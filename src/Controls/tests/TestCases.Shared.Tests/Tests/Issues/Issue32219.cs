@@ -13,7 +13,7 @@ public class Issue32219 : _IssuesUITest
 	{ }
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void VerifyFlyoutSelectedCurrentItem()
 	{
 		App.WaitForElement("homePageLabel");

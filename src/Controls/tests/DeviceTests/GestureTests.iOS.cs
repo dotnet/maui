@@ -9,6 +9,7 @@ using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.TestUtils.DeviceTests.Runners;
+using UIKit;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
@@ -90,5 +91,40 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 #endif
+
+		[Theory]
+		[InlineData(1, 2)]
+		[InlineData(2, 3)]
+		[InlineData(3, 1)]
+		[InlineData(1, 3)]
+		public async Task ChangingNumberOfTapsRequiredUpdatesNativeGestureRecognizerForSpan(int initialTaps, int updatedTaps)
+		{
+			var tapGestureRecognizer = new TapGestureRecognizer { NumberOfTapsRequired = initialTaps };
+
+			var span = new Span { Text = "Tap me" };
+			span.GestureRecognizers.Add(tapGestureRecognizer);
+
+			var label = new Label
+			{
+				FormattedText = new FormattedString
+				{
+					Spans = { span }
+				}
+			};
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<LabelHandler>(label);
+
+				UITapGestureRecognizer GetNativeTapGestureRecognizer() =>
+					handler.PlatformView.GestureRecognizers?.OfType<UITapGestureRecognizer>().FirstOrDefault();
+
+				Assert.Equal((nuint)initialTaps, GetNativeTapGestureRecognizer().NumberOfTapsRequired);
+
+				tapGestureRecognizer.NumberOfTapsRequired = updatedTaps;
+
+				Assert.Equal((nuint)updatedTaps, GetNativeTapGestureRecognizer().NumberOfTapsRequired);
+			});
+		}
 	}
 }

@@ -7,6 +7,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 	{
 		internal static void DisposeModalAndChildHandlers(this Maui.IElement view)
 		{
+			if (view is Element rootElement && HandlerProperties.GetDisconnectPolicy(rootElement) == HandlerDisconnectPolicy.Manual)
+			{
+				DisposeModalWrapper(rootElement.Handler as IPlatformViewHandler);
+				return;
+			}
+
 			IPlatformViewHandler renderer;
 			foreach (Element child in ((Element)view).Descendants())
 			{
@@ -26,11 +32,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				renderer = (visualElement.Handler as IPlatformViewHandler);
 				if (renderer != null)
 				{
-					if (renderer.ViewController != null)
-					{
-						if (renderer.ViewController.ParentViewController is Platform.ControlsModalWrapper modalWrapper)
-							modalWrapper.Dispose();
-					}
+					DisposeModalWrapper(renderer);
 
 					renderer.PlatformView?.RemoveFromSuperview();
 
@@ -42,6 +44,17 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					{
 						disposable.Dispose();
 					}
+				}
+			}
+		}
+
+		static void DisposeModalWrapper(IPlatformViewHandler renderer)
+		{
+			if (renderer?.ViewController is not null)
+			{
+				if (renderer.ViewController.ParentViewController is Platform.ControlsModalWrapper modalWrapper)
+				{
+					modalWrapper.Dispose();
 				}
 			}
 		}

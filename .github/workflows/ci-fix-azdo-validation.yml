@@ -43,6 +43,9 @@ jobs:
           ref: ${{ github.sha }}
           fetch-depth: 1
           persist-credentials: false
+          sparse-checkout: |
+            /.github/scripts/Queue-CiFixAzdoValidation.ps1
+          sparse-checkout-cone-mode: false
 
       - name: Queue Azure DevOps PR validation
         shell: pwsh

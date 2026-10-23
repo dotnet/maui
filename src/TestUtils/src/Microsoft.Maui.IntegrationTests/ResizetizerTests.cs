@@ -19,6 +19,69 @@ public class ResizetizerTests : BaseBuildTest
 		""";
 
 	[Theory]
+	[InlineData("android", true, false)]
+	[InlineData("android", false, false)]
+	[InlineData("ios", true, false)]
+	[InlineData("ios", false, false)]
+	[InlineData("android", false, true)]
+	[InlineData("ios", false, true)]
+	public void PackagedResizetizerRendersSvgFiltersAndText(string platform, bool isAppIcon, bool isSplashScreen)
+	{
+		SetTestIdentifier(platform, isAppIcon, isSplashScreen);
+
+		var projectFile = Path.Combine(TestDirectory, "SvgFilters.csproj");
+		File.WriteAllText(Path.Combine(TestDirectory, "filtered.svg"),
+			"""
+			<svg width="456" height="456" viewBox="0 0 456 456" xmlns="http://www.w3.org/2000/svg">
+				<filter id="blur"><feGaussianBlur stdDeviation="8" /></filter>
+				<rect x="32" y="32" width="392" height="392" fill="#512BD4" filter="url(#blur)" />
+				<text x="64" y="256" font-family="Arial" font-size="64" fill="black">MAUI</text>
+			</svg>
+			""");
+		// Run the packaged task in MSBuild, not the test host's different SkiaSharp asset selection.
+		File.WriteAllText(projectFile,
+			$$"""
+			<Project Sdk="Microsoft.NET.Sdk">
+				<PropertyGroup>
+					<TargetFramework>{{DotNetCurrent}}</TargetFramework>
+				</PropertyGroup>
+				<ItemGroup>
+					<PackageReference Include="Microsoft.Maui.Resizetizer" Version="{{MauiPackageVersion}}" />
+					<Image Include="filtered.svg" IsAppIcon="{{isAppIcon}}" Condition="'{{isSplashScreen}}' != 'True'" />
+					<MauiSplashScreen Include="filtered.svg" Color="#512BD4" Condition="'{{isSplashScreen}}' == 'True'" />
+				</ItemGroup>
+				<Target Name="RenderSvg">
+					<MakeDir Directories="rendered" />
+					<ResizetizeImages PlatformType="{{platform}}" IntermediateOutputPath="rendered" Images="@(Image)"
+						Condition="'{{isSplashScreen}}' != 'True'" />
+					<GenerateSplashAndroidResources MauiSplashScreen="@(MauiSplashScreen)" IntermediateOutputPath="rendered"
+						Condition="'{{isSplashScreen}}' == 'True' and '{{platform}}' == 'android'" />
+					<GenerateSplashStoryboard MauiSplashScreen="@(MauiSplashScreen)" IntermediateOutputPath="rendered"
+						Condition="'{{isSplashScreen}}' == 'True' and '{{platform}}' == 'ios'" />
+				</Target>
+			</Project>
+			""");
+
+		Assert.True(DotnetInternal.Build(projectFile, "Debug", target: "RenderSvg", properties: BuildProps, output: _output),
+			"Packaged Resizetizer failed to render SVG filters and text. Check test output for errors.");
+		Assert.NotEmpty(Directory.GetFiles(Path.Combine(TestDirectory, "rendered"), "*.png", SearchOption.AllDirectories));
+		if (isSplashScreen)
+		{
+			var outputDirectory = Path.Combine(TestDirectory, "rendered");
+			if (platform == "android")
+			{
+				Assert.True(File.Exists(Path.Combine(outputDirectory, "values", "maui_colors.xml")));
+				Assert.True(File.Exists(Path.Combine(outputDirectory, "drawable", "maui_splash_image.xml")));
+				Assert.True(File.Exists(Path.Combine(outputDirectory, "drawable-v31", "maui_splash_image.xml")));
+			}
+			else
+			{
+				Assert.True(File.Exists(Path.Combine(outputDirectory, "MauiSplash.storyboard")));
+			}
+		}
+	}
+
+	[Theory]
 	[InlineData("ios")]
 	[InlineData("maccatalyst")]
 	public void BuildsAppleIconComposerMauiIconIncrementally(string platform)
@@ -114,15 +177,15 @@ public class ResizetizerTests : BaseBuildTest
 
 	[Theory]
 	// windows unpackaged/exe
-	[InlineData("maui", "classlib", true)] // net9.0
-	[InlineData("maui", "mauilib", true)] // net9.0-xxx
-	[InlineData("maui-blazor", "classlib", true)] // net9.0
-	[InlineData("maui-blazor", "mauilib", true)] // net9.0-xxx
+	[InlineData("maui", "classlib", true)] // base TFM
+	[InlineData("maui", "mauilib", true)] // platform TFMs
+	[InlineData("maui-blazor", "classlib", true)] // base TFM
+	[InlineData("maui-blazor", "mauilib", true)] // platform TFMs
 												 // windows packaged/msix
-	[InlineData("maui", "classlib", false)] // net9.0
-	[InlineData("maui", "mauilib", false)] // net9.0-xxx
-	[InlineData("maui-blazor", "classlib", false)] // net9.0
-	[InlineData("maui-blazor", "mauilib", false)] // net9.0-xxx
+	[InlineData("maui", "classlib", false)] // base TFM
+	[InlineData("maui", "mauilib", false)] // platform TFMs
+	[InlineData("maui-blazor", "classlib", false)] // base TFM
+	[InlineData("maui-blazor", "mauilib", false)] // platform TFMs
 	public void CollectsAssets(string id, string libid, bool unpackaged)
 	{
 		SetTestIdentifier(id, libid, unpackaged);
@@ -153,19 +216,7 @@ public class ResizetizerTests : BaseBuildTest
 			</Project>
 			""");
 
-		// toggle packaged / unpackaged
-		if (unpackaged)
-		{
-			FileUtilities.ReplaceInFile(appFile,
-				"</Project>",
-				"""
-				<PropertyGroup>
-					<WindowsPackageType>None</WindowsPackageType>
-				</PropertyGroup>
-				</Project>
-				""");
-
-		}
+		SetWindowsPackageType(appFile, unpackaged);
 
 		// add the svg file
 		File.WriteAllText(Path.Combine(libDir, "the_image.svg"), BlankSvgContents);
@@ -184,20 +235,37 @@ public class ResizetizerTests : BaseBuildTest
 			</Project>
 			""");
 
-		// build
-		Assert.True(DotnetInternal.Build(appFile, "Debug", properties: BuildProps, output: _output),
-			$"Project {Path.GetFileName(appFile)} failed to build. Check test output/attachments for errors.");
-
-		// assert
-		Assert.True(File.Exists(Path.Combine(appDir, $"obj\\Debug\\{DotNetCurrent}-android\\resizetizer\\r\\drawable-mdpi\\the_image.png")),
+		// build and assert Android
+		var androidFramework = $"{DotNetCurrent}-android";
+		Assert.True(DotnetInternal.Build(appFile, "Debug", framework: androidFramework, properties: BuildProps, output: _output),
+			$"Project {Path.GetFileName(appFile)} failed to build for Android. Check test output/attachments for errors.");
+		Assert.True(File.Exists(Path.Combine(appDir, "obj", "Debug", androidFramework, "resizetizer", "r", "drawable-mdpi", "the_image.png")),
 			"Android was missing the image file.");
-		Assert.True(File.Exists(Path.Combine(appDir, $"obj\\Debug\\{DotNetCurrent}-ios\\iossimulator-x64\\resizetizer\\r\\the_image.png")),
+
+		// build and assert iOS
+		var iosFramework = $"{DotNetCurrent}-ios";
+		var iosRuntimeIdentifier = TestEnvironment.IOSSimulatorRuntimeIdentifier;
+		Assert.True(DotnetInternal.Build(appFile, "Debug", framework: iosFramework, properties: BuildProps, runtimeIdentifier: iosRuntimeIdentifier, output: _output),
+			$"Project {Path.GetFileName(appFile)} failed to build for iOS. Check test output/attachments for errors.");
+		Assert.True(File.Exists(Path.Combine(appDir, "obj", "Debug", iosFramework, iosRuntimeIdentifier, "resizetizer", "r", "the_image.png")),
 			"iOS was missing the image file.");
-		Assert.True(File.Exists(Path.Combine(appDir, $"obj\\Debug\\{DotNetCurrent}-maccatalyst\\maccatalyst-x64\\resizetizer\\r\\the_image.png")),
+
+		// build and assert Mac Catalyst
+		var macCatalystFramework = $"{DotNetCurrent}-maccatalyst";
+		var macCatalystRuntimeIdentifier = TestEnvironment.IsArm64 ? "maccatalyst-arm64" : "maccatalyst-x64";
+		Assert.True(DotnetInternal.Build(appFile, "Debug", framework: macCatalystFramework, properties: BuildProps, runtimeIdentifier: macCatalystRuntimeIdentifier, output: _output),
+			$"Project {Path.GetFileName(appFile)} failed to build for Mac Catalyst. Check test output/attachments for errors.");
+		Assert.True(File.Exists(Path.Combine(appDir, "obj", "Debug", macCatalystFramework, macCatalystRuntimeIdentifier, "resizetizer", "r", "the_image.png")),
 			"Mac Catalyst was missing the image file.");
+
 		if (TestEnvironment.IsWindows)
-			Assert.True(File.Exists(Path.Combine(appDir, $"obj\\Debug\\{DotNetCurrent}-windows10.0.19041.0\\win-x64\\resizetizer\\r\\the_image.scale-100.png")),
+		{
+			var windowsFramework = $"{DotNetCurrent}-windows10.0.19041.0";
+			Assert.True(DotnetInternal.Build(appFile, "Debug", framework: windowsFramework, properties: GetWindowsBuildProps(), output: _output),
+				$"Project {Path.GetFileName(appFile)} failed to build for Windows. Check test output/attachments for errors.");
+			Assert.True(File.Exists(Path.Combine(appDir, "obj", "x64", "Debug", windowsFramework, "resizetizer", "r", "the_image.scale-100.png")),
 				"Windows was missing the image file.");
+		}
 	}
 
 	// Regression test for https://github.com/dotnet/maui/issues/23268: custom font assets were not
@@ -999,18 +1067,7 @@ public class ResizetizerTests : BaseBuildTest
 			</Project>
 			""");
 
-		// toggle packaged / unpackaged
-		if (unpackaged)
-		{
-			FileUtilities.ReplaceInFile(appFile,
-				"</Project>",
-				"""
-				<PropertyGroup>
-					<WindowsPackageType>None</WindowsPackageType>
-				</PropertyGroup>
-				</Project>
-				""");
-		}
+		SetWindowsPackageType(appFile, unpackaged);
 
 		// add the svg file to the library
 		File.WriteAllText(Path.Combine(libDir, "the_image.svg"), BlankSvgContents);
@@ -1030,16 +1087,21 @@ public class ResizetizerTests : BaseBuildTest
 			</Project>
 			""");
 
-		// build
-		Assert.True(DotnetInternal.Build(appFile, "Debug", properties: BuildProps, output: _output),
-			$"Project {Path.GetFileName(appFile)} failed to build. Check test output/attachments for errors.");
-
-		// assert - the image should NOT be collected because AdditionalProperties excluded it
-		Assert.False(File.Exists(Path.Combine(appDir, $"obj\\Debug\\{DotNetCurrent}-android\\resizetizer\\r\\drawable-mdpi\\the_image.png")),
+		// build and assert Android - the image should NOT be collected because AdditionalProperties excluded it
+		var androidFramework = $"{DotNetCurrent}-android";
+		Assert.True(DotnetInternal.Build(appFile, "Debug", framework: androidFramework, properties: BuildProps, output: _output),
+			$"Project {Path.GetFileName(appFile)} failed to build for Android. Check test output/attachments for errors.");
+		Assert.False(File.Exists(Path.Combine(appDir, "obj", "Debug", androidFramework, "resizetizer", "r", "drawable-mdpi", "the_image.png")),
 			"Android should NOT have the image file (AdditionalProperties should have excluded it).");
+
 		if (TestEnvironment.IsWindows)
-			Assert.False(File.Exists(Path.Combine(appDir, $"obj\\Debug\\{DotNetCurrent}-windows10.0.19041.0\\win-x64\\resizetizer\\r\\the_image.scale-100.png")),
+		{
+			var windowsFramework = $"{DotNetCurrent}-windows10.0.19041.0";
+			Assert.True(DotnetInternal.Build(appFile, "Debug", framework: windowsFramework, properties: GetWindowsBuildProps(), output: _output),
+				$"Project {Path.GetFileName(appFile)} failed to build for Windows. Check test output/attachments for errors.");
+			Assert.False(File.Exists(Path.Combine(appDir, "obj", "x64", "Debug", windowsFramework, "resizetizer", "r", "the_image.scale-100.png")),
 				"Windows should NOT have the image file (AdditionalProperties should have excluded it).");
+		}
 	}
 
 	[Theory]
@@ -1075,18 +1137,7 @@ public class ResizetizerTests : BaseBuildTest
 			</Project>
 			""");
 
-		// toggle packaged / unpackaged
-		if (unpackaged)
-		{
-			FileUtilities.ReplaceInFile(appFile,
-				"</Project>",
-				"""
-				<PropertyGroup>
-					<WindowsPackageType>None</WindowsPackageType>
-				</PropertyGroup>
-				</Project>
-				""");
-		}
+		SetWindowsPackageType(appFile, unpackaged);
 
 		// add two svg files to the library — the property selects which one is included
 		File.WriteAllText(Path.Combine(libDir, "default_image.svg"), BlankSvgContents);
@@ -1107,22 +1158,42 @@ public class ResizetizerTests : BaseBuildTest
 			</Project>
 			""");
 
-		// build
-		Assert.True(DotnetInternal.Build(appFile, "Debug", properties: BuildProps, output: _output),
-			$"Project {Path.GetFileName(appFile)} failed to build. Check test output/attachments for errors.");
-
-		// assert - alternate_image should be collected (property was propagated)
-		Assert.True(File.Exists(Path.Combine(appDir, $"obj\\Debug\\{DotNetCurrent}-android\\resizetizer\\r\\drawable-mdpi\\alternate_image.png")),
+		// build and assert Android
+		var androidFramework = $"{DotNetCurrent}-android";
+		Assert.True(DotnetInternal.Build(appFile, "Debug", framework: androidFramework, properties: BuildProps, output: _output),
+			$"Project {Path.GetFileName(appFile)} failed to build for Android. Check test output/attachments for errors.");
+		Assert.True(File.Exists(Path.Combine(appDir, "obj", "Debug", androidFramework, "resizetizer", "r", "drawable-mdpi", "alternate_image.png")),
 			"Android was missing alternate_image — AdditionalProperties was not propagated.");
-		// assert - default_image should NOT be collected (it was excluded by the property)
-		Assert.False(File.Exists(Path.Combine(appDir, $"obj\\Debug\\{DotNetCurrent}-android\\resizetizer\\r\\drawable-mdpi\\default_image.png")),
+		Assert.False(File.Exists(Path.Combine(appDir, "obj", "Debug", androidFramework, "resizetizer", "r", "drawable-mdpi", "default_image.png")),
 			"Android should NOT have default_image — AdditionalProperties should have selected the alternate.");
+
 		if (TestEnvironment.IsWindows)
 		{
-			Assert.True(File.Exists(Path.Combine(appDir, $"obj\\Debug\\{DotNetCurrent}-windows10.0.19041.0\\win-x64\\resizetizer\\r\\alternate_image.scale-100.png")),
+			var windowsFramework = $"{DotNetCurrent}-windows10.0.19041.0";
+			Assert.True(DotnetInternal.Build(appFile, "Debug", framework: windowsFramework, properties: GetWindowsBuildProps(), output: _output),
+				$"Project {Path.GetFileName(appFile)} failed to build for Windows. Check test output/attachments for errors.");
+			Assert.True(File.Exists(Path.Combine(appDir, "obj", "x64", "Debug", windowsFramework, "resizetizer", "r", "alternate_image.scale-100.png")),
 				"Windows was missing alternate_image — AdditionalProperties was not propagated.");
-			Assert.False(File.Exists(Path.Combine(appDir, $"obj\\Debug\\{DotNetCurrent}-windows10.0.19041.0\\win-x64\\resizetizer\\r\\default_image.scale-100.png")),
+			Assert.False(File.Exists(Path.Combine(appDir, "obj", "x64", "Debug", windowsFramework, "resizetizer", "r", "default_image.scale-100.png")),
 				"Windows should NOT have default_image — AdditionalProperties should have selected the alternate.");
 		}
+	}
+
+	static void SetWindowsPackageType(string projectFile, bool unpackaged)
+	{
+		FileUtilities.ReplaceInFile(
+			projectFile,
+			"<WindowsPackageType>None</WindowsPackageType>",
+			$"<WindowsPackageType>{(unpackaged ? "None" : "MSIX")}</WindowsPackageType>");
+	}
+
+	List<string> GetWindowsBuildProps()
+	{
+		var properties = BuildProps;
+		// Constrain restore without producing RID-specific app output that mismatches project-reference PRI output.
+		properties.Add("RuntimeIdentifiers=win-x64");
+		properties.Add("Platform=x64");
+		properties.Add("UseMonoRuntime=false");
+		return properties;
 	}
 }

@@ -15,6 +15,15 @@ namespace Microsoft.Maui.Platform
 	/// </summary>
 	public abstract class MauiView : UIView, ICrossPlatformLayoutBacking, IVisualTreeElementProvidable, IUIViewLifeCycleEvents, IPlatformMeasureInvalidationController
 	{
+		protected MauiView()
+		{
+		}
+
+		private protected MauiView(NativeHandle handle)
+			: base(handle)
+		{
+		}
+
 		/// <summary>
 		/// Flag indicating that parent views should be invalidated when this view is moved to a window.
 		/// This is used to trigger layout updates when the view hierarchy changes.
@@ -776,7 +785,7 @@ namespace Microsoft.Maui.Platform
 			// Compare at device-pixel resolution to filter sub-pixel noise from animations
 			// that would otherwise trigger infinite layout invalidation cycles (#32586, #33934).
 			return oldApplyingSafeAreaAdjustments == _appliesSafeAreaAdjustments &&
-				   (oldSafeArea.EqualsAtPixelLevel(_safeArea) || !_appliesSafeAreaAdjustments);
+				   (oldSafeArea.EqualsAtPixelLevel(_safeArea, this.GetEffectiveDisplayScale()) || !_appliesSafeAreaAdjustments);
 		}
 
 		/// <summary>

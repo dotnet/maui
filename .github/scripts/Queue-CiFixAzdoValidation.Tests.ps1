@@ -200,12 +200,18 @@ Describe 'Test-CiFixPrFingerprint' {
 }
 
 Describe 'trusted workflow configuration' {
-    It 'pins checkout to the reviewed v7.0.1 commit in the id-token job' {
+    It 'pins checkout to the reviewed v7.0.1 commit in the id-token job with <LineEnding> line endings' -ForEach @(
+        @{ LineEnding = 'LF'; NewLine = "`n" }
+        @{ LineEnding = 'CRLF'; NewLine = "`r`n" }
+    ) {
         $workflow = Get-Content -Raw -LiteralPath (Join-Path $PSScriptRoot '../workflows/ci-fix-azdo-validation.yml')
+        $workflow = $workflow -replace '\r?\n', $NewLine
 
         $workflow | Should -Match 'actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7\.0\.1'
         $workflow | Should -Match 'ref: \$\{\{ github\.sha \}\}'
         $workflow | Should -Not -Match 'github\.event\.pull_request\.base\.sha'
+        $workflow | Should -Match 'fetch-depth: 1'
+        $workflow | Should -Match '(?m)^\s+sparse-checkout: \|\r?\n\s+/\.github/scripts/Queue-CiFixAzdoValidation\.ps1\r?\n\s+sparse-checkout-cone-mode: false\r?$'
         $workflow | Should -Match 'persist-credentials: false'
         $workflow | Should -Match 'id-token: write'
         $workflow | Should -Match 'timeout-minutes: 10'
@@ -853,6 +859,7 @@ Describe 'Invoke-AzdoPipelineQueue retry safety' {
             'Test-IsDispatcherBudgetException',
             'Get-DispatcherHttpTimeoutSeconds',
             'Invoke-DispatcherSleep',
+            'Get-AzdoQueueFailureMessage',
             'Get-CiFixPipelineDefinitions',
             'Test-IsTransientHttpException',
             'Get-HttpStatusCode',
@@ -880,7 +887,7 @@ Describe 'Invoke-AzdoPipelineQueue retry safety' {
             $script:TransientHttpStatusCodes = @(408, 429, 500, 502, 503, 504)
             $script:MaxHttpAttempts = 4
             $script:RetryBaseDelaySeconds = 2
-            $script:DispatcherBudgetSeconds = 480
+            $script:EffectiveDispatcherBudgetSeconds = 480
             $script:DispatcherStopwatch = [System.Diagnostics.Stopwatch]::StartNew()
             $script:DispatcherBudgetPrefix = '[dispatcher-budget-exhausted]'
             foreach ($definition in $FunctionDefinitions) {
@@ -1119,6 +1126,81 @@ Describe 'Invoke-AzdoPipelineQueue retry safety' {
             Should -Invoke Invoke-RestMethod -ModuleName QueueCiFixAzdoValidationTest -Times 1 -Exactly -ParameterFilter { $Method -eq 'Post' }
             Should -Invoke Get-AzdoDuplicateBuild -ModuleName QueueCiFixAzdoValidationTest -Times 0 -Exactly
             Should -Invoke Start-Sleep -ModuleName QueueCiFixAzdoValidationTest -Times 0 -Exactly
+        }
+
+        It 'includes bounded Azure response details for a nontransient POST failure' {
+            $exception = [System.Net.Http.HttpRequestException]::new(
+                'Response status code does not indicate success: 400 (Bad Request).',
+                $null,
+                [System.Net.HttpStatusCode]::BadRequest)
+            $errorRecord = [System.Management.Automation.ErrorRecord]::new(
+                $exception,
+                'AzdoQueueFailure',
+                [System.Management.Automation.ErrorCategory]::InvalidOperation,
+                $null)
+            $errorRecord.ErrorDetails = [System.Management.Automation.ErrorDetails]::new(
+                '{"message":"The build request is invalid for this source provider.","typeKey":"BuildRequestValidationFailed"}')
+
+            Mock Invoke-RestMethod {
+                throw $errorRecord
+            } -ModuleName QueueCiFixAzdoValidationTest
+            Mock Get-AzdoDuplicateBuild {
+                throw 'Duplicate lookup must not run for a nontransient failure.'
+            } -ModuleName QueueCiFixAzdoValidationTest
+
+            {
+                Invoke-QueueTestAzdoPipelineQueue `
+                    -DefinitionId 313 `
+                    -Context $script:queueContext `
+                    -AuthToken test-token
+            } | Should -Throw '*400 (Bad Request)*Azure response: The build request is invalid for this source provider. (Azure type: BuildRequestValidationFailed)*'
+
+            Should -Invoke Invoke-RestMethod -ModuleName QueueCiFixAzdoValidationTest -Times 1 -Exactly -ParameterFilter {
+                $Method -eq 'Post'
+            }
+            Should -Invoke Get-AzdoDuplicateBuild -ModuleName QueueCiFixAzdoValidationTest -Times 0 -Exactly
+        }
+
+        It 'redacts and truncates non-JSON Azure response details' {
+            $exception = [System.InvalidOperationException]::new('invalid request')
+            $errorRecord = [System.Management.Automation.ErrorRecord]::new(
+                $exception,
+                'AzdoQueueFailure',
+                [System.Management.Automation.ErrorCategory]::InvalidOperation,
+                $null)
+            $errorRecord.ErrorDetails = [System.Management.Automation.ErrorDetails]::new(
+                ('Bearer abc.def.ghi access_token=sensitive ' + ('x' * 400)))
+
+            $message = Get-QueueTestAzdoQueueFailureMessage `
+                -ErrorRecord $errorRecord `
+                -MaximumDetailLength 256
+
+            $message | Should -Match 'Bearer \[redacted\]'
+            $message | Should -Match 'access_token=\[redacted\]'
+            $message | Should -Match '\.\.\. \[truncated\]$'
+            $message | Should -Not -Match 'sensitive'
+            $message.Length | Should -BeLessOrEqual 300
+        }
+
+        It 'redacts quoted JSON credential fields while preserving safe fallback details' {
+            $exception = [System.InvalidOperationException]::new('invalid request')
+            $errorRecord = [System.Management.Automation.ErrorRecord]::new(
+                $exception,
+                'AzdoQueueFailure',
+                [System.Management.Automation.ErrorCategory]::InvalidOperation,
+                $null)
+            $errorRecord.ErrorDetails = [System.Management.Automation.ErrorDetails]::new(
+                '{"access_token":"sensitive","nested":{"client_assertion":"assertion"},"ID_TOKEN" : "id-secret","refresh_token":"refresh","token":"general","requestId":"safe-id"}')
+
+            $message = Get-QueueTestAzdoQueueFailureMessage -ErrorRecord $errorRecord
+
+            $message | Should -Match '"access_token":"\[redacted\]"'
+            $message | Should -Match '"client_assertion":"\[redacted\]"'
+            $message | Should -Match '"ID_TOKEN" : "\[redacted\]"'
+            $message | Should -Match '"refresh_token":"\[redacted\]"'
+            $message | Should -Match '"token":"\[redacted\]"'
+            $message | Should -Match '"requestId":"safe-id"'
+            $message | Should -Not -Match ':\s*"(?:sensitive|assertion|id-secret|refresh|general)"'
         }
 
         It 'caps HTTP timeouts and retry sleeps to the shared remaining budget' {
@@ -1514,6 +1596,121 @@ Describe 'event payload validation' {
         $LASTEXITCODE | Should -Not -Be 0
         $output -join [Environment]::NewLine |
             Should -Match 'GITHUB_EVENT_PATH must identify a supported GitHub event payload file\.'
+    }
+}
+
+Describe 'entrypoint dispatcher deadline' {
+    BeforeEach {
+        $script:oldStepSummary = $env:GITHUB_STEP_SUMMARY
+        $summaryPath = Join-Path $TestDrive "deadline-summary-$([Guid]::NewGuid().ToString('N')).md"
+        $env:GITHUB_STEP_SUMMARY = $summaryPath
+        $eventPath = Join-Path $TestDrive 'deadline-event.json'
+        $fixturePath = Join-Path $TestDrive 'deadline-fixture.json'
+        New-TestEvent | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $eventPath
+        New-TestPullRequestFixture -PullRequests @((New-TestPullRequest)) |
+            ConvertTo-Json -Depth 20 |
+            Set-Content -LiteralPath $fixturePath
+
+        Mock Invoke-RestMethod { throw 'HTTP, OIDC, and Azure requests must not run.' }
+        Mock Invoke-WebRequest { throw 'HTTP requests must not run.' }
+        Mock Start-Sleep { throw 'Sleep must not run.' }
+    }
+
+    AfterEach {
+        $env:GITHUB_STEP_SUMMARY = $script:oldStepSummary
+    }
+
+    It 'fails explicitly before external work when preparation exhausted the deadline (<Mode>)' -ForEach @(
+        @{ Mode = 'live discovery'; UseFixture = $false; EmptyFixture = $false }
+        @{ Mode = 'eligible offline fixture'; UseFixture = $true; EmptyFixture = $false }
+        @{ Mode = 'no eligible offline work'; UseFixture = $true; EmptyFixture = $true }
+    ) {
+        if ($EmptyFixture) {
+            [pscustomobject]@{ pullRequests = @() } |
+                ConvertTo-Json -Depth 10 |
+                Set-Content -LiteralPath $fixturePath
+        }
+        $parameters = @{
+            EventPath = $eventPath
+            Repository = 'dotnet/maui'
+            EventName = 'pull_request_target'
+            DispatcherBudgetSeconds = 420
+            DispatcherDeadlineUnixSeconds = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds() - 60
+        }
+        if ($UseFixture) {
+            $parameters.PullRequestsFixturePath = $fixturePath
+            $parameters.DryRun = $true
+        }
+
+        { & $scriptPath @parameters } |
+            Should -Throw '*dispatcher-budget-exhausted*preparation*No queue POST was attempted.*'
+
+        $summary = Get-Content -Raw -LiteralPath $summaryPath
+        $summary | Should -Match '\[dispatcher-budget-exhausted\]'
+        $summary | Should -Match 'Stage: preparation / dispatcher deadline'
+        $summary | Should -Match 'Result: failed'
+        $summary | Should -Match 'before PR discovery or authentication'
+        $summary | Should -Match 'No queue POST was attempted\.'
+        Should -Invoke Invoke-RestMethod -Times 0 -Exactly
+        Should -Invoke Invoke-WebRequest -Times 0 -Exactly
+        Should -Invoke Start-Sleep -Times 0 -Exactly
+    }
+
+    It 'returns a nonzero process exit with the preparation diagnostic for an expired deadline' {
+        $output = & pwsh -NoLogo -NoProfile -File $scriptPath `
+            -EventPath $eventPath `
+            -Repository dotnet/maui `
+            -EventName pull_request_target `
+            -PullRequestsFixturePath $fixturePath `
+            -DispatcherBudgetSeconds 420 `
+            -DispatcherDeadlineUnixSeconds ([DateTimeOffset]::UtcNow.ToUnixTimeSeconds() - 60) `
+            -DryRun 2>&1
+
+        $LASTEXITCODE | Should -Not -Be 0
+        $diagnostic = $output -join [Environment]::NewLine
+        $diagnostic | Should -Match '\[dispatcher-budget-exhausted\]'
+        $diagnostic | Should -Match 'preparation'
+        $diagnostic | Should -Not -Match 'variable cannot be validated'
+        (Get-Content -Raw -LiteralPath $summaryPath) |
+            Should -Match 'No queue POST was attempted\.'
+    }
+
+    It 'retains caller validation that rejects a zero budget before writing a startup summary' {
+        {
+            & $scriptPath `
+                -EventPath $eventPath `
+                -Repository dotnet/maui `
+                -EventName pull_request_target `
+                -DispatcherBudgetSeconds 0 `
+                -DispatcherDeadlineUnixSeconds ([DateTimeOffset]::UtcNow.ToUnixTimeSeconds() - 60)
+        } | Should -Throw "*'DispatcherBudgetSeconds'*"
+
+        Test-Path -LiteralPath $summaryPath | Should -BeFalse
+        Should -Invoke Invoke-RestMethod -Times 0 -Exactly
+        Should -Invoke Invoke-WebRequest -Times 0 -Exactly
+        Should -Invoke Start-Sleep -Times 0 -Exactly
+    }
+
+    It 'reaches verified offline payload generation with a valid future deadline' {
+        $output = & $scriptPath `
+            -EventPath $eventPath `
+            -Repository dotnet/maui `
+            -EventName pull_request_target `
+            -PullRequestsFixturePath $fixturePath `
+            -DispatcherBudgetSeconds 420 `
+            -DispatcherDeadlineUnixSeconds ([DateTimeOffset]::UtcNow.ToUnixTimeSeconds() + 120) `
+            -DryRun
+
+        $results = @($output -join [Environment]::NewLine | ConvertFrom-Json -Depth 20)
+        $results.Count | Should -Be 3
+        @($results.Outcome | Select-Object -Unique) | Should -Be @('dry-run')
+        @($results.DefinitionId | Sort-Object) | Should -Be @(302, 313, 314)
+        @($results.Request.sourceVersion | Select-Object -Unique) |
+            Should -Be @('2222222222222222222222222222222222222222')
+        (Get-Content -Raw -LiteralPath $summaryPath) | Should -Match 'dotnet/maui#123'
+        Should -Invoke Invoke-RestMethod -Times 0 -Exactly
+        Should -Invoke Invoke-WebRequest -Times 0 -Exactly
+        Should -Invoke Start-Sleep -Times 0 -Exactly
     }
 }
 

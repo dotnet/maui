@@ -118,6 +118,7 @@
         {
           "condition": "(!UseSampleContent)",
           "exclude": [
+            "Behavior/**",
             "Converter/**",
             "Data/**",
             "GlobalUsings.cs",

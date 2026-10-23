@@ -14,7 +14,7 @@ public class ShellFlyoutHeaderBehavior : _IssuesUITest
 	public override string Issue => "Shell Flyout Header Behavior";
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void FlyoutHeaderBehaviorFixed()
 	{
 		App.WaitForElement("Fixed");
@@ -27,7 +27,7 @@ public class ShellFlyoutHeaderBehavior : _IssuesUITest
 	}
 #if !IOS // For iOS, getting incorrect Rect values from GetRect method in Appium even though the size is reduced in UI.
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void FlyoutHeaderBehaviorCollapseOnScroll()
 	{
 		App.WaitForElement("CollapseOnScroll");
@@ -40,7 +40,7 @@ public class ShellFlyoutHeaderBehavior : _IssuesUITest
 	}
 
 	[Test] // Skip this for iOS, because FindElements returns count eventhough the element is scrolled up and hidded from the UI.
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void FlyoutHeaderBehaviorScroll()
 	{
 		App.WaitForElement("Scroll");

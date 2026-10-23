@@ -63,6 +63,44 @@ and `maui-pr-uitests` may not run automatically depending on the changed files.
   inaccessible/expired/insufficient data — do not assume unrelated or PR-caused.
 - Helix work-item console output may live behind `helix.dot.net` and Azure Blob URLs.
 
+## Setup-only retries
+
+Shared test preparation uses **at most five total attempts per setup operation**,
+not five additional retries or five whole-job reruns. Azure task-level recovery
+uses `retryCountOnTaskFailure: 4`, with the agent's backoff and attempt diagnostics.
+Task and job timeouts can end recovery earlier; exhaustion remains a failed step.
+
+- `eng/pipelines/common/provision.yml` covers .NET SDK/tool installation, JDK,
+  Xcode selection/provisioning, Android SDK environment discovery and AVD creation.
+  Its consumers include UI-test lanes (including Material3), device-test builds,
+  unit/Helix preparation, integration tests and the review gate. Platform and skip
+  conditions still determine which operations run.
+- Android common packages, platform APIs and emulator images retry **per package**
+  through `src/Provisioning/Provisioning.csproj` and
+  `eng/scripts/Install-AndroidSdkPackage.ps1`. Only Azure Pipelines installs retry;
+  local installs still attempt once. Each CI attempt has a fresh Android user
+  cache and temporary directory. After a failed attempt, the installer discovers
+  the SDK path and removes only the failed package directory and the SDK's `.temp`
+  staging directory before retrying. Successful packages are not reinstalled.
+  The enclosing Azure task does not retry, avoiding a five-by-five multiplier.
+- Simulator-runtime installation keeps its existing CoreSimulator recovery, but
+  counts the initial download toward the five-attempt cap and fails on exhaustion
+  or an unusable runtime instead of continuing with a warning.
+- Shared UI/device/template/integration setup also retries artifact downloads and
+  separate .NET SDK/workload/tool installation. UI setup additionally retries Node
+  and Appium installation. Windows Helix-device preparation and the legacy
+  handler/template paths use the same task retry count.
+- The Cake UI runner retries its explicitly separated preparation/build phases
+  before invoking the test runner: iOS device preparation, Android APK installation,
+  Windows test paths, and UI-test project builds on all four platforms. Local
+  runs and non-UI Cake targets keep their existing behavior.
+
+This is **not** a retry based on an absent TRX or a zero test count. Test commands,
+NUnit fixture setup/teardown, result reconciliation, publication, and existing
+test-execution retries are unchanged. Android emulator boot, independent review
+gate preparation, and provisioning inside Helix/XHarness workers retain their
+existing policies; shared agent setup does not wrap or resubmit those test runs.
+
 ## Enumerate EVERY failed leg — Build Analysis is NOT exhaustive
 
 > 🚨 The single most common way to be **wrong** about "what's unique to this PR" is to
@@ -433,6 +471,15 @@ on appearance alone:
    dismisses, because a broad known-issue regex could otherwise launder a PR-caused break in
    a *different* test that merely shares a red leg on base. An uncorroborated text match (no
    exact base match) stays `indeterminate` (`Needs human investigation`).
+   The local gatherer preserves `ErrorMessage` arrays as ordered AND conditions:
+   every literal must occur on a distinct subsequent line within one actual occurrence,
+   following the [public BA array contract](https://github.com/dotnet/arcade/blob/5a63d054ea793bdbdb6aa9f4558558e3a8f41529/Documentation/Build%20Analysis/KnownIssues.md#fill-out-known-issues-with-a-list-of-errors).
+   Each array's matched text includes that occurrence's name, message, and separately
+   captured stack trace. Arrays cannot combine evidence from separate occurrences of a
+   deduplicated test/platform. Scalar and regex rules retain their existing aggregated text.
+   Case-insensitive matching, the 20,000-character cap per matched text, first-matching-rule
+   selection, and attribution gates are unchanged. This local hint matcher does not
+   establish full Build Analysis/Build Insights service parity.
 4. **Retry recovery** — the failing leg was retried by CI and **passed** on a later
    attempt (the recovered leg does not surface as a failure at all). A leg that was retried
    and **still failed** (`retriedStillFailing = true`) is the opposite — **persistent**,

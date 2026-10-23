@@ -19,6 +19,22 @@ namespace Microsoft.Maui.Handlers
 
 		protected internal string? UrlCanceled { get; set; }
 
+		public override bool NeedsContainer => true;
+
+		protected override void SetupContainer()
+		{
+			base.SetupContainer();
+			// Native parent clipping rejects off-screen WebView drawing without an empty Skia clip.
+			if (ContainerView is WrapperView wrapper)
+				wrapper.SetClipChildren(true);
+		}
+
+		protected override void RemoveContainer()
+		{
+			// Disconnect clears the platform view before removing the container.
+			WrapperView.RemoveContainer(((ViewHandler)this).PlatformView, Context, ContainerView, () => ContainerView = null);
+		}
+
 		MauiWebViewClient? _webViewClient;
 		MauiWebChromeClient? _webChromeClient;
 
@@ -86,6 +102,9 @@ namespace Microsoft.Maui.Handlers
 			platformView.SetWebViewClient(null!);
 			platformView.SetWebChromeClient(null);
 			platformView.StopLoading();
+			ContainerView?.RemoveFromParent();
+			HasContainer = false;
+
 			if (platformView.Parent is ViewGroup parent)
 				parent.RemoveView(platformView);
 			platformView.RemoveAllViews();

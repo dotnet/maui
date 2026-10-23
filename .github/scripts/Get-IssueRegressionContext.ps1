@@ -21,17 +21,15 @@ function Get-IssueRegressionRequest {
     }
 
     return [pscustomobject]@{
-        issueNumber = $number
-        requester = $Event.comment.user.login
+        issueNumber   = $number
+        requester     = $Event.comment.user.login
         commentNodeId = $Event.comment.node_id
     }
 }
 
-function Get-RegressionIssueFields {
+function Get-RegressionUnfencedLine {
     param([AllowEmptyString()][string]$Body)
 
-    $fields = [ordered]@{}
-    $headings = [System.Collections.Generic.List[System.Text.RegularExpressions.Match]]::new()
     $fenceCharacter = $null
     $fenceLength = 0
     foreach ($line in [regex]::Matches($Body, '(?m)^[^\r\n]*')) {
@@ -51,18 +49,52 @@ function Get-RegressionIssueFields {
             $fenceLength = $fence.Groups['fence'].Value.Length
             continue
         }
-        if ($line.Value -cmatch '\A### [^\r\n]+\z') {
-            $headings.Add($line)
-        }
+        $line
     }
+}
+
+function ConvertTo-RegressionFormVersion {
+    param([AllowEmptyString()][string]$Value)
+
+    if ($Value.Length -le 128 -and
+        $Value -cmatch '\Av?(?<version>\d+\.\d+\.\d+(?:-[0-9A-Za-z][0-9A-Za-z.-]*)?)(?:[ \t]+(?:GA|SR\d+(?:\.\d+)?))?(?:[ \t]+\((?<annotation>[^()\r\n]*)\))?\z') {
+        if ($Matches.annotation -match '\d+\.\d+\.\d+') { return $null }
+        return $Matches.version
+    }
+    return $null
+}
+
+function Get-RegressionMetadataVersion {
+    param([AllowEmptyString()][string]$Value)
+
+    $version = ConvertTo-RegressionFormVersion -Value $Value
+    if ($version -cmatch '\A\d+\.\d+\.\d+-(?:preview|rc)\.\d+\z') {
+        return $version
+    }
+    return $null
+}
+
+function Get-RegressionIssueFields {
+    param([AllowEmptyString()][string]$Body)
+
+    $fields = [ordered]@{}
+    $headings = @(Get-RegressionUnfencedLine -Body $Body |
+            Where-Object { $_.Value -cmatch '\A### [^\r\n]+\z' })
     for ($index = 0; $index -lt $headings.Count; $index++) {
         $heading = $headings[$index].Value.Substring(4).Trim()
         $start = $headings[$index].Index + $headings[$index].Length
         $end = if ($index + 1 -lt $headings.Count) { $headings[$index + 1].Index } else { $Body.Length }
+        $value = $Body.Substring($start, $end - $start).Trim()
         if ($fields.Contains($heading)) {
-            $fields[$heading] = $null
-        } else {
-            $fields[$heading] = $Body.Substring($start, $end - $start).Trim()
+            $previousVersion = ConvertTo-RegressionFormVersion -Value ([string]$fields[$heading])
+            $version = ConvertTo-RegressionFormVersion -Value $value
+            if ($heading -notin @('Version with bug', 'Last version that worked well') -or
+                $null -eq $previousVersion -or $previousVersion -cne $version) {
+                $fields[$heading] = $null
+            }
+        }
+        else {
+            $fields[$heading] = $value
         }
     }
     return $fields
@@ -72,7 +104,8 @@ function Resolve-RegressionVersion {
     param([AllowEmptyString()][string]$Version)
 
     $result = [ordered]@{ reported = $Version; status = 'unresolved'; refs = @(); sha = $null }
-    if ($Version -cnotmatch '\Av?(\d+\.\d+\.\d+(?:-[0-9A-Za-z][0-9A-Za-z.-]*)?)(?:[ \t]+(?:GA|SR\d+(?:\.\d+)?))?\z') {
+    if ($Version.Length -gt 128 -or
+        $Version -cnotmatch '\Av?(\d+\.\d+\.\d+(?:-[0-9A-Za-z][0-9A-Za-z.-]*)?)(?:[ \t]+(?:GA|SR\d+(?:\.\d+)?))?\z') {
         return [pscustomobject]$result
     }
     $versionNumber = $Matches[1]
@@ -101,10 +134,219 @@ function Resolve-RegressionVersion {
     if ($shas.Count -eq 1) {
         $result.status = 'resolved'
         $result.sha = $shas[0]
-    } elseif ($shas.Count -gt 1) {
+    }
+    elseif ($shas.Count -gt 1) {
         $result.status = 'ambiguous'
     }
     return [pscustomobject]$result
+}
+
+function Get-RegressionReleaseComparison {
+    param(
+        [Parameter(Mandatory)][string]$GoodSha,
+        [Parameter(Mandatory)][string]$BadSha
+    )
+
+    if ($GoodSha -cnotmatch '\A[0-9a-f]{40}\z' -or $BadSha -cnotmatch '\A[0-9a-f]{40}\z') {
+        throw 'Invalid release comparison revision.'
+    }
+    $response = Invoke-GhCommandWithRetry -Arguments @(
+        'api', "repos/dotnet/maui/compare/${GoodSha}...${BadSha}?per_page=100&page=1"
+    ) -Description 'compare reported release boundaries' -RequireOutput
+    $comparison = $response | ConvertFrom-Json
+    $totalCommits = 0
+    if ($null -eq $comparison -or
+        $comparison.status -notin @('ahead', 'behind', 'identical', 'diverged') -or
+        $comparison.merge_base_commit.sha -cnotmatch '\A[0-9a-f]{40}\z' -or
+        -not [int]::TryParse([string]$comparison.total_commits, [ref]$totalCommits) -or
+        $totalCommits -lt 0 -or
+        $comparison.commits -isnot [array] -or $comparison.files -isnot [array]) {
+        throw 'Missing or invalid release comparison evidence.'
+    }
+    return [ordered]@{
+        url                    = $comparison.html_url
+        status                 = $comparison.status
+        mergeBaseSha           = $comparison.merge_base_commit.sha
+        aheadBy                = $comparison.ahead_by
+        behindBy               = $comparison.behind_by
+        isForwardRange         = $comparison.status -eq 'ahead' -and $comparison.merge_base_commit.sha -eq $GoodSha
+        totalCommits           = $totalCommits
+        commitsTruncated       = $totalCommits -gt @($comparison.commits).Count
+        filesPossiblyTruncated = @($comparison.files).Count -ge 300
+        commits                = @($comparison.commits | ForEach-Object {
+                if ($_.sha -cnotmatch '\A[0-9a-f]{40}\z') { throw 'Invalid comparison commit.' }
+                [pscustomobject]@{ sha = $_.sha; url = $_.html_url; subject = ($_.commit.message -split '\r?\n')[0] }
+            })
+        files                  = @($comparison.files | ForEach-Object {
+                [pscustomobject]@{ path = $_.filename; previousPath = $_.previous_filename; status = $_.status }
+            })
+    }
+}
+
+function Get-RegressionInvestigation {
+    param([Parameter(Mandatory)]$Context)
+
+    $investigation = [ordered]@{
+        selection             = 'reported-form'
+        good                  = $Context.boundaries.reportedGood
+        bad                   = $Context.boundaries.reportedBad
+        comparison            = $Context.comparison
+        observations          = $Context.diagnostics.versionObservations
+        observationsTruncated = $Context.diagnostics.versionObservationsTruncated
+        limits                = @{ supplementalTagVersions = 4; comparisons = 2; releaseList = 30; releaseReads = 2 }
+        releaseMetadata       = [ordered]@{ listRequested = $false; releasesRead = 0; listPossiblyTruncated = $false }
+        gaps                  = [System.Collections.Generic.List[string]]::new()
+    }
+    if ($investigation.good.status -eq 'ambiguous' -or $investigation.bad.status -eq 'ambiguous') {
+        return [pscustomobject]$investigation
+    }
+
+    $resolved = @{}
+    foreach ($boundary in @($investigation.good, $investigation.bad)) {
+        $version = ConvertTo-RegressionFormVersion -Value ([string]$boundary.reported)
+        if ($null -ne $version) { $resolved[$version] = $boundary }
+    }
+    $lookups = 0
+    $sourceOrder = @($investigation.observations | Select-Object -ExpandProperty mentionedAt -Unique)
+    $groups = $investigation.observations | Group-Object mentionedAt -AsHashTable -AsString
+    for ($index = $sourceOrder.Count - 1; $index -ge 0; $index--) {
+        $observations = $groups[$sourceOrder[$index]]
+        $goodVersions = @($observations | Where-Object role -EQ 'good' | Select-Object -ExpandProperty value -Unique)
+        $badVersions = @($observations | Where-Object role -EQ 'bad' | Select-Object -ExpandProperty value -Unique)
+        $formGood = $goodVersions.Count -eq 0 -and $badVersions.Count -eq 1 -and
+        $Context.boundaries.reportedGood.status -eq 'resolved' -and
+        @($observations | Where-Object { $_.role -eq 'bad' -and $_.firstObservedBad }).Count -gt 0
+        if ($formGood) {
+            $goodVersions = @(ConvertTo-RegressionFormVersion -Value ([string]$Context.boundaries.reportedGood.reported))
+            $observations = @([pscustomobject]@{
+                    value = $goodVersions[0]; role = 'good'; mentionedAt = $Context.issue.url
+                    author = $Context.issue.author; updatedAt = $Context.issue.updatedAt
+                    excerpt = "Last version that worked well: $($Context.boundaries.reportedGood.reported)"
+                    kind = 'issue-form'; status = 'human-reported-unverified'
+                }) + $observations
+        }
+        if ($goodVersions.Count -ne 1 -or $badVersions.Count -ne 1 -or
+            $goodVersions[0] -ceq $badVersions[0]) { continue }
+        $pair = @{}
+        foreach ($role in @('good', 'bad')) {
+            $observation = $observations | Where-Object role -EQ $role | Select-Object -First 1
+            $version = [string]$observation.value
+            if (-not $resolved.ContainsKey($version)) {
+                if ($lookups -ge 4) {
+                    $investigation.gaps.Add('Supplemental version tag lookups reached the four-version limit.')
+                    break
+                }
+                $lookups++
+                try {
+                    $resolved[$version] = Resolve-RegressionVersion -Version $version
+                }
+                catch {
+                    $resolved[$version] = [pscustomobject]@{ status = 'unavailable' }
+                    $investigation.gaps.Add("Supplemental tag lookup failed for ${version}: $($_.Exception.Message)")
+                    Write-Warning 'A supplemental release tag lookup failed.'
+                    continue
+                }
+            }
+            $boundary = $resolved[$version]
+            if ($boundary.status -ne 'resolved') {
+                $investigation.gaps.Add("Supplemental $role version $version is $($boundary.status); no exact source boundary was selected from it.")
+                continue
+            }
+            $pair[$role] = [pscustomobject]@{
+                reported = $version; status = $boundary.status; refs = $boundary.refs; sha = $boundary.sha
+                origin = $observation; installedVersionVerified = $false
+            }
+        }
+        if ($pair.Count -eq 2) {
+            $investigation.selection = if ($formGood) { 'form-good-and-human-first-bad' } else { 'human-reported-pair' }
+            $investigation.good = $pair.good
+            $investigation.bad = $pair.bad
+            break
+        }
+        if ($lookups -ge 4) { break }
+    }
+
+    $eligible = @('good', 'bad' | Where-Object {
+            $boundary = $investigation[$_]
+            $boundary.status -eq 'unresolved' -and
+            $null -ne (Get-RegressionMetadataVersion -Value ([string]$boundary.reported))
+        })
+    if ($eligible.Count -gt 0) {
+        try {
+            $investigation.releaseMetadata.listRequested = $true
+            $json = Invoke-GhCommandWithRetry -Arguments @(
+                'api', 'repos/dotnet/maui/releases?per_page=30&page=1'
+            ) -Description 'collect bounded Preview/RC release mappings' -RequireOutput
+            $releases = $json | ConvertFrom-Json -NoEnumerate
+            if ($releases -isnot [array] -or $releases.Count -gt 30) { throw 'Invalid release list.' }
+            $investigation.releaseMetadata.listPossiblyTruncated = $releases.Count -eq 30
+            $releaseReads = 0
+            foreach ($role in $eligible) {
+                $shorthand = Get-RegressionMetadataVersion -Value ([string]$investigation[$role].reported)
+                $parts = [regex]::Match($shorthand, '\A(?<prefix>\d+\.\d+\.)\d+-(?<channel>(?:preview|rc)\.\d+)\z')
+                $pattern = '\A' + [regex]::Escape($parts.Groups['prefix'].Value) +
+                '\d+-' + [regex]::Escape($parts.Groups['channel'].Value) + '(?:\.\d+)*\z'
+                $matchingReleases = @($releases | Where-Object { -not $_.draft -and $_.tag_name -cmatch $pattern })
+                if ($matchingReleases.Count -ne 1) {
+                    $investigation.gaps.Add("No unique published release mapping for $shorthand in the first 30 releases.")
+                    continue
+                }
+                $id = 0L
+                if (-not [long]::TryParse([string]$matchingReleases[0].id, [ref]$id) -or $id -le 0 -or $releaseReads -ge 2) {
+                    throw 'Invalid or over-budget release mapping.'
+                }
+                $releaseReads++
+                $investigation.releaseMetadata.releasesRead = $releaseReads
+                $releaseJson = Invoke-GhCommandWithRetry -Arguments @(
+                    'api', "repos/dotnet/maui/releases/$id"
+                ) -Description 'read published MAUI package/source mapping' -RequireOutput
+                $release = $releaseJson | ConvertFrom-Json
+                if ($release.draft -or $release.id -ne $id -or $release.tag_name -cne $matchingReleases[0].tag_name -or
+                    [string]::IsNullOrWhiteSpace([string]$release.published_at) -or
+                    [Text.Encoding]::UTF8.GetByteCount([string]$release.body) -gt 128KB) {
+                    throw 'Invalid published release mapping.'
+                }
+                $rowPattern = '(?m)^\| \*\*MAUI\*\* \| Microsoft\.NET\.Sdk\.Maui \| (?<version>' +
+                [regex]::Escape($shorthand) + '(?:\.\d+)+) \| [^|\r\n]+ \| [^\r\n]*' +
+                '\[Source\]\(https://github\.com/dotnet/maui/commit/(?<sha>[0-9a-f]{40})\) [^\r\n]*\|[ \t]*\r?$'
+                $rows = [regex]::Matches([string]$release.body, $rowPattern)
+                if ($rows.Count -ne 1) {
+                    $investigation.gaps.Add("Published release $($release.tag_name) has no unique MAUI package/source row for $shorthand.")
+                    continue
+                }
+                $investigation[$role] = [pscustomobject]@{
+                    reported = $investigation[$role].reported; status = 'mapped-source'; refs = @()
+                    sha = $rows[0].Groups['sha'].Value; packageVersion = $rows[0].Groups['version'].Value
+                    workloadSetVersion = $release.tag_name; installedVersionVerified = $false
+                    origin = [pscustomobject]@{
+                        kind = 'published-release'; url = $release.html_url; updatedAt = $release.updated_at
+                        excerpt = $rows[0].Value; releaseListPossiblyTruncated = $releases.Count -eq 30
+                    }
+                }
+                $investigation.selection = 'published-release-source-lead'
+            }
+        }
+        catch {
+            $investigation.gaps.Add("Published release mapping unavailable: $($_.Exception.Message)")
+            Write-Warning 'Bounded Preview/RC metadata could not be collected.'
+        }
+    }
+
+    $good = $investigation.good
+    $bad = $investigation.bad
+    if ($good.status -in @('resolved', 'mapped-source') -and $bad.status -in @('resolved', 'mapped-source') -and
+        ($good.sha -cne $Context.boundaries.reportedGood.sha -or
+        $bad.sha -cne $Context.boundaries.reportedBad.sha)) {
+        $investigation.comparison = $null
+        try {
+            $investigation.comparison = Get-RegressionReleaseComparison -GoodSha $good.sha -BadSha $bad.sha
+        }
+        catch {
+            $investigation.gaps.Add("Supplemental source comparison unavailable: $($_.Exception.Message)")
+            Write-Warning 'A supplemental source comparison could not be collected.'
+        }
+    }
+    return [pscustomobject]$investigation
 }
 
 function Get-IssueRegressionContext {
@@ -118,27 +360,28 @@ function Get-IssueRegressionContext {
     }
     $fields = Get-RegressionIssueFields -Body ([string]$Issue.body)
     $context = [ordered]@{
-        schemaVersion = 1
-        repository = 'dotnet/maui'
-        capturedAt = [DateTimeOffset]::UtcNow.ToString('o')
-        issue = [ordered]@{
-            number = $Issue.number
-            url = $Issue.html_url
-            author = $Issue.user.login
-            title = $Issue.title
-            body = $Issue.body
+        schemaVersion     = 1
+        repository        = 'dotnet/maui'
+        capturedAt        = [DateTimeOffset]::UtcNow.ToString('o')
+        issue             = [ordered]@{
+            number    = $Issue.number
+            url       = $Issue.html_url
+            author    = $Issue.user.login
+            title     = $Issue.title
+            body      = $Issue.body
             updatedAt = $Issue.updated_at
-            labels = @($Issue.labels | ForEach-Object { $_.name })
-            fields = $fields
+            labels    = @($Issue.labels | ForEach-Object { $_.name })
+            fields    = $fields
         }
-        comments = @()
+        comments          = @()
         commentsTruncated = [int]$Issue.comments -gt 100
-        boundaries = [ordered]@{}
-        comparison = $null
-        preflight = $null
-        diagnostics = $null
-        sourceEvidence = $null
-        gaps = [System.Collections.Generic.List[string]]::new()
+        boundaries        = [ordered]@{}
+        comparison        = $null
+        investigation     = $null
+        preflight         = $null
+        diagnostics       = $null
+        sourceEvidence    = $null
+        gaps              = [System.Collections.Generic.List[string]]::new()
     }
 
     try {
@@ -156,13 +399,14 @@ function Get-IssueRegressionContext {
                 }
                 $pageComments | ForEach-Object {
                     [pscustomobject]@{
-                        url = $_.html_url
-                        author = $_.user.login
-                        authorType = $_.user.type
-                        association = $_.author_association
-                        createdAt = $_.created_at
-                        updatedAt = $_.updated_at
-                        body = $_.body
+                        url           = $_.html_url
+                        author        = $_.user.login
+                        authorType    = $_.user.type
+                        association   = $_.author_association
+                        createdAt     = $_.created_at
+                        updatedAt     = $_.updated_at
+                        body          = $_.body
+                        isPriorReport = Test-RegressionPriorReport -Body ([string]$_.body)
                     }
                 }
             }
@@ -179,16 +423,17 @@ function Get-IssueRegressionContext {
             throw 'The issue changed during comment collection or its snapshot could not be revalidated.'
         }
         $context.comments = @($comments | Select-Object -Last 100)
-    } catch {
+    }
+    catch {
         $context.commentsTruncated = $true
         $context.gaps.Add("Comments unavailable: $($_.Exception.Message)")
         Write-Warning 'Issue comments could not be collected; the context records this gap.'
     }
 
     foreach ($boundary in @(
-        @{ key = 'reportedGood'; heading = 'Last version that worked well' },
-        @{ key = 'reportedBad'; heading = 'Version with bug' }
-    )) {
+            @{ key = 'reportedGood'; heading = 'Last version that worked well' },
+            @{ key = 'reportedBad'; heading = 'Version with bug' }
+        )) {
         if ($fields.Contains($boundary.heading) -and $null -eq $fields[$boundary.heading]) {
             $context.boundaries[$boundary.key] = [pscustomobject]@{
                 reported = $null; status = 'ambiguous'; refs = @(); sha = $null
@@ -197,12 +442,17 @@ function Get-IssueRegressionContext {
             continue
         }
         try {
-            $context.boundaries[$boundary.key] = Resolve-RegressionVersion -Version ([string]$fields[$boundary.heading])
+            $reported = [string]$fields[$boundary.heading]
+            $version = ConvertTo-RegressionFormVersion -Value $reported
+            if ($null -eq $version) { $version = $reported }
+            $context.boundaries[$boundary.key] = Resolve-RegressionVersion -Version $version
+            $context.boundaries[$boundary.key].reported = $reported
             if ($context.boundaries[$boundary.key].status -ne 'resolved') {
                 $status = $context.boundaries[$boundary.key].status
                 $context.gaps.Add("$($boundary.key) is ${status}: the reported version does not identify one available exact release tag.")
             }
-        } catch {
+        }
+        catch {
             $context.boundaries[$boundary.key] = [pscustomobject]@{
                 reported = [string]$fields[$boundary.heading]; status = 'unavailable'; refs = @(); sha = $null
             }
@@ -215,64 +465,48 @@ function Get-IssueRegressionContext {
     $bad = $context.boundaries.reportedBad
     if ($good.status -eq 'resolved' -and $bad.status -eq 'resolved') {
         try {
-            $response = Invoke-GhCommandWithRetry -Arguments @(
-                'api', "repos/dotnet/maui/compare/$($good.sha)...$($bad.sha)?per_page=100&page=1"
-            ) -Description 'compare reported release boundaries' -RequireOutput
-            $comparison = $response | ConvertFrom-Json
-            $totalCommits = 0
-            if ($null -eq $comparison -or
-                $comparison.status -notin @('ahead', 'behind', 'identical', 'diverged') -or
-                $comparison.merge_base_commit.sha -cnotmatch '\A[0-9a-f]{40}\z' -or
-                -not [int]::TryParse([string]$comparison.total_commits, [ref]$totalCommits) -or
-                $totalCommits -lt 0 -or
-                $comparison.commits -isnot [array] -or $comparison.files -isnot [array]) {
-                throw 'Missing or invalid release comparison evidence.'
-            }
-            $context.comparison = [ordered]@{
-                url = $comparison.html_url
-                status = $comparison.status
-                mergeBaseSha = $comparison.merge_base_commit.sha
-                aheadBy = $comparison.ahead_by
-                behindBy = $comparison.behind_by
-                isForwardRange = $comparison.status -eq 'ahead' -and $comparison.merge_base_commit.sha -eq $good.sha
-                totalCommits = $totalCommits
-                commitsTruncated = $totalCommits -gt @($comparison.commits).Count
-                filesPossiblyTruncated = @($comparison.files).Count -ge 300
-                commits = @($comparison.commits | ForEach-Object {
-                    [pscustomobject]@{ sha = $_.sha; url = $_.html_url; subject = ($_.commit.message -split '\r?\n')[0] }
-                })
-                files = @($comparison.files | ForEach-Object {
-                    [pscustomobject]@{ path = $_.filename; previousPath = $_.previous_filename; status = $_.status }
-                })
-            }
-        } catch {
+            $context.comparison = Get-RegressionReleaseComparison -GoodSha $good.sha -BadSha $bad.sha
+        }
+        catch {
             $context.gaps.Add("Release comparison unavailable: $($_.Exception.Message)")
             Write-Warning 'The release comparison failed; the context records this gap.'
         }
     }
-    $ambiguous = $good.status -eq 'ambiguous' -or $bad.status -eq 'ambiguous'
-    $metadataEligible = [string]$good.reported -match '\Av?\d+\.\d+\.\d+-(?:preview|rc)\.\d+\z' -or
-        [string]$bad.reported -match '\Av?\d+\.\d+\.\d+-(?:preview|rc)\.\d+\z'
-    $context.preflight = [ordered]@{
-        mode = if ($ambiguous) {
-            'boundary-only'
-        } elseif ($metadataEligible -and ($good.status -ne 'resolved' -or $bad.status -ne 'resolved')) {
-            'metadata-resolution'
-        } elseif ($good.status -ne 'resolved' -and $bad.status -ne 'resolved') {
-            'boundary-only'
-        } else { 'source-leads' }
-        usableForwardRange = $null -ne $context.comparison -and $context.comparison.isForwardRange
-        reason = if ($ambiguous) { 'Ambiguous reported boundary; do not select a replacement from prose.' }
-            elseif ($metadataEligible -and ($good.status -ne 'resolved' -or $bad.status -ne 'resolved')) {
-                'Preview/RC shorthand is eligible for bounded published release mapping, not proof of installed packages.'
-            }
-            elseif ($good.status -ne 'resolved' -and $bad.status -ne 'resolved') {
-                'Neither reported boundary maps to an exact release tag; request exact installed MAUI versions.'
-            } elseif ($null -eq $context.comparison -or -not $context.comparison.isForwardRange) {
-                'No verified forward range; static source leads are not regression attribution.'
-            } else { 'Exact release source range available; runtime causality remains unverified.' }
-    }
     $context.diagnostics = Get-RegressionDiagnosticInventory -Context $context
+    $context.investigation = Get-RegressionInvestigation -Context $context
+    $sourceGood = $context.investigation.good
+    $sourceBad = $context.investigation.bad
+    $sourceComparison = $context.investigation.comparison
+    $ambiguous = $good.status -eq 'ambiguous' -or $bad.status -eq 'ambiguous'
+    $metadataEligible = $null -ne (Get-RegressionMetadataVersion -Value ([string]$good.reported)) -or
+    $null -ne (Get-RegressionMetadataVersion -Value ([string]$bad.reported))
+    $context.preflight = [ordered]@{
+        mode               = if ($ambiguous) {
+            'boundary-only'
+        }
+        elseif ($metadataEligible -and ($good.status -ne 'resolved' -or $bad.status -ne 'resolved')) {
+            'metadata-resolution'
+        }
+        elseif ($sourceGood.status -notin @('resolved', 'mapped-source') -and
+            $sourceBad.status -notin @('resolved', 'mapped-source')) {
+            'boundary-only'
+        }
+        else { 'source-leads' }
+        usableForwardRange = $sourceGood.status -eq 'resolved' -and $sourceBad.status -eq 'resolved' -and
+        $null -ne $sourceComparison -and $sourceComparison.isForwardRange
+        reason             = if ($ambiguous) { 'Ambiguous reported boundary; do not select a replacement from prose.' }
+        elseif ($metadataEligible -and ($good.status -ne 'resolved' -or $bad.status -ne 'resolved')) {
+            'Preview/RC shorthand is eligible for bounded published release mapping, not proof of installed packages.'
+        }
+        elseif ($sourceGood.status -notin @('resolved', 'mapped-source') -and
+            $sourceBad.status -notin @('resolved', 'mapped-source')) {
+            'Neither reported boundary maps to an exact release tag; request exact installed MAUI versions.'
+        }
+        elseif ($null -eq $sourceComparison -or -not $sourceComparison.isForwardRange) {
+            'No verified forward range; static source leads are not regression attribution.'
+        }
+        else { 'Exact release source range available; human observations do not verify equivalent runtime conditions.' }
+    }
     if (-not [string]::IsNullOrWhiteSpace($DiagnosticDirectory)) {
         $images = Get-RegressionDiagnosticImages -Inventory $context.diagnostics -Directory $DiagnosticDirectory
         $context.diagnostics | Add-Member -NotePropertyName staticImages -NotePropertyValue $images

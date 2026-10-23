@@ -673,9 +673,8 @@ public partial class SyncLambdaPage : ContentPage
 	}
 
 	[Fact]
-	public void CSharpExpression_WithoutPreviewFeatures_ReportsMAUIX2012()
+	public void CSharpExpression_WithoutPreviewFeatureFlag_GeneratesExpression()
 	{
-		// C# expressions require EnablePreviewFeatures=true
 		var xaml =
 """
 <?xml version="1.0" encoding="utf-8" ?>
@@ -701,10 +700,10 @@ public partial class NoPreviewPage : ContentPage
 }
 """;
 
-		var (result, _) = RunGenerator(xaml, codeBehind, enablePreviewFeatures: false);
+		var (result, generated) = RunGenerator(xaml, codeBehind);
 
-		// Should report MAUIX2012 error about preview features required
-		Assert.Contains(result.Diagnostics, d => d.Id == "MAUIX2012");
+		Assert.Empty(result.Diagnostics);
+		Assert.Contains("GetText()", generated, StringComparison.Ordinal);
 	}
 
 	[Fact]

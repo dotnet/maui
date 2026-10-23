@@ -277,7 +277,7 @@ namespace Microsoft.Maui.Controls
 
 				_displayedPage = value;
 
-				foreach (var item in _displayedPageObservers)
+				foreach (var item in _displayedPageObservers.ToArray())
 					item.Callback(_displayedPage);
 			}
 		}

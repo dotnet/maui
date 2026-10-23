@@ -260,3 +260,7 @@ static Microsoft.Maui.Controls.Toolbar.MapDrawerToggleVisible(Microsoft.Maui.Han
 static Microsoft.Maui.Controls.Toolbar.MapDrawerToggleVisible(Microsoft.Maui.Handlers.ToolbarHandler! handler, Microsoft.Maui.Controls.Toolbar! toolbar) -> void
 static Microsoft.Maui.Controls.Shell.ResolveFlyoutItemTemplate(Microsoft.Maui.Controls.Shell? shell, Microsoft.Maui.Controls.BindableObject! flyoutItem) -> Microsoft.Maui.Controls.DataTemplate?
 static Microsoft.Maui.Controls.Internals.DependencyResolver.ResetResolver() -> void
+Microsoft.Maui.Controls.Picker.~Picker() -> void
+Microsoft.Maui.Controls.SwipeView.~SwipeView() -> void
+Microsoft.Maui.Controls.ShellContent.~ShellContent() -> void
+Microsoft.Maui.Controls.GradientBrush.~GradientBrush() -> void

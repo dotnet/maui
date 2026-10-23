@@ -1,7 +1,9 @@
 #nullable disable
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 using Android.Content;
 using Android.Graphics.Drawables;
@@ -14,6 +16,7 @@ using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using AColor = Android.Graphics.Color;
 using ALabelVisibilityMode = Google.Android.Material.BottomNavigation.LabelVisibilityMode;
+using AView = Android.Views.View;
 using ColorStateList = Android.Content.Res.ColorStateList;
 using IMenu = Android.Views.IMenu;
 using LP = Android.Views.ViewGroup.LayoutParams;
@@ -26,6 +29,8 @@ namespace Microsoft.Maui.Controls.Platform
 	public static class BottomNavigationViewUtils
 	{
 		internal const int MoreTabId = 99;
+		static readonly ConditionalWeakTable<BottomNavigationView, MenuGeneration> s_menuGenerations =
+			new ConditionalWeakTable<BottomNavigationView, MenuGeneration>();
 
 		/// <summary>
 		/// Maximum number of items allowed in the bottom navigation bar.
@@ -68,13 +73,19 @@ namespace Microsoft.Maui.Controls.Platform
 			int currentIndex,
 			BottomNavigationView bottomView,
 			IMauiContext mauiContext,
+			Func<bool> isCurrent,
 			out IMenuItem menuItem,
 			Action<IMenuItem> onIconLoaded = null)
 		{
 			Task returnValue;
 			using var title = new Java.Lang.String(item.title);
 			menuItem = menu.Add(0, index, 0, title);
-			returnValue = SetMenuItemIcon(menuItem, item.icon, mauiContext, onIconLoaded);
+			returnValue = SetMenuItemIcon(
+				menuItem,
+				item.icon,
+				mauiContext,
+				isCurrent,
+				onIconLoaded);
 			UpdateEnabled(item.tabEnabled, menuItem);
 			if (index == currentIndex)
 			{
@@ -92,10 +103,13 @@ namespace Microsoft.Maui.Controls.Platform
 			int currentIndex,
 			BottomNavigationView bottomView,
 			IMauiContext mauiContext,
+			Action<IReadOnlyList<IMenuItem>> menuItemsUpdated = null,
 			Action<IMenuItem> onIconLoaded = null)
 		{
 			maxBottomItems = Math.Min(maxBottomItems, MaxBottomNavigationItems);
 			Context context = mauiContext.Context;
+			var generation = s_menuGenerations.GetOrCreateValue(bottomView);
+			var generationValue = Interlocked.Increment(ref generation.Value);
 
 			while (items.Count < menu.Size())
 			{
@@ -111,22 +125,46 @@ namespace Microsoft.Maui.Controls.Platform
 			for (int i = 0; i < end; i++)
 			{
 				var item = items[i];
+				var isCurrent = CreateMenuIconValidator(generation, generationValue, i);
 
 				IMenuItem menuItem;
 				if (i >= menu.Size())
-					loadTasks.Add(SetupMenuItem(item, menu, i, currentIndex, bottomView, mauiContext, out menuItem, onIconLoaded));
+					loadTasks.Add(SetupMenuItem(
+						item,
+						menu,
+						i,
+						currentIndex,
+						bottomView,
+						mauiContext,
+						isCurrent,
+						out menuItem,
+						onIconLoaded));
 				else
 				{
 					menuItem = menu.GetItem(i);
 					if (menuItem.ItemId != i)
 					{
 						menu.RemoveItem(menuItem.ItemId);
-						loadTasks.Add(SetupMenuItem(item, menu, i, currentIndex, bottomView, mauiContext, out menuItem, onIconLoaded));
+						loadTasks.Add(SetupMenuItem(
+							item,
+							menu,
+							i,
+							currentIndex,
+							bottomView,
+							mauiContext,
+							isCurrent,
+							out menuItem,
+							onIconLoaded));
 					}
 					else
 					{
 						SetMenuItemTitle(menuItem, item.title);
-						loadTasks.Add(SetMenuItemIcon(menuItem, item.icon, mauiContext, onIconLoaded));
+						loadTasks.Add(SetMenuItemIcon(
+							menuItem,
+							item.icon,
+							mauiContext,
+							isCurrent,
+							onIconLoaded));
 						// Reapply enabled/selected state since this IMenuItem is being reused, not recreated.
 						UpdateEnabled(item.tabEnabled, menuItem);
 						if (i == currentIndex)
@@ -136,6 +174,9 @@ namespace Microsoft.Maui.Controls.Platform
 						}
 					}
 				}
+
+				if (i == currentIndex)
+					menuItem.SetChecked(true);
 
 				menuItems.Add(menuItem);
 			}
@@ -159,13 +200,20 @@ namespace Microsoft.Maui.Controls.Platform
 				moreMenuItem = menu.GetItem(menuSize - 1);
 			}
 
-			if (moreMenuItem is not null && currentIndex >= maxBottomItems - 1)
+			if (moreMenuItem is not null)
 			{
-				// Use SetChecked only — setting SelectedItemId would trigger ShowMoreBottomSheet().
-				moreMenuItem.SetChecked(true);
+				if (!menuItems.Contains(moreMenuItem))
+					menuItems.Add(moreMenuItem);
+
+				if (currentIndex >= maxBottomItems - 1)
+				{
+					// Use SetChecked only — setting SelectedItemId would trigger ShowMoreBottomSheet().
+					moreMenuItem.SetChecked(true);
+				}
 			}
 
 			bottomView.SetShiftMode(false, false);
+			menuItemsUpdated?.Invoke(menuItems);
 
 			if (loadTasks.Count > 0)
 			{
@@ -192,24 +240,29 @@ namespace Microsoft.Maui.Controls.Platform
 		}
 
 		// Records which ImageSource each reused IMenuItem is currently supposed to show, so a
-		// slower, stale load (from before the item was repurposed for a different tab) can
-		// detect it's been superseded and skip applying its now-outdated result.
+		// slower, stale load can detect it has been superseded.
 		static readonly ConditionalWeakTable<IMenuItem, ImageSource> s_pendingIconSource = new();
 
-		internal static async Task SetMenuItemIcon(IMenuItem menuItem, ImageSource source, IMauiContext context, Action<IMenuItem> onIconLoaded = null)
+		internal static async Task SetMenuItemIcon(
+			IMenuItem menuItem,
+			ImageSource source,
+			IMauiContext context,
+			Func<bool> isCurrent = null,
+			Action<IMenuItem> onIconLoaded = null)
 		{
-			if (!menuItem.IsAlive())
+			if (!menuItem.IsAlive() || isCurrent?.Invoke() == false)
 				return;
-
-			s_pendingIconSource.AddOrUpdate(menuItem, source);
 
 			if (source is null)
 			{
+				s_pendingIconSource.Remove(menuItem);
 				// Clear any stale icon left on this (possibly reused) menu item.
 				menuItem.SetIcon(null);
 				onIconLoaded?.Invoke(menuItem);
 				return;
 			}
+
+			s_pendingIconSource.AddOrUpdate(menuItem, source);
 
 			// Exceptions are intentionally allowed to propagate here (not swallowed) so
 			// callers can observe/log failures via the returned Task — e.g. the legacy
@@ -226,13 +279,61 @@ namespace Microsoft.Maui.Controls.Platform
 
 			// Skip applying if this menu item has since been repurposed for a different
 			// source (i.e. a newer SetMenuItemIcon call updated the pending source above).
-			if (menuItem.IsAlive() && s_pendingIconSource.TryGetValue(menuItem, out var pending) && ReferenceEquals(pending, source))
+			if (menuItem.IsAlive() &&
+				isCurrent?.Invoke() != false &&
+				s_pendingIconSource.TryGetValue(menuItem, out var pending) &&
+				ReferenceEquals(pending, source))
 			{
 				menuItem.SetIcon(result?.Value);
 				// Let the caller reapply per-item icon tint (e.g. to preserve a
 				// FontImageSource's own Color) now that the drawable is installed.
 				onIconLoaded?.Invoke(menuItem);
 			}
+		}
+
+		internal static Func<bool> BeginMenuIconUpdate(
+			BottomNavigationView bottomView,
+			int itemId)
+		{
+			var generation = s_menuGenerations.GetOrCreateValue(bottomView);
+			var generationValue = Volatile.Read(ref generation.Value);
+			var itemGeneration = generation.ItemValues.AddOrUpdate(
+				itemId,
+				1,
+				static (_, current) => current + 1);
+			return CreateMenuIconValidator(
+				generation,
+				generationValue,
+				itemId,
+				itemGeneration);
+		}
+
+		static Func<bool> CreateMenuIconValidator(
+			MenuGeneration generation,
+			int generationValue,
+			int itemId)
+		{
+			var itemGeneration = generation.ItemValues.GetOrAdd(itemId, 0);
+			return CreateMenuIconValidator(generation, generationValue, itemId, itemGeneration);
+		}
+
+		static Func<bool> CreateMenuIconValidator(
+			MenuGeneration generation,
+			int generationValue,
+			int itemId,
+			int itemGeneration)
+		{
+			return () =>
+				Volatile.Read(ref generation.Value) == generationValue &&
+				generation.ItemValues.TryGetValue(itemId, out var currentItemGeneration) &&
+				currentItemGeneration == itemGeneration;
+		}
+
+		sealed class MenuGeneration
+		{
+			public int Value;
+			public ConcurrentDictionary<int, int> ItemValues { get; } =
+				new ConcurrentDictionary<int, int>();
 		}
 
 		public static BottomSheetDialog CreateMoreBottomSheet(
@@ -247,7 +348,8 @@ namespace Microsoft.Maui.Controls.Platform
 			Action<int, BottomSheetDialog> selectCallback,
 			IMauiContext mauiContext,
 			List<(string title, ImageSource icon, bool tabEnabled)> items,
-			int maxItemCount)
+			int maxItemCount,
+			Action<int, AView> rowCreated = null)
 		{
 			maxItemCount = Math.Min(maxItemCount, MaxBottomNavigationItems);
 			var context = mauiContext.Context;
@@ -262,71 +364,72 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				var i_local = i;
 				var shellContent = items[i];
+				var innerLayout = new LinearLayout(context);
+				innerLayout.ClipToOutline = true;
+				innerLayout.SetBackground(CreateItemBackgroundDrawable(context));
+				innerLayout.SetPadding(0, (int)context.ToPixels(6), 0, (int)context.ToPixels(6));
+				innerLayout.Orientation = Orientation.Horizontal;
+				using (var param = new LP(LP.MatchParent, LP.WrapContent))
+					innerLayout.LayoutParameters = param;
 
-				using (var innerLayout = new LinearLayout(context))
+				// technically the unhook isn't needed
+				// we dont even unhook the events that dont fire
+				void clickCallback(object s, EventArgs e)
 				{
-					innerLayout.ClipToOutline = true;
-					innerLayout.SetBackground(CreateItemBackgroundDrawable(context));
-					innerLayout.SetPadding(0, (int)context.ToPixels(6), 0, (int)context.ToPixels(6));
-					innerLayout.Orientation = Orientation.Horizontal;
-					using (var param = new LP(LP.MatchParent, LP.WrapContent))
-						innerLayout.LayoutParameters = param;
+					selectCallback(i_local, bottomSheetDialog);
+					if (!innerLayout.IsDisposed())
+						innerLayout.Click -= clickCallback;
+				}
+				innerLayout.Click += clickCallback;
 
-					// technically the unhook isn't needed
-					// we dont even unhook the events that dont fire
-					void clickCallback(object s, EventArgs e)
-					{
-						selectCallback(i_local, bottomSheetDialog);
-						if (!innerLayout.IsDisposed())
-							innerLayout.Click -= clickCallback;
-					}
-					innerLayout.Click += clickCallback;
+				var image = new ImageView(context);
+				var lp = new LinearLayout.LayoutParams((int)context.ToPixels(32), (int)context.ToPixels(32))
+				{
+					LeftMargin = (int)context.ToPixels(20),
+					RightMargin = (int)context.ToPixels(20),
+					TopMargin = (int)context.ToPixels(6),
+					BottomMargin = (int)context.ToPixels(6),
+					Gravity = GravityFlags.Center
+				};
+				image.LayoutParameters = lp;
+				lp.Dispose();
 
-					var image = new ImageView(context);
-					var lp = new LinearLayout.LayoutParams((int)context.ToPixels(32), (int)context.ToPixels(32))
+				image.ImageTintList = ColorStateList.ValueOf(
+					RuntimeFeature.IsMaterial3Enabled
+						? new AColor(context.GetThemeAttrColor(Resource.Attribute.colorOnSurfaceVariant))
+						: Colors.Black.MultiplyAlpha(0.6f).ToPlatform());
+
+				shellContent.icon.LoadImage(mauiContext, result =>
+				{
+					image.SetImageDrawable(result?.Value);
+				});
+
+				innerLayout.AddView(image);
+
+				using (var text = new TextView(context))
+				{
+					text.SetTypeface(Typeface.Create("sans-serif-medium", TypefaceStyle.Normal), TypefaceStyle.Normal);
+					text.SetTextColor(
+						RuntimeFeature.IsMaterial3Enabled
+							? new AColor(context.GetThemeAttrColor(Resource.Attribute.colorOnSurface))
+							: AColor.Black);
+					text.Text = shellContent.title;
+					lp = new LinearLayout.LayoutParams(0, LP.WrapContent)
 					{
-						LeftMargin = (int)context.ToPixels(20),
-						RightMargin = (int)context.ToPixels(20),
-						TopMargin = (int)context.ToPixels(6),
-						BottomMargin = (int)context.ToPixels(6),
-						Gravity = GravityFlags.Center
+						Gravity = GravityFlags.Center,
+						Weight = 1
 					};
-					image.LayoutParameters = lp;
+					text.LayoutParameters = lp;
 					lp.Dispose();
 
-					image.ImageTintList = ColorStateList.ValueOf(
-						RuntimeFeature.IsMaterial3Enabled
-							? new AColor(context.GetThemeAttrColor(Resource.Attribute.colorOnSurfaceVariant))
-							: Colors.Black.MultiplyAlpha(0.6f).ToPlatform());
-
-					shellContent.icon.LoadImage(mauiContext, result =>
-					{
-						image.SetImageDrawable(result?.Value);
-					});
-
-					innerLayout.AddView(image);
-
-					using (var text = new TextView(context))
-					{
-						text.SetTypeface(Typeface.Create("sans-serif-medium", TypefaceStyle.Normal), TypefaceStyle.Normal);
-						text.SetTextColor(
-							RuntimeFeature.IsMaterial3Enabled
-								? new AColor(context.GetThemeAttrColor(Resource.Attribute.colorOnSurface))
-								: AColor.Black);
-						text.Text = shellContent.title;
-						lp = new LinearLayout.LayoutParams(0, LP.WrapContent)
-						{
-							Gravity = GravityFlags.Center,
-							Weight = 1
-						};
-						text.LayoutParameters = lp;
-						lp.Dispose();
-
-						innerLayout.AddView(text);
-					}
-
-					bottomSheetLayout.AddView(innerLayout);
+					innerLayout.AddView(text);
 				}
+
+				bottomSheetLayout.AddView(innerLayout);
+				if (rowCreated is not null)
+					rowCreated(i, innerLayout);
+				else
+					innerLayout.Dispose();
 			}
 
 			bottomSheetDialog.SetContentView(bottomSheetLayout);

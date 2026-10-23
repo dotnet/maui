@@ -67,6 +67,8 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 
 	WeakNotifyPropertyChangedProxy? _layoutPropertyChangedProxy;
 	PropertyChangedEventHandler? _layoutPropertyChanged;
+	WeakNotifyCollectionChangedProxy? _itemsChangedProxy;
+	NotifyCollectionChangedEventHandler? _itemsChanged;
 	bool _isScrollingForItemsUpdate;
 	SnapPointsType _snapPointsType;
 	SnapPointsAlignment _snapPointsAlignment;
@@ -253,10 +255,8 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 			mauiItemsView.CleanUpAutomationEvents();
 		}
 
-		if (_collectionViewSource?.Source is INotifyCollectionChanged incc)
-		{
-			incc.CollectionChanged -= ItemsChanged;
-		}
+		_itemsChangedProxy?.Unsubscribe();
+		_itemsChangedProxy = null;
 
 		if (_scrollViewer is not null)
 		{
@@ -440,7 +440,8 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 
 		if (_collectionViewSource?.Source is INotifyCollectionChanged incc)
 		{
-			incc.CollectionChanged += ItemsChanged;
+			_itemsChanged ??= ItemsChanged;
+			_itemsChangedProxy = new WeakNotifyCollectionChangedProxy(incc, _itemsChanged);
 		}
 
 		// Set up the new ItemTemplate
@@ -503,10 +504,8 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 				groupedItemTemplateCollection.CleanUp();
 			}
 
-			if (_collectionViewSource.Source is INotifyCollectionChanged incc)
-			{
-				incc.CollectionChanged -= ItemsChanged;
-			}
+			_itemsChangedProxy?.Unsubscribe();
+			_itemsChangedProxy = null;
 
 			_collectionViewSource.Source = null;
 			_collectionViewSource = null;
@@ -789,7 +788,10 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 		bool noTemplate = ItemsView.ItemTemplate is null;
 		bool isMeasureAllItems = ItemsView is CollectionView cv && cv.ItemSizingStrategy == ItemSizingStrategy.MeasureAllItems;
 
-		layout.ItemsStretch = (noTemplate && isMeasureAllItems)
+		bool isHorizontalLayout = gridItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal;
+		// Uniform stretching gives an untemplated horizontal grid enough width to scroll,
+		// but on a vertical grid it also inflates row height and creates large blank gaps.
+		layout.ItemsStretch = (isHorizontalLayout && noTemplate && isMeasureAllItems)
 			? UniformGridLayoutItemsStretch.Uniform
 			: UniformGridLayoutItemsStretch.Fill;
 		layout.ItemsJustification = UniformGridLayoutItemsJustification.Start;

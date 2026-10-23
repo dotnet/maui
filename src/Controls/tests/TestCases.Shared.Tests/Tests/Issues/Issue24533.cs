@@ -35,6 +35,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		void TapFooter()
 		{
+			App.ScrollTo("Footer");
 			App.WaitForElement("Footer");
 			App.Tap("Footer");
 		}

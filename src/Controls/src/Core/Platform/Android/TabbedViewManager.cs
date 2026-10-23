@@ -38,6 +38,8 @@ internal class TabbedViewManager
     Fragment _tabLayoutFragment;
     ColorStateList _originalTabTextColors;
     ColorStateList _originalTabIconColors;
+    Drawable _originalBottomNavigationViewBackground;
+    Drawable _originalTabLayoutBackground;
     ColorStateList _newTabTextColors;
     ColorStateList _newTabIconColors;
     FragmentManager _fragmentManager;
@@ -234,6 +236,7 @@ internal class TabbedViewManager
         {
             Element.TabsChanged -= OnTabsCollectionChanged;
             RemoveTabs();
+            _context.GetNavigationRootManager().RootViewChanged -= RootViewChanged;
 
             if (_currentBarBackground is GradientBrush currentGradientBrush)
             {
@@ -263,7 +266,18 @@ internal class TabbedViewManager
             if (_managesViewPager)
             {
                 _viewPager.UnregisterOnPageChangeCallback(_listeners);
-                _viewPager.Adapter = null;
+                if (_viewPager.Adapter is MultiPageFragmentStateAdapter<Page> oldAdapter)
+                {
+                    // Treat the adapter as empty before detaching it so pending ViewPager
+                    // layouts cannot recreate fragments while teardown is in progress.
+                    oldAdapter.BeginTeardown();
+                    _viewPager.Adapter = null;
+                    oldAdapter.Dispose();
+                }
+                else
+                {
+                    _viewPager.Adapter = null;
+                }
             }
         }
 
@@ -279,9 +293,11 @@ internal class TabbedViewManager
 
             if (IsBottomTabPlacement)
             {
-                // Shell (external VP2) uses bottomNavigationViewStyle for M3 active indicator;
-                // TabbedPage (managed VP2) uses the default constructor to match legacy behavior.
-                int styleAttr = _managesViewPager ? 0 : Resource.Attribute.bottomNavigationViewStyle;
+                // Shell uses this style for its active indicator, while TabbedPage needs it
+                // under Material 3 so clearing MAUI colors can restore the native appearance.
+                int styleAttr = !_managesViewPager || RuntimeFeature.IsMaterial3Enabled
+                    ? Resource.Attribute.bottomNavigationViewStyle
+                    : 0;
                 _bottomNavigationView = CreateBottomNavigationView(
                     _context.Context,
                     styleAttr,
@@ -290,6 +306,10 @@ internal class TabbedViewManager
                         Gravity = (int)GravityFlags.Bottom
                     });
 
+                if (RuntimeFeature.IsMaterial3Enabled)
+                {
+                    _originalBottomNavigationViewBackground = _bottomNavigationView.Background;
+                }
             }
             else
             {
@@ -301,6 +321,11 @@ internal class TabbedViewManager
                         TabGravity = TabLayout.GravityFill,
                         LayoutParameters = new AppBarLayout.LayoutParams(AppBarLayout.LayoutParams.MatchParent, AppBarLayout.LayoutParams.WrapContent)
                     };
+
+                    if (RuntimeFeature.IsMaterial3Enabled)
+                    {
+                        _originalTabLayoutBackground = _tabLayout.Background;
+                    }
                 }
             }
 
@@ -892,7 +917,14 @@ internal class TabbedViewManager
             {
                 if (Element.BarBackgroundColor is null)
                 {
-                    _bottomNavigationView.SetBackground(null);
+                    if (RuntimeFeature.IsMaterial3Enabled)
+                    {
+                        RestoreBottomNavigationViewBackground();
+                    }
+                    else
+                    {
+                        _bottomNavigationView.SetBackground(null);
+                    }
                 }
                 else
                 {
@@ -907,6 +939,11 @@ internal class TabbedViewManager
             if (tintColor is null)
             {
                 _tabLayout.BackgroundTintMode = null;
+
+                if (RuntimeFeature.IsMaterial3Enabled)
+                {
+                    RestoreTabLayoutBackground();
+                }
             }
             else
             {
@@ -960,16 +997,40 @@ internal class TabbedViewManager
 
     internal virtual void RefreshBarBackground()
     {
+        bool shouldRestoreNativeBackground = RuntimeFeature.IsMaterial3Enabled &&
+            Brush.IsNullOrEmpty(_currentBarBackground) &&
+            Element.BarBackgroundColor is null;
+
         if (IsBottomTabPlacement)
         {
             _bottomNavigationView?.UpdateBackground(_currentBarBackground);
+
+            if (shouldRestoreNativeBackground)
+            {
+                RestoreBottomNavigationViewBackground();
+            }
         }
         else
         {
             _tabLayout.UpdateBackground(_currentBarBackground);
+
+            if (shouldRestoreNativeBackground)
+            {
+                RestoreTabLayoutBackground();
+            }
         }
 
         UpdateSystemChrome();
+    }
+
+    void RestoreBottomNavigationViewBackground()
+    {
+        _bottomNavigationView?.SetBackground(_originalBottomNavigationViewBackground);
+    }
+
+    void RestoreTabLayoutBackground()
+    {
+        _tabLayout?.SetBackground(_originalTabLayoutBackground);
     }
 
     void UpdateSystemChrome()

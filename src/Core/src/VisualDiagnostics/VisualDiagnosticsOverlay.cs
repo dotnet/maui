@@ -181,8 +181,6 @@ namespace Microsoft.Maui
 		{
 			RemoveScrollableElementHandler();
 
-			Tapped -= VisualDiagnosticsOverlayOnTapped;
-
 			return base.Deinitialize();
 		}
 

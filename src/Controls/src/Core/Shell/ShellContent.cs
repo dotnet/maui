@@ -250,6 +250,10 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		WeakNotifyPropertyChangedProxy _pagePropertyChangedProxy;
+		PropertyChangedEventHandler _pagePropertyChangedHandler;
+		~ShellContent() => _pagePropertyChangedProxy?.Unsubscribe();
+
 		void SendPageAppearingWhenParentSet(Page page)
 		{
 			page.ParentSet += OnPresentedPageParentSet;
@@ -266,7 +270,9 @@ namespace Microsoft.Maui.Controls
 			base.OnChildAdded(child);
 			if (child is Page page)
 			{
-				page.PropertyChanged += OnPagePropertyChanged;
+				_pagePropertyChangedHandler ??= OnPagePropertyChanged;
+				_pagePropertyChangedProxy ??= new();
+				_pagePropertyChangedProxy.Subscribe(page, _pagePropertyChangedHandler);
 				_isPageVisibleChanged?.Invoke(this, EventArgs.Empty);
 			}
 		}
@@ -274,9 +280,9 @@ namespace Microsoft.Maui.Controls
 		protected override void OnChildRemoved(Element child, int oldLogicalIndex)
 		{
 			base.OnChildRemoved(child, oldLogicalIndex);
-			if (child is Page page)
+			if (child is Page)
 			{
-				page.PropertyChanged -= OnPagePropertyChanged;
+				_pagePropertyChangedProxy?.Unsubscribe();
 			}
 		}
 

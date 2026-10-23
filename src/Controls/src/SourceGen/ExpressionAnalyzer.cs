@@ -250,6 +250,19 @@ internal static class ExpressionAnalyzer
 			}
 			currentType = currentType.BaseType;
 		}
+
+		if (type.TypeKind == TypeKind.Interface)
+		{
+			foreach (var interfaceType in type.AllInterfaces)
+			{
+				foreach (var member in interfaceType.GetMembers(methodName))
+				{
+					if (member is IMethodSymbol)
+						return true;
+				}
+			}
+		}
+
 		return false;
 	}
 
@@ -555,6 +568,19 @@ internal static class ExpressionAnalyzer
 			}
 			currentType = currentType.BaseType;
 		}
+
+		if (type.TypeKind == TypeKind.Interface)
+		{
+			foreach (var interfaceType in type.AllInterfaces)
+			{
+				foreach (var member in interfaceType.GetMembers(memberName))
+				{
+					if (member is IPropertySymbol || member is IFieldSymbol || member is IMethodSymbol)
+						return true;
+				}
+			}
+		}
+
 		return false;
 	}
 
@@ -574,6 +600,19 @@ internal static class ExpressionAnalyzer
 			}
 			currentType = currentType.BaseType;
 		}
+
+		if (type.TypeKind == TypeKind.Interface)
+		{
+			foreach (var interfaceType in type.AllInterfaces)
+			{
+				foreach (var member in interfaceType.GetMembers(memberName))
+				{
+					if (member is IPropertySymbol || member is IFieldSymbol)
+						return true;
+				}
+			}
+		}
+
 		return false;
 	}
 

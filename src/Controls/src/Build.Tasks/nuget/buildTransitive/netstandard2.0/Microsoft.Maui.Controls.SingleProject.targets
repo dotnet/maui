@@ -191,6 +191,29 @@
       <_MauiXamlToRemove
           Condition="'$(WindowsProjectFolder)' != ''"
           Include="$(WindowsProjectFolder)**/*.xaml" />
+
+      <!--
+        Remove non-active-platform MAUI XAML files under Platforms/<Platform>. Unlike Compile
+        items, MauiXaml has no ExcludeFromCurrentConfiguration gating, so without this every
+        platform's *.xaml stayed in the MauiXaml item group (and therefore in the XAML SourceGen's
+        AdditionalFiles) for every inner build/TFM, causing files that reuse the same class name
+        per platform (a standard per-platform partial-page pattern) to generate duplicate
+        InitializeComponent/attribute definitions (CS0579/CS0111). See
+        https://github.com/dotnet/maui/issues/36951.
+      -->
+      <_MauiXamlToRemove
+          Condition="'$(AndroidProjectFolder)' != '' and '$(TargetPlatformIdentifier)' != 'android'"
+          Include="$(AndroidProjectFolder)**/*.xaml" />
+      <_MauiXamlToRemove
+          Condition="'$(iOSProjectFolder)' != '' and '$(TargetPlatformIdentifier)' != 'ios'"
+          Include="$(iOSProjectFolder)**/*.xaml" />
+      <_MauiXamlToRemove
+          Condition="'$(MacCatalystProjectFolder)' != '' and '$(TargetPlatformIdentifier)' != 'maccatalyst'"
+          Include="$(MacCatalystProjectFolder)**/*.xaml" />
+      <_MauiXamlToRemove
+          Condition="'$(TizenProjectFolder)' != '' and '$(TargetPlatformIdentifier)' != 'tizen'"
+          Include="$(TizenProjectFolder)**/*.xaml" />
+
       <EmbeddedResource Remove="@(_MauiXamlToRemove)" />
       <MauiXaml Remove="@(_MauiXamlToRemove)" />
     </ItemGroup>

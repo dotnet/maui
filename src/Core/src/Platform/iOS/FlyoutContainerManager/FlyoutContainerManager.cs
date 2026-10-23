@@ -524,9 +524,8 @@ internal class FlyoutContainerManager
 		{
 			if (!FlyoutOverlapsDetailsInPopoverMode || ShouldShowSplitMode)
 			{
-				// iOS mirrors the locked RTL detail origin, while Mac Catalyst requires the
-				// explicit flyout-width offset used by the legacy Shell renderer.
-				if (IsRTL && ShouldShowSplitMode && !(OperatingSystem.IsMacCatalyst() && _flyoutOverlapsDetail))
+				// Handle RTL positioning for split and locked modes.
+				if (IsRTL && ShouldShowSplitMode && (!_flyoutOverlapsDetail || _flyoutBehavior == FlyoutBehavior.Locked))
 				{
 					detailFrame.X = 0;
 				}
@@ -552,15 +551,6 @@ internal class FlyoutContainerManager
 				// Dim using the click-off scrim overlay, not Layer.Opacity — an overlay dims
 				// everything underneath it (including the nav bar), unlike Layer.Opacity.
 				_dimDetailWithScrim = true;
-			}
-
-			// RTL split mode: the narrow detail strip behind the flyout must be invisible so it
-			// matches the baseline (white background), while remaining accessible for taps.
-			// Layer.Opacity (unlike UIView.Alpha) doesn't affect UIKit's default hit-testing, so
-			// zeroing it here hides the content visually without breaking tap/VoiceOver/Appium access.
-			if (IsRTL && ShouldShowSplitMode && UIDevice.CurrentDevice.UserInterfaceIdiom != UIUserInterfaceIdiom.Pad)
-			{
-				opacity = 0;
 			}
 		}
 

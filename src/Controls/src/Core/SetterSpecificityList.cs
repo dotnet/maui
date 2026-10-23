@@ -19,6 +19,19 @@ namespace Microsoft.Maui.Controls
 
 		public readonly int Count => _count;
 
+		public T? this[SetterSpecificity key]
+		{
+			readonly get => GetValue(key);
+			set => SetValue(key, value);
+		}
+
+		public SetterSpecificityList(int initialCapacity)
+		{
+			this = default;
+			if (initialCapacity > 2)
+				_rest = new Entry[initialCapacity - 2];
+		}
+
 		/// <summary>Gets the highest specificity.</summary>
 		public readonly SetterSpecificity GetSpecificity()
 			=> _count >= 1 ? _top.Specificity : default;
@@ -53,7 +66,7 @@ namespace Microsoft.Maui.Controls
 				? new KeyValuePair<SetterSpecificity, T>(_top.Specificity, _top.Value!)
 				: default;
 
-		public void SetValue(SetterSpecificity key, T value)
+		public void SetValue(SetterSpecificity key, T? value)
 		{
 			var newEntry = new Entry(value, key);
 
@@ -111,6 +124,32 @@ namespace Microsoft.Maui.Controls
 
 			if (RestSetOrInsert(newEntry))
 				_count++;
+		}
+
+		/// <summary>Gets the value at <paramref name="index"/>, ordered from lowest to highest specificity.</summary>
+		public readonly T? GetValueAt(int index)
+		{
+			var restCount = _count - 2;
+			if (index < restCount)
+				return _rest![index].Value;
+			if (index == restCount && _count >= 2)
+				return _second.Value;
+			if (index == _count - 1 && _count >= 1)
+				return _top.Value;
+			throw new ArgumentOutOfRangeException(nameof(index));
+		}
+
+		/// <summary>Gets the specificity at <paramref name="index"/>, ordered from lowest to highest.</summary>
+		public readonly SetterSpecificity GetSpecificityAt(int index)
+		{
+			var restCount = _count - 2;
+			if (index < restCount)
+				return _rest![index].Specificity;
+			if (index == restCount && _count >= 2)
+				return _second.Specificity;
+			if (index == _count - 1 && _count >= 1)
+				return _top.Specificity;
+			throw new ArgumentOutOfRangeException(nameof(index));
 		}
 
 		public void Remove(SetterSpecificity key)

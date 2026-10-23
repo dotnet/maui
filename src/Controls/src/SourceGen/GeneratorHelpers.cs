@@ -36,12 +36,15 @@ static class GeneratorHelpers
 			: $"@{identifier}";
 	}
 
-	public static ProjectItem? ComputeProjectItem((AdditionalText additionalText, AnalyzerConfigOptionsProvider optionsProvider) tuple, CancellationToken cancellationToken)
+	public static ProjectItem? ComputeProjectItem((AdditionalText additionalText, AnalyzerConfigOptionsProvider optionsProvider) tuple, CancellationToken cancellationToken, HotReloadSessionToken hotReloadSessionToken)
 	{
 		if (cancellationToken.IsCancellationRequested)
 			return null;
 
-		var projectItem = new ProjectItem(tuple.additionalText, tuple.optionsProvider.GetOptions(tuple.additionalText));
+		var projectItem = new ProjectItem(tuple.additionalText, tuple.optionsProvider.GetOptions(tuple.additionalText))
+		{
+			HotReloadSessionToken = hotReloadSessionToken,
+		};
 		return projectItem.Kind == "None" ? null : projectItem;
 	}
 

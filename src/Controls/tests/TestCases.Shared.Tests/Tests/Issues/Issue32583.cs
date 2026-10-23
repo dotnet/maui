@@ -13,7 +13,7 @@ public class Issue32583 : _IssuesUITest
 	public override string Issue => "Shell Navigation Bar Remains Visible After Navigating Back to a ContentPage with a Hidden Navigation Bar";
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void NavigationBarShouldRemainHiddenAfterNavigatingBack()
 	{
 		App.WaitForElement("Issue32583NavigateButton");

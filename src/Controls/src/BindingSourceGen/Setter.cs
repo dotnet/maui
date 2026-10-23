@@ -2,7 +2,10 @@ namespace Microsoft.Maui.Controls.BindingSourceGen;
 
 using static Microsoft.Maui.Controls.BindingSourceGen.UnsafeAccessorsMethodName;
 
-public sealed record Setter(string[] PatternMatchingExpressions, string AssignmentStatement)
+public sealed record Setter(
+	string[] PatternMatchingExpressions,
+	string AssignmentStatement,
+	string[] CopyBackStatements)
 {
 	public static Setter From(
 		IEnumerable<IPathPart> path,
@@ -11,6 +14,7 @@ public sealed record Setter(string[] PatternMatchingExpressions, string Assignme
 	{
 		string accessAccumulator = sourceVariableName;
 		List<string> patternMatchingExpressions = new();
+		List<string> copyBackStatements = new();
 		bool skipNextConditionalAccess = false;
 
 		void AddPatternMatchingExpression(string pattern)
@@ -20,11 +24,14 @@ public sealed record Setter(string[] PatternMatchingExpressions, string Assignme
 			accessAccumulator = tmpVariableName;
 		}
 
-		foreach (var part in path)
+		var parts = path as IReadOnlyList<IPathPart> ?? path.ToArray();
+
+		for (int i = 0; i < parts.Count; i++)
 		{
+			var part = parts[i];
 			var skipConditionalAccess = skipNextConditionalAccess;
 			skipNextConditionalAccess = false;
-			bool isLastPart = part == path.Last();
+			bool isLastPart = i == parts.Count - 1;
 
 			if (part is Cast { TargetType: var targetType })
 			{
@@ -41,14 +48,30 @@ public sealed record Setter(string[] PatternMatchingExpressions, string Assignme
 					AddPatternMatchingExpression("{}");
 				}
 
+				var copyBackTarget = accessAccumulator;
 				accessAccumulator = AccessExpressionBuilder.ExtendExpression(accessAccumulator, innerPart);
+
+				// A value-type member/indexer result accessed mid-path through a possibly-null receiver
+				// is an rvalue, so a following inline member/index assignment would fail with CS1612
+				// ("cannot modify the return value ... because it is not a variable"). Capture it into a
+				// local first. If the next part is itself a conditional access, it introduces its own
+				// local, so no extra capture is needed.
+				if (!isLastPart
+					&& parts[i + 1] is not ConditionalAccess
+					&& NeedsValueTypeCapture(innerPart))
+				{
+					AddPatternMatchingExpression("{}");
+					copyBackStatements.Add(BuildAssignmentStatement(copyBackTarget, innerPart, accessAccumulator));
+				}
 			}
-			else if (part is MemberAccess { IsValueType: true } && !isLastPart)
+			else if (!isLastPart
+				&& parts[i + 1] is not ConditionalAccess
+				&& NeedsValueTypeCapture(part))
 			{
-				// It is necessary to create a variable for value types in order to set their properties.
-				// We can simply reuse the pattern matching mechanism to declare the variable.
+				var copyBackTarget = accessAccumulator;
 				accessAccumulator = AccessExpressionBuilder.ExtendExpression(accessAccumulator, part);
 				AddPatternMatchingExpression("{}");
+				copyBackStatements.Add(BuildAssignmentStatement(copyBackTarget, part, accessAccumulator));
 			}
 			else if (!isLastPart)
 			{
@@ -61,7 +84,18 @@ public sealed record Setter(string[] PatternMatchingExpressions, string Assignme
 
 		return new Setter(
 			patternMatchingExpressions.ToArray(),
-			AssignmentStatement: BuildAssignmentStatement(accessAccumulator, path.Any() ? path.Last() : null, assignedValueExpression));
+			AssignmentStatement: BuildAssignmentStatement(accessAccumulator, parts.Count > 0 ? parts[parts.Count - 1] : null, assignedValueExpression),
+			CopyBackStatements: copyBackStatements.AsEnumerable().Reverse().ToArray());
+
+		// Whether the value produced by this part is an rvalue that has to be captured into a local
+		// before a member of it can be assigned. Fields and array elements are variables (lvalues),
+		// so they can be assigned through directly; properties and indexers return a copy.
+		static bool NeedsValueTypeCapture(IPathPart part) => part switch
+		{
+			MemberAccess { IsValueType: true, Kind: not AccessorKind.Field } => true,
+			IndexAccess { IsValueType: true, IsArrayElement: false } => true,
+			_ => false,
+		};
 	}
 
 	public static string BuildAssignmentStatement(string accessAccumulator, IPathPart? lastPart, string assignedValueExpression = "value") =>

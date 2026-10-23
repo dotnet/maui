@@ -661,7 +661,7 @@ Task("buildAndTest")
 	.IsDependentOn("testOnly");
 
 Task("SetupTestPaths")
-	.Does(() => {
+	.Does(() => RunUITestSetupWithRetry(() => {
 
 	// UI Tests
 	if (string.IsNullOrEmpty(TEST_APP) )
@@ -742,52 +742,54 @@ Task("SetupTestPaths")
 	Information("UITest App: {0}", TEST_APP);
 	Information("DeviceTest App: {0}", DEVICETEST_APP);
 	Information("Test Results Directory: {0}", TEST_RESULTS);
-});
+}));
 
 Task("uitest")
 	.IsDependentOn("SetupTestPaths")
 	.Does(() =>
 {
-	CleanDirectories(TEST_RESULTS);
-
-	Information("Build UITests project {0}",PROJECT.FullPath);
+	string? localToolPath = null;
 	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
-	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-windows.binlog";
+	RunUITestSetupWithRetry(() =>
+	{
+		CleanDirectories(TEST_RESULTS);
 
-	Information("old dotnet root: {0}", DOTNET_ROOT);
-	Information("old dotnet path: {0}", DOTNET_PATH);
+		Information("Build UITests project {0}",PROJECT.FullPath);
+		var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-windows.binlog";
 
-	var buildSettings = new DotNetBuildSettings {
+		Information("old dotnet root: {0}", DOTNET_ROOT);
+		Information("old dotnet path: {0}", DOTNET_PATH);
+
+		var buildSettings = new DotNetBuildSettings {
 			Configuration = CONFIGURATION,
 			ArgumentCustomization = args => args
 				.Append("/p:ExtraDefineConstants=WINTEST")
 				.Append("/bl:" + binlog)
 				.Append("/maxcpucount:1")
 				//.Append("/tl")
-	};
+		};
 
-	string? localToolPath = null;
+		if (localDotnet)
+		{
+			var localDotnetRoot = MakeAbsolute(Directory("../../.dotnet/"));
+			Information("new dotnet root: {0}", localDotnetRoot);
 
-	if (localDotnet)
-	{
-		var localDotnetRoot = MakeAbsolute(Directory("../../.dotnet/"));
-		Information("new dotnet root: {0}", localDotnetRoot);
+			DOTNET_ROOT = localDotnetRoot.ToString();
 
-		DOTNET_ROOT = localDotnetRoot.ToString();
+			localToolPath = $"{localDotnetRoot}/dotnet.exe";
 
-		localToolPath = $"{localDotnetRoot}/dotnet.exe";
+			Information("new dotnet toolPath: {0}", localToolPath);
 
-		Information("new dotnet toolPath: {0}", localToolPath);
+			SetDotNetEnvironmentVariables(DOTNET_ROOT);
 
-		SetDotNetEnvironmentVariables(DOTNET_ROOT);
+			buildSettings.ToolPath = localToolPath;
+		}
 
-		buildSettings.ToolPath = localToolPath;
-	}
+		DotNetBuild(PROJECT.FullPath, buildSettings);
 
-	DotNetBuild(PROJECT.FullPath, buildSettings);
-
-	SetEnvironmentVariable("WINDOWS_APP_PATH", TEST_APP);
-	SetEnvironmentVariable("APPIUM_LOG_FILE", $"{BINLOG_DIR}/appium_windows_{name}.log");
+		SetEnvironmentVariable("WINDOWS_APP_PATH", TEST_APP);
+		SetEnvironmentVariable("APPIUM_LOG_FILE", $"{BINLOG_DIR}/appium_windows_{name}.log");
+	});
 
 	// Set TEST_CONFIGURATION_ARGS for handler selection and snapshot folder determination
 	var TEST_CONFIGURATION_ARGS = Argument("TEST_CONFIGURATION_ARGS", EnvironmentVariable("TEST_CONFIGURATION_ARGS") ?? "");
@@ -798,7 +800,7 @@ Task("uitest")
 	}
 
 	Information("Run UITests project {0}",PROJECT.FullPath);
-	RunTestWithLocalDotNet(PROJECT.FullPath, CONFIGURATION, localToolPath, noBuild: true, resultsFileNameWithoutExtension: $"{name}-{CONFIGURATION}-windows");
+	RunUITestsWithRetry(PROJECT.FullPath, CONFIGURATION, localToolPath, $"{name}-{CONFIGURATION}-windows");
 });
 
 RunTarget(TARGET);
