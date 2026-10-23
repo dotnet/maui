@@ -63,5 +63,18 @@ namespace Microsoft.Maui.Controls.Platform
 				nativeRecognizerHandle, touchHandle, platformViewHandle, (CoreTrace.Receiver)(int)receiver);
 
 		internal static bool TryDrain(out string snapshot) => CoreTrace.TryDrain(out snapshot);
+
+		internal static bool IsRecording => CoreTrace.IsRecording();
+
+		internal static bool ReserveApplicationEvent(out long generation) =>
+			CoreTrace.ReserveApplicationEvent(out generation);
+
+		internal static void RecordApplicationEvent(long generation, int eventType, long eventHandle,
+			double eventTime, bool touchSetPresent, int touchCount, bool touchSampled, long touchHandle, int touchPhase,
+			double touchTime, double x, double y, long targetHandle, int targetManagedKind,
+			long windowHandle, bool windowKeySampled, bool windowIsKey, int applicationState) =>
+			CoreTrace.RecordApplicationEvent(generation, eventType, eventHandle, eventTime, touchSetPresent, touchCount,
+				touchSampled, touchHandle, touchPhase, touchTime, x, y, targetHandle, targetManagedKind,
+				windowHandle, windowKeySampled, windowIsKey, applicationState);
 	}
 }

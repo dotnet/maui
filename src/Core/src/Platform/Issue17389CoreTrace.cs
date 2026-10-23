@@ -15,7 +15,8 @@ namespace Microsoft.Maui.Platform
 			RejectTarget, NativeTapAction, ManagedTapDispatch, CommandEntry,
 			NativeAttached, DisposeRemoveSiteCompleted, DisposeNativeDisposing,
 			CollectionRemoveSiteCompleted, CollectionNativeDisposing,
-			NativeOwnerAtAdd, HitWithSuppliedTouch, HitRecognizerOwner, HitWithoutTouchAssociation
+			NativeOwnerAtAdd, HitWithSuppliedTouch, HitRecognizerOwner, HitWithoutTouchAssociation,
+			ApplicationEventBeforeDispatch
 		}
 
 		internal enum Receiver
@@ -30,7 +31,8 @@ namespace Microsoft.Maui.Platform
 			TouchSetTooLarge, NoUniqueBeganPointMatch, DuplicateHit,
 			HitQueryLimit, RecognizerArrayTooLarge, UnknownRecognizer,
 			AmbiguousBinding, BindingOverflow, StaleSample,
-			NativeReadBudget, RepeatedAddOwnerSample, UntrackedAdd, BufferFullBeforeNativeRead
+			NativeReadBudget, RepeatedAddOwnerSample, UntrackedAdd, BufferFullBeforeNativeRead,
+			ApplicationEventReadBudget
 		}
 
 		const int Capacity = 64;
@@ -40,6 +42,7 @@ namespace Microsoft.Maui.Platform
 		const int MaxNonNullHitReads = 256;
 		const int MaxTouches = 4;
 		const int MaxRecognizerArray = 8;
+		const int MaxApplicationEvents = 16;
 		static readonly object Sync = new();
 		static readonly Entry[] Entries = new Entry[Capacity];
 		static readonly Binding[] Bindings = new Binding[MaxBindings];
@@ -48,6 +51,7 @@ namespace Microsoft.Maui.Platform
 		static ConditionalWeakTable<object, Identity> _identities = new();
 		static bool _recording;
 		static int _count, _dropped, _nextId, _bindingCount, _queryCount, _hitReadCount;
+		static int _applicationEventCount;
 		static long _generation;
 
 		[Conditional("MACCATALYST")]
@@ -57,6 +61,7 @@ namespace Microsoft.Maui.Platform
 			{
 				_generation++;
 				_count = _dropped = _nextId = _bindingCount = _queryCount = _hitReadCount = 0;
+				_applicationEventCount = 0;
 				Array.Clear(Counters, 0, Counters.Length);
 				_identities = new();
 				_recording = true;
@@ -117,6 +122,10 @@ namespace Microsoft.Maui.Platform
 					.Append(" nativeBindingLimit=").Append(MaxBindings)
 					.Append(" nonNullHitReadsObserved=").Append(_hitReadCount)
 					.Append(" acceptedHitQueries=").Append(_queryCount)
+					.Append(" applicationEventReadLimit=").Append(MaxApplicationEvents)
+					.Append(" applicationEventsReserved=").Append(_applicationEventCount)
+					.Append(" applicationObservation=BeforeBaseSendEvent applicationInputAssociation=SuppliedUIEventOnly applicationTouchSelection=ExactlyOneSuppliedTouch")
+					.Append(" eventTargetManagedKinds=0:null,1:UILabel,2:UIScrollView,3:UIWindow,4:LayoutView,5:MauiView,6:OtherUIView")
 					.Append(" registeredNativeBindings=").Append(_bindingCount);
 				for (int i = 0; i < Counters.Length; i++)
 					text.Append(' ').Append((Counter)i).Append('=').Append(Counters[i]);
@@ -138,8 +147,10 @@ namespace Microsoft.Maui.Platform
 					{
 						bool hitSampled = entry.Stage is Stage.HitWithSuppliedTouch or Stage.HitWithoutTouchAssociation;
 						text.Append(" hitSampled=").Append(hitSampled)
-							.Append(" suppliedEventSampled=").Append(entry.Query > 0)
+							.Append(" suppliedEventSampled=").Append(entry.Query > 0 || entry.Stage == Stage.ApplicationEventBeforeDispatch)
 							.Append(" eventTouchSampled=").Append(entry.TouchSampled)
+							.Append(" suppliedTouchSetSampled=").Append(entry.TouchSampled || entry.Stage == Stage.ApplicationEventBeforeDispatch)
+							.Append(" suppliedTouchSetPresent=").Append(entry.TouchSampled || entry.SuppliedTouchSetPresent)
 							.Append(" queryPointSampled=").Append(hitSampled)
 							.Append(" addReceiverSampled=").Append(entry.Stage == Stage.NativeOwnerAtAdd)
 							.Append(" nativeArraySampled=").Append(hitSampled)
@@ -178,7 +189,14 @@ namespace Microsoft.Maui.Platform
 							.Append(" windowSampled=").Append(entry.WindowSampled)
 							.Append(" windowHandle=").Append(entry.WindowHandle)
 							.Append(" windowKeySampled=").Append(entry.WindowKeySampled)
-							.Append(" windowIsKey=").Append(entry.WindowIsKey);
+							.Append(" windowIsKey=").Append(entry.WindowIsKey)
+							.Append(" applicationStateSampled=").Append(entry.ApplicationStateSampled)
+							.Append(" applicationState=").Append(entry.ApplicationState)
+							.Append(" eventTargetSampled=").Append(entry.EventTargetSampled)
+							.Append(" eventTargetHandle=").Append(entry.EventTargetHandle)
+							.Append(" eventTargetManagedKind=").Append(entry.EventTargetManagedKind)
+							.Append(" touchLocationInWindowSampled=").Append(entry.Stage == Stage.ApplicationEventBeforeDispatch && entry.TouchSampled)
+							.Append(" nativeDispatchCompletionProven=false");
 					}
 					text.AppendLine();
 				}
@@ -233,7 +251,7 @@ namespace Microsoft.Maui.Platform
 			};
 		}
 
-		static bool IsRecording()
+		internal static bool IsRecording()
 		{
 			lock (Sync)
 				return _recording;
@@ -283,6 +301,59 @@ namespace Microsoft.Maui.Platform
 		{
 			lock (Sync)
 				return _generation;
+		}
+
+		internal static bool ReserveApplicationEvent(out long generation)
+		{
+			lock (Sync)
+			{
+				generation = _generation;
+				if (!_recording)
+					return false;
+				if (_applicationEventCount == MaxApplicationEvents)
+				{
+					Increment(Counter.ApplicationEventReadBudget);
+					return false;
+				}
+				if (_count == Capacity)
+				{
+					Increment(Counter.BufferFullBeforeNativeRead);
+					return false;
+				}
+				_applicationEventCount++;
+				return true;
+			}
+		}
+
+		internal static void RecordApplicationEvent(long generation, int eventType, long eventHandle,
+			double eventTime, bool touchSetPresent, int touchCount, bool touchSampled, long touchHandle, int touchPhase,
+			double touchTime, double x, double y, long targetHandle, int targetManagedKind,
+			long windowHandle, bool windowKeySampled, bool windowIsKey, int applicationState)
+		{
+			Publish(generation, new Entry
+			{
+				Stage = Stage.ApplicationEventBeforeDispatch,
+				EventType = eventType,
+				EventHandle = eventHandle,
+				EventTime = eventTime,
+				EventTouchCount = touchCount,
+				SuppliedTouchSetPresent = touchSetPresent,
+				TouchSampled = touchSampled,
+				TouchHandle = touchHandle,
+				TouchPhase = touchPhase,
+				TouchTime = touchTime,
+				TouchX = x,
+				TouchY = y,
+				EventTargetSampled = touchSampled,
+				EventTargetHandle = targetHandle,
+				EventTargetManagedKind = targetManagedKind,
+				WindowSampled = touchSampled,
+				WindowHandle = windowHandle,
+				WindowKeySampled = windowKeySampled,
+				WindowIsKey = windowIsKey,
+				ApplicationStateSampled = true,
+				ApplicationState = applicationState
+			});
 		}
 
 		static bool ReserveNativeHitRead(Ticket ticket)
@@ -452,6 +523,10 @@ namespace Microsoft.Maui.Platform
 			internal double NativeAlpha, BoundsX, BoundsY, BoundsWidth, BoundsHeight;
 			internal bool WindowSampled, WindowKeySampled, WindowIsKey;
 			internal long WindowHandle;
+			internal bool ApplicationStateSampled, EventTargetSampled;
+			internal bool SuppliedTouchSetPresent;
+			internal int ApplicationState, EventTargetManagedKind;
+			internal long EventTargetHandle;
 
 			public Entry()
 			{
@@ -471,6 +546,10 @@ namespace Microsoft.Maui.Platform
 				NativeAlpha = BoundsX = BoundsY = BoundsWidth = BoundsHeight = 0;
 				WindowSampled = WindowKeySampled = WindowIsKey = false;
 				WindowHandle = 0;
+				ApplicationStateSampled = EventTargetSampled = false;
+				SuppliedTouchSetPresent = false;
+				ApplicationState = EventTargetManagedKind = 0;
+				EventTargetHandle = 0;
 			}
 		}
 	}
