@@ -81,7 +81,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				background ?? new SolidColorBrush(ShellRenderer.DefaultBottomNavigationViewBackgroundColor));
 		}
 
-		protected virtual void SetBackground(BottomNavigationView bottomView, Brush brush)
+		void SetBackground(BottomNavigationView bottomView, Brush brush)
 		{
 			if (brush is GradientBrush)
 			{
@@ -95,7 +95,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			SetBackgroundColor(bottomView, (brush as SolidColorBrush)?.Color);
 		}
 
-		void ApplySolidBackground(BottomNavigationView bottomView, Color color)
+		protected virtual void SetBackgroundColor(BottomNavigationView bottomView, Color color)
 		{
 #pragma warning disable XAOBS001 // Obsolete
 			var menuView = bottomView.GetChildAt(0) as BottomNavigationMenuView;
@@ -159,11 +159,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				var touchPoint = new Point(child.Left + (child.Right - child.Left) / 2, child.Top + (child.Bottom - child.Top) / 2);
 				bottomView.SetBackground(new ColorChangeRevealDrawable(lastColor, newColor, touchPoint));
 			}
-		}
-
-		protected virtual void SetBackgroundColor(BottomNavigationView bottomView, Color color)
-		{
-			ApplySolidBackground(bottomView, color);
 		}
 
 		static ColorStateList MakeDefaultColorStateList(Context context)
