@@ -76,10 +76,18 @@ namespace Microsoft.Maui.DeviceTests
 
 					trackingStream.AllowRead();
 
-					var submission = await WaitForStage(
-						imageView.RequestSubmitted.Task,
+					var requestSubmittedTask = imageView.RequestSubmitted.Task;
+					var completedTask = await WaitForStage(
+						Task.WhenAny(requestSubmittedTask, loadTask),
 						"Glide to submit the buffered image request");
 
+					if (completedTask == loadTask)
+					{
+						using var unexpectedResult = await loadTask;
+						throw new InvalidOperationException("The image load completed before Glide submitted its request.");
+					}
+
+					var submission = await requestSubmittedTask;
 					Assert.True(submission.SourceDisposed);
 					Assert.False(submission.Request.IsRunning);
 
