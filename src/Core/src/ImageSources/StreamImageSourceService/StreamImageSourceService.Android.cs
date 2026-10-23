@@ -29,8 +29,10 @@ namespace Microsoft.Maui
 							throw new InvalidOperationException("Unable to load image stream.");
 						}
 
-						bytes = await GetStreamBytesAsync(stream, cancellationToken);
+						bytes = await Task.Run(() => GetStreamBytesAsync(stream, cancellationToken), cancellationToken);
 					}
+
+					cancellationToken.ThrowIfCancellationRequested();
 
 					var callback = new ImageLoaderCallback();
 
@@ -64,8 +66,10 @@ namespace Microsoft.Maui
 							throw new InvalidOperationException("Unable to load image stream.");
 						}
 
-						bytes = await GetStreamBytesAsync(stream, cancellationToken).ConfigureAwait(false);
+						bytes = await Task.Run(() => GetStreamBytesAsync(stream, cancellationToken), cancellationToken).ConfigureAwait(false);
 					}
+
+					cancellationToken.ThrowIfCancellationRequested();
 
 					var drawableCallback = new ImageLoaderResultCallback();
 
