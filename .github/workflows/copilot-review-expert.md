@@ -131,6 +131,31 @@ jobs:
       review_base: ${{ steps.context.outputs.base_sha }}
   agent:
     needs: [pre_activation, activation, pat_pool, publication_context]
+  detection:
+    pre-steps:
+      - name: Download frozen detector pricing
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: activation
+          path: ${{ runner.temp }}/expert-detection-context
+      - name: Restore frozen catalog before native detector usage parsing
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const fs = require('node:fs');
+            const source = `${process.env.RUNNER_TEMP}/expert-detection-context/models.json`;
+            const stat = fs.lstatSync(source);
+            if (!stat.isFile() || stat.size <= 0 || stat.size > 4 * 1024 * 1024) {
+              throw new Error('The frozen detector pricing catalog must be a bounded regular file.');
+            }
+            const catalog = JSON.parse(fs.readFileSync(source, 'utf8'));
+            const pricing = catalog.providers?.['github-copilot']?.models?.['gpt-6.1-sol']?.cost;
+            if (!pricing || !['input', 'output', 'cache_read', 'cache_write'].every(
+                key => Number.isFinite(Number(pricing[key])) && Number(pricing[key]) > 0)) {
+              throw new Error('Frozen GPT-6.1 Sol detector pricing is unavailable.');
+            }
+            fs.mkdirSync('/tmp/gh-aw', { recursive: true });
+            fs.copyFileSync(source, '/tmp/gh-aw/models.json');
   publication_context:
     needs: [pre_activation, activation]
     runs-on: ubuntu-slim
