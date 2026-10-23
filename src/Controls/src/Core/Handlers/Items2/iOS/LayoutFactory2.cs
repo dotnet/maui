@@ -348,7 +348,6 @@ internal static class LayoutFactory2
 			gridItemsLayout.Span,
 			gridItemsLayout);
 
-
 #nullable disable
 	public static UICollectionViewLayout CreateCarouselLayout(
 		WeakReference<CarouselView> weakItemsView,
@@ -486,11 +485,25 @@ internal static class LayoutFactory2
 					carouselPosition = pageIndex - 1;
 				}
 
-				// A resize can deliver another invalidation callback after the controller's layout
-				// flags are cleared. Ignore stale offsets until the preserved page is visible again.
-				if (cv2Controller.ShouldIgnorePositionUpdateAfterBoundsChange(carouselPosition))
+				var pendingPosition = cv2Controller.PositionBeforeBoundsChange;
+				if (pendingPosition >= 0)
 				{
-					return;
+					var targetIndexPath = cv2Controller.GetScrollToIndexPath(pendingPosition);
+					bool isTargetItemVisible = false;
+					for (int itemIndex = 0; itemIndex < items.Length; itemIndex++)
+					{
+						var item = items[itemIndex];
+						if (item.RepresentedElementCategory == UICollectionElementCategory.Cell && item.IndexPath.Equals(targetIndexPath))
+						{
+							isTargetItemVisible = true;
+							break;
+						}
+					}
+
+					if (cv2Controller.ShouldIgnorePositionUpdateAfterBoundsChange(carouselPosition, isTargetItemVisible))
+					{
+						return;
+					}
 				}
 
 				if (loopSource is not null)
