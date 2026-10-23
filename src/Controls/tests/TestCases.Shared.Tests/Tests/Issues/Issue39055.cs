@@ -29,12 +29,17 @@ public class Issue39055 : _IssuesUITest
     [ShardedTestCategory(UITestCategories.Shell, shard: 1)]
     public void Issue39055OverflowTabAutomationIdShouldBeSet()
     {
-#if WINDOWS || MACCATALYST  //Reduce window width for overflow tab testing
+#if WINDOWS //Reduce window width for overflow tab testing
         App.Tap("ReduceWindowWidthButton");
 #endif
         App.WaitForElement("More");
         App.Tap("More");
+#if MACCATALYST 
+        App.WaitForElement("tab_help").Tap();
+        App.WaitForElement("page_help");
+#else
         App.WaitForElement("tab_account").Tap();
         App.WaitForElement("page_account");
+#endif
     }
 }
