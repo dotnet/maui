@@ -50,7 +50,7 @@ on:
             const comment = context.payload.comment;
             if (context.payload.action !== 'created' || !context.payload.issue?.pull_request ||
                 comment?.user?.type !== 'User' || comment.user.login !== context.actor ||
-                !/^\s*\/review\s+expert-review(?:-with-gate)?\s*$/i.test(comment.body ?? '')) return;
+                !/^\s*\/review\s+expert-review(?:er)?(?:-with-gate)?\s*$/i.test(comment.body ?? '')) return;
             number = context.payload.issue.number;
             actor = comment.user.login;
           } else if (context.eventName === 'workflow_dispatch') {
@@ -111,6 +111,11 @@ env:
   GH_AW_MODELS_JSON_PATH: /tmp/gh-aw/models.json
 
 model: gpt-6.1-sol
+max-ai-credits: -1
+max-daily-ai-credits: -1
+# v0.86.2 has no off switch for turn/cache-miss caps.
+max-turns: 2147483647
+max-turn-cache-misses: 2147483647
 models:
   allowed: ["gpt-6.1-sol", "copilot/gpt-6.1-sol", "openai/gpt-6.1-sol", "github-copilot/gpt-6.1-sol"]
 engine:
@@ -131,31 +136,6 @@ jobs:
       review_base: ${{ steps.context.outputs.base_sha }}
   agent:
     needs: [pre_activation, activation, pat_pool, publication_context]
-  detection:
-    pre-steps:
-      - name: Download frozen detector pricing
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: activation
-          path: ${{ runner.temp }}/expert-detection-context
-      - name: Restore frozen catalog before native detector usage parsing
-        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
-        with:
-          script: |
-            const fs = require('node:fs');
-            const source = `${process.env.RUNNER_TEMP}/expert-detection-context/models.json`;
-            const stat = fs.lstatSync(source);
-            if (!stat.isFile() || stat.size <= 0 || stat.size > 4 * 1024 * 1024) {
-              throw new Error('The frozen detector pricing catalog must be a bounded regular file.');
-            }
-            const catalog = JSON.parse(fs.readFileSync(source, 'utf8'));
-            const pricing = catalog.providers?.['github-copilot']?.models?.['gpt-6.1-sol']?.cost;
-            if (!pricing || !['input', 'output', 'cache_read', 'cache_write'].every(
-                key => Number.isFinite(Number(pricing[key])) && Number(pricing[key]) > 0)) {
-              throw new Error('Frozen GPT-6.1 Sol detector pricing is unavailable.');
-            }
-            fs.mkdirSync('/tmp/gh-aw', { recursive: true });
-            fs.copyFileSync(source, '/tmp/gh-aw/models.json');
   publication_context:
     needs: [pre_activation, activation]
     runs-on: ubuntu-slim
@@ -169,132 +149,6 @@ jobs:
   conclusion:
     # Inline-only lane: failures belong in Actions, never in PR summary comments.
     if: 'false'
-  usage_accounting:
-    needs: [activation, agent, detection]
-    if: >-
-      always() && needs.activation.result == 'success' &&
-      needs.agent.result != 'skipped'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      actions: read
-    timeout-minutes: 10
-    concurrency:
-      group: gh-aw-conclusion-copilot-review-expert
-      cancel-in-progress: false
-      queue: max
-    steps:
-      - name: Set up pinned silent usage accounting
-        id: setup
-        uses: github/gh-aw-actions/setup@6aab9e5b5c91c615506061f09bedd81a23babe3c # v0.86.2
-        with:
-          destination: ${{ runner.temp }}/gh-aw/actions
-          job-name: ${{ github.job }}
-      - name: Download agent usage evidence
-        if: always()
-        continue-on-error: true
-        uses: actions/download-artifact@v8.0.1
-        with:
-          name: agent
-          path: /tmp/gh-aw/
-      - name: Download frozen model pricing
-        id: pricing
-        if: always()
-        uses: actions/download-artifact@v8.0.1
-        with:
-          name: activation
-          path: ${{ runner.temp }}/expert-accounting-context
-      - name: Download detector usage evidence
-        if: always()
-        continue-on-error: true
-        uses: actions/download-artifact@v8.0.1
-        with:
-          name: detection
-          path: /tmp/gh-aw/
-      - name: Collect usage without public reporters
-        id: collect
-        if: always() && steps.setup.outcome == 'success'
-        run: |
-          bash "${RUNNER_TEMP}/gh-aw/actions/collect_usage_artifact_files.sh"
-          if ! test -s /tmp/gh-aw/usage/agent_usage.jsonl &&
-             ! test -s /tmp/gh-aw/usage/agent/token_usage.jsonl; then
-            echo "::error::Agent usage evidence is unavailable; do not cache a measured zero."
-            exit 1
-          fi
-      - name: Retain actual detector AI credits when proxy logs are unavailable
-        id: detector_usage
-        if: always() && steps.collect.outcome == 'success'
-        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
-        env:
-          DETECTOR_RESULT: ${{ needs.detection.result }}
-          DETECTOR_AIC: ${{ needs.detection.outputs.aic }}
-        with:
-          script: |
-            const fs = require('node:fs');
-            const usage = '/tmp/gh-aw/usage';
-            if (['detection_usage.jsonl', 'detection/token_usage.jsonl']
-                .some(path => fs.existsSync(`${usage}/${path}`) && fs.statSync(`${usage}/${path}`).size)) return;
-            if (process.env.DETECTOR_RESULT === 'skipped') return;
-            const raw = process.env.DETECTOR_AIC;
-            if (!raw?.trim() || !Number.isFinite(Number(raw)) || Number(raw) < 0) {
-              throw new Error('Detector AI-credit evidence is unavailable; no complete daily cache entry may be written.');
-            }
-            fs.writeFileSync(`${usage}/detection_usage.jsonl`,
-              JSON.stringify({stage: 'detection', aic: Number(raw)}) + '\n');
-      - name: Retain actual usage evidence
-        if: always()
-        uses: actions/upload-artifact@v7.0.1
-        with:
-          name: usage
-          path: /tmp/gh-aw/usage/
-          if-no-files-found: warn
-      - name: Restore daily AI-credit history
-        id: restore
-        if: always() && steps.detector_usage.outcome == 'success' && steps.pricing.outcome == 'success'
-        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          key: agentic-workflow-usage-copilotreviewexpert-${{ github.run_id }}
-          restore-keys: agentic-workflow-usage-copilotreviewexpert-
-          path: /tmp/gh-aw/agentic-workflow-usage-cache.jsonl
-      - name: Record this run with the pinned daily AI-credit writer
-        id: record
-        if: always() && steps.restore.outcome == 'success'
-        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
-        env:
-          GH_AW_MODELS_JSON_PATH: ${{ runner.temp }}/expert-accounting-context/models.json
-        with:
-          script: |
-            const fs = require('node:fs');
-            const catalog = JSON.parse(fs.readFileSync(process.env.GH_AW_MODELS_JSON_PATH, 'utf8'));
-            const pricing = catalog.providers?.['github-copilot']?.models?.['gpt-6.1-sol']?.cost;
-            if (!pricing || !['input', 'output', 'cache_read', 'cache_write'].every(
-                key => Number.isFinite(Number(pricing[key])) && Number(pricing[key]) > 0)) {
-              throw new Error('Frozen GPT-6.1 Sol pricing is unavailable; do not cache unpriced inference.');
-            }
-            const { setupGlobals } = require('${{ runner.temp }}/gh-aw/actions/setup_globals.cjs');
-            setupGlobals(core, github, context);
-            const { main } = require('${{ runner.temp }}/gh-aw/actions/write_daily_aic_usage_cache.cjs');
-            await main();
-            const entries = fs.readFileSync('/tmp/gh-aw/agentic-workflow-usage-cache.jsonl', 'utf8')
-              .trim().split('\n').map(line => JSON.parse(line));
-            if (!entries.some(entry => String(entry.run_id) === String(context.runId) &&
-                Number.isFinite(entry.aic) && entry.aic > 0)) {
-              throw new Error('The native writer did not retain positive measured AI-credit usage for this run.');
-            }
-      - name: Save daily AI-credit history
-        if: always() && steps.record.outcome == 'success'
-        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          key: agentic-workflow-usage-copilotreviewexpert-${{ github.run_id }}
-          path: /tmp/gh-aw/agentic-workflow-usage-cache.jsonl
-      - name: Retain daily AI-credit accounting
-        if: always() && steps.record.outcome == 'success'
-        uses: actions/upload-artifact@v7.0.1
-        with:
-          name: aic-usage-cache
-          path: /tmp/gh-aw/agentic-workflow-usage-cache.jsonl
-          if-no-files-found: error
-          retention-days: 7
   complete_request:
     needs: [pre_activation, activation, safe_outputs]
     if: >-
@@ -336,6 +190,7 @@ safe-outputs:
   data: true
   threat-detection:
     continue-on-error: false
+    max-ai-credits: -1
     engine:
       id: copilot
       # v0.86.2 exposes detector-specific model selection through this field.

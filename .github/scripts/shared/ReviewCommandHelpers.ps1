@@ -63,18 +63,18 @@ function ConvertFrom-ReviewCommand {
     if ($trimmed -notmatch '(?i)^/review(\s|$)') {
         return $null
     }
-    if ($trimmed -match '(?i)^/review\s+(rerun|tests|performance|expert-review)(\s|$)') {
+    if ($trimmed -match '(?i)^/review\s+(rerun|tests|performance|expert-review(?:er)?)(\s|$)') {
         return $null
     }
 
-    $combined = $trimmed -match '(?i)^/review\s+expert-review-with-gate$'
+    $combined = $trimmed -match '(?i)^/review\s+expert-review(?:er)?-with-gate$'
     if (-not $combined -and $trimmed -match '(?i)^/review\s+expert-review') {
         return $null
     }
     $gateOnly = $combined -or $trimmed -match '(?i)^/review\s+gate(\s|$)'
     $argsText = [regex]::Replace($trimmed, '(?i)^/review(?:\s+|$)', '')
     if ($gateOnly) {
-        $argsText = [regex]::Replace($argsText, '(?i)^(gate|expert-review-with-gate)(?:\s+|$)', '')
+        $argsText = [regex]::Replace($argsText, '(?i)^(gate|expert-review(?:er)?-with-gate)(?:\s+|$)', '')
     }
     $tokens = @()
     if (-not [string]::IsNullOrWhiteSpace($argsText)) {

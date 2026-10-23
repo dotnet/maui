@@ -77,8 +77,8 @@ jobs:
             exit 0
           fi
           # The combined command shares the expert workflow's event but starts only Gate here.
-          if [[ "${COMMENT_BODY}" =~ ^[[:space:]]*/review[[:space:]]+expert-review-with-gate([[:space:]]|$) ]]; then
-            if [[ "${COMMENT_BODY}" =~ ^[[:space:]]*/review[[:space:]]+expert-review-with-gate[[:space:]]*$ ]]; then
+          if [[ "${COMMENT_BODY}" =~ ^[[:space:]]*/review[[:space:]]+expert-review(er)?-with-gate([[:space:]]|$) ]]; then
+            if [[ "${COMMENT_BODY}" =~ ^[[:space:]]*/review[[:space:]]+expert-review(er)?-with-gate[[:space:]]*$ ]]; then
               echo "matched=true" >> "$GITHUB_OUTPUT"
             else
               echo "matched=false" >> "$GITHUB_OUTPUT"
@@ -108,8 +108,8 @@ jobs:
         run: |
           is_recoverable_review_command() {
             NORMALIZED_BODY=$(printf '%s' "$1" | jq -Rrs 'gsub("^\\s+|\\s+$"; "") | ascii_downcase')
-            if [[ "${NORMALIZED_BODY}" =~ ^/review[[:space:]]+expert-review-with-gate([[:space:]]|$) ]]; then
-              [[ "${NORMALIZED_BODY}" =~ ^/review[[:space:]]+expert-review-with-gate[[:space:]]*$ ]]
+            if [[ "${NORMALIZED_BODY}" =~ ^/review[[:space:]]+expert-review(er)?-with-gate([[:space:]]|$) ]]; then
+              [[ "${NORMALIZED_BODY}" =~ ^/review[[:space:]]+expert-review(er)?-with-gate[[:space:]]*$ ]]
               return
             fi
             [[ "${NORMALIZED_BODY}" =~ ^/review([[:space:]]|$) ]] &&
@@ -158,7 +158,7 @@ jobs:
           GATE_ONLY=false
           NORMALIZED_BODY=$(printf '%s' "${COMMENT_BODY}" | jq -Rrs 'gsub("^\\s+|\\s+$"; "") | ascii_downcase')
           if [[ "${NORMALIZED_BODY}" =~ ^/review[[:space:]]+gate([[:space:]]|$) ]] ||
-             [[ "${NORMALIZED_BODY}" =~ ^/review[[:space:]]+expert-review-with-gate$ ]]; then
+             [[ "${NORMALIZED_BODY}" =~ ^/review[[:space:]]+expert-review(er)?-with-gate$ ]]; then
             GATE_ONLY=true
           fi
 
@@ -844,8 +844,8 @@ jobs:
           if [ "${EVENT_NAME}" = "workflow_dispatch" ]; then
             is_recoverable_review_command() {
               NORMALIZED_BODY=$(printf '%s' "$1" | jq -Rrs 'gsub("^\\s+|\\s+$"; "") | ascii_downcase')
-              if [[ "${NORMALIZED_BODY}" =~ ^/review[[:space:]]+expert-review-with-gate([[:space:]]|$) ]]; then
-                [[ "${NORMALIZED_BODY}" =~ ^/review[[:space:]]+expert-review-with-gate[[:space:]]*$ ]]
+              if [[ "${NORMALIZED_BODY}" =~ ^/review[[:space:]]+expert-review(er)?-with-gate([[:space:]]|$) ]]; then
+                [[ "${NORMALIZED_BODY}" =~ ^/review[[:space:]]+expert-review(er)?-with-gate[[:space:]]*$ ]]
                 return
               fi
               [[ "${NORMALIZED_BODY}" =~ ^/review([[:space:]]|$) ]] &&

@@ -94,6 +94,8 @@ verifies existing PR tests without starting the full review, try-fix, or a
 second expert reviewer. Each lane retains its own report and failure handling.
 This combined spelling accepts no extra arguments. Existing standalone commands
 and `/review gate` options remain unchanged.
+`/review expert-reviewer-with-gate` is an equivalent combined-command alias;
+`/review expert-reviewer` is an equivalent expert-only alias.
 
 Use `/review tests` when the question is specifically about CI/test failures, for example:
 
@@ -570,16 +572,15 @@ dimension table, follow-up or separate automation-status comment. Failures and
 context limitations stay in Actions logs and artifacts. This lane
 does not edit, collapse or replace existing summary comments from earlier runs
 or other review lanes.
-A separate silent job retains native usage artifacts and updates the pinned
-daily AI-credit cache even when review or detection fails. It restores the frozen
-activation model catalog, including the imported GPT-6.1 Sol prices, for the
-native cache writer. It has no PR-write permission or public reporting steps;
-missing usage or pricing evidence is an explicit accounting failure, never a
-cached measured zero.
-The agent and detector jobs also retain the catalog path in their job environment
-so native usage-parsing steps use the same prices after inference finishes.
-The detector restores that catalog from the activation artifact separately:
-the native agent artifact does not carry the root catalog into the detector job.
+Per-run AI-credit budgets are disabled for both the expert and independent
+detector, and the daily AI-credit guard is disabled. Cost accounting is not a
+prerequisite for starting or publishing a review; there is no custom accounting
+job or required daily usage cache. Native usage reporting remains diagnostic.
+The expert's configurable turn and consecutive-cache-miss caps use
+`2147483647` because pinned gh-aw v0.86.2 does not support disabling them.
+The generated detector retains the runtime's built-in turn/cache-miss caps;
+its engine-level turn setting is not propagated by this compiler.
+Provider-enforced quotas, runtime hard caps and job timeouts still apply.
 The review always covers the entire merge-base-to-head PR diff across all
 commits and changed files, not only the latest commit or changes since a prior
 review. The pinned SHA identifies the frozen snapshot and inline anchors,
