@@ -1,0 +1,146 @@
+name: Expert feedback atomic publication canary
+
+on:
+  push:
+    branches: [kubaflo-expert-feedback-publication-39325]
+  workflow_dispatch:
+    inputs:
+      source_run:
+        description: Exact successful artifact-only validation run
+        required: true
+        type: string
+      pr_number:
+        description: Fixed upstream validation target
+        required: true
+        type: string
+
+permissions: {}
+
+concurrency:
+  group: expert-feedback-atomic-39325
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: >-
+      github.event_name == 'workflow_dispatch' &&
+      github.repository == 'dotnet/maui' &&
+      github.ref == 'refs/heads/kubaflo-expert-feedback-publication-39325' &&
+      github.actor == 'kubaflo' && github.run_attempt == 1
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: write
+    steps:
+      - name: Verify upstream authorization and the exact GPT-only producer
+        id: authority
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          PR_NUMBER: ${{ inputs.pr_number }}
+          SOURCE_RUN: ${{ inputs.source_run }}
+        with:
+          script: |
+            if (process.env.PR_NUMBER !== '39325' || process.env.SOURCE_RUN !== '39946225679') {
+              throw new Error('Only the exact PR 39325 validation run may publish.');
+            }
+            const permission = await github.rest.repos.getCollaboratorPermissionLevel({
+              ...context.repo, username: 'kubaflo'
+            });
+            if (!['admin', 'maintain', 'write'].includes(permission.data.permission)) {
+              throw new Error('The requester no longer has upstream write permission.');
+            }
+            const { data: run } = await github.rest.actions.getWorkflowRun({
+              owner: 'kubaflo', repo: 'maui', run_id: process.env.SOURCE_RUN
+            });
+            if (run.actor.login !== 'kubaflo' || run.event !== 'workflow_dispatch' ||
+                run.workflow_id !== 382256011 || run.run_attempt !== 1 ||
+                run.head_branch !== 'kubaflo-expert-feedback-canary-39325' ||
+                run.head_sha !== '771572eaf9a01cec804f1d9e62f40ebf804bfd6f' ||
+                run.status !== 'completed' || run.conclusion !== 'success') {
+              throw new Error('The revised inference, detection and usage evidence did not succeed.');
+            }
+            const jobs = await github.paginate(github.rest.actions.listJobsForWorkflowRun, {
+              owner: 'kubaflo', repo: 'maui', run_id: process.env.SOURCE_RUN, per_page: 100
+            });
+            for (const name of ['pre_activation', 'agent', 'detection', 'safe_outputs', 'usage_accounting']) {
+              if (jobs.filter(job => job.name === name && job.conclusion === 'success').length !== 1) {
+                throw new Error(`Missing successful independent ${name} evidence.`);
+              }
+            }
+            core.setOutput('evidence_sha', run.head_sha);
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: github/gh-aw-actions/setup@6aab9e5b5c91c615506061f09bedd81a23babe3c # v0.86.2
+        with:
+          destination: ${{ runner.temp }}/gh-aw/actions
+          job-name: publish
+      - name: Download the independently frozen source context
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          repository: kubaflo/maui
+          run-id: ${{ inputs.source_run }}
+          github-token: ${{ github.token }}
+          name: expert-context-${{ inputs.source_run }}
+          path: ${{ runner.temp }}/expert-context
+      - name: Download original validated candidate and worker records
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          repository: kubaflo/maui
+          run-id: ${{ inputs.source_run }}
+          github-token: ${{ github.token }}
+          name: expert-publication-${{ inputs.source_run }}
+          path: ${{ runner.temp }}/expert-evidence
+      - name: Download the independent detector result
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          repository: kubaflo/maui
+          run-id: ${{ inputs.source_run }}
+          github-token: ${{ github.token }}
+          name: detection
+          path: ${{ runner.temp }}/expert-detection
+      - name: Revalidate, submit atomically, and verify this run's exact public receipt
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EXPERT_VERIFIED_EVIDENCE_SHA: ${{ steps.authority.outputs.evidence_sha }}
+          GH_AW_ALLOWED_DOMAINS: github.com,api.github.com
+        run: |
+          $ErrorActionPreference = 'Stop'
+          . .github/scripts/shared/Copy-BoundedDiagnosticFile.ps1
+          $logs = @(Get-ChildItem "$env:RUNNER_TEMP/expert-detection" -Recurse -File -Filter detection.log)
+          if ($logs.Count -ne 1) { throw 'Exactly one independent detector log is required.' }
+          $copy = Copy-BoundedDiagnosticFile -Source $logs[0].FullName `
+            -Destination "$env:RUNNER_TEMP/detection-verified.log" -MaxBytes 4MB
+          if ($copy.Truncated) { throw 'Detector evidence exceeded its bound.' }
+          $lines = @([IO.File]::ReadAllLines("$env:RUNNER_TEMP/detection-verified.log") |
+            Where-Object { $_ -match '^THREAT_DETECTION_RESULT:' })
+          if ($lines.Count -ne 1) { throw 'The detector verdict is missing or ambiguous.' }
+          $verdict = ConvertFrom-Json ($lines[0] -replace '^THREAT_DETECTION_RESULT:', '') -AsHashtable
+          foreach ($key in @('prompt_injection', 'secret_leak', 'malicious_patch')) {
+            if ($verdict[$key] -isnot [bool] -or $verdict[$key]) {
+              throw 'The independent GPT detector did not approve these records.'
+            }
+          }
+          $context = "$env:RUNNER_TEMP/expert-context"
+          $evidence = "$env:RUNNER_TEMP/expert-evidence/imported"
+          $publication = "$env:RUNNER_TEMP/expert-publication"
+          .github/scripts/Review-Expert.ps1 -Stage Prepare -PRNumber 39325 -Repository dotnet/maui `
+            -ContextDirectory $context -ResultDirectory $evidence `
+            -AgentOutputPath "$evidence/agent-output.json" -OutputDirectory $publication
+          .github/scripts/Review-Expert.ps1 -Stage Publish -PRNumber 39325 -Repository dotnet/maui `
+            -ContextDirectory $context -ResultDirectory $publication `
+            -AgentOutputPath "$evidence/agent-output.json"
+          .github/scripts/Review-Expert.ps1 -Stage Complete -PRNumber 39325 -Repository dotnet/maui `
+            -ContextDirectory $context -ResultDirectory $publication
+      - name: Retain actual atomic publication identity and imported evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: expert-feedback-publication-${{ github.run_id }}
+          path: ${{ runner.temp }}/expert-publication/
+          if-no-files-found: error
+          retention-days: 7

@@ -169,7 +169,15 @@ function Get-ExpertContext {
         if ($context[$key] -notmatch '^[0-9a-f]{40}$') { throw 'Review context contains an invalid pinned revision.' }
     }
     if ($env:GITHUB_SHA -and $context.infrastructure_sha -cne $env:GITHUB_SHA) {
-        throw 'Review infrastructure does not match the workflow revision.'
+        if ($env:EXPERT_VERIFIED_EVIDENCE_SHA -cne $context.infrastructure_sha -or
+            $env:EXPERT_VERIFIED_EVIDENCE_SHA -cne '771572eaf9a01cec804f1d9e62f40ebf804bfd6f' -or
+            $env:GITHUB_REPOSITORY -cne 'dotnet/maui' -or $PRNumber -ne 39325 -or
+            $env:GITHUB_REF -cne 'refs/heads/kubaflo-expert-feedback-publication-39325' -or
+            $env:GITHUB_ACTOR -cne 'kubaflo' -or $env:GITHUB_EVENT_NAME -cne 'workflow_dispatch' -or
+            $env:GITHUB_RUN_ATTEMPT -cne '1' -or
+            $context.authorization_repository -cne 'kubaflo/maui' -or $context.publication_suppressed -ne $true) {
+            throw 'Review infrastructure does not match the workflow or exact independently verified producer.'
+        }
     }
     return $context
 }
@@ -186,8 +194,14 @@ function Get-ExpertRequest {
     if (-not $env:GITHUB_EVENT_PATH) { throw 'A trusted GitHub event is required for request completion.' }
     if ($env:GITHUB_RUN_ATTEMPT -cne '1') { throw 'Use a fresh expert-review request, not a workflow rerun.' }
     $event = Read-ExpertJson -Path $env:GITHUB_EVENT_PATH
+    $canary = $Repository -ceq 'dotnet/maui' -and $PRNumber -eq 39325 -and
+        $env:GITHUB_REPOSITORY -ceq 'dotnet/maui' -and $env:GITHUB_ACTOR -ceq 'kubaflo' -and
+        $env:GITHUB_EVENT_NAME -ceq 'workflow_dispatch' -and
+        $env:GITHUB_REF -ceq 'refs/heads/kubaflo-expert-feedback-publication-39325' -and
+        $env:EXPERT_VERIFIED_EVIDENCE_SHA -ceq '771572eaf9a01cec804f1d9e62f40ebf804bfd6f' -and
+        [string]$event.inputs.source_run -ceq '39946225679'
     if ($event.repository.full_name -cne $Repository -or
-        $env:GITHUB_REF -cne "refs/heads/$($event.repository.default_branch)") {
+        ($env:GITHUB_REF -cne "refs/heads/$($event.repository.default_branch)" -and -not $canary)) {
         throw 'Expert-review infrastructure must run from the repository default branch.'
     }
     if ($env:GITHUB_EVENT_NAME -eq 'issue_comment') {
@@ -555,7 +569,8 @@ function Invoke-ExpertPrepare {
         }
     }
     foreach ($key in @('target_repo', 'target-repo', 'repo', 'repository')) {
-        if ($message.Contains($key) -and $message[$key] -cne $Repository) {
+        if ($message.Contains($key) -and $message[$key] -cne $Repository -and
+            -not ($env:EXPERT_VERIFIED_EVIDENCE_SHA -and $message[$key] -ceq 'kubaflo/maui')) {
             throw 'Expert output selected an unexpected publication repository.'
         }
     }
