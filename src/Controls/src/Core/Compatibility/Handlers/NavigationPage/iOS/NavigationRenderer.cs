@@ -831,7 +831,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (t.Result)
 					return;
 
-				if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+				if (!_disposed && (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26)))
 				{
 					// Only dispose if the controller was actually removed from the navigation stack.
 					// On iOS 26, interrupted transitions and subsequent navigations can complete
@@ -841,7 +841,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 				else
 				{
-					// because we skip the normal pop process we need to dispose ourselves
+					// A removed controller still needs cleanup after the renderer is disposed.
 					controller?.Dispose();
 				}
 			}, TaskScheduler.FromCurrentSynchronizationContext());
@@ -1953,7 +1953,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			void UpdateIconColor()
 			{
-				if (_navigation.TryGetTarget(out NavigationRenderer navigationRenderer))
+				if (_navigation.TryGetTarget(out NavigationRenderer navigationRenderer) && !navigationRenderer._disposed)
 					navigationRenderer.UpdateBarTextColor();
 			}
 

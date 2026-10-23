@@ -130,6 +130,7 @@ public class TabbedPageManager
 
 		if (Element is not null)
 		{
+			Application.Current!.RequestedThemeChanged -= OnRequestedThemeChanged;
 			_tabRegistrationGeneration++;
 			_nativeTabRegistrations.Clear();
 			CloseMoreDialog();
@@ -194,6 +195,8 @@ public class TabbedPageManager
 
 				if (RuntimeFeature.IsMaterial3Enabled)
 					_originalBottomNavigationViewBackground = _bottomNavigationView.Background;
+
+				BottomNavigationViewUtils.UpdateActiveIndicatorColor(_bottomNavigationView);
 			}
 			else
 			{
@@ -226,9 +229,15 @@ public class TabbedPageManager
 			previousPage = tabbedPage.CurrentPage;
 
 			((IPageController)tabbedPage).InternalChildren.CollectionChanged += OnChildrenCollectionChanged;
+			Application.Current!.RequestedThemeChanged += OnRequestedThemeChanged;
 
 			SetTabLayout();
 		}
+	}
+
+	void OnRequestedThemeChanged(object sender, AppThemeChangedEventArgs e)
+	{
+		BottomNavigationViewUtils.UpdateActiveIndicatorColor(_bottomNavigationView);
 	}
 
 	protected virtual void OnLayoutChanged(object sender, AView.LayoutChangeEventArgs e)
@@ -667,6 +676,13 @@ public class TabbedPageManager
 			_bottomNavigationView,
 			Element.FindMauiContext(),
 			menuItems => RegisterBottomMenuItems(menuItems, pages));
+
+		// SetupMenu recreates the BottomNavigationItemView instances after clearing the children and adding new items at runtime,
+		// which resets the per-item icon tint. Reapply the icon colors when the tab item style has already been loaded.
+		if (_tabItemStyleLoaded)
+		{
+			UpdateItemIconColor();
+		}
 
 		if (Element.CurrentPage == null && Element.Children.Count > 0)
 			Element.CurrentPage = Element.Children[0];
