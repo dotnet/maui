@@ -109,7 +109,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (brush is GradientBrush)
 			{
 				// Keep gradients free of the Material elevation overlay.
+				var oldBackground = bottomView.Background;
+				bottomView.Background = null;
 				bottomView.UpdateBackground(brush);
+				DisposeBackground(oldBackground);
 				return;
 			}
 
@@ -138,8 +141,16 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			var oldBackground = bottomView.Background;
 			bottomView.SetBackground(_originalBackground);
-			if ((oldBackground is GradientStrokeDrawable or MauiDrawable) && !ReferenceEquals(oldBackground, _originalBackground))
-				oldBackground.Dispose();
+			DisposeBackground(oldBackground);
+		}
+
+		void DisposeBackground(Drawable background)
+		{
+			if (!ReferenceEquals(background, _originalBackground) &&
+				background is MaterialShapeDrawable or ColorChangeRevealDrawable or GradientStrokeDrawable or MauiDrawable)
+			{
+				background.Dispose();
+			}
 		}
 
 		protected virtual void SetBackgroundColor(BottomNavigationView bottomView, Color color)
@@ -172,7 +183,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 #pragma warning disable CS0618 // Obsolete
 				ViewCompat.SetBackground(bottomView, solidBackground);
 #pragma warning restore CS0618 // Obsolete
-				oldBackground.Dispose();
+				DisposeBackground(oldBackground);
 				return;
 			}
 
