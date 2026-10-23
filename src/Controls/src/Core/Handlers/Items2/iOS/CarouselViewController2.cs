@@ -18,7 +18,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		bool _isResizing = false;
 		CGSize _lastBoundsSize = CGSize.Empty;
 		int _positionBeforeBoundsChange = -1;
-		bool _boundsChangeNeedsStableLayout;
 		bool _isUpdating = false;
 		bool _isInternalCollectionUpdate = false;
 		int _section = 0;
@@ -94,7 +93,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		void CapturePositionBeforeBoundsChange()
 		{
-			if (!_isRotating && !_isResizing)
+			if (_positionBeforeBoundsChange < 0)
 			{
 				_positionBeforeBoundsChange = (ItemsView as CarouselView)?.Position ?? -1;
 			}
@@ -111,11 +110,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		internal void UpdateResizeState()
 		{
 			var boundsSize = CollectionView.Bounds.Size;
+			// Bounds can change without an orientation notification, so detect resizing here as well.
 			if (InitialPositionSet && _lastBoundsSize != CGSize.Empty && boundsSize != _lastBoundsSize)
 			{
 				CapturePositionBeforeBoundsChange();
 				_isResizing = true;
-				_boundsChangeNeedsStableLayout = true;
 			}
 
 			_lastBoundsSize = boundsSize;
@@ -131,12 +130,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				BoundsSizeChanged();
 				_isRotating = false;
 				_isResizing = false;
-			}
-			else if (_boundsChangeNeedsStableLayout)
-			{
-				// Keep the captured position through the first pass with unchanged bounds.
-				_boundsChangeNeedsStableLayout = false;
-				_positionBeforeBoundsChange = -1;
 			}
 		}
 
@@ -287,7 +280,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			_isResizing = false;
 			_lastBoundsSize = CGSize.Empty;
 			_positionBeforeBoundsChange = -1;
-			_boundsChangeNeedsStableLayout = false;
 			_isInternalCollectionUpdate = false;
 			// Don't let a pending scroll target survive re-attach.
 			_gotoPosition = -1;
@@ -527,7 +519,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			return (_isRotating || _isResizing) && !CollectionView.Dragging && !CollectionView.Decelerating;
 		}
 
-		internal bool ShouldIgnorePositionUpdateAfterBoundsChange(int position)
+		internal int PositionBeforeBoundsChange => _positionBeforeBoundsChange;
+
+		internal bool ShouldIgnorePositionUpdateAfterBoundsChange(int position, bool isRestoredItemVisible)
 		{
 			if (_positionBeforeBoundsChange < 0)
 			{
@@ -542,7 +536,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				return false;
 			}
 
-			return position != _positionBeforeBoundsChange;
+			if (position == _positionBeforeBoundsChange && isRestoredItemVisible)
+			{
+				_positionBeforeBoundsChange = -1;
+			}
+
+			return true;
 		}
 
 		internal void UpdateLoop()
