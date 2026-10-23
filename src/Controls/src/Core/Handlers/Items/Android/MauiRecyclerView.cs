@@ -71,13 +71,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public override void SetAdapter(Adapter adapter)
 		{
 			base.SetAdapter(adapter);
-			_accessibilityMetadata?.OnAdapterAttached(adapter);
+			_accessibilityMetadata?.InvalidateCache();
 		}
 
 		public override void SwapAdapter(Adapter adapter, bool removeAndRecycleExistingViews)
 		{
 			base.SwapAdapter(adapter, removeAndRecycleExistingViews);
-			_accessibilityMetadata?.OnAdapterAttached(adapter);
+			_accessibilityMetadata?.InvalidateCache();
 		}
 
 		protected override void OnAttachedToWindow()
@@ -170,6 +170,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				// Unhook whichever adapter is active
 				SetAdapter(null);
 
+				_accessibilityMetadata?.UnobserveAdapter(_emptyViewAdapter);
+				_accessibilityMetadata?.UnobserveAdapter(ItemsViewAdapter);
 				_emptyViewAdapter?.Dispose();
 				ItemsViewAdapter?.Dispose();
 			}
@@ -208,7 +210,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				_accessibilityMetadata = new CollectionViewAccessibilityMetadata(this);
 				SetAccessibilityDelegateCompat(new CollectionViewAccessibilityDelegate(this, _accessibilityMetadata));
-				_accessibilityMetadata.OnAdapterAttached(GetAdapter());
+				_accessibilityMetadata.ObserveAdapter(ItemsViewAdapter);
+				_accessibilityMetadata.ObserveAdapter(_emptyViewAdapter);
 			}
 
 			UpdateLayoutManager();
@@ -279,6 +282,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				if (_emptyViewAdapter == null)
 				{
 					_emptyViewAdapter = new EmptyViewAdapter(ItemsView);
+					_accessibilityMetadata?.ObserveAdapter(_emptyViewAdapter);
 				}
 
 				if (ItemsView is StructuredItemsView structuredItemsView)
@@ -332,6 +336,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_emptyCollectionObserver.Stop(oldItemViewAdapter);
 
 			ItemsViewAdapter = CreateAdapter();
+			_accessibilityMetadata?.ObserveAdapter(ItemsViewAdapter);
 
 			(RecyclerViewScrollListener as RecyclerViewScrollListener<TItemsView, TItemsViewSource>)?.UpdateAdapter(ItemsViewAdapter);
 
@@ -348,6 +353,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			_itemTouchHelperCallback?.SetAdapter(ItemsViewAdapter as IItemTouchHelperAdapter);
 
+			_accessibilityMetadata?.UnobserveAdapter(oldItemViewAdapter);
 			oldItemViewAdapter?.Dispose();
 		}
 
