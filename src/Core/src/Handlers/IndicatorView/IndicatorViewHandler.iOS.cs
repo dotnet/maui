@@ -81,6 +81,8 @@ namespace Microsoft.Maui.Handlers
 				{
 					ClearIndicators();
 					handler = indicatorsLayoutOverride.ToPlatform(MauiContext);
+					// SizeThatFits measures the template; its LayoutView must not measure again at final bounds.
+					PlatformView.MarkAsCrossPlatformLayoutBacking();
 					PlatformView.AddSubview(handler);
 				}
 			}

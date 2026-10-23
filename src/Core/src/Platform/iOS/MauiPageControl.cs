@@ -57,7 +57,6 @@ namespace Microsoft.Maui.Platform
 				&& (templatedIndicator as ITemplatedIndicatorView)?.IndicatorsLayoutOverride is ILayout layout)
 			{
 				// The template host needs valid bounds before RTL child positioning runs.
-				layout.Measure((double)Bounds.Width, (double)Bounds.Height);
 				layout.Arrange(Bounds.ToRectangle());
 				return;
 			}
