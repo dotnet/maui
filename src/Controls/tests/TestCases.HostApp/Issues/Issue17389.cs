@@ -47,42 +47,44 @@ public class Issue17389 : TestContentPage
 		Content = CreateMainContent();
 	}
 
-	ScrollView CreateMainContent()
+	View CreateMainContent()
 	{
-		return new ScrollView
+		var layout = new StackLayout
 		{
-			Content = new StackLayout
+			Spacing = 20,
+			Children =
 			{
-				Spacing = 20,
-				Children =
+				new Label
 				{
-					new Label
-					{
-						Text = "InputTransparent Background Test",
-						FontSize = 18,
-						FontAttributes = FontAttributes.Bold,
-						HorizontalOptions = LayoutOptions.Center
-					},
-					tapCountLabel,
-					new Button
-					{
-						Text = "Toggle InputTransparent",
-						Command = new Command(ToggleInputTransparent),
-						AutomationId = "ToggleInputTransparentButton"
-					},
-					new Button
-					{
-						Text = "Toggle Background Colors",
-						Command = new Command(ToggleBackgroundColors),
-						AutomationId = "ToggleBackgroundColorsButton"
-					},
-					redGrid,
-					greenGrid,
-					blueBorder,
-					purpleContent
-				}
+					Text = "InputTransparent Background Test",
+					FontSize = 18,
+					FontAttributes = FontAttributes.Bold,
+					HorizontalOptions = LayoutOptions.Center
+				},
+				tapCountLabel,
+				new Button
+				{
+					Text = "Toggle InputTransparent",
+					Command = new Command(ToggleInputTransparent),
+					AutomationId = "ToggleInputTransparentButton"
+				},
+				new Button
+				{
+					Text = "Toggle Background Colors",
+					Command = new Command(ToggleBackgroundColors),
+					AutomationId = "ToggleBackgroundColorsButton"
+				},
+				redGrid,
+				greenGrid,
+				blueBorder,
+				purpleContent
 			}
 		};
+#if MACCATALYST
+		return layout;
+#else
+		return new ScrollView { Content = layout };
+#endif
 	}
 
 	Grid CreateBackgroundTestGrid(Color bgColor, bool inputTransparent, string labelText, out Label label)
