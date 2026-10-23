@@ -299,6 +299,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				InvalidateFontsOnContentSizeChanged(_footer);
 				ReMeasureFooter();
 				_tableViewController?.ForEachCachedView(InvalidateFontsOnContentSizeChanged);
+				InvalidateFontsOnContentSizeChanged(_shellFlyoutContentManager?.Content);
 			}
 		}
 
