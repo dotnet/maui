@@ -1,6 +1,7 @@
 ﻿#nullable enable
 using System;
 using System.Runtime.CompilerServices;
+using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
@@ -37,6 +38,18 @@ public partial class ViewHandler
 		// Both Clip and Shadow depend on the Control size.
 		handler.ToPlatform().UpdateClip(view);
 		handler.ToPlatform().UpdateShadow(view);
+	}
+
+	internal void ReconnectContainer()
+	{
+		if (PlatformView is null ||
+			ContainerView is not WrapperView wrapper ||
+			ReferenceEquals(wrapper.Child, PlatformView))
+		{
+			return;
+		}
+
+		wrapper.Child = PlatformView;
 	}
 
 	public static void MapTranslationX(IViewHandler handler, IView view)

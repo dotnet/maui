@@ -36,6 +36,8 @@ parameters:
 
 steps:
 
+# Four task retries mean five total attempts. Android package installs retry
+# individually in Provisioning.csproj; do not also retry their enclosing tasks.
 ##################################################
 #               Provisioning Feeds               #
 ##################################################
@@ -79,6 +81,7 @@ steps:
     - task: xamops.azdevex.provisionator-task.provisionator@3
       condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
       displayName: 'Provision Xcode'
+      retryCountOnTaskFailure: 4
       inputs:
         provisionator_uri: ${{ parameters.provisionatorUri }}
         provisioning_script: ${{ parameters.checkoutDirectory }}/${{ parameters.provisionatorXCodePath }}
@@ -166,6 +169,7 @@ steps:
       sudo xcodebuild -runFirstLaunch
     displayName: Select Xcode Version
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
+    retryCountOnTaskFailure: 4
     timeoutInMinutes: 30
 
   - ${{ if ne(parameters.skipSimulatorSetup, 'true') }}:
@@ -325,52 +329,39 @@ steps:
           echo "Re-trying simulator runtime installation..."
           sudo xcodebuild $DOWNLOAD_ARGS
 
-          # KEEP TRYING until a runtime is actually create-usable — do NOT give up after a
-          # fixed number of tries and let the iOS gate self-degrade to INCONCLUSIVE. A wedged
-          # CoreSimulatorService can leave runtimes "Ready" on disk yet NOT create-usable
-          # (`simctl create` -> "Invalid runtime"), or leave the agent with 0 usable runtimes
-          # entirely ("0 runtimes enrolled / 0 images on disk"). The only reliable cure is to
-          # purge the on-disk image store and re-download on a clean slate — sometimes more
-          # than once (the daemon re-wedges, or a multi-GB download is transient/partial). Loop
-          # the restart+purge+re-download+smoke-test cycle until a create-usable runtime exists,
-          # bounded by BOTH an attempt cap AND a wall-clock budget kept safely under this step's
-          # timeout so a retry can never be killed mid-download (which would leave a half-staged
-          # image). Only inside this already-failed retry branch, so the healthy first-download
-          # path is untouched. Escalates to the nuclear on-disk image-store purge from the 2nd
-          # attempt on (the ghost-collision / drain-succeeds-but-still-wedged case a conditional
-          # purge alone missed). (PR #36427/#36577: agent showed "0 runtimes enrolled / 0 images
-          # on disk", the step retried 3x then degraded — directive: "iOS must work, keep trying
-          # as long as it works".) A throwaway device is created then immediately deleted.
-          maxRuntimeAttempts=8
+          # A Ready image can still fail simctl create. Recover the image store until
+          # a throwaway device can be created, bounded by five total downloads and
+          # the existing time budget. Exhaustion must fail setup, not run tests.
+          maxRuntimeAttempts=5
           installBudgetSeconds=2100   # ~35 min; leaves >=10 min of the 45-min step for a final download + verify
-          smokeAttempt=0
+          # The initial download and the retry above already consumed two attempts.
+          runtimeInstallAttempt=2
           while : ; do
-            smokeAttempt=$((smokeAttempt+1))
             SMOKE_RT=$(xcrun simctl list runtimes -j | jq -r '[.runtimes[] | select(.platform=="iOS" and .isAvailable)] | sort_by(.version) | last | .identifier')
             SMOKE_DT=$(xcrun simctl list devicetypes -j | jq -r '[.devicetypes[] | select(.productFamily=="iPhone")] | .[0].identifier')
             if [[ -n "$SMOKE_RT" && "$SMOKE_RT" != "null" && -n "$SMOKE_DT" && "$SMOKE_DT" != "null" ]]; then
               SMOKE_UDID=$(xcrun simctl create "copilot-runtime-smoketest" "$SMOKE_DT" "$SMOKE_RT" 2>&1)
               SMOKE_RC=$?
               if [[ "$SMOKE_RC" == "0" ]]; then
-                echo "Simulator runtime is create-usable (smoke device $SMOKE_UDID) after $smokeAttempt attempt(s); cleaning up."
+                echo "Simulator runtime is create-usable (smoke device $SMOKE_UDID) after $runtimeInstallAttempt install attempt(s); cleaning up."
                 xcrun simctl delete "$SMOKE_UDID" 2>/dev/null || true
                 break
               fi
-              echo "Runtime NOT create-usable (attempt $smokeAttempt/$maxRuntimeAttempts): '$SMOKE_UDID' — CoreSimulatorService still wedged."
+              echo "Runtime NOT create-usable (attempt $runtimeInstallAttempt/$maxRuntimeAttempts): '$SMOKE_UDID' — CoreSimulatorService still wedged."
             else
-              echo "Could not resolve an iOS runtime/devicetype to smoke-test (attempt $smokeAttempt/$maxRuntimeAttempts; rt='$SMOKE_RT' dt='$SMOKE_DT')."
+              echo "Could not resolve an iOS runtime/devicetype to smoke-test (attempt $runtimeInstallAttempt/$maxRuntimeAttempts; rt='$SMOKE_RT' dt='$SMOKE_DT')."
             fi
             # Stop only when attempts are exhausted OR too little wall-clock remains to safely
             # start another multi-GB download inside the step timeout — never a premature give-up.
-            if [[ "$smokeAttempt" -ge "$maxRuntimeAttempts" ]]; then
-              echo "##vso[task.logissue type=warning]Simulator runtimes still not create-usable after $smokeAttempt attempts (restart+purge+re-download); iOS sim boot may fail and self-degrade to INCONCLUSIVE. This is agent infrastructure, not a PR problem."
-              break
+            if [[ "$runtimeInstallAttempt" -ge "$maxRuntimeAttempts" ]]; then
+              echo "##vso[task.logissue type=error]Simulator runtime setup failed after $maxRuntimeAttempts total install attempts."
+              exit 1
             fi
             if [[ "$SECONDS" -ge "$installBudgetSeconds" ]]; then
-              echo "##vso[task.logissue type=warning]Simulator-runtime install budget (${installBudgetSeconds}s) reached after $smokeAttempt attempts; stopping retries so the step timeout cannot kill a download mid-flight. iOS sim boot may self-degrade to INCONCLUSIVE."
-              break
+              echo "##vso[task.logissue type=error]Simulator-runtime install budget (${installBudgetSeconds}s) exhausted after $runtimeInstallAttempt attempts."
+              exit 1
             fi
-            echo "Restarting CoreSimulatorService and re-downloading runtimes (next attempt $((smokeAttempt+1)); ${SECONDS}s elapsed)..."
+            echo "Restarting CoreSimulatorService and re-downloading runtimes (next attempt $((runtimeInstallAttempt+1))/$maxRuntimeAttempts; ${SECONDS}s elapsed)..."
             sudo killall -9 com.apple.CoreSimulator.CoreSimulatorService 2>/dev/null || killall -9 com.apple.CoreSimulator.CoreSimulatorService 2>/dev/null || true
             sleep 5
             force_unmount_sim_runtime_volumes
@@ -395,13 +386,14 @@ steps:
                 echo "Unable to parse simulator runtime image JSON; treating the drain as incomplete."
               fi
             fi
-            # From the 2nd attempt on, ALWAYS purge the on-disk image store before re-downloading
+            # Before the fourth download, ALWAYS purge the on-disk image store
             # (not only when the drain fails): a runtime can drain from `runtime list` yet leave
             # same-UUID "(Deleting)" ghosts in the image store that collide "Invalid runtime: null"
             # on re-download and keep the agent at 0 create-usable runtimes (PR #27153 14699070).
-            if [[ "$smokeAttempt" -ge 2 || "$C" != "0" ]]; then
+            if [[ "$runtimeInstallAttempt" -ge 3 || "$C" != "0" ]]; then
               purge_wedged_sim_image_store
             fi
+            runtimeInstallAttempt=$((runtimeInstallAttempt+1))
             sudo xcodebuild $DOWNLOAD_ARGS
           done
         fi
@@ -424,17 +416,14 @@ steps:
           exit 1
         fi
         if [[ "$READY_COUNT" == "0" ]]; then
-          echo "##vso[task.logissue type=warning]$RUNTIME_COUNT simulator runtime image(s) present but 0 are 'Ready'/create-usable (likely stuck in '(Deleting)') — CoreSimulatorService is wedged on this AGENT. iOS sim boot will self-degrade to INCONCLUSIVE; this is agent infrastructure, not a PR problem."
+          echo "##vso[task.logissue type=error]$RUNTIME_COUNT simulator runtime image(s) present but none are Ready after setup."
+          exit 1
         fi
         echo "Found $RUNTIME_COUNT simulator runtime(s) ($READY_COUNT Ready/create-usable)"
       displayName: Install Simulator Runtimes
       condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
-      # 45 (was 30): the "keep trying until create-usable" retry loop above re-downloads the
-      # multi-GB runtime up to a few times on a wedged agent. Only the already-failed retry
-      # path uses the extra time — a healthy agent installs on the first download (~7 min) and
-      # exits — so this never slows a healthy iOS build. The loop's own installBudgetSeconds
-      # (2100s) stops starting new downloads with >=10 min to spare so this timeout can never
-      # kill a download mid-flight. Directive: iOS must work, keep trying as long as it works.
+      # The retry loop stops starting downloads after 35 minutes, leaving time
+      # for the final download and verification within this existing timeout.
       timeoutInMinutes: 45
 
 # Provision Additional Software
@@ -478,6 +467,7 @@ steps:
 # Provisioning .NET - .NET SDK
 - task: UseDotNet@2
   displayName: 'Use .NET SDK $(DOTNET_VERSION)'
+  retryCountOnTaskFailure: 4
   inputs:
     packageType: sdk
     version: $(DOTNET_VERSION)
@@ -499,6 +489,7 @@ steps:
 - script: |
     dotnet tool restore --verbosity diag
   displayName: 'Restore .NET Tools'
+  retryCountOnTaskFailure: 4
 
 ##################################################
 #              Provisioning Android              #
@@ -545,6 +536,7 @@ steps:
   - pwsh: dotnet build -t:ProvisionJdk -bl:"$(LogDirectory)/provision-jdk.binlog" ${{ parameters.checkoutDirectory }}/src/Provisioning/Provisioning.csproj -v:detailed
     displayName: 'Provision JDK (maui cli)'
     condition: succeeded()
+    retryCountOnTaskFailure: 4
 
   - pwsh: |
       $sourceDirectory = '/etc/apt/sources.list.d'
@@ -635,6 +627,7 @@ steps:
       echo "ANDROID_HOME set to '$preferredSdk'"
     displayName: 'Provision Android SDK - Environment variables (branch tool)'
     condition: succeeded()
+    retryCountOnTaskFailure: 4
 
 # Provisioning Android - Android SDK platform APIs (eg: platforms;android-29, platforms;android-30)
 - ${{ if ne(parameters.skipAndroidPlatformApis, 'true') }}:
@@ -657,6 +650,7 @@ steps:
   - pwsh: dotnet build -t:ProvisionAndroidSdkAvdCreateAvds -p:AndroidSdkProvisionApiLevel="$Env:AndroidSdkProvisionApiLevel" -bl:"$(LogDirectory)/provision-androidsdk-create-avds.binlog" ${{ parameters.checkoutDirectory }}/src/Provisioning/Provisioning.csproj -v:detailed
     displayName: 'Provision Android SDK - Create AVDs'
     condition: succeeded()
+    retryCountOnTaskFailure: 4
     env:
       AndroidSdkProvisionApiLevel: ${{ parameters.androidEmulatorApiLevel }}
 

@@ -128,7 +128,7 @@ namespace Microsoft.Maui.Controls
 			switch (e.Action)
 			{
 				case NotifyCollectionChangedAction.Add:
-					ValuesChanged?.Invoke(this, ResourcesChangedEventArgs.StyleSheets);
+					RaiseValuesChanged(ResourcesChangedEventArgs.StyleSheets);
 					break;
 			}
 		}
@@ -408,7 +408,7 @@ namespace Microsoft.Maui.Controls
 		{
 			StyleSheets = StyleSheets ?? new List<StyleSheets.StyleSheet>(2);
 			StyleSheets.Add(styleSheet);
-			ValuesChanged?.Invoke(this, ResourcesChangedEventArgs.StyleSheets);
+			RaiseValuesChanged(ResourcesChangedEventArgs.StyleSheets);
 		}
 
 		void OnValueChanged(string key, object value)
@@ -420,8 +420,10 @@ namespace Microsoft.Maui.Controls
 		{
 			if (values == null || values.Length == 0)
 				return;
-			ValuesChanged?.Invoke(this, new ResourcesChangedEventArgs(values));
+			RaiseValuesChanged(new ResourcesChangedEventArgs(values));
 		}
+
+		void RaiseValuesChanged(ResourcesChangedEventArgs e) => _weakEventManager.HandleEvent(this, e, nameof(ValuesChanged));
 
 		internal void Reload()
 		{
@@ -429,7 +431,13 @@ namespace Microsoft.Maui.Controls
 				OnValuesChanged(mr);
 		}
 
-		event EventHandler<ResourcesChangedEventArgs> ValuesChanged;
+		readonly WeakEventManager _weakEventManager = new WeakEventManager();
+
+		event EventHandler<ResourcesChangedEventArgs> ValuesChanged
+		{
+			add => _weakEventManager.AddEventHandler(value);
+			remove => _weakEventManager.RemoveEventHandler(value);
+		}
 
 		//only used for unit testing
 		internal static void ClearCache() => s_instances = new ConditionalWeakTable<Type, ResourceDictionary>();

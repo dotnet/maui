@@ -13,7 +13,7 @@ public class Issue32419 : _IssuesUITest
 	{ }
 
 	[Test, Order(1)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void VerifyShellFlyoutContentAlignedInRTL()
 	{
 		App.WaitForElement("homePageLabel");
@@ -21,7 +21,7 @@ public class Issue32419 : _IssuesUITest
 	}
 
 	[Test, Order(2)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void VerifyShellMenuItemsAlignedInRTL()
 	{
 		App.WaitForElement("homePageLabel");

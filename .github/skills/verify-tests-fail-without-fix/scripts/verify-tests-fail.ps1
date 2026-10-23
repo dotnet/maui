@@ -1120,6 +1120,18 @@ function Invoke-TestRunConfirmed {
 # ============================================================
 # Parse test results from output (supports all test types)
 # ============================================================
+function Get-SnapshotSizeMismatchSignatures {
+    param([string] $Content)
+    if ([string]::IsNullOrWhiteSpace($Content)) { return @() }
+
+    $rx = [regex]'(?i)Snapshot different than baseline:\s*(?<file>[^\r\n]+?)\s*\(size differs\s*-\s*baseline is (?<baseline>\d+x\d+) pixels?, actual is (?<actual>\d+x\d+) pixels?\)'
+    return @($rx.Matches($Content) |
+        ForEach-Object {
+            "$($_.Groups['file'].Value.Trim().ToLowerInvariant())|$($_.Groups['baseline'].Value)|$($_.Groups['actual'].Value)"
+        } |
+        Sort-Object -Unique)
+}
+
 function Get-TestResultFromOutput {
     <#
     .SYNOPSIS
@@ -1754,10 +1766,9 @@ function Limit-ExpensiveGateTests {
         AzDO hard-kills the task → a "The task has timed out" FAILED verdict
         with no analysis (observed on build 14676353 / PR #36109: 11 device
         tests → 120-min timeout). This caps the expensive tests, prioritising
-        the PR's own newly-added (fix-authored) regression tests. Deep UI Tests
-        exercises the HostApp UI category matrix, but does not run DeviceTests;
-        any dropped device-test groups are persisted as an explicit coverage
-        limitation in the gate report. Cheap unit/XAML tests are never capped
+        the PR's own newly-added (fix-authored) regression tests. Dropped native
+        groups are persisted as explicit coverage limitations in the report;
+        /review gate runs no subsequent sweep. Cheap unit/XAML tests are never capped
         (they are fast). Caps are env-overridable via GATE_MAX_DEVICE_TESTS /
         GATE_MAX_UI_TESTS.
     #>
@@ -1800,13 +1811,13 @@ function Limit-ExpensiveGateTests {
     }
     if ($droppedDevice.Count -gt 0) {
         $droppedDeviceNames = @($droppedDevice | ForEach-Object { $_.TestName }) -join ', '
-        $deviceLimitation = "The A/B gate did not verify $($droppedDevice.Count) dropped DeviceTest group(s): $droppedDeviceNames. Deep UI Tests runs HostApp UI categories only and does not execute DeviceTests; separate device-test validation is required."
+        $deviceLimitation = "The A/B gate did not verify $($droppedDevice.Count) dropped DeviceTest group(s): $droppedDeviceNames. Separate device-test validation is required; /review gate does not run a subsequent sweep."
         $script:GateCoverageLimitations += $deviceLimitation
         Write-Host "⚠️  $deviceLimitation" -ForegroundColor Yellow
     }
     if ($droppedUi.Count -gt 0) {
         $droppedUiNames = @($droppedUi | ForEach-Object { $_.TestName }) -join ', '
-        $uiLimitation = "The A/B gate did not verify $($droppedUi.Count) dropped UI test group(s): $droppedUiNames. Those UI categories are exercised separately by the Deep UI Tests stage, without the gate's before/after comparison."
+        $uiLimitation = "The A/B gate did not verify $($droppedUi.Count) dropped UI test group(s): $droppedUiNames. Separate UI-test validation is required; /review gate does not run a subsequent category sweep."
         $script:GateCoverageLimitations += $uiLimitation
         Write-Host "⚠️  $uiLimitation" -ForegroundColor Yellow
     }
@@ -2190,7 +2201,7 @@ if ($DetectedFixFiles.Count -eq 0) {
     # masquerade as a broken test — mirroring the full-verification mode's classification.
     $hasEnvError   = @($allResults | Where-Object { $_.EnvError }).Count -gt 0
     $hasBuildError = @($allResults | Where-Object { $_.BuildError }).Count -gt 0
-    $hasOtherError = @($allResults | Where-Object { $_.Error -and -not $_.EnvError -and -not $_.BuildError }).Count -gt 0
+    $hasOtherError = @($allResults | Where-Object { $_.FilterMismatch -or ($_.Error -and -not $_.EnvError -and -not $_.BuildError) }).Count -gt 0
 
     # Show per-test results
     foreach ($r in $allResults) {
@@ -2199,6 +2210,8 @@ if ($DetectedFixFiles.Count -eq 0) {
             Write-Host "  $icon [$($r.TestType)] $($r.TestName): ⚠️ ENV ERROR — $($r.Error)" -ForegroundColor Yellow
         } elseif ($r.BuildError) {
             Write-Host "  $icon [$($r.TestType)] $($r.TestName): 🛠️ BUILD ERROR — $($r.Error)" -ForegroundColor Yellow
+        } elseif ($r.FilterMismatch) {
+            Write-Host "  $icon [$($r.TestType)] $($r.TestName): 🔍 NO MATCH — $($r.Error)" -ForegroundColor Yellow
         } elseif ($r.Error) {
             Write-Host "  $icon [$($r.TestType)] $($r.TestName): ⚠️ ERROR — $($r.Error)" -ForegroundColor Yellow
         } elseif (-not $r.Passed) {
@@ -3340,18 +3353,6 @@ function Get-SnapshotDiffMap {
     return $map
 }
 
-function Get-SnapshotSizeMismatchSignatures {
-    param([string] $Content)
-    if ([string]::IsNullOrWhiteSpace($Content)) { return @() }
-
-    $rx = [regex]'(?i)Snapshot different than baseline:\s*(?<file>[^\r\n]+?)\s*\(size differs\s*-\s*baseline is (?<baseline>\d+x\d+) pixels?, actual is (?<actual>\d+x\d+) pixels?\)'
-    return @($rx.Matches($Content) |
-        ForEach-Object {
-            "$($_.Groups['file'].Value.Trim().ToLowerInvariant())|$($_.Groups['baseline'].Value)|$($_.Groups['actual'].Value)"
-        } |
-        Sort-Object -Unique)
-}
-
 function Test-SnapshotSizeMismatchPair {
     param(
         [object] $WithoutFixResult,
@@ -3550,6 +3551,10 @@ foreach ($testEntry in $AllDetectedTests) {
     $counts = if ($result.Total -gt 0) { " ($($result.Total) total, $($result.Failed) failed)" } else { "" }
     if ($result.EnvError) {
         Write-Host "  ⚠️ $($testEntry.TestName): ENV ERROR$counts — $durStr — $($result.Error)" -ForegroundColor Yellow
+    } elseif ($result.BuildError) {
+        Write-Host "  🛠️ $($testEntry.TestName): BUILD ERROR — $durStr — $($result.Error)" -ForegroundColor Yellow
+    } elseif ($result.FilterMismatch) {
+        Write-Host "  🔍 $($testEntry.TestName): NO MATCH — $durStr — $($result.Error)" -ForegroundColor Yellow
     } elseif (-not $result.Passed) {
         Write-Host "  ✅ $($testEntry.TestName): FAILED$counts — $durStr (expected)" -ForegroundColor Green
         if ($result.FailureReason) { Write-Host "     └─ $($result.FailureReason)" -ForegroundColor DarkGray }
@@ -3673,6 +3678,10 @@ foreach ($testEntry in $AllDetectedTests) {
     $counts = if ($result.Total -gt 0) { " ($($result.Total) total, $($result.Failed) failed)" } else { "" }
     if ($result.EnvError) {
         Write-Host "  ⚠️ $($testEntry.TestName): ENV ERROR$counts — $durStr — $($result.Error)" -ForegroundColor Yellow
+    } elseif ($result.BuildError) {
+        Write-Host "  🛠️ $($testEntry.TestName): BUILD ERROR — $durStr — $($result.Error)" -ForegroundColor Yellow
+    } elseif ($result.FilterMismatch) {
+        Write-Host "  🔍 $($testEntry.TestName): NO MATCH — $durStr — $($result.Error)" -ForegroundColor Yellow
     } elseif ($result.Passed) {
         Write-Host "  ✅ $($testEntry.TestName): PASSED$counts — $durStr (expected)" -ForegroundColor Green
     } else {
@@ -3884,22 +3893,22 @@ foreach ($t in $AllDetectedTests) {
     $woResult = $withoutFixResults | Where-Object { $_.TestName -eq $t.TestName }
     $wResult = $withFixResults | Where-Object { $_.TestName -eq $t.TestName }
 
-    $woIcon = if ($woResult.EnvError) { "⚠️ ENV ERR" } elseif (-not $woResult.Passed) { "✅ FAIL   " } else { "❌ PASS   " }
-    $wIcon = if ($wResult.EnvError) { "⚠️ ENV ERR" } elseif ($wResult.Passed) { "✅ PASS  " } else { "❌ FAIL  " }
+    $woIcon = if ($woResult.EnvError) { "⚠️ ENV ERR" } elseif ($woResult.BuildError) { "BUILD ERR" } elseif ($woResult.FilterMismatch) { "NO MATCH " } elseif (-not $woResult.Passed) { "✅ FAIL   " } else { "❌ PASS   " }
+    $wIcon = if ($wResult.EnvError) { "⚠️ ENV ERR" } elseif ($wResult.BuildError) { "BUILD ERR" } elseif ($wResult.FilterMismatch) { "NO MATCH " } elseif ($wResult.Passed) { "✅ PASS  " } else { "❌ FAIL  " }
 
     $nameDisplay = $t.TestName
     if ($nameDisplay.Length -gt 22) { $nameDisplay = $nameDisplay.Substring(0, 19) + "..." }
     $nameDisplay = $nameDisplay.PadRight(22)
 
-    $woColor = if ($woResult.EnvError) { "Yellow" } elseif (-not $woResult.Passed) { "Green" } else { "Red" }
-    $wColor = if ($wResult.EnvError) { "Yellow" } elseif ($wResult.Passed) { "Green" } else { "Red" }
+    $woColor = if ($woResult.EnvError -or $woResult.BuildError -or $woResult.FilterMismatch) { "Yellow" } elseif (-not $woResult.Passed) { "Green" } else { "Red" }
+    $wColor = if ($wResult.EnvError -or $wResult.BuildError -or $wResult.FilterMismatch) { "Yellow" } elseif ($wResult.Passed) { "Green" } else { "Red" }
 
     Write-Host "  $nameDisplay │ " -NoNewline -ForegroundColor White
     Write-Host "$woIcon" -NoNewline -ForegroundColor $woColor
     Write-Host "  │ " -NoNewline -ForegroundColor White
     Write-Host "$wIcon" -ForegroundColor $wColor
 
-    Write-Log "  [$($t.Type)] $($t.TestName): without fix=$(if (-not $woResult.Passed) {'FAIL ✅'} else {'PASS ❌'}), with fix=$(if ($wResult.Passed) {'PASS ✅'} else {'FAIL ❌'})"
+    Write-Log "  [$($t.Type)] $($t.TestName): without fix=$($woIcon.Trim()), with fix=$($wIcon.Trim())"
 }
 Write-Host "  ───────────────────────┼─────────────┼────────────" -ForegroundColor DarkGray
 Write-Host "  Expected               │   FAIL      │   PASS     " -ForegroundColor DarkGray
@@ -4105,8 +4114,10 @@ $gateInfraError = (-not $hasDefinitiveGateFailure) -and (
 
 Write-Log ""
 Write-Log "Summary:"
-Write-Log "  - Tests WITHOUT fix: $(if ($failedWithoutFix) { 'ALL FAIL ✅ (expected)' } else { 'SOME PASS ❌ (should all fail!)' })"
-Write-Log "  - Tests WITH fix: $(if ($passedWithFix) { 'ALL PASS ✅ (expected)' } else { 'SOME FAIL ❌ (should all pass!)' })"
+Write-Log "  - Conclusive FAIL-to-PASS test groups: $reproducingCount"
+Write-Log "  - Genuine with-fix failures: $withFixGenuineFailCount"
+Write-Log "  - Unmatched selected filters: $anyFilterMismatch"
+Write-Log "  - Environment/build blockers: $($anyEnvError -or $baselineBuildError -or $withFixBuildError)"
 
 # Generate markdown report
 Write-MarkdownReport `
@@ -4133,6 +4144,7 @@ if ($verificationPassed) {
     Write-Host "╠═══════════════════════════════════════════════════════════╣" -ForegroundColor Green
     Write-Host "║  Tests correctly detect the issue:                        ║" -ForegroundColor Green
     Write-Host "║  - FAIL without fix (as expected)                         ║" -ForegroundColor Green
+    Write-Host "║  - PASS with fix (as expected)                            ║" -ForegroundColor Green
     Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Green
     exit 0
 } elseif ($compileCoupledVerified) {

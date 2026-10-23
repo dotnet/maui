@@ -383,6 +383,42 @@ For rapid development and debugging, you can run specific tests directly:
 
 For comprehensive CI-like test runs:
 
+Android, iOS, MacCatalyst, and Windows CI runs retry once after a failure using
+the shared UI test runner. For an exact category group such as
+`TestCategory=Editor|TestCategory=Effects|TestCategory=Essentials`, the retry runs
+only categories containing failed tests or fixtures. NUnit XML provides inherited
+fixture and method categories; only categories in the original group are selected.
+Missing, incomplete, or unmappable results fall back to the original filter with
+a warning. Custom filters retain their original selection, and local runs do not retry.
+
+Explicitly separated preparation and test-project build phases on Android, iOS,
+MacCatalyst, and Windows CI allow at most five total attempts per failed phase,
+before test execution starts. These retries do not restart completed tests.
+Local runs and device-test Cake targets do not retry these phases. Shared agent
+provisioning also uses bounded setup-only recovery; see
+[Setup-only retries](../.github/docs/maui-ci-facts.md#setup-only-retries) for its
+coverage and limits.
+
+NUnit XML is checked whether VSTest succeeds or throws. Fixture-only failures
+such as `OneTimeTearDown` errors trigger the same category-based retry and are
+recorded as TRX run errors if they persist. Missing or malformed reports are
+logged without replacing an existing VSTest exception.
+
+The published TRX combines untouched first-attempt results with retry results.
+Failures not reported by the retry remain failures. Fixture errors are cleared
+only when retry NUnit XML confirms that the same fixture in the same assembly
+completed successfully; omitted, skipped, or incomplete fixtures remain run
+errors, even if all retained test cases passed.
+
+Available raw TRX and NUnit XML files are copied before XML parsing,
+reconciliation, or category selection, including for full-filter retries. The
+first attempt's snapshots are under `nunit-<id>/raw/` and the retry's snapshots
+under `nunit-<id>/retry/raw/`, beneath the result directory. Retry output always
+uses a separate directory, even when the first TRX is missing or malformed.
+Only the combined top-level TRX is published; if the first TRX cannot be read,
+the retry TRX is published instead. If raw reports cannot be archived, the runner
+stops without retrying or overwriting the available evidence.
+
 **Android:**
 
 ```powershell

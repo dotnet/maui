@@ -708,10 +708,17 @@ namespace Microsoft.Maui.Controls.Handlers
 		void UpdateTabBarVisibility(IShellItemController item)
 		{
 			if (PlatformView is not MauiNavigationView mauiNavView)
+			{
 				return;
+			}
 
 			var paneDisplayMode = GetNavigationViewPaneDisplayMode(item);
-			mauiNavView.PaneDisplayMode = paneDisplayMode;
+
+			if (mauiNavView.PaneDisplayMode != paneDisplayMode)
+			{
+				mauiNavView.PaneDisplayMode = paneDisplayMode;
+			}
+
 			mauiNavView.PinPaneDisplayModeTo = paneDisplayMode;
 		}
 

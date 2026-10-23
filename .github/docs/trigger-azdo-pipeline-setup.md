@@ -19,6 +19,21 @@ GitHub Actions ──► GitHub OIDC Provider ──► Azure AD (federated cred
 > (e.g. in the `dotnet` org). The workflow uses **manual OIDC token exchange via
 > `curl`** instead, which works everywhere that `id-token: write` is allowed.
 
+## Azure Pipelines comment cleanup
+
+`azure-pipelines-comment-cleanup.yml` collapses standalone `/azp run` commands
+(including named-pipeline variants such as `/azp run maui-pr, maui-pr-uitests`)
+and success-only acknowledgments from `azure-pipelines[bot]` as **resolved** on
+pull requests. Comments remain expandable; nothing is deleted. Failure messages,
+authorization notices, mixed success/warning responses, and ordinary discussion
+remain visible.
+
+This is independent of pipeline dispatch and does not change which pipelines run
+or who can request them. It uses the repository's `GITHUB_TOKEN`, does not check
+out or execute PR code, and needs no additional secret. Once merged into the
+default branch, it handles newly created or edited comments; it does not sweep
+historical comments.
+
 ## Prerequisites
 
 - Azure CLI installed locally (for one-time setup)
@@ -251,7 +266,7 @@ fires after its create/push run.
 4. Azure AD validates the JWT against the federated credential and returns
    a bearer token scoped to AzDO (resource: 499b84ac-1321-427f-aa17-267ca6975798)
 5. Step 3 calls the appropriate Azure DevOps queue endpoint with the bearer
-   token: the Pipelines Runs API for `/review`, or the Build Queue API for
+   token: the Pipelines Runs API for `/review` and `/review gate`, or the Build Queue API for
    CI-fix PR validation
 6. AzDO validates the token, checks the identity's permissions, and queues the build
 ```

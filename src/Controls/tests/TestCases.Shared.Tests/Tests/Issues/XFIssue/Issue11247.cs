@@ -14,7 +14,7 @@ public class Issue11247 : _IssuesUITest
 	public override string Issue => "[Bug] Shell FlyoutIsPresented not working if set in \"navigating\" handler";
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 
 	public void SettingFlyoutIsPresentedInNavigatingKeepsFlyoutOpen()
 	{

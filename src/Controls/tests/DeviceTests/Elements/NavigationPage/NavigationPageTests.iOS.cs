@@ -41,6 +41,60 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory]
+		[InlineData(true, false)]
+		[InlineData(false, true)]
+		public async Task InteractivePopGestureRespectsBackButtonPressedWhenNavigationBarHidden(bool backHandled, bool expectedShouldBegin)
+		{
+			SetupBuilder();
+			var rootPage = new ContentPage();
+			var backHandlingPage = new BackHandlingPage(backHandled);
+			NavigationPage.SetHasNavigationBar(backHandlingPage, false);
+
+			var navPage = new NavigationPage(rootPage);
+			await navPage.PushAsync(backHandlingPage);
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async handler =>
+			{
+				var navController = Assert.IsType<NavigationRenderer>(navPage.Handler);
+				var recognizer = navController.InteractivePopGestureRecognizer;
+
+				Assert.Equal(expectedShouldBegin, recognizer.Delegate.ShouldBegin(recognizer));
+				if (expectedShouldBegin)
+				{
+					Assert.True(navController.ShouldPopItem(navController.NavigationBar, navController.NavigationBar.TopItem));
+				}
+				Assert.Equal(1, backHandlingPage.BackButtonPressedCount);
+				await Task.CompletedTask;
+			});
+		}
+
+		[Theory]
+		[InlineData(true, false)]
+		[InlineData(false, true)]
+		public async Task InteractivePopGestureRespectsBackButtonPressedWhenNavigationBarVisible(bool backHandled, bool expectedShouldBegin)
+		{
+			SetupBuilder();
+			var rootPage = new ContentPage();
+			var backHandlingPage = new BackHandlingPage(backHandled);
+			var navPage = new NavigationPage(rootPage);
+			await navPage.PushAsync(backHandlingPage);
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async handler =>
+			{
+				var navController = Assert.IsType<NavigationRenderer>(navPage.Handler);
+				var recognizer = navController.InteractivePopGestureRecognizer;
+
+				Assert.Equal(expectedShouldBegin, recognizer.Delegate.ShouldBegin(recognizer));
+				if (expectedShouldBegin)
+				{
+					Assert.True(navController.ShouldPopItem(navController.NavigationBar, navController.NavigationBar.TopItem));
+				}
+				Assert.Equal(1, backHandlingPage.BackButtonPressedCount);
+				await Task.CompletedTask;
+			});
+		}
+
+		[Theory]
 		[InlineData(true)]
 		[InlineData(false)]
 		public async Task PrefersLargeTitles(bool enabled)
@@ -92,6 +146,24 @@ namespace Microsoft.Maui.DeviceTests
 				(handler as NavigationRenderer).Dispose();
 				(handler as NavigationRenderer).Dispose();
 			});
+		}
+
+		sealed class BackHandlingPage : ContentPage
+		{
+			readonly bool _backHandled;
+
+			public BackHandlingPage(bool backHandled)
+			{
+				_backHandled = backHandled;
+			}
+
+			public int BackButtonPressedCount { get; private set; }
+
+			protected override bool OnBackButtonPressed()
+			{
+				BackButtonPressedCount++;
+				return _backHandled;
+			}
 		}
 	}
 }

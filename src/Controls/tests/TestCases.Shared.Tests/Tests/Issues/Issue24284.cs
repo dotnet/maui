@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "FlyoutHeaderAdaptsToMinimumHeight";
 
 		[Test]
-		[Category(UITestCategories.Shell)]
+		[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 		public void FlyoutHeaderAdaptsToMinimumHeight()
 		{
 			var heightReferenceLabel = App.WaitForElement("HeightReferenceLabel").GetRect();

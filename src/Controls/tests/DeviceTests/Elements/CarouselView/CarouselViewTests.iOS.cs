@@ -7,6 +7,7 @@ using Microsoft.Maui.Controls.Handlers.Items2;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
+using Microsoft.Maui.Platform;
 using Xunit;
 using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
@@ -14,6 +15,81 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class CarouselViewTests
 	{
+		[Theory]
+		[InlineData(false, false)]
+		[InlineData(false, true)]
+		[InlineData(true, false)]
+		[InlineData(true, true)]
+		public async Task TemplateSelectorPreservesCellWhenMeasureIsInvalidated(bool loop, bool createsNewTemplates)
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<CarouselView, CarouselViewHandler2>();
+					handlers.AddHandler<Label, LabelHandler>();
+				});
+			});
+
+			var carouselView = new CarouselView
+			{
+				Loop = loop,
+				HeightRequest = 200,
+				WidthRequest = 300,
+				ItemsSource = new[] { 1, 2 },
+				ItemTemplate = createsNewTemplates
+					? new NewCarouselTemplateSelector()
+					: new CustomDataTemplateSelectorSelector
+					{
+						Template1 = new DataTemplate(() => new Label { Text = "Item 1" }),
+						Template2 = new DataTemplate(() => new Label { Text = "Item 2" })
+					}
+			};
+
+			await CreateHandlerAndAddToWindow<CarouselViewHandler2>(carouselView, async handler =>
+			{
+				var controller = Assert.IsType<CarouselViewController2>(handler.Controller);
+				var collectionView = controller.CollectionView;
+				using var indexPath = Foundation.NSIndexPath.FromItemSection(loop ? 1 : 0, 0);
+
+				await AssertEventually(() => controller.InitialPositionSet &&
+					collectionView.CellForItem(indexPath) is TemplatedCell2,
+					message: "The first carousel item was not displayed.");
+
+				var cell = Assert.IsAssignableFrom<TemplatedCell2>(collectionView.CellForItem(indexPath));
+				var label = Assert.IsType<Label>(cell.PlatformHandler.VirtualView);
+				Assert.Equal("Item 1", label.Text);
+				var reuseIdentifier = cell.ReuseIdentifier;
+
+				label.Text = "Item 1 with updated content";
+				((IPlatformMeasureInvalidationController)cell).InvalidateMeasure();
+				((IPlatformMeasureInvalidationController)collectionView).InvalidateMeasure(isPropagating: true);
+				Assert.True(cell.MeasureInvalidated);
+
+				controller.ViewWillLayoutSubviews();
+				collectionView.LayoutIfNeeded();
+
+				Assert.Same(cell, collectionView.CellForItem(indexPath));
+				Assert.Equal(reuseIdentifier, cell.ReuseIdentifier);
+				Assert.Equal("Item 1 with updated content", label.Text);
+				Assert.Equal(1, label.BindingContext);
+
+				carouselView.Position = 1;
+				using var nextIndexPath = Foundation.NSIndexPath.FromItemSection(loop ? 2 : 1, 0);
+				await AssertEventually(() =>
+					collectionView.CellForItem(nextIndexPath) is TemplatedCell2 nextCell &&
+					nextCell.PlatformHandler?.VirtualView is Label { Text: "Item 2" } &&
+					carouselView.CurrentItem is 2,
+					message: "The second carousel template was not displayed after scrolling.");
+			});
+		}
+
+		sealed class NewCarouselTemplateSelector : DataTemplateSelector
+		{
+			protected override DataTemplate OnSelectTemplate(object item, BindableObject container)
+				=> new DataTemplate(() => new Label { Text = $"Item {item}" });
+		}
+
 		void SetupBuilderForDetachedItemsSourceReplacement()
 		{
 			EnsureHandlerCreated(builder =>
