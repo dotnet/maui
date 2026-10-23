@@ -112,6 +112,38 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(-1, picker.SelectedIndex);
 		}
 
+		// Confirms SelectedIndexProperty's coerceValue reuses the original boxed value instead of
+		// reboxing when the index is already in range, and still reboxes when it's clamped.
+		[Fact]
+		public void SelectedIndexCoerceValueReusesBoxWhenAlreadyInRange()
+		{
+			var picker = new Picker();
+			picker.Items.Add("John");
+			picker.Items.Add("Paul");
+			picker.Items.Add("George");
+			object boxedValue = 1;
+
+			var result = Picker.SelectedIndexProperty.CoerceValue(picker, boxedValue);
+
+			Assert.Same(boxedValue, result);
+			Assert.Equal(1, (int)result);
+		}
+
+		[Fact]
+		public void SelectedIndexCoerceValueReboxesWhenOutOfRange()
+		{
+			var picker = new Picker();
+			picker.Items.Add("John");
+			picker.Items.Add("Paul");
+			picker.Items.Add("George");
+			object boxedValue = 5;
+
+			var result = Picker.SelectedIndexProperty.CoerceValue(picker, boxedValue);
+
+			Assert.NotSame(boxedValue, result);
+			Assert.Equal(2, (int)result);
+		}
+
 		[Fact]
 		public void SelectedIndexSetBeforeItemsSourceAppliesAfterItemsSource()
 		{
