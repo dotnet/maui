@@ -237,8 +237,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					_requiresSafeAreaReconciliation = RequiresSafeAreaReconciliation(virtualView);
 				}
 
+				var mauiView = MauiView.GetCellSafeAreaView(PlatformView);
 				var appliesSafeArea = _requiresSafeAreaReconciliation ||
-					PlatformView is MauiView { CellSafeAreaOverride.IsEmpty: false };
+					mauiView is { CellSafeAreaOverride.IsEmpty: false };
 
 				if (!needsFinalArrange && !_hasArrangedSize)
 				{
@@ -255,7 +256,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				_needsArrange = false;
 
 				var safeAreaChanged = false;
-				if (appliesSafeArea && PlatformView is MauiView mauiView)
+				if (appliesSafeArea && mauiView is not null)
 				{
 					var previousCellSafeArea = mauiView.CellSafeAreaOverride;
 					MauiView.ApplyCellSafeAreaOverride(this, virtualView, mauiView);
@@ -409,7 +410,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			// Retain _cachedConstraints so MeasureFirstItem cells can reuse the
 			// first-item measurement when the collection constraints are unchanged.
 
-			if (PlatformView is MauiView mauiView && !mauiView.CellSafeAreaOverride.IsEmpty)
+			if (MauiView.GetCellSafeAreaView(PlatformView) is MauiView mauiView && !mauiView.CellSafeAreaOverride.IsEmpty)
 			{
 				mauiView.CellSafeAreaOverride = SafeAreaPadding.Empty;
 			}
