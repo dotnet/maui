@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-compiler_commit=86885522c56a777b4734e6b5d81b41ce244a513f
-compiler_version=v0.86.2+maui-duplicate-detector
-runtime_commit=6aab9e5b5c91c615506061f09bedd81a23babe3c
+compiler_commit=ff62cdbec36230acbae869ddb28806e8eca01ea1
+compiler_version=v0.87.10+maui-duplicate-detector
+runtime_commit=bc8c008a419c5b7a29df6f5641edd35fd1c6ea85
 cache_directory="${XDG_CACHE_HOME:-$HOME/.cache}/maui/gh-aw/$compiler_commit"
 source_directory="$cache_directory/source"
 compiler_binary="$cache_directory/gh-aw"
@@ -18,11 +18,12 @@ run_without_tokens() {
 }
 
 if ! command -v go >/dev/null 2>&1; then
-  echo "Compiling the duplicate detector requires Go 1.26.5 or later." >&2
+  echo "Compiling the duplicate detector requires Go 1.26.7 or later." >&2
   exit 127
 fi
 
 cd "$(git rev-parse --show-toplevel)"
+compiler_patch="$PWD/.github/scripts/IssueDuplicateCompiler.patch"
 mkdir -p "$cache_directory"
 if [[ ! -d "$source_directory/.git" ]]; then
   if [[ -e "$source_directory" ]]; then
@@ -33,7 +34,7 @@ if [[ ! -d "$source_directory/.git" ]]; then
 fi
 if ! git -C "$source_directory" rev-parse --verify HEAD >/dev/null 2>&1; then
   git -C "$source_directory" fetch --quiet --depth 1 \
-    https://github.com/kubaflo/gh-aw.git "$compiler_commit"
+    https://github.com/github/gh-aw.git "$compiler_commit"
   git -C "$source_directory" checkout --quiet --detach FETCH_HEAD
 fi
 if [[ "$(git -C "$source_directory" rev-parse HEAD)" != "$compiler_commit" ||
@@ -42,9 +43,19 @@ if [[ "$(git -C "$source_directory" rev-parse HEAD)" != "$compiler_commit" ||
   exit 1
 fi
 
+build_directory="$(mktemp -d "$cache_directory/build.XXXXXXXX")"
+trap 'rm -rf -- "$build_directory"' EXIT
+git -C "$source_directory" archive HEAD | tar -x -C "$build_directory"
+git --git-dir="$source_directory/.git" --work-tree="$build_directory" \
+  -C "$build_directory" apply --unidiff-zero --check "$compiler_patch"
+git --git-dir="$source_directory/.git" --work-tree="$build_directory" \
+  -C "$build_directory" apply --unidiff-zero "$compiler_patch"
+git --git-dir="$source_directory/.git" --work-tree="$build_directory" \
+  -C "$build_directory" apply --unidiff-zero --reverse --check "$compiler_patch"
+
 (
-  cd "$source_directory"
-  run_without_tokens GOWORK=off go build -p 4 \
+  cd "$build_directory"
+  run_without_tokens GOWORK=off go build -buildvcs=false -p 4 \
     -ldflags "-X main.version=$compiler_version -X main.isRelease=true" \
     -o "$compiler_binary" ./cmd/gh-aw
 )

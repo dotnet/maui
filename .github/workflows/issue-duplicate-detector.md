@@ -77,7 +77,7 @@ jobs:
   pre-activation:
     outputs:
       should_run: ${{ steps.context.outputs.should_run }}
-  # v0.86.2 leaves job-level import conditions unresolved; keep this secret gate explicit.
+  # Keep the activation condition explicit for the secret-bearing job.
   pat_pool:
     if: needs.pre_activation.outputs.should_run == 'true'
     needs: [pre_activation]
@@ -133,10 +133,11 @@ sandbox:
       # Preserve the explicit repository scope instead of replacing it with all public repos.
       MCP_GATEWAY_FORCE_PUBLIC_REPOS: "false"
 
-# Stock v0.86.2 drops call-limit metadata; use CompileIssueDuplicateDetector.sh.
+# Preserve call-limit metadata with CompileIssueDuplicateDetector.sh.
 tools:
   bash: false
   edit: false
+  cli-proxy: false
   timeout: 240
   github:
     toolsets: [issues]
@@ -271,7 +272,7 @@ steps:
   - name: Check official compiler base compatibility
     uses: actions/github-script@v9.0.0
     env:
-      GH_AW_COMPILED_VERSION: v0.86.2
+      GH_AW_COMPILED_VERSION: v0.87.10
     with:
       script: |
         const { setupGlobals } = require('${{ runner.temp }}/gh-aw/actions/setup_globals.cjs');
@@ -327,6 +328,7 @@ concurrency:
   group: issue-duplicate-detector
   cancel-in-progress: false
   queue: max
+  job-discriminator: ${{ github.run_id }}
 
 timeout-minutes: 15
 ---
