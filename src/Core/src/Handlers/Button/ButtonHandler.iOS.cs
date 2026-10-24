@@ -84,6 +84,16 @@ namespace Microsoft.Maui.Handlers
 		}
 #endif
 
+		public override void PlatformArrange(Rect rect)
+		{
+			var previousSize = ContainerView?.Bounds.Size ?? PlatformView.Bounds.Size;
+			base.PlatformArrange(rect);
+			if (previousSize != (ContainerView?.Bounds.Size ?? PlatformView.Bounds.Size))
+			{
+				UpdateValue(nameof(IButtonStroke.CornerRadius));
+			}
+		}
+
 		public static void MapStrokeColor(IButtonHandler handler, IButtonStroke buttonStroke)
 		{
 			handler.PlatformView?.UpdateStrokeColor(buttonStroke);
