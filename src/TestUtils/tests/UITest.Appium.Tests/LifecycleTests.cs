@@ -59,6 +59,20 @@ public class LifecycleTests
 			command.Name == DriverCommand.FindElement || command.Name == DriverCommand.FindElements || command.Name == DriverCommand.SendKeysToElement);
 	}
 
+	[Fact]
+	public void FailedTerminationCannotLaunchWithStaleStartupArguments()
+	{
+		var executor = new RecordingExecutor { FailTermination = true };
+		var config = new Config();
+		config.SetProperty("TestDevice", TestDevice.iOS);
+		config.SetProperty("AppId", "com.microsoft.maui.uitests");
+		using var app = new TestApp(new IOSDriver(executor, new AppiumOptions()), config);
+
+		Assert.Throws<InvalidOperationException>(() => app.LaunchApp("Next issue"));
+		Assert.DoesNotContain(executor.Commands, command => command.Name == DriverCommand.ExecuteScript
+			&& Equals(command.Parameters["script"], "mobile: launchApp"));
+	}
+
 	sealed class TestApp(AppiumDriver driver, IConfig config) : AppiumApp(driver, config)
 	{
 		public override ApplicationState AppState => ApplicationState.Running;
@@ -67,12 +81,17 @@ public class LifecycleTests
 	sealed class RecordingExecutor : ICommandExecutor
 	{
 		public List<Command> Commands { get; } = new();
+		public bool FailTermination { get; set; }
 
 		public bool TryAddCommand(string commandName, CommandInfo? info) => true;
 		public Response Execute(Command command) => ExecuteAsync(command).GetAwaiter().GetResult();
 		public Task<Response> ExecuteAsync(Command command)
 		{
 			Commands.Add(command);
+			if (FailTermination && (command.Name.Contains("terminate", StringComparison.OrdinalIgnoreCase)
+				|| command.Name == DriverCommand.ExecuteScript && Equals(command.Parameters["script"], "mobile: terminateApp")))
+				throw new WebDriverException("Termination failed");
+
 			var response = command.Name == DriverCommand.NewSession
 				? Response.FromJson("""{"value":{"sessionId":"recording","capabilities":{"platformName":"test"}}}""")
 				: new Response("recording", true, WebDriverResult.Success);

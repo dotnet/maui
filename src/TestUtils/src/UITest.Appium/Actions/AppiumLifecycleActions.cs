@@ -77,7 +77,10 @@ namespace UITest.Appium
 			_app.Config.SetProperty("TestConfigurationArgs", args);
 
 			if (args.ContainsKey("test") && _app.GetTestDevice() is TestDevice.iOS or TestDevice.Mac)
-				CloseApp(parameters);
+			{
+				if (CloseApp(parameters).Result != CommandResponseResult.Success)
+					throw new InvalidOperationException("Could not terminate the app before launching a new startup test.");
+			}
 
 			if (_app.GetTestDevice() == TestDevice.Mac)
 			{
