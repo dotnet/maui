@@ -22,7 +22,7 @@
         <ItemsWrapGrid Orientation="Horizontal" />
     </ItemsPanelTemplate>
 
-    <DataTemplate x:Key="ItemsViewDefaultTemplate" x:DataType="local:ItemTemplateContext">
+    <DataTemplate x:Key="ItemsViewDefaultTemplate">
         <local:ItemContentControl 
             x:Name="ItemContentControl" 
             MauiContext="{Binding MauiContext}" 
@@ -31,7 +31,7 @@
         </local:ItemContentControl>
     </DataTemplate>
 
-    <DataTemplate x:Key="GroupHeaderTemplate" x:DataType="local:GroupTemplateContext">
+    <DataTemplate x:Key="GroupHeaderTemplate">
         <local:ItemContentControl 
             x:Name="ItemContentControl" DataContext="{Binding HeaderItemTemplateContext}"
             MauiContext="{Binding MauiContext}" 
@@ -40,7 +40,7 @@
         </local:ItemContentControl>
     </DataTemplate>
 
-    <DataTemplate x:Key="CarouselItemsViewDefaultTemplate" x:DataType="local:ItemTemplateContext">
+    <DataTemplate x:Key="CarouselItemsViewDefaultTemplate">
         <local:ItemContentControl
             x:Name="ItemContentControl" 
             MauiContext="{Binding MauiContext}" 
