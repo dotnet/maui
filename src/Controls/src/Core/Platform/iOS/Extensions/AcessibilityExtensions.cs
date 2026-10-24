@@ -7,6 +7,24 @@ internal static class AccessibilityExtensions
 {
 	static readonly ConditionalWeakTable<UICollectionViewCell, AccessibilityTraitState> AccessibilityTraitStates = new();
 
+	internal static void TransferAccessibilityTraitsTo(this UICollectionViewCell cell, UICollectionViewCell destination)
+	{
+		if (ReferenceEquals(cell, destination) ||
+			!AccessibilityTraitStates.TryGetValue(cell, out var traitState))
+		{
+			return;
+		}
+
+		if (AccessibilityTraitStates.TryGetValue(destination, out var previousState))
+		{
+			ResetAccessibilityTraitState(previousState);
+		}
+
+		AccessibilityTraitStates.Remove(cell);
+		AccessibilityTraitStates.Remove(destination);
+		AccessibilityTraitStates.Add(destination, traitState);
+	}
+
 	internal static void UpdateAccessibilityTraits(this UICollectionView collectionView, SelectableItemsView itemsView)
 	{
 		foreach (var subview in collectionView.Subviews)
