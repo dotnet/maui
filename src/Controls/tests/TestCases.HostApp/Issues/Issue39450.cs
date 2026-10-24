@@ -49,12 +49,14 @@ public class Issue39450 : ContentPage
 			AutomationId = "StateLabel",
 			Text = "Normal",
 			TextColor = Colors.Black,
+			FontAutoScalingEnabled = false,
 			HorizontalOptions = LayoutOptions.Center
 		};
 		var toggleButton = new Button
 		{
 			AutomationId = "ToggleGradientStateButton",
-			Text = "Toggle gradient state"
+			Text = "Toggle gradient state",
+			FontAutoScalingEnabled = false
 		};
 		bool gradientState = false;
 		toggleButton.Clicked += (sender, args) =>
@@ -74,7 +76,8 @@ public class Issue39450 : ContentPage
 				new Label
 				{
 					Text = "All button backgrounds should stay inside their rounded borders, including after toggling the gradient state.",
-					TextColor = Colors.Black
+					TextColor = Colors.Black,
+					FontAutoScalingEnabled = false
 				},
 				linearButton,
 				radialButton,
@@ -91,6 +94,7 @@ public class Issue39450 : ContentPage
 		AutomationId = automationId,
 		Background = background,
 		TextColor = Colors.White,
+		FontAutoScalingEnabled = false,
 		BorderColor = Colors.Gray,
 		BorderWidth = 1,
 		CornerRadius = 20,
