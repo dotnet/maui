@@ -32,6 +32,42 @@ namespace Microsoft.Maui.DeviceTests
 			return Task.CompletedTask;
 		}
 
+		[Fact(DisplayName = "Flyout Items Release The Shell")]
+		public async Task FlyoutItemsReleaseTheShell()
+		{
+			SetupBuilder();
+
+			var shellReference = await CreateAndRemoveShellWithFlyoutItems();
+
+			await AssertionExtensions.WaitForGC(shellReference);
+		}
+
+		// Not inlined so no local in the test method keeps the shell alive.
+		[System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+		async Task<WeakReference> CreateAndRemoveShellWithFlyoutItems()
+		{
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.FlyoutBehavior = FlyoutBehavior.Locked;
+				shell.Items.Add(new FlyoutItem { Title = "One", Items = { new ContentPage { Title = "One" } } });
+				shell.Items.Add(new FlyoutItem { Title = "Two", Items = { new ContentPage { Title = "Two" } } });
+			});
+
+			var window = new Controls.Window(shell);
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, async handler =>
+			{
+				var shellView = (ShellView)shell.Handler.PlatformView;
+				await AssertEventually(() => shellView.GetChildren<ShellFlyoutItemView>().Any());
+
+				var shellHandler = shell.Handler;
+				window.Page = new ContentPage();
+				await OnLoadedAsync(window.Page);
+				shellHandler.DisconnectHandler();
+			});
+
+			return new WeakReference(shell);
+		}
+
 		[Fact(DisplayName = "Shell Title Updates Correctly")]
 		public async Task ShellTitleUpdatesCorrectly()
 		{
