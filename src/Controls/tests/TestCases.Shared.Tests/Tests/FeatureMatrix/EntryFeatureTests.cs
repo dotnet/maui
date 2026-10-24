@@ -44,7 +44,7 @@ public class EntryFeatureTests : _GalleryUITest
 	{
 		App.WaitForElement("TestEntry");
 		App.Tap("TestEntry");
-		HideSoftKeyboardIfVisible();
+		HideSoftKeyboardAfterFocus();
 		Assert.That(App.WaitForElement("FocusedLabel").GetText(), Is.EqualTo("Focused: Event Triggered"));
 	}
 
@@ -576,12 +576,12 @@ public class EntryFeatureTests : _GalleryUITest
 		HideSoftKeyboardIfVisible();
 		App.WaitForElement("UpdateCursorAndSelectionButton");
 		App.Tap("UpdateCursorAndSelectionButton");
-		HideSoftKeyboardIfVisible();
+		HideSoftKeyboardAfterFocus();
 		Assert.That(App.WaitForElement("CursorPositionEntry").GetText(), Is.EqualTo("3"));
 		Assert.That(App.WaitForElement("SelectionLengthEntry").GetText(), Is.EqualTo("5"));
 		App.WaitForElement("TestEntry");
 		App.Tap("TestEntry");
-		HideSoftKeyboardIfVisible();
+		HideSoftKeyboardAfterFocus();
 		Assert.That(App.WaitForElement("CursorPositionEntry").GetText(), Is.EqualTo("10"));
 	}
 #endif

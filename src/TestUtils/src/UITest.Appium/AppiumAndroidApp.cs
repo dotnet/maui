@@ -89,12 +89,6 @@ namespace UITest.Appium
 
 			SetGeneralAppiumOptions(config, options);
 
-			var udid = config.GetProperty<string>("Udid");
-			if (!string.IsNullOrWhiteSpace(udid))
-			{
-				options.AddAdditionalAppiumOption(MobileCapabilityType.Udid, udid);
-			}
-
 			if (!string.IsNullOrWhiteSpace(appId))
 			{
 				options.AddAdditionalAppiumOption(MobileCapabilityType.NoReset, "true");
