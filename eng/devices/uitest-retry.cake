@@ -8,6 +8,7 @@ public static class UITestRetry
 {
     public static void RunSetup(Action setup, bool retry, Action<Exception> onRetry)
     {
+        var maxAttempts = retry ? 5 : 1;
         for (var attempt = 0; ; attempt++)
         {
             try
@@ -17,9 +18,10 @@ public static class UITestRetry
             }
             catch (Exception ex)
             {
-                if (!retry || attempt > 0)
+                if (attempt + 1 >= maxAttempts)
                     throw;
                 onRetry(ex);
+                System.Threading.Thread.Sleep(TimeSpan.FromSeconds((attempt + 1) * (attempt + 1)));
             }
         }
     }

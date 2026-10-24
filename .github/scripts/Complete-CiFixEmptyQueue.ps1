@@ -18,6 +18,11 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
+# AWF chroots can break module discovery; load the installed manifests directly.
+foreach ($module in @('Microsoft.PowerShell.Management', 'Microsoft.PowerShell.Utility')) {
+    Import-Module -Name ([IO.Path]::Combine($PSHOME, 'Modules', $module, "$module.psd1"))
+}
+
 function Test-JsonInt64Value {
     param(
         [AllowNull()]

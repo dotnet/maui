@@ -17,8 +17,9 @@ bool deviceBootWait = Argument("wait", true);
 
 void RunUITestSetupWithRetry(Action setup)
 {
+	int attempt = 1;
 	UITestRetry.RunSetup(setup, IsCIBuild() && TARGET.StartsWith("uitest", StringComparison.OrdinalIgnoreCase),
-		ex => Warning("UI test setup/build failed; retrying this phase once before running tests: {0}", ex.Message));
+		ex => Warning("UI test setup/build attempt {0}/5 failed; retrying before running tests: {1}", attempt++, ex.Message));
 }
 
 void RunUITestsWithRetry(string project, string config, string toolPath, string resultsFileName, Action onFinalFailure = null)
