@@ -11,7 +11,7 @@ namespace Maui.Controls.Sample.Pages
 			InitializeComponent();
 		}
 
-		async void OnButtonClicked(object sender, EventArgs e)
+		async void OnButtonClicked(object? sender, EventArgs e)
 		{
 			var button = sender as Button;
 			await DisplayAlertAsync("Button clicked", $"Clicked {button?.Text}", "OK");

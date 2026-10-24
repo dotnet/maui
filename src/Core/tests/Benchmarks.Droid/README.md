@@ -11,6 +11,11 @@ setup up an Android instrumentation class and custom MSBuild target:
 
 Use `Release` builds when recording your final timing on a physical device.
 
+The project disables trimming and ReadyToRun compilation. To benchmark Mono instead
+of the default CoreCLR runtime on .NET 11, add `-p:UseMonoRuntime=true`. Mono AOT
+compilation remains disabled for those builds; the project does not set
+`RunAOTCompilation` for CoreCLR builds.
+
 This will print output like:
 
     I/DOTNET  : // * Summary *

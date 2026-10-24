@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class PickerHandler : ViewHandler<IPicker, MauiPicker>
 	{
-		AppCompatAlertDialog? _dialog;
+		protected AppCompatAlertDialog? _dialog;
 
 		protected override MauiPicker CreatePlatformView() =>
 			new MauiPicker(Context);

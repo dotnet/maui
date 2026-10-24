@@ -3,7 +3,11 @@
     <SampleProject>true</SampleProject>
     <UseMaui Condition=" '$(UseWorkload)' == 'true' ">true</UseMaui>
     <DefaultXamlRuntime Condition=" '$(UseWorkload)' != 'true' ">Maui</DefaultXamlRuntime>
-    <WarningsNotAsErrors>$(WarningsNotAsErrors);XC0022;XC0023</WarningsNotAsErrors>
+    <!-- XC0618 (obsolete warning) and XC0619 (obsolete error) are suppressed here because sample projects
+         intentionally use deprecated APIs for demonstration purposes. XC0619 is emitted via raw LogError
+         (not the warning-promotion path), so WarningsNotAsErrors has no functional effect on it currently,
+         but it's listed defensively to prevent future TreatWarningsAsErrors from interfering. -->
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);XC0022;XC0023;XC0618;XC0619</WarningsNotAsErrors>
     <MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
   </PropertyGroup>
   <Import Project="../../../Directory.Build.props" />

@@ -26,6 +26,11 @@ namespace Microsoft.Maui.ApplicationModel
 			return requestCode;
 		}
 
+		internal static int GetTaskId(ActivityManager.RecentTaskInfo taskInfo) =>
+			OperatingSystem.IsAndroidVersionAtLeast(29)
+				? taskInfo.TaskId
+				: taskInfo.PersistentId;
+
 		internal static Intent? RegisterBroadcastReceiver(BroadcastReceiver? receiver, IntentFilter filter)
 		{
 #if ANDROID34_0_OR_GREATER

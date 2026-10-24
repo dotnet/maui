@@ -7,6 +7,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue31167 : _IssuesUITest
 {
+	const string DoneButtonId = "Done";
+
 	public Issue31167(TestDevice testDevice) : base(testDevice)
 	{
 	}
@@ -37,8 +39,8 @@ public class Issue31167 : _IssuesUITest
 		App.Tap("MyDatePicker");
 		
 		// On iOS, tap Done to close the picker
-		App.WaitForElement("Done");
-		App.Tap("Done");
+		App.WaitForElement(DoneButtonId);
+		App.Tap(DoneButtonId);
 
 		// Verify text still shows 4-digit year after interaction
 		var afterInteractionText = App.WaitForElement("MyDatePicker").GetText();
@@ -109,10 +111,10 @@ public class Issue31167 : _IssuesUITest
 		{
 			// Open picker
 			App.Tap("MyDatePicker");
-			App.WaitForElement("Done");
+			App.WaitForElement(DoneButtonId);
 
 			// Close picker
-			App.Tap("Done");
+			App.Tap(DoneButtonId);
 
 			// Verify format is still consistent
 			var currentText = App.WaitForElement("MyDatePicker").GetText();
