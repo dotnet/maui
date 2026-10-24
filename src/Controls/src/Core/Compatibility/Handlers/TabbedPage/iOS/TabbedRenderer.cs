@@ -51,6 +51,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		IDisposable _nativeSubscriptionWatcher;
 
 		Brush _currentBarBackground;
+		WeakBrushChangedProxy _solidBarBackgroundProxy;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "This cached callback targets only this renderer; the brush proxy holds it weakly, and both the subscription and callback are cleared in Dispose.")]
+		EventHandler _solidBarBackgroundChanged;
 
 		IMauiContext MauiContext => _mauiContext;
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The mapper is static shared handler metadata and is not retained by renderer instances.")]
@@ -224,6 +227,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					currentGradientBrush.InvalidateGradientBrushRequested -= OnBarBackgroundChanged;
 				}
 				_currentBarBackground = null;
+				_solidBarBackgroundProxy?.Unsubscribe();
+				_solidBarBackgroundChanged = null;
 
 				FinishedCustomizingViewControllers -= HandleFinishedCustomizingViewControllers;
 			}
@@ -543,12 +548,19 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				oldGradientBrush.InvalidateGradientBrushRequested -= OnBarBackgroundChanged;
 			}
 
+			_solidBarBackgroundProxy?.Unsubscribe();
 			_currentBarBackground = tabbed.BarBackground;
 
 			if (_currentBarBackground is GradientBrush newGradientBrush)
 			{
 				newGradientBrush.Parent = tabbed;
 				newGradientBrush.InvalidateGradientBrushRequested += OnBarBackgroundChanged;
+			}
+			else if (_currentBarBackground is SolidColorBrush and not ImmutableBrush)
+			{
+				_solidBarBackgroundChanged ??= OnBarBackgroundChanged;
+				(_solidBarBackgroundProxy ??= new WeakBrushChangedProxy())
+					.Subscribe(_currentBarBackground, _solidBarBackgroundChanged);
 			}
 
 			ApplyBarBackground();

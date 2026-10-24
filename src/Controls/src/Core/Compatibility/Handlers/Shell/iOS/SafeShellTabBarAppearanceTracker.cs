@@ -12,10 +12,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		UIColor _defaultBarTint;
 		UIColor _defaultTint;
 		UIColor _defaultUnselectedTint;
+		bool _defaultAppearanceCaptured;
 		UITabBarAppearance _tabBarAppearance;
 		public virtual void ResetAppearance(UITabBarController controller)
 		{
-			if (_defaultTint == null)
+			if (!_defaultAppearanceCaptured)
 				return;
 
 			var tabBar = controller.TabBar;
@@ -40,11 +41,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			var tabBar = controller.TabBar;
 
-			if (_defaultTint == null)
+			if (!_defaultAppearanceCaptured)
 			{
 				_defaultBarTint = tabBar.BarTintColor;
 				_defaultTint = tabBar.TintColor;
 				_defaultUnselectedTint = tabBar.UnselectedItemTintColor;
+				_defaultAppearanceCaptured = true;
 			}
 
 			if (OperatingSystem.IsIOSVersionAtLeast(15) || OperatingSystem.IsMacCatalystVersionAtLeast(15) || OperatingSystem.IsTvOSVersionAtLeast(15))

@@ -50,6 +50,41 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact]
+		public async Task SolidBarBackgroundColorChangesUpdateNativeAppearance()
+		{
+			if (!OperatingSystem.IsIOSVersionAtLeast(15) && !OperatingSystem.IsMacCatalystVersionAtLeast(15))
+				return;
+
+			SetupBuilder();
+			var tabbedPage = CreateBasicTabbedPage();
+			var original = new SolidColorBrush(Colors.Red);
+			tabbedPage.BarBackground = original;
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(tabbedPage), handler =>
+			{
+				var tabBar = GetTabBar(tabbedPage);
+				Assert.True(ColorComparison.ARGBEquivalent(Colors.Red.ToPlatform(), tabBar.BackgroundColor));
+
+				original.Color = Colors.Blue;
+				Assert.True(ColorComparison.ARGBEquivalent(Colors.Blue.ToPlatform(), tabBar.StandardAppearance.BackgroundColor));
+				Assert.True(ColorComparison.ARGBEquivalent(Colors.Blue.ToPlatform(), tabBar.BackgroundColor));
+
+				var replacement = new SolidColorBrush(Colors.Green);
+				tabbedPage.BarBackground = replacement;
+				original.Color = Colors.Yellow;
+				Assert.True(ColorComparison.ARGBEquivalent(Colors.Green.ToPlatform(), tabBar.BackgroundColor));
+
+				replacement.Color = Colors.Purple;
+				Assert.True(ColorComparison.ARGBEquivalent(Colors.Purple.ToPlatform(), tabBar.BackgroundColor));
+
+				tabbedPage.BarBackground = null;
+				replacement.Color = Colors.Red;
+				Assert.Null(tabBar.BackgroundColor);
+				return Task.CompletedTask;
+			});
+		}
+
 		[Theory]
 		[InlineData(false)]
 		[InlineData(true)]

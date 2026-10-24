@@ -42,6 +42,32 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(updateCount, handler.UpdateCount);
 		}
 
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void EqualColorBrushReplacementDetachesTheOldInstance(bool replaceWithImmutableBrush)
+		{
+			var original = new SolidColorBrush(Colors.Red);
+			Brush replacement = replaceWithImmutableBrush ? new ImmutableBrush(Colors.Red) : new SolidColorBrush(Colors.Red);
+			var toolbar = new Toolbar(new ContentPage()) { BarBackground = original };
+			var handler = new BackgroundTrackingHandler();
+			handler.SetVirtualView(toolbar);
+
+			toolbar.BarBackground = replacement;
+
+			Assert.Same(replacement, toolbar.BarBackground);
+			var updateCount = handler.UpdateCount;
+			original.Color = Colors.Blue;
+			Assert.Equal(updateCount, handler.UpdateCount);
+
+			if (!replaceWithImmutableBrush)
+			{
+				((SolidColorBrush)replacement).Color = Colors.Green;
+				Assert.Equal(updateCount + 1, handler.UpdateCount);
+				Assert.Equal(Colors.Green, handler.LastColor);
+			}
+		}
+
 		[Fact]
 		public async Task SharedSolidBrushDoesNotRetainToolbar()
 		{

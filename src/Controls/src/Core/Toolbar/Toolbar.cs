@@ -55,7 +55,7 @@ namespace Microsoft.Maui.Controls
 			get => _barBackground;
 			set
 			{
-				if (EqualityComparer<Brush>.Default.Equals(_barBackground, value))
+				if (ReferenceEquals(_barBackground, value))
 					return;
 
 				_barBackgroundProxy?.Unsubscribe();

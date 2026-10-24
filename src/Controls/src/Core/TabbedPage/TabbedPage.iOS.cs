@@ -25,6 +25,8 @@ namespace Microsoft.Maui.Controls
 		bool? _defaultBarTranslucent;
 		UITabBarAppearance _tabBarAppearance;
 		Brush _currentBarBackground;
+		WeakBrushChangedProxy _solidBarBackgroundProxy;
+		EventHandler _solidBarBackgroundChanged;
 
 		// Tracks pages from the previous MapItemsSource call so we can
 		// disconnect handlers for pages that were removed.
@@ -87,6 +89,8 @@ namespace Microsoft.Maui.Controls
 				gradientBrush.InvalidateGradientBrushRequested -= OnBarBackgroundChanged;
 			}
 			_currentBarBackground = null;
+			_solidBarBackgroundProxy?.Unsubscribe();
+			_solidBarBackgroundChanged = null;
 
 			// Clear previous pages tracking
 			_previousPages = null;
@@ -191,12 +195,19 @@ namespace Microsoft.Maui.Controls
 				oldGradientBrush.InvalidateGradientBrushRequested -= view.OnBarBackgroundChanged;
 			}
 
+			view._solidBarBackgroundProxy?.Unsubscribe();
 			view._currentBarBackground = view.BarBackground;
 
 			if (view._currentBarBackground is GradientBrush newGradientBrush)
 			{
 				newGradientBrush.Parent = view;
 				newGradientBrush.InvalidateGradientBrushRequested += view.OnBarBackgroundChanged;
+			}
+			else if (view._currentBarBackground is SolidColorBrush and not ImmutableBrush)
+			{
+				view._solidBarBackgroundChanged ??= view.OnBarBackgroundChanged;
+				(view._solidBarBackgroundProxy ??= new WeakBrushChangedProxy())
+					.Subscribe(view._currentBarBackground, view._solidBarBackgroundChanged);
 			}
 
 			view.UpdateBarBackground(tabBar);
