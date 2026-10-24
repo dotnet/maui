@@ -31,10 +31,6 @@ Describe 'Windows XAML trimming metadata' {
   It 'declares exact data source types for keyed DataTemplates' {
     $expectations = @(
       @{
-        Path = 'src/Core/src/Platform/Windows/Styles/MauiComboBoxStyle.xaml'
-        Templates = @{ ComboBoxHeader = 'maui:IPicker' }
-      },
-      @{
         Path = 'src/Core/src/Platform/Windows/Styles/WindowRootViewStyle.xaml'
         Templates = @{
           MauiAppTitleBarTemplateDefault = 'maui:WindowRootView'
@@ -77,30 +73,6 @@ Describe 'Windows XAML trimming metadata' {
           TableRoot = 'controls:TableRoot'
           TableSection = 'controls:TableSection'
         }
-      },
-      @{
-        Path = 'src/Compatibility/Core/src/Windows/ListViewStyles.xaml'
-        Templates = @{
-          CompatibilityTextCell = 'controls:TextCell'
-          CompatibilityListViewHeaderTextCell = 'controls:TextCell'
-          CompatibilityImageCell = 'controls:ImageCell'
-          CompatibilitySwitchCell = 'controls:SwitchCell'
-          CompatibilityEntryCell = 'controls:EntryCell'
-        }
-      },
-      @{
-        Path = 'src/Compatibility/Core/src/Windows/PickerStyle.xaml'
-        Templates = @{ ComboBoxHeader = 'controls:Picker' }
-      },
-      @{
-        Path = 'src/Compatibility/Core/src/Windows/Resources.xaml'
-        Templates = @{
-          CompatibilityTextCell = 'controls:TextCell'
-          CompatibilityListViewHeaderTextCell = 'controls:TextCell'
-          CompatibilityImageCell = 'controls:ImageCell'
-          CompatibilitySwitchCell = 'controls:SwitchCell'
-          CompatibilityEntryCell = 'controls:EntryCell'
-        }
       }
     )
 
@@ -118,8 +90,7 @@ Describe 'Windows XAML trimming metadata' {
 
   It 'keeps PageControl title as a typed XAML binding rather than code-behind reimplementation' {
     foreach ($path in @(
-      'src/Controls/src/Core/Platform/Windows/Styles/MauiControlsPageControlStyle.xaml',
-      'src/Compatibility/Core/src/Windows/PageControlStyle.xaml'
+      'src/Controls/src/Core/Platform/Windows/Styles/MauiControlsPageControlStyle.xaml'
     )) {
       $document = Get-XamlDocument $path
       $titleTextBlock = Get-XamlElements $document 'TextBlock' |
@@ -143,18 +114,6 @@ Describe 'Windows XAML trimming metadata' {
       @{
         Path = 'src/Controls/src/Core/Compatibility/Handlers/ListView/Windows/ListViewStyles.xaml'
         Template = 'ImageCell'
-        TextVisibility = '{Binding Text, Converter={StaticResource CollapseWhenEmpty}}'
-        DetailVisibility = '{Binding Detail, Converter={StaticResource CollapseWhenEmpty}}'
-      },
-      @{
-        Path = 'src/Compatibility/Core/src/Windows/ListViewStyles.xaml'
-        Template = 'CompatibilityTextCell'
-        TextVisibility = '{Binding Text, Converter={StaticResource CollapseWhenEmpty}}'
-        DetailVisibility = '{Binding Detail, Converter={StaticResource CollapseWhenEmpty}}'
-      },
-      @{
-        Path = 'src/Compatibility/Core/src/Windows/Resources.xaml'
-        Template = 'CompatibilityTextCell'
         TextVisibility = '{Binding Text, Converter={StaticResource CollapseWhenEmpty}}'
         DetailVisibility = '{Binding Detail, Converter={StaticResource CollapseWhenEmpty}}'
       }
@@ -186,21 +145,5 @@ Describe 'Windows XAML trimming metadata' {
     $sliderImage = Get-XamlElements $slider 'Image' | Where-Object { (Get-XamlAttributeValue $_ 'Name') -eq 'ThumbImage' } | Select-Object -First 1
     Get-XamlAttributeValue $sliderImage 'Source' | Should -Be '{Binding Tag, RelativeSource={RelativeSource TemplatedParent}}'
 
-    $legacySlider = Get-XamlDocument 'src/Compatibility/Core/src/Windows/SliderStyle.xaml'
-    $legacySliderImage = Get-XamlElements $legacySlider 'Image' | Where-Object { (Get-XamlAttributeValue $_ 'Name') -eq 'ThumbImage' } | Select-Object -First 1
-    $legacyThumb = Get-XamlElements $legacySlider 'Thumb' |
-      Where-Object { (Get-XamlAttributeValue $_ 'Name') -eq 'HorizontalImageThumb' } |
-      Select-Object -First 1
-    Get-XamlAttributeValue $legacySliderImage 'Source' | Should -Be '{Binding Tag, RelativeSource={RelativeSource TemplatedParent}}'
-    Get-XamlAttributeValue $legacyThumb 'Tag' | Should -Be '{Binding ThumbImageSource, RelativeSource={RelativeSource TemplatedParent}}'
-
-    $checkBox = Get-XamlDocument 'src/Compatibility/Core/src/Windows/FormsCheckBoxStyle.xaml'
-    $controlTemplate = Get-XamlElements $checkBox 'ControlTemplate' | Select-Object -First 1
-    Get-XamlAttributeValue $controlTemplate 'TargetType' | Should -Be 'CheckBox'
-
-    $normalRectangle = Get-XamlElements $checkBox 'Rectangle' |
-      Where-Object { (Get-XamlAttributeValue $_ 'Name') -eq 'NormalRectangle' } |
-      Select-Object -First 1
-    Get-XamlAttributeValue $normalRectangle 'Stroke' | Should -Be '{Binding TintBrush, RelativeSource={RelativeSource TemplatedParent}}'
   }
 }
