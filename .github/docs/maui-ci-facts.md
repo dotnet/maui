@@ -329,6 +329,12 @@ prefix, with the job ID and stage attempt appended by the collection template. T
 job ID distinguishes non-matrix jobs that share `System.JobName=__default`; both
 snapshot artifacts and diagnostic `drop-` artifacts must remain unique across retries.
 
+Diagnostic drops contain `ui-test-diagnostics.zip`, preserving the full staging-directory
+layout without exceeding the File Container service's 399-character item-path limit on
+deep NUnit attachments. Extract that ZIP after downloading a diagnostic drop; the shared
+artifact aggregator does this automatically and still accepts older unpacked drops.
+Snapshot-diff artifacts remain unpacked.
+
 The gatherer can collect failed UI result IDs from the public
 `vstmr.dev.azure.com/.../testresults/resultsbybuild` endpoint, then reads the public
 result-detail and attachment APIs. The simplified workflow/local runner skips
