@@ -30,3 +30,5 @@ Microsoft.Maui.Controls.Label.~Label() -> void
 Microsoft.Maui.Controls.ShellContent.~ShellContent() -> void
 Microsoft.Maui.Controls.GradientBrush.~GradientBrush() -> void
 Microsoft.Maui.Controls.SwipeView.~SwipeView() -> void
+~override Microsoft.Maui.Controls.Handlers.Items.MauiRecyclerView<TItemsView, TAdapter, TItemsViewSource>.SetAdapter(AndroidX.RecyclerView.Widget.RecyclerView.Adapter adapter) -> void
+~override Microsoft.Maui.Controls.Handlers.Items.MauiRecyclerView<TItemsView, TAdapter, TItemsViewSource>.SwapAdapter(AndroidX.RecyclerView.Widget.RecyclerView.Adapter adapter, bool removeAndRecycleExistingViews) -> void
