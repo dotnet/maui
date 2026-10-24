@@ -44,9 +44,24 @@ namespace Microsoft.Maui.Controls.Platform
 			bottomNavigationView.ItemActiveIndicatorColor = ColorStateList.ValueOf(new AColor(GetThemeAttrColor(bottomNavigationView.Context, Resource.Attribute.colorSecondaryContainer)));
 		}
 
-		static int GetThemeAttrColor(Context context, int attr)
+		internal static bool UsesDefaultSelectedIconColor(Context context, ColorStateList colors)
 		{
-			var requestedTheme = Application.Current?.RequestedTheme;
+			if (!RuntimeFeature.IsMaterial3Enabled || colors is null || !colors.IsStateful)
+				return false;
+
+			// Follow the indicator only for default theme-role colors, not custom native icon tints.
+			var checkedState = new[] { global::Android.Resource.Attribute.StateEnabled, global::Android.Resource.Attribute.StateChecked };
+			var checkedColor = colors.GetColorForState(checkedState, new AColor(colors.DefaultColor));
+			return checkedColor == GetThemeAttrColor(context, Resource.Attribute.colorOnSecondaryContainer, AppTheme.Light) ||
+				checkedColor == GetThemeAttrColor(context, Resource.Attribute.colorOnSecondaryContainer, AppTheme.Dark);
+		}
+
+		internal static Color GetDefaultSelectedIconColor(Context context) =>
+			new AColor(GetThemeAttrColor(context, Resource.Attribute.colorOnSecondaryContainer)).ToColor();
+
+		static int GetThemeAttrColor(Context context, int attr, AppTheme? requestedTheme = null)
+		{
+			requestedTheme ??= Application.Current?.RequestedTheme;
 			if (requestedTheme is not AppTheme.Dark and not AppTheme.Light)
 			{
 				return context.GetThemeAttrColor(attr);
