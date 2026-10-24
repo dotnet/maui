@@ -465,7 +465,7 @@ internal static class ColorUtils
 
 	private static bool TryParseDouble(ReadOnlySpan<char> s, out double value) =>
 		double.TryParse(
-#if NETSTANDARD2_0 || TIZEN
+#if NETSTANDARD2_0
 			s.ToString(),
 #else
 			s,
@@ -474,7 +474,7 @@ internal static class ColorUtils
 
 	private static int ParseInt(ReadOnlySpan<char> s) =>
 		int.Parse(
-#if NETSTANDARD2_0 || TIZEN
+#if NETSTANDARD2_0
 			s.ToString(),
 #else
 			s,

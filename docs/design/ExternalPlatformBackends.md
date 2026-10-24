@@ -15,9 +15,7 @@ using PlatformView = Microsoft.Maui.Platform.MauiLabel;
 using PlatformView = AndroidX.AppCompat.Widget.AppCompatTextView;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.Controls.TextBlock;
-#elif TIZEN
-using PlatformView = Tizen.UIExtensions.NUI.Label;
-#elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !TIZEN)
+#elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS)
 using PlatformView = System.Object;
 #endif
 
@@ -254,10 +252,10 @@ typed member freely — which is what the in-box handlers and the tests here do.
 An external backend derives from the public generic handler base classes and stops trying to implement
 the aliased interfaces.
 
-> **Note on the native type.** On a platform target framework,
+> **Note on the native type.** On an in-box platform target framework,
 > `ViewHandler<TVirtualView, TPlatformView>` constrains `TPlatformView` to that platform's base view
-> type (`UIKit.UIView`, `Android.Views.View`, `Microsoft.UI.Xaml.FrameworkElement`,
-> `Tizen.NUI.BaseComponents.View`). An external backend's views already satisfy that. The constraint was
+> type (`UIKit.UIView`, `Android.Views.View`, `Microsoft.UI.Xaml.FrameworkElement`).
+> An external backend's views already satisfy that. The constraint was
 > never the problem — the *aliased interfaces* were, because they pin `PlatformView` to one exact
 > concrete type. `ElementHandler<TVirtualView, TPlatformView>` constrains `TPlatformView` only to
 > `class`, on every target framework.
@@ -356,11 +354,9 @@ against is target-framework specific: `CS9333`/`CS8766` on the platform-neutral 
 `CS0738` on the platform TFMs. A target framework Core ships but the guard project does not compile
 would be an untested target framework, and the gap would be silent.
 
-Both projects expand the same `$(MauiPlatforms)`, so the platform set — **including whether Tizen is
-enabled** — cannot drift between them. Tizen is currently absent from real builds only because
-`IncludeTizenTargetFrameworks` is off repo-wide, **not** because the guard project lacks sources for it:
-`FakeNativeViews.Tizen.cs` exists and derives from `Tizen.NUI.BaseComponents.View`, so the matrix builds
-the moment the workload is re-enabled. `ExternalBackendTargetFrameworkTests` enforces all of this — it
+Both projects expand the same `$(MauiPlatforms)`, so the supported platform set cannot drift between
+them. Tizen is no longer an in-box target framework; an out-of-tree Tizen backend can consume the
+platform-neutral contracts instead. `ExternalBackendTargetFrameworkTests` enforces the shared matrix — it
 compares the two `TargetFrameworks` expressions directly and asserts a fake-native-view source exists for
 every platform.
 
@@ -373,15 +369,11 @@ The fake native view types are per-platform, because
 | `net11.0-android` | `Android.Views.View` | `Android.Views.View` |
 | `net11.0-ios`, `net11.0-maccatalyst` | `UIKit.UIView` | `UIKit.UIView` |
 | `net11.0-windows` | `Microsoft.UI.Xaml.FrameworkElement` | `Microsoft.UI.Xaml.Controls.Panel` |
-| `net11.0-tizen` *(gated off)* | `Tizen.NUI.BaseComponents.View` | `Tizen.NUI.BaseComponents.View` |
 
 This mirrors reality: a real external backend's views *do* derive from the platform's base view type.
 What makes it external is that its **concrete** types are its own, and so are never the types the aliased
-interfaces are pinned to (`MauiLabel`, `AppCompatTextView`, `TextBlock`,
-`Tizen.UIExtensions.NUI.Label`) — which is exactly what produces `CS0738`. Note the Tizen fake derives
-from the platform SDK's own `Tizen.NUI.BaseComponents.View` rather than from
-`Tizen.UIExtensions.NUI.ViewGroup`, which is what .NET MAUI's in-box Tizen views use: an external backend
-depends on the platform SDK, not on .NET MAUI's platform helper packages.
+interfaces are pinned to (`MauiLabel`, `AppCompatTextView`, `TextBlock`) — which is exactly what produces
+`CS0738`. An external backend depends on the platform SDK, not on .NET MAUI's platform helper packages.
 
 `ElementHandler<,>` constrains `TPlatformView` only to `class` on every TFM, so the fake native
 *window* type is a single definition shared across all of them.

@@ -147,7 +147,7 @@ if (BlazorWebViewStaticContentHotReload.TryGetUpdatedStaticContent(
 
 This is a query, not a mutation: it reports content and lets the handler apply it to whatever
 response state it owns. The returned stream is fresh per call and the caller is responsible for
-disposing it, along with any content it had already resolved. The in-box Android, iOS, Tizen and
+disposing it, along with any content it had already resolved. The in-box Android, iOS and
 Windows web view managers apply hot-reloaded content through exactly this call, so the public seam
 is the same code path MAUI itself ships on.
 

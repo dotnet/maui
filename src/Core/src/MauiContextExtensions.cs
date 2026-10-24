@@ -14,9 +14,6 @@ using NativeWindow = UIKit.UIWindow;
 #elif __ANDROID__
 using NativeApplication = Android.App.Application;
 using NativeWindow = Android.App.Activity;
-#elif TIZEN
-using NativeApplication = Tizen.Applications.CoreApplication;
-using NativeWindow = Tizen.NUI.Window;
 #else
 using NativeApplication = System.Object;
 using NativeWindow = System.Object;

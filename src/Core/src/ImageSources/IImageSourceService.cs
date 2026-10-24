@@ -25,10 +25,6 @@ namespace Microsoft.Maui
 			IImageSource imageSource,
 			float scale = 1,
 			CancellationToken cancellationToken = default);
-#elif TIZEN || __TIZEN__
-		Task<IImageSourceServiceResult<MauiImageSource>?> GetImageAsync(
-			IImageSource imageSource,
-			CancellationToken cancellationToken = default);
 #elif WINDOWS
 		Task<IImageSourceServiceResult<UI.Xaml.Media.ImageSource>?> GetImageSourceAsync(
 			IImageSource imageSource,
