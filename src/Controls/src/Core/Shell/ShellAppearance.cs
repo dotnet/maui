@@ -89,7 +89,7 @@ namespace Microsoft.Maui.Controls
 		internal Brush EffectiveTabBarBackground =>
 			TabBarBackgroundColor is not null
 				? new SolidColorBrush(TabBarBackgroundColor)
-				: Background is SolidColorBrush or GradientBrush && !Brush.IsNullOrEmpty(Background)
+				: Background is SolidColorBrush or LinearGradientBrush or RadialGradientBrush && !Brush.IsNullOrEmpty(Background)
 					? Background
 					: BackgroundColor is not null
 						? new SolidColorBrush(BackgroundColor)

@@ -727,10 +727,23 @@ namespace Microsoft.Maui.Controls
 		static readonly BindablePropertyKey ItemsPropertyKey = BindableProperty.CreateReadOnly(nameof(Items), typeof(ShellItemCollection), typeof(Shell), null,
 				defaultValueCreator: bo => new ShellItemCollection { Inner = new ElementCollection<ShellItem>(((Shell)bo).InternalChildren) });
 
-		List<(IAppearanceObserver Observer, Element Pivot)> _appearanceObservers = new List<(IAppearanceObserver Observer, Element Pivot)>();
-		// Keep callbacks alive while the brush proxies hold only weak references to them.
-		Dictionary<IAppearanceObserver, (List<WeakBrushChangedProxy> Proxies, EventHandler Handler)> _appearanceObserverBrushes = new Dictionary<IAppearanceObserver, (List<WeakBrushChangedProxy> Proxies, EventHandler Handler)>();
+		List<AppearanceObserverRegistration> _appearanceObservers = new List<AppearanceObserverRegistration>();
 		List<IFlyoutBehaviorObserver> _flyoutBehaviorObservers = new List<IFlyoutBehaviorObserver>();
+
+		sealed class AppearanceObserverRegistration
+		{
+			public readonly IAppearanceObserver Observer;
+			public readonly Element Pivot;
+			public List<WeakBrushChangedProxy> BrushProxies;
+			// Keep the callback alive while its brush proxies hold only weak references to it.
+			public EventHandler BrushChanged;
+
+			public AppearanceObserverRegistration(IAppearanceObserver observer, Element pivot)
+			{
+				Observer = observer;
+				Pivot = pivot;
+			}
+		}
 
 
 #nullable enable
@@ -845,57 +858,57 @@ namespace Microsoft.Maui.Controls
 
 		void IShellController.AddAppearanceObserver(IAppearanceObserver observer, Element pivot)
 		{
-			_appearanceObservers.Add((observer, pivot));
-			UpdateAppearanceObserver(observer, pivot);
+			var registration = new AppearanceObserverRegistration(observer, pivot);
+			_appearanceObservers.Add(registration);
+			UpdateAppearanceObserver(registration);
 		}
 
-		void UpdateAppearanceObserver(IAppearanceObserver observer, Element pivot)
+		void UpdateAppearanceObserver(AppearanceObserverRegistration registration)
 		{
-			var appearance = GetAppearanceForPivot(pivot);
-			UpdateAppearanceObserverBrush(observer, pivot, appearance);
-			UpdateToolbarAppearanceFeatures(pivot, appearance);
-			observer.OnAppearanceChanged(appearance);
+			var appearance = GetAppearanceForPivot(registration.Pivot);
+			UpdateAppearanceObserverBrush(registration, appearance);
+			UpdateToolbarAppearanceFeatures(registration.Pivot, appearance);
+			registration.Observer.OnAppearanceChanged(appearance);
 		}
 
-		void UpdateAppearanceObserverBrush(IAppearanceObserver observer, Element pivot, ShellAppearance appearance)
+		void UpdateAppearanceObserverBrush(AppearanceObserverRegistration registration, ShellAppearance appearance)
 		{
 			var brushes = appearance?.TabBarBackgroundColor is null ? appearance?.BackgroundBrushes : null;
-			if (_appearanceObserverBrushes.TryGetValue(observer, out var currentSubscription))
+			var proxies = registration.BrushProxies;
+			bool sameBrushes = (proxies?.Count ?? 0) == (brushes?.Count ?? 0);
+			for (int i = 0; sameBrushes && i < (proxies?.Count ?? 0); i++)
 			{
-				bool sameBrushes = currentSubscription.Proxies.Count == (brushes?.Count ?? 0);
-				for (int i = 0; sameBrushes && i < currentSubscription.Proxies.Count; i++)
-				{
-					sameBrushes = currentSubscription.Proxies[i].TryGetSource(out var currentBrush) &&
-						ReferenceEquals(currentBrush, brushes[i]);
-				}
-
-				if (sameBrushes)
-					return;
-
-				RemoveAppearanceObserverBrush(observer);
+				sameBrushes = proxies[i].TryGetSource(out var currentBrush) &&
+					ReferenceEquals(currentBrush, brushes[i]);
 			}
+
+			if (sameBrushes)
+				return;
+
+			RemoveAppearanceObserverBrush(registration);
 
 			if (brushes is { Count: > 0 })
 			{
-				EventHandler handler = (_, _) => UpdateAppearanceObserver(observer, pivot);
-				var proxies = new List<WeakBrushChangedProxy>(brushes.Count);
+				registration.BrushChanged = (_, _) => UpdateAppearanceObserver(registration);
+				proxies = new List<WeakBrushChangedProxy>(brushes.Count);
 				for (int i = 0; i < brushes.Count; i++)
 				{
 					var proxy = new WeakBrushChangedProxy();
-					proxy.Subscribe(brushes[i], handler);
+					proxy.Subscribe(brushes[i], registration.BrushChanged);
 					proxies.Add(proxy);
 				}
-				_appearanceObserverBrushes.Add(observer, (proxies, handler));
+				registration.BrushProxies = proxies;
 			}
 		}
 
-		void RemoveAppearanceObserverBrush(IAppearanceObserver observer)
+		static void RemoveAppearanceObserverBrush(AppearanceObserverRegistration registration)
 		{
-			if (_appearanceObserverBrushes.TryGetValue(observer, out var subscription))
+			if (registration.BrushProxies is { } proxies)
 			{
-				for (int i = 0; i < subscription.Proxies.Count; i++)
-					subscription.Proxies[i].Unsubscribe();
-				_appearanceObserverBrushes.Remove(observer);
+				for (int i = 0; i < proxies.Count; i++)
+					proxies[i].Unsubscribe();
+				registration.BrushProxies = null;
+				registration.BrushChanged = null;
 			}
 		}
 
@@ -978,10 +991,9 @@ namespace Microsoft.Maui.Controls
 			// need walk up from the source to look for the pivot as items below the change
 			// can't be affected by it
 
-			foreach (var (Observer, Pivot) in _appearanceObservers)
+			foreach (var registration in _appearanceObservers)
 			{
-				var observer = Observer;
-				var pivot = Pivot;
+				var pivot = registration.Pivot;
 
 				Element target;
 				Element leaf;
@@ -1000,7 +1012,7 @@ namespace Microsoft.Maui.Controls
 				{
 					if (leaf == target)
 					{
-						UpdateAppearanceObserver(observer, pivot);
+						UpdateAppearanceObserver(registration);
 						break;
 					}
 
@@ -1133,8 +1145,8 @@ namespace Microsoft.Maui.Controls
 			{
 				if (_appearanceObservers[i].Observer == observer)
 				{
+					RemoveAppearanceObserverBrush(_appearanceObservers[i]);
 					_appearanceObservers.RemoveAt(i);
-					RemoveAppearanceObserverBrush(observer);
 					return true;
 				}
 			}

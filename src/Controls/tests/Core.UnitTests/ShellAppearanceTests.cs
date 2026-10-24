@@ -134,6 +134,94 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(4, observer.UpdateCount);
 		}
 
+		[Fact]
+		public void OneAppearanceObserverTracksBrushesForEachPivot()
+		{
+			var shell = new Shell();
+			var firstItem = CreateShellItem<FlyoutItem>();
+			var secondItem = CreateShellItem<FlyoutItem>();
+			var firstBrush = new SolidColorBrush(Colors.Red);
+			var secondBrush = new SolidColorBrush(Colors.Green);
+			var observer = new TestAppearanceObserver();
+			shell.Items.Add(firstItem);
+			shell.Items.Add(secondItem);
+			Shell.SetBackground(firstItem, firstBrush);
+			Shell.SetBackground(secondItem, secondBrush);
+			var controller = (IShellController)shell;
+			controller.AddAppearanceObserver(observer, firstItem);
+			controller.AddAppearanceObserver(observer, secondItem);
+			var updateCount = observer.UpdateCount;
+
+			firstBrush.Color = Colors.Blue;
+
+			Assert.Equal(updateCount + 1, observer.UpdateCount);
+			Assert.Same(firstBrush, observer.LastAppearance.EffectiveTabBarBackground);
+
+			secondBrush.Color = Colors.Yellow;
+
+			Assert.Equal(updateCount + 2, observer.UpdateCount);
+			Assert.Same(secondBrush, observer.LastAppearance.EffectiveTabBarBackground);
+		}
+
+		[Fact]
+		public void RemovingAppearanceObserverPreservesItsRemainingPivotSubscription()
+		{
+			var shell = new Shell();
+			var firstItem = CreateShellItem<FlyoutItem>();
+			var secondItem = CreateShellItem<FlyoutItem>();
+			var firstBrush = new SolidColorBrush(Colors.Red);
+			var secondBrush = new SolidColorBrush(Colors.Green);
+			var observer = new TestAppearanceObserver();
+			shell.Items.Add(firstItem);
+			shell.Items.Add(secondItem);
+			Shell.SetBackground(firstItem, firstBrush);
+			Shell.SetBackground(secondItem, secondBrush);
+			var controller = (IShellController)shell;
+			controller.AddAppearanceObserver(observer, firstItem);
+			controller.AddAppearanceObserver(observer, secondItem);
+
+			Assert.True(controller.RemoveAppearanceObserver(observer));
+			var updateCount = observer.UpdateCount;
+			firstBrush.Color = Colors.Blue;
+			Assert.Equal(updateCount, observer.UpdateCount);
+
+			secondBrush.Color = Colors.Yellow;
+
+			Assert.Equal(updateCount + 1, observer.UpdateCount);
+			Assert.Same(secondBrush, observer.LastAppearance.EffectiveTabBarBackground);
+
+			Assert.True(controller.RemoveAppearanceObserver(observer));
+			secondBrush.Color = Colors.Purple;
+			Assert.Equal(updateCount + 1, observer.UpdateCount);
+			Assert.False(controller.RemoveAppearanceObserver(observer));
+		}
+
+		[Fact]
+		public void EqualAppearanceObserversHaveIndependentBrushSubscriptions()
+		{
+			var shell = new Shell();
+			var shellItem = CreateShellItem<FlyoutItem>();
+			var brush = new SolidColorBrush(Colors.Red);
+			var firstObserver = new EqualAppearanceObserver();
+			var secondObserver = new EqualAppearanceObserver();
+			shell.Items.Add(shellItem);
+			Shell.SetBackground(shell, brush);
+			var controller = (IShellController)shell;
+			controller.AddAppearanceObserver(firstObserver, shellItem);
+			controller.AddAppearanceObserver(secondObserver, shellItem);
+
+			brush.Color = Colors.Blue;
+
+			Assert.Equal(2, firstObserver.UpdateCount);
+			Assert.Equal(2, secondObserver.UpdateCount);
+
+			Assert.True(controller.RemoveAppearanceObserver(firstObserver));
+			brush.Color = Colors.Green;
+
+			Assert.Equal(2, firstObserver.UpdateCount);
+			Assert.Equal(3, secondObserver.UpdateCount);
+		}
+
 		[Theory]
 		[InlineData(false)]
 		[InlineData(true)]
@@ -427,6 +515,31 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Assert.Null(result.EffectiveTabBarBackground);
 		}
 
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void UnsupportedGradientBrushFallsBackToConfiguredColor(bool hasBackgroundColor)
+		{
+			var result = IngestAppearance(item =>
+			{
+				Shell.SetBackground(item, new UnsupportedGradientBrush
+				{
+					GradientStops = new GradientStopCollection
+					{
+						new GradientStop(Colors.Red, 0),
+						new GradientStop(Colors.Blue, 1)
+					}
+				});
+				if (hasBackgroundColor)
+					Shell.SetBackgroundColor(item, Colors.Green);
+			});
+
+			if (hasBackgroundColor)
+				Assert.Equal(Colors.Green, Assert.IsType<SolidColorBrush>(result.EffectiveTabBarBackground).Color);
+			else
+				Assert.Null(result.EffectiveTabBarBackground);
+		}
+
 		[Fact]
 		public void EffectiveTabBarBackground_TabBarBackgroundColorWinsOverBackgroundBrush()
 		{
@@ -480,6 +593,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			});
 
 			Assert.Equal(Colors.Red, ((IShellAppearanceElement)result).EffectiveTabBarBackgroundColor);
+		}
+
+		sealed class UnsupportedGradientBrush : GradientBrush
+		{
+		}
+
+		sealed class EqualAppearanceObserver : TestAppearanceObserver
+		{
+			public override bool Equals(object obj) => obj is EqualAppearanceObserver;
+			public override int GetHashCode() => 0;
 		}
 
 		class TestAppearanceObserver : IAppearanceObserver
