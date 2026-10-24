@@ -119,6 +119,45 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory]
+		[InlineData(false, false)]
+		[InlineData(false, true)]
+		[InlineData(true, false)]
+		[InlineData(true, true)]
+		public async Task UnsupportedBarBackgroundFallsBackToColor(bool customGradient, bool hasBackgroundColor)
+		{
+			if (!OperatingSystem.IsIOSVersionAtLeast(15) && !OperatingSystem.IsMacCatalystVersionAtLeast(15))
+				return;
+
+			SetupBuilder();
+			var tabbedPage = CreateBasicTabbedPage();
+			tabbedPage.BarBackground = customGradient
+				? new UnsupportedGradientBrush
+				{
+					GradientStops = new GradientStopCollection
+					{
+						new GradientStop(Colors.Red, 0),
+						new GradientStop(Colors.Blue, 1)
+					}
+				}
+				: new ImageBrush(ImageSource.FromFile("background.png"));
+			if (hasBackgroundColor)
+				tabbedPage.BarBackgroundColor = Colors.Blue;
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(tabbedPage), handler =>
+			{
+				var tabBar = GetTabBar(tabbedPage);
+				var expectedColor = hasBackgroundColor ? Colors.Blue.ToPlatform() : null;
+				Assert.True(ColorComparison.ARGBEquivalent(expectedColor, tabBar.StandardAppearance.BackgroundColor));
+				Assert.Null(tabBar.BackgroundColor);
+				return Task.CompletedTask;
+			});
+		}
+
+		sealed class UnsupportedGradientBrush : GradientBrush
+		{
+		}
+
+		[Theory]
 		[InlineData(false)]
 		[InlineData(true)]
 		public async Task LegacyBarBackgroundColorPreservesNativeViewBackground(bool afterGradient)

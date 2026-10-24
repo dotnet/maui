@@ -63,7 +63,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_defaultAppearanceCaptured = true;
 			}
 
-			if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13))
+			if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13, 1) || OperatingSystem.IsTvOSVersionAtLeast(13))
 				UpdateiOS13NavigationBarAppearance(controller, appearance);
 			else
 				UpdateNavigationBarAppearance(controller, appearance);

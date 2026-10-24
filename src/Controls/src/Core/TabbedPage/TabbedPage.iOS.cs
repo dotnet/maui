@@ -22,6 +22,7 @@ namespace Microsoft.Maui.Controls
 		bool _defaultBarTextColorSet;
 		UIColor _defaultBarColor;
 		bool _defaultBarColorSet;
+		UIColor _defaultViewBackgroundColor;
 		bool? _defaultBarTranslucent;
 		UITabBarAppearance _tabBarAppearance;
 		Brush _currentBarBackground;
@@ -82,6 +83,7 @@ namespace Microsoft.Maui.Controls
 			_barBackgroundColorWasSet = false;
 			_barTextColorWasSet = false;
 			_defaultBarColor = null;
+			_defaultViewBackgroundColor = null;
 			_defaultBarTextColor = null;
 
 			// Clean up gradient brush subscription
@@ -898,16 +900,22 @@ namespace Microsoft.Maui.Controls
 		[System.Runtime.Versioning.SupportedOSPlatform("tvos15.0")]
 		void UpdateiOS15TabBarAppearance(UITabBar tabBar)
 		{
+			if (_tabBarAppearance is null)
+				_defaultViewBackgroundColor = tabBar.BackgroundColor;
+
+			var useBrush = !Brush.IsNullOrEmpty(BarBackground) &&
+				BarBackground is SolidColorBrush or LinearGradientBrush or RadialGradientBrush;
 			tabBar.UpdateiOS15TabBarAppearance(
 				ref _tabBarAppearance,
 				_defaultBarColor,
 				_defaultBarTextColor,
 				IsSet(SelectedTabColorProperty) ? SelectedTabColor : null,
 				IsSet(UnselectedTabColorProperty) ? UnselectedTabColor : null,
-				!Brush.IsNullOrEmpty(BarBackground) ? BarBackground : IsSet(BarBackgroundColorProperty) ? BarBackgroundColor?.AsPaint() : null,
+				useBrush ? BarBackground : IsSet(BarBackgroundColorProperty) ? BarBackgroundColor?.AsPaint() : null,
 				IsSet(BarTextColorProperty) ? BarTextColor : null,
 				IsSet(BarTextColorProperty) ? BarTextColor : null,
-				useBackgroundColorForSolidPaint: !Brush.IsNullOrEmpty(BarBackground));
+				useBackgroundColorForSolidPaint: useBrush,
+				defaultViewBackgroundColor: _defaultViewBackgroundColor);
 		}
 
 		void UpdateChildrenOrderIndex(UIViewController[] viewControllers)

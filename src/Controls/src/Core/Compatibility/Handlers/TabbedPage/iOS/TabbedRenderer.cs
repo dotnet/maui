@@ -30,6 +30,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		bool _defaultBarTextColorSet;
 		UIColor _defaultBarColor;
 		bool _defaultBarColorSet;
+		UIColor _defaultViewBackgroundColor;
 		bool? _defaultBarTranslucent;
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The Maui context is required for the compatibility renderer lifetime and is not exposed outside the handler.")]
 		IMauiContext _mauiContext;
@@ -931,16 +932,22 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			if (Tabbed is not TabbedPage tabbed)
 				return;
+			if (_tabBarAppearance is null)
+				_defaultViewBackgroundColor = TabBar.BackgroundColor;
+
+			var useBrush = !Brush.IsNullOrEmpty(tabbed.BarBackground) &&
+				tabbed.BarBackground is SolidColorBrush or LinearGradientBrush or RadialGradientBrush;
 			TabBar.UpdateiOS15TabBarAppearance(
 				ref _tabBarAppearance,
 				_defaultBarColor,
 				_defaultBarTextColor,
 				tabbed.IsSet(TabbedPage.SelectedTabColorProperty) ? tabbed.SelectedTabColor : null,
 				tabbed.IsSet(TabbedPage.UnselectedTabColorProperty) ? tabbed.UnselectedTabColor : null,
-				!Brush.IsNullOrEmpty(tabbed.BarBackground) ? tabbed.BarBackground : tabbed.IsSet(TabbedPage.BarBackgroundColorProperty) ? tabbed.BarBackgroundColor?.AsPaint() : null,
+				useBrush ? tabbed.BarBackground : tabbed.IsSet(TabbedPage.BarBackgroundColorProperty) ? tabbed.BarBackgroundColor?.AsPaint() : null,
 				tabbed.IsSet(TabbedPage.BarTextColorProperty) ? tabbed.BarTextColor : null,
 				tabbed.IsSet(TabbedPage.BarTextColorProperty) ? tabbed.BarTextColor : null,
-				useBackgroundColorForSolidPaint: !Brush.IsNullOrEmpty(tabbed.BarBackground));
+				useBackgroundColorForSolidPaint: useBrush,
+				defaultViewBackgroundColor: _defaultViewBackgroundColor);
 		}
 
 		#region IPlatformViewHandler

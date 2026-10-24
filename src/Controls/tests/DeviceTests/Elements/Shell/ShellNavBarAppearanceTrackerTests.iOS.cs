@@ -13,6 +13,53 @@ namespace Microsoft.Maui.DeviceTests
 	public class ShellNavBarAppearanceTrackerTests : ControlsHandlerTestBase
 	{
 		[Theory]
+		[InlineData("Solid")]
+		[InlineData("Linear")]
+		[InlineData("Radial")]
+		public async Task BrushUpdatesStandardAndScrollEdgeAppearance(string kind)
+		{
+			if (!OperatingSystem.IsIOSVersionAtLeast(13) && !OperatingSystem.IsMacCatalystVersionAtLeast(13, 1))
+				return;
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				using var controller = new UINavigationController();
+				var navigationBar = controller.NavigationBar;
+				navigationBar.Frame = new CoreGraphics.CGRect(0, 0, 320, 44);
+				using var tracker = new ShellNavBarAppearanceTracker();
+				Brush brush = kind switch
+				{
+					"Solid" => new SolidColorBrush(Colors.Blue),
+					"Linear" => new LinearGradientBrush(),
+					"Radial" => new RadialGradientBrush(),
+					_ => throw new ArgumentOutOfRangeException(nameof(kind), kind, null)
+				};
+				if (brush is GradientBrush gradient)
+				{
+					gradient.GradientStops.Add(new GradientStop(Colors.Red, 0));
+					gradient.GradientStops.Add(new GradientStop(Colors.Blue, 1));
+				}
+				var shellItem = new ShellItem();
+				Shell.SetBackground(shellItem, brush);
+				var appearance = new ShellAppearance();
+				appearance.Ingest(shellItem);
+
+				tracker.SetAppearance(controller, appearance);
+
+				if (brush is SolidColorBrush)
+				{
+					Assert.True(ColorComparison.ARGBEquivalent(Colors.Blue.ToPlatform(), navigationBar.StandardAppearance.BackgroundColor));
+					Assert.True(ColorComparison.ARGBEquivalent(Colors.Blue.ToPlatform(), navigationBar.ScrollEdgeAppearance.BackgroundColor));
+				}
+				else
+				{
+					Assert.NotNull(navigationBar.StandardAppearance.BackgroundImage);
+					Assert.NotNull(navigationBar.ScrollEdgeAppearance.BackgroundImage);
+				}
+			});
+		}
+
+		[Theory]
 		[InlineData(false)]
 		[InlineData(true)]
 		public async Task ResetRestoresNativeAppearanceAfterGradientAndSolid(bool nullTint)

@@ -39,7 +39,8 @@ namespace Microsoft.Maui.Platform
 			Paint? barBackground,
 			Color? selectedBarTextColor,
 			Color? unSelectedBarTextColor,
-			bool useBackgroundColorForSolidPaint = true)
+			bool useBackgroundColorForSolidPaint = true,
+			UIColor? defaultViewBackgroundColor = null)
 		{
 			_tabBarAppearance ??= new UITabBarAppearance();
 			_tabBarAppearance.ConfigureWithDefaultBackground();
@@ -59,12 +60,12 @@ namespace Microsoft.Maui.Platform
 				case SolidPaint solidPaint:
 					_tabBarAppearance.BackgroundColor =
 						solidPaint.Color?.ToPlatform() ?? defaultBarColor;
-					tabBar.BackgroundColor = useBackgroundColorForSolidPaint ? _tabBarAppearance.BackgroundColor : null;
+					tabBar.BackgroundColor = useBackgroundColorForSolidPaint ? _tabBarAppearance.BackgroundColor : defaultViewBackgroundColor;
 					break;
 
 				default:
 					_tabBarAppearance.BackgroundColor = defaultBarColor;
-					tabBar.BackgroundColor = null;
+					tabBar.BackgroundColor = defaultViewBackgroundColor;
 					break;
 			}
 

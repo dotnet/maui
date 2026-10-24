@@ -15,11 +15,15 @@ namespace Microsoft.Maui.DeviceTests
 	public class SafeShellTabBarAppearanceTrackerTests : ControlsHandlerTestBase
 	{
 		[Theory]
-		[InlineData(false, false)]
-		[InlineData(false, true)]
-		[InlineData(true, false)]
-		[InlineData(true, true)]
-		public async Task LegacyBackgroundColorPreservesNativeViewBackground(bool tabBarColor, bool afterGradient)
+		[InlineData(false, false, false)]
+		[InlineData(false, true, false)]
+		[InlineData(true, false, false)]
+		[InlineData(true, true, false)]
+		[InlineData(false, false, true)]
+		[InlineData(false, true, true)]
+		[InlineData(true, false, true)]
+		[InlineData(true, true, true)]
+		public async Task LegacyBackgroundColorPreservesNativeViewBackground(bool tabBarColor, bool afterGradient, bool hasNativeBackground)
 		{
 			if (!OperatingSystem.IsIOSVersionAtLeast(15) && !OperatingSystem.IsMacCatalystVersionAtLeast(15))
 				return;
@@ -27,6 +31,8 @@ namespace Microsoft.Maui.DeviceTests
 			await InvokeOnMainThreadAsync(() =>
 			{
 				using var tabBar = new UITabBar();
+				var nativeBackground = hasNativeBackground ? Colors.Yellow.ToPlatform() : null;
+				tabBar.BackgroundColor = nativeBackground;
 				using var controller = new TestTabBarController(tabBar);
 				using var tracker = new SafeShellTabBarAppearanceTracker();
 				var shellItem = new ShellItem();
@@ -56,7 +62,7 @@ namespace Microsoft.Maui.DeviceTests
 				tracker.SetAppearance(controller, appearance);
 
 				Assert.True(ColorComparison.ARGBEquivalent(Colors.Blue.ToPlatform(), tabBar.StandardAppearance.BackgroundColor));
-				Assert.Null(tabBar.BackgroundColor);
+				Assert.True(ColorComparison.ARGBEquivalent(nativeBackground, tabBar.BackgroundColor));
 				Assert.DoesNotContain(tabBar.Layer.Sublayers ?? Array.Empty<CALayer>(), layer => layer is CAGradientLayer);
 			});
 		}
