@@ -121,6 +121,41 @@ namespace Microsoft.Maui.DeviceTests
 		[Theory]
 		[InlineData(false)]
 		[InlineData(true)]
+		public async Task LegacyBarBackgroundColorPreservesNativeViewBackground(bool afterGradient)
+		{
+			if (!OperatingSystem.IsIOSVersionAtLeast(15) && !OperatingSystem.IsMacCatalystVersionAtLeast(15))
+				return;
+
+			SetupBuilder();
+			var tabbedPage = CreateBasicTabbedPage();
+			tabbedPage.BarBackgroundColor = Colors.Blue;
+			if (afterGradient)
+			{
+				tabbedPage.BarBackground = new LinearGradientBrush(
+					new GradientStopCollection
+					{
+						new GradientStop(Colors.Red, 0),
+						new GradientStop(Colors.Blue, 1)
+					},
+					new Point(0, 0),
+					new Point(1, 1));
+			}
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(tabbedPage), handler =>
+			{
+				var tabBar = GetTabBar(tabbedPage);
+				tabbedPage.BarBackground = null;
+
+				Assert.True(ColorComparison.ARGBEquivalent(Colors.Blue.ToPlatform(), tabBar.StandardAppearance.BackgroundColor));
+				Assert.Null(tabBar.BackgroundColor);
+				Assert.DoesNotContain(tabBar.Layer.Sublayers ?? Array.Empty<CALayer>(), layer => layer is CAGradientLayer);
+				return Task.CompletedTask;
+			});
+		}
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
 		public async Task BarBackgroundTransitionRemovesGradientAndRestoresEffect(bool useSolidBackground)
 		{
 			if (!OperatingSystem.IsIOSVersionAtLeast(15) && !OperatingSystem.IsMacCatalystVersionAtLeast(15))

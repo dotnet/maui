@@ -114,7 +114,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					unselectedColor,
 					background,
 					titleColor ?? foregroundColor,
-					unselectedColor);
+					unselectedColor,
+					useBackgroundColorForSolidPaint: ReferenceEquals(background, appearance.Background));
 
 			// Set disabled color in the global appearance for text-only tabs
 			if (disabledColor is not null && _tabBarAppearance is not null)

@@ -939,7 +939,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				tabbed.IsSet(TabbedPage.UnselectedTabColorProperty) ? tabbed.UnselectedTabColor : null,
 				!Brush.IsNullOrEmpty(tabbed.BarBackground) ? tabbed.BarBackground : tabbed.IsSet(TabbedPage.BarBackgroundColorProperty) ? tabbed.BarBackgroundColor?.AsPaint() : null,
 				tabbed.IsSet(TabbedPage.BarTextColorProperty) ? tabbed.BarTextColor : null,
-				tabbed.IsSet(TabbedPage.BarTextColorProperty) ? tabbed.BarTextColor : null);
+				tabbed.IsSet(TabbedPage.BarTextColorProperty) ? tabbed.BarTextColor : null,
+				useBackgroundColorForSolidPaint: !Brush.IsNullOrEmpty(tabbed.BarBackground));
 		}
 
 		#region IPlatformViewHandler

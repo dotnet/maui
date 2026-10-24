@@ -906,7 +906,8 @@ namespace Microsoft.Maui.Controls
 				IsSet(UnselectedTabColorProperty) ? UnselectedTabColor : null,
 				!Brush.IsNullOrEmpty(BarBackground) ? BarBackground : IsSet(BarBackgroundColorProperty) ? BarBackgroundColor?.AsPaint() : null,
 				IsSet(BarTextColorProperty) ? BarTextColor : null,
-				IsSet(BarTextColorProperty) ? BarTextColor : null);
+				IsSet(BarTextColorProperty) ? BarTextColor : null,
+				useBackgroundColorForSolidPaint: !Brush.IsNullOrEmpty(BarBackground));
 		}
 
 		void UpdateChildrenOrderIndex(UIViewController[] viewControllers)
