@@ -17,8 +17,18 @@ public partial class HybridWebViewControlPage : ContentPage
 
 	private async void OnEvaluateJavaScriptClicked(object sender, EventArgs e)
 	{
-		var result = await MyHybridWebView.EvaluateJavaScriptAsync("document.title");
-		_viewModel.Status = $"EvaluateJavaScriptAsync Result: {result}";
+		var button = (Button)sender;
+		var viewModel = _viewModel;
+		button.IsEnabled = false;
+		try
+		{
+			var result = await MyHybridWebView.EvaluateJavaScriptAsync("document.title");
+			viewModel.Status = $"EvaluateJavaScriptAsync Result: {result}";
+		}
+		finally
+		{
+			button.IsEnabled = true;
+		}
 	}
 
 	private async void OnHybridRootButtonClicked(object sender, EventArgs e)
