@@ -39,6 +39,9 @@ namespace Microsoft.Maui.Controls
 		Color[] _colorArray = new Color[s_ingestArray.Length];
 		Brush[] _brushArray = new Brush[s_ingestBrushArray.Length];
 		double[] _doubleArray = new double[s_ingestDoubleArray.Length];
+		List<Brush> _backgroundBrushes;
+
+		internal IReadOnlyList<Brush> BackgroundBrushes => _backgroundBrushes;
 
 		/// <summary>Gets the background color of the Shell.</summary>
 		public Color BackgroundColor => _colorArray[0];
@@ -186,6 +189,8 @@ namespace Microsoft.Maui.Controls
 				{
 					anySet = true;
 					_brushArray[i] = brushDataSet[i].Value;
+					if (i == 1 && brushDataSet[i].Value is Brush brush && brush is not ImmutableBrush)
+						AddBackgroundBrush(brush);
 				}
 			}
 
@@ -200,6 +205,21 @@ namespace Microsoft.Maui.Controls
 			}
 
 			return anySet;
+		}
+
+		void AddBackgroundBrush(Brush brush)
+		{
+			if (_backgroundBrushes is not null)
+			{
+				for (int i = 0; i < _backgroundBrushes.Count; i++)
+				{
+					if (ReferenceEquals(_backgroundBrushes[i], brush))
+						return;
+				}
+			}
+
+			// Empty child brushes can later replace the inherited background.
+			(_backgroundBrushes ??= new List<Brush>()).Add(brush);
 		}
 
 		/// <summary>Marks the appearance as complete by filling any remaining null values.</summary>

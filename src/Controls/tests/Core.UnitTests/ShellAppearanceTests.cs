@@ -215,6 +215,115 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Same(gradient, observer.LastAppearance.EffectiveTabBarBackground);
 		}
 
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void EmptyChildGradientReplacesInheritedBackgroundWhenPopulated(bool initiallyEmpty)
+		{
+			var shell = new Shell();
+			var shellItem = CreateShellItem<FlyoutItem>();
+			var inheritedBrush = new SolidColorBrush(Colors.Purple);
+			var gradient = CreateGradient();
+			var observer = new TestAppearanceObserver();
+			shell.Items.Add(shellItem);
+			Shell.SetBackground(shell, inheritedBrush);
+			if (initiallyEmpty)
+				gradient.GradientStops.Clear();
+			Shell.SetBackground(shellItem, gradient);
+			var shellController = (IShellController)shell;
+			shellController.AddAppearanceObserver(observer, shellItem);
+
+			if (!initiallyEmpty)
+				gradient.GradientStops.Clear();
+			Assert.Same(inheritedBrush, observer.LastAppearance.EffectiveTabBarBackground);
+			var updateCount = observer.UpdateCount;
+
+			gradient.GradientStops.Add(new GradientStop(Colors.Blue, 0));
+
+			Assert.Equal(updateCount + 1, observer.UpdateCount);
+			Assert.Same(gradient, observer.LastAppearance.EffectiveTabBarBackground);
+			updateCount = observer.UpdateCount;
+			inheritedBrush.Color = Colors.Green;
+			Assert.Equal(updateCount, observer.UpdateCount);
+
+			gradient.GradientStops.Clear();
+			Assert.Same(inheritedBrush, observer.LastAppearance.EffectiveTabBarBackground);
+			shellItem.ClearValue(Shell.BackgroundProperty);
+			updateCount = observer.UpdateCount;
+			gradient.GradientStops.Add(new GradientStop(Colors.Red, 0));
+			Assert.Equal(updateCount, observer.UpdateCount);
+
+			inheritedBrush.Color = Colors.Yellow;
+			Assert.Equal(updateCount + 1, observer.UpdateCount);
+		}
+
+		[Fact]
+		public void NestedEmptyBackgroundsObserveEachCandidateByReference()
+		{
+			var shell = new Shell();
+			var shellItem = CreateShellItem<FlyoutItem>();
+			var inheritedBrush = new SolidColorBrush(Colors.Purple);
+			var outerBrush = new LinearGradientBrush();
+			var innerBrush = new LinearGradientBrush();
+			var observer = new TestAppearanceObserver();
+			shell.Items.Add(shellItem);
+			Shell.SetBackground(shell, inheritedBrush);
+			Shell.SetBackground(shellItem, outerBrush);
+			Shell.SetBackground(shellItem.Items[0], innerBrush);
+			((IShellController)shell).AddAppearanceObserver(observer, shellItem);
+			Assert.Same(inheritedBrush, observer.LastAppearance.EffectiveTabBarBackground);
+			var updateCount = observer.UpdateCount;
+
+			outerBrush.GradientStops.Add(new GradientStop(Colors.Red, 0));
+			Assert.Equal(updateCount + 1, observer.UpdateCount);
+			Assert.Same(outerBrush, observer.LastAppearance.EffectiveTabBarBackground);
+
+			innerBrush.GradientStops.Add(new GradientStop(Colors.Blue, 0));
+			Assert.Equal(updateCount + 2, observer.UpdateCount);
+			Assert.Same(innerBrush, observer.LastAppearance.EffectiveTabBarBackground);
+		}
+
+		[Fact]
+		public void SharedEmptyBackgroundIsObservedOnlyOnce()
+		{
+			var shell = new Shell();
+			var shellItem = CreateShellItem<FlyoutItem>();
+			var sharedBrush = new LinearGradientBrush();
+			var observer = new TestAppearanceObserver();
+			shell.Items.Add(shellItem);
+			Shell.SetBackground(shell, new SolidColorBrush(Colors.Purple));
+			Shell.SetBackground(shellItem, sharedBrush);
+			Shell.SetBackground(shellItem.Items[0], sharedBrush);
+			((IShellController)shell).AddAppearanceObserver(observer, shellItem);
+			var updateCount = observer.UpdateCount;
+
+			sharedBrush.GradientStops.Add(new GradientStop(Colors.Blue, 0));
+
+			Assert.Equal(updateCount + 1, observer.UpdateCount);
+			Assert.Same(sharedBrush, observer.LastAppearance.EffectiveTabBarBackground);
+		}
+
+		[Fact]
+		public void EmptyChildSolidBrushReplacesInheritedBackgroundWhenPopulated()
+		{
+			var shell = new Shell();
+			var shellItem = CreateShellItem<FlyoutItem>();
+			var inheritedBrush = new SolidColorBrush(Colors.Purple);
+			var childBrush = new SolidColorBrush();
+			var observer = new TestAppearanceObserver();
+			shell.Items.Add(shellItem);
+			Shell.SetBackground(shell, inheritedBrush);
+			Shell.SetBackground(shellItem, childBrush);
+			((IShellController)shell).AddAppearanceObserver(observer, shellItem);
+			Assert.Same(inheritedBrush, observer.LastAppearance.EffectiveTabBarBackground);
+			var updateCount = observer.UpdateCount;
+
+			childBrush.Color = Colors.Blue;
+
+			Assert.Equal(updateCount + 1, observer.UpdateCount);
+			Assert.Same(childBrush, observer.LastAppearance.EffectiveTabBarBackground);
+		}
+
 		[Fact]
 		public async Task SharedGradientDoesNotRetainShellOrAppearanceObservers()
 		{
@@ -241,14 +350,32 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			GC.KeepAlive(brush);
 		}
 
+		[Fact]
+		public async Task SharedInheritedAndEmptyChildBrushesDoNotRetainShell()
+		{
+			var inheritedBrush = new SolidColorBrush(Colors.Purple);
+			var childBrush = new LinearGradientBrush();
+			var references = CreateShellAppearanceReferences(inheritedBrush, childBrush);
+
+			foreach (var reference in references)
+				Assert.False(await reference.WaitForCollect());
+
+			childBrush.GradientStops.Add(new GradientStop(Colors.Blue, 0));
+			inheritedBrush.Color = Colors.Green;
+			GC.KeepAlive(childBrush);
+			GC.KeepAlive(inheritedBrush);
+		}
+
 		[System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
-		WeakReference[] CreateShellAppearanceReferences(Brush background)
+		WeakReference[] CreateShellAppearanceReferences(Brush background, Brush childBackground = null)
 		{
 			var shell = new Shell();
 			var shellItem = CreateShellItem<FlyoutItem>();
 			var observer = new TestAppearanceObserver();
 			shell.Items.Add(shellItem);
 			Shell.SetBackground(shell, background);
+			if (childBackground is not null)
+				Shell.SetBackground(shellItem, childBackground);
 			((IShellController)shell).AddAppearanceObserver(observer, shellItem);
 
 			return new[] { new WeakReference(shell), new WeakReference(shellItem), new WeakReference(observer) };
