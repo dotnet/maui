@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Handlers
 
 			var oldVirtualView = VirtualView;
 
-			bool setupPlatformView = oldVirtualView == null;
+			bool setupPlatformView = oldVirtualView == null || PlatformView == null;
 
 			VirtualView = view;
 			if (PlatformView is null)
@@ -126,16 +126,8 @@ namespace Microsoft.Maui.Handlers
 
 		private protected abstract void OnDisconnectHandler(object platformView);
 
-		void DisconnectHandler(object platformView)
-		{
+		void DisconnectHandler(object platformView) =>
 			OnDisconnectHandler(platformView);
-
-			// VirtualView has already been changed over to a new handler
-			if (VirtualView != null && VirtualView.Handler == this)
-				VirtualView.Handler = null;
-
-			VirtualView = null;
-		}
 
 		void IElementHandler.DisconnectHandler()
 		{
@@ -153,6 +145,12 @@ namespace Microsoft.Maui.Handlers
 				DisconnectHandler(oldPlatformView);
 			}
 
+			// A fragment may have already released its platform view.
+			// Do not detach a replacement handler from the virtual view.
+			if (VirtualView != null && VirtualView.Handler == this)
+				VirtualView.Handler = null;
+
+			VirtualView = null;
 			_handlerState = ElementHandlerState.Disconnected;
 		}
 

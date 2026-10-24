@@ -13,6 +13,7 @@ using Google.Android.Material.BottomSheet;
 using Google.Android.Material.Navigation;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Platform.Compatibility;
+using Microsoft.Maui.Platform;
 using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
 using AView = Android.Views.View;
 
@@ -24,6 +25,12 @@ namespace Microsoft.Maui.Controls.Handlers
     /// </summary>
     public partial class ShellItemHandler : ElementHandler<ShellItem, ViewPager2>, IAppearanceObserver
     {
+        AView? _rootView;
+        LayoutInflater? _fragmentLayoutInflater;
+        ViewGroup? _fragmentContainer;
+        bool _platformViewConnected;
+        ShellItem? _subscribedShellItem;
+        List<string>? _releasedSectionFragmentTags;
         internal ViewPager2? _viewPager;
         internal BottomNavigationView? _bottomNavigationView;
         internal TabbedViewManager? _tabbedViewManager;
@@ -77,20 +84,155 @@ namespace Microsoft.Maui.Controls.Handlers
         }
 
         /// <summary>
-        /// Creates the platform element (ViewPager2) for the ShellItem.
-        /// Note: The actual ViewPager2 used at runtime comes from shellitemlayout.axml
-        /// (inflated in ShellItemWrapperFragment). This method satisfies the ElementHandler
-        /// contract. The fragment assigns the real ViewPager2 to _viewPager.
+        /// Creates the ShellItem's ViewPager2 by inflating shellitemlayout.axml.
+        /// The wrapper fragment hosts the cached layout containing this pager.
+        /// Overrides can customize or replace the returned pager.
         /// </summary>
         protected override ViewPager2 CreatePlatformElement()
         {
-            var context = MauiContext?.Context ?? throw new InvalidOperationException("MauiContext cannot be null");
+            var inflater = _fragmentLayoutInflater ?? MauiContext?.GetLayoutInflater()
+                ?? throw new InvalidOperationException("LayoutInflater cannot be null");
+            var shell = VirtualView.FindParentOfType<Shell>();
+            var container = _fragmentContainer
+                ?? (shell?.Handler?.PlatformView as AView)?.FindViewById<ViewGroup>(Resource.Id.navigationlayout_content);
 
-            // Create a placeholder ViewPager2 to satisfy the handler contract.
-            // The ShellItemWrapperFragment replaces _viewPager with the one from XML layout.
-            _viewPager = new ViewPager2(context);
+            var rootView = InflateLayout(inflater, container);
+            _ = rootView.FindViewById<CoordinatorLayout>(Resource.Id.shellitem_coordinator)
+                ?? throw new InvalidOperationException("shellitem_coordinator not found");
+            var viewPager = rootView.FindViewById<ViewPager2>(Resource.Id.shellitem_viewpager)
+                ?? throw new InvalidOperationException("shellitem_viewpager not found");
 
+            _rootView = rootView;
+            _viewPager = viewPager;
             return _viewPager;
+        }
+
+        internal AView GetFragmentView(Fragment fragment, LayoutInflater inflater, ViewGroup? container)
+        {
+            if (_parentFragment is not null && _parentFragment != fragment && _parentFragment.View is not null)
+            {
+                throw new InvalidOperationException("ShellItemHandler is already hosted in a fragment");
+            }
+
+            SetParentFragment(fragment);
+
+            if (((IElementHandler)this).PlatformView is null)
+            {
+                _fragmentLayoutInflater = inflater;
+                _fragmentContainer = container;
+                try
+                {
+                    PlatformView = CreatePlatformElement();
+                }
+                finally
+                {
+                    _fragmentLayoutInflater = null;
+                    _fragmentContainer = null;
+                }
+            }
+
+            if (_rootView is null)
+            {
+                PlatformView.RemoveFromParent();
+                _rootView = InflateLayout(inflater, container, PlatformView);
+            }
+
+            var rootView = _rootView;
+            _ = rootView.FindViewById<CoordinatorLayout>(Resource.Id.shellitem_coordinator)
+                ?? throw new InvalidOperationException("shellitem_coordinator not found");
+            var layoutPager = rootView.FindViewById<ViewPager2>(Resource.Id.shellitem_viewpager)
+                ?? throw new InvalidOperationException("shellitem_viewpager not found");
+            if (layoutPager != PlatformView)
+            {
+                var pagerParent = layoutPager.Parent as ViewGroup
+                    ?? throw new InvalidOperationException("shellitem_viewpager must have a layout parent");
+                var index = pagerParent.IndexOfChild(layoutPager);
+                var layoutParameters = layoutPager.LayoutParameters;
+                var id = layoutPager.Id;
+                pagerParent.RemoveView(layoutPager);
+                layoutPager.Dispose();
+                PlatformView.RemoveFromParent();
+                PlatformView.Id = id;
+                pagerParent.AddView(PlatformView, index, layoutParameters);
+            }
+
+            if (!_platformViewConnected)
+            {
+                ConnectHandler(PlatformView);
+                _mapper.UpdateProperties(this, VirtualView);
+            }
+
+            if (rootView.Parent is ViewGroup parent)
+            {
+                parent.RemoveView(rootView);
+            }
+
+            return rootView;
+        }
+
+        static AView InflateLayout(LayoutInflater inflater, ViewGroup? container, ViewPager2? pager = null)
+        {
+            if (pager is null)
+            {
+                return inflater.Inflate(Resource.Layout.shellitemlayout, container, false)
+                    ?? throw new InvalidOperationException("shellitemlayout inflation failed");
+            }
+
+            // A custom CreatePlatformElement can return a standalone pager. Reuse it
+            // in the XML slot instead of constructing another ViewPager2 during inflation.
+            var context = inflater.Context
+                ?? throw new InvalidOperationException("LayoutInflater.Context cannot be null");
+            using var scopedInflater = inflater.CloneInContext(context)
+                ?? throw new InvalidOperationException("LayoutInflater cloning failed");
+            using var factory = new ShellItemPagerFactory(pager);
+            scopedInflater.Factory2 = factory;
+            return scopedInflater.Inflate(Resource.Layout.shellitemlayout, container, false)
+                ?? throw new InvalidOperationException("shellitemlayout inflation failed");
+        }
+
+        internal void ReleaseFragmentView(AView? view)
+        {
+            // A late callback from an old wrapper must not release a reconnected handler's layout.
+            if (view is null || view != _rootView)
+            {
+                return;
+            }
+
+            var platformView = PlatformView;
+            PlatformView = null!;
+            if (_platformViewConnected)
+            {
+                DisconnectHandler(platformView);
+            }
+
+            _viewPager = null;
+            _rootView = null;
+        }
+
+        internal void RemoveReleasedSectionFragments(Fragment parentFragment)
+        {
+            if (_releasedSectionFragmentTags is null)
+            {
+                return;
+            }
+
+            var fragmentManager = parentFragment.ChildFragmentManager;
+            var transaction = fragmentManager.BeginTransaction();
+            var removeFragments = false;
+            for (int i = 0; i < _releasedSectionFragmentTags.Count; i++)
+            {
+                var fragment = fragmentManager.FindFragmentByTag(_releasedSectionFragmentTags[i]);
+                if (fragment is not null)
+                {
+                    transaction.Remove(fragment);
+                    removeFragments = true;
+                }
+            }
+            if (removeFragments)
+            {
+                transaction.CommitNow();
+            }
+            _releasedSectionFragmentTags = null;
         }
 
         /// <summary>
@@ -139,8 +281,9 @@ namespace Microsoft.Maui.Controls.Handlers
             }
             else
             {
+                var fragmentManager = _parentFragment.ChildFragmentManager;
                 _adapter = new ShellSectionFragmentAdapter(
-                    _parentFragment.ChildFragmentManager,
+                    fragmentManager,
                     _parentFragment.Lifecycle,
                     shellSections,
                     _shellContext);
@@ -270,7 +413,8 @@ namespace Microsoft.Maui.Controls.Handlers
         /// </summary>
         internal void SwitchToSection(ShellSection newSection, bool animate)
         {
-            if (newSection is null || _viewPager is null || VirtualView is null)
+            if (newSection is null || _viewPager is null || !_platformViewConnected ||
+                _switchingShellItem || _parentFragment?.View is null)
             {
                 return;
             }
@@ -349,9 +493,7 @@ namespace Microsoft.Maui.Controls.Handlers
                 return;
             }
 
-            // Set flag to preserve fragment-level resources during disconnect/connect cycle.
-            // SetVirtualView triggers DisconnectHandler → ConnectHandler. Without this flag,
-            // DisconnectHandler would destroy toolbar, adapter, and fragment references.
+            // Preserve the native presentation while changing its virtual ShellItem.
             _preserveFragmentResources = true;
 
             // Suppress MapCurrentItem → SwitchToSection during SetVirtualView.
@@ -362,12 +504,23 @@ namespace Microsoft.Maui.Controls.Handlers
             _switchingShellItem = true;
             try
             {
+                DisconnectShellItem();
                 SetVirtualView(newItem);
+
+                if (_platformViewConnected)
+                {
+                    UpdateShellItemSubscriptions(newItem);
+                }
             }
             finally
             {
                 _switchingShellItem = false;
                 _preserveFragmentResources = false;
+            }
+
+            if (_parentFragment?.View is null)
+            {
+                return;
             }
 
             // Rebuild ViewPager2 adapter for new ShellItem's sections
@@ -681,7 +834,7 @@ namespace Microsoft.Maui.Controls.Handlers
         /// </summary>
         internal void OnPageSelected(int position)
         {
-            if (VirtualView is null || _viewPager is null)
+            if (_viewPager is null || ((IElementHandler)this).VirtualView is null)
             {
                 return;
             }
@@ -755,13 +908,9 @@ namespace Microsoft.Maui.Controls.Handlers
         protected override void ConnectHandler(ViewPager2 platformView)
         {
             base.ConnectHandler(platformView);
+            _viewPager = platformView;
 
-            // Subscribe to ShellItem property changes to detect CurrentItem changes from navigation
-            if (VirtualView is not null)
-            {
-                VirtualView.PropertyChanged += OnShellItemPropertyChanged;
-                ((IShellItemController)VirtualView).ItemsCollectionChanged += OnShellItemsChanged;
-            }
+            UpdateShellItemSubscriptions(VirtualView);
 
             // Initialize the Shell context early. The bottom navigation appearance tracker
             // is created with the deferred TabbedViewManager when tabs are actually needed.
@@ -769,10 +918,51 @@ namespace Microsoft.Maui.Controls.Handlers
 
             // NOTE: Appearance observer registration is deferred to RegisterAppearanceObserver()
             // called from OnViewCreated in the wrapper fragment. At ConnectHandler time,
-            // the BottomNavigationView and Toolbar from the XML layout are not yet inflated.
+            // the bottom navigation view and shared toolbar are not yet ready.
             // Registering here causes the initial OnAppearanceChanged callback to be lost
             // because the views aren't ready. The old ShellItemRenderer registered in
             // OnCreateView() AFTER creating all views — we match that pattern.
+            _platformViewConnected = true;
+        }
+
+        void UpdateShellItemSubscriptions(ShellItem? item)
+        {
+            if (_subscribedShellItem == item)
+            {
+                return;
+            }
+
+            if (_subscribedShellItem is not null)
+            {
+                _subscribedShellItem.PropertyChanged -= OnShellItemPropertyChanged;
+                ((IShellItemController)_subscribedShellItem).ItemsCollectionChanged -= OnShellItemsChanged;
+            }
+
+            _subscribedShellItem = item;
+            if (item is not null)
+            {
+                item.PropertyChanged += OnShellItemPropertyChanged;
+                ((IShellItemController)item).ItemsCollectionChanged += OnShellItemsChanged;
+            }
+        }
+
+        void DisconnectShellItem()
+        {
+            UpdateShellItemSubscriptions(null);
+
+            if (_shellSection is not null)
+            {
+                ((IShellSectionController)_shellSection).RemoveDisplayedPageObserver(this);
+                _shellSection = null;
+            }
+
+            _displayedPage = null;
+
+            if (_registeredShell is not null)
+            {
+                ((IShellController)_registeredShell).RemoveAppearanceObserver(this);
+                _registeredShell = null;
+            }
         }
 
         void OnShellItemPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -786,7 +976,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
         void OnShellItemsChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
-            if (VirtualView is null)
+            if (((IElementHandler)this).VirtualView is null || _parentFragment?.View is null)
             {
                 return;
             }
@@ -854,27 +1044,8 @@ namespace Microsoft.Maui.Controls.Handlers
         /// </summary>
         protected override void DisconnectHandler(ViewPager2 platformView)
         {
-            if (VirtualView is not null)
-            {
-                VirtualView.PropertyChanged -= OnShellItemPropertyChanged;
-                ((IShellItemController)VirtualView).ItemsCollectionChanged -= OnShellItemsChanged;
-            }
-
-            if (_shellSection is not null)
-            {
-                ((IShellSectionController)_shellSection).RemoveDisplayedPageObserver(this);
-                _shellSection = null;
-            }
-
-            _displayedPage = null;
-
-            // Unregister appearance observer (use cached Shell reference for reliable removal
-            // even when VirtualView has already been detached from Shell.Items)
-            if (_registeredShell is not null)
-            {
-                ((IShellController)_registeredShell).RemoveAppearanceObserver(this);
-                _registeredShell = null;
-            }
+            _platformViewConnected = false;
+            DisconnectShellItem();
 
             // Dispose per-item appearance tracker; tab setup or rebuild recreates it as needed.
             _appearanceTracker?.Dispose();
@@ -884,6 +1055,7 @@ namespace Microsoft.Maui.Controls.Handlers
             if (_pageChangeCallback is not null && _viewPager is not null)
             {
                 _viewPager.UnregisterOnPageChangeCallback(_pageChangeCallback);
+                _pageChangeCallback.Dispose();
                 _pageChangeCallback = null;
             }
 
@@ -906,8 +1078,12 @@ namespace Microsoft.Maui.Controls.Handlers
                 _shellToolbar = null;
                 _appBarLayout = null;
 
+                _releasedSectionFragmentTags = _adapter?.ReleaseRenderers();
                 platformView.Adapter = null;
                 _adapter = null;
+                _viewPager = null;
+                _rootView = null;
+                _pendingAdapterUpdate = false;
 
                 _shellContext = null;
                 _parentFragment = null;
@@ -1178,6 +1354,33 @@ namespace Microsoft.Maui.Controls.Handlers
         }
 
         #endregion Toolbar Management
+
+        sealed class ShellItemPagerFactory : Java.Lang.Object, LayoutInflater.IFactory2
+        {
+            readonly ViewPager2 _pager;
+
+            public ShellItemPagerFactory(ViewPager2 pager)
+            {
+                _pager = pager;
+            }
+
+            public AView? OnCreateView(AView? parent, string name, global::Android.Content.Context context,
+                global::Android.Util.IAttributeSet attrs)
+            {
+                if (name == "androidx.viewpager2.widget.ViewPager2" &&
+                    attrs.GetAttributeResourceValue("http://schemas.android.com/apk/res/android", "id", 0) == Resource.Id.shellitem_viewpager)
+                {
+                    _pager.Id = Resource.Id.shellitem_viewpager;
+                    return _pager;
+                }
+
+                return null;
+            }
+
+            public AView? OnCreateView(string name, global::Android.Content.Context context,
+                global::Android.Util.IAttributeSet attrs) =>
+                OnCreateView(null, name, context, attrs);
+        }
     }
 
     /// <summary>
@@ -1371,6 +1574,34 @@ namespace Microsoft.Maui.Controls.Handlers
 
             _renderers.TryGetValue(_sections[position], out var renderer);
             return renderer;
+        }
+
+        internal List<string> GetFragmentTags()
+        {
+            var tags = new List<string>();
+            foreach (var renderer in _renderers.Values)
+            {
+                if (renderer is IShellObservableFragment observableFragment &&
+                    observableFragment.Fragment.Tag is string tag)
+                {
+                    tags.Add(tag);
+                }
+            }
+            return tags;
+        }
+
+        internal List<string> ReleaseRenderers()
+        {
+            // Dispose clears renderer fragment references, so capture the owned tags first.
+            var tags = GetFragmentTags();
+            foreach (var renderer in _renderers.Values)
+            {
+                renderer.Dispose();
+            }
+            _renderers.Clear();
+            _sectionIds.Clear();
+            _sections = Array.Empty<ShellSection>();
+            return tags;
         }
     }
 }

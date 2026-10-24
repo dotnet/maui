@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Shell Item Layout - Used by ShellItemHandler (ShellItemWrapperFragment)
+    Shell Item Layout - Inflated by ShellItemHandler and hosted by ShellItemWrapperFragment.
+    The ViewPager2 in this layout is the handler's PlatformView; each fragment view
+    lifecycle creates one layout and releases it before the next view is created.
     
     Structure:
       CoordinatorLayout (root - enables window insets handling)
