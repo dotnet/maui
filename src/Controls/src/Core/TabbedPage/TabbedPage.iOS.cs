@@ -25,8 +25,8 @@ namespace Microsoft.Maui.Controls
 		bool? _defaultBarTranslucent;
 		UITabBarAppearance _tabBarAppearance;
 		Brush _currentBarBackground;
-		WeakBrushChangedProxy _solidBarBackgroundProxy;
-		EventHandler _solidBarBackgroundChanged;
+		WeakBrushChangedProxy _barBackgroundProxy;
+		EventHandler _barBackgroundChanged;
 
 		// Tracks pages from the previous MapItemsSource call so we can
 		// disconnect handlers for pages that were removed.
@@ -51,6 +51,8 @@ namespace Microsoft.Maui.Controls
 			{
 				return;
 			}
+
+			_barBackgroundProxy?.Unsubscribe();
 
 			// Handler is being removed or replaced — clean up old resources
 
@@ -86,11 +88,9 @@ namespace Microsoft.Maui.Controls
 			if (_currentBarBackground is GradientBrush gradientBrush)
 			{
 				gradientBrush.Parent = null;
-				gradientBrush.InvalidateGradientBrushRequested -= OnBarBackgroundChanged;
 			}
 			_currentBarBackground = null;
-			_solidBarBackgroundProxy?.Unsubscribe();
-			_solidBarBackgroundChanged = null;
+			_barBackgroundChanged = null;
 
 			// Clear previous pages tracking
 			_previousPages = null;
@@ -189,25 +189,23 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
+			view._barBackgroundProxy?.Unsubscribe();
 			if (view._currentBarBackground is GradientBrush oldGradientBrush)
 			{
 				oldGradientBrush.Parent = null;
-				oldGradientBrush.InvalidateGradientBrushRequested -= view.OnBarBackgroundChanged;
 			}
 
-			view._solidBarBackgroundProxy?.Unsubscribe();
 			view._currentBarBackground = view.BarBackground;
 
 			if (view._currentBarBackground is GradientBrush newGradientBrush)
 			{
 				newGradientBrush.Parent = view;
-				newGradientBrush.InvalidateGradientBrushRequested += view.OnBarBackgroundChanged;
 			}
-			else if (view._currentBarBackground is SolidColorBrush and not ImmutableBrush)
+			if (view._currentBarBackground is Brush brush && brush is not ImmutableBrush)
 			{
-				view._solidBarBackgroundChanged ??= view.OnBarBackgroundChanged;
-				(view._solidBarBackgroundProxy ??= new WeakBrushChangedProxy())
-					.Subscribe(view._currentBarBackground, view._solidBarBackgroundChanged);
+				view._barBackgroundChanged ??= view.OnBarBackgroundChanged;
+				(view._barBackgroundProxy ??= new WeakBrushChangedProxy())
+					.Subscribe(brush, view._barBackgroundChanged);
 			}
 
 			view.UpdateBarBackground(tabBar);

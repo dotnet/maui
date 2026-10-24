@@ -10,6 +10,9 @@ using Microsoft.Maui.Controls.Platform.Compatibility;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
 using Xunit;
+using AColor = Android.Graphics.Color;
+using Bitmap = Android.Graphics.Bitmap;
+using Canvas = Android.Graphics.Canvas;
 using ColorChangeRevealDrawable = Microsoft.Maui.Controls.Platform.ColorChangeRevealDrawable;
 using GradientStrokeDrawable = Microsoft.Maui.Controls.Platform.GradientStrokeDrawable;
 
@@ -18,6 +21,45 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Shell)]
 	public class ShellBottomNavViewAppearanceTrackerTests : ControlsHandlerTestBase
 	{
+		[Fact]
+		public async Task GradientBackgroundIsReusedAndMutableChangesRefreshItsShader()
+		{
+			EnsureHandlerCreated();
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var shellItem = new ShellItem();
+				using var bottomView = new BottomNavigationView(MauiContext.Context);
+				var shellContext = new ShellRenderer(MauiContext.Context);
+				using var tracker = new ShellBottomNavViewAppearanceTracker(shellContext, shellItem);
+				var gradient = CreateGradient();
+				gradient.EndPoint = new Point(1, 0);
+				Shell.SetBackground(shellItem, gradient);
+				var appearance = new ShellAppearance();
+				appearance.Ingest(shellItem);
+				tracker.SetAppearance(bottomView, appearance);
+				var background = Assert.IsType<GradientStrokeDrawable>(bottomView.Background);
+				background.SetBounds(0, 0, 100, 20);
+				using var bitmap = Bitmap.CreateBitmap(100, 20, Bitmap.Config.Argb8888);
+				using var canvas = new Canvas(bitmap);
+				background.Draw(canvas);
+				Assert.True(new AColor(bitmap.GetPixel(1, 10)).R > 200);
+
+				Shell.SetForegroundColor(shellItem, Colors.Yellow);
+				var updatedAppearance = new ShellAppearance();
+				updatedAppearance.Ingest(shellItem);
+				tracker.SetAppearance(bottomView, updatedAppearance);
+				Assert.Same(background, bottomView.Background);
+
+				gradient.GradientStops[0].Color = Colors.Green;
+				tracker.SetAppearance(bottomView, updatedAppearance);
+				Assert.Same(background, bottomView.Background);
+				background.Draw(canvas);
+				var pixel = new AColor(bitmap.GetPixel(1, 10));
+				Assert.True(pixel.G > 100 && pixel.R < 30);
+			});
+		}
+
 		[Fact]
 		public async Task SolidBackgroundIsPreservedOnRepeatedColorUpdates()
 		{

@@ -51,9 +51,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		IDisposable _nativeSubscriptionWatcher;
 
 		Brush _currentBarBackground;
-		WeakBrushChangedProxy _solidBarBackgroundProxy;
+		WeakBrushChangedProxy _barBackgroundProxy;
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "This cached callback targets only this renderer; the brush proxy holds it weakly, and both the subscription and callback are cleared in Dispose.")]
-		EventHandler _solidBarBackgroundChanged;
+		EventHandler _barBackgroundChanged;
 
 		IMauiContext MauiContext => _mauiContext;
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The mapper is static shared handler metadata and is not retained by renderer instances.")]
@@ -218,17 +218,16 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 						page.PropertyChanged -= OnPagePropertyChanged;
 				}
 
+				_barBackgroundProxy?.Unsubscribe();
 				if (_currentBarBackground is GradientBrush currentGradientBrush)
 				{
 					if (ReferenceEquals(currentGradientBrush.Parent, Tabbed))
 					{
 						currentGradientBrush.Parent = null;
 					}
-					currentGradientBrush.InvalidateGradientBrushRequested -= OnBarBackgroundChanged;
 				}
 				_currentBarBackground = null;
-				_solidBarBackgroundProxy?.Unsubscribe();
-				_solidBarBackgroundChanged = null;
+				_barBackgroundChanged = null;
 
 				FinishedCustomizingViewControllers -= HandleFinishedCustomizingViewControllers;
 			}
@@ -536,31 +535,28 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				TabBar.BarTintColor = isDefaultColor ? _defaultBarColor : barBackgroundColor.ToPlatform();
 		}
 
-		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Gradient brush InvalidateGradientBrushRequested is removed before replacing the brush and in Dispose.")]
 		void UpdateBarBackground()
 		{
 			if (Tabbed is not TabbedPage tabbed || TabBar == null)
 				return;
 
+			_barBackgroundProxy?.Unsubscribe();
 			if (_currentBarBackground is GradientBrush oldGradientBrush)
 			{
 				oldGradientBrush.Parent = null;
-				oldGradientBrush.InvalidateGradientBrushRequested -= OnBarBackgroundChanged;
 			}
 
-			_solidBarBackgroundProxy?.Unsubscribe();
 			_currentBarBackground = tabbed.BarBackground;
 
 			if (_currentBarBackground is GradientBrush newGradientBrush)
 			{
 				newGradientBrush.Parent = tabbed;
-				newGradientBrush.InvalidateGradientBrushRequested += OnBarBackgroundChanged;
 			}
-			else if (_currentBarBackground is SolidColorBrush and not ImmutableBrush)
+			if (_currentBarBackground is Brush brush && brush is not ImmutableBrush)
 			{
-				_solidBarBackgroundChanged ??= OnBarBackgroundChanged;
-				(_solidBarBackgroundProxy ??= new WeakBrushChangedProxy())
-					.Subscribe(_currentBarBackground, _solidBarBackgroundChanged);
+				_barBackgroundChanged ??= OnBarBackgroundChanged;
+				(_barBackgroundProxy ??= new WeakBrushChangedProxy())
+					.Subscribe(brush, _barBackgroundChanged);
 			}
 
 			ApplyBarBackground();

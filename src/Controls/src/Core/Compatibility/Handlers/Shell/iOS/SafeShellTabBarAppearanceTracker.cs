@@ -12,6 +12,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		UIColor _defaultBarTint;
 		UIColor _defaultTint;
 		UIColor _defaultUnselectedTint;
+		UIColor _defaultBackgroundColor;
+		UITabBarAppearance _defaultStandardAppearance;
+		UITabBarAppearance _defaultScrollEdgeAppearance;
 		bool _defaultAppearanceCaptured;
 		UITabBarAppearance _tabBarAppearance;
 		public virtual void ResetAppearance(UITabBarController controller)
@@ -25,11 +28,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				// Remove any gradient/solid background applied through SetAppearance so it does not survive the reset.
 				Microsoft.Maui.Platform.LayerExtensions.RemoveBackgroundLayer(tabBar);
-				tabBar.BackgroundColor = null;
-
-				_tabBarAppearance ??= new UITabBarAppearance();
-				_tabBarAppearance.ConfigureWithDefaultBackground();
-				tabBar.StandardAppearance = tabBar.ScrollEdgeAppearance = _tabBarAppearance;
+				tabBar.BackgroundColor = _defaultBackgroundColor;
+				tabBar.StandardAppearance = _defaultStandardAppearance;
+				tabBar.ScrollEdgeAppearance = _defaultScrollEdgeAppearance;
 			}
 
 			tabBar.BarTintColor = _defaultBarTint;
@@ -46,6 +47,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_defaultBarTint = tabBar.BarTintColor;
 				_defaultTint = tabBar.TintColor;
 				_defaultUnselectedTint = tabBar.UnselectedItemTintColor;
+				_defaultBackgroundColor = tabBar.BackgroundColor;
+				if (OperatingSystem.IsIOSVersionAtLeast(15) || OperatingSystem.IsMacCatalystVersionAtLeast(15) || OperatingSystem.IsTvOSVersionAtLeast(15))
+				{
+					_defaultStandardAppearance = (UITabBarAppearance)tabBar.StandardAppearance.Copy();
+					_defaultScrollEdgeAppearance = tabBar.ScrollEdgeAppearance is UITabBarAppearance scrollEdge
+						? (UITabBarAppearance)scrollEdge.Copy()
+						: null;
+				}
 				_defaultAppearanceCaptured = true;
 			}
 
@@ -63,6 +72,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected virtual void Dispose(bool disposing)
 		{
+			if (disposing)
+			{
+				_tabBarAppearance?.Dispose();
+				_tabBarAppearance = null;
+				_defaultStandardAppearance?.Dispose();
+				_defaultStandardAppearance = null;
+				_defaultScrollEdgeAppearance?.Dispose();
+				_defaultScrollEdgeAppearance = null;
+			}
 		}
 
 		public void Dispose()

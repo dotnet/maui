@@ -110,6 +110,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				// Keep gradients free of the Material elevation overlay.
 				var oldBackground = bottomView.Background;
+				if (oldBackground is GradientStrokeDrawable gradientBackground && !ReferenceEquals(oldBackground, _originalBackground))
+				{
+					gradientBackground.SetBrush(brush);
+					// Rebuild the shader at the existing bounds after brush changes.
+					gradientBackground.Shape = gradientBackground.Shape;
+					gradientBackground.InvalidateSelf();
+					return;
+				}
 				bottomView.Background = null;
 				bottomView.UpdateBackground(brush);
 				DisposeBackground(oldBackground);

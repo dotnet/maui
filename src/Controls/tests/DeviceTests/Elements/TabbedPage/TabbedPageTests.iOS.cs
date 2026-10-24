@@ -51,6 +51,39 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task GradientGeometryChangesUpdateNativeAppearance()
+		{
+			if (!OperatingSystem.IsIOSVersionAtLeast(15) && !OperatingSystem.IsMacCatalystVersionAtLeast(15))
+				return;
+
+			SetupBuilder();
+			var tabbedPage = CreateBasicTabbedPage();
+			var gradient = new LinearGradientBrush(
+				new GradientStopCollection
+				{
+					new GradientStop(Colors.Red, 0),
+					new GradientStop(Colors.Blue, 1)
+				},
+				new Point(0, 0),
+				new Point(1, 1));
+			tabbedPage.BarBackground = gradient;
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(tabbedPage), handler =>
+			{
+				var tabBar = GetTabBar(tabbedPage);
+				gradient.StartPoint = new Point(0.25, 0.5);
+				gradient.EndPoint = new Point(0.75, 0);
+
+				var layer = Assert.Single(tabBar.Layer.Sublayers.OfType<CAGradientLayer>());
+				Assert.Equal(0.25, (double)layer.StartPoint.X);
+				Assert.Equal(0.5, (double)layer.StartPoint.Y);
+				Assert.Equal(0.75, (double)layer.EndPoint.X);
+				Assert.Equal(0, (double)layer.EndPoint.Y);
+				return Task.CompletedTask;
+			});
+		}
+
+		[Fact]
 		public async Task SolidBarBackgroundColorChangesUpdateNativeAppearance()
 		{
 			if (!OperatingSystem.IsIOSVersionAtLeast(15) && !OperatingSystem.IsMacCatalystVersionAtLeast(15))

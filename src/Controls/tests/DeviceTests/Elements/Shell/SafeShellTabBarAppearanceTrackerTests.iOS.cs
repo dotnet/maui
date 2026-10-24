@@ -15,6 +15,42 @@ namespace Microsoft.Maui.DeviceTests
 	public class SafeShellTabBarAppearanceTrackerTests : ControlsHandlerTestBase
 	{
 		[Fact]
+		public async Task ResetRestoresOriginalNativeAppearances()
+		{
+			if (!OperatingSystem.IsIOSVersionAtLeast(15) && !OperatingSystem.IsMacCatalystVersionAtLeast(15))
+				return;
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				using var tabBar = new UITabBar();
+				using var controller = new TestTabBarController(tabBar);
+				using var standard = new UITabBarAppearance();
+				using var scrollEdge = new UITabBarAppearance();
+				standard.ConfigureWithOpaqueBackground();
+				standard.BackgroundColor = Colors.Purple.ToPlatform();
+				scrollEdge.ConfigureWithTransparentBackground();
+				scrollEdge.BackgroundColor = Colors.Green.ToPlatform();
+				tabBar.StandardAppearance = standard;
+				tabBar.ScrollEdgeAppearance = scrollEdge;
+				tabBar.BackgroundColor = Colors.Yellow.ToPlatform();
+				using var tracker = new SafeShellTabBarAppearanceTracker();
+				var shellItem = new ShellItem();
+				Shell.SetBackground(shellItem, new SolidColorBrush(Colors.Blue));
+				var appearance = new ShellAppearance();
+				appearance.Ingest(shellItem);
+
+				tracker.SetAppearance(controller, appearance);
+				tracker.ResetAppearance(controller);
+
+				Assert.True(ColorComparison.ARGBEquivalent(Colors.Purple.ToPlatform(), tabBar.StandardAppearance.BackgroundColor));
+				Assert.True(ColorComparison.ARGBEquivalent(Colors.Green.ToPlatform(), tabBar.ScrollEdgeAppearance.BackgroundColor));
+				Assert.True(ColorComparison.ARGBEquivalent(Colors.Yellow.ToPlatform(), tabBar.BackgroundColor));
+				Assert.Null(tabBar.StandardAppearance.BackgroundEffect);
+				Assert.Null(tabBar.ScrollEdgeAppearance.BackgroundEffect);
+			});
+		}
+
+		[Fact]
 		public async Task ResetRestoresCapturedAppearanceWhenOriginalTintIsNull()
 		{
 			if (!OperatingSystem.IsIOSVersionAtLeast(15) && !OperatingSystem.IsMacCatalystVersionAtLeast(15))
