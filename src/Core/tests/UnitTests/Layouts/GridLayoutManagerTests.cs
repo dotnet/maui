@@ -1576,6 +1576,107 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			Assert.Equal(75, measure.Height);
 		}
 
+		static IView CreateConstraintFillingView()
+		{
+			var view = CreateTestView();
+			view.DesiredSize.Returns(Size.Zero);
+
+			view.Measure(Arg.Any<double>(), Arg.Any<double>()).Returns(args => new Size((double)args[0], (double)args[1]))
+				.AndDoes(args => view.DesiredSize.Returns(new Size((double)args[0], (double)args[1])));
+
+			return view;
+		}
+
+		[Fact]
+		public void AutoRowSpanningStarColumnIsSizedBeforeStarRows()
+		{
+			// https://github.com/dotnet/maui/issues/26426
+			var grid = CreateGridLayout(rows: "*, Auto", columns: "Auto, *");
+
+			var fillingView = CreateConstraintFillingView();
+			var autoRowView = CreateTestView(new Size(80, 50));
+
+			SubstituteChildren(grid, fillingView, autoRowView);
+			SetLocation(grid, fillingView, row: 0, col: 1);
+			SetLocation(grid, autoRowView, row: 1, col: 0, colSpan: 2);
+
+			var measure = MeasureAndArrangeFixed(grid, 400, 800);
+
+			// The * row only gets the space left over by the Auto row
+			Assert.Equal(800, measure.Height);
+			fillingView.Received().Measure(400, 750);
+			AssertArranged(fillingView, 0, 0, 400, 750);
+			AssertArranged(autoRowView, 0, 750, 400, 50);
+		}
+
+		[Fact]
+		public void AutoColumnSpanningStarRowIsSizedBeforeStarColumns()
+		{
+			var grid = CreateGridLayout(rows: "Auto, *", columns: "*, Auto");
+
+			var fillingView = CreateConstraintFillingView();
+			var autoColumnView = CreateTestView(new Size(50, 80));
+
+			SubstituteChildren(grid, fillingView, autoColumnView);
+			SetLocation(grid, fillingView, row: 1, col: 0);
+			SetLocation(grid, autoColumnView, row: 0, col: 1, rowSpan: 2);
+
+			var measure = MeasureAndArrangeFixed(grid, 400, 800);
+
+			// The * column only gets the space left over by the Auto column
+			Assert.Equal(400, measure.Width);
+			fillingView.Received().Measure(350, 800);
+			AssertArranged(fillingView, 0, 0, 350, 800);
+			AssertArranged(autoColumnView, 350, 0, 50, 800);
+		}
+
+		[Fact]
+		public void AutoRowInStarColumnIsSizedBeforeStarRows()
+		{
+			// https://github.com/dotnet/maui/issues/21974
+			var grid = CreateGridLayout(rows: "*, Auto", columns: "*, Auto");
+
+			var fillingView = CreateConstraintFillingView();
+			var autoRowView = CreateTestView(new Size(200, 50));
+
+			SubstituteChildren(grid, fillingView, autoRowView);
+			SetLocation(grid, fillingView, row: 0, col: 0);
+			SetLocation(grid, autoRowView, row: 1, col: 0);
+
+			var measure = MeasureAndArrangeFixed(grid, 500, 500);
+
+			// The * row only gets the space left over by the Auto row
+			Assert.Equal(500, measure.Height);
+			fillingView.Received().Measure(500, 450);
+			AssertArranged(fillingView, 0, 0, 500, 450);
+			AssertArranged(autoRowView, 0, 450, 500, 50);
+		}
+
+		[Fact]
+		public void StarRowGetsSpaceLeftByAutoRowWithCellInStarColumn()
+		{
+			// https://github.com/dotnet/maui/issues/23125
+			var grid = CreateGridLayout(rows: "Auto, *", columns: "*, Auto");
+
+			var autoRowView = CreateTestView(new Size(300, 254));
+			var autoColumnView = CreateTestView(new Size(100, 20));
+			var fillingView = CreateConstraintFillingView();
+
+			SubstituteChildren(grid, autoRowView, autoColumnView, fillingView);
+			SetLocation(grid, autoRowView, row: 0, col: 0);
+			SetLocation(grid, autoColumnView, row: 0, col: 1);
+			SetLocation(grid, fillingView, row: 1, col: 0);
+
+			var measure = MeasureAndArrangeFixed(grid, 400, 800);
+
+			// The * row only gets the space left over by the Auto row
+			Assert.Equal(800, measure.Height);
+			fillingView.Received().Measure(300, 546);
+			AssertArranged(autoRowView, 0, 0, 300, 254);
+			AssertArranged(autoColumnView, 300, 0, 100, 254);
+			AssertArranged(fillingView, 0, 254, 300, 546);
+		}
+
 		[Theory]
 		[InlineData(100, 200, 210, 200)]
 		[InlineData(200, 100, 210, 200)]
