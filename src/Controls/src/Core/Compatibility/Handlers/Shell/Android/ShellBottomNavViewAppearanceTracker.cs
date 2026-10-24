@@ -209,6 +209,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					};
 					backgroundColor.InitializeElevationOverlay(bottomView.Context);
 					bottomView.SetBackground(backgroundColor);
+					DisposeBackground(oldBackground);
 				}
 			}
 			else
@@ -226,6 +227,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				var touchPoint = new Point(child.Left + (child.Right - child.Left) / 2, child.Top + (child.Bottom - child.Top) / 2);
 				bottomView.SetBackground(new ColorChangeRevealDrawable(lastColor, newColor, touchPoint));
+				DisposeBackground(oldBackground);
 			}
 		}
 

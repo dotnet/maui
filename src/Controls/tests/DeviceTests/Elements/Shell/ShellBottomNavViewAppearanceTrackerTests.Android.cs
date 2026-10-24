@@ -96,6 +96,63 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory]
+		[InlineData(false, false, false)]
+		[InlineData(false, true, false)]
+		[InlineData(true, false, false)]
+		[InlineData(true, true, false)]
+		[InlineData(false, false, true)]
+		[InlineData(false, true, true)]
+		[InlineData(true, false, true)]
+		[InlineData(true, true, true)]
+		public async Task SolidColorReplacementDisposesOnlyOwnedBackground(bool hasMenuView, bool useAnimation, bool isCapturedBackground)
+		{
+			EnsureHandlerCreated();
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var section = new ShellSection
+				{
+					Title = "Home",
+					Items = { new ShellContent { Content = new ContentPage() } }
+				};
+				var shellItem = new ShellItem { Items = { section }, CurrentItem = section };
+				using var bottomView = new BottomNavigationView(MauiContext.Context);
+				using var title = new Java.Lang.String("Home");
+				if (hasMenuView)
+					bottomView.Menu.Add(0, 0, 0, title);
+				else
+					bottomView.RemoveAllViews();
+				using var tracker = new TestAppearanceTracker(shellItem);
+				using Drawable previousBackground = useAnimation
+					? new ColorChangeRevealDrawable(Colors.Yellow.ToPlatform(), Colors.Red.ToPlatform(), new Point(0, 0))
+					: new MaterialShapeDrawable { FillColor = ColorStateList.ValueOf(Colors.Red.ToPlatform()) };
+				bottomView.Background = previousBackground;
+				if (isCapturedBackground)
+					tracker.CaptureNativeAppearance(bottomView);
+
+				tracker.ApplyBackgroundColor(bottomView, Colors.Blue);
+
+				Assert.NotSame(previousBackground, bottomView.Background);
+				if (isCapturedBackground)
+					Assert.NotEqual(IntPtr.Zero, previousBackground.Handle);
+				else
+					Assert.Equal(IntPtr.Zero, previousBackground.Handle);
+
+				if (hasMenuView)
+				{
+					var reveal = Assert.IsType<ColorChangeRevealDrawable>(bottomView.Background);
+					Assert.Equal(Colors.Red.ToPlatform(), reveal.StartColor);
+					Assert.Equal(Colors.Blue.ToPlatform(), reveal.EndColor);
+				}
+				else
+				{
+					var material = Assert.IsType<MaterialShapeDrawable>(bottomView.Background);
+					Assert.Equal(Colors.Blue.ToPlatform().ToArgb(), material.FillColor.DefaultColor);
+				}
+			});
+		}
+
+		[Theory]
 		[InlineData(false)]
 		[InlineData(true)]
 		public async Task GradientDisposesReplacedSolidBackground(bool useAnimation)
