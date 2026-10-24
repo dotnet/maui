@@ -302,6 +302,22 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(shell.Items[0], flyoutItems[0][0]);
 		}
 
+		[Fact]
+		public void CurrentItemDoesNotChangeTheFlyoutOrderOfImplicitShellContents()
+		{
+			var shell = new TestShell();
+			var firstContent = CreateShellContent();
+			var currentContent = CreateShellContent();
+
+			shell.CurrentItem = currentContent;
+			shell.Items.Add(firstContent);
+			shell.Items.Add(currentContent);
+
+			Assert.Equal(firstContent, shell.Items[0].CurrentItem.CurrentItem);
+			Assert.Equal(currentContent, shell.Items[1].CurrentItem.CurrentItem);
+			Assert.Equal(currentContent, shell.CurrentItem.CurrentItem.CurrentItem);
+		}
+
 		MenuItem CreateNonVisibleMenuItem()
 		{
 			MenuItem item = new MenuItem();
