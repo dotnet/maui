@@ -17,6 +17,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public bool OnItemMove(int fromPosition, int toPosition)
 		{
+			// A native move must not overtake collection changes which have not reached the adapter yet.
+			if (CollectionChangedDispatcher.IsDispatchRequired)
+				return false;
+
 			var itemsSource = ItemsSource;
 			var itemsView = ItemsView;
 
