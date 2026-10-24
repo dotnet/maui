@@ -247,7 +247,10 @@ namespace Microsoft.Maui.Platform
 					UIImage? defaultClearImage = clearButton.ImageForState(UIControlState.Highlighted);
 					clearButton.TintColor = entry.TextColor.ToPlatform();
 
-					var tintedClearImage = GetClearButtonTintImage(defaultClearImage, entry.TextColor.ToPlatform());
+					var tintedClearImage = GetClearButtonTintImage(
+						defaultClearImage,
+						entry.TextColor.ToPlatform(),
+						(nfloat)textField.GetDisplayScale());
 					if (tintedClearImage is not null)
 					{
 						clearButton.SetImage(tintedClearImage, UIControlState.Normal);
@@ -257,7 +260,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		internal static UIImage? GetClearButtonTintImage(UIImage? image, UIColor color)
+		internal static UIImage? GetClearButtonTintImage(UIImage? image, UIColor color, nfloat scale)
 		{
 			if (image is null)
 			{
@@ -269,7 +272,7 @@ namespace Microsoft.Maui.Platform
 			var renderer = new UIGraphicsImageRenderer(size, new UIGraphicsImageRendererFormat()
 			{
 				Opaque = false,
-				Scale = UIScreen.MainScreen.Scale,
+				Scale = scale,
 			});
 
 			if (renderer is null)

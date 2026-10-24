@@ -63,6 +63,71 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void FlattenSmallArcProducesFinitePoints()
+		{
+			var points = new List<Point>();
+
+			GeometryHelper.FlattenArc(
+				points,
+				Point.Zero,
+				new Point(-0.55999, -0.44),
+				1,
+				1,
+				0,
+				false,
+				false,
+				1);
+
+			Assert.Equal(2, points.Count);
+			Assert.All(points, point =>
+			{
+				Assert.True(double.IsFinite(point.X));
+				Assert.True(double.IsFinite(point.Y));
+			});
+		}
+
+		[Fact]
+		public void FlattenSmallCubicBezierProducesFinitePoints()
+		{
+			var points = new List<Point>();
+
+			GeometryHelper.FlattenCubicBezier(
+				points,
+				Point.Zero,
+				new Point(0.1, 0.1),
+				new Point(0.2, 0.1),
+				new Point(0.3, 0),
+				1);
+
+			Assert.Equal(2, points.Count);
+			Assert.All(points, point =>
+			{
+				Assert.True(double.IsFinite(point.X));
+				Assert.True(double.IsFinite(point.Y));
+			});
+		}
+
+		[Fact]
+		public void FlattenSmallQuadraticBezierProducesFinitePoints()
+		{
+			var points = new List<Point>();
+
+			GeometryHelper.FlattenQuadraticBezier(
+				points,
+				Point.Zero,
+				new Point(0.2, 0.2),
+				new Point(0.4, 0),
+				1);
+
+			Assert.Equal(2, points.Count);
+			Assert.All(points, point =>
+			{
+				Assert.True(double.IsFinite(point.X));
+				Assert.True(double.IsFinite(point.Y));
+			});
+		}
+
+		[Fact]
 		public void TestRoundLineGeometryConstruction()
 		{
 			var lineGeometry = new LineGeometry(new Point(0, 0), new Point(100, 100));

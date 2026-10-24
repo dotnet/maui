@@ -1,4 +1,3 @@
-#if TEST_FAILS_ON_WINDOWS // Issue Link : https://github.com/dotnet/maui/issues/34738
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -15,12 +14,15 @@ public class Issue32995 : _IssuesUITest
 	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void TabBarDisabledColorAppliedToDisabledTab()
 	{
+		Exception? exception = null;
 		App.WaitForElement("Tab2");
-		VerifyScreenshot("DisabledTabWithGreenColor");
-
+		VerifyScreenshotOrSetException(ref exception,"DisabledTabWithGreenColor");
 		App.Tap("EnableButton");
 		App.WaitForElement("Tab2");
-		VerifyScreenshot("EnabledTabWithNormalColor");
+		VerifyScreenshotOrSetException(ref exception,"EnabledTabWithNormalColor");
+		if(exception is not null)
+		{
+			throw exception;
+		}
 	}
 }
-#endif

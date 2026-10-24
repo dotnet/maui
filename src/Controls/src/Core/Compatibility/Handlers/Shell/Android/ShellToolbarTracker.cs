@@ -740,6 +740,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				ApplyToolbarChanges((Toolbar)sender, (Toolbar)_toolbar);
 				UpdateToolbarIconAccessibilityText(_platformToolbar, _shell);
+
+				// IconColor follows the effective Shell.ForegroundColor, including values set on a parent
+				// ShellItem/ShellSection/ShellContent that do not raise a property change on the page or the Shell.
+				if (e.PropertyName == nameof(Toolbar.IconColor))
+					UpdateToolbarItemsTintColors();
 			}
 		}
 
@@ -755,7 +760,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		Color GetSearchHandlerTintColor(Page page)
 		{
-			var foregroundColor = page is not null ? Shell.GetForegroundColor(page) : null;
+			// Shell.ForegroundColor can be set on any element between the page and the Shell
+			// (ShellContent, Tab, TabBar, FlyoutItem), so resolve it the same way Shell resolves its appearance.
+			var foregroundColor = page is not null ? _shell.GetAppearanceForPivot(page)?.ForegroundColor : null;
 			return TintColor ?? foregroundColor ?? Shell.GetForegroundColor(_shell);
 		}
 
@@ -1022,7 +1029,22 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 						ADrawableCompat.SetTintList(IconBitmap, null); // Clear tint to preserve original icon colors
 					}
 
-					IconBitmap.SetBounds(Bounds.Left, Bounds.Top, Bounds.Right, Bounds.Bottom);
+					var bounds = Bounds;
+					var width = bounds.Width();
+					var height = bounds.Height();
+					var iconWidth = IconBitmap.IntrinsicWidth;
+					var iconHeight = IconBitmap.IntrinsicHeight;
+
+					if (iconWidth > 0 && iconHeight > 0)
+					{
+						var scale = Math.Min((float)width / iconWidth, (float)height / iconHeight);
+						width = Math.Max(1, (int)Math.Round(iconWidth * scale));
+						height = Math.Max(1, (int)Math.Round(iconHeight * scale));
+					}
+
+					var left = bounds.Left + (bounds.Width() - width) / 2;
+					var top = bounds.Top + (bounds.Height() - height) / 2;
+					IconBitmap.SetBounds(left, top, left + width, top + height);
 					IconBitmap.Draw(canvas);
 				}
 				else if (!string.IsNullOrEmpty(Text))
