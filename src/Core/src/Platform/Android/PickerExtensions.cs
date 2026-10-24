@@ -50,12 +50,6 @@ namespace Microsoft.Maui.Platform
 		}
 
 		// TODO: Material3 - make it public in .net 11
-		internal static void UpdateTitleColor(this MauiMaterialPicker platformPicker, IPicker picker)
-		{
-			platformPicker.UpdateTitleColorCore(picker);
-		}
-
-		// TODO: Material3 - make it public in .net 11
 		internal static void UpdateSelectedIndex(this MauiMaterialPicker platformPicker, IPicker picker)
 		{
 			UpdatePicker(platformPicker, picker);
@@ -69,6 +63,21 @@ namespace Microsoft.Maui.Platform
 		internal static void UpdateFlowDirection(this AppCompatAlertDialog alertDialog, MauiMaterialPicker platformPicker)
 		{
 			alertDialog.UpdateFlowDirectionCore(platformPicker);
+		}
+
+		internal static void UpdateTitle(this MauiMaterialPickerTextInputLayout platformPicker, IPicker picker)
+		{
+			platformPicker.Hint = picker.Title;
+		}
+
+		internal static void UpdateSelectedIndex(this MauiMaterialPickerTextInputLayout platformPicker, IPicker picker)
+		{
+			UpdatePickerTextCore(platformPicker.Picker, picker);
+		}
+
+		internal static void UpdatePicker(this MauiMaterialPickerTextInputLayout platformPicker, IPicker picker)
+		{
+			UpdatePickerTextCore(platformPicker.Picker, picker);
 		}
 
 		// TODO: Material3 - make it public in .net 11
@@ -93,7 +102,11 @@ namespace Microsoft.Maui.Platform
 		internal static void UpdatePickerCore(this AppCompatEditText platformPicker, IPicker picker)
 		{
 			platformPicker.Hint = picker.Title;
+			UpdatePickerTextCore(platformPicker, picker);
+		}
 
+		static void UpdatePickerTextCore(this AppCompatEditText platformPicker, IPicker picker)
+		{
 			if (picker.SelectedIndex == -1 || picker.SelectedIndex >= picker.GetCount())
 			{
 				platformPicker.Text = null;
