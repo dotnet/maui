@@ -18,13 +18,25 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void AccessibilityTraitsSetCorrectly()
 		{
 			App.WaitForElement("ToggleSelectionModeButton").Click();
+			AssertButtonTraits("None", false);
 			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "None");
 			App.WaitForElement("ToggleSelectionModeButton").Click();
+			AssertButtonTraits("Single", true);
 			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "Single");
 			App.WaitForElement("ToggleSelectionModeButton").Click();
+			AssertButtonTraits("Multiple", true);
 			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "Multiple");
 			App.WaitForElement("ToggleSelectionModeButton").Click();
+			AssertButtonTraits("None", false);
 			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "None");
+		}
+
+		void AssertButtonTraits(string selectionMode, bool isButton)
+		{
+			App.WaitForTextToBePresentInElement("SelectionModeStatus", $"selectionMode: {selectionMode}");
+			App.WaitForTextToBePresentInElement("BorderButtonTrait", $"Border: Item is Button - {isButton}");
+			App.WaitForTextToBePresentInElement("StackButtonTrait", $"VSL: Item is Button - {isButton}");
+			App.WaitForTextToBePresentInElement("GridButtonTrait", $"Grid: Item is Button - {isButton}");
 		}
 	}
 }

@@ -64,9 +64,9 @@
       </CollectionView>
 
       <Button Text="Toggle SelectionMode" Clicked="Button_Clicked" AutomationId="ToggleSelectionModeButton" />
-      <Label x:Name="selectionLabel" />
-      <Label Text="Border Item is Button?" x:Name="Label1" />
-      <Label Text="VerticalStackLayout Item is Button?" x:Name="Label2" />
-      <Label Text="Grid Item is Button?" x:Name="Label3" />
+      <Label x:Name="selectionLabel" AutomationId="SelectionModeStatus" />
+      <Label Text="Border Item is Button?" x:Name="Label1" AutomationId="BorderButtonTrait" />
+      <Label Text="VerticalStackLayout Item is Button?" x:Name="Label2" AutomationId="StackButtonTrait" />
+      <Label Text="Grid Item is Button?" x:Name="Label3" AutomationId="GridButtonTrait" />
     </VerticalStackLayout>
 </ContentPage>

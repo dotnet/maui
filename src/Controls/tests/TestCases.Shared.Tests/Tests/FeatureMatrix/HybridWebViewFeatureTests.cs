@@ -73,7 +73,7 @@ public class HybridWebViewFeatureTests : _GalleryUITest
 		Thread.Sleep(2000); // Allow time for the UI to update
 		App.WaitForElement("EvaluateJavaScriptButton");
 		App.Tap("EvaluateJavaScriptButton");
-		App.WaitForElement("StatusLabel");
+		WaitForJavaScriptResult("EvaluateJavaScriptAsync Result: HybridWebView1");
 		var result = App.FindElement("StatusLabel").GetText();
 		Assert.That(result, Is.EqualTo("EvaluateJavaScriptAsync Result: HybridWebView1"), "JavaScript evaluation should return the correct title for HybridWebview1.");
 
@@ -82,7 +82,7 @@ public class HybridWebViewFeatureTests : _GalleryUITest
 		Thread.Sleep(2000); // Allow time for the UI to update
 		App.WaitForElement("EvaluateJavaScriptButton");
 		App.Tap("EvaluateJavaScriptButton");
-		App.WaitForElement("StatusLabel");
+		WaitForJavaScriptResult("EvaluateJavaScriptAsync Result: HybridWebView2");
 		var result2 = App.FindElement("StatusLabel").GetText();
 		Assert.That(result2, Is.EqualTo("EvaluateJavaScriptAsync Result: HybridWebView2"), "JavaScript evaluation should return the correct title for HybridWebview2.");
 	}
@@ -100,7 +100,7 @@ public class HybridWebViewFeatureTests : _GalleryUITest
 		Thread.Sleep(2000); // Allow time for the UI to update
 		App.WaitForElement("EvaluateJavaScriptButton");
 		App.Tap("EvaluateJavaScriptButton");
-		App.WaitForElement("StatusLabel");
+		WaitForJavaScriptResult("EvaluateJavaScriptAsync Result: HybridWebView Image Page");
 		var result = App.FindElement("StatusLabel").GetText();
 		Assert.That(result, Is.EqualTo("EvaluateJavaScriptAsync Result: HybridWebView Image Page"));
 
@@ -109,7 +109,7 @@ public class HybridWebViewFeatureTests : _GalleryUITest
 		Thread.Sleep(2000); // Allow time for the UI to update
 		App.WaitForElement("EvaluateJavaScriptButton");
 		App.Tap("EvaluateJavaScriptButton");
-		App.WaitForElement("StatusLabel");
+		WaitForJavaScriptResult("EvaluateJavaScriptAsync Result: HybridWebView Navigation Page");
 		var result2 = App.FindElement("StatusLabel").GetText();
 		Assert.That(result2, Is.EqualTo("EvaluateJavaScriptAsync Result: HybridWebView Navigation Page"));
 	}
@@ -152,7 +152,7 @@ public class HybridWebViewFeatureTests : _GalleryUITest
 		App.Tap("IndexHtmlButton");
 		App.WaitForElement("SendMessageButton");
 		App.Tap("SendMessageButton");
-		App.WaitForElement("StatusLabel");
+		App.WaitForTextToBePresentInElement("StatusLabel", "Message sent successfully. Result: Message received");
 		var message = App.FindElement("StatusLabel").GetText();
 		Assert.That(message, Is.EqualTo("Message sent successfully. Result: Message received"), "JavaScript should receive the message sent from C#.");
 	}
@@ -171,4 +171,21 @@ public class HybridWebViewFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
+
+	void WaitForJavaScriptResult(string expected)
+	{
+		// Navigation can still be pending after the previous evaluation completes.
+		Assert.That(() =>
+		{
+			var button = App.FindElement("EvaluateJavaScriptButton");
+			if (!button.IsEnabled())
+				return false;
+
+			if (App.FindElement("StatusLabel").GetText() == expected)
+				return true;
+
+			button.Click();
+			return false;
+		}, Is.True.After(15000, 250), $"The document did not become ready for evaluation: {expected}");
+	}
 }

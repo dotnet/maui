@@ -18,6 +18,23 @@ public class Issue28986_ParentChildTest : _IssuesUITest
     : base(device)
     { }
 
+    public override void TestSetup()
+    {
+        base.TestSetup();
+
+        // Orientation acknowledgement precedes the end of the native rotation animation.
+        System.Drawing.Size screen = default;
+        System.Drawing.Rectangle bounds = default;
+        Assert.That(() =>
+        {
+            screen = ((AppiumApp)App).Driver.Manage().Window.Size;
+            bounds = App.WaitForElement("ParentGrid").GetRect();
+            return screen.Height > screen.Width &&
+                bounds == new System.Drawing.Rectangle(System.Drawing.Point.Empty, screen);
+        }, Is.True.After(5000, 100),
+            () => $"ParentGrid {bounds} must fill portrait window {screen} before measuring safe-area insets.");
+    }
+
     // Bottom-specific assertions guard for devices without bottom safe area (e.g. iPad without home indicator).
     static bool HasBottomSafeArea(double measuredBottomInset) => measuredBottomInset > 2;
 

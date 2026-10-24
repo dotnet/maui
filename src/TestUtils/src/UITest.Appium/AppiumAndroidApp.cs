@@ -95,7 +95,7 @@ namespace UITest.Appium
 				options.AddAdditionalAppiumOption(AndroidMobileCapabilityType.AppPackage, appId);
 				options.AddAdditionalAppiumOption(AndroidMobileCapabilityType.AppActivity, $"{appId}.MainActivity");
 			}
-			
+
 			var headless = config.GetProperty<bool>("Headless");
 			if (headless)
 			{

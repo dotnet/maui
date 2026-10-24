@@ -22,7 +22,7 @@ public class Issue23708 : ContentPage
 			},
 			ItemTemplate = new DataTemplate(() =>
 			{
-				var label = new Label();
+				var label = new Label { HeightRequest = 20 };
 				label.SetBinding(Label.TextProperty, ".");
 				label.SetBinding(AutomationIdProperty, new Binding(".", stringFormat: "Item{0}"));
 				return label;
@@ -32,6 +32,7 @@ public class Issue23708 : ContentPage
 				var label = new Label
 				{
 					FontSize = 32,
+					HeightRequest = 40,
 					TextColor = Colors.Blue,
 				};
 				label.SetBinding(Label.TextProperty, nameof(GroupedItems.Name));

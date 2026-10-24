@@ -8,12 +8,13 @@
   The child pipeline (eng/pipelines/ci-copilot-uitests.yml) publishes
   one drop-* artifact per matrix job (one job per detected category per
   platform) via PublishBuildArtifacts@1 in ui-tests-steps.yml. Each
-  artifact contains the TRX file from `dotnet test --logger trx`.
+  artifact contains the TRX file from `dotnet test --logger trx`, either
+  directly or inside ui-test-diagnostics.zip.
 
   This script:
     1. Lists artifacts on the build (filtered to drop-* + ui-tests-samples).
     2. Downloads them into a temp dir.
-    3. Walks all .trx files.
+    3. Expands diagnostic archives and walks all .trx files.
     4. Calls Get-TrxResults from Review-PR.ps1 (sourced via -ScriptDir)
        to parse each one.
     5. Merges results by category. The category for each TRX is derived
@@ -71,15 +72,9 @@ if (Test-Path $trxHelperPath) {
     throw "Get-TrxResults.ps1 not found at $trxHelperPath"
 }
 
-# Map artifact name → matrix category. Job names look like:
-#   android_ui_tests_controls_30_<CATEGORYGROUP>
-#   ios_ui_tests_mono_controls_latest_<CATEGORYGROUP>
-#   winui_ui_tests_controls_<CATEGORYGROUP>
-#   mac_ui_tests_controls_<CATEGORYGROUP>
 function Get-CategoryFromArtifactName {
     param([string]$ArtifactName)
 
-    # Pattern: drop-<stagename>-<jobname>-<attempt>
     $stagePrefixes = @(
         'android_ui_tests', 'android_ui_tests_coreclr', 'android_ui_tests_material3',
         'ios_ui_tests_mono', 'ios_ui_tests_mono_cv1', 'ios_ui_tests_mono_carv1',
@@ -87,7 +82,13 @@ function Get-CategoryFromArtifactName {
         'winui_ui_tests', 'mac_ui_tests'
     )
 
-    $name = $ArtifactName -replace '^drop-', '' -replace '-\d+$', ''
+    $name = $ArtifactName -replace '^drop-', ''
+    $identitySuffix = '-[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}-\d+-\d+$'
+    if ($name -match $identitySuffix) {
+        $name = $name -replace $identitySuffix, ''
+    } else {
+        $name = $name -replace '-\d+$', ''
+    }
 
     foreach ($sp in $stagePrefixes | Sort-Object Length -Descending) {
         if ($name -match "^${sp}-(.+)$") {
@@ -233,13 +234,21 @@ if ($dropArtifacts.Count -eq 0) {
 # --------- Download each artifact ---------
 foreach ($art in $dropArtifacts) {
     $artDir = Join-Path $OutputDir $art.name
-    if (Test-Path $artDir) { continue }   # already downloaded
-    Write-Host "  ⬇  $($art.name)" -ForegroundColor DarkGray
-    az pipelines runs artifact download `
-        --org $Org --project $Project --run-id $BuildId `
-        --artifact-name $art.name --path $artDir 2>&1 | Out-Null
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host "    ⚠  download failed for $($art.name)" -ForegroundColor Yellow
+    if (-not (Test-Path $artDir)) {
+        Write-Host "  ⬇  $($art.name)" -ForegroundColor DarkGray
+        az pipelines runs artifact download `
+            --org $Org --project $Project --run-id $BuildId `
+            --artifact-name $art.name --path $artDir 2>&1 | Out-Null
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "    ⚠  download failed for $($art.name)" -ForegroundColor Yellow
+            continue
+        }
+    }
+
+    $diagnosticsArchive = Join-Path $artDir "ui-test-diagnostics.zip"
+    if (Test-Path -LiteralPath $diagnosticsArchive -PathType Leaf) {
+        Write-Host "  Expanding diagnostics for $($art.name)" -ForegroundColor Gray
+        Expand-Archive -LiteralPath $diagnosticsArchive -DestinationPath $artDir -Force
     }
 }
 

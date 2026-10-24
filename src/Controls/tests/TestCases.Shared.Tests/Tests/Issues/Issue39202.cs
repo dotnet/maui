@@ -17,8 +17,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void CollectionViewItemSafeAreaEdgesShouldBePreservedWithShadow()
 		{
 			App.SetOrientationLandscape();
-			App.WaitForElement("NoShadowLabel");
-			App.WaitForElement("ShadowLabel");
+			var noShadow = App.WaitForElement("NoShadowLabel").GetRect();
+			var shadow = App.WaitForElement("ShadowLabel").GetRect();
+			Assert.That(shadow.X, Is.EqualTo(noShadow.X).Within(1),
+				"Adding a shadow must not remove the item root's safe-area inset.");
 
 			VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 		}
