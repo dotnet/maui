@@ -75,12 +75,27 @@ if (Test-Path $trxHelperPath) {
 function Get-CategoryFromArtifactName {
     param([string]$ArtifactName)
 
-    # Isolate the shared definition so it does not replace this compatibility entry point.
-    & {
-        param($HelperPath, $Name)
-        . $HelperPath
-        Get-CategoryFromArtifactName -ArtifactName $Name
-    } (Join-Path $PSScriptRoot "Get-CategoryFromArtifactName.ps1") $ArtifactName
+    $stagePrefixes = @(
+        'android_ui_tests', 'android_ui_tests_coreclr', 'android_ui_tests_material3',
+        'ios_ui_tests_mono', 'ios_ui_tests_mono_cv1', 'ios_ui_tests_mono_carv1',
+        'ios_ui_tests_nativeaot',
+        'winui_ui_tests', 'mac_ui_tests'
+    )
+
+    $name = $ArtifactName -replace '^drop-', ''
+    $identitySuffix = '-[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}-\d+-\d+$'
+    if ($name -match $identitySuffix) {
+        $name = $name -replace $identitySuffix, ''
+    } else {
+        $name = $name -replace '-\d+$', ''
+    }
+
+    foreach ($sp in $stagePrefixes | Sort-Object Length -Descending) {
+        if ($name -match "^${sp}-(.+)$") {
+            return $Matches[1].Trim()
+        }
+    }
+    return $name
 }
 
 # Walk a pre-populated OutputDir: find all .trx files (one per matrix
