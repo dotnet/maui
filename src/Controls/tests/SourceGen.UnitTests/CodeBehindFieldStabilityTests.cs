@@ -148,6 +148,54 @@ public class CodeBehindFieldStabilityTests : SourceGenTestsBase
 		}
 	}
 
+	[Theory]
+	[InlineData(false)]
+	[InlineData(true)]
+	public void RuntimeInflation_PreservesXNameWhitespaceInNameScopeLookup(bool enableIncrementalHotReload)
+	{
+		const string codeBehind = """
+			using Microsoft.Maui.Controls;
+			using Microsoft.Maui.Controls.Xaml;
+
+			namespace Test;
+
+			[XamlProcessing(XamlInflator.Runtime)]
+			public partial class RuntimeXNameWhitespace : ContentPage
+			{
+				public RuntimeXNameWhitespace() => InitializeComponent();
+			}
+			""";
+		const string xamlV1 = """
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="Test.RuntimeXNameWhitespace">
+				<Label x:Name=" label0 " />
+			</ContentPage>
+			""";
+		const string xamlV2 = """
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="Test.RuntimeXNameWhitespace">
+				<Label x:Name="  label0  " />
+			</ContentPage>
+			""";
+
+		var xamlFile = new AdditionalXamlFile("RuntimeXNameWhitespace.xaml", xamlV1, enableIncrementalHotReload);
+		var compilation = CreateMauiCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText(codeBehind));
+		var (_, result, updatedCompilation, diagnostics) = RunGeneratorWithChangesAndUpdateCompilation<XamlGenerator>(compilation, ApplyChanges, xamlFile);
+		var output = GetCbOutput(result);
+
+		AssertNoErrors(diagnostics, updatedCompilation);
+		Assert.Contains("Label label0;", output, StringComparison.Ordinal);
+		Assert.Contains("FindByName<global::Microsoft.Maui.Controls.Label>(this, \"  label0  \")", output, StringComparison.Ordinal);
+
+		(GeneratorDriver, Compilation) ApplyChanges(GeneratorDriver driver, Compilation currentCompilation)
+		{
+			var newXamlFile = new AdditionalXamlFile(xamlFile.Path, xamlV2, enableIncrementalHotReload);
+			return (driver.ReplaceAdditionalText(xamlFile.Text, newXamlFile.Text), currentCompilation);
+		}
+	}
+
 	// Reusing a previously-generated field name for an incompatible element type must not change
 	// the declared type of the existing field (a type change is itself an EnC rude edit); the
 	// original field must be kept as-is and simply left unassigned.

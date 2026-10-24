@@ -12,13 +12,27 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		UIColor _defaultBarTint;
 		UIColor _defaultTint;
 		UIColor _defaultUnselectedTint;
+		UIColor _defaultBackgroundColor;
+		UITabBarAppearance _defaultStandardAppearance;
+		UITabBarAppearance _defaultScrollEdgeAppearance;
+		bool _defaultAppearanceCaptured;
 		UITabBarAppearance _tabBarAppearance;
 		public virtual void ResetAppearance(UITabBarController controller)
 		{
-			if (_defaultTint == null)
+			if (!_defaultAppearanceCaptured)
 				return;
 
 			var tabBar = controller.TabBar;
+
+			if (OperatingSystem.IsIOSVersionAtLeast(15) || OperatingSystem.IsMacCatalystVersionAtLeast(15) || OperatingSystem.IsTvOSVersionAtLeast(15))
+			{
+				// Remove any gradient/solid background applied through SetAppearance so it does not survive the reset.
+				Microsoft.Maui.Platform.LayerExtensions.RemoveBackgroundLayer(tabBar);
+				tabBar.BackgroundColor = _defaultBackgroundColor;
+				tabBar.StandardAppearance = _defaultStandardAppearance;
+				tabBar.ScrollEdgeAppearance = _defaultScrollEdgeAppearance;
+			}
+
 			tabBar.BarTintColor = _defaultBarTint;
 			tabBar.TintColor = _defaultTint;
 			tabBar.UnselectedItemTintColor = _defaultUnselectedTint;
@@ -26,23 +40,25 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public virtual void SetAppearance(UITabBarController controller, ShellAppearance appearance)
 		{
-			IShellAppearanceElement appearanceElement = appearance;
-			var backgroundColor = appearanceElement.EffectiveTabBarBackgroundColor;
-			var foregroundColor = appearanceElement.EffectiveTabBarForegroundColor;
-			var disabledColor = appearanceElement.EffectiveTabBarDisabledColor;
-			var unselectedColor = appearanceElement.EffectiveTabBarUnselectedColor;
-			var titleColor = appearanceElement.EffectiveTabBarTitleColor;
-
 			var tabBar = controller.TabBar;
 
-			if (_defaultTint == null)
+			if (!_defaultAppearanceCaptured)
 			{
 				_defaultBarTint = tabBar.BarTintColor;
 				_defaultTint = tabBar.TintColor;
 				_defaultUnselectedTint = tabBar.UnselectedItemTintColor;
+				_defaultBackgroundColor = tabBar.BackgroundColor;
+				if (OperatingSystem.IsIOSVersionAtLeast(15) || OperatingSystem.IsMacCatalystVersionAtLeast(15) || OperatingSystem.IsTvOSVersionAtLeast(15))
+				{
+					_defaultStandardAppearance = (UITabBarAppearance)tabBar.StandardAppearance.Copy();
+					_defaultScrollEdgeAppearance = tabBar.ScrollEdgeAppearance is UITabBarAppearance scrollEdge
+						? (UITabBarAppearance)scrollEdge.Copy()
+						: null;
+				}
+				_defaultAppearanceCaptured = true;
 			}
 
-			if (OperatingSystem.IsIOSVersionAtLeast(15) || OperatingSystem.IsTvOSVersionAtLeast(15))
+			if (OperatingSystem.IsIOSVersionAtLeast(15) || OperatingSystem.IsMacCatalystVersionAtLeast(15) || OperatingSystem.IsTvOSVersionAtLeast(15))
 				UpdateiOS15TabBarAppearance(controller, appearance);
 			else
 				UpdateTabBarAppearance(controller, appearance);
@@ -56,6 +72,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected virtual void Dispose(bool disposing)
 		{
+			if (disposing)
+			{
+				_tabBarAppearance?.Dispose();
+				_tabBarAppearance = null;
+				_defaultStandardAppearance?.Dispose();
+				_defaultStandardAppearance = null;
+				_defaultScrollEdgeAppearance?.Dispose();
+				_defaultScrollEdgeAppearance = null;
+			}
 		}
 
 		public void Dispose()
@@ -66,27 +91,32 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		#endregion
 
 		[System.Runtime.Versioning.SupportedOSPlatform("ios15.0")]
+		[System.Runtime.Versioning.SupportedOSPlatform("maccatalyst15.0")]
 		[System.Runtime.Versioning.SupportedOSPlatform("tvos15.0")]
 		void UpdateiOS15TabBarAppearance(UITabBarController controller, ShellAppearance appearance)
 		{
 			IShellAppearanceElement appearanceElement = appearance;
 
-			var backgroundColor = appearanceElement.EffectiveTabBarBackgroundColor;
+			var background = appearance.EffectiveTabBarBackground;
 			var foregroundColor = appearanceElement.EffectiveTabBarForegroundColor;
 			var unselectedColor = appearanceElement.EffectiveTabBarUnselectedColor;
 			var titleColor = appearanceElement.EffectiveTabBarTitleColor;
 			var disabledColor = appearanceElement.EffectiveTabBarDisabledColor;
 
-			controller.TabBar
+			var tabBar = controller.TabBar;
+
+			tabBar
 				.UpdateiOS15TabBarAppearance(
 					ref _tabBarAppearance,
 					null,
 					null,
 					foregroundColor ?? titleColor,
 					unselectedColor,
-					backgroundColor,
+					background,
 					titleColor ?? foregroundColor,
-					unselectedColor);
+					unselectedColor,
+					useBackgroundColorForSolidPaint: ReferenceEquals(background, appearance.Background),
+					defaultViewBackgroundColor: _defaultBackgroundColor);
 
 			// Set disabled color in the global appearance for text-only tabs
 			if (disabledColor is not null && _tabBarAppearance is not null)

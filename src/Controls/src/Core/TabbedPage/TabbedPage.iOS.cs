@@ -22,9 +22,12 @@ namespace Microsoft.Maui.Controls
 		bool _defaultBarTextColorSet;
 		UIColor _defaultBarColor;
 		bool _defaultBarColorSet;
+		UIColor _defaultViewBackgroundColor;
 		bool? _defaultBarTranslucent;
 		UITabBarAppearance _tabBarAppearance;
 		Brush _currentBarBackground;
+		WeakBrushChangedProxy _barBackgroundProxy;
+		EventHandler _barBackgroundChanged;
 
 		// Tracks pages from the previous MapItemsSource call so we can
 		// disconnect handlers for pages that were removed.
@@ -49,6 +52,8 @@ namespace Microsoft.Maui.Controls
 			{
 				return;
 			}
+
+			_barBackgroundProxy?.Unsubscribe();
 
 			// Handler is being removed or replaced — clean up old resources
 
@@ -78,15 +83,16 @@ namespace Microsoft.Maui.Controls
 			_barBackgroundColorWasSet = false;
 			_barTextColorWasSet = false;
 			_defaultBarColor = null;
+			_defaultViewBackgroundColor = null;
 			_defaultBarTextColor = null;
 
 			// Clean up gradient brush subscription
 			if (_currentBarBackground is GradientBrush gradientBrush)
 			{
 				gradientBrush.Parent = null;
-				gradientBrush.InvalidateGradientBrushRequested -= OnBarBackgroundChanged;
 			}
 			_currentBarBackground = null;
+			_barBackgroundChanged = null;
 
 			// Clear previous pages tracking
 			_previousPages = null;
@@ -185,10 +191,10 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
+			view._barBackgroundProxy?.Unsubscribe();
 			if (view._currentBarBackground is GradientBrush oldGradientBrush)
 			{
 				oldGradientBrush.Parent = null;
-				oldGradientBrush.InvalidateGradientBrushRequested -= view.OnBarBackgroundChanged;
 			}
 
 			view._currentBarBackground = view.BarBackground;
@@ -196,16 +202,30 @@ namespace Microsoft.Maui.Controls
 			if (view._currentBarBackground is GradientBrush newGradientBrush)
 			{
 				newGradientBrush.Parent = view;
-				newGradientBrush.InvalidateGradientBrushRequested += view.OnBarBackgroundChanged;
+			}
+			if (view._currentBarBackground is Brush brush && brush is not ImmutableBrush)
+			{
+				view._barBackgroundChanged ??= view.OnBarBackgroundChanged;
+				(view._barBackgroundProxy ??= new WeakBrushChangedProxy())
+					.Subscribe(brush, view._barBackgroundChanged);
 			}
 
-			tabBar.UpdateBackground(view._currentBarBackground);
+			view.UpdateBarBackground(tabBar);
 		}
 
 		void OnBarBackgroundChanged(object sender, EventArgs e)
 		{
 			var tabBar = GetTabBar(Handler as ITabbedViewHandler);
-			tabBar?.UpdateBackground(_currentBarBackground);
+			if (tabBar is not null)
+				UpdateBarBackground(tabBar);
+		}
+
+		void UpdateBarBackground(UITabBar tabBar)
+		{
+			if (OperatingSystem.IsIOSVersionAtLeast(15) || OperatingSystem.IsMacCatalystVersionAtLeast(15) || OperatingSystem.IsTvOSVersionAtLeast(15))
+				UpdateiOS15TabBarAppearance(tabBar);
+			else
+				tabBar.UpdateBackground(_currentBarBackground);
 		}
 
 		internal static void MapBarBackgroundColor(ITabbedViewHandler handler, TabbedPage view)
@@ -236,7 +256,7 @@ namespace Microsoft.Maui.Controls
 				view._barBackgroundColorWasSet = true;
 			}
 
-			if (OperatingSystem.IsIOSVersionAtLeast(15) || OperatingSystem.IsTvOSVersionAtLeast(15))
+			if (OperatingSystem.IsIOSVersionAtLeast(15) || OperatingSystem.IsMacCatalystVersionAtLeast(15) || OperatingSystem.IsTvOSVersionAtLeast(15))
 			{
 				view.UpdateiOS15TabBarAppearance(tabBar);
 			}
@@ -292,7 +312,7 @@ namespace Microsoft.Maui.Controls
 			}
 
 			// Set TintColor for selected icon
-			if (OperatingSystem.IsIOSVersionAtLeast(15) || OperatingSystem.IsTvOSVersionAtLeast(15))
+			if (OperatingSystem.IsIOSVersionAtLeast(15) || OperatingSystem.IsMacCatalystVersionAtLeast(15) || OperatingSystem.IsTvOSVersionAtLeast(15))
 			{
 				view.UpdateiOS15TabBarAppearance(tabBar);
 			}
@@ -310,7 +330,7 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
-			if (OperatingSystem.IsIOSVersionAtLeast(15) || OperatingSystem.IsTvOSVersionAtLeast(15))
+			if (OperatingSystem.IsIOSVersionAtLeast(15) || OperatingSystem.IsMacCatalystVersionAtLeast(15) || OperatingSystem.IsTvOSVersionAtLeast(15))
 			{
 				view.UpdateiOS15TabBarAppearance(tabBar);
 			}
@@ -345,7 +365,7 @@ namespace Microsoft.Maui.Controls
 				tabBar.TintColor = UITabBar.Appearance.TintColor;
 			}
 
-			if (OperatingSystem.IsIOSVersionAtLeast(15) || OperatingSystem.IsTvOSVersionAtLeast(15))
+			if (OperatingSystem.IsIOSVersionAtLeast(15) || OperatingSystem.IsMacCatalystVersionAtLeast(15) || OperatingSystem.IsTvOSVersionAtLeast(15))
 			{
 				view.UpdateiOS15TabBarAppearance(tabBar);
 			}
@@ -876,18 +896,26 @@ namespace Microsoft.Maui.Controls
 		}
 
 		[System.Runtime.Versioning.SupportedOSPlatform("ios15.0")]
+		[System.Runtime.Versioning.SupportedOSPlatform("maccatalyst15.0")]
 		[System.Runtime.Versioning.SupportedOSPlatform("tvos15.0")]
 		void UpdateiOS15TabBarAppearance(UITabBar tabBar)
 		{
+			if (_tabBarAppearance is null)
+				_defaultViewBackgroundColor = tabBar.BackgroundColor;
+
+			var useBrush = !Brush.IsNullOrEmpty(BarBackground) &&
+				BarBackground is SolidColorBrush or LinearGradientBrush or RadialGradientBrush;
 			tabBar.UpdateiOS15TabBarAppearance(
 				ref _tabBarAppearance,
 				_defaultBarColor,
 				_defaultBarTextColor,
 				IsSet(SelectedTabColorProperty) ? SelectedTabColor : null,
 				IsSet(UnselectedTabColorProperty) ? UnselectedTabColor : null,
-				IsSet(BarBackgroundColorProperty) ? BarBackgroundColor : null,
+				useBrush ? BarBackground : IsSet(BarBackgroundColorProperty) ? BarBackgroundColor?.AsPaint() : null,
 				IsSet(BarTextColorProperty) ? BarTextColor : null,
-				IsSet(BarTextColorProperty) ? BarTextColor : null);
+				IsSet(BarTextColorProperty) ? BarTextColor : null,
+				useBackgroundColorForSolidPaint: useBrush,
+				defaultViewBackgroundColor: _defaultViewBackgroundColor);
 		}
 
 		void UpdateChildrenOrderIndex(UIViewController[] viewControllers)
