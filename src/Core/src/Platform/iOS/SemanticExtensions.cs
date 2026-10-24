@@ -85,7 +85,7 @@ namespace Microsoft.Maui.Platform
 			// stops announcing stale content and its children become navigable again.
 			if (semantics is null)
 			{
-				if (view is ILayout && platformView is not UIControl && platformView.IsAccessibilityElement)
+				if ((view is ILayout || view is IContentView) && platformView is not UIControl && platformView.IsAccessibilityElement)
 				{
 					platformView.IsAccessibilityElement = false;
 					platformView.AccessibilityLabel = null;
@@ -94,6 +94,13 @@ namespace Microsoft.Maui.Platform
 					{
 						clearedMauiView.SynthesizeAccessibilityLabelFromChildren = false;
 					}
+				}
+
+				if (view is IContentView && view is not ILayout)
+				{
+					platformView.ShouldGroupAccessibilityChildren = false;
+					platformView.AccessibilityLabel = null;
+					platformView.AccessibilityHint = null;
 				}
 
 				return;
@@ -172,6 +179,27 @@ namespace Microsoft.Maui.Platform
 				{
 					demotedMauiView.SynthesizeAccessibilityLabelFromChildren = false;
 				}
+			}
+
+			// Non-layout content containers (ContentView, Border, Frame, etc.) with presented content
+			// should remain containers so their independently accessible children stay reachable.
+			if (view is IContentView contentView
+				&& view is not ILayout
+				&& contentView.PresentedContent is not null
+				&& platformView.GestureRecognizers is not { Length: > 0 })
+			{
+				platformView.AccessibilityLabel = semantics.Description;
+				platformView.AccessibilityHint = semantics.Hint;
+				platformView.IsAccessibilityElement = false;
+				platformView.ShouldGroupAccessibilityChildren = true;
+				UpdateSemanticsHeading(platformView, semantics);
+				return;
+			}
+
+			if (view is IContentView && view is not ILayout
+				&& platformView.ShouldGroupAccessibilityChildren)
+			{
+				platformView.ShouldGroupAccessibilityChildren = false;
 			}
 
 			UpdateSemantics(platformView, semantics);
