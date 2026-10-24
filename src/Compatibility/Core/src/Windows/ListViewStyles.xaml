@@ -7,6 +7,7 @@
     xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)"
     xmlns:contract7NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,7)"
     xmlns:primitiveContract7Present="using:Microsoft.UI.Xaml.Controls.Primitives?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)"
+    xmlns:controls="using:Microsoft.Maui.Controls"
     xmlns:xf="using:Microsoft.Maui.Controls.Platform"
 	xmlns:uwp="using:Microsoft.Maui.Controls.Compatibility.Platform.UWP">
 
@@ -45,41 +46,41 @@
         </ContentControl>
     </DataTemplate>
 
-    <DataTemplate x:Key="CompatibilityTextCell">
+    <DataTemplate x:Key="CompatibilityTextCell" x:DataType="controls:TextCell">
         <StackPanel AutomationProperties.AutomationId="{Binding AutomationId}">
             <TextBlock
 				Text="{Binding Text}"
 				Style="{ThemeResource BaseTextBlockStyle}"
-				Visibility="{Binding Text,RelativeSource={RelativeSource Self}, Converter={StaticResource CollapseWhenEmpty}}"
+				Visibility="{Binding Text, Converter={StaticResource CollapseWhenEmpty}}"
 				Foreground="{Binding TextColor, Converter={StaticResource ColorConverter}, ConverterParameter=DefaultTextForegroundThemeBrush}" />
 
             <TextBlock
 				Text="{Binding Detail}"
 				Style="{ThemeResource BodyTextBlockStyle}"
-				Visibility="{Binding Text,RelativeSource={RelativeSource Self}, Converter={StaticResource CollapseWhenEmpty}}"
+				Visibility="{Binding Detail, Converter={StaticResource CollapseWhenEmpty}}"
 				Foreground="{Binding DetailColor, Converter={StaticResource ColorConverter}, ConverterParameter=DefaultTextForegroundThemeBrush}"
 				x:Name="detail"/>
         </StackPanel>
     </DataTemplate>
 
-    <DataTemplate x:Key="CompatibilityListViewHeaderTextCell">
+    <DataTemplate x:Key="CompatibilityListViewHeaderTextCell" x:DataType="controls:TextCell">
         <StackPanel>
             <TextBlock
 				Text="{Binding Text}"
 				Style="{ThemeResource SubheaderTextBlockStyle}"
-				Visibility="{Binding Text,RelativeSource={RelativeSource Self}, Converter={StaticResource CollapseWhenEmpty}}"
+				Visibility="{Binding Text, Converter={StaticResource CollapseWhenEmpty}}"
 				Foreground="{Binding TextColor, Converter={StaticResource ColorConverter}, ConverterParameter=DefaultTextForegroundThemeBrush}" />
 
             <TextBlock
 				Text="{Binding Detail}"
 				Style="{ThemeResource BodyTextBlockStyle}"
-				Visibility="{Binding Text,RelativeSource={RelativeSource Self}, Converter={StaticResource CollapseWhenEmpty}}"
+				Visibility="{Binding Detail, Converter={StaticResource CollapseWhenEmpty}}"
 				Foreground="{Binding DetailColor, Converter={StaticResource ColorConverter}, ConverterParameter=DefaultTextForegroundThemeBrush}"
 				x:Name="detail" />
         </StackPanel>
     </DataTemplate>
 
-    <DataTemplate x:Key="CompatibilityImageCell">
+    <DataTemplate x:Key="CompatibilityImageCell" x:DataType="controls:ImageCell">
         <Grid AutomationProperties.AutomationId="{Binding AutomationId}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
@@ -99,19 +100,19 @@
             <TextBlock Grid.Column="1" Grid.Row="0"
 				Text="{Binding Text}"
 				Style="{ThemeResource BaseTextBlockStyle}"
-				Visibility="{Binding Text,RelativeSource={RelativeSource Self}, Converter={StaticResource CollapseWhenEmpty}}"
+				Visibility="{Binding Text, Converter={StaticResource CollapseWhenEmpty}}"
 				Foreground="{Binding TextColor, Converter={StaticResource ColorConverter}, ConverterParameter=DefaultTextForegroundThemeBrush}" />
 
             <TextBlock Grid.Column="1" Grid.Row="1"
 				Text="{Binding Detail}"
 				Style="{ThemeResource BodyTextBlockStyle}"
-				Visibility="{Binding Text,RelativeSource={RelativeSource Self}, Converter={StaticResource CollapseWhenEmpty}}"
+				Visibility="{Binding Detail, Converter={StaticResource CollapseWhenEmpty}}"
 				Foreground="{Binding DetailColor, Converter={StaticResource ColorConverter}, ConverterParameter=DefaultTextForegroundThemeBrush}"
 				x:Name="detail" />
         </Grid>
     </DataTemplate>
 
-    <DataTemplate x:Key="CompatibilitySwitchCell">
+    <DataTemplate x:Key="CompatibilitySwitchCell" x:DataType="controls:SwitchCell">
         <Grid HorizontalAlignment="Stretch" x:Name="ParentGrid"  AutomationProperties.AutomationId="{Binding AutomationId}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
@@ -124,10 +125,10 @@
         </Grid>
     </DataTemplate>
 
-    <DataTemplate x:Key="CompatibilityEntryCell">
+    <DataTemplate x:Key="CompatibilityEntryCell" x:DataType="controls:EntryCell">
         <uwp:EntryCellTextBox  AutomationProperties.AutomationId="{Binding AutomationId}" IsEnabled="{Binding IsEnabled}" Header="{Binding}" Text="{Binding Text, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" TextAlignment="{Binding HorizontalTextAlignment,Converter={StaticResource HorizontalTextAlignmentConverter}}" PlaceholderText="{Binding Placeholder}"  InputScope="{Binding Keyboard,Converter={StaticResource KeyboardConverter}}" HorizontalAlignment="Stretch">
             <uwp:EntryCellTextBox.HeaderTemplate>
-                <DataTemplate>
+                <DataTemplate x:DataType="controls:EntryCell">
                     <TextBlock Text="{Binding Label}" IsHitTestVisible="False" Style="{ThemeResource BaseTextBlockStyle}" Foreground="{Binding LabelColor, Converter={StaticResource ColorConverter}, ConverterParameter=DefaultTextForegroundThemeBrush}" />
                 </DataTemplate>
             </uwp:EntryCellTextBox.HeaderTemplate>

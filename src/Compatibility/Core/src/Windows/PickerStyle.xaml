@@ -1,6 +1,7 @@
 <ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.Maui.Controls"
     xmlns:local="using:Microsoft.Maui.Controls.Compatibility.Platform.UWP">
 
     <Style TargetType="local:FormsComboBox">
@@ -266,7 +267,7 @@
         </Setter>
     </Style>
 
-    <DataTemplate x:Key="ComboBoxHeader">
+    <DataTemplate x:Key="ComboBoxHeader" x:DataType="controls:Picker">
         <TextBlock Text="{Binding Title}" 
                    CharacterSpacing="{Binding Path=CharacterSpacing, ElementName=HeaderContentPresenter}"
                    Foreground="{Binding TitleColor,Converter={StaticResource ColorConverter},ConverterParameter=DefaultTextForegroundThemeBrush}" />
