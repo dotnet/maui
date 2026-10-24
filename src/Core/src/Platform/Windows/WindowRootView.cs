@@ -18,7 +18,6 @@ using WThickness = Microsoft.UI.Xaml.Thickness;
 
 namespace Microsoft.Maui.Platform
 {
-	[Microsoft.UI.Xaml.Data.Bindable]
 	public partial class WindowRootView : ContentControl
 	{
 		public static readonly DependencyProperty AppTitleBarTemplateProperty
