@@ -186,6 +186,9 @@
     <_PacksToRemove Include="microsoft.net.sdk.macos" />
     <_PacksToRemove Include="microsoft.net.workload.emscripten" />
     <_PacksToRemove Include="microsoft.net.workload.mono.toolchain" />
+    <!-- Bundled final manifests take precedence over the pinned net10 prerelease manifests. -->
+    <_PacksToRemove Include="microsoft.net.workload.emscripten.net10" />
+    <_PacksToRemove Include="microsoft.net.workload.mono.toolchain.net10" />
     <!-- Ids for 'dotnet workload install' -->
     <_WorkloadIds Include="android" />
     <_WorkloadIds Include="maccatalyst" Condition="!$([MSBuild]::IsOSPlatform('linux'))" />
