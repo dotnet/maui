@@ -8,12 +8,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items2;
 /// An observable collection of <see cref="ItemTemplateContext2"/> that mirrors an
 /// <see cref="INotifyCollectionChanged"/> items source, keeping the template collection
 /// synchronized with the underlying data and supporting drag/drop reordering.
+/// The owner is weakly referenced because WinUI may retain this source after removal.
 /// </summary>
 internal class ObservableItemTemplateCollection2 : ObservableCollection<ItemTemplateContext2>
 {
 	readonly IList _itemsSource;
 	readonly DataTemplate _itemTemplate;
-	readonly BindableObject _container;
+	readonly WeakReference<BindableObject> _container;
 	readonly IMauiContext? _mauiContext;
 	readonly double _itemHeight;
 	readonly double _itemWidth;
@@ -32,7 +33,7 @@ internal class ObservableItemTemplateCollection2 : ObservableCollection<ItemTemp
 	{
 		_itemsSource = itemsSource;
 		_itemTemplate = itemTemplate;
-		_container = container;
+		_container = new(container);
 		_mauiContext = mauiContext;
 		_itemHeight = itemHeight ?? 0;
 		_itemWidth = itemWidth ?? 0;
@@ -164,7 +165,12 @@ internal class ObservableItemTemplateCollection2 : ObservableCollection<ItemTemp
 		if (!_observeChanges)
 			return;
 
-		_container.Dispatcher.DispatchIfRequired(() =>
+		if (!_container.TryGetTarget(out var container))
+		{
+			return;
+		}
+
+		container.Dispatcher.DispatchIfRequired(() =>
 		{
 			if (!_observeChanges)
 				return;

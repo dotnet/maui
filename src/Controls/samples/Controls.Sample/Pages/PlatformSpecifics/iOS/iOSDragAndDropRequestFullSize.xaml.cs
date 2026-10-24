@@ -92,7 +92,7 @@ namespace Maui.Controls.Sample.Pages
 			if (copySwitch.IsToggled)
 				e.PlatformArgs!.SetDropProposal(new UIKit.UIDropProposal(UIKit.UIDropOperation.Copy));
 			else if (moveSwitch.IsToggled)
-				e.PlatformArgs!.SetDropProposal(new UIKit.UIDropProposal(UIKit.UIDropOperation.Move));
+				e.AcceptedOperation = DataPackageOperation.Move;
 			else if (forbiddenSwitch.IsToggled)
 				e.PlatformArgs!.SetDropProposal(new UIKit.UIDropProposal(UIKit.UIDropOperation.Forbidden));
 #endif

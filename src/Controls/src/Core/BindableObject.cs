@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		internal ushort _triggerCount = 0;
-		internal Dictionary<TriggerBase, SetterSpecificity> _triggerSpecificity = new();
+		internal Dictionary<TriggerBase, SetterSpecificity> _triggerSpecificity;
 		readonly Dictionary<int, BindablePropertyContext> _properties = new(4);
 		bool _applying;
 		WeakReference _inheritedContext;
@@ -140,7 +140,7 @@ namespace Microsoft.Maui.Controls
 			if (changed)
 			{
 				property.PropertyChanging?.Invoke(this, original.Value, newValue);
-				OnPropertyChanging(property.PropertyName);
+				NotifyPropertyChanging(property);
 			}
 
 			bpcontext.Values.Remove(specificity);
@@ -423,14 +423,73 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		/// <param name="propertyName">The name of the property that has changed.</param>
 		protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
-			=> PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+			=> PropertyChanged?.Invoke(this, ChangedEventArgsFor(propertyName));
 
 		/// <summary>
 		/// Raises the <see cref="PropertyChanging"/> event.
 		/// </summary>
 		/// <param name="propertyName">The name of the property that is changing.</param>
 		protected virtual void OnPropertyChanging([CallerMemberName] string propertyName = null)
-			=> PropertyChanging?.Invoke(this, new PropertyChangingEventArgs(propertyName));
+			=> PropertyChanging?.Invoke(this, ChangingEventArgsFor(propertyName));
+
+		// The BindableProperty currently being notified, if any. OnPropertyChanged/OnPropertyChanging take a name
+		// rather than a property, and they are public API that dozens of controls override, so the property cannot
+		// simply be passed down as an argument. Parking it here instead lets the args come straight off the property
+		// while the virtual is still dispatched exactly as before, so every override keeps working.
+		BindableProperty _notifyingProperty;
+
+		void NotifyPropertyChanged(BindableProperty property)
+		{
+			// Saved and restored rather than cleared, because a handler is free to set another property from inside
+			// this notification, and the outer one has to still be parked when that nested call returns.
+			var previous = _notifyingProperty;
+			_notifyingProperty = property;
+
+			try
+			{
+				OnPropertyChanged(property.PropertyName);
+			}
+			finally
+			{
+				_notifyingProperty = previous;
+			}
+		}
+
+		void NotifyPropertyChanging(BindableProperty property)
+		{
+			var previous = _notifyingProperty;
+			_notifyingProperty = property;
+
+			try
+			{
+				OnPropertyChanging(property.PropertyName);
+			}
+			finally
+			{
+				_notifyingProperty = previous;
+			}
+		}
+
+		// All three notification sites pass property.PropertyName itself, so the parked property is the right one
+		// exactly when the reference matches. An override that calls base.OnPropertyChanged with some other name —
+		// or any notification that never came from a BindableProperty at all — falls through to the keyed cache.
+		internal PropertyChangedEventArgs ChangedEventArgsFor(string propertyName)
+		{
+			var property = _notifyingProperty;
+
+			return property is not null && ReferenceEquals(property.PropertyName, propertyName)
+				? property.ChangedEventArgs
+				: BindableProperty.GetCachedPropertyChangedEventArgs(propertyName);
+		}
+
+		PropertyChangingEventArgs ChangingEventArgsFor(string propertyName)
+		{
+			var property = _notifyingProperty;
+
+			return property is not null && ReferenceEquals(property.PropertyName, propertyName)
+				? property.ChangingEventArgs
+				: BindableProperty.GetCachedPropertyChangingEventArgs(propertyName);
+		}
 
 		/// <summary>
 		/// Removes all current bindings from the current context.
@@ -469,8 +528,9 @@ namespace Microsoft.Maui.Controls
 			ApplyBinding(bpcontext, fromBindingContextChanged: false);
 		}
 
-		internal virtual void OnRemoveDynamicResource(BindableProperty property)
+		internal virtual bool OnRemoveDynamicResource(BindableProperty property, SetterSpecificity specificity)
 		{
+			return true;
 		}
 
 		internal virtual void OnSetDynamicResource(BindableProperty property, string key, SetterSpecificity specificity)
@@ -485,9 +545,13 @@ namespace Microsoft.Maui.Controls
 			if (property == null)
 				throw new ArgumentNullException(nameof(property));
 
-			OnRemoveDynamicResource(property);
-			BindablePropertyContext context = GetOrCreateContext(property);
-			context.Attributes &= ~BindableContextAttributes.IsDynamicResource;
+			// A lower-specificity registration may still be live for this property (a style's,
+			// under a visual state's); only clear the flag once the last one is gone.
+			if (OnRemoveDynamicResource(property, specificity))
+			{
+				BindablePropertyContext context = GetOrCreateContext(property);
+				context.Attributes &= ~BindableContextAttributes.IsDynamicResource;
+			}
 		}
 
 		void IDynamicResourceHandler.SetDynamicResource(BindableProperty property, string key)
@@ -496,7 +560,6 @@ namespace Microsoft.Maui.Controls
 		internal void SetDynamicResource(BindableProperty property, string key)
 			=> SetDynamicResource(property, key, SetterSpecificity.DynamicResourceSetter);
 
-		//FIXME, use specificity
 		internal void SetDynamicResource(BindableProperty property, string key, SetterSpecificity specificity)
 		{
 			if (property == null)
@@ -504,6 +567,11 @@ namespace Microsoft.Maui.Controls
 			if (string.IsNullOrEmpty(key))
 				throw new ArgumentNullException(nameof(key));
 
+			if (specificity == SetterSpecificity.DynamicResourceSetter)
+			{
+				BindablePropertyContext context = GetOrCreateContext(property);
+				context.Attributes |= BindableContextAttributes.IsDynamicResource;
+			}
 			OnSetDynamicResource(property, key, specificity);
 		}
 
@@ -658,6 +726,14 @@ namespace Microsoft.Maui.Controls
 				originalSpecificity = context.Values.GetSpecificity();
 			}
 
+			if (specificity == SetterSpecificity.DynamicResourceSetter
+				&& (context.Attributes & BindableContextAttributes.IsDynamicResource) != 0
+				&& originalSpecificity == SetterSpecificity.ManualValueSetter)
+			{
+				context.Values.Remove(SetterSpecificity.ManualValueSetter);
+				originalSpecificity = context.Values.GetSpecificity();
+			}
+
 			//We keep setter of lower specificity so we can unapply
 			if (specificity < originalSpecificity)
 			{
@@ -676,14 +752,17 @@ namespace Microsoft.Maui.Controls
 			{
 				property.PropertyChanging?.Invoke(this, original, value);
 
-				OnPropertyChanging(property.PropertyName);
+				NotifyPropertyChanging(property);
 			}
 
 			context.Values.SetValue(specificity, value);
 
 			context.Attributes &= ~BindableContextAttributes.IsDefaultValueCreated;
 
-			if ((context.Attributes & BindableContextAttributes.IsDynamicResource) != 0 && clearDynamicResources)
+			if ((context.Attributes & BindableContextAttributes.IsDynamicResource) != 0
+				&& clearDynamicResources
+				&& (specificity == SetterSpecificity.ManualValueSetter
+					|| (!currentlyApplying && (specificity == SetterSpecificity.FromHandler || specificity.IsBinding))))
 				RemoveDynamicResource(property);
 
 			BindingBase binding = context.Bindings.GetValue();
@@ -709,7 +788,7 @@ namespace Microsoft.Maui.Controls
 		{
 			if (willFirePropertyChanged)
 			{
-				OnPropertyChanged(property.PropertyName);
+				NotifyPropertyChanged(property);
 				property.PropertyChanged?.Invoke(this, original, value);
 			}
 		}

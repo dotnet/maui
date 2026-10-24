@@ -4,7 +4,7 @@
     <UseN1PackageVersions Condition="'$(UseN1PackageVersions)' == '' and ('$(IsTestProject)' == 'true' or '$(MauiTestProject)' == 'true')">false</UseN1PackageVersions>
     <UseN1PackageVersions Condition="'$(UseN1PackageVersions)' == ''">true</UseN1PackageVersions>
     <MicrosoftDotNetNPackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</MicrosoftDotNetNPackageVersion>
-    <MicrosoftDotNetN1PackageVersion>11.0.0-preview.7.26381.103</MicrosoftDotNetN1PackageVersion>
+    <MicrosoftDotNetN1PackageVersion>11.0.0-rc.1.26425.128</MicrosoftDotNetN1PackageVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(UseN1PackageVersions)' == 'true' and $(MicrosoftDotNetNPackageVersion.Contains('-'))">
@@ -75,19 +75,11 @@
         Version="$(_SkiaSharpVersion)"
     />
     <PackageReference
-        Update="SkiaSharp.Views.Gtk3"
-        Version="$(_SkiaSharpVersion)"
-    />
-    <PackageReference
         Update="SkiaSharp.Views.WinUI"
         Version="$(_SkiaSharpVersion)"
     />
     <PackageReference
         Update="SkiaSharp.Views.WPF"
-        Version="$(_SkiaSharpVersion)"
-    />
-    <PackageReference
-        Update="SkiaSharp.NativeAssets.Linux"
         Version="$(_SkiaSharpVersion)"
     />
     <PackageReference
@@ -362,10 +354,6 @@
         Version="$(MonoApiToolsMSBuildTasksPackageVersion)"
     />
     <PackageReference
-        Update="Tizen.UIExtensions.NUI"
-        Version="$(TizenUIExtensionsVersion)"
-    />
-    <PackageReference
         Update="Svg.Skia"
         Version="$(SvgSkiaPackageVersion)"
     />
@@ -379,6 +367,14 @@
     />
     <PackageReference
         Update="Svg.Model"
+        Version="$(SvgSkiaPackageVersion)"
+    />
+    <PackageReference
+        Update="Svg.SceneGraph"
+        Version="$(SvgSkiaPackageVersion)"
+    />
+    <PackageReference
+        Update="Svg.Animation"
         Version="$(SvgSkiaPackageVersion)"
     />
     <PackageReference

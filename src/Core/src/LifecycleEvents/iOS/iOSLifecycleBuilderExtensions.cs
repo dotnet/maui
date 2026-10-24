@@ -12,6 +12,20 @@ namespace Microsoft.Maui.LifecycleEvents
 		public static IiOSLifecycleBuilder OnActivated(this IiOSLifecycleBuilder lifecycle, iOSLifecycle.OnActivated del) => lifecycle.OnEvent(del);
 		public static IiOSLifecycleBuilder OnResignActivation(this IiOSLifecycleBuilder lifecycle, iOSLifecycle.OnResignActivation del) => lifecycle.OnEvent(del);
 		public static IiOSLifecycleBuilder OpenUrl(this IiOSLifecycleBuilder lifecycle, iOSLifecycle.OpenUrl del) => lifecycle.OnEvent(del);
+		/// <summary>
+		/// Registers a handler for quick actions delivered through the application or scene lifecycle.
+		/// </summary>
+		/// <param name="lifecycle">The lifecycle builder.</param>
+		/// <param name="del">The handler to register.</param>
+		/// <returns>The lifecycle builder.</returns>
+		/// <remarks>
+		/// Every registration must invoke its own completion callback exactly once, with <see langword="true"/>
+		/// if it handled the action or <see langword="false"/> otherwise. Existing logging-only observers must
+		/// also acknowledge <see langword="false"/>. Acknowledgement may be deferred for asynchronous work;
+		/// returning from the handler is not an acknowledgement. If no registration reports <see langword="true"/>,
+		/// a missing reply can leave native completion pending.
+		/// See <see cref="iOSLifecycle.PerformActionForShortcutItem"/> for the completion aggregation contract.
+		/// </remarks>
 		public static IiOSLifecycleBuilder PerformActionForShortcutItem(this IiOSLifecycleBuilder lifecycle, iOSLifecycle.PerformActionForShortcutItem del) => lifecycle.OnEvent(del);
 		public static IiOSLifecycleBuilder WillEnterForeground(this IiOSLifecycleBuilder lifecycle, iOSLifecycle.WillEnterForeground del) => lifecycle.OnEvent(del);
 		public static IiOSLifecycleBuilder WillTerminate(this IiOSLifecycleBuilder lifecycle, iOSLifecycle.WillTerminate del) => lifecycle.OnEvent(del);
@@ -42,10 +56,32 @@ namespace Microsoft.Maui.LifecycleEvents
 		public static IiOSLifecycleBuilder SceneDidEnterBackground(this IiOSLifecycleBuilder lifecycle, iOSLifecycle.SceneDidEnterBackground del) => lifecycle.OnEvent(del);
 
 
+		/// <summary>
+		/// Registers a handler for URL contexts delivered through a scene's open-URL callback.
+		/// </summary>
+		/// <param name="lifecycle">The lifecycle builder.</param>
+		/// <param name="del">The handler to register.</param>
+		/// <returns>The lifecycle builder.</returns>
+		/// <remarks>
+		/// URLs supplied when a scene connects are available in <see cref="UISceneConnectionOptions.UrlContexts"/>
+		/// through <see cref="SceneWillConnect"/>. They are not automatically replayed through this handler.
+		/// </remarks>
 		[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
 		[System.Runtime.Versioning.SupportedOSPlatform("tvos13.0")]
 		public static IiOSLifecycleBuilder SceneOpenUrl(this IiOSLifecycleBuilder lifecycle, iOSLifecycle.SceneOpenUrl del) => lifecycle.OnEvent(del);
 
+		/// <summary>
+		/// Registers a handler for a user activity delivered through a scene's continuation callback.
+		/// </summary>
+		/// <param name="lifecycle">The lifecycle builder.</param>
+		/// <param name="del">The handler to register.</param>
+		/// <returns>The lifecycle builder.</returns>
+		/// <remarks>
+		/// Activities supplied in <see cref="UISceneConnectionOptions.UserActivities"/> when a scene connects
+		/// are available through <see cref="SceneWillConnect"/>. They are not automatically replayed through
+		/// this handler. UIKit can also deliver Handoff activities separately through this handler after
+		/// the scene connects.
+		/// </remarks>
 		[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
 		[System.Runtime.Versioning.SupportedOSPlatform("tvos13.0")]
 		public static IiOSLifecycleBuilder SceneContinueUserActivity(this IiOSLifecycleBuilder lifecycle, iOSLifecycle.SceneContinueUserActivity del) => lifecycle.OnEvent(del);

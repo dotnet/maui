@@ -138,6 +138,7 @@ Old markerless issue filed before canonical metadata existed.
 
     # The marker horizon every coverage test shares. Fixture builds are dated relative to
     # it so "finished before the scanner last wrote" and "finished after" are expressible.
+    $script:FixtureNow = [datetime]::Parse('2026-07-15T00:00:00Z').ToUniversalTime()
     $script:FixtureMarkerUpdatedAt = [datetime]::Parse('2026-07-01T00:00:00Z').ToUniversalTime()
 
     # Coverage probe for the single canonical fixture leg, used by the leg-result tests.
@@ -178,6 +179,8 @@ Old markerless issue filed before canonical metadata existed.
         }
         $script:RepoLabels = @($RepoLabels | ForEach-Object { [pscustomobject]@{ name = $_ } })
     }
+
+    Mock Get-Date { $script:FixtureNow }
 }
 
 Describe 'CI scan reconciler' {

@@ -18,6 +18,7 @@ using WThickness = Microsoft.UI.Xaml.Thickness;
 
 namespace Microsoft.Maui.Platform
 {
+	[Microsoft.UI.Xaml.Data.Bindable]
 	public partial class WindowRootView : ContentControl
 	{
 		public static readonly DependencyProperty AppTitleBarTemplateProperty
@@ -466,6 +467,18 @@ namespace Microsoft.Maui.Platform
 					UpdateAppTitleBarTemplate();
 				}
 				return;
+			}
+
+			if (_titleBar is IView titleBarView && titleBarView.Handler?.MauiContext is { } currentContext && currentContext != mauiContext)
+			{
+				if (currentContext.GetNavigationRootManager()?.RootView is WindowRootView currentRootView &&
+					!ReferenceEquals(currentRootView, this) &&
+					ReferenceEquals(currentRootView.TitleBar, titlebar))
+				{
+					currentRootView.SetTitleBar(null, null);
+				}
+
+				titleBarView.DisconnectHandlers();
 			}
 
 			var handler = _titleBar?.ToHandler(mauiContext);

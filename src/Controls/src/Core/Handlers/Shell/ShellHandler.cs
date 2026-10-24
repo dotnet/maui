@@ -1,5 +1,5 @@
 ﻿#nullable disable
-#if WINDOWS || TIZEN || ANDROID
+#if WINDOWS || ANDROID || IOS || MACCATALYST
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls.Handlers
 		public static PropertyMapper<Shell, ShellHandler> Mapper =
 				new PropertyMapper<Shell, ShellHandler>(ElementMapper)
 				{
-#if WINDOWS || TIZEN
+#if WINDOWS
 				[nameof(IToolbarElement.Toolbar)] = (handler, view) => ViewHandler.MapToolbar(handler, view),
 				[nameof(IFlyoutView.Flyout)] = MapFlyout,
 #endif
@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Controls.Handlers
 				[nameof(Shell.FlyoutHeader)] = MapFlyoutHeader,
 				[nameof(Shell.FlyoutHeaderTemplate)] = MapFlyoutHeader,
 				[nameof(Shell.FlyoutHeaderBehavior)] = MapFlyoutHeaderBehavior,
-#if WINDOWS || TIZEN
+#if WINDOWS
 				[nameof(Shell.Items)] = MapItems,
 				[nameof(Shell.FlyoutItems)] = MapFlyoutItems,
 				[nameof(Shell.FlyoutIcon)] = MapFlyoutIcon,
@@ -44,7 +44,15 @@ namespace Microsoft.Maui.Controls.Handlers
 #if ANDROID
 					[nameof(Shell.FlyoutHeight)] = MapFlyoutHeight,
 #endif
-				};
+#if IOS || MACCATALYST
+			[PlatformConfiguration.iOSSpecific.Page.PrefersHomeIndicatorAutoHiddenProperty.PropertyName] = MapPrefersHomeIndicatorAutoHidden,
+			[PlatformConfiguration.iOSSpecific.Page.PrefersStatusBarHiddenProperty.PropertyName] = MapPrefersStatusBarHidden,
+			[PlatformConfiguration.iOSSpecific.Page.PreferredStatusBarUpdateAnimationProperty.PropertyName] = MapPreferredStatusBarUpdateAnimation,
+			// Refresh toolbar items when these properties change on iOS.
+			[nameof(Shell.FlyoutIcon)] = MapFlyoutIcon,
+			[Shell.ForegroundColorProperty.PropertyName] = MapForegroundColor,
+#endif
+			};
 
 		public static CommandMapper<Shell, ShellHandler> CommandMapper =
 				new CommandMapper<Shell, ShellHandler>(ElementCommandMapper);

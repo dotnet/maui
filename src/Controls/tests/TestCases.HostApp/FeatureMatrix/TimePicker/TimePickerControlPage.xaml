@@ -11,23 +11,28 @@
                            AutomationId="Options"/>
        </ContentPage.ToolbarItems>
 
-       <Grid RowDefinitions="*,Auto,Auto,Auto"
+       <Grid RowDefinitions="*,Auto,Auto,Auto,Auto,Auto"
              ColumnDefinitions="0.5*,0.5*">
               <Grid x:Name="TimePickerGrid"
                     Grid.Row="0"
                     Grid.ColumnSpan="2"
                     VerticalOptions="Center">
-                     <TimePicker AutomationId="TimePickerControl"
+                     <TimePicker x:Name="TimePickerControl"
+                                 AutomationId="TimePickerControl"
                                  CharacterSpacing="{Binding CharacterSpacing}"
                                  FlowDirection="{Binding FlowDirection}"
                                  Format="{Binding Format}"
                                  FontAttributes="{Binding FontAttributes}"
+                                 FontAutoScalingEnabled="{Binding FontAutoScalingEnabled}"
                                  FontFamily="{Binding FontFamily}"
                                  FontSize="{Binding FontSize}"
                                  IsEnabled="{Binding IsEnabled}"
+                                 IsOpen="{Binding IsOpen, Mode=TwoWay}"
                                  IsVisible="{Binding IsVisible}"
+                                 Closed="TimePicker_Closed"
+                                 Opened="TimePicker_Opened"
                                  Shadow="{Binding Shadow}"
-                                 Time="{Binding Time}"
+                                 Time="{Binding Time, Mode=TwoWay}"
                                  TimeSelected="TimePicker_TimeSelected"
                                  TextColor="{Binding TextColor}"/>
               </Grid>
@@ -57,7 +62,41 @@
               <Label Grid.Row="3"
                      Grid.Column="1"
                      x:Name="CultureFormatLabel"
-                     AutomationId="CultureFormatLabel"
-                     Margin="0,0,0,50"/>
+                     AutomationId="CultureFormatLabel"/>
+
+              <HorizontalStackLayout Grid.Row="4"
+                                     Grid.ColumnSpan="2"
+                                     HorizontalOptions="Center"
+                                     Spacing="8">
+                     <Button AutomationId="OpenTimePickerButton"
+                             Clicked="OpenTimePickerButton_Clicked"
+                             Text="Open"/>
+                     <Button AutomationId="CloseTimePickerButton"
+                             Clicked="CloseTimePickerButton_Clicked"
+                             Text="Close"/>
+                     <Button AutomationId="FocusTimePickerButton"
+                             Clicked="FocusTimePickerButton_Clicked"
+                             Text="Focus"/>
+                     <Button AutomationId="UnfocusTimePickerButton"
+                             Clicked="UnfocusTimePickerButton_Clicked"
+                             Text="Unfocus"/>
+              </HorizontalStackLayout>
+
+              <HorizontalStackLayout Grid.Row="5"
+                                     Grid.ColumnSpan="2"
+                                     HorizontalOptions="Center"
+                                     Margin="0,0,0,20"
+                                     Spacing="12">
+                     <Label AutomationId="IsOpenStatusLabel"
+                            Text="{Binding IsOpen, StringFormat='IsOpen: {0}'}"/>
+                     <Label x:Name="OpenedCountLabel"
+                            AutomationId="OpenedCountLabel"
+                            Text="Opened: 0"/>
+                     <Label x:Name="ClosedCountLabel"
+                            AutomationId="ClosedCountLabel"
+                            Text="Closed: 0"/>
+                     <Label AutomationId="FontAutoScalingStatusLabel"
+                            Text="{Binding FontAutoScalingEnabled, StringFormat='Scale: {0}'}"/>
+              </HorizontalStackLayout>
        </Grid>
 </ContentPage>

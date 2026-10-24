@@ -19,6 +19,30 @@ GitHub Actions ──► GitHub OIDC Provider ──► Azure AD (federated cred
 > (e.g. in the `dotnet` org). The workflow uses **manual OIDC token exchange via
 > `curl`** instead, which works everywhere that `id-token: write` is allowed.
 
+## CI comment cleanup
+
+`azure-pipelines-comment-cleanup.yml` collapses standalone `/azp run` commands
+(including named-pipeline variants such as `/azp run maui-pr, maui-pr-uitests`)
+and successful-start acknowledgments from `azure-pipelines[bot]` as **resolved**
+on pull requests, including acknowledgments with the standard "There may be
+pipelines that require an authorized user to comment /azp run to run" hint.
+It also collapses workflow-failure notices from `github-actions[bot]`: marked
+review failures, agent-job failures, failed workflow status messages, and
+security-scanning failure notices. Comments remain expandable; nothing is
+deleted. Substantive review reports (including Tests Failure Analysis), actual
+Azure Pipelines failures, standalone authorization warnings, and ordinary
+discussion remain visible.
+
+This is independent of pipeline dispatch and does not change which pipelines run
+or who can request them. It uses the repository's `GITHUB_TOKEN`, does not check
+out or execute PR code, and needs no additional secret. Created or edited comment
+events clean up the triggering PR. An hourly sweep reconciles all open PRs,
+including historical comments, because comments posted with `GITHUB_TOKEN` do not
+trigger another `issue_comment` workflow. A manual dispatch can target a single
+`pr_number` (including a closed PR), or scan all open PRs when omitted. Already
+minimized comments are left unchanged. Automatic cleanup activates after merge
+into the default branch.
+
 ## Prerequisites
 
 - Azure CLI installed locally (for one-time setup)
@@ -79,12 +103,19 @@ az identity federated-credential create \
   --audiences "api://AzureADTokenExchange"
 ```
 
-> **Subject claim mapping:** The OIDC token's `sub` claim is what Azure AD matches
-> against the `--subject` parameter. For `issue_comment` events (like the `/review`
-> command), the workflow runs from the default branch, so the subject is
-> `repo:dotnet/maui:ref:refs/heads/main`. For `pull_request` events, the subject
-> would be `repo:dotnet/maui:pull_request`. This is why the case-sensitivity
-> warning above is critical — the `sub` claim value must match exactly.
+The trusted CI-fix validator deliberately runs from `main` and therefore reuses
+the branch-scoped credential above:
+
+- `pull_request_target` provides the immediate path for eligible PRs targeting
+  `main`;
+- `workflow_run` reconciles all eligible open CI-fix PR heads after either the
+  main or net11 fixer completes. This path covers PRs and pushes created with
+  `GITHUB_TOKEN`, whose normal PR events can be suppressed or approval-gated,
+  and covers net11 without granting OIDC trust to PR events or to `net11.0`.
+
+Do not add repository-wide `repo:dotnet/maui:pull_request` or net11 credentials
+for this automation. The privileged queue step always uses the existing
+`repo:dotnet/maui:ref:refs/heads/main` subject and trusted default-branch code.
 
 Add more federated credentials for other branches or trigger types as needed:
 
@@ -152,7 +183,7 @@ The identity needs **"Queue builds"** permission on the target pipeline(s):
 
 | AzDO Organization | Project | Example Pipelines |
 |---|---|---|
-| `dnceng-public` | `public` | 302 (maui-pr), 314 (maui-pr-devicetests) |
+| `dnceng-public` | `public` | 302 (maui-pr), 313 (maui-pr-uitests), 314 (maui-pr-devicetests) |
 | `DevDiv` | `DevDiv` | 27723 |
 
 ## Step 4: Set GitHub Repository Secrets
@@ -172,6 +203,67 @@ In **dotnet/maui** → **Settings** → **Secrets and variables** → **Actions*
 
 See [`.github/workflows/review-trigger.yml`](../workflows/review-trigger.yml) for a ready-to-use workflow.
 
+Automated CI-fix PR validation is implemented separately by
+[`ci-fix-azdo-validation.yml`](../workflows/ci-fix-azdo-validation.yml). It:
+
+- runs only from trusted default/base-branch code via `pull_request_target` and
+  `workflow_run`;
+- never checks out or executes the PR head;
+- requires the exact same-repo CI-fix bot fingerprint;
+- reconciles every live eligible CI-fix head on each configured PR-target event,
+  including unrelated PR events, so GitHub's single-pending-run concurrency
+  behavior cannot strand an eligible head;
+- treats the live open-PR scan as authoritative so delayed webhook snapshots
+  cannot restore revoked eligibility or queue obsolete head/merge commits;
+- uses the list response only to nominate eligible PRs, then refreshes each
+  nominee individually within bounded retries and verifies the candidate
+  GitHub test-merge commit object has that refreshed source head as its second
+  parent before the head/merge pair can enter Azure queueing or deduplication.
+  The current base SHA is not required to equal the first merge parent because
+  the base can advance independently;
+- reports a bounded missing/stale/conflicting test merge as three explicit
+  failed pipeline results for that PR without making Azure requests, while
+  continuing scan-all recovery for other verified eligible heads. Unexpected
+  GitHub failures and shared-budget exhaustion remain fatal discovery errors;
+- starts an absolute seven-minute deadline before checkout and applies its
+  remaining allowance across PR discovery, authentication, queue-time
+  revalidation, dedupe reads, queue POSTs, retries, and reconciliation. The
+  ten-minute job timeout therefore preserves a real three-minute reserve for
+  summaries and an explicit failed outcome instead of a hard cancellation;
+- uses exact-file, non-cone sparse checkout of the standalone dispatcher script
+  at the trusted `github.sha`, keeping the pinned checkout action, shallow fetch,
+  and disabled credential persistence. This avoids materializing unrelated
+  repository files; it does not guarantee checkout finishes within the deadline
+  or establish production checkout performance;
+- keeps the validated caller budget separate from the effective remaining
+  budget. If preparation consumes the deadline, startup fails explicitly with
+  `[dispatcher-budget-exhausted]`, records the preparation/deadline stage in the
+  job summary, and states that no queue POST was attempted before any PR
+  discovery, authentication, HTTP request, or retry sleep. An expired deadline
+  is a failure even when no eligible work exists; it is never restarted after
+  checkout. Checkout or startup exceeding the hard job timeout can still cancel
+  the job before the script can report this diagnostic;
+- caps every HTTP timeout and retry sleep to the remaining shared budget. If it
+  expires, no new requests start, completed results remain visible, all
+  unprocessed PR/pipeline work is marked failed, and an ambiguous one-time POST
+  remains explicitly uncertain rather than being retried;
+- queues definitions 302, 313, and 314 against `refs/pull/<number>/merge`;
+- supplies only a verified test-merge commit as `sourceVersion` and its paired
+  PR head as
+  `triggerInfo["pr.sourceSha"]`, matching normal Azure Pipelines PR build
+  metadata intended to attach checks to the PR head;
+- supplies Azure Build Queue `parameters` as a serialized JSON string containing
+  the producer-equivalent `system.pullRequest.*` values. These serialized
+  system parameters provide the bare target branch used by pipeline conditions;
+  `triggerInfo` remains provider/build metadata. Exact PR-head check association
+  still requires live rollout canary verification for all three definitions;
+- deduplicates each pipeline by PR head SHA and reports partial failures.
+
+The workflow and script need to exist only on `main`. Before declaring net11
+coverage enabled, verify that the net11 fixer's compiled workflow name remains
+`CI Failure Fixer (net11.0)` so the main-branch `workflow_run` reconciliation
+fires after its create/push run.
+
 ## How It Works (Token Flow)
 
 ```
@@ -182,8 +274,9 @@ See [`.github/workflows/review-trigger.yml`](../workflows/review-trigger.yml) fo
    (grant_type=client_credentials) for the managed identity's client_id
 4. Azure AD validates the JWT against the federated credential and returns
    a bearer token scoped to AzDO (resource: 499b84ac-1321-427f-aa17-267ca6975798)
-5. Step 3 calls POST dev.azure.com/{org}/{project}/_apis/pipelines/{id}/runs
-   with the bearer token
+5. Step 3 calls the appropriate Azure DevOps queue endpoint with the bearer
+   token: the Pipelines Runs API for `/review` and `/review gate`, or the Build Queue API for
+   CI-fix PR validation
 6. AzDO validates the token, checks the identity's permissions, and queues the build
 ```
 

@@ -1,10 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using WApp = Microsoft.UI.Xaml.Application;
+using WAutomationProperties = Microsoft.UI.Xaml.Automation.AutomationProperties;
 using WBorder = Microsoft.UI.Xaml.Controls.Border;
 using WControlTemplate = Microsoft.UI.Xaml.Controls.ControlTemplate;
 using WRectangle = Microsoft.UI.Xaml.Shapes.Rectangle;
@@ -35,10 +39,23 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 	bool _isHorizontalLayout;
 	ScrollViewer? _scrollViewer;
 	Canvas? _dropIndicatorCanvas;
+	bool _automationSetUpdateQueued;
+	int _automationDataItemCount = -1;
+	List<int>? _automationExcludedIndexes;
+	readonly ItemsViewAccessibilityHelper _accessibilityHelper;
+
+	internal ScrollViewer? ScrollViewerControl => _scrollViewer;
+	internal event Action<int>? ContainerPrepared;
 
 	public MauiItemsView()
 	{
 		Template = (WControlTemplate)WApp.Current.Resources["MauiItemsViewTemplate"];
+		_accessibilityHelper = new ItemsViewAccessibilityHelper(this);
+
+		// Keep the owner out of tab order until the handler finishes restoring its
+		// selection and the item containers are ready.
+		IsTabStop = false;
+		XYFocusKeyboardNavigation = XYFocusKeyboardNavigationMode.Enabled;
 
 		// Disable WinUI's default ItemCollectionTransitionProvider which plays a
 		// staggered top-to-bottom cascade animation as virtualized items enter the
@@ -48,6 +65,8 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 
 		ApplyItemContainerResourceOverrides();
 	}
+
+	protected override AutomationPeer OnCreateAutomationPeer() => new MauiItemsViewAutomationPeer(this);
 
 	/// <summary>
 	/// Overrides WinUI ItemContainer theme resources on this instance so that
@@ -196,6 +215,9 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 
 	protected override void OnApplyTemplate()
 	{
+		CancelPendingAccessibilityFocus();
+		CleanUpAutomationEvents();
+
 		base.OnApplyTemplate();
 
 		// WinUI's base.OnApplyTemplate() re-assigns ItemTransitionProvider to its
@@ -217,7 +239,12 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 		// TemplateBinding {x:Null} in XAML may be evaluated before WinUI assigns
 		// defaults, so a direct code assignment is the reliable approach.
 		if (_itemsRepeater is ItemsRepeater repeater)
+		{
 			repeater.ItemTransitionProvider = null;
+			repeater.ElementPrepared += ItemsRepeater_AutomationElementPrepared;
+			repeater.ElementIndexChanged += ItemsRepeater_AutomationElementIndexChanged;
+			repeater.ElementClearing += ItemsRepeater_AutomationElementClearing;
+		}
 
 		if (_emptyViewContentControl is not null)
 		{
@@ -248,6 +275,151 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 		// avoids the repeated allocations.
 		InitInsertionFadeStoryboard();
 	}
+
+	void ItemsRepeater_AutomationElementPrepared(ItemsRepeater sender, ItemsRepeaterElementPreparedEventArgs args)
+	{
+		UpdateAutomationSetProperties(sender, args.Element, args.Index);
+		ContainerPrepared?.Invoke(args.Index);
+	}
+
+	void ItemsRepeater_AutomationElementIndexChanged(ItemsRepeater sender, ItemsRepeaterElementIndexChangedEventArgs args) =>
+		UpdateAutomationSetProperties(sender, args.Element, args.NewIndex);
+
+	void ItemsRepeater_AutomationElementClearing(ItemsRepeater sender, ItemsRepeaterElementClearingEventArgs args) =>
+		ClearAutomationSetProperties(args.Element);
+
+	internal void InvalidateAutomationSetProperties()
+	{
+		_automationDataItemCount = -1;
+		_automationExcludedIndexes = null;
+		if (ItemsRepeaterControl is ItemsRepeater repeater)
+		{
+			QueueAutomationSetPropertiesUpdate(repeater);
+		}
+	}
+
+	void QueueAutomationSetPropertiesUpdate(ItemsRepeater repeater)
+	{
+		if (_automationSetUpdateQueued || !ReferenceEquals(repeater, ItemsRepeaterControl))
+		{
+			return;
+		}
+
+		_automationSetUpdateQueued = true;
+		if (!DispatcherQueue.TryEnqueue(() =>
+		{
+			if (!_automationSetUpdateQueued || !ReferenceEquals(repeater, ItemsRepeaterControl))
+				return;
+
+			_automationSetUpdateQueued = false;
+			UpdateRealizedAutomationSetProperties(repeater);
+		}))
+		{
+			_automationSetUpdateQueued = false;
+		}
+	}
+
+	void UpdateRealizedAutomationSetProperties(ItemsRepeater repeater)
+	{
+		var childCount = VisualTreeHelper.GetChildrenCount(repeater);
+		for (var childIndex = 0; childIndex < childCount; childIndex++)
+		{
+			if (VisualTreeHelper.GetChild(repeater, childIndex) is UIElement element)
+			{
+				UpdateAutomationSetProperties(repeater, element, repeater.GetElementIndex(element));
+			}
+		}
+	}
+
+	void UpdateAutomationSetProperties(ItemsRepeater repeater, UIElement element, int index)
+	{
+		if (index < 0 || index >= repeater.ItemsSourceView.Count)
+		{
+			ClearAutomationSetProperties(element);
+			return;
+		}
+
+		EnsureAutomationSetCache(repeater);
+		var excludedIndex = _automationExcludedIndexes?.BinarySearch(index) ?? -1;
+		if (excludedIndex >= 0)
+		{
+			ClearAutomationSetProperties(element);
+			return;
+		}
+
+		var excludedBefore = excludedIndex < -1 ? ~excludedIndex : 0;
+		WAutomationProperties.SetPositionInSet(element, index + 1 - excludedBefore);
+		WAutomationProperties.SetSizeOfSet(element, _automationDataItemCount);
+	}
+
+	void EnsureAutomationSetCache(ItemsRepeater repeater)
+	{
+		if (_automationDataItemCount >= 0)
+		{
+			return;
+		}
+
+		_automationDataItemCount = repeater.ItemsSourceView.Count;
+		if (_mauiVirtualView is not GroupableItemsView { IsGrouped: true })
+		{
+			return;
+		}
+
+		for (var index = 0; index < repeater.ItemsSourceView.Count; index++)
+		{
+			if (IsAutomationDataItem(repeater.ItemsSourceView.GetAt(index)))
+			{
+				continue;
+			}
+
+			_automationDataItemCount--;
+			(_automationExcludedIndexes ??= new()).Add(index);
+		}
+	}
+
+	static void ClearAutomationSetProperties(UIElement element)
+	{
+		element.ClearValue(WAutomationProperties.PositionInSetProperty);
+		element.ClearValue(WAutomationProperties.SizeOfSetProperty);
+	}
+
+	internal void CleanUpAccessibilityHelper()
+	{
+		_accessibilityHelper?.CleanUp();
+	}
+
+	/// <summary>
+	/// Resubscribes the accessibility helper's focus events. Required after
+	/// <see cref="CleanUpAccessibilityHelper"/> if this platform view is reconnected
+	/// to a handler (e.g. Shell tab switch or temporary visual-tree removal); a no-op
+	/// otherwise since the helper is already attached from construction.
+	/// </summary>
+	internal void ReattachAccessibilityHelper()
+	{
+		_accessibilityHelper?.Attach();
+	}
+
+	internal void CancelPendingAccessibilityFocus()
+	{
+		_accessibilityHelper?.CancelPendingContainerPrepared();
+	}
+
+	internal void CleanUpAutomationEvents()
+	{
+		if (_itemsRepeater is ItemsRepeater repeater)
+		{
+			repeater.ElementPrepared -= ItemsRepeater_AutomationElementPrepared;
+			repeater.ElementIndexChanged -= ItemsRepeater_AutomationElementIndexChanged;
+			repeater.ElementClearing -= ItemsRepeater_AutomationElementClearing;
+		}
+
+		_automationSetUpdateQueued = false;
+		_automationDataItemCount = -1;
+		_automationExcludedIndexes = null;
+	}
+
+	static bool IsAutomationDataItem(object? item) =>
+		item is not ItemTemplateContext2 context || (!context.IsHeader && !context.IsFooter);
 
 	/// <summary>Gets whether the items are arranged horizontally (along-axis = width) or vertically (along-axis = height).</summary>
 	internal bool IsHorizontalLayout => _isHorizontalLayout;

@@ -5,6 +5,11 @@ using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Xunit;
+#if IOS || MACCATALYST
+using CollectionViewHandler = Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2;
+#else
+using Microsoft.Maui.Controls.Handlers.Items;
+#endif
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -20,6 +25,8 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler(typeof(VerticalStackLayout), typeof(LayoutHandler));
 					handlers.AddHandler(typeof(Grid), typeof(LayoutHandler));
 					handlers.AddHandler(typeof(Button), typeof(ButtonHandler));
+					handlers.AddHandler(typeof(Label), typeof(LabelHandler));
+					handlers.AddHandler<CollectionView, CollectionViewHandler>();
 					handlers.AddHandler<SwipeView, SwipeViewHandler>();
 					handlers.AddHandler<SwipeItem, SwipeItemMenuItemHandler>();
 					handlers.AddHandler<SwipeItemView, SwipeItemViewHandler>();

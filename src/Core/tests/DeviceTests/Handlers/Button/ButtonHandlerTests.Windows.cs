@@ -12,6 +12,58 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class ButtonHandlerTests
 	{
+		[Theory]
+		[InlineData("#00000000", "#B2F9F9F9")]
+		[InlineData("#00000000", "#B21A7F37")]
+		[InlineData("#00FF0000", "#B2F9F9F9")]
+		[InlineData("#00FF0000", "#B21A7F37")]
+		public async Task TransparentBackgroundEndpointsPreserveTransitionRgb(string transparentColorHex, string hoverColorHex)
+		{
+			var button = new ButtonStub
+			{
+				Text = "Test",
+				Background = new SolidPaintStub(Color.FromArgb(transparentColorHex))
+			};
+
+			await AttachAndRun(button, handler =>
+			{
+				var resources = handler.PlatformView.Resources;
+				var resourceKeys = new[]
+				{
+					"ButtonBackground",
+					"ButtonBackgroundPointerOver",
+					"ButtonBackgroundPressed",
+					"ButtonBackgroundDisabled"
+				};
+
+				for (var transition = 0; transition < 3; transition++)
+				{
+					var transparentBrush = Assert.IsType<UI.Xaml.Media.SolidColorBrush>(resources["ButtonBackground"]);
+					Assert.Equal((byte)0, transparentBrush.Color.A);
+
+					button.Background = new SolidPaintStub(Color.FromArgb(hoverColorHex));
+					handler.UpdateValue(nameof(IView.Background));
+
+					var hoverBrush = Assert.IsType<UI.Xaml.Media.SolidColorBrush>(resources["ButtonBackground"]);
+					var hoverColor = hoverBrush.Color;
+					Assert.Equal(Color.FromArgb(hoverColorHex).ToWindowsColor(), hoverColor);
+					Assert.Equal(global::Windows.UI.Color.FromArgb(0, hoverColor.R, hoverColor.G, hoverColor.B), transparentBrush.Color);
+					foreach (var key in resourceKeys)
+						Assert.Equal(hoverColor, Assert.IsType<UI.Xaml.Media.SolidColorBrush>(resources[key]).Color);
+
+					button.Background = new SolidPaintStub(Color.FromArgb(transparentColorHex));
+					handler.UpdateValue(nameof(IView.Background));
+
+					var expectedTransparentColor = global::Windows.UI.Color.FromArgb(0, hoverColor.R, hoverColor.G, hoverColor.B);
+					Assert.Equal(hoverColor, hoverBrush.Color);
+					foreach (var key in resourceKeys)
+						Assert.Equal(expectedTransparentColor, Assert.IsType<UI.Xaml.Media.SolidColorBrush>(resources[key]).Color);
+				}
+
+				return Task.CompletedTask;
+			});
+		}
+
 		[Fact(DisplayName = "CharacterSpacing Initializes Correctly")]
 		public async Task CharacterSpacingInitializesCorrectly()
 		{

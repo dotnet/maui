@@ -11,6 +11,7 @@ public class SwitchViewModel : INotifyPropertyChanged
 	private bool _isVisible = true;
 	private bool _isToggled = false;
 	private Color _onColor;
+	private Color _offColor;
 	private Shadow _shadow;
 	private Color _thumbColor;
 
@@ -79,6 +80,19 @@ public class SwitchViewModel : INotifyPropertyChanged
 		}
 	}
 
+	public Color OffColor
+	{
+		get => _offColor;
+		set
+		{
+			if (_offColor != value)
+			{
+				_offColor = value;
+				OnPropertyChanged();
+			}
+		}
+	}
+
 	public Shadow Shadow
 	{
 		get => _shadow;
@@ -103,6 +117,18 @@ public class SwitchViewModel : INotifyPropertyChanged
 				OnPropertyChanged();
 			}
 		}
+	}
+
+	public void ResetToDefaults()
+	{
+		FlowDirection = FlowDirection.LeftToRight;
+		IsEnabled = true;
+		IsVisible = true;
+		IsToggled = false;
+		OnColor = null;
+		OffColor = null;
+		Shadow = null;
+		ThumbColor = null;
 	}
 
 	public event PropertyChangedEventHandler PropertyChanged;

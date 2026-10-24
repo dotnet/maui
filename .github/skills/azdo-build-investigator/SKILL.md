@@ -18,8 +18,9 @@ answering "why is CI red?" and "is this PR ready to merge?". Use it together wit
 > available). This skill provides MAUI-specific corrections and context on top of that.
 
 For the **automated** path (a maintainer comments `/review tests` on a PR), the
-`review-test-failures` skill does the same classification deterministically and posts a
-merge-readiness comment. Both skills reason from the same shared facts below.
+`review-test-failures` skill relates failures to the PR diff and the latest five
+completed runs per pipeline on the PR's target branch, then posts one compact attribution
+comment. It does not issue merge approval. Both use the operational facts below.
 
 ## MAUI CI facts (canonical)
 
@@ -29,8 +30,8 @@ All MAUI-specific facts live in **`.github/docs/maui-ci-facts.md`** — read it.
   `maui-pr-uitests` 313), org/project, and investigation priority order.
 - **AzDO data sources** (anonymous public build/timeline/log REST APIs; `_apis/test` is
   optional enrichment).
-- **XHarness exit-0 blind spot** and the Helix `aggregated` endpoint for hidden
-  device-test failures.
+- **XHarness exit-0 blind spot**, Helix work items, and actual result files for
+  hidden device-test failures.
 - **Container artifact binlogs** (Bearer token + File Container API; `mcp-binlog-tool`).
 - **Test count deduplication** (group by test name + OS platform).
 - **Baseline comparison** (is the failure already red on the base branch?).

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
@@ -34,6 +35,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				builder.ConfigureMauiHandlers(handlers =>
 				{
+					handlers.AddHandler<Button, ButtonHandler>();
 					handlers.AddHandler<Grid, LayoutHandler>();
 					handlers.AddHandler<VerticalStackLayout, LayoutHandler>();
 					handlers.AddHandler<HorizontalStackLayout, LayoutHandler>();
@@ -41,6 +43,42 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler<FlexLayout, LayoutHandler>();
 					handlers.AddHandler<StackLayout, LayoutHandler>();
 				});
+			});
+		}
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task InputTransparentLayoutContainerRemainsHitTestVisible(bool cascadeInputTransparent)
+		{
+			SetupLayoutBuilder();
+
+			var button = new Button();
+			var grid = new Grid
+			{
+				CascadeInputTransparent = cascadeInputTransparent,
+				Clip = new EllipseGeometry(new Point(50, 50), 50, 50),
+				HeightRequest = 100,
+				InputTransparent = true,
+				WidthRequest = 100
+			};
+			grid.Add(button);
+
+			await AttachAndRun(grid, (LayoutHandler handler) =>
+			{
+				var container = Assert.IsType<WrapperView>(handler.ContainerView);
+				var buttonHandler = Assert.IsType<ButtonHandler>(button.Handler);
+
+				Assert.True(container.IsHitTestVisible);
+				Assert.Equal(!cascadeInputTransparent, buttonHandler.PlatformView.IsHitTestVisible);
+
+				grid.InputTransparent = false;
+				Assert.True(container.IsHitTestVisible);
+				Assert.True(buttonHandler.PlatformView.IsHitTestVisible);
+
+				grid.InputTransparent = true;
+				Assert.True(container.IsHitTestVisible);
+				Assert.Equal(!cascadeInputTransparent, buttonHandler.PlatformView.IsHitTestVisible);
 			});
 		}
 

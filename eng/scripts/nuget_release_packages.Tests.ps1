@@ -37,6 +37,27 @@ Describe 'nuget_release_packages.ps1' {
     $output -join "`n" | Should -Match 'NuGetPackagesToPublish]false'
   }
 
+  It 'accepts an already-published package removed during preparation' {
+    @(
+      [pscustomobject]@{ id = 'Existing.Package'; version = '1.0.0'; normalizedVersion = '1.0.0'; fileName = 'Existing.Package.1.0.0.nupkg' }
+    ) | ConvertTo-Json | Set-Content (Join-Path $packagesPath 'expected-packages.json')
+    Mock Invoke-WebRequest { [pscustomobject]@{ StatusCode = 200 } }
+
+    $output = & $scriptPath -Action FilterExisting -PackagesPath $packagesPath 6>&1
+
+    $output -join "`n" | Should -Match 'NuGetPackagesToPublish]false'
+  }
+
+  It 'rejects an unpublished package missing from the artifact' {
+    @(
+      [pscustomobject]@{ id = 'Missing.Package'; version = '1.0.0'; normalizedVersion = '1.0.0'; fileName = 'Missing.Package.1.0.0.nupkg' }
+    ) | ConvertTo-Json | Set-Content (Join-Path $packagesPath 'expected-packages.json')
+    Mock Invoke-WebRequest { [pscustomobject]@{ StatusCode = 404 } }
+
+    { & $scriptPath -Action FilterExisting -PackagesPath $packagesPath } |
+      Should -Throw '*Unpublished package*was not found*'
+  }
+
   It 'fails closed on an unexpected NuGet response' {
     @(
       [pscustomobject]@{ id = 'Unknown.Package'; version = '1.0.0'; normalizedVersion = '1.0.0'; fileName = 'Unknown.Package.1.0.0.nupkg' }

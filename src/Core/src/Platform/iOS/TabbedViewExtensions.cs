@@ -27,6 +27,7 @@ namespace Microsoft.Maui.Platform
 		}
 
 		[System.Runtime.Versioning.SupportedOSPlatform("ios15.0")]
+		[System.Runtime.Versioning.SupportedOSPlatform("maccatalyst15.0")]
 		[System.Runtime.Versioning.SupportedOSPlatform("tvos15.0")]
 		internal static void UpdateiOS15TabBarAppearance(
 			this UITabBar tabBar,
@@ -35,25 +36,37 @@ namespace Microsoft.Maui.Platform
 			UIColor? defaultBarTextColor,
 			Color? selectedTabColor,
 			Color? unselectedTabColor,
-			Color? barBackgroundColor,
+			Paint? barBackground,
 			Color? selectedBarTextColor,
-			Color? unSelectedBarTextColor)
+			Color? unSelectedBarTextColor,
+			bool useBackgroundColorForSolidPaint = true,
+			UIColor? defaultViewBackgroundColor = null)
 		{
-			if (_tabBarAppearance == null)
-			{
-				_tabBarAppearance = new UITabBarAppearance();
-				_tabBarAppearance.ConfigureWithDefaultBackground();
-			}
+			_tabBarAppearance ??= new UITabBarAppearance();
+			_tabBarAppearance.ConfigureWithDefaultBackground();
 
-			var effectiveBarColor = (barBackgroundColor == null) ? defaultBarColor : barBackgroundColor.ToPlatform();
-			// Set BarBackgroundColor
-			if (effectiveBarColor != null)
+			// Reset the background layer to ensure any previous customizations do not persist.
+			tabBar.RemoveBackgroundLayer();
+
+			switch (barBackground)
 			{
-				_tabBarAppearance.BackgroundColor = effectiveBarColor;
-				if (OperatingSystem.IsIOSVersionAtLeast(26))
-				{
-					tabBar.BackgroundColor = effectiveBarColor;
-				}
+				case GradientPaint:
+					_tabBarAppearance.BackgroundEffect = null;
+					_tabBarAppearance.BackgroundColor = UIColor.Clear;
+					tabBar.BackgroundColor = UIColor.Clear;
+					tabBar.UpdateBackground(barBackground);
+					break;
+
+				case SolidPaint solidPaint:
+					_tabBarAppearance.BackgroundColor =
+						solidPaint.Color?.ToPlatform() ?? defaultBarColor;
+					tabBar.BackgroundColor = useBackgroundColorForSolidPaint ? _tabBarAppearance.BackgroundColor : defaultViewBackgroundColor;
+					break;
+
+				default:
+					_tabBarAppearance.BackgroundColor = defaultBarColor;
+					tabBar.BackgroundColor = defaultViewBackgroundColor;
+					break;
 			}
 
 			// Set BarTextColor

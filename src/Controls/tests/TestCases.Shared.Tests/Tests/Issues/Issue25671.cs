@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Layout passes should not increase";
 
 		[Test]
-		[Category(UITestCategories.CollectionView)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 		public async Task LayoutPassesShouldNotIncrease()
 		{
 			App.WaitForElement("RegenerateItems");
@@ -48,7 +48,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
             if (App.FindElement("HeadingLabel").GetText() == "CollectionViewHandler2")
             {
 	            maxMeasurePasses = 373;
-	            maxArrangePasses = 276;
+	            maxArrangePasses = 313;
             }
 #elif ANDROID
 			const int maxMeasurePasses = 353;

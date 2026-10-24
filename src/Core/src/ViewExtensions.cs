@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Media;
 using System.Collections.Generic;
 using System.IO;
-#if (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID && !TIZEN)
+#if (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID)
 using IPlatformViewHandler = Microsoft.Maui.IViewHandler;
 #endif
 #if IOS || MACCATALYST
@@ -16,9 +16,6 @@ using ParentView = Android.Views.IViewParent;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
 using ParentView = Microsoft.UI.Xaml.DependencyObject;
-#elif TIZEN
-using PlatformView = Tizen.NUI.BaseComponents.View;
-using ParentView = Tizen.NUI.BaseComponents.View;
 #else
 using PlatformView = System.Object;
 using ParentView = System.Object;
@@ -44,23 +41,26 @@ namespace Microsoft.Maui
 				viewToDisconnect.Handler?.DisconnectHandler();
 			}
 
-			void BuildFlatList(IView view, List<IView> flatList)
+			// Non-IView IVisualTreeElement nodes (e.g. ShellItem/ShellSection) can't be added to
+			// the flat list, but traversal must continue through them since their descendants
+			// (e.g. pages hosted inside a Shell) can still be IView.
+			static void BuildFlatList(object element, List<IView> flatList)
 			{
-				if (view is IHandlerDisconnectPolicies HandlerPropertiess && HandlerPropertiess.DisconnectPolicy == HandlerDisconnectPolicy.Manual)
+				if (element is IHandlerDisconnectPolicies handlerProperties && handlerProperties.DisconnectPolicy == HandlerDisconnectPolicy.Manual)
 				{
 					return;
 				}
 
-				flatList.Add(view);
+				if (element is IView elementView)
+				{
+					flatList.Add(elementView);
+				}
 
-				if (view is IVisualTreeElement vte)
+				if (element is IVisualTreeElement vte)
 				{
 					foreach (var child in vte.GetVisualChildren())
 					{
-						if (child is IView childView)
-						{
-							BuildFlatList(childView, flatList);
-						}
+						BuildFlatList(child, flatList);
 					}
 				}
 			}
@@ -113,7 +113,6 @@ namespace Microsoft.Maui
 			await Screenshot.Default.CaptureAsync(window);
 #endif
 
-#if !TIZEN
 		internal static bool NeedsContainer(this IView? view)
 		{
 			if (view?.Clip != null || view?.Shadow != null)
@@ -135,7 +134,6 @@ namespace Microsoft.Maui
 #endif
 			return false;
 		}
-#endif
 
 	}
 }

@@ -242,16 +242,26 @@ namespace Microsoft.Maui.Controls
 
 			if (page.Parent == null)
 			{
-				page.ParentSet += OnPresentedPageParentSet;
-				void OnPresentedPageParentSet(object sender, EventArgs e)
-				{
-					this.FindParentOfType<Shell>().SendPageAppearing(page);
-					(sender as Page).ParentSet -= OnPresentedPageParentSet;
-				}
+				SendPageAppearingWhenParentSet(page);
 			}
 			else if (IsVisibleContent && page.IsVisible)
 			{
 				this.FindParentOfType<Shell>().SendPageAppearing(page);
+			}
+		}
+
+		WeakNotifyPropertyChangedProxy _pagePropertyChangedProxy;
+		PropertyChangedEventHandler _pagePropertyChangedHandler;
+		~ShellContent() => _pagePropertyChangedProxy?.Unsubscribe();
+
+		void SendPageAppearingWhenParentSet(Page page)
+		{
+			page.ParentSet += OnPresentedPageParentSet;
+
+			void OnPresentedPageParentSet(object sender, EventArgs e)
+			{
+				this.FindParentOfType<Shell>().SendPageAppearing(page);
+				(sender as Page).ParentSet -= OnPresentedPageParentSet;
 			}
 		}
 
@@ -260,7 +270,9 @@ namespace Microsoft.Maui.Controls
 			base.OnChildAdded(child);
 			if (child is Page page)
 			{
-				page.PropertyChanged += OnPagePropertyChanged;
+				_pagePropertyChangedHandler ??= OnPagePropertyChanged;
+				_pagePropertyChangedProxy ??= new();
+				_pagePropertyChangedProxy.Subscribe(page, _pagePropertyChangedHandler);
 				_isPageVisibleChanged?.Invoke(this, EventArgs.Empty);
 			}
 		}
@@ -268,9 +280,9 @@ namespace Microsoft.Maui.Controls
 		protected override void OnChildRemoved(Element child, int oldLogicalIndex)
 		{
 			base.OnChildRemoved(child, oldLogicalIndex);
-			if (child is Page page)
+			if (child is Page)
 			{
-				page.PropertyChanged -= OnPagePropertyChanged;
+				_pagePropertyChangedProxy?.Unsubscribe();
 			}
 		}
 

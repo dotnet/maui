@@ -13,6 +13,16 @@ namespace Microsoft.Maui.Platform
 {
 	public static class ApplicationExtensions
 	{
+		internal static void DispatchShortcutItem(this IServiceProvider? services, UIApplication application, UIApplicationShortcutItem shortcutItem, UIOperationHandler completionHandler)
+		{
+			if (completionHandler is null)
+				throw new ArgumentNullException(nameof(completionHandler));
+
+			services.InvokeLifecycleEventsWithCompletion<iOSLifecycle.PerformActionForShortcutItem>(
+				(del, complete) => del(application, shortcutItem, complete.Invoke),
+				handled => MainThread.BeginInvokeOnMainThread(() => completionHandler(handled)));
+		}
+
 		[SupportedOSPlatform("ios13.0")]
 		[SupportedOSPlatform("tvos13.0")]
 		public static void RequestNewWindow(this IUIApplicationDelegate platformApplication, IApplication application, OpenWindowRequest? args)

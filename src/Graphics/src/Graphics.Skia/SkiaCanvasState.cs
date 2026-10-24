@@ -238,9 +238,6 @@ namespace Microsoft.Maui.Graphics.Skia
 			set
 			{
 				_fontSize = value;
-#pragma warning disable CS0618 // Type or member is obsolete
-				FontPaint.TextSize = _fontSize * _scaleX;
-#pragma warning restore CS0618 // Type or member is obsolete
 				FontFont.Size = _fontSize * _scaleX;
 			}
 		}
@@ -252,13 +249,6 @@ namespace Microsoft.Maui.Graphics.Skia
 				if (!ReferenceEquals(_font, value) && (_font is null || !_font.Equals(value)))
 				{
 					_font = value;
-
-					if (_fontPaint != null)
-					{
-#pragma warning disable CS0618 // Type or member is obsolete
-						_fontPaint.Typeface = GetSKTypeface();
-#pragma warning restore CS0618 // Type or member is obsolete
-					}
 
 					if (_fontFont != null)
 					{
@@ -281,9 +271,6 @@ namespace Microsoft.Maui.Graphics.Skia
 					{
 						Color = SKColors.Black,
 						IsAntialias = true,
-#pragma warning disable CS0618 // Type or member is obsolete
-						Typeface = GetSKTypeface(),
-#pragma warning restore CS0618 // Type or member is obsolete
 					};
 				}
 
@@ -491,16 +478,15 @@ namespace Microsoft.Maui.Graphics.Skia
 			_scaleY = _scaleY * sy;
 
 			StrokePaint.StrokeWidth = StrokeSize * _scaleX;
-#pragma warning disable CS0618 // Type or member is obsolete
-			FontPaint.TextSize = _fontSize * _scaleX;
-#pragma warning restore CS0618 // Type or member is obsolete
 			FontFont.Size = _fontSize * _scaleX;
 		}
 
 		[Obsolete("Use Reset(SKPaint, SKFont, SKPaint, SKPaint) instead")]
 		public void Reset(SKPaint fontPaint, SKPaint fillPaint, SKPaint strokePaint)
 		{
-			Reset(fontPaint, fontPaint?.ToFont(), fillPaint, strokePaint);
+			// SKPaint no longer carries text/font information (SkiaSharp 4.x removed those members),
+			// so pass a null font; FontFont lazily rebuilds a default font when next accessed.
+			Reset(fontPaint, (SKFont)null, fillPaint, strokePaint);
 		}
 
 		public void Reset(SKPaint fontPaint, SKFont fontFont, SKPaint fillPaint, SKPaint strokePaint)

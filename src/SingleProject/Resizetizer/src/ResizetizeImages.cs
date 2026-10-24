@@ -93,14 +93,6 @@ namespace Microsoft.Maui.Resizetizer
 				}
 			});
 
-			if (PlatformType == "tizen")
-			{
-				var tizenResourceXmlGenerator = new TizenResourceXmlGenerator(IntermediateOutputPath, Logger);
-				var r = tizenResourceXmlGenerator.Generate();
-				if (r is not null)
-					resizedImages.Add(r);
-			}
-
 			var copiedResources = new List<TaskItem>();
 
 			foreach (var img in resizedImages)

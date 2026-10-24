@@ -47,10 +47,6 @@
 
     <UsingTask
         AssemblyFile="$(_ResizetizerTaskAssemblyName)"
-        TaskName="Microsoft.Maui.Resizetizer.TizenSplashUpdater" />
-
-    <UsingTask
-        AssemblyFile="$(_ResizetizerTaskAssemblyName)"
         TaskName="Microsoft.Maui.Resizetizer.GenerateSplashAssets" />
 
     <UsingTask
@@ -60,10 +56,6 @@
     <UsingTask
         AssemblyFile="$(_ResizetizerTaskAssemblyName)"
         TaskName="Microsoft.Maui.Resizetizer.GeneratePackageAppxManifest" />
-
-  <UsingTask
-        AssemblyFile="$(_ResizetizerTaskAssemblyName)"
-        TaskName="Microsoft.Maui.Resizetizer.GenerateTizenManifest" />
 
     <PropertyGroup>
         <CleanDependsOn>
@@ -79,17 +71,17 @@
         <_ResizetizerPlatformIsmacOS Condition="'$(_ResizetizerPlatformIdentifier)' == 'macos'">True</_ResizetizerPlatformIsmacOS>
         <_ResizetizerPlatformIstvOS Condition="'$(_ResizetizerPlatformIdentifier)' == 'tvos'">True</_ResizetizerPlatformIstvOS>
         <_ResizetizerPlatformIsWindows Condition="$(_ResizetizerPlatformIdentifier.Contains('windows')) == 'True'">True</_ResizetizerPlatformIsWindows>
-        <_ResizetizerPlatformIsTizen Condition="'$(_ResizetizerPlatformIdentifier)' == 'tizen'">True</_ResizetizerPlatformIsTizen>
 
         <_ResizetizerIntermediateOutputPath Condition=" '$(_ResizetizerIntermediateOutputPath)' == '' " >$(IntermediateOutputPath)</_ResizetizerIntermediateOutputPath>
 
         <_ResizetizerInputsFile>$(_ResizetizerIntermediateOutputPath)mauiimage.inputs</_ResizetizerInputsFile>
         <_ResizetizerOutputsFile>$(_ResizetizerIntermediateOutputPath)mauiimage.outputs</_ResizetizerOutputsFile>
         <_ResizetizerStampFile>$(_ResizetizerIntermediateOutputPath)mauiimage.stamp</_ResizetizerStampFile>
+        <_MauiNativeAppleIconInputsFile>$(_ResizetizerIntermediateOutputPath)mauinativeappleicon.inputs</_MauiNativeAppleIconInputsFile>
         <_MauiFontInputsFile>$(_ResizetizerIntermediateOutputPath)mauifont.inputs</_MauiFontInputsFile>
-        <_MauiFontStampFile>$(_ResizetizerIntermediateOutputPath)mauifont.stamp</_MauiFontStampFile>
+        <_MauiFontOutputsFile>$(_ResizetizerIntermediateOutputPath)mauifont.outputs</_MauiFontOutputsFile>
         <_MauiSplashInputsFile>$(_ResizetizerIntermediateOutputPath)mauisplash.inputs</_MauiSplashInputsFile>
-        <_MauiSplashStampFile>$(_ResizetizerIntermediateOutputPath)mauisplash.stamp</_MauiSplashStampFile>
+        <_MauiSplashOutputsFile>$(_ResizetizerIntermediateOutputPath)mauisplash.outputs</_MauiSplashOutputsFile>
         <_MauiManifestStampFile>$(_ResizetizerIntermediateOutputPath)mauimanifest.stamp</_MauiManifestStampFile>
 
         <_ResizetizerIntermediateOutputRoot>$(_ResizetizerIntermediateOutputPath)resizetizer\</_ResizetizerIntermediateOutputRoot>
@@ -119,6 +111,14 @@
         <EnableMauiSplashScreenProcessing Condition=" '$(EnableMauiSplashScreenProcessing)' == '' ">true</EnableMauiSplashScreenProcessing>
         <EnableMauiFontProcessing Condition=" '$(EnableMauiFontProcessing)' == '' ">true</EnableMauiFontProcessing>
         <EnableMauiImageProcessing Condition=" '$(EnableMauiImageProcessing)' == '' ">true</EnableMauiImageProcessing>
+
+        <!-- Icon Composer support was added in the .NET 11 Preview 6 Apple workload. -->
+        <_MauiNativeAppleIconMinimumWorkloadVersion>26.5.11720</_MauiNativeAppleIconMinimumWorkloadVersion>
+        <_MauiAppleWorkloadVersion>$([System.Text.RegularExpressions.Regex]::Match('$(_ShortPackageVersion)', '^\d+\.\d+\.\d+').Value)</_MauiAppleWorkloadVersion>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(_MauiAppleWorkloadVersion)' != ''">
+        <_MauiNativeAppleIconSupported Condition="$([MSBuild]::VersionGreaterThanOrEquals('$(_MauiAppleWorkloadVersion)', '$(_MauiNativeAppleIconMinimumWorkloadVersion)'))">True</_MauiNativeAppleIconSupported>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
@@ -128,10 +128,9 @@
         <_ResizetizerIsiOSSpecificApp Condition=" '$(_ResizetizerPlatformIsiOS)' == 'True' And ('$(OutputType)' == 'Exe' Or '$(IsAppExtension)' == 'True')">True</_ResizetizerIsiOSSpecificApp>
         <_ResizetizerIsWPFApp Condition="'$(IsApplication)' == 'True' And '$(NuGetRuntimeIdentifier)' == 'win' And '$(_ResizetizerPlatformIsWindows)' == 'True'">True</_ResizetizerIsWPFApp>
         <_ResizetizerIsWindowsAppSdk Condition="'$(MicrosoftWindowsAppSDKPackageDir)' != '' And '$(_ResizetizerPlatformIsWindows)' == 'True' And ('$(OutputType)' == 'WinExe' Or '$(OutputType)' == 'Exe')">True</_ResizetizerIsWindowsAppSdk>
-        <_ResizetizerIsTizenApp Condition="'$(_ResizetizerPlatformIsTizen)' == 'True' And ( '$(OutputType)' == 'Exe' )">True</_ResizetizerIsTizenApp>
     </PropertyGroup>
 
-    <PropertyGroup Condition="'$(_ResizetizerIsAndroidApp)' == 'True' Or '$(_ResizetizerIsiOSApp)' == 'True' Or '$(_ResizetizerIsWPFApp)' == 'True' Or '$(_ResizetizerIsWindowsAppSdk)' == 'True' Or '$(_ResizetizerIsTizenApp)' == 'True'">
+    <PropertyGroup Condition="'$(_ResizetizerIsAndroidApp)' == 'True' Or '$(_ResizetizerIsiOSApp)' == 'True' Or '$(_ResizetizerIsWPFApp)' == 'True' Or '$(_ResizetizerIsWindowsAppSdk)' == 'True'">
         <_ResizetizerIsCompatibleApp>True</_ResizetizerIsCompatibleApp>
     </PropertyGroup>
 
@@ -163,6 +162,18 @@
         </ProcessMauiFontsDependsOnTargets>
     </PropertyGroup>
 
+    <!-- Output manifests must also be checked for backends that opt in through a late import. -->
+    <PropertyGroup>
+        <ProcessMauiSplashScreensDependsOnTargets>
+            $(ProcessMauiSplashScreensDependsOnTargets);
+            _ReadMauiSplashOutputs;
+        </ProcessMauiSplashScreensDependsOnTargets>
+        <ProcessMauiFontsDependsOnTargets>
+            $(ProcessMauiFontsDependsOnTargets);
+            _ReadMauiFontOutputs;
+        </ProcessMauiFontsDependsOnTargets>
+    </PropertyGroup>
+
     <!-- iOS -->
     <PropertyGroup Condition="'$(_ResizetizerIsiOSApp)' == 'True'">
         <ResizetizerPlatformType>ios</ResizetizerPlatformType>
@@ -178,6 +189,7 @@
         <CompileImageAssetsDependsOn>
             $(CompileImageAssetsDependsOn);
             ResizetizeCollectItems;
+            _CollectMauiNativeAppleIcon;
         </CompileImageAssetsDependsOn>
 
         <ResizetizeAfterTargets>
@@ -186,7 +198,7 @@
         </ResizetizeAfterTargets>
 
         <CollectAppManifestsDependsOn>
-            ProcessMauiFonts;
+            _CollectMauiFontItems;
             ProcessMauiSplashScreens;
             $(CollectAppManifestsDependsOn)
         </CollectAppManifestsDependsOn>
@@ -247,32 +259,14 @@
         </ProcessMauiFontsBeforeTargets>
     </PropertyGroup>
 
-    <!-- Tizen -->
-    <PropertyGroup Condition="'$(_ResizetizerIsTizenApp)' == 'True'">
-        <ResizetizerPlatformType>tizen</ResizetizerPlatformType>
-
-        <ResizetizeBeforeTargets>
-            $(ResizetizeBeforeTargets);
-            PrepareResources;
-        </ResizetizeBeforeTargets>
-
-        <ResizetizeAfterTargets>
-            $(ResizetizeAfterTargets);
-            ResizetizeCollectItems;
-        </ResizetizeAfterTargets>
-
-        <ProcessMauiFontsAfterTargets>
-            $(ProcessMauiFontsAfterTargets);
-            ResizetizeCollectItems;
-        </ProcessMauiFontsAfterTargets>
-    </PropertyGroup>
-
     <!-- Finds absolute paths to any MauiImage in this project -->
     <!-- App head projects will invoke this target on their project references to collect images -->
     <Target Name="GetMauiItems" Outputs="@(ExportedMauiItem)">
         <ItemGroup>
             <MauiItem Include="@(MauiImage)" ItemGroupName="MauiImage" Condition="'%(MauiImage.ForegroundFile)' == ''" />
             <MauiItem Include="@(MauiImage)" ItemGroupName="MauiImage" Condition="'%(MauiImage.ForegroundFile)' != ''" ForegroundFile="$([System.IO.Path]::GetFullPath('%(MauiImage.ForegroundFile)'))" />
+            <_MauiIconComposer Include="@(MauiIcon->WithMetadataValue('Extension', '.icon'))" Condition="'$(_ResizetizerPlatformIsiOS)' == 'True' Or '$(_ResizetizerPlatformIsMacCatalyst)' == 'True'" />
+            <MauiItem Include="@(_MauiIconComposer)" ItemGroupName="MauiIcon" Condition="'%(_MauiIconComposer.ForegroundFile)' == ''" />
             <MauiItem Include="@(MauiIcon)" ItemGroupName="MauiIcon" Condition="'%(MauiIcon.ForegroundFile)' != '' and '%(MauiIcon.MonochromeFile)' == ''" ForegroundFile="$([System.IO.Path]::GetFullPath('%(MauiIcon.ForegroundFile)'))" />
             <MauiItem Include="@(MauiIcon)" ItemGroupName="MauiIcon" Condition="'%(MauiIcon.ForegroundFile)' != '' and '%(MauiIcon.MonochromeFile)' != ''" ForegroundFile="$([System.IO.Path]::GetFullPath('%(MauiIcon.ForegroundFile)'))" MonochromeFile="$([System.IO.Path]::GetFullPath('%(MauiIcon.MonochromeFile)'))" />
             <MauiItem Include="@(MauiFont)"  ItemGroupName="MauiFont" />
@@ -311,6 +305,8 @@
             <!-- If any resolved paths were missing OriginalProjectReferenceItemSpec or NearestTargetFramework, fall back to the 
                  previous functionality with using the ProjectReference items and the CURRENT project's TargetFramework -->
             <_ResizetizeCollectItemsProject Include="@(ProjectReference)" Exclude="@(_ResizetizeCollectItemsProject)" NearestTargetFramework="$(TargetFramework)" />
+            <!-- Restore metadata that is not retained when converting the resolved reference back to its original item spec. -->
+            <_ResizetizeCollectItemsProject Update="@(ProjectReference)" AdditionalProperties="%(ProjectReference.AdditionalProperties)" />
         </ItemGroup>
         <MSBuild
             Targets="GetMauiItems"
@@ -350,7 +346,15 @@
 
         <!-- Map @(MauiIcon) to @(MauiImage IsAppIcon=true) -->
         <ItemGroup>
-            <MauiImage Include="@(MauiIcon)" IsAppIcon="True" />
+            <MauiImage
+                Include="@(MauiIcon)"
+                IsAppIcon="True"
+                Condition="'$(_ResizetizerIsiOSApp)' != 'True'" />
+            <MauiImage
+                Include="@(MauiIcon)"
+                Exclude="@(MauiIcon->WithMetadataValue('Extension', '.icon'))"
+                IsAppIcon="True"
+                Condition="'$(_ResizetizerIsiOSApp)' == 'True'" />
         </ItemGroup>
 
         <!-- Add a hash to the splash screen so we can use it later -->
@@ -432,6 +436,120 @@
         DependsOnTargets="ResizetizeCollectItems;ProcessMauiSplashScreens;_ReadResizetizeImagesOutputs"
         Condition="'$(_ResizetizerIsCompatibleApp)' != 'True' And '$(ResizetizerPlatformType)' != ''" />
 
+    <Target Name="_CollectMauiNativeAppleIcon"
+        Condition="'$(_ResizetizerIsiOSApp)' == 'True' And '$(DesignTimeBuild)' != 'true'"
+        BeforeTargets="_ReadAppManifest;_BeforeCoreCompileImageAssets;_SetResourceMetadata"
+        DependsOnTargets="ResizetizeCollectItems">
+
+        <ItemGroup>
+            <_MauiNativeAppleIcon
+                Include="@(MauiIcon->WithMetadataValue('Extension', '.icon'))" />
+            <_MauiNonNativeAppleIcon
+                Include="@(MauiIcon)"
+                Exclude="@(_MauiNativeAppleIcon)" />
+        </ItemGroup>
+
+        <Error
+            Condition="'@(_MauiNativeAppleIcon)' != '' And '$(_MauiNativeAppleIconSupported)' != 'True'"
+            Text="The MauiIcon '%(_MauiNativeAppleIcon.Identity)' uses an Apple Icon Composer .icon bundle, which requires the .NET Apple workload version $(_MauiNativeAppleIconMinimumWorkloadVersion) or newer. The current workload version is '$(_ShortPackageVersion)'." />
+        <Error
+            Condition="'@(_MauiNativeAppleIcon->Count())' &gt; '1'"
+            Text="Only one Apple Icon Composer .icon bundle can be specified as MauiIcon for iOS or Mac Catalyst. Found: @(_MauiNativeAppleIcon, ', ')." />
+        <Error
+            Condition="'@(_MauiNativeAppleIcon)' != '' And '@(_MauiNonNativeAppleIcon)' != ''"
+            Text="An Apple Icon Composer .icon bundle cannot be combined with another MauiIcon for the same iOS or Mac Catalyst target. Remove the additional MauiIcon item(s): @(_MauiNonNativeAppleIcon, ', ')." />
+
+        <PropertyGroup Condition="'@(_MauiNativeAppleIcon)' != ''">
+            <_MauiNativeAppleIconDirectory>%(_MauiNativeAppleIcon.FullPath)</_MauiNativeAppleIconDirectory>
+            <_MauiNativeAppleIconDirectoryWithSlash>$([MSBuild]::EnsureTrailingSlash('$(_MauiNativeAppleIconDirectory)'))</_MauiNativeAppleIconDirectoryWithSlash>
+            <_MauiNativeAppleIconRelativeDirectory>$([MSBuild]::MakeRelative('$(MSBuildProjectDirectory)', '$(_MauiNativeAppleIconDirectory)'))</_MauiNativeAppleIconRelativeDirectory>
+            <_MauiNativeAppleIconName>%(_MauiNativeAppleIcon.Filename)</_MauiNativeAppleIconName>
+            <_MauiExistingAppIcon>$(AppIcon)</_MauiExistingAppIcon>
+        </PropertyGroup>
+
+        <Error
+            Condition="'@(_MauiNativeAppleIcon)' != '' And !$([System.IO.Directory]::Exists('$(_MauiNativeAppleIconDirectory)'))"
+            Text="The MauiIcon '$(_MauiNativeAppleIconDirectory)' is an Apple Icon Composer .icon bundle, but the directory does not exist." />
+        <Error
+            Condition="'@(_MauiNativeAppleIcon)' != '' And !Exists('$(_MauiNativeAppleIconDirectoryWithSlash)icon.json')"
+            Text="The Apple Icon Composer bundle '$(_MauiNativeAppleIconDirectory)' must contain an icon.json file at its root." />
+        <Error
+            Condition="'@(_MauiNativeAppleIcon)' != '' And '$(_MauiExistingAppIcon)' != '' And '$(_MauiExistingAppIcon)' != '$(_MauiNativeAppleIconName)'"
+            Text="The AppIcon property '$(_MauiExistingAppIcon)' does not match the MauiIcon bundle name '$(_MauiNativeAppleIconName)'. Remove AppIcon or set it to '$(_MauiNativeAppleIconName)'." />
+
+        <ItemGroup Condition="'@(_MauiNativeAppleIcon)' != ''">
+            <!-- New Apple workloads include .icon children by default. Replace those items so
+                 linked and project-reference bundles have one deterministic virtual path. -->
+            <ImageAsset
+                Remove="$(_MauiNativeAppleIconDirectoryWithSlash)**\*;$(_MauiNativeAppleIconRelativeDirectory)\**\*" />
+            <_MauiNativeAppleIconAsset
+                Include="$(_MauiNativeAppleIconDirectoryWithSlash)Assets\**\*"
+                Exclude="$(_MauiNativeAppleIconDirectoryWithSlash)Assets\**\.DS_Store" />
+            <_MauiNativeAppleIconChild
+                Include="$(_MauiNativeAppleIconDirectoryWithSlash)**\*"
+                Exclude="$(_MauiNativeAppleIconDirectoryWithSlash)**\.DS_Store" />
+            <ImageAsset Include="@(_MauiNativeAppleIconChild)">
+                <Link>$(_MauiNativeAppleIconName).icon\%(_MauiNativeAppleIconChild.RecursiveDir)%(_MauiNativeAppleIconChild.Filename)%(_MauiNativeAppleIconChild.Extension)</Link>
+                <Visible>false</Visible>
+            </ImageAsset>
+        </ItemGroup>
+
+        <Error
+            Condition="'@(_MauiNativeAppleIcon)' != '' And '@(_MauiNativeAppleIconAsset)' == ''"
+            Text="The Apple Icon Composer bundle '$(_MauiNativeAppleIconDirectory)' must contain at least one file in its Assets directory." />
+
+        <PropertyGroup Condition="'@(_MauiNativeAppleIcon)' != ''">
+            <AppIcon>$(_MauiNativeAppleIconName)</AppIcon>
+            <_MauiNativeAppleIconActive>True</_MauiNativeAppleIconActive>
+        </PropertyGroup>
+
+        <GetFileHash
+            Condition="'@(_MauiNativeAppleIcon)' != ''"
+            Files="@(_MauiNativeAppleIconChild)">
+            <Output TaskParameter="Items" ItemName="_MauiNativeAppleIconChildWithHashes" />
+        </GetFileHash>
+
+        <!-- WriteOnlyWhenDifferent avoids invalidating no-op builds. Persisting each child hash
+             detects content changes even when a copied file retains an older timestamp. -->
+        <WriteLinesToFile
+            Condition="'@(_MauiNativeAppleIcon)' != ''"
+            File="$(_MauiNativeAppleIconInputsFile)"
+            Lines="@(_MauiNativeAppleIconChildWithHashes->'%(FullPath);%(FileHash)')"
+            Overwrite="true"
+            WriteOnlyWhenDifferent="true" />
+
+        <ItemGroup Condition="'@(_MauiNativeAppleIcon)' != ''">
+            <FileWrites Include="$(_MauiNativeAppleIconInputsFile)" />
+        </ItemGroup>
+    </Target>
+
+    <Target Name="_InvalidateMauiNativeAppleIconCache"
+        Condition="'$(_MauiNativeAppleIconActive)' == 'True'"
+        BeforeTargets="_BeforeCoreCompileImageAssets"
+        DependsOnTargets="_CollectMauiNativeAppleIcon"
+        Inputs="$(_MauiNativeAppleIconInputsFile)"
+        Outputs="$(_ACTool_PartialAppManifestCache);$(_ACTool_BundleResourceCache)">
+        <Delete Files="$(_ACTool_PartialAppManifestCache);$(_ACTool_BundleResourceCache)" />
+    </Target>
+
+    <Target Name="_InvalidateRemovedMauiNativeAppleIconCache"
+        Condition="'$(_MauiNativeAppleIconActive)' != 'True' And Exists('$(_MauiNativeAppleIconInputsFile)')"
+        BeforeTargets="_BeforeCoreCompileImageAssets"
+        DependsOnTargets="_CollectMauiNativeAppleIcon">
+        <Delete Files="$(_ACTool_PartialAppManifestCache);$(_ACTool_BundleResourceCache);$(_MauiNativeAppleIconInputsFile)" />
+    </Target>
+
+    <Target Name="_ClearMauiNativeAppleIconManifestSelection"
+        Condition="'$(_MauiNativeAppleIconActive)' == 'True'"
+        AfterTargets="_ReadAppManifest">
+        <!-- MAUI templates historically select Assets.xcassets/appicon.appiconset in
+             Info.plist. AppIcon is the supported selector for .icon bundles, so clear only
+             the parsed private property and leave the user's Info.plist untouched. -->
+        <PropertyGroup>
+            <_XSAppIconAssets></_XSAppIconAssets>
+        </PropertyGroup>
+    </Target>
+
     <Target Name="ProcessMauiAssets"
         Condition="'$(EnableMauiAssetProcessing)' == 'true'"
         DependsOnTargets="$(ProcessMauiAssetsDependsOnTargets)">
@@ -448,7 +566,6 @@
             <_MauiAssetItemMetadata Condition="'$(_ResizetizerIsAndroidApp)' == 'True'">Link</_MauiAssetItemMetadata>
             <_MauiAssetItemMetadata Condition="'$(_ResizetizerIsiOSApp)' == 'True'">Link</_MauiAssetItemMetadata>
             <_MauiAssetItemMetadata Condition="'$(_ResizetizerIsWindowsAppSdk)' == 'True'">TargetPath</_MauiAssetItemMetadata>
-            <_MauiAssetItemMetadata Condition="'$(_ResizetizerIsTizenApp)' == 'True'">TizenTpkFileName</_MauiAssetItemMetadata>
             <_MauiAssetItemMetadata Condition="'$(_MauiAssetItemMetadata)' == ''">Link</_MauiAssetItemMetadata>
         </PropertyGroup>
         <GetMauiAssetPath
@@ -467,9 +584,6 @@
         <ItemGroup Condition="'$(_ResizetizerIsWindowsAppSdk)' == 'True'">
             <ContentWithTargetPath Include="@(_MauiAssetItemWithMetadata)" CopyToPublishDirectory="PreserveNewest" />
         </ItemGroup>
-        <ItemGroup Condition="'$(_ResizetizerIsTizenApp)' == 'True'">
-            <TizenResource Include="@(_MauiAssetItemWithMetadata)" />
-        </ItemGroup>
         <ItemGroup>
             <MauiProcessedAsset Include="@(_MauiAssetItemWithMetadata)" />
         </ItemGroup>
@@ -484,7 +598,8 @@
     <Target Name="ProcessMauiSplashScreens"
         Condition="'$(EnableMauiSplashScreenProcessing)' == 'true'"
         Inputs="$(MSBuildThisFileFullPath);$(_ResizetizerTaskAssemblyName);$(_MauiSplashInputsFile);@(MauiSplashScreen)"
-        Outputs="$(_MauiSplashStampFile)">
+        Outputs="$(_MauiSplashOutputsFile)"
+        DependsOnTargets="$(ProcessMauiSplashScreensDependsOnTargets)">
 
         <PropertyGroup>
             <_MauiHasSplashScreens>false</_MauiHasSplashScreens>
@@ -634,52 +749,40 @@
             </ContentWithTargetPath>
         </ItemGroup>
 
-        <!-- Tizen -->
-        <TizenSplashUpdater
-            Condition="'$(_ResizetizerIsTizenApp)' == 'True' and '$(_MauiHasSplashScreens)' == 'true'"
-            IntermediateOutputPath="$(_MauiIntermediateSplashScreen)"
-            MauiSplashScreen="@(MauiSplashScreen)"
-        />
-        <ItemGroup Condition="'$(_ResizetizerIsTizenApp)' == 'True' and '$(_MauiHasSplashScreens)' == 'true'">
-            <_MauiSplashAssets Include="$(_MauiIntermediateSplashScreen)**\*" />
-            <MauiImage Include="@(MauiSplashScreen)" />
-            <_MauiSplashScreens Include="$(_MauiIntermediateSplashScreen)splash\*" />
-            <TizenTpkUserIncludeFiles Include="@(_MauiSplashScreens)" TizenTpkSubDir="shared\res\splash" />
-        </ItemGroup>
-
-        <!-- Stamp file for Outputs -->
+        <!-- Track generated splash outputs in an obj-scoped manifest. _ReadMauiSplashOutputs
+             deletes this manifest before the incremental check if an entry is missing, which
+             re-runs this target without re-stamping unchanged Android assets and unnecessarily
+             invalidating aapt2. -->
         <MakeDir Directories="$(_ResizetizerIntermediateOutputPath)"/>
-        <Touch Files="$(_MauiSplashStampFile)" AlwaysCreate="True" />
+        <WriteLinesToFile
+            File="$(_MauiSplashOutputsFile)"
+            Lines="@(_MauiSplashAssets->'%(FullPath)')"
+            Overwrite="true"
+            WriteOnlyWhenDifferent="true"
+        />
+        <Touch Files="$(_MauiSplashOutputsFile)" AlwaysCreate="True" />
 
         <ItemGroup>
             <FileWrites Include="@(_MauiSplashAssets)" />
-            <FileWrites Include="$(_MauiSplashStampFile)" />
+            <FileWrites Include="$(_MauiSplashOutputsFile)" />
         </ItemGroup>
 
     </Target>
 
-    <!-- A partial obj/cache restore can leave the font stamp while losing a copied font
-         or the iOS partial manifest. Remove the stamp when an expected output is missing
-         so ProcessMauiFonts restores it. Removed fonts are absent from @(MauiFont), so
-         stale files are not re-exposed. -->
-    <Target Name="_HealProcessedMauiFonts"
-        Condition="'$(EnableMauiFontProcessing)' == 'true' And Exists('$(_MauiFontStampFile)')"
-        BeforeTargets="ProcessMauiFonts"
-        DependsOnTargets="ResizetizeCollectItems">
+    <Target Name="_ReadMauiSplashOutputs">
+        <ReadLinesFromFile File="$(_MauiSplashOutputsFile)" Condition="Exists ('$(_MauiSplashOutputsFile)')">
+            <Output TaskParameter="Lines" ItemName="_MauiSplashOutputs" />
+        </ReadLinesFromFile>
         <ItemGroup>
-            <_MauiExpectedProcessedFont Include="@(MauiFont->'$(_MauiIntermediateFonts)%(Filename)%(Extension)'->Distinct())" />
-            <_MauiMissingProcessedFont Include="@(_MauiExpectedProcessedFont)" Condition="!Exists('%(_MauiExpectedProcessedFont.Identity)')" />
-            <_MauiMissingProcessedFont
-                Include="$(_MauiIntermediateFonts)MauiInfo.plist"
-                Condition="'$(_ResizetizerIsiOSApp)' == 'True' And '@(MauiFont)' != '' And !Exists('$(_MauiIntermediateFonts)MauiInfo.plist')" />
+            <_MauiMissingSplashOutput Include="@(_MauiSplashOutputs)" Condition="!Exists('%(_MauiSplashOutputs.Identity)')" />
         </ItemGroup>
-        <Delete Files="$(_MauiFontStampFile)" Condition="'@(_MauiMissingProcessedFont)' != ''" />
+        <Delete Files="$(_MauiSplashOutputsFile)" Condition="'@(_MauiMissingSplashOutput)' != ''" />
     </Target>
 
     <Target Name="ProcessMauiFonts"
         Condition="'$(EnableMauiFontProcessing)' == 'true'"
         Inputs="$(MSBuildThisFileFullPath);$(_ResizetizerTaskAssemblyName);$(_MauiFontInputsFile);@(MauiFont)"
-        Outputs="$(_MauiFontStampFile)"
+        Outputs="$(_MauiFontOutputsFile)"
         AfterTargets="$(ProcessMauiFontsAfterTargets)"
         BeforeTargets="$(ProcessMauiFontsBeforeTargets)"
         DependsOnTargets="$(ProcessMauiFontsDependsOnTargets)">
@@ -690,9 +793,96 @@
             DestinationFolder="$(_MauiIntermediateFonts)"
             SkipUnchangedFiles="true" />
 
+        <!-- Predict the copied font paths and de-duplicate by intermediate filename so a project and
+             a ProjectReference that both supply e.g. 'OpenSans.ttf' collapse to a single output.
+             Because every font is copied flat into $(_MauiIntermediateFonts), de-duplicating these
+             mapped paths is equivalent to de-duplicating @(MauiFont) by %(Filename)%(Extension). This
+             keeps the generated plist's UIAppFonts and the output manifest free of duplicates,
+             matching the de-dup applied to _MauiFontCopied in _CollectMauiFontItems. -->
         <ItemGroup>
-            <_MauiFontCopied Include="$(_MauiIntermediateFonts)*" />
+            <_MauiFontOutput Include="@(MauiFont->'$(_MauiIntermediateFonts)%(Filename)%(Extension)')" />
             <MauiProcessedFont Include="@(MauiFont->'$(_MauiIntermediateFonts)%(Filename)%(Extension)'->Distinct())" />
+        </ItemGroup>
+        <RemoveDuplicates Inputs="@(_MauiFontOutput)">
+            <Output TaskParameter="Filtered" ItemName="_MauiFontOutputUnique" />
+        </RemoveDuplicates>
+
+        <!-- Create a partial info.plist for iOS. CreatePartialInfoPlistTask only reads each font's
+             file name, so the de-duplicated intermediate paths yield the same UIAppFonts entries as
+             @(MauiFont) while avoiding duplicate <string> entries when filenames collide. -->
+        <CreatePartialInfoPlistTask
+            Condition="'$(_ResizetizerIsiOSApp)' == 'True' And '@(_MauiFontOutputUnique)' != ''"
+            IntermediateOutputPath="$(_MauiIntermediateFonts)"
+            PlistName="MauiInfo.plist"
+            CustomFonts="@(_MauiFontOutputUnique)" />
+
+        <!-- Tear down a previously-generated partial info.plist when the last MauiFont is removed.
+             CreatePartialInfoPlistTask above is skipped when there are no fonts, but
+             _CollectMauiFontItems would still register a lingering MauiInfo.plist via its Exists()
+             check, keeping stale UIAppFonts entries on iOS/MacCatalyst. Removing the last font
+             rewrites mauifont.inputs (now empty), so this target re-runs and clears the plist. -->
+        <Delete
+            Condition="'$(_ResizetizerIsiOSApp)' == 'True' And '@(MauiFont)' == '' And Exists('$(_MauiIntermediateFonts)MauiInfo.plist')"
+            Files="$(_MauiIntermediateFonts)MauiInfo.plist" />
+
+        <!-- Track generated font outputs (copied fonts + any iOS partial plist) in an obj-scoped
+             manifest. _ReadMauiFontOutputs deletes this manifest before the incremental check if an
+             entry is missing, which re-runs this target without re-stamping unchanged generated files
+             and unnecessarily invalidating downstream consumers. -->
+        <ItemGroup>
+            <_MauiFontOutputUnique Include="$(_MauiIntermediateFonts)MauiInfo.plist"
+                Condition="'$(_ResizetizerIsiOSApp)' == 'True' And Exists('$(_MauiIntermediateFonts)MauiInfo.plist')" />
+        </ItemGroup>
+
+        <MakeDir Directories="$(_ResizetizerIntermediateOutputPath)"/>
+        <WriteLinesToFile
+            File="$(_MauiFontOutputsFile)"
+            Lines="@(_MauiFontOutputUnique->'%(FullPath)')"
+            Overwrite="true"
+            WriteOnlyWhenDifferent="true"
+        />
+        <Touch Files="$(_MauiFontOutputsFile)" AlwaysCreate="True" />
+
+        <!-- Include our fonts and output manifest as filewrites so they don't get rm'd -->
+        <ItemGroup>
+            <FileWrites Include="$(_MauiFontOutputsFile)" />
+            <FileWrites Include="@(_MauiFontOutputUnique)" />
+        </ItemGroup>
+    </Target>
+
+    <!-- Collect font items for platform-specific packaging.
+         This target always runs (no Inputs/Outputs) to ensure platform items
+         are registered even when ProcessMauiFonts is skipped by incremental build.
+         Uses predictive path mapping from source @(MauiFont) items to handle both cases:
+         - When ProcessMauiFonts runs: items point to newly copied fonts
+         - When ProcessMauiFonts skips: items point to existing fonts from intermediate folder -->
+    <Target Name="_CollectMauiFontItems"
+        Condition="'$(EnableMauiFontProcessing)' == 'true'"
+        DependsOnTargets="ProcessMauiFonts;_RegisterMauiFontItems"
+        AfterTargets="$(ProcessMauiFontsAfterTargets)"
+        BeforeTargets="$(ProcessMauiFontsBeforeTargets)" />
+
+    <!-- The post-processing hook can register items without depending back on its caller,
+         even when ProcessMauiFonts was reached through _CollectMauiFontItems. -->
+    <Target Name="_RegisterMauiFontItems"
+        Condition="'$(EnableMauiFontProcessing)' == 'true'">
+        <!-- Collect fonts from intermediate directory (works whether ProcessMauiFonts ran or was skipped) -->
+        <ItemGroup>
+            <_MauiFontCopied Include="@(MauiFont->'$(_MauiIntermediateFonts)%(Filename)%(Extension)')" />
+        </ItemGroup>
+
+        <!-- De-duplicate the mapped paths: two @(MauiFont) items whose filenames collide (e.g. one
+             from this project and one from a ProjectReference, both 'OpenSans.ttf') flatten to the
+             same intermediate path and would otherwise register duplicate
+             AndroidAsset/BundleResource/ContentWithTargetPath items. The previous glob over the
+             intermediate folder was implicitly de-duplicated by the filesystem, so preserve that
+             behavior here before the platform-specific registrations below. -->
+        <RemoveDuplicates Inputs="@(_MauiFontCopied)">
+            <Output TaskParameter="Filtered" ItemName="_MauiFontCopiedUnique" />
+        </RemoveDuplicates>
+        <ItemGroup>
+            <_MauiFontCopied Remove="@(_MauiFontCopied)" />
+            <_MauiFontCopied Include="@(_MauiFontCopiedUnique)" />
         </ItemGroup>
 
         <!-- iOS -->
@@ -707,13 +897,6 @@
             <BundleResource Include="@(_MauiFontBundleResource)" />
 
         </ItemGroup>
-
-        <!-- Create a partial info.plist for iOS -->
-        <CreatePartialInfoPlistTask
-            Condition="'$(_ResizetizerIsiOSApp)' == 'True' And '@(_MauiFontCopied)' != ''"
-            IntermediateOutputPath="$(_MauiIntermediateFonts)"
-            PlistName="MauiInfo.plist"
-            CustomFonts="@(_MauiFontCopied)" />
 
         <!-- iOS - Partial Info.plist for font registration  -->
         <ItemGroup Condition="'$(_ResizetizerIsiOSApp)' == 'True' ">
@@ -751,25 +934,26 @@
 
         </ItemGroup>
 
-        <!-- Tizen -->
-        <ItemGroup Condition="'$(_ResizetizerIsTizenApp)' == 'True'">
-            <TizenTpkUserIncludeFiles Include="@(_MauiFontCopied)"  Condition="'@(_MauiFontCopied)' != ''" TizenTpkSubDir="res\fonts\" />
-        </ItemGroup>
-
-        <!-- Touch/create our stamp file for outputs -->
-        <Touch Files="$(_MauiFontStampFile)" AlwaysCreate="True" />
-
-        <!-- Include our fonts and stamp file as filewrites so they don't get rm'd -->
+        <!-- Include collected fonts as filewrites so they don't get rm'd -->
         <ItemGroup>
-            <FileWrites Include="$(_MauiFontStampFile)" />
             <FileWrites Include="@(_MauiFontCopied)" />
         </ItemGroup>
+    </Target>
+
+    <Target Name="_ReadMauiFontOutputs">
+        <ReadLinesFromFile File="$(_MauiFontOutputsFile)" Condition="Exists ('$(_MauiFontOutputsFile)')">
+            <Output TaskParameter="Lines" ItemName="_MauiFontOutputs" />
+        </ReadLinesFromFile>
+        <ItemGroup>
+            <_MauiMissingFontOutput Include="@(_MauiFontOutputs)" Condition="!Exists('%(_MauiFontOutputs.Identity)')" />
+        </ItemGroup>
+        <Delete Files="$(_MauiFontOutputsFile)" Condition="'@(_MauiMissingFontOutput)' != ''" />
     </Target>
 
     <!-- External backends add packaging targets to ResizetizerAfterFontProcessingTargets. -->
     <Target Name="ResizetizerAfterFontProcessing"
         AfterTargets="ProcessMauiFonts"
-        DependsOnTargets="$(ResizetizerAfterFontProcessingTargets)"
+        DependsOnTargets="_RegisterMauiFontItems;$(ResizetizerAfterFontProcessingTargets)"
         Condition="'$(EnableMauiFontProcessing)' == 'true' And '$(ResizetizerAfterFontProcessingTargets)' != ''" />
 
     <Target Name="_ReadResizetizeImagesOutputs">
@@ -862,7 +1046,7 @@
 
     <Target Name="_ResizetizeInjectPlatformItems"
         AfterTargets="ResizetizeImages"
-        Condition="'$(EnableMauiImageProcessing)' == 'true' And ('$(_ResizetizerIsAndroidApp)' == 'True' Or '$(_ResizetizerIsiOSApp)' == 'True' Or '$(_ResizetizerIsWindowsAppSdk)' == 'True' Or '$(_ResizetizerIsWPFApp)' == 'True' Or '$(_ResizetizerIsTizenApp)' == 'True')">
+        Condition="'$(EnableMauiImageProcessing)' == 'true' And ('$(_ResizetizerIsAndroidApp)' == 'True' Or '$(_ResizetizerIsiOSApp)' == 'True' Or '$(_ResizetizerIsWindowsAppSdk)' == 'True' Or '$(_ResizetizerIsWPFApp)' == 'True')">
 
         <!-- iOS -->
         <ItemGroup Condition="'$(_ResizetizerIsiOSApp)' == 'True'">
@@ -912,19 +1096,6 @@
                 <LogicalName>%(_ResizetizerCollectedImages.Filename)%(_ResizetizerCollectedImages.Extension)</LogicalName>
                 <Link>%(_ResizetizerCollectedImages.Filename)%(_ResizetizerCollectedImages.Extension)</Link>
             </Resource>
-        </ItemGroup>
-
-        <!-- Tizen -->
-        <PropertyGroup>
-            <ResizetizerIntermediateOutputAbsolutePath>$(_MauiIntermediateImagesFullPath)</ResizetizerIntermediateOutputAbsolutePath>
-        </PropertyGroup>
-        <ItemGroup Condition="'$(_ResizetizerIsTizenApp)' == 'True' And '@(_ResizetizerCollectedImages)' != ''">
-            <TizenTpkUserIncludeFiles Include="$(ResizetizerIntermediateOutputAbsolutePath)res\res.xml" TizenTpkSubDir="res\" />
-            <FileWrites Include="$(ResizetizerIntermediateOutputAbsolutePath)res\res.xml" />
-
-            <TizenTpkUserIncludeFiles Include="@(_ResizetizerCollectedImages)">
-                <TizenTpkSubDir>$([MSBuild]::MakeRelative('$(ResizetizerIntermediateOutputAbsolutePath)', '%(_ResizetizerCollectedImages.RelativeDir)'))</TizenTpkSubDir>
-            </TizenTpkUserIncludeFiles>
         </ItemGroup>
 
     </Target>
@@ -1049,36 +1220,6 @@
                 <_Parameter1>Microsoft.Maui.ApplicationModel.AppInfo.Version</_Parameter1>
                 <_Parameter2>@(_MauiAppxManifestVersion)</_Parameter2>
             </AssemblyAttribute>
-        </ItemGroup>
-    </Target>
-
-    <Target Name="MauiGenerateTizenManifest"
-            Condition="'$(_ResizetizerIsTizenApp)' == 'True'"
-            BeforeTargets="$(ResizetizeBeforeTargets)"
-            AfterTargets="$(ResizetizeImages)"
-            Inputs="$(MSBuildThisFileFullPath);$(_ResizetizerTaskAssemblyName);$(_ResizetizerInputsFile);$(_MauiSplashInputsFile);$(TizenManifestFile)"
-            Outputs="$(_MauiManifestStampFile);$(_MauiIntermediateManifest)tizen-manifest.xml">
-
-        <GenerateTizenManifest
-            IntermediateOutputPath="$(_MauiIntermediateManifest)"
-            TizenManifestFile="$(TizenManifestFile)"
-            GeneratedFilename="tizen-manifest.xml"
-            ApplicationId="$(ApplicationId)"
-            ApplicationDisplayVersion="$(ApplicationDisplayVersion)"
-            ApplicationVersion="$(ApplicationVersion)"
-            ApplicationTitle="$(ApplicationTitle)"
-            AppIcon="@(MauiImage->WithMetadataValue('IsAppIcon', 'true'))"
-            SplashScreen="@(MauiSplashScreen)" />
-
-        <!-- replace user manifest -->
-        <PropertyGroup>
-          <TizenManifestFile>$(_MauiIntermediateManifest)tizen-manifest.xml</TizenManifestFile>
-        </PropertyGroup>
-
-        <!-- Stamp file for Outputs -->
-        <Touch Files="$(_MauiManifestStampFile)" AlwaysCreate="True" />
-        <ItemGroup>
-          <FileWrites Include="$(_MauiManifestStampFile)" />
         </ItemGroup>
     </Target>
 

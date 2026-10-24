@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public Issue33604(TestDevice device) : base(device) { }
 
 		[Test]
-		[Category(UITestCategories.CollectionView)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
 		public void CollectionViewItemsShouldRespectSafeAreaEdges()
 		{
 			App.WaitForElement("TestCollectionView");

@@ -11,7 +11,6 @@ using WASDKSelectionChangedEventArgs = Microsoft.UI.Xaml.Controls.SelectionChang
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
-	[Obsolete("This type is obsolete on Windows. Use Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView> or a concrete Items2 handler instead.")]
 	public partial class SelectableItemsViewHandler<TItemsView> : StructuredItemsViewHandler<TItemsView> where TItemsView : SelectableItemsView
 	{
 		bool _ignorePlatformSelectionChange;
@@ -128,7 +127,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					break;
 			}
 
-			UpdateItemContentControlSelection();
+			UpdateItemContentControlSelection(ListViewBase);
 			_ignorePlatformSelectionChange = false;
 		}
 
@@ -146,38 +145,50 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void PlatformSelectionChanged(object sender, WASDKSelectionChangedEventArgs args)
 		{
-			UpdateVirtualSelection();
-		}
-
-		void UpdateVirtualSelection()
-		{
-			if (_ignorePlatformSelectionChange || ItemsView == null)
+			if (sender is not ListViewBase platformView)
 			{
 				return;
 			}
 
-			switch (ListViewBase.SelectionMode)
+			UpdateVirtualSelection(platformView);
+		}
+
+		void UpdateVirtualSelection(ListViewBase platformView)
+		{
+			if (_ignorePlatformSelectionChange ||
+				!ReferenceEquals(((IElementHandler)this).PlatformView, platformView) ||
+				((IElementHandler)this).VirtualView is null)
+			{
+				return;
+			}
+
+			switch (platformView.SelectionMode)
 			{
 				case WASDKListViewSelectionMode.None:
 					break;
 				case WASDKListViewSelectionMode.Single:
-					UpdateVirtualSingleSelection();
+					UpdateVirtualSingleSelection(platformView);
 					break;
 				case WASDKListViewSelectionMode.Multiple:
-					UpdateVirtualMultipleSelection();
+					UpdateVirtualMultipleSelection(platformView);
 					break;
 				default:
 					break;
 			}
 
-			UpdateItemContentControlSelection();
+			if (!ReferenceEquals(((IElementHandler)this).PlatformView, platformView))
+			{
+				return;
+			}
+
+			UpdateItemContentControlSelection(platformView);
 		}
 
-		void UpdateVirtualSingleSelection()
+		void UpdateVirtualSingleSelection(ListViewBase platformView)
 		{
-			var selectedItem = ListViewBase.SelectedItem is ItemTemplateContext itemPair
+			var selectedItem = platformView.SelectedItem is ItemTemplateContext itemPair
 				? itemPair.Item
-				: ListViewBase.SelectedItem;
+				: platformView.SelectedItem;
 
 			if (ItemsView != null)
 			{
@@ -188,14 +199,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 		}
 
-		void UpdateVirtualMultipleSelection()
+		void UpdateVirtualMultipleSelection(ListViewBase platformView)
 		{
 			ItemsView.SelectionChanged -= VirtualSelectionChanged;
 
 			var selection = new List<object>();
-			for (int n = 0; n < ListViewBase.SelectedItems.Count; n++)
+			for (int n = 0; n < platformView.SelectedItems.Count; n++)
 			{
-				var item = ListViewBase.SelectedItems[n];
+				var item = platformView.SelectedItems[n];
 				selection.Add(item is ItemTemplateContext itc ? itc.Item : item);
 			}
 
@@ -204,9 +215,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			ItemsView.SelectionChanged += VirtualSelectionChanged;
 		}
 
-		void UpdateItemContentControlSelection()
+		void UpdateItemContentControlSelection(ListViewBase platformView)
 		{
-			var formsItemContentControls = ListViewBase.GetChildren<ItemContentControl>();
+			var formsItemContentControls = platformView.GetChildren<ItemContentControl>();
 
 			foreach (var formsItemContentControl in formsItemContentControls)
 			{

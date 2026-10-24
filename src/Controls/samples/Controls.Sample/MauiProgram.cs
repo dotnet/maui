@@ -255,7 +255,11 @@ namespace Maui.Controls.Sample
 						.OnActivated((a) => LogEvent(nameof(iOSLifecycle.OnActivated)))
 						.OnResignActivation((a) => LogEvent(nameof(iOSLifecycle.OnResignActivation)))
 						.OpenUrl((a, b, c) => LogEvent(nameof(iOSLifecycle.OpenUrl)) && false)
-						.PerformActionForShortcutItem((a, b, c) => LogEvent(nameof(iOSLifecycle.PerformActionForShortcutItem)))
+						.PerformActionForShortcutItem((a, b, completionHandler) =>
+						{
+							LogEvent(nameof(iOSLifecycle.PerformActionForShortcutItem));
+							completionHandler(false);
+						})
 						.WillEnterForeground((a) => LogEvent(nameof(iOSLifecycle.WillEnterForeground)))
 						.ApplicationSignificantTimeChange((a) => LogEvent(nameof(iOSLifecycle.ApplicationSignificantTimeChange)))
 						.WillTerminate((a) => LogEvent(nameof(iOSLifecycle.WillTerminate))));
@@ -269,19 +273,6 @@ namespace Maui.Controls.Sample
 						.OnClosed((a, b) => LogEvent(nameof(WindowsLifecycle.OnClosed)))
 						.OnLaunched((a, b) => LogEvent(nameof(WindowsLifecycle.OnLaunched)))
 						.OnVisibilityChanged((a, b) => LogEvent(nameof(WindowsLifecycle.OnVisibilityChanged))));
-#elif TIZEN
-					events.AddTizen(tizen => tizen
-						.OnAppControlReceived((a, b) => LogEvent(nameof(TizenLifecycle.OnAppControlReceived)))
-						.OnCreate((a) => LogEvent(nameof(TizenLifecycle.OnCreate)))
-						.OnDeviceOrientationChanged((a, b) => LogEvent(nameof(TizenLifecycle.OnDeviceOrientationChanged)))
-						.OnLocaleChanged((a, b) => LogEvent(nameof(TizenLifecycle.OnLocaleChanged)))
-						.OnLowBattery((a, b) => LogEvent(nameof(TizenLifecycle.OnLowBattery)))
-						.OnLowMemory((a, b) => LogEvent(nameof(TizenLifecycle.OnLowMemory)))
-						.OnPause((a) => LogEvent(nameof(TizenLifecycle.OnPause)))
-						.OnPreCreate((a) => LogEvent(nameof(TizenLifecycle.OnPreCreate)))
-						.OnRegionFormatChanged((a, b) => LogEvent(nameof(TizenLifecycle.OnRegionFormatChanged)))
-						.OnResume((a) => LogEvent(nameof(TizenLifecycle.OnResume)))
-						.OnTerminate((a) => LogEvent(nameof(TizenLifecycle.OnTerminate))));
 #endif
 
 					static bool LogEvent(string eventName, string? type = null)
@@ -323,7 +314,7 @@ namespace Maui.Controls.Sample
 #endif
 				});
 
-			// Adapt to dual-screen and foldable Android devices like Surface Duo, includes TwoPaneView layout control
+			// Adapt to dual-screen and foldable devices, including automatic TwoPaneView layout.
 			appBuilder.UseFoldable();
 
 			// If someone wanted to completely turn off the CascadeInputTransparent behavior in their application, this next line would be an easy way to do it

@@ -148,6 +148,40 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "NavigationPage BarBackgroundColor preserves Material 3 AppBar lift-on-scroll styling")]
+		public async Task BarBackgroundColorPreservesMaterial3AppBarLiftOnScrollStyling()
+		{
+			if (!RuntimeFeature.UseMauiAndroidSystemBarBackgrounds || !RuntimeFeature.IsMaterial3Enabled)
+				return;
+
+			SetupBuilder();
+
+			var firstColor = Colors.Orange;
+			var secondColor = Colors.Blue;
+			var navPage = new NavigationPage(new ContentPage { Title = "Page Title" })
+			{
+				BarBackgroundColor = firstColor
+			};
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async handler =>
+			{
+				await OnLoadedAsync(navPage.CurrentPage);
+
+				var platformToolbar = GetPlatformToolbar(handler.MauiContext);
+				var appBar = platformToolbar.Parent.GetParentOfType<AppBarLayout>();
+				Assert.NotNull(appBar);
+				var materialShapeDrawable = Assert.IsType<MaterialShapeDrawable>(appBar.Background);
+				Assert.Null(ViewCompat.GetBackgroundTintList(appBar));
+				Assert.Equal(firstColor.ToPlatform().ToArgb(), GetMaterialShapeDrawableFillColor(materialShapeDrawable));
+
+				navPage.BarBackgroundColor = secondColor;
+				await AssertEventually(() =>
+					appBar.Background is MaterialShapeDrawable drawable &&
+					ViewCompat.GetBackgroundTintList(appBar) is null &&
+					GetMaterialShapeDrawableFillColor(drawable) == secondColor.ToPlatform().ToArgb());
+			});
+		}
+
 		[Fact(DisplayName = "NavigationPage BarBackgroundColor colors Android status bar on initial load")]
 		public async Task BarBackgroundColorUpdatesAndroidStatusBarOnInitialLoad()
 		{
@@ -250,6 +284,12 @@ namespace Microsoft.Maui.DeviceTests
 		static void AssertAppBarBackgroundColor(AppBarLayout appBar, Color expectedColor)
 		{
 			Assert.Equal(expectedColor.ToPlatform().ToArgb(), GetAppBarBackgroundColor(appBar));
+		}
+
+		static int GetMaterialShapeDrawableFillColor(MaterialShapeDrawable drawable)
+		{
+			Assert.NotNull(drawable.FillColor);
+			return drawable.FillColor.DefaultColor;
 		}
 
 		[Fact(DisplayName = "NavigationPage push to hidden navigation bar clears app bar inset padding")]

@@ -366,6 +366,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 			if (_webviewManager != null)
 			{
 				// Dispatch because this is going to be async, and we want to catch any errors
+				var logger = Services.GetService<ILogger<BlazorWebView>>() ?? NullLogger<BlazorWebView>.Instance;
 				_ = ComponentsDispatcher.InvokeAsync(async () =>
 				{
 					var newItems = (eventArgs.NewItems ?? Array.Empty<RootComponent>()).Cast<RootComponent>();
@@ -380,7 +381,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 					{
 						await item.RemoveFromWebViewManagerAsync(_webviewManager);
 					}
-				});
+				}).ObserveExceptionsAsync(logger);
 			}
 		}
 

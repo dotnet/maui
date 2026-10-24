@@ -6,8 +6,6 @@ using PlatformView = UIKit.UIView;
 using PlatformView = Android.Views.View;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
-#elif TIZEN
-using PlatformView = Tizen.NUI.BaseComponents.View;
 #elif (NETSTANDARD || !PLATFORM)
 using PlatformView = System.Object;
 #endif
@@ -69,7 +67,7 @@ namespace Microsoft.Maui.Handlers
 #pragma warning disable CS0618 // Type or member is obsolete
 				[nameof(IBorder.Border)] = MapBorderView,
 #pragma warning restore CS0618 // Type or member is obsolete
-#if ANDROID || WINDOWS || TIZEN
+#if ANDROID || WINDOWS
 				[nameof(IToolbarElement.Toolbar)] = MapToolbar,
 #endif
 				[nameof(IView.InputTransparent)] = MapInputTransparent,
@@ -244,7 +242,7 @@ namespace Microsoft.Maui.Handlers
 		/// handler shadows <see cref="ContainerView"/> with a more specific type, so that an unsupported container is rejected
 		/// where the mistake is made instead of surfacing later as an <see cref="System.InvalidCastException"/> from the
 		/// shadowing getter.</para>
-		/// <para>The .NET MAUI iOS, Mac Catalyst and Tizen handlers use this to require a
+		/// <para>The .NET MAUI iOS and Mac Catalyst handlers use this to require a
 		/// <see cref="Platform.WrapperView"/>. An external backend that shadows <see cref="ContainerView"/> with its own
 		/// wrapper type should do the same.</para>
 		/// <para>Note that <paramref name="containerView"/> is typed as the platform view type of the target framework,
@@ -661,11 +659,19 @@ namespace Microsoft.Maui.Handlers
 			bool hasContainerOldValue = handler.HasContainer;
 
 			if (handler is ViewHandler viewHandler)
+			{
+#if WINDOWS
+				// Reusing a disconnected handler creates a new platform view; preserve the wrapper's visual-tree slot.
+				if (hasContainerOldValue)
+					viewHandler.ReconnectContainer();
+#endif
+
 				handler.HasContainer = viewHandler.NeedsContainer;
+			}
 			else
 				handler.HasContainer = view.NeedsContainer();
 
-#if IOS || MACCATALYST
+#if IOS || MACCATALYST || WINDOWS
 			MapInputTransparentToContainer(handler, view);
 #endif
 
@@ -748,8 +754,8 @@ namespace Microsoft.Maui.Handlers
 				wrapper.InputTransparent = view.InputTransparent;
 #else
 
-#if IOS || MACCATALYST
-			// Containers on iOS/Mac Catalyst may be hit testable, so we need to
+#if IOS || MACCATALYST || WINDOWS
+			// Containers may be hit testable, so we need to
 			// propagate the view's values to its container view.
 			MapInputTransparentToContainer(handler, view);
 #endif
@@ -758,9 +764,17 @@ namespace Microsoft.Maui.Handlers
 #endif
 		}
 
-#if IOS || MACCATALYST
+#if IOS || MACCATALYST || WINDOWS
 		static void MapInputTransparentToContainer(IViewHandler handler, IView view)
 		{
+#if WINDOWS
+			// LayoutPanel has a specialized mapper that makes the panel transparent to input without
+			// disabling its child tree. Other handlers disable their platform view and its subtree, so
+			// propagating the same value to their wrapper preserves their existing behavior.
+			if (handler is ILayoutHandler)
+				return;
+#endif
+
 			if (handler.ContainerView is WrapperView wrapper)
 				wrapper.UpdateInputTransparent(handler, view);
 		}

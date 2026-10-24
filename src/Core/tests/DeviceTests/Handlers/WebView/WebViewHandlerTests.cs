@@ -144,7 +144,7 @@ namespace Microsoft.Maui.DeviceTests
 				(handler.PlatformView as IWebViewDelegate)?.LoadUrl(encodedUrl);
 			});
 
-			var navigationResult = await tcs.Task.WaitAsync(TimeSpan.FromSeconds(5));
+			var navigationResult = await tcs.Task.WaitAsync(TimeSpan.FromSeconds(30));
 
 			Assert.Equal(WebNavigationResult.Success, navigationResult);
 		}

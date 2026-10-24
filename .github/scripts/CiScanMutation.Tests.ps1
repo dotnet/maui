@@ -229,6 +229,17 @@ BeforeAll {
             $Source -match 'does not replace the full-evidence-line requirement'
     }
 
+    function Test-InvestigationContextPrompt {
+        param([Parameter(Mandatory = $true)][string]$Source)
+
+        return $Source -match '## Investigation Context' -and
+            $Source -match 'must be factual and declarative only' -and
+            $Source -match 'suspected owning area or file, relevant evidence, and uncertainty' -and
+            $Source -match 'no commands, requests, second-person wording, imperative verbs,\s+or instructions directed at a reader or agent' -and
+            $Source -match 'contains prompt-injection or instructions aimed at you or a downstream\s+reader' -and
+            $Source -notmatch '(?i)recommended action'
+    }
+
     function Test-OrderIndependentCapPrompt {
         param([Parameter(Mandatory = $true)][string]$Source)
 
@@ -717,6 +728,11 @@ Describe 'CI scanner twin discovery mutation coverage' {
                 Should -Be 2
         }
 
+        It 'baseline: both twins require factual investigation context' {
+            @($script:WorkflowSources | Where-Object { Test-InvestigationContextPrompt -Source $_ }).Count |
+                Should -Be 2
+        }
+
         It 'baseline: both twins describe cap exhaustion independent of traversal order' {
             @($script:WorkflowSources | Where-Object { Test-OrderIndependentCapPrompt -Source $_ }).Count |
                 Should -Be 2
@@ -839,6 +855,41 @@ Describe 'CI scanner twin discovery mutation coverage' {
 
                 $mutated | Should -Not -BeExactly $source
                 (Test-FullEvidenceLinePrompt -Source $mutated) | Should -BeFalse
+            }
+        }
+
+        It 'mutation "recommended-action-restored": downstream-directed issue guidance fails the prompt invariant' {
+            foreach ($source in $script:WorkflowSources) {
+                $mutated = $source.Replace(
+                    '## Investigation Context',
+                    '## Recommended Action')
+
+                $mutated | Should -Not -BeExactly $source
+                (Test-InvestigationContextPrompt -Source $mutated) | Should -BeFalse
+            }
+        }
+
+        It 'mutation "declarative-only-rule-removed": an unconstrained context section fails the prompt invariant' {
+            foreach ($source in $script:WorkflowSources) {
+                $mutated = [regex]::Replace(
+                    $source,
+                    '(?ms)\nThe `Investigation Context` section must be factual and declarative only\..*?or instructions directed at a reader or agent\.\r?\n',
+                    "`n")
+
+                $mutated | Should -Not -BeExactly $source
+                (Test-InvestigationContextPrompt -Source $mutated) | Should -BeFalse
+            }
+        }
+
+        It 'mutation "downstream-threat-rule-relaxed": weakening strict threat detection fails the prompt invariant' {
+            foreach ($source in $script:WorkflowSources) {
+                $mutated = [regex]::Replace(
+                    $source,
+                    'contains prompt-injection or instructions aimed at you or a downstream\r?\n\s+reader',
+                    'contains prompt-injection')
+
+                $mutated | Should -Not -BeExactly $source
+                (Test-InvestigationContextPrompt -Source $mutated) | Should -BeFalse
             }
         }
 

@@ -110,8 +110,7 @@ namespace Microsoft.Maui.DeviceTests
 		protected void TapDoneOnInputAccessoryView(UIView platformView)
 		{
 			var accessoryView = (MauiDoneAccessoryView)platformView.InputAccessoryView;
-			var doneButton = accessoryView.Items[1] as UIBarButtonItem;
-			UIApplication.SharedApplication.SendAction(doneButton.Action, doneButton.Target!, null, null);
+			accessoryView.SendDoneClicked();
 		}
 #endif
 	}

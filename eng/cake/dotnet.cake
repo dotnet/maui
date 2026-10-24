@@ -640,7 +640,7 @@ Task("GenerateCgManifest")
 });
 
 Task("publicapi")
-    .Description("Clears PublicAPI.Unshipped.txt files and regenerates them with current public APIs. Processes Core, Controls, Essentials, and Graphics projects. Skips Windows files on non-Windows platforms and always skips Tizen files. Use after adding new public APIs to resolve build errors.")
+    .Description("Clears PublicAPI.Unshipped.txt files and regenerates them with current public APIs. Processes Core, Controls, Essentials, and Graphics projects. Skips Windows files on non-Windows platforms. Use after adding new public APIs to resolve build errors.")
     .Does(() =>
 {
     var corePublicApiDir = MakeAbsolute(Directory("./src/Core/src/PublicAPI"));
@@ -663,13 +663,6 @@ Task("publicapi")
         if (!IsRunningOnWindows() && file.FullPath.Contains("windows"))
         {
             Information($"Skipping Windows file (not on Windows): {file}");
-            continue;
-        }
-
-        // Skip Tizen-specific files
-        if (file.FullPath.Contains("tizen"))
-        {
-            Information($"Skipping Tizen file: {file}");
             continue;
         }
 
@@ -926,7 +919,7 @@ void RunMSBuildWithDotNet(
     DotNetBuild(sln, dotnetBuildSettings);
 }
 
-void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = null, Dictionary<string, string> argsExtra = null, bool noBuild = false, string resultsFileNameWithoutExtension = null, string filter = "", int maxCpuCount = 0)
+void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = null, Dictionary<string, string> argsExtra = null, bool noBuild = false, string resultsFileNameWithoutExtension = null, string filter = "", int maxCpuCount = 0, string resultsDirectory = null, string nunitResultsDirectory = null)
 {
     if (string.IsNullOrWhiteSpace(filter))
     {
@@ -975,7 +968,7 @@ void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = nu
                 $"trx;LogFileName={results}",
                 $"console;verbosity=normal"
             },
-        ResultsDirectory = GetTestResultsDirectory(),
+        ResultsDirectory = resultsDirectory == null ? GetTestResultsDirectory() : new DirectoryPath(resultsDirectory),
         //    Verbosity = Cake.Common.Tools.DotNetCore.DotNetCoreVerbosity.Diagnostic,
 
         ArgumentCustomization = args => 
@@ -1002,6 +995,11 @@ void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = nu
 
             // https://github.com/microsoft/vstest/issues/5112
             args.Append($"/p:VStestUseMSBuildOutput=false");
+
+            if (!string.IsNullOrEmpty(nunitResultsDirectory))
+            {
+                args.Append("--").AppendQuoted($"NUnit.TestOutputXml={nunitResultsDirectory}");
+            }
 
             return args;
         }
@@ -1072,9 +1070,6 @@ void ProcessTFMSwitches()
 
     if (HasArgument("catalyst") || HasArgument("maccatalyst"))
         replaceTarget.Add("_IncludeMacCatalyst");
-
-    if (HasArgument("tizen"))
-        replaceTarget.Add("_IncludeTizen");
 
     if (replaceTarget.Count > 0)
     {

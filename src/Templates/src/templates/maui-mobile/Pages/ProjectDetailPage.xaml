@@ -33,19 +33,19 @@
                         Text="{Binding Description}" SemanticProperties.Description="Description" />
                 </sf:SfTextInputLayout>
 
-              <sf:SfTextInputLayout
-                    Hint="Category"
-                    SemanticProperties.Description="ComboBox to select a category. Activate to browse and select a category">
+                <sf:SfTextInputLayout
+                    Hint="Category">
                     <Picker ItemsSource="{Binding Categories}"
                             SelectedItem="{Binding Category}"
                             SelectedIndex="{Binding CategoryIndex}"
-                            IsOpen="{Binding IsCategoryPickerExpanded, Mode=TwoWay}"/>
+                            IsOpen="{Binding IsCategoryPickerExpanded, Mode=TwoWay}"
+                            SemanticProperties.Hint="ComboBox to select a category. Activate to browse and select a category. State Collapsed"/>
                 </sf:SfTextInputLayout>
 
                 <Label 
                     Text="Icon" 
                     Style="{StaticResource Title2}"/>
-                <CollectionView 
+                <CollectionView x:Name="IconsCollectionView"
                     HeightRequest="44" Margin="0,0,0,15"
                     SelectionMode="Single" 
                     SelectedItem="{Binding Icon}"
@@ -96,11 +96,12 @@
                     Text="Tags" 
                     Style="{StaticResource Title2}"/>
 
-                <CollectionView
+                <CollectionView x:Name="TagsCollectionView"
                     ItemsSource="{Binding AllTags}"
                     SelectionMode="Multiple"
                     HeightRequest="44"
                     Margin="0,0,0,15"
+                    SemanticProperties.Description="Tags Collection"
                     SelectedItems="{Binding SelectedTags, Mode=TwoWay}"
                     SelectionChangedCommand="{Binding SelectionChangedCommand}"
                     SelectionChangedCommandParameter="{Binding SelectedTags}">

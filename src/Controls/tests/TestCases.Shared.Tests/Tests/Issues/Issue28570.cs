@@ -11,7 +11,7 @@ public class Issue28570 : _IssuesUITest
 	public override string Issue => "Setting BackButtonBehavior to not visible or not enabled does not work";
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void BackButtonShouldNotBeVisible()
 	{
 		App.WaitForElement("NavigateToDetailButton");

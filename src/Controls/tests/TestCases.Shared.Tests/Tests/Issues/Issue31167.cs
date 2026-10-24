@@ -7,7 +7,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue31167 : _IssuesUITest
 {
-	string doneButton => App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp) ? "selected" : "Done";
+	const string DoneButtonId = "Done";
+
 	public Issue31167(TestDevice testDevice) : base(testDevice)
 	{
 	}
@@ -37,9 +38,9 @@ public class Issue31167 : _IssuesUITest
 		// Simulate user interaction by opening and closing the DatePicker
 		App.Tap("MyDatePicker");
 		
-		// On iOS, tap Done (or "selected" on iOS 26+) to close the picker
-		App.WaitForElement(doneButton);
-		App.Tap(doneButton);
+		// On iOS, tap Done to close the picker
+		App.WaitForElement(DoneButtonId);
+		App.Tap(DoneButtonId);
 
 		// Verify text still shows 4-digit year after interaction
 		var afterInteractionText = App.WaitForElement("MyDatePicker").GetText();
@@ -110,10 +111,10 @@ public class Issue31167 : _IssuesUITest
 		{
 			// Open picker
 			App.Tap("MyDatePicker");
-			App.WaitForElement(doneButton);
+			App.WaitForElement(DoneButtonId);
 
 			// Close picker
-			App.Tap(doneButton);
+			App.Tap(DoneButtonId);
 
 			// Verify format is still consistent
 			var currentText = App.WaitForElement("MyDatePicker").GetText();

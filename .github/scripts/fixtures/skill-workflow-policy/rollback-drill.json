@@ -1,0 +1,9 @@
+{
+  "skill": "rollback-drill",
+  "changed_files": [
+    ".github/skills/rollback-drill/SKILL.md",
+    ".github/skills/rollback-drill/tests/eval.rollback.vally.yaml"
+  ],
+  "static_result": "success",
+  "failing_static_result": "failure"
+}

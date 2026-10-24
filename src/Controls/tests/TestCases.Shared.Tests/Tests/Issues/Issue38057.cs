@@ -13,7 +13,7 @@ public class Issue38057 : _IssuesUITest
     public override string Issue => "CollectionView MakeVisible scrolls the target item to the top";
 
     [Test]
-    [Category(UITestCategories.CollectionView)]
+    [ShardedTestCategory(UITestCategories.CollectionView)]
     public void Issue38057_MakeVisiblePositionsTargetAtBottomOfViewport()
     {
         App.WaitForElement("ScrollToProboscisMonkeyButton");

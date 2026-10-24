@@ -727,8 +727,23 @@ namespace Microsoft.Maui.Controls
 		static readonly BindablePropertyKey ItemsPropertyKey = BindableProperty.CreateReadOnly(nameof(Items), typeof(ShellItemCollection), typeof(Shell), null,
 				defaultValueCreator: bo => new ShellItemCollection { Inner = new ElementCollection<ShellItem>(((Shell)bo).InternalChildren) });
 
-		List<(IAppearanceObserver Observer, Element Pivot)> _appearanceObservers = new List<(IAppearanceObserver Observer, Element Pivot)>();
+		List<AppearanceObserverRegistration> _appearanceObservers = new List<AppearanceObserverRegistration>();
 		List<IFlyoutBehaviorObserver> _flyoutBehaviorObservers = new List<IFlyoutBehaviorObserver>();
+
+		sealed class AppearanceObserverRegistration
+		{
+			public readonly IAppearanceObserver Observer;
+			public readonly Element Pivot;
+			public List<WeakBrushChangedProxy> BrushProxies;
+			// Keep the callback alive while its brush proxies hold only weak references to it.
+			public EventHandler BrushChanged;
+
+			public AppearanceObserverRegistration(IAppearanceObserver observer, Element pivot)
+			{
+				Observer = observer;
+				Pivot = pivot;
+			}
+		}
 
 
 #nullable enable
@@ -843,10 +858,58 @@ namespace Microsoft.Maui.Controls
 
 		void IShellController.AddAppearanceObserver(IAppearanceObserver observer, Element pivot)
 		{
-			_appearanceObservers.Add((observer, pivot));
-			var appearance = GetAppearanceForPivot(pivot);
-			UpdateToolbarAppearanceFeatures(pivot, appearance);
-			observer.OnAppearanceChanged(appearance);
+			var registration = new AppearanceObserverRegistration(observer, pivot);
+			_appearanceObservers.Add(registration);
+			UpdateAppearanceObserver(registration);
+		}
+
+		void UpdateAppearanceObserver(AppearanceObserverRegistration registration)
+		{
+			var appearance = GetAppearanceForPivot(registration.Pivot);
+			UpdateAppearanceObserverBrush(registration, appearance);
+			UpdateToolbarAppearanceFeatures(registration.Pivot, appearance);
+			registration.Observer.OnAppearanceChanged(appearance);
+		}
+
+		void UpdateAppearanceObserverBrush(AppearanceObserverRegistration registration, ShellAppearance appearance)
+		{
+			var brushes = appearance?.BackgroundBrushes;
+			var proxies = registration.BrushProxies;
+			bool sameBrushes = (proxies?.Count ?? 0) == (brushes?.Count ?? 0);
+			for (int i = 0; sameBrushes && i < (proxies?.Count ?? 0); i++)
+			{
+				sameBrushes = proxies[i].TryGetSource(out var currentBrush) &&
+					ReferenceEquals(currentBrush, brushes[i]);
+			}
+
+			if (sameBrushes)
+				return;
+
+			RemoveAppearanceObserverBrush(registration);
+
+			if (brushes is { Count: > 0 })
+			{
+				registration.BrushChanged = (_, _) => UpdateAppearanceObserver(registration);
+				proxies = new List<WeakBrushChangedProxy>(brushes.Count);
+				for (int i = 0; i < brushes.Count; i++)
+				{
+					var proxy = new WeakBrushChangedProxy();
+					proxy.Subscribe(brushes[i], registration.BrushChanged);
+					proxies.Add(proxy);
+				}
+				registration.BrushProxies = proxies;
+			}
+		}
+
+		static void RemoveAppearanceObserverBrush(AppearanceObserverRegistration registration)
+		{
+			if (registration.BrushProxies is { } proxies)
+			{
+				for (int i = 0; i < proxies.Count; i++)
+					proxies[i].Unsubscribe();
+				registration.BrushProxies = null;
+				registration.BrushChanged = null;
+			}
 		}
 
 		void IShellController.AddFlyoutBehaviorObserver(IFlyoutBehaviorObserver observer)
@@ -866,6 +929,7 @@ namespace Microsoft.Maui.Controls
 			if (pivot is ShellContent || pivot is ShellSection || pivot is ContentPage)
 			{
 				appearance = appearance ?? GetAppearanceForPivot(pivot);
+
 				Toolbar.BarTextColor = appearance?.TitleColor ?? DefaultTitleColor;
 				if (!Brush.IsNullOrEmpty(appearance?.Background))
 				{
@@ -884,7 +948,7 @@ namespace Microsoft.Maui.Controls
 			RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#FEF7FF") : Color.FromArgb("#2c3e50"),
 			RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#141218") : Color.FromArgb("#1B3147"));
 		static Color DefaultForegroundColor => ResolveThemeColor(
-			RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#1D1B20") : Colors.Black,
+			RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#1D1B20") : Colors.White,
 			RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#E6E0E9") : Colors.White);
 		static Color DefaultTitleColor => ResolveThemeColor(
 			RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#1D1B20") : Colors.White,
@@ -927,10 +991,9 @@ namespace Microsoft.Maui.Controls
 			// need walk up from the source to look for the pivot as items below the change
 			// can't be affected by it
 
-			foreach (var (Observer, Pivot) in _appearanceObservers)
+			foreach (var registration in _appearanceObservers)
 			{
-				var observer = Observer;
-				var pivot = Pivot;
+				var pivot = registration.Pivot;
 
 				Element target;
 				Element leaf;
@@ -949,9 +1012,7 @@ namespace Microsoft.Maui.Controls
 				{
 					if (leaf == target)
 					{
-						var appearance = GetAppearanceForPivot(pivot);
-						UpdateToolbarAppearanceFeatures(pivot, appearance);
-						observer.OnAppearanceChanged(appearance);
+						UpdateAppearanceObserver(registration);
 						break;
 					}
 
@@ -1084,6 +1145,7 @@ namespace Microsoft.Maui.Controls
 			{
 				if (_appearanceObservers[i].Observer == observer)
 				{
+					RemoveAppearanceObserverBrush(_appearanceObservers[i]);
 					_appearanceObservers.RemoveAt(i);
 					return true;
 				}
@@ -1395,27 +1457,14 @@ namespace Microsoft.Maui.Controls
 			Route = Routing.GenerateImplicitRoute("shell");
 			Initialize();
 
-			if (Application.Current is not null)
+			if (Application.Current is not null &&
+				(DeviceInfo.Platform != DevicePlatform.Android || !RuntimeFeature.IsMaterial3Enabled))
 			{
-				Color light;
-				Color dark;
-
-				if (DeviceInfo.Platform == DevicePlatform.Android && RuntimeFeature.IsMaterial3Enabled)
-				{
-					light = Color.FromArgb("#FEF7FF");
-					dark = Color.FromArgb("#141218");
-				}
-				else
-				{
-					light = Colors.White;
-					dark = Colors.Black;
-				}
-
 				this.SetBinding(Shell.FlyoutBackgroundColorProperty,
 					new AppThemeBinding
 					{
-						Light = light,
-						Dark = dark,
+						Light = Colors.White,
+						Dark = Colors.Black,
 						Mode = BindingMode.OneWay
 					});
 			}
@@ -1760,6 +1809,21 @@ namespace Microsoft.Maui.Controls
 			_structureChanged?.Invoke(this, EventArgs.Empty);
 		}
 
+		bool _backButtonPressedFromGesture;
+
+		internal bool SendBackButtonPressedFromGesture()
+		{
+			_backButtonPressedFromGesture = true;
+			try
+			{
+				return SendBackButtonPressed();
+			}
+			finally
+			{
+				_backButtonPressedFromGesture = false;
+			}
+		}
+
 		protected override bool OnBackButtonPressed()
 		{
 #if WINDOWS || !PLATFORM
@@ -1779,6 +1843,11 @@ namespace Microsoft.Maui.Controls
 
 			if (GetVisiblePage() is Page page && page.SendBackButtonPressed())
 				return true;
+
+			if (_backButtonPressedFromGesture)
+			{
+				return false;
+			}
 
 			var currentContent = CurrentItem?.CurrentItem;
 			if (currentContent != null && currentContent.Stack.Count > 1)
@@ -1811,8 +1880,7 @@ namespace Microsoft.Maui.Controls
 			Navigated?.Invoke(this, args);
 			OnNavigated(args);
 
-			if (_previousPage != null)
-				_previousPage.PropertyChanged -= OnCurrentPagePropertyChanged;
+			_previousPage?.PropertyChanged -= OnCurrentPagePropertyChanged;
 
 			_navigationType = NavigationType.Replace;
 
@@ -1845,8 +1913,7 @@ namespace Microsoft.Maui.Controls
 			PropagateSendNavigatedTo();
 			_previousPage = null;
 
-			if (CurrentPage != null)
-				CurrentPage.PropertyChanged += OnCurrentPagePropertyChanged;
+			CurrentPage?.PropertyChanged += OnCurrentPagePropertyChanged;
 
 			CurrentItem?.Handler?.UpdateValue(Shell.TabBarIsVisibleProperty.PropertyName);
 			(this.Window as Window)?.NotifyNavigationStateChanged();

@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Graphics;
@@ -56,8 +57,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		static readonly NSString CellId = new NSString("HeaderCell");
 
-		readonly IShellContext _shellContext;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The shell context is retained for the header lifetime and released when the header is disposed.")]
+		IShellContext _shellContext;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The selection bar view is owned by this header and disposed in Dispose.")]
 		UIView _bar;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The bottom shadow view is owned by this header and disposed in Dispose.")]
 		UIView _bottomShadow;
 		Color _selectedColor;
 		Color _unselectedColor;
@@ -228,9 +232,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				ShellSection = null;
 				_bar.RemoveFromSuperview();
+				_bottomShadow.RemoveFromSuperview();
 				this.RemoveFromParentViewController();
 				_bar.Dispose();
+				_bottomShadow.Dispose();
 				_bar = null;
+				_bottomShadow = null;
+				_shellContext = null;
 			}
 
 			_isDisposed = true;
@@ -262,6 +270,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 		}
 
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "The ShellSection.PropertyChanged subscription is removed in Dispose before the shell section is released.")]
 		protected virtual void OnShellSectionPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == ShellSection.CurrentItemProperty.PropertyName)
@@ -285,6 +294,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			CollectionView.SelectItem(NSIndexPath.FromItemSection((int)SelectedIndex, 0), false, UICollectionViewScrollPosition.CenteredHorizontally);
 		}
 
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "The ShellSectionController.ItemsCollectionChanged subscription is removed in Dispose before the shell section is released.")]
 		void OnShellSectionItemsChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
 			HandleEventsOnItemsChange(e);
@@ -310,6 +320,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 		}
 
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "ShellContent.PropertyChanged subscriptions are removed in Dispose and when items are removed from the section.")]
 		void OnShellContentPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == nameof(ShellContent.Title))
@@ -374,6 +385,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				}
 			}
 
+			[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The label is owned by the collection view cell ContentView for the cell lifetime.")]
 			public UILabel Label { get; }
 
 			public override void LayoutSubviews()

@@ -2,6 +2,7 @@ parameters:
   androidPool: { }
   androidLinuxPool: { }
   iosPool: { }
+  iosXcodeVersion: ''
   windowsPool: { }
   windowsBuildPool: { }
   macosPool: { }
@@ -21,15 +22,21 @@ parameters:
     - 'Accessibility,ActionSheet,ActivityIndicator,Animation,AppLinks'
     - 'Border,BoxView,Brush,Button'
     - 'CarouselView'
+    # CollectionView remains the umbrella category for local runs. CI uses the explicit CollectionView1-7 shard categories below.
+    - 'CollectionView1'
+    - 'CollectionView2'
+    - 'CollectionView3'
+    - 'CollectionView4'
+    - 'CollectionView5'
+    - 'CollectionView6'
+    - 'CollectionView7'
     - 'Cells,CheckBox,ContextActions,CustomRenderers,DatePicker,Dispatcher,DisplayAlert,DisplayPrompt,DragAndDrop'
-    - 'CollectionView'
     - 'Entry'
     - 'Editor,Effects,Essentials,FlyoutPage,Focus,Fonts,Frame,Gestures,GraphicsView'
     - 'Image,ImageButton,IndicatorView,InputTransparent,IsEnabled,IsVisible'
     - 'Label'
     - 'Layout'
     - 'Lifecycle,ManualReview,Maps'
-    - 'ListView'
     - 'Navigation'
     - 'Page,Performance,Picker,ProgressBar'
     - 'RadioButton,RefreshView'
@@ -40,7 +47,9 @@ parameters:
     - 'ScrollView'
     - 'SearchBar,Shape,Slider'
     - 'SoftInput,Stepper,Switch,SwipeView'
-    - 'Shell'
+    # Shell remains the umbrella category for local runs. CI uses Shell1 and Shell2 on every platform.
+    - 'Shell1'
+    - 'Shell2'
     - 'TabbedPage,TableView,TimePicker,TitleView,ToolbarItem,Triggers'
     - 'ViewBaseTests,VisualStateManager,Window'
     - 'WebView'
@@ -287,7 +296,11 @@ stages:
                 displayName: ${{ coalesce(project.desc, project.name) }} (v${{ version }})
                 pool: ${{ parameters.iosPool }}
                 variables:
-                  REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
+                  ${{ if ne(parameters.iosXcodeVersion, '') }}:
+                    XCODE: ${{ parameters.iosXcodeVersion }}
+                    REQUIRED_XCODE: ${{ parameters.iosXcodeVersion }}
+                  ${{ else }}:
+                    REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                   APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
                 steps:
                   - template: ui-tests-steps.yml
@@ -336,6 +349,9 @@ stages:
                   displayName: ${{ coalesce(project.desc, project.name) }} (v${{ version }})
                   pool: ${{ parameters.iosPool }}
                   variables:
+                    ${{ if ne(parameters.iosXcodeVersion, '') }}:
+                      XCODE: ${{ parameters.iosXcodeVersion }}
+                      REQUIRED_XCODE: ${{ parameters.iosXcodeVersion }}
                     APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
                   steps:
                     - template: ui-tests-steps.yml

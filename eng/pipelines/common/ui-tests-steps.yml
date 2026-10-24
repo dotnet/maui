@@ -11,7 +11,7 @@ parameters:
   runtimeVariant: "CoreCLR"
   useMaterial3: false # NEW PARAMETER - Enable Material3 build
   useWindowsCV1: false # NEW PARAMETER - Enable WindowsCollectionView1Handler test configuration
-  testFilter: ''
+  testFilter: '' # comma-separated category list, expanded into ORed TestCategory= terms
   headless: true
   testConfigurationArgs: ''
   skipProvisioning: true
@@ -19,36 +19,43 @@ parameters:
 
 steps:
 - task: DownloadPipelineArtifact@2
+  retryCountOnTaskFailure: 4
   condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'Mono'), eq('${{ parameters.useMaterial3 }}', 'false'))
   inputs:
     artifact: ui-tests-samples
 
 - task: DownloadPipelineArtifact@2
+  retryCountOnTaskFailure: 4
   condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'Mono'), eq('${{ parameters.useMaterial3 }}', 'true'))
   inputs:
     artifact: ui-tests-samples-material3
 
 - task: DownloadPipelineArtifact@2
+  retryCountOnTaskFailure: 4
   condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'NativeAOT'))
   inputs:
     artifact: ui-tests-samples-nativeaot
 
 - task: DownloadPipelineArtifact@2
+  retryCountOnTaskFailure: 4
   condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'CoreCLR'), eq('${{ parameters.useMaterial3 }}', 'false'))
   inputs:
     artifact: ui-tests-samples-coreclr
 
 - task: DownloadPipelineArtifact@2
+  retryCountOnTaskFailure: 4
   condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'CoreCLR'), eq('${{ parameters.useMaterial3 }}', 'true'))
   inputs:
     artifact: ui-tests-samples-material3-coreclr
 
 - task: DownloadPipelineArtifact@2
+  retryCountOnTaskFailure: 4
   condition: and(eq('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.useWindowsCV1 }}', 'false'))
   inputs:
     artifact: ui-tests-samples-windows
 
 - task: DownloadPipelineArtifact@2
+  retryCountOnTaskFailure: 4
   condition: and(eq('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.useWindowsCV1 }}', 'true'))
   inputs:
     artifact: ui-tests-samples-windows-cv1
@@ -104,7 +111,7 @@ steps:
 
 - pwsh: ./build.ps1 --target=dotnet --configuration="${{ parameters.configuration }}" --verbosity=diagnostic
   displayName: 'Install .NET'
-  retryCountOnTaskFailure: 2
+  retryCountOnTaskFailure: 4
   env:
     DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
     PRIVATE_BUILD: $(PrivateBuild)
@@ -120,6 +127,7 @@ steps:
   displayName: "Set screen resolution"
 
 - task: UseNode@1
+  retryCountOnTaskFailure: 4
   inputs:
     version: "20.3.1"
   displayName: "Install node"
@@ -129,7 +137,7 @@ steps:
     dotnet build ./src/Provisioning/Provisioning.csproj -t:ProvisionAppium -p:SkipAppiumDoctor="$skipAppiumDoctor" -bl:"$(LogDirectory)/provision-appium.binlog"
   displayName: "Install Appium"
   continueOnError: false
-  retryCountOnTaskFailure: 2
+  retryCountOnTaskFailure: 4
   timeoutInMinutes: 10
   env:
     APPIUM_HOME: $(APPIUM_HOME)
@@ -173,8 +181,6 @@ steps:
 
     Invoke-Expression $command  
   displayName: $(Agent.JobName)
-  ${{ if ne(parameters.platform, 'android')}}:
-    retryCountOnTaskFailure: 1
   env:
     APPIUM_HOME: $(APPIUM_HOME)
 
@@ -206,5 +212,6 @@ steps:
       chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/enable-notification-center.sh
       $(System.DefaultWorkingDirectory)/eng/scripts/enable-notification-center.sh
     displayName: 'Enable Notification Center'
+    condition: always()
     continueOnError: true
     timeoutInMinutes: 60

@@ -9,7 +9,7 @@ applyTo: "src/Controls/src/Core/Handlers/Items/**,src/Controls/src/Core/Handlers
 
 There are **TWO separate handler implementations**, with platform- and control-specific coverage:
 
-1. **Items/** (`Handlers/Items/`) - Contains code for **ALL platforms** (Android, iOS, Windows, MacCatalyst, Tizen)
+1. **Items/** (`Handlers/Items/`) - Contains code for **ALL built-in platforms** (Android, iOS, Windows, MacCatalyst)
 2. **Items2/** (`Handlers/Items2/`) - Contains code for **iOS/MacCatalyst** and **Windows CollectionView**
 
 ### Platform-Specific Deprecation
@@ -19,13 +19,12 @@ The deprecation of Items/ depends on both platform and control:
 | Platform | Control | Active Handler | Notes |
 |----------|---------|----------------|-------|
 | **Android** | CollectionView / CarouselView | `Items/Android/` | **ONLY implementation** - Items2/ has no Android code |
-| **Tizen** | CollectionView / CarouselView | `Items/Tizen/` | **ONLY implementation** - Items2/ has no Tizen code |
 | **Windows** | CollectionView | `Items2/Windows/` | Default on .NET 11; Items/ is the obsolete feature-switch fallback |
 | **Windows** | CarouselView | `Items/` | **ONLY implementation** - there is no Windows CarouselViewHandler2 |
 | **iOS** | CollectionView / CarouselView | `Items2/iOS/` | Items/ iOS code is deprecated |
 | **MacCatalyst** | CollectionView / CarouselView | `Items2/iOS/` | Items/ MacCatalyst code is deprecated |
 
-**CRITICAL**: Items2/ does not replace Items/ wholesale. Android and Tizen use Items/ for both controls, and Windows CarouselView still uses Items/.
+**CRITICAL**: Items2/ does not replace Items/ wholesale. Android uses Items/ for both controls, and Windows CarouselView still uses Items/.
 
 ### Shared iOS/Mac Catalyst Infrastructure
 
@@ -47,7 +46,7 @@ It also reuses internal item-source, template, index-path, snap, scroll-tracking
 ### Decision Tree by Platform
 
 ```
-Is the issue/PR for Android or Tizen?
+Is the issue/PR for Android?
   YES → Work on Items/ (it's the ONLY implementation)
   NO  → Continue...
 
@@ -70,7 +69,6 @@ git diff <base-branch>..<pr-branch> --name-only | grep -i "handlers/items"
 
 # Look for path pattern:
 # - Contains "/Items/Android/" → Android (ONLY implementation, work here)
-# - Contains "/Items/Tizen/" or ".Tizen.cs" → Tizen (ONLY implementation, work here)
 # - Contains "/Items2/Windows/" or "Items2/*.Windows.cs" → Windows CollectionView (CURRENT)
 # - Contains "/Items/*.Windows.cs" → Windows CarouselView or deprecated CollectionView fallback
 # - Contains "/Items2/iOS/" or "Items2/*.iOS.cs" → iOS/MacCatalyst (CURRENT)
@@ -83,7 +81,6 @@ git diff <base-branch>..<pr-branch> --name-only | grep -i "handlers/items"
 | Platform | Default Action |
 |----------|----------------|
 | **Android** | ✅ Work on `Items/Android/` - it's the only option |
-| **Tizen** | ✅ Work on `Items/Tizen/` - it's the only option |
 | **Windows CollectionView** | ✅ Work on `Items2/` Windows files - this is the .NET 11 default |
 | **Windows CarouselView** | ✅ Work on `Items/` Windows files - it's the only option |
 | **iOS/MacCatalyst** | ✅ Work on `Items2/` - Items/ is deprecated for iOS |
@@ -102,7 +99,6 @@ Only work on Items/ iOS code when:
 | Path Pattern | Platform | Status |
 |--------------|----------|--------|
 | `Handlers/Items/Android/` | Android | **ACTIVE** (only implementation) |
-| `Handlers/Items/Tizen/` | Tizen | **ACTIVE** (only implementation) |
 | `Handlers/Items2/Windows/`, `Handlers/Items2/*.Windows.cs` | Windows CollectionView | **ACTIVE** (default) |
 | `Handlers/Items/*.Windows.cs` | Windows | **ACTIVE** for CarouselView; **DEPRECATED** CollectionView fallback |
 | `Handlers/Items2/iOS/` | iOS/MacCatalyst | **ACTIVE** (current) |
@@ -113,7 +109,7 @@ Only work on Items/ iOS code when:
 ## Common Mistakes to Avoid
 
 ❌ **Wrong**: "Items/ is deprecated everywhere"
-- Items/ remains the only implementation for Android, Tizen, and Windows CarouselView
+- Items/ remains the only implementation for Android and Windows CarouselView
 
 ❌ **Wrong**: "Items2/ is iOS-only"
 - Items2/ also contains the default .NET 11 Windows CollectionView implementation

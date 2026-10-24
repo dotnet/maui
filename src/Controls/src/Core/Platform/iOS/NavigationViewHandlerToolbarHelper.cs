@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using CoreGraphics;
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
@@ -35,6 +36,7 @@ namespace Microsoft.Maui.Controls
         {
         }
 
+        [UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Child PropertyChanged subscriptions are removed when Child changes and in Dispose.")]
         public Page? Child
         {
             get => _childRef?.TryGetTarget(out var p) == true ? p : null;
@@ -64,6 +66,7 @@ namespace Microsoft.Maui.Controls
             }
         }
 
+        [UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Toolbar tracker CollectionChanged is removed in Dispose.")]
         public override void ViewDidLoad()
         {
             base.ViewDidLoad();
@@ -324,7 +327,7 @@ namespace Microsoft.Maui.Controls
 
                 // Properly detach child view controllers added via AddChildViewController
                 // in CreateForPage. The renderer's ParentingViewController.Disconnect
-                // explicitly removed each child VC before disposal. 
+                // explicitly removed each child VC before disposal.
                 if (ChildViewControllers is UIViewController[] children)
                 {
                     foreach (var childVC in children)
@@ -817,6 +820,7 @@ namespace Microsoft.Maui.Controls
             _trackedToolbarItems.Clear();
         }
 
+        [UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "ToolbarItem PropertyChanged subscriptions are removed by CleanToolbarItems before replacement and in Dispose.")]
         void UpdateToolbarItems()
         {
             CleanToolbarItems();
@@ -952,10 +956,13 @@ namespace Microsoft.Maui.Controls
     sealed class TitleViewContainer : UIView
     {
         View? _view;
+        [UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The title view child handler is disconnected and cleared in Dispose.")]
         IPlatformViewHandler? _child;
+        [UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The title icon view is owned by the container and disposed in Dispose.")]
         UIImageView? _icon;
         bool _disposed;
 
+        [UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "The title view ParentSet subscription is removed when it fires and in Dispose.")]
         internal TitleViewContainer(View? view, UINavigationBar bar) : base(bar.Bounds)
         {
             if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))

@@ -14,6 +14,10 @@ namespace Microsoft.Maui.Handlers
 		static readonly bool s_shouldBeDelayed = DeviceInfo.Idiom != DeviceIdiom.Desktop;
 		bool _set;
 
+		// Some Windows IMEs use Enter to confirm the current composition.
+		// Those Enter presses should not trigger Entry.Completed.
+		bool _enterKeyDownSeen;
+
 		protected override TextBox CreatePlatformView() =>
 			new MauiPasswordTextBox()
 			{
@@ -32,7 +36,9 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(TextBox platformView)
 		{
+			platformView.KeyDown += OnPlatformKeyDown;
 			platformView.KeyUp += OnPlatformKeyUp;
+			platformView.LostFocus += OnPlatformLostFocus;
 			platformView.TextChanged += OnPlatformTextChanged;
 			platformView.SizeChanged += OnPlatformViewSizeChanged;
 		}
@@ -40,8 +46,12 @@ namespace Microsoft.Maui.Handlers
 		protected override void DisconnectHandler(TextBox platformView)
 		{
 			platformView.SizeChanged -= OnPlatformViewSizeChanged;
+			platformView.KeyDown -= OnPlatformKeyDown;
 			platformView.KeyUp -= OnPlatformKeyUp;
+			platformView.LostFocus -= OnPlatformLostFocus;
 			platformView.TextChanged -= OnPlatformTextChanged;
+
+			_enterKeyDownSeen = false;
 
 			if (_set)
 				platformView.SelectionChanged -= OnPlatformSelectionChanged;
@@ -114,10 +124,36 @@ namespace Microsoft.Maui.Handlers
 				VirtualView?.UpdateText(PlatformView.Text);
 		}
 
+		void OnPlatformLostFocus(object sender, RoutedEventArgs args)
+		{
+			_enterKeyDownSeen = false;
+		}
+
+		void OnPlatformKeyDown(object? sender, KeyRoutedEventArgs args)
+		{
+			if (args?.Key == VirtualKey.Enter)
+			{
+				_enterKeyDownSeen = true;
+			}
+		}
+
 		void OnPlatformKeyUp(object? sender, KeyRoutedEventArgs args)
 		{
 			if (args?.Key != VirtualKey.Enter)
+			{
 				return;
+			}
+
+			// Some Windows IMEs raise KeyDown(Process) followed by KeyUp(Enter)
+			// when Enter is used to confirm an IME candidate. Since this is not a
+			// user submission, suppress Completed unless an actual Enter KeyDown
+			// preceded the KeyUp.
+			if (!_enterKeyDownSeen)
+			{
+				return;
+			}
+
+			_enterKeyDownSeen = false;
 
 			if (VirtualView?.ReturnType == ReturnType.Next)
 			{

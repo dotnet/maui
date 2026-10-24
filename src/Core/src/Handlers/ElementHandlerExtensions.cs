@@ -4,8 +4,6 @@ using PlatformView = UIKit.UIView;
 using PlatformView = Android.Views.View;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
-#elif TIZEN
-using PlatformView = Tizen.NUI.BaseComponents.View;
 #elif (NETSTANDARD || !PLATFORM)
 using PlatformView = System.Object;
 #endif
@@ -93,6 +91,13 @@ namespace Microsoft.Maui
 			if (platformView is PlatformView androidView && androidView.IsDisposed())
 				return false;
 #endif
+#if WINDOWS
+			if (viewHandler?.MauiContext is MauiContext mc && mc.IsWindowScopeDisposed)
+			{
+				return false;
+			}
+#endif
+
 			return true;
 		}
 

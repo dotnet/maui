@@ -16,22 +16,20 @@ public class Issue10947 : _IssuesUITest
 	string FooterEntry => "FooterEntry";
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 	public void CollectionViewHeaderShouldNotScroll()
 	{
-		var headerEntry = App.WaitForElement(HeaderEntry);
-		var headerLocation = headerEntry.GetRect();
-		var footerEntry = App.WaitForElement(FooterEntry);
-		var footerLocation = footerEntry.GetRect();
+		var headerLocation = App.WaitForElementAndGetRect(HeaderEntry);
+		var footerLocation = App.WaitForElementAndGetRect(FooterEntry);
 
 		App.Tap(HeaderEntry);
 
-		var newHeaderLocation = headerEntry.GetRect();
+		var newHeaderLocation = App.WaitForElementAndGetRect(HeaderEntry);
 		ClassicAssert.AreEqual(headerLocation, newHeaderLocation);
 
 		App.Tap(FooterEntry);
 
-		var newFooterLocation = footerEntry.GetRect();
+		var newFooterLocation = App.WaitForElementAndGetRect(FooterEntry);
 
 		ClassicAssert.AreEqual(footerLocation, newFooterLocation);
 	}

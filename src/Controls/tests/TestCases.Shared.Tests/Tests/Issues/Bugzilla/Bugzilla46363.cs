@@ -16,7 +16,7 @@ public class Bugzilla46363 : _IssuesUITest
 	public override string Issue => "TapGestureRecognizer blocks List View Context Actions";
 
 	[Test]
-	[Category(UITestCategories.ListView)]
+	[Category(UITestCategories.ContextActions)]
 	public void _46363_Tap_Succeeds()
 	{
 		App.WaitForElement("TestingLabel");
@@ -28,7 +28,7 @@ public class Bugzilla46363 : _IssuesUITest
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST //ContextActions Menu Items Not Accessible via Automation on iOS and Catalyst Platforms. 
 	//For more information see Issue Link: https://github.com/dotnet/maui/issues/27394
 	[Test]
-	[Category(UITestCategories.ListView)]
+	[Category(UITestCategories.ContextActions)]
 	public void _46363_ContextAction_Succeeds()
 	{
 		App.WaitForElement("TestingLabel");

@@ -5,11 +5,12 @@
              Title="ImageButtonOptionsPage">
     <ContentPage.ToolbarItems>
         <ToolbarItem Text="Apply"
+                     AutomationId="Apply"
                      Clicked="ApplyButton_Clicked"/>
     </ContentPage.ToolbarItems>
     <Grid ColumnDefinitions="*,*"
           RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
-          RowSpacing="25"
+          RowSpacing="10"
           ColumnSpacing="5"
           Padding="20">
         <VerticalStackLayout Grid.Row="0"
@@ -76,11 +77,13 @@
                    FontSize="16"
                    FontAttributes="Bold"/>
             <Entry x:Name="CornerRadiusEntry"
-                   Placeholder="e.g. 10,20,10,20"
+                   Placeholder="e.g. 50"
                    TextChanged="OnCornerRadiusChanged"
                    AutomationId="CornerRadiusEntry"/>
         </VerticalStackLayout>
 
+        <!-- IsOpaque: No platform handler implements MapIsOpaque, so setting this property
+             has no visible or behavioral effect. Kept for completeness but not testable via UI tests. -->
         <VerticalStackLayout Grid.Row="3"
                              Grid.Column="0">
             <Label Text="Is Opaque"
@@ -196,6 +199,79 @@
                    Placeholder="e.g. 10,20,10,20"
                    TextChanged="OnPaddingChanged"
                    AutomationId="PaddingEntry"/>
+        </VerticalStackLayout>
+        <VerticalStackLayout Grid.Row="6"
+                             Grid.Column="1">
+            <Label Text="Background Color"
+                   FontSize="16"
+                   FontAttributes="Bold"/>
+            <HorizontalStackLayout>
+                <RadioButton Content="None"
+                             IsChecked="True"
+                             GroupName="BackgroundColorGroup"
+                             CheckedChanged="BackgroundColorRadio_CheckedChanged"
+                             AutomationId="BackgroundColorNone"/>
+                <RadioButton Content="Yellow"
+                             GroupName="BackgroundColorGroup"
+                             CheckedChanged="BackgroundColorRadio_CheckedChanged"
+                             AutomationId="BackgroundColorYellow"/>
+            </HorizontalStackLayout>
+        </VerticalStackLayout>
+        <VerticalStackLayout Grid.Row="7"
+                             Grid.Column="0">
+            <Label Text="Opacity"
+                   FontSize="16"
+                   FontAttributes="Bold"/>
+            <HorizontalStackLayout>
+                <RadioButton Content="1.0"
+                             IsChecked="True"
+                             GroupName="OpacityGroup"
+                             CheckedChanged="OpacityRadio_CheckedChanged"
+                             AutomationId="OpacityFull"/>
+                <RadioButton Content="0.5"
+                             GroupName="OpacityGroup"
+                             CheckedChanged="OpacityRadio_CheckedChanged"
+                             AutomationId="OpacityHalf"/>
+                <RadioButton Content="0.0"
+                             GroupName="OpacityGroup"
+                             CheckedChanged="OpacityRadio_CheckedChanged"
+                             AutomationId="OpacityZero"/>
+            </HorizontalStackLayout>
+        </VerticalStackLayout>
+        <VerticalStackLayout Grid.Row="7"
+                             Grid.Column="1">
+            <Label Text="Input Transparent"
+                   FontSize="16"
+                   FontAttributes="Bold"/>
+            <HorizontalStackLayout>
+                <RadioButton Content="False"
+                             IsChecked="True"
+                             GroupName="InputTransparentGroup"
+                             CheckedChanged="InputTransparentRadio_CheckedChanged"
+                             AutomationId="InputTransparentFalse"/>
+                <RadioButton Content="True"
+                             GroupName="InputTransparentGroup"
+                             CheckedChanged="InputTransparentRadio_CheckedChanged"
+                             AutomationId="InputTransparentTrue"/>
+            </HorizontalStackLayout>
+        </VerticalStackLayout>
+        <VerticalStackLayout Grid.Row="8"
+                             Grid.Column="0">
+            <Label Text="Rotation"
+                   FontSize="16"
+                   FontAttributes="Bold"/>
+            <Entry Placeholder="e.g. 45"
+                   TextChanged="RotationEntry_TextChanged"
+                   AutomationId="RotationEntry"/>
+        </VerticalStackLayout>
+        <VerticalStackLayout Grid.Row="8"
+                             Grid.Column="1">
+            <Label Text="Scale"
+                   FontSize="16"
+                   FontAttributes="Bold"/>
+            <Entry Placeholder="e.g. 0.5"
+                   TextChanged="ScaleEntry_TextChanged"
+                   AutomationId="ScaleEntry"/>
         </VerticalStackLayout>
     </Grid>
 </ContentPage>

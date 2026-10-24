@@ -38,25 +38,35 @@ namespace Microsoft.Maui.DeviceTests
 	public partial class ShellTests : ControlsHandlerTestBase
 	{
 		protected virtual void SetupBuilder()
+			=> SetupBuilder(null, null);
+
+		void SetupBuilder(Type shellHandlerType)
+			=> SetupBuilder(null, shellHandlerType);
+
+		void SetupBuilder(Action<MauiAppBuilder> additionalCreationActions, Type shellHandlerType = null)
 		{
 			EnsureHandlerCreated(builder =>
 			{
+#if IOS || MACCATALYST
+				builder.ConfigureImageSources(services =>
+				{
+					services.AddService<IDelayedImageSource, DelayedImageSourceService>();
+				});
+#endif
 				builder.ConfigureMauiHandlers(handlers =>
 				{
 					SetupShellHandlers(handlers);
+					if (shellHandlerType != null)
+						handlers.AddHandler(typeof(Shell), shellHandlerType);
+
 					RegisterNavigationPageHandler(handlers);
 					handlers.AddHandler(typeof(Button), typeof(ButtonHandler));
 					handlers.AddHandler(typeof(Entry), typeof(EntryHandler));
 					handlers.AddHandler(typeof(Controls.ContentView), typeof(ContentViewHandler));
 					handlers.AddHandler(typeof(ScrollView), typeof(ScrollViewHandler));
-#if WINDOWS
-#pragma warning disable CS0618 // Windows coverage intentionally includes the legacy CollectionView handler.
-#endif
 					handlers.AddHandler(typeof(CollectionView), typeof(CollectionViewHandler));
-#if WINDOWS
-#pragma warning restore CS0618 // Type or member is obsolete
-#endif
 				});
+				additionalCreationActions?.Invoke(builder);
 			});
 		}
 
@@ -403,7 +413,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await CreateHandlerAndAddToWindow(shell, async () =>
 			{
-				#if ANDROID || IOS || MACCATALYST
+#if ANDROID || IOS || MACCATALYST
 				var shellContext = (IShellContext)shell.Handler;
 				await CheckFlyoutState(shellContext, true);
 				shell.FlyoutIsPresented = false;

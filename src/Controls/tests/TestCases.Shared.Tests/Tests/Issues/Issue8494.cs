@@ -12,7 +12,7 @@ public class Issue8494 : _IssuesUITest
 	public override string Issue => "Margin doesn't work inside CollectionView EmptyView";
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 	public void CheckEmptyViewMargin()
 	{
 		App.WaitForElement("EmptyViewDescriptionLabel");

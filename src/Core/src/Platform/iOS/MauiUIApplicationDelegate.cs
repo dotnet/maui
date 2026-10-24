@@ -94,7 +94,7 @@ namespace Microsoft.Maui
 		[Export("application:performActionForShortcutItem:completionHandler:")]
 		public virtual void PerformActionForShortcutItem(UIApplication application, UIApplicationShortcutItem shortcutItem, UIOperationHandler completionHandler)
 		{
-			_services?.InvokeLifecycleEvents<iOSLifecycle.PerformActionForShortcutItem>(del => del(application, shortcutItem, completionHandler));
+			_services.DispatchShortcutItem(application, shortcutItem, completionHandler);
 		}
 
 		[Export("application:openURL:options:")]
@@ -166,7 +166,7 @@ namespace Microsoft.Maui
 		}
 
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "There can only be one MauiUIApplicationDelegate.")]
-		public static MauiUIApplicationDelegate Current { get; private set; } = null!;
+		public static MauiUIApplicationDelegate Current { get; internal set; } = null!;
 
 		[Export("window")]
 		public virtual UIWindow? Window { get; set; }

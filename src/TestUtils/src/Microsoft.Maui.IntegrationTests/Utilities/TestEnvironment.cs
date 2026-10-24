@@ -37,6 +37,13 @@ namespace Microsoft.Maui.IntegrationTests
 			Environment.GetEnvironmentVariable("IOS_TEST_DEVICE")
 			?? null; // ← Set to a specific device string if needed locally (e.g., "ios-simulator-64_18.5")
 
+		/// <summary>
+		/// Optional dedicated simulator UUID, used by both the fixture and XHarness.
+		/// The fixture boots and shuts down this simulator; do not select a shared device.
+		/// </summary>
+		public static string? IosTestDeviceUdid =>
+			Environment.GetEnvironmentVariable("IOS_TEST_DEVICE_UDID");
+
 		#endregion
 
 		/// <summary>

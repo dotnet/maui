@@ -73,10 +73,6 @@
     <ObjcBindingApiDefinition Include="..\AppleNative\ApiDefinition.cs" />
     <ObjcBindingCoreSource Include="..\AppleNative\StructsAndEnums.cs" />
   </ItemGroup>
-  <ItemGroup Condition="$(TargetFramework.Contains('-tizen'))">
-    <PackageReference Include="Tizen.UIExtensions.NUI" />
-    <ProjectReference Include="..\..\Graphics\src\Graphics.Skia\Graphics.Skia.csproj" />
-  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Essentials\src\Essentials.csproj" />
     <ProjectReference Include="..\..\Graphics\src\Graphics\Graphics.csproj" />

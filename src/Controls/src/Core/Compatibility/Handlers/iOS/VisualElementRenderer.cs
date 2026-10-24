@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Maui.Controls.Platform;
 using UIKit;
 
@@ -68,6 +69,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 		}
 
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "VisualElement SizeChanged and BatchCommitted subscriptions are removed when the element changes.")]
 		partial void ElementChangedPartial(ElementChangedEventArgs<TElement> e)
 		{
 			if (e.OldElement is VisualElement oldVe)

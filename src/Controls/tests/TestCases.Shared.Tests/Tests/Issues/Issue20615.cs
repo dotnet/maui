@@ -13,7 +13,7 @@ public class Issue20615 : _IssuesUITest
 	public override string Issue => "CollectionView selecteditem background lost if collectionview (or parent) IsEnabled changed.";
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
 	public void CollectionViewSelectedItemBackgroundLost()
 	{
 		App.WaitForElement("CollectionView");

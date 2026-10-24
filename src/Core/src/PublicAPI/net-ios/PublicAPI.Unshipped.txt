@@ -28,6 +28,7 @@ override Microsoft.Maui.Handlers.FlyoutViewHandler.ConnectHandler(UIKit.UIView! 
 override Microsoft.Maui.Handlers.FlyoutViewHandler.DisconnectHandler(UIKit.UIView! platformView) -> void
 override Microsoft.Maui.Handlers.LabelHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 override Microsoft.Maui.Handlers.NavigationViewHandler.ConnectHandler(UIKit.UIView! platformView) -> void
+override Microsoft.Maui.Handlers.ScrollViewHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect rect) -> void
 override Microsoft.Maui.Handlers.ShapeViewHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 override Microsoft.Maui.Handlers.StepperHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 override Microsoft.Maui.MauiUIApplicationDelegate.ValidateCommand(UIKit.UICommand! command) -> void
@@ -64,6 +65,7 @@ static Microsoft.Maui.Platform.SemanticExtensions.PostAccessibilityFocusNotifica
 static Microsoft.Maui.Platform.SemanticExtensions.PostAccessibilityFocusNotification(this UIKit.UIView! platformView, UIKit.UIView? inputView) -> void
 static Microsoft.Maui.SafeAreaEdges.Container.get -> Microsoft.Maui.SafeAreaEdges
 virtual Microsoft.Maui.Animations.PlatformTicker.Dispose(bool disposing) -> void
+virtual Microsoft.Maui.MauiUISceneDelegate.PerformAction(UIKit.UIWindowScene! windowScene, UIKit.UIApplicationShortcutItem! shortcutItem, System.Action<bool>! completionHandler) -> void
 ~override Microsoft.Maui.Handlers.TabbedViewHandler.ConnectHandler(UIKit.UIView platformView) -> void
 ~override Microsoft.Maui.Handlers.TabbedViewHandler.DisconnectHandler(UIKit.UIView platformView) -> void
 Microsoft.Maui.ISwipeItemMenuItemIconColor

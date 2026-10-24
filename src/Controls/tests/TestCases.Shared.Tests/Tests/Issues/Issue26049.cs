@@ -1,4 +1,4 @@
-#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS   //More information - https://github.com/dotnet/maui/issues/27494
+#if TEST_FAILS_ON_ANDROID //This issue will be fixed in Shell Handler Implementation PR - https://github.com/dotnet/maui/pull/34758
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -11,35 +11,48 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 		}
 
-		public override string Issue => "[iOS] Fix ShellContent Title Does Not Update at Runtime";
+		public override string Issue => "Fix ShellContent Title Does Not Update at Runtime";
 
 		[Test, Order(1)]
-		[Category(UITestCategories.Shell)]
+		[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 		public void VerifyFirstShellContentTitle()
 		{
 			App.WaitForElement("ChangeShellContentTitle");
 			App.Click("ChangeShellContentTitle");
+			TabNavigationViewItemIfWindows();
 			VerifyScreenshot();
 		}
 
 		[Test, Order(2)]
-		[Category(UITestCategories.Shell)]
+		[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 		public void VerifyNewlyAddedShellContentTitle()
 		{
+			TabNavigationViewItemIfWindows();
 			App.WaitForElement("AddShellContent");
 			App.Click("AddShellContent");
 			App.Click("UpdateNewShellContentTitle");
+			TabNavigationViewItemIfWindows();
 			VerifyScreenshot();
 		}
 
 		[Test, Order(3)]
-		[Category(UITestCategories.Shell)]
+		[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 		public void VerifyExistingTabTitle()
 		{
+			TabNavigationViewItemIfWindows();
 			App.WaitForElement("RemoveShellContent");
 			App.Click("RemoveShellContent");
 			App.Click("UpdateThirdTabTitle");
+			TabNavigationViewItemIfWindows();
 			VerifyScreenshot();
+		}
+
+		void TabNavigationViewItemIfWindows()
+		{
+#if WINDOWS
+			App.WaitForElement("navViewItem");
+			App.Tap("navViewItem");
+#endif
 		}
 	}
 }

@@ -22,6 +22,8 @@ namespace Microsoft.Maui.Controls
 		static ConditionalWeakTable<Type, ResourceDictionary> s_instances = new ConditionalWeakTable<Type, ResourceDictionary>();
 		readonly Dictionary<string, object> _innerDictionary = new(StringComparer.Ordinal);
 		ResourceDictionary _mergedInstance;
+		WeakValuesChangedProxy _mergedInstanceChangedProxy;
+		EventHandler<ResourcesChangedEventArgs> _mergedInstanceChanged;
 		Uri _source;
 
 		// This action is instantiated in a module initializer in ResourceDictionaryHotReloadHelper
@@ -102,7 +104,38 @@ namespace Microsoft.Maui.Controls
 		{
 			_source = source;
 			_mergedInstance = sourceInstance;
+			_mergedInstanceChangedProxy ??= new WeakValuesChangedProxy();
+			_mergedInstanceChanged ??= Item_ValuesChanged;
+			_mergedInstanceChangedProxy.Subscribe(sourceInstance, _mergedInstanceChanged);
 			OnKeysChanged(_mergedInstance.MergedResourcesKeys);
+		}
+
+		sealed class WeakValuesChangedProxy : WeakEventProxy<ResourceDictionary, EventHandler<ResourcesChangedEventArgs>>
+		{
+			void OnValuesChanged(object sender, ResourcesChangedEventArgs e)
+			{
+				if (TryGetHandler(out var handler))
+					handler(sender, e);
+				else
+					Unsubscribe();
+			}
+
+			public override void Subscribe(ResourceDictionary source, EventHandler<ResourcesChangedEventArgs> handler)
+			{
+				if (TryGetSource(out var previousSource))
+					previousSource.ValuesChanged -= OnValuesChanged;
+
+				source.ValuesChanged += OnValuesChanged;
+				base.Subscribe(source, handler);
+			}
+
+			public override void Unsubscribe()
+			{
+				if (TryGetSource(out var source))
+					source.ValuesChanged -= OnValuesChanged;
+
+				base.Unsubscribe();
+			}
 		}
 
 		ObservableCollection<ResourceDictionary> _mergedDictionaries;
@@ -128,7 +161,7 @@ namespace Microsoft.Maui.Controls
 			switch (e.Action)
 			{
 				case NotifyCollectionChangedAction.Add:
-					ValuesChanged?.Invoke(this, ResourcesChangedEventArgs.StyleSheets);
+					RaiseValuesChanged(ResourcesChangedEventArgs.StyleSheets);
 					break;
 			}
 		}
@@ -447,7 +480,7 @@ namespace Microsoft.Maui.Controls
 		{
 			StyleSheets = StyleSheets ?? new List<StyleSheets.StyleSheet>(2);
 			StyleSheets.Add(styleSheet);
-			ValuesChanged?.Invoke(this, ResourcesChangedEventArgs.StyleSheets);
+			RaiseValuesChanged(ResourcesChangedEventArgs.StyleSheets);
 		}
 
 		void OnValueChanged(string key, object value)
@@ -459,17 +492,25 @@ namespace Microsoft.Maui.Controls
 		{
 			if (keys == null)
 				return;
-			ValuesChanged?.Invoke(this, new ResourcesChangedEventArgs(keys, ResolveKey));
+			RaiseValuesChanged(new ResourcesChangedEventArgs(keys, ResolveKey));
 		}
 
 		object ResolveKey(string key) => TryGetValue(key, out var value) ? value : null;
+
+		void RaiseValuesChanged(ResourcesChangedEventArgs e) => _weakEventManager.HandleEvent(this, e, nameof(ValuesChanged));
 
 		internal void Reload()
 		{
 			OnKeysChanged(MergedResourcesKeys);
 		}
 
-		event EventHandler<ResourcesChangedEventArgs> ValuesChanged;
+		readonly WeakEventManager _weakEventManager = new WeakEventManager();
+
+		event EventHandler<ResourcesChangedEventArgs> ValuesChanged
+		{
+			add => _weakEventManager.AddEventHandler(value);
+			remove => _weakEventManager.RemoveEventHandler(value);
+		}
 
 		//only used for unit testing
 		internal static void ClearCache() => s_instances = new ConditionalWeakTable<Type, ResourceDictionary>();

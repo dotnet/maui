@@ -16,7 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Verify data templates in CollectionView virtualize correctly";
 
 		[Test]
-		[Category(UITestCategories.CollectionView)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 		public void VerifyCollectionViewItemsAfterScrolling()
 		{
 			App.WaitForElement(scrollUpButton);

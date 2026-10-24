@@ -12,6 +12,10 @@ public class Issue32983 : ContentPage
     readonly Label _measuredHeightLabel;
     readonly Label _statusLabel;
     readonly VerticalStackLayout _rootLayout;
+#if IOS || MACCATALYST
+    // The native controller holds content weakly; retain the last sheet for this page's lifetime.
+    Issue32983BottomSheetContentView _bottomSheetContent;
+#endif
 
     public Issue32983()
     {
@@ -55,6 +59,7 @@ public class Issue32983 : ContentPage
     {
 #if IOS || MACCATALYST
         var bottomSheetContent = new Issue32983BottomSheetContentView();
+        _bottomSheetContent = bottomSheetContent;
         var vm = new Issue32983ViewModel();
         for (int i = 0; i < 10; i++)
         {

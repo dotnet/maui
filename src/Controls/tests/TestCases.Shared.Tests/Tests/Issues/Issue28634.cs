@@ -13,7 +13,7 @@ public class Issue28634 : _IssuesUITest
 	{ }
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void VerifySearchHandlerPlaceholderText()
 	{
 		App.WaitForElement("button");

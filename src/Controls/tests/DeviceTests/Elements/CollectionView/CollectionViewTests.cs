@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -33,33 +34,45 @@ namespace Microsoft.Maui.DeviceTests
 #endif
 	public partial class CollectionViewTests : ControlsHandlerTestBase
 	{
+		void RegisterCommonHandlers(IMauiHandlersCollection handlers)
+		{
+			handlers.AddHandler(typeof(Toolbar), typeof(ToolbarHandler));
+			RegisterNavigationPageHandler(handlers);
+			handlers.AddHandler<Page, PageHandler>();
+			handlers.AddHandler<Window, WindowHandlerStub>();
+			handlers.AddHandler<VerticalStackLayout, LayoutHandler>();
+			handlers.AddHandler<Grid, LayoutHandler>();
+			handlers.AddHandler<Label, LabelHandler>();
+			handlers.AddHandler<Button, ButtonHandler>();
+			handlers.AddHandler<SwipeView, SwipeViewHandler>();
+			handlers.AddHandler<SwipeItem, SwipeItemMenuItemHandler>();
+		}
+
 		protected virtual void SetupBuilder()
 		{
 			EnsureHandlerCreated(builder =>
 			{
 				builder.ConfigureMauiHandlers(handlers =>
 				{
-					handlers.AddHandler(typeof(Toolbar), typeof(ToolbarHandler));
-					RegisterNavigationPageHandler(handlers);
-					handlers.AddHandler<Page, PageHandler>();
-					handlers.AddHandler<Window, WindowHandlerStub>();
-
-#if WINDOWS
-#pragma warning disable CS0618 // Windows coverage intentionally exercises the legacy CollectionView handler.
-#endif
+					RegisterCommonHandlers(handlers);
 					handlers.AddHandler<CollectionView, CollectionViewHandler>();
-#if WINDOWS
-#pragma warning restore CS0618 // Type or member is obsolete
-#endif
-					handlers.AddHandler<VerticalStackLayout, LayoutHandler>();
-					handlers.AddHandler<Grid, LayoutHandler>();
-					handlers.AddHandler<Label, LabelHandler>();
-					handlers.AddHandler<Button, ButtonHandler>();
-					handlers.AddHandler<SwipeView, SwipeViewHandler>();
-					handlers.AddHandler<SwipeItem, SwipeItemMenuItemHandler>();
 				});
 			});
 		}
+
+#if WINDOWS
+		protected virtual void SetupBuilderCollectionView2()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					RegisterCommonHandlers(handlers);
+					handlers.AddHandler<CollectionView, Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2>();
+				});
+			});
+		}
+#endif
 
 		// Extracted so an iOS/MacCatalyst-only subclass can swap in NavigationRenderer, letting
 		// every CollectionViewTests test run against both the NavigationPage renderer and
@@ -103,9 +116,6 @@ namespace Microsoft.Maui.DeviceTests
 				WidthRequest = 200
 			};
 
-#if WINDOWS
-#pragma warning disable CS0618 // Windows coverage intentionally exercises the legacy CollectionView handler.
-#endif
 			await collectionView.AttachAndRun<CollectionViewHandler>(async (handler) =>
 			{
 				bool expectation() => buttons.Count > 1 && buttons.Last().Frame.Height > 0 && buttons.Last().IsLoaded;
@@ -122,17 +132,32 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(10, button.Frame.Y, 1d);
 
 			}, MauiContext, (view) => CreateHandlerAsync<CollectionViewHandler>(view));
-#if WINDOWS
-#pragma warning restore CS0618 // Type or member is obsolete
-#endif
 		}
 
-#if TEST_FAILS_ON_ANDROID && TESTS_FAILS_ON_WINDOWS && TESTS_FAILS_ON_IOS && TESTS_FAILS_ON_MACCATALYST // For more information, see: https://github.com/dotnet/maui/issues/35985
+#if TESTS_FAILS_ON_WINDOWS // For more information, see: https://github.com/dotnet/maui/issues/38098
 		[Fact]
 		public async Task ItemsSourceDoesNotLeak()
 		{
 			SetupBuilder();
 
+			var weakReferences = await CreateAndTeardownCollectionViewWithItemsSourceAsync();
+
+			await AssertionExtensions.WaitForGC([.. weakReferences]);
+		}
+#endif
+
+		// Extracted into its own non-inlineable method so the entire stack frame - including the
+		// async state machine's hoisted locals and the lambda's closure (labels, collectionView,
+		// navPage, logicalChildren, data, etc.) - is guaranteed to be torn down when this method
+		// returns. Keeping this setup/teardown logic inline in the test method risks the JIT
+		// leaving stale references to these objects live in the shared frame/registers past their
+		// last real use, which makes WaitForGC's outcome sensitive to unrelated code changes
+		// elsewhere in the method (e.g. adding/removing statements can shift whether those slots
+		// get reused in time). See MemoryTests.CreateAndDisconnectShapeWithReplacedPoints for the
+		// same pattern.
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		async Task<List<WeakReference>> CreateAndTeardownCollectionViewWithItemsSourceAsync()
+		{
 			var weakReferences = new List<WeakReference>();
 
 			var labels = new List<Label>();
@@ -184,13 +209,11 @@ namespace Microsoft.Maui.DeviceTests
 				await navPage.PopAsync();
 			});
 
-
 			Assert.NotNull(logicalChildren);
 			Assert.True(logicalChildren.Count <= 5, "_logicalChildren should not grow in size!");
 
-			await AssertionExtensions.WaitForGC([.. weakReferences]);
+			return weakReferences;
 		}
-#endif
 
 		[Fact(
 #if IOS || MACCATALYST || WINDOWS
@@ -227,14 +250,8 @@ Skip = "Fails: https://github.com/dotnet/maui/issues/17664"
 				})
 			};
 
-#if WINDOWS
-#pragma warning disable CS0618 // Windows coverage intentionally exercises the legacy CollectionView handler.
-#endif
 			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
 			{
-#if WINDOWS
-#pragma warning restore CS0618 // Type or member is obsolete
-#endif
 				collectionView.ScrollTo(index: 24, animate: false); // Item "x"
 
 				int retryCount = 3;
@@ -313,14 +330,8 @@ Skip = "Fails on iOS/macOS: https://github.com/dotnet/maui/issues/17664"
 				})
 			};
 
-#if WINDOWS
-#pragma warning disable CS0618 // Windows coverage intentionally exercises the legacy CollectionView handler.
-#endif
 			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
 			{
-#if WINDOWS
-#pragma warning restore CS0618 // Type or member is obsolete
-#endif
 				collectionView.ScrollTo(index: 4, groupIndex: 13, animate: false); // Item "N_4"
 
 				int retryCount = 3;
@@ -563,14 +574,8 @@ Skip = "Fails on iOS/macOS: https://github.com/dotnet/maui/issues/17664"
 
 			var frame = collectionView.Frame;
 
-#if WINDOWS
-#pragma warning disable CS0618 // Windows coverage intentionally exercises the legacy CollectionView handler.
-#endif
 			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
 			{
-#if WINDOWS
-#pragma warning restore CS0618 // Type or member is obsolete
-#endif
 				await WaitForUIUpdate(frame, collectionView);
 
 				var labels = collectionView.LogicalChildrenInternal;
@@ -608,14 +613,8 @@ Skip = "Fails on iOS/macOS: https://github.com/dotnet/maui/issues/17664"
 				}
 			};
 
-#if WINDOWS
-#pragma warning disable CS0618 // Windows coverage intentionally exercises the legacy CollectionView handler.
-#endif
 			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
 			{
-#if WINDOWS
-#pragma warning restore CS0618 // Type or member is obsolete
-#endif
 				await WaitForUIUpdate(collectionView.Frame, collectionView);
 
 				Assert.NotNull(handler.PlatformView);
@@ -673,14 +672,8 @@ Skip = "Fails on iOS/macOS: https://github.com/dotnet/maui/issues/17664"
 				HeightRequest = 200,
 			};
 
-#if WINDOWS
-#pragma warning disable CS0618 // Windows coverage intentionally exercises the legacy CollectionView handler.
-#endif
 			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
 			{
-#if WINDOWS
-#pragma warning restore CS0618 // Type or member is obsolete
-#endif
 				var data = new ObservableCollection<MyRecord>()
 				{
 					new MyRecord("Item 1"),

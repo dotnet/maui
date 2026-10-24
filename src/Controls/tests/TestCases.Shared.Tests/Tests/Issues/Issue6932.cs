@@ -16,7 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "EmptyView for BindableLayout (view)";
 
 		[Test]
-		[Category(UITestCategories.CollectionView)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 		public void EmptyViewBecomesVisibleWhenItemsSourceIsCleared()
 		{
 			App.WaitForAnyElement(["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]);
@@ -26,7 +26,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		[Test]
-		[Category(UITestCategories.CollectionView)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
 		public void EmptyViewHidesWhenItemsSourceIsFilled()
 		{
 			App.WaitForElement(ClearAutomationId);

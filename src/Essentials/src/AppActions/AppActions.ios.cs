@@ -35,12 +35,40 @@ namespace Microsoft.Maui.ApplicationModel
 
 		public void PerformActionForShortcutItem(UIApplication application, UIApplicationShortcutItem shortcutItem, UIOperationHandler completionHandler)
 		{
-			if (shortcutItem.Type == ShortcutType)
-			{
-				var appAction = shortcutItem.ToAppAction();
+			if (completionHandler is null)
+				throw new ArgumentNullException(nameof(completionHandler));
 
-				AppActionActivated?.Invoke(null, new AppActionEventArgs(appAction));
+			var handled = false;
+
+			try
+			{
+				if (shortcutItem.Type == ShortcutType)
+				{
+					var appAction = shortcutItem.ToAppAction();
+					var handler = AppActionActivated;
+
+					if (handler is not null)
+					{
+						handler.Invoke(null, new AppActionEventArgs(appAction));
+						handled = true;
+					}
+				}
 			}
+			catch (Exception exception)
+			{
+				try
+				{
+					completionHandler(false);
+				}
+				catch (Exception completionException)
+				{
+					throw new AggregateException(exception, completionException);
+				}
+
+				throw;
+			}
+
+			completionHandler(handled);
 		}
 	}
 

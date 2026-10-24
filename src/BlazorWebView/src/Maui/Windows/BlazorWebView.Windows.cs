@@ -1,5 +1,4 @@
 ﻿using System;
-using WebView2Control = Microsoft.UI.Xaml.Controls.WebView2;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
@@ -25,9 +24,13 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 		private void Window_Destroying(object? sender, EventArgs e)
 		{
-			// see: https://github.com/microsoft/microsoft-ui-xaml/issues/6872
-			if (Handler?.PlatformView is WebView2Control webView)
-				webView.Close();
+			// Routed through the shared guarded helper because DisconnectHandler may also
+			// close the native CoreWebView2 around the same time.
+			var platformView = ((BlazorWebViewHandler?)Handler)?.PlatformView;
+			if (platformView is not null)
+			{
+				BlazorWebViewHandler.CloseWebView2(platformView);
+			}
 		}
 	}
 }

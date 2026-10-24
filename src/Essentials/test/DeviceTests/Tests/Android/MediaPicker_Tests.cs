@@ -155,10 +155,11 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 
 		static string[] FindCacheFiles(string baseName)
 		{
-			if (!Directory.Exists(FileSystem.CacheDirectory))
+			var mauiCacheDirectory = Path.Combine(FileSystem.CacheDirectory, FileSystemUtils.EssentialsFolderHash);
+			if (!Directory.Exists(mauiCacheDirectory))
 				return Array.Empty<string>();
 
-			return Directory.GetFiles(FileSystem.CacheDirectory, baseName + ".*", SearchOption.AllDirectories);
+			return Directory.GetFiles(mauiCacheDirectory, baseName + ".*", SearchOption.AllDirectories);
 		}
 
 		static void DeleteCacheFiles(string baseName)
