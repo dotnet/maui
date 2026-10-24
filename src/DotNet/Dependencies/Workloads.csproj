@@ -3,12 +3,14 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <!-- Runtime manifests use the runtime's release suffix, not the SDK's build suffix. -->
     <_RuntimeManifestVersion>$(VersionBand)$([System.Text.RegularExpressions.Regex]::Match($(MicrosoftNETCoreAppRefPackageVersion), `-.*`))</_RuntimeManifestVersion>
+    <!-- Keep net10 packs on the publicly available 10.0.12 runtime until the final manifests' 10.0.15 packs are public. -->
+    <_PreviousRuntimeManifestVersion>11.0.100-rtm.26480.113</_PreviousRuntimeManifestVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageDownload Include="Microsoft.NET.Workload.Mono.ToolChain.Current.Manifest-$(DotNetVersionBand)"   Version="[$(_RuntimeManifestVersion)]" />
-    <PackageDownload Include="Microsoft.NET.Workload.Mono.ToolChain.net10.Manifest-$(DotNetVersionBand)"   Version="[$(_RuntimeManifestVersion)]" />
+    <PackageDownload Include="Microsoft.NET.Workload.Mono.ToolChain.net10.Manifest-$(DotNetVersionBand)"   Version="[$(_PreviousRuntimeManifestVersion)]" />
     <PackageDownload Include="Microsoft.NET.Workload.Emscripten.Current.Manifest-$(DotNetVersionBand)" Version="[$(_RuntimeManifestVersion)]" />
-    <PackageDownload Include="Microsoft.NET.Workload.Emscripten.net10.Manifest-$(DotNetVersionBand)" Version="[$(_RuntimeManifestVersion)]" />
+    <PackageDownload Include="Microsoft.NET.Workload.Emscripten.net10.Manifest-$(DotNetVersionBand)" Version="[$(_PreviousRuntimeManifestVersion)]" />
     <PackageDownload Include="Microsoft.NET.Sdk.Android.Manifest-$(DotNetAndroidManifestVersionBand)"    Version="[$(MicrosoftAndroidSdkWindowsPackageVersion)]" />
     <PackageDownload Include="Microsoft.NET.Sdk.MacCatalyst.Manifest-$(DotNetMaciOSManifestVersionBand)" Version="[$(MicrosoftMacCatalystSdkPackageVersion)]" />
     <PackageDownload Include="Microsoft.NET.Sdk.iOS.Manifest-$(DotNetMaciOSManifestVersionBand)"         Version="[$(MicrosoftiOSSdkPackageVersion)]" />
