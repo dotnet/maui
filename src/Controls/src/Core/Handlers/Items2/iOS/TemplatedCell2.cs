@@ -122,9 +122,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				var constraints = GetMeasureConstraints(preferredAttributes);
 				var constraintsChanged = _cachedConstraints != constraints;
 				var shouldArrangeInline = false;
+				var arrangeInducedInvalidation = false;
 
 				if (_measureInvalidated || constraintsChanged)
 				{
+					arrangeInducedInvalidation = _invalidatedDuringArrange && !constraintsChanged;
 					// Dynamic content invalidations need an inline arrange so the
 					// updated content is rendered immediately. Constraint changes,
 					// such as rotation, are deferred to LayoutSubviews when the
@@ -189,10 +191,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				preferredAttributes.Frame = new CGRect(preferredAttributes.Frame.Location, size);
 				preferredAttributes.ZIndex = 2;
 
+				if (arrangeInducedInvalidation && _hasArrangedSize && size.ToCGSize().IsCloseTo(_lastArrangedSize))
+				{
+					_needsArrange = false;
+				}
+
 				if (_needsArrange &&
 					((shouldArrangeInline && _hasArrangedSize) ||
 						!_hasArrangedSize))
 				{
+					_needsArrange = false;
 					ArrangeVirtualView(virtualView, size);
 				}
 
@@ -234,7 +242,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				var boundsSize = Bounds.Size.ToSize();
 				var needsFinalArrange = _needsArrange;
 				// Preferred sizing can advance _lastArrangedSize before UIKit applies new bounds.
-				var boundsChanged = _hasNativeBoundsSize && !Bounds.Size.IsCloseTo(_lastNativeBoundsSize);
+				var boundsChanged = _hasNativeBoundsSize
+					? !Bounds.Size.IsCloseTo(_lastNativeBoundsSize)
+					: _hasArrangedSize && !Bounds.Size.IsCloseTo(_lastArrangedSize);
 				_hasNativeBoundsSize = true;
 				_lastNativeBoundsSize = boundsSize;
 				if (_requiresSafeAreaReconciliation ||
