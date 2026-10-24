@@ -77,14 +77,6 @@
          Version="$(SystemBuffersPackageVersion)"
     />
     <PackageReference
-         Update="System.IO.UnmanagedMemoryStream"
-         Version="$(SystemIOUnmanagedMemoryStreamPackageVersion)"
-    />
-    <PackageReference
-         Update="System.ObjectModel"
-         Version="$(SystemObjectModelPackageVersion)"
-    />
-    <PackageReference
          Update="System.Runtime.CompilerServices.Unsafe"
          Version="$(SystemRuntimeCompilerServicesUnsafePackageVersion)"
     />
