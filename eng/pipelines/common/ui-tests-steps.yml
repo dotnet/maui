@@ -187,6 +187,29 @@ steps:
     testRunTitle: '${{ parameters.testFilter }}_$(System.PhaseName)'
     failTaskOnFailedTests: true
 
+- pwsh: |
+    $ErrorActionPreference = 'Stop'
+    $directory = $env:BUILD_ARTIFACTSTAGINGDIRECTORY
+    if ([string]::IsNullOrWhiteSpace($directory)) {
+      throw 'The UI diagnostic staging directory is unavailable.'
+    }
+    New-Item -ItemType Directory -Path $directory -Force | Out-Null
+    if (@(Get-ChildItem -LiteralPath $directory -File -Recurse -Force).Count -eq 0) {
+      $message = 'No UI test artifacts were generated. This archive contains publication context only, not test results; inspect failed checkout or setup tasks.'
+      [ordered]@{
+        message = $message
+        jobStatus = $env:AGENT_JOBSTATUS
+        buildId = $env:BUILD_BUILDID
+        jobId = $env:SYSTEM_JOBID
+      } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $directory 'no-ui-test-artifacts.json') -Encoding utf8
+      if ($env:AGENT_JOBSTATUS -notin @('Failed', 'Canceled')) {
+        throw $message
+      }
+      Write-Warning $message
+    }
+  displayName: Record missing UI diagnostics
+  condition: always()
+
 - task: ArchiveFiles@2
   condition: always()
   displayName: Archive UI test diagnostics

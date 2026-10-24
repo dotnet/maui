@@ -335,6 +335,11 @@ deep NUnit attachments. Extract that ZIP after downloading a diagnostic drop; th
 artifact aggregator does this automatically and still accepts older unpacked drops.
 Snapshot-diff artifacts remain unpacked.
 
+When checkout or setup fails before producing artifacts, the ZIP contains an explicit
+`no-ui-test-artifacts.json` publication notice instead of failing to archive an empty
+directory. This notice is not a test result; the original job failure remains. An empty
+diagnostic directory after an otherwise successful job is an error.
+
 The gatherer can collect failed UI result IDs from the public
 `vstmr.dev.azure.com/.../testresults/resultsbybuild` endpoint, then reads the public
 result-detail and attachment APIs. The simplified workflow/local runner skips
