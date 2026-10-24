@@ -12,6 +12,48 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Shell)]
 	public class ShellNavBarAppearanceTrackerTests : ControlsHandlerTestBase
 	{
+		[Fact]
+		public async Task NavigationGradientRefreshesWithTabBarColorOverride()
+		{
+			if (!OperatingSystem.IsIOSVersionAtLeast(13) && !OperatingSystem.IsMacCatalystVersionAtLeast(13, 1))
+				return;
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				using var controller = new UINavigationController();
+				controller.NavigationBar.Frame = new CoreGraphics.CGRect(0, 0, 320, 44);
+				using var tracker = new ShellNavBarAppearanceTracker();
+				var observer = new NavigationAppearanceObserver(controller, tracker);
+				var shell = new Shell();
+				var section = new ShellSection
+				{
+					Items = { new ShellContent { Content = new ContentPage() } }
+				};
+				var shellItem = new ShellItem { Items = { section }, CurrentItem = section };
+				shell.Items.Add(shellItem);
+				var gradient = new LinearGradientBrush(
+					new GradientStopCollection
+					{
+						new GradientStop(Colors.Red, 0),
+						new GradientStop(Colors.Blue, 1)
+					},
+					new Point(0, 0),
+					new Point(1, 1));
+				Shell.SetBackground(shell, gradient);
+				Shell.SetTabBarBackgroundColor(shell, Colors.Green);
+				var shellController = (IShellController)shell;
+				shellController.AddAppearanceObserver(observer, shellItem);
+				using var initialImage = controller.NavigationBar.StandardAppearance.BackgroundImage.AsPNG();
+
+				gradient.GradientStops[0].Color = Colors.Yellow;
+
+				using var updatedImage = controller.NavigationBar.StandardAppearance.BackgroundImage.AsPNG();
+				Assert.NotEqual(initialImage.ToArray(), updatedImage.ToArray());
+				Assert.Equal(Colors.Green, observer.Appearance.TabBarBackgroundColor);
+				Assert.True(shellController.RemoveAppearanceObserver(observer));
+			});
+		}
+
 		[Theory]
 		[InlineData("Solid")]
 		[InlineData("Linear")]
@@ -117,6 +159,26 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				get => null;
 				set { }
+			}
+		}
+
+		sealed class NavigationAppearanceObserver : IAppearanceObserver
+		{
+			readonly UINavigationController _controller;
+			readonly ShellNavBarAppearanceTracker _tracker;
+
+			public NavigationAppearanceObserver(UINavigationController controller, ShellNavBarAppearanceTracker tracker)
+			{
+				_controller = controller;
+				_tracker = tracker;
+			}
+
+			public ShellAppearance Appearance { get; private set; }
+
+			public void OnAppearanceChanged(ShellAppearance appearance)
+			{
+				Appearance = appearance;
+				_tracker.SetAppearance(_controller, appearance);
 			}
 		}
 

@@ -873,7 +873,7 @@ namespace Microsoft.Maui.Controls
 
 		void UpdateAppearanceObserverBrush(AppearanceObserverRegistration registration, ShellAppearance appearance)
 		{
-			var brushes = appearance?.TabBarBackgroundColor is null ? appearance?.BackgroundBrushes : null;
+			var brushes = appearance?.BackgroundBrushes;
 			var proxies = registration.BrushProxies;
 			bool sameBrushes = (proxies?.Count ?? 0) == (brushes?.Count ?? 0);
 			for (int i = 0; sameBrushes && i < (proxies?.Count ?? 0); i++)

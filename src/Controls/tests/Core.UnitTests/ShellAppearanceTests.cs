@@ -248,7 +248,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void TabBarBackgroundColorOverridesSolidBrushInvalidation()
+		public void TabBarBackgroundColorDoesNotSuppressNavigationSolidBrushInvalidation()
 		{
 			var shell = new Shell();
 			var shellItem = CreateShellItem<FlyoutItem>();
@@ -262,7 +262,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			brush.Color = Colors.Blue;
 
-			Assert.Equal(updateCount, observer.UpdateCount);
+			Assert.Equal(updateCount + 1, observer.UpdateCount);
+			Assert.Same(brush, observer.LastAppearance.Background);
 			Assert.Equal(Colors.Green, Assert.IsType<SolidColorBrush>(observer.LastAppearance.EffectiveTabBarBackground).Color);
 
 			shell.ClearValue(Shell.TabBarBackgroundColorProperty);
@@ -270,6 +271,50 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			updateCount = observer.UpdateCount;
 			brush.Color = Colors.Purple;
 
+			Assert.Equal(updateCount + 1, observer.UpdateCount);
+		}
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void TabBarBackgroundColorDoesNotSuppressNavigationGradientInvalidation(bool initiallyOverridden)
+		{
+			var shell = new Shell();
+			var shellItem = CreateShellItem<FlyoutItem>();
+			var gradient = CreateGradient();
+			var observer = new TestAppearanceObserver();
+			shell.Items.Add(shellItem);
+			Shell.SetBackground(shell, gradient);
+			if (initiallyOverridden)
+				Shell.SetTabBarBackgroundColor(shell, Colors.Green);
+			var controller = (IShellController)shell;
+			controller.AddAppearanceObserver(observer, shellItem);
+			if (!initiallyOverridden)
+				Shell.SetTabBarBackgroundColor(shell, Colors.Green);
+			var updateCount = observer.UpdateCount;
+
+			gradient.GradientStops[0].Color = Colors.Blue;
+
+			Assert.Equal(updateCount + 1, observer.UpdateCount);
+			Assert.Same(gradient, observer.LastAppearance.Background);
+			Assert.Equal(Colors.Green, Assert.IsType<SolidColorBrush>(observer.LastAppearance.EffectiveTabBarBackground).Color);
+
+			gradient.EndPoint = new Point(0.25, 0.75);
+			Assert.Equal(updateCount + 2, observer.UpdateCount);
+
+			var replacement = CreateGradient();
+			Shell.SetBackground(shell, replacement);
+			updateCount = observer.UpdateCount;
+			gradient.GradientStops[0].Color = Colors.Purple;
+			Assert.Equal(updateCount, observer.UpdateCount);
+
+			replacement.GradientStops[0].Color = Colors.Red;
+			Assert.Equal(updateCount + 1, observer.UpdateCount);
+			Assert.Same(replacement, observer.LastAppearance.Background);
+			Assert.Equal(Colors.Green, Assert.IsType<SolidColorBrush>(observer.LastAppearance.EffectiveTabBarBackground).Color);
+
+			Assert.True(controller.RemoveAppearanceObserver(observer));
+			replacement.GradientStops[0].Color = Colors.Yellow;
 			Assert.Equal(updateCount + 1, observer.UpdateCount);
 		}
 
