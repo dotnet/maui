@@ -43,6 +43,23 @@ dotnet build ./src/Provisioning/Provisioning.csproj -t:ProvisionAppium -p:SkipAp
 - Set `JAVA_HOME` environment variable
 - Install Android API 30 SDK with x86/x64 emulator image
 
+#### Launch directly to a test page
+
+The Android HostApp accepts a `test` string intent extra containing the exact
+issue description (from `IssueAttribute`) or gallery title, matched
+case-insensitively. For example, after installing the HostApp:
+
+```bash
+adb shell am start -S -n com.microsoft.maui.uitests/com.microsoft.maui.uitests.MainActivity --es test '"Android direct test launch"'
+```
+
+This creates the requested page as the initial window page without searching or
+tapping through the gallery. Use `-S` to stop the existing app before launching:
+the extra is read when the window is created, not when an already-running activity
+is brought to the foreground. Omit `--es test ...` for normal gallery startup.
+An empty or unrecognized test also opens the gallery; an unrecognized test is
+reported in debug output.
+
 ### iOS/MacCatalyst-Specific
 
 - macOS required
