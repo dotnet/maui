@@ -1151,12 +1151,16 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.SetOrientationLandscape();
 			App.WaitForElement("SafeAreaEdgesValueLabel");
 
-			var (screenWidth, screenHeight) = GetScreenSize();
-
 			// Left: edge-to-edge
-			var leftRect = App.WaitForElement("LeftEdgeIndicator").GetRect();
-			Assert.That(leftRect.X, Is.EqualTo(0).Within(PixelTolerance),
-				$"None: left X ({leftRect.X}) should be = 0 (edge-to-edge)");
+			System.Drawing.Rectangle leftRect = default;
+			Assert.That(() =>
+			{
+				leftRect = App.WaitForElement("LeftEdgeIndicator").GetRect();
+				return leftRect.X;
+			}, Is.EqualTo(0).Within(PixelTolerance).After(5000, 100),
+				() => $"None: left X ({leftRect.X}) should be = 0 (edge-to-edge)");
+
+			var (screenWidth, screenHeight) = GetScreenSize();
 
 			// Right: edge-to-edge
 			var rightRect = App.WaitForElement("RightEdgeIndicator").GetRect();
@@ -1496,12 +1500,16 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.SetOrientationLandscape();
 			App.WaitForElement("SafeAreaEdgesValueLabel");
 
-			var (screenWidth, screenHeight) = GetScreenSize();
-
 			// ── Before keyboard ──
-			var leftBeforeRect = App.WaitForElement("LeftEdgeIndicator").GetRect();
-			Assert.That(leftBeforeRect.X, Is.EqualTo(0).Within(PixelTolerance),
-				$"Before keyboard - left X ({leftBeforeRect.X}) should be = 0 (edge-to-edge)");
+			System.Drawing.Rectangle leftBeforeRect = default;
+			Assert.That(() =>
+			{
+				leftBeforeRect = App.WaitForElement("LeftEdgeIndicator").GetRect();
+				return leftBeforeRect.X;
+			}, Is.EqualTo(0).Within(PixelTolerance).After(5000, 100),
+				() => $"Before keyboard - left X ({leftBeforeRect.X}) should be = 0 (edge-to-edge)");
+
+			var (screenWidth, screenHeight) = GetScreenSize();
 
 			var rightBeforeRect = App.WaitForElement("RightEdgeIndicator").GetRect();
 			var rightBeforeEdge = rightBeforeRect.X + rightBeforeRect.Width;
