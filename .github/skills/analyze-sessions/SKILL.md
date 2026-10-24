@@ -270,6 +270,10 @@ npx -y @microsoft/vally-cli@0.14.0 lint --eval-spec <path-to-eval> --strict
 ## When NOT to use
 
 - Reviewing a specific PR → `pr-review` / `code-review`.
+- Measuring reviewer usefulness or deciding which reviewer stages to remove →
+  `evaluate-pr-reviewer`. Its offline grader joins archived build/step telemetry
+  with PR-head-pinned artifact assessments; a session pain score is not a
+  review-quality score.
 - Investigating CI / build / Helix failures → `azdo-build-investigator`.
 - Extracting lessons from one finished PR → `learn-from-pr`.
 - Any "how does X work?" question → answer directly; do not launch analysis.
