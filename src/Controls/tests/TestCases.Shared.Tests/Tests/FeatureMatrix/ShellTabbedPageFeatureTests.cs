@@ -8,6 +8,7 @@ public class ShellTabbedPageFeatureTests : _GalleryUITest
 {
 	public const string ShellTabbedFeatureMatrix = "Shell Feature Matrix";
 	public override string GalleryPageName => ShellTabbedFeatureMatrix;
+	protected override string GallerySubPageButton => "ShellTabbedButton";
 	public const string Options = "Options";
 	public const string Apply = "Apply";
 
@@ -111,8 +112,6 @@ public class ShellTabbedPageFeatureTests : _GalleryUITest
 	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void VerifyShell_NavigatingTabs()
 	{
-		App.WaitForElement("ShellTabbedButton");
-		App.Tap("ShellTabbedButton");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("NavigateToTab3");
