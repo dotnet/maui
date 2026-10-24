@@ -181,10 +181,21 @@ steps:
     testRunTitle: '${{ parameters.testFilter }}_$(System.PhaseName)'
     failTaskOnFailedTests: true
 
+- task: ArchiveFiles@2
+  condition: always()
+  displayName: Archive UI test diagnostics
+  inputs:
+    rootFolderOrFile: $(Build.ArtifactStagingDirectory)
+    includeRootFolder: false
+    archiveType: zip
+    archiveFile: $(Agent.TempDirectory)/ui-test-diagnostics.zip
+    replaceExistingArchive: true
+
 - task: PublishBuildArtifacts@1
   condition: always()
   displayName: publish artifacts
   inputs:
+    PathtoPublish: $(Agent.TempDirectory)/ui-test-diagnostics.zip
     artifactName: drop-$(System.StageName)-$(System.JobName)-$(System.JobId)-$(System.StageAttempt)-$(System.JobAttempt)
 
 # Enable Notification Center re-enabled only for catalyst

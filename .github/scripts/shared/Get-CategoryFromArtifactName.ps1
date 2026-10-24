@@ -1,7 +1,7 @@
 function Get-CategoryFromArtifactName {
     param([string]$ArtifactName)
 
-    # Pattern: drop-<stagename>-<jobname>-<attempt>
+    # Pattern: drop-<stage>-<job>-<jobId>-<stageAttempt>-<jobAttempt>, or the legacy single-attempt suffix.
     # Stage 2 uses: drop-<platform>_ui_tests-controls-<category>
     # where platform is the literal CI parameter (android, ios, catalyst, windows).
     # Legacy CI stages use different names (ios_ui_tests_mono, winui_ui_tests, etc.).
@@ -21,7 +21,13 @@ function Get-CategoryFromArtifactName {
         'winui_ui_tests', 'mac_ui_tests'
     )
 
-    $name = $ArtifactName -replace '^drop-', '' -replace '-\d+$', ''
+    $name = $ArtifactName -replace '^drop-', ''
+    $identitySuffix = '-[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}-\d+-\d+$'
+    if ($name -match $identitySuffix) {
+        $name = $name -replace $identitySuffix, ''
+    } else {
+        $name = $name -replace '-\d+$', ''
+    }
 
     foreach ($sp in $stagePrefixes | Sort-Object Length -Descending) {
         if ($name -match "^${sp}-(.+)$") {
