@@ -409,6 +409,24 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(Colors.Green, brush.Color);
 		}
 
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void UnsupportedTabBarBrushFallsBackToConfiguredColor(bool hasBackgroundColor)
+		{
+			var result = IngestAppearance(item =>
+			{
+				Shell.SetBackground(item, new ImageBrush(ImageSource.FromFile("background.png")));
+				if (hasBackgroundColor)
+					Shell.SetBackgroundColor(item, Colors.Green);
+			});
+
+			if (hasBackgroundColor)
+				Assert.Equal(Colors.Green, Assert.IsType<SolidColorBrush>(result.EffectiveTabBarBackground).Color);
+			else
+				Assert.Null(result.EffectiveTabBarBackground);
+		}
+
 		[Fact]
 		public void EffectiveTabBarBackground_TabBarBackgroundColorWinsOverBackgroundBrush()
 		{

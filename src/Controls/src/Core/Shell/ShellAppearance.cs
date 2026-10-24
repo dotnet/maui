@@ -85,11 +85,11 @@ namespace Microsoft.Maui.Controls
 		Color IShellAppearanceElement.EffectiveTabBarBackgroundColor =>
 			TabBarBackgroundColor ?? BackgroundColor;
 
-		// Full tab bar background precedence: TabBarBackgroundColor > Shell.Background > Shell.BackgroundColor.
+		// TabBarBackgroundColor > supported Shell.Background brush > Shell.BackgroundColor.
 		internal Brush EffectiveTabBarBackground =>
 			TabBarBackgroundColor is not null
 				? new SolidColorBrush(TabBarBackgroundColor)
-				: !Brush.IsNullOrEmpty(Background)
+				: Background is SolidColorBrush or GradientBrush && !Brush.IsNullOrEmpty(Background)
 					? Background
 					: BackgroundColor is not null
 						? new SolidColorBrush(BackgroundColor)

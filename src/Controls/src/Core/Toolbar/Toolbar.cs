@@ -24,6 +24,8 @@ namespace Microsoft.Maui.Controls
 		Color _iconColor;
 		Color _barTextColor;
 		Brush _barBackground;
+		WeakBrushChangedProxy _barBackgroundProxy;
+		EventHandler _barBackgroundChanged;
 		ImageSource _titleIcon;
 		string _backButtonTitle;
 		string _backButtonAccessibilityLabel;
@@ -48,7 +50,27 @@ namespace Microsoft.Maui.Controls
 		public string BackButtonTitle { get => _backButtonTitle; set => SetProperty(ref _backButtonTitle, value); }
 		public string BackButtonAccessibilityLabel { get => _backButtonAccessibilityLabel; set => SetProperty(ref _backButtonAccessibilityLabel, value); }
 		public ImageSource TitleIcon { get => _titleIcon; set => SetProperty(ref _titleIcon, value); }
-		public Brush BarBackground { get => _barBackground; set => SetProperty(ref _barBackground, value); }
+		public Brush BarBackground
+		{
+			get => _barBackground;
+			set
+			{
+				if (EqualityComparer<Brush>.Default.Equals(_barBackground, value))
+					return;
+
+				_barBackgroundProxy?.Unsubscribe();
+				_barBackground = value;
+
+				// Platform implementations already listen for gradient invalidation.
+				if (value is SolidColorBrush && value is not ImmutableBrush)
+				{
+					_barBackgroundChanged ??= (_, _) => NotifyPropertyChanged(nameof(BarBackground));
+					(_barBackgroundProxy ??= new WeakBrushChangedProxy()).Subscribe(value, _barBackgroundChanged);
+				}
+
+				NotifyPropertyChanged(nameof(BarBackground));
+			}
+		}
 		public virtual Color BarTextColor { get => _barTextColor; set => SetProperty(ref _barTextColor, value); }
 		public virtual Color IconColor { get => _iconColor; set => SetProperty(ref _iconColor, value); }
 		public virtual string Title { get => _title; set => SetProperty(ref _title, value); }

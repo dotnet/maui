@@ -1,4 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
+using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Handlers;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -6,6 +9,76 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 	public class ToolbarTests : BaseTestFixture
 	{
+		[Fact]
+		public void SolidBrushChangesNotifyToolbarHandler()
+		{
+			var brush = new SolidColorBrush(Colors.Red);
+			var toolbar = new Toolbar(new ContentPage()) { BarBackground = brush };
+			var handler = new BackgroundTrackingHandler();
+			handler.SetVirtualView(toolbar);
+			var updateCount = handler.UpdateCount;
+
+			brush.Color = Colors.Blue;
+
+			Assert.Equal(updateCount + 1, handler.UpdateCount);
+			Assert.Equal(Colors.Blue, handler.LastColor);
+
+			var replacement = new SolidColorBrush(Colors.Green);
+			toolbar.BarBackground = replacement;
+			updateCount = handler.UpdateCount;
+			brush.Color = Colors.Purple;
+			Assert.Equal(updateCount, handler.UpdateCount);
+
+			replacement.Color = null;
+			Assert.Equal(updateCount + 1, handler.UpdateCount);
+			Assert.Null(handler.LastColor);
+			replacement.Color = Colors.Yellow;
+			Assert.Equal(updateCount + 2, handler.UpdateCount);
+			Assert.Equal(Colors.Yellow, handler.LastColor);
+
+			toolbar.BarBackground = null;
+			updateCount = handler.UpdateCount;
+			replacement.Color = Colors.Red;
+			Assert.Equal(updateCount, handler.UpdateCount);
+		}
+
+		[Fact]
+		public async Task SharedSolidBrushDoesNotRetainToolbar()
+		{
+			var brush = new SolidColorBrush(Colors.Red);
+			var reference = CreateToolbarReference(brush);
+
+			Assert.False(await reference.WaitForCollect());
+			brush.Color = Colors.Blue;
+			GC.KeepAlive(brush);
+		}
+
+		[System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+		static WeakReference CreateToolbarReference(SolidColorBrush brush) =>
+			new WeakReference(new Toolbar(new ContentPage()) { BarBackground = brush });
+
+		sealed class BackgroundTrackingHandler : ElementHandler<Toolbar, object>
+		{
+			static readonly IPropertyMapper<Toolbar, BackgroundTrackingHandler> BackgroundMapper =
+				new PropertyMapper<Toolbar, BackgroundTrackingHandler>(ElementMapper)
+				{
+					[nameof(Toolbar.BarBackground)] = (handler, toolbar) =>
+					{
+						handler.UpdateCount++;
+						handler.LastColor = (toolbar.BarBackground as SolidColorBrush)?.Color;
+					}
+				};
+
+			public BackgroundTrackingHandler() : base(BackgroundMapper)
+			{
+			}
+
+			public int UpdateCount { get; private set; }
+			public Color LastColor { get; private set; }
+
+			protected override object CreatePlatformElement() => new object();
+		}
+
 		[Fact]
 		public void ToolbarExistsForNavigationPage()
 		{
