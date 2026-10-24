@@ -865,11 +865,10 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		[InlineData("android", "Android")]
 		[InlineData("ios", "iOS")]
 		[InlineData("maccatalyst", "MacCatalyst")]
-		[InlineData("tizen", "Tizen")]
 		public void SingleProject_RemovePlatformCompileItems_RetainsActivePlatformMauiXaml(
 			string targetPlatformIdentifier, string activePlatformFolder)
 		{
-			var allFolders = new[] { "Android", "iOS", "MacCatalyst", "Tizen" };
+			var allFolders = new[] { "Android", "iOS", "MacCatalyst" };
 			var log = BuildMauiXamlFilterProject(targetPlatformIdentifier, allFolders);
 			var itemsLine = GetNormalizedMauiXamlItemsLine(log);
 
@@ -884,7 +883,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		/// Windows XAML is WinUI markup — not MAUI XAML — and is unconditionally stripped from
 		/// MauiXaml by _MauiRemovePlatformCompileItems even when Windows is the active platform.
 		/// This behaviour predates issue #36951 and is intentionally separate from the
-		/// Android/iOS/MacCatalyst/Tizen filtering above.
+		/// Android/iOS/MacCatalyst filtering above.
 		/// </summary>
 		[Fact]
 		public void SingleProject_RemovePlatformCompileItems_AlwaysRemovesWindowsMauiXaml()
@@ -2087,8 +2086,11 @@ public static class MacosMarker
 				AssertTypeDoesNotExist(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.MacosMarker");
 		}
 
-		[Fact]
-		public void SingleProject_NeutralTfmCanActivateBuiltInBackendByIdentity()
+		[Theory]
+		[InlineData("android", "Android", true)]
+		[InlineData("tizen", "Tizen", false)]
+		public void SingleProject_NeutralTfmOnlyActivatesRegisteredBuiltInBackends(
+			string activeBackend, string platformFolder, bool shouldIncludeBackendFile)
 		{
 			SetUp();
 			var project = NewElement("Project").WithAttribute("Sdk", "Microsoft.NET.Sdk");
@@ -2107,12 +2109,12 @@ public static class Entry
 	public static string Value => ""ok"";
 }");
 
-			WriteFile("Platforms\\Android\\AndroidMarker.cs", @"
+			WriteFile($"Platforms\\{platformFolder}\\BackendMarker.cs", @"
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-public static class AndroidMarker
+public static class BackendMarker
 {
-	public static string Value => ""Android"";
+	public static string Value => ""Backend"";
 }");
 
 			AddSingleProjectTargetsImport(project);
@@ -2120,21 +2122,26 @@ public static class AndroidMarker
 			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
 			project.Save(projectFile);
 
-			Build(projectFile, additionalArgs: "-p:MauiActiveBackend=android");
+			Build(projectFile, additionalArgs: $"-p:MauiActiveBackend={activeBackend}");
 
 			var testDll = IOPath.Combine(intermediateDirectory, "test.dll");
 			AssertExists(testDll, nonEmpty: true);
-			AssertTypeExists(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.AndroidMarker");
+			if (shouldIncludeBackendFile)
+				AssertTypeExists(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.BackendMarker");
+			else
+				AssertTypeDoesNotExist(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.BackendMarker");
 		}
 
-		// Neutral-TFM activation (the GTK scenario from #35021/#36650). On a plain
+		// Neutral-TFM activation for out-of-tree backends. On a plain
 		// net11.0 inner build no TargetPlatformIdentifier is recognized; a backend
 		// declares a stable BackendIdentity and is activated via the well-known
 		// MauiActiveBackend selector. Only the activated backend's Platforms/<Backend>
 		// files compile; a recognized built-in folder (iOS) stays excluded because
 		// its TPI does not match the (empty) neutral TPI.
-		[Fact]
-		public void SingleProject_NeutralTfmActivatesBackendByIdentity()
+		[Theory]
+		[InlineData("gtk", "Gtk")]
+		[InlineData("tizen", "Tizen")]
+		public void SingleProject_NeutralTfmActivatesBackendByIdentity(string backendIdentity, string platformFolder)
 		{
 			SetUp();
 			var project = NewElement("Project").WithAttribute("Sdk", "Microsoft.NET.Sdk");
@@ -2147,8 +2154,8 @@ public static class AndroidMarker
 
 			var customMappings = NewElement("ItemGroup");
 			customMappings.Add(NewElement("MauiPlatformSpecificFolder")
-				.WithAttribute("Include", "Platforms\\Gtk\\")
-				.WithAttribute("BackendIdentity", "gtk"));
+				.WithAttribute("Include", $"Platforms\\{platformFolder}\\")
+				.WithAttribute("BackendIdentity", backendIdentity));
 			project.Add(customMappings);
 
 			WriteFile("Entry.cs", @"
@@ -2159,12 +2166,12 @@ public static class Entry
 	public static string Value => ""ok"";
 }");
 
-			WriteFile("Platforms\\Gtk\\GtkMarker.cs", @"
+			WriteFile($"Platforms\\{platformFolder}\\BackendMarker.cs", @"
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-public static class GtkMarker
+public static class BackendMarker
 {
-	public static string Value => ""Gtk"";
+	public static string Value => ""Backend"";
 }");
 
 			// A built-in recognized folder (iOS) that must NOT come in on a neutral
@@ -2183,11 +2190,11 @@ public static class IosMarker
 			project.Save(projectFile);
 
 			// Neutral TFM (no _SingleProjectTestTargetPlatformIdentifier) + backend selector.
-			Build(projectFile, additionalArgs: "-p:MauiActiveBackend=gtk");
+			Build(projectFile, additionalArgs: $"-p:MauiActiveBackend={backendIdentity}");
 
 			var testDll = IOPath.Combine(intermediateDirectory, "test.dll");
 			AssertExists(testDll, nonEmpty: true);
-			AssertTypeExists(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.GtkMarker");
+			AssertTypeExists(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.BackendMarker");
 			AssertTypeDoesNotExist(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.IosMarker");
 		}
 

@@ -736,7 +736,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			int backgroundCalls = 0;
 			Paint capturedBackground = null;
 
-			// Mirrors PageHandler on iOS/Tizen, where the page handler's own mapper owns Background.
+			// Mirrors PageHandler on iOS, where the page handler's own mapper owns Background.
 			var mapper = new PropertyMapper<IContentView, IPageHandler>(PageHandler.Mapper)
 			{
 				[nameof(IContentView.Background)] = (h, v) =>

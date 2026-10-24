@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Media;
 using System.Collections.Generic;
 using System.IO;
-#if (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID && !TIZEN)
+#if (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID)
 using IPlatformViewHandler = Microsoft.Maui.IViewHandler;
 #endif
 #if IOS || MACCATALYST
@@ -16,9 +16,6 @@ using ParentView = Android.Views.IViewParent;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
 using ParentView = Microsoft.UI.Xaml.DependencyObject;
-#elif TIZEN
-using PlatformView = Tizen.NUI.BaseComponents.View;
-using ParentView = Tizen.NUI.BaseComponents.View;
 #else
 using PlatformView = System.Object;
 using ParentView = System.Object;
@@ -116,7 +113,6 @@ namespace Microsoft.Maui
 			await Screenshot.Default.CaptureAsync(window);
 #endif
 
-#if !TIZEN
 		internal static bool NeedsContainer(this IView? view)
 		{
 			if (view?.Clip != null || view?.Shadow != null)
@@ -138,7 +134,6 @@ namespace Microsoft.Maui
 #endif
 			return false;
 		}
-#endif
 
 	}
 }

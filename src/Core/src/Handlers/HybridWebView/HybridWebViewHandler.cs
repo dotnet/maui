@@ -7,10 +7,7 @@ using HeaderPairType = System.String;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.Controls.WebView2;
 using HeaderPairType = System.String;
-#elif TIZEN
-using PlatformView = Tizen.NUI.BaseComponents.View;
-using HeaderPairType = System.String;
-#elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID && !TIZEN)
+#elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID)
 using PlatformView = System.Object;
 using HeaderPairType = System.String;
 #endif
@@ -274,7 +271,7 @@ namespace Microsoft.Maui.Handlers
 
 
 
-#if PLATFORM && !TIZEN
+#if PLATFORM
 		public static async void MapEvaluateJavaScriptAsync(IHybridWebViewHandler handler, IHybridWebView hybridWebView, object? arg)
 		{
 			if (arg is not EvaluateJavaScriptAsyncRequest request ||
@@ -331,7 +328,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static async void MapInvokeJavaScriptAsync(IHybridWebViewHandler handler, IHybridWebView hybridWebView, object? arg)
 		{
-#if PLATFORM && !TIZEN
+#if PLATFORM
 			if (arg is not HybridWebViewInvokeJavaScriptRequest invokeJavaScriptRequest)
 			{
 				return;

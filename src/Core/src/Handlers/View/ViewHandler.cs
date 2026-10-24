@@ -6,8 +6,6 @@ using PlatformView = UIKit.UIView;
 using PlatformView = Android.Views.View;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
-#elif TIZEN
-using PlatformView = Tizen.NUI.BaseComponents.View;
 #elif (NETSTANDARD || !PLATFORM)
 using PlatformView = System.Object;
 #endif
@@ -69,7 +67,7 @@ namespace Microsoft.Maui.Handlers
 #pragma warning disable CS0618 // Type or member is obsolete
 				[nameof(IBorder.Border)] = MapBorderView,
 #pragma warning restore CS0618 // Type or member is obsolete
-#if ANDROID || WINDOWS || TIZEN
+#if ANDROID || WINDOWS
 				[nameof(IToolbarElement.Toolbar)] = MapToolbar,
 #endif
 				[nameof(IView.InputTransparent)] = MapInputTransparent,
@@ -244,7 +242,7 @@ namespace Microsoft.Maui.Handlers
 		/// handler shadows <see cref="ContainerView"/> with a more specific type, so that an unsupported container is rejected
 		/// where the mistake is made instead of surfacing later as an <see cref="System.InvalidCastException"/> from the
 		/// shadowing getter.</para>
-		/// <para>The .NET MAUI iOS, Mac Catalyst and Tizen handlers use this to require a
+		/// <para>The .NET MAUI iOS and Mac Catalyst handlers use this to require a
 		/// <see cref="Platform.WrapperView"/>. An external backend that shadows <see cref="ContainerView"/> with its own
 		/// wrapper type should do the same.</para>
 		/// <para>Note that <paramref name="containerView"/> is typed as the platform view type of the target framework,

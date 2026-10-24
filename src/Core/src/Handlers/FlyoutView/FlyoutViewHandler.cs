@@ -4,8 +4,6 @@ using PlatformView = UIKit.UIView;
 using PlatformView = Android.Views.View;
 #elif WINDOWS
 using PlatformView = Microsoft.Maui.Platform.RootNavigationView;
-#elif TIZEN
-using PlatformView = Tizen.UIExtensions.NUI.DrawerView;
 #elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID)
 using PlatformView = System.Object;
 #endif
@@ -30,7 +28,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IFlyoutView.FlyoutBehavior)] = MapFlyoutBehavior,
 			[nameof(IFlyoutView.FlyoutWidth)] = MapFlyoutWidth,
 			[nameof(IFlyoutView.IsGestureEnabled)] = MapIsGestureEnabled,
-#if ANDROID || WINDOWS || TIZEN
+#if ANDROID || WINDOWS
 			[nameof(IToolbarElement.Toolbar)] = MapToolbar,
 #endif
 		};

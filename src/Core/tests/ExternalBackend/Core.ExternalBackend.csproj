@@ -12,7 +12,7 @@
 
       Compiling the same external-backend sources against every one of them is the only way to prove
       the contracts actually close the gap on all of them. Because both this list and Core's expand the
-      same $(MauiPlatforms), the platform set - including whether Tizen is present - can never drift
+      same $(MauiPlatforms), the platform set can never drift
       between the two. ExternalBackendTargetFrameworkTests asserts that.
     -->
     <TargetFrameworks>netstandard2.1;netstandard2.0;$(_MauiDotNetTfm);$(MauiPlatforms)</TargetFrameworks>

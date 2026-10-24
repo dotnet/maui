@@ -86,8 +86,6 @@
       <!-- On Linux, install maui-android instead of maui to avoid iOS/macOS dependencies -->
       <_LocalWorkloadIds Include="maui-android" Condition="$([MSBuild]::IsOSPlatform('linux'))" />
       <_LocalWorkloadIds Include="maui" Condition="!$([MSBuild]::IsOSPlatform('linux'))" />
-      
-      <_LocalWorkloadIds Include="tizen" Condition=" '$(IncludeTizenTargetFrameworks)' == 'true' " />
     </ItemGroup>
     <Copy SourceFiles="$(MauiRootDirectory)NuGet.config" DestinationFolder="$(DotNetTempDirectory)" />
     <Exec Command="dotnet nuget add source &quot;$(NugetArtifactsPath)&quot; --name artifacts --configfile &quot;$(DotNetTempDirectory)NuGet.config&quot;" />
@@ -195,7 +193,6 @@
     <_WorkloadIds Include="macos" Condition="!$([MSBuild]::IsOSPlatform('linux'))" />
     <_WorkloadIds Include="ios" Condition="!$([MSBuild]::IsOSPlatform('linux'))" />
     <_WorkloadIds Include="tvos" Condition="!$([MSBuild]::IsOSPlatform('linux'))" />
-    <_WorkloadIds Include="tizen" Condition=" '$(IncludeTizenTargetFrameworks)' == 'true' " />
   </ItemGroup>
 
   <!-- Remove stale workload manifest bands left by the SDK installer.
