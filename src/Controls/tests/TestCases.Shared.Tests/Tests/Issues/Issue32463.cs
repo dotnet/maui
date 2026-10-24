@@ -37,13 +37,14 @@ public class Issue32463 : UITest
 	{
 		var arguments = new Dictionary<string, object>
 		{
-			{ "intent", "com.microsoft.maui.uitests/com.microsoft.maui.uitests.MainActivity" },
+			{ "component", "com.microsoft.maui.uitests/com.microsoft.maui.uitests.MainActivity" },
 			{ "stop", true }
 		};
 
 		if (test is not null)
 		{
-			arguments["extras"] = new[] { new[] { "s", "test", test } };
+			// adb's remote shell needs quotes preserved for spaces and empty strings.
+			arguments["extras"] = new[] { new[] { "s", "test", $"\"{test}\"" } };
 		}
 
 		((AppiumApp)App).Driver.ExecuteScript("mobile: startActivity", arguments);
