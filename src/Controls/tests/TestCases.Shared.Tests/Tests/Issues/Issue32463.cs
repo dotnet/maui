@@ -1,4 +1,4 @@
-#if ANDROID
+#if ANDROID || IOSUITEST
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -12,8 +12,8 @@ public class Issue32463 : UITest
 	{
 	}
 
-	[TestCase("Android direct test launch", "DirectLaunchLabel")]
-	[TestCase("android DIRECT test launch", "DirectLaunchLabel")]
+	[TestCase("Direct test launch", "DirectLaunchLabel")]
+	[TestCase("DIRECT test launch", "DirectLaunchLabel")]
 	[TestCase("Button Feature Matrix", "ButtonControl")]
 	[Category(UITestCategories.LifeCycle)]
 	public void LaunchDirectlyToTest(string test, string expectedElement)
@@ -35,6 +35,15 @@ public class Issue32463 : UITest
 
 	void LaunchWithTest(string? test)
 	{
+#if IOSUITEST
+		App.CloseApp();
+		var environment = new Dictionary<string, string> { ["test"] = test ?? "" };
+		((AppiumApp)App).Driver.ExecuteScript("mobile: launchApp", new Dictionary<string, object>
+		{
+			{ "bundleId", "com.microsoft.maui.uitests" },
+			{ "environment", environment }
+		});
+#else
 		var arguments = new Dictionary<string, object>
 		{
 			{ "component", "com.microsoft.maui.uitests/com.microsoft.maui.uitests.MainActivity" },
@@ -43,11 +52,11 @@ public class Issue32463 : UITest
 
 		if (test is not null)
 		{
-			// adb's remote shell needs quotes preserved for spaces and empty strings.
-			arguments["extras"] = new[] { new[] { "s", "test", $"\"{test}\"" } };
+			arguments["extras"] = new[] { new[] { "s", "test", AppLaunchArguments.QuoteAndroidShellArgument(test) } };
 		}
 
 		((AppiumApp)App).Driver.ExecuteScript("mobile: startActivity", arguments);
+#endif
 	}
 }
 #endif

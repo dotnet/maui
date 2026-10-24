@@ -80,17 +80,10 @@ namespace UITest.Appium.NUnit
 		{
 			try
 			{
-				
-				if (Device is TestDevice.Mac)
-				{
-					// For Mac, here needed to close the app itself, re-open happens on InitialSetup
-					Close();
-				}
-				else if (!ResetAfterEachTest)
-				{
-					Reset();
-				}
-					 
+
+				// The next fixture launches its own target; don't relaunch the gallery at teardown.
+				Close();
+
 			}
 			catch (Exception e)
 			{

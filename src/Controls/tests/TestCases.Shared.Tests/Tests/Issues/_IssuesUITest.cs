@@ -21,40 +21,33 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		protected override void TryToResetTestState()
 		{
-#if !MACCATALYST
-			NavigateToIssue(Issue);
-#endif
+			if (!UseDirectLaunch)
+			{
+				App.WaitForGoToTestButtonWithRecovery(Issue);
+				App.EnterText("SearchBar", Issue);
+				App.WaitForElement("GoToTestButton");
+				App.Tap("GoToTestButton");
+			}
 		}
 
 		public override IConfig GetTestConfig()
 		{
 			var config = base.GetTestConfig();
 
-#if MACCATALYST
-			// For Catalyst, pass the test name as a startup argument
-			// If the UITestContext is not null we can directly pass the Issue via LaunchAppWithTest
-			if (UITestContext is null)
-			{
+			if (UseDirectLaunch)
 				config.SetTestConfigurationArg("test", Issue);
-			}
-#endif
 
 			return config;
 		}
 
 		public override void LaunchAppWithTest()
 		{
-			App.LaunchApp(Issue, ResetAfterEachTest);
+			if (UseDirectLaunch)
+				App.LaunchApp(Issue, ResetAfterEachTest);
+			else
+				App.LaunchApp();
 		}
 
 		public abstract string Issue { get; }
-
-		private void NavigateToIssue(string issue)
-		{
-			App.WaitForGoToTestButtonWithRecovery(issue);
-			App.EnterText("SearchBar", issue);
-			App.WaitForElement("GoToTestButton");
-			App.Tap("GoToTestButton");
-		}
 	}
 }

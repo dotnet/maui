@@ -64,15 +64,23 @@ namespace UITest.Appium
 			if (_app?.Driver is null)
 				return CommandResponse.FailedEmptyResponse;
 
+			var args = _app.Config.GetProperty<Dictionary<string, string>>("TestConfigurationArgs") ?? new Dictionary<string, string>();
+
+			if (parameters.TryGetValue("testName", out var value) && value is string testName)
+			{
+				if (_app.Driver is WindowsDriver && (!args.TryGetValue("test", out var currentTest) || currentTest != testName))
+					throw new InvalidOperationException("Changing the Windows startup test requires a new driver session with updated appArguments.");
+
+				args["test"] = testName;
+			}
+
+			_app.Config.SetProperty("TestConfigurationArgs", args);
+
+			if (args.ContainsKey("test") && _app.GetTestDevice() is TestDevice.iOS or TestDevice.Mac)
+				CloseApp(parameters);
+
 			if (_app.GetTestDevice() == TestDevice.Mac)
-			{		
-				var args = _app.Config.GetProperty<Dictionary<string, string>>("TestConfigurationArgs") ?? new Dictionary<string, string>();
-
-				if (args.ContainsKey("test") && parameters.ContainsKey("testName") && parameters["testName"] is string testName && !string.IsNullOrEmpty(testName))
-				{
-					args["test"] = testName;
-				}
-
+			{
 				_app.Driver.ExecuteScript("macos: launchApp", new Dictionary<string, object>
 				{
 					{ "bundleId", _app.GetAppId() },
@@ -89,11 +97,19 @@ namespace UITest.Appium
 			}
 			else if (_app.Driver is IOSDriver iOSDriver)
 			{
-				var args = _app.Config.GetProperty<Dictionary<string, string>>("TestConfigurationArgs") ?? new Dictionary<string, string>();
 				iOSDriver.ExecuteScript("mobile: launchApp", new Dictionary<string, object>
 				{
 					{ "bundleId", _app.GetAppId() },
 					{ "environment", args },
+				});
+			}
+			else if (_app.GetTestDevice() == TestDevice.Android && args.TryGetValue("test", out var androidTest))
+			{
+				_app.Driver.ExecuteScript("mobile: startActivity", new Dictionary<string, object>
+				{
+					{ "component", $"{_app.GetAppId()}/{_app.GetAppId()}.MainActivity" },
+					{ "stop", true },
+					{ "extras", new[] { new[] { "s", "test", AppLaunchArguments.QuoteAndroidShellArgument(androidTest) } } }
 				});
 			}
 			else
@@ -231,7 +247,9 @@ namespace UITest.Appium
 						if (process is not null && !process.WaitForExit(10000))
 						{
 							Debug.WriteLine(">>>>> ForceCloseApp: xcrun simctl terminate timed out, killing process");
-							try { process.Kill(); } catch { }
+							try
+							{ process.Kill(); }
+							catch { }
 						}
 						return CommandResponse.SuccessEmptyResponse;
 					}
@@ -254,7 +272,9 @@ namespace UITest.Appium
 					if (process is not null && !process.WaitForExit(10000))
 					{
 						Debug.WriteLine(">>>>> ForceCloseApp: adb force-stop timed out, killing process");
-						try { process.Kill(); } catch { }
+						try
+						{ process.Kill(); }
+						catch { }
 					}
 					return CommandResponse.SuccessEmptyResponse;
 				}
@@ -274,7 +294,9 @@ namespace UITest.Appium
 					if (process is not null && !process.WaitForExit(10000))
 					{
 						Debug.WriteLine(">>>>> ForceCloseApp: pkill timed out, killing process");
-						try { process.Kill(); } catch { }
+						try
+						{ process.Kill(); }
+						catch { }
 					}
 					return CommandResponse.SuccessEmptyResponse;
 				}
@@ -292,7 +314,9 @@ namespace UITest.Appium
 					if (process is not null && !process.WaitForExit(10000))
 					{
 						Debug.WriteLine(">>>>> ForceCloseApp: taskkill timed out, killing process");
-						try { process.Kill(); } catch { }
+						try
+						{ process.Kill(); }
+						catch { }
 					}
 					return CommandResponse.SuccessEmptyResponse;
 				}
@@ -325,7 +349,9 @@ namespace UITest.Appium
 			if (_app.GetTestDevice() != TestDevice.Android)
 			{
 				ForceCloseApp(parameters);
-				try { LaunchApp(parameters); } catch (Exception ex) { Debug.WriteLine($">>>>> RecoverFromCrash relaunch failed: {ex.Message}"); }
+				try
+				{ LaunchApp(parameters); }
+				catch (Exception ex) { Debug.WriteLine($">>>>> RecoverFromCrash relaunch failed: {ex.Message}"); }
 				return CommandResponse.SuccessEmptyResponse;
 			}
 
@@ -397,7 +423,9 @@ namespace UITest.Appium
 					if (!process.WaitForExit(15000))
 					{
 						Debug.WriteLine($">>>>> RunAdb timed out: adb {string.Join(' ', args)}");
-						try { process.Kill(); } catch { /* best effort */ }
+						try
+						{ process.Kill(); }
+						catch { /* best effort */ }
 					}
 				}
 			}

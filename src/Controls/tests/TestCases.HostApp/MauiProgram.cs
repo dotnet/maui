@@ -99,10 +99,14 @@ namespace Maui.Controls.Sample
 			OverrideMainPage(ref mainPage);
 #if ANDROID
 			var testName = Microsoft.Maui.ApplicationModel.Platform.CurrentActivity?.Intent?.GetStringExtra("test");
-#elif MACCATALYST
+#elif IOS || MACCATALYST
 			var testName = System.Environment.GetEnvironmentVariable("test");
+#elif WINDOWS
+			const string testArgument = "--test=";
+			var testName = Environment.GetCommandLineArgs()
+				.FirstOrDefault(argument => argument.StartsWith(testArgument, StringComparison.Ordinal))?[testArgument.Length..];
 #endif
-#if ANDROID || MACCATALYST
+#if ANDROID || IOS || MACCATALYST || WINDOWS
 			if (!string.IsNullOrEmpty(testName))
 			{
 				// Try to get the test page directly from issues/test cases

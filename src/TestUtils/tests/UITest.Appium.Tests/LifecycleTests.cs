@@ -1,0 +1,84 @@
+using System.Text.Json;
+using OpenQA.Selenium;
+using OpenQA.Selenium.Appium;
+using OpenQA.Selenium.Appium.Android;
+using OpenQA.Selenium.Appium.iOS;
+using OpenQA.Selenium.Appium.Mac;
+using UITest.Core;
+using Xunit;
+
+namespace UITest.Appium.Tests;
+
+public class LifecycleTests
+{
+	[Theory]
+	[InlineData(TestDevice.Android, "mobile: startActivity")]
+	[InlineData(TestDevice.iOS, "mobile: launchApp")]
+	[InlineData(TestDevice.Mac, "macos: launchApp")]
+	public void RelaunchAndResetCarryCurrentTest(TestDevice device, string launchScript)
+	{
+		var executor = new RecordingExecutor();
+		var options = new AppiumOptions();
+		AppiumDriver driver = device switch
+		{
+			TestDevice.Android => new AndroidDriver(executor, options),
+			TestDevice.iOS => new IOSDriver(executor, options),
+			TestDevice.Mac => new MacDriver(executor, options),
+			_ => throw new NotSupportedException()
+		};
+		var config = new Config();
+		config.SetProperty("TestDevice", device);
+		config.SetProperty("AppId", "com.microsoft.maui.uitests");
+		config.SetProperty("TestConfigurationArgs", new Dictionary<string, string> { ["test"] = "Previous fixture" });
+		using var app = new TestApp(driver, config);
+		executor.Commands.Clear();
+
+		app.LaunchApp("Next \"test\" with spaces");
+		app.ResetApp();
+
+		var launches = executor.Commands.Where(command =>
+			command.Name == DriverCommand.ExecuteScript && Equals(command.Parameters["script"], launchScript)).ToList();
+		Assert.Equal(2, launches.Count);
+		foreach (var launch in launches)
+		{
+			var arguments = Assert.IsAssignableFrom<object[]>(launch.Parameters["args"]);
+			var payload = JsonSerializer.SerializeToElement(Assert.Single(arguments));
+			if (device == TestDevice.Android)
+			{
+				Assert.True(payload.GetProperty("stop").GetBoolean());
+				var extra = Assert.Single(payload.GetProperty("extras").EnumerateArray());
+				Assert.Equal(new[] { "s", "test", AppLaunchArguments.QuoteAndroidShellArgument("Next \"test\" with spaces") },
+					extra.EnumerateArray().Select(item => item.GetString()));
+			}
+			else
+			{
+				Assert.Equal("Next \"test\" with spaces", payload.GetProperty("environment").GetProperty("test").GetString());
+			}
+		}
+		Assert.DoesNotContain(executor.Commands, command =>
+			command.Name == DriverCommand.FindElement || command.Name == DriverCommand.FindElements || command.Name == DriverCommand.SendKeysToElement);
+	}
+
+	sealed class TestApp(AppiumDriver driver, IConfig config) : AppiumApp(driver, config)
+	{
+		public override ApplicationState AppState => ApplicationState.Running;
+	}
+
+	sealed class RecordingExecutor : ICommandExecutor
+	{
+		public List<Command> Commands { get; } = new();
+
+		public bool TryAddCommand(string commandName, CommandInfo? info) => true;
+		public Response Execute(Command command) => ExecuteAsync(command).GetAwaiter().GetResult();
+		public Task<Response> ExecuteAsync(Command command)
+		{
+			Commands.Add(command);
+			var response = command.Name == DriverCommand.NewSession
+				? Response.FromJson("""{"value":{"sessionId":"recording","capabilities":{"platformName":"test"}}}""")
+				: new Response("recording", true, WebDriverResult.Success);
+			return Task.FromResult(response);
+		}
+
+		public void Dispose() { }
+	}
+}
