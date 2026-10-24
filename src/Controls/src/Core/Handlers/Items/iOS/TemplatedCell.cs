@@ -295,6 +295,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			CurrentTemplate = measurementCell.CurrentTemplate;
 			_size = measurementCell._size;
 			SetRenderer(measurementCell.PlatformHandler);
+			measurementCell.TransferAccessibilityTraitsTo(this);
 			_bound = true;
 			((IPlatformMeasureInvalidationController)this).InvalidateMeasure();
 		}
