@@ -30,6 +30,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		Drawable _originalBackground;
 		ColorStateList _itemTextColor;
 		ColorStateList _itemIconTint;
+		bool _usesThemeSelectedIconColor;
 
 		public ShellBottomNavViewAppearanceTracker(IShellContext shellContext, ShellItem shellItem)
 		{
@@ -49,7 +50,17 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			// instead of nulling out the bottom nav's icon/text colors and background.
 			if (RuntimeFeature.IsMaterial3Enabled && _originalAppearanceCaptured)
 			{
-				bottomView.ItemIconTintList = _originalItemIconTint;
+				if (_usesThemeSelectedIconColor)
+				{
+					_itemIconTint = MakeColorStateList(
+						BottomNavigationViewUtils.GetDefaultSelectedIconColor(bottomView.Context),
+						null, null, _originalItemIconTint);
+					bottomView.ItemIconTintList = _itemIconTint;
+				}
+				else
+				{
+					bottomView.ItemIconTintList = _originalItemIconTint;
+				}
 				bottomView.ItemTextColor = _originalItemTextColor;
 				RestoreBackground(bottomView);
 			}
@@ -77,7 +88,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_originalItemTextColor);
 
 			_itemIconTint = MakeColorStateList(
-				foregroundColor ?? titleColor,
+				foregroundColor ?? titleColor ??
+					(_usesThemeSelectedIconColor ? BottomNavigationViewUtils.GetDefaultSelectedIconColor(bottomView.Context) : null),
 				disabledColor,
 				unselectedColor,
 				_originalItemIconTint);
@@ -98,6 +110,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			_originalItemTextColor = bottomView.ItemTextColor;
 			_originalItemIconTint = bottomView.ItemIconTintList;
+			_usesThemeSelectedIconColor = BottomNavigationViewUtils.UsesDefaultSelectedIconColor(bottomView.Context, _originalItemIconTint);
 			_originalBackground = bottomView.Background;
 			_originalAppearanceCaptured = true;
 		}

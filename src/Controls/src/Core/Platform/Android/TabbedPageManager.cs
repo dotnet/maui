@@ -38,6 +38,7 @@ public class TabbedPageManager
 	Fragment _tabLayoutFragment;
 	ColorStateList _originalTabTextColors;
 	ColorStateList _orignalTabIconColors;
+	bool _usesThemeSelectedIconColor;
 	Drawable _originalBottomNavigationViewBackground;
 	Drawable _originalTabLayoutBackground;
 	ColorStateList _newTabTextColors;
@@ -238,6 +239,8 @@ public class TabbedPageManager
 	void OnRequestedThemeChanged(object sender, AppThemeChangedEventArgs e)
 	{
 		BottomNavigationViewUtils.UpdateActiveIndicatorColor(_bottomNavigationView);
+		if (RuntimeFeature.IsMaterial3Enabled && IsBottomTabPlacement)
+			UpdateItemIconColor();
 	}
 
 	protected virtual void OnLayoutChanged(object sender, AView.LayoutChangeEventArgs e)
@@ -975,12 +978,17 @@ public class TabbedPageManager
 		if (_orignalTabIconColors is null)
 		{
 			_orignalTabIconColors = IsBottomTabPlacement ? _bottomNavigationView.ItemIconTintList : _tabLayout.TabIconTint;
+			_usesThemeSelectedIconColor = IsBottomTabPlacement &&
+				BottomNavigationViewUtils.UsesDefaultSelectedIconColor(_context.Context, _orignalTabIconColors);
 		}
 
 		Color barItemColor = BarItemColor;
 		Color barSelectedItemColor = BarSelectedItemColor;
+		Color themeSelectedIconColor = _usesThemeSelectedIconColor
+			? BottomNavigationViewUtils.GetDefaultSelectedIconColor(_context.Context)
+			: null;
 
-		if (barItemColor is null && barSelectedItemColor is null)
+		if (barItemColor is null && barSelectedItemColor is null && themeSelectedIconColor is null)
 		{
 			return _orignalTabIconColors;
 		}
@@ -999,7 +1007,7 @@ public class TabbedPageManager
 		}
 		else
 		{
-			defaultColor = GetDefaultColor();
+			defaultColor = themeSelectedIconColor is not null ? _orignalTabIconColors.DefaultColor : GetDefaultColor();
 		}
 
 		if (barSelectedItemColor is not null)
@@ -1008,10 +1016,19 @@ public class TabbedPageManager
 		}
 		else
 		{
-			checkedColor = GetDefaultColor();
+			checkedColor = themeSelectedIconColor?.ToPlatform().ToArgb() ?? GetDefaultColor();
 		}
 
-		_newTabIconColors = GetColorStateList(defaultColor, checkedColor);
+		if (themeSelectedIconColor is not null)
+		{
+			var disabledColor = _orignalTabIconColors.GetColorForState(
+				new[] { -global::Android.Resource.Attribute.StateEnabled }, global::Android.Graphics.Color.Gray);
+			_newTabIconColors = ColorStateListExtensions.CreateSwitch(disabledColor, checkedColor, defaultColor);
+		}
+		else
+		{
+			_newTabIconColors = GetColorStateList(defaultColor, checkedColor);
+		}
 		return _newTabIconColors;
 	}
 

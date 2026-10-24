@@ -17,6 +17,22 @@ public class Issue38234 : _IssuesUITest
 	[Category(UITestCategories.Material3)]
 	public void ShellTabBarSelectionColorUpdatesAfterThemeChange()
 	{
+		App.WaitForElement("UseNativeSelectionColorButton");
+		App.Tap("UseNativeSelectionColorButton");
+		VerifyThemeTransitions();
+	}
+
+	[Test]
+	[Category(UITestCategories.Material3)]
+	public void ShellTabBarExplicitSelectionColorSurvivesThemeChange()
+	{
+		App.WaitForElement("UseExplicitSelectionColorButton");
+		App.Tap("UseExplicitSelectionColorButton");
+		VerifyThemeTransitions();
+	}
+
+	void VerifyThemeTransitions()
+	{
 		App.WaitForElement("SwitchToDarkThemeButton");
 		var lightColor = ReadIndicatorColor();
 
@@ -38,10 +54,21 @@ public class Issue38234 : _IssuesUITest
 			App.Tap("ReadIndicatorColorButton");
 			color = App.WaitForElement("IndicatorColorLabel").GetText();
 			expectedColor = App.WaitForElement("ExpectedIndicatorColorLabel").GetText();
-			return expectedColor is { Length: 8 } && expectedColor.All(Uri.IsHexDigit) && color == expectedColor;
+			return expectedColor is { Length: 17 } && expectedColor[8] == '/' &&
+				expectedColor[..8].All(Uri.IsHexDigit) && expectedColor[9..].All(Uri.IsHexDigit) &&
+				color == expectedColor;
 		}, Is.True.After(5000, 100),
 			() => $"Expected native Material3 indicator {expectedColor}; actual {color}.");
-		return color ?? throw new InvalidOperationException("Native selection indicator color was not reported.");
+		return (color ?? throw new InvalidOperationException("Native selection indicator color was not reported."))[..8];
+	}
+}
+
+public class Issue38234NativeTabbedPage : Issue38234
+{
+	public override string Issue => "Android Material 3 TabbedPage native selection colors follow AppTheme";
+
+	public Issue38234NativeTabbedPage(TestDevice device) : base(device)
+	{
 	}
 }
 #endif
