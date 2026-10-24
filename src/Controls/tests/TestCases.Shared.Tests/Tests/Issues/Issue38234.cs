@@ -18,10 +18,30 @@ public class Issue38234 : _IssuesUITest
 	public void ShellTabBarSelectionColorUpdatesAfterThemeChange()
 	{
 		App.WaitForElement("SwitchToDarkThemeButton");
+		var lightColor = ReadIndicatorColor();
+
 		App.Tap("SwitchToDarkThemeButton");
 		App.WaitForElement("Dark theme active");
+		Assert.That(ReadIndicatorColor(), Is.Not.EqualTo(lightColor));
 
-		VerifyScreenshot();
+		App.Tap("SwitchToDarkThemeButton");
+		App.WaitForElement("Light theme active");
+		Assert.That(ReadIndicatorColor(), Is.EqualTo(lightColor));
+	}
+
+	string ReadIndicatorColor()
+	{
+		string? color = null;
+		string? expectedColor = null;
+		Assert.That(() =>
+		{
+			App.Tap("ReadIndicatorColorButton");
+			color = App.WaitForElement("IndicatorColorLabel").GetText();
+			expectedColor = App.WaitForElement("ExpectedIndicatorColorLabel").GetText();
+			return expectedColor is { Length: 8 } && expectedColor.All(Uri.IsHexDigit) && color == expectedColor;
+		}, Is.True.After(5000, 100),
+			() => $"Expected native Material3 indicator {expectedColor}; actual {color}.");
+		return color ?? throw new InvalidOperationException("Native selection indicator color was not reported.");
 	}
 }
 #endif

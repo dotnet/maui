@@ -23,14 +23,16 @@ public class Issue28986_ParentChildTest : _IssuesUITest
         base.TestSetup();
 
         // Orientation acknowledgement precedes the end of the native rotation animation.
-        App.RetryAssert(() =>
+        System.Drawing.Size screen = default;
+        System.Drawing.Rectangle bounds = default;
+        Assert.That(() =>
         {
-            var screen = ((AppiumApp)App).Driver.Manage().Window.Size;
-            Assert.That(screen.Height, Is.GreaterThan(screen.Width));
-            Assert.That(App.WaitForElement("ParentGrid").GetRect(),
-                Is.EqualTo(new System.Drawing.Rectangle(System.Drawing.Point.Empty, screen)),
-                "ParentGrid must fill the portrait window before measuring safe-area insets.");
-        }, timeout: TimeSpan.FromSeconds(5), retryFrequency: TimeSpan.FromMilliseconds(100));
+            screen = ((AppiumApp)App).Driver.Manage().Window.Size;
+            bounds = App.WaitForElement("ParentGrid").GetRect();
+            return screen.Height > screen.Width &&
+                bounds == new System.Drawing.Rectangle(System.Drawing.Point.Empty, screen);
+        }, Is.True.After(5000, 100),
+            () => $"ParentGrid {bounds} must fill portrait window {screen} before measuring safe-area insets.");
     }
 
     // Bottom-specific assertions guard for devices without bottom safe area (e.g. iPad without home indicator).
