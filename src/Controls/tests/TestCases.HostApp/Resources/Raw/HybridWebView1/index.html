@@ -4,6 +4,7 @@
 <head>
     <title>HybridWebView1</title>
     <meta charset="UTF-8" />
+    <script src="_framework/hybridwebview.js"></script>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -177,15 +178,9 @@
     </div>
 
     <script>
-        window.HybridWebView = {
-            SendRawMessage: function (msg) {
-                if (window.chrome && window.chrome.webview) {
-                    window.chrome.webview.postMessage("__RawMessage|" + msg);
-                } else if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.webwindowinterop) {
-                    window.webkit.messageHandlers.webwindowinterop.postMessage("__RawMessage|" + msg);
-                }
-            }
-        };
+        window.addEventListener("HybridWebViewMessageReceived", function (e) {
+            window.HybridWebView.SendRawMessage("You said: " + e.detail.message);
+        });
     </script>
 </body>
 
