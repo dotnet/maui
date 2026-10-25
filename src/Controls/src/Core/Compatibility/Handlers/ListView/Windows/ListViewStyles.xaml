@@ -7,7 +7,6 @@
     xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)"
     xmlns:contract7NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,7)"
     xmlns:primitiveContract7Present="using:Microsoft.UI.Xaml.Controls.Primitives?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)"
-    xmlns:controls="using:Microsoft.Maui.Controls"
     xmlns:maui="using:Microsoft.Maui.Controls.Platform"
 	xmlns:platform="using:Microsoft.Maui.Controls.Platform.Compatibility">
 
@@ -59,7 +58,7 @@
         </ContentControl>
     </DataTemplate>
     
-    <DataTemplate x:Key="TextCell" x:DataType="controls:TextCell">
+    <DataTemplate x:Key="TextCell">
         <StackPanel AutomationProperties.AutomationId="{Binding AutomationId}">
             <TextBlock
 				Text="{Binding Text}"
@@ -76,7 +75,7 @@
         </StackPanel>
     </DataTemplate>
 
-    <DataTemplate x:Key="ListViewHeaderTextCell" x:DataType="controls:TextCell">
+    <DataTemplate x:Key="ListViewHeaderTextCell">
         <StackPanel>
             <TextBlock
 				Text="{Binding Text}"
@@ -93,7 +92,7 @@
         </StackPanel>
     </DataTemplate>
 
-    <DataTemplate x:Key="ImageCell" x:DataType="controls:ImageCell">
+    <DataTemplate x:Key="ImageCell">
         <Grid AutomationProperties.AutomationId="{Binding AutomationId}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
@@ -125,7 +124,7 @@
         </Grid>
     </DataTemplate>
 
-    <DataTemplate x:Key="SwitchCell" x:DataType="controls:SwitchCell">
+    <DataTemplate x:Key="SwitchCell">
         <Grid HorizontalAlignment="Stretch" x:Name="ParentGrid"  AutomationProperties.AutomationId="{Binding AutomationId}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
@@ -138,10 +137,10 @@
         </Grid>
     </DataTemplate>
 
-    <DataTemplate x:Key="EntryCell" x:DataType="controls:EntryCell">
+    <DataTemplate x:Key="EntryCell">
         <platform:EntryCellTextBox  AutomationProperties.AutomationId="{Binding AutomationId}" IsEnabled="{Binding IsEnabled}" Header="{Binding}" Text="{Binding Text, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" TextAlignment="{Binding HorizontalTextAlignment,Converter={StaticResource HorizontalTextAlignmentConverter}}" PlaceholderText="{Binding Placeholder}"  InputScope="{Binding Keyboard,Converter={StaticResource KeyboardConverter}}" HorizontalAlignment="Stretch">
             <platform:EntryCellTextBox.HeaderTemplate>
-                <DataTemplate x:DataType="controls:EntryCell">
+                <DataTemplate>
                     <TextBlock Text="{Binding Label}" IsHitTestVisible="False" Style="{ThemeResource BaseTextBlockStyle}" Foreground="{Binding LabelColor, Converter={StaticResource ColorConverter}, ConverterParameter=DefaultTextForegroundThemeBrush}" />
                 </DataTemplate>
             </platform:EntryCellTextBox.HeaderTemplate>

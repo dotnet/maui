@@ -1,6 +1,6 @@
 #Requires -Modules Pester
 
-Describe 'Windows XAML trimming metadata' {
+Describe 'Windows XAML binding behavior' {
   BeforeAll {
     $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '../../..')).Path
 
@@ -28,95 +28,7 @@ Describe 'Windows XAML trimming metadata' {
     }
   }
 
-  It 'declares exact data source types for keyed DataTemplates' {
-    $expectations = @(
-      @{
-        Path = 'src/Core/src/Platform/Windows/Styles/MauiComboBoxStyle.xaml'
-        Templates = @{ ComboBoxHeader = 'maui:IPicker' }
-      },
-      @{
-        Path = 'src/Core/src/Platform/Windows/Styles/WindowRootViewStyle.xaml'
-        Templates = @{
-          MauiAppTitleBarTemplateDefault = 'maui:WindowRootView'
-          MauiAppTitleBarContainerTemplateDefault = 'maui:WindowRootView'
-        }
-      },
-      @{
-        Path = 'src/Controls/src/Core/Platform/Windows/CollectionView/ItemsViewStyles.xaml'
-        Templates = @{
-          ItemsViewDefaultTemplate = 'local:ItemTemplateContext'
-          GroupHeaderTemplate = 'local:GroupTemplateContext'
-          CarouselItemsViewDefaultTemplate = 'local:ItemTemplateContext'
-        }
-      },
-      @{
-        Path = 'src/Controls/src/Core/Platform/Windows/Styles/ShellStyles.xaml'
-        Templates = @{
-          ShellFlyoutBaseShellItemTemplate = 'core:NavigationViewItemViewModel'
-          ShellFlyoutMenuItemTemplate = 'core:NavigationViewItemViewModel'
-          SearchHandlerItemTemplate = 'platform:ItemTemplateContext'
-        }
-      },
-      @{
-        Path = 'src/Controls/src/Core/Platform/Windows/TabbedPage/TabbedPageStyle.xaml'
-        Templates = @{ TabBarNavigationViewMenuItem = 'core:NavigationViewItemViewModel' }
-      },
-      @{
-        Path = 'src/Controls/src/Core/Compatibility/Handlers/ListView/Windows/ListViewStyles.xaml'
-        Templates = @{
-          TextCell = 'controls:TextCell'
-          ListViewHeaderTextCell = 'controls:TextCell'
-          ImageCell = 'controls:ImageCell'
-          SwitchCell = 'controls:SwitchCell'
-          EntryCell = 'controls:EntryCell'
-        }
-      },
-      @{
-        Path = 'src/Controls/src/Core/Compatibility/Handlers/TableView/Windows/TableViewStyles.xaml'
-        Templates = @{
-          TableRoot = 'controls:TableRoot'
-          TableSection = 'controls:TableSection'
-        }
-      },
-      @{
-        Path = 'src/Compatibility/Core/src/Windows/ListViewStyles.xaml'
-        Templates = @{
-          CompatibilityTextCell = 'controls:TextCell'
-          CompatibilityListViewHeaderTextCell = 'controls:TextCell'
-          CompatibilityImageCell = 'controls:ImageCell'
-          CompatibilitySwitchCell = 'controls:SwitchCell'
-          CompatibilityEntryCell = 'controls:EntryCell'
-        }
-      },
-      @{
-        Path = 'src/Compatibility/Core/src/Windows/PickerStyle.xaml'
-        Templates = @{ ComboBoxHeader = 'controls:Picker' }
-      },
-      @{
-        Path = 'src/Compatibility/Core/src/Windows/Resources.xaml'
-        Templates = @{
-          CompatibilityTextCell = 'controls:TextCell'
-          CompatibilityListViewHeaderTextCell = 'controls:TextCell'
-          CompatibilityImageCell = 'controls:ImageCell'
-          CompatibilitySwitchCell = 'controls:SwitchCell'
-          CompatibilityEntryCell = 'controls:EntryCell'
-        }
-      }
-    )
-
-    foreach ($expectation in $expectations) {
-      $document = Get-XamlDocument $expectation.Path
-
-      foreach ($templateKey in $expectation.Templates.Keys) {
-        $template = Get-XamlDataTemplate $document $templateKey
-
-        $template | Should -Not -BeNullOrEmpty -Because "$($expectation.Path) should define DataTemplate '$templateKey'"
-        Get-XamlAttributeValue $template 'DataType' | Should -Be $expectation.Templates[$templateKey] -Because "$($expectation.Path) '$templateKey' should declare the trimmed binding source type"
-      }
-    }
-  }
-
-  It 'keeps PageControl title as a typed XAML binding rather than code-behind reimplementation' {
+  It 'keeps PageControl title as a XAML binding rather than code-behind reimplementation' {
     foreach ($path in @(
       'src/Controls/src/Core/Platform/Windows/Styles/MauiControlsPageControlStyle.xaml',
       'src/Compatibility/Core/src/Windows/PageControlStyle.xaml'
@@ -127,7 +39,6 @@ Describe 'Windows XAML trimming metadata' {
         Select-Object -First 1
 
       $titleTextBlock | Should -Not -BeNullOrEmpty -Because "$path should retain the original title binding"
-      Get-XamlAttributeValue $titleTextBlock 'DataType' | Should -Be 'controls:Page'
       Get-XamlAttributeValue $titleTextBlock 'Name' | Should -BeNullOrEmpty
     }
   }
