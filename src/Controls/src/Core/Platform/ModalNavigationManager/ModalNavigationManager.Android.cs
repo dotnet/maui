@@ -543,6 +543,16 @@ namespace Microsoft.Maui.Controls.Platform
 							return;
 						}
 
+						// Route through the Activity's dispatcher so callbacks registered by the app
+						// get a chance to run first, same as when no modal is shown. MAUI's own
+						// callback on the Activity handles the modal pop if nothing else consumes it.
+						if (activity is AndroidX.Activity.ComponentActivity componentActivity &&
+							componentActivity.OnBackPressedDispatcher.HasEnabledCallbacks)
+						{
+							componentActivity.OnBackPressedDispatcher.OnBackPressed();
+							return;
+						}
+
 						try
 						{
 							IPlatformApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnBackPressed>(del =>
