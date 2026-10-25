@@ -1,6 +1,8 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 #if ANDROID
 using Android.Content;
@@ -110,10 +112,119 @@ namespace Microsoft.Maui.ApplicationModel
 		/// <summary>
 		/// Occurs when an app action is activated.
 		/// </summary>
+		/// <remarks>
+		/// Instance subscribers are held weakly. Keep the subscriber alive while it should receive app actions.
+		/// </remarks>
 		public static event EventHandler<AppActionEventArgs>? OnAppAction
 		{
-			add => Current.AppActionActivated += value;
-			remove => Current.AppActionActivated -= value;
+			add
+			{
+				if (value is not null)
+					subscriptions.GetValue(Current, publisher => new AppActionSubscriptions(publisher)).Add(value);
+			}
+			remove
+			{
+				if (value is not null && subscriptions.TryGetValue(Current, out var handlers))
+					handlers.Remove(value);
+			}
+		}
+
+		static readonly ConditionalWeakTable<IAppActions, AppActionSubscriptions> subscriptions = new();
+
+		sealed class AppActionSubscriptions
+		{
+			readonly IAppActions _publisher;
+			readonly List<Subscription> _handlers = new();
+
+			public AppActionSubscriptions(IAppActions publisher) => _publisher = publisher;
+
+			public void Add(EventHandler<AppActionEventArgs> handler)
+			{
+				lock (_handlers)
+				{
+					Prune();
+					foreach (EventHandler<AppActionEventArgs> item in handler.GetInvocationList())
+					{
+						var subscription = new Subscription(this, item);
+						_handlers.Add(subscription);
+						_publisher.AppActionActivated += subscription.Invoke;
+					}
+				}
+			}
+
+			public void Remove(EventHandler<AppActionEventArgs> handler)
+			{
+				var invocationList = handler.GetInvocationList();
+				lock (_handlers)
+				{
+					Prune();
+					for (int start = _handlers.Count - invocationList.Length; start >= 0; start--)
+					{
+						int offset = 0;
+						while (offset < invocationList.Length &&
+							_handlers[start + offset].Matches((EventHandler<AppActionEventArgs>)invocationList[offset]))
+							offset++;
+
+						if (offset != invocationList.Length)
+							continue;
+
+						for (int i = 0; i < invocationList.Length; i++)
+							_publisher.AppActionActivated -= _handlers[start + i].Invoke;
+						_handlers.RemoveRange(start, invocationList.Length);
+						return;
+					}
+				}
+			}
+
+			void Prune()
+			{
+				for (int i = _handlers.Count - 1; i >= 0; i--)
+				{
+					if (_handlers[i].IsAlive)
+						continue;
+
+					_publisher.AppActionActivated -= _handlers[i].Invoke;
+					_handlers.RemoveAt(i);
+				}
+			}
+
+			sealed class Subscription
+			{
+				readonly AppActionSubscriptions _owner;
+				readonly WeakReference<object>? _target;
+				readonly MethodInfo _method;
+				readonly EventHandler<AppActionEventArgs>? _staticHandler;
+
+				public Subscription(AppActionSubscriptions owner, EventHandler<AppActionEventArgs> handler)
+				{
+					_owner = owner;
+					_method = handler.Method;
+					if (handler.Target is object target)
+						_target = new WeakReference<object>(target);
+					else
+						_staticHandler = handler;
+				}
+
+				public bool IsAlive => _target is null || _target.TryGetTarget(out _);
+
+				public bool Matches(EventHandler<AppActionEventArgs> handler) =>
+					_method == handler.Method &&
+					(_target is null ? handler.Target is null :
+						_target.TryGetTarget(out var target) && ReferenceEquals(target, handler.Target));
+
+				public void Invoke(object? sender, AppActionEventArgs args)
+				{
+					if (_staticHandler is not null)
+						_staticHandler(sender, args);
+					else if (_target!.TryGetTarget(out var target))
+						((EventHandler<AppActionEventArgs>)_method.CreateDelegate(typeof(EventHandler<AppActionEventArgs>), target))(sender, args);
+					else
+					{
+						lock (_owner._handlers)
+							_owner.Prune();
+					}
+				}
+			}
 		}
 
 		static IAppActions? currentImplementation;
