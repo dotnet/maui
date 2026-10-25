@@ -1,9 +1,66 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using Microsoft.Build.Utilities;
+using SkiaSharp;
 using Xunit;
 
 namespace Microsoft.Maui.Resizetizer.Tests
 {
 	public class ResizeImageInfoTests
 	{
+		public class Parse
+		{
+			[Fact]
+			public void SupportsDarkSplashMetadata()
+			{
+				var image = new TaskItem("images/camera.png", new Dictionary<string, string>
+				{
+					["DarkFile"] = "images/camera_color.png",
+					["DarkColor"] = "#000000",
+					["DarkTintColor"] = "#ffffff",
+				});
+
+				var info = ResizeImageInfo.Parse(image);
+
+				Assert.Equal(SKColors.Black, info.DarkColor);
+				Assert.Equal(SKColors.White, info.DarkTintColor);
+				Assert.EndsWith("camera_color.png", info.DarkFilename, StringComparison.Ordinal);
+				Assert.False(info.DarkIsVector);
+			}
+
+			[Fact]
+			public void DarkTintColorFallsBackToTintColorOnlyWhenDarkFileIsNotSpecified()
+			{
+				var image = new TaskItem("images/camera.png", new Dictionary<string, string>
+				{
+					["TintColor"] = "#ff0000",
+				});
+
+				var info = ResizeImageInfo.Parse(image);
+				var darkInfo = info.CreateDarkVariant();
+
+				Assert.Equal(SKColors.Red, darkInfo.TintColor);
+				Assert.Equal(info.Filename, darkInfo.Filename);
+			}
+
+			[Fact]
+			public void DarkTintColorDoesNotFallbackToTintColorWhenDarkFileIsSpecified()
+			{
+				var image = new TaskItem("images/camera.png", new Dictionary<string, string>
+				{
+					["TintColor"] = "#ff0000",
+					["DarkFile"] = "images/camera_color.png",
+				});
+
+				var info = ResizeImageInfo.Parse(image);
+				var darkInfo = info.CreateDarkVariant();
+
+				Assert.Null(darkInfo.TintColor);
+				Assert.EndsWith("camera_color.png", darkInfo.Filename, StringComparison.Ordinal);
+			}
+		}
+
 		public class IsVector
 		{
 			[Theory]
@@ -53,6 +110,107 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				};
 
 				Assert.False(info.IsVector);
+			}
+		}
+
+		public class ResizeQualityTests
+		{
+			[Fact]
+			public void DefaultQualityIsAuto()
+			{
+				var info = new ResizeImageInfo();
+				Assert.Equal(ResizeQuality.Auto, info.Quality);
+			}
+
+			[Fact]
+			public void DefaultQualityConstantIsAuto()
+			{
+				Assert.Equal(ResizeQuality.Auto, ResizeImageInfo.DefaultResizeQuality);
+			}
+
+			[Theory]
+			[InlineData("Auto")]
+			[InlineData("Best")]
+			[InlineData("Fastest")]
+			public void QualityCanBeSet(string qualityName)
+			{
+				var quality = Enum.Parse<ResizeQuality>(qualityName);
+				var info = new ResizeImageInfo
+				{
+					Quality = quality
+				};
+
+				Assert.Equal(quality, info.Quality);
+			}
+
+			[Theory]
+			[InlineData("Auto")]
+			[InlineData("Best")]
+			[InlineData("Fastest")]
+			public void QualityParsedFromTaskItem(string metadataValue)
+			{
+				var expected = Enum.Parse<ResizeQuality>(metadataValue);
+				var path = Path.GetFullPath("images/camera.png");
+				var item = new TaskItem(path, new Dictionary<string, string>
+				{
+					["ResizeQuality"] = metadataValue
+				});
+
+				var info = ResizeImageInfo.Parse(item);
+				Assert.Equal(expected, info.Quality);
+			}
+
+			[Fact]
+			public void QualityDefaultsToAutoWhenNotSpecified()
+			{
+				var path = Path.GetFullPath("images/camera.png");
+				var item = new TaskItem(path);
+
+				var info = ResizeImageInfo.Parse(item);
+				Assert.Equal(ResizeQuality.Auto, info.Quality);
+			}
+
+			[Fact]
+			public void QualityDefaultsToAutoForInvalidValue()
+			{
+				var path = Path.GetFullPath("images/camera.png");
+				var item = new TaskItem(path, new Dictionary<string, string>
+				{
+					["ResizeQuality"] = "InvalidValue"
+				});
+
+				var info = ResizeImageInfo.Parse(item);
+				Assert.Equal(ResizeQuality.Auto, info.Quality);
+			}
+
+			[Fact]
+			public void QualityDefaultsToAutoForUndefinedNumericValue()
+			{
+				var path = Path.GetFullPath("images/camera.png");
+				var item = new TaskItem(path, new Dictionary<string, string>
+				{
+					["ResizeQuality"] = "3"
+				});
+
+				var info = ResizeImageInfo.Parse(item);
+				Assert.Equal(ResizeQuality.Auto, info.Quality);
+			}
+
+			[Theory]
+			[InlineData("auto")]
+			[InlineData("FASTEST")]
+			[InlineData("best")]
+			public void QualityParsingIsCaseInsensitive(string metadataValue)
+			{
+				var expected = Enum.Parse<ResizeQuality>(metadataValue, ignoreCase: true);
+				var path = Path.GetFullPath("images/camera.png");
+				var item = new TaskItem(path, new Dictionary<string, string>
+				{
+					["ResizeQuality"] = metadataValue
+				});
+
+				var info = ResizeImageInfo.Parse(item);
+				Assert.Equal(expected, info.Quality);
 			}
 		}
 	}

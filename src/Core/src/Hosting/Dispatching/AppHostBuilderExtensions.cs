@@ -107,7 +107,7 @@ namespace Microsoft.Maui.Hosting
 			return builder;
 		}
 
-		static string ReplaceLocalhost(string uri, string devTunnelId)
+		internal static string ReplaceLocalhost(string uri, string devTunnelId)
 		{
 			// source format is `http[s]://localhost:[port]`
 			// tunnel format is `http[s]://exciting-tunnel-[port].devtunnels.ms`

@@ -24,6 +24,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		CancellationTokenSource _scrollDebounce;
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The orientation observer token is removed from NSNotificationCenter in TearDown and Dispose, so it does not root this controller.")]
 		NSObject _orientationObserver;
+		internal int DragStartPosition { get; private set; } = -1;
 
 		// Tracks the last position the controller synced with the CarouselView. This survives
 		// detach/re-attach (it is intentionally not reset in TearDown) so that when the view
@@ -118,14 +119,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		public override void DraggingStarted(UIScrollView scrollView)
 		{
-			//	_isDragging = true;
+			DragStartPosition = ItemsView?.Position ?? -1;
 			ItemsView?.SetIsDragging(true);
 		}
 
 		public override void DraggingEnded(UIScrollView scrollView, bool willDecelerate)
 		{
+			DragStartPosition = -1;
 			ItemsView?.SetIsDragging(false);
-			//_isDragging = false;
 		}
 
 		public override void UpdateItemsSource()

@@ -5,57 +5,70 @@ using Google.Android.Material.ImageView;
 
 namespace Microsoft.Maui.Platform
 {
+	/// <summary>
+	/// A <see cref="ShapeableImageView"/> that normalizes padding during measurement.
+	/// </summary>
 	public class MauiShapeableImageView : ShapeableImageView
 	{
+		/// <summary>
+		/// Initializes a new instance of the <see cref="MauiShapeableImageView"/> class.
+		/// </summary>
+		/// <param name="context">The Android context for the view.</param>
 		public MauiShapeableImageView(Context? context) : base(context)
 		{
 		}
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="MauiShapeableImageView"/> class.
+		/// </summary>
+		/// <param name="context">The Android context for the view.</param>
+		/// <param name="attrs">The attributes for the view.</param>
 		public MauiShapeableImageView(Context? context, IAttributeSet? attrs) : base(context, attrs)
 		{
 		}
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="MauiShapeableImageView"/> class.
+		/// </summary>
+		/// <param name="context">The Android context for the view.</param>
+		/// <param name="attrs">The attributes for the view.</param>
+		/// <param name="defStyle">The default style attribute for the view.</param>
 		public MauiShapeableImageView(Context? context, IAttributeSet? attrs, int defStyle) : base(context, attrs, defStyle)
 		{
 		}
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="MauiShapeableImageView"/> class,
+		/// optionally applying the .NET MAUI Material 3 theme to the context.
+		/// </summary>
+		/// <param name="context">The Android context for the view.</param>
+		/// <param name="useMaterial3">
+		/// <see langword="true"/> to use the .NET MAUI Material 3 theme; otherwise, to use the Material 2 theme
+		/// when <paramref name="context"/> is already wrapped in a .NET MAUI Material theme.
+		/// </param>
+		public MauiShapeableImageView(Context? context, bool useMaterial3)
+			: base(GetThemedContext(context, useMaterial3))
+		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="MauiShapeableImageView"/> class from a JNI reference.
+		/// </summary>
+		/// <param name="javaReference">The JNI reference.</param>
+		/// <param name="transfer">The ownership transfer behavior for the JNI reference.</param>
 		protected MauiShapeableImageView(nint javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
 		{
 		}
 
-		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
+		static Context? GetThemedContext(Context? context, bool useMaterial3)
 		{
-			// The padding has a few issues. This is a workaround for the following issue:
-			// https://github.com/material-components/material-components-android/issues/2063
+			if (context is null || (!useMaterial3 && context is not MauiMaterialContextThemeWrapper))
+				return context;
 
-			// ShapeableImageView combines ContentPadding with Padding and updates
-			// Padding with the result.
-			base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
-
-			// We need to reset the padding to 0 to avoid a double padding.
-			SetPadding(0, 0, 0, 0);
-		}
-	}
-
-	// TODO: net11 - Remove this class and update MauiShapeableImageView to public API with the same changes.
-	internal class MaterialShapeableImageView : ShapeableImageView
-	{
-		public MaterialShapeableImageView(Context context) : base(MauiMaterialContextThemeWrapper.Create(context))
-		{
+			return MauiMaterialContextThemeWrapper.Create(context, useMaterial3);
 		}
 
-		public MaterialShapeableImageView(Context context, IAttributeSet? attrs) : base(MauiMaterialContextThemeWrapper.Create(context), attrs)
-		{
-		}
-
-		public MaterialShapeableImageView(Context context, IAttributeSet? attrs, int defStyle) : base(MauiMaterialContextThemeWrapper.Create(context), attrs, defStyle)
-		{
-		}
-
-		protected MaterialShapeableImageView(nint javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
-		{
-		}
-
+		/// <inheritdoc />
 		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
 		{
 			// The padding has a few issues. This is a workaround for the following issue:

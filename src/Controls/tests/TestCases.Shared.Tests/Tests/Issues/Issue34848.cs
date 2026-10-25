@@ -6,6 +6,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue34848 : _IssuesUITest
 {
+	const string DoneButtonId = "Done";
+
 	public Issue34848(TestDevice testDevice) : base(testDevice) { }
 
 	public override string Issue => "DatePicker Opened and Closed events are not raised on MacCatalyst";
@@ -23,7 +25,7 @@ public class Issue34848 : _IssuesUITest
 
 #if IOS
 		// iOS DatePicker uses a wheel picker, so we can just tap the "Done" button to close it
-		App.Tap("Done");
+		App.Tap(DoneButtonId);
 #elif WINDOWS
 		// On Windows, we can tap a date to close the DatePicker
 		App.Tap("16");

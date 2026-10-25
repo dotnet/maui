@@ -17,20 +17,44 @@ namespace WebViewAppShared
 
 		public ExampleJsInterop(IJSRuntime jsRuntime)
 		{
-			moduleTask = new(() => jsRuntime.InvokeAsync<IJSObjectReference>(
-			   "import", "./_content/WebViewAppShared/exampleJsInterop.js").AsTask());
+			moduleTask = new(async () =>
+			{
+				try
+				{
+					return await jsRuntime.InvokeAsync<IJSObjectReference>(
+						"import", "./_content/WebViewAppShared/exampleJsInterop.js");
+				}
+				catch (JSException ex)
+				{
+					throw new InvalidOperationException("Unable to import the example JavaScript module.", ex);
+				}
+			});
 		}
 
 		public async ValueTask<string> Prompt(string message)
 		{
-			var module = await moduleTask.Value;
-			return await module.InvokeAsync<string>("showPrompt", message);
+			try
+			{
+				var module = await moduleTask.Value;
+				return await module.InvokeAsync<string>("showPrompt", message);
+			}
+			catch (JSException ex)
+			{
+				throw new InvalidOperationException("Unable to show the JavaScript prompt.", ex);
+			}
 		}
 
 		public async ValueTask UpdateControlDiv(string newValue)
 		{
-			var module = await moduleTask.Value;
-			await module.InvokeVoidAsync("updateControlDiv", newValue);
+			try
+			{
+				var module = await moduleTask.Value;
+				await module.InvokeVoidAsync("updateControlDiv", newValue);
+			}
+			catch (JSException ex)
+			{
+				throw new InvalidOperationException("Unable to update the control div from JavaScript.", ex);
+			}
 		}
 
 		public async ValueTask DisposeAsync()
@@ -38,7 +62,14 @@ namespace WebViewAppShared
 			if (moduleTask.IsValueCreated)
 			{
 				var module = await moduleTask.Value;
-				await module.DisposeAsync();
+				try
+				{
+					await module.DisposeAsync();
+				}
+				catch (JSDisconnectedException)
+				{
+					// The JavaScript context is already gone, so the module no longer needs disposal.
+				}
 			}
 		}
 	}
