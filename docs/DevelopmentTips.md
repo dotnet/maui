@@ -60,7 +60,9 @@ To build and run Blazor Desktop samples, check out the [Blazor Desktop](https://
 On `main`, the public `maui-pr`, `maui-pr-uitests`, and `maui-pr-devicetests`
 pipelines compile Apple apps with Xcode 27 on
 `AcesShared` / `ACES_VM_SharedPool_GoldenGate`. The .NET 10 Apple workloads are
-27.0.10722 from the released Xcode 27 toolchain; current Apple TFMs are 27.0.
+27.0.10722 from the released Xcode 27 toolchain; explicit current Apple TFMs are
+27.0. Unversioned .NET 10 library TFMs retain the SDK's 26.0 compatibility default,
+so framework libraries build both variants for app and test-project references.
 NuGet.org is retained as a publisher fallback because the tvOS x64 simulator
 runtime pack from that release is missing from the configured Azure mirrors.
 Because these workload pins are shared, private and official compilation pools
@@ -71,8 +73,9 @@ silently falling back to an older Xcode.
 Xcode 27 requires the native framework's iOS deployment target to be at least
 15.0. Native Debug/Release and managed iOS minimums are aligned at 15.0, following
 [#39262](https://github.com/dotnet/maui/pull/39262). This intentionally removes
-iOS 13/14 support; it is not merely a CI image change. The managed Mac Catalyst
-minimum remains 15.0, which maps to macOS 12.0.
+iOS 13/14 support; it is not merely a CI image change. The Apple 27 SDK also
+requires Mac Catalyst 17.0 (macOS 14.0); the managed minimum and library template
+are aligned with that requirement, matching the existing app templates.
 
 UI-test compilation and execution deliberately use different images, following
 [#38855](https://github.com/dotnet/maui/pull/38855) and
