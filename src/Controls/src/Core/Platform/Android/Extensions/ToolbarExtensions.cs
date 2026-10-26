@@ -184,7 +184,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public static void UpdateBarBackground(this AToolbar nativeToolbar, Toolbar toolbar)
 		{
-			if (!RuntimeFeature.IsMaterial3Enabled)
+			if (!RuntimeFeature.IsMaterial3Enabled || !RuntimeFeature.UseMauiAndroidSystemBarBackgrounds)
 			{
 				Brush barBackground = toolbar.BarBackground;
 
