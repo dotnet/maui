@@ -304,5 +304,30 @@ namespace Microsoft.Maui.DeviceTests
 				});
 			});
 		}
+
+		[Fact]
+		public async Task EmptyInsetsReachTrackedViewsOnly()
+		{
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var listener = new MauiWindowInsetListener();
+				var tracked = new InsetRecordingView(MauiContext.Context!);
+				var untracked = new InsetRecordingView(MauiContext.Context!);
+
+				// Keyboard closed on a window with no system bars: every inset is zero
+				var emptyInsets = new WindowInsetsCompat.Builder().Build()!;
+				Assert.False(emptyInsets.HasInsets);
+
+				// A tracked view holds padding from earlier insets (e.g. the keyboard height)
+				// and must get the empty dispatch to reset it
+				listener.TrackView(tracked);
+				listener.OnApplyWindowInsets(tracked, emptyInsets);
+				Assert.Equal(1, tracked.HandledCount);
+
+				// A view that never had padding has nothing to reset
+				listener.OnApplyWindowInsets(untracked, emptyInsets);
+				Assert.Equal(0, untracked.HandledCount);
+			});
+		}
 	}
 }
