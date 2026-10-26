@@ -63,6 +63,12 @@ pipelines compile Apple apps with Xcode 27 on
 existing toolchains. Xcode 27 selection fails if the requested version is missing
 rather than silently falling back to an older Xcode.
 
+Xcode 27 requires the native framework's iOS deployment target to be at least
+15.0. Native Debug/Release and managed iOS minimums are aligned at 15.0, following
+[#39262](https://github.com/dotnet/maui/pull/39262). This intentionally removes
+iOS 13/14 support; it is not merely a CI image change. The managed Mac Catalyst
+minimum remains 15.0, which maps to macOS 12.0.
+
 UI-test compilation and execution deliberately use different images, following
 [#38855](https://github.com/dotnet/maui/pull/38855) and
 [#39262](https://github.com/dotnet/maui/pull/39262): iOS Appium execution stays on

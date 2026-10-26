@@ -39,8 +39,8 @@
 
   <!-- platform version number information -->
   <PropertyGroup Condition="'$(_MauiTargetPlatformIsiOS)' == 'True'">
-    <SupportedOSPlatformVersion>13.0</SupportedOSPlatformVersion>
-    <TargetPlatformMinVersion>13.0</TargetPlatformMinVersion>
+    <SupportedOSPlatformVersion>15.0</SupportedOSPlatformVersion>
+    <TargetPlatformMinVersion>15.0</TargetPlatformMinVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(_MauiTargetPlatformIstvOS)' == 'True'">
     <SupportedOSPlatformVersion>10.0</SupportedOSPlatformVersion>
