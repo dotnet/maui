@@ -88,6 +88,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			var previousSize = ContainerView?.Bounds.Size ?? PlatformView.Bounds.Size;
 			base.PlatformArrange(rect);
+			ContainerView?.LayoutIfNeeded();
 			if (previousSize != (ContainerView?.Bounds.Size ?? PlatformView.Bounds.Size))
 			{
 				UpdateValue(nameof(IButtonStroke.CornerRadius));
