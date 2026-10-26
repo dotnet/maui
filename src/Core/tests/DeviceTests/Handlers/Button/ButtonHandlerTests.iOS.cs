@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
@@ -11,6 +12,72 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class ButtonHandlerTests
 	{
+		[Fact]
+		public async Task GradientCornerRadiusUpdatesWhenResized()
+		{
+			var button = new ButtonStub
+			{
+				Background = new LinearGradientPaintStub(Colors.Red, Colors.Blue),
+				CornerRadius = 100,
+				Width = 50,
+				Height = 50,
+				DesiredSize = new Microsoft.Maui.Graphics.Size(50, 50)
+			};
+
+			var radii = await GetValueAsync(button, handler =>
+			{
+				double GetGradientCornerRadius()
+				{
+					var backgroundLayer = handler.PlatformView.Layer.Sublayers?.FirstOrDefault(layer => layer.Name == "MauiBackgroundLayer");
+					Assert.NotNull(backgroundLayer);
+					return backgroundLayer.CornerRadius;
+				}
+
+				handler.PlatformArrange(new Microsoft.Maui.Graphics.Rect(0, 0, 50, 50));
+				var initialRadius = GetGradientCornerRadius();
+
+				var resizedBounds = new Microsoft.Maui.Graphics.Rect(0, 0, 40, 40);
+				handler.PlatformArrange(resizedBounds);
+				var resizedRadius = GetGradientCornerRadius();
+				handler.PlatformArrange(resizedBounds);
+
+				return (initialRadius, resizedRadius, sameSizeRadius: GetGradientCornerRadius());
+			});
+
+			Assert.Equal(25, radii.initialRadius, Precision);
+			Assert.Equal(20, radii.resizedRadius, Precision);
+			Assert.Equal(20, radii.sameSizeRadius, Precision);
+		}
+
+		[Fact]
+		public async Task CornerRadiusUpdatesWhenResized()
+		{
+			var button = new ButtonStub
+			{
+				CornerRadius = 100,
+				Width = 50,
+				Height = 50,
+				DesiredSize = new Microsoft.Maui.Graphics.Size(50, 50)
+			};
+
+			var radii = await GetValueAsync(button, handler =>
+			{
+				handler.PlatformArrange(new Microsoft.Maui.Graphics.Rect(0, 0, 50, 50));
+				var initialRadius = (double)handler.PlatformView.Layer.CornerRadius;
+
+				var resizedBounds = new Microsoft.Maui.Graphics.Rect(0, 0, 40, 40);
+				handler.PlatformArrange(resizedBounds);
+				var resizedRadius = (double)handler.PlatformView.Layer.CornerRadius;
+				handler.PlatformArrange(resizedBounds);
+
+				return (initialRadius, resizedRadius, sameSizeRadius: (double)handler.PlatformView.Layer.CornerRadius);
+			});
+
+			Assert.Equal(25, radii.initialRadius, Precision);
+			Assert.Equal(20, radii.resizedRadius, Precision);
+			Assert.Equal(20, radii.sameSizeRadius, Precision);
+		}
+
 		[Fact(DisplayName = "CharacterSpacing Initializes Correctly")]
 		public async Task CharacterSpacingInitializesCorrectly()
 		{

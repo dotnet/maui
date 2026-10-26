@@ -18,6 +18,21 @@ namespace Microsoft.Maui.Platform
 			return (float)Math.Min(cornerRadius, Math.Min(bounds.Width, bounds.Height) / 2);
 		}
 
+		internal static void UpdateBackgroundLayerCornerRadius(this UIView control, int cornerRadius)
+		{
+			if (cornerRadius < 0 || control.Layer?.Sublayers is not { Length: > 0 } sublayers)
+				return;
+
+			foreach (var sublayer in sublayers)
+			{
+				if (sublayer.Name == ViewExtensions.BackgroundLayerName)
+				{
+					sublayer.CornerRadius = sublayer.GetEffectiveCornerRadius(cornerRadius);
+					return;
+				}
+			}
+		}
+
 		public static void InsertBackgroundLayer(this UIView control, CALayer backgroundLayer, int index = -1)
 		{
 			control.RemoveBackgroundLayer();
