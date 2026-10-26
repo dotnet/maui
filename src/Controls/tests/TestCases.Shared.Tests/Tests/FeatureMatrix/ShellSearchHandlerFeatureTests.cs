@@ -8,7 +8,7 @@ namespace Microsoft.Maui.TestCases.Tests;
 /// Shell SearchHandler feature matrix tests.
 /// WARNING: Tests use [Order] and maintain state across methods.
 /// They are NOT independent — running out of order may cause failures.
-/// The first test navigates to the Shell Search page; subsequent tests
+/// Fixture setup navigates to the Shell Search page; tests
 /// continue from the same page. Each Options round-trip calls Reset()
 /// on the ViewModel so all properties return to defaults before the
 /// next option is applied.
@@ -17,6 +17,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 {
 	public const string ShellSearchFeatureMatrix = "Shell Feature Matrix";
 	public override string GalleryPageName => ShellSearchFeatureMatrix;
+	protected override string GallerySubPageButton => "ShellSearchButton";
 	public const string Options = "Options";
 	public const string Apply = "Apply";
 
@@ -52,6 +53,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 	{
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
+		App.WaitForNoElement(Apply);
 	}
 
 	// Scrolls/drags the search page into view on platforms where the collapsible
@@ -73,8 +75,6 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void VerifyShellSearch_Placeholder()
 	{
-		App.WaitForElement("ShellSearchButton");
-		App.Tap("ShellSearchButton");
 		OpenOptions();
 		App.WaitForElement("PlaceholderEntry");
 		App.ClearText("PlaceholderEntry");
@@ -610,6 +610,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		searchHandler.Tap();
 		searchHandler.Clear();
 		searchHandler.SendKeys("Testing");
+		Assert.That(() => App.GetShellSearchHandler().GetText(), Is.EqualTo("Testing").After(10000, 200));
 		VerifyShellSearchScreenshot();
 	}
 

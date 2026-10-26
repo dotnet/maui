@@ -7,6 +7,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
@@ -500,6 +501,13 @@ namespace Microsoft.Maui.Controls
 				propertyChanged: OnShellAppearanceValueChanged);
 
 		/// <summary>
+		/// Defines the background brush for the Shell toolbar. Supports gradient brushes.
+		/// </summary>
+		public static readonly new BindableProperty BackgroundProperty =
+			BindableProperty.CreateAttached("Background", typeof(Brush), typeof(Shell), Brush.Default,
+				propertyChanged: OnShellAppearanceValueChanged);
+
+		/// <summary>
 		/// The backdrop of the flyout, which is the appearance of the flyout overlay.
 		/// </summary>
 		public static readonly BindableProperty FlyoutBackdropProperty =
@@ -683,6 +691,20 @@ namespace Microsoft.Maui.Controls
 		/// <param name="value">The brushed used in the backdrop of the flyout.</param>
 		public static void SetFlyoutBackdrop(BindableObject obj, Brush value) => obj.SetValue(FlyoutBackdropProperty, value);
 
+		/// <summary>
+		/// Gets the background brush for the Shell toolbar.
+		/// </summary>
+		/// <param name="obj">The object from which to get the background brush.</param>
+		/// <returns>The background brush for the Shell toolbar.</returns>
+		public static Brush GetBackground(BindableObject obj) => (Brush)obj.GetValue(BackgroundProperty);
+
+		/// <summary>
+		/// Sets the background brush for the Shell toolbar.
+		/// </summary>
+		/// <param name="obj">The object on which to set the background brush.</param>
+		/// <param name="value">The brush to use as the Shell toolbar background.</param>
+		public static void SetBackground(BindableObject obj, Brush value) => obj.SetValue(BackgroundProperty, value);
+
 		static void OnShellAppearanceValueChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			var item = (Element)bindable;
@@ -705,10 +727,98 @@ namespace Microsoft.Maui.Controls
 		static readonly BindablePropertyKey ItemsPropertyKey = BindableProperty.CreateReadOnly(nameof(Items), typeof(ShellItemCollection), typeof(Shell), null,
 				defaultValueCreator: bo => new ShellItemCollection { Inner = new ElementCollection<ShellItem>(((Shell)bo).InternalChildren) });
 
-		List<(IAppearanceObserver Observer, Element Pivot)> _appearanceObservers = new List<(IAppearanceObserver Observer, Element Pivot)>();
+		List<AppearanceObserverRegistration> _appearanceObservers = new List<AppearanceObserverRegistration>();
 		List<IFlyoutBehaviorObserver> _flyoutBehaviorObservers = new List<IFlyoutBehaviorObserver>();
 
+		sealed class AppearanceObserverRegistration
+		{
+			public readonly IAppearanceObserver Observer;
+			public readonly Element Pivot;
+			public List<WeakBrushChangedProxy> BrushProxies;
+			// Keep the callback alive while its brush proxies hold only weak references to it.
+			public EventHandler BrushChanged;
 
+			public AppearanceObserverRegistration(IAppearanceObserver observer, Element pivot)
+			{
+				Observer = observer;
+				Pivot = pivot;
+			}
+		}
+
+
+#nullable enable
+		/// <summary>
+		/// Resolves the application-defined flyout <see cref="DataTemplate"/> for a flyout item.
+		/// </summary>
+		/// <param name="shell">
+		/// The <see cref="Shell"/> that owns <paramref name="flyoutItem"/>. When <see langword="null"/>, the owning Shell is
+		/// resolved from <paramref name="flyoutItem"/>; if it cannot be resolved, only templates set on the item itself are considered.
+		/// </param>
+		/// <param name="flyoutItem">A flyout item produced by <see cref="IShellController.GenerateFlyoutGrouping"/>.</param>
+		/// <returns>
+		/// The application-defined <see cref="DataTemplate"/> for <paramref name="flyoutItem"/>, or <see langword="null"/> when the
+		/// application has not supplied one and the caller should use its own platform-native default flyout item presentation.
+		/// </returns>
+		/// <exception cref="ArgumentNullException"><paramref name="flyoutItem"/> is <see langword="null"/>.</exception>
+		/// <remarks>
+		/// <para>
+		/// This is the supported entry point for custom Shell backends. It applies the same precedence the built-in backends use:
+		/// a template set on the item wins over a template set on the Shell, <see cref="MenuItemTemplateProperty"/> is used for menu
+		/// items and <see cref="ItemTemplateProperty"/> for everything else, and the pair of objects that backs a menu item is
+		/// resolved internally so a template set on either one is found.
+		/// </para>
+		/// <para>
+		/// The returned value may be a <see cref="DataTemplateSelector"/>. Call
+		/// <see cref="Internals.DataTemplateExtensions.SelectDataTemplate(DataTemplate, object, BindableObject)"/> before creating
+		/// content. Bind the created content to <paramref name="flyoutItem"/>, which is what the built-in Android, iOS, and Windows
+		/// backends do.
+		/// </para>
+		/// </remarks>
+		/// <example>
+		/// <code><![CDATA[
+		/// View CreateFlyoutItemView(Shell shell, BindableObject flyoutItem)
+		/// {
+		///     var template = Shell.ResolveFlyoutItemTemplate(shell, flyoutItem);
+		///
+		///     if (template is null)
+		///         return CreatePlatformDefaultFlyoutItemView(flyoutItem);
+		///
+		///     var view = (View)template.SelectDataTemplate(flyoutItem, shell).CreateContent();
+		///     view.BindingContext = flyoutItem;
+		///     return view;
+		/// }
+		/// ]]></code>
+		/// </example>
+		public static DataTemplate? ResolveFlyoutItemTemplate(Shell? shell, BindableObject flyoutItem)
+		{
+			if (flyoutItem is null)
+				throw new ArgumentNullException(nameof(flyoutItem));
+
+			shell ??= (flyoutItem as Element)?.FindParentOfType<Shell>();
+
+			BindableProperty bp = flyoutItem is IMenuItemController ? MenuItemTemplateProperty : ItemTemplateProperty;
+
+			// An explicitly set template wins even when its value is null, which lets an application opt a single item
+			// out of a Shell level template. A null value is reported as "no template" so callers fall back safely.
+			BindableObject templateSource = GetBindableObjectWithFlyoutItemTemplate(flyoutItem);
+
+			if (templateSource.IsSet(bp))
+				return templateSource.GetValue(bp) as DataTemplate;
+
+			if (shell is not null && shell.IsSet(bp))
+				return shell.GetValue(bp) as DataTemplate;
+
+			return null;
+		}
+
+		/// <summary>
+		/// Gets the object that carries the flyout template for <paramref name="bo"/>.
+		/// </summary>
+		/// <remarks>
+		/// A menu item in the flyout is backed by a pair of objects: the public <see cref="MenuItem"/> and the internal
+		/// <c>MenuShellItem</c> wrapper (or the item's parent for <c>ShellContent.MenuItems</c>). The template may be set on
+		/// either one, so this resolves whichever object actually holds it.
+		/// </remarks>
 		internal static BindableObject GetBindableObjectWithFlyoutItemTemplate(BindableObject bo)
 		{
 			if (bo is IMenuItemController)
@@ -721,24 +831,10 @@ namespace Microsoft.Maui.Controls
 
 			return bo;
 		}
+#nullable disable
 
 		DataTemplate IShellController.GetFlyoutItemDataTemplate(BindableObject bo)
-		{
-			BindableProperty bp = bo is IMenuItemController ? MenuItemTemplateProperty : ItemTemplateProperty;
-			var bindableObjectWithTemplate = GetBindableObjectWithFlyoutItemTemplate(bo);
-
-			if (bindableObjectWithTemplate.IsSet(bp))
-			{
-				return (DataTemplate)bindableObjectWithTemplate.GetValue(bp);
-			}
-
-			if (IsSet(bp))
-			{
-				return (DataTemplate)GetValue(bp);
-			}
-
-			return BaseShellItem.CreateDefaultFlyoutItemCell(bo);
-		}
+			=> ResolveFlyoutItemTemplate(this, bo) ?? BaseShellItem.CreateDefaultFlyoutItemCell(bo);
 
 		event EventHandler IShellController.StructureChanged
 		{
@@ -762,10 +858,58 @@ namespace Microsoft.Maui.Controls
 
 		void IShellController.AddAppearanceObserver(IAppearanceObserver observer, Element pivot)
 		{
-			_appearanceObservers.Add((observer, pivot));
-			var appearance = GetAppearanceForPivot(pivot);
-			UpdateToolbarAppearanceFeatures(pivot, appearance);
-			observer.OnAppearanceChanged(appearance);
+			var registration = new AppearanceObserverRegistration(observer, pivot);
+			_appearanceObservers.Add(registration);
+			UpdateAppearanceObserver(registration);
+		}
+
+		void UpdateAppearanceObserver(AppearanceObserverRegistration registration)
+		{
+			var appearance = GetAppearanceForPivot(registration.Pivot);
+			UpdateAppearanceObserverBrush(registration, appearance);
+			UpdateToolbarAppearanceFeatures(registration.Pivot, appearance);
+			registration.Observer.OnAppearanceChanged(appearance);
+		}
+
+		void UpdateAppearanceObserverBrush(AppearanceObserverRegistration registration, ShellAppearance appearance)
+		{
+			var brushes = appearance?.BackgroundBrushes;
+			var proxies = registration.BrushProxies;
+			bool sameBrushes = (proxies?.Count ?? 0) == (brushes?.Count ?? 0);
+			for (int i = 0; sameBrushes && i < (proxies?.Count ?? 0); i++)
+			{
+				sameBrushes = proxies[i].TryGetSource(out var currentBrush) &&
+					ReferenceEquals(currentBrush, brushes[i]);
+			}
+
+			if (sameBrushes)
+				return;
+
+			RemoveAppearanceObserverBrush(registration);
+
+			if (brushes is { Count: > 0 })
+			{
+				registration.BrushChanged = (_, _) => UpdateAppearanceObserver(registration);
+				proxies = new List<WeakBrushChangedProxy>(brushes.Count);
+				for (int i = 0; i < brushes.Count; i++)
+				{
+					var proxy = new WeakBrushChangedProxy();
+					proxy.Subscribe(brushes[i], registration.BrushChanged);
+					proxies.Add(proxy);
+				}
+				registration.BrushProxies = proxies;
+			}
+		}
+
+		static void RemoveAppearanceObserverBrush(AppearanceObserverRegistration registration)
+		{
+			if (registration.BrushProxies is { } proxies)
+			{
+				for (int i = 0; i < proxies.Count; i++)
+					proxies[i].Unsubscribe();
+				registration.BrushProxies = null;
+				registration.BrushChanged = null;
+			}
 		}
 
 		void IShellController.AddFlyoutBehaviorObserver(IFlyoutBehaviorObserver observer)
@@ -787,15 +931,28 @@ namespace Microsoft.Maui.Controls
 				appearance = appearance ?? GetAppearanceForPivot(pivot);
 
 				Toolbar.BarTextColor = appearance?.TitleColor ?? DefaultTitleColor;
-				Toolbar.BarBackground = appearance?.BackgroundColor ?? DefaultBackgroundColor;
+				if (!Brush.IsNullOrEmpty(appearance?.Background))
+				{
+					Toolbar.BarBackground = appearance.Background;
+				}
+				else
+				{
+					Toolbar.BarBackground = appearance?.BackgroundColor ?? DefaultBackgroundColor;
+				}
 				Toolbar.IconColor = appearance?.ForegroundColor ?? DefaultForegroundColor;
 			}
 		}
 
 #if ANDROID
-		static Color DefaultBackgroundColor => ResolveThemeColor(Color.FromArgb("#2c3e50"), Color.FromArgb("#1B3147"));
-		static Color DefaultForegroundColor => ResolveThemeColor(Colors.White, Colors.White);
-		static Color DefaultTitleColor => ResolveThemeColor(Colors.White, Colors.White);
+		static Color DefaultBackgroundColor => ResolveThemeColor(
+			RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#FEF7FF") : Color.FromArgb("#2c3e50"),
+			RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#141218") : Color.FromArgb("#1B3147"));
+		static Color DefaultForegroundColor => ResolveThemeColor(
+			RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#1D1B20") : Colors.White,
+			RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#E6E0E9") : Colors.White);
+		static Color DefaultTitleColor => ResolveThemeColor(
+			RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#1D1B20") : Colors.White,
+			RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#E6E0E9") : Colors.White);
 
 		static bool IsDarkTheme => (Application.Current?.RequestedTheme == AppTheme.Dark);
 
@@ -834,10 +991,9 @@ namespace Microsoft.Maui.Controls
 			// need walk up from the source to look for the pivot as items below the change
 			// can't be affected by it
 
-			foreach (var (Observer, Pivot) in _appearanceObservers)
+			foreach (var registration in _appearanceObservers)
 			{
-				var observer = Observer;
-				var pivot = Pivot;
+				var pivot = registration.Pivot;
 
 				Element target;
 				Element leaf;
@@ -856,9 +1012,7 @@ namespace Microsoft.Maui.Controls
 				{
 					if (leaf == target)
 					{
-						var appearance = GetAppearanceForPivot(pivot);
-						UpdateToolbarAppearanceFeatures(pivot, appearance);
-						observer.OnAppearanceChanged(appearance);
+						UpdateAppearanceObserver(registration);
 						break;
 					}
 
@@ -991,6 +1145,7 @@ namespace Microsoft.Maui.Controls
 			{
 				if (_appearanceObservers[i].Observer == observer)
 				{
+					RemoveAppearanceObserverBrush(_appearanceObservers[i]);
 					_appearanceObservers.RemoveAt(i);
 					return true;
 				}
@@ -1280,6 +1435,15 @@ namespace Microsoft.Maui.Controls
 		NavigationType _pendingNavigationType;
 
 		/// <summary>Initializes a new instance of the <see cref="Shell"/> class.</summary>
+		// Preserve MenuShellItem which is reached through event-driven and interface-dispatch
+		// code paths that the trimmer cannot statically trace.
+		// The IL2026/IL2111/IL3050 diagnostics originate from the TypeConverter base class hierarchy
+		// (ShellItemConverter : TypeConverter) whose inherited members like GetProperties/GetEditor
+		// carry RequiresUnreferencedCode. These base methods are never called by MAUI.
+		[DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(MenuShellItem))]
+		[UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode", Justification = "ShellItemConverter only overrides CanConvertFrom/To and ConvertFrom/To; the annotated TypeConverter base members are never called.")]
+		[UnconditionalSuppressMessage("Trimming", "IL2111:ReflectionToDynamicallyAccessedMembers", Justification = "ShellItemConverter only overrides CanConvertFrom/To and ConvertFrom/To; the annotated TypeConverter base members are never called.")]
+		[UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode", Justification = "ShellItemConverter only overrides CanConvertFrom/To and ConvertFrom/To; the annotated TypeConverter base members are never called.")]
 		public Shell()
 		{
 			Toolbar = new ShellToolbar(this);
@@ -1388,7 +1552,7 @@ namespace Microsoft.Maui.Controls
 					}
 					catch (Exception exc)
 					{
-						Application.Current?.FindMauiContext()?.CreateLogger<Shell>()?.LogWarning(exc, "If you're using hot reload add a route to everything in your shell file");
+						MauiLogger<Shell>.Log(LogLevel.Warning, exc, "If you're using hot reload add a route to everything in your shell file");
 					}
 				}
 
@@ -1704,7 +1868,7 @@ namespace Microsoft.Maui.Controls
 				}
 				catch (Exception exc)
 				{
-					Application.Current?.FindMauiContext()?.CreateLogger<Shell>()?.LogWarning(exc, "Failed to Navigate Back");
+					MauiLogger<Shell>.Log(LogLevel.Warning, exc, "Failed to Navigate Back");
 				}
 			}
 		}
@@ -1716,8 +1880,7 @@ namespace Microsoft.Maui.Controls
 			Navigated?.Invoke(this, args);
 			OnNavigated(args);
 
-			if (_previousPage != null)
-				_previousPage.PropertyChanged -= OnCurrentPagePropertyChanged;
+			_previousPage?.PropertyChanged -= OnCurrentPagePropertyChanged;
 
 			_navigationType = NavigationType.Replace;
 
@@ -1750,8 +1913,7 @@ namespace Microsoft.Maui.Controls
 			PropagateSendNavigatedTo();
 			_previousPage = null;
 
-			if (CurrentPage != null)
-				CurrentPage.PropertyChanged += OnCurrentPagePropertyChanged;
+			CurrentPage?.PropertyChanged += OnCurrentPagePropertyChanged;
 
 			CurrentItem?.Handler?.UpdateValue(Shell.TabBarIsVisibleProperty.PropertyName);
 			(this.Window as Window)?.NotifyNavigationStateChanged();
@@ -1873,6 +2035,7 @@ namespace Microsoft.Maui.Controls
 				ShellContent currentShellContent = shell.CurrentItem.CurrentItem?.CurrentItem;
 				currentShellContent?.SetValue(ShellContent.QueryAttributesProperty, new ShellRouteParameters());
 			}
+			shell.CurrentContent?.ApplyQueryAttributesFromSelection();
 
 			if (shell.CurrentItem?.CurrentItem != null)
 				shell.ShellController.AppearanceChanged(shell.CurrentItem.CurrentItem, false);

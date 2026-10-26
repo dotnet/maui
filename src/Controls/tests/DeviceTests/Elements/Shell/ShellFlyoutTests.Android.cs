@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using AndroidX.DrawerLayout.Widget;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Platform.Compatibility;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
@@ -15,18 +16,21 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				shell.FlyoutContent = new VerticalStackLayout() { new Label() { Text = "Flyout Content" } };
 			},
-			async (shell, handler) =>
+			async shell =>
 			{
+#if ANDROID || IOS || MACCATALYST
+				var shellContext = (IShellContext)shell.Handler;
+#endif
 				// 1. Set FlyoutIsPresented=true to make the Shell Flyout visible.
 				shell.FlyoutIsPresented = true;
 
-				var dl = GetDrawerLayout(handler) as DrawerLayout;
+				var dl = GetDrawerLayout(shellContext) as DrawerLayout;
 				Assert.NotNull(dl);
 
 				await AssertionExtensions.AssertEventually(() =>
 				{
 					// 2. Check that the Flyout has size.
-					var flyoutFrame = GetFlyoutFrame(handler);
+					var flyoutFrame = GetFlyoutFrame(shellContext);
 					return flyoutFrame.Width > 0 && flyoutFrame.Height > 0 && dl.IsOpen;
 				});
 			});

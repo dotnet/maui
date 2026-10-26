@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Handlers
 		public static new IPropertyMapper<IContentView, IPageHandler> Mapper =
 			new PropertyMapper<IContentView, IPageHandler>(ContentViewHandler.Mapper)
 			{
-#if IOS || TIZEN
+#if IOS
 				[nameof(IContentView.Background)] = MapBackground,
 #if IOS
 				[nameof(IiOSPageSpecifics.IsHomeIndicatorAutoHidden)] = MapHomeIndicatorAutoHidden,

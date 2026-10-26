@@ -2,6 +2,7 @@
 using CoreLocation;
 using MapKit;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Maps.Platform;
 
 namespace Microsoft.Maui.Maps.Handlers
 {
@@ -25,6 +26,15 @@ namespace Microsoft.Maui.Maps.Handlers
 		{
 			if (handler.PlatformView is MKPointAnnotation mKPointAnnotation)
 				mKPointAnnotation.Subtitle = mapPin.Address;
+		}
+
+		// The initial image is applied in MauiMKMapView.GetViewForAnnotation (set on the
+		// MKAnnotationView, not the IMKAnnotation). This handles runtime ImageSource changes by
+		// refreshing the annotation view of a pin that is already on the map.
+		public static void MapImageSource(IMapPinHandler handler, IMapPin mapPin)
+		{
+			if (mapPin.Parent?.Handler?.PlatformView is MauiMKMapView mapView)
+				mapView.UpdatePinImage(mapPin);
 		}
 	}
 }

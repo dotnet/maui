@@ -8,6 +8,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 {
 	public const string ShellFeatureMatrix = "Shell Feature Matrix";
 	public override string GalleryPageName => ShellFeatureMatrix;
+	protected override string GallerySubPageButton => "ShellNavigationButton";
 
 	public ShellNavigationFeatureTests(TestDevice device) : base(device) { }
 
@@ -108,8 +109,6 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void VerifyShellProperties_InitialState()
 	{
-		App.WaitForElement("ShellNavigationButton");
-		App.Tap("ShellNavigationButton");
 		App.WaitForElement("MainPageIdentityLabel");
 		Assert.That(App.FindElement("CurrentStateLabel").GetText(), Does.Contain("main"));
 		Assert.That(App.FindElement("CurrentPageLabel").GetText(), Is.EqualTo("ShellNavigation"));

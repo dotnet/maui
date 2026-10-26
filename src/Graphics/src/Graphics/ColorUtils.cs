@@ -361,7 +361,9 @@ internal static class ColorUtils
 		out ReadOnlySpan<char> quad3)
 	{
 		var op = value.IndexOf('(');
+#pragma warning disable CA1307 // Specify StringComparison for clarity - char overload doesn't support StringComparison
 		var cp = value.LastIndexOf(')');
+#pragma warning restore CA1307 // Specify StringComparison for clarity
 		if (op < 0 || cp < 0 || cp < op)
 			goto ReturnFalse;
 
@@ -403,7 +405,9 @@ internal static class ColorUtils
 		out ReadOnlySpan<char> triplet2)
 	{
 		var op = value.IndexOf('(');
+#pragma warning disable CA1307 // Specify StringComparison for clarity - char overload doesn't support StringComparison
 		var cp = value.LastIndexOf(')');
+#pragma warning restore CA1307 // Specify StringComparison for clarity
 		if (op < 0 || cp < 0 || cp < op)
 			goto ReturnFalse;
 
@@ -461,7 +465,7 @@ internal static class ColorUtils
 
 	private static bool TryParseDouble(ReadOnlySpan<char> s, out double value) =>
 		double.TryParse(
-#if NETSTANDARD2_0 || TIZEN
+#if NETSTANDARD2_0
 			s.ToString(),
 #else
 			s,
@@ -470,7 +474,7 @@ internal static class ColorUtils
 
 	private static int ParseInt(ReadOnlySpan<char> s) =>
 		int.Parse(
-#if NETSTANDARD2_0 || TIZEN
+#if NETSTANDARD2_0
 			s.ToString(),
 #else
 			s,

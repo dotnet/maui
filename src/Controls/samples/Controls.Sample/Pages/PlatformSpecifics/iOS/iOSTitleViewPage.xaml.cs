@@ -12,7 +12,7 @@ namespace Maui.Controls.Sample.Pages
 			_searchBar.Effects.Add(Effect.Resolve("XamarinDocs.SearchBarEffect"));
 		}
 
-		void OnReturnButtonClicked(object sender, EventArgs e)
+		void OnReturnButtonClicked(object? sender, EventArgs e)
 		{
 			Navigation.PopAsync();
 		}

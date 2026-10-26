@@ -262,7 +262,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				{
 					var previousCellSafeArea = mauiView.CellSafeAreaOverride;
 					MauiView.ApplyCellSafeAreaOverride(this, virtualView, mauiView);
-					safeAreaChanged = !previousCellSafeArea.EqualsAtPixelLevel(mauiView.CellSafeAreaOverride);
+					safeAreaChanged = !previousCellSafeArea.EqualsAtPixelLevel(mauiView.CellSafeAreaOverride, mauiView.GetEffectiveDisplayScale());
 				}
 
 				var measuredConstraintsMatchBounds = Bounds.Size.IsCloseTo(new Size(

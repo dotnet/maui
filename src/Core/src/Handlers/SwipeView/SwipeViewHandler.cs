@@ -4,9 +4,7 @@ using PlatformView = Microsoft.Maui.Platform.MauiSwipeView;
 using PlatformView = Microsoft.Maui.Platform.MauiSwipeView;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.Controls.SwipeControl;
-#elif TIZEN
-using PlatformView = Microsoft.Maui.Platform.MauiSwipeView;
-#elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID && !TIZEN)
+#elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID)
 using PlatformView = System.Object;
 #endif
 
@@ -22,7 +20,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(ISwipeView.TopItems)] = MapTopItems,
 			[nameof(ISwipeView.RightItems)] = MapRightItems,
 			[nameof(ISwipeView.BottomItems)] = MapBottomItems,
-#if ANDROID || IOS || TIZEN
+#if ANDROID || IOS
 			[nameof(IView.IsEnabled)] = MapIsEnabled,
 #endif
 #if ANDROID
