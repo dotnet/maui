@@ -61,6 +61,8 @@ On `main`, the public `maui-pr`, `maui-pr-uitests`, and `maui-pr-devicetests`
 pipelines compile Apple apps with Xcode 27 on
 `AcesShared` / `ACES_VM_SharedPool_GoldenGate`. The .NET 10 Apple workloads are
 27.0.10722 from the released Xcode 27 toolchain; current Apple TFMs are 27.0.
+NuGet.org is retained as a publisher fallback because the tvOS x64 simulator
+runtime pack from that release is missing from the configured Azure mirrors.
 Because these workload pins are shared, private and official compilation pools
 also use GoldenGate/Xcode 27 rather than attempting to build with Xcode 26.
 Xcode 27 selection fails if the requested version is missing rather than
