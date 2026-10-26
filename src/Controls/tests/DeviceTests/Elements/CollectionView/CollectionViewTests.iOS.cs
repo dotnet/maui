@@ -35,7 +35,6 @@ namespace Microsoft.Maui.DeviceTests
 			return VerifyGroupedCollectionViewEmptyViewTracksGroups<CollectionViewHandler2>();
 		}
 
-		async Task VerifyGroupedCollectionViewEmptyViewTracksGroups<THandler>()
 		async Task VerifyGroupedCollectionViewEmptyViewTracksGroups<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] THandler>()
 			where THandler : class, IElementHandler
 		{
