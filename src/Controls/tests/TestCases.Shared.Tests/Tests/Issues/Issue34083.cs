@@ -14,7 +14,7 @@ public class Issue34083 : _IssuesUITest
 	public override string Issue => "Toolbar Items Do Not Reflect Shell ForegroundColor";
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void VerifyShellForegroundColorIsAppliedToToolbarItems()
 	{
 		App.WaitForElement("Issue34083_DescriptionLabel");

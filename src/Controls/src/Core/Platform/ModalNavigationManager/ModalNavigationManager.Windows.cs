@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		Task<Page> PopModalPlatformAsync(bool animated)
+		Task<Page> PopModalPlatformCoreAsync(bool animated)
 		{
 			var tcs = new TaskCompletionSource<Page>();
 			var poppedPage = CurrentPlatformModalPage;
@@ -67,7 +67,7 @@ namespace Microsoft.Maui.Controls.Platform
 			return tcs.Task;
 		}
 
-		Task PushModalPlatformAsync(Page modal, bool animated)
+		Task PushModalPlatformCoreAsync(Page modal, bool animated)
 		{
 			_ = modal ?? throw new ArgumentNullException(nameof(modal));
 

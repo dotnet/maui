@@ -13,7 +13,7 @@ public class Issue25134 : _IssuesUITest
     public override string Issue => "Shell retains page references when replacing a page";
 
     [Test]
-    [Category(UITestCategories.Shell)]
+    [ShardedTestCategory(UITestCategories.Shell, shard: 2)]
     public void ShellReplaceDisposesPage()
     {
         App.WaitForElement("goToChildPage");

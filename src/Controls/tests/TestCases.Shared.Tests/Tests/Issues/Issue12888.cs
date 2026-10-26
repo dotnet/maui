@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Fix timing on iOS Toolbar";
 
-		[Category(UITestCategories.Shell)]
+		[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 		[Test(Description = "TitleView Set On Shell Works After Navigation")]
 		public void TitleViewSetOnShellWorksAfterNavigation()
 		{

@@ -43,14 +43,17 @@ namespace Microsoft.Maui.Platform
 			alertDialog.UpdateFlowDirectionCore(platformPicker);
 		}
 
-		// TODO: Material3 - make it public in .net 11
-		internal static void UpdateTitle(this MauiMaterialPicker platformPicker, IPicker picker)
+		public static void UpdateTitle(this MauiMaterialPicker platformPicker, IPicker picker)
 		{
 			UpdatePicker(platformPicker, picker);
 		}
 
-		// TODO: Material3 - make it public in .net 11
-		internal static void UpdateSelectedIndex(this MauiMaterialPicker platformPicker, IPicker picker)
+		public static void UpdateTitleColor(this MauiMaterialPicker platformPicker, IPicker picker)
+		{
+			platformPicker.UpdateTitleColorCore(picker);
+		}
+
+		public static void UpdateSelectedIndex(this MauiMaterialPicker platformPicker, IPicker picker)
 		{
 			UpdatePicker(platformPicker, picker);
 		}
@@ -80,8 +83,7 @@ namespace Microsoft.Maui.Platform
 			UpdatePickerTextCore(platformPicker.Picker, picker);
 		}
 
-		// TODO: Material3 - make it public in .net 11
-		internal static void UpdateTitleColorCore(this AppCompatEditText platformPicker, IPicker picker)
+		public static void UpdateTitleColorCore(this AppCompatEditText platformPicker, IPicker picker)
 		{
 			var titleColor = picker.TitleColor;
 
@@ -98,8 +100,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		// TODO: Material3 - make it public in .net 11
-		internal static void UpdatePickerCore(this AppCompatEditText platformPicker, IPicker picker)
+		public static void UpdatePickerCore(this AppCompatEditText platformPicker, IPicker picker)
 		{
 			platformPicker.Hint = picker.Title;
 			UpdatePickerTextCore(platformPicker, picker);
@@ -117,8 +118,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		// TODO: Material3 - make it public in .net 11
-		internal static void UpdateFlowDirectionCore(this AppCompatAlertDialog alertDialog, AppCompatEditText platformPicker)
+		public static void UpdateFlowDirectionCore(this AppCompatAlertDialog alertDialog, AppCompatEditText platformPicker)
 		{
 			var platformLayoutDirection = platformPicker.LayoutDirection;
 

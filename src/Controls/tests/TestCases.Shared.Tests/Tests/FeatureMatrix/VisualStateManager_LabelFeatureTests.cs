@@ -9,6 +9,7 @@ public class VisualStateManager_LabelFeatureTests : _GalleryUITest
 {
 	public const string VisualStateManagerLabelFeatureTests = "VisualStateManager Feature Matrix";
 	public override string GalleryPageName => VisualStateManagerLabelFeatureTests;
+	protected override string GallerySubPageButton => "VSMLabelButton";
 
 	public VisualStateManager_LabelFeatureTests(TestDevice device)
 		: base(device)
@@ -18,8 +19,6 @@ public class VisualStateManager_LabelFeatureTests : _GalleryUITest
 	[Test, Order(1)]
 	public void VerifyVSM_Label_InitialState()
 	{
-		App.WaitForElement("VSMLabelButton");
-		App.Tap("VSMLabelButton");
 		App.WaitForElement("LabelState");
 		var labelText = App.FindElement("LabelState").GetText();
 		Assert.That(labelText, Is.EqualTo("State: Normal"));

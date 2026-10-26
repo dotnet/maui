@@ -13,7 +13,7 @@ namespace Maui.Controls.Sample.Pages
 			UpdateLabel();
 		}
 
-		void OnToggleButtonClicked(object sender, EventArgs e)
+		void OnToggleButtonClicked(object? sender, EventArgs e)
 		{
 			var detectReadingOrder = _editor.On<Microsoft.Maui.Controls.PlatformConfiguration.Windows>().GetDetectReadingOrderFromContent();
 

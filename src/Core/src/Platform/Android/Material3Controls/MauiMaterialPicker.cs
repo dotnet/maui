@@ -8,8 +8,7 @@ using Google.Android.Material.TextField;
 
 namespace Microsoft.Maui.Platform;
 
-// TODO: Material3 - make it public in .net 11
-internal class MauiMaterialPicker : MauiMaterialPickerBase
+public class MauiMaterialPicker : MauiMaterialPickerBase
 {
 	public MauiMaterialPicker(Context context) : base(context)
 	{
@@ -31,7 +30,7 @@ internal class MauiMaterialPicker : MauiMaterialPickerBase
 	}
 }
 
-internal class MauiMaterialPickerTextInputLayout : MauiMaterialTextInputLayout
+public class MauiMaterialPickerTextInputLayout : MauiMaterialTextInputLayout
 {
 	public MauiMaterialPicker Picker { get; }
 
@@ -43,8 +42,7 @@ internal class MauiMaterialPickerTextInputLayout : MauiMaterialTextInputLayout
 	}
 }
 
-// TODO: Material3 - make it public in .net 11
-internal class MauiMaterialPickerBase : TextInputEditText
+public class MauiMaterialPickerBase : TextInputEditText
 {
 	readonly PickerDragGestureFilter _dragGestureFilter = new();
 

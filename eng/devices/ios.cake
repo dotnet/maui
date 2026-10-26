@@ -16,6 +16,7 @@ var testResultsPath = Argument("results", EnvironmentVariable("IOS_TEST_RESULTS"
 var platform = testDevice.ToLower().Contains("simulator") ? "iPhoneSimulator" : "iPhone";
 var runtimeIdentifier = Argument("rid", EnvironmentVariable("IOS_RUNTIME_IDENTIFIER") ?? GetDefaultRuntimeIdentifier(testDevice));
 var deviceCleanupEnabled = Argument("cleanup", true);
+var useCoreClr = Argument("coreclr", false);
 
 // Device details
 var udid = Argument("udid", EnvironmentVariable("IOS_SIMULATOR_UDID") ?? "");
@@ -38,6 +39,7 @@ Information($"Build Runtime Identifier: {runtimeIdentifier}");
 Information($"Build Target Framework: {targetFramework}");
 Information($"Test Device: {testDevice}");
 Information($"Test Results Path: {testResultsPath}");
+Information("Use CoreCLR: {0}", useCoreClr);
 Information("Runtime Variant: {0}", RUNTIME_VARIANT);
 
 var dotnetToolPath = GetDotnetToolPath();
@@ -54,7 +56,7 @@ Teardown(context =>
 });
 
 Task("connectToDevice")
-	.Does(() =>
+	.Does(() => RunUITestSetupWithRetry(() =>
 	{
 		if (!deviceBoot)
 		{
@@ -73,7 +75,7 @@ Task("connectToDevice")
 			GetSimulators(testDevice, dotnetToolPath);
 			ResetSimulators(testDevice, dotnetToolPath);
 		}
-	});
+	}));
 
 Task("Cleanup")
 	.Does(() =>
@@ -85,7 +87,7 @@ Task("buildOnly")
 	.WithCriteria(!string.IsNullOrEmpty(projectPath))
 	.Does(() =>
 	{
-		ExecuteBuild(projectPath, testDevice, binlogDirectory, configuration, runtimeIdentifier, targetFramework, dotnetToolPath);
+		ExecuteBuild(projectPath, testDevice, binlogDirectory, configuration, runtimeIdentifier, targetFramework, dotnetToolPath, useCoreClr);
 	});
 
 Task("testOnly")
@@ -116,10 +118,10 @@ Task("uitest-build")
 
 Task("uitest-prepare")
 	.IsDependentOn("connectToDevice")
-	.Does(() =>
+	.Does(() => RunUITestSetupWithRetry(() =>
 	{
 		ExecutePrepareUITests(projectPath, testAppProjectPath, testDevice, testResultsPath, binlogDirectory, configuration, targetFramework, runtimeIdentifier, iosVersion, dotnetToolPath, headless);
-	});
+	}));
 
 Task("uitest")
 	.IsDependentOn("uitest-prepare")
@@ -130,10 +132,11 @@ Task("uitest")
 
 RunTarget(TARGET);
 
-void ExecuteBuild(string project, string device, string binDir, string config, string rid, string tfm, string toolPath)
+void ExecuteBuild(string project, string device, string binDir, string config, string rid, string tfm, string toolPath, bool useCoreClr)
 {
 	var projectName = System.IO.Path.GetFileNameWithoutExtension(project);
-	var binlog = $"{binDir}/{projectName}-{config}-ios.binlog";
+	var monoRuntime = useCoreClr ? "coreclr" : "mono";
+	var binlog = $"{binDir}/{projectName}-{config}-{monoRuntime}-ios.binlog";
 
 	DotNetBuild(project, new DotNetBuildSettings
 	{
@@ -151,6 +154,11 @@ void ExecuteBuild(string project, string device, string binDir, string config, s
 				.Append($"/p:RuntimeIdentifier={rid}")
 				.Append("/bl:" + binlog)
 				.Append("/tl");
+
+			if (useCoreClr)
+			{
+				args.Append("/p:UseMonoRuntime=false");
+			}
 
 			return args;
 		}
@@ -240,7 +248,7 @@ void ExecuteUITests(string project, string app, string device, string resultsDir
 	var resultsFileName = SanitizeTestResultsFilename($"{name}-{config}-ios-{testFilter}");
 	var appiumLog = $"{binDir}/appium_ios_{resultsFileName}.log";
 
-	DotNetBuild(project, new DotNetBuildSettings
+	RunUITestSetupWithRetry(() => DotNetBuild(project, new DotNetBuildSettings
 	{
 		Configuration = config,
 		ToolPath = toolPath,
@@ -248,7 +256,7 @@ void ExecuteUITests(string project, string app, string device, string resultsDir
 			.Append("/p:ExtraDefineConstants=IOSUITEST")
 			.Append($"/p:_UseNativeAot={USE_NATIVE_AOT}")
 			.Append("/bl:" + binlog)
-	});
+	}));
 
 	var TEST_CONFIGURATION_ARGS = Argument("TEST_CONFIGURATION_ARGS", EnvironmentVariable("TEST_CONFIGURATION_ARGS") ?? "");
 
@@ -257,7 +265,7 @@ void ExecuteUITests(string project, string app, string device, string resultsDir
 	SetEnvironmentVariable("APPIUM_LOG_FILE", appiumLog);
 
 	Information("Run UITests project {0}", project);
-	RunTestWithLocalDotNet(project, config, pathDotnet: toolPath, noBuild: true, resultsFileNameWithoutExtension: resultsFileName);
+	RunUITestsWithRetry(project, config, toolPath, resultsFileName);
 	Information("UI Tests completed.");
 }
 

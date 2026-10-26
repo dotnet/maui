@@ -12,10 +12,15 @@ parameters:
 
 steps:
   - powershell: |
+        # Set up the preview dotnet environment (process-scoped only).
+        # DOTNET_ROOT and MSBuildEnableWorkloadResolver are intentionally NOT
+        # persisted as pipeline variables — doing so poisons subsequent pwsh:
+        # steps whose system PowerShell needs a different .NET runtime
+        # (e.g., PowerShell 7.6 needs .NET 10, not .NET 11 preview).
+        # This matches the pattern used by dotnet/android.
         if ([Environment]::OSVersion.Platform -eq "Unix") {
             $DOTNET_ROOT = "${{ parameters.mauiSourcePath }}/.dotnet"
             $env:DOTNET_ROOT = $DOTNET_ROOT
-            $env:DOTNET_MULTILEVEL_LOOKUP = "0"
             $env:DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR=$DOTNET_ROOT
             $env:MSBuildEnableWorkloadResolver = "true"
             $env:PATH = "${DOTNET_ROOT}:$env:PATH"
@@ -25,7 +30,6 @@ steps:
         } else {
             $DOTNET_ROOT = "${{ parameters.mauiSourcePath }}\.dotnet"
             $env:DOTNET_ROOT = $DOTNET_ROOT
-            $env:DOTNET_MULTILEVEL_LOOKUP = "0"
             $env:DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR=$DOTNET_ROOT
             $env:MSBuildEnableWorkloadResolver = "true"
             $env:PATH = "${DOTNET_ROOT};$env:PATH"
@@ -33,33 +37,35 @@ steps:
             $env:DOTNET_PATH = $dotnetPath
             $env:DOTNET_HOST_PATH = $dotnetPath
         }
-        Write-Host "##vso[task.setvariable variable=DOTNET_ROOT;]$DOTNET_ROOT";
-        Write-Host "##vso[task.setvariable variable=DOTNET_PATH;]$env:DOTNET_PATH";
-        Write-Host "##vso[task.setvariable variable=DOTNET_HOST_PATH;]$env:DOTNET_HOST_PATH";
-        Write-Host "##vso[task.setvariable variable=DOTNET_MULTILEVEL_LOOKUP;]$env:DOTNET_MULTILEVEL_LOOKUP";
-        Write-Host "##vso[task.setvariable variable=MSBuildEnableWorkloadResolver;]$env:MSBuildEnableWorkloadResolver";
+        # Only persist PATH so the 'dotnet' binary resolves in subsequent steps
         Write-Host "##vso[task.setvariable variable=PATH;]$env:PATH";
         write-host "DOTNET_ROOT: $DOTNET_ROOT"
         Write-Host "PATH: $env:PATH"
 
-    displayName: Setup DOTNET_ROOT and PATH
-
-  - powershell: |
-        $dotnetPath = $env:DOTNET_PATH
-        Write-Host "The env variables:"
-        dir env:
         Write-Host "Print dotnet info: "
         & $dotnetPath --info
         Write-Host "Running command: $dotnetPath ${{ parameters.command }} ${{ parameters.project }} ${{ parameters.arguments }}"
         & $dotnetPath ${{ parameters.command }} ${{ parameters.project }} ${{ parameters.arguments }}
-        if ([System.Convert]::ToBoolean("${{ parameters.useExitCodeForErrors }}") -and $LASTEXITCODE -ne 0) {
-            Write-Host "##vso[task.logissue type=error]Test suite had $LASTEXITCODE failure(s)."
-            Write-Host "##vso[task.complete result=Failed;]"
-            exit $LASTEXITCODE
+        $commandExitCode = $LASTEXITCODE
+        if ($commandExitCode -ne 0) {
+            if ([System.Convert]::ToBoolean("${{ parameters.continueOnError }}") -eq $false) {
+                # Hard fail — exit immediately
+                if ([System.Convert]::ToBoolean("${{ parameters.useExitCodeForErrors }}")) {
+                    Write-Host "##vso[task.logissue type=error]Test suite had $commandExitCode failure(s)."
+                } else {
+                    Write-Host "##vso[task.logissue type=error]Command failed with exit code $commandExitCode."
+                }
+                Write-Host "##vso[task.complete result=Failed;]"
+                exit $commandExitCode
+            } elseif ([System.Convert]::ToBoolean("${{ parameters.useExitCodeForErrors }}")) {
+                # Soft fail — log error + mark failed, but DON'T exit
+                # (so downstream PublishTestResults steps still run)
+                Write-Host "##vso[task.logissue type=error]Test suite had $commandExitCode failure(s)."
+                Write-Host "##vso[task.complete result=Failed;]"
+            }
         }
     displayName: ${{ parameters.displayName }}
     condition: ${{ parameters.condition }}
-    continueOnError: ${{ parameters.continueOnError }}
     retryCountOnTaskFailure: ${{ parameters.retryCountOnTaskFailure }}
     env:
         ${{ each envVariable in parameters.envVariables }}:

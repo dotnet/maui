@@ -7,9 +7,6 @@ namespace Microsoft.Maui.Diagnostics;
 
 internal class DiagnosticsManager : IDiagnosticsManager
 {
-	const string DiagnosticsNamespace = "Microsoft.Maui";
-	const string DiagnosticsVersion = "1.0.0";
-
 	readonly IDiagnosticTagger[] _taggers;
 	readonly IDiagnosticMetrics[] _metrics;
 	readonly Dictionary<Type, IDiagnosticMetrics> _initializedMetrics = new();
@@ -19,9 +16,9 @@ internal class DiagnosticsManager : IDiagnosticsManager
 		_taggers = [.. taggers];
 		_metrics = [.. metrics];
 
-		ActivitySource = new ActivitySource(DiagnosticsNamespace, DiagnosticsVersion);
+		ActivitySource = new ActivitySource(DiagnosticsIdentity.Namespace, DiagnosticsIdentity.Version);
 
-		Meter = meterFactory?.Create(DiagnosticsNamespace, DiagnosticsVersion);
+		Meter = meterFactory?.Create(DiagnosticsIdentity.Namespace, DiagnosticsIdentity.Version);
 
 		if (Meter is not null)
 		{

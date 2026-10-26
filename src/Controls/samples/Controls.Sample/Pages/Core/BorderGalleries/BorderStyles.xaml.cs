@@ -14,9 +14,9 @@ namespace Maui.Controls.Sample.Pages
 			ChangeCornerRadius(0);
 		}
 
-		void OnIncreaseCornerRadius(object sender, EventArgs e) => ChangeCornerRadius(10);
+		void OnIncreaseCornerRadius(object? sender, EventArgs e) => ChangeCornerRadius(10);
 
-		void OnDecreaseCornerRadius(object sender, EventArgs e) => ChangeCornerRadius(-10);
+		void OnDecreaseCornerRadius(object? sender, EventArgs e) => ChangeCornerRadius(-10);
 
 		void ChangeCornerRadius(double delta)
 		{

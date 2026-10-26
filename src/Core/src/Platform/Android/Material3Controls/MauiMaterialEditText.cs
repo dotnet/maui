@@ -7,8 +7,7 @@ using Google.Android.Material.TextField;
 
 namespace Microsoft.Maui.Platform;
 
-// TODO: Material3 - make it public in .net 11
-internal class MauiMaterialEditText : TextInputEditText
+public class MauiMaterialEditText : TextInputEditText
 {
 	public event EventHandler? SelectionChanged;
 
@@ -37,11 +36,10 @@ internal class MauiMaterialEditText : TextInputEditText
 
 	protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
 	{
-		// Get the measure spec mode and size
 		var heightMode = MeasureSpec.GetMode(heightMeasureSpec);
 		var heightSize = MeasureSpec.GetSize(heightMeasureSpec);
 
-		if (heightMode == MeasureSpecMode.AtMost && heightSize > 0)
+		if (heightMode == MeasureSpecMode.AtMost && heightSize > 0 && MaxLines == 1)
 		{
 			heightMeasureSpec = MeasureSpec.MakeMeasureSpec(heightSize, MeasureSpecMode.Exactly);
 		}
@@ -50,8 +48,7 @@ internal class MauiMaterialEditText : TextInputEditText
 	}
 }
 
-// TODO: Material3: Make it public in .NET 11
-internal class MauiMaterialTextInputLayout : TextInputLayout
+public class MauiMaterialTextInputLayout : TextInputLayout
 {
 	public MauiMaterialTextInputLayout(Context context) : base(context)
 	{

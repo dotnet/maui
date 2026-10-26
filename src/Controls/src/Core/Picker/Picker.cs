@@ -78,11 +78,13 @@ namespace Microsoft.Maui.Controls
 				propertyChanged: OnIsOpenPropertyChanged);
 
 		readonly Lazy<PlatformConfigurationRegistry<Picker>> _platformConfigurationRegistry;
+		readonly NotifyCollectionChangedEventHandler _itemsSourceCollectionChangedEventHandler;
 
 		/// <summary>Initializes a new instance of the Picker class.</summary>
 		public Picker()
 		{
 			((INotifyCollectionChanged)Items).CollectionChanged += OnItemsCollectionChanged;
+			_itemsSourceCollectionChangedEventHandler = CollectionChanged;
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Picker>>(() => new PlatformConfigurationRegistry<Picker>(this));
 		}
 		/// <summary>Gets a value that indicates whether the font for the searchbar text is bold, italic, or neither. This is a bindable property.</summary>
@@ -356,6 +358,9 @@ namespace Microsoft.Maui.Controls
 
 		readonly Queue<Action> _pendingIsOpenActions = new Queue<Action>();
 		INotifyCollectionChanged _subscribedItemsSourceCollection;
+		readonly WeakNotifyCollectionChangedProxy _itemsSourceCollectionChangedProxy = new();
+
+		~Picker() => _itemsSourceCollectionChangedProxy.Unsubscribe();
 
 		void OnIsOpenPropertyChanged(bool oldValue, bool newValue)
 		{
@@ -417,7 +422,7 @@ namespace Microsoft.Maui.Controls
 
 			UnsubscribeFromItemsSourceCollection();
 			_subscribedItemsSourceCollection = collection;
-			_subscribedItemsSourceCollection.CollectionChanged += CollectionChanged;
+			_itemsSourceCollectionChangedProxy.Subscribe(_subscribedItemsSourceCollection, _itemsSourceCollectionChangedEventHandler);
 		}
 
 		void UnsubscribeFromItemsSourceCollection()
@@ -427,7 +432,7 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
-			_subscribedItemsSourceCollection.CollectionChanged -= CollectionChanged;
+			_itemsSourceCollectionChangedProxy.Unsubscribe();
 			_subscribedItemsSourceCollection = null;
 		}
 

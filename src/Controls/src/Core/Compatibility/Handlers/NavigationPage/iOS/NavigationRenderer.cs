@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Maui.Controls.Diagnostics;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
@@ -59,6 +60,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		WeakReference<VisualElement> _element;
 		WeakReference<Page> _current;
 		bool _uiRequestedPop; // User tapped the back button or swiped to navigate back
+		bool _interactivePopGesturePending;
+		readonly NativeElementRegistrationSet _nativeNavigationRegistrations = new NativeElementRegistrationSet();
 		MauiNavigationDelegate NavigationDelegate => Delegate as MauiNavigationDelegate;
 
 		[Internals.Preserve(Conditional = true)]
@@ -100,8 +103,17 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public void SetElement(VisualElement element)
 		{
+			_nativeNavigationRegistrations.Clear();
 			(this as IElementHandler).SetVirtualView(element);
 			_element = element is null ? null : new(element);
+			if (element is NavigationPage navigationPage)
+			{
+				_nativeNavigationRegistrations.Register(
+					navigationPage,
+					NavigationBar,
+					NativeElementRoles.Toolbar,
+					NativeElementDiscriminators.RealizedView);
+			}
 		}
 
 		public UIViewController ViewController
@@ -109,7 +121,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			get { return this; }
 		}
 
-		//TODO: this was deprecated in iOS8.0 and is not called in 9.0+
+#pragma warning disable CS0809 // Obsolete override provides migration guidance beyond UIKit's platform obsoletion.
+		[Obsolete("NavigationRenderer.DidRotate is obsolete and will be removed in .NET 12. Use ViewWillTransitionToSize for size-transition work and ViewDidLayoutSubviews for final layout updates.")]
 		[System.Runtime.Versioning.UnsupportedOSPlatform("ios8.0")]
 		[System.Runtime.Versioning.UnsupportedOSPlatform("tvos")]
 		public override void DidRotate(UIInterfaceOrientation fromInterfaceOrientation)
@@ -121,6 +134,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var parentingViewController = GetParentingViewController();
 			parentingViewController?.UpdateLeftBarButtonItem();
 		}
+#pragma warning restore CS0809
 
 		public Task<bool> PopToRootAsync(Page page, bool animated = true)
 		{
@@ -173,6 +187,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public override void ViewDidDisappear(bool animated)
 		{
+			_interactivePopGesturePending = false;
 			CompletePendingNavigation(false);
 
 			base.ViewDidDisappear(animated);
@@ -249,11 +264,37 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			Element.PropertyChanged += HandlePropertyChanged;
 
-			InteractivePopGestureRecognizer.Delegate = new GestureDelegate(() => _uiRequestedPop = true);
+			InteractivePopGestureRecognizer.Delegate = new GestureDelegate(ShouldBeginInteractivePop);
 
 			UpdateToolBarVisible();
 			UpdateBackgroundColor();
 			Current = navPage.CurrentPage;
+		}
+
+		bool ShouldBeginInteractivePop()
+		{
+			_interactivePopGesturePending = ShouldPopCurrentPage();
+			return _interactivePopGesturePending;
+		}
+
+		bool ShouldPopCurrentPage()
+		{
+			// Call ContentPage.SendBackButtonPressed() directly (not via NavPage.SendBackButtonPressed())
+			// to avoid triggering NavigationPage.OnBackButtonPressed → SafePop(), which would
+			// pop the MAUI stack while ShouldPopItem returns false (blocking UIKit's pop),
+			// causing a UIKit VC / MAUI navigation stack desync.
+			// Note: This bypasses NavigationPage subclass overrides of OnBackButtonPressed.
+			// Using _ignorePopCall to suppress SafePop was considered, but OnBackButtonPressed
+			// returns true for both "page handled it" and "SafePop handled it", making it
+			// impossible to distinguish cancellation from normal pop in ShouldPopItem.
+			if (NavPage?.CurrentPage?.SendBackButtonPressed() == true)
+			{
+				_uiRequestedPop = false;
+				return false;
+			}
+
+			_uiRequestedPop = true;
+			return true;
 		}
 
 		class GestureDelegate : UIGestureRecognizerDelegate
@@ -283,6 +324,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			if (disposing)
 			{
+				_nativeNavigationRegistrations.Clear();
 				Delegate = null;
 				foreach (var childViewController in ViewControllers)
 					childViewController.Dispose();
@@ -585,7 +627,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				UpdateUseLargeTitles();
 			}
-			else if (e.PropertyName == NavigationPage.BackButtonTitleProperty.PropertyName || e.PropertyName == NavigationPage.TitleProperty.PropertyName)
+			else if (e.PropertyName == NavigationPage.BackButtonTitleProperty.PropertyName || e.PropertyName == NavigationPage.TitleProperty.PropertyName || e.PropertyName == NavigationPage.BackButtonAccessibilityLabelProperty.PropertyName)
 			{
 				var pack = (ParentingViewController)TopViewController;
 				pack?.UpdateTitleArea(pack.Child);
@@ -1046,13 +1088,15 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void SetStatusBarStyle()
 		{
-			if (NavPage is null)
+			var navPage = NavPage;
+
+			if (navPage is null)
 			{
 				return;
 			}
 
-			var barTextColor = NavPage.BarTextColor;
-			var statusBarColorMode = NavPage.OnThisPlatform().GetStatusBarTextColorMode();
+			var barTextColor = navPage.BarTextColor;
+			var statusBarColorMode = navPage.OnThisPlatform().GetStatusBarTextColorMode();
 
 #pragma warning disable CA1416, CA1422 // TODO:   'UIApplication.StatusBarStyle' is unsupported on: 'ios' 9.0 and later
 			if (statusBarColorMode == StatusBarTextColorMode.DoNotAdjust || barTextColor?.GetLuminosity() <= 0.5)
@@ -1132,21 +1176,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		[Internals.Preserve(Conditional = true)]
 		internal bool ShouldPopItem(UINavigationBar _, UINavigationItem __)
 		{
-			// Call ContentPage.SendBackButtonPressed() directly (not via NavPage.SendBackButtonPressed())
-			// to avoid triggering NavigationPage.OnBackButtonPressed → SafePop(), which would
-			// pop the MAUI stack while ShouldPopItem returns false (blocking UIKit's pop),
-			// causing a UIKit VC / MAUI navigation stack desync.
-			// Note: This bypasses NavigationPage subclass overrides of OnBackButtonPressed.
-			// Using _ignorePopCall to suppress SafePop was considered, but OnBackButtonPressed
-			// returns true for both "page handled it" and "SafePop handled it", making it
-			// impossible to distinguish cancellation from normal pop in ShouldPopItem.
-			if (NavPage?.CurrentPage?.SendBackButtonPressed() == true)
+			// UIKit invokes ShouldBegin before ShouldPopItem for an interactive pop.
+			// The application back callback was already evaluated while admitting the gesture.
+			if (_interactivePopGesturePending)
 			{
-				_uiRequestedPop = false;
-				return false;
+				return true;
 			}
-			_uiRequestedPop = true;
-			return true;
+
+			return ShouldPopCurrentPage();
 		}
 
 		[Export("navigationBar:didPopItem:")]
@@ -1364,6 +1401,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				if (_navigation.TryGetTarget(out NavigationRenderer r))
 				{
+					r._interactivePopGesturePending = false;
 					r._navigating = false;
 					if (r.VisibleViewController is ParentingViewController pvc)
 					{
@@ -1398,6 +1436,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			bool _disposed;
 			ToolbarTracker _tracker = new ToolbarTracker();
 			List<ToolbarItem> _trackedToolbarItems = new List<ToolbarItem>();
+			readonly NativeElementRegistrationSet _nativeToolbarRegistrations = new NativeElementRegistrationSet();
 			bool _toolbarUpdatePending = false;
 
 			public ParentingViewController(NavigationRenderer navigation)
@@ -1587,6 +1626,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			internal void Disconnect(bool dispose)
 			{
+				_nativeToolbarRegistrations.Clear();
 				// Unsubscribe from toolbar item property changes
 				CleanToolbarItems();
 
@@ -1677,7 +1717,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				else if (e.PropertyName == NavigationPage.TitleIconImageSourceProperty.PropertyName ||
 					 e.PropertyName == NavigationPage.TitleViewProperty.PropertyName)
 					UpdateTitleArea(Child);
-				else if (e.PropertyName == NavigationPage.BackButtonTitleProperty.PropertyName)
+				else if (e.PropertyName == NavigationPage.BackButtonTitleProperty.PropertyName || e.PropertyName == NavigationPage.BackButtonAccessibilityLabelProperty.PropertyName)
 					UpdateBackButtonTitle(Child);
 				else if (e.PropertyName == NavigationPage.IconColorProperty.PropertyName)
 					UpdateIconColor();
@@ -1737,15 +1777,16 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				var rect = RectangleF.Empty;
 				var size = rect.Size;
 
-				UIGraphics.BeginImageContext(size);
-				var context = UIGraphics.GetCurrentContext();
-				context?.SetFillColor(1, 1, 1, 0);
-				context?.FillRect(rect);
-
-				var empty = UIGraphics.GetImageFromCurrentImageContext();
-				context?.Dispose();
-
-				return empty;
+				// UIGraphicsImageRenderer (iOS 10+) replaces the deprecated
+				// UIGraphics.BeginImageContext/GetImageFromCurrentImageContext APIs,
+				// which are unsupported on iOS 17.0+.
+				using var renderer = new UIGraphicsImageRenderer(size);
+				return renderer.CreateImage((UIGraphicsImageRendererContext rendererContext) =>
+				{
+					var context = rendererContext.CGContext;
+					context.SetFillColor(1, 1, 1, 0);
+					context.FillRect(rect);
+				});
 			}
 
 			/// <summary>
@@ -1828,23 +1869,35 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			public bool NeedsTitleViewContainer(Page page) => NavigationPage.GetTitleIconImageSource(page) != null || NavigationPage.GetTitleView(page) != null;
 
-			internal void UpdateBackButtonTitle(Page page) => UpdateBackButtonTitle(page.Title, NavigationPage.GetBackButtonTitle(page));
+			internal void UpdateBackButtonTitle(Page page) => UpdateBackButtonTitle(page.Title, NavigationPage.GetBackButtonTitle(page), NavigationPage.GetBackButtonAccessibilityLabel(page));
 
-			internal void UpdateBackButtonTitle(string title, string backButtonTitle)
+			internal void UpdateBackButtonTitle(string title, string backButtonTitle, string backButtonAccessibilityLabel = null)
 			{
 				if (!string.IsNullOrWhiteSpace(title))
+				{
 					NavigationItem.Title = title;
+				}
 
-				if (backButtonTitle != null)
+				if (backButtonTitle is not null || !string.IsNullOrEmpty(backButtonAccessibilityLabel))
+				{
 					// adding a custom event handler to UIBarButtonItem for navigating back seems to be ignored.
-					NavigationItem.BackBarButtonItem = new UIBarButtonItem { Title = backButtonTitle, Style = UIBarButtonItemStyle.Plain };
+					var barButtonItem = new UIBarButtonItem { Style = UIBarButtonItemStyle.Plain };
+					barButtonItem.Title = backButtonTitle ?? title;
+					if (!string.IsNullOrEmpty(backButtonAccessibilityLabel))
+					{
+						barButtonItem.AccessibilityLabel = backButtonAccessibilityLabel;
+					}
+					NavigationItem.BackBarButtonItem = barButtonItem;
+				}
 				else
+				{
 					NavigationItem.BackBarButtonItem = null;
+				}
 			}
 
 			internal void UpdateTitleArea(Page page)
 			{
-				if (page == null)
+				if (_disposed || page == null)
 					return;
 
 				ImageSource titleIcon = NavigationPage.GetTitleIconImageSource(page);
@@ -1859,11 +1912,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (!(OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsMacCatalystVersionAtLeast(11)) && !isBackButtonTextSet)
 					backButtonText = "";
 
+				string backButtonAccessibilityLabel = NavigationPage.GetBackButtonAccessibilityLabel(page);
+
 				_navigation.TryGetTarget(out NavigationRenderer n);
 
 				// First page and we have a flyout detail to contend with
 				UpdateLeftBarButtonItem();
-				UpdateBackButtonTitle(page.Title ?? n?.NavPage.Title, backButtonText);
+				UpdateBackButtonTitle(page.Title ?? n?.NavPage.Title, backButtonText, backButtonAccessibilityLabel);
 
 				//var hadTitleView = NavigationItem.TitleView != null;
 				ClearTitleViewContainer();
@@ -1873,6 +1928,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 						return;
 
 					Container titleViewContainer = CreateTitleViewContainer(titleView, n.NavigationBar);
+					titleViewContainer.Owner = new WeakReference<UIViewController>(this);
 
 					UpdateTitleImage(titleViewContainer, titleIcon);
 					NavigationItem.TitleView = titleViewContainer;
@@ -1969,26 +2025,58 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				UpdateToolbarItems();
 			}
 
+			void UpdateSecondaryMenuOnly()
+			{
+				var menuButton = NavigationItem.RightBarButtonItems?.FirstOrDefault(
+					item => item.AccessibilityIdentifier == "SecondaryToolbarMenuButton");
+
+				if (menuButton is null)
+					return;
+
+				List<UIMenuElement> secondaries = null;
+
+				foreach (var item in _tracker.ToolbarItems)
+				{
+					if (item.Order == ToolbarItemOrder.Secondary)
+						(secondaries ??= []).Add(CreateSecondaryPlatformAction(item));
+				}
+
+				if (secondaries is not null)
+					menuButton.Menu = UIMenu.Create(string.Empty, null, UIMenuIdentifier.Edit, UIMenuOptions.DisplayInline, secondaries.ToArray());
+			}
+
 			void OnToolbarItemPropertyChanged(object sender, PropertyChangedEventArgs e)
 			{
-				// Only rebuild toolbar items if a relevant property changed
-				if (e.PropertyName == MenuItem.IsEnabledProperty.PropertyName ||
+				var item = sender as ToolbarItem;
+				var isRelevantProperty =
+					e.PropertyName == MenuItem.IsEnabledProperty.PropertyName ||
 					e.PropertyName == MenuItem.TextProperty.PropertyName ||
-					e.PropertyName == MenuItem.IconImageSourceProperty.PropertyName)
+					e.PropertyName == MenuItem.IconImageSourceProperty.PropertyName;
+
+				if (item is null || !isRelevantProperty)
+					return;
+
+				if (item.Order != ToolbarItemOrder.Secondary &&
+					e.PropertyName == MenuItem.IsEnabledProperty.PropertyName)
 				{
-					// Throttle updates to prevent excessive rebuilding when multiple properties change rapidly
-					if (!_toolbarUpdatePending)
+					return;
+				}
+
+				// Throttle updates to prevent excessive rebuilding when multiple properties change rapidly
+				if (!_toolbarUpdatePending)
+				{
+					_toolbarUpdatePending = true;
+					BeginInvokeOnMainThread(() =>
 					{
-						_toolbarUpdatePending = true;
-						BeginInvokeOnMainThread(() =>
+						_toolbarUpdatePending = false;
+						if (!_disposed)
 						{
-							_toolbarUpdatePending = false;
-							if (!_disposed)
-							{
+							if (item.Order == ToolbarItemOrder.Secondary)
+								UpdateSecondaryMenuOnly();
+							else
 								UpdateToolbarItems();
-							}
-						});
-					}
+						}
+					});
 				}
 			}
 
@@ -2040,6 +2128,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "ToolbarItem PropertyChanged subscriptions are removed by CleanToolbarItems before replacement and in Disconnect.")]
 			void UpdateToolbarItems()
 			{
+				_nativeToolbarRegistrations.Clear();
 				// Unsubscribe from previous toolbar item property changes
 				CleanToolbarItems();
 
@@ -2071,11 +2160,23 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 					if (item.Order == ToolbarItemOrder.Secondary)
 					{
-						(secondaries ??= []).Add(item.ToSecondarySubToolbarItem().PlatformAction);
+						var secondaryItem = item.ToSecondarySubToolbarItem().PlatformAction;
+						(secondaries ??= []).Add(secondaryItem);
+						_nativeToolbarRegistrations.Register(
+							item,
+							secondaryItem,
+							NativeElementRoles.ToolbarOverflow,
+							NativeElementDiscriminators.LogicalModel);
 					}
 					else
 					{
-						(primaries ??= []).Add(item.ToUIBarButtonItem());
+						var primaryItem = item.ToUIBarButtonItem();
+						(primaries ??= []).Add(primaryItem);
+						_nativeToolbarRegistrations.Register(
+							item,
+							primaryItem,
+							NativeElementRoles.ToolbarItem,
+							NativeElementDiscriminators.LogicalModel);
 					}
 				}
 
@@ -2084,7 +2185,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					primaries.Reverse();
 				}
 
-				if (secondaries is not null && secondaries.Count > 0)
+				// UIBarButtonItem(UIImage, UIMenu) is only available on iOS/MacCatalyst 14.0+.
+				if (secondaries is not null && secondaries.Count > 0 &&
+					(OperatingSystem.IsIOSVersionAtLeast(14) || OperatingSystem.IsMacCatalystVersionAtLeast(14)))
 				{
 					UIImage secondaryIcon = null;
 					if (_navigation.TryGetTarget(out NavigationRenderer navRenderer))
@@ -2108,6 +2211,19 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					primaries ??= [];
 
 					primaries.Insert(0, menuButton);
+					if (Child is Page child)
+					{
+						_nativeToolbarRegistrations.Register(
+							child,
+							menu,
+							NativeElementRoles.ToolbarOverflow,
+							NativeElementDiscriminators.LogicalModel);
+						_nativeToolbarRegistrations.Register(
+							child,
+							menuButton,
+							NativeElementRoles.ToolbarOverflow,
+							NativeElementDiscriminators.LogicalModel);
+					}
 				}
 
 				NavigationItem.SetRightBarButtonItems(primaries is null ? [] : primaries.ToArray(), false);
@@ -2197,6 +2313,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			return (Current.Handler as IPlatformViewHandler)?.ViewController;
 		}
+
+#if !MACCATALYST
+		public override UIViewController ChildViewControllerForStatusBarStyle() =>
+			(Current.Handler as IPlatformViewHandler)?.ViewController;
+#endif
 
 		public override UIViewController ChildViewControllerForHomeIndicatorAutoHidden =>
 			ChildViewControllerForStatusBarHidden();
@@ -2338,6 +2459,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			UIImageView _icon;
 			bool _disposed;
 			nfloat? _navigationBarHeight;
+			internal WeakReference<UIViewController> Owner { get; set; }
 
 			//https://developer.apple.com/documentation/uikit/uiview/2865930-directionallayoutmargins
 			const int SystemMargin = 16;
@@ -2537,6 +2659,21 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			public override void LayoutSubviews()
 			{
 				base.LayoutSubviews();
+				if (_disposed)
+					return;
+
+				if (OperatingSystem.IsIOSVersionAtLeast(27, 1) && !OperatingSystem.IsMacCatalyst() &&
+					_bar?.Bounds.Height > 0 &&
+					_navigationBarHeight != _bar.Bounds.Height &&
+					Owner?.TryGetTarget(out var owner) == true &&
+					owner is ParentingViewController controller &&
+					controller.NavigationItem.TitleView == this)
+				{
+					// Compare the sizing height, not Frame.Height, which can exclude title margins.
+					controller.UpdateTitleArea(controller.Child);
+					return;
+				}
+
 				if (Frame == CGRect.Empty || Frame.Width >= 10000 || Frame.Height >= 10000)
 					return;
 
@@ -2573,6 +2710,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 
 				_disposed = true;
+				Owner = null;
 
 				if (disposing)
 				{

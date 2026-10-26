@@ -25,6 +25,7 @@
                              Shadow="{Binding Shadow}"
                              FlowDirection="{Binding FlowDirection}"
                              RawMessageReceived="OnRawMessageReceived"
+                             WebViewInitialized="OnWebViewInitialized"
                              AutomationId="HybridWebViewControl"/>
 
               <!-- Row 1: Title and Status Labels -->
@@ -220,3 +221,4 @@
               </VerticalStackLayout>
        </Grid>
 </ContentPage>
+       

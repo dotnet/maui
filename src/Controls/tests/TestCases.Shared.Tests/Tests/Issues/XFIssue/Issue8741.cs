@@ -13,7 +13,7 @@ public class Issue8741 : _IssuesUITest
 	public override string Issue => "[Bug] [Shell] [Android] ToolbarItem Enabled/Disabled behavior does not work for Shell apps";
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void Issue8741Test()
 	{
 		App.WaitForElement("Add");
