@@ -251,6 +251,8 @@
     <Win2DWarnNoPlatform>false</Win2DWarnNoPlatform>
     <!-- Xcode 27.0 and 27.1 are interchangeable as far as we're concerned, so ask the iOS/Mac Catalyst workloads to not validate the Xcode version (we have Xcode 27.0 on the bots, while the latest workloads require Xcode 27.1) -->
     <ValidateXcodeVersion Condition="'$(ValidateXcodeVersion)' == ''">false</ValidateXcodeVersion>
+    <!-- Templates and scene-specific test hosts already include UIApplicationSceneManifest (validated by AppleTemplateManifestTests); skip MT7199 build-time validation for the remaining in-repo legacy sample/test hosts -->
+    <ValidateSceneManifest Condition="'$(ValidateSceneManifest)' == ''">false</ValidateSceneManifest>
   </PropertyGroup>
 
   <Import Condition="'$(SampleProject)' != 'True' and '$(CI)' == 'true'" Project="$(MSBuildThisFileDirectory)eng\SourceLink.Build.props" />
