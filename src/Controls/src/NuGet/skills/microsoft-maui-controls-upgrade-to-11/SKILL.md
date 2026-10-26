@@ -41,6 +41,13 @@ platform versions when compatible with the selected SDK; a recognized suffixed
 TFM is not inherently an error. Verify the evaluated project and fresh restore
 graph rather than inferring the selected API from the project text alone.
 
+Review inherited and configuration-specific Mono runtime settings before moving
+mobile targets to CoreCLR. Read the
+[mobile runtime property reference](references/mobile-runtime-properties.md)
+for the Android/Apple property inventory, .NET 10-only conditioning, and the
+`AndroidEnableMarshalMethods`/ReadyToRun incompatibility. These newer breaking
+changes are not covered by the historical RC1 evaluation.
+
 ## Review native customization, not just compilation
 
 Find handler registrations, renderer subclasses, mapper changes, event

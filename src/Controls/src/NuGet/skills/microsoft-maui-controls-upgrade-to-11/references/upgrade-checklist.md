@@ -12,6 +12,9 @@
 - Identify explicit `SupportedOSPlatformVersion` values and manifest/deployment
   minimums. Check the selected platform SDK's requirements; do not blindly carry
   an older minimum forward or lower one to silence a build error.
+- Audit Mono-specific properties/items and the marshal-methods/ReadyToRun
+  combination using the [mobile runtime property reference](mobile-runtime-properties.md).
+  Preserve required .NET 10 settings only on their existing older targets.
 
 For example, inspect:
 
@@ -77,6 +80,7 @@ baseline was runnable.
 - [Supported platforms](https://learn.microsoft.com/dotnet/maui/supported-platforms)
 - [Shell navigation](https://learn.microsoft.com/dotnet/maui/fundamentals/shell/navigation)
 - [Handler customization](https://learn.microsoft.com/dotnet/maui/user-interface/handlers/customize)
+- [Mobile runtime property breaking-change tracking: dotnet/docs#56477](https://github.com/dotnet/docs/issues/56477)
 
 Check the documentation view/release and the exact package together. These links
 can change as previews become final releases.
