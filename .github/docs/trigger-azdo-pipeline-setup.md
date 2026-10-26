@@ -19,6 +19,30 @@ GitHub Actions ──► GitHub OIDC Provider ──► Azure AD (federated cred
 > (e.g. in the `dotnet` org). The workflow uses **manual OIDC token exchange via
 > `curl`** instead, which works everywhere that `id-token: write` is allowed.
 
+## CI comment cleanup
+
+`azure-pipelines-comment-cleanup.yml` collapses standalone `/azp run` commands
+(including named-pipeline variants such as `/azp run maui-pr, maui-pr-uitests`)
+and successful-start acknowledgments from `azure-pipelines[bot]` as **resolved**
+on pull requests, including acknowledgments with the standard "There may be
+pipelines that require an authorized user to comment /azp run to run" hint.
+It also collapses workflow-failure notices from `github-actions[bot]`: marked
+review failures, agent-job failures, failed workflow status messages, and
+security-scanning failure notices. Comments remain expandable; nothing is
+deleted. Substantive review reports (including Tests Failure Analysis), actual
+Azure Pipelines failures, standalone authorization warnings, and ordinary
+discussion remain visible.
+
+This is independent of pipeline dispatch and does not change which pipelines run
+or who can request them. It uses the repository's `GITHUB_TOKEN`, does not check
+out or execute PR code, and needs no additional secret. Created or edited comment
+events clean up the triggering PR. An hourly sweep reconciles all open PRs,
+including historical comments, because comments posted with `GITHUB_TOKEN` do not
+trigger another `issue_comment` workflow. A manual dispatch can target a single
+`pr_number` (including a closed PR), or scan all open PRs when omitted. Already
+minimized comments are left unchanged. Automatic cleanup activates after merge
+into the default branch.
+
 ## Prerequisites
 
 - Azure CLI installed locally (for one-time setup)
@@ -206,6 +230,19 @@ Automated CI-fix PR validation is implemented separately by
   revalidation, dedupe reads, queue POSTs, retries, and reconciliation. The
   ten-minute job timeout therefore preserves a real three-minute reserve for
   summaries and an explicit failed outcome instead of a hard cancellation;
+- uses exact-file, non-cone sparse checkout of the standalone dispatcher script
+  at the trusted `github.sha`, keeping the pinned checkout action, shallow fetch,
+  and disabled credential persistence. This avoids materializing unrelated
+  repository files; it does not guarantee checkout finishes within the deadline
+  or establish production checkout performance;
+- keeps the validated caller budget separate from the effective remaining
+  budget. If preparation consumes the deadline, startup fails explicitly with
+  `[dispatcher-budget-exhausted]`, records the preparation/deadline stage in the
+  job summary, and states that no queue POST was attempted before any PR
+  discovery, authentication, HTTP request, or retry sleep. An expired deadline
+  is a failure even when no eligible work exists; it is never restarted after
+  checkout. Checkout or startup exceeding the hard job timeout can still cancel
+  the job before the script can report this diagnostic;
 - caps every HTTP timeout and retry sleep to the remaining shared budget. If it
   expires, no new requests start, completed results remain visible, all
   unprocessed PR/pipeline work is marked failed, and an ambiguous one-time POST
@@ -238,7 +275,7 @@ fires after its create/push run.
 4. Azure AD validates the JWT against the federated credential and returns
    a bearer token scoped to AzDO (resource: 499b84ac-1321-427f-aa17-267ca6975798)
 5. Step 3 calls the appropriate Azure DevOps queue endpoint with the bearer
-   token: the Pipelines Runs API for `/review`, or the Build Queue API for
+   token: the Pipelines Runs API for `/review` and `/review gate`, or the Build Queue API for
    CI-fix PR validation
 6. AzDO validates the token, checks the identity's permissions, and queues the build
 ```

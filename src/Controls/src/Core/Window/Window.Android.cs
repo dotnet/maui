@@ -19,6 +19,33 @@ namespace Microsoft.Maui.Controls
 		internal Activity PlatformActivity =>
 			(Handler?.PlatformView as Activity) ?? throw new InvalidOperationException("Window should have an Activity set.");
 
+		partial void HandleLoadedPageDisconnect(Page page, ref bool disconnectHandled)
+		{
+			// Android WindowHandler wraps an Activity, not a View with an unload event.
+			if (Handler is IPlatformViewHandler { PlatformView: not null })
+			{
+				return;
+			}
+
+			if (page.Handler is IPlatformViewHandler { PlatformView: not null })
+			{
+				var outgoingHandler = page.Handler;
+				page.OnUnloaded(() =>
+				{
+					if (ReferenceEquals(page.Handler, outgoingHandler) &&
+						((IVisualTreeElement)page).GetVisualParent() is null &&
+						!page.IsLoaded)
+						page.DisconnectHandlers();
+				});
+			}
+			else
+			{
+				page.DisconnectHandlers();
+			}
+
+			disconnectHandled = true;
+		}
+
 		[Obsolete]
 		public static void MapContent(WindowHandler handler, IWindow view)
 		{

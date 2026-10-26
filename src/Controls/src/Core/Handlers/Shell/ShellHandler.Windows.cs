@@ -68,6 +68,8 @@ namespace Microsoft.Maui.Controls.Handlers
 			platformView.PaneOpening -= OnPaneOpening;
 			platformView.PaneClosing -= OnPaneClosing;
 			platformView.ItemInvoked -= OnMenuItemInvoked;
+
+			platformView.Disconnect();
 		}
 
 		void OnMenuItemInvoked(Microsoft.UI.Xaml.Controls.NavigationView sender, Microsoft.UI.Xaml.Controls.NavigationViewItemInvokedEventArgs args)
@@ -140,14 +142,13 @@ namespace Microsoft.Maui.Controls.Handlers
 					view.FlyoutBackgroundColor?.AsPaint());
 		}
 
-		//TODO: Make it public in .NET 10.
-		internal static void MapFlyoutBackgroundImage(ShellHandler handler, Shell view)
+		public static void MapFlyoutBackgroundImage(ShellHandler handler, Shell view)
 		{
+			if (handler.PlatformView is null)
+				return;
+
 			var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
-			if (handler?.PlatformView is not null && provider is not null)
-			{
-				handler.PlatformView.UpdateBackgroundImageSourceAsync(view.FlyoutBackgroundImage, provider, view.FlyoutBackgroundImageAspect).FireAndForget();
-			}
+			handler.PlatformView.UpdateBackgroundImageSourceAsync(view.FlyoutBackgroundImage, provider, view.FlyoutBackgroundImageAspect).FireAndForget(handler);
 		}
 
 		public static void MapFlyoutIcon(ShellHandler handler, Shell view)

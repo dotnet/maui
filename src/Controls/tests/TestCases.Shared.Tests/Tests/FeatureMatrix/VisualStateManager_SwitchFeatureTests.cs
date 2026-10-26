@@ -9,6 +9,7 @@ public class VisualStateManager_SwitchFeatureTests : _GalleryUITest
 {
 	public const string VisualStateManagerSwitchFeatureTests = "VisualStateManager Feature Matrix";
 	public override string GalleryPageName => VisualStateManagerSwitchFeatureTests;
+	protected override string GallerySubPageButton => "VSMSwitchButton";
 
 	public VisualStateManager_SwitchFeatureTests(TestDevice device)
 		: base(device)
@@ -18,8 +19,6 @@ public class VisualStateManager_SwitchFeatureTests : _GalleryUITest
 	[Test, Order(1)]
 	public void VerifyVSM_Switch_InitialState()
 	{
-		App.WaitForElement("VSMSwitchButton");
-		App.Tap("VSMSwitchButton");
 		App.WaitForElement("VSMSwitch");
 		var stateText = App.FindElement("SwitchState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Off"));

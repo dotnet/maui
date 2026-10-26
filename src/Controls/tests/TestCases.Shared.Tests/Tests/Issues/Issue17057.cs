@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Shell FlowDirection not updating properly";
 
 		[Test]
-		[Category(UITestCategories.Shell)]
+		[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 		public void ShellFlowDirectionUpdate()
 		{
 			App.WaitForElement("label");

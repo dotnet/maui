@@ -5,7 +5,7 @@
 		<TargetFrameworks Condition="'$(IncludePreviousTfms)' == 'true'">$(TargetFrameworks);$(_MauiPreviousDotNetTfm);$(MauiPreviousPlatforms)</TargetFrameworks>
 		<AssemblyName>Microsoft.Maui.Controls.Xaml</AssemblyName>
 		<RootNamespace>Microsoft.Maui.Controls.Xaml</RootNamespace>
-		<IsTrimmable>false</IsTrimmable>
+		<IsTrimmable Condition="!$(TargetFramework.StartsWith('netstandard'))">true</IsTrimmable>
 		<_MauiDesignDllBuild Condition=" '$(OS)' != 'Unix' ">True</_MauiDesignDllBuild>
 		<NoWarn>$(NoWarn);CA2200;RS0041</NoWarn>
 		<WarningsAsErrors>$(WarningsAsErrors);CS1591</WarningsAsErrors>

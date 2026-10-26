@@ -12,7 +12,7 @@ public class Issue35401 : _IssuesUITest
 	public override string Issue => "Modal page keyboard dismissal causes parent Shell page layout to offset on iOS";
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void ParentPageShouldNotOffsetAfterModalKeyboardDismissal()
 	{
 		// Navigate from Level1 to Level2

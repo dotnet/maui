@@ -80,10 +80,10 @@ namespace Microsoft.Maui.Devices
 		/// Provides the default implementation for static usage of this API.
 		/// </summary>
 		public static IVibration Default =>
-			defaultImplementation ??= new VibrationImplementation();
+			EssentialsImplementation.GetOrCreate(ref defaultImplementation, static () => new VibrationImplementation());
 
 		internal static void SetDefault(IVibration? implementation) =>
-			defaultImplementation = implementation;
+			EssentialsImplementation.Set(ref defaultImplementation, implementation);
 	}
 
 	/// <summary>

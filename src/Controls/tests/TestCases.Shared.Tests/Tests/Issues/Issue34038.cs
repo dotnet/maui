@@ -19,7 +19,7 @@ public class Issue34038 : _IssuesUITest
 	public override string Issue => "[macOS] IsEnabled property false not working on MenuBarItem";
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void DisabledMenuBarItemCannotBeOpenedOrExecuted()
 	{
 		// Navigate to test page

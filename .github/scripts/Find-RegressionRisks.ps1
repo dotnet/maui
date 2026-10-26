@@ -42,6 +42,15 @@
     When set, append entries to inline-findings.json at the file:line where reverted code
     was deleted. Off by default until accuracy is validated.
 
+.PARAMETER DiffFile
+    Optional frozen current-PR diff. Historical fix diffs are still fetched from GitHub.
+
+.PARAMETER ChangedPathsFile
+    Optional frozen JSON array of current-PR file paths, used instead of live auto-detection.
+
+.PARAMETER StrictEvidence
+    Fail on unavailable comparison evidence instead of treating it as no match.
+
 .EXAMPLE
     pwsh .github/scripts/Find-RegressionRisks.ps1 -PRNumber 33908
 
@@ -74,10 +83,19 @@ param(
     [string]$OutputDir,
 
     [Parameter(Mandatory = $false)]
-    [switch]$WriteInlineFindings
+    [switch]$WriteInlineFindings,
+
+    [Parameter(Mandatory = $false)]
+    [string]$DiffFile,
+
+    [Parameter(Mandatory = $false)]
+    [string]$ChangedPathsFile,
+
+    [Parameter(Mandatory = $false)]
+    [switch]$StrictEvidence
 )
 
-$ErrorActionPreference = 'Continue'
+$ErrorActionPreference = if ($StrictEvidence) { 'Stop' } else { 'Continue' }
 
 # ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -118,6 +136,9 @@ function Get-PRDiffText {
         [string]$Repo
     )
     $raw = gh pr diff $Number --repo $Repo 2>$null
+    if ($StrictEvidence -and ($LASTEXITCODE -ne 0 -or -not $raw)) {
+        throw "Could not collect the comparison diff for PR #$Number."
+    }
     if (-not $raw) { return $null }
     if ($raw -is [array]) { $raw = $raw -join "`n" }
     return $raw
@@ -253,12 +274,16 @@ function Get-PRMetadataIfBugFix {
 
     # Single gh call for labels + title + body + merge commit (was 3 separate calls before).
     $json = gh pr view $Number --repo $Repo --json labels,title,body,mergeCommit 2>$null
+    if ($StrictEvidence -and ($LASTEXITCODE -ne 0 -or -not $json)) {
+        throw "Could not collect metadata for historical PR #$Number."
+    }
     if (-not $json) { return $null }
     if ($json -is [array]) { $json = $json -join "`n" }
 
     try {
         $data = $json | ConvertFrom-Json
     } catch {
+        if ($StrictEvidence) { throw }
         return $null
     }
 
@@ -281,6 +306,9 @@ function Get-PRMetadataIfBugFix {
     if ($matched.Count -eq 0 -and $linkedIssues.Count -gt 0) {
         foreach ($issueNum in $linkedIssues) {
             $issueLabelsRaw = gh issue view $issueNum --repo $Repo --json labels --jq '.labels[].name' 2>$null
+            if ($StrictEvidence -and $LASTEXITCODE -ne 0) {
+                throw "Could not collect labels for linked issue #$issueNum."
+            }
             if (-not $issueLabelsRaw) { continue }
             foreach ($il in ($issueLabelsRaw -split "`n")) {
                 if (Test-IsBugFixLabel $il) {
@@ -329,11 +357,20 @@ Write-Banner "Regression Cross-Reference — PR #$PRNumber"
 
 # Resolve files
 if (-not $FilePaths -or $FilePaths.Count -eq 0) {
-    Write-Host "📂 Auto-detecting implementation files from PR #$PRNumber…" -ForegroundColor Yellow
-    $prFiles = gh pr diff $PRNumber --repo $Repo --name-only 2>$null
-    if (-not $prFiles) {
-        Write-Host "❌ Could not get PR diff. Make sure gh is authenticated." -ForegroundColor Red
-        exit 2
+    if ($ChangedPathsFile) {
+        Write-Host "📂 Reading frozen implementation-file candidates…" -ForegroundColor Yellow
+        $prFiles = Get-Content -Raw -LiteralPath $ChangedPathsFile | ConvertFrom-Json -NoEnumerate
+        if ($prFiles -isnot [array] -or
+            @($prFiles | Where-Object { $_ -isnot [string] -or [string]::IsNullOrWhiteSpace($_) }).Count) {
+            throw 'Frozen changed paths must be a JSON array of nonempty strings.'
+        }
+    } else {
+        Write-Host "📂 Auto-detecting implementation files from PR #$PRNumber…" -ForegroundColor Yellow
+        $prFiles = gh pr diff $PRNumber --repo $Repo --name-only 2>$null
+        if (-not $prFiles -or ($StrictEvidence -and $LASTEXITCODE -ne 0)) {
+            Write-Host "❌ Could not get PR diff. Make sure gh is authenticated." -ForegroundColor Red
+            exit 2
+        }
     }
     $FilePaths = @($prFiles | Where-Object { Test-IsImplementationFile $_ })
     Write-Host "  Found $($FilePaths.Count) implementation file(s)" -ForegroundColor Gray
@@ -355,7 +392,11 @@ if ($FilePaths.Count -eq 0) {
 # Step 1: PR diff (lines removed)
 Write-Host ""
 Write-Host "📝 Reading current PR diff…" -ForegroundColor Yellow
-$prDiff = Get-PRDiffText -Number $PRNumber -Repo $Repo
+$prDiff = if ($DiffFile) {
+    Get-Content -Raw -LiteralPath $DiffFile
+} else {
+    Get-PRDiffText -Number $PRNumber -Repo $Repo
+}
 if (-not $prDiff) {
     Write-Host "❌ Empty PR diff." -ForegroundColor Red
     exit 2
@@ -391,13 +432,18 @@ foreach ($candidate in @($BaseBranch, "origin/$BaseBranch", "upstream/$BaseBranc
     }
 }
 if (-not $gitLogRef) {
+    if ($StrictEvidence) { throw "The pinned regression-history base is unavailable." }
     Write-Host "  ⚠️  Base ref '$BaseBranch' not found locally — falling back to --all (may include unrelated history)." -ForegroundColor Yellow
 }
 
 # Resolve the PR's base branch so we can verify that fix PRs were actually merged
 # into it. A fix merged to inflight/current won't be reachable from main.
 $prBaseRef = $null
-$prBaseJson = gh pr view $PRNumber --repo $Repo --json baseRefName --jq '.baseRefName' 2>$null
+$prBaseJson = if ($StrictEvidence -and $BaseBranch -match '^[0-9a-fA-F]{40}$') {
+    $BaseBranch
+} else {
+    gh pr view $PRNumber --repo $Repo --json baseRefName --jq '.baseRefName' 2>$null
+}
 if ($prBaseJson) {
     foreach ($candidate in @($prBaseJson, "origin/$prBaseJson", "upstream/$prBaseJson")) {
         git rev-parse --verify --quiet $candidate 2>$null | Out-Null
@@ -410,6 +456,7 @@ if ($prBaseJson) {
 if ($prBaseRef) {
     Write-Host "  📌 PR targets '$prBaseJson' — verifying fix PRs are reachable from $prBaseRef" -ForegroundColor Gray
 } else {
+    if ($StrictEvidence) { throw "Could not resolve the regression comparison's base ancestry." }
     Write-Host "  ⚠️ Could not resolve PR base branch — skipping ancestry verification" -ForegroundColor Yellow
 }
 
@@ -431,6 +478,9 @@ foreach ($filePath in $FilePaths) {
         $commitLog = git log --oneline --follow --since="$sinceDate" $gitLogRef -- $filePath 2>$null
     } else {
         $commitLog = git log --oneline --follow --since="$sinceDate" --all -- $filePath 2>$null
+    }
+    if ($StrictEvidence -and $LASTEXITCODE -ne 0) {
+        throw "Could not read the pinned file history."
     }
     if (-not $commitLog) {
         Write-Host "  ● No recent commits." -ForegroundColor Green
@@ -482,7 +532,21 @@ foreach ($filePath in $FilePaths) {
         # to inflight/current (or another branch) won't be in a PR targeting main.
         if ($prBaseRef -and $meta.MergeCommit) {
             git merge-base --is-ancestor $meta.MergeCommit $prBaseRef 2>$null
-            if ($LASTEXITCODE -ne 0) {
+            $ancestryExitCode = $LASTEXITCODE
+            if ($StrictEvidence -and $LASTEXITCODE -gt 1) {
+                if ($meta.MergeCommit -notmatch '^[0-9a-f]{40}$' -or
+                    $prBaseRef -notmatch '^[0-9a-f]{40}$') {
+                    throw "Could not verify ancestry of historical PR #$recentPR."
+                }
+                # Other-branch merge objects may be absent from the trusted checkout.
+                $comparison = gh api "repos/$Repo/compare/$($meta.MergeCommit)...$prBaseRef" --jq '.status'
+                if ($LASTEXITCODE -ne 0 -or $comparison -notin @('ahead', 'identical', 'behind', 'diverged')) {
+                    throw "Could not verify remote ancestry of historical PR #$recentPR."
+                }
+                $ancestryExitCode = if ($comparison -in @('ahead', 'identical')) { 0 } else { 1 }
+                Write-Host "    Verified pinned ancestry via GitHub comparison: $comparison" -ForegroundColor DarkGray
+            }
+            if ($ancestryExitCode -ne 0) {
                 Write-Host "    ⏭️ fix not in PR's base branch (merged to different branch)" -ForegroundColor DarkGray
                 continue
             }
@@ -624,6 +688,7 @@ if ($hasTestDetector) {
                 $fixPRsWithTests[$fixPR] = @()
             }
         } catch {
+            if ($StrictEvidence) { throw }
             Write-Host "    ⚠️ Test detection failed: $_" -ForegroundColor Yellow
             $fixPRsWithTests[$fixPR] = @()
         }
