@@ -1,4 +1,9 @@
 #nullable enable
+Microsoft.Maui.Platform.MauiMaterialPickerTextInputLayout
+Microsoft.Maui.Platform.MauiMaterialPickerTextInputLayout.MauiMaterialPickerTextInputLayout(Android.Content.Context! context) -> void
+Microsoft.Maui.Platform.MauiMaterialPickerTextInputLayout.Picker.get -> Microsoft.Maui.Platform.MauiMaterialPicker!
+override Microsoft.Maui.Platform.MauiMaterialPickerBase.OnMeasure(int widthMeasureSpec, int heightMeasureSpec) -> void
+static Microsoft.Maui.Handlers.PickerHandler2.MapFlowDirection(Microsoft.Maui.Handlers.PickerHandler2! handler, Microsoft.Maui.IPicker! picker) -> void
 *REMOVED*override Microsoft.Maui.Graphics.MauiDrawable.Dispose(bool disposing) -> void
 *REMOVED*override Microsoft.Maui.Graphics.MauiDrawable.OnBoundsChange(Android.Graphics.Rect! bounds) -> void
 *REMOVED*override Microsoft.Maui.Graphics.MauiDrawable.OnDraw(Android.Graphics.Drawables.Shapes.Shape? shape, Android.Graphics.Canvas? canvas, Android.Graphics.Paint? paint) -> void
@@ -165,9 +170,9 @@ override Microsoft.Maui.Handlers.FlyoutViewHandler.DisconnectHandler(Microsoft.M
 override Microsoft.Maui.Handlers.ImageHandler2.CreatePlatformView() -> Google.Android.Material.ImageView.ShapeableImageView!
 override Microsoft.Maui.Handlers.LabelHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 override Microsoft.Maui.Handlers.LabelHandler2.CreatePlatformView() -> Microsoft.Maui.Platform.MauiMaterialTextView!
-override Microsoft.Maui.Handlers.PickerHandler2.ConnectHandler(Microsoft.Maui.Platform.MauiMaterialPicker! platformView) -> void
-override Microsoft.Maui.Handlers.PickerHandler2.CreatePlatformView() -> Microsoft.Maui.Platform.MauiMaterialPicker!
-override Microsoft.Maui.Handlers.PickerHandler2.DisconnectHandler(Microsoft.Maui.Platform.MauiMaterialPicker! platformView) -> void
+override Microsoft.Maui.Handlers.PickerHandler2.ConnectHandler(Microsoft.Maui.Platform.MauiMaterialPickerTextInputLayout! platformView) -> void
+override Microsoft.Maui.Handlers.PickerHandler2.CreatePlatformView() -> Microsoft.Maui.Platform.MauiMaterialPickerTextInputLayout!
+override Microsoft.Maui.Handlers.PickerHandler2.DisconnectHandler(Microsoft.Maui.Platform.MauiMaterialPickerTextInputLayout! platformView) -> void
 override Microsoft.Maui.Handlers.ProgressBarHandler2.CreatePlatformView() -> Google.Android.Material.ProgressIndicator.LinearProgressIndicator!
 override Microsoft.Maui.Handlers.RadioButtonHandler2.CreatePlatformView() -> Google.Android.Material.RadioButton.MaterialRadioButton!
 override Microsoft.Maui.Handlers.SearchBarHandler2.ConnectHandler(Microsoft.Maui.Platform.MauiMaterialSearchBarTextInputLayout! platformView) -> void
