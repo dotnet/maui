@@ -74,9 +74,10 @@ silently falling back to an older Xcode.
 Xcode 27 requires the native framework's iOS deployment target to be at least
 15.0. Native Debug/Release and managed iOS minimums are aligned at 15.0, following
 [#39262](https://github.com/dotnet/maui/pull/39262). This intentionally removes
-iOS 13/14 support; it is not merely a CI image change. The Apple 27 SDK also
-requires Mac Catalyst 17.0 (macOS 14.0); the managed minimum and library template
-are aligned with that requirement, matching the existing app templates.
+iOS 13/14 support; it is not merely a CI image change. Apple 27 apps require
+Mac Catalyst 17.0 (macOS 14.0), matching the existing app templates. Framework
+libraries and the library template retain Mac Catalyst 15.0 through the Apple
+26.0 compatibility SDK; the app minimum must not raise the library minimum.
 
 UI-test compilation and execution deliberately use different images, following
 [#38855](https://github.com/dotnet/maui/pull/38855) and

@@ -47,8 +47,9 @@
     <TargetPlatformMinVersion>10.0</TargetPlatformMinVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(_MauiTargetPlatformIsMacCatalyst)' == 'True'">
-    <SupportedOSPlatformVersion>17.0</SupportedOSPlatformVersion>
-    <TargetPlatformMinVersion>17.0</TargetPlatformMinVersion>
+    <SupportedOSPlatformVersion>15.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="'$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe'">17.0</SupportedOSPlatformVersion>
+    <TargetPlatformMinVersion>$(SupportedOSPlatformVersion)</TargetPlatformMinVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(_MauiTargetPlatformIsmacOS)' == 'True'">
     <SupportedOSPlatformVersion>12.0</SupportedOSPlatformVersion>
