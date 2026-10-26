@@ -27,6 +27,7 @@ namespace Microsoft.Maui.Platform
 			{
 				var cornerRadius = platformButton.Layer.GetEffectiveCornerRadius(buttonStroke.CornerRadius);
 				platformButton.Layer.CornerRadius = cornerRadius;
+				platformButton.UpdateBackgroundLayerCornerRadius(buttonStroke.CornerRadius);
 			}
 		}
 
