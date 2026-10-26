@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using CoreGraphics;
@@ -35,6 +36,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		async Task VerifyGroupedCollectionViewEmptyViewTracksGroups<THandler>()
+		async Task VerifyGroupedCollectionViewEmptyViewTracksGroups<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] THandler>()
 			where THandler : class, IElementHandler
 		{
 			EnsureHandlerCreated(builder =>
