@@ -60,9 +60,10 @@ To build and run Blazor Desktop samples, check out the [Blazor Desktop](https://
 On `main`, the public `maui-pr`, `maui-pr-uitests`, and `maui-pr-devicetests`
 pipelines compile Apple apps with Xcode 27 on
 `AcesShared` / `ACES_VM_SharedPool_GoldenGate`. The .NET 10 Apple workloads are
-27.0.10722 from the released Xcode 27 toolchain; explicit current Apple TFMs are
-27.0. Unversioned .NET 10 library TFMs retain the SDK's 26.0 compatibility default,
-so framework libraries build both variants for app and test-project references.
+27.0.10722 from the released Xcode 27 toolchain. Framework library TFMs stay at
+26.0, matching the compatibility SDK deliberately retained by the Apple 27
+manifests for .NET 10 libraries. Unversioned apps select Apple 27 and consume those
+compatible libraries without requiring a new framework API surface.
 NuGet.org is retained as a publisher fallback because the tvOS x64 simulator
 runtime pack from that release is missing from the configured Azure mirrors.
 Because these workload pins are shared, private and official compilation pools

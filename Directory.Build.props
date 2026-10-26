@@ -174,10 +174,11 @@
     <MacosTargetFrameworkVersionSdkDefault>26.0</MacosTargetFrameworkVersionSdkDefault>
     <AndroidTargetFrameworkVersionSdkDefault>36.0</AndroidTargetFrameworkVersionSdkDefault>
     <!-- Current .NET -->
-    <IosTargetFrameworkVersion>27.0</IosTargetFrameworkVersion>
-    <TvosTargetFrameworkVersion>27.0</TvosTargetFrameworkVersion>
-    <MacCatalystTargetFrameworkVersion>27.0</MacCatalystTargetFrameworkVersion>
-    <MacosTargetFrameworkVersion>27.0</MacosTargetFrameworkVersion>
+    <!-- Keep library APIs on the compatibility SDK; unversioned apps use Apple 27. -->
+    <IosTargetFrameworkVersion>26.0</IosTargetFrameworkVersion>
+    <TvosTargetFrameworkVersion>26.0</TvosTargetFrameworkVersion>
+    <MacCatalystTargetFrameworkVersion>26.0</MacCatalystTargetFrameworkVersion>
+    <MacosTargetFrameworkVersion>26.0</MacosTargetFrameworkVersion>
     <AndroidTargetFrameworkVersion>36.0</AndroidTargetFrameworkVersion>
     <WindowsTargetFrameworkVersion>10.0.19041.0</WindowsTargetFrameworkVersion>
     <Windows2TargetFrameworkVersion>10.0.20348.0</Windows2TargetFrameworkVersion>
