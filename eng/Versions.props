@@ -72,10 +72,10 @@
     <MicrosoftiOSSdknet110_270PackageVersion>27.0.12230</MicrosoftiOSSdknet110_270PackageVersion>
     <MicrosofttvOSSdknet110_270PackageVersion>27.0.12253</MicrosofttvOSSdknet110_270PackageVersion>
     <!-- This is a subscription of the .NET 10 latest stable versions of our packages -->
-    <MicrosoftMacCatalystSdknet100_265PackageVersion>26.5.10322</MicrosoftMacCatalystSdknet100_265PackageVersion>
-    <MicrosoftmacOSSdknet100_265PackageVersion>26.5.10322</MicrosoftmacOSSdknet100_265PackageVersion>
-    <MicrosoftiOSSdknet100_265PackageVersion>26.5.10322</MicrosoftiOSSdknet100_265PackageVersion>
-    <MicrosofttvOSSdknet100_265PackageVersion>26.5.10322</MicrosofttvOSSdknet100_265PackageVersion>
+    <MicrosoftMacCatalystSdknet100_260PackageVersion>26.0.11017</MicrosoftMacCatalystSdknet100_260PackageVersion>
+    <MicrosoftmacOSSdknet100_260PackageVersion>26.0.11017</MicrosoftmacOSSdknet100_260PackageVersion>
+    <MicrosoftiOSSdknet100_260PackageVersion>26.0.11017</MicrosoftiOSSdknet100_260PackageVersion>
+    <MicrosofttvOSSdknet100_260PackageVersion>26.0.11017</MicrosofttvOSSdknet100_260PackageVersion>
     <!-- wasdk -->
     <MicrosoftWindowsCsWin32PackageVersion>0.3.298</MicrosoftWindowsCsWin32PackageVersion>
     <MicrosoftWindowsSDKBuildToolsWinAppPackageVersion>0.7.1</MicrosoftWindowsSDKBuildToolsWinAppPackageVersion>
