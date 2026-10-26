@@ -90,6 +90,11 @@ Task and job timeouts can end recovery earlier; exhaustion remains a failed step
   separate .NET SDK/workload/tool installation. UI setup additionally retries Node
   and Appium installation. Windows Helix-device preparation and the legacy
   handler/template paths use the same task retry count.
+- Appium driver installs and updates in Azure Pipelines use a checkout-local npm
+  cache under `src/Provisioning/obj/appium-driver-npm-cache`, separate from the
+  global Appium install's cache. This avoids permission failures from a shared
+  user cache without deleting it, changing its ownership, or elevating driver
+  installation. Local provisioning retains its existing npm cache configuration.
 - The Cake UI runner retries its explicitly separated preparation/build phases
   before invoking the test runner: iOS device preparation, Android APK installation,
   Windows test paths, and UI-test project builds on all four platforms. Local
