@@ -76,7 +76,7 @@ parameters:
     sln: '$(Build.SourcesDirectory)/Microsoft.Maui.sln'
   - name: AcesShared
     demands:
-        - ImageOverride -equals ACES_VM_SharedPool_Tahoe
+        - ImageOverride -equals ACES_VM_SharedPool_GoldenGate
     os: macOS
     buildScript: $(_buildScriptMacOS)
     sln: '$(Build.SourcesDirectory)/Microsoft.Maui-mac.slnf'
@@ -105,7 +105,7 @@ parameters:
     public:
       name: AcesShared
       demands:
-        - ImageOverride -equals ACES_VM_SharedPool_Tahoe
+        - ImageOverride -equals ACES_VM_SharedPool_GoldenGate
       label: macOS
 
 - name: AndroidPoolLinux

@@ -105,12 +105,13 @@ parameters:
       vmImage: macOS-14
 
   # Public pools (dnceng-public)
+  # Build Apple apps with Xcode 27, but retain Tahoe/macOS 14 for Appium execution.
   - name: androidPoolPublic
     type: object
     default:
       name: AcesShared
       demands:
-        - ImageOverride -equals ACES_VM_SharedPool_Tahoe
+        - ImageOverride -equals ACES_VM_SharedPool_GoldenGate
   
   - name: androidPoolLinuxPublic
     type: object
@@ -159,6 +160,7 @@ stages:
         windowsBuildPool: ${{ parameters.windowsBuildPoolInternal }}
         macosPool: ${{ parameters.macosPoolInternal }}
       ${{ else }}:
+        iosXcodeVersion: $(DEVICETESTS_REQUIRED_XCODE)
         androidPool: ${{ parameters.androidPoolPublic }}
         androidLinuxPool: ${{ parameters.androidPoolLinuxPublic }}
         iosPool: ${{ parameters.iosPoolPublic }}
@@ -184,5 +186,4 @@ stages:
           ios: $(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.iOS.Tests/Controls.TestCases.iOS.Tests.csproj
           winui: $(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.WinUI.Tests/Controls.TestCases.WinUI.Tests.csproj
           mac: $(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.Mac.Tests/Controls.TestCases.Mac.Tests.csproj
-
 

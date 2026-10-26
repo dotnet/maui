@@ -13,6 +13,12 @@ variables:
   value: 26.0.1
 - name: XCODE
   value: 26.0.1
+# Keep private and other pipeline definitions on their existing toolchains.
+- ${{ if in(variables['Build.DefinitionName'], 'maui-pr', 'maui-pr-uitests', 'maui-pr-devicetests') }}:
+  - name: REQUIRED_XCODE
+    value: 27.0.0
+  - name: XCODE
+    value: 27.0
 - name: POWERSHELL_VERSION
   value: 7.4.0
 # Workaround for PowerShell/PowerShell#20802 (open since Nov 2023):

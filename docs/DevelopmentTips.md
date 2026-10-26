@@ -55,6 +55,22 @@ To build and run Blazor Desktop samples, check out the [Blazor Desktop](https://
 
 # Advanced Scenarios
 
+### Public CI Apple toolchains
+
+On `main`, the public `maui-pr`, `maui-pr-uitests`, and `maui-pr-devicetests`
+pipelines compile Apple apps with Xcode 27 on
+`AcesShared` / `ACES_VM_SharedPool_GoldenGate`. Private pipelines retain their
+existing toolchains. Xcode 27 selection fails if the requested version is missing
+rather than silently falling back to an older Xcode.
+
+UI-test compilation and execution deliberately use different images, following
+[#38855](https://github.com/dotnet/maui/pull/38855) and
+[#39262](https://github.com/dotnet/maui/pull/39262): iOS Appium execution stays on
+Tahoe with `DEVICETESTS_REQUIRED_XCODE`, while Mac Catalyst execution stays on
+hosted macOS 14. GoldenGate previously lacked compatible Simulator UI and Mac2
+support. Moving execution requires separate validation; it is not implied by
+successful Xcode 27 compilation. Helix worker queues are unchanged.
+
 ### Compile using a local `.dotnet\dotnet` via `build.*` scripts on the root folder 
 
 This is the **recommended** method for provisioning the .NET SDK and workloads. It uses the Arcade build infrastructure. For more information, you can look [here](https://github.com/dotnet/arcade/blob/main/Documentation/ArcadeSdk.md#build-scripts-and-extensibility-points)
