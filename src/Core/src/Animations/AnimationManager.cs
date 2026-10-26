@@ -120,6 +120,9 @@ namespace Microsoft.Maui.Animations
 			{
 				_disposedValue = true;
 
+				Ticker.Fire -= OnFire;
+				End();
+
 				if (disposing)
 				{
 					Animation[] animations = [.._animations];
