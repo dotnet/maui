@@ -13,6 +13,11 @@ from NuGet. The generated project also disables the installed MAUI workload's SD
 imports `Sdk/Sdk.targets` from the verified source-built `Microsoft.Maui.Sdk` package;
 the installed Android/Apple/Windows platform toolchains remain in use.
 
+Both build jobs install the requested .NET SDK in a separate directory under
+`runner.temp`. This keeps runner-preinstalled SDKs from selecting a different SDK
+feature band for workload installation than the generated app uses. Workloads
+installed for another feature band can otherwise appear missing at app build time.
+
 Each dry-run download includes `provenance.json`: checked package repository commits and
 hashes, the MAUI packages resolved during each build, and informational versions and hashes
 read from the MAUI assemblies inside the final app archives. Separate `source-packages-*`

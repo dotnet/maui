@@ -269,6 +269,8 @@ jobs:
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
+        env:
+          DOTNET_INSTALL_DIR: ${{ runner.temp }}/template-app-dotnet
         with:
           dotnet-version: ${{ needs.prepare.outputs.dotnet_sdk }}
 
@@ -617,6 +619,8 @@ jobs:
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
+        env:
+          DOTNET_INSTALL_DIR: ${{ runner.temp }}/template-app-dotnet
         with:
           dotnet-version: ${{ needs.prepare.outputs.dotnet_sdk }}
 
