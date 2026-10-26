@@ -59,8 +59,9 @@ parameters:
     os: Windows
     buildScript: $(_buildScript)
     sln: '$(Build.SourcesDirectory)/Microsoft.Maui.sln'
-  - name: Azure Pipelines
-    vmImage: $(HostedMacImage)
+  - name: AcesShared
+    demands:
+        - ImageOverride -equals ACES_VM_SharedPool_GoldenGate
     os: macOS
     buildScript: $(_buildScriptMacOS)
     sln: '$(Build.SourcesDirectory)/Microsoft.Maui-mac.slnf'
@@ -99,8 +100,9 @@ parameters:
   type: object
   default:
     internal:
-      name: Azure Pipelines
-      vmImage: $(HostedMacImage)
+      name: AcesShared
+      demands:
+        - ImageOverride -equals ACES_VM_SharedPool_GoldenGate
       label: macOS
     public:
       name: AcesShared

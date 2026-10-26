@@ -59,9 +59,12 @@ To build and run Blazor Desktop samples, check out the [Blazor Desktop](https://
 
 On `main`, the public `maui-pr`, `maui-pr-uitests`, and `maui-pr-devicetests`
 pipelines compile Apple apps with Xcode 27 on
-`AcesShared` / `ACES_VM_SharedPool_GoldenGate`. Private pipelines retain their
-existing toolchains. Xcode 27 selection fails if the requested version is missing
-rather than silently falling back to an older Xcode.
+`AcesShared` / `ACES_VM_SharedPool_GoldenGate`. The .NET 10 Apple workloads are
+27.0.10722 from the released Xcode 27 toolchain; current Apple TFMs are 27.0.
+Because these workload pins are shared, private and official compilation pools
+also use GoldenGate/Xcode 27 rather than attempting to build with Xcode 26.
+Xcode 27 selection fails if the requested version is missing rather than
+silently falling back to an older Xcode.
 
 Xcode 27 requires the native framework's iOS deployment target to be at least
 15.0. Native Debug/Release and managed iOS minimums are aligned at 15.0, following

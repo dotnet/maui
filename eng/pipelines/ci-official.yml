@@ -52,8 +52,9 @@ parameters:
 - name: MacOSPool
   type: object
   default:
-    name: Azure Pipelines
-    vmImage: macOS-15
+    name: AcesShared
+    demands:
+      - ImageOverride -equals ACES_VM_SharedPool_GoldenGate
     os: macOS
 
 resources:

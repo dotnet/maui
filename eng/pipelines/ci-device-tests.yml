@@ -68,14 +68,16 @@ parameters:
 - name: macOSTestPoolInternal
   type: object
   default:
-    name: Azure Pipelines
-    vmImage: macOS-15-arm64
+    name: AcesShared
+    demands:
+      - ImageOverride -equals ACES_VM_SharedPool_GoldenGate
 
 - name: macOSPoolInternal
   type: object
   default:
-    name: Azure Pipelines
-    vmImage: macOS-15-arm64
+    name: AcesShared
+    demands:
+      - ImageOverride -equals ACES_VM_SharedPool_GoldenGate
 
 # Public pools (dnceng-public)
 - name: windowsPoolPublic
