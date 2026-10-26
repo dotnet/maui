@@ -106,13 +106,17 @@ namespace Microsoft.Maui.DeviceTests
 
 			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async handler =>
 			{
-				var navController = Assert.IsType<NavigationRenderer>(navPage.Handler);
+				var navController = Assert.IsAssignableFrom<UINavigationController>(
+					(navPage.Handler as IPlatformViewHandler)?.ViewController);
 				var recognizer = navController.InteractivePopGestureRecognizer;
 
 				Assert.Equal(expectedShouldBegin, recognizer.Delegate.ShouldBegin(recognizer));
 				if (expectedShouldBegin)
 				{
-					Assert.True(navController.ShouldPopItem(navController.NavigationBar, navController.NavigationBar.TopItem));
+					if (navController is NavigationRenderer renderer)
+					{
+						Assert.True(renderer.ShouldPopItem(renderer.NavigationBar, renderer.NavigationBar.TopItem));
+					}
 				}
 				Assert.Equal(1, backHandlingPage.BackButtonPressedCount);
 				await Task.CompletedTask;
@@ -132,13 +136,17 @@ namespace Microsoft.Maui.DeviceTests
 
 			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async handler =>
 			{
-				var navController = Assert.IsType<NavigationRenderer>(navPage.Handler);
+				var navController = Assert.IsAssignableFrom<UINavigationController>(
+					(navPage.Handler as IPlatformViewHandler)?.ViewController);
 				var recognizer = navController.InteractivePopGestureRecognizer;
 
 				Assert.Equal(expectedShouldBegin, recognizer.Delegate.ShouldBegin(recognizer));
 				if (expectedShouldBegin)
 				{
-					Assert.True(navController.ShouldPopItem(navController.NavigationBar, navController.NavigationBar.TopItem));
+					if (navController is NavigationRenderer renderer)
+					{
+						Assert.True(renderer.ShouldPopItem(renderer.NavigationBar, renderer.NavigationBar.TopItem));
+					}
 				}
 				Assert.Equal(1, backHandlingPage.BackButtonPressedCount);
 				await Task.CompletedTask;

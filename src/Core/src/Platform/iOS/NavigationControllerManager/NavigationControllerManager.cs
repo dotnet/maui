@@ -29,6 +29,7 @@ namespace Microsoft.Maui.Platform
         TaskCompletionSource<bool>? _popCompletionTask;
         UIViewController[]? _pendingViewControllers;
         bool _firstLayoutCompleted;
+        bool _interactivePopGesturePending;
         bool _disposed;
 
         /// <summary>
@@ -208,6 +209,11 @@ namespace Microsoft.Maui.Platform
         /// </summary>
         internal bool HandleShouldPopItem()
         {
+            if (_interactivePopGesturePending)
+            {
+                return true;
+            }
+
             return _delegate.ShouldPop();
         }
 
@@ -290,6 +296,7 @@ namespace Microsoft.Maui.Platform
 
                 if (_managerRef.TryGetTarget(out var manager))
                 {
+                    manager._interactivePopGesturePending = false;
                     if (manager._disposed)
                     {
                         return;
@@ -342,6 +349,7 @@ namespace Microsoft.Maui.Platform
             }
 
             _disposed = true;
+            _interactivePopGesturePending = false;
 
             // Clear native delegates to prevent late callbacks (DidShowViewController,
             // WillShowViewController) from firing after the handler disconnects.
@@ -387,6 +395,8 @@ namespace Microsoft.Maui.Platform
                 {
                     return;
                 }
+
+                manager._interactivePopGesturePending = false;
 
                 // Resolve completion tasks
                 if (manager._completionTasks.TryGetValue(viewController, out var source))
@@ -492,10 +502,13 @@ namespace Microsoft.Maui.Platform
                     return false;
                 }
 
-                // Always allow the gesture — matches the renderer, which returns true
-                // and lets UIKit drive the interactive transition. After the gesture
-                // completes, OnInteractivePopCompleted syncs the MAUI stack.
-                return true;
+                if (!_managerRef.TryGetTarget(out var manager) || manager._disposed)
+                {
+                    return false;
+                }
+
+                manager._interactivePopGesturePending = manager._delegate.ShouldPop();
+                return manager._interactivePopGesturePending;
             }
         }
 
