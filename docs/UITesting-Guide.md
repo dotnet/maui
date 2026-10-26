@@ -98,6 +98,11 @@ Resets relaunch the current fixture's target, including fixtures that set
 Fixture teardown closes the app rather than launching an unused gallery.
 Tests of normal gallery startup can derive directly from `UITest` instead.
 
+Starting a new test and resetting the app stop with an explicit error if the
+previous app cannot be terminated. OS-command fallback termination succeeds only
+when the command starts, completes within its timeout, and exits with code zero; a failed command
+must not be treated as a successful close.
+
 Android, iOS, and MacCatalyst reuse the driver session and send the current target
 with each app launch. Android forwards the configured device UDID to Appium as
 well, so multiple running emulators do not select the wrong device. Windows uses

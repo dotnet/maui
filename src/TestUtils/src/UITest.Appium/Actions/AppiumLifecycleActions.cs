@@ -160,7 +160,9 @@ namespace UITest.Appium
 			if (_app?.Driver is null)
 				return CommandResponse.FailedEmptyResponse;
 
-			CloseApp(parameters);
+			if (CloseApp(parameters).Result != CommandResponseResult.Success)
+				throw new InvalidOperationException("Could not terminate the app before resetting it.");
+
 			LaunchApp(parameters);
 
 			return CommandResponse.SuccessEmptyResponse;
@@ -247,14 +249,7 @@ namespace UITest.Appium
 							RedirectStandardError = true,
 							UseShellExecute = false,
 						});
-						if (process is not null && !process.WaitForExit(10000))
-						{
-							Debug.WriteLine(">>>>> ForceCloseApp: xcrun simctl terminate timed out, killing process");
-							try
-							{ process.Kill(); }
-							catch { }
-						}
-						return CommandResponse.SuccessEmptyResponse;
+						return WaitForForceClose(process, "xcrun simctl terminate");
 					}
 					else
 					{
@@ -272,14 +267,7 @@ namespace UITest.Appium
 						RedirectStandardError = true,
 						UseShellExecute = false,
 					});
-					if (process is not null && !process.WaitForExit(10000))
-					{
-						Debug.WriteLine(">>>>> ForceCloseApp: adb force-stop timed out, killing process");
-						try
-						{ process.Kill(); }
-						catch { }
-					}
-					return CommandResponse.SuccessEmptyResponse;
+					return WaitForForceClose(process, "adb force-stop");
 				}
 				else if (testDevice == TestDevice.Mac)
 				{
@@ -294,14 +282,7 @@ namespace UITest.Appium
 						RedirectStandardError = true,
 						UseShellExecute = false,
 					});
-					if (process is not null && !process.WaitForExit(10000))
-					{
-						Debug.WriteLine(">>>>> ForceCloseApp: pkill timed out, killing process");
-						try
-						{ process.Kill(); }
-						catch { }
-					}
-					return CommandResponse.SuccessEmptyResponse;
+					return WaitForForceClose(process, "macOS force-kill");
 				}
 				else if (testDevice == TestDevice.Windows)
 				{
@@ -314,14 +295,7 @@ namespace UITest.Appium
 						RedirectStandardError = true,
 						UseShellExecute = false,
 					});
-					if (process is not null && !process.WaitForExit(10000))
-					{
-						Debug.WriteLine(">>>>> ForceCloseApp: taskkill timed out, killing process");
-						try
-						{ process.Kill(); }
-						catch { }
-					}
-					return CommandResponse.SuccessEmptyResponse;
+					return WaitForForceClose(process, "Windows taskkill");
 				}
 			}
 			catch (Exception ex)
@@ -330,6 +304,37 @@ namespace UITest.Appium
 			}
 
 			return CommandResponse.FailedEmptyResponse;
+		}
+
+		static CommandResponse WaitForForceClose(Process? process, string command)
+		{
+			if (process is null)
+			{
+				Debug.WriteLine($">>>>> ForceCloseApp: {command} did not start");
+				return CommandResponse.FailedEmptyResponse;
+			}
+
+			var output = process.StandardOutput.ReadToEndAsync();
+			var error = process.StandardError.ReadToEndAsync();
+
+			if (!process.WaitForExit(10000))
+			{
+				Debug.WriteLine($">>>>> ForceCloseApp: {command} timed out, killing process");
+				process.Kill();
+				return CommandResponse.FailedEmptyResponse;
+			}
+
+			var standardOutput = output.GetAwaiter().GetResult();
+			var standardError = error.GetAwaiter().GetResult();
+
+			if (process.ExitCode != 0)
+			{
+				Debug.WriteLine($">>>>> ForceCloseApp: {command} exited with code {process.ExitCode}."
+					+ $"{Environment.NewLine}{standardOutput}{standardError}");
+				return CommandResponse.FailedEmptyResponse;
+			}
+
+			return CommandResponse.SuccessEmptyResponse;
 		}
 
 		/// <summary>

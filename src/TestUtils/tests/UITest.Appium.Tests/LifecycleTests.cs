@@ -73,6 +73,48 @@ public class LifecycleTests
 			&& Equals(command.Parameters["script"], "mobile: launchApp"));
 	}
 
+	[Theory]
+	[InlineData(false)]
+	[InlineData(true)]
+	public void FailedSimulatorFallbackCannotLaunchWithStaleStartupArguments(bool reset)
+	{
+		var executor = new RecordingExecutor { FailTermination = true };
+		var config = new Config();
+		config.SetProperty("TestDevice", TestDevice.iOS);
+		config.SetProperty("AppId", "com.microsoft.maui.uitests");
+		config.SetProperty("Udid", "00000000-0000-0000-0000-000000000000");
+		config.SetProperty("TestConfigurationArgs", new Dictionary<string, string> { ["test"] = "Next issue" });
+		using var app = new TestApp(new IOSDriver(executor, new AppiumOptions()), config);
+
+		var exception = Assert.Throws<InvalidOperationException>(() =>
+		{
+			if (reset)
+				app.ResetApp();
+			else
+				app.LaunchApp("Next issue");
+		});
+		Assert.Equal(reset
+			? "Could not terminate the app before resetting it."
+			: "Could not terminate the app before launching a new startup test.", exception.Message);
+		Assert.DoesNotContain(executor.Commands, command => command.Name == DriverCommand.ExecuteScript
+			&& Equals(command.Parameters["script"], "mobile: launchApp"));
+	}
+
+	[Fact]
+	public void ForceCloseReportsFailedSimulatorProcess()
+	{
+		var executor = new RecordingExecutor();
+		var config = new Config();
+		config.SetProperty("TestDevice", TestDevice.iOS);
+		config.SetProperty("AppId", "com.microsoft.maui.uitests");
+		config.SetProperty("Udid", "00000000-0000-0000-0000-000000000000");
+		using var app = new TestApp(new IOSDriver(executor, new AppiumOptions()), config);
+
+		var response = app.CommandExecutor.Execute("forceCloseApp", new Dictionary<string, object>());
+
+		Assert.Equal(CommandResponseResult.Failed, response.Result);
+	}
+
 	sealed class TestApp(AppiumDriver driver, IConfig config) : AppiumApp(driver, config)
 	{
 		public override ApplicationState AppState => ApplicationState.Running;
