@@ -48,11 +48,25 @@ set `DEVELOPER_DIR` for the build command:
 DEVELOPER_DIR=/Applications/Xcode_27.app/Contents/Developer ./build.sh -restore -build
 ```
 
+#### Tizen backends on .NET 11
+
+Starting with .NET 11, this repository no longer includes a Tizen platform implementation or
+builds and packages Tizen target frameworks. Tizen backends must supply their own native
+dependencies, handlers, lifecycle integration, and resource and manifest processing outside
+this repository.
+
+Platform-neutral compatibility APIs remain available for external backends, including
+`DevicePlatform.Tizen`, the legacy `Device.Tizen` constant, `OnPlatformExtension.Tizen`,
+`PlatformConfiguration.Tizen`, and the managed `TizenSpecific` attached properties.
+External backends can use the [platform-neutral handler contracts](design/ExternalPlatformBackends.md)
+and register their platform folders with `MauiPlatformSpecificFolder`; the built-in
+`Platforms/Tizen` registration and `IncludeTizenTargetFrameworks` build switch have been removed.
+
 #### PublicAPI Management
 `--target=publicapi`
 - Clears and regenerates PublicAPI.Unshipped.txt files across all MAUI projects (Core, Controls, Essentials, Graphics)
 - Use this when you've added new public APIs and are getting build errors about missing API declarations
-- Automatically skips Windows-specific files when not running on Windows, and always skips Tizen files
+- Automatically skips Windows-specific files when not running on Windows
 
 ```bash
 dotnet cake --target=publicapi
@@ -248,6 +262,29 @@ The harness regression tests do not require MAUI workloads or an emulator:
 ```bash
 dotnet test src/TestUtils/src/Microsoft.Maui.IntegrationTests --filter "FullyQualifiedName~ToolRunnerTests|FullyQualifiedName~BuildWarningsUtilitiesTests"
 ```
+
+## Handler Initialization Attribution
+
+`Microsoft.Maui` contains opt-in instrumentation that attributes handler initialization time
+(`ElementHandler.SetVirtualView`, `PropertyMapper.UpdateProperties`/`UpdateProperty`) using
+`System.Diagnostics.Activity`. It is **compile-time** opt-in: it is only compiled when the
+`MauiEnableHandlerInstrumentation` MSBuild property is set to `true`, which defines the
+`HANDLER_INSTRUMENTATION` constant. A default build compiles none of it, so the handler/mapper hot
+paths are unchanged.
+
+```bash
+# Build Core (and anything referencing it) with the instrumentation compiled in
+dotnet build src/Core/src/Core.csproj -p:MauiEnableHandlerInstrumentation=true
+
+# Build and run the Core unit tests with the instrumented code path (also run in CI)
+dotnet cake --target=dotnet-test-handler-instrumentation
+```
+
+The spans are emitted on the same `ActivitySource` name/version as the rest of MAUI's diagnostics
+(`Microsoft.Maui`, `1.0.0`, see `DiagnosticsIdentity`), so a single `ActivityListener` subscription
+observes handler, mapper, and layout spans. Emitted operations: `SetVirtualView`,
+`CreatePlatformElement`, `AssignHandler`, `ConnectHandler`, `ResolveMapper`, `UpdateProperties`, and
+`MapProperty` (tagged with `element.type`, `handler.type`, and, for `MapProperty`, `mapper.property`).
 
 ## Running Device Tests on Helix
 

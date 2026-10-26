@@ -163,27 +163,6 @@ namespace Microsoft.Maui.ApplicationModel
 		public static bool OnAppInstanceActivated(UI.Xaml.Application application, Microsoft.Windows.AppLifecycle.AppActivationArguments args) =>
 			WebAuthenticator.Default.OnAppInstanceActivated(args);
 
-#elif TIZEN
-		/// <summary>
-		/// Gets a <see cref="Tizen.Applications.Package"/> object with information about the current application package.
-		/// </summary>
-		public static Tizen.Applications.Package CurrentPackage
-		{
-			get
-			{
-				var packageId = Tizen.Applications.Application.Current.ApplicationInfo.PackageId;
-				return Tizen.Applications.PackageManager.GetPackage(packageId);
-			}
-		}
-
-		/// <summary>
-		/// Gets or sets the map service API key for this platform.
-		/// </summary>
-		public static string? MapServiceToken
-		{
-			get => Geocoding.Default.GetMapServiceToken();
-			set => Geocoding.Default.SetMapServiceToken(value);
-		}
 #endif
 
 	}

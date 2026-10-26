@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -8,6 +9,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2;
 /// <summary>
 /// An observable collection that flattens grouped items into a single list with
 /// header/footer contexts per group, keeping in sync with the source via INCC.
+/// Holds its owner and source event subscriptions weakly so a long-lived group
+/// or WinUI projection cannot retain a removed CollectionView.
 /// </summary>
 internal class GroupedItemTemplateCollection2 : ObservableCollection<ItemTemplateContext2>
 {
@@ -15,10 +18,15 @@ internal class GroupedItemTemplateCollection2 : ObservableCollection<ItemTemplat
 	readonly DataTemplate _itemTemplate;
 	readonly DataTemplate? _groupHeaderTemplate;
 	readonly DataTemplate? _groupFooterTemplate;
-	readonly BindableObject _container;
+	readonly WeakReference<BindableObject> _container;
 	readonly IMauiContext? _mauiContext;
-	readonly Dictionary<object, NotifyCollectionChangedEventHandler> _groupSubscriptions = new();
+	// The adapter, not the source, must keep the delegates behind the weak proxies alive.
+	readonly Dictionary<object, (WeakNotifyCollectionChangedProxy Proxy, NotifyCollectionChangedEventHandler Handler)> _groupSubscriptions = new();
+	readonly WeakNotifyCollectionChangedProxy _groupsProxy = new();
+	readonly NotifyCollectionChangedEventHandler _groupsChanged;
 	bool _suppressNotifications;
+
+	~GroupedItemTemplateCollection2() => CleanUp();
 
 	public GroupedItemTemplateCollection2(IEnumerable itemsSource,
 		DataTemplate itemTemplate, DataTemplate groupHeaderTemplate, DataTemplate groupFooterTemplate,
@@ -28,15 +36,16 @@ internal class GroupedItemTemplateCollection2 : ObservableCollection<ItemTemplat
 		_itemTemplate = itemTemplate;
 		_groupHeaderTemplate = groupHeaderTemplate;
 		_groupFooterTemplate = groupFooterTemplate;
-		_container = container;
+		_container = new(container);
 		_mauiContext = mauiContext;
+		_groupsChanged = OnGroupsChanged;
 
 		RebuildFlatList();
 		SubscribeToGroups(_itemsSource);
 
 		if (_itemsSource is INotifyCollectionChanged incc)
 		{
-			incc.CollectionChanged += OnGroupsChanged;
+			_groupsProxy.Subscribe(incc, _groupsChanged);
 		}
 	}
 
@@ -77,13 +86,19 @@ internal class GroupedItemTemplateCollection2 : ObservableCollection<ItemTemplat
 		if (group is INotifyCollectionChanged incc && !_groupSubscriptions.ContainsKey(group))
 		{
 			var handler = CreateGroupItemsChangedHandler(group);
-			incc.CollectionChanged += handler;
-			_groupSubscriptions[group] = handler;
+			var proxy = new WeakNotifyCollectionChangedProxy(incc, handler);
+			_groupSubscriptions[group] = (proxy, handler);
 		}
 	}
 
 	NotifyCollectionChangedEventHandler CreateGroupItemsChangedHandler(object group) =>
-		(s, e) => _container.Dispatcher.DispatchIfRequired(() => OnGroupItemsChanged(group, e));
+		(s, e) =>
+		{
+			if (_container.TryGetTarget(out var container))
+			{
+				container.Dispatcher.DispatchIfRequired(() => OnGroupItemsChanged(group, e));
+			}
+		};
 
 	void UnsubscribeFromGroups(IEnumerable? groups)
 	{
@@ -98,12 +113,9 @@ internal class GroupedItemTemplateCollection2 : ObservableCollection<ItemTemplat
 
 	void UnsubscribeFromGroup(object group)
 	{
-		if (_groupSubscriptions.TryGetValue(group, out var handler))
+		if (_groupSubscriptions.TryGetValue(group, out var subscription))
 		{
-			if (group is INotifyCollectionChanged incc)
-			{
-				incc.CollectionChanged -= handler;
-			}
+			subscription.Proxy.Unsubscribe();
 			_groupSubscriptions.Remove(group);
 		}
 	}
@@ -112,10 +124,7 @@ internal class GroupedItemTemplateCollection2 : ObservableCollection<ItemTemplat
 	{
 		foreach (var kvp in _groupSubscriptions)
 		{
-			if (kvp.Key is INotifyCollectionChanged incc)
-			{
-				incc.CollectionChanged -= kvp.Value;
-			}
+			kvp.Value.Proxy.Unsubscribe();
 		}
 		_groupSubscriptions.Clear();
 	}
@@ -148,8 +157,13 @@ internal class GroupedItemTemplateCollection2 : ObservableCollection<ItemTemplat
 		}
 	}
 
-	void OnGroupsChanged(object? sender, NotifyCollectionChangedEventArgs args) =>
-		_container.Dispatcher.DispatchIfRequired(() => OnGroupsCollectionChanged(args));
+	void OnGroupsChanged(object? sender, NotifyCollectionChangedEventArgs args)
+	{
+		if (_container.TryGetTarget(out var container))
+		{
+			container.Dispatcher.DispatchIfRequired(() => OnGroupsCollectionChanged(args));
+		}
+	}
 
 	void OnGroupsCollectionChanged(NotifyCollectionChangedEventArgs args)
 	{
@@ -404,9 +418,6 @@ internal class GroupedItemTemplateCollection2 : ObservableCollection<ItemTemplat
 	{
 		UnsubscribeFromAllGroups();
 
-		if (_itemsSource is INotifyCollectionChanged incc)
-		{
-			incc.CollectionChanged -= OnGroupsChanged;
-		}
+		_groupsProxy.Unsubscribe();
 	}
 }

@@ -15,10 +15,19 @@
     <EnableAotAnalyzer>true</EnableAotAnalyzer>
     <EnableSingleFileAnalyzer>true</EnableSingleFileAnalyzer>
   </PropertyGroup>
+  <Target Name="_SetIosDuoBindingsAvailability"
+          BeforeTargets="PrepareForBuild"
+          Condition="'$(_MauiTargetPlatformIsiOS)' == 'True'">
+    <PropertyGroup>
+      <IosDuoBindingsAvailable Condition="'$(IosDuoBindingsAvailable)' == '' and '$(TargetPlatformVersion)' != ''">$([MSBuild]::VersionGreaterThanOrEquals('$(TargetPlatformVersion)', '27.1'))</IosDuoBindingsAvailable>
+      <IosDuoBindingsAvailable Condition="'$(IosDuoBindingsAvailable)' == ''">false</IosDuoBindingsAvailable>
+      <DefineConstants Condition="'$(IosDuoBindingsAvailable)' == 'true'">$(DefineConstants);IOS_DUO_BINDINGS</DefineConstants>
+    </PropertyGroup>
+  </Target>
   <PropertyGroup>
     <!-- NuGet package information -->
     <IsPackable>True</IsPackable>
-    <PackageTags>$(DefaultPackageTags);foldable;surface-duo</PackageTags>
+    <PackageTags>$(DefaultPackageTags);foldable;surface-duo;iphone-duo</PackageTags>
     <Description>Foldable or multi-screen device support for .NET Multi-platform App UI (.NET MAUI) apps.</Description>
   </PropertyGroup>
   <Import Project="$(MauiSrcDirectory)MultiTargeting.targets" />

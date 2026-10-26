@@ -105,7 +105,6 @@ ResizetizeCollectItems          ← Collects items from project + references
 | **Android** | `BeforeTargets=_ComputeAndroidResourcePaths` | `AfterTargets=ResizetizeCollectItems` | `AfterTargets=ResizetizeCollectItems` |
 | **Windows** | Via `DependsOnTargets` (from `ResizetizeImages`/`ProcessMauiFonts`) | `BeforeTargets=AssignTargetPaths` | `BeforeTargets=AssignTargetPaths` |
 | **WPF** | Via `DependsOnTargets` (from `ResizetizeImages`/`ProcessMauiFonts`) | `BeforeTargets=FileClassification` | `BeforeTargets=FileClassification` |
-| **Tizen** | Via `DependsOnTargets` (from `ResizetizeImages`/`ProcessMauiFonts`) | `AfterTargets=ResizetizeCollectItems` | `AfterTargets=ResizetizeCollectItems` |
 
 ## ⚠️ Critical Pattern: Inputs/Outputs and Item Registration
 
@@ -190,7 +189,6 @@ MSBuild's `Inputs`/`Outputs` incremental check skips **targets** when outputs ar
 | **Android** | `AndroidAsset` | `Link` |
 | **Windows** | `ContentWithTargetPath` | `TargetPath`, `CopyToPublishDirectory` |
 | **WPF** | `Resource` | `LogicalName`, `Link` |
-| **Tizen** | `TizenTpkUserIncludeFiles` | `TizenTpkSubDir` |
 
 **Image Items** (from `ResizetizeImages`):
 
@@ -200,7 +198,6 @@ MSBuild's `Inputs`/`Outputs` incremental check skips **targets** when outputs ar
 | **Android** | `LibraryResourceDirectories` | `StampFile` |
 | **Windows** | `ContentWithTargetPath` | `TargetPath`, `CopyToPublishDirectory` |
 | **WPF** | `Resource` | `LogicalName`, `Link` |
-| **Tizen** | `TizenTpkUserIncludeFiles` | `TizenTpkSubDir` |
 
 ### iOS-Specific: Info.plist Font Registration
 
@@ -283,7 +280,6 @@ Predictive mapping from the source items is also preferred over a filesystem glo
 | `_ResizetizerIsiOSApp` | iOS/MacCatalyst application (includes both) |
 | `_ResizetizerIsWindowsAppSdk` | Windows App SDK (WinUI) |
 | `_ResizetizerIsWPFApp` | WPF application |
-| `_ResizetizerIsTizenApp` | Tizen application |
 | `_ResizetizerIsCompatibleApp` | Any of the above |
 
 ## Testing MSBuild Target Changes

@@ -17,8 +17,9 @@ bool deviceBootWait = Argument("wait", true);
 
 void RunUITestSetupWithRetry(Action setup)
 {
+	int attempt = 1;
 	UITestRetry.RunSetup(setup, IsCIBuild() && TARGET.StartsWith("uitest", StringComparison.OrdinalIgnoreCase),
-		ex => Warning("UI test setup/build failed; retrying this phase once before running tests: {0}", ex.Message));
+		ex => Warning("UI test setup/build attempt {0}/5 failed; retrying before running tests: {1}", attempt++, ex.Message));
 }
 
 void RunUITestsWithRetry(string project, string config, string toolPath, string resultsFileName, Action onFinalFailure = null)
@@ -28,7 +29,7 @@ void RunUITestsWithRetry(string project, string config, string toolPath, string 
 	var nunitDirectory = System.IO.Path.Combine(resultDirectory, $"nunit-{Guid.NewGuid():N}");
 	var retryDirectory = System.IO.Path.Combine(nunitDirectory, "retry");
 	var resultsFile = System.IO.Path.Combine(resultDirectory, resultsFileName + ".trx");
-	var retryFilter = testFilter;
+	string retrySettingsFile = null;
 	XDocument originalResults = null;
 	XDocument[] originalReports = Array.Empty<XDocument>();
 
@@ -48,9 +49,9 @@ void RunUITestsWithRetry(string project, string config, string toolPath, string 
 			try
 			{
 				RunTestWithLocalDotNet(project, config, pathDotnet: toolPath, noBuild: true,
-					resultsFileNameWithoutExtension: resultsFileName, filter: retryFilter,
+					resultsFileNameWithoutExtension: resultsFileName, filter: testFilter,
 					resultsDirectory: retryCount == 0 ? null : retryDirectory,
-					nunitResultsDirectory: attemptNUnitDirectory);
+					nunitResultsDirectory: attemptNUnitDirectory, settingsFile: retrySettingsFile);
 			}
 			catch (Exception ex)
 			{
@@ -62,7 +63,7 @@ void RunUITestsWithRetry(string project, string config, string toolPath, string 
 			string[] reportFiles = Array.Empty<string>();
 			try
 			{
-				// Preserve raw evidence before reconciliation or category selection can fail.
+				// Preserve raw evidence before reconciliation or retry selection can fail.
 				reportFiles = GetFiles($"{attemptNUnitDirectory}/*.xml").Select(file => file.FullPath).ToArray();
 				var rawDirectory = System.IO.Path.Combine(attemptNUnitDirectory, "raw");
 				System.IO.Directory.CreateDirectory(rawDirectory);
@@ -174,13 +175,17 @@ void RunUITestsWithRetry(string project, string config, string toolPath, string 
 			{
 				if (reportFailure != null)
 					throw new InvalidOperationException("NUnit reports could not all be reconciled.");
-				retryFilter = UITestRetry.GetFilter(testFilter, reports);
-				Information("Retrying only failed UI test categories: {0}", retryFilter);
+				var filter = UITestRetry.GetFilter(testFilter, reports);
+				EnsureDirectoryExists(retryDirectory);
+				retrySettingsFile = System.IO.Path.Combine(retryDirectory, "retry.runsettings");
+				UITestRetry.CreateRunSettings(filter).Save(retrySettingsFile);
+				Information("Retrying failed UI tests (whole feature-matrix fixtures; category recovery for other fixture errors): {0}", filter);
 			}
-			catch (Exception metadataException) when (metadataException is InvalidOperationException || metadataException is FormatException)
+			catch (Exception metadataException) when (metadataException is InvalidOperationException || metadataException is FormatException ||
+				metadataException is System.IO.IOException || metadataException is UnauthorizedAccessException)
 			{
 				Warning("Unable to narrow the UI test retry; rerunning the original filter: {0}", metadataException.Message);
-				retryFilter = testFilter;
+				retrySettingsFile = null;
 			}
 
 			try
@@ -191,7 +196,7 @@ void RunUITestsWithRetry(string project, string config, string toolPath, string 
 			catch (Exception metadataException) when (metadataException is System.IO.IOException || metadataException is System.Xml.XmlException || metadataException is InvalidOperationException)
 			{
 				Warning("Unable to read the first attempt's TRX for merging; rerunning the original filter: {0}", metadataException.Message);
-				retryFilter = testFilter;
+				retrySettingsFile = null;
 				originalResults = null;
 				originalReports = Array.Empty<XDocument>();
 			}

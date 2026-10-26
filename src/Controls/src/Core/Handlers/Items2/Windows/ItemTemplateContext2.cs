@@ -40,10 +40,18 @@ internal class ItemTemplateContext2
 	public ItemTemplateContext2(DataTemplate mauiDataTemplate, object? item, BindableObject container,
 		double? height = null, double? width = null, Thickness? itemSpacing = null,
 		bool isHeader = false, bool isFooter = false, IMauiContext? mauiContext = null)
+		: this(mauiDataTemplate, item, new WeakReference<BindableObject>(container),
+			height, width, itemSpacing, isHeader, isFooter, mauiContext)
+	{
+	}
+
+	internal ItemTemplateContext2(DataTemplate mauiDataTemplate, object? item, WeakReference<BindableObject> container,
+		double? height = null, double? width = null, Thickness? itemSpacing = null,
+		bool isHeader = false, bool isFooter = false, IMauiContext? mauiContext = null)
 	{
 		MauiDataTemplate = mauiDataTemplate;
 		Item = item;
-		_container = new(container);
+		_container = container;
 		MauiContext = mauiContext;
 		ItemHeight = height ?? 0;
 		ItemWidth = width ?? 0;

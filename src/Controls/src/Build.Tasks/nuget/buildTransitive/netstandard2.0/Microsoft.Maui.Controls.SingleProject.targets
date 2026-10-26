@@ -28,11 +28,6 @@
         Update="$(WindowsProjectFolder)**/*$(DefaultLanguageSourceExtension)">
       <ExcludeFromCurrentConfiguration>false</ExcludeFromCurrentConfiguration>
     </Compile>
-    <Compile
-        Condition=" '$(TargetPlatformIdentifier)' == 'tizen' "
-        Update="$(TizenProjectFolder)**/*$(DefaultLanguageSourceExtension)">
-      <ExcludeFromCurrentConfiguration>false</ExcludeFromCurrentConfiguration>
-    </Compile>
   </ItemGroup>
 
   <!--
@@ -210,9 +205,6 @@
       <_MauiXamlToRemove
           Condition="'$(MacCatalystProjectFolder)' != '' and '$(TargetPlatformIdentifier)' != 'maccatalyst'"
           Include="$(MacCatalystProjectFolder)**/*.xaml" />
-      <_MauiXamlToRemove
-          Condition="'$(TizenProjectFolder)' != '' and '$(TargetPlatformIdentifier)' != 'tizen'"
-          Include="$(TizenProjectFolder)**/*.xaml" />
 
       <EmbeddedResource Remove="@(_MauiXamlToRemove)" />
       <MauiXaml Remove="@(_MauiXamlToRemove)" />

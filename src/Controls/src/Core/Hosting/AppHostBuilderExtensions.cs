@@ -22,9 +22,6 @@ using Microsoft.Maui.Controls.Handlers.Items2;
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Controls.Handlers.Items2;
-#elif TIZEN
-using Microsoft.Maui.Controls.Handlers.Compatibility;
-using Microsoft.Maui.Controls.Compatibility.Platform.Tizen;
 #endif
 
 namespace Microsoft.Maui.Controls.Hosting;
@@ -166,7 +163,7 @@ public static partial class AppHostBuilderExtensions
 		handlersCollection.AddHandler<MenuBarItem>(static _ => new MenuBarItemHandler());
 #pragma warning restore CA1416
 
-#if WINDOWS || ANDROID || IOS || MACCATALYST || TIZEN
+#if WINDOWS || ANDROID || IOS || MACCATALYST
 #pragma warning disable CS0618 // Type or member is obsolete
 #if ANDROID
 		handlersCollection.AddHandler<ListView>(static services => new Handlers.Compatibility.ListViewRenderer(
@@ -176,7 +173,6 @@ public static partial class AppHostBuilderExtensions
 		handlersCollection.AddHandler<ListView>(static _ => new Handlers.Compatibility.ListViewRenderer());
 #endif
 #pragma warning restore CS0618 // Type or member is obsolete
-#if !TIZEN
 #pragma warning disable CS0618 // Type or member is obsolete
 #if WINDOWS
 		handlersCollection.AddHandler(typeof(Cell), typeof(Handlers.Compatibility.CellRenderer));
@@ -199,7 +195,6 @@ public static partial class AppHostBuilderExtensions
 #pragma warning disable CS0618 // Type or member is obsolete
 		handlersCollection.AddHandler<SwitchCell>(static _ => new Handlers.Compatibility.SwitchCellRenderer());
 #pragma warning restore CS0618 // Type or member is obsolete
-#endif
 #pragma warning disable CS0618 // Type or member is obsolete
 #if ANDROID
 		handlersCollection.AddHandler<TableView>(static services => new Handlers.Compatibility.TableViewRenderer(
@@ -230,7 +225,7 @@ public static partial class AppHostBuilderExtensions
 		handlersCollection.AddHandler<FlyoutPage>(static _ => new FlyoutViewHandler());
 #endif
 
-#if ANDROID || IOS || MACCATALYST || TIZEN
+#if ANDROID || IOS || MACCATALYST
 		handlersCollection.AddHandler<SwipeItemView>(static _ => new SwipeItemViewHandler());
 #endif
 
@@ -251,13 +246,13 @@ public static partial class AppHostBuilderExtensions
 		handlersCollection.AddHandler<ShellItem>(static _ => new ShellItemHandler());
 		handlersCollection.AddHandler<ShellSection>(static _ => new ShellSectionHandler());
 		handlersCollection.AddHandler<ShellContent>(static _ => new ShellContentHandler());
-#elif ANDROID || TIZEN
+#elif ANDROID
 		handlersCollection.AddHandler<Shell>(static _ => new ShellHandler());
 		handlersCollection.AddHandler<ShellItem>(static _ => new ShellItemHandler());
 		handlersCollection.AddHandler<ShellSection>(static _ => new ShellSectionHandler());
 #endif
 
-#if WINDOWS || ANDROID || TIZEN
+#if WINDOWS || ANDROID
 		handlersCollection.AddHandler<NavigationPage>(static _ => new NavigationViewHandler());
 		handlersCollection.AddHandler<Toolbar>(static _ => new ToolbarHandler());
 		handlersCollection.AddHandler<FlyoutPage>(static _ => new FlyoutViewHandler());
@@ -269,7 +264,7 @@ public static partial class AppHostBuilderExtensions
 
 	static MauiAppBuilder SetupDefaults(this MauiAppBuilder builder)
 	{
-#if WINDOWS || ANDROID || IOS || MACCATALYST || TIZEN
+#if WINDOWS || ANDROID || IOS || MACCATALYST
 		// initialize compatibility DependencyService
 		DependencyService.SetToInitialized();
 
