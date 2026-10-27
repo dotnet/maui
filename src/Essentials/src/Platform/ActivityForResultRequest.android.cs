@@ -53,10 +53,10 @@ internal abstract class ActivityForResultRequest<TContract, TResult>
 	static readonly string RequestOwnerStateKey =
 		$"Microsoft.Maui.ApplicationModel.ActivityForResultRequest.{typeof(TContract).FullName}";
 
-	// Tracks one ActivityResultLauncher per ComponentActivity instance.
-	// ConditionalWeakTable holds weak references to keys, so entries are automatically
-	// eligible for collection when the activity is no longer referenced.
-	readonly ConditionalWeakTable<ComponentActivity, ActivityResultLauncher> _activityLaunchers = new();
+	// Android can keep an activity alive without a managed root. Keep its launcher
+	// strongly referenced until ActivityDestroyed so GC cannot dispose the JNI peer.
+	readonly ConcurrentDictionary<ComponentActivity, ActivityResultLauncher> _activityLaunchers =
+		new(ReferenceEqualityComparer.Instance);
 
 	readonly ConditionalWeakTable<ComponentActivity, string> _requestOwners = new();
 	readonly ConditionalWeakTable<ComponentActivity, object> _savedRequestOwners = new();
@@ -93,7 +93,7 @@ internal abstract class ActivityForResultRequest<TContract, TResult>
 
 		var launcher = RegisterForActivityResult(componentActivity, contract, callback);
 		_requestOwners.Add(componentActivity, requestOwner);
-		_activityLaunchers.Add(componentActivity, launcher);
+		_activityLaunchers[componentActivity] = launcher;
 	}
 
 	protected virtual ActivityResultLauncher RegisterForActivityResult(
@@ -170,6 +170,8 @@ internal abstract class ActivityForResultRequest<TContract, TResult>
 
 	internal void ActivityDestroyed(ComponentActivity componentActivity)
 	{
+		_activityLaunchers.TryRemove(componentActivity, out _);
+
 		if (!_requestOwners.TryGetValue(componentActivity, out var requestOwner)
 			|| !_requestState.HasPendingRequest(requestOwner))
 		{
