@@ -103,17 +103,47 @@ namespace UITest.Appium
 				element.Click();
 				return CommandResponse.SuccessEmptyResponse;
 			}
-			catch (InvalidOperationException)
+			catch (InvalidOperationException clickFailure)
 			{
-				return ProcessException();
+				return ProcessException(clickFailure);
 			}
-			catch (WebDriverException)
+			catch (WebDriverException clickFailure)
 			{
-				return ProcessException();
+				return ProcessException(clickFailure);
 			}
 
-			CommandResponse ProcessException()
+			CommandResponse ProcessException(Exception clickFailure)
 			{
+				if (_appiumApp.GetTestDevice() is TestDevice.iOS or TestDevice.Android)
+				{
+					Console.WriteLine($"Native click failed; attempting an element-origin touch: {clickFailure}");
+					try
+					{
+						// Mobile drivers do not expose the Windows UIA ClickablePoint attribute.
+						var touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerKind.Touch);
+						var sequence = new ActionSequence(touchDevice, 0);
+						sequence.AddAction(touchDevice.CreatePointerMove(element, 0, 0, TimeSpan.FromMilliseconds(5)));
+						sequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
+						sequence.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
+						_appiumApp.Driver.PerformActions([sequence]);
+						return CommandResponse.SuccessEmptyResponse;
+					}
+					catch (Exception touchFailure) when (touchFailure is WebDriverException or InvalidOperationException or ArgumentException or NotSupportedException)
+					{
+						var failures = new List<Exception> { clickFailure, touchFailure };
+						try
+						{
+							_appiumApp.Driver.ResetInputState();
+						}
+						catch (Exception resetFailure) when (resetFailure is WebDriverException or InvalidOperationException or ArgumentException or NotSupportedException)
+						{
+							failures.Add(resetFailure);
+						}
+
+						throw new AggregateException("The native click and its touch fallback failed.", failures);
+					}
+				}
+
 				// Some elements aren't "clickable" from an automation perspective (e.g., Frame renders as a Border
 				// with content in it; if the content is just a TextBlock, we'll end up here)
 
