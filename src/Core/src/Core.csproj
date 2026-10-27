@@ -102,7 +102,8 @@
     <Compile Remove="Platform\iOS\CALayerAutosizeObserver.cs" />
   </ItemGroup>
 
-  <Target Name="_CopyToBuildTasksDir" AfterTargets="Build">
+  <!-- The Windows CI full build consumes imports staged by the preceding BuildTasks pass. -->
+  <Target Name="_CopyToBuildTasksDir" AfterTargets="Build" Condition="'$(_MauiSkipCoreBuildTaskStaging)' != 'true'">
     <ItemGroup>
       <_CopyItems Include="nuget\buildTransitive\**" SubFolder="" Exclude="nuget\**\*.in.*;nuget\**\net-*\*" />
       <_CopyItems Include="nuget\buildTransitive\net-windows\**" SubFolder="net$(_MauiMinimumSupportedDotNetTfm)-windows$(MinimumWindowsTargetFrameworkVersion)" />

@@ -19,9 +19,15 @@ stages:
       ${{ if job.condition }}:
         condition: ${{ job.condition }}
       variables:
+        ${{ if job.xcodeVersion }}:
+          XCODE: ${{ job.xcodeVersion }}
+          REQUIRED_XCODE: ${{ job.xcodeVersion }}
         # Build the filter based on whether testName or testCategory is provided
         # XUnit filter syntax: FullyQualifiedName~ for name matching, Category= for traits
-        ${{ if job.testName }}:
+        ${{ if job.testFilter }}:
+          testFilter: ${{ job.testFilter }}
+          testIdentifier: ${{ job.name }}
+        ${{ elseif job.testName }}:
           testFilter: 'FullyQualifiedName~${{ job.testName }}'
           testIdentifier: ${{ job.testName }}
         ${{ else }}:

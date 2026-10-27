@@ -71,6 +71,14 @@ also use GoldenGate/Xcode 27 rather than attempting to build with Xcode 26.
 Xcode 27 selection fails if the requested version is missing rather than
 silently falling back to an older Xcode.
 
+The macOS template Build category is split without removing coverage: .NET 9
+cases run on the hosted `macOS-26` image with Xcode 26.5, matching their Apple
+compatibility SDK; the complementary cases retain GoldenGate/Xcode 27.
+
+Full Windows CI builds stage Core build-task imports in the preceding BuildTasks
+pass. The parallel solution build must not rewrite those imports while another
+project evaluates them.
+
 Xcode 27 requires the native framework's iOS deployment target to be at least
 15.0. Native Debug/Release and managed iOS minimums are aligned at 15.0, following
 [#39262](https://github.com/dotnet/maui/pull/39262). This intentionally removes

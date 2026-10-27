@@ -15,7 +15,7 @@
   <!-- Full build: Microsoft.Maui.sln -->
   <ItemGroup Condition="'$(BuildDeviceTests)' != 'true' and '$(Pack)' != 'true'">
     <ProjectToBuild Include="$(RepoRoot)Microsoft.Maui.sln" Condition="'$(OS)' == 'Windows_NT'" BuildInParallel="false">
-        <AdditionalProperties>ValidateXcodeVersion=false;CodesignRequireProvisioningProfile=false;EnableWindowsTargeting=true</AdditionalProperties>
+        <AdditionalProperties>ValidateXcodeVersion=false;CodesignRequireProvisioningProfile=false;EnableWindowsTargeting=true;_MauiSkipCoreBuildTaskStaging=$(TF_BUILD)</AdditionalProperties>
     </ProjectToBuild>
     <ProjectToBuild Include="$(RepoRoot)Microsoft.Maui-mac.slnf" Condition="'$(OS)' != 'Windows_NT'" BuildInParallel="false">
         <AdditionalProperties>ValidateXcodeVersion=false;CodesignRequireProvisioningProfile=false;EnableWindowsTargeting=true</AdditionalProperties>

@@ -248,6 +248,16 @@ stages:
         pool: ${{ parameters.MacOSPool.internal }}
       timeout: 240
       testCategory: Build
+      testFilter: 'Category=Build&DisplayName!~net9.0'
+    # The .NET 9 compatibility workload requires Xcode 26.5, not the app SDK's Xcode 27.
+    - name: mac_buildtemplate_previous_tests
+      pool:
+        name: Azure Pipelines
+        vmImage: macOS-26
+      timeout: 240
+      testCategory: Build
+      testFilter: 'Category=Build&DisplayName~net9.0'
+      xcodeVersion: '26.5'
 
     - name: win_blazortemplate_tests
       ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
