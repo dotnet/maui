@@ -150,8 +150,7 @@ RunTarget(TARGET);
 void ExecuteBuild(string project, string device, string binDir, string config, string tfm, string toolPath, bool useCoreClr)
 {
 	var projectName = System.IO.Path.GetFileNameWithoutExtension(project);
-	bool isUsingCoreClr = useCoreClr.ToString().Equals("true", StringComparison.CurrentCultureIgnoreCase);
-	var monoRuntime = isUsingCoreClr ? "coreclr" : "mono";
+	var monoRuntime = useCoreClr ? "coreclr" : "mono";
 	var binlog = $"{binDir}/{projectName}-{config}-{monoRuntime}-android.binlog";
 
 	DotNetBuild(project, new DotNetBuildSettings
@@ -168,7 +167,7 @@ void ExecuteBuild(string project, string device, string binDir, string config, s
 			args.Append("/p:EmbedAssembliesIntoApk=true")
 				.Append("/bl:" + binlog);
 
-			if (isUsingCoreClr)
+			if (useCoreClr)
 			{
 				args.Append("/p:UseMonoRuntime=false");
 			}
@@ -268,6 +267,10 @@ void ExecutePrepareUITests(string project, string app, string appPackageName, st
 void ExecuteUITests(string project, string app, string appPackageName, string device, string resultsDir, string binDir, string config, string tfm, string rid, string ver, string toolPath, string instrumentation)
 {
 	string platform = "android";
+	var TEST_CONFIGURATION_ARGS = Argument("TEST_CONFIGURATION_ARGS", EnvironmentVariable("TEST_CONFIGURATION_ARGS") ?? "");
+	Information("TEST_CONFIGURATION_ARGS {0}", TEST_CONFIGURATION_ARGS);
+	SetEnvironmentVariable("TEST_CONFIGURATION_ARGS", TEST_CONFIGURATION_ARGS);
+
 	Information("Build UITests project {0}", project);
 
 	var name = System.IO.Path.GetFileNameWithoutExtension(project);

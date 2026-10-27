@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Net.Http;
 using System.Reflection.Metadata;
 using System.Text;
@@ -49,15 +50,13 @@ namespace Microsoft.Maui.DeviceTests
 
 		public static async Task<bool> WaitForCollect(params WeakReference[] references)
 		{
-			bool allCollected = true;
 			foreach (var reference in references)
 			{
 				Assert.NotNull(reference);
-				var isAlive = await reference.WaitForCollect();
-				if (isAlive)
-					allCollected = false;
+				await reference.WaitForCollect();
 			}
-			return allCollected; // Only true if all references are collected
+
+			return references.All(reference => !reference.IsAlive);
 		}
 
 		public static async Task WaitForGC(params WeakReference[] references)

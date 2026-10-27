@@ -2,10 +2,20 @@
 applyTo:
   - "src/Controls/src/Core/Handlers/Items/*.Windows.cs"
   - "src/Controls/src/Core/Handlers/Items/*.windows.cs"
+  - "src/Controls/src/Core/Handlers/Items2/*.Windows.cs"
+  - "src/Controls/src/Core/Handlers/Items2/*.windows.cs"
+  - "src/Controls/src/Core/Handlers/Items2/Windows/**"
 ---
-# CollectionView — Windows (Items/ Handler)
+# CollectionView — Windows
 
-Items/ is the **ONLY** Windows CollectionView implementation. Items2/ has NO Windows code.
+On .NET 11, Items2/ is the default Windows CollectionView implementation. Items/ remains the obsolete CollectionView fallback behind `RuntimeFeature.IsWindowsCollectionView2HandlerEnabled` and the only Windows CarouselView implementation.
+
+## Which Handler to Change
+
+- CollectionView work targets `Items2/`.
+- CarouselView work targets `Items/`.
+- Change the Items/ CollectionView path only for explicit legacy fallback maintenance.
+- Keep `ItemsViewHandler<TItemsView>` active because Windows CarouselView still derives from it; the Structured/Selectable/Groupable/Reorderable Items handler chain is CollectionView-specific and obsolete.
 
 ## WinUI ListView/ItemsRepeater Patterns
 - Preserve WinUI XAML styles applied via native theming — clearing a MAUI property must restore the style-applied value, not a hardcoded default

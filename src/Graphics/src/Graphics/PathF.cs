@@ -1671,7 +1671,11 @@ namespace Microsoft.Maui.Graphics
 			Invalidate();
 		}
 
-		/// <inheritdoc />
+		// Explicit crefs replace legacy unqualified inheritdoc entries during mdoc import.
+		/// <inheritdoc cref="object.Equals(object)"/>
+		/// <summary>Determines whether the specified object is equal to the current <see cref="PathF"/> using tolerance-based comparison for geometric values.</summary>
+		/// <param name="obj">The object to compare with the current object.</param>
+		/// <returns><see langword="true"/> if the specified object represents the same path as the current object, with point and arc values compared within <see cref="GeometryUtil.Epsilon"/>; otherwise, <see langword="false"/>.</returns>
 		public override bool Equals(object obj)
 		{
 			if (obj is PathF compareTo)
@@ -1717,7 +1721,9 @@ namespace Microsoft.Maui.Graphics
 			return true;
 		}
 
-		/// <inheritdoc />
+		/// <inheritdoc cref="object.GetHashCode"/>
+		/// <summary>Serves as the default hash function.</summary>
+		/// <returns>A hash code for the current object.</returns>
 		public override int GetHashCode()
 		{
 			unchecked

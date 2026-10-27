@@ -182,25 +182,11 @@
         </div>
     </div>
 
+    <script src="_framework/hybridwebview.js"></script>
     <script>
-        // HybridWebView bridge
-        window.HybridWebView = {
-            SendRawMessage: function (msg) {
-                try {
-                    if (window.chrome && window.chrome.webview) {
-                        window.chrome.webview.postMessage("__RawMessage|" + msg);
-                        return true;
-                    } else if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.webwindowinterop) {
-                        window.webkit.messageHandlers.webwindowinterop.postMessage("__RawMessage|" + msg);
-                        return true;
-                    }
-                    return false;
-                } catch (error) {
-                    document.getElementById('status').textContent = `Error: ${error.message}`;
-                    return false;
-                }
-            }
-        };
+        window.addEventListener("HybridWebViewMessageReceived", function (e) {
+            window.HybridWebView.SendRawMessage("You said: " + e.detail.message);
+        });
 
         function showPage(pageId) {
             // Hide all pages
@@ -230,11 +216,8 @@
         }
 
         function sendMessage(msg) {
-            if (window.HybridWebView.SendRawMessage(msg)) {
-                document.getElementById('status').textContent = `✅ Sent: ${msg}`;
-            } else {
-                document.getElementById('status').textContent = `❌ Failed to send`;
-            }
+            window.HybridWebView.SendRawMessage(msg);
+            document.getElementById('status').textContent = `✅ Sent: ${msg}`;
         }
 
         // Receive messages from C#

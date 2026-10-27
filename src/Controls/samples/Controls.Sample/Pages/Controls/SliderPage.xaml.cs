@@ -14,12 +14,12 @@ namespace Maui.Controls.Sample.Pages
 			UpdateInfo();
 		}
 
-		void OnValueChanged(object sender, ValueChangedEventArgs args)
+		void OnValueChanged(object? sender, ValueChangedEventArgs args)
 		{
 			Debug.WriteLine($"Slider Value: {args.NewValue}");
 		}
 
-		private void ToggleImageSource(object sender, System.EventArgs e)
+		private void ToggleImageSource(object? sender, System.EventArgs e)
 		{
 			if (_imageSource is null)
 			{
@@ -33,18 +33,18 @@ namespace Maui.Controls.Sample.Pages
 			}
 		}
 
-		void OnDynamicValueChanged(object sender, ValueChangedEventArgs args)
+		void OnDynamicValueChanged(object? sender, ValueChangedEventArgs args)
 		{
 			UpdateInfo();
 		}
 
-		void OnUpdateMinimumButtonClicked(object sender, System.EventArgs e)
+		void OnUpdateMinimumButtonClicked(object? sender, System.EventArgs e)
 		{
 			DynamicSlider.Minimum = 4;
 			UpdateInfo();
 		}
 
-		void OnUpdateMaximumButtonClicked(object sender, System.EventArgs e)
+		void OnUpdateMaximumButtonClicked(object? sender, System.EventArgs e)
 		{
 			DynamicSlider.Maximum = 8;
 			UpdateInfo();

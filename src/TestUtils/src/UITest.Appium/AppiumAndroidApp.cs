@@ -22,7 +22,6 @@ namespace UITest.Appium
 		{
 			var device = config.GetProperty<string>("EmulatorDeviceName");
 			var apkPath = config.GetProperty<string>("AppPath");
-			var pkgName = config.GetProperty<string>("AppId");
 			var outDir = config.GetProperty<string>("ReportDirectory");
 			var enableDebugPopup = config.GetProperty<bool>("EnableDebugPopup");
 			var avdForce = config.GetProperty<bool>("AvdForceInstall");
@@ -39,8 +38,46 @@ namespace UITest.Appium
 			//// TODO: Check for installed package first?
 			//AndroidEmulator.InstallPackage(apkPath, pkgName, outDir);
 			var androidApp = new AppiumAndroidApp(remoteAddress, config);
-			androidApp.Driver.ActivateApp(pkgName);
+			androidApp.ActivateApp(forceRestart: true);
 			return androidApp;
+		}
+
+		internal void ActivateApp(bool forceRestart = false)
+			=> ActivateApp(this, forceRestart);
+
+		internal static void ActivateApp(AppiumApp app, bool forceRestart)
+		{
+			var appId = app.GetAppId();
+			var args = GetTestConfigurationArgs(app.Config);
+			var startupArgs = app.Config.GetProperty<Dictionary<string, string>>("TestConfigurationArgs");
+			var extras = new List<string[]>();
+			if (!string.IsNullOrEmpty(args))
+				extras.Add(new[] { "s", "TEST_CONFIGURATION_ARGS", AppLaunchArguments.QuoteAndroidShellArgument(args) });
+			if (startupArgs is not null && startupArgs.TryGetValue("test", out var testName))
+				extras.Add(new[] { "s", "test", AppLaunchArguments.QuoteAndroidShellArgument(testName) });
+
+			if (extras.Count == 0)
+			{
+				app.Driver.ActivateApp(appId);
+				return;
+			}
+
+			app.Driver.ExecuteScript("mobile: startActivity", new Dictionary<string, object>
+			{
+				{ "component", $"{appId}/{appId}.MainActivity" },
+				{ "action", "android.intent.action.MAIN" },
+				{ "categories", new[] { "android.intent.category.LAUNCHER" } },
+				{ "flags", "0x10200000" },
+				{ "extras", extras.ToArray() },
+				{ "wait", true },
+				{ "stop", forceRestart },
+			});
+		}
+
+		static string? GetTestConfigurationArgs(IConfig config)
+		{
+			var args = config.GetProperty<Dictionary<string, string>>("TestConfigurationArgs");
+			return args is not null && args.TryGetValue("TEST_CONFIGURATION_ARGS", out var value) ? value : null;
 		}
 
 		public override IUIElementQueryable Query => new AppiumAndroidQueryable(this);
@@ -92,6 +129,8 @@ namespace UITest.Appium
 			var udid = config.GetProperty<string>("Udid");
 			if (!string.IsNullOrWhiteSpace(udid))
 				options.AddAdditionalAppiumOption(MobileCapabilityType.Udid, udid);
+			if (!string.IsNullOrEmpty(GetTestConfigurationArgs(config)))
+				options.AddAdditionalAppiumOption("autoLaunch", false);
 
 			if (!string.IsNullOrWhiteSpace(appId))
 			{

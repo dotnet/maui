@@ -9,7 +9,7 @@ namespace Maui.Controls.Sample.Pages
 			InitializeComponent();
 		}
 
-		void OnMoreSamplesClicked(object sender, EventArgs args)
+		void OnMoreSamplesClicked(object? sender, EventArgs args)
 		{
 			Navigation.PushAsync(new Pages.ShapesGalleries.ShapesGallery());
 		}
