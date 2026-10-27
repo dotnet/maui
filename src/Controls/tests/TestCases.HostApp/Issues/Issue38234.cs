@@ -13,6 +13,18 @@ public class Issue38234 : Shell
 
 		FlyoutBehavior = FlyoutBehavior.Disabled;
 
+		var white = Color.FromArgb("#FFFFFFFF");
+		var gray950 = Color.FromArgb("#FF141414");
+		var magenta = Color.FromArgb("#FFD600AA");
+		var gray200 = Color.FromArgb("#FFC8C8C8");
+
+		this.SetAppThemeColor(Shell.BackgroundColorProperty, white, gray950);
+		this.SetAppThemeColor(Shell.TitleColorProperty, magenta, white);
+		this.SetAppThemeColor(Shell.TabBarBackgroundColorProperty, white, gray950);
+		this.SetAppThemeColor(Shell.TabBarTitleColorProperty, magenta, white);
+		this.SetAppThemeColor(Shell.TabBarForegroundColorProperty, gray950, gray200);
+		this.SetAppThemeColor(Shell.TabBarUnselectedColorProperty, gray200, gray950);
+
 		Label statusLabel = new Label
 		{
 			Text = "Light theme active",
