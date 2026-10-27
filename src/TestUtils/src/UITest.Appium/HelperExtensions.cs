@@ -2351,6 +2351,24 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
+		/// Gets the Android screenshot's system-owned top inset in physical pixels.
+		/// </summary>
+		/// <param name="app">The application to measure.</param>
+		/// <param name="imageWidth">The captured screenshot width.</param>
+		/// <param name="imageHeight">The captured screenshot height.</param>
+		public static int GetAndroidScreenshotTopInset(this IApp app, int imageWidth, int imageHeight)
+		{
+			ArgumentOutOfRangeException.ThrowIfNegativeOrZero(imageWidth);
+			ArgumentOutOfRangeException.ThrowIfNegativeOrZero(imageHeight);
+			if (app.GetTestDevice() != TestDevice.Android)
+				throw new InvalidOperationException("Screenshot top-inset measurement is only supported on Android.");
+			var response = app.CommandExecutor.Execute("getAndroidScreenshotTopInset",
+				new Dictionary<string, object> { ["imageWidth"] = imageWidth, ["imageHeight"] = imageHeight });
+			return response.Value is int inset && response.Result == CommandResponseResult.Success
+				? inset : throw new InvalidOperationException("Could not measure the Android screenshot top inset.");
+		}
+
+		/// <summary>
 		/// Navigates back in the application by simulating a tap on the platform-specific back navigation button or using a custom identifier.
 		/// </summary>
 		/// <param name="app">The IApp instance representing the main gateway to interact with the application.</param>
