@@ -3,6 +3,7 @@ using Android.Content.Res;
 using Android.Graphics.Drawables;
 using AndroidX.AppCompat.Widget;
 using Google.Android.Material.Shape;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
@@ -15,6 +16,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 	{
 		bool _disposed;
 		bool _originalAppearanceCaptured;
+		AppTheme _capturedTheme;
 		// Defaults to the M2 fallback so BarTextColor/BarBackground/IconColor are never null even if
 		// a custom renderer never calls CaptureNativeColors; CaptureNativeColors overwrites these with
 		// the real native values once it runs.
@@ -29,6 +31,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public virtual void SetAppearance(AToolbar toolbar, IShellToolbarTracker toolbarTracker, ShellAppearance appearance)
 		{
+			//UpdateNativeColors(toolbar);
+
 			var foreground = appearance.ForegroundColor;
 			var background = appearance.BackgroundColor;
 			var titleColor = appearance.TitleColor;
@@ -38,6 +42,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public virtual void ResetAppearance(AToolbar toolbar, IShellToolbarTracker toolbarTracker)
 		{
+			//UpdateNativeColors(toolbar);
+
 			if (RuntimeFeature.IsMaterial3Enabled)
 			{
 				RestoreNativeColors(toolbar, toolbarTracker);
@@ -122,6 +128,19 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 
 			_originalAppearanceCaptured = true;
+			_capturedTheme = Application.Current.RequestedTheme;
+		}
+
+		void UpdateNativeColors(AToolbar toolbar)
+		{
+			if (_disposed || !RuntimeFeature.IsMaterial3Enabled || !_originalAppearanceCaptured ||
+				_capturedTheme == Application.Current.RequestedTheme)
+				return;
+
+			using var context = ThemeUtils.CreateThemedContext(toolbar.Context);
+			_originalNativeTitleColor = Color.FromInt(context.GetThemeAttrColor(Resource.Attribute.colorOnSurface));
+			_originalNativeBackgroundColor = Color.FromInt(context.GetThemeAttrColor(Resource.Attribute.colorSurface));
+			_capturedTheme = Application.Current.RequestedTheme;
 		}
 
 		#region IDisposable

@@ -8,6 +8,7 @@ using AndroidX.AppCompat.Content.Res;
 using AndroidX.Core.View;
 using Google.Android.Material.BottomNavigation;
 using Google.Android.Material.Shape;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Controls.Platform.Compatibility;
 using Microsoft.Maui.Graphics;
@@ -25,6 +26,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		bool _disposed;
 		bool _originalAppearanceCaptured;
+		AppTheme _capturedTheme;
 		ColorStateList _originalItemTextColor;
 		ColorStateList _originalItemIconTint;
 		Drawable _originalBackground;
@@ -44,6 +46,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public virtual void ResetAppearance(BottomNavigationView bottomView)
 		{
+		//	UpdateNativeColors(bottomView);
+
 			// If a custom renderer never called CaptureNativeAppearance, _originalItemIconTint/
 			// _originalItemTextColor/_originalBackground stay null - fall back to the M2-style defaults
 			// instead of nulling out the bottom nav's icon/text colors and background.
@@ -63,6 +67,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public virtual void SetAppearance(BottomNavigationView bottomView, IShellAppearanceElement appearance)
 		{
+			//UpdateNativeColors(bottomView);
+
 			IShellAppearanceElement controller = appearance;
 			var backgroundColor = controller.EffectiveTabBarBackgroundColor;
 			var foregroundColor = controller.EffectiveTabBarForegroundColor;
@@ -100,6 +106,23 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_originalItemIconTint = bottomView.ItemIconTintList;
 			_originalBackground = bottomView.Background;
 			_originalAppearanceCaptured = true;
+			_capturedTheme = Application.Current.RequestedTheme;
+		}
+
+		void UpdateNativeColors(BottomNavigationView bottomView)
+		{
+			if (_disposed || !RuntimeFeature.IsMaterial3Enabled || !_originalAppearanceCaptured ||
+				_capturedTheme == Application.Current.RequestedTheme)
+				return;
+
+			using var context = ThemeUtils.CreateThemedContext(bottomView.Context);
+			var selectedText = context.GetThemeAttrColor(Resource.Attribute.colorOnSurface);
+			var selectedIcon = context.GetThemeAttrColor(Resource.Attribute.colorOnSecondaryContainer);
+			var unselected = context.GetThemeAttrColor(Resource.Attribute.colorOnSurfaceVariant);
+			_originalItemTextColor = ColorStateListExtensions.CreateSwitch(unselected, selectedText, unselected);
+			_originalItemIconTint = ColorStateListExtensions.CreateSwitch(unselected, selectedIcon, unselected);
+			_originalBackground = new ColorDrawable(new AColor(context.GetThemeAttrColor(Resource.Attribute.colorSurfaceContainer)));
+			_capturedTheme = Application.Current.RequestedTheme;
 		}
 
 		void RestoreBackground(BottomNavigationView bottomView)

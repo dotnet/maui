@@ -41,23 +41,8 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 			}
 
-			bottomNavigationView.ItemActiveIndicatorColor = ColorStateList.ValueOf(new AColor(GetThemeAttrColor(bottomNavigationView.Context, Resource.Attribute.colorSecondaryContainer)));
-		}
-
-		static int GetThemeAttrColor(Context context, int attr)
-		{
-			var requestedTheme = Application.Current?.RequestedTheme;
-			if (requestedTheme is not AppTheme.Dark and not AppTheme.Light)
-			{
-				return context.GetThemeAttrColor(attr);
-			}
-
-			using var configuration = new Configuration(context.Resources?.Configuration);
-			configuration.UiMode = (configuration.UiMode & ~UiMode.NightMask) | (requestedTheme == AppTheme.Dark ? UiMode.NightYes : UiMode.NightNo);
-
-			using var configuredContext = context.CreateConfigurationContext(configuration);
-			configuredContext.SetTheme(Resource.Style.Maui_Material3_Theme_NoActionBar);
-			return configuredContext.GetThemeAttrColor(attr);
+			using var context = ThemeUtils.CreateThemedContext(bottomNavigationView.Context);
+			bottomNavigationView.ItemActiveIndicatorColor = ColorStateList.ValueOf(new AColor(context.GetThemeAttrColor(Resource.Attribute.colorSecondaryContainer)));
 		}
 
 		public static Drawable CreateItemBackgroundDrawable()
