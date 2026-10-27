@@ -63,6 +63,18 @@ and `maui-pr-uitests` may not run automatically depending on the changed files.
   inaccessible/expired/insufficient data — do not assume unrelated or PR-caused.
 - Helix work-item console output may live behind `helix.dot.net` and Azure Blob URLs.
 
+## UI diagnostic artifact paths
+
+Azure build-artifact paths have a 399-character limit, including the artifact name
+and the TRX attachment-copy directories. The Cake UI runner passes each attempt's
+results directory to the test process through `MAUI_UI_TEST_RESULTS_DIRECTORY`.
+Diagnostic names budget for the artifact prefix and the TRX user/machine,
+timestamp, execution GUID and machine directories. Names that fit stay unchanged;
+long names retain the diagnostic type, full file GUID and a hashed test identity.
+NUnit attachment descriptions retain the full test name. An insufficient budget
+fails explicitly rather than producing an invalid path. This applies to the
+standard UI artifact layout, not arbitrary future publishers or directory layouts.
+
 ## Setup-only retries
 
 Shared test preparation uses **at most five total attempts per setup operation**,
