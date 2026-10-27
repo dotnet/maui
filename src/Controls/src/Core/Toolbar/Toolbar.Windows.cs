@@ -97,7 +97,13 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
-			if (e.PropertyName == nameof(ToolbarItem.Text) || e.PropertyName == nameof(ToolbarItem.IconImageSource))
+			if (e.PropertyName == nameof(ToolbarItem.IconImageSource))
+			{
+				UpdateMenu();
+				return;
+			}
+
+			if (e.PropertyName == nameof(ToolbarItem.Text))
 			{
 				var toolbarItems = new List<ToolbarItem>(ToolbarItems ?? Array.Empty<ToolbarItem>());
 				SetDefaultLabelPosition(commandBar, toolbarItems);
