@@ -12,6 +12,7 @@ namespace Microsoft.Maui.Controls
 	public partial class Toolbar
 	{
 		readonly ImageConverter _imageConverter = new ImageConverter();
+		readonly IconConverter _iconConverter = new IconConverter();
 
 		NavigationRootManager? NavigationRootManager =>
 			MauiContext?.GetNavigationRootManager();
@@ -113,7 +114,7 @@ namespace Microsoft.Maui.Controls
 			if ((commandBar.IsDynamicOverflowEnabled && item.Order == ToolbarItemOrder.Secondary) ||
 				source is FontImageSource)
 			{
-				button.Icon = source?.ToIconSource(MauiContext!)?.CreateIconElement();
+				button.SetBinding(AppBarButton.IconProperty, nameof(ToolbarItem.IconImageSource), _iconConverter);
 			}
 			else
 			{
