@@ -16,6 +16,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[Android] WindowSoftInputModeAdjust is not working for modal pages";
 
+		protected override bool ResetAfterEachTest => true;
+
 		[Test, Order(1)]
 		[Category(UITestCategories.Page)]
 		public void WindowSoftInputModeAdjustSetToResizeForModalPage()
