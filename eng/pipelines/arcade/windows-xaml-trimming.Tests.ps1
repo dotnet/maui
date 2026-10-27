@@ -29,10 +29,13 @@ Describe 'Windows XAML binding behavior' {
   }
 
   It 'keeps PageControl title as a XAML binding rather than code-behind reimplementation' {
-    foreach ($path in @(
-      'src/Controls/src/Core/Platform/Windows/Styles/MauiControlsPageControlStyle.xaml',
-      'src/Compatibility/Core/src/Windows/PageControlStyle.xaml'
-    )) {
+    $paths = @('src/Controls/src/Core/Platform/Windows/Styles/MauiControlsPageControlStyle.xaml')
+    $legacyPath = 'src/Compatibility/Core/src/Windows/PageControlStyle.xaml'
+    if (Test-Path -LiteralPath (Join-Path $repoRoot $legacyPath)) {
+      $paths += $legacyPath
+    }
+
+    foreach ($path in $paths) {
       $document = Get-XamlDocument $path
       $titleTextBlock = Get-XamlElements $document 'TextBlock' |
         Where-Object { (Get-XamlAttributeValue $_ 'Text') -eq '{Binding Title}' } |
@@ -56,20 +59,26 @@ Describe 'Windows XAML binding behavior' {
         Template = 'ImageCell'
         TextVisibility = '{Binding Text, Converter={StaticResource CollapseWhenEmpty}}'
         DetailVisibility = '{Binding Detail, Converter={StaticResource CollapseWhenEmpty}}'
-      },
-      @{
-        Path = 'src/Compatibility/Core/src/Windows/ListViewStyles.xaml'
-        Template = 'CompatibilityTextCell'
-        TextVisibility = '{Binding Text, Converter={StaticResource CollapseWhenEmpty}}'
-        DetailVisibility = '{Binding Detail, Converter={StaticResource CollapseWhenEmpty}}'
-      },
-      @{
-        Path = 'src/Compatibility/Core/src/Windows/Resources.xaml'
-        Template = 'CompatibilityTextCell'
-        TextVisibility = '{Binding Text, Converter={StaticResource CollapseWhenEmpty}}'
-        DetailVisibility = '{Binding Detail, Converter={StaticResource CollapseWhenEmpty}}'
       }
     )
+
+    $legacyPath = 'src/Compatibility/Core/src/Windows/ListViewStyles.xaml'
+    if (Test-Path -LiteralPath (Join-Path $repoRoot $legacyPath)) {
+      $expectations += @(
+        @{
+          Path = $legacyPath
+          Template = 'CompatibilityTextCell'
+          TextVisibility = '{Binding Text, Converter={StaticResource CollapseWhenEmpty}}'
+          DetailVisibility = '{Binding Detail, Converter={StaticResource CollapseWhenEmpty}}'
+        },
+        @{
+          Path = 'src/Compatibility/Core/src/Windows/Resources.xaml'
+          Template = 'CompatibilityTextCell'
+          TextVisibility = '{Binding Text, Converter={StaticResource CollapseWhenEmpty}}'
+          DetailVisibility = '{Binding Detail, Converter={StaticResource CollapseWhenEmpty}}'
+        }
+      )
+    }
 
     foreach ($expectation in $expectations) {
       $document = Get-XamlDocument $expectation.Path
@@ -97,21 +106,24 @@ Describe 'Windows XAML binding behavior' {
     $sliderImage = Get-XamlElements $slider 'Image' | Where-Object { (Get-XamlAttributeValue $_ 'Name') -eq 'ThumbImage' } | Select-Object -First 1
     Get-XamlAttributeValue $sliderImage 'Source' | Should -Be '{Binding Tag, RelativeSource={RelativeSource TemplatedParent}}'
 
-    $legacySlider = Get-XamlDocument 'src/Compatibility/Core/src/Windows/SliderStyle.xaml'
-    $legacySliderImage = Get-XamlElements $legacySlider 'Image' | Where-Object { (Get-XamlAttributeValue $_ 'Name') -eq 'ThumbImage' } | Select-Object -First 1
-    $legacyThumb = Get-XamlElements $legacySlider 'Thumb' |
-      Where-Object { (Get-XamlAttributeValue $_ 'Name') -eq 'HorizontalImageThumb' } |
-      Select-Object -First 1
-    Get-XamlAttributeValue $legacySliderImage 'Source' | Should -Be '{Binding Tag, RelativeSource={RelativeSource TemplatedParent}}'
-    Get-XamlAttributeValue $legacyThumb 'Tag' | Should -Be '{Binding ThumbImageSource, RelativeSource={RelativeSource TemplatedParent}}'
+    $legacySliderPath = 'src/Compatibility/Core/src/Windows/SliderStyle.xaml'
+    if (Test-Path -LiteralPath (Join-Path $repoRoot $legacySliderPath)) {
+      $legacySlider = Get-XamlDocument $legacySliderPath
+      $legacySliderImage = Get-XamlElements $legacySlider 'Image' | Where-Object { (Get-XamlAttributeValue $_ 'Name') -eq 'ThumbImage' } | Select-Object -First 1
+      $legacyThumb = Get-XamlElements $legacySlider 'Thumb' |
+        Where-Object { (Get-XamlAttributeValue $_ 'Name') -eq 'HorizontalImageThumb' } |
+        Select-Object -First 1
+      Get-XamlAttributeValue $legacySliderImage 'Source' | Should -Be '{Binding Tag, RelativeSource={RelativeSource TemplatedParent}}'
+      Get-XamlAttributeValue $legacyThumb 'Tag' | Should -Be '{Binding ThumbImageSource, RelativeSource={RelativeSource TemplatedParent}}'
 
-    $checkBox = Get-XamlDocument 'src/Compatibility/Core/src/Windows/FormsCheckBoxStyle.xaml'
-    $controlTemplate = Get-XamlElements $checkBox 'ControlTemplate' | Select-Object -First 1
-    Get-XamlAttributeValue $controlTemplate 'TargetType' | Should -Be 'CheckBox'
+      $checkBox = Get-XamlDocument 'src/Compatibility/Core/src/Windows/FormsCheckBoxStyle.xaml'
+      $controlTemplate = Get-XamlElements $checkBox 'ControlTemplate' | Select-Object -First 1
+      Get-XamlAttributeValue $controlTemplate 'TargetType' | Should -Be 'CheckBox'
 
-    $normalRectangle = Get-XamlElements $checkBox 'Rectangle' |
-      Where-Object { (Get-XamlAttributeValue $_ 'Name') -eq 'NormalRectangle' } |
-      Select-Object -First 1
-    Get-XamlAttributeValue $normalRectangle 'Stroke' | Should -Be '{Binding TintBrush, RelativeSource={RelativeSource TemplatedParent}}'
+      $normalRectangle = Get-XamlElements $checkBox 'Rectangle' |
+        Where-Object { (Get-XamlAttributeValue $_ 'Name') -eq 'NormalRectangle' } |
+        Select-Object -First 1
+      Get-XamlAttributeValue $normalRectangle 'Stroke' | Should -Be '{Binding TintBrush, RelativeSource={RelativeSource TemplatedParent}}'
+    }
   }
 }

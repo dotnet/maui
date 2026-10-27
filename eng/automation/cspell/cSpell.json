@@ -23,7 +23,13 @@
         "devicectl",
         "xcdevice",
         "MAUIX",
-        "Parameterless"
+        "Parameterless",
+        "Passwordless",
+        "PKCE",
+        "SWIX",
+        "Swix",
+        "unregistration",
+        "webauthn"
     ],
     "ignoreWords": [],
     "patterns": [
