@@ -25,6 +25,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		bool _disposed;
 		bool _originalAppearanceCaptured;
+		UiMode _originalNightMode;
 		ColorStateList _originalItemTextColor;
 		ColorStateList _originalItemIconTint;
 		Drawable _originalBackground;
@@ -44,6 +45,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public virtual void ResetAppearance(BottomNavigationView bottomView)
 		{
+			RefreshNativeAppearance(bottomView);
 			// If a custom renderer never called CaptureNativeAppearance, _originalItemIconTint/
 			// _originalItemTextColor/_originalBackground stay null - fall back to the M2-style defaults
 			// instead of nulling out the bottom nav's icon/text colors and background.
@@ -63,6 +65,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public virtual void SetAppearance(BottomNavigationView bottomView, IShellAppearanceElement appearance)
 		{
+			RefreshNativeAppearance(bottomView);
 			IShellAppearanceElement controller = appearance;
 			var backgroundColor = controller.EffectiveTabBarBackgroundColor;
 			var foregroundColor = controller.EffectiveTabBarForegroundColor;
@@ -99,7 +102,22 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_originalItemTextColor = bottomView.ItemTextColor;
 			_originalItemIconTint = bottomView.ItemIconTintList;
 			_originalBackground = bottomView.Background;
+			_originalNightMode = bottomView.Context.Resources.Configuration.UiMode & UiMode.NightMask;
 			_originalAppearanceCaptured = true;
+		}
+
+		void RefreshNativeAppearance(BottomNavigationView bottomView)
+		{
+			if (!RuntimeFeature.IsMaterial3Enabled || !_originalAppearanceCaptured ||
+				_originalNightMode == ShellAppearanceTheme.GetNightMode(bottomView.Context))
+				return;
+
+			using var context = ShellAppearanceTheme.CreateContext(bottomView.Context);
+			using var defaults = new BottomNavigationView(context, null, Resource.Attribute.bottomNavigationViewStyle);
+			_originalItemTextColor = defaults.ItemTextColor;
+			_originalItemIconTint = defaults.ItemIconTintList;
+			_originalBackground = defaults.Background;
+			_originalNightMode = ShellAppearanceTheme.GetNightMode(bottomView.Context);
 		}
 
 		void RestoreBackground(BottomNavigationView bottomView)

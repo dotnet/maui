@@ -15,9 +15,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 	{
 		bool _disposed;
 		bool _originalAppearanceCaptured;
+		UiMode _originalNightMode;
 		// Defaults to the M2 fallback so BarTextColor/BarBackground/IconColor are never null even if
 		// a custom renderer never calls CaptureNativeColors; CaptureNativeColors overwrites these with
-		// the real native values once it runs.
+		// the real native values once it runs; theme changes refresh them from a new native widget.
 		Color _originalNativeTitleColor = ShellRenderer.DefaultTitleColor;
 		Color _originalNativeBackgroundColor = ShellRenderer.DefaultBackgroundColor;
 		IShellContext _shellContext;
@@ -29,6 +30,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public virtual void SetAppearance(AToolbar toolbar, IShellToolbarTracker toolbarTracker, ShellAppearance appearance)
 		{
+			RefreshNativeColors(toolbar);
 			var foreground = appearance.ForegroundColor;
 			var background = appearance.BackgroundColor;
 			var titleColor = appearance.TitleColor;
@@ -38,6 +40,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public virtual void ResetAppearance(AToolbar toolbar, IShellToolbarTracker toolbarTracker)
 		{
+			RefreshNativeColors(toolbar);
 			if (RuntimeFeature.IsMaterial3Enabled)
 			{
 				RestoreNativeColors(toolbar, toolbarTracker);
@@ -104,6 +107,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (_originalAppearanceCaptured)
 				return;
 
+			ReadNativeColors(toolbar);
+			_originalAppearanceCaptured = true;
+		}
+
+		void ReadNativeColors(AToolbar toolbar)
+		{
 			var context = toolbar?.Context;
 			if (context is not null)
 			{
@@ -121,7 +130,18 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_originalNativeBackgroundColor = Color.FromInt(colorDrawable.Color);
 			}
 
-			_originalAppearanceCaptured = true;
+			_originalNightMode = context?.Resources?.Configuration?.UiMode & UiMode.NightMask ?? UiMode.NightUndefined;
+		}
+
+		void RefreshNativeColors(AToolbar toolbar)
+		{
+			if (!RuntimeFeature.IsMaterial3Enabled || !_originalAppearanceCaptured ||
+				_originalNightMode == ShellAppearanceTheme.GetNightMode(toolbar.Context))
+				return;
+
+			using var context = ShellAppearanceTheme.CreateContext(toolbar.Context);
+			using var defaults = new Google.Android.Material.AppBar.MaterialToolbar(context);
+			ReadNativeColors(defaults);
 		}
 
 		#region IDisposable

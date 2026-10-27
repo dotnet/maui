@@ -14,6 +14,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 	{
 		bool _disposed;
 		bool _originalAppearanceCaptured;
+		UiMode _originalNightMode;
 		ColorStateList _originalTextColors;
 		Drawable _originalBackground;
 		int? _originalIndicatorColor;
@@ -26,6 +27,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public virtual void ResetAppearance(TabLayout tabLayout)
 		{
+			RefreshNativeColors(tabLayout);
 			if (RuntimeFeature.IsMaterial3Enabled)
 			{
 				RestoreNativeColors(tabLayout);
@@ -41,6 +43,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public virtual void SetAppearance(TabLayout tabLayout, ShellAppearance appearance)
 		{
+			RefreshNativeColors(tabLayout);
 			var foreground = appearance.ForegroundColor;
 			var background = appearance.BackgroundColor;
 			var titleColor = appearance.TitleColor;
@@ -106,7 +109,22 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var context = tabLayout.Context;
 			_originalIndicatorColor = context?.GetThemeAttrColor(Resource.Attribute.colorPrimary);
 
+			_originalNightMode = context.Resources.Configuration.UiMode & UiMode.NightMask;
 			_originalAppearanceCaptured = true;
+		}
+
+		void RefreshNativeColors(TabLayout tabLayout)
+		{
+			if (!RuntimeFeature.IsMaterial3Enabled || !_originalAppearanceCaptured ||
+				_originalNightMode == ShellAppearanceTheme.GetNightMode(tabLayout.Context))
+				return;
+
+			using var context = ShellAppearanceTheme.CreateContext(tabLayout.Context);
+			using var defaults = new TabLayout(context);
+			_originalTextColors = defaults.TabTextColors;
+			_originalBackground = defaults.Background;
+			_originalIndicatorColor = defaults.Context.GetThemeAttrColor(Resource.Attribute.colorPrimary);
+			_originalNightMode = ShellAppearanceTheme.GetNightMode(tabLayout.Context);
 		}
 
 		void RestoreNativeColors(TabLayout tabLayout)
