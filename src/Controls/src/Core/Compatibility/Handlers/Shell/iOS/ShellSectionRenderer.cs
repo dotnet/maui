@@ -191,6 +191,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			// we now route this through "GoToAsync"
 			CoreFoundation.DispatchQueue.MainQueue.DispatchAsync(async () =>
 			{
+				// The renderer can be disposed before this runs or while the navigation is awaited
+				if (_disposed)
+					return;
+
 				var navItemsCount = NavigationBar.Items.Length;
 
 				try
@@ -201,6 +205,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				{
 					_sendPopPending = false;
 				}
+
+				if (_disposed)
+					return;
 
 				// This means the navigation was cancelled
 				if (NavigationBar.Items.Length == navItemsCount)

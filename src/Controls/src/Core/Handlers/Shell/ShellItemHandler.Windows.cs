@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -31,6 +32,7 @@ namespace Microsoft.Maui.Controls.Handlers
 		IShellAppearanceElement? _shellAppearanceElement;
 		readonly HashSet<ShellSection> _trackedShellSections = new();
 		readonly HashSet<ShellSection> _badgeTrackedSections = new();
+		ItemsRepeater? _overflowMenuItemsHost;
 
 		public ShellItemHandler() : base(Mapper, CommandMapper)
 		{
@@ -76,7 +78,12 @@ namespace Microsoft.Maui.Controls.Handlers
 
 			base.ConnectHandler(platformView);
 
-			mauiNavView?.SelectionChanged += OnNavigationTabChanged;
+			if (mauiNavView is not null)
+			{
+				mauiNavView.SelectionChanged += OnNavigationTabChanged;
+				mauiNavView.OnApplyTemplateFinished += OnNavigationViewApplyTemplateFinished;
+				TrackOverflowMenuItems(mauiNavView.TopNavMenuItemsOverflowHost);
+			}
 
 			if (VirtualView.Parent is Shell shell)
 			{
@@ -91,6 +98,7 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (platformView is MauiNavigationView mnv)
 			{
 				mnv.SelectionChanged -= OnNavigationTabChanged;
+				mnv.OnApplyTemplateFinished -= OnNavigationViewApplyTemplateFinished;
 				if (mnv.AutoSuggestBox is { } autoSuggestBox)
 				{
 					autoSuggestBox.TextChanged -= OnSearchBoxTextChanged;
@@ -103,6 +111,7 @@ namespace Microsoft.Maui.Controls.Handlers
 			}
 
 			platformView.Loaded -= OnNavigationViewLoaded;
+			TrackOverflowMenuItems(null);
 
 			_currentShellSection?.PropertyChanged -= OnCurrentShellSectionPropertyChanged;
 
@@ -232,6 +241,70 @@ namespace Microsoft.Maui.Controls.Handlers
 			}
 		}
 
+		void OnNavigationViewApplyTemplateFinished(object? sender, EventArgs e)
+		{
+			if (sender is MauiNavigationView mauiNavView)
+				TrackOverflowMenuItems(mauiNavView.TopNavMenuItemsOverflowHost);
+		}
+
+		void TrackOverflowMenuItems(ItemsRepeater? overflowMenuItemsHost)
+		{
+			if (_overflowMenuItemsHost == overflowMenuItemsHost)
+				return;
+
+			if (_overflowMenuItemsHost is not null)
+			{
+				_overflowMenuItemsHost.ElementPrepared -= OnOverflowMenuItemPrepared;
+				_overflowMenuItemsHost.ElementClearing -= OnOverflowMenuItemClearing;
+			}
+
+			_overflowMenuItemsHost = overflowMenuItemsHost;
+
+			if (_overflowMenuItemsHost is not null)
+			{
+				_overflowMenuItemsHost.ElementPrepared += OnOverflowMenuItemPrepared;
+				_overflowMenuItemsHost.ElementClearing += OnOverflowMenuItemClearing;
+			}
+		}
+
+		static void OnOverflowMenuItemPrepared(ItemsRepeater sender, ItemsRepeaterElementPreparedEventArgs args)
+		{
+			if (args.Element is NavigationViewItem item)
+				UpdateOverflowMenuItemSelectsOnInvoked(item);
+		}
+
+		static void OnOverflowMenuItemClearing(ItemsRepeater sender, ItemsRepeaterElementClearingEventArgs args)
+		{
+			// Containers are reused between the overflow menu and the tab bar
+			if (args.Element is NavigationViewItem item)
+				item.ClearValue(NavigationViewItem.SelectsOnInvokedProperty);
+		}
+
+		// MapMenuItems can add or remove the sub tabs of a tab that already sits in the overflow menu
+		void UpdateOverflowMenuItems()
+		{
+			if (_overflowMenuItemsHost?.ItemsSourceView is not { } overflowMenuItems)
+				return;
+
+			for (int i = 0; i < overflowMenuItems.Count; i++)
+			{
+				if (_overflowMenuItemsHost.TryGetElement(i) is NavigationViewItem item)
+					UpdateOverflowMenuItemSelectsOnInvoked(item);
+			}
+		}
+
+		// WinUI can't select a data bound item that has children while it sits in the overflow menu of the
+		// top tab bar. It doesn't find the item's container there, and expanding the item right after the
+		// click fails with E_BOUNDS (https://github.com/dotnet/maui/issues/37985). So in the overflow menu
+		// a tab with sub tabs only expands, and the navigation happens when one of its sub tabs is picked.
+		static void UpdateOverflowMenuItemSelectsOnInvoked(NavigationViewItem item)
+		{
+			if (item.DataContext is NavigationViewItemViewModel { MenuItemsSource: not null })
+				item.SelectsOnInvoked = false;
+			else
+				item.ClearValue(NavigationViewItem.SelectsOnInvokedProperty);
+		}
+
 		internal void MapMenuItems()
 		{
 			// Unsubscribe from previously tracked sections to prevent duplicate PropertyChanged subscriptions
@@ -301,7 +374,9 @@ namespace Microsoft.Maui.Controls.Handlers
 				void SetValues(BaseShellItem bsi, NavigationViewItemViewModel vm)
 				{
 					vm.Content = bsi.Title;
+
 					vm.IsEnabled = bsi.IsEnabled;
+
 					var iconSource = bsi.Icon?.ToIconSource(MauiContext!);
 
 					if (iconSource != null)
@@ -324,8 +399,15 @@ namespace Microsoft.Maui.Controls.Handlers
 				}
 			});
 
+			UpdateOverflowMenuItems();
+
 			if (PlatformView is NavigationView navView && navView.SelectedItem != selectedItem)
 				navView.SelectedItem = selectedItem;
+
+			if (_shellAppearanceElement is not null)
+			{
+				UpdateAppearance(_shellAppearanceElement);
+			}
 
 			UpdateValue(Shell.TabBarIsVisibleProperty.PropertyName);
 			TrackBadgeSections();
@@ -832,12 +914,15 @@ namespace Microsoft.Maui.Controls.Handlers
 			var foregroundColor = _shellAppearanceElement.EffectiveTabBarForegroundColor?.AsPaint();
 			var unselectedColor = _shellAppearanceElement.EffectiveTabBarUnselectedColor?.AsPaint();
 			var titleColor = _shellAppearanceElement.EffectiveTabBarTitleColor?.AsPaint();
+			var disabledColor = _shellAppearanceElement.EffectiveTabBarDisabledColor?.AsPaint();
 
 			mauiNavView.UpdateTopNavAreaBackground(backgroundColor);
 			mauiNavView.UpdateTopNavigationViewItemUnselectedColor(unselectedColor);
+			// Update the fallback resources before overriding them with the disabled color.
 			mauiNavView.UpdateTopNavigationViewItemTextSelectedColor(titleColor ?? foregroundColor);
 			mauiNavView.UpdateTopNavigationViewItemTextColor(unselectedColor);
 			mauiNavView.UpdateTopNavigationViewItemSelectedColor(foregroundColor ?? titleColor);
+			mauiNavView.UpdateTopNavigationViewItemDisabledColor(disabledColor);
 		}
 
 		void OnApplyTemplateFinished(object? sender, EventArgs e)

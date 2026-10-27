@@ -227,7 +227,8 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 
 		/// <summary>
 		/// Marks the manager as disposing to prevent further operations.
-		/// This should be called by the owning control before starting disposal.
+		/// This should be called by the owning control after page disposal completes,
+		/// but before disposing the native WebView.
 		/// </summary>
 		internal void MarkAsDisposing()
 		{
