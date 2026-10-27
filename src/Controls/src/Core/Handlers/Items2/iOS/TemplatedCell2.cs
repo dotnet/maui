@@ -127,14 +127,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 				if (_measureInvalidated || constraintsChanged)
 				{
-					// Dynamic content invalidations need an inline arrange so the
-					// updated content is rendered immediately. Constraint changes,
-					// such as rotation, are deferred to LayoutSubviews when the
-					// cell has already been arranged so the final native bounds
-					// are used for the arrange.
-					shouldArrangeInline =
-						!constraintsChanged && !_invalidatedDuringArrange;
-
+					// External invalidations need a synchronous arrange even if the outer
+					// size is unchanged. Arrange-induced invalidations only need another
+					// inline arrange when measurement produces a different size.
+					shouldArrangeInline = !_invalidatedDuringArrange || constraintsChanged;
 					_invalidatedDuringArrange = false;
 
 					// Preserve invalidations raised by Measure or Arrange for the next pass.
@@ -187,8 +183,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				preferredAttributes.ZIndex = 2;
 
 				if (_needsArrange &&
-					((shouldArrangeInline && _hasArrangedSize) ||
-						!_hasArrangedSize))
+					(shouldArrangeInline ||
+						!_hasArrangedSize ||
+						!size.ToCGSize().IsCloseTo(_lastArrangedSize)))
 				{
 					ArrangeVirtualView(virtualView, size);
 				}
@@ -271,8 +268,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					double.IsPositiveInfinity(_cachedConstraints.Height) ? boundsSize.Height : _cachedConstraints.Height));
 
 				if (safeAreaChanged ||
-					needsFinalArrange ||
-					(boundsChanged && measuredConstraintsMatchBounds))
+					(boundsChanged && (needsFinalArrange || measuredConstraintsMatchBounds)))
 				{
 					ArrangeVirtualView(virtualView, boundsSize);
 				}
