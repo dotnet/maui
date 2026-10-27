@@ -32,6 +32,15 @@ namespace Microsoft.Maui.Controls.Platform
 		static readonly ConditionalWeakTable<BottomNavigationView, MenuGeneration> s_menuGenerations =
 			new ConditionalWeakTable<BottomNavigationView, MenuGeneration>();
 
+		/// <summary>
+		/// Maximum number of items allowed in the bottom navigation bar.
+		/// Newer versions of the Xamarin.Google.Android.Material package report
+		/// <c>BottomNavigationView.MaxItemCount</c> as 6, whereas older versions returned 5.
+		/// Clamped to 5 for consistent behavior regardless of the Material library version.
+		/// See https://github.com/dotnet/maui/pull/33450
+		/// </summary>
+		internal const int MaxBottomNavigationItems = 5;
+
 		public static Drawable CreateItemBackgroundDrawable()
 		{
 			var stateList = ColorStateList.ValueOf(Colors.Black.MultiplyAlpha(0.2f).ToPlatform());
@@ -65,7 +74,8 @@ namespace Microsoft.Maui.Controls.Platform
 			BottomNavigationView bottomView,
 			IMauiContext mauiContext,
 			Func<bool> isCurrent,
-			out IMenuItem menuItem)
+			out IMenuItem menuItem,
+			Action<IMenuItem> onIconLoaded = null)
 		{
 			Task returnValue;
 			using var title = new Java.Lang.String(item.title);
@@ -74,7 +84,8 @@ namespace Microsoft.Maui.Controls.Platform
 				menuItem,
 				item.icon,
 				mauiContext,
-				isCurrent);
+				isCurrent,
+				onIconLoaded);
 			UpdateEnabled(item.tabEnabled, menuItem);
 			if (index == currentIndex)
 			{
@@ -92,8 +103,10 @@ namespace Microsoft.Maui.Controls.Platform
 			int currentIndex,
 			BottomNavigationView bottomView,
 			IMauiContext mauiContext,
-			Action<IReadOnlyList<IMenuItem>> menuItemsUpdated = null)
+			Action<IReadOnlyList<IMenuItem>> menuItemsUpdated = null,
+			Action<IMenuItem> onIconLoaded = null)
 		{
+			maxBottomItems = Math.Min(maxBottomItems, MaxBottomNavigationItems);
 			Context context = mauiContext.Context;
 			var generation = s_menuGenerations.GetOrCreateValue(bottomView);
 			var generationValue = Interlocked.Increment(ref generation.Value);
@@ -124,7 +137,8 @@ namespace Microsoft.Maui.Controls.Platform
 						bottomView,
 						mauiContext,
 						isCurrent,
-						out menuItem));
+						out menuItem,
+						onIconLoaded));
 				else
 				{
 					menuItem = menu.GetItem(i);
@@ -139,7 +153,8 @@ namespace Microsoft.Maui.Controls.Platform
 							bottomView,
 							mauiContext,
 							isCurrent,
-							out menuItem));
+							out menuItem,
+							onIconLoaded));
 					}
 					else
 					{
@@ -148,7 +163,15 @@ namespace Microsoft.Maui.Controls.Platform
 							menuItem,
 							item.icon,
 							mauiContext,
-							isCurrent));
+							isCurrent,
+							onIconLoaded));
+						// Reapply enabled/selected state since this IMenuItem is being reused, not recreated.
+						UpdateEnabled(item.tabEnabled, menuItem);
+						if (i == currentIndex)
+						{
+							menuItem.SetChecked(true);
+							bottomView.SelectedItemId = i;
+						}
 					}
 				}
 
@@ -159,33 +182,55 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			var menuSize = menu.Size();
-			if (showMore)
+			IMenuItem moreMenuItem = null;
+			if (showMore && menu.GetItem(menuSize - 1).ItemId != MoreTabId)
 			{
-				IMenuItem menuItem;
-				if (menuSize == 0 || menu.GetItem(menuSize - 1).ItemId != MoreTabId)
-				{
-					var moreString = context.Resources.GetText(Resource.String.overflow_tab_title);
-					if (menuSize == maxBottomItems)
-						menu.RemoveItem(menu.GetItem(menuSize - 1).ItemId);
-					menuItem = menu.Add(0, MoreTabId, 0, moreString);
+				var moreString = context.Resources.GetText(Resource.String.overflow_tab_title);
+				if (menuSize == maxBottomItems)
+					menu.RemoveItem(menu.GetItem(menuSize - 1).ItemId);
+				moreMenuItem = menu.Add(0, MoreTabId, 0, moreString);
+				menuItems.Add(moreMenuItem);
 
-					menuItem.SetIcon(Resource.Drawable.abc_ic_menu_overflow_material);
-					if (currentIndex >= maxBottomItems - 1)
-						menuItem.SetChecked(true);
-				}
-				else
-				{
-					menuItem = menu.GetItem(menuSize - 1);
-				}
+				moreMenuItem.SetIcon(Resource.Drawable.abc_ic_menu_overflow_material);
+			}
+			else if (showMore)
+			{
+				// The More item already exists (reused, not recreated) — still need to
+				// reapply its selected state below in case currentIndex has changed.
+				moreMenuItem = menu.GetItem(menuSize - 1);
+			}
 
-				menuItems.Add(menuItem);
+			if (moreMenuItem is not null)
+			{
+				if (!menuItems.Contains(moreMenuItem))
+					menuItems.Add(moreMenuItem);
+
+				if (currentIndex >= maxBottomItems - 1)
+				{
+					// Use SetChecked only — setting SelectedItemId would trigger ShowMoreBottomSheet().
+					moreMenuItem.SetChecked(true);
+				}
 			}
 
 			bottomView.SetShiftMode(false, false);
 			menuItemsUpdated?.Invoke(menuItems);
 
 			if (loadTasks.Count > 0)
-				await Task.WhenAll(loadTasks);
+			{
+				try
+				{
+					await Task.WhenAll(loadTasks);
+				}
+				catch (Exception ex)
+				{
+					// SetupMenu is async void — an unhandled exception here would crash
+					// the app. SetMenuItemIcon itself no longer swallows exceptions so
+					// its other caller (ShellItemRenderer.UpdateShellSectionIcon, via
+					// FireAndForget) can still observe/log a faulted Task; this catch
+					// only protects SetupMenu's own async-void boundary.
+					System.Diagnostics.Debug.WriteLine($"SetupMenu: one or more icon loads failed: {ex}");
+				}
+			}
 		}
 
 		internal static void SetMenuItemTitle(IMenuItem menuItem, string title)
@@ -194,18 +239,36 @@ namespace Microsoft.Maui.Controls.Platform
 			menuItem.SetTitle(jTitle);
 		}
 
+		// Records which ImageSource each reused IMenuItem is currently supposed to show, so a
+		// slower, stale load can detect it has been superseded.
+		static readonly ConditionalWeakTable<IMenuItem, ImageSource> s_pendingIconSource = new();
+
 		internal static async Task SetMenuItemIcon(
 			IMenuItem menuItem,
 			ImageSource source,
 			IMauiContext context,
-			Func<bool> isCurrent = null)
+			Func<bool> isCurrent = null,
+			Action<IMenuItem> onIconLoaded = null)
 		{
 			if (!menuItem.IsAlive() || isCurrent?.Invoke() == false)
 				return;
 
 			if (source is null)
+			{
+				s_pendingIconSource.Remove(menuItem);
+				// Clear any stale icon left on this (possibly reused) menu item.
+				menuItem.SetIcon(null);
+				onIconLoaded?.Invoke(menuItem);
 				return;
+			}
 
+			s_pendingIconSource.AddOrUpdate(menuItem, source);
+
+			// Exceptions are intentionally allowed to propagate here (not swallowed) so
+			// callers can observe/log failures via the returned Task — e.g. the legacy
+			// ShellItemRenderer.UpdateShellSectionIcon relies on FireAndForget's error
+			// handler seeing a faulted Task. SetupMenu (the other caller) guards its own
+			// async-void boundary separately when awaiting these tasks.
 			var services = context.Services;
 			var provider = services.GetRequiredService<IImageSourceServiceProvider>();
 			var imageSourceService = provider.GetRequiredImageSourceService(source);
@@ -214,9 +277,17 @@ namespace Microsoft.Maui.Controls.Platform
 				source,
 				context.Context);
 
-			if (menuItem.IsAlive() && isCurrent?.Invoke() != false)
+			// Skip applying if this menu item has since been repurposed for a different
+			// source (i.e. a newer SetMenuItemIcon call updated the pending source above).
+			if (menuItem.IsAlive() &&
+				isCurrent?.Invoke() != false &&
+				s_pendingIconSource.TryGetValue(menuItem, out var pending) &&
+				ReferenceEquals(pending, source))
 			{
 				menuItem.SetIcon(result?.Value);
+				// Let the caller reapply per-item icon tint (e.g. to preserve a
+				// FontImageSource's own Color) now that the drawable is installed.
+				onIconLoaded?.Invoke(menuItem);
 			}
 		}
 
@@ -270,7 +341,7 @@ namespace Microsoft.Maui.Controls.Platform
 			IMauiContext mauiContext,
 			List<(string title, ImageSource icon, bool tabEnabled)> items)
 		{
-			return CreateMoreBottomSheet(selectCallback, mauiContext, items, 5);
+			return CreateMoreBottomSheet(selectCallback, mauiContext, items, MaxBottomNavigationItems);
 		}
 
 		internal static BottomSheetDialog CreateMoreBottomSheet(
@@ -280,6 +351,7 @@ namespace Microsoft.Maui.Controls.Platform
 			int maxItemCount,
 			Action<int, AView> rowCreated = null)
 		{
+			maxItemCount = Math.Min(maxItemCount, MaxBottomNavigationItems);
 			var context = mauiContext.Context;
 			var bottomSheetDialog = new BottomSheetDialog(context);
 			var bottomSheetLayout = new LinearLayout(context);

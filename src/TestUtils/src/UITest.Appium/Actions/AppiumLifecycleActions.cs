@@ -106,14 +106,9 @@ namespace UITest.Appium
 					{ "environment", args },
 				});
 			}
-			else if (_app.GetTestDevice() == TestDevice.Android && args.TryGetValue("test", out var androidTest))
+			else if (_app.GetTestDevice() == TestDevice.Android)
 			{
-				_app.Driver.ExecuteScript("mobile: startActivity", new Dictionary<string, object>
-				{
-					{ "component", $"{_app.GetAppId()}/{_app.GetAppId()}.MainActivity" },
-					{ "stop", true },
-					{ "extras", new[] { new[] { "s", "test", AppLaunchArguments.QuoteAndroidShellArgument(androidTest) } } }
-				});
+				AppiumAndroidApp.ActivateApp(_app, forceRestart: args.ContainsKey("test"));
 			}
 			else
 			{
@@ -134,7 +129,11 @@ namespace UITest.Appium
 			}
 			else
 			{
-				_app.Driver.ActivateApp(_app.GetAppId());
+				if (_app is AppiumAndroidApp androidApp)
+					androidApp.ActivateApp();
+				else
+					_app.Driver.ActivateApp(_app.GetAppId());
+
 				// Give it time for the animation to settle, otherwise there's a risk
 				// of picking wrong elements coordinates and `Tap`s will fail silently.
 				Thread.Sleep(100);
@@ -383,12 +382,21 @@ namespace UITest.Appium
 				//    case the driver session is wedged from the crash.
 				try
 				{
-					_app.Driver.ActivateApp(appId);
+					LaunchApp(parameters);
 				}
 				catch (Exception ex)
 				{
-					Debug.WriteLine($">>>>> RecoverFromCrash ActivateApp failed, falling back to monkey: {ex.Message}");
-					RunAdb("shell", "monkey", "-p", appId, "-c", "android.intent.category.LAUNCHER", "1");
+					Debug.WriteLine($">>>>> RecoverFromCrash launch failed, falling back to adb: {ex.Message}");
+					var args = _app.Config.GetProperty<Dictionary<string, string>>("TestConfigurationArgs");
+					if (args is not null && args.TryGetValue("TEST_CONFIGURATION_ARGS", out var configurationArgs) && !string.IsNullOrEmpty(configurationArgs))
+					{
+						RunAdb("shell", "am", "start", "-W", "-n", $"{appId}/{appId}.MainActivity",
+							"--es", "TEST_CONFIGURATION_ARGS", configurationArgs);
+					}
+					else
+					{
+						RunAdb("shell", "monkey", "-p", appId, "-c", "android.intent.category.LAUNCHER", "1");
+					}
 				}
 
 				return CommandResponse.SuccessEmptyResponse;

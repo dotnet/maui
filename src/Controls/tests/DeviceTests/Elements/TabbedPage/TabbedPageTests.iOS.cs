@@ -3,22 +3,384 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CoreAnimation;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Handlers.Compatibility;
+using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using UIKit;
+using Xunit;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.TabbedPage)]
 	public partial class TabbedPageTests
 	{
+		[Fact(DisplayName = "TabbedPage BarBackground gradient persists after iOS 15 appearance update")]
+		public async Task BarBackgroundGradientPersistsAfteriOS15AppearanceUpdate()
+		{
+			if (!OperatingSystem.IsIOSVersionAtLeast(15) && !OperatingSystem.IsMacCatalystVersionAtLeast(15))
+				return;
+
+			SetupBuilder();
+			var tabbedPage = CreateBasicTabbedPage();
+			tabbedPage.BarBackground = new LinearGradientBrush(
+				new GradientStopCollection
+				{
+					new GradientStop(Colors.Red, 0),
+					new GradientStop(Colors.Blue, 1)
+				},
+				new Point(0, 0),
+				new Point(1, 1));
+			tabbedPage.SelectedTabColor = Colors.Green;
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(tabbedPage), handler =>
+			{
+				Assert.Single(GetTabBar(tabbedPage).Layer.Sublayers.OfType<CAGradientLayer>());
+
+				tabbedPage.BarTextColor = Colors.Green;
+
+				Assert.Single(GetTabBar(tabbedPage).Layer.Sublayers.OfType<CAGradientLayer>());
+
+				return Task.CompletedTask;
+			});
+		}
+
+		[Fact]
+		public async Task GradientGeometryChangesUpdateNativeAppearance()
+		{
+			if (!OperatingSystem.IsIOSVersionAtLeast(15) && !OperatingSystem.IsMacCatalystVersionAtLeast(15))
+				return;
+
+			SetupBuilder();
+			var tabbedPage = CreateBasicTabbedPage();
+			var gradient = new LinearGradientBrush(
+				new GradientStopCollection
+				{
+					new GradientStop(Colors.Red, 0),
+					new GradientStop(Colors.Blue, 1)
+				},
+				new Point(0, 0),
+				new Point(1, 1));
+			tabbedPage.BarBackground = gradient;
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(tabbedPage), handler =>
+			{
+				var tabBar = GetTabBar(tabbedPage);
+				gradient.StartPoint = new Point(0.25, 0.5);
+				gradient.EndPoint = new Point(0.75, 0);
+
+				var layer = Assert.Single(tabBar.Layer.Sublayers.OfType<CAGradientLayer>());
+				Assert.Equal(0.25, (double)layer.StartPoint.X);
+				Assert.Equal(0.5, (double)layer.StartPoint.Y);
+				Assert.Equal(0.75, (double)layer.EndPoint.X);
+				Assert.Equal(0, (double)layer.EndPoint.Y);
+				return Task.CompletedTask;
+			});
+		}
+
+		[Fact]
+		public async Task SolidBarBackgroundColorChangesUpdateNativeAppearance()
+		{
+			if (!OperatingSystem.IsIOSVersionAtLeast(15) && !OperatingSystem.IsMacCatalystVersionAtLeast(15))
+				return;
+
+			SetupBuilder();
+			var tabbedPage = CreateBasicTabbedPage();
+			var original = new SolidColorBrush(Colors.Red);
+			tabbedPage.BarBackground = original;
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(tabbedPage), handler =>
+			{
+				var tabBar = GetTabBar(tabbedPage);
+				Assert.True(ColorComparison.ARGBEquivalent(Colors.Red.ToPlatform(), tabBar.BackgroundColor));
+
+				original.Color = Colors.Blue;
+				Assert.True(ColorComparison.ARGBEquivalent(Colors.Blue.ToPlatform(), tabBar.StandardAppearance.BackgroundColor));
+				Assert.True(ColorComparison.ARGBEquivalent(Colors.Blue.ToPlatform(), tabBar.BackgroundColor));
+
+				var replacement = new SolidColorBrush(Colors.Green);
+				tabbedPage.BarBackground = replacement;
+				original.Color = Colors.Yellow;
+				Assert.True(ColorComparison.ARGBEquivalent(Colors.Green.ToPlatform(), tabBar.BackgroundColor));
+
+				replacement.Color = Colors.Purple;
+				Assert.True(ColorComparison.ARGBEquivalent(Colors.Purple.ToPlatform(), tabBar.BackgroundColor));
+
+				tabbedPage.BarBackground = null;
+				replacement.Color = Colors.Red;
+				Assert.Null(tabBar.BackgroundColor);
+				return Task.CompletedTask;
+			});
+		}
+
+		[Theory]
+		[InlineData(false, false)]
+		[InlineData(false, true)]
+		[InlineData(true, false)]
+		[InlineData(true, true)]
+		public async Task UnsupportedBarBackgroundFallsBackToColor(bool customGradient, bool hasBackgroundColor)
+		{
+			if (!OperatingSystem.IsIOSVersionAtLeast(15) && !OperatingSystem.IsMacCatalystVersionAtLeast(15))
+				return;
+
+			SetupBuilder();
+			var tabbedPage = CreateBasicTabbedPage();
+			tabbedPage.BarBackground = customGradient
+				? new UnsupportedGradientBrush
+				{
+					GradientStops = new GradientStopCollection
+					{
+						new GradientStop(Colors.Red, 0),
+						new GradientStop(Colors.Blue, 1)
+					}
+				}
+				: new ImageBrush(ImageSource.FromFile("background.png"));
+			if (hasBackgroundColor)
+				tabbedPage.BarBackgroundColor = Colors.Blue;
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(tabbedPage), handler =>
+			{
+				var tabBar = GetTabBar(tabbedPage);
+				var expectedColor = hasBackgroundColor ? Colors.Blue.ToPlatform() : null;
+				Assert.True(ColorComparison.ARGBEquivalent(expectedColor, tabBar.StandardAppearance.BackgroundColor));
+				Assert.Null(tabBar.BackgroundColor);
+				return Task.CompletedTask;
+			});
+		}
+
+		sealed class UnsupportedGradientBrush : GradientBrush
+		{
+		}
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task LegacyBarBackgroundColorPreservesNativeViewBackground(bool afterGradient)
+		{
+			if (!OperatingSystem.IsIOSVersionAtLeast(15) && !OperatingSystem.IsMacCatalystVersionAtLeast(15))
+				return;
+
+			SetupBuilder();
+			var tabbedPage = CreateBasicTabbedPage();
+			tabbedPage.BarBackgroundColor = Colors.Blue;
+			if (afterGradient)
+			{
+				tabbedPage.BarBackground = new LinearGradientBrush(
+					new GradientStopCollection
+					{
+						new GradientStop(Colors.Red, 0),
+						new GradientStop(Colors.Blue, 1)
+					},
+					new Point(0, 0),
+					new Point(1, 1));
+			}
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(tabbedPage), handler =>
+			{
+				var tabBar = GetTabBar(tabbedPage);
+				tabbedPage.BarBackground = null;
+
+				Assert.True(ColorComparison.ARGBEquivalent(Colors.Blue.ToPlatform(), tabBar.StandardAppearance.BackgroundColor));
+				Assert.Null(tabBar.BackgroundColor);
+				Assert.DoesNotContain(tabBar.Layer.Sublayers ?? Array.Empty<CALayer>(), layer => layer is CAGradientLayer);
+				return Task.CompletedTask;
+			});
+		}
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task BarBackgroundTransitionRemovesGradientAndRestoresEffect(bool useSolidBackground)
+		{
+			if (!OperatingSystem.IsIOSVersionAtLeast(15) && !OperatingSystem.IsMacCatalystVersionAtLeast(15))
+				return;
+
+			SetupBuilder();
+			var tabbedPage = CreateBasicTabbedPage();
+			tabbedPage.BarBackground = new LinearGradientBrush(
+				new GradientStopCollection
+				{
+					new GradientStop(Colors.Red, 0),
+					new GradientStop(Colors.Blue, 1)
+				},
+				new Point(0, 0),
+				new Point(1, 1));
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(tabbedPage), handler =>
+			{
+				var tabBar = GetTabBar(tabbedPage);
+				Assert.Single(tabBar.Layer.Sublayers.OfType<CAGradientLayer>());
+
+				tabbedPage.BarBackground = useSolidBackground ? new SolidColorBrush(Colors.Green) : null;
+
+				using var defaultAppearance = new UITabBarAppearance();
+				defaultAppearance.ConfigureWithDefaultBackground();
+				Assert.Equal(defaultAppearance.BackgroundEffect?.GetType(), tabBar.StandardAppearance.BackgroundEffect?.GetType());
+				Assert.True(ColorComparison.ARGBEquivalent(useSolidBackground ? Colors.Green.ToPlatform() : null, tabBar.BackgroundColor));
+				Assert.DoesNotContain(tabBar.Layer.Sublayers, layer => layer is CAGradientLayer);
+				return Task.CompletedTask;
+			});
+		}
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task TabBarBackgroundEffectIsRestoredAfterGradient(bool useSolidBackground)
+		{
+			if (!OperatingSystem.IsIOSVersionAtLeast(15) && !OperatingSystem.IsMacCatalystVersionAtLeast(15))
+				return;
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				using var tabBar = new UITabBar();
+				using var defaultAppearance = new UITabBarAppearance();
+				defaultAppearance.ConfigureWithDefaultBackground();
+				UITabBarAppearance appearance = null;
+
+				try
+				{
+					Paint gradient = new LinearGradientBrush(
+						new GradientStopCollection
+						{
+							new GradientStop(Colors.Red, 0),
+							new GradientStop(Colors.Blue, 1)
+						},
+						new Point(0, 0),
+						new Point(1, 1));
+
+					tabBar.UpdateiOS15TabBarAppearance(ref appearance, null, null, null, null, gradient, null, null);
+					Assert.Null(appearance.BackgroundEffect);
+
+					Paint background = useSolidBackground ? new SolidPaint(Colors.Green) : null;
+					tabBar.UpdateiOS15TabBarAppearance(ref appearance, null, null, null, null, background, null, null);
+
+					Assert.Equal(defaultAppearance.BackgroundEffect?.GetType(), appearance.BackgroundEffect?.GetType());
+					Assert.True(ColorComparison.ARGBEquivalent(useSolidBackground ? Colors.Green.ToPlatform() : null, tabBar.BackgroundColor));
+					Assert.DoesNotContain(tabBar.Layer.Sublayers ?? Array.Empty<CALayer>(), layer => layer is CAGradientLayer);
+				}
+				finally
+				{
+					appearance?.Dispose();
+				}
+			});
+		}
+
+		[Fact]
+		public async Task BadgePropertiesUpdateNativeTabBarItem()
+		{
+			SetupBuilder(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<TabbedPage, Microsoft.Maui.Handlers.TabbedViewHandler>();
+				});
+			});
+
+			var firstPage = new ContentPage { Title = "First" };
+			var secondPage = new ContentPage { Title = "Second" };
+			TabbedPage.SetBadgeText(firstPage, "7");
+			TabbedPage.SetBadgeColor(firstPage, Colors.Blue);
+			TabbedPage.SetBadgeTextColor(firstPage, Colors.Yellow);
+
+			var tabbedPage = CreateBasicTabbedPage(pages: new[] { firstPage, secondPage });
+
+			await CreateHandlerAndAddToWindow<Microsoft.Maui.Handlers.TabbedViewHandler>(tabbedPage, async handler =>
+			{
+				await OnLoadedAsync(firstPage);
+				UITabBarItem GetFirstTabBarItem() => handler.Manager?.TabBar?.Items?.FirstOrDefault();
+
+				await AssertEventually(() => GetFirstTabBarItem()?.BadgeValue == "7");
+				var tabBarItem = GetFirstTabBarItem();
+				Assert.True(ColorComparison.ARGBEquivalent(Colors.Blue.ToPlatform(), tabBarItem.BadgeColor));
+				AssertBadgeTextColor(tabBarItem, Colors.Yellow);
+
+				TabbedPage.SetBadgeText(firstPage, "");
+				await AssertEventually(() => GetFirstTabBarItem()?.BadgeValue == "");
+
+				TabbedPage.SetBadgeText(firstPage, "New");
+				TabbedPage.SetBadgeColor(firstPage, Colors.Orange);
+				TabbedPage.SetBadgeTextColor(firstPage, Colors.Black);
+				await AssertEventually(() =>
+					GetFirstTabBarItem()?.BadgeValue == "New" &&
+					ColorComparison.ARGBEquivalent(Colors.Orange.ToPlatform(), GetFirstTabBarItem().BadgeColor));
+				tabBarItem = GetFirstTabBarItem();
+				AssertBadgeTextColor(tabBarItem, Colors.Black);
+
+				firstPage.ClearValue(TabbedPage.BadgeColorProperty);
+				firstPage.ClearValue(TabbedPage.BadgeTextColorProperty);
+				await AssertEventually(() =>
+					GetFirstTabBarItem() is { } item &&
+					item.BadgeColor is null &&
+					item.GetBadgeTextAttributes(UIControlState.Normal)?.ForegroundColor is null);
+
+				TabbedPage.SetBadgeText(firstPage, null);
+				await AssertEventually(() =>
+					GetFirstTabBarItem() is { } item &&
+					item.BadgeValue is null);
+			});
+		}
+
+		[Fact]
+		public async Task BadgeTextUpdatePreservesNativeBadgeAppearance()
+		{
+			SetupBuilder(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<TabbedPage, Microsoft.Maui.Handlers.TabbedViewHandler>();
+				});
+			});
+
+			var firstPage = new ContentPage { Title = "First" };
+			TabbedPage.SetBadgeText(firstPage, "1");
+			var tabbedPage = CreateBasicTabbedPage(pages: new[] { firstPage });
+
+			await CreateHandlerAndAddToWindow<Microsoft.Maui.Handlers.TabbedViewHandler>(tabbedPage, async handler =>
+			{
+				await OnLoadedAsync(firstPage);
+				var tabBarItem = handler.Manager?.TabBar?.Items?.FirstOrDefault();
+				Assert.NotNull(tabBarItem);
+
+				var attributes = new UIStringAttributes { ForegroundColor = Colors.Green.ToPlatform() };
+				tabBarItem.BadgeColor = Colors.Purple.ToPlatform();
+				tabBarItem.SetBadgeTextAttributes(attributes, UIControlState.Normal);
+
+				TabbedPage.SetBadgeText(firstPage, "2");
+
+				await AssertEventually(() => tabBarItem.BadgeValue == "2");
+				Assert.True(ColorComparison.ARGBEquivalent(Colors.Purple.ToPlatform(), tabBarItem.BadgeColor));
+				Assert.True(ColorComparison.ARGBEquivalent(
+					Colors.Green.ToPlatform(),
+					tabBarItem.GetBadgeTextAttributes(UIControlState.Normal)?.ForegroundColor));
+			});
+		}
+
+		static void AssertBadgeTextColor(UITabBarItem tabBarItem, Color expected)
+		{
+			Assert.True(ColorComparison.ARGBEquivalent(
+				expected.ToPlatform(),
+				tabBarItem.GetBadgeTextAttributes(UIControlState.Normal)?.ForegroundColor));
+			Assert.True(ColorComparison.ARGBEquivalent(
+				expected.ToPlatform(),
+				tabBarItem.GetBadgeTextAttributes(UIControlState.Selected)?.ForegroundColor));
+			Assert.True(ColorComparison.ARGBEquivalent(
+				expected.ToPlatform(),
+				tabBarItem.GetBadgeTextAttributes(UIControlState.Disabled)?.ForegroundColor));
+			Assert.True(ColorComparison.ARGBEquivalent(
+				expected.ToPlatform(),
+				tabBarItem.GetBadgeTextAttributes(UIControlState.Focused)?.ForegroundColor));
+		}
+
 		UITabBar GetTabBar(TabbedPage tabbedPage)
 		{
-			var pagerParent = (tabbedPage.CurrentPage.Handler as IPlatformViewHandler)
-				.PlatformView.FindParent(x => x.NextResponder is UITabBarController);
-
-			return pagerParent.Subviews.FirstOrDefault(v => v.GetType() == typeof(UITabBar)) as UITabBar;
+			var handler = Assert.IsAssignableFrom<IPlatformViewHandler>(tabbedPage.Handler);
+			var controller = Assert.IsAssignableFrom<UITabBarController>(handler.ViewController);
+			return controller.TabBar;
 		}
 
 		async Task ValidateTabBarIconColor(
@@ -59,6 +421,69 @@ namespace Microsoft.Maui.DeviceTests
 					GetTabBar(tabbedPage),
 					tabText, iconColor, MauiContext);
 			}
+		}
+
+		[Theory("Handler: Tab switch fires Appearing/Disappearing on NavigationPage content")]
+		[ClassData(typeof(TabbedPagePivots))]
+		public async Task Handler_TabSwitchFiresAppearingDisappearing(bool bottomTabs, bool isSmoothScrollEnabled)
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler(typeof(VerticalStackLayout), typeof(LayoutHandler));
+					handlers.AddHandler(typeof(Toolbar), typeof(ToolbarHandler));
+					handlers.AddHandler(typeof(Button), typeof(ButtonHandler));
+					handlers.AddHandler<Page, PageHandler>();
+					handlers.AddHandler<Label, LabelHandler>();
+					RegisterTabbedPageHandler(handlers);
+					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
+				});
+			});
+
+			var page1Content = new ContentPage { Title = "Tab1 Content", Content = new Label { Text = "Tab 1" } };
+			var page2Content = new ContentPage { Title = "Tab2 Content", Content = new Label { Text = "Tab 2" } };
+			var navPage1 = new NavigationPage(page1Content) { Title = "Tab 1" };
+			var navPage2 = new NavigationPage(page2Content) { Title = "Tab 2" };
+
+			bool page1Appeared = false;
+			bool page1Disappeared = false;
+			bool page2Appeared = false;
+			bool page2Disappeared = false;
+
+			page1Content.Appearing += (_, _) => page1Appeared = true;
+			page1Content.Disappearing += (_, _) => page1Disappeared = true;
+			page2Content.Appearing += (_, _) => page2Appeared = true;
+			page2Content.Disappearing += (_, _) => page2Disappeared = true;
+
+			var tabbedPage = CreateBasicTabbedPage(bottomTabs, isSmoothScrollEnabled, new Page[] { navPage1, navPage2 });
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(tabbedPage), async (handler) =>
+			{
+				// Tab 1 is initially selected — its content should have appeared
+				await OnNavigatedToAsync(page1Content);
+				Assert.True(page1Appeared, "Tab1 content should have appeared on initial load");
+
+				// Switch to Tab 2
+				page1Disappeared = false;
+				page2Appeared = false;
+				tabbedPage.CurrentPage = navPage2;
+				await OnNavigatedToAsync(page2Content);
+				await AssertEventually(() => page1Disappeared && page2Appeared);
+
+				Assert.True(page1Disappeared, "Tab1 content should have disappeared after switching to Tab2");
+				Assert.True(page2Appeared, "Tab2 content should have appeared after switching to Tab2");
+
+				// Switch back to Tab 1
+				page1Appeared = false;
+				page2Disappeared = false;
+				tabbedPage.CurrentPage = navPage1;
+				await OnNavigatedToAsync(page1Content);
+				await AssertEventually(() => page2Disappeared && page1Appeared);
+
+				Assert.True(page2Disappeared, "Tab2 content should have disappeared after switching back to Tab1");
+				Assert.True(page1Appeared, "Tab1 content should have appeared after switching back to Tab1");
+			});
 		}
 	}
 }

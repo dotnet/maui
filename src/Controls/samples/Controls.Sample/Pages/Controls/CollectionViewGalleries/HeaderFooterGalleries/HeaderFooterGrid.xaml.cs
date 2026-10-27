@@ -20,13 +20,13 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.HeaderFooterGalleri
 			CollectionView.ItemsSource = _demoFilteredItemSource.Items;
 		}
 
-		void AddContentClicked(object sender, System.EventArgs e)
+		void AddContentClicked(object? sender, System.EventArgs e)
 		{
 			if (sender is VisualElement ve && ve.Parent is StackLayout sl)
 				sl.Children.Add(new Label() { Text = "Grow" });
 		}
 
-		void ToggleHeader(object sender, System.EventArgs e)
+		void ToggleHeader(object? sender, System.EventArgs e)
 		{
 			header = CollectionView.Header ?? header;
 
@@ -36,7 +36,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.HeaderFooterGalleri
 				CollectionView.Header = null;
 		}
 
-		void ToggleFooter(object sender, System.EventArgs e)
+		void ToggleFooter(object? sender, System.EventArgs e)
 		{
 			footer = CollectionView.Footer ?? footer;
 

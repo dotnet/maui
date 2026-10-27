@@ -107,6 +107,17 @@ When tests fail, CI produces comparison screenshots showing differences:
 
 ![Failed Test Screenshot](../assets/FailedTestScreenshot.png)
 
+#### Android Status-Bar Cropping
+
+Android screenshots use the status-bar height reported by `App.GetSystemBars()`
+for their default top crop, rather than a fixed value. Explicit `cropTop` values
+still take precedence. Other platforms and bottom cropping are unchanged.
+
+Baselines captured with the previous fixed top crop must be recropped or
+regenerated when the reported height differs, so their dimensions match the new
+screenshots. For example, the standard API 30 emulator reports 63 physical pixels
+instead of the previous 60-pixel crop.
+
 ## Advanced Test Patterns
 
 ### Gallery Page Architecture

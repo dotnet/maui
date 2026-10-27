@@ -12,10 +12,11 @@ namespace UITest.Appium.Tests;
 public class LifecycleTests
 {
 	[Theory]
-	[InlineData(TestDevice.Android, "mobile: startActivity")]
-	[InlineData(TestDevice.iOS, "mobile: launchApp")]
-	[InlineData(TestDevice.Mac, "macos: launchApp")]
-	public void RelaunchAndResetCarryCurrentTest(TestDevice device, string launchScript)
+	[InlineData(TestDevice.Android, "mobile: startActivity", false)]
+	[InlineData(TestDevice.Android, "mobile: startActivity", true)]
+	[InlineData(TestDevice.iOS, "mobile: launchApp", false)]
+	[InlineData(TestDevice.Mac, "macos: launchApp", false)]
+	public void RelaunchAndResetCarryCurrentTest(TestDevice device, string launchScript, bool useShellRenderer)
 	{
 		var executor = new RecordingExecutor();
 		var options = new AppiumOptions();
@@ -29,7 +30,10 @@ public class LifecycleTests
 		var config = new Config();
 		config.SetProperty("TestDevice", device);
 		config.SetProperty("AppId", "com.microsoft.maui.uitests");
-		config.SetProperty("TestConfigurationArgs", new Dictionary<string, string> { ["test"] = "Previous fixture" });
+		var startupArguments = new Dictionary<string, string> { ["test"] = "Previous fixture" };
+		if (useShellRenderer)
+			startupArguments["TEST_CONFIGURATION_ARGS"] = "ShellRenderer";
+		config.SetProperty("TestConfigurationArgs", startupArguments);
 		using var app = new TestApp(driver, config);
 		executor.Commands.Clear();
 
@@ -46,9 +50,16 @@ public class LifecycleTests
 			if (device == TestDevice.Android)
 			{
 				Assert.True(payload.GetProperty("stop").GetBoolean());
-				var extra = Assert.Single(payload.GetProperty("extras").EnumerateArray());
+				var extras = payload.GetProperty("extras").EnumerateArray().ToArray();
+				Assert.Equal(useShellRenderer ? 2 : 1, extras.Length);
+				var extra = Assert.Single(extras, item => item[1].GetString() == "test");
 				Assert.Equal(new[] { "s", "test", AppLaunchArguments.QuoteAndroidShellArgument("Next \"test\" with spaces") },
 					extra.EnumerateArray().Select(item => item.GetString()));
+				if (useShellRenderer)
+				{
+					var configuration = Assert.Single(extras, item => item[1].GetString() == "TEST_CONFIGURATION_ARGS");
+					Assert.Equal(AppLaunchArguments.QuoteAndroidShellArgument("ShellRenderer"), configuration[2].GetString());
+				}
 			}
 			else
 			{

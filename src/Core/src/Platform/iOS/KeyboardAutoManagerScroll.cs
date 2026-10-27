@@ -221,8 +221,8 @@ public static class KeyboardAutoManagerScroll
 	static void SetAnimationDuration(this NSDictionary dict)
 	{
 		var durationObj = dict.FindValue("UIKeyboardAnimationDurationUserInfoKey");
-		var durationNum = (NSNumber)NSObject.FromObject(durationObj);
-		var num = (double)durationNum;
+		var durationNum = (NSNumber?)NSObject.FromObject(durationObj);
+		var num = (double?)durationNum ?? 0;
 		if (num != 0)
 		{
 			AnimationDuration = num;
@@ -306,7 +306,7 @@ public static class KeyboardAutoManagerScroll
 	// all the fields are updated before calling AdjustPostition()
 	internal static async Task AdjustPositionDebounce()
 	{
-		// If View is inside a MauiView that implements ISafeAreaView2
+		// If View is inside a MauiView that handles SafeAreaEdges
 		// and has SafeAreaEdges.SoftInput set, do not perform auto-scrolling
 		// since SafeAreaEdges.SoftInput will handle the adjustments
 		if (View is not null && MauiView.IsSoftInputHandledByParent(View))

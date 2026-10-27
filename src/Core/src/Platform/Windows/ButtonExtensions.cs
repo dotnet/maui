@@ -87,6 +87,25 @@ namespace Microsoft.Maui.Platform
 		{
 			var brush = button.Background?.ToPlatform();
 
+			if (brush is UI.Xaml.Media.SolidColorBrush newBrush &&
+				BackgroundResourceKeys.Length > 0 &&
+				platformButton.Resources.Keys.Contains(BackgroundResourceKeys[0]) &&
+				platformButton.Resources.TryGetValue(BackgroundResourceKeys[0], out var value) &&
+				value is UI.Xaml.Media.SolidColorBrush currentBrush)
+			{
+				// Keep transparent endpoints the same hue so WinUI's brush transition only fades alpha.
+				if (currentBrush.Color.A == 0)
+				{
+					var color = newBrush.Color;
+					currentBrush.Color = global::Windows.UI.Color.FromArgb(0, color.R, color.G, color.B);
+				}
+				else if (newBrush.Color.A == 0)
+				{
+					var color = currentBrush.Color;
+					newBrush.Color = global::Windows.UI.Color.FromArgb(0, color.R, color.G, color.B);
+				}
+			}
+
 			if (brush is null)
 				platformButton.Resources.RemoveKeys(BackgroundResourceKeys);
 			else

@@ -4,6 +4,9 @@
              x:Class="Maui.Controls.Sample.LabelOptionsPage"
              Title="LabelOptionsPage">
     <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Sample Text"
+                     Clicked="UseSampleText_Clicked"
+                     AutomationId="UseSampleText"/>
         <ToolbarItem Text="Apply"
                      Clicked="ApplyButton_Clicked"
                      AutomationId="Apply"/>

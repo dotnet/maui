@@ -115,7 +115,7 @@ public class SetterBuilderTests
 	{
 		var setter = Setter.From(
 			[
-				new MemberAccess("Y", IsValueType: false, ContainingType: new TypeDescription("X"), MemberType: new TypeDescription("Z"), Kind: AccessorKind.Field, IsGetterInaccessible: true, IsSetterInaccessible: true)
+				new MemberAccess("Y", IsValueType: false, ContainingType: new TypeDescription("X"), MemberType: new TypeDescription("Z"), Kind: AccessorKind.Field, IsGetterAccessible: false, IsSetterAccessible: false)
 			]);
 		Assert.Empty(setter.PatternMatchingExpressions);
 		Assert.Equal("GetUnsafeField_Y(source) = value;", setter.AssignmentStatement);
@@ -126,7 +126,7 @@ public class SetterBuilderTests
 	{
 		var setter = Setter.From(
 			[
-				new MemberAccess("Y", IsValueType: false, ContainingType: new TypeDescription("X"), MemberType: new TypeDescription("Z"), Kind: AccessorKind.Property, IsGetterInaccessible: true, IsSetterInaccessible: true)
+				new MemberAccess("Y", IsValueType: false, ContainingType: new TypeDescription("X"), MemberType: new TypeDescription("Z"), Kind: AccessorKind.Property, IsGetterAccessible: false, IsSetterAccessible: false)
 			]);
 		Assert.Empty(setter.PatternMatchingExpressions);
 		Assert.Equal("SetUnsafeProperty_Y(source, value);", setter.AssignmentStatement);
@@ -137,7 +137,7 @@ public class SetterBuilderTests
 	{
 		var setter = Setter.From(
 			[
-				new MemberAccess("Y", IsValueType: false, ContainingType: new TypeDescription("X"), MemberType: new TypeDescription("Z"), Kind: AccessorKind.Property, IsGetterInaccessible: true, IsSetterInaccessible: false),
+				new MemberAccess("Y", IsValueType: false, ContainingType: new TypeDescription("X"), MemberType: new TypeDescription("Z"), Kind: AccessorKind.Property, IsGetterAccessible: false, IsSetterAccessible: true),
 				new MemberAccess("A"),
 			]);
 		Assert.Empty(setter.PatternMatchingExpressions);

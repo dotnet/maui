@@ -29,7 +29,7 @@
   <ItemGroup>
     <PackageReference Include="SkiaSharp" />
   </ItemGroup>
-  <ItemGroup Condition="$(TargetFramework.Contains('-android')) or $(TargetFramework.Contains('-ios')) or $(TargetFramework.Contains('-macos')) or $(TargetFramework.Contains('-maccatalyst')) or $(TargetFramework.Contains('-tizen'))">
+  <ItemGroup Condition="$(TargetFramework.Contains('-android')) or $(TargetFramework.Contains('-ios')) or $(TargetFramework.Contains('-macos')) or $(TargetFramework.Contains('-maccatalyst'))">
     <PackageReference Include="SkiaSharp.Views" />
   </ItemGroup>
   <ItemGroup Condition="$(TargetFramework.Contains('-windows'))">

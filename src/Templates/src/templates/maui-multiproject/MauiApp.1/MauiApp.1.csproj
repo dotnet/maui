@@ -8,19 +8,16 @@
 		<UseMaui>true</UseMaui>
 		<Nullable>enable</Nullable>
 
-		<!-- Enable XAML source generation for faster build times and improved performance.
-		     This generates C# code from XAML at compile time instead of runtime inflation.
-		     To disable, remove this line.
-		     For individual files, you can override by setting Inflator metadata:
-		       <MauiXaml Update="MyPage.xaml" Inflator="Default" /> (reverts to defaults: Runtime for Debug, XamlC for Release)
-		       <MauiXaml Update="MyPage.xaml" Inflator="Runtime" /> (force runtime inflation) -->
-		<MauiXamlInflator>SourceGen</MauiXamlInflator>
+<!--#if (avalonia) -->
+		<AvaloniaControlsMauiGenerateBootstrap>false</AvaloniaControlsMauiGenerateBootstrap>
+<!--#endif -->
+
 	</PropertyGroup>
 
 	<ItemGroup>
 		<!-- Images -->
 		<MauiImage Include="Resources\Images\*" />
-		<MauiImage Update="Resources\Images\dotnet_bot.png" Resize="True" BaseSize="300,185" />
+		<MauiImage Update="Resources\Images\dotnet_bot.png" BaseSize="222,185" />
 
 		<!-- Custom Fonts -->
 		<MauiFont Include="Resources\Fonts\*" />
@@ -32,6 +29,9 @@
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="MS_EXT_LOG_DEBUG_VERSION" />
+<!--#if (avalonia) -->
+		<PackageReference Include="Avalonia.Controls.Maui" Version="AVALONIA_CONTROLS_MAUI_VERSION" />
+<!--#endif -->
 	</ItemGroup>
 
 </Project>

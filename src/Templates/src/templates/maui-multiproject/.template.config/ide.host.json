@@ -39,6 +39,14 @@
       "id": "winui",
       "isVisible": true,
       "defaultValue": "true"
+    },
+    {
+      "id": "avalonia",
+      "isVisible": false
+    },
+    {
+      "id": "avaloniaControlsMauiVersion",
+      "isVisible": false
     }
   ]
 }
