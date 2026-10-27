@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public virtual void ResetAppearance(BottomNavigationView bottomView)
 		{
-		//	UpdateNativeColors(bottomView);
+			UpdateNativeColors(bottomView);
 
 			// If a custom renderer never called CaptureNativeAppearance, _originalItemIconTint/
 			// _originalItemTextColor/_originalBackground stay null - fall back to the M2-style defaults
@@ -67,7 +67,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public virtual void SetAppearance(BottomNavigationView bottomView, IShellAppearanceElement appearance)
 		{
-			//UpdateNativeColors(bottomView);
+			UpdateNativeColors(bottomView);
 
 			IShellAppearanceElement controller = appearance;
 			var backgroundColor = controller.EffectiveTabBarBackgroundColor;

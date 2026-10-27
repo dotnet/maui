@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public virtual void SetAppearance(AToolbar toolbar, IShellToolbarTracker toolbarTracker, ShellAppearance appearance)
 		{
-			//UpdateNativeColors(toolbar);
+			UpdateNativeColors(toolbar);
 
 			var foreground = appearance.ForegroundColor;
 			var background = appearance.BackgroundColor;
@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public virtual void ResetAppearance(AToolbar toolbar, IShellToolbarTracker toolbarTracker)
 		{
-			//UpdateNativeColors(toolbar);
+			UpdateNativeColors(toolbar);
 
 			if (RuntimeFeature.IsMaterial3Enabled)
 			{
