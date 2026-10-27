@@ -80,6 +80,7 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Same(pager, Assert.Single(fixture.ItemHandler.ConnectedPagers));
 				Assert.Same(pager, Assert.Single(fixture.ItemHandler.MappedPagers));
 				Assert.Equal(PagerTrackingShellItemHandler.Customization, pager.ContentDescription);
+				Assert.Equal(OverScrollMode.Never, pager.OverScrollMode);
 				Assert.IsType<FrameLayout.LayoutParams>(fixture.Fragment.View.LayoutParameters);
 				if (itemHandlerType == typeof(ProgrammaticPagerShellItemHandler))
 				{
@@ -88,6 +89,19 @@ namespace Microsoft.Maui.DeviceTests
 				}
 				return Task.CompletedTask;
 			}, itemHandlerType: itemHandlerType);
+
+		[Theory]
+		[InlineData(typeof(ProgrammaticPagerShellItemHandler))]
+		[InlineData(typeof(ReplacingPagerShellItemHandler))]
+		public Task CustomPagerMappingsOverrideLayoutDefaults(Type itemHandlerType) =>
+			RunWithShell(fixture =>
+			{
+				var pager = fixture.GetPager();
+				fixture.AssertPagerIdentity(pager);
+				Assert.Equal(OverScrollMode.Always, pager.OverScrollMode);
+				Assert.Same(pager, Assert.Single(fixture.ItemHandler.MappedPagers));
+				return Task.CompletedTask;
+			}, itemHandlerType: itemHandlerType, customizeOverScroll: true);
 
 		[Fact]
 		public Task ViewRecreationReleasesAndReconnectsThePagerOnce() =>
@@ -251,6 +265,140 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(2, fixture.ItemHandler.MappedPagers.Count);
 				Assert.Equal(2, fixture.ShellHandler.InflatedPagers.Count);
 				Assert.Single(fixture.ItemHandler.DisconnectedPagers);
+			});
+
+		[Fact]
+		public Task PropertyMappingsWaitForTheRecreatedPager() =>
+			RunWithShell(async fixture =>
+			{
+				for (var cycle = 0; cycle < 2; cycle++)
+				{
+					var oldPager = fixture.GetPager();
+					var propertyMappings = fixture.Item.CurrentItemMappings.Count;
+					var allMappings = fixture.ItemHandler.MappedPagers.Count;
+					fixture.Detach();
+
+					Assert.Null(((IElementHandler)fixture.ItemHandler).PlatformView);
+					Assert.Same(fixture.ItemHandler, fixture.Item.Handler);
+					var section = fixture.Item.Items[(cycle + 1) % fixture.Item.Items.Count];
+					var exception = Record.Exception(() => fixture.Item.CurrentItem = section);
+					Assert.Null(exception);
+					Assert.Null(Record.Exception(() =>
+						fixture.ItemHandler.UpdateValue(nameof(ShellItem.CurrentItem))));
+					Assert.Null(Record.Exception(() =>
+						fixture.ItemHandler.UpdateValue("PagerCustomization")));
+					Assert.Equal(propertyMappings, fixture.Item.CurrentItemMappings.Count);
+					Assert.Equal(allMappings, fixture.ItemHandler.MappedPagers.Count);
+
+					fixture.Attach();
+					await OnLoadedAsync(fixture.Shell.CurrentPage);
+
+					var pager = fixture.GetPager();
+					fixture.AssertPagerIdentity(pager);
+					Assert.NotSame(oldPager, pager);
+					Assert.Equal(propertyMappings + 1, fixture.Item.CurrentItemMappings.Count);
+					Assert.Equal(allMappings + 1, fixture.ItemHandler.MappedPagers.Count);
+					Assert.Same(pager, fixture.Item.CurrentItemMappings.Last().Pager);
+					Assert.Same(section, fixture.Item.CurrentItemMappings.Last().Section);
+					Assert.Equal(section.Title, pager.ContentDescription);
+					Assert.Equal(fixture.Item.Items.IndexOf(section), pager.CurrentItem);
+				}
+			}, trackCurrentItemMapping: true);
+
+		[Fact]
+		public async Task NativeCommandsAreNotDispatchedOrReplayedWhileThePagerIsReleased()
+		{
+			const string command = "PagerOwnershipCommand";
+			var originalMapper = ShellItemHandler.CommandMapper;
+			var invocations = new List<(ViewPager2 Pager, object Args)>();
+			ShellItemHandler.CommandMapper = new CommandMapper<ShellItem, ShellItemHandler>(originalMapper)
+			{
+				[command] = (handler, _, args) =>
+				{
+					handler.PlatformView.ContentDescription = $"{args}";
+					invocations.Add((handler.PlatformView, args));
+				}
+			};
+			try
+			{
+				await RunWithShell(async fixture =>
+				{
+					fixture.ItemHandler.Invoke(command, "initial");
+					Assert.Single(invocations);
+					for (var cycle = 0; cycle < 2; cycle++)
+					{
+						var oldPager = fixture.GetPager();
+						var calls = invocations.Count;
+						fixture.Detach();
+
+						Assert.Null(Record.Exception(() =>
+							fixture.ItemHandler.Invoke(command, "released")));
+						Assert.Equal(calls, invocations.Count);
+
+						fixture.Attach();
+						await OnLoadedAsync(fixture.Shell.CurrentPage);
+
+						Assert.Equal(calls, invocations.Count);
+						var pager = fixture.GetPager();
+						Assert.NotSame(oldPager, pager);
+						fixture.ItemHandler.Invoke(command, "reconnected");
+						Assert.Equal(calls + 1, invocations.Count);
+						Assert.Same(pager, invocations.Last().Pager);
+						Assert.Equal("reconnected", invocations.Last().Args);
+						Assert.Equal("reconnected", pager.ContentDescription);
+						fixture.AssertPagerIdentity(pager);
+					}
+				});
+			}
+			finally
+			{
+				ShellItemHandler.CommandMapper = originalMapper;
+			}
+		}
+
+		[Fact]
+		public Task ReconnectThenDisconnectBeforeAttachmentKeepsPendingFragmentCleanup() =>
+			RunWithShell(async fixture =>
+			{
+				await AssertEventually(() =>
+					fixture.ItemHandler._adapter.GetFragmentTags().Count == fixture.Item.Items.Count);
+				var ownedTags = fixture.ItemHandler._adapter.GetFragmentTags().ToArray();
+				var manager = fixture.Fragment.ChildFragmentManager;
+				var unrelated = new AndroidX.Fragment.App.Fragment();
+				manager.BeginTransaction().Add(unrelated, "unrelated-pager-test-fragment").CommitNow();
+				try
+				{
+					fixture.Detach();
+					Assert.Equal(ownedTags, GetPendingFragmentTags(fixture.ItemHandler));
+					((IElementHandler)fixture.ItemHandler).DisconnectHandler();
+					fixture.ItemHandler.SetVirtualView(fixture.Item);
+					Assert.Null(fixture.ItemHandler._adapter);
+					((IElementHandler)fixture.ItemHandler).DisconnectHandler();
+					((IElementHandler)fixture.ItemHandler).DisconnectHandler();
+
+					// Fail before attachment on the broken path, rather than restoring stale hosts.
+					Assert.Equal(ownedTags, GetPendingFragmentTags(fixture.ItemHandler));
+					fixture.Attach();
+
+					Assert.IsType<FrameLayout>(fixture.Fragment.View);
+					Assert.Null(((IElementHandler)fixture.ItemHandler).PlatformView);
+					Assert.Null(((IElementHandler)fixture.ItemHandler).VirtualView);
+					foreach (var tag in ownedTags)
+					{
+						Assert.Null(manager.FindFragmentByTag(tag));
+					}
+					Assert.Same(unrelated, manager.FindFragmentByTag("unrelated-pager-test-fragment"));
+					Assert.Equal(2, fixture.ItemHandler.CreatedPagers.Count);
+					Assert.Equal(2, fixture.ItemHandler.DisconnectedPagers.Count);
+				}
+				finally
+				{
+					if (unrelated.IsAdded)
+					{
+						// A failing assertion can leave the wrapper detached with saved child state.
+						manager.BeginTransaction().Remove(unrelated).CommitNowAllowingStateLoss();
+					}
+				}
 			});
 
 		[Fact]
@@ -437,12 +585,17 @@ namespace Microsoft.Maui.DeviceTests
 			}));
 
 		async Task RunWithShell(Func<Fixture, Task> action, int sectionCount = 2, int selectedIndex = 0,
-			Type itemHandlerType = null)
+			Type itemHandlerType = null, bool trackCurrentItemMapping = false, bool customizeOverScroll = false)
 		{
 			SetupBuilder(itemHandlerType);
 			var shell = await InvokeOnMainThreadAsync(() =>
 			{
-				var item = new PagerTestItem { Title = "Pager ownership" };
+				var item = new PagerTestItem
+				{
+					Title = "Pager ownership",
+					TrackCurrentItemMapping = trackCurrentItemMapping,
+					CustomizeOverScroll = customizeOverScroll
+				};
 				for (var index = 0; index < sectionCount; index++)
 				{
 					item.Items.Add(new ShellSection
@@ -484,6 +637,14 @@ namespace Microsoft.Maui.DeviceTests
 			var field = declaringType.GetField(eventName, BindingFlags.Instance | BindingFlags.NonPublic);
 			Assert.NotNull(field);
 			return (field.GetValue(source) as MulticastDelegate)?.GetInvocationList() ?? Array.Empty<Delegate>();
+		}
+
+		static string[] GetPendingFragmentTags(ShellItemHandler handler)
+		{
+			var field = typeof(ShellItemHandler).GetField("_releasedSectionFragmentTags",
+				BindingFlags.Instance | BindingFlags.NonPublic);
+			Assert.NotNull(field);
+			return Assert.IsAssignableFrom<IEnumerable<string>>(field.GetValue(handler)).ToArray();
 		}
 
 		public class ProgrammaticPagerShellItemHandler : PagerTrackingShellItemHandler
@@ -562,15 +723,35 @@ namespace Microsoft.Maui.DeviceTests
 
 		sealed class PagerTestItem : FlyoutItem, IPropertyMapperView
 		{
-			readonly PropertyMapper<ShellItem, ShellItemHandler> _mapper = new()
+			readonly PropertyMapper<ShellItem, ShellItemHandler> _mapper;
+
+			public bool TrackCurrentItemMapping { get; set; }
+			public bool CustomizeOverScroll { get; set; }
+			public List<(ViewPager2 Pager, ShellSection Section)> CurrentItemMappings { get; } = new();
+
+			public PagerTestItem()
 			{
-				["PagerCustomization"] = (handler, _) =>
+				_mapper = new PropertyMapper<ShellItem, ShellItemHandler>(ShellItemHandler.Mapper)
 				{
-					var trackingHandler = (PagerTrackingShellItemHandler)handler;
-					trackingHandler.MappedPagers.Add(handler.PlatformView);
-					handler.PlatformView.ContentDescription = PagerTrackingShellItemHandler.Customization;
-				}
-			};
+					["PagerCustomization"] = (handler, _) =>
+					{
+						var trackingHandler = (PagerTrackingShellItemHandler)handler;
+						trackingHandler.MappedPagers.Add(handler.PlatformView);
+						if (!TrackCurrentItemMapping)
+							handler.PlatformView.ContentDescription = PagerTrackingShellItemHandler.Customization;
+						if (CustomizeOverScroll)
+							handler.PlatformView.OverScrollMode = OverScrollMode.Always;
+					}
+				};
+				_mapper.AppendToMapping(nameof(ShellItem.CurrentItem), (handler, item) =>
+				{
+					if (TrackCurrentItemMapping)
+					{
+						CurrentItemMappings.Add((handler.PlatformView, item.CurrentItem));
+						handler.PlatformView.ContentDescription = item.CurrentItem.Title;
+					}
+				});
+			}
 
 			PropertyMapper IPropertyMapperView.GetPropertyMapperOverrides() => _mapper;
 		}

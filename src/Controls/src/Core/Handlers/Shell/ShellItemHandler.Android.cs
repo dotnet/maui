@@ -75,6 +75,24 @@ namespace Microsoft.Maui.Controls.Handlers
         {
         }
 
+        /// <inheritdoc/>
+        public override void UpdateValue(string property)
+        {
+            if (((IElementHandler)this).PlatformView is not null)
+            {
+                base.UpdateValue(property);
+            }
+        }
+
+        /// <inheritdoc/>
+        public override void Invoke(string command, object? args)
+        {
+            if (((IElementHandler)this).PlatformView is not null)
+            {
+                base.Invoke(command, args);
+            }
+        }
+
         /// <summary>
         /// Sets the parent fragment that hosts this handler. Used for child fragment management.
         /// </summary>
@@ -107,6 +125,46 @@ namespace Microsoft.Maui.Controls.Handlers
             return _viewPager;
         }
 
+        private protected override object OnCreatePlatformElement() => CreatePlatformPager();
+
+        ViewPager2 CreatePlatformPager()
+        {
+            // Apply the XML defaults before connection and mapper customizations run.
+            var pager = CreatePlatformElement();
+            if (_rootView is null)
+            {
+                var inflater = _fragmentLayoutInflater ?? MauiContext?.GetLayoutInflater()
+                    ?? throw new InvalidOperationException("LayoutInflater cannot be null");
+                var shell = VirtualView.FindParentOfType<Shell>();
+                var container = _fragmentContainer
+                    ?? (shell?.Handler?.PlatformView as AView)?.FindViewById<ViewGroup>(Resource.Id.navigationlayout_content);
+                pager.RemoveFromParent();
+                _rootView = InflateLayout(inflater, container, pager);
+            }
+
+            var rootView = _rootView;
+            _ = rootView.FindViewById<CoordinatorLayout>(Resource.Id.shellitem_coordinator)
+                ?? throw new InvalidOperationException("shellitem_coordinator not found");
+            var layoutPager = rootView.FindViewById<ViewPager2>(Resource.Id.shellitem_viewpager)
+                ?? throw new InvalidOperationException("shellitem_viewpager not found");
+            if (layoutPager != pager)
+            {
+                var pagerParent = layoutPager.Parent as ViewGroup
+                    ?? throw new InvalidOperationException("shellitem_viewpager must have a layout parent");
+                var index = pagerParent.IndexOfChild(layoutPager);
+                var layoutParameters = layoutPager.LayoutParameters;
+                var id = layoutPager.Id;
+                var overScrollMode = layoutPager.OverScrollMode;
+                pagerParent.RemoveView(layoutPager);
+                layoutPager.Dispose();
+                pager.RemoveFromParent();
+                pager.Id = id;
+                pager.OverScrollMode = overScrollMode;
+                pagerParent.AddView(pager, index, layoutParameters);
+            }
+            return pager;
+        }
+
         internal AView GetFragmentView(Fragment fragment, LayoutInflater inflater, ViewGroup? container)
         {
             if (_parentFragment is not null && _parentFragment != fragment && _parentFragment.View is not null)
@@ -122,7 +180,7 @@ namespace Microsoft.Maui.Controls.Handlers
                 _fragmentContainer = container;
                 try
                 {
-                    PlatformView = CreatePlatformElement();
+                    PlatformView = CreatePlatformPager();
                 }
                 finally
                 {
@@ -131,31 +189,8 @@ namespace Microsoft.Maui.Controls.Handlers
                 }
             }
 
-            if (_rootView is null)
-            {
-                PlatformView.RemoveFromParent();
-                _rootView = InflateLayout(inflater, container, PlatformView);
-            }
-
-            var rootView = _rootView;
-            _ = rootView.FindViewById<CoordinatorLayout>(Resource.Id.shellitem_coordinator)
-                ?? throw new InvalidOperationException("shellitem_coordinator not found");
-            var layoutPager = rootView.FindViewById<ViewPager2>(Resource.Id.shellitem_viewpager)
-                ?? throw new InvalidOperationException("shellitem_viewpager not found");
-            if (layoutPager != PlatformView)
-            {
-                var pagerParent = layoutPager.Parent as ViewGroup
-                    ?? throw new InvalidOperationException("shellitem_viewpager must have a layout parent");
-                var index = pagerParent.IndexOfChild(layoutPager);
-                var layoutParameters = layoutPager.LayoutParameters;
-                var id = layoutPager.Id;
-                pagerParent.RemoveView(layoutPager);
-                layoutPager.Dispose();
-                PlatformView.RemoveFromParent();
-                PlatformView.Id = id;
-                pagerParent.AddView(PlatformView, index, layoutParameters);
-            }
-
+            var rootView = _rootView
+                ?? throw new InvalidOperationException("ShellItemHandler has no layout");
             if (!_platformViewConnected)
             {
                 ConnectHandler(PlatformView);
@@ -1073,7 +1108,14 @@ namespace Microsoft.Maui.Controls.Handlers
                 _shellToolbar = null;
                 _appBarLayout = null;
 
-                _releasedSectionFragmentTags = _adapter?.ReleaseRenderers();
+                if (_adapter is not null)
+                {
+                    var tags = _adapter.ReleaseRenderers();
+                    if (_releasedSectionFragmentTags is null)
+                        _releasedSectionFragmentTags = tags;
+                    else
+                        _releasedSectionFragmentTags.AddRange(tags);
+                }
                 platformView.Adapter = null;
                 _adapter = null;
                 _viewPager = null;
@@ -1366,6 +1408,19 @@ namespace Microsoft.Maui.Controls.Handlers
                     attrs.GetAttributeResourceValue("http://schemas.android.com/apk/res/android", "id", 0) == Resource.Id.shellitem_viewpager)
                 {
                     _pager.Id = Resource.Id.shellitem_viewpager;
+                    using var attributes = context.ObtainStyledAttributes(attrs,
+                        new[] { global::Android.Resource.Attribute.OverScrollMode });
+                    try
+                    {
+                        if (attributes.HasValue(0))
+                        {
+                            _pager.OverScrollMode = (OverScrollMode)attributes.GetInt(0, (int)_pager.OverScrollMode);
+                        }
+                    }
+                    finally
+                    {
+                        attributes.Recycle();
+                    }
                     return _pager;
                 }
 

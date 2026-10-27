@@ -155,6 +155,8 @@ override Microsoft.Maui.Controls.Handlers.ShellHandler.DisconnectHandler(Microso
 override Microsoft.Maui.Controls.Handlers.ShellItemHandler.ConnectHandler(AndroidX.ViewPager2.Widget.ViewPager2! platformView) -> void
 override Microsoft.Maui.Controls.Handlers.ShellItemHandler.CreatePlatformElement() -> AndroidX.ViewPager2.Widget.ViewPager2!
 override Microsoft.Maui.Controls.Handlers.ShellItemHandler.DisconnectHandler(AndroidX.ViewPager2.Widget.ViewPager2! platformView) -> void
+override Microsoft.Maui.Controls.Handlers.ShellItemHandler.Invoke(string! command, object? args) -> void
+override Microsoft.Maui.Controls.Handlers.ShellItemHandler.UpdateValue(string! property) -> void
 override Microsoft.Maui.Controls.Handlers.ShellItemWrapperFragment.Dispose(bool disposing) -> void
 override Microsoft.Maui.Controls.Handlers.ShellItemWrapperFragment.OnCreateView(Android.Views.LayoutInflater! inflater, Android.Views.ViewGroup? container, Android.OS.Bundle? savedInstanceState) -> Android.Views.View!
 override Microsoft.Maui.Controls.Handlers.ShellItemWrapperFragment.OnDestroyView() -> void
