@@ -81,8 +81,8 @@ Android screenshot cropping distinguishes system-window bar bounds from the
 native content viewport. On the API36 Pixel 3 XL, those APIs can report84px and
 171px respectively; they are not interchangeable. The capture helper uses the
 native viewport top while the screenshot and viewport match the session's initial
-orientation/size. UiAutomator2 4.2.1 memoizes the native status-bar height, so rotated
-or resized captures retain the previous current-window-bar policy with a diagnostic
+orientation/size/density. UiAutomator2 4.2.1 memoizes the native status-bar height, so
+rotated, resized or density-changed captures retain the previous current-window-bar policy with a diagnostic
 instead of blindly applying a cached portrait inset. Hidden bars crop0; an explicit
 test `cropTop` still takes precedence. Missing/invalid metrics and frame/viewport
 size mismatches fail rather than being guessed or resized. This changes neither

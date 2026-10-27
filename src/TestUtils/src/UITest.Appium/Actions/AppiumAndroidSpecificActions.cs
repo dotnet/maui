@@ -223,6 +223,8 @@ namespace UITest.Appium
 			var height = ReadPixel(viewport, "height");
 			if (width != imageWidth || height <= 0 || (long)height + top != imageHeight)
 				throw new InvalidOperationException("Android native viewport does not match the captured screenshot.");
+			if (top == windowBarHeight)
+				return new CommandResponse(top, CommandResponseResult.Success);
 
 			if (androidDriver.Capabilities.GetCapability("viewportRect") is not IDictionary<string, object> initialViewport)
 				throw new InvalidOperationException("Android session viewport is missing; the cached inset orientation cannot be verified.");
@@ -240,15 +242,28 @@ namespace UITest.Appium
 				return new CommandResponse(windowBarHeight, CommandResponseResult.Success);
 			}
 
+			var initialDensity = ReadPixelValue(androidDriver.Capabilities.GetCapability("deviceScreenDensity"), "deviceScreenDensity");
+			var currentDensity = androidDriver.GetDisplayDensity();
+			if (initialDensity <= 0 || !float.IsFinite(currentDensity) || currentDensity <= 0 || currentDensity > int.MaxValue)
+				throw new InvalidOperationException("Android screenshot density is missing or invalid.");
+			if (currentDensity != initialDensity)
+			{
+				Console.WriteLine("Screenshot density changed since session creation; retaining the current window-reported status-bar crop.");
+				return new CommandResponse(windowBarHeight, CommandResponseResult.Success);
+			}
+
 			return new CommandResponse(top, CommandResponseResult.Success);
 
 			static int ReadPixel(IDictionary<string, object> values, string key) =>
-				values.TryGetValue(key, out var pixel) ? pixel switch
-				{
-					int number when number >= 0 => number,
-					long number when number >= 0 && number <= int.MaxValue => (int)number,
-					_ => throw new InvalidOperationException($"Android screenshot metric '{key}' must be a nonnegative integer.")
-				} : throw new InvalidOperationException($"Android screenshot metric '{key}' is missing.");
+				values.TryGetValue(key, out var pixel) ? ReadPixelValue(pixel, key)
+					: throw new InvalidOperationException($"Android screenshot metric '{key}' is missing.");
+
+			static int ReadPixelValue(object? pixel, string key) => pixel switch
+			{
+				int number when number >= 0 => number,
+				long number when number >= 0 && number <= int.MaxValue => (int)number,
+				_ => throw new InvalidOperationException($"Android screenshot metric '{key}' must be a nonnegative integer.")
+			};
 		}
 
 		CommandResponse GetSystemBars(IDictionary<string, object> parameters)

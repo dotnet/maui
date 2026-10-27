@@ -143,6 +143,33 @@ public class AndroidScreenshotInsetsTests
 		Assert.Throws<InvalidOperationException>(() => app.GetAndroidScreenshotTopInset(1440, 2960));
 	}
 
+	[Fact]
+	public void DensityChangeDoesNotApplyTheSessionCachedInset()
+	{
+		var executor = new RecordingExecutor { WindowBarHeight = 60, CurrentDensity = 420 };
+		using var app = CreateApp(executor);
+
+		Assert.Equal(60, app.GetAndroidScreenshotTopInset(1440, 2960));
+	}
+
+	[Fact]
+	public void MissingSessionDensityCannotCertifyAConflictingCachedInset()
+	{
+		var executor = new RecordingExecutor { IncludeInitialDensity = false };
+		using var app = CreateApp(executor);
+
+		Assert.Throws<InvalidOperationException>(() => app.GetAndroidScreenshotTopInset(1440, 2960));
+	}
+
+	[Fact]
+	public void InvalidCurrentDensityRemainsAFailure()
+	{
+		var executor = new RecordingExecutor { CurrentDensity = float.NaN };
+		using var app = CreateApp(executor);
+
+		Assert.Throws<InvalidOperationException>(() => app.GetAndroidScreenshotTopInset(1440, 2960));
+	}
+
 	[Theory]
 	[InlineData(0, 2960)]
 	[InlineData(1440, -1)]
@@ -184,6 +211,8 @@ public class AndroidScreenshotInsetsTests
 		public int ViewportHeight { get; set; } = 2789;
 		public bool IncludeTop { get; set; } = true;
 		public bool IncludeInitialViewport { get; set; } = true;
+		public bool IncludeInitialDensity { get; set; } = true;
+		public float CurrentDensity { get; set; } = 560;
 		public Exception? ViewportFailure { get; set; }
 		public bool TryAddCommand(string commandName, CommandInfo? info) => true;
 		public Response Execute(Command command) => ExecuteAsync(command).GetAwaiter().GetResult();
@@ -193,6 +222,8 @@ public class AndroidScreenshotInsetsTests
 			if (command.Name == DriverCommand.NewSession)
 			{
 				var capabilities = new Dictionary<string, object> { ["platformName"] = "Android" };
+				if (IncludeInitialDensity)
+					capabilities["deviceScreenDensity"] = 560;
 				if (IncludeInitialViewport)
 					capabilities["viewportRect"] = new { left = 0, top = InitialTop, width = InitialWidth, height = InitialHeight };
 				return Task.FromResult(Response.FromJson(JsonSerializer.Serialize(new
@@ -218,6 +249,8 @@ public class AndroidScreenshotInsetsTests
 						viewport["top"] = NativeTop;
 					return Task.FromResult(new Response("recording", viewport, WebDriverResult.Success));
 				}
+				if (script == "mobile:getDisplayDensity")
+					return Task.FromResult(new Response("recording", CurrentDensity, WebDriverResult.Success));
 				throw new InvalidOperationException($"Unexpected script: {script}");
 			}
 			return Task.FromResult(new Response("recording", true, WebDriverResult.Success));
