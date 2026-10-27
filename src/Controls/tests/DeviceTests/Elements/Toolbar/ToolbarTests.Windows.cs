@@ -12,7 +12,6 @@ using Microsoft.Maui.DeviceTests.TestCases;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
-using System;
 using System.IO;
 using Microsoft.UI.Xaml.Controls;
 using Xunit;
@@ -57,6 +56,17 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal("X", icon.Glyph);
 				Assert.Null(button.Content);
 				await AssertionExtensions.AssertEventually(() => icon.ActualWidth > 0 && icon.ActualHeight > 0);
+
+				toolbarItem.IconImageSource = new FontImageSource()
+				{
+					Glyph = "Z",
+					Color = Microsoft.Maui.Graphics.Colors.Black
+				};
+
+				await AssertionExtensions.AssertEventually(() =>
+					button.Icon is FontIcon { Glyph: "Z" } replacementIcon &&
+					replacementIcon.ActualWidth > 0 &&
+					replacementIcon.ActualHeight > 0);
 
 				toolbarItem.IconImageSource = ImageSource.FromStream(() =>
 					new MemoryStream(Convert.FromBase64String("iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAIAAAD/gAIDAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAAJOgAACToAYJjBRwAAADLSURBVHhe7cfBCQAgAMSw239p/RcsDlDIJzvLLz6Cj+Aj+Ag+go/gI/gIPoKP4CP4CD6Cj+Aj+Ag+go/gI/gIPoKP4CP4CD6Cj+Aj+Ag+go/gI/gIPoKP4CP4CD6Cj+Aj+Ag+go/gI/gIPoKP4CP4CD6Cj+Aj+Ag+go/gI/gIPoKP4CP4CD6Cj+Aj+Ag+go/gI/gIPoKP4CP4CD6Cj+Aj+Ag+go/gI/gIPoKP4CP4CD6Cj+Aj+Ag+go/gI/gIPoKP4CP4CD6Cj+Aj+Ag+go/gI/gIPoKP4CP4CD6Cj+Aj+Ag+go/gI/gIPoKP4CP4CD6Cj+Aj+Ag+go/gI/gIPoKP4CP4CD6Cj+DztF2eLesr6yjgngAAAABJRU5ErkJggg==")));
