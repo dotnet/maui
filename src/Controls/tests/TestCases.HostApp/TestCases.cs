@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
 using System.Linq;
+using System.Reflection;
 
 namespace Maui.Controls.Sample
 {
@@ -10,27 +10,27 @@ namespace Maui.Controls.Sample
 		{
 			public static Dictionary<string, Action> PageToAction = new Dictionary<string, Action>(StringComparer.OrdinalIgnoreCase);
 
-			[UnconditionalSuppressMessage("TrimAnalysis", "IL2112", 
+			[UnconditionalSuppressMessage("TrimAnalysis", "IL2112",
 				Justification = "TestCaseScreen fields are not accessed via reflection in NativeAOT builds since reflection-based test discovery is disabled.")]
 			bool _filterBugzilla;
-			
-			[UnconditionalSuppressMessage("TrimAnalysis", "IL2112", 
+
+			[UnconditionalSuppressMessage("TrimAnalysis", "IL2112",
 				Justification = "TestCaseScreen fields are not accessed via reflection in NativeAOT builds since reflection-based test discovery is disabled.")]
 			bool _filterNone;
-			
-			[UnconditionalSuppressMessage("TrimAnalysis", "IL2112", 
+
+			[UnconditionalSuppressMessage("TrimAnalysis", "IL2112",
 				Justification = "TestCaseScreen fields are not accessed via reflection in NativeAOT builds since reflection-based test discovery is disabled.")]
 			bool _filterGitHub;
-			
-			[UnconditionalSuppressMessage("TrimAnalysis", "IL2112", 
+
+			[UnconditionalSuppressMessage("TrimAnalysis", "IL2112",
 				Justification = "TestCaseScreen fields are not accessed via reflection in NativeAOT builds since reflection-based test discovery is disabled.")]
 			bool _filterManual;
-			
-			[UnconditionalSuppressMessage("TrimAnalysis", "IL2112", 
+
+			[UnconditionalSuppressMessage("TrimAnalysis", "IL2112",
 				Justification = "TestCaseScreen fields are not accessed via reflection in NativeAOT builds since reflection-based test discovery is disabled.")]
 			string _filter;
 
-			void CheckInternetAndLoadPage(Type type)
+			Page CheckInternetAndGetPage(Type type)
 			{
 				try
 				{
@@ -42,21 +42,18 @@ namespace Maui.Controls.Sample
 							httpResponse.Wait();
 							if (httpResponse.Result.IsSuccessStatusCode)
 							{
-								var page = ActivatePage(type);
-								Application.Current.Windows[0].Page = page;
+								return ActivatePage(type);
 							}
 							else
 							{
-								var noInternetConnectionPage = ActivatePage(typeof(NoInternetConnectionPage));
-								Application.Current.Windows[0].Page = noInternetConnectionPage;
+								return ActivatePage(typeof(NoInternetConnectionPage));
 							}
 						}
 					}
 				}
 				catch
 				{
-					var noInternetConnectionPage = ActivatePage(typeof(NoInternetConnectionPage));
-					Application.Current.Windows[0].Page = noInternetConnectionPage;
+					return ActivatePage(typeof(NoInternetConnectionPage));
 				}
 			}
 
@@ -68,7 +65,7 @@ namespace Maui.Controls.Sample
 				{
 					return () =>
 					{
-						CheckInternetAndLoadPage(type);
+						Application.Current.Windows[0].Page = CheckInternetAndGetPage(type);
 					};
 				}
 
@@ -103,7 +100,7 @@ namespace Maui.Controls.Sample
 				return navigationAction;
 			}
 
-			[UnconditionalSuppressMessage("TrimAnalysis", "IL2026", 
+			[UnconditionalSuppressMessage("TrimAnalysis", "IL2026",
 				Justification = "ActivatePage method is only called in non-NativeAOT builds where reflection-based test discovery is enabled.")]
 			Page ActivatePage([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
 			{
@@ -154,7 +151,7 @@ namespace Maui.Controls.Sample
 				}
 			}
 
-			[UnconditionalSuppressMessage("TrimAnalysis", "IL2112", 
+			[UnconditionalSuppressMessage("TrimAnalysis", "IL2112",
 				Justification = "TestCaseScreen fields are not accessed via reflection in NativeAOT builds since reflection-based test discovery is disabled.")]
 			readonly List<IssueModel> _issues;
 
@@ -199,7 +196,7 @@ namespace Maui.Controls.Sample
 						 IsInternetRequired = attribute.IsInternetRequired,
 						 Action = ActivatePageAndNavigate(attribute, type),
 						 // PageFactory is used to retrieve the instance of the page.
-						 PageFactory = () => ActivatePage(type)
+						 PageFactory = () => attribute.IsInternetRequired ? CheckInternetAndGetPage(type) : ActivatePage(type)
 					 }).ToList();
 #endif
 
@@ -361,7 +358,7 @@ namespace Maui.Controls.Sample
 				ItemsSource = issues;
 			}
 
-			[UnconditionalSuppressMessage("TrimAnalysis", "IL2112", 
+			[UnconditionalSuppressMessage("TrimAnalysis", "IL2112",
 				Justification = "TestCaseScreen fields are not accessed via reflection in NativeAOT builds since reflection-based test discovery is disabled.")]
 			HashSet<string> _exemptNames = new HashSet<string> { };
 

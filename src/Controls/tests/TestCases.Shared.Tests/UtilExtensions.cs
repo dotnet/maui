@@ -31,12 +31,13 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		public static void NavigateToGallery(this IApp app, string page)
 		{
-			// For Catalyst app directly go the test page while opening.
-			if (app is not AppiumCatalystApp)
-			{
-				app.WaitForGoToTestButtonWithRecovery();
-				NavigateTo(app, page);
-			}
+			var startupArgs = app.Config.GetProperty<Dictionary<string, string>>("TestConfigurationArgs");
+			if (startupArgs is not null && startupArgs.TryGetValue("test", out var startupPage)
+				&& string.Equals(startupPage, page, StringComparison.OrdinalIgnoreCase))
+				return;
+
+			app.WaitForGoToTestButtonWithRecovery();
+			NavigateTo(app, page);
 		}
 
 		// Waits for the gallery's "Go To Test button" and, if it never appears (the usual
