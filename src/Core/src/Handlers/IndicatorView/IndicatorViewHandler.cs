@@ -25,7 +25,10 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IIndicatorView.IndicatorSize)] = MapIndicatorSize,
 			[nameof(IIndicatorView.IndicatorColor)] = MapIndicatorColor,
 			[nameof(IIndicatorView.SelectedIndicatorColor)] = MapSelectedIndicatorColor,
-			[nameof(IIndicatorView.IndicatorsShape)] = MapIndicatorShape
+			[nameof(IIndicatorView.IndicatorsShape)] = MapIndicatorShape,
+#if __IOS__ || MACCATALYST
+			[nameof(IView.FlowDirection)] = MapFlowDirection,
+#endif
 		};
 
 		public static CommandMapper<IIndicatorView, IIndicatorViewHandler> CommandMapper = new(ViewCommandMapper)
