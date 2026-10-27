@@ -153,6 +153,15 @@ public class AndroidScreenshotInsetsTests
 	}
 
 	[Fact]
+	public void HeightOnlyResizeDoesNotApplyTheSessionCachedInset()
+	{
+		var executor = new RecordingExecutor { ViewportHeight = 2629 };
+		using var app = CreateApp(executor);
+
+		Assert.Equal(84, app.GetAndroidScreenshotTopInset(1440, 2800));
+	}
+
+	[Fact]
 	public void MissingSessionDensityCannotCertifyAConflictingCachedInset()
 	{
 		var executor = new RecordingExecutor { IncludeInitialDensity = false };
@@ -165,6 +174,29 @@ public class AndroidScreenshotInsetsTests
 	public void InvalidCurrentDensityRemainsAFailure()
 	{
 		var executor = new RecordingExecutor { CurrentDensity = float.NaN };
+		using var app = CreateApp(executor);
+
+		Assert.Throws<InvalidOperationException>(() => app.GetAndroidScreenshotTopInset(1440, 2960));
+	}
+
+	[Fact]
+	public void HiddenToVisibleTransitionRechecksCurrentWindowVisibility()
+	{
+		var executor = new RecordingExecutor { Visible = false, WindowBarHeight = 0 };
+		using var app = CreateApp(executor);
+		Assert.Equal(0, app.GetAndroidScreenshotTopInset(1440, 2960));
+
+		executor.Visible = true;
+		executor.WindowBarHeight = 84;
+
+		Assert.Equal(171, app.GetAndroidScreenshotTopInset(1440, 2960));
+		Assert.Equal(2, executor.Scripts.Count(s => s == "mobile:getSystemBars"));
+	}
+
+	[Fact]
+	public void ConflictingCachedInsetCannotExcludeLessThanTheVisibleSystemWindow()
+	{
+		var executor = new RecordingExecutor { NativeTop = 60L, ViewportHeight = 2900, InitialTop = 60, InitialHeight = 2900 };
 		using var app = CreateApp(executor);
 
 		Assert.Throws<InvalidOperationException>(() => app.GetAndroidScreenshotTopInset(1440, 2960));

@@ -87,6 +87,8 @@ instead of blindly applying a cached portrait inset. Hidden bars crop0; an expli
 test `cropTop` still takes precedence. Missing/invalid metrics and frame/viewport
 size mismatches fail rather than being guessed or resized. This changes neither
 the product image, committed visual expectations nor comparison tolerances.
+The cached-policy choice is logged when the two metrics differ. An otherwise
+eligible cached inset smaller than the visible system window is rejected.
 
 ## Setup-only retries
 

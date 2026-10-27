@@ -236,7 +236,7 @@ namespace UITest.Appium
 
 			// UiAutomator2 4.2.1 memoizes the native status-bar height for the session.
 			if (initialWidth != width ||
-				Math.Sign((long)initialWidth - initialHeight - initialTop) != Math.Sign((long)imageWidth - imageHeight))
+				(long)initialHeight + initialTop != imageHeight)
 			{
 				Console.WriteLine("Screenshot orientation/size changed since session creation; retaining the current window-reported status-bar crop.");
 				return new CommandResponse(windowBarHeight, CommandResponseResult.Success);
@@ -252,6 +252,10 @@ namespace UITest.Appium
 				return new CommandResponse(windowBarHeight, CommandResponseResult.Success);
 			}
 
+			if (top < windowBarHeight)
+				throw new InvalidOperationException("The cached Android viewport inset excludes less than the visible system window; the capture region cannot be certified.");
+
+			Console.WriteLine($"Android screenshot inset policy: cached native viewport top {top}, system-window height {windowBarHeight}; session frame {imageWidth}x{imageHeight} and density {currentDensity} match.");
 			return new CommandResponse(top, CommandResponseResult.Success);
 
 			static int ReadPixel(IDictionary<string, object> values, string key) =>
