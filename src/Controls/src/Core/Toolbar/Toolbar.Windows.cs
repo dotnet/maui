@@ -47,7 +47,8 @@ namespace Microsoft.Maui.Controls
 				var button = new AppBarButton();
 				button.SetBinding(AppBarButton.LabelProperty, "Text");
 
-				if (commandBar.IsDynamicOverflowEnabled && item.Order == ToolbarItemOrder.Secondary)
+				if ((commandBar.IsDynamicOverflowEnabled && item.Order == ToolbarItemOrder.Secondary) ||
+					item.IconImageSource is FontImageSource)
 				{
 					button.SetBinding(AppBarButton.IconProperty, "IconImageSource", _imageSourceIconElementConverter);
 				}

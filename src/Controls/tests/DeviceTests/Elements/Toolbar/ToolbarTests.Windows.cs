@@ -21,6 +21,43 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Toolbar)]
 	public partial class ToolbarTests : ControlsHandlerTestBase
 	{
+		[Fact(DisplayName = "Toolbar FontImageSource icon is shown with text")]
+		public async Task ToolbarFontImageSourceIconIsShownWithText()
+		{
+			SetupBuilder();
+
+			var toolbarItem = new ToolbarItem()
+			{
+				Text = "Letter X",
+				IconImageSource = new FontImageSource()
+				{
+					Glyph = "X",
+					Color = Microsoft.Maui.Graphics.Colors.Black
+				}
+			};
+
+			var navPage = new NavigationPage(new ContentPage()
+			{
+				ToolbarItems =
+				{
+					toolbarItem
+				}
+			});
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
+			{
+				var toolbar = (Toolbar)(navPage.Window as IToolbarElement).Toolbar;
+				var commandBar = ((MauiToolbar)toolbar.Handler.PlatformView).CommandBar;
+				var button = Assert.IsType<AppBarButton>(commandBar.PrimaryCommands[0]);
+				var icon = Assert.IsType<FontIcon>(button.Icon);
+
+				Assert.Equal("Letter X", button.Label);
+				Assert.Equal("X", icon.Glyph);
+				Assert.Null(button.Content);
+				await AssertionExtensions.AssertEventually(() => icon.ActualWidth > 0 && icon.ActualHeight > 0);
+			});
+		}
+
 		[Fact(DisplayName = "Toolbar Default Label Position")]
 		public async Task ToolbarDefaultLabelPositionWithNoImages()
 		{
