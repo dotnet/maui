@@ -12,6 +12,7 @@ namespace Microsoft.Maui.Handlers;
 public partial class ViewHandler
 {
 	readonly static ConditionalWeakTable<PlatformView, ViewHandler> FocusManagerMapping = new();
+	bool _didReconnectContainer;
 
 	static ViewHandler()
 	{
@@ -40,16 +41,17 @@ public partial class ViewHandler
 		handler.ToPlatform().UpdateShadow(view);
 	}
 
-	internal void ReconnectContainer()
+	internal bool ReconnectContainer()
 	{
 		if (PlatformView is null ||
 			ContainerView is not WrapperView wrapper ||
 			ReferenceEquals(wrapper.Child, PlatformView))
 		{
-			return;
+			return false;
 		}
 
 		wrapper.Child = PlatformView;
+		return true;
 	}
 
 	public static void MapTranslationX(IViewHandler handler, IView view)
