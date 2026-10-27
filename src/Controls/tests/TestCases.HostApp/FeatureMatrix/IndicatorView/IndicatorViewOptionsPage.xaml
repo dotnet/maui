@@ -101,6 +101,7 @@
                       ColumnDefinitions="*,*"
                       ColumnSpacing="10">
                         <StackLayout Grid.Column="0"
+                                     FlowDirection="LeftToRight"
                                      Spacing="10">
                                 <Label Text="IndicatorSize"
                                        FontAttributes="Bold"
@@ -113,6 +114,7 @@
                                          AutomationId="IndicatorSizeStepper"/>
                         </StackLayout>
                         <StackLayout Grid.Column="1"
+                                     FlowDirection="LeftToRight"
                                      Spacing="10">
                                 <Label Text="Position"
                                        FontAttributes="Bold"
@@ -265,6 +267,7 @@
                        FontAttributes="Bold"
                        AutomationId="MaximumVisibleLabel"/>
                 <StackLayout Grid.Row="9"
+                             FlowDirection="LeftToRight"
                              Spacing="10">
                         <Stepper Value="{Binding MaximumVisible}"
                                  Minimum="1"

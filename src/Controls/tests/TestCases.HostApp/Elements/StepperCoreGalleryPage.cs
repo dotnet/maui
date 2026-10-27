@@ -6,6 +6,7 @@ internal class StepperCoreGalleryPage : ContentPage
 	{
 		var layout = new StackLayout
 		{
+			FlowDirection = FlowDirection.LeftToRight,
 			Padding = new Thickness(12)
 		};
 
@@ -29,6 +30,14 @@ internal class StepperCoreGalleryPage : ContentPage
 		{
 			defaultLabelValue.Text = e.NewValue.ToString();
 		};
+
+		var useInheritedRtl = new Button
+		{
+			AutomationId = "UseInheritedRTL",
+			Text = "Use inherited right-to-left flow"
+		};
+		useInheritedRtl.Clicked += (s, e) => layout.FlowDirection = FlowDirection.RightToLeft;
+		layout.Add(useInheritedRtl);
 
 		Content = layout;
 	}

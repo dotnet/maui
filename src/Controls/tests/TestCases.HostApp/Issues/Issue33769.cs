@@ -42,6 +42,7 @@ public class Issue33769 : ContentPage
 
 		Content = new VerticalStackLayout
 		{
+			FlowDirection = FlowDirection.LeftToRight,
 			Padding = 20,
 			Spacing = 15,
 			Children =

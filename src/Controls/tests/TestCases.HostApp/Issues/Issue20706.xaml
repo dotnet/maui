@@ -7,7 +7,7 @@
     <local:ViewModelClass/>
   </ContentPage.BindingContext>
   <ContentPage.Content>
-    <VerticalStackLayout>
+    <VerticalStackLayout FlowDirection="LeftToRight">
       <Stepper AutomationId="myStepper"
                x:Name="stepperValue"
                Maximum="1000"

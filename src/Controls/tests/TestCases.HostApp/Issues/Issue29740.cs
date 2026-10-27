@@ -32,6 +32,7 @@ public class Issue29740 : ContentPage
 		// Create the layout
 		var verticalStack = new VerticalStackLayout
 		{
+			FlowDirection = FlowDirection.LeftToRight,
 			Padding = new Thickness(30, 0),
 			Spacing = 25,
 			Children =
@@ -61,4 +62,3 @@ public class Issue29740 : ContentPage
 		stepperValueLabel.Text = $"Stepper Value: {value}";
 	}
 }
-

@@ -22,7 +22,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			Assert.That("0", Is.EqualTo(initialValue));
 
 			// Increase the value.
-			App.IncreaseStepper("myStepper");
+			App.IncreaseStepper("myStepper", isRightToLeft: false);
 
 			// Verify that the value has been increased.
 			var step1Value = App.FindElement("entry").GetText();
@@ -32,12 +32,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.Click("incrementButton");
 
 			// Increase the value.
-			App.IncreaseStepper("myStepper");
+			App.IncreaseStepper("myStepper", isRightToLeft: false);
 			var step2Value = App.FindElement("entry").GetText();
 			Assert.That("12", Is.EqualTo(step2Value));
 
 			// Decrease the value.
-			App.DecreaseStepper("myStepper");
+			App.DecreaseStepper("myStepper", isRightToLeft: false);
 
 			// Verify that the value has decreased.
 			var step3Value = App.FindElement("entry").GetText();

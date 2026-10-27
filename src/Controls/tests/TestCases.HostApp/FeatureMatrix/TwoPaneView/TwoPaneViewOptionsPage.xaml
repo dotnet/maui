@@ -13,6 +13,7 @@
        </ContentPage.ToolbarItems>
        <HorizontalStackLayout>
        <VerticalStackLayout 
+              FlowDirection="LeftToRight"
               Spacing="10" Padding="5"
               AutomationId="DimensionsPanel">
 

@@ -24,7 +24,7 @@ public class Issue29740 : _IssuesUITest
 		Assert.That(initialvalue, Is.EqualTo("Stepper Value: 0"));
 		for (int i = 0; i < 4; i++)
 		{
-			App.IncreaseStepper("29740Stepper");
+			App.IncreaseStepper("29740Stepper", isRightToLeft: false);
 		}
 		var finalvalue = App.WaitForElement("29740StepperValueLabel").GetText();
 		Assert.That(finalvalue, Is.EqualTo("Stepper Value: 10"));

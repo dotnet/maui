@@ -11,7 +11,9 @@ namespace Microsoft.Maui.TestCases.Tests
 		public const string StepperGallery = "Stepper Gallery";
 
 		public override string GalleryPageName => StepperGallery;
-		
+
+		protected override bool ResetAfterEachTest => true;
+
 		public StepperUITests(TestDevice device)
 			: base(device)
 		{
@@ -37,7 +39,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			ClassicAssert.AreEqual("0", step1Value);
 
 			// 2. Increase the value.
-			App.IncreaseStepper(stepperAutomationId);
+			App.IncreaseStepper(stepperAutomationId, isRightToLeft: false);
 
 			// 3. Verify that the value has increased.
 			var step3Value = App.FindElement(valueAutomationId).GetText();
@@ -59,18 +61,33 @@ namespace Microsoft.Maui.TestCases.Tests
 			ClassicAssert.AreEqual("0", step1Value);
 
 			// 2. Increase the value.
-			App.IncreaseStepper(stepperAutomationId);
+			App.IncreaseStepper(stepperAutomationId, isRightToLeft: false);
 
 			// 3. Verify that the value has increased.
 			var step3Value = App.FindElement(valueAutomationId).GetText();
 			ClassicAssert.AreEqual("1", step3Value);
 
 			// 4. Decrease the value.
-			App.DecreaseStepper(stepperAutomationId);
+			App.DecreaseStepper(stepperAutomationId, isRightToLeft: false);
 
 			// 5. Verify that the value has decreased.
 			var step5Value = App.FindElement(valueAutomationId).GetText();
 			ClassicAssert.AreEqual("0", step5Value);
+		}
+
+		[Test]
+		[Description("Stepper actions follow the effective direction inherited from its parent")]
+		public void StepperValueChangesWithInheritedRightToLeftFlowDirection()
+		{
+			App.WaitForElement("DefaultLabel");
+			App.Tap("UseInheritedRTL");
+			ClassicAssert.AreEqual("0", App.FindElement("DefaultLabelValue").GetText());
+
+			App.IncreaseStepper("DefaultStepper", isRightToLeft: true);
+			ClassicAssert.AreEqual("1", App.FindElement("DefaultLabelValue").GetText());
+
+			App.DecreaseStepper("DefaultStepper", isRightToLeft: true);
+			ClassicAssert.AreEqual("0", App.FindElement("DefaultLabelValue").GetText());
 		}
 	}
 }

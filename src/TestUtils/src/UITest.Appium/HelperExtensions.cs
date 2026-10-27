@@ -1,8 +1,8 @@
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Runtime.ExceptionServices;
 using System.Drawing;
+using System.Runtime.ExceptionServices;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Android;
@@ -1879,12 +1879,16 @@ namespace UITest.Appium
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
 		/// <param name="marked">Marked selector of the Stepper element to increase.</param>
-		public static void IncreaseStepper(this IApp app, string marked)
+		/// <param name="isRightToLeft">The control's effective flow direction, including inherited flow. Required for Apple coordinate fallback when native button children are unavailable.</param>
+		public static void IncreaseStepper(this IApp app, string marked, bool? isRightToLeft = null)
 		{
-			app.CommandExecutor.Execute("increaseStepper", new Dictionary<string, object>
+			var parameters = new Dictionary<string, object>
 			{
 				["elementId"] = marked
-			});
+			};
+			if (isRightToLeft.HasValue)
+				parameters["isRightToLeft"] = isRightToLeft.Value;
+			app.CommandExecutor.Execute("increaseStepper", parameters);
 		}
 
 		/// <summary>
@@ -1892,12 +1896,16 @@ namespace UITest.Appium
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
 		/// <param name="marked">Marked selector of the Stepper element to decrease.</param>
-		public static void DecreaseStepper(this IApp app, string marked)
+		/// <param name="isRightToLeft">The control's effective flow direction, including inherited flow. Required for Apple coordinate fallback when native button children are unavailable.</param>
+		public static void DecreaseStepper(this IApp app, string marked, bool? isRightToLeft = null)
 		{
-			app.CommandExecutor.Execute("decreaseStepper", new Dictionary<string, object>
+			var parameters = new Dictionary<string, object>
 			{
 				["elementId"] = marked
-			});
+			};
+			if (isRightToLeft.HasValue)
+				parameters["isRightToLeft"] = isRightToLeft.Value;
+			app.CommandExecutor.Execute("decreaseStepper", parameters);
 		}
 
 		/// <summary>
@@ -3108,18 +3116,18 @@ namespace UITest.Appium
 				{
 					// Signal cancellation (Appium driver won't respect it, but good hygiene)
 					cts.Cancel();
-					
+
 					// Warn about orphaned thread - the background task will continue blocking until
 					// the underlying Appium/WDA call times out or the process is killed
 					Debug.WriteLine($">>>>> Appium command timed out after {timeout.Value.TotalSeconds}s. Background thread may remain blocked until app is force-terminated.");
-					
+
 					// Observe any future exception from the orphaned task to prevent unobserved task exceptions
 					task.ContinueWith(t =>
 					{
 						if (t.Exception is not null)
 							Debug.WriteLine($">>>>> Orphaned Appium task faulted: {t.Exception.InnerException?.Message}");
 					}, TaskContinuationOptions.OnlyOnFaulted);
-					
+
 					throw new TimeoutException(
 						$"An Appium command did not complete within {timeout.Value.TotalSeconds}s. " +
 						"The application may be unresponsive (e.g., due to an infinite layout loop).");
