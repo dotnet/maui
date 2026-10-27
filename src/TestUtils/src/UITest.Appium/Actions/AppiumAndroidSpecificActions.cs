@@ -13,6 +13,7 @@ namespace UITest.Appium
 		const string GetPerformanceDataCommand = "getPerformanceData";
 		const string ToggleSystemAnimationsCommand = "toggleSystemAnimations";
 		const string GetSystemBarsCommand = "getSystemBars";
+		const string GetScreenshotTopInsetCommand = "getAndroidScreenshotTopInset";
 		const string ToggleSecondaryToolbarItemsCommand = "toggleSecondaryToolbarItems";
 		const string CheckIfGestureNavigationIsEnabledCommand = "checkIfGestureNavigationIsEnabled";
 
@@ -26,6 +27,7 @@ namespace UITest.Appium
 			GetPerformanceDataCommand,
 			ToggleSystemAnimationsCommand,
 			GetSystemBarsCommand,
+			GetScreenshotTopInsetCommand,
 			ToggleSecondaryToolbarItemsCommand,
 			CheckIfGestureNavigationIsEnabledCommand,
 		};
@@ -50,6 +52,7 @@ namespace UITest.Appium
 				GetPerformanceDataCommand => GetPerformanceData(parameters),
 				ToggleSystemAnimationsCommand => ToggleSystemAnimations(parameters),
 				GetSystemBarsCommand => GetSystemBars(parameters),
+				GetScreenshotTopInsetCommand => GetScreenshotTopInset(parameters),
 				ToggleSecondaryToolbarItemsCommand => ToggleSecondaryToolbarItems(parameters),
 				CheckIfGestureNavigationIsEnabledCommand => CheckIfGestureNavigationIsEnabled(parameters),
 				_ => CommandResponse.FailedEmptyResponse,
@@ -193,6 +196,78 @@ namespace UITest.Appium
 			{
 				return CommandResponse.FailedEmptyResponse;
 			}
+		}
+
+		CommandResponse GetScreenshotTopInset(IDictionary<string, object> parameters)
+		{
+			if (_appiumApp.Driver is not AndroidDriver androidDriver)
+				throw new InvalidOperationException("Android screenshot insets require an Android driver.");
+
+			var bars = androidDriver.GetSystemBars();
+			if (!bars.TryGetValue("statusBar", out var value) || value is not IDictionary<string, object> statusBar ||
+				!statusBar.TryGetValue("visible", out var visibleValue) || visibleValue is not bool visible)
+				throw new InvalidOperationException("Android status-bar visibility is missing.");
+
+			var imageWidth = ReadPixel(parameters, "imageWidth");
+			var imageHeight = ReadPixel(parameters, "imageHeight");
+			var windowBarHeight = ReadPixel(statusBar, "height");
+			if (imageWidth <= 0 || imageHeight <= 0 || windowBarHeight >= imageHeight)
+				throw new InvalidOperationException("Android status-bar bounds do not fit the screenshot.");
+			if (!visible)
+				return new CommandResponse(0, CommandResponseResult.Success);
+
+			if (androidDriver.ExecuteScript("mobile: viewportRect") is not IDictionary<string, object> viewport)
+				throw new InvalidOperationException("Android native viewport is missing.");
+			var top = ReadPixel(viewport, "top");
+			var width = ReadPixel(viewport, "width");
+			var height = ReadPixel(viewport, "height");
+			if (width != imageWidth || height <= 0 || (long)height + top != imageHeight)
+				throw new InvalidOperationException("Android native viewport does not match the captured screenshot.");
+			if (top == windowBarHeight)
+				return new CommandResponse(top, CommandResponseResult.Success);
+
+			if (androidDriver.Capabilities.GetCapability("viewportRect") is not IDictionary<string, object> initialViewport)
+				throw new InvalidOperationException("Android session viewport is missing; the cached inset orientation cannot be verified.");
+			var initialWidth = ReadPixel(initialViewport, "width");
+			var initialHeight = ReadPixel(initialViewport, "height");
+			var initialTop = ReadPixel(initialViewport, "top");
+			if (initialWidth <= 0 || initialHeight <= 0)
+				throw new InvalidOperationException("Android session viewport has invalid bounds.");
+
+			// UiAutomator2 4.2.1 memoizes the native status-bar height for the session.
+			if (initialWidth != width ||
+				(long)initialHeight + initialTop != imageHeight)
+			{
+				Console.WriteLine("Screenshot orientation/size changed since session creation; retaining the current window-reported status-bar crop.");
+				return new CommandResponse(windowBarHeight, CommandResponseResult.Success);
+			}
+
+			var initialDensity = ReadPixelValue(androidDriver.Capabilities.GetCapability("deviceScreenDensity"), "deviceScreenDensity");
+			var currentDensity = androidDriver.GetDisplayDensity();
+			if (initialDensity <= 0 || !float.IsFinite(currentDensity) || currentDensity <= 0 || currentDensity > int.MaxValue)
+				throw new InvalidOperationException("Android screenshot density is missing or invalid.");
+			if (currentDensity != initialDensity)
+			{
+				Console.WriteLine("Screenshot density changed since session creation; retaining the current window-reported status-bar crop.");
+				return new CommandResponse(windowBarHeight, CommandResponseResult.Success);
+			}
+
+			if (top < windowBarHeight)
+				throw new InvalidOperationException("The cached Android viewport inset excludes less than the visible system window; the capture region cannot be certified.");
+
+			Console.WriteLine($"Android screenshot inset policy: cached native viewport top {top}, system-window height {windowBarHeight}; session frame {imageWidth}x{imageHeight} and density {currentDensity} match.");
+			return new CommandResponse(top, CommandResponseResult.Success);
+
+			static int ReadPixel(IDictionary<string, object> values, string key) =>
+				values.TryGetValue(key, out var pixel) ? ReadPixelValue(pixel, key)
+					: throw new InvalidOperationException($"Android screenshot metric '{key}' is missing.");
+
+			static int ReadPixelValue(object? pixel, string key) => pixel switch
+			{
+				int number when number >= 0 => number,
+				long number when number >= 0 && number <= int.MaxValue => (int)number,
+				_ => throw new InvalidOperationException($"Android screenshot metric '{key}' must be a nonnegative integer.")
+			};
 		}
 
 		CommandResponse GetSystemBars(IDictionary<string, object> parameters)

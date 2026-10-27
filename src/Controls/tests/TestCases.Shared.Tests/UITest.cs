@@ -397,7 +397,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 					case TestDevice.Windows:
 						environmentName = "windows";
-						
+
 						// Check if the Windows CV1 handler is selected via TEST_CONFIGURATION_ARGS.
 						// This uses a separate snapshot directory for visual regression testing
 						var testConfigurationArgs = Environment.GetEnvironmentVariable("TEST_CONFIGURATION_ARGS") ?? "";
@@ -432,21 +432,13 @@ namespace Microsoft.Maui.TestCases.Tests
 
 				var actualImage = new ImageSnapshot(screenshotPngBytes, ImageSnapshotFormat.PNG);
 
-				int androidStatusBarHeight = 0;
+				IImageEditor? imageEditor = null;
+				int androidTopInset = 0;
 				if (_testDevice == TestDevice.Android && cropTop <= 0)
 				{
-					var systemBars = App.GetSystemBars();
-					if (!systemBars.TryGetValue("statusBar", out var statusBarObject) ||
-						statusBarObject is not IDictionary<string, object> statusBar ||
-						!statusBar.TryGetValue("height", out var heightObject) ||
-						heightObject is null)
-					{
-						throw new InvalidOperationException("Unable to read Android statusBar.height from GetSystemBars(). Screenshot cropping requires this value.");
-					}
-
-					androidStatusBarHeight = Convert.ToInt32(heightObject);
-					if (androidStatusBarHeight < 0)
-						throw new InvalidOperationException($"GetSystemBars() returned an invalid Android status bar height: {androidStatusBarHeight}.");
+					imageEditor = _imageEditorFactory.CreateImageEditor(actualImage);
+					var (imageWidth, imageHeight) = imageEditor.GetSize();
+					androidTopInset = App.GetAndroidScreenshotTopInset(imageWidth, imageHeight);
 				}
 
 				// For Android and iOS, crop off the OS status bar at the top since it's not part of the
@@ -454,7 +446,7 @@ namespace Microsoft.Maui.TestCases.Tests
 				// bar at the top as it varies slightly based on OS theme and is also not part of the app.
 				int cropFromTop = _testDevice switch
 				{
-					TestDevice.Android => androidStatusBarHeight,
+					TestDevice.Android => androidTopInset,
 					TestDevice.iOS => environmentName == "ios-iphonex" ? 90 : 110,
 					TestDevice.Windows => 32,
 					TestDevice.Mac => 29,
@@ -491,7 +483,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 				if (cropFromLeft > 0 || cropFromRight > 0 || cropFromTop > 0 || cropFromBottom > 0)
 				{
-					IImageEditor imageEditor = _imageEditorFactory.CreateImageEditor(actualImage);
+					imageEditor ??= _imageEditorFactory.CreateImageEditor(actualImage);
 					(int width, int height) = imageEditor.GetSize();
 
 					imageEditor.Crop(cropFromLeft, cropFromTop, width - cropFromLeft - cropFromRight, height - cropFromTop - cropFromBottom);
