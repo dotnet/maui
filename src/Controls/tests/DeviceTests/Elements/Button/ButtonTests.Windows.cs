@@ -76,6 +76,34 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact]
+		public async Task ReconnectingContainerRestoresOpacityChangedWhileDisconnected()
+		{
+			var button = new Controls.Button
+			{
+				Text = "Test",
+				Clip = new Controls.Shapes.EllipseGeometry(new Point(50, 50), 50, 50)
+			};
+
+			await AttachAndRun<ButtonHandler>(button, handler =>
+			{
+				var container = Assert.IsType<WrapperView>(handler.ContainerView);
+				var parent = container.Parent;
+				button.Opacity = 0;
+				Assert.Equal(0d, container.Opacity);
+
+				((IElementHandler)handler).DisconnectHandler();
+				button.Opacity = 1;
+				handler.SetVirtualView(button);
+
+				Assert.Same(container, handler.ContainerView);
+				Assert.Same(parent, container.Parent);
+				Assert.Same(handler.PlatformView, container.Child);
+				Assert.Equal(1d, container.Opacity);
+				Assert.Equal(1d, handler.PlatformView.Opacity);
+			});
+		}
+
 		Button GetPlatformButton(ButtonHandler buttonHandler) =>
 			buttonHandler.PlatformView;
 
