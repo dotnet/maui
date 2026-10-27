@@ -2,8 +2,9 @@
 using System;
 using System.Runtime.InteropServices;
 using Foundation;
-using UIKit;
+using Microsoft.Maui.ApplicationModel;
 using ObjCRuntime;
+using UIKit;
 
 namespace Microsoft.Maui.Devices
 {
@@ -163,6 +164,16 @@ namespace Microsoft.Maui.Devices
 			// NSApplicationDidChangeScreenParametersNotification - for resolution/refresh rate changes
 			observer = notificationCenter.AddObserver(ScreenParametersChangedNotification, OnMainDisplayInfoChanged);
 #else
+			if (OperatingSystem.IsIOSVersionAtLeast(27))
+			{
+				// Status bar orientation notifications are no longer delivered on iOS 27.
+				// Queue the read so the window scene has applied the new interface orientation.
+				observer = notificationCenter.AddObserver(UIDevice.OrientationDidChangeNotification,
+					_ => UIApplication.SharedApplication.BeginInvokeOnMainThread(OnMainDisplayInfoChanged));
+				UIDevice.CurrentDevice.BeginGeneratingDeviceOrientationNotifications();
+				return;
+			}
+
 			// On iOS, use status bar orientation changes (deprecated but still works)
 			var notification = UIApplication.DidChangeStatusBarOrientationNotification;
 			observer = notificationCenter.AddObserver(notification, OnMainDisplayInfoChanged);
@@ -171,6 +182,10 @@ namespace Microsoft.Maui.Devices
 
 		protected override void StopScreenMetricsListeners()
 		{
+#if !MACCATALYST
+			if (OperatingSystem.IsIOSVersionAtLeast(27) && observer is not null)
+				UIDevice.CurrentDevice.EndGeneratingDeviceOrientationNotifications();
+#endif
 			observer?.Dispose();
 			observer = null;
 		}
@@ -180,13 +195,23 @@ namespace Microsoft.Maui.Devices
 
 #pragma warning disable CA1416 // UIApplication.StatusBarOrientation has [UnsupportedOSPlatform("ios9.0")]. (Deprecated but still works)
 #pragma warning disable CA1422 // Validate platform compatibility
+		static UIInterfaceOrientation GetInterfaceOrientation()
+		{
+#if !MACCATALYST
+			if (OperatingSystem.IsIOSVersionAtLeast(27))
+				return WindowStateManager.Default.GetCurrentUIWindow()?.WindowScene?.EffectiveGeometry.InterfaceOrientation
+					?? UIInterfaceOrientation.Unknown;
+#endif
+			return UIApplication.SharedApplication.StatusBarOrientation;
+		}
+
 		static DisplayOrientation CalculateOrientation() =>
-			UIApplication.SharedApplication.StatusBarOrientation.IsLandscape()
+			GetInterfaceOrientation().IsLandscape()
 				? DisplayOrientation.Landscape
 				: DisplayOrientation.Portrait;
 
 		static DisplayRotation CalculateRotation() =>
-			UIApplication.SharedApplication.StatusBarOrientation switch
+			GetInterfaceOrientation() switch
 			{
 				UIInterfaceOrientation.Portrait => DisplayRotation.Rotation0,
 				UIInterfaceOrientation.PortraitUpsideDown => DisplayRotation.Rotation180,
