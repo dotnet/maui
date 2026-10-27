@@ -174,8 +174,7 @@ namespace Microsoft.Maui.Devices
 				return;
 			}
 
-			// On iOS, use status bar orientation changes (deprecated but still works)
-			var notification = UIApplication.DidChangeStatusBarOrientationNotification;
+			var notification = UIDevice.OrientationDidChangeNotification;
 			observer = notificationCenter.AddObserver(notification, OnMainDisplayInfoChanged);
 #endif
 		}
@@ -205,20 +204,44 @@ namespace Microsoft.Maui.Devices
 			return UIApplication.SharedApplication.StatusBarOrientation;
 		}
 
-		static DisplayOrientation CalculateOrientation() =>
-			GetInterfaceOrientation().IsLandscape()
+		static DisplayOrientation CalculateOrientation()
+		{
+#if !MACCATALYST
+			if (OperatingSystem.IsIOSVersionAtLeast(27))
+				return GetInterfaceOrientation() switch
+				{
+					UIInterfaceOrientation.LandscapeLeft or UIInterfaceOrientation.LandscapeRight => DisplayOrientation.Landscape,
+					UIInterfaceOrientation.Portrait or UIInterfaceOrientation.PortraitUpsideDown => DisplayOrientation.Portrait,
+					_ => DisplayOrientation.Unknown,
+				};
+#endif
+			return UIDevice.CurrentDevice.Orientation.IsLandscape()
 				? DisplayOrientation.Landscape
-				: DisplayOrientation.Portrait;
+				: UIDevice.CurrentDevice.Orientation == UIDeviceOrientation.PortraitUpsideDown || UIDevice.CurrentDevice.Orientation == UIDeviceOrientation.Portrait ? DisplayOrientation.Portrait : DisplayOrientation.Unknown;
+		}
 
-		static DisplayRotation CalculateRotation() =>
-			GetInterfaceOrientation() switch
+		static DisplayRotation CalculateRotation()
+		{
+#if !MACCATALYST
+			if (OperatingSystem.IsIOSVersionAtLeast(27))
+				return GetInterfaceOrientation() switch
+				{
+					UIInterfaceOrientation.Portrait => DisplayRotation.Rotation0,
+					UIInterfaceOrientation.PortraitUpsideDown => DisplayRotation.Rotation180,
+					UIInterfaceOrientation.LandscapeLeft => DisplayRotation.Rotation270,
+					UIInterfaceOrientation.LandscapeRight => DisplayRotation.Rotation90,
+					_ => DisplayRotation.Unknown,
+				};
+#endif
+			return UIDevice.CurrentDevice.Orientation switch
 			{
-				UIInterfaceOrientation.Portrait => DisplayRotation.Rotation0,
-				UIInterfaceOrientation.PortraitUpsideDown => DisplayRotation.Rotation180,
-				UIInterfaceOrientation.LandscapeLeft => DisplayRotation.Rotation270,
-				UIInterfaceOrientation.LandscapeRight => DisplayRotation.Rotation90,
+				UIDeviceOrientation.Portrait => DisplayRotation.Rotation0,
+				UIDeviceOrientation.PortraitUpsideDown => DisplayRotation.Rotation180,
+				UIDeviceOrientation.LandscapeRight => DisplayRotation.Rotation270,
+				UIDeviceOrientation.LandscapeLeft => DisplayRotation.Rotation90,
 				_ => DisplayRotation.Unknown,
 			};
+		}
 
 #pragma warning restore CA1422 // Validate platform compatibility
 #pragma warning restore CA1416

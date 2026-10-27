@@ -8,7 +8,6 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
@@ -508,10 +507,10 @@ namespace Microsoft.Maui.Controls
 
 		Page GetOrCreateFromRoute(string route, ShellRouteParameters queryData, IServiceProvider services, bool isLast, bool isPopping)
 		{
-			var content = Routing.GetOrCreateContent(route, services) as Page;
-			if (content == null)
+			var element = Routing.GetOrCreateContent(route, services);
+			if (element is not Page content)
 			{
-				Application.Current?.FindMauiContext()?.CreateLogger<ShellSection>()?.LogWarning("Failed to Create Content For: {route}", route);
+				throw new InvalidOperationException($"Content for route {route} should be of type {nameof(Page)}, but was {element?.GetType().FullName ?? "null"}");
 			}
 
 			ShellNavigationManager.ApplyQueryAttributes(content, queryData, isLast, isPopping);

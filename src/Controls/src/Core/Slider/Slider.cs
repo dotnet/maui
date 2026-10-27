@@ -45,13 +45,15 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty ValueProperty = BindableProperty.Create(nameof(Value), typeof(double), typeof(Slider), 0d, BindingMode.TwoWay, coerceValue: (bindable, value) =>
 		{
 			var slider = (Slider)bindable;
+			var original = (double)value;
 			// Only store the requested value if the user is setting it (not during recoercion)
 			if (!slider._isRecoercing)
 			{
-				slider._requestedValue = (double)value;
+				slider._requestedValue = original;
 				slider._userSetValue = true;
 			}
-			return ((double)value).Clamp(slider.Minimum, slider.Maximum);
+			var coerced = original.Clamp(slider.Minimum, slider.Maximum);
+			return coerced == original ? value : (object)coerced;
 		}, propertyChanged: (bindable, oldValue, newValue) =>
 		{
 			var slider = (Slider)bindable;
