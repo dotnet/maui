@@ -85,6 +85,10 @@
   </ItemGroup>
 
   <!-- TypeScript compilation -->
+  <PropertyGroup>
+    <!-- Parallel TFM builds must not overwrite a resource another compiler is reading. -->
+    <TypeScriptOutDir>$(BaseIntermediateOutputPath)$(Configuration)/$(TargetFramework)/$(RuntimeIdentifier)/TypeScript</TypeScriptOutDir>
+  </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="5.7.1">
       <PrivateAssets>all</PrivateAssets>
@@ -92,7 +96,8 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Handlers\HybridWebView\HybridWebView.js" LogicalName="_framework/hybridwebview.js" />
+    <EmbeddedResource Include="Handlers\HybridWebView\HybridWebView.js" LogicalName="_framework/hybridwebview.js" Condition="'$(TypeScriptCompileBlocked)' == 'true'" />
+    <EmbeddedResource Include="$(TypeScriptOutDir)/HybridWebView.js" LogicalName="_framework/hybridwebview.js" Condition="'$(TypeScriptCompileBlocked)' != 'true'" />
     <None Remove="Handlers\HybridWebView\HybridWebView.js" />
   </ItemGroup>
   <ItemGroup>
