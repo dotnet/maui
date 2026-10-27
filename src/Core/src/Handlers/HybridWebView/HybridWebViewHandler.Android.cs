@@ -86,6 +86,7 @@ namespace Microsoft.Maui.Handlers
 			platformView.StopLoading();
 			ContainerView?.RemoveFromParent();
 			HasContainer = false;
+			platformView.RemoveFromParent();
 
 			base.DisconnectHandler(platformView);
 		}
