@@ -38,19 +38,13 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory]
-		[InlineData(-1, true, true)]
-		[InlineData(0, true, true)]
-		[InlineData(1, true, true)]
-		[InlineData(-1, false, true)]
-		[InlineData(0, false, true)]
-		[InlineData(1, false, true)]
-		[InlineData(-1, true, false)]
-		[InlineData(0, true, false)]
-		[InlineData(1, true, false)]
-		[InlineData(-1, false, false)]
-		[InlineData(0, false, false)]
-		[InlineData(1, false, false)]
-		public async Task ChangingRequestedSizeRedrawsBoxView(double initialSize, bool changeWidth, bool useBackground)
+		[InlineData(-1, true)]
+		[InlineData(0, true)]
+		[InlineData(1, true)]
+		[InlineData(-1, false)]
+		[InlineData(0, false)]
+		[InlineData(1, false)]
+		public async Task ChangingWidthRequestRedrawsBoxView(double initialWidth, bool useBackground)
 		{
 			EnsureHandlerCreated(builder => builder.ConfigureMauiHandlers(handlers =>
 			{
@@ -60,11 +54,13 @@ namespace Microsoft.Maui.DeviceTests
 
 			var boxView = new BoxView
 			{
-				WidthRequest = changeWidth ? initialSize : 100,
-				HeightRequest = changeWidth ? 5 : initialSize,
+				HeightRequest = 5,
 				HorizontalOptions = LayoutOptions.Start,
 				VerticalOptions = LayoutOptions.Start
 			};
+
+			if (initialWidth >= 0)
+				boxView.WidthRequest = initialWidth;
 
 			if (useBackground)
 				boxView.Background = Brush.Red;
@@ -78,21 +74,27 @@ namespace Microsoft.Maui.DeviceTests
 				var handler = (ShapeViewHandler)boxView.Handler;
 				var platformView = (RecordingShapeView)GetNativeBoxView(handler);
 				await AssertHelpers.AssertEventually(() =>
-					(changeWidth ? boxView.Width : boxView.Height) == Math.Max(0, initialSize));
+					boxView.Width == Math.Max(0, initialWidth),
+					message: $"BoxView did not reach initial width {initialWidth} (background={useBackground}).");
 
-				if (changeWidth)
-					boxView.WidthRequest = 100;
-				else
-					boxView.HeightRequest = 100;
+				foreach (var width in new[] { 100, 200, 100 })
+				{
+					var previousDrawCount = platformView.DrawCount;
+					boxView.WidthRequest = width;
 
-				// Observe UIKit's draw pass before taking a snapshot, which can itself force drawing.
-				await AssertHelpers.AssertEventually(() =>
-					platformView.LastDrawBounds is CGRect bounds &&
-					bounds.Width == 100 && bounds.Height == (changeWidth ? 5 : 100),
-					message: "BoxView did not redraw at its updated size.");
+					await AssertHelpers.AssertEventually(() =>
+						boxView.Width == width && platformView.Bounds.Width == width,
+						message: $"BoxView did not reach width {width} (initial={initialWidth}, background={useBackground}).");
 
-				Assert.Equal(100, changeWidth ? boxView.Width : boxView.Height);
-				await platformView.AssertContainsColor(Colors.Red, MauiContext);
+					// Observe UIKit's draw pass before taking a snapshot, which can itself force drawing.
+					await AssertHelpers.AssertEventually(() =>
+						platformView.DrawCount > previousDrawCount &&
+						platformView.LastDrawBounds is CGRect bounds &&
+						bounds.Width == width && bounds.Height == 5,
+						message: $"BoxView did not redraw at width {width} (initial={initialWidth}, background={useBackground}).");
+
+					await platformView.AssertContainsColor(Colors.Red, MauiContext);
+				}
 			});
 		}
 
@@ -104,11 +106,13 @@ namespace Microsoft.Maui.DeviceTests
 		sealed class RecordingShapeView : MauiShapeView
 		{
 			public CGRect? LastDrawBounds { get; private set; }
+			public int DrawCount { get; private set; }
 
 			public override void Draw(CGRect dirtyRect)
 			{
-				LastDrawBounds = dirtyRect;
 				base.Draw(dirtyRect);
+				LastDrawBounds = Bounds;
+				DrawCount++;
 			}
 		}
 
