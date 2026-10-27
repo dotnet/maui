@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Controls.Handlers
         public override AView OnCreateView(LayoutInflater inflater, ViewGroup? container, Bundle? savedInstanceState)
         {
             // If restored without proper handler reference, return empty view
-            if (_handler is null)
+            if (_handler is null || ((IElementHandler)_handler).VirtualView is null)
             {
                 return new FrameLayout(inflater.Context!);
             }
@@ -62,14 +62,17 @@ namespace Microsoft.Maui.Controls.Handlers
             base.OnViewCreated(view, savedInstanceState);
 
             // Setup adapter now that fragment is attached
-            _handler?.SetupViewPagerAdapter();
+            if (_handler is not null && ((IElementHandler)_handler).VirtualView is not null)
+            {
+                _handler.SetupViewPagerAdapter();
+            }
         }
 
         public override void OnResume()
         {
             base.OnResume();
 
-            if (_handler is null || _handler.VirtualView is null)
+            if (_handler is null || ((IElementHandler)_handler).VirtualView is not ShellSection section)
             {
                 return;
             }
@@ -79,8 +82,8 @@ namespace Microsoft.Maui.Controls.Handlers
                 return;
             }
 
-            var shell = _handler.VirtualView.FindParentOfType<Shell>();
-            var currentContent = _handler.VirtualView.CurrentItem;
+            var shell = section.FindParentOfType<Shell>();
+            var currentContent = section.CurrentItem;
 
             if (shell is null || currentContent is null)
             {

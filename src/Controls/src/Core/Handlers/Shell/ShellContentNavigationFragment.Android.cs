@@ -489,15 +489,7 @@ namespace Microsoft.Maui.Controls.Handlers
             _navigationContainer = null;
             _stackNavigationManager = null;
 
-            // Disconnect the root page and all its child handlers when the ShellContent has been
-            // removed from the Shell hierarchy (e.g. Shell.Items.Clear()).
-            // The guard prevents premature disconnection during normal back-navigation where the
-            // page is still cached and will be reused — without it, handlers like WebView would
-            // be incorrectly released mid-navigation.
-            if (_shellContent?.FindParentOfType<Shell>() is null)
-            {
-                _rootPage?.DisconnectHandlers();
-            }
+            DisconnectOrphanedPageHandlers();
 
             if (_subscribedToNavigationRequested)
             {
@@ -509,6 +501,40 @@ namespace Microsoft.Maui.Controls.Handlers
             }
 
             base.OnDestroyView();
+        }
+
+        internal void DisconnectOrphanedPageHandlers()
+        {
+            var belongsToShell =
+                _shellContent is ShellContent content &&
+                content.Parent is ShellSection section &&
+                section.Parent is ShellItem item &&
+                item.Parent is Shell shell &&
+                shell.Items.Contains(item) &&
+                item.Items.Contains(section) &&
+                section.Items.Contains(content);
+
+            // Release orphaned pages before deferred native teardown can detach a reused view.
+            // Collection removal can precede clearing the old parent links.
+            if (!belongsToShell &&
+                (_rootPage?.Parent is null || _rootPage.Parent == _shellContent || OwnsRootPageHandler()))
+            {
+                _rootPage?.DisconnectHandlers();
+            }
+        }
+
+        bool OwnsRootPageHandler()
+        {
+            IElementHandler? handler = _rootPage?.Handler;
+            if (_navigationContainer is null || handler?.PlatformView is not AView view)
+                return false;
+
+            for (AView? current = view; current is not null; current = current.Parent as AView)
+            {
+                if (current == _navigationContainer)
+                    return true;
+            }
+            return false;
         }
 
         protected override void Dispose(bool disposing)

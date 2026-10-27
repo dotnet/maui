@@ -440,6 +440,9 @@ namespace Microsoft.Maui.Controls.Handlers
 
         protected override void DisconnectHandler(AView platformView)
         {
+            var viewPager = _viewPager;
+            var adapter = viewPager?.Adapter;
+
             // Unsubscribe from events
             _rootLayout?.ViewAttachedToWindow -= OnRootLayoutAttachedToWindow;
 
@@ -476,8 +479,12 @@ namespace Microsoft.Maui.Controls.Handlers
             }
 
             // Cleanup adapter
+            if (_adapter is not null)
+            {
+                _adapter.Handler = null;
+            }
             _adapter = null;
-            _viewPager?.Adapter = null;
+            ShellItemHandler.QueueViewPagerAdapterCleanup(viewPager, adapter);
             _viewPager = null;
 
             // Cleanup TabLayout
@@ -497,6 +504,11 @@ namespace Microsoft.Maui.Controls.Handlers
 
             _rootLayout = null;
             _shellContext = null;
+
+            if (adapter is ShellContentFragmentAdapter contentAdapter)
+            {
+                contentAdapter.DisconnectOrphanedPageHandlers();
+            }
 
             base.DisconnectHandler(platformView);
         }
@@ -827,6 +839,7 @@ namespace Microsoft.Maui.Controls.Handlers
         IList<ShellContent>? _visibleItems;
         long _itemIdCounter;
         readonly Dictionary<ShellContent, long> _contentIds = new Dictionary<ShellContent, long>();
+        readonly List<WeakReference<ShellContentNavigationFragment>> _fragments = new();
         IShellSectionController SectionController => (IShellSectionController)_shellSection;
 
         public ShellContentFragmentAdapter(ShellSection shellSection, Fragment parentFragment, IMauiContext mauiContext)
@@ -835,6 +848,19 @@ namespace Microsoft.Maui.Controls.Handlers
             _shellSection = shellSection;
             _mauiContext = mauiContext;
             _visibleItems = SectionController.GetItems();
+        }
+
+        internal void DisconnectOrphanedPageHandlers()
+        {
+            var fragments = _fragments.ToArray();
+            _fragments.Clear();
+            foreach (var reference in fragments)
+            {
+                if (reference.TryGetTarget(out var fragment))
+                {
+                    fragment.DisconnectOrphanedPageHandlers();
+                }
+            }
         }
 
         public override int ItemCount => _visibleItems?.Count ?? 0;
@@ -881,7 +907,10 @@ namespace Microsoft.Maui.Controls.Handlers
             }
 
             var shellContent = _visibleItems[position];
-            return new ShellContentNavigationFragment(shellContent, _mauiContext, Handler);
+            var fragment = new ShellContentNavigationFragment(shellContent, _mauiContext, Handler);
+            _fragments.RemoveAll(reference => !reference.TryGetTarget(out _));
+            _fragments.Add(new WeakReference<ShellContentNavigationFragment>(fragment));
+            return fragment;
         }
 
         /// <summary>

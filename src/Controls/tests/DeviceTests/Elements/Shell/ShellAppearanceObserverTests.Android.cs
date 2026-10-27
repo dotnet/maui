@@ -28,7 +28,7 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task ClearAndReplaceRemovesOldObserversAndReplaysAppearance()
 		{
-			Console.WriteLine($"Shell observer test host: material3={RuntimeFeature.IsMaterial3Enabled}");
+			Console.WriteLine($"Shell observer test host: material3={RuntimeFeature.IsMaterial3Enabled}, chrome={RuntimeFeature.UseMauiAndroidSystemBarBackgrounds}");
 			EnsureHandlerCreated(builder => builder.ConfigureMauiHandlers(handlers =>
 			{
 				SetupShellHandlers(handlers);
@@ -91,10 +91,28 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var field = typeof(Shell).GetField("_appearanceObservers", BindingFlags.Instance | BindingFlags.NonPublic)
 				?? throw new InvalidOperationException("Shell appearance observer field was not found.");
-			if (field.GetValue(shell) is not IEnumerable<(IAppearanceObserver Observer, Element Pivot)> observers)
+			var value = field.GetValue(shell);
+			if (value is IEnumerable<(IAppearanceObserver Observer, Element Pivot)> observers)
+				return observers.ToArray();
+
+			if (value is not System.Collections.IEnumerable registrations)
 				throw new InvalidOperationException("Shell appearance observer storage has changed.");
 
-			return observers.ToArray();
+			var registrationType = typeof(Shell).GetNestedType("AppearanceObserverRegistration", BindingFlags.NonPublic)
+				?? throw new InvalidOperationException("Shell appearance observer registration type was not found.");
+			var observerField = registrationType.GetField("Observer", BindingFlags.Instance | BindingFlags.Public)
+				?? throw new InvalidOperationException("Shell appearance observer registration has no Observer field.");
+			var pivotField = registrationType.GetField("Pivot", BindingFlags.Instance | BindingFlags.Public)
+				?? throw new InvalidOperationException("Shell appearance observer registration has no Pivot field.");
+			var snapshot = new List<(IAppearanceObserver Observer, Element Pivot)>();
+			foreach (var registration in registrations)
+			{
+				if (observerField.GetValue(registration) is not IAppearanceObserver observer ||
+					pivotField.GetValue(registration) is not Element pivot)
+					throw new InvalidOperationException("Shell appearance observer registration has invalid values.");
+				snapshot.Add((observer, pivot));
+			}
+			return snapshot.ToArray();
 		}
 
 		static void AssertNoRetiredPivots(
@@ -112,7 +130,10 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			Assert.Equal(color, tracker.LastBackground);
 			Assert.Equal(color, tracker.LastToolbarBackground);
-			Assert.Equal(color.ToPlatform().ToArgb(), tracker.LastNativeBackground);
+			if (RuntimeFeature.UseMauiAndroidSystemBarBackgrounds)
+				Assert.Equal(color.ToPlatform().ToArgb(), tracker.LastNativeBackground);
+			else
+				Assert.Null(tracker.LastNativeBackground);
 		}
 	}
 
@@ -145,26 +166,28 @@ namespace Microsoft.Maui.DeviceTests
 			base.SetAppearance(toolbar, toolbarTracker, appearance);
 			LastToolbarBackground = _context.Shell.Toolbar.BarBackground is SolidColorBrush toolbarBrush
 				? toolbarBrush.Color : null;
-			Assert.True(RuntimeFeature.UseMauiAndroidSystemBarBackgrounds);
-
-			var appBar = toolbar.Parent.GetParentOfType<AppBarLayout>()
-				?? throw new InvalidOperationException("The toolbar has no AppBarLayout parent.");
-			if (RuntimeFeature.IsMaterial3Enabled)
+			LastNativeBackground = null;
+			if (RuntimeFeature.UseMauiAndroidSystemBarBackgrounds)
 			{
-				var background = Assert.IsAssignableFrom<MaterialShapeDrawable>(appBar.Background);
-				var fill = background.FillColor
-					?? throw new InvalidOperationException("The Material AppBar has no fill color.");
-				LastNativeBackground = fill.GetColorForState(
-					appBar.GetDrawableState(), new global::Android.Graphics.Color(fill.DefaultColor));
+				var appBar = toolbar.Parent.GetParentOfType<AppBarLayout>()
+					?? throw new InvalidOperationException("The toolbar has no AppBarLayout parent.");
+				if (RuntimeFeature.IsMaterial3Enabled)
+				{
+					var background = Assert.IsAssignableFrom<MaterialShapeDrawable>(appBar.Background);
+					var fill = background.FillColor
+						?? throw new InvalidOperationException("The Material AppBar has no fill color.");
+					LastNativeBackground = fill.GetColorForState(
+						appBar.GetDrawableState(), new global::Android.Graphics.Color(fill.DefaultColor));
+				}
+				else
+				{
+					var tint = ViewCompat.GetBackgroundTintList(appBar)
+						?? throw new InvalidOperationException("The AppBar has no background tint.");
+					LastNativeBackground = tint.GetColorForState(
+						appBar.GetDrawableState(), new global::Android.Graphics.Color(tint.DefaultColor));
+				}
 			}
-			else
-			{
-				var tint = ViewCompat.GetBackgroundTintList(appBar)
-					?? throw new InvalidOperationException("The AppBar has no background tint.");
-				LastNativeBackground = tint.GetColorForState(
-					appBar.GetDrawableState(), new global::Android.Graphics.Color(tint.DefaultColor));
-			}
-			Console.WriteLine($"Shell appearance: material3={RuntimeFeature.IsMaterial3Enabled}, background={LastBackground}, toolbar={LastToolbarBackground}, nativeArgb={LastNativeBackground}");
+			Console.WriteLine($"Shell appearance: material3={RuntimeFeature.IsMaterial3Enabled}, chrome={RuntimeFeature.UseMauiAndroidSystemBarBackgrounds}, background={LastBackground}, toolbar={LastToolbarBackground}, nativeArgb={LastNativeBackground}");
 		}
 	}
 }

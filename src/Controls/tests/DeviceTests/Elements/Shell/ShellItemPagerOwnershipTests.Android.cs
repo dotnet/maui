@@ -9,12 +9,14 @@ using Android.Views;
 using Android.Widget;
 using AndroidX.Activity;
 using AndroidX.CoordinatorLayout.Widget;
+using AndroidX.RecyclerView.Widget;
 using AndroidX.ViewPager2.Widget;
 using Google.Android.Material.BottomSheet;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Platform.Compatibility;
+using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
@@ -150,7 +152,6 @@ namespace Microsoft.Maui.DeviceTests
 					Assert.Null(fixture.ItemHandler._registeredShell);
 					Assert.Null(fixture.ItemHandler._shellSection);
 					Assert.Null(fixture.ItemHandler._toolbar);
-					Assert.Null(oldPager.Adapter);
 					Assert.Null(oldRoot.Parent);
 					Assert.Same(fixture.Item, ((IElementHandler)fixture.ItemHandler).VirtualView);
 					Assert.Same(fixture.ItemHandler, fixture.Item.Handler);
@@ -177,6 +178,7 @@ namespace Microsoft.Maui.DeviceTests
 					fixture.Attach();
 					await OnLoadedAsync(fixture.Shell.CurrentPage);
 					await AssertEventually(() => sections.All(section => section.Handler is PagerTrackingShellSectionHandler));
+					await AssertEventually(() => oldPager.Adapter is null);
 
 					var pager = fixture.GetPager();
 					fixture.AssertPagerIdentity(pager);
@@ -220,6 +222,181 @@ namespace Microsoft.Maui.DeviceTests
 					oldCallback = fixture.ItemHandler._pageChangeCallback;
 				}
 			});
+
+		[Fact]
+		public Task RetiredContentCleanupPreservesAReusedPageHandler() =>
+			RunWithShell(async fixture =>
+			{
+				var page = fixture.Shell.CurrentPage;
+				var oldContent = fixture.Item.CurrentItem.CurrentItem;
+				var renderer = Assert.IsType<ShellSectionHandlerAdapter>(fixture.ItemHandler._adapter.GetRenderer(0));
+				var fragment = Assert.Single(renderer.Fragment.ChildFragmentManager.Fragments.OfType<ShellContentNavigationFragment>());
+				var retiredPageHandler = page.Handler;
+				Assert.NotNull(retiredPageHandler);
+
+				fixture.Shell.Items.Clear();
+				var replacementContent = new ShellContent { Content = page };
+				fixture.Shell.CurrentItem = replacementContent;
+				Assert.Null(((IElementHandler)retiredPageHandler).VirtualView);
+				Assert.NotSame(retiredPageHandler, page.Handler);
+				await OnLoadedAsync(page);
+				await NextMainLoopTurn();
+				var replacementHandler = page.Handler;
+				Assert.NotNull(replacementHandler);
+				Assert.NotSame(retiredPageHandler, replacementHandler);
+				Assert.NotSame(oldContent, page.Parent);
+				Assert.Same(replacementContent, page.Parent);
+
+				fragment.OnDestroyView();
+				Assert.Same(replacementHandler, page.Handler);
+				Assert.True(page.IsLoaded);
+				Assert.True(page.ToPlatform().IsAttachedToWindow);
+			});
+
+		[Fact]
+		public Task RetiredContentCleanupHandlesAPrecreatedReplacement() =>
+			RunWithShell(async fixture =>
+			{
+				var page = fixture.Shell.CurrentPage;
+				var retiredPageHandler = page.Handler;
+				var replacementContent = new ShellContent { Content = page };
+
+				fixture.Shell.Items.Clear();
+				fixture.Shell.CurrentItem = replacementContent;
+				Assert.Null(((IElementHandler)retiredPageHandler).VirtualView);
+				Assert.NotSame(retiredPageHandler, page.Handler);
+				await OnLoadedAsync(page);
+				await NextMainLoopTurn();
+
+				Assert.NotNull(page.Handler);
+				Assert.NotSame(retiredPageHandler, page.Handler);
+				Assert.Same(replacementContent, page.Parent);
+				Assert.True(page.ToPlatform().IsAttachedToWindow);
+			});
+
+		[Fact]
+		public Task QueuedCleanupDoesNotClearReplacementAdapters() =>
+			RunWithShell(async fixture =>
+			{
+				var itemPager = fixture.GetPager();
+				var sectionHandler = Assert.IsType<PagerTrackingShellSectionHandler>(fixture.Item.CurrentItem.Handler);
+				var sectionPager = sectionHandler.ViewPager;
+				Assert.NotNull(sectionPager);
+				using var itemAdapter = new EmptyPagerAdapter();
+				using var sectionAdapter = new EmptyPagerAdapter();
+
+				fixture.Detach();
+				itemPager.Adapter = itemAdapter;
+				sectionPager.Adapter = sectionAdapter;
+				try
+				{
+					await NextMainLoopTurn();
+					Assert.Same(itemAdapter, itemPager.Adapter);
+					Assert.Same(sectionAdapter, sectionPager.Adapter);
+
+					fixture.Attach();
+					await OnLoadedAsync(fixture.Shell.CurrentPage);
+					Assert.NotSame(itemPager, fixture.GetPager());
+					Assert.NotNull(fixture.GetPager().Adapter);
+					Assert.Equal(1, sectionHandler.DisconnectCount);
+				}
+				finally
+				{
+					itemPager.Adapter = null;
+					sectionPager.Adapter = null;
+				}
+			});
+
+		[Fact]
+		public Task RetiredSectionWrapperIgnoresLateLifecycleCallbacks() =>
+			RunWithShell(fixture =>
+			{
+				var renderer = Assert.IsType<ShellSectionHandlerAdapter>(fixture.ItemHandler._adapter.GetRenderer(0));
+				var fragment = Assert.IsType<ShellSectionWrapperFragment>(renderer.Fragment);
+				var sectionHandler = Assert.IsType<PagerTrackingShellSectionHandler>(fixture.Item.CurrentItem.Handler);
+
+				fixture.Detach();
+				Assert.Null(((IElementHandler)sectionHandler).VirtualView);
+				using var view = fragment.OnCreateView(fixture.ItemHandler.MauiContext.GetLayoutInflater(), null, null);
+				Assert.IsType<FrameLayout>(view);
+				fragment.OnViewCreated(view, null);
+				fragment.OnResume();
+				Assert.Equal(1, sectionHandler.DisconnectCount);
+				return Task.CompletedTask;
+			});
+
+		[Fact]
+		public async Task ReplacingShellRootFromPageLoadedReleasesTheRetiredPresentation()
+		{
+			SetupBuilder();
+			var window = await InvokeOnMainThreadAsync(() => new Controls.Window(new ContentPage()));
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, async handler =>
+			{
+				for (var cycle = 0; cycle < 2; cycle++)
+				{
+					var page = new ContentPage { Content = new Label { Text = $"Outgoing {cycle}" } };
+					var replacementPage = new ContentPage { Content = new Label { Text = $"Replacement {cycle}" } };
+					var shell = new Shell { CurrentItem = page };
+					Page replacement = replacementPage;
+					var replaced = new TaskCompletionSource<Exception>(TaskCreationOptions.RunContinuationsAsynchronously);
+					PagerTrackingShellItemHandler retiredItemHandler = null;
+					PagerTrackingShellSectionHandler retiredSectionHandler = null;
+					ViewPager2[] retiredPagers = null;
+					page.Loaded += OnLoaded;
+					try
+					{
+						window.Page = shell;
+						Assert.Null(await replaced.Task);
+						await OnLoadedAsync(replacementPage);
+						await AssertEventually(() => retiredPagers.All(pager => pager.Adapter is null));
+
+						Assert.Same(replacement, window.Page);
+						var root = handler.MauiContext.GetNavigationRootManager().RootView;
+						var platform = replacementPage.ToPlatform();
+						Assert.True(platform.IsAttachedToWindow);
+						Assert.NotNull(root);
+						var current = platform;
+						while (current is not null && !ReferenceEquals(current, root))
+							current = current.Parent as AView;
+						Assert.Same(root, current);
+						Assert.Single(retiredItemHandler.DisconnectedPagers);
+						Assert.Equal(1, retiredSectionHandler.DisconnectCount);
+
+					}
+					finally
+					{
+						page.Loaded -= OnLoaded;
+					}
+
+					void OnLoaded(object sender, EventArgs args)
+					{
+						page.Loaded -= OnLoaded;
+						replaced.SetResult(Record.Exception(() =>
+						{
+							var item = shell.CurrentItem;
+							var section = item.CurrentItem;
+							retiredItemHandler = Assert.IsType<PagerTrackingShellItemHandler>(item.Handler);
+							retiredSectionHandler = Assert.IsType<PagerTrackingShellSectionHandler>(section.Handler);
+							Assert.NotNull(retiredSectionHandler.ViewPager);
+							retiredPagers = new[] { retiredItemHandler.PlatformView, retiredSectionHandler.ViewPager };
+							window.Page = replacement;
+
+							Assert.Null(item.Handler);
+							Assert.Null(section.Handler);
+							Assert.Null(((IElementHandler)retiredItemHandler).PlatformView);
+							Assert.Null(((IElementHandler)retiredItemHandler).VirtualView);
+							Assert.Null(((IElementHandler)retiredSectionHandler).PlatformView);
+							Assert.Null(((IElementHandler)retiredSectionHandler).VirtualView);
+							Assert.Null(retiredItemHandler._adapter);
+							Assert.Null(retiredItemHandler._registeredShell);
+							Assert.Equal(1, retiredSectionHandler.DisconnectCount);
+							AssertSectionSubscriptions(section, retiredSectionHandler, subscribed: false);
+						}));
+					}
+				}
+			});
+		}
 
 		[Fact]
 		public Task DisconnectAfterViewDestructionDoesNotRepeatNativeCleanup() =>
@@ -584,6 +761,13 @@ namespace Microsoft.Maui.DeviceTests
 				handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
 			}));
 
+		Task NextMainLoopTurn()
+		{
+			var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+			Assert.True(MauiContext.GetDispatcher().Dispatch(() => completion.SetResult()));
+			return completion.Task;
+		}
+
 		async Task RunWithShell(Func<Fixture, Task> action, int sectionCount = 2, int selectedIndex = 0,
 			Type itemHandlerType = null, bool trackCurrentItemMapping = false, bool customizeOverScroll = false)
 		{
@@ -765,6 +949,17 @@ namespace Microsoft.Maui.DeviceTests
 			public int InvocationCount { get; private set; }
 
 			public override void HandleOnBackPressed() => InvocationCount++;
+		}
+
+		sealed class EmptyPagerAdapter : RecyclerView.Adapter
+		{
+			public override int ItemCount => 0;
+
+			public override RecyclerView.ViewHolder OnCreateViewHolder(ViewGroup parent, int viewType) =>
+				throw new NotSupportedException();
+
+			public override void OnBindViewHolder(RecyclerView.ViewHolder holder, int position) =>
+				throw new NotSupportedException();
 		}
 	}
 

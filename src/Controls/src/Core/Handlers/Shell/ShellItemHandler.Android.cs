@@ -5,6 +5,7 @@ using Android.OS;
 using Android.Views;
 using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.Fragment.App;
+using AndroidX.RecyclerView.Widget;
 using AndroidX.ViewPager2.Adapter;
 using AndroidX.ViewPager2.Widget;
 using Google.Android.Material.AppBar;
@@ -242,6 +243,24 @@ namespace Microsoft.Maui.Controls.Handlers
 
             _viewPager = null;
             _rootView = null;
+        }
+
+        internal static void QueueViewPagerAdapterCleanup(ViewPager2? pager, RecyclerView.Adapter? adapter)
+        {
+            if (pager is null || adapter is null)
+            {
+                return;
+            }
+
+            // Removing an adapter can save child-fragment state. Always leave the current
+            // fragment transaction, even when teardown starts on the UI thread.
+            global::Android.App.Application.SynchronizationContext.Post(_ =>
+            {
+                if (pager.Adapter == adapter)
+                {
+                    pager.Adapter = null;
+                }
+            }, null);
         }
 
         internal void RemoveReleasedSectionFragments(Fragment parentFragment)
@@ -1074,6 +1093,7 @@ namespace Microsoft.Maui.Controls.Handlers
         /// </summary>
         protected override void DisconnectHandler(ViewPager2 platformView)
         {
+            var adapter = platformView.Adapter;
             _platformViewConnected = false;
             DisconnectShellItem();
 
@@ -1116,7 +1136,7 @@ namespace Microsoft.Maui.Controls.Handlers
                     else
                         _releasedSectionFragmentTags.AddRange(tags);
                 }
-                platformView.Adapter = null;
+                QueueViewPagerAdapterCleanup(platformView, adapter);
                 _adapter = null;
                 _viewPager = null;
                 _rootView = null;
