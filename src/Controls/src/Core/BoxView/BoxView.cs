@@ -154,6 +154,9 @@ namespace Microsoft.Maui.Controls
 				propertyName == FillProperty.PropertyName ||
 				propertyName == IsVisibleProperty.PropertyName ||
 				propertyName == BackgroundProperty.PropertyName ||
+#if IOS || MACCATALYST
+				propertyName == WidthRequestProperty.PropertyName ||
+#endif
 				propertyName == CornerRadiusProperty.PropertyName)
 			{
 				Handler?.UpdateValue(nameof(IShapeView.Shape));
