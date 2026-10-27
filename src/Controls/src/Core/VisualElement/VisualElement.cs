@@ -234,8 +234,10 @@ namespace Microsoft.Maui.Controls
 					bindable.SetValue(TranslationYProperty, translationY);
 				else if (transformName.StartsWith("translate", StringComparison.OrdinalIgnoreCase))
 				{
+					// translate(tx) is the same as translate(tx, 0)
 					var translate = value.Split(',');
-					if (double.TryParse(translate[0], out translationX) && double.TryParse(translate[1], out translationY))
+					translationY = 0;
+					if (double.TryParse(translate[0], out translationX) && (translate.Length == 1 || double.TryParse(translate[1], out translationY)))
 					{
 						bindable.SetValue(TranslationXProperty, translationX);
 						bindable.SetValue(TranslationYProperty, translationY);
@@ -247,11 +249,16 @@ namespace Microsoft.Maui.Controls
 					bindable.SetValue(ScaleYProperty, scaleY);
 				else if (transformName.StartsWith("scale", StringComparison.OrdinalIgnoreCase))
 				{
+					// scale(s) is the same as scale(s, s)
 					var scale = value.Split(',');
-					if (double.TryParse(scale[0], out scaleX) && double.TryParse(scale[1], out scaleY))
+					if (double.TryParse(scale[0], out scaleX))
 					{
-						bindable.SetValue(ScaleXProperty, scaleX);
-						bindable.SetValue(ScaleYProperty, scaleY);
+						scaleY = scaleX;
+						if (scale.Length == 1 || double.TryParse(scale[1], out scaleY))
+						{
+							bindable.SetValue(ScaleXProperty, scaleX);
+							bindable.SetValue(ScaleYProperty, scaleY);
+						}
 					}
 				}
 				else if (transformName.StartsWith("rotateX", StringComparison.OrdinalIgnoreCase) && double.TryParse(value, out rotateX))
