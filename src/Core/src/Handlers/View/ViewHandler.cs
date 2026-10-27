@@ -275,6 +275,7 @@ namespace Microsoft.Maui.Handlers
 		private protected override void OnDisconnecting()
 		{
 #if WINDOWS
+			_didReconnectContainer = false;
 			if (HasContainer && ContainerView is Platform.WrapperView wrapper)
 			{
 				// Keep the wrapper's visual-tree slot for ReconnectContainer, not the disconnected native view.

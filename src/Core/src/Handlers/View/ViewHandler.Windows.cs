@@ -22,7 +22,6 @@ public partial class ViewHandler
 
 	partial void ConnectingHandler(PlatformView? platformView)
 	{
-		_didReconnectContainer = false;
 		if (platformView is not null)
 		{
 			FocusManagerMapping.Add(platformView, this);

@@ -136,6 +136,54 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact]
+		public async Task ReconnectingContainerRestoresDefaultsMappedFromHandlerChanged()
+		{
+			var button = new Controls.Button
+			{
+				Text = "Test",
+				Clip = new Controls.Shapes.EllipseGeometry(new Point(50, 50), 50, 50)
+			};
+
+			await AttachAndRun<ButtonHandler>(button, handler =>
+			{
+				var container = Assert.IsType<WrapperView>(handler.ContainerView);
+				button.IsVisible = false;
+				button.Opacity = 0;
+				Assert.Equal(Microsoft.UI.Xaml.Visibility.Collapsed, container.Visibility);
+				Assert.Equal(0d, container.Opacity);
+				var earlyMappingCount = 0;
+				System.EventHandler handlerChanged = (sender, args) =>
+				{
+					if (ReferenceEquals(button.Handler, handler))
+					{
+						Assert.True(handler.IsConnectingHandler());
+						earlyMappingCount++;
+						handler.UpdateValue(nameof(IViewHandler.ContainerView));
+					}
+				};
+				button.HandlerChanged += handlerChanged;
+				try
+				{
+					((IElementHandler)handler).DisconnectHandler();
+					button.IsVisible = true;
+					button.Opacity = 1;
+					handler.SetVirtualView(button);
+
+					Assert.Equal(1, earlyMappingCount);
+					Assert.Same(container, handler.ContainerView);
+					Assert.Same(handler.PlatformView, container.Child);
+					Assert.Equal(Microsoft.UI.Xaml.Visibility.Visible, container.Visibility);
+					Assert.Equal(1d, container.Opacity);
+					Assert.Equal(1d, handler.PlatformView.Opacity);
+				}
+				finally
+				{
+					button.HandlerChanged -= handlerChanged;
+				}
+			});
+		}
+
 		class RepeatedContainerMappingButtonHandler : ButtonHandler
 		{
 			public int ContainerMappingCount { get; private set; }
