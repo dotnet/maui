@@ -1101,9 +1101,8 @@ jobs:
         with:
           repository: ${{ needs.pr-gate.outputs.head_repo || needs.slash-gate.outputs.head_repo || github.repository }}
           ref: ${{ needs.pr-gate.outputs.head_sha || needs.slash-gate.outputs.head_sha || github.sha }}
-          sparse-checkout: |
-            .github/skills
-            .github/plugin.json
+          # SetupVallyRuntime creates full detached worktrees after stripping
+          # checkout remotes, so every blob must already be materialized.
           persist-credentials: false
 
       - name: Setup Node
