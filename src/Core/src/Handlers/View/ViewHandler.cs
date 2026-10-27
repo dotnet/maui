@@ -677,10 +677,15 @@ namespace Microsoft.Maui.Handlers
 			{
 #if WINDOWS
 				// Reusing a disconnected handler creates a new platform view; preserve the wrapper's visual-tree slot.
-				viewHandler._didReconnectContainer = hasContainerOldValue && viewHandler.ReconnectContainer();
+				// Other mappers can replay ContainerView before the remaining defaults have been mapped.
+				viewHandler._didReconnectContainer |= hasContainerOldValue && viewHandler.ReconnectContainer();
 #endif
 
 				handler.HasContainer = viewHandler.NeedsContainer;
+#if WINDOWS
+				if (!handler.HasContainer)
+					viewHandler._didReconnectContainer = false;
+#endif
 			}
 			else
 				handler.HasContainer = view.NeedsContainer();

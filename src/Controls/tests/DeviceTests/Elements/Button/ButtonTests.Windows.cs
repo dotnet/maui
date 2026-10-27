@@ -104,6 +104,55 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact]
+		public async Task ReconnectingContainerRestoresDefaultsAfterRepeatedContainerMapping()
+		{
+			var button = new Controls.Button
+			{
+				Text = "Test",
+				Clip = new Controls.Shapes.EllipseGeometry(new Point(50, 50), 50, 50)
+			};
+
+			await AttachAndRun<RepeatedContainerMappingButtonHandler>(button, handler =>
+			{
+				var container = Assert.IsType<WrapperView>(handler.ContainerView);
+				button.IsVisible = false;
+				button.Opacity = 0;
+				Assert.Equal(Microsoft.UI.Xaml.Visibility.Collapsed, container.Visibility);
+				Assert.Equal(0d, container.Opacity);
+				var previousMappingCount = handler.ContainerMappingCount;
+
+				((IElementHandler)handler).DisconnectHandler();
+				button.IsVisible = true;
+				button.Opacity = 1;
+				handler.SetVirtualView(button);
+
+				Assert.True(handler.ContainerMappingCount >= previousMappingCount + 2);
+				Assert.Same(container, handler.ContainerView);
+				Assert.Same(handler.PlatformView, container.Child);
+				Assert.Equal(Microsoft.UI.Xaml.Visibility.Visible, container.Visibility);
+				Assert.Equal(1d, container.Opacity);
+				Assert.Equal(1d, handler.PlatformView.Opacity);
+			});
+		}
+
+		class RepeatedContainerMappingButtonHandler : ButtonHandler
+		{
+			public int ContainerMappingCount { get; private set; }
+
+			public RepeatedContainerMappingButtonHandler() : base(CreateMapper())
+			{
+			}
+
+			static IPropertyMapper CreateMapper()
+			{
+				var mapper = new PropertyMapper<IButton, RepeatedContainerMappingButtonHandler>(ButtonHandler.Mapper);
+				mapper.AppendToMapping(nameof(IViewHandler.ContainerView), (handler, view) => handler.ContainerMappingCount++);
+				mapper.AppendToMapping(nameof(IView.Clip), (handler, view) => handler.UpdateValue(nameof(IViewHandler.ContainerView)));
+				return mapper;
+			}
+		}
+
 		Button GetPlatformButton(ButtonHandler buttonHandler) =>
 			buttonHandler.PlatformView;
 
