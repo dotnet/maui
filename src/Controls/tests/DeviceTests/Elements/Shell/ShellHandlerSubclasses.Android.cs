@@ -426,6 +426,7 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
 					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedViewHandler));
 					handlers.AddHandler(typeof(FlyoutPage), typeof(FlyoutViewHandler));
+					handlers.AddHandler(typeof(ReentrantFlyoutPage), typeof(ReentrantFlyoutViewHandler));
 					handlers.AddHandler(typeof(Controls.ContentView), typeof(ContentViewHandler));
 					handlers.AddHandler(typeof(ScrollView), typeof(ScrollViewHandler));
 				});
