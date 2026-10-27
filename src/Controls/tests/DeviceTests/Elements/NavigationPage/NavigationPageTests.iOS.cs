@@ -332,7 +332,17 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(true)]
 		public async Task NativePopContinuationAfterRendererDisposalDoesNotThrow(bool popToRoot)
 		{
-			SetupBuilder();
+			// This exercises renderer-specific native-pop continuations, including in handler-derived fixtures.
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler(typeof(Toolbar), typeof(ToolbarHandler));
+					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationRenderer));
+					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedRenderer));
+					RegisterCommonHandlers(handlers);
+				});
+			});
 			var root = new ContentPage();
 			var navigationPage = new NavigationPage(root);
 
