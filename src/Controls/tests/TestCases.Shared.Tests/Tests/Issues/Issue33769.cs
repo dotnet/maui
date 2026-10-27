@@ -17,11 +17,11 @@ public class Issue33769 : _IssuesUITest
 	public void ValidateStepperReachesMinMax()
 	{
 		App.WaitForElement("Issue33769_StepperStatusLabel");
-		App.IncreaseStepper("Issue33769_Stepper");
+		App.IncreaseStepper("Issue33769_Stepper", isRightToLeft: false);
 		var result = App.WaitForElement("Issue33769_StepperStatusLabel").GetText();
 		Assert.That(result, Is.EqualTo("Success"));
 
-		App.DecreaseStepper("Issue33769_Stepper");
+		App.DecreaseStepper("Issue33769_Stepper", isRightToLeft: false);
 		result = App.WaitForElement("Issue33769_StepperStatusLabel").GetText();
 		Assert.That(result, Is.EqualTo("Success"));
 	}

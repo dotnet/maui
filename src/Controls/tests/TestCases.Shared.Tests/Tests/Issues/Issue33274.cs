@@ -19,13 +19,13 @@ public class Issue33274 : _IssuesUITest
 		App.WaitForElement("Maximumlabel");
 
 		// We are already at maximum and the increment schould not increase the internal value
-		App.IncreaseStepper("Maximumstepper");
-		App.DecreaseStepper("Maximumstepper");
+		App.IncreaseStepper("Maximumstepper", isRightToLeft: false);
+		App.DecreaseStepper("Maximumstepper", isRightToLeft: false);
 		Assert.That(App.FindElement("Maximumlabel").GetText(), Is.EqualTo("0"));
 
 		// We are already at minimum and the decrement schould not decrease the internal value
-		App.DecreaseStepper("Minimumstepper");
-		App.IncreaseStepper("Minimumstepper");
+		App.DecreaseStepper("Minimumstepper", isRightToLeft: false);
+		App.IncreaseStepper("Minimumstepper", isRightToLeft: false);
 		Assert.That(App.FindElement("Minimumlabel").GetText(), Is.EqualTo("1"));
 	}
 }

@@ -68,8 +68,8 @@ namespace Microsoft.Maui.TestCases.Tests
             App.WaitForElement("Options");
             App.Tap("Options");
 
-            App.IncreaseStepper("WideModeStepper");
-            App.IncreaseStepper("WideModeStepper");
+            App.IncreaseStepper("WideModeStepper", isRightToLeft: false);
+            App.IncreaseStepper("WideModeStepper", isRightToLeft: false);
 
             App.WaitForElement("Apply");
             App.Tap("Apply");
@@ -107,8 +107,8 @@ namespace Microsoft.Maui.TestCases.Tests
             App.WaitForElement("Options");
             App.Tap("Options");
 
-            App.DecreaseStepper("WideModeStepper");
-            App.DecreaseStepper("WideModeStepper");
+            App.DecreaseStepper("WideModeStepper", isRightToLeft: false);
+            App.DecreaseStepper("WideModeStepper", isRightToLeft: false);
 
             App.WaitForElement("FlowDirectionRTLCheckBox");
             App.Tap("FlowDirectionRTLCheckBox");
@@ -131,8 +131,8 @@ namespace Microsoft.Maui.TestCases.Tests
             App.WaitForElement("Options");
             App.Tap("Options");
 
-            App.IncreaseStepper("WideModeStepper");
-            App.IncreaseStepper("WideModeStepper");
+            App.IncreaseStepper("WideModeStepper", isRightToLeft: false);
+            App.IncreaseStepper("WideModeStepper", isRightToLeft: false);
 
             App.WaitForElement("Apply");
             App.Tap("Apply");
@@ -188,11 +188,11 @@ namespace Microsoft.Maui.TestCases.Tests
             App.WaitForElement("Options");
             App.Tap("Options");
 
-            App.IncreaseStepper("Pane1LengthStepper");
-            App.IncreaseStepper("Pane1LengthStepper");
+            App.IncreaseStepper("Pane1LengthStepper", isRightToLeft: false);
+            App.IncreaseStepper("Pane1LengthStepper", isRightToLeft: false);
 
-            App.IncreaseStepper("WideModeStepper");
-            App.IncreaseStepper("WideModeStepper");
+            App.IncreaseStepper("WideModeStepper", isRightToLeft: false);
+            App.IncreaseStepper("WideModeStepper", isRightToLeft: false);
 
             App.WaitForElement("Apply");
             App.Tap("Apply");
@@ -207,11 +207,11 @@ namespace Microsoft.Maui.TestCases.Tests
             App.WaitForElement("Options");
             App.Tap("Options");
 
-            App.IncreaseStepper("Pane2LengthStepper");
-            App.IncreaseStepper("Pane2LengthStepper");
+            App.IncreaseStepper("Pane2LengthStepper", isRightToLeft: false);
+            App.IncreaseStepper("Pane2LengthStepper", isRightToLeft: false);
 
-            App.IncreaseStepper("WideModeStepper");
-            App.IncreaseStepper("WideModeStepper");
+            App.IncreaseStepper("WideModeStepper", isRightToLeft: false);
+            App.IncreaseStepper("WideModeStepper", isRightToLeft: false);
 
             App.WaitForElement("Apply");
             App.Tap("Apply");
@@ -260,9 +260,9 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Options");
 
 			App.WaitForElement("Pane1LengthLabel");
-			App.IncreaseStepper("Pane1LengthStepper");
+			App.IncreaseStepper("Pane1LengthStepper", isRightToLeft: false);
 			App.WaitForElement("Pane1LengthLabel");
-			App.IncreaseStepper("Pane1LengthStepper");
+			App.IncreaseStepper("Pane1LengthStepper", isRightToLeft: false);
 
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
@@ -278,9 +278,9 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Options");
 
 			App.WaitForElement("Pane2LengthLabel");
-			App.IncreaseStepper("Pane2LengthStepper");
+			App.IncreaseStepper("Pane2LengthStepper", isRightToLeft: false);
 			App.WaitForElement("Pane2LengthLabel");
-			App.IncreaseStepper("Pane2LengthStepper");
+			App.IncreaseStepper("Pane2LengthStepper", isRightToLeft: false);
 
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
@@ -310,9 +310,9 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Options");
 
 			App.WaitForElement("WideModeStepper");
-			App.DecreaseStepper("WideModeStepper");
+			App.DecreaseStepper("WideModeStepper", isRightToLeft: false);
 			App.WaitForElement("WideModeStepper");
-			App.DecreaseStepper("WideModeStepper");
+			App.DecreaseStepper("WideModeStepper", isRightToLeft: false);
 
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
@@ -334,9 +334,9 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Options");
 
 			App.WaitForElement("WideModeStepper");
-			App.DecreaseStepper("WideModeStepper");
+			App.DecreaseStepper("WideModeStepper", isRightToLeft: false);
 			App.WaitForElement("WideModeStepper");
-			App.DecreaseStepper("WideModeStepper");
+			App.DecreaseStepper("WideModeStepper", isRightToLeft: false);
 
 			App.WaitForElement("FlowDirectionRTLCheckBox");
 			App.Tap("FlowDirectionRTLCheckBox");
@@ -373,9 +373,9 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Options");
 
 			App.WaitForElement("WideModeStepper");
-			App.DecreaseStepper("WideModeStepper");
+			App.DecreaseStepper("WideModeStepper", isRightToLeft: false);
 			App.WaitForElement("WideModeStepper");
-			App.DecreaseStepper("WideModeStepper");
+			App.DecreaseStepper("WideModeStepper", isRightToLeft: false);
 
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
@@ -391,14 +391,14 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Options");
 
 			App.WaitForElement("Pane1LengthStepper");
-			App.IncreaseStepper("Pane1LengthStepper");
+			App.IncreaseStepper("Pane1LengthStepper", isRightToLeft: false);
 			App.WaitForElement("Pane1LengthStepper");
-			App.IncreaseStepper("Pane1LengthStepper");
+			App.IncreaseStepper("Pane1LengthStepper", isRightToLeft: false);
 
 			App.WaitForElement("WideModeStepper");
-			App.DecreaseStepper("WideModeStepper");
+			App.DecreaseStepper("WideModeStepper", isRightToLeft: false);
 			App.WaitForElement("WideModeStepper");
-			App.DecreaseStepper("WideModeStepper");
+			App.DecreaseStepper("WideModeStepper", isRightToLeft: false);
 
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
@@ -414,14 +414,14 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Options");
 
 			App.WaitForElement("Pane2LengthStepper");
-			App.IncreaseStepper("Pane2LengthStepper");
+			App.IncreaseStepper("Pane2LengthStepper", isRightToLeft: false);
 			App.WaitForElement("Pane2LengthStepper");
-			App.IncreaseStepper("Pane2LengthStepper");
+			App.IncreaseStepper("Pane2LengthStepper", isRightToLeft: false);
 
 			App.WaitForElement("WideModeStepper");
-			App.DecreaseStepper("WideModeStepper");
+			App.DecreaseStepper("WideModeStepper", isRightToLeft: false);
 			App.WaitForElement("WideModeStepper");
-			App.DecreaseStepper("WideModeStepper");
+			App.DecreaseStepper("WideModeStepper", isRightToLeft: false);
 
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
@@ -440,9 +440,9 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("ShadowCheckBox");
 
 			App.WaitForElement("WideModeStepper");
-			App.DecreaseStepper("WideModeStepper");
+			App.DecreaseStepper("WideModeStepper", isRightToLeft: false);
 			App.WaitForElement("WideModeStepper");
-			App.DecreaseStepper("WideModeStepper");
+			App.DecreaseStepper("WideModeStepper", isRightToLeft: false);
 
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
@@ -458,9 +458,9 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Options");
 
 			App.WaitForElement("WideModeStepper");
-			App.DecreaseStepper("WideModeStepper");
+			App.DecreaseStepper("WideModeStepper", isRightToLeft: false);
 			App.WaitForElement("WideModeStepper");
-			App.DecreaseStepper("WideModeStepper");
+			App.DecreaseStepper("WideModeStepper", isRightToLeft: false);
 
 			App.WaitForElement("FlowDirectionRTLCheckBox");
 			App.Tap("FlowDirectionRTLCheckBox");

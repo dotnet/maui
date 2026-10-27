@@ -30,57 +30,43 @@ class AppiumAppleStepperActions : ICommandExecutionGroup
 	{
 		return commandName switch
 		{
-			IncreaseCommand => Increase(parameters),
-			DecreaseCommand => Decrease(parameters),
+			IncreaseCommand => ChangeValue(parameters, increase: true),
+			DecreaseCommand => ChangeValue(parameters, increase: false),
 			_ => CommandResponse.FailedEmptyResponse,
 		};
 	}
 
-	CommandResponse Increase(IDictionary<string, object> parameters)
+	CommandResponse ChangeValue(IDictionary<string, object> parameters, bool increase)
 	{
-		string? elementId = parameters["elementId"].ToString();
-
-		if (elementId is null)
-			return CommandResponse.FailedEmptyResponse;
+		if (!parameters.TryGetValue("elementId", out var value) || value is not string elementId || string.IsNullOrEmpty(elementId))
+			throw new ArgumentException("A Stepper automation identifier is required.", nameof(parameters));
 
 		var element = _appiumApp.FindElement(elementId);
 		var stepper = GetAppiumElement(element);
 
 		if (stepper is null)
-			return CommandResponse.FailedEmptyResponse;
+			throw new InvalidOperationException($"Stepper '{elementId}' is not an Appium element.");
 
 		var buttons = AppiumQuery.ByClass("XCUIElementTypeButton").FindElements(stepper, _appiumApp);
 
 		if (buttons is not null && buttons.Count > 1)
 		{
-			var increaseButton = buttons.LastOrDefault();
-			increaseButton?.Tap();
+			var button = increase ? buttons.Last() : buttons.First();
+			button.Tap();
+			return CommandResponse.SuccessEmptyResponse;
 		}
 
-		return CommandResponse.SuccessEmptyResponse;
-	}
+		if (!parameters.TryGetValue("isRightToLeft", out var direction) || direction is not bool isRightToLeft)
+			throw new InvalidOperationException($"Stepper '{elementId}' has no accessible button pair. Supply its effective isRightToLeft direction for a coordinate tap.");
 
-	CommandResponse Decrease(IDictionary<string, object> parameters)
-	{
-		string? elementId = parameters["elementId"].ToString();
+		var bounds = stepper.Rect;
+		if (bounds.Width <= 0 || bounds.Height <= 0)
+			throw new InvalidOperationException($"Stepper '{elementId}' has empty bounds and cannot be tapped.");
 
-		if (elementId is null)
-			return CommandResponse.FailedEmptyResponse;
-
-		var element = _appiumApp.FindElement(elementId);
-		var stepper = GetAppiumElement(element);
-
-		if (stepper is null)
-			return CommandResponse.FailedEmptyResponse;
-
-		var buttons = AppiumQuery.ByClass("XCUIElementTypeButton").FindElements(stepper, _appiumApp);
-
-		if (buttons is not null && buttons.Count > 1)
-		{
-			var decreaseButton = buttons.FirstOrDefault();
-			decreaseButton?.Tap();
-		}
-
+		var rightHalf = increase != isRightToLeft;
+		var x = bounds.X + bounds.Width * (rightHalf ? 0.75f : 0.25f);
+		var y = bounds.Y + bounds.Height / 2f;
+		_appiumApp.TapCoordinates(x, y);
 		return CommandResponse.SuccessEmptyResponse;
 	}
 

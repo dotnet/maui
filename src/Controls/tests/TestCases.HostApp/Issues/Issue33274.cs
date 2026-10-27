@@ -5,7 +5,7 @@ public class Issue33274 : TestContentPage
 {
 	protected override void Init()
 	{
-		var layout = new StackLayout { };
+		var layout = new StackLayout { FlowDirection = FlowDirection.LeftToRight };
 
 		Stepper Incrementstepper = new Stepper
 		{

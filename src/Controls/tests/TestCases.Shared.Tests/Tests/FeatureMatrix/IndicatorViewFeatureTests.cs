@@ -137,7 +137,7 @@ public class IndicatorViewFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
- 
+
 	[Test, Order(5)]
 	[Category(UITestCategories.IndicatorView)]
 	public void VerifySelectedIndicatorSize()
@@ -327,7 +327,7 @@ public class IndicatorViewFeatureTests : _GalleryUITest
 		App.Tap(Apply);
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
- 
+
 	[Test, Order(11)]
 	[Category(UITestCategories.IndicatorView)]
 	public void VerifyIndicatorView_Shadow()
@@ -528,8 +528,8 @@ public class IndicatorViewFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-// Issue Link: https://github.com/dotnet/maui/issues/31128
-// Issue Link: https://github.com/dotnet/maui/issues/31141
+	// Issue Link: https://github.com/dotnet/maui/issues/31128
+	// Issue Link: https://github.com/dotnet/maui/issues/31141
 	[Test, Order(34)]
 	[Category(UITestCategories.IndicatorView)]
 	[Ignore("IndicatorView templates currently fail on all supported platforms. See issues #31128 and #31141.")]
@@ -676,15 +676,15 @@ public class IndicatorViewFeatureTests : _GalleryUITest
 	{
 #if WINDOWS
 		if (increase)
-			App.IncreaseStepper(stepperAutomationId);
+			App.IncreaseStepper(stepperAutomationId, isRightToLeft: false);
 		else
-			App.DecreaseStepper(stepperAutomationId);
+			App.DecreaseStepper(stepperAutomationId, isRightToLeft: false);
 #else
 		App.WaitForElement(stepperAutomationId);
 		if (increase)
-			App.IncreaseStepper(stepperAutomationId);
+			App.IncreaseStepper(stepperAutomationId, isRightToLeft: false);
 		else
-			App.DecreaseStepper(stepperAutomationId);
+			App.DecreaseStepper(stepperAutomationId, isRightToLeft: false);
 #endif
 	}
 }

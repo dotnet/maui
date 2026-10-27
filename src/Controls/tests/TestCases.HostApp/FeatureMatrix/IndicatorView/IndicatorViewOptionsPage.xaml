@@ -101,6 +101,7 @@
                       ColumnDefinitions="*,*"
                       ColumnSpacing="10">
                         <StackLayout Grid.Column="0"
+                                     FlowDirection="LeftToRight"
                                      Spacing="10">
                                 <Label Text="IndicatorSize"
                                        FontAttributes="Bold"

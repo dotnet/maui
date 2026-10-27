@@ -18,11 +18,11 @@ public class Issue2597 : _IssuesUITest
 	{
 		App.WaitForElement("Stepper");
 
-		App.IncreaseStepper("Stepper");
+		App.IncreaseStepper("Stepper", isRightToLeft: false);
 
 		Assert.That(App.FindElement("StepperValue").GetText(), Is.EqualTo("Stepper value is 0"));
 
-		App.DecreaseStepper("Stepper");
+		App.DecreaseStepper("Stepper", isRightToLeft: false);
 
 		Assert.That(App.FindElement("StepperValue").GetText(), Is.EqualTo("Stepper value is 0"));
 	}

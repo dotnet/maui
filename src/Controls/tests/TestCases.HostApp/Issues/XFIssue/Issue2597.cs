@@ -51,6 +51,7 @@ public class Issue2597 : TestContentPage
 		// Build the page.
 		Content = new StackLayout
 		{
+			FlowDirection = FlowDirection.LeftToRight,
 			Children =
 			{
 				header,
