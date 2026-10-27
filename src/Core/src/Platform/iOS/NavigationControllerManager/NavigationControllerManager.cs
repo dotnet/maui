@@ -29,6 +29,7 @@ namespace Microsoft.Maui.Platform
         TaskCompletionSource<bool>? _popCompletionTask;
         UIViewController[]? _pendingViewControllers;
         bool _firstLayoutCompleted;
+        bool _interactivePopGesturePending;
         bool _disposed;
 
         /// <summary>
@@ -57,7 +58,7 @@ namespace Microsoft.Maui.Platform
             if (_navigationController.InteractivePopGestureRecognizer is not null)
             {
                 _navigationController.InteractivePopGestureRecognizer.Delegate =
-                    new GestureDelegate(_navigationController, this);
+                    new GestureDelegate(this);
             }
         }
 
@@ -76,7 +77,7 @@ namespace Microsoft.Maui.Platform
             _navigationController.View?.Window?.EndEditing(true);
 
             var completionSource = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-            _pendingViewControllers = null;
+            ClearPendingViewControllers();
             _completionTasks[viewController] = completionSource;
             (_navigationController as MauiNavigationController)?.UpdateCurrentTopVC(viewController);
             _navigationController.PushViewController(viewController, animated);
@@ -89,7 +90,7 @@ namespace Microsoft.Maui.Platform
         /// </summary>
         public Task<bool> PopViewController(bool animated)
         {
-            _pendingViewControllers = null;
+            ClearPendingViewControllers();
             _popCompletionTask = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
             _navigationController.PopViewController(animated);
             return _popCompletionTask.Task;
@@ -101,7 +102,7 @@ namespace Microsoft.Maui.Platform
         /// </summary>
         public Task<bool> PopToRootViewController(UIViewController rootViewController, bool animated)
         {
-            _pendingViewControllers = null;
+            ClearPendingViewControllers();
             var completionSource = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
             _completionTasks[rootViewController] = completionSource;
             _navigationController.PopToRootViewController(animated);
@@ -121,6 +122,7 @@ namespace Microsoft.Maui.Platform
         /// </summary>
         public void InsertViewController(int index, UIViewController viewController)
         {
+            _interactivePopGesturePending = false;
             var vcs = new List<UIViewController>(_pendingViewControllers ?? _navigationController.ViewControllers ?? Array.Empty<UIViewController>());
             vcs.Insert(index, viewController);
             _pendingViewControllers = vcs.ToArray();
@@ -135,6 +137,7 @@ namespace Microsoft.Maui.Platform
             var vcs = new List<UIViewController>(_pendingViewControllers ?? _navigationController.ViewControllers ?? Array.Empty<UIViewController>());
             if (vcs.Remove(viewController))
             {
+                _interactivePopGesturePending = false;
                 _pendingViewControllers = vcs.ToArray();
                 _navigationController.ViewControllers = _pendingViewControllers;
             }
@@ -147,9 +150,13 @@ namespace Microsoft.Maui.Platform
             _pendingViewControllers ?? _navigationController.ViewControllers ?? Array.Empty<UIViewController>();
 
         /// <summary>
-        /// Clears the pending view controller state (e.g., on navigation events).
+        /// Clears pending navigation state (e.g., on navigation events).
         /// </summary>
-        public void ClearPendingViewControllers() => _pendingViewControllers = null;
+        public void ClearPendingViewControllers()
+        {
+            _pendingViewControllers = null;
+            _interactivePopGesturePending = false;
+        }
 
         /// <summary>
         /// Updates the cached top VC for status bar delegation after SetViewControllers.
@@ -208,7 +215,8 @@ namespace Microsoft.Maui.Platform
         /// </summary>
         internal bool HandleShouldPopItem()
         {
-            return _delegate.ShouldPop();
+            // Gesture admission already evaluated the application's back policy.
+            return _disposed || _interactivePopGesturePending || _delegate.ShouldPop();
         }
 
         #endregion
@@ -310,6 +318,7 @@ namespace Microsoft.Maui.Platform
                         return;
                     }
 
+                    manager._interactivePopGesturePending = false;
                     manager._delegate.OnNavigationControllerDidDisappear();
                 }
             }
@@ -358,7 +367,7 @@ namespace Microsoft.Maui.Platform
             // soft-fail contract Shell relies on (async void callers can't catch TaskCanceledException).
             CompletePendingImmediately(false);
 
-            _pendingViewControllers = null;
+            ClearPendingViewControllers();
         }
 
         #endregion
@@ -387,6 +396,8 @@ namespace Microsoft.Maui.Platform
                 {
                     return;
                 }
+
+                manager._interactivePopGesturePending = false;
 
                 // Resolve completion tasks
                 if (manager._completionTasks.TryGetValue(viewController, out var source))
@@ -470,32 +481,24 @@ namespace Microsoft.Maui.Platform
         /// </summary>
         sealed class GestureDelegate : UIGestureRecognizerDelegate
         {
-            readonly WeakReference<UINavigationController> _navigationControllerRef;
             readonly WeakReference<NavigationControllerManager> _managerRef;
 
-            public GestureDelegate(UINavigationController navController, NavigationControllerManager manager)
+            public GestureDelegate(NavigationControllerManager manager)
             {
-                _navigationControllerRef = new WeakReference<UINavigationController>(navController);
                 _managerRef = new WeakReference<NavigationControllerManager>(manager);
             }
 
             public override bool ShouldBegin(UIGestureRecognizer recognizer)
             {
-                if (!_navigationControllerRef.TryGetTarget(out var navController))
+                if (!_managerRef.TryGetTarget(out var manager) || manager._disposed)
                 {
                     return false;
                 }
 
-                // Only allow interactive pop if there's more than the root VC
-                if ((navController.ViewControllers?.Length ?? 0) <= 1)
-                {
-                    return false;
-                }
-
-                // Always allow the gesture — matches the renderer, which returns true
-                // and lets UIKit drive the interactive transition. After the gesture
-                // completes, OnInteractivePopCompleted syncs the MAUI stack.
-                return true;
+                manager._interactivePopGesturePending =
+                    (manager._navigationController.ViewControllers?.Length ?? 0) > 1 &&
+                    manager._delegate.ShouldPop();
+                return manager._interactivePopGesturePending;
             }
         }
 
