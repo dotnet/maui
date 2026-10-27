@@ -38,7 +38,7 @@ namespace UITest.Appium.NUnit
 		public IApp RunningApp => App;
 
 		public abstract IConfig GetTestConfig();
-		
+
 		public abstract void Close();
 
 		public abstract void LaunchAppWithTest();
@@ -47,12 +47,10 @@ namespace UITest.Appium.NUnit
 		{
 			_context = context ?? throw new ArgumentNullException(nameof(context));
 
-			if (UITestContext != null && Device is TestDevice.Mac)
-			{
-				LaunchAppWithTest();
-			}
-
+			var existingContext = _uiTestContext;
 			InitialSetup(context, false);
+			if (existingContext is not null && ReferenceEquals(existingContext, _uiTestContext))
+				LaunchAppWithTest();
 		}
 
 		public virtual void Reset()
@@ -70,17 +68,34 @@ namespace UITest.Appium.NUnit
 			var testConfig = GetTestConfig();
 			testConfig.SetProperty("TestDevice", _testDevice);
 
-			// Check to see if we have a context already from a previous test and re-use it as creating the driver is expensive
-			if (reset || _uiTestContext == null)
+			// WinAppDriver's launch command reuses immutable session capabilities, including appArguments.
+			var recreateWindowsSession = _uiTestContext is not null && _testDevice == TestDevice.Windows
+				&& GetStartupTest(_uiTestContext.Config) != GetStartupTest(testConfig);
+
+			// Reuse mobile/Catalyst sessions; they accept a new startup target on each launch.
+			if (reset || _uiTestContext == null || recreateWindowsSession)
 			{
-				_uiTestContext?.Dispose();
+				var previousContext = _uiTestContext;
+				_uiTestContext = null;
+				previousContext?.Dispose();
 				_uiTestContext = context.CreateUIClientContext(testConfig);
+			}
+			else
+			{
+				_uiTestContext.Config.SetProperty("TestConfigurationArgs",
+					testConfig.GetProperty<Dictionary<string, string>>("TestConfigurationArgs"));
 			}
 
 			if (_uiTestContext == null)
 			{
 				throw new InvalidOperationException("Failed to get the driver.");
 			}
+		}
+
+		static string? GetStartupTest(IConfig config)
+		{
+			var args = config.GetProperty<Dictionary<string, string>>("TestConfigurationArgs");
+			return args is not null && args.TryGetValue("test", out var testName) ? testName : null;
 		}
 	}
 }
