@@ -1011,6 +1011,14 @@ void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = nu
         }
     };
 
+    if (IsCIBuild() && !string.IsNullOrEmpty(nunitResultsDirectory))
+    {
+        settings.EnvironmentVariables = new Dictionary<string, string>
+        {
+            ["MAUI_UI_TEST_RESULTS_DIRECTORY"] = MakeAbsolute(settings.ResultsDirectory).FullPath
+        };
+    }
+
     if (!string.IsNullOrEmpty(pathDotnet))
     {
         settings.ToolPath = pathDotnet;

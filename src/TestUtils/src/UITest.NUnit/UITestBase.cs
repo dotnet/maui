@@ -332,13 +332,6 @@ namespace UITest.Appium.NUnit
 			if (UITestContext is null)
 				return null;
 
-			if (string.IsNullOrEmpty(note))
-				note = "-";
-			else
-				note = $"-{note}-";
-
-			filename = $"{Path.GetFileNameWithoutExtension(filename)}-{Guid.NewGuid().ToString("N")}{Path.GetExtension(filename)}";
-
 			var logDir =
 				Path.GetDirectoryName(Environment.GetEnvironmentVariable("APPIUM_LOG_FILE") ??
 				Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location))!;
@@ -347,14 +340,28 @@ namespace UITest.Appium.NUnit
 				TestContext.CurrentContext.Test.MethodName ??
 				TestContext.CurrentContext.Test.Name;
 
-			return Path.Combine(logDir, $"{name}-{_testDevice}{note}{filename}");
+			var maximumLength = 255;
+			var resultsDirectory = Environment.GetEnvironmentVariable("MAUI_UI_TEST_RESULTS_DIRECTORY");
+			if (!string.IsNullOrEmpty(resultsDirectory))
+			{
+				string RequiredVariable(string variable) => Environment.GetEnvironmentVariable(variable) is { Length: > 0 } value
+					? value : throw new InvalidOperationException($"Diagnostic path budgeting requires {variable}.");
+
+				var artifactRoot = RequiredVariable("BUILD_ARTIFACTSTAGINGDIRECTORY");
+				var artifactName = $"drop-{RequiredVariable("SYSTEM_STAGENAME")}-{RequiredVariable("SYSTEM_JOBNAME")}-{RequiredVariable("SYSTEM_JOBATTEMPT")}";
+				var relativeDirectory = Path.GetRelativePath(artifactRoot, resultsDirectory);
+				maximumLength = DiagnosticFileName.GetMaximumLength(artifactName, relativeDirectory,
+					Environment.GetEnvironmentVariable("UserName") ?? "", Environment.MachineName);
+			}
+
+			return Path.Combine(logDir, DiagnosticFileName.Create(name, _testDevice.ToString(), note, filename, Guid.NewGuid(), maximumLength));
 		}
 
 		void AddTestAttachment(string filePath, string? description = null)
 		{
 			try
 			{
-				TestContext.AddTestAttachment(filePath, description);
+				TestContext.AddTestAttachment(filePath, $"{TestContext.CurrentContext.Test.FullName}: {description}");
 			}
 			catch (FileNotFoundException e) when (e.Message == "Test attachment file path could not be found.")
 			{

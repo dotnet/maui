@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\UITest.Core\UITest.Core.csproj" />
+    <InternalsVisibleTo Include="UITest.Appium.Tests" />
   </ItemGroup>
 
 </Project>
