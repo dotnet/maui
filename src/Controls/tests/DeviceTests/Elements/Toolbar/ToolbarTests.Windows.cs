@@ -22,6 +22,8 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Toolbar)]
 	public partial class ToolbarTests : ControlsHandlerTestBase
 	{
+		const string TestPng = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAANSURBVBhXY/jPwPAfAAUAAf+mXJtdAAAAAElFTkSuQmCC";
+
 		[Fact(DisplayName = "Toolbar FontImageSource icon is shown with text")]
 		public async Task ToolbarFontImageSourceIconIsShownWithText()
 		{
@@ -69,13 +71,41 @@ namespace Microsoft.Maui.DeviceTests
 					replacementIcon.ActualHeight > 0);
 
 				toolbarItem.IconImageSource = ImageSource.FromStream(() =>
-					new MemoryStream(Convert.FromBase64String("iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAIAAAD/gAIDAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAAJOgAACToAYJjBRwAAADLSURBVHhe7cfBCQAgAMSw239p/RcsDlDIJzvLLz6Cj+Aj+Ag+go/gI/gIPoKP4CP4CD6Cj+Aj+Ag+go/gI/gIPoKP4CP4CD6Cj+Aj+Ag+go/gI/gIPoKP4CP4CD6Cj+Aj+Ag+go/gI/gIPoKP4CP4CD6Cj+Aj+Ag+go/gI/gIPoKP4CP4CD6Cj+Aj+Ag+go/gI/gIPoKP4CP4CD6Cj+Aj+Ag+go/gI/gIPoKP4CP4CD6Cj+Aj+Ag+go/gI/gIPoKP4CP4CD6Cj+Aj+Ag+go/gI/gIPoKP4CP4CD6Cj+Aj+Ag+go/gI/gIPoKP4CP4CD6Cj+Aj+Ag+go/gI/gIPoKP4CP4CD6Cj+DztF2eLesr6yjgngAAAABJRU5ErkJggg==")));
+					new MemoryStream(Convert.FromBase64String(TestPng)));
 
 				var buttonWithFileImage = Assert.IsType<AppBarButton>(commandBar.PrimaryCommands[0]);
 				Assert.Null(buttonWithFileImage.Icon);
 				var streamImage = Assert.IsType<Microsoft.UI.Xaml.Controls.Image>(buttonWithFileImage.Content);
 
 				await AssertionExtensions.AssertEventually(() => streamImage.Source is not null);
+			});
+		}
+
+		[Fact(DisplayName = "Toolbar secondary stream image does not throw with dynamic overflow")]
+		public async Task ToolbarSecondaryStreamImageDoesNotThrowWithDynamicOverflow()
+		{
+			SetupBuilder();
+
+			var page = new ContentPage();
+			Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.Page.SetToolbarDynamicOverflowEnabled(page, true);
+			page.ToolbarItems.Add(new ToolbarItem
+			{
+				Text = "Secondary",
+				Order = ToolbarItemOrder.Secondary,
+				IconImageSource = ImageSource.FromStream(() => new MemoryStream(Convert.FromBase64String(TestPng)))
+			});
+
+			var navPage = new NavigationPage(page);
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), (handler) =>
+			{
+				var toolbar = (Toolbar)(navPage.Window as IToolbarElement).Toolbar;
+				var commandBar = ((MauiToolbar)toolbar.Handler.PlatformView).CommandBar;
+				var button = Assert.IsType<AppBarButton>(commandBar.SecondaryCommands[0]);
+
+				Assert.Equal("Secondary", button.Label);
+				Assert.Null(button.Icon);
+				return Task.CompletedTask;
 			});
 		}
 
