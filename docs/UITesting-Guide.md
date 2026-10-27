@@ -43,11 +43,82 @@ dotnet build ./src/Provisioning/Provisioning.csproj -t:ProvisionAppium -p:SkipAp
 - Set `JAVA_HOME` environment variable
 - Install Android API 30 SDK with x86/x64 emulator image
 
+#### Launch directly to a test page
+
+The Android HostApp accepts a `test` string intent extra containing the exact
+issue description (from `IssueAttribute`) or gallery title, matched
+case-insensitively. For example, after installing the HostApp:
+
+```bash
+adb shell am start -S -n com.microsoft.maui.uitests/com.microsoft.maui.uitests.MainActivity --es test '"Direct test launch"'
+```
+
+This creates the requested page as the initial window page without searching or
+tapping through the gallery. Use `-S` to stop the existing app before launching:
+the extra is read when the window is created, not when an already-running activity
+is brought to the foreground. Omit `--es test ...` for normal gallery startup.
+An empty or unrecognized test also opens the gallery; an unrecognized test is
+reported in debug output.
+
 ### iOS/MacCatalyst-Specific
 
 - macOS required
 - Xcode with command-line tools installed
 - iOS Simulator configured
+
+#### Launch directly on iOS
+
+iOS and MacCatalyst use the `test` environment variable with the same exact issue
+description or gallery title. After installing the iOS HostApp on a simulator:
+
+```bash
+SIMCTL_CHILD_test="Direct test launch" xcrun simctl launch --terminate-running-process <simulator-udid> com.microsoft.maui.uitests
+```
+
+For a manually launched MacCatalyst app, set `test` in the app process's environment.
+On Windows, pass the description or gallery title as one `--test=...` command-line
+argument:
+
+```powershell
+.\Controls.TestCases.HostApp.exe '--test=Direct test launch'
+```
+
+On all platforms, missing, empty, or unrecognized startup targets open the normal
+gallery. Unknown targets are reported in debug output. A startup target is consumed
+when the initial window is created, so terminate the previous app instance before
+changing it.
+
+### Direct launch in the UI test runner
+
+`_IssuesUITest` and `_GalleryUITest` configure their startup targets automatically
+on Android, iOS, and MacCatalyst.
+Fixture setup no longer searches for and taps the gallery's Go To Test button.
+Resets relaunch the current fixture's target, including fixtures that set
+`ResetAfterEachTest`; gallery subpage buttons are still selected after launch.
+Fixture teardown closes the app rather than launching an unused gallery.
+Tests of normal gallery startup can derive directly from `UITest` instead.
+
+Starting a new test and resetting the app stop with an explicit error if the
+previous app cannot be terminated. OS-command fallback termination succeeds only
+when the command starts, completes within its timeout, and exits with code zero; a failed command
+must not be treated as a successful close.
+
+Android, iOS, and MacCatalyst reuse the driver session and send the current target
+with each app launch. Android forwards the configured device UDID to Appium as
+well, so multiple running emulators do not select the wrong device. Windows uses
+`appArguments`; because WinAppDriver cannot change these capabilities on an
+existing session, changing the startup target recreates that session. Windows
+therefore retains gallery navigation by default until its native timing is
+validated; set `MAUI_UITEST_DIRECT_LAUNCH=true` to opt into direct fixture startup.
+Set it to `false` on any platform to compare the legacy navigation path.
+Do not infer a Windows speedup from eliminating gallery navigation alone.
+
+The startup argument, session reuse, and launch-command unit tests run without
+native UI automation:
+
+```bash
+dotnet test src/TestUtils/tests/UITest.Appium.Tests/UITest.Appium.Tests.csproj
+```
 
 ## Creating a UI Test
 

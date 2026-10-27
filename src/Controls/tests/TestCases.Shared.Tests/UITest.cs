@@ -31,6 +31,11 @@ namespace Microsoft.Maui.TestCases.Tests
 		protected const int SetupMaxRetries = 1;
 		protected const int InstrumentationCrashMaxRetries = 1;
 
+		protected virtual bool UseDirectLaunch =>
+			Environment.GetEnvironmentVariable("MAUI_UITEST_DIRECT_LAUNCH") is string configured
+				? bool.Parse(configured)
+				: _testDevice != TestDevice.Windows;
+
 		/// <summary>
 		/// Detects if an exception indicates an Android UiAutomator2 instrumentation crash
 		/// or other infrastructure failure that requires session recreation.
@@ -156,7 +161,8 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		public override void Reset()
 		{
-			App.ResetApp();
+			App.CloseApp();
+			LaunchAppWithTest();
 		}
 
 		public override void Close()

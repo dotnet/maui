@@ -97,10 +97,16 @@ namespace Maui.Controls.Sample
 		{
 			Page mainPage = null;
 			OverrideMainPage(ref mainPage);
-#if MACCATALYST
-			// Check for startup test argument from environment variables (passed by test runner)
+#if ANDROID
+			var testName = Microsoft.Maui.ApplicationModel.Platform.CurrentActivity?.Intent?.GetStringExtra("test");
+#elif IOS || MACCATALYST
 			var testName = System.Environment.GetEnvironmentVariable("test");
-
+#elif WINDOWS
+			const string testArgument = "--test=";
+			var testName = Environment.GetCommandLineArgs()
+				.FirstOrDefault(argument => argument.StartsWith(testArgument, StringComparison.Ordinal))?[testArgument.Length..];
+#endif
+#if ANDROID || IOS || MACCATALYST || WINDOWS
 			if (!string.IsNullOrEmpty(testName))
 			{
 				// Try to get the test page directly from issues/test cases
@@ -120,6 +126,8 @@ namespace Maui.Controls.Sample
 					// Return the gallery page
 					return galleryPage;
 				}
+
+				Debug.WriteLine($"No test or gallery page found for startup test '{testName}'.");
 			}
 #endif
 			return mainPage ?? new CoreNavigationPage();

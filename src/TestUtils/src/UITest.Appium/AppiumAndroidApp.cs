@@ -89,13 +89,24 @@ namespace UITest.Appium
 
 			SetGeneralAppiumOptions(config, options);
 
+			var udid = config.GetProperty<string>("Udid");
+			if (!string.IsNullOrWhiteSpace(udid))
+				options.AddAdditionalAppiumOption(MobileCapabilityType.Udid, udid);
+
 			if (!string.IsNullOrWhiteSpace(appId))
 			{
 				options.AddAdditionalAppiumOption(MobileCapabilityType.NoReset, "true");
 				options.AddAdditionalAppiumOption(AndroidMobileCapabilityType.AppPackage, appId);
 				options.AddAdditionalAppiumOption(AndroidMobileCapabilityType.AppActivity, $"{appId}.MainActivity");
 			}
-			
+
+			var args = config.GetProperty<Dictionary<string, string>>("TestConfigurationArgs");
+			if (args is not null && args.TryGetValue("test", out var testName))
+			{
+				options.AddAdditionalAppiumOption("optionalIntentArguments", AppLaunchArguments.AndroidTestExtra(testName));
+				options.AddAdditionalAppiumOption("forceAppLaunch", true);
+			}
+
 			var headless = config.GetProperty<bool>("Headless");
 			if (headless)
 			{
