@@ -16,6 +16,7 @@ namespace UITest.Appium.NUnit
 		// (NUnit doesn't attach files from OneTimeSetUp to individual test results in Azure DevOps)
 		private readonly List<string> _fixtureSetupDiagnosticFiles = new();
 		private bool _fixtureSetupFailed = false;
+		private WindowsProcessObservation? _windowsProcessObservation;
 
 		public UITestBase(TestDevice testDevice)
 			: base(testDevice)
@@ -35,6 +36,14 @@ namespace UITest.Appium.NUnit
 			if (ResetAfterEachTest)
 			{
 				FixtureSetup();
+			}
+
+			var name = TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
+			if (_testDevice == TestDevice.Windows && OperatingSystem.IsWindows()
+				&& string.Equals(Environment.GetEnvironmentVariable("TF_BUILD"), "True", StringComparison.OrdinalIgnoreCase)
+				&& name == "L2TabBarSwitchingDoesNotCrash")
+			{
+				_windowsProcessObservation = WindowsProcessObservation.TryStart(App, message => TestContext.Progress.WriteLine(message));
 			}
 		}
 
@@ -127,6 +136,7 @@ namespace UITest.Appium.NUnit
 				}
 				catch (Exception)
 				{
+					_windowsProcessObservation?.Capture("window-probe-error-before-force-close");
 					// AppState query failed for some other reason (not a timeout/freeze).
 					// Force-close the app and treat it as not running.
 					try
@@ -137,6 +147,7 @@ namespace UITest.Appium.NUnit
 					appState = ApplicationState.NotRunning;
 				}
 
+				_windowsProcessObservation?.Capture("after-window-handle-probe-before-reset", appState);
 				if (appState != ApplicationState.Running)
 				{
 					SaveDeviceDiagnosticInfo();
@@ -154,6 +165,7 @@ namespace UITest.Appium.NUnit
 			}
 			catch (TimeoutException ex)
 			{
+				_windowsProcessObservation?.Capture("window-probe-timeout-before-force-close");
 				// App is stuck in an infinite loop (e.g., layout cycle). Force-terminate and reset.
 				TestContext.Error.WriteLine($">>>>> {DateTime.Now} App became unresponsive, force-closing: {ex.Message}");
 				try
@@ -179,6 +191,8 @@ namespace UITest.Appium.NUnit
 			}
 			finally
 			{
+				_windowsProcessObservation?.Dispose();
+				_windowsProcessObservation = null;
 				var testOutcome = TestContext.CurrentContext.Result.Outcome;
 				if (testOutcome == ResultState.Error ||
 					testOutcome == ResultState.Failure)
