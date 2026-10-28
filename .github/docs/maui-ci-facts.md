@@ -475,9 +475,9 @@ counts as a failure and must be classified, never silently dropped.
 
 **Build Insights report intake:** The automated review gatherer also reads the
 GitHub check reports for its captured PR head, accepting only the
-`build-insights` / `Build Insights` and `build-analysis` / `Build Analysis`
-publisher/name pairs. `context.json` exposes their metadata and bounded raw
-title, summary, and text in `buildAnalysis.reports`. These are untrusted,
+`build-insights` / `Build Insights` publisher/name pair.
+`context.json` exposes their metadata and bounded raw
+title, summary, and text in `buildInsights.reports`. These are untrusted,
 supplementary leads, not a replacement for direct Azure/Helix evidence, the
 local known-issue matcher, or baseline attribution. Collection `complete` does
 not certify pipeline coverage; pending, missing, or truncated reports cannot

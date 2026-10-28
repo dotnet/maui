@@ -43,7 +43,7 @@ BeforeAll {
             'Get-GatherRequestTimeoutSeconds',
             'Invoke-ProcessWithGatherDeadline',
             'Invoke-GhJson',
-            'Get-BuildAnalysisCheckReports',
+            'Get-BuildInsightsCheckReports',
             'Invoke-JsonUrl',
             'Invoke-TextUrl',
             'Get-PinnedPrDiff',
@@ -2324,7 +2324,7 @@ Describe 'Markdown evidence pointer' -Tag 'EvidenceCollection', 'MarkdownEvidenc
     }
 }
 
-Describe 'Build Insights and Build Analysis check report intake' -Tag 'BuildAnalysisCheckReports' {
+Describe 'Build Insights check report intake' -Tag 'BuildInsightsCheckReports' {
     BeforeAll {
         $script:validHeadSha = 'a' * 40
         $script:expectedReportKeys = @(
@@ -2462,7 +2462,7 @@ Describe 'Build Insights and Build Analysis check report intake' -Tag 'BuildAnal
             return New-CheckRunsPageFixture -TotalCount 1 -CheckRuns @($run)
         }
 
-        $result = Get-BuildAnalysisCheckReports -Repository 'dotnet/maui' -HeadSha $script:validHeadSha
+        $result = Get-BuildInsightsCheckReports -Repository 'dotnet/maui' -HeadSha $script:validHeadSha
         $result.queried | Should -BeTrue
         $result.complete | Should -BeTrue
         $result.errors.Count | Should -Be 0
@@ -2519,7 +2519,7 @@ Describe 'Build Insights and Build Analysis check report intake' -Tag 'BuildAnal
     },
     {
       "id": 910051,
-      "name": "Build Analysis",
+      "name": "Build Insights",
       "head_sha": "$($script:validHeadSha)",
       "status": "completed",
       "conclusion": "failure",
@@ -2529,8 +2529,8 @@ Describe 'Build Insights and Build Analysis check report intake' -Tag 'BuildAnal
       "completed_at": null,
       "app": {
         "id": 12346,
-        "slug": "build-analysis",
-        "name": "Build Analysis"
+        "slug": "build-insights",
+        "name": "Build Insights"
       },
       "output": {
         "title": "DateTimeOffset report",
@@ -2547,7 +2547,7 @@ Describe 'Build Insights and Build Analysis check report intake' -Tag 'BuildAnal
 
         Mock Invoke-GhJson { return $parsedResponse }
 
-        $result = Get-BuildAnalysisCheckReports -Repository 'dotnet/maui' -HeadSha $script:validHeadSha
+        $result = Get-BuildInsightsCheckReports -Repository 'dotnet/maui' -HeadSha $script:validHeadSha
         $result.queried | Should -BeTrue
         $result.complete | Should -BeTrue
         $result.errors.Count | Should -Be 0
@@ -2559,7 +2559,7 @@ Describe 'Build Insights and Build Analysis check report intake' -Tag 'BuildAnal
         $result.reports[1].completedAt | Should -BeNullOrEmpty
     }
 
-    It 'collects both Build Insights and Build Analysis as distinct trusted identities and accepts case-insensitive head SHA' {
+    It 'accepts case-insensitive head SHA for Build Insights and ignores legacy Build Analysis reports' {
         $biRun = New-CheckRunFixture `
             -Id 910010 `
             -Name 'Build Insights' `
@@ -2568,7 +2568,7 @@ Describe 'Build Insights and Build Analysis check report intake' -Tag 'BuildAnal
             -Title 'BI Title' `
             -Summary 'BI Summary' `
             -Text 'BI Body'
-        $baRun = New-CheckRunFixture `
+        $legacyRun = New-CheckRunFixture `
             -Id 910011 `
             -Name 'Build Analysis' `
             -AppSlug 'build-analysis' `
@@ -2578,29 +2578,25 @@ Describe 'Build Insights and Build Analysis check report intake' -Tag 'BuildAnal
             -Text 'BA Body'
 
         Mock Invoke-GhJson {
-            return New-CheckRunsPageFixture -TotalCount 2 -CheckRuns @($biRun, $baRun)
+            return New-CheckRunsPageFixture -TotalCount 2 -CheckRuns @($biRun, $legacyRun)
         }
 
-        $result = Get-BuildAnalysisCheckReports -Repository 'dotnet/maui' -HeadSha $script:validHeadSha
+        $result = Get-BuildInsightsCheckReports -Repository 'dotnet/maui' -HeadSha $script:validHeadSha
         $result.queried | Should -BeTrue
         $result.complete | Should -BeTrue
         $result.errors.Count | Should -Be 0
-        $result.reports.Count | Should -Be 2
+        $result.reports.Count | Should -Be 1
         $result.reports[0].id | Should -Be 910010
         $result.reports[0].appSlug | Should -BeExactly 'build-insights'
         $result.reports[0].name | Should -BeExactly 'Build Insights'
         $result.reports[0].title | Should -BeExactly 'BI Title'
-        $result.reports[1].id | Should -Be 910011
-        $result.reports[1].appSlug | Should -BeExactly 'build-analysis'
-        $result.reports[1].name | Should -BeExactly 'Build Analysis'
-        $result.reports[1].title | Should -BeExactly 'BA Title'
     }
 
-    It 'ignores untrusted apps using the Build Insights or Build Analysis check name: <Case>' -ForEach @(
+    It 'ignores untrusted apps using the Build Insights check name: <Case>' -ForEach @(
         @{ Case = 'github-actions with Build Insights name'; Name = 'Build Insights'; AppSlug = 'github-actions'; NullApp = $false; OmitAppSlug = $false },
-        @{ Case = 'custom-app with Build Analysis name'; Name = 'Build Analysis'; AppSlug = 'custom-app'; NullApp = $false; OmitAppSlug = $false },
+        @{ Case = 'custom-app with Build Insights name'; Name = 'Build Insights'; AppSlug = 'custom-app'; NullApp = $false; OmitAppSlug = $false },
         @{ Case = 'null app object with Build Insights name'; Name = 'Build Insights'; AppSlug = $null; NullApp = $true; OmitAppSlug = $false },
-        @{ Case = 'app missing slug property with Build Analysis name'; Name = 'Build Analysis'; AppSlug = $null; NullApp = $false; OmitAppSlug = $true },
+        @{ Case = 'app missing slug property with Build Insights name'; Name = 'Build Insights'; AppSlug = $null; NullApp = $false; OmitAppSlug = $true },
         @{ Case = 'non-string app slug with Build Insights name'; Name = 'Build Insights'; AppSlug = 12345; NullApp = $false; OmitAppSlug = $false }
     ) {
         $untrusted = New-CheckRunFixture -Id 910020 -Name $Name -AppSlug $AppSlug -NullApp:$NullApp -OmitAppSlug:$OmitAppSlug
@@ -2608,7 +2604,7 @@ Describe 'Build Insights and Build Analysis check report intake' -Tag 'BuildAnal
             return New-CheckRunsPageFixture -TotalCount 1 -CheckRuns @($untrusted)
         }
 
-        $result = Get-BuildAnalysisCheckReports -Repository 'dotnet/maui' -HeadSha $script:validHeadSha
+        $result = Get-BuildInsightsCheckReports -Repository 'dotnet/maui' -HeadSha $script:validHeadSha
         $result.queried | Should -BeTrue
         $result.complete | Should -BeTrue
         $result.reports.Count | Should -Be 0
@@ -2616,6 +2612,7 @@ Describe 'Build Insights and Build Analysis check report intake' -Tag 'BuildAnal
     }
 
     It 'ignores wrong publisher or check-name combinations and unrelated checks: <Case>' -ForEach @(
+        @{ Case = 'legacy Build Analysis publisher and check'; AppSlug = 'build-analysis'; Name = 'Build Analysis' },
         @{ Case = 'build-insights app with Build Analysis name'; AppSlug = 'build-insights'; Name = 'Build Analysis' },
         @{ Case = 'build-analysis app with Build Insights name'; AppSlug = 'build-analysis'; Name = 'Build Insights' },
         @{ Case = 'build-insights app with lowercase check name'; AppSlug = 'build-insights'; Name = 'build insights' },
@@ -2628,7 +2625,7 @@ Describe 'Build Insights and Build Analysis check report intake' -Tag 'BuildAnal
             return New-CheckRunsPageFixture -TotalCount 1 -CheckRuns @($checkRun)
         }
 
-        $result = Get-BuildAnalysisCheckReports -Repository 'dotnet/maui' -HeadSha $script:validHeadSha
+        $result = Get-BuildInsightsCheckReports -Repository 'dotnet/maui' -HeadSha $script:validHeadSha
         $result.queried | Should -BeTrue
         $result.complete | Should -BeTrue
         $result.reports.Count | Should -Be 0
@@ -2637,16 +2634,16 @@ Describe 'Build Insights and Build Analysis check report intake' -Tag 'BuildAnal
 
     It 'excludes stale or mismatched head_sha on expected publishers and marks collection incomplete: <Case>' -ForEach @(
         @{ Case = 'stale 40-hex commit SHA'; AppSlug = 'build-insights'; Name = 'Build Insights'; BadHead = ('b' * 40); OmitHead = $false; ExpectedErrorPattern = ('b' * 40) },
-        @{ Case = 'missing head_sha property'; AppSlug = 'build-analysis'; Name = 'Build Analysis'; BadHead = $null; OmitHead = $true; ExpectedErrorPattern = '<invalid>' },
+        @{ Case = 'missing head_sha property'; AppSlug = 'build-insights'; Name = 'Build Insights'; BadHead = $null; OmitHead = $true; ExpectedErrorPattern = '<invalid>' },
         @{ Case = 'non-string head_sha value'; AppSlug = 'build-insights'; Name = 'Build Insights'; BadHead = 12345; OmitHead = $false; ExpectedErrorPattern = '<invalid>' }
     ) {
         $staleRun = New-CheckRunFixture -Id 910040 -Name $Name -AppSlug $AppSlug -HeadSha $BadHead -OmitHeadSha:$OmitHead
-        $validRun = New-CheckRunFixture -Id 910041 -Name 'Build Analysis' -AppSlug 'build-analysis' -HeadSha $script:validHeadSha
+        $validRun = New-CheckRunFixture -Id 910041 -Name 'Build Insights' -AppSlug 'build-insights' -HeadSha $script:validHeadSha
         Mock Invoke-GhJson {
             return New-CheckRunsPageFixture -TotalCount 2 -CheckRuns @($staleRun, $validRun)
         }
 
-        $result = Get-BuildAnalysisCheckReports -Repository 'dotnet/maui' -HeadSha $script:validHeadSha
+        $result = Get-BuildInsightsCheckReports -Repository 'dotnet/maui' -HeadSha $script:validHeadSha
         $result.queried | Should -BeTrue
         $result.complete | Should -BeFalse
         $result.reports.Count | Should -Be 1
@@ -2666,7 +2663,7 @@ Describe 'Build Insights and Build Analysis check report intake' -Tag 'BuildAnal
             return New-CheckRunsPageFixture -TotalCount 1 -CheckRuns @($run)
         }
 
-        $result = Get-BuildAnalysisCheckReports -Repository 'dotnet/maui' -HeadSha $script:validHeadSha
+        $result = Get-BuildInsightsCheckReports -Repository 'dotnet/maui' -HeadSha $script:validHeadSha
         $result.queried | Should -BeTrue
         $result.complete | Should -BeTrue
         $result.errors.Count | Should -Be 0
@@ -2680,12 +2677,12 @@ Describe 'Build Insights and Build Analysis check report intake' -Tag 'BuildAnal
     It 'preserves partial or in_progress reports as provisional data with null completion fields' {
         $inProgressRun = New-CheckRunFixture `
             -Id 910070 `
-            -Name 'Build Analysis' `
-            -AppSlug 'build-analysis' `
+            -Name 'Build Insights' `
+            -AppSlug 'build-insights' `
             -Status 'in_progress' `
             -Conclusion $null `
             -CompletedAt $null `
-            -Title 'Build Analysis (running)' `
+            -Title 'Build Insights (running)' `
             -Summary 'Analyzing 2 completed test legs while uitests is still running.' `
             -Text $null
 
@@ -2693,7 +2690,7 @@ Describe 'Build Insights and Build Analysis check report intake' -Tag 'BuildAnal
             return New-CheckRunsPageFixture -TotalCount 1 -CheckRuns @($inProgressRun)
         }
 
-        $result = Get-BuildAnalysisCheckReports -Repository 'dotnet/maui' -HeadSha $script:validHeadSha
+        $result = Get-BuildInsightsCheckReports -Repository 'dotnet/maui' -HeadSha $script:validHeadSha
         $result.queried | Should -BeTrue
         $result.complete | Should -BeTrue
         $result.errors.Count | Should -Be 0
@@ -2701,7 +2698,7 @@ Describe 'Build Insights and Build Analysis check report intake' -Tag 'BuildAnal
         $result.reports[0].status | Should -BeExactly 'in_progress'
         $result.reports[0].conclusion | Should -BeNullOrEmpty
         $result.reports[0].completedAt | Should -BeNullOrEmpty
-        $result.reports[0].title | Should -BeExactly 'Build Analysis (running)'
+        $result.reports[0].title | Should -BeExactly 'Build Insights (running)'
         $result.reports[0].summary | Should -BeExactly 'Analyzing 2 completed test legs while uitests is still running.'
         $result.reports[0].text | Should -BeExactly ''
         $result.reports[0].truncated | Should -BeFalse
@@ -2726,7 +2723,7 @@ Describe 'Build Insights and Build Analysis check report intake' -Tag 'BuildAnal
             return New-CheckRunsPageFixture -TotalCount 1 -CheckRuns @($run)
         }
 
-        $result = Get-BuildAnalysisCheckReports -Repository 'dotnet/maui' -HeadSha $script:validHeadSha
+        $result = Get-BuildInsightsCheckReports -Repository 'dotnet/maui' -HeadSha $script:validHeadSha
         $result.queried | Should -BeTrue
         $result.complete | Should -BeFalse
         $result.reports.Count | Should -Be 1
@@ -2754,7 +2751,7 @@ Describe 'Build Insights and Build Analysis check report intake' -Tag 'BuildAnal
             return New-CheckRunsPageFixture -TotalCount $TotalCount -CheckRuns $Runs
         }
 
-        $result = Get-BuildAnalysisCheckReports -Repository 'dotnet/maui' -HeadSha $script:validHeadSha
+        $result = Get-BuildInsightsCheckReports -Repository 'dotnet/maui' -HeadSha $script:validHeadSha
         $result.queried | Should -BeTrue
         $result.complete | Should -BeTrue
         $result.reports.Count | Should -Be 0
@@ -2771,7 +2768,7 @@ Describe 'Build Insights and Build Analysis check report intake' -Tag 'BuildAnal
     ) {
         Mock Invoke-GhJson { throw 'Invoke-GhJson must not be called for invalid parameters.' }
 
-        $result = Get-BuildAnalysisCheckReports `
+        $result = Get-BuildInsightsCheckReports `
             -Repository $Repository `
             -HeadSha $HeadSha `
             -MaxPages $MaxPages `
@@ -2957,9 +2954,9 @@ Describe 'Build Insights and Build Analysis check report intake' -Tag 'BuildAnal
                 check_runs = @(
                     [pscustomobject]@{
                         id = 910084
-                        name = 'Build Analysis'
+                        name = 'Build Insights'
                         head_sha = ('a' * 40)
-                        app = [pscustomobject]@{ slug = 'build-analysis' }
+                        app = [pscustomobject]@{ slug = 'build-insights' }
                         output = [pscustomobject]@{ title = 'T'; summary = 'S'; text = 999 }
                     }
                 )
@@ -2970,7 +2967,7 @@ Describe 'Build Insights and Build Analysis check report intake' -Tag 'BuildAnal
     ) {
         Mock Invoke-GhJson { return $Response }
 
-        $result = Get-BuildAnalysisCheckReports -Repository 'dotnet/maui' -HeadSha $script:validHeadSha
+        $result = Get-BuildInsightsCheckReports -Repository 'dotnet/maui' -HeadSha $script:validHeadSha
         $result.queried | Should -BeTrue
         $result.complete | Should -BeFalse
         $result.reports.Count | Should -Be $ExpectedReports
@@ -2981,7 +2978,7 @@ Describe 'Build Insights and Build Analysis check report intake' -Tag 'BuildAnal
     It 'surfaces transport failure on initial request without silent empty success' {
         Mock Invoke-GhJson { throw 'gh api failed: HTTP 503 Service Unavailable' }
 
-        $result = Get-BuildAnalysisCheckReports -Repository 'dotnet/maui' -HeadSha $script:validHeadSha
+        $result = Get-BuildInsightsCheckReports -Repository 'dotnet/maui' -HeadSha $script:validHeadSha
         $result.queried | Should -BeTrue
         $result.complete | Should -BeFalse
         $result.reports.Count | Should -Be 0
@@ -3005,7 +3002,7 @@ Describe 'Build Insights and Build Analysis check report intake' -Tag 'BuildAnal
             throw 'gh api failed on page 2: HTTP 502 Bad Gateway'
         }
 
-        $result = Get-BuildAnalysisCheckReports -Repository 'dotnet/maui' -HeadSha $script:validHeadSha
+        $result = Get-BuildInsightsCheckReports -Repository 'dotnet/maui' -HeadSha $script:validHeadSha
         $result.queried | Should -BeTrue
         $result.complete | Should -BeFalse
         $result.reports.Count | Should -Be 1
@@ -3024,7 +3021,7 @@ Describe 'Build Insights and Build Analysis check report intake' -Tag 'BuildAnal
             })
         $page2Runs = @(
             (New-CheckRunFixture -Id 910301 -Name 'maui-pr-uitests' -AppSlug 'azure-pipelines'),
-            (New-CheckRunFixture -Id 910302 -Name 'Build Analysis' -AppSlug 'build-analysis' -Title 'Page 2 BA')
+            (New-CheckRunFixture -Id 910302 -Name 'Build Insights' -AppSlug 'build-insights' -Title 'Page 2 BI')
         )
 
         Mock Invoke-GhJson {
@@ -3038,7 +3035,7 @@ Describe 'Build Insights and Build Analysis check report intake' -Tag 'BuildAnal
             throw "Unexpected page call: $joined"
         }
 
-        $result = Get-BuildAnalysisCheckReports -Repository 'dotnet/maui' -HeadSha $script:validHeadSha
+        $result = Get-BuildInsightsCheckReports -Repository 'dotnet/maui' -HeadSha $script:validHeadSha
         $result.queried | Should -BeTrue
         $result.complete | Should -BeTrue
         $result.errors.Count | Should -Be 0
@@ -3055,7 +3052,7 @@ Describe 'Build Insights and Build Analysis check report intake' -Tag 'BuildAnal
                 New-CheckRunFixture -Id (910400 + $_) -Name 'maui-pr' -AppSlug 'azure-pipelines'
             })
         $page2Runs = @(
-            (New-CheckRunFixture -Id 910501 -Name 'Build Analysis' -AppSlug 'build-analysis' -Title 'Page 2 BA')
+            (New-CheckRunFixture -Id 910501 -Name 'Build Insights' -AppSlug 'build-insights' -Title 'Page 2 BI')
         ) + @(2..100 | ForEach-Object {
                 New-CheckRunFixture -Id (910500 + $_) -Name 'maui-pr' -AppSlug 'azure-pipelines'
             })
@@ -3071,7 +3068,7 @@ Describe 'Build Insights and Build Analysis check report intake' -Tag 'BuildAnal
             throw "Unexpected page beyond MaxPages: $joined"
         }
 
-        $result = Get-BuildAnalysisCheckReports -Repository 'dotnet/maui' -HeadSha $script:validHeadSha -MaxPages 2
+        $result = Get-BuildInsightsCheckReports -Repository 'dotnet/maui' -HeadSha $script:validHeadSha -MaxPages 2
         $result.queried | Should -BeTrue
         $result.complete | Should -BeFalse
         $result.reports.Count | Should -Be 2
@@ -3088,7 +3085,7 @@ Describe 'Build Insights and Build Analysis check report intake' -Tag 'BuildAnal
             return New-CheckRunsPageFixture -TotalCount 5 -CheckRuns $shortPage
         }
 
-        $result = Get-BuildAnalysisCheckReports -Repository 'dotnet/maui' -HeadSha $script:validHeadSha
+        $result = Get-BuildInsightsCheckReports -Repository 'dotnet/maui' -HeadSha $script:validHeadSha
         $result.queried | Should -BeTrue
         $result.complete | Should -BeFalse
         $result.reports.Count | Should -Be 1
@@ -3100,14 +3097,14 @@ Describe 'Build Insights and Build Analysis check report intake' -Tag 'BuildAnal
     It 'enforces MaxReports cap and records an explicit overflow error' {
         $runs = @(
             (New-CheckRunFixture -Id 910701 -Name 'Build Insights' -AppSlug 'build-insights' -Title 'Report 1'),
-            (New-CheckRunFixture -Id 910702 -Name 'Build Analysis' -AppSlug 'build-analysis' -Title 'Report 2'),
+            (New-CheckRunFixture -Id 910702 -Name 'Build Insights' -AppSlug 'build-insights' -Title 'Report 2'),
             (New-CheckRunFixture -Id 910703 -Name 'Build Insights' -AppSlug 'build-insights' -Title 'Report 3')
         )
         Mock Invoke-GhJson {
             return New-CheckRunsPageFixture -TotalCount 3 -CheckRuns $runs
         }
 
-        $result = Get-BuildAnalysisCheckReports -Repository 'dotnet/maui' -HeadSha $script:validHeadSha -MaxReports 2
+        $result = Get-BuildInsightsCheckReports -Repository 'dotnet/maui' -HeadSha $script:validHeadSha -MaxReports 2
         $result.queried | Should -BeTrue
         $result.complete | Should -BeFalse
         $result.reports.Count | Should -Be 2
@@ -3129,7 +3126,7 @@ Describe 'Build Insights and Build Analysis check report intake' -Tag 'BuildAnal
             return New-CheckRunsPageFixture -TotalCount 1 -CheckRuns @($exactRun)
         }
 
-        $exactResult = Get-BuildAnalysisCheckReports -Repository 'dotnet/maui' -HeadSha $script:validHeadSha -MaxReportCharacters 20
+        $exactResult = Get-BuildInsightsCheckReports -Repository 'dotnet/maui' -HeadSha $script:validHeadSha -MaxReportCharacters 20
         $exactResult.queried | Should -BeTrue
         $exactResult.complete | Should -BeTrue
         $exactResult.errors.Count | Should -Be 0
@@ -3148,8 +3145,8 @@ Describe 'Build Insights and Build Analysis check report intake' -Tag 'BuildAnal
             -Text '123456789'
         $overInSummaryRun = New-CheckRunFixture `
             -Id 910803 `
-            -Name 'Build Analysis' `
-            -AppSlug 'build-analysis' `
+            -Name 'Build Insights' `
+            -AppSlug 'build-insights' `
             -Title '12345' `
             -Summary 'abcdef' `
             -Text 'xyz'
@@ -3158,7 +3155,7 @@ Describe 'Build Insights and Build Analysis check report intake' -Tag 'BuildAnal
             return New-CheckRunsPageFixture -TotalCount 2 -CheckRuns @($overInTextRun, $overInSummaryRun)
         }
 
-        $overTextResult = Get-BuildAnalysisCheckReports -Repository 'dotnet/maui' -HeadSha $script:validHeadSha -MaxReportCharacters 20
+        $overTextResult = Get-BuildInsightsCheckReports -Repository 'dotnet/maui' -HeadSha $script:validHeadSha -MaxReportCharacters 20
         $overTextResult.queried | Should -BeTrue
         $overTextResult.complete | Should -BeFalse
         $overTextResult.reports.Count | Should -Be 2
@@ -3170,7 +3167,7 @@ Describe 'Build Insights and Build Analysis check report intake' -Tag 'BuildAnal
         $overTextResult.errors.Count | Should -Be 1
         $overTextResult.errors[0] | Should -Match 'id 910802 exceeded the 20-character title/summary/text cap'
 
-        $overSummaryResult = Get-BuildAnalysisCheckReports -Repository 'dotnet/maui' -HeadSha $script:validHeadSha -MaxReportCharacters 8
+        $overSummaryResult = Get-BuildInsightsCheckReports -Repository 'dotnet/maui' -HeadSha $script:validHeadSha -MaxReportCharacters 8
         $overSummaryResult.queried | Should -BeTrue
         $overSummaryResult.complete | Should -BeFalse
         $overSummaryResult.reports[1].truncated | Should -BeTrue
@@ -3184,7 +3181,7 @@ Describe 'Build Insights and Build Analysis check report intake' -Tag 'BuildAnal
         $script:GatherHardDeadline = (Get-Date).AddSeconds(-5)
         Mock Invoke-GhJson { throw 'Invoke-GhJson must not run when deadline is already exhausted.' }
 
-        $result = Get-BuildAnalysisCheckReports -Repository 'dotnet/maui' -HeadSha $script:validHeadSha
+        $result = Get-BuildInsightsCheckReports -Repository 'dotnet/maui' -HeadSha $script:validHeadSha
         $result.queried | Should -BeFalse
         $result.complete | Should -BeFalse
         $result.reports.Count | Should -Be 0
@@ -3194,22 +3191,22 @@ Describe 'Build Insights and Build Analysis check report intake' -Tag 'BuildAnal
         Should -Invoke Invoke-GhJson -Times 0 -Exactly
     }
 
-    It 'does not fetch Build Insights or Build Analysis reports when initial no-results evaluation skips' {
+    It 'does not fetch Build Insights reports when initial no-results evaluation skips' {
         $statements = $script:gatherAst.EndBlock.Statements
         $firstSkipIf = $statements | Where-Object {
             $_ -is [System.Management.Automation.Language.IfStatementAst] -and
             $_.Clauses[0].Item1.Extent.Text -eq '$evaluation.skip'
         } | Select-Object -First 1
-        $buildAnalysisAssignment = $statements | Where-Object {
+        $buildInsightsAssignment = $statements | Where-Object {
             $_ -is [System.Management.Automation.Language.AssignmentStatementAst] -and
-            $_.Left.Extent.Text -eq '$buildAnalysis'
+            $_.Left.Extent.Text -eq '$buildInsights'
         } | Select-Object -First 1
 
         $firstSkipIf | Should -Not -BeNullOrEmpty
-        $buildAnalysisAssignment | Should -Not -BeNullOrEmpty
-        $firstSkipIf.Extent.EndOffset | Should -BeLessThan $buildAnalysisAssignment.Extent.StartOffset
+        $buildInsightsAssignment | Should -Not -BeNullOrEmpty
+        $firstSkipIf.Extent.EndOffset | Should -BeLessThan $buildInsightsAssignment.Extent.StartOffset
 
-        Mock Get-BuildAnalysisCheckReports { throw 'Get-BuildAnalysisCheckReports must not be called on initial no-results skip.' }
+        Mock Get-BuildInsightsCheckReports { throw 'Get-BuildInsightsCheckReports must not be called on initial no-results skip.' }
         $checks = @(
             [pscustomobject]@{
                 __typename = 'CheckRun'
@@ -3236,31 +3233,31 @@ Describe 'Build Insights and Build Analysis check report intake' -Tag 'BuildAnal
         New-Item -ItemType Directory -Path $outDir -Force | Out-Null
         Write-SkippedTestReviewContext -Pr $pr -Repository 'dotnet/maui' -Evaluation $evaluation -OutputDirectory $outDir *>$null
         $skippedContext = Get-Content -LiteralPath (Join-Path $outDir 'context.json') -Raw | ConvertFrom-Json
-        $skippedContext.PSObject.Properties.Name | Should -Not -Contain 'buildAnalysis'
-        Should -Invoke Get-BuildAnalysisCheckReports -Times 0 -Exactly
+        $skippedContext.PSObject.Properties.Name | Should -Not -Contain 'buildInsights'
+        Should -Invoke Get-BuildInsightsCheckReports -Times 0 -Exactly
 
         $postBuildSkipOutDir = Join-Path $TestDrive 'skip-after-builds'
         New-Item -ItemType Directory -Path $postBuildSkipOutDir -Force | Out-Null
-        $postBuildAnalysis = [ordered]@{
+        $postBuildInsights = [ordered]@{
             queried = $true
             complete = $false
             reports = @()
-            errors = @('Build Analysis check report query failed on page 1: timeout')
+            errors = @('Build Insights check report query failed on page 1: timeout')
         }
-        Write-SkippedTestReviewContext -Pr $pr -Repository 'dotnet/maui' -Evaluation $evaluation -OutputDirectory $postBuildSkipOutDir -Builds @() -BuildAnalysis $postBuildAnalysis *>$null
+        Write-SkippedTestReviewContext -Pr $pr -Repository 'dotnet/maui' -Evaluation $evaluation -OutputDirectory $postBuildSkipOutDir -Builds @() -BuildInsights $postBuildInsights *>$null
         $postSkippedContext = Get-Content -LiteralPath (Join-Path $postBuildSkipOutDir 'context.json') -Raw | ConvertFrom-Json
-        $postSkippedContext.buildAnalysis.queried | Should -BeTrue
-        $postSkippedContext.buildAnalysis.complete | Should -BeFalse
-        $postSkippedContext.limitations[0] | Should -Match '^Supplementary Build Insights / Build Analysis report collection:'
+        $postSkippedContext.buildInsights.queried | Should -BeTrue
+        $postSkippedContext.buildInsights.complete | Should -BeFalse
+        $postSkippedContext.limitations[0] | Should -Match '^Supplementary Build Insights report collection:'
     }
 
-    It 'wires additive context.buildAnalysis, limitations, and markdown pointer without driving gate or attribution' {
+    It 'wires additive context.buildInsights, limitations, and markdown pointer without driving gate or attribution' {
         $statements = $script:gatherAst.EndBlock.Statements
-        $buildAnalysisAssignment = $statements | Where-Object {
+        $buildInsightsAssignment = $statements | Where-Object {
             $_ -is [System.Management.Automation.Language.AssignmentStatementAst] -and
-            $_.Left.Extent.Text -eq '$buildAnalysis'
+            $_.Left.Extent.Text -eq '$buildInsights'
         } | Select-Object -First 1
-        $buildAnalysisAssignment | Should -Not -BeNullOrEmpty
+        $buildInsightsAssignment | Should -Not -BeNullOrEmpty
 
         $Repository = 'dotnet/maui'
         $pr = @{
@@ -3268,7 +3265,7 @@ Describe 'Build Insights and Build Analysis check report intake' -Tag 'BuildAnal
             headRefOid = $script:validHeadSha
             baseRefOid = ('b' * 40)
         }
-        Mock Get-BuildAnalysisCheckReports {
+        Mock Get-BuildInsightsCheckReports {
             return [ordered]@{
                 queried = $true
                 complete = $false
@@ -3290,24 +3287,24 @@ Describe 'Build Insights and Build Analysis check report intake' -Tag 'BuildAnal
                         truncated = $false
                     }
                 )
-                errors = @('Expected publisher ''build-analysis/Build Analysis'' returned a check run for head ''bbbb'' instead of captured head.')
+                errors = @('Expected publisher ''build-insights/Build Insights'' returned a check run for head ''bbbb'' instead of captured head.')
             }
         }
 
-        Invoke-Expression $buildAnalysisAssignment.Extent.Text
-        Should -Invoke Get-BuildAnalysisCheckReports -Times 1 -Exactly -ParameterFilter {
+        Invoke-Expression $buildInsightsAssignment.Extent.Text
+        Should -Invoke Get-BuildInsightsCheckReports -Times 1 -Exactly -ParameterFilter {
             $Repository -eq 'dotnet/maui' -and $HeadSha -eq $script:validHeadSha
         }
 
         $limitations = New-Object System.Collections.Generic.List[string]
         $limitationLoop = $statements | Where-Object {
             $_ -is [System.Management.Automation.Language.ForEachStatementAst] -and
-            $_.Condition.Extent.Text -eq '@($buildAnalysis.errors)'
+            $_.Condition.Extent.Text -eq '@($buildInsights.errors)'
         } | Select-Object -First 1
         $limitationLoop | Should -Not -BeNullOrEmpty
         Invoke-Expression $limitationLoop.Extent.Text
         $limitations.Count | Should -Be 1
-        $limitations[0] | Should -Match '^Supplementary Build Insights / Build Analysis report collection:'
+        $limitations[0] | Should -Match '^Supplementary Build Insights report collection:'
 
         $prDiff = @{ text = 'actual patch'; truncated = $false; error = $null; headRefOid = $pr.headRefOid; baseRefOid = $pr.baseRefOid }
         $history = @{ scope = 'target-branch'; baseBranch = 'main'; requestedBuildCount = 5; pipelines = @() }
@@ -3327,11 +3324,11 @@ Describe 'Build Insights and Build Analysis check report intake' -Tag 'BuildAnal
         $context = Invoke-Expression $contextAssignment.Right.Extent.Text
         $serialized = $context | ConvertTo-Json -Depth 100 | ConvertFrom-Json
 
-        $serialized.buildAnalysis.queried | Should -BeTrue
-        $serialized.buildAnalysis.complete | Should -BeFalse
-        $serialized.buildAnalysis.reports.Count | Should -Be 1
-        $serialized.buildAnalysis.reports[0].id | Should -Be 910900
-        $serialized.buildAnalysis.reports[0].status | Should -BeExactly 'in_progress'
+        $serialized.buildInsights.queried | Should -BeTrue
+        $serialized.buildInsights.complete | Should -BeFalse
+        $serialized.buildInsights.reports.Count | Should -Be 1
+        $serialized.buildInsights.reports[0].id | Should -Be 910900
+        $serialized.buildInsights.reports[0].status | Should -BeExactly 'in_progress'
         $serialized.limitations | Should -Contain $limitations[0]
         $serialized.gate.verdictCeiling | Should -BeExactly 'Needs attention before merge'
 
@@ -3351,22 +3348,22 @@ Describe 'Build Insights and Build Analysis check report intake' -Tag 'BuildAnal
         }
         Invoke-Expression $write.Extent.Text
         $markdown = Get-Content -Path $ContextMarkdownPath -Raw
-        $markdown | Should -Match '`buildAnalysis` contains untrusted supplementary GitHub Build Insights / Build Analysis report bodies'
+        $markdown | Should -Match '`buildInsights` contains untrusted supplementary GitHub Build Insights report bodies'
 
-        # Verify gate and evaluation logic never consume buildAnalysis or treat empty/provisional BI reports as clean CI proof
+        # Verify gate and evaluation logic never consume buildInsights or treat empty/provisional BI reports as clean CI proof
         $evalAst = $script:gatherAst.Find({
                 param($node)
                 $node -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
                 $node.Name -eq 'Get-TestReviewEvaluation'
             }, $true)
-        $evalAst.Extent.Text | Should -Not -Match 'buildAnalysis|Get-BuildAnalysisCheckReports'
+        $evalAst.Extent.Text | Should -Not -Match 'buildInsights|Get-BuildInsightsCheckReports'
 
         $gateAssignment = $statements | Where-Object {
             $_ -is [System.Management.Automation.Language.AssignmentStatementAst] -and
             $_.Left.Extent.Text -eq '$gate'
         } | Select-Object -First 1
         $gateAssignment | Should -Not -BeNullOrEmpty
-        $gateAssignment.Extent.Text | Should -Not -Match 'buildAnalysis|Get-BuildAnalysisCheckReports'
+        $gateAssignment.Extent.Text | Should -Not -Match 'buildInsights|Get-BuildInsightsCheckReports'
 
         $checksWithProvisionalBiAndPendingCi = @(
             [pscustomobject]@{
@@ -3378,7 +3375,7 @@ Describe 'Build Insights and Build Analysis check report intake' -Tag 'BuildAnal
             },
             [pscustomobject]@{
                 __typename = 'CheckRun'
-                name = 'Build Analysis'
+                name = 'Unrelated check'
                 status = 'COMPLETED'
                 conclusion = 'SUCCESS'
                 detailsUrl = 'https://github.com/dotnet/maui/runs/910901'

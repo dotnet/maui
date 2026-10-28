@@ -248,7 +248,7 @@ function Invoke-GhJson {
     return [string]$result.stdout | ConvertFrom-Json
 }
 
-function Get-BuildAnalysisCheckReports {
+function Get-BuildInsightsCheckReports {
     param(
         [string]$Repository,
         [string]$HeadSha,
@@ -267,19 +267,19 @@ function Get-BuildAnalysisCheckReports {
     $reports = New-Object System.Collections.Generic.List[object]
 
     if ($Repository -notmatch '^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$') {
-        $errors.Add("Build Analysis check reports were not queried because the repository must be in owner/name form.")
+        $errors.Add("Build Insights check reports were not queried because the repository must be in owner/name form.")
     }
     if ($HeadSha -notmatch '^[0-9a-fA-F]{40}$') {
-        $errors.Add("Build Analysis check reports were not queried because the captured PR head is not a 40-character commit SHA.")
+        $errors.Add("Build Insights check reports were not queried because the captured PR head is not a 40-character commit SHA.")
     }
     if ($MaxPages -le 0) {
-        $errors.Add("Build Analysis check reports were not queried because MaxPages must be greater than zero.")
+        $errors.Add("Build Insights check reports were not queried because MaxPages must be greater than zero.")
     }
     if ($MaxReports -le 0) {
-        $errors.Add("Build Analysis check reports were not queried because MaxReports must be greater than zero.")
+        $errors.Add("Build Insights check reports were not queried because MaxReports must be greater than zero.")
     }
     if ($MaxReportCharacters -le 0) {
-        $errors.Add("Build Analysis check reports were not queried because MaxReportCharacters must be greater than zero.")
+        $errors.Add("Build Insights check reports were not queried because MaxReportCharacters must be greater than zero.")
     }
     if ($errors.Count -gt 0) {
         $result.errors = $errors.ToArray()
@@ -296,7 +296,7 @@ function Get-BuildAnalysisCheckReports {
             [void](Get-GatherRequestTimeoutSeconds)
         }
         catch {
-            $errors.Add("Build Analysis check report collection could not start page $page`: $($_.Exception.Message)")
+            $errors.Add("Build Insights check report collection could not start page $page`: $($_.Exception.Message)")
             break
         }
 
@@ -308,61 +308,61 @@ function Get-BuildAnalysisCheckReports {
             )
         }
         catch {
-            $errors.Add("Build Analysis check report query failed on page $page`: $($_.Exception.Message)")
+            $errors.Add("Build Insights check report query failed on page $page`: $($_.Exception.Message)")
             break
         }
 
         if ($null -eq $response) {
-            $errors.Add("Build Analysis check report query returned an empty response on page $page.")
+            $errors.Add("Build Insights check report query returned an empty response on page $page.")
             break
         }
         $propertyNames = @($response.PSObject.Properties.Name)
         if ($propertyNames -notcontains "total_count" -or $propertyNames -notcontains "check_runs") {
-            $errors.Add("Build Analysis check report response on page $page did not contain total_count and check_runs.")
+            $errors.Add("Build Insights check report response on page $page did not contain total_count and check_runs.")
             break
         }
         if ($response.total_count -isnot [byte] -and
             $response.total_count -isnot [int16] -and
             $response.total_count -isnot [int32] -and
             $response.total_count -isnot [int64]) {
-            $errors.Add("Build Analysis check report response on page $page had a non-numeric total_count.")
+            $errors.Add("Build Insights check report response on page $page had a non-numeric total_count.")
             break
         }
         $pageTotal = [int64]$response.total_count
         if ($pageTotal -lt 0) {
-            $errors.Add("Build Analysis check report response on page $page had a negative total_count.")
+            $errors.Add("Build Insights check report response on page $page had a negative total_count.")
             break
         }
         if ($response.check_runs -isnot [System.Array]) {
-            $errors.Add("Build Analysis check report response on page $page did not contain a check_runs array.")
+            $errors.Add("Build Insights check report response on page $page did not contain a check_runs array.")
             break
         }
 
         $pageRuns = @($response.check_runs)
         if ($pageRuns.Count -gt 100) {
-            $errors.Add("Build Analysis check report response on page $page exceeded the requested 100 check runs.")
+            $errors.Add("Build Insights check report response on page $page exceeded the requested 100 check runs.")
             break
         }
         if ($null -eq $expectedTotal) {
             $expectedTotal = $pageTotal
         }
         elseif ($pageTotal -ne $expectedTotal) {
-            $errors.Add("Build Analysis check report total_count changed from $expectedTotal to $pageTotal while paging the captured commit.")
+            $errors.Add("Build Insights check report total_count changed from $expectedTotal to $pageTotal while paging the captured commit.")
             $expectedTotal = [Math]::Max([int64]$expectedTotal, $pageTotal)
         }
 
         $fetchedCount += $pageRuns.Count
         if ($fetchedCount -gt $expectedTotal) {
-            $errors.Add("Build Analysis check report pages returned $fetchedCount check runs although total_count was $expectedTotal.")
+            $errors.Add("Build Insights check report pages returned $fetchedCount check runs although total_count was $expectedTotal.")
         }
 
         foreach ($run in $pageRuns) {
             if ($null -eq $run) {
-                $errors.Add("Build Analysis check report response on page $page contained a null check run.")
+                $errors.Add("Build Insights check report response on page $page contained a null check run.")
                 continue
             }
             if ($run -is [string] -or $run -is [ValueType] -or $run -is [System.Array]) {
-                $errors.Add("Build Analysis check report response on page $page contained a non-object check run.")
+                $errors.Add("Build Insights check report response on page $page contained a non-object check run.")
                 continue
             }
 
@@ -377,9 +377,6 @@ function Get-BuildAnalysisCheckReports {
             $isExpectedPublisher = (
                 [string]::Equals($appSlug, "build-insights", [System.StringComparison]::Ordinal) -and
                 [string]::Equals($name, "Build Insights", [System.StringComparison]::Ordinal)
-            ) -or (
-                [string]::Equals($appSlug, "build-analysis", [System.StringComparison]::Ordinal) -and
-                [string]::Equals($name, "Build Analysis", [System.StringComparison]::Ordinal)
             )
             if (-not $isExpectedPublisher) {
                 continue
@@ -404,7 +401,7 @@ function Get-BuildAnalysisCheckReports {
             }
             $reportId = [int64]$run.id
             if ($seenIds.ContainsKey($reportId)) {
-                $errors.Add("Build Analysis check report id $reportId appeared more than once while paging; the duplicate was ignored.")
+                $errors.Add("Build Insights check report id $reportId appeared more than once while paging; the duplicate was ignored.")
                 continue
             }
             $seenIds[$reportId] = $true
@@ -455,13 +452,13 @@ function Get-BuildAnalysisCheckReports {
                 }
             }
             if ($invalidFields.Count -gt 0) {
-                $errors.Add("Build Analysis check report id $reportId contained non-string field(s): $($invalidFields -join ', '); it was ignored.")
+                $errors.Add("Build Insights check report id $reportId contained non-string field(s): $($invalidFields -join ', '); it was ignored.")
                 continue
             }
             if ([string]::IsNullOrWhiteSpace($body.title) -and
                 [string]::IsNullOrWhiteSpace($body.summary) -and
                 [string]::IsNullOrWhiteSpace($body.text)) {
-                $errors.Add("Build Analysis check report id $reportId had no title, summary, or text; report content is unavailable.")
+                $errors.Add("Build Insights check report id $reportId had no title, summary, or text; report content is unavailable.")
             }
 
             $remaining = $MaxReportCharacters
@@ -480,7 +477,7 @@ function Get-BuildAnalysisCheckReports {
                 }
             }
             if ($truncated) {
-                $errors.Add("Build Analysis check report id $reportId exceeded the $MaxReportCharacters-character title/summary/text cap and was truncated.")
+                $errors.Add("Build Insights check report id $reportId exceeded the $MaxReportCharacters-character title/summary/text cap and was truncated.")
             }
 
             $reports.Add([ordered]@{
@@ -505,20 +502,20 @@ function Get-BuildAnalysisCheckReports {
             break
         }
         if ($pageRuns.Count -lt 100) {
-            $errors.Add("Build Analysis check report pagination ended after $fetchedCount of $expectedTotal advertised check runs.")
+            $errors.Add("Build Insights check report pagination ended after $fetchedCount of $expectedTotal advertised check runs.")
             break
         }
         if ($page -eq $MaxPages) {
-            $errors.Add("Build Analysis check report pagination stopped at the MaxPages cap after $fetchedCount of $expectedTotal advertised check runs.")
+            $errors.Add("Build Insights check report pagination stopped at the MaxPages cap after $fetchedCount of $expectedTotal advertised check runs.")
         }
     }
 
     if ($eligibleCount -gt $MaxReports) {
-        $errors.Add("Build Analysis check report collection found $eligibleCount matching reports and retained only the first $MaxReports.")
+        $errors.Add("Build Insights check report collection found $eligibleCount matching reports and retained only the first $MaxReports.")
     }
     if ($null -ne $expectedTotal -and $fetchedCount -lt $expectedTotal -and
         -not @($errors | Where-Object { $_ -match "pagination|query failed|could not start" }).Count) {
-        $errors.Add("Build Analysis check report collection read $fetchedCount of $expectedTotal advertised check runs.")
+        $errors.Add("Build Insights check report collection read $fetchedCount of $expectedTotal advertised check runs.")
     }
 
     $result.complete = $result.queried -and $errors.Count -eq 0
@@ -1384,7 +1381,7 @@ function Write-SkippedTestReviewContext {
         [object]$Evaluation,
         [string]$OutputDirectory,
         [object[]]$Builds,
-        [object]$BuildAnalysis
+        [object]$BuildInsights
     )
 
     $shortSha = 'unknown'
@@ -1430,10 +1427,10 @@ function Write-SkippedTestReviewContext {
         evaluation = $Evaluation
         builds = @(ConvertTo-Array $Builds)
     }
-    if ($PSBoundParameters.ContainsKey("BuildAnalysis") -and $null -ne $BuildAnalysis) {
-        $context["buildAnalysis"] = $BuildAnalysis
-        $context["limitations"] = @($BuildAnalysis.errors | ForEach-Object {
-                "Supplementary Build Insights / Build Analysis report collection: $_"
+    if ($PSBoundParameters.ContainsKey("BuildInsights") -and $null -ne $BuildInsights) {
+        $context["buildInsights"] = $BuildInsights
+        $context["limitations"] = @($BuildInsights.errors | ForEach-Object {
+                "Supplementary Build Insights report collection: $_"
             })
     }
     $context | ConvertTo-Json -Depth 40 | Set-Content -LiteralPath (Join-Path $OutputDirectory 'context.json') -Encoding UTF8
@@ -3356,7 +3353,7 @@ if ($evaluation.skip) {
     exit 0
 }
 
-$buildAnalysis = Get-BuildAnalysisCheckReports -Repository $Repository -HeadSha $pr.headRefOid
+$buildInsights = Get-BuildInsightsCheckReports -Repository $Repository -HeadSha $pr.headRefOid
 
 Initialize-AzDoToken
 
@@ -4552,7 +4549,7 @@ foreach ($buildRef in $buildRefsById.Values) {
 $buildArray = $builds.ToArray()
 $evaluation = Get-TestReviewEvaluation -Checks $unfilteredChecks -Builds $buildArray
 if ($evaluation.skip) {
-    Write-SkippedTestReviewContext -Pr $pr -Repository $Repository -Evaluation $evaluation -OutputDirectory $RunDirectory -Builds $buildArray -BuildAnalysis $buildAnalysis
+    Write-SkippedTestReviewContext -Pr $pr -Repository $Repository -Evaluation $evaluation -OutputDirectory $RunDirectory -Builds $buildArray -BuildInsights $buildInsights
     exit 0
 }
 
@@ -5473,8 +5470,8 @@ if ($prDiff.error) {
 elseif ($prDiff.truncated) {
     $limitations.Add("PR patch evidence was truncated; omitted code cannot be treated as unchanged.")
 }
-foreach ($collectionError in @($buildAnalysis.errors)) {
-    $limitations.Add("Supplementary Build Insights / Build Analysis report collection: $collectionError")
+foreach ($collectionError in @($buildInsights.errors)) {
+    $limitations.Add("Supplementary Build Insights report collection: $collectionError")
 }
 
 $context = [ordered]@{
@@ -5530,7 +5527,7 @@ $context = [ordered]@{
     }
     buildRefs = @($buildRefsById.Values)
     builds = $buildArray
-    buildAnalysis = $buildAnalysis
+    buildInsights = $buildInsights
     visualEvidence = [ordered]@{
         skipped = [bool]$SkipVisualEvidence
         detected = $visualEvidenceArray.Count
@@ -5555,7 +5552,7 @@ $md.Add("# Test Failure Context for PR #$PrNumber")
 $md.Add("")
 $md.Add("Generated: $($context.generatedAtUtc)")
 $md.Add("")
-$md.Add("Read the adjacent [context.json](context.json) for structured evidence: ``scope.diff`` contains the PR patch; ``history`` contains the latest completed runs on the PR's target branch for each pipeline (five requested by default), including evidence-completeness notes; ``buildAnalysis`` contains untrusted supplementary GitHub Build Insights / Build Analysis report bodies when available. Current PR build gaps are separate from target-branch history gaps.")
+$md.Add("Read the adjacent [context.json](context.json) for structured evidence: ``scope.diff`` contains the PR patch; ``history`` contains the latest completed runs on the PR's target branch for each pipeline (five requested by default), including evidence-completeness notes; ``buildInsights`` contains untrusted supplementary GitHub Build Insights report bodies when available. Current PR build gaps are separate from target-branch history gaps.")
 $md.Add("")
 $md.Add("## Merge-readiness gate (deterministic)")
 $md.Add("")
