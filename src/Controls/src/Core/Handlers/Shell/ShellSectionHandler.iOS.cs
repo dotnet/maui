@@ -149,7 +149,6 @@ namespace Microsoft.Maui.Controls.Handlers
         protected override void DisconnectHandler(UIView platformView)
         {
             ((IDisconnectable)this).Disconnect();
-            _interactivePopGesturePending = false;
 
             _rootViewController?.View?.RemoveFromSuperview();
             _rootViewController?.RemoveFromParentViewController();
@@ -205,6 +204,7 @@ namespace Microsoft.Maui.Controls.Handlers
             _pageAnimation?.StopAnimation(true);
             _pageAnimation = null;
             _pendingPushCount = 0;
+            _interactivePopGesturePending = false;
 
             if (_displayedPage is not null)
             {
@@ -296,6 +296,8 @@ namespace Microsoft.Maui.Controls.Handlers
             var (isHidden, animate) = GetNavigationBarVisibility(viewController);
             return (isHidden, animate);
         }
+
+        bool INavigationManagerDelegate.ShouldBeginInteractivePop() => ShouldPop();
 
         bool INavigationManagerDelegate.ShouldPop()
         {
@@ -1028,8 +1030,19 @@ namespace Microsoft.Maui.Controls.Handlers
 
         internal bool SendPop(UIViewController? topViewController = null)
         {
+            if (((IElementHandler)this).VirtualView is null)
+            {
+                return false;
+            }
+
             var navigationController = ActiveNavigationController();
             var navigationBar = navigationController.NavigationBar;
+
+            // UIKit owns an admitted interactive pop; do not dispatch a second Shell pop.
+            if (_interactivePopGesturePending)
+            {
+                return true;
+            }
 
             if (ActiveViewControllers().Length < navigationBar.Items!.Length)
             {
@@ -1048,7 +1061,7 @@ namespace Microsoft.Maui.Controls.Handlers
             }
 
             topViewController ??= navigationController.TopViewController;
-            if (!_interactivePopGesturePending && BackButtonPressedHandled(topViewController, isInteractivePopGesture: false))
+            if (BackButtonPressedHandled(topViewController, isInteractivePopGesture: false))
             {
                 _sendPopPending = false;
                 return false;
@@ -1089,56 +1102,48 @@ namespace Microsoft.Maui.Controls.Handlers
             return false;
         }
 
-        bool BackButtonPressedHandled(UIViewController topViewController, bool isInteractivePopGesture)
+        bool BackButtonPressedHandled(UIViewController? topViewController, bool isInteractivePopGesture)
         {
-            IShellPageRendererTracker? tracker = null;
-            foreach (var candidate in _trackers.Values)
+            foreach (var tracker in _trackers.Values)
             {
-                if (candidate.ViewController == topViewController)
+                if (tracker.ViewController != topViewController)
                 {
-                    tracker = candidate;
-                    break;
-                }
-            }
-
-            if (tracker is null)
-            {
-                return false;
-            }
-
-            var behavior = Shell.GetEffectiveBackButtonBehavior(tracker.Page);
-            if (!behavior.GetPropertyIfSet(BackButtonBehavior.IsEnabledProperty, true))
-            {
-                return true;
-            }
-
-            var command = behavior.GetPropertyIfSet<ICommand>(BackButtonBehavior.CommandProperty, null!);
-            var commandParameter = behavior.GetPropertyIfSet<object>(BackButtonBehavior.CommandParameterProperty, null!);
-            if (command is not null)
-            {
-                if (command.CanExecute(commandParameter))
-                {
-                    command.Execute(commandParameter);
+                    continue;
                 }
 
-                return true;
+                var behavior = Shell.GetEffectiveBackButtonBehavior(tracker.Page);
+                if (!behavior.GetPropertyIfSet(BackButtonBehavior.IsEnabledProperty, true))
+                {
+                    return true;
+                }
+
+                var command = behavior.GetPropertyIfSet<ICommand>(BackButtonBehavior.CommandProperty, null!);
+                var commandParameter = behavior.GetPropertyIfSet<object>(BackButtonBehavior.CommandParameterProperty, null!);
+                if (command is not null)
+                {
+                    if (command.CanExecute(commandParameter))
+                    {
+                        command.Execute(commandParameter);
+                    }
+
+                    return true;
+                }
+
+                return isInteractivePopGesture
+                    ? _shellContext?.Shell?.SendBackButtonPressedFromGesture() == true
+                    : _shellContext?.Shell?.SendBackButtonPressed() == true;
             }
 
-            var shell = _shellContext?.Shell;
-            return shell is not null &&
-                (isInteractivePopGesture
-                    ? shell.SendBackButtonPressedFromGesture()
-                    : shell.SendBackButtonPressed());
+            return false;
         }
 
         bool ShouldPop()
         {
-            if (_shellContext?.Shell is null)
+            if (((IElementHandler)this).VirtualView is null || _shellContext?.Shell is null)
             {
                 return false;
             }
 
-            _interactivePopGesturePending = false;
             if (BackButtonPressedHandled(_navigationController.TopViewController, isInteractivePopGesture: true))
             {
                 return false;
@@ -1153,7 +1158,6 @@ namespace Microsoft.Maui.Controls.Handlers
 
             _interactivePopGesturePending = ((IShellController)_shellContext.Shell).ProposeNavigation(
                 ShellNavigationSource.Pop, shellItem, shellSection, shellContent, stack, true);
-
             return _interactivePopGesturePending;
         }
 
@@ -1682,12 +1686,6 @@ namespace Microsoft.Maui.Controls.Handlers
         void SetupInteractivePopGesture()
         {
             _navManager?.SetupInteractivePopGesture();
-            // Override with Shell's gesture delegate so BackButtonBehavior is enforced.
-            if (_navigationController.InteractivePopGestureRecognizer is not null)
-            {
-                _navigationController.InteractivePopGestureRecognizer.Delegate =
-                    new GestureDelegate(_navigationController, this);
-            }
         }
 
         TaskCompletionSource<bool> PushViewController(UIViewController viewController, bool animated)
@@ -1801,6 +1799,7 @@ namespace Microsoft.Maui.Controls.Handlers
             _navManager?.Dispose();
             _navManager = null;
             _sendPopPending = false;
+            _interactivePopGesturePending = false;
         }
 
         (bool isHidden, bool animate) GetNavigationBarVisibility(UIViewController viewController)
@@ -1822,41 +1821,6 @@ namespace Microsoft.Maui.Controls.Handlers
             }
 
             return (false, false);
-        }
-
-        /// <summary>
-        /// Checks BackButtonBehavior and ProposeNavigation before allowing a swipe-back gesture.
-        /// </summary>
-        sealed class GestureDelegate : UIGestureRecognizerDelegate
-        {
-            readonly WeakReference<UINavigationController> _navigationControllerRef;
-            readonly WeakReference<ShellSectionHandler> _handlerRef;
-
-            public GestureDelegate(UINavigationController navController, ShellSectionHandler handler)
-            {
-                _navigationControllerRef = new WeakReference<UINavigationController>(navController);
-                _handlerRef = new WeakReference<ShellSectionHandler>(handler);
-            }
-
-            public override bool ShouldBegin(UIGestureRecognizer recognizer)
-            {
-                if (!_navigationControllerRef.TryGetTarget(out var navController))
-                {
-                    return false;
-                }
-
-                if ((navController.ViewControllers?.Length ?? 0) <= 1)
-                {
-                    return false;
-                }
-
-                if (!_handlerRef.TryGetTarget(out var handler))
-                {
-                    return false;
-                }
-
-                return handler.ShouldPop();
-            }
         }
 
         #endregion
