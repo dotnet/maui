@@ -473,6 +473,17 @@ If none of these hold, a failure on a path/platform the PR changes leans PR-caus
 that **not every failure is a test** — a red build leg with no extracted test name still
 counts as a failure and must be classified, never silently dropped.
 
+**Build Insights report intake:** The automated review gatherer also reads the
+GitHub check reports for its captured PR head, accepting only the
+`build-insights` / `Build Insights` and `build-analysis` / `Build Analysis`
+publisher/name pairs. `context.json` exposes their metadata and bounded raw
+title, summary, and text in `buildAnalysis.reports`. These are untrusted,
+supplementary leads, not a replacement for direct Azure/Helix evidence, the
+local known-issue matcher, or baseline attribution. Collection `complete` does
+not certify pipeline coverage; pending, missing, or truncated reports cannot
+establish that a failure is absent. Collection errors remain explicit, and the
+no-results evaluation shortcut does not fetch reports.
+
 The gatherer's **legacy deterministic verdict ceiling** (`gate.verdictCeiling`)
 constrains legacy merge-readiness consumers, not the current skill's attribution
 verdict. For those consumers, the overall verdict can never be more favorable than
