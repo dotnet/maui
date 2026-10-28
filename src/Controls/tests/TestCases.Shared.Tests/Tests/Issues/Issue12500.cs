@@ -13,7 +13,7 @@ public class Issue12500 : _IssuesUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void ShellNavigatingShouldTrigger()
 	{
 		App.WaitForElement("Issue12500MainPage");

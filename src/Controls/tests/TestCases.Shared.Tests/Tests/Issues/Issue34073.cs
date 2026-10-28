@@ -11,7 +11,7 @@ public class Issue34073 : _IssuesUITest
 	public Issue34073(TestDevice device) : base(device) { }
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void OnNavigatingFromShouldReportCorrectDestinationPage()
 	{
 		// Wait for Page A to load

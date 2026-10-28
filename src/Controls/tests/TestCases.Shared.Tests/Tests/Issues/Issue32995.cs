@@ -12,7 +12,7 @@ public class Issue32995 : _IssuesUITest
 	public override string Issue => "TabBarDisabledColor not applied to disabled tabs on iOS";
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void TabBarDisabledColorAppliedToDisabledTab()
 	{
 		App.WaitForElement("Tab2");

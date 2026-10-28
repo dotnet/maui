@@ -14,7 +14,7 @@ public class Issue38323 : _IssuesUITest
     public override string Issue => "[iOS] Shell navigation operations fail under the native More tab";
 
     [Test]
-    [Category(UITestCategories.Shell)]
+    [ShardedTestCategory(UITestCategories.Shell, shard: 1)]
     public void NavigationOperationsWorkUnderMoreTab()
     {
         OpenTestPageUnderMoreTab();

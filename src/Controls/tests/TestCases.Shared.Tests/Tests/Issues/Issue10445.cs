@@ -13,7 +13,7 @@ public class Issue10445 : _IssuesUITest
 	public override string Issue => "Shell.Background does not support gradient brushes";
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void ShellBackgroundSupportsGradientBrush()
 	{
 		// Wait for the page to be fully loaded
