@@ -82,7 +82,7 @@ BeforeAll {
         }
     }
 
-    function Invoke-TestCiFixProductionKustoFallback {
+    function Invoke-TestCiFixProductionKustoComparison {
         param(
             [Parameter(Mandatory = $true)][string]$Root,
             [Parameter(Mandatory = $true)][int]$ProducerSeconds
@@ -190,7 +190,7 @@ sleep 5
                 -MaxFailedLogs 10 `
                 -TimelineByteLimit 10000 `
                 -LogByteLimit 10000 `
-                -Provider 'kusto'
+                -Provider 'kusto-compare'
             $timer.Stop()
             $nextProbe = Invoke-CiFixKustoQuery -Query 'print Value=1'
             $finalProbe = Invoke-CiFixKustoQuery -Query 'print Value=2'
@@ -2273,7 +2273,54 @@ Describe 'CI-fix normalized exact-build provider contract' {
         $result.error | Should -Match "FailedTaskCount"
     }
 
-    It 'falls back when a complete-looking Kusto subset omits an entire subtree' {
+    It 'uses only the projected Kusto inventory and remains incomplete when a subtree could be omitted' {
+        $kustoResponse = New-TestCiFixKustoResponse `
+            -Columns $columns `
+            -Rows @((New-CertificateRow), (New-FailureRow))
+        $requestedUris = [Collections.Generic.List[string]]::new()
+        $requestInvoker = {
+            param($Uri, $MaxBytes)
+            $requestedUris.Add($Uri)
+            if ($Uri -match '/timeline\?') {
+                throw "Kusto-only mode must not request the Azure timeline: $Uri"
+            }
+            if ($Uri -match '/logs/10\?') {
+                return [pscustomobject]@{
+                    Succeeded = $true
+                    StatusCode = 200
+                    RedirectLocation = $null
+                    Content = 'Kusto-selected log'
+                    Truncated = $false
+                    Error = ''
+                    Attempts = 1
+                }
+            }
+            throw "Unexpected URI: $Uri"
+        }
+
+        $result = Get-CiFixBuildEvidence `
+            -BuildId 42 `
+            -OutputDirectory (Join-Path $TestDrive 'provider-kusto-only') `
+            -MaxFailedLogs 10 `
+            -TimelineByteLimit 10000 `
+            -LogByteLimit 10000 `
+            -Provider 'kusto' `
+            -RequestInvoker $requestInvoker `
+            -KustoQueryInvoker { param($Query) $kustoResponse }
+
+        $result.complete | Should -BeFalse
+        $result.inventory.requestedCoverage | Should -BeExactly 'partial'
+        $result.inventory.usedProvider | Should -BeExactly 'kusto'
+        $result.inventory.usedCoverage | Should -BeExactly 'partial'
+        $result.inventory.fallbackUsed | Should -BeFalse
+        $result.inventory.projectedFailedTaskCount | Should -Be 1
+        $result.failedTasks.Count | Should -Be 1
+        $result.failedTasks[0].name | Should -BeExactly 'failed task'
+        @($requestedUris | Where-Object { $_ -match '/timeline\?' }).Count | Should -Be 0
+        @($requestedUris | Where-Object { $_ -match '/logs/10\?' }).Count | Should -Be 1
+    }
+
+    It 'uses comparison mode to find an entire subtree omitted from the Kusto projection' {
         $kustoResponse = New-TestCiFixKustoResponse `
             -Columns $columns `
             -Rows @((New-CertificateRow), (New-FailureRow))
@@ -2310,11 +2357,12 @@ Describe 'CI-fix normalized exact-build provider contract' {
             -MaxFailedLogs 10 `
             -TimelineByteLimit 10000 `
             -LogByteLimit 10000 `
-            -Provider 'kusto' `
+            -Provider 'kusto-compare' `
             -RequestInvoker $requestInvoker `
             -KustoQueryInvoker { param($Query) $kustoResponse }
 
         $result.complete | Should -BeTrue
+        $result.inventory.requestedProvider | Should -BeExactly 'kusto-compare'
         $result.inventory.requestedCoverage | Should -BeExactly 'partial'
         $result.inventory.usedProvider | Should -BeExactly 'azure'
         $result.inventory.fallbackUsed | Should -BeTrue
@@ -2326,28 +2374,27 @@ Describe 'CI-fix normalized exact-build provider contract' {
         @($requestedUris | Where-Object { $_ -match '/logs/11\?' }).Count | Should -Be 1
     }
 
-    It 'requests the Azure timeline when the Kusto certificate fails' {
+    It 'keeps Kusto-only mode timeline-free when the structural certificate fails' {
         $kustoResponse = New-TestCiFixKustoResponse `
             -Columns $columns `
             -Rows @(
                 (New-CertificateRow -MaxAttempt 2 -RetrySignalCount 1),
                 (New-FailureRow -LogId 20 -Name 'Kusto projection'))
-        $timelineRequests = 0
+        $requestedUris = [Collections.Generic.List[string]]::new()
         $requestInvoker = {
             param($Uri, $MaxBytes)
-            $content = if ($Uri -match '/timeline\?') {
-                $script:timelineRequests++
-                '{"records":[{"id":"aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa","type":"Task","result":"failed","name":"Azure truth","attempt":1,"log":{"id":10}}]}'
-            } elseif ($Uri -match '/logs/10\?') {
-                'Azure truth log'
-            } else {
+            $requestedUris.Add($Uri)
+            if ($Uri -match '/timeline\?') {
+                throw "Kusto-only mode must not request the Azure timeline: $Uri"
+            }
+            if ($Uri -notmatch '/logs/20\?') {
                 throw "Unexpected URI: $Uri"
             }
             [pscustomobject]@{
                 Succeeded = $true
                 StatusCode = 200
                 RedirectLocation = $null
-                Content = $content
+                Content = 'Kusto projection log'
                 Truncated = $false
                 Error = ''
                 Attempts = 1
@@ -2364,20 +2411,21 @@ Describe 'CI-fix normalized exact-build provider contract' {
             -RequestInvoker $requestInvoker `
             -KustoQueryInvoker { param($Query) $kustoResponse }
 
-        $result.complete | Should -BeTrue
-        $result.failedTasks[0].name | Should -BeExactly 'Azure truth'
+        $result.complete | Should -BeFalse
+        $result.failedTasks[0].name | Should -BeExactly 'Kusto projection'
         $result.inventory.requestedProvider | Should -BeExactly 'kusto'
         $result.inventory.requestedCoverage | Should -BeExactly 'partial'
-        $result.inventory.usedProvider | Should -BeExactly 'azure'
-        $result.inventory.usedCoverage | Should -BeExactly 'complete'
-        $result.inventory.fallbackUsed | Should -BeTrue
+        $result.inventory.usedProvider | Should -BeExactly 'kusto'
+        $result.inventory.usedCoverage | Should -BeExactly 'partial'
+        $result.inventory.fallbackUsed | Should -BeFalse
         $result.inventory.projectedFailedTaskCount | Should -Be 1
         $result.inventory.projectedFailedTasks[0].name | Should -BeExactly 'Kusto projection'
-        $script:timelineRequests | Should -Be 1
+        @($requestedUris | Where-Object { $_ -match '/timeline\?' }).Count | Should -Be 0
+        @($requestedUris | Where-Object { $_ -match '/logs/20\?' }).Count | Should -Be 1
     }
 
-    It 'skips the production Kusto transport when only the Azure authority reserve remains' {
-        $observation = Invoke-TestCiFixProductionKustoFallback `
+    It 'skips the production Kusto comparison when only the Azure authority reserve remains' {
+        $observation = Invoke-TestCiFixProductionKustoComparison `
             -Root (Join-Path $TestDrive 'production-kusto-skip') `
             -ProducerSeconds 60
 
@@ -2392,17 +2440,19 @@ Describe 'CI-fix normalized exact-build provider contract' {
         $observation.Result.failedTasks[0].name | Should -BeExactly 'Azure truth'
     }
 
-    It 'bounds a slow production Kusto transport and preserves an authoritative Azure attempt' {
-        $observation = Invoke-TestCiFixProductionKustoFallback `
+    It 'bounds a slow production Kusto comparison and preserves an authoritative Azure attempt' {
+        $observation = Invoke-TestCiFixProductionKustoComparison `
             -Root (Join-Path $TestDrive 'production-kusto-timeout') `
             -ProducerSeconds 63
 
         $observation.AzInvoked | Should -BeTrue
-        $observation.AzInvocationCount | Should -Be 2
+        $observation.AzInvocationCount | Should -BeIn @(1, 2)
         $observation.ElapsedSeconds | Should -BeLessThan 4.5
         $observation.DiagnosticSecondsRemaining | Should -BeGreaterThan 3.5
+        $observation.DiagnosticSecondsRemaining | Should -BeLessThan 6
         $observation.NextProbe.Succeeded | Should -BeFalse
-        $observation.NextProbe.Error | Should -Match 'exceeded the 1-second limit'
+        $observation.NextProbe.Error |
+            Should -Match 'exceeded the 1-second limit|Azure authority reserve'
         $observation.FinalProbe.Succeeded | Should -BeFalse
         $observation.FinalProbe.Error | Should -Match 'Azure authority reserve'
         $observation.Result.complete | Should -BeTrue
@@ -2421,6 +2471,7 @@ Describe 'CI-fixer workflow evidence wiring' {
         foreach ($workflow in @($mainWorkflow, $net11Workflow)) {
             $workflow | Should -Match 'Prefetch bounded Azure DevOps failure evidence'
             $workflow | Should -Match '\.github/scripts/Get-CiFixAzdoEvidence\.ps1'
+            $workflow | Should -Not -Match '-EvidenceProvider'
             $workflow | Should -Match '/tmp/gh-aw/agent/azdo-evidence'
             $workflow | Should -Match 'Do NOT improvise a second\s+Azure downloader'
             $workflow | Should -Match 'retrieval failure into a successful/noop'

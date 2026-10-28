@@ -7,7 +7,7 @@
 param(
     [string]$CandidatesPath = '/tmp/gh-aw/agent/prefetch.json',
     [string]$OutputDirectory = '/tmp/gh-aw/agent/azdo-evidence',
-    [ValidateSet('azure', 'kusto')]
+    [ValidateSet('azure', 'kusto', 'kusto-compare')]
     [string]$EvidenceProvider = 'azure',
     [ValidateSet('main', 'net11.0')]
     [string]$Branch = 'main',
@@ -1527,7 +1527,7 @@ function Get-CiFixBuildEvidence {
         [Parameter(Mandatory = $true)][int]$MaxFailedLogs,
         [Parameter(Mandatory = $true)][int]$TimelineByteLimit,
         [Parameter(Mandatory = $true)][int]$LogByteLimit,
-        [ValidateSet('azure', 'kusto')]
+        [ValidateSet('azure', 'kusto', 'kusto-compare')]
         [string]$Provider = 'azure',
         [scriptblock]$RequestInvoker = {
             param($RequestUri, $ByteLimit)
@@ -1539,11 +1539,21 @@ function Get-CiFixBuildEvidence {
         }
     )
 
-    if ($Provider -eq 'kusto') {
+    if ($Provider -in @('kusto', 'kusto-compare')) {
         $inventory = Get-CiFixKustoBuildInventory `
             -BuildId $BuildId `
             -MaxRows 256 `
             -QueryInvoker $KustoQueryInvoker
+        if ($Provider -eq 'kusto') {
+            return Get-CiFixBuildEvidenceFromInventory `
+                -BuildId $BuildId `
+                -Inventory $inventory `
+                -OutputDirectory $OutputDirectory `
+                -MaxFailedLogs $MaxFailedLogs `
+                -LogByteLimit $LogByteLimit `
+                -RequestInvoker $RequestInvoker
+        }
+
         if (-not $inventory.complete) {
             $fallback = Get-CiFixBuildEvidence `
                 -BuildId $BuildId `
@@ -1556,7 +1566,7 @@ function Get-CiFixBuildEvidence {
                 -KustoQueryInvoker $KustoQueryInvoker
             $azureInventory = $fallback.inventory
             $fallback | Add-Member -NotePropertyName inventory -NotePropertyValue ([pscustomobject]@{
-                    requestedProvider = 'kusto'
+                    requestedProvider = $Provider
                     requestedCoverage = [string]$inventory.coverage
                     requestedStatus = [string]$inventory.status
                     usedProvider = 'azure'
@@ -1955,7 +1965,7 @@ function Get-CiFixBuildEvidenceBounded {
         [Parameter(Mandatory = $true)][int]$MaxFailedLogs,
         [Parameter(Mandatory = $true)][int]$TimelineByteLimit,
         [Parameter(Mandatory = $true)][int]$LogByteLimit,
-        [ValidateSet('azure', 'kusto')]
+        [ValidateSet('azure', 'kusto', 'kusto-compare')]
         [string]$Provider = 'azure',
         [scriptblock]$RequestInvoker = {
             param($RequestUri, $ByteLimit)
@@ -2035,7 +2045,7 @@ function New-CiFixAzdoEvidence {
         [Parameter(Mandatory = $true)][int]$FailedLogLimit,
         [Parameter(Mandatory = $true)][int]$TimelineByteLimit,
         [Parameter(Mandatory = $true)][int]$LogByteLimit,
-        [ValidateSet('azure', 'kusto')]
+        [ValidateSet('azure', 'kusto', 'kusto-compare')]
         [string]$Provider = 'azure',
         [int]$TotalBuildLimit = 40,
         [long]$TotalDownloadByteLimit = 67108864,

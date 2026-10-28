@@ -8,7 +8,7 @@
 This prototype targets only the exact-build work in
 `Get-CiFixBuildEvidence`: timeline discovery, failed-task identity,
 current/previous attempt provenance, log pointers, and truthful completeness.
-It does not change build selection, raw Azure log downloads, Helix fallback,
+It does not change build selection, raw Azure log downloads, Helix retrieval,
 safety limits, or the separate CI-status recurrence/history path. The earlier
 [PureWeen/maui#186](https://github.com/PureWeen/maui/pull/186) experiment is
 requirements background, not the implementation target here.
@@ -27,24 +27,32 @@ For each selected build, the default `azure` provider:
 6. Marks evidence incomplete for missing provenance, missing logs, malformed
    responses, unavailable prior timelines, or any limit.
 
-The Kusto experiment does not replace those guarantees. `-EvidenceProvider
-kusto` queries Kusto first, retains the projected failure inventory as
-diagnostic provider metadata, and then falls back to the authoritative Azure
-timeline. Raw log downloads continue to use Azure.
+The experiment now separates two purposes:
 
-The provider cannot safely substitute for Azure because the available Kusto
-tables do not carry independently sourced proof that the ingester fetched the
-final complete timeline snapshot. Fresh post-build ingestion and an internally
-consistent hierarchy do not detect a structurally valid stale subset that
-omits an entire late job/task subtree.
+- `-EvidenceProvider kusto` uses the projected Kusto inventory directly and
+  never requests the Azure timeline. It still downloads the projected tasks'
+  raw logs from Azure by log ID. Because source-snapshot completeness cannot be
+  proven, the resulting evidence remains incomplete and cannot authorize a
+  repair.
+- `-EvidenceProvider kusto-compare` queries Kusto first and then uses the Azure
+  timeline as the authority. This mode exists only to measure exact identity
+  parity and whole-subtree omissions.
+
+The Kusto-only mode demonstrates timeline-free acquisition, not a safe
+production substitution. The available tables do not carry independently
+sourced proof that the ingester fetched the final complete timeline snapshot.
+Fresh post-build ingestion and an internally consistent hierarchy do not
+detect a structurally valid stale subset that omits an entire late job/task
+subtree.
 
 ## Fail-safe producer budget
 
-The diagnostic provider has a separate fail-safe budget inside the producer's
-shared deadline:
+The experimental providers have a separate fail-safe budget inside the
+producer's shared deadline:
 
-- Azure always reserves `min(60, MaxProducerSeconds)` seconds of the producer
-  budget. A one-second handoff margin is also excluded from Kusto.
+- Azure log retrieval and comparison-mode timeline acquisition reserve
+  `min(60, MaxProducerSeconds)` seconds of the producer budget. A one-second
+  handoff margin is also excluded from Kusto.
 - Kusto receives at most 10% of the initial producer budget, capped at 60
   seconds total across all builds.
 - Each individual Kusto probe is capped at 20 seconds and also by the remaining
@@ -60,10 +68,10 @@ total while the final 60 seconds remain unavailable to diagnostics. Fast Kusto
 successes and errors consume only their actual elapsed time, preserving useful
 diagnostics when the budget is healthy.
 
-This policy prevents the optional provider from starving the authoritative
-fallback. It cannot guarantee that Azure completes: earlier or repeated Azure
-requests, response-body stalls, raw log downloads, and the overall producer
-deadline can still exhaust the authoritative budget.
+This policy prevents the optional Kusto query from starving the Azure evidence
+reads that follow it. It cannot guarantee that Azure completes: earlier or
+repeated Azure requests, response-body stalls, raw log downloads, and the
+overall producer deadline can still exhaust the reserved budget.
 
 ## Local Kusto query
 
@@ -79,6 +87,10 @@ pwsh -NoProfile -File .github/scripts/Get-CiFixAzdoEvidence.ps1 `
   -CandidatesPath <candidate-snapshot.json> `
   -OutputDirectory <evidence-directory>
 ```
+
+Use `-EvidenceProvider kusto-compare` only when measuring the Kusto projection
+against the authoritative Azure timeline. Production workflow wiring omits
+`-EvidenceProvider`, so it continues to use `azure`.
 
 No token or query payload is written to disk. The script invokes `az rest
 --resource https://api.kusto.windows.net` through the user's existing Azure CLI
@@ -135,13 +147,16 @@ were retained outside the checkout and were not committed.
 
 | Public build | Azure truth | Kusto projection | Exact identity comparison | Indexing lag | Result |
 |---|---:|---:|---|---:|---|
-| `1650505` | 45 current failed tasks | 45 | 45/45 record ID + log ID matches | ~42m 45s | Diagnostic parity only; Azure timeline remains authoritative and the unchanged 32-log cap still leaves 13 logs unfetched |
-| `1626285` | Retained multi-attempt evidence; live Azure timeline now 404 | 71 current-timeline candidates | Not eligible for substitution | ~49m 5s | `MaxAttempt=2` forces deterministic Azure fallback, which remains incomplete after timeline retention |
-| `1650530` | 6 current failed tasks and all 6 Azure logs available | 6 | 6/6 record ID + log ID matches | ~32m 2s | Diagnostic parity only; Azure timeline remains authoritative |
-| `1626205` | 28 current failed/error-bearing tasks | 28 | 28/28 record ID + log ID matches | ~17m 42s | Diagnostic parity only; Azure timeline remains authoritative |
+| `1650505` | 45 current failed tasks | 45 | 45/45 record ID + log ID matches | ~42m 45s | Zero Azure timeline requests; one targeted Azure log sample succeeded; evidence remains incomplete |
+| `1626285` | Retained multi-attempt evidence; live Azure timeline now 404 | 71 current-timeline candidates | Not eligible for complete substitution | ~49m 5s | Zero Azure timeline requests; the selected older log sample was unavailable; retry/provenance remains incomplete |
+| `1650530` | 6 current failed tasks | 6 | 6/6 record ID + log ID matches | ~32m 2s | Zero Azure timeline requests; one targeted Azure log sample succeeded; evidence remains incomplete |
+| `1626205` | 28 current failed/error-bearing tasks | 28 | 28/28 record ID + log ID matches | ~17m 42s | Zero Azure timeline requests; one targeted Azure log sample succeeded; evidence remains incomplete |
 
-The 32-log cap is deliberately unchanged. This prototype does not claim log
-savings, Helix completeness, or a supported production Kusto dependency.
+The live Kusto-only probes deliberately sampled at most one targeted log per
+build; they validated the inventory and no-timeline contract, not full-build log
+retrieval. The configured 32-log cap is deliberately unchanged. This prototype
+does not claim log savings, Helix completeness, or a supported production Kusto
+dependency.
 
 ## Normalized provider contract
 
@@ -153,9 +168,9 @@ retrieval:
   "requestedProvider": "kusto",
   "requestedCoverage": "partial",
   "requestedStatus": "available",
-  "usedProvider": "azure",
-  "usedCoverage": "complete | partial",
-  "fallbackUsed": true,
+  "usedProvider": "kusto",
+  "usedCoverage": "partial",
+  "fallbackUsed": false,
   "indexedAt": "2026-10-27T13:21:56.4658131Z",
   "buildFinishTime": "2026-10-27T12:39:11.0000000Z",
   "truncated": false,
@@ -168,8 +183,9 @@ retrieval:
 
 `projectedFailedTasks` uses the same normalized task shape consumed by raw log
 download: record/name/attempt/log identity, source timeline/record/attempt, and
-provider-specific result/path fields. A future MCP adapter can populate this
-shape without changing manifest assembly, Azure log download, or
+provider-specific result/path fields. In `kusto-compare` mode the manifest also
+records `usedProvider=azure` and `fallbackUsed=true`. A future MCP adapter can
+populate this shape without changing manifest assembly, Azure log download, or
 evidence-completeness rules.
 
 Completeness must remain independent across:
