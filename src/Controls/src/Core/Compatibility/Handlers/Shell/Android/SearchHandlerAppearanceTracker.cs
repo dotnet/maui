@@ -41,6 +41,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_editText.FocusChange += EditTextFocusChange;
 			UpdateSearchBarColors();
 			UpdateFont();
+			UpdateCharacterSpacing();
 			UpdateHorizontalTextAlignment();
 			UpdateVerticalTextAlignment();
 			UpdateInputType();
@@ -71,6 +72,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			else if (e.IsOneOf(SearchHandler.FontFamilyProperty, SearchHandler.FontAttributesProperty, SearchHandler.FontSizeProperty))
 			{
 				UpdateFont();
+			}
+			else if (e.Is(SearchHandler.CharacterSpacingProperty))
+			{
+				UpdateCharacterSpacing();
 			}
 			else if (e.Is(SearchHandler.CancelButtonColorProperty))
 			{
@@ -140,9 +145,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_editText.SetTextSize(ComplexUnitType.Sp, (float)_searchHandler.FontSize);
 		}
 
+		void UpdateCharacterSpacing()
+		{
+			_editText.UpdateCharacterSpacing(_searchHandler);
+		}
+
 		void UpdatePlaceholder()
 		{
-			_editText.Hint = _searchHandler.Placeholder;
+			_editText.UpdatePlaceholder(_searchHandler);
 		}
 
 		void UpdatePlaceholderColor()
