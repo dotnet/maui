@@ -15,6 +15,10 @@
 - Audit Mono-specific properties/items and the marshal-methods/ReadyToRun
   combination using the [mobile runtime property reference](mobile-runtime-properties.md).
   Preserve required .NET 10 settings only on their existing older targets.
+- For iOS/Mac Catalyst targets, review the
+  [UIKit scene lifecycle migration](uikit-scene-lifecycle.md) before building
+  against Apple SDK 27. Inventory every shipping plist and custom callback;
+  obtain a support-policy decision before raising deployment minimums.
 
 For example, inspect:
 
@@ -80,6 +84,7 @@ baseline was runnable.
 - [Supported platforms](https://learn.microsoft.com/dotnet/maui/supported-platforms)
 - [Shell navigation](https://learn.microsoft.com/dotnet/maui/fundamentals/shell/navigation)
 - [Handler customization](https://learn.microsoft.com/dotnet/maui/user-interface/handlers/customize)
+- [UIKit scene lifecycle migration](https://learn.microsoft.com/dotnet/maui/ios/uikit-scene-lifecycle)
 - [Mobile runtime property breaking-change tracking: dotnet/docs#56477](https://github.com/dotnet/docs/issues/56477)
 
 Check the documentation view/release and the exact package together. These links

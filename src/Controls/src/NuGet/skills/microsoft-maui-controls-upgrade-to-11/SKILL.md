@@ -56,6 +56,13 @@ renderer can still compile and preserve a screenshot without using the new
 default architecture. Do not register an old renderer solely to conceal an
 incomplete migration; discuss any intentionally requested fallback explicitly.
 
+For applications targeting iOS or Mac Catalyst, read the
+[UIKit scene lifecycle reference](references/uikit-scene-lifecycle.md).
+Building against Apple SDK 27 requires scene adoption independently of the
+.NET major version. Package/workload updates do not retrofit platform files.
+Reconcile existing delegates, manifests and lifecycle behavior; do not silently
+drop older OS support or treat Android evaluation results as Apple validation.
+
 For Android Shell renderer customizations, read the
 [Android Shell reference](references/android-shell.md). Other platforms must be
 checked against their own release-specific APIs; Android findings are not proof
