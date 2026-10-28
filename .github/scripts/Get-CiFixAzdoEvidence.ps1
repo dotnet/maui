@@ -838,13 +838,23 @@ let records = recordLatestRows
              IsFailure=tolower(Result) in ("failed", "partiallysucceeded")
                  or coalesce(ErrorCount, 0) > 0;
 let parentKeys = records
-    | project ParentTimelineId=TimelineId, ExistingParentId=RecordId;
-let orphanSummary = records
+    | project ParentTimelineId=TimelineId, ExistingParentId=RecordId,
+              ParentDepth=Depth, ParentPath=Path;
+let childParentSummary = records
     | where isnotempty(ParentId)
-    | join kind=leftanti parentKeys
+    | join kind=leftouter parentKeys
         on `$left.TimelineId == `$right.ParentTimelineId,
            `$left.ParentId == `$right.ExistingParentId
-    | summarize OrphanRecordCount=count();
+    | summarize
+        OrphanRecordCount=countif(isempty(ExistingParentId)),
+        ImmediateParentErrorCount=countif(
+            isempty(ExistingParentId) or
+            Depth != ParentDepth + 1 or
+            not(Path startswith strcat(ParentPath, "."))),
+        DisconnectedRecordCount=countif(
+            isempty(ExistingParentId) or
+            Depth != ParentDepth + 1 or
+            not(Path startswith strcat(ParentPath, ".")));
 let duplicatePathSummary = records
     | summarize PathUseCount=count() by TimelineId, Path
     | summarize DuplicatePathCount=countif(PathUseCount > 1);
@@ -862,8 +872,10 @@ let recordSummary = records
         TaskRecordCount=countif(Depth == 3),
         SentinelPathCount=countif(isempty(Path) or Path startswith "999."),
         PathShapeErrorCount=countif(
+            not(Path matches regex @"^[0-9]+(\.[0-9]+){0,3}$") or
             (Depth == 0 and isnotempty(ParentId)) or
             (Depth > 0 and isempty(ParentId))),
+        UnsupportedDepthCount=countif(Depth !in (0, 1, 2, 3)),
         UnfinishedRelevantCount=countif(
             Depth in (2, 3) and isnull(FinishTime)),
         InvalidRecordIdentityCount=countif(
@@ -898,7 +910,11 @@ let certificate = recordSummary
              LatestRecordConflictCount=tolong(toscalar(
                  recordConflicts | project LatestRecordConflictCount)),
              OrphanRecordCount=tolong(toscalar(
-                 orphanSummary | project OrphanRecordCount)),
+                 childParentSummary | project OrphanRecordCount)),
+             ImmediateParentErrorCount=tolong(toscalar(
+                 childParentSummary | project ImmediateParentErrorCount)),
+             DisconnectedRecordCount=tolong(toscalar(
+                 childParentSummary | project DisconnectedRecordCount)),
              DuplicatePathCount=tolong(toscalar(
                  duplicatePathSummary | project DuplicatePathCount))
     | extend ReingestedRecordCount=RawRecordCount - RecordCount
@@ -916,7 +932,9 @@ let certificate = recordSummary
               RecordMaxIndexedAt=tostring(RecordMaxIndexedAt),
               RecordId="", ParentId="", Name="", Result="",
               ErrorCount=long(null), LogId=long(null), LogUri="",
-              Attempt=long(null), Path="", RecordIndexedAt="";
+              Attempt=long(null), Path="", RecordIndexedAt="",
+              ImmediateParentErrorCount, UnsupportedDepthCount,
+              DisconnectedRecordCount;
 let failures =
     records
     | where Depth == 3 and IsFailure and LogId > 0
@@ -944,7 +962,10 @@ let failures =
               RecordMaxIndexedAt="", RecordId, ParentId, Name, Result,
               ErrorCount=tolong(ErrorCount), LogId=tolong(LogId), LogUri,
               Attempt=tolong(Attempt), Path,
-              RecordIndexedAt=tostring(RecordIngestedAt);
+              RecordIndexedAt=tostring(RecordIngestedAt),
+              ImmediateParentErrorCount=long(null),
+              UnsupportedDepthCount=long(null),
+              DisconnectedRecordCount=long(null);
 union certificate, failures
 | order by RowKind asc, Path asc, RecordId asc
 "@
@@ -978,7 +999,8 @@ union certificate, failures
             'SelectableFailureCount', 'RecordMinIndexedAt',
             'RecordMaxIndexedAt', 'RecordId', 'ParentId', 'Name', 'Result',
             'ErrorCount', 'LogId', 'LogUri', 'Attempt', 'Path',
-            'RecordIndexedAt')
+            'RecordIndexedAt', 'ImmediateParentErrorCount',
+            'UnsupportedDepthCount', 'DisconnectedRecordCount')
     if (-not $table.Succeeded) {
         return [pscustomobject]@{
             provider = 'kusto'
@@ -1021,7 +1043,9 @@ union certificate, failures
         'JobRecordCount', 'TaskRecordCount', 'OrphanRecordCount',
         'SentinelPathCount', 'PathShapeErrorCount', 'DuplicatePathCount',
         'UnfinishedRelevantCount', 'InvalidRecordIdentityCount',
-        'InvalidLogScopeCount', 'FailedTaskCount', 'SelectableFailureCount')
+        'InvalidLogScopeCount', 'FailedTaskCount', 'SelectableFailureCount',
+        'ImmediateParentErrorCount', 'UnsupportedDepthCount',
+        'DisconnectedRecordCount')
     $counts = @{}
     foreach ($countName in $countNames) {
         $count = 0L
@@ -1181,6 +1205,9 @@ union certificate, failures
     if ($counts.OrphanRecordCount -ne 0 -or
         $counts.SentinelPathCount -ne 0 -or
         $counts.PathShapeErrorCount -ne 0 -or
+        $counts.ImmediateParentErrorCount -ne 0 -or
+        $counts.UnsupportedDepthCount -ne 0 -or
+        $counts.DisconnectedRecordCount -ne 0 -or
         $counts.DuplicatePathCount -ne 0) {
         $certificateErrors.Add('timeline hierarchy is incomplete or malformed')
     }
@@ -1312,16 +1339,17 @@ union certificate, failures
         }
     }
 
-    $complete = $certificateErrors.Count -eq 0
-    $coverage = if ($complete) { 'complete' } else { 'partial' }
-    $status = if ($complete) {
-        'available'
-    } elseif ($certificateErrors -contains 'build or record indexing is missing or stale') {
+    # Internal consistency cannot prove that the ingester fetched the final source timeline.
+    $certificateErrors.Add(
+        'independent source snapshot completeness metadata is unavailable')
+    $complete = $false
+    $coverage = 'partial'
+    $status = if ($certificateErrors -contains 'build or record indexing is missing or stale') {
         'stale'
     } else {
         'available'
     }
-    $error = if ($complete) { '' } else { $certificateErrors -join '; ' }
+    $error = $certificateErrors -join '; '
 
     return [pscustomobject]@{
         provider = 'kusto'

@@ -1701,7 +1701,8 @@ Describe 'CI-fix normalized exact-build provider contract' {
             'SelectableFailureCount', 'RecordMinIndexedAt',
             'RecordMaxIndexedAt', 'RecordId', 'ParentId', 'Name', 'Result',
             'ErrorCount', 'LogId', 'LogUri', 'Attempt', 'Path',
-            'RecordIndexedAt')
+            'RecordIndexedAt', 'ImmediateParentErrorCount',
+            'UnsupportedDepthCount', 'DisconnectedRecordCount')
 
         function New-CertificateRow {
             param(
@@ -1731,7 +1732,10 @@ Describe 'CI-fix normalized exact-build provider contract' {
                 [object]$InvalidRecordIdentityCount = 0,
                 [object]$InvalidLogScopeCount = 0,
                 [object]$FailedTaskCount = 1,
-                [object]$SelectableFailureCount = 1
+                [object]$SelectableFailureCount = 1,
+                [object]$ImmediateParentErrorCount = 0,
+                [object]$UnsupportedDepthCount = 0,
+                [object]$DisconnectedRecordCount = 0
             )
             return @(
                 'certificate', $BuildId, $BuildScopeCount, $PublicBuildCount,
@@ -1748,7 +1752,8 @@ Describe 'CI-fix normalized exact-build provider contract' {
                 $InvalidLogScopeCount, $FailedTaskCount,
                 $SelectableFailureCount, '2026-10-27T13:22:00Z',
                 '2026-10-27T13:22:00Z', '', '', '', '', $null, $null, '',
-                $null, '', '')
+                $null, '', '', $ImmediateParentErrorCount,
+                $UnsupportedDepthCount, $DisconnectedRecordCount)
         }
 
         function New-FailureRow {
@@ -1767,7 +1772,8 @@ Describe 'CI-fix normalized exact-build provider contract' {
                 '', $RecordId, '22222222-2222-2222-2222-222222222222',
                 $Name, 'failed', 1, $LogId,
                 "https://dev.azure.com/dnceng-public/public/_apis/build/builds/$BuildId/logs/$LogId",
-                1, '001.001.001.001', '2026-10-27T13:22:00Z')
+                1, '001.001.001.001', '2026-10-27T13:22:00Z',
+                $null, $null, $null)
         }
     }
 
@@ -1821,7 +1827,7 @@ Describe 'CI-fix normalized exact-build provider contract' {
         $result.failedTasks[0].status | Should -BeExactly 'available'
     }
 
-    It 'certifies a complete single-attempt failure inventory with current provenance' {
+    It 'keeps a structurally valid single-attempt projection partial without source snapshot proof' {
         $response = New-TestCiFixKustoResponse `
             -Columns $columns `
             -Rows @((New-CertificateRow), (New-FailureRow))
@@ -1831,8 +1837,8 @@ Describe 'CI-fix normalized exact-build provider contract' {
             -MaxRows 10 `
             -QueryInvoker { param($Query) $response }
 
-        $result.coverage | Should -BeExactly 'complete'
-        $result.complete | Should -BeTrue
+        $result.coverage | Should -BeExactly 'partial'
+        $result.complete | Should -BeFalse
         $result.failedTasks.Count | Should -Be 1
         $result.failedTasks[0].recordId | Should -BeExactly '11111111-1111-1111-1111-111111111111'
         $result.failedTasks[0].logId | Should -Be 10
@@ -1840,10 +1846,10 @@ Describe 'CI-fix normalized exact-build provider contract' {
         $result.failedTasks[0].sourceRecordId | Should -BeExactly $result.failedTasks[0].recordId
         $result.failedTasks[0].sourceAttempt | Should -Be 1
         $result.failedTasks[0].provenanceValid | Should -BeTrue
-        $result.error | Should -BeExactly ''
+        $result.error | Should -Match 'independent source snapshot completeness metadata is unavailable'
     }
 
-    It 'certifies an indexed empty inventory under the same certificate' {
+    It 'keeps an indexed empty projection partial without source snapshot proof' {
         $response = New-TestCiFixKustoResponse `
             -Columns $columns `
             -Rows (, (New-CertificateRow -FailedTaskCount 0 -SelectableFailureCount 0))
@@ -1852,9 +1858,10 @@ Describe 'CI-fix normalized exact-build provider contract' {
             -BuildId 42 `
             -QueryInvoker { param($Query) $response }
 
-        $result.coverage | Should -BeExactly 'complete'
-        $result.complete | Should -BeTrue
+        $result.coverage | Should -BeExactly 'partial'
+        $result.complete | Should -BeFalse
         $result.failedTasks.Count | Should -Be 0
+        $result.error | Should -Match 'independent source snapshot completeness metadata is unavailable'
     }
 
     It 'distinguishes a not-indexed build from an indexed empty inventory' {
@@ -1944,7 +1951,10 @@ Describe 'CI-fix normalized exact-build provider contract' {
         $response = New-TestCiFixKustoResponse `
             -Columns $columns `
             -Rows @(
-                (New-CertificateRow -OrphanRecordCount 1 -SentinelPathCount 1),
+                (New-CertificateRow `
+                        -OrphanRecordCount 1 `
+                        -SentinelPathCount 1 `
+                        -PathShapeErrorCount 1),
                 (New-FailureRow))
 
         $result = Get-CiFixKustoBuildInventory `
@@ -1952,6 +1962,38 @@ Describe 'CI-fix normalized exact-build provider contract' {
             -QueryInvoker { param($Query) $response }
 
         $result.coverage | Should -BeExactly 'partial'
+        $result.error | Should -Match 'hierarchy is incomplete'
+    }
+
+    It 'rejects a child whose existing parent is not its immediate path parent' {
+        $response = New-TestCiFixKustoResponse `
+            -Columns $columns `
+            -Rows @(
+                (New-CertificateRow -ImmediateParentErrorCount 1),
+                (New-FailureRow))
+
+        $result = Get-CiFixKustoBuildInventory `
+            -BuildId 42 `
+            -QueryInvoker { param($Query) $response }
+
+        $result.complete | Should -BeFalse
+        $result.error | Should -Match 'hierarchy is incomplete'
+    }
+
+    It 'rejects unsupported hierarchy depths and disconnected records' {
+        $response = New-TestCiFixKustoResponse `
+            -Columns $columns `
+            -Rows @(
+                (New-CertificateRow `
+                        -UnsupportedDepthCount 1 `
+                        -DisconnectedRecordCount 1),
+                (New-FailureRow))
+
+        $result = Get-CiFixKustoBuildInventory `
+            -BuildId 42 `
+            -QueryInvoker { param($Query) $response }
+
+        $result.complete | Should -BeFalse
         $result.error | Should -Match 'hierarchy is incomplete'
     }
 
@@ -1968,7 +2010,7 @@ Describe 'CI-fix normalized exact-build provider contract' {
         $result.error | Should -Match 'unfinished task or job'
     }
 
-    It 'deduplicates reingested rows in the query and accepts a consistent certificate' {
+    It 'deduplicates reingested rows while remaining partial without source proof' {
         $response = New-TestCiFixKustoResponse `
             -Columns $columns `
             -Rows @(
@@ -1987,9 +2029,14 @@ Describe 'CI-fix normalized exact-build provider contract' {
                 $response
             }
 
-        $result.complete | Should -BeTrue
+        $result.complete | Should -BeFalse
+        $result.error | Should -Match 'independent source snapshot completeness metadata is unavailable'
         $script:capturedQuery | Should -Match 'LatestRecordIngestedAt=max\(RecordIngestedAt\)'
         $script:capturedQuery | Should -Match 'summarize arg_max\(RecordFingerprint, \*\) by TimelineId, RecordId'
+        $script:capturedQuery | Should -Match 'Depth != ParentDepth \+ 1'
+        $script:capturedQuery | Should -Match 'Path startswith strcat\(ParentPath, "\."\)'
+        $script:capturedQuery | Should -Match 'not\(Path matches regex'
+        $script:capturedQuery | Should -Match 'UnsupportedDepthCount=countif\(Depth !in \(0, 1, 2, 3\)\)'
     }
 
     It 'falls back when latest reingested rows conflict' {
@@ -2077,7 +2124,7 @@ Describe 'CI-fix normalized exact-build provider contract' {
         $result.error | Should -Match "FailedTaskCount"
     }
 
-    It 'uses certified Kusto inventory without requesting the Azure timeline' {
+    It 'falls back when a complete-looking Kusto subset omits an entire subtree' {
         $kustoResponse = New-TestCiFixKustoResponse `
             -Columns $columns `
             -Rows @((New-CertificateRow), (New-FailureRow))
@@ -2085,11 +2132,23 @@ Describe 'CI-fix normalized exact-build provider contract' {
         $requestInvoker = {
             param($Uri, $MaxBytes)
             $requestedUris.Add($Uri)
+            $content = if ($Uri -match '/timeline\?') {
+                @'
+{"records":[
+  {"id":"aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa","type":"Task","result":"failed","name":"Azure task in retained subtree","attempt":1,"log":{"id":10}},
+  {"id":"bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb","type":"Task","result":"failed","name":"Azure task in omitted subtree","attempt":1,"log":{"id":11}}
+]}
+'@
+            } elseif ($Uri -match '/logs/(10|11)\?') {
+                'Azure-selected log'
+            } else {
+                throw "Unexpected URI: $Uri"
+            }
             [pscustomobject]@{
                 Succeeded = $true
                 StatusCode = 200
                 RedirectLocation = $null
-                Content = 'Kusto-selected log'
+                Content = $content
                 Truncated = $false
                 Error = ''
                 Attempts = 1
@@ -2107,10 +2166,15 @@ Describe 'CI-fix normalized exact-build provider contract' {
             -KustoQueryInvoker { param($Query) $kustoResponse }
 
         $result.complete | Should -BeTrue
-        $result.inventory.usedProvider | Should -BeExactly 'kusto'
-        $result.inventory.fallbackUsed | Should -BeFalse
-        @($requestedUris | Where-Object { $_ -match '/timeline\?' }).Count | Should -Be 0
+        $result.inventory.requestedCoverage | Should -BeExactly 'partial'
+        $result.inventory.usedProvider | Should -BeExactly 'azure'
+        $result.inventory.fallbackUsed | Should -BeTrue
+        $result.inventory.projectedFailedTaskCount | Should -Be 1
+        $result.failedTasks.Count | Should -Be 2
+        $result.failedTasks.name | Should -Contain 'Azure task in omitted subtree'
+        @($requestedUris | Where-Object { $_ -match '/timeline\?' }).Count | Should -Be 1
         @($requestedUris | Where-Object { $_ -match '/logs/10\?' }).Count | Should -Be 1
+        @($requestedUris | Where-Object { $_ -match '/logs/11\?' }).Count | Should -Be 1
     }
 
     It 'requests the Azure timeline when the Kusto certificate fails' {
