@@ -38,6 +38,33 @@ final complete timeline snapshot. Fresh post-build ingestion and an internally
 consistent hierarchy do not detect a structurally valid stale subset that
 omits an entire late job/task subtree.
 
+## Fail-safe producer budget
+
+The diagnostic provider has a separate fail-safe budget inside the producer's
+shared deadline:
+
+- Azure always reserves `min(60, MaxProducerSeconds)` seconds of the producer
+  budget. A one-second handoff margin is also excluded from Kusto.
+- Kusto receives at most 10% of the initial producer budget, capped at 60
+  seconds total across all builds.
+- Each individual Kusto probe is capped at 20 seconds and also by the remaining
+  diagnostic pool.
+- If fewer than one diagnostic second remains after the Azure reserve and
+  handoff margin, Kusto is skipped and Azure is attempted immediately.
+- Actual Kusto wall-clock time is debited from the shared diagnostic pool, so
+  repeated slow or timed-out probes cannot each consume a fresh timeout.
+
+With `-MaxProducerSeconds 60`, the full budget is reserved for Azure and Kusto
+is skipped. With the default 600 seconds, Kusto can use at most 60 seconds in
+total while the final 60 seconds remain unavailable to diagnostics. Fast Kusto
+successes and errors consume only their actual elapsed time, preserving useful
+diagnostics when the budget is healthy.
+
+This policy prevents the optional provider from starving the authoritative
+fallback. It cannot guarantee that Azure completes: earlier or repeated Azure
+requests, response-body stalls, raw log downloads, and the overall producer
+deadline can still exhaust the authoritative budget.
+
 ## Local Kusto query
 
 The adapter uses the public Arcade-documented employee data source

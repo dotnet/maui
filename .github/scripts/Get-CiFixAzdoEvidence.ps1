@@ -29,6 +29,23 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
+function Initialize-CiFixProducerBudget {
+    param(
+        [Parameter(Mandatory = $true)]
+        [int]$ProducerSeconds
+    )
+
+    $script:ProducerDeadlineUtc = [DateTime]::UtcNow.AddSeconds($ProducerSeconds)
+    $script:AzureAuthoritativeReserveSeconds = [Math]::Min(
+        $script:HttpTimeoutSeconds,
+        $ProducerSeconds)
+    $script:KustoDiagnosticSecondsRemaining = [double][Math]::Min(
+        60,
+        [Math]::Floor($ProducerSeconds * 0.1))
+    $script:KustoDiagnosticPerQuerySeconds = 20
+    $script:KustoDiagnosticHandoffSeconds = 1
+}
+
 $script:PipelineDefinitions = @{
     'maui-pr' = 302
     'maui-pr-devicetests' = 314
@@ -43,7 +60,7 @@ $script:TransientStatusCodes = @(408, 429, 500, 502, 503, 504)
 $script:MaxHttpAttempts = 3
 $script:HttpTimeoutSeconds = 60
 $script:RemainingDownloadBytes = $MaxTotalDownloadBytes
-$script:ProducerDeadlineUtc = [DateTime]::UtcNow.AddSeconds($MaxProducerSeconds)
+Initialize-CiFixProducerBudget -ProducerSeconds $MaxProducerSeconds
 
 function Get-CiFixIssueField {
     param(
@@ -589,16 +606,25 @@ function Invoke-CiFixKustoQuery {
     )
 
     $producerRemaining = $script:ProducerDeadlineUtc - [DateTime]::UtcNow
-    if ($producerRemaining -le [TimeSpan]::Zero) {
+    $availableDiagnosticSeconds = [Math]::Min(
+        $script:KustoDiagnosticSecondsRemaining,
+        $producerRemaining.TotalSeconds -
+            $script:AzureAuthoritativeReserveSeconds -
+            $script:KustoDiagnosticHandoffSeconds)
+    if ($availableDiagnosticSeconds -lt 1) {
         return [pscustomobject]@{
             Succeeded = $false
             Content = ''
-            Error = 'producer deadline exhausted before Kusto query'
+            Error = "Kusto diagnostic skipped to preserve the $($script:AzureAuthoritativeReserveSeconds)-second Azure authority reserve"
         }
     }
     $effectiveTimeoutSeconds = [Math]::Max(
         1,
-        [Math]::Min($TimeoutSeconds, [Math]::Floor($producerRemaining.TotalSeconds)))
+        [Math]::Min(
+            $script:KustoDiagnosticPerQuerySeconds,
+            [Math]::Min(
+                $TimeoutSeconds,
+                [Math]::Floor($availableDiagnosticSeconds))))
     $payload = @{
         db = $script:KustoDatabase
         csl = $Query
@@ -623,6 +649,7 @@ function Invoke-CiFixKustoQuery {
 
     $process = [Diagnostics.Process]::new()
     $process.StartInfo = $startInfo
+    $diagnosticTimer = [Diagnostics.Stopwatch]::StartNew()
     try {
         if (-not $process.Start()) {
             return [pscustomobject]@{
@@ -673,6 +700,10 @@ function Invoke-CiFixKustoQuery {
         }
     }
     finally {
+        $diagnosticTimer.Stop()
+        $script:KustoDiagnosticSecondsRemaining = [Math]::Max(
+            0,
+            $script:KustoDiagnosticSecondsRemaining - $diagnosticTimer.Elapsed.TotalSeconds)
         $process.Dispose()
     }
 }
@@ -2035,7 +2066,7 @@ function New-CiFixAzdoEvidence {
 
     New-Item -ItemType Directory -Force -Path $Destination | Out-Null
     $script:RemainingDownloadBytes = $TotalDownloadByteLimit
-    $script:ProducerDeadlineUtc = [DateTime]::UtcNow.AddSeconds($ProducerSeconds)
+    Initialize-CiFixProducerBudget -ProducerSeconds $ProducerSeconds
 
     $issues = @()
     $requestedPipelines = [ordered]@{}

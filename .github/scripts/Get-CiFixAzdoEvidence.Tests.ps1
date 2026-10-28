@@ -14,6 +14,7 @@ BeforeAll {
     }
 
     foreach ($functionName in @(
+            'Initialize-CiFixProducerBudget',
             'Get-CiFixIssueField',
             'Invoke-CiFixAzdoRequest',
             'ConvertFrom-CiFixJsonResponse',
@@ -53,6 +54,10 @@ BeforeAll {
     $script:HttpTimeoutSeconds = 60
     $script:RemainingDownloadBytes = 67108864
     $script:ProducerDeadlineUtc = [DateTime]::UtcNow.AddMinutes(10)
+    $script:AzureAuthoritativeReserveSeconds = 60
+    $script:KustoDiagnosticSecondsRemaining = 60.0
+    $script:KustoDiagnosticPerQuerySeconds = 20
+    $script:KustoDiagnosticHandoffSeconds = 1
 
     function New-TestCiFixKustoResponse {
         param(
@@ -75,6 +80,150 @@ BeforeAll {
             } | ConvertTo-Json -Depth 20 -Compress
             Error = ''
         }
+    }
+
+    function Invoke-TestCiFixProductionKustoFallback {
+        param(
+            [Parameter(Mandatory = $true)][string]$Root,
+            [Parameter(Mandatory = $true)][int]$ProducerSeconds
+        )
+
+        $port = Get-Random -Minimum 30000 -Maximum 45000
+        $readyPath = Join-Path $Root 'azure-server.ready'
+        $serverJob = Start-Job -ArgumentList $port, $readyPath -ScriptBlock {
+            param($Port, $ReadyPath)
+
+            $listener = [Net.Sockets.TcpListener]::new([Net.IPAddress]::Loopback, $Port)
+            $listener.Start()
+            Set-Content -LiteralPath $ReadyPath -Value 'ready'
+            try {
+                foreach ($requestIndex in 1..2) {
+                    $client = $listener.AcceptTcpClient()
+                    try {
+                        $stream = $client.GetStream()
+                        $reader = [IO.StreamReader]::new(
+                            $stream,
+                            [Text.Encoding]::ASCII,
+                            $false,
+                            1024,
+                            $true)
+                        $requestLine = $reader.ReadLine()
+                        while (($line = $reader.ReadLine()) -ne '') {
+                            if ($null -eq $line) {
+                                break
+                            }
+                        }
+
+                        $content = if ($requestLine -match '/timeline\?') {
+                            '{"records":[{"id":"aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa","type":"Task","result":"failed","name":"Azure truth","attempt":1,"log":{"id":10}}]}'
+                        } elseif ($requestLine -match '/logs/10\?') {
+                            'Azure truth log'
+                        } else {
+                            throw "Unexpected request: $requestLine"
+                        }
+                        $contentBytes = [Text.Encoding]::UTF8.GetBytes($content)
+                        $headers = [Text.Encoding]::ASCII.GetBytes(
+                            "HTTP/1.1 200 OK`r`nContent-Length: $($contentBytes.Length)`r`nConnection: close`r`n`r`n")
+                        $stream.Write($headers, 0, $headers.Length)
+                        $stream.Write($contentBytes, 0, $contentBytes.Length)
+                    }
+                    finally {
+                        $client.Dispose()
+                    }
+                }
+            }
+            finally {
+                $listener.Stop()
+            }
+        }
+
+        $fakeBin = Join-Path $Root 'fake-az'
+        New-Item -ItemType Directory -Force -Path $fakeBin | Out-Null
+        $markerPath = Join-Path $Root 'az-invoked'
+        if ($IsWindows) {
+            $azPath = Join-Path $fakeBin 'az.cmd'
+            Set-Content -LiteralPath $azPath -Value @'
+@echo off
+echo invoked>>"%CI_FIX_FAKE_AZ_MARKER%"
+powershell -NoProfile -Command "Start-Sleep -Seconds 5"
+'@
+        } else {
+            $azPath = Join-Path $fakeBin 'az'
+            Set-Content -LiteralPath $azPath -Value @'
+#!/bin/sh
+printf 'invoked\n' >> "$CI_FIX_FAKE_AZ_MARKER"
+sleep 5
+'@
+            & chmod +x $azPath
+        }
+
+        $oldPath = $env:PATH
+        $oldMarker = $env:CI_FIX_FAKE_AZ_MARKER
+        $oldBaseUri = $script:AzdoBaseUri
+        $oldDeadline = $script:ProducerDeadlineUtc
+        $oldReserve = $script:AzureAuthoritativeReserveSeconds
+        $oldDiagnosticSeconds = $script:KustoDiagnosticSecondsRemaining
+        $oldPerQuerySeconds = $script:KustoDiagnosticPerQuerySeconds
+        $oldHandoffSeconds = $script:KustoDiagnosticHandoffSeconds
+        $oldRemainingBytes = $script:RemainingDownloadBytes
+        $observation = $null
+        try {
+            $readyDeadline = [DateTime]::UtcNow.AddSeconds(5)
+            while (-not (Test-Path -LiteralPath $readyPath) -and
+                [DateTime]::UtcNow -lt $readyDeadline) {
+                Start-Sleep -Milliseconds 25
+            }
+            if (-not (Test-Path -LiteralPath $readyPath)) {
+                throw 'Azure test server did not become ready'
+            }
+
+            $env:PATH = "$fakeBin$([IO.Path]::PathSeparator)$oldPath"
+            $env:CI_FIX_FAKE_AZ_MARKER = $markerPath
+            $script:AzdoBaseUri = "http://127.0.0.1:$port/_apis/build"
+            Initialize-CiFixProducerBudget -ProducerSeconds $ProducerSeconds
+            $script:RemainingDownloadBytes = 100000
+
+            $timer = [Diagnostics.Stopwatch]::StartNew()
+            $result = Get-CiFixBuildEvidence `
+                -BuildId 42 `
+                -OutputDirectory (Join-Path $Root 'evidence') `
+                -MaxFailedLogs 10 `
+                -TimelineByteLimit 10000 `
+                -LogByteLimit 10000 `
+                -Provider 'kusto'
+            $timer.Stop()
+            $nextProbe = Invoke-CiFixKustoQuery -Query 'print Value=1'
+            $finalProbe = Invoke-CiFixKustoQuery -Query 'print Value=2'
+            $observation = [pscustomobject]@{
+                Result = $result
+                ElapsedSeconds = $timer.Elapsed.TotalSeconds
+                AzInvoked = Test-Path -LiteralPath $markerPath
+                AzInvocationCount = if (Test-Path -LiteralPath $markerPath) {
+                    @(Get-Content -LiteralPath $markerPath).Count
+                } else {
+                    0
+                }
+                NextProbe = $nextProbe
+                FinalProbe = $finalProbe
+                DiagnosticSecondsRemaining = $script:KustoDiagnosticSecondsRemaining
+            }
+        }
+        finally {
+            $env:PATH = $oldPath
+            $env:CI_FIX_FAKE_AZ_MARKER = $oldMarker
+            $script:AzdoBaseUri = $oldBaseUri
+            $script:ProducerDeadlineUtc = $oldDeadline
+            $script:AzureAuthoritativeReserveSeconds = $oldReserve
+            $script:KustoDiagnosticSecondsRemaining = $oldDiagnosticSeconds
+            $script:KustoDiagnosticPerQuerySeconds = $oldPerQuerySeconds
+            $script:KustoDiagnosticHandoffSeconds = $oldHandoffSeconds
+            $script:RemainingDownloadBytes = $oldRemainingBytes
+            Wait-Job -Job $serverJob -Timeout 3 | Out-Null
+            Stop-Job -Job $serverJob -ErrorAction SilentlyContinue
+            Remove-Job -Job $serverJob -Force
+        }
+
+        return $observation
     }
 }
 
@@ -2225,6 +2374,42 @@ Describe 'CI-fix normalized exact-build provider contract' {
         $result.inventory.projectedFailedTaskCount | Should -Be 1
         $result.inventory.projectedFailedTasks[0].name | Should -BeExactly 'Kusto projection'
         $script:timelineRequests | Should -Be 1
+    }
+
+    It 'skips the production Kusto transport when only the Azure authority reserve remains' {
+        $observation = Invoke-TestCiFixProductionKustoFallback `
+            -Root (Join-Path $TestDrive 'production-kusto-skip') `
+            -ProducerSeconds 60
+
+        $observation.AzInvoked | Should -BeFalse
+        $observation.AzInvocationCount | Should -Be 0
+        $observation.NextProbe.Error | Should -Match 'Azure authority reserve'
+        $observation.FinalProbe.Error | Should -Match 'Azure authority reserve'
+        $observation.Result.complete | Should -BeTrue
+        $observation.Result.inventory.usedProvider | Should -BeExactly 'azure'
+        $observation.Result.inventory.fallbackUsed | Should -BeTrue
+        $observation.Result.inventory.error | Should -Match 'Azure authority reserve'
+        $observation.Result.failedTasks[0].name | Should -BeExactly 'Azure truth'
+    }
+
+    It 'bounds a slow production Kusto transport and preserves an authoritative Azure attempt' {
+        $observation = Invoke-TestCiFixProductionKustoFallback `
+            -Root (Join-Path $TestDrive 'production-kusto-timeout') `
+            -ProducerSeconds 63
+
+        $observation.AzInvoked | Should -BeTrue
+        $observation.AzInvocationCount | Should -Be 2
+        $observation.ElapsedSeconds | Should -BeLessThan 4.5
+        $observation.DiagnosticSecondsRemaining | Should -BeGreaterThan 3.5
+        $observation.NextProbe.Succeeded | Should -BeFalse
+        $observation.NextProbe.Error | Should -Match 'exceeded the 1-second limit'
+        $observation.FinalProbe.Succeeded | Should -BeFalse
+        $observation.FinalProbe.Error | Should -Match 'Azure authority reserve'
+        $observation.Result.complete | Should -BeTrue
+        $observation.Result.inventory.usedProvider | Should -BeExactly 'azure'
+        $observation.Result.inventory.fallbackUsed | Should -BeTrue
+        $observation.Result.inventory.error | Should -Match 'exceeded the 1-second limit'
+        $observation.Result.failedTasks[0].name | Should -BeExactly 'Azure truth'
     }
 }
 
