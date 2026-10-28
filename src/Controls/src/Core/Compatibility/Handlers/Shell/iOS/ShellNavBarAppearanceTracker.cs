@@ -16,7 +16,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		UIStringAttributes _defaultTitleAttributes;
 		UINavigationBarAppearance _defaultStandardAppearance;
 		UINavigationBarAppearance _defaultScrollEdgeAppearance;
-		bool _defaultTranslucent;
 		bool _defaultAppearanceCaptured;
 		float _shadowOpacity = float.MinValue;
 		CGColor _shadowColor;
@@ -33,7 +32,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				navBar.BarTintColor = _defaultBarTint;
 				navBar.TintColor = _defaultTint;
 				navBar.TitleTextAttributes = _defaultTitleAttributes;
-				navBar.Translucent = _defaultTranslucent;
+				navBar.Translucent = false;
 
 				if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13, 1) || OperatingSystem.IsTvOSVersionAtLeast(13))
 				{
@@ -52,7 +51,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_defaultBarTint = navBar.BarTintColor;
 				_defaultTint = navBar.TintColor;
 				_defaultTitleAttributes = navBar.TitleTextAttributes;
-				_defaultTranslucent = navBar.Translucent;
 				if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13, 1) || OperatingSystem.IsTvOSVersionAtLeast(13))
 				{
 					_defaultStandardAppearance = (UINavigationBarAppearance)navBar.StandardAppearance.Copy();
