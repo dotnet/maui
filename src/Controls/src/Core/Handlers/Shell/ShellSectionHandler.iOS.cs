@@ -149,7 +149,6 @@ namespace Microsoft.Maui.Controls.Handlers
         protected override void DisconnectHandler(UIView platformView)
         {
             ((IDisconnectable)this).Disconnect();
-            _interactivePopGesturePending = false;
 
             _rootViewController?.View?.RemoveFromSuperview();
             _rootViewController?.RemoveFromParentViewController();

@@ -298,7 +298,6 @@ namespace Microsoft.Maui.Platform
 
                 if (_managerRef.TryGetTarget(out var manager))
                 {
-                    manager._interactivePopGesturePending = false;
                     if (manager._disposed)
                     {
                         return;
