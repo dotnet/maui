@@ -275,7 +275,9 @@ namespace Microsoft.Maui.Handlers
 		private protected override void OnDisconnecting()
 		{
 #if WINDOWS
-			// Windows reconnect replaces the native child while retaining the wrapper's visual-tree slot.
+			// Preserve the Windows wrapper and its visual-tree position across handler reconnects.
+			// ReconnectContainer attaches the newly created platform view to this same wrapper.
+			// Removing it here would force SetupContainer to create a replacement wrapper.
 			if (ContainerView is Platform.WrapperView)
 			{
 				base.OnDisconnecting();
