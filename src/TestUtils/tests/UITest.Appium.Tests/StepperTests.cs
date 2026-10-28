@@ -2,6 +2,7 @@ using System.Text.Json;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.iOS;
+using OpenQA.Selenium.Appium.Mac;
 using UITest.Core;
 using Xunit;
 
@@ -53,6 +54,127 @@ public class StepperTests
 		Assert.Equal(CommandResponseResult.Success, response.Result);
 		var click = Assert.Single(executor.Commands, c => c.Name == DriverCommand.ClickElement);
 		Assert.Equal(expectedElement, click.Parameters["id"]);
+		Assert.DoesNotContain(executor.Commands, c => c.Name == DriverCommand.Actions);
+	}
+
+	[Theory]
+	[InlineData(TestDevice.Mac, false, "increaseStepper", "increment")]
+	[InlineData(TestDevice.Mac, true, "increaseStepper", "increment")]
+	[InlineData(TestDevice.Mac, false, "decreaseStepper", "decrement")]
+	[InlineData(TestDevice.Mac, true, "decreaseStepper", "decrement")]
+	[InlineData(TestDevice.iOS, false, "increaseStepper", "increment")]
+	[InlineData(TestDevice.iOS, true, "increaseStepper", "increment")]
+	[InlineData(TestDevice.iOS, false, "decreaseStepper", "decrement")]
+	[InlineData(TestDevice.iOS, true, "decreaseStepper", "decrement")]
+	public void SemanticButtonsDoNotDependOnNativeOrder(TestDevice device, bool incrementFirst, string command, string expectedElement)
+	{
+		var executor = SemanticExecutor(incrementFirst);
+		using var app = CreateApp(executor, device);
+
+		var response = app.CommandExecutor.Execute(command, Parameters(true));
+
+		Assert.Equal(CommandResponseResult.Success, response.Result);
+		var click = Assert.Single(executor.Commands, c => c.Name == DriverCommand.ClickElement);
+		Assert.Equal(expectedElement, click.Parameters["id"]);
+		Assert.DoesNotContain(executor.Commands, c => c.Name == DriverCommand.Actions
+			|| c.Name == DriverCommand.ExecuteScript || c.Name == DriverCommand.SendKeysToElement);
+	}
+
+	[Theory]
+	[InlineData(TestDevice.Mac, "increaseStepper", "increment")]
+	[InlineData(TestDevice.Mac, "decreaseStepper", "decrement")]
+	[InlineData(TestDevice.iOS, "increaseStepper", "increment")]
+	[InlineData(TestDevice.iOS, "decreaseStepper", "decrement")]
+	public void DisabledSemanticButtonDoesNotChangeTheRequestedAction(TestDevice device, string command, string expectedElement)
+	{
+		var executor = SemanticExecutor(incrementFirst: true);
+		executor.DisabledElement = expectedElement;
+		using var app = CreateApp(executor, device);
+
+		app.CommandExecutor.Execute(command, Parameters(true));
+
+		var click = Assert.Single(executor.Commands, c => c.Name == DriverCommand.ClickElement);
+		Assert.Equal(expectedElement, click.Parameters["id"]);
+		Assert.DoesNotContain(executor.Commands, c => c.Name == DriverCommand.IsElementEnabled
+			|| c.Name == DriverCommand.Actions || c.Name == DriverCommand.SendKeysToElement);
+	}
+
+	[Theory]
+	[InlineData("DefaultStepper-Increment", null)]
+	[InlineData(null, "DefaultStepper-Decrement")]
+	[InlineData("DefaultStepper-Increment", "unidentified")]
+	[InlineData("unidentified", "DefaultStepper-Decrement")]
+	[InlineData("DefaultStepper-Increment", "DefaultStepper-Increment")]
+	[InlineData("DefaultStepper-Decrement", "DefaultStepper-Decrement")]
+	[InlineData("OtherStepper-Increment", "OtherStepper-Decrement")]
+	public void IncompleteOrConflictingSemanticMetadataCannotChooseAPositionalButton(string? first, string? last)
+	{
+		var executor = new RecordingExecutor { ButtonCount = 2 };
+		executor.Identifiers["decrement"] = first;
+		executor.Identifiers["increment"] = last;
+		using var app = CreateApp(executor, TestDevice.Mac);
+
+		Assert.Throws<InvalidOperationException>(() =>
+			app.CommandExecutor.Execute("increaseStepper", Parameters(true)));
+		Assert.DoesNotContain(executor.Commands, c => c.Name == DriverCommand.ClickElement
+			|| c.Name == DriverCommand.Actions);
+	}
+
+	[Fact]
+	public void DuplicateSemanticTargetCannotHideBehindACompletePair()
+	{
+		var executor = SemanticExecutor(incrementFirst: false);
+		executor.ButtonOrder = ["decrement", "increment", "duplicate"];
+		executor.Identifiers["duplicate"] = "DefaultStepper-Increment";
+		using var app = CreateApp(executor, TestDevice.Mac);
+
+		Assert.Throws<InvalidOperationException>(() =>
+			app.CommandExecutor.Execute("increaseStepper", Parameters(true)));
+		Assert.DoesNotContain(executor.Commands, c => c.Name == DriverCommand.ClickElement);
+	}
+
+	[Theory]
+	[InlineData(TestDevice.iOS)]
+	[InlineData(TestDevice.Mac)]
+	public void NativeIdentifierErrorsAreNotReportedAsSuccessfulClicks(TestDevice device)
+	{
+		var executor = SemanticExecutor(incrementFirst: true);
+		executor.FailAttributes = true;
+		using var app = CreateApp(executor, device);
+
+		Assert.Throws<WebDriverException>(() =>
+			app.CommandExecutor.Execute("increaseStepper", Parameters(true)));
+		Assert.DoesNotContain(executor.Commands, c => c.Name == DriverCommand.ClickElement
+			|| c.Name == DriverCommand.Actions);
+	}
+
+	[Fact]
+	public void NativeSemanticClickAndFallbackErrorsPropagate()
+	{
+		var executor = SemanticExecutor(incrementFirst: true);
+		executor.FailClicks = true;
+		executor.FailActions = true;
+		using var app = CreateApp(executor);
+
+		var error = Assert.Throws<AggregateException>(() =>
+			app.CommandExecutor.Execute("increaseStepper", Parameters(true)));
+		Assert.Equal(2, error.InnerExceptions.Count);
+	}
+
+	[Fact]
+	public void UnidentifiedLegacyButtonsKeepTheirPositionalCompatibility()
+	{
+		var executor = new RecordingExecutor { ButtonCount = 2 };
+		executor.Identifiers["decrement"] = "legacy-left";
+		executor.Identifiers["increment"] = "legacy-right";
+		using var app = CreateApp(executor, TestDevice.Mac);
+
+		app.CommandExecutor.Execute("increaseStepper", Parameters(null));
+		app.CommandExecutor.Execute("decreaseStepper", Parameters(null));
+
+		Assert.Equal(new[] { "increment", "decrement" },
+			executor.Commands.Where(c => c.Name == DriverCommand.ClickElement)
+				.Select(c => c.Parameters["id"]));
 		Assert.DoesNotContain(executor.Commands, c => c.Name == DriverCommand.Actions);
 	}
 
@@ -136,11 +258,26 @@ public class StepperTests
 		return parameters;
 	}
 
-	static TestApp CreateApp(RecordingExecutor executor)
+	static RecordingExecutor SemanticExecutor(bool incrementFirst)
+	{
+		var executor = new RecordingExecutor
+		{
+			ButtonOrder = incrementFirst ? ["increment", "decrement"] : ["decrement", "increment"]
+		};
+		executor.Identifiers["increment"] = "DefaultStepper-Increment";
+		executor.Identifiers["decrement"] = "DefaultStepper-Decrement";
+		return executor;
+	}
+
+	static TestApp CreateApp(RecordingExecutor executor, TestDevice device = TestDevice.iOS)
 	{
 		var config = new Config();
-		config.SetProperty("TestDevice", TestDevice.iOS);
-		var app = new TestApp(new IOSDriver(executor, new AppiumOptions()), config);
+		config.SetProperty("TestDevice", device);
+		executor.Device = device;
+		AppiumDriver driver = device == TestDevice.Mac
+			? new MacDriver(executor, new AppiumOptions())
+			: new IOSDriver(executor, new AppiumOptions());
+		var app = new TestApp(driver, config);
 		executor.Commands.Clear();
 		return app;
 	}
@@ -168,6 +305,12 @@ public class StepperTests
 		public int Width { get; set; } = 95;
 		public int Height { get; set; } = 32;
 		public bool FailActions { get; set; }
+		public TestDevice Device { get; set; }
+		public string[]? ButtonOrder { get; set; }
+		public Dictionary<string, string?> Identifiers { get; } = new();
+		public string? DisabledElement { get; set; }
+		public bool FailAttributes { get; set; }
+		public bool FailClicks { get; set; }
 
 		public bool TryAddCommand(string commandName, CommandInfo? info) => true;
 		public Response Execute(Command command) => ExecuteAsync(command).GetAwaiter().GetResult();
@@ -177,23 +320,43 @@ public class StepperTests
 			Commands.Add(command);
 			if (command.Name == DriverCommand.Actions && FailActions)
 				throw new WebDriverException("Tap failed");
+			if (command.Name == DriverCommand.GetElementAttribute && FailAttributes)
+				throw new WebDriverException("Native identifier failed");
+			if (command.Name == DriverCommand.ClickElement && FailClicks)
+				throw new WebDriverException("Native click failed");
 
 			var response = command.Name switch
 			{
 				_ when command.Name == DriverCommand.NewSession => Response.FromJson(
 					"""{"value":{"sessionId":"recording","capabilities":{"platformName":"iOS"}}}"""),
-				_ when command.Name == DriverCommand.FindChildElements => Response.FromJson(ButtonCount switch
+				_ when command.Name == DriverCommand.FindChildElements => Response.FromJson(JsonSerializer.Serialize(new
 				{
-					0 => """{"value":[]}""",
-					1 => """{"value":[{"element-6066-11e4-a52e-4f735466cecf":"increment"}]}""",
-					_ => """{"value":[{"element-6066-11e4-a52e-4f735466cecf":"decrement"},{"element-6066-11e4-a52e-4f735466cecf":"increment"}]}"""
-				}),
+					value = (ButtonOrder ?? (ButtonCount switch
+					{
+						0 => [],
+						1 => ["increment"],
+						_ => new[] { "decrement", "increment" }
+					})).Select(id => new Dictionary<string, string>
+					{
+						["element-6066-11e4-a52e-4f735466cecf"] = id
+					})
+				})),
+				_ when command.Name == DriverCommand.GetElementAttribute => IdentifierResponse(command),
+				_ when command.Name == DriverCommand.IsElementEnabled => new Response("recording",
+					!Equals(command.Parameters["id"], DisabledElement), WebDriverResult.Success),
 				_ when command.Name == DriverCommand.GetElementRect => new Response("recording",
 					new Dictionary<string, object> { ["x"] = 140, ["y"] = 73, ["width"] = Width, ["height"] = Height },
 					WebDriverResult.Success),
 				_ => new Response("recording", true, WebDriverResult.Success)
 			};
 			return Task.FromResult(response);
+		}
+
+		Response IdentifierResponse(Command command)
+		{
+			Assert.Equal(Device == TestDevice.Mac ? "identifier" : "name", command.Parameters["name"]);
+			Identifiers.TryGetValue((string)command.Parameters["id"], out var identifier);
+			return Response.FromJson(JsonSerializer.Serialize(new { value = identifier }));
 		}
 
 		public void Dispose() { }
