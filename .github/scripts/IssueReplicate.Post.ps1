@@ -14,6 +14,7 @@ param(
     [string]$RecordingPrefix = 'REPRO_VIDEO_',
     [byte[]]$VideoBytes,
     [switch]$NativeCanary,
+    [switch]$VerifyHostedRecording,
     [string]$OutputPath = ''
 )
 
@@ -312,6 +313,14 @@ function Get-RecordingSection {
                     }
                     $checkpoint = $receipt.Checkpoint
                     $recordingText += $checkpoint
+                    if ($VerifyHostedRecording) {
+                        Assert-IssueReplicateHostedRecording -Url $receipt.Url `
+                            -ExpectedBytes $result.recording.bytes -ExpectedSha256 $result.recording.sha256
+                        $recordingText += "`n`n**Hosted attachment integrity:** verified $($result.recording.bytes) bytes; " +
+                            "SHA-256 ``$($result.recording.sha256)``."
+                    } else {
+                        $recordingText += "`n`n**Hosted attachment integrity:** not verified by this invocation."
+                    }
                     $publicationInterrupted = $false
                 } catch {
                     $recordingFailure = $_.Exception.Message.Replace("`r", '') -replace '##vso\[[^]]*\]', ''

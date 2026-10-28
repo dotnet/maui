@@ -410,6 +410,15 @@ partial candidate reports retain it. If an upload may have started but its URL
 was not persisted, retries fail closed without uploading again or overwriting the
 pending report. An operator must reconcile the public upload receipt from the
 trusted publisher log; GitHub upload and comment writes are not one atomic operation.
+Production publication passes `-VerifyHostedRecording`: after the pending report
+references the attachment, the publisher downloads it anonymously and requires
+its exact byte count and SHA-256 to match the validated result before finalizing.
+The download follows at most four redirects across fixed HTTPS attachment hosts,
+has one shared 60-second deadline, and cannot read more than the expected size.
+A missing, oversized, truncated or changed attachment leaves the report pending
+and fails publication. Retrying reuses the saved URL and verifies it again,
+without uploading another clip. Direct legacy invocations without the switch
+explicitly label hosted integrity as unverified; they do not certify the upload.
 The clip is retained as a GitHub user attachment, independently of Azure/GitHub
 run-artifact retention. This workflow does not automatically delete uploaded clips.
 
@@ -685,7 +694,8 @@ binds import to the selected build/infrastructure SHA, rejects missing/duplicate
 or oversized fields, and preserves the exact patch and recording bytes.
 It transfers data only, never executable files; no artifact upload is introduced.
 Pass the import's `RecordingBytes` directly to `IssueReplicate.Post.ps1 -VideoBytes`
-in the trusted publisher process. This avoids putting the full recording back in
+in the trusted publisher process, with `-VerifyHostedRecording` for publication.
+This avoids putting the full recording back in
 the local environment, where macOS has a much smaller aggregate process-argument
 limit than hosted Linux. The supplied bytes must still match the result's size
 and SHA-256 before preview or upload.

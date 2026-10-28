@@ -3,7 +3,8 @@ function Read-IssueReplicateHttpResponse {
         [Parameter(Mandatory)][Net.Http.HttpResponseMessage]$Response,
         [Parameter(Mandatory)][ValidateRange(1, 1048576)][int]$MaxBytes,
         [Parameter(Mandatory)][Threading.CancellationToken]$CancellationToken,
-        [switch]$AppiumErrorResponse
+        [switch]$AppiumErrorResponse,
+        [switch]$AsBytes
     )
 
     if (-not $AppiumErrorResponse -or $Response.IsSuccessStatusCode) {
@@ -25,6 +26,11 @@ function Read-IssueReplicateHttpResponse {
             $count += $read
         }
         if ($count -gt $MaxBytes) { throw "The HTTP response exceeds its bound: read at least $count bytes, permitted $MaxBytes." }
+        if ($AsBytes -and $Response.IsSuccessStatusCode) {
+            $result = [byte[]]::new($count)
+            [Array]::Copy($bytes, $result, $count)
+            return ,$result
+        }
         $text = [Text.UTF8Encoding]::new($false, $true).GetString($bytes, 0, $count)
         if (-not $Response.IsSuccessStatusCode) {
             $errorResponse = $text | ConvertFrom-Json -Depth 8
@@ -470,6 +476,69 @@ function Sync-IssueReplicateRecordingPublication {
     Write-Host "Native recording upload receipt ($($Recording.sha256)): $url"
     & $SaveCheckpoint $checkpoint | Out-Null
     return @{ Url = $url; Checkpoint = $checkpoint }
+}
+
+function Assert-IssueReplicateHostedRecording {
+    param(
+        [Parameter(Mandatory)][ValidatePattern('^https://github\.com/user-attachments/assets/[a-fA-F0-9-]{36}$')]
+        [string]$Url,
+        [Parameter(Mandatory)][ValidateRange(24, 1048576)][int]$ExpectedBytes,
+        [Parameter(Mandatory)][ValidatePattern('^[0-9a-f]{64}$')][string]$ExpectedSha256
+    )
+
+    $handler = [Net.Http.HttpClientHandler]::new()
+    $handler.AllowAutoRedirect = $false
+    $handler.UseCookies = $false
+    $handler.UseDefaultCredentials = $false
+    $client = [Net.Http.HttpClient]::new($handler)
+    $deadline = [Threading.CancellationTokenSource]::new([TimeSpan]::FromSeconds(60))
+    $destination = [uri]$Url
+    try {
+        for ($hop = 0; $hop -lt 5; $hop++) {
+            if ($destination.Scheme -cne 'https' -or -not $destination.IsDefaultPort -or
+                $destination.UserInfo -or $destination.Fragment -or
+                $destination.Host -notin @('github.com', 'objects.githubusercontent.com',
+                    'private-user-images.githubusercontent.com',
+                    'github-production-user-asset-6210df.s3.amazonaws.com')) {
+                throw 'The hosted recording redirected outside the approved public attachment hosts.'
+            }
+            $request = [Net.Http.HttpRequestMessage]::new([Net.Http.HttpMethod]::Get, $destination)
+            $request.Headers.UserAgent.ParseAdd('maui-issue-replicate/1.0')
+            $response = $null
+            try {
+                $response = $client.SendAsync($request, [Net.Http.HttpCompletionOption]::ResponseHeadersRead,
+                    $deadline.Token).GetAwaiter().GetResult()
+                if ([int]$response.StatusCode -ge 300 -and [int]$response.StatusCode -lt 400) {
+                    if (-not $response.Headers.Location) {
+                        throw 'The hosted recording redirect has no destination.'
+                    }
+                    $destination = [uri]::new($destination, $response.Headers.Location)
+                    continue
+                }
+                $bytes = Read-IssueReplicateHttpResponse -Response $response -MaxBytes $ExpectedBytes `
+                    -CancellationToken $deadline.Token -AsBytes
+                if ($bytes.Length -ne $ExpectedBytes) {
+                    throw "The hosted recording length does not match the result: expected $ExpectedBytes bytes, received $($bytes.Length)."
+                }
+                $hash = [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData($bytes)).ToLowerInvariant()
+                if ($hash -cne $ExpectedSha256) {
+                    throw 'The hosted recording SHA-256 does not match the result.'
+                }
+                Write-Host "Hosted recording verified: $ExpectedBytes bytes, SHA-256 $hash."
+                return
+            }
+            finally {
+                if ($response) { $response.Dispose() }
+                $request.Dispose()
+            }
+        }
+        throw 'The hosted recording redirected too many times.'
+    }
+    finally {
+        $deadline.Dispose()
+        $client.Dispose()
+        $handler.Dispose()
+    }
 }
 
 function Publish-IssueReplicateRecording {

@@ -320,7 +320,7 @@ stages:
                 }
                 & pwsh -NoProfile -File .github/scripts/IssueReplicate.Post.ps1 `
                   -IssueNumber $issue -CommentId $comment -BuildId ([int]"$(Build.BuildId)") `
-                  -AndroidApi $env:ANDROID_API `
+                  -AndroidApi $env:ANDROID_API -VerifyHostedRecording `
                   -InputDirectory "$(Pipeline.Workspace)/IssueInput" -ResultsDirectory $result `
                   -SampleDirectory "$(Pipeline.Workspace)/SampleOutput" -CandidateDirectory $candidateDirectory
                 if ($LASTEXITCODE -ne 0) { throw 'The result publisher failed.' }
