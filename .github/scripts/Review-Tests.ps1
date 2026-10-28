@@ -589,7 +589,7 @@ Rules:
 
     Set-Content -Path $PromptPath -Value $prompt -Encoding UTF8
 
-    $model = "gpt-6-astra"
+    $model = "gpt-6.1-sol"
     Write-Host "Invoking Copilot CLI with model $model..."
     if ($AllowAllTools) {
         Write-Host "AllowAllTools enabled: Copilot CLI will run with --allow-all against untrusted PR/log evidence." -ForegroundColor Yellow
