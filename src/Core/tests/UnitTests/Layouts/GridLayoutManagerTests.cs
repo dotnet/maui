@@ -1677,6 +1677,28 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			AssertArranged(fillingView, 0, 254, 300, 546);
 		}
 
+		[Fact]
+		public void CellsWaitingInBothDirectionsKeepTheExistingMeasureOrder()
+		{
+			var grid = CreateGridLayout(rows: "Auto, *", columns: "Auto, *");
+
+			// The Auto row waits for the * columns, and the Auto column waits for the * rows
+			var autoRowView = CreateTestView(new Size(210, 44));
+			var autoColumnView = CreateTestView(new Size(100, 40));
+			var fillingView = CreateConstraintFillingView();
+
+			SubstituteChildren(grid, autoRowView, autoColumnView, fillingView);
+			SetLocation(grid, autoRowView, row: 0, col: 0, colSpan: 2);
+			SetLocation(grid, autoColumnView, row: 1, col: 0);
+			SetLocation(grid, fillingView, row: 1, col: 1);
+
+			MeasureAndArrangeFixed(grid, 400, 800);
+
+			// No order works for both, so the * sizes are resolved before either Auto cell is measured, as before
+			fillingView.Received(1).Measure(Arg.Any<double>(), Arg.Any<double>());
+			fillingView.Received().Measure(400, 800);
+		}
+
 		[Theory]
 		[InlineData(100, 200, 210, 200)]
 		[InlineData(200, 100, 210, 200)]
