@@ -78,5 +78,9 @@ namespace Microsoft.Maui.Maps.Handlers
 			// Fill is not directly supported on MapIcon
 			// Would need custom shape implementation for polygons/circles
 		}
+
+		public static void MapIsVisible(IMapElementHandler handler, IMapElement mapElement) { }
+
+		public static void MapZIndex(IMapElementHandler handler, IMapElement mapElement) {}
 	}
 }

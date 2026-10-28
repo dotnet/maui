@@ -4,9 +4,7 @@ using PlatformView = MapKit.MKOverlayRenderer;
 using PlatformView = Java.Lang.Object;
 #elif WINDOWS
 using PlatformView = System.Object;
-#elif TIZEN
-using PlatformView = System.Object;
-#elif (NETSTANDARD || !PLATFORM) || (NET6_0 && !IOS && !ANDROID && !TIZEN)
+#elif (NETSTANDARD || !PLATFORM) || (NET6_0 && !IOS && !ANDROID)
 using PlatformView = System.Object;
 #endif
 using Microsoft.Maui.Handlers;
@@ -26,6 +24,8 @@ namespace Microsoft.Maui.Maps.Handlers
 			[nameof(IMapElement.Stroke)] = MapStroke,
 			[nameof(IMapElement.StrokeThickness)] = MapStrokeThickness,
 			[nameof(IFilledMapElement.Fill)] = MapFill,
+			[nameof(IMapElement.IsVisible)] = MapIsVisible,
+			[nameof(IMapElement.ZIndex)] = MapZIndex,
 #if MONOANDROID
 			["Geopath"] = MapGeopath,
 			[nameof(ICircleMapElement.Radius)] = MapRadius,

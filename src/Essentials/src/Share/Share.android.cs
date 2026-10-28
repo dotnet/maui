@@ -13,6 +13,21 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 	{
 		Task PlatformRequestAsync(ShareTextRequest request)
 		{
+			var intent = CreateShareTextIntent(request);
+
+			var chooserIntent = Intent.CreateChooser(intent, request.Title ?? string.Empty);
+			var flags = ActivityFlags.ClearTop | ActivityFlags.NewTask;
+			if (intent.ClipData != null)
+				flags |= ActivityFlags.GrantReadUriPermission;
+			chooserIntent.SetFlags(flags);
+			Application.Context.StartActivity(chooserIntent);
+
+			return Task.CompletedTask;
+		}
+
+		// Extracted for testability — verifiable without launching an Activity.
+		internal static Intent CreateShareTextIntent(ShareTextRequest request)
+		{
 			var items = new List<string>();
 			if (!string.IsNullOrWhiteSpace(request.Text))
 			{
@@ -33,12 +48,21 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 				intent.PutExtra(Intent.ExtraSubject, request.Subject);
 			}
 
-			var chooserIntent = Intent.CreateChooser(intent, request.Title ?? string.Empty);
-			var flags = ActivityFlags.ClearTop | ActivityFlags.NewTask;
-			chooserIntent.SetFlags(flags);
-			Application.Context.StartActivity(chooserIntent);
+			// Android 10+ reads the share sheet thumbnail from the first ClipData item
+			// and the preview title from EXTRA_TITLE.
+			if (request.PreviewImage != null && OperatingSystem.IsAndroidVersionAtLeast(29))
+			{
+				var previewUri = FileSystemUtils.GetShareableFileUri(request.PreviewImage);
+				intent.ClipData = ClipData.NewRawUri(request.Title ?? string.Empty, previewUri);
+				intent.AddFlags(ActivityFlags.GrantReadUriPermission);
 
-			return Task.CompletedTask;
+				if (!string.IsNullOrEmpty(request.Title))
+				{
+					intent.PutExtra(Intent.ExtraTitle, request.Title);
+				}
+			}
+
+			return intent;
 		}
 
 		Task PlatformRequestAsync(ShareFileRequest request) =>

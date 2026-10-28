@@ -13,7 +13,7 @@ class ExpandMarkupsVisitor(SourceGenContext context) : IXamlNodeVisitor
 	{
 	}
 
-	record SGContextProvider(SourceGenContext Context)
+	internal record SGContextProvider(SourceGenContext Context)
 	{
 	}
 
@@ -57,13 +57,6 @@ class ExpandMarkupsVisitor(SourceGenContext context) : IXamlNodeVisitor
 		// Check if it's a C# expression
 		if (CSharpExpressionHelpers.IsExpression(trimmed, name => TryResolveMarkupExtensionType(name, node.NamespaceResolver)))
 		{
-			if (!Context.ProjectItem.EnablePreviewFeatures)
-			{
-				var location = LocationHelpers.LocationCreate(Context.ProjectItem.RelativePath!, node, trimmed);
-				Context.ReportDiagnostic(Diagnostic.Create(Descriptors.CSharpExpressionsRequirePreviewFeatures, location));
-				return;
-			}
-
 			// Async lambda event handlers are not supported
 			if (CSharpExpressionHelpers.IsAsyncLambdaEventHandler(trimmed))
 			{
@@ -98,16 +91,14 @@ class ExpandMarkupsVisitor(SourceGenContext context) : IXamlNodeVisitor
 		// Get thisType and dataType for ambiguity checking
 		ITypeSymbol? thisType = null;
 		ITypeSymbol? dataType = null;
-		if (Context.ProjectItem.EnablePreviewFeatures)
-		{
-			// Try to get the page/view type (this)
-			var rootElement = GetRootElement(parentElement);
-			if (rootElement?.XmlType.TryResolveTypeSymbol(null, Context.Compilation, Context.XmlnsCache, Context.TypeCache, out var resolvedThisType) == true)
-				thisType = resolvedThisType;
-			
-			// Try to get x:DataType
-			XDataTypeResolver.TryGetXDataType(parentElement, Context, out dataType);
-		}
+
+		// Try to get the page/view type (this)
+		var rootElement = GetRootElement(parentElement);
+		if (rootElement?.XmlType.TryResolveTypeSymbol(null, Context.Compilation, Context.XmlnsCache, Context.TypeCache, out var resolvedThisType) == true)
+			thisType = resolvedThisType;
+
+		// Try to get x:DataType
+		XDataTypeResolver.TryGetXDataType(parentElement, Context, out dataType);
 
 		// Check if this is a C# expression (consolidates all detection logic)
 		var classification = CSharpExpressionHelpers.ClassifyExpression(
@@ -116,7 +107,7 @@ class ExpandMarkupsVisitor(SourceGenContext context) : IXamlNodeVisitor
 			name => CanResolveAsProperty(name, thisType, dataType));
 
 		// Report ambiguity warning if both markup extension and property exist
-		if (classification.IsAmbiguous && classification.Name != null && Context.ProjectItem.EnablePreviewFeatures)
+		if (classification.IsAmbiguous && classification.Name != null)
 		{
 			var location = LocationHelpers.LocationCreate(Context.ProjectItem.RelativePath!, markupnode, markupString);
 			Context.ReportDiagnostic(Diagnostic.Create(
@@ -127,15 +118,8 @@ class ExpandMarkupsVisitor(SourceGenContext context) : IXamlNodeVisitor
 
 		if (classification.IsExpression)
 		{
-			// C# expressions require EnablePreviewFeatures
-			if (!Context.ProjectItem.EnablePreviewFeatures)
-			{
-				var location = LocationHelpers.LocationCreate(Context.ProjectItem.RelativePath!, markupnode, markupString);
-				Context.ReportDiagnostic(Diagnostic.Create(Descriptors.CSharpExpressionsRequirePreviewFeatures, location));
-				// Fall through to parse as markup extension (will likely fail, but gives better error context)
-			}
 			// Async lambda event handlers are not supported
-			else if (CSharpExpressionHelpers.IsAsyncLambdaEventHandler(markupString))
+			if (CSharpExpressionHelpers.IsAsyncLambdaEventHandler(markupString))
 			{
 				var location = LocationHelpers.LocationCreate(Context.ProjectItem.RelativePath!, markupnode, markupString);
 				Context.ReportDiagnostic(Diagnostic.Create(Descriptors.AsyncLambdaNotSupported, location));
@@ -257,31 +241,28 @@ class ExpandMarkupsVisitor(SourceGenContext context) : IXamlNodeVisitor
 
 	INode? ParseExpression(ref string expression, IXmlNamespaceResolver nsResolver, IXmlLineInfo xmlLineInfo, INode node, INode parentNode)
 	{
+		// Capture the original expression so diagnostics point at the full markup, even after `expression` is consumed below.
+		var originalExpression = expression;
+
 		if (expression.StartsWith("{}", StringComparison.Ordinal))
 			return new ValueNode(expression.Substring(2), null, xmlLineInfo?.LineNumber ?? -1, xmlLineInfo?.LinePosition ?? -1);
 
 		if (expression.Length == 0 || expression[expression.Length - 1] != '}')
 		{
-			//FIXME fix location
-			var location = Context.ProjectItem.RelativePath is not null ? Location.Create(Context.ProjectItem.RelativePath, new TextSpan(), new LinePositionSpan()) : null;
-			Context.ReportDiagnostic(Diagnostic.Create(Descriptors.ExpressionNotClosed, location));
+			Context.ReportDiagnostic(Diagnostic.Create(Descriptors.ExpressionNotClosed, CreateExpressionLocation(xmlLineInfo, originalExpression)));
 			return null;
 		}
 
 		if (!MarkupExpressionParser.MatchMarkup(out var match, expression, out var len))
 		{
-			//FIXME fix location
-			var location = Context.ProjectItem.RelativePath is not null ? Location.Create(Context.ProjectItem.RelativePath, new TextSpan(), new LinePositionSpan()) : null;
-			Context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, location));
+			Context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, CreateExpressionLocation(xmlLineInfo, originalExpression)));
 			return null;
 		}
 
 		expression = expression.Substring(len).TrimStart();
 		if (expression.Length == 0)
 		{
-			//FIXME fix location
-			var location = Context.ProjectItem.RelativePath is not null ? Location.Create(Context.ProjectItem.RelativePath, new TextSpan(), new LinePositionSpan()) : null;
-			Context.ReportDiagnostic(Diagnostic.Create(Descriptors.ExpressionNotClosed, location));
+			Context.ReportDiagnostic(Diagnostic.Create(Descriptors.ExpressionNotClosed, CreateExpressionLocation(xmlLineInfo, originalExpression)));
 			return null;
 		}
 		var serviceProvider = new XamlServiceProvider(node, Context);
@@ -291,6 +272,17 @@ class ExpandMarkupsVisitor(SourceGenContext context) : IXamlNodeVisitor
 			serviceProvider.Add(typeof(IXmlLineInfoProvider), new XmlLineInfoProvider(xmlLineInfo));
 
 		return new MarkupExpansionParser().Parse(match!, ref expression, serviceProvider);
+	}
+
+	// Builds a diagnostic location pointing at the offending expression using its line info,
+	// instead of defaulting to the file root (1,1).
+	Location? CreateExpressionLocation(IXmlLineInfo? xmlLineInfo, string text)
+	{
+		if (Context.ProjectItem.RelativePath is not string relativePath)
+			return null;
+		if (xmlLineInfo is null || !xmlLineInfo.HasLineInfo())
+			return Location.Create(relativePath, new TextSpan(), new LinePositionSpan());
+		return LocationHelpers.LocationCreate(relativePath, xmlLineInfo, text);
 	}
 
 

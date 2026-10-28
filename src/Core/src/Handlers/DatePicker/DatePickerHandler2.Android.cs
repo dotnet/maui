@@ -1,13 +1,13 @@
 using System;
 using System.Collections.Generic;
 using Android.Content;
+using Android.Views;
 using AndroidX.Fragment.App;
 using Google.Android.Material.DatePicker;
 
 namespace Microsoft.Maui.Handlers;
 
-// TODO: material3 - make it public in .net 11
-internal class DatePickerHandler2 : ViewHandler<IDatePicker, MauiMaterialDatePicker>
+public class DatePickerHandler2 : ViewHandler<IDatePicker, MauiMaterialDatePicker>
 {
     internal MaterialDatePicker? _dialog;
     internal bool _isUpdatingIsOpen;
@@ -30,6 +30,8 @@ internal class DatePickerHandler2 : ViewHandler<IDatePicker, MauiMaterialDatePic
 
     public static CommandMapper<IDatePicker, DatePickerHandler2> CommandMapper = new(ViewCommandMapper)
     {
+        [nameof(IView.Focus)] = MapFocus,
+        [nameof(IView.Unfocus)] = MapUnfocus,
     };
 
     public DatePickerHandler2() : base(Mapper, CommandMapper)
@@ -50,6 +52,11 @@ internal class DatePickerHandler2 : ViewHandler<IDatePicker, MauiMaterialDatePic
 
         platformView.ShowPicker = ShowPickerDialog;
         platformView.HidePicker = HidePickerDialog;
+        platformView.ConnectClickListener();
+
+        // Focus lives on the inner edit text (the outer TextInputLayout never receives focus), so
+        // subscribe here to keep VirtualView.IsFocused and the Focused/Unfocused events in sync.
+        platformView.InputEditText?.FocusChange += OnInputFocusChange;
     }
 
     protected override void DisconnectHandler(MauiMaterialDatePicker platformView)
@@ -73,13 +80,44 @@ internal class DatePickerHandler2 : ViewHandler<IDatePicker, MauiMaterialDatePic
 
         platformView.ShowPicker = null;
         platformView.HidePicker = null;
+        platformView.DisconnectClickListener();
+
+        // Reset focusability enabled by RequestInputFocus/FocusInput; the platform view can be reused
+        // across reconnects, so a leftover focusable read-only field could become an initial-focus candidate.
+        // Clear focus while the listener is still attached so VirtualView.IsFocused is also reset.
+        platformView.ClearInputFocus();
+        platformView.InputEditText?.FocusChange -= OnInputFocusChange;
 
         base.DisconnectHandler(platformView);
     }
 
+    void OnInputFocusChange(object? sender, View.FocusChangeEventArgs e)
+    {
+        if (VirtualView is null)
+        {
+            return;
+        }
+
+        VirtualView.IsFocused = e.HasFocus;
+    }
+
+    // The outer TextInputLayout never takes focus, so route IView.Focus/Unfocus to the inner edit text.
+    public static void MapFocus(DatePickerHandler2 handler, IDatePicker picker, object? args)
+    {
+        if (args is FocusRequest request)
+        {
+            handler.PlatformView?.FocusInput(request);
+        }
+    }
+
+    public static void MapUnfocus(DatePickerHandler2 handler, IDatePicker picker, object? args)
+    {
+        handler.PlatformView?.ClearInputFocus();
+    }
+
     static void MapBackground(DatePickerHandler2 handler, IDatePicker datePicker)
     {
-        handler.PlatformView?.UpdateBackground(datePicker);
+        handler.PlatformView?.UpdateBoxBackground(datePicker);
     }
 
     static void MapIsOpen(DatePickerHandler2 handler, IDatePicker picker)
@@ -99,7 +137,7 @@ internal class DatePickerHandler2 : ViewHandler<IDatePicker, MauiMaterialDatePic
 
     static void MapTextColor(DatePickerHandler2 handler, IDatePicker picker)
     {
-        handler.PlatformView?.UpdateTextColor(picker);
+        handler.PlatformView?.InputEditText?.UpdateTextColor(picker);
     }
 
     // Material3 MaterialDatePicker uses immutable CalendarConstraints.
@@ -117,24 +155,24 @@ internal class DatePickerHandler2 : ViewHandler<IDatePicker, MauiMaterialDatePic
 
     static void MapFormat(DatePickerHandler2 handler, IDatePicker picker)
     {
-        handler.PlatformView?.UpdateFormat(picker);
+        handler.PlatformView?.InputEditText?.UpdateFormat(picker);
     }
 
     static void MapFont(DatePickerHandler2 handler, IDatePicker picker)
     {
         var fontManager = handler.GetRequiredService<IFontManager>();
 
-        handler.PlatformView?.UpdateFont(picker, fontManager);
+        handler.PlatformView?.InputEditText?.UpdateFont(picker, fontManager);
     }
 
     static void MapDate(DatePickerHandler2 handler, IDatePicker picker)
     {
-        handler.PlatformView?.UpdateDate(picker);
+        handler.PlatformView?.InputEditText?.UpdateDate(picker);
     }
 
     static void MapCharacterSpacing(DatePickerHandler2 handler, IDatePicker picker)
     {
-        handler.PlatformView?.UpdateCharacterSpacing(picker);
+        handler.PlatformView?.InputEditText?.UpdateCharacterSpacing(picker);
     }
 
     protected virtual MaterialDatePicker? CreateDatePickerDialog(int year, int month, int day)
@@ -243,7 +281,29 @@ internal class DatePickerHandler2 : ViewHandler<IDatePicker, MauiMaterialDatePic
         var day = date?.Day ?? DateTime.Today.Day;
 
         _dialog = CreateDatePickerDialog(year, month, day);
-        _dialog?.Show(fragmentManager, "MaterialDatePicker");
+        if (_dialog is null)
+        {
+            return;
+        }
+
+        // Focus the field before Show() so the outlined layout shows its highlighted (focused) state
+        // and to avoid racing with the dialog window taking focus. This also covers opens triggered
+        // programmatically via IsOpen.
+        PlatformView?.RequestInputFocus();
+
+        try
+        {
+            _dialog.Show(fragmentManager, "MaterialDatePicker");
+        }
+        catch (Java.Lang.IllegalStateException)
+        {
+            // A rejected fragment transaction (e.g. state saved in a race after the guard above) must not
+            // strand the field focused with no dialog; restore the resting state and abort the open.
+            _dialog = null;
+            PlatformView?.ClearInputFocus();
+            UpdateIsOpenState(false);
+            return;
+        }
 
         UpdateIsOpenState(true);
     }
@@ -252,6 +312,7 @@ internal class DatePickerHandler2 : ViewHandler<IDatePicker, MauiMaterialDatePic
     {
         if (_dialog is null)
         {
+            PlatformView?.ClearInputFocus();
             UpdateIsOpenState(false);
             return;
         }
@@ -264,6 +325,7 @@ internal class DatePickerHandler2 : ViewHandler<IDatePicker, MauiMaterialDatePic
         }
 
         _dialog = null;
+        PlatformView?.ClearInputFocus();
         UpdateIsOpenState(false);
     }
 
@@ -295,8 +357,7 @@ internal class DatePickerHandler2 : ViewHandler<IDatePicker, MauiMaterialDatePic
     }
 }
 
-// TODO: material3 - make it public in .net 11
-internal class MaterialDatePickerPositiveButtonClickListener : Java.Lang.Object, IMaterialPickerOnPositiveButtonClickListener
+public class MaterialDatePickerPositiveButtonClickListener : Java.Lang.Object, IMaterialPickerOnPositiveButtonClickListener
 {
     readonly WeakReference<DatePickerHandler2> _handler;
 
@@ -326,8 +387,7 @@ internal class MaterialDatePickerPositiveButtonClickListener : Java.Lang.Object,
     }
 }
 
-// TODO: material3 - make it public in .net 11
-internal class MaterialDatePickerDismissListener : Java.Lang.Object, IDialogInterfaceOnDismissListener
+public class MaterialDatePickerDismissListener : Java.Lang.Object, IDialogInterfaceOnDismissListener
 {
     readonly WeakReference<DatePickerHandler2> _handler;
 
@@ -346,6 +406,7 @@ internal class MaterialDatePickerDismissListener : Java.Lang.Object, IDialogInte
         // Dialog was dismissed (back button, outside tap, cancel button, etc.)
         // Clean up without trying to dismiss again
         handler._dialog = null;
+        handler.PlatformView?.ClearInputFocus();
         handler.UpdateIsOpenState(false);
     }
 }

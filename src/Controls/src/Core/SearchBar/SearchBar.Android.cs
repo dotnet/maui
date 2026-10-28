@@ -14,8 +14,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		// Material3 specific overload for SearchBarHandler2
-		// TODO: Material3: Make it public in .NET 11
-		internal static void MapText(SearchBarHandler2 handler, SearchBar searchBar)
+		public static void MapText(SearchBarHandler2 handler, SearchBar searchBar)
 		{
 			if (handler.PlatformView?.EditText is null)
 			{

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Build.Framework;
 using Microsoft.Maui.Controls.Build.Tasks;
 using Microsoft.Maui.Controls.MSBuild.UnitTests;
 using Mono.Cecil;
@@ -36,13 +37,26 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			bool treatWarningsAsErrors = false,
 			bool compileBindingsWithSource = true,
 			bool generateFullIl = true)
+			=> Compile(type, out methodDefinition, out hasLoggedErrors, out _, targetFramework, treatWarningsAsErrors, compileBindingsWithSource, generateFullIl);
+
+		public static void Compile(
+			Type type,
+			out MethodDefinition methodDefinition,
+			out bool hasLoggedErrors,
+			out IReadOnlyList<BuildWarningEventArgs> loggedWarnings,
+			string targetFramework = null,
+			bool treatWarningsAsErrors = false,
+			bool compileBindingsWithSource = true,
+			bool generateFullIl = true)
 		{
 			methodDefinition = null;
+			loggedWarnings = null;
 			var assembly = type.Assembly.Location;
 			var refs = from an in type.Assembly.GetReferencedAssemblies()
 					   let a = System.Reflection.Assembly.Load(an)
 					   select a.Location;
 
+			var dummyEngine = new MSBuild.UnitTests.DummyBuildEngine();
 			var xamlc = new XamlCTask
 			{
 				Assembly = assembly,
@@ -56,7 +70,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				TargetFramework = targetFramework,
 				TreatWarningsAsErrors = treatWarningsAsErrors,
 				CompileBindingsWithSource = compileBindingsWithSource,
-				BuildEngine = new MSBuild.UnitTests.DummyBuildEngine(),
+				BuildEngine = dummyEngine,
 				MockCompile = true,
 
 			};
@@ -65,8 +79,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			{
 				methodDefinition = xamlc.InitCompForType;
 				hasLoggedErrors = xamlc.LoggingHelper.HasLoggedErrors;
+				loggedWarnings = dummyEngine.Warnings;
 				return;
 			}
+			loggedWarnings = dummyEngine.Warnings;
 			if (exceptions.Count > 1)
 				throw new AggregateException(exceptions);
 			throw exceptions[0];

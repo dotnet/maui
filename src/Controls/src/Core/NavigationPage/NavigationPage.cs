@@ -17,6 +17,9 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for attached property <c>BackButtonTitle</c>.</summary>
 		public static readonly BindableProperty BackButtonTitleProperty = BindableProperty.CreateAttached("BackButtonTitle", typeof(string), typeof(Page), null);
 
+		/// <summary>Bindable property for attached property <c>BackButtonAccessibilityLabel</c>.</summary>
+		public static readonly BindableProperty BackButtonAccessibilityLabelProperty = BindableProperty.CreateAttached("BackButtonAccessibilityLabel", typeof(string), typeof(Page), null);
+
 		/// <summary>Bindable property for attached property <c>HasNavigationBar</c>.</summary>
 		public static readonly BindableProperty HasNavigationBarProperty =
 			BindableProperty.CreateAttached("HasNavigationBar", typeof(bool), typeof(Page), BooleanBoxes.TrueBox);
@@ -57,7 +60,25 @@ namespace Microsoft.Maui.Controls
 
 		partial void Init();
 
+		// Deferred NavigatedTo support (iOS/MacCatalyst only):
+		// On iOS, the handler connects (OnHandlerChangedCore) before the Window parents
+		// the page, so NavigationProxy.Inner is null at that point. If NavigatedTo fires
+		// immediately, any PushModalAsync called from a NavigatedTo handler will silently
+		// fail (NavigationProxy queues the request and returns Task.CompletedTask).
+		// With the renderer, OnHandlerChangedCore was skipped (IsShimmed()=true) and
+		// NavigatedTo fired later from the renderer's ViewDidAppear.
+		// These partial methods let iOS defer SendNavigated to OnControllerAppeared
+		// (ViewDidAppear), when Inner is wired. On Android/Windows these are no-ops
+		// because Inner is already set before the handler connects.
+		partial void ShouldDeferNavigatedTo(ref bool defer);
+		partial void FireDeferredNavigatedTo();
+		partial void OnHandlerDisconnected();
+
 #if IOS || MACCATALYST
+		// On iOS/MacCatalyst, default to legacy NavigationImpl (event-based).
+		// UseHandlerNavigation() is called when NavigationViewHandler connects,
+		// enabling MauiNavigationImpl (RequestNavigation-based).
+		// This ensures the renderer fallback works without any special handling.
 		const bool UseMauiHandler = false;
 #else
 		const bool UseMauiHandler = true;
@@ -90,6 +111,36 @@ namespace Microsoft.Maui.Controls
 
 			if (root != null)
 				PushPage(root);
+		}
+
+		/// <summary>
+		/// Switches from legacy NavigationImpl to MauiNavigationImpl.
+		/// Called when NavigationViewHandler connects on iOS/MacCatalyst.
+		/// </summary>
+		internal void UseHandlerNavigation()
+		{
+			if (!_setForMaui)
+			{
+				_setForMaui = true;
+
+				var oldInner = NavigationProxy?.Inner;
+				Navigation = new MauiNavigationImpl(this);
+				if (oldInner is not null)
+				{
+					NavigationProxy.Inner = oldInner;
+				}
+
+				// Child pages' NavigationProxy.Inner still references the old proxy.
+				// Re-wire them to the new one so PushModalAsync etc. route correctly.
+				var newProxy = NavigationProxy;
+				foreach (var child in InternalChildren)
+				{
+					if (child is NavigableElement nav)
+					{
+						nav.NavigationProxy.Inner = newProxy;
+					}
+				}
+			}
 		}
 
 		/// <summary>Gets or sets the background color for the bar at the top of the NavigationPage. This is a bindable property.</summary>
@@ -176,6 +227,14 @@ namespace Microsoft.Maui.Controls
 			return (string)page.GetValue(BackButtonTitleProperty);
 		}
 
+		/// <summary>Gets the accessibility label for the back button of the specified <paramref name="page"/>.</summary>
+		/// <param name="page">The <see cref="Microsoft.Maui.Controls.Page"/> whose back-button's accessibility label is being requested.</param>
+		/// <returns>The accessibility label read by screen readers for the back button, or <see langword="null"/> if not set.</returns>
+		public static string GetBackButtonAccessibilityLabel(BindableObject page)
+		{
+			return (string)page.GetValue(BackButtonAccessibilityLabelProperty);
+		}
+
 		/// <summary>Returns a value that indicates whether <paramref name="page"/> has a back button.</summary>
 		/// <param name="page">The page parameter.</param>
 		public static bool GetHasBackButton(Page page)
@@ -255,7 +314,7 @@ namespace Microsoft.Maui.Controls
 			}
 			catch (Exception e)
 			{
-				Application.Current?.FindMauiContext()?.CreateLogger<NavigationPage>()?.LogWarning(e, null);
+				MauiLogger<NavigationPage>.Log(LogLevel.Warning, e, "");
 				CurrentNavigationTask = null;
 				tcs.SetCanceled();
 
@@ -353,6 +412,14 @@ namespace Microsoft.Maui.Controls
 		public static void SetBackButtonTitle(BindableObject page, string value)
 		{
 			page.SetValue(BackButtonTitleProperty, value);
+		}
+
+		/// <summary>Sets the accessibility label for the back button of <paramref name="page"/>, allowing the text read by screen readers to differ from the visible back button title.</summary>
+		/// <param name="page">The page parameter.</param>
+		/// <param name="value">The accessibility label value to set.</param>
+		public static void SetBackButtonAccessibilityLabel(BindableObject page, string value)
+		{
+			page.SetValue(BackButtonAccessibilityLabelProperty, value);
 		}
 
 		/// <summary>Adds or removes a back button to <paramref name="page"/>, with optional animation.</summary>
@@ -726,6 +793,19 @@ namespace Microsoft.Maui.Controls
 		{
 			base.OnHandlerChangedCore();
 
+#if IOS || MACCATALYST
+			// On iOS/MacCatalyst, enable handler-based navigation (MauiNavigationImpl)
+			// when NavigationViewHandler connects. Constructor defaults to legacy
+			// NavigationImpl on these platforms to support renderer fallback.
+			if (Handler is NavigationViewHandler && !_setForMaui)
+			{
+				UseHandlerNavigation();
+				// The legacy NavigationImpl may have set CurrentNavigationTask (e.g. PushAsync
+				// in a subclass constructor). Clear it so SendHandlerUpdateAsync can take over.
+				CurrentNavigationTask = null;
+			}
+#endif
+
 			if (Navigation is MauiNavigationImpl && InternalChildren.Count > 0)
 			{
 				var navStack = Navigation.NavigationStack;
@@ -735,12 +815,18 @@ namespace Microsoft.Maui.Controls
 
 				var navigationType = DetermineNavigationType();
 
+				// On iOS, ShouldDeferNavigatedTo sets defer=true when Inner is null.
+				// When deferred, SendNavigated is skipped here and fired later from
+				// OnControllerAppeared (ViewDidAppear) via FireDeferredNavigatedTo.
+				bool deferNavigatedTo = false;
+				ShouldDeferNavigatedTo(ref deferNavigatedTo);
+
 				SendHandlerUpdateAsync(false, null,
 				() =>
 				{
 					FireAppearing(CurrentPage);
 				},
-				() =>
+				deferNavigatedTo ? null : () =>
 				{
 					SendNavigated(null, navigationType);
 				})
@@ -749,9 +835,14 @@ namespace Microsoft.Maui.Controls
 
 			// If the handler is disconnected and we're still waiting for updates from the handler
 			// Just complete any waits
-			if (Handler == null && _waitingCount > 0)
+			if (Handler is null && _waitingCount > 0)
 			{
 				((IStackNavigation)this).NavigationFinished(this.NavigationStack);
+			}
+
+			if (Handler is null)
+			{
+				OnHandlerDisconnected();
 			}
 		}
 
@@ -938,7 +1029,7 @@ namespace Microsoft.Maui.Controls
 
 				if (page == Owner.CurrentPage)
 				{
-					Application.Current?.FindMauiContext()?.CreateLogger<NavigationPage>()?.LogWarning("RemovePage called for CurrentPage object. This can result in undesired behavior, consider calling PopAsync instead.");
+					MauiLogger<NavigationPage>.Log(LogLevel.Warning, "RemovePage called for CurrentPage object. This can result in undesired behavior, consider calling PopAsync instead.");
 					PopAsync();
 					return;
 				}

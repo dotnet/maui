@@ -161,9 +161,9 @@ public class PlatformWebViewWebResourceRequestedEventArgs
 		{
 			foreach (var key in rh.Keys)
 			{
-				if (key is Foundation.NSString keyString)
+				if (key is Foundation.NSString keyString && rh[keyString]?.ToString() is string value)
 				{
-					headers[keyString] = rh[keyString].ToString();
+					headers[keyString] = value;
 				}
 			}
 		}
