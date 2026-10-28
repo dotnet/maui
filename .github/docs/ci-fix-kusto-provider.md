@@ -28,10 +28,12 @@ For each selected build, the default `azure` provider:
    responses, unavailable prior timelines, or any limit.
 
 The Kusto experiment does not replace those guarantees. `-EvidenceProvider
-kusto` queries Kusto first, records its normalized projection, and falls back
-to Azure because current Kusto coverage is always `partial` or `notIndexed`.
-Only a future provider response with `taskInventory.coverage=complete` after
-all pages may replace Azure timeline discovery.
+kusto` queries Kusto first and replaces Azure timeline discovery only when a
+fail-closed certificate proves a completed, single-attempt public build with a
+complete current hierarchy and a bounded exact failure inventory. Any retry,
+ambiguous scope, stale or malformed ingestion, structural gap, conflicting
+identity, or provider limit falls back to Azure. Raw log downloads continue to
+use Azure in either path.
 
 ## Local Kusto query
 
@@ -44,32 +46,47 @@ and runs through the user's existing Azure CLI login:
 az login
 pwsh -NoProfile -File .github/scripts/Get-CiFixAzdoEvidence.ps1 `
   -EvidenceProvider kusto `
-  -CandidatesPath /tmp/gh-aw/agent/prefetch.json `
-  -OutputDirectory /tmp/ci-fix-kusto
+  -CandidatesPath <candidate-snapshot.json> `
+  -OutputDirectory <evidence-directory>
 ```
 
-No token is written to disk or passed to the script. The script invokes
-`az rest --resource https://api.kusto.windows.net` with a temporary query body
-outside the checkout. Real evidence should remain outside every checkout.
+No token or query payload is written to disk. The script invokes `az rest
+--resource https://api.kusto.windows.net` through the user's existing Azure CLI
+login. Real evidence should remain outside every checkout.
 
-The bounded query reads one build row from `TimelineBuilds` and at most 257
-candidate task rows from `TimelineRecords`. Candidate rows require a task name,
-positive log ID, and either a failed/partially-succeeded result or a positive
-timeline error count. The normalized projection keeps:
+The bounded query reads the exact build rows from `TimelineBuilds` and all
+hierarchy rows for that build ID from `TimelineRecords`. It deterministically
+keeps the latest ingestion for each `(TimelineId, RecordId)` and rejects
+conflicting variants at the latest ingestion time. The query computes its
+certificate before returning at most 257 failed-task rows. Task records are
+identified by their four-part hierarchy path, which preserves task rows such
+as initialization/finalization records that do not have `TaskName`.
+
+The certificate requires:
+
+- exactly one `dnceng-public/public` build scope with completed failed status;
+- one timeline, attempt `1` throughout, and no retry signal;
+- a nonempty root/job/task hierarchy with valid parent links, unique paths, and
+  no orphan `999.*` sentinel;
+- no unfinished task or job records;
+- valid record/timeline identities and exact public Azure log URLs;
+- build and record ingestion timestamps at or after build completion;
+- an exact failure count within the provider row limit, with unique record and
+  log identities.
+
+The normalized projection keeps:
 
 - build ID, finish time, and Kusto indexing time;
 - record ID, parent ID, task display name, result, and error count;
 - attempt, timeline ID, hierarchy path, log ID, and Azure log URL.
 
-Kusto currently does **not** provide an explicit complete-build marker, prior
-timeline rows or `previousAttempts[].recordId` linkage, a stable
-current-versus-previous classification, total/paged inventory counts, or an
-independent test/Helix completeness state. `ingestion_time()` measures
-freshness, not completeness. `TimelineRecords` also lacks organization and
-project columns, so the adapter can validate the `TimelineBuilds` row for
-`dnceng-public/public` but cannot prove record-level scoping if build IDs ever
-collide across projects. Therefore an indexed empty result remains `partial`,
-not complete.
+The ingester writes each timeline-record batch as one queued in-memory stream.
+That contract plus the hierarchy checks allows a completed single-attempt
+inventory, including an empty failure inventory, to be certified. Kusto still
+does **not** expose `previousAttempts[].recordId` linkage or independent
+test/Helix completeness. Multi-attempt builds therefore remain `partial`, and
+`ingestion_time()` is used only as one freshness condition rather than as a
+standalone completeness claim.
 
 ## Measured exact-build results
 
@@ -78,10 +95,10 @@ were retained under `/tmp`, not committed.
 
 | Public build | Azure truth | Kusto projection | Exact identity comparison | Indexing lag | Result |
 |---|---:|---:|---|---:|---|
-| `1650505` | 45 current failed tasks | 45 | 45/45 record ID + log ID + name + attempt matches | ~42m 45s | Kusto partial; Azure fallback downloads 32 logs and leaves 13 at the unchanged cap |
-| `1626285` | Retained: 58 current + 64 previous-attempt tasks; live Azure timeline now 404 | 71 current-timeline candidates | 58/58 retained current failed-task matches; 13 additional error-bearing rows; 0/64 prior-task log IDs and none of 8 prior timeline IDs | ~49m 5s | Kusto cannot reconstruct prior-attempt provenance; Azure fallback remains incomplete because retention expired |
-| `1650530` | 6 current failed tasks and all 6 Azure logs available | 6 | 6/6 exact matches | ~32m 2s | Azure task/log inventory completes, but underlying test/Helix evidence remains independently incomplete |
-| `1626205` | Retained baseline: 10 result-failed tasks, no prior attempts | 28 current-timeline candidates | All 10 retained failed-task identities match; 18 additional error-bearing rows. Current Azure consumer semantics also select 28 | ~17m 42s | Kusto partial; Azure fallback remains authoritative |
+| `1650505` | 45 current failed tasks | 45 | 45/45 record ID + log ID matches | ~42m 45s | Inventory certified and Azure timeline skipped; overall evidence remains incomplete because the unchanged 32-log cap leaves 13 logs unfetched |
+| `1626285` | Retained multi-attempt evidence; live Azure timeline now 404 | 71 current-timeline candidates | Not eligible for substitution | ~49m 5s | `MaxAttempt=2` forces deterministic Azure fallback, which remains incomplete after timeline retention |
+| `1650530` | 6 current failed tasks and all 6 Azure logs available | 6 | 6/6 record ID + log ID matches | ~32m 2s | Inventory certified and all six raw logs downloaded; test/Helix completeness remains independent |
+| `1626205` | 28 current failed/error-bearing tasks | 28 | 28/28 record ID + log ID matches | ~17m 42s | Inventory certified and Azure timeline skipped |
 
 The 32-log cap is deliberately unchanged. This prototype does not claim log
 savings, Helix completeness, or a supported production Kusto dependency.
@@ -94,11 +111,11 @@ retrieval:
 ```json
 {
   "requestedProvider": "kusto",
-  "requestedCoverage": "complete | partial | notIndexed",
-  "requestedStatus": "available | malformed | error | notIndexed",
-  "usedProvider": "azure",
+  "requestedCoverage": "complete",
+  "requestedStatus": "available",
+  "usedProvider": "kusto",
   "usedCoverage": "complete | partial",
-  "fallbackUsed": true,
+  "fallbackUsed": false,
   "indexedAt": "2026-10-27T13:21:56.4658131Z",
   "buildFinishTime": "2026-10-27T12:39:11.0000000Z",
   "truncated": false,
@@ -121,7 +138,8 @@ Completeness must remain independent across:
 - `knownIssueAssociations`
 - `testAndHelixEvidence`
 
-Only `taskInventory=complete` authorizes replacing Azure timeline discovery.
+Only a certified `taskInventory=complete` authorizes replacing Azure timeline
+discovery.
 Known-issue matches or test/Helix rows cannot imply a complete task inventory.
 
 ## Proposed Build Insights MCP tool

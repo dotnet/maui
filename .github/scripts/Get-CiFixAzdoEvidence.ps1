@@ -599,88 +599,81 @@ function Invoke-CiFixKustoQuery {
     $effectiveTimeoutSeconds = [Math]::Max(
         1,
         [Math]::Min($TimeoutSeconds, [Math]::Floor($producerRemaining.TotalSeconds)))
-    $payloadPath = Join-Path ([IO.Path]::GetTempPath()) "ci-fix-kusto-$([Guid]::NewGuid().ToString('N')).json"
+    $payload = @{
+        db = $script:KustoDatabase
+        csl = $Query
+    } | ConvertTo-Json -Compress
+
+    $startInfo = [Diagnostics.ProcessStartInfo]::new()
+    $startInfo.FileName = 'az'
+    $startInfo.UseShellExecute = $false
+    $startInfo.RedirectStandardOutput = $true
+    $startInfo.RedirectStandardError = $true
+    foreach ($argument in @(
+            'rest',
+            '--only-show-errors',
+            '--method', 'post',
+            '--url', $script:KustoQueryUri,
+            '--resource', $script:KustoResourceUri,
+            '--headers', 'Content-Type=application/json',
+            '--body', $payload,
+            '--output', 'json')) {
+        $startInfo.ArgumentList.Add($argument)
+    }
+
+    $process = [Diagnostics.Process]::new()
+    $process.StartInfo = $startInfo
     try {
-        @{
-            db = $script:KustoDatabase
-            csl = $Query
-        } | ConvertTo-Json -Compress |
-            Set-Content -LiteralPath $payloadPath -Encoding utf8NoBOM
-
-        $startInfo = [Diagnostics.ProcessStartInfo]::new()
-        $startInfo.FileName = 'az'
-        $startInfo.UseShellExecute = $false
-        $startInfo.RedirectStandardOutput = $true
-        $startInfo.RedirectStandardError = $true
-        foreach ($argument in @(
-                'rest',
-                '--only-show-errors',
-                '--method', 'post',
-                '--url', $script:KustoQueryUri,
-                '--resource', $script:KustoResourceUri,
-                '--headers', 'Content-Type=application/json',
-                '--body', "@$payloadPath",
-                '--output', 'json')) {
-            $startInfo.ArgumentList.Add($argument)
-        }
-
-        $process = [Diagnostics.Process]::new()
-        $process.StartInfo = $startInfo
-        try {
-            if (-not $process.Start()) {
-                return [pscustomobject]@{
-                    Succeeded = $false
-                    Content = ''
-                    Error = 'Azure CLI Kusto query could not be started'
-                }
-            }
-
-            $stdout = $process.StandardOutput.ReadToEndAsync()
-            $stderr = $process.StandardError.ReadToEndAsync()
-            if (-not $process.WaitForExit($effectiveTimeoutSeconds * 1000)) {
-                $process.Kill($true)
-                $process.WaitForExit()
-                return [pscustomobject]@{
-                    Succeeded = $false
-                    Content = ''
-                    Error = "Azure CLI Kusto query exceeded the $effectiveTimeoutSeconds-second limit"
-                }
-            }
-
-            $content = $stdout.GetAwaiter().GetResult()
-            $errorText = $stderr.GetAwaiter().GetResult()
-            if ($process.ExitCode -ne 0) {
-                $error = if ($errorText -match '(?i)(az login|login required|not logged in)') {
-                    'Azure CLI Kusto authentication is unavailable; run az login with an authorized employee account'
-                } else {
-                    "Azure CLI Kusto query failed with exit code $($process.ExitCode)"
-                }
-                return [pscustomobject]@{
-                    Succeeded = $false
-                    Content = ''
-                    Error = $error
-                }
-            }
-
-            return [pscustomobject]@{
-                Succeeded = $true
-                Content = $content
-                Error = ''
-            }
-        }
-        catch {
+        if (-not $process.Start()) {
             return [pscustomobject]@{
                 Succeeded = $false
                 Content = ''
-                Error = 'Azure CLI Kusto query transport failed'
+                Error = 'Azure CLI Kusto query could not be started'
             }
         }
-        finally {
-            $process.Dispose()
+
+        $stdout = $process.StandardOutput.ReadToEndAsync()
+        $stderr = $process.StandardError.ReadToEndAsync()
+        if (-not $process.WaitForExit($effectiveTimeoutSeconds * 1000)) {
+            $process.Kill($true)
+            $process.WaitForExit()
+            return [pscustomobject]@{
+                Succeeded = $false
+                Content = ''
+                Error = "Azure CLI Kusto query exceeded the $effectiveTimeoutSeconds-second limit"
+            }
+        }
+
+        $content = $stdout.GetAwaiter().GetResult()
+        $errorText = $stderr.GetAwaiter().GetResult()
+        if ($process.ExitCode -ne 0) {
+            $error = if ($errorText -match '(?i)(az login|login required|not logged in)') {
+                'Azure CLI Kusto authentication is unavailable; run az login with an authorized employee account'
+            } else {
+                "Azure CLI Kusto query failed with exit code $($process.ExitCode)"
+            }
+            return [pscustomobject]@{
+                Succeeded = $false
+                Content = ''
+                Error = $error
+            }
+        }
+
+        return [pscustomobject]@{
+            Succeeded = $true
+            Content = $content
+            Error = ''
+        }
+    }
+    catch {
+        return [pscustomobject]@{
+            Succeeded = $false
+            Content = ''
+            Error = 'Azure CLI Kusto query transport failed'
         }
     }
     finally {
-        Remove-Item -LiteralPath $payloadPath -Force -ErrorAction SilentlyContinue
+        $process.Dispose()
     }
 }
 
@@ -792,30 +785,168 @@ function Get-CiFixKustoBuildInventory {
     $queryRowLimit = $MaxRows + 1
     $query = @"
 let targetBuildId = $BuildId;
-let buildState =
-    TimelineBuilds
-    | where Organization == "dnceng-public" and Project == "public" and BuildId == targetBuildId
-    | summarize BuildRowCount=count(), BuildFinishTime=max(FinishTime), BuildIndexedAt=max(ingestion_time())
-    | project RowKind="build", BuildId=tolong(targetBuildId), BuildRowCount,
-              BuildFinishTime=tostring(BuildFinishTime),
-              BuildIndexedAt=tostring(BuildIndexedAt),
-              RecordId="", ParentId="", Name="", Result="", ErrorCount=long(null),
-              LogId=long(null), LogUri="", Attempt=long(null), TimelineId="", Path="", RecordIndexedAt="";
-let failures =
-    TimelineRecords
+let publicProjectId = "$($script:AzdoPublicProjectId)";
+let buildRaw = TimelineBuilds
     | where BuildId == targetBuildId
-    | where isnotempty(TaskName) and LogId > 0
-    | where tolower(Result) in ("failed", "partiallysucceeded") or ErrorCount > 0
-    | order by Path asc
+    | extend BuildIngestedAt=ingestion_time(),
+             BuildFingerprint=hash_sha256(tostring(pack(
+                 "Status", Status, "Result", Result, "FinishTime", FinishTime,
+                 "Organization", Organization, "Project", Project)));
+let buildLatestTimes = buildRaw
+    | summarize LatestBuildIngestedAt=max(BuildIngestedAt) by Organization, Project;
+let buildLatestRows = buildRaw
+    | join kind=inner buildLatestTimes on Organization, Project
+    | where BuildIngestedAt == LatestBuildIngestedAt;
+let buildConflicts = buildLatestRows
+    | summarize VariantCount=dcount(BuildFingerprint) by Organization, Project
+    | summarize BuildLatestConflictCount=countif(VariantCount > 1);
+let builds = buildLatestRows
+    | summarize arg_max(BuildFingerprint, *) by Organization, Project;
+let publicBuild = builds
+    | where Organization == "dnceng-public" and Project == "public";
+let recordRaw = TimelineRecords
+    | where BuildId == targetBuildId
+    | extend RecordIngestedAt=ingestion_time(),
+             RecordFingerprint=hash_sha256(tostring(pack(
+                 "BuildId", BuildId, "RecordId", RecordId, "TimelineId", TimelineId,
+                 "Order", Order, "Path", Path, "ParentId", ParentId, "Name", Name,
+                 "StartTime", StartTime, "FinishTime", FinishTime, "Result", Result,
+                 "ResultCode", ResultCode, "ChangeId", ChangeId,
+                 "LastModified", LastModified, "WorkerName", WorkerName,
+                 "Details", Details, "ErrorCount", ErrorCount,
+                 "WarningCount", WarningCount, "Url", Url, "LogId", LogId,
+                 "LogUri", LogUri, "TaskId", TaskId, "TaskName", TaskName,
+                 "TaskVersion", TaskVersion, "Attempt", Attempt,
+                 "ImageName", ImageName)));
+let recordLatestTimes = recordRaw
+    | summarize LatestRecordIngestedAt=max(RecordIngestedAt) by TimelineId, RecordId;
+let recordLatestRows = recordRaw
+    | join kind=inner recordLatestTimes on TimelineId, RecordId
+    | where RecordIngestedAt == LatestRecordIngestedAt;
+let recordConflicts = recordLatestRows
+    | summarize VariantCount=dcount(RecordFingerprint) by TimelineId, RecordId
+    | summarize LatestRecordConflictCount=countif(VariantCount > 1);
+let records = recordLatestRows
+    | summarize arg_max(RecordFingerprint, *) by TimelineId, RecordId
+    | extend Depth=countof(Path, "."),
+             ExpectedLogUriByName=strcat(
+                 "https://dev.azure.com/dnceng-public/public/_apis/build/builds/",
+                 targetBuildId, "/logs/", LogId),
+             ExpectedLogUriById=strcat(
+                 "https://dev.azure.com/dnceng-public/", publicProjectId,
+                 "/_apis/build/builds/", targetBuildId, "/logs/", LogId),
+             IsFailure=tolower(Result) in ("failed", "partiallysucceeded")
+                 or coalesce(ErrorCount, 0) > 0;
+let parentKeys = records
+    | project ParentTimelineId=TimelineId, ExistingParentId=RecordId;
+let orphanSummary = records
+    | where isnotempty(ParentId)
+    | join kind=leftanti parentKeys
+        on `$left.TimelineId == `$right.ParentTimelineId,
+           `$left.ParentId == `$right.ExistingParentId
+    | summarize OrphanRecordCount=count();
+let duplicatePathSummary = records
+    | summarize PathUseCount=count() by TimelineId, Path
+    | summarize DuplicatePathCount=countif(PathUseCount > 1);
+let recordSummary = records
+    | summarize
+        RecordCount=count(),
+        DistinctTimelineCount=dcount(TimelineId),
+        TimelineId=take_any(TimelineId),
+        MinAttempt=tolong(min(Attempt)),
+        MaxAttempt=tolong(max(Attempt)),
+        InvalidAttemptCount=countif(isnull(Attempt) or Attempt < 1),
+        RetrySignalCount=countif(Attempt > 1),
+        RootRecordCount=countif(Depth == 0),
+        JobRecordCount=countif(Depth == 2),
+        TaskRecordCount=countif(Depth == 3),
+        SentinelPathCount=countif(isempty(Path) or Path startswith "999."),
+        PathShapeErrorCount=countif(
+            (Depth == 0 and isnotempty(ParentId)) or
+            (Depth > 0 and isempty(ParentId))),
+        UnfinishedRelevantCount=countif(
+            Depth in (2, 3) and isnull(FinishTime)),
+        InvalidRecordIdentityCount=countif(
+            isnull(toguid(RecordId)) or
+            isnull(toguid(TimelineId)) or
+            (isnotempty(ParentId) and isnull(toguid(ParentId)))),
+        InvalidLogScopeCount=countif(
+            (LogId > 0 and (
+                isempty(LogUri) or
+                (LogUri != ExpectedLogUriByName and LogUri != ExpectedLogUriById))) or
+            ((isnull(LogId) or LogId <= 0) and isnotempty(LogUri))),
+        FailedTaskCount=countif(Depth == 3 and IsFailure),
+        SelectableFailureCount=countif(
+            Depth == 3 and IsFailure and LogId > 0),
+        RecordMinIndexedAt=min(RecordIngestedAt),
+        RecordMaxIndexedAt=max(RecordIngestedAt);
+let certificate = recordSummary
+    | extend BuildId=tolong(targetBuildId),
+             BuildScopeCount=toscalar(builds | summarize count()),
+             PublicBuildCount=toscalar(publicBuild | summarize count()),
+             BuildStatus=tostring(
+                 toscalar(publicBuild | summarize take_any(Status))),
+             BuildResult=tostring(
+                 toscalar(publicBuild | summarize take_any(Result))),
+             BuildFinishTime=tostring(
+                 toscalar(publicBuild | summarize take_any(FinishTime))),
+             BuildIndexedAt=tostring(
+                 toscalar(publicBuild | summarize take_any(BuildIngestedAt))),
+             BuildLatestConflictCount=tolong(toscalar(
+                 buildConflicts | project BuildLatestConflictCount)),
+             RawRecordCount=tolong(toscalar(recordRaw | summarize count())),
+             LatestRecordConflictCount=tolong(toscalar(
+                 recordConflicts | project LatestRecordConflictCount)),
+             OrphanRecordCount=tolong(toscalar(
+                 orphanSummary | project OrphanRecordCount)),
+             DuplicatePathCount=tolong(toscalar(
+                 duplicatePathSummary | project DuplicatePathCount))
+    | extend ReingestedRecordCount=RawRecordCount - RecordCount
+    | project RowKind="certificate", BuildId, BuildScopeCount, PublicBuildCount,
+              BuildStatus, BuildResult, BuildFinishTime, BuildIndexedAt,
+              BuildLatestConflictCount, RawRecordCount, RecordCount,
+              ReingestedRecordCount, LatestRecordConflictCount,
+              DistinctTimelineCount, TimelineId, MinAttempt, MaxAttempt,
+              InvalidAttemptCount, RetrySignalCount, RootRecordCount,
+              JobRecordCount, TaskRecordCount, OrphanRecordCount,
+              SentinelPathCount, PathShapeErrorCount, DuplicatePathCount,
+              UnfinishedRelevantCount, InvalidRecordIdentityCount,
+              InvalidLogScopeCount, FailedTaskCount, SelectableFailureCount,
+              RecordMinIndexedAt=tostring(RecordMinIndexedAt),
+              RecordMaxIndexedAt=tostring(RecordMaxIndexedAt),
+              RecordId="", ParentId="", Name="", Result="",
+              ErrorCount=long(null), LogId=long(null), LogUri="",
+              Attempt=long(null), Path="", RecordIndexedAt="";
+let failures =
+    records
+    | where Depth == 3 and IsFailure and LogId > 0
+    | order by Path asc, RecordId asc
     | serialize ProviderOrdinal=row_number()
     | where ProviderOrdinal <= $queryRowLimit
-    | project RowKind="failure", BuildId=tolong(BuildId), BuildRowCount=long(null),
-              BuildFinishTime="", BuildIndexedAt="",
-              RecordId, ParentId, Name, Result, ErrorCount=tolong(ErrorCount),
-              LogId=tolong(LogId), LogUri, Attempt=tolong(Attempt), TimelineId, Path,
-              RecordIndexedAt="";
-union buildState, failures
-| order by RowKind asc, Path asc
+    | project RowKind="failure", BuildId=tolong(BuildId),
+              BuildScopeCount=long(null), PublicBuildCount=long(null),
+              BuildStatus="", BuildResult="", BuildFinishTime="",
+              BuildIndexedAt="", BuildLatestConflictCount=long(null),
+              RawRecordCount=long(null), RecordCount=long(null),
+              ReingestedRecordCount=long(null),
+              LatestRecordConflictCount=long(null),
+              DistinctTimelineCount=long(null), TimelineId,
+              MinAttempt=long(null), MaxAttempt=long(null),
+              InvalidAttemptCount=long(null), RetrySignalCount=long(null),
+              RootRecordCount=long(null), JobRecordCount=long(null),
+              TaskRecordCount=long(null), OrphanRecordCount=long(null),
+              SentinelPathCount=long(null), PathShapeErrorCount=long(null),
+              DuplicatePathCount=long(null),
+              UnfinishedRelevantCount=long(null),
+              InvalidRecordIdentityCount=long(null),
+              InvalidLogScopeCount=long(null), FailedTaskCount=long(null),
+              SelectableFailureCount=long(null), RecordMinIndexedAt="",
+              RecordMaxIndexedAt="", RecordId, ParentId, Name, Result,
+              ErrorCount=tolong(ErrorCount), LogId=tolong(LogId), LogUri,
+              Attempt=tolong(Attempt), Path,
+              RecordIndexedAt=tostring(RecordIngestedAt);
+union certificate, failures
+| order by RowKind asc, Path asc, RecordId asc
 "@
     $response = & $QueryInvoker $query
     if (-not $response.Succeeded) {
@@ -834,9 +965,20 @@ union buildState, failures
     $table = ConvertFrom-CiFixKustoTable `
         -Response $response `
         -RequiredColumns @(
-            'RowKind', 'BuildId', 'BuildRowCount', 'BuildFinishTime', 'BuildIndexedAt',
-            'RecordId', 'ParentId', 'Name', 'Result', 'ErrorCount', 'LogId',
-            'LogUri', 'Attempt', 'TimelineId', 'Path', 'RecordIndexedAt')
+            'RowKind', 'BuildId', 'BuildScopeCount', 'PublicBuildCount',
+            'BuildStatus', 'BuildResult', 'BuildFinishTime', 'BuildIndexedAt',
+            'BuildLatestConflictCount', 'RawRecordCount', 'RecordCount',
+            'ReingestedRecordCount', 'LatestRecordConflictCount',
+            'DistinctTimelineCount', 'TimelineId', 'MinAttempt', 'MaxAttempt',
+            'InvalidAttemptCount', 'RetrySignalCount', 'RootRecordCount',
+            'JobRecordCount', 'TaskRecordCount', 'OrphanRecordCount',
+            'SentinelPathCount', 'PathShapeErrorCount', 'DuplicatePathCount',
+            'UnfinishedRelevantCount', 'InvalidRecordIdentityCount',
+            'InvalidLogScopeCount', 'FailedTaskCount',
+            'SelectableFailureCount', 'RecordMinIndexedAt',
+            'RecordMaxIndexedAt', 'RecordId', 'ParentId', 'Name', 'Result',
+            'ErrorCount', 'LogId', 'LogUri', 'Attempt', 'Path',
+            'RecordIndexedAt')
     if (-not $table.Succeeded) {
         return [pscustomobject]@{
             provider = 'kusto'
@@ -851,10 +993,12 @@ union buildState, failures
         }
     }
 
-    $buildRows = @($table.Rows | Where-Object RowKind -eq 'build')
+    $certificateRows = @($table.Rows | Where-Object RowKind -eq 'certificate')
     $failureRows = @($table.Rows | Where-Object RowKind -eq 'failure')
-    if ($buildRows.Count -ne 1 -or
-        @($table.Rows | Where-Object { $_.RowKind -notin @('build', 'failure') }).Count -gt 0) {
+    if ($certificateRows.Count -ne 1 -or
+        @($table.Rows | Where-Object {
+                $_.RowKind -notin @('certificate', 'failure')
+            }).Count -gt 0) {
         return [pscustomobject]@{
             provider = 'kusto'
             coverage = 'partial'
@@ -864,13 +1008,51 @@ union buildState, failures
             buildFinishTime = $null
             truncated = $false
             failedTasks = @()
-            error = 'Kusto result must contain exactly one build row and only build/failure row kinds'
+            error = 'Kusto result must contain exactly one certificate row and only certificate/failure row kinds'
         }
     }
 
-    $buildRowCount = 0L
-    if (-not [long]::TryParse([string]$buildRows[0].BuildRowCount, [ref]$buildRowCount) -or
-        $buildRowCount -lt 0) {
+    $certificate = $certificateRows[0]
+    $countNames = @(
+        'BuildScopeCount', 'PublicBuildCount', 'BuildLatestConflictCount',
+        'RawRecordCount', 'RecordCount', 'ReingestedRecordCount',
+        'LatestRecordConflictCount', 'DistinctTimelineCount',
+        'InvalidAttemptCount', 'RetrySignalCount', 'RootRecordCount',
+        'JobRecordCount', 'TaskRecordCount', 'OrphanRecordCount',
+        'SentinelPathCount', 'PathShapeErrorCount', 'DuplicatePathCount',
+        'UnfinishedRelevantCount', 'InvalidRecordIdentityCount',
+        'InvalidLogScopeCount', 'FailedTaskCount', 'SelectableFailureCount')
+    $counts = @{}
+    foreach ($countName in $countNames) {
+        $count = 0L
+        if (-not [long]::TryParse(
+                [string]$certificate.$countName,
+                [Globalization.NumberStyles]::None,
+                [Globalization.CultureInfo]::InvariantCulture,
+                [ref]$count) -or
+            $count -lt 0) {
+            return [pscustomobject]@{
+                provider = 'kusto'
+                coverage = 'partial'
+                status = 'malformed'
+                complete = $false
+                indexedAt = $null
+                buildFinishTime = $null
+                truncated = $false
+                failedTasks = @()
+                error = "Kusto certificate field '$countName' is missing or invalid"
+            }
+        }
+        $counts[$countName] = $count
+    }
+
+    $certificateBuildId = 0L
+    if (-not [long]::TryParse(
+            [string]$certificate.BuildId,
+            [Globalization.NumberStyles]::None,
+            [Globalization.CultureInfo]::InvariantCulture,
+            [ref]$certificateBuildId) -or
+        $certificateBuildId -ne $BuildId) {
         return [pscustomobject]@{
             provider = 'kusto'
             coverage = 'partial'
@@ -880,26 +1062,170 @@ union buildState, failures
             buildFinishTime = $null
             truncated = $false
             failedTasks = @()
-            error = 'Kusto build row count is missing or invalid'
+            error = 'Kusto certificate build identity is missing or invalid'
         }
     }
-    $indexedAt = if ($buildRows[0].BuildIndexedAt -is [DateTime]) {
-        $buildRows[0].BuildIndexedAt.ToUniversalTime().ToString('o')
-    } else {
-        [string]$buildRows[0].BuildIndexedAt
+
+    $parseUtc = {
+        param($Value)
+        if ($Value -is [DateTime]) {
+            return $Value.ToUniversalTime()
+        }
+        if ($Value -is [DateTimeOffset]) {
+            return $Value.UtcDateTime
+        }
+        $parsed = [DateTimeOffset]::MinValue
+        if ([DateTimeOffset]::TryParse(
+                [string]$Value,
+                [Globalization.CultureInfo]::InvariantCulture,
+                [Globalization.DateTimeStyles]::AssumeUniversal,
+                [ref]$parsed)) {
+            return $parsed.UtcDateTime
+        }
+        return $null
     }
-    $buildFinishTime = if ($buildRows[0].BuildFinishTime -is [DateTime]) {
-        $buildRows[0].BuildFinishTime.ToUniversalTime().ToString('o')
+    $buildFinishUtc = & $parseUtc $certificate.BuildFinishTime
+    $buildIndexedUtc = & $parseUtc $certificate.BuildIndexedAt
+    $recordMinIndexedUtc = & $parseUtc $certificate.RecordMinIndexedAt
+    $recordMaxIndexedUtc = & $parseUtc $certificate.RecordMaxIndexedAt
+    $indexedAt = if ($null -ne $recordMaxIndexedUtc) {
+        $recordMaxIndexedUtc.ToString('o')
+    } elseif ($null -ne $buildIndexedUtc) {
+        $buildIndexedUtc.ToString('o')
     } else {
-        [string]$buildRows[0].BuildFinishTime
+        $null
+    }
+    $buildFinishTime = if ($null -ne $buildFinishUtc) {
+        $buildFinishUtc.ToString('o')
+    } else {
+        $null
     }
 
-    $truncated = $failureRows.Count -gt $MaxRows
+    $notIndexed = $counts.BuildScopeCount -eq 0 -and
+        $counts.RecordCount -eq 0
+    if ($notIndexed) {
+        return [pscustomobject]@{
+            provider = 'kusto'
+            coverage = 'notIndexed'
+            status = 'notIndexed'
+            complete = $false
+            indexedAt = $null
+            buildFinishTime = $null
+            truncated = $false
+            failedTasks = @()
+            previousAttempts = @()
+            error = 'Kusto has not indexed this build'
+        }
+    }
+
+    $minAttempt = 0L
+    $maxAttempt = 0L
+    $validAttemptRange =
+        [long]::TryParse(
+            [string]$certificate.MinAttempt,
+            [Globalization.NumberStyles]::None,
+            [Globalization.CultureInfo]::InvariantCulture,
+            [ref]$minAttempt) -and
+        [long]::TryParse(
+            [string]$certificate.MaxAttempt,
+            [Globalization.NumberStyles]::None,
+            [Globalization.CultureInfo]::InvariantCulture,
+            [ref]$maxAttempt)
+    $timelineId = [Guid]::Empty
+    $validTimelineId = [Guid]::TryParse(
+        [string]$certificate.TimelineId,
+        [ref]$timelineId) -and
+        $timelineId -ne [Guid]::Empty
+
+    $truncated = $counts.FailedTaskCount -gt $MaxRows -or
+        $counts.SelectableFailureCount -gt $MaxRows
+    $certificateErrors = [Collections.Generic.List[string]]::new()
+    if ($counts.BuildScopeCount -ne 1 -or $counts.PublicBuildCount -ne 1) {
+        $certificateErrors.Add('build scope is missing or ambiguous')
+    }
+    if ($counts.BuildLatestConflictCount -ne 0) {
+        $certificateErrors.Add('latest build rows conflict')
+    }
+    if ([string]$certificate.BuildStatus -cne 'completed' -or
+        [string]$certificate.BuildResult -notin @('failed', 'partiallySucceeded')) {
+        $certificateErrors.Add('public build is not a completed failed build')
+    }
+    if ($null -eq $buildFinishUtc -or
+        $null -eq $buildIndexedUtc -or
+        $null -eq $recordMinIndexedUtc -or
+        $null -eq $recordMaxIndexedUtc -or
+        $buildIndexedUtc -lt $buildFinishUtc -or
+        $recordMinIndexedUtc -lt $buildFinishUtc -or
+        $recordMaxIndexedUtc -lt $recordMinIndexedUtc) {
+        $certificateErrors.Add('build or record indexing is missing or stale')
+    }
+    if ($counts.RecordCount -le 0 -or
+        $counts.RootRecordCount -le 0 -or
+        $counts.JobRecordCount -le 0 -or
+        $counts.TaskRecordCount -le 0) {
+        $certificateErrors.Add('timeline hierarchy is missing required records')
+    }
+    if ($counts.DistinctTimelineCount -ne 1 -or -not $validTimelineId) {
+        $certificateErrors.Add('timeline identity is missing or ambiguous')
+    }
+    if (-not $validAttemptRange -or
+        $minAttempt -ne 1 -or
+        $maxAttempt -ne 1 -or
+        $counts.InvalidAttemptCount -ne 0 -or
+        $counts.RetrySignalCount -ne 0) {
+        $certificateErrors.Add('timeline contains retry or invalid attempt signals')
+    }
+    if ($counts.LatestRecordConflictCount -ne 0) {
+        $certificateErrors.Add('latest timeline rows conflict')
+    }
+    if ($counts.OrphanRecordCount -ne 0 -or
+        $counts.SentinelPathCount -ne 0 -or
+        $counts.PathShapeErrorCount -ne 0 -or
+        $counts.DuplicatePathCount -ne 0) {
+        $certificateErrors.Add('timeline hierarchy is incomplete or malformed')
+    }
+    if ($counts.UnfinishedRelevantCount -ne 0) {
+        $certificateErrors.Add('timeline contains unfinished task or job records')
+    }
+    if ($counts.InvalidRecordIdentityCount -ne 0 -or
+        $counts.InvalidLogScopeCount -ne 0) {
+        $certificateErrors.Add('timeline contains invalid record or public log identities')
+    }
+    if ($counts.FailedTaskCount -ne $counts.SelectableFailureCount) {
+        $certificateErrors.Add('one or more failed task records lack a usable log identity')
+    }
+    if ($truncated) {
+        $certificateErrors.Add(
+            "Kusto failure inventory exceeded the $MaxRows-row provider limit")
+    }
+    if ($failureRows.Count -ne $counts.SelectableFailureCount) {
+        $certificateErrors.Add('Kusto failure row count does not match the certificate')
+    }
+
     $tasks = @()
+    $seenRecordIds = @{}
+    $seenLogIds = @{}
     foreach ($row in @($failureRows | Select-Object -First $MaxRows)) {
         $rowBuildId = 0L
         $logId = 0L
         $attempt = 0
+        $recordId = [Guid]::Empty
+        $parentId = [Guid]::Empty
+        $rowTimelineId = [Guid]::Empty
+        $rowIndexedUtc = & $parseUtc $row.RecordIndexedAt
+        $providerErrorCount = 0L
+        $providerErrorCountValid =
+            [string]::IsNullOrWhiteSpace([string]$row.ErrorCount) -or
+            ([long]::TryParse(
+                    [string]$row.ErrorCount,
+                    [Globalization.NumberStyles]::Integer,
+                    [Globalization.CultureInfo]::InvariantCulture,
+                    [ref]$providerErrorCount) -and
+                $providerErrorCount -ge 0)
+        $providerResult = [string]$row.Result
+        $providerFailureValid = $providerErrorCountValid -and
+            ($providerResult -in @('failed', 'partiallySucceeded') -or
+                $providerErrorCount -gt 0)
         $logUri = $null
         $validLogUri = [Uri]::TryCreate(
             [string]$row.LogUri,
@@ -907,17 +1233,29 @@ union buildState, failures
             [ref]$logUri) -and
             $logUri.Scheme -ceq 'https' -and
             $logUri.Host -ceq 'dev.azure.com' -and
+            $logUri.IsDefaultPort -and
             [string]::IsNullOrEmpty($logUri.UserInfo) -and
-            [string]::IsNullOrEmpty($logUri.Query)
+            [string]::IsNullOrEmpty($logUri.Query) -and
+            [string]::IsNullOrEmpty($logUri.Fragment)
         $valid = [long]::TryParse([string]$row.BuildId, [ref]$rowBuildId) -and
             $rowBuildId -eq $BuildId -and
             [long]::TryParse([string]$row.LogId, [ref]$logId) -and
             $logId -gt 0 -and
             [int]::TryParse([string]$row.Attempt, [ref]$attempt) -and
-            $attempt -gt 0 -and
-            -not [string]::IsNullOrWhiteSpace([string]$row.RecordId) -and
+            $attempt -eq 1 -and
+            [Guid]::TryParse([string]$row.RecordId, [ref]$recordId) -and
+            $recordId -ne [Guid]::Empty -and
+            [Guid]::TryParse([string]$row.ParentId, [ref]$parentId) -and
+            $parentId -ne [Guid]::Empty -and
+            [Guid]::TryParse([string]$row.TimelineId, [ref]$rowTimelineId) -and
+            $rowTimelineId -eq $timelineId -and
             -not [string]::IsNullOrWhiteSpace([string]$row.Name) -and
-            -not [string]::IsNullOrWhiteSpace([string]$row.TimelineId) -and
+            -not [string]::IsNullOrWhiteSpace([string]$row.Path) -and
+            ([string]$row.Path).Split('.').Count -eq 4 -and
+            $null -ne $rowIndexedUtc -and
+            $null -ne $buildFinishUtc -and
+            $rowIndexedUtc -ge $buildFinishUtc -and
+            $providerFailureValid -and
             $validLogUri -and
             $logUri.AbsolutePath -in @(
                 "/dnceng-public/public/_apis/build/builds/$BuildId/logs/$logId",
@@ -935,51 +1273,66 @@ union buildState, failures
                 error = 'Kusto failure row contains missing or invalid exact-build identity fields'
             }
         }
+        $recordKey = $recordId.ToString('D')
+        if ($seenRecordIds.ContainsKey($recordKey) -or
+            $seenLogIds.ContainsKey($logId)) {
+            return [pscustomobject]@{
+                provider = 'kusto'
+                coverage = 'partial'
+                status = 'malformed'
+                complete = $false
+                indexedAt = $indexedAt
+                buildFinishTime = $buildFinishTime
+                truncated = $truncated
+                failedTasks = @()
+                previousAttempts = @()
+                error = 'Kusto failure rows contain duplicate or conflicting identities'
+            }
+        }
+        $seenRecordIds[$recordKey] = $true
+        $seenLogIds[$logId] = $true
 
         $tasks += [pscustomobject]@{
-            recordId = [string]$row.RecordId
+            recordId = $recordKey
             name = [string]$row.Name
             logId = $logId
             logIdValid = $true
             rawLogId = [string]$row.LogId
             attempt = $attempt
-            source = 'unknown'
-            sourceTimelineId = [string]$row.TimelineId
-            sourceRecordId = $null
-            sourceAttempt = $null
-            provenanceValid = $false
-            provenanceError = 'Kusto does not expose stable current-versus-previous attempt provenance'
+            source = 'current'
+            sourceTimelineId = $rowTimelineId.ToString('D')
+            sourceRecordId = $recordKey
+            sourceAttempt = 1
+            provenanceValid = $true
+            provenanceError = ''
             logUri = [string]$row.LogUri
             providerPath = [string]$row.Path
-            providerResult = [string]$row.Result
-            providerErrorCount = $row.ErrorCount
+            providerResult = $providerResult
+            providerErrorCount = $providerErrorCount
         }
     }
 
-    $coverage = if ($buildRowCount -eq 0 -and $failureRows.Count -eq 0) {
-        'notIndexed'
+    $complete = $certificateErrors.Count -eq 0
+    $coverage = if ($complete) { 'complete' } else { 'partial' }
+    $status = if ($complete) {
+        'available'
+    } elseif ($certificateErrors -contains 'build or record indexing is missing or stale') {
+        'stale'
     } else {
-        'partial'
+        'available'
     }
-    $error = if ($coverage -eq 'notIndexed') {
-        'Kusto has not indexed this build'
-    } elseif ($truncated) {
-        "Kusto failure inventory exceeded the $MaxRows-row provider limit"
-    } elseif ($tasks.Count -eq 0) {
-        'Kusto indexed the build but exposes no completeness marker for an empty failure inventory'
-    } else {
-        'Kusto exposes current timeline task/log identities but no completeness or previous-attempt linkage'
-    }
+    $error = if ($complete) { '' } else { $certificateErrors -join '; ' }
 
     return [pscustomobject]@{
         provider = 'kusto'
         coverage = $coverage
-        status = if ($coverage -eq 'notIndexed') { 'notIndexed' } else { 'available' }
-        complete = $false
+        status = $status
+        complete = $complete
         indexedAt = $indexedAt
         buildFinishTime = $buildFinishTime
         truncated = $truncated
         failedTasks = @($tasks)
+        previousAttempts = @()
         error = $error
     }
 }
