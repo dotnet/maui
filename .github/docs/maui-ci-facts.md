@@ -31,6 +31,28 @@ green base job alone is not causal proof, and missing evidence is reported expli
 
 ## Pipelines
 
+### Automated CI fixes
+
+`ci-status-main` and `ci-status-net11` scan the three pipelines every twelve
+hours and create fix PRs directly against their configured branch. They do not
+file CI-scan tracking issues or failure/no-op diagnostic issues. Findings that
+cannot be safely fixed remain in the run's evidence and analysis artifacts.
+Manual dispatch defaults to staged (`dry_run: true`), including PR updates.
+
+The scanners deduplicate by a stable failure fingerprint on the PR, watch the
+same owned PR for up to ten attempts, and publish at most one PR operation per
+run. A PR requires a real, validated source/test fix; reproduction-only and empty
+hand-off PRs are not allowed. The trusted Azure DevOps validator reconciles open
+CI-fix PR heads after a scanner completes, including PRs created with
+`GITHUB_TOKEN` that do not emit follow-up workflow events.
+
+`ci-status-fix` and `ci-status-fix-net11` are manual-only compatibility workflows
+for older issue-linked PRs. They must not be scheduled alongside the direct
+scanners. The legacy issue reconciler and locking workflow do not produce new
+issues.
+
+### Pipeline definitions
+
 **Organization**: `dnceng-public` / project `public`
 (`https://dev.azure.com/dnceng-public/public/_apis/build/...`).
 
