@@ -43,32 +43,22 @@ namespace UITest.Appium
 		}
 
 		internal void ActivateApp(bool forceRestart = false)
-			=> ActivateApp(this, forceRestart);
-
-		internal static void ActivateApp(AppiumApp app, bool forceRestart)
 		{
-			var appId = app.GetAppId();
-			var args = GetTestConfigurationArgs(app.Config);
-			var startupArgs = app.Config.GetProperty<Dictionary<string, string>>("TestConfigurationArgs");
-			var extras = new List<string[]>();
-			if (!string.IsNullOrEmpty(args))
-				extras.Add(new[] { "s", "TEST_CONFIGURATION_ARGS", AppLaunchArguments.QuoteAndroidShellArgument(args) });
-			if (startupArgs is not null && startupArgs.TryGetValue("test", out var testName))
-				extras.Add(new[] { "s", "test", AppLaunchArguments.QuoteAndroidShellArgument(testName) });
-
-			if (extras.Count == 0)
+			var appId = this.GetAppId();
+			var args = GetTestConfigurationArgs(Config);
+			if (string.IsNullOrEmpty(args))
 			{
-				app.Driver.ActivateApp(appId);
+				Driver.ActivateApp(appId);
 				return;
 			}
 
-			app.Driver.ExecuteScript("mobile: startActivity", new Dictionary<string, object>
+			Driver.ExecuteScript("mobile: startActivity", new Dictionary<string, object>
 			{
 				{ "component", $"{appId}/{appId}.MainActivity" },
 				{ "action", "android.intent.action.MAIN" },
 				{ "categories", new[] { "android.intent.category.LAUNCHER" } },
 				{ "flags", "0x10200000" },
-				{ "extras", extras.ToArray() },
+				{ "extras", new[] { new[] { "s", "TEST_CONFIGURATION_ARGS", args } } },
 				{ "wait", true },
 				{ "stop", forceRestart },
 			});
@@ -126,9 +116,6 @@ namespace UITest.Appium
 
 			SetGeneralAppiumOptions(config, options);
 
-			var udid = config.GetProperty<string>("Udid");
-			if (!string.IsNullOrWhiteSpace(udid))
-				options.AddAdditionalAppiumOption(MobileCapabilityType.Udid, udid);
 			if (!string.IsNullOrEmpty(GetTestConfigurationArgs(config)))
 				options.AddAdditionalAppiumOption("autoLaunch", false);
 
@@ -138,14 +125,7 @@ namespace UITest.Appium
 				options.AddAdditionalAppiumOption(AndroidMobileCapabilityType.AppPackage, appId);
 				options.AddAdditionalAppiumOption(AndroidMobileCapabilityType.AppActivity, $"{appId}.MainActivity");
 			}
-
-			var args = config.GetProperty<Dictionary<string, string>>("TestConfigurationArgs");
-			if (args is not null && args.TryGetValue("test", out var testName))
-			{
-				options.AddAdditionalAppiumOption("optionalIntentArguments", AppLaunchArguments.AndroidTestExtra(testName));
-				options.AddAdditionalAppiumOption("forceAppLaunch", true);
-			}
-
+			
 			var headless = config.GetProperty<bool>("Headless");
 			if (headless)
 			{
