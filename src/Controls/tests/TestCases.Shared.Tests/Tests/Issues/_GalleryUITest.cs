@@ -12,8 +12,14 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 			var config = base.GetTestConfig();
 
-			if (UseDirectLaunch)
-				config.SetTestConfigurationArg("test", GalleryPageName);
+#if MACCATALYST
+            // For Catalyst, pass the test name as a startup argument
+            // If the UITestContext is not null we can directly pass the Issue via LaunchAppWithTest
+            if (UITestContext is null)
+            {
+                config.SetTestConfigurationArg("test", GalleryPageName);
+            }
+#endif
 
 			return config;
 		}
@@ -27,10 +33,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			{
 				try
 				{
-					if (UseDirectLaunch)
-						App.LaunchApp(GalleryPageName, ResetAfterEachTest);
-					else
-						App.LaunchApp();
+					App.LaunchApp(GalleryPageName, ResetAfterEachTest);
 					return; // Success, exit retry loop
 				}
 				catch (Exception)
@@ -50,7 +53,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		protected override void FixtureSetup()
 		{
 			base.FixtureSetup();
-			if (!UseDirectLaunch)
+			if (Device is not TestDevice.Mac)
 				App.NavigateToGallery(GalleryPageName, GalleryPageReadyElement);
 
 			if (GallerySubPageButton is string subPageButton)
@@ -58,12 +61,6 @@ namespace Microsoft.Maui.TestCases.Tests
 				App.WaitForElementTillPageNavigationSettled(subPageButton);
 				App.Tap(subPageButton);
 			}
-		}
-
-		protected override void TryToResetTestState()
-		{
-			if (!UseDirectLaunch)
-				base.TryToResetTestState();
 		}
 
 		public abstract string GalleryPageName { get; }
