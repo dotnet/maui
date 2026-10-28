@@ -13,17 +13,20 @@ public class Issue38234 : Shell
 
 		FlyoutBehavior = FlyoutBehavior.Disabled;
 
-		var white = Color.FromArgb("#FFFFFFFF");
-		var gray950 = Color.FromArgb("#FF141414");
-		var magenta = Color.FromArgb("#FFD600AA");
-		var gray200 = Color.FromArgb("#FFC8C8C8");
-
-		this.SetAppThemeColor(Shell.BackgroundColorProperty, white, gray950);
-		this.SetAppThemeColor(Shell.TitleColorProperty, magenta, white);
-		this.SetAppThemeColor(Shell.TabBarBackgroundColorProperty, white, gray950);
-		this.SetAppThemeColor(Shell.TabBarTitleColorProperty, magenta, white);
-		this.SetAppThemeColor(Shell.TabBarForegroundColorProperty, gray950, gray200);
-		this.SetAppThemeColor(Shell.TabBarUnselectedColorProperty, gray200, gray950);
+		// Material 3 baseline roles; the selected icon intentionally uses the TabbedPage test colors.
+		// https://m3.material.io/components/navigation-bar/specs
+		var onSurfaceLight = Color.FromArgb("#1D1B20");
+		var onSurfaceDark = Color.FromArgb("#E6E0E9");
+		this.SetAppThemeColor(Shell.BackgroundColorProperty,
+			Color.FromArgb("#FEF7FF"), Color.FromArgb("#141218"));
+		this.SetAppThemeColor(Shell.TitleColorProperty, onSurfaceLight, onSurfaceDark);
+		this.SetAppThemeColor(Shell.TabBarBackgroundColorProperty,
+			Color.FromArgb("#F3EDF7"), Color.FromArgb("#211F26"));
+		this.SetAppThemeColor(Shell.TabBarTitleColorProperty, Color.FromArgb("#D600AA"), onSurfaceDark);
+		this.SetAppThemeColor(Shell.TabBarForegroundColorProperty,
+			Color.FromArgb("#D600AA"), Color.FromArgb("#FFFFFF"));
+		this.SetAppThemeColor(Shell.TabBarUnselectedColorProperty,
+			Color.FromArgb("#49454F"), Color.FromArgb("#CAC4D0"));
 
 		Label statusLabel = new Label
 		{
