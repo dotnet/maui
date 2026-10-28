@@ -7,6 +7,8 @@
 param(
     [string]$CandidatesPath = '/tmp/gh-aw/agent/prefetch.json',
     [string]$OutputDirectory = '/tmp/gh-aw/agent/azdo-evidence',
+    [ValidateSet('azure', 'kusto')]
+    [string]$EvidenceProvider = 'azure',
     [ValidateSet('main', 'net11.0')]
     [string]$Branch = 'main',
     [ValidateRange(1, 5)]
@@ -33,6 +35,10 @@ $script:PipelineDefinitions = @{
     'maui-pr-uitests' = 313
 }
 $script:AzdoBaseUri = 'https://dev.azure.com/dnceng-public/public/_apis/build'
+$script:AzdoPublicProjectId = 'cbb18261-c48f-4abb-8651-8cdcb5474649'
+$script:KustoQueryUri = 'https://engsrvprod.kusto.windows.net/v1/rest/query'
+$script:KustoResourceUri = 'https://api.kusto.windows.net'
+$script:KustoDatabase = 'engineeringdata'
 $script:TransientStatusCodes = @(408, 429, 500, 502, 503, 504)
 $script:MaxHttpAttempts = 3
 $script:HttpTimeoutSeconds = 60
@@ -575,6 +581,533 @@ function Resolve-CiFixPreviousAttemptTaskProvenance {
     }
 }
 
+function Invoke-CiFixKustoQuery {
+    param(
+        [Parameter(Mandatory = $true)][string]$Query,
+        [ValidateRange(1, 300)]
+        [int]$TimeoutSeconds = 60
+    )
+
+    $producerRemaining = $script:ProducerDeadlineUtc - [DateTime]::UtcNow
+    if ($producerRemaining -le [TimeSpan]::Zero) {
+        return [pscustomobject]@{
+            Succeeded = $false
+            Content = ''
+            Error = 'producer deadline exhausted before Kusto query'
+        }
+    }
+    $effectiveTimeoutSeconds = [Math]::Max(
+        1,
+        [Math]::Min($TimeoutSeconds, [Math]::Floor($producerRemaining.TotalSeconds)))
+    $payloadPath = Join-Path ([IO.Path]::GetTempPath()) "ci-fix-kusto-$([Guid]::NewGuid().ToString('N')).json"
+    try {
+        @{
+            db = $script:KustoDatabase
+            csl = $Query
+        } | ConvertTo-Json -Compress |
+            Set-Content -LiteralPath $payloadPath -Encoding utf8NoBOM
+
+        $startInfo = [Diagnostics.ProcessStartInfo]::new()
+        $startInfo.FileName = 'az'
+        $startInfo.UseShellExecute = $false
+        $startInfo.RedirectStandardOutput = $true
+        $startInfo.RedirectStandardError = $true
+        foreach ($argument in @(
+                'rest',
+                '--only-show-errors',
+                '--method', 'post',
+                '--url', $script:KustoQueryUri,
+                '--resource', $script:KustoResourceUri,
+                '--headers', 'Content-Type=application/json',
+                '--body', "@$payloadPath",
+                '--output', 'json')) {
+            $startInfo.ArgumentList.Add($argument)
+        }
+
+        $process = [Diagnostics.Process]::new()
+        $process.StartInfo = $startInfo
+        try {
+            if (-not $process.Start()) {
+                return [pscustomobject]@{
+                    Succeeded = $false
+                    Content = ''
+                    Error = 'Azure CLI Kusto query could not be started'
+                }
+            }
+
+            $stdout = $process.StandardOutput.ReadToEndAsync()
+            $stderr = $process.StandardError.ReadToEndAsync()
+            if (-not $process.WaitForExit($effectiveTimeoutSeconds * 1000)) {
+                $process.Kill($true)
+                $process.WaitForExit()
+                return [pscustomobject]@{
+                    Succeeded = $false
+                    Content = ''
+                    Error = "Azure CLI Kusto query exceeded the $effectiveTimeoutSeconds-second limit"
+                }
+            }
+
+            $content = $stdout.GetAwaiter().GetResult()
+            $errorText = $stderr.GetAwaiter().GetResult()
+            if ($process.ExitCode -ne 0) {
+                $error = if ($errorText -match '(?i)(az login|login required|not logged in)') {
+                    'Azure CLI Kusto authentication is unavailable; run az login with an authorized employee account'
+                } else {
+                    "Azure CLI Kusto query failed with exit code $($process.ExitCode)"
+                }
+                return [pscustomobject]@{
+                    Succeeded = $false
+                    Content = ''
+                    Error = $error
+                }
+            }
+
+            return [pscustomobject]@{
+                Succeeded = $true
+                Content = $content
+                Error = ''
+            }
+        }
+        catch {
+            return [pscustomobject]@{
+                Succeeded = $false
+                Content = ''
+                Error = 'Azure CLI Kusto query transport failed'
+            }
+        }
+        finally {
+            $process.Dispose()
+        }
+    }
+    finally {
+        Remove-Item -LiteralPath $payloadPath -Force -ErrorAction SilentlyContinue
+    }
+}
+
+function ConvertFrom-CiFixKustoTable {
+    param(
+        [Parameter(Mandatory = $true)]$Response,
+        [Parameter(Mandatory = $true)][string[]]$RequiredColumns
+    )
+
+    if (-not $Response.Succeeded) {
+        return [pscustomobject]@{
+            Succeeded = $false
+            Rows = @()
+            Error = $Response.Error
+        }
+    }
+
+    try {
+        $value = $Response.Content | ConvertFrom-Json -Depth 100 -NoEnumerate
+    }
+    catch {
+        return [pscustomobject]@{
+            Succeeded = $false
+            Rows = @()
+            Error = "Kusto returned malformed JSON: $($_.Exception.Message)"
+        }
+    }
+
+    if ($null -eq $value -or
+        $value.GetType() -ne [Management.Automation.PSCustomObject] -or
+        $null -eq $value.Tables -or
+        $value.Tables.GetType() -ne [object[]] -or
+        $value.Tables.Count -lt 1) {
+        return [pscustomobject]@{
+            Succeeded = $false
+            Rows = @()
+            Error = 'Kusto response does not contain a primary result table'
+        }
+    }
+
+    $table = $value.Tables[0]
+    if ($null -eq $table.Columns -or
+        $table.Columns.GetType() -ne [object[]] -or
+        $null -eq $table.Rows -or
+        $table.Rows.GetType() -ne [object[]]) {
+        return [pscustomobject]@{
+            Succeeded = $false
+            Rows = @()
+            Error = 'Kusto primary result columns or rows are malformed'
+        }
+    }
+
+    $columnIndexes = @{}
+    for ($index = 0; $index -lt $table.Columns.Count; $index++) {
+        $columnName = [string]$table.Columns[$index].ColumnName
+        if ([string]::IsNullOrWhiteSpace($columnName) -or $columnIndexes.ContainsKey($columnName)) {
+            return [pscustomobject]@{
+                Succeeded = $false
+                Rows = @()
+                Error = 'Kusto primary result contains missing or duplicate column names'
+            }
+        }
+        $columnIndexes[$columnName] = $index
+    }
+    $missingColumns = @($RequiredColumns | Where-Object { -not $columnIndexes.ContainsKey($_) })
+    if ($missingColumns.Count -gt 0) {
+        return [pscustomobject]@{
+            Succeeded = $false
+            Rows = @()
+            Error = "Kusto primary result is missing required column(s): $($missingColumns -join ', ')"
+        }
+    }
+
+    $rows = @()
+    foreach ($row in @($table.Rows)) {
+        if ($null -eq $row -or $row.GetType() -ne [object[]] -or $row.Count -ne $table.Columns.Count) {
+            return [pscustomobject]@{
+                Succeeded = $false
+                Rows = @()
+                Error = 'Kusto primary result contains a malformed row'
+            }
+        }
+
+        $mapped = [ordered]@{}
+        foreach ($columnName in $columnIndexes.Keys) {
+            $mapped[$columnName] = $row[$columnIndexes[$columnName]]
+        }
+        $rows += [pscustomobject]$mapped
+    }
+
+    return [pscustomobject]@{
+        Succeeded = $true
+        Rows = @($rows)
+        Error = ''
+    }
+}
+
+function Get-CiFixKustoBuildInventory {
+    param(
+        [Parameter(Mandatory = $true)][long]$BuildId,
+        [ValidateRange(1, 256)]
+        [int]$MaxRows = 64,
+        [scriptblock]$QueryInvoker = {
+            param($Query)
+            Invoke-CiFixKustoQuery -Query $Query
+        }
+    )
+
+    $queryRowLimit = $MaxRows + 1
+    $query = @"
+let targetBuildId = $BuildId;
+let buildState =
+    TimelineBuilds
+    | where Organization == "dnceng-public" and Project == "public" and BuildId == targetBuildId
+    | summarize BuildRowCount=count(), BuildFinishTime=max(FinishTime), BuildIndexedAt=max(ingestion_time())
+    | project RowKind="build", BuildId=tolong(targetBuildId), BuildRowCount,
+              BuildFinishTime=tostring(BuildFinishTime),
+              BuildIndexedAt=tostring(BuildIndexedAt),
+              RecordId="", ParentId="", Name="", Result="", ErrorCount=long(null),
+              LogId=long(null), LogUri="", Attempt=long(null), TimelineId="", Path="", RecordIndexedAt="";
+let failures =
+    TimelineRecords
+    | where BuildId == targetBuildId
+    | where isnotempty(TaskName) and LogId > 0
+    | where tolower(Result) in ("failed", "partiallysucceeded") or ErrorCount > 0
+    | order by Path asc
+    | serialize ProviderOrdinal=row_number()
+    | where ProviderOrdinal <= $queryRowLimit
+    | project RowKind="failure", BuildId=tolong(BuildId), BuildRowCount=long(null),
+              BuildFinishTime="", BuildIndexedAt="",
+              RecordId, ParentId, Name, Result, ErrorCount=tolong(ErrorCount),
+              LogId=tolong(LogId), LogUri, Attempt=tolong(Attempt), TimelineId, Path,
+              RecordIndexedAt="";
+union buildState, failures
+| order by RowKind asc, Path asc
+"@
+    $response = & $QueryInvoker $query
+    if (-not $response.Succeeded) {
+        return [pscustomobject]@{
+            provider = 'kusto'
+            coverage = 'partial'
+            status = 'error'
+            complete = $false
+            indexedAt = $null
+            buildFinishTime = $null
+            truncated = $false
+            failedTasks = @()
+            error = $response.Error
+        }
+    }
+    $table = ConvertFrom-CiFixKustoTable `
+        -Response $response `
+        -RequiredColumns @(
+            'RowKind', 'BuildId', 'BuildRowCount', 'BuildFinishTime', 'BuildIndexedAt',
+            'RecordId', 'ParentId', 'Name', 'Result', 'ErrorCount', 'LogId',
+            'LogUri', 'Attempt', 'TimelineId', 'Path', 'RecordIndexedAt')
+    if (-not $table.Succeeded) {
+        return [pscustomobject]@{
+            provider = 'kusto'
+            coverage = 'partial'
+            status = 'malformed'
+            complete = $false
+            indexedAt = $null
+            buildFinishTime = $null
+            truncated = $false
+            failedTasks = @()
+            error = $table.Error
+        }
+    }
+
+    $buildRows = @($table.Rows | Where-Object RowKind -eq 'build')
+    $failureRows = @($table.Rows | Where-Object RowKind -eq 'failure')
+    if ($buildRows.Count -ne 1 -or
+        @($table.Rows | Where-Object { $_.RowKind -notin @('build', 'failure') }).Count -gt 0) {
+        return [pscustomobject]@{
+            provider = 'kusto'
+            coverage = 'partial'
+            status = 'malformed'
+            complete = $false
+            indexedAt = $null
+            buildFinishTime = $null
+            truncated = $false
+            failedTasks = @()
+            error = 'Kusto result must contain exactly one build row and only build/failure row kinds'
+        }
+    }
+
+    $buildRowCount = 0L
+    if (-not [long]::TryParse([string]$buildRows[0].BuildRowCount, [ref]$buildRowCount) -or
+        $buildRowCount -lt 0) {
+        return [pscustomobject]@{
+            provider = 'kusto'
+            coverage = 'partial'
+            status = 'malformed'
+            complete = $false
+            indexedAt = $null
+            buildFinishTime = $null
+            truncated = $false
+            failedTasks = @()
+            error = 'Kusto build row count is missing or invalid'
+        }
+    }
+    $indexedAt = if ($buildRows[0].BuildIndexedAt -is [DateTime]) {
+        $buildRows[0].BuildIndexedAt.ToUniversalTime().ToString('o')
+    } else {
+        [string]$buildRows[0].BuildIndexedAt
+    }
+    $buildFinishTime = if ($buildRows[0].BuildFinishTime -is [DateTime]) {
+        $buildRows[0].BuildFinishTime.ToUniversalTime().ToString('o')
+    } else {
+        [string]$buildRows[0].BuildFinishTime
+    }
+
+    $truncated = $failureRows.Count -gt $MaxRows
+    $tasks = @()
+    foreach ($row in @($failureRows | Select-Object -First $MaxRows)) {
+        $rowBuildId = 0L
+        $logId = 0L
+        $attempt = 0
+        $logUri = $null
+        $validLogUri = [Uri]::TryCreate(
+            [string]$row.LogUri,
+            [UriKind]::Absolute,
+            [ref]$logUri) -and
+            $logUri.Scheme -ceq 'https' -and
+            $logUri.Host -ceq 'dev.azure.com' -and
+            [string]::IsNullOrEmpty($logUri.UserInfo) -and
+            [string]::IsNullOrEmpty($logUri.Query)
+        $valid = [long]::TryParse([string]$row.BuildId, [ref]$rowBuildId) -and
+            $rowBuildId -eq $BuildId -and
+            [long]::TryParse([string]$row.LogId, [ref]$logId) -and
+            $logId -gt 0 -and
+            [int]::TryParse([string]$row.Attempt, [ref]$attempt) -and
+            $attempt -gt 0 -and
+            -not [string]::IsNullOrWhiteSpace([string]$row.RecordId) -and
+            -not [string]::IsNullOrWhiteSpace([string]$row.Name) -and
+            -not [string]::IsNullOrWhiteSpace([string]$row.TimelineId) -and
+            $validLogUri -and
+            $logUri.AbsolutePath -in @(
+                "/dnceng-public/public/_apis/build/builds/$BuildId/logs/$logId",
+                "/dnceng-public/$($script:AzdoPublicProjectId)/_apis/build/builds/$BuildId/logs/$logId")
+        if (-not $valid) {
+            return [pscustomobject]@{
+                provider = 'kusto'
+                coverage = 'partial'
+                status = 'malformed'
+                complete = $false
+                indexedAt = $indexedAt
+                buildFinishTime = $buildFinishTime
+                truncated = $truncated
+                failedTasks = @()
+                error = 'Kusto failure row contains missing or invalid exact-build identity fields'
+            }
+        }
+
+        $tasks += [pscustomobject]@{
+            recordId = [string]$row.RecordId
+            name = [string]$row.Name
+            logId = $logId
+            logIdValid = $true
+            rawLogId = [string]$row.LogId
+            attempt = $attempt
+            source = 'unknown'
+            sourceTimelineId = [string]$row.TimelineId
+            sourceRecordId = $null
+            sourceAttempt = $null
+            provenanceValid = $false
+            provenanceError = 'Kusto does not expose stable current-versus-previous attempt provenance'
+            logUri = [string]$row.LogUri
+            providerPath = [string]$row.Path
+            providerResult = [string]$row.Result
+            providerErrorCount = $row.ErrorCount
+        }
+    }
+
+    $coverage = if ($buildRowCount -eq 0 -and $failureRows.Count -eq 0) {
+        'notIndexed'
+    } else {
+        'partial'
+    }
+    $error = if ($coverage -eq 'notIndexed') {
+        'Kusto has not indexed this build'
+    } elseif ($truncated) {
+        "Kusto failure inventory exceeded the $MaxRows-row provider limit"
+    } elseif ($tasks.Count -eq 0) {
+        'Kusto indexed the build but exposes no completeness marker for an empty failure inventory'
+    } else {
+        'Kusto exposes current timeline task/log identities but no completeness or previous-attempt linkage'
+    }
+
+    return [pscustomobject]@{
+        provider = 'kusto'
+        coverage = $coverage
+        status = if ($coverage -eq 'notIndexed') { 'notIndexed' } else { 'available' }
+        complete = $false
+        indexedAt = $indexedAt
+        buildFinishTime = $buildFinishTime
+        truncated = $truncated
+        failedTasks = @($tasks)
+        error = $error
+    }
+}
+
+function Get-CiFixBuildEvidenceFromInventory {
+    param(
+        [Parameter(Mandatory = $true)][long]$BuildId,
+        [Parameter(Mandatory = $true)]$Inventory,
+        [Parameter(Mandatory = $true)][string]$OutputDirectory,
+        [Parameter(Mandatory = $true)][int]$MaxFailedLogs,
+        [Parameter(Mandatory = $true)][int]$LogByteLimit,
+        [scriptblock]$RequestInvoker = {
+            param($RequestUri, $ByteLimit)
+            Invoke-CiFixAzdoRequest -Uri $RequestUri -MaxBytes $ByteLimit
+        }
+    )
+
+    $buildDirectory = Join-Path $OutputDirectory "build_$BuildId"
+    New-Item -ItemType Directory -Force -Path $buildDirectory | Out-Null
+
+    $failedTasks = @()
+    $fetchedFailedTaskCount = 0
+    $seenLogs = @{}
+    $providerTasks = @()
+    foreach ($task in @($Inventory.failedTasks)) {
+        if ($seenLogs.ContainsKey([long]$task.logId)) {
+            continue
+        }
+        $seenLogs[[long]$task.logId] = $true
+        $providerTasks += $task
+    }
+    $logsTruncatedByCount = $providerTasks.Count -gt $MaxFailedLogs
+    foreach ($task in $providerTasks) {
+        if ($fetchedFailedTaskCount -ge $MaxFailedLogs) {
+            $failedTasks += [pscustomobject]@{
+                recordId = $task.recordId
+                name = $task.name
+                attempt = $task.attempt
+                logId = $task.logId
+                rawLogId = $task.rawLogId
+                source = $task.source
+                sourceTimelineId = $task.sourceTimelineId
+                sourceRecordId = $task.sourceRecordId
+                sourceAttempt = $task.sourceAttempt
+                status = 'not_fetched_limit'
+                httpStatus = $null
+                redirectLocation = $null
+                attempts = 0
+                path = $null
+                bytes = 0
+                error = "failed-task log limit $MaxFailedLogs reached"
+            }
+            continue
+        }
+
+        $fetchedFailedTaskCount++
+        $logUri = "$($script:AzdoBaseUri)/builds/$BuildId/logs/$($task.logId)?api-version=7.1"
+        $logResponse = & $RequestInvoker $logUri $LogByteLimit
+        $relativePath = "build_$BuildId/log_$($task.logId).txt"
+        $logPath = Join-Path $OutputDirectory $relativePath
+        if ($logResponse.Content.Length -gt 0) {
+            [IO.File]::WriteAllText($logPath, $logResponse.Content, [Text.UTF8Encoding]::new($false))
+        }
+        $failedTasks += [pscustomobject]@{
+            recordId = $task.recordId
+            name = $task.name
+            attempt = $task.attempt
+            logId = $task.logId
+            rawLogId = $task.rawLogId
+            source = $task.source
+            sourceTimelineId = $task.sourceTimelineId
+            sourceRecordId = $task.sourceRecordId
+            sourceAttempt = $task.sourceAttempt
+            status = if ($logResponse.Succeeded) { 'available' } elseif ($logResponse.Truncated) { 'truncated' } else { 'error' }
+            httpStatus = $logResponse.StatusCode
+            redirectLocation = $logResponse.RedirectLocation
+            attempts = $logResponse.Attempts
+            path = if ($logResponse.Content.Length -gt 0) { $relativePath } else { $null }
+            bytes = [Text.Encoding]::UTF8.GetByteCount($logResponse.Content)
+            error = $logResponse.Error
+        }
+    }
+
+    $logsComplete = -not $logsTruncatedByCount -and
+        @($failedTasks | Where-Object status -ne 'available').Count -eq 0
+    $previousTasks = @($providerTasks | Where-Object source -eq 'previous_attempt')
+    return [pscustomobject]@{
+        buildId = $BuildId
+        complete = [bool]$Inventory.complete -and $logsComplete
+        inventory = [pscustomobject]@{
+            requestedProvider = [string]$Inventory.provider
+            requestedCoverage = [string]$Inventory.coverage
+            requestedStatus = [string]$Inventory.status
+            usedProvider = [string]$Inventory.provider
+            usedCoverage = [string]$Inventory.coverage
+            usedStatus = [string]$Inventory.status
+            fallbackUsed = $false
+            indexedAt = $Inventory.indexedAt
+            buildFinishTime = $Inventory.buildFinishTime
+            truncated = [bool]$Inventory.truncated
+            projectedFailedTaskCount = $providerTasks.Count
+            projectedFailedTasks = @($providerTasks)
+            error = [string]$Inventory.error
+        }
+        timeline = [pscustomobject]@{
+            status = "provider_$($Inventory.coverage)"
+            httpStatus = $null
+            redirectLocation = $null
+            attempts = 1
+            path = $null
+            error = [string]$Inventory.error
+        }
+        failedTaskCount = $providerTasks.Count
+        fetchedFailedTaskCount = $fetchedFailedTaskCount
+        logsTruncatedByCount = $logsTruncatedByCount
+        previousAttemptCount = $previousTasks.Count
+        previousAttemptTimelineCount = @(
+            $previousTasks |
+                ForEach-Object sourceTimelineId |
+                Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_) } |
+                Select-Object -Unique).Count
+        previousAttemptsComplete = [bool]$Inventory.complete
+        previousAttemptsTruncatedByCount = $false
+        previousAttempts = @($Inventory.previousAttempts)
+        failedTasks = @($failedTasks)
+    }
+}
+
 function Get-CiFixBuildEvidence {
     param(
         [Parameter(Mandatory = $true)][long]$BuildId,
@@ -582,11 +1115,60 @@ function Get-CiFixBuildEvidence {
         [Parameter(Mandatory = $true)][int]$MaxFailedLogs,
         [Parameter(Mandatory = $true)][int]$TimelineByteLimit,
         [Parameter(Mandatory = $true)][int]$LogByteLimit,
+        [ValidateSet('azure', 'kusto')]
+        [string]$Provider = 'azure',
         [scriptblock]$RequestInvoker = {
             param($RequestUri, $ByteLimit)
             Invoke-CiFixAzdoRequest -Uri $RequestUri -MaxBytes $ByteLimit
+        },
+        [scriptblock]$KustoQueryInvoker = {
+            param($Query)
+            Invoke-CiFixKustoQuery -Query $Query
         }
     )
+
+    if ($Provider -eq 'kusto') {
+        $inventory = Get-CiFixKustoBuildInventory `
+            -BuildId $BuildId `
+            -MaxRows 256 `
+            -QueryInvoker $KustoQueryInvoker
+        if (-not $inventory.complete) {
+            $fallback = Get-CiFixBuildEvidence `
+                -BuildId $BuildId `
+                -OutputDirectory $OutputDirectory `
+                -MaxFailedLogs $MaxFailedLogs `
+                -TimelineByteLimit $TimelineByteLimit `
+                -LogByteLimit $LogByteLimit `
+                -Provider 'azure' `
+                -RequestInvoker $RequestInvoker `
+                -KustoQueryInvoker $KustoQueryInvoker
+            $azureInventory = $fallback.inventory
+            $fallback | Add-Member -NotePropertyName inventory -NotePropertyValue ([pscustomobject]@{
+                    requestedProvider = 'kusto'
+                    requestedCoverage = [string]$inventory.coverage
+                    requestedStatus = [string]$inventory.status
+                    usedProvider = 'azure'
+                    usedCoverage = [string]$azureInventory.usedCoverage
+                    usedStatus = [string]$azureInventory.usedStatus
+                    fallbackUsed = $true
+                    indexedAt = $inventory.indexedAt
+                    buildFinishTime = $inventory.buildFinishTime
+                    truncated = [bool]$inventory.truncated
+                    projectedFailedTaskCount = @($inventory.failedTasks).Count
+                    projectedFailedTasks = @($inventory.failedTasks)
+                    error = [string]$inventory.error
+                }) -Force
+            return $fallback
+        }
+
+        return Get-CiFixBuildEvidenceFromInventory `
+            -BuildId $BuildId `
+            -Inventory $inventory `
+            -OutputDirectory $OutputDirectory `
+            -MaxFailedLogs $MaxFailedLogs `
+            -LogByteLimit $LogByteLimit `
+            -RequestInvoker $RequestInvoker
+    }
 
     $buildDirectory = Join-Path $OutputDirectory "build_$BuildId"
     New-Item -ItemType Directory -Force -Path $buildDirectory | Out-Null
@@ -898,9 +1480,28 @@ function Get-CiFixBuildEvidence {
         }
     }
 
+    $taskInventoryComplete = $timelineValid -and
+        -not $previousAttemptsTruncatedByCount -and
+        @($previousAttempts | Where-Object status -ne 'available').Count -eq 0 -and
+        @($failedTasks | Where-Object status -eq 'unavailable').Count -eq 0
     return [pscustomobject]@{
         buildId = $BuildId
         complete = $complete
+        inventory = [pscustomobject]@{
+            requestedProvider = 'azure'
+            requestedCoverage = if ($taskInventoryComplete) { 'complete' } else { 'partial' }
+            requestedStatus = 'available'
+            usedProvider = 'azure'
+            usedCoverage = if ($taskInventoryComplete) { 'complete' } else { 'partial' }
+            usedStatus = 'available'
+            fallbackUsed = $false
+            indexedAt = $null
+            buildFinishTime = $null
+            truncated = -not $taskInventoryComplete
+            projectedFailedTaskCount = $allFailedTasks.Count
+            projectedFailedTasks = @()
+            error = if ($taskInventoryComplete) { '' } else { 'Azure timeline task inventory is incomplete' }
+        }
         timeline = [pscustomobject]@{
             status = if ($timelineValid) {
                 'available'
@@ -942,9 +1543,15 @@ function Get-CiFixBuildEvidenceBounded {
         [Parameter(Mandatory = $true)][int]$MaxFailedLogs,
         [Parameter(Mandatory = $true)][int]$TimelineByteLimit,
         [Parameter(Mandatory = $true)][int]$LogByteLimit,
+        [ValidateSet('azure', 'kusto')]
+        [string]$Provider = 'azure',
         [scriptblock]$RequestInvoker = {
             param($RequestUri, $ByteLimit)
             Invoke-CiFixAzdoRequest -Uri $RequestUri -MaxBytes $ByteLimit
+        },
+        [scriptblock]$KustoQueryInvoker = {
+            param($Query)
+            Invoke-CiFixKustoQuery -Query $Query
         }
     )
 
@@ -957,6 +1564,21 @@ function Get-CiFixBuildEvidenceBounded {
             buildId = $BuildId
             complete = $false
             limitReached = $true
+            inventory = [pscustomobject]@{
+                requestedProvider = $Provider
+                requestedCoverage = 'not_fetched_limit'
+                requestedStatus = 'limit'
+                usedProvider = $null
+                usedCoverage = 'not_fetched_limit'
+                usedStatus = 'limit'
+                fallbackUsed = $false
+                indexedAt = $null
+                buildFinishTime = $null
+                truncated = $true
+                projectedFailedTaskCount = 0
+                projectedFailedTasks = @()
+                error = "global build limit $BuildLimit reached"
+            }
             timeline = [pscustomobject]@{
                 status = 'not_fetched_limit'
                 httpStatus = $null
@@ -985,7 +1607,9 @@ function Get-CiFixBuildEvidenceBounded {
         -MaxFailedLogs $MaxFailedLogs `
         -TimelineByteLimit $TimelineByteLimit `
         -LogByteLimit $LogByteLimit `
-        -RequestInvoker $RequestInvoker
+        -Provider $Provider `
+        -RequestInvoker $RequestInvoker `
+        -KustoQueryInvoker $KustoQueryInvoker
     $Evidence[$BuildId] = $result
     return $result
 }
@@ -999,12 +1623,18 @@ function New-CiFixAzdoEvidence {
         [Parameter(Mandatory = $true)][int]$FailedLogLimit,
         [Parameter(Mandatory = $true)][int]$TimelineByteLimit,
         [Parameter(Mandatory = $true)][int]$LogByteLimit,
+        [ValidateSet('azure', 'kusto')]
+        [string]$Provider = 'azure',
         [int]$TotalBuildLimit = 40,
         [long]$TotalDownloadByteLimit = 67108864,
         [int]$ProducerSeconds = 600,
         [scriptblock]$RequestInvoker = {
             param($RequestUri, $ByteLimit)
             Invoke-CiFixAzdoRequest -Uri $RequestUri -MaxBytes $ByteLimit
+        },
+        [scriptblock]$KustoQueryInvoker = {
+            param($Query)
+            Invoke-CiFixKustoQuery -Query $Query
         }
     )
 
@@ -1113,7 +1743,9 @@ function New-CiFixAzdoEvidence {
                     -MaxFailedLogs $FailedLogLimit `
                     -TimelineByteLimit $TimelineByteLimit `
                     -LogByteLimit $LogByteLimit `
-                    -RequestInvoker $RequestInvoker
+                    -Provider $Provider `
+                    -RequestInvoker $RequestInvoker `
+                    -KustoQueryInvoker $KustoQueryInvoker
                 $buildResult = [string]$build.result
                 $isCanceled = $buildResult -eq 'canceled'
                 $evidenceComplete = [bool]$evidence.complete -and -not $isCanceled
@@ -1164,7 +1796,9 @@ function New-CiFixAzdoEvidence {
             -MaxFailedLogs $FailedLogLimit `
             -TimelineByteLimit $TimelineByteLimit `
             -LogByteLimit $LogByteLimit `
-            -RequestInvoker $RequestInvoker
+            -Provider $Provider `
+            -RequestInvoker $RequestInvoker `
+            -KustoQueryInvoker $KustoQueryInvoker
         $citedEvidence += [pscustomobject]@{
             buildId = $buildId
             evidenceComplete = [bool]$evidence.complete
@@ -1252,7 +1886,9 @@ function New-CiFixAzdoEvidence {
                     -MaxFailedLogs $FailedLogLimit `
                     -TimelineByteLimit $TimelineByteLimit `
                     -LogByteLimit $LogByteLimit `
-                    -RequestInvoker $RequestInvoker
+                    -Provider $Provider `
+                    -RequestInvoker $RequestInvoker `
+                    -KustoQueryInvoker $KustoQueryInvoker
                 $buildResult = [string]$build.result
                 $isCanceled = $buildResult -eq 'canceled'
                 $evidenceComplete = [bool]$evidence.complete -and -not $isCanceled
@@ -1303,6 +1939,7 @@ function New-CiFixAzdoEvidence {
         generatedAt = (Get-Date).ToUniversalTime().ToString('o')
         repository = 'dotnet/maui'
         branch = $TargetBranch
+        evidenceProvider = $Provider
         sourceIssueCount = $issues.Count
         limits = [ordered]@{
             maxBuildsPerPipeline = $BuildLimit
@@ -1336,6 +1973,7 @@ if ($MyInvocation.InvocationName -ne '.') {
         -TotalBuildLimit $MaxTotalBuilds `
         -TimelineByteLimit $MaxTimelineBytes `
         -LogByteLimit $MaxLogBytes `
+        -Provider $EvidenceProvider `
         -TotalDownloadByteLimit $MaxTotalDownloadBytes `
         -ProducerSeconds $MaxProducerSeconds | Out-Null
 }
