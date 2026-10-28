@@ -35,8 +35,9 @@ public class Issue39055 : _IssuesUITest
         App.WaitForElement("More");
         App.Tap("More");
 #if MACCATALYST 
-        App.WaitForElement("tab_help").Tap();
-        App.WaitForElement("page_help");
+        App.WaitForElementTillPageNavigationSettled("tab_help");
+        App.Tap("tab_help");
+        App.WaitForElementTillPageNavigationSettled("page_help");
 #else
         App.WaitForElement("tab_account").Tap();
         App.WaitForElement("page_account");
