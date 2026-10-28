@@ -15,7 +15,7 @@ public class Issue4684 : _IssuesUITest
 	public override string Issue => "[Android] don't clear shell content because native page isn't visible";
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void NavigatingBackAndForthDoesNotCrash()
 	{
 		App.TapInShellFlyout("Connect");

@@ -47,7 +47,9 @@ parameters:
     - 'ScrollView'
     - 'SearchBar,Shape,Slider'
     - 'SoftInput,Stepper,Switch,SwipeView'
-    - 'Shell'
+    # Shell remains the umbrella category for local runs. CI uses Shell1 and Shell2 on every platform.
+    - 'Shell1'
+    - 'Shell2'
     - 'TabbedPage,TableView,TimePicker,TitleView,ToolbarItem,Triggers'
     - 'ViewBaseTests,VisualStateManager,Window'
     - 'WebView'
