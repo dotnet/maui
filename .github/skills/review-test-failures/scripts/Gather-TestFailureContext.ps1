@@ -303,7 +303,7 @@ function Get-BuildInsightsCheckReports {
         $result.queried = $true
         try {
             $response = Invoke-GhJson -Arguments @(
-                "api", "repos/$Repository/commits/$HeadSha/check-runs?per_page=100&page=$page",
+                "api", "repos/$Repository/commits/$HeadSha/check-runs?filter=all&per_page=100&page=$page",
                 "--header", "Accept: application/vnd.github+json"
             )
         }
@@ -3353,8 +3353,6 @@ if ($evaluation.skip) {
     exit 0
 }
 
-$buildInsights = Get-BuildInsightsCheckReports -Repository $Repository -HeadSha $pr.headRefOid
-
 Initialize-AzDoToken
 
 if ($CheckName) {
@@ -4549,7 +4547,7 @@ foreach ($buildRef in $buildRefsById.Values) {
 $buildArray = $builds.ToArray()
 $evaluation = Get-TestReviewEvaluation -Checks $unfilteredChecks -Builds $buildArray
 if ($evaluation.skip) {
-    Write-SkippedTestReviewContext -Pr $pr -Repository $Repository -Evaluation $evaluation -OutputDirectory $RunDirectory -Builds $buildArray -BuildInsights $buildInsights
+    Write-SkippedTestReviewContext -Pr $pr -Repository $Repository -Evaluation $evaluation -OutputDirectory $RunDirectory -Builds $buildArray
     exit 0
 }
 
@@ -5440,6 +5438,10 @@ $gate = [ordered]@{
     failuresMatchingCiScan = $failuresCiScan
     ciScanDemotions = $ciScanDemotions
 }
+
+# Supplementary reports may use only the budget left after primary evidence, history, and
+# baseline attribution. A slow check-runs request must not starve those authoritative sources.
+$buildInsights = Get-BuildInsightsCheckReports -Repository $Repository -HeadSha $pr.headRefOid
 
 $limitations = New-Object System.Collections.Generic.List[string]
 # Do NOT emit a standalone "no AzDO token" limitation. The gh-aw CI runner is intentionally

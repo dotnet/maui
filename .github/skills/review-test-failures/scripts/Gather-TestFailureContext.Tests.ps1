@@ -2432,6 +2432,7 @@ Describe 'Build Insights check report intake' -Tag 'BuildInsightsCheckReports' {
             $joined = ($Arguments -join ' ')
             return (
                 $joined -match ([regex]::Escape("repos/$Repository/commits/$HeadSha/check-runs")) -and
+                $joined -match '(?:\?|&)filter=all(?:&|$)' -and
                 $joined -match 'per_page=100\b' -and
                 $joined -match ("page=$ExpectedPage\b")
             )
@@ -2440,6 +2441,24 @@ Describe 'Build Insights check report intake' -Tag 'BuildInsightsCheckReports' {
 
     BeforeEach {
         $script:GatherHardDeadline = [datetime]::MaxValue
+    }
+
+    It 'requests all same-named check runs rather than only the latest attempt' {
+        $earlier = New-CheckRunFixture -Id 910101 -Title 'Earlier build'
+        $latest = New-CheckRunFixture -Id 910102 -Title 'Later build'
+        Mock Invoke-GhJson {
+            if (($Arguments -join ' ') -match '(?:\?|&)filter=all(?:&|$)') {
+                return New-CheckRunsPageFixture -TotalCount 2 -CheckRuns @($earlier, $latest)
+            }
+            return New-CheckRunsPageFixture -TotalCount 1 -CheckRuns @($latest)
+        }
+
+        $result = Get-BuildInsightsCheckReports -Repository 'dotnet/maui' -HeadSha $script:validHeadSha
+        $result.complete | Should -BeTrue
+        @($result.reports.id) | Should -Be @(910101, 910102)
+        Should -Invoke Invoke-GhJson -Times 1 -Exactly -ParameterFilter {
+            Test-CheckRunsEndpointArguments -Arguments $Arguments
+        }
     }
 
     It 'collects one trusted Build Insights report for the exact PR head' {
@@ -3191,20 +3210,23 @@ Describe 'Build Insights check report intake' -Tag 'BuildInsightsCheckReports' {
         Should -Invoke Invoke-GhJson -Times 0 -Exactly
     }
 
-    It 'does not fetch Build Insights reports when initial no-results evaluation skips' {
+    It 'does not fetch Build Insights reports when either no-results evaluation skips' {
         $statements = $script:gatherAst.EndBlock.Statements
-        $firstSkipIf = $statements | Where-Object {
+        $skipGuards = @($statements | Where-Object {
             $_ -is [System.Management.Automation.Language.IfStatementAst] -and
             $_.Clauses[0].Item1.Extent.Text -eq '$evaluation.skip'
-        } | Select-Object -First 1
+        })
         $buildInsightsAssignment = $statements | Where-Object {
             $_ -is [System.Management.Automation.Language.AssignmentStatementAst] -and
             $_.Left.Extent.Text -eq '$buildInsights'
         } | Select-Object -First 1
 
-        $firstSkipIf | Should -Not -BeNullOrEmpty
+        $skipGuards.Count | Should -Be 2
         $buildInsightsAssignment | Should -Not -BeNullOrEmpty
-        $firstSkipIf.Extent.EndOffset | Should -BeLessThan $buildInsightsAssignment.Extent.StartOffset
+        foreach ($guard in $skipGuards) {
+            $guard.Extent.EndOffset | Should -BeLessThan $buildInsightsAssignment.Extent.StartOffset
+            $guard.Extent.Text | Should -Not -Match '-BuildInsights'
+        }
 
         Mock Get-BuildInsightsCheckReports { throw 'Get-BuildInsightsCheckReports must not be called on initial no-results skip.' }
         $checks = @(
@@ -3391,5 +3413,148 @@ Describe 'Build Insights check report intake' -Tag 'BuildInsightsCheckReports' {
         $evalPending = Get-TestReviewEvaluation -Checks $checksWithProvisionalBiAndPendingCi
         $evalPending.skip | Should -BeTrue
         @($evalPending.pipelines | ForEach-Object { $_.status }) | Should -Be @('pending', 'unavailable', 'unavailable')
+    }
+}
+
+Describe 'Build Insights orchestration priority' -Tag 'BuildInsightsCheckReports' {
+    BeforeAll {
+        foreach ($function in $script:gatherAst.EndBlock.Statements | Where-Object {
+                $_ -is [System.Management.Automation.Language.FunctionDefinitionAst]
+            }) {
+            Invoke-Expression $function.Extent.Text
+        }
+        $source = Get-Content -LiteralPath $scriptPath -Raw
+        $entryStart = $source.IndexOf('Write-Host "Gathering test-failure context')
+        $script:orchestrationEntry = $source.Substring($entryStart)
+    }
+
+    It 'preserves primary evidence, history, and attribution when supplementary collection <Case>' -ForEach @(
+        @{ Case = 'succeeds'; TimesOut = $false }
+        @{ Case = 'exhausts the remaining budget'; TimesOut = $true }
+    ) {
+        $script:orchestrationEvents = [System.Collections.Generic.List[string]]::new()
+        $script:orchestrationClock = [datetime]'2026-10-28T10:00:00Z'
+        $gatherBudgetSeconds = 5
+        $gatherHardDeadline = $script:orchestrationClock.AddSeconds($gatherBudgetSeconds)
+        $script:GatherHardDeadline = $gatherHardDeadline
+        $Repository = 'dotnet/maui'
+        $PrNumber = 123
+        $BuildId = @()
+        $CheckName = $null
+        $SkipVisualEvidence = $true
+        $HistoryBuilds = 5
+        $LookbackBuilds = 5
+        $RegressionBaseBuilds = 5
+        $MinBaseGreenSamples = 2
+        $BaselineBuildsPerDefinition = 1
+        $RunDirectory = Join-Path $TestDrive $Case
+        New-Item -ItemType Directory -Path $RunDirectory -Force | Out-Null
+        $ContextJsonPath = Join-Path $RunDirectory 'context.json'
+        $ContextMarkdownPath = Join-Path $RunDirectory 'context.md'
+
+        Mock Get-Date { $script:orchestrationClock }
+        Mock Initialize-AzDoToken {}
+        Mock Invoke-ProcessWithGatherDeadline {
+            if (($Arguments -join ' ') -notmatch '^pr diff 123 --repo dotnet/maui --name-only$') {
+                throw "Unexpected process request: $Arguments"
+            }
+            @{ exitCode = 0; stdout = '.github/skills/review-test-failures/scripts/Gather-TestFailureContext.ps1'; stderr = '' }
+        }
+        Mock Invoke-GhJson {
+            if ($Arguments[0] -eq 'pr') {
+                return @{
+                    number = 123; title = 'Fixture PR'; state = 'OPEN'
+                    url = 'https://github.com/dotnet/maui/pull/123'
+                    author = @{ login = 'fixture-author' }; labels = @()
+                    headRefOid = ('a' * 40); baseRefOid = ('b' * 40)
+                    headRefName = 'fixture'; baseRefName = 'main'
+                    statusCheckRollup = @(@{
+                        name = 'maui-pr'; status = 'COMPLETED'; conclusion = 'FAILURE'
+                        detailsUrl = 'https://dev.azure.com/dnceng-public/public/_build/results?buildId=123'
+                    })
+                }
+            }
+            if ($Arguments[0] -ne 'api' -or $Arguments[1] -notmatch '/check-runs\?') {
+                throw "Unexpected GitHub request: $Arguments"
+            }
+            $script:orchestrationEvents.Add('reports')
+            if ($TimesOut) {
+                $script:orchestrationClock = $script:GatherHardDeadline.AddSeconds(1)
+                throw 'Fixture check-runs request exceeded the remaining gather request timeout.'
+            }
+            [pscustomobject]@{ total_count = 0; check_runs = @() }
+        }
+        Mock Invoke-AzDoJsonWithProjectFallback {
+            [void](Get-GatherRequestTimeoutSeconds)
+            if ($RelativePath -match '/timeline\?') {
+                $script:orchestrationEvents.Add('timeline')
+                return @{
+                    value = @{ records = @(@{
+                        id = 'task-1'; name = 'Build Linux'; type = 'Task'; result = 'failed'
+                        state = 'completed'; attempt = 1; log = @{ id = 1 }; issues = @()
+                    }) }
+                    error = $null
+                }
+            }
+            $script:orchestrationEvents.Add('build')
+            @{ value = New-HistoryBuildFixture -Id 123; error = $null; baseUrl = 'https://dev.azure.com/dnceng-public/public' }
+        }
+        Mock Get-BuildHeadEvidence { @{ verified = $true; error = $null } }
+        Mock Invoke-TextUrl {
+            [void](Get-GatherRequestTimeoutSeconds)
+            $Url | Should -Match '/builds/123/logs/1\?'
+            $script:orchestrationEvents.Add('log')
+            'src/Fixture.cs(1,1): error CS0246: The type FixtureType could not be found'
+        }
+        Mock Invoke-JsonUrl { throw "Unexpected JSON request: $Url" }
+        Mock Get-PinnedPrDiff { @{ text = 'fixture patch'; truncated = $false; error = $null } }
+        Mock Get-KnownBuildIssues { @{ patterns = @(); error = $null } }
+        Mock Get-CiScanIssues { @{ matchers = @(); error = $null } }
+        Mock Get-RecentBaseBuilds { New-HistoryBuildFixture -Id 99 -Branch 'refs/heads/main' -Result 'succeeded' }
+        Mock Get-PipelineHistory {
+            [void](Get-GatherRequestTimeoutSeconds)
+            $script:orchestrationEvents.Add('history')
+            @{ scope = 'target-branch'; baseBranch = $BaseBranch; requestedBuildCount = $Top; pipelines = @() }
+        }
+        Mock Get-AggregatedBaseLegMap {
+            [void](Get-GatherRequestTimeoutSeconds)
+            $script:orchestrationEvents.Add('baseline')
+            @{ accessible = $false; truncated = $false }
+        }
+
+        $originalAzDoToken = $env:AZDO_TOKEN
+        try {
+            $env:AZDO_TOKEN = $null
+            & ([scriptblock]::Create($script:orchestrationEntry)) *>$null
+        }
+        finally {
+            $env:AZDO_TOKEN = $originalAzDoToken
+            $script:GatherHardDeadline = [datetime]::MaxValue
+        }
+
+        @($script:orchestrationEvents) | Should -Be @('build', 'timeline', 'log', 'history', 'baseline', 'reports')
+        $context = Get-Content -LiteralPath $ContextJsonPath -Raw | ConvertFrom-Json
+        $context.builds.Count | Should -Be 1
+        $context.builds[0].accessible | Should -BeTrue
+        $context.builds[0].timelineReadable | Should -BeTrue
+        $context.builds[0].error | Should -BeNullOrEmpty
+        $context.failures.unique.Count | Should -Be 1
+        $context.failures.unique[0].messages[0] | Should -Match 'CS0246.*FixtureType'
+        $context.history.baseBranch | Should -Be 'main'
+        $context.baselineSummary.Count | Should -Be 1
+        $context.gate.verdictCeiling | Should -Be 'Needs human investigation'
+        $context.gate.unexplainedFailedLegs | Should -Be 0
+        $context.buildInsights.queried | Should -BeTrue
+        $context.buildInsights.complete | Should -Be (-not $TimesOut)
+        if ($TimesOut) {
+            ($context.limitations -join ' ') | Should -Match 'Supplementary Build Insights report collection:.*remaining gather request timeout'
+        }
+        else {
+            $context.buildInsights.errors.Count | Should -Be 0
+        }
+        Should -Invoke Invoke-AzDoJsonWithProjectFallback -Times 2 -Exactly
+        Should -Invoke Invoke-TextUrl -Times 1 -Exactly
+        Should -Invoke Get-PipelineHistory -Times 1 -Exactly
+        Should -Invoke Get-AggregatedBaseLegMap -Times 1 -Exactly
     }
 }
