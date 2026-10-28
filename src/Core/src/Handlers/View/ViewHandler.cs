@@ -274,7 +274,15 @@ namespace Microsoft.Maui.Handlers
 
 		private protected override void OnDisconnecting()
 		{
-#if !WINDOWS
+#if WINDOWS
+			// Windows reconnect replaces the native child while retaining the wrapper's visual-tree slot.
+			if (ContainerView is Platform.WrapperView)
+			{
+				base.OnDisconnecting();
+				return;
+			}
+#endif
+
 			// The platform view is still reachable here, which is the same precondition RemoveContainer()
 			// runs under during normal operation, so existing overrides stay on their supported path.
 			// Without this, ContainerView and HasContainer would survive the disconnect and a later
@@ -285,7 +293,7 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			ContainerView = null;
-#endif
+
 			base.OnDisconnecting();
 		}
 
