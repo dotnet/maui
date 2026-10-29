@@ -141,6 +141,7 @@ namespace Microsoft.Maui.DeviceTests
 				var solidAppearance = new ShellAppearance();
 				solidAppearance.Ingest(shellItem);
 				tracker.SetAppearance(controller, solidAppearance);
+				Assert.False(navigationBar.Translucent);
 
 				tracker.ResetAppearance(controller);
 
@@ -149,7 +150,7 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.NotNull(navigationBar.StandardAppearance.BackgroundEffect);
 				Assert.Null(navigationBar.ScrollEdgeAppearance.BackgroundEffect);
 				Assert.Null(navigationBar.StandardAppearance.BackgroundImage);
-				Assert.True(navigationBar.Translucent);
+				Assert.False(navigationBar.Translucent);
 			});
 		}
 
