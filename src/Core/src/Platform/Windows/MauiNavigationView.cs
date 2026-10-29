@@ -16,6 +16,7 @@ namespace Microsoft.Maui.Platform
 
 		internal StackPanel? TopNavArea { get; private set; }
 		internal ItemsRepeater? TopNavMenuItemsHost { get; private set; }
+		internal ItemsRepeater? TopNavMenuItemsOverflowHost { get; private set; }
 		internal Grid? PaneContentGrid { get; private set; }
 		internal event EventHandler? OnApplyTemplateFinished;
 		internal SplitView? RootSplitView { get; private set; }
@@ -83,6 +84,7 @@ namespace Microsoft.Maui.Platform
 			RootSplitView = (SplitView)GetTemplateChild("RootSplitView");
 			TopNavArea = (StackPanel)GetTemplateChild("TopNavArea");
 			TopNavMenuItemsHost = (ItemsRepeater)GetTemplateChild("TopNavMenuItemsHost");
+			TopNavMenuItemsOverflowHost = (ItemsRepeater)GetTemplateChild("TopNavMenuItemsOverflowHost");
 			ContentPaneTopPadding = (Grid)GetTemplateChild("ContentPaneTopPadding");
 			PaneToggleButtonGrid = (Grid)GetTemplateChild("PaneToggleButtonGrid");
 			ButtonHolderGrid = (Grid)GetTemplateChild("ButtonHolderGrid");

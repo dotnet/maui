@@ -11,8 +11,13 @@
 
 	internal interface IRoundRectangle : IShape
 	{
-		PathF InnerPathForBounds(Rect bounds, float strokeThickness);
+		PathF InnerPathForBounds(Rect bounds, float strokeThickness, bool includeShapeStroke);
 		PathF InnerPath();
+	}
+
+	internal interface IShapeWithStroke : IShape
+	{
+		PathF PathForBounds(Rect bounds, bool includeStroke);
 	}
 
 	/// <summary>

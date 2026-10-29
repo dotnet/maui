@@ -47,22 +47,22 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for attached property <c>Row</c>.</summary>
 		public static readonly BindableProperty RowProperty = BindableProperty.CreateAttached("Row",
 			typeof(int), typeof(Grid), default(int), validateValue: (bindable, value) => (int)value >= 0,
-			propertyChanged: Invalidate);
+			propertyChanged: InvalidateParent);
 
 		/// <summary>Bindable property for attached property <c>RowSpan</c>.</summary>
 		public static readonly BindableProperty RowSpanProperty = BindableProperty.CreateAttached("RowSpan",
 			typeof(int), typeof(Grid), 1, validateValue: (bindable, value) => (int)value >= 1,
-			propertyChanged: Invalidate);
+			propertyChanged: InvalidateParent);
 
 		/// <summary>Bindable property for attached property <c>Column</c>.</summary>
 		public static readonly BindableProperty ColumnProperty = BindableProperty.CreateAttached("Column",
 			typeof(int), typeof(Grid), default(int), validateValue: (bindable, value) => (int)value >= 0,
-			propertyChanged: Invalidate);
+			propertyChanged: InvalidateParent);
 
 		/// <summary>Bindable property for attached property <c>ColumnSpan</c>.</summary>
 		public static readonly BindableProperty ColumnSpanProperty = BindableProperty.CreateAttached("ColumnSpan",
 			typeof(int), typeof(Grid), 1, validateValue: (bindable, value) => (int)value >= 1,
-			propertyChanged: Invalidate);
+			propertyChanged: InvalidateParent);
 
 		/// <summary>Gets the column of the <paramref name="bindable" /> child element.</summary>
 		/// <param name="bindable">An element that belongs to the Grid layout.</param>
@@ -407,7 +407,11 @@ namespace Microsoft.Maui.Controls
 			{
 				grid.InvalidateMeasure();
 			}
-			else if (bindable is Element element && element.Parent is Grid parentGrid)
+		}
+
+		static void InvalidateParent(BindableObject bindable, object oldValue, object newValue)
+		{
+			if (bindable is Element element && element.Parent is Grid parentGrid)
 			{
 				parentGrid.InvalidateMeasure();
 			}

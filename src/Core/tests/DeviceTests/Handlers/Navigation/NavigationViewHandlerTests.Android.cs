@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 using Android.OS;
 using Android.Views;
@@ -18,6 +19,47 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class NavigationViewHandlerTests
 	{
+		[Fact(DisplayName = "Popping Pages Doesn't Throw Java Exceptions")]
+		public async Task PoppingPagesDoesntThrowJavaExceptions()
+		{
+			var page1 = new ButtonStub();
+			var page2 = new ButtonStub();
+			var page3 = new ButtonStub();
+			NavigationViewStub navigationViewStub = new NavigationViewStub()
+			{
+				NavigationStack = new List<IView>()
+				{
+					page1, page2, page3
+				}
+			};
+
+			await CreateNavigationViewHandlerAsync(navigationViewStub, async (handler) =>
+			{
+				// The exceptions are caught, but they still reach FirstChanceException handlers (and crash reporters)
+				var exceptionMessages = new List<string>();
+				AppDomain.CurrentDomain.FirstChanceException += OnFirstChanceException;
+
+				try
+				{
+					navigationViewStub.RequestNavigation(new NavigationRequest(new List<IView>() { page1 }, false));
+					await navigationViewStub.OnNavigationFinished;
+				}
+				finally
+				{
+					AppDomain.CurrentDomain.FirstChanceException -= OnFirstChanceException;
+				}
+
+				Assert.Empty(exceptionMessages);
+				Assert.Equal(1, GetNativeNavigationStackCount(handler));
+
+				void OnFirstChanceException(object sender, FirstChanceExceptionEventArgs e)
+				{
+					if (e.Exception is IllegalArgumentException)
+						exceptionMessages.Add(e.Exception.Message);
+				}
+			});
+		}
+
 		int GetNativeNavigationStackCount(NavigationViewHandler navigationViewHandler)
 		{
 			int i = 0;

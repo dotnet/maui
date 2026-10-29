@@ -33,7 +33,7 @@
                 <Entry Text="{Binding Locality}"/>
                 <Label Text="Admin Area"/>
                 <Entry Text="{Binding AdminArea}"/>
-                <Label Text="Country Name"/>
+                <Label Text="Country/region name"/>
                 <Entry Text="{Binding Country}"/>
                 <Label Text="Zip Code"/>
                 <Entry Text="{Binding ZipCode}" Keyboard="Numeric"/>
