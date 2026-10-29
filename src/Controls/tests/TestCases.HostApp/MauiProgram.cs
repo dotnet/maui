@@ -84,6 +84,7 @@ namespace Maui.Controls.Sample
 					Android.Util.Log.Info("MauiUITests", $"Using {handler.GetType().Name}");
 					return handler;
 				});
+				handlers.AddHandler(typeof(Issue19831Renderer), typeof(Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer));
 				handlers.AddHandler(typeof(Issue7814TouchClaimView), typeof(Issue7814TouchClaimViewHandler));
 #endif
 			});

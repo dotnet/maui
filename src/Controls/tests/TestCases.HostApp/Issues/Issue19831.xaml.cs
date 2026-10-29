@@ -3,12 +3,22 @@ using Microsoft.Maui.Controls.Xaml;
 
 namespace Maui.Controls.Sample.Issues;
 
-[XamlCompilation(XamlCompilationOptions.Compile)]
 [Issue(IssueTracker.Github, 19831, "[Android] Action mode menu doesn't disappear when switch on another tab", PlatformAffected.Android)]
-
-public partial class Issue19831 : Shell
+public class Issue19831 : Issue19831Base
 {
-	public Issue19831()
+}
+
+#if ANDROID
+[Issue(IssueTracker.Github, 19831, "ShellRenderer title updates after switching tabs with context actions open", PlatformAffected.Android, issueTestNumber: 1)]
+public class Issue19831Renderer : Issue19831Base
+{
+}
+#endif
+
+[XamlCompilation(XamlCompilationOptions.Compile)]
+public abstract partial class Issue19831Base : Shell
+{
+	protected Issue19831Base()
 	{
 		InitializeComponent();
 	}
