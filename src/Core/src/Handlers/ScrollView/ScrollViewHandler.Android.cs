@@ -239,6 +239,7 @@ namespace Microsoft.Maui.Handlers
 				if (currentPaddingLayer.ChildCount == 0 || currentPaddingLayer.GetChildAt(0) != nativeContent)
 				{
 					currentPaddingLayer.RemoveAllViews();
+					nativeContent.RemoveFromParent();
 					currentPaddingLayer.AddView(nativeContent);
 				}
 			}
@@ -264,6 +265,7 @@ namespace Microsoft.Maui.Handlers
 			UpdateClipForShadow(paddingShim, handler.PlatformView, scrollView.PresentedContent);
 
 			handler.PlatformView.RemoveAllViews();
+			nativeContent.RemoveFromParent();
 			paddingShim.AddView(nativeContent);
 			handler.PlatformView.SetContent(paddingShim);
 		}
