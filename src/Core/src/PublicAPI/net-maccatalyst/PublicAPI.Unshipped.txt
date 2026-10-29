@@ -19,3 +19,24 @@ override Microsoft.Maui.Platform.NoCaretField.LayoutSubviews() -> void
 override Microsoft.Maui.Handlers.EditorHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect rect) -> void
 override Microsoft.Maui.Handlers.ScrollViewHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect rect) -> void
 virtual Microsoft.Maui.MauiUISceneDelegate.PerformAction(UIKit.UIWindowScene! windowScene, UIKit.UIApplicationShortcutItem! shortcutItem, System.Action<bool>! completionHandler) -> void
+Microsoft.Maui.IContentButton
+Microsoft.Maui.Handlers.IContentButtonHandler
+Microsoft.Maui.Handlers.IContentButtonHandler.VirtualView.get -> Microsoft.Maui.IContentButton!
+Microsoft.Maui.Handlers.IContentButtonHandler.PlatformView.get -> UIKit.UIButton!
+Microsoft.Maui.Handlers.ContentButtonHandler
+Microsoft.Maui.Handlers.ContentButtonHandler.ContentButtonHandler() -> void
+Microsoft.Maui.Handlers.ContentButtonHandler.ContentButtonHandler(Microsoft.Maui.IPropertyMapper? mapper) -> void
+Microsoft.Maui.Handlers.ContentButtonHandler.ContentButtonHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper) -> void
+override Microsoft.Maui.Handlers.ContentButtonHandler.CreatePlatformView() -> UIKit.UIButton!
+override Microsoft.Maui.Handlers.ContentButtonHandler.SetVirtualView(Microsoft.Maui.IView! view) -> void
+override Microsoft.Maui.Handlers.ContentButtonHandler.ConnectHandler(UIKit.UIButton! platformView) -> void
+override Microsoft.Maui.Handlers.ContentButtonHandler.DisconnectHandler(UIKit.UIButton! platformView) -> void
+static Microsoft.Maui.Handlers.ContentButtonHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IContentButton!, Microsoft.Maui.Handlers.IContentButtonHandler!>!
+static Microsoft.Maui.Handlers.ContentButtonHandler.Mapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IContentButton!, Microsoft.Maui.Handlers.IContentButtonHandler!>!
+static Microsoft.Maui.Handlers.ContentButtonHandler.MapBackground(Microsoft.Maui.Handlers.IContentButtonHandler! handler, Microsoft.Maui.IContentButton! button) -> void
+static Microsoft.Maui.Handlers.ContentButtonHandler.MapContent(Microsoft.Maui.Handlers.IContentButtonHandler! handler, Microsoft.Maui.IContentButton! button) -> void
+static Microsoft.Maui.Handlers.ContentButtonHandler.MapCornerRadius(Microsoft.Maui.Handlers.IContentButtonHandler! handler, Microsoft.Maui.IContentButton! button) -> void
+static Microsoft.Maui.Handlers.ContentButtonHandler.MapIsEnabled(Microsoft.Maui.Handlers.IContentButtonHandler! handler, Microsoft.Maui.IContentButton! button) -> void
+static Microsoft.Maui.Handlers.ContentButtonHandler.MapPadding(Microsoft.Maui.Handlers.IContentButtonHandler! handler, Microsoft.Maui.IContentButton! button) -> void
+static Microsoft.Maui.Handlers.ContentButtonHandler.MapStrokeColor(Microsoft.Maui.Handlers.IContentButtonHandler! handler, Microsoft.Maui.IContentButton! button) -> void
+static Microsoft.Maui.Handlers.ContentButtonHandler.MapStrokeThickness(Microsoft.Maui.Handlers.IContentButtonHandler! handler, Microsoft.Maui.IContentButton! button) -> void

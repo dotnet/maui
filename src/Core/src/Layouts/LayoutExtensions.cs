@@ -213,6 +213,13 @@ namespace Microsoft.Maui.Layouts
 			_ = contentView.PresentedContent.Arrange(targetBounds);
 		}
 
+		internal static void ArrangeContent(this IContentView contentView, Thickness inset, Rect bounds)
+		{
+			contentView.PresentedContent?.Arrange(new Rect(bounds.Left + inset.Left, bounds.Top + inset.Top,
+				Math.Max(0, bounds.Width - inset.HorizontalThickness),
+				Math.Max(0, bounds.Height - inset.VerticalThickness)));
+		}
+
 		public static Size AdjustForFill(this Size size, Rect bounds, IView view)
 		{
 			if (view.HorizontalLayoutAlignment == LayoutAlignment.Fill)

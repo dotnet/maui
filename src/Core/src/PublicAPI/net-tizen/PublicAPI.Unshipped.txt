@@ -1,1 +1,19 @@
 #nullable enable
+Microsoft.Maui.IContentButton
+Microsoft.Maui.Handlers.IContentButtonHandler
+Microsoft.Maui.Handlers.IContentButtonHandler.VirtualView.get -> Microsoft.Maui.IContentButton!
+Microsoft.Maui.Handlers.IContentButtonHandler.PlatformView.get -> Tizen.NUI.BaseComponents.View!
+Microsoft.Maui.Handlers.ContentButtonHandler
+Microsoft.Maui.Handlers.ContentButtonHandler.ContentButtonHandler() -> void
+Microsoft.Maui.Handlers.ContentButtonHandler.ContentButtonHandler(Microsoft.Maui.IPropertyMapper? mapper) -> void
+Microsoft.Maui.Handlers.ContentButtonHandler.ContentButtonHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper) -> void
+override Microsoft.Maui.Handlers.ContentButtonHandler.CreatePlatformView() -> Tizen.NUI.BaseComponents.View!
+static Microsoft.Maui.Handlers.ContentButtonHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IContentButton!, Microsoft.Maui.Handlers.IContentButtonHandler!>!
+static Microsoft.Maui.Handlers.ContentButtonHandler.Mapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IContentButton!, Microsoft.Maui.Handlers.IContentButtonHandler!>!
+static Microsoft.Maui.Handlers.ContentButtonHandler.MapBackground(Microsoft.Maui.Handlers.IContentButtonHandler! handler, Microsoft.Maui.IContentButton! button) -> void
+static Microsoft.Maui.Handlers.ContentButtonHandler.MapContent(Microsoft.Maui.Handlers.IContentButtonHandler! handler, Microsoft.Maui.IContentButton! button) -> void
+static Microsoft.Maui.Handlers.ContentButtonHandler.MapCornerRadius(Microsoft.Maui.Handlers.IContentButtonHandler! handler, Microsoft.Maui.IContentButton! button) -> void
+static Microsoft.Maui.Handlers.ContentButtonHandler.MapIsEnabled(Microsoft.Maui.Handlers.IContentButtonHandler! handler, Microsoft.Maui.IContentButton! button) -> void
+static Microsoft.Maui.Handlers.ContentButtonHandler.MapPadding(Microsoft.Maui.Handlers.IContentButtonHandler! handler, Microsoft.Maui.IContentButton! button) -> void
+static Microsoft.Maui.Handlers.ContentButtonHandler.MapStrokeColor(Microsoft.Maui.Handlers.IContentButtonHandler! handler, Microsoft.Maui.IContentButton! button) -> void
+static Microsoft.Maui.Handlers.ContentButtonHandler.MapStrokeThickness(Microsoft.Maui.Handlers.IContentButtonHandler! handler, Microsoft.Maui.IContentButton! button) -> void

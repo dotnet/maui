@@ -14,6 +14,7 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler(typeof(ButtonWithContainerStub), typeof(ButtonWithContainerStubHandler));
 					handlers.AddHandler(typeof(SliderStub), typeof(SliderHandler));
 					handlers.AddHandler(typeof(ButtonStub), typeof(ButtonHandler));
+					handlers.AddHandler(typeof(ContentButtonStub), typeof(ContentButtonHandler));
 					handlers.AddHandler(typeof(ElementStub), typeof(ElementHandlerStub));
 				})
 				.ConfigureImageSources(services =>

@@ -1,28 +1,61 @@
 ﻿#nullable enable
-*REMOVED*override Microsoft.Maui.Controls.Platform.GenericAnimatorListener.JavaFinalize() -> void
-override Microsoft.Maui.Controls.Platform.GenericAnimatorListener.Dispose(bool disposing) -> void
+Microsoft.Maui.Controls.ContentButton
+Microsoft.Maui.Controls.ContentButton.BorderColor.get -> Microsoft.Maui.Graphics.Color?
+Microsoft.Maui.Controls.ContentButton.BorderColor.set -> void
+Microsoft.Maui.Controls.ContentButton.BorderWidth.get -> double
+Microsoft.Maui.Controls.ContentButton.BorderWidth.set -> void
+Microsoft.Maui.Controls.ContentButton.Clicked -> System.EventHandler?
+Microsoft.Maui.Controls.ContentButton.Command.get -> System.Windows.Input.ICommand?
+Microsoft.Maui.Controls.ContentButton.Command.set -> void
+Microsoft.Maui.Controls.ContentButton.CommandParameter.get -> object?
+Microsoft.Maui.Controls.ContentButton.CommandParameter.set -> void
+Microsoft.Maui.Controls.ContentButton.ContentButton() -> void
+Microsoft.Maui.Controls.ContentButton.CornerRadius.get -> int
+Microsoft.Maui.Controls.ContentButton.CornerRadius.set -> void
+Microsoft.Maui.Controls.ContentButton.IsPressed.get -> bool
+Microsoft.Maui.Controls.ContentButton.On<T>() -> Microsoft.Maui.Controls.IPlatformElementConfiguration<T, Microsoft.Maui.Controls.ContentButton!>!
+Microsoft.Maui.Controls.ContentButton.Pressed -> System.EventHandler?
+Microsoft.Maui.Controls.ContentButton.Released -> System.EventHandler?
+Microsoft.Maui.Controls.IndicatorView.~IndicatorView() -> void
+Microsoft.Maui.Controls.Label.~Label() -> void
+Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ContentButton
+override Microsoft.Maui.Controls.ContentButton.ChangeVisualState() -> void
+override Microsoft.Maui.Controls.ContentButton.IsEnabledCore.get -> bool
+override Microsoft.Maui.Controls.ContentButton.OnPropertyChanged(string? propertyName = null) -> void
 override Microsoft.Maui.Controls.GraphicsView.OnBindingContextChanged() -> void
-*REMOVED*~static readonly Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.DefaultForegroundColor -> Microsoft.Maui.Graphics.Color
-*REMOVED*~static readonly Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.DefaultTitleColor -> Microsoft.Maui.Graphics.Color
-*REMOVED*~static readonly Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.DefaultUnselectedColor -> Microsoft.Maui.Graphics.Color
-~static Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.DefaultForegroundColor.get -> Microsoft.Maui.Graphics.Color
-~static Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.DefaultTitleColor.get -> Microsoft.Maui.Graphics.Color
-~static Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.DefaultUnselectedColor.get -> Microsoft.Maui.Graphics.Color
-override Microsoft.Maui.Controls.Shapes.Shape.OnPropertyChanged(string? propertyName = null) -> void
 ~override Microsoft.Maui.Controls.Handlers.Items.MauiCarouselRecyclerView.RequestChildFocus(Android.Views.View child, Android.Views.View focused) -> void
 ~override Microsoft.Maui.Controls.Handlers.Items.MauiCarouselRecyclerView.RequestChildRectangleOnScreen(Android.Views.View child, Android.Graphics.Rect rect, bool immediate) -> bool
 ~override Microsoft.Maui.Controls.Handlers.Items.MauiRecyclerView<TItemsView, TAdapter, TItemsViewSource>.DispatchTouchEvent(Android.Views.MotionEvent e) -> bool
-~override Microsoft.Maui.Controls.Handlers.Items.MauiRecyclerView<TItemsView, TAdapter, TItemsViewSource>.OnInterceptTouchEvent(Android.Views.MotionEvent e) -> bool
-~override Microsoft.Maui.Controls.Handlers.Items.MauiRecyclerView<TItemsView, TAdapter, TItemsViewSource>.OnTouchEvent(Android.Views.MotionEvent e) -> bool
-~override Microsoft.Maui.Controls.Handlers.Items.RecyclerViewScrollListener<TItemsView, TItemsViewSource>.OnScrollStateChanged(AndroidX.RecyclerView.Widget.RecyclerView recyclerView, int newState) -> void
-~override Microsoft.Maui.Controls.Handlers.Items.SelectableItemsViewAdapter<TItemsView, TItemsSource>.IsSelectionEnabled(Android.Views.ViewGroup parent, int viewType) -> bool
 override Microsoft.Maui.Controls.Handlers.Items.MauiRecyclerView<TItemsView, TAdapter, TItemsViewSource>.OnAttachedToWindow() -> void
 override Microsoft.Maui.Controls.Handlers.Items.MauiRecyclerView<TItemsView, TAdapter, TItemsViewSource>.OnDetachedFromWindow() -> void
-override Microsoft.Maui.Controls.TitleBar.OnBindingContextChanged() -> void
-Microsoft.Maui.Controls.IndicatorView.~IndicatorView() -> void
-~override Microsoft.Maui.Controls.Handlers.Items.MauiRecyclerView<TItemsView, TAdapter, TItemsViewSource>.OnVisibilityChanged(Android.Views.View changedView, Android.Views.ViewStates visibility) -> void
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.OnHiddenChanged(bool hidden) -> void
-~override Microsoft.Maui.Controls.RadioButton.OnPropertyChanged(string propertyName = null) -> void
+~override Microsoft.Maui.Controls.Handlers.Items.MauiRecyclerView<TItemsView, TAdapter, TItemsViewSource>.OnInterceptTouchEvent(Android.Views.MotionEvent e) -> bool
 override Microsoft.Maui.Controls.Handlers.Items.MauiRecyclerView<TItemsView, TAdapter, TItemsViewSource>.OnSizeChanged(int w, int h, int oldw, int oldh) -> void
+~override Microsoft.Maui.Controls.Handlers.Items.MauiRecyclerView<TItemsView, TAdapter, TItemsViewSource>.OnTouchEvent(Android.Views.MotionEvent e) -> bool
+~override Microsoft.Maui.Controls.Handlers.Items.MauiRecyclerView<TItemsView, TAdapter, TItemsViewSource>.OnVisibilityChanged(Android.Views.View changedView, Android.Views.ViewStates visibility) -> void
+~override Microsoft.Maui.Controls.Handlers.Items.RecyclerViewScrollListener<TItemsView, TItemsViewSource>.OnScrollStateChanged(AndroidX.RecyclerView.Widget.RecyclerView recyclerView, int newState) -> void
+~override Microsoft.Maui.Controls.Handlers.Items.SelectableItemsViewAdapter<TItemsView, TItemsSource>.IsSelectionEnabled(Android.Views.ViewGroup parent, int viewType) -> bool
+override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.OnHiddenChanged(bool hidden) -> void
+override Microsoft.Maui.Controls.Platform.GenericAnimatorListener.Dispose(bool disposing) -> void
+*REMOVED*override Microsoft.Maui.Controls.Platform.GenericAnimatorListener.JavaFinalize() -> void
+~override Microsoft.Maui.Controls.RadioButton.OnPropertyChanged(string propertyName = null) -> void
+override Microsoft.Maui.Controls.Shapes.Shape.OnPropertyChanged(string? propertyName = null) -> void
 ~override Microsoft.Maui.Controls.SwipeItems.OnPropertyChanged(string propertyName = null) -> void
-Microsoft.Maui.Controls.Label.~Label() -> void
+override Microsoft.Maui.Controls.TitleBar.OnBindingContextChanged() -> void
+static Microsoft.Maui.Controls.ContentButton.MapRippleColor(Microsoft.Maui.Handlers.IContentButtonHandler! handler, Microsoft.Maui.Controls.ContentButton! button) -> void
+~static Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.DefaultForegroundColor.get -> Microsoft.Maui.Graphics.Color
+~static Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.DefaultTitleColor.get -> Microsoft.Maui.Graphics.Color
+~static Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.DefaultUnselectedColor.get -> Microsoft.Maui.Graphics.Color
+static Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ContentButton.GetRippleColor(Microsoft.Maui.Controls.BindableObject! element) -> Microsoft.Maui.Graphics.Color?
+static Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ContentButton.GetRippleColor(this Microsoft.Maui.Controls.IPlatformElementConfiguration<Microsoft.Maui.Controls.PlatformConfiguration.Android!, Microsoft.Maui.Controls.ContentButton!>! config) -> Microsoft.Maui.Graphics.Color?
+static Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ContentButton.SetRippleColor(Microsoft.Maui.Controls.BindableObject! element, Microsoft.Maui.Graphics.Color? value) -> void
+static Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ContentButton.SetRippleColor(this Microsoft.Maui.Controls.IPlatformElementConfiguration<Microsoft.Maui.Controls.PlatformConfiguration.Android!, Microsoft.Maui.Controls.ContentButton!>! config, Microsoft.Maui.Graphics.Color? value) -> Microsoft.Maui.Controls.IPlatformElementConfiguration<Microsoft.Maui.Controls.PlatformConfiguration.Android!, Microsoft.Maui.Controls.ContentButton!>!
+static readonly Microsoft.Maui.Controls.ContentButton.BorderColorProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.ContentButton.BorderWidthProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.ContentButton.CommandParameterProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.ContentButton.CommandProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.ContentButton.CornerRadiusProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.ContentButton.IsPressedProperty -> Microsoft.Maui.Controls.BindableProperty!
+*REMOVED*~static readonly Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.DefaultForegroundColor -> Microsoft.Maui.Graphics.Color
+*REMOVED*~static readonly Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.DefaultTitleColor -> Microsoft.Maui.Graphics.Color
+*REMOVED*~static readonly Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.DefaultUnselectedColor -> Microsoft.Maui.Graphics.Color
+static readonly Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ContentButton.RippleColorProperty -> Microsoft.Maui.Controls.BindableProperty!

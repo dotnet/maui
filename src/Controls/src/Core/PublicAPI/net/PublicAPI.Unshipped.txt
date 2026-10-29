@@ -1,8 +1,40 @@
-#nullable enable
-override Microsoft.Maui.Controls.Shapes.Shape.OnPropertyChanged(string? propertyName = null) -> void
-~override Microsoft.Maui.Controls.RadioButton.OnPropertyChanged(string propertyName = null) -> void
-override Microsoft.Maui.Controls.GraphicsView.OnBindingContextChanged() -> void
-override Microsoft.Maui.Controls.TitleBar.OnBindingContextChanged() -> void
+﻿#nullable enable
+Microsoft.Maui.Controls.ContentButton
+Microsoft.Maui.Controls.ContentButton.BorderColor.get -> Microsoft.Maui.Graphics.Color?
+Microsoft.Maui.Controls.ContentButton.BorderColor.set -> void
+Microsoft.Maui.Controls.ContentButton.BorderWidth.get -> double
+Microsoft.Maui.Controls.ContentButton.BorderWidth.set -> void
+Microsoft.Maui.Controls.ContentButton.Clicked -> System.EventHandler?
+Microsoft.Maui.Controls.ContentButton.Command.get -> System.Windows.Input.ICommand?
+Microsoft.Maui.Controls.ContentButton.Command.set -> void
+Microsoft.Maui.Controls.ContentButton.CommandParameter.get -> object?
+Microsoft.Maui.Controls.ContentButton.CommandParameter.set -> void
+Microsoft.Maui.Controls.ContentButton.ContentButton() -> void
+Microsoft.Maui.Controls.ContentButton.CornerRadius.get -> int
+Microsoft.Maui.Controls.ContentButton.CornerRadius.set -> void
+Microsoft.Maui.Controls.ContentButton.IsPressed.get -> bool
+Microsoft.Maui.Controls.ContentButton.On<T>() -> Microsoft.Maui.Controls.IPlatformElementConfiguration<T, Microsoft.Maui.Controls.ContentButton!>!
+Microsoft.Maui.Controls.ContentButton.Pressed -> System.EventHandler?
+Microsoft.Maui.Controls.ContentButton.Released -> System.EventHandler?
 Microsoft.Maui.Controls.IndicatorView.~IndicatorView() -> void
-~override Microsoft.Maui.Controls.SwipeItems.OnPropertyChanged(string propertyName = null) -> void
 Microsoft.Maui.Controls.Label.~Label() -> void
+Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ContentButton
+override Microsoft.Maui.Controls.ContentButton.ChangeVisualState() -> void
+override Microsoft.Maui.Controls.ContentButton.IsEnabledCore.get -> bool
+override Microsoft.Maui.Controls.ContentButton.OnPropertyChanged(string? propertyName = null) -> void
+override Microsoft.Maui.Controls.GraphicsView.OnBindingContextChanged() -> void
+~override Microsoft.Maui.Controls.RadioButton.OnPropertyChanged(string propertyName = null) -> void
+override Microsoft.Maui.Controls.Shapes.Shape.OnPropertyChanged(string? propertyName = null) -> void
+~override Microsoft.Maui.Controls.SwipeItems.OnPropertyChanged(string propertyName = null) -> void
+override Microsoft.Maui.Controls.TitleBar.OnBindingContextChanged() -> void
+static Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ContentButton.GetRippleColor(Microsoft.Maui.Controls.BindableObject! element) -> Microsoft.Maui.Graphics.Color?
+static Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ContentButton.GetRippleColor(this Microsoft.Maui.Controls.IPlatformElementConfiguration<Microsoft.Maui.Controls.PlatformConfiguration.Android!, Microsoft.Maui.Controls.ContentButton!>! config) -> Microsoft.Maui.Graphics.Color?
+static Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ContentButton.SetRippleColor(Microsoft.Maui.Controls.BindableObject! element, Microsoft.Maui.Graphics.Color? value) -> void
+static Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ContentButton.SetRippleColor(this Microsoft.Maui.Controls.IPlatformElementConfiguration<Microsoft.Maui.Controls.PlatformConfiguration.Android!, Microsoft.Maui.Controls.ContentButton!>! config, Microsoft.Maui.Graphics.Color? value) -> Microsoft.Maui.Controls.IPlatformElementConfiguration<Microsoft.Maui.Controls.PlatformConfiguration.Android!, Microsoft.Maui.Controls.ContentButton!>!
+static readonly Microsoft.Maui.Controls.ContentButton.BorderColorProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.ContentButton.BorderWidthProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.ContentButton.CommandParameterProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.ContentButton.CommandProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.ContentButton.CornerRadiusProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.ContentButton.IsPressedProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ContentButton.RippleColorProperty -> Microsoft.Maui.Controls.BindableProperty!

@@ -116,11 +116,13 @@ public static partial class AppHostBuilderExtensions
 		handlersCollection.AddHandler<SearchBar, SearchBarHandler>();
 		handlersCollection.AddHandler<Slider, SliderHandler>();
 		handlersCollection.AddHandler<DatePicker, DatePickerHandler>();
-        handlersCollection.AddHandler<Entry, EntryHandler>();
+		handlersCollection.AddHandler<Entry, EntryHandler>();
 #endif
 		handlersCollection.AddHandler<Application, ApplicationHandler>();
 		handlersCollection.AddHandler<BoxView, BoxViewHandler>();
 		handlersCollection.AddHandler<Button, ButtonHandler>();
+		handlersCollection.AddHandler<IContentButton, ContentButtonHandler>();
+		handlersCollection.AddHandler<ContentButton, ContentButtonHandler>();
 		handlersCollection.AddHandler<GraphicsView, GraphicsViewHandler>();
 		handlersCollection.AddHandler<Layout, LayoutHandler>();
 		handlersCollection.AddHandler<ScrollView, ScrollViewHandler>();
@@ -311,6 +313,7 @@ public static partial class AppHostBuilderExtensions
 		Application.RemapForControls();
 		VisualElement.RemapIfNeeded();
 		Button.RemapForControls();
+		ContentButton.RemapForControls();
 		DatePicker.RemapForControls();
 		RadioButton.RemapForControls();
 		FlyoutPage.RemapForControls();
