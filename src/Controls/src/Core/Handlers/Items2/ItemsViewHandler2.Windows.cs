@@ -596,7 +596,8 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 			return;
 		}
 
-		if (!PlatformView.IsLoaded)
+		// Collapsed views can be loaded without an ItemsRepeater; WinUI cannot scroll them.
+		if (!PlatformView.IsLoaded || PlatformView.Visibility != WVisibility.Visible)
 		{
 			return;
 		}
