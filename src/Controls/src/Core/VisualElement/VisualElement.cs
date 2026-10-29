@@ -266,7 +266,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		static bool TryParseTransformValue(string value, out double result)
-			=> double.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out result);
+			=> double.TryParse(value, NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out result);
 
 		internal static readonly BindableProperty TransformOriginProperty =
 			BindableProperty.Create("TransformOrigin", typeof(Point), typeof(VisualElement), new Point(.5d, .5d),

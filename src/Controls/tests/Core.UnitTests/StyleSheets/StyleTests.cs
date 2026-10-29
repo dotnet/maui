@@ -213,5 +213,24 @@ namespace Microsoft.Maui.Controls.StyleSheets.UnitTests
 			Assert.Equal(22.5, ve.RotationY);
 		}
 
+		[Theory]
+		[InlineData("en-US")]
+		[InlineData("de-DE")]
+		public void TransformValuesAcceptExponentNotation(string culture)
+		{
+			CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo(culture);
+
+			var styleString = @"transform: rotate(1e2) scale(1e-1,2.5e-1);";
+			var style = Style.Parse(new CssReader(new StringReader(styleString)), '}');
+			Assert.NotNull(style);
+
+			var ve = new VisualElement();
+			style.Apply(ve);
+
+			Assert.Equal(100, ve.Rotation);
+			Assert.Equal(0.1, ve.ScaleX);
+			Assert.Equal(0.25, ve.ScaleY);
+		}
+
 	}
 }
