@@ -32,7 +32,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				navBar.BarTintColor = _defaultBarTint;
 				navBar.TintColor = _defaultTint;
 				navBar.TitleTextAttributes = _defaultTitleAttributes;
-				navBar.Translucent = false;
 
 				if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13, 1) || OperatingSystem.IsTvOSVersionAtLeast(13))
 				{
