@@ -34,7 +34,10 @@ namespace Microsoft.Maui.Controls.Platform
 		public static void UpdateText(this UITextField textField, InputView inputView) =>
 			UpdateText(textField, inputView, textField.IsEditing);
 
-		static void UpdateText(this IUITextInput textInput, InputView inputView, bool isEditing)
+		internal static void UpdateText(this UITextField textField, ITextInput inputView) =>
+			UpdateText(textField, inputView, textField.IsEditing);
+
+		static void UpdateText(this IUITextInput textInput, ITextInput inputView, bool isEditing)
 		{
 			// Setting the text causes the cursor to be reset to the end of the IUITextInput.
 			// So, let's set back the cursor to the last known position and calculate a new
@@ -47,10 +50,10 @@ namespace Microsoft.Maui.Controls.Platform
 			// a different length that the one that has been set in the control.
 			var newTextLength = !string.IsNullOrWhiteSpace(inputView.Text) ? textInput.TextInRange(textRange)?.Length ?? 0 : 0;
 
-			var newText = TextTransformUtilities.GetTransformedText(
-				inputView?.Text,
-				textInput.GetSecureTextEntry() ? TextTransform.Default : inputView.TextTransform
-				);
+			var newText = inputView is ITextElement textElement
+				? textElement.UpdateFormsText(inputView.Text,
+					textInput.GetSecureTextEntry() ? TextTransform.Default : textElement.TextTransform)
+				: inputView.Text ?? string.Empty;
 
 			if (!string.IsNullOrWhiteSpace(oldText))
 				newTextLength = newText.Length;
