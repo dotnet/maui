@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				Microsoft.Maui.Platform.LayerExtensions.RemoveBackgroundLayer(tabBar);
 				tabBar.BackgroundColor = _defaultBackgroundColor;
 				tabBar.StandardAppearance = _defaultStandardAppearance;
-				tabBar.ScrollEdgeAppearance = _defaultScrollEdgeAppearance;
+				tabBar.ScrollEdgeAppearance = _defaultScrollEdgeAppearance ?? _defaultStandardAppearance;
 			}
 
 			tabBar.BarTintColor = _defaultBarTint;

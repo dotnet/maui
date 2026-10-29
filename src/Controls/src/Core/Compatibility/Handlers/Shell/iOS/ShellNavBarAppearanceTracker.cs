@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13, 1) || OperatingSystem.IsTvOSVersionAtLeast(13))
 				{
 					navBar.StandardAppearance = _defaultStandardAppearance;
-					navBar.ScrollEdgeAppearance = _defaultScrollEdgeAppearance;
+					navBar.ScrollEdgeAppearance = _defaultScrollEdgeAppearance ?? _defaultStandardAppearance;
 				}
 			}
 		}

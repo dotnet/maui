@@ -104,6 +104,50 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task ResetRestoresStandardMaterialWhenOriginalScrollEdgeAppearanceIsNull()
+		{
+			if (!OperatingSystem.IsIOSVersionAtLeast(15) && !OperatingSystem.IsMacCatalystVersionAtLeast(15))
+				return;
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				using var tabBar = new UITabBar();
+				using var controller = new TestTabBarController(tabBar);
+				using var standard = new UITabBarAppearance();
+				standard.ConfigureWithDefaultBackground();
+				standard.BackgroundColor = Colors.Purple.ToPlatform();
+				tabBar.StandardAppearance = standard;
+				tabBar.ScrollEdgeAppearance = null;
+				using var tracker = new SafeShellTabBarAppearanceTracker();
+				var shellItem = new ShellItem();
+				Shell.SetBackground(shellItem, new LinearGradientBrush(
+					new GradientStopCollection
+					{
+						new GradientStop(Colors.Red, 0),
+						new GradientStop(Colors.Blue, 1)
+					},
+					new Point(0, 0),
+					new Point(1, 1)));
+				var gradientAppearance = new ShellAppearance();
+				gradientAppearance.Ingest(shellItem);
+				tracker.SetAppearance(controller, gradientAppearance);
+
+				Shell.SetBackground(shellItem, new SolidColorBrush(Colors.Blue));
+				var solidAppearance = new ShellAppearance();
+				solidAppearance.Ingest(shellItem);
+				tracker.SetAppearance(controller, solidAppearance);
+				tracker.ResetAppearance(controller);
+
+				Assert.NotNull(tabBar.ScrollEdgeAppearance);
+				Assert.True(ColorComparison.ARGBEquivalent(Colors.Purple.ToPlatform(), tabBar.StandardAppearance.BackgroundColor));
+				Assert.True(ColorComparison.ARGBEquivalent(Colors.Purple.ToPlatform(), tabBar.ScrollEdgeAppearance.BackgroundColor));
+				Assert.NotNull(tabBar.StandardAppearance.BackgroundEffect);
+				Assert.NotNull(tabBar.ScrollEdgeAppearance.BackgroundEffect);
+				Assert.DoesNotContain(tabBar.Layer.Sublayers ?? Array.Empty<CALayer>(), layer => layer is CAGradientLayer);
+			});
+		}
+
+		[Fact]
 		public async Task ResetRestoresCapturedAppearanceWhenOriginalTintIsNull()
 		{
 			if (!OperatingSystem.IsIOSVersionAtLeast(15) && !OperatingSystem.IsMacCatalystVersionAtLeast(15))
