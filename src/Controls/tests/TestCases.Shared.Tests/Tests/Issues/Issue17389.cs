@@ -30,18 +30,19 @@ public class Issue17389 : _IssuesUITest
 
         foreach (var layout in layouts)
         {
-            App.Tap(layout);
+            App.TapElement(layout);
         }
 
-        App.WaitForElement("Tap count: 4");
+        Assert.That(App.WaitForTextToBePresentInElement("TapCountLabel", "Tap count: 4"), Is.True);
         App.Click("ToggleInputTransparentButton");
+        Assert.That(App.WaitForTextToBePresentInElement("RedGrid", "InputTransparent=True"), Is.True);
 
         foreach (var layout in layouts)
         {
-            App.Tap(layout);
+            App.TapElement(layout);
         }
 
-        App.WaitForElement("Tap count: 0");
+        Assert.That(App.WaitForTextToBePresentInElement("TapCountLabel", "Tap count: 0"), Is.True);
     }
 
     [Test, Order(2)]
