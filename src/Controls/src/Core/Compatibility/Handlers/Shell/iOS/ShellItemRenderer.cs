@@ -424,6 +424,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			_appearanceTracker = _context.CreateTabBarAppearanceTracker();
 			shellItem.PropertyChanged += OnElementPropertyChanged;
+			TabBar.AccessibilityIdentifier = shellItem.AutomationId;
 			((IShellController)_context.Shell).AddAppearanceObserver(this, shellItem);
 			ShellItemController.ItemsCollectionChanged += OnItemsCollectionChanged;
 		}
@@ -580,6 +581,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					cell,
 					NativeElementRoles.ShellTabOverflow,
 					NativeElementDiscriminators.OverflowRow);
+				cell.AccessibilityIdentifier = renderer.ShellSection.AutomationId
+					?? renderer.ShellSection.CurrentItem?.AutomationId;
 
 #pragma warning disable CA1416, CA1422 // TODO: 'UITableViewCell.TextLabel' is unsupported on: 'ios' 14.0 and later
 				if (!renderer.ShellSection.IsEnabled)

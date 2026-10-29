@@ -477,6 +477,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				UpdateTabBarItem();
 			else if (e.PropertyName == BaseShellItem.IconProperty.PropertyName)
 				UpdateTabBarItem();
+			else if (e.PropertyName == ShellSection.CurrentItemProperty.PropertyName)
+				UpdateTabBarItemAutomationId();
 		}
 
 		protected virtual IShellSectionRootRenderer CreateShellSectionRootRenderer(ShellSection shellSection, IShellContext shellContext)
@@ -690,13 +692,21 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				var image = TabbedViewExtensions.AutoResizeTabBarImage(TraitCollection, icon?.Value);
 				TabBarItem = new UITabBarItem(ShellSection.Title, image, null);
-				TabBarItem.AccessibilityIdentifier = ShellSection.AutomationId ?? ShellSection.Title;
+				TabBarItem.AccessibilityIdentifier = ShellSection.AutomationId ?? ShellSection.CurrentItem?.AutomationId ?? ShellSection.Title;
 				_nativeTabRegistrations.Register(
 					shellSection,
 					TabBarItem,
 					NativeElementRoles.ShellTab,
 					NativeElementDiscriminators.TabBarItem);
+				UpdateTabBarItemAutomationId();
 			});
+		}
+
+		void UpdateTabBarItemAutomationId()
+		{
+			TabBarItem.AccessibilityIdentifier = ShellSection.AutomationId
+				?? ShellSection.CurrentItem?.AutomationId
+				?? ShellSection.Title;
 		}
 
 		void DisposePage(Page page, bool calledFromDispose = false)
