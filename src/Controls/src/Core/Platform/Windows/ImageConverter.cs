@@ -13,7 +13,8 @@ namespace Microsoft.Maui.Controls.Platform
 			if (value is not ImageSource source)
 				return null;
 
-			var context = source.FindMauiContext(true);
+			// A replacement source can be converted before it has been attached to its parent.
+			var context = parameter as IMauiContext ?? source.FindMauiContext(true);
 			return source.GetPlatformImageAsync(context).ContinueWith(task => task.Result.Value).AsAsyncValue();
 		}
 

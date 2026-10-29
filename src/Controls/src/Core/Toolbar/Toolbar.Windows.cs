@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml.Controls;
@@ -12,7 +13,6 @@ namespace Microsoft.Maui.Controls
 	public partial class Toolbar
 	{
 		readonly ImageConverter _imageConverter = new ImageConverter();
-		readonly IconConverter _iconConverter = new IconConverter();
 
 		NavigationRootManager? NavigationRootManager =>
 			MauiContext?.GetNavigationRootManager();
@@ -111,24 +111,30 @@ namespace Microsoft.Maui.Controls
 			button.Content = null;
 
 			var source = item.IconImageSource;
-			if ((commandBar.IsDynamicOverflowEnabled && item.Order == ToolbarItemOrder.Secondary) ||
-				source is FontImageSource)
+			if (source.IsNullOrEmpty())
+				return;
+
+			if (source is FontImageSource fontSource &&
+				fontSource.FontFamily is string fontFamily &&
+				MauiContext.Services.GetRequiredService<IFontRegistrar>().GetFont(fontFamily) is not null)
 			{
-				button.SetBinding(AppBarButton.IconProperty, nameof(ToolbarItem.IconImageSource), _iconConverter);
+				// Render registered app fonts like Image while retaining the native icon slot for the label.
+				var icon = new ImageIcon();
+				icon.SetBinding(ImageIcon.SourceProperty, "Value");
+				icon.DataContext = _imageConverter.Convert(source, typeof(object), MauiContext, string.Empty);
+				button.Icon = icon;
+			}
+			else if (source is FontImageSource ||
+				(commandBar.IsDynamicOverflowEnabled && item.Order == ToolbarItemOrder.Secondary))
+			{
+				button.Icon = source.ToIconSource(MauiContext)?.CreateIconElement();
 			}
 			else
 			{
-				if (!source.IsNullOrEmpty())
-				{
-					var image = new WImage();
-					button.Content = image;
-					image.SetBinding(WImage.SourceProperty, "Value");
-					image.SetBinding(WImage.DataContextProperty, "IconImageSource", _imageConverter);
-				}
-				else
-				{
-					button.Content = null;
-				}
+				var image = new WImage();
+				image.SetBinding(WImage.SourceProperty, "Value");
+				image.DataContext = _imageConverter.Convert(source, typeof(object), MauiContext, string.Empty);
+				button.Content = image;
 			}
 		}
 
