@@ -92,7 +92,7 @@ namespace Microsoft.Maui.Controls.Platform
 				throw new InvalidOperationException("Root View Needs to be set");
 		}
 
-		Task<Page> PopModalPlatformCoreAsync(bool animated)
+		async Task<Page> PopModalPlatformCoreAsync(bool animated)
 		{
 			Page modal = CurrentPlatformModalPage;
 			_platformModalPages.Remove(modal);
@@ -105,7 +105,14 @@ namespace Microsoft.Maui.Controls.Platform
 			// If for the dialog is null what we want to do?
 			if (dialogFragment is null)
 			{
-				return Task.FromResult(modal);
+				return modal;
+			}
+
+			// A deferred pop can arrive before the first layout starts the entrance animation.
+			// Wait for it so the entrance and exit animations cannot replace each other.
+			if (animated && dialogFragment.IsAnimated && dialogFragment.View is not null)
+			{
+				await dialogFragment.AnimationTask;
 			}
 
 			var source = new TaskCompletionSource<Page>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -134,7 +141,7 @@ namespace Microsoft.Maui.Controls.Platform
 				source.TrySetResult(modal);
 			}
 
-			return source.Task;
+			return await source.Task;
 
 			void OnAnimationEnded(object? sender, AAnimation.AnimationEndEventArgs e)
 			{
@@ -194,17 +201,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (animated)
 			{
-				TaskCompletionSource<bool> animationCompletionSource = new(TaskCreationOptions.RunContinuationsAsynchronously);
-
-				dialogFragment.AnimationEnded += OnAnimationEnded;
-
-				void OnAnimationEnded(object? sender, EventArgs e)
-				{
-					dialogFragment.AnimationEnded -= OnAnimationEnded;
-					animationCompletionSource.SetResult(true);
-				}
-
-				await animationCompletionSource.Task;
+				await dialogFragment.AnimationTask;
 			}
 			else
 			{
@@ -229,10 +226,10 @@ namespace Microsoft.Maui.Controls.Platform
 			IMauiContext _mauiWindowContext;
 			NavigationRootManager? _navigationRootManager;
 			static readonly ColorDrawable TransparentColorDrawable = new(AColor.Transparent);
-			bool _pendingAnimation = true;
+			readonly TaskCompletionSource<bool> _animationCompletionSource = new(TaskCreationOptions.RunContinuationsAsynchronously);
 			bool _pendingNavigation = true;
 
-			internal event EventHandler? AnimationEnded;
+			internal Task AnimationTask => _animationCompletionSource.Task;
 			internal event EventHandler? PresentationCompleted;
 
 			public bool IsAnimated { get; internal set; }
@@ -491,13 +488,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			void FireAnimationEnded()
 			{
-				if (!_pendingAnimation)
-				{
-					return;
-				}
-
-				_pendingAnimation = false;
-				AnimationEnded?.Invoke(this, EventArgs.Empty);
+				_animationCompletionSource.TrySetResult(true);
 			}
 
 			void FirePresentationCompleted()
