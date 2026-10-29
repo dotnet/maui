@@ -1,3 +1,4 @@
+using ImageMagick;
 using NUnit.Framework;
 using OpenQA.Selenium.DevTools.V131.Runtime;
 using UITest.Appium;
@@ -9,6 +10,7 @@ namespace Microsoft.Maui.TestCases.Tests;
 /// Shell Flyout feature matrix tests.
 /// WARNING: Tests use [Order] and maintain state across methods.
 /// They are NOT independent - running out of order may cause failures.
+/// The flyout visibility and size/color regressions initialize their own scenario.
 /// </summary>
 public class ShellFeatureTests : _GalleryUITest
 {
@@ -23,6 +25,18 @@ public class ShellFeatureTests : _GalleryUITest
 	public const string FooterTemplate = "FooterTemplate";
 	public const string OpenFlyout = "OpenFlyout";
 	public const string ShellFlyoutButton = "ShellFlyoutButton";
+	bool IsIndependentFlyoutTest => TestContext.CurrentContext.Test.MethodName is
+		nameof(VerifyShellFlyout_HeightAndWidthWithBackgroundColor) or
+		nameof(VerifyShellFlyout_FlyoutIsPresented) or
+		nameof(VerifyShellFlyout_FlyoutBehaviorLocked);
+	protected override string? GallerySubPageButton => IsIndependentFlyoutTest ? ShellFlyoutButton : null;
+
+	public override void TestSetup()
+	{
+		base.TestSetup();
+		if (IsIndependentFlyoutTest)
+			FixtureSetup();
+	}
 
 	public ShellFeatureTests(TestDevice device)
 		: base(device)
@@ -268,7 +282,7 @@ public class ShellFeatureTests : _GalleryUITest
 			$"MenuItem4 should move up after scrolling. Initial Y: {initialMenuItem4Y}, After scroll Y: {afterScrollMenuItem4Y}");
 		App.ScrollUp("MenuItem1", ScrollStrategy.Gesture, 0.99, 1000);
 		App.ScrollUp("MenuItem2", ScrollStrategy.Gesture, 0.99, 1000);
-		App.WaitForElement(OpenFlyout); 
+		App.WaitForElement(OpenFlyout);
 		App.Tap(OpenFlyout);
 	}
 
@@ -287,7 +301,7 @@ public class ShellFeatureTests : _GalleryUITest
 		App.WaitForElement(Options);
 		App.TapShellFlyoutIcon();
 		App.WaitForElement(Header);
-		float startingHeight = App.WaitForElement(Header).GetRect().Y; 
+		float startingHeight = App.WaitForElement(Header).GetRect().Y;
 		App.ScrollDown("MenuItem1", ScrollStrategy.Gesture, 0.99, 1000);
 		App.ScrollDown("MenuItem2", ScrollStrategy.Gesture, 0.99, 1000);
 		App.WaitForElement(Header);
@@ -299,7 +313,7 @@ public class ShellFeatureTests : _GalleryUITest
 		App.WaitForElement(OpenFlyout);
 		App.Tap(OpenFlyout);
 	}
- 
+
 	[Test, Order(14)]
 	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void VerifyShellFlyout_FlyoutHeaderBehaviorScroll()
@@ -315,7 +329,7 @@ public class ShellFeatureTests : _GalleryUITest
 		App.WaitForElement(Options);
 		App.TapShellFlyoutIcon();
 		App.WaitForElement(Header);
-		float startingHeight =	App.WaitForElement(Header).GetRect().Y;
+		float startingHeight = App.WaitForElement(Header).GetRect().Y;
 		App.ScrollDown("MenuItem1", ScrollStrategy.Gesture, 0.99, 1000);
 		App.ScrollDown("MenuItem2", ScrollStrategy.Gesture, 0.99, 1000);
 		App.WaitForElement(Header);
@@ -327,7 +341,7 @@ public class ShellFeatureTests : _GalleryUITest
 		App.WaitForElement(OpenFlyout);
 		App.Tap(OpenFlyout);
 	}
- 
+
 	[Test, Order(15)]
 	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void VerifyShellFlyout_FlyoutHeaderBehaviorCollapseOnScroll()
@@ -342,7 +356,7 @@ public class ShellFeatureTests : _GalleryUITest
 		App.Tap(Apply);
 		App.WaitForElement(Options);
 		App.TapShellFlyoutIcon();
-		float startingHeight =	App.WaitForElement(Header).GetRect().Y;
+		float startingHeight = App.WaitForElement(Header).GetRect().Y;
 		App.ScrollDown("MenuItem1", ScrollStrategy.Gesture, 0.99, 1000);
 		App.ScrollDown("MenuItem2", ScrollStrategy.Gesture, 0.99, 1000);
 		App.WaitForElement(Header);
@@ -917,8 +931,6 @@ public class ShellFeatureTests : _GalleryUITest
 	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void VerifyShellFlyout_HeightAndWidthWithBackgroundColor()
 	{
-		App.WaitForElement(OpenFlyout); // To close the flyout for previous test
-		App.Tap(OpenFlyout);
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("FlyoutBackgroundColorBlue");
@@ -931,24 +943,48 @@ public class ShellFeatureTests : _GalleryUITest
 		App.EnterText("FlyoutHeightEntry", "400");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
+		App.WaitForNoElement(Apply);
 		App.WaitForElement(Options);
 		App.TapShellFlyoutIcon();
 		App.WaitForElement("MenuItem1");
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+		if (App is AppiumWindowsApp)
+		{
+			App.RetryAssert(() =>
+			{
+				var pane = App.WaitForElement("PaneRoot").GetRect();
+				Assert.That(pane.Width, Is.EqualTo(300));
+				Assert.That(pane.Height, Is.EqualTo(400));
+				var window = App.WaitForElement(AppiumQuery.ByXPath("//Window[@ClassName='WinUIDesktopWin32WindowClass']")).GetRect();
+				var menuItem = App.WaitForElement("MenuItem1").GetRect();
+				using var screenshot = new MagickImage(App.Screenshot());
+				using var pixels = screenshot.GetPixels();
+				var scaleX = screenshot.Width / (double)window.Width;
+				var scaleY = screenshot.Height / (double)window.Height;
+				// Inspect the painted gap between native menu rows, not a hovered or selected row.
+				var x = (int)Math.Round((pane.CenterX() - window.Left) * scaleX);
+				var y = (int)Math.Round((menuItem.Bottom + 2 - window.Top) * scaleY);
+				Assert.That(pixels.GetPixel(x, y).ToColor(), Is.EqualTo(MagickColors.LightBlue),
+					"The resized native flyout must paint its configured LightBlue background.");
+			});
+		}
+		else
+		{
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+		}
 	}
 
 	[Test, Order(47)]
 	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void VerifyShellFlyout_FlyoutIsPresented()
 	{
-		App.WaitForElement(OpenFlyout); // To close the flyout for previous test
-		App.Tap(OpenFlyout);
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("IsPresentedTrue");
 		App.Tap("IsPresentedTrue");
 		App.WaitForElement(OpenFlyout); // verify the flyout is opened
+		App.WaitForElement("MenuItem1");
 		App.Tap(OpenFlyout);
+		App.WaitForNoElement(() => App.FindElementsByText("MenuItem1").FirstOrDefault(e => e.IsDisplayed()));
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 	}
@@ -965,15 +1001,19 @@ public class ShellFeatureTests : _GalleryUITest
 		App.Tap(Options);
 		App.WaitForElement("FlyoutBehaviorLocked");
 		App.Tap("FlyoutBehaviorLocked");
-		App.WaitForElement(OpenFlyout);
+		Assert.That(App.WaitForElement("MenuItem1").IsDisplayed(), Is.True);
+		// Locked prevents user dismissal, not an explicit FlyoutIsPresented=false in the close command.
+		App.WaitForElement(Apply).Tap();
+		App.WaitForElement("HomePageTitle");
+		Assert.That(App.WaitForElement("MenuItem1").IsDisplayed(), Is.True,
+			"A locked flyout must remain visible while navigating its unobscured content.");
 		App.WaitForElement("FlyoutBehavior");
 		App.Tap("FlyoutBehavior");
 #if IOS || MACCATALYST
         App.WaitForElement(OpenFlyout); // On iOS, tapping the FlyoutBehavior does not close the flyout
 		App.Tap(OpenFlyout);
 #endif
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
+		App.WaitForElement(Options);
 	}
 
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_MACCATALYST && TEST_FAILS_ON_WINDOWS  //Issue Link: https://github.com/dotnet/maui/issues/32419, https://github.com/dotnet/maui/issues/32476

@@ -5,10 +5,11 @@ public class Issue32219 : TestShell
 {
 	protected override void Init()
 	{
+		var homePage = new Issue32219HomePage() { Title = "Home" };
 		var shellContent = new ShellContent
 		{
 			Route = "home",
-			Content = new Issue32219HomePage() { Title = "Home" }
+			Content = homePage
 		};
 
 		var flyoutItem = new FlyoutItem
@@ -34,7 +35,7 @@ public class Issue32219 : TestShell
 				new ShellContent
 				{
 					Route = "login",
-					Content = new Issue32219LoginPage() { Title = "Login" }
+					Content = new Issue32219LoginPage(homePage) { Title = "Login" }
 				}
 			}
 		};
@@ -44,8 +45,22 @@ public class Issue32219 : TestShell
 
 	class Issue32219HomePage : ContentPage
 	{
+		readonly Button _openReturnedFlyout;
+
 		public Issue32219HomePage()
 		{
+			_openReturnedFlyout = new Button
+			{
+				Text = "Open returned flyout",
+				AutomationId = "OpenReturnedFlyout",
+				IsVisible = false,
+				VerticalOptions = LayoutOptions.End
+			};
+			_openReturnedFlyout.Clicked += (_, _) =>
+			{
+				_openReturnedFlyout.IsVisible = false;
+				Shell.Current.FlyoutIsPresented = true;
+			};
 			Content = new Grid
 			{
 				Children =
@@ -58,14 +73,17 @@ public class Issue32219 : TestShell
 						VerticalOptions = LayoutOptions.Center,
 						HorizontalOptions = LayoutOptions.Center,
 					},
+					_openReturnedFlyout
 				}
 			};
 		}
+
+		public void NavigationCompleted() => _openReturnedFlyout.IsVisible = true;
 	}
 
 	class Issue32219LoginPage : ContentPage
 	{
-		public Issue32219LoginPage()
+		public Issue32219LoginPage(Issue32219HomePage homePage)
 		{
 			Content = new VerticalStackLayout
 			{
@@ -84,7 +102,11 @@ public class Issue32219 : TestShell
 					{
 						Text = "Login",
 						AutomationId = "loginButton",
-						Command = new Command(async () => await Shell.Current.GoToAsync("//home")),
+						Command = new Command(async () =>
+						{
+							await Shell.Current.GoToAsync("//home");
+							homePage.NavigationCompleted();
+						}),
 						VerticalOptions = LayoutOptions.Center,
 						HorizontalOptions = LayoutOptions.Center,
 					}

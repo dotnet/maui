@@ -31,6 +31,8 @@ public class Issue34343 : _IssuesUITest
 		App.Tap("HideAndNavigateButton");
 		App.WaitForElement("Tab5Content");
 		App.Tap("NavigateToPage51Button");
+		App.WaitForElement("Page51Content");
+		App.WaitForNoElement("NavigateToPage51Button");
 		VerifyScreenshot();
 	}
 #endif

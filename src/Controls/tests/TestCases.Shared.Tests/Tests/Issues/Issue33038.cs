@@ -18,10 +18,23 @@ public class Issue33038 : _IssuesUITest
 	{
 		App.WaitForElement("StartPageLabel");
 		App.Tap("GoToSignInButton");
-		App.WaitForElement("SignInLabel");
-		// The layout can take an extra frame to settle after navigation, so retry the screenshot
-		// comparison and allow a small tolerance for cross-machine rendering variance.
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+		var scale = App is AppiumAndroidApp ? App.GetDisplayDensity() : 1;
+		App.RetryAssert(() =>
+		{
+			var layout = App.WaitForElementAndGetRect("SignInLayout");
+			var label = App.WaitForElementAndGetRect("SignInLabel");
+			var entry = App.WaitForElementAndGetRect("EmailEntry");
+			Assert.That(layout.Top, Is.GreaterThan(0), "The first layout must respect the top safe area.");
+			Assert.That(label.Height, Is.GreaterThan(0));
+			Assert.That(entry.Height, Is.GreaterThan(0));
+			Assert.That(label.Top, Is.EqualTo(layout.Top + 20 * scale).Within(2));
+			Assert.That(label.Left, Is.EqualTo(layout.Left + 20 * scale).Within(2));
+			Assert.That(entry.Left, Is.EqualTo(label.Left).Within(1));
+			Assert.That(entry.Right, Is.EqualTo(layout.Right - 20 * scale).Within(2));
+			Assert.That(entry.Top, Is.EqualTo(label.Bottom + 16 * scale).Within(2));
+			Assert.That(entry.Bottom, Is.LessThanOrEqualTo(layout.Bottom));
+		});
+		Assert.That(App.IsKeyboardShown(), Is.False, "Layout must be correct before opening the keyboard.");
 	}
 }
 #endif

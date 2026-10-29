@@ -10,11 +10,13 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 	{
 		public override string Issue => "The color of the custom icon in Shell always resets to the default blue";
 
+		protected override bool ResetAfterEachTest => true;
+
 		public IssueShell6738(TestDevice testDevice) : base(testDevice)
 		{
 		}
 
-		[Test, Order(1)]
+		[Test]
 		[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 		public void EnsureCustomFlyoutIconColor()
 		{
@@ -22,7 +24,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			VerifyScreenshot();
 		}
 
-		[Test, Order(2)]
+		[Test]
 		[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 		public void EnsureFlyoutIconWithForegroundColor()
 		{

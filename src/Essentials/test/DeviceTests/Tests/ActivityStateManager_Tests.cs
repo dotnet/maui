@@ -28,24 +28,32 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		/// only the first call registers a listener.
 		/// </summary>
 		[Fact]
-		public void Init_CalledMultipleTimes_SameListenerIsKept()
-		{
-			var app = (global::Android.App.Application)global::Android.App.Application.Context;
-			var manager = new ActivityStateManagerImplementation();
+		public Task Init_CalledMultipleTimes_SameListenerIsKept() =>
+			MainThread.InvokeOnMainThreadAsync(() =>
+			{
+				var app = (global::Android.App.Application)global::Android.App.Application.Context;
+				var manager = new ActivityStateManagerImplementation();
 
-			manager.Init(app);
-			var listenerAfterFirst = GetListener(manager);
+				try
+				{
+					manager.Init(app);
+					var listenerAfterFirst = GetListener(manager);
 
-			manager.Init(app);
-			var listenerAfterSecond = GetListener(manager);
+					manager.Init(app);
+					var listenerAfterSecond = GetListener(manager);
 
-			manager.Init(app);
-			var listenerAfterThird = GetListener(manager);
+					manager.Init(app);
+					var listenerAfterThird = GetListener(manager);
 
-			Assert.NotNull(listenerAfterFirst);
-			Assert.Same(listenerAfterFirst, listenerAfterSecond);
-			Assert.Same(listenerAfterFirst, listenerAfterThird);
-		}
+					Assert.NotNull(listenerAfterFirst);
+					Assert.Same(listenerAfterFirst, listenerAfterSecond);
+					Assert.Same(listenerAfterFirst, listenerAfterThird);
+				}
+				finally
+				{
+					manager.Dispose();
+				}
+			});
 
 		/// <summary>
 		/// Verifies that ActivityStateChanged fires exactly once per lifecycle event
@@ -60,34 +68,43 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		/// With the bug all three are different objects → fires three times.
 		/// </summary>
 		[Fact]
-		public void Init_CalledMultipleTimes_ActivityStateChangedFiresOnce()
-		{
-			var app = (global::Android.App.Application)global::Android.App.Application.Context;
-			var activity = MauiPlatform.CurrentActivity;
+		public Task Init_CalledMultipleTimes_ActivityStateChangedFiresOnce() =>
+			// Keep real lifecycle callbacks out of the count by using one synchronous UI-thread turn.
+			MainThread.InvokeOnMainThreadAsync(() =>
+			{
+				var app = (global::Android.App.Application)global::Android.App.Application.Context;
+				var activity = MauiPlatform.CurrentActivity;
 
-			var manager = new ActivityStateManagerImplementation();
+				var manager = new ActivityStateManagerImplementation();
 
-			int invocations = 0;
-			manager.ActivityStateChanged += (_, _) => Interlocked.Increment(ref invocations);
+				try
+				{
+					int invocations = 0;
+					manager.ActivityStateChanged += (_, _) => Interlocked.Increment(ref invocations);
 
-			// Capture the listener after EACH Init call, before the next one overwrites it.
-			manager.Init(app);
-			var l1 = GetListener(manager) as global::Android.App.Application.IActivityLifecycleCallbacks;
+					// Capture the listener after EACH Init call, before the next one overwrites it.
+					manager.Init(app);
+					var l1 = GetListener(manager) as global::Android.App.Application.IActivityLifecycleCallbacks;
 
-			manager.Init(app);
-			var l2 = GetListener(manager) as global::Android.App.Application.IActivityLifecycleCallbacks;
+					manager.Init(app);
+					var l2 = GetListener(manager) as global::Android.App.Application.IActivityLifecycleCallbacks;
 
-			manager.Init(app);
-			var l3 = GetListener(manager) as global::Android.App.Application.IActivityLifecycleCallbacks;
+					manager.Init(app);
+					var l3 = GetListener(manager) as global::Android.App.Application.IActivityLifecycleCallbacks;
 
-			// Simulate Android dispatching a Resumed event to every distinct registered listener.
-			// With fix:  l1 == l2 == l3 (same object) → 1 unique listener → 1 invocation ✅
-			// With bug:  l1 != l2 != l3 (different)   → 3 unique listeners → 3 invocations ❌
-			foreach (var l in new[] { l1, l2, l3 }.Distinct())
-				l?.OnActivityResumed(activity);
+					// Simulate Android dispatching a Resumed event to every distinct registered listener.
+					// With fix:  l1 == l2 == l3 (same object) → 1 unique listener → 1 invocation ✅
+					// With bug:  l1 != l2 != l3 (different)   → 3 unique listeners → 3 invocations ❌
+					foreach (var l in new[] { l1, l2, l3 }.Distinct())
+						l?.OnActivityResumed(activity);
 
-			Assert.Equal(1, invocations);
-		}
+					Assert.Equal(1, invocations);
+				}
+				finally
+				{
+					manager.Dispose();
+				}
+			});
 
 		[Fact]
 		public async Task PendingRequest_IsAdoptedFromRecreatedActivityState()

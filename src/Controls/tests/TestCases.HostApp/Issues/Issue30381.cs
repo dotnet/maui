@@ -3,103 +3,114 @@ namespace Maui.Controls.Sample.Issues;
 [Issue(IssueTracker.Github, 30381, "WebView GoBack/GoForward not working for HtmlWebViewSource on iOS", PlatformAffected.iOS | PlatformAffected.macOS)]
 public class Issue30381 : ContentPage
 {
-    WebView MyWebView;
-    Label CanGoBackLabel;
-    Label CanGoForwardLabel;
-    Button ClickLinkButton;
-    Button GoBackButton;
-    Button GoForwardButton;
-    Button UpdateStatusButton;
+	WebView MyWebView;
+	Label CanGoBackLabel;
+	Label CanGoForwardLabel;
+	Button ClickLinkButton;
+	Button GoBackButton;
+	Button GoForwardButton;
+	Button UpdateStatusButton;
+	Label DocumentStatusLabel;
 
-    public Issue30381()
-    {
-        CreateUI();
-        SetupWebView();
-        MyWebView.Navigated += OnWebViewNavigated;
-    }
+	public Issue30381()
+	{
+		CreateUI();
+		SetupWebView();
+		MyWebView.Navigated += OnWebViewNavigated;
+	}
 
-    void CreateUI()
-    {
-        // Create all UI elements in code
-        var instructionLabel = new Label
-        {
-            Text = "Click the link in WebView to navigate, then test CanGoForward",
-            AutomationId = "InstructionLabel",
-            FontAttributes = FontAttributes.Bold
-        };
+	void CreateUI()
+	{
+		// Create all UI elements in code
+		var instructionLabel = new Label
+		{
+			Text = "Click the link in WebView to navigate, then test CanGoForward",
+			AutomationId = "InstructionLabel",
+			FontAttributes = FontAttributes.Bold
+		};
 
-        MyWebView = new WebView
-        {
-            AutomationId = "TestWebView",
-            HeightRequest = 300
-        };
+		MyWebView = new WebView
+		{
+			AutomationId = "TestWebView",
+			HeightRequest = 300
+		};
 
-        GoBackButton = new Button
-        {
-            Text = "Go Back",
-            AutomationId = "GoBackButton"
-        };
-        GoBackButton.Clicked += OnGoBackClicked;
+		GoBackButton = new Button
+		{
+			Text = "Go Back",
+			AutomationId = "GoBackButton"
+		};
+		GoBackButton.Clicked += OnGoBackClicked;
 
-        GoForwardButton = new Button
-        {
-            Text = "Go Forward",
-            AutomationId = "GoForwardButton"
-        };
-        GoForwardButton.Clicked += OnGoForwardClicked;
+		GoForwardButton = new Button
+		{
+			Text = "Go Forward",
+			AutomationId = "GoForwardButton"
+		};
+		GoForwardButton.Clicked += OnGoForwardClicked;
 
-        ClickLinkButton = new Button
-        {
-            Text = "Click Link",
-            AutomationId = "ClickLinkButton"
-        };
-        ClickLinkButton.Clicked += OnClickLinkClicked;
+		ClickLinkButton = new Button
+		{
+			Text = "Click Link",
+			AutomationId = "ClickLinkButton"
+		};
+		ClickLinkButton.Clicked += OnClickLinkClicked;
 
-        UpdateStatusButton = new Button
-        {
-            Text = "Get Status",
-            AutomationId = "UpdateStatusButton"
-        };
-        UpdateStatusButton.Clicked += OnUpdateStatusClicked;
+		UpdateStatusButton = new Button
+		{
+			Text = "Get Status",
+			AutomationId = "UpdateStatusButton"
+		};
+		UpdateStatusButton.Clicked += OnUpdateStatusClicked;
 
-        var buttonLayout = new HorizontalStackLayout
-        {
-            Spacing = 10,
-            Children = { GoBackButton, GoForwardButton, ClickLinkButton, UpdateStatusButton }
-        };
+		var buttonLayout = new HorizontalStackLayout
+		{
+			Spacing = 10,
+			Children = { GoBackButton, GoForwardButton, ClickLinkButton, UpdateStatusButton }
+		};
 
-        CanGoBackLabel = new Label
-        {
-            AutomationId = "CanGoBackLabel",
-            Text = "CanGoBack: False"
-        };
+		CanGoBackLabel = new Label
+		{
+			AutomationId = "CanGoBackLabel",
+			Text = "CanGoBack: False"
+		};
 
-        CanGoForwardLabel = new Label
-        {
-            AutomationId = "CanGoForwardLabel",
-            Text = "CanGoForward: False"
-        };
+		CanGoForwardLabel = new Label
+		{
+			AutomationId = "CanGoForwardLabel",
+			Text = "CanGoForward: False"
+		};
+		DocumentStatusLabel = new Label
+		{
+			AutomationId = "DocumentStatusLabel",
+			Text = "Document: loading"
+		};
 
-        Content = new VerticalStackLayout
-        {
-            Padding = 20,
-            Spacing = 10,
-            Children =
-            {
-                instructionLabel,
-                MyWebView,
-                buttonLayout,
-                CanGoBackLabel,
-                CanGoForwardLabel,
-            }
-        };
-    }
+		Content = new VerticalStackLayout
+		{
+			Padding = 20,
+			Spacing = 10,
+			Children =
+			{
+				instructionLabel,
+				MyWebView,
+				buttonLayout,
+				CanGoBackLabel,
+				CanGoForwardLabel,
+				DocumentStatusLabel,
+			}
+		};
+	}
 
-    void SetupWebView()
-    {
-        MyWebView.Source = new HtmlWebViewSource
-        {
-            Html = @"
+	void SetupWebView()
+	{
+		MyWebView.Source = new HtmlWebViewSource
+		{
+#if MACCATALYST
+			// Mac app assets live in Contents/Resources, not at the bundle root.
+			BaseUrl = Foundation.NSBundle.MainBundle.ResourcePath,
+#endif
+			Html = @"
             <html>
             <head>
                 <title>Wikipedia</title>
@@ -110,61 +121,59 @@ public class Issue30381 : ContentPage
                     a:hover { background: #e0e0e0; }
                 </style>
             </head>
-            <body>
+            <body data-page='initial'>
                 <h1>Welcome to Wikipedia</h1>
                 <p>Wikipedia is a free online encyclopedia.</p>
-                <p>Read more <a href='https://github.com/dotnet/maui' id='testLink'>here</a>.</p>
+                <p>Read more <a href='issue30381-target.html' id='testLink'>here</a>.</p>
             </body>
             </html>"
-        };
+		};
 
-        UpdateNavigationStatus();
-    }
+		UpdateNavigationStatus();
+	}
 
-    async void OnClickLinkClicked(object sender, EventArgs e)
-    {
-        // Use JavaScript to programmatically click the link
-        await MyWebView.EvaluateJavaScriptAsync("document.getElementById('testLink').click();");
-        // Don't update status here - user needs to click Update Status button
-    }
+	async void OnClickLinkClicked(object sender, EventArgs e)
+	{
+		// Use JavaScript to programmatically click the link
+		await MyWebView.EvaluateJavaScriptAsync("document.getElementById('testLink').click();");
+		// Don't update status here - user needs to click Update Status button
+	}
 
-    void OnUpdateStatusClicked(object sender, EventArgs e)
-    {
-        UpdateNavigationStatus();
-    }
+	async void OnUpdateStatusClicked(object sender, EventArgs e)
+	{
+		var page = await MyWebView.EvaluateJavaScriptAsync("document.body ? document.body.dataset.page : 'loading'");
+		DocumentStatusLabel.Text = $"Document: {page?.Trim('\"')}";
+		UpdateNavigationStatus();
+	}
 
-    void OnGoBackClicked(object sender, EventArgs e)
-    {
-        if (MyWebView.CanGoBack)
-        {
-            MyWebView.GoBack();
-        }
-        
-        UpdateNavigationStatus();
-    }
+	void OnGoBackClicked(object sender, EventArgs e)
+	{
+		if (MyWebView.CanGoBack)
+		{
+			MyWebView.GoBack();
+		}
 
-    void OnGoForwardClicked(object sender, EventArgs e)
-    {
-        if (MyWebView.CanGoForward)
-        {
-            MyWebView.GoForward();
-        }
-        
-        UpdateNavigationStatus();
-    }
+		UpdateNavigationStatus();
+	}
 
-    void UpdateNavigationStatus()
-    {
-        CanGoBackLabel.Text = $"CanGoBack: {MyWebView.CanGoBack}";
-        CanGoForwardLabel.Text = $"CanGoForward: {MyWebView.CanGoForward}";
-    }
+	void OnGoForwardClicked(object sender, EventArgs e)
+	{
+		if (MyWebView.CanGoForward)
+		{
+			MyWebView.GoForward();
+		}
 
-    void OnWebViewNavigated(object sender, WebNavigatedEventArgs e)
-    {
-        if (e.Url.Contains("github.com", StringComparison.OrdinalIgnoreCase))
-        {
-            // Update navigation status after navigation completes
-            UpdateNavigationStatus();
-        }
-    }
+		UpdateNavigationStatus();
+	}
+
+	void UpdateNavigationStatus()
+	{
+		CanGoBackLabel.Text = $"CanGoBack: {MyWebView.CanGoBack}";
+		CanGoForwardLabel.Text = $"CanGoForward: {MyWebView.CanGoForward}";
+	}
+
+	void OnWebViewNavigated(object sender, WebNavigatedEventArgs e)
+	{
+		UpdateNavigationStatus();
+	}
 }

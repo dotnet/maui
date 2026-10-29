@@ -11,6 +11,15 @@ public class ShellTabbedPageFeatureTests : _GalleryUITest
 	protected override string GallerySubPageButton => "ShellTabbedButton";
 	public const string Options = "Options";
 	public const string Apply = "Apply";
+	bool IsIndependentVisibilityTest => TestContext.CurrentContext.Test.MethodName == nameof(VerifyShell_IsVisible);
+	protected override string? GallerySubPageButton => IsIndependentVisibilityTest ? "ShellTabbedButton" : null;
+
+	public override void TestSetup()
+	{
+		base.TestSetup();
+		if (IsIndependentVisibilityTest)
+			FixtureSetup();
+	}
 
 	public ShellTabbedPageFeatureTests(TestDevice device)
 		: base(device)
@@ -140,12 +149,21 @@ public class ShellTabbedPageFeatureTests : _GalleryUITest
 	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void VerifyShell_IsVisible()
 	{
+		ShellFeatureTestActions.WaitForBottomTab(App, "Tab4").Tap();
+		App.WaitForElement("Tab4Label");
+		App.Tap("GoToTab1Button");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("IsVisibleFalse");
 		App.Tap("IsVisibleFalse");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
+		App.WaitForElement("Tab1Label");
+		ShellFeatureTestActions.WaitForNoBottomTab(App, "Tab4");
+		ShellFeatureTestActions.WaitForBottomTab(App, "Tab3").Tap();
+		App.WaitForElement("Tab3Label");
+		App.Tap("GoToTab1Button");
+		App.WaitForElement(Options);
 		VerifyScreenshot();
 	}
 

@@ -15,6 +15,7 @@
         <TabBar>
                 <ShellContent x:Name="homePage"
                               Title="Home"
+                              AutomationId="ShellHomeTab"
                               Route="home"
                               Icon="coffee.png"
                               Shell.PresentationMode="{Binding PresentationMode}">

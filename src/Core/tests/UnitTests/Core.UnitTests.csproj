@@ -21,6 +21,7 @@
           Link="TemplateLocalization\%(RecursiveDir)%(Filename)%(Extension)"
           CopyToOutputDirectory="PreserveNewest"
           CopyToPublishDirectory="PreserveNewest" />
+    <Compile Include="..\..\..\TestUtils\src\DeviceTests\AssertionExtensions.GarbageCollection.cs" Link="AssertionExtensions.GarbageCollection.cs" />
   </ItemGroup>
 
   <ItemGroup>
