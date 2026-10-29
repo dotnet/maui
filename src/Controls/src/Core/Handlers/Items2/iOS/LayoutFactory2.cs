@@ -348,7 +348,6 @@ internal static class LayoutFactory2
 			gridItemsLayout.Span,
 			gridItemsLayout);
 
-
 #nullable disable
 	public static UICollectionViewLayout CreateCarouselLayout(
 		WeakReference<CarouselView> weakItemsView,
@@ -435,6 +434,11 @@ internal static class LayoutFactory2
 					return;
 				}
 
+				if (cv2Controller.IsRotatingOrResizing())
+				{
+					return;
+				}
+
 				// Calculate page index accounting for ItemSpacing
 				var itemSpacing = itemsView.ItemsLayout is LinearItemsLayout linearLayout ? linearLayout.ItemSpacing : 0;
 
@@ -449,6 +453,7 @@ internal static class LayoutFactory2
 				var pageSize = isHorizontal
 					? env.Container.ContentSize.Width
 					: env.Container.ContentSize.Height;
+
 				double page = (pageOffset + sectionMargin) / effectiveItemWidth;
 
 				if (Math.Abs(page % 1) > (double.Epsilon * 100) || cv2Controller.ItemsSource.ItemCount <= 0)
@@ -458,8 +463,11 @@ internal static class LayoutFactory2
 
 				var pageIndex = (int)page;
 				var carouselPosition = pageIndex;
+				var loopSource = itemsView.Loop
+					? cv2Controller.ItemsSource as ILoopItemsViewSource
+					: null;
 
-				if (itemsView.Loop && cv2Controller.ItemsSource is ILoopItemsViewSource loopSource)
+				if (loopSource is not null)
 				{
 					var maxIndex = loopSource.LoopCount - 1;
 
@@ -477,7 +485,31 @@ internal static class LayoutFactory2
 
 					//since we added one item at the beginning of our ItemSource, we need to subtract one
 					carouselPosition = pageIndex - 1;
+				}
 
+				var pendingPosition = cv2Controller.PositionBeforeBoundsChange;
+				if (pendingPosition >= 0)
+				{
+					var targetIndexPath = cv2Controller.GetScrollToIndexPath(pendingPosition);
+					bool isTargetItemVisible = false;
+					for (int itemIndex = 0; itemIndex < items.Length; itemIndex++)
+					{
+						var item = items[itemIndex];
+						if (item.RepresentedElementCategory == UICollectionElementCategory.Cell && item.IndexPath.Equals(targetIndexPath))
+						{
+							isTargetItemVisible = true;
+							break;
+						}
+					}
+
+					if (cv2Controller.ShouldIgnorePositionUpdateAfterBoundsChange(carouselPosition, isTargetItemVisible))
+					{
+						return;
+					}
+				}
+
+				if (loopSource is not null)
+				{
 					if (itemsView.Position != carouselPosition)
 					{
 						//If we are updating the ItemsSource, we don't want to scroll the CollectionView
@@ -503,13 +535,8 @@ internal static class LayoutFactory2
 					}
 				}
 
-				if (cv2Controller.IsRotating())
-				{
-					return;
-				}
-
 				//Update the CarouselView position
-				cv2Controller?.SetPosition(carouselPosition);
+				cv2Controller.SetPosition(carouselPosition);
 			};
 
 			return section;

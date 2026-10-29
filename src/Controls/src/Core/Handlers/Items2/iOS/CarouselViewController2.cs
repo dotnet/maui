@@ -15,6 +15,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 	public class CarouselViewController2 : ItemsViewController2<CarouselView>
 	{
 		bool _isRotating = false;
+		bool _isResizing = false;
+		CGSize _lastBoundsSize = CGSize.Empty;
+		int _positionBeforeBoundsChange = -1;
 		bool _isUpdating = false;
 		bool _isInternalCollectionUpdate = false;
 		int _section = 0;
@@ -83,42 +86,78 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			if (InitialPositionSet)
 			{
+				CapturePositionBeforeBoundsChange();
 				_isRotating = true;
+			}
+		}
+
+		void CapturePositionBeforeBoundsChange()
+		{
+			if (_positionBeforeBoundsChange < 0)
+			{
+				_positionBeforeBoundsChange = (ItemsView as CarouselView)?.Position ?? -1;
 			}
 		}
 
 		public override void ViewWillLayoutSubviews()
 		{
+			UpdateResizeState();
 			base.ViewWillLayoutSubviews();
+
 			UpdateVisualStates();
 		}
 
+		internal void UpdateResizeState()
+		{
+			var boundsSize = CollectionView.Bounds.Size;
+			// Bounds can change without an orientation notification, so detect resizing here as well.
+			if (InitialPositionSet && _lastBoundsSize != CGSize.Empty && boundsSize != _lastBoundsSize)
+			{
+				CapturePositionBeforeBoundsChange();
+				_isResizing = true;
+			}
+
+			_lastBoundsSize = boundsSize;
+		}
 
 		public override async void ViewDidLayoutSubviews()
 		{
 			base.ViewDidLayoutSubviews();
 			await UpdateInitialPosition();
 
-			if (_isRotating)
+			if (_isRotating || _isResizing)
 			{
 				BoundsSizeChanged();
 				_isRotating = false;
+				_isResizing = false;
 			}
 		}
 
 		void BoundsSizeChanged()
 		{
-			// Re-center the current item after bounds change to ensure proper positioning
-			// This is especially important during device rotation to maintain the correct scroll position
-			if (ItemsView is CarouselView carousel && carousel.Position >= 0)
+			if (ItemsView is CarouselView carousel && ItemsSource is not null && ItemsSource.ItemCount > 0)
 			{
-				carousel.ScrollTo(carousel.Position, position: Microsoft.Maui.Controls.ScrollToPosition.Center, animate: false);
+				var position = _positionBeforeBoundsChange >= 0
+					? _positionBeforeBoundsChange
+					: carousel.Position;
+				var indexPath = GetScrollToIndexPath(position);
+
+				if (LayoutFactory2.IsIndexPathValid(indexPath, CollectionView))
+				{
+					var scrollPosition = IsHorizontal
+						? UICollectionViewScrollPosition.CenteredHorizontally
+						: UICollectionViewScrollPosition.CenteredVertically;
+					CollectionView.ScrollToItem(indexPath, scrollPosition, false);
+				}
 			}
 		}
 
 		public override void DraggingStarted(UIScrollView scrollView)
 		{
 			//	_isDragging = true;
+			_isRotating = false;
+			_isResizing = false;
+			_positionBeforeBoundsChange = -1;
 			ItemsView?.SetIsDragging(true);
 		}
 
@@ -238,6 +277,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			_carouselViewLoopManager = null;
 			_isUpdating = false;
 			_isRotating = false;
+			_isResizing = false;
+			_lastBoundsSize = CGSize.Empty;
+			_positionBeforeBoundsChange = -1;
 			_isInternalCollectionUpdate = false;
 			// Don't let a pending scroll target survive re-attach.
 			_gotoPosition = -1;
@@ -472,9 +514,34 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			return _isUpdating;
 		}
 
-		internal bool IsRotating()
+		internal bool IsRotatingOrResizing()
 		{
-			return _isRotating;
+			return (_isRotating || _isResizing) && !CollectionView.Dragging && !CollectionView.Decelerating;
+		}
+
+		internal int PositionBeforeBoundsChange => _positionBeforeBoundsChange;
+
+		internal bool ShouldIgnorePositionUpdateAfterBoundsChange(int position, bool isRestoredItemVisible)
+		{
+			if (_positionBeforeBoundsChange < 0)
+			{
+				return false;
+			}
+
+			if (CollectionView.Dragging || CollectionView.Decelerating)
+			{
+				_isRotating = false;
+				_isResizing = false;
+				_positionBeforeBoundsChange = -1;
+				return false;
+			}
+
+			if (position == _positionBeforeBoundsChange && isRestoredItemVisible)
+			{
+				_positionBeforeBoundsChange = -1;
+			}
+
+			return true;
 		}
 
 		internal void UpdateLoop()
@@ -530,6 +597,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			if (ItemsSource is null || ItemsSource.ItemCount == 0 || goToPosition >= ItemsSource.ItemCount)
 			{
 				return;
+			}
+
+			if (_positionBeforeBoundsChange >= 0 && goToPosition != _positionBeforeBoundsChange)
+			{
+				_positionBeforeBoundsChange = -1;
 			}
 
 			if (_gotoPosition == -1 && (goToPosition != carouselPosition || forceScroll))
