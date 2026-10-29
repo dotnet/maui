@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
@@ -12,6 +13,7 @@ using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
+using ObjCRuntime;
 using UIKit;
 using Xunit;
 
@@ -106,6 +108,8 @@ namespace Microsoft.Maui.DeviceTests
 
 			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async handler =>
 			{
+				await OnNavigatedToAsync(backHandlingPage);
+
 				var navController = Assert.IsAssignableFrom<UINavigationController>(
 					(navPage.Handler as IPlatformViewHandler)?.ViewController);
 				var recognizer = navController.InteractivePopGestureRecognizer;
@@ -113,13 +117,21 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(expectedShouldBegin, recognizer.Delegate.ShouldBegin(recognizer));
 				if (expectedShouldBegin)
 				{
-					if (navController is NavigationRenderer renderer)
-					{
-						Assert.True(renderer.ShouldPopItem(renderer.NavigationBar, renderer.NavigationBar.TopItem));
-					}
+					Assert.True(NativeShouldPopItem(navController));
+					Assert.Equal(1, backHandlingPage.BackButtonPressedCount);
+
+					// A cancelled gesture finishes by showing the original top controller.
+					navController.Delegate.DidShowViewController(navController, navController.TopViewController, false);
+					backHandlingPage.BackHandled = true;
+
+					Assert.False(NativeShouldPopItem(navController));
+					Assert.Equal(2, backHandlingPage.BackButtonPressedCount);
+					Assert.Same(backHandlingPage, navPage.CurrentPage);
 				}
-				Assert.Equal(1, backHandlingPage.BackButtonPressedCount);
-				await Task.CompletedTask;
+				else
+				{
+					Assert.Equal(1, backHandlingPage.BackButtonPressedCount);
+				}
 			});
 		}
 
@@ -136,6 +148,8 @@ namespace Microsoft.Maui.DeviceTests
 
 			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async handler =>
 			{
+				await OnNavigatedToAsync(backHandlingPage);
+
 				var navController = Assert.IsAssignableFrom<UINavigationController>(
 					(navPage.Handler as IPlatformViewHandler)?.ViewController);
 				var recognizer = navController.InteractivePopGestureRecognizer;
@@ -143,13 +157,21 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(expectedShouldBegin, recognizer.Delegate.ShouldBegin(recognizer));
 				if (expectedShouldBegin)
 				{
-					if (navController is NavigationRenderer renderer)
-					{
-						Assert.True(renderer.ShouldPopItem(renderer.NavigationBar, renderer.NavigationBar.TopItem));
-					}
+					Assert.True(NativeShouldPopItem(navController));
+					Assert.Equal(1, backHandlingPage.BackButtonPressedCount);
+
+					// A cancelled gesture finishes by showing the original top controller.
+					navController.Delegate.DidShowViewController(navController, navController.TopViewController, false);
+					backHandlingPage.BackHandled = true;
+
+					Assert.False(NativeShouldPopItem(navController));
+					Assert.Equal(2, backHandlingPage.BackButtonPressedCount);
+					Assert.Same(backHandlingPage, navPage.CurrentPage);
 				}
-				Assert.Equal(1, backHandlingPage.BackButtonPressedCount);
-				await Task.CompletedTask;
+				else
+				{
+					Assert.Equal(1, backHandlingPage.BackButtonPressedCount);
+				}
 			});
 		}
 
@@ -256,21 +278,29 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		static bool NativeShouldPopItem(UINavigationController controller) =>
+			SendShouldPopItem(controller.Handle, Selector.GetHandle("navigationBar:shouldPopItem:"),
+				controller.NavigationBar.Handle, controller.NavigationBar.TopItem.Handle);
+
+		[DllImport(Constants.ObjectiveCLibrary, EntryPoint = "objc_msgSend")]
+		[return: MarshalAs(UnmanagedType.I1)]
+		static extern bool SendShouldPopItem(IntPtr receiver, IntPtr selector, IntPtr navigationBar, IntPtr item);
+
 		sealed class BackHandlingPage : ContentPage
 		{
-			readonly bool _backHandled;
-
 			public BackHandlingPage(bool backHandled)
 			{
-				_backHandled = backHandled;
+				BackHandled = backHandled;
 			}
+
+			public bool BackHandled { get; set; }
 
 			public int BackButtonPressedCount { get; private set; }
 
 			protected override bool OnBackButtonPressed()
 			{
 				BackButtonPressedCount++;
-				return _backHandled;
+				return BackHandled;
 			}
 		}
 	}
