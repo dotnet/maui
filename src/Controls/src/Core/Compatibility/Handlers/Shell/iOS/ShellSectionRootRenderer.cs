@@ -47,11 +47,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The page animation is stopped and cleared in Disconnect and whenever a replacement animation starts.")]
 		UIViewPropertyAnimator _pageAnimation;
 		UIEdgeInsets _additionalSafeArea = UIEdgeInsets.Zero;
-
-#if MACCATALYST
-		CGRect _previousFrameHeader;
-#endif
-
 		ShellSection ShellSection
 		{
 			get;
@@ -717,17 +712,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				CGRect frame = new CGRect(View.Bounds.X, headerTop, View.Bounds.Width, HeaderHeight);
 				_blurView.Frame = frame;
-				_header.ViewController.View.Frame = frame;
-#if MACCATALYST
-				if (frame.Width != _previousFrameHeader.Width || frame.Height != _previousFrameHeader.Height)
+
+				if (_header.ViewController.View.Frame != frame)
 				{
-					_previousFrameHeader = frame;
+					_header.ViewController.View.Frame = frame;
 					if (_header.ViewController is ShellSectionRootHeader rootHeader)
 					{
-    					rootHeader.CollectionView.CollectionViewLayout.InvalidateLayout();
+						rootHeader.CollectionView.CollectionViewLayout.InvalidateLayout();
 					}
 				}
-#endif
 			}
 
 			nfloat left;
