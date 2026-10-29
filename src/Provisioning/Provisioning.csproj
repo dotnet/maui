@@ -122,8 +122,14 @@
            <AppiumDriverListJsonFile>$(MSBuildThisFileDirectory)obj\appium-drivers.json</AppiumDriverListJsonFile>  
        </PropertyGroup>  
 
+       <PropertyGroup Condition="'$(TF_BUILD)' == 'True'">
+           <_AppiumDriverNpmCache>$(MSBuildThisFileDirectory)obj/appium-driver-npm-cache</_AppiumDriverNpmCache>
+           <_AppiumDriverEnvironment>NPM_CONFIG_CACHE=$(_AppiumDriverNpmCache)</_AppiumDriverEnvironment>
+       </PropertyGroup>
+
        <!-- Ensure output directory exists -->  
        <MakeDir Directories="$(MSBuildThisFileDirectory)obj" Condition="!Exists('$(MSBuildThisFileDirectory)obj')" />  
+       <MakeDir Directories="$(_AppiumDriverNpmCache)" Condition="'$(TF_BUILD)' == 'True'" />
 
        <!-- Get JSON output list of installed appium drivers with their version info -->  
        <Exec  
@@ -175,6 +181,7 @@
        <!-- Update any drivers needing an update (if any) with timeout -->  
        <Exec  
            Command="appium driver update %(AppiumDriversToUpdate.Identity)"  
+           EnvironmentVariables="$(_AppiumDriverEnvironment)"
            Condition="'@(AppiumDriversToUpdate)' != ''"  
            Timeout="300000"  
            StandardOutputImportance="normal"  
@@ -185,6 +192,7 @@
        <!-- Install any drivers not yet installed (if any) with timeout -->  
        <Exec  
            Command="appium driver install %(AppiumDriversToInstall.Identity)@%(AppiumDriversToInstall.Version)"  
+           EnvironmentVariables="$(_AppiumDriverEnvironment)"
            Condition="'@(AppiumDriversToInstall)' != ''"  
            Timeout="300000"  
            StandardOutputImportance="normal"  

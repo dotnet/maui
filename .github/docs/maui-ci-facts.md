@@ -63,6 +63,13 @@ and `maui-pr-uitests` may not run automatically depending on the changed files.
   inaccessible/expired/insufficient data — do not assume unrelated or PR-caused.
 - Helix work-item console output may live behind `helix.dot.net` and Azure Blob URLs.
 
+## Appium driver npm cache
+
+Appium driver installs and updates in Azure Pipelines use a checkout-local npm
+cache under `src/Provisioning/obj/appium-driver-npm-cache`, separate from the
+global Appium install's cache. This avoids permission failures from a shared
+user cache without deleting it, changing its ownership, or elevating driver
+installation. Local provisioning retains its existing npm cache configuration.
 ## Enumerate EVERY failed leg — Build Analysis is NOT exhaustive
 
 > 🚨 The single most common way to be **wrong** about "what's unique to this PR" is to
