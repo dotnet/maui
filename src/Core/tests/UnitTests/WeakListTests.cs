@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -7,14 +8,20 @@ namespace Microsoft.Maui.UnitTests
 {
 	public class WeakListTests
 	{
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		static WeakReference AddCollectableObject(WeakList<object> list)
+		{
+			var evict = new object();
+			list.Add(evict);
+			return new WeakReference(evict);
+		}
+
 		[Fact]
 		public async Task ObjectsAreEvicted_GetEnumerator()
 		{
 			var expected = new object();
-			var evict = new object();
-			WeakReference weakReference = new WeakReference(evict);
-			var list = new WeakList<object> { expected, evict };
-			evict = null;
+			var list = new WeakList<object> { expected };
+			var weakReference = AddCollectableObject(list);
 			list.CleanupThreshold = 1;
 
 			Assert.False(await weakReference.WaitForCollect(), "Object failed to be collected");
@@ -32,10 +39,8 @@ namespace Microsoft.Maui.UnitTests
 		public async Task ObjectsAreEvicted_Remove()
 		{
 			var expected = new object();
-			var evict = new object();
-			WeakReference weakReference = new WeakReference(evict);
-			var list = new WeakList<object> { expected, evict };
-			evict = null;
+			var list = new WeakList<object> { expected };
+			var weakReference = AddCollectableObject(list);
 			list.CleanupThreshold = 1;
 
 			Assert.False(await weakReference.WaitForCollect(), "Object failed to be collected");
@@ -49,10 +54,8 @@ namespace Microsoft.Maui.UnitTests
 		public async Task ObjectsAreEvicted_Add()
 		{
 			var expected = new object();
-			var evict = new object();
-			WeakReference weakReference = new WeakReference(evict);
-			var list = new WeakList<object> { expected, evict };
-			evict = null;
+			var list = new WeakList<object> { expected };
+			var weakReference = AddCollectableObject(list);
 			list.CleanupThreshold = 1;
 
 			Assert.False(await weakReference.WaitForCollect(), "Object failed to be collected");
