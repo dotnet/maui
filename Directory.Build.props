@@ -160,6 +160,9 @@
     <GenerateLibraryLayout>true</GenerateLibraryLayout>
     <DisableEmbeddedXbf>false</DisableEmbeddedXbf>
     <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
+    <!-- With MSIX tooling on, the PRI targets fall back to the machine's current culture, which may not be a valid
+         resource language (e.g. en-150 -> APPX1685); pin the default the MRT Core targets use when it is off. -->
+    <DefaultLanguage Condition="'$(DefaultLanguage)' == ''">en-US</DefaultLanguage>
     <AppxBundle>Never</AppxBundle>
   </PropertyGroup>
 
