@@ -126,6 +126,10 @@ that this switch shuts down processes associated with the package **or its
 dependencies**; `ForceTargetApplicationShutdown` only covers the target package.
 Keep this behavior scoped to the Helix runner, not local developer deployment.
 Deployment errors still fail the work item and print the Appx deployment log.
+For `0x80073CF0` / missing `AppxManifest.xml`, inspect the actual input package
+and registered runtime state before assuming the payload is malformed. Failure
+diagnostics print runtime manifest presence and the newest deployment events;
+an unsorted `Select-Object -Last` can instead show old events baked into the image.
 
 ### Android activity isolation
 
