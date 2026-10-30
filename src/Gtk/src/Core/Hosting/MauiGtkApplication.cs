@@ -61,7 +61,7 @@ namespace Microsoft.Maui
 		protected abstract MauiApp CreateMauiApp();
 
 		/// <summary>Runs the GTK main loop until the last window closes.</summary>
-		/// <param name="args">The command line arguments.</param>
+		/// <param name="args">The command line arguments handed to <c>GApplication</c>; remove the own options of the app first, GApplication rejects unknown ones.</param>
 		/// <returns>The process exit code.</returns>
 		public int Run(string[] args)
 		{
@@ -76,7 +76,9 @@ namespace Microsoft.Maui
 			_application.Shutdown += OnShutdown;
 			_application.WindowRemoved += (_, args) => _windows.Remove(args.Window);
 
-			return ((GLib.Application)_application).Run();
+			// The arguments go to GApplication (--help, --gapplication-service...): strip your own options before calling Run.
+			var programName = Environment.GetCommandLineArgs() is { Length: > 0 } commandLine ? commandLine[0] : "maui";
+			return ((GLib.Application)_application).Run(programName, args ?? Array.Empty<string>());
 		}
 
 		void OnStartup(object? sender, EventArgs e)

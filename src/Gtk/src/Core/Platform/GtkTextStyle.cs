@@ -45,12 +45,24 @@ namespace Microsoft.Maui.Gtk.Platform
 		public static void SetCharacterSpacing(global::Gtk.Widget widget, double characterSpacing, string selector = "") =>
 			GtkStyle.For(widget).Set("letter-spacing", characterSpacing == 0 ? null : characterSpacing.ToString("0.##", CultureInfo.InvariantCulture) + "px", selector);
 
-		/// <summary>Sets the padding (CSS <c>padding</c>).</summary>
+		/// <summary>
+		/// Sets the padding as CSS <c>padding-*</c> declarations. A side that is <see cref="double.NaN"/> means "platform default"
+		/// (the Controls <c>Button</c> reports that) and leaves the theme's padding for that side untouched.
+		/// </summary>
 		/// <param name="widget">The widget.</param>
 		/// <param name="padding">The thickness.</param>
 		/// <param name="selector">A CSS sub-selector.</param>
-		public static void SetPadding(global::Gtk.Widget widget, Thickness padding, string selector = "") =>
-			GtkStyle.For(widget).Set("padding", FormattableString.Invariant($"{padding.Top:0.##}px {padding.Right:0.##}px {padding.Bottom:0.##}px {padding.Left:0.##}px"), selector);
+		public static void SetPadding(global::Gtk.Widget widget, Thickness padding, string selector = "")
+		{
+			var style = GtkStyle.For(widget);
+			style.Set("padding-top", FormatLength(padding.Top), selector);
+			style.Set("padding-right", FormatLength(padding.Right), selector);
+			style.Set("padding-bottom", FormatLength(padding.Bottom), selector);
+			style.Set("padding-left", FormatLength(padding.Left), selector);
+		}
+
+		static string? FormatLength(double value) =>
+			double.IsNaN(value) || double.IsInfinity(value) ? null : Math.Max(0, value).ToString("0.##", CultureInfo.InvariantCulture) + "px";
 
 		/// <summary>Sets underline/strikethrough text decorations.</summary>
 		/// <param name="widget">The widget.</param>

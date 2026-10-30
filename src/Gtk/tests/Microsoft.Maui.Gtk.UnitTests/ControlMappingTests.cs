@@ -22,6 +22,42 @@ namespace Microsoft.Maui.Gtk.UnitTests
 	{
 		static string Css(global::Gtk.Widget widget, string? subtree = null) => GtkStyle.For(widget).ToCss();
 
+		[GtkFact]
+		public void EveryMappedControlProducesValidCssAndLaysOutWithoutComplaints() => GtkTestHost.Run(() =>
+		{
+			GtkTestHost.ClearComplaints();
+
+			var views = new View[]
+			{
+				new Label { Text = "x", FontSize = 24, FontAttributes = FontAttributes.Bold, TextColor = Colors.Red, CharacterSpacing = 1, LineHeight = 1.2, Padding = new Thickness(2), TextDecorations = TextDecorations.Underline },
+				new Button { Text = "x", TextColor = Colors.Blue, BorderColor = Colors.Black, BorderWidth = 1, CornerRadius = 4, Background = new SolidColorBrush(Colors.Yellow) },
+				new Entry { Text = "x", Placeholder = "p", PlaceholderColor = Colors.Gray, TextColor = Colors.Red, FontSize = 14, BackgroundColor = Colors.White },
+				new Editor { Text = "x", Placeholder = "p", PlaceholderColor = Colors.Gray, TextColor = Colors.Red, FontSize = 14, BackgroundColor = Colors.White },
+				new Switch { IsToggled = true, OnColor = Colors.Green, ThumbColor = Colors.Orange },
+				new CheckBox { IsChecked = true, Color = Colors.Purple, BackgroundColor = Colors.White },
+				new Border { StrokeThickness = 2, Stroke = Colors.Red, Padding = new Thickness(6), Background = new SolidColorBrush(Colors.Blue) },
+				new ContentView { BackgroundColor = Colors.Green },
+				new Image { Aspect = Aspect.AspectFill, BackgroundColor = Colors.Gray },
+			};
+
+			var stack = new VerticalStackLayout
+			{
+				Padding = 20,
+				Spacing = 8,
+				Background = new LinearGradientBrush(
+					new GradientStopCollection { new GradientStop(Colors.Red, 0), new GradientStop(Colors.Blue, 1) },
+					new Point(0, 0),
+					new Point(1, 1)),
+			};
+			foreach (var view in views)
+				stack.Add(view);
+
+			using var host = new WindowHost(new ScrollView { Content = stack }, 400, 700);
+			host.Pump();
+
+			GtkTestHost.AssertNoComplaints();
+		});
+
 		// ------------------------------------------------------------------ Label
 
 		[GtkFact]
@@ -48,7 +84,10 @@ namespace Microsoft.Maui.Gtk.UnitTests
 			Assert.Contains("font-style: italic", css);
 			Assert.Contains("letter-spacing: 2px", css);
 			Assert.Contains("text-decoration-line: underline line-through", css);
-			Assert.Contains("padding: 2px 3px 4px 1px", css);
+			Assert.Contains("padding-top: 2px", css);
+			Assert.Contains("padding-right: 3px", css);
+			Assert.Contains("padding-bottom: 4px", css);
+			Assert.Contains("padding-left: 1px", css);
 			Assert.Contains("line-height: 1.5", css);
 
 			label.Text = "Changed";
@@ -118,7 +157,7 @@ namespace Microsoft.Maui.Gtk.UnitTests
 			var css = Css(widget);
 			Assert.Contains("color: rgba(0,128,0,1)", css);
 			Assert.Contains("font-size: 18px", css);
-			Assert.Contains("padding: 5px 5px 5px 5px", css);
+			Assert.Contains("padding-top: 5px", css);
 			Assert.Contains("border-style: solid", css);
 			Assert.Contains("border-width: 3px", css);
 			Assert.Contains("border-color: rgba(0,0,0,1)", css);

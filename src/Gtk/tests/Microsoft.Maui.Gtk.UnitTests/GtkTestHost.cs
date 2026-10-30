@@ -156,21 +156,44 @@ public static class GtkTestHost
 		GLib.Log.SetLogHandler("Pango", flags, record);
 	}
 
-	/// <summary>The GTK criticals/warnings logged since the last <see cref="ClearComplaints"/>.</summary>
+	static StderrCapture? s_capture;
+
+	/// <summary>
+	/// The GTK criticals/warnings (including CSS parser errors and "Allocating size ... without calling gtk_widget_measure")
+	/// written since the last <see cref="ClearComplaints"/>, as captured from the native stderr during <see cref="Run(Action)"/>.
+	/// </summary>
 	public static string[] Complaints
 	{
 		get
 		{
 			lock (s_complaints)
+			{
+				if (s_capture is not null)
+					s_complaints.AddRange(s_capture.Read());
+
 				return s_complaints.ToArray();
+			}
 		}
+	}
+
+	/// <summary>
+	/// Fails when GTK complained since the last <see cref="ClearComplaints"/>: layout violations ("Allocating size ... without calling
+	/// gtk_widget_measure", "Allocation ... too small"), CSS parser errors, or any other critical/warning.
+	/// </summary>
+	public static void AssertNoComplaints()
+	{
+		var complaints = Complaints;
+		Assert.True(complaints.Length == 0, "GTK complained: " + string.Join(" | ", complaints));
 	}
 
 	/// <summary>Forgets the recorded GTK criticals/warnings.</summary>
 	public static void ClearComplaints()
 	{
 		lock (s_complaints)
+		{
+			s_capture?.Read();
 			s_complaints.Clear();
+		}
 	}
 
 	/// <summary>Runs a test body on the GTK thread, rethrowing whatever it throws.</summary>
@@ -190,6 +213,10 @@ public static class GtkTestHost
 		{
 			s_work.Add(() =>
 			{
+				var capture = StderrCapture.Start();
+				lock (s_complaints)
+					s_capture = capture;
+
 				try
 				{
 					body();
@@ -200,6 +227,13 @@ public static class GtkTestHost
 				}
 				finally
 				{
+					lock (s_complaints)
+					{
+						if (capture is not null)
+							s_complaints.AddRange(capture.Stop());
+						s_capture = null;
+					}
+
 					done.Set();
 				}
 			});

@@ -15,6 +15,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.Maui.Gtk.UnitTests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\..\Core\src\Core.csproj" />
     <PackageReference Include="GtkSharp4" />
     <PackageReference Include="GdkSharp4" />
@@ -23,5 +27,7 @@
     <PackageReference Include="GrapheneSharp4" />
     <PackageReference Include="CairoSharp4" />
   </ItemGroup>
+
+  <Import Project="$(MauiSrcDirectory)PublicAPI.targets" />
 
 </Project>

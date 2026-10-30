@@ -21,16 +21,7 @@ namespace Microsoft.Maui.Gtk.UnitTests
 			}
 		}
 
-		static void AssertNoLayoutComplaints()
-		{
-			var layoutComplaints = GtkTestHost.Complaints
-				.Where(c => c.Contains("gtk_widget_measure", StringComparison.Ordinal)
-					|| c.Contains("too small", StringComparison.Ordinal)
-					|| c.Contains("Allocating size", StringComparison.Ordinal))
-				.ToArray();
-
-			Assert.True(layoutComplaints.Length == 0, "GTK layout complaints: " + string.Join(" | ", layoutComplaints));
-		}
+		static void AssertNoLayoutComplaints() => GtkTestHost.AssertNoComplaints();
 
 		[GtkFact]
 		public void VerticalStackStacksChildrenAndNeverAllocatesWithoutMeasuring() => GtkTestHost.Run(() =>
@@ -64,6 +55,7 @@ namespace Microsoft.Maui.Gtk.UnitTests
 		[GtkFact]
 		public void RootPanelDecidesTheWindowSizeNotTheContent() => GtkTestHost.Run(() =>
 		{
+			GtkTestHost.ClearComplaints();
 			var huge = new Box { WidthRequest = 5000, HeightRequest = 5000 };
 			using var host = new WindowHost(new Grid { Children = { huge } }, 500, 300);
 
@@ -75,11 +67,14 @@ namespace Microsoft.Maui.Gtk.UnitTests
 			root.Measure(global::Gtk.Orientation.Horizontal, -1, out int min, out int natural, out _, out _);
 			Assert.Equal(0, min);
 			Assert.Equal(0, natural);
+
+			AssertNoLayoutComplaints();
 		});
 
 		[GtkFact]
 		public void ExplicitSizesAreHonoured() => GtkTestHost.Run(() =>
 		{
+			GtkTestHost.ClearComplaints();
 			var button = new Microsoft.Maui.Controls.Button
 			{
 				Text = "x",
@@ -94,11 +89,14 @@ namespace Microsoft.Maui.Gtk.UnitTests
 			var bounds = host.Bounds((button));
 			Assert.Equal(220, bounds.Width);
 			Assert.Equal(70, bounds.Height);
+
+			AssertNoLayoutComplaints();
 		});
 
 		[GtkFact]
 		public void MinimumAndMaximumSizesClampTheDesiredSize() => GtkTestHost.Run(() =>
 		{
+			GtkTestHost.ClearComplaints();
 			var label = new Label { Text = "a", MinimumWidthRequest = 150, MaximumWidthRequest = 400, HorizontalOptions = LayoutOptions.Start };
 			var wide = new Label
 			{
@@ -112,11 +110,14 @@ namespace Microsoft.Maui.Gtk.UnitTests
 
 			Assert.Equal(150, host.Bounds((label)).Width);
 			Assert.True(host.Bounds((wide)).Width <= 120);
+
+			AssertNoLayoutComplaints();
 		});
 
 		[GtkFact]
 		public void LabelWrapsToTheConstraintAndGrowsTaller() => GtkTestHost.Run(() =>
 		{
+			GtkTestHost.ClearComplaints();
 			var text = string.Join(" ", Enumerable.Repeat("wrapping text", 12));
 			var label = new Label { Text = text, VerticalOptions = LayoutOptions.Start };
 
@@ -130,11 +131,14 @@ namespace Microsoft.Maui.Gtk.UnitTests
 
 			Assert.True(narrow.Width <= 200, $"narrow label is {narrow.Width} wide");
 			Assert.True(narrow.Height > wide.Height, $"wrapped label ({narrow.Height}) should be taller than the wide one ({wide.Height})");
+
+			AssertNoLayoutComplaints();
 		});
 
 		[GtkFact]
 		public void GridPlacesChildrenInCells() => GtkTestHost.Run(() =>
 		{
+			GtkTestHost.ClearComplaints();
 			var a = new Box { Color = Colors.Red };
 			var b = new Box { Color = Colors.Blue };
 			var grid = new Grid
@@ -155,11 +159,14 @@ namespace Microsoft.Maui.Gtk.UnitTests
 			Assert.Equal(60, boundsB.Y);
 			Assert.Equal(400, boundsB.Width);
 			Assert.Equal(240, boundsB.Height);
+
+			AssertNoLayoutComplaints();
 		});
 
 		[GtkFact]
 		public void InvalidateMeasureRelaysOutTheParent() => GtkTestHost.Run(() =>
 		{
+			GtkTestHost.ClearComplaints();
 			var first = new Label { Text = "one", VerticalOptions = LayoutOptions.Start };
 			var second = new Label { Text = "two", VerticalOptions = LayoutOptions.Start };
 			var stack = new VerticalStackLayout { Children = { first, second } };
@@ -174,11 +181,14 @@ namespace Microsoft.Maui.Gtk.UnitTests
 
 			int after = host.Bounds((second)).Y;
 			Assert.True(after > before, $"second label should move down when the first grows ({before} -> {after})");
+
+			AssertNoLayoutComplaints();
 		});
 
 		[GtkFact]
 		public void TranslationScaleAndRotationAreAppliedAsTransforms() => GtkTestHost.Run(() =>
 		{
+			GtkTestHost.ClearComplaints();
 			var box = new Box
 			{
 				Color = Colors.Green,
@@ -208,11 +218,14 @@ namespace Microsoft.Maui.Gtk.UnitTests
 			Assert.Equal(-25, scaled.Y);
 			Assert.Equal(200, scaled.Width);
 			Assert.Equal(100, scaled.Height);
+
+			AssertNoLayoutComplaints();
 		});
 
 		[GtkFact]
 		public void CollapsedViewsTakeNoSpaceAndHiddenViewsKeepTheirSlot() => GtkTestHost.Run(() =>
 		{
+			GtkTestHost.ClearComplaints();
 			var first = new Box { HeightRequest = 40, WidthRequest = 40, HorizontalOptions = LayoutOptions.Start };
 			var middle = new Box { HeightRequest = 40, WidthRequest = 40, HorizontalOptions = LayoutOptions.Start };
 			var last = new Box { HeightRequest = 40, WidthRequest = 40, HorizontalOptions = LayoutOptions.Start };
@@ -230,11 +243,14 @@ namespace Microsoft.Maui.Gtk.UnitTests
 			middle.Opacity = 1;
 			host.Pump();
 			Assert.Equal(80, host.Bounds((last)).Y);
+
+			AssertNoLayoutComplaints();
 		});
 
 		[GtkFact]
 		public void ScrollViewScrollsContentTallerThanTheViewport() => GtkTestHost.Run(() =>
 		{
+			GtkTestHost.ClearComplaints();
 			var content = new VerticalStackLayout();
 			for (int i = 0; i < 30; i++)
 				content.Add(new Box { HeightRequest = 50, Color = Colors.Orange });
@@ -250,6 +266,8 @@ namespace Microsoft.Maui.Gtk.UnitTests
 			scroller.Vadjustment.Value = 100;
 			host.Pump();
 			Assert.Equal(100, scroll.ScrollY, 1);
+
+			AssertNoLayoutComplaints();
 		});
 	}
 }
