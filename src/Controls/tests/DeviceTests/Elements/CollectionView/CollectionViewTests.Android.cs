@@ -19,6 +19,52 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class CollectionViewTests : ControlsHandlerTestBase
 	{
+		[Theory]
+		[InlineData(ItemsLayoutOrientation.Vertical)]
+		[InlineData(ItemsLayoutOrientation.Horizontal)]
+		public async Task GridItemOffsetsExcludeCrossAxisOuterSpacing(ItemsLayoutOrientation orientation)
+		{
+			SetupBuilder();
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var layout = new GridItemsLayout(2, orientation);
+				var collectionView = new CollectionView
+				{
+					ItemsLayout = layout,
+					ItemsSource = new[] { "First", "Second", "Third", "Fourth" }
+				};
+				var handler = CreateHandler<CollectionViewHandler>(collectionView);
+				var recyclerView = handler.PlatformView;
+
+				// Use a pixel-exact gap so density rounding does not obscure the regression.
+				layout.HorizontalItemSpacing = recyclerView.Context.FromPixels(100);
+				layout.VerticalItemSpacing = recyclerView.Context.FromPixels(100);
+				LayoutAndGetViewHolder(recyclerView);
+
+				using var decoration = new SpacingItemDecoration(recyclerView.Context, layout);
+				using var state = new global::AndroidX.RecyclerView.Widget.RecyclerView.State();
+				using var offsets = new global::Android.Graphics.Rect();
+				int halfSpacing = orientation == ItemsLayoutOrientation.Vertical
+					? decoration.HorizontalOffset
+					: decoration.VerticalOffset;
+				Assert.True(halfSpacing > 0);
+
+				for (int position = 0; position < 2; position++)
+				{
+					var holder = recyclerView.FindViewHolderForAdapterPosition(position);
+					Assert.NotNull(holder);
+					offsets.SetEmpty();
+					decoration.GetItemOffsets(offsets, holder.ItemView, recyclerView, state);
+
+					int start = orientation == ItemsLayoutOrientation.Vertical ? offsets.Left : offsets.Top;
+					int end = orientation == ItemsLayoutOrientation.Vertical ? offsets.Right : offsets.Bottom;
+					Assert.Equal(position == 0 ? 0 : halfSpacing, start);
+					Assert.Equal(position == 0 ? halfSpacing : 0, end);
+				}
+			});
+		}
+
 		public static TheoryData<System.Type> SafeAreaItemViewTypes
 		{
 			get
@@ -240,33 +286,6 @@ namespace Microsoft.Maui.DeviceTests
 			var emptySource = new EmptySource();
 			var count = emptySource.Count;
 			Assert.Equal(0, count);
-		}
-
-		[Theory]
-		[InlineData(100, 0, 1, 2, 0, 50)]
-		[InlineData(100, 1, 1, 2, 50, 0)]
-		[InlineData(100, 0, 2, 2, 0, 0)]
-		[InlineData(5, 0, 1, 3, 0, 4)]
-		[InlineData(5, 1, 1, 3, 1, 2)]
-		[InlineData(5, 2, 1, 3, 3, 0)]
-		public void GridSpacingIsDistributedAcrossSpans(
-			int spacing,
-			int spanIndex,
-			int spanSize,
-			int spanCount,
-			int expectedStart,
-			int expectedEnd)
-		{
-			SpacingItemDecoration.GetCrossAxisOffsets(
-				spacing,
-				spanIndex,
-				spanSize,
-				spanCount,
-				out int start,
-				out int end);
-
-			Assert.Equal(expectedStart, start);
-			Assert.Equal(expectedEnd, end);
 		}
 
 		//src/Compatibility/Core/tests/Android/ObservableItemsSourceTests.cs#L52

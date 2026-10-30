@@ -18,13 +18,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public SpacingItemDecoration(Context context, IItemsLayout itemsLayout)
 		{
-			// The original "SpacingItemDecoration" applied spacing based on an item's current span index.
-			// It did not apply any spacing to items currently at span index 0 which can create an issue for us with grid layouts.
-			// If one of those items at span index 0 were to move to another column, it would result in misaligned items.
-			// It's better to just apply equal spacing to all items so we can avoid that issue (even the ones at span index 0).
-			// The reason they didn't do this originally, I suspect, is that they didn't want spacing around the edge of the RecyclerView.
-			// That however can be corrected by adjusting the padding on the RecyclerView which we are now doing.
-
 			if (itemsLayout == null)
 			{
 				throw new ArgumentNullException(nameof(itemsLayout));
@@ -107,6 +100,24 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				int spanCount = gridLayoutManager.SpanCount;
 				isInFirstRowCol = IsInFirstSpanGroup(spanSizeLookup, position, spanCount);
 				isInLastRowCol = IsInLastSpanGroup(spanSizeLookup, view, position, itemCount, spanCount);
+
+				int spanIndex = GetSpanIndex(spanSizeLookup, view, position, spanCount);
+				int spanSize = spanSizeLookup.GetSpanSize(position);
+
+				// Distribute cross-axis spacing without adding insets at the grid's outer edges.
+				if (_orientation == ItemsLayoutOrientation.Vertical)
+				{
+					GetCrossAxisOffsets(HorizontalOffset * 2, spanIndex, spanSize, spanCount, out int start, out int end);
+					bool isRtl = parent.LayoutDirection == ALayoutDirection.Rtl;
+					outRect.Left = isRtl ? end : start;
+					outRect.Right = isRtl ? start : end;
+				}
+				else
+				{
+					GetCrossAxisOffsets(VerticalOffset * 2, spanIndex, spanSize, spanCount, out int top, out int bottom);
+					outRect.Top = top;
+					outRect.Bottom = bottom;
+				}
 			}
 			else
 			{
@@ -129,6 +140,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				if (isInLastRowCol)
 					outRect.Right = 0;
 			}
+		}
+
+		internal static void GetCrossAxisOffsets(int spacing, int spanIndex, int spanSize, int spanCount, out int start, out int end)
+		{
+			start = (int)((long)spacing * spanIndex / spanCount);
+			end = spacing - (int)((long)spacing * (spanIndex + spanSize) / spanCount);
 		}
 
 		static bool IsInFirstSpanGroup(GridLayoutManager.SpanSizeLookup spanSizeLookup, int position, int spanCount)
