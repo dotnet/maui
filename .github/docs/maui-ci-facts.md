@@ -70,6 +70,17 @@ cache under `src/Provisioning/obj/appium-driver-npm-cache`, separate from the
 global Appium install's cache. This avoids permission failures from a shared
 user cache without deleting it, changing its ownership, or elevating driver
 installation. Local provisioning retains its existing npm cache configuration.
+
+## SearchHandler query cleanup and snapshots
+
+The Shell sharding change (#39359, backported in #39725) clears the query in
+`Issue35736.SearchHandlerClearIconUpdatesAtRuntime` after its screenshot. The
+following QueryIcon, ClearPlaceholderIcon, and ResetAll snapshots must show the
+cleared query, not an `A` leaked from the preceding test. Android and iOS baselines
+were updated with that cleanup; MacCatalyst needs the same state alignment.
+Keep the cleanup and verify the intended native icons before updating a baseline;
+do not restore leaked text or relax comparison tolerances to match an old image.
+
 ## Enumerate EVERY failed leg — Build Analysis is NOT exhaustive
 
 > 🚨 The single most common way to be **wrong** about "what's unique to this PR" is to
