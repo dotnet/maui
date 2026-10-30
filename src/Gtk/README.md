@@ -14,13 +14,9 @@ checks, `IButtonHandler` and user mapper customisations keep working.
 | `samples/Maui.Gtk.Sample` | | code-only sample (plain `net10.0` for now) |
 | `src/Essentials` | `Microsoft.Maui.Essentials.Gtk` | Essentials on GTK 4 / Linux, see [`src/Essentials/README.md`](src/Essentials/README.md) |
 | `../Graphics/src/Graphics.Cairo` | `Microsoft.Maui.Graphics.Cairo` | `ICanvas` on Cairo/Pango, see its [README](../Graphics/src/Graphics.Cairo/README.md) |
-<<<<<<< HEAD
 | `src/Controls` | `Microsoft.Maui.Controls.Gtk` | Controls handlers and `UseMauiGtk()`, see [`src/Controls/README.md`](src/Controls/README.md) |
-| `src/BlazorWebView`, `src/Maps` | `*.Gtk` | other areas (separate tracks, see their own sections) |
-=======
 | `src/BlazorWebView` | `Microsoft.AspNetCore.Components.WebView.Maui.Gtk` | `BlazorWebView` on WebKitGTK; also documents `WebView` and `HybridWebView`, see its [README](src/BlazorWebView/README.md) |
-| `src/Controls`, `src/Maps` | `*.Gtk` | other areas (separate tracks, see their own sections) |
->>>>>>> c8a41c5513 (GTK web views: connect decide-policy/load-failed natively, Navigating for app-started loads, keep libwebkitgtk loaded; docs and test counts)
+| `src/Maps` | `Microsoft.Maui.Controls.Maps.Gtk` | other area (separate track, see its own section) |
 
 Requires GTK >= 4.14 (guard newer APIs with `GtkRuntime.AtLeast(major, minor)`).
 
@@ -77,7 +73,6 @@ Pass only GApplication options in `args`. Lifecycle: `ConfigureLifecycleEvents(e
 | ScrollView | `Gtk.ScrolledWindow` | programmatic scrolling is instant |
 | Border | `MauiGtkBorder` | any `IShape`; gradient fills through Cairo |
 | Switch, CheckBox | `Gtk.Switch`, `Gtk.CheckButton` | |
-<<<<<<< HEAD
 | ActivityIndicator | `Gtk.Spinner` | `IsRunning` = spinning; colour = CSS `color` |
 | ProgressBar | `Gtk.ProgressBar` | colour on the `progress` node; RTL inverts |
 | Slider | `Gtk.Scale` | track/thumb colours are CSS; `ThumbImageSource` ignored; `DragStarted/Completed` from a capture-phase click |
@@ -95,13 +90,9 @@ Pass only GApplication options in `args`. Lifecycle: `ConfigureLifecycleEvents(e
 | SwipeView, SwipeItem(View) | `MauiGtkSwipePanel` | `GestureDrag`; content slides by `GtkViewState.PlatformOffsetX/Y`; reveal/execute, `RequestOpen/Close`; not animated |
 | MenuBar, MenuBarItem | `GMenu` tree in a `Gtk.PopoverMenuBar` above the window content | items are `GSimpleAction`s of the `menu` group; icons not shown; accelerators shown, not bound |
 | MenuFlyout*, `ContextFlyout` | `Gtk.PopoverMenu` over the `GMenu` | secondary click or long press on any view; separators split sections |
-
-Not in this area: Shell, CollectionView, WebView, Maps, NavigationPage/Toolbar/FlyoutPage/TabbedPage. Image-paint backgrounds are unsupported.
-=======
 | WebView, HybridWebView | `WebKit.WebView` (WebKitGTK 6; a `Gtk.Label` when it cannot be loaded) | see [`src/BlazorWebView/README.md`](src/BlazorWebView/README.md) |
 
-Not in this area: Picker/Slider/..., Shell, CollectionView, Maps. Image-paint backgrounds are unsupported.
->>>>>>> c8a41c5513 (GTK web views: connect decide-policy/load-failed natively, Navigating for app-started loads, keep libwebkitgtk loaded; docs and test counts)
+Not in this area: Shell, CollectionView, Maps, NavigationPage/Toolbar/FlyoutPage/TabbedPage. Image-paint backgrounds are unsupported.
 
 ## Tests
 
@@ -114,11 +105,7 @@ Not in this area: Picker/Slider/..., Shell, CollectionView, Maps. Image-paint ba
 
 | Project | Tests (Windows GTK 4.22 / Debian 13 GTK 4.18, xvfb) |
 |---------|------|
-<<<<<<< HEAD
-| `Microsoft.Maui.Gtk.UnitTests` (Core + Essentials) | 351 passed, 4 skipped (Windows; the skips are the 4 popup tests, Linux-only) |
-=======
-| `Microsoft.Maui.Gtk.UnitTests` (Core + Essentials + Web) | Windows 257 passed, 17 skipped (WebKit); Debian 274 passed, 0 skipped |
->>>>>>> c8a41c5513 (GTK web views: connect decide-policy/load-failed natively, Navigating for app-started loads, keep libwebkitgtk loaded; docs and test counts)
+| `Microsoft.Maui.Gtk.UnitTests` (Core + Essentials + Handlers + Controls + Web) | TBD |
 | `Graphics.Cairo.Tests` | 125 passed, 0 skipped |
 | `Core.UnitTests` / `Controls.Core.UnitTests` (net10.0) | 878 (+3 skipped) / 5865 (+30 skipped) passed |
 
