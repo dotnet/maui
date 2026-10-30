@@ -30,6 +30,28 @@ namespace Microsoft.Maui.Gtk.Platform
 		/// <summary>The vertical counterpart of <see cref="MinimumWidthFollowsContent"/>.</summary>
 		public bool MinimumHeightFollowsContent { get; set; }
 
+		/// <summary>
+		/// <see langword="true"/> for panels whose virtual view is measured by MAUI's own layout pass (content views, pages, layouts,
+		/// borders): <see cref="GtkPlatformViewBackend"/> then measures the virtual view directly with MAUI's constraints and
+		/// <c>OnMeasure</c> only reports that result. Letting GTK's unconstrained measure re-run the cross-platform measure would overwrite
+		/// the children's measurements taken with the real constraints. Scroll content is measured by GTK (the viewport asks), so it leaves this off.
+		/// </summary>
+		public bool IsMeasuredByMaui { get; set; }
+
+		/// <summary>The size MAUI last measured the virtual view to, or <see langword="null"/> before the first measure.</summary>
+		public Size? MeasuredSize { get; private set; }
+
+		/// <summary>Records the size MAUI measured; queues a GTK resize when it changed so GTK's cached measure follows.</summary>
+		/// <param name="size">The measured size.</param>
+		internal void UpdateMeasuredSize(Size size)
+		{
+			if (MeasuredSize == size)
+				return;
+
+			MeasuredSize = size;
+			QueueResize();
+		}
+
 		/// <summary>Whether the panel clips its children to its allocation.</summary>
 		public bool ClipsToBounds
 		{
@@ -51,6 +73,16 @@ namespace Microsoft.Maui.Gtk.Platform
 			if (layout is null)
 			{
 				natural = 0;
+				return;
+			}
+
+			bool horizontalPass = orientation == global::Gtk.Orientation.Horizontal;
+
+			if (IsMeasuredByMaui && MeasuredSize is { } measured)
+			{
+				natural = GtkInterop.ToPixels(horizontalPass ? measured.Width : measured.Height);
+				if (horizontalPass ? MinimumWidthFollowsContent : MinimumHeightFollowsContent)
+					minimum = natural;
 				return;
 			}
 

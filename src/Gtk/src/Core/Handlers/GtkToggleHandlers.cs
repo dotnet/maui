@@ -17,6 +17,7 @@ namespace Microsoft.Maui.Gtk.Handlers
 
 		/// <summary>Creates the handler with the stock mappers.</summary>
 		public GtkSwitchHandler()
+			: base(GtkMapper, GtkCommandMapper)
 		{
 		}
 
@@ -24,7 +25,7 @@ namespace Microsoft.Maui.Gtk.Handlers
 		/// <param name="mapper">The property mapper, or <see langword="null"/> for the stock one.</param>
 		/// <param name="commandMapper">The command mapper, or <see langword="null"/> for the stock one.</param>
 		public GtkSwitchHandler(IPropertyMapper? mapper, CommandMapper? commandMapper = null)
-			: base(mapper, commandMapper)
+			: base(mapper ?? GtkMapper, commandMapper ?? GtkCommandMapper)
 		{
 		}
 
@@ -40,18 +41,30 @@ namespace Microsoft.Maui.Gtk.Handlers
 
 		void OnActiveChanged(object o, GLib.NotifyArgs args)
 		{
-			if (_updatingFromVirtualView || o is not GtkSwitch toggle || VirtualView is null)
+			if (_updatingFromVirtualView || o is not GtkSwitch toggle || ((IElementHandler)this).VirtualView is not ISwitch view)
 				return;
 
-			if (VirtualView.IsOn != toggle.Active)
-				VirtualView.IsOn = toggle.Active;
+			if (view.IsOn != toggle.Active)
+				view.IsOn = toggle.Active;
 		}
 
-		internal static void ApplyMappers()
-		{
-			var mapper = Mapper;
+		internal static readonly IPropertyMapper<ISwitch, ISwitchHandler> GtkMapper = CreateMapper();
 
-			mapper.MapGtk<ISwitch, ISwitchHandler, GtkSwitch>(nameof(ISwitch.IsOn), (h, v, w) =>
+		internal static readonly CommandMapper<ISwitch, ISwitchHandler> GtkCommandMapper = CreateCommandMapper();
+
+		static IPropertyMapper<ISwitch, ISwitchHandler> CreateMapper()
+		{
+			var mapper = new GtkMapperBuilder<ISwitch, ISwitchHandler>(SwitchHandler.Mapper).AddViewMappings();
+			Configure(mapper);
+			return mapper.Build();
+		}
+
+		static CommandMapper<ISwitch, ISwitchHandler> CreateCommandMapper() =>
+			new GtkCommandMapperBuilder<ISwitch, ISwitchHandler>(SwitchHandler.CommandMapper).AddViewCommands().Build();
+
+		static void Configure(GtkMapperBuilder<ISwitch, ISwitchHandler> mapper)
+		{
+			mapper.MapGtk<GtkSwitch>(nameof(ISwitch.IsOn), (h, v, w) =>
 			{
 				if (h is not GtkSwitchHandler gtk)
 				{
@@ -69,12 +82,12 @@ namespace Microsoft.Maui.Gtk.Handlers
 					gtk._updatingFromVirtualView = false;
 				}
 			});
-			mapper.MapGtk<ISwitch, ISwitchHandler, GtkSwitch>(nameof(ISwitch.TrackColor), (h, v, w) =>
+			mapper.MapGtk<GtkSwitch>(nameof(ISwitch.TrackColor), (h, v, w) =>
 				GtkStyle.For(w).Set("background-color", v.TrackColor?.ToCss(), ":checked"));
-			mapper.MapGtk<ISwitch, ISwitchHandler, GtkSwitch>(nameof(ISwitch.ThumbColor), (h, v, w) =>
+			mapper.MapGtk<GtkSwitch>(nameof(ISwitch.ThumbColor), (h, v, w) =>
 				GtkStyle.For(w).Set("background-color", v.ThumbColor?.ToCss(), " slider"));
 			// A switch does not stretch: its natural size is what MAUI should use.
-			mapper.MapGtk<ISwitch, ISwitchHandler, GtkSwitch>(nameof(IView.MinimumWidth), (h, v, w) => { });
+			mapper.MapGtk<GtkSwitch>(nameof(IView.MinimumWidth), (h, v, w) => { });
 		}
 	}
 
@@ -87,6 +100,7 @@ namespace Microsoft.Maui.Gtk.Handlers
 
 		/// <summary>Creates the handler with the stock mappers.</summary>
 		public GtkCheckBoxHandler()
+			: base(GtkMapper, GtkCommandMapper)
 		{
 		}
 
@@ -94,7 +108,7 @@ namespace Microsoft.Maui.Gtk.Handlers
 		/// <param name="mapper">The property mapper, or <see langword="null"/> for the stock one.</param>
 		/// <param name="commandMapper">The command mapper, or <see langword="null"/> for the stock one.</param>
 		public GtkCheckBoxHandler(IPropertyMapper? mapper, CommandMapper? commandMapper = null)
-			: base(mapper, commandMapper)
+			: base(mapper ?? GtkMapper, commandMapper ?? GtkCommandMapper)
 		{
 		}
 
@@ -120,18 +134,30 @@ namespace Microsoft.Maui.Gtk.Handlers
 
 		void OnToggled(object? sender, EventArgs e)
 		{
-			if (_updatingFromVirtualView || sender is not GtkCheckButton check || VirtualView is null)
+			if (_updatingFromVirtualView || sender is not GtkCheckButton check || ((IElementHandler)this).VirtualView is not ICheckBox view)
 				return;
 
-			if (VirtualView.IsChecked != check.Active)
-				VirtualView.IsChecked = check.Active;
+			if (view.IsChecked != check.Active)
+				view.IsChecked = check.Active;
 		}
 
-		internal static void ApplyMappers()
-		{
-			var mapper = Mapper;
+		internal static readonly IPropertyMapper<ICheckBox, ICheckBoxHandler> GtkMapper = CreateMapper();
 
-			mapper.MapGtk<ICheckBox, ICheckBoxHandler, GtkCheckButton>(nameof(ICheckBox.IsChecked), (h, v, w) =>
+		internal static readonly CommandMapper<ICheckBox, CheckBoxHandler> GtkCommandMapper = CreateCommandMapper();
+
+		static IPropertyMapper<ICheckBox, ICheckBoxHandler> CreateMapper()
+		{
+			var mapper = new GtkMapperBuilder<ICheckBox, ICheckBoxHandler>(CheckBoxHandler.Mapper).AddViewMappings();
+			Configure(mapper);
+			return mapper.Build();
+		}
+
+		static CommandMapper<ICheckBox, CheckBoxHandler> CreateCommandMapper() =>
+			new GtkCommandMapperBuilder<ICheckBox, CheckBoxHandler>(CheckBoxHandler.CommandMapper).AddViewCommands().Build();
+
+		static void Configure(GtkMapperBuilder<ICheckBox, ICheckBoxHandler> mapper)
+		{
+			mapper.MapGtk<GtkCheckButton>(nameof(ICheckBox.IsChecked), (h, v, w) =>
 			{
 				if (h is not GtkCheckBoxHandler gtk)
 				{
@@ -149,7 +175,7 @@ namespace Microsoft.Maui.Gtk.Handlers
 					gtk._updatingFromVirtualView = false;
 				}
 			});
-			mapper.MapGtk<ICheckBox, ICheckBoxHandler, GtkCheckButton>(nameof(ICheckBox.Foreground), (h, v, w) =>
+			mapper.MapGtk<GtkCheckButton>(nameof(ICheckBox.Foreground), (h, v, w) =>
 			{
 				var style = GtkStyle.For(w);
 				style.ClearPrefix("background", " check:checked");
@@ -160,7 +186,7 @@ namespace Microsoft.Maui.Gtk.Handlers
 					style.Set("border-color", color.ToCss(), " check:checked");
 				}
 			});
-			mapper.MapGtk<ICheckBox, ICheckBoxHandler, GtkCheckButton>(nameof(ICheckBox.Background), (h, v, w) => GtkStyle.For(w).SetBackground(v.Background));
+			mapper.MapGtk<GtkCheckButton>(nameof(ICheckBox.Background), (h, v, w) => GtkStyle.For(w).SetBackground(v.Background));
 		}
 	}
 }

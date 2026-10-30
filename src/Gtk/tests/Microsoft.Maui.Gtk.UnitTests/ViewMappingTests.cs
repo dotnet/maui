@@ -10,7 +10,7 @@ using GtkWidget = global::Gtk.Widget;
 
 namespace Microsoft.Maui.Gtk.UnitTests
 {
-	/// <summary>The properties every view shares (the patched ViewMapper), exercised on real widgets.</summary>
+	/// <summary>The properties every view shares (the GTK view mappings), exercised on real widgets.</summary>
 	public class ViewMappingTests
 	{
 		static GtkLabel CreateLabel(Label label) => GtkTestApp.CreateWidget<GtkLabel>(label);

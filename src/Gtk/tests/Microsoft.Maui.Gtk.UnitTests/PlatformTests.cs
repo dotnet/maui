@@ -385,6 +385,26 @@ namespace Microsoft.Maui.Gtk.UnitTests
 		});
 
 		[GtkFact]
+		public void MauiMeasuredPanelsReportTheMauiMeasureInsteadOfRemeasuring() => GtkTestHost.Run(() =>
+		{
+			var layout = new FixedLayout();
+			var panel = new MauiGtkPanel { CrossPlatformLayout = layout, IsMeasuredByMaui = true };
+
+			// Before MAUI measured, GTK's measure falls back to the cross-platform measure.
+			panel.Measure(global::Gtk.Orientation.Horizontal, -1, out _, out int fallback, out _, out _);
+			Assert.Equal(120, fallback);
+			int measuresAfterFallback = layout.Measures;
+
+			panel.UpdateMeasuredSize(new Size(50, 30));
+			panel.Measure(global::Gtk.Orientation.Horizontal, -1, out _, out int width, out _, out _);
+			panel.Measure(global::Gtk.Orientation.Vertical, 50, out _, out int height, out _, out _);
+
+			Assert.Equal(50, width);
+			Assert.Equal(30, height);
+			Assert.Equal(measuresAfterFallback, layout.Measures);
+		});
+
+		[GtkFact]
 		public void PanelWithoutALayoutMeasuresZero() => GtkTestHost.Run(() =>
 		{
 			var panel = new MauiGtkPanel();

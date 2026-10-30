@@ -330,7 +330,7 @@ namespace Microsoft.Maui.Gtk.UnitTests
 		[GtkFact]
 		public void EditorGrowsWithItsContent() => GtkTestHost.Run(() =>
 		{
-			var editor = new Editor { Text = "one", VerticalOptions = LayoutOptions.Start };
+			var editor = new Editor { Text = "one", VerticalOptions = LayoutOptions.Start, AutoSize = EditorAutoSizeOption.TextChanges };
 			using var host = new WindowHost(new VerticalStackLayout { Children = { editor } }, 300, 400);
 			int oneLine = host.Bounds(editor).Height;
 
@@ -714,14 +714,67 @@ namespace Microsoft.Maui.Gtk.UnitTests
 		});
 
 		[GtkFact]
-		public void WindowRaisesLifecycleCallbacks() => GtkTestHost.Run(() =>
+		public void WindowRaisesLifecycleCallbacksAndReportsItsFrame() => GtkTestHost.Run(() =>
 		{
-			using var host = new WindowHost(new Label { Text = "x" }, 300, 200);
+			var platformWindow = new global::Gtk.Window { Decorated = false };
+			var context = GtkTestApp.NewContext();
+			context.AddWeakSpecific<global::Gtk.Window>(platformWindow);
+			var window = new Microsoft.Maui.Controls.Window(new ContentPage { Content = new Label { Text = "x" } });
 
-			// Created happens when the handler connects; the window reports its frame once it is allocated.
-			Assert.True(GtkTestHost.PumpUntil(() => host.Window.Width > 0 || true, host.PlatformWindow, 100));
-			Assert.NotNull(host.Window.Handler);
-			Assert.Same(host.PlatformWindow, host.Window.Handler!.PlatformView);
+			int created = 0, destroying = 0, activated = 0, deactivated = 0;
+			window.Created += (_, _) => created++;
+			window.Destroying += (_, _) => destroying++;
+			window.Activated += (_, _) => activated++;
+			window.Deactivated += (_, _) => deactivated++;
+
+			platformWindow.SetWindowHandler(window, context);
+			Assert.Equal(1, created);
+
+			platformWindow.SetDefaultSize(320, 240);
+			platformWindow.Present();
+			GtkTestHost.Pump(platformWindow);
+			GtkTestHost.Resize(platformWindow, 320, 240);
+
+			// The virtual window learns the size GTK gave it.
+			Assert.Equal(320, window.Width);
+			Assert.Equal(240, window.Height);
+
+			// Activation follows the toplevel's is-active state, and only transitions are forwarded: notifications that do not
+			// change the state (GTK sends them) must not raise Deactivated before an Activated or the same event twice.
+			var notify = typeof(GLib.Object).GetMethod("Notify", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!;
+			notify.Invoke(platformWindow, new object[] { "is-active" });
+			notify.Invoke(platformWindow, new object[] { "is-active" });
+			Assert.Equal(platformWindow.IsActive ? 1 : 0, activated);
+			Assert.Equal(0, deactivated);
+
+			// A close request reaches the virtual window before the window goes away. A later handler vetoes the close:
+			// tests never destroy windows.
+			platformWindow.CloseRequest += (o, a) => a.RetVal = true;
+			GLib.Signal.Emit(platformWindow, "close-request");
+			Assert.Equal(1, destroying);
+
+			GtkTestHost.Retire(platformWindow);
+		});
+
+		[GtkFact]
+		public void ScrollViewNeverAsksForMoreThanItIsOffered() => GtkTestHost.Run(() =>
+		{
+			var content = new VerticalStackLayout();
+			for (int i = 0; i < 40; i++)
+				content.Add(new ContentView { HeightRequest = 50 });
+
+			var scroll = new ScrollView { Content = content };
+			var grid = new Grid { RowDefinitions = { new RowDefinition(GridLength.Auto), new RowDefinition(GridLength.Star) } };
+			var header = new Label { Text = "header" };
+			grid.Add(header, 0, 0);
+			grid.Add(scroll, 0, 1);
+
+			using var host = new WindowHost(grid, 300, 400);
+
+			// The star row gets what is left; the scroll view does not push the layout to its content height (2000).
+			Assert.True(host.Bounds(scroll).Height < 400, $"scroll view is {host.Bounds(scroll).Height} high");
+			Assert.Equal(400, host.Bounds(scroll).Y + host.Bounds(scroll).Height);
+			Assert.True(((global::Gtk.ScrolledWindow)host.Widget(scroll)).Vadjustment.Upper >= 2000);
 		});
 	}
 }

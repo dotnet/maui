@@ -165,28 +165,57 @@ namespace Microsoft.Maui.Gtk.UnitTests
 		});
 
 		[GtkFact]
-		public void MapperPatchingIsIdempotent()
+		public void StockMapperRemapsAndCustomisationsStillRunAfterTheGtkMapping() => GtkTestHost.Run(() =>
 		{
-			GtkMapperRegistration.Apply();
-			GtkMapperRegistration.Apply();
-			Assert.True(GtkMapperRegistration.IsApplied);
-		}
+			var app = GtkTestApp.App;
+			var ran = new System.Collections.Generic.List<string>();
+
+			// What Controls does lazily (Label's static constructor): ReplaceMapping discards the previous mapping. Then a user customisation.
+			LabelHandler.Mapper.ReplaceMapping<Label, ILabelHandler>(nameof(ILabel.Text), (handler, label) => ran.Add("replaced"));
+			LabelHandler.Mapper.AppendToMapping(nameof(ILabel.Text), (handler, label) => ran.Add("appended"));
+
+			try
+			{
+				var widget = GtkTestApp.CreateWidget<global::Gtk.Label>(new Label { Text = "text survives" });
+
+				Assert.Equal("text survives", widget.Text);
+				Assert.Equal(new[] { "replaced", "appended" }, ran);
+			}
+			finally
+			{
+				// Static mappers are process-wide: put the stock mapping back for the other tests.
+				LabelHandler.Mapper.ReplaceMapping<Label, ILabelHandler>(nameof(ILabel.Text), (handler, label) => { });
+			}
+		});
 
 		[GtkFact]
-		public void ApplyPutsTheGtkBranchBackOnTopOfAShadowingRemap() => GtkTestHost.Run(() =>
+		public void GtkMappersAreRestrictedToGtkPlatformViews() => GtkTestHost.Run(() =>
 		{
-			GtkMapperRegistration.Apply();
+			var seen = new System.Collections.Generic.List<string>();
+			var builder = new GtkMapperBuilder<ILabel, ILabelHandler>(LabelHandler.Mapper)
+				.MapGtk<global::Gtk.Label>(nameof(ILabel.Text), (handler, label, widget) => seen.Add("gtk"));
+			var mapper = builder.Build();
 
-			// What Controls' RemapForControls does on every UseMauiApp: replace the mapping, ignoring the previous one.
-			LabelHandler.Mapper.ReplaceMapping<Label, ILabelHandler>(nameof(ILabel.Text), (handler, label) => { });
+			var label = new Label { Text = "x" };
 
-			var before = GtkTestApp.CreateWidget<global::Gtk.Label>(new Label { Text = "shadowed" });
-			Assert.Equal(string.Empty, before.Text);
+			var other = new FakeLabelHandler(new object());
+			other.SetVirtualView(label);
+			mapper.GetProperty(nameof(ILabel.Text))!(other, label);
+			Assert.Empty(seen);
 
-			GtkMapperRegistration.Apply();
-
-			var after = GtkTestApp.CreateWidget<global::Gtk.Label>(new Label { Text = "restored" });
-			Assert.Equal("restored", after.Text);
+			var gtk = new FakeLabelHandler(new global::Gtk.Label());
+			gtk.SetVirtualView(label);
+			mapper.GetProperty(nameof(ILabel.Text))!(gtk, label);
+			Assert.Equal(new[] { "gtk" }, seen);
 		});
+
+		sealed class FakeLabelHandler : LabelHandler
+		{
+			readonly object _platformView;
+
+			public FakeLabelHandler(object platformView) => _platformView = platformView;
+
+			protected override object CreatePlatformView() => _platformView;
+		}
 	}
 }

@@ -18,6 +18,7 @@ namespace Microsoft.Maui.Gtk.Handlers
 
 		/// <summary>Creates the handler with the stock mappers.</summary>
 		public GtkEntryHandler()
+			: base(GtkMapper, GtkCommandMapper)
 		{
 		}
 
@@ -25,7 +26,7 @@ namespace Microsoft.Maui.Gtk.Handlers
 		/// <param name="mapper">The property mapper, or <see langword="null"/> for the stock one.</param>
 		/// <param name="commandMapper">The command mapper, or <see langword="null"/> for the stock one.</param>
 		public GtkEntryHandler(IPropertyMapper? mapper, CommandMapper? commandMapper = null)
-			: base(mapper, commandMapper)
+			: base(mapper ?? GtkMapper, commandMapper ?? GtkCommandMapper)
 		{
 		}
 
@@ -61,15 +62,18 @@ namespace Microsoft.Maui.Gtk.Handlers
 
 		void OnChanged(object? sender, EventArgs e)
 		{
-			if (_updatingFromVirtualView || sender is not GtkEntry entry || VirtualView is null)
+			if (_updatingFromVirtualView || sender is not GtkEntry entry || View is not { } view)
 				return;
 
 			var text = entry.Text ?? string.Empty;
-			if (!string.Equals(VirtualView.Text, text, StringComparison.Ordinal))
-				VirtualView.Text = text;
+			if (!string.Equals(view.Text, text, StringComparison.Ordinal))
+				view.Text = text;
 		}
 
-		void OnActivated(object? sender, EventArgs e) => VirtualView?.Completed();
+		// The virtual view is null once the handler disconnected; the generic VirtualView property would throw then.
+		IEntry? View => ((IElementHandler)this).VirtualView as IEntry;
+
+		void OnActivated(object? sender, EventArgs e) => View?.Completed();
 
 		void OnIconPress(object o, global::Gtk.IconPressArgs args)
 		{
@@ -79,47 +83,65 @@ namespace Microsoft.Maui.Gtk.Handlers
 
 		void OnCursorPositionChanged(object o, GLib.NotifyArgs args)
 		{
-			if (_updatingFromVirtualView || PlatformView is not GtkEntry entry || VirtualView is null)
+			if (_updatingFromVirtualView || ((IElementHandler)this).PlatformView is not GtkEntry entry || View is not { } view)
 				return;
 
-			if (VirtualView.CursorPosition != entry.Position)
-				VirtualView.CursorPosition = entry.Position;
+			if (view.CursorPosition != entry.Position)
+				view.CursorPosition = entry.Position;
 		}
 
-		internal static void ApplyMappers()
-		{
-			var mapper = Mapper;
+		internal static readonly IPropertyMapper<IEntry, IEntryHandler> GtkMapper = CreateMapper();
 
-			mapper.MapGtk<IEntry, IEntryHandler, GtkEntry>(nameof(IEntry.Text), (h, v, w) => Guard(h, () =>
+		internal static readonly CommandMapper<IEntry, IEntryHandler> GtkCommandMapper = CreateCommandMapper();
+
+		static IPropertyMapper<IEntry, IEntryHandler> CreateMapper()
+		{
+			var mapper = new GtkMapperBuilder<IEntry, IEntryHandler>(EntryHandler.Mapper).AddViewMappings();
+			var commands = new GtkCommandMapperBuilder<IEntry, IEntryHandler>(EntryHandler.CommandMapper).AddViewCommands();
+			Configure(mapper, commands);
+			return mapper.Build();
+		}
+
+		static CommandMapper<IEntry, IEntryHandler> CreateCommandMapper()
+		{
+			var mapper = new GtkMapperBuilder<IEntry, IEntryHandler>(EntryHandler.Mapper).AddViewMappings();
+			var commands = new GtkCommandMapperBuilder<IEntry, IEntryHandler>(EntryHandler.CommandMapper).AddViewCommands();
+			Configure(mapper, commands);
+			return commands.Build();
+		}
+
+		static void Configure(GtkMapperBuilder<IEntry, IEntryHandler> mapper, GtkCommandMapperBuilder<IEntry, IEntryHandler> commands)
+		{
+			mapper.MapGtk<GtkEntry>(nameof(IEntry.Text), (h, v, w) => Guard(h, () =>
 			{
 				var text = v.Text ?? string.Empty;
 				if (!string.Equals(w.Text, text, StringComparison.Ordinal))
 					w.Text = text;
 			}));
-			mapper.MapGtk<IEntry, IEntryHandler, GtkEntry>(nameof(IEntry.TextColor), (h, v, w) => GtkTextStyle.SetColor(w, v.TextColor));
-			mapper.MapGtk<IEntry, IEntryHandler, GtkEntry>(nameof(IEntry.Font), (h, v, w) => GtkTextStyle.SetFont(w, v.Font, GtkTextStyle.GetFontManager(h)));
-			mapper.MapGtk<IEntry, IEntryHandler, GtkEntry>(nameof(IEntry.CharacterSpacing), (h, v, w) => GtkTextStyle.SetCharacterSpacing(w, v.CharacterSpacing));
-			mapper.MapGtk<IEntry, IEntryHandler, GtkEntry>(nameof(IEntry.Background), (h, v, w) => GtkStyle.For(w).SetBackground(v.Background));
-			mapper.MapGtk<IEntry, IEntryHandler, GtkEntry>(nameof(IEntry.Placeholder), (h, v, w) => w.PlaceholderText = v.Placeholder ?? string.Empty);
-			mapper.MapGtk<IEntry, IEntryHandler, GtkEntry>(nameof(IEntry.PlaceholderColor), (h, v, w) => GtkTextStyle.SetColor(w, v.PlaceholderColor, " placeholder"));
-			mapper.MapGtk<IEntry, IEntryHandler, GtkEntry>(nameof(IEntry.IsPassword), (h, v, w) => w.Visibility = !v.IsPassword);
-			mapper.MapGtk<IEntry, IEntryHandler, GtkEntry>(nameof(IEntry.IsReadOnly), (h, v, w) => w.IsEditable = !v.IsReadOnly);
-			mapper.MapGtk<IEntry, IEntryHandler, GtkEntry>(nameof(IEntry.MaxLength), (h, v, w) =>
+			mapper.MapGtk<GtkEntry>(nameof(IEntry.TextColor), (h, v, w) => GtkTextStyle.SetColor(w, v.TextColor));
+			mapper.MapGtk<GtkEntry>(nameof(IEntry.Font), (h, v, w) => GtkTextStyle.SetFont(w, v.Font, GtkTextStyle.GetFontManager(h)));
+			mapper.MapGtk<GtkEntry>(nameof(IEntry.CharacterSpacing), (h, v, w) => GtkTextStyle.SetCharacterSpacing(w, v.CharacterSpacing));
+			mapper.MapGtk<GtkEntry>(nameof(IEntry.Background), (h, v, w) => GtkStyle.For(w).SetBackground(v.Background));
+			mapper.MapGtk<GtkEntry>(nameof(IEntry.Placeholder), (h, v, w) => w.PlaceholderText = v.Placeholder ?? string.Empty);
+			mapper.MapGtk<GtkEntry>(nameof(IEntry.PlaceholderColor), (h, v, w) => GtkTextStyle.SetColor(w, v.PlaceholderColor, " placeholder"));
+			mapper.MapGtk<GtkEntry>(nameof(IEntry.IsPassword), (h, v, w) => w.Visibility = !v.IsPassword);
+			mapper.MapGtk<GtkEntry>(nameof(IEntry.IsReadOnly), (h, v, w) => w.IsEditable = !v.IsReadOnly);
+			mapper.MapGtk<GtkEntry>(nameof(IEntry.MaxLength), (h, v, w) =>
 				w.MaxLength = v.MaxLength > 0 && v.MaxLength < ushort.MaxValue ? v.MaxLength : 0);
-			mapper.MapGtk<IEntry, IEntryHandler, GtkEntry>(nameof(IEntry.HorizontalTextAlignment), (h, v, w) =>
+			mapper.MapGtk<GtkEntry>(nameof(IEntry.HorizontalTextAlignment), (h, v, w) =>
 				w.Alignment = GtkTextStyle.ToAlignment(v.HorizontalTextAlignment, v.FlowDirection));
-			mapper.MapGtk<IEntry, IEntryHandler, GtkEntry>(nameof(IEntry.VerticalTextAlignment), (h, v, w) => { /* GtkEntry always centres its text vertically */ });
-			mapper.MapGtk<IEntry, IEntryHandler, GtkEntry>(nameof(IEntry.Keyboard), (h, v, w) => GtkInputExtensions.UpdateKeyboard(w, v.Keyboard, v));
-			mapper.MapGtk<IEntry, IEntryHandler, GtkEntry>(nameof(IEntry.IsTextPredictionEnabled), (h, v, w) => GtkInputExtensions.UpdateKeyboard(w, v.Keyboard, v));
-			mapper.MapGtk<IEntry, IEntryHandler, GtkEntry>(nameof(IEntry.IsSpellCheckEnabled), (h, v, w) => GtkInputExtensions.UpdateKeyboard(w, v.Keyboard, v));
-			mapper.MapGtk<IEntry, IEntryHandler, GtkEntry>(nameof(IEntry.ReturnType), (h, v, w) => { /* no GTK equivalent */ });
-			mapper.MapGtk<IEntry, IEntryHandler, GtkEntry>(nameof(IEntry.ClearButtonVisibility), (h, v, w) => UpdateClearButton(w, v));
-			mapper.MapGtk<IEntry, IEntryHandler, GtkEntry>(nameof(IEntry.CursorPosition), (h, v, w) => Guard(h, () =>
+			mapper.MapGtk<GtkEntry>(nameof(IEntry.VerticalTextAlignment), (h, v, w) => { /* GtkEntry always centres its text vertically */ });
+			mapper.MapGtk<GtkEntry>(nameof(IEntry.Keyboard), (h, v, w) => GtkInputExtensions.UpdateKeyboard(w, v.Keyboard, v));
+			mapper.MapGtk<GtkEntry>(nameof(IEntry.IsTextPredictionEnabled), (h, v, w) => GtkInputExtensions.UpdateKeyboard(w, v.Keyboard, v));
+			mapper.MapGtk<GtkEntry>(nameof(IEntry.IsSpellCheckEnabled), (h, v, w) => GtkInputExtensions.UpdateKeyboard(w, v.Keyboard, v));
+			mapper.MapGtk<GtkEntry>(nameof(IEntry.ReturnType), (h, v, w) => { /* no GTK equivalent */ });
+			mapper.MapGtk<GtkEntry>(nameof(IEntry.ClearButtonVisibility), (h, v, w) => UpdateClearButton(w, v));
+			mapper.MapGtk<GtkEntry>(nameof(IEntry.CursorPosition), (h, v, w) => Guard(h, () =>
 			{
 				int position = Math.Max(0, Math.Min(v.CursorPosition, (w.Text ?? string.Empty).Length));
 				w.Position = position;
 			}));
-			mapper.MapGtk<IEntry, IEntryHandler, GtkEntry>(nameof(IEntry.SelectionLength), (h, v, w) => Guard(h, () =>
+			mapper.MapGtk<GtkEntry>(nameof(IEntry.SelectionLength), (h, v, w) => Guard(h, () =>
 			{
 				int length = (w.Text ?? string.Empty).Length;
 				int start = Math.Max(0, Math.Min(v.CursorPosition, length));

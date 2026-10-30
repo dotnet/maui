@@ -106,9 +106,15 @@ Microsoft.Maui.Gtk.Handlers.MauiGtkEditor.SetPlaceholder(string? text) -> void
 Microsoft.Maui.Gtk.Handlers.MauiGtkEditor.Text.get -> string!
 Microsoft.Maui.Gtk.Handlers.MauiGtkEditor.Text.set -> void
 Microsoft.Maui.Gtk.Handlers.MauiGtkEditor.View.get -> Gtk.TextView!
+Microsoft.Maui.Gtk.Hosting.GtkCommandMapperBuilder<TVirtualView, THandler>
+Microsoft.Maui.Gtk.Hosting.GtkCommandMapperBuilder<TVirtualView, THandler>.Build() -> Microsoft.Maui.CommandMapper<TVirtualView, THandler>!
+Microsoft.Maui.Gtk.Hosting.GtkCommandMapperBuilder<TVirtualView, THandler>.GtkCommandMapperBuilder(Microsoft.Maui.CommandMapper<TVirtualView, THandler>! stock) -> void
+Microsoft.Maui.Gtk.Hosting.GtkCommandMapperBuilder<TVirtualView, THandler>.MapGtk<TWidget>(string! key, System.Action<THandler, TVirtualView, object?, TWidget!>! action, bool callStock = true) -> Microsoft.Maui.Gtk.Hosting.GtkCommandMapperBuilder<TVirtualView, THandler>!
 Microsoft.Maui.Gtk.Hosting.GtkHandlerMap
-Microsoft.Maui.Gtk.Hosting.GtkMapperExtensions
-Microsoft.Maui.Gtk.Hosting.GtkMapperRegistration
+Microsoft.Maui.Gtk.Hosting.GtkMapperBuilder<TVirtualView, THandler>
+Microsoft.Maui.Gtk.Hosting.GtkMapperBuilder<TVirtualView, THandler>.Build() -> Microsoft.Maui.IPropertyMapper<TVirtualView, THandler>!
+Microsoft.Maui.Gtk.Hosting.GtkMapperBuilder<TVirtualView, THandler>.GtkMapperBuilder(Microsoft.Maui.IPropertyMapper<TVirtualView, THandler>! stock) -> void
+Microsoft.Maui.Gtk.Hosting.GtkMapperBuilder<TVirtualView, THandler>.MapGtk<TWidget>(string! key, System.Action<THandler, TVirtualView, TWidget!>! action, bool callStock = true) -> Microsoft.Maui.Gtk.Hosting.GtkMapperBuilder<TVirtualView, THandler>!
 Microsoft.Maui.Gtk.ImageSources.GtkFileImageSourceService
 Microsoft.Maui.Gtk.ImageSources.GtkFileImageSourceService.GtkFileImageSourceService(Microsoft.Extensions.Logging.ILogger<Microsoft.Maui.Gtk.ImageSources.GtkFileImageSourceService!>? logger = null) -> void
 Microsoft.Maui.Gtk.ImageSources.GtkFontImageSourceService
@@ -149,7 +155,15 @@ Microsoft.Maui.Gtk.Platform.GtkViewState.Frame.set -> void
 Microsoft.Maui.Gtk.Platform.GtkViewState.GtkViewState() -> void
 Microsoft.Maui.Gtk.Platform.GtkViewState.HasFrame.get -> bool
 Microsoft.Maui.Gtk.Platform.GtkViewState.HasFrame.set -> void
+Microsoft.Maui.Gtk.Platform.GtkViewState.HasMeasure.get -> bool
+Microsoft.Maui.Gtk.Platform.GtkViewState.HasMeasure.set -> void
 Microsoft.Maui.Gtk.Platform.GtkViewState.HasTransform.get -> bool
+Microsoft.Maui.Gtk.Platform.GtkViewState.HeightForWidth.get -> int
+Microsoft.Maui.Gtk.Platform.GtkViewState.HeightForWidth.set -> void
+Microsoft.Maui.Gtk.Platform.GtkViewState.NaturalHeight.get -> int
+Microsoft.Maui.Gtk.Platform.GtkViewState.NaturalHeight.set -> void
+Microsoft.Maui.Gtk.Platform.GtkViewState.NaturalWidth.get -> int
+Microsoft.Maui.Gtk.Platform.GtkViewState.NaturalWidth.set -> void
 Microsoft.Maui.Gtk.Platform.GtkViewState.Rotation.get -> double
 Microsoft.Maui.Gtk.Platform.GtkViewState.Rotation.set -> void
 Microsoft.Maui.Gtk.Platform.GtkViewState.ScaleX.get -> double
@@ -180,7 +194,10 @@ Microsoft.Maui.Gtk.Platform.MauiGtkPanel.CrossPlatformLayout.get -> Microsoft.Ma
 Microsoft.Maui.Gtk.Platform.MauiGtkPanel.CrossPlatformLayout.set -> void
 Microsoft.Maui.Gtk.Platform.MauiGtkPanel.IndexOfChild(Gtk.Widget! child) -> int
 Microsoft.Maui.Gtk.Platform.MauiGtkPanel.InsertChild(int index, Gtk.Widget! child) -> void
+Microsoft.Maui.Gtk.Platform.MauiGtkPanel.IsMeasuredByMaui.get -> bool
+Microsoft.Maui.Gtk.Platform.MauiGtkPanel.IsMeasuredByMaui.set -> void
 Microsoft.Maui.Gtk.Platform.MauiGtkPanel.MauiGtkPanel() -> void
+Microsoft.Maui.Gtk.Platform.MauiGtkPanel.MeasuredSize.get -> Microsoft.Maui.Graphics.Size?
 Microsoft.Maui.Gtk.Platform.MauiGtkPanel.MinimumHeightFollowsContent.get -> bool
 Microsoft.Maui.Gtk.Platform.MauiGtkPanel.MinimumHeightFollowsContent.set -> void
 Microsoft.Maui.Gtk.Platform.MauiGtkPanel.MinimumWidthFollowsContent.get -> bool
@@ -256,11 +273,6 @@ static Microsoft.Maui.Gtk.Hosting.GtkHandlerMap.Add<TStock, TGtk>() -> void
 static Microsoft.Maui.Gtk.Hosting.GtkHandlerMap.AddDefault(System.Type! virtualViewType, System.Type! gtkHandlerType) -> void
 static Microsoft.Maui.Gtk.Hosting.GtkHandlerMap.Apply(Microsoft.Maui.Hosting.IMauiHandlersCollection! handlers) -> void
 static Microsoft.Maui.Gtk.Hosting.GtkHandlerMap.TryGetGtkHandler(System.Type! stockHandlerType, out System.Type! gtkHandlerType) -> bool
-static Microsoft.Maui.Gtk.Hosting.GtkMapperExtensions.MapGtk<TVirtualView, THandler, TWidget>(this Microsoft.Maui.CommandMapper<TVirtualView, THandler>! mapper, string! key, System.Action<THandler, TVirtualView, object?, TWidget!>! action) -> void
-static Microsoft.Maui.Gtk.Hosting.GtkMapperExtensions.MapGtk<TVirtualView, THandler, TWidget>(this Microsoft.Maui.IPropertyMapper<TVirtualView, THandler>! mapper, string! key, System.Action<THandler, TVirtualView, TWidget!>! action) -> void
-static Microsoft.Maui.Gtk.Hosting.GtkMapperExtensions.ReapplyShadowedPatches() -> void
-static Microsoft.Maui.Gtk.Hosting.GtkMapperRegistration.Apply() -> void
-static Microsoft.Maui.Gtk.Hosting.GtkMapperRegistration.IsApplied.get -> bool
 static Microsoft.Maui.Gtk.ImageSources.GtkImageSourceService<T>.TextureFromBytes(byte[]! data) -> Gdk.Texture?
 static Microsoft.Maui.Gtk.Platform.GtkInputExtensions.ToInputHints(Microsoft.Maui.ITextInput! input) -> Gtk.InputHints
 static Microsoft.Maui.Gtk.Platform.GtkInputExtensions.ToInputPurpose(Microsoft.Maui.Keyboard? keyboard) -> Gtk.InputPurpose

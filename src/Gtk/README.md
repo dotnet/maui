@@ -30,11 +30,11 @@ class LinuxApp : MauiGtkApplication
 builder.UseMauiApp<App>().UseMauiGtkCore();   // UseMauiGtk() (Controls.Gtk) = UseMauiGtkCore + Controls + Essentials
 ```
 
-**Ordering rule.** `UseMauiGtkCore()` / `UseMauiGtk()` must come right after `UseMauiApp<T>()` and before any
-`AppendToMapping`/`PrependToMapping`. The backend patches the stock *static* mappers in place with a GTK branch
-(`MapGtk`, runs only when `PlatformView` is the expected GTK widget); user customisations added afterwards wrap it.
-`UseMauiApp` re-maps those statics on every call, so `UseMauiGtkCore()` re-installs any patch that was shadowed
-(`GtkMapperRegistration.Apply()` is idempotent).
+**Mappers.** Every GTK handler passes its own mapper to the stock base handler: `GtkMapperBuilder` puts the GTK implementation of a key
+in front of the stock mapper (`MapGtk<TWidget>`: runs when the platform view is the expected GTK widget, then the stock mapping of the
+same key runs). Controls' remaps and `AppendToMapping`/`PrependToMapping` customisations of the *stock* mappers therefore keep working, and
+there is no ordering rule between `UseMauiGtkCore()`/`UseMauiGtk()` and `UseMauiApp<T>()`. (Patching the static mappers in place was rejected:
+Controls re-maps them lazily, e.g. `Label`'s static constructor, with `ReplaceMapping`, which discards the previous mapping.)
 
 `MauiGtkApplication.Run(args)` owns a `Gtk.Application` (`startup` builds the app, `activate` creates the first window).
 Pass only GApplication options in `args`. Lifecycle: `ConfigureLifecycleEvents(e => e.AddGtk(g => g.OnStartup(...).OnActivate(...).OnShutdown(...).OnWindowCreated(...)))`.
@@ -44,7 +44,7 @@ Pass only GApplication options in `args`. Lifecycle: `ConfigureLifecycleEvents(e
 | Concern | Implementation |
 |---|---|
 | Handler substitution | `GtkHandlerMap` (stock type -> GTK type); `GtkHandlerMap.Apply` rewrites registered `ServiceDescriptor`s and adds interface defaults. Other assemblies call `GtkHandlerMap.Add`. |
-| Property mapping | `GtkMapperExtensions.MapGtk<TView, THandler, TWidget>`; view-level patches in `GtkViewMappers`. |
+| Property mapping | `GtkMapperBuilder`/`GtkCommandMapperBuilder` per handler (static `GtkMapper`/`GtkCommandMapper`); the shared view properties in `GtkViewMappers`. |
 | Layout | `MauiGtkPanel` (custom `Widget`, `ICrossPlatformLayoutBacking`): `OnMeasure` -> `CrossPlatformMeasure`, `OnSizeAllocate` -> `CrossPlatformArrange`; children allocated inside the parent allocate by `GtkPlatformViewBackend` (Core's `PlatformViewBackend` hook). Minimum size 0 (scroll content: follows content). `MauiGtkRootPanel` asks for 0x0 and measures before arranging. |
 | Container (clip/shadow) | `GtkWrapperView`, a single-child widget set as `ContainerView`. Clip = any `IShape` via `Gsk.Path`; shadow = outset shadow. |
 | Transforms | translation/scale/rotation (+ anchor) become the `Gsk.Transform` of the child allocation (`GtkViewState`). `RotationX/Y` ignored. |

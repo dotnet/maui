@@ -21,6 +21,7 @@ namespace Microsoft.Maui.Gtk.Handlers
 
 		/// <summary>Creates the handler with the stock mappers.</summary>
 		public GtkScrollViewHandler()
+			: base(GtkMapper, GtkCommandMapper)
 		{
 		}
 
@@ -28,7 +29,7 @@ namespace Microsoft.Maui.Gtk.Handlers
 		/// <param name="mapper">The property mapper, or <see langword="null"/> for the stock one.</param>
 		/// <param name="commandMapper">The command mapper, or <see langword="null"/> for the stock one.</param>
 		public GtkScrollViewHandler(IPropertyMapper? mapper, CommandMapper? commandMapper = null)
-			: base(mapper, commandMapper)
+			: base(mapper ?? GtkMapper, commandMapper ?? GtkCommandMapper)
 		{
 		}
 
@@ -76,11 +77,11 @@ namespace Microsoft.Maui.Gtk.Handlers
 
 		void OnScrolled(object? sender, EventArgs e)
 		{
-			if (PlatformView is not GtkScrolledWindow scroller || VirtualView is null)
+			if (((IElementHandler)this).PlatformView is not GtkScrolledWindow scroller || ((IElementHandler)this).VirtualView is not IScrollView view)
 				return;
 
-			VirtualView.HorizontalOffset = scroller.Hadjustment.Value;
-			VirtualView.VerticalOffset = scroller.Vadjustment.Value;
+			view.HorizontalOffset = scroller.Hadjustment.Value;
+			view.VerticalOffset = scroller.Vadjustment.Value;
 		}
 
 		Size ICrossPlatformLayout.CrossPlatformMeasure(double widthConstraint, double heightConstraint)
@@ -112,11 +113,29 @@ namespace Microsoft.Maui.Gtk.Handlers
 		Size ICrossPlatformLayout.CrossPlatformArrange(Rect bounds) =>
 			((ICrossPlatformLayout)VirtualView).CrossPlatformArrange(bounds);
 
-		internal static void ApplyMappers()
-		{
-			var mapper = Mapper;
+		internal static readonly IPropertyMapper<IScrollView, IScrollViewHandler> GtkMapper = CreateMapper();
 
-			mapper.MapGtk<IScrollView, IScrollViewHandler, GtkScrolledWindow>(nameof(IScrollView.Content), (h, v, w) =>
+		internal static readonly CommandMapper<IScrollView, IScrollViewHandler> GtkCommandMapper = CreateCommandMapper();
+
+		static IPropertyMapper<IScrollView, IScrollViewHandler> CreateMapper()
+		{
+			var mapper = new GtkMapperBuilder<IScrollView, IScrollViewHandler>(ScrollViewHandler.Mapper).AddViewMappings();
+			var commands = new GtkCommandMapperBuilder<IScrollView, IScrollViewHandler>(ScrollViewHandler.CommandMapper).AddViewCommands();
+			Configure(mapper, commands);
+			return mapper.Build();
+		}
+
+		static CommandMapper<IScrollView, IScrollViewHandler> CreateCommandMapper()
+		{
+			var mapper = new GtkMapperBuilder<IScrollView, IScrollViewHandler>(ScrollViewHandler.Mapper).AddViewMappings();
+			var commands = new GtkCommandMapperBuilder<IScrollView, IScrollViewHandler>(ScrollViewHandler.CommandMapper).AddViewCommands();
+			Configure(mapper, commands);
+			return commands.Build();
+		}
+
+		static void Configure(GtkMapperBuilder<IScrollView, IScrollViewHandler> mapper, GtkCommandMapperBuilder<IScrollView, IScrollViewHandler> commands)
+		{
+			mapper.MapGtk<GtkScrolledWindow>(nameof(IScrollView.Content), (h, v, w) =>
 			{
 				if (h is not GtkScrollViewHandler handler)
 					return;
@@ -126,14 +145,14 @@ namespace Microsoft.Maui.Gtk.Handlers
 				if (v.PresentedContent is { } content && h.MauiContext is { } context)
 					panel.AddChild((global::Gtk.Widget)content.ToPlatform(context));
 			});
-			mapper.MapGtk<IScrollView, IScrollViewHandler, GtkScrolledWindow>(nameof(IScrollView.Orientation), (h, v, w) => UpdatePolicies(w, v));
-			mapper.MapGtk<IScrollView, IScrollViewHandler, GtkScrolledWindow>(nameof(IScrollView.HorizontalScrollBarVisibility), (h, v, w) => UpdatePolicies(w, v));
-			mapper.MapGtk<IScrollView, IScrollViewHandler, GtkScrolledWindow>(nameof(IScrollView.VerticalScrollBarVisibility), (h, v, w) => UpdatePolicies(w, v));
-			mapper.MapGtk<IScrollView, IScrollViewHandler, GtkScrolledWindow>(nameof(IView.FlowDirection), (h, v, w) =>
+			mapper.MapGtk<GtkScrolledWindow>(nameof(IScrollView.Orientation), (h, v, w) => UpdatePolicies(w, v));
+			mapper.MapGtk<GtkScrolledWindow>(nameof(IScrollView.HorizontalScrollBarVisibility), (h, v, w) => UpdatePolicies(w, v));
+			mapper.MapGtk<GtkScrolledWindow>(nameof(IScrollView.VerticalScrollBarVisibility), (h, v, w) => UpdatePolicies(w, v));
+			mapper.MapGtk<GtkScrolledWindow>(nameof(IView.FlowDirection), (h, v, w) =>
 				w.Direction = v.FlowDirection == FlowDirection.RightToLeft ? global::Gtk.TextDirection.Rtl : global::Gtk.TextDirection.Ltr);
-			mapper.MapGtk<IScrollView, IScrollViewHandler, GtkScrolledWindow>(nameof(IView.IsEnabled), (h, v, w) => w.Sensitive = v.IsEnabled);
+			mapper.MapGtk<GtkScrolledWindow>(nameof(IView.IsEnabled), (h, v, w) => w.Sensitive = v.IsEnabled);
 
-			CommandMapper.MapGtk<IScrollView, IScrollViewHandler, GtkScrolledWindow>(nameof(IScrollView.RequestScrollTo), (h, v, args, w) =>
+			commands.MapGtk<GtkScrolledWindow>(nameof(IScrollView.RequestScrollTo), (h, v, args, w) =>
 			{
 				if (args is not ScrollToRequest request)
 					return;
@@ -142,7 +161,7 @@ namespace Microsoft.Maui.Gtk.Handlers
 				SetOffset(w.Vadjustment, request.VerticalOffset);
 				v.ScrollFinished();
 			});
-			CommandMapper.MapGtk<IScrollView, IScrollViewHandler, GtkScrolledWindow>(nameof(IView.InvalidateMeasure), (h, v, args, w) =>
+			commands.MapGtk<GtkScrolledWindow>(nameof(IView.InvalidateMeasure), (h, v, args, w) =>
 			{
 				w.QueueResize();
 				(h as GtkScrollViewHandler)?._contentPanel?.QueueResize();

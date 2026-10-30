@@ -66,6 +66,7 @@ namespace Microsoft.Maui.Gtk.Handlers
 
 		/// <summary>Creates the handler with the stock mappers.</summary>
 		public GtkButtonHandler()
+			: base(GtkMapper, GtkCommandMapper)
 		{
 		}
 
@@ -73,7 +74,7 @@ namespace Microsoft.Maui.Gtk.Handlers
 		/// <param name="mapper">The property mapper, or <see langword="null"/> for the stock one.</param>
 		/// <param name="commandMapper">The command mapper, or <see langword="null"/> for the stock one.</param>
 		public GtkButtonHandler(IPropertyMapper? mapper, CommandMapper? commandMapper = null)
-			: base(mapper, commandMapper)
+			: base(mapper ?? GtkMapper, commandMapper ?? GtkCommandMapper)
 		{
 		}
 
@@ -117,32 +118,53 @@ namespace Microsoft.Maui.Gtk.Handlers
 			base.DisconnectHandler(platformView);
 		}
 
-		void OnClicked(object? sender, EventArgs e) => VirtualView?.Clicked();
+		// The virtual view is null once the handler disconnected; the generic VirtualView property would throw then.
+		IButton? View => ((IElementHandler)this).VirtualView as IButton;
 
-		void OnPressed(object o, global::Gtk.PressedArgs args) => VirtualView?.Pressed();
+		void OnClicked(object? sender, EventArgs e) => View?.Clicked();
 
-		void OnReleased(object o, global::Gtk.ReleasedArgs args) => VirtualView?.Released();
+		void OnPressed(object o, global::Gtk.PressedArgs args) => View?.Pressed();
 
-		internal static void ApplyMappers()
+		void OnReleased(object o, global::Gtk.ReleasedArgs args) => View?.Released();
+
+		internal static readonly IPropertyMapper<IButton, IButtonHandler> GtkMapper = CreateMapper();
+
+		internal static readonly CommandMapper<IButton, IButtonHandler> GtkCommandMapper = CreateCommandMapper();
+
+		static IPropertyMapper<IButton, IButtonHandler> CreateMapper()
 		{
-			var mapper = Mapper;
+			var mapper = new GtkMapperBuilder<IButton, IButtonHandler>(ButtonHandler.Mapper).AddViewMappings();
+			var commands = new GtkCommandMapperBuilder<IButton, IButtonHandler>(ButtonHandler.CommandMapper).AddViewCommands();
+			Configure(mapper, commands);
+			return mapper.Build();
+		}
 
-			mapper.MapGtk<IButton, IButtonHandler, MauiGtkButton>(nameof(IText.Text), (h, v, w) => w.Text = (v as IText)?.Text ?? string.Empty);
-			mapper.MapGtk<IButton, IButtonHandler, MauiGtkButton>(nameof(ITextStyle.TextColor), (h, v, w) => GtkTextStyle.SetColor(w, (v as ITextStyle)?.TextColor));
-			mapper.MapGtk<IButton, IButtonHandler, MauiGtkButton>(nameof(ITextStyle.CharacterSpacing), (h, v, w) =>
+		static CommandMapper<IButton, IButtonHandler> CreateCommandMapper()
+		{
+			var mapper = new GtkMapperBuilder<IButton, IButtonHandler>(ButtonHandler.Mapper).AddViewMappings();
+			var commands = new GtkCommandMapperBuilder<IButton, IButtonHandler>(ButtonHandler.CommandMapper).AddViewCommands();
+			Configure(mapper, commands);
+			return commands.Build();
+		}
+
+		static void Configure(GtkMapperBuilder<IButton, IButtonHandler> mapper, GtkCommandMapperBuilder<IButton, IButtonHandler> commands)
+		{
+			mapper.MapGtk<MauiGtkButton>(nameof(IText.Text), (h, v, w) => w.Text = (v as IText)?.Text ?? string.Empty);
+			mapper.MapGtk<MauiGtkButton>(nameof(ITextStyle.TextColor), (h, v, w) => GtkTextStyle.SetColor(w, (v as ITextStyle)?.TextColor));
+			mapper.MapGtk<MauiGtkButton>(nameof(ITextStyle.CharacterSpacing), (h, v, w) =>
 				GtkTextStyle.SetCharacterSpacing(w, (v as ITextStyle)?.CharacterSpacing ?? 0));
-			mapper.MapGtk<IButton, IButtonHandler, MauiGtkButton>(nameof(ITextStyle.Font), (h, v, w) =>
+			mapper.MapGtk<MauiGtkButton>(nameof(ITextStyle.Font), (h, v, w) =>
 			{
 				if (v is ITextStyle style)
 					GtkTextStyle.SetFont(w, style.Font, GtkTextStyle.GetFontManager(h));
 			});
-			mapper.MapGtk<IButton, IButtonHandler, MauiGtkButton>(nameof(IButton.Background), (h, v, w) => GtkStyle.For(w).SetBackground(v.Background));
-			mapper.MapGtk<IButton, IButtonHandler, MauiGtkButton>(nameof(IButton.Padding), (h, v, w) => GtkTextStyle.SetPadding(w, v.Padding));
-			mapper.MapGtk<IButton, IButtonHandler, MauiGtkButton>(nameof(IButtonStroke.StrokeThickness), (h, v, w) => UpdateStroke(w, v));
-			mapper.MapGtk<IButton, IButtonHandler, MauiGtkButton>(nameof(IButtonStroke.StrokeColor), (h, v, w) => UpdateStroke(w, v));
-			mapper.MapGtk<IButton, IButtonHandler, MauiGtkButton>(nameof(IButtonStroke.CornerRadius), (h, v, w) =>
+			mapper.MapGtk<MauiGtkButton>(nameof(IButton.Background), (h, v, w) => GtkStyle.For(w).SetBackground(v.Background));
+			mapper.MapGtk<MauiGtkButton>(nameof(IButton.Padding), (h, v, w) => GtkTextStyle.SetPadding(w, v.Padding));
+			mapper.MapGtk<MauiGtkButton>(nameof(IButtonStroke.StrokeThickness), (h, v, w) => UpdateStroke(w, v));
+			mapper.MapGtk<MauiGtkButton>(nameof(IButtonStroke.StrokeColor), (h, v, w) => UpdateStroke(w, v));
+			mapper.MapGtk<MauiGtkButton>(nameof(IButtonStroke.CornerRadius), (h, v, w) =>
 				GtkStyle.For(w).Set("border-radius", v.CornerRadius >= 0 ? v.CornerRadius.ToString(CultureInfo.InvariantCulture) + "px" : null));
-			mapper.MapGtk<IButton, IButtonHandler, MauiGtkButton>(nameof(IImage.Source), (h, v, w) =>
+			mapper.MapGtk<MauiGtkButton>(nameof(IImage.Source), (h, v, w) =>
 			{
 				if (h is GtkButtonHandler handler)
 					handler.UpdateImage(w, v as IImageSourcePart);

@@ -23,11 +23,11 @@ namespace Microsoft.Maui.Hosting
 		/// services and the GTK handlers (by rewriting the registrations of the stock handlers).
 		/// </summary>
 		/// <remarks>
-		/// <para><b>Ordering rule:</b> call it immediately after <c>UseMauiApp&lt;T&gt;()</c> and before any <c>AppendToMapping</c> /
-		/// <c>PrependToMapping</c> customisation. The backend patches the stock static property mappers in place with a GTK branch;
-		/// customisations added afterwards then wrap the GTK implementation, while customisations added before are shadowed
-		/// on GTK. Handler registrations are rewritten when the app is built, so registrations made later by
-		/// <c>ConfigureMauiHandlers</c> are also covered.</para>
+		/// <para><b>Mappers.</b> Each GTK handler carries its own property mapper in front of the stock one (see <see cref="GtkMapperBuilder{TVirtualView, THandler}"/>):
+		/// the GTK implementation runs first, then the stock mapping of the same key, so Controls' remaps and
+		/// <c>AppendToMapping</c>/<c>PrependToMapping</c> customisations of the stock mappers keep working, in whatever order they were registered.
+		/// There is no ordering rule between this call and <c>UseMauiApp&lt;T&gt;()</c>. Handler registrations are rewritten when the handler
+		/// collection is built, so <c>ConfigureMauiHandlers</c> registrations made later are also covered.</para>
 		/// <para>Apps that use Controls call <c>UseMauiGtk()</c> from <c>Microsoft.Maui.Controls.Gtk</c> instead, which calls this
 		/// method and adds the Controls and Essentials registrations.</para>
 		/// </remarks>
@@ -38,7 +38,6 @@ namespace Microsoft.Maui.Hosting
 				throw new ArgumentNullException(nameof(builder));
 
 			GtkRuntime.EnsureInitialized();
-			GtkMapperRegistration.Apply();
 			GtkPlatformViewBackend.Install();
 
 			var services = builder.Services;

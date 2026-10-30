@@ -47,6 +47,19 @@ namespace Microsoft.Maui.Gtk.Platform
 			bool widthExplicit = IsExplicitSet(view.Width);
 			bool heightExplicit = IsExplicitSet(view.Height);
 
+			// Layout panels are measured by MAUI itself, with the constraints of this call (see MauiGtkPanel.IsMeasuredByMaui).
+			if (handler.PlatformView is MauiGtkPanel { IsMeasuredByMaui: true, CrossPlatformLayout: { } layout } panel)
+			{
+				var measured = layout.CrossPlatformMeasure(
+					widthExplicit ? view.Width : widthConstraint,
+					heightExplicit ? view.Height : heightConstraint);
+				panel.UpdateMeasuredSize(measured);
+
+				return new Size(
+					ResolveConstraints(measured.Width, view.Width, view.MinimumWidth, view.MaximumWidth),
+					ResolveConstraints(measured.Height, view.Height, view.MinimumHeight, view.MaximumHeight));
+			}
+
 			// GTK is height-for-width: settle the width first, then ask for the height at that width.
 			widget.Measure(global::Gtk.Orientation.Horizontal, -1, out int minWidth, out int naturalWidth, out _, out _);
 
@@ -59,6 +72,21 @@ namespace Microsoft.Maui.Gtk.Platform
 			widget.Measure(global::Gtk.Orientation.Vertical, GtkInterop.ToPixels(width), out int minHeight, out int naturalHeight, out _, out _);
 
 			double height = heightExplicit ? view.Height : Math.Max(minHeight, naturalHeight);
+
+			var state = GtkViewState.For(widget);
+			state.HasMeasure = true;
+			state.NaturalWidth = naturalWidth;
+			state.HeightForWidth = GtkInterop.ToPixels(width);
+			state.NaturalHeight = naturalHeight;
+
+			// A scrolling viewport never asks for more than it is offered (the content scrolls), like a ScrollViewer on Windows.
+			if (widget is global::Gtk.ScrolledWindow)
+			{
+				if (!widthExplicit && !double.IsInfinity(widthConstraint))
+					width = Math.Max(minWidth, Math.Min(width, widthConstraint));
+				if (!heightExplicit && !double.IsInfinity(heightConstraint))
+					height = Math.Max(minHeight, Math.Min(height, heightConstraint));
+			}
 
 			return new Size(
 				ResolveConstraints(width, view.Width, view.MinimumWidth, view.MaximumWidth),
@@ -76,9 +104,33 @@ namespace Microsoft.Maui.Gtk.Platform
 			state.Frame = frame;
 			state.HasFrame = true;
 
+			InvalidateIfNativeSizeChanged(handler, widget, state);
 			Allocate(widget, state);
 
 			handler.Invoke(nameof(IView.Frame), frame);
+		}
+
+		/// <summary>
+		/// GTK changes the natural size of a widget by itself (a CSS font validated by the frame clock, text typed into an editor,
+		/// an image that finished loading) and MAUI would keep using its cached measure. Like the other platforms' "platform size
+		/// changed" hook, this compares GTK's size with the one MAUI measured and invalidates the virtual view when they differ,
+		/// so the next layout pass measures again. Layout panels are measured by MAUI itself and need no check.
+		/// </summary>
+		static void InvalidateIfNativeSizeChanged(IViewHandler handler, global::Gtk.Widget widget, GtkViewState state)
+		{
+			if (!state.HasMeasure || !widget.Visible || handler.PlatformView is MauiGtkPanel { IsMeasuredByMaui: true } || handler.PlatformView is global::Gtk.ScrolledWindow)
+				return;
+
+			widget.Measure(global::Gtk.Orientation.Horizontal, -1, out _, out int naturalWidth, out _, out _);
+			widget.Measure(global::Gtk.Orientation.Vertical, state.HeightForWidth, out _, out int naturalHeight, out _, out _);
+
+			if (naturalWidth == state.NaturalWidth && naturalHeight == state.NaturalHeight)
+				return;
+
+			// Remember the new size first: the invalidation re-measures and must not trigger itself again.
+			state.NaturalWidth = naturalWidth;
+			state.NaturalHeight = naturalHeight;
+			handler.VirtualView?.InvalidateMeasure();
 		}
 
 		/// <summary>

@@ -167,6 +167,7 @@ namespace Microsoft.Maui.Gtk.Handlers
 	{
 		/// <summary>Creates the handler with the stock mappers.</summary>
 		public GtkBorderHandler()
+			: base(GtkMapper, GtkCommandMapper)
 		{
 		}
 
@@ -174,12 +175,12 @@ namespace Microsoft.Maui.Gtk.Handlers
 		/// <param name="mapper">The property mapper, or <see langword="null"/> for the stock one.</param>
 		/// <param name="commandMapper">The command mapper, or <see langword="null"/> for the stock one.</param>
 		public GtkBorderHandler(IPropertyMapper? mapper, CommandMapper? commandMapper = null)
-			: base(mapper, commandMapper)
+			: base(mapper ?? GtkMapper, commandMapper ?? GtkCommandMapper)
 		{
 		}
 
 		/// <inheritdoc/>
-		protected override object CreatePlatformView() => new MauiGtkBorder { CrossPlatformLayout = VirtualView };
+		protected override object CreatePlatformView() => new MauiGtkBorder { CrossPlatformLayout = VirtualView, IsMeasuredByMaui = true };
 
 		/// <inheritdoc/>
 		protected override void ConnectHandler(object platformView)
@@ -195,22 +196,40 @@ namespace Microsoft.Maui.Gtk.Handlers
 			base.DisconnectHandler(platformView);
 		}
 
-		internal static void ApplyMappers()
+		internal static readonly IPropertyMapper<IBorderView, IBorderHandler> GtkMapper = CreateMapper();
+
+		internal static readonly CommandMapper<IBorderView, BorderHandler> GtkCommandMapper = CreateCommandMapper();
+
+		static IPropertyMapper<IBorderView, IBorderHandler> CreateMapper()
 		{
-			var mapper = Mapper;
+			var mapper = new GtkMapperBuilder<IBorderView, IBorderHandler>(BorderHandler.Mapper).AddViewMappings();
+			var commands = new GtkCommandMapperBuilder<IBorderView, BorderHandler>(BorderHandler.CommandMapper).AddViewCommands();
+			Configure(mapper, commands);
+			return mapper.Build();
+		}
 
-			mapper.MapGtk<IBorderView, IBorderHandler, MauiGtkBorder>(nameof(IBorderView.Content), (h, v, w) => GtkContainerBehavior.UpdateContent(h, v, w));
-			mapper.MapGtk<IBorderView, IBorderHandler, MauiGtkBorder>(nameof(IBorderView.Background), (h, v, w) => w.Fill = v.Background);
-			mapper.MapGtk<IBorderView, IBorderHandler, MauiGtkBorder>(nameof(IBorderView.Shape), (h, v, w) => w.Shape = v.Shape);
-			mapper.MapGtk<IBorderView, IBorderHandler, MauiGtkBorder>(nameof(IBorderView.Stroke), (h, v, w) => w.Stroke = v.Stroke);
-			mapper.MapGtk<IBorderView, IBorderHandler, MauiGtkBorder>(nameof(IBorderView.StrokeThickness), (h, v, w) => w.StrokeThickness = v.StrokeThickness);
-			mapper.MapGtk<IBorderView, IBorderHandler, MauiGtkBorder>(nameof(IBorderView.StrokeLineCap), (h, v, w) => { w.StrokeLineCap = v.StrokeLineCap; w.QueueDraw(); });
-			mapper.MapGtk<IBorderView, IBorderHandler, MauiGtkBorder>(nameof(IBorderView.StrokeLineJoin), (h, v, w) => { w.StrokeLineJoin = v.StrokeLineJoin; w.QueueDraw(); });
-			mapper.MapGtk<IBorderView, IBorderHandler, MauiGtkBorder>(nameof(IBorderView.StrokeDashPattern), (h, v, w) => { w.StrokeDashPattern = v.StrokeDashPattern; w.QueueDraw(); });
-			mapper.MapGtk<IBorderView, IBorderHandler, MauiGtkBorder>(nameof(IBorderView.StrokeDashOffset), (h, v, w) => { w.StrokeDashOffset = v.StrokeDashOffset; w.QueueDraw(); });
-			mapper.MapGtk<IBorderView, IBorderHandler, MauiGtkBorder>(nameof(IBorderView.StrokeMiterLimit), (h, v, w) => { w.StrokeMiterLimit = v.StrokeMiterLimit; w.QueueDraw(); });
+		static CommandMapper<IBorderView, BorderHandler> CreateCommandMapper()
+		{
+			var mapper = new GtkMapperBuilder<IBorderView, IBorderHandler>(BorderHandler.Mapper).AddViewMappings();
+			var commands = new GtkCommandMapperBuilder<IBorderView, BorderHandler>(BorderHandler.CommandMapper).AddViewCommands();
+			Configure(mapper, commands);
+			return commands.Build();
+		}
 
-			BorderHandler.CommandMapper.MapGtk<IBorderView, BorderHandler, MauiGtkBorder>(nameof(IView.InvalidateMeasure), (h, v, args, w) => w.QueueResize());
+		static void Configure(GtkMapperBuilder<IBorderView, IBorderHandler> mapper, GtkCommandMapperBuilder<IBorderView, BorderHandler> commands)
+		{
+			mapper.MapGtk<MauiGtkBorder>(nameof(IBorderView.Content), (h, v, w) => GtkContainerBehavior.UpdateContent(h, v, w));
+			mapper.MapGtk<MauiGtkBorder>(nameof(IBorderView.Background), (h, v, w) => w.Fill = v.Background);
+			mapper.MapGtk<MauiGtkBorder>(nameof(IBorderView.Shape), (h, v, w) => w.Shape = v.Shape);
+			mapper.MapGtk<MauiGtkBorder>(nameof(IBorderView.Stroke), (h, v, w) => w.Stroke = v.Stroke);
+			mapper.MapGtk<MauiGtkBorder>(nameof(IBorderView.StrokeThickness), (h, v, w) => w.StrokeThickness = v.StrokeThickness);
+			mapper.MapGtk<MauiGtkBorder>(nameof(IBorderView.StrokeLineCap), (h, v, w) => { w.StrokeLineCap = v.StrokeLineCap; w.QueueDraw(); });
+			mapper.MapGtk<MauiGtkBorder>(nameof(IBorderView.StrokeLineJoin), (h, v, w) => { w.StrokeLineJoin = v.StrokeLineJoin; w.QueueDraw(); });
+			mapper.MapGtk<MauiGtkBorder>(nameof(IBorderView.StrokeDashPattern), (h, v, w) => { w.StrokeDashPattern = v.StrokeDashPattern; w.QueueDraw(); });
+			mapper.MapGtk<MauiGtkBorder>(nameof(IBorderView.StrokeDashOffset), (h, v, w) => { w.StrokeDashOffset = v.StrokeDashOffset; w.QueueDraw(); });
+			mapper.MapGtk<MauiGtkBorder>(nameof(IBorderView.StrokeMiterLimit), (h, v, w) => { w.StrokeMiterLimit = v.StrokeMiterLimit; w.QueueDraw(); });
+
+			commands.MapGtk<MauiGtkBorder>(nameof(IView.InvalidateMeasure), (h, v, args, w) => w.QueueResize());
 		}
 	}
 }

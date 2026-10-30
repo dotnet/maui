@@ -78,6 +78,7 @@ namespace Microsoft.Maui.Gtk.Handlers
 
 		/// <summary>Creates the handler with the stock mappers.</summary>
 		public GtkEditorHandler()
+			: base(GtkMapper, GtkCommandMapper)
 		{
 		}
 
@@ -85,7 +86,7 @@ namespace Microsoft.Maui.Gtk.Handlers
 		/// <param name="mapper">The property mapper, or <see langword="null"/> for the stock one.</param>
 		/// <param name="commandMapper">The command mapper, or <see langword="null"/> for the stock one.</param>
 		public GtkEditorHandler(IPropertyMapper? mapper, CommandMapper? commandMapper = null)
-			: base(mapper, commandMapper)
+			: base(mapper ?? GtkMapper, commandMapper ?? GtkCommandMapper)
 		{
 		}
 
@@ -115,15 +116,17 @@ namespace Microsoft.Maui.Gtk.Handlers
 			base.DisconnectHandler(platformView);
 		}
 
-		void OnFocusLeave(object? sender, EventArgs e) => VirtualView?.Completed();
+		IEditor? View => ((IElementHandler)this).VirtualView as IEditor;
+
+		void OnFocusLeave(object? sender, EventArgs e) => View?.Completed();
 
 		void OnChanged(object? sender, EventArgs e)
 		{
-			if (_updatingFromVirtualView || PlatformView is not MauiGtkEditor editor || VirtualView is null)
+			if (_updatingFromVirtualView || ((IElementHandler)this).PlatformView is not MauiGtkEditor editor || View is not { } view)
 				return;
 
 			var text = editor.Text;
-			int max = VirtualView.MaxLength;
+			int max = view.MaxLength;
 			if (max > 0 && max < int.MaxValue && text.Length > max)
 			{
 				text = text.Substring(0, max);
@@ -138,28 +141,46 @@ namespace Microsoft.Maui.Gtk.Handlers
 				}
 			}
 
-			if (!string.Equals(VirtualView.Text, text, StringComparison.Ordinal))
-				VirtualView.Text = text;
+			if (!string.Equals(view.Text, text, StringComparison.Ordinal))
+				view.Text = text;
 		}
 
-		internal static void ApplyMappers()
-		{
-			var mapper = Mapper;
+		internal static readonly IPropertyMapper<IEditor, IEditorHandler> GtkMapper = CreateMapper();
 
-			mapper.MapGtk<IEditor, IEditorHandler, MauiGtkEditor>(nameof(IEditor.Text), (h, v, w) => Guard(h, () => w.Text = v.Text ?? string.Empty));
-			mapper.MapGtk<IEditor, IEditorHandler, MauiGtkEditor>(nameof(IEditor.TextColor), (h, v, w) => GtkTextStyle.SetColor(w.View, v.TextColor));
-			mapper.MapGtk<IEditor, IEditorHandler, MauiGtkEditor>(nameof(IEditor.Font), (h, v, w) =>
+		internal static readonly CommandMapper<IEditor, IEditorHandler> GtkCommandMapper = CreateCommandMapper();
+
+		static IPropertyMapper<IEditor, IEditorHandler> CreateMapper()
+		{
+			var mapper = new GtkMapperBuilder<IEditor, IEditorHandler>(EditorHandler.Mapper).AddViewMappings();
+			var commands = new GtkCommandMapperBuilder<IEditor, IEditorHandler>(EditorHandler.CommandMapper).AddViewCommands();
+			Configure(mapper, commands);
+			return mapper.Build();
+		}
+
+		static CommandMapper<IEditor, IEditorHandler> CreateCommandMapper()
+		{
+			var mapper = new GtkMapperBuilder<IEditor, IEditorHandler>(EditorHandler.Mapper).AddViewMappings();
+			var commands = new GtkCommandMapperBuilder<IEditor, IEditorHandler>(EditorHandler.CommandMapper).AddViewCommands();
+			Configure(mapper, commands);
+			return commands.Build();
+		}
+
+		static void Configure(GtkMapperBuilder<IEditor, IEditorHandler> mapper, GtkCommandMapperBuilder<IEditor, IEditorHandler> commands)
+		{
+			mapper.MapGtk<MauiGtkEditor>(nameof(IEditor.Text), (h, v, w) => Guard(h, () => w.Text = v.Text ?? string.Empty));
+			mapper.MapGtk<MauiGtkEditor>(nameof(IEditor.TextColor), (h, v, w) => GtkTextStyle.SetColor(w.View, v.TextColor));
+			mapper.MapGtk<MauiGtkEditor>(nameof(IEditor.Font), (h, v, w) =>
 			{
 				var fonts = GtkTextStyle.GetFontManager(h);
 				GtkTextStyle.SetFont(w.View, v.Font, fonts);
 				GtkTextStyle.SetFont(w.PlaceholderLabel, v.Font, fonts);
 			});
-			mapper.MapGtk<IEditor, IEditorHandler, MauiGtkEditor>(nameof(IEditor.CharacterSpacing), (h, v, w) => GtkTextStyle.SetCharacterSpacing(w.View, v.CharacterSpacing));
-			mapper.MapGtk<IEditor, IEditorHandler, MauiGtkEditor>(nameof(IEditor.Background), (h, v, w) => GtkStyle.For(w.View).SetBackground(v.Background, " text"));
-			mapper.MapGtk<IEditor, IEditorHandler, MauiGtkEditor>(nameof(IEditor.Placeholder), (h, v, w) => w.SetPlaceholder(v.Placeholder));
-			mapper.MapGtk<IEditor, IEditorHandler, MauiGtkEditor>(nameof(IEditor.PlaceholderColor), (h, v, w) => GtkTextStyle.SetColor(w.PlaceholderLabel, v.PlaceholderColor));
-			mapper.MapGtk<IEditor, IEditorHandler, MauiGtkEditor>(nameof(IEditor.IsReadOnly), (h, v, w) => w.View.Editable = !v.IsReadOnly);
-			mapper.MapGtk<IEditor, IEditorHandler, MauiGtkEditor>(nameof(IEditor.MaxLength), (h, v, w) =>
+			mapper.MapGtk<MauiGtkEditor>(nameof(IEditor.CharacterSpacing), (h, v, w) => GtkTextStyle.SetCharacterSpacing(w.View, v.CharacterSpacing));
+			mapper.MapGtk<MauiGtkEditor>(nameof(IEditor.Background), (h, v, w) => GtkStyle.For(w.View).SetBackground(v.Background, " text"));
+			mapper.MapGtk<MauiGtkEditor>(nameof(IEditor.Placeholder), (h, v, w) => w.SetPlaceholder(v.Placeholder));
+			mapper.MapGtk<MauiGtkEditor>(nameof(IEditor.PlaceholderColor), (h, v, w) => GtkTextStyle.SetColor(w.PlaceholderLabel, v.PlaceholderColor));
+			mapper.MapGtk<MauiGtkEditor>(nameof(IEditor.IsReadOnly), (h, v, w) => w.View.Editable = !v.IsReadOnly);
+			mapper.MapGtk<MauiGtkEditor>(nameof(IEditor.MaxLength), (h, v, w) =>
 			{
 				// Truncate the virtual view's text (the Text mapping then updates the widget); never push the widget's text back.
 				int max = v.MaxLength;
@@ -167,19 +188,19 @@ namespace Microsoft.Maui.Gtk.Handlers
 				if (max >= 0 && max < int.MaxValue && text is not null && text.Length > max)
 					v.Text = text.Substring(0, max);
 			});
-			mapper.MapGtk<IEditor, IEditorHandler, MauiGtkEditor>(nameof(IEditor.HorizontalTextAlignment), (h, v, w) =>
+			mapper.MapGtk<MauiGtkEditor>(nameof(IEditor.HorizontalTextAlignment), (h, v, w) =>
 				w.View.Justification = v.HorizontalTextAlignment switch
 				{
 					TextAlignment.Center => global::Gtk.Justification.Center,
 					TextAlignment.End => global::Gtk.Justification.Right,
 					_ => global::Gtk.Justification.Left,
 				});
-			mapper.MapGtk<IEditor, IEditorHandler, MauiGtkEditor>(nameof(IEditor.VerticalTextAlignment), (h, v, w) => { /* the text view fills its allocation from the top */ });
-			mapper.MapGtk<IEditor, IEditorHandler, MauiGtkEditor>(nameof(IEditor.Keyboard), (h, v, w) => GtkInputExtensions.UpdateKeyboard(w.View, v.Keyboard, v));
-			mapper.MapGtk<IEditor, IEditorHandler, MauiGtkEditor>(nameof(IEditor.IsTextPredictionEnabled), (h, v, w) => GtkInputExtensions.UpdateKeyboard(w.View, v.Keyboard, v));
-			mapper.MapGtk<IEditor, IEditorHandler, MauiGtkEditor>(nameof(IEditor.IsSpellCheckEnabled), (h, v, w) => GtkInputExtensions.UpdateKeyboard(w.View, v.Keyboard, v));
-			mapper.MapGtk<IEditor, IEditorHandler, MauiGtkEditor>(nameof(IEditor.CursorPosition), (h, v, w) => Guard(h, () => UpdateSelection(w, v)));
-			mapper.MapGtk<IEditor, IEditorHandler, MauiGtkEditor>(nameof(IEditor.SelectionLength), (h, v, w) => Guard(h, () => UpdateSelection(w, v)));
+			mapper.MapGtk<MauiGtkEditor>(nameof(IEditor.VerticalTextAlignment), (h, v, w) => { /* the text view fills its allocation from the top */ });
+			mapper.MapGtk<MauiGtkEditor>(nameof(IEditor.Keyboard), (h, v, w) => GtkInputExtensions.UpdateKeyboard(w.View, v.Keyboard, v));
+			mapper.MapGtk<MauiGtkEditor>(nameof(IEditor.IsTextPredictionEnabled), (h, v, w) => GtkInputExtensions.UpdateKeyboard(w.View, v.Keyboard, v));
+			mapper.MapGtk<MauiGtkEditor>(nameof(IEditor.IsSpellCheckEnabled), (h, v, w) => GtkInputExtensions.UpdateKeyboard(w.View, v.Keyboard, v));
+			mapper.MapGtk<MauiGtkEditor>(nameof(IEditor.CursorPosition), (h, v, w) => Guard(h, () => UpdateSelection(w, v)));
+			mapper.MapGtk<MauiGtkEditor>(nameof(IEditor.SelectionLength), (h, v, w) => Guard(h, () => UpdateSelection(w, v)));
 		}
 
 		static void UpdateSelection(MauiGtkEditor editor, IEditor view)

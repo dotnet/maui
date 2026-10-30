@@ -14,6 +14,7 @@ namespace Microsoft.Maui.Gtk.Handlers
 	{
 		/// <summary>Creates the handler with the stock mappers.</summary>
 		public GtkContentViewHandler()
+			: base(GtkMapper, GtkCommandMapper)
 		{
 		}
 
@@ -21,12 +22,12 @@ namespace Microsoft.Maui.Gtk.Handlers
 		/// <param name="mapper">The property mapper, or <see langword="null"/> for the stock one.</param>
 		/// <param name="commandMapper">The command mapper, or <see langword="null"/> for the stock one.</param>
 		public GtkContentViewHandler(IPropertyMapper? mapper, CommandMapper? commandMapper = null)
-			: base(mapper, commandMapper)
+			: base(mapper ?? GtkMapper, commandMapper ?? GtkCommandMapper)
 		{
 		}
 
 		/// <inheritdoc/>
-		protected override object CreatePlatformView() => new MauiGtkPanel { CrossPlatformLayout = VirtualView };
+		protected override object CreatePlatformView() => new MauiGtkPanel { CrossPlatformLayout = VirtualView, IsMeasuredByMaui = true };
 
 		/// <inheritdoc/>
 		protected override void ConnectHandler(object platformView)
@@ -42,11 +43,14 @@ namespace Microsoft.Maui.Gtk.Handlers
 			base.DisconnectHandler(platformView);
 		}
 
-		internal static void ApplyMappers()
-		{
-			ContentViewHandler.Mapper.MapGtk<IContentView, IContentViewHandler, MauiGtkPanel>(
-				nameof(IContentView.Content), (h, v, panel) => GtkContainerBehavior.UpdateContent(h, v, panel));
-		}
+		internal static readonly IPropertyMapper<IContentView, IContentViewHandler> GtkMapper =
+			new GtkMapperBuilder<IContentView, IContentViewHandler>(ContentViewHandler.Mapper)
+				.AddViewMappings()
+				.MapGtk<MauiGtkPanel>(nameof(IContentView.Content), (h, v, panel) => GtkContainerBehavior.UpdateContent(h, v, panel))
+				.Build();
+
+		internal static readonly CommandMapper<IContentView, IContentViewHandler> GtkCommandMapper =
+			new GtkCommandMapperBuilder<IContentView, IContentViewHandler>(ContentViewHandler.CommandMapper).AddViewCommands().Build();
 	}
 
 	/// <summary>
@@ -56,6 +60,7 @@ namespace Microsoft.Maui.Gtk.Handlers
 	{
 		/// <summary>Creates the handler with the stock mappers.</summary>
 		public GtkPageHandler()
+			: base(GtkMapper, GtkCommandMapper)
 		{
 		}
 
@@ -63,12 +68,12 @@ namespace Microsoft.Maui.Gtk.Handlers
 		/// <param name="mapper">The property mapper, or <see langword="null"/> for the stock one.</param>
 		/// <param name="commandMapper">The command mapper, or <see langword="null"/> for the stock one.</param>
 		public GtkPageHandler(IPropertyMapper? mapper, CommandMapper? commandMapper = null)
-			: base(mapper, commandMapper)
+			: base(mapper ?? GtkMapper, commandMapper ?? GtkCommandMapper)
 		{
 		}
 
 		/// <inheritdoc/>
-		protected override object CreatePlatformView() => new MauiGtkPanel { CrossPlatformLayout = VirtualView };
+		protected override object CreatePlatformView() => new MauiGtkPanel { CrossPlatformLayout = VirtualView, IsMeasuredByMaui = true };
 
 		/// <inheritdoc/>
 		protected override void ConnectHandler(object platformView)
@@ -84,11 +89,16 @@ namespace Microsoft.Maui.Gtk.Handlers
 			base.DisconnectHandler(platformView);
 		}
 
-		internal static void ApplyMappers()
-		{
-			// The window title is owned by IWindow.Title; the page title is surfaced by a toolbar (Controls backend).
-			PageHandler.Mapper.MapGtk<IContentView, IPageHandler, MauiGtkPanel>(nameof(ITitledElement.Title), (h, v, panel) => { });
-		}
+		internal static readonly IPropertyMapper<IContentView, IPageHandler> GtkMapper =
+			new GtkMapperBuilder<IContentView, IPageHandler>(PageHandler.Mapper)
+				.AddViewMappings()
+				.MapGtk<MauiGtkPanel>(nameof(IContentView.Content), (h, v, panel) => GtkContainerBehavior.UpdateContent(h, v, panel))
+				// The window title is owned by IWindow.Title; the page title is surfaced by a toolbar (Controls backend).
+				.MapGtk<MauiGtkPanel>(nameof(ITitledElement.Title), (h, v, panel) => { })
+				.Build();
+
+		internal static readonly CommandMapper<IContentView, IPageHandler> GtkCommandMapper =
+			new GtkCommandMapperBuilder<IContentView, IPageHandler>(PageHandler.CommandMapper).AddViewCommands().Build();
 	}
 
 	/// <summary>
@@ -102,6 +112,7 @@ namespace Microsoft.Maui.Gtk.Handlers
 	{
 		/// <summary>Creates the handler with the stock mappers.</summary>
 		public GtkLayoutHandler()
+			: base(GtkMapper, GtkCommandMapper)
 		{
 		}
 
@@ -109,7 +120,7 @@ namespace Microsoft.Maui.Gtk.Handlers
 		/// <param name="mapper">The property mapper, or <see langword="null"/> for the stock one.</param>
 		/// <param name="commandMapper">The command mapper, or <see langword="null"/> for the stock one.</param>
 		public GtkLayoutHandler(IPropertyMapper? mapper, CommandMapper? commandMapper = null)
-			: base(mapper, commandMapper)
+			: base(mapper ?? GtkMapper, commandMapper ?? GtkCommandMapper)
 		{
 		}
 
@@ -121,7 +132,7 @@ namespace Microsoft.Maui.Gtk.Handlers
 			if (VirtualView is null)
 				throw new InvalidOperationException($"{nameof(VirtualView)} must be set to create a layout panel.");
 
-			return new MauiGtkPanel { CrossPlatformLayout = VirtualView };
+			return new MauiGtkPanel { CrossPlatformLayout = VirtualView, IsMeasuredByMaui = true };
 		}
 
 		/// <inheritdoc/>
@@ -196,13 +207,16 @@ namespace Microsoft.Maui.Gtk.Handlers
 			}
 		}
 
-		internal static void ApplyMappers()
-		{
-			LayoutHandler.Mapper.MapGtk<ILayout, ILayoutHandler, MauiGtkPanel>(nameof(ILayout.Background),
-				(h, v, panel) => GtkStyle.For(panel).SetBackground(v.Background));
-			LayoutHandler.Mapper.MapGtk<ILayout, ILayoutHandler, MauiGtkPanel>(nameof(ILayout.ClipsToBounds),
-				(h, v, panel) => panel.ClipsToBounds = v.ClipsToBounds);
-		}
+		internal static readonly IPropertyMapper<ILayout, ILayoutHandler> GtkMapper =
+			new GtkMapperBuilder<ILayout, ILayoutHandler>(LayoutHandler.Mapper)
+				.AddViewMappings()
+				// The stock layout background mapping throws on the platform-less assemblies, so it is not chained.
+				.MapGtk<MauiGtkPanel>(nameof(ILayout.Background), (h, v, panel) => GtkStyle.For(panel).SetBackground(v.Background), callStock: false)
+				.MapGtk<MauiGtkPanel>(nameof(ILayout.ClipsToBounds), (h, v, panel) => panel.ClipsToBounds = v.ClipsToBounds)
+				.Build();
+
+		internal static readonly CommandMapper<ILayout, ILayoutHandler> GtkCommandMapper =
+			new GtkCommandMapperBuilder<ILayout, ILayoutHandler>(LayoutHandler.CommandMapper).AddViewCommands().Build();
 	}
 
 	static class GtkContainerBehavior

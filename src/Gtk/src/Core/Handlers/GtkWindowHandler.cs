@@ -24,9 +24,13 @@ namespace Microsoft.Maui.Gtk.Handlers
 
 		MauiGtkRootPanel? _root;
 		bool _created;
+		bool _resumed;
+		bool _activated;
+		bool _destroyed;
 
 		/// <summary>Creates the handler with the stock mappers.</summary>
 		public GtkWindowHandler()
+			: base(GtkMapper, GtkCommandMapper)
 		{
 		}
 
@@ -34,7 +38,7 @@ namespace Microsoft.Maui.Gtk.Handlers
 		/// <param name="mapper">The property mapper, or <see langword="null"/> for the stock one.</param>
 		/// <param name="commandMapper">The command mapper, or <see langword="null"/> for the stock one.</param>
 		public GtkWindowHandler(IPropertyMapper? mapper, CommandMapper? commandMapper = null)
-			: base(mapper, commandMapper)
+			: base(mapper ?? GtkMapper, commandMapper ?? GtkCommandMapper)
 		{
 		}
 
@@ -64,7 +68,7 @@ namespace Microsoft.Maui.Gtk.Handlers
 			if (!_created)
 			{
 				_created = true;
-				VirtualView?.Created();
+				View?.Created();
 			}
 		}
 
@@ -86,22 +90,62 @@ namespace Microsoft.Maui.Gtk.Handlers
 
 		void OnCloseRequest(object o, global::Gtk.CloseRequestArgs args)
 		{
-			VirtualView?.Destroying();
+			// The virtual window throws when it is destroyed twice (a hide-on-close window can be asked repeatedly).
+			if (!_destroyed && View is { } view)
+			{
+				_destroyed = true;
+
+				if (_activated)
+				{
+					_activated = false;
+					view.Deactivated();
+				}
+
+				view.Destroying();
+			}
+
 			args.RetVal = false;
 		}
 
 		void OnIsActiveChanged(object o, GLib.NotifyArgs args)
 		{
-			if (PlatformView is not GtkWindow window || VirtualView is null)
+			if (((IElementHandler)this).PlatformView is not GtkWindow window || View is not { } view)
 				return;
 
+			// The virtual window requires Resumed before the first Activated and strictly alternating Activated/Deactivated:
+			// is-active also notifies without changing value, so only transitions are forwarded.
 			if (window.IsActive)
-				VirtualView.Activated();
-			else
-				VirtualView.Deactivated();
+			{
+				if (!_resumed)
+				{
+					_resumed = true;
+					view.Resumed();
+				}
+
+				if (!_activated)
+				{
+					_activated = true;
+					view.Activated();
+				}
+			}
+			else if (_activated)
+			{
+				_activated = false;
+				view.Deactivated();
+			}
 		}
 
-		void OnRootSizeChanged(int width, int height) => VirtualView?.FrameChanged(new Rect(0, 0, width, height));
+		// The virtual view is null once the handler disconnected; the generic VirtualView property would throw then.
+		IWindow? View => ((IElementHandler)this).VirtualView as IWindow;
+
+		void OnRootSizeChanged(int width, int height)
+		{
+			// Report the size of the whole window (the default-size semantics), not just the content area under the title bar.
+			var window = ((IElementHandler)this).PlatformView as GtkWindow;
+			int windowWidth = window is { Width: > 0 } ? window.Width : width;
+			int windowHeight = window is { Height: > 0 } ? window.Height : height;
+			View?.FrameChanged(new Rect(0, 0, windowWidth, windowHeight));
+		}
 
 		/// <summary>Replaces the window content widget.</summary>
 		internal static void UpdateContent(GtkWindowHandler handler, IWindow window)
@@ -119,28 +163,46 @@ namespace Microsoft.Maui.Gtk.Handlers
 			}
 		}
 
-		internal static void ApplyMappers()
-		{
-			var mapper = Mapper;
+		internal static readonly IPropertyMapper<IWindow, IWindowHandler> GtkMapper = CreateMapper();
 
-			mapper.MapGtk<IWindow, IWindowHandler, GtkWindow>(nameof(IWindow.Title), (h, v, w) => w.Title = v.Title ?? string.Empty);
-			mapper.MapGtk<IWindow, IWindowHandler, GtkWindow>(nameof(IWindow.Content), (h, v, w) =>
+		internal static readonly CommandMapper<IWindow, IWindowHandler> GtkCommandMapper = CreateCommandMapper();
+
+		static IPropertyMapper<IWindow, IWindowHandler> CreateMapper()
+		{
+			var mapper = new GtkMapperBuilder<IWindow, IWindowHandler>(WindowHandler.Mapper);
+			var commands = new GtkCommandMapperBuilder<IWindow, IWindowHandler>(WindowHandler.CommandMapper);
+			Configure(mapper, commands);
+			return mapper.Build();
+		}
+
+		static CommandMapper<IWindow, IWindowHandler> CreateCommandMapper()
+		{
+			var mapper = new GtkMapperBuilder<IWindow, IWindowHandler>(WindowHandler.Mapper);
+			var commands = new GtkCommandMapperBuilder<IWindow, IWindowHandler>(WindowHandler.CommandMapper);
+			Configure(mapper, commands);
+			return commands.Build();
+		}
+
+		static void Configure(GtkMapperBuilder<IWindow, IWindowHandler> mapper, GtkCommandMapperBuilder<IWindow, IWindowHandler> commands)
+		{
+			mapper.MapGtk<GtkWindow>(nameof(IWindow.Title), (h, v, w) => w.Title = v.Title ?? string.Empty);
+			mapper.MapGtk<GtkWindow>(nameof(IWindow.Content), (h, v, w) =>
 			{
 				if (h is GtkWindowHandler handler)
 					UpdateContent(handler, v);
 			});
-			mapper.MapGtk<IWindow, IWindowHandler, GtkWindow>(nameof(IWindow.Width), (h, v, w) => UpdateDefaultSize(w, v));
-			mapper.MapGtk<IWindow, IWindowHandler, GtkWindow>(nameof(IWindow.Height), (h, v, w) => UpdateDefaultSize(w, v));
-			mapper.MapGtk<IWindow, IWindowHandler, GtkWindow>(nameof(IWindow.MinimumWidth), (h, v, w) => UpdateMinimumSize(w, v));
-			mapper.MapGtk<IWindow, IWindowHandler, GtkWindow>(nameof(IWindow.MinimumHeight), (h, v, w) => UpdateMinimumSize(w, v));
-			mapper.MapGtk<IWindow, IWindowHandler, GtkWindow>(nameof(IWindow.FlowDirection), (h, v, w) =>
+			mapper.MapGtk<GtkWindow>(nameof(IWindow.Width), (h, v, w) => UpdateDefaultSize(w, v));
+			mapper.MapGtk<GtkWindow>(nameof(IWindow.Height), (h, v, w) => UpdateDefaultSize(w, v));
+			mapper.MapGtk<GtkWindow>(nameof(IWindow.MinimumWidth), (h, v, w) => UpdateMinimumSize(w, v));
+			mapper.MapGtk<GtkWindow>(nameof(IWindow.MinimumHeight), (h, v, w) => UpdateMinimumSize(w, v));
+			mapper.MapGtk<GtkWindow>(nameof(IWindow.FlowDirection), (h, v, w) =>
 				w.Direction = v.FlowDirection == FlowDirection.RightToLeft ? global::Gtk.TextDirection.Rtl : global::Gtk.TextDirection.Ltr);
 
 			// GTK 4 cannot position a toplevel; X/Y/Maximum* are accepted and ignored.
 			foreach (var key in new[] { nameof(IWindow.X), nameof(IWindow.Y), nameof(IWindow.MaximumWidth), nameof(IWindow.MaximumHeight) })
-				mapper.MapGtk<IWindow, IWindowHandler, GtkWindow>(key, (h, v, w) => { });
+				mapper.MapGtk<GtkWindow>(key, (h, v, w) => { });
 
-			CommandMapper.MapGtk<IWindow, IWindowHandler, GtkWindow>(nameof(IWindow.RequestDisplayDensity), (h, v, args, w) =>
+			commands.MapGtk<GtkWindow>(nameof(IWindow.RequestDisplayDensity), (h, v, args, w) =>
 			{
 				if (args is DisplayDensityRequest request)
 					request.SetResult(w.ScaleFactor);
@@ -171,11 +233,11 @@ namespace Microsoft.Maui.Gtk.Handlers
 			public WindowContentLayout(GtkWindowHandler handler) => _handler = handler;
 
 			public Size CrossPlatformMeasure(double widthConstraint, double heightConstraint) =>
-				_handler.VirtualView?.Content?.Measure(widthConstraint, heightConstraint) ?? Size.Zero;
+				_handler.View?.Content?.Measure(widthConstraint, heightConstraint) ?? Size.Zero;
 
 			public Size CrossPlatformArrange(Rect bounds)
 			{
-				_handler.VirtualView?.Content?.Arrange(bounds);
+				_handler.View?.Content?.Arrange(bounds);
 				return bounds.Size;
 			}
 		}

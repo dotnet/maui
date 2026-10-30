@@ -42,6 +42,18 @@ namespace Microsoft.Maui.Gtk.Platform
 		public bool HasTransform =>
 			TranslationX != 0 || TranslationY != 0 || Rotation != 0 || ScaleX != 1 || ScaleY != 1;
 
+		/// <summary>Whether <see cref="NaturalWidth"/>/<see cref="NaturalHeight"/> hold the GTK size MAUI last measured.</summary>
+		public bool HasMeasure { get; set; }
+
+		/// <summary>The natural width GTK reported when MAUI last measured the widget.</summary>
+		public int NaturalWidth { get; set; }
+
+		/// <summary>The width <see cref="NaturalHeight"/> was measured for.</summary>
+		public int HeightForWidth { get; set; }
+
+		/// <summary>The natural height GTK reported (at <see cref="HeightForWidth"/>) when MAUI last measured the widget.</summary>
+		public int NaturalHeight { get; set; }
+
 		/// <summary>Copies every value from <paramref name="other"/> (used when a widget is wrapped in or unwrapped from a container).</summary>
 		/// <param name="other">The source state.</param>
 		public void CopyFrom(GtkViewState other)

@@ -14,6 +14,7 @@ namespace Microsoft.Maui.Gtk.Handlers
 	{
 		/// <summary>Creates the handler with the stock mappers.</summary>
 		public GtkLabelHandler()
+			: base(GtkMapper, GtkCommandMapper)
 		{
 		}
 
@@ -21,7 +22,7 @@ namespace Microsoft.Maui.Gtk.Handlers
 		/// <param name="mapper">The property mapper, or <see langword="null"/> for the stock one.</param>
 		/// <param name="commandMapper">The command mapper, or <see langword="null"/> for the stock one.</param>
 		public GtkLabelHandler(IPropertyMapper? mapper, CommandMapper? commandMapper = null)
-			: base(mapper, commandMapper)
+			: base(mapper ?? GtkMapper, commandMapper ?? GtkCommandMapper)
 		{
 		}
 
@@ -34,19 +35,37 @@ namespace Microsoft.Maui.Gtk.Handlers
 			Yalign = 0.5f,
 		};
 
-		internal static void ApplyMappers()
-		{
-			var mapper = Mapper;
+		internal static readonly IPropertyMapper<ILabel, ILabelHandler> GtkMapper = CreateMapper();
 
-			mapper.MapGtk<ILabel, ILabelHandler, GtkLabel>(nameof(ITextStyle.TextColor), (h, v, w) => GtkTextStyle.SetColor(w, v.TextColor));
-			mapper.MapGtk<ILabel, ILabelHandler, GtkLabel>(nameof(ILabel.Text), (h, v, w) => w.Text = v.Text ?? string.Empty);
-			mapper.MapGtk<ILabel, ILabelHandler, GtkLabel>(nameof(ITextStyle.CharacterSpacing), (h, v, w) => GtkTextStyle.SetCharacterSpacing(w, v.CharacterSpacing));
-			mapper.MapGtk<ILabel, ILabelHandler, GtkLabel>(nameof(ITextStyle.Font), (h, v, w) => GtkTextStyle.SetFont(w, v.Font, GtkTextStyle.GetFontManager(h)));
-			mapper.MapGtk<ILabel, ILabelHandler, GtkLabel>(nameof(ITextAlignment.HorizontalTextAlignment), (h, v, w) => UpdateHorizontalAlignment(w, v));
-			mapper.MapGtk<ILabel, ILabelHandler, GtkLabel>(nameof(ITextAlignment.VerticalTextAlignment), (h, v, w) => UpdateVerticalAlignment(w, v));
-			mapper.MapGtk<ILabel, ILabelHandler, GtkLabel>(nameof(ILabel.TextDecorations), (h, v, w) => GtkTextStyle.SetTextDecorations(w, v.TextDecorations));
-			mapper.MapGtk<ILabel, ILabelHandler, GtkLabel>(nameof(ILabel.Padding), (h, v, w) => GtkTextStyle.SetPadding(w, v.Padding));
-			mapper.MapGtk<ILabel, ILabelHandler, GtkLabel>(nameof(ILabel.LineHeight), (h, v, w) =>
+		internal static readonly CommandMapper<ILabel, ILabelHandler> GtkCommandMapper = CreateCommandMapper();
+
+		static IPropertyMapper<ILabel, ILabelHandler> CreateMapper()
+		{
+			var mapper = new GtkMapperBuilder<ILabel, ILabelHandler>(LabelHandler.Mapper).AddViewMappings();
+			var commands = new GtkCommandMapperBuilder<ILabel, ILabelHandler>(LabelHandler.CommandMapper).AddViewCommands();
+			Configure(mapper, commands);
+			return mapper.Build();
+		}
+
+		static CommandMapper<ILabel, ILabelHandler> CreateCommandMapper()
+		{
+			var mapper = new GtkMapperBuilder<ILabel, ILabelHandler>(LabelHandler.Mapper).AddViewMappings();
+			var commands = new GtkCommandMapperBuilder<ILabel, ILabelHandler>(LabelHandler.CommandMapper).AddViewCommands();
+			Configure(mapper, commands);
+			return commands.Build();
+		}
+
+		static void Configure(GtkMapperBuilder<ILabel, ILabelHandler> mapper, GtkCommandMapperBuilder<ILabel, ILabelHandler> commands)
+		{
+			mapper.MapGtk<GtkLabel>(nameof(ITextStyle.TextColor), (h, v, w) => GtkTextStyle.SetColor(w, v.TextColor));
+			mapper.MapGtk<GtkLabel>(nameof(ILabel.Text), (h, v, w) => w.Text = v.Text ?? string.Empty);
+			mapper.MapGtk<GtkLabel>(nameof(ITextStyle.CharacterSpacing), (h, v, w) => GtkTextStyle.SetCharacterSpacing(w, v.CharacterSpacing));
+			mapper.MapGtk<GtkLabel>(nameof(ITextStyle.Font), (h, v, w) => GtkTextStyle.SetFont(w, v.Font, GtkTextStyle.GetFontManager(h)));
+			mapper.MapGtk<GtkLabel>(nameof(ITextAlignment.HorizontalTextAlignment), (h, v, w) => UpdateHorizontalAlignment(w, v));
+			mapper.MapGtk<GtkLabel>(nameof(ITextAlignment.VerticalTextAlignment), (h, v, w) => UpdateVerticalAlignment(w, v));
+			mapper.MapGtk<GtkLabel>(nameof(ILabel.TextDecorations), (h, v, w) => GtkTextStyle.SetTextDecorations(w, v.TextDecorations));
+			mapper.MapGtk<GtkLabel>(nameof(ILabel.Padding), (h, v, w) => GtkTextStyle.SetPadding(w, v.Padding));
+			mapper.MapGtk<GtkLabel>(nameof(ILabel.LineHeight), (h, v, w) =>
 				GtkStyle.For(w).Set("line-height", v.LineHeight >= 0 ? v.LineHeight.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture) : null));
 		}
 
