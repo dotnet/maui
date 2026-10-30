@@ -1,4 +1,17 @@
 <Project>
+  <!--
+    Windows/WSL output split. A tree checked out on a Windows drive and built from both sides (Windows dotnet and a Linux
+    dotnet under WSL on /mnt/<drive>/...) would share artifacts/obj and artifacts/bin: project.assets.json, caches and
+    outputs of one OS then clobber (or lock) the other's. When MSBuild runs on a non-Windows OS from a /mnt/ path, the
+    Arcade artifacts root moves to artifacts-wsl/ (ArtifactsDir is read by Arcade's RepoLayout.props, so bin, obj,
+    packages, log and TestResults all follow). A native Linux/macOS checkout is untouched. Force either way with
+    -p:UseOSSpecificOutputPaths=true|false.
+  -->
+  <PropertyGroup>
+    <UseOSSpecificOutputPaths Condition="'$(UseOSSpecificOutputPaths)' == '' and '$(OS)' != 'Windows_NT' and $(MSBuildThisFileDirectory.StartsWith('/mnt/'))">true</UseOSSpecificOutputPaths>
+    <ArtifactsDir Condition="'$(ArtifactsDir)' == '' and '$(UseOSSpecificOutputPaths)' == 'true'">$(MSBuildThisFileDirectory)artifacts-wsl/</ArtifactsDir>
+  </PropertyGroup>
+
   <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
   <Import Condition="'$(EnvironmentBuildPropsImported)' != 'True'" Project="$(MSBuildThisFileDirectory)eng\Environment.Build.props" />
 

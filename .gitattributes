@@ -20,3 +20,5 @@
 GitInfo.txt merge=ours
 
 .github/workflows/*.lock.yml linguist-generated=true
+# Linux/GTK helper scripts run under WSL/Linux: keep LF even with core.autocrlf on Windows.
+/eng/gtk/*.sh text eol=lf

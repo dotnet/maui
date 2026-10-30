@@ -133,4 +133,8 @@
   <Target Name="GetTypeScriptOutputForPublishing" />
   <Target Name="GetTypeScriptCopyToOutputDirectoryItems" />
 
+
+  <!-- Linux/GTK fork: publish packed -gtk packages to the local feed (only when -p:MauiGtkLocalFeedDir=... is passed; see eng/gtk/pack-local.ps1). -->
+  <Import Project="$(MSBuildThisFileDirectory)eng/gtk/LocalFeed.targets" Condition="'$(MauiGtkLocalFeedDir)' != '' and Exists('$(MSBuildThisFileDirectory)eng/gtk/LocalFeed.targets')" />
+
 </Project>

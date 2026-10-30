@@ -357,3 +357,26 @@ The device tests are integrated into the CI pipeline via:
 - [XHarness on Helix Documentation](https://github.com/dotnet/arcade/blob/main/src/Microsoft.DotNet.Helix/Sdk/tools/xharness-runner/Readme.md#android-apk-payloads)
 - [Helix Documentation](https://github.com/dotnet/arcade/tree/main/src/Microsoft.DotNet.Helix)
 - [Example Helix Run](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1115383&view=results)
+
+# Linux / GTK 4 backend (no mobile workloads)
+
+The GTK 4 backend lives in `src/Gtk` (see [src/Gtk/README.md](../src/Gtk/README.md)). It builds with a plain .NET 10 SDK, without the Android/iOS/macOS/Windows workloads, by switching those TFMs off in a **local, gitignored** `Directory.Build.Override.props` at the repo root (imported by `Directory.Build.props`):
+
+```xml
+<Project>
+  <PropertyGroup>
+    <IncludeAndroidTargetFrameworks>false</IncludeAndroidTargetFrameworks>
+    <IncludeIosTargetFrameworks>false</IncludeIosTargetFrameworks>
+    <IncludeMacCatalystTargetFrameworks>false</IncludeMacCatalystTargetFrameworks>
+    <IncludeMacOSTargetFrameworks>false</IncludeMacOSTargetFrameworks>
+    <IncludeTizenTargetFrameworks>false</IncludeTizenTargetFrameworks>
+    <IncludeWindowsTargetFrameworks>false</IncludeWindowsTargetFrameworks>
+  </PropertyGroup>
+</Project>
+```
+
+- Cake normally generates this file from `Directory.Build.Override.props.in` (platform switches such as `--android`); on Linux write it by hand as above. It is in `.gitignore`: copy it into every git worktree.
+- Result: projects build `netstandard2.0/2.1` + `net10.0` only. Packing from such a tree gives packages without mobile/Windows assets.
+- Build/test: `dotnet build Microsoft.Maui-linux.slnf`, `dotnet test src/Core/tests/UnitTests/Core.UnitTests.csproj`.
+- WSL: `eng/gtk/wsl-setup.sh` once, then `eng/gtk/wsl-test.sh <test.csproj>` (headless). Output goes to `artifacts-wsl/` so it never clobbers a Windows build of the same tree (`Directory.Build.props`).
+- Forked packages for apps: `pwsh eng/gtk/pack-local.ps1` (versions `10.0.130-gtk.<stamp>.<rev>`, copied into `Packages/`).

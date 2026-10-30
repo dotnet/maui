@@ -1,0 +1,61 @@
+<Project>
+  <!--
+    Local-feed publishing for the forked Linux/GTK packages (see src/Gtk/README.md, "Local feed").
+
+    Imported by the root Directory.Build.targets only when MauiGtkLocalFeedDir is set (eng/gtk/pack-local.ps1 does
+    that). After `Pack` it
+      1. copies the new <PackageId>.<version>.nupkg (+ .symbols.nupkg / .snupkg when present) into the feed,
+      2. deletes every OLDER <PackageId>.<major.minor.patch>-gtk.*.nupkg/.symbols.nupkg/.snupkg from the feed,
+      3. deletes the extracted copies of the old versions AND of the new one from the NuGet cache, so the next restore
+         unpacks what was just built.
+    Only forked packages are touched: the version must contain "-gtk." (a stable 10.0.130 is refused), and the id match
+    requires a version right after "<PackageId>." so sibling ids (Microsoft.Maui.Controls vs Microsoft.Maui.Controls.Maps)
+    never purge each other.
+
+    Properties: MauiGtkLocalFeedDir (feed folder), MauiGtkNuGetCacheDir (default: $(NuGetPackageRoot)).
+    This replaces Net4x.CleanCache for this tree (B9: the package exists on nuget.org but also forces
+    GeneratePackageOnBuild/Version rewriting on every project and purges the whole cache folder of the id).
+  -->
+  <Target Name="MauiGtkPublishToLocalFeed"
+          AfterTargets="Pack"
+          Condition="'$(MauiGtkLocalFeedDir)' != '' and '$(IsPackable)' == 'true' and ('$(IsCrossTargetingBuild)' == 'true' or '$(TargetFrameworks)' == '')">
+    <Error Condition="!$(PackageVersion.Contains('-gtk.'))"
+           Text="MauiGtkLocalFeed: $(PackageId) $(PackageVersion) is not a forked '-gtk.' version; refusing to write it to the local feed. Pass -p:OfficialBuild=true -p:OfficialBuildId=yyyyMMdd.r -p:PreReleaseVersionLabel=gtk (eng/gtk/pack-local.ps1 does)." />
+
+    <PropertyGroup>
+      <_GtkFeed>$([MSBuild]::EnsureTrailingSlash('$(MauiGtkLocalFeedDir)'))</_GtkFeed>
+      <_GtkOut>$([MSBuild]::EnsureTrailingSlash('$(PackageOutputPath)'))</_GtkOut>
+      <_GtkCache Condition="'$(MauiGtkNuGetCacheDir)' != ''">$([MSBuild]::EnsureTrailingSlash('$(MauiGtkNuGetCacheDir)'))</_GtkCache>
+      <_GtkCache Condition="'$(_GtkCache)' == '' and '$(NuGetPackageRoot)' != ''">$([MSBuild]::EnsureTrailingSlash('$(NuGetPackageRoot)'))</_GtkCache>
+      <_GtkIdLower>$(PackageId.ToLowerInvariant())</_GtkIdLower>
+      <_GtkCurrent>$(PackageId).$(PackageVersion)</_GtkCurrent>
+      <!-- "<id>.<major>.<minor>.<patch>-gtk." -->
+      <_GtkPattern>^$([System.Text.RegularExpressions.Regex]::Escape('$(PackageId)'))\.\d+\.\d+\.\d+-gtk\.</_GtkPattern>
+      <_GtkPrefixLength>$([MSBuild]::Add($(PackageId.Length), 1))</_GtkPrefixLength>
+    </PropertyGroup>
+
+    <Copy SourceFiles="$(_GtkOut)$(_GtkCurrent).nupkg" DestinationFolder="$(_GtkFeed)" />
+    <Copy SourceFiles="$(_GtkOut)$(_GtkCurrent).symbols.nupkg" DestinationFolder="$(_GtkFeed)" Condition="Exists('$(_GtkOut)$(_GtkCurrent).symbols.nupkg')" />
+    <Copy SourceFiles="$(_GtkOut)$(_GtkCurrent).snupkg" DestinationFolder="$(_GtkFeed)" Condition="Exists('$(_GtkOut)$(_GtkCurrent).snupkg')" />
+
+    <!-- Older forked versions of exactly this id. Filename of "X.1.2.3-gtk.4.5.symbols.nupkg" is "X.1.2.3-gtk.4.5.symbols", hence the regex on the prefix only. -->
+    <ItemGroup>
+      <_GtkFeedFile Include="$(_GtkFeed)$(PackageId).*-gtk.*.nupkg;$(_GtkFeed)$(PackageId).*-gtk.*.snupkg" />
+      <_GtkOld Include="@(_GtkFeedFile)"
+               Condition="$([System.Text.RegularExpressions.Regex]::IsMatch('%(Filename)', '$(_GtkPattern)')) and '%(Filename)' != '$(_GtkCurrent)' and '%(Filename)' != '$(_GtkCurrent).symbols'" />
+    </ItemGroup>
+    <ItemGroup>
+      <_GtkOld>
+        <OldVersion>$([System.Text.RegularExpressions.Regex]::Match('%(Filename)', '^$([System.Text.RegularExpressions.Regex]::Escape('$(PackageId)'))\.(\d+\.\d+\.\d+-gtk\.[0-9A-Za-z.]*?)(\.symbols)?$').Groups[1].Value)</OldVersion>
+      </_GtkOld>
+    </ItemGroup>
+    <ItemGroup>
+      <_GtkStaleCache Include="$(_GtkCache)$(_GtkIdLower)/%(_GtkOld.OldVersion)" Condition="'$(_GtkCache)' != '' and '%(_GtkOld.OldVersion)' != ''" />
+      <_GtkStaleCache Include="$(_GtkCache)$(_GtkIdLower)/$(PackageVersion.ToLowerInvariant())" Condition="'$(_GtkCache)' != ''" />
+    </ItemGroup>
+
+    <Message Importance="high" Text="MauiGtkLocalFeed: $(_GtkCurrent) -> $(_GtkFeed); removing @(_GtkOld->Count()) older file(s)" />
+    <Delete Files="@(_GtkOld)" />
+    <RemoveDir Directories="@(_GtkStaleCache->Distinct())" />
+  </Target>
+</Project>
