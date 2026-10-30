@@ -101,6 +101,8 @@ dotnet tool restore
 dotnet cake --target=VS
 ```
 
+To only launch Visual Studio on an already provisioned `.dotnet` (no clean/provision/pack), use `pwsh eng/scripts/Start-VisualStudio.ps1 [-Solution <sln>] [-SkipBuildTasks]`.
+
 There is also a `VSCode` target for launching Visual Studio Code.
 
 ```dotnetcli

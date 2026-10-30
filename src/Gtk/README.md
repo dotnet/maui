@@ -215,7 +215,7 @@ No mobile or Windows workloads are needed. Create the local, gitignored `Directo
 | Build the Linux subset | `dotnet build Microsoft.Maui-linux.slnf` (projects listed from `Microsoft.Maui-vscode.sln`; add new `src/Gtk` projects to both) |
 | Core unit tests | `dotnet test src/Core/tests/UnitTests/Core.UnitTests.csproj` |
 | SDK | `global.json` lists `.dotnet` then `$host$`: with no provisioned `.dotnet`, the `dotnet` on `PATH` is used (any 10.0+ SDK; TFMs built are `netstandard2.0/2.1` and `net10.0`) |
-| Visual Studio on `Microsoft.Maui.sln` | Launch it with `dotnet cake --target=VS --sln=Microsoft.Maui.sln` (sets `DOTNET_ROOT`/`DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR` to `.dotnet`). A plain launch takes the SDK from `.dotnet` but the workload manifests from `C:\Program Files\dotnet`, so the mobile projects that hardcode their TFM (`GraphicsTester.*`, `Compatibility.*.Android/iOS`, `Benchmarks.Droid`) fail with MSB4236 |
+| Visual Studio on `Microsoft.Maui.sln` | Launch it with `pwsh eng/scripts/Start-VisualStudio.ps1 -Solution Microsoft.Maui.sln` (builds the build tasks, sets `DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR` to `.dotnet`). A plain launch takes the SDK from `.dotnet` but the workload manifests from `C:\Program Files\dotnet`, so the mobile projects that hardcode their TFM (`GraphicsTester.*`, `Compatibility.*.Android/iOS`, `Benchmarks.Droid`) fail with MSB4236 |
 | GTK runtime | Linux: `libgtk-4-1`, `libadwaita-1-0`; Windows: `%LOCALAPPDATA%\Gtk\4.22.4\bin` |
 
 ## WSL / Linux

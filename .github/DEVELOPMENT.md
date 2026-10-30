@@ -34,6 +34,8 @@ Note: the main branch is always [pinned to the latest stable release](https://gi
 ## Windows
 Open the `Microsoft.Maui-windows.slnf` file in Visual Studio from the root of the repo.
 
+When the SDK is provisioned in `.dotnet` (`./build.cmd -restore`), launch Visual Studio with `pwsh eng/scripts/Start-VisualStudio.ps1 [-Solution Microsoft.Maui.sln]`: it builds the build tasks and points the SDK resolver at `.dotnet`. A plain launch reads the workload manifests from `C:\Program Files\dotnet` and the mobile projects fail with MSB4236 (`Microsoft.Android.Sdk.net10`, `Microsoft.iOS.Windows.Sdk.Aliased.*`, `Microsoft.NET.Runtime.MonoTargets.Sdk.net10`).
+
 ## Mac
 
 Open the root folder of the repository in VS Code.
