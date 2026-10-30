@@ -234,6 +234,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Maui.Gtk.UnitTest
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Maui.Gtk.Sample", "src\Gtk\samples\Maui.Gtk.Sample\Maui.Gtk.Sample.csproj", "{6A1F3C20-5B7D-4E21-9C11-0D5A7E4B1003}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Maui.Essentials.Gtk", "src\Gtk\src\Essentials\Microsoft.Maui.Essentials.Gtk.csproj", "{6A1F3C20-5B7D-4E21-9C11-0D5A7E4B1004}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -601,6 +603,10 @@ Global
 		{6A1F3C20-5B7D-4E21-9C11-0D5A7E4B1003}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6A1F3C20-5B7D-4E21-9C11-0D5A7E4B1003}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6A1F3C20-5B7D-4E21-9C11-0D5A7E4B1003}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6A1F3C20-5B7D-4E21-9C11-0D5A7E4B1004}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6A1F3C20-5B7D-4E21-9C11-0D5A7E4B1004}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6A1F3C20-5B7D-4E21-9C11-0D5A7E4B1004}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6A1F3C20-5B7D-4E21-9C11-0D5A7E4B1004}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -708,6 +714,7 @@ Global
 		{6A1F3C20-5B7D-4E21-9C11-0D5A7E4B1001} = {6A1F3C20-5B7D-4E21-9C11-0D5A7E4B10F0}
 		{6A1F3C20-5B7D-4E21-9C11-0D5A7E4B1002} = {6A1F3C20-5B7D-4E21-9C11-0D5A7E4B10F0}
 		{6A1F3C20-5B7D-4E21-9C11-0D5A7E4B1003} = {6A1F3C20-5B7D-4E21-9C11-0D5A7E4B10F0}
+		{6A1F3C20-5B7D-4E21-9C11-0D5A7E4B1004} = {6A1F3C20-5B7D-4E21-9C11-0D5A7E4B10F0}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0B8ABEAD-D2B5-4370-A187-62B5ABE4EE50}

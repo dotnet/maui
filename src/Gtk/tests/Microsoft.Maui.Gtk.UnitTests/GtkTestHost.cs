@@ -32,6 +32,7 @@ public static class GtkTestHost
 	static readonly List<string> s_complaints = new();
 	static readonly System.Collections.Concurrent.BlockingCollection<Action> s_work = new();
 
+	static volatile bool s_backgroundPump;
 	static bool s_initialized;
 	static string? s_unavailable;
 	static Thread? s_gtkThread;
@@ -102,6 +103,9 @@ public static class GtkTestHost
 	static string NoNativeRuntime(string detail) =>
 		"The native GTK 4 runtime is not available, so there are no widgets to test: " + detail;
 
+	[DllImport("ole32.dll")]
+	static extern int OleInitialize(IntPtr reserved);
+
 	static void StartGtkThread()
 	{
 		using var ready = new ManualResetEventSlim();
@@ -111,6 +115,10 @@ public static class GtkTestHost
 		{
 			try
 			{
+				// GDK's Windows clipboard and drag and drop are OLE based and need the thread to be OLE initialized.
+				if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+					OleInitialize(IntPtr.Zero);
+
 				GtkRuntime.EnsureInitialized();
 				InstallLogCapture();
 			}
@@ -123,8 +131,18 @@ public static class GtkTestHost
 
 			ready.Set();
 
-			foreach (var work in s_work.GetConsumingEnumerable())
-				work();
+			while (true)
+			{
+				if (s_work.TryTake(out var work, 5))
+					work();
+
+				if (s_backgroundPump)
+				{
+					for (var i = 0; i < MaxDrainIterations && GLib.MainContext.Iteration(false); i++)
+					{
+					}
+				}
+			}
 		})
 		{
 			IsBackground = true,
@@ -194,6 +212,18 @@ public static class GtkTestHost
 			s_capture?.Read();
 			s_complaints.Clear();
 		}
+	}
+
+	/// <summary>
+	/// Queues <paramref name="work"/> on the GTK thread without waiting for it, and makes the thread iterate the GLib main context
+	/// between work items from now on (Essentials tests await GTK callbacks, such as the clipboard, from other threads).
+	/// Core tests stay deterministic until this is first called: they pump explicitly.
+	/// </summary>
+	public static void Post(Action work)
+	{
+		EnsureInitialized();
+		s_backgroundPump = true;
+		s_work.Add(work);
 	}
 
 	/// <summary>Runs a test body on the GTK thread, rethrowing whatever it throws.</summary>

@@ -12,7 +12,9 @@ checks, `IButtonHandler` and user mapper customisations keep working.
 | `src/Core` | `Microsoft.Maui.Gtk` | hosting, layout bridge, handlers, fonts, images, styling (this document) |
 | `tests/Microsoft.Maui.Gtk.UnitTests` | | xUnit tests on real widgets (one shared project) |
 | `samples/Maui.Gtk.Sample` | | code-only sample (plain `net10.0` for now) |
-| `src/Controls`, `src/Essentials`, `src/BlazorWebView`, `src/Maps` | `*.Gtk` | other areas (separate tracks, see their own sections) |
+| `src/Essentials` | `Microsoft.Maui.Essentials.Gtk` | Essentials on GTK 4 / Linux, see [`src/Essentials/README.md`](src/Essentials/README.md) |
+| `../Graphics/src/Graphics.Cairo` | `Microsoft.Maui.Graphics.Cairo` | `ICanvas` on Cairo/Pango, see its [README](../Graphics/src/Graphics.Cairo/README.md) |
+| `src/Controls`, `src/BlazorWebView`, `src/Maps` | `*.Gtk` | other areas (separate tracks, see their own sections) |
 
 Requires GTK >= 4.14 (guard newer APIs with `GtkRuntime.AtLeast(major, minor)`).
 
@@ -68,7 +70,7 @@ Pass only GApplication options in `args`. Lifecycle: `ConfigureLifecycleEvents(e
 | Border | `MauiGtkBorder` | any `IShape`; gradient fills through Cairo |
 | Switch, CheckBox | `Gtk.Switch`, `Gtk.CheckButton` | |
 
-Not in this area: Picker/Slider/..., Shell, CollectionView, Essentials, WebView, Maps. Image-paint backgrounds are unsupported.
+Not in this area: Picker/Slider/..., Shell, CollectionView, WebView, Maps. Image-paint backgrounds are unsupported.
 
 ## Tests
 
@@ -79,6 +81,7 @@ Not in this area: Picker/Slider/..., Shell, CollectionView, Essentials, WebView,
 | Smoke | `dotnet run --project src/Gtk/samples/Maui.Gtk.Sample -- --smoke` (prints `SMOKE OK`) |
 | Core hook tests | `dotnet test src/Core/tests/UnitTests/Core.UnitTests.csproj --filter "FullyQualifiedName~PlatformViewBackendTests"` |
 
+- One shared test project; Essentials tests (`Essentials/`) run on the same GTK thread through `GtkTestHost` (a second GTK thread crashes the process); the host is OLE initialized on Windows and iterates the main context in the background once `GtkTestHost.Post` is used.
 - Tests use `[GtkFact]`: skipped when no GTK/display, a failure when `MAUI_GTK_REQUIRE_NATIVE` is set.
 - GTK runs on one dedicated (STA on Windows) thread; test bodies go through `GtkTestHost.Run`. No `async` bodies, never `Destroy()` a window.
 - The host captures the native stderr, so layout violations ("Allocating size ... without calling gtk_widget_measure"), CSS parser errors

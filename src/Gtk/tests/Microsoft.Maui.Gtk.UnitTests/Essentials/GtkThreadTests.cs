@@ -13,6 +13,9 @@ namespace Microsoft.Maui.Gtk.UnitTests.Essentials;
 [Collection("Gtk")]
 public class GtkThreadTests
 {
+	// Points the Essentials dispatcher at the shared GTK thread before any test body runs (skipped tests never construct the class).
+	public GtkThreadTests() => _ = GtkHost.Instance;
+
 	[GtkFact]
 	public void DeviceDisplayReportsAMonitor()
 	{
