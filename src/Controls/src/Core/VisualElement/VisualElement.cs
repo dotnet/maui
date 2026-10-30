@@ -276,7 +276,13 @@ namespace Microsoft.Maui.Controls
 		bool _isVisibleCumulative = (bool)IsVisibleProperty.DefaultValue;
 
 		/// <summary>Bindable property for <see cref="Opacity"/>.</summary>
-		public static readonly BindableProperty OpacityProperty = BindableProperty.Create(nameof(Opacity), typeof(double), typeof(VisualElement), 1d, coerceValue: (bindable, value) => ((double)value).Clamp(0, 1));
+		public static readonly BindableProperty OpacityProperty = BindableProperty.Create(nameof(Opacity), typeof(double), typeof(VisualElement), 1d,
+			coerceValue: (bindable, value) =>
+			{
+				var original = (double)value;
+				var clamped = original.Clamp(0, 1);
+				return clamped == original ? value : (object)clamped;
+			});
 
 		/// <summary>Bindable property for <see cref="BackgroundColor"/>.</summary>
 		public static readonly BindableProperty BackgroundColorProperty = BindableProperty.Create(nameof(BackgroundColor), typeof(Color), typeof(VisualElement), null);

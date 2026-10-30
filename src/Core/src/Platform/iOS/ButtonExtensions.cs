@@ -79,6 +79,9 @@ namespace Microsoft.Maui.Platform
 		}
 
 		public static void UpdateBackground(this UIButton platformButton, Graphics.Paint? paint)
+			=> UpdateBackground(platformButton, paint, null);
+
+		internal static void UpdateBackground(this UIButton platformButton, Graphics.Paint? paint, IButtonStroke? stroke)
 		{
 			// Remove previous background gradient layer if any.
 			// Safe to call unconditionally even when Window is null (initial-render path): at that
@@ -102,7 +105,7 @@ namespace Microsoft.Maui.Platform
 			}
 
 			// Delegate to the standard view background update
-			ViewExtensions.UpdateBackground(platformButton, paint);
+			ViewExtensions.UpdateBackground(platformButton, paint, stroke);
 		}
 
 		public static void UpdateCharacterSpacing(this UIButton platformButton, ITextStyle textStyle)

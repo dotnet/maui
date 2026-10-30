@@ -280,11 +280,11 @@ namespace Microsoft.Maui.Media
 		public string Language { get; }
 
 		/// <summary>
-		/// Gets the country name or code.
+		/// Gets the country/region name or code.
 		/// </summary>
 		/// <remarks>
 		/// <para>This value may vary between platforms and is never <see langword="null"/>; an unknown or unused country is represented by <see cref="string.Empty"/>.</para>
-		/// <para>For Android this used the ISO 3166 alpha-2 country code or UN M.49 numeric-3 area code.</para>
+		/// <para>For Android this used the ISO 3166 alpha-2 country/region code or UN M.49 numeric-3 area code.</para>
 		/// <para>For iOS and Windows this field is not used and is <see cref="string.Empty"/>. On those platforms the region is already part of <see cref="Language"/> (for example <c>en-US</c>).</para>
 		/// </remarks>
 		public string Country { get; }

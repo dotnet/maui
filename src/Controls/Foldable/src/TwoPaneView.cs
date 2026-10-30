@@ -2,10 +2,10 @@ using System;
 using System.Threading;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Converters;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Foldable;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Converters;
 
 namespace Microsoft.Maui.Controls.Foldable
 {

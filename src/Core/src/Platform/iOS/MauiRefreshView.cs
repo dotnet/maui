@@ -15,6 +15,8 @@ namespace Microsoft.Maui.Platform
 		bool _isRefreshing;
 		bool _isEnabled = true;
 		bool _isRefreshEnabled = true;
+		bool _originalAlwaysBounceVertical;
+		bool _hasStoredAlwaysBounceVertical;
 		nfloat _originalY;
 		nfloat _refreshControlHeight;
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
@@ -131,6 +133,18 @@ namespace Microsoft.Maui.Platform
 				if (CanUseRefreshControlProperty())
 					scrollView.RefreshControl = null;
 
+				if (_hasStoredAlwaysBounceVertical)
+				{
+					// Restore only while the value still matches the override applied by RefreshView.
+					// The wrapped control may have updated its own scrolling policy in the meantime.
+					if (scrollView.AlwaysBounceVertical)
+					{
+						scrollView.AlwaysBounceVertical = _originalAlwaysBounceVertical;
+					}
+
+					_hasStoredAlwaysBounceVertical = false;
+				}
+
 				return true;
 			}
 
@@ -158,6 +172,13 @@ namespace Microsoft.Maui.Platform
  
 			if (view is UIScrollView scrollView)
 			{
+				// Store the original value before attaching the refresh control.
+				if (!_hasStoredAlwaysBounceVertical)
+				{
+					_originalAlwaysBounceVertical = scrollView.AlwaysBounceVertical;
+					_hasStoredAlwaysBounceVertical = true;
+				}
+
 				if (CanUseRefreshControlProperty())
 					scrollView.RefreshControl = _refreshControl;
 				else

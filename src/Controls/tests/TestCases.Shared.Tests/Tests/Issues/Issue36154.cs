@@ -36,5 +36,6 @@ public class Issue36154 : _IssuesUITest
 			App.WaitForTextToBePresentInElement("ResultLabel", "RIGHT invoked!"),
 			Is.True,
 			"Timed out waiting for ResultLabel to display 'RIGHT invoked!' after the swipe.");
+		Assert.That(App.WaitForElement("ResultLabel").GetText(), Is.EqualTo("RIGHT invoked!"));
 	}
 }

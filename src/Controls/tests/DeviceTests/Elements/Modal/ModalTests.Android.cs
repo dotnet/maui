@@ -1,6 +1,7 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Android.Runtime;
 using AndroidX.Core.View;
 using AndroidX.Fragment.App;
 using Java.Lang;
@@ -67,6 +68,54 @@ namespace Microsoft.Maui.DeviceTests
 					Assert.False(modalPage.IsLoaded);
 					iWindow.Activated();
 					await OnLoadedAsync(modalPage);
+				});
+		}
+
+		[Fact]
+		public async Task DismissingModalNavigationPageDuringPushDoesntCrash()
+		{
+			SetupBuilder();
+			var page = new ContentPage();
+			var modalRootPage = new ContentPage()
+			{
+				Content = new Label()
+			};
+
+			var modalPage = new NavigationPage(modalRootPage);
+			var window = new Window(page);
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(window,
+				async (_) =>
+				{
+					await page.Navigation.PushModalAsync(modalPage, false);
+					await OnNavigatedToAsync(modalRootPage);
+
+					var navHostFragmentManager = ((NavigationViewHandler)modalPage.Handler).StackNavigationManager.NavHost.ChildFragmentManager;
+
+					// Android calls OnCreateView, so an exception thrown there would crash the app instead of failing the test
+					System.Exception unhandledException = null;
+					AndroidEnvironment.UnhandledExceptionRaiser += OnUnhandledException;
+
+					try
+					{
+						// Dismissing the modal disconnects the NavigationPage before the fragment transaction of the push runs
+						var pushTask = modalPage.PushAsync(new ContentPage(), false);
+						var popTask = page.Navigation.PopModalAsync(false);
+						navHostFragmentManager.ExecutePendingTransactions();
+						await Task.WhenAll(pushTask, popTask);
+					}
+					finally
+					{
+						AndroidEnvironment.UnhandledExceptionRaiser -= OnUnhandledException;
+					}
+
+					Assert.Null(unhandledException);
+
+					void OnUnhandledException(object sender, RaiseThrowableEventArgs e)
+					{
+						unhandledException ??= e.Exception;
+						e.Handled = true;
+					}
 				});
 		}
 

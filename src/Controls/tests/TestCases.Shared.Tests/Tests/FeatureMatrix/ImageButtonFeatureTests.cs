@@ -124,7 +124,6 @@ public class ImageButtonFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-#if TEST_FAILS_ON_ANDROID // Issue Link: https://github.com/dotnet/maui/issues/29956
 	[Test, Order(6)]
 	[Category(UITestCategories.ImageButton)]
 	public void VerifyImageButtonAspect_AspectFillWithImageSourceFromUri()
@@ -140,7 +139,6 @@ public class ImageButtonFeatureTests : _GalleryUITest
 		App.WaitForElement("ImageButtonControl", timeout: TimeSpan.FromSeconds(3));
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
-#endif
 
 	[Test, Order(7)]
 	[Category(UITestCategories.ImageButton)]
@@ -274,8 +272,8 @@ public class ImageButtonFeatureTests : _GalleryUITest
 	}
 #endif
 
-#if TEST_FAILS_ON_ANDROID  && TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/29956 , // Issue Link: https://github.com/dotnet/maui/issues/29959
-    [Test, Order(15)]
+#if TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/29959
+	[Test, Order(15)]
 	[Category(UITestCategories.ImageButton)]
 	public void VerifyImageButtonAspect_AspectFillWithImageSourceFromFile()
 	{

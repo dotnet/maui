@@ -49,7 +49,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		Size _cachedConstraints;
 		Size _lastArrangedSize;
 		Size _lastNativeBoundsSize;
-		WeakReference<object> _itemsSource;
 
 		// Indicates the cell is being used as a supplementary view (group header/footer)
 		internal bool isSupplementaryView = false;
@@ -84,6 +83,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		internal UIView PlatformView { get; set; }
+
+		MauiView CellSafeAreaView =>
+			PlatformView as MauiView ?? PlatformHandler?.PlatformView as MauiView;
 
 		CollectionViewHandler2 CollectionViewHandler
 		{
@@ -141,22 +143,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 						if (cachedSize != CGSize.Empty)
 						{
 							_measuredSize = cachedSize.ToSize();
-							// For MeasureFirstItem, non-first cells reuse the cached first-item size.
-							// Mirroring CV1 (Items/TemplatedCell.cs): when ConstrainedSize is set, CV1
-							// calls NO virtualView.Measure() from PreferredLayoutAttributesFittingAttributes.
-							// We do the same — only call Measure when the layout constraints actually change
-							// (fresh cell: _cachedConstraints==default, or rotation/resize: new width/height).
-							// Checking the full Size (both width and height) handles both orientations:
-							//   - Vertical list:   constraints=(w, ∞) — width change drives the check.
-							//   - Horizontal list: constraints=(∞, h) — height change drives the check.
-							// Recycled cells at the same constraints skip Measure entirely, eliminating
-							// the per-scroll MeasureOverride invocation that PR #29496 introduced.
-							// The Measure return value is intentionally discarded; _measuredSize comes
-							// from the cache, not from this call.
-							if (_cachedConstraints != constraints)
-							{
-								virtualView.Measure(constraints.Width, constraints.Height);
-							}
+							virtualView.Measure(constraints.Width, constraints.Height);
 						}
 						else
 						{
@@ -169,6 +156,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					{
 						// For headers/footers, always measure directly without using or updating the first-item cache
 						_measuredSize = virtualView.Measure(constraints.Width, constraints.Height);
+
+						// A collapsed header/footer does not reserve space, but Measure() still
+						// reports the content size because visibility is not part of a layout
+						// measure pass. Collapse the growing dimension explicitly (#30924).
+						if (virtualView.Visibility == Microsoft.Maui.Visibility.Collapsed)
+						{
+							_measuredSize = ScrollDirection == UICollectionViewScrollDirection.Vertical
+								? new Size(_measuredSize.Width, 0)
+								: new Size(0, _measuredSize.Height);
+						}
 					}
 					_cachedConstraints = constraints;
 					_needsArrange = true;
@@ -240,8 +237,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					_requiresSafeAreaReconciliation = RequiresSafeAreaReconciliation(virtualView);
 				}
 
+				var mauiView = CellSafeAreaView;
 				var appliesSafeArea = _requiresSafeAreaReconciliation ||
-					PlatformView is MauiView { CellSafeAreaOverride.IsEmpty: false };
+					mauiView is { CellSafeAreaOverride.IsEmpty: false };
 
 				if (!needsFinalArrange && !_hasArrangedSize)
 				{
@@ -258,7 +256,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				_needsArrange = false;
 
 				var safeAreaChanged = false;
-				if (appliesSafeArea && PlatformView is MauiView mauiView)
+				if (appliesSafeArea && mauiView is not null)
 				{
 					var previousCellSafeArea = mauiView.CellSafeAreaOverride;
 					MauiView.ApplyCellSafeAreaOverride(this, virtualView, mauiView);
@@ -311,7 +309,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		void BindVirtualView(View virtualView, object bindingContext, ItemsView itemsView, bool needsContainer)
 		{
 			ResetArrangeState();
-			ResetCachedConstraintsIfItemsSourceChanged(itemsView.ItemsSource);
 
 			var oldElement = PlatformHandler?.VirtualView as View;
 
@@ -412,7 +409,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			// Retain _cachedConstraints so MeasureFirstItem cells can reuse the
 			// first-item measurement when the collection constraints are unchanged.
 
-			if (PlatformView is MauiView mauiView && !mauiView.CellSafeAreaOverride.IsEmpty)
+			if (CellSafeAreaView is MauiView mauiView && !mauiView.CellSafeAreaOverride.IsEmpty)
 			{
 				mauiView.CellSafeAreaOverride = SafeAreaPadding.Empty;
 			}
@@ -446,28 +443,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			return false;
 		}
-		void ResetCachedConstraintsIfItemsSourceChanged(object itemsSource)
-		{
-			if (itemsSource is null)
-			{
-				if (_itemsSource is not null)
-				{
-					_itemsSource = null;
-					_cachedConstraints = default;
-				}
-
-				return;
-			}
-
-			if (_itemsSource is null ||
-				!_itemsSource.TryGetTarget(out var previousItemsSource) ||
-				!ReferenceEquals(previousItemsSource, itemsSource))
-			{
-				_itemsSource = new(itemsSource);
-				_cachedConstraints = default;
-			}
-		}
-
 		public override bool Selected
 		{
 			get => base.Selected;

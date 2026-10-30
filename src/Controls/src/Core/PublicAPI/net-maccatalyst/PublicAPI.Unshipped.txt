@@ -340,3 +340,4 @@ Microsoft.Maui.Controls.Picker.~Picker() -> void
 Microsoft.Maui.Controls.ShellContent.~ShellContent() -> void
 Microsoft.Maui.Controls.GradientBrush.~GradientBrush() -> void
 Microsoft.Maui.Controls.SwipeView.~SwipeView() -> void
+override Microsoft.Maui.Controls.Handlers.Items2.ItemsViewController2<TItemsView>.ViewDidLayoutSubviews() -> void

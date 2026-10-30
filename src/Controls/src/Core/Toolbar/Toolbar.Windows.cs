@@ -1,10 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using NativeAutomationProperties = Microsoft.UI.Xaml.Automation.AutomationProperties;
 using WGrid = Microsoft.UI.Xaml.Controls.Grid;
 using WImage = Microsoft.UI.Xaml.Controls.Image;
@@ -14,7 +18,7 @@ namespace Microsoft.Maui.Controls
 	public partial class Toolbar
 	{
 		readonly ImageConverter _imageConverter = new ImageConverter();
-		readonly ImageSourceIconElementConverter _imageSourceIconElementConverter = new ImageSourceIconElementConverter();
+		static readonly ConditionalWeakTable<AppBarButton, NativeIconBadgeState> s_nativeIconBadgeStates = new();
 
 		NavigationRootManager? NavigationRootManager =>
 			MauiContext?.GetNavigationRootManager();
@@ -48,63 +52,7 @@ namespace Microsoft.Maui.Controls
 			{
 				var button = new AppBarButton();
 				button.SetBinding(AppBarButton.LabelProperty, "Text");
-
-				if (commandBar.IsDynamicOverflowEnabled && item.Order == ToolbarItemOrder.Secondary)
-				{
-					button.SetBinding(AppBarButton.IconProperty, "IconImageSource", _imageSourceIconElementConverter);
-				}
-				else if (!item.IconImageSource.IsNullOrEmpty())
-				{
-					var img = new WImage();
-					img.SetBinding(WImage.SourceProperty, "Value");
-					img.SetBinding(WImage.DataContextProperty, "IconImageSource", _imageConverter);
-
-					if (item.BadgeText is not null)
-					{
-						// Wrap icon in a Grid with InfoBadge overlay for badge support
-						var grid = new WGrid();
-#pragma warning disable RS0030 // Standalone WinUI Grid, not a MauiPanel
-						grid.Children.Add(img);
-
-						var infoBadge = new InfoBadge
-						{
-							HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Right,
-							VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Top,
-							Margin = new Microsoft.UI.Xaml.Thickness(0, -4, -4, 0),
-						};
-						UpdateInfoBadge(infoBadge, item);
-						grid.Children.Add(infoBadge);
-#pragma warning restore RS0030
-
-						button.Content = grid;
-					}
-					else
-					{
-						button.Content = img;
-					}
-				}
-
-				// For text-only toolbar items (no icon), wrap the label in a Grid
-				// with InfoBadge overlay so badges are still visible.
-				if (item.IconImageSource.IsNullOrEmpty() && item.BadgeText is not null)
-				{
-					var textBlock = new Microsoft.UI.Xaml.Controls.TextBlock { Text = item.Text ?? string.Empty };
-					var grid = new WGrid();
-#pragma warning disable RS0030 // Standalone WinUI Grid, not a MauiPanel
-					grid.Children.Add(textBlock);
-
-					var infoBadge = new InfoBadge
-					{
-						HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Right,
-						VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Top,
-						Margin = new Microsoft.UI.Xaml.Thickness(0, -4, -4, 0),
-					};
-					UpdateInfoBadge(infoBadge, item);
-					grid.Children.Add(infoBadge);
-#pragma warning restore RS0030
-
-					button.Content = grid;
-				}
+				UpdateToolbarItemIcon(button, item, commandBar);
 
 				button.Command = new MenuItemCommand(item);
 				button.DataContext = item;
@@ -143,71 +91,195 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
-			if (e.PropertyName == nameof(ToolbarItem.BadgeText) || e.PropertyName == nameof(ToolbarItem.BadgeColor) || e.PropertyName == nameof(ToolbarItem.BadgeTextColor))
+			if (e.PropertyName == nameof(ToolbarItem.BadgeText) ||
+				e.PropertyName == nameof(ToolbarItem.BadgeColor) ||
+				e.PropertyName == nameof(ToolbarItem.BadgeTextColor))
 			{
-				if (sender is ToolbarItem toolbarItem)
+				if (sender is ToolbarItem badgeItem &&
+					FindToolbarItemButton(commandBar, badgeItem) is AppBarButton badgeButton)
 				{
-					foreach (var command in commandBar.PrimaryCommands)
-					{
-						if (command is AppBarButton button && ReferenceEquals(button.DataContext, toolbarItem))
-						{
-							if (button.Content is WGrid grid)
-							{
-#pragma warning disable RS0030 // Standalone WinUI Grid, not a MauiPanel
-								foreach (var child in grid.Children)
-#pragma warning restore RS0030
-								{
-									if (child is InfoBadge badge)
-									{
-										UpdateInfoBadge(badge, toolbarItem);
-										break;
-									}
-								}
-							}
-							else if (toolbarItem.BadgeText is not null)
-							{
-								// Item didn't have a badge before - wrap content in Grid with InfoBadge
-								var existingContent = button.Content as Microsoft.UI.Xaml.UIElement;
-								if (existingContent == null && !toolbarItem.IconImageSource.IsNullOrEmpty())
-								{
-									var img = new WImage();
-									img.SetBinding(WImage.SourceProperty, "Value");
-									img.SetBinding(WImage.DataContextProperty, "IconImageSource", _imageConverter);
-									existingContent = img;
-								}
-								else if (existingContent == null)
-								{
-									existingContent = new Microsoft.UI.Xaml.Controls.TextBlock { Text = toolbarItem.Text ?? string.Empty };
-								}
-
-								var newGrid = new WGrid();
-#pragma warning disable RS0030 // Standalone WinUI Grid, not a MauiPanel
-								newGrid.Children.Add(existingContent);
-
-								var newBadge = new InfoBadge
-								{
-									HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Right,
-									VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Top,
-									Margin = new Microsoft.UI.Xaml.Thickness(0, -4, -4, 0),
-								};
-								UpdateInfoBadge(newBadge, toolbarItem);
-								newGrid.Children.Add(newBadge);
-#pragma warning restore RS0030
-
-								button.Content = newGrid;
-							}
-							break;
-						}
-					}
+					UpdateToolbarItemIcon(badgeButton, badgeItem, commandBar);
 				}
+
 				return;
 			}
 
-			if (e.PropertyName == nameof(ToolbarItem.Text) || e.PropertyName == nameof(ToolbarItem.IconImageSource))
+			if (e.PropertyName == nameof(ToolbarItem.IconImageSource))
+			{
+				if (sender is ToolbarItem item &&
+					FindToolbarItemButton(commandBar, item) is AppBarButton button)
+				{
+					UpdateToolbarItemIcon(button, item, commandBar);
+				}
+
+				var toolbarItems = new List<ToolbarItem>(ToolbarItems ?? Array.Empty<ToolbarItem>());
+				SetDefaultLabelPosition(commandBar, toolbarItems);
+				return;
+			}
+
+			if (e.PropertyName == nameof(ToolbarItem.Text))
 			{
 				var toolbarItems = new List<ToolbarItem>(ToolbarItems ?? Array.Empty<ToolbarItem>());
 				SetDefaultLabelPosition(commandBar, toolbarItems);
 			}
+		}
+
+		private void UpdateToolbarItemIcon(AppBarButton button, ToolbarItem item, CommandBar commandBar)
+		{
+			button.ClearValue(AppBarButton.IconProperty);
+			button.Content = null;
+
+			var source = item.IconImageSource;
+			if (source.IsNullOrEmpty())
+			{
+				UpdateToolbarItemBadge(button, item);
+				return;
+			}
+
+			if (source is FontImageSource fontSource &&
+				fontSource.FontFamily is string fontFamily &&
+				MauiContext.Services.GetRequiredService<IFontRegistrar>().GetFont(fontFamily) is not null)
+			{
+				// Render registered app fonts like Image while retaining the native icon slot for the label.
+				var icon = new ImageIcon();
+				icon.SetBinding(ImageIcon.SourceProperty, "Value");
+				icon.DataContext = _imageConverter.Convert(source, typeof(object), MauiContext, string.Empty);
+				button.Icon = icon;
+			}
+			else if (source is FontImageSource ||
+				(commandBar.IsDynamicOverflowEnabled && item.Order == ToolbarItemOrder.Secondary))
+			{
+				button.Icon = source.ToIconSource(MauiContext)?.CreateIconElement();
+			}
+			else
+			{
+				var image = new WImage();
+				image.SetBinding(WImage.SourceProperty, "Value");
+				image.DataContext = _imageConverter.Convert(source, typeof(object), MauiContext, string.Empty);
+				button.Content = image;
+			}
+
+			UpdateToolbarItemBadge(button, item);
+		}
+
+		static void UpdateToolbarItemBadge(AppBarButton button, ToolbarItem item)
+		{
+			Microsoft.UI.Xaml.UIElement? content = button.Content as Microsoft.UI.Xaml.UIElement;
+			if (content is null && item.IconImageSource.IsNullOrEmpty())
+				content = new TextBlock { Text = item.Text ?? string.Empty };
+
+			if (content is null)
+			{
+				UpdateNativeIconBadge(button, item);
+				return;
+			}
+
+			RemoveNativeIconBadge(button);
+
+			if (item.BadgeText is null)
+				return;
+
+			var grid = new WGrid();
+#pragma warning disable RS0030 // Standalone WinUI Grid, not a MauiPanel
+			grid.Children.Add(content);
+
+			var badge = new InfoBadge
+			{
+				HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Right,
+				VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Top,
+				Margin = new Microsoft.UI.Xaml.Thickness(0, -4, -4, 0),
+			};
+			UpdateInfoBadge(badge, item);
+			grid.Children.Add(badge);
+#pragma warning restore RS0030
+
+			button.Content = grid;
+		}
+
+		static void UpdateNativeIconBadge(AppBarButton button, ToolbarItem item)
+		{
+			if (item.BadgeText is null)
+			{
+				RemoveNativeIconBadge(button);
+				return;
+			}
+
+			var state = s_nativeIconBadgeStates.GetValue(button, static button =>
+			{
+				button.Loaded += OnNativeIconButtonLoaded;
+				return new NativeIconBadgeState();
+			});
+
+			UpdateInfoBadge(state.Badge, item);
+			AttachNativeIconBadge(button, state);
+		}
+
+		static void OnNativeIconButtonLoaded(object sender, RoutedEventArgs e)
+		{
+			if (sender is AppBarButton button &&
+				s_nativeIconBadgeStates.TryGetValue(button, out var state))
+			{
+				AttachNativeIconBadge(button, state);
+			}
+		}
+
+		static void AttachNativeIconBadge(AppBarButton button, NativeIconBadgeState state)
+		{
+			button.ApplyTemplate();
+			var host = FindBadgeHost(button);
+			if (host is null || ReferenceEquals(host, state.Host))
+				return;
+
+			if (state.Host is not null)
+				state.Host.Children.Remove(state.Badge);
+
+			state.Host = host;
+#pragma warning disable RS0030 // AppBarButton template Grid, not a MauiPanel
+			host.Children.Add(state.Badge);
+#pragma warning restore RS0030
+		}
+
+		static WGrid? FindBadgeHost(DependencyObject parent)
+		{
+			var childCount = VisualTreeHelper.GetChildrenCount(parent);
+			for (int index = 0; index < childCount; index++)
+			{
+				var child = VisualTreeHelper.GetChild(parent, index);
+				if (child is WGrid grid)
+					return grid;
+
+				if (FindBadgeHost(child) is WGrid descendantGrid)
+					return descendantGrid;
+			}
+
+			return null;
+		}
+
+		static void RemoveNativeIconBadge(AppBarButton button)
+		{
+			if (s_nativeIconBadgeStates.TryGetValue(button, out var state) &&
+				state.Host is not null)
+			{
+				state.Host.Children.Remove(state.Badge);
+				state.Host = null;
+			}
+		}
+
+		private static AppBarButton? FindToolbarItemButton(CommandBar commandBar, ToolbarItem item)
+		{
+			foreach (var command in commandBar.PrimaryCommands)
+			{
+				if (command is AppBarButton button && ReferenceEquals(button.DataContext, item))
+					return button;
+			}
+
+			foreach (var command in commandBar.SecondaryCommands)
+			{
+				if (command is AppBarButton button && ReferenceEquals(button.DataContext, item))
+					return button;
+			}
+
+			return null;
 		}
 
 		/// <summary>
@@ -249,6 +321,18 @@ namespace Microsoft.Maui.Controls
 			}
 			else
 				badge.ClearValue(InfoBadge.ForegroundProperty);
+		}
+
+		sealed class NativeIconBadgeState
+		{
+			public InfoBadge Badge { get; } = new()
+			{
+				HorizontalAlignment = HorizontalAlignment.Right,
+				VerticalAlignment = VerticalAlignment.Top,
+				Margin = new Thickness(0, -4, -4, 0),
+			};
+
+			public WGrid? Host { get; set; }
 		}
 
 		private static void SetDefaultLabelPosition(CommandBar commandBar, IList<ToolbarItem> toolbarItems)

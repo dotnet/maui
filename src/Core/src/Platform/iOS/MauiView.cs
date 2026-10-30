@@ -85,17 +85,29 @@ namespace Microsoft.Maui.Platform
 		/// </summary>
 		internal static void ApplyCellSafeAreaOverride(UIView cell, IView virtualView, UIView platformView)
 		{
-			if (virtualView.UsesSafeAreaEdges() && platformView is MauiView mauiView)
+			var mauiView = platformView as MauiView;
+
+			if (mauiView is null && platformView is WrapperView wrapperView)
+			{
+				var subviews = wrapperView.Subviews;
+
+				if (subviews.Length > 0 && subviews[0] is MauiView wrappedMauiView)
+				{
+					mauiView = wrappedMauiView;
+				}
+			}
+
+			if (virtualView.UsesSafeAreaEdges() && mauiView is not null)
 			{
 				var insets = ComputeCellSafeAreaInsets(cell, virtualView);
 				mauiView.CellSafeAreaOverride = insets != UIEdgeInsets.Zero
 					? insets.ToSafeAreaInsets()
 					: SafeAreaPadding.Empty;
 			}
-			else if (platformView is MauiView mv && !mv.CellSafeAreaOverride.IsEmpty)
+			else if (mauiView is not null && !mauiView.CellSafeAreaOverride.IsEmpty)
 			{
 				// Clear stale override from a previous template that used safe area edges.
-				mv.CellSafeAreaOverride = SafeAreaPadding.Empty;
+				mauiView.CellSafeAreaOverride = SafeAreaPadding.Empty;
 			}
 		}
 
