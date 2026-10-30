@@ -259,11 +259,10 @@ Automated CI-fix PR validation is implemented separately by
   still requires live rollout canary verification for all three definitions;
 - deduplicates each pipeline by PR head SHA and reports partial failures.
 
-The workflow and script need to exist only on `main`. The `workflow_run`
-allowlist includes `CI Failure Scanner`, `CI Failure Scanner (net11.0)`, and
-the two manual legacy `CI Failure Fixer` workflows. Keep their exact compiled
-names and paths aligned with `Test-TrustedCiFixWorkflowRun` so reconciliation
-fires after direct issue-free PR creation and follow-up pushes.
+The workflow and script need to exist only on `main`. Before declaring net11
+coverage enabled, verify that the net11 fixer's compiled workflow name remains
+`CI Failure Fixer (net11.0)` so the main-branch `workflow_run` reconciliation
+fires after its create/push run.
 
 ## How It Works (Token Flow)
 

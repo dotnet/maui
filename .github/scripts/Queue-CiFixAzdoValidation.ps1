@@ -462,8 +462,6 @@ function Test-TrustedCiFixWorkflowRun {
     $headRepository = Get-ObjectPropertyValue -InputObject $workflowRun -Name 'head_repository'
 
     $allowedWorkflows = @{
-        'CI Failure Scanner' = '.github/workflows/ci-status-main.lock.yml'
-        'CI Failure Scanner (net11.0)' = '.github/workflows/ci-status-net11.lock.yml'
         'CI Failure Fixer (main)' = '.github/workflows/ci-status-fix.lock.yml'
         'CI Failure Fixer (net11.0)' = '.github/workflows/ci-status-fix-net11.lock.yml'
     }

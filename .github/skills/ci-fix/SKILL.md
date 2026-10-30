@@ -1,6 +1,6 @@
 ---
 name: ci-fix
-description: Common safety and triage protocol for .NET MAUI CI-fixer workflows. Use whenever investigating, creating, or advancing a `[ci-fix]` or `[ci-fix-net11]` pull request from direct CI evidence or a legacy `ci-scan` issue, including frozen ownership snapshots, Continue/Watch/Stop/Skip classification, manual dispatches, and scheduled sweeps.
+description: Common safety and triage protocol for .NET MAUI CI-fixer workflows. Use whenever investigating, creating, or advancing a `[ci-fix]` or `[ci-fix-net11]` pull request from a `ci-scan` issue, including frozen ownership snapshots, Continue/Watch/Stop/Skip classification, manual single-issue dispatches, and scheduled sweeps.
 ---
 
 # CI-fix triage protocol
@@ -8,18 +8,6 @@ description: Common safety and triage protocol for .NET MAUI CI-fixer workflows.
 Use this protocol before proposing a code change or emitting a CI-fixer safe
 output. The calling workflow supplies its branch, labels, title prefix, attempt
 limit, and allowed write surface; preserve those caller-specific restrictions.
-
-## Direct CI discovery
-
-The scheduled `ci-status-main` and `ci-status-net11` workflows discover failures
-directly, without tracking issues. Their ownership key is the exact hidden
-`ci-fix-fingerprint` PR-body comment; apply the same open/merged/closed ownership
-decisions below to that key instead of `Refs: dotnet/maui#N`. Verify the configured
-base, title prefix, label, and same-repository head branch before advancing a PR.
-Do not invent an issue number or create a tracking, diagnostic, or hand-off issue.
-An unsupported or runtime-blocked fix stays in run logs/artifacts, not an empty
-or reproduction-only PR. The issue-specific instructions below apply only to
-legacy issue-linked maintenance.
 
 ## Return a decision
 

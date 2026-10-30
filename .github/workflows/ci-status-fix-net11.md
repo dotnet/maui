@@ -1,8 +1,8 @@
 ---
 name: "CI Failure Fixer (net11.0)"
 description: |
-  Manual legacy maintenance of issue-linked CI-fix PRs. New failures are handled
-  directly by ci-status-net11 without tracking issues. This workflow targets
+  Periodic pass over open ci-scan-net11 tracking issues filed by the net11.0 CI
+  failure scanner (.github/workflows/ci-status-net11.md). This workflow targets
   the `net11.0` branch EXCLUSIVELY: it processes only issues labelled ci-scan-net11 and
   opens every PR against net11.0. (The main branch is handled by the parallel
   .github/workflows/ci-status-fix.md — the two are split because gh-aw can
@@ -45,6 +45,7 @@ permissions:
   pull-requests: read
 
 on:
+  schedule: every 12h
   workflow_dispatch:
     inputs:
       issue_number:
@@ -242,16 +243,6 @@ checkout:
     - "net11.0"
 
 safe-outputs:
-  report-failure-as-issue: false
-  report-failed-jobs: false
-  missing-tool:
-    create-issue: false
-  missing-data:
-    create-issue: false
-  report-incomplete:
-    create-issue: false
-  noop:
-    report-as-issue: false
   # The pre-agent step overrides the repository default for capture-time
   # validation. This supported safe-output environment pins the separately
   # generated apply-time jobs.
@@ -501,8 +492,16 @@ post-steps:
       # (missing_tool / missing_data / noop / report_incomplete) are emitted outside that
       # rule and are deliberately excluded so they cannot redden a legitimate run.
       #
-      # Diagnostic outputs remain available in dry_run, but their issue creation
-      # is disabled above. Blockers are reported only in run logs and summaries.
+      # That exclusion deliberately SURVIVES dry_run, even though `noop`
+      # (report-as-issue: true) and `report_incomplete` do each create a GitHub issue.
+      # Two reasons. First, this step is detective, not preventive: naming them here
+      # could not stop the issue, only redden the run after it was already filed.
+      # Second, `report_incomplete` is emitted from the snapshot guard, which runs
+      # BEFORE any Step 0 dry-run gate and exists precisely to say "I could not
+      # proceed" -- a write-free canary that cannot report its own blocker is worse
+      # than one that files a diagnostic. So the dry-run contract enforced here is
+      # "emit no MUTATION", not "emit no telemetry": the run's own reporting about
+      # itself is not an agent code/PR mutation and is never suppressed.
       if [ -f "${output}" ] && jq -e '.items | type == "array"' "${output}" >/dev/null; then
         for mutating_type in \
           create_pull_request \
@@ -587,11 +586,6 @@ network:
 ---
 
 # CI Failure Fixer — dotnet/maui (net11.0 branch)
-
-This is a manual compatibility workflow for existing issue-linked PRs. The
-scheduled `ci-status-net11` workflow now discovers failures and maintains fix PRs
-directly without issues. Never create or reopen tracking or diagnostic issues.
-Blocked investigations remain in the run log and artifacts.
 
 You walk open `[ci-scan-net11]` tracking issues filed by the net11.0 CI failure
 scanner. **This workflow targets the `net11.0` branch exclusively** — every issue
