@@ -316,8 +316,8 @@ namespace Microsoft.Maui.Controls.Gtk.Items
 				content = GtkCellViews.ToView(cell);
 			}
 
-			if (VirtualView.RowHeight > 0 && !VirtualView.HasUnevenRows)
-				content.HeightRequest = VirtualView.RowHeight;
+			// The fixed row height is applied by the native row, not written into the user's view (a ViewCell's View is theirs).
+			host.RowHeight = VirtualView.RowHeight > 0 && !VirtualView.HasUnevenRows ? VirtualView.RowHeight : 0;
 
 			// A view cell's view belongs to the cell (that is where its binding context comes from); other views belong to the list.
 			if (cell is not ViewCell)
@@ -490,8 +490,6 @@ namespace Microsoft.Maui.Controls.Gtk.Items
 				{
 					VirtualView.AddLogicalChild(cell);
 					var view = GtkCellViews.ToView(cell);
-					if (VirtualView.RowHeight > 0 && !VirtualView.HasUnevenRows)
-						view.HeightRequest = VirtualView.RowHeight;
 					Add(view, cell);
 				}
 			}
@@ -502,7 +500,10 @@ namespace Microsoft.Maui.Controls.Gtk.Items
 			VirtualView.AddLogicalChild(view);
 			view.IsPlatformStateConsistent = true;
 
+			// The fixed row height of the cells is applied by the native row, not written into the user's view.
 			var host = new MauiGtkItemHost { Tag = cell };
+			if (cell is not null && VirtualView.RowHeight > 0 && !VirtualView.HasUnevenRows)
+				host.RowHeight = VirtualView.RowHeight;
 			host.SetView(view, MauiContext!);
 
 			if (cell is not null)

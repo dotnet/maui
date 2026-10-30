@@ -72,6 +72,57 @@ namespace Microsoft.Maui.Gtk.UnitTests
 		});
 
 		[GtkFact]
+		public void ListViewRowHeightIsAppliedToTheRowNotToTheUsersView() => GtkTestHost.Run(() =>
+		{
+			_ = ControlsTestApp.App;
+			Label? userLabel = null;
+			var list = new ListView
+			{
+				RowHeight = 60,
+				ItemsSource = new[] { "a", "b" },
+				ItemTemplate = new DataTemplate(() =>
+				{
+					userLabel = new Label { HeightRequest = 24 };
+					userLabel.SetBinding(Label.TextProperty, ".");
+					return new ViewCell { View = userLabel };
+				}),
+			};
+			using var host = new ControlsWindowHost(new ContentPage { Content = list }, 400, 300);
+			host.Pump(10);
+
+			var handler = (GtkListViewHandler)list.Handler!;
+			Assert.NotEmpty(handler.BoundHosts);
+			Assert.All(handler.BoundHosts, h =>
+			{
+				Assert.Equal(60, h.RowHeight);
+				h.Measure(global::Gtk.Orientation.Vertical, 300, out _, out int natural, out _, out _);
+				Assert.Equal(60 + h.MarginTop + h.MarginBottom, natural); // the margins of a cell row come on top
+				// The view belongs to the user's template: its HeightRequest is untouched.
+				Assert.Equal(24, ((Label)h.View!).HeightRequest);
+			});
+			Assert.Equal(24, userLabel!.HeightRequest);
+		});
+
+		[GtkFact]
+		public void TableViewRowHeightIsAppliedToTheRowNotToTheUsersView() => GtkTestHost.Run(() =>
+		{
+			_ = ControlsTestApp.App;
+			var label = new Label { Text = "x", HeightRequest = 24 };
+			var table = new TableView
+			{
+				RowHeight = 70,
+				Root = new TableRoot { new TableSection { new ViewCell { View = label } } },
+			};
+			using var host = new ControlsWindowHost(new ContentPage { Content = table }, 400, 300);
+			host.Pump(10);
+
+			var handler = (GtkTableViewHandler)table.Handler!;
+			var row = Assert.Single(handler.Hosts);
+			Assert.Equal(70, row.RowHeight);
+			Assert.Equal(24, label.HeightRequest);
+		});
+
+		[GtkFact]
 		public void SelectionAndTapsReachTheListView() => GtkTestHost.Run(() =>
 		{
 			_ = ControlsTestApp.App;
