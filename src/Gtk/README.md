@@ -81,6 +81,12 @@ Not in this area: Picker/Slider/..., Shell, CollectionView, WebView, Maps. Image
 | Smoke | `dotnet run --project src/Gtk/samples/Maui.Gtk.Sample -- --smoke` (prints `SMOKE OK`) |
 | Core hook tests | `dotnet test src/Core/tests/UnitTests/Core.UnitTests.csproj --filter "FullyQualifiedName~PlatformViewBackendTests"` |
 
+| Project | Tests (Windows GTK 4.22 / Debian 13 GTK 4.18, xvfb) |
+|---------|------|
+| `Microsoft.Maui.Gtk.UnitTests` (Core + Essentials) | 194 passed, 0 skipped |
+| `Graphics.Cairo.Tests` | 125 passed, 0 skipped |
+| `Core.UnitTests` / `Controls.Core.UnitTests` (net10.0) | 878 (+3 skipped) / 5865 (+30 skipped) passed |
+
 - One shared test project; Essentials tests (`Essentials/`) run on the same GTK thread through `GtkTestHost` (a second GTK thread crashes the process); the host is OLE initialized on Windows and iterates the main context in the background once `GtkTestHost.Post` is used.
 - Tests use `[GtkFact]`: skipped when no GTK/display, a failure when `MAUI_GTK_REQUIRE_NATIVE` is set.
 - GTK runs on one dedicated (STA on Windows) thread; test bodies go through `GtkTestHost.Run`. No `async` bodies, never `Destroy()` a window.
