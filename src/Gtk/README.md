@@ -11,7 +11,7 @@ checks, `IButtonHandler` and user mapper customisations keep working.
 |---|---|---|
 | `src/Core` | `Microsoft.Maui.Gtk` | hosting, layout bridge, handlers, fonts, images, styling (this document) |
 | `tests/Microsoft.Maui.Gtk.UnitTests` | | xUnit tests on real widgets (one shared project) |
-| `samples/Maui.Gtk.Sample` | | code-only sample on `net10.0-gtk4.22` (SingleProject: `Platforms/Linux`, icon, image, font, asset) |
+| `samples/Maui.Gtk.Sample` | | code-only sample on `net10.0-gtk4.22` (SingleProject: `Platforms/Linux`, icon, image, font, asset); needs the `gtk` workload, so it is not part of `Microsoft.Maui-linux.slnf` |
 | `src/Essentials` | `Microsoft.Maui.Essentials.Gtk` | Essentials on GTK 4 / Linux, see [`src/Essentials/README.md`](src/Essentials/README.md) |
 | `../Graphics/src/Graphics.Cairo` | `Microsoft.Maui.Graphics.Cairo` | `ICanvas` on Cairo/Pango, see its [README](../Graphics/src/Graphics.Cairo/README.md) |
 | `src/Controls` | `Microsoft.Maui.Controls.Gtk` | Controls handlers and `UseMauiGtk()`, see [`src/Controls/README.md`](src/Controls/README.md) |
@@ -162,7 +162,7 @@ Not in this area: Shell, CollectionView, Maps, NavigationPage/Toolbar/FlyoutPage
 |---|---|
 | Windows | `dotnet test src/Gtk/tests/Microsoft.Maui.Gtk.UnitTests` (GTK 4 runtime in `%LOCALAPPDATA%\Gtk\4.22.4\bin` or on `PATH`) |
 | Linux / WSL (headless) | `GDK_BACKEND=x11 dbus-run-session -- xvfb-run -a --server-args="-screen 0 1280x1024x24" dotnet test src/Gtk/tests/Microsoft.Maui.Gtk.UnitTests` |
-| Smoke | `dotnet run --project src/Gtk/samples/Maui.Gtk.Sample -- --smoke` (prints `SMOKE OK`) |
+| Smoke | `dotnet run --project src/Gtk/samples/Maui.Gtk.Sample -- --smoke` (prints `SMOKE OK`; checks the SDK-copied image, font, icon, asset and `.desktop`; needs the `gtk` workload) |
 | Core hook tests | `dotnet test src/Core/tests/UnitTests/Core.UnitTests.csproj --filter "FullyQualifiedName~PlatformViewBackendTests"` |
 
 | Project | Tests (Windows GTK 4.22 / Debian 13 GTK 4.18, xvfb) |
