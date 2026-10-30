@@ -169,7 +169,7 @@ Not in this area: Shell, CollectionView, Maps, NavigationPage/Toolbar/FlyoutPage
 |---------|------|
 | `Microsoft.Maui.Gtk.UnitTests` (Core + Essentials + Handlers + Controls + Web + Maps) | Windows 637 passed, 21 skipped (17 WebKit + 4 Linux-only popups); Debian 658 passed, 0 skipped |
 | `Graphics.Cairo.Tests` | 125 passed, 0 skipped |
-| `Core.UnitTests` / `Controls.Core.UnitTests` (net10.0) | 883 (+3 skipped) / 5865 (+30 skipped) passed |
+| `Core.UnitTests` / `Controls.Core.UnitTests` (net10.0) | 883 (+3 skipped) / 5869 (+30 skipped) passed |
 | `Resizetizer.UnitTests` (43 for `gtk`: images, icon, `.desktop`, dpi paths) | 637 passed, 2 skipped |
 
 - One shared test project; Essentials tests (`Essentials/`) run on the same GTK thread through `GtkTestHost` (a second GTK thread crashes the process); the host is OLE initialized on Windows and iterates the main context in the background once `GtkTestHost.Post` is used.
