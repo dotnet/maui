@@ -168,5 +168,49 @@ namespace Microsoft.Maui.Controls.StyleSheets.UnitTests
 			Assert.Equal(Colors.Green, button.BackgroundColor);
 		}
 
+		[Fact]
+		public void TransformScaleWithSingleValueScalesBothAxes()
+		{
+			var styleString = @"transform: scale(2);";
+			var style = Style.Parse(new CssReader(new StringReader(styleString)), '}');
+			Assert.NotNull(style);
+
+			var ve = new VisualElement();
+			style.Apply(ve);
+
+			Assert.Equal(2, ve.ScaleX);
+			Assert.Equal(2, ve.ScaleY);
+		}
+
+		[Fact]
+		public void TransformTranslateWithSingleValueTranslatesXOnly()
+		{
+			var styleString = @"transform: translate(10);";
+			var style = Style.Parse(new CssReader(new StringReader(styleString)), '}');
+			Assert.NotNull(style);
+
+			var ve = new VisualElement();
+			style.Apply(ve);
+
+			Assert.Equal(10, ve.TranslationX);
+			Assert.Equal(0, ve.TranslationY);
+		}
+
+		[Fact]
+		public void TransformScaleAndTranslateWithTwoValues()
+		{
+			var styleString = @"transform: scale(2,3) translate(10,20);";
+			var style = Style.Parse(new CssReader(new StringReader(styleString)), '}');
+			Assert.NotNull(style);
+
+			var ve = new VisualElement();
+			style.Apply(ve);
+
+			Assert.Equal(2, ve.ScaleX);
+			Assert.Equal(3, ve.ScaleY);
+			Assert.Equal(10, ve.TranslationX);
+			Assert.Equal(20, ve.TranslationY);
+		}
+
 	}
 }
