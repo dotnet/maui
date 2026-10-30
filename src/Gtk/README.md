@@ -65,3 +65,4 @@ Do not run `./build.sh -restore` from WSL: it would provision the Linux SDK into
 - `eng/gtk/LocalFeed.targets` (imported by `Directory.Build.targets` only when `-p:MauiGtkLocalFeedDir` is set) runs after `Pack`: copies the nupkg into the feed, deletes older `<id>.*-gtk.*` files of exactly that id, and deletes the old and new version folders from the Windows NuGet cache. It refuses non `-gtk.` versions.
 - Only the TFMs enabled by `Directory.Build.Override.props` are packed (see Building), so packages built on a machine without mobile workloads carry no mobile/Windows assets.
 - Under WSL run `eng/gtk/refresh-gtk-packages.sh` after each repack.
+- Self-test of the feed logic (12 checks, no MAUI build): `pwsh eng/gtk/tests/LocalFeed.Tests.ps1`.

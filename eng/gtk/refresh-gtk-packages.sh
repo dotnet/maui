@@ -29,6 +29,6 @@ else
         rm -rf "$v"; echo "removed $v"; removed=$((removed+1))
       done
     fi
-  done < <(find "$feed" -maxdepth 1 -name '*-gtk.*.nupkg')
+  done < <(find -L "$feed" -maxdepth 1 -name '*-gtk.*.nupkg')
 fi
 echo "refresh-gtk-packages: removed $removed cached folder(s) from $cache"
