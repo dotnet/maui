@@ -21,6 +21,85 @@ namespace Microsoft.Maui.DeviceTests
 	public partial class CollectionViewTests
 	{
 		[Theory]
+		[InlineData(ItemsUpdatingScrollMode.KeepItemsInView, false)]
+		[InlineData(ItemsUpdatingScrollMode.KeepItemsInView, true)]
+		[InlineData(ItemsUpdatingScrollMode.KeepLastItemInView, false)]
+		[InlineData(ItemsUpdatingScrollMode.KeepLastItemInView, true)]
+		public async Task CollectionView2SharedItemsSourceUpdatesWhileHidden(ItemsUpdatingScrollMode scrollMode, bool hiddenFirst)
+		{
+			SetupBuilderCollectionView2();
+
+			var items = new ObservableCollection<string> { "Item 1", "Item 2", "Item 3" };
+			var itemTemplate = new Controls.DataTemplate(() =>
+			{
+				var label = new Label { HeightRequest = 40 };
+				label.SetBinding(Label.TextProperty, ".");
+				return label;
+			});
+			var visible = new CollectionView
+			{
+				ItemsSource = items,
+				ItemTemplate = itemTemplate,
+				ItemsUpdatingScrollMode = scrollMode,
+				HeightRequest = 200
+			};
+			var hidden = new CollectionView
+			{
+				ItemsSource = items,
+				ItemTemplate = itemTemplate,
+				ItemsUpdatingScrollMode = scrollMode,
+				HeightRequest = 200,
+				IsVisible = false
+			};
+			var layout = new VerticalStackLayout();
+			layout.Add(hiddenFirst ? hidden : visible);
+			layout.Add(hiddenFirst ? visible : hidden);
+
+			await CreateHandlerAndAddToWindow<LayoutHandler>(layout, async handler =>
+			{
+				var visiblePlatformView = Assert.IsType<CollectionViewHandler2>(visible.Handler).PlatformView;
+				var hiddenPlatformView = Assert.IsType<CollectionViewHandler2>(hidden.Handler).PlatformView;
+				await AssertEventually(() => visiblePlatformView.IsLoaded && hiddenPlatformView.IsLoaded);
+
+				items.Add("Item 4");
+				handler.PlatformView.UpdateLayout();
+				await Task.Delay(100);
+
+				Assert.Equal(items, Assert.IsAssignableFrom<System.Collections.IEnumerable>(visiblePlatformView.ItemsSource)
+					.Cast<ItemTemplateContext2>().Select(context => Assert.IsType<string>(context.Item)));
+				Assert.Equal(items, Assert.IsAssignableFrom<System.Collections.IEnumerable>(hiddenPlatformView.ItemsSource)
+					.Cast<ItemTemplateContext2>().Select(context => Assert.IsType<string>(context.Item)));
+
+				hidden.IsVisible = true;
+				await AssertEventually(() => hidden.LogicalChildrenInternal.OfType<Label>()
+					.Any(label => label.Text == "Item 4" && label.IsLoaded));
+
+				// Hide after layout has queued a scroll but before the dispatcher executes it.
+				items.Add("Item 5");
+				handler.PlatformView.UpdateLayout();
+				hidden.IsVisible = false;
+				await Task.Delay(100);
+
+				items.RemoveAt(0);
+				items[0] = "Updated item";
+				items.Move(0, items.Count - 1);
+				items.Clear();
+				items.Add("After reset");
+				handler.PlatformView.UpdateLayout();
+				await Task.Delay(100);
+
+				Assert.Equal(items, Assert.IsAssignableFrom<System.Collections.IEnumerable>(visiblePlatformView.ItemsSource)
+					.Cast<ItemTemplateContext2>().Select(context => Assert.IsType<string>(context.Item)));
+				Assert.Equal(items, Assert.IsAssignableFrom<System.Collections.IEnumerable>(hiddenPlatformView.ItemsSource)
+					.Cast<ItemTemplateContext2>().Select(context => Assert.IsType<string>(context.Item)));
+
+				hidden.IsVisible = true;
+				await AssertEventually(() => hidden.LogicalChildrenInternal.OfType<Label>()
+					.Any(label => label.Text == "After reset" && label.IsLoaded));
+			});
+		}
+
+		[Theory]
 		[InlineData(false)]
 		[InlineData(true)]
 		public async Task CollectionView2ItemsSourceCanBeClearedAndRestored(bool useItemTemplate)
