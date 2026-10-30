@@ -11,6 +11,12 @@
       "longName": "sample-content",
       "shortName": "sc"
     },
+    "Linux": {
+      "longName": "linux"
+    },
+    "mauiGtkVersion": {
+      "longName": "maui-gtk-version"
+    },
     "skipRestore": {
       "longName": "no-restore",
       "shortName": ""

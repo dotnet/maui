@@ -1,0 +1,1 @@
+A raw asset (MauiAsset): copied next to the app and read through FileSystem.OpenAppPackageFileAsync.

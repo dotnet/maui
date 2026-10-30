@@ -83,6 +83,12 @@
             "MainPage.xaml.cs",
             "Resources/Images/dotnet_bot.png"
           ]
+        },
+        {
+          "condition": "(!Linux)",
+          "exclude": [
+            "Platforms/Linux/**"
+          ]
         }]
       }
     ],
@@ -183,6 +189,20 @@
         "defaultValue": "false",
         "displayName": "_Include sample content",
         "description": "Configures whether to add sample pages and functionality to demonstrate basic usage patterns."
+      },
+      "Linux": {
+        "type": "parameter",
+        "datatype": "bool",
+        "defaultValue": "false",
+        "displayName": "Add _Linux (GTK 4) head",
+        "description": "Adds a Linux head (GTK 4, net10.0-gtk4.22): Platforms/Linux/Program.cs and the Microsoft.Maui.Controls.Gtk package. Needs the GtkSharp 'gtk' workload; see src/Gtk/README.md."
+      },
+      "mauiGtkVersion": {
+        "type": "parameter",
+        "datatype": "string",
+        "replaces": "MAUI_GTK_VERSION",
+        "defaultValue": "MAUI_GTK_VERSION_VALUE",
+        "description": "The version of the Microsoft.Maui.* packages of the Linux head (a floating range of the GTK build)."
       },
       "skipRestore": {
         "type": "parameter",

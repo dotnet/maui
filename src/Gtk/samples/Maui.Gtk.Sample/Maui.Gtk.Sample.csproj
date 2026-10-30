@@ -2,14 +2,31 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <!-- Plain net10.0 for now; the net10.0-gtk4.22 head arrives with the SDK/templates work. -->
-    <TargetFramework>$(MauiGtkTargetFramework)</TargetFramework>
+    <!-- The GtkSharp 'gtk' workload target framework (see src/Gtk/README.md, "Creating an app"). -->
+    <TargetFramework>net10.0-gtk4.22</TargetFramework>
+    <SingleProject>true</SingleProject>
     <RootNamespace>Maui.Gtk.Sample</RootNamespace>
     <AssemblyName>Maui.Gtk.Sample</AssemblyName>
     <IsPackable>false</IsPackable>
     <SampleProject>true</SampleProject>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
+
+    <ApplicationTitle>MAUI on GTK 4</ApplicationTitle>
+    <ApplicationId>com.microsoft.maui.gtk.sample</ApplicationId>
+    <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
+    <ApplicationVersion>1</ApplicationVersion>
   </PropertyGroup>
+
+  <ItemGroup>
+    <!-- App icon: Resources/Icons/hicolor/*/apps/appicon.png and the com.microsoft.maui.gtk.sample.desktop entry. -->
+    <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" />
+    <!-- Images: Resources/Images/*.png next to the app. -->
+    <MauiImage Include="Resources\Images\*" BaseSize="168,208" />
+    <!-- Fonts: Resources/Fonts, registered with ConfigureFonts(f => f.AddFont("OpenSans-Regular.ttf", ...)). -->
+    <MauiFont Include="Resources\Fonts\*" />
+    <!-- Raw assets: next to the app, at their logical name. -->
+    <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="GtkSharp4" />

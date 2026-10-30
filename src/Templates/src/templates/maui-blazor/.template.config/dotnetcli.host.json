@@ -4,6 +4,12 @@
     "msExtensionsLoggingDebugVersion": {
       "isHidden": true
     },
+    "Linux": {
+      "longName": "linux"
+    },
+    "mauiGtkVersion": {
+      "longName": "maui-gtk-version"
+    },
     "Framework": {
       "longName": "framework"
     },

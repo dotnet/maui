@@ -9,5 +9,6 @@ public static class MauiProgram
 		MauiApp.CreateBuilder()
 			.UseMauiApp<App>()
 			.UseMauiGtk()
+			.ConfigureFonts(fonts => fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular"))
 			.Build();
 }

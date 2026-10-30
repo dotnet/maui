@@ -15,6 +15,13 @@ public static class MauiProgram
 		var builder = MauiApp.CreateBuilder();
 		builder
 			.UseMauiApp<App>()
+#if (Linux)
+//-:cnd:noEmit
+#if GTK
+			.UseMauiGtk()
+#endif
+//+:cnd:noEmit
+#endif
 #if (IncludeSampleContent)
 			.UseMauiCommunityToolkit()
 			.ConfigureSyncfusionToolkit()

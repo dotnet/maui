@@ -1,0 +1,5 @@
+<Project>
+  <!-- In-tree samples use the MSBuild tasks and targets built from this repository (Resizetizer, Controls.Build.Tasks), like src/Controls/samples. -->
+  <Import Project="$(MauiSrcDirectory)Maui.InTree.targets" />
+  <Import Project="$(MauiRootDirectory)Directory.Build.targets" />
+</Project>

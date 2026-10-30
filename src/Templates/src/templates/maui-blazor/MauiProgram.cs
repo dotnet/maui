@@ -9,12 +9,29 @@ public static class MauiProgram
 		var builder = MauiApp.CreateBuilder();
 		builder
 			.UseMauiApp<App>()
+#if (Linux)
+//-:cnd:noEmit
+#if GTK
+			.UseMauiGtk()
+#endif
+//+:cnd:noEmit
+#endif
 			.ConfigureFonts(fonts =>
 			{
 				fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
 			});
 
+#if (Linux)
+//-:cnd:noEmit
+#if GTK
+		builder.Services.AddMauiBlazorWebView().UseGtkPlatformHandler();
+#else
 		builder.Services.AddMauiBlazorWebView();
+#endif
+//+:cnd:noEmit
+#else
+		builder.Services.AddMauiBlazorWebView();
+#endif
 
 //-:cnd:noEmit
 #if DEBUG

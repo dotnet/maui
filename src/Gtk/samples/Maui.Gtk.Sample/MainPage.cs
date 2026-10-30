@@ -32,6 +32,10 @@ public sealed class MainPage : ContentPage
 			HorizontalOptions = LayoutOptions.Start,
 		};
 
+		// MauiImage / MauiFont / MauiAsset (see the project file): Resources/Images/dotnet_bot.png, Resources/Fonts/OpenSans-Regular.ttf.
+		var bot = new Image { Source = "dotnet_bot", HeightRequest = 104, WidthRequest = 84, HorizontalOptions = LayoutOptions.Start };
+		var fontLabel = new Label { Text = "OpenSans-Regular from MauiFont", FontFamily = "OpenSansRegular", FontSize = 16 };
+
 		var card = new Border
 		{
 			StrokeThickness = 2,
@@ -70,6 +74,8 @@ public sealed class MainPage : ContentPage
 						},
 					},
 					image,
+					bot,
+					fontLabel,
 					card,
 				},
 			},

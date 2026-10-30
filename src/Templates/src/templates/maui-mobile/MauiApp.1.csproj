@@ -4,6 +4,13 @@
 		<TargetFrameworks>DOTNET_TFM-android</TargetFrameworks>
 		<TargetFrameworks Condition="!$([MSBuild]::IsOSPlatform('linux'))">$(TargetFrameworks);DOTNET_TFM-ios;DOTNET_TFM-maccatalyst</TargetFrameworks>
 		<TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);DOTNET_TFM-windows10.0.19041.0</TargetFrameworks>
+<!--#if (Linux) -->
+
+		<!-- Linux (GTK 4): needs the GtkSharp 'gtk' workload. The Android, iOS and Windows workloads do not exist on a Linux host,
+		     so there the app has the GTK head only. -->
+		<TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('linux'))">DOTNET_TFM-gtk4.22</TargetFrameworks>
+		<TargetFrameworks Condition="!$([MSBuild]::IsOSPlatform('linux'))">$(TargetFrameworks);DOTNET_TFM-gtk4.22</TargetFrameworks>
+<!--#endif -->
 
 		<!-- Note for MacCatalyst:
 		The default runtime is maccatalyst-x64, except in Release config, in which case the default is maccatalyst-x64;maccatalyst-arm64.
@@ -14,7 +21,13 @@
 
 		<OutputType>Exe</OutputType>
 		<RootNamespace>MauiApp._1</RootNamespace>
+<!--#if (Linux) -->
+		<!-- The maui workload is not available on Linux: the GTK head takes MAUI from NuGet packages (below) instead of UseMaui. -->
+		<UseMaui Condition="'$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)'))' != 'gtk'">true</UseMaui>
+		<MauiVersion Condition="'$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)'))' == 'gtk' and '$(MauiVersion)' == ''">MAUI_GTK_VERSION</MauiVersion>
+<!--#else -->
 		<UseMaui>true</UseMaui>
+<!--#endif -->
 		<SingleProject>true</SingleProject>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
@@ -84,6 +97,15 @@
 		<PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="MS_EXT_LOG_DEBUG_VERSION" />
 	</ItemGroup>
+
+<!--#if (Linux) -->
+	<!-- Linux (GTK 4): what UseMaui adds on the other platforms -->
+	<ItemGroup Condition="'$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)'))' == 'gtk'">
+		<PackageReference Include="Microsoft.Maui.Controls.Gtk" Version="$(MauiVersion)" />
+		<PackageReference Include="Microsoft.Maui.Resizetizer" Version="$(MauiVersion)" PrivateAssets="all" />
+	</ItemGroup>
+
+<!--#endif -->
 
 <!--#if (IncludeSampleContent) -->
 	<ItemGroup>

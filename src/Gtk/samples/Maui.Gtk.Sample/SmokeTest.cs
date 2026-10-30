@@ -51,6 +51,34 @@ static class SmokeTest
 			return;
 		}
 
+		// What the SDK build (Resizetizer) copies next to the app.
+		var missing = new System.Collections.Generic.List<string>();
+		foreach (var file in new[]
+		{
+			"Resources/Images/dotnet_bot.png",
+			"Resources/Fonts/OpenSans-Regular.ttf",
+			"Resources/Icons/hicolor/256x256/apps/appicon.png",
+			"hello.txt",
+			"com.microsoft.maui.gtk.sample.desktop",
+		})
+		{
+			if (!System.IO.File.Exists(System.IO.Path.Combine(AppContext.BaseDirectory, file)))
+				missing.Add(file);
+		}
+
+		if (missing.Count > 0)
+		{
+			Failure = "missing SDK resources: " + string.Join(", ", missing);
+			return;
+		}
+
+		var registrar = page.Handler?.MauiContext?.Services.GetService(typeof(IFontRegistrar)) as IFontRegistrar;
+		if (registrar?.GetFont("OpenSansRegular") is null)
+		{
+			Failure = "the embedded font OpenSansRegular was not loaded";
+			return;
+		}
+
 		Succeeded = true;
 	}
 }
