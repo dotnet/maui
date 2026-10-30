@@ -17,6 +17,8 @@ front of the stock ones (see the Gtk README), so there is no ordering rule with 
 | NavigationPage | `GtkNavigationViewHandler` (Core) | `Gtk.Stack` of `MauiGtkFillHost` | slide transition when animated; only the top page is realised |
 | Toolbar | `GtkControlsToolbarHandler` : `GtkToolbarHandler` (Core) | `Gtk.HeaderBar` as the window title bar | back button, drawer toggle, items (primary = buttons, secondary = overflow popover), title view/icon, colours |
 | FlyoutPage | `GtkFlyoutViewHandler` (Core) | `MauiGtkFlyoutPanel` | `Split` = locked side by side; `Popover` = slide-over with scrim (click dismisses) |
+| Label | `GtkControlsLabelHandler` : `GtkLabelHandler` | `Gtk.Label` | `FormattedText` = Pango `span`s, `TextType.Html` = Pango markup (small HTML subset), `TextTransform`, `LineBreakMode`, `MaxLines`; span gestures unsupported |
+| DisplayAlert / ActionSheet / Prompt | `GtkDialogs` via the alert delegate convention (keyed `Func<Page, ..., Task<...>>` services) | modal `Gtk.Window` transient for the page's window | not `Gtk.AlertDialog`: its async GIO call cannot be driven or inspected; buttons are named after their text |
 | TabbedPage | `GtkTabbedPageHandler` : `GtkTabbedViewHandler` (Core) | `MauiGtkTabView` (toggle-button bar + `Gtk.Stack`) | bar on top; icons; bar/selected/unselected colours |
 
 Not done yet: see the section "Open issues" of the area reports; the table above only lists what is implemented and tested.
