@@ -6,6 +6,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue17389 : _IssuesUITest
 {
+    protected override bool ResetAfterEachTest => true;
+
     public Issue17389(TestDevice testDevice) : base(testDevice)
     {
     }
@@ -28,18 +30,19 @@ public class Issue17389 : _IssuesUITest
 
         foreach (var layout in layouts)
         {
-            App.Tap(layout);
+            App.TapElement(layout);
         }
 
-        App.WaitForElement("Tap count: 4");
+        Assert.That(App.WaitForTextToBePresentInElement("TapCountLabel", "Tap count: 4"), Is.True);
         App.Click("ToggleInputTransparentButton");
+        Assert.That(App.WaitForTextToBePresentInElement("RedGrid", "InputTransparent=True"), Is.True);
 
         foreach (var layout in layouts)
         {
-            App.Tap(layout);
+            App.TapElement(layout);
         }
 
-        App.WaitForElement("Tap count: 0");
+        Assert.That(App.WaitForTextToBePresentInElement("TapCountLabel", "Tap count: 0"), Is.True);
     }
 
     [Test, Order(2)]
@@ -47,6 +50,11 @@ public class Issue17389 : _IssuesUITest
     public void ValidateInputTransparentBackgroundColorToggle()
     {
         Exception? exception = null;
+
+        App.WaitForElement("ToggleInputTransparentButton");
+        App.Tap("ToggleInputTransparentButton");
+        Assert.That(App.WaitForTextToBePresentInElement("RedGrid", "InputTransparent=True"), Is.True);
+        Assert.That(App.WaitForTextToBePresentInElement("TapCountLabel", "Tap count: 0"), Is.True);
 
         App.WaitForElement("ToggleBackgroundColorsButton");
         VerifyScreenshotOrSetException(ref exception, "BeforeToggleBackgroundColors");

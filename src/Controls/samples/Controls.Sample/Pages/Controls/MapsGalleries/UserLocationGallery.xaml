@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage 
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:maps="http://schemas.microsoft.com/dotnet/2021/maui/maps"
+    x:Class="Maui.Controls.Sample.Pages.MapsGalleries.UserLocationGallery"
+    Title="User Location">
+    <Grid RowDefinitions="Auto, Auto, Auto, *">
+        <!-- Controls -->
+        <HorizontalStackLayout Grid.Row="0" Spacing="5" Padding="10">
+            <Label Text="Show User Location:" VerticalOptions="Center"/>
+            <Switch x:Name="ShowUserSwitch" IsToggled="True" VerticalOptions="Center"/>
+        </HorizontalStackLayout>
+        
+        <!-- Last Location Display -->
+        <Frame Grid.Row="1" Margin="10" Padding="10" BackgroundColor="{AppThemeBinding Light=#F5F5F5, Dark=#333333}">
+            <VerticalStackLayout>
+                <Label Text="Last User Location:" FontAttributes="Bold"/>
+                <Label x:Name="LatitudeLabel" Text="Latitude: --"/>
+                <Label x:Name="LongitudeLabel" Text="Longitude: --"/>
+                <Label x:Name="UpdateCountLabel" Text="Updates received: 0"/>
+            </VerticalStackLayout>
+        </Frame>
+        
+        <!-- Event Log -->
+        <Frame Grid.Row="2" Margin="10" Padding="10" MaximumHeightRequest="120" BackgroundColor="{AppThemeBinding Light=#F5F5F5, Dark=#333333}">
+            <VerticalStackLayout>
+                <Label Text="Recent Location Updates:" FontAttributes="Bold"/>
+                <ScrollView>
+                    <Label x:Name="EventLogLabel" FontSize="11" Text="Waiting for location updates..."/>
+                </ScrollView>
+            </VerticalStackLayout>
+        </Frame>
+        
+        <!-- Map -->
+        <maps:Map x:Name="userLocationMap" Grid.Row="3"
+            IsShowingUser="{Binding IsToggled, Source={x:Reference ShowUserSwitch}}"
+            MapClicked="OnMapClicked"
+            UserLocationChanged="OnUserLocationChanged"/>
+    </Grid>
+</ContentPage>

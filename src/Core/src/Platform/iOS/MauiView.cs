@@ -97,16 +97,16 @@ namespace Microsoft.Maui.Platform
 				}
 			}
 
-			if (virtualView is ISafeAreaView2 safeView && mauiView is not null)
+			if (virtualView.UsesSafeAreaEdges() && mauiView is not null)
 			{
-				var insets = ComputeCellSafeAreaInsets(cell, safeView);
+				var insets = ComputeCellSafeAreaInsets(cell, virtualView);
 				mauiView.CellSafeAreaOverride = insets != UIEdgeInsets.Zero
 					? insets.ToSafeAreaInsets()
 					: SafeAreaPadding.Empty;
 			}
 			else if (mauiView is not null && !mauiView.CellSafeAreaOverride.IsEmpty)
 			{
-				// Clear stale override from a previous template that implemented ISafeAreaView2.
+				// Clear stale override from a previous template that used safe area edges.
 				mauiView.CellSafeAreaOverride = SafeAreaPadding.Empty;
 			}
 		}
@@ -116,7 +116,7 @@ namespace Microsoft.Maui.Platform
 		/// Returns <see cref="UIEdgeInsets.Zero"/> when all edges share the same region (e.g., default
 		/// Container×4), as the parent layout chain handles uniform safe area (#33604, #34635).
 		/// </summary>
-		static UIEdgeInsets ComputeCellSafeAreaInsets(UIView cell, ISafeAreaView2 safeView)
+		static UIEdgeInsets ComputeCellSafeAreaInsets(UIView cell, IView safeView)
 		{
 			var window = cell.Window;
 			if (window is null)
@@ -126,10 +126,10 @@ namespace Microsoft.Maui.Platform
 			if (windowSA == UIEdgeInsets.Zero)
 				return UIEdgeInsets.Zero;
 
-			var leftRegion = safeView.GetSafeAreaRegionsForEdge(0);
-			var topRegion = safeView.GetSafeAreaRegionsForEdge(1);
-			var rightRegion = safeView.GetSafeAreaRegionsForEdge(2);
-			var bottomRegion = safeView.GetSafeAreaRegionsForEdge(3);
+			var leftRegion = safeView.GetSafeAreaRegionForEdge(0);
+			var topRegion = safeView.GetSafeAreaRegionForEdge(1);
+			var rightRegion = safeView.GetSafeAreaRegionForEdge(2);
+			var bottomRegion = safeView.GetSafeAreaRegionForEdge(3);
 
 			// Uniform edges (Container×4, None×4, All×4) are handled by the parent layout chain.
 			bool allSameRegion = leftRegion == topRegion
@@ -241,20 +241,7 @@ namespace Microsoft.Maui.Platform
 		}
 
 		internal SafeAreaRegions GetSafeAreaRegionForEdge(int edge)
-		{
-			if (View is ISafeAreaView2 safeAreaPage)
-			{
-				return safeAreaPage.GetSafeAreaRegionsForEdge(edge);
-			}
-
-			// Fallback to legacy ISafeAreaView behavior
-			if (View is ISafeAreaView sav)
-			{
-				return sav.IgnoreSafeArea ? SafeAreaRegions.None : SafeAreaRegions.Container;
-			}
-
-			return SafeAreaRegions.None;
-		}
+			=> View.GetSafeAreaRegionForEdge(edge);
 
 		// Note: This method was changed from static to instance to access _isKeyboardShowing field
 		// which is needed to determine if SoftInput padding should be applied
@@ -343,11 +330,11 @@ namespace Microsoft.Maui.Platform
 		bool ShouldSubscribeToKeyboardNotifications()
 		{
 			// Only subscribe if any edge has All or SoftInput regions
-			if (View is ISafeAreaView2 safeAreaPage)
+			if (View.UsesSafeAreaEdges())
 			{
 				for (int edge = 0; edge < 4; edge++)
 				{
-					var region = safeAreaPage.GetSafeAreaRegionsForEdge(edge);
+					var region = GetSafeAreaRegionForEdge(edge);
 					if (SafeAreaEdges.IsSoftInput(region))
 					{
 						return true;
@@ -459,14 +446,14 @@ namespace Microsoft.Maui.Platform
 			var baseSafeArea = SafeAreaInsets.ToSafeAreaInsets();
 
 			// Check if keyboard-aware safe area adjustments are needed
-			if (View is ISafeAreaView2 safeAreaPage && _isKeyboardShowing)
+			if (View.UsesSafeAreaEdges() && _isKeyboardShowing)
 			{
 				// Check if any edge has SafeAreaRegions.SoftInput set
 				var needsKeyboardAdjustment = false;
 				for (int edge = 0; edge < 4; edge++)
 				{
 
-					var safeAreaRegion = safeAreaPage.GetSafeAreaRegionsForEdge(edge);
+					var safeAreaRegion = GetSafeAreaRegionForEdge(edge);
 					if (SafeAreaEdges.IsSoftInput(safeAreaRegion))
 					{
 						needsKeyboardAdjustment = true;
@@ -487,7 +474,7 @@ namespace Microsoft.Maui.Platform
 						// If keyboard is visible and intersects with window
 						if (!keyboardIntersection.IsEmpty)
 						{
-							var bottomEdgeRegion = safeAreaPage.GetSafeAreaRegionsForEdge(3); // 3 = bottom edge
+							var bottomEdgeRegion = GetSafeAreaRegionForEdge(3); // 3 = bottom edge
 
 							// For SafeAreaRegions.SoftInput: Always pad so content doesn't go under the keyboard
 							// Bottom edge is most commonly affected by keyboard
@@ -512,7 +499,7 @@ namespace Microsoft.Maui.Platform
 				}
 			}
 
-			if (View is ISafeAreaView2)
+			if (View.UsesSafeAreaEdges())
 			{
 				// Single ancestor walk resolves all 4 edges at once, cached until invalidated
 				// (see SafeAreaInsetsExtensions.ResolveParentBlockedEdges) to avoid re-walking on every layout pass.
@@ -538,7 +525,7 @@ namespace Microsoft.Maui.Platform
 		}
 
 		/// <summary>
-		/// Checks if any parent view in the hierarchy is a MauiView that implements ISafeAreaView2
+		/// Checks if any parent view in the hierarchy is a MauiView that uses safe area edges
 		/// and has SafeAreaEdges.SoftInput set for the bottom edge. This is used to determine if
 		/// keyboard overlap/padding is already being handled by an ancestor, so the current view
 		/// should not apply additional adjustments.
@@ -547,8 +534,8 @@ namespace Microsoft.Maui.Platform
 		internal static bool IsSoftInputHandledByParent(UIView view)
 		{
 			return view.FindParent(x => x is MauiView mv
-				&& mv.View is ISafeAreaView2 safeAreaView2
-				&& SafeAreaEdges.IsSoftInput(safeAreaView2.GetSafeAreaRegionsForEdge(3))) is not null;
+				&& mv.View.UsesSafeAreaEdges()
+				&& SafeAreaEdges.IsSoftInput(mv.GetSafeAreaRegionForEdge(3))) is not null;
 		}
 
 
@@ -916,6 +903,24 @@ namespace Microsoft.Maui.Platform
 			_safeAreaInvalidated = true;
 			_blockedEdgesCacheValid = false;
 			SetNeedsLayout();
+		}
+
+		internal static void InvalidateSafeArea(UIView platformView)
+		{
+			if (platformView is MauiView mauiView)
+			{
+				mauiView.InvalidateSafeArea();
+			}
+			else if (platformView is MauiScrollView mauiScrollView)
+			{
+				mauiScrollView.InvalidateSafeArea();
+			}
+
+			var subviews = platformView.Subviews;
+			for (int i = 0; i < subviews.Length; i++)
+			{
+				InvalidateSafeArea(subviews[i]);
+			}
 		}
 
 		/// <summary>

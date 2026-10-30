@@ -204,14 +204,7 @@ namespace Microsoft.Maui.Platform
 		}
 
 		SafeAreaRegions GetSafeAreaRegionForEdge(int edge)
-		{
-			if (View is ISafeAreaView2 safeAreaPage)
-			{
-				return safeAreaPage.GetSafeAreaRegionsForEdge(edge);
-			}
-
-			return SafeAreaRegions.None; // Default: edge-to-edge content
-		}
+			=> View.GetSafeAreaRegionForEdge(edge);
 
 		SafeAreaEdges? _previousEdges;
 

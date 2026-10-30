@@ -18,6 +18,16 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// The data is copied to the drop target.
 		/// </summary>
-		Copy = 1
+		Copy = 1,
+
+		/// <summary>
+		/// The data is moved to the drop target.
+		/// </summary>
+		/// <remarks>
+		/// The drag source must allow moving. The application is responsible for updating
+		/// its data or collections when the drop succeeds; this operation does not remove
+		/// the source data or move a view automatically.
+		/// </remarks>
+		Move = 2
 	}
 }

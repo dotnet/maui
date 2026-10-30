@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public static PropertyMapper<CarouselView, CarouselViewHandler> Mapper = new(ItemsViewMapper)
 		{
-#if TIZEN || ANDROID
+#if ANDROID
 			[Controls.CarouselView.ItemsLayoutProperty.PropertyName] = MapItemsLayout,
 #endif
 #if IOS || MACCATALYST

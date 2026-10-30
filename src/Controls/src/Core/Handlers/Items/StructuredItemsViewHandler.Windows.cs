@@ -106,14 +106,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
-			if (_currentHeader != null)
+			var header = ItemsView.Header ?? ItemsView.HeaderTemplate;
+
+			// Header and HeaderTemplate both map here, so the same view comes through again. Taking it out
+			// of the logical tree and back would set its inherited BindingContext to null in between.
+			if (_currentHeader != null && !ReferenceEquals(_currentHeader, header))
 			{
 				Element.RemoveLogicalChild(_currentHeader);
 				_currentHeader.Cleanup();
 				_currentHeader = null;
 			}
-
-			var header = ItemsView.Header ?? ItemsView.HeaderTemplate;
 
 			switch (header)
 			{
@@ -128,8 +130,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 				case View view:
 					ListViewBase.HeaderTemplate = ViewTemplate;
-					_currentHeader = view;
-					Element.AddLogicalChild(_currentHeader);
+					if (_currentHeader is null)
+					{
+						_currentHeader = view;
+						Element.AddLogicalChild(_currentHeader);
+					}
 					ListViewBase.Header = view;
 					break;
 
@@ -156,14 +161,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
-			if (_currentFooter != null)
+			var footer = ItemsView.Footer ?? ItemsView.FooterTemplate;
+
+			// the same as for the header: keep a view that comes through again in the logical tree
+			if (_currentFooter != null && !ReferenceEquals(_currentFooter, footer))
 			{
 				Element.RemoveLogicalChild(_currentFooter);
 				_currentFooter.Cleanup();
 				_currentFooter = null;
 			}
-
-			var footer = ItemsView.Footer ?? ItemsView.FooterTemplate;
 
 			switch (footer)
 			{
@@ -178,8 +184,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 				case View view:
 					ListViewBase.FooterTemplate = ViewTemplate;
-					_currentFooter = view;
-					Element.AddLogicalChild(_currentFooter);
+					if (_currentFooter is null)
+					{
+						_currentFooter = view;
+						Element.AddLogicalChild(_currentFooter);
+					}
 					ListViewBase.Footer = view;
 					break;
 
