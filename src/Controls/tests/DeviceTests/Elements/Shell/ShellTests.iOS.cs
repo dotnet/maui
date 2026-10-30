@@ -426,6 +426,88 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact]
+		public async Task ShellHandlerCancelledInteractivePopRespectsSubsequentChildBackVeto()
+		{
+			SetupShellHandlerHierarchy();
+
+			var backPressOrder = new List<string>();
+			var rootPage = new BackHandlingPage(false, () => backPressOrder.Add("Root")) { Title = "Root" };
+			var childPage = new BackHandlingPage(false, () => backPressOrder.Add("Child")) { Title = "Child" };
+			var shell = new BackHandlingShell(false, () => backPressOrder.Add("Shell"))
+			{
+				CurrentItem = rootPage
+			};
+
+			await CreateHandlerAndAddToWindow<Controls.Handlers.ShellHandler>(shell, async handler =>
+			{
+				await OnLoadedAsync(rootPage);
+				await shell.Navigation.PushAsync(childPage).WaitAsync(TimeSpan.FromSeconds(2));
+				await OnNavigatedToAsync(childPage);
+
+				var section = shell.CurrentItem.CurrentItem;
+				var sectionHandler = Assert.IsType<Controls.Handlers.ShellSectionHandler>(section.Handler);
+				var navController = sectionHandler._navigationController;
+				var childController = navController.TopViewController;
+
+				Assert.True(navController.InteractivePopGestureRecognizer.Delegate.ShouldBegin(
+					navController.InteractivePopGestureRecognizer));
+				Assert.Equal(1, childPage.BackButtonPressedCount);
+				Assert.Equal(new Page[] { null, childPage }, shell.Navigation.NavigationStack);
+				Assert.Equal(2, navController.ViewControllers.Length);
+				Assert.Same(childController, navController.TopViewController);
+
+				// UIKit reports the original top controller after canceling the interactive pop.
+				navController.Delegate.DidShowViewController(navController, childController, false);
+				childPage.BackHandled = true;
+
+				Assert.False(ShellHandlerNativeShouldPopItem(navController));
+				Assert.Equal(2, childPage.BackButtonPressedCount);
+				Assert.Equal(0, rootPage.BackButtonPressedCount);
+				Assert.Equal(new[] { "Shell", "Child", "Shell", "Child" }, backPressOrder);
+				Assert.Equal(new Page[] { null, childPage }, shell.Navigation.NavigationStack);
+				Assert.Equal(2, navController.ViewControllers.Length);
+				Assert.Same(childController, navController.TopViewController);
+			});
+		}
+
+		[Fact]
+		public async Task ShellHandlerInteractivePopGestureReturnsFalseWhenChildDisconnectsSectionHandler()
+		{
+			SetupShellHandlerHierarchy();
+
+			var backPressOrder = new List<string>();
+			Controls.Handlers.ShellSectionHandler sectionHandler = null;
+			var rootPage = new BackHandlingPage(false, () => backPressOrder.Add("Root")) { Title = "Root" };
+			var childPage = new BackHandlingPage(false, () =>
+			{
+				backPressOrder.Add("Child");
+				((IElementHandler)sectionHandler)?.DisconnectHandler();
+			})
+			{ Title = "Child" };
+			var shell = new BackHandlingShell(false, () => backPressOrder.Add("Shell"))
+			{
+				CurrentItem = rootPage
+			};
+
+			await CreateHandlerAndAddToWindow<Controls.Handlers.ShellHandler>(shell, async handler =>
+			{
+				await OnLoadedAsync(rootPage);
+				await shell.Navigation.PushAsync(childPage).WaitAsync(TimeSpan.FromSeconds(2));
+				await OnNavigatedToAsync(childPage);
+
+				var section = shell.CurrentItem.CurrentItem;
+				sectionHandler = Assert.IsType<Controls.Handlers.ShellSectionHandler>(section.Handler);
+				var recognizer = sectionHandler._navigationController.InteractivePopGestureRecognizer;
+
+				Assert.False(recognizer.Delegate.ShouldBegin(recognizer));
+				Assert.Null(section.Handler);
+				Assert.Equal(1, childPage.BackButtonPressedCount);
+				Assert.Equal(0, rootPage.BackButtonPressedCount);
+				Assert.Equal(new[] { "Shell", "Child" }, backPressOrder);
+			});
+		}
+
 		static bool ShellHandlerNativeShouldPopItem(UINavigationController controller) =>
 			SendShellHandlerShouldPopItem(controller.Handle, Selector.GetHandle("navigationBar:shouldPopItem:"),
 				controller.NavigationBar.Handle, controller.NavigationBar.TopItem.Handle);

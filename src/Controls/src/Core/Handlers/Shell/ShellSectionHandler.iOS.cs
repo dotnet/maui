@@ -1149,14 +1149,20 @@ namespace Microsoft.Maui.Controls.Handlers
                 return false;
             }
 
-            var shellItem = _shellContext.Shell.CurrentItem;
+            var shell = _shellContext?.Shell;
+            if (((IElementHandler)this).VirtualView is null || shell is null)
+            {
+                return false;
+            }
+
+            var shellItem = shell.CurrentItem;
             var shellSection = shellItem?.CurrentItem;
             var shellContent = shellSection?.CurrentItem;
             var stack = shellSection?.Stack.ToList();
 
             stack?.RemoveAt(stack.Count - 1);
 
-            _interactivePopGesturePending = ((IShellController)_shellContext.Shell).ProposeNavigation(
+            _interactivePopGesturePending = ((IShellController)shell).ProposeNavigation(
                 ShellNavigationSource.Pop, shellItem, shellSection, shellContent, stack, true);
             return _interactivePopGesturePending;
         }
