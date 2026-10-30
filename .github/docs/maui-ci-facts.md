@@ -117,6 +117,10 @@ UI execution jobs keep .NET CLI state under the agent's job-local temporary
 directory, not the image's shared user `.dotnet` directory. The job-level
 `DOTNET_CLI_HOME` is shared by tool restore and subsequent tool invocations so
 resolver caches remain available; it does not change `HOME` or the SDK root.
+Preserve `NUGET_PACKAGES` (or Arcade's normal user-profile cache when unset)
+before relocating CLI state. Otherwise NuGet restores under the new CLI home
+while Arcade's `NuGetPackageRoot` still imports tasks from the original cache,
+which can leave provisioning tasks such as `JsonPeek` unavailable.
 Bootstrap does not generate an unrelated ASP.NET development certificate.
 
 ## MAUI-specific quirks

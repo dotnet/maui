@@ -25,8 +25,14 @@ steps:
 
 - pwsh: |
     $ErrorActionPreference = 'Stop'
+    $nugetPackages = $env:NUGET_PACKAGES
+    if (-not $nugetPackages) {
+      $userProfile = if ($IsWindows) { $env:USERPROFILE } else { $env:HOME }
+      $nugetPackages = Join-Path $userProfile '.nuget/packages'
+    }
     $cliHome = Join-Path $env:AGENT_TEMPDIRECTORY 'dotnet-cli-home'
     New-Item -ItemType Directory -Path $cliHome -Force | Out-Null
+    Write-Host "##vso[task.setvariable variable=NUGET_PACKAGES]$nugetPackages"
     Write-Host "##vso[task.setvariable variable=DOTNET_CLI_HOME]$cliHome"
     Write-Host "##vso[task.setvariable variable=DOTNET_GENERATE_ASPNET_CERTIFICATE]false"
   displayName: Initialize job-local .NET CLI state
