@@ -37,6 +37,9 @@ namespace Microsoft.Maui.Gtk.UnitTests
 	{
 		public ControlsWindowHost(Page page, int width = 800, int height = 600)
 		{
+			// Synthetic signal emissions of earlier tests log GTK warnings; each host starts with a clean slate.
+			GtkTestHost.ClearComplaints();
+
 			PlatformWindow = new global::Gtk.Window();
 			Context = ControlsTestApp.NewContext();
 			Context.AddWeakSpecific(PlatformWindow);

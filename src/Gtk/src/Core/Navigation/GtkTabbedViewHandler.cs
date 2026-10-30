@@ -43,6 +43,8 @@ namespace Microsoft.Maui.Gtk.Handlers
 		internal static readonly IPropertyMapper<ITabbedView, ITabbedViewHandler> GtkMapper =
 			new GtkMapperBuilder<ITabbedView, ITabbedViewHandler>(TabbedViewHandler.Mapper)
 				.AddViewMappings()
+				// A tabbed page that is the root of a modal page owns the toolbar of that modal window.
+				.MapGtk<MauiGtkTabView>(nameof(IToolbarElement.Toolbar), (h, v, w) => GtkToolbarSupport.UpdateWindowToolbar(h, v as IToolbarElement))
 				.Build();
 
 		internal static readonly CommandMapper<ITabbedView, ITabbedViewHandler> GtkCommandMapper =

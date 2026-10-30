@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Gtk.Platform;
 using GtkBox = Gtk.Box;
@@ -200,7 +201,9 @@ namespace Microsoft.Maui.Controls.Gtk.Platform
 				Child = content,
 			};
 
-			if (page.Window?.Handler?.PlatformView is GtkWindow parent)
+			// The window of the page: a modal page has its own (see GtkModalNavigationBackend), else the application window.
+			var parent = page.Handler?.MauiContext?.Services.GetService<GtkWindow>() ?? page.Window?.Handler?.PlatformView as GtkWindow;
+			if (parent is not null)
 				window.TransientFor = parent;
 
 			if (flowDirection == FlowDirection.RightToLeft)

@@ -95,6 +95,8 @@ namespace Microsoft.Maui.Gtk.Handlers
 				.MapGtk<MauiGtkPanel>(nameof(IContentView.Content), (h, v, panel) => GtkContainerBehavior.UpdateContent(h, v, panel))
 				// The window title is owned by IWindow.Title; the page title is surfaced by a toolbar (Controls backend).
 				.MapGtk<MauiGtkPanel>(nameof(ITitledElement.Title), (h, v, panel) => { })
+				// A page that is the root of a modal page owns the toolbar (title bar) of that modal window.
+				.MapGtk<MauiGtkPanel>(nameof(IToolbarElement.Toolbar), (h, v, panel) => GtkToolbarSupport.UpdateWindowToolbar(h, v as IToolbarElement))
 				.Build();
 
 		internal static readonly CommandMapper<IContentView, IPageHandler> GtkCommandMapper =

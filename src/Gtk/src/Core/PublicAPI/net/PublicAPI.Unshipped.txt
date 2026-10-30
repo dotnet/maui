@@ -432,6 +432,7 @@ Microsoft.Maui.Gtk.Platform.MauiGtkFillHost
 Microsoft.Maui.Gtk.Platform.MauiGtkFillHost.Clear() -> void
 Microsoft.Maui.Gtk.Platform.MauiGtkFillHost.MauiGtkFillHost() -> void
 Microsoft.Maui.Gtk.Platform.MauiGtkFillHost.SetView(Microsoft.Maui.IView? view, Microsoft.Maui.IMauiContext! mauiContext) -> void
+Microsoft.Maui.Gtk.Platform.MauiGtkFillHost.SetWidget(Gtk.Widget? widget) -> void
 Microsoft.Maui.Gtk.Platform.MauiGtkFillHost.View.get -> Microsoft.Maui.IView?
 Microsoft.Maui.Gtk.Platform.MauiGtkFlyoutPanel
 Microsoft.Maui.Gtk.Platform.MauiGtkFlyoutPanel.AnimationDuration.get -> uint
@@ -604,6 +605,8 @@ override Microsoft.Maui.Gtk.Handlers.GtkWindowHandler.ConnectHandler(object! pla
 override Microsoft.Maui.Gtk.Handlers.GtkWindowHandler.CreatePlatformElement() -> object!
 override Microsoft.Maui.Gtk.Handlers.GtkWindowHandler.DisconnectHandler(object! platformView) -> void
 override Microsoft.Maui.Gtk.Handlers.MauiGtkBorder.OnSnapshot(Gtk.Snapshot! snapshot) -> void
+override Microsoft.Maui.Gtk.Platform.MauiGtkFillHost.ArrangeChildren(int width, int height) -> void
+override Microsoft.Maui.Gtk.Platform.MauiGtkFillHost.OnMeasure(Gtk.Orientation orientation, int forSize, out int minimum, out int natural, out int minimumBaseline, out int naturalBaseline) -> void
 override Microsoft.Maui.Gtk.Platform.MauiGtkPanel.OnGetRequestMode() -> Gtk.SizeRequestMode
 override Microsoft.Maui.Gtk.Platform.MauiGtkPanel.OnMeasure(Gtk.Orientation orientation, int forSize, out int minimum, out int natural, out int minimumBaseline, out int naturalBaseline) -> void
 override Microsoft.Maui.Gtk.Platform.MauiGtkPanel.OnSizeAllocate(int width, int height, int baseline) -> void

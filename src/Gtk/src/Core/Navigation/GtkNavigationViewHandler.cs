@@ -181,6 +181,8 @@ namespace Microsoft.Maui.Gtk.Handlers
 		internal static readonly IPropertyMapper<IStackNavigationView, INavigationViewHandler> GtkMapper =
 			new GtkMapperBuilder<IStackNavigationView, INavigationViewHandler>(NavigationViewHandler.Mapper)
 				.AddViewMappings()
+				// A navigation page that is the root of a modal page owns the toolbar of that modal window.
+				.MapGtk<GtkStack>(nameof(IToolbarElement.Toolbar), (h, v, w) => GtkToolbarSupport.UpdateWindowToolbar(h, v as IToolbarElement))
 				.Build();
 
 		internal static readonly CommandMapper<IStackNavigationView, INavigationViewHandler> GtkCommandMapper =
