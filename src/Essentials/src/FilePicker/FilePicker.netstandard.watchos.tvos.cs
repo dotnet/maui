@@ -1,7 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Maui.ApplicationModel;
-using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Storage
 {
@@ -11,32 +11,36 @@ namespace Microsoft.Maui.Storage
 			=> throw new NotImplementedInReferenceAssemblyException();
 	}
 
+	/// <summary>
+	/// Lets a backend built over the platform-less assemblies (for example the Linux/GTK 4 backend, which installs it from its
+	/// Essentials registration) define the built-in <see cref="FilePickerFileType"/> values. The argument is the member name
+	/// (<c>Images</c>, <c>Png</c>, <c>Jpeg</c>, <c>Video</c> or <c>Pdf</c>). With the default <see langword="null"/> factory those
+	/// members throw <see cref="NotImplementedInReferenceAssemblyException"/>, as in the stock Standard behaviour.
+	/// </summary>
+	/// <remarks>The members are <see langword="static readonly"/>, so the factory must be installed before <see cref="FilePickerFileType"/> is first used.</remarks>
+	internal static class FilePickerFileTypeBackend
+	{
+		public static Func<string, FilePickerFileType> Factory { get; set; }
+
+		public static FilePickerFileType Create(string name)
+			=> Factory is null ? throw new NotImplementedInReferenceAssemblyException() : Factory(name);
+	}
+
 	public partial class FilePickerFileType
 	{
-		// The built-in file types are plain data (MIME types), so they are defined here instead of throwing:
-		// a type initializer that throws would make FilePickerFileType.Images/Png/... unusable for every
-		// custom platform backend (for example Linux/GTK) that only supplies its own IFilePicker.
-		// Backends that report DevicePlatform "Linux" get these values; the picker implementation interprets them.
-
 		static FilePickerFileType PlatformImageFileType()
-			=> ForLinux("image/png", "image/jpeg", "image/gif", "image/bmp", "image/webp");
+			=> FilePickerFileTypeBackend.Create("Images");
 
 		static FilePickerFileType PlatformPngFileType()
-			=> ForLinux("image/png");
+			=> FilePickerFileTypeBackend.Create("Png");
 
 		static FilePickerFileType PlatformJpegFileType()
-			=> ForLinux("image/jpeg");
+			=> FilePickerFileTypeBackend.Create("Jpeg");
 
 		static FilePickerFileType PlatformVideoFileType()
-			=> ForLinux("video/mp4", "video/x-matroska", "video/quicktime", "video/webm", "video/x-msvideo");
+			=> FilePickerFileTypeBackend.Create("Video");
 
 		static FilePickerFileType PlatformPdfFileType()
-			=> ForLinux("application/pdf");
-
-		static FilePickerFileType ForLinux(params string[] mimeTypes)
-			=> new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
-			{
-				{ DevicePlatform.Create("Linux"), mimeTypes }
-			});
+			=> FilePickerFileTypeBackend.Create("Pdf");
 	}
 }

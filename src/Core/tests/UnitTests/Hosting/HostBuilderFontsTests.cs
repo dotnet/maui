@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Hosting;
@@ -98,16 +97,15 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			_ = builder.Build();
 		}
 
-		[Theory]
-		[InlineData("Resources", "Fonts")]
-		[InlineData("Fonts", null)]
-		[InlineData(null, null)]
-		public void NativeFontIsHandedToTheLoaderFromTheFolderNextToTheApp(string folder1, string folder2)
+		[Fact]
+		public void NativeFontStaysUnresolvedWithoutABackend()
 		{
-			var folder = Path.Combine(AppContext.BaseDirectory, Path.Combine(new[] { folder1, folder2 }.Where(f => f != null).ToArray()));
+			// Stock Standard behaviour: with no provider installed, a font file sitting next to the app is not looked up at all.
+			Assert.Null(FontRegistrar.NativeFontStreamProvider);
+
 			var filename = $"Native{Guid.NewGuid():N}.ttf";
-			Directory.CreateDirectory(folder);
-			File.WriteAllBytes(Path.Combine(folder, filename), new byte[] { 1, 2, 3, 4 });
+			var path = Path.Combine(AppContext.BaseDirectory, filename);
+			File.WriteAllBytes(path, new byte[] { 1, 2, 3, 4 });
 
 			try
 			{
@@ -115,38 +113,61 @@ namespace Microsoft.Maui.UnitTests.Hosting
 				var registrar = new FontRegistrar(loader);
 				registrar.Register(filename, "Native");
 
-				var result = registrar.GetFont("Native");
+				Assert.Null(registrar.GetFont("Native"));
+				Assert.Null(loader.FontName);
+			}
+			finally
+			{
+				File.Delete(path);
+			}
+		}
 
-				Assert.Equal("loaded:" + filename, result);
-				Assert.Equal(filename, loader.FontName);
+		[Fact]
+		public void NativeFontIsHandedToTheLoaderFromTheInstalledProvider()
+		{
+			var old = FontRegistrar.NativeFontStreamProvider;
+			string asked = null;
+			FontRegistrar.NativeFontStreamProvider = name =>
+			{
+				asked = name;
+				return new MemoryStream(new byte[] { 1, 2, 3, 4 });
+			};
+
+			try
+			{
+				var loader = new RecordingFontLoader();
+				var registrar = new FontRegistrar(loader);
+				registrar.Register("Some.ttf", "Native");
+
+				Assert.Equal("loaded:Some.ttf", registrar.GetFont("Native"));
+				Assert.Equal("Some.ttf", asked);
 				Assert.Equal(new byte[] { 1, 2, 3, 4 }, loader.Content);
 			}
 			finally
 			{
-				File.Delete(Path.Combine(folder, filename));
+				FontRegistrar.NativeFontStreamProvider = old;
 			}
 		}
 
 		[Fact]
-		public void NativeFontThatIsNotThereStaysUnresolved()
+		public void NativeFontThatTheProviderDoesNotHaveStaysUnresolved()
 		{
-			var loader = new RecordingFontLoader();
-			var registrar = new FontRegistrar(loader);
-			registrar.Register("NoSuchFont.ttf", "Missing");
+			var old = FontRegistrar.NativeFontStreamProvider;
+			FontRegistrar.NativeFontStreamProvider = _ => null;
 
-			Assert.Null(registrar.GetFont("Missing"));
-			Assert.Null(loader.FontName);
-		}
+			try
+			{
+				var loader = new RecordingFontLoader();
+				var registrar = new FontRegistrar(loader);
+				registrar.Register("NoSuchFont.ttf", "Missing");
 
-		[Fact]
-		public void NativeFontWithADirectoryInItsNameLooksOnlyAtTheFileName()
-		{
-			var loader = new RecordingFontLoader();
-			var registrar = new FontRegistrar(loader);
-			registrar.Register("../../etc/passwd", "Evil");
-
-			Assert.Null(registrar.GetFont("Evil"));
-			Assert.Null(loader.FontName);
+				Assert.Null(registrar.GetFont("Missing"));
+				Assert.Null(loader.FontName);
+			}
+			finally
+			{
+				FontRegistrar.NativeFontStreamProvider = old;
+			}
 		}
 
 		sealed class RecordingFontLoader : IEmbeddedFontLoader

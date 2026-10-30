@@ -48,7 +48,8 @@ namespace Microsoft.Maui.Hosting
 			services.Replace(ServiceDescriptor.Singleton<IDispatcherProvider>(dispatcherProvider));
 			services.Replace(ServiceDescriptor.Scoped<ITicker>(_ => new GtkTicker()));
 
-			// Fonts.
+			// Fonts. Fonts registered by file name are read from the folders next to the app.
+			FontRegistrar.NativeFontStreamProvider = GtkEmbeddedFontLoader.OpenNativeFont;
 			services.Replace(ServiceDescriptor.Singleton<IEmbeddedFontLoader>(_ => new GtkEmbeddedFontLoader()));
 			services.Replace(ServiceDescriptor.Singleton<IFontManager>(sp => new GtkFontManager(sp.GetRequiredService<IFontRegistrar>(), sp)));
 

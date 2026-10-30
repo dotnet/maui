@@ -34,7 +34,7 @@ Notes
 
 - GTK floor is 4.14; newer APIs are version-guarded.
 - Threading: GTK-bound APIs marshal to the main thread via `GLib.Idle`; blocking getters (`HasText`, `MainDisplayInfo`) block the caller until it runs.
-- Core change: `FilePickerFileType.Images/Png/Jpeg/Videos/Pdf` (`FilePicker.netstandard.watchos.tvos.cs`) no longer throw in their type initializer; they carry MIME types for platform `Linux`.
+- Seam in Essentials: `FilePickerFileTypeBackend.Factory` (`FilePicker.netstandard.watchos.tvos.cs`). `UseMauiGtkEssentials` installs `GtkFilePickerFileTypes.Create`, so `FilePickerFileType.Images/Png/Jpeg/Video/Pdf` carry MIME types for platform `Linux`. Without it they throw `NotImplementedInReferenceAssemblyException` as upstream (test in `Essentials.UnitTests`). The members are `static readonly`: call `UseMauiGtkEssentials` before first use of `FilePickerFileType`.
 
 Tests: `src/Gtk/tests/Microsoft.Maui.Gtk.UnitTests/Essentials` (xUnit). Pure logic runs anywhere; `[GtkFact]` tests need a GTK 4 runtime/display
 and are skipped otherwise (`MAUI_GTK_REQUIRE_NATIVE=1` turns the skip into a failure). Linux headless:

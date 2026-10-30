@@ -47,6 +47,9 @@ public static class GtkEssentialsExtensions
 		GtkEssentialsContext.Options = options;
 		GtkDispatch.MarkCurrentThreadAsMain();
 
+		// The stock Standard assembly has no built-in file types of its own: this backend defines them (FilePickerFileType.Images...).
+		FilePickerFileTypeBackend.Factory = GtkFilePickerFileTypes.Create;
+
 		var identity = AppIdentity.Resolve(GtkEssentialsContext.EntryAssembly, options.ApplicationId, options.ApplicationName);
 		var services = builder.Services;
 

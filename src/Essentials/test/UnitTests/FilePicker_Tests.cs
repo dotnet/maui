@@ -18,5 +18,14 @@ namespace Tests
 		{
 			await Assert.ThrowsAsync<NotImplementedInReferenceAssemblyException>(() => FilePicker.PickMultipleAsync());
 		}
+
+		[Fact]
+		public void BuiltInFileTypes_Fail_On_NetStandard_Without_A_Backend()
+		{
+			// No backend (for example the GTK one) has installed FilePickerFileTypeBackend.Factory: stock behaviour.
+			Assert.Null(FilePickerFileTypeBackend.Factory);
+			Assert.Throws<NotImplementedInReferenceAssemblyException>(() => FilePickerFileTypeBackend.Create("Images"));
+			Assert.Throws<NotImplementedInReferenceAssemblyException>(() => FilePickerFileTypeBackend.Create("Pdf"));
+		}
 	}
 }

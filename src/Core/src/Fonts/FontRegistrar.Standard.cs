@@ -7,43 +7,21 @@ namespace Microsoft.Maui
 	/// <inheritdoc/>
 	public partial class FontRegistrar : IFontRegistrar
 	{
-		// There is no platform font system on Standard, but an app host (for example the Linux/GTK 4 backend) can supply an
-		// IEmbeddedFontLoader. Fonts registered by file name (ConfigureFonts: AddFont("Name.ttf")) are the files MauiFont
-		// copies next to the application, in Resources/Fonts. They are handed to the loader as a stream; the default Standard
-		// loader returns null, so without a host the font stays unresolved as before.
+		/// <summary>
+		/// Supplies the content of a font registered by file name (<c>AddFont("Name.ttf")</c>) to an app host built on the platform-less
+		/// assemblies (for example the Linux/GTK 4 backend, which installs it from <c>UseMauiGtkCore</c>). It returns the font stream or
+		/// <see langword="null"/>; the stream is handed to the <see cref="IEmbeddedFontLoader"/> and disposed. With the default
+		/// <see langword="null"/> provider there is no native font lookup: the font stays unresolved, as in the stock Standard behaviour.
+		/// </summary>
+		internal static Func<string, Stream?>? NativeFontStreamProvider { get; set; }
+
 		string? LoadNativeAppFont(string font, string filename, string? alias)
 		{
-			var path = FindNativeFontFile(filename);
-			if (path is null)
+			if (NativeFontStreamProvider?.Invoke(filename) is not { } stream)
 				return null;
 
-			using var stream = File.OpenRead(path);
-
-			return LoadEmbeddedFont(font, filename, alias, stream);
-		}
-
-		static string? FindNativeFontFile(string filename)
-		{
-			var name = Path.GetFileName(filename);
-			if (string.IsNullOrEmpty(name))
-				return null;
-
-			var baseDirectory = AppContext.BaseDirectory;
-			string[] folders =
-			{
-				Path.Combine(baseDirectory, "Resources", "Fonts"),
-				Path.Combine(baseDirectory, "Fonts"),
-				baseDirectory,
-			};
-
-			foreach (var folder in folders)
-			{
-				var candidate = Path.Combine(folder, name);
-				if (File.Exists(candidate))
-					return candidate;
-			}
-
-			return null;
+			using (stream)
+				return LoadEmbeddedFont(font, filename, alias, stream);
 		}
 	}
 }

@@ -75,6 +75,35 @@ namespace Microsoft.Maui.Gtk.Fonts
 			return null;
 		}
 
+		/// <summary>
+		/// Opens a font registered by file name (<c>AddFont("Name.ttf")</c>): the file MauiFont copies next to the application
+		/// (<c>Resources/Fonts</c>, <c>Fonts</c> or the application folder). Installed into the stock <c>FontRegistrar</c> by
+		/// <c>UseMauiGtkCore</c>. Only the file name is used, never a directory part of <paramref name="filename"/>.
+		/// </summary>
+		internal static Stream? OpenNativeFont(string filename)
+		{
+			var name = Path.GetFileName(filename);
+			if (string.IsNullOrEmpty(name))
+				return null;
+
+			var baseDirectory = AppContext.BaseDirectory;
+			string[] folders =
+			{
+				Path.Combine(baseDirectory, "Resources", "Fonts"),
+				Path.Combine(baseDirectory, "Fonts"),
+				baseDirectory,
+			};
+
+			foreach (var folder in folders)
+			{
+				var candidate = Path.Combine(folder, name);
+				if (File.Exists(candidate))
+					return File.OpenRead(candidate);
+			}
+
+			return null;
+		}
+
 		static void Register(string filePath)
 		{
 			if (!FontConfigHelper.TryAddFontFileWithPango(filePath))
