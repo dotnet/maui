@@ -30,20 +30,20 @@ public class Issue17389 : _IssuesUITest
 
 		for (var index = 0; index < layouts.Length; index++)
 		{
-			TapLayout(layouts[index]);
-			App.WaitForElement($"Tap count: {index + 1}");
+			App.TapElement(layouts[index]);
+			Assert.That(App.WaitForTextToBePresentInElement("TapCountLabel", $"Tap count: {index + 1}"), Is.True);
 		}
 
-		App.WaitForElement("Tap count: 4");
+		Assert.That(App.WaitForTextToBePresentInElement("TapCountLabel", "Tap count: 4"), Is.True);
 		App.Click("ToggleInputTransparentButton");
 		Assert.That(App.WaitForTextToBePresentInElement("RedGrid", "InputTransparent=True"), Is.True);
 
 		foreach (var layout in layouts)
 		{
-			TapLayout(layout);
+			App.TapElement(layout);
 		}
 
-		App.WaitForElement("Tap count: 0");
+		Assert.That(App.WaitForTextToBePresentInElement("TapCountLabel", "Tap count: 0"), Is.True);
 	}
 
 	[Test, Order(2)]
@@ -69,17 +69,4 @@ public class Issue17389 : _IssuesUITest
 		}
 	}
 
-	void TapLayout(string automationId)
-	{
-		if (App is ICatalystApp)
-		{
-			// Exercise parent gesture routing with real pointer input, not a static-text accessibility action.
-			var rect = App.WaitForElement(automationId).GetRect();
-			App.TapCoordinates(rect.CenterX(), rect.CenterY());
-		}
-		else
-		{
-			App.Tap(automationId);
-		}
-	}
 }
