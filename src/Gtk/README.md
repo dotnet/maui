@@ -231,13 +231,13 @@ wsl -d Debian -- bash /mnt/d/CommonLibrary/maui/eng/gtk/wsl-setup.sh
 wsl -d Debian -- bash /mnt/d/CommonLibrary/maui/eng/gtk/wsl-test.sh src/Core/tests/UnitTests/Core.UnitTests.csproj
 ```
 
-Under WSL the `Packages` junction is not readable (an NTFS reparse point): restore with `RestoreAdditionalProjectSources=/mnt/d/Starb/Packages` (any folder with the GtkSharp4 packages).
+GtkSharp4 restores from nuget.org. Under WSL the `Packages` junction is not readable (an NTFS reparse point): an app consuming the forked packages restores with `RestoreAdditionalProjectSources=/mnt/d/Starb/Packages`.
 
 Do not run `./build.sh -restore` from WSL: it would provision the Linux SDK into the shared `.dotnet`.
 
 ## Local feed (forked packages)
 
-`Packages/` is a junction to the shared feed `D:\Starb\Packages` (`NuGet.config`, key `starb`); it holds the GtkSharp4 packages and the forked MAUI packages.
+`Packages/` is a junction to the shared folder `D:\Starb\Packages` that holds the forked MAUI packages. It is not a package source of this repository (`NuGet.config` restores GtkSharp4 from nuget.org); apps built from the `--linux` template add it in their own `NuGet.config`.
 
 - `pwsh eng/gtk/pack-local.ps1 [-Only <substr>,...] [-Configuration Debug] [-Revision n] [-NoRestore] [-WhatIf]` packs, in dependency order, Graphics, Graphics.Cairo, Essentials, Core, Controls (Build.Tasks, Xaml, Core, SourceGen, BindingSourceGen, NuGet), Resizetizer, Maps, Controls.Maps, BlazorWebView and every project under `src/Gtk/src`; projects that do not exist are skipped.
 - Version `10.0.130-gtk.<stamp>.<rev>`: Arcade properties `OfficialBuild=true`, `OfficialBuildId=<yyyyMMdd>.<rev>`, `PreReleaseVersionLabel=gtk`. `<stamp>` is Arcade's `yy*1000 + mm*50 + dd`; `<rev>` is the next free revision of the day, so a repack always yields a new, higher version (never a stable `10.0.130`). Pack a whole set: dependents reference their dependencies at the same revision.

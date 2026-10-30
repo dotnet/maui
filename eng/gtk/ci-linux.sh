@@ -1,18 +1,16 @@
 #!/usr/bin/env bash
-# CI for the Linux/GTK 4 backend (not Azure DevOps): GtkSharp -> Packages, Microsoft.Maui-linux.slnf, headless tests.
+# CI for the Linux/GTK 4 backend (not Azure DevOps): Microsoft.Maui-linux.slnf, headless tests. GtkSharp4 restores from nuget.org.
 #
 #   eng/gtk/ci-linux.sh                run on this machine (steps below)
 #   eng/gtk/ci-linux.sh --containers   re-run it in docker/podman containers: ubuntu:24.04 (GTK 4.14, the floor) and
 #                                      debian:forky (GTK 4.22); override with MAUI_GTK_CI_IMAGES="img1 img2"
 #
 # Steps (each can be skipped with CI_SKIP_<NAME>=1):
-#   GTKSHARP  build GtkSharp at the pinned ref (eng/gtk/gtksharp.ref, or $GTKSHARP_REF) and copy *Sharp4 packages into Packages/
-#             (skipped when Packages/ already holds GtkSharp4 and CI_REBUILD_GTKSHARP is not set)
 #   SDK       .NET 10 SDK into ~/.dotnet (eng/gtk/wsl-setup.sh)
 #   BUILD     dotnet build Microsoft.Maui-linux.slnf (mobile/Windows TFMs disabled by Directory.Build.Override.props)
 #   TEST      the GTK unit tests under Xvfb + a private D-Bus session, GDK_BACKEND=x11, software rendering
 #   SAMPLE    the sample app headless (--smoke)
-# Environment: GTKSHARP_DIR (default ../GtkSharp), GTKSHARP_URL, GTKSHARP_REF, MAUI_GTK_FATAL_CRITICALS=1 (G_DEBUG=fatal-criticals:
+# Environment: MAUI_GTK_FATAL_CRITICALS=1 (G_DEBUG=fatal-criticals:
 # a GTK critical aborts the test run, e.g. "Allocating size ... without calling gtk_widget_measure").
 set -euo pipefail
 repo="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
@@ -26,8 +24,7 @@ if [ "${1:-}" = "--containers" ]; then
   for image in ${MAUI_GTK_CI_IMAGES:-ubuntu:24.04 debian:forky}; do
     echo "=== $image"
     # The container needs the tools to download the SDK and the native GTK 4 stack the tests load.
-    "$engine" run --rm -v "$repo:/src" -v "${GTKSHARP_DIR:-$repo/../GtkSharp}:/gtksharp" -w /src \
-      -e GTKSHARP_DIR=/gtksharp -e CI_SKIP_GTKSHARP="${CI_SKIP_GTKSHARP:-}" -e WEBKIT_DISABLE_SANDBOX_THIS_IS_DANGEROUS=1 \
+    "$engine" run --rm -v "$repo:/src" -w /src -e WEBKIT_DISABLE_SANDBOX_THIS_IS_DANGEROUS=1 \
       "$image" bash -c '
         set -e
         export DEBIAN_FRONTEND=noninteractive
@@ -41,32 +38,6 @@ fi
 
 step() { local var="CI_SKIP_$1"; [ -z "${!var:-}" ]; }
 say() { echo; echo "=== $*"; }
-
-# ------------------------------------------------------------------------------------------------ GtkSharp
-if step GTKSHARP; then
-  say "GtkSharp -> Packages/"
-  mkdir -p Packages
-  if [ -z "${CI_REBUILD_GTKSHARP:-}" ] && ls Packages/GtkSharp4.*.nupkg > /dev/null 2>&1; then
-    echo "Packages/ already holds GtkSharp4 ($(ls Packages/GtkSharp4.*.nupkg | head -1)); set CI_REBUILD_GTKSHARP=1 to rebuild"
-  else
-    gtk_dir="${GTKSHARP_DIR:-$repo/../GtkSharp}"
-    gtk_ref="${GTKSHARP_REF:-$(grep -v '^#' eng/gtk/gtksharp.ref 2> /dev/null | head -1)}"
-    gtk_ref="${gtk_ref:-net4x.gtk4}"
-    if [ ! -d "$gtk_dir/.git" ]; then
-      git clone "${GTKSHARP_URL:-https://github.com/pieroviano/GtkSharp}" "$gtk_dir"
-    fi
-    (
-      cd "$gtk_dir"
-      git fetch --quiet origin "$gtk_ref" 2> /dev/null || git fetch --quiet origin
-      git checkout --quiet "$gtk_ref"
-      export DOTNET_ROOT="${DOTNET_ROOT:-$HOME/.dotnet}" PATH="${DOTNET_ROOT:-$HOME/.dotnet}:$PATH"
-      dotnet tool restore
-      dotnet cake build.cake --BuildTarget=PackageNuGet
-    )
-    # Never overwrite a package the feed already holds with a different build of the same version: copy only what is new.
-    find "$gtk_dir/BuildOutput/NugetPackages" -name '*Sharp4.*.nupkg' -exec cp -n {} Packages/ \;
-  fi
-fi
 
 # ------------------------------------------------------------------------------------------------ SDK
 export DOTNET_ROOT="${DOTNET_ROOT:-$HOME/.dotnet}"

@@ -124,7 +124,7 @@
        - Native assets build and sha
     -->
     <_SkiaSharpVersion>4.150.1</_SkiaSharpVersion>
-    <!-- GtkSharp4 (Gtk 4.22 bindings, netstandard2.0) from the shared local feed; floats on the daily build number. Used by src/Gtk. -->
+    <!-- GtkSharp4 (Gtk 4.22 bindings, netstandard2.0) from nuget.org; floats on the build number. Used by src/Gtk. -->
     <_GtkSharp4Version>4.22.4.*</_GtkSharp4Version>
     <_SkiaSharpExtendedVersion>3.0.0</_SkiaSharpExtendedVersion>
     <_HarfBuzzSharpVersion>14.2.1.1</_HarfBuzzSharpVersion>

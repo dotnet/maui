@@ -199,7 +199,7 @@ PublishScripts/
 
 # NuGet Packages
 *.nupkg
-# Local NuGet feed: junction to the shared d:\Starb\Packages folder (GtkSharp4 and the forked MAUI packages)
+# Local NuGet feed: junction to the shared d:\Starb\Packages folder, where eng/gtk/pack-local.ps1 puts the forked MAUI packages
 /Packages
 # NuGet Symbol Packages
 *.snupkg
