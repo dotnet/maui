@@ -1,4 +1,11 @@
-﻿using Microsoft.Extensions.Logging;
+﻿#if (Linux)
+//-:cnd:noEmit
+#if GTK
+using Microsoft.AspNetCore.Components.WebView.Maui;
+#endif
+//+:cnd:noEmit
+#endif
+using Microsoft.Extensions.Logging;
 
 namespace MauiApp._1;
 
