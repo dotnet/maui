@@ -592,6 +592,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		VerifyShellSearchScreenshot();
 	}
 
+#if TEST_FAILS_ON_WINDOWS // In Windows, when SearchHandler is focused, the focus label does not get updated consistently, making the test flaky. Therefore, the test was restricted to avoid flaky behavior on Windows.
 	[Test, Order(35)]
 	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void VerifyShellSearch_TextColor()
@@ -613,6 +614,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		Assert.That(() => App.GetShellSearchHandler().GetText(), Is.EqualTo("Testing").After(10000, 200));
 		VerifyShellSearchScreenshot();
 	}
+#endif
 
 	[Test, Order(36)]
 	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
@@ -637,7 +639,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 	}
 #endif
 
-#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // Issue Link: https://github.com/dotnet/maui/issues/35624
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/35624, In Windows, when SearchHandler is focused, the focus label does not get updated consistently, making the test flaky. Therefore, the test was restricted to avoid flaky behavior on Windows.
 	[Test, Order(37)]
 	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void VerifyShellSearch_CharacterSpacing()
