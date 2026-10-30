@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(MauiGtkTargetFramework)</TargetFramework>
+    <RootNamespace>Microsoft.Maui.Gtk</RootNamespace>
+    <AssemblyName>Microsoft.Maui.Gtk</AssemblyName>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <NoWarn>$(NoWarn);RS0041;RS0026;RS0027</NoWarn>
+    <WarningsAsErrors>$(WarningsAsErrors);CS1591</WarningsAsErrors>
+    <!-- NuGet package information -->
+    <IsPackable>true</IsPackable>
+    <PackageId>Microsoft.Maui.Gtk</PackageId>
+    <Description>GTK 4 (GtkSharp4) backend for .NET MAUI: hosting, layout bridge, handlers and platform services.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Core\src\Core.csproj" />
+    <PackageReference Include="GtkSharp4" />
+    <PackageReference Include="GdkSharp4" />
+    <PackageReference Include="GskSharp4" />
+    <PackageReference Include="PangoSharp4" />
+    <PackageReference Include="GrapheneSharp4" />
+    <PackageReference Include="CairoSharp4" />
+  </ItemGroup>
+
+</Project>

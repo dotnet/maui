@@ -1,0 +1,160 @@
+using System;
+using System.Collections.Generic;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Gtk.Platform;
+using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Hosting;
+using Microsoft.Maui.LifecycleEvents;
+using Microsoft.Maui.Platform;
+using GtkApplication = Gtk.Application;
+using GtkWindow = Gtk.Window;
+
+namespace Microsoft.Maui
+{
+	/// <summary>
+	/// The entry point of a MAUI application on GTK 4. Derive from it, return the app from <see cref="CreateMauiApp"/> and
+	/// call <see cref="Run"/> from <c>Main</c>.
+	/// </summary>
+	/// <remarks>
+	/// <para>The class owns a <c>Gtk.Application</c>: <c>startup</c> builds the <see cref="MauiApp"/> and the application-scope
+	/// <see cref="IMauiContext"/>; <c>activate</c> creates the <see cref="IApplication"/> handler and the first window
+	/// (further activations present the existing window); <c>shutdown</c> raises <see cref="GtkLifecycle.OnShutdown"/>.</para>
+	/// <example>
+	/// <code>
+	/// class LinuxApp : MauiGtkApplication
+	/// {
+	///     protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiApp();
+	/// }
+	/// public static int Main(string[] args) =&gt; new LinuxApp().Run(args);
+	/// </code>
+	/// </example>
+	/// </remarks>
+	public abstract class MauiGtkApplication : IPlatformApplication
+	{
+		readonly string? _applicationId;
+		readonly List<GtkWindow> _windows = new();
+		GtkApplication? _application;
+		MauiApp? _mauiApp;
+		IMauiContext? _applicationContext;
+		IApplication? _mauiApplication;
+
+		/// <summary>Creates the application host.</summary>
+		/// <param name="applicationId">The D-Bus style application id; defaults to one derived from the entry assembly.</param>
+		protected MauiGtkApplication(string? applicationId = null)
+		{
+			_applicationId = applicationId;
+		}
+
+		/// <summary>The running host, or <see langword="null"/>.</summary>
+		public static MauiGtkApplication? Current { get; private set; }
+
+		/// <summary>The underlying <c>Gtk.Application</c> (available from <see cref="Run"/> on).</summary>
+		public GtkApplication GtkApplication => _application ?? throw new InvalidOperationException("The application has not been started.");
+
+		/// <inheritdoc/>
+		public IServiceProvider Services => _applicationContext?.Services ?? throw new InvalidOperationException("The application has not been started.");
+
+		/// <inheritdoc/>
+		public IApplication Application => _mauiApplication ?? throw new InvalidOperationException("The application has not been activated.");
+
+		/// <summary>Builds the application.</summary>
+		protected abstract MauiApp CreateMauiApp();
+
+		/// <summary>Runs the GTK main loop until the last window closes.</summary>
+		/// <param name="args">The command line arguments.</param>
+		/// <returns>The process exit code.</returns>
+		public int Run(string[] args)
+		{
+			GtkRuntime.EnsureInitialized();
+
+			Current = this;
+			IPlatformApplication.Current = this;
+
+			_application = new GtkApplication(_applicationId ?? CreateApplicationId(), GLib.ApplicationFlags.None);
+			_application.Startup += OnStartup;
+			_application.Activated += OnActivated;
+			_application.Shutdown += OnShutdown;
+			_application.WindowRemoved += (_, args) => _windows.Remove(args.Window);
+
+			return ((GLib.Application)_application).Run();
+		}
+
+		void OnStartup(object? sender, EventArgs e)
+		{
+			_mauiApp = CreateMauiApp();
+
+			var rootContext = new MauiContext(_mauiApp.Services);
+			_applicationContext = rootContext.MakeApplicationScope(this);
+			((MauiContext)_applicationContext).AddSpecific(GtkApplication);
+
+			Services.InvokeLifecycleEvents<GtkLifecycle.OnStartup>(del => del(GtkApplication));
+		}
+
+		void OnActivated(object? sender, EventArgs e)
+		{
+			if (_applicationContext is null)
+				return;
+
+			if (_mauiApplication is not null)
+			{
+				// A second activation (for example the user launched the app again): bring the window forward.
+				if (_windows.Count > 0)
+					_windows[0].Present();
+				return;
+			}
+
+			_mauiApplication = Services.GetRequiredService<IApplication>();
+			ElementExtensions.SetApplicationHandler(this, _mauiApplication, _applicationContext);
+
+			Services.InvokeLifecycleEvents<GtkLifecycle.OnActivate>(del => del(GtkApplication));
+
+			CreatePlatformWindow(_mauiApplication, null);
+		}
+
+		void OnShutdown(object? sender, EventArgs e)
+		{
+			Services.InvokeLifecycleEvents<GtkLifecycle.OnShutdown>(del => del(GtkApplication));
+		}
+
+		/// <summary>Creates a platform window for a new <see cref="IWindow"/> of <paramref name="application"/> and presents it.</summary>
+		/// <param name="application">The MAUI application.</param>
+		/// <param name="request">The open-window request, if any.</param>
+		internal void CreatePlatformWindow(IApplication application, OpenWindowRequest? request)
+		{
+			if (application.Handler?.MauiContext is not IMauiContext applicationContext)
+				return;
+
+			var platformWindow = new global::Gtk.ApplicationWindow(GtkApplication);
+
+			var windowContext = applicationContext.MakeWindowScope(platformWindow, out _);
+			((MauiContext)windowContext).AddWeakSpecific<GtkWindow>(platformWindow);
+
+			Services.InvokeLifecycleEvents<GtkLifecycle.OnMauiContextCreated>(del => del(windowContext));
+
+			var activationState = request?.State is { } state ? new ActivationState(windowContext, state) : new ActivationState(windowContext);
+			var window = application.CreateWindow(activationState);
+
+			_windows.Add(platformWindow);
+
+			ElementExtensions.SetWindowHandler(platformWindow, window, windowContext);
+
+			Services.InvokeLifecycleEvents<GtkLifecycle.OnWindowCreated>(del => del(platformWindow));
+
+			platformWindow.Present();
+		}
+
+		static string CreateApplicationId()
+		{
+			var name = System.Reflection.Assembly.GetEntryAssembly()?.GetName().Name ?? "maui";
+			var chars = new char[name.Length];
+			for (int i = 0; i < name.Length; i++)
+				chars[i] = char.IsLetterOrDigit(name[i]) && name[i] < 128 ? char.ToLowerInvariant(name[i]) : '_';
+
+			var id = new string(chars);
+			if (id.Length == 0 || char.IsDigit(id[0]))
+				id = "app" + id;
+
+			return "org.maui." + id;
+		}
+	}
+}
