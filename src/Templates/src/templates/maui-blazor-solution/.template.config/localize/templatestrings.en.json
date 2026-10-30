@@ -29,5 +29,7 @@
   "symbols/AllInteractive/description": "Configures whether to make every page interactive by applying an interactive render mode at the top level. If false, pages will use static server rendering by default, and can be marked interactive on a per-page or per-component basis.",
   "symbols/NoHttps/description": "Whether to turn off HTTPS. This option only applies if Individual isn't used for --auth.",
   "symbols/UseProgramMain/displayName": "Do not use _top-level statements",
-  "symbols/UseProgramMain/description": "Whether to generate an explicit Program class and Main method instead of top-level statements."
+  "symbols/UseProgramMain/description": "Whether to generate an explicit Program class and Main method instead of top-level statements.",
+  "symbols/LocalhostTld/displayName": "Use the .dev.localhost TLD in the application URL",
+  "symbols/LocalhostTld/description": "Whether to combine the project name with the .dev.localhost TLD in the application URL for local development, e.g. https://myapp.dev.localhost:12345."
 }

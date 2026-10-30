@@ -29,5 +29,7 @@
   "symbols/AllInteractive/description": "配置是否通过在顶层应用交互式呈现模式来使每个页面都具备交互性。如果为 false，页面将默认使用静态服务器呈现，并且可按每页或每组件标记为具有交互性。",
   "symbols/NoHttps/description": "是否禁用 HTTPS。只有当未对 --auth 使用“个人”时，此选项才适用。",
   "symbols/UseProgramMain/displayName": "不使用顶级语句(_T)",
-  "symbols/UseProgramMain/description": "是否生成显式程序类和主方法，而不是顶级语句。"
+  "symbols/UseProgramMain/description": "是否生成显式程序类和主方法，而不是顶级语句。",
+  "symbols/LocalhostTld/displayName": "Use the .dev.localhost TLD in the application URL",
+  "symbols/LocalhostTld/description": "Whether to combine the project name with the .dev.localhost TLD in the application URL for local development, e.g. https://myapp.dev.localhost:12345."
 }

@@ -10,5 +10,8 @@
   "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "Ziel DOTNET_TFM_VALUE",
   "symbols/IncludeSampleContent/displayName": "_Include sample content",
   "symbols/IncludeSampleContent/description": "Legt fest, ob Beispielseiten und -funktionen hinzugefügt werden sollen, um grundlegende Nutzungsmuster zu demonstrieren.",
+  "symbols/Linux/displayName": "Add _Linux (GTK 4) head",
+  "symbols/Linux/description": "Adds a Linux head (GTK 4, net10.0-gtk4.22): Platforms/Linux/Program.cs and the Microsoft.Maui.Controls.Gtk package. Needs the GtkSharp 'gtk' workload; see src/Gtk/README.md.",
+  "symbols/mauiGtkVersion/description": "The version of the Microsoft.Maui.* packages of the Linux head (a floating range of the GTK build).",
   "symbols/skipRestore/description": "Wenn angegeben, wird die automatische Wiederherstellung des Projekts beim Erstellen übersprungen."
 }

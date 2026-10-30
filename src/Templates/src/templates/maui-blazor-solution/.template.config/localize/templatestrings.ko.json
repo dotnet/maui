@@ -29,5 +29,7 @@
   "symbols/AllInteractive/description": "최상위 수준에서 대화형 렌더링 모드를 적용하여 모든 페이지를 대화형으로 설정할지 여부를 구성합니다. false이면 페이지는 기본적으로 정적 서버 렌더링을 사용하며 페이지별 또는 구성 요소별로 대화형으로 표시될 수 있습니다.",
   "symbols/NoHttps/description": "HTTPS를 끌지 여부입니다. 이 옵션은 개별 항목이 --auth에 사용되지 않는 경우에만 적용됩니다.",
   "symbols/UseProgramMain/displayName": "최상위 문 사용 안 함(_T)",
-  "symbols/UseProgramMain/description": "최상위 문 대신 명시적 Program 클래스 및 Main 메서드를 생성할지 여부입니다."
+  "symbols/UseProgramMain/description": "최상위 문 대신 명시적 Program 클래스 및 Main 메서드를 생성할지 여부입니다.",
+  "symbols/LocalhostTld/displayName": "Use the .dev.localhost TLD in the application URL",
+  "symbols/LocalhostTld/description": "Whether to combine the project name with the .dev.localhost TLD in the application URL for local development, e.g. https://myapp.dev.localhost:12345."
 }

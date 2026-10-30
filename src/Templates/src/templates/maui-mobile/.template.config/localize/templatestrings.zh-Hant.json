@@ -10,5 +10,8 @@
   "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "目標 DOTNET_TFM_VALUE",
   "symbols/IncludeSampleContent/displayName": "包含範例內容(_I)",
   "symbols/IncludeSampleContent/description": "設定是否要新增範例頁面和功能，以示範基本使用模式。",
+  "symbols/Linux/displayName": "Add _Linux (GTK 4) head",
+  "symbols/Linux/description": "Adds a Linux head (GTK 4, net10.0-gtk4.22): Platforms/Linux/Program.cs and the Microsoft.Maui.Controls.Gtk package. Needs the GtkSharp 'gtk' workload; see src/Gtk/README.md.",
+  "symbols/mauiGtkVersion/description": "The version of the Microsoft.Maui.* packages of the Linux head (a floating range of the GTK build).",
   "symbols/skipRestore/description": "如果指定，則會在建立時跳過專案的自動還原。"
 }

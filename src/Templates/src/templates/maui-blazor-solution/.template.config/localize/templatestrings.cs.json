@@ -29,5 +29,7 @@
   "symbols/AllInteractive/description": "Konfiguruje, jestli se má každá stránka nastavit jako interaktivní, a to použitím interaktivního režimu vykreslování na nejvyšší úrovni. Pokud se nastaví na false, stránky budou ve výchozím nastavení používat vykreslování statického serveru a dají se označit jako interaktivní pro jednotlivé stránky nebo komponenty.",
   "symbols/NoHttps/description": "Určuje, jestli se má vypnout protokol HTTPS. Tato možnost platí jenom v případě, že se pro --auth nepoužívá Individual.",
   "symbols/UseProgramMain/displayName": "Nepoužívat _příkazy nejvyšší úrovně",
-  "symbols/UseProgramMain/description": "Určuje, jestli se má místo příkazů nejvyšší úrovně generovat explicitní třída Program a metoda Main."
+  "symbols/UseProgramMain/description": "Určuje, jestli se má místo příkazů nejvyšší úrovně generovat explicitní třída Program a metoda Main.",
+  "symbols/LocalhostTld/displayName": "Use the .dev.localhost TLD in the application URL",
+  "symbols/LocalhostTld/description": "Whether to combine the project name with the .dev.localhost TLD in the application URL for local development, e.g. https://myapp.dev.localhost:12345."
 }

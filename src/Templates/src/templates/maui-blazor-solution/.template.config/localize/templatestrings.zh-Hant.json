@@ -29,5 +29,7 @@
   "symbols/AllInteractive/description": "設定是否要在最高層級應用互動式轉譯模式，讓每一頁都能互動。若為 False，則頁面預設會使用靜態伺服器轉譯，而且可以按照頁面或按照元件標示為互動式。",
   "symbols/NoHttps/description": "是否要關閉 HTTPS。此選項僅適用於個人未用於 --auth 時。",
   "symbols/UseProgramMain/displayName": "不要使用最上層陳述式(_T)",
-  "symbols/UseProgramMain/description": "是否要產生明確的 Program 類別和 Main 方法，而非最上層語句。"
+  "symbols/UseProgramMain/description": "是否要產生明確的 Program 類別和 Main 方法，而非最上層語句。",
+  "symbols/LocalhostTld/displayName": "Use the .dev.localhost TLD in the application URL",
+  "symbols/LocalhostTld/description": "Whether to combine the project name with the .dev.localhost TLD in the application URL for local development, e.g. https://myapp.dev.localhost:12345."
 }

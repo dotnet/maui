@@ -29,5 +29,7 @@
   "symbols/AllInteractive/description": "En üst düzeyde etkileşimli bir işleme modu uygulayarak her sayfanın etkileşimli olup olmayacağını yapılandırır. False ise sayfalar varsayılan olarak statik sunucu işleme kullanır ve sayfa başına veya bileşen başına temelinde etkileşimli olarak işaretlenebilir.",
   "symbols/NoHttps/description": "HTTPS'nin kapatılıp kapatılmayacağı. Bu seçenek yalnızca Bireysel --auth için kullanılmadığında geçerlidir.",
   "symbols/UseProgramMain/displayName": "_Üst düzey deyimler kullanmayın",
-  "symbols/UseProgramMain/description": "Üst düzey deyimler yerine açık bir Program sınıfı ve Ana yöntem oluşturup oluşturulmayacağını belirtir."
+  "symbols/UseProgramMain/description": "Üst düzey deyimler yerine açık bir Program sınıfı ve Ana yöntem oluşturup oluşturulmayacağını belirtir.",
+  "symbols/LocalhostTld/displayName": "Use the .dev.localhost TLD in the application URL",
+  "symbols/LocalhostTld/description": "Whether to combine the project name with the .dev.localhost TLD in the application URL for local development, e.g. https://myapp.dev.localhost:12345."
 }

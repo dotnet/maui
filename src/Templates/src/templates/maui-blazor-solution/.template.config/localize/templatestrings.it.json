@@ -29,5 +29,7 @@
   "symbols/AllInteractive/description": "Configura se rendere interattiva ogni pagina applicando una modalità di rendering interattiva al livello superiore. Se false, le pagine useranno il rendering statico del server per impostazione predefinita e possono essere contrassegnate come interattive per pagina o per componente.",
   "symbols/NoHttps/description": "Indica se disattivare HTTPS. Questa opzione si applica solo se l'opzione Individual non viene usata per --auth.",
   "symbols/UseProgramMain/displayName": "Non usare_istruzioni di primo livello",
-  "symbols/UseProgramMain/description": "Indica se generare una classe Program esplicita e un metodo Main anziché istruzioni di primo livello."
+  "symbols/UseProgramMain/description": "Indica se generare una classe Program esplicita e un metodo Main anziché istruzioni di primo livello.",
+  "symbols/LocalhostTld/displayName": "Use the .dev.localhost TLD in the application URL",
+  "symbols/LocalhostTld/description": "Whether to combine the project name with the .dev.localhost TLD in the application URL for local development, e.g. https://myapp.dev.localhost:12345."
 }
