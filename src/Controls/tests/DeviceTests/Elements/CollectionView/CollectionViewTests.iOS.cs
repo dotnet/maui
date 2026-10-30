@@ -23,6 +23,98 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class CollectionViewTests
 	{
+		[Theory]
+		[InlineData(0, false, double.PositiveInfinity, 250)]
+		[InlineData(1, false, double.PositiveInfinity, 250)]
+		[InlineData(3, false, double.PositiveInfinity, 250)]
+		[InlineData(3, true, double.PositiveInfinity, 250)]
+		[InlineData(3, false, 400, 400)]
+		public async Task HorizontalCollectionViewPreMountHeightRespectsConstraints(
+			int itemCount, bool isGrouped, double heightConstraint, double expectedHeight)
+		{
+			SetupBuilder();
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var items = new ObservableCollection<string>();
+				for (int i = 0; i < itemCount; i++)
+				{
+					items.Add($"Project {i}");
+				}
+
+				var collectionView = new CollectionView
+				{
+					MinimumHeightRequest = 250,
+					ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Horizontal),
+					IsGrouped = isGrouped,
+					ItemsSource = isGrouped
+						? new ObservableCollection<ObservableCollection<string>> { items }
+						: items,
+					ItemTemplate = new DataTemplate(() => new Label { Text = "Project", WidthRequest = 200 })
+				};
+
+				var handler = await CreateHandlerAsync<CollectionViewHandler2>(collectionView);
+				try
+				{
+					var platformView = handler.Controller.CollectionView;
+					Assert.Null(platformView.Window);
+					var originalFrame = platformView.Frame;
+
+					for (int i = 0; i < 2; i++)
+					{
+						var desiredSize = handler.GetDesiredSize(350, heightConstraint);
+						if (double.IsPositiveInfinity(heightConstraint))
+						{
+							Assert.Equal(expectedHeight, desiredSize.Height, 1);
+						}
+						else
+						{
+							Assert.InRange(desiredSize.Height, collectionView.MinimumHeightRequest, expectedHeight);
+						}
+						Assert.Equal(originalFrame, platformView.Frame);
+					}
+				}
+				finally
+				{
+					((IElementHandler)handler).DisconnectHandler();
+				}
+			});
+		}
+
+		[Theory]
+		[InlineData(400)]
+		[InlineData(double.PositiveInfinity)]
+		public async Task VerticalCollectionViewPreMountHeightMeasuresContent(double heightConstraint)
+		{
+			SetupBuilder();
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var collectionView = new CollectionView
+				{
+					ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Vertical),
+					ItemsSource = new[] { "Task 1", "Task 2", "Task 3" },
+					ItemTemplate = new DataTemplate(() => new Label { Text = "Task", HeightRequest = 50 })
+				};
+
+				var handler = await CreateHandlerAsync<CollectionViewHandler2>(collectionView);
+				try
+				{
+					var platformView = handler.Controller.CollectionView;
+					Assert.Null(platformView.Window);
+					var originalFrame = platformView.Frame;
+
+					var desiredSize = handler.GetDesiredSize(350, heightConstraint);
+					Assert.Equal(150, desiredSize.Height, 1);
+					Assert.Equal(originalFrame, platformView.Frame);
+				}
+				finally
+				{
+					((IElementHandler)handler).DisconnectHandler();
+				}
+			});
+		}
+
 		[Fact(DisplayName = "Grouped CollectionView EmptyView Tracks Groups")]
 		public Task GroupedCollectionViewEmptyViewTracksGroups()
 		{
