@@ -31,7 +31,8 @@ public class Issue17389 : _IssuesUITest
 		for (var index = 0; index < layouts.Length; index++)
 		{
 			App.TapElement(layouts[index]);
-			Assert.That(App.WaitForTextToBePresentInElement("TapCountLabel", $"Tap count: {index + 1}"), Is.True);
+			Assert.That(App.WaitForTextToBePresentInElement("TapCountLabel", $"Tap count: {index + 1}"), Is.True,
+				$"Tapping {layouts[index]} should produce tap count {index + 1}.");
 		}
 
 		Assert.That(App.WaitForTextToBePresentInElement("TapCountLabel", "Tap count: 4"), Is.True);
