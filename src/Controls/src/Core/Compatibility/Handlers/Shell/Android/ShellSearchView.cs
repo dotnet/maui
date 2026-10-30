@@ -80,7 +80,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				if ((searchHandler.Query ?? string.Empty) != (text ?? string.Empty))
 				{
-					searchHandler.SetValue(SearchHandler.QueryProperty, text ?? string.Empty, SetterSpecificity.FromHandler);
+					searchHandler.SetValue(SearchHandler.QueryProperty, text);
 				}
 			}
 			finally
