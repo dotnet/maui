@@ -63,14 +63,15 @@ namespace Microsoft.Maui.Gtk.UnitTests
 			var panel = GtkTestApp.CreateWidget<MauiGtkRefreshPanel>(refresh);
 			Assert.True(panel.IsRefreshEnabled);
 
-			refresh.IsEnabled = true;
-			var field = typeof(RefreshView).GetProperty(nameof(RefreshView.IsRefreshing));
-			Assert.NotNull(field);
-
-			// IsRefreshEnabled is the virtual view's internal-by-interface flag: flip it through the handler contract.
-			panel.IsRefreshEnabled = false;
+			refresh.IsRefreshEnabled = false;
+			Assert.False(panel.IsRefreshEnabled);
 			Assert.False(panel.Pull(500));
 			Assert.False(refresh.IsRefreshing);
+
+			refresh.IsRefreshEnabled = true;
+			Assert.True(panel.IsRefreshEnabled);
+			Assert.True(panel.Pull(500));
+			Assert.True(refresh.IsRefreshing);
 		});
 
 		[GtkFact]
