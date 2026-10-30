@@ -135,7 +135,8 @@ namespace Microsoft.Maui.Gtk.Platform
 
 		/// <summary>
 		/// Allocates <paramref name="widget"/> at its stored frame with its translation/scale/rotation applied.
-		/// Callers outside the parent's allocate (a transform changed) use <see cref="Reallocate"/>.
+		/// Must run inside the parent's size-allocate (GTK forbids allocating a child at any other time); a transform change outside it
+		/// goes through <see cref="Reallocate"/>.
 		/// </summary>
 		internal static void Allocate(global::Gtk.Widget widget, GtkViewState state)
 		{
@@ -155,16 +156,20 @@ namespace Microsoft.Maui.Gtk.Platform
 			widget.Allocate(width, height, -1, CreateTransform(frame, state, width, height));
 		}
 
-		/// <summary>Re-allocates a widget at its last frame after a transform property changed.</summary>
+		/// <summary>
+		/// Applies a changed transform (translation/scale/rotation, already stored in the widget's <see cref="GtkViewState"/>). A child may only
+		/// be allocated from its parent's size-allocate, so this queues an allocation of the parent: its arrange runs again and reaches
+		/// <see cref="PlatformArrange"/>, which allocates the widget with the new transform.
+		/// </summary>
 		/// <param name="widget">The widget (container or platform view).</param>
 		internal static void Reallocate(global::Gtk.Widget widget)
 		{
 			var state = GtkViewState.TryGet(widget);
-			if (state is null || !state.HasFrame || widget.Parent is null)
+			if (state is null || !state.HasFrame || widget.Parent is not { } parent)
 				return;
 
-			Allocate(widget, state);
-			widget.Parent.QueueDraw();
+			parent.QueueAllocate();
+			parent.QueueDraw();
 		}
 
 		static Gsk.Transform CreateTransform(Rect frame, GtkViewState state, int width, int height)
