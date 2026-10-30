@@ -217,6 +217,19 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				_defaultStandardAppearance = (UINavigationBarAppearance)navBar.StandardAppearance.Copy();
 				_defaultScrollEdgeAppearance = (UINavigationBarAppearance)navBar.ScrollEdgeAppearance?.Copy();
+
+				var shadowColor = UIColor.FromRGBA(0, 0, 0, 76);
+
+				// UIKit can omit the native separator; preserve it without replacing the captured background.
+				if (_defaultStandardAppearance.ShadowColor is null && _defaultStandardAppearance.ShadowImage is null)
+				{
+					_defaultStandardAppearance.ShadowColor = shadowColor;
+				}
+
+				if (_defaultScrollEdgeAppearance is { ShadowColor: null, ShadowImage: null })
+				{
+					_defaultScrollEdgeAppearance.ShadowColor = shadowColor;
+				}
 			}
 			_defaultAppearanceCaptured = true;
 
