@@ -12,12 +12,14 @@
       "src\\Graphics\\samples\\GraphicsTester.Skia.Windows\\GraphicsTester.Skia.Windows.csproj",
       "src\\Graphics\\samples\\GraphicsTester.WinUI.Desktop\\GraphicsTester.WinUI.Desktop.csproj",
       "src\\Graphics\\samples\\GraphicsTester.iOS\\GraphicsTester.iOS.csproj",
+      "src\\Graphics\\src\\Graphics.Cairo\\Graphics.Cairo.csproj",
       "src\\Graphics\\src\\Graphics.Skia.GtkSharp\\Graphics.Skia.GtkSharp.csproj",
       "src\\Graphics\\src\\Graphics.Skia.WPF\\Graphics.Skia.WPF.csproj",
       "src\\Graphics\\src\\Graphics.Skia\\Graphics.Skia.csproj",
       "src\\Graphics\\src\\Graphics.Win2D\\Graphics.Win2D.csproj",
       "src\\Graphics\\src\\Graphics\\Graphics.csproj",
       "src\\Graphics\\src\\Text.Markdig\\Graphics.Text.Markdig.csproj",
+      "src\\Graphics\\tests\\Graphics.Cairo.Tests\\Graphics.Cairo.Tests.csproj",
       "src\\Graphics\\tests\\Graphics.Benchmarks\\Graphics.Benchmarks.csproj",
       "src\\Graphics\\tests\\Graphics.Tests\\Graphics.Tests.csproj"
     ]

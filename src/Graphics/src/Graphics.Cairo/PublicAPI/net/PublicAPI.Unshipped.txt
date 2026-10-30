@@ -1,0 +1,139 @@
+﻿#nullable enable
+Microsoft.Maui.Graphics.Cairo.CairoBitmapExportContext
+Microsoft.Maui.Graphics.Cairo.CairoBitmapExportContext.CairoBitmapExportContext(int width, int height, float displayScale = 1, int dpi = 72, bool transparent = true) -> void
+~Microsoft.Maui.Graphics.Cairo.CairoBitmapExportContext.Surface.get -> Cairo.ImageSurface
+Microsoft.Maui.Graphics.Cairo.CairoBitmapExportService
+Microsoft.Maui.Graphics.Cairo.CairoBitmapExportService.CairoBitmapExportService() -> void
+~Microsoft.Maui.Graphics.Cairo.CairoBitmapExportService.CreateContext(int width, int height, float displayScale = 1) -> Microsoft.Maui.Graphics.BitmapExportContext
+Microsoft.Maui.Graphics.Cairo.CairoCanvas
+Microsoft.Maui.Graphics.Cairo.CairoCanvas.CairoCanvas() -> void
+~Microsoft.Maui.Graphics.Cairo.CairoCanvas.CairoCanvas(Cairo.Context context) -> void
+~Microsoft.Maui.Graphics.Cairo.CairoCanvas.Context.get -> Cairo.Context
+~Microsoft.Maui.Graphics.Cairo.CairoCanvas.Context.set -> void
+Microsoft.Maui.Graphics.Cairo.CairoCanvas.SetBlur(float blurRadius) -> void
+Microsoft.Maui.Graphics.Cairo.CairoCanvasState
+Microsoft.Maui.Graphics.Cairo.CairoCanvasState.Alpha.get -> float
+Microsoft.Maui.Graphics.Cairo.CairoCanvasState.Alpha.set -> void
+Microsoft.Maui.Graphics.Cairo.CairoCanvasState.Antialias.get -> bool
+Microsoft.Maui.Graphics.Cairo.CairoCanvasState.Antialias.set -> void
+Microsoft.Maui.Graphics.Cairo.CairoCanvasState.BlendMode.get -> Microsoft.Maui.Graphics.BlendMode
+Microsoft.Maui.Graphics.Cairo.CairoCanvasState.BlendMode.set -> void
+Microsoft.Maui.Graphics.Cairo.CairoCanvasState.BlurRadius.get -> float
+Microsoft.Maui.Graphics.Cairo.CairoCanvasState.BlurRadius.set -> void
+Microsoft.Maui.Graphics.Cairo.CairoCanvasState.CairoCanvasState() -> void
+~Microsoft.Maui.Graphics.Cairo.CairoCanvasState.CairoCanvasState(Microsoft.Maui.Graphics.Cairo.CairoCanvasState prototype) -> void
+Microsoft.Maui.Graphics.Cairo.CairoCanvasState.ClearShadow() -> void
+~Microsoft.Maui.Graphics.Cairo.CairoCanvasState.FillColor.get -> Microsoft.Maui.Graphics.Color
+~Microsoft.Maui.Graphics.Cairo.CairoCanvasState.FillColor.set -> void
+~Microsoft.Maui.Graphics.Cairo.CairoCanvasState.FillPattern.get -> Cairo.Pattern
+~Microsoft.Maui.Graphics.Cairo.CairoCanvasState.Font.get -> Microsoft.Maui.Graphics.IFont
+~Microsoft.Maui.Graphics.Cairo.CairoCanvasState.Font.set -> void
+~Microsoft.Maui.Graphics.Cairo.CairoCanvasState.FontColor.get -> Microsoft.Maui.Graphics.Color
+~Microsoft.Maui.Graphics.Cairo.CairoCanvasState.FontColor.set -> void
+Microsoft.Maui.Graphics.Cairo.CairoCanvasState.FontSize.get -> float
+Microsoft.Maui.Graphics.Cairo.CairoCanvasState.FontSize.set -> void
+Microsoft.Maui.Graphics.Cairo.CairoCanvasState.HasShadow.get -> bool
+Microsoft.Maui.Graphics.Cairo.CairoCanvasState.MiterLimit.get -> float
+Microsoft.Maui.Graphics.Cairo.CairoCanvasState.MiterLimit.set -> void
+Microsoft.Maui.Graphics.Cairo.CairoCanvasState.PlatformDashOffset.get -> double
+Microsoft.Maui.Graphics.Cairo.CairoCanvasState.PlatformDashOffset.set -> void
+~Microsoft.Maui.Graphics.Cairo.CairoCanvasState.PlatformDashPattern.get -> double[]
+~Microsoft.Maui.Graphics.Cairo.CairoCanvasState.PlatformDashPattern.set -> void
+Microsoft.Maui.Graphics.Cairo.CairoCanvasState.PlatformStrokeSize.get -> float
+Microsoft.Maui.Graphics.Cairo.CairoCanvasState.PlatformStrokeSize.set -> void
+Microsoft.Maui.Graphics.Cairo.CairoCanvasState.Reset() -> void
+~Microsoft.Maui.Graphics.Cairo.CairoCanvasState.SetFillPattern(Cairo.Pattern pattern) -> void
+~Microsoft.Maui.Graphics.Cairo.CairoCanvasState.SetShadow(Microsoft.Maui.Graphics.SizeF offset, float blur, Microsoft.Maui.Graphics.Color color) -> void
+Microsoft.Maui.Graphics.Cairo.CairoCanvasState.ShadowBlur.get -> float
+~Microsoft.Maui.Graphics.Cairo.CairoCanvasState.ShadowColor.get -> Microsoft.Maui.Graphics.Color
+Microsoft.Maui.Graphics.Cairo.CairoCanvasState.ShadowOffset.get -> Microsoft.Maui.Graphics.SizeF
+~Microsoft.Maui.Graphics.Cairo.CairoCanvasState.StrokeColor.get -> Microsoft.Maui.Graphics.Color
+~Microsoft.Maui.Graphics.Cairo.CairoCanvasState.StrokeColor.set -> void
+Microsoft.Maui.Graphics.Cairo.CairoCanvasState.StrokeLineCap.get -> Microsoft.Maui.Graphics.LineCap
+Microsoft.Maui.Graphics.Cairo.CairoCanvasState.StrokeLineCap.set -> void
+Microsoft.Maui.Graphics.Cairo.CairoCanvasState.StrokeLineJoin.get -> Microsoft.Maui.Graphics.LineJoin
+Microsoft.Maui.Graphics.Cairo.CairoCanvasState.StrokeLineJoin.set -> void
+Microsoft.Maui.Graphics.Cairo.CairoCanvasStateService
+Microsoft.Maui.Graphics.Cairo.CairoCanvasStateService.CairoCanvasStateService() -> void
+~Microsoft.Maui.Graphics.Cairo.CairoCanvasStateService.CreateCopy(Microsoft.Maui.Graphics.Cairo.CairoCanvasState prototype) -> Microsoft.Maui.Graphics.Cairo.CairoCanvasState
+~Microsoft.Maui.Graphics.Cairo.CairoCanvasStateService.CreateNew(object context) -> Microsoft.Maui.Graphics.Cairo.CairoCanvasState
+~Microsoft.Maui.Graphics.Cairo.CairoCanvasStateService.Reset(Microsoft.Maui.Graphics.Cairo.CairoCanvasState state) -> void
+Microsoft.Maui.Graphics.Cairo.CairoExtensions
+Microsoft.Maui.Graphics.Cairo.CairoImage
+~Microsoft.Maui.Graphics.Cairo.CairoImage.CairoImage(Cairo.ImageSurface surface, bool ownsSurface = true) -> void
+Microsoft.Maui.Graphics.Cairo.CairoImage.Dispose() -> void
+~Microsoft.Maui.Graphics.Cairo.CairoImage.Downsize(float maxWidth, float maxHeight, bool disposeOriginal = false) -> Microsoft.Maui.Graphics.IImage
+~Microsoft.Maui.Graphics.Cairo.CairoImage.Downsize(float maxWidthOrHeight, bool disposeOriginal = false) -> Microsoft.Maui.Graphics.IImage
+~Microsoft.Maui.Graphics.Cairo.CairoImage.Draw(Microsoft.Maui.Graphics.ICanvas canvas, Microsoft.Maui.Graphics.RectF dirtyRect) -> void
+Microsoft.Maui.Graphics.Cairo.CairoImage.Height.get -> float
+~Microsoft.Maui.Graphics.Cairo.CairoImage.PlatformRepresentation.get -> Cairo.ImageSurface
+~Microsoft.Maui.Graphics.Cairo.CairoImage.Resize(float width, float height, Microsoft.Maui.Graphics.ResizeMode resizeMode = Microsoft.Maui.Graphics.ResizeMode.Fit, bool disposeOriginal = false) -> Microsoft.Maui.Graphics.IImage
+~Microsoft.Maui.Graphics.Cairo.CairoImage.Save(System.IO.Stream stream, Microsoft.Maui.Graphics.ImageFormat format = Microsoft.Maui.Graphics.ImageFormat.Png, float quality = 1) -> void
+~Microsoft.Maui.Graphics.Cairo.CairoImage.SaveAsync(System.IO.Stream stream, Microsoft.Maui.Graphics.ImageFormat format = Microsoft.Maui.Graphics.ImageFormat.Png, float quality = 1) -> System.Threading.Tasks.Task
+~Microsoft.Maui.Graphics.Cairo.CairoImage.ToPixbuf(bool flattenOnWhite = false) -> Gdk.Pixbuf
+~Microsoft.Maui.Graphics.Cairo.CairoImage.ToPlatformImage() -> Microsoft.Maui.Graphics.IImage
+Microsoft.Maui.Graphics.Cairo.CairoImage.Width.get -> float
+Microsoft.Maui.Graphics.Cairo.CairoImageLoadingService
+Microsoft.Maui.Graphics.Cairo.CairoImageLoadingService.CairoImageLoadingService() -> void
+~Microsoft.Maui.Graphics.Cairo.CairoImageLoadingService.FromStream(System.IO.Stream stream, Microsoft.Maui.Graphics.ImageFormat format = Microsoft.Maui.Graphics.ImageFormat.Png) -> Microsoft.Maui.Graphics.IImage
+Microsoft.Maui.Graphics.Cairo.PangoStringSizeService
+~Microsoft.Maui.Graphics.Cairo.PangoStringSizeService.GetStringSize(string value, Microsoft.Maui.Graphics.IFont font, float fontSize) -> Microsoft.Maui.Graphics.SizeF
+~Microsoft.Maui.Graphics.Cairo.PangoStringSizeService.GetStringSize(string value, Microsoft.Maui.Graphics.IFont font, float fontSize, Microsoft.Maui.Graphics.HorizontalAlignment horizontalAlignment, Microsoft.Maui.Graphics.VerticalAlignment verticalAlignment) -> Microsoft.Maui.Graphics.SizeF
+Microsoft.Maui.Graphics.Cairo.PangoStringSizeService.PangoStringSizeService() -> void
+~override Microsoft.Maui.Graphics.Cairo.CairoBitmapExportContext.Canvas.get -> Microsoft.Maui.Graphics.ICanvas
+override Microsoft.Maui.Graphics.Cairo.CairoBitmapExportContext.Dispose() -> void
+~override Microsoft.Maui.Graphics.Cairo.CairoBitmapExportContext.Image.get -> Microsoft.Maui.Graphics.IImage
+~override Microsoft.Maui.Graphics.Cairo.CairoBitmapExportContext.WriteToStream(System.IO.Stream stream) -> void
+override Microsoft.Maui.Graphics.Cairo.CairoCanvas.Alpha.set -> void
+override Microsoft.Maui.Graphics.Cairo.CairoCanvas.Antialias.set -> void
+override Microsoft.Maui.Graphics.Cairo.CairoCanvas.BlendMode.set -> void
+~override Microsoft.Maui.Graphics.Cairo.CairoCanvas.ClipPath(Microsoft.Maui.Graphics.PathF path, Microsoft.Maui.Graphics.WindingMode windingMode = Microsoft.Maui.Graphics.WindingMode.NonZero) -> void
+override Microsoft.Maui.Graphics.Cairo.CairoCanvas.ClipRectangle(float x, float y, float width, float height) -> void
+override Microsoft.Maui.Graphics.Cairo.CairoCanvas.Dispose() -> void
+~override Microsoft.Maui.Graphics.Cairo.CairoCanvas.DrawImage(Microsoft.Maui.Graphics.IImage image, float x, float y, float width, float height) -> void
+~override Microsoft.Maui.Graphics.Cairo.CairoCanvas.DrawString(string value, float x, float y, Microsoft.Maui.Graphics.HorizontalAlignment horizontalAlignment) -> void
+~override Microsoft.Maui.Graphics.Cairo.CairoCanvas.DrawString(string value, float x, float y, float width, float height, Microsoft.Maui.Graphics.HorizontalAlignment horizontalAlignment, Microsoft.Maui.Graphics.VerticalAlignment verticalAlignment, Microsoft.Maui.Graphics.TextFlow textFlow = Microsoft.Maui.Graphics.TextFlow.ClipBounds, float lineSpacingAdjustment = 0) -> void
+~override Microsoft.Maui.Graphics.Cairo.CairoCanvas.DrawText(Microsoft.Maui.Graphics.Text.IAttributedText value, float x, float y, float width, float height) -> void
+override Microsoft.Maui.Graphics.Cairo.CairoCanvas.FillArc(float x, float y, float width, float height, float startAngle, float endAngle, bool clockwise) -> void
+~override Microsoft.Maui.Graphics.Cairo.CairoCanvas.FillColor.set -> void
+override Microsoft.Maui.Graphics.Cairo.CairoCanvas.FillEllipse(float x, float y, float width, float height) -> void
+~override Microsoft.Maui.Graphics.Cairo.CairoCanvas.FillPath(Microsoft.Maui.Graphics.PathF path, Microsoft.Maui.Graphics.WindingMode windingMode) -> void
+override Microsoft.Maui.Graphics.Cairo.CairoCanvas.FillRectangle(float x, float y, float width, float height) -> void
+override Microsoft.Maui.Graphics.Cairo.CairoCanvas.FillRoundedRectangle(float x, float y, float width, float height, float cornerRadius) -> void
+~override Microsoft.Maui.Graphics.Cairo.CairoCanvas.Font.set -> void
+~override Microsoft.Maui.Graphics.Cairo.CairoCanvas.FontColor.set -> void
+override Microsoft.Maui.Graphics.Cairo.CairoCanvas.FontSize.set -> void
+override Microsoft.Maui.Graphics.Cairo.CairoCanvas.MiterLimit.set -> void
+override Microsoft.Maui.Graphics.Cairo.CairoCanvas.PlatformConcatenateTransform(System.Numerics.Matrix3x2 transform) -> void
+override Microsoft.Maui.Graphics.Cairo.CairoCanvas.PlatformDrawArc(float x, float y, float width, float height, float startAngle, float endAngle, bool clockwise, bool closed) -> void
+override Microsoft.Maui.Graphics.Cairo.CairoCanvas.PlatformDrawEllipse(float x, float y, float width, float height) -> void
+override Microsoft.Maui.Graphics.Cairo.CairoCanvas.PlatformDrawLine(float x1, float y1, float x2, float y2) -> void
+~override Microsoft.Maui.Graphics.Cairo.CairoCanvas.PlatformDrawPath(Microsoft.Maui.Graphics.PathF path) -> void
+override Microsoft.Maui.Graphics.Cairo.CairoCanvas.PlatformDrawRectangle(float x, float y, float width, float height) -> void
+override Microsoft.Maui.Graphics.Cairo.CairoCanvas.PlatformDrawRoundedRectangle(float x, float y, float width, float height, float cornerRadius) -> void
+override Microsoft.Maui.Graphics.Cairo.CairoCanvas.PlatformRotate(float degrees, float radians) -> void
+override Microsoft.Maui.Graphics.Cairo.CairoCanvas.PlatformRotate(float degrees, float radians, float x, float y) -> void
+override Microsoft.Maui.Graphics.Cairo.CairoCanvas.PlatformScale(float fx, float fy) -> void
+~override Microsoft.Maui.Graphics.Cairo.CairoCanvas.PlatformSetStrokeDashPattern(float[] strokePattern, float strokeDashOffset, float strokeSize) -> void
+override Microsoft.Maui.Graphics.Cairo.CairoCanvas.PlatformStrokeSize.set -> void
+override Microsoft.Maui.Graphics.Cairo.CairoCanvas.PlatformTranslate(float tx, float ty) -> void
+override Microsoft.Maui.Graphics.Cairo.CairoCanvas.ResetState() -> void
+override Microsoft.Maui.Graphics.Cairo.CairoCanvas.SaveState() -> void
+~override Microsoft.Maui.Graphics.Cairo.CairoCanvas.SetFillPaint(Microsoft.Maui.Graphics.Paint paint, Microsoft.Maui.Graphics.RectF rectangle) -> void
+~override Microsoft.Maui.Graphics.Cairo.CairoCanvas.SetShadow(Microsoft.Maui.Graphics.SizeF offset, float blur, Microsoft.Maui.Graphics.Color color) -> void
+~override Microsoft.Maui.Graphics.Cairo.CairoCanvas.StateRestored(Microsoft.Maui.Graphics.Cairo.CairoCanvasState state) -> void
+~override Microsoft.Maui.Graphics.Cairo.CairoCanvas.StrokeColor.set -> void
+override Microsoft.Maui.Graphics.Cairo.CairoCanvas.StrokeLineCap.set -> void
+override Microsoft.Maui.Graphics.Cairo.CairoCanvas.StrokeLineJoin.set -> void
+override Microsoft.Maui.Graphics.Cairo.CairoCanvas.SubtractFromClip(float x, float y, float width, float height) -> void
+override Microsoft.Maui.Graphics.Cairo.CairoCanvasState.Dispose() -> void
+~static Microsoft.Maui.Graphics.Cairo.CairoExtensions.AddArc(this Cairo.Context context, double x, double y, double width, double height, double startAngle, double endAngle, bool clockwise, bool newSubPath) -> void
+~static Microsoft.Maui.Graphics.Cairo.CairoExtensions.AddEllipse(this Cairo.Context context, double x, double y, double width, double height) -> void
+~static Microsoft.Maui.Graphics.Cairo.CairoExtensions.AddPath(this Cairo.Context context, Microsoft.Maui.Graphics.PathF path) -> void
+~static Microsoft.Maui.Graphics.Cairo.CairoExtensions.AddRoundedRectangle(this Cairo.Context context, double x, double y, double width, double height, double cornerRadius) -> void
+~static Microsoft.Maui.Graphics.Cairo.CairoExtensions.AsCairoColor(this Microsoft.Maui.Graphics.Color color, float alpha = 1) -> Cairo.Color
+~static Microsoft.Maui.Graphics.Cairo.CairoExtensions.AsCairoMatrix(this System.Numerics.Matrix3x2 matrix) -> Cairo.Matrix
+static Microsoft.Maui.Graphics.Cairo.CairoExtensions.AsCairoOperator(this Microsoft.Maui.Graphics.BlendMode blendMode) -> Cairo.Operator
+~static Microsoft.Maui.Graphics.Cairo.CairoImage.FromBytes(byte[] bytes) -> Microsoft.Maui.Graphics.Cairo.CairoImage
+~static Microsoft.Maui.Graphics.Cairo.CairoImage.FromPixbuf(Gdk.Pixbuf pixbuf) -> Microsoft.Maui.Graphics.Cairo.CairoImage
+~static Microsoft.Maui.Graphics.Cairo.CairoImage.FromStream(System.IO.Stream stream, Microsoft.Maui.Graphics.ImageFormat formatHint = Microsoft.Maui.Graphics.ImageFormat.Png) -> Microsoft.Maui.Graphics.IImage

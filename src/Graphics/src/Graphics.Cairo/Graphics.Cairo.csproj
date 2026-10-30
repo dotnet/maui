@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;$(_MauiDotNetTfm)</TargetFrameworks>
+    <RootNamespace>Microsoft.Maui.Graphics.Cairo</RootNamespace>
+    <AssemblyName>Microsoft.Maui.Graphics.Cairo</AssemblyName>
+    <IsTrimmable>false</IsTrimmable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);RS0026;RS0027;RS0041</NoWarn>
+    <WarningsAsErrors>CS1591</WarningsAsErrors>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- NuGet package information -->
+    <IsPackable>true</IsPackable>
+    <PackageId>Microsoft.Maui.Graphics.Cairo</PackageId>
+    <PackageTags>$(DefaultPackageTags);graphics;drawing;cairo;pango;gtk</PackageTags>
+    <Description>.NET Multi-platform App UI (.NET MAUI) is a cross-platform framework for creating native mobile and desktop apps with C# and XAML. This package contains an implementation of the .NET MAUI Graphics canvas on top of Cairo, Pango and gdk-pixbuf (through the GtkSharp 4 bindings), for Linux/GTK 4 and Windows.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Versions come from eng/NuGetVersions.targets. Only the Cairo/Pango/Gdk(Pixbuf) bindings are needed: no GtkSharp4. -->
+    <PackageReference Include="CairoSharp4" />
+    <PackageReference Include="PangoSharp4" />
+    <PackageReference Include="GdkSharp4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.Maui.Graphics.Cairo.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Graphics\Graphics.csproj" />
+  </ItemGroup>
+
+  <Import Project="$(MauiSrcDirectory)PublicAPI.targets" />
+
+</Project>
