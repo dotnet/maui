@@ -1,11 +1,12 @@
 using System;
 using CoreGraphics;
+using Foundation;
 using Microsoft.Maui.Graphics;
 using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
-	internal sealed class MauiContentButton : UIButton, IPlatformMeasureInvalidationController
+	internal sealed class MauiContentButton : UIButton, ICrossPlatformLayoutBacking, IPlatformMeasureInvalidationController
 	{
 		readonly UIColor? _defaultBackgroundColor;
 		readonly CGColor? _defaultBorderColor;
@@ -16,25 +17,33 @@ namespace Microsoft.Maui.Platform
 		double _lastMeasureHeight = double.NaN;
 		double _lastMeasureWidth = double.NaN;
 		WeakReference<UIView>? _contentView;
-		WeakReference<IContentButton>? _virtualView;
+		WeakReference<ICrossPlatformLayout>? _crossPlatformLayout;
 
 		internal MauiContentButton(IContentButton virtualView)
-			: base(UIButtonType.System)
 		{
 			_defaultBackgroundColor = BackgroundColor;
 			_defaultBorderColor = Layer.BorderColor;
 			_defaultCornerRadius = Layer.CornerRadius;
 			ClipsToBounds = true;
+			IsAccessibilityElement = true;
 			SetVirtualView(virtualView);
 		}
 
-		IContentButton? VirtualView =>
-			_virtualView is not null && _virtualView.TryGetTarget(out var view) ? view : null;
+		ICrossPlatformLayout? ICrossPlatformLayoutBacking.CrossPlatformLayout
+		{
+			get => _crossPlatformLayout is not null && _crossPlatformLayout.TryGetTarget(out var layout) ? layout : null;
+			set
+			{
+				_crossPlatformLayout = value is null ? null : new(value);
+				InvalidateConstraintsCache();
+			}
+		}
+
+		IContentButton? VirtualView => ((ICrossPlatformLayoutBacking)this).CrossPlatformLayout as IContentButton;
 
 		internal void SetVirtualView(IContentButton? virtualView)
 		{
-			_virtualView = virtualView is null ? null : new(virtualView);
-			InvalidateConstraintsCache();
+			((ICrossPlatformLayoutBacking)this).CrossPlatformLayout = virtualView;
 		}
 
 		internal void SetContent(UIView? content)
@@ -139,6 +148,19 @@ namespace Microsoft.Maui.Platform
 
 			SendActionForControlEvents(UIControlEvent.PrimaryActionTriggered);
 			return true;
+		}
+
+		public override UIView? HitTest(CGPoint point, UIEvent? uievent) =>
+			base.HitTest(point, uievent) is null ? null : this;
+
+		public override void TouchesEnded(NSSet touches, UIEvent? evt)
+		{
+			// UIKit permits a release slightly outside a button. ContentButton requires
+			// the release to be inside its bounds, including when hosted in a scroll view.
+			if (touches.AnyObject is UITouch touch && !PointInside(touch.LocationInView(this), evt))
+				base.TouchesCancelled(touches, evt);
+			else
+				base.TouchesEnded(touches, evt);
 		}
 
 		public override void MovedToWindow()

@@ -27,6 +27,8 @@ with explicit, bound and ancestor `IsEnabled` values. Command tracking uses the
 shared weak subscription and command-parameter binding dependency implementation.
 `Pressed`, `Released`, read-only `IsPressed` and the `Pressed` visual state use
 `ButtonElement`. A release clears the pressed state even after disabling.
+Releasing outside the button's bounds cancels activation, including on Apple
+platforms where UIKit normally allows a small release-outside tolerance.
 
 Only presentation content is supported in this first implementation. Labels,
 images and layouts inside the button are not separate input or accessibility
@@ -74,6 +76,9 @@ device-test category. The TestCases host includes **ContentButton Feature Matrix
 and corresponding `ContentButtonFeatureTests` in the Button UI-test category.
 The feature page exposes content replacement/removal, handler replacement,
 background changes, disable-on-press and remove-on-press.
+Apple device tests also assert native content frames before and after content
+replacement, for both direct content and nested layouts. Native measurement tests
+check content and inset dimensions, not just nonnegative sizes.
 
 The following checks require real platform runs; adding a test does not certify
 that a platform has passed:

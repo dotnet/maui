@@ -1,18 +1,11 @@
 using System;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
-using Microsoft.Maui.Primitives;
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
 	public class ContentButtonStub : StubBase, IContentButton
 	{
-		public ContentButtonStub()
-		{
-			Width = Dimension.Unset;
-			Height = Dimension.Unset;
-		}
-
 		public IView Content { get; set; }
 		object IContentView.Content => Content;
 		public IView PresentedContent => Content;

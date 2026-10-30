@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Automation.Provider;
@@ -12,6 +13,17 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Button)]
 	public class ContentButtonWindowsTests : ControlsHandlerTestBase
 	{
+		public ContentButtonWindowsTests()
+		{
+			EnsureHandlerCreated(builder => builder.ConfigureMauiHandlers(handlers =>
+			{
+				handlers.AddHandler<ContentButton, ContentButtonHandler>();
+				handlers.AddHandler<VerticalStackLayout, LayoutHandler>();
+				handlers.AddHandler<Label, LabelHandler>();
+				handlers.AddHandler<Button, ButtonHandler>();
+			}));
+		}
+
 		[Fact]
 		public async Task SemanticDescriptionProducesSingleNativeButton()
 		{

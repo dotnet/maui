@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Primitives;
 using UIKit;
 using Xunit;
 
@@ -19,8 +20,8 @@ namespace Microsoft.Maui.DeviceTests
 
 			await InvokeOnMainThreadAsync(() =>
 			{
-				var firstPlatformView = Assert.Single(handler.PlatformView.Subviews, view => view.AccessibilityElementsHidden);
-				Assert.Same(first.Handler?.PlatformView, firstPlatformView);
+				var firstPlatformView = Assert.IsAssignableFrom<UIView>(first.Handler?.PlatformView);
+				Assert.Same(handler.PlatformView, firstPlatformView.Superview);
 				Assert.False(firstPlatformView.UserInteractionEnabled);
 				Assert.False(firstPlatformView.IsAccessibilityElement);
 				Assert.True(firstPlatformView.AccessibilityElementsHidden);
@@ -28,14 +29,14 @@ namespace Microsoft.Maui.DeviceTests
 				button.Content = second;
 				handler.UpdateValue(nameof(IContentView.Content));
 
-				var secondPlatformView = Assert.Single(handler.PlatformView.Subviews, view => view.AccessibilityElementsHidden);
-				Assert.Same(second.Handler?.PlatformView, secondPlatformView);
+				var secondPlatformView = Assert.IsAssignableFrom<UIView>(second.Handler?.PlatformView);
+				Assert.Same(handler.PlatformView, secondPlatformView.Superview);
 				Assert.Null(firstPlatformView.Superview);
 				Assert.True(secondPlatformView.AccessibilityElementsHidden);
 
 				button.Content = null;
 				handler.UpdateValue(nameof(IContentView.Content));
-				Assert.DoesNotContain(handler.PlatformView.Subviews, view => view.AccessibilityElementsHidden);
+				Assert.Null(secondPlatformView.Superview);
 			});
 		}
 
@@ -56,6 +57,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await InvokeOnMainThreadAsync(() =>
 			{
+				var platformView = handler.PlatformView;
 				handler.PlatformView.SendActionForControlEvents(UIControlEvent.TouchDown);
 				handler.PlatformView.SendActionForControlEvents(UIControlEvent.TouchUpOutside);
 				Assert.Equal(1, pressed);
@@ -78,7 +80,7 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(3, pressed);
 				Assert.Equal(3, released);
 
-				handler.PlatformView.SendActionForControlEvents(UIControlEvent.PrimaryActionTriggered);
+				platformView.SendActionForControlEvents(UIControlEvent.PrimaryActionTriggered);
 				Assert.Equal(1, clicked);
 			});
 		}
@@ -92,6 +94,8 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var button = new ContentButtonStub
 			{
+				Width = Dimension.Unset,
+				Height = Dimension.Unset,
 				Content = new LabelStub { Text = "Content" },
 				Padding = new Thickness(8),
 				StrokeThickness = 2,
@@ -105,6 +109,26 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.False(double.IsNaN(size.Height));
 			Assert.True(size.Width >= 0);
 			Assert.True(size.Height >= 0);
+		}
+
+		[Fact]
+		public async Task NativeMeasureIncludesContentAndInsets()
+		{
+			var button = new ContentButtonStub
+			{
+				Width = Dimension.Unset,
+				Height = Dimension.Unset,
+				Content = new LabelStub { Text = "Content", Width = 50, Height = 30 },
+				Padding = new Thickness(8),
+				StrokeThickness = 2,
+			};
+			var handler = await CreateHandlerAsync(button);
+
+			var size = await InvokeOnMainThreadAsync(() =>
+				handler.PlatformView.SizeThatFits(new CoreGraphics.CGSize(100, 80)));
+
+			Assert.Equal(70, size.Width);
+			Assert.Equal(50, size.Height);
 		}
 	}
 }
