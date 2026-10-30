@@ -63,6 +63,15 @@ and `maui-pr-uitests` may not run automatically depending on the changed files.
   inaccessible/expired/insufficient data — do not assume unrelated or PR-caused.
 - Helix work-item console output may live behind `helix.dot.net` and Azure Blob URLs.
 
+## Apple SDK coherency
+
+Previous-.NET Apple SDK dependencies must match the child package names, versions
+and SHAs in the retained macios parent's `eng/Version.Details.xml`. An Xcode-band
+change can rename those child packages even when their .NET major stays the same.
+Update the corresponding `eng/Versions.props` properties and package feed together;
+do not remove `CoherentParentDependency` to hide a stale child package name.
+Check the child's declared Xcode requirement separately from the parent's.
+
 ## Appium driver npm cache
 
 Appium driver installs and updates in Azure Pipelines use a checkout-local npm
