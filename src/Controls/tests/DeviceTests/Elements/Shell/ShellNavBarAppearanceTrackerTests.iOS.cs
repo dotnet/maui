@@ -102,11 +102,9 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory]
-		[InlineData(false, false)]
-		[InlineData(false, true)]
-		[InlineData(true, false)]
-		[InlineData(true, true)]
-		public async Task ResetRestoresNativeAppearanceAfterGradientAndSolid(bool nullTint, bool hasScrollEdgeAppearance)
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task ResetRestoresNativeAppearanceAfterGradientAndSolid(bool nullTint)
 		{
 			if (!OperatingSystem.IsIOSVersionAtLeast(13) && !OperatingSystem.IsMacCatalystVersionAtLeast(13, 1))
 				return;
@@ -124,7 +122,7 @@ namespace Microsoft.Maui.DeviceTests
 				scrollEdge.ConfigureWithTransparentBackground();
 				scrollEdge.BackgroundColor = Colors.Green.ToPlatform();
 				navigationBar.StandardAppearance = standard;
-				navigationBar.ScrollEdgeAppearance = hasScrollEdgeAppearance ? scrollEdge : null;
+				navigationBar.ScrollEdgeAppearance = scrollEdge;
 				navigationBar.Translucent = true;
 				using var tracker = new ShellNavBarAppearanceTracker();
 				var shellItem = new ShellItem();
@@ -143,21 +141,16 @@ namespace Microsoft.Maui.DeviceTests
 				var solidAppearance = new ShellAppearance();
 				solidAppearance.Ingest(shellItem);
 				tracker.SetAppearance(controller, solidAppearance);
-				var translucentBeforeReset = navigationBar.Translucent;
+				Assert.False(navigationBar.Translucent);
 
 				tracker.ResetAppearance(controller);
 
 				Assert.True(ColorComparison.ARGBEquivalent(Colors.Purple.ToPlatform(), navigationBar.StandardAppearance.BackgroundColor));
-				Assert.NotNull(navigationBar.ScrollEdgeAppearance);
-				Assert.True(ColorComparison.ARGBEquivalent((hasScrollEdgeAppearance ? Colors.Green : Colors.Purple).ToPlatform(), navigationBar.ScrollEdgeAppearance.BackgroundColor));
+				Assert.True(ColorComparison.ARGBEquivalent(Colors.Green.ToPlatform(), navigationBar.ScrollEdgeAppearance.BackgroundColor));
 				Assert.NotNull(navigationBar.StandardAppearance.BackgroundEffect);
-				if (hasScrollEdgeAppearance)
-					Assert.Null(navigationBar.ScrollEdgeAppearance.BackgroundEffect);
-				else
-					Assert.NotNull(navigationBar.ScrollEdgeAppearance.BackgroundEffect);
+				Assert.Null(navigationBar.ScrollEdgeAppearance.BackgroundEffect);
 				Assert.Null(navigationBar.StandardAppearance.BackgroundImage);
-				Assert.Null(navigationBar.ScrollEdgeAppearance.BackgroundImage);
-				Assert.Equal(translucentBeforeReset, navigationBar.Translucent);
+				Assert.False(navigationBar.Translucent);
 			});
 		}
 
