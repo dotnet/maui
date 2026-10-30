@@ -123,17 +123,12 @@ namespace Microsoft.Maui.TestCases.Tests
 		/// because App.Tap() uses element.Click() which triggers Android's accessibility
 		/// click (performClick). MAUI uses GestureDetector for tap recognition through
 		/// touch events, not OnClickListener, so element.Click() doesn't fire TapGestureRecognizer.
-		/// Dispatch the platform touch command directly so Catalyst uses its native coordinate click.
 		/// </summary>
 		public static void TapElement(this IApp app, string automationId)
 		{
 			var element = app.WaitForElement(automationId);
 			var rect = element.GetRect();
-			app.CommandExecutor.Execute("tapCoordinates", new Dictionary<string, object>
-			{
-				{ "x", rect.CenterX() },
-				{ "y", rect.CenterY() }
-			});
+			app.TapCoordinates(rect.CenterX(), rect.CenterY());
 		}
 
 		public static void AssertMemoryTest(this IApp app)

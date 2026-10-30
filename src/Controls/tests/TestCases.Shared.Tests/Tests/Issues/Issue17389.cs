@@ -20,6 +20,9 @@ public class Issue17389 : _IssuesUITest
 	{
 		App.WaitForElement("ToggleInputTransparentButton");
 
+		if (App is AppiumCatalystApp)
+			App.ForegroundApp();
+
 		string[] layouts = new[]
 		{
 			 "RedGrid",
