@@ -1,4 +1,8 @@
-﻿#nullable enable
+abstract Microsoft.Maui.Gtk.ImageSources.GtkImageSourceService<T>.LoadTextureAsync(T source, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<Gdk.Texture?>!
+abstract Microsoft.Maui.MauiGtkApplication.CreateMauiApp() -> Microsoft.Maui.Hosting.MauiApp!
+const Microsoft.Maui.Gtk.Handlers.MauiGtkRefreshPanel.PullThreshold = 100 -> double
+const Microsoft.Maui.Gtk.Platform.GtkRuntime.MinimumMinorVersion = 14 -> int
+const Microsoft.Maui.Gtk.Platform.MauiGtkFlyoutPanel.DefaultFlyoutWidth = 320 -> int
 Microsoft.Maui.Gtk.Dispatching.GtkDispatcher
 Microsoft.Maui.Gtk.Dispatching.GtkDispatcher.CreateTimer() -> Microsoft.Maui.Dispatching.IDispatcherTimer!
 Microsoft.Maui.Gtk.Dispatching.GtkDispatcher.Dispatch(System.Action! action) -> bool
@@ -56,6 +60,10 @@ Microsoft.Maui.Gtk.Handlers.GtkEditorHandler.GtkEditorHandler(Microsoft.Maui.IPr
 Microsoft.Maui.Gtk.Handlers.GtkEntryHandler
 Microsoft.Maui.Gtk.Handlers.GtkEntryHandler.GtkEntryHandler() -> void
 Microsoft.Maui.Gtk.Handlers.GtkEntryHandler.GtkEntryHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper = null) -> void
+Microsoft.Maui.Gtk.Handlers.GtkFlyoutViewHandler
+Microsoft.Maui.Gtk.Handlers.GtkFlyoutViewHandler.GtkFlyoutViewHandler() -> void
+Microsoft.Maui.Gtk.Handlers.GtkFlyoutViewHandler.GtkFlyoutViewHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper = null) -> void
+Microsoft.Maui.Gtk.Handlers.GtkFlyoutViewHandler.Panel.get -> Microsoft.Maui.Gtk.Platform.MauiGtkFlyoutPanel!
 Microsoft.Maui.Gtk.Handlers.GtkGraphicsViewHandler
 Microsoft.Maui.Gtk.Handlers.GtkGraphicsViewHandler.GtkGraphicsViewHandler() -> void
 Microsoft.Maui.Gtk.Handlers.GtkGraphicsViewHandler.GtkGraphicsViewHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper = null) -> void
@@ -107,6 +115,12 @@ Microsoft.Maui.Gtk.Handlers.GtkMenuFlyoutSubItemHandler.GtkMenuFlyoutSubItemHand
 Microsoft.Maui.Gtk.Handlers.GtkMenuFlyoutSubItemHandler.GtkMenuFlyoutSubItemHandler(Microsoft.Maui.IPropertyMapper! mapper, Microsoft.Maui.CommandMapper? commandMapper = null) -> void
 Microsoft.Maui.Gtk.Handlers.GtkMenuFlyoutSubItemHandler.Insert(int index, Microsoft.Maui.IMenuElement! view) -> void
 Microsoft.Maui.Gtk.Handlers.GtkMenuFlyoutSubItemHandler.Remove(Microsoft.Maui.IMenuElement! view) -> void
+Microsoft.Maui.Gtk.Handlers.GtkNavigationViewHandler
+Microsoft.Maui.Gtk.Handlers.GtkNavigationViewHandler.GtkNavigationViewHandler() -> void
+Microsoft.Maui.Gtk.Handlers.GtkNavigationViewHandler.GtkNavigationViewHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper = null) -> void
+Microsoft.Maui.Gtk.Handlers.GtkNavigationViewHandler.Navigate(Microsoft.Maui.NavigationRequest! request) -> void
+Microsoft.Maui.Gtk.Handlers.GtkNavigationViewHandler.NavigationStack.get -> System.Collections.Generic.IReadOnlyList<Microsoft.Maui.IView!>!
+Microsoft.Maui.Gtk.Handlers.GtkNavigationViewHandler.Stack.get -> Gtk.Stack!
 Microsoft.Maui.Gtk.Handlers.GtkPageHandler
 Microsoft.Maui.Gtk.Handlers.GtkPageHandler.GtkPageHandler() -> void
 Microsoft.Maui.Gtk.Handlers.GtkPageHandler.GtkPageHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper = null) -> void
@@ -150,9 +164,46 @@ Microsoft.Maui.Gtk.Handlers.GtkSwipeViewHandler.GtkSwipeViewHandler(Microsoft.Ma
 Microsoft.Maui.Gtk.Handlers.GtkSwitchHandler
 Microsoft.Maui.Gtk.Handlers.GtkSwitchHandler.GtkSwitchHandler() -> void
 Microsoft.Maui.Gtk.Handlers.GtkSwitchHandler.GtkSwitchHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper = null) -> void
+Microsoft.Maui.Gtk.Handlers.GtkTabbedViewHandler
+Microsoft.Maui.Gtk.Handlers.GtkTabbedViewHandler.GtkTabbedViewHandler() -> void
+Microsoft.Maui.Gtk.Handlers.GtkTabbedViewHandler.GtkTabbedViewHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper = null) -> void
+Microsoft.Maui.Gtk.Handlers.GtkTabbedViewHandler.TabView.get -> Microsoft.Maui.Gtk.Platform.MauiGtkTabView!
 Microsoft.Maui.Gtk.Handlers.GtkTimePickerHandler
 Microsoft.Maui.Gtk.Handlers.GtkTimePickerHandler.GtkTimePickerHandler() -> void
 Microsoft.Maui.Gtk.Handlers.GtkTimePickerHandler.GtkTimePickerHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper = null) -> void
+Microsoft.Maui.Gtk.Handlers.GtkToolbarHandler
+Microsoft.Maui.Gtk.Handlers.GtkToolbarHandler.BackButton.get -> Gtk.Button!
+Microsoft.Maui.Gtk.Handlers.GtkToolbarHandler.DrawerButton.get -> Gtk.Button!
+Microsoft.Maui.Gtk.Handlers.GtkToolbarHandler.DrawerToggleClicked -> System.EventHandler?
+Microsoft.Maui.Gtk.Handlers.GtkToolbarHandler.GtkToolbarHandler() -> void
+Microsoft.Maui.Gtk.Handlers.GtkToolbarHandler.GtkToolbarHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper = null) -> void
+Microsoft.Maui.Gtk.Handlers.GtkToolbarHandler.HeaderBar.get -> Gtk.HeaderBar!
+Microsoft.Maui.Gtk.Handlers.GtkToolbarHandler.ItemWidgets.get -> System.Collections.Generic.IReadOnlyList<Gtk.Widget!>!
+Microsoft.Maui.Gtk.Handlers.GtkToolbarHandler.OverflowButton.get -> Gtk.MenuButton?
+Microsoft.Maui.Gtk.Handlers.GtkToolbarHandler.SetBackButtonEnabled(bool enabled) -> void
+Microsoft.Maui.Gtk.Handlers.GtkToolbarHandler.SetBackButtonTitle(string? title) -> void
+Microsoft.Maui.Gtk.Handlers.GtkToolbarHandler.SetBarBackground(Microsoft.Maui.Graphics.Paint? background) -> void
+Microsoft.Maui.Gtk.Handlers.GtkToolbarHandler.SetBarTextColor(Microsoft.Maui.Graphics.Color? color) -> void
+Microsoft.Maui.Gtk.Handlers.GtkToolbarHandler.SetDrawerToggleVisible(bool visible) -> void
+Microsoft.Maui.Gtk.Handlers.GtkToolbarHandler.SetIconColor(Microsoft.Maui.Graphics.Color? color) -> void
+Microsoft.Maui.Gtk.Handlers.GtkToolbarHandler.SetItems(System.Collections.Generic.IReadOnlyList<Microsoft.Maui.Gtk.Handlers.GtkToolbarItem!>! items) -> void
+Microsoft.Maui.Gtk.Handlers.GtkToolbarHandler.SetTitleIcon(Gdk.Texture? icon) -> void
+Microsoft.Maui.Gtk.Handlers.GtkToolbarHandler.SetTitleView(Gtk.Widget? titleView) -> void
+Microsoft.Maui.Gtk.Handlers.GtkToolbarHandler.TitleLabel.get -> Gtk.Label!
+Microsoft.Maui.Gtk.Handlers.GtkToolbarItem
+Microsoft.Maui.Gtk.Handlers.GtkToolbarItem.Activate.get -> System.Action?
+Microsoft.Maui.Gtk.Handlers.GtkToolbarItem.Activate.set -> void
+Microsoft.Maui.Gtk.Handlers.GtkToolbarItem.AutomationId.get -> string?
+Microsoft.Maui.Gtk.Handlers.GtkToolbarItem.AutomationId.set -> void
+Microsoft.Maui.Gtk.Handlers.GtkToolbarItem.GtkToolbarItem() -> void
+Microsoft.Maui.Gtk.Handlers.GtkToolbarItem.Icon.get -> Gdk.Texture?
+Microsoft.Maui.Gtk.Handlers.GtkToolbarItem.Icon.set -> void
+Microsoft.Maui.Gtk.Handlers.GtkToolbarItem.IsEnabled.get -> bool
+Microsoft.Maui.Gtk.Handlers.GtkToolbarItem.IsEnabled.set -> void
+Microsoft.Maui.Gtk.Handlers.GtkToolbarItem.IsSecondary.get -> bool
+Microsoft.Maui.Gtk.Handlers.GtkToolbarItem.IsSecondary.set -> void
+Microsoft.Maui.Gtk.Handlers.GtkToolbarItem.Text.get -> string?
+Microsoft.Maui.Gtk.Handlers.GtkToolbarItem.Text.set -> void
 Microsoft.Maui.Gtk.Handlers.GtkWindowHandler
 Microsoft.Maui.Gtk.Handlers.GtkWindowHandler.GtkWindowHandler() -> void
 Microsoft.Maui.Gtk.Handlers.GtkWindowHandler.GtkWindowHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper = null) -> void
@@ -204,18 +255,18 @@ Microsoft.Maui.Gtk.Handlers.MauiGtkEditor.Text.get -> string!
 Microsoft.Maui.Gtk.Handlers.MauiGtkEditor.Text.set -> void
 Microsoft.Maui.Gtk.Handlers.MauiGtkEditor.View.get -> Gtk.TextView!
 Microsoft.Maui.Gtk.Handlers.MauiGtkGraphicsView
-Microsoft.Maui.Gtk.Handlers.MauiGtkGraphicsView.DrawCount.get -> int
 Microsoft.Maui.Gtk.Handlers.MauiGtkGraphicsView.Drawable.get -> Microsoft.Maui.Graphics.IDrawable?
 Microsoft.Maui.Gtk.Handlers.MauiGtkGraphicsView.Drawable.set -> void
+Microsoft.Maui.Gtk.Handlers.MauiGtkGraphicsView.DrawCount.get -> int
 Microsoft.Maui.Gtk.Handlers.MauiGtkGraphicsView.HoverEnded -> System.Action?
 Microsoft.Maui.Gtk.Handlers.MauiGtkGraphicsView.HoverMoved -> System.Action<Microsoft.Maui.Graphics.PointF[]!>?
 Microsoft.Maui.Gtk.Handlers.MauiGtkGraphicsView.HoverStarted -> System.Action<Microsoft.Maui.Graphics.PointF[]!>?
 Microsoft.Maui.Gtk.Handlers.MauiGtkGraphicsView.InteractionCancelled -> System.Action?
 Microsoft.Maui.Gtk.Handlers.MauiGtkGraphicsView.InteractionDragged -> System.Action<Microsoft.Maui.Graphics.PointF[]!>?
 Microsoft.Maui.Gtk.Handlers.MauiGtkGraphicsView.InteractionEnded -> System.Action<Microsoft.Maui.Graphics.PointF[]!, bool>?
-Microsoft.Maui.Gtk.Handlers.MauiGtkGraphicsView.InteractionStarted -> System.Action<Microsoft.Maui.Graphics.PointF[]!>?
 Microsoft.Maui.Gtk.Handlers.MauiGtkGraphicsView.InteractionsEnabled.get -> bool
 Microsoft.Maui.Gtk.Handlers.MauiGtkGraphicsView.InteractionsEnabled.set -> void
+Microsoft.Maui.Gtk.Handlers.MauiGtkGraphicsView.InteractionStarted -> System.Action<Microsoft.Maui.Graphics.PointF[]!>?
 Microsoft.Maui.Gtk.Handlers.MauiGtkGraphicsView.Invalidate() -> void
 Microsoft.Maui.Gtk.Handlers.MauiGtkGraphicsView.MauiGtkGraphicsView() -> void
 Microsoft.Maui.Gtk.Handlers.MauiGtkImageButton
@@ -328,6 +379,9 @@ Microsoft.Maui.Gtk.Platform.GtkStyle.CssClass.get -> string!
 Microsoft.Maui.Gtk.Platform.GtkStyle.Set(string! property, string? value, string! selector = "") -> void
 Microsoft.Maui.Gtk.Platform.GtkStyle.SetBackground(Microsoft.Maui.Graphics.Paint? paint, string! selector = "") -> void
 Microsoft.Maui.Gtk.Platform.GtkStyle.ToCss() -> string!
+Microsoft.Maui.Gtk.Platform.GtkTabBarPosition
+Microsoft.Maui.Gtk.Platform.GtkTabBarPosition.Bottom = 1 -> Microsoft.Maui.Gtk.Platform.GtkTabBarPosition
+Microsoft.Maui.Gtk.Platform.GtkTabBarPosition.Top = 0 -> Microsoft.Maui.Gtk.Platform.GtkTabBarPosition
 Microsoft.Maui.Gtk.Platform.GtkTextStyle
 Microsoft.Maui.Gtk.Platform.GtkViewState
 Microsoft.Maui.Gtk.Platform.GtkViewState.AnchorX.get -> double
@@ -374,6 +428,25 @@ Microsoft.Maui.Gtk.Platform.GtkWrapperView.Shadow.get -> Microsoft.Maui.IShadow?
 Microsoft.Maui.Gtk.Platform.GtkWrapperView.Shadow.set -> void
 Microsoft.Maui.Gtk.Platform.IGtkChildHost
 Microsoft.Maui.Gtk.Platform.IGtkChildHost.ReplaceChild(Gtk.Widget! oldChild, Gtk.Widget! newChild) -> void
+Microsoft.Maui.Gtk.Platform.MauiGtkFillHost
+Microsoft.Maui.Gtk.Platform.MauiGtkFillHost.Clear() -> void
+Microsoft.Maui.Gtk.Platform.MauiGtkFillHost.MauiGtkFillHost() -> void
+Microsoft.Maui.Gtk.Platform.MauiGtkFillHost.SetView(Microsoft.Maui.IView? view, Microsoft.Maui.IMauiContext! mauiContext) -> void
+Microsoft.Maui.Gtk.Platform.MauiGtkFillHost.View.get -> Microsoft.Maui.IView?
+Microsoft.Maui.Gtk.Platform.MauiGtkFlyoutPanel
+Microsoft.Maui.Gtk.Platform.MauiGtkFlyoutPanel.AnimationDuration.get -> uint
+Microsoft.Maui.Gtk.Platform.MauiGtkFlyoutPanel.AnimationDuration.set -> void
+Microsoft.Maui.Gtk.Platform.MauiGtkFlyoutPanel.Behavior.get -> Microsoft.Maui.FlyoutBehavior
+Microsoft.Maui.Gtk.Platform.MauiGtkFlyoutPanel.Behavior.set -> void
+Microsoft.Maui.Gtk.Platform.MauiGtkFlyoutPanel.DetailHost.get -> Microsoft.Maui.Gtk.Platform.MauiGtkFillHost!
+Microsoft.Maui.Gtk.Platform.MauiGtkFlyoutPanel.DismissRequested -> System.Action?
+Microsoft.Maui.Gtk.Platform.MauiGtkFlyoutPanel.FlyoutHost.get -> Microsoft.Maui.Gtk.Platform.MauiGtkFillHost!
+Microsoft.Maui.Gtk.Platform.MauiGtkFlyoutPanel.FlyoutWidth.get -> double
+Microsoft.Maui.Gtk.Platform.MauiGtkFlyoutPanel.FlyoutWidth.set -> void
+Microsoft.Maui.Gtk.Platform.MauiGtkFlyoutPanel.IsPresented.get -> bool
+Microsoft.Maui.Gtk.Platform.MauiGtkFlyoutPanel.IsPresented.set -> void
+Microsoft.Maui.Gtk.Platform.MauiGtkFlyoutPanel.MauiGtkFlyoutPanel() -> void
+Microsoft.Maui.Gtk.Platform.MauiGtkFlyoutPanel.Progress.get -> double
 Microsoft.Maui.Gtk.Platform.MauiGtkPanel
 Microsoft.Maui.Gtk.Platform.MauiGtkPanel.AddChild(Gtk.Widget! child) -> void
 Microsoft.Maui.Gtk.Platform.MauiGtkPanel.ClearChildren() -> void
@@ -396,6 +469,22 @@ Microsoft.Maui.Gtk.Platform.MauiGtkPanel.ReplaceChild(Gtk.Widget! oldChild, Gtk.
 Microsoft.Maui.Gtk.Platform.MauiGtkRootPanel
 Microsoft.Maui.Gtk.Platform.MauiGtkRootPanel.MauiGtkRootPanel() -> void
 Microsoft.Maui.Gtk.Platform.MauiGtkRootPanel.SizeChanged -> System.Action<int, int>?
+Microsoft.Maui.Gtk.Platform.MauiGtkTabView
+Microsoft.Maui.Gtk.Platform.MauiGtkTabView.Bar.get -> Gtk.Box!
+Microsoft.Maui.Gtk.Platform.MauiGtkTabView.BarPosition.get -> Microsoft.Maui.Gtk.Platform.GtkTabBarPosition
+Microsoft.Maui.Gtk.Platform.MauiGtkTabView.BarPosition.set -> void
+Microsoft.Maui.Gtk.Platform.MauiGtkTabView.ButtonAt(int index) -> Gtk.ToggleButton!
+Microsoft.Maui.Gtk.Platform.MauiGtkTabView.Clear() -> void
+Microsoft.Maui.Gtk.Platform.MauiGtkTabView.Count.get -> int
+Microsoft.Maui.Gtk.Platform.MauiGtkTabView.HostAt(int index) -> Microsoft.Maui.Gtk.Platform.MauiGtkFillHost!
+Microsoft.Maui.Gtk.Platform.MauiGtkTabView.InsertTab(int index, string? title, Gdk.Texture? icon) -> Microsoft.Maui.Gtk.Platform.MauiGtkFillHost!
+Microsoft.Maui.Gtk.Platform.MauiGtkTabView.MauiGtkTabView() -> void
+Microsoft.Maui.Gtk.Platform.MauiGtkTabView.RemoveTab(int index) -> void
+Microsoft.Maui.Gtk.Platform.MauiGtkTabView.SelectedIndex.get -> int
+Microsoft.Maui.Gtk.Platform.MauiGtkTabView.SelectedIndex.set -> void
+Microsoft.Maui.Gtk.Platform.MauiGtkTabView.SelectedIndexChanged -> System.Action<int>?
+Microsoft.Maui.Gtk.Platform.MauiGtkTabView.SetTab(int index, string? title, Gdk.Texture? icon) -> void
+Microsoft.Maui.Gtk.Platform.MauiGtkTabView.Stack.get -> Gtk.Stack!
 Microsoft.Maui.Hosting.GtkMauiAppBuilderExtensions
 Microsoft.Maui.LifecycleEvents.GtkLifecycle
 Microsoft.Maui.LifecycleEvents.GtkLifecycle.OnActivate
@@ -410,10 +499,6 @@ Microsoft.Maui.MauiGtkApplication.GtkApplication.get -> Gtk.Application!
 Microsoft.Maui.MauiGtkApplication.MauiGtkApplication(string? applicationId = null) -> void
 Microsoft.Maui.MauiGtkApplication.Run(string![]! args) -> int
 Microsoft.Maui.MauiGtkApplication.Services.get -> System.IServiceProvider!
-abstract Microsoft.Maui.Gtk.ImageSources.GtkImageSourceService<T>.LoadTextureAsync(T source, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<Gdk.Texture?>!
-abstract Microsoft.Maui.MauiGtkApplication.CreateMauiApp() -> Microsoft.Maui.Hosting.MauiApp!
-const Microsoft.Maui.Gtk.Handlers.MauiGtkRefreshPanel.PullThreshold = 100 -> double
-const Microsoft.Maui.Gtk.Platform.GtkRuntime.MinimumMinorVersion = 14 -> int
 override Microsoft.Maui.Gtk.Dispatching.GtkTicker.IsRunning.get -> bool
 override Microsoft.Maui.Gtk.Dispatching.GtkTicker.Start() -> void
 override Microsoft.Maui.Gtk.Dispatching.GtkTicker.Stop() -> void
@@ -440,6 +525,9 @@ override Microsoft.Maui.Gtk.Handlers.GtkEditorHandler.DisconnectHandler(object! 
 override Microsoft.Maui.Gtk.Handlers.GtkEntryHandler.ConnectHandler(object! platformView) -> void
 override Microsoft.Maui.Gtk.Handlers.GtkEntryHandler.CreatePlatformView() -> object!
 override Microsoft.Maui.Gtk.Handlers.GtkEntryHandler.DisconnectHandler(object! platformView) -> void
+override Microsoft.Maui.Gtk.Handlers.GtkFlyoutViewHandler.ConnectHandler(object! platformView) -> void
+override Microsoft.Maui.Gtk.Handlers.GtkFlyoutViewHandler.CreatePlatformView() -> object!
+override Microsoft.Maui.Gtk.Handlers.GtkFlyoutViewHandler.DisconnectHandler(object! platformView) -> void
 override Microsoft.Maui.Gtk.Handlers.GtkGraphicsViewHandler.ConnectHandler(object! platformView) -> void
 override Microsoft.Maui.Gtk.Handlers.GtkGraphicsViewHandler.CreatePlatformView() -> object!
 override Microsoft.Maui.Gtk.Handlers.GtkGraphicsViewHandler.DisconnectHandler(object! platformView) -> void
@@ -465,6 +553,8 @@ override Microsoft.Maui.Gtk.Handlers.GtkMenuFlyoutItemHandler.DisconnectHandler(
 override Microsoft.Maui.Gtk.Handlers.GtkMenuFlyoutSeparatorHandler.CreatePlatformElement() -> object!
 override Microsoft.Maui.Gtk.Handlers.GtkMenuFlyoutSubItemHandler.CreatePlatformElement() -> object!
 override Microsoft.Maui.Gtk.Handlers.GtkMenuFlyoutSubItemHandler.SetVirtualView(Microsoft.Maui.IElement! view) -> void
+override Microsoft.Maui.Gtk.Handlers.GtkNavigationViewHandler.CreatePlatformView() -> object!
+override Microsoft.Maui.Gtk.Handlers.GtkNavigationViewHandler.DisconnectHandler(object! platformView) -> void
 override Microsoft.Maui.Gtk.Handlers.GtkPageHandler.ConnectHandler(object! platformView) -> void
 override Microsoft.Maui.Gtk.Handlers.GtkPageHandler.CreatePlatformView() -> object!
 override Microsoft.Maui.Gtk.Handlers.GtkPageHandler.DisconnectHandler(object! platformView) -> void
@@ -502,9 +592,14 @@ override Microsoft.Maui.Gtk.Handlers.GtkSwipeViewHandler.CreatePlatformView() ->
 override Microsoft.Maui.Gtk.Handlers.GtkSwipeViewHandler.DisconnectHandler(object! platformView) -> void
 override Microsoft.Maui.Gtk.Handlers.GtkSwitchHandler.ConnectHandler(object! platformView) -> void
 override Microsoft.Maui.Gtk.Handlers.GtkSwitchHandler.CreatePlatformView() -> object!
+override Microsoft.Maui.Gtk.Handlers.GtkTabbedViewHandler.CreatePlatformView() -> object!
+override Microsoft.Maui.Gtk.Handlers.GtkTabbedViewHandler.DisconnectHandler(object! platformView) -> void
 override Microsoft.Maui.Gtk.Handlers.GtkTimePickerHandler.ConnectHandler(object! platformView) -> void
 override Microsoft.Maui.Gtk.Handlers.GtkTimePickerHandler.CreatePlatformView() -> object!
 override Microsoft.Maui.Gtk.Handlers.GtkTimePickerHandler.DisconnectHandler(object! platformView) -> void
+override Microsoft.Maui.Gtk.Handlers.GtkToolbarHandler.ConnectHandler(object! platformView) -> void
+override Microsoft.Maui.Gtk.Handlers.GtkToolbarHandler.CreatePlatformElement() -> object!
+override Microsoft.Maui.Gtk.Handlers.GtkToolbarHandler.DisconnectHandler(object! platformView) -> void
 override Microsoft.Maui.Gtk.Handlers.GtkWindowHandler.ConnectHandler(object! platformView) -> void
 override Microsoft.Maui.Gtk.Handlers.GtkWindowHandler.CreatePlatformElement() -> object!
 override Microsoft.Maui.Gtk.Handlers.GtkWindowHandler.DisconnectHandler(object! platformView) -> void
@@ -513,6 +608,8 @@ override Microsoft.Maui.Gtk.Platform.MauiGtkPanel.OnGetRequestMode() -> Gtk.Size
 override Microsoft.Maui.Gtk.Platform.MauiGtkPanel.OnMeasure(Gtk.Orientation orientation, int forSize, out int minimum, out int natural, out int minimumBaseline, out int naturalBaseline) -> void
 override Microsoft.Maui.Gtk.Platform.MauiGtkPanel.OnSizeAllocate(int width, int height, int baseline) -> void
 static Microsoft.Maui.Gtk.Handlers.GtkLabelHandler.SetMaxLines(Gtk.Label! label, int maxLines) -> void
+static Microsoft.Maui.Gtk.Handlers.GtkNavigationViewHandler.TransitionDuration.get -> uint
+static Microsoft.Maui.Gtk.Handlers.GtkNavigationViewHandler.TransitionDuration.set -> void
 static Microsoft.Maui.Gtk.Handlers.GtkShapeViewBehavior.AddShapeMappings<TVirtualView, THandler>(this Microsoft.Maui.Gtk.Hosting.GtkMapperBuilder<TVirtualView!, THandler!>! mapper) -> Microsoft.Maui.Gtk.Hosting.GtkMapperBuilder<TVirtualView!, THandler!>!
 static Microsoft.Maui.Gtk.Handlers.GtkShapeViewBehavior.CreatePlatformView(Microsoft.Maui.IShapeView! shapeView) -> Microsoft.Maui.Gtk.Handlers.MauiGtkGraphicsView!
 static Microsoft.Maui.Gtk.Handlers.GtkShapeViewBehavior.Invalidate(Microsoft.Maui.IViewHandler! handler) -> void
@@ -559,8 +656,10 @@ static Microsoft.Maui.LifecycleEvents.GtkLifecycleExtensions.OnStartup(this Micr
 static Microsoft.Maui.LifecycleEvents.GtkLifecycleExtensions.OnWindowCreated(this Microsoft.Maui.LifecycleEvents.IGtkLifecycleBuilder! lifecycle, Microsoft.Maui.LifecycleEvents.GtkLifecycle.OnWindowCreated! del) -> Microsoft.Maui.LifecycleEvents.IGtkLifecycleBuilder!
 static Microsoft.Maui.MauiGtkApplication.Current.get -> Microsoft.Maui.MauiGtkApplication?
 static readonly Microsoft.Maui.Gtk.Handlers.GtkWindowHandler.DefaultWindowSize -> Microsoft.Maui.Graphics.Size
+virtual Microsoft.Maui.Gtk.Handlers.GtkToolbarHandler.OnBackButtonClicked() -> void
 virtual Microsoft.Maui.Gtk.Platform.MauiGtkPanel.ArrangeChildren(int width, int height) -> void
 virtual Microsoft.Maui.LifecycleEvents.GtkLifecycle.OnActivate.Invoke(Gtk.Application! application) -> void
 virtual Microsoft.Maui.LifecycleEvents.GtkLifecycle.OnShutdown.Invoke(Gtk.Application! application) -> void
 virtual Microsoft.Maui.LifecycleEvents.GtkLifecycle.OnStartup.Invoke(Gtk.Application! application) -> void
 virtual Microsoft.Maui.LifecycleEvents.GtkLifecycle.OnWindowCreated.Invoke(Gtk.Window! window) -> void
+﻿#nullable enable

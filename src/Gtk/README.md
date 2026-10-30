@@ -14,7 +14,8 @@ checks, `IButtonHandler` and user mapper customisations keep working.
 | `samples/Maui.Gtk.Sample` | | code-only sample (plain `net10.0` for now) |
 | `src/Essentials` | `Microsoft.Maui.Essentials.Gtk` | Essentials on GTK 4 / Linux, see [`src/Essentials/README.md`](src/Essentials/README.md) |
 | `../Graphics/src/Graphics.Cairo` | `Microsoft.Maui.Graphics.Cairo` | `ICanvas` on Cairo/Pango, see its [README](../Graphics/src/Graphics.Cairo/README.md) |
-| `src/Controls`, `src/BlazorWebView`, `src/Maps` | `*.Gtk` | other areas (separate tracks, see their own sections) |
+| `src/Controls` | `Microsoft.Maui.Controls.Gtk` | Controls handlers and `UseMauiGtk()`, see [`src/Controls/README.md`](src/Controls/README.md) |
+| `src/BlazorWebView`, `src/Maps` | `*.Gtk` | other areas (separate tracks, see their own sections) |
 
 Requires GTK >= 4.14 (guard newer APIs with `GtkRuntime.AtLeast(major, minor)`).
 

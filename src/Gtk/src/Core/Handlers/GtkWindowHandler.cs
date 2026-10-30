@@ -109,12 +109,25 @@ namespace Microsoft.Maui.Gtk.Handlers
 
 		void OnIsActiveChanged(object o, GLib.NotifyArgs args)
 		{
-			if (((IElementHandler)this).PlatformView is not GtkWindow window || View is not { } view)
+			if (((IElementHandler)this).PlatformView is not GtkWindow window)
+				return;
+
+			UpdateActive(window.IsActive);
+		}
+
+		/// <summary>
+		/// Forwards an activation change to the virtual window with the same guards as the <c>is-active</c> notification. Display servers
+		/// without a window manager (a bare X server) never activate a toplevel, so hosts and tests use this to run the activation lifecycle.
+		/// </summary>
+		/// <param name="isActive">Whether the window is now the active one.</param>
+		internal void UpdateActive(bool isActive)
+		{
+			if (View is not { } view)
 				return;
 
 			// The virtual window requires Resumed before the first Activated and strictly alternating Activated/Deactivated:
 			// is-active also notifies without changing value, so only transitions are forwarded.
-			if (window.IsActive)
+			if (isActive)
 			{
 				if (!_resumed)
 				{
@@ -203,6 +216,8 @@ namespace Microsoft.Maui.Gtk.Handlers
 				if (h is GtkWindowHandler handler)
 					GtkWindowMenuBar.Update(handler, v, w);
 			});
+			// The toolbar of the window (set by Controls' NavigationPage, for example) is the window's title bar.
+			mapper.MapGtk<GtkWindow>(nameof(IToolbarElement.Toolbar), (h, v, w) => GtkToolbarSupport.UpdateWindowToolbar(h, v as IToolbarElement));
 
 			// GTK 4 cannot position a toplevel; X/Y/Maximum* are accepted and ignored.
 			foreach (var key in new[] { nameof(IWindow.X), nameof(IWindow.Y), nameof(IWindow.MaximumWidth), nameof(IWindow.MaximumHeight) })

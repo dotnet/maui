@@ -1,3 +1,15 @@
 ﻿#nullable enable
+Microsoft.Maui.Controls.Gtk.Handlers.GtkControlsToolbarHandler
+Microsoft.Maui.Controls.Gtk.Handlers.GtkControlsToolbarHandler.GtkControlsToolbarHandler() -> void
+Microsoft.Maui.Controls.Gtk.Handlers.GtkControlsToolbarHandler.GtkControlsToolbarHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper = null) -> void
+Microsoft.Maui.Controls.Gtk.Handlers.GtkControlsToolbarHandler.UpdateItems() -> void
+Microsoft.Maui.Controls.Gtk.Handlers.GtkTabbedPageHandler
+Microsoft.Maui.Controls.Gtk.Handlers.GtkTabbedPageHandler.GtkTabbedPageHandler() -> void
+Microsoft.Maui.Controls.Gtk.Handlers.GtkTabbedPageHandler.GtkTabbedPageHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper = null) -> void
+Microsoft.Maui.Controls.Gtk.Handlers.GtkTabbedPageHandler.Rebuild() -> void
 Microsoft.Maui.Hosting.GtkControlsExtensions
+override Microsoft.Maui.Controls.Gtk.Handlers.GtkControlsToolbarHandler.ConnectHandler(object! platformView) -> void
+override Microsoft.Maui.Controls.Gtk.Handlers.GtkControlsToolbarHandler.DisconnectHandler(object! platformView) -> void
+override Microsoft.Maui.Controls.Gtk.Handlers.GtkTabbedPageHandler.ConnectHandler(object! platformView) -> void
+override Microsoft.Maui.Controls.Gtk.Handlers.GtkTabbedPageHandler.DisconnectHandler(object! platformView) -> void
 static Microsoft.Maui.Hosting.GtkControlsExtensions.UseMauiGtk(this Microsoft.Maui.Hosting.MauiAppBuilder! builder, System.Action<Microsoft.Maui.Hosting.GtkEssentialsOptions!>? configureEssentials = null) -> Microsoft.Maui.Hosting.MauiAppBuilder!
