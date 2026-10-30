@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\Core\src\Core.csproj" />
+    <ProjectReference Include="..\..\..\Graphics\src\Graphics.Cairo\Graphics.Cairo.csproj" />
     <PackageReference Include="GtkSharp4" />
     <PackageReference Include="GdkSharp4" />
     <PackageReference Include="GskSharp4" />

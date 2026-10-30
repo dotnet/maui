@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Gtk.Hosting
 	/// <summary>
 	/// GTK implementations of the <see cref="ViewHandler.ViewMapper"/> / <see cref="ViewHandler.ViewCommandMapper"/> properties that
 	/// every view shares: visibility, opacity, background, enabled state, input transparency, transforms, automation id,
-	/// semantics, tooltip, clip and shadow.
+	/// semantics, tooltip, clip, shadow and context flyout.
 	/// </summary>
 	internal static class GtkViewMappers
 	{
@@ -26,6 +26,7 @@ namespace Microsoft.Maui.Gtk.Hosting
 			mapper.MapGtk<global::Gtk.Widget>(nameof(IToolTipElement.ToolTip), (h, v, w) => UpdateToolTip(h, v));
 			mapper.MapGtk<global::Gtk.Widget>(nameof(IView.Clip), (h, v, w) => UpdateClip(h, v));
 			mapper.MapGtk<global::Gtk.Widget>(nameof(IView.Shadow), (h, v, w) => UpdateShadow(h, v));
+			mapper.MapGtk<global::Gtk.Widget>(nameof(IContextFlyoutElement.ContextFlyout), (h, v, w) => GtkContextFlyout.Update(h, v));
 
 			mapper.MapGtk<global::Gtk.Widget>(nameof(IView.TranslationX), (h, v, w) => UpdateTransform(h, v));
 			mapper.MapGtk<global::Gtk.Widget>(nameof(IView.TranslationY), (h, v, w) => UpdateTransform(h, v));

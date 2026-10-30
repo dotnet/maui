@@ -170,7 +170,7 @@ namespace Microsoft.Maui.Gtk.Platform
 		static Gsk.Transform CreateTransform(Rect frame, GtkViewState state, int width, int height)
 		{
 			var transform = new Gsk.Transform()
-				.Translate(GtkInterop.ToGraphene(frame.X + state.TranslationX, frame.Y + state.TranslationY));
+				.Translate(GtkInterop.ToGraphene(frame.X + state.TranslationX + state.PlatformOffsetX, frame.Y + state.TranslationY + state.PlatformOffsetY));
 
 			if (state.Rotation != 0 || state.ScaleX != 1 || state.ScaleY != 1)
 			{

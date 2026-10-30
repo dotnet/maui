@@ -198,6 +198,12 @@ namespace Microsoft.Maui.Gtk.Handlers
 			mapper.MapGtk<GtkWindow>(nameof(IWindow.FlowDirection), (h, v, w) =>
 				w.Direction = v.FlowDirection == FlowDirection.RightToLeft ? global::Gtk.TextDirection.Rtl : global::Gtk.TextDirection.Ltr);
 
+			mapper.MapGtk<GtkWindow>(nameof(IMenuBarElement.MenuBar), (h, v, w) =>
+			{
+				if (h is GtkWindowHandler handler)
+					GtkWindowMenuBar.Update(handler, v, w);
+			});
+
 			// GTK 4 cannot position a toplevel; X/Y/Maximum* are accepted and ignored.
 			foreach (var key in new[] { nameof(IWindow.X), nameof(IWindow.Y), nameof(IWindow.MaximumWidth), nameof(IWindow.MaximumHeight) })
 				mapper.MapGtk<GtkWindow>(key, (h, v, w) => { });

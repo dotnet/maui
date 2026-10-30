@@ -23,6 +23,15 @@ namespace Microsoft.Maui.Gtk.Platform
 		/// <summary>See <see cref="ITransform.TranslationY"/>.</summary>
 		public double TranslationY { get; set; }
 
+		/// <summary>
+		/// A translation the platform itself applies on top of <see cref="TranslationX"/> (a swipe view sliding its content, a refresh view
+		/// pulling it down). Unlike <see cref="TranslationX"/> it is never overwritten by the view's transform properties.
+		/// </summary>
+		public double PlatformOffsetX { get; set; }
+
+		/// <summary>The vertical counterpart of <see cref="PlatformOffsetX"/>.</summary>
+		public double PlatformOffsetY { get; set; }
+
 		/// <summary>See <see cref="ITransform.Rotation"/>, in degrees.</summary>
 		public double Rotation { get; set; }
 
@@ -62,6 +71,8 @@ namespace Microsoft.Maui.Gtk.Platform
 			HasFrame = other.HasFrame;
 			TranslationX = other.TranslationX;
 			TranslationY = other.TranslationY;
+			PlatformOffsetX = other.PlatformOffsetX;
+			PlatformOffsetY = other.PlatformOffsetY;
 			Rotation = other.Rotation;
 			ScaleX = other.ScaleX;
 			ScaleY = other.ScaleY;
