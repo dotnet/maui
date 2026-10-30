@@ -79,5 +79,12 @@
 		/// <param name="handler">The associated handler.</param>
 		/// <param name="view">The associated <see cref="IView"/> instance.</param>
 		public static void MapContextFlyout(IViewHandler handler, IView view) { }
+
+		/// <summary>
+		/// Sets <see cref="ContainerView"/> on behalf of an <see cref="IPlatformViewBackend"/>, whose
+		/// <see cref="IPlatformViewBackend.SetupContainer(IViewHandler)"/> creates the container.
+		/// </summary>
+		/// <param name="containerView">The platform container wrapping <see cref="ViewHandler.PlatformView"/>, or <see langword="null"/>.</param>
+		internal void SetContainerView(object? containerView) => ContainerView = containerView;
 	}
 }

@@ -198,6 +198,8 @@ PublishScripts/
 
 # NuGet Packages
 *.nupkg
+# Local NuGet feed: junction to the shared d:\Starb\Packages folder (GtkSharp4 and the forked MAUI packages)
+/Packages
 # NuGet Symbol Packages
 *.snupkg
 # The packages folder can be ignored because of Package Restore

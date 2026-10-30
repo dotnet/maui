@@ -332,4 +332,18 @@
     <PackageReference Update="MicroBuild.Plugins.SwixBuild.Dotnet" Version="$(MicroBuildPluginsSwixBuildDotnetPackageVersion)" />
     <PackageReference Update="Microsoft.DotNet.Build.Tasks.Installers" Version="$(MicrosoftDotNetBuildTasksInstallersPackageVersion)"/>
   </ItemGroup>
+  <!-- GtkSharp4 bindings (Linux/GTK backend, src/Gtk) -->
+  <ItemGroup>
+    <PackageReference Update="GLibSharp4" Version="$(_GtkSharp4Version)" />
+    <PackageReference Update="GioSharp4" Version="$(_GtkSharp4Version)" />
+    <PackageReference Update="CairoSharp4" Version="$(_GtkSharp4Version)" />
+    <PackageReference Update="PangoSharp4" Version="$(_GtkSharp4Version)" />
+    <PackageReference Update="GrapheneSharp4" Version="$(_GtkSharp4Version)" />
+    <PackageReference Update="GdkSharp4" Version="$(_GtkSharp4Version)" />
+    <PackageReference Update="GskSharp4" Version="$(_GtkSharp4Version)" />
+    <PackageReference Update="GtkSharp4" Version="$(_GtkSharp4Version)" />
+    <PackageReference Update="AdwaitaSharp4" Version="$(_GtkSharp4Version)" />
+    <PackageReference Update="JavaScriptCoreSharp4" Version="$(_GtkSharp4Version)" />
+    <PackageReference Update="WebkitGtkSharp4" Version="$(_GtkSharp4Version)" />
+  </ItemGroup>
 </Project>

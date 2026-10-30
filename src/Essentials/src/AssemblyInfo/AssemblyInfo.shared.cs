@@ -1,6 +1,9 @@
 using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("Microsoft.Maui")]
+[assembly: InternalsVisibleTo("Microsoft.Maui.Essentials.Gtk")]
+[assembly: InternalsVisibleTo("Microsoft.Maui.Gtk")]
+[assembly: InternalsVisibleTo("Microsoft.Maui.Gtk.UnitTests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Essentials.DeviceTests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Essentials.UnitTests")]
 [assembly: InternalsVisibleTo("EssentialsTests")]

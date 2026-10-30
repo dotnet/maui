@@ -7,4 +7,5 @@ using System.Runtime.CompilerServices;
 
 [assembly: XmlnsDefinition("http://schemas.microsoft.com/dotnet/2021/maui", "Microsoft.AspNetCore.Components.WebView.Maui")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.MauiBlazorWebView.UnitTests")]
+[assembly: InternalsVisibleTo("Microsoft.AspNetCore.Components.WebView.Maui.Gtk")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.MauiBlazorWebView.DeviceTests")]

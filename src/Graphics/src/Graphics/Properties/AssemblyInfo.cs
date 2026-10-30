@@ -2,6 +2,8 @@ using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("Maui.Controls.Sample")]
 [assembly: InternalsVisibleTo("Microsoft.Maui")]
+[assembly: InternalsVisibleTo("Microsoft.Maui.Graphics.Cairo")]
+[assembly: InternalsVisibleTo("Microsoft.Maui.Gtk")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.Android")]

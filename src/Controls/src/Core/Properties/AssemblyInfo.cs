@@ -7,6 +7,11 @@ using Compatibility = Microsoft.Maui.Controls.Compatibility;
 [assembly: InternalsVisibleTo("Microsoft.AspNetCore.Components.WebView.Maui")]
 
 [assembly: InternalsVisibleTo("iOSUnitTests")]
+[assembly: InternalsVisibleTo("Microsoft.Maui.Gtk")]
+[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Gtk")]
+[assembly: InternalsVisibleTo("Microsoft.AspNetCore.Components.WebView.Maui.Gtk")]
+[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Maps.Gtk")]
+[assembly: InternalsVisibleTo("Microsoft.Maui.Gtk.UnitTests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.Android")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.iOS")]

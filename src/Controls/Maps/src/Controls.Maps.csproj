@@ -41,4 +41,7 @@
 
   <Import Project="$(MauiSrcDirectory)Workload\Shared\LibraryPacks.targets" />
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.Maui.Controls.Maps.Gtk" />
+  </ItemGroup>
 </Project>
