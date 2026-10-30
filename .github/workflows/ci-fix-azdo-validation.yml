@@ -6,10 +6,9 @@ on:
     branches: [main]
   # CI-fixer PRs and follow-up pushes can be created with GITHUB_TOKEN, which
   # suppresses normal event-driven workflows or leaves them approval-gated.
-  # Reconcile after direct scan-and-fix or manual legacy fixer runs. GITHUB_TOKEN
-  # PR creation does not trigger pull_request_target, so this path is required.
+  # Reconcile all eligible open heads after either trusted fixer completes.
   workflow_run:
-    workflows: ["CI Failure Scanner", "CI Failure Scanner (net11.0)", "CI Failure Fixer (main)", "CI Failure Fixer (net11.0)"]
+    workflows: ["CI Failure Fixer (main)", "CI Failure Fixer (net11.0)"]
     types: [completed]
 
 permissions: {}
