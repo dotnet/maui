@@ -6,8 +6,9 @@ namespace Microsoft.Maui.Gtk.Hosting
 	/// Patches the stock static property/command mappers with the GTK implementations, once per process.
 	/// </summary>
 	/// <remarks>
-	/// The mappers are process-wide statics, so the patch is applied once (idempotent) and every GTK branch only runs for
-	/// GTK widgets. Tests that construct handlers directly call <see cref="Apply"/> first.
+	/// The mappers are process-wide statics, so the patches are installed once and every GTK branch only runs for GTK widgets.
+	/// Calling <see cref="Apply"/> again is cheap and re-installs the patches that a later re-mapping (for example Controls'
+	/// <c>UseMauiApp</c>) has shadowed. Tests that construct handlers directly call <see cref="Apply"/> first.
 	/// </remarks>
 	public static class GtkMapperRegistration
 	{
@@ -17,13 +18,17 @@ namespace Microsoft.Maui.Gtk.Hosting
 		/// <summary>Whether the mappers have been patched.</summary>
 		public static bool IsApplied => s_applied;
 
-		/// <summary>Patches the core mappers. Safe to call repeatedly.</summary>
+		/// <summary>Patches the core mappers, or re-installs the patches that were shadowed since. Safe to call repeatedly.</summary>
 		public static void Apply()
 		{
 			lock (s_gate)
 			{
 				if (s_applied)
+				{
+					// Controls re-maps the static mappers whenever an app is built: put the GTK branches back on top.
+					GtkMapperExtensions.ReapplyShadowedPatches();
 					return;
+				}
 
 				GtkViewMappers.Apply();
 				GtkApplicationHandler.ApplyMappers();

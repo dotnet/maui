@@ -171,5 +171,22 @@ namespace Microsoft.Maui.Gtk.UnitTests
 			GtkMapperRegistration.Apply();
 			Assert.True(GtkMapperRegistration.IsApplied);
 		}
+
+		[GtkFact]
+		public void ApplyPutsTheGtkBranchBackOnTopOfAShadowingRemap() => GtkTestHost.Run(() =>
+		{
+			GtkMapperRegistration.Apply();
+
+			// What Controls' RemapForControls does on every UseMauiApp: replace the mapping, ignoring the previous one.
+			LabelHandler.Mapper.ReplaceMapping<Label, ILabelHandler>(nameof(ILabel.Text), (handler, label) => { });
+
+			var before = GtkTestApp.CreateWidget<global::Gtk.Label>(new Label { Text = "shadowed" });
+			Assert.Equal(string.Empty, before.Text);
+
+			GtkMapperRegistration.Apply();
+
+			var after = GtkTestApp.CreateWidget<global::Gtk.Label>(new Label { Text = "restored" });
+			Assert.Equal("restored", after.Text);
+		});
 	}
 }
