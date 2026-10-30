@@ -26,8 +26,8 @@ namespace Microsoft.Maui.Hosting
 		/// <para><b>Mappers.</b> Each GTK handler carries its own property mapper in front of the stock one (see <see cref="GtkMapperBuilder{TVirtualView, THandler}"/>):
 		/// the GTK implementation runs first, then the stock mapping of the same key, so Controls' remaps and
 		/// <c>AppendToMapping</c>/<c>PrependToMapping</c> customisations of the stock mappers keep working, in whatever order they were registered.
-		/// There is no ordering rule between this call and <c>UseMauiApp&lt;T&gt;()</c>. Handler registrations are rewritten when the handler
-		/// collection is built, so <c>ConfigureMauiHandlers</c> registrations made later are also covered.</para>
+		/// There is no ordering rule between this call and <c>UseMauiApp&lt;T&gt;()</c> or <c>ConfigureMauiHandlers</c>: the handler collection is
+		/// wrapped so the rewrite (<see cref="GtkHandlerMap.Apply"/>) runs after every registration, whenever it was made.</para>
 		/// <para>Apps that use Controls call <c>UseMauiGtk()</c> from <c>Microsoft.Maui.Controls.Gtk</c> instead, which calls this
 		/// method and adds the Controls and Essentials registrations.</para>
 		/// </remarks>
@@ -61,8 +61,15 @@ namespace Microsoft.Maui.Hosting
 				sources.AddService<IFontImageSource>(sp => new GtkFontImageSourceService(sp.GetService<IFontManager>(), sp.GetService<ILogger<GtkFontImageSourceService>>()));
 			});
 
-			// Handlers: runs when the handler collection is built, after every registration that precedes it.
-			builder.ConfigureMauiHandlers(GtkHandlerMap.Apply);
+			// Handlers: ConfigureMauiHandlers runs the registrations in call order, so a callback could only rewrite those before it. Make sure the
+			// stock collection/factory registrations exist (TryAdd), then replace the collection with one that applies the map once all registrations ran.
+			builder.ConfigureMauiHandlers(null);
+			services.Replace(ServiceDescriptor.Singleton<IMauiHandlersCollection>(sp =>
+			{
+				var handlers = new HandlerMauiAppBuilderExtensions.HandlerServiceBuilder(sp.GetServices<HandlerMauiAppBuilderExtensions.HandlerRegistration>());
+				GtkHandlerMap.Apply(handlers);
+				return handlers;
+			}));
 
 			return builder;
 		}

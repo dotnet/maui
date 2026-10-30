@@ -107,8 +107,37 @@ namespace Microsoft.Maui.Gtk.Hosting
 					handlers[i] = new ServiceDescriptor(descriptor.ServiceType, gtk, descriptor.Lifetime);
 			}
 
+			PreferMostDerived(handlers);
+
 			foreach (var pair in defaults)
 				handlers.TryAddHandler(pair.Key, pair.Value);
+		}
+
+		// The last registration of a service type wins. A stock registration rewritten to a GTK handler must not shadow an explicit registration
+		// of a more specific handler for the same view (for example a Controls-aware subclass), whatever the order of the registrations:
+		// move such a registration after the rewritten one.
+		static void PreferMostDerived(IMauiHandlersCollection handlers)
+		{
+			for (int i = 0; i < handlers.Count; i++)
+			{
+				var current = handlers[i];
+				if (current.ImplementationType is not { } currentType)
+					continue;
+
+				for (int j = i + 1; j < handlers.Count; j++)
+				{
+					var later = handlers[j];
+					if (later.ServiceType == current.ServiceType && later.ImplementationType is { } laterType
+						&& laterType != currentType && laterType.IsAssignableFrom(currentType))
+					{
+						// current is more specific than the later registration: current must win.
+						handlers.RemoveAt(i);
+						handlers.Add(current);
+						i--;
+						break;
+					}
+				}
+			}
 		}
 	}
 }

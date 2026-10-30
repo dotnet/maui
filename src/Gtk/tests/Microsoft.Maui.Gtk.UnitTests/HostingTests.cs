@@ -2,6 +2,7 @@ using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Animations;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Gtk.Dispatching;
 using Microsoft.Maui.Gtk.Fonts;
@@ -158,6 +159,79 @@ namespace Microsoft.Maui.Gtk.UnitTests
 
 			Assert.True(fired2, "no frame clock tick arrived");
 		});
+
+		[GtkFact]
+		public void TickerReanchorsWhenItsWindowIsUnmapped() => GtkTestHost.Run(() =>
+		{
+			var first = new global::Gtk.Window();
+			first.SetDefaultSize(100, 100);
+			first.Present();
+			Assert.True(GtkTestHost.PumpUntil(() => first.IsMapped, first));
+
+			var ticker = new GtkTicker { MaxFps = 60 };
+			int fired = 0;
+			ticker.Fire = () => fired++;
+			ticker.Start();
+			Assert.True(GtkTestHost.PumpUntil(() => fired >= 1, first, 3000));
+
+			// A second window exists; the anchor window goes away: ticks must continue.
+			var second = new global::Gtk.Window();
+			second.SetDefaultSize(100, 100);
+			second.Present();
+			Assert.True(GtkTestHost.PumpUntil(() => second.IsMapped, second));
+
+			first.Visible = false;
+			Assert.True(GtkTestHost.PumpUntil(() => !first.IsMapped, second));
+			int before = fired;
+			bool resumed = GtkTestHost.PumpUntil(() => fired >= before + 3, second, 3000);
+
+			ticker.Stop();
+			GtkTestHost.Retire(first);
+			GtkTestHost.Retire(second);
+
+			Assert.True(resumed, "ticks stopped after the anchor window was unmapped");
+		});
+
+		[GtkFact]
+		public void HandlerRewriteDoesNotDependOnTheCallOrder() => GtkTestHost.Run(() =>
+		{
+			// UseMauiGtkCore before UseMauiApp (stock handlers are registered afterwards) and a later ConfigureMauiHandlers.
+			var builder = MauiApp.CreateBuilder();
+			builder.UseMauiGtkCore().UseMauiApp<TestApplication>();
+			builder.ConfigureMauiHandlers(h => h.AddHandler<Editor, EditorHandler>());
+			var app = builder.Build();
+
+			var factory = app.Services.GetRequiredService<IMauiHandlersFactory>();
+			Assert.Equal(typeof(GtkLabelHandler), factory.GetHandlerType(typeof(Label)));
+			Assert.Equal(typeof(GtkButtonHandler), factory.GetHandlerType(typeof(Microsoft.Maui.Controls.Button)));
+			Assert.Equal(typeof(GtkEditorHandler), factory.GetHandlerType(typeof(Editor)));
+		});
+
+		[GtkFact]
+		public void ARegistrationMoreSpecificThanTheRewrittenStockOneWinsInAnyOrder()
+		{
+			foreach (bool specificFirst in new[] { true, false })
+			{
+				var handlers = new HandlerMauiAppBuilderExtensions.HandlerServiceBuilder(null!);
+				if (specificFirst)
+					handlers.AddHandler<Label, DerivedGtkLabelHandler>();
+				handlers.AddHandler<Label, LabelHandler>();
+				if (!specificFirst)
+					handlers.AddHandler<Label, DerivedGtkLabelHandler>();
+
+				GtkHandlerMap.Apply(handlers);
+
+				System.Type? winner = null;
+				foreach (var d in handlers)
+					if (d.ServiceType == typeof(Label))
+						winner = d.ImplementationType;
+				Assert.Equal(typeof(DerivedGtkLabelHandler), winner);
+			}
+		}
+
+		sealed class DerivedGtkLabelHandler : GtkLabelHandler
+		{
+		}
 
 		[GtkFact]
 		public void FontManagerAndEmbeddedLoaderAreRegistered() => GtkTestHost.Run(() =>

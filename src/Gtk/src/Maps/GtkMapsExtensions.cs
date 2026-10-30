@@ -38,9 +38,6 @@ namespace Microsoft.Maui.Hosting
 
 			builder.UseMauiMaps();
 
-			// Handler callbacks run in registration order and GtkHandlerMap.Apply rewrites what is registered so far: run it again after the
-			// map registrations so this call works before or after UseMauiGtkCore() (Apply is idempotent).
-			builder.ConfigureMauiHandlers(GtkHandlerMap.Apply);
 			builder.Services.TryAddSingleton(options);
 			builder.Services.TryAddSingleton<IGeocoding>(sp => new NominatimGeocoding(sp.GetRequiredService<GtkMapOptions>()));
 

@@ -11,7 +11,7 @@ checks, `IButtonHandler` and user mapper customisations keep working.
 |---|---|---|
 | `src/Core` | `Microsoft.Maui.Gtk` | hosting, layout bridge, handlers, fonts, images, styling (this document) |
 | `tests/Microsoft.Maui.Gtk.UnitTests` | | xUnit tests on real widgets (one shared project) |
-| `samples/Maui.Gtk.Sample` | | code-only sample on `net10.0-gtk4.22` (SingleProject: `Platforms/Linux`, icon, image, font, asset); needs the `gtk` workload, so it is not part of `Microsoft.Maui-linux.slnf` |
+| `samples/Maui.Gtk.Sample` | | code-only sample on `net10.0-gtk4.22` (SingleProject: `Platforms/Linux`, icon, image, font, asset); needs the `gtk` workload, so it is listed in `Microsoft.Maui.sln`/`-vscode.sln` without a build configuration (a solution build or `dotnet format` skips it) and is not part of `Microsoft.Maui-linux.slnf`; build the project directly |
 | `src/Essentials` | `Microsoft.Maui.Essentials.Gtk` | Essentials on GTK 4 / Linux, see [`src/Essentials/README.md`](src/Essentials/README.md) |
 | `../Graphics/src/Graphics.Cairo` | `Microsoft.Maui.Graphics.Cairo` | `ICanvas` on Cairo/Pango, see its [README](../Graphics/src/Graphics.Cairo/README.md) |
 | `src/Controls` | `Microsoft.Maui.Controls.Gtk` | Controls handlers and `UseMauiGtk()`, see [`src/Controls/README.md`](src/Controls/README.md) |
@@ -99,7 +99,7 @@ builder.UseMauiApp<App>().UseMauiGtkCore();   // UseMauiGtk() (Controls.Gtk) = U
 **Mappers.** Every GTK handler passes its own mapper to the stock base handler: `GtkMapperBuilder` puts the GTK implementation of a key
 in front of the stock mapper (`MapGtk<TWidget>`: runs when the platform view is the expected GTK widget, then the stock mapping of the
 same key runs). Controls' remaps and `AppendToMapping`/`PrependToMapping` customisations of the *stock* mappers therefore keep working, and
-there is no ordering rule between `UseMauiGtkCore()`/`UseMauiGtk()` and `UseMauiApp<T>()`. (Patching the static mappers in place was rejected:
+there is no ordering rule between `UseMauiGtkCore()`/`UseMauiGtk()`, `UseMauiApp<T>()` and `ConfigureMauiHandlers` (`UseMauiGtkCore` wraps the `IMauiHandlersCollection` so `GtkHandlerMap.Apply` runs after all registrations; a more specific registration, e.g. a Controls-aware subclass, wins over the rewritten stock one). (Patching the static mappers in place was rejected:
 Controls re-maps them lazily, e.g. `Label`'s static constructor, with `ReplaceMapping`, which discards the previous mapping.)
 
 `MauiGtkApplication.Run(args)` owns a `Gtk.Application` (`startup` builds the app, `activate` creates the first window).
@@ -117,7 +117,7 @@ Pass only GApplication options in `args`. Lifecycle: `ConfigureLifecycleEvents(e
 | Menus | `GtkMenuNode` tree (`GtkMenuModel.cs`) mirrors MAUI menus as `GLib.Menu` + `GSimpleAction`s (group `menu`); the root rebuilds the models on every change. `GtkWindowMenuBar` stacks the `PopoverMenuBar` above the root panel; `GtkContextFlyout` installs the secondary click / long press. `MenuFlyoutItemHandler` has no mapper constructor, so its GTK mappings are added once to the stock static mapper (they only act for `GtkMenuFlyoutItemHandler`). |
 | Transforms | translation/scale/rotation (+ anchor) become the `Gsk.Transform` of the child allocation (`GtkViewState`). `RotationX/Y` ignored. |
 | Styling | `GtkStyle`: one `CssProvider` + class per widget (the only `StyleContext.AddProvider` use). Colour, font, spacing, decorations, padding, background (solid/linear/radial), borders are CSS. |
-| Dispatcher / ticker | `GtkDispatcher` (`GLib.Idle/Timeout`, inline on the GTK thread), `GtkTicker` (frame-clock tick callback, `Timeout` fallback). |
+| Dispatcher / ticker | `GtkDispatcher` (`GLib.Idle/Timeout`, inline on the GTK thread), `GtkTicker` (frame-clock tick callback on a main (non-modal, non-transient) window, re-anchored when that window unmaps; `Timeout` fallback). |
 | Fonts | `GtkFontManager` (`Font` -> CSS / `Pango.FontDescription`); `GtkEmbeddedFontLoader` (`pango_font_map_add_font_file` on Pango >= 1.56, else fontconfig `FcConfigAppFontAddFile`). |
 | Images | `IGtkImageSourceService` -> `Gdk.Texture` for File/Stream/Uri/Font; `GtkImageLoader` replaces `ImageSourcePartLoader` (a no-op on `net10.0`). |
 
