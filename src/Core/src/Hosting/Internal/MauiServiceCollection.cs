@@ -18,7 +18,20 @@ namespace Microsoft.Maui.Hosting.Internal
 		public ServiceDescriptor this[int index]
 		{
 			get => _descriptors[index];
-			set => _descriptors[index] = value;
+			set
+			{
+				var previous = _descriptors[index];
+				_descriptors[index] = value;
+
+				// Keep the lookup used by TryGetService in step with the list (the last registration of a service type wins):
+				// it must resolve to the replacement, never to the descriptor that was just replaced.
+				bool wasCurrent = _descriptorDictionary.TryGetValue(previous.ServiceType, out var current) && ReferenceEquals(current, previous);
+				if (wasCurrent)
+					_descriptorDictionary.Remove(previous.ServiceType);
+
+				if (wasCurrent || !_descriptorDictionary.ContainsKey(value.ServiceType))
+					_descriptorDictionary[value.ServiceType] = value;
+			}
 		}
 
 		public void Add(ServiceDescriptor item)
