@@ -13,7 +13,7 @@ window screenshots and announcements; default = active window of `Gtk.Applicatio
 
 | API | Implementation |
 |---|---|
-| AppInfo | Entry assembly (`ApplicationId` / `ApplicationDisplayVersion` / `ApplicationVersion` `AssemblyMetadata`, title, version). Theme: portal `org.freedesktop.appearance color-scheme`, fallback `Gtk.Settings` |
+| AppInfo | Entry assembly (`ApplicationId` / `ApplicationTitle` / `ApplicationDisplayVersion` / `ApplicationVersion` `AssemblyMetadata`, which the SDK emits from the project properties, then title, version). Theme: portal `org.freedesktop.appearance color-scheme`, fallback `Gtk.Settings` |
 | DeviceInfo | `DevicePlatform "Linux"`, `/etc/os-release` (`VERSION_ID`, kernel on rolling), DMI model/vendor, VM detection, Desktop idiom |
 | DeviceDisplay | First `Gdk.Display` monitor (geometry x scale). `KeepScreenOn` = `Gtk.Application.Inhibit(Idle)` |
 | FileSystem | `$XDG_DATA_HOME/<id>`, `$XDG_CACHE_HOME/<id>`; package files from `AppContext.BaseDirectory` |

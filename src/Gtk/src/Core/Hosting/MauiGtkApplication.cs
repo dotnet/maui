@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Gtk.Hosting;
 using Microsoft.Maui.Gtk.Platform;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
@@ -70,7 +71,7 @@ namespace Microsoft.Maui
 			Current = this;
 			IPlatformApplication.Current = this;
 
-			_application = new GtkApplication(_applicationId ?? CreateApplicationId(), GLib.ApplicationFlags.None);
+			_application = new GtkApplication(_applicationId ?? GtkApplicationIdentity.ResolveApplicationId(System.Reflection.Assembly.GetEntryAssembly()), GLib.ApplicationFlags.None);
 			_application.Startup += OnStartup;
 			_application.Activated += OnActivated;
 			_application.Shutdown += OnShutdown;
@@ -83,6 +84,8 @@ namespace Microsoft.Maui
 
 		void OnStartup(object? sender, EventArgs e)
 		{
+			InstallApplicationIcon();
+
 			_mauiApp = CreateMauiApp();
 
 			var rootContext = new MauiContext(_mauiApp.Services);
@@ -90,6 +93,19 @@ namespace Microsoft.Maui
 			((MauiContext)_applicationContext).AddSpecific(GtkApplication);
 
 			Services.InvokeLifecycleEvents<GtkLifecycle.OnStartup>(del => del(GtkApplication));
+		}
+
+		// The icon is cosmetic: a missing icon theme or display must never stop the app from starting.
+		static void InstallApplicationIcon()
+		{
+			try
+			{
+				GtkApplicationIdentity.InstallIcon(AppContext.BaseDirectory);
+			}
+			catch (Exception ex)
+			{
+				System.Diagnostics.Debug.WriteLine(ex);
+			}
 		}
 
 		void OnActivated(object? sender, EventArgs e)
@@ -143,20 +159,6 @@ namespace Microsoft.Maui
 			Services.InvokeLifecycleEvents<GtkLifecycle.OnWindowCreated>(del => del(platformWindow));
 
 			platformWindow.Present();
-		}
-
-		static string CreateApplicationId()
-		{
-			var name = System.Reflection.Assembly.GetEntryAssembly()?.GetName().Name ?? "maui";
-			var chars = new char[name.Length];
-			for (int i = 0; i < name.Length; i++)
-				chars[i] = char.IsLetterOrDigit(name[i]) && name[i] < 128 ? char.ToLowerInvariant(name[i]) : '_';
-
-			var id = new string(chars);
-			if (id.Length == 0 || char.IsDigit(id[0]))
-				id = "app" + id;
-
-			return "org.maui." + id;
 		}
 	}
 }

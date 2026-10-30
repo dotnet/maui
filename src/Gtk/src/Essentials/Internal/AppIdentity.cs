@@ -29,7 +29,7 @@ sealed class AppIdentity
 
 	/// <summary>
 	/// Resolves the identity. Id: option, then <c>ApplicationId</c> assembly metadata, then the assembly name.
-	/// Name: option, then <c>AssemblyTitle</c>, <c>AssemblyProduct</c>, the assembly name.
+	/// Name: option, then <c>ApplicationTitle</c> metadata (the project's <c>ApplicationTitle</c>), <c>AssemblyTitle</c>, <c>AssemblyProduct</c>, the assembly name.
 	/// Version: <c>ApplicationDisplayVersion</c> metadata, then the informational version (without <c>+build</c>), then the assembly version.
 	/// Build: <c>ApplicationVersion</c> metadata, then the assembly version build number, else <c>1</c>.
 	/// </summary>
@@ -41,6 +41,7 @@ sealed class AppIdentity
 		var id = FirstNonEmpty(idOverride, Metadata(assembly, "ApplicationId"), simpleName)!;
 		var name = FirstNonEmpty(
 			nameOverride,
+			Metadata(assembly, "ApplicationTitle"),
 			assembly?.GetCustomAttribute<AssemblyTitleAttribute>()?.Title,
 			assembly?.GetCustomAttribute<AssemblyProductAttribute>()?.Product,
 			simpleName)!;
