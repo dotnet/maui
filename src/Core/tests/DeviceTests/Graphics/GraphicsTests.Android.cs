@@ -1,5 +1,10 @@
-﻿using Microsoft.Maui.DeviceTests.Stubs;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Java.Interop;
+using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Graphics.Platform;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests;
@@ -7,6 +12,65 @@ namespace Microsoft.Maui.DeviceTests;
 [Category(TestCategory.Graphics)]
 public partial class GraphicsTests : TestBase
 {
+	[Theory]
+	[InlineData("DrawStringPoint")]
+	[InlineData("DrawStringRectangle")]
+	[InlineData("GetStringSize")]
+	[InlineData("GetStringSizeWithAlignment")]
+	public async Task TextOperationsDisposeTemporaryJavaPeers(string operation)
+	{
+		await InvokeOnMainThreadAsync(() =>
+		{
+			using var bitmap = global::Android.Graphics.Bitmap.CreateBitmap(200, 80, global::Android.Graphics.Bitmap.Config.Argb8888!);
+			using var nativeCanvas = new global::Android.Graphics.Canvas(bitmap);
+			using var canvas = new PlatformCanvas { Canvas = nativeCanvas, FontSize = 18 };
+			var sizeService = new PlatformStringSizeService();
+			var font = Microsoft.Maui.Graphics.Font.Default;
+
+			Action run = operation switch
+			{
+				"DrawStringPoint" => () => canvas.DrawString("Hello MAUI", 0, 20, HorizontalAlignment.Left),
+				"DrawStringRectangle" => () => canvas.DrawString("Hello MAUI", 0, 0, 200, 80, HorizontalAlignment.Left, VerticalAlignment.Top),
+				"GetStringSize" => () => sizeService.GetStringSize("Hello MAUI", font, 18),
+				"GetStringSizeWithAlignment" => () => sizeService.GetStringSize("Hello MAUI", font, 18, HorizontalAlignment.Center, VerticalAlignment.Center),
+				_ => throw new ArgumentOutOfRangeException(nameof(operation))
+			};
+
+			// Warm up canvas-owned paint, then check explicit cleanup rather than GC or process memory.
+			run();
+			var existingPeers = GetTextPeers();
+			for (int i = 0; i < 20; i++)
+				run();
+
+			var remainingPeers = GetTextPeers();
+			remainingPeers.ExceptWith(existingPeers);
+			try
+			{
+				Assert.Empty(remainingPeers);
+			}
+			finally
+			{
+				foreach (var peer in remainingPeers)
+					peer.Dispose();
+			}
+		});
+
+		static HashSet<IJavaPeerable> GetTextPeers()
+		{
+			var peers = new HashSet<IJavaPeerable>(ReferenceEqualityComparer.Instance);
+			foreach (var entry in JniEnvironment.Runtime.ValueManager.GetSurfacedPeers())
+			{
+				if (entry.SurfacedPeer.TryGetTarget(out var peer) &&
+					peer.PeerReference.IsValid &&
+					peer is global::Android.Text.StaticLayout or global::Android.Text.TextPaint or global::Android.Text.StaticLayout.Builder)
+				{
+					peers.Add(peer);
+				}
+			}
+			return peers;
+		}
+	}
+
 	[Fact]
 	public void RadialGradientWithZeroSizeDoesNotThrow()
 	{

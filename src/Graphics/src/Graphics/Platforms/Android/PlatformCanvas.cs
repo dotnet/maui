@@ -615,7 +615,7 @@ namespace Microsoft.Maui.Graphics.Platform
 
 			_canvas.Save();
 			_canvas.Translate(x, y - CurrentState.ScaledFontSize);
-			StaticLayout layout = TextLayoutUtils.CreateLayout(value, CurrentState.FontPaint, 512, Layout.Alignment.AlignNormal);
+			using StaticLayout layout = TextLayoutUtils.CreateLayout(value, CurrentState.FontPaint, 512, Layout.Alignment.AlignNormal);
 			layout.Draw(_canvas);
 			_canvas.Restore();
 		}
@@ -646,7 +646,7 @@ namespace Microsoft.Maui.Graphics.Platform
 				alignment = Layout.Alignment.AlignOpposite;
 			}
 
-			var layout = TextLayoutUtils.CreateLayout(value, CurrentState.FontPaint, (int)width, alignment);
+			using var layout = TextLayoutUtils.CreateLayout(value, CurrentState.FontPaint, (int)width, alignment);
 			var offset = layout.GetOffsetsToDrawText(x, y, width, height, horizAlignment, vertAlignment);
 			_canvas.Translate(offset.Width, offset.Height);
 			layout.Draw(_canvas);
