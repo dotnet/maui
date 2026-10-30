@@ -1,0 +1,11 @@
+﻿#nullable enable
+Microsoft.Maui.Hosting.GtkEssentialsExtensions
+Microsoft.Maui.Hosting.GtkEssentialsOptions
+Microsoft.Maui.Hosting.GtkEssentialsOptions.ApplicationId.get -> string?
+Microsoft.Maui.Hosting.GtkEssentialsOptions.ApplicationId.set -> void
+Microsoft.Maui.Hosting.GtkEssentialsOptions.ApplicationName.get -> string?
+Microsoft.Maui.Hosting.GtkEssentialsOptions.ApplicationName.set -> void
+Microsoft.Maui.Hosting.GtkEssentialsOptions.GtkEssentialsOptions() -> void
+Microsoft.Maui.Hosting.GtkEssentialsOptions.ParentWindowProvider.get -> System.Func<Gtk.Window?>?
+Microsoft.Maui.Hosting.GtkEssentialsOptions.ParentWindowProvider.set -> void
+static Microsoft.Maui.Hosting.GtkEssentialsExtensions.UseMauiGtkEssentials(this Microsoft.Maui.Hosting.MauiAppBuilder! builder, System.Action<Microsoft.Maui.Hosting.GtkEssentialsOptions!>? configure = null) -> Microsoft.Maui.Hosting.MauiAppBuilder!

@@ -7,10 +7,12 @@
     <IsPackable>false</IsPackable>
     <MauiTestProject>true</MauiTestProject>
     <!-- Real GTK widgets are exercised on one dedicated thread (see GtkTestHost); no parallelism. -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <NoWarn>$(NoWarn);CS1591;CA1707;CA1307;CA1309;CA1310;CA1861;xUnit1013</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="coverlet.collector" Version="$(CoverletCollectorPackageVersion)" />
     <PackageReference Include="xunit" Version="$(XunitPackageVersion)" />
     <PackageReference Include="GtkSharp4" />
@@ -29,6 +31,7 @@
     <ProjectReference Include="..\..\src\Core\Microsoft.Maui.Gtk.csproj" />
     <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core.csproj" />
     <ProjectReference Include="..\..\..\Controls\src\Xaml\Controls.Xaml.csproj" />
+    <ProjectReference Include="..\..\src\Essentials\Microsoft.Maui.Essentials.Gtk.csproj" />
   </ItemGroup>
 
 </Project>

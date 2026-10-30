@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(MauiGtkTargetFramework)</TargetFramework>
+    <AssemblyName>Microsoft.Maui.Essentials.Gtk</AssemblyName>
+    <RootNamespace>Microsoft.Maui.Essentials.Gtk</RootNamespace>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <IsAotCompatible>true</IsAotCompatible>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <NoWarn>$(NoWarn);RS0041;RS0026;RS0027;NU5104</NoWarn>
+    <WarningsAsErrors>$(WarningsAsErrors);CS1591</WarningsAsErrors>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>Microsoft.Maui.Essentials.Gtk</PackageId>
+    <PackageTags>$(DefaultPackageTags);essentials;gtk;linux</PackageTags>
+    <Description>.NET MAUI Essentials implementations for Linux on GTK 4 (GtkSharp4): app info, device info, preferences, secure storage (libsecret), connectivity, clipboard, launcher, file picker and more.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Essentials\src\Essentials.csproj" />
+    <ProjectReference Include="..\..\..\Core\src\Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="GioSharp4" />
+    <PackageReference Include="GtkSharp4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.Maui.Gtk.UnitTests" />
+  </ItemGroup>
+
+  <Import Project="$(MauiSrcDirectory)PublicAPI.targets" />
+
+</Project>
