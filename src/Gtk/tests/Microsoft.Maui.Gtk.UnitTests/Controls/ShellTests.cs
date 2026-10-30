@@ -141,6 +141,13 @@ namespace Microsoft.Maui.Gtk.UnitTests
 			Assert.Equal(FlyoutBehavior.Flyout, panel.Behavior);
 			Assert.False(panel.FlyoutHost.Visible);
 
+			// Shell's initial platform-initiated navigation resets FlyoutIsPresented when it lands late: let it settle first.
+			for (int i = 0; i < 5; i++)
+			{
+				host.Pump();
+				System.Threading.Thread.Sleep(20);
+			}
+
 			shell.FlyoutIsPresented = true;
 			host.Pump();
 			Assert.True(panel.FlyoutHost.Visible);

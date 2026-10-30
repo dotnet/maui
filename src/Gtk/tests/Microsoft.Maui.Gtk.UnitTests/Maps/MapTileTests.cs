@@ -243,13 +243,21 @@ namespace Microsoft.Maui.Gtk.UnitTests.Maps
 			Assert.Equal(2, store.InFlight);
 			Assert.Equal(3, store.Queued);
 
-			fetcher.Gate.Release(5);
+			// Free one slot at a time so the start order of the waiting requests is observable without racing pool threads.
+			fetcher.Gate.Release(1);
+			Assert.True(WaitFor(() => fetcher.Requests.Count == 3));
+			Assert.Equal("e", fetcher.Requests.ToArray()[2]);
+
+			fetcher.Gate.Release(1);
+			Assert.True(WaitFor(() => fetcher.Requests.Count == 4));
+			Assert.Equal("d", fetcher.Requests.ToArray()[3]);
+
+			fetcher.Gate.Release(3);
 			Assert.True(WaitFor(() => done.Count == 5));
 
-			// "a" and "b" took the free slots; the waiting ones are served newest first.
+			// "a" and "b" took the free slots; the waiting ones were served newest first.
 			var order = fetcher.Requests.ToArray();
 			Assert.Equal(new[] { "a", "b" }, order.Take(2).OrderBy(u => u).ToArray());
-			Assert.Equal(new[] { "d", "e" }, order.Skip(2).Take(2).OrderBy(u => u).ToArray());
 			Assert.Equal("c", order[4]);
 		}
 

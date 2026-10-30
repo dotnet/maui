@@ -105,7 +105,7 @@ Not in this area: Shell, CollectionView, Maps, NavigationPage/Toolbar/FlyoutPage
 
 | Project | Tests (Windows GTK 4.22 / Debian 13 GTK 4.18, xvfb) |
 |---------|------|
-| `Microsoft.Maui.Gtk.UnitTests` (Core + Essentials + Handlers + Controls + Web) | TBD |
+| `Microsoft.Maui.Gtk.UnitTests` (Core + Essentials + Handlers + Controls + Web + Maps) | Windows 615 passed, 21 skipped (17 WebKit + 4 Linux-only popups); Debian 636 passed, 0 skipped |
 | `Graphics.Cairo.Tests` | 125 passed, 0 skipped |
 | `Core.UnitTests` / `Controls.Core.UnitTests` (net10.0) | 878 (+3 skipped) / 5865 (+30 skipped) passed |
 

@@ -189,7 +189,8 @@ public static class GtkTestHost
 				if (s_capture is not null)
 					s_complaints.AddRange(s_capture.Read());
 
-				return s_complaints.ToArray();
+				// A headless session has no D-Bus accessibility service; GTK logs that once per process, not a defect.
+				return s_complaints.FindAll(c => !c.Contains("accessibility bus")).ToArray();
 			}
 		}
 	}

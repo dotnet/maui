@@ -105,7 +105,7 @@ namespace Microsoft.Maui.Gtk.Handlers
 	/// </summary>
 	/// <remarks>
 	/// Text colour, font and letter spacing are CSS on the picker (they cascade to the drop-down and its list); the horizontal and vertical text
-	/// alignment have no GTK equivalent. <c>IsOpen</c> activates the drop-down; it is not exercised on Windows, where <c>Popover.Popup</c> crashes with the gvsbuild runtime.
+	/// alignment have no GTK equivalent. <c>IsOpen</c> pops the drop-down's popover up; it is not exercised on Windows, where <c>Popover.Popup</c> crashes with the gvsbuild runtime.
 	/// </remarks>
 	public class GtkPickerHandler : PickerHandler
 	{
@@ -190,7 +190,11 @@ namespace Microsoft.Maui.Gtk.Handlers
 		{
 			if (view.IsOpen)
 			{
-				((global::Gtk.Widget)picker.DropDown).Activate();
+				// GtkDropDown owns its popover as a direct child: pop it up as the toggle button would.
+				if (picker.Popover is { } dropDownPopover)
+					dropDownPopover.Popup();
+				else
+					((global::Gtk.Widget)picker.DropDown).Activate();
 
 				if (handler is GtkPickerHandler gtk && gtk._popover is null && picker.Popover is { } popover)
 				{

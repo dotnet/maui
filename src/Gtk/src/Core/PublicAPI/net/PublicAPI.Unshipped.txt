@@ -1,9 +1,4 @@
-abstract Microsoft.Maui.Gtk.ImageSources.GtkImageSourceService<T>.LoadTextureAsync(T source, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<Gdk.Texture?>!
-abstract Microsoft.Maui.MauiGtkApplication.CreateMauiApp() -> Microsoft.Maui.Hosting.MauiApp!
-const Microsoft.Maui.Gtk.Handlers.MauiGtkRefreshPanel.PullThreshold = 100 -> double
-const Microsoft.Maui.Gtk.Platform.GtkRuntime.MinimumMinorVersion = 14 -> int
-const Microsoft.Maui.Gtk.Platform.MauiGtkFlyoutPanel.DefaultFlyoutWidth = 320 -> int
-const Microsoft.Maui.Gtk.Web.GtkWebKit.DisableVariable = "MAUI_GTK_DISABLE_WEBKIT" -> string!
+﻿#nullable enable
 Microsoft.Maui.Gtk.Dispatching.GtkDispatcher
 Microsoft.Maui.Gtk.Dispatching.GtkDispatcher.CreateTimer() -> Microsoft.Maui.Dispatching.IDispatcherTimer!
 Microsoft.Maui.Gtk.Dispatching.GtkDispatcher.Dispatch(System.Action! action) -> bool
@@ -262,18 +257,18 @@ Microsoft.Maui.Gtk.Handlers.MauiGtkEditor.Text.get -> string!
 Microsoft.Maui.Gtk.Handlers.MauiGtkEditor.Text.set -> void
 Microsoft.Maui.Gtk.Handlers.MauiGtkEditor.View.get -> Gtk.TextView!
 Microsoft.Maui.Gtk.Handlers.MauiGtkGraphicsView
+Microsoft.Maui.Gtk.Handlers.MauiGtkGraphicsView.DrawCount.get -> int
 Microsoft.Maui.Gtk.Handlers.MauiGtkGraphicsView.Drawable.get -> Microsoft.Maui.Graphics.IDrawable?
 Microsoft.Maui.Gtk.Handlers.MauiGtkGraphicsView.Drawable.set -> void
-Microsoft.Maui.Gtk.Handlers.MauiGtkGraphicsView.DrawCount.get -> int
 Microsoft.Maui.Gtk.Handlers.MauiGtkGraphicsView.HoverEnded -> System.Action?
 Microsoft.Maui.Gtk.Handlers.MauiGtkGraphicsView.HoverMoved -> System.Action<Microsoft.Maui.Graphics.PointF[]!>?
 Microsoft.Maui.Gtk.Handlers.MauiGtkGraphicsView.HoverStarted -> System.Action<Microsoft.Maui.Graphics.PointF[]!>?
 Microsoft.Maui.Gtk.Handlers.MauiGtkGraphicsView.InteractionCancelled -> System.Action?
 Microsoft.Maui.Gtk.Handlers.MauiGtkGraphicsView.InteractionDragged -> System.Action<Microsoft.Maui.Graphics.PointF[]!>?
 Microsoft.Maui.Gtk.Handlers.MauiGtkGraphicsView.InteractionEnded -> System.Action<Microsoft.Maui.Graphics.PointF[]!, bool>?
+Microsoft.Maui.Gtk.Handlers.MauiGtkGraphicsView.InteractionStarted -> System.Action<Microsoft.Maui.Graphics.PointF[]!>?
 Microsoft.Maui.Gtk.Handlers.MauiGtkGraphicsView.InteractionsEnabled.get -> bool
 Microsoft.Maui.Gtk.Handlers.MauiGtkGraphicsView.InteractionsEnabled.set -> void
-Microsoft.Maui.Gtk.Handlers.MauiGtkGraphicsView.InteractionStarted -> System.Action<Microsoft.Maui.Graphics.PointF[]!>?
 Microsoft.Maui.Gtk.Handlers.MauiGtkGraphicsView.Invalidate() -> void
 Microsoft.Maui.Gtk.Handlers.MauiGtkGraphicsView.MauiGtkGraphicsView() -> void
 Microsoft.Maui.Gtk.Handlers.MauiGtkImageButton
@@ -508,6 +503,12 @@ Microsoft.Maui.MauiGtkApplication.GtkApplication.get -> Gtk.Application!
 Microsoft.Maui.MauiGtkApplication.MauiGtkApplication(string? applicationId = null) -> void
 Microsoft.Maui.MauiGtkApplication.Run(string![]! args) -> int
 Microsoft.Maui.MauiGtkApplication.Services.get -> System.IServiceProvider!
+abstract Microsoft.Maui.Gtk.ImageSources.GtkImageSourceService<T>.LoadTextureAsync(T source, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<Gdk.Texture?>!
+abstract Microsoft.Maui.MauiGtkApplication.CreateMauiApp() -> Microsoft.Maui.Hosting.MauiApp!
+const Microsoft.Maui.Gtk.Handlers.MauiGtkRefreshPanel.PullThreshold = 100 -> double
+const Microsoft.Maui.Gtk.Platform.GtkRuntime.MinimumMinorVersion = 14 -> int
+const Microsoft.Maui.Gtk.Platform.MauiGtkFlyoutPanel.DefaultFlyoutWidth = 320 -> int
+const Microsoft.Maui.Gtk.Web.GtkWebKit.DisableVariable = "MAUI_GTK_DISABLE_WEBKIT" -> string!
 override Microsoft.Maui.Gtk.Dispatching.GtkTicker.IsRunning.get -> bool
 override Microsoft.Maui.Gtk.Dispatching.GtkTicker.Start() -> void
 override Microsoft.Maui.Gtk.Dispatching.GtkTicker.Stop() -> void
@@ -681,4 +682,3 @@ virtual Microsoft.Maui.LifecycleEvents.GtkLifecycle.OnActivate.Invoke(Gtk.Applic
 virtual Microsoft.Maui.LifecycleEvents.GtkLifecycle.OnShutdown.Invoke(Gtk.Application! application) -> void
 virtual Microsoft.Maui.LifecycleEvents.GtkLifecycle.OnStartup.Invoke(Gtk.Application! application) -> void
 virtual Microsoft.Maui.LifecycleEvents.GtkLifecycle.OnWindowCreated.Invoke(Gtk.Window! window) -> void
-﻿#nullable enable
