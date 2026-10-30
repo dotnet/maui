@@ -132,7 +132,7 @@ namespace Microsoft.Maui.Gtk.Handlers
 
 			if (widgets.Count > 0)
 			{
-				var box = new global::Gtk.Box(horizontal ? global::Gtk.Orientation.Horizontal : global::Gtk.Orientation.Vertical, 0) { Visible = false };
+				var box = new global::Gtk.Box(horizontal ? global::Gtk.Orientation.Horizontal : global::Gtk.Orientation.Vertical, 0) { Opacity = 0, CanTarget = false };
 				for (int i = 0; i < widgets.Count; i++)
 				{
 					int itemIndex = i;
@@ -297,11 +297,17 @@ namespace Microsoft.Maui.Gtk.Handlers
 
 		void ApplyOffsets()
 		{
+			// The boxes stay visible (a hidden widget measures as 0, and the extent of the items is needed to size the swipe); the ones not
+			// being revealed are transparent and ignore the pointer.
 			for (int i = 0; i < _boxes.Length; i++)
 			{
-				if (_boxes[i] is { } box)
-					box.Visible = (_x > 0 && s_sides[i] == OpenSwipeItem.LeftItems) || (_x < 0 && s_sides[i] == OpenSwipeItem.RightItems)
-						|| (_y > 0 && s_sides[i] == OpenSwipeItem.TopItems) || (_y < 0 && s_sides[i] == OpenSwipeItem.BottomItems);
+				if (_boxes[i] is not { } box)
+					continue;
+
+				bool revealed = (_x > 0 && s_sides[i] == OpenSwipeItem.LeftItems) || (_x < 0 && s_sides[i] == OpenSwipeItem.RightItems)
+					|| (_y > 0 && s_sides[i] == OpenSwipeItem.TopItems) || (_y < 0 && s_sides[i] == OpenSwipeItem.BottomItems);
+				box.Opacity = revealed ? 1 : 0;
+				box.CanTarget = revealed;
 			}
 
 			QueueAllocate();
@@ -322,7 +328,7 @@ namespace Microsoft.Maui.Gtk.Handlers
 
 			for (int i = 0; i < _boxes.Length; i++)
 			{
-				if (_boxes[i] is not { Visible: true } box)
+				if (_boxes[i] is not { } box)
 					continue;
 
 				var side = s_sides[i];

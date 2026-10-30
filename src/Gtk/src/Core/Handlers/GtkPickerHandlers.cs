@@ -12,31 +12,22 @@ using GtkPopover = Gtk.Popover;
 namespace Microsoft.Maui.Gtk.Handlers
 {
 	/// <summary>
-	/// A <c>Gtk.DropDown</c> over a <c>Gtk.StringList</c> with a title that is shown while nothing is selected (a drop-down has no
-	/// placeholder of its own, so the title is a non-interactive label overlaid on it).
+	/// A <c>Gtk.DropDown</c> over a <c>Gtk.StringList</c>. A drop-down cannot be left without a selection (its selection model always selects an item),
+	/// so item 0 of the list is a placeholder row that shows the title: selecting it means "no selection" (<see cref="SelectedIndex"/> -1), and the
+	/// real items start at position 1.
 	/// </summary>
-	public sealed class MauiGtkPicker : global::Gtk.Overlay
+	public sealed class MauiGtkPicker : global::Gtk.Box
 	{
-		/// <summary>The value GTK uses for "no selection" (<c>GTK_INVALID_LIST_POSITION</c>).</summary>
-		public const uint InvalidPosition = uint.MaxValue;
-
-		readonly global::Gtk.StringList _items = new(Array.Empty<string>());
+		readonly global::Gtk.StringList _items = new(new[] { string.Empty });
 		readonly GtkDropDown _dropDown;
-		readonly GtkLabel _title = new() { Xalign = 0, CanTarget = false, Halign = global::Gtk.Align.Start, Valign = global::Gtk.Align.Center, MarginStart = 10 };
 
 		/// <summary>Creates the picker.</summary>
 		public MauiGtkPicker()
+			: base(global::Gtk.Orientation.Horizontal, 0)
 		{
 			_dropDown = new GtkDropDown(_items, null) { Hexpand = true };
-			_title.AddCssClass("dim-label");
-			Child = _dropDown;
-			AddOverlay(_title);
-			_dropDown.AddNotification("selected", (o, a) =>
-			{
-				UpdateTitleVisibility();
-				SelectionChanged?.Invoke(this, EventArgs.Empty);
-			});
-			UpdateTitleVisibility();
+			Append(_dropDown);
+			_dropDown.AddNotification("selected", (o, a) => SelectionChanged?.Invoke(this, EventArgs.Empty));
 		}
 
 		/// <summary>Raised when the selected index changed (programmatically or by the user).</summary>
@@ -44,9 +35,6 @@ namespace Microsoft.Maui.Gtk.Handlers
 
 		/// <summary>The drop-down widget.</summary>
 		public GtkDropDown DropDown => _dropDown;
-
-		/// <summary>The title label shown while nothing is selected.</summary>
-		public GtkLabel TitleLabel => _title;
 
 		/// <summary>The popover the drop-down opens, or <see langword="null"/> when GTK has not created it yet.</summary>
 		public GtkPopover? Popover
@@ -63,30 +51,40 @@ namespace Microsoft.Maui.Gtk.Handlers
 			}
 		}
 
-		/// <summary>The title text.</summary>
+		/// <summary>The title: the text of the "no selection" row.</summary>
 		public string Title
 		{
-			get => _title.Text ?? string.Empty;
-			set => _title.Text = value ?? string.Empty;
-		}
-
-		/// <summary>The number of items.</summary>
-		public int ItemCount => (int)_items.NItems;
-
-		/// <summary>The selected index, or -1.</summary>
-		public int SelectedIndex
-		{
-			get => _dropDown.Selected == InvalidPosition ? -1 : (int)_dropDown.Selected;
+			get => _items.GetString(0) ?? string.Empty;
 			set
 			{
-				uint target = value < 0 || value >= ItemCount ? InvalidPosition : (uint)value;
-				if (_dropDown.Selected != target)
-					_dropDown.Selected = target;
-				UpdateTitleVisibility();
+				var text = value ?? string.Empty;
+				if (_items.GetString(0) == text)
+					return;
+
+				// Replacing the row can move the selection; put it back.
+				uint selected = _dropDown.Selected;
+				_items.Splice(0, 1, new[] { text });
+				if (_dropDown.Selected != selected)
+					_dropDown.Selected = selected;
 			}
 		}
 
-		/// <summary>Replaces the items. The selection is cleared by GTK when it no longer fits.</summary>
+		/// <summary>The number of items (the placeholder row is not counted).</summary>
+		public int ItemCount => (int)_items.NItems - 1;
+
+		/// <summary>The selected index, or -1 for none (the placeholder row).</summary>
+		public int SelectedIndex
+		{
+			get => _dropDown.Selected == 0 || _dropDown.Selected >= _items.NItems ? -1 : (int)_dropDown.Selected - 1;
+			set
+			{
+				uint target = value < 0 || value >= ItemCount ? 0 : (uint)value + 1;
+				if (_dropDown.Selected != target)
+					_dropDown.Selected = target;
+			}
+		}
+
+		/// <summary>Replaces the items. The selection falls back to the placeholder row when it no longer fits.</summary>
 		/// <param name="items">The item texts.</param>
 		public void SetItems(IList<string>? items)
 		{
@@ -94,23 +92,20 @@ namespace Microsoft.Maui.Gtk.Handlers
 			for (int i = 0; i < array.Length; i++)
 				array[i] = items![i] ?? string.Empty;
 
-			_items.Splice(0, _items.NItems, array);
-			UpdateTitleVisibility();
+			_items.Splice(1, _items.NItems - 1, array);
 		}
 
 		/// <summary>Gets the text of the item at <paramref name="index"/>.</summary>
 		/// <param name="index">The index.</param>
-		public string GetItem(int index) => _items.GetString((uint)index) ?? string.Empty;
-
-		void UpdateTitleVisibility() => _title.Visible = _dropDown.Selected == InvalidPosition && !string.IsNullOrEmpty(_title.Text);
+		public string GetItem(int index) => _items.GetString((uint)index + 1) ?? string.Empty;
 	}
 
 	/// <summary>
 	/// <see cref="PickerHandler"/> over a <see cref="MauiGtkPicker"/> (<c>Gtk.DropDown</c> + <c>Gtk.StringList</c>).
 	/// </summary>
 	/// <remarks>
-	/// Text colour, font and letter spacing are CSS on the picker (they cascade to the drop-down and its list); vertical text alignment has no
-	/// GTK equivalent. <c>IsOpen</c> activates the drop-down; it is not exercised on Windows, where <c>Popover.Popup</c> crashes with the gvsbuild runtime.
+	/// Text colour, font and letter spacing are CSS on the picker (they cascade to the drop-down and its list); the horizontal and vertical text
+	/// alignment have no GTK equivalent. <c>IsOpen</c> activates the drop-down; it is not exercised on Windows, where <c>Popover.Popup</c> crashes with the gvsbuild runtime.
 	/// </remarks>
 	public class GtkPickerHandler : PickerHandler
 	{
@@ -180,8 +175,13 @@ namespace Microsoft.Maui.Gtk.Handlers
 				action();
 		}
 
+		// Nothing selected shows the title, in the title colour (when it has one).
+		static void UpdateColor(MauiGtkPicker picker, IPicker view) =>
+			GtkTextStyle.SetColor(picker, view.SelectedIndex < 0 ? view.TitleColor ?? view.TextColor : view.TextColor);
+
 		static void UpdateItems(IPickerHandler handler, IPicker view, MauiGtkPicker picker) => Guarded(handler, () =>
 		{
+			picker.Title = view.Title ?? string.Empty;
 			picker.SetItems(view.Items);
 			picker.SelectedIndex = view.SelectedIndex;
 		});
@@ -208,14 +208,17 @@ namespace Microsoft.Maui.Gtk.Handlers
 			new GtkMapperBuilder<IPicker, IPickerHandler>(PickerHandler.Mapper)
 				.AddViewMappings()
 				.MapGtk<MauiGtkPicker>(nameof(IPicker.Items), (h, v, w) => UpdateItems(h, v, w))
-				.MapGtk<MauiGtkPicker>(nameof(IPicker.SelectedIndex), (h, v, w) => Guarded(h, () => w.SelectedIndex = v.SelectedIndex))
-				.MapGtk<MauiGtkPicker>(nameof(IPicker.Title), (h, v, w) => w.Title = v.Title ?? string.Empty)
-				.MapGtk<MauiGtkPicker>(nameof(IPicker.TitleColor), (h, v, w) => GtkTextStyle.SetColor(w.TitleLabel, v.TitleColor))
-				.MapGtk<MauiGtkPicker>(nameof(IPicker.TextColor), (h, v, w) => GtkTextStyle.SetColor(w, v.TextColor))
+				.MapGtk<MauiGtkPicker>(nameof(IPicker.SelectedIndex), (h, v, w) =>
+				{
+					Guarded(h, () => w.SelectedIndex = v.SelectedIndex);
+					UpdateColor(w, v);
+				})
+				.MapGtk<MauiGtkPicker>(nameof(IPicker.Title), (h, v, w) => Guarded(h, () => w.Title = v.Title ?? string.Empty))
+				.MapGtk<MauiGtkPicker>(nameof(IPicker.TitleColor), (h, v, w) => UpdateColor(w, v))
+				.MapGtk<MauiGtkPicker>(nameof(IPicker.TextColor), (h, v, w) => UpdateColor(w, v))
 				.MapGtk<MauiGtkPicker>(nameof(IPicker.Font), (h, v, w) => GtkTextStyle.SetFont(w, v.Font, GtkTextStyle.GetFontManager(h)))
 				.MapGtk<MauiGtkPicker>(nameof(IPicker.CharacterSpacing), (h, v, w) => GtkTextStyle.SetCharacterSpacing(w, v.CharacterSpacing))
-				.MapGtk<MauiGtkPicker>(nameof(ITextAlignment.HorizontalTextAlignment), (h, v, w) =>
-					w.TitleLabel.Xalign = GtkTextStyle.ToAlignment(v.HorizontalTextAlignment, v.FlowDirection))
+				.MapGtk<MauiGtkPicker>(nameof(ITextAlignment.HorizontalTextAlignment), (h, v, w) => { /* the drop-down lays its text out itself */ })
 				.MapGtk<MauiGtkPicker>(nameof(ITextAlignment.VerticalTextAlignment), (h, v, w) => { /* a drop-down always centres its text vertically */ })
 				.MapGtk<MauiGtkPicker>(nameof(IPicker.IsOpen), (h, v, w) => UpdateIsOpen(h, v, w))
 				.Build();

@@ -283,6 +283,8 @@ namespace Microsoft.Maui.Gtk.Handlers
 			nameof(IShapeView.Stroke),
 			nameof(IShapeView.StrokeThickness),
 			nameof(IShapeView.StrokeDashPattern),
+			// Controls signals a dash change under its own property name (its remap of the shape mapper keys on it).
+			"StrokeDashArray",
 			nameof(IShapeView.StrokeDashOffset),
 			nameof(IShapeView.StrokeLineCap),
 			nameof(IShapeView.StrokeLineJoin),
@@ -392,12 +394,19 @@ namespace Microsoft.Maui.Gtk.Handlers
 
 			for (int i = 0; i < n; i++)
 			{
-				var bounds = new Rect(x + i * (size + gap), y, size, size);
-				var path = Shape?.PathForBounds(bounds);
-				if (path is null)
+				float left = x + i * (size + gap);
+
+				// Shapes report their path for a rectangle at the origin; the dot is moved to its place.
+				PathF path;
+				if (Shape?.PathForBounds(new Rect(0, 0, size, size)) is { } shapePath)
+				{
+					path = shapePath;
+					path.Transform(System.Numerics.Matrix3x2.CreateTranslation(left, y));
+				}
+				else
 				{
 					path = new PathF();
-					path.AppendEllipse((float)bounds.X, (float)bounds.Y, size, size);
+					path.AppendEllipse(left, y, size, size);
 				}
 
 				canvas.FillColor = i == selected
