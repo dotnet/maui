@@ -1083,10 +1083,11 @@ public static class LinuxMarker
 		[InlineData("ios", "iOS")]
 		[InlineData("maccatalyst", "MacCatalyst")]
 		[InlineData("tizen", "Tizen")]
+		[InlineData("gtk", "Linux")]
 		public void SingleProject_RemovePlatformCompileItems_RetainsActivePlatformMauiXaml(
 			string targetPlatformIdentifier, string activePlatformFolder)
 		{
-			var allFolders = new[] { "Android", "iOS", "MacCatalyst", "Tizen" };
+			var allFolders = new[] { "Android", "iOS", "MacCatalyst", "Tizen", "Linux" };
 			var log = BuildMauiXamlFilterProject(targetPlatformIdentifier, allFolders);
 			var itemsLine = GetNormalizedMauiXamlItemsLine(log);
 
@@ -1101,7 +1102,7 @@ public static class LinuxMarker
 		/// Windows XAML is WinUI markup — not MAUI XAML — and is unconditionally stripped from
 		/// MauiXaml by _MauiRemovePlatformCompileItems even when Windows is the active platform.
 		/// This behaviour predates issue #36951 and is intentionally separate from the
-		/// Android/iOS/MacCatalyst/Tizen filtering above.
+		/// Android/iOS/MacCatalyst/Tizen/Linux filtering above.
 		/// </summary>
 		[Fact]
 		public void SingleProject_RemovePlatformCompileItems_AlwaysRemovesWindowsMauiXaml()

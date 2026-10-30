@@ -26,6 +26,9 @@
     <EnableDefaultTizenItems>false</EnableDefaultTizenItems>
     <TizenProjectFolder Condition=" '$(TizenProjectFolder)' == '' ">$(PlatformsProjectFolder)Tizen\</TizenProjectFolder>
     <TizenProjectFolder>$([MSBuild]::EnsureTrailingSlash('$(TizenProjectFolder)'))</TizenProjectFolder>
+    <!-- Linux (GTK 4, target platform identifier "gtk"; TFM net10.0-gtk4.22) -->
+    <LinuxProjectFolder Condition=" '$(LinuxProjectFolder)' == '' ">$(PlatformsProjectFolder)Linux\</LinuxProjectFolder>
+    <LinuxProjectFolder>$([MSBuild]::EnsureTrailingSlash('$(LinuxProjectFolder)'))</LinuxProjectFolder>
   </PropertyGroup>
 
   <!--
@@ -42,6 +45,7 @@
     <MauiPlatformSpecificFolder Include="$(MacCatalystProjectFolder)" TargetPlatformIdentifier="maccatalyst" />
     <MauiPlatformSpecificFolder Include="$(WindowsProjectFolder)" TargetPlatformIdentifier="windows" />
     <MauiPlatformSpecificFolder Include="$(TizenProjectFolder)" TargetPlatformIdentifier="tizen" />
+    <MauiPlatformSpecificFolder Include="$(LinuxProjectFolder)" TargetPlatformIdentifier="gtk" />
   </ItemGroup>
 
   <!--

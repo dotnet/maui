@@ -33,6 +33,11 @@
         Update="$(TizenProjectFolder)**/*$(DefaultLanguageSourceExtension)">
       <ExcludeFromCurrentConfiguration>false</ExcludeFromCurrentConfiguration>
     </Compile>
+    <Compile
+        Condition=" '$(TargetPlatformIdentifier)' == 'gtk' "
+        Update="$(LinuxProjectFolder)**/*$(DefaultLanguageSourceExtension)">
+      <ExcludeFromCurrentConfiguration>false</ExcludeFromCurrentConfiguration>
+    </Compile>
   </ItemGroup>
 
   <!--
@@ -151,6 +156,9 @@
       <_MauiXamlToRemove
           Condition="'$(TizenProjectFolder)' != '' and '$(TargetPlatformIdentifier)' != 'tizen'"
           Include="$(TizenProjectFolder)**/*.xaml" />
+      <_MauiXamlToRemove
+          Condition="'$(LinuxProjectFolder)' != '' and '$(TargetPlatformIdentifier)' != 'gtk'"
+          Include="$(LinuxProjectFolder)**/*.xaml" />
 
       <EmbeddedResource Remove="@(_MauiXamlToRemove)" />
       <MauiXaml Remove="@(_MauiXamlToRemove)" />

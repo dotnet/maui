@@ -53,6 +53,10 @@
         AssemblyFile="$(_ResizetizerTaskAssemblyName)"
         TaskName="Microsoft.Maui.Resizetizer.GenerateTizenManifest" />
 
+    <UsingTask
+        AssemblyFile="$(_ResizetizerTaskAssemblyName)"
+        TaskName="Microsoft.Maui.Resizetizer.GenerateGtkDesktopFile" />
+
     <PropertyGroup>
         <CleanDependsOn>
             $(CleanDependsOn);
@@ -68,6 +72,7 @@
         <_ResizetizerPlatformIstvOS Condition="'$(_ResizetizerPlatformIdentifier)' == 'tvos'">True</_ResizetizerPlatformIstvOS>
         <_ResizetizerPlatformIsWindows Condition="$(_ResizetizerPlatformIdentifier.Contains('windows')) == 'True'">True</_ResizetizerPlatformIsWindows>
         <_ResizetizerPlatformIsTizen Condition="'$(_ResizetizerPlatformIdentifier)' == 'tizen'">True</_ResizetizerPlatformIsTizen>
+        <_ResizetizerPlatformIsGtk Condition="'$(_ResizetizerPlatformIdentifier)' == 'gtk'">True</_ResizetizerPlatformIsGtk>
 
         <_ResizetizerIntermediateOutputPath Condition=" '$(_ResizetizerIntermediateOutputPath)' == '' " >$(IntermediateOutputPath)</_ResizetizerIntermediateOutputPath>
 
@@ -109,9 +114,10 @@
         <_ResizetizerIsWPFApp Condition="'$(IsApplication)' == 'True' And '$(NuGetRuntimeIdentifier)' == 'win' And '$(_ResizetizerPlatformIsWindows)' == 'True'">True</_ResizetizerIsWPFApp>
         <_ResizetizerIsWindowsAppSdk Condition="'$(MicrosoftWindowsAppSDKPackageDir)' != '' And '$(_ResizetizerPlatformIsWindows)' == 'True' And ('$(OutputType)' == 'WinExe' Or '$(OutputType)' == 'Exe')">True</_ResizetizerIsWindowsAppSdk>
         <_ResizetizerIsTizenApp Condition="'$(_ResizetizerPlatformIsTizen)' == 'True' And ( '$(OutputType)' == 'Exe' )">True</_ResizetizerIsTizenApp>
+        <_ResizetizerIsGtkApp Condition="'$(_ResizetizerPlatformIsGtk)' == 'True' And ( '$(OutputType)' == 'Exe' )">True</_ResizetizerIsGtkApp>
     </PropertyGroup>
 
-    <PropertyGroup Condition="'$(_ResizetizerIsAndroidApp)' == 'True' Or '$(_ResizetizerIsiOSApp)' == 'True' Or '$(_ResizetizerIsWPFApp)' == 'True' Or '$(_ResizetizerIsWindowsAppSdk)' == 'True' Or '$(_ResizetizerIsTizenApp)' == 'True'">
+    <PropertyGroup Condition="'$(_ResizetizerIsAndroidApp)' == 'True' Or '$(_ResizetizerIsiOSApp)' == 'True' Or '$(_ResizetizerIsWPFApp)' == 'True' Or '$(_ResizetizerIsWindowsAppSdk)' == 'True' Or '$(_ResizetizerIsTizenApp)' == 'True' Or '$(_ResizetizerIsGtkApp)' == 'True'">
         <_ResizetizerIsCompatibleApp>True</_ResizetizerIsCompatibleApp>
 
         <ResizetizeDependsOnTargets>
@@ -235,6 +241,21 @@
             $(ProcessMauiFontsAfterTargets);
             ResizetizeCollectItems;
         </ProcessMauiFontsAfterTargets>
+    </PropertyGroup>
+
+    <!-- Linux (GTK 4): images, fonts, assets and the icon are Content copied next to the app: Resources/Images, Resources/Fonts, Resources/Icons -->
+    <PropertyGroup Condition="'$(_ResizetizerIsGtkApp)' == 'True'">
+        <ResizetizerPlatformType>gtk</ResizetizerPlatformType>
+
+        <ResizetizeBeforeTargets>
+            $(ResizetizeBeforeTargets);
+            AssignTargetPaths;
+        </ResizetizeBeforeTargets>
+
+        <ProcessMauiFontsBeforeTargets>
+            $(ProcessMauiFontsBeforeTargets);
+            AssignTargetPaths;
+        </ProcessMauiFontsBeforeTargets>
     </PropertyGroup>
 
     <!-- Finds absolute paths to any MauiImage in this project -->
@@ -381,6 +402,7 @@
             <_MauiAssetItemMetadata Condition="'$(_ResizetizerIsiOSApp)' == 'True'">Link</_MauiAssetItemMetadata>
             <_MauiAssetItemMetadata Condition="'$(_ResizetizerIsWindowsAppSdk)' == 'True'">TargetPath</_MauiAssetItemMetadata>
             <_MauiAssetItemMetadata Condition="'$(_ResizetizerIsTizenApp)' == 'True'">TizenTpkFileName</_MauiAssetItemMetadata>
+            <_MauiAssetItemMetadata Condition="'$(_ResizetizerIsGtkApp)' == 'True'">TargetPath</_MauiAssetItemMetadata>
         </PropertyGroup>
         <GetMauiAssetPath
             ProjectDirectory="$(MSBuildProjectDirectory)"
@@ -400,6 +422,9 @@
         </ItemGroup>
         <ItemGroup Condition="'$(_ResizetizerIsTizenApp)' == 'True'">
             <TizenResource Include="@(_MauiAssetItemWithMetadata)" />
+        </ItemGroup>
+        <ItemGroup Condition="'$(_ResizetizerIsGtkApp)' == 'True'">
+            <ContentWithTargetPath Include="@(_MauiAssetItemWithMetadata)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
         </ItemGroup>
     </Target>
 
@@ -499,6 +524,13 @@
                 <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
             </ContentWithTargetPath>
         </ItemGroup>
+
+        <!-- Linux (GTK 4): there is no splash screen mechanism, MauiSplashScreen items are ignored -->
+        <Message
+            Condition="'$(_ResizetizerIsGtkApp)' == 'True' and '$(_MauiHasSplashScreens)' == 'true'"
+            Importance="low"
+            Text="MauiSplashScreen is not supported on Linux (GTK 4) and is ignored."
+        />
 
         <!-- Tizen -->
         <TizenSplashUpdater
@@ -698,6 +730,15 @@
             <TizenTpkUserIncludeFiles Include="@(_MauiFontCopied)"  Condition="'@(_MauiFontCopied)' != ''" TizenTpkSubDir="res\fonts\" />
         </ItemGroup>
 
+        <!-- Linux (GTK 4): Resources/Fonts next to the app, registered at run time by the embedded font loader -->
+        <ItemGroup Condition="'$(_ResizetizerIsGtkApp)' == 'True'">
+            <ContentWithTargetPath Include="@(_MauiFontCopied)" Condition="'@(_MauiFontCopied)' != ''">
+                <TargetPath>Resources/Fonts/$([System.IO.Path]::GetFileName(%(_MauiFontCopied.Identity)))</TargetPath>
+                <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+                <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+            </ContentWithTargetPath>
+        </ItemGroup>
+
         <!-- Include collected fonts as filewrites so they don't get rm'd -->
         <ItemGroup>
             <FileWrites Include="@(_MauiFontCopied)" />
@@ -834,6 +875,16 @@
             <TizenTpkUserIncludeFiles Include="@(_ResizetizerCollectedImages)">
                 <TizenTpkSubDir>$([MSBuild]::MakeRelative($(ResizetizerIntermediateOutputAbsolutePath), $([System.IO.Path]::GetFullPath('%(_ResizetizerCollectedImages.RelativeDir)'))))</TizenTpkSubDir>
             </TizenTpkUserIncludeFiles>
+            <FileWrites Include="@(_ResizetizerCollectedImages)" />
+        </ItemGroup>
+
+        <!-- Linux (GTK 4): the dpi path of a generated file (Resources/Images, Resources/Icons/hicolor/...) is its place next to the app -->
+        <ItemGroup Condition="'$(_ResizetizerIsGtkApp)' == 'True' And '@(_ResizetizerCollectedImages)' != ''">
+            <ContentWithTargetPath Include="@(_ResizetizerCollectedImages)">
+                <TargetPath>$([MSBuild]::MakeRelative($(ResizetizerIntermediateOutputAbsolutePath), %(_ResizetizerCollectedImages.FullPath)))</TargetPath>
+                <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+                <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+            </ContentWithTargetPath>
             <FileWrites Include="@(_ResizetizerCollectedImages)" />
         </ItemGroup>
 
@@ -1003,6 +1054,63 @@
         <Touch Files="$(_MauiManifestStampFile)" AlwaysCreate="True" />
         <ItemGroup>
           <FileWrites Include="$(_MauiManifestStampFile)" />
+        </ItemGroup>
+    </Target>
+
+    <!--
+        Linux (GTK 4): the freedesktop.org desktop entry <ApplicationId>.desktop next to the app (Name, Exec, Icon from the project).
+        Installers copy it to share/applications and make Exec absolute.
+    -->
+    <Target Name="MauiGenerateGtkDesktopFile"
+            Condition="'$(_ResizetizerIsGtkApp)' == 'True' And '$(DisableResizetizer)' != 'true'"
+            BeforeTargets="$(ResizetizeBeforeTargets)"
+            DependsOnTargets="ResizetizeCollectItems">
+
+        <GenerateGtkDesktopFile
+            IntermediateOutputPath="$(_MauiIntermediateManifest)"
+            ApplicationId="$(ApplicationId)"
+            ApplicationTitle="$(ApplicationTitle)"
+            ApplicationDisplayVersion="$(ApplicationDisplayVersion)"
+            Executable="$(AssemblyName)"
+            AppIcon="@(MauiImage->WithMetadataValue('IsAppIcon', 'true'))"
+            Categories="$(ApplicationCategories)">
+            <Output TaskParameter="GeneratedDesktopFile" ItemName="_MauiGtkDesktopFile" />
+        </GenerateGtkDesktopFile>
+
+        <ItemGroup Condition="'@(_MauiGtkDesktopFile)' != ''">
+            <ContentWithTargetPath Include="@(_MauiGtkDesktopFile)">
+                <TargetPath>%(Filename)%(Extension)</TargetPath>
+                <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+                <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+            </ContentWithTargetPath>
+            <FileWrites Include="@(_MauiGtkDesktopFile)" />
+        </ItemGroup>
+    </Target>
+
+    <!--
+        Linux (GTK 4): the application identity as assembly metadata, read by Microsoft.Maui.Gtk (GApplication id) and
+        Microsoft.Maui.Essentials.Gtk (AppInfo), like the AppxManifest values on Windows.
+    -->
+    <Target Name="_MauiGtkAssemblyAttributes"
+            BeforeTargets="GetAssemblyAttributes"
+            Condition="'$(_ResizetizerIsGtkApp)' == 'True'">
+        <ItemGroup>
+            <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" Condition="'$(ApplicationId)' != ''">
+                <_Parameter1>ApplicationId</_Parameter1>
+                <_Parameter2>$(ApplicationId)</_Parameter2>
+            </AssemblyAttribute>
+            <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" Condition="'$(ApplicationTitle)' != ''">
+                <_Parameter1>ApplicationTitle</_Parameter1>
+                <_Parameter2>$(ApplicationTitle)</_Parameter2>
+            </AssemblyAttribute>
+            <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" Condition="'$(ApplicationDisplayVersion)' != ''">
+                <_Parameter1>ApplicationDisplayVersion</_Parameter1>
+                <_Parameter2>$(ApplicationDisplayVersion)</_Parameter2>
+            </AssemblyAttribute>
+            <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" Condition="'$(ApplicationVersion)' != ''">
+                <_Parameter1>ApplicationVersion</_Parameter1>
+                <_Parameter2>$(ApplicationVersion)</_Parameter2>
+            </AssemblyAttribute>
         </ItemGroup>
     </Target>
 

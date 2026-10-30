@@ -312,6 +312,33 @@ namespace Microsoft.Maui.Resizetizer
 
 		}
 
+		/// <summary>
+		/// Linux / GTK 4 (target platform identifier "gtk"). Images are single 1.0 scale PNGs next to the app in
+		/// <c>Resources/Images</c> (GDK scales logical pixels itself; <c>GtkFileImageSourceService</c> looks there). The app icon
+		/// follows the freedesktop icon theme layout (<c>hicolor/&lt;size&gt;x&lt;size&gt;/apps</c>) below <c>Resources/Icons</c>.
+		/// </summary>
+		public static class Gtk
+		{
+			public const string ImagesPath = "Resources/Images";
+			public const string IconsPath = "Resources/Icons";
+
+			public static DpiPath Original => new DpiPath(ImagesPath, 1.0m);
+
+			public static DpiPath[] Image
+				=> new[]
+				{
+					new DpiPath(ImagesPath, 1.0m),
+				};
+
+			public static DpiPath[] AppIcon
+				=> new[]
+				{
+					new DpiPath(IconsPath + "/hicolor/48x48/apps", 1.0m, size: new SKSize(48, 48)),
+					new DpiPath(IconsPath + "/hicolor/128x128/apps", 1.0m, size: new SKSize(128, 128)),
+					new DpiPath(IconsPath + "/hicolor/256x256/apps", 1.0m, size: new SKSize(256, 256)),
+				};
+		}
+
 		public static DpiPath GetOriginal(string platform)
 		{
 			switch (platform.ToLowerInvariant())
@@ -326,6 +353,8 @@ namespace Microsoft.Maui.Resizetizer
 					return DpiPath.Wpf.Original;
 				case "tizen":
 					return DpiPath.Tizen.Original;
+				case "gtk":
+					return DpiPath.Gtk.Original;
 			}
 
 			return null;
@@ -345,6 +374,8 @@ namespace Microsoft.Maui.Resizetizer
 					return DpiPath.Wpf.Image;
 				case "tizen":
 					return DpiPath.Tizen.Image;
+				case "gtk":
+					return DpiPath.Gtk.Image;
 			}
 
 			return null;
@@ -370,6 +401,9 @@ namespace Microsoft.Maui.Resizetizer
 					break;
 				case "tizen":
 					result = DpiPath.Tizen.AppIcon;
+					break;
+				case "gtk":
+					result = DpiPath.Gtk.AppIcon;
 					break;
 			}
 
