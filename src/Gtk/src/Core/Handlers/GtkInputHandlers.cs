@@ -54,6 +54,7 @@ namespace Microsoft.Maui.Gtk.Handlers
 			{
 				entry.Changed -= OnChanged;
 				entry.Activate -= OnActivate;
+				entry.RemoveNotification("cursor-position", OnCursorPositionChanged);
 			}
 
 			base.DisconnectHandler(platformView);

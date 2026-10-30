@@ -8,8 +8,9 @@ namespace Microsoft.Maui.Gtk.Hosting
 	/// <remarks>
 	/// <para>The GTK handlers pass this mapper to their stock base class, instead of patching the process-wide static mapper. A
 	/// mapping first runs the GTK implementation (when the platform view is the expected GTK widget) and then the stock mapping
-	/// of the same key, so Controls' remaps and user <c>AppendToMapping</c>/<c>PrependToMapping</c> customisations on the stock mapper
-	/// still run, whenever they were registered. Patching the static mapper in place was not an option: Controls re-maps those
+	/// of the same key, so Controls' remaps and user <c>AppendToMapping</c>/<c>PrependToMapping</c>/<c>ReplaceMapping</c> customisations on the stock mapper
+	/// still run, whenever they were registered, but always after the GTK implementation (a prepended mapping sees the GTK widget already updated, and a
+	/// replacement cannot suppress the GTK update). Patching the static mapper in place was not an option: Controls re-maps those
 	/// statics lazily (for example <c>Label</c>'s static constructor) and its <c>ReplaceMapping</c> discards the previous mapping.</para>
 	/// <para>The stock mapper is read live, so customisations made before the first handler of the type is created are honoured;
 	/// create the mapper once per handler type (a static field).</para>

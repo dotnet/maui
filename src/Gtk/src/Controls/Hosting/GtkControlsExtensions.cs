@@ -16,8 +16,8 @@ namespace Microsoft.Maui.Hosting
 		/// </summary>
 		/// <remarks>
 		/// Call it right after <c>UseMauiApp&lt;T&gt;()</c>, on the GTK main thread (<c>CreateMauiApp</c> runs in <c>Main</c>).
-		/// The property mappers are per handler and sit in front of the stock ones, so there is no ordering rule with
-		/// <c>AppendToMapping</c>/<c>PrependToMapping</c> customisations.
+		/// The property mappers are per handler and sit in front of the stock ones, so stock-mapper
+		/// customisations (<c>Append</c>/<c>Prepend</c>/<c>Replace</c>) still run but always after the GTK implementation.
 		/// </remarks>
 		/// <param name="builder">The app builder.</param>
 		/// <param name="configureEssentials">Optional Essentials options.</param>

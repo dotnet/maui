@@ -98,8 +98,9 @@ builder.UseMauiApp<App>().UseMauiGtkCore();   // UseMauiGtk() (Controls.Gtk) = U
 
 **Mappers.** Every GTK handler passes its own mapper to the stock base handler: `GtkMapperBuilder` puts the GTK implementation of a key
 in front of the stock mapper (`MapGtk<TWidget>`: runs when the platform view is the expected GTK widget, then the stock mapping of the
-same key runs). Controls' remaps and `AppendToMapping`/`PrependToMapping` customisations of the *stock* mappers therefore keep working, and
-there is no ordering rule between `UseMauiGtkCore()`/`UseMauiGtk()`, `UseMauiApp<T>()` and `ConfigureMauiHandlers` (`UseMauiGtkCore` wraps the `IMauiHandlersCollection` so `GtkHandlerMap.Apply` runs after all registrations; a more specific registration, e.g. a Controls-aware subclass, wins over the rewritten stock one). (Patching the static mappers in place was rejected:
+same key runs). Controls' remaps and `AppendToMapping`/`PrependToMapping`/`ReplaceMapping` customisations of the *stock* mappers therefore still run, but
+**always after** the GTK implementation: a `PrependToMapping` runs after the GTK widget was updated, and a `ModifyMapping`/`ReplaceMapping`
+that skips the previous mapping cannot suppress the GTK update (customise the GTK handler's own mapper instead). There is no registration ordering rule between `UseMauiGtkCore()`/`UseMauiGtk()`, `UseMauiApp<T>()` and `ConfigureMauiHandlers` (`UseMauiGtkCore` wraps the `IMauiHandlersCollection` so `GtkHandlerMap.Apply` runs after all registrations; a more specific registration, e.g. a Controls-aware subclass, wins over the rewritten stock one). (Patching the static mappers in place was rejected:
 Controls re-maps them lazily, e.g. `Label`'s static constructor, with `ReplaceMapping`, which discards the previous mapping.)
 
 `MauiGtkApplication.Run(args)` owns a `Gtk.Application` (`startup` builds the app, `activate` creates the first window).

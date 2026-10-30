@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Hosting
 		/// <remarks>
 		/// <para><b>Mappers.</b> Each GTK handler carries its own property mapper in front of the stock one (see <see cref="GtkMapperBuilder{TVirtualView, THandler}"/>):
 		/// the GTK implementation runs first, then the stock mapping of the same key, so Controls' remaps and
-		/// <c>AppendToMapping</c>/<c>PrependToMapping</c> customisations of the stock mappers keep working, in whatever order they were registered.
+		/// <c>AppendToMapping</c>/<c>PrependToMapping</c> customisations of the stock mappers still run, in whatever order they were registered, but always after the GTK implementation.
 		/// There is no ordering rule between this call and <c>UseMauiApp&lt;T&gt;()</c> or <c>ConfigureMauiHandlers</c>: the handler collection is
 		/// wrapped so the rewrite (<see cref="GtkHandlerMap.Apply"/>) runs after every registration, whenever it was made.</para>
 		/// <para>Apps that use Controls call <c>UseMauiGtk()</c> from <c>Microsoft.Maui.Controls.Gtk</c> instead, which calls this

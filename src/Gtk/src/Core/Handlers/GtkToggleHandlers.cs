@@ -39,6 +39,13 @@ namespace Microsoft.Maui.Gtk.Handlers
 			(platformView as GtkSwitch)?.AddNotification("active", OnActiveChanged);
 		}
 
+		/// <inheritdoc/>
+		protected override void DisconnectHandler(object platformView)
+		{
+			(platformView as GtkSwitch)?.RemoveNotification("active", OnActiveChanged);
+			base.DisconnectHandler(platformView);
+		}
+
 		void OnActiveChanged(object o, GLib.NotifyArgs args)
 		{
 			if (_updatingFromVirtualView || o is not GtkSwitch toggle || ((IElementHandler)this).VirtualView is not ISwitch view)

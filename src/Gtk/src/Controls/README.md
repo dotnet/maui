@@ -8,7 +8,7 @@ MauiApp.CreateBuilder().UseMauiApp<App>().UseMauiGtk();   // Core + Controls + E
 ```
 
 `UseMauiGtk()` = `UseMauiGtkCore()` + `UseMauiGtkEssentials()` + the Controls registrations below. Mappers are per handler and sit in
-front of the stock ones (see the Gtk README), so there is no ordering rule with `AppendToMapping`.
+front of the stock ones (see the Gtk README), so stock-mapper customisations still run, but always after the GTK implementation.
 
 ## Status
 

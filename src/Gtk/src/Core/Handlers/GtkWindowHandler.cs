@@ -78,6 +78,7 @@ namespace Microsoft.Maui.Gtk.Handlers
 			if (platformView is GtkWindow window)
 			{
 				window.CloseRequest -= OnCloseRequest;
+				window.RemoveNotification("is-active", OnIsActiveChanged);
 				if (_root is not null)
 					_root.SizeChanged -= OnRootSizeChanged;
 

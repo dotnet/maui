@@ -605,6 +605,7 @@ override Microsoft.Maui.Gtk.Handlers.GtkSwipeViewHandler.CreatePlatformView() ->
 override Microsoft.Maui.Gtk.Handlers.GtkSwipeViewHandler.DisconnectHandler(object! platformView) -> void
 override Microsoft.Maui.Gtk.Handlers.GtkSwitchHandler.ConnectHandler(object! platformView) -> void
 override Microsoft.Maui.Gtk.Handlers.GtkSwitchHandler.CreatePlatformView() -> object!
+override Microsoft.Maui.Gtk.Handlers.GtkSwitchHandler.DisconnectHandler(object! platformView) -> void
 override Microsoft.Maui.Gtk.Handlers.GtkTabbedViewHandler.CreatePlatformView() -> object!
 override Microsoft.Maui.Gtk.Handlers.GtkTabbedViewHandler.DisconnectHandler(object! platformView) -> void
 override Microsoft.Maui.Gtk.Handlers.GtkTimePickerHandler.ConnectHandler(object! platformView) -> void

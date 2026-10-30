@@ -265,6 +265,25 @@ namespace Microsoft.Maui.Gtk.UnitTests
 		});
 
 		[GtkFact]
+		public void StockMapperPrependRunsAfterTheGtkMapping() => GtkTestHost.Run(() =>
+		{
+			string? seenByPrepend = null;
+			LabelHandler.Mapper.PrependToMapping(nameof(ILabel.Text), (handler, label) => seenByPrepend = (handler.PlatformView as global::Gtk.Label)?.Text);
+
+			try
+			{
+				GtkTestApp.CreateWidget<global::Gtk.Label>(new Label { Text = "gtk first" });
+
+				// Documented ordering: the GTK implementation runs before the whole stock chain, prepends included.
+				Assert.Equal("gtk first", seenByPrepend);
+			}
+			finally
+			{
+				LabelHandler.Mapper.ReplaceMapping<Label, ILabelHandler>(nameof(ILabel.Text), (handler, label) => { });
+			}
+		});
+
+		[GtkFact]
 		public void GtkMappersAreRestrictedToGtkPlatformViews() => GtkTestHost.Run(() =>
 		{
 			var seen = new System.Collections.Generic.List<string>();

@@ -417,7 +417,10 @@ namespace Microsoft.Maui.Gtk.Handlers
 		protected override void DisconnectHandler(object platformView)
 		{
 			if (platformView is MauiGtkDatePicker picker)
+			{
 				picker.DateChanged -= OnDateChanged;
+				picker.RemoveNotification("active", OnActiveChanged);
+			}
 
 			base.DisconnectHandler(platformView);
 		}
@@ -591,7 +594,10 @@ namespace Microsoft.Maui.Gtk.Handlers
 		protected override void DisconnectHandler(object platformView)
 		{
 			if (platformView is MauiGtkTimePicker picker)
+			{
 				picker.TimeChanged -= OnTimeChanged;
+				picker.RemoveNotification("active", OnActiveChanged);
+			}
 
 			base.DisconnectHandler(platformView);
 		}
