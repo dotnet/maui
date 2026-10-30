@@ -55,6 +55,46 @@ To build and run Blazor Desktop samples, check out the [Blazor Desktop](https://
 
 # Advanced Scenarios
 
+### Public CI Apple toolchains
+
+On `main`, the public `maui-pr`, `maui-pr-uitests`, and `maui-pr-devicetests`
+pipelines compile Apple apps with Xcode 27 on
+`AcesShared` / `ACES_VM_SharedPool_GoldenGate`. The .NET 10 Apple workloads are
+27.0.10722 from the released Xcode 27 toolchain. Framework library TFMs stay at
+26.0, matching the compatibility SDK deliberately retained by the Apple 27
+manifests for .NET 10 libraries. Unversioned apps select Apple 27 and consume those
+compatible libraries without requiring a new framework API surface.
+NuGet.org is retained as a publisher fallback because the tvOS x64 simulator
+runtime pack from that release is missing from the configured Azure mirrors.
+Because these workload pins are shared, private and official compilation pools
+also use GoldenGate/Xcode 27 rather than attempting to build with Xcode 26.
+Xcode 27 selection fails if the requested version is missing rather than
+silently falling back to an older Xcode.
+
+The macOS template Build category is split without removing coverage: .NET 9
+cases run on the hosted `macOS-26` image with Xcode 26.5, matching their Apple
+compatibility SDK; the complementary cases retain GoldenGate/Xcode 27.
+
+Full Windows CI builds stage Core build-task imports in the preceding BuildTasks
+pass. The parallel solution build must not rewrite those imports while another
+project evaluates them.
+
+Xcode 27 requires the native framework's iOS deployment target to be at least
+15.0. Native Debug/Release and managed iOS minimums are aligned at 15.0, following
+[#39262](https://github.com/dotnet/maui/pull/39262). This intentionally removes
+iOS 13/14 support; it is not merely a CI image change. Apple 27 apps require
+Mac Catalyst 17.0 (macOS 14.0), matching the existing app templates. Framework
+libraries and the library template retain Mac Catalyst 15.0 through the Apple
+26.0 compatibility SDK; the app minimum must not raise the library minimum.
+
+UI-test compilation and execution deliberately use different images, following
+[#38855](https://github.com/dotnet/maui/pull/38855) and
+[#39262](https://github.com/dotnet/maui/pull/39262): iOS Appium execution stays on
+Tahoe with `DEVICETESTS_REQUIRED_XCODE`, while Mac Catalyst execution stays on
+hosted macOS 14. GoldenGate previously lacked compatible Simulator UI and Mac2
+support. Moving execution requires separate validation; it is not implied by
+successful Xcode 27 compilation. Helix worker queues are unchanged.
+
 ### Compile using a local `.dotnet\dotnet` via `build.*` scripts on the root folder 
 
 This is the **recommended** method for provisioning the .NET SDK and workloads. It uses the Arcade build infrastructure. For more information, you can look [here](https://github.com/dotnet/arcade/blob/main/Documentation/ArcadeSdk.md#build-scripts-and-extensibility-points)

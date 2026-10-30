@@ -146,6 +146,10 @@ steps:
       done
 
       if [[ -z "$XCODE_PATH" ]]; then
+        if [[ "$ORIGINAL_VERSION" == 27.* ]]; then
+          echo "##vso[task.logissue type=error]Required Xcode ${ORIGINAL_VERSION} is not installed on this agent. Use an image with Xcode 27."
+          exit 1
+        fi
         echo "WARNING: No exact match for requested Xcode version ${ORIGINAL_VERSION}"
         echo "Tried: ${VERSIONS_TO_TRY[*]}"
         echo "Falling back to latest available Xcode on this agent..."

@@ -167,12 +167,14 @@
   <!-- version number information -->
   <PropertyGroup>
     <!-- Default versions from the SDKs (update when there is a new TFM version) -->
+    <!-- Unversioned .NET 10 Apple libraries still select the 26.0 compatibility SDK. -->
     <IosTargetFrameworkVersionSdkDefault>26.0</IosTargetFrameworkVersionSdkDefault>
     <TvosTargetFrameworkVersionSdkDefault>26.0</TvosTargetFrameworkVersionSdkDefault>
     <MacCatalystTargetFrameworkVersionSdkDefault>26.0</MacCatalystTargetFrameworkVersionSdkDefault>
     <MacosTargetFrameworkVersionSdkDefault>26.0</MacosTargetFrameworkVersionSdkDefault>
     <AndroidTargetFrameworkVersionSdkDefault>36.0</AndroidTargetFrameworkVersionSdkDefault>
     <!-- Current .NET -->
+    <!-- Keep library APIs on the compatibility SDK; unversioned apps use Apple 27. -->
     <IosTargetFrameworkVersion>26.0</IosTargetFrameworkVersion>
     <TvosTargetFrameworkVersion>26.0</TvosTargetFrameworkVersion>
     <MacCatalystTargetFrameworkVersion>26.0</MacCatalystTargetFrameworkVersion>

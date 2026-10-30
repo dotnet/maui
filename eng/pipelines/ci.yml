@@ -59,8 +59,9 @@ parameters:
     os: Windows
     buildScript: $(_buildScript)
     sln: '$(Build.SourcesDirectory)/Microsoft.Maui.sln'
-  - name: Azure Pipelines
-    vmImage: $(HostedMacImage)
+  - name: AcesShared
+    demands:
+        - ImageOverride -equals ACES_VM_SharedPool_GoldenGate
     os: macOS
     buildScript: $(_buildScriptMacOS)
     sln: '$(Build.SourcesDirectory)/Microsoft.Maui-mac.slnf'
@@ -76,7 +77,7 @@ parameters:
     sln: '$(Build.SourcesDirectory)/Microsoft.Maui.sln'
   - name: AcesShared
     demands:
-        - ImageOverride -equals ACES_VM_SharedPool_Tahoe
+        - ImageOverride -equals ACES_VM_SharedPool_GoldenGate
     os: macOS
     buildScript: $(_buildScriptMacOS)
     sln: '$(Build.SourcesDirectory)/Microsoft.Maui-mac.slnf'
@@ -99,13 +100,14 @@ parameters:
   type: object
   default:
     internal:
-      name: Azure Pipelines
-      vmImage: $(HostedMacImage)
+      name: AcesShared
+      demands:
+        - ImageOverride -equals ACES_VM_SharedPool_GoldenGate
       label: macOS
     public:
       name: AcesShared
       demands:
-        - ImageOverride -equals ACES_VM_SharedPool_Tahoe
+        - ImageOverride -equals ACES_VM_SharedPool_GoldenGate
       label: macOS
 
 - name: AndroidPoolLinux
@@ -246,6 +248,16 @@ stages:
         pool: ${{ parameters.MacOSPool.internal }}
       timeout: 240
       testCategory: Build
+      testFilter: 'Category=Build&DisplayName!~net9.0'
+    # The .NET 9 compatibility workload requires Xcode 26.5, not the app SDK's Xcode 27.
+    - name: mac_buildtemplate_previous_tests
+      pool:
+        name: Azure Pipelines
+        vmImage: macOS-26
+      timeout: 240
+      testCategory: Build
+      testFilter: 'Category=Build&DisplayName~net9.0'
+      xcodeVersion: '26.5'
 
     - name: win_blazortemplate_tests
       ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
