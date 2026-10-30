@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "issueNumber": 39080,
+  "commentId": 5950971972,
+  "platform": "ios",
+  "targetRef": "main",
+  "targetSha": "2067dd42c6032fbc40d2e46245806679a85df5e6",
+  "author": "jbcomp",
+  "issueText": "Historical canary snapshot for issue 39080: a disabled RefreshView allows its ScrollView content to move during a downward gesture on iOS. The generated candidate is not proof that the original app interaction was exercised.",
+  "sourceType": "attachment",
+  "sourceUrl": "https://github.com/user-attachments/files/32956421/MauiRefreshView.zip",
+  "sourceCommit": "",
+  "sampleSha256": "d30f2f011b86096258b45882e5a1c0ef03b8bf258819bfafa41690b01fe87f97"
+}

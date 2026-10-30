@@ -260,7 +260,7 @@ $BaselineScript = Join-Path $RepoRoot ".github/scripts/EstablishBrokenBaseline.p
 
 # Import Test-IsTestFile and Find-MergeBase from shared script
 $ExplicitBaseBranch = $BaseBranch
-. $BaselineScript
+. $BaselineScript -BaseBranch $ExplicitBaseBranch
 
 # Import the shared test detection script
 $DetectTestsScript = Join-Path $RepoRoot ".github/scripts/shared/Detect-TestsInDiff.ps1"
