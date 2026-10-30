@@ -159,7 +159,14 @@ namespace Microsoft.Maui.Gtk.Handlers
 			mapper.MapGtk<IEditor, IEditorHandler, MauiGtkEditor>(nameof(IEditor.Placeholder), (h, v, w) => w.SetPlaceholder(v.Placeholder));
 			mapper.MapGtk<IEditor, IEditorHandler, MauiGtkEditor>(nameof(IEditor.PlaceholderColor), (h, v, w) => GtkTextStyle.SetColor(w.PlaceholderLabel, v.PlaceholderColor));
 			mapper.MapGtk<IEditor, IEditorHandler, MauiGtkEditor>(nameof(IEditor.IsReadOnly), (h, v, w) => w.View.Editable = !v.IsReadOnly);
-			mapper.MapGtk<IEditor, IEditorHandler, MauiGtkEditor>(nameof(IEditor.MaxLength), (h, v, w) => { if (h is GtkEditorHandler g) g.OnChanged(w, EventArgs.Empty); });
+			mapper.MapGtk<IEditor, IEditorHandler, MauiGtkEditor>(nameof(IEditor.MaxLength), (h, v, w) =>
+			{
+				// Truncate the virtual view's text (the Text mapping then updates the widget); never push the widget's text back.
+				int max = v.MaxLength;
+				var text = v.Text;
+				if (max >= 0 && max < int.MaxValue && text is not null && text.Length > max)
+					v.Text = text.Substring(0, max);
+			});
 			mapper.MapGtk<IEditor, IEditorHandler, MauiGtkEditor>(nameof(IEditor.HorizontalTextAlignment), (h, v, w) =>
 				w.View.Justification = v.HorizontalTextAlignment switch
 				{

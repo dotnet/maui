@@ -20,6 +20,28 @@ namespace Microsoft.Maui.Gtk.ImageSources
 		CancellationTokenSource? _cancellation;
 		IDisposable? _result;
 
+		/// <summary>
+		/// Finds the GTK service for <paramref name="source"/>. The service registered for the concrete source type (Controls registers
+		/// <c>FileImageSource</c> and friends) may be a stock one that cannot produce textures; the GTK services are registered for the
+		/// core source interfaces, so those are tried next.
+		/// </summary>
+		static IGtkImageSourceService? Resolve(IImageSourceServiceProvider provider, IImageSource source)
+		{
+			if (provider.GetImageSourceService(source.GetType()) is IGtkImageSourceService direct)
+				return direct;
+
+			if (source is IFileImageSource && provider.GetImageSourceService(typeof(IFileImageSource)) is IGtkImageSourceService file)
+				return file;
+			if (source is IStreamImageSource && provider.GetImageSourceService(typeof(IStreamImageSource)) is IGtkImageSourceService stream)
+				return stream;
+			if (source is IUriImageSource && provider.GetImageSourceService(typeof(IUriImageSource)) is IGtkImageSourceService uri)
+				return uri;
+			if (source is IFontImageSource && provider.GetImageSourceService(typeof(IFontImageSource)) is IGtkImageSourceService font)
+				return font;
+
+			return null;
+		}
+
 		/// <summary>Cancels any load in flight and releases the current result.</summary>
 		public void Reset()
 		{
@@ -50,7 +72,7 @@ namespace Microsoft.Maui.Gtk.ImageSources
 			var token = cancellation.Token;
 
 			var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
-			var service = provider.GetImageSourceService(source.GetType()) as IGtkImageSourceService;
+			var service = Resolve(provider, source);
 			var events = part as IImageSourcePartEvents;
 
 			if (service is null)

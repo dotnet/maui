@@ -125,7 +125,7 @@ namespace Microsoft.Maui.Gtk.Hosting
 		{
 			var platformView = (global::Gtk.Widget)handler.PlatformView!;
 			var outer = Outer(handler, platformView);
-			outer.TooltipText = (view as IToolTipElement)?.ToolTip?.ToString();
+			outer.TooltipText = (view as IToolTipElement)?.ToolTip?.Content?.ToString();
 		}
 
 		static void UpdateClip(IViewHandler handler, IView view)

@@ -7,7 +7,7 @@
     <IsPackable>false</IsPackable>
     <MauiTestProject>true</MauiTestProject>
     <!-- Real GTK widgets are exercised on one dedicated thread (see GtkTestHost); no parallelism. -->
-    <NoWarn>$(NoWarn);CS1591;CA1707;xUnit1013</NoWarn>
+    <NoWarn>$(NoWarn);CS1591;CA1707;CA1307;CA1309;CA1310;CA1861;xUnit1013</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
