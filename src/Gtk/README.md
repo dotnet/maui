@@ -49,6 +49,8 @@ Pass only GApplication options in `args`. Lifecycle: `ConfigureLifecycleEvents(e
 | Property mapping | `GtkMapperBuilder`/`GtkCommandMapperBuilder` per handler (static `GtkMapper`/`GtkCommandMapper`); the shared view properties in `GtkViewMappers`. |
 | Layout | `MauiGtkPanel` (custom `Widget`, `ICrossPlatformLayoutBacking`): `OnMeasure` -> `CrossPlatformMeasure`, `OnSizeAllocate` -> `CrossPlatformArrange`; children allocated inside the parent allocate by `GtkPlatformViewBackend` (Core's `PlatformViewBackend` hook). Minimum size 0 (scroll content: follows content). `MauiGtkRootPanel` asks for 0x0 and measures before arranging. |
 | Container (clip/shadow) | `GtkWrapperView`, a single-child widget set as `ContainerView`. Clip = any `IShape` via `Gsk.Path`; shadow = outset shadow. |
+| Platform offset | `GtkViewState.PlatformOffsetX/Y`: a translation the platform applies on top of `TranslationX/Y` (swipe, refresh), never overwritten by the view's transform mappers. |
+| Menus | `GtkMenuNode` tree (`GtkMenuModel.cs`) mirrors MAUI menus as `GLib.Menu` + `GSimpleAction`s (group `menu`); the root rebuilds the models on every change. `GtkWindowMenuBar` stacks the `PopoverMenuBar` above the root panel; `GtkContextFlyout` installs the secondary click / long press. `MenuFlyoutItemHandler` has no mapper constructor, so its GTK mappings are added once to the stock static mapper (they only act for `GtkMenuFlyoutItemHandler`). |
 | Transforms | translation/scale/rotation (+ anchor) become the `Gsk.Transform` of the child allocation (`GtkViewState`). `RotationX/Y` ignored. |
 | Styling | `GtkStyle`: one `CssProvider` + class per widget (the only `StyleContext.AddProvider` use). Colour, font, spacing, decorations, padding, background (solid/linear/radial), borders are CSS. |
 | Dispatcher / ticker | `GtkDispatcher` (`GLib.Idle/Timeout`, inline on the GTK thread), `GtkTicker` (frame-clock tick callback, `Timeout` fallback). |
@@ -69,8 +71,25 @@ Pass only GApplication options in `args`. Lifecycle: `ConfigureLifecycleEvents(e
 | ScrollView | `Gtk.ScrolledWindow` | programmatic scrolling is instant |
 | Border | `MauiGtkBorder` | any `IShape`; gradient fills through Cairo |
 | Switch, CheckBox | `Gtk.Switch`, `Gtk.CheckButton` | |
+| ActivityIndicator | `Gtk.Spinner` | `IsRunning` = spinning; colour = CSS `color` |
+| ProgressBar | `Gtk.ProgressBar` | colour on the `progress` node; RTL inverts |
+| Slider | `Gtk.Scale` | track/thumb colours are CSS; `ThumbImageSource` ignored; `DragStarted/Completed` from a capture-phase click |
+| Stepper | `MauiGtkStepper` (linked "-"/"+" buttons) | MAUI semantics: clamped, a button is insensitive at its bound |
+| Picker | `MauiGtkPicker` (`Gtk.DropDown` + `Gtk.StringList`) | a drop-down always has a selection, so row 0 is the title row = "no selection"; text alignment ignored |
+| DatePicker | `MauiGtkDatePicker` (`MenuButton` + `Popover` + `Calendar`) | min/max clamp the date; label uses `Format` |
+| TimePicker | `MauiGtkTimePicker` (`MenuButton` + `Popover` + 2 `SpinButton`) | label uses `Format` on the time of day |
+| RadioButton | `MauiGtkRadioButton` (`CheckButton` in a private group) | MAUI owns grouping; string content = label, view content next to the indicator, template content replaces the indicator |
+| SearchBar | `Gtk.SearchEntry` | immediate text updates, `activate` = `SearchButtonPressed`; `ReturnType` ignored; `MaxLength` by truncation |
+| ImageButton | `MauiGtkImageButton` (`Button` + `Picture`) | like Button: clicked/pressed/released, stroke, corner radius |
+| GraphicsView | `MauiGtkGraphicsView` (`DrawingArea` + `CairoCanvas`) | start/drag/end/cancel and hover interactions |
+| Shapes (`ShapeViewHandler`) | `MauiGtkGraphicsView` + `ShapeDrawable` | fill/stroke/dash/cap/join/miter repaint; the background is painted by the shape (no CSS background) |
+| IndicatorView | `MauiGtkGraphicsView` drawing dots | natural size = the dots; shape from `IndicatorsShape` |
+| RefreshView | `MauiGtkRefreshPanel` | pull = capture-phase scroll up while the content is at its top (100 px); spinner over the top edge |
+| SwipeView, SwipeItem(View) | `MauiGtkSwipePanel` | `GestureDrag`; content slides by `GtkViewState.PlatformOffsetX/Y`; reveal/execute, `RequestOpen/Close`; not animated |
+| MenuBar, MenuBarItem | `GMenu` tree in a `Gtk.PopoverMenuBar` above the window content | items are `GSimpleAction`s of the `menu` group; icons not shown; accelerators shown, not bound |
+| MenuFlyout*, `ContextFlyout` | `Gtk.PopoverMenu` over the `GMenu` | secondary click or long press on any view; separators split sections |
 
-Not in this area: Picker/Slider/..., Shell, CollectionView, WebView, Maps. Image-paint backgrounds are unsupported.
+Not in this area: Shell, CollectionView, WebView, Maps, NavigationPage/Toolbar/FlyoutPage/TabbedPage. Image-paint backgrounds are unsupported.
 
 ## Tests
 
@@ -97,6 +116,9 @@ Not in this area: Picker/Slider/..., Shell, CollectionView, WebView, Maps. Image
 
 ## Known limitations
 
+- Popups (`Picker.IsOpen`, `DatePicker/TimePicker.IsOpen`, context flyouts) pop a `Gtk.Popover` up, which crashes the process with the gvsbuild runtime on Windows: those tests are `[GtkLinuxFact]` (skipped on Windows, run headless on Linux).
+- The Controls shape handlers (`Line`, `Path`, `Polygon`, `Polyline`, `Rectangle`, `RoundRectangle`, `BoxView`) derive from `ShapeViewHandler`; their GTK subclasses belong to `Microsoft.Maui.Controls.Gtk` and can reuse `GtkShapeViewBehavior` (platform view, repaint mappings). Only `Ellipse` is covered by Core.
+- `SwipeItemView` is resolved by Controls to the content view handler (it is a `ContentView`); `Microsoft.Maui.Controls.Gtk` registers `SwipeItemView -> SwipeItemViewHandler`.
 - Windows builds pack/test `net10.0`/`netstandard` only (mobile/Windows TFMs are disabled locally by `Directory.Build.Override.props`).
 - `RotationX`/`RotationY`, window position, maximum window size, image-paint backgrounds, animated scrolling.
 - Accessibility goes through `Widget.Accessible` (GtkSharp's compat wrapper) for name and description only.

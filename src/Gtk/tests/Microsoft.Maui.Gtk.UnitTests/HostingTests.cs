@@ -49,7 +49,9 @@ namespace Microsoft.Maui.Gtk.UnitTests
 		{
 			Assert.True(GtkHandlerMap.TryGetGtkHandler(typeof(LabelHandler), out var gtk));
 			Assert.Equal(typeof(GtkLabelHandler), gtk);
-			Assert.False(GtkHandlerMap.TryGetGtkHandler(typeof(SliderHandler), out _));
+			Assert.True(GtkHandlerMap.TryGetGtkHandler(typeof(SliderHandler), out var slider));
+			Assert.Equal(typeof(GtkSliderHandler), slider);
+			Assert.False(GtkHandlerMap.TryGetGtkHandler(typeof(string), out _));
 		}
 
 		[GtkFact]
