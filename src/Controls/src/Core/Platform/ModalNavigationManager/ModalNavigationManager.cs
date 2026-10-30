@@ -14,6 +14,9 @@ namespace Microsoft.Maui.Controls.Platform
 		IMauiContext WindowMauiContext => _window.MauiContext;
 
 		List<Page> _platformModalPages = new List<Page>();
+
+		// Modal pages as presented on the platform (the stack the Push/PopModalPlatformAsync implementations maintain); for unit tests.
+		internal IReadOnlyList<Page> PlatformModalStack => _platformModalPages;
 		NavigatingStepRequestList _modalPages = new NavigatingStepRequestList();
 
 		Page? _currentPage;

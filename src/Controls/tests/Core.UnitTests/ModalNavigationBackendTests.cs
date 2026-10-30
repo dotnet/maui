@@ -75,12 +75,20 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			Assert.Null(ModalNavigationBackend.Current);
 
-			var window = new TestWindow(new Page());
-			var modal = new Page();
+			var root = new Page { Title = "root" };
+			var window = new TestWindow(root);
+			// With handlers the manager is ready, so Push/PopModalPlatformAsync (the Standard implementations) really run.
+			window.Handler = new WindowHandlerStub();
+			root.Handler = new HandlerStub();
+			var modal = new Page { Title = "modal" };
+
 			await window.Navigation.PushModalAsync(modal);
 			Assert.Equal(modal, window.Navigation.ModalStack[0]);
+			Assert.Equal(new[] { modal }, window.ModalNavigationManager.PlatformModalStack);
 
 			Assert.Equal(modal, await window.Navigation.PopModalAsync());
+			Assert.Empty(window.Navigation.ModalStack);
+			Assert.Empty(window.ModalNavigationManager.PlatformModalStack);
 		}
 	}
 }
