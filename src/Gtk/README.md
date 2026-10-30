@@ -11,7 +11,7 @@ checks, `IButtonHandler` and user mapper customisations keep working.
 |---|---|---|
 | `src/Core` | `Microsoft.Maui.Gtk` | hosting, layout bridge, handlers, fonts, images, styling (this document) |
 | `tests/Microsoft.Maui.Gtk.UnitTests` | | xUnit tests on real widgets (one shared project) |
-| `samples/Maui.Gtk.Sample` | | code-only sample on `net10.0-gtk4.22` (SingleProject: `Platforms/Linux`, icon, image, font, asset); needs the `gtk` workload, so it is listed in `Microsoft.Maui.sln`/`-vscode.sln` without a build configuration (a solution build or `dotnet format` skips it) and is not part of `Microsoft.Maui-linux.slnf`; build the project directly |
+| `samples/Maui.Gtk.Sample` | | code-only sample on `net10.0-gtk4.22` (SingleProject: `Platforms/Linux`, icon, image, font, asset); needs the `gtk` workload (without it, `MauiGtkWorkload.props` falls back to `net10.0` so solution load/restore works, and building the project fails with `MAUIGTK001`), so it is listed in `Microsoft.Maui.sln`/`-vscode.sln` without a build configuration (a solution build or `dotnet format` skips it) and is not part of `Microsoft.Maui-linux.slnf`; build the project directly |
 | `samples/Maui.Gtk.BlazorSample` | | Blazor sample, same `gtk` workload requirement and solution/slnf treatment as `Maui.Gtk.Sample`; build the project directly |
 | `src/Essentials` | `Microsoft.Maui.Essentials.Gtk` | Essentials on GTK 4 / Linux, see [`src/Essentials/README.md`](src/Essentials/README.md) |
 | `../Graphics/src/Graphics.Cairo` | `Microsoft.Maui.Graphics.Cairo` | `ICanvas` on Cairo/Pango, see its [README](../Graphics/src/Graphics.Cairo/README.md) |
@@ -215,6 +215,7 @@ No mobile or Windows workloads are needed. Create the local, gitignored `Directo
 | Build the Linux subset | `dotnet build Microsoft.Maui-linux.slnf` (projects listed from `Microsoft.Maui-vscode.sln`; add new `src/Gtk` projects to both) |
 | Core unit tests | `dotnet test src/Core/tests/UnitTests/Core.UnitTests.csproj` |
 | SDK | `global.json` lists `.dotnet` then `$host$`: with no provisioned `.dotnet`, the `dotnet` on `PATH` is used (any 10.0+ SDK; TFMs built are `netstandard2.0/2.1` and `net10.0`) |
+| Visual Studio on `Microsoft.Maui.sln` | Launch it with `dotnet cake --target=VS --sln=Microsoft.Maui.sln` (sets `DOTNET_ROOT`/`DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR` to `.dotnet`). A plain launch takes the SDK from `.dotnet` but the workload manifests from `C:\Program Files\dotnet`, so the mobile projects that hardcode their TFM (`GraphicsTester.*`, `Compatibility.*.Android/iOS`, `Benchmarks.Droid`) fail with MSB4236 |
 | GTK runtime | Linux: `libgtk-4-1`, `libadwaita-1-0`; Windows: `%LOCALAPPDATA%\Gtk\4.22.4\bin` |
 
 ## WSL / Linux

@@ -2,4 +2,9 @@
   <!-- In-tree samples use the MSBuild tasks and targets built from this repository (Resizetizer, Controls.Build.Tasks), like src/Controls/samples. -->
   <Import Project="$(MauiSrcDirectory)Maui.InTree.targets" />
   <Import Project="$(MauiRootDirectory)Directory.Build.targets" />
+
+  <!-- An app head (MauiGtkAppHead=true) that fell back to the platform-less TFM (no 'gtk' workload, see src/Gtk/Directory.Build.props) is not buildable. -->
+  <Target Name="_MauiGtkRequireWorkload" BeforeTargets="BeforeBuild" Condition="'$(MauiGtkAppHead)' == 'true' and '$(MauiGtkWorkloadInstalled)' != 'true' and '$(DesignTimeBuild)' != 'true'">
+    <Error Code="MAUIGTK001" Text="$(MSBuildProjectName) needs the GtkSharp 'gtk' workload (net10.0-gtk4.22), which the SDK at $(_MauiGtkSdkRoot) does not have (no sdk-manifests/$(_MauiGtkSdkBand)/GtkSharp4.NET.Sdk.Gtk). Install it (src/Gtk/README.md, Prerequisites) or build with the SDK that has it." />
+  </Target>
 </Project>

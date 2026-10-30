@@ -1,0 +1,18 @@
+<Project>
+  <!--
+    Imported at the end of Microsoft.NET.Sdk.props (AfterMicrosoftNetSdkProps, set in Directory.Build.props), where the
+    SDK in use is known (NetCoreRoot, NETCoreSdkVersion) and the project body has not run yet.
+
+    App heads use MauiGtkAppTargetFramework: net10.0-gtk4.22 when that SDK has the GtkSharp 'gtk' workload manifest
+    (sdk-manifests/<band>/GtkSharp4.NET.Sdk.Gtk), else the platform-less TFM, so loading/restoring a solution that lists
+    them (Visual Studio on Microsoft.Maui.sln) does not fail with NETSDK1139; building such a head then stops with
+    MAUIGTK001 (samples/Directory.Build.targets). Override with -p:MauiGtkWorkloadInstalled=true|false.
+  -->
+  <PropertyGroup>
+    <_MauiGtkSdkRoot>$([MSBuild]::EnsureTrailingSlash('$(NetCoreRoot)'))</_MauiGtkSdkRoot>
+    <_MauiGtkSdkBand>$([System.Text.RegularExpressions.Regex]::Match('$(NETCoreSdkVersion)', '^\d+\.\d+\.\d'))00</_MauiGtkSdkBand>
+    <MauiGtkWorkloadInstalled Condition="'$(MauiGtkWorkloadInstalled)' == '' and Exists('$(_MauiGtkSdkRoot)sdk-manifests/$(_MauiGtkSdkBand)/GtkSharp4.NET.Sdk.Gtk')">true</MauiGtkWorkloadInstalled>
+    <MauiGtkAppTargetFramework Condition="'$(MauiGtkAppTargetFramework)' == '' and '$(MauiGtkWorkloadInstalled)' == 'true'">$(_MauiDotNetTfm)-gtk4.22</MauiGtkAppTargetFramework>
+    <MauiGtkAppTargetFramework Condition="'$(MauiGtkAppTargetFramework)' == ''">$(_MauiDotNetTfm)</MauiGtkAppTargetFramework>
+  </PropertyGroup>
+</Project>

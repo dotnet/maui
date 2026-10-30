@@ -7,4 +7,9 @@
     <MauiGtkTargetFramework>$(_MauiDotNetTfm)</MauiGtkTargetFramework>
     <Nullable>enable</Nullable>
   </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- MauiGtkAppTargetFramework for app heads; needs the SDK location, known only once the SDK props ran (see the file). -->
+    <AfterMicrosoftNetSdkProps>$(MSBuildThisFileDirectory)MauiGtkWorkload.props</AfterMicrosoftNetSdkProps>
+  </PropertyGroup>
 </Project>

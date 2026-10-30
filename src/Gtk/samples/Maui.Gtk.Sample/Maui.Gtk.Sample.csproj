@@ -2,8 +2,9 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <!-- The GtkSharp 'gtk' workload target framework (see src/Gtk/README.md, "Creating an app"). -->
-    <TargetFramework>net10.0-gtk4.22</TargetFramework>
+    <!-- net10.0-gtk4.22 (GtkSharp 'gtk' workload, see src/Gtk/README.md, "Creating an app"); net10.0 + MAUIGTK001 on build when the workload is missing. -->
+    <TargetFramework>$(MauiGtkAppTargetFramework)</TargetFramework>
+    <MauiGtkAppHead>true</MauiGtkAppHead>
     <SingleProject>true</SingleProject>
     <RootNamespace>Maui.Gtk.Sample</RootNamespace>
     <AssemblyName>Maui.Gtk.Sample</AssemblyName>
