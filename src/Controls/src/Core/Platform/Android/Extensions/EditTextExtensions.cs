@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls.Platform
 			editText.ImeOptions = imeOptions;
 		}
 
-		static (string oldText, string newText) GetTexts(EditText editText, ITextInput textInput)
+		static (string oldText, string newText) GetTexts(EditText editText, string text, ITextElement textElement)
 		{
 			var oldText = editText.Text ?? string.Empty;
 
@@ -29,20 +29,21 @@ namespace Microsoft.Maui.Controls.Platform
 				(inputType & InputTypes.TextVariationPassword) == InputTypes.TextVariationPassword ||
 				(inputType & InputTypes.NumberVariationPassword) == InputTypes.NumberVariationPassword;
 
-			var newText = textInput is ITextElement textElement
-				? textElement.UpdateFormsText(textInput.Text,
-					isPasswordEnabled ? TextTransform.None : textElement.TextTransform)
-				: textInput.Text ?? string.Empty;
+			var newText = textElement.UpdateFormsText(text,
+				isPasswordEnabled ? TextTransform.None : textElement.TextTransform);
 
 			return (oldText, newText);
 		}
 
 		public static void UpdateText(this EditText editText, InputView inputView) =>
-			UpdateText(editText, (ITextInput)inputView);
+			UpdateText(editText, inputView.Text, inputView);
 
-		internal static void UpdateText(this EditText editText, ITextInput textInput)
+		internal static void UpdateText(this EditText editText, SearchHandler searchHandler) =>
+			UpdateText(editText, searchHandler.Query, searchHandler);
+
+		static void UpdateText(EditText editText, string text, ITextElement textElement)
 		{
-			(var oldText, var newText) = GetTexts(editText, textInput);
+			(var oldText, var newText) = GetTexts(editText, text, textElement);
 
 			if (oldText != newText)
 			{
@@ -56,9 +57,15 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		internal static void UpdateTextFromPlatform(this EditText editText, ITextInput textInput)
+		internal static void UpdateTextFromPlatform(this EditText editText, InputView inputView) =>
+			UpdateTextFromPlatform(editText, inputView.Text, inputView);
+
+		internal static void UpdateTextFromPlatform(this EditText editText, SearchHandler searchHandler) =>
+			UpdateTextFromPlatform(editText, searchHandler.Query, searchHandler);
+
+		static void UpdateTextFromPlatform(EditText editText, string text, ITextElement textElement)
 		{
-			(var oldText, var newText) = GetTexts(editText, textInput);
+			(var oldText, var newText) = GetTexts(editText, text, textElement);
 
 			if (oldText != newText)
 			{

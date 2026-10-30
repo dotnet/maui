@@ -78,7 +78,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			searchHandler.DataFlowDirection = DataFlowDirection.FromPlatform;
 			try
 			{
-				((ITextInput)searchHandler).UpdateText(text);
+				if ((searchHandler.Query ?? string.Empty) != (text ?? string.Empty))
+				{
+					searchHandler.SetValue(SearchHandler.QueryProperty, text ?? string.Empty, SetterSpecificity.FromHandler);
+				}
 			}
 			finally
 			{
