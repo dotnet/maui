@@ -1,16 +1,96 @@
-# .NET MAUI on Linux (GTK 4)
+# .NET MAUI on Linux with GTK 4
 
-Linux backend for .NET MAUI on GTK 4 (GtkSharp4 bindings, GTK >= 4.14). Handlers subclass the stock MAUI handlers and
-reach the GTK widgets through `PlatformViewBackend` (see `docs/plans/linux-gtk4-backend.md`).
+An add-on backend: it runs MAUI's platform-less (`net10.0`) assemblies on real GTK 4 widgets through
+[GtkSharp4](https://github.com/pieroviano/GtkSharp) (native GTK 4 API, not the GTK 3 `Compat` surface). The stock
+handlers on `net10.0` throw from `CreatePlatformView`; each GTK handler **subclasses** its stock handler, so `is ButtonHandler`
+checks, `IButtonHandler` and user mapper customisations keep working.
 
-| Project | Path |
-|---------|------|
-| Microsoft.Maui.Gtk | `src/Gtk/src/Core` |
-| Microsoft.Maui.Controls.Gtk | `src/Gtk/src/Controls` |
-| Microsoft.Maui.Essentials.Gtk | `src/Gtk/src/Essentials` |
-| Microsoft.AspNetCore.Components.WebView.Maui.Gtk | `src/Gtk/src/BlazorWebView` |
-| Microsoft.Maui.Controls.Maps.Gtk | `src/Gtk/src/Maps` |
-| Unit tests / sample | `src/Gtk/tests/Microsoft.Maui.Gtk.UnitTests`, `src/Gtk/samples/Maui.Gtk.Sample` |
+## Layout
+
+| Path | Assembly | Role |
+|---|---|---|
+| `src/Core` | `Microsoft.Maui.Gtk` | hosting, layout bridge, handlers, fonts, images, styling (this document) |
+| `tests/Microsoft.Maui.Gtk.UnitTests` | | xUnit tests on real widgets (one shared project) |
+| `samples/Maui.Gtk.Sample` | | code-only sample (plain `net10.0` for now) |
+| `src/Controls`, `src/Essentials`, `src/BlazorWebView`, `src/Maps` | `*.Gtk` | other areas (separate tracks, see their own sections) |
+
+Requires GTK >= 4.14 (guard newer APIs with `GtkRuntime.AtLeast(major, minor)`).
+
+## Entry point
+
+```csharp
+// Program.cs
+public static int Main(string[] args) => new LinuxApp().Run(args);
+class LinuxApp : MauiGtkApplication
+{
+	protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiApp();
+}
+
+// MauiProgram.cs
+builder.UseMauiApp<App>().UseMauiGtkCore();   // UseMauiGtk() (Controls.Gtk) = UseMauiGtkCore + Controls + Essentials
+```
+
+**Ordering rule.** `UseMauiGtkCore()` / `UseMauiGtk()` must come right after `UseMauiApp<T>()` and before any
+`AppendToMapping`/`PrependToMapping`. The backend patches the stock *static* mappers in place with a GTK branch
+(`MapGtk`, runs only when `PlatformView` is the expected GTK widget); user customisations added afterwards wrap it.
+`UseMauiApp` re-maps those statics on every call, so `UseMauiGtkCore()` re-installs any patch that was shadowed
+(`GtkMapperRegistration.Apply()` is idempotent).
+
+`MauiGtkApplication.Run(args)` owns a `Gtk.Application` (`startup` builds the app, `activate` creates the first window).
+Pass only GApplication options in `args`. Lifecycle: `ConfigureLifecycleEvents(e => e.AddGtk(g => g.OnStartup(...).OnActivate(...).OnShutdown(...).OnWindowCreated(...)))`.
+
+## Architecture
+
+| Concern | Implementation |
+|---|---|
+| Handler substitution | `GtkHandlerMap` (stock type -> GTK type); `GtkHandlerMap.Apply` rewrites registered `ServiceDescriptor`s and adds interface defaults. Other assemblies call `GtkHandlerMap.Add`. |
+| Property mapping | `GtkMapperExtensions.MapGtk<TView, THandler, TWidget>`; view-level patches in `GtkViewMappers`. |
+| Layout | `MauiGtkPanel` (custom `Widget`, `ICrossPlatformLayoutBacking`): `OnMeasure` -> `CrossPlatformMeasure`, `OnSizeAllocate` -> `CrossPlatformArrange`; children allocated inside the parent allocate by `GtkPlatformViewBackend` (Core's `PlatformViewBackend` hook). Minimum size 0 (scroll content: follows content). `MauiGtkRootPanel` asks for 0x0 and measures before arranging. |
+| Container (clip/shadow) | `GtkWrapperView`, a single-child widget set as `ContainerView`. Clip = any `IShape` via `Gsk.Path`; shadow = outset shadow. |
+| Transforms | translation/scale/rotation (+ anchor) become the `Gsk.Transform` of the child allocation (`GtkViewState`). `RotationX/Y` ignored. |
+| Styling | `GtkStyle`: one `CssProvider` + class per widget (the only `StyleContext.AddProvider` use). Colour, font, spacing, decorations, padding, background (solid/linear/radial), borders are CSS. |
+| Dispatcher / ticker | `GtkDispatcher` (`GLib.Idle/Timeout`, inline on the GTK thread), `GtkTicker` (frame-clock tick callback, `Timeout` fallback). |
+| Fonts | `GtkFontManager` (`Font` -> CSS / `Pango.FontDescription`); `GtkEmbeddedFontLoader` (`pango_font_map_add_font_file` on Pango >= 1.56, else fontconfig `FcConfigAppFontAddFile`). |
+| Images | `IGtkImageSourceService` -> `Gdk.Texture` for File/Stream/Uri/Font; `GtkImageLoader` replaces `ImageSourcePartLoader` (a no-op on `net10.0`). |
+
+## Supported controls
+
+| Control | GTK widget | Notes |
+|---|---|---|
+| Application, Window | `Gtk.Application`, `Gtk.Window` | no X/Y/max size (GTK 4 cannot); Width/Height = default size, Minimum* = size request |
+| ContentPage, ContentView, Layouts (Stack/Grid/Absolute/Flex) | `MauiGtkPanel` | |
+| Label | `Gtk.Label` | wraps by default; `GtkLabelHandler.SetMaxLines` for `MaxLines` |
+| Button | `MauiGtkButton` (image + label) | Clicked/Pressed/Released, stroke, corner radius |
+| Image | `Gtk.Picture` | static; `IsAnimationPlaying` ignored |
+| Entry | `Gtk.Entry` | return type, vertical alignment: no GTK equivalent |
+| Editor | `MauiGtkEditor` (overlay, scrolled `TextView`) | placeholder label, grows with text |
+| ScrollView | `Gtk.ScrolledWindow` | programmatic scrolling is instant |
+| Border | `MauiGtkBorder` | any `IShape`; gradient fills through Cairo |
+| Switch, CheckBox | `Gtk.Switch`, `Gtk.CheckButton` | |
+
+Not in this area: Picker/Slider/..., Shell, CollectionView, Essentials, WebView, Maps. Image-paint backgrounds are unsupported.
+
+## Tests
+
+| Where | Command |
+|---|---|
+| Windows | `dotnet test src/Gtk/tests/Microsoft.Maui.Gtk.UnitTests` (GTK 4 runtime in `%LOCALAPPDATA%\Gtk\4.22.4\bin` or on `PATH`) |
+| Linux / WSL (headless) | `GDK_BACKEND=x11 dbus-run-session -- xvfb-run -a --server-args="-screen 0 1280x1024x24" dotnet test src/Gtk/tests/Microsoft.Maui.Gtk.UnitTests` |
+| Smoke | `dotnet run --project src/Gtk/samples/Maui.Gtk.Sample -- --smoke` (prints `SMOKE OK`) |
+| Core hook tests | `dotnet test src/Core/tests/UnitTests/Core.UnitTests.csproj --filter "FullyQualifiedName~PlatformViewBackendTests"` |
+
+- Tests use `[GtkFact]`: skipped when no GTK/display, a failure when `MAUI_GTK_REQUIRE_NATIVE` is set.
+- GTK runs on one dedicated (STA on Windows) thread; test bodies go through `GtkTestHost.Run`. No `async` bodies, never `Destroy()` a window.
+- The host captures the native stderr, so layout violations ("Allocating size ... without calling gtk_widget_measure"), CSS parser errors
+  and other GTK criticals fail the tests that call `GtkTestHost.AssertNoComplaints()`.
+- GTK validates CSS from the frame clock: after a style change wait with `GtkTestHost.PumpUntil`, do not assume one `Pump` is enough.
+- Public API: `PublicAPI/net/PublicAPI.*.txt` (generated in Debug by `PublicAPI.targets`).
+
+## Known limitations
+
+- Windows builds pack/test `net10.0`/`netstandard` only (mobile/Windows TFMs are disabled locally by `Directory.Build.Override.props`).
+- `RotationX`/`RotationY`, window position, maximum window size, image-paint backgrounds, animated scrolling.
+- Accessibility goes through `Widget.Accessible` (GtkSharp's compat wrapper) for name and description only.
 
 ## Building
 
