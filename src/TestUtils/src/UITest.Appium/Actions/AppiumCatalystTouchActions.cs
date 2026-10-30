@@ -47,20 +47,11 @@ namespace UITest.Appium
 			if (parameters.TryGetValue("x", out var x) &&
 				parameters.TryGetValue("y", out var y))
 			{
-				var arguments = new Dictionary<string, object>
+				_appiumApp.Driver.ExecuteScript("macos: click", new Dictionary<string, object>
 				{
 					{ "x", Convert.ToSingle(x) },
 					{ "y", Convert.ToSingle(y) },
-				};
-
-				if (parameters.TryGetValue("element", out var element))
-				{
-					var appiumElement = GetAppiumElement(element)
-						?? throw new ArgumentException("The click target must be an Appium element.", nameof(parameters));
-					arguments.Add("elementId", appiumElement.Id);
-				}
-
-				_appiumApp.Driver.ExecuteScript("macos: click", arguments);
+				});
 
 				return CommandResponse.SuccessEmptyResponse;
 			}
