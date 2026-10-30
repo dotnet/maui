@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.Maui.Gtk.UnitTests" />
+    <InternalsVisibleTo Include="Microsoft.Maui.Controls.Gtk" />
   </ItemGroup>
 
   <ItemGroup>

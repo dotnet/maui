@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(MauiGtkTargetFramework)</TargetFramework>
+    <RootNamespace>Microsoft.Maui.Controls.Gtk</RootNamespace>
+    <AssemblyName>Microsoft.Maui.Controls.Gtk</AssemblyName>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <NoWarn>$(NoWarn);RS0041;RS0026;RS0027;NU5104</NoWarn>
+    <WarningsAsErrors>$(WarningsAsErrors);CS1591</WarningsAsErrors>
+    <IsPackable>true</IsPackable>
+    <PackageId>Microsoft.Maui.Controls.Gtk</PackageId>
+    <PackageTags>$(DefaultPackageTags);controls;gtk;linux</PackageTags>
+    <Description>GTK 4 (GtkSharp4) handlers for .NET MAUI Controls: navigation, tabs, flyout, Shell, collections, lists, alerts, gestures and modal pages. UseMauiGtk() is the single call an app makes.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.Maui.Gtk.UnitTests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core.csproj" />
+    <ProjectReference Include="..\Core\Microsoft.Maui.Gtk.csproj" />
+    <ProjectReference Include="..\Essentials\Microsoft.Maui.Essentials.Gtk.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="GtkSharp4" />
+    <PackageReference Include="GdkSharp4" />
+    <PackageReference Include="GskSharp4" />
+    <PackageReference Include="PangoSharp4" />
+    <PackageReference Include="GrapheneSharp4" />
+    <PackageReference Include="CairoSharp4" />
+    <PackageReference Include="GioSharp4" />
+  </ItemGroup>
+
+  <Import Project="$(MauiSrcDirectory)PublicAPI.targets" />
+
+</Project>

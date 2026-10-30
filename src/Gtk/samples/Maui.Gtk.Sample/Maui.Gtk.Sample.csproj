@@ -22,6 +22,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Core\Microsoft.Maui.Gtk.csproj" />
+    <ProjectReference Include="..\..\src\Controls\Microsoft.Maui.Controls.Gtk.csproj" />
     <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core.csproj" />
     <ProjectReference Include="..\..\..\Controls\src\Xaml\Controls.Xaml.csproj" />
   </ItemGroup>

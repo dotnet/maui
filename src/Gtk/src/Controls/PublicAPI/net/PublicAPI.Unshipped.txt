@@ -1,0 +1,3 @@
+﻿#nullable enable
+Microsoft.Maui.Hosting.GtkControlsExtensions
+static Microsoft.Maui.Hosting.GtkControlsExtensions.UseMauiGtk(this Microsoft.Maui.Hosting.MauiAppBuilder! builder, System.Action<Microsoft.Maui.Hosting.GtkEssentialsOptions!>? configureEssentials = null) -> Microsoft.Maui.Hosting.MauiAppBuilder!

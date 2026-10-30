@@ -29,6 +29,7 @@
       "src\\Graphics\\tests\\Graphics.Cairo.Tests\\Graphics.Cairo.Tests.csproj",
       "src\\Gtk\\src\\Core\\Microsoft.Maui.Gtk.csproj",
       "src\\Gtk\\src\\Essentials\\Microsoft.Maui.Essentials.Gtk.csproj",
+      "src\\Gtk\\src\\Controls\\Microsoft.Maui.Controls.Gtk.csproj",
       "src\\Gtk\\tests\\Microsoft.Maui.Gtk.UnitTests\\Microsoft.Maui.Gtk.UnitTests.csproj",
       "src\\Gtk\\samples\\Maui.Gtk.Sample\\Maui.Gtk.Sample.csproj"
     ]
