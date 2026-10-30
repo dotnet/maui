@@ -113,8 +113,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
-			_container.Dispatcher.DispatchIfRequired(() => CollectionChanged(args));
+			if (_itemsSource is MarshalingObservableCollection)
+				CollectionChanged(args);
+			else
+				DispatchCollectionChanged(args);
 		}
+
+		void DispatchCollectionChanged(NotifyCollectionChangedEventArgs args) =>
+			_container.Dispatcher.DispatchIfRequired(() => CollectionChanged(args));
 
 		void CollectionChanged(NotifyCollectionChangedEventArgs args)
 		{
@@ -153,8 +159,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			var start = AdjustPositionForHeader(Math.Min(args.OldStartingIndex, args.NewStartingIndex));
-			var end = AdjustPositionForHeader(Math.Max(args.OldStartingIndex, args.NewStartingIndex) + count);
-			_notifier.NotifyItemRangeChanged(this, start, end);
+			var affectedCount = Math.Abs(args.OldStartingIndex - args.NewStartingIndex) + count;
+			_notifier.NotifyItemRangeChanged(this, start, affectedCount);
 		}
 
 		void Add(NotifyCollectionChangedEventArgs args)
