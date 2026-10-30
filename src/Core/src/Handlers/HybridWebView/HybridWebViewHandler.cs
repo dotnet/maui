@@ -459,7 +459,8 @@ namespace Microsoft.Maui.Handlers
 #endif
 		}
 
-		static async Task<object?> MapInvokeJavaScriptAsyncImpl(IHybridWebViewHandler handler, IHybridWebView hybridWebView, HybridWebViewInvokeJavaScriptRequest invokeJavaScriptRequest)
+		// internal: the GTK backend (Microsoft.Maui.Gtk) shares this body; it is compiled for every target but only reachable from PLATFORM code otherwise.
+		internal static async Task<object?> MapInvokeJavaScriptAsyncImpl(IHybridWebViewHandler handler, IHybridWebView hybridWebView, HybridWebViewInvokeJavaScriptRequest invokeJavaScriptRequest)
 		{
 			// Create a callback for async JavaScript methods to invoke when they are done
 			var taskManager = handler.GetRequiredService<IHybridWebViewTaskManager>();

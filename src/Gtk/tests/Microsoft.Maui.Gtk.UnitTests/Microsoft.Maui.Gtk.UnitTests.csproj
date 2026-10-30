@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
     <TargetFramework>$(MauiGtkTargetFramework)</TargetFramework>
@@ -33,6 +33,10 @@
     <ProjectReference Include="..\..\..\Controls\src\Xaml\Controls.Xaml.csproj" />
     <ProjectReference Include="..\..\src\Essentials\Microsoft.Maui.Essentials.Gtk.csproj" />
     <ProjectReference Include="..\..\src\Controls\Microsoft.Maui.Controls.Gtk.csproj" />
+    <ProjectReference Include="..\..\src\BlazorWebView\Microsoft.AspNetCore.Components.WebView.Maui.Gtk.csproj" />
   </ItemGroup>
+
+  <!-- Project references do not import package build assets: copy the Blazor static web assets (blazor.webview.js) next to the tests. -->
+  <Import Project="..\..\src\BlazorWebView\build\Microsoft.AspNetCore.Components.WebView.Maui.Gtk.targets" />
 
 </Project>

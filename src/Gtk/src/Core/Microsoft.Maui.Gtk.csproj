@@ -17,6 +17,7 @@
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.Maui.Gtk.UnitTests" />
     <InternalsVisibleTo Include="Microsoft.Maui.Controls.Gtk" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.WebView.Maui.Gtk" />
   </ItemGroup>
 
   <ItemGroup>
@@ -28,6 +29,8 @@
     <PackageReference Include="PangoSharp4" />
     <PackageReference Include="GrapheneSharp4" />
     <PackageReference Include="CairoSharp4" />
+    <PackageReference Include="JavaScriptCoreSharp4" />
+    <PackageReference Include="WebkitGtkSharp4" />
   </ItemGroup>
 
   <Import Project="$(MauiSrcDirectory)PublicAPI.targets" />

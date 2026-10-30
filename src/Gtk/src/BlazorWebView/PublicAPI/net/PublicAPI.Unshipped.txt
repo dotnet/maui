@@ -1,0 +1,11 @@
+﻿#nullable enable
+Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewGtkExtensions
+Microsoft.AspNetCore.Components.WebView.Maui.GtkBlazorWebViewHandler
+Microsoft.AspNetCore.Components.WebView.Maui.GtkBlazorWebViewHandler.GtkBlazorWebViewHandler() -> void
+Microsoft.AspNetCore.Components.WebView.Maui.GtkBlazorWebViewHandler.GtkBlazorWebViewHandler(Microsoft.Maui.PropertyMapper? mapper) -> void
+override Microsoft.AspNetCore.Components.WebView.Maui.GtkBlazorWebViewHandler.ConnectHandler(object! platformView) -> void
+override Microsoft.AspNetCore.Components.WebView.Maui.GtkBlazorWebViewHandler.CreateFileProvider(string! contentRootDir) -> Microsoft.Extensions.FileProviders.IFileProvider!
+override Microsoft.AspNetCore.Components.WebView.Maui.GtkBlazorWebViewHandler.CreatePlatformView() -> object!
+override Microsoft.AspNetCore.Components.WebView.Maui.GtkBlazorWebViewHandler.DisconnectHandler(object! platformView) -> void
+override Microsoft.AspNetCore.Components.WebView.Maui.GtkBlazorWebViewHandler.TryDispatchAsync(System.Action<System.IServiceProvider!>! workItem) -> System.Threading.Tasks.Task<bool>!
+static Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewGtkExtensions.UseGtkPlatformHandler(this Microsoft.AspNetCore.Components.WebView.Maui.IMauiBlazorWebViewBuilder! builder) -> Microsoft.AspNetCore.Components.WebView.Maui.IMauiBlazorWebViewBuilder!

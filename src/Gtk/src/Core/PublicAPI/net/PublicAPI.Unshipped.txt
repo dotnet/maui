@@ -3,6 +3,7 @@ abstract Microsoft.Maui.MauiGtkApplication.CreateMauiApp() -> Microsoft.Maui.Hos
 const Microsoft.Maui.Gtk.Handlers.MauiGtkRefreshPanel.PullThreshold = 100 -> double
 const Microsoft.Maui.Gtk.Platform.GtkRuntime.MinimumMinorVersion = 14 -> int
 const Microsoft.Maui.Gtk.Platform.MauiGtkFlyoutPanel.DefaultFlyoutWidth = 320 -> int
+const Microsoft.Maui.Gtk.Web.GtkWebKit.DisableVariable = "MAUI_GTK_DISABLE_WEBKIT" -> string!
 Microsoft.Maui.Gtk.Dispatching.GtkDispatcher
 Microsoft.Maui.Gtk.Dispatching.GtkDispatcher.CreateTimer() -> Microsoft.Maui.Dispatching.IDispatcherTimer!
 Microsoft.Maui.Gtk.Dispatching.GtkDispatcher.Dispatch(System.Action! action) -> bool
@@ -67,6 +68,9 @@ Microsoft.Maui.Gtk.Handlers.GtkFlyoutViewHandler.Panel.get -> Microsoft.Maui.Gtk
 Microsoft.Maui.Gtk.Handlers.GtkGraphicsViewHandler
 Microsoft.Maui.Gtk.Handlers.GtkGraphicsViewHandler.GtkGraphicsViewHandler() -> void
 Microsoft.Maui.Gtk.Handlers.GtkGraphicsViewHandler.GtkGraphicsViewHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper = null) -> void
+Microsoft.Maui.Gtk.Handlers.GtkHybridWebViewHandler
+Microsoft.Maui.Gtk.Handlers.GtkHybridWebViewHandler.GtkHybridWebViewHandler() -> void
+Microsoft.Maui.Gtk.Handlers.GtkHybridWebViewHandler.GtkHybridWebViewHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper = null) -> void
 Microsoft.Maui.Gtk.Handlers.GtkImageButtonHandler
 Microsoft.Maui.Gtk.Handlers.GtkImageButtonHandler.GtkImageButtonHandler() -> void
 Microsoft.Maui.Gtk.Handlers.GtkImageButtonHandler.GtkImageButtonHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper = null) -> void
@@ -204,6 +208,9 @@ Microsoft.Maui.Gtk.Handlers.GtkToolbarItem.IsSecondary.get -> bool
 Microsoft.Maui.Gtk.Handlers.GtkToolbarItem.IsSecondary.set -> void
 Microsoft.Maui.Gtk.Handlers.GtkToolbarItem.Text.get -> string?
 Microsoft.Maui.Gtk.Handlers.GtkToolbarItem.Text.set -> void
+Microsoft.Maui.Gtk.Handlers.GtkWebViewHandler
+Microsoft.Maui.Gtk.Handlers.GtkWebViewHandler.GtkWebViewHandler() -> void
+Microsoft.Maui.Gtk.Handlers.GtkWebViewHandler.GtkWebViewHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper = null) -> void
 Microsoft.Maui.Gtk.Handlers.GtkWindowHandler
 Microsoft.Maui.Gtk.Handlers.GtkWindowHandler.GtkWindowHandler() -> void
 Microsoft.Maui.Gtk.Handlers.GtkWindowHandler.GtkWindowHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper = null) -> void
@@ -486,6 +493,7 @@ Microsoft.Maui.Gtk.Platform.MauiGtkTabView.SelectedIndex.set -> void
 Microsoft.Maui.Gtk.Platform.MauiGtkTabView.SelectedIndexChanged -> System.Action<int>?
 Microsoft.Maui.Gtk.Platform.MauiGtkTabView.SetTab(int index, string? title, Gdk.Texture? icon) -> void
 Microsoft.Maui.Gtk.Platform.MauiGtkTabView.Stack.get -> Gtk.Stack!
+Microsoft.Maui.Gtk.Web.GtkWebKit
 Microsoft.Maui.Hosting.GtkMauiAppBuilderExtensions
 Microsoft.Maui.LifecycleEvents.GtkLifecycle
 Microsoft.Maui.LifecycleEvents.GtkLifecycle.OnActivate
@@ -532,6 +540,9 @@ override Microsoft.Maui.Gtk.Handlers.GtkFlyoutViewHandler.DisconnectHandler(obje
 override Microsoft.Maui.Gtk.Handlers.GtkGraphicsViewHandler.ConnectHandler(object! platformView) -> void
 override Microsoft.Maui.Gtk.Handlers.GtkGraphicsViewHandler.CreatePlatformView() -> object!
 override Microsoft.Maui.Gtk.Handlers.GtkGraphicsViewHandler.DisconnectHandler(object! platformView) -> void
+override Microsoft.Maui.Gtk.Handlers.GtkHybridWebViewHandler.ConnectHandler(object! platformView) -> void
+override Microsoft.Maui.Gtk.Handlers.GtkHybridWebViewHandler.CreatePlatformView() -> object!
+override Microsoft.Maui.Gtk.Handlers.GtkHybridWebViewHandler.DisconnectHandler(object! platformView) -> void
 override Microsoft.Maui.Gtk.Handlers.GtkImageButtonHandler.ConnectHandler(object! platformView) -> void
 override Microsoft.Maui.Gtk.Handlers.GtkImageButtonHandler.CreatePlatformView() -> object!
 override Microsoft.Maui.Gtk.Handlers.GtkImageButtonHandler.DisconnectHandler(object! platformView) -> void
@@ -601,6 +612,9 @@ override Microsoft.Maui.Gtk.Handlers.GtkTimePickerHandler.DisconnectHandler(obje
 override Microsoft.Maui.Gtk.Handlers.GtkToolbarHandler.ConnectHandler(object! platformView) -> void
 override Microsoft.Maui.Gtk.Handlers.GtkToolbarHandler.CreatePlatformElement() -> object!
 override Microsoft.Maui.Gtk.Handlers.GtkToolbarHandler.DisconnectHandler(object! platformView) -> void
+override Microsoft.Maui.Gtk.Handlers.GtkWebViewHandler.ConnectHandler(object! platformView) -> void
+override Microsoft.Maui.Gtk.Handlers.GtkWebViewHandler.CreatePlatformView() -> object!
+override Microsoft.Maui.Gtk.Handlers.GtkWebViewHandler.DisconnectHandler(object! platformView) -> void
 override Microsoft.Maui.Gtk.Handlers.GtkWindowHandler.ConnectHandler(object! platformView) -> void
 override Microsoft.Maui.Gtk.Handlers.GtkWindowHandler.CreatePlatformElement() -> object!
 override Microsoft.Maui.Gtk.Handlers.GtkWindowHandler.DisconnectHandler(object! platformView) -> void
@@ -651,6 +665,8 @@ static Microsoft.Maui.Gtk.Platform.GtkTextStyle.SetTextDecorations(Gtk.Widget! w
 static Microsoft.Maui.Gtk.Platform.GtkTextStyle.ToAlignment(Microsoft.Maui.TextAlignment alignment, Microsoft.Maui.FlowDirection flowDirection = Microsoft.Maui.FlowDirection.LeftToRight) -> float
 static Microsoft.Maui.Gtk.Platform.GtkViewState.For(Gtk.Widget! widget) -> Microsoft.Maui.Gtk.Platform.GtkViewState!
 static Microsoft.Maui.Gtk.Platform.GtkViewState.TryGet(Gtk.Widget! widget) -> Microsoft.Maui.Gtk.Platform.GtkViewState?
+static Microsoft.Maui.Gtk.Web.GtkWebKit.IsAvailable.get -> bool
+static Microsoft.Maui.Gtk.Web.GtkWebKit.UnavailableReason.get -> string?
 static Microsoft.Maui.Hosting.GtkMauiAppBuilderExtensions.UseMauiGtkCore(this Microsoft.Maui.Hosting.MauiAppBuilder! builder) -> Microsoft.Maui.Hosting.MauiAppBuilder!
 static Microsoft.Maui.LifecycleEvents.GtkLifecycleExtensions.AddGtk(this Microsoft.Maui.LifecycleEvents.ILifecycleBuilder! builder, System.Action<Microsoft.Maui.LifecycleEvents.IGtkLifecycleBuilder!>! configureDelegate) -> Microsoft.Maui.LifecycleEvents.ILifecycleBuilder!
 static Microsoft.Maui.LifecycleEvents.GtkLifecycleExtensions.OnActivate(this Microsoft.Maui.LifecycleEvents.IGtkLifecycleBuilder! lifecycle, Microsoft.Maui.LifecycleEvents.GtkLifecycle.OnActivate! del) -> Microsoft.Maui.LifecycleEvents.IGtkLifecycleBuilder!

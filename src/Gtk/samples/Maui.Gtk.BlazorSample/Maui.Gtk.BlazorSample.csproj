@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <!-- Plain net10.0 for now; the net10.0-gtk4.22 head arrives with the SDK/templates work. -->
+    <TargetFramework>$(MauiGtkTargetFramework)</TargetFramework>
+    <RootNamespace>Maui.Gtk.BlazorSample</RootNamespace>
+    <AssemblyName>Maui.Gtk.BlazorSample</AssemblyName>
+    <IsPackable>false</IsPackable>
+    <SampleProject>true</SampleProject>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="GtkSharp4" />
+    <PackageReference Include="GdkSharp4" />
+    <PackageReference Include="GskSharp4" />
+    <PackageReference Include="PangoSharp4" />
+    <PackageReference Include="GrapheneSharp4" />
+    <PackageReference Include="CairoSharp4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Core\Microsoft.Maui.Gtk.csproj" />
+    <ProjectReference Include="..\..\src\BlazorWebView\Microsoft.AspNetCore.Components.WebView.Maui.Gtk.csproj" />
+    <ProjectReference Include="..\..\..\BlazorWebView\src\Maui\Microsoft.AspNetCore.Components.WebView.Maui.csproj" />
+    <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core.csproj" />
+    <ProjectReference Include="..\..\..\Controls\src\Xaml\Controls.Xaml.csproj" />
+  </ItemGroup>
+
+  <!-- Project references do not import the package build assets: import them explicitly (a package reference does it by itself). -->
+  <Import Project="..\..\src\BlazorWebView\build\Microsoft.AspNetCore.Components.WebView.Maui.Gtk.targets" />
+
+</Project>

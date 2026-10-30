@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(MauiGtkTargetFramework)</TargetFramework>
+    <RootNamespace>Microsoft.AspNetCore.Components.WebView.Maui</RootNamespace>
+    <AssemblyName>Microsoft.AspNetCore.Components.WebView.Maui.Gtk</AssemblyName>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <NoWarn>$(NoWarn);RS0041;RS0026;RS0027</NoWarn>
+    <WarningsAsErrors>$(WarningsAsErrors);CS1591</WarningsAsErrors>
+    <!-- NuGet package information -->
+    <IsPackable>true</IsPackable>
+    <PackageId>Microsoft.AspNetCore.Components.WebView.Maui.Gtk</PackageId>
+    <PackageTags>$(DefaultPackageTags);blazor;webview;aspnet;gtk;linux</PackageTags>
+    <Description>BlazorWebView for .NET MAUI on Linux with GTK 4: a WebKitGTK 6 handler that serves the Blazor app through a custom URI scheme.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.Maui.Gtk.UnitTests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Core\Microsoft.Maui.Gtk.csproj" />
+    <ProjectReference Include="..\..\..\BlazorWebView\src\Maui\Microsoft.AspNetCore.Components.WebView.Maui.csproj" />
+    <ProjectReference Include="..\..\..\Core\src\Core.csproj" />
+    <PackageReference Include="GtkSharp4" />
+    <PackageReference Include="JavaScriptCoreSharp4" />
+    <PackageReference Include="WebkitGtkSharp4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Imported automatically by the NuGet package of this assembly. -->
+    <None Include="build\**\*" Pack="true" PackagePath="build\" />
+  </ItemGroup>
+
+  <Import Project="$(MauiSrcDirectory)PublicAPI.targets" />
+
+</Project>

@@ -1,0 +1,34 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!--
+    A BlazorWebView on GTK reads its files (the host page, wwwroot/**, and the Blazor framework script _framework/blazor.webview.js, which
+    ships as a static web asset of Microsoft.AspNetCore.Components.WebView) from <output>/wwwroot next to the executable.
+    .NET MAUI converts the static web assets to MauiAssets for the same purpose (Microsoft.AspNetCore.Components.WebView.Maui.targets);
+    this target copies them to the output directory instead. Set GtkBlazorCopyStaticWebAssets=false to opt out.
+  -->
+  <PropertyGroup>
+    <GtkBlazorCopyStaticWebAssets Condition="'$(GtkBlazorCopyStaticWebAssets)' == ''">true</GtkBlazorCopyStaticWebAssets>
+  </PropertyGroup>
+
+  <Target Name="_GtkConvertStaticWebAssetsToContent"
+          Condition="'$(GtkBlazorCopyStaticWebAssets)' == 'true'"
+          BeforeTargets="AssignTargetPaths"
+          DependsOnTargets="ResolveProjectReferences;StaticWebAssetsPrepareForRun;StaticWebAssetsPrepareForPublish;LoadStaticWebAssetsPublishManifest">
+
+    <ComputeStaticWebAssetsTargetPaths Assets="@(StaticWebAsset)" PathPrefix="wwwroot">
+      <Output TaskParameter="AssetsWithTargetPath" ItemName="_GtkStaticWebAssetWithTargetPath" />
+    </ComputeStaticWebAssetsTargetPaths>
+
+    <ItemGroup>
+      <!-- Precompressed alternatives (.gz, .br) are of no use to a local app. -->
+      <_GtkStaticWebAssetWithTargetPath Remove="@(_GtkStaticWebAssetWithTargetPath)"
+                                        Condition="'%(AssetRole)' == 'Alternative' and ('%(Extension)' == '.gz' or '%(Extension)' == '.br')" />
+
+      <Content Remove="@(_GtkStaticWebAssetWithTargetPath->'%(OriginalItemSpec)')" />
+      <Content Include="@(_GtkStaticWebAssetWithTargetPath)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="Never">
+        <Link>%(_GtkStaticWebAssetWithTargetPath.TargetPath)</Link>
+      </Content>
+    </ItemGroup>
+  </Target>
+
+</Project>

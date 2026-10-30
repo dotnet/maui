@@ -29,6 +29,7 @@ namespace Microsoft.Maui.Gtk.Hosting
 			AddCoreEntries();
 			AddControlEntries();
 			AddNavigationEntries();
+			AddWebViewEntries();
 		}
 
 		/// <summary>Maps <paramref name="stockHandlerType"/> to <paramref name="gtkHandlerType"/>.</summary>
