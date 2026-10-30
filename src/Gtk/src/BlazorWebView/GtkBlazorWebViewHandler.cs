@@ -55,6 +55,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		const string UseBlockingDisposalSwitch = "BlazorWebView.UseBlockingDisposal";
 
 		WebKitView? _view;
+		GtkWebKitSignals? _signals;
 		IDisposable? _route;
 		GtkWebViewManager? _webviewManager;
 		ILogger? _logger;
@@ -117,7 +118,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			if (platformView is WebKitView view)
 			{
 				_view = view;
-				view.DecidePolicy += OnDecidePolicy;
+				_signals = new GtkWebKitSignals(view, OnDecidePolicy, null);
 			}
 		}
 
@@ -126,12 +127,13 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		{
 			if (platformView is WebKitView view)
 			{
-				view.DecidePolicy -= OnDecidePolicy;
 				view.UserContentManager.ScriptMessageReceived -= OnScriptMessageReceived;
 				view.UserContentManager.UnregisterScriptMessageHandler(GtkWebViewScripts.HybridMessageHandlerName, null);
 				view.StopLoading();
 			}
 
+			_signals?.Dispose();
+			_signals = null;
 			_route?.Dispose();
 			_route = null;
 
@@ -289,18 +291,20 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			}
 		}
 
-		void OnDecidePolicy(object? sender, WebKit.DecidePolicyArgs args)
+		bool OnDecidePolicy(IntPtr decisionHandle, WebKit.PolicyDecisionType decisionType)
 		{
-			if (args.Decision is null || View is not { } virtualView)
-				return;
+			if (decisionHandle == IntPtr.Zero || View is not { } virtualView)
+				return false;
 
-			if (args.DecisionType != WebKit.PolicyDecisionType.NavigationAction && args.DecisionType != WebKit.PolicyDecisionType.NewWindowAction)
-				return;
+			if (decisionType != WebKit.PolicyDecisionType.NavigationAction && decisionType != WebKit.PolicyDecisionType.NewWindowAction)
+				return false;
 
-			var decision = args.Decision as WebKit.NavigationPolicyDecision ?? new WebKit.NavigationPolicyDecision(args.Decision.Handle);
+			if (GLib.Object.GetObject(decisionHandle) is not WebKit.NavigationPolicyDecision decision)
+				return false;
+
 			var requestUri = decision.NavigationAction?.Request?.Uri;
 			if (!Uri.TryCreate(requestUri, UriKind.Absolute, out var uri) || uri.Scheme == "about")
-				return;
+				return false;
 
 			var callbackArgs = UrlLoadingEventArgs.CreateWithDefaultLoadingStrategy(uri, GtkWebViewManager.AppOriginUri);
 			virtualView.UrlLoading(callbackArgs);
@@ -313,8 +317,10 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			if (callbackArgs.UrlLoadingStrategy != UrlLoadingStrategy.OpenInWebView)
 			{
 				decision.Ignore();
-				args.RetVal = true;
+				return true;
 			}
+
+			return false;
 		}
 
 		sealed class WebKitTransport : IGtkBlazorTransport

@@ -113,6 +113,30 @@ public class WebViewHandlerTests
 	});
 
 	[WebKitFact]
+	public void LinksClickedInThePageRaiseNavigatingAndCanBeCancelled() => GtkTestHost.Run(() =>
+	{
+		var navigating = new List<WebNavigatingEventArgs>();
+		var navigated = new List<WebNavigatedEventArgs>();
+		var (view, _) = Create();
+		view.Navigated += (s, e) => navigated.Add(e);
+		view.Source = new HtmlWebViewSource { Html = "<a id='a' href='https://example.invalid/next'>go</a>" };
+		WaitForNavigated(navigated, 1);
+
+		view.Navigating += (s, e) =>
+		{
+			navigating.Add(e);
+			e.Cancel = true;
+		};
+		view.Eval("document.getElementById('a').click()");
+
+		Assert.True(GtkTestHost.PumpUntil(() => navigating.Count > 0, null, 15000), "Navigating was not raised for the link");
+		Assert.StartsWith("https://example.invalid/next", navigating[0].Url);
+		Assert.Equal(WebNavigationEvent.NewPage, navigating[0].NavigationEvent);
+		GtkTestHost.PumpUntil(() => false, null, 500);
+		Assert.Single(navigated);
+	});
+
+	[WebKitFact]
 	public void GoBackAndForwardNavigateTheHistory() => GtkTestHost.Run(() =>
 	{
 		var navigated = new List<WebNavigatedEventArgs>();
@@ -212,8 +236,9 @@ public class WebViewHandlerTests
 		var (view, handler) = Create();
 		view.Navigated += (s, e) => navigated.Add(e);
 
+		var native = (global::WebKit.WebView)handler.PlatformView!;
 		((global::Microsoft.Maui.IElement)view).Handler!.DisconnectHandler();
-		((global::WebKit.WebView)handler.PlatformView!).LoadUri(PageOne);
+		native.LoadUri(PageOne);
 		GtkTestHost.PumpUntil(() => navigated.Count > 0, null, 1500);
 
 		Assert.Empty(navigated);

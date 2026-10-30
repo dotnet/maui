@@ -23,6 +23,7 @@ namespace Microsoft.Maui.Gtk.Handlers
 		WebNavigationEvent _pendingEvent = WebNavigationEvent.NewPage;
 		bool _cancelled;
 		bool _failed;
+		GtkWebKitSignals? _signals;
 
 		/// <summary>Creates the handler with the stock mappers.</summary>
 		public GtkWebViewHandler()
@@ -51,8 +52,7 @@ namespace Microsoft.Maui.Gtk.Handlers
 
 			_view = view;
 			view.LoadChanged += OnLoadChanged;
-			view.LoadFailed += OnLoadFailed;
-			view.DecidePolicy += OnDecidePolicy;
+			_signals = new GtkWebKitSignals(view, OnDecidePolicy, OnLoadFailed);
 			view.WebProcessTerminated += OnWebProcessTerminated;
 		}
 
@@ -62,12 +62,12 @@ namespace Microsoft.Maui.Gtk.Handlers
 			if (platformView is WebKitView view)
 			{
 				view.LoadChanged -= OnLoadChanged;
-				view.LoadFailed -= OnLoadFailed;
-				view.DecidePolicy -= OnDecidePolicy;
 				view.WebProcessTerminated -= OnWebProcessTerminated;
 				view.StopLoading();
 			}
 
+			_signals?.Dispose();
+			_signals = null;
 			_view = null;
 			base.DisconnectHandler(platformView);
 		}
@@ -82,7 +82,7 @@ namespace Microsoft.Maui.Gtk.Handlers
 				return;
 
 			_pendingEvent = WebNavigationEvent.NewPage;
-			virtualView.Source?.Load(new WebViewDelegate(_view));
+			virtualView.Source?.Load(new WebViewDelegate(this, _view));
 		}
 
 		void UpdateUserAgent()
@@ -120,6 +120,9 @@ namespace Microsoft.Maui.Gtk.Handlers
 		void Reload()
 		{
 			if (_view is null)
+				return;
+
+			if (RaiseNavigating(WebNavigationEvent.Refresh, _view.Uri))
 				return;
 
 			_pendingEvent = WebNavigationEvent.Refresh;
@@ -160,20 +163,35 @@ namespace Microsoft.Maui.Gtk.Handlers
 			}
 		}
 
-		void OnLoadFailed(object? sender, WebKit.LoadFailedArgs args)
+		bool OnLoadFailed(WebKit.LoadEvent loadEvent, string? failingUri)
 		{
-			args.RetVal = false;
-
 			if (_cancelled)
 			{
 				// The app cancelled this navigation in Navigating; WebKit reports it as a failure.
 				_cancelled = false;
 				_failed = true;
-				return;
+				return false;
 			}
 
 			_failed = true;
-			RaiseNavigated(args.FailingUri, WebNavigationResult.Failure);
+			RaiseNavigated(failingUri, WebNavigationResult.Failure);
+			return false;
+		}
+
+		/// <summary>
+		/// WebKit raises <c>decide-policy</c> for navigations the page starts (links, forms, scripts) but not for loads the app starts, so
+		/// those raise <c>Navigating</c> here. Returns <see langword="true"/> when the app cancelled the navigation.
+		/// </summary>
+		bool RaiseNavigating(WebNavigationEvent navigationEvent, string? url)
+		{
+			if (View is not { } virtualView || string.IsNullOrEmpty(url))
+				return false;
+
+			var cancel = virtualView.Navigating(navigationEvent, url);
+			if (cancel)
+				_pendingEvent = WebNavigationEvent.NewPage;
+
+			return cancel;
 		}
 
 		void RaiseNavigated(string? url, WebNavigationResult result)
@@ -184,19 +202,21 @@ namespace Microsoft.Maui.Gtk.Handlers
 			View?.Navigated(navigationEvent, url ?? string.Empty, result);
 		}
 
-		void OnDecidePolicy(object? sender, WebKit.DecidePolicyArgs args)
+		bool OnDecidePolicy(IntPtr decisionHandle, WebKit.PolicyDecisionType decisionType)
 		{
-			if (_view is null || View is not { } virtualView || args.Decision is null)
-				return;
+			if (_view is null || View is not { } virtualView || decisionHandle == IntPtr.Zero)
+				return false;
 
-			if (args.DecisionType != WebKit.PolicyDecisionType.NavigationAction && args.DecisionType != WebKit.PolicyDecisionType.NewWindowAction)
-				return;
+			if (decisionType != WebKit.PolicyDecisionType.NavigationAction && decisionType != WebKit.PolicyDecisionType.NewWindowAction)
+				return false;
 
-			var decision = args.Decision as WebKit.NavigationPolicyDecision ?? new WebKit.NavigationPolicyDecision(args.Decision.Handle);
+			if (GLib.Object.GetObject(decisionHandle) is not WebKit.NavigationPolicyDecision decision)
+				return false;
+
 			var action = decision.NavigationAction;
 			var uri = action?.Request?.Uri;
 			if (action is null || string.IsNullOrEmpty(uri))
-				return;
+				return false;
 
 			_cancelled = false;
 			var navigationEvent = GtkWebViewScripts.ResolveNavigationEvent(action.NavigationType, _pendingEvent);
@@ -207,17 +227,18 @@ namespace Microsoft.Maui.Gtk.Handlers
 				_pendingEvent = WebNavigationEvent.NewPage;
 				_cancelled = true;
 				decision.Ignore();
-				args.RetVal = true;
-				return;
+				return true;
 			}
 
-			if (args.DecisionType == WebKit.PolicyDecisionType.NewWindowAction)
+			if (decisionType == WebKit.PolicyDecisionType.NewWindowAction)
 			{
 				// target=_blank and window.open: there is no second web view, so the link loads here.
 				decision.Ignore();
-				args.RetVal = true;
 				_view.LoadUri(uri);
+				return true;
 			}
+
+			return false;
 		}
 
 		void OnWebProcessTerminated(object? sender, WebKit.WebProcessTerminatedArgs args) =>
@@ -225,16 +246,31 @@ namespace Microsoft.Maui.Gtk.Handlers
 
 		sealed class WebViewDelegate : IWebViewDelegate
 		{
+			readonly GtkWebViewHandler _handler;
 			readonly WebKitView _view;
 
-			public WebViewDelegate(WebKitView view)
+			public WebViewDelegate(GtkWebViewHandler handler, WebKitView view)
 			{
+				_handler = handler;
 				_view = view;
 			}
 
-			public void LoadHtml(string? html, string? baseUrl) => _view.LoadHtml(html ?? string.Empty, baseUrl);
+			public void LoadHtml(string? html, string? baseUrl)
+			{
+				if (_handler.RaiseNavigating(WebNavigationEvent.NewPage, string.IsNullOrEmpty(baseUrl) ? "about:blank" : baseUrl))
+					return;
 
-			public void LoadUrl(string? url) => _view.LoadUri(string.IsNullOrEmpty(url) ? "about:blank" : url);
+				_view.LoadHtml(html ?? string.Empty, baseUrl);
+			}
+
+			public void LoadUrl(string? url)
+			{
+				var target = string.IsNullOrEmpty(url) ? "about:blank" : url;
+				if (_handler.RaiseNavigating(WebNavigationEvent.NewPage, target))
+					return;
+
+				_view.LoadUri(target);
+			}
 		}
 
 		internal static readonly IPropertyMapper<IWebView, IWebViewHandler> GtkMapper = CreateMapper();

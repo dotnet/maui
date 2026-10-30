@@ -78,11 +78,9 @@ namespace Microsoft.Maui.Gtk.Web
 		{
 			foreach (var name in s_libraryNames)
 			{
-				if (NativeLibrary.TryLoad(name, out var handle))
-				{
-					NativeLibrary.Free(handle);
+				// The library stays loaded: unloading WebKitGTK again crashes the process on some systems.
+				if (NativeLibrary.TryLoad(name, out _))
 					return true;
-				}
 			}
 
 			return false;
