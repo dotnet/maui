@@ -147,7 +147,7 @@ namespace Microsoft.Maui.Controls.Internals
 		List<WeakReference<Element>> _ancestryChain;
 		bool _isBindingContextRelativeSource;
 		BindingMode _cachedMode;
-		bool _isTSource; // cached type check result
+		Type _lastReportedSourceType;
 		object _cachedDefaultValue; // cached default value
 		bool _hasDefaultValue;
 		bool _skipConvert; // true when TProperty matches property.ReturnType
@@ -292,7 +292,7 @@ namespace Microsoft.Maui.Controls.Internals
 			_hasDefaultValue = false;
 			_cachedDefaultValue = null;
 			_skipConvert = false;
-			_isTSource = false;
+			_lastReportedSourceType = null;
 
 #if (!DO_NOT_CHECK_FOR_BINDING_REUSE)
 			_weakSource.SetTarget(null);
@@ -305,16 +305,19 @@ namespace Microsoft.Maui.Controls.Internals
 		// ApplyCore  100000 (w/o INPC, w/o unnapply)	: 20ms.
 		internal void ApplyCore(object sourceObject, BindableObject target, BindableProperty property, bool fromTarget, SetterSpecificity specificity)
 		{
-			// Use cached type check after first apply (source type doesn't change)
-			var isTSource = _isTSource;
-			if (!_hasDefaultValue)
+			var isTSource = sourceObject is TSource;
+			if (!isTSource && sourceObject is not null)
 			{
-				isTSource = sourceObject is TSource;
-				_isTSource = isTSource;
-				if (!isTSource && sourceObject is not null)
+				var sourceType = sourceObject.GetType();
+				if (_lastReportedSourceType != sourceType)
 				{
-					BindingDiagnostics.SendBindingFailure(this, "Binding", $"Mismatch between the specified x:DataType ({typeof(TSource)}) and the current binding context ({sourceObject.GetType()}).");
+					BindingDiagnostics.SendBindingFailure(this, "Binding", $"Mismatch between the specified x:DataType ({typeof(TSource)}) and the current binding context ({sourceType}).");
+					_lastReportedSourceType = sourceType;
 				}
+			}
+			else
+			{
+				_lastReportedSourceType = null;
 			}
 
 			// Use cached mode if available, otherwise compute and cache it

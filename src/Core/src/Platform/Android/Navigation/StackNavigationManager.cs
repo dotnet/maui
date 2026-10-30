@@ -181,7 +181,14 @@ namespace Microsoft.Maui.Platform
 			else
 			{
 				int popToId = fragmentNavDestinations[newPageStack.Count - 1].Id;
-				navController.PopBackStack(popToId, false);
+
+				// Remove the popped destinations from the graph right away. IterateBackStack below looks up every
+				// destination of the graph on the back stack, which throws an IllegalArgumentException for a popped one
+				if (navController.PopBackStack(popToId, false))
+				{
+					for (int i = newPageStack.Count; i < fragmentNavDestinations.Count; i++)
+						NavGraph.Remove(fragmentNavDestinations[i]);
+				}
 			}
 
 			// We only keep destinations around that are on the backstack

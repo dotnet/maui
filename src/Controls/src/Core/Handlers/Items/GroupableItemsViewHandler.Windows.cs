@@ -41,7 +41,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			base.UpdateItemTemplate();
 
-			ListViewBase.GroupStyleSelector = new GroupHeaderStyleSelector();
+			// All groups use the same header template; a managed WinRT selector is unnecessary.
+			ListViewBase.GroupStyle.Clear();
+			ListViewBase.GroupStyle.Add(new GroupStyle
+			{
+				HeaderTemplate = (Microsoft.UI.Xaml.DataTemplate)Microsoft.UI.Xaml.Application.Current.Resources["GroupHeaderTemplate"]
+			});
 		}
 	}
 }

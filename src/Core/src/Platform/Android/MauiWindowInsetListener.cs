@@ -274,7 +274,11 @@ namespace Microsoft.Maui.Platform
 
 		public virtual WindowInsetsCompat? OnApplyWindowInsets(AView? v, WindowInsetsCompat? insets)
 		{
-			if (insets is null || !insets.HasInsets || v is null ||
+			// Empty insets still reach a tracked view: once the keyboard closes on a window with
+			// no system bars (immersive, tablet in desktop windowing), every inset is zero, and
+			// skipping the dispatch would leave the keyboard-height padding on the view for good.
+			if (insets is null || v is null ||
+				(!insets.HasInsets && !IsViewTracked(v)) ||
 				(IsImeAnimating && !_viewsAttachedDuringImeAnimation.Contains(v)))
 			{
 				if (IsImeAnimating && v is not null)

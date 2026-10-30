@@ -66,6 +66,87 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void StateTriggerReattachesWhenStateIsReaddedAfterAttach()
+		{
+			var label = new Label();
+			var trigger = new AdaptiveTrigger { MinWindowWidth = 300 };
+			var state = new VisualState
+			{
+				Name = "Large",
+				StateTriggers = { trigger }
+			};
+			var group = new VisualStateGroup { States = { state } };
+
+			VisualStateManager.SetVisualStateGroups(label, new VisualStateGroupList { group });
+			_ = new Window { Page = new ContentPage { Content = label } };
+
+			Assert.True(trigger.IsAttached);
+
+			group.States.Remove(state);
+
+			Assert.False(trigger.IsAttached);
+
+			group.States.Add(state);
+
+			Assert.True(trigger.IsAttached);
+		}
+
+		[Fact]
+		public void StateTriggerDoesNotAttachWhenStateIsAddedToRemovedGroup()
+		{
+			var label = new Label();
+			var groups = new VisualStateGroupList();
+			var group = new VisualStateGroup();
+			var originalTrigger = new AdaptiveTrigger { MinWindowWidth = 300 };
+			group.States.Add(new VisualState { Name = "Original", StateTriggers = { originalTrigger } });
+			groups.Add(group);
+			VisualStateManager.SetVisualStateGroups(label, groups);
+			_ = new Window { Page = new ContentPage { Content = label } };
+
+			Assert.True(originalTrigger.IsAttached);
+
+			groups.Remove(group);
+
+			Assert.False(originalTrigger.IsAttached);
+			Assert.Null(group.VisualElement);
+
+			var addedTrigger = new AdaptiveTrigger { MinWindowWidth = 500 };
+			group.States.Add(new VisualState { Name = "Added", StateTriggers = { addedTrigger } });
+
+			Assert.False(addedTrigger.IsAttached);
+		}
+
+		[Fact]
+		public void StateTriggersAttachWhenGroupIsAddedAfterElementIsAttached()
+		{
+			var label = new Label();
+			var groups = new VisualStateGroupList
+			{
+				new VisualStateGroup
+				{
+					Name = "Existing",
+					States = { new VisualState { Name = "Normal" } }
+				}
+			};
+			VisualStateManager.SetVisualStateGroups(label, groups);
+			_ = new Window { Page = new ContentPage { Content = label } };
+
+			var trigger = new AdaptiveTrigger { MinWindowWidth = 300 };
+			var group = new VisualStateGroup
+			{
+				States =
+				{
+					new VisualState { Name = "Added", StateTriggers = { trigger } }
+				}
+			};
+
+			groups.Add(group);
+
+			Assert.Same(label, group.VisualElement);
+			Assert.True(trigger.IsAttached);
+		}
+
+		[Fact]
 		public void ResizingWindowPageActivatesTrigger()
 		{
 			var redBrush = new SolidColorBrush(Colors.Red);

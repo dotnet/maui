@@ -76,6 +76,125 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			AssertInvalidated(handler);
 		}
 
+		[Theory]
+		[InlineData("Array")]
+		[InlineData("CopiedList")]
+		[InlineData("OwnedList")]
+		[InlineData("Converter")]
+		public void ChangingConstructedColumnWidthInvalidatesGrid(string construction)
+		{
+			var grid = new Grid
+			{
+				ColumnDefinitions = CreateColumnDefinitions(construction)
+			};
+
+			var handler = ListenForInvalidation(grid);
+			grid.ColumnDefinitions[0].Width = 0;
+			AssertInvalidated(handler);
+		}
+
+		[Theory]
+		[InlineData("Array")]
+		[InlineData("CopiedList")]
+		[InlineData("OwnedList")]
+		[InlineData("Converter")]
+		public void ChangingConstructedRowHeightInvalidatesGrid(string construction)
+		{
+			var definitions = new List<RowDefinition> { new RowDefinition(390) };
+			var grid = new Grid
+			{
+				RowDefinitions = construction switch
+				{
+					"Array" => new RowDefinitionCollection(definitions.ToArray()),
+					"CopiedList" => new RowDefinitionCollection(definitions, copy: true),
+					"OwnedList" => new RowDefinitionCollection(definitions, copy: false),
+					"Converter" => (RowDefinitionCollection)new RowDefinitionCollectionTypeConverter().ConvertFromInvariantString("390"),
+					_ => throw new ArgumentOutOfRangeException(nameof(construction))
+				}
+			};
+
+			var handler = ListenForInvalidation(grid);
+			grid.RowDefinitions[0].Height = 0;
+			AssertInvalidated(handler);
+		}
+
+		[Theory]
+		[InlineData("Array", false)]
+		[InlineData("CopiedList", false)]
+		[InlineData("OwnedList", false)]
+		[InlineData("Converter", false)]
+		[InlineData("Array", true)]
+		[InlineData("CopiedList", true)]
+		[InlineData("OwnedList", true)]
+		[InlineData("Converter", true)]
+		public void RemovedConstructedColumnDoesNotInvalidateGrid(string construction, bool clear)
+		{
+			var grid = new Grid
+			{
+				ColumnDefinitions = CreateColumnDefinitions(construction)
+			};
+			var definition = grid.ColumnDefinitions[0];
+
+			if (clear)
+				grid.ColumnDefinitions.Clear();
+			else
+				grid.ColumnDefinitions.Remove(definition);
+
+			var handler = ListenForInvalidation(grid);
+			definition.Width = 0;
+			handler.DidNotReceive().Invoke(Arg.Is(nameof(IView.InvalidateMeasure)), Arg.Any<object>());
+		}
+
+		static ColumnDefinitionCollection CreateColumnDefinitions(string construction)
+		{
+			var definitions = new List<ColumnDefinition> { new ColumnDefinition(390) };
+			return construction switch
+			{
+				"Array" => new ColumnDefinitionCollection(definitions.ToArray()),
+				"CopiedList" => new ColumnDefinitionCollection(definitions, copy: true),
+				"OwnedList" => new ColumnDefinitionCollection(definitions, copy: false),
+				"Converter" => (ColumnDefinitionCollection)new ColumnDefinitionCollectionTypeConverter().ConvertFromInvariantString("390"),
+				_ => throw new ArgumentOutOfRangeException(nameof(construction))
+			};
+		}
+
+		[Theory]
+		[InlineData("Row", false)]
+		[InlineData("RowSpan", false)]
+		[InlineData("Column", false)]
+		[InlineData("ColumnSpan", false)]
+		[InlineData("Row", true)]
+		[InlineData("RowSpan", true)]
+		[InlineData("Column", true)]
+		[InlineData("ColumnSpan", true)]
+		public void ChangingChildGridPositionInvalidatesParent(string property, bool childIsGrid)
+		{
+			var parent = new Grid();
+			View child = childIsGrid ? new Grid() : new Label();
+			parent.Add(child);
+			var handler = ListenForInvalidation(parent);
+
+			switch (property)
+			{
+				case "Row":
+					Grid.SetRow(child, 1);
+					break;
+				case "RowSpan":
+					Grid.SetRowSpan(child, 2);
+					break;
+				case "Column":
+					Grid.SetColumn(child, 1);
+					break;
+				case "ColumnSpan":
+					Grid.SetColumnSpan(child, 2);
+					break;
+				default:
+					throw new ArgumentOutOfRangeException(nameof(property));
+			}
+
+			AssertInvalidated(handler);
+		}
+
 		[Fact]
 		public void ChangingChildRowInvalidatesGrid()
 		{

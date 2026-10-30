@@ -1854,6 +1854,110 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal("Child2Updated", (string)bindable.GetValue(property));
 		}
 
+		[Theory]
+		[InlineData(BindingMode.OneWay)]
+		[InlineData(BindingMode.OneTime)]
+		[InlineData(BindingMode.TwoWay)]
+		// https://github.com/dotnet/maui/issues/38667
+		public void TypedBinding_DoesNotInvokeGetter_WhenSourceBecomesNullOrWrongType(BindingMode mode)
+		{
+			var getterCalls = 0;
+			var property = BindableProperty.Create("Text", typeof(string), typeof(MockBindable), "default", BindingMode.OneWay);
+			var binding = new TypedBinding<MockViewModel, string>(
+				vm =>
+				{
+					getterCalls++;
+					return (vm.Text, true);
+				},
+				null,
+				null)
+			{
+				Mode = mode
+			};
+
+			var bindable = new MockBindable();
+			binding.ApplyCore(new MockViewModel("first"), bindable, property, false, SetterSpecificity.FromBinding);
+			Assert.Equal("first", bindable.GetValue(property));
+			Assert.Equal(1, getterCalls);
+
+			binding.ApplyCore(null, bindable, property, false, SetterSpecificity.FromBinding);
+			Assert.Equal("default", bindable.GetValue(property));
+			Assert.Equal(1, getterCalls);
+
+			binding.ApplyCore(new MockViewModel("second"), bindable, property, false, SetterSpecificity.FromBinding);
+			Assert.Equal("second", bindable.GetValue(property));
+			Assert.Equal(2, getterCalls);
+
+			binding.ApplyCore("wrong-type", bindable, property, false, SetterSpecificity.FromBinding);
+			Assert.Equal("default", bindable.GetValue(property));
+			Assert.Equal(2, getterCalls);
+
+			binding.ApplyCore(new MockViewModel("third"), bindable, property, false, SetterSpecificity.FromBinding);
+			Assert.Equal("third", bindable.GetValue(property));
+			Assert.Equal(3, getterCalls);
+		}
+
+		[Fact]
+		// https://github.com/dotnet/maui/issues/38667
+		public void TypedBinding_UsesFallbackValue_WhenSourceBecomesNullOrWrongType()
+		{
+			var getterCalls = 0;
+			var property = BindableProperty.Create("Text", typeof(string), typeof(MockBindable), "default", BindingMode.OneWay);
+			var binding = new TypedBinding<MockViewModel, string>(
+				vm =>
+				{
+					getterCalls++;
+					return (vm.Text, true);
+				},
+				null,
+				null)
+			{
+				Mode = BindingMode.OneWay,
+				FallbackValue = "fallback"
+			};
+
+			var bindable = new MockBindable();
+			binding.ApplyCore(new MockViewModel("valid"), bindable, property, false, SetterSpecificity.FromBinding);
+			Assert.Equal("valid", bindable.GetValue(property));
+			Assert.Equal(1, getterCalls);
+
+			binding.ApplyCore(null, bindable, property, false, SetterSpecificity.FromBinding);
+			Assert.Equal("fallback", bindable.GetValue(property));
+			Assert.Equal(1, getterCalls);
+
+			binding.ApplyCore("wrong-type", bindable, property, false, SetterSpecificity.FromBinding);
+			Assert.Equal("fallback", bindable.GetValue(property));
+			Assert.Equal(1, getterCalls);
+		}
+
+		[Fact]
+		// https://github.com/dotnet/maui/issues/38667
+		public void TypedBinding_RecoversFromInitialWrongTypeContext()
+		{
+			var getterCalls = 0;
+			var property = BindableProperty.Create("Text", typeof(string), typeof(MockBindable), "default", BindingMode.OneWay);
+			var bindable = new MockBindable();
+			var binding = new TypedBinding<MockViewModel, string>(
+				vm =>
+				{
+					getterCalls++;
+					return (vm.Text, true);
+				},
+				null,
+				null)
+			{
+				Mode = BindingMode.OneWay
+			};
+
+			binding.ApplyCore("wrong-type", bindable, property, false, SetterSpecificity.FromBinding);
+			Assert.Equal("default", bindable.GetValue(property));
+			Assert.Equal(0, getterCalls);
+
+			binding.ApplyCore(new MockViewModel("valid"), bindable, property, false, SetterSpecificity.FromBinding);
+			Assert.Equal("valid", bindable.GetValue(property));
+			Assert.Equal(1, getterCalls);
+		}
+
 		[Fact]
 		//https://github.com/xamarin/Microsoft.Maui.Controls/issues/3650
 		//https://github.com/xamarin/Microsoft.Maui.Controls/issues/3613

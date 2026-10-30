@@ -5,7 +5,7 @@
              x:Class="Maui.Controls.Sample.Issues.Issue26817_2">
     <VerticalStackLayout>
       <Label Text="Border" Padding="0,10,10,10"/>
-      <CollectionView SelectionMode="Single" x:Name="border">
+      <local:CollectionView2 SelectionMode="Single" x:Name="border">
          <CollectionView.ItemsSource>
                <x:Array Type="{x:Type x:String}">
                   <x:String>Item 1</x:String>
@@ -23,10 +23,10 @@
                   </Border>
                </DataTemplate>
          </CollectionView.ItemTemplate>
-      </CollectionView>
+      </local:CollectionView2>
 
       <Label Text="VerticalStackLayout" Padding="0,10,10,10"/>
-      <CollectionView SelectionMode="Single" x:Name="vsl">
+      <local:CollectionView2 SelectionMode="Single" x:Name="vsl">
          <CollectionView.ItemsSource>
                <x:Array Type="{x:Type x:String}">
                   <x:String>Item 1</x:String>
@@ -42,10 +42,10 @@
                   </VerticalStackLayout>
                </DataTemplate>
          </CollectionView.ItemTemplate>
-      </CollectionView>
+      </local:CollectionView2>
 
       <Label Text="Grid" Padding="0,10,10,10"/>
-      <CollectionView SelectionMode="Single" x:Name="grid">
+      <local:CollectionView2 SelectionMode="Single" x:Name="grid">
          <CollectionView.ItemsSource>
                <x:Array Type="{x:Type x:String}">
                   <x:String>Item 1</x:String>
@@ -61,7 +61,7 @@
                   </Grid>
                </DataTemplate>
          </CollectionView.ItemTemplate>
-      </CollectionView>
+      </local:CollectionView2>
 
       <Button Text="Toggle SelectionMode" Clicked="Button_Clicked" AutomationId="ToggleSelectionModeButton" />
       <Label x:Name="selectionLabel" />
