@@ -1,8 +1,8 @@
 <Project DefaultTargets="Restore;Build">
-  <Import Sdk="Microsoft.NET.Sdk" Project="Sdk.props" />
+  <Import Sdk="Microsoft.Build.NoTargets" Project="Sdk.props" />
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>$(_MauiDotNetTfm)</TargetFramework>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <IncludeBuildOutput>false</IncludeBuildOutput>
 
@@ -195,7 +195,7 @@
     />
   </Target>
 
-  <Import Sdk="Microsoft.NET.Sdk" Project="Sdk.targets" />
+  <Import Sdk="Microsoft.Build.NoTargets" Project="Sdk.targets" />
 
   <PropertyGroup>
     <BuildDependsOn>

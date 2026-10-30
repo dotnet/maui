@@ -37,11 +37,10 @@ internal class MauiMaterialEditText : TextInputEditText
 
 	protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
 	{
-		// Get the measure spec mode and size
 		var heightMode = MeasureSpec.GetMode(heightMeasureSpec);
 		var heightSize = MeasureSpec.GetSize(heightMeasureSpec);
 
-		if (heightMode == MeasureSpecMode.AtMost && heightSize > 0)
+		if (heightMode == MeasureSpecMode.AtMost && heightSize > 0 && MaxLines == 1)
 		{
 			heightMeasureSpec = MeasureSpec.MakeMeasureSpec(heightSize, MeasureSpecMode.Exactly);
 		}

@@ -84,22 +84,32 @@ namespace Microsoft.Maui.Layouts
 				desiredWidth = IsExplicitSet(view.Width) ? desiredWidth : Math.Min(bounds.Width, view.MaximumWidth);
 			}
 
-			return AlignHorizontal(bounds.X, margin.Left, margin.Right, bounds.Width, desiredWidth, alignment);
+			var clampMarginOverflow = view.Parent is not IFlexLayout;
+
+			return AlignHorizontal(bounds.X, margin.Left, margin.Right, bounds.Width, desiredWidth, alignment, clampMarginOverflow);
 		}
 
 		static double AlignHorizontal(double startX, double startMargin, double endMargin, double boundsWidth,
-			double desiredWidth, LayoutAlignment horizontalLayoutAlignment)
+			double desiredWidth, LayoutAlignment horizontalLayoutAlignment, bool clampMarginOverflow)
 		{
 			double frameX = startX + startMargin;
+			var availableWidth = boundsWidth - desiredWidth;
+
+			// Preserve alignment when content overflows; clamp only when margins leave no room for it.
+			if (clampMarginOverflow && availableWidth < 0 && startMargin > 0 &&
+				startMargin + endMargin >= boundsWidth && desiredWidth - startMargin - endMargin <= boundsWidth)
+			{
+				availableWidth = 0;
+			}
 
 			switch (horizontalLayoutAlignment)
 			{
 				case LayoutAlignment.Center:
-					frameX += (boundsWidth - desiredWidth) / 2;
+					frameX += availableWidth / 2;
 					break;
 
 				case LayoutAlignment.End:
-					frameX += boundsWidth - desiredWidth;
+					frameX += availableWidth;
 					break;
 			}
 
@@ -122,15 +132,22 @@ namespace Microsoft.Maui.Layouts
 			}
 
 			double frameY = bounds.Y + margin.Top;
+			var availableHeight = bounds.Height - desiredHeight;
+
+			if (view.Parent is not IFlexLayout && availableHeight < 0 && margin.Top > 0 &&
+				margin.VerticalThickness >= bounds.Height && desiredHeight - margin.VerticalThickness <= bounds.Height)
+			{
+				availableHeight = 0;
+			}
 
 			switch (alignment)
 			{
 				case LayoutAlignment.Center:
-					frameY += (bounds.Height - desiredHeight) / 2;
+					frameY += availableHeight / 2;
 					break;
 
 				case LayoutAlignment.End:
-					frameY += bounds.Height - desiredHeight;
+					frameY += availableHeight;
 					break;
 			}
 
@@ -158,7 +175,9 @@ namespace Microsoft.Maui.Layouts
 
 			var contentSize = Size.Zero;
 
-			if (content != null)
+			// Collapsed content takes no space, as in the layout managers. Android measures a GONE view
+			// at its full size, so without this check a hidden child kept its height there.
+			if (content != null && content.Visibility != Visibility.Collapsed)
 			{
 				contentSize = content.Measure(widthConstraint - inset.HorizontalThickness,
 					heightConstraint - inset.VerticalThickness);
@@ -189,7 +208,7 @@ namespace Microsoft.Maui.Layouts
 
 			var contentSize = Size.Zero;
 
-			if (content != null)
+			if (content != null && content.Visibility != Visibility.Collapsed)
 			{
 				contentSize = content.Measure(widthConstraint - inset.HorizontalThickness,
 					heightConstraint - inset.VerticalThickness);

@@ -14,7 +14,7 @@ public class Issue7339 : _IssuesUITest
 
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void MaterialFrameDisposesCorrectly()
 	{
 		App.WaitForElement("InstructionLabel");

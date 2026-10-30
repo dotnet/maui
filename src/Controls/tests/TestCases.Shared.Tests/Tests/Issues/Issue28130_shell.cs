@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "[Windows] Shell Flyout Menu Icon disappears from Window Title Bar after Navigation";
 
 		[Test]
-		[Category(UITestCategories.Shell)]
+		[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 		public void FlyoutMenuShouldNotDisappearAfterNavigation_Shell()
 		{
 			App.WaitForElement("detailLabel");

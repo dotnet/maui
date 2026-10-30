@@ -1,5 +1,6 @@
 ﻿#nullable enable
 Microsoft.Maui.FontManager.Dispose() -> void
+override Microsoft.Maui.Platform.MauiPageControl.SizeThatFits(CoreGraphics.CGSize size) -> CoreGraphics.CGSize
 override Microsoft.Maui.Handlers.LabelHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 override Microsoft.Maui.Handlers.ShapeViewHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 override Microsoft.Maui.Handlers.StepperHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
@@ -40,3 +41,4 @@ static Microsoft.Maui.Handlers.ContentButtonHandler.MapIsEnabled(Microsoft.Maui.
 static Microsoft.Maui.Handlers.ContentButtonHandler.MapPadding(Microsoft.Maui.Handlers.IContentButtonHandler! handler, Microsoft.Maui.IContentButton! button) -> void
 static Microsoft.Maui.Handlers.ContentButtonHandler.MapStrokeColor(Microsoft.Maui.Handlers.IContentButtonHandler! handler, Microsoft.Maui.IContentButton! button) -> void
 static Microsoft.Maui.Handlers.ContentButtonHandler.MapStrokeThickness(Microsoft.Maui.Handlers.IContentButtonHandler! handler, Microsoft.Maui.IContentButton! button) -> void
+override Microsoft.Maui.Platform.PlatformTouchGraphicsView.MovedToWindow() -> void

@@ -76,8 +76,15 @@ jobs:
             echo "matched=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          # Focused subcommands remain owned by their independent workflows.
-          if [[ "${COMMENT_BODY}" =~ ^[[:space:]]*/review[[:space:]]+(tests|performance)([[:space:]]|$) ]]; then
+          # The combined command shares the expert workflow's event but starts only Gate here.
+          if [[ "${COMMENT_BODY}" =~ ^[[:space:]]*/review[[:space:]]+expert-review(er)?-with-gate([[:space:]]|$) ]]; then
+            if [[ "${COMMENT_BODY}" =~ ^[[:space:]]*/review[[:space:]]+expert-review(er)?-with-gate[[:space:]]*$ ]]; then
+              echo "matched=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "matched=false" >> "$GITHUB_OUTPUT"
+            fi
+          elif [[ "${COMMENT_BODY}" =~ ^[[:space:]]*/review[[:space:]]+(tests|performance)([[:space:]]|$) ]] ||
+               [[ "${COMMENT_BODY}" =~ ^[[:space:]]*/review[[:space:]]+expert-review ]]; then
             echo "matched=false" >> "$GITHUB_OUTPUT"
           elif [[ "${COMMENT_BODY}" =~ ^[[:space:]]*/review([[:space:]]|$) ]]; then
             echo "matched=true" >> "$GITHUB_OUTPUT"
@@ -101,8 +108,13 @@ jobs:
         run: |
           is_recoverable_review_command() {
             NORMALIZED_BODY=$(printf '%s' "$1" | jq -Rrs 'gsub("^\\s+|\\s+$"; "") | ascii_downcase')
+            if [[ "${NORMALIZED_BODY}" =~ ^/review[[:space:]]+expert-review(er)?-with-gate([[:space:]]|$) ]]; then
+              [[ "${NORMALIZED_BODY}" =~ ^/review[[:space:]]+expert-review(er)?-with-gate[[:space:]]*$ ]]
+              return
+            fi
             [[ "${NORMALIZED_BODY}" =~ ^/review([[:space:]]|$) ]] &&
-              [[ ! "${NORMALIZED_BODY}" =~ ^/review[[:space:]]+(tests|rerun|performance)([[:space:]]|$) ]]
+              [[ ! "${NORMALIZED_BODY}" =~ ^/review[[:space:]]+(tests|rerun|performance)([[:space:]]|$) ]] &&
+              [[ ! "${NORMALIZED_BODY}" =~ ^/review[[:space:]]+expert-review ]]
           }
 
           if [ "${EVENT_NAME}" = "workflow_dispatch" ]; then
@@ -145,7 +157,8 @@ jobs:
 
           GATE_ONLY=false
           NORMALIZED_BODY=$(printf '%s' "${COMMENT_BODY}" | jq -Rrs 'gsub("^\\s+|\\s+$"; "") | ascii_downcase')
-          if [[ "${NORMALIZED_BODY}" =~ ^/review[[:space:]]+gate([[:space:]]|$) ]]; then
+          if [[ "${NORMALIZED_BODY}" =~ ^/review[[:space:]]+gate([[:space:]]|$) ]] ||
+             [[ "${NORMALIZED_BODY}" =~ ^/review[[:space:]]+expert-review(er)?-with-gate$ ]]; then
             GATE_ONLY=true
           fi
 
@@ -528,11 +541,11 @@ jobs:
             if (Test-AgentReviewInProgressIsStale -PRNumber $env:PR_NUMBER -Owner '${{ github.repository_owner }}' -Repo '${{ github.event.repository.name }}') {
               Clear-AgentReviewInProgress -PRNumber $env:PR_NUMBER -Owner '${{ github.repository_owner }}' -Repo '${{ github.event.repository.name }}' | Out-Null
             } else {
-              "locked=true" >> $env:GITHUB_OUTPUT
-              "state=already-running" >> $env:GITHUB_OUTPUT
               "### $($env:REVIEW_COMMAND) skipped" >> $env:GITHUB_STEP_SUMMARY
               "PR #$($env:PR_NUMBER) already has ``s/agent-review-in-progress``." >> $env:GITHUB_STEP_SUMMARY
 
+              "locked=true" >> $env:GITHUB_OUTPUT
+              "state=already-running" >> $env:GITHUB_OUTPUT
               exit 0
             }
           }
@@ -821,8 +834,13 @@ jobs:
           if [ "${EVENT_NAME}" = "workflow_dispatch" ]; then
             is_recoverable_review_command() {
               NORMALIZED_BODY=$(printf '%s' "$1" | jq -Rrs 'gsub("^\\s+|\\s+$"; "") | ascii_downcase')
+              if [[ "${NORMALIZED_BODY}" =~ ^/review[[:space:]]+expert-review(er)?-with-gate([[:space:]]|$) ]]; then
+                [[ "${NORMALIZED_BODY}" =~ ^/review[[:space:]]+expert-review(er)?-with-gate[[:space:]]*$ ]]
+                return
+              fi
               [[ "${NORMALIZED_BODY}" =~ ^/review([[:space:]]|$) ]] &&
-                [[ ! "${NORMALIZED_BODY}" =~ ^/review[[:space:]]+(tests|rerun|performance)([[:space:]]|$) ]]
+                [[ ! "${NORMALIZED_BODY}" =~ ^/review[[:space:]]+(tests|rerun|performance)([[:space:]]|$) ]] &&
+                [[ ! "${NORMALIZED_BODY}" =~ ^/review[[:space:]]+expert-review ]]
             }
 
             if ! [[ "${COMMENT_ID}" =~ ^[1-9][0-9]*$ ]] || [ -z "${COMMENT_NODE_ID}" ]; then

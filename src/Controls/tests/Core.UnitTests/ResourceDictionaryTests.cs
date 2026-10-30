@@ -622,5 +622,40 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			rd0.Add("foo", "Foo");
 			Assert.Equal("Foo", label.Text);
 		}
+
+		// Issue #36389: a shared ResourceDictionary instance assigned to multiple VisualElements should
+		// not root every element for the dictionary's lifetime via the non-weak ValuesChanged subscription.
+		[Fact]
+		public void SharedResourceDictionaryDoesNotLeakSubscribingElements()
+		{
+			const int elementCount = 30;
+			var shared = new ResourceDictionary { { "Accent", "Red" } };
+
+			var references = MakeElements(shared);
+
+			for (int i = 0; i < 6; i++)
+			{
+				GC.Collect();
+				GC.WaitForPendingFinalizers();
+				GC.Collect();
+			}
+
+			int alive = references.Count(r => r.IsAlive);
+			GC.KeepAlive(shared);
+
+			Assert.Equal(0, alive);
+
+			[System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+			static List<WeakReference> MakeElements(ResourceDictionary shared)
+			{
+				var refs = new List<WeakReference>(elementCount);
+				for (int i = 0; i < elementCount; i++)
+				{
+					var view = new ContentView { Resources = shared };
+					refs.Add(new WeakReference(view));
+				}
+				return refs;
+			}
+		}
 	}
 }

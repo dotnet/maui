@@ -167,11 +167,15 @@ namespace Microsoft.Maui.Controls
 			{
 				child.PropertyChanged -= OnPagePropertyChanged;
 			}
-			if (_navigationView != null)
-			{
+		if (_navigationView != null)
+		{
+			// Only clear the shared view's selection if it is still showing this
+			// page's tabs; another TabbedPage may already have taken over (pop).
+			// Always unsubscribe to avoid leaking the handler.
+			if (OwnsNavigationViewItems())
 				_navigationView.SelectedItem = null;
-				_navigationView.SelectionChanged -= OnSelectedMenuItemChanged;
-			}
+			_navigationView.SelectionChanged -= OnSelectedMenuItemChanged;
+		}
 
 			OnTabbedPageDisappearing(this, EventArgs.Empty);
 
@@ -186,6 +190,11 @@ namespace Microsoft.Maui.Controls
 			if (_navigationView != null)
 			{
 				_navigationView.PaneDisplayMode = NavigationViewPaneDisplayMode.Top;
+
+				// The shared root NavigationView still shows the previous TabbedPage's
+				// tabs after a pop, so re-sync to this page's children first. Without
+				// this the selection restore below would run against stale items.
+				Handler?.UpdateValue(nameof(TabbedPage.ItemsSource));
 
 				// Restore the correct selection when this TabbedPage re-appears (e.g. after
 				// navigating back from another TabbedPage pushed onto the NavigationPage stack).
@@ -203,9 +212,26 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		// The root NavigationView is shared by every TabbedPage in the NavigationPage,
+		// so only the TabbedPage whose tabs are currently displayed may reset it.
+		// Without this, a disconnecting (popped) page would clear the selection and
+		// collapse the pane after the revealed page has already taken over the view.
+		bool OwnsNavigationViewItems()
+		{
+			if (_navigationView?.MenuItemsSource is IList<NavigationViewItemViewModel> items)
+			{
+				foreach (var item in items)
+				{
+					if (item.Data is Page page && Children.Contains(page))
+						return true;
+				}
+			}
+			return false;
+		}
+
 		void OnTabbedPageDisappearing(object? sender, EventArgs e)
 		{
-			if (_navigationView != null)
+			if (_navigationView != null && OwnsNavigationViewItems())
 			{
 				// Clear stale selection so the NavigationView does not ghost-show this
 				// TabbedPage's selected tab when another TabbedPage takes over the view.
@@ -272,8 +298,14 @@ namespace Microsoft.Maui.Controls
 
 		void OnSelectedMenuItemChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
 		{
+			// Multiple TabbedPages in a NavigationPage share the same root NavigationView,
+			// so every connected TabbedPage sees every selection change. Only react when
+			// the selected page is one of this TabbedPage's own children; otherwise a
+			// hidden TabbedPage would steal and reparent the visible page's content,
+			// crashing layout on Windows (https://github.com/dotnet/maui/issues/26214).
 			if (args.SelectedItem is NavigationViewItemViewModel itemViewModel &&
-				itemViewModel.Data is Page page)
+				itemViewModel.Data is Page page &&
+				Children.Contains(page))
 			{
 				NavigateToPage(page);
 			}

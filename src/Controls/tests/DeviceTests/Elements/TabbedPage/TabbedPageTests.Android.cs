@@ -72,6 +72,52 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task ClearingBarBackgroundRestoresMaterial3ThemeColors()
+		{
+			if (!RuntimeFeature.IsMaterial3Enabled)
+				return;
+
+			SetupBuilder();
+
+			var tabbedPage = CreateBasicTabbedPage(bottomTabs: true);
+
+			await CreateHandlerAndAddToWindow<TabbedViewHandler>(tabbedPage, handler =>
+			{
+				var bottomNav = GetBottomNavigationView(handler);
+
+				var originalTextColors = bottomNav.ItemTextColor;
+				var originalIconColors = bottomNav.ItemIconTintList;
+
+				Assert.NotNull(originalTextColors);
+				Assert.NotNull(originalIconColors);
+
+				tabbedPage.BarBackgroundColor = Colors.Red;
+
+				var customizedTextColors = bottomNav.ItemTextColor;
+				var customizedIconColors = bottomNav.ItemIconTintList;
+
+				Assert.NotNull(customizedTextColors);
+				Assert.NotNull(customizedIconColors);
+
+				tabbedPage.BarBackgroundColor = null;
+
+				Assert.Equal(
+	originalTextColors.GetColorForState(
+		new[] { global::Android.Resource.Attribute.StateChecked }, global::Android.Graphics.Color.Transparent),
+	bottomNav.ItemTextColor.GetColorForState(
+		new[] { global::Android.Resource.Attribute.StateChecked }, global::Android.Graphics.Color.Transparent));
+
+				Assert.Equal(
+					originalIconColors.GetColorForState(
+						new[] { global::Android.Resource.Attribute.StateChecked }, global::Android.Graphics.Color.Transparent),
+					bottomNav.ItemIconTintList.GetColorForState(
+						new[] { global::Android.Resource.Attribute.StateChecked }, global::Android.Graphics.Color.Transparent));
+
+				return Task.CompletedTask;
+			});
+		}
+
+		[Fact]
 		public async Task ChangingBottomTabAttributesDoesntRecreateBottomTabs()
 		{
 			SetupBuilder();

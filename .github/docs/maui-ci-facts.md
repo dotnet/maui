@@ -31,6 +31,28 @@ green base job alone is not causal proof, and missing evidence is reported expli
 
 ## Pipelines
 
+### Automated CI fixes
+
+`ci-status-main` and `ci-status-net11` scan the three pipelines every twelve
+hours and create fix PRs directly against their configured branch. They do not
+file CI-scan tracking issues or failure/no-op diagnostic issues. Findings that
+cannot be safely fixed remain in the run's evidence and analysis artifacts.
+Manual dispatch defaults to staged (`dry_run: true`), including PR updates.
+
+The scanners deduplicate by a stable failure fingerprint on the PR, watch the
+same owned PR for up to ten attempts, and publish at most one PR operation per
+run. A PR requires a real, validated source/test fix; reproduction-only and empty
+hand-off PRs are not allowed. The trusted Azure DevOps validator reconciles open
+CI-fix PR heads after a scanner completes, including PRs created with
+`GITHUB_TOKEN` that do not emit follow-up workflow events.
+
+`ci-status-fix` and `ci-status-fix-net11` are manual-only compatibility workflows
+for older issue-linked PRs. They must not be scheduled alongside the direct
+scanners. The legacy issue reconciler and locking workflow do not produce new
+issues.
+
+### Pipeline definitions
+
 **Organization**: `dnceng-public` / project `public`
 (`https://dev.azure.com/dnceng-public/public/_apis/build/...`).
 
@@ -62,6 +84,44 @@ and `maui-pr-uitests` may not run automatically depending on the changed files.
 - If a build returns **404** even with authenticated access, classify it as
   inaccessible/expired/insufficient data — do not assume unrelated or PR-caused.
 - Helix work-item console output may live behind `helix.dot.net` and Azure Blob URLs.
+
+## Setup-only retries
+
+Shared test preparation uses **at most five total attempts per setup operation**,
+not five additional retries or five whole-job reruns. Azure task-level recovery
+uses `retryCountOnTaskFailure: 4`, with the agent's backoff and attempt diagnostics.
+Task and job timeouts can end recovery earlier; exhaustion remains a failed step.
+
+- `eng/pipelines/common/provision.yml` covers .NET SDK/tool installation, JDK,
+  Xcode selection/provisioning, Android SDK environment discovery and AVD creation.
+  Its consumers include UI-test lanes (including Material3), device-test builds,
+  unit/Helix preparation, integration tests and the review gate. Platform and skip
+  conditions still determine which operations run.
+- Android common packages, platform APIs and emulator images retry **per package**
+  through `src/Provisioning/Provisioning.csproj` and
+  `eng/scripts/Install-AndroidSdkPackage.ps1`. Only Azure Pipelines installs retry;
+  local installs still attempt once. Each CI attempt has a fresh Android user
+  cache and temporary directory. After a failed attempt, the installer discovers
+  the SDK path and removes only the failed package directory and the SDK's `.temp`
+  staging directory before retrying. Successful packages are not reinstalled.
+  The enclosing Azure task does not retry, avoiding a five-by-five multiplier.
+- Simulator-runtime installation keeps its existing CoreSimulator recovery, but
+  counts the initial download toward the five-attempt cap and fails on exhaustion
+  or an unusable runtime instead of continuing with a warning.
+- Shared UI/device/template/integration setup also retries artifact downloads and
+  separate .NET SDK/workload/tool installation. UI setup additionally retries Node
+  and Appium installation. Windows Helix-device preparation and the legacy
+  handler/template paths use the same task retry count.
+- The Cake UI runner retries its explicitly separated preparation/build phases
+  before invoking the test runner: iOS device preparation, Android APK installation,
+  Windows test paths, and UI-test project builds on all four platforms. Local
+  runs and non-UI Cake targets keep their existing behavior.
+
+This is **not** a retry based on an absent TRX or a zero test count. Test commands,
+NUnit fixture setup/teardown, result reconciliation, publication, and existing
+test-execution retries are unchanged. Android emulator boot, independent review
+gate preparation, and provisioning inside Helix/XHarness workers retain their
+existing policies; shared agent setup does not wrap or resubmit those test runs.
 
 ## Enumerate EVERY failed leg — Build Analysis is NOT exhaustive
 
@@ -220,6 +280,15 @@ MAUI build artifacts are **Container** type, not `PipelineArtifact`:
 If available, the `mcp-binlog-tool` / binlog MCP server can analyze downloaded
 `.binlog` files. Optional — core investigation works via `gh` CLI and REST.
 
+### APIScan analysis inputs
+
+The official pipeline stages unsigned build outputs in `APIScanFiles` for
+analysis, separately from the signed shipping packages. Keep both the
+`APIScanFiles` artifact and its APIScan consumer job marked `isProduction: false`;
+otherwise production-release validation reports missing signing certificates
+on these analysis-only copies. This classification does not disable `APIScan@2`
+or change signing and validation of the actual release artifacts.
+
 ## Test count deduplication
 
 **Never sum raw failed counts across test runs.** MAUI UI/device tests repeat the
@@ -323,6 +392,8 @@ error XAGRDL0000: Could not GET '...pkgs.dev.azure.com/.../maven/v1/...'
 | `error IL####` / `ILC####` / NativeAOT publish fail | `maui-pr` AOT legs, `Run Integration Tests – AOT` | **NativeAOT / ILC** trim-analysis break. May be pre-existing (e.g. HybridWebView `IL2026`) — confirm with a job- AND test-level baseline diff before attributing to the PR. |
 | `error NETSDK1144` | `maui-pr` TrimFull legs | Optimizing assemblies for size failed (often an ILLink warning promoted to error). Check whether the same leg is red on the base branch. |
 | `XamlC` | `maui-pr` | XAML compiler — usually missing type or bad binding |
+| `WMC0612` / XBF `0x09C4` / `Property Not Found` after adding native Windows `x:DataType` | `maui-pr` Windows build/pack | The native XBF generator rejects the annotations introduced by #38735 on classic `{Binding}` templates. Restore the prior metadata without replacing bindings or converters. XML/source-only checks cannot validate XBF compilation; require an actual Windows build. |
+| `WMC9999` on overloaded table collections, `WMC0821` on open generic types, or invalid generated `XamlTypeInfo.g.cs` after adding native `[Bindable]` | `maui-pr` Windows build/pack | These were successive failures from #38735's new metadata in the Windows investigation on #39608. Restore the pre-cleanup native metadata baseline rather than changing public collection APIs, generic types, or generated code. Preserve existing runtime binding behavior and validate with the native Windows compiler. |
 | `error XAGRDL0000` / `401` / `No local versions` | `maui-pr` or official build | Gradle/Maven feed issue — see above |
 | `XHarness timeout` | `maui-pr-devicetests` Helix logs | Test killed by infrastructure; may be transient |
 | `No test result files found` | `maui-pr-devicetests` Helix logs | Tests never ran or app crashed on launch |

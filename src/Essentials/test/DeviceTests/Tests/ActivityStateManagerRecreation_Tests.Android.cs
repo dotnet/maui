@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Android.App;
 using Android.Content;
@@ -19,6 +20,70 @@ namespace Microsoft.Maui.Essentials.DeviceTests;
 [Category("ActivityStateManager")]
 public class ActivityStateManagerRecreation_Tests
 {
+	[Fact]
+	public Task RegisteredLauncher_SurvivesGarbageCollectionWithoutActivityRoot() =>
+		MainThread.InvokeOnMainThreadAsync(() =>
+		{
+			var request = new RecreationActivityForResultRequest();
+			var activityReference = RegisterUnrootedActivity(request);
+
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+			GC.Collect();
+			Java.Lang.Runtime.GetRuntime()!.Gc();
+			Java.Lang.Runtime.GetRuntime()!.RunFinalization();
+			Java.Lang.Runtime.GetRuntime()!.Gc();
+
+			Assert.True(activityReference.TryGetTarget(out var activity),
+				"The registration must keep the activity and its launcher alive until ActivityDestroyed.");
+
+			try
+			{
+				using var input = new JavaString("after-gc");
+				var pending = request.Launch(activity!, input);
+				Assert.False(pending.IsCompleted,
+					"The launcher must remain usable after collection.");
+			}
+			finally
+			{
+				request.CancelPendingRequest(activity!);
+				request.ActivityDestroyed(activity!);
+				activity!.ResultRegistry.Dispose();
+				activity.Dispose();
+				GC.KeepAlive(request);
+			}
+		});
+
+	[Theory]
+	[InlineData(false)]
+	[InlineData(true)]
+	public Task DestroyedActivity_ReleasesLauncher(bool hasPendingRequest) =>
+		MainThread.InvokeOnMainThreadAsync(() =>
+		{
+			var request = new RecreationActivityForResultRequest();
+			using var activity = new ActivityResultRecreationActivity();
+			using var input = new JavaString("destroyed");
+			request.Register(activity, null);
+			Task<JavaString>? pending = hasPendingRequest ? request.Launch(activity, input) : null;
+
+			request.ActivityDestroyed(activity);
+
+			if (pending is not null)
+				Assert.True(pending.IsCanceled);
+			Assert.True(request.Launch(activity, input).IsCanceled,
+				"A destroyed activity must no longer have a registered launcher.");
+			activity.ResultRegistry.Dispose();
+		});
+
+	[MethodImpl(MethodImplOptions.NoInlining)]
+	static WeakReference<ActivityResultRecreationActivity> RegisterUnrootedActivity(
+		RecreationActivityForResultRequest request)
+	{
+		var activity = new ActivityResultRecreationActivity();
+		request.Register(activity, null);
+		return new WeakReference<ActivityResultRecreationActivity>(activity);
+	}
+
 	[Fact]
 	public async Task PendingRequest_CompletesThroughRecreatedActivityCallback()
 	{

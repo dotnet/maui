@@ -12,7 +12,7 @@ public class Issue34343 : _IssuesUITest
 
 #if ANDROID
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void TabBarShouldDisplayCorrectTabsAfterFirstTabBecomesInvisible()
 	{
 		App.WaitForElement("HideAndNavigateButton");
@@ -24,7 +24,7 @@ public class Issue34343 : _IssuesUITest
 
 #if IOS || MACCATALYST
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void SubPageNavigationShouldWorkAfterFirstTabBecomesInvisible()
 	{
 		App.WaitForElement("HideAndNavigateButton");

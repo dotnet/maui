@@ -900,14 +900,18 @@ void RunMSBuildWithDotNet(
     DotNetBuild(sln, dotnetBuildSettings);
 }
 
-void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = null, Dictionary<string, string> argsExtra = null, bool noBuild = false, string resultsFileNameWithoutExtension = null, string filter = "", int maxCpuCount = 0)
+void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = null, Dictionary<string, string> argsExtra = null, bool noBuild = false, string resultsFileNameWithoutExtension = null, string filter = "", int maxCpuCount = 0, string resultsDirectory = null, string nunitResultsDirectory = null, string settingsFile = null)
 {
     if (string.IsNullOrWhiteSpace(filter))
     {
         filter = testFilter;
     }
 
-    if (!string.IsNullOrWhiteSpace(filter))
+    if (settingsFile != null)
+    {
+        Information("Run Tests With Settings {0}", settingsFile);
+    }
+    else if (!string.IsNullOrWhiteSpace(filter))
     {
         Information("Run Tests With Filter {0}", filter);
     }
@@ -944,12 +948,14 @@ void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = nu
     {
         Configuration = config,
         NoBuild = noBuild,
-        Filter = filter,
+        // NUnit.Where replaces the VSTest filter; its category constraint is included in the settings.
+        Filter = settingsFile == null ? filter : null,
+        Settings = settingsFile == null ? null : new FilePath(settingsFile),
         Loggers = {
                 $"trx;LogFileName={results}",
                 $"console;verbosity=normal"
             },
-        ResultsDirectory = GetTestResultsDirectory(),
+        ResultsDirectory = resultsDirectory == null ? GetTestResultsDirectory() : new DirectoryPath(resultsDirectory),
         //    Verbosity = Cake.Common.Tools.DotNetCore.DotNetCoreVerbosity.Diagnostic,
 
         ArgumentCustomization = args => 
@@ -976,6 +982,11 @@ void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = nu
 
             // https://github.com/microsoft/vstest/issues/5112
             args.Append($"/p:VStestUseMSBuildOutput=false");
+
+            if (!string.IsNullOrEmpty(nunitResultsDirectory))
+            {
+                args.Append("--").AppendQuoted($"NUnit.TestOutputXml={nunitResultsDirectory}");
+            }
 
             return args;
         }

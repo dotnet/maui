@@ -19,6 +19,30 @@ GitHub Actions ──► GitHub OIDC Provider ──► Azure AD (federated cred
 > (e.g. in the `dotnet` org). The workflow uses **manual OIDC token exchange via
 > `curl`** instead, which works everywhere that `id-token: write` is allowed.
 
+## CI comment cleanup
+
+`azure-pipelines-comment-cleanup.yml` collapses standalone `/azp run` commands
+(including named-pipeline variants such as `/azp run maui-pr, maui-pr-uitests`)
+and successful-start acknowledgments from `azure-pipelines[bot]` as **resolved**
+on pull requests, including acknowledgments with the standard "There may be
+pipelines that require an authorized user to comment /azp run to run" hint.
+It also collapses workflow-failure notices from `github-actions[bot]`: marked
+review failures, agent-job failures, failed workflow status messages, and
+security-scanning failure notices. Comments remain expandable; nothing is
+deleted. Substantive review reports (including Tests Failure Analysis), actual
+Azure Pipelines failures, standalone authorization warnings, and ordinary
+discussion remain visible.
+
+This is independent of pipeline dispatch and does not change which pipelines run
+or who can request them. It uses the repository's `GITHUB_TOKEN`, does not check
+out or execute PR code, and needs no additional secret. Created or edited comment
+events clean up the triggering PR. An hourly sweep reconciles all open PRs,
+including historical comments, because comments posted with `GITHUB_TOKEN` do not
+trigger another `issue_comment` workflow. A manual dispatch can target a single
+`pr_number` (including a closed PR), or scan all open PRs when omitted. Already
+minimized comments are left unchanged. Automatic cleanup activates after merge
+into the default branch.
+
 ## Prerequisites
 
 - Azure CLI installed locally (for one-time setup)
@@ -235,10 +259,11 @@ Automated CI-fix PR validation is implemented separately by
   still requires live rollout canary verification for all three definitions;
 - deduplicates each pipeline by PR head SHA and reports partial failures.
 
-The workflow and script need to exist only on `main`. Before declaring net11
-coverage enabled, verify that the net11 fixer's compiled workflow name remains
-`CI Failure Fixer (net11.0)` so the main-branch `workflow_run` reconciliation
-fires after its create/push run.
+The workflow and script need to exist only on `main`. The `workflow_run`
+allowlist includes `CI Failure Scanner`, `CI Failure Scanner (net11.0)`, and
+the two manual legacy `CI Failure Fixer` workflows. Keep their exact compiled
+names and paths aligned with `Test-TrustedCiFixWorkflowRun` so reconciliation
+fires after direct issue-free PR creation and follow-up pushes.
 
 ## How It Works (Token Flow)
 

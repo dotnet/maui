@@ -13,7 +13,7 @@ public class Issue5161 : _IssuesUITest
 	public override string Issue => "ShellContent IsEnabledProperty does not work";
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void CheckIsEnabled()
 	{
 		App.WaitForElement("ThirdTab");

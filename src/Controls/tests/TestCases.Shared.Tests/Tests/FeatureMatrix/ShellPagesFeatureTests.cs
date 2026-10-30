@@ -9,6 +9,7 @@ public class ShellPagesFeatureTests : _GalleryUITest
 {
 	public const string ShellPagesFeatureMatrix = "Shell Feature Matrix";
 	public override string GalleryPageName => ShellPagesFeatureMatrix;
+	protected override string GallerySubPageButton => "ShellPageButton";
 	public const string Options = "Options";
 	public const string Apply = "Apply";
 
@@ -19,7 +20,7 @@ public class ShellPagesFeatureTests : _GalleryUITest
 
 #if TEST_FAILS_ON_CATALYST // Issue Link: https://github.com/dotnet/maui/issues/32125
 	[Test, Order(5)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void ShellPages_TitleColor()
 	{
 		App.WaitForElement(Options);
@@ -34,7 +35,7 @@ public class ShellPagesFeatureTests : _GalleryUITest
 
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/32992
 	[Test, Order(2)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void ShellPages_BackgroundColor()
 	{
 		if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
@@ -53,7 +54,7 @@ public class ShellPagesFeatureTests : _GalleryUITest
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/5161
 	[Test, Order(3)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void ShellPages_DisabledColor()
 	{
 		App.WaitForElement(Options);
@@ -70,7 +71,7 @@ public class ShellPagesFeatureTests : _GalleryUITest
 
 #if TEST_FAILS_ON_CATALYST // Issue Link: https://github.com/dotnet/maui/issues/32125
 	[Test, Order(4)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void ShellPages_UnselectedColor()
 	{
 		if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
@@ -88,11 +89,9 @@ public class ShellPagesFeatureTests : _GalleryUITest
 #endif
 
 	[Test, Order(1)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void ShellPages_IsEnabledTrue()
 	{
-		App.WaitForElement("ShellPageButton");
-		App.Tap("ShellPageButton");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("IsEnabledTrue");
@@ -108,7 +107,7 @@ public class ShellPagesFeatureTests : _GalleryUITest
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/5161
 	[Test, Order(6)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void ShellPages_IsEnabledFalse()
 	{
 		App.WaitForElement(Options);
@@ -125,7 +124,7 @@ public class ShellPagesFeatureTests : _GalleryUITest
 
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/32992
 	[Test, Order(7)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void ShellPages_ShowTitleViewWithBackgroundColor()
 	{
 		if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
@@ -145,7 +144,7 @@ public class ShellPagesFeatureTests : _GalleryUITest
 #endif
 
 	[Test, Order(8)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void ShellPages_ShowTitleView()
 	{
 		App.WaitForElement(Options); // to reset the old value
@@ -158,7 +157,7 @@ public class ShellPagesFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(9)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void ShellPages_ShowTitleViewHidden()
 	{
 		App.WaitForElement("HideTitleViewButton");
@@ -168,7 +167,7 @@ public class ShellPagesFeatureTests : _GalleryUITest
 
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // Issue Link: https://github.com/dotnet/maui/issues/17550
 	[Test, Order(10)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void ShellPages_NavBarVisibilityHide()
 	{
 		App.WaitForElement("NavBarHideButton");
@@ -177,7 +176,7 @@ public class ShellPagesFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(11)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void ShellPages_NavBarVisibilityShow()
 	{
 		App.WaitForElement("NavBarShowButton");
@@ -188,7 +187,7 @@ public class ShellPagesFeatureTests : _GalleryUITest
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/6399
 	[Test, Order(12)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void ShellPages_NavBarHasShadowTrue()
 	{
 		App.WaitForElement(Options);
@@ -203,7 +202,7 @@ public class ShellPagesFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(13)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void ShellPages_NavBarHasShadowFalse()
 	{
 		App.WaitForElement(Options);
@@ -219,7 +218,7 @@ public class ShellPagesFeatureTests : _GalleryUITest
 #endif
 
 	[Test, Order(14)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void ShellPages_IsVisibleFalse()
 	{
 		App.WaitForElement(Options);
@@ -232,7 +231,7 @@ public class ShellPagesFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(15)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void ShellPages_IsVisibleTrue()
 	{
 		App.WaitForElement(Options);
@@ -245,7 +244,7 @@ public class ShellPagesFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(16)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void ShellPages_PresentationModeNotAnimated()
 	{
 		App.WaitForElement("NotAnimatedButton");
@@ -255,7 +254,7 @@ public class ShellPagesFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(17)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void ShellPages_PresentationModeAnimated()
 	{
 		App.WaitForElement("GoBackButton"); // To go back to controls page
@@ -267,7 +266,7 @@ public class ShellPagesFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(18)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void ShellPages_PresentationModeModal()
 	{
 		App.WaitForElement("GoBackButton"); // To go back to controls page
@@ -279,7 +278,7 @@ public class ShellPagesFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(19)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void ShellPages_PresentationModeModalAnimated()
 	{
 		App.WaitForElement("GoBackButton"); // To go back to controls page
@@ -291,7 +290,7 @@ public class ShellPagesFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(20)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void ShellPages_PresentationModeModalNotAnimated()
 	{ 
 		App.WaitForElement("GoBackButton"); // To go back to controls page
@@ -304,7 +303,7 @@ public class ShellPagesFeatureTests : _GalleryUITest
 
 #if TEST_FAILS_ON_CATALYST // Issue Link: https://github.com/dotnet/maui/issues/32125
 	[Test, Order(21)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void ShellPages_ForegroundColor()
 	{
 		App.WaitForElement("GoBackButton"); // To go back to controls page
@@ -319,7 +318,7 @@ public class ShellPagesFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(22)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void ShellPages_ForegroundColorAndTitleColor()
 	{
 		App.WaitForElement(Options);
@@ -336,7 +335,7 @@ public class ShellPagesFeatureTests : _GalleryUITest
 
 #if TEST_FAILS_ON_CATALYST // Issue Link: https://github.com/dotnet/maui/issues/32125
 	[Test, Order(23)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void ShellPages_ForegroundColorAndUnselectedColor()
 	{
 		if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
@@ -358,7 +357,7 @@ public class ShellPagesFeatureTests : _GalleryUITest
 
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS// Issue Link: https://github.com/dotnet/maui/issues/32992
 	[Test, Order(24)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void ShellPages_BackgroundColorAndForegroundColor()
 	{
 		if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
@@ -377,7 +376,7 @@ public class ShellPagesFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(25)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void ShellPages_BackgroundColorAndTitleColor()
 	{
 		if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
@@ -396,7 +395,7 @@ public class ShellPagesFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(26)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void ShellPages_BackgroundColorAndUnselectedColor()
 	{
 		if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
@@ -417,7 +416,7 @@ public class ShellPagesFeatureTests : _GalleryUITest
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/5161
 	[Test, Order(27)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void ShellPages_ForegroundColorAndDisabledColor()
 	{
 		App.WaitForElement(Options);
@@ -434,7 +433,7 @@ public class ShellPagesFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(28)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void ShellPages_DisabledColorAndUnselectedColor()
 	{
 		if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
@@ -457,7 +456,7 @@ public class ShellPagesFeatureTests : _GalleryUITest
 
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS// Issue Link: https://github.com/dotnet/maui/issues/33909
 	[Test, Order(30)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void ShellPages_VerifyForegroundColorResetForBackButton()
 	{
 		App.WaitForElement(Options);
@@ -474,7 +473,7 @@ public class ShellPagesFeatureTests : _GalleryUITest
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS  // Issue Link:https://github.com/dotnet/maui/issues/32993
 	[Test, Order(29)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void ShellPages_FlowDirectionRTL()
 	{
 		App.WaitForElement(Options);

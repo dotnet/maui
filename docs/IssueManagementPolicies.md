@@ -22,6 +22,8 @@ If the author does not post a response or updates the PR within **14 days**, the
 
 If we determine that the issue is a duplicate of another, we will close the issue and comment with the issue we believe is the duplicate one. Note that we might close an issue as duplicate which is not the one that has been reported the earliest. We might close an issue that has been reported earlier because the later issue has more relevant information and/or discussion.
 
+The [issue duplicate detector](../.github/docs/issue-duplicate-detector.md) can suggest existing reports with an estimated duplicate probability and supporting evidence. These AI estimates are advisory, not confirmed duplicate decisions. The workflow never labels or closes issues; maintainers decide whether reports have the same root cause.
+
 ## Locking closed issues
 
 After an issue has been closed and had no activity for **30 days** it will be automatically locked as *resolved*. This is done in order to reduce confusion as to where to post new comments. If you are still encountering the problem reported in an issue or have a related question or bug report, feel free to open a *new issue* and link to the original (now locked) issue!
