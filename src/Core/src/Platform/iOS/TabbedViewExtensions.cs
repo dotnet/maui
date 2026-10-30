@@ -138,7 +138,7 @@ namespace Microsoft.Maui.Platform
 			tabBar.StandardAppearance = tabBar.ScrollEdgeAppearance = _tabBarAppearance;
 
 			// Applying both colors requires an immediate layout on iOS 26 to avoid initially truncated tab titles.
-			if (OperatingSystem.IsIOSVersionAtLeast(26) && barBackgroundColor is not null && selectedBarTextColor is not null)
+			if (OperatingSystem.IsIOSVersionAtLeast(26) && barBackground is not null && selectedBarTextColor is not null)
 			{
 				tabBar.LayoutIfNeeded();
 			}

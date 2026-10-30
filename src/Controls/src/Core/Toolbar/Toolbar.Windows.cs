@@ -327,9 +327,9 @@ namespace Microsoft.Maui.Controls
 		{
 			public InfoBadge Badge { get; } = new()
 			{
-				HorizontalAlignment = HorizontalAlignment.Right,
-				VerticalAlignment = VerticalAlignment.Top,
-				Margin = new Thickness(0, -4, -4, 0),
+				HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Right,
+				VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Top,
+				Margin = new Microsoft.UI.Xaml.Thickness(0, -4, -4, 0),
 			};
 
 			public WGrid? Host { get; set; }
