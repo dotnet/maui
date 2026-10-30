@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Essentials.Gtk;
 using Microsoft.Maui.Media;
 using Xunit;
@@ -22,7 +23,18 @@ public class GtkThreadTests
 		var host = GtkHost.Instance!;
 		var display = new GtkDeviceDisplay();
 
-		var info = host.Invoke(() => display.MainDisplayInfo);
+		var (info, monitorCount) = host.Invoke(() => (display.MainDisplayInfo, (int)(Gdk.Display.Default?.Monitors?.NItems ?? 0)));
+
+		if (monitorCount == 0)
+		{
+			// A session without monitors (a service or remote session: GDK lists none) has no main display: the documented
+			// "unknown" value rather than a made-up size.
+			Assert.Equal(0, info.Width);
+			Assert.Equal(0, info.Height);
+			Assert.Equal(1, info.Density);
+			Assert.Equal(DisplayOrientation.Unknown, info.Orientation);
+			return;
+		}
 
 		Assert.True(info.Width > 0, "width");
 		Assert.True(info.Height > 0, "height");
