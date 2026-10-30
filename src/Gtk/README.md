@@ -16,7 +16,7 @@ checks, `IButtonHandler` and user mapper customisations keep working.
 | `../Graphics/src/Graphics.Cairo` | `Microsoft.Maui.Graphics.Cairo` | `ICanvas` on Cairo/Pango, see its [README](../Graphics/src/Graphics.Cairo/README.md) |
 | `src/Controls` | `Microsoft.Maui.Controls.Gtk` | Controls handlers and `UseMauiGtk()`, see [`src/Controls/README.md`](src/Controls/README.md) |
 | `src/BlazorWebView` | `Microsoft.AspNetCore.Components.WebView.Maui.Gtk` | `BlazorWebView` on WebKitGTK; also documents `WebView` and `HybridWebView`, see its [README](src/BlazorWebView/README.md) |
-| `src/Maps` | `Microsoft.Maui.Controls.Maps.Gtk` | other area (separate track, see its own section) |
+| `src/Maps` | `Microsoft.Maui.Controls.Maps.Gtk` | `Map` on OSM slippy tiles, see [`src/Maps/README.md`](src/Maps/README.md) |
 
 Requires GTK >= 4.14 (guard newer APIs with `GtkRuntime.AtLeast(major, minor)`).
 

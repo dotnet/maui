@@ -1,0 +1,89 @@
+﻿#nullable enable
+Microsoft.Maui.Hosting.GtkMapsExtensions
+Microsoft.Maui.Maps.Gtk.GtkMapHandler
+Microsoft.Maui.Maps.Gtk.GtkMapHandler.GtkMapHandler() -> void
+Microsoft.Maui.Maps.Gtk.GtkMapHandler.GtkMapHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper = null) -> void
+Microsoft.Maui.Maps.Gtk.GtkMapOptions
+Microsoft.Maui.Maps.Gtk.GtkMapOptions.CacheDirectory.get -> string?
+Microsoft.Maui.Maps.Gtk.GtkMapOptions.CacheDirectory.set -> void
+Microsoft.Maui.Maps.Gtk.GtkMapOptions.CacheMaxAge.get -> System.TimeSpan
+Microsoft.Maui.Maps.Gtk.GtkMapOptions.CacheMaxAge.set -> void
+Microsoft.Maui.Maps.Gtk.GtkMapOptions.CacheMaxBytes.get -> long
+Microsoft.Maui.Maps.Gtk.GtkMapOptions.CacheMaxBytes.set -> void
+Microsoft.Maui.Maps.Gtk.GtkMapOptions.GetTileSource(Microsoft.Maui.Maps.MapType mapType) -> Microsoft.Maui.Maps.Gtk.GtkMapTileSource!
+Microsoft.Maui.Maps.Gtk.GtkMapOptions.GtkMapOptions() -> void
+Microsoft.Maui.Maps.Gtk.GtkMapOptions.HybridTiles.get -> Microsoft.Maui.Maps.Gtk.GtkMapTileSource!
+Microsoft.Maui.Maps.Gtk.GtkMapOptions.HybridTiles.set -> void
+Microsoft.Maui.Maps.Gtk.GtkMapOptions.MaxConcurrentDownloads.get -> int
+Microsoft.Maui.Maps.Gtk.GtkMapOptions.MaxConcurrentDownloads.set -> void
+Microsoft.Maui.Maps.Gtk.GtkMapOptions.NominatimUrl.get -> string!
+Microsoft.Maui.Maps.Gtk.GtkMapOptions.NominatimUrl.set -> void
+Microsoft.Maui.Maps.Gtk.GtkMapOptions.SatelliteTiles.get -> Microsoft.Maui.Maps.Gtk.GtkMapTileSource!
+Microsoft.Maui.Maps.Gtk.GtkMapOptions.SatelliteTiles.set -> void
+Microsoft.Maui.Maps.Gtk.GtkMapOptions.StreetTiles.get -> Microsoft.Maui.Maps.Gtk.GtkMapTileSource!
+Microsoft.Maui.Maps.Gtk.GtkMapOptions.StreetTiles.set -> void
+Microsoft.Maui.Maps.Gtk.GtkMapOptions.TileFetcher.get -> Microsoft.Maui.Maps.Gtk.IGtkMapTileFetcher?
+Microsoft.Maui.Maps.Gtk.GtkMapOptions.TileFetcher.set -> void
+Microsoft.Maui.Maps.Gtk.GtkMapOptions.UserAgent.get -> string!
+Microsoft.Maui.Maps.Gtk.GtkMapOptions.UserAgent.set -> void
+Microsoft.Maui.Maps.Gtk.GtkMapOptions.UserLocationProvider.get -> System.Func<Microsoft.Maui.Devices.Sensors.Location?>?
+Microsoft.Maui.Maps.Gtk.GtkMapOptions.UserLocationProvider.set -> void
+Microsoft.Maui.Maps.Gtk.GtkMapTileSource
+Microsoft.Maui.Maps.Gtk.GtkMapTileSource.Attribution.get -> string!
+Microsoft.Maui.Maps.Gtk.GtkMapTileSource.GtkMapTileSource(string! urlTemplate, string? attribution, int maxZoom = 19, string? overlayUrlTemplate = null) -> void
+Microsoft.Maui.Maps.Gtk.GtkMapTileSource.MaxZoom.get -> int
+Microsoft.Maui.Maps.Gtk.GtkMapTileSource.OverlayUrlTemplate.get -> string?
+Microsoft.Maui.Maps.Gtk.GtkMapTileSource.UrlTemplate.get -> string!
+Microsoft.Maui.Maps.Gtk.HttpGtkMapTileFetcher
+Microsoft.Maui.Maps.Gtk.HttpGtkMapTileFetcher.Dispose() -> void
+Microsoft.Maui.Maps.Gtk.HttpGtkMapTileFetcher.FetchAsync(string! url, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<byte[]?>!
+Microsoft.Maui.Maps.Gtk.HttpGtkMapTileFetcher.HttpGtkMapTileFetcher(string! userAgent, System.Net.Http.HttpMessageHandler? handler = null) -> void
+Microsoft.Maui.Maps.Gtk.IGtkMapTileFetcher
+Microsoft.Maui.Maps.Gtk.IGtkMapTileFetcher.FetchAsync(string! url, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<byte[]?>!
+Microsoft.Maui.Maps.Gtk.MapPositionEventArgs
+Microsoft.Maui.Maps.Gtk.MapPositionEventArgs.MapPositionEventArgs(Microsoft.Maui.Devices.Sensors.Location! position) -> void
+Microsoft.Maui.Maps.Gtk.MapPositionEventArgs.Position.get -> Microsoft.Maui.Devices.Sensors.Location!
+Microsoft.Maui.Maps.Gtk.MauiGtkMapView
+Microsoft.Maui.Maps.Gtk.MauiGtkMapView.CenterLatitude.get -> double
+Microsoft.Maui.Maps.Gtk.MauiGtkMapView.CenterLongitude.get -> double
+Microsoft.Maui.Maps.Gtk.MauiGtkMapView.Invalidate() -> void
+Microsoft.Maui.Maps.Gtk.MauiGtkMapView.IsScrollEnabled.get -> bool
+Microsoft.Maui.Maps.Gtk.MauiGtkMapView.IsScrollEnabled.set -> void
+Microsoft.Maui.Maps.Gtk.MauiGtkMapView.IsShowingUser.get -> bool
+Microsoft.Maui.Maps.Gtk.MauiGtkMapView.IsShowingUser.set -> void
+Microsoft.Maui.Maps.Gtk.MauiGtkMapView.IsZoomEnabled.get -> bool
+Microsoft.Maui.Maps.Gtk.MauiGtkMapView.IsZoomEnabled.set -> void
+Microsoft.Maui.Maps.Gtk.MauiGtkMapView.MapClicked -> System.EventHandler<Microsoft.Maui.Maps.Gtk.MapPositionEventArgs!>?
+Microsoft.Maui.Maps.Gtk.MauiGtkMapView.MauiGtkMapView() -> void
+Microsoft.Maui.Maps.Gtk.MauiGtkMapView.MauiGtkMapView(Microsoft.Maui.Maps.Gtk.GtkMapOptions! options) -> void
+Microsoft.Maui.Maps.Gtk.MauiGtkMapView.MoveTo(Microsoft.Maui.Devices.Sensors.Location! center, int zoom) -> void
+Microsoft.Maui.Maps.Gtk.MauiGtkMapView.MoveToRegion(Microsoft.Maui.Maps.MapSpan! span) -> void
+Microsoft.Maui.Maps.Gtk.MauiGtkMapView.PanByPixels(double deltaX, double deltaY) -> void
+Microsoft.Maui.Maps.Gtk.MauiGtkMapView.PinAt(double px, double py) -> Microsoft.Maui.Maps.IMapPin?
+Microsoft.Maui.Maps.Gtk.MauiGtkMapView.Pins.get -> System.Collections.Generic.IReadOnlyList<Microsoft.Maui.Maps.IMapPin!>!
+Microsoft.Maui.Maps.Gtk.MauiGtkMapView.SelectedPin.get -> Microsoft.Maui.Maps.IMapPin?
+Microsoft.Maui.Maps.Gtk.MauiGtkMapView.SetElements(System.Collections.Generic.IEnumerable<Microsoft.Maui.Maps.IMapElement!>! elements) -> void
+Microsoft.Maui.Maps.Gtk.MauiGtkMapView.SetPins(System.Collections.Generic.IEnumerable<Microsoft.Maui.Maps.IMapPin!>! pins) -> void
+Microsoft.Maui.Maps.Gtk.MauiGtkMapView.TileSource.get -> Microsoft.Maui.Maps.Gtk.GtkMapTileSource!
+Microsoft.Maui.Maps.Gtk.MauiGtkMapView.TileSource.set -> void
+Microsoft.Maui.Maps.Gtk.MauiGtkMapView.UserLocation.get -> Microsoft.Maui.Devices.Sensors.Location?
+Microsoft.Maui.Maps.Gtk.MauiGtkMapView.UserLocation.set -> void
+Microsoft.Maui.Maps.Gtk.MauiGtkMapView.ViewportChanged -> System.EventHandler?
+Microsoft.Maui.Maps.Gtk.MauiGtkMapView.VisibleRegion.get -> Microsoft.Maui.Maps.MapSpan!
+Microsoft.Maui.Maps.Gtk.MauiGtkMapView.Zoom.get -> int
+Microsoft.Maui.Maps.Gtk.MauiGtkMapView.ZoomAt(int steps, double px, double py) -> void
+Microsoft.Maui.Maps.Gtk.NominatimGeocoding
+Microsoft.Maui.Maps.Gtk.NominatimGeocoding.Dispose() -> void
+Microsoft.Maui.Maps.Gtk.NominatimGeocoding.GetLocationsAsync(string! address) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.Maui.Devices.Sensors.Location!>!>!
+Microsoft.Maui.Maps.Gtk.NominatimGeocoding.GetPlacemarksAsync(double latitude, double longitude) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.Maui.Devices.Sensors.Placemark!>!>!
+Microsoft.Maui.Maps.Gtk.NominatimGeocoding.MinimumInterval.get -> System.TimeSpan
+Microsoft.Maui.Maps.Gtk.NominatimGeocoding.MinimumInterval.set -> void
+Microsoft.Maui.Maps.Gtk.NominatimGeocoding.NominatimGeocoding(Microsoft.Maui.Maps.Gtk.GtkMapOptions! options, System.Net.Http.HttpMessageHandler? handler = null) -> void
+override Microsoft.Maui.Maps.Gtk.GtkMapHandler.ConnectHandler(object! platformView) -> void
+override Microsoft.Maui.Maps.Gtk.GtkMapHandler.CreatePlatformView() -> object!
+override Microsoft.Maui.Maps.Gtk.GtkMapHandler.DisconnectHandler(object! platformView) -> void
+static Microsoft.Maui.Hosting.GtkMapsExtensions.UseMauiMapsGtk(this Microsoft.Maui.Hosting.MauiAppBuilder! builder, System.Action<Microsoft.Maui.Maps.Gtk.GtkMapOptions!>? configure = null) -> Microsoft.Maui.Hosting.MauiAppBuilder!
+static Microsoft.Maui.Maps.Gtk.GtkMapTileSource.EsriHybrid.get -> Microsoft.Maui.Maps.Gtk.GtkMapTileSource!
+static Microsoft.Maui.Maps.Gtk.GtkMapTileSource.EsriSatellite.get -> Microsoft.Maui.Maps.Gtk.GtkMapTileSource!
+static Microsoft.Maui.Maps.Gtk.GtkMapTileSource.FormatUrl(string! template, int zoom, int x, int y) -> string!
+static Microsoft.Maui.Maps.Gtk.GtkMapTileSource.OpenStreetMap.get -> Microsoft.Maui.Maps.Gtk.GtkMapTileSource!

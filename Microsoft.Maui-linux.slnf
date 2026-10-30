@@ -32,6 +32,7 @@
       "src\\Gtk\\src\\Controls\\Microsoft.Maui.Controls.Gtk.csproj",
       "src\\Gtk\\src\\BlazorWebView\\Microsoft.AspNetCore.Components.WebView.Maui.Gtk.csproj",
       "src\\Gtk\\samples\\Maui.Gtk.BlazorSample\\Maui.Gtk.BlazorSample.csproj",
+      "src\\Gtk\\src\\Maps\\Microsoft.Maui.Controls.Maps.Gtk.csproj",
       "src\\Gtk\\tests\\Microsoft.Maui.Gtk.UnitTests\\Microsoft.Maui.Gtk.UnitTests.csproj",
       "src\\Gtk\\samples\\Maui.Gtk.Sample\\Maui.Gtk.Sample.csproj"
     ]

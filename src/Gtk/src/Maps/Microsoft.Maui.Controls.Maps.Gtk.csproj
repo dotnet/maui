@@ -1,0 +1,40 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(MauiGtkTargetFramework)</TargetFramework>
+    <RootNamespace>Microsoft.Maui.Maps.Gtk</RootNamespace>
+    <AssemblyName>Microsoft.Maui.Controls.Maps.Gtk</AssemblyName>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);RS0041;RS0026;RS0027</NoWarn>
+    <WarningsAsErrors>$(WarningsAsErrors);CS1591</WarningsAsErrors>
+    <!-- NuGet package information -->
+    <IsPackable>true</IsPackable>
+    <PackageId>Microsoft.Maui.Controls.Maps.Gtk</PackageId>
+    <PackageTags>$(DefaultPackageTags);maps;mapping;gtk;linux;openstreetmap</PackageTags>
+    <Description>.NET MAUI Maps on Linux with GTK 4 (GtkSharp4): the Map control drawn over OpenStreetMap-compatible slippy tiles with pins, polylines, polygons and circles, plus a Nominatim geocoder.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.Maui.Gtk.UnitTests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Core\Microsoft.Maui.Gtk.csproj" />
+    <ProjectReference Include="..\..\..\Controls\Maps\src\Controls.Maps.csproj" />
+    <ProjectReference Include="..\..\..\Core\maps\src\Maps.csproj" />
+    <ProjectReference Include="..\..\..\Core\src\Core.csproj" />
+    <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="GtkSharp4" />
+    <PackageReference Include="GdkSharp4" />
+    <PackageReference Include="GskSharp4" />
+    <PackageReference Include="PangoSharp4" />
+    <PackageReference Include="GrapheneSharp4" />
+    <PackageReference Include="CairoSharp4" />
+  </ItemGroup>
+
+  <Import Project="$(MauiSrcDirectory)PublicAPI.targets" />
+
+</Project>
