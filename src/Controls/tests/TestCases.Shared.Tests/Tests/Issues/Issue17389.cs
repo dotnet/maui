@@ -21,7 +21,7 @@ public class Issue17389 : _IssuesUITest
 		App.WaitForElement("ToggleInputTransparentButton");
 
 		if (App is AppiumCatalystApp)
-			App.ForegroundApp();
+			App.LaunchApp();
 
 		string[] layouts = new[]
 		{
