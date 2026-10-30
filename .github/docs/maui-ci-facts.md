@@ -113,6 +113,12 @@ the initial credential before any tests execute. These jobs consume prebuilt app
 or package artifacts and do not need release tags. Build-job checkout and
 tag-based versioning remain unchanged.
 
+UI execution jobs keep .NET CLI state under the agent's job-local temporary
+directory, not the image's shared user `.dotnet` directory. The job-level
+`DOTNET_CLI_HOME` is shared by tool restore and subsequent tool invocations so
+resolver caches remain available; it does not change `HOME` or the SDK root.
+Bootstrap does not generate an unrelated ASP.NET development certificate.
+
 ## MAUI-specific quirks
 
 ### Windows packaged device-test deployment

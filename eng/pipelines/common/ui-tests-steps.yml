@@ -23,6 +23,14 @@ steps:
   fetchTags: false
   clean: true
 
+- pwsh: |
+    $ErrorActionPreference = 'Stop'
+    $cliHome = Join-Path $env:AGENT_TEMPDIRECTORY 'dotnet-cli-home'
+    New-Item -ItemType Directory -Path $cliHome -Force | Out-Null
+    Write-Host "##vso[task.setvariable variable=DOTNET_CLI_HOME]$cliHome"
+    Write-Host "##vso[task.setvariable variable=DOTNET_GENERATE_ASPNET_CERTIFICATE]false"
+  displayName: Initialize job-local .NET CLI state
+
 - task: DownloadPipelineArtifact@2
   condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'Mono'), eq('${{ parameters.useMaterial3 }}', 'false'))
   inputs:
