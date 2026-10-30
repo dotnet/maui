@@ -212,6 +212,7 @@ steps:
     testResultsFiles: '$(TestResultsDirectory)/*.trx'
     testRunTitle: '${{ parameters.testFilter }}_$(System.PhaseName)'
     failTaskOnFailedTests: true
+    failTaskOnMissingResultsFile: true
 
 - task: PublishBuildArtifacts@1
   condition: always()

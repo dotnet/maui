@@ -122,6 +122,8 @@ before relocating CLI state. Otherwise NuGet restores under the new CLI home
 while Arcade's `NuGetPackageRoot` still imports tasks from the original cache,
 which can leave provisioning tasks such as `JsonPeek` unavailable.
 Bootstrap does not generate an unrelated ASP.NET development certificate.
+UI result publication fails if the expected TRX files are missing. A successful
+setup task or publisher warning is not evidence that the selected tests ran.
 
 ## MAUI-specific quirks
 
