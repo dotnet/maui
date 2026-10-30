@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Gtk.UnitTests
 	{
 		static MauiApp? s_app;
 
-		/// <summary>The shared app; must be touched on the GTK thread.</summary>
+		/// <summary>The shared app; must be touched on the GTK thread. Controls created before the first window need it built first (their dispatcher comes from it).</summary>
 		public static MauiApp App => s_app ??= MauiApp.CreateBuilder()
 			.UseMauiApp<ControlsTestApplication>()
 			.UseMauiGtk()
@@ -59,6 +59,16 @@ namespace Microsoft.Maui.Gtk.UnitTests
 			((Microsoft.Maui.Gtk.Handlers.GtkWindowHandler)Window.Handler!).UpdateActive(true);
 			GtkTestHost.Pump(PlatformWindow, 8);
 			GtkTestHost.Resize(PlatformWindow, width, height);
+		}
+
+		/// <summary>
+		/// Fails when GTK complained since the host was created, except about the missing accessibility bus: that is the environment of a
+		/// headless session (no D-Bus a11y service), logged once by the first window of the process.
+		/// </summary>
+		public static void AssertNoComplaints()
+		{
+			var complaints = System.Linq.Enumerable.ToArray(System.Linq.Enumerable.Where(GtkTestHost.Complaints, c => !c.Contains("accessibility bus", StringComparison.Ordinal)));
+			Xunit.Assert.True(complaints.Length == 0, "GTK complained: " + string.Join(" | ", complaints));
 		}
 
 		public global::Gtk.Window PlatformWindow { get; }

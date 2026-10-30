@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Gtk.UnitTests
 			Assert.False(handler.Tabs.Bar.Visible);
 			Assert.Equal("home", GtkTestHost.Find<global::Gtk.Label>(handler.Tabs.HostAt(0)).First().Text);
 			Assert.True(GtkTestHost.Find<global::Gtk.Label>(handler.Tabs.HostAt(0)).First().Width > 0);
-			GtkTestHost.AssertNoComplaints();
+			ControlsWindowHost.AssertNoComplaints();
 		});
 
 		[GtkFact]

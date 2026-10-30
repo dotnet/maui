@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Gtk.UnitTests
 			// The root page fills the stack and its content is laid out.
 			var label = host.Widget(root.Content);
 			Assert.True(label.Width > 0 && label.Height > 0);
-			GtkTestHost.AssertNoComplaints();
+			ControlsWindowHost.AssertNoComplaints();
 		});
 
 		[GtkFact]
@@ -62,7 +62,7 @@ namespace Microsoft.Maui.Gtk.UnitTests
 			Assert.Single(handler.NavigationStack);
 			Assert.Same(host.Widget(root), handler.Stack.VisibleChild!.FirstChild);
 			Assert.Single(GtkTestHost.Find<MauiGtkFillHost>(handler.Stack));
-			GtkTestHost.AssertNoComplaints();
+			ControlsWindowHost.AssertNoComplaints();
 		});
 
 		[GtkFact]
@@ -295,7 +295,7 @@ namespace Microsoft.Maui.Gtk.UnitTests
 			Assert.Equal(flyoutBounds.Width, detailBounds.X);
 			Assert.Equal(panel.Width, detailBounds.X + detailBounds.Width);
 			Assert.True(host.Widget(detail.Content).Width > 0);
-			GtkTestHost.AssertNoComplaints();
+			ControlsWindowHost.AssertNoComplaints();
 		});
 
 		[GtkFact]

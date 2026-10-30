@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Gtk.UnitTests
 			{
 				var widget = new GtkLabel();
 				widget.Markup = GtkLabelMarkup.FromHtml(html);
-				GtkTestHost.AssertNoComplaints();
+				ControlsWindowHost.AssertNoComplaints();
 			}
 		});
 

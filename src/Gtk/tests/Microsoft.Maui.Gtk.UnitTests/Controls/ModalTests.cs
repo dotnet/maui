@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Gtk.UnitTests
 			var label = (global::Gtk.Widget)modal.Content.Handler!.PlatformView!;
 			Assert.True(label.Width > 0 && label.Height > 0);
 			GtkTestHost.Retire(window);
-			GtkTestHost.AssertNoComplaints();
+			ControlsWindowHost.AssertNoComplaints();
 		});
 
 		[GtkFact]

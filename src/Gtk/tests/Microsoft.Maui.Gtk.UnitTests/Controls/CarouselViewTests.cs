@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Gtk.UnitTests
 
 				var first = handler.Controller.BoundHosts.OrderBy(h => h.ListItem!.Position).First();
 				Assert.Equal(400, first.Width);
-				GtkTestHost.AssertNoComplaints();
+				ControlsWindowHost.AssertNoComplaints();
 			}
 		});
 

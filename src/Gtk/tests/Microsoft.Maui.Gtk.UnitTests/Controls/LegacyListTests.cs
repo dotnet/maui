@@ -17,6 +17,7 @@ namespace Microsoft.Maui.Gtk.UnitTests
 		[GtkFact]
 		public void ListViewShowsTextCellsFromTheTemplate() => GtkTestHost.Run(() =>
 		{
+			_ = ControlsTestApp.App;
 			var list = new ListView
 			{
 				ItemsSource = new[] { "one", "two", "three" },
@@ -36,12 +37,13 @@ namespace Microsoft.Maui.Gtk.UnitTests
 			Assert.Equal(new[] { "one", "two", "three" }, RowTexts(handler));
 			// The detail is a second label bound to the cell.
 			Assert.Contains("3", handler.BoundHosts.SelectMany(h => GtkTestHost.Find<global::Gtk.Label>(h)).Select(l => l.Text));
-			GtkTestHost.AssertNoComplaints();
+			ControlsWindowHost.AssertNoComplaints();
 		});
 
 		[GtkFact]
 		public void ListViewWithoutATemplateShowsToString() => GtkTestHost.Run(() =>
 		{
+			_ = ControlsTestApp.App;
 			var list = new ListView { ItemsSource = new object[] { 1, "b" } };
 			using var host = new ControlsWindowHost(new ContentPage { Content = list }, 400, 300);
 			host.Pump(10);
@@ -52,6 +54,7 @@ namespace Microsoft.Maui.Gtk.UnitTests
 		[GtkFact]
 		public void ListViewViewCellsShowTheirView() => GtkTestHost.Run(() =>
 		{
+			_ = ControlsTestApp.App;
 			var list = new ListView
 			{
 				ItemsSource = new[] { "a", "b" },
@@ -71,6 +74,7 @@ namespace Microsoft.Maui.Gtk.UnitTests
 		[GtkFact]
 		public void SelectionAndTapsReachTheListView() => GtkTestHost.Run(() =>
 		{
+			_ = ControlsTestApp.App;
 			var list = new ListView { ItemsSource = new[] { "a", "b", "c" } };
 			using var host = new ControlsWindowHost(new ContentPage { Content = list }, 400, 300);
 			host.Pump(10);
@@ -99,6 +103,7 @@ namespace Microsoft.Maui.Gtk.UnitTests
 		[GtkFact]
 		public void ListViewHeaderFooterAndGrouping() => GtkTestHost.Run(() =>
 		{
+			_ = ControlsTestApp.App;
 			var group = new List<string> { "x", "y" };
 			var list = new ListView
 			{
@@ -120,6 +125,7 @@ namespace Microsoft.Maui.Gtk.UnitTests
 		[GtkFact]
 		public void SwitchAndEntryCellsStayBoundToTheCell() => GtkTestHost.Run(() =>
 		{
+			_ = ControlsTestApp.App;
 			var switchCell = new SwitchCell { Text = "wifi", On = false };
 			var entryCell = new EntryCell { Label = "name", Text = "abc", Placeholder = "p" };
 			var table = new TableView
@@ -153,6 +159,7 @@ namespace Microsoft.Maui.Gtk.UnitTests
 		[GtkFact]
 		public void TappingATableCellRunsItsTapBehaviour() => GtkTestHost.Run(() =>
 		{
+			_ = ControlsTestApp.App;
 			int taps = 0;
 			var cell = new TextCell { Text = "tap me", Command = new Command(() => taps++) };
 			var table = new TableView { Root = new TableRoot { new TableSection { cell } } };

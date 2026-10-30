@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Gtk.UnitTests
 				Assert.Equal(30, first.Height);
 				// GTK adds its row padding around the content.
 				Assert.InRange(GtkTestHost.BoundsIn(second, first.Parent).Y - GtkTestHost.BoundsIn(first, first.Parent).Y, 30, 40);
-				GtkTestHost.AssertNoComplaints();
+				ControlsWindowHost.AssertNoComplaints();
 			}
 		});
 
@@ -526,7 +526,7 @@ namespace Microsoft.Maui.Gtk.UnitTests
 				var bounds = host.Bounds(view);
 				Assert.Equal(content.Width, bounds.Width);
 				Assert.Equal(content.Height, bounds.Height);
-				GtkTestHost.AssertNoComplaints();
+				ControlsWindowHost.AssertNoComplaints();
 			}
 		});
 
