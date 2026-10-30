@@ -184,19 +184,7 @@ namespace Microsoft.Maui.DeviceTests
 		[Description("Multiple calls to NavigationRenderer.Dispose shouldn't crash")]
 		public async Task NavigationRendererDoubleDisposal()
 		{
-			// This test targets NavigationRenderer.Dispose() specifically, so it always
-			// registers NavigationRenderer directly rather than deferring to SetupBuilder()
-			// (which, on the Handler subclass, would register NavigationViewHandler instead).
-			EnsureHandlerCreated(builder =>
-			{
-				builder.ConfigureMauiHandlers(handlers =>
-				{
-					handlers.AddHandler(typeof(Toolbar), typeof(ToolbarHandler));
-					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationRenderer));
-					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedRenderer));
-					RegisterCommonHandlers(handlers);
-				});
-			});
+			SetupNavigationRenderer();
 
 			var root = new ContentPage()
 			{
@@ -257,7 +245,7 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(true)]
 		public async Task NativePopContinuationAfterRendererDisposalDoesNotThrow(bool popToRoot)
 		{
-			SetupBuilder();
+			SetupNavigationRenderer();
 			var root = new ContentPage();
 			var navigationPage = new NavigationPage(root);
 
@@ -294,6 +282,21 @@ namespace Microsoft.Maui.DeviceTests
 				poppedPage.ToolbarItems.Add(new ToolbarItem { Text = "Added after dismissal" });
 				await AssertEventually(() => poppedController.Handle == IntPtr.Zero,
 					message: "The removed controller should be disposed even when its page is retained.");
+			});
+		}
+
+		void SetupNavigationRenderer()
+		{
+			// Renderer-disposal tests must retain their native implementation in inherited handler fixtures.
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler(typeof(Toolbar), typeof(ToolbarHandler));
+					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationRenderer));
+					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedRenderer));
+					RegisterCommonHandlers(handlers);
+				});
 			});
 		}
 
