@@ -110,13 +110,18 @@ namespace Microsoft.Maui.Gtk.Handlers
 
 		void OnDraw(global::Gtk.DrawingArea area, global::Cairo.Context context, int width, int height)
 		{
-			DrawCount++;
+			// GtkSharp hands over a referenced context that nobody else disposes; release it so the
+			// finalizer does not report a leak (and write to a possibly invalid console).
+			using (context)
+			{
+				DrawCount++;
 
-			if (Drawable is not { } drawable || width <= 0 || height <= 0)
-				return;
+				if (Drawable is not { } drawable || width <= 0 || height <= 0)
+					return;
 
-			using var canvas = new CairoCanvas(context);
-			drawable.Draw(canvas, new RectF(0, 0, width, height));
+				using var canvas = new CairoCanvas(context);
+				drawable.Draw(canvas, new RectF(0, 0, width, height));
+			}
 		}
 
 		static PointF[] Point(double x, double y) => new[] { new PointF((float)x, (float)y) };
