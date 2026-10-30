@@ -104,6 +104,15 @@ do not restore leaked text or relax comparison tolerances to match an old image.
 - Do not answer "nothing is unique to the PR" until you have confirmed you inspected
   **all** failed legs. Absence of evidence is not evidence — it is usually an unread log.
 
+## Test-job checkout
+
+UI execution and integration-test setup check out the requested commit at depth
+one without fetching tags. Fetching all tags can pull unrelated historical image
+objects despite the shallow depth, exhausting checkout time or the lifetime of
+the initial credential before any tests execute. These jobs consume prebuilt app
+or package artifacts and do not need release tags. Build-job checkout and
+tag-based versioning remain unchanged.
+
 ## MAUI-specific quirks
 
 ### Windows packaged device-test deployment

@@ -18,6 +18,11 @@ parameters:
   checkoutDirectory: $(System.DefaultWorkingDirectory)
 
 steps:
+- checkout: self
+  fetchDepth: 1
+  fetchTags: false
+  clean: true
+
 - task: DownloadPipelineArtifact@2
   condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'Mono'), eq('${{ parameters.useMaterial3 }}', 'false'))
   inputs:
