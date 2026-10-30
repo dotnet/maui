@@ -230,11 +230,11 @@ namespace Microsoft.Maui.Controls
 			if (host is null || ReferenceEquals(host, state.Host))
 				return;
 
+#pragma warning disable RS0030 // AppBarButton template Grid, not a MauiPanel
 			if (state.Host is not null)
 				state.Host.Children.Remove(state.Badge);
 
 			state.Host = host;
-#pragma warning disable RS0030 // AppBarButton template Grid, not a MauiPanel
 			host.Children.Add(state.Badge);
 #pragma warning restore RS0030
 		}
@@ -260,7 +260,9 @@ namespace Microsoft.Maui.Controls
 			if (s_nativeIconBadgeStates.TryGetValue(button, out var state) &&
 				state.Host is not null)
 			{
+#pragma warning disable RS0030 // AppBarButton template Grid, not a MauiPanel
 				state.Host.Children.Remove(state.Badge);
+#pragma warning restore RS0030
 				state.Host = null;
 			}
 		}
