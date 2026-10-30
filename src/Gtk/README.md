@@ -63,6 +63,8 @@ windows and tizen only): the app runs on the JIT.
 | Feed | A `NuGet.config` next to the project with the feed folder (`Packages/`) and nuget.org |
 | Build / run | `dotnet build -f net10.0-gtk4.22`, `dotnet run -f net10.0-gtk4.22`; headless: `GDK_BACKEND=x11 dbus-run-session -- xvfb-run -a dotnet run -f net10.0-gtk4.22` |
 
+Verified on Debian 13 (GTK 4.18.6, headless Xvfb): `dotnet new maui --linux` and `dotnet new maui-blazor --linux` from the packed template build with the packed `-gtk` packages and run; the image, the `OpenSans` font from `MauiFont`, the icon files and the `.desktop` entry are next to the executable.
+
 The template adds `Platforms/Linux/Program.cs` (a `MauiGtkApplication`), `.UseMauiGtk()` under `#if GTK` in `MauiProgram.cs`, and for the GTK head
 only the `Microsoft.Maui.Controls.Gtk` (+ `Microsoft.AspNetCore.Components.WebView.Maui.Gtk`) and `Microsoft.Maui.Resizetizer` references.
 `IncludeSampleContent` pulls Syncfusion and CommunityToolkit packages that have no GTK support: use it on Linux at your own risk.
@@ -165,9 +167,10 @@ Not in this area: Shell, CollectionView, Maps, NavigationPage/Toolbar/FlyoutPage
 
 | Project | Tests (Windows GTK 4.22 / Debian 13 GTK 4.18, xvfb) |
 |---------|------|
-| `Microsoft.Maui.Gtk.UnitTests` (Core + Essentials + Handlers + Controls + Web + Maps) | Windows 615 passed, 21 skipped (17 WebKit + 4 Linux-only popups); Debian 636 passed, 0 skipped |
+| `Microsoft.Maui.Gtk.UnitTests` (Core + Essentials + Handlers + Controls + Web + Maps) | Windows 637 passed, 21 skipped (17 WebKit + 4 Linux-only popups); Debian 658 passed, 0 skipped |
 | `Graphics.Cairo.Tests` | 125 passed, 0 skipped |
-| `Core.UnitTests` / `Controls.Core.UnitTests` (net10.0) | 878 (+3 skipped) / 5865 (+30 skipped) passed |
+| `Core.UnitTests` / `Controls.Core.UnitTests` (net10.0) | 883 (+3 skipped) / 5865 (+30 skipped) passed |
+| `Resizetizer.UnitTests` (43 for `gtk`: images, icon, `.desktop`, dpi paths) | 637 passed, 2 skipped |
 
 - One shared test project; Essentials tests (`Essentials/`) run on the same GTK thread through `GtkTestHost` (a second GTK thread crashes the process); the host is OLE initialized on Windows and iterates the main context in the background once `GtkTestHost.Post` is used.
 - Tests use `[GtkFact]`: skipped when no GTK/display, a failure when `MAUI_GTK_REQUIRE_NATIVE` is set.
@@ -227,6 +230,8 @@ The tree can be built from Windows and from WSL (`/mnt/d/...`) without the two c
 wsl -d Debian -- bash /mnt/d/CommonLibrary/maui/eng/gtk/wsl-setup.sh
 wsl -d Debian -- bash /mnt/d/CommonLibrary/maui/eng/gtk/wsl-test.sh src/Core/tests/UnitTests/Core.UnitTests.csproj
 ```
+
+Under WSL the `Packages` junction is not readable (an NTFS reparse point): restore with `RestoreAdditionalProjectSources=/mnt/d/Starb/Packages` (any folder with the GtkSharp4 packages).
 
 Do not run `./build.sh -restore` from WSL: it would provision the Linux SDK into the shared `.dotnet`.
 
