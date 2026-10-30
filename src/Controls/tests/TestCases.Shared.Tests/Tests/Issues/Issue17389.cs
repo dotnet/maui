@@ -14,7 +14,7 @@ public class Issue17389 : _IssuesUITest
 
     public override string Issue => "InputTransparent should not affect background color on Windows layouts";
 
-#if TEST_FAILS_ON_CATALYST // Tapping does not work properly on CI Mac devices, so it has been restricted to avoid flakiness.
+#if TEST_FAILS_ON_CATALYST // Issue Link: https://github.com/dotnet/maui/issues/39775
     [Test, Order(1)]
     [Category(UITestCategories.Layout)]
     public void ValidateBackgroundColorDoesNotAffectInputTransparent()
