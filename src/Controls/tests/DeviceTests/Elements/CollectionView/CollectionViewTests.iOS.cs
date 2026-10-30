@@ -82,6 +82,53 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory]
+		[InlineData(double.PositiveInfinity, 250)]
+		[InlineData(320, 320)]
+		public async Task VerticalCollectionViewPreMountWidthRespectsConstraints(double widthConstraint, double expectedWidth)
+		{
+			SetupBuilder();
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var collectionView = new CollectionView
+				{
+					MinimumWidthRequest = 250,
+					HeightRequest = 300,
+					ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Vertical),
+					ItemsSource = new[] { "Row 1", "Row 2", "Row 3", "Row 4", "Row 5", "Row 6", "Row 7", "Row 8" },
+					ItemTemplate = new DataTemplate(() => new Label { Text = "Row", HeightRequest = 40 })
+				};
+
+				var handler = await CreateHandlerAsync<CollectionViewHandler2>(collectionView);
+				try
+				{
+					var platformView = handler.Controller.CollectionView;
+					Assert.Null(platformView.Window);
+					var originalFrame = platformView.Frame;
+
+					for (int i = 0; i < 2; i++)
+					{
+						var desiredSize = handler.GetDesiredSize(widthConstraint, 300);
+						if (double.IsPositiveInfinity(widthConstraint))
+						{
+							Assert.Equal(expectedWidth, desiredSize.Width, 1);
+						}
+						else
+						{
+							Assert.InRange(desiredSize.Width, collectionView.MinimumWidthRequest, expectedWidth);
+						}
+						Assert.Equal(300, desiredSize.Height, 1);
+						Assert.Equal(originalFrame, platformView.Frame);
+					}
+				}
+				finally
+				{
+					((IElementHandler)handler).DisconnectHandler();
+				}
+			});
+		}
+
+		[Theory]
 		[InlineData(400)]
 		[InlineData(double.PositiveInfinity)]
 		public async Task VerticalCollectionViewPreMountHeightMeasuresContent(double heightConstraint)
