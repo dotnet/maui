@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.IO;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Graphics;
@@ -166,6 +167,69 @@ namespace Microsoft.Maui.Controls.StyleSheets.UnitTests
 			button.IsEnabled = true;
 
 			Assert.Equal(Colors.Green, button.BackgroundColor);
+		}
+
+		[Theory]
+		[InlineData("en-US")]
+		[InlineData("de-DE")]
+		[InlineData("fr-FR")]
+		public void TransformValuesUseInvariantCulture(string culture)
+		{
+			CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo(culture);
+
+			var styleString = @"transform: translate(10.5,20.25) scale(1.5,1.5) rotate(45.5);";
+			var style = Style.Parse(new CssReader(new StringReader(styleString)), '}');
+			Assert.NotNull(style);
+
+			var ve = new VisualElement();
+			style.Apply(ve);
+
+			Assert.Equal(10.5, ve.TranslationX);
+			Assert.Equal(20.25, ve.TranslationY);
+			Assert.Equal(1.5, ve.ScaleX);
+			Assert.Equal(1.5, ve.ScaleY);
+			Assert.Equal(45.5, ve.Rotation);
+		}
+
+		[Theory]
+		[InlineData("en-US")]
+		[InlineData("de-DE")]
+		public void SingleAxisTransformValuesUseInvariantCulture(string culture)
+		{
+			CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo(culture);
+
+			var styleString = @"transform: translateX(1.5) translateY(2.5) scaleX(0.5) scaleY(0.75) rotateX(12.5) rotateY(22.5);";
+			var style = Style.Parse(new CssReader(new StringReader(styleString)), '}');
+			Assert.NotNull(style);
+
+			var ve = new VisualElement();
+			style.Apply(ve);
+
+			Assert.Equal(1.5, ve.TranslationX);
+			Assert.Equal(2.5, ve.TranslationY);
+			Assert.Equal(0.5, ve.ScaleX);
+			Assert.Equal(0.75, ve.ScaleY);
+			Assert.Equal(12.5, ve.RotationX);
+			Assert.Equal(22.5, ve.RotationY);
+		}
+
+		[Theory]
+		[InlineData("en-US")]
+		[InlineData("de-DE")]
+		public void TransformValuesAcceptExponentNotation(string culture)
+		{
+			CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo(culture);
+
+			var styleString = @"transform: rotate(1e2) scale(1e-1,2.5e-1);";
+			var style = Style.Parse(new CssReader(new StringReader(styleString)), '}');
+			Assert.NotNull(style);
+
+			var ve = new VisualElement();
+			style.Apply(ve);
+
+			Assert.Equal(100, ve.Rotation);
+			Assert.Equal(0.1, ve.ScaleX);
+			Assert.Equal(0.25, ve.ScaleY);
 		}
 
 	}

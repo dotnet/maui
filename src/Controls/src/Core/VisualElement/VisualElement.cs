@@ -228,42 +228,45 @@ namespace Microsoft.Maui.Controls
 				var transformName = transform.Substring(0, openBracket);
 				var value = transform.Substring(openBracket + 1, closeBracket - openBracket - 1);
 				double translationX, translationY, scaleX, scaleY, rotateX, rotateY, rotate;
-				if (transformName.StartsWith("translateX", StringComparison.OrdinalIgnoreCase) && double.TryParse(value, out translationX))
+				if (transformName.StartsWith("translateX", StringComparison.OrdinalIgnoreCase) && TryParseTransformValue(value, out translationX))
 					bindable.SetValue(TranslationXProperty, translationX);
-				else if (transformName.StartsWith("translateY", StringComparison.OrdinalIgnoreCase) && double.TryParse(value, out translationY))
+				else if (transformName.StartsWith("translateY", StringComparison.OrdinalIgnoreCase) && TryParseTransformValue(value, out translationY))
 					bindable.SetValue(TranslationYProperty, translationY);
 				else if (transformName.StartsWith("translate", StringComparison.OrdinalIgnoreCase))
 				{
 					var translate = value.Split(',');
-					if (double.TryParse(translate[0], out translationX) && double.TryParse(translate[1], out translationY))
+					if (TryParseTransformValue(translate[0], out translationX) && TryParseTransformValue(translate[1], out translationY))
 					{
 						bindable.SetValue(TranslationXProperty, translationX);
 						bindable.SetValue(TranslationYProperty, translationY);
 					}
 				}
-				else if (transformName.StartsWith("scaleX", StringComparison.OrdinalIgnoreCase) && double.TryParse(value, out scaleX))
+				else if (transformName.StartsWith("scaleX", StringComparison.OrdinalIgnoreCase) && TryParseTransformValue(value, out scaleX))
 					bindable.SetValue(ScaleXProperty, scaleX);
-				else if (transformName.StartsWith("scaleY", StringComparison.OrdinalIgnoreCase) && double.TryParse(value, out scaleY))
+				else if (transformName.StartsWith("scaleY", StringComparison.OrdinalIgnoreCase) && TryParseTransformValue(value, out scaleY))
 					bindable.SetValue(ScaleYProperty, scaleY);
 				else if (transformName.StartsWith("scale", StringComparison.OrdinalIgnoreCase))
 				{
 					var scale = value.Split(',');
-					if (double.TryParse(scale[0], out scaleX) && double.TryParse(scale[1], out scaleY))
+					if (TryParseTransformValue(scale[0], out scaleX) && TryParseTransformValue(scale[1], out scaleY))
 					{
 						bindable.SetValue(ScaleXProperty, scaleX);
 						bindable.SetValue(ScaleYProperty, scaleY);
 					}
 				}
-				else if (transformName.StartsWith("rotateX", StringComparison.OrdinalIgnoreCase) && double.TryParse(value, out rotateX))
+				else if (transformName.StartsWith("rotateX", StringComparison.OrdinalIgnoreCase) && TryParseTransformValue(value, out rotateX))
 					bindable.SetValue(RotationXProperty, rotateX);
-				else if (transformName.StartsWith("rotateY", StringComparison.OrdinalIgnoreCase) && double.TryParse(value, out rotateY))
+				else if (transformName.StartsWith("rotateY", StringComparison.OrdinalIgnoreCase) && TryParseTransformValue(value, out rotateY))
 					bindable.SetValue(RotationYProperty, rotateY);
-				else if (transformName.StartsWith("rotate", StringComparison.OrdinalIgnoreCase) && double.TryParse(value, out rotate))
+				else if (transformName.StartsWith("rotate", StringComparison.OrdinalIgnoreCase) && TryParseTransformValue(value, out rotate))
 					bindable.SetValue(RotationProperty, rotate);
 				else
 					throw new FormatException("Invalid transform name");
 			}
 		}
+
+		static bool TryParseTransformValue(string value, out double result)
+			=> double.TryParse(value, NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out result);
 
 		internal static readonly BindableProperty TransformOriginProperty =
 			BindableProperty.Create("TransformOrigin", typeof(Point), typeof(VisualElement), new Point(.5d, .5d),
