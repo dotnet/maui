@@ -52,5 +52,51 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			Assert.True(collection.TryGetService(typeof(IService), out var descriptor));
 			Assert.Equal(typeof(Second), descriptor!.ImplementationType);
 		}
+
+		[Fact]
+		public void ReplacingTheLastDescriptorWithAnotherTypeFallsBackToTheEarlierOneOfThatType()
+		{
+			var collection = new MauiServiceCollection();
+			collection.AddTransient<IService, First>();
+			collection.AddTransient<IService, Second>();
+
+			collection[1] = ServiceDescriptor.Transient<First, First>();
+
+			Assert.True(collection.TryGetService(typeof(IService), out var descriptor));
+			Assert.Equal(typeof(First), descriptor!.ImplementationType);
+			Assert.True(collection.TryGetService(typeof(First), out _));
+		}
+
+		[Fact]
+		public void ReplacingAMiddleDescriptorWithTheSameTypeAsLaterOnesKeepsTheLastOfThem()
+		{
+			var collection = new MauiServiceCollection();
+			collection.AddTransient<IService, First>();
+			collection.Add(ServiceDescriptor.Transient<First, First>());
+			collection.Add(ServiceDescriptor.Singleton<First, First>());
+
+			// slot 1 (a First registration) becomes an IService registration, now the last IService; First is still last at slot 2.
+			collection[1] = ServiceDescriptor.Transient<IService, Second>();
+
+			Assert.True(collection.TryGetService(typeof(IService), out var service));
+			Assert.Equal(typeof(Second), service!.ImplementationType);
+			Assert.True(collection.TryGetService(typeof(First), out var first));
+			Assert.Same(collection[2], first);
+		}
+
+		[Fact]
+		public void ReplacingANonCurrentDescriptorWithTheSameTypeKeepsTheLaterOneInTheLookup()
+		{
+			var collection = new MauiServiceCollection();
+			collection.AddTransient<IService, First>();
+			collection.Add(ServiceDescriptor.Transient<First, First>());
+			collection.AddTransient<IService, Second>();
+
+			collection[1] = ServiceDescriptor.Transient<IService, First>();
+
+			Assert.True(collection.TryGetService(typeof(IService), out var descriptor));
+			Assert.Same(collection[2], descriptor);
+			Assert.False(collection.TryGetService(typeof(First), out _));
+		}
 	}
 }
