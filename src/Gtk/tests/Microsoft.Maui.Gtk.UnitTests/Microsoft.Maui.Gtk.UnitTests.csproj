@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(MauiGtkTargetFramework)</TargetFramework>
+    <AssemblyName>Microsoft.Maui.Gtk.UnitTests</AssemblyName>
+    <RootNamespace>Microsoft.Maui.Gtk.UnitTests</RootNamespace>
+    <IsPackable>false</IsPackable>
+    <MauiTestProject>true</MauiTestProject>
+    <!-- Real GTK widgets are exercised on one dedicated thread (see GtkTestHost); no parallelism. -->
+    <NoWarn>$(NoWarn);CS1591;CA1707;xUnit1013</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" Version="$(CoverletCollectorPackageVersion)" />
+    <PackageReference Include="xunit" Version="$(XunitPackageVersion)" />
+    <PackageReference Include="GtkSharp4" />
+    <PackageReference Include="GdkSharp4" />
+    <PackageReference Include="GskSharp4" />
+    <PackageReference Include="PangoSharp4" />
+    <PackageReference Include="GrapheneSharp4" />
+    <PackageReference Include="CairoSharp4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Core\Microsoft.Maui.Gtk.csproj" />
+    <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core.csproj" />
+    <ProjectReference Include="..\..\..\Controls\src\Xaml\Controls.Xaml.csproj" />
+  </ItemGroup>
+
+</Project>

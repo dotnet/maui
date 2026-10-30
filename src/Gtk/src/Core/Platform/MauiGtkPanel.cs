@@ -13,13 +13,22 @@ namespace Microsoft.Maui.Gtk.Platform
 	/// <item>Measure: <c>OnMeasure</c> runs <see cref="ICrossPlatformLayout.CrossPlatformMeasure"/>; MAUI infinity is GTK <c>-1</c>.</item>
 	/// <item>Arrange: <c>OnSizeAllocate</c> runs <see cref="ICrossPlatformLayout.CrossPlatformArrange"/>; each child's handler allocates
 	/// it from inside this call (see <see cref="GtkPlatformViewBackend"/>). There is no <c>SetSizeRequest</c> and no write-back.</item>
-	/// <item>The minimum size is 0 (layouts may be smaller than their content, as on the other platforms); the natural size is the desired size.</item>
+	/// <item>The minimum size is 0 (layouts may be smaller than their content, as on the other platforms; see <see cref="MinimumWidthFollowsContent"/> for scroll content); the natural size is the desired size.</item>
 	/// </list>
 	/// </remarks>
 	public class MauiGtkPanel : global::Gtk.Widget, ICrossPlatformLayoutBacking, IGtkChildHost
 	{
 		/// <inheritdoc/>
 		public ICrossPlatformLayout? CrossPlatformLayout { get; set; }
+
+		/// <summary>
+		/// When <see langword="true"/> the panel's minimum width is its natural (desired) width instead of 0. A scrollable viewport
+		/// sizes its content to the content's <em>minimum</em>, so scroll content sets this for the directions that scroll.
+		/// </summary>
+		public bool MinimumWidthFollowsContent { get; set; }
+
+		/// <summary>The vertical counterpart of <see cref="MinimumWidthFollowsContent"/>.</summary>
+		public bool MinimumHeightFollowsContent { get; set; }
 
 		/// <summary>Whether the panel clips its children to its allocation.</summary>
 		public bool ClipsToBounds
@@ -55,7 +64,10 @@ namespace Microsoft.Maui.Gtk.Platform
 				heightConstraint = forSize;
 
 			var size = layout.CrossPlatformMeasure(widthConstraint, heightConstraint);
-			natural = GtkInterop.ToPixels(orientation == global::Gtk.Orientation.Horizontal ? size.Width : size.Height);
+			bool horizontal = orientation == global::Gtk.Orientation.Horizontal;
+			natural = GtkInterop.ToPixels(horizontal ? size.Width : size.Height);
+			if (horizontal ? MinimumWidthFollowsContent : MinimumHeightFollowsContent)
+				minimum = natural;
 		}
 
 		/// <inheritdoc/>

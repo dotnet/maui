@@ -166,6 +166,14 @@ namespace Microsoft.Maui.Gtk.Handlers
 				vertical = ToPolicy(view.VerticalScrollBarVisibility);
 
 			scroller.SetPolicy(horizontal, vertical);
+
+			// A viewport sizes its content to the content's minimum: the scrolling directions must report the full content size.
+			if (scroller.Child is global::Gtk.Viewport { Child: MauiGtkPanel panel })
+			{
+				panel.MinimumWidthFollowsContent = horizontal != global::Gtk.PolicyType.Never;
+				panel.MinimumHeightFollowsContent = vertical != global::Gtk.PolicyType.Never;
+				panel.QueueResize();
+			}
 		}
 
 		static global::Gtk.PolicyType ToPolicy(ScrollBarVisibility visibility) => visibility switch
