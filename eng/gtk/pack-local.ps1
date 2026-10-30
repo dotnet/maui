@@ -7,6 +7,7 @@
   (OfficialBuild + OfficialBuildId + PreReleaseVersionLabel=gtk; see src/Gtk/README.md) and
   -p:MauiGtkLocalFeedDir, which makes eng/gtk/LocalFeed.targets copy the nupkg into the feed, delete older -gtk
   nupkgs of the same id and purge their folders from the NuGet cache.
+  The list includes the project templates (Microsoft.Maui.Templates.net10: `dotnet new maui --linux`).
   Projects that do not exist (yet) are skipped. Only the TFMs enabled by the (gitignored) Directory.Build.Override.props
   are packed: on a machine without the mobile workloads that is netstandard + net10.0 only.
   Run `eng/gtk/refresh-gtk-packages.sh` under WSL afterwards to purge the WSL NuGet cache.
@@ -66,6 +67,7 @@ $ordered = @(
     'src/Core/maps/src/Maps.csproj'
     'src/Controls/Maps/src/Controls.Maps.csproj'
     'src/BlazorWebView/src/Maui/Microsoft.AspNetCore.Components.WebView.Maui.csproj'
+    'src/Templates/src/Microsoft.Maui.Templates.csproj'
 )
 $gtkRoot = Join-Path $repo 'src/Gtk/src'
 $gtk = @()

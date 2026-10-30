@@ -204,7 +204,7 @@ namespace Microsoft.Maui.Controls.Gtk.Handlers
 				{
 					var host = _tabs.InsertTab(_tabs.Count, section.Title, null);
 					_sections.Add(section);
-					host.SetView(((IShellSectionController)section).PresentedPage, MauiContext);
+					host.SetView(GetPresentedPage(section), MauiContext);
 
 					((IShellSectionController)section).NavigationRequested += OnSectionNavigationRequested;
 					section.PropertyChanged += OnSectionPropertyChanged;
@@ -294,12 +294,23 @@ namespace Microsoft.Maui.Controls.Gtk.Handlers
 			args.Task = System.Threading.Tasks.Task.FromResult(true);
 		}
 
+		// A ShellContent with a ContentTemplate (the project template: ContentTemplate="{DataTemplate local:MainPage}") creates its page
+		// on demand: PresentedPage stays null until a platform asks for the content, as the other platforms' renderers do.
+		static Page? GetPresentedPage(ShellSection section)
+		{
+			var page = ((IShellSectionController)section).PresentedPage;
+			if (page is null && section.CurrentItem is IShellContentController content)
+				page = content.GetOrCreateContent();
+
+			return page;
+		}
+
 		void ShowPresentedPage(int index)
 		{
 			if (MauiContext is null)
 				return;
 
-			var page = ((IShellSectionController)_sections[index]).PresentedPage;
+			var page = GetPresentedPage(_sections[index]);
 			var host = _tabs.HostAt(index);
 			if (!ReferenceEquals(host.View, page))
 				host.SetView(page, MauiContext);

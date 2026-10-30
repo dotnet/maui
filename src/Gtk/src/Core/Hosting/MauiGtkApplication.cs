@@ -40,7 +40,7 @@ namespace Microsoft.Maui
 		IApplication? _mauiApplication;
 
 		/// <summary>Creates the application host.</summary>
-		/// <param name="applicationId">The D-Bus style application id; defaults to one derived from the entry assembly.</param>
+		/// <param name="applicationId">The D-Bus style application id. Defaults to the <c>ApplicationId</c> assembly metadata that the SDK build emits from the project's <c>ApplicationId</c> (when it is a valid id; it names the generated <c>.desktop</c> file), else to one derived from the entry assembly name.</param>
 		protected MauiGtkApplication(string? applicationId = null)
 		{
 			_applicationId = applicationId;

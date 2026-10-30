@@ -1,0 +1,2 @@
+# GtkSharp ref (branch, tag or commit) that eng/gtk/ci-linux.sh builds into Packages/. Pin a commit SHA for reproducible CI.
+net4x.gtk4

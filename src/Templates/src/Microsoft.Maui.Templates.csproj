@@ -85,12 +85,12 @@
         DestinationFiles="%(TemplateJsonInput.RelativeDir)templatestrings.json"
         Condition="'%(TemplateJsonInput.Filename)%(TemplateJsonInput.Extension)' == 'templatestrings.en.json'" />
 
-    <!-- Replace .NET TFM versions -->
+    <!-- Replace .NET TFM versions; MAUI_GTK_VERSION_VALUE is the floating range of the forked Linux/GTK packages (the Linux option of dotnet new maui) -->
     <ReplaceFileText
         InputFilename="%(TemplateJsonInput.IntermediateLocation)"
         OutputFilename="%(TemplateJsonInput.IntermediateLocation)"
-        MatchExpression="DOTNET_TFM_VALUE;DOTNET_TFM_VERSION_VALUE;DOTNET_TFM_VERSION_MAJOR_VALUE;MS_EXT_LOG_DEBUG_VERSION_VALUE;MS_COMPONENTS_WEB_VERSION_VALUE;MS_COMPONENTS_WEBASSEMBLY_VERSION_VALUE;MS_COMPONENTS_WEBASSEMBLY_SERVER_VERSION_VALUE"
-        ReplacementText="$(_MauiDotNetTfm);$(_MauiDotNetVersion);$(_MauiDotNetVersionMajor)000;$(MicrosoftExtensionsLoggingDebugVersion);$(MicrosoftAspNetCoreComponentsWebPackageVersion);$(MicrosoftAspNetCoreComponentsWebAssemblyPackageVersion);$(MicrosoftAspNetCoreComponentsWebAssemblyServerPackageVersion)" />
+        MatchExpression="DOTNET_TFM_VALUE;DOTNET_TFM_VERSION_VALUE;DOTNET_TFM_VERSION_MAJOR_VALUE;MS_EXT_LOG_DEBUG_VERSION_VALUE;MS_COMPONENTS_WEB_VERSION_VALUE;MS_COMPONENTS_WEBASSEMBLY_VERSION_VALUE;MS_COMPONENTS_WEBASSEMBLY_SERVER_VERSION_VALUE;MAUI_GTK_VERSION_VALUE"
+        ReplacementText="$(_MauiDotNetTfm);$(_MauiDotNetVersion);$(_MauiDotNetVersionMajor)000;$(MicrosoftExtensionsLoggingDebugVersion);$(MicrosoftAspNetCoreComponentsWebPackageVersion);$(MicrosoftAspNetCoreComponentsWebAssemblyPackageVersion);$(MicrosoftAspNetCoreComponentsWebAssemblyServerPackageVersion);$(MajorVersion).$(MinorVersion).$(PatchVersion)-gtk.*" />
 
     <ItemGroup>
       <FileWrites Include="%(TemplateJsonInput.IntermediateLocation)" />

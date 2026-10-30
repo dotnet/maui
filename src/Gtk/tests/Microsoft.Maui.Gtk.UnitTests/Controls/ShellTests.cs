@@ -39,6 +39,25 @@ namespace Microsoft.Maui.Gtk.UnitTests
 		});
 
 		[GtkFact]
+		public void ShellContentWithAContentTemplateShowsItsPage() => GtkTestHost.Run(() =>
+		{
+			// The project template's AppShell: ContentTemplate, so the page only exists once the handler asks for it.
+			var shell = new Shell
+			{
+				Items =
+				{
+					new ShellContent { Title = "Home", ContentTemplate = new DataTemplate(() => Page("templated")) },
+				},
+			};
+			using var host = new ControlsWindowHost(shell, 800, 500);
+			var handler = Assert.IsType<GtkShellHandler>(shell.Handler);
+
+			Assert.Equal("templated", GtkTestHost.Find<global::Gtk.Label>(handler.Tabs.HostAt(0)).First().Text);
+			Assert.True(GtkTestHost.Find<global::Gtk.Label>(handler.Tabs.HostAt(0)).First().Width > 0);
+			ControlsWindowHost.AssertNoComplaints();
+		});
+
+		[GtkFact]
 		public void SelectingAFlyoutItemNavigatesToIt() => GtkTestHost.Run(() =>
 		{
 			var shell = new Shell { Items = { Item("Home", Page("home")), Item("Settings", Page("settings")) } };

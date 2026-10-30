@@ -23,8 +23,8 @@
 		<RootNamespace>MauiApp._1</RootNamespace>
 <!--#if (Linux) -->
 		<!-- The maui workload is not available on Linux: the GTK head takes MAUI from NuGet packages (below) instead of UseMaui. -->
-		<UseMaui Condition="'$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)'))' != 'gtk'">true</UseMaui>
-		<MauiVersion Condition="'$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)'))' == 'gtk' and '$(MauiVersion)' == ''">MAUI_GTK_VERSION</MauiVersion>
+		<UseMaui Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'gtk'">true</UseMaui>
+		<MauiVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'gtk' and '$(MauiVersion)' == ''">MAUI_GTK_VERSION</MauiVersion>
 <!--#else -->
 		<UseMaui>true</UseMaui>
 <!--#endif -->
@@ -100,7 +100,7 @@
 
 <!--#if (Linux) -->
 	<!-- Linux (GTK 4): what UseMaui adds on the other platforms -->
-	<ItemGroup Condition="'$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)'))' == 'gtk'">
+	<ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'gtk'">
 		<PackageReference Include="Microsoft.Maui.Controls.Gtk" Version="$(MauiVersion)" />
 		<PackageReference Include="Microsoft.Maui.Resizetizer" Version="$(MauiVersion)" PrivateAssets="all" />
 	</ItemGroup>

@@ -11,7 +11,7 @@ checks, `IButtonHandler` and user mapper customisations keep working.
 |---|---|---|
 | `src/Core` | `Microsoft.Maui.Gtk` | hosting, layout bridge, handlers, fonts, images, styling (this document) |
 | `tests/Microsoft.Maui.Gtk.UnitTests` | | xUnit tests on real widgets (one shared project) |
-| `samples/Maui.Gtk.Sample` | | code-only sample (plain `net10.0` for now) |
+| `samples/Maui.Gtk.Sample` | | code-only sample on `net10.0-gtk4.22` (SingleProject: `Platforms/Linux`, icon, image, font, asset) |
 | `src/Essentials` | `Microsoft.Maui.Essentials.Gtk` | Essentials on GTK 4 / Linux, see [`src/Essentials/README.md`](src/Essentials/README.md) |
 | `../Graphics/src/Graphics.Cairo` | `Microsoft.Maui.Graphics.Cairo` | `ICanvas` on Cairo/Pango, see its [README](../Graphics/src/Graphics.Cairo/README.md) |
 | `src/Controls` | `Microsoft.Maui.Controls.Gtk` | Controls handlers and `UseMauiGtk()`, see [`src/Controls/README.md`](src/Controls/README.md) |
@@ -19,6 +19,66 @@ checks, `IButtonHandler` and user mapper customisations keep working.
 | `src/Maps` | `Microsoft.Maui.Controls.Maps.Gtk` | `Map` on OSM slippy tiles, see [`src/Maps/README.md`](src/Maps/README.md) |
 
 Requires GTK >= 4.14 (guard newer APIs with `GtkRuntime.AtLeast(major, minor)`).
+
+## Creating an app
+
+An app head targets **`net10.0-gtk4.22`** (the GtkSharp `gtk` workload, target platform identifier `gtk`, constant `GTK`). NuGet resolves the
+`lib/net10.0` assets of the MAUI packages for it.
+
+**No `maui` workload (blocking check B5).** `UseMaui=true` makes the SDK load the `maui` workload manifest, which asks for workloads that do not
+exist on Linux (`NETSDK1147: ... maui-tizen`). The GTK head therefore leaves `UseMaui` off and takes MAUI from packages
+(MAUI 8+ already does not add package references for `UseMaui`; the app lists them). `SingleProject`, XAML, implicit usings and Resizetizer
+come with the packages (`buildTransitive` of `Microsoft.Maui.Controls.Build.Tasks` and `Microsoft.Maui.Resizetizer`):
+
+```xml
+<PropertyGroup>
+  <OutputType>Exe</OutputType>
+  <TargetFramework>net10.0-gtk4.22</TargetFramework>
+  <SingleProject>true</SingleProject>
+  <ImplicitUsings>enable</ImplicitUsings>
+  <ApplicationTitle>My App</ApplicationTitle>
+  <ApplicationId>com.contoso.myapp</ApplicationId>
+  <MauiVersion>10.0.130-gtk.*</MauiVersion>
+</PropertyGroup>
+<ItemGroup>
+  <PackageReference Include="Microsoft.Maui.Controls.Gtk" Version="$(MauiVersion)" />   <!-- Controls, Microsoft.Maui.Gtk, Essentials.Gtk, GtkSharp4 -->
+  <PackageReference Include="Microsoft.Maui.Resizetizer" Version="$(MauiVersion)" PrivateAssets="all" />
+  <!-- Blazor: Microsoft.AspNetCore.Components.WebView.Maui.Gtk -->
+</ItemGroup>
+```
+
+There are no implicit package references for `gtk` (the SDK part would live in the `maui` workload, which does not exist on Linux): the explicit
+references above are the contract. The interpreter is not forced for `gtk` (`Microsoft.Maui.Controls.Common.targets` names android, ios, maccatalyst,
+windows and tizen only): the app runs on the JIT.
+
+### From the template
+
+| Step | Command |
+|------|---------|
+| .NET 10 SDK + `gtk` workload | Windows: GtkSharp `Docs/workload-install.md`. Linux/WSL: `eng/gtk/install-gtk-workload.sh [<SDK dir that has the workload>]` (copies manifest and packs into `~/.dotnet`) |
+| GTK 4 runtime (>= 4.14) | Debian 13 / Ubuntu 24.04: `libgtk-4-1 libadwaita-1-0` (`libwebkitgtk-6.0-4` for web views); Windows: downloaded by the workload |
+| Packages | `pwsh eng/gtk/pack-local.ps1` (see Local feed) puts `Microsoft.Maui.*` `10.0.130-gtk.*`, the GTK packages and `Microsoft.Maui.Templates.net10` in `Packages/` |
+| Template | `dotnet new install Packages/Microsoft.Maui.Templates.net10.<version>.nupkg` (add `--debug:custom-hive <dir>` to keep your real templates untouched) |
+| App | `dotnet new maui --linux -n MyApp` (or `dotnet new maui-blazor --linux`; `--maui-gtk-version` pins the package version). On a Linux host the project has only the GTK head; elsewhere `net10.0-gtk4.22` is added to the mobile/Windows TFMs |
+| Feed | A `NuGet.config` next to the project with the feed folder (`Packages/`) and nuget.org |
+| Build / run | `dotnet build -f net10.0-gtk4.22`, `dotnet run -f net10.0-gtk4.22`; headless: `GDK_BACKEND=x11 dbus-run-session -- xvfb-run -a dotnet run -f net10.0-gtk4.22` |
+
+The template adds `Platforms/Linux/Program.cs` (a `MauiGtkApplication`), `.UseMauiGtk()` under `#if GTK` in `MauiProgram.cs`, and for the GTK head
+only the `Microsoft.Maui.Controls.Gtk` (+ `Microsoft.AspNetCore.Components.WebView.Maui.Gtk`) and `Microsoft.Maui.Resizetizer` references.
+`IncludeSampleContent` pulls Syncfusion and CommunityToolkit packages that have no GTK support: use it on Linux at your own risk.
+
+### What the SDK build does for `gtk`
+
+| Item | Result next to the executable |
+|------|-------------------------------|
+| `Platforms/Linux/**` | Compiled for `gtk` only (`LinuxProjectFolder`, `MauiPlatformSpecificFolder` with `TargetPlatformIdentifier="gtk"`); XAML there is removed from the other TFMs |
+| `MauiImage` | `Resources/Images/<name>.png`, one 1.0 scale (GDK scales logical pixels; `GtkFileImageSourceService` looks there). Vectors are rasterised at `BaseSize` |
+| `MauiFont` | `Resources/Fonts/<file>`; `ConfigureFonts(f => f.AddFont("X.ttf", "Alias"))` hands the file to the embedded font loader (Pango >= 1.56 `add_font_file`, else fontconfig) |
+| `MauiAsset` | At its logical name (`FileSystem.OpenAppPackageFileAsync`) |
+| `MauiIcon` | `Resources/Icons/hicolor/{48,128,256}/apps/<name>.png`; the app adds `Resources/Icons` to the icon theme and uses the icon as the default window icon |
+| `.desktop` | `<ApplicationId>.desktop` (Name = `ApplicationTitle`, Exec = assembly name, Icon, `StartupWMClass`); `ApplicationCategories` sets `Categories`. Installers copy it to `share/applications` and make `Exec` absolute |
+| `MauiSplashScreen` | Ignored (no splash mechanism in GTK) |
+| Identity | `AssemblyMetadata` `ApplicationId`, `ApplicationTitle`, `ApplicationDisplayVersion`, `ApplicationVersion`: the `GApplication` id (when a valid D-Bus style id, else `org.maui.<assembly>`) and `AppInfo` |
 
 ## Entry point
 
