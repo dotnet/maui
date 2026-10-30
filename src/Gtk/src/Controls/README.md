@@ -31,7 +31,7 @@ front of the stock ones (see the Gtk README), so stock-mapper customisations sti
 
 - **Seams in `Controls.Core`.** The platform-less build had no-op gesture and modal managers. Two small internal hooks make them
   pluggable: `GesturePlatformBackend.Factory` (`GesturePlatformManager.Standard.cs`) and `ModalNavigationBackend.Current`
-  (`ModalNavigationManager.Standard.cs`). With nothing assigned the behaviour is unchanged. Tests: `GesturePlatformBackendTests`,
+  (`ModalNavigationManager.Standard.cs`). With nothing assigned the behaviour is unchanged (`ModalNavigationBackendTests` runs the no-backend Standard path through `ModalNavigationManager.PlatformModalStack`). Tests: `GesturePlatformBackendTests`,
   `ModalNavigationBackendTests` in `Controls.Core.UnitTests`.
 - **Pages in containers.** Navigation, tabs, flyout, Shell and modal windows hold each page in a `MauiGtkFillHost`: from inside its
   size-allocate it measures the page with the exact allocation and arranges it to fill (measure before allocate, no deferral). List rows

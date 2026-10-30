@@ -12,6 +12,7 @@ checks, `IButtonHandler` and user mapper customisations keep working.
 | `src/Core` | `Microsoft.Maui.Gtk` | hosting, layout bridge, handlers, fonts, images, styling (this document) |
 | `tests/Microsoft.Maui.Gtk.UnitTests` | | xUnit tests on real widgets (one shared project) |
 | `samples/Maui.Gtk.Sample` | | code-only sample on `net10.0-gtk4.22` (SingleProject: `Platforms/Linux`, icon, image, font, asset); needs the `gtk` workload, so it is listed in `Microsoft.Maui.sln`/`-vscode.sln` without a build configuration (a solution build or `dotnet format` skips it) and is not part of `Microsoft.Maui-linux.slnf`; build the project directly |
+| `samples/Maui.Gtk.BlazorSample` | | Blazor sample, same `gtk` workload requirement and solution/slnf treatment as `Maui.Gtk.Sample`; build the project directly |
 | `src/Essentials` | `Microsoft.Maui.Essentials.Gtk` | Essentials on GTK 4 / Linux, see [`src/Essentials/README.md`](src/Essentials/README.md) |
 | `../Graphics/src/Graphics.Cairo` | `Microsoft.Maui.Graphics.Cairo` | `ICanvas` on Cairo/Pango, see its [README](../Graphics/src/Graphics.Cairo/README.md) |
 | `src/Controls` | `Microsoft.Maui.Controls.Gtk` | Controls handlers and `UseMauiGtk()`, see [`src/Controls/README.md`](src/Controls/README.md) |
@@ -116,10 +117,10 @@ Pass only GApplication options in `args`. Lifecycle: `ConfigureLifecycleEvents(e
 | Container (clip/shadow) | `GtkWrapperView`, a single-child widget set as `ContainerView`. Clip = any `IShape` via `Gsk.Path`; shadow = outset shadow. |
 | Platform offset | `GtkViewState.PlatformOffsetX/Y`: a translation the platform applies on top of `TranslationX/Y` (swipe, refresh), never overwritten by the view's transform mappers. |
 | Menus | `GtkMenuNode` tree (`GtkMenuModel.cs`) mirrors MAUI menus as `GLib.Menu` + `GSimpleAction`s (group `menu`); the root rebuilds the models on every change. `GtkWindowMenuBar` stacks the `PopoverMenuBar` above the root panel; `GtkContextFlyout` installs the secondary click / long press. `MenuFlyoutItemHandler` has no mapper constructor, so its GTK mappings are added once to the stock static mapper (they only act for `GtkMenuFlyoutItemHandler`). |
-| Transforms | translation/scale/rotation (+ anchor) become the `Gsk.Transform` of the child allocation (`GtkViewState`). `RotationX/Y` ignored. |
+| Transforms | translation/scale/rotation (+ anchor) become the `Gsk.Transform` of the child allocation (`GtkViewState`). A transform change stores the values and queues an allocation of the parent, whose arrange re-applies them via `PlatformArrange` (a child is only allocated inside its parent's size-allocate). `RotationX/Y` ignored. |
 | Styling | `GtkStyle`: one `CssProvider` + class per widget (the only `StyleContext.AddProvider` use). Colour, font, spacing, decorations, padding, background (solid/linear/radial), borders are CSS. |
 | Dispatcher / ticker | `GtkDispatcher` (`GLib.Idle/Timeout`, inline on the GTK thread), `GtkTicker` (frame-clock tick callback on a main (non-modal, non-transient) window, re-anchored when that window unmaps; `Timeout` fallback). |
-| Fonts | `GtkFontManager` (`Font` -> CSS / `Pango.FontDescription`); `GtkEmbeddedFontLoader` (`pango_font_map_add_font_file` on Pango >= 1.56, else fontconfig `FcConfigAppFontAddFile`). |
+| Fonts | `GtkFontManager` (`Font` -> CSS / `Pango.FontDescription`); `GtkEmbeddedFontLoader` (`pango_font_map_add_font_file` on Pango >= 1.56, else fontconfig `FcConfigAppFontAddFile`). Fonts registered by file name are opened from `Resources/Fonts`, `Fonts` or the app folder through `FontRegistrar.NativeFontStreamProvider` (Core hook, installed by `UseMauiGtkCore`; null = upstream Standard behaviour, font unresolved). |
 | Images | `IGtkImageSourceService` -> `Gdk.Texture` for File/Stream/Uri/Font; `GtkImageLoader` replaces `ImageSourcePartLoader` (a no-op on `net10.0`). |
 
 ## Supported controls
@@ -168,9 +169,10 @@ Not in this area: Shell, CollectionView, Maps, NavigationPage/Toolbar/FlyoutPage
 
 | Project | Tests (Windows GTK 4.22 / Debian 13 GTK 4.18, xvfb) |
 |---------|------|
-| `Microsoft.Maui.Gtk.UnitTests` (Core + Essentials + Handlers + Controls + Web + Maps) | Windows 637 passed, 21 skipped (17 WebKit + 4 Linux-only popups); Debian 658 passed, 0 skipped |
+| `Microsoft.Maui.Gtk.UnitTests` (Core + Essentials + Handlers + Controls + Web + Maps) | Windows 648 passed, 21 skipped (17 WebKit + 4 Linux-only popups); Debian 658 passed, 0 skipped (not re-run after the latest changes) |
 | `Graphics.Cairo.Tests` | 125 passed, 0 skipped |
-| `Core.UnitTests` / `Controls.Core.UnitTests` (net10.0) | 883 (+3 skipped) / 5869 (+30 skipped) passed |
+| `Essentials.UnitTests` (net10.0) | 441 passed, 0 skipped |
+| `Core.UnitTests` / `Controls.Core.UnitTests` (net10.0) | 884 (+3 skipped) / 5869 (+30 skipped) passed |
 | `Resizetizer.UnitTests` (43 for `gtk`: images, icon, `.desktop`, dpi paths) | 637 passed, 2 skipped |
 
 - One shared test project; Essentials tests (`Essentials/`) run on the same GTK thread through `GtkTestHost` (a second GTK thread crashes the process); the host is OLE initialized on Windows and iterates the main context in the background once `GtkTestHost.Post` is used.
