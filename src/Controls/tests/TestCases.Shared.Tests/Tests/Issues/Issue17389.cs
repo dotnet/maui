@@ -20,9 +20,6 @@ public class Issue17389 : _IssuesUITest
 	{
 		App.WaitForElement("ToggleInputTransparentButton");
 
-		if (App is AppiumCatalystApp)
-			App.LaunchApp();
-
 		string[] layouts = new[]
 		{
 			 "RedGrid",
@@ -33,7 +30,7 @@ public class Issue17389 : _IssuesUITest
 
 		for (var index = 0; index < layouts.Length; index++)
 		{
-			App.TapElement(layouts[index]);
+			TapLayout(layouts[index]);
 			Assert.That(App.WaitForTextToBePresentInElement("TapCountLabel", $"Tap count: {index + 1}"), Is.True,
 				$"Tapping {layouts[index]} should produce tap count {index + 1}.");
 		}
@@ -44,10 +41,30 @@ public class Issue17389 : _IssuesUITest
 
 		foreach (var layout in layouts)
 		{
-			App.TapElement(layout);
+			TapLayout(layout);
 		}
 
 		Assert.That(App.WaitForTextToBePresentInElement("TapCountLabel", "Tap count: 0"), Is.True);
+	}
+
+	void TapLayout(string automationId)
+	{
+		if (App is not AppiumCatalystApp)
+		{
+			App.TapElement(automationId);
+			return;
+		}
+
+		var element = App.WaitForElement(automationId);
+		var rect = element.GetRect();
+
+		// Avoid Mac2's absolute-coordinate application proxy while keeping a physical click.
+		App.CommandExecutor.Execute("tapCoordinates", new Dictionary<string, object>
+		{
+			{ "element", element },
+			{ "x", rect.Width / 2f },
+			{ "y", rect.Height / 2f },
+		});
 	}
 
 	[Test, Order(2)]
