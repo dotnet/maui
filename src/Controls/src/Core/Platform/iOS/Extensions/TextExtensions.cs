@@ -29,15 +29,15 @@ namespace Microsoft.Maui.Controls.Platform
 		}
 
 		public static void UpdateText(this UITextView textView, InputView inputView) =>
-			UpdateText(textView, inputView, textView.IsFirstResponder);
+			UpdateText(textView, inputView.Text, inputView, textView.IsFirstResponder);
 
 		public static void UpdateText(this UITextField textField, InputView inputView) =>
-			UpdateText(textField, inputView, textField.IsEditing);
+			UpdateText(textField, inputView.Text, inputView, textField.IsEditing);
 
-		internal static void UpdateText(this UITextField textField, ITextInput inputView) =>
-			UpdateText(textField, inputView, textField.IsEditing);
+		internal static void UpdateText(this UITextField textField, SearchHandler searchHandler) =>
+			UpdateText(textField, searchHandler.Query, searchHandler, textField.IsEditing);
 
-		static void UpdateText(this IUITextInput textInput, ITextInput inputView, bool isEditing)
+		static void UpdateText(this IUITextInput textInput, string text, ITextElement textElement, bool isEditing)
 		{
 			// Setting the text causes the cursor to be reset to the end of the IUITextInput.
 			// So, let's set back the cursor to the last known position and calculate a new
@@ -48,12 +48,10 @@ namespace Microsoft.Maui.Controls.Platform
 			// We need this variable because in some cases because of the iOS's
 			// auto correction eg. eg '--' => '—' the actual text in the input might have
 			// a different length that the one that has been set in the control.
-			var newTextLength = !string.IsNullOrWhiteSpace(inputView.Text) ? textInput.TextInRange(textRange)?.Length ?? 0 : 0;
+			var newTextLength = !string.IsNullOrWhiteSpace(text) ? textInput.TextInRange(textRange)?.Length ?? 0 : 0;
 
-			var newText = inputView is ITextElement textElement
-				? textElement.UpdateFormsText(inputView.Text,
-					textInput.GetSecureTextEntry() ? TextTransform.Default : textElement.TextTransform)
-				: inputView.Text ?? string.Empty;
+			var newText = textElement.UpdateFormsText(text,
+				textInput.GetSecureTextEntry() ? TextTransform.Default : textElement.TextTransform);
 
 			if (!string.IsNullOrWhiteSpace(oldText))
 				newTextLength = newText.Length;

@@ -15,31 +15,12 @@ namespace Microsoft.Maui.Controls
 	/// <summary>
 	/// Provides search functionality in a <see cref="Shell"/> application.
 	/// </summary>
-	public class SearchHandler : BindableObject, ISearchHandlerController, IPlaceholderElement, IFontElement, ITextElement, ITextAlignmentElement, ITextInput
+	public class SearchHandler : BindableObject, ISearchHandlerController, IPlaceholderElement, IFontElement, ITextElement, ITextAlignmentElement, IPlaceholder, ITextStyle
 	{
 		internal DataFlowDirection DataFlowDirection { get; set; }
 
-		string IText.Text => Query;
-
-		string ITextInput.Text
-		{
-			get => Query;
-			set => SetValue(QueryProperty, value, SetterSpecificity.FromHandler);
-		}
-
+		// The shared character-spacing helpers require ITextStyle, which also requires a Font property.
 		Font ITextStyle.Font => this.ToFont();
-
-		bool ITextInput.IsTextPredictionEnabled => true;
-
-		bool ITextInput.IsSpellCheckEnabled => true;
-
-		bool ITextInput.IsReadOnly => false;
-
-		int ITextInput.MaxLength => int.MaxValue;
-
-		int ITextInput.CursorPosition { get; set; }
-
-		int ITextInput.SelectionLength { get; set; }
 
 		/// <summary>Bindable property key for <see cref="IsFocused"/>.</summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]

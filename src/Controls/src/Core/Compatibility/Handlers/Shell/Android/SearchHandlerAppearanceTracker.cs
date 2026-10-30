@@ -107,11 +107,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			if (_searchHandler.DataFlowDirection == DataFlowDirection.FromPlatform)
 			{
-				Platform.EditTextExtensions.UpdateTextFromPlatform(_editText, _searchHandler);
+				_editText.UpdateTextFromPlatform(_searchHandler);
 				return;
 			}
 
-			Platform.EditTextExtensions.UpdateText(_editText, _searchHandler);
+			_editText.UpdateText(_searchHandler);
 		}
 
 		void EditTextFocusChange(object s, AView.FocusChangeEventArgs args)
