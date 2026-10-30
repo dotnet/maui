@@ -1,0 +1,10 @@
+<Project>
+  <!-- Shared settings for the Linux/GTK 4 backend (see src/Gtk/README.md). -->
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
+  <PropertyGroup>
+    <!-- Backend libraries target the platform-less MAUI leg; apps use net10.0-gtk4.22 and resolve these lib/net10.0 assets. -->
+    <MauiGtkTargetFramework>$(_MauiDotNetTfm)</MauiGtkTargetFramework>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+</Project>
