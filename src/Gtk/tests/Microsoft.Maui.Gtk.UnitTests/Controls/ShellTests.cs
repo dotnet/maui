@@ -685,7 +685,7 @@ namespace Microsoft.Maui.Gtk.UnitTests
 			Assert.Equal("* kiwi", TextsIn(gtkSearch.Results.GetRowAtIndex(0)!).Single());
 		});
 
-		[GtkLinuxFact]
+		[GtkFact]
 		public void SearchSuggestionsPopUpWhileTheQueryHasMatches() => GtkTestHost.Run(() =>
 		{
 			var page = Page("home");

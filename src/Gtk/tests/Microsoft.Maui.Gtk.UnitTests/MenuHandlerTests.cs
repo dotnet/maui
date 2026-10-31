@@ -460,7 +460,7 @@ namespace Microsoft.Maui.Gtk.UnitTests
 			Assert.Contains("'bytes'", Attribute(Node(flyout).Menu, 0, "icon"));
 		});
 
-		[GtkLinuxFact]
+		[GtkFact]
 		public void PopoverMenuDrawsTheIconOfAnItem() => GtkTestHost.Run(() =>
 		{
 			var withIcon = new MenuFlyoutItem { Text = "Open", IconImageSource = new FileImageSource { File = "document-open" } };
