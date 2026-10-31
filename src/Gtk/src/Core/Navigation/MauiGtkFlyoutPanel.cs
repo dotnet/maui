@@ -28,6 +28,7 @@ namespace Microsoft.Maui.Gtk.Platform
 		uint _animation;
 		DateTime _animationStart;
 		double _animationFrom;
+		Color? _scrimColor;
 
 		/// <summary>Creates the panel.</summary>
 		public MauiGtkFlyoutPanel()
@@ -46,6 +47,17 @@ namespace Microsoft.Maui.Gtk.Platform
 
 		/// <summary>The host of the detail pane.</summary>
 		public MauiGtkFillHost DetailHost => _detail;
+
+		/// <summary>The colour of the scrim drawn over the detail while the flyout slides in (black when <see langword="null"/>); its alpha is the scrim's opacity at full progress (0.4 when <see langword="null"/>).</summary>
+		public Color? ScrimColor
+		{
+			get => _scrimColor;
+			set
+			{
+				_scrimColor = value;
+				QueueDraw();
+			}
+		}
 
 		/// <summary>Duration of the slide, in milliseconds (0 = instant).</summary>
 		public uint AnimationDuration { get; set; } = 200;
@@ -213,7 +225,9 @@ namespace Microsoft.Maui.Gtk.Platform
 
 			if (_behavior == FlyoutBehavior.Flyout && _progress > 0)
 			{
-				var scrim = new Gdk.RGBA { Red = 0, Green = 0, Blue = 0, Alpha = (float)(0.4 * _progress) };
+				var scrim = _scrimColor is { } color
+					? new Gdk.RGBA { Red = color.Red, Green = color.Green, Blue = color.Blue, Alpha = (float)(color.Alpha * _progress) }
+					: new Gdk.RGBA { Red = 0, Green = 0, Blue = 0, Alpha = (float)(0.4 * _progress) };
 				var bounds = GtkInterop.ToGrapheneRect(0, 0, Width, Height);
 				snapshot.AppendColor(scrim, bounds);
 			}

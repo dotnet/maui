@@ -183,6 +183,7 @@ Microsoft.Maui.Gtk.Handlers.GtkToolbarHandler.SetBackButtonEnabled(bool enabled)
 Microsoft.Maui.Gtk.Handlers.GtkToolbarHandler.SetBackButtonTitle(string? title) -> void
 Microsoft.Maui.Gtk.Handlers.GtkToolbarHandler.SetBarBackground(Microsoft.Maui.Graphics.Paint? background) -> void
 Microsoft.Maui.Gtk.Handlers.GtkToolbarHandler.SetBarTextColor(Microsoft.Maui.Graphics.Color? color) -> void
+Microsoft.Maui.Gtk.Handlers.GtkToolbarHandler.SetDrawerIcon(Gdk.Texture? icon) -> void
 Microsoft.Maui.Gtk.Handlers.GtkToolbarHandler.SetDrawerToggleVisible(bool visible) -> void
 Microsoft.Maui.Gtk.Handlers.GtkToolbarHandler.SetIconColor(Microsoft.Maui.Graphics.Color? color) -> void
 Microsoft.Maui.Gtk.Handlers.GtkToolbarHandler.SetItems(System.Collections.Generic.IReadOnlyList<Microsoft.Maui.Gtk.Handlers.GtkToolbarItem!>! items) -> void
@@ -450,6 +451,8 @@ Microsoft.Maui.Gtk.Platform.MauiGtkFlyoutPanel.IsPresented.get -> bool
 Microsoft.Maui.Gtk.Platform.MauiGtkFlyoutPanel.IsPresented.set -> void
 Microsoft.Maui.Gtk.Platform.MauiGtkFlyoutPanel.MauiGtkFlyoutPanel() -> void
 Microsoft.Maui.Gtk.Platform.MauiGtkFlyoutPanel.Progress.get -> double
+Microsoft.Maui.Gtk.Platform.MauiGtkFlyoutPanel.ScrimColor.get -> Microsoft.Maui.Graphics.Color?
+Microsoft.Maui.Gtk.Platform.MauiGtkFlyoutPanel.ScrimColor.set -> void
 Microsoft.Maui.Gtk.Platform.MauiGtkPanel
 Microsoft.Maui.Gtk.Platform.MauiGtkPanel.AddChild(Gtk.Widget! child) -> void
 Microsoft.Maui.Gtk.Platform.MauiGtkPanel.ClearChildren() -> void

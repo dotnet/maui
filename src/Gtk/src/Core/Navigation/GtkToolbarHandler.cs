@@ -145,6 +145,19 @@ namespace Microsoft.Maui.Gtk.Handlers
 		/// <param name="visible">Whether the toggle is visible.</param>
 		public void SetDrawerToggleVisible(bool visible) => _drawerButton.Visible = visible;
 
+		/// <summary>Sets the icon of the drawer toggle (the flyout icon).</summary>
+		/// <param name="icon">The icon, or <see langword="null"/> for the theme's menu icon.</param>
+		public void SetDrawerIcon(Gdk.Texture? icon)
+		{
+			if (icon is null)
+			{
+				_drawerButton.IconName = "open-menu-symbolic";
+				return;
+			}
+
+			_drawerButton.Child = new global::Gtk.Image { Paintable = icon, PixelSize = 20 };
+		}
+
 		/// <summary>Sets the tool tip of the back button (the back button title).</summary>
 		/// <param name="title">The title, or <see langword="null"/>.</param>
 		public void SetBackButtonTitle(string? title) => _backButton.TooltipText = string.IsNullOrEmpty(title) ? null : title;
