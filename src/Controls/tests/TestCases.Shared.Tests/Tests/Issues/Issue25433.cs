@@ -1,6 +1,4 @@
-﻿#if !WINDOWS
-// https://github.com/dotnet/maui/issues/11320
-// Item spacing on the Windows platform is currently not functioning correctly
+﻿#if ANDROID // The Apple fix was CV1-only; Android continues to use the Items handler.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;

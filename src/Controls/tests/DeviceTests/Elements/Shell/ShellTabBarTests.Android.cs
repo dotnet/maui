@@ -8,7 +8,7 @@ using Google.Android.Material.BottomNavigation;
 using Google.Android.Material.TextView;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers;
-using Microsoft.Maui.Controls.Handlers.Compatibility;
+using Microsoft.Maui.Controls.Platform.Compatibility;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
 using Xunit;
@@ -23,8 +23,8 @@ namespace Microsoft.Maui.DeviceTests
 		BottomNavigationView GetTab(ShellSection item)
 		{
 			var shell = item.FindParentOfType<Shell>();
-			var renderer = (ShellRenderer)shell.Handler;
-			var bottomView = GetDrawerLayout(renderer).GetFirstChildOfType<BottomNavigationView>();
+			var shellContext = (IShellContext)shell.Handler;
+			var bottomView = GetDrawerLayout(shellContext).GetFirstChildOfType<BottomNavigationView>();
 			var menu = bottomView.Menu;
 			var index = shell.CurrentItem.Items.IndexOf(item);
 

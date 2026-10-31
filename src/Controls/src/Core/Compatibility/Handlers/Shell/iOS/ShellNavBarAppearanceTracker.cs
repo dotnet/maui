@@ -14,6 +14,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		UIColor _defaultBarTint;
 		UIColor _defaultTint;
 		UIStringAttributes _defaultTitleAttributes;
+		UINavigationBarAppearance _defaultStandardAppearance;
+		UINavigationBarAppearance _defaultScrollEdgeAppearance;
+		bool _defaultAppearanceCaptured;
 		float _shadowOpacity = float.MinValue;
 		CGColor _shadowColor;
 
@@ -23,15 +26,18 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public void ResetAppearance(UINavigationController controller)
 		{
-			if (_defaultTint != null)
+			if (_defaultAppearanceCaptured)
 			{
 				var navBar = controller.NavigationBar;
 				navBar.BarTintColor = _defaultBarTint;
 				navBar.TintColor = _defaultTint;
 				navBar.TitleTextAttributes = _defaultTitleAttributes;
 
-				if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13))
-					UpdateiOS13NavigationBarAppearance(controller, null);
+				if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13, 1) || OperatingSystem.IsTvOSVersionAtLeast(13))
+				{
+					navBar.StandardAppearance = _defaultStandardAppearance;
+					navBar.ScrollEdgeAppearance = _defaultScrollEdgeAppearance;
+				}
 			}
 		}
 
@@ -39,14 +45,22 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			var navBar = controller.NavigationBar;
 
-			if (_defaultTint == null)
+			if (!_defaultAppearanceCaptured)
 			{
 				_defaultBarTint = navBar.BarTintColor;
 				_defaultTint = navBar.TintColor;
 				_defaultTitleAttributes = navBar.TitleTextAttributes;
+				if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13, 1) || OperatingSystem.IsTvOSVersionAtLeast(13))
+				{
+					_defaultStandardAppearance = (UINavigationBarAppearance)navBar.StandardAppearance.Copy();
+					_defaultScrollEdgeAppearance = navBar.ScrollEdgeAppearance is UINavigationBarAppearance scrollEdge
+						? (UINavigationBarAppearance)scrollEdge.Copy()
+						: null;
+				}
+				_defaultAppearanceCaptured = true;
 			}
 
-			if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13))
+			if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13, 1) || OperatingSystem.IsTvOSVersionAtLeast(13))
 				UpdateiOS13NavigationBarAppearance(controller, appearance);
 			else
 				UpdateNavigationBarAppearance(controller, appearance);
@@ -56,6 +70,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected virtual void Dispose(bool disposing)
 		{
+			if (disposing)
+			{
+				_defaultStandardAppearance?.Dispose();
+				_defaultStandardAppearance = null;
+				_defaultScrollEdgeAppearance?.Dispose();
+				_defaultScrollEdgeAppearance = null;
+			}
 		}
 
 		public void Dispose()
@@ -91,6 +112,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		#endregion
 
 		[SupportedOSPlatform("ios13.0")]
+		[SupportedOSPlatform("maccatalyst13.1")]
 		[SupportedOSPlatform("tvos13.0")]
 		void UpdateiOS13NavigationBarAppearance(UINavigationController controller, ShellAppearance appearance)
 		{
@@ -131,11 +153,26 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					navBar.TintColor = _defaultTint;
 				}
 
-				// Set BackgroundColor
-				var background = appearance.BackgroundColor;
-
-				if (background != null)
-					navigationBarAppearance.BackgroundColor = background.ToPlatform();
+				// Set Background (prefer Brush over Color for gradient support)
+				if (!Brush.IsNullOrEmpty(appearance.Background))
+				{
+					if (appearance.Background is SolidColorBrush solidBrush && solidBrush.Color is not null)
+					{
+						navigationBarAppearance.BackgroundColor = solidBrush.Color.ToPlatform();
+					}
+					else
+					{
+						var backgroundImage = navBar.GetBackgroundImage(appearance.Background);
+						if (backgroundImage is not null)
+						{
+							navigationBarAppearance.BackgroundImage = backgroundImage;
+						}
+					}
+				}
+				else if (appearance.BackgroundColor is not null)
+				{
+					navigationBarAppearance.BackgroundColor = appearance.BackgroundColor.ToPlatform();
+				}
 
 				// Set TitleColor
 				var titleColor = appearance.TitleColor;

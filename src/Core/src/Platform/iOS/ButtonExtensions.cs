@@ -78,8 +78,10 @@ namespace Microsoft.Maui.Platform
 			platformButton.SetAttributedTitle(mutable, UIControlState.Normal);
 		}
 
-		// TODO: Make this public in .NET 11
-		internal static void UpdateBackground(this UIButton platformButton, Graphics.Paint? paint, IButtonStroke stroke)
+		public static void UpdateBackground(this UIButton platformButton, Graphics.Paint? paint)
+			=> UpdateBackground(platformButton, paint, null);
+
+		internal static void UpdateBackground(this UIButton platformButton, Graphics.Paint? paint, IButtonStroke? stroke)
 		{
 			// Remove previous background gradient layer if any.
 			// Safe to call unconditionally even when Window is null (initial-render path): at that

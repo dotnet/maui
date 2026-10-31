@@ -53,6 +53,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 	{
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
+		App.WaitForNoElement(Apply);
 	}
 
 	// Scrolls/drags the search page into view on platforms where the collapsible
@@ -591,6 +592,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		VerifyShellSearchScreenshot();
 	}
 
+#if TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/39776
 	[Test, Order(35)]
 	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void VerifyShellSearch_TextColor()
@@ -609,8 +611,10 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		searchHandler.Tap();
 		searchHandler.Clear();
 		searchHandler.SendKeys("Testing");
+		Assert.That(() => App.GetShellSearchHandler().GetText(), Is.EqualTo("Testing").After(10000, 200));
 		VerifyShellSearchScreenshot();
 	}
+#endif
 
 	[Test, Order(36)]
 	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
@@ -635,7 +639,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 	}
 #endif
 
-#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // Issue Link: https://github.com/dotnet/maui/issues/35624
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/35624, https://github.com/dotnet/maui/issues/39776
 	[Test, Order(37)]
 	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void VerifyShellSearch_CharacterSpacing()

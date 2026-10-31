@@ -308,6 +308,9 @@ namespace Microsoft.Maui.Controls
 			shellSection.SetBinding(TitleProperty, static (BaseShellItem item) => item.Title, BindingMode.OneWay, source: shellContent);
 			shellSection.SetBinding(IconProperty, static (BaseShellItem item) => item.Icon, BindingMode.OneWay, source: shellContent);
 			shellSection.SetBinding(FlyoutIconProperty, static (BaseShellItem item) => item.FlyoutIcon, BindingMode.OneWay, source: shellContent);
+			shellSection.SetBinding(BadgeTextProperty, static (BaseShellItem item) => item.BadgeText, BindingMode.OneWay, source: shellContent);
+			shellSection.SetBinding(BadgeColorProperty, static (BaseShellItem item) => item.BadgeColor, BindingMode.OneWay, source: shellContent);
+			shellSection.SetBinding(BadgeTextColorProperty, static (BaseShellItem item) => item.BadgeTextColor, BindingMode.OneWay, source: shellContent);
 
 			return shellSection;
 		}
@@ -327,7 +330,7 @@ namespace Microsoft.Maui.Controls
 			return (ShellSection)(ShellContent)page;
 		}
 
-		async Task PrepareCurrentStackForBeingReplaced(ShellNavigationRequest request, ShellRouteParameters queryData, IServiceProvider services, bool? animate, List<string> globalRoutes, bool isRelativePopping)
+		async Task PrepareCurrentStackForBeingReplaced(ShellNavigationRequest request, ShellRouteParameters queryData, IServiceProvider services, bool? animate, List<string> globalRoutes, List<string> resolvedRoutes, bool isRelativePopping)
 		{
 			string route = "";
 			List<Page> navStack = null;
@@ -368,10 +371,14 @@ namespace Microsoft.Maui.Controls
 						// Routes match so don't do anything
 						if (navIndex < _navStack.Count && Routing.GetRoute(_navStack[navIndex]) == globalRoutes[i])
 						{
+							// Update ResolvedRoute in case the resolved value changed
+							// (e.g. navigating from product/apple to product/banana)
+							if (resolvedRoutes?.Count > i && Routing.IsTemplateRoute(globalRoutes[i]))
+								Routing.SetResolvedRoute(_navStack[navIndex], resolvedRoutes[i]);
 							continue;
 						}
 
-						var page = GetOrCreateFromRoute(globalRoutes[i], queryData, services, i == globalRoutes.Count - 1, false);
+						var page = GetOrCreateFromRoute(globalRoutes[i], resolvedRoutes?.Count > i ? resolvedRoutes[i] : null, queryData, services, i == globalRoutes.Count - 1, false);
 						if (IsModal(page))
 						{
 							await PushModalAsync(page, IsNavigationAnimated(page));
@@ -415,6 +422,10 @@ namespace Microsoft.Maui.Controls
 							// pop everything after this route
 							popCount = i + 2;
 							ShellNavigationManager.ApplyQueryAttributes(navPage, queryData, isLast, isRelativePopping);
+
+							// Update ResolvedRoute for reused template pages
+							if (resolvedRoutes?.Count > i && Routing.IsTemplateRoute(route))
+								Routing.SetResolvedRoute(navPage, resolvedRoutes[i]);
 
 							// If we're not on the last loop of the stack then continue
 							// otherwise pop the rest of the stack
@@ -505,12 +516,22 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		Page GetOrCreateFromRoute(string route, ShellRouteParameters queryData, IServiceProvider services, bool isLast, bool isPopping)
+		Page GetOrCreateFromRoute(string route, string resolvedRoute, ShellRouteParameters queryData, IServiceProvider services, bool isLast, bool isPopping)
 		{
 			var element = Routing.GetOrCreateContent(route, services);
 			if (element is not Page content)
 			{
 				throw new InvalidOperationException($"Content for route {route} should be of type {nameof(Page)}, but was {element?.GetType().FullName ?? "null"}");
+			}
+
+			// For template routes (e.g. "product/{sku}"), store the resolved value
+			// (e.g. "product/seed-tomato") in a separate attached property. The
+			// page's Route stays as the registered template key so factory
+			// lookups and stack-reuse comparisons still work.
+			if (resolvedRoute != null && resolvedRoute != route
+				&& Routing.IsTemplateRoute(route))
+			{
+				Routing.SetResolvedRoute(content, resolvedRoute);
 			}
 
 			ShellNavigationManager.ApplyQueryAttributes(content, queryData, isLast, isPopping);
@@ -520,6 +541,7 @@ namespace Microsoft.Maui.Controls
 		internal async Task GoToAsync(ShellNavigationRequest request, ShellRouteParameters queryData, IServiceProvider services, bool? animate, bool isRelativePopping)
 		{
 			List<string> globalRoutes = request.Request.GlobalRoutes;
+			List<string> resolvedRoutes = request.Request.ResolvedGlobalRoutes;
 			if (globalRoutes == null || globalRoutes.Count == 0)
 			{
 				if (_navStack.Count == 2)
@@ -530,7 +552,7 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
-			await PrepareCurrentStackForBeingReplaced(request, queryData, services, animate, globalRoutes, isRelativePopping);
+			await PrepareCurrentStackForBeingReplaced(request, queryData, services, animate, globalRoutes, resolvedRoutes, isRelativePopping);
 
 			List<Page> modalPageStacks = new List<Page>();
 			List<Page> nonModalPageStacks = new List<Page>();
@@ -548,7 +570,7 @@ namespace Microsoft.Maui.Controls
 			for (int i = whereToStartNavigation; i < globalRoutes.Count; i++)
 			{
 				bool isLast = i == globalRoutes.Count - 1;
-				var content = GetOrCreateFromRoute(globalRoutes[i], queryData, services, isLast, false);
+				var content = GetOrCreateFromRoute(globalRoutes[i], resolvedRoutes?.Count > i ? resolvedRoutes[i] : null, queryData, services, isLast, false);
 				if (content == null)
 				{
 					break;
@@ -699,13 +721,7 @@ namespace Microsoft.Maui.Controls
 		{
 			if (child is IShellContentController sc && (sc.Page?.IsPlatformEnabled == true))
 			{
-				sc.Page.PlatformEnabledChanged += WaitForRendererToGetRemoved;
-				void WaitForRendererToGetRemoved(object s, EventArgs p)
-				{
-					sc.Page.PlatformEnabledChanged -= WaitForRendererToGetRemoved;
-					base.OnChildRemoved(child, oldLogicalIndex);
-				}
-				;
+				OnChildRemovedWhenPlatformDisabled(sc, child, oldLogicalIndex);
 			}
 			else
 			{
@@ -713,6 +729,17 @@ namespace Microsoft.Maui.Controls
 			}
 
 			OnVisibleChildRemoved(child);
+		}
+
+		void OnChildRemovedWhenPlatformDisabled(IShellContentController sc, Element child, int oldLogicalIndex)
+		{
+			sc.Page.PlatformEnabledChanged += WaitForRendererToGetRemoved;
+
+			void WaitForRendererToGetRemoved(object s, EventArgs p)
+			{
+				sc.Page.PlatformEnabledChanged -= WaitForRendererToGetRemoved;
+				base.OnChildRemoved(child, oldLogicalIndex);
+			}
 		}
 
 		void OnVisibleChildAdded(Element child)
@@ -1055,6 +1082,7 @@ namespace Microsoft.Maui.Controls
 			if (newValue == null)
 				return;
 
+			((ShellContent)newValue).ApplyQueryAttributesFromSelection();
 			shellSection.PresentedPageAppearing();
 
 			if (shellSection.Parent?.Parent is IShellController shell && shellSection.IsVisibleSection)
@@ -1307,16 +1335,16 @@ namespace Microsoft.Maui.Controls
 			_handlerBasedNavigationCompletionSource = null;
 			source?.SetResult(true);
 		}
-#nullable disable
+
 
 		private sealed class ShellSectionTypeConverter : TypeConverter
 		{
-			public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType) => false;
-			public override object ConvertTo(ITypeDescriptorContext context, CultureInfo cultureInfo, object value, Type destinationType) => throw new NotSupportedException();
+			public override bool CanConvertTo(ITypeDescriptorContext? context, Type? destinationType) => false;
+			public override object? ConvertTo(ITypeDescriptorContext? context, CultureInfo? cultureInfo, object? value, Type destinationType) => throw new NotSupportedException();
 
-			public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+			public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)
 				=> sourceType == typeof(ShellContent) || sourceType == typeof(TemplatedPage);
-			public override object ConvertFrom(ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value)
+			public override object? ConvertFrom(ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object value)
 				=> value switch
 				{
 					ShellContent shellContent => (ShellSection)shellContent,
@@ -1324,7 +1352,7 @@ namespace Microsoft.Maui.Controls
 					_ => throw new NotSupportedException(),
 				};
 		}
-
+#nullable disable
 		/// <summary>
 		/// Provides a debug view for the <see cref="ShellSection"/> class.
 		/// </summary>

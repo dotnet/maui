@@ -40,6 +40,7 @@ updates:
       patterns:
         - "Microsoft.Graphics.Win2D"
         - "Microsoft.Windows.SDK.BuildTools"
+        - "Microsoft.Windows.SDK.BuildTools.WinApp"
         - "Microsoft.WindowsAppSDK"
         - "Microsoft.Web.WebView2"
     xunit:

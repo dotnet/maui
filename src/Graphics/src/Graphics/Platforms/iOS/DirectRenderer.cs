@@ -32,6 +32,8 @@ namespace Microsoft.Maui.Graphics.Platform
 		public void Draw(CGContext coreGraphics, RectF dirtyRect)
 		{
 			_canvas.Context = coreGraphics;
+			_canvas.ShouldMirrorShadowOffsetX =
+				_graphicsView?.EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft;
 
 			try
 			{
@@ -43,6 +45,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			}
 			finally
 			{
+				_canvas.ShouldMirrorShadowOffsetX = false;
 				_canvas.Context = null;
 			}
 		}
