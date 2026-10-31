@@ -160,6 +160,16 @@ settings. Assert that the original activity is `RESUMED` before and after
 navigation. `HasWindowFocus` is not a lifecycle check: the notification shade can
 take focus while that same activity remains resumed.
 
+### Android UI-test failure diagnostics
+
+After the final Android UI-test failure, logcat collection uses the existing
+30-second ADB command deadline. Cake terminates the owned logcat process when its
+bounded wait expires. Log a diagnostic timeout and rethrow the original test
+failure; do not let an offline emulator block result publication until job
+cancellation, or treat missing diagnostics as a successful test. The standalone
+`logcat` target still fails on timeout. This does not repair emulator connectivity
+or change test assertions, execution categories, retry counts or test deadlines.
+
 ### XHarness exit-0 blind spot
 
 Windows device categories also require complete, parseable xUnit output. The
