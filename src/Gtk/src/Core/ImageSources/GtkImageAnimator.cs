@@ -29,6 +29,7 @@ namespace Microsoft.Maui.Gtk.ImageSources
 		/// <summary>Replaces the animation (<see langword="null"/> for a still image).</summary>
 		public void SetAnimation(GtkImageAnimation? animation)
 		{
+			_animation?.Pause();
 			_animation = animation;
 			Refresh();
 		}
@@ -43,6 +44,12 @@ namespace Microsoft.Maui.Gtk.ImageSources
 		void Refresh()
 		{
 			var shouldTick = _playing && _animation is { IsDisposed: false };
+			// The animation's own clock only runs while playing, so pause holds the frame and play resumes from it.
+			if (shouldTick)
+				_animation!.Play();
+			else
+				_animation?.Pause();
+
 			if (shouldTick && _tickId == 0)
 				_tickId = _host.AddTickCallback(OnTick);
 			else if (!shouldTick && _tickId != 0)

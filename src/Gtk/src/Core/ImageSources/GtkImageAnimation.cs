@@ -1,5 +1,7 @@
 using System;
+using System.Diagnostics;
 using System.IO;
+using System.Runtime.InteropServices;
 
 // gdk-pixbuf is the only GTK 4 animation decoder in the bindings (GTK deprecates it, but it is not going away).
 #pragma warning disable CS0612, CS0618
@@ -14,12 +16,58 @@ namespace Microsoft.Maui.Gtk.ImageSources
 	{
 		readonly Gdk.PixbufAnimation _animation;
 		readonly Gdk.PixbufAnimationIter _iterator;
+		// The iterator is driven by a playback clock that only runs while playing (not by wall-clock time), so pausing holds the frame and
+		// resuming continues from it. The clock origin is arbitrary; only differences matter.
+		const long ClockOriginSeconds = 1_000_000;
+		readonly Stopwatch _clock = new();
 		Gdk.Texture? _texture;
 
 		GtkImageAnimation(Gdk.PixbufAnimation animation)
 		{
 			_animation = animation;
-			_iterator = animation.GetIter(IntPtr.Zero);
+			var origin = ClockTime(0);
+			try
+			{
+				_iterator = animation.GetIter(origin);
+			}
+			finally
+			{
+				Marshal.FreeHGlobal(origin);
+			}
+		}
+
+		/// <summary>Whether the playback clock is running.</summary>
+		public bool IsPlaying => _clock.IsRunning;
+
+		/// <summary>Starts (or resumes) the playback clock; frames only advance while it runs.</summary>
+		public void Play() => _clock.Start();
+
+		/// <summary>Stops the playback clock; the current frame is held until <see cref="Play"/>.</summary>
+		public void Pause() => _clock.Stop();
+
+		// A GTimeVal (two glong: 4 bytes each on Windows, pointer-sized on Unix) for the given playback time, as a transient native block.
+		static IntPtr ClockTime(long elapsedMilliseconds)
+		{
+			var seconds = ClockOriginSeconds + elapsedMilliseconds / 1000;
+			var micro = elapsedMilliseconds % 1000 * 1000;
+			var size = Marshal.SizeOf<CLong>();
+			var block = Marshal.AllocHGlobal(size * 2);
+			Marshal.StructureToPtr(new CLong((nint)seconds), block, false);
+			Marshal.StructureToPtr(new CLong((nint)micro), block + size, false);
+			return block;
+		}
+
+		bool AdvanceIterator()
+		{
+			var time = ClockTime(_clock.ElapsedMilliseconds);
+			try
+			{
+				return _iterator.Advance(time);
+			}
+			finally
+			{
+				Marshal.FreeHGlobal(time);
+			}
 		}
 
 		/// <summary>Whether <see cref="Dispose"/> ran (a ticking player must stop using it).</summary>
@@ -31,11 +79,11 @@ namespace Microsoft.Maui.Gtk.ImageSources
 		/// <summary>Milliseconds the current frame stays on screen; <c>-1</c> when it stays forever (last frame of a non-looping animation).</summary>
 		public int DelayMilliseconds => _iterator.DelayTime;
 
-		/// <summary>Moves to the frame due at the current time.</summary>
+		/// <summary>Moves to the frame due at the current playback time (time spent playing; paused time does not count).</summary>
 		/// <returns><see langword="true"/> when the frame changed (<see cref="CurrentTexture"/> is then a new texture).</returns>
 		public bool Advance()
 		{
-			if (IsDisposed || !_iterator.Advance(IntPtr.Zero))
+			if (IsDisposed || !AdvanceIterator())
 				return false;
 
 			_texture = null;

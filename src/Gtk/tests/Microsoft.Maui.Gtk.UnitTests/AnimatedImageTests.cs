@@ -28,9 +28,31 @@ namespace Microsoft.Maui.Gtk.UnitTests
 			var first = animation!.CurrentTexture;
 			Assert.Equal(1, first.Width);
 
+			animation.Play();
 			Thread.Sleep(150);
 			Assert.True(animation.Advance());
 			Assert.NotSame(first, animation.CurrentTexture);
+		});
+
+		[GtkFact]
+		public void AnimationClockOnlyAdvancesWhilePlaying() => GtkTestHost.Run(() =>
+		{
+			using var animation = GtkImageAnimation.TryCreate(TestImages.CreateAnimatedGif());
+			Assert.NotNull(animation);
+
+			// Wall-clock time passing while stopped must not count (a late start used to jump ahead).
+			Thread.Sleep(150);
+			Assert.False(animation!.Advance());
+
+			animation.Play();
+			Thread.Sleep(150);
+			Assert.True(animation.Advance());
+
+			// Pause holds the frame no matter how long it lasts.
+			animation.Pause();
+			Thread.Sleep(200);
+			Assert.False(animation.Advance());
+			Assert.False(animation.IsPlaying);
 		});
 
 		[GtkFact]
