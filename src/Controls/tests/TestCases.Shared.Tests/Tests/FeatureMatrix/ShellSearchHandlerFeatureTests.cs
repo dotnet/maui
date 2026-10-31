@@ -686,6 +686,9 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		searchHandler.Tap();
 		searchHandler.Clear();
 		searchHandler.SendKeys("Testing");
+		Assert.That(() => App.WaitForElement("FocusStatus").GetText(),
+			Is.EqualTo("Focused").After(2000, 100),
+			"Typing in the search box should report its focused state.");
 		VerifyShellSearchScreenshot();
 	}
 #endif
