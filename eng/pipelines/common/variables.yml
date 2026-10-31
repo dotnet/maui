@@ -8,6 +8,11 @@ variables:
   value: $[counter('buildversion-counter', 5000)]
 - name: _BuildOfficialId
   value: $[ format('{0}.{1}', format('{0:yyyyMMdd}', pipeline.startTime), counter(format('{0:yyyyMMdd}', pipeline.startTime), 1) )]
+# Mono, iOS 18.5, and MacCatalyst coverage is reserved for release validation.
+- name: TestTargetBranch
+  value: $[replace(coalesce(variables['System.PullRequest.TargetBranch'], variables['Build.SourceBranch']), 'refs/heads/', '')]
+- name: RunExtendedTests
+  value: $[or(startsWith(variables['TestTargetBranch'], 'release/'), eq(variables['TestTargetBranch'], 'inflight/candidate'))]
 - name: DOTNET_SKIP_FIRST_TIME_EXPERIENCE
   value: true
 - name: DOTNET_VERSION
