@@ -21,6 +21,96 @@ namespace Microsoft.Maui.DeviceTests
 	public partial class CollectionViewTests
 	{
 		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task LegacyGridLayoutReplacementUpdatesPanelAndSubscription(bool useItemTemplate)
+		{
+			SetupBuilder();
+
+			var items = new[] { "First", "Second", "Third", "Fourth", "Fifth", "Sixth", "Seventh", "Eighth" };
+			var originalLayout = new GridItemsLayout(2, ItemsLayoutOrientation.Vertical);
+			var collectionView = new CollectionView
+			{
+				WidthRequest = 400,
+				HeightRequest = 400,
+				ItemsSource = items,
+				ItemsLayout = originalLayout,
+				SelectionMode = Controls.SelectionMode.Single,
+				SelectedItem = items[0]
+			};
+
+			if (useItemTemplate)
+			{
+				collectionView.ItemTemplate = new Controls.DataTemplate(() =>
+				{
+					var label = new Label();
+					label.SetBinding(Label.TextProperty, ".");
+					return label;
+				});
+			}
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				var gridView = Assert.IsType<FormsGridView>(handler.PlatformView);
+				await AssertEventually(() => gridView.IsLoaded && gridView.ItemsPanelRoot is UI.Xaml.Controls.ItemsWrapGrid);
+
+				var replacementLayout = new GridItemsLayout(4, ItemsLayoutOrientation.Horizontal);
+				collectionView.ItemsLayout = replacementLayout;
+				gridView.UpdateLayout();
+
+				await AssertEventually(() =>
+					gridView.ItemsPanelRoot is UI.Xaml.Controls.ItemsWrapGrid panel &&
+					panel.Orientation == UI.Xaml.Controls.Orientation.Vertical &&
+					panel.MaximumRowsOrColumns == 4 &&
+					gridView.ContainerFromIndex(3) is UI.Xaml.Controls.GridViewItem item &&
+					item.ActualHeight > 0);
+
+				var first = Assert.IsType<UI.Xaml.Controls.GridViewItem>(gridView.ContainerFromIndex(0));
+				var firstPosition = first.TransformToVisual(gridView).TransformPoint(new global::Windows.Foundation.Point());
+				var previousY = firstPosition.Y;
+				for (int i = 1; i < 4; i++)
+				{
+					var item = Assert.IsType<UI.Xaml.Controls.GridViewItem>(gridView.ContainerFromIndex(i));
+					var position = item.TransformToVisual(gridView).TransformPoint(new global::Windows.Foundation.Point());
+					Assert.Equal(firstPosition.X, position.X, 1);
+					Assert.True(position.Y > previousY);
+					previousY = position.Y;
+				}
+
+				Assert.Same(gridView, handler.PlatformView);
+				Assert.Same(items[0], collectionView.SelectedItem);
+				Assert.Single(gridView.SelectedItems);
+				Assert.Equal(UI.Xaml.Controls.ScrollMode.Enabled, UI.Xaml.Controls.ScrollViewer.GetHorizontalScrollMode(gridView));
+				Assert.Equal(UI.Xaml.Controls.ScrollMode.Disabled, UI.Xaml.Controls.ScrollViewer.GetVerticalScrollMode(gridView));
+
+				replacementLayout.Span = 3;
+				await AssertEventually(() =>
+					gridView.ItemsPanelRoot is UI.Xaml.Controls.ItemsWrapGrid panel && panel.MaximumRowsOrColumns == 3);
+				originalLayout.Span = 7;
+				Assert.Equal(3, gridView.Span);
+
+				replacementLayout.HorizontalItemSpacing = 10;
+				replacementLayout.VerticalItemSpacing = 6;
+				var margin = Assert.Single(gridView.ItemContainerStyle.Setters.OfType<WSetter>(),
+					setter => setter.Property == FrameworkElement.MarginProperty);
+				Assert.Equal(new UI.Xaml.Thickness(5, 3, 5, 3), Assert.IsType<UI.Xaml.Thickness>(margin.Value));
+
+				collectionView.ItemsLayout = new GridItemsLayout(2, ItemsLayoutOrientation.Vertical);
+				gridView.UpdateLayout();
+				await AssertEventually(() =>
+					gridView.ItemsPanelRoot is UI.Xaml.Controls.ItemsWrapGrid panel &&
+					panel.Orientation == UI.Xaml.Controls.Orientation.Horizontal &&
+					panel.MaximumRowsOrColumns == 2);
+
+				Assert.Equal(UI.Xaml.Controls.ScrollMode.Disabled, UI.Xaml.Controls.ScrollViewer.GetHorizontalScrollMode(gridView));
+				Assert.Equal(UI.Xaml.Controls.ScrollMode.Enabled, UI.Xaml.Controls.ScrollViewer.GetVerticalScrollMode(gridView));
+				Assert.Equal(UI.Xaml.Controls.ScrollBarVisibility.Disabled, UI.Xaml.Controls.ScrollViewer.GetHorizontalScrollBarVisibility(gridView));
+				Assert.Same(items[0], collectionView.SelectedItem);
+				Assert.Single(gridView.SelectedItems);
+			});
+		}
+
+		[Theory]
 		[InlineData(ItemsUpdatingScrollMode.KeepItemsInView, false)]
 		[InlineData(ItemsUpdatingScrollMode.KeepItemsInView, true)]
 		[InlineData(ItemsUpdatingScrollMode.KeepLastItemInView, false)]
