@@ -1,4 +1,7 @@
 ﻿#nullable enable
+Microsoft.Maui.Controls.Gtk.Handlers.GtkBoxViewHandler
+Microsoft.Maui.Controls.Gtk.Handlers.GtkBoxViewHandler.GtkBoxViewHandler() -> void
+Microsoft.Maui.Controls.Gtk.Handlers.GtkBoxViewHandler.GtkBoxViewHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper = null) -> void
 Microsoft.Maui.Controls.Gtk.Handlers.GtkControlsLabelHandler
 Microsoft.Maui.Controls.Gtk.Handlers.GtkControlsLabelHandler.GtkControlsLabelHandler() -> void
 Microsoft.Maui.Controls.Gtk.Handlers.GtkControlsLabelHandler.GtkControlsLabelHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper = null) -> void
@@ -6,6 +9,27 @@ Microsoft.Maui.Controls.Gtk.Handlers.GtkControlsToolbarHandler
 Microsoft.Maui.Controls.Gtk.Handlers.GtkControlsToolbarHandler.GtkControlsToolbarHandler() -> void
 Microsoft.Maui.Controls.Gtk.Handlers.GtkControlsToolbarHandler.GtkControlsToolbarHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper = null) -> void
 Microsoft.Maui.Controls.Gtk.Handlers.GtkControlsToolbarHandler.UpdateItems() -> void
+Microsoft.Maui.Controls.Gtk.Handlers.GtkFrameHandler
+Microsoft.Maui.Controls.Gtk.Handlers.GtkFrameHandler.GtkFrameHandler() -> void
+Microsoft.Maui.Controls.Gtk.Handlers.GtkFrameHandler.GtkFrameHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper = null) -> void
+Microsoft.Maui.Controls.Gtk.Handlers.GtkLineHandler
+Microsoft.Maui.Controls.Gtk.Handlers.GtkLineHandler.GtkLineHandler() -> void
+Microsoft.Maui.Controls.Gtk.Handlers.GtkLineHandler.GtkLineHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper = null) -> void
+Microsoft.Maui.Controls.Gtk.Handlers.GtkPathHandler
+Microsoft.Maui.Controls.Gtk.Handlers.GtkPathHandler.GtkPathHandler() -> void
+Microsoft.Maui.Controls.Gtk.Handlers.GtkPathHandler.GtkPathHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper = null) -> void
+Microsoft.Maui.Controls.Gtk.Handlers.GtkPolygonHandler
+Microsoft.Maui.Controls.Gtk.Handlers.GtkPolygonHandler.GtkPolygonHandler() -> void
+Microsoft.Maui.Controls.Gtk.Handlers.GtkPolygonHandler.GtkPolygonHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper = null) -> void
+Microsoft.Maui.Controls.Gtk.Handlers.GtkPolylineHandler
+Microsoft.Maui.Controls.Gtk.Handlers.GtkPolylineHandler.GtkPolylineHandler() -> void
+Microsoft.Maui.Controls.Gtk.Handlers.GtkPolylineHandler.GtkPolylineHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper = null) -> void
+Microsoft.Maui.Controls.Gtk.Handlers.GtkRectangleHandler
+Microsoft.Maui.Controls.Gtk.Handlers.GtkRectangleHandler.GtkRectangleHandler() -> void
+Microsoft.Maui.Controls.Gtk.Handlers.GtkRectangleHandler.GtkRectangleHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper = null) -> void
+Microsoft.Maui.Controls.Gtk.Handlers.GtkRoundRectangleHandler
+Microsoft.Maui.Controls.Gtk.Handlers.GtkRoundRectangleHandler.GtkRoundRectangleHandler() -> void
+Microsoft.Maui.Controls.Gtk.Handlers.GtkRoundRectangleHandler.GtkRoundRectangleHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper = null) -> void
 Microsoft.Maui.Controls.Gtk.Handlers.GtkShellHandler
 Microsoft.Maui.Controls.Gtk.Handlers.GtkShellHandler.GtkShellHandler() -> void
 Microsoft.Maui.Controls.Gtk.Handlers.GtkShellHandler.GtkShellHandler(Microsoft.Maui.IPropertyMapper? mapper) -> void
@@ -29,6 +53,9 @@ Microsoft.Maui.Controls.Gtk.Platform.GtkLabelMarkup
 Microsoft.Maui.Hosting.GtkControlsExtensions
 override Microsoft.Maui.Controls.Gtk.Handlers.GtkControlsToolbarHandler.ConnectHandler(object! platformView) -> void
 override Microsoft.Maui.Controls.Gtk.Handlers.GtkControlsToolbarHandler.DisconnectHandler(object! platformView) -> void
+override Microsoft.Maui.Controls.Gtk.Handlers.GtkFrameHandler.ConnectHandler(object! platformView) -> void
+override Microsoft.Maui.Controls.Gtk.Handlers.GtkFrameHandler.CreatePlatformView() -> object!
+override Microsoft.Maui.Controls.Gtk.Handlers.GtkFrameHandler.DisconnectHandler(object! platformView) -> void
 override Microsoft.Maui.Controls.Gtk.Handlers.GtkShellHandler.ConnectHandler(Microsoft.Maui.Gtk.Platform.MauiGtkFlyoutPanel! platformView) -> void
 override Microsoft.Maui.Controls.Gtk.Handlers.GtkShellHandler.CreatePlatformView() -> Microsoft.Maui.Gtk.Platform.MauiGtkFlyoutPanel!
 override Microsoft.Maui.Controls.Gtk.Handlers.GtkShellHandler.DisconnectHandler(Microsoft.Maui.Gtk.Platform.MauiGtkFlyoutPanel! platformView) -> void

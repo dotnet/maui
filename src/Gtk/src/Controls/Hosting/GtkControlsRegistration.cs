@@ -32,6 +32,16 @@ namespace Microsoft.Maui.Controls.Gtk.Hosting
 				handlers.AddHandler<CollectionView, GtkCollectionViewHandler>();
 				handlers.AddHandler<CarouselView, GtkCarouselViewHandler>();
 				handlers.AddHandler<Shell, GtkShellHandler>();
+				handlers.AddHandler<Shapes.Line, GtkLineHandler>();
+				handlers.AddHandler<Shapes.Path, GtkPathHandler>();
+				handlers.AddHandler<Shapes.Polygon, GtkPolygonHandler>();
+				handlers.AddHandler<Shapes.Polyline, GtkPolylineHandler>();
+				handlers.AddHandler<Shapes.Rectangle, GtkRectangleHandler>();
+				handlers.AddHandler<Shapes.RoundRectangle, GtkRoundRectangleHandler>();
+				handlers.AddHandler<BoxView, GtkBoxViewHandler>();
+#pragma warning disable CS0618 // Frame is obsolete but still supported.
+				handlers.AddHandler<Frame, GtkFrameHandler>();
+#pragma warning restore CS0618
 #pragma warning disable CS0618 // ListView and TableView are obsolete but still supported.
 				handlers.AddHandler<ListView, GtkListViewHandler>();
 				handlers.AddHandler<TableView, GtkTableViewHandler>();

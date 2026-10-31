@@ -149,6 +149,8 @@ Pass only GApplication options in `args`. Lifecycle: `ConfigureLifecycleEvents(e
 | ImageButton | `MauiGtkImageButton` (`Button` + `Picture`) | like Button: clicked/pressed/released, stroke, corner radius |
 | GraphicsView | `MauiGtkGraphicsView` (`DrawingArea` + `CairoCanvas`) | start/drag/end/cancel and hover interactions |
 | Shapes (`ShapeViewHandler`) | `MauiGtkGraphicsView` + `ShapeDrawable` | fill/stroke/dash/cap/join/miter repaint; the background is painted by the shape (no CSS background) |
+| Controls shapes, `BoxView` | `GtkLineHandler` ... `GtkBoxViewHandler` (`Microsoft.Maui.Controls.Gtk`) over the same view | see the Controls README |
+| Frame | `GtkFrameHandler` (`Microsoft.Maui.Controls.Gtk`) over `MauiGtkBorder` | corner radius, border colour, padding, `HasShadow` as CSS shadow |
 | IndicatorView | `MauiGtkGraphicsView` drawing dots | natural size = the dots; shape from `IndicatorsShape` |
 | RefreshView | `MauiGtkRefreshPanel` | pull = capture-phase scroll up while the content is at its top (100 px); spinner over the top edge |
 | SwipeView, SwipeItem(View) | `MauiGtkSwipePanel` | `GestureDrag`; content slides by `GtkViewState.PlatformOffsetX/Y`; reveal/execute, `RequestOpen/Close`; not animated |
@@ -169,7 +171,7 @@ Not in this area: Shell, CollectionView, Maps, NavigationPage/Toolbar/FlyoutPage
 
 | Project | Tests (Windows GTK 4.22 / Debian 13 GTK 4.18, xvfb) |
 |---------|------|
-| `Microsoft.Maui.Gtk.UnitTests` (Core + Essentials + Handlers + Controls + Web + Maps) | Windows 648 passed, 21 skipped (17 WebKit + 4 Linux-only popups); Debian 13 (GTK 4.18) 669 passed, 0 skipped |
+| `Microsoft.Maui.Gtk.UnitTests` (Core + Essentials + Handlers + Controls + Web + Maps) | Windows 658 passed, 21 skipped (17 WebKit + 4 Linux-only popups); Debian 13 (GTK 4.18) 679 passed, 0 skipped |
 | `Graphics.Cairo.Tests` | 125 passed, 0 skipped |
 | `Essentials.UnitTests` (net10.0) | 441 passed, 0 skipped |
 | `Core.UnitTests` / `Controls.Core.UnitTests` (net10.0) | 884 (+3 skipped) / 5869 (+30 skipped) passed |
@@ -186,7 +188,6 @@ Not in this area: Shell, CollectionView, Maps, NavigationPage/Toolbar/FlyoutPage
 ## Known limitations
 
 - Popups (`Picker.IsOpen`, `DatePicker/TimePicker.IsOpen`, context flyouts) pop a `Gtk.Popover` up, which crashes the process with the gvsbuild runtime on Windows: those tests are `[GtkLinuxFact]` (skipped on Windows, run headless on Linux).
-- The Controls shape handlers (`Line`, `Path`, `Polygon`, `Polyline`, `Rectangle`, `RoundRectangle`, `BoxView`) derive from `ShapeViewHandler`; their GTK subclasses belong to `Microsoft.Maui.Controls.Gtk` and can reuse `GtkShapeViewBehavior` (platform view, repaint mappings). Only `Ellipse` is covered by Core.
 - `SwipeItemView` is resolved by Controls to the content view handler (it is a `ContentView`); `Microsoft.Maui.Controls.Gtk` registers `SwipeItemView -> SwipeItemViewHandler`.
 - Windows builds pack/test `net10.0`/`netstandard` only (mobile/Windows TFMs are disabled locally by `Directory.Build.Override.props`).
 - `RotationX`/`RotationY`, window position, maximum window size, image-paint backgrounds, animated scrolling.

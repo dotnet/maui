@@ -23,6 +23,8 @@ front of the stock ones (see the Gtk README), so stock-mapper customisations sti
 | CarouselView | `GtkCarouselViewHandler` | the same list, pages as wide as the viewport | snaps 120 ms after scrolling stops; `Position`/`CurrentItem` both ways; peek insets; swipe on/off. **Not**: `Loop`, bounce |
 | ListView, TableView | `GtkListViewHandler`, `GtkTableViewHandler` | `Gtk.ListView` / scrolled column | cells as views (view/text/image/switch/entry), selection, `ItemTapped`, header/footer, grouping (header row), separators. **Not**: context actions, pull to refresh |
 | Label | `GtkControlsLabelHandler` : `GtkLabelHandler` | `Gtk.Label` | `FormattedText` = Pango `span`s, `TextType.Html` = Pango markup (small HTML subset), `TextTransform`, `LineBreakMode`, `MaxLines`; span gestures unsupported |
+| Shapes | `GtkLineHandler`, `GtkPathHandler`, `GtkPolygonHandler`, `GtkPolylineHandler`, `GtkRectangleHandler`, `GtkRoundRectangleHandler`, `GtkBoxViewHandler` : `GtkShapeViewHandler` (Core) | `MauiGtkGraphicsView` + `ShapeDrawable` | registered by view type (the stock handlers take no command mapper); their own properties (`X1..Y2`, `Data`, `Points`, `FillRule`, `RadiusX/Y`, `CornerRadius`, `Color`) repaint |
+| Frame | `GtkFrameHandler` | `MauiGtkBorder` | rounded-rectangle shape of `CornerRadius` (unset = 5), 1 px `BorderColor` stroke, `Padding`; `HasShadow` = CSS `box-shadow` (an explicit `Shadow` uses the container shadow) |
 | DisplayAlert / ActionSheet / Prompt | `GtkDialogs` via the alert delegate convention (keyed `Func<Page, ..., Task<...>>` services) | modal `Gtk.Window` transient for the page's window | not `Gtk.AlertDialog`: its async GIO call cannot be driven or inspected; buttons are named after their text |
 | Gestures | `GtkGestureConnection` (through `GesturePlatformBackend.Factory`) | `GestureClick` (tap, double tap, pointer press), `GestureDrag` (pan, swipe), `GestureZoom` (pinch), `EventControllerMotion` (pointer), `DragSource`/`DropTarget` (text) | controllers exist only for the recognizer kinds a view has; none claims a sequence. Drag and drop carries text; an in-process drop gets the source's whole `DataPackage` |
 | Modal pages | `GtkModalNavigationBackend` (through `ModalNavigationBackend.Current`) | modal `Gtk.Window` transient for the page below, in its own window scope | the modal page's toolbar is that window's title bar; closing the window pops the page; `animated` is ignored |
@@ -49,4 +51,4 @@ front of the stock ones (see the Gtk README), so stock-mapper customisations sti
 
 `src/Gtk/tests/Microsoft.Maui.Gtk.UnitTests/Controls/` (xUnit, real widgets; `ControlsWindowHost` hosts a page in a `Gtk.Window`,
 `ControlsTestApp` builds an app with `UseMauiGtk()`): Navigation (16), Alerts and Labels (35), Gestures (20), Modal (6), CollectionView
-(21), Carousel (7), Legacy lists (7), Shell (6).
+(21), Carousel (7), Legacy lists (7), Shell (6), Shapes and Frame (10).
