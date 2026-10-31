@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 
@@ -7,6 +8,26 @@ namespace Microsoft.Maui.Gtk.UnitTests
 	/// <summary>Creates small PNG files/streams without any imaging dependency.</summary>
 	public static class TestImages
 	{
+		/// <summary>A 1x1 two-frame GIF (red, then blue), 50 ms per frame, looping forever.</summary>
+		public static byte[] CreateAnimatedGif()
+		{
+			var gif = new List<byte>();
+			gif.AddRange(System.Text.Encoding.ASCII.GetBytes("GIF89a"));
+			gif.AddRange(new byte[] { 1, 0, 1, 0, 0x80, 0, 0 });                  // 1x1, 2-entry global palette
+			gif.AddRange(new byte[] { 255, 0, 0, 0, 0, 255 });                    // red, blue
+			gif.AddRange(new byte[] { 0x21, 0xFF, 0x0B });                        // NETSCAPE2.0 loop forever
+			gif.AddRange(System.Text.Encoding.ASCII.GetBytes("NETSCAPE2.0"));
+			gif.AddRange(new byte[] { 3, 1, 0, 0, 0 });
+			foreach (byte lzw in new byte[] { 0x44, 0x4C })                       // pixel index 0, then index 1
+			{
+				gif.AddRange(new byte[] { 0x21, 0xF9, 4, 0, 5, 0, 0, 0 });        // graphic control: 5 cs delay
+				gif.AddRange(new byte[] { 0x2C, 0, 0, 0, 0, 1, 0, 1, 0, 0 });     // image descriptor
+				gif.AddRange(new byte[] { 2, 2, lzw, 1, 0 });                     // min code size, one block, end
+			}
+			gif.Add(0x3B);
+			return gif.ToArray();
+		}
+
 		public static byte[] CreatePng(int width, int height, byte red, byte green, byte blue)
 		{
 			using var raw = new MemoryStream();

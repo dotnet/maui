@@ -56,7 +56,15 @@ namespace Microsoft.Maui.Gtk.ImageSources
 		/// <param name="part">The image source part of the virtual view.</param>
 		/// <param name="apply">Receives the texture on the GTK thread.</param>
 		/// <returns>A task that completes when the load finished or was superseded.</returns>
-		public async Task UpdateAsync(IElementHandler handler, IImageSourcePart? part, Action<Gdk.Texture?> apply)
+		public Task UpdateAsync(IElementHandler handler, IImageSourcePart? part, Action<Gdk.Texture?> apply) =>
+			UpdateAsync(handler, part, apply, null);
+
+		/// <summary>
+		/// Like the public overload, and when the source is a multi-frame image (GIF, APNG, animated WebP) also hands the decoded
+		/// animation to <paramref name="applyAnimation"/> (called after <paramref name="apply"/> with its first frame; <see langword="null"/>
+		/// for a still image). The loader owns the animation and disposes it on the next load or <see cref="Reset"/>.
+		/// </summary>
+		internal async Task UpdateAsync(IElementHandler handler, IImageSourcePart? part, Action<Gdk.Texture?> apply, Action<GtkImageAnimation?>? applyAnimation)
 		{
 			Reset();
 
@@ -64,6 +72,7 @@ namespace Microsoft.Maui.Gtk.ImageSources
 			if (part is null || source is null || source.IsEmpty)
 			{
 				apply(null);
+				applyAnimation?.Invoke(null);
 				part?.UpdateIsLoading(false);
 				return;
 			}
@@ -85,10 +94,20 @@ namespace Microsoft.Maui.Gtk.ImageSources
 			events?.LoadingStarted();
 
 			IImageSourceServiceResult<Gdk.Texture>? result = null;
+			GtkLoadedImage? loaded = null;
 			Exception? failure = null;
 			try
 			{
-				result = await service.GetTextureAsync(source, token).ConfigureAwait(false);
+				if (applyAnimation is not null && service is IGtkAnimatedImageSourceService animated)
+				{
+					loaded = await animated.GetImageAsync(source, token).ConfigureAwait(false);
+					if (loaded is not null)
+						result = new ImageSourceServiceResultTexture(loaded.Texture);
+				}
+				else
+				{
+					result = await service.GetTextureAsync(source, token).ConfigureAwait(false);
+				}
 			}
 			catch (OperationCanceledException)
 			{
@@ -104,11 +123,13 @@ namespace Microsoft.Maui.Gtk.ImageSources
 				if (token.IsCancellationRequested)
 				{
 					result?.Dispose();
+					loaded?.Animation?.Dispose();
 					return;
 				}
 
-				_result = result;
+				_result = loaded?.Animation is { } animation ? new AnimationResult(result!, animation) : result;
 				apply(result?.Value);
+				applyAnimation?.Invoke(loaded?.Animation);
 				part.UpdateIsLoading(false);
 
 				if (failure is not null)
@@ -116,6 +137,24 @@ namespace Microsoft.Maui.Gtk.ImageSources
 				else
 					events?.LoadingCompleted(result is not null);
 			});
+		}
+	}
+
+	sealed class AnimationResult : IDisposable
+	{
+		readonly IDisposable _texture;
+		readonly GtkImageAnimation _animation;
+
+		public AnimationResult(IDisposable texture, GtkImageAnimation animation)
+		{
+			_texture = texture;
+			_animation = animation;
+		}
+
+		public void Dispose()
+		{
+			_texture.Dispose();
+			_animation.Dispose();
 		}
 	}
 }

@@ -131,7 +131,7 @@ Pass only GApplication options in `args`. Lifecycle: `ConfigureLifecycleEvents(e
 | ContentPage, ContentView, Layouts (Stack/Grid/Absolute/Flex) | `MauiGtkPanel` | |
 | Label | `Gtk.Label` | wraps by default; `GtkLabelHandler.SetMaxLines` for `MaxLines` |
 | Button | `MauiGtkButton` (image + label) | Clicked/Pressed/Released, stroke, corner radius |
-| Image | `Gtk.Picture` | static; `IsAnimationPlaying` ignored |
+| Image | `Gtk.Picture` | animated GIF/APNG/WebP (gdk-pixbuf) play on the frame clock while `IsAnimationPlaying`, else show the first frame. `ImageButton` has no `IsAnimationPlaying` (always first frame) |
 | Entry | `Gtk.Entry` | return type, vertical alignment: no GTK equivalent |
 | Editor | `MauiGtkEditor` (overlay, scrolled `TextView`) | placeholder label, grows with text |
 | ScrollView | `Gtk.ScrolledWindow` | programmatic scrolling is instant |

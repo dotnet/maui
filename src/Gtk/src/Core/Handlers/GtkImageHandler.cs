@@ -11,10 +11,14 @@ namespace Microsoft.Maui.Gtk.Handlers
 	/// <see cref="ImageHandler"/> over a <c>Gtk.Picture</c>. The source is decoded to a <c>Gdk.Texture</c> by the
 	/// <see cref="IGtkImageSourceService"/> registered for the source type; <see cref="Aspect"/> maps to <c>ContentFit</c>.
 	/// </summary>
-	/// <remarks>Images are static: <c>IsAnimationPlaying</c> is accepted and ignored.</remarks>
+	/// <remarks>
+	/// Animated sources (GIF, APNG, animated WebP) show their first frame and play while <c>IsAnimationPlaying</c> is <see langword="true"/>, driven by the
+	/// widget's frame clock (<see cref="GtkImageAnimator"/>).
+	/// </remarks>
 	public class GtkImageHandler : ImageHandler
 	{
 		readonly GtkImageLoader _loader = new();
+		GtkImageAnimator? _animator;
 
 		/// <summary>Creates the handler with the stock mappers.</summary>
 		public GtkImageHandler()
@@ -30,13 +34,21 @@ namespace Microsoft.Maui.Gtk.Handlers
 		{
 		}
 
+		internal GtkImageAnimator? Animator => _animator;
+
 		/// <inheritdoc/>
-		protected override object CreatePlatformView() => new GtkPicture { CanShrink = true, ContentFit = global::Gtk.ContentFit.Contain };
+		protected override object CreatePlatformView()
+		{
+			var picture = new GtkPicture { CanShrink = true, ContentFit = global::Gtk.ContentFit.Contain };
+			_animator = new GtkImageAnimator(picture, texture => picture.Paintable = texture);
+			return picture;
+		}
 
 		/// <inheritdoc/>
 		protected override void DisconnectHandler(object platformView)
 		{
 			_loader.Reset();
+			_animator?.Dispose();
 			base.DisconnectHandler(platformView);
 		}
 
@@ -63,12 +75,16 @@ namespace Microsoft.Maui.Gtk.Handlers
 		static void Configure(GtkMapperBuilder<IImage, IImageHandler> mapper, GtkCommandMapperBuilder<IImage, IImageHandler> commands)
 		{
 			mapper.MapGtk<GtkPicture>(nameof(IImage.Aspect), (h, v, w) => w.ContentFit = ToContentFit(v.Aspect));
-			mapper.MapGtk<GtkPicture>(nameof(IImage.IsAnimationPlaying), (h, v, w) => { });
+			mapper.MapGtk<GtkPicture>(nameof(IImage.IsAnimationPlaying), (h, v, w) => (h as GtkImageHandler)?._animator?.SetPlaying(v.IsAnimationPlaying));
 			mapper.MapGtk<GtkPicture>(nameof(IImage.Background), (h, v, w) => GtkStyle.For(w).SetBackground(v.Background));
 			mapper.MapGtk<GtkPicture>(nameof(IImage.Source), (h, v, w) =>
 			{
 				if (h is GtkImageHandler handler)
-					_ = handler._loader.UpdateAsync(h, v, texture => w.Paintable = texture);
+					_ = handler._loader.UpdateAsync(h, v, texture => w.Paintable = texture, animation =>
+					{
+						handler._animator?.SetAnimation(animation);
+						handler._animator?.SetPlaying(v.IsAnimationPlaying);
+					});
 			});
 			// Explicit sizes are applied by the layout (GetDesiredSize/PlatformArrange), not by the widget.
 			mapper.MapGtk<GtkPicture>(nameof(IImage.Width), (h, v, w) => { });

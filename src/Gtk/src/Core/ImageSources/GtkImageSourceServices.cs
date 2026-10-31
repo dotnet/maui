@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Gtk.ImageSources
 	}
 
 	/// <summary>Shared plumbing of the GTK image source services.</summary>
-	public abstract class GtkImageSourceService<T> : ImageSourceService, IImageSourceService<T>, IGtkImageSourceService
+	public abstract class GtkImageSourceService<T> : ImageSourceService, IImageSourceService<T>, IGtkAnimatedImageSourceService
 		where T : IImageSource
 	{
 		/// <summary>Creates the service.</summary>
@@ -51,6 +51,47 @@ namespace Microsoft.Maui.Gtk.ImageSources
 				return null;
 			}
 		}
+
+		/// <inheritdoc/>
+		async Task<GtkLoadedImage?> IGtkAnimatedImageSourceService.GetImageAsync(IImageSource imageSource, CancellationToken cancellationToken)
+		{
+			if (imageSource is not T source || imageSource.IsEmpty)
+				return null;
+
+			try
+			{
+				var data = await LoadEncodedAsync(source, cancellationToken).ConfigureAwait(false);
+				if (data is not null)
+				{
+					var animation = GtkImageAnimation.TryCreate(data);
+					if (animation is not null)
+						return new GtkLoadedImage(animation.CurrentTexture, animation);
+
+					var still = TextureFromBytes(data);
+					return still is null ? null : new GtkLoadedImage(still, null);
+				}
+
+				var texture = await LoadTextureAsync(source, cancellationToken).ConfigureAwait(false);
+				return texture is null ? null : new GtkLoadedImage(texture, null);
+			}
+			catch (OperationCanceledException)
+			{
+				throw;
+			}
+			catch (Exception ex)
+			{
+				Logger?.LogWarning(ex, "Unable to load the image source {ImageSource} as a GTK image.", imageSource);
+				return null;
+			}
+		}
+
+		/// <summary>
+		/// The encoded bytes of <paramref name="source"/> when it may be an animation (decoded by <see cref="GtkImageAnimation"/>), or <see langword="null"/>
+		/// to take the plain <see cref="LoadTextureAsync"/> path. Sources that already hold the bytes override it so the data is read once.
+		/// </summary>
+		/// <param name="source">The typed image source.</param>
+		/// <param name="cancellationToken">Cancels the load.</param>
+		private protected virtual Task<byte[]?> LoadEncodedAsync(T source, CancellationToken cancellationToken) => Task.FromResult<byte[]?>(null);
 
 		/// <summary>Loads the texture for <paramref name="source"/>.</summary>
 		/// <param name="source">The typed image source.</param>
@@ -95,6 +136,17 @@ namespace Microsoft.Maui.Gtk.ImageSources
 			return Task.FromResult<Gdk.Texture?>(path is null ? null : new Gdk.Texture(path));
 		}
 
+		// Only files whose header says "animation" are read here; everything else keeps the direct texture path.
+		private protected override Task<byte[]?> LoadEncodedAsync(IFileImageSource source, CancellationToken cancellationToken)
+		{
+			var path = Resolve(source.File);
+			if (path is null)
+				return Task.FromResult<byte[]?>(null);
+
+			var data = File.ReadAllBytes(path);
+			return Task.FromResult<byte[]?>(GtkImageAnimation.MayBeAnimated(data) ? data : null);
+		}
+
 		internal static string? Resolve(string? file)
 		{
 			if (string.IsNullOrEmpty(file))
@@ -137,6 +189,18 @@ namespace Microsoft.Maui.Gtk.ImageSources
 		}
 
 		/// <inheritdoc/>
+		private protected override async Task<byte[]?> LoadEncodedAsync(IStreamImageSource source, CancellationToken cancellationToken)
+		{
+			using var stream = await source.GetStreamAsync(cancellationToken).ConfigureAwait(false);
+			if (stream is null)
+				return null;
+
+			using var memory = new MemoryStream();
+			await stream.CopyToAsync(memory, 81920, cancellationToken).ConfigureAwait(false);
+			return memory.ToArray();
+		}
+
+		/// <inheritdoc/>
 		protected override async Task<Gdk.Texture?> LoadTextureAsync(IStreamImageSource source, CancellationToken cancellationToken)
 		{
 			using var stream = await source.GetStreamAsync(cancellationToken).ConfigureAwait(false);
@@ -160,6 +224,9 @@ namespace Microsoft.Maui.Gtk.ImageSources
 			: base(logger)
 		{
 		}
+
+		private protected override async Task<byte[]?> LoadEncodedAsync(IUriImageSource source, CancellationToken cancellationToken) =>
+			source.Uri is null ? null : await s_client.Value.GetByteArrayAsync(source.Uri, cancellationToken).ConfigureAwait(false);
 
 		/// <inheritdoc/>
 		protected override async Task<Gdk.Texture?> LoadTextureAsync(IUriImageSource source, CancellationToken cancellationToken)
