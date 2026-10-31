@@ -19,11 +19,22 @@ public class Issue39559 : _IssuesUITest
 		App.Tap("OpenModalButton");
 		App.WaitForElement("ModalLabel");
 
-		App.Back();
+		try
+		{
+			App.Back();
 
-		// Without the fix the callback registered on the Activity never runs while a modal is shown.
-		App.WaitForTextToBePresentInElement("ModalBackPressCountLabel", "Modal count: 1");
-		Assert.That(App.FindElement("ModalBackPressCountLabel").GetText(), Is.EqualTo("Modal count: 1"));
+			// Without the fix the callback registered on the Activity never runs while a modal is shown.
+			App.WaitForTextToBePresentInElement("ModalBackPressCountLabel", "Modal count: 1");
+			Assert.That(App.WaitForElement("ModalBackPressCountLabel").GetText(), Is.EqualTo("Modal count: 1"));
+		}
+		finally
+		{
+			// Without the fix Back already closed the modal, so only close it if it is still open.
+			if (App.FindElements("CloseModalButton").Count > 0)
+			{
+				App.Tap("CloseModalButton");
+			}
+		}
 	}
 }
 #endif
