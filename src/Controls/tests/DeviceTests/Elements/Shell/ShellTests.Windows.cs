@@ -95,6 +95,10 @@ namespace Microsoft.Maui.DeviceTests
 				if (!disconnectHandler)
 				{
 					await shell.Navigation.PopAsync();
+					await AssertEventually(() => searchBox.IsLoaded &&
+						searchBox.Visibility == Microsoft.UI.Xaml.Visibility.Visible &&
+						IsViewLaidOut(searchBox));
+					Assert.Same(searchBox, navigationView.AutoSuggestBox);
 					Assert.True(searchBox.Focus(FocusState.Programmatic));
 					await AssertEventually(() => searchHandler.IsFocused);
 					Assert.Equal(2, focusedEvents);
