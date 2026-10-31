@@ -40,6 +40,24 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public virtual void SetAppearance(UITabBarController controller, ShellAppearance appearance)
 		{
+			var tabBar = controller.TabBar;
+
+			if (!_defaultAppearanceCaptured)
+			{
+				_defaultBarTint = tabBar.BarTintColor;
+				_defaultTint = tabBar.TintColor;
+				_defaultUnselectedTint = tabBar.UnselectedItemTintColor;
+				_defaultBackgroundColor = tabBar.BackgroundColor;
+				if (OperatingSystem.IsIOSVersionAtLeast(15) || OperatingSystem.IsMacCatalystVersionAtLeast(15) || OperatingSystem.IsTvOSVersionAtLeast(15))
+				{
+					_defaultStandardAppearance = (UITabBarAppearance)tabBar.StandardAppearance.Copy();
+					_defaultScrollEdgeAppearance = tabBar.ScrollEdgeAppearance is UITabBarAppearance scrollEdge
+						? (UITabBarAppearance)scrollEdge.Copy()
+						: null;
+				}
+				_defaultAppearanceCaptured = true;
+			}
+
 			if (OperatingSystem.IsIOSVersionAtLeast(15) || OperatingSystem.IsMacCatalystVersionAtLeast(15) || OperatingSystem.IsTvOSVersionAtLeast(15))
 				UpdateiOS15TabBarAppearance(controller, appearance);
 			else
@@ -144,26 +162,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			// Set disabled color for text-only tabs
 			if (disabledColor is not null && disabledColor.IsNotDefault())
 				UITabBarItem.Appearance.SetTitleTextAttributes(new UIStringAttributes { ForegroundColor = disabledColor.ToPlatform() }, UIControlState.Disabled);
-		}
-
-		internal void CaptureDefaultAppearance(UITabBarController controller)
-		{
-			if (_defaultAppearanceCaptured)
-			{
-				return;
-			}
-
-			var tabBar = controller.TabBar;
-			_defaultBarTint = tabBar.BarTintColor;
-			_defaultTint = tabBar.TintColor;
-			_defaultUnselectedTint = tabBar.UnselectedItemTintColor;
-			_defaultBackgroundColor = tabBar.BackgroundColor;
-			if (OperatingSystem.IsIOSVersionAtLeast(15) || OperatingSystem.IsMacCatalystVersionAtLeast(15) || OperatingSystem.IsTvOSVersionAtLeast(15))
-			{
-				_defaultStandardAppearance = (UITabBarAppearance)tabBar.StandardAppearance.Copy();
-				_defaultScrollEdgeAppearance = (UITabBarAppearance)tabBar.ScrollEdgeAppearance?.Copy();
-			}
-			_defaultAppearanceCaptured = true;
 		}
 	}
 }
