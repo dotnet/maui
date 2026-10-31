@@ -202,7 +202,6 @@ public class Material3SwitchFeatureTests : _GalleryUITest
 
     [Test]
     [Order(16)]
-    [Ignore("Fails on Android — see https://github.com/dotnet/maui/issues/19883")]
     public void Material3Switch_SetOnColorAndThumbColor_VerifyVisualState()
     {
         App.WaitForElement("Options");
@@ -220,7 +219,6 @@ public class Material3SwitchFeatureTests : _GalleryUITest
 
     [Test]
     [Order(17)]
-    [Ignore("Fails on Android — see https://github.com/dotnet/maui/issues/19883")]
     public void Material3Switch_SetThumbColorAndOnColor_VerifyVisualState()
     {
         App.WaitForElement("Options");
@@ -238,7 +236,6 @@ public class Material3SwitchFeatureTests : _GalleryUITest
 
     [Test]
     [Order(18)]
-    [Ignore("Fails on Android — see https://github.com/dotnet/maui/issues/19883")]
     public void Material3Switch_SetOffColorAndThumbColor_VerifyVisualState()
     {
         App.WaitForElement("Options");

@@ -18,6 +18,25 @@ parameters:
   checkoutDirectory: $(System.DefaultWorkingDirectory)
 
 steps:
+- checkout: self
+  fetchDepth: 1
+  fetchTags: false
+  clean: true
+
+- pwsh: |
+    $ErrorActionPreference = 'Stop'
+    $nugetPackages = $env:NUGET_PACKAGES
+    if (-not $nugetPackages) {
+      $userProfile = if ($IsWindows) { $env:USERPROFILE } else { $env:HOME }
+      $nugetPackages = Join-Path $userProfile '.nuget/packages'
+    }
+    $cliHome = Join-Path $env:AGENT_TEMPDIRECTORY 'dotnet-cli-home'
+    New-Item -ItemType Directory -Path $cliHome -Force | Out-Null
+    Write-Host "##vso[task.setvariable variable=NUGET_PACKAGES]$nugetPackages"
+    Write-Host "##vso[task.setvariable variable=DOTNET_CLI_HOME]$cliHome"
+    Write-Host "##vso[task.setvariable variable=DOTNET_GENERATE_ASPNET_CERTIFICATE]false"
+  displayName: Initialize job-local .NET CLI state
+
 - task: DownloadPipelineArtifact@2
   condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'Mono'), eq('${{ parameters.useMaterial3 }}', 'false'))
   inputs:
@@ -193,6 +212,7 @@ steps:
     testResultsFiles: '$(TestResultsDirectory)/*.trx'
     testRunTitle: '${{ parameters.testFilter }}_$(System.PhaseName)'
     failTaskOnFailedTests: true
+    failTaskOnMissingResultsFile: true
 
 - task: PublishBuildArtifacts@1
   condition: always()

@@ -1,4 +1,3 @@
-#if TEST_FAILS_ON_CATALYST // Test fails on MacCatalyst in CI because SearchHandler clear-icon visibility is intermittent and an unexpected center line appears in screenshots.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -97,4 +96,3 @@ public class Issue35736 : _IssuesUITest
 #endif
 	}
 }
-#endif

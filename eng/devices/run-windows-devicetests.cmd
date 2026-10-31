@@ -176,7 +176,7 @@ if %IS_PACKAGED%==1 (
         "Add-AppxPackage @installParameters"
     if !ERRORLEVEL! NEQ 0 (
         echo ERROR: Failed to install app package
-        powershell -NoProfile -Command "Get-AppPackageLog -All | Select-Object -Last 50 | Format-List"
+        powershell -NoProfile -Command "Get-AppxPackage -Name 'Microsoft.WindowsAppRuntime*' | Select-Object Name, Version, InstallLocation, Status, @{Name='ManifestExists';Expression={$_.InstallLocation -and (Test-Path -LiteralPath (Join-Path $_.InstallLocation 'AppxManifest.xml'))}} | Format-List; Get-AppPackageLog -All | Sort-Object TimeCreated -Descending | Select-Object -First 50 | Format-List"
         exit /b 1
     )
     
