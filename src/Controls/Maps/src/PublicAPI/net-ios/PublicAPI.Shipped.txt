@@ -1,16 +1,37 @@
 #nullable enable
+const Microsoft.Maui.Controls.Maps.Pin.DefaultClusteringIdentifier = "maui_default_cluster" -> string!
 Microsoft.Maui.Controls.Hosting.AppHostBuilderExtensions
 Microsoft.Maui.Controls.Maps.Circle
 Microsoft.Maui.Controls.Maps.Circle.Center.get -> Microsoft.Maui.Devices.Sensors.Location!
 Microsoft.Maui.Controls.Maps.Circle.Center.set -> void
 Microsoft.Maui.Controls.Maps.Circle.Circle() -> void
+Microsoft.Maui.Controls.Maps.Circle.CircleClicked -> System.EventHandler?
 Microsoft.Maui.Controls.Maps.Circle.Fill.get -> Microsoft.Maui.Graphics.Paint?
 Microsoft.Maui.Controls.Maps.Circle.FillColor.get -> Microsoft.Maui.Graphics.Color!
 Microsoft.Maui.Controls.Maps.Circle.FillColor.set -> void
 Microsoft.Maui.Controls.Maps.Circle.Radius.get -> Microsoft.Maui.Maps.Distance
 Microsoft.Maui.Controls.Maps.Circle.Radius.set -> void
+Microsoft.Maui.Controls.Maps.ClusterClickedEventArgs
+Microsoft.Maui.Controls.Maps.ClusterClickedEventArgs.ClusterClickedEventArgs(System.Collections.Generic.IReadOnlyList<Microsoft.Maui.Controls.Maps.Pin!>! pins, Microsoft.Maui.Devices.Sensors.Location! location) -> void
+Microsoft.Maui.Controls.Maps.ClusterClickedEventArgs.Handled.get -> bool
+Microsoft.Maui.Controls.Maps.ClusterClickedEventArgs.Handled.set -> void
+Microsoft.Maui.Controls.Maps.ClusterClickedEventArgs.Location.get -> Microsoft.Maui.Devices.Sensors.Location!
+Microsoft.Maui.Controls.Maps.ClusterClickedEventArgs.Pins.get -> System.Collections.Generic.IReadOnlyList<Microsoft.Maui.Controls.Maps.Pin!>!
+Microsoft.Maui.Controls.Maps.ClusterInfo
+Microsoft.Maui.Controls.Maps.ClusterInfo.ClusterInfo(int count, string! clusteringIdentifier, System.Collections.Generic.IReadOnlyList<Microsoft.Maui.Controls.Maps.Pin!>! pins, Microsoft.Maui.Devices.Sensors.Location! location) -> void
+Microsoft.Maui.Controls.Maps.ClusterInfo.ClusteringIdentifier.get -> string!
+Microsoft.Maui.Controls.Maps.ClusterInfo.Count.get -> int
+Microsoft.Maui.Controls.Maps.ClusterInfo.Location.get -> Microsoft.Maui.Devices.Sensors.Location!
+Microsoft.Maui.Controls.Maps.ClusterInfo.Pins.get -> System.Collections.Generic.IReadOnlyList<Microsoft.Maui.Controls.Maps.Pin!>!
 Microsoft.Maui.Controls.Maps.Map
+Microsoft.Maui.Controls.Maps.Map.ClusterClicked -> System.EventHandler<Microsoft.Maui.Controls.Maps.ClusterClickedEventArgs!>?
+Microsoft.Maui.Controls.Maps.Map.ClusterImageProvider.get -> System.Func<Microsoft.Maui.Controls.Maps.ClusterInfo!, Microsoft.Maui.Controls.ImageSource?>?
+Microsoft.Maui.Controls.Maps.Map.ClusterImageProvider.set -> void
+Microsoft.Maui.Controls.Maps.Map.ClusterImageSource.get -> Microsoft.Maui.Controls.ImageSource?
+Microsoft.Maui.Controls.Maps.Map.ClusterImageSource.set -> void
 Microsoft.Maui.Controls.Maps.Map.GetEnumerator() -> System.Collections.Generic.IEnumerator<Microsoft.Maui.Maps.IMapPin!>!
+Microsoft.Maui.Controls.Maps.Map.IsClusteringEnabled.get -> bool
+Microsoft.Maui.Controls.Maps.Map.IsClusteringEnabled.set -> void
 Microsoft.Maui.Controls.Maps.Map.IsScrollEnabled.get -> bool
 Microsoft.Maui.Controls.Maps.Map.IsScrollEnabled.set -> void
 Microsoft.Maui.Controls.Maps.Map.IsShowingUser.get -> bool
@@ -25,19 +46,29 @@ Microsoft.Maui.Controls.Maps.Map.ItemTemplate.get -> Microsoft.Maui.Controls.Dat
 Microsoft.Maui.Controls.Maps.Map.ItemTemplate.set -> void
 Microsoft.Maui.Controls.Maps.Map.ItemTemplateSelector.get -> Microsoft.Maui.Controls.DataTemplateSelector!
 Microsoft.Maui.Controls.Maps.Map.ItemTemplateSelector.set -> void
+Microsoft.Maui.Controls.Maps.Map.LastUserLocation.get -> Microsoft.Maui.Devices.Sensors.Location?
 Microsoft.Maui.Controls.Maps.Map.Map() -> void
 Microsoft.Maui.Controls.Maps.Map.Map(Microsoft.Maui.Maps.MapSpan! region) -> void
 Microsoft.Maui.Controls.Maps.Map.MapClicked -> System.EventHandler<Microsoft.Maui.Controls.Maps.MapClickedEventArgs!>?
 Microsoft.Maui.Controls.Maps.Map.MapElements.get -> System.Collections.Generic.IList<Microsoft.Maui.Controls.Maps.MapElement!>!
+Microsoft.Maui.Controls.Maps.Map.MapLongClicked -> System.EventHandler<Microsoft.Maui.Controls.Maps.MapClickedEventArgs!>?
+Microsoft.Maui.Controls.Maps.Map.MapStyle.get -> string?
+Microsoft.Maui.Controls.Maps.Map.MapStyle.set -> void
 Microsoft.Maui.Controls.Maps.Map.MapType.get -> Microsoft.Maui.Maps.MapType
 Microsoft.Maui.Controls.Maps.Map.MapType.set -> void
+Microsoft.Maui.Controls.Maps.Map.MoveToRegion(Microsoft.Maui.Maps.MapSpan! mapSpan, bool animated) -> void
 Microsoft.Maui.Controls.Maps.Map.MoveToRegion(Microsoft.Maui.Maps.MapSpan! mapSpan) -> void
 Microsoft.Maui.Controls.Maps.Map.Pins.get -> System.Collections.Generic.IList<Microsoft.Maui.Controls.Maps.Pin!>!
+Microsoft.Maui.Controls.Maps.Map.Region.get -> Microsoft.Maui.Maps.MapSpan?
+Microsoft.Maui.Controls.Maps.Map.Region.set -> void
+Microsoft.Maui.Controls.Maps.Map.UserLocationChanged -> System.EventHandler<Microsoft.Maui.Controls.Maps.UserLocationChangedEventArgs!>?
 Microsoft.Maui.Controls.Maps.Map.VisibleRegion.get -> Microsoft.Maui.Maps.MapSpan?
 Microsoft.Maui.Controls.Maps.MapClickedEventArgs
 Microsoft.Maui.Controls.Maps.MapClickedEventArgs.Location.get -> Microsoft.Maui.Devices.Sensors.Location!
 Microsoft.Maui.Controls.Maps.MapClickedEventArgs.MapClickedEventArgs(Microsoft.Maui.Devices.Sensors.Location! location) -> void
 Microsoft.Maui.Controls.Maps.MapElement
+Microsoft.Maui.Controls.Maps.MapElement.IsVisible.get -> bool
+Microsoft.Maui.Controls.Maps.MapElement.IsVisible.set -> void
 Microsoft.Maui.Controls.Maps.MapElement.MapElement() -> void
 Microsoft.Maui.Controls.Maps.MapElement.MapElementId.get -> object?
 Microsoft.Maui.Controls.Maps.MapElement.MapElementId.set -> void
@@ -45,9 +76,16 @@ Microsoft.Maui.Controls.Maps.MapElement.StrokeColor.get -> Microsoft.Maui.Graphi
 Microsoft.Maui.Controls.Maps.MapElement.StrokeColor.set -> void
 Microsoft.Maui.Controls.Maps.MapElement.StrokeWidth.get -> float
 Microsoft.Maui.Controls.Maps.MapElement.StrokeWidth.set -> void
+Microsoft.Maui.Controls.Maps.MapElement.ZIndex.get -> int
+Microsoft.Maui.Controls.Maps.MapElement.ZIndex.set -> void
 Microsoft.Maui.Controls.Maps.Pin
 Microsoft.Maui.Controls.Maps.Pin.Address.get -> string!
 Microsoft.Maui.Controls.Maps.Pin.Address.set -> void
+Microsoft.Maui.Controls.Maps.Pin.ClusteringIdentifier.get -> string!
+Microsoft.Maui.Controls.Maps.Pin.ClusteringIdentifier.set -> void
+Microsoft.Maui.Controls.Maps.Pin.HideInfoWindow() -> void
+Microsoft.Maui.Controls.Maps.Pin.ImageSource.get -> Microsoft.Maui.Controls.ImageSource?
+Microsoft.Maui.Controls.Maps.Pin.ImageSource.set -> void
 Microsoft.Maui.Controls.Maps.Pin.InfoWindowClicked -> System.EventHandler<Microsoft.Maui.Controls.Maps.PinClickedEventArgs!>?
 Microsoft.Maui.Controls.Maps.Pin.Label.get -> string!
 Microsoft.Maui.Controls.Maps.Pin.Label.set -> void
@@ -59,6 +97,7 @@ Microsoft.Maui.Controls.Maps.Pin.MarkerId.set -> void
 Microsoft.Maui.Controls.Maps.Pin.Pin() -> void
 Microsoft.Maui.Controls.Maps.Pin.SendInfoWindowClick() -> bool
 Microsoft.Maui.Controls.Maps.Pin.SendMarkerClick() -> bool
+Microsoft.Maui.Controls.Maps.Pin.ShowInfoWindow() -> void
 Microsoft.Maui.Controls.Maps.Pin.Type.get -> Microsoft.Maui.Controls.Maps.PinType
 Microsoft.Maui.Controls.Maps.Pin.Type.set -> void
 Microsoft.Maui.Controls.Maps.PinClickedEventArgs
@@ -85,6 +124,7 @@ Microsoft.Maui.Controls.Maps.Polygon.IndexOf(Microsoft.Maui.Devices.Sensors.Loca
 Microsoft.Maui.Controls.Maps.Polygon.Insert(int index, Microsoft.Maui.Devices.Sensors.Location! item) -> void
 Microsoft.Maui.Controls.Maps.Polygon.IsReadOnly.get -> bool
 Microsoft.Maui.Controls.Maps.Polygon.Polygon() -> void
+Microsoft.Maui.Controls.Maps.Polygon.PolygonClicked -> System.EventHandler?
 Microsoft.Maui.Controls.Maps.Polygon.Remove(Microsoft.Maui.Devices.Sensors.Location! item) -> bool
 Microsoft.Maui.Controls.Maps.Polygon.RemoveAt(int index) -> void
 Microsoft.Maui.Controls.Maps.Polygon.this[int index].get -> Microsoft.Maui.Devices.Sensors.Location!
@@ -101,10 +141,15 @@ Microsoft.Maui.Controls.Maps.Polyline.IndexOf(Microsoft.Maui.Devices.Sensors.Loc
 Microsoft.Maui.Controls.Maps.Polyline.Insert(int index, Microsoft.Maui.Devices.Sensors.Location! item) -> void
 Microsoft.Maui.Controls.Maps.Polyline.IsReadOnly.get -> bool
 Microsoft.Maui.Controls.Maps.Polyline.Polyline() -> void
+Microsoft.Maui.Controls.Maps.Polyline.PolylineClicked -> System.EventHandler?
 Microsoft.Maui.Controls.Maps.Polyline.Remove(Microsoft.Maui.Devices.Sensors.Location! item) -> bool
 Microsoft.Maui.Controls.Maps.Polyline.RemoveAt(int index) -> void
 Microsoft.Maui.Controls.Maps.Polyline.this[int index].get -> Microsoft.Maui.Devices.Sensors.Location!
 Microsoft.Maui.Controls.Maps.Polyline.this[int index].set -> void
+Microsoft.Maui.Controls.Maps.UserLocationChangedEventArgs
+Microsoft.Maui.Controls.Maps.UserLocationChangedEventArgs.Location.get -> Microsoft.Maui.Devices.Sensors.Location!
+Microsoft.Maui.Controls.Maps.UserLocationChangedEventArgs.UserLocationChangedEventArgs(Microsoft.Maui.Devices.Sensors.Location! location) -> void
+override Microsoft.Maui.Controls.Maps.Map.OnBindingContextChanged() -> void
 override Microsoft.Maui.Controls.Maps.Map.OnHandlerChanged() -> void
 override Microsoft.Maui.Controls.Maps.Pin.Equals(object? obj) -> bool
 override Microsoft.Maui.Controls.Maps.Pin.GetHashCode() -> int
@@ -115,6 +160,8 @@ static Microsoft.Maui.Controls.Maps.Pin.operator ==(Microsoft.Maui.Controls.Maps
 static readonly Microsoft.Maui.Controls.Maps.Circle.CenterProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.Maps.Circle.FillColorProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.Maps.Circle.RadiusProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.Maps.Map.ClusterImageSourceProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.Maps.Map.IsClusteringEnabledProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.Maps.Map.IsScrollEnabledProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.Maps.Map.IsShowingUserProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.Maps.Map.IsTrafficEnabledProperty -> Microsoft.Maui.Controls.BindableProperty!
@@ -122,10 +169,16 @@ static readonly Microsoft.Maui.Controls.Maps.Map.IsZoomEnabledProperty -> Micros
 static readonly Microsoft.Maui.Controls.Maps.Map.ItemsSourceProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.Maps.Map.ItemTemplateProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.Maps.Map.ItemTemplateSelectorProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.Maps.Map.MapStyleProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.Maps.Map.MapTypeProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.Maps.Map.RegionProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.Maps.MapElement.IsVisibleProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.Maps.MapElement.StrokeColorProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.Maps.MapElement.StrokeWidthProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.Maps.MapElement.ZIndexProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.Maps.Pin.AddressProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.Maps.Pin.ClusteringIdentifierProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.Maps.Pin.ImageSourceProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.Maps.Pin.LabelProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.Maps.Pin.LocationProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.Maps.Pin.TypeProperty -> Microsoft.Maui.Controls.BindableProperty!
