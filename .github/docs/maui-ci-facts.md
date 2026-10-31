@@ -134,6 +134,22 @@ Bootstrap does not generate an unrelated ASP.NET development certificate.
 UI result publication fails if the expected TRX files are missing. A successful
 setup task or publisher warning is not evidence that the selected tests ran.
 
+## CI Android foreground isolation
+
+After UI-test APK installation, `eng/devices/android.cake` force-stops the
+preinstalled `com.android.vending` package before AUT launch to prevent its
+auto-update/onboarding activities from taking the foreground. This applies only
+when the current CI invocation created and started the emulator, and ADB
+positively identifies that same AVD. Local runs, physical devices, and
+reused/prebooted emulators are excluded.
+
+The Store remains installed and enabled and can still be explicitly launched.
+Google Play Services, emulator image/API/ABI, tests, assertions, filters, retries,
+and timeouts are unchanged. Missing Store on a non-Play image is logged as image
+configuration; missing Store on a Play image, ambiguous/wrong device identity,
+ADB errors, and command timeouts fail preparation visibly. This is foreground
+isolation, not recovery for offline emulators or failed APK installation.
+
 ## MAUI-specific quirks
 
 ### Windows packaged device-test deployment

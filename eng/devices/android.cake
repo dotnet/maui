@@ -34,6 +34,7 @@ var deviceSkin = Argument("skin", EnvironmentVariable("ANDROID_TEST_SKIN") ?? "N
 var androidAvd = "";
 var androidAvdImage = "";
 var deviceArch = "";
+var usesVirtualDevice = false;
 var androidVersion = Argument("apiversion", EnvironmentVariable("ANDROID_PLATFORM_VERSION") ?? DefaultApiLevel.ToString());
 var headless = Argument<bool>("headless", EnvironmentVariable<bool>("HEADLESS", false));
 
@@ -402,6 +403,7 @@ void DetermineDeviceCharacteristics(string deviceDescriptor, int defaultApiLevel
 		emulator = false;
 	else if (parts[1] != "emulator" && parts[1] != "simulator")
 		throw new Exception("Unexpected device type (expected: device|emulator) in device: " + deviceDescriptor);
+	usesVirtualDevice = emulator;
 	// arch/bits
 	Information("Host OS System Arch: {0}", System.Runtime.InteropServices.RuntimeInformation.OSArchitecture);
 	Information("Host Processor System Arch: {0}", System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture);
@@ -676,6 +678,66 @@ void InstallApk(string testApp, string testAppPackageName, string testResultsDir
 	}
 
 	DotNetTool("tool", settings);
+	StopPlayStoreOnOwnedCIEmulator();
+}
+
+void StopPlayStoreOnOwnedCIEmulator()
+{
+	if (!IsCIBuild() || !usesVirtualDevice || !deviceCreate || !deviceBoot || emulatorProcess == null)
+	{
+		Information("Skipping Play Store foreground isolation: not a newly created CI emulator.");
+		return;
+	}
+
+	var serial = RunRequiredAdbCommand("get-serialno").Single();
+	if (!serial.StartsWith("emulator-", StringComparison.Ordinal) ||
+		!int.TryParse(serial.Substring("emulator-".Length), out _))
+		throw new Exception($"Refusing Play Store foreground isolation on non-emulator device '{serial}'.");
+
+	var avdName = RunRequiredAdbCommand($"-s {serial} emu avd name").FirstOrDefault();
+	if (avdName != androidAvd)
+		throw new Exception($"Refusing Play Store foreground isolation: '{serial}' is AVD '{avdName}', not the newly created '{androidAvd}'.");
+
+	var packages = RunRequiredAdbCommand($"-s {serial} shell pm list packages com.android.vending");
+	if (!packages.Contains("package:com.android.vending"))
+	{
+		if (androidAvdImage.Contains(";google_apis_playstore;"))
+			throw new Exception($"Play Store is missing from the configured Play Store image '{androidAvdImage}' on '{serial}'.");
+
+		Information("No Play Store package on newly created CI emulator {0} ({1}); no foreground isolation needed.", serial, androidAvdImage);
+		return;
+	}
+
+	Information("Force-stopping com.android.vending before AUT launch on newly created CI emulator {0}, AVD {1} ({2}). Store and Google Play Services remain installed and enabled.", serial, androidAvd, androidAvdImage);
+	RunRequiredAdbCommand($"-s {serial} shell am force-stop com.android.vending");
+}
+
+string[] RunRequiredAdbCommand(string arguments)
+{
+	// The addin's force-stop alias discards the exit status; SafeAdbShell also suppresses errors.
+	using (var process = StartAndReturnProcess($"{androidSdkRoot}/platform-tools/adb", new ProcessSettings
+	{
+		Arguments = arguments,
+		RedirectStandardOutput = true,
+		RedirectStandardError = true
+	}))
+	{
+		if (!process.WaitForExit(AdbCommandTimeoutSeconds * 1000))
+		{
+			process.Kill();
+			throw new TimeoutException($"ADB command '{arguments}' did not finish within {AdbCommandTimeoutSeconds} seconds.");
+		}
+
+		foreach (var error in process.GetStandardError())
+			Warning("ADB: {0}", error);
+
+		var output = process.GetStandardOutput().ToArray();
+		var exitCode = process.GetExitCode();
+		if (exitCode != 0)
+			throw new Exception($"ADB command '{arguments}' failed with exit code {exitCode}: {string.Join("\n", output)}");
+
+		return output;
+	}
 }
 
 void GetDevices(string version, string toolPath)
