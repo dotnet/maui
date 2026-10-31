@@ -544,6 +544,15 @@ namespace Microsoft.Maui.Controls.Platform
 							return;
 						}
 
+						// Callbacks registered by the app on the Activity's dispatcher get a chance to
+						// handle back first, same as when no modal is shown. If there are none, the
+						// existing lifecycle event path below runs unchanged.
+						if (activity is MauiAppCompatActivity mauiActivity &&
+							mauiActivity.TryDispatchBackToAppCallbacks())
+						{
+							return;
+						}
+
 						try
 						{
 							IPlatformApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnBackPressed>(del =>
