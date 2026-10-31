@@ -72,8 +72,9 @@ namespace Microsoft.Maui.DeviceTests
 					var replacement = replaceSearchHandler
 						? new SearchHandler { SearchBoxVisibility = SearchBoxVisibility.Expanded }
 						: null;
-					Shell.SetSearchHandler(page, replacement);
-					itemHandler.UpdateValue(nameof(ShellItem.CurrentItem));
+					var destination = new ContentPage();
+					Shell.SetSearchHandler(destination, replacement);
+					await shell.Navigation.PushAsync(destination);
 
 					if (replacement is not null)
 					{
@@ -93,8 +94,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				if (!disconnectHandler)
 				{
-					Shell.SetSearchHandler(page, searchHandler);
-					itemHandler.UpdateValue(nameof(ShellItem.CurrentItem));
+					await shell.Navigation.PopAsync();
 					Assert.True(searchBox.Focus(FocusState.Programmatic));
 					await AssertEventually(() => searchHandler.IsFocused);
 					Assert.Equal(2, focusedEvents);
