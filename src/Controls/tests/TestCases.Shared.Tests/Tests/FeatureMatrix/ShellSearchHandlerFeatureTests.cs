@@ -634,12 +634,12 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		searchHandler.Tap();
 		searchHandler.Clear();
 		searchHandler.SendKeys("Testing");
+		VerifyShellSearchScreenshot();
 #if WINDOWS
-		Assert.That(() => App.WaitForElement("FocusStatus").GetText(),
-			Is.EqualTo("Focused").After(2000, 100),
+		Assert.That(App.FindElement("FocusStatus")?.GetText(),
+			Is.EqualTo("Focused"),
 			"Typing in the search box should report its focused state.");
 #endif
-		VerifyShellSearchScreenshot();
 	}
 #endif
 
@@ -663,10 +663,10 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		searchHandler.Tap();
 		searchHandler.Clear();
 		searchHandler.SendKeys("Testing");
-		Assert.That(() => App.WaitForElement("FocusStatus").GetText(),
-			Is.EqualTo("Focused").After(2000, 100),
-			"Typing in the search box should report its focused state.");
 		VerifyShellSearchScreenshot();
+		Assert.That(App.FindElement("FocusStatus")?.GetText(),
+			Is.EqualTo("Focused"),
+			"Typing in the search box should report its focused state.");
 	}
 #endif
 
@@ -689,10 +689,10 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		searchHandler.Tap();
 		searchHandler.Clear();
 		searchHandler.SendKeys("Testing");
-		Assert.That(() => App.WaitForElement("FocusStatus").GetText(),
-			Is.EqualTo("Focused").After(2000, 100),
-			"Typing in the search box should report its focused state.");
 		VerifyShellSearchScreenshot();
+		Assert.That(App.FindElement("FocusStatus")?.GetText(),
+			Is.EqualTo("Focused"),
+			"Typing in the search box should report its focused state.");
 	}
 #endif
 
