@@ -19,6 +19,17 @@ public class Issue35490 : _IssuesUITest
 	{
 		App.WaitForElement("Tab1Label");
 		VerifyScreenshot();
+#if IOS
+		var platformVersion = ((AppiumApp)App).Driver.Capabilities.GetCapability("platformVersion") as string
+			?? throw new InvalidOperationException("iOS platformVersion capability is missing.");
+		if (Version.Parse(platformVersion).Major >= 26)
+		{
+			var content = App.FindElement(AppiumQuery.ByXPath("//XCUIElementTypeStaticText[@name='Tab1Label']/parent::*")).GetRect();
+			var tabBar = App.FindElement(AppiumQuery.ByXPath("//XCUIElementTypeTabBar")).GetRect();
+			Assert.That(content.Y + content.Height, Is.EqualTo(tabBar.Y + tabBar.Height),
+				"NavigationPage child content must extend under the floating tab bar.");
+		}
+#endif
 	}
 }
 #endif
