@@ -694,9 +694,15 @@ void StopPlayStoreOnOwnedCIEmulator()
 		!int.TryParse(serial.Substring("emulator-".Length), out _))
 		throw new Exception($"Refusing Play Store foreground isolation on non-emulator device '{serial}'.");
 
-	var avdName = RunRequiredAdbCommand($"-s {serial} emu avd name").FirstOrDefault();
-	if (avdName != androidAvd)
-		throw new Exception($"Refusing Play Store foreground isolation: '{serial}' is AVD '{avdName}', not the newly created '{androidAvd}'.");
+	// The emulator console can return success without an AVD name; use its guest identity.
+	var avdNames = RunRequiredAdbCommand($"-s {serial} shell getprop")
+		.Select(line => System.Text.RegularExpressions.Regex.Match(line, @"^\[ro\.(?:boot|kernel)\.qemu\.avd_name\]: \[(.*)\]$"))
+		.Where(match => match.Success && !string.IsNullOrWhiteSpace(match.Groups[1].Value))
+		.Select(match => match.Groups[1].Value)
+		.Distinct(StringComparer.Ordinal)
+		.ToArray();
+	if (avdNames.Length != 1 || avdNames[0] != androidAvd)
+		throw new Exception($"Refusing Play Store foreground isolation: '{serial}' has AVD identities '{string.Join(", ", avdNames)}', not the newly created '{androidAvd}'.");
 
 	var packages = RunRequiredAdbCommand($"-s {serial} shell pm list packages com.android.vending");
 	if (!packages.Contains("package:com.android.vending"))
@@ -715,18 +721,38 @@ void StopPlayStoreOnOwnedCIEmulator()
 string[] RunRequiredAdbCommand(string arguments)
 {
 	// The addin's force-stop alias discards the exit status; SafeAdbShell also suppresses errors.
+	var deadline = System.Diagnostics.Stopwatch.StartNew();
+	var outputComplete = new TaskCompletionSource<bool>();
+	var errorComplete = new TaskCompletionSource<bool>();
 	using (var process = StartAndReturnProcess($"{androidSdkRoot}/platform-tools/adb", new ProcessSettings
 	{
 		Arguments = arguments,
 		RedirectStandardOutput = true,
-		RedirectStandardError = true
+		RedirectStandardError = true,
+		RedirectedStandardOutputHandler = line =>
+		{
+			if (line == null)
+				outputComplete.TrySetResult(true);
+			return line;
+		},
+		RedirectedStandardErrorHandler = line =>
+		{
+			if (line == null)
+				errorComplete.TrySetResult(true);
+			return line;
+		}
 	}))
 	{
-		if (!process.WaitForExit(AdbCommandTimeoutSeconds * 1000))
+		int RemainingMilliseconds() => Math.Max(0, AdbCommandTimeoutSeconds * 1000 - (int)deadline.ElapsedMilliseconds);
+
+		// Cake's timed wait kills the process on timeout, but does not await redirected EOF.
+		if (!process.WaitForExit(RemainingMilliseconds()))
 		{
-			process.Kill();
 			throw new TimeoutException($"ADB command '{arguments}' did not finish within {AdbCommandTimeoutSeconds} seconds.");
 		}
+
+		if (!System.Threading.Tasks.Task.WhenAll(outputComplete.Task, errorComplete.Task).Wait(RemainingMilliseconds()))
+			throw new TimeoutException($"ADB command '{arguments}' output did not finish within {AdbCommandTimeoutSeconds} seconds.");
 
 		foreach (var error in process.GetStandardError())
 			Warning("ADB: {0}", error);
