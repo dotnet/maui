@@ -317,7 +317,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				// UICollectionViewCompositionalLayout hasn't run a layout pass and therefore
 				// CollectionViewContentSize is still zero. Force a layout pass with the given constraints
 				// so the layout can compute actual content size from its items.
-				if (collectionView.Window == null || frameIsZeroInScrollDirection)
+				// Skip unbounded CollectionView cross-axis probes to avoid measuring the synthetic frame.
+				bool canMeasureContent = VirtualView is not CollectionView ||
+					((scrollDirection != UICollectionViewScrollDirection.Horizontal || double.IsFinite(heightConstraint)) &&
+					 (scrollDirection != UICollectionViewScrollDirection.Vertical || double.IsFinite(widthConstraint)));
+
+				if (canMeasureContent && (collectionView.Window == null || frameIsZeroInScrollDirection))
 				{
 					// Local helper to clamp layout constraints to finite, non-negative nfloat values.
 					nfloat ClampConstraint(double constraint, nfloat fallback)
