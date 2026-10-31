@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Text;
 
 namespace Microsoft.Maui.Gtk.Platform
@@ -40,7 +41,7 @@ namespace Microsoft.Maui.Gtk.Platform
 	{
 		string _text = string.Empty;
 		bool _isEnabled = true;
-		string? _accelerator;
+		string[] _accelerators = Array.Empty<string>();
 
 		public GtkMenuItemNode()
 		{
@@ -76,16 +77,36 @@ namespace Microsoft.Maui.Gtk.Platform
 			}
 		}
 
-		/// <summary>The accelerator shown next to the label (GTK syntax such as <c>&lt;Control&gt;s</c>), or <see langword="null"/>.</summary>
+		/// <summary>The accelerator shown next to the label (GTK syntax such as <c>&lt;Control&gt;s</c>), or <see langword="null"/>; the first of <see cref="Accelerators"/>.</summary>
 		public string? Accelerator
 		{
-			get => _accelerator;
+			get => _accelerators.Length > 0 ? _accelerators[0] : null;
+			set => Accelerators = string.IsNullOrEmpty(value) ? Array.Empty<string>() : new[] { value! };
+		}
+
+		/// <summary>Every accelerator of the item in GTK syntax; all of them trigger the item, the first one is shown next to the label.</summary>
+		public IReadOnlyList<string> Accelerators
+		{
+			get => _accelerators;
 			set
 			{
-				_accelerator = value;
+				_accelerators = value is null ? Array.Empty<string>() : new List<string>(value).ToArray();
 				NotifyChanged();
 			}
 		}
+
+		/// <summary>The icon in the serialised <c>GIcon</c> form of the <c>icon</c> menu attribute (see <see cref="GtkMenuIcons"/>), or <see langword="null"/>.</summary>
+		public GLib.Variant? Icon
+		{
+			get => _icon;
+			set
+			{
+				_icon = value;
+				NotifyChanged();
+			}
+		}
+
+		GLib.Variant? _icon;
 	}
 
 	/// <summary>A separator: it ends the current section of its container.</summary>
@@ -104,7 +125,8 @@ namespace Microsoft.Maui.Gtk.Platform
 		readonly HashSet<string> _registered = new(StringComparer.Ordinal);
 		string _text = string.Empty;
 		bool _isEnabled = true;
-		string? _accelerator;
+		string[] _accelerators = Array.Empty<string>();
+		GLib.Variant? _icon;
 
 		public GtkMenuContainerNode()
 		{
@@ -149,11 +171,46 @@ namespace Microsoft.Maui.Gtk.Platform
 		/// <summary>The accelerator shown when this container is used as a sub item.</summary>
 		public string? Accelerator
 		{
-			get => _accelerator;
+			get => _accelerators.Length > 0 ? _accelerators[0] : null;
 			set
 			{
-				_accelerator = value;
+				_accelerators = string.IsNullOrEmpty(value) ? Array.Empty<string>() : new[] { value! };
 				NotifyChanged();
+			}
+		}
+
+		/// <summary>The icon in the serialised <c>GIcon</c> form of the <c>icon</c> menu attribute (see <see cref="GtkMenuIcons"/>), or <see langword="null"/>.</summary>
+		public GLib.Variant? Icon
+		{
+			get => _icon;
+			set
+			{
+				_icon = value;
+				NotifyChanged();
+			}
+		}
+
+		/// <summary>Every (action name, accelerator) pair of the items below this container, in tree order; separators and submenus carry none.</summary>
+		public List<(string ActionName, string Accelerator)> CollectAccelerators()
+		{
+			var result = new List<(string, string)>();
+			Collect(this);
+			return result;
+
+			void Collect(GtkMenuContainerNode container)
+			{
+				foreach (var child in container._children)
+				{
+					if (child is GtkMenuItemNode leaf)
+					{
+						foreach (var accelerator in leaf.Accelerators)
+							result.Add((leaf.ActionName, accelerator));
+					}
+					else if (child is GtkMenuContainerNode sub)
+					{
+						Collect(sub);
+					}
+				}
 			}
 		}
 
@@ -259,12 +316,14 @@ namespace Microsoft.Maui.Gtk.Platform
 					case GtkMenuItemNode leaf:
 						var item = new GLib.MenuItem(leaf.Text, "menu." + leaf.ActionName);
 						SetAccelerator(item, leaf.Accelerator);
+						SetIcon(item, leaf.Icon);
 						target.AppendItem(item);
 						break;
 					case GtkMenuContainerNode container:
 						var submenu = GLib.MenuItem.NewSubmenu(container.Text, container.Menu);
 						submenu.DetailedAction = "menu." + container.ActionName;
 						SetAccelerator(submenu, container.Accelerator);
+						SetIcon(submenu, container.Icon);
 						target.AppendItem(submenu);
 						break;
 				}
@@ -275,6 +334,12 @@ namespace Microsoft.Maui.Gtk.Platform
 		{
 			if (!string.IsNullOrEmpty(accelerator))
 				item.SetAttributeValue("accel", new GLib.Variant(accelerator));
+		}
+
+		static void SetIcon(GLib.MenuItem item, GLib.Variant? icon)
+		{
+			if (icon is not null)
+				item.SetAttributeValue("icon", icon);
 		}
 
 		void SyncActions()
@@ -376,12 +441,23 @@ namespace Microsoft.Maui.Gtk.Platform
 			return text.ToString();
 		}
 
-		public static string? Format(IReadOnlyList<IKeyboardAccelerator>? accelerators)
+		/// <summary>The first accelerator of the list in GTK syntax (the one shown next to the label), or <see langword="null"/>.</summary>
+		public static string? Format(IReadOnlyList<IKeyboardAccelerator>? accelerators) => FormatAll(accelerators).FirstOrDefault();
+
+		/// <summary>Every accelerator of the list in GTK syntax; entries without a key are skipped.</summary>
+		public static string[] FormatAll(IReadOnlyList<IKeyboardAccelerator>? accelerators)
 		{
 			if (accelerators is null || accelerators.Count == 0)
-				return null;
+				return Array.Empty<string>();
 
-			return Format(accelerators[0].Modifiers, accelerators[0].Key);
+			var result = new List<string>(accelerators.Count);
+			foreach (var accelerator in accelerators)
+			{
+				if (Format(accelerator.Modifiers, accelerator.Key) is { } text)
+					result.Add(text);
+			}
+
+			return result.ToArray();
 		}
 	}
 }

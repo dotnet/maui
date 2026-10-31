@@ -310,6 +310,173 @@ namespace Microsoft.Maui.Gtk.UnitTests
 			Assert.True(popovers[0].Visible);
 		});
 
+		// ----------------------------------------------------------------- accelerators
+
+		static KeyboardAccelerator Accel(string key, KeyboardAcceleratorModifiers modifiers = KeyboardAcceleratorModifiers.Ctrl) =>
+			new() { Key = key, Modifiers = modifiers };
+
+		[GtkFact]
+		public void MenuFlyoutItemMapsEveryAcceleratorButShowsTheFirst() => GtkTestHost.Run(() =>
+		{
+			var item = new MenuFlyoutItem { Text = "Save" };
+			item.KeyboardAccelerators.Add(Accel("S"));
+			item.KeyboardAccelerators.Add(Accel("W", KeyboardAcceleratorModifiers.Ctrl | KeyboardAcceleratorModifiers.Alt));
+			var flyout = new MenuFlyout { item };
+			GtkTestApp.CreateHandler<GtkMenuFlyoutHandler>(flyout);
+
+			var node = (GtkMenuItemNode)item.Handler!.PlatformView!;
+			Assert.Equal(new[] { "<Control>s", "<Control><Alt>w" }, node.Accelerators);
+			Assert.Equal("<Control>s", Attribute(Node(flyout).Menu, 0, "accel"));
+
+			item.KeyboardAccelerators.RemoveAt(0);
+			Assert.Equal(new[] { "<Control><Alt>w" }, node.Accelerators);
+		});
+
+		[GtkFact]
+		public void MenuBarAcceleratorsAreBoundOnTheWindowAndTriggerTheItems() => GtkTestHost.Run(() =>
+		{
+			GtkTestHost.ClearComplaints();
+			int saves = 0, closes = 0;
+			var save = new MenuFlyoutItem { Text = "Save" };
+			save.KeyboardAccelerators.Add(Accel("S"));
+			save.KeyboardAccelerators.Add(Accel("F2", KeyboardAcceleratorModifiers.None));
+			save.Clicked += (s, e) => saves++;
+			var close = new MenuFlyoutItem { Text = "Close" };
+			close.KeyboardAccelerators.Add(Accel("W"));
+			close.Clicked += (s, e) => closes++;
+
+			using var host = new WindowHost(new Label { Text = "content" }, 400, 300);
+			var file = new MenuBarItem { Text = "File" };
+			file.Add(save);
+			file.Add(new MenuFlyoutSeparator());
+			file.Add(close);
+			host.Page.MenuBarItems.Add(file);
+			host.Pump();
+
+			var binding = GtkWindowMenuBar.GetAccelerators(host.PlatformWindow);
+			Assert.NotNull(binding);
+			Assert.Equal(3, binding!.Count);
+			Assert.Equal(global::Gtk.ShortcutScope.Global, binding.Controller.Scope);
+
+			// The shortcuts activate the items through the window's "menu" action group.
+			foreach (var shortcut in binding.Shortcuts)
+				Assert.True(shortcut.Action.Activate(0, host.PlatformWindow, null));
+			Assert.Equal(2, saves);
+			Assert.Equal(1, closes);
+
+			// The shortcuts follow the tree.
+			close.KeyboardAccelerators.Clear();
+			Assert.Equal(2, GtkWindowMenuBar.GetAccelerators(host.PlatformWindow)!.Count);
+
+			host.Page.MenuBarItems.Remove(file);
+			host.Pump();
+			Assert.Null(GtkWindowMenuBar.GetAccelerators(host.PlatformWindow));
+			Assert.NotSame(binding.Controller, GtkTestHost.ControllerOf<global::Gtk.ShortcutController>(host.PlatformWindow));
+			GtkTestHost.AssertNoComplaints();
+		});
+
+		[GtkFact]
+		public void ContextFlyoutAcceleratorsAreScopedToTheirWidget() => GtkTestHost.Run(() =>
+		{
+			int copies = 0;
+			var copy = new MenuFlyoutItem { Text = "Copy" };
+			copy.KeyboardAccelerators.Add(Accel("C"));
+			copy.KeyboardAccelerators.Add(Accel("Insert"));
+			copy.Clicked += (s, e) => copies++;
+			var label = new Label { Text = "x" };
+			FlyoutBase.SetContextFlyout(label, new MenuFlyout { copy });
+			var widget = GtkTestApp.CreateWidget<global::Gtk.Label>(label);
+
+			var binding = GtkContextFlyout.GetAccelerators(widget);
+			Assert.NotNull(binding);
+			Assert.Equal(2, binding!.Count);
+			Assert.Equal(global::Gtk.ShortcutScope.Local, binding.Controller.Scope);
+			foreach (var shortcut in binding.Shortcuts)
+				Assert.True(shortcut.Action.Activate(0, widget, null));
+			Assert.Equal(2, copies);
+
+			FlyoutBase.SetContextFlyout(label, null);
+			Assert.Null(GtkContextFlyout.GetAccelerators(widget));
+			Assert.NotSame(binding.Controller, GtkTestHost.ControllerOf<global::Gtk.ShortcutController>(widget));
+		});
+
+		[GtkFact]
+		public void InvalidAcceleratorsAreSkipped() => GtkTestHost.Run(() =>
+		{
+			var item = new MenuFlyoutItem { Text = "Odd" };
+			item.KeyboardAccelerators.Add(Accel("NoSuchKeyName"));
+			item.KeyboardAccelerators.Add(Accel("O"));
+			var label = new Label { Text = "x" };
+			FlyoutBase.SetContextFlyout(label, new MenuFlyout { item });
+			var widget = GtkTestApp.CreateWidget<global::Gtk.Label>(label);
+
+			Assert.Equal(1, GtkContextFlyout.GetAccelerators(widget)!.Count);
+		});
+
+		// ----------------------------------------------------------------- icons
+
+		[GtkFact]
+		public void MenuIconsFromFilesAndThemeNamesAreModelAttributes() => GtkTestHost.Run(() =>
+		{
+			var path = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "maui-menu-icon-" + Guid.NewGuid().ToString("N") + ".png");
+			System.IO.File.WriteAllBytes(path, new byte[] { 1 });
+			try
+			{
+				var withFile = new MenuFlyoutItem { Text = "File", IconImageSource = new FileImageSource { File = path } };
+				var themed = new MenuFlyoutItem { Text = "Themed", IconImageSource = new FileImageSource { File = "document-open" } };
+				var none = new MenuFlyoutItem { Text = "None" };
+				var sub = new MenuFlyoutSubItem { Text = "Sub", IconImageSource = new FileImageSource { File = "folder" } };
+				sub.Add(new MenuFlyoutItem { Text = "inner" });
+				var flyout = new MenuFlyout { withFile, themed, none, sub };
+				GtkTestApp.CreateHandler<GtkMenuFlyoutHandler>(flyout);
+
+				var menu = Node(flyout).Menu;
+				Assert.Contains("'file'", Attribute(menu, 0, "icon"));
+				Assert.Contains("'themed'", Attribute(menu, 1, "icon"));
+				Assert.Contains("document-open", Attribute(menu, 1, "icon"));
+				Assert.Null(Attribute(menu, 2, "icon"));
+				Assert.Contains("folder", Attribute(menu, 3, "icon"));
+
+				withFile.IconImageSource = null;
+				Assert.Null(Attribute(Node(flyout).Menu, 0, "icon"));
+			}
+			finally
+			{
+				System.IO.File.Delete(path);
+			}
+		});
+
+		[GtkFact]
+		public void MenuIconsFromStreamsAreBytesIcons() => GtkTestHost.Run(() =>
+		{
+			var item = new MenuFlyoutItem
+			{
+				Text = "Stream",
+				IconImageSource = ImageSource.FromStream(() => new System.IO.MemoryStream(new byte[] { 1, 2, 3 })),
+			};
+			var flyout = new MenuFlyout { item };
+			GtkTestApp.CreateHandler<GtkMenuFlyoutHandler>(flyout);
+
+			Assert.True(GtkTestHost.PumpUntil(() => Attribute(Node(flyout).Menu, 0, "icon") is not null));
+			Assert.Contains("'bytes'", Attribute(Node(flyout).Menu, 0, "icon"));
+		});
+
+		[GtkLinuxFact]
+		public void PopoverMenuDrawsTheIconOfAnItem() => GtkTestHost.Run(() =>
+		{
+			var withIcon = new MenuFlyoutItem { Text = "Open", IconImageSource = new FileImageSource { File = "document-open" } };
+			var flyout = new MenuFlyout { withIcon, new MenuFlyoutItem { Text = "Plain" } };
+			GtkTestApp.CreateHandler<GtkMenuFlyoutHandler>(flyout);
+
+			var node = Node(flyout);
+			node.RebuildAll();
+			var popover = new global::Gtk.PopoverMenu(node.Menu);
+
+			// Exactly one image: the icon of the first item (the plain one has none).
+			Assert.Single(GtkTestHost.Find<global::Gtk.Image>(popover));
+			popover.Unparent();
+		});
+
 		[GtkFact]
 		public void MenuNodesGetUniqueActionNames() => GtkTestHost.Run(() =>
 		{

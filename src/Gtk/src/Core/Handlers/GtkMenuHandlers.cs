@@ -242,7 +242,10 @@ namespace Microsoft.Maui.Gtk.Handlers
 				.MapGtk<GtkMenuContainerNode>(nameof(IMenuElement.IsEnabled), (h, v, w) => w.IsEnabled = v.IsEnabled)
 				.MapGtk<GtkMenuContainerNode>(nameof(IMenuFlyoutItem.KeyboardAccelerators), (h, v, w) =>
 					w.Accelerator = GtkMenuAccelerators.Format(v.KeyboardAccelerators))
-				.MapGtk<GtkMenuContainerNode>(nameof(IMenuElement.Source), (h, v, w) => { /* menu icons are not shown */ })
+				.MapGtk<GtkMenuContainerNode>(nameof(IMenuElement.Source), (h, v, w) =>
+					GtkMenuIcons.Load(v.Source, () => ReferenceEquals(h.VirtualView?.Source, v.Source), icon => w.Icon = icon))
+				.MapGtk<GtkMenuContainerNode>(GtkMenuIcons.ControlsIconProperty, (h, v, w) =>
+					GtkMenuIcons.Load(v.Source, () => ReferenceEquals(h.VirtualView?.Source, v.Source), icon => w.Icon = icon))
 				.Build();
 
 		internal static readonly CommandMapper<IMenuFlyoutSubItem, IMenuFlyoutSubItemHandler> GtkCommandMapper = MenuFlyoutSubItemHandler.CommandMapper;
@@ -288,8 +291,11 @@ namespace Microsoft.Maui.Gtk.Handlers
 				mapper.Add(nameof(IMenuElement.Text), (h, v) => With(h, node => node.Text = v.Text));
 				mapper.Add(nameof(IMenuElement.IsEnabled), (h, v) => With(h, node => node.IsEnabled = v.IsEnabled));
 				mapper.Add(nameof(IMenuFlyoutItem.KeyboardAccelerators), (h, v) =>
-					With(h, node => node.Accelerator = GtkMenuAccelerators.Format(v.KeyboardAccelerators)));
-				mapper.Add(nameof(IMenuElement.Source), (h, v) => { /* menu icons are not shown */ });
+					With(h, node => node.Accelerators = GtkMenuAccelerators.FormatAll(v.KeyboardAccelerators)));
+				mapper.Add(nameof(IMenuElement.Source), (h, v) =>
+					With(h, node => GtkMenuIcons.Load(v.Source, () => ReferenceEquals(h.VirtualView?.Source, v.Source), icon => node.Icon = icon)));
+				mapper.Add(GtkMenuIcons.ControlsIconProperty, (h, v) =>
+					With(h, node => GtkMenuIcons.Load(v.Source, () => ReferenceEquals(h.VirtualView?.Source, v.Source), icon => node.Icon = icon)));
 			}
 		}
 
