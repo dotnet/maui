@@ -131,7 +131,7 @@ Pass only GApplication options in `args`. Lifecycle: `ConfigureLifecycleEvents(e
 | ContentPage, ContentView, Layouts (Stack/Grid/Absolute/Flex) | `MauiGtkPanel` | |
 | Label | `Gtk.Label` | wraps by default; `GtkLabelHandler.SetMaxLines` for `MaxLines` |
 | Button | `MauiGtkButton` (image + label) | Clicked/Pressed/Released, stroke, corner radius |
-| Image | `Gtk.Picture` | animated GIF/APNG/WebP (gdk-pixbuf) play on the frame clock while `IsAnimationPlaying`, else show the first frame. `ImageButton` has no `IsAnimationPlaying` (always first frame) |
+| Image | `Gtk.Picture` | animated GIF/APNG/WebP (gdk-pixbuf) play on the frame clock while `IsAnimationPlaying`, else hold the current frame (a playback clock only runs while playing: pause holds, play resumes from that frame), the first frame before playing. `ImageButton` has no `IsAnimationPlaying` (always first frame) |
 | Entry | `Gtk.Entry` | return type, vertical alignment: no GTK equivalent |
 | Editor | `MauiGtkEditor` (overlay, scrolled `TextView`) | placeholder label, grows with text |
 | ScrollView | `Gtk.ScrolledWindow` | programmatic scrolling is instant |
@@ -169,7 +169,7 @@ Not in this area: Shell, CollectionView, Maps, NavigationPage/Toolbar/FlyoutPage
 | Smoke | `dotnet run --project src/Gtk/samples/Maui.Gtk.Sample -- --smoke` (prints `SMOKE OK`; checks the SDK-copied image, font, icon, asset and `.desktop`; needs the `gtk` workload) |
 | Core hook tests | `dotnet test src/Core/tests/UnitTests/Core.UnitTests.csproj --filter "FullyQualifiedName~PlatformViewBackendTests"` |
 
-| Project | Tests (Windows GTK 4.22 / Debian 13 GTK 4.18, xvfb) |
+| Project | Tests (Windows GTK 4.22 / Ubuntu 24.04 GTK 4.14, xvfb) |
 |---------|------|
 | `Microsoft.Maui.Gtk.UnitTests` (Core + Essentials + Handlers + Controls + Web + Maps) | Windows 713 passed, 17 skipped (WebKit: not shipped for Windows); Ubuntu 24.04 (GTK 4.14, xvfb) 730 passed, 0 skipped |
 | `Graphics.Cairo.Tests` | 125 passed, 0 skipped |

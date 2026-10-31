@@ -56,6 +56,10 @@ override Microsoft.Maui.Controls.Gtk.Handlers.GtkControlsToolbarHandler.Disconne
 override Microsoft.Maui.Controls.Gtk.Handlers.GtkFrameHandler.ConnectHandler(object! platformView) -> void
 override Microsoft.Maui.Controls.Gtk.Handlers.GtkFrameHandler.CreatePlatformView() -> object!
 override Microsoft.Maui.Controls.Gtk.Handlers.GtkFrameHandler.DisconnectHandler(object! platformView) -> void
+override Microsoft.Maui.Controls.Gtk.Handlers.GtkPolygonHandler.ConnectHandler(object! platformView) -> void
+override Microsoft.Maui.Controls.Gtk.Handlers.GtkPolygonHandler.DisconnectHandler(object! platformView) -> void
+override Microsoft.Maui.Controls.Gtk.Handlers.GtkPolylineHandler.ConnectHandler(object! platformView) -> void
+override Microsoft.Maui.Controls.Gtk.Handlers.GtkPolylineHandler.DisconnectHandler(object! platformView) -> void
 override Microsoft.Maui.Controls.Gtk.Handlers.GtkShellHandler.ConnectHandler(Microsoft.Maui.Gtk.Platform.MauiGtkFlyoutPanel! platformView) -> void
 override Microsoft.Maui.Controls.Gtk.Handlers.GtkShellHandler.CreatePlatformView() -> Microsoft.Maui.Gtk.Platform.MauiGtkFlyoutPanel!
 override Microsoft.Maui.Controls.Gtk.Handlers.GtkShellHandler.DisconnectHandler(Microsoft.Maui.Gtk.Platform.MauiGtkFlyoutPanel! platformView) -> void

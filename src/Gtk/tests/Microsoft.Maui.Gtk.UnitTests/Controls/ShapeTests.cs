@@ -140,6 +140,88 @@ namespace Microsoft.Maui.Gtk.UnitTests
 			ControlsWindowHost.AssertNoComplaints();
 		});
 
+		[GtkFact]
+		public void PolygonAndPolylineRepaintOnInPlacePointsChanges() => GtkTestHost.Run(() =>
+		{
+			var polygon = Fix(new Polygon { Fill = Red, Points = new PointCollection { new Point(0, 0), new Point(80, 0), new Point(80, 80) } });
+			using (var host = Host(polygon))
+			{
+				var widget = Render(host, polygon);
+				AssertRepaints(host, widget, () => polygon.Points.Add(new Point(0, 80)), "Polygon Points.Add");
+				AssertRepaints(host, widget, () => polygon.Points.Clear(), "Polygon Points.Clear");
+
+				// A replaced collection is followed; the old one no longer repaints.
+				var old = polygon.Points;
+				polygon.Points = new PointCollection { new Point(0, 0), new Point(80, 80) };
+				host.Pump();
+				AssertRepaints(host, widget, () => polygon.Points.Add(new Point(0, 80)), "Polygon new Points.Add");
+				int before = widget.DrawCount;
+				old.Add(new Point(1, 1));
+				GtkTestHost.Pump(host.PlatformWindow, 4);
+				Assert.Equal(before, widget.DrawCount);
+			}
+
+			var polyline = Fix(new Polyline { Stroke = Red, StrokeThickness = 4, Points = new PointCollection { new Point(0, 0), new Point(80, 40) } });
+			using (var host = Host(polyline))
+			{
+				var widget = Render(host, polyline);
+				AssertRepaints(host, widget, () => polyline.Points.Add(new Point(0, 80)), "Polyline Points.Add");
+				AssertRepaints(host, widget, () => polyline.Points.Clear(), "Polyline Points.Clear");
+			}
+
+			ControlsWindowHost.AssertNoComplaints();
+		});
+
+		[GtkFact]
+		public void DisconnectedPolygonStopsFollowingItsPoints() => GtkTestHost.Run(() =>
+		{
+			bool active = true;
+			int updates = 0;
+			Microsoft.Maui.Controls.Handlers.PolygonHandler.Mapper.AppendToMapping(nameof(Polygon.Points), (h, v) => { if (active) updates++; });
+			try
+			{
+				var polygon = Fix(new Polygon { Fill = Red, Points = new PointCollection { new Point(0, 0), new Point(80, 0), new Point(80, 80) } });
+				using var host = Host(polygon);
+				host.Pump();
+				updates = 0;
+				polygon.Points.Add(new Point(0, 80));
+				Assert.Equal(1, updates);
+
+				polygon.Handler = null; // disconnects
+				polygon.Points.Add(new Point(5, 5));
+				Assert.Equal(1, updates);
+			}
+			finally
+			{
+				active = false;
+			}
+		});
+
+		[GtkFact]
+		public void UserCustomisationsOfTheStockShapeMappersRunOnGtk() => GtkTestHost.Run(() =>
+		{
+			bool active = true;
+			int lines = 0, polygons = 0, rects = 0;
+			Microsoft.Maui.Controls.Handlers.LineHandler.Mapper.AppendToMapping(nameof(Line.X2), (h, v) => { if (active) lines++; });
+			Microsoft.Maui.Controls.Handlers.PolygonHandler.Mapper.AppendToMapping(nameof(Polygon.FillRule), (h, v) => { if (active) polygons++; });
+			Microsoft.Maui.Controls.Handlers.RectangleHandler.Mapper.AppendToMapping(nameof(Rectangle.RadiusX), (h, v) => { if (active) rects++; });
+			try
+			{
+				var line = Fix(new Line { X2 = 80, Stroke = Red });
+				var polygon = Fix(new Polygon { Fill = Red, Points = new PointCollection { new Point(0, 0), new Point(80, 80), new Point(0, 80) } });
+				var rect = Fix(new Rectangle { Fill = Red });
+				using var host = Host(new VerticalStackLayout { line, polygon, rect });
+				host.Pump();
+				Assert.True(lines > 0, "LineHandler.Mapper customisation did not run");
+				Assert.True(polygons > 0, "PolygonHandler.Mapper customisation did not run");
+				Assert.True(rects > 0, "RectangleHandler.Mapper customisation did not run");
+			}
+			finally
+			{
+				active = false;
+			}
+		});
+
 		// ------------------------------------------------------------------ Frame
 
 #pragma warning disable CS0618 // Frame is obsolete but still supported.
