@@ -274,19 +274,41 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					await platformView.EnsureCoreWebView2Async();
 
-					var navigated = new TaskCompletionSource();
-					platformView.CoreWebView2.NavigationCompleted += (_, _) => navigated.TrySetResult();
-					((IWebViewDelegate)platformView).LoadUrl("https://appdir/appdir-iframe-parent.html");
-					await navigated.Task.WaitAsync(TimeSpan.FromSeconds(10));
+					const string parentUrl = "https://appdir/appdir-iframe-parent.html";
+					var documentReady = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+					ulong? navigationId = null;
+					void OnNavigationStarting(CoreWebView2 sender, CoreWebView2NavigationStartingEventArgs args)
+					{
+						if (args.Uri == parentUrl)
+							navigationId = args.NavigationId;
+					}
+					void OnDocumentReady(CoreWebView2 sender, CoreWebView2DOMContentLoadedEventArgs args)
+					{
+						if (args.NavigationId == navigationId)
+							documentReady.TrySetResult();
+					}
 
-					var title = await WaitForTitleAsync(
-						platformView,
-						TimeSpan.FromSeconds(8),
-						"\"child:ok\"", "\"child:status\"", "\"child:denied\"");
+					platformView.CoreWebView2.NavigationStarting += OnNavigationStarting;
+					platformView.CoreWebView2.DOMContentLoaded += OnDocumentReady;
+					try
+					{
+						((IWebViewDelegate)platformView).LoadUrl(parentUrl);
+						await documentReady.Task.WaitAsync(TimeSpan.FromSeconds(10));
 
-					// The cross-origin (opaque-origin) iframe cannot read the appdir file
-					// via fetch under DenyCors.
-					Assert.Equal("\"child:denied\"", title);
+						var title = await WaitForTitleAsync(
+							platformView,
+							TimeSpan.FromSeconds(8),
+							"\"child:ok\"", "\"child:status\"", "\"child:denied\"");
+
+						// The cross-origin (opaque-origin) iframe cannot read the appdir file
+						// via fetch under DenyCors.
+						Assert.Equal("\"child:denied\"", title);
+					}
+					finally
+					{
+						platformView.CoreWebView2.NavigationStarting -= OnNavigationStarting;
+						platformView.CoreWebView2.DOMContentLoaded -= OnDocumentReady;
+					}
 				});
 			});
 		}
