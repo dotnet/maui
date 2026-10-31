@@ -182,9 +182,10 @@ namespace Microsoft.Maui.Controls.Platform
 						// WinUI's automatic width uses only the first cell.
 						var width = _measuredItemWidth;
 						var constraint = new global::Windows.Foundation.Size(double.PositiveInfinity, _wrapGrid.ItemHeight);
-						for (var i = 0; i < _wrapGrid.Children.Count; i++)
+						var childrenCount = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetChildrenCount(_wrapGrid);
+						for (var i = 0; i < childrenCount; i++)
 						{
-							if (_wrapGrid.Children[i] is GridViewItem container)
+							if (Microsoft.UI.Xaml.Media.VisualTreeHelper.GetChild(_wrapGrid, i) is GridViewItem container)
 							{
 								container.Measure(constraint);
 								width = Math.Max(width, container.DesiredSize.Width);
