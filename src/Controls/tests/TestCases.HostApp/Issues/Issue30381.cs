@@ -97,7 +97,7 @@ public class Issue30381 : ContentPage
 
     void SetupWebView()
     {
-        MyWebView.Source = new HtmlWebViewSource
+        var source = new HtmlWebViewSource
         {
             Html = @"
             <html>
@@ -117,6 +117,12 @@ public class Issue30381 : ContentPage
             </body>
             </html>"
         };
+
+#if MACCATALYST
+        // HtmlWebViewSource's default origin is the bundle root; Catalyst assets are in Contents/Resources.
+        source.Html = source.Html.Replace("href='issue30381.html'", "href='Contents/Resources/issue30381.html'", StringComparison.Ordinal);
+#endif
+        MyWebView.Source = source;
 
         UpdateNavigationStatus();
     }
