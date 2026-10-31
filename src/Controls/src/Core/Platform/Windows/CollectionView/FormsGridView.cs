@@ -181,19 +181,28 @@ namespace Microsoft.Maui.Controls.Platform
 					{
 						// WinUI's automatic width uses only the first cell.
 						var width = _measuredItemWidth;
-						var constraint = new global::Windows.Foundation.Size(double.PositiveInfinity, _wrapGrid.ItemHeight);
+						var horizontalMargin = 0d;
+						var hasMeasuredContent = false;
 						var childrenCount = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetChildrenCount(_wrapGrid);
 						for (var i = 0; i < childrenCount; i++)
 						{
-							if (Microsoft.UI.Xaml.Media.VisualTreeHelper.GetChild(_wrapGrid, i) is GridViewItem container)
+							if (Microsoft.UI.Xaml.Media.VisualTreeHelper.GetChild(_wrapGrid, i) is GridViewItem container &&
+								container.ContentTemplateRoot is UIElement content)
 							{
-								container.Measure(constraint);
-								width = Math.Max(width, container.DesiredSize.Width);
+								var margin = container.Margin;
+								var padding = container.Padding;
+								var height = Math.Max(0, _wrapGrid.ItemHeight - margin.Top - margin.Bottom - padding.Top - padding.Bottom);
+								content.Measure(new global::Windows.Foundation.Size(double.PositiveInfinity, height));
+								// Cache content, not the container's transient theme minimum or previous spacing.
+								width = Math.Max(width, content.DesiredSize.Width + padding.Left + padding.Right);
+								horizontalMargin = Math.Max(horizontalMargin, margin.Left + margin.Right);
+								hasMeasuredContent = true;
 							}
 						}
 
-						if (width > 0 && _wrapGrid.ItemWidth != width)
-							_wrapGrid.ItemWidth = width;
+						var itemWidth = width + horizontalMargin;
+						if (hasMeasuredContent && width > 0 && _wrapGrid.ItemWidth != itemWidth)
+							_wrapGrid.ItemWidth = itemWidth;
 						_measuredItemWidth = width;
 					}
 					else
