@@ -21,7 +21,7 @@ public class Issue18896 : _IssuesUITest
 		App.WaitForElement("WaitForStubControl");
 
 		App.ScrollDown(ListView);
-#if ANDROID
+#if ANDROID || WINDOWS
 		App.ScrollUp(ListView, ScrollStrategy.Gesture, 0.9);
 #else
 		App.ScrollUp(ListView);
