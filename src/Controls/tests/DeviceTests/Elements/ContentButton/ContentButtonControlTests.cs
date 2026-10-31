@@ -18,8 +18,10 @@ namespace Microsoft.Maui.DeviceTests
 			handlers.AddHandler<ContentPresenter, ContentViewHandler>();
 		}));
 
-		[Fact]
-		public async Task NestedContentAndTemplateCanBeReplaced()
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task NestedContentAndTemplateCanBeReplaced(bool nestedTemplate)
 		{
 			SetupBuilder();
 			await InvokeOnMainThreadAsync(() =>
@@ -39,11 +41,15 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.NotNull(replacement.Handler);
 				Assert.Same(context, replacement.BindingContext);
 
-				button.ControlTemplate = new ControlTemplate(() => new ContentPresenter());
-				var presenter = Assert.IsType<ContentPresenter>(((IContentView)button).PresentedContent);
+				var presenter = new ContentPresenter();
+				View templateRoot = nestedTemplate ? new Grid { presenter } : presenter;
+				button.ControlTemplate = new ControlTemplate(() => templateRoot);
+				Assert.Same(templateRoot, ((IContentView)button).PresentedContent);
 				Assert.Same(replacement, presenter.Content);
 				Assert.NotNull(presenter.Handler);
 				button.ControlTemplate = null;
+				Assert.Null(presenter.Content);
+				Assert.Same(replacement, ((IContentView)button).PresentedContent);
 				button.Content = null;
 				Assert.Null(replacement.Parent);
 				Assert.Null(((IContentView)button).PresentedContent);

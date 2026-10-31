@@ -79,6 +79,9 @@ background changes, disable-on-press and remove-on-press.
 Apple device tests also assert native content frames before and after content
 replacement, for both direct content and nested layouts. Native measurement tests
 check content and inset dimensions, not just nonnegative sizes.
+Template replacement covers both a direct presenter and one nested in a layout,
+including returning to untemplated content. Windows stroke-reset coverage compares
+against the native default captured before applying an explicit border.
 
 The following checks require real platform runs; adding a test does not certify
 that a platform has passed:

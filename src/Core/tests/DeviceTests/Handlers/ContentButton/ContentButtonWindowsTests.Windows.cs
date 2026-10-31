@@ -1,5 +1,4 @@
 #nullable enable
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
@@ -97,13 +96,16 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				Content = new LabelStub { Text = "Content" },
 				Padding = new Thickness(1, 2, 3, 4),
-				StrokeThickness = 6
 			};
 			var handler = await CreateHandlerAsync(button);
 
 			await InvokeOnMainThreadAsync(() =>
 			{
 				var platformButton = Assert.IsType<MauiContentButton>(handler.PlatformView);
+				var defaultStroke = platformButton.GetResource<object>("ButtonBorderThemeThickness");
+
+				button.StrokeThickness = 6;
+				handler.UpdateValue(nameof(IButtonStroke.StrokeThickness));
 				var nativeStroke = Assert.IsType<WThickness>(platformButton.Resources["ButtonBorderThemeThickness"]);
 
 				Assert.Equal(new WThickness(0), platformButton.Padding);
@@ -117,7 +119,7 @@ namespace Microsoft.Maui.DeviceTests
 				button.StrokeThickness = -1;
 				handler.UpdateValue(nameof(IButtonStroke.StrokeThickness));
 				Assert.Equal(new WThickness(0), platformButton.ContentPanel.Margin);
-				Assert.False(platformButton.Resources.Keys.Contains("ButtonBorderThemeThickness"));
+				Assert.Equal(defaultStroke, platformButton.GetResource<object>("ButtonBorderThemeThickness"));
 			});
 		}
 	}
