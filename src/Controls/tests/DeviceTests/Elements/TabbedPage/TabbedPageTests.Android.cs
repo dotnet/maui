@@ -325,6 +325,53 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.True(success);
 		}
 
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task RebuildingBottomTabsPreservesFontIconColors(bool hasExplicitIconColor)
+		{
+			SetupBuilder();
+			var tabbedPage = CreateBasicTabbedPage(true, pages: new[]
+			{
+				CreatePage("Page 1"),
+				CreatePage("Page 2")
+			});
+			tabbedPage.SelectedTabColor = Colors.Magenta;
+			tabbedPage.UnselectedTabColor = Colors.Purple;
+
+			await CreateHandlerAndAddToWindow<TabbedViewHandler>(tabbedPage, async handler =>
+			{
+				await ValidateTabBarIconColor(tabbedPage, "Page 1", hasExplicitIconColor ? Colors.Lime : Colors.Magenta, true);
+
+				tabbedPage.Children.Clear();
+				var firstPage = CreatePage("Page 1");
+				var secondPage = CreatePage("Page 2");
+				tabbedPage.Children.Add(firstPage);
+				tabbedPage.Children.Add(secondPage);
+				await OnNavigatedToAsync(firstPage);
+
+				await ValidateTabBarIconColor(tabbedPage, "Page 1", hasExplicitIconColor ? Colors.Lime : Colors.Magenta, true);
+				await ValidateTabBarIconColor(tabbedPage, "Page 2", hasExplicitIconColor ? Colors.Lime : Colors.Purple, true);
+
+				tabbedPage.CurrentPage = secondPage;
+				await OnNavigatedToAsync(secondPage);
+
+				await ValidateTabBarIconColor(tabbedPage, "Page 1", hasExplicitIconColor ? Colors.Lime : Colors.Purple, true);
+				await ValidateTabBarIconColor(tabbedPage, "Page 2", hasExplicitIconColor ? Colors.Lime : Colors.Magenta, true);
+			});
+
+			ContentPage CreatePage(string title) => new()
+			{
+				Title = title,
+				IconImageSource = new FontImageSource
+				{
+					Glyph = "\u25CF",
+					Size = 24,
+					Color = hasExplicitIconColor ? Colors.Lime : null
+				}
+			};
+		}
+
 		[Fact]
 		public async Task ClearingBarBackgroundRestoresMaterial3ThemeColors()
 		{

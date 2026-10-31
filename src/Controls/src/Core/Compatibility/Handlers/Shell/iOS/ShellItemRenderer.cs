@@ -435,6 +435,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		protected virtual void OnShellItemSet(ShellItem shellItem)
 		{
 			_appearanceTracker = _context.CreateTabBarAppearanceTracker();
+			if (_appearanceTracker is SafeShellTabBarAppearanceTracker tracker)
+			{
+				tracker.CaptureDefaultAppearance(this);
+			}
+
 			shellItem.PropertyChanged += OnElementPropertyChanged;
 			((IShellController)_context.Shell).AddAppearanceObserver(this, shellItem);
 			ShellItemController.ItemsCollectionChanged += OnItemsCollectionChanged;

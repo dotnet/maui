@@ -14,12 +14,15 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Changing ItemSpacing at runtime shifts CollectionView's ContentOffset, hiding the first item";
 
 		[Test]
-		[ShardedTestCategory(UITestCategories.CollectionView, shard:1)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
 		public void ChangingItemSpacingDoesNotShiftFirstItemOutOfView()
 		{
 			App.WaitForElement("IncreaseSpacingButton");
+			var firstItemY = App.WaitForElement("Item 1").GetRect().Y;
 			App.Tap("IncreaseSpacingButton");
 			VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
+			Assert.That(App.WaitForElement("Item 1").GetRect().Y, Is.GreaterThanOrEqualTo(firstItemY - 1),
+				"Changing item spacing should not move the first item above its initial visible position.");
 		}
 	}
 }
