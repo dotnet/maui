@@ -194,10 +194,11 @@ namespace Microsoft.Maui.Controls.Gtk.Items
 			try
 			{
 				int index = VirtualView.SelectedItem is { } item ? _source.IndexOf(item) : -1;
+				// Unselect through the invalid position: SingleSelection does not implement unselect_all before GTK 4.18, so UnselectAll is a no-op there.
 				if (index >= 0)
 					_selection.SelectItem((uint)index, true);
 				else
-					_selection.UnselectAll();
+					_selection.Selected = uint.MaxValue;
 			}
 			finally
 			{

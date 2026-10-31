@@ -16,6 +16,22 @@ namespace Microsoft.Maui.Gtk.UnitTests
 {
 	public class HostingTests
 	{
+		[Theory]
+		[InlineData(true, System.Threading.ApartmentState.MTA, true)]
+		[InlineData(true, System.Threading.ApartmentState.Unknown, true)]
+		[InlineData(true, System.Threading.ApartmentState.STA, false)]
+		[InlineData(false, System.Threading.ApartmentState.MTA, false)]
+		[InlineData(false, System.Threading.ApartmentState.Unknown, false)]
+		public void RunRequiresASingleThreadedApartmentOnWindowsOnly(bool isWindows, System.Threading.ApartmentState state, bool throws)
+		{
+			var error = Record.Exception(() => MauiGtkApplication.EnsureApartment(isWindows, state));
+
+			if (throws)
+				Assert.Contains("[STAThread]", Assert.IsType<InvalidOperationException>(error).Message, StringComparison.Ordinal);
+			else
+				Assert.Null(error);
+		}
+
 		[GtkFact]
 		public void StockHandlerRegistrationsAreRewrittenToGtkHandlers() => GtkTestHost.Run(() =>
 		{

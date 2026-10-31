@@ -146,6 +146,11 @@ namespace Microsoft.Maui.Gtk.UnitTests
 			host.Pump();
 			Assert.Equal(2u, handler.Selection.Selected);
 
+			// The app clears the selection (GTK_INVALID_LIST_POSITION).
+			list.SelectedItem = null;
+			host.Pump();
+			Assert.Equal(uint.MaxValue, handler.Selection.Selected);
+
 			// Activating a row taps it.
 			GLib.Signal.Emit(handler.List!, "activate", 0u);
 			Assert.Equal("a", tapped);

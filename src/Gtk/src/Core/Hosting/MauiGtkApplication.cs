@@ -26,6 +26,7 @@ namespace Microsoft.Maui
 	/// {
 	///     protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiApp();
 	/// }
+	/// [STAThread] // GDK on Windows initialises COM (OleInitialize)
 	/// public static int Main(string[] args) =&gt; new LinuxApp().Run(args);
 	/// </code>
 	/// </example>
@@ -64,8 +65,10 @@ namespace Microsoft.Maui
 		/// <summary>Runs the GTK main loop until the last window closes.</summary>
 		/// <param name="args">The command line arguments handed to <c>GApplication</c>; remove the own options of the app first, GApplication rejects unknown ones.</param>
 		/// <returns>The process exit code.</returns>
+		/// <exception cref="InvalidOperationException">On Windows, when the calling thread is not a single-threaded apartment (mark <c>Main</c> with <c>[STAThread]</c>).</exception>
 		public int Run(string[] args)
 		{
+			EnsureApartment(OperatingSystem.IsWindows(), System.Threading.Thread.CurrentThread.GetApartmentState());
 			GtkRuntime.EnsureInitialized();
 
 			Current = this;
@@ -80,6 +83,14 @@ namespace Microsoft.Maui
 			// The arguments go to GApplication (--help, --gapplication-service...): strip your own options before calling Run.
 			var programName = Environment.GetCommandLineArgs() is { Length: > 0 } commandLine ? commandLine[0] : "maui";
 			return ((GLib.Application)_application).Run(programName, args ?? Array.Empty<string>());
+		}
+
+		// GDK initialises COM with OleInitialize on Windows, which aborts the process (Gdk-ERROR "OleInitialize failed") on an MTA thread:
+		// fail early with an actionable message instead.
+		internal static void EnsureApartment(bool isWindows, System.Threading.ApartmentState state)
+		{
+			if (isWindows && state != System.Threading.ApartmentState.STA)
+				throw new InvalidOperationException("GTK on Windows needs a single-threaded apartment: mark Main with [STAThread] (GDK initialises COM with OleInitialize).");
 		}
 
 		void OnStartup(object? sender, EventArgs e)

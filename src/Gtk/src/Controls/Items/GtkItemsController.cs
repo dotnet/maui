@@ -309,10 +309,11 @@ namespace Microsoft.Maui.Controls.Gtk.Items
 				if (_selection is global::Gtk.SingleSelection single)
 				{
 					int index = selectable.SelectedItem is { } item ? _source.IndexOf(item) : -1;
+					// Unselect through the invalid position: SingleSelection does not implement unselect_all before GTK 4.18, so UnselectAll is a no-op there.
 					if (index >= 0)
 						single.SelectItem((uint)index, true);
 					else
-						single.UnselectAll();
+						single.Selected = uint.MaxValue;
 				}
 				else if (_selection is global::Gtk.MultiSelection multi)
 				{

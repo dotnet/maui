@@ -105,7 +105,7 @@ namespace Microsoft.Maui.Gtk.Handlers
 	/// </summary>
 	/// <remarks>
 	/// Text colour, font and letter spacing are CSS on the picker (they cascade to the drop-down and its list); the horizontal and vertical text
-	/// alignment have no GTK equivalent. <c>IsOpen</c> pops the drop-down's popover up; it is not exercised on Windows, where <c>Popover.Popup</c> crashes with the gvsbuild runtime.
+	/// alignment have no GTK equivalent. <c>IsOpen</c> pops the drop-down's popover up.
 	/// </remarks>
 	public class GtkPickerHandler : PickerHandler
 	{
@@ -380,7 +380,7 @@ namespace Microsoft.Maui.Gtk.Handlers
 	/// <summary>
 	/// <see cref="DatePickerHandler"/> over a <see cref="MauiGtkDatePicker"/> (<c>Gtk.MenuButton</c> + <c>Gtk.Popover</c> + <c>Gtk.Calendar</c>).
 	/// </summary>
-	/// <remarks><c>IsOpen</c> pops the popover up, which is not exercised on Windows (<c>Popover.Popup</c> crashes with the gvsbuild runtime).</remarks>
+	/// <remarks><c>IsOpen</c> pops the popover up.</remarks>
 	public class GtkDatePickerHandler : DatePickerHandler
 	{
 		readonly GtkUpdateGuard _guard = new();
@@ -557,7 +557,7 @@ namespace Microsoft.Maui.Gtk.Handlers
 	/// <summary>
 	/// <see cref="TimePickerHandler"/> over a <see cref="MauiGtkTimePicker"/> (<c>Gtk.MenuButton</c> + <c>Gtk.Popover</c> + two <c>Gtk.SpinButton</c>s).
 	/// </summary>
-	/// <remarks><c>IsOpen</c> pops the popover up, which is not exercised on Windows (<c>Popover.Popup</c> crashes with the gvsbuild runtime).</remarks>
+	/// <remarks><c>IsOpen</c> pops the popover up.</remarks>
 	public class GtkTimePickerHandler : TimePickerHandler
 	{
 		readonly GtkUpdateGuard _guard = new();

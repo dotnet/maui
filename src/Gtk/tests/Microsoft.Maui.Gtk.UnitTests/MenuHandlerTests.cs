@@ -9,7 +9,6 @@ using Xunit;
 namespace Microsoft.Maui.Gtk.UnitTests
 {
 	/// <summary>MenuBar, MenuBarItem, MenuFlyout, MenuFlyoutItem/SubItem/Separator and the context flyout, on real GIO menu models and widgets.</summary>
-	/// <remarks>Nothing here pops a popover up (that crashes with the gvsbuild runtime on Windows); the popover tests need Linux and use <c>GtkLinuxFact</c>.</remarks>
 	public class MenuHandlerTests
 	{
 		static string? Attribute(GLib.MenuModel model, int index, string name) =>
@@ -292,7 +291,7 @@ namespace Microsoft.Maui.Gtk.UnitTests
 			popover.Unparent();
 		});
 
-		[GtkLinuxFact]
+		[GtkFact]
 		public void ContextFlyoutPopsUpOnASecondaryClick() => GtkTestHost.Run(() =>
 		{
 			var label = new Label { Text = "right click me", WidthRequest = 100, HeightRequest = 30 };

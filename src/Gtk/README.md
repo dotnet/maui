@@ -171,7 +171,7 @@ Not in this area: Shell, CollectionView, Maps, NavigationPage/Toolbar/FlyoutPage
 
 | Project | Tests (Windows GTK 4.22 / Debian 13 GTK 4.18, xvfb) |
 |---------|------|
-| `Microsoft.Maui.Gtk.UnitTests` (Core + Essentials + Handlers + Controls + Web + Maps) | Windows 658 passed, 21 skipped (17 WebKit + 4 Linux-only popups); Debian 13 (GTK 4.18) 679 passed, 0 skipped |
+| `Microsoft.Maui.Gtk.UnitTests` (Core + Essentials + Handlers + Controls + Web + Maps) | Windows 657 passed, 17 skipped (WebKit: not shipped for Windows); Debian 13 (GTK 4.18) / Ubuntu 24.04 (GTK 4.14) 674 passed, 0 skipped |
 | `Graphics.Cairo.Tests` | 125 passed, 0 skipped |
 | `Essentials.UnitTests` (net10.0) | 441 passed, 0 skipped |
 | `Core.UnitTests` / `Controls.Core.UnitTests` (net10.0) | 884 (+3 skipped) / 5869 (+30 skipped) passed |
@@ -187,7 +187,6 @@ Not in this area: Shell, CollectionView, Maps, NavigationPage/Toolbar/FlyoutPage
 
 ## Known limitations
 
-- Popups (`Picker.IsOpen`, `DatePicker/TimePicker.IsOpen`, context flyouts) pop a `Gtk.Popover` up, which crashes the process with the gvsbuild runtime on Windows: those tests are `[GtkLinuxFact]` (skipped on Windows, run headless on Linux).
 - `SwipeItemView` is resolved by Controls to the content view handler (it is a `ContentView`); `Microsoft.Maui.Controls.Gtk` registers `SwipeItemView -> SwipeItemViewHandler`.
 - Windows builds pack/test `net10.0`/`netstandard` only (mobile/Windows TFMs are disabled locally by `Directory.Build.Override.props`).
 - `RotationX`/`RotationY`, window position, maximum window size, image-paint backgrounds, animated scrolling.

@@ -134,7 +134,7 @@ namespace Microsoft.Maui.Gtk.UnitTests
 			Assert.False(widget.Sensitive);
 		});
 
-		[GtkLinuxFact]
+		[GtkFact]
 		public void PickerMapsIsOpen() => GtkTestHost.Run(() =>
 		{
 			var picker = NewPicker("a", "b");
@@ -221,7 +221,7 @@ namespace Microsoft.Maui.Gtk.UnitTests
 			Assert.Same(widget.Editor, widget.Popover);
 		});
 
-		[GtkLinuxFact]
+		[GtkFact]
 		public void DatePickerMapsIsOpen() => GtkTestHost.Run(() =>
 		{
 			var picker = new DatePicker();
@@ -282,7 +282,7 @@ namespace Microsoft.Maui.Gtk.UnitTests
 			Assert.Contains("letter-spacing: 1px", css);
 		});
 
-		[GtkLinuxFact]
+		[GtkFact]
 		public void TimePickerMapsIsOpen() => GtkTestHost.Run(() =>
 		{
 			var picker = new TimePicker();
