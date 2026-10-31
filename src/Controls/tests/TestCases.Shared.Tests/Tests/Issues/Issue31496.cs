@@ -13,7 +13,7 @@ public class Issue31496 : _IssuesUITest
     public override string Issue => "BoxView in AbsoluteLayout does not return to default AutoSize";
 
     [Test]
-    [Category(UITestCategories.Layout)]
+    [ShardedTestCategory(UITestCategories.Layout, shard: 1)]
     public void BoxViewInAbsoluteLayoutReturnsToDefaultAutoSize()
     {
         App.WaitForElement("Issue31496ChangeBoundsButton");

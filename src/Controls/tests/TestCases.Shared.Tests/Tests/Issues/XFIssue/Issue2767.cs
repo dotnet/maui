@@ -13,7 +13,7 @@ public class Issue2767 : _IssuesUITest
 	public override string Issue => "ArgumentException: NaN not valid for height";
 
 	[Test]
-	[Category(UITestCategories.Layout)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 2)]
 
 	public void Issue2767Test()
 	{

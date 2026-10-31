@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Grid wrong Row height";
 
 		[Test]
-		[Category(UITestCategories.Layout)]
+		[ShardedTestCategory(UITestCategories.Layout, shard: 2)]
 		public void Issue15330Test()
 		{
 			App.WaitForElement("WaitForStubControl");

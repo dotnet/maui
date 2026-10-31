@@ -14,7 +14,7 @@ public class Bugzilla40161 : _IssuesUITest
 	public override string Issue => "Issue Bugzilla40161";
 
 	[Test]
-	[Category(UITestCategories.Layout)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 2)]
 	public void Issue1Test()
 	{
 		App.WaitForElement("REFRESH");

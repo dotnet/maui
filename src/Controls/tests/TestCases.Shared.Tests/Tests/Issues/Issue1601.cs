@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Exception thrown when `Removing Content Using LayoutCompression";
 
 		[Test]
-		[Category(UITestCategories.Layout)]
+		[ShardedTestCategory(UITestCategories.Layout, shard: 3)]
 		public void Issue1601Test()
 		{
 			App.WaitForElement("CrashButton");

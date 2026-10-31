@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Modal Page margin correct after Keyboard opens";
 
 		[Test]
-		[Category(UITestCategories.Layout)]
+		[ShardedTestCategory(UITestCategories.Layout, shard: 2)]
 		public async Task ModalPageMarginCorrectAfterKeyboardOpens()
 		{
 			App.WaitForElement("WaitForStubControl");

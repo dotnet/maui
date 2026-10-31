@@ -19,7 +19,7 @@ public class Issue28945 : _IssuesUITest
 	public override string Issue => "Add Focus propagation to MauiView";
 
 	[Test]
-	[Category(UITestCategories.Layout)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 1)]
 	public void MauiViewShouldPropagateFocus()
 	{
 		App.WaitForElement("Issue28945_ContentView");

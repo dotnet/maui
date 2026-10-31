@@ -13,7 +13,7 @@ public class Issue29919 : _IssuesUITest
 	public override string Issue => "StackLayout Throws Exception on Windows When Orientation Is Set with HeightRequest of 0, Padding, and Opposing Alignment";
 
 	[Test]
-	[Category(UITestCategories.Layout)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 1)]
 	public void StackLayoutWindowsCrashWithZeroHeight()
 	{
 		App.WaitForElement("29919DescriptionLabel");

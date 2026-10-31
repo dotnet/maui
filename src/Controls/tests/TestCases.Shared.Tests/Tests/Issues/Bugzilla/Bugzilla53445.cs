@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Setting Grid.IsEnabled to false does not disable child controls";
 
 		[Test]
-		[Category(UITestCategories.Layout)]
+		[ShardedTestCategory(UITestCategories.Layout, shard: 2)]
 		public void Bugzilla53445Test()
 		{
 			App.WaitForElement("Success");

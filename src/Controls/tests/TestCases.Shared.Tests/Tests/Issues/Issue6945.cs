@@ -19,7 +19,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "[iOS] Wrong anchor behavior when setting HeightRequest ";
 
 		[Test]
-		[Category(UITestCategories.Layout)]
+		[ShardedTestCategory(UITestCategories.Layout, shard: 3)]
 		public void WrongTranslationBehaviorWhenChangingHeightRequestAndSettingAnchor()
 		{
 			var rect = App.WaitForElement(BoxViewId).GetRect();

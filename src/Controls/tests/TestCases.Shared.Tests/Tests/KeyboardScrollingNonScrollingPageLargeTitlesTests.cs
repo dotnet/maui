@@ -4,7 +4,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests
 {
-	[Category(UITestCategories.Layout)]
 	public class KeyboardScrollingNonScrollingPageLargeTitlesTests : CoreGalleryBasePageTest
 	{
 		const string KeyboardScrollingGallery = "Keyboard Scrolling Gallery - NonScrolling Page / Large Titles";
@@ -22,18 +21,21 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test]
+		[ShardedTestCategory(UITestCategories.Layout, shard: 2)]
 		public void EntriesScrollingPageTest()
 		{
 			KeyboardScrolling.EntriesScrollingTest(App, KeyboardScrollingGallery);
 		}
 
 		[Test]
+		[ShardedTestCategory(UITestCategories.Layout, shard: 3)]
 		public void EditorsScrollingPageTest()
 		{
 			KeyboardScrolling.EditorsScrollingTest(App, KeyboardScrollingGallery);
 		}
 
 		[Test]
+		[ShardedTestCategory(UITestCategories.Layout, shard: 2)]
 		public void EntryNextEditorTest()
 		{
 			KeyboardScrolling.EntryNextEditorScrollingTest(App, KeyboardScrollingGallery);

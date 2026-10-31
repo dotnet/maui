@@ -33,7 +33,7 @@ namespace Microsoft.Maui.TestCases.Tests
 #if MACCATALYST || WINDOWS
 
         [Test, Order(16)]
-        [Category(UITestCategories.Layout)]
+        [ShardedTestCategory(UITestCategories.Layout, shard: 3)]
         public void TwoPaneView_RTLFlowDirection()
         {
             App.WaitForElement("Options");
@@ -49,7 +49,7 @@ namespace Microsoft.Maui.TestCases.Tests
         }
 
         [Test, Order(1)]
-        [Category(UITestCategories.Layout)]
+        [ShardedTestCategory(UITestCategories.Layout, shard: 3)]
         public void TwoPaneView_WideMode()
         {
             App.WaitForElement("Options");
@@ -62,7 +62,7 @@ namespace Microsoft.Maui.TestCases.Tests
         }
 
         [Test, Order(2)]
-        [Category(UITestCategories.Layout)]
+        [ShardedTestCategory(UITestCategories.Layout, shard: 3)]
         public void TwoPaneView_IsTall_UsingRect()
         {
             App.WaitForElement("Options");
@@ -83,7 +83,7 @@ namespace Microsoft.Maui.TestCases.Tests
         }
 
         [Test, Order(3)]
-        [Category(UITestCategories.Layout)]
+        [ShardedTestCategory(UITestCategories.Layout, shard: 3)]
         public void TwoPaneView_Wide_UsingRect()
         {
             App.WaitForElement("Options");
@@ -101,7 +101,7 @@ namespace Microsoft.Maui.TestCases.Tests
         }
 
         [Test, Order(17)]
-        [Category(UITestCategories.Layout)]
+        [ShardedTestCategory(UITestCategories.Layout, shard: 3)]
         public void TwoPaneView_IsWideWithRTL_UsingRect()
         {
             App.WaitForElement("Options");
@@ -125,7 +125,7 @@ namespace Microsoft.Maui.TestCases.Tests
         }
 
         [Test, Order(4)]
-        [Category(UITestCategories.Layout)]
+        [ShardedTestCategory(UITestCategories.Layout, shard: 3)]
         public void TwoPaneView_TallMode()
         {
             App.WaitForElement("Options");
@@ -141,7 +141,7 @@ namespace Microsoft.Maui.TestCases.Tests
         }
 
         [Test, Order(5)]
-        [Category(UITestCategories.Layout)]
+        [ShardedTestCategory(UITestCategories.Layout, shard: 3)]
         public void TwoPaneView_Pane1Priority()
         {
             App.WaitForElement("Options");
@@ -160,7 +160,7 @@ namespace Microsoft.Maui.TestCases.Tests
         }
 
         [Test, Order(6)]
-        [Category(UITestCategories.Layout)]
+        [ShardedTestCategory(UITestCategories.Layout, shard: 3)]
         public void TwoPaneView_Pane2Priority()
         {
             App.WaitForElement("Options");
@@ -182,7 +182,7 @@ namespace Microsoft.Maui.TestCases.Tests
         }
 
         [Test, Order(7)]
-        [Category(UITestCategories.Layout)]
+        [ShardedTestCategory(UITestCategories.Layout, shard: 3)]
         public void TwoPaneView_Pane1SizeIncrease_WithTallMode()
         {
             App.WaitForElement("Options");
@@ -201,7 +201,7 @@ namespace Microsoft.Maui.TestCases.Tests
         }
 
         [Test, Order(8)]
-        [Category(UITestCategories.Layout)]
+        [ShardedTestCategory(UITestCategories.Layout, shard: 3)]
         public void TwoPaneView_Pane2SizeIncrease_WithTallMode()
         {
             App.WaitForElement("Options");
@@ -221,7 +221,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 #endif
 		[Test, Order(15)]
-		[Category(UITestCategories.Layout)]
+		[ShardedTestCategory(UITestCategories.Layout, shard: 3)]
 		public void TwoPaneView_IsVisible()
 		{
 			App.WaitForElement("Options");
@@ -237,7 +237,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test, Order(14)]
-		[Category(UITestCategories.Layout)]
+		[ShardedTestCategory(UITestCategories.Layout, shard: 3)]
 		public void TwoPaneView_ZIsShadowEnabled()
 		{
 			App.WaitForElement("Options");
@@ -253,7 +253,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test, Order(13)]
-		[Category(UITestCategories.Layout)]
+		[ShardedTestCategory(UITestCategories.Layout, shard: 3)]
 		public void TwoPaneView_Pane1SizeIncrease()
 		{
 			App.WaitForElement("Options");
@@ -271,7 +271,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test, Order(12)]
-		[Category(UITestCategories.Layout)]
+		[ShardedTestCategory(UITestCategories.Layout, shard: 3)]
 		public void TwoPaneView_Pane2SizeIncrease()
 		{
 			App.WaitForElement("Options");
@@ -291,7 +291,7 @@ namespace Microsoft.Maui.TestCases.Tests
 #if ANDROID || IOS
 
 		[Test, Order(1)]
-		[Category(UITestCategories.Layout)]
+		[ShardedTestCategory(UITestCategories.Layout, shard: 3)]
 		public void TwoPaneView_IsTall_UsingRect()
 		{
 			var pane1Y = App.WaitForElement("Pane1Label").GetRect().Y;
@@ -303,7 +303,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test, Order(2)]
-		[Category(UITestCategories.Layout)]
+		[ShardedTestCategory(UITestCategories.Layout, shard: 3)]
 		public void TwoPaneView_IsWide_UsingRect()
 		{
 			App.WaitForElement("Options");
@@ -327,7 +327,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test, Order(3)]
-		[Category(UITestCategories.Layout)]
+		[ShardedTestCategory(UITestCategories.Layout, shard: 3)]
 		public void TwoPaneView_IsWideWithRTL_UsingRect()
 		{
 			App.WaitForElement("Options");
@@ -353,7 +353,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test, Order(4)]
-		[Category(UITestCategories.Layout)]
+		[ShardedTestCategory(UITestCategories.Layout, shard: 3)]
 		public void TwoPaneView_TallMode()
 		{
 			App.WaitForElement("Options");
@@ -366,7 +366,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test, Order(5)]
-		[Category(UITestCategories.Layout)]
+		[ShardedTestCategory(UITestCategories.Layout, shard: 3)]
 		public void TwoPaneView_WideMode()
 		{
 			App.WaitForElement("Options");
@@ -384,7 +384,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test, Order(6)]
-		[Category(UITestCategories.Layout)]
+		[ShardedTestCategory(UITestCategories.Layout, shard: 3)]
 		public void TwoPaneView_Pane1SizeIncrease_WithWideMode()
 		{
 			App.WaitForElement("Options");
@@ -407,7 +407,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test, Order(7)]
-		[Category(UITestCategories.Layout)]
+		[ShardedTestCategory(UITestCategories.Layout, shard: 3)]
 		public void TwoPaneView_Pane2SizeIncrease_WithWideMode()
 		{
 			App.WaitForElement("Options");
@@ -430,7 +430,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test, Order(8)]
-		[Category(UITestCategories.Layout)]
+		[ShardedTestCategory(UITestCategories.Layout, shard: 3)]
 		public void TwoPaneView_ShadowWithWideMode()
 		{
 			App.WaitForElement("Options");
@@ -451,7 +451,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test, Order(9)]
-		[Category(UITestCategories.Layout)]
+		[ShardedTestCategory(UITestCategories.Layout, shard: 3)]
 		public void TwoPaneView_RTLFlowDirection()
 		{
 			App.WaitForElement("Options");
@@ -473,7 +473,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 
 		[Test, Order(10)]
-		[Category(UITestCategories.Layout)]
+		[ShardedTestCategory(UITestCategories.Layout, shard: 3)]
 		public void TwoPaneView_Pane1Priority()
 		{
 			App.WaitForElement("Options");
@@ -489,7 +489,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test, Order(11)]
-		[Category(UITestCategories.Layout)]
+		[ShardedTestCategory(UITestCategories.Layout, shard: 3)]
 		public void TwoPaneView_Pane2Priority()
 		{
 			App.WaitForElement("Options");

@@ -20,7 +20,7 @@ public class Issue3475 : _IssuesUITest
 	public override string Issue => "[iOS] LayoutCompression Performance Issues";
 
 	[Test]
-	[Category(UITestCategories.Layout)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 2)]
 	public void Issue3475TestsLayoutCompressionPerformance()
 	{
 		App.WaitForElement(_titleLabelId);

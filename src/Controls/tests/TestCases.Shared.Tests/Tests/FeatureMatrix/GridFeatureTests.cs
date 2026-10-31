@@ -28,7 +28,7 @@ public class GridFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.Layout)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 1)]
 	public void VerifyGrid_SetRow()
 	{
 		App.WaitForElement(Options);
@@ -42,7 +42,7 @@ public class GridFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.Layout)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 1)]
 	public void VerifyGrid_SetColumn()
 	{
 		App.WaitForElement(Options);
@@ -56,7 +56,7 @@ public class GridFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.Layout)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 2)]
 	public void VerifyGrid_IsVisible()
 	{
 		App.WaitForElement(Options);
@@ -69,7 +69,7 @@ public class GridFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.Layout)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 3)]
 	public void VerifyGrid_FlowDirection()
 	{
 		App.WaitForElement(Options);
@@ -82,7 +82,7 @@ public class GridFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.Layout)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 1)]
 	public void VerifyGrid_BackgroundColor()
 	{
 		App.WaitForElement(Options);
@@ -95,7 +95,7 @@ public class GridFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.Layout)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 1)]
 	public void VerifyGrid_Padding()
 	{
 		App.WaitForElement(Options);
@@ -109,7 +109,7 @@ public class GridFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.Layout)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 2)]
 	public void VerifyGrid_RowSpacing()
 	{
 		App.WaitForElement(Options);
@@ -123,7 +123,7 @@ public class GridFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.Layout)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 1)]
 	public void VerifyGrid_ColumnSpacing()
 	{
 		App.WaitForElement(Options);
@@ -137,7 +137,7 @@ public class GridFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.Layout)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 1)]
 	public void VerifyGrid_NestedGrid()
 	{
 		App.WaitForElement(Options);
@@ -151,7 +151,7 @@ public class GridFeatureTests : _GalleryUITest
 
 
 	[Test]
-	[Category(UITestCategories.Layout)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 2)]
 	public void VerifyGrid_ColumnSpan()
 	{
 		App.WaitForElement(Options);
@@ -165,7 +165,7 @@ public class GridFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.Layout)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 3)]
 	public void VerifyGrid_RowSpan()
 	{
 		App.WaitForElement(Options);
@@ -179,7 +179,7 @@ public class GridFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.Layout)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 1)]
 	public void VerifyGrid_HorizontalOptionsStart()
 	{
 		App.WaitForElement(Options);
@@ -192,7 +192,7 @@ public class GridFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.Layout)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 2)]
 	public void VerifyGrid_HorizontalOptionsCenter()
 	{
 		App.WaitForElement(Options);
@@ -205,7 +205,7 @@ public class GridFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.Layout)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 1)]
 	public void VerifyGrid_HorizontalOptionsEnd()
 	{
 		App.WaitForElement(Options);
@@ -218,7 +218,7 @@ public class GridFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.Layout)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 3)]
 	public void VerifyGrid_VerticalOptionsStart()
 	{
 		App.WaitForElement(Options);
@@ -231,7 +231,7 @@ public class GridFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.Layout)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 2)]
 	public void VerifyGrid_VerticalOptionsCenter()
 	{
 		App.WaitForElement(Options);
@@ -244,7 +244,7 @@ public class GridFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.Layout)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 2)]
 	public void VerifyGrid_VerticalOptionsEnd()
 	{
 		App.WaitForElement(Options);
@@ -257,7 +257,7 @@ public class GridFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.Layout)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 2)]
 	public void VerifyGrid_VerticalAndHorizontalOptionsStart()
 	{
 		App.WaitForElement(Options);
@@ -272,7 +272,7 @@ public class GridFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.Layout)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 2)]
 	public void VerifyGrid_VerticalAndHorizontalOptionsCenter()
 	{
 		App.WaitForElement(Options);
@@ -287,7 +287,7 @@ public class GridFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.Layout)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 3)]
 	public void VerifyGrid_VerticalAndHorizontalOptionsEnd()
 	{
 		App.WaitForElement(Options);
@@ -302,7 +302,7 @@ public class GridFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.Layout)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 2)]
 	public void VerifyGrid_RowAndColumnTypeAbsolute()
 	{
 		App.WaitForElement(Options);
@@ -323,7 +323,7 @@ public class GridFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.Layout)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 1)]
 	public void VerifyGrid_SetRowAndColumn_BackgroundColor()
 	{
 		App.WaitForElement(Options);
@@ -342,7 +342,7 @@ public class GridFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.Layout)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 3)]
 	public void VerifyGrid_SetRowAndColumnSpacing_BackgroundColor()
 	{
 		App.WaitForElement(Options);
@@ -361,7 +361,7 @@ public class GridFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.Layout)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 3)]
 	public void VerifyGrid_SetRow_SetRowSpacing()
 	{
 		App.WaitForElement(Options);
@@ -380,7 +380,7 @@ public class GridFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.Layout)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 1)]
 	public void VerifyGrid_SetColumn_SetColumnSpacing()
 	{
 		App.WaitForElement(Options);
@@ -399,7 +399,7 @@ public class GridFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.Layout)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 2)]
 	public void VerifyGrid_SetRow_SetColumnSpacing()
 	{
 		App.WaitForElement(Options);
@@ -418,7 +418,7 @@ public class GridFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.Layout)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 2)]
 	public void VerifyGrid_SetColumn_SetRowSpacing()
 	{
 		App.WaitForElement(Options);
@@ -437,7 +437,7 @@ public class GridFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.Layout)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 2)]
 	public void VerifyGrid_SetRowSpacingAndPadding()
 	{
 		App.WaitForElement(Options);
@@ -456,7 +456,7 @@ public class GridFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.Layout)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 1)]
 	public void VerifyGrid_SetColumnSpacingAndPadding()
 	{
 		App.WaitForElement(Options);
@@ -475,7 +475,7 @@ public class GridFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.Layout)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 2)]
 	public void VerifyGrid_SetPaddingAndBackgroundColor()
 	{
 		App.WaitForElement(Options);

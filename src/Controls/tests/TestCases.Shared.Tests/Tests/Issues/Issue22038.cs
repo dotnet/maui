@@ -11,7 +11,7 @@ public class Issue22038 : _IssuesUITest
 	public override string Issue => "[Android] Layout with small explicit size and Opacity < 1 clips overflowing children";
 
 	[Test]
-	[Category(UITestCategories.Layout)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 3)]
 	public void OverflowingChildrenShouldNotBeClippedWhenOpacityIsLessThanOne()
 	{
 		App.WaitForElement("Issue22038DescriptionLabel");

@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Button rendering overflow issue when padding is set in StackLayout";
 
 		[Test]
-		[Category(UITestCategories.Layout)]
+		[ShardedTestCategory(UITestCategories.Layout, shard: 2)]
 		public void CreateStackWithPadding()
 		{
 			App.WaitForElement("Button");

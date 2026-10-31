@@ -4,7 +4,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
 
-[Category(UITestCategories.Layout)]
 public class FlexLayoutFeatureTests : _GalleryUITest
 {
     public const string FlexLayoutFeatureMatrix = "FlexLayout Feature Matrix";
@@ -13,6 +12,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
     public FlexLayoutFeatureTests(TestDevice device) : base(device) { }
 
     [Test, Order(1)]
+    [ShardedTestCategory(UITestCategories.Layout, shard: 1)]
     public void FlexLayout_ValidateDefaultValues()
     {
         App.WaitForElement("AlignContentLabel");
@@ -26,6 +26,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
     }
 
     [Test, Order(2)]
+    [ShardedTestCategory(UITestCategories.Layout, shard: 1)]
     public void FlexLayout_SetWrapAlignContentStretch()
     {
         App.WaitForElement("Options");
@@ -45,6 +46,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
     }
 
     [Test, Order(3)]
+    [ShardedTestCategory(UITestCategories.Layout, shard: 1)]
     public void FlexLayout_SetWrapAlignContentCenter()
     {
         App.WaitForElement("Options");
@@ -62,6 +64,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
     }
 
     [Test, Order(4)]
+    [ShardedTestCategory(UITestCategories.Layout, shard: 1)]
     public void FlexLayout_SetWrapAlignContentStart()
     {
         App.WaitForElement("Options");
@@ -79,6 +82,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
     }
 
     [Test, Order(5)]
+    [ShardedTestCategory(UITestCategories.Layout, shard: 1)]
     public void FlexLayout_SetWrapAlignContentEnd()
     {
         App.WaitForElement("Options");
@@ -96,6 +100,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
     }
 
     [Test, Order(6)]
+    [ShardedTestCategory(UITestCategories.Layout, shard: 1)]
     public void FlexLayout_SetWrapAlignContentSpaceAround()
     {
         App.WaitForElement("Options");
@@ -113,6 +118,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
     }
 
     [Test, Order(7)]
+    [ShardedTestCategory(UITestCategories.Layout, shard: 1)]
     public void FlexLayout_SetWrapAlignContentSpaceBetween()
     {
         App.WaitForElement("Options");
@@ -130,6 +136,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
     }
 
     [Test, Order(8)]
+    [ShardedTestCategory(UITestCategories.Layout, shard: 1)]
     public void FlexLayout_SetWrapAlignContentSpaceEvenly()
     {
         App.WaitForElement("Options");
@@ -147,6 +154,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
     }
 
     [Test, Order(9)]
+    [ShardedTestCategory(UITestCategories.Layout, shard: 1)]
     public void FlexLayout_SetWrapReverseAlignContentStretch()
     {
         App.WaitForElement("Options");
@@ -164,6 +172,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
     }
 
     [Test, Order(10)]
+    [ShardedTestCategory(UITestCategories.Layout, shard: 1)]
     public void FlexLayout_SetWrapReverseAlignContentCenter()
     {
         App.WaitForElement("Options");
@@ -181,6 +190,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
     }
 
     [Test, Order(11)]
+    [ShardedTestCategory(UITestCategories.Layout, shard: 1)]
     public void FlexLayout_SetWrapReverseAlignContentStart()
     {
         App.WaitForElement("Options");
@@ -198,6 +208,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
     }
 
     [Test, Order(12)]
+    [ShardedTestCategory(UITestCategories.Layout, shard: 1)]
     public void FlexLayout_SetWrapReverseAlignContentEnd()
     {
         App.WaitForElement("Options");
@@ -217,6 +228,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS // Issue Link - https://github.com/dotnet/maui/issues/31565
 
     [Test, Order(13)]
+    [ShardedTestCategory(UITestCategories.Layout, shard: 1)]
     public void FlexLayout_SetWrapReverseAlignContentSpaceAround()
     {
         App.WaitForElement("Options");
@@ -234,6 +246,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
     }
 
     [Test, Order(14)]
+    [ShardedTestCategory(UITestCategories.Layout, shard: 1)]
     public void FlexLayout_SetWrapReverseAlignContentSpaceBetween()
     {
         App.WaitForElement("Options");
@@ -251,6 +264,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
     }
 
     [Test, Order(15)]
+    [ShardedTestCategory(UITestCategories.Layout, shard: 1)]
     public void FlexLayout_SetWrapReverseAlignContentSpaceEvenly()
     {
         App.WaitForElement("Options");
@@ -269,6 +283,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
 #endif
 
     [Test, Order(16)]
+    [ShardedTestCategory(UITestCategories.Layout, shard: 1)]
     public void FlexLayout_AlignItemsCenter()
     {
         App.WaitForElement("RemoveChildrenButton");
@@ -285,6 +300,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
     }
 
     [Test, Order(17)]
+    [ShardedTestCategory(UITestCategories.Layout, shard: 1)]
     public void FlexLayout_AlignItemsEnd()
     {
         App.WaitForElement("Options");
@@ -299,6 +315,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
     }
 
     [Test, Order(18)]
+    [ShardedTestCategory(UITestCategories.Layout, shard: 1)]
     public void FlexLayout_AlignItemsStretch()
     {
         App.WaitForElement("Options");
@@ -313,6 +330,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
     }
 
     [Test, Order(19)]
+    [ShardedTestCategory(UITestCategories.Layout, shard: 1)]
     public void FlexLayout_DirectionRowReverse()
     {
         App.WaitForElement("Options");
@@ -327,6 +345,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
     }
 
     [Test, Order(20)]
+    [ShardedTestCategory(UITestCategories.Layout, shard: 1)]
     public void FlexLayout_DirectionColumn()
     {
 #if ANDROID || IOS
@@ -345,6 +364,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
     }
 
     [Test, Order(21)]
+    [ShardedTestCategory(UITestCategories.Layout, shard: 1)]
     public void FlexLayout_DirectionColumnReverse()
     {
         App.WaitForElement("Options");
@@ -359,6 +379,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
     }
 
     [Test, Order(22)]
+    [ShardedTestCategory(UITestCategories.Layout, shard: 1)]
     public void FlexLayout_JustifyContentCenter()
     {
 #if ANDROID || IOS
@@ -377,6 +398,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
     }
 
     [Test, Order(23)]
+    [ShardedTestCategory(UITestCategories.Layout, shard: 1)]
     public void FlexLayout_JustifyContentEnd()
     {
         App.WaitForElement("Options");
@@ -391,6 +413,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
     }
 
     [Test, Order(24)]
+    [ShardedTestCategory(UITestCategories.Layout, shard: 1)]
     public void FlexLayout_JustifyContentSpaceBetween()
     {
         App.WaitForElement("Options");
@@ -405,6 +428,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
     }
 
     [Test, Order(25)]
+    [ShardedTestCategory(UITestCategories.Layout, shard: 1)]
     public void FlexLayout_JustifyContentSpaceAround()
     {
         App.WaitForElement("Options");
@@ -419,6 +443,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
     }
 
     [Test, Order(26)]
+    [ShardedTestCategory(UITestCategories.Layout, shard: 1)]
     public void FlexLayout_JustifyContentSpaceEvenly()
     {
         App.WaitForElement("Options");
@@ -433,6 +458,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
     }
 
     [Test, Order(27)]
+    [ShardedTestCategory(UITestCategories.Layout, shard: 1)]
     public void FlexLayout_AlignSelfStart()
     {
         App.WaitForElement("Options");
@@ -447,6 +473,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
     }
 
     [Test, Order(28)]
+    [ShardedTestCategory(UITestCategories.Layout, shard: 1)]
     public void FlexLayout_AlignSelfCenter()
     {
         App.WaitForElement("Options");
@@ -461,6 +488,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
     }
 
     [Test, Order(29)]
+    [ShardedTestCategory(UITestCategories.Layout, shard: 1)]
     public void FlexLayout_AlignSelfEnd()
     {
         App.WaitForElement("Options");
@@ -475,6 +503,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
     }
 
     [Test, Order(30)]
+    [ShardedTestCategory(UITestCategories.Layout, shard: 1)]
     public void FlexLayout_AlignSelfStretch()
     {
         App.WaitForElement("Options");
@@ -489,6 +518,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
     }
 
     [Test, Order(31)]
+    [ShardedTestCategory(UITestCategories.Layout, shard: 1)]
     public void FlexLayout_Child1Grow()
     {
         App.WaitForElement("Options");
@@ -504,6 +534,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
     }
 
     [Test, Order(32)]
+    [ShardedTestCategory(UITestCategories.Layout, shard: 1)]
     public void FlexLayout_Child1Shrink()
     {
         App.WaitForElement("Options");
@@ -525,6 +556,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
     }
 
     [Test, Order(33)]
+    [ShardedTestCategory(UITestCategories.Layout, shard: 1)]
     public void FlexLayout_Child1Order()
     {
 #if MACCATALYST || WINDOWS
@@ -544,6 +576,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
     }
 
     [Test, Order(34)]
+    [ShardedTestCategory(UITestCategories.Layout, shard: 1)]
     public void FlexLayout_BasisAuto_DirectionRow()
     {
         App.WaitForElement("Options");
@@ -561,6 +594,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
     }
 
     [Test, Order(35)]
+    [ShardedTestCategory(UITestCategories.Layout, shard: 1)]
     public void FlexLayout_BasisFixed_DirectionRow()
     {
         App.WaitForElement("Options");
@@ -578,6 +612,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
     }
 
     [Test, Order(36)]
+    [ShardedTestCategory(UITestCategories.Layout, shard: 1)]
     public void FlexLayout_BasisPercentage_DirectionRow()
     {
         App.WaitForElement("Options");
@@ -595,6 +630,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
     }
 
     [Test, Order(37)]
+    [ShardedTestCategory(UITestCategories.Layout, shard: 1)]
     public void FlexLayout_BasisAuto_DirectionRowReverse()
     {
         App.WaitForElement("Options");
@@ -612,6 +648,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
     }
 
     [Test, Order(38)]
+    [ShardedTestCategory(UITestCategories.Layout, shard: 1)]
     public void FlexLayout_BasisFixed_DirectionRowReverse()
     {
         App.WaitForElement("Options");
@@ -629,6 +666,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
     }
 
     [Test, Order(39)]
+    [ShardedTestCategory(UITestCategories.Layout, shard: 1)]
     public void FlexLayout_BasisPercentage_DirectionRowReverse()
     {
         App.WaitForElement("Options");
@@ -646,6 +684,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
     }
 
     [Test, Order(40)]
+    [ShardedTestCategory(UITestCategories.Layout, shard: 1)]
     public void FlexLayout_BasisAuto_DirectionColumn()
     {
 #if ANDROID || IOS
@@ -667,6 +706,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
     }
 
     [Test, Order(41)]
+    [ShardedTestCategory(UITestCategories.Layout, shard: 1)]
     public void FlexLayout_BasisFixed_DirectionColumn()
     {
         App.WaitForElement("Options");
@@ -684,6 +724,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
     }
 
     [Test, Order(42)]
+    [ShardedTestCategory(UITestCategories.Layout, shard: 1)]
     public void FlexLayout_BasisPercentage_DirectionColumn()
     {
         App.WaitForElement("Options");
@@ -705,6 +746,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
     }
 
     [Test, Order(43)]
+    [ShardedTestCategory(UITestCategories.Layout, shard: 1)]
     public void FlexLayout_BasisAuto_DirectionColumnReverse()
     {
         App.WaitForElement("Options");
@@ -722,6 +764,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
     }
 
     [Test, Order(44)]
+    [ShardedTestCategory(UITestCategories.Layout, shard: 1)]
     public void FlexLayout_BasisFixed_DirectionColumnReverse()
     {
         App.WaitForElement("Options");
@@ -739,6 +782,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
     }
 
     [Test, Order(45)]
+    [ShardedTestCategory(UITestCategories.Layout, shard: 1)]
     public void FlexLayout_BasisPercentage_DirectionColumnReverse()
     {
         App.WaitForElement("Options");
@@ -760,6 +804,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
     }
 
     [Test, Order(46)]
+    [ShardedTestCategory(UITestCategories.Layout, shard: 1)]
     public void FlexLayout_SetAlignItemsCenterWrap()
     {
         App.WaitForElement("Options");
@@ -781,6 +826,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
     }
 
     [Test, Order(47)]
+    [ShardedTestCategory(UITestCategories.Layout, shard: 1)]
     public void FlexLayout_SetAlignItemsEndWrap()
     {
         App.WaitForElement("Options");

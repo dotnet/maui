@@ -13,7 +13,7 @@ public class StackLayoutIssue : _IssuesUITest
 	public override string Issue => "StackLayout issue";
 
 	[Test]
-	[Category(UITestCategories.Layout)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 1)]
 	public void StackLayoutIssueTestsAllElementsPresent()
 	{
 		App.WaitForElement("FirstImage");

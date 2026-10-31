@@ -33,7 +33,7 @@ namespace UITest.Analyzers.NUnit
 
 		// Keep this list in sync through the rebalance-ui-test-categories skill.
 		private static readonly ImmutableArray<string> CiShardCategoryPrefixes =
-			ImmutableArray.Create("CollectionView", "Shell");
+			ImmutableArray.Create("CollectionView", "Layout", "Shell");
 
 		private static readonly DiagnosticDescriptor MissingCategoryRule = new DiagnosticDescriptor(
 			MissingCategoryDiagnosticId,

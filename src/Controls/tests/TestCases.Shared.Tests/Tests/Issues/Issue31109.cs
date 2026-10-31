@@ -6,7 +6,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-	[Category(UITestCategories.Layout)]
 	public class Issue31109 : _IssuesUITest
 	{
 		public Issue31109(TestDevice device) : base(device)
@@ -16,6 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "FlexLayout items with Dynamic Width are not updating correctly on orientation change or scroll in Android";
 
 		[Test]
+		[ShardedTestCategory(UITestCategories.Layout, shard: 3)]
 		public void DynamicWidthRequestUpdatesFlexLayoutItems()
 		{
 			// Wait for the initial layout to render

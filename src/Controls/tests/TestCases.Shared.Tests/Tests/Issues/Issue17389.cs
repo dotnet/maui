@@ -15,7 +15,7 @@ public class Issue17389 : _IssuesUITest
 	public override string Issue => "InputTransparent should not affect background color on Windows layouts";
 
 	[Test, Order(1)]
-	[Category(UITestCategories.Layout)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 3)]
 	public void ValidateBackgroundColorDoesNotAffectInputTransparent()
 	{
 		App.WaitForElement("ToggleInputTransparentButton");
@@ -48,7 +48,7 @@ public class Issue17389 : _IssuesUITest
 	}
 
 	[Test, Order(2)]
-	[Category(UITestCategories.Layout)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 3)]
 	public void ValidateInputTransparentBackgroundColorToggle()
 	{
 		Exception? exception = null;

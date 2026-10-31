@@ -15,6 +15,61 @@ function Get-Percentile {
 	return [double]$sorted[$index]
 }
 
+function Get-UITestConditionPlatforms {
+	param(
+		[Parameter(Mandatory)][string]$Condition,
+		[bool]$SymbolsModified = $false
+	)
+
+	$platforms = @('ANDROID', 'IOS', 'MACCATALYST', 'WINDOWS')
+	if (-not $SymbolsModified -and $Condition.Trim() -cmatch
+		'^(?:ANDROID|IOS|MACCATALYST|WINDOWS)(?:\s*\|\|\s*(?:ANDROID|IOS|MACCATALYST|WINDOWS))*$') {
+		$enabled = @($Condition -split '\s*\|\|\s*' | ForEach-Object { $_.Trim() })
+		return [pscustomobject]@{
+			TruePlatforms = @($platforms | Where-Object { $enabled -ccontains $_ })
+			FalsePlatforms = @($platforms | Where-Object { $enabled -cnotcontains $_ })
+		}
+	}
+
+	# Unknown conditions may select either branch on every platform.
+	return [pscustomobject]@{
+		TruePlatforms = $platforms
+		FalsePlatforms = $platforms
+	}
+}
+
+function Get-UITestCodeText {
+	param([Parameter(Mandatory)][AllowEmptyString()][string]$Text)
+
+	if (-not ('Maui.UITestCategories.CSharpCodeMasker' -as [type])) {
+		$repoRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..' '..' '..' '..'))
+		$assetsPath = Join-Path $repoRoot 'artifacts/obj/UITest.Analyzers/project.assets.json'
+		if (-not (Test-Path -LiteralPath $assetsPath)) {
+			throw 'Restore src/TestUtils/src/UITest.Analyzers/UITest.Analyzers.csproj before collecting source inventory; its existing Roslyn dependency supplies the C# lexer.'
+		}
+		$assets = Get-Content -LiteralPath $assetsPath -Raw | ConvertFrom-Json
+		$references = foreach ($package in @('Microsoft.CodeAnalysis.Common', 'Microsoft.CodeAnalysis.CSharp')) {
+			$library = @($assets.libraries.PSObject.Properties | Where-Object { $_.Name.StartsWith("$package/") })
+			if ($library.Count -ne 1) { throw "Could not resolve the existing $package dependency from $assetsPath." }
+			$dllName = if ($package.EndsWith('.Common')) { 'Microsoft.CodeAnalysis.dll' } else { "$package.dll" }
+			$relativePath = "lib/netstandard2.0/$dllName"
+			$paths = @($assets.packageFolders.PSObject.Properties.Name | ForEach-Object {
+				Join-Path $_ $library[0].Value.path $relativePath
+			} | Where-Object { Test-Path -LiteralPath $_ })
+			if ($paths.Count -eq 0) { throw "Restored C# lexer assembly '$relativePath' is missing." }
+			$null = [System.Reflection.Assembly]::LoadFrom($paths[0])
+			$paths[0]
+		}
+		Add-Type -Path (Join-Path $PSScriptRoot 'CSharpCodeMasker.cs') -ReferencedAssemblies @(
+			$references
+			[System.Collections.Immutable.ImmutableArray].Assembly.Location
+			[System.Text.RegularExpressions.Regex].Assembly.Location
+			[System.Reflection.Assembly]::Load('netstandard').Location
+		) -ErrorAction Stop
+	}
+	return [Maui.UITestCategories.CSharpCodeMasker]::Mask($Text)
+}
+
 function Get-UITestInventory {
 	param(
 		[Parameter(Mandatory)][string]$TestRoot,
@@ -31,16 +86,27 @@ function Get-UITestInventory {
 	$items = [System.Collections.Generic.List[object]]::new()
 
 	foreach ($file in Get-ChildItem -LiteralPath $TestRoot -Recurse -File -Filter '*.cs' | Sort-Object FullName) {
-		$lines = [System.IO.File]::ReadAllLines($file.FullName)
+		$lines = @((Get-UITestCodeText -Text ([System.IO.File]::ReadAllText($file.FullName))) -split '\r?\n')
 		$namespace = ''
 		$className = ''
 		$classHasUmbrella = $false
 		$disabledStack = [System.Collections.Generic.List[bool]]::new()
+		$platformStack = [System.Collections.Generic.List[object]]::new()
+		$activePlatforms = @('ANDROID', 'IOS', 'MACCATALYST', 'WINDOWS')
+		$symbolsModified = @($lines | Where-Object {
+			$_ -cmatch '^\s*#(?:define|undef)\s+(?:ANDROID|IOS|MACCATALYST|WINDOWS)\b'
+		}).Count -gt 0
 
 		for ($i = 0; $i -lt $lines.Count; $i++) {
 			$directive = $lines[$i].Trim()
 			if ($directive -match '^#if\s+(?<condition>.+)$') {
 				$condition = $Matches['condition']
+				$possible = Get-UITestConditionPlatforms -Condition $condition -SymbolsModified $symbolsModified
+				$platformStack.Add([pscustomobject]@{
+					ParentPlatforms = $activePlatforms
+					RemainingPlatforms = @($activePlatforms | Where-Object { $possible.FalsePlatforms -ccontains $_ })
+				})
+				$activePlatforms = @($activePlatforms | Where-Object { $possible.TruePlatforms -ccontains $_ })
 				$disabledHere = @(
 					'TEST_FAILS_ON_ANDROID',
 					'TEST_FAILS_ON_CATALYST',
@@ -50,11 +116,22 @@ function Get-UITestInventory {
 				$disabledStack.Add(-not ($disabledHere -contains $false))
 				continue
 			}
-			if ($directive -match '^#(?:else|elif)\b' -and $disabledStack.Count -gt 0) {
+			if ($directive -match '^#elif\s+(?<condition>.+)$' -and $disabledStack.Count -gt 0) {
+				$possible = Get-UITestConditionPlatforms -Condition $Matches['condition'] -SymbolsModified $symbolsModified
+				$frame = $platformStack[$platformStack.Count - 1]
+				$activePlatforms = @($frame.RemainingPlatforms | Where-Object { $possible.TruePlatforms -ccontains $_ })
+				$frame.RemainingPlatforms = @($frame.RemainingPlatforms | Where-Object { $possible.FalsePlatforms -ccontains $_ })
+				$disabledStack[$disabledStack.Count - 1] = $false
+				continue
+			}
+			if ($directive -match '^#else\b' -and $disabledStack.Count -gt 0) {
+				$activePlatforms = $platformStack[$platformStack.Count - 1].RemainingPlatforms
 				$disabledStack[$disabledStack.Count - 1] = $false
 				continue
 			}
 			if ($directive -match '^#endif\b' -and $disabledStack.Count -gt 0) {
+				$activePlatforms = $platformStack[$platformStack.Count - 1].ParentPlatforms
+				$platformStack.RemoveAt($platformStack.Count - 1)
 				$disabledStack.RemoveAt($disabledStack.Count - 1)
 				continue
 			}
@@ -119,7 +196,7 @@ function Get-UITestInventory {
 				FullClassName = $fullClassName
 				MethodName = $methodName
 				File = $file.FullName
-				RelativeFile = $null
+				RelativeFile = [System.IO.Path]::GetRelativePath($TestRoot, $file.FullName)
 				MethodLine = $i + 1
 				AttributeStartLine = $attributeStart + 1
 				UmbrellaLine = if ($methodHasUmbrella) {
@@ -138,11 +215,28 @@ function Get-UITestInventory {
 						"Category\s*\(\s*UITestCategories\.$escapedCategory\d+\s*\)").Count +
 					[regex]::Matches($classAttributeText, $shardedPattern).Count)
 				DisabledAllPlatforms = $disabledStack -contains $true
+				Platforms = @($activePlatforms)
 			})
 		}
 	}
 
-	return @($items)
+	$logicalItems = [System.Collections.Generic.List[object]]::new()
+	foreach ($group in $items | Group-Object Id -CaseSensitive) {
+		$seenPlatforms = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::Ordinal)
+		foreach ($declaration in $group.Group) {
+			foreach ($platform in $declaration.Platforms) {
+				if (-not $seenPlatforms.Add($platform)) {
+					throw "Test ID '$($group.Name)' has declarations that may overlap on $platform; platform exclusivity must be proven."
+				}
+			}
+		}
+		$logical = $group.Group[0].PSObject.Copy()
+		$logical.Ordered = $group.Group.Ordered -contains $true
+		$logical.DisabledAllPlatforms = $group.Group.DisabledAllPlatforms -notcontains $false
+		$logical | Add-Member -NotePropertyName Declarations -NotePropertyValue @($group.Group)
+		$logicalItems.Add($logical)
+	}
+	return @($logicalItems)
 }
 
 function Resolve-ResultMethod {
@@ -515,7 +609,8 @@ function New-UITestShardPlan {
 		[int]$MaxShards = 12,
 		[int]$MinimumShards = 1,
 		[ValidateSet('Fail', 'ClassPlatformMax')]
-		[string]$UnmeasuredTestPolicy = 'Fail'
+		[string]$UnmeasuredTestPolicy = 'Fail',
+		[string[]]$CohesiveFixture = @()
 	)
 
 	if ($Evidence.category -ne $Category) {
@@ -573,6 +668,12 @@ function New-UITestShardPlan {
 				$_.PSObject.Properties['Ordered'] -and $_.Ordered
 			}).Count -gt 0
 		} | ForEach-Object Name
+		foreach ($fixture in $CohesiveFixture) {
+			if ($fixture -cnotin @($Inventory.FullClassName)) {
+				throw "Requested cohesive fixture '$fixture' is not in the $Category source inventory."
+			}
+			$fixture
+		}
 	)
 	$planningGroups = @(
 		$Inventory | Group-Object {
@@ -717,6 +818,13 @@ function New-UITestShardPlan {
 			className = $test.FullClassName
 			methodName = $test.MethodName
 			file = $test.RelativeFile
+			declarations = @($test.Declarations | ForEach-Object {
+				[pscustomobject]@{
+					file = $_.RelativeFile
+					methodLine = $_.MethodLine
+					platforms = @($_.Platforms)
+				}
+			})
 			shard = "$Category$([int]$selected.Assignment[$test.Id] + 1)"
 			platformMinutes = $platformWeights
 			disabledAllPlatforms = [bool]$test.DisabledAllPlatforms
@@ -739,7 +847,7 @@ function New-UITestShardPlan {
 	}
 
 	return [pscustomobject]@{
-		schemaVersion = 1
+		schemaVersion = 2
 		category = $Category
 		targetMinutes = $TargetMinutes
 		safetyMarginMinutes = $SafetyMarginMinutes
@@ -762,48 +870,48 @@ function New-UITestShardPlan {
 			$_.DisabledAllPlatforms -and @($Evidence.samples.TestId) -notcontains $_.Id
 		}).Count
 		imputedTestCount = $imputedIds.Count
+		explicitCohesiveFixtures = @($CohesiveFixture | Sort-Object -Unique)
 		limitations = @(
 			'Projections use historical per-test p80 durations and measured job overhead; they are estimates, not guarantees.'
 			"Assignments must project strictly below target minus the $SafetyMarginMinutes minute safety margin."
 			'Dedicated testConfigurationArgs stages are retained as separate evidence and do not reduce ordinary category-matrix projections.'
-			'Methods in fixtures containing NUnit Order attributes are assigned together so ordered setup and state remain available.'
+			'Methods in fixtures containing NUnit Order attributes or explicitly declared state dependencies are assigned together.'
+			'Proven mutually exclusive platform declarations share one method identity and weight; every declaration receives the same shard.'
 			'Tests without samples on a platform contribute zero to that platform because they were not executed there.'
 			'When explicitly enabled, unmeasured active tests use the maximum measured duration from their class/platform (or platform-wide maximum).'
 		)
 	}
 }
 
-function Remove-ShardCategoryFromLine {
+function Remove-UITestCategoryFromLine {
 	param(
 		[Parameter(Mandatory)][AllowEmptyString()][string]$Line,
-		[Parameter(Mandatory)][string]$Category
+		[Parameter(Mandatory)][AllowEmptyString()][string]$CodeLine,
+		[Parameter(Mandatory)][string]$Token
 	)
 
-	$token = "Category\s*\(\s*UITestCategories\.$([regex]::Escape($Category))\d+\s*\)"
-	if ($Line -notmatch $token) { return $Line }
-	if ($Line -match "^\s*\[\s*$token\s*\]\s*$") { return $null }
-
-	$result = $Line
-	$result = [regex]::Replace($result, "$token\s*,\s*", '')
-	$result = [regex]::Replace($result, "\s*,\s*$token", '')
-	$result = [regex]::Replace($result, $token, '')
-	return $result
-}
-
-function Remove-UmbrellaCategoryFromLine {
-	param(
-		[Parameter(Mandatory)][AllowEmptyString()][string]$Line,
-		[Parameter(Mandatory)][string]$Category
-	)
-
-	$token = "(?<!ShardedTest)Category\s*\(\s*UITestCategories\.$([regex]::Escape($Category))\s*\)"
-	if ($Line -notmatch $token) { return $Line }
-	if ($Line -match "^\s*\[\s*$token\s*\]\s*$") { return $null }
-
-	$result = $Line
-	$result = [regex]::Replace($result, "$token\s*,\s*", '')
-	$result = [regex]::Replace($result, "\s*,\s*$token", '')
-	return [regex]::Replace($result, $token, '')
+	$matches = @([regex]::Matches($CodeLine, $Token))
+	if ($matches.Count -eq 0) { return $Line }
+	foreach ($match in $matches | Sort-Object Index -Descending) {
+		$start = $match.Index
+		$end = $match.Index + $match.Length
+		$left = $CodeLine.Substring(0, $start).TrimEnd()
+		$right = $CodeLine.Substring($end).TrimStart()
+		if ($left.EndsWith('[') -and $right.StartsWith(']')) {
+			$start = $left.Length - 1
+			$end = $CodeLine.IndexOf(']', $end) + 1
+		} elseif ($right.StartsWith(',')) {
+			$end = $CodeLine.IndexOf(',', $end) + 1
+		} elseif ($left.EndsWith(',')) {
+			$start = $left.Length - 1
+		} else {
+			throw "Could not safely remove a category from '$Line'."
+		}
+		$Line = $Line.Remove($start, $end - $start)
+		$CodeLine = $CodeLine.Remove($start, $end - $start)
+	}
+	if ([string]::IsNullOrWhiteSpace($Line)) { return $null }
+	return $Line
 }
 
 function Set-UITestShardCategories {
@@ -819,8 +927,11 @@ function Set-UITestShardCategories {
 	$inventory = @(Get-UITestInventory -TestRoot $TestRoot -Category $Category)
 	$files = @(
 		$Assignments.file
+		$Assignments | ForEach-Object {
+			if ($_.PSObject.Properties['declarations']) { $_.declarations.file }
+		}
 		Get-ChildItem -LiteralPath $TestRoot -Recurse -File -Filter '*.cs' | Where-Object {
-			[System.IO.File]::ReadAllText($_.FullName) -match
+			(Get-UITestCodeText -Text ([System.IO.File]::ReadAllText($_.FullName))) -match
 				"(?:Category\s*\(\s*UITestCategories\.$escapedCategory\d+\s*\)|" +
 				"ShardedTestCategory(?:Attribute)?\s*\(\s*UITestCategories\.$escapedCategory)"
 		} | ForEach-Object {
@@ -834,6 +945,7 @@ function Set-UITestShardCategories {
 			$originalBytes[0] -eq 0xEF -and $originalBytes[1] -eq 0xBB -and $originalBytes[2] -eq 0xBF
 		$encoding = [System.Text.UTF8Encoding]::new($hasUtf8Bom)
 		$original = [System.IO.File]::ReadAllText($path)
+		$codeLines = @((Get-UITestCodeText -Text $original) -split '\r?\n')
 		$newLine = if ($original.Contains("`r`n")) { "`r`n" } else { "`n" }
 		$hasFinalNewLine = $original.EndsWith("`n")
 		$lines = [System.Collections.Generic.List[string]]::new()
@@ -842,7 +954,7 @@ function Set-UITestShardCategories {
 			$lines.RemoveAt($lines.Count - 1)
 		}
 
-		$fileInventory = @($inventory | Where-Object { $_.File -eq $path })
+		$fileInventory = @($inventory | ForEach-Object { $_.Declarations } | Where-Object { $_.File -eq $path })
 		foreach ($test in $fileInventory | Sort-Object MethodLine -Descending) {
 			if (-not $assignmentById.ContainsKey($test.Id)) {
 				continue
@@ -854,10 +966,11 @@ function Set-UITestShardCategories {
 			$categoryToken = "(?<!ShardedTest)Category\s*\(\s*UITestCategories\.$escapedCategory\s*\)"
 			$shardedToken = "ShardedTestCategory(?:Attribute)?\s*\(\s*UITestCategories\.$escapedCategory" +
 				"(?:\s*,\s*(?:shard\s*:\s*)?\d+)?\s*\)"
-			if ($lines[$lineIndex] -match $categoryToken) {
-				$lines[$lineIndex] = [regex]::Replace($lines[$lineIndex], $categoryToken, $replacement)
-			} elseif ($lines[$lineIndex] -match $shardedToken) {
-				$lines[$lineIndex] = [regex]::Replace($lines[$lineIndex], $shardedToken, $replacement)
+			$matches = @([regex]::Matches($codeLines[$lineIndex], "(?:$categoryToken|$shardedToken)"))
+			if ($matches.Count -gt 0) {
+				foreach ($match in $matches | Sort-Object Index -Descending) {
+					$lines[$lineIndex] = $lines[$lineIndex].Remove($match.Index, $match.Length).Insert($match.Index, $replacement)
+				}
 			} else {
 				$methodIndex = [int]$test.MethodLine - 1
 				$indent = [regex]::Match($lines[$methodIndex], '^\s*').Value
@@ -866,11 +979,10 @@ function Set-UITestShardCategories {
 		}
 
 		$cleanedLines = [System.Collections.Generic.List[string]]::new()
-		foreach ($line in $lines) {
-			$cleaned = Remove-ShardCategoryFromLine -Line $line -Category $Category
-			if ($null -ne $cleaned) {
-				$cleaned = Remove-UmbrellaCategoryFromLine -Line $cleaned -Category $Category
-			}
+		$codeLines = @((Get-UITestCodeText -Text ($lines -join $newLine)) -split '\r?\n')
+		for ($i = 0; $i -lt $lines.Count; $i++) {
+			$token = "(?<!ShardedTest)Category\s*\(\s*UITestCategories\.$escapedCategory(?:\d+)?\s*\)"
+			$cleaned = Remove-UITestCategoryFromLine -Line $lines[$i] -CodeLine $codeLines[$i] -Token $token
 			if ($null -ne $cleaned) { $cleanedLines.Add($cleaned) }
 		}
 		[System.IO.File]::WriteAllText(
@@ -1023,6 +1135,26 @@ function Set-ShardInfrastructure {
 	[System.IO.File]::WriteAllText($AnalyzerPath, $analyzer, $analyzerEncoding)
 }
 
+function Get-UITestPlanRelativePath {
+	param(
+		[Parameter(Mandatory)]$Declaration,
+		[Parameter(Mandatory)][string]$TestId
+	)
+
+	if (-not $Declaration.PSObject.Properties['file'] -or
+		[string]::IsNullOrWhiteSpace([string]$Declaration.file)) {
+		throw "Plan assignment '$TestId' does not contain a file path."
+	}
+	$path = ([string]$Declaration.file).Replace('\', '/')
+	if ([System.IO.Path]::IsPathRooted([string]$Declaration.file) -or
+		$path -match '^[A-Za-z]:/' -or $path.StartsWith('/') -or
+		$path -match '(^|/)\.\.(/|$)') {
+		throw "Plan assignment '$TestId' contains invalid relative file path '$($Declaration.file)'."
+	}
+	if ($path.StartsWith('./')) { $path = $path.Substring(2) }
+	return $path
+}
+
 function Test-UITestShardPlan {
 	param(
 		[Parameter(Mandatory)][string]$TestRoot,
@@ -1054,6 +1186,7 @@ function Test-UITestShardPlan {
 	$plannedIds = [System.Collections.Generic.HashSet[string]]::new(
 		[System.StringComparer]::Ordinal)
 	$assignmentPaths = @{}
+	$assignmentDeclarations = @{}
 	foreach ($assignment in @($Plan.assignments)) {
 		if (-not $assignment.PSObject.Properties['testId'] -or
 			[string]::IsNullOrWhiteSpace([string]$assignment.testId)) {
@@ -1074,32 +1207,45 @@ function Test-UITestShardPlan {
 			throw "Plan assignment '$testId' uses invalid shard '$shard'; expected ${Category}1 through $Category$shardCount."
 		}
 
-		if (-not $assignment.PSObject.Properties['file'] -or
-			[string]::IsNullOrWhiteSpace([string]$assignment.file)) {
-			throw "Plan assignment '$testId' does not contain a file path."
+		$assignmentPaths[$testId] = Get-UITestPlanRelativePath -Declaration $assignment -TestId $testId
+		if ($assignment.PSObject.Properties['declarations']) {
+			$locations = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::Ordinal)
+			foreach ($declaration in @($assignment.declarations)) {
+				$path = Get-UITestPlanRelativePath -Declaration $declaration -TestId $testId
+				if (-not $declaration.PSObject.Properties['platforms']) {
+					throw "Plan declaration '$testId' does not contain platform coverage."
+				}
+				$platforms = @($declaration.platforms)
+				foreach ($platform in $platforms) {
+					if ($platform -cnotin @('ANDROID', 'IOS', 'MACCATALYST', 'WINDOWS')) {
+						throw "Plan declaration '$testId' contains unknown platform '$platform'."
+					}
+				}
+				$key = "$path|$(($platforms | Sort-Object) -join ',')"
+				if (-not $locations.Add($key)) {
+					throw "Plan assignment '$testId' contains duplicate declaration '$key'."
+				}
+			}
+			$assignmentDeclarations[$testId] = $locations
 		}
-		$assignmentPath = ([string]$assignment.file).Replace('\', '/')
-		if ([System.IO.Path]::IsPathRooted([string]$assignment.file) -or
-			$assignmentPath -match '^[A-Za-z]:/' -or
-			$assignmentPath.StartsWith('/') -or
-			$assignmentPath -match '(^|/)\.\.(/|$)') {
-			throw "Plan assignment '$testId' contains invalid relative file path '$($assignment.file)'."
-		}
-		if ($assignmentPath.StartsWith('./')) {
-			$assignmentPath = $assignmentPath.Substring(2)
-		}
-		$assignmentPaths[$testId] = $assignmentPath
 	}
 
 	$inventoryIds = [System.Collections.Generic.HashSet[string]]::new(
 		[System.StringComparer]::Ordinal)
 	$inventoryPaths = @{}
+	$inventoryDeclarations = @{}
 	foreach ($test in @(Get-UITestInventory -TestRoot $TestRoot -Category $Category)) {
 		if (-not $inventoryIds.Add([string]$test.Id)) {
 			throw "Pre-apply inventory contains duplicate test ID '$($test.Id)'."
 		}
 		$inventoryPaths[[string]$test.Id] =
 			([System.IO.Path]::GetRelativePath($TestRoot, $test.File)).Replace('\', '/')
+		$locations = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::Ordinal)
+		foreach ($declaration in $test.Declarations) {
+			$path = $declaration.RelativeFile.Replace('\', '/')
+			$null = $locations.Add("$path|$(($declaration.Platforms | Sort-Object) -join ',')")
+		}
+		$inventoryDeclarations[[string]$test.Id] = $locations
 	}
 
 	$missing = @($inventoryIds | Where-Object { -not $plannedIds.Contains($_) } | Sort-Object)
@@ -1123,6 +1269,13 @@ function Test-UITestShardPlan {
 			[System.StringComparison]::Ordinal)) {
 			throw "Plan assignment '$testId' references '$($assignmentPaths[$testId])' but the pre-apply inventory is in '$($inventoryPaths[$testId])'."
 		}
+		if ($assignmentDeclarations.ContainsKey($testId)) {
+			if (-not $inventoryDeclarations[$testId].SetEquals($assignmentDeclarations[$testId])) {
+				throw "Plan declaration locations and platform coverage for '$testId' do not exactly match the source inventory."
+			}
+		} elseif ($inventoryDeclarations[$testId].Count -gt 1) {
+			throw "Plan assignment '$testId' must record every mutually exclusive platform declaration."
+		}
 	}
 }
 
@@ -1141,7 +1294,7 @@ function Test-UITestShardApplication {
 	}
 
 	$validShards = @(1..([int]$Plan.shardCount) | ForEach-Object { "$Category$_" })
-	foreach ($test in $inventory | Where-Object { -not $_.DisabledAllPlatforms }) {
+	foreach ($test in $inventory | ForEach-Object { $_.Declarations }) {
 		if ($test.ShardCount -ne 1 -or $test.Shard -ne $planned[$test.Id]) {
 			throw "Active test '$($test.Id)' must have exactly its planned method-level shard '$($planned[$test.Id])'."
 		}
@@ -1151,7 +1304,7 @@ function Test-UITestShardApplication {
 	}
 
 	foreach ($file in Get-ChildItem -LiteralPath $TestRoot -Recurse -File -Filter '*.cs') {
-		$text = [System.IO.File]::ReadAllText($file.FullName)
+		$text = Get-UITestCodeText -Text ([System.IO.File]::ReadAllText($file.FullName))
 		foreach ($match in [regex]::Matches(
 			$text,
 			"Category\s*\(\s*UITestCategories\.(?<shard>$([regex]::Escape($Category))\d+)\s*\)")) {

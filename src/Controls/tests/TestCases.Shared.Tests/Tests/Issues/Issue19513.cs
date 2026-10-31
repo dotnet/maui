@@ -12,7 +12,7 @@ public class Issue19513 : _IssuesUITest
 
 	public override string Issue => "HorizontalStackLayout Crashes Debugger on Negative Spacing";
 	[Test]
-	[Category(UITestCategories.Layout)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 3)]
 	public void NegativeSpacingCrashes()
 	{
 		App.WaitForElement("Image1");

@@ -16,7 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "[Android] infinite layout loop";
 
 		[Test]
-		[Category(UITestCategories.Layout)]
+		[ShardedTestCategory(UITestCategories.Layout, shard: 1)]
 		public void NonAppCompatBasicSwitchTest()
 		{
 			App.WaitForElement(success);

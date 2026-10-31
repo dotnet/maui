@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{ }
 
 		[Test]
-		[Category(UITestCategories.Layout)]
+		[ShardedTestCategory(UITestCategories.Layout, shard: 3)]
 		public void LabelDisplayWithoutCroppingInsideVerticalLayout()
 		{
 			App.WaitForElement("Label");

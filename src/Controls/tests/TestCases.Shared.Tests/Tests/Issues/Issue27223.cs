@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
         public override string Issue => "SizeChanged event fires when size hasn't changed";
 
         [Test]
-        [Category(UITestCategories.Layout)]
+        [ShardedTestCategory(UITestCategories.Layout, shard: 2)]
         public void SizeChangedOnlyFiresWhenSizeChanges()
         {
             App.WaitForElement("Label");

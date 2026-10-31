@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Grid.IsEnabled property is not working";
 
 		[Test]
-		[Category(UITestCategories.Layout)]
+		[ShardedTestCategory(UITestCategories.Layout, shard: 3)]
 		public void GridIsEnabled()
 		{
 			App.WaitForElement("entry");

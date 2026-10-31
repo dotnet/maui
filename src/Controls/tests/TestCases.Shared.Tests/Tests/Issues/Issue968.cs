@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Description("Verify the layout lays out on rotations")]
-		[Category(UITestCategories.Layout)]
+		[ShardedTestCategory(UITestCategories.Layout, shard: 3)]
 		[FailsOnMacWhenRunningOnXamarinUITest("SetOrientationPortrait method not implemented")]
 		[FailsOnWindowsWhenRunningOnXamarinUITest("SetOrientationPortrait method not implemented")]
 		public void Issue968TestsRotationRelayoutIssue()

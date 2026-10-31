@@ -20,6 +20,7 @@ param(
 	[int]$MinimumShards = 1,
 	[ValidateSet('Fail', 'ClassPlatformMax')]
 	[string]$UnmeasuredTestPolicy = 'Fail',
+	[string[]]$CohesiveFixture = @(),
 	[switch]$Apply,
 	[string]$RepositoryRoot
 )
@@ -75,7 +76,8 @@ if ($Mode -in @('Plan', 'All')) {
 	}
 	$plan = New-UITestShardPlan -Category $Category -Inventory $inventory -Evidence $evidence `
 		-TargetMinutes $TargetMinutes -SafetyMarginMinutes $SafetyMarginMinutes `
-		-MaxShards $MaxShards -MinimumShards $MinimumShards -UnmeasuredTestPolicy $UnmeasuredTestPolicy
+		-MaxShards $MaxShards -MinimumShards $MinimumShards -UnmeasuredTestPolicy $UnmeasuredTestPolicy `
+		-CohesiveFixture $CohesiveFixture
 	Write-JsonFile -Value $plan -Path $OutputPath
 	Write-Host "Planned $(@($plan.assignments).Count) tests across $($plan.shardCount) shards; worst projection $($plan.maxProjectedMinutes)m -> $OutputPath"
 }

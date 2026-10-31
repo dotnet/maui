@@ -3,8 +3,8 @@ name: rebalance-ui-test-categories
 description: Rebalances a UI-test umbrella category into additive method-level CI shards using historical Azure DevOps test durations.
 metadata:
   author: dotnet-maui
-  version: "1.0"
-compatibility: Requires PowerShell 7 and Azure CLI with the azure-devops extension.
+  version: "1.1"
+compatibility: Requires PowerShell 7, the restored UITest.Analyzers Roslyn dependency, and Azure CLI with the azure-devops extension.
 ---
 
 # Rebalance UI Test Categories
@@ -16,6 +16,10 @@ matrix legs and each leg must fit a target duration.
 
 - Historical Azure test results are required. Never substitute source test
   counts for timing evidence.
+- Inventory, category edits, and mandatory validation use the existing analyzer
+  dependency's Roslyn lexer to ignore comments and literals consistently. The
+  lexical view preserves character offsets and line breaks and visits every
+  preprocessor branch; edits leave comment and literal contents unchanged.
 - Use one method-level
   `[ShardedTestCategory(UITestCategories.Category, shard: N)]` attribute. It
   exposes both the umbrella and exactly one numbered shard category to NUnit.
@@ -32,9 +36,23 @@ matrix legs and each leg must fit a target duration.
 - Applying a category maintains the analyzer's reusable shard-prefix set,
   preserving previously registered umbrellas, and performs mandatory
   plan-to-source validation after editing.
+- Platform-alternative declarations share one logical method ID and historical
+  weight only when their possible platform sets are disjoint. The inventory
+  proves simple `ANDROID`, `IOS`, `MACCATALYST`, and `WINDOWS` disjunctions,
+  including nested `#if`/`#elif`/`#else` branches. Other conditions are treated
+  conservatively as potentially active on every platform; overlapping or
+  unproven duplicate declarations fail.
+- Schema 2 plans record every declaration's relative file, source line, and
+  possible platforms. All declarations receive the logical method's shard and
+  are validated against the source; none are removed or counted twice for
+  timing. Schema 1 plans remain applicable only to methods without alternatives.
 - Before splitting methods from one fixture across shards, ensure fixture setup
   independently reaches the state required by every selected method. Never rely
   on an `Order(1)` test to initialize the remaining shard.
+- For a fixture with implicit state dependencies but no `Order` attributes, pass
+  its fully qualified class name through `-CohesiveFixture`. Unknown names fail.
+  This uses the existing ordered-fixture grouping and scheduling mechanism,
+  preserving test bodies and ordering without introducing setup or test changes.
 - Dedicated configuration stages that use `testConfigurationArgs`, such as
   `ios_ui_tests_mono_cv1`, reuse the numbered shard filters but remain outside
   ordinary category-matrix projection data. Their samples and overhead are
@@ -42,6 +60,12 @@ matrix legs and each leg must fit a target duration.
   artificially cheaper.
 
 ## Commands
+
+Restore the existing C# lexer dependency before gathering or applying:
+
+```bash
+dotnet restore src/TestUtils/src/UITest.Analyzers/UITest.Analyzers.csproj
+```
 
 Gather, plan, report, and apply in one operation:
 

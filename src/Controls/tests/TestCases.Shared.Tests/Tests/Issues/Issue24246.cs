@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "SafeArea arrange insets are currently insetting based on an incorrect Bounds";
 
 		[Test]
-		[Category(UITestCategories.Layout)]
+		[ShardedTestCategory(UITestCategories.Layout, shard: 1)]
 		public void SafeAreaInsetsCorrectlyForMeasureAndArrangePass()
 		{
 			App.WaitForElement("entry");

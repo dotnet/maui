@@ -4,7 +4,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
 
-[Category(UITestCategories.Layout)]
 public class BindableLayoutFeatureTests : _GalleryUITest
 {
 	public const string BindableLayoutFeatureMatrix = "BindableLayout Feature Matrix";
@@ -16,6 +15,7 @@ public class BindableLayoutFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(1)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 3)]
 	public void VerifyBindableLayoutWithItemsSourceNone()
 	{
 		App.WaitForElement("StackLayoutWithBindableLayout");
@@ -30,6 +30,7 @@ public class BindableLayoutFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(2)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 3)]
 	public void VerifyBindableLayoutWithItemsSourceObservableCollection()
 	{
 		App.WaitForElement("Options");
@@ -43,6 +44,7 @@ public class BindableLayoutFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(3)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 3)]
 	public void VerifyBindableLayoutWithItemsSourceEmptyCollection()
 	{
 		App.WaitForElement("Options");
@@ -58,6 +60,7 @@ public class BindableLayoutFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(4)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 3)]
 	public void VerifyBindableLayoutWithEmptyViewString()
 	{
 		App.WaitForElement("Options");
@@ -73,6 +76,7 @@ public class BindableLayoutFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(5)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 3)]
 	public void VerifyBindableLayoutWithEmptyViewView()
 	{
 		App.WaitForElement("Options");
@@ -88,6 +92,7 @@ public class BindableLayoutFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(6)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 3)]
 	public void VerifyBindableLayoutWithEmptyViewTemplate()
 	{
 		App.WaitForElement("Options");
@@ -103,6 +108,7 @@ public class BindableLayoutFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(7)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 3)]
 	public void VerifyBindableLayoutWithBasicItemTemplate()
 	{
 		App.WaitForElement("Options");
@@ -118,6 +124,7 @@ public class BindableLayoutFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(8)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 3)]
 	public void VerifyBindableLayoutWithGridItemTemplate()
 	{
 		App.WaitForElement("Options");
@@ -133,6 +140,7 @@ public class BindableLayoutFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(9)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 3)]
 	public void VerifyBindableLayoutWithItemTemplateSelector()
 	{
 		App.WaitForElement("Options");
@@ -148,6 +156,7 @@ public class BindableLayoutFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(10)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 3)]
 	public void VerifyBindableLayoutWithEmptyViewStringAndEmptyViewTemplate()
 	{
 		App.WaitForElement("Options");
@@ -165,6 +174,7 @@ public class BindableLayoutFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(11)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 3)]
 	public void VerifyBindableLayoutWithEmptyViewViewAndEmptyViewTemplate()
 	{
 		App.WaitForElement("Options");
@@ -182,6 +192,7 @@ public class BindableLayoutFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(12)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 3)]
 	public void VerifyBindableLayoutWithAddItems()
 	{
 		App.WaitForElement("Options");
@@ -197,6 +208,7 @@ public class BindableLayoutFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(13)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 3)]
 	public void VerifyBindableLayoutWithAddItemsAtIndex()
 	{
 		App.WaitForElement("Options");
@@ -215,6 +227,7 @@ public class BindableLayoutFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(14)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 3)]
 	public void VerifyBindableLayoutWithRemoveItems()
 	{
 		App.WaitForElement("Options");
@@ -230,6 +243,7 @@ public class BindableLayoutFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(15)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 3)]
 	public void VerifyBindableLayoutWithRemoveItemsAtIndex()
 	{
 		App.WaitForElement("Options");
@@ -248,6 +262,7 @@ public class BindableLayoutFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(16)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 3)]
 	public void VerifyBindableLayoutWithReplaceItems()
 	{
 		App.WaitForElement("Options");
@@ -269,6 +284,7 @@ public class BindableLayoutFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(17)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 3)]
 	public void VerifyBindableLayoutWithReplaceItemsAtIndex()
 	{
 		App.WaitForElement("Options");
@@ -289,6 +305,7 @@ public class BindableLayoutFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(18)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 3)]
 	public void VerifyBindableLayoutWithGetAndSetEmptyView()
     {
 		App.WaitForElement("Options");
@@ -307,6 +324,7 @@ public class BindableLayoutFeatureTests : _GalleryUITest
     }
 
 	[Test, Order(19)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 3)]
 	public void VerifyBindableLayoutWithGetAndSetEmptyViewTemplate()
     {
 		App.WaitForElement("Options");
@@ -325,6 +343,7 @@ public class BindableLayoutFeatureTests : _GalleryUITest
     }
 
 	[Test, Order(20)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 3)]
 	public void VerifyBindableLayoutWithGetAndSetItemSource()
 	{
 		App.WaitForElement("Options");
@@ -343,6 +362,7 @@ public class BindableLayoutFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(21)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 3)]
 	public void VerifyBindableLayoutWithGetAndSetItemTemplate()
 	{
 		App.WaitForElement("Options");
@@ -361,6 +381,7 @@ public class BindableLayoutFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(22)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 3)]
 	public void VerifyBindableLayoutWithGetAndSetItemTemplateSelector()
 	{
 		App.WaitForElement("Options");

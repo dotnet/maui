@@ -35,7 +35,10 @@ parameters:
     - 'Editor,Effects,Essentials,FlyoutPage,Focus,Fonts,Frame,Gestures,GraphicsView'
     - 'Image,ImageButton,IndicatorView,InputTransparent,IsEnabled,IsVisible'
     - 'Label'
-    - 'Layout'
+    # Layout remains the umbrella category for local runs. CI uses the explicit Layout1-3 shard categories below.
+    - 'Layout1'
+    - 'Layout2'
+    - 'Layout3'
     - 'Lifecycle,ManualReview,Maps'
     - 'Navigation'
     - 'Page,Performance,Picker,ProgressBar'

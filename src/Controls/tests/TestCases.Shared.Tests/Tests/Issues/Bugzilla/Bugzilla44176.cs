@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "InputTransparent fails if BackgroundColor not explicitly set on Android";
 
 		[Test]
-		[Category(UITestCategories.Layout)]
+		[ShardedTestCategory(UITestCategories.Layout, shard: 3)]
 		[FailsOnAllPlatformsWhenRunningOnXamarinUITest]
 		public void Bugzilla44176Test()
 		{

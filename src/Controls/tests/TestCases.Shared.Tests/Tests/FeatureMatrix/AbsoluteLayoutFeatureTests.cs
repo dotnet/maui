@@ -30,7 +30,7 @@ public class AbsoluteLayoutFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(1)]
-	[Category(UITestCategories.Layout)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 2)]
 	public void VerifyAbsoluteLayout_LayoutBounds()
 	{
 		App.WaitForElement(Options);
@@ -55,7 +55,7 @@ public class AbsoluteLayoutFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.Layout)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 2)]
 	public void VerifyAbsoluteLayout_WidthAndHeight()
 	{
 		App.WaitForElement(Options);
@@ -74,7 +74,7 @@ public class AbsoluteLayoutFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.Layout)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 2)]
 	public void VerifyAbsoluteLayout_XProportional()
 	{
 		App.WaitForElement(Options);
@@ -96,7 +96,7 @@ public class AbsoluteLayoutFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.Layout)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 2)]
 	public void VerifyAbsoluteLayout_YProportional()
 	{
 		App.WaitForElement(Options);
@@ -118,7 +118,7 @@ public class AbsoluteLayoutFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.Layout)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 2)]
 	public void VerifyAbsoluteLayout_XProportionalAndYProportional()
 	{
 		App.WaitForElement(Options);
@@ -145,7 +145,7 @@ public class AbsoluteLayoutFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.Layout)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 2)]
 	public void VerifyAbsoluteLayout_PositionProportional()
 	{
 		App.WaitForElement(Options);
@@ -170,7 +170,7 @@ public class AbsoluteLayoutFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.Layout)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 2)]
 	public void VerifyAbsoluteLayout_WidthProportional()
 	{
 		App.WaitForElement(Options);
@@ -189,7 +189,7 @@ public class AbsoluteLayoutFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.Layout)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 2)]
 	public void VerifyAbsoluteLayout_HeightProportional()
 	{
 		App.WaitForElement(Options);
@@ -208,7 +208,7 @@ public class AbsoluteLayoutFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.Layout)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 2)]
 	public void VerifyAbsoluteLayout_WidthProportionalAndHeightProportional()
 	{
 		App.WaitForElement(Options);
@@ -229,7 +229,7 @@ public class AbsoluteLayoutFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.Layout)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 2)]
 	public void VerifyAbsoluteLayout_SizeProportional()
 	{
 		App.WaitForElement(Options);
@@ -248,7 +248,7 @@ public class AbsoluteLayoutFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.Layout)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 2)]
 	public void VerifyAbsoluteLayout_SizeProportionalWithMaximumValue()
 	{
 		App.WaitForElement(Options);
@@ -267,7 +267,7 @@ public class AbsoluteLayoutFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.Layout)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 2)]
 	public void VerifyAbsoluteLayout_AllProportional()
 	{
 		App.WaitForElement(Options);
@@ -292,7 +292,7 @@ public class AbsoluteLayoutFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.Layout)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 2)]
 	public void VerifyAbsoluteLayout_SizeProportionalAndPositionProportional()
 	{
 		App.WaitForElement(Options);
@@ -319,7 +319,7 @@ public class AbsoluteLayoutFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.Layout)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 2)]
 	public void VerifyAbsoluteLayout_FlowDirection()
 	{
 		App.WaitForElement(Options);
@@ -338,7 +338,7 @@ public class AbsoluteLayoutFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.Layout)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 2)]
 	public void VerifyAbsoluteLayout_Visibility()
 	{
 		App.WaitForElement(Options);
@@ -352,7 +352,7 @@ public class AbsoluteLayoutFeatureTests : _GalleryUITest
 
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // Issue Link: https://github.com/dotnet/maui/issues/31496
 	[Test]
-	[Category(UITestCategories.Layout)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 2)]
 	public void VerifyAbsoluteLayout_BackgroundColor()
 	{
 		App.WaitForElement(Options);
@@ -365,7 +365,7 @@ public class AbsoluteLayoutFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.Layout)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 2)]
 	public void VerifyAbsoluteLayout_Reset_LayoutBounds()
 	{
 		App.WaitForElement(Options);

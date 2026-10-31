@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Z order drawing of children views are different on Android, iOS, Win";
 
 		[Test]
-		[Category(UITestCategories.Layout)]
+		[ShardedTestCategory(UITestCategories.Layout, shard: 2)]
 		public void Issue34007TestFirstElementHasLowestZOrder()
 		{
 			var buttonLocations = App.WaitForElement("Button0");

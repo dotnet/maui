@@ -4,7 +4,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
 
-[Category(UITestCategories.Layout)]
 public class StackLayoutFeatureTests : _GalleryUITest
 {
 	public const string StackLayoutFeatureMatrix = "StackLayout Feature Matrix";
@@ -16,6 +15,7 @@ public class StackLayoutFeatureTests : _GalleryUITest
 	}
 
 	[Test]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 3)]
 	public void HorizontalStackLayout_IsVisible()
 	{
 		App.WaitForElement("Options");
@@ -31,6 +31,7 @@ public class StackLayoutFeatureTests : _GalleryUITest
 	}
 
 	[Test]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 3)]
 	public void VerticalStackLayout_IsVisible()
 	{
 		App.WaitForElement("Options");
@@ -49,6 +50,7 @@ public class StackLayoutFeatureTests : _GalleryUITest
 	}
 
 	[Test]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 2)]
 	public void HorizontalStackLayout_RTLFlowDirection()
 	{
 		App.WaitForElement("Options");
@@ -64,6 +66,7 @@ public class StackLayoutFeatureTests : _GalleryUITest
 	}
 
 	[Test]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 1)]
 	public void VerticalStackLayout_RTLFlowDirection()
 	{
 		App.WaitForElement("Options");
@@ -82,6 +85,7 @@ public class StackLayoutFeatureTests : _GalleryUITest
 	}
 
 	[Test]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 1)]
 	public void VerticalStackLayout_Spacing_With_RTL()
 	{
 		App.WaitForElement("Options");
@@ -104,6 +108,7 @@ public class StackLayoutFeatureTests : _GalleryUITest
 	}
 
 	[Test]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 3)]
 	public void HorizontalStackLayout_Spacing_With_RTL()
 	{
 		App.WaitForElement("Options");
@@ -123,6 +128,7 @@ public class StackLayoutFeatureTests : _GalleryUITest
 	}
 
 	[Test]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 3)]
 	public void HorizontalStackLayout_Spacing_With_Height()
 	{
 		App.WaitForElement("Options");
@@ -143,6 +149,7 @@ public class StackLayoutFeatureTests : _GalleryUITest
 	}
 
 	[Test]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 1)]
 	public void HorizontalStackLayout_Spacing_With_Width()
 	{
 		App.WaitForElement("Options");
@@ -163,6 +170,7 @@ public class StackLayoutFeatureTests : _GalleryUITest
 	}
 
 	[Test]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 2)]
 	public void HorizontalStackLayout_RTLFlowDirection_With_Height()
 	{
 		App.WaitForElement("Options");
@@ -182,6 +190,7 @@ public class StackLayoutFeatureTests : _GalleryUITest
 	}
 
 	[Test]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 3)]
 	public void HorizontalStackLayout_RTLFlowDirection_With_Width()
 	{
 		App.WaitForElement("Options");
@@ -201,6 +210,7 @@ public class StackLayoutFeatureTests : _GalleryUITest
 	}
 
 	[Test]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 1)]
 	public void VerticalStackLayout_Spacing_With_Width()
 	{
 		App.WaitForElement("Options");
@@ -224,6 +234,7 @@ public class StackLayoutFeatureTests : _GalleryUITest
 	}
 
 	[Test]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 3)]
 	public void VerticalStackLayout_Spacing_With_Height()
 	{
 		App.WaitForElement("Options");
@@ -247,6 +258,7 @@ public class StackLayoutFeatureTests : _GalleryUITest
 	}
 
 	[Test]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 2)]
 	public void VerticalStackLayout_RTLFlowDirection_With_Width()
 	{
 		App.WaitForElement("Options");
@@ -269,6 +281,7 @@ public class StackLayoutFeatureTests : _GalleryUITest
 	}
 
 	[Test]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 3)]
 	public void VerticalStackLayout_RTLFlowDirection_With_Height()
 	{
 		App.WaitForElement("Options");
@@ -291,6 +304,7 @@ public class StackLayoutFeatureTests : _GalleryUITest
 	}
 
 	[Test]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 3)]
 	public void VerticalStackLayout_RTLFlowDirection_With_HeightAndWidth()
 	{
 		App.WaitForElement("Options");
@@ -317,6 +331,7 @@ public class StackLayoutFeatureTests : _GalleryUITest
 	}
 
 	[Test]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 2)]
 	public void HorizontalStackLayout_RTLFlowDirection_With_HeightAndWidth()
 	{
 		App.WaitForElement("Options");
@@ -340,6 +355,7 @@ public class StackLayoutFeatureTests : _GalleryUITest
 	}
 
 	[Test]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 1)]
 	public void VerticalStackLayout_Spacing_With_HeightAndWidth()
 	{
 		App.WaitForElement("Options");
@@ -367,6 +383,7 @@ public class StackLayoutFeatureTests : _GalleryUITest
 	}
 
 	[Test]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 2)]
 	public void HorizontalStackLayout_Spacing_With_HeightAndWidth()
 	{
 		App.WaitForElement("Options");
@@ -392,6 +409,7 @@ public class StackLayoutFeatureTests : _GalleryUITest
 
 #if ANDROID || IOS
 	[Test]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 1)]
 	public void HorizontalStackLayout_Spacing_WithLandscape()
 	{
 		App.WaitForElement("Options");
@@ -414,6 +432,7 @@ public class StackLayoutFeatureTests : _GalleryUITest
 	}
 
 	[Test]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 1)]
 	public void VerticalStackLayout_Spacing_WithLandscape()
 	{
 		App.WaitForElement("Options");

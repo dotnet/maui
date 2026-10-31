@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "FlexLayout alignment issue when Wrap is set to Reverse and AlignContent is set to SpaceAround, SpaceBetween or SpaceEvenly";
 
 		[Test, Order(1)]
-		[Category(UITestCategories.Layout)]
+		[ShardedTestCategory(UITestCategories.Layout, shard: 3)]
 		public void FlexLayoutReverseWithSpaceAround()
 		{
 			App.WaitForElement("SpaceAroundButton");
@@ -22,7 +22,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		[Test, Order(2)]
-		[Category(UITestCategories.Layout)]
+		[ShardedTestCategory(UITestCategories.Layout, shard: 3)]
 		public void FlexLayoutReverseWithSpaceBetween()
 		{
 			App.WaitForElement("SpaceBetweenButton");
@@ -31,7 +31,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		[Test, Order(3)]
-		[Category(UITestCategories.Layout)]
+		[ShardedTestCategory(UITestCategories.Layout, shard: 3)]
 		public void FlexLayoutReverseWithSpaceEvenly()
 		{
 			App.WaitForElement("SpaceEvenlyButton");

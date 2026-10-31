@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "[iOS] Top Padding not working on iOS when it is set alone";
 
 		[Test]
-		[Category(UITestCategories.Layout)]
+		[ShardedTestCategory(UITestCategories.Layout, shard: 1)]
 		public void PaddingEqualToSafeAreaWorks()
 		{
 			var somePadding = App.WaitForElement("Hello").GetRect();

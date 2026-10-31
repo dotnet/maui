@@ -11,7 +11,7 @@ public class Issue34464 : _IssuesUITest
 	public override string Issue => "FlexLayout with BindableLayout and Label text display";
 
 	[Test]
-	[Category(UITestCategories.Layout)]
+	[ShardedTestCategory(UITestCategories.Layout, shard: 3)]
 	public void FlexLayoutWithBindableLayoutDisplaysLabels()
 	{
 		App.WaitForElement("HeaderLabel");

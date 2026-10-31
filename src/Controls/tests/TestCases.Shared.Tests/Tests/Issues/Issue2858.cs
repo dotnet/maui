@@ -17,7 +17,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Transparency Cascading";
 
 		[Test]
-		[Category(UITestCategories.Layout)]
+		[ShardedTestCategory(UITestCategories.Layout, shard: 3)]
 		[FailsOnAllPlatformsWhenRunningOnXamarinUITest]
 		public void CascadeInputTransparentGrids()
 		{

@@ -13,7 +13,7 @@ public class Issue14364 : _IssuesUITest
     public override string Issue => "Control size properties are not available during Loaded event";
 
     [Test]
-    [Category(UITestCategories.Layout)]
+    [ShardedTestCategory(UITestCategories.Layout, shard: 3)]
     public void SizePropertiesAvailableDuringLoadedEvent()
     {
         var label = App.WaitForElement("labelSize");

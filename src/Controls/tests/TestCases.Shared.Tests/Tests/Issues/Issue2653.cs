@@ -17,7 +17,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "[UWP] Grid insert z-order on UWP broken in Forms 3";
 
 		[Test]
-		[Category(UITestCategories.Layout)]
+		[ShardedTestCategory(UITestCategories.Layout, shard: 2)]
 		[FailsOnAllPlatformsWhenRunningOnXamarinUITest]
 		public void ZIndexWhenInsertingChildren()
 		{
