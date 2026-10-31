@@ -152,15 +152,15 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 			}
 
-			void ResetMeasuredItemWidth(DependencyObject sender, DependencyProperty property)
-			{
-				_measuredItemWidth = 0;
-			}
-
 			if (args.Phase == 0)
 				args.RegisterUpdateCallback(1, OnContainerContentChanging);
 			else
 				FindItemsWrapGrid();
+		}
+
+		void ResetMeasuredItemWidth(DependencyObject sender, DependencyProperty property)
+		{
+			_measuredItemWidth = 0;
 		}
 
 		void UpdateItemSize()
@@ -171,46 +171,46 @@ namespace Microsoft.Maui.Controls.Platform
 			_updatingItemSize = true;
 			try
 			{
-			// Avoid the ItemWrapGrid grow beyond what this grid view is configured to
-			_wrapGrid.MaximumRowsOrColumns = Span;
+				// Avoid the ItemWrapGrid grow beyond what this grid view is configured to
+				_wrapGrid.MaximumRowsOrColumns = Span;
 
-			if (_orientation == Orientation.Horizontal)
-			{
-				_wrapGrid.ItemHeight = Math.Floor(_wrapGrid.ActualHeight / Span);
-				if (ItemSizingStrategy == ItemSizingStrategy.MeasureAllItems)
+				if (_orientation == Orientation.Horizontal)
 				{
-					// WinUI's automatic width uses only the first cell.
-					var width = _measuredItemWidth;
-					var constraint = new global::Windows.Foundation.Size(double.PositiveInfinity, _wrapGrid.ItemHeight);
-					for (var i = 0; i < _wrapGrid.Children.Count; i++)
+					_wrapGrid.ItemHeight = Math.Floor(_wrapGrid.ActualHeight / Span);
+					if (ItemSizingStrategy == ItemSizingStrategy.MeasureAllItems)
 					{
-						if (_wrapGrid.Children[i] is GridViewItem container)
+						// WinUI's automatic width uses only the first cell.
+						var width = _measuredItemWidth;
+						var constraint = new global::Windows.Foundation.Size(double.PositiveInfinity, _wrapGrid.ItemHeight);
+						for (var i = 0; i < _wrapGrid.Children.Count; i++)
 						{
-							container.Measure(constraint);
-							width = Math.Max(width, container.DesiredSize.Width);
+							if (_wrapGrid.Children[i] is GridViewItem container)
+							{
+								container.Measure(constraint);
+								width = Math.Max(width, container.DesiredSize.Width);
+							}
 						}
-					}
 
-					if (width > 0 && _wrapGrid.ItemWidth != width)
-						_wrapGrid.ItemWidth = width;
-					_measuredItemWidth = width;
+						if (width > 0 && _wrapGrid.ItemWidth != width)
+							_wrapGrid.ItemWidth = width;
+						_measuredItemWidth = width;
+					}
+					else
+					{
+						_wrapGrid.ClearValue(ItemsWrapGrid.ItemWidthProperty);
+					}
 				}
 				else
 				{
-					_wrapGrid.ClearValue(ItemsWrapGrid.ItemWidthProperty);
+					if (Span > 1)
+					{
+						_wrapGrid.ItemWidth = Math.Floor(_wrapGrid.ActualWidth / Span);
+					}
+					else
+					{
+						_wrapGrid.ClearValue(ItemsWrapGrid.ItemWidthProperty);
+					}
 				}
-			}
-			else
-			{
-				if (Span > 1)
-				{
-					_wrapGrid.ItemWidth = Math.Floor(_wrapGrid.ActualWidth / Span);
-				}
-				else
-				{
-					_wrapGrid.ClearValue(ItemsWrapGrid.ItemWidthProperty);
-				}
-			}
 			}
 			finally
 			{
