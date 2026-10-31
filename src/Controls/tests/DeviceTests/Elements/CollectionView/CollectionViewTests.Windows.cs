@@ -27,7 +27,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			SetupBuilder();
 
-			var items = new[] { "First", "Second", "Third", "Fourth", "Fifth", "Sixth", "Seventh", "Eighth" };
+			var items = new[] { "A", "Capuchin Monkey", "Third", "Fourth", "Fifth", "Sixth", "Seventh", "Eighth" };
 			var originalLayout = new GridItemsLayout(2, ItemsLayoutOrientation.Vertical);
 			var collectionView = new CollectionView
 			{
@@ -35,6 +35,7 @@ namespace Microsoft.Maui.DeviceTests
 				HeightRequest = 400,
 				ItemsSource = items,
 				ItemsLayout = originalLayout,
+				ItemSizingStrategy = ItemSizingStrategy.MeasureAllItems,
 				SelectionMode = Controls.SelectionMode.Single,
 				SelectedItem = items[0]
 			};
@@ -66,6 +67,21 @@ namespace Microsoft.Maui.DeviceTests
 					item.ActualHeight > 0);
 
 				var first = Assert.IsType<UI.Xaml.Controls.GridViewItem>(gridView.ContainerFromIndex(0));
+				var longerItem = Assert.IsType<UI.Xaml.Controls.GridViewItem>(gridView.ContainerFromIndex(1));
+				var text = longerItem.GetFirstDescendant<UI.Xaml.Controls.TextBlock>();
+				Assert.NotNull(text);
+				var widthProbe = new UI.Xaml.Controls.TextBlock
+				{
+					Text = items[1],
+					FontFamily = text.FontFamily,
+					FontSize = text.FontSize,
+					FontWeight = text.FontWeight,
+					FontStyle = text.FontStyle
+				};
+				widthProbe.Measure(new global::Windows.Foundation.Size(double.PositiveInfinity, double.PositiveInfinity));
+				var requiredWidth = widthProbe.DesiredSize.Width;
+				await AssertEventually(() => first.ActualWidth >= requiredWidth && longerItem.ActualWidth >= requiredWidth);
+
 				var firstPosition = first.TransformToVisual(gridView).TransformPoint(new global::Windows.Foundation.Point());
 				var previousY = firstPosition.Y;
 				for (int i = 1; i < 4; i++)

@@ -19,6 +19,9 @@ namespace Microsoft.Maui.Controls.Platform
 		FrameworkElement _emptyView;
 		View _formsEmptyView;
 		Orientation _orientation;
+		ItemSizingStrategy _itemSizingStrategy;
+		bool _updatingItemSize;
+		double _measuredItemWidth;
 
 		public FormsGridView()
 		{
@@ -27,8 +30,27 @@ namespace Microsoft.Maui.Controls.Platform
 			DefaultStyleKey = typeof(FormsGridView);
 
 			RegisterPropertyChangedCallback(ItemsPanelProperty, ItemsPanelChanged);
+			RegisterPropertyChangedCallback(ItemsSourceProperty, ResetMeasuredItemWidth);
+			RegisterPropertyChangedCallback(ItemTemplateProperty, ResetMeasuredItemWidth);
+			RegisterPropertyChangedCallback(ItemContainerStyleProperty, ResetMeasuredItemWidth);
 
 			ChoosingItemContainer += OnChoosingItemContainer;
+			ContainerContentChanging += OnContainerContentChanging;
+		}
+
+		public ItemSizingStrategy ItemSizingStrategy
+		{
+			get => _itemSizingStrategy;
+			set
+			{
+				if (_itemSizingStrategy == value)
+					return;
+
+				_itemSizingStrategy = value;
+				_measuredItemWidth = 0;
+				if (_wrapGrid is not null)
+					UpdateItemSize();
+			}
 		}
 
 		public int Span
@@ -36,6 +58,8 @@ namespace Microsoft.Maui.Controls.Platform
 			get => _span;
 			set
 			{
+				if (_span != value)
+					_measuredItemWidth = 0;
 				_span = value;
 				if (_wrapGrid != null)
 				{
@@ -69,6 +93,8 @@ namespace Microsoft.Maui.Controls.Platform
 			get => _orientation;
 			set
 			{
+				if (_orientation != value)
+					_measuredItemWidth = 0;
 				_orientation = value;
 				if (_orientation == Orientation.Horizontal)
 				{
@@ -94,6 +120,7 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 
 				_wrapGrid = wrapGrid;
+				_measuredItemWidth = 0;
 			}
 
 			if (_wrapGrid == null)
@@ -117,14 +144,61 @@ namespace Microsoft.Maui.Controls.Platform
 			UpdateItemSize();
 		}
 
+		void OnContainerContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
+		{
+			if (args.InRecycleQueue || _orientation != Orientation.Horizontal ||
+				ItemSizingStrategy != ItemSizingStrategy.MeasureAllItems)
+			{
+				return;
+			}
+
+			void ResetMeasuredItemWidth(DependencyObject sender, DependencyProperty property)
+			{
+				_measuredItemWidth = 0;
+			}
+
+			if (args.Phase == 0)
+				args.RegisterUpdateCallback(1, OnContainerContentChanging);
+			else
+				FindItemsWrapGrid();
+		}
+
 		void UpdateItemSize()
 		{
+			if (_updatingItemSize)
+				return;
+
+			_updatingItemSize = true;
+			try
+			{
 			// Avoid the ItemWrapGrid grow beyond what this grid view is configured to
 			_wrapGrid.MaximumRowsOrColumns = Span;
 
 			if (_orientation == Orientation.Horizontal)
 			{
 				_wrapGrid.ItemHeight = Math.Floor(_wrapGrid.ActualHeight / Span);
+				if (ItemSizingStrategy == ItemSizingStrategy.MeasureAllItems)
+				{
+					// WinUI's automatic width uses only the first cell.
+					var width = _measuredItemWidth;
+					var constraint = new global::Windows.Foundation.Size(double.PositiveInfinity, _wrapGrid.ItemHeight);
+					for (var i = 0; i < _wrapGrid.Children.Count; i++)
+					{
+						if (_wrapGrid.Children[i] is GridViewItem container)
+						{
+							container.Measure(constraint);
+							width = Math.Max(width, container.DesiredSize.Width);
+						}
+					}
+
+					if (width > 0 && _wrapGrid.ItemWidth != width)
+						_wrapGrid.ItemWidth = width;
+					_measuredItemWidth = width;
+				}
+				else
+				{
+					_wrapGrid.ClearValue(ItemsWrapGrid.ItemWidthProperty);
+				}
 			}
 			else
 			{
@@ -136,6 +210,11 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					_wrapGrid.ClearValue(ItemsWrapGrid.ItemWidthProperty);
 				}
+			}
+			}
+			finally
+			{
+				_updatingItemSize = false;
 			}
 		}
 

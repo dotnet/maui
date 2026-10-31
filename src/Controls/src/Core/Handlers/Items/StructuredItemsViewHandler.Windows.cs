@@ -99,7 +99,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public static void MapItemSizingStrategy(StructuredItemsViewHandler<TItemsView> handler, StructuredItemsView itemsView)
 		{
-
+			if (handler.ListViewBase is FormsGridView gridView)
+				gridView.ItemSizingStrategy = itemsView.ItemSizingStrategy;
 		}
 
 		protected override void UpdateItemsLayout()
@@ -122,7 +123,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			switch (VirtualView.ItemsLayout)
 			{
 				case GridItemsLayout gridItemsLayout:
-					return CreateGridView(gridItemsLayout);
+					return CreateGridView(gridItemsLayout, VirtualView.ItemSizingStrategy);
 				case LinearItemsLayout listItemsLayout when listItemsLayout.Orientation == ItemsLayoutOrientation.Vertical:
 					return CreateVerticalListView(listItemsLayout);
 				case LinearItemsLayout listItemsLayout when listItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal:
@@ -241,9 +242,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 		}
 
-		static ListViewBase CreateGridView(GridItemsLayout gridItemsLayout)
+		static ListViewBase CreateGridView(GridItemsLayout gridItemsLayout, ItemSizingStrategy itemSizingStrategy)
 		{
-			var gridView = new FormsGridView();
+			var gridView = new FormsGridView { ItemSizingStrategy = itemSizingStrategy };
 			ConfigureGridView(gridView, gridItemsLayout, isInitialLayout: true);
 			return gridView;
 		}
