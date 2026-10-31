@@ -111,6 +111,8 @@ namespace Microsoft.Maui.Controls.Handlers
 				_currentSearchHandler.PropertyChanged -= OnCurrentSearchHandlerPropertyChanged;
 				_currentSearchHandler.ShowSoftInputRequested -= OnShowSoftInputRequested;
 				_currentSearchHandler.HideSoftInputRequested -= OnHideSoftInputRequested;
+				_currentSearchHandler.SetIsFocused(false);
+				_currentSearchHandler = null;
 			}
 
 			UntrackAllBadgeSections();
@@ -409,6 +411,7 @@ namespace Microsoft.Maui.Controls.Handlers
 					_currentSearchHandler.PropertyChanged -= OnCurrentSearchHandlerPropertyChanged;
 					_currentSearchHandler.ShowSoftInputRequested -= OnShowSoftInputRequested;
 					_currentSearchHandler.HideSoftInputRequested -= OnHideSoftInputRequested;
+					_currentSearchHandler.SetIsFocused(false);
 				}
 
 				_currentSearchHandler = newSearchHandler;
@@ -461,6 +464,11 @@ namespace Microsoft.Maui.Controls.Handlers
 					}
 
 					UpdateQueryIcon();
+
+					// The native textbox can retain focus while the search handler changes.
+					_currentSearchHandler.SetIsFocused(
+						autoSuggestBox.FocusState != FocusState.Unfocused ||
+						autoSuggestBox.GetFirstDescendant<TextBox>() is { FocusState: not FocusState.Unfocused });
 				}
 				else
 				{
