@@ -112,6 +112,12 @@ namespace Microsoft.Maui.Controls.Gtk.Items
 		/// <summary>Raised on the GTK thread after the rows changed: <c>(position, removed, added)</c>.</summary>
 		public event Action<int, int, int>? RowsChanged;
 
+		/// <summary>
+		/// Whether the last <see cref="RowsChanged"/> may have moved the end of the list away (rows were added or the model was rebuilt) as opposed to
+		/// rows being removed, replaced or moved in place.
+		/// </summary>
+		public bool LastChangeGrew { get; private set; }
+
 		/// <summary>The row at <paramref name="position"/>.</summary>
 		/// <param name="position">The row index.</param>
 		public GtkRow RowAt(int position) => _rows[position];
@@ -258,6 +264,7 @@ namespace Microsoft.Maui.Controls.Gtk.Items
 						foreach (var item in e.NewItems)
 							_rows.Insert(index++, new GtkRow(GtkRowKind.Item, item, null));
 
+						LastChangeGrew = true;
 						Raise(e.NewStartingIndex, 0, e.NewItems.Count);
 						break;
 					}
@@ -267,6 +274,7 @@ namespace Microsoft.Maui.Controls.Gtk.Items
 						_rows[e.OldStartingIndex + i].Removed = true;
 
 					_rows.RemoveRange(e.OldStartingIndex, e.OldItems.Count);
+					LastChangeGrew = false;
 					Raise(e.OldStartingIndex, e.OldItems.Count, 0);
 					break;
 
@@ -278,6 +286,7 @@ namespace Microsoft.Maui.Controls.Gtk.Items
 						_rows[e.NewStartingIndex + i] = new GtkRow(GtkRowKind.Item, e.NewItems[i], null);
 					}
 
+					LastChangeGrew = false;
 					Raise(e.NewStartingIndex, e.NewItems.Count, e.NewItems.Count);
 					break;
 
@@ -286,10 +295,12 @@ namespace Microsoft.Maui.Controls.Gtk.Items
 					{
 						var moved = _rows.GetRange(e.OldStartingIndex, e.OldItems.Count);
 						_rows.RemoveRange(e.OldStartingIndex, moved.Count);
+						LastChangeGrew = false;
 						Raise(e.OldStartingIndex, moved.Count, 0);
 
 						int target = Math.Min(e.NewStartingIndex, _rows.Count);
 						_rows.InsertRange(target, moved);
+						LastChangeGrew = false;
 						Raise(target, 0, moved.Count);
 						break;
 					}
@@ -306,6 +317,7 @@ namespace Microsoft.Maui.Controls.Gtk.Items
 				collection.CollectionChanged -= OnCollectionChanged;
 			_observed.Clear();
 
+			LastChangeGrew = true;
 			Rebuild(raise: true);
 			Observe();
 		}

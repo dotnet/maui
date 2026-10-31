@@ -132,6 +132,69 @@ namespace Microsoft.Maui.Gtk.UnitTests
 		});
 
 		[GtkFact]
+		public void RemainingItemsThresholdIsNotRearmedByReplacingOrRemovingRowsNearTheEnd() => GtkTestHost.Run(() =>
+		{
+			var items = new ObservableCollection<string>(Items(100));
+			var (view, host) = Create(v =>
+			{
+				v.ItemsSource = items;
+				v.RemainingItemsThreshold = 5;
+			});
+			using (host)
+			{
+				int raised = 0;
+				view.RemainingItemsThresholdReached += (_, _) => raised++;
+				var adjustment = Controller(view).Scroller.Vadjustment;
+				Settle(host);
+				adjustment.Value = adjustment.Upper;
+				Assert.True(GtkTestHost.PumpUntil(() => raised > 0, host.PlatformWindow));
+				Settle(host);
+				Assert.Equal(1, raised);
+
+				// No new crossing: the end is still within the threshold.
+				items[items.Count - 2] = "replaced";
+				Settle(host);
+				items.RemoveAt(items.Count - 1);
+				Settle(host);
+				Assert.Equal(1, raised);
+
+				// Growing the list is a new chance to cross.
+				adjustment.Value = 0;
+				Settle(host);
+				for (int i = 0; i < 50; i++)
+					items.Add("more " + i);
+				Settle(host);
+				adjustment.Value = adjustment.Upper;
+				Assert.True(GtkTestHost.PumpUntil(() => raised == 2, host.PlatformWindow));
+			}
+		});
+
+		[GtkFact]
+		public void ReplacingTheItemsSourceRearmsTheRemainingItemsThreshold() => GtkTestHost.Run(() =>
+		{
+			var (view, host) = Create(v =>
+			{
+				v.ItemsSource = Items(100);
+				v.RemainingItemsThreshold = 5;
+			});
+			using (host)
+			{
+				int raised = 0;
+				view.RemainingItemsThresholdReached += (_, _) => raised++;
+				var adjustment = Controller(view).Scroller.Vadjustment;
+				Settle(host);
+				adjustment.Value = adjustment.Upper;
+				Assert.True(GtkTestHost.PumpUntil(() => raised > 0, host.PlatformWindow));
+				Settle(host);
+				Assert.Equal(1, raised);
+
+				// A short list: its end is within the threshold as soon as it is laid out.
+				view.ItemsSource = Items(3);
+				Assert.True(GtkTestHost.PumpUntil(() => raised == 2, host.PlatformWindow), "the new source did not re-arm the threshold");
+			}
+		});
+
+		[GtkFact]
 		public void MeasureFirstItemGivesEveryRowTheHeightOfTheFirst() => GtkTestHost.Run(() =>
 		{
 			static double Varying(string text) => 20 + (int.Parse(text.AsSpan(5)) % 3) * 25;
@@ -288,6 +351,37 @@ namespace Microsoft.Maui.Gtk.UnitTests
 				Assert.True(controller.Reorder(Row("a3"), header, after: false));
 				Assert.Equal("a3", groups[1][0]);
 				Assert.Equal(3, completed);
+			}
+		});
+
+		[GtkFact]
+		public void GroupedReorderOfPlainListGroupsInAnObservableSourceRebuildsTheRows() => GtkTestHost.Run(() =>
+		{
+			var groups = new ObservableCollection<List<string>>
+			{
+				new List<string> { "a1", "a2", "a3" },
+				new List<string> { "b1", "b2" },
+			};
+			var (view, host) = Create(v =>
+			{
+				v.IsGrouped = true;
+				v.ItemsSource = groups;
+				v.CanReorderItems = true;
+			});
+			using (host)
+			{
+				var controller = Controller(view);
+				GtkRow Row(string text) => Enumerable.Range(0, controller.Source!.Count).Select(controller.Source.RowAt).First(r => Equals(r.Data, text));
+				IEnumerable<object?> Items() => Enumerable.Range(0, controller.Source!.Count).Select(controller.Source.RowAt).Where(r => r.Kind == GtkRowKind.Item).Select(r => r.Data);
+
+				Assert.True(controller.Reorder(Row("a1"), Row("a3"), after: true));
+				Assert.Equal(new[] { "a2", "a3", "a1" }, groups[0]);
+
+				// The rows follow at once (the groups do not report the change), so the next drag moves the item that is shown.
+				Assert.Equal(new object[] { "a2", "a3", "a1", "b1", "b2" }, Items());
+				Assert.True(controller.Reorder(Row("a3"), Row("a2"), after: false));
+				Assert.Equal(new[] { "a3", "a2", "a1" }, groups[0]);
+				Assert.Equal(new object[] { "a3", "a2", "a1", "b1", "b2" }, Items());
 			}
 		});
 

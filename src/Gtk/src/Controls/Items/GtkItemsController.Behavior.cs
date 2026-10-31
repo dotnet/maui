@@ -383,9 +383,13 @@ namespace Microsoft.Maui.Controls.Gtk.Items
 			fromList.RemoveAt(from);
 			toList.Insert(Math.Min(to, toList.Count), data);
 
-			// A plain list does not tell the model; observable ones do.
-			if (_view.ItemsSource is not INotifyCollectionChanged)
-				UpdateItemsSource();
+			// A plain list does not tell the model; observable ones do. The model observes the items source itself when it is not grouped, and
+			// only the groups that are observable themselves when it is grouped (an observable list of plain lists reports nothing).
+			bool observed = _view is GroupableItemsView { IsGrouped: true }
+				? fromList is INotifyCollectionChanged && toList is INotifyCollectionChanged
+				: _view.ItemsSource is INotifyCollectionChanged;
+			if (!observed)
+				RebuildSource();
 
 			reorderable.SendReorderCompleted();
 			return true;

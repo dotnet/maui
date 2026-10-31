@@ -121,6 +121,21 @@ namespace Microsoft.Maui.Controls.Gtk.Items
 			if (_disposed)
 				return;
 
+			RebuildSource();
+
+			// A new source starts a new list: the threshold re-arms and Scrolled deltas restart from the top.
+			_thresholdReached = false;
+			_lastHorizontalOffset = 0;
+			_lastVerticalOffset = 0;
+			QueueScrollEvaluation(raiseScrolled: false);
+		}
+
+		/// <summary>Replaces the model with one over the current items source, keeping the scroll state (a reorder of a plain list uses this).</summary>
+		internal void RebuildSource()
+		{
+			if (_disposed)
+				return;
+
 			bool grouped = _view is GroupableItemsView { IsGrouped: true };
 			bool linear = !(GetLayout() is GridItemsLayout);
 			var groupable = _view as GroupableItemsView;
@@ -174,8 +189,11 @@ namespace Microsoft.Maui.Controls.Gtk.Items
 			Prune();
 			UpdateEmptyView();
 
-			// New rows can move the end of the list away again: the threshold re-arms and is judged after the layout.
-			_thresholdReached = false;
+			// New rows (or a rebuilt model) can move the end of the list away again: the threshold re-arms and is judged after the layout. Removing,
+			// replacing or moving rows is not a new crossing, so it must not fire the event again.
+			if (_source?.LastChangeGrew ?? true)
+				_thresholdReached = false;
+
 			QueueScrollEvaluation(raiseScrolled: false);
 			SourceChanged?.Invoke();
 		}
