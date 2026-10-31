@@ -12,10 +12,13 @@ namespace Microsoft.Maui.Controls.Gtk.Items
 	/// <remarks>
 	/// <para>Supported: items source (observable collections update the rows), item template and template selector, linear and grid
 	/// layouts (orientation, span, item spacing), header and footer (above and below the scrolling area), empty view, none/single/multiple
-	/// selection, grouping with group header and footer templates (linear layouts), scroll bar visibility and
-	/// <see cref="ItemsView.ScrollTo(int, int, ScrollToPosition, bool)"/> (the row is made visible; the position hint is ignored).</para>
-	/// <para>Not supported: reordering, item sizing strategy (rows are always measured by their content), scroll events,
-	/// <c>RemainingItemsThreshold</c>.</para>
+	/// selection, grouping with group header and footer templates (linear layouts), scroll bar visibility,
+	/// <see cref="ItemsView.ScrollTo(int, int, ScrollToPosition, bool)"/> (start, centre, end or make visible), the
+	/// <see cref="ItemsView.Scrolled"/> event, <see cref="ItemsView.RemainingItemsThreshold"/> (raised once each time the end comes within
+	/// the threshold), <see cref="ItemSizingStrategy.MeasureFirstItem"/> (every item takes the size of the first one along the scroll axis)
+	/// and reordering (<see cref="ReorderableItemsView.CanReorderItems"/>: drag a row onto another; grouped lists move within a group, or
+	/// between groups with <see cref="ReorderableItemsView.CanMixGroups"/>).</para>
+	/// <para>Not supported: scrolling the list while dragging a row, a drop indicator.</para>
 	/// </remarks>
 	public class GtkCollectionViewHandler : CollectionViewHandler
 	{
@@ -88,6 +91,8 @@ namespace Microsoft.Maui.Controls.Gtk.Items
 				.MapGtk<GtkBox>(nameof(SelectableItemsView.SelectionMode), (h, v, w) => C(h)?.UpdateSelectionMode())
 				.MapGtk<GtkBox>(nameof(SelectableItemsView.SelectedItem), (h, v, w) => C(h)?.UpdateSelectionFromView())
 				.MapGtk<GtkBox>(nameof(SelectableItemsView.SelectedItems), (h, v, w) => C(h)?.UpdateSelectionFromView())
+				.MapGtk<GtkBox>(nameof(StructuredItemsView.ItemSizingStrategy), (h, v, w) => C(h)?.InvalidateSharedSize())
+				.MapGtk<GtkBox>(nameof(ItemsView.RemainingItemsThreshold), (h, v, w) => C(h)?.UpdateRemainingItemsThreshold())
 				.MapGtk<GtkBox>(nameof(ItemsView.HorizontalScrollBarVisibility), (h, v, w) => C(h)?.UpdateScrollBars())
 				.MapGtk<GtkBox>(nameof(ItemsView.VerticalScrollBarVisibility), (h, v, w) => C(h)?.UpdateScrollBars())
 				.Build();

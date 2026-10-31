@@ -106,6 +106,9 @@ namespace Microsoft.Maui.Controls.Gtk.Items
 		/// <summary>The number of rows.</summary>
 		public int Count => _rows.Count;
 
+		/// <summary>Whether the model has group header or footer rows (then a row position is not the index of its item).</summary>
+		public bool HasGroupRows => _groupHeaders || _groupFooters;
+
 		/// <summary>Raised on the GTK thread after the rows changed: <c>(position, removed, added)</c>.</summary>
 		public event Action<int, int, int>? RowsChanged;
 

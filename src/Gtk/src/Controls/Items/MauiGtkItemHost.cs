@@ -20,6 +20,15 @@ namespace Microsoft.Maui.Controls.Gtk.Items
 		/// </summary>
 		public double RowHeight { get; set; }
 
+		/// <summary>
+		/// Supplies the size every row has along an axis regardless of its content (<c>ItemSizingStrategy.MeasureFirstItem</c>): the value for the
+		/// orientation asked, in device-independent units, or <see langword="null"/> when the row measures its content.
+		/// </summary>
+		public Func<global::Gtk.Orientation, double?>? SharedSize { get; set; }
+
+		/// <summary>Called with the orientation and the content size (device-independent units) every time this host measured its content.</summary>
+		public Action<MauiGtkItemHost, global::Gtk.Orientation, double>? ContentMeasured { get; set; }
+
 		/// <summary>The template the current view was created from; a recycled row with the same template reuses the view.</summary>
 		public DataTemplate? Template { get; set; }
 
@@ -34,6 +43,10 @@ namespace Microsoft.Maui.Controls.Gtk.Items
 
 		/// <summary>The list item that currently shows this host, for selection state.</summary>
 		public global::Gtk.ListItem? ListItem { get; set; }
+
+		// Group headers and footers are never sized by the first item.
+		double? Shared(global::Gtk.Orientation orientation) =>
+			Kind is GtkRowKind.GroupHeader or GtkRowKind.GroupFooter ? null : SharedSize?.Invoke(orientation);
 
 		/// <inheritdoc/>
 		protected override void OnMeasure(global::Gtk.Orientation orientation, int forSize,
@@ -56,8 +69,15 @@ namespace Microsoft.Maui.Controls.Gtk.Items
 					return;
 				}
 
+				if (Shared(orientation) is { } sharedWidth)
+				{
+					natural = GtkInterop.ToPixels(sharedWidth);
+					return;
+				}
+
 				var size = view.Measure(double.PositiveInfinity, double.PositiveInfinity);
 				natural = GtkInterop.ToPixels(size.Width);
+				ContentMeasured?.Invoke(this, orientation, size.Width);
 				return;
 			}
 
@@ -67,11 +87,18 @@ namespace Microsoft.Maui.Controls.Gtk.Items
 				return;
 			}
 
+			if (Shared(orientation) is { } sharedHeight)
+			{
+				minimum = natural = GtkInterop.ToPixels(sharedHeight);
+				return;
+			}
+
 			double width = fixedWidth > 0 ? fixedWidth : forSize >= 0 ? forSize : double.PositiveInfinity;
 			var measured = view.Measure(width, double.PositiveInfinity);
 
 			// A row must keep its content's height, otherwise the list would squash it.
 			minimum = natural = GtkInterop.ToPixels(measured.Height);
+			ContentMeasured?.Invoke(this, orientation, measured.Height);
 		}
 	}
 }

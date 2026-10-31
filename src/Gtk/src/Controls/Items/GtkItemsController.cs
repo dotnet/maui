@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls.Gtk.Items
 	/// <para>Template views are created once per visible row and recycled: a row bound to another item of the same template keeps its view
 	/// and only gets a new binding context.</para>
 	/// </remarks>
-	sealed class GtkItemsController : IDisposable
+	sealed partial class GtkItemsController : IDisposable
 	{
 		readonly ItemsView _view;
 		readonly IMauiContext _context;
@@ -40,6 +40,14 @@ namespace Microsoft.Maui.Controls.Gtk.Items
 		int _spacing;
 		bool _updatingSelection;
 		bool _disposed;
+		double _lastHorizontalOffset;
+		double _lastVerticalOffset;
+		bool _thresholdReached;
+		bool _scrollEvaluationQueued;
+		double? _firstItemWidth;
+		double? _firstItemHeight;
+		int _firstItemViewport;
+		GtkRow? _dragRow;
 
 		public GtkItemsController(ItemsView view, IMauiContext context)
 		{
@@ -54,6 +62,11 @@ namespace Microsoft.Maui.Controls.Gtk.Items
 			_factory.Bind += OnBind;
 			_factory.Unbind += OnUnbind;
 			_factory.Teardown += OnTeardown;
+
+			_scroller.Hadjustment.ValueChanged += OnAdjustmentValueChanged;
+			_scroller.Vadjustment.ValueChanged += OnAdjustmentValueChanged;
+			_scroller.Hadjustment.Changed += OnAdjustmentBoundsChanged;
+			_scroller.Vadjustment.Changed += OnAdjustmentBoundsChanged;
 		}
 
 		/// <summary>The widget that is the platform view of the handler.</summary>
@@ -112,6 +125,7 @@ namespace Microsoft.Maui.Controls.Gtk.Items
 			bool linear = !(GetLayout() is GridItemsLayout);
 			var groupable = _view as GroupableItemsView;
 
+			InvalidateSharedSize();
 			var previous = _source;
 			previous?.Detach();
 			_source = new GtkItemsSource(
@@ -159,6 +173,10 @@ namespace Microsoft.Maui.Controls.Gtk.Items
 		{
 			Prune();
 			UpdateEmptyView();
+
+			// New rows can move the end of the list away again: the threshold re-arms and is judged after the layout.
+			_thresholdReached = false;
+			QueueScrollEvaluation(raiseScrolled: false);
 			SourceChanged?.Invoke();
 		}
 
@@ -202,6 +220,7 @@ namespace Microsoft.Maui.Controls.Gtk.Items
 			}
 
 			_list.Orientation = orientation;
+			InvalidateSharedSize();
 
 			if (_list is global::Gtk.GridView gridView && layout is GridItemsLayout gridLayout)
 			{
@@ -375,7 +394,11 @@ namespace Microsoft.Maui.Controls.Gtk.Items
 		void OnSetup(object? sender, global::Gtk.SetupArgs args)
 		{
 			var item = (global::Gtk.ListItem)args.Object;
-			item.Child = new MauiGtkItemHost { FixedWidth = FixedRowWidth, ListItem = item };
+			var host = new MauiGtkItemHost { FixedWidth = FixedRowWidth, ListItem = item, SharedSize = SharedSizeFor, ContentMeasured = OnHostMeasured };
+			item.Child = host;
+
+			if (_view is ReorderableItemsView)
+				InstallReorder(host);
 		}
 
 		void OnBind(object? sender, global::Gtk.BindArgs args)
@@ -556,7 +579,7 @@ namespace Microsoft.Maui.Controls.Gtk.Items
 
 		// ------------------------------------------------------------------ scrolling
 
-		/// <summary>Scrolls so that <paramref name="args"/>' index or item is visible.</summary>
+		/// <summary>Scrolls so that <paramref name="args"/>' index or item is visible, honouring its position hint.</summary>
 		/// <param name="args">The request.</param>
 		public void ScrollTo(ScrollToRequestEventArgs args)
 		{
@@ -572,6 +595,9 @@ namespace Microsoft.Maui.Controls.Gtk.Items
 				listView.ScrollTo((uint)row, flags, null!);
 			else if (_list is global::Gtk.GridView gridView)
 				gridView.ScrollTo((uint)row, flags, null!);
+
+			if (args.ScrollToPosition != ScrollToPosition.MakeVisible)
+				AlignRow(_source.RowAt(row), args.ScrollToPosition, attemptsLeft: 30);
 		}
 
 		int RowOfIndex(int index, int groupIndex)
@@ -640,6 +666,10 @@ namespace Microsoft.Maui.Controls.Gtk.Items
 				return;
 
 			_disposed = true;
+			_scroller.Hadjustment.ValueChanged -= OnAdjustmentValueChanged;
+			_scroller.Vadjustment.ValueChanged -= OnAdjustmentValueChanged;
+			_scroller.Hadjustment.Changed -= OnAdjustmentBoundsChanged;
+			_scroller.Vadjustment.Changed -= OnAdjustmentBoundsChanged;
 			_source?.Detach();
 
 			foreach (var host in new List<MauiGtkItemHost>(_bound))
