@@ -174,7 +174,7 @@ Not in this area: Shell, CollectionView, Maps, NavigationPage/Toolbar/FlyoutPage
 
 | Project | Tests (Windows GTK 4.22 / Ubuntu 24.04 GTK 4.14, xvfb) |
 |---------|------|
-| `Microsoft.Maui.Gtk.UnitTests` (Core + Essentials + Handlers + Controls + Web + Maps) | Windows 1066 passed, 0 skipped; Ubuntu 24.04 (GTK 4.14, xvfb) 1054 passed, 12 skipped (WebView2 and Windows-only tests) |
+| `Microsoft.Maui.Gtk.UnitTests` (Core + Essentials + Handlers + Controls + Web + Maps) | Windows 1071 passed, 0 skipped; Ubuntu 24.04 (GTK 4.14, xvfb) 1058 passed, 13 skipped (WebView2 and Windows-only tests) |
 | `Graphics.Cairo.Tests` | 125 passed, 0 skipped |
 | `Essentials.UnitTests` (net10.0) | 441 passed, 0 skipped |
 | `Core.UnitTests` / `Controls.Core.UnitTests` (net10.0) | 884 (+3 skipped) / 5869 (+30 skipped) passed |
@@ -194,7 +194,7 @@ Not in this area: Shell, CollectionView, Maps, NavigationPage/Toolbar/FlyoutPage
 - `SwipeItemView` is resolved by Controls to the content view handler (it is a `ContentView`); `Microsoft.Maui.Controls.Gtk` registers `SwipeItemView -> SwipeItemViewHandler`.
 - Windows builds pack/test `net10.0`/`netstandard` only (mobile/Windows TFMs are disabled locally by `Directory.Build.Override.props`).
 - Window position, maximum window size.
-- WebView, HybridWebView and BlazorWebView on Windows are a native child window (WebView2 "airspace"): they are always drawn above the GTK content, so popovers, menus and tooltips that overlap it are hidden behind it; GTK containers do not clip it (a `ScrollView` around it neither scrolls nor clips it); `Opacity`, `Rotation`, `Scale`, clips and shadows of the view or of an ancestor are ignored. `HtmlWebViewSource.BaseUrl` is ignored and the HTML is limited to 2 MB (`NavigateToString`).
+- WebView, HybridWebView and BlazorWebView on Windows are a native child window (WebView2 "airspace"): they are always drawn above the GTK content, so popovers, menus and tooltips that overlap it are hidden behind it; GTK containers do not clip it (a `ScrollView` around it neither scrolls nor clips it); `Opacity`, `Rotation`, `Scale`, clips and shadows of the view or of an ancestor are ignored. Keyboard focus follows the GTK focus: focusing another widget of the active window (click or Tab) returns the Win32 focus from the web view to the window. `HtmlWebViewSource.BaseUrl` is ignored and the HTML is limited to 2 MB (`NavigateToString`).
 - Accessibility: GTK fixes a widget's role when it joins a window, so a `HeadingLevel` set after the label is in a window keeps the old role (set it before, e.g. in XAML). `IsInAccessibleTree=false` hides the children too (GTK has only the hidden state). No `TabIndex`/`IsTabStop` (not in MAUI). Backends: Ubuntu 24.04 (GTK 4.14) AT-SPI publishes label, description, roles, `CHECKED`, `SENSITIVE`, `EDITABLE` (verified through `libatspi`) but not the `HIDDEN` state, the `LABELLED_BY` relation, the heading `LEVEL` or the spin button value (that needs `GtkAccessibleRange`, which a custom widget cannot implement through GtkSharp): they are set for backends that honour them. Windows: GTK 4.22.4 contains the AccessKit backend but runs the null (test) context also with `GTK_A11Y=accesskit`, so UI Automation sees the toplevel window only (probe: `UiaAccessibilityTests`); announcing on a toplevel crashes the process there, so announcements go to the window content.
 
 

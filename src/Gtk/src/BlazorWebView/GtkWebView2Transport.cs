@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 	/// <c>PostWebMessageAsString</c> and page-to-.NET messages <c>WebMessageReceived</c>, as in the Windows <c>WebView2WebViewManager</c>.</para>
 	/// <para>WebView2 creates its controller once the host is realized and creates a new one after a re-realization. The transport configures every
 	/// new <see cref="CoreWebView2"/> as soon as it exists and navigates only after the shim script is registered, so the first document always
-	/// has <c>window.external</c>. A navigation requested earlier is kept (the last one wins) and run then.</para>
+	/// has <c>window.external</c>. A navigation requested earlier is kept (the last one wins) and run then. After a re-realization the transport, not the engine (<c>ReplayOnRecreate</c> is off while it is attached), navigates the new control to the app page the closed one showed.</para>
 	/// <para>Navigations the page starts (links, <c>window.open</c>) are reported to <c>navigationFilter</c>, which returns <see langword="true"/> to cancel them.</para>
 	/// </remarks>
 	[SupportedOSPlatform("windows")]
@@ -56,6 +56,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			_host.CoreWebView2Initialized += OnCoreInitialized;
 			_host.ControllerClosing += OnControllerClosing;
 			_engine.Navigating += OnNavigating;
+			// The transport owns the navigation of every new control: it must register its script before the page loads.
+			_engine.ReplayOnRecreate = false;
 
 			if (_host.CoreWebView2 is { } core)
 				OnCoreInitialized(_host, core);
@@ -90,6 +92,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			_host.CoreWebView2Initialized -= OnCoreInitialized;
 			_host.ControllerClosing -= OnControllerClosing;
 			_engine.Navigating -= OnNavigating;
+			_engine.ReplayOnRecreate = true;
 			Detach();
 		}
 
@@ -138,7 +141,15 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			});
 		}
 
-		void OnControllerClosing(object? sender, EventArgs e) => Detach();
+		void OnControllerClosing(object? sender, EventArgs e)
+		{
+			// The next control continues where this one is (the route the user reached), not at the start page.
+			if (_core is { } core && Uri.TryCreate(core.Source, UriKind.Absolute, out var source) && source.Scheme != "about"
+				&& GtkWebViewManager.WebView2AppOriginUri.IsBaseOf(source))
+				_desiredUri = source.AbsoluteUri;
+
+			Detach();
+		}
 
 		void Detach()
 		{

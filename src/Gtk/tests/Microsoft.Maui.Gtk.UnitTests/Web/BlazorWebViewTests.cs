@@ -470,4 +470,32 @@ public class BlazorWebViewHandlerTests : IDisposable
 
 		Assert.Null(exception);
 	});
+
+	[WebView2Fact]
+	public void ARerealizedWebView2ControlLoadsTheAppOncePastTheShim() => GtkTestHost.Run(() =>
+	{
+		var (_, handler) = Create();
+		var host = (MauiGtkWebView2Host)handler.PlatformView!;
+		Assert.True(GtkTestHost.PumpUntil(() => CounterText(handler) == "Count: 0", null, 30000), "Blazor never rendered");
+
+		// Move the widget to another window: its controller is closed and a new one created.
+		var first = _windows[0];
+		first.Child = null;
+		var oldController = host.Controller;
+		var starts = 0;
+		var log = new List<string>();
+		host.CoreWebView2Initialized += (_, core) => core.NavigationStarting += (_, e) => { starts++; log.Add(e.Uri); };
+		var second = new global::Gtk.Window { Decorated = false, DefaultWidth = 800, DefaultHeight = 600, Child = host };
+		_windows.Add(second);
+		second.Present();
+		GtkTestHost.Resize(second, 800, 600);
+
+		Assert.True(GtkTestHost.PumpUntil(() => CounterText(handler) == "Count: 0", second, 30000), "Blazor did not render in the new control; text: " + CounterText(handler));
+		GtkTestHost.PumpUntil(() => false, second, 1500);
+
+		// One load, past the shim: no page without window.external followed by a second load of the start page.
+		Assert.NotSame(oldController, host.Controller);
+		Assert.True(starts == 1, starts + " navigations: " + string.Join(" ; ", log));
+		Assert.Equal("Count: 0", CounterText(handler));
+	});
 }

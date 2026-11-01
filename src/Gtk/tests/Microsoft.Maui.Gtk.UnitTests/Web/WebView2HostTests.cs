@@ -485,4 +485,90 @@ public class WebView2HostTests
 			Done(f);
 		}
 	});
+
+	[GtkFact]
+	public void AnotherWidgetTakingTheGtkFocusReturnsTheWin32FocusToTheToplevel() => GtkTestHost.Run(() =>
+	{
+		var f = Show();
+		try
+		{
+			var other = new global::Gtk.Button { Label = "other", Focusable = true };
+			f.Content.Prepend(other);
+			GtkTestHost.Pump(f.Window);
+			Assert.True(GtkTestHost.PumpUntil(() => f.Window.IsActive, f.Window, 5000), "the window never became active");
+			f.Host.GrabFocus();
+			GtkTestHost.Pump(f.Window);
+			Assert.Empty(f.Services.FocusedToplevels);
+
+			other.GrabFocus();
+			GtkTestHost.Pump(f.Window);
+
+			Assert.False(f.Host.IsFocus);
+			Assert.Equal(new[] { FakeHostServices.FakeHandle }, f.Services.FocusedToplevels);
+		}
+		finally
+		{
+			Done(f);
+		}
+	});
+
+	[GtkFact]
+	public void LosingTheGtkFocusWithoutAControllerDoesNotTouchWin32() => GtkTestHost.Run(() =>
+	{
+		var f = Show(new FakeHostServices { AutoComplete = false });
+		try
+		{
+			f.Host.FocusLeft();
+
+			Assert.Empty(f.Services.FocusedToplevels);
+		}
+		finally
+		{
+			Done(f);
+		}
+	});
+
+	[GtkFact]
+	public void EvaluationsQueuedBeforeAControllerExistsAreCancelledWhenTheEngineIsDisposed() => GtkTestHost.Run(() =>
+	{
+		var host = new MauiGtkWebView2Host();
+		var first = new EvaluateJavaScriptAsyncRequest("1");
+		var second = new EvaluateJavaScriptAsyncRequest("2");
+		host.Engine.EvaluateScript("1", first);
+		host.Engine.EvaluateScript("2", second);
+		Assert.False(first.Task.IsCompleted);
+
+		host.Engine.Dispose();
+
+		Assert.True(first.Task.IsCanceled);
+		Assert.True(second.Task.IsCanceled);
+
+		// An evaluation issued after the disposal is not left hanging either.
+		var late = new EvaluateJavaScriptAsyncRequest("3");
+		host.Engine.EvaluateScript("3", late);
+		Assert.True(late.Task.IsCanceled);
+	});
+
+	[GtkFact]
+	public void EvaluationsQueuedBeforeAControllerExistsFailWhenTheControllerCannotBeCreated() => GtkTestHost.Run(() =>
+	{
+		var f = Show(new FakeHostServices { AutoComplete = false });
+		try
+		{
+			var request = new EvaluateJavaScriptAsyncRequest("1");
+			f.Host.Engine.EvaluateScript("1", request);
+			Assert.True(GtkTestHost.PumpUntil(() => f.Services.Pending.Count > 0, f.Window, 3000));
+			var failure = new InvalidOperationException("locked");
+
+			f.Services.Pending[0].SetException(failure);
+
+			Assert.True(GtkTestHost.PumpUntil(() => request.Task.IsCompleted, f.Window, 3000), "the evaluation never completed");
+			Assert.True(request.Task.IsFaulted);
+			Assert.Same(failure, request.Task.Exception!.GetBaseException());
+		}
+		finally
+		{
+			Done(f);
+		}
+	});
 }

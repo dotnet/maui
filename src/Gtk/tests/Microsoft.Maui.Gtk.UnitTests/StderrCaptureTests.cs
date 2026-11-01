@@ -20,6 +20,9 @@ namespace Microsoft.Maui.Gtk.UnitTests
 			GtkTestHost.Retire(window);
 
 			Assert.Contains(GtkTestHost.Complaints, c => c.Contains("Theme parser error", StringComparison.Ordinal));
+
+			// The complaint is deliberate: do not leak it into whichever test asserts "no complaints" next.
+			GtkTestHost.ClearComplaints();
 		});
 	}
 }

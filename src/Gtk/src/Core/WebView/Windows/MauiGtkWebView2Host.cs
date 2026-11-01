@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Gtk.Web
 	/// <para><b>Visibility.</b> The web view is visible exactly while the widget is mapped, which GTK derives from the widget's own visibility and
 	/// that of all its ancestors (hidden pages of a stack, a hidden window, a collapsed container).</para>
 	/// <para><b>Focus.</b> Taking the GTK focus moves the keyboard focus into the web view; a click inside the web view makes the host the GTK
-	/// focus widget; tabbing out of the web view returns the Win32 focus to the toplevel and moves the GTK focus on.</para>
+	/// focus widget; tabbing out of the web view returns the Win32 focus to the toplevel and moves the GTK focus on; when another widget of the active window takes the GTK focus (a click, a programmatic focus change) the Win32 focus returns to the toplevel too, otherwise typing would still go to the page.</para>
 	/// <para><b>Airspace.</b> The web view is a native child window: it is always above the GTK content, is not clipped by GTK containers
 	/// (scrolled windows) and cannot be transformed or faded; popovers and menus over it are hidden behind it.</para>
 	/// <para><b>Seams for the HybridWebView and BlazorWebView tracks.</b> <see cref="Engine"/> is the <see cref="IGtkWebEngine"/> of the host;
@@ -38,6 +38,7 @@ namespace Microsoft.Maui.Gtk.Web
 		int _generation;
 		bool _creating;
 		bool _syncingFocus;
+		bool _returningFocus;
 		(int X, int Y, int Width, int Height)? _lastBounds;
 		bool? _lastVisible;
 
@@ -50,6 +51,7 @@ namespace Microsoft.Maui.Gtk.Web
 
 			_focusController = new global::Gtk.EventControllerFocus();
 			_focusController.Enter += OnFocusEnter;
+			_focusController.Leave += OnFocusLeave;
 			AddController(_focusController);
 		}
 
@@ -301,6 +303,24 @@ namespace Microsoft.Maui.Gtk.Web
 				_controller?.MoveFocusIn();
 		}
 
+		void OnFocusLeave(object? sender, EventArgs e) => FocusLeft();
+
+		/// <summary>
+		/// The host lost the GTK focus to another widget: the Win32 keyboard focus is still in the WebView2 child window (clicking a GTK widget
+		/// does not move it), so it returns to the toplevel. Nothing happens while the window itself is inactive (focus follows the window) or
+		/// when the focus is already on its way back (tab out, <see cref="_returningFocus"/>).
+		/// </summary>
+		internal void FocusLeft()
+		{
+			if (_controller is null || _toplevelHandle == IntPtr.Zero || _returningFocus || _syncingFocus)
+				return;
+
+			if (Root is not global::Gtk.Window { IsActive: true })
+				return;
+
+			_services.FocusToplevel(_toplevelHandle);
+		}
+
 		void OnControllerGotFocus(object? sender, EventArgs e)
 		{
 			// A click inside the web view: make the host the GTK focus widget so Tab and focus rings continue from here.
@@ -320,11 +340,19 @@ namespace Microsoft.Maui.Gtk.Web
 
 		void OnFocusLeaveRequested(object? sender, bool forward)
 		{
-			if (_toplevelHandle != IntPtr.Zero)
-				_services.FocusToplevel(_toplevelHandle);
+			_returningFocus = true;
+			try
+			{
+				if (_toplevelHandle != IntPtr.Zero)
+					_services.FocusToplevel(_toplevelHandle);
 
-			if (Root is global::Gtk.Widget root)
-				root.ChildFocus(forward ? global::Gtk.DirectionType.TabForward : global::Gtk.DirectionType.TabBackward);
+				if (Root is global::Gtk.Widget root)
+					root.ChildFocus(forward ? global::Gtk.DirectionType.TabForward : global::Gtk.DirectionType.TabBackward);
+			}
+			finally
+			{
+				_returningFocus = false;
+			}
 		}
 	}
 }

@@ -10,7 +10,8 @@ namespace Microsoft.Maui.Gtk.Web
 	/// <remarks>
 	/// <para>The controller exists only while the host is realized and is created asynchronously. Until then the engine queues what it is asked
 	/// to do (scripts in order, only the last navigation) and runs it when <see cref="IGtkWebEngine.Ready"/> is raised. After a re-realization
-	/// (the widget was moved to another window) the controller is new: the engine navigates to the address the old one showed; history is lost.</para>
+	/// (the widget was moved to another window) the controller is new: the engine navigates to the address the old one showed (unless <see cref="ReplayOnRecreate"/> is off); history is lost.
+	/// Evaluations still queued when the engine is disposed or the controller cannot be created are completed (cancelled, or faulted with the failure).</para>
 	/// <para>WebView2 raises <c>NavigationStarting</c> for the app's own loads too; the engine swallows the one that follows
 	/// <see cref="LoadUri"/>/<see cref="LoadHtml"/>/<see cref="Reload"/> because the handler already raised <c>Navigating</c> for it.
 	/// <see cref="LoadHtml"/> uses <c>NavigateToString</c>, which has no base URL and a size limit of 2 MB (a larger document fails the navigation).</para>
@@ -36,11 +37,15 @@ namespace Microsoft.Maui.Gtk.Web
 
 		readonly struct QueuedOperation
 		{
-			public QueuedOperation(bool isNavigation, Action<CoreWebView2> run)
+			public QueuedOperation(bool isNavigation, Action<CoreWebView2> run, Action<Exception?>? abandon = null)
 			{
 				IsNavigation = isNavigation;
 				Run = run;
+				Abandon = abandon;
 			}
+
+			/// <summary>Completes the caller's pending request when the operation will never run; <see langword="null"/> when nobody waits for it.</summary>
+			public Action<Exception?>? Abandon { get; }
 
 			public bool IsNavigation { get; }
 
@@ -57,6 +62,12 @@ namespace Microsoft.Maui.Gtk.Web
 
 		/// <inheritdoc/>
 		public global::Gtk.Widget Widget => _host;
+
+		/// <summary>
+		/// Whether a new controller (a re-realization) navigates to the address the closed one showed. Whoever owns the navigation of the control
+		/// (the BlazorWebView transport, which must register its scripts first) sets this to <see langword="false"/> and navigates itself.
+		/// </summary>
+		internal bool ReplayOnRecreate { get; set; } = true;
 
 		/// <summary>The WebView2 control, or <see langword="null"/> before <see cref="Ready"/>.</summary>
 		internal CoreWebView2? Core => _core;
@@ -147,7 +158,7 @@ namespace Microsoft.Maui.Gtk.Web
 
 		/// <inheritdoc/>
 		public void EvaluateScript(string script, EvaluateJavaScriptAsyncRequest request) =>
-			Enqueue(false, core => CompleteEvaluation(core, script, request));
+			Enqueue(false, core => CompleteEvaluation(core, script, request), failure => AbandonEvaluation(request, failure));
 
 		/// <inheritdoc/>
 		public void Dispose()
@@ -160,14 +171,17 @@ namespace Microsoft.Maui.Gtk.Web
 			_host.ControllerClosing -= OnControllerClosing;
 			_host.ControllerFailed -= OnControllerFailed;
 			Detach();
-			_queue.Clear();
+			AbandonQueue(null);
 			_host.CloseController();
 		}
 
-		void Enqueue(bool isNavigation, Action<CoreWebView2> run)
+		void Enqueue(bool isNavigation, Action<CoreWebView2> run, Action<Exception?>? abandon = null)
 		{
 			if (_disposed)
+			{
+				abandon?.Invoke(null);
 				return;
+			}
 
 			if (_core is { } core)
 			{
@@ -178,7 +192,24 @@ namespace Microsoft.Maui.Gtk.Web
 			if (isNavigation)
 				_queue.RemoveAll(o => o.IsNavigation);
 
-			_queue.Add(new QueuedOperation(isNavigation, run));
+			_queue.Add(new QueuedOperation(isNavigation, run, abandon));
+		}
+
+		// The queued operations will never run (disposed, or no controller could be created): complete the requests somebody awaits.
+		void AbandonQueue(Exception? failure)
+		{
+			var abandoned = _queue.ToArray();
+			_queue.Clear();
+			foreach (var operation in abandoned)
+				operation.Abandon?.Invoke(failure);
+		}
+
+		static void AbandonEvaluation(EvaluateJavaScriptAsyncRequest request, Exception? failure)
+		{
+			if (failure is null)
+				request.TrySetCanceled();
+			else
+				request.TrySetException(failure);
 		}
 
 		// WebView2 reports an empty Source for some documents (data: URLs); the address of the navigation that started is the best answer then.
@@ -222,7 +253,7 @@ namespace Microsoft.Maui.Gtk.Web
 
 			Ready?.Invoke(this, EventArgs.Empty);
 
-			if (_replay is { } replay && _queue.Count == 0)
+			if (ReplayOnRecreate && _replay is { } replay && _queue.Count == 0)
 			{
 				// A re-realized host: show what the closed controller showed.
 				var uri = replay();
@@ -252,7 +283,7 @@ namespace Microsoft.Maui.Gtk.Web
 			if (_queue.Exists(o => o.IsNavigation))
 				Navigated?.Invoke(this, new GtkWebNavigatedEventArgs(null, WebNavigationResult.Failure));
 
-			_queue.Clear();
+			AbandonQueue(e);
 		}
 
 		void Detach()
