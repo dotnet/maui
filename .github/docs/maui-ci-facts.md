@@ -297,6 +297,28 @@ extract); or the work item exited non-zero with **zero** named failures. A devic
 > console keeps only the HEAD, where per-test `[FAIL]` lines live, and drops the TAIL where the
 > timeout/crash marker prints).
 
+### Temporary Windows Blazor diagnostics
+
+The diagnostic-only branch for the Windows Blazor missing-results investigation
+records the unpackaged app's exact PID in `blazor-process.log` before waiting.
+Its owned-process observer records CPU time, responsiveness, and the progress
+file's size and last-write time every 30 seconds within the existing two-hour
+Helix work-item limit. `blazor-stdout.log` and `blazor-stderr.log` capture output
+before the app installs its managed logger.
+
+On Windows, the Blazor test app uses `HELIX_WORKITEM_UPLOAD_ROOT` to open
+`blazor-progress-<PID>.log` with automatic flushing. It captures the existing
+Console/TestLogger/XHarness output, enables the pinned runner's
+`XHARNESS_LOG_TEST_START` and `XHARNESS_LOG_THREAD_ID` flags, and records app,
+headless-runner, and WebView2 await boundaries. The managed sink also applies to
+the packaged Blazor comparison; packaged launch, other test apps and native
+platforms, test selection, result generation, and execution budgets are unchanged.
+
+These files are observability, not test results or a hang fix. An absent/empty XML
+still means missing measurements. A completed run that does not reproduce the
+hang is not causal certification. The caller retains its existing `0`/`-1` exit
+guard and requires real result files.
+
 ### Container artifact binlogs
 
 MAUI build artifacts are **Container** type, not `PipelineArtifact`:

@@ -340,7 +340,11 @@ if %IS_PACKAGED%==1 (
         REM Single test run
         echo Starting test executable...
         echo Command: "!TEST_EXE!" "%TEST_RESULTS_FILE%"
-        start "" /wait "!TEST_EXE!" "%TEST_RESULTS_FILE%"
+        if /i "%SCENARIO_NAME%"=="MauiBlazorWebView.DeviceTests" (
+            powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0Run-UnpackagedBlazorDiagnostics.ps1" -Executable "!TEST_EXE!" -ResultsFile "%TEST_RESULTS_FILE%"
+        ) else (
+            start "" /wait "!TEST_EXE!" "%TEST_RESULTS_FILE%"
+        )
         set LAUNCH_ERRORLEVEL=!ERRORLEVEL!
         echo App exited with code: !LAUNCH_ERRORLEVEL!
         if !LAUNCH_ERRORLEVEL! NEQ 0 if !LAUNCH_ERRORLEVEL! NEQ -1 (

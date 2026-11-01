@@ -10,6 +10,7 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests
 	{
 		public static async Task WaitForWebViewReady(WebView2 wv2)
 		{
+			var readyOperation = WindowsTestDiagnostics.BeginOperation("WaitForWebViewReady");
 			CoreWebView2 coreWebView2 = null;
 
 			// Ensure that the WebView2 runtime is installed and initialized and has a CoreWebView2 instance.
@@ -20,7 +21,9 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests
 				{
 					throw new InvalidOperationException("WebView2 runtime is not installed.");
 				}
+				var ensureOperation = WindowsTestDiagnostics.BeginOperation("EnsureCoreWebView2Async");
 				await wv2.EnsureCoreWebView2Async();
+				WindowsTestDiagnostics.WriteStage($"EnsureCoreWebView2Async.complete operation={ensureOperation}");
 			}
 
 			await Retry(() =>
@@ -34,6 +37,7 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests
 			await sem.WaitAsync();
 			wv2.CoreWebView2.DOMContentLoaded += (s, e) =>
 			{
+				WindowsTestDiagnostics.WriteStage($"DOMContentLoaded operation={readyOperation}");
 				domLoaded = true;
 				sem.Release();
 			};
@@ -42,6 +46,7 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests
 
 			if (!domLoaded)
 			{
+				WindowsTestDiagnostics.WriteStage($"DOMContentLoaded.fallback operation={readyOperation}");
 				// It's possible that the DOMContentLoaded event won't fire because it's already loaded by the time we got here. To check
 				// for that, we inspect an arbitrary custom HTML element attribute to see if we can find it. If we can find it, then surely
 				// the DOM content is loaded, so we can continue with the test.
@@ -49,7 +54,7 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests
 				await Retry(
 					async () =>
 					{
-						var testHtmlLoadedAttributeValue = await wv2.CoreWebView2.ExecuteScriptAsync("(document.head.attributes['testhtmlloaded']?.value === 'true')");
+						var testHtmlLoadedAttributeValue = await ExecuteScriptAsync(wv2, "(document.head.attributes['testhtmlloaded']?.value === 'true')");
 
 						// If the event didn't fire, AND we couldn't find the custom HTML element attribute, then the test content didn't load
 						return testHtmlLoadedAttributeValue == "true";
@@ -59,12 +64,16 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests
 						return Task.FromResult(new Exception($"Waited {timeoutInMS}ms but couldn't get CoreWebView2.DOMContentLoaded to complete."));
 					});
 			}
+			WindowsTestDiagnostics.WriteStage($"WaitForWebViewReady.complete operation={readyOperation}");
 			return;
 		}
 
 		public static async Task<string> ExecuteScriptAsync(WebView2 webView2, string script)
 		{
-			return await webView2.CoreWebView2.ExecuteScriptAsync(javaScript: script);
+			var operation = WindowsTestDiagnostics.BeginOperation("ExecuteScriptAsync");
+			var result = await webView2.CoreWebView2.ExecuteScriptAsync(javaScript: script);
+			WindowsTestDiagnostics.WriteStage($"ExecuteScriptAsync.complete operation={operation}");
+			return result;
 		}
 	}
 }

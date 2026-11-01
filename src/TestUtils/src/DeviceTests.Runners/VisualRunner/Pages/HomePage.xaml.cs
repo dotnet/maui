@@ -24,6 +24,9 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner.Pages
 			string? testResultsFile = null;
 
 #if WINDOWS
+			var diagnosticsEnabled = Environment.GetEnvironmentVariable("MAUI_BLAZOR_TEST_DIAGNOSTICS") == "1";
+			if (diagnosticsEnabled)
+				Console.WriteLine($"{DateTime.UtcNow:O} pid={Environment.ProcessId} stage=HomePage.Loaded");
 			var cliArgs = Environment.GetCommandLineArgs();
 			if (cliArgs.Length > 1)
 			{
@@ -48,8 +51,14 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner.Pages
 				}
 				else
 				{
+					if (diagnosticsEnabled)
+						Console.WriteLine($"{DateTime.UtcNow:O} pid={Environment.ProcessId} stage=HeadlessTestRunner.resolve");
 					var headlessRunner = Handler!.MauiContext!.Services.GetRequiredService<HeadlessTestRunner>();
+					if (diagnosticsEnabled)
+						Console.WriteLine($"{DateTime.UtcNow:O} pid={Environment.ProcessId} stage=HeadlessTestRunner.RunTestsAsync.start");
 					await headlessRunner.RunTestsAsync();
+					if (diagnosticsEnabled)
+						Console.WriteLine($"{DateTime.UtcNow:O} pid={Environment.ProcessId} stage=HeadlessTestRunner.RunTestsAsync.complete");
 				}
 #endif
 
