@@ -172,7 +172,7 @@ Not in this area: Shell, CollectionView, Maps, NavigationPage/Toolbar/FlyoutPage
 
 | Project | Tests (Windows GTK 4.22 / Ubuntu 24.04 GTK 4.14, xvfb) |
 |---------|------|
-| `Microsoft.Maui.Gtk.UnitTests` (Core + Essentials + Handlers + Controls + Web + Maps) | Windows 778 passed, 17 skipped (WebKit: not shipped for Windows); Ubuntu 24.04 (GTK 4.14, xvfb) 795 passed, 0 skipped |
+| `Microsoft.Maui.Gtk.UnitTests` (Core + Essentials + Handlers + Controls + Web + Maps) | Windows 796 passed, 17 skipped (WebKit: not shipped for Windows); Ubuntu 24.04 (GTK 4.14, xvfb) 813 passed, 0 skipped |
 | `Graphics.Cairo.Tests` | 125 passed, 0 skipped |
 | `Essentials.UnitTests` (net10.0) | 441 passed, 0 skipped |
 | `Core.UnitTests` / `Controls.Core.UnitTests` (net10.0) | 884 (+3 skipped) / 5869 (+30 skipped) passed |
@@ -184,6 +184,7 @@ Not in this area: Shell, CollectionView, Maps, NavigationPage/Toolbar/FlyoutPage
 - The host captures the native stderr, so layout violations ("Allocating size ... without calling gtk_widget_measure"), CSS parser errors
   and other GTK criticals fail the tests that call `GtkTestHost.AssertNoComplaints()`.
 - GTK validates CSS from the frame clock: after a style change wait with `GtkTestHost.PumpUntil`, do not assume one `Pump` is enough.
+- `AtSpiAccessibilityTests` read the accessibility tree back through `libatspi` (Linux; needs the a11y bus, so `dbus-run-session`; they return without asserting where it is missing), `UiaAccessibilityTests` through UI Automation (Windows).
 - Public API: `PublicAPI/net/PublicAPI.*.txt` (generated in Debug by `PublicAPI.targets`).
 
 ## Known limitations
@@ -191,7 +192,7 @@ Not in this area: Shell, CollectionView, Maps, NavigationPage/Toolbar/FlyoutPage
 - `SwipeItemView` is resolved by Controls to the content view handler (it is a `ContentView`); `Microsoft.Maui.Controls.Gtk` registers `SwipeItemView -> SwipeItemViewHandler`.
 - Windows builds pack/test `net10.0`/`netstandard` only (mobile/Windows TFMs are disabled locally by `Directory.Build.Override.props`).
 - Window position, maximum window size.
-- Accessibility: GTK fixes a widget's role when it joins a window, so a `HeadingLevel` set after the label is in a window keeps the old role (set it before, e.g. in XAML). `IsInAccessibleTree=false` hides the children too (GTK has only the hidden state). No `TabIndex`/`IsTabStop` (not in MAUI). The Windows GTK 4.22 AccessKit backend crashes the process when a toplevel window itself is announced on; announcements go to the window content.
+- Accessibility: GTK fixes a widget's role when it joins a window, so a `HeadingLevel` set after the label is in a window keeps the old role (set it before, e.g. in XAML). `IsInAccessibleTree=false` hides the children too (GTK has only the hidden state). No `TabIndex`/`IsTabStop` (not in MAUI). Backends: Ubuntu 24.04 (GTK 4.14) AT-SPI publishes label, description, roles, `CHECKED`, `SENSITIVE`, `EDITABLE` (verified through `libatspi`) but not the `HIDDEN` state, the `LABELLED_BY` relation, the heading `LEVEL` or the spin button value (that needs `GtkAccessibleRange`, which a custom widget cannot implement through GtkSharp): they are set for backends that honour them. Windows: GTK 4.22.4 contains the AccessKit backend but runs the null (test) context also with `GTK_A11Y=accesskit`, so UI Automation sees the toplevel window only (probe: `UiaAccessibilityTests`); announcing on a toplevel crashes the process there, so announcements go to the window content.
 
 
 ## Building

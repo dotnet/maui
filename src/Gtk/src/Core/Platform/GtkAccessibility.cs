@@ -43,6 +43,8 @@ namespace Microsoft.Maui.Gtk.Platform
 			public bool LabelSet;
 			public bool DescriptionSet;
 			public bool LevelSet;
+			public string? Description;
+			public bool TracksLabelText;
 		}
 
 		/// <summary>The property name <c>AutomationProperties.IsInAccessibleTree</c> raises on the handler.</summary>
@@ -145,6 +147,20 @@ namespace Microsoft.Maui.Gtk.Platform
 			return widget.AccessibleRole == role;
 		}
 
+		// A GtkLabel (and the labelled buttons) publish their text as their accessible label whenever it changes, which would drop the description again.
+		static void KeepLabelOverText(global::Gtk.Widget widget, State state)
+		{
+			if (state.TracksLabelText || widget is not (global::Gtk.Label or global::Gtk.CheckButton or global::Gtk.Button))
+				return;
+
+			state.TracksLabelText = true;
+			widget.AddNotification("label", (o, a) =>
+			{
+				if (!string.IsNullOrEmpty(state.Description))
+					SetProperty(widget, global::Gtk.AccessibleProperty.Label, state.Description);
+			});
+		}
+
 		static void Sync(global::Gtk.IAccessible accessible, global::Gtk.AccessibleProperty property, string? value, ref bool isSet)
 		{
 			if (!string.IsNullOrEmpty(value))
@@ -169,6 +185,8 @@ namespace Microsoft.Maui.Gtk.Platform
 
 			// Only what this mapping set is removed again: GTK fills in some properties itself (a label from its text).
 			Sync(widget, global::Gtk.AccessibleProperty.Label, semantics?.Description, ref state.LabelSet);
+			state.Description = semantics?.Description;
+			KeepLabelOverText(widget, state);
 			Sync(widget, global::Gtk.AccessibleProperty.Description, semantics?.Hint, ref state.DescriptionSet);
 
 			int level = semantics is null ? 0 : (int)semantics.HeadingLevel;
