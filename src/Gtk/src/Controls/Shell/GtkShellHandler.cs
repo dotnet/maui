@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Controls.Gtk.Handlers
 		readonly MauiGtkFillHost _contentHost = new() { Vexpand = true };
 		readonly GtkBox _detailBox = new(global::Gtk.Orientation.Vertical, 0) { Hexpand = true, Vexpand = true };
 		readonly MauiGtkTabView _tabs = new() { Hexpand = true, Vexpand = true };
-		readonly List<GtkImageLoader> _loaders = new();
+		readonly Dictionary<BaseShellItem, GtkImageLoader> _loaders = new();
 		readonly List<View> _rowViews = new();
 		readonly Dictionary<ShellSection, MauiGtkTabView> _inner = new();
 		GtkShellSearch? _search;
@@ -509,7 +509,7 @@ namespace Microsoft.Maui.Controls.Gtk.Handlers
 			_inner.Clear();
 			_sections.Clear();
 
-			foreach (var loader in _loaders)
+			foreach (var loader in _loaders.Values)
 				loader.Reset();
 			_loaders.Clear();
 		}
@@ -578,14 +578,15 @@ namespace Microsoft.Maui.Controls.Gtk.Handlers
 					_tabs.SetTab(current, section.Title, texture);
 			});
 
+		// One loader per item: a new load supersedes the previous one (a slower old load cannot overwrite it), and an empty icon applies null,
+		// which clears the icon the item showed before.
 		void LoadIcon(BaseShellItem item, Action<Gdk.Texture?> apply)
 		{
-			if (item.Icon is not { IsEmpty: false } icon)
-				return;
+			if (!_loaders.TryGetValue(item, out var loader))
+				_loaders[item] = loader = new GtkImageLoader();
 
-			var loader = new GtkImageLoader();
-			_loaders.Add(loader);
-			_ = loader.UpdateAsync(this, new IconPart(icon), apply);
+			var part = item.Icon is { IsEmpty: false } icon ? new IconPart(icon) : null;
+			_ = loader.UpdateAsync(this, part, apply);
 		}
 
 		void OnSectionNavigationRequested(object? sender, NavigationRequestedEventArgs args)

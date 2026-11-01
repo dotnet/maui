@@ -419,6 +419,32 @@ namespace Microsoft.Maui.Gtk.UnitTests
 			}
 		});
 
+		[GtkFact]
+		public void ClearingASectionIconRemovesItFromTheTab() => GtkTestHost.Run(() =>
+		{
+			var path = TestImages.WritePng(8, 8, 255, 0, 0);
+			try
+			{
+				var one = new ShellContent { Title = "One", Icon = ImageSource.FromFile(path), Content = Page("one") };
+				var shell = new Shell { Items = { new TabBar { Items = { one, new ShellContent { Title = "Two", Content = Page("two") } } } } };
+				using var host = new ControlsWindowHost(shell, 800, 500);
+				var tabs = ((GtkShellHandler)shell.Handler!).Tabs;
+
+				Assert.True(GtkTestHost.PumpUntil(() => GtkTestHost.Find<global::Gtk.Image>(tabs.ButtonAt(0)).Single().Visible, host.PlatformWindow));
+
+				one.Icon = null;
+				Assert.True(GtkTestHost.PumpUntil(() => !GtkTestHost.Find<global::Gtk.Image>(tabs.ButtonAt(0)).Single().Visible, host.PlatformWindow), "the old icon stayed");
+
+				// Setting it again shows the new one.
+				one.Icon = ImageSource.FromFile(path);
+				Assert.True(GtkTestHost.PumpUntil(() => GtkTestHost.Find<global::Gtk.Image>(tabs.ButtonAt(0)).Single().Visible, host.PlatformWindow));
+			}
+			finally
+			{
+				System.IO.File.Delete(path);
+			}
+		});
+
 		static FlyoutItem TwoContentItem(out ShellSection section, out ShellContent first, out ShellContent second)
 		{
 			first = new ShellContent { Title = "First", Content = Page("first") };
