@@ -718,7 +718,7 @@ namespace Microsoft.Maui.DeviceTests
 							Math.Abs(horizontalGap - horizontal) <= 1 &&
 							Math.Abs(verticalGap - vertical) <= 1;
 					});
-					var panel = handler.PlatformView.GetFirstDescendant<ItemsWrapGrid>();
+					var panel = handler.PlatformView.GetFirstDescendant<Microsoft.UI.Xaml.Controls.ItemsWrapGrid>();
 					Assert.True(matched, $"Expected gaps {horizontal}/{vertical}, got {horizontalGap}/{verticalGap}; first item {first?.ActualWidth}x{first?.ActualHeight}; panel item width {panel?.ItemWidth}.");
 				}
 
