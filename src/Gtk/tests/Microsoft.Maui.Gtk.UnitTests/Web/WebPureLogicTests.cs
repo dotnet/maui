@@ -114,7 +114,7 @@ public class GtkHybridWebViewResponderTests
 		public string? DefaultFile = "index.html";
 		public byte[]? EmbeddedScript = Encoding.UTF8.GetBytes("/* hybrid */");
 
-		public GtkHybridWebViewResponder Create() => new(
+		public GtkHybridWebViewResponder Create(Uri? origin = null) => new(
 			() => HybridRoot,
 			() => DefaultFile,
 			body =>
@@ -128,7 +128,8 @@ public class GtkHybridWebViewResponderTests
 				Opened.Add(key);
 				return Task.FromResult<Stream?>(Files.TryGetValue(key, out var bytes) ? new MemoryStream(bytes) : null);
 			},
-			name => name == "_framework/hybridwebview.js" && EmbeddedScript is not null ? new MemoryStream(EmbeddedScript) : null);
+			name => name == "_framework/hybridwebview.js" && EmbeddedScript is not null ? new MemoryStream(EmbeddedScript) : null,
+			origin: origin);
 	}
 
 	static GtkUriSchemeRequest Get(string url) => new(url, "GET", Array.Empty<byte>(), Origin);
@@ -268,4 +269,91 @@ public class GtkHybridWebViewResponderTests
 	[InlineData(null, false)]
 	public void OnlyPagesOfTheAppOriginAreTrusted(string? pageUri, bool expected) =>
 		Assert.Equal(expected, GtkHybridWebViewResponder.IsFromAppOrigin(pageUri));
+
+	const string WebView2Origin = "https://0.0.0.1/";
+
+	static GtkUriSchemeRequest WebView2Request(string url, string method, byte[] body, params (string Name, string Value)[] headers) =>
+		new(url, method, body, null, headers.Select(h => new KeyValuePair<string, string>(h.Name, h.Value)).ToList());
+
+	[Fact]
+	public async Task TheWebView2OriginServesFilesAndRejectsTheWebKitOrigin()
+	{
+		var fixture = new Fixture();
+		fixture.Files["wwwroot/index.html"] = Encoding.UTF8.GetBytes("<html/>");
+		var responder = fixture.Create(GtkHybridWebViewResponder.WebView2OriginUri);
+
+		var root = await responder.RespondAsync(WebView2Request(WebView2Origin, "GET", Array.Empty<byte>()));
+		var script = await responder.RespondAsync(WebView2Request(WebView2Origin + "_framework/hybridwebview.js", "GET", Array.Empty<byte>()));
+		var foreign = await responder.RespondAsync(Get(Origin + "index.html"));
+
+		Assert.Equal(200, root.Status);
+		Assert.Equal("text/html", root.ContentType);
+		Assert.Equal("<html/>", Encoding.UTF8.GetString(root.Body));
+		Assert.Equal(200, script.Status);
+		Assert.Equal(404, foreign.Status);
+	}
+
+	[Fact]
+	public async Task InvokeDotNetOnWebView2NeedsTheInvokeTokenHeader()
+	{
+		var fixture = new Fixture();
+		var responder = fixture.Create(GtkHybridWebViewResponder.WebView2OriginUri);
+		var url = WebView2Origin + "__hwvInvokeDotNet";
+
+		// The page URI is unknown to WebView2 requests: the headers decide.
+		var withoutToken = await responder.RespondAsync(WebView2Request(url, "POST", new byte[] { 1 }, ("Origin", "https://0.0.0.1")));
+		var wrongOrigin = await responder.RespondAsync(WebView2Request(url, "POST", new byte[] { 1 }, ("X-Maui-Invoke-Token", "HybridWebView"), ("Origin", "https://evil.example")));
+		var accepted = await responder.RespondAsync(WebView2Request(url, "POST", new byte[] { 1 }, ("X-Maui-Invoke-Token", "HybridWebView"), ("Origin", "https://0.0.0.1")));
+		var referer = await responder.RespondAsync(WebView2Request(url, "POST", new byte[] { 2 }, ("X-Maui-Invoke-Token", "HybridWebView"), ("Referer", "https://0.0.0.1/")));
+
+		Assert.Equal(400, withoutToken.Status);
+		Assert.Equal(400, wrongOrigin.Status);
+		Assert.Equal(200, accepted.Status);
+		Assert.Equal(200, referer.Status);
+		Assert.Equal(new byte[] { 2 }, fixture.InvokeInput);
+	}
+
+	[Fact]
+	public async Task InvokeDotNetOnWebView2StillNeedsAPostWithABody()
+	{
+		var responder = new Fixture().Create(GtkHybridWebViewResponder.WebView2OriginUri);
+		var url = WebView2Origin + "__hwvInvokeDotNet";
+		var headers = new[] { ("X-Maui-Invoke-Token", "HybridWebView"), ("Origin", "https://0.0.0.1") };
+
+		Assert.Equal(405, (await responder.RespondAsync(WebView2Request(url, "GET", Array.Empty<byte>(), headers))).Status);
+		Assert.Equal(400, (await responder.RespondAsync(WebView2Request(url, "POST", Array.Empty<byte>(), headers))).Status);
+	}
+
+	[Theory]
+	[InlineData("https://0.0.0.1/", true)]
+	[InlineData("https://0.0.0.1/sub/page.html", true)]
+	[InlineData("https://0.0.0.2/", false)]
+	[InlineData("app://0.0.0.1/", false)]
+	[InlineData(null, false)]
+	public void PageTrustFollowsTheGivenOrigin(string? pageUri, bool expected) =>
+		Assert.Equal(expected, GtkHybridWebViewResponder.IsFromOrigin(GtkHybridWebViewResponder.WebView2OriginUri, pageUri));
+
+	[Theory]
+	[InlineData("plain")]
+	[InlineData("a b%c+d&e=é€")]
+	[InlineData("nul\u0000inside")]
+	public void WebView2MessagesSurviveTheUrlEncodingRoundTrip(string message)
+	{
+		var encoded = GtkHybridWebView2Bridge.EncodeMessage(message);
+
+		Assert.DoesNotContain('\u0000', encoded);
+		Assert.Equal(message, GtkHybridWebView2Bridge.DecodeMessage(encoded));
+		// What hybridwebview.js posts is encodeURIComponent(message).
+		Assert.Equal(message, GtkHybridWebView2Bridge.DecodeMessage(Uri.EscapeDataString(message)));
+	}
+
+	[Fact]
+	public void WebView2ResponseHeadersCarryLengthAndTypeWhenKnown()
+	{
+		Assert.Equal(
+			"Content-Length: 3\r\nContent-Type: text/html\r\n",
+			GtkHybridWebView2Bridge.BuildHeaders(GtkUriSchemeResponse.Ok("text/html", new byte[3])));
+		Assert.Equal(string.Empty, GtkHybridWebView2Bridge.BuildHeaders(GtkUriSchemeResponse.NotFound()));
+		Assert.Equal("Content-Length: 1\r\n", GtkHybridWebView2Bridge.BuildHeaders(GtkUriSchemeResponse.Ok(null, new byte[1])));
+	}
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Microsoft.Maui.Gtk.Web
@@ -7,8 +8,9 @@ namespace Microsoft.Maui.Gtk.Web
 	internal sealed class GtkUriSchemeRequest
 	{
 		/// <summary>Creates a request.</summary>
-		public GtkUriSchemeRequest(string url, string method, byte[] body, string? pageUri)
+		public GtkUriSchemeRequest(string url, string method, byte[] body, string? pageUri, IReadOnlyCollection<KeyValuePair<string, string>>? headers = null)
 		{
+			Headers = headers;
 			Url = url;
 			Method = method;
 			Body = body;
@@ -23,6 +25,9 @@ namespace Microsoft.Maui.Gtk.Web
 
 		/// <summary>The request body; empty when there is none.</summary>
 		public byte[] Body { get; }
+
+		/// <summary>The request headers, or <see langword="null"/> where the engine exposes none (WebKitGTK).</summary>
+		public IReadOnlyCollection<KeyValuePair<string, string>>? Headers { get; }
 
 		/// <summary>The URI of the page that issued the request (the web view's current URI), if known.</summary>
 		public string? PageUri { get; }

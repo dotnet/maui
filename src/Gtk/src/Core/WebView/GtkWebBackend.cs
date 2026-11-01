@@ -24,8 +24,8 @@ namespace Microsoft.Maui.Gtk.Web
 	/// </summary>
 	/// <remarks>
 	/// <see cref="CreatePlatformView"/> / <see cref="CreateEngine"/> are the seam the handlers use: the WebView handler goes through both; the
-	/// HybridWebView and BlazorWebView handlers still create WebKit views directly (<c>GtkWebKit.CreatePlatformView</c>) and switch to these
-	/// two calls when they get their WebView2 transport, reaching engine-specific features through <see cref="MauiGtkWebView2Host"/>.
+	/// HybridWebView goes through <see cref="CreatePlatformView"/> too (reaching engine-specific features through <see cref="MauiGtkWebView2Host"/>);
+	/// the BlazorWebView handler still creates WebKit views directly (<c>GtkWebKit.CreatePlatformView</c>) and switches when it gets its WebView2 transport.
 	/// </remarks>
 	internal static class GtkWebBackend
 	{

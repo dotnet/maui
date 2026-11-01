@@ -7,7 +7,7 @@ On Linux the controls run on **WebKitGTK 6** (`libwebkitgtk-6.0`) through `Webki
 **Windows:** `WebView` runs on **WebView2** (`Microsoft.Web.WebView2`, referenced by `Microsoft.Maui.Gtk`; needs the WebView2 Runtime, part of Windows 11 and Edge).
 `GtkWebBackend` picks the engine at run time (Linux -> WebKitGTK, Windows -> WebView2, else a placeholder label); without the runtime the label reads
 "WebView2 Runtime not installed (https://go.microsoft.com/fwlink/p/?LinkId=2124703)". `MAUI_GTK_DISABLE_WEBVIEW2=1` forces the placeholder.
-HybridWebView and BlazorWebView still create WebKit views only, so on Windows they show the placeholder until their WebView2 transports land (the seams below are for them).
+`HybridWebView` runs on WebView2 too (see "HybridWebView" below); BlazorWebView still creates WebKit views only, so on Windows it shows the placeholder until its WebView2 transport lands (the seams below are for it).
 
 ### WebView2 backend
 
@@ -16,7 +16,7 @@ HybridWebView and BlazorWebView still create WebKit views only, so on Windows th
 | `MauiGtkWebView2Host` | empty focusable `Gtk.Widget` that owns the `CoreWebView2Controller`: created on *realize* with the toplevel's HWND (`gdk_win32_surface_get_handle`), closed on *unrealize*. Bounds = widget bounds + the surface transform, times `gdk_surface_get_scale`, pushed on size-allocate, map and every frame-clock layout (a position-only change does not allocate); visible exactly while mapped (a hidden ancestor hides it); GTK focus -> `MoveFocus`, a click inside -> GTK `grab_focus`, Tab out -> toplevel `SetFocus` + `child_focus`; toplevel moves (`EVENT_OBJECT_LOCATIONCHANGE`) -> `NotifyParentWindowPositionChanged` |
 | `GtkWebView2Environment` | availability probe (`GetAvailableBrowserVersionString`) and the one shared `CoreWebView2Environment`; user data folder `WEBVIEW2_USER_DATA_FOLDER`, else `%LOCALAPPDATA%\<process name>\WebView2` |
 | `IGtkWebEngine` | what the WebView handler needs from an engine: `GtkWebKitEngine` (the former handler code) and `MauiGtkWebView2Engine`. WebView2 queues scripts and the last navigation until the controller exists, and replays the address after a re-realization (history is lost) |
-| Seams for HybridWebView / BlazorWebView | `GtkWebBackend.CreatePlatformView` / `CreateEngine`; `MauiGtkWebView2Host.CoreWebView2Initialized` (raised per controller before the first navigation: add `WebResourceRequested` filters, document-created scripts, `WebMessageReceived`), `.CoreWebView2`, `.Controller`, `.Services` (fakes in tests); `GtkWebView2Environment.GetAsync` |
+| Seams for HybridWebView (used) / BlazorWebView | `GtkWebBackend.CreatePlatformView` / `CreateEngine`; `MauiGtkWebView2Host.CoreWebView2Initialized` (raised per controller before the first navigation: add `WebResourceRequested` filters, document-created scripts, `WebMessageReceived`), `.CoreWebView2`, `.Controller`, `.Services` (fakes in tests); `GtkWebView2Environment.GetAsync` |
 
 WebView2 notes: the control exists only once the host is in a realized window (a view that is not in a window loads nothing yet); `HtmlWebViewSource.BaseUrl` is ignored and HTML is limited to 2 MB;
 the web view is a native child window, see "airspace" under Known limitations in the main README.
@@ -53,7 +53,8 @@ Implementation note: GtkSharp's event wrappers of the `gboolean`-returning WebKi
   The scheme is registered once on the default `WebContext` as secure and CORS-enabled (`fetch()` to a custom scheme needs it) and routed to the requesting view.
 - `hybridwebview.js` already speaks the iOS protocol: JavaScript posts to `window.webkit.messageHandlers.webwindowinterop` (registered on the view's `UserContentManager`), .NET answers with `window.external.receiveMessage(...)`.
 - `InvokeDotNet` is a `fetch` to `__hwvInvokeDotNet` answered by `GtkHybridWebViewResponder`. **WebKitGTK exposes no request headers**, so the `X-Maui-Invoke-Token`/`Origin` check of the other platforms is replaced by: `POST` with a body, issued by a page of the app origin. Script messages are accepted only while the view shows a page of the app origin.
-- `WebResourceRequested` interception is not available.
+- App-side `WebResourceRequested` interception (`WebViewInitializationCompleted`'s `CoreWebView2`) is not available.
+- **Windows (WebView2):** the app origin is **`https://0.0.0.1/`** (as on Windows and Android). `GtkHybridWebView2Bridge` adds a `WebResourceRequested` filter `https://0.0.0.1/*` and answers it with the same `GtkHybridWebViewResponder` (WebView2 deferral completed on the GTK thread; the response body is a `MemoryStream` WebView2 reads after the handler returned). WebView2 exposes request headers, so `__hwvInvokeDotNet` gets the `X-Maui-Invoke-Token` + `Origin`/`Referer` check of the other platforms. `hybridwebview.js` posts with `chrome.webview.postMessage(encodeURIComponent(msg))` (`WebMessageReceived`, accepted from the app origin only) and receives `PostWebMessageAsString(Uri.EscapeDataString(msg))`; messages sent before the controller exists are kept and posted when it is configured. `EvaluateJavaScriptAsync`/`InvokeJavaScriptAsync` go through the engine's `ExecuteScriptAsync`. The shared WebView2 environment is used, so `WebViewInitializationStartedEventArgs.BrowserExecutableFolder`/`UserDataFolder`/`EnvironmentOptions` and the controller options are not applied (`WebViewInitializationCompleted` carries no `CoreWebView2`; use `MauiGtkWebView2Host.CoreWebView2Initialized`).
 
 ## BlazorWebView
 
@@ -82,7 +83,8 @@ builder.Services.AddMauiBlazorWebView().UseGtkPlatformHandler();   // after the 
 | Placeholder handlers (`[GtkFact]`) | GTK 4 | Windows and Linux (with an engine the same tests assert the real view) |
 | WebView on the platform engine (`[WebEngineFact]`, `WebViewHandlerTests`): navigation, cancel, history, JavaScript, user agent, disconnect | WebKitGTK 6 + display, or the WebView2 Runtime | Linux (WebKit) and Windows (WebView2); skipped with the reason where no engine is usable |
 | Real WebView2 (`[WebView2Fact]`, `WebView2EngineTests`): queued operations, controller bounds and visibility, child window + input, re-realization, `CoreWebView2Initialized`, cookies, new-window links | WebView2 Runtime | Windows only |
-| Hybrid messaging and `InvokeDotNet`, Blazor render + click (`[WebKitFact]`) | WebKitGTK 6 + display | Linux only; skipped with the reason on Windows; set `MAUI_GTK_REQUIRE_NATIVE=1` to make an unusable runtime a failure |
+| HybridWebView page load, `InvokeDotNet`, raw messages, `EvaluateJavaScriptAsync`/`InvokeJavaScriptAsync`, foreign-origin messages, 400/404/405 answers (`[WebEngineFact]`, `HybridWebViewHandlerTests`; token header check `[WebView2Fact]`) | WebKitGTK 6 + display, or the WebView2 Runtime | Linux (WebKit) and Windows (WebView2); skipped with the reason where no engine is usable |
+| Blazor render + click (`[WebKitFact]`) | WebKitGTK 6 + display | Linux only; skipped with the reason on Windows; set `MAUI_GTK_REQUIRE_NATIVE=1` to make an unusable runtime a failure |
 
 ```bash
 # Debian 13 / WSL, headless

@@ -15,13 +15,18 @@ namespace Microsoft.Maui.Gtk.Web
 	/// <remarks>
 	/// WebKitGTK does not expose the headers of a scheme request, so the <c>X-Maui-Invoke-Token</c>/<c>Origin</c> check the other platforms apply
 	/// to <c>__hwvInvokeDotNet</c> is replaced by two checks: the request must be a <c>POST</c> with a body, and it must come from a page
-	/// of the app origin (<see cref="GtkUriSchemeRequest.PageUri"/>).
+	/// of the app origin (<see cref="GtkUriSchemeRequest.PageUri"/>). WebView2 exposes the headers: a request that carries
+	/// <see cref="GtkUriSchemeRequest.Headers"/> (served on <see cref="WebView2OriginUri"/>) gets the header check of Windows, Android and iOS instead.
 	/// </remarks>
 	internal sealed class GtkHybridWebViewResponder
 	{
 		/// <summary>The app origin HybridWebView serves on GTK. <c>https</c> cannot be served by an app on WebKit, so the <c>app</c> scheme is used.</summary>
 		internal static readonly Uri AppOriginUri = new(GtkWebViewScripts.AppScheme + "://0.0.0.1/");
 
+		/// <summary>The app origin HybridWebView serves on WebView2: <c>https://0.0.0.1/</c>, as on Windows and Android.</summary>
+		internal static readonly Uri WebView2OriginUri = new("https://0.0.0.1/");
+
+		readonly Uri _origin;
 		readonly Func<string?> _hybridRoot;
 		readonly Func<string?> _defaultFile;
 		readonly Func<byte[], Task<byte[]?>> _invokeDotNet;
@@ -36,14 +41,17 @@ namespace Microsoft.Maui.Gtk.Web
 		/// <param name="openAsset">Opens an app package file, or returns <see langword="null"/> when there is none.</param>
 		/// <param name="openEmbedded">Opens an embedded resource, or returns <see langword="null"/>.</param>
 		/// <param name="logger">The logger, if any.</param>
+		/// <param name="origin">The app origin to serve, or <see langword="null"/> for <see cref="AppOriginUri"/>.</param>
 		public GtkHybridWebViewResponder(
 			Func<string?> hybridRoot,
 			Func<string?> defaultFile,
 			Func<byte[], Task<byte[]?>> invokeDotNet,
 			Func<string, Task<Stream?>> openAsset,
 			Func<string, Stream?> openEmbedded,
-			ILogger? logger = null)
+			ILogger? logger = null,
+			Uri? origin = null)
 		{
+			_origin = origin ?? AppOriginUri;
 			_hybridRoot = hybridRoot;
 			_defaultFile = defaultFile;
 			_invokeDotNet = invokeDotNet;
@@ -58,13 +66,13 @@ namespace Microsoft.Maui.Gtk.Web
 		{
 			var url = WebUtils.RemovePossibleQueryString(request.Url);
 
-			if (!Uri.TryCreate(url, UriKind.Absolute, out var uri) || !AppOriginUri.IsBaseOf(uri))
+			if (!Uri.TryCreate(url, UriKind.Absolute, out var uri) || !_origin.IsBaseOf(uri))
 			{
 				_logger?.LogDebug("Request for {Url} is not for the app origin.", url);
 				return GtkUriSchemeResponse.NotFound();
 			}
 
-			var relativePath = WebUtils.ResolveRelativePath(AppOriginUri, uri);
+			var relativePath = WebUtils.ResolveRelativePath(_origin, uri);
 			if (relativePath is null)
 			{
 				_logger?.LogDebug("Request for {Url} resolved to an invalid path.", url);
@@ -111,7 +119,15 @@ namespace Microsoft.Maui.Gtk.Web
 
 		async Task<GtkUriSchemeResponse> InvokeDotNetAsync(GtkUriSchemeRequest request)
 		{
-			if (!IsFromAppOrigin(request.PageUri))
+			if (request.Headers is { } headers)
+			{
+				if (!HybridWebViewHandler.HasExpectedHeaders(headers))
+				{
+					_logger?.LogError("InvokeDotNet endpoint missing or invalid request header");
+					return GtkUriSchemeResponse.BadRequest();
+				}
+			}
+			else if (!IsFromOrigin(_origin, request.PageUri))
 			{
 				_logger?.LogError("InvokeDotNet endpoint called from outside the app origin");
 				return GtkUriSchemeResponse.BadRequest();
@@ -137,8 +153,13 @@ namespace Microsoft.Maui.Gtk.Web
 
 		/// <summary>Whether a page URI belongs to the app origin; a missing URI does not.</summary>
 		/// <param name="pageUri">The URI of the page that made a request or posted a message.</param>
-		internal static bool IsFromAppOrigin(string? pageUri) =>
-			Uri.TryCreate(pageUri, UriKind.Absolute, out var page) && AppOriginUri.IsBaseOf(page);
+		internal static bool IsFromAppOrigin(string? pageUri) => IsFromOrigin(AppOriginUri, pageUri);
+
+		/// <summary>Whether a page URI belongs to <paramref name="origin"/>; a missing URI does not.</summary>
+		/// <param name="origin">The app origin.</param>
+		/// <param name="pageUri">The URI of the page that made a request or posted a message.</param>
+		internal static bool IsFromOrigin(Uri origin, string? pageUri) =>
+			Uri.TryCreate(pageUri, UriKind.Absolute, out var page) && origin.IsBaseOf(page);
 
 		static async Task<byte[]> ReadAllAsync(Stream stream)
 		{
