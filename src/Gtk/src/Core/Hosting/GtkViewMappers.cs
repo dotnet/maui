@@ -87,6 +87,9 @@ namespace Microsoft.Maui.Gtk.Hosting
 			if (!ReferenceEquals(outer, platformView))
 				platformView.Visible = visible;
 
+			// GTK rewrites the accessible Hidden state when a widget is shown or hidden: re-apply an exclusion from the accessibility tree.
+			GtkAccessibility.UpdateHidden(platformView, view);
+
 			UpdateOpacity(handler, view);
 		}
 

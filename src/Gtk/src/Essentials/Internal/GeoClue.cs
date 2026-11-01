@@ -172,6 +172,7 @@ sealed class GeoClueSession : ILocationSession
 	readonly object gate = new();
 	IGeoClueClient? client;
 	bool started;
+	bool starting; // inside IGeoClueClient.Start: the client must not be recycled yet
 	bool disposed;
 
 	internal GeoClueSession(IGeoClueService service, string desktopId, uint accuracyLevel, uint thresholdSeconds)
@@ -202,42 +203,85 @@ sealed class GeoClueSession : ILocationSession
 
 	void StartClient()
 	{
+		IGeoClueClient created;
 		try
 		{
-			var created = service.CreateClient();
-			created.LocationUpdated += OnLocationUpdated;
-
-			lock (gate)
-			{
-				if (disposed)
-				{
-					created.LocationUpdated -= OnLocationUpdated;
-					created.Dispose();
-					return;
-				}
-
-				client = created;
-			}
-
-			created.Start(desktopId, accuracyLevel, thresholdSeconds);
-
-			bool stop;
-			lock (gate)
-				stop = disposed;
-
-			if (stop)
-				created.Stop(); // disposed while starting: the dispose path may have stopped it before this start
+			created = service.CreateClient();
 		}
 		catch (Exception ex)
 		{
-			lock (gate)
+			ReportFailure(ex);
+			return;
+		}
+
+		created.LocationUpdated += OnLocationUpdated;
+
+		lock (gate)
+		{
+			if (disposed)
 			{
-				if (disposed)
-					return;
+				created.LocationUpdated -= OnLocationUpdated;
+				created.Dispose();
+				return;
 			}
 
-			Failed?.Invoke(this, ex is GeoClueException { Unauthorized: true } ? GeolocationError.Unauthorized : GeolocationError.PositionUnavailable);
+			client = created;
+			starting = true;
 		}
+
+		Exception? error = null;
+		try
+		{
+			created.Start(desktopId, accuracyLevel, thresholdSeconds);
+		}
+		catch (Exception ex)
+		{
+			error = ex;
+		}
+
+		bool release;
+		lock (gate)
+		{
+			starting = false;
+			release = disposed;
+			if (release)
+				client = null;
+		}
+
+		if (release)
+		{
+			// Disposed while starting: Dispose left the client to this path, so it is not recycled (and started by another session) mid-Start.
+			StopAndRelease(created);
+			return;
+		}
+
+		if (error is not null)
+			ReportFailure(error);
+	}
+
+	void ReportFailure(Exception ex)
+	{
+		lock (gate)
+		{
+			if (disposed)
+				return;
+		}
+
+		Failed?.Invoke(this, ex is GeoClueException { Unauthorized: true } ? GeolocationError.Unauthorized : GeolocationError.PositionUnavailable);
+	}
+
+	void StopAndRelease(IGeoClueClient toRelease)
+	{
+		toRelease.LocationUpdated -= OnLocationUpdated;
+		try
+		{
+			toRelease.Stop();
+		}
+		catch (Exception)
+		{
+		}
+
+		toRelease.Dispose();
 	}
 
 	void OnLocationUpdated(object? sender, GeoClueFix fix)
@@ -260,26 +304,16 @@ sealed class GeoClueSession : ILocationSession
 				return;
 
 			disposed = true;
-			toDispose = client;
+
+			// A client still inside Start is released by StartClient once Start returns, so it is not recycled and re-started meanwhile.
+			toDispose = starting ? null : client;
 			client = null;
 		}
 
 		if (toDispose is null)
 			return;
 
-		toDispose.LocationUpdated -= OnLocationUpdated;
-		_ = Task.Run(() =>
-		{
-			try
-			{
-				toDispose.Stop();
-			}
-			catch (Exception)
-			{
-			}
-
-			toDispose.Dispose();
-		});
+		_ = Task.Run(() => StopAndRelease(toDispose));
 	}
 }
 
@@ -301,6 +335,9 @@ sealed class GioGeoClueService : IGeoClueService
 	internal const string LocationInterface = "org.freedesktop.GeoClue2.Location";
 	internal const string PropertiesInterface = "org.freedesktop.DBus.Properties";
 	const int CallTimeoutMs = 3000;
+
+	/// <summary><c>G_MAXINT</c> = no timeout: <c>Client.Start</c> is answered only after the GeoClue agent's authorization prompt, which waits for the user.</summary>
+	const int NoTimeoutMs = int.MaxValue;
 
 	readonly GLib.BusType busType;
 	readonly Stack<GioGeoClueClient> idle = new();
@@ -392,11 +429,11 @@ sealed class GioGeoClueService : IGeoClueService
 		Call(connection, "org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus", "ListActivatableNames", null)
 			?.Contains("'" + BusName + "'", StringComparison.Ordinal) == true;
 
-	internal static string? Call(GLib.DBusConnection connection, string name, string path, string iface, string method, GLib.Variant? args)
+	internal static string? Call(GLib.DBusConnection connection, string name, string path, string iface, string method, GLib.Variant? args, bool waitForUser = false)
 	{
 		try
 		{
-			using var reply = connection.CallSync(name, path, iface, method, args!, null!, GLib.DBusCallFlags.AllowInteractiveAuthorization, CallTimeoutMs, null!);
+			using var reply = connection.CallSync(name, path, iface, method, args!, null!, GLib.DBusCallFlags.AllowInteractiveAuthorization, waitForUser ? NoTimeoutMs : CallTimeoutMs, null!);
 			return reply?.Print(true);
 		}
 		finally
@@ -454,7 +491,7 @@ sealed class GioGeoClueClient : IGeoClueClient
 			SetProperty("DesktopId", new GLib.Variant(desktopId));
 			SetProperty("RequestedAccuracyLevel", new GLib.Variant(accuracyLevel));
 			SetProperty("TimeThreshold", new GLib.Variant(timeThresholdSeconds));
-			GioGeoClueService.Call(connection, GioGeoClueService.BusName, path, GioGeoClueService.ClientInterface, "Start", null);
+			GioGeoClueService.Call(connection, GioGeoClueService.BusName, path, GioGeoClueService.ClientInterface, "Start", null, waitForUser: true);
 		}
 		catch (Exception ex)
 		{

@@ -503,8 +503,19 @@ public class GeoClueTests
 
 		public int DisposeCount;
 
+		/// <summary>When set, <see cref="Start"/> signals <see cref="StartEntered"/> and blocks until it is released.</summary>
+		public ManualResetEventSlim? StartGate { get; set; }
+
+		public ManualResetEventSlim StartEntered { get; } = new();
+
 		public void Start(string desktopId, uint accuracyLevel, uint timeThresholdSeconds)
 		{
+			if (StartGate is not null)
+			{
+				StartEntered.Set();
+				StartGate.Wait();
+			}
+
 			if (StartFailure is not null)
 				throw StartFailure;
 
@@ -612,6 +623,37 @@ public class GeoClueTests
 
 		session.Dispose(); // idempotent
 		Assert.Equal(1, service.Client.DisposeCount);
+	}
+
+	[Theory]
+	[InlineData(false)]
+	[InlineData(true)]
+	public async Task DisposeWhileStartIsInFlightReleasesTheClientOnlyAfterStartReturns(bool startFails)
+	{
+		var gate = new ManualResetEventSlim();
+		var service = new FakeService { Client = { StartGate = gate } };
+		if (startFails)
+			service.Client.StartFailure = new GeoClueException("x", false);
+
+		var session = new GeoClueSource(service, "x").Open(GeolocationAccuracy.Default, TimeSpan.Zero);
+		var failures = 0;
+		session.Failed += (_, _) => Interlocked.Increment(ref failures);
+		session.Start();
+		Assert.True(service.Client.StartEntered.Wait(TimeSpan.FromSeconds(10)));
+
+		session.Dispose();
+		await Task.Delay(150);
+
+		// Still inside Start: the client must not be handed back for reuse (another session could pop and start it).
+		Assert.Equal(0, service.Client.DisposeCount);
+		Assert.Equal(0, service.Client.StopCount);
+
+		gate.Set();
+		await WaitFor(() => service.Client.DisposeCount == 1);
+
+		Assert.Equal(1, service.Client.StopCount);
+		Assert.False(service.Client.HasSubscribers);
+		Assert.Equal(0, failures);
 	}
 
 	[Fact]

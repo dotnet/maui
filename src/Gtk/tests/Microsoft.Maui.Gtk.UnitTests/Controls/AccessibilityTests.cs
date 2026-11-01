@@ -25,6 +25,28 @@ namespace Microsoft.Maui.Gtk.UnitTests
 
 		static bool Has(GtkWidget widget, GtkState state) => global::Gtk.Test.AccessibleHasState(widget, state);
 
+		[System.Runtime.InteropServices.UnmanagedFunctionPointer(System.Runtime.InteropServices.CallingConvention.Cdecl)]
+		delegate IntPtr CheckStateNative(IntPtr accessible, int state, int value);
+
+		/// <summary>
+		/// Whether the boolean Hidden state is currently TRUE (<c>gtk_test_accessible_check_state</c>; the binding only exposes <c>has_state</c>,
+		/// which is also true once GTK has written FALSE; the C function returns NULL when the state matches). Falls back to <c>has_state</c> if the C function cannot be resolved.
+		/// </summary>
+		static bool GtkHiddenIsTrue(GtkWidget widget)
+		{
+			foreach (var name in new[] { "libgtk-4.so.1", "gtk-4-1.dll", "libgtk-4.1.dylib" })
+			{
+				if (System.Runtime.InteropServices.NativeLibrary.TryLoad(name, out var lib)
+					&& System.Runtime.InteropServices.NativeLibrary.TryGetExport(lib, "gtk_test_accessible_check_state", out var fn))
+				{
+					var check = System.Runtime.InteropServices.Marshal.GetDelegateForFunctionPointer<CheckStateNative>(fn);
+					return check(widget.Handle, (int)GtkState.Hidden, 1) == IntPtr.Zero;
+				}
+			}
+
+			return Has(widget, GtkState.Hidden);
+		}
+
 		static bool Has(GtkWidget widget, GtkRelation relation) => global::Gtk.Test.AccessibleHasRelation(widget, relation);
 
 		// ------------------------------------------------------------------ label, description, heading
@@ -99,6 +121,32 @@ namespace Microsoft.Maui.Gtk.UnitTests
 			Assert.True(Has(widget, GtkState.Hidden));
 
 			AutomationProperties.SetExcludedWithChildren(entry, null);
+			GtkTestHost.AssertNoComplaints();
+		});
+
+		[GtkTheory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public void ExclusionSurvivesCollapsingAndShowingAgain(bool excludedWithChildren) => GtkTestHost.Run(() =>
+		{
+			var entry = new Entry();
+			_ = ControlsTestApp.App; // registers the Controls automation source
+			using var host = new WindowHost(new VerticalStackLayout { entry });
+			host.Pump();
+			var widget = host.Widget(entry);
+			if (excludedWithChildren)
+				AutomationProperties.SetExcludedWithChildren(entry, true);
+			else
+				AutomationProperties.SetIsInAccessibleTree(entry, false);
+			Assert.True(GtkHiddenIsTrue(widget), "excluded");
+
+			entry.IsVisible = false;
+			host.Pump();
+			entry.IsVisible = true;
+			host.Pump();
+
+			// GTK rewrites Hidden when the widget is shown and mapped; the exclusion must be put back.
+			Assert.True(GtkHiddenIsTrue(widget));
 			GtkTestHost.AssertNoComplaints();
 		});
 
