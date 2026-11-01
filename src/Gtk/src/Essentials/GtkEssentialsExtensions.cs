@@ -33,8 +33,8 @@ public static class GtkEssentialsExtensions
 	/// Services that already have a registration are left alone, so an app can replace any of them.</para>
 	/// <para>Registered: AppInfo, DeviceInfo, DeviceDisplay, FileSystem, Preferences, SecureStorage (libsecret), Connectivity,
 	/// Battery, Clipboard, Launcher, Browser, Email, Map, FilePicker, MediaPicker, Screenshot (also the keyed view/window
-	/// capture hooks used by <c>CaptureAsync</c>), SemanticScreenReader, TextToSpeech (speech-dispatcher on Linux, SAPI on Windows), and unsupported-feature stubs for sensors, Contacts,
-	/// Flashlight, Vibration, HapticFeedback, Sms, PhoneDialer, Share and Geolocation.</para>
+	/// capture hooks used by <c>CaptureAsync</c>), SemanticScreenReader, Share, TextToSpeech (speech-dispatcher on Linux, SAPI on Windows), Geolocation (GeoClue2 on Linux, the Location API on Windows), and unsupported-feature stubs for sensors, Contacts,
+	/// Flashlight, Vibration, HapticFeedback, Sms and PhoneDialer.</para>
 	/// </remarks>
 	public static MauiAppBuilder UseMauiGtkEssentials(this MauiAppBuilder builder, Action<GtkEssentialsOptions>? configure = null)
 	{
@@ -71,6 +71,7 @@ public static class GtkEssentialsExtensions
 		services.TryAddSingleton<IMediaPicker>(_ => new GtkMediaPicker());
 		services.TryAddSingleton<IScreenshot>(_ => new GtkScreenshot());
 		services.TryAddSingleton<ISemanticScreenReader>(_ => new GtkSemanticScreenReader());
+		services.TryAddSingleton<IGeolocation>(_ => new GtkGeolocation(identity.ApplicationId));
 
 		Func<object, Task<IScreenshotResult?>> capture = GtkScreenshot.CaptureAsync;
 		services.TryAddKeyedSingleton(ScreenshotDispatch.ViewCaptureKey, capture);
@@ -90,7 +91,6 @@ public static class GtkEssentialsExtensions
 		services.TryAddSingleton<IPhoneDialer>(_ => new UnsupportedPhoneDialer());
 		services.TryAddSingleton<IShare>(_ => new GtkShare());
 		services.TryAddSingleton<ITextToSpeech>(_ => new GtkTextToSpeech());
-		services.TryAddSingleton<IGeolocation>(_ => new UnsupportedGeolocation());
 
 		return builder;
 	}

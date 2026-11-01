@@ -61,7 +61,7 @@ public class RegistrationTests
 		Assert.IsType<GtkSemanticScreenReader>(sp.GetRequiredService<ISemanticScreenReader>());
 		Assert.IsType<GtkShare>(sp.GetRequiredService<IShare>());
 		Assert.IsType<GtkTextToSpeech>(sp.GetRequiredService<ITextToSpeech>());
-		Assert.IsType<UnsupportedGeolocation>(sp.GetRequiredService<IGeolocation>());
+		Assert.IsType<GtkGeolocation>(sp.GetRequiredService<IGeolocation>());
 	}
 
 	[Fact]
@@ -74,6 +74,7 @@ public class RegistrationTests
 		Assert.Equal("Linux", DeviceInfo.Platform.ToString());
 		Assert.Equal(DeviceIdiom.Desktop, DeviceInfo.Idiom);
 		Assert.IsType<GtkPreferences>(Preferences.Default);
+		Assert.IsType<GtkGeolocation>(Geolocation.Default);
 		Assert.IsType<GtkFileSystem>(FileSystem.Current);
 		Assert.False(Vibration.Default.IsSupported);
 		Assert.False(Accelerometer.Default.IsSupported);
@@ -100,7 +101,6 @@ public class RegistrationTests
 		Assert.Throws<FeatureNotSupportedException>(() => Accelerometer.Default.Start(SensorSpeed.Default));
 		Assert.Throws<FeatureNotSupportedException>(() => PhoneDialer.Default.Open("123"));
 		await Assert.ThrowsAsync<FeatureNotSupportedException>(() => Sms.Default.ComposeAsync(new SmsMessage("a", "b")));
-		await Assert.ThrowsAsync<FeatureNotSupportedException>(() => Geolocation.Default.GetLastKnownLocationAsync());
 		Assert.False(await Flashlight.Default.IsSupportedAsync());
 	}
 

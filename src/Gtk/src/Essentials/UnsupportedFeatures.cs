@@ -165,27 +165,3 @@ sealed class UnsupportedPhoneDialer : IPhoneDialer
 	public void Open(string number) => throw Unsupported.Exception("PhoneDialer");
 }
 
-/// <summary>Geolocation through GeoClue2 is a later item: until then every request fails with <see cref="FeatureNotSupportedException"/>.</summary>
-sealed class UnsupportedGeolocation : IGeolocation
-{
-	public event EventHandler<GeolocationLocationChangedEventArgs>? LocationChanged { add { } remove { } }
-
-	public event EventHandler<GeolocationListeningFailedEventArgs>? ListeningFailed { add { } remove { } }
-
-	public bool IsListeningForeground => false;
-
-	public bool IsEnabled => false;
-
-	public Task<Location?> GetLastKnownLocationAsync() =>
-		Task.FromException<Location?>(Unsupported.Exception("Geolocation"));
-
-	public Task<Location?> GetLocationAsync(GeolocationRequest request, CancellationToken cancelToken) =>
-		Task.FromException<Location?>(Unsupported.Exception("Geolocation"));
-
-	public Task<bool> StartListeningForegroundAsync(GeolocationListeningRequest request) =>
-		Task.FromException<bool>(Unsupported.Exception("Geolocation"));
-
-	public void StopListeningForeground()
-	{
-	}
-}
