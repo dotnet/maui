@@ -17,7 +17,9 @@ namespace Microsoft.Maui.Gtk.Handlers
 	/// <remarks>
 	/// Programmatic scrolling that is not <see cref="ScrollToRequest.Instant"/> eases to the target over <see cref="ScrollAnimationMilliseconds"/>
 	/// on the frame clock of the scroller's window and then calls <see cref="IScrollView.ScrollFinished"/>; a newer request replaces a running
-	/// animation (the Controls layer completes the superseded one). A scroller that is not mapped has no frame clock and scrolls instantly.
+	/// animation without finishing it. <see cref="IScrollView.ScrollFinished"/> completes only the newest request's task: the Controls layer
+	/// swaps its completion source before calling the handler and does not complete the task of an in-flight request it replaces (same on
+	/// every platform), so the handler must not call it for the superseded one. A scroller that is not mapped has no frame clock and scrolls instantly.
 	/// </remarks>
 	public class GtkScrollViewHandler : ScrollViewHandler, ICrossPlatformLayout
 	{

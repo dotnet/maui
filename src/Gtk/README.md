@@ -136,7 +136,7 @@ Pass only GApplication options in `args`. Lifecycle: `ConfigureLifecycleEvents(e
 | Image | `Gtk.Picture` | animated GIF/APNG/WebP (gdk-pixbuf) play on the frame clock while `IsAnimationPlaying`, else hold the current frame (a playback clock only runs while playing: pause holds, play resumes from that frame), the first frame before playing. `ImageButton` has no `IsAnimationPlaying` (always first frame) |
 | Entry | `Gtk.Entry` | return type, vertical alignment: no GTK equivalent |
 | Editor | `MauiGtkEditor` (overlay, scrolled `TextView`) | placeholder label, grows with text |
-| ScrollView | `Gtk.ScrolledWindow` | `ScrollToAsync` eases over 250 ms on the frame clock (`ScrollFinished` at the end; a new request replaces it); `animated: false` or an unmapped scroller scrolls instantly |
+| ScrollView | `Gtk.ScrolledWindow` | `ScrollToAsync` eases over 250 ms on the frame clock (`ScrollFinished` at the end; a new request replaces it without finishing it, so only the newest `ScrollToAsync` task completes, as on every platform: Controls does not complete the task of a replaced in-flight request); `animated: false` or an unmapped scroller scrolls instantly |
 | Border | `MauiGtkBorder` | any `IShape`; gradient fills through Cairo |
 | Switch, CheckBox | `Gtk.Switch`, `Gtk.CheckButton` | |
 | ActivityIndicator | `Gtk.Spinner` | `IsRunning` = spinning; colour = CSS `color` |
@@ -173,7 +173,7 @@ Not in this area: Shell, CollectionView, Maps, NavigationPage/Toolbar/FlyoutPage
 
 | Project | Tests (Windows GTK 4.22 / Ubuntu 24.04 GTK 4.14, xvfb) |
 |---------|------|
-| `Microsoft.Maui.Gtk.UnitTests` (Core + Essentials + Handlers + Controls + Web + Maps) | Windows 941 passed, 17 skipped (WebKit: not shipped for Windows); Ubuntu 24.04 (GTK 4.14, xvfb) 958 passed, 0 skipped |
+| `Microsoft.Maui.Gtk.UnitTests` (Core + Essentials + Handlers + Controls + Web + Maps) | Windows 954 passed, 17 skipped (WebKit: not shipped for Windows); Ubuntu 24.04 (GTK 4.14, xvfb) 971 passed, 0 skipped |
 | `Graphics.Cairo.Tests` | 125 passed, 0 skipped |
 | `Essentials.UnitTests` (net10.0) | 441 passed, 0 skipped |
 | `Core.UnitTests` / `Controls.Core.UnitTests` (net10.0) | 884 (+3 skipped) / 5869 (+30 skipped) passed |

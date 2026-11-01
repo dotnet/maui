@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Essentials.Gtk;
 /// <para>Each utterance opens its own <c>SPDConnection</c> (threaded mode): voice, rate, pitch and volume are per connection,
 /// so nothing leaks into the next utterance. The end and cancel notifications are delivered on the library's event thread
 /// through function pointers written into the public head of the struct
-/// (<c>{ callback_begin; callback_end; callback_cancel; ... }</c>, one pointer each); they complete the utterance's task, which
+/// (<c>{ callback_begin; callback_end; callback_cancel; ... }</c>, one pointer each, so the offsets scale with the pointer size); they complete the utterance's task, which
 /// is looked up by the connection's client id.</para>
 /// <para>Cancelling the token calls <c>spd_cancel</c> on the connection. The connection is closed from the awaiting
 /// continuation, never from the callback (<c>spd_close</c> joins the event thread).</para>
@@ -29,7 +29,10 @@ sealed class LibSpeechd : ISpeechBackend
 	const int PriorityText = 3;
 	const int NotifyEnd = 2, NotifyCancel = 8;
 	const int EventEnd = 1, EventCancel = 3;
-	const int EndCallbackOffset = 8, CancelCallbackOffset = 16; // SPDConnection { begin, end, cancel, ... }
+	/// <summary>Byte offset of the <c>index</c>-th <c>SPDCallback*</c> member at the head of <c>SPDConnection</c> (libspeechd.h: <c>callback_begin</c>, <c>callback_end</c>, <c>callback_cancel</c>, ...); every member is one pointer wide.</summary>
+	internal static int CallbackOffset(int index, int pointerSize) => index * pointerSize;
+
+	static readonly int EndCallbackOffset = CallbackOffset(1, IntPtr.Size), CancelCallbackOffset = CallbackOffset(2, IntPtr.Size);
 
 	/// <summary>Utterances waiting for their end/cancel notification, keyed by connection client id.</summary>
 	static readonly ConcurrentDictionary<nuint, TaskCompletionSource> Pending = new();

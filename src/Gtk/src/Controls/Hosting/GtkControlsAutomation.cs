@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 using Microsoft.Maui.Gtk.Platform;
 
 namespace Microsoft.Maui.Controls.Gtk.Hosting
@@ -24,22 +25,61 @@ namespace Microsoft.Maui.Controls.Gtk.Hosting
 				return null;
 
 			// A label that is created after the view it labels (declaration order in a page): relate them once its handler exists.
+			// The mapping runs on every change, so keep one pending registration per view (replaced when the label changes) instead of one per run.
 			if (label.Handler is null)
 			{
-				void Connected(object? sender, EventArgs e)
+				lock (Pending)
 				{
-					if (label.Handler is null)
-						return;
+					if (Pending.TryGetValue(bindable, out var existing))
+					{
+						if (ReferenceEquals(existing.Label, label))
+							return label;
 
-					label.HandlerChanged -= Connected;
-					(view as VisualElement)?.Handler?.UpdateValue(GtkAccessibility.LabeledByKey);
+						existing.Cancel();
+					}
+
+					Pending.Remove(bindable);
+					Pending.Add(bindable, new PendingRelation(label, view));
 				}
-
-				label.HandlerChanged += Connected;
 			}
 
 			return label;
 		}
+
+		/// <summary>The view's one outstanding wait for its label's handler; holds the view weakly so a label does not keep the labelled view alive.</summary>
+		sealed class PendingRelation
+		{
+			readonly WeakReference<IView> view;
+
+			internal PendingRelation(VisualElement label, IView view)
+			{
+				Label = label;
+				this.view = new WeakReference<IView>(view);
+				label.HandlerChanged += Connected;
+			}
+
+			internal VisualElement Label { get; }
+
+			internal void Cancel() => Label.HandlerChanged -= Connected;
+
+			void Connected(object? sender, EventArgs e)
+			{
+				if (Label.Handler is null)
+					return;
+
+				Cancel();
+				if (view.TryGetTarget(out var target))
+				{
+					if (target is BindableObject bindable)
+						lock (Pending)
+							Pending.Remove(bindable);
+
+					(target as VisualElement)?.Handler?.UpdateValue(GtkAccessibility.LabeledByKey);
+				}
+			}
+		}
+
+		static readonly ConditionalWeakTable<BindableObject, PendingRelation> Pending = new();
 	}
 #pragma warning restore CS0618
 }

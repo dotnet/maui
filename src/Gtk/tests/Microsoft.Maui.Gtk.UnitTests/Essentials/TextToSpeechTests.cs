@@ -382,3 +382,17 @@ public class NativeSpeechTests
 		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => speaking);
 	}
 }
+
+public class SpeechdLayoutTests
+{
+	// SPDConnection { SPDCallback *callback_begin, *callback_end, *callback_cancel, ... }: one pointer per member.
+	[Theory]
+	[InlineData(0, 4, 0)]
+	[InlineData(1, 4, 4)]
+	[InlineData(2, 4, 8)]
+	[InlineData(0, 8, 0)]
+	[InlineData(1, 8, 8)]
+	[InlineData(2, 8, 16)]
+	public void CallbackOffsetsScaleWithThePointerSize(int index, int pointerSize, int expected) =>
+		Assert.Equal(expected, LibSpeechd.CallbackOffset(index, pointerSize));
+}

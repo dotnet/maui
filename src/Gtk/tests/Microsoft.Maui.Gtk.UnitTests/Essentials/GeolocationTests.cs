@@ -1166,3 +1166,50 @@ public class GeoClueDBusTests
 		}
 	}
 }
+
+[Collection("Gtk")]
+public class GtkGeolocationProbeThreadTests
+{
+	sealed class ThreadRecordingSource : ILocationSource
+	{
+		public int? ProbeThreadId;
+		public bool IsEnabled
+		{
+			get
+			{
+				ProbeThreadId = Environment.CurrentManagedThreadId;
+				Thread.Sleep(20);
+				return true;
+			}
+		}
+
+		public Location? GetLastKnownLocation() => null;
+
+		public ILocationSession Open(GeolocationAccuracy accuracy, TimeSpan minimumTime) => new FakeLocationSession();
+	}
+
+	[Fact]
+	public async Task StartListeningProbesIsEnabledOffTheCallingThread()
+	{
+		var source = new ThreadRecordingSource();
+		var geo = new GtkGeolocation("test", source);
+		int callerThread = Environment.CurrentManagedThreadId;
+
+		Assert.True(await geo.StartListeningForegroundAsync(new GeolocationListeningRequest(GeolocationAccuracy.Default, TimeSpan.Zero)));
+
+		Assert.NotNull(source.ProbeThreadId);
+		Assert.NotEqual(callerThread, source.ProbeThreadId);
+		geo.StopListeningForeground();
+	}
+
+	[Fact]
+	public async Task StartListeningReturnsFalseAndOpensNothingWhenDisabled()
+	{
+		var source = new FakeLocationSource { IsEnabled = false };
+		var geo = new GtkGeolocation("test", source);
+
+		Assert.False(await geo.StartListeningForegroundAsync(new GeolocationListeningRequest(GeolocationAccuracy.Default, TimeSpan.Zero)));
+		Assert.Empty(source.Sessions);
+		Assert.False(geo.IsListeningForeground);
+	}
+}

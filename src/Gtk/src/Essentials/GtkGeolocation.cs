@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Essentials.Gtk;
 /// (when positive) elapses first; cancelling the token throws <see cref="OperationCanceledException"/>.
 /// <see cref="LocationChanged"/> and <see cref="ListeningFailed"/> are raised on the GTK main thread.</para>
 /// <para>Each request opens its own session (its own GeoClue client on Linux), so listening and one-shot requests do not disturb each other.
-/// <see cref="GetLocationAsync"/> probes <see cref="IsEnabled"/> off the calling thread.</para>
+/// <see cref="GetLocationAsync"/> and <see cref="StartListeningForegroundAsync"/> probe <see cref="IsEnabled"/> off the calling thread.</para>
 /// </remarks>
 sealed class GtkGeolocation : IGeolocation
 {
@@ -105,8 +105,14 @@ sealed class GtkGeolocation : IGeolocation
 				throw new InvalidOperationException("Already listening to location updates.");
 		}
 
-		if (!SafeIsEnabled())
-			return Task.FromResult(false);
+		return StartListeningCoreAsync(request);
+	}
+
+	async Task<bool> StartListeningCoreAsync(GeolocationListeningRequest request)
+	{
+		// the probe may block on D-Bus/COM: keep it off the caller's thread (often the GTK main thread), as GetLocationAsync does
+		if (!await Task.Run(SafeIsEnabled).ConfigureAwait(false))
+			return false;
 
 		ILocationSession session;
 		try
@@ -115,7 +121,7 @@ sealed class GtkGeolocation : IGeolocation
 		}
 		catch (Exception)
 		{
-			return Task.FromResult(false);
+			return false;
 		}
 
 		lock (gate)
@@ -139,10 +145,10 @@ sealed class GtkGeolocation : IGeolocation
 		catch (Exception)
 		{
 			Detach(session);
-			return Task.FromResult(false);
+			return false;
 		}
 
-		return Task.FromResult(true);
+		return true;
 	}
 
 	public void StopListeningForeground()
