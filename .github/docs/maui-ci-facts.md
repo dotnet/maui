@@ -87,6 +87,12 @@ and `maui-pr-uitests` may not run automatically depending on the changed files.
 
 ## Setup-only retries
 
+Android Cake failure diagnostics bound `adb logcat -d` to 30 seconds and stop
+only that diagnostic process on timeout. An offline or missing emulator can
+otherwise leave logcat waiting indefinitely after the test runner has finished.
+Partial output and an explicit warning are retained without replacing the
+original test failure. A diagnostic timeout is not native test acceptance.
+
 Shared provisioning initializes `DOTNET_CLI_HOME` under the agent's per-job
 temporary directory before invoking .NET. It preserves an existing
 `NUGET_PACKAGES`, or pins the original user-profile package cache when unset,

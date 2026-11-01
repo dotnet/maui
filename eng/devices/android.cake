@@ -582,8 +582,24 @@ void WriteLogCat(string filename = null)
 			return output;
 		};
 
-		var process = StartProcess($"{adb}", processSettings);
-		Information("exit code {0}", process);
+		using (var process = StartAndReturnProcess(adb, processSettings))
+		{
+			if (!process.WaitForExit(AdbCommandTimeoutSeconds * 1000))
+			{
+				Warning("ADB logcat timed out after {0} seconds; retaining the partial diagnostic without replacing the test failure.", AdbCommandTimeoutSeconds);
+				process.Kill();
+				if (!process.WaitForExit(5000))
+					Warning("ADB logcat did not terminate within 5 seconds after cancellation.");
+				return;
+			}
+
+			var exitCode = process.GetExitCode();
+			if (exitCode != 0)
+			{
+				Warning("ADB logcat failed with exit code {0}; retaining the partial diagnostic.", exitCode);
+				return;
+			}
+		}
 	}
 
 	Information("Logcat written to {0}", location);
