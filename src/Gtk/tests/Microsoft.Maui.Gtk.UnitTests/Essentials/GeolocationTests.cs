@@ -18,7 +18,7 @@ sealed class FakeLocationSession : ILocationSession
 
 	public event EventHandler<GeolocationError>? Failed;
 
-	public bool Started { get; private set; }
+	public volatile bool Started;
 
 	public bool Disposed { get; private set; }
 
@@ -56,7 +56,8 @@ sealed class FakeLocationSource : ILocationSource
 	public ILocationSession Open(GeolocationAccuracy accuracy, TimeSpan minimumTime)
 	{
 		var session = new FakeLocationSession { Accuracy = accuracy, MinimumTime = minimumTime };
-		Sessions.Add(session);
+		lock (Sessions)
+			Sessions.Add(session);
 		return session;
 	}
 }
@@ -66,6 +67,25 @@ sealed class FakeLocationSource : ILocationSource
 public class GtkGeolocationTests
 {
 	static Location Fix(double lat = 10, double lon = 20) => new(lat, lon, DateTimeOffset.UtcNow);
+
+	/// <summary>The session at <paramref name="index"/> once opened and started (<c>GetLocationAsync</c> probes <c>IsEnabled</c> off the caller's thread first).</summary>
+	static async Task<FakeLocationSession> SessionAsync(FakeLocationSource source, int index = 0)
+	{
+		var deadline = DateTime.UtcNow.AddSeconds(10);
+		while (DateTime.UtcNow < deadline)
+		{
+			FakeLocationSession? found;
+			lock (source.Sessions)
+				found = source.Sessions.Count > index ? source.Sessions[index] : null;
+
+			if (found is { Started: true })
+				return found;
+
+			await Task.Delay(5);
+		}
+
+		throw new TimeoutException("The session was not opened and started.");
+	}
 
 	static GtkGeolocation Create(ILocationSource source)
 	{
@@ -91,7 +111,7 @@ public class GtkGeolocationTests
 		var geo = Create(source);
 
 		var task = geo.GetLocationAsync(new GeolocationRequest(GeolocationAccuracy.High, TimeSpan.FromSeconds(30)), default);
-		var session = Assert.Single(source.Sessions);
+		var session = await SessionAsync(source);
 		Assert.True(session.Started);
 		Assert.Equal(GeolocationAccuracy.High, session.Accuracy);
 		Assert.Equal(TimeSpan.Zero, session.MinimumTime);
@@ -114,7 +134,7 @@ public class GtkGeolocationTests
 		var source = new FakeLocationSource();
 		var task = Create(source).GetLocationAsync(new GeolocationRequest(accuracy, TimeSpan.FromSeconds(30)), default);
 
-		var session = Assert.Single(source.Sessions);
+		var session = await SessionAsync(source);
 		Assert.Equal(accuracy, session.Accuracy);
 		session.Raise(Fix());
 		await task;
@@ -144,7 +164,7 @@ public class GtkGeolocationTests
 		await Task.Delay(150);
 		Assert.False(task.IsCompleted);
 
-		source.Sessions[0].Raise(Fix());
+		(await SessionAsync(source)).Raise(Fix());
 		Assert.NotNull(await task.WaitAsync(TimeSpan.FromSeconds(10)));
 	}
 
@@ -155,6 +175,7 @@ public class GtkGeolocationTests
 		using var cts = new CancellationTokenSource();
 		var task = Create(source).GetLocationAsync(new GeolocationRequest(), cts.Token);
 
+		await SessionAsync(source);
 		cts.Cancel();
 
 		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => task);
@@ -193,11 +214,12 @@ public class GtkGeolocationTests
 		var source = new FakeLocationSource();
 		var task = Create(source).GetLocationAsync(new GeolocationRequest(GeolocationAccuracy.Medium, TimeSpan.FromSeconds(30)), default);
 
-		source.Sessions[0].Fail(error);
+		var session = await SessionAsync(source);
+		session.Fail(error);
 
 		var thrown = await Assert.ThrowsAnyAsync<Exception>(() => task);
 		Assert.IsType(exception, thrown);
-		Assert.True(source.Sessions[0].Disposed);
+		Assert.True(session.Disposed);
 	}
 
 	[Fact]
@@ -209,7 +231,7 @@ public class GtkGeolocationTests
 		Assert.Equal(5, (await geo.GetLastKnownLocationAsync())!.Latitude);
 
 		var task = geo.GetLocationAsync(new GeolocationRequest(GeolocationAccuracy.Medium, TimeSpan.FromSeconds(30)), default);
-		source.Sessions[0].Raise(Fix(7, 8));
+		(await SessionAsync(source)).Raise(Fix(7, 8));
 		await task;
 
 		Assert.Equal(7, (await geo.GetLastKnownLocationAsync())!.Latitude);
@@ -346,13 +368,13 @@ public class GtkGeolocationTests
 		await geo.StartListeningForegroundAsync(new GeolocationListeningRequest());
 
 		var one = geo.GetLocationAsync(new GeolocationRequest(GeolocationAccuracy.Medium, TimeSpan.FromSeconds(30)), default);
-		Assert.Equal(2, source.Sessions.Count);
-		source.Sessions[1].Raise(Fix());
+		var oneShot = await SessionAsync(source, 1);
+		oneShot.Raise(Fix());
 		await one;
 
 		Assert.True(geo.IsListeningForeground);
 		Assert.False(source.Sessions[0].Disposed);
-		Assert.True(source.Sessions[1].Disposed);
+		Assert.True(oneShot.Disposed);
 		await Task.Delay(100);
 		Assert.Equal(0, updates);
 	}
@@ -860,7 +882,7 @@ public class GeoClueDBusTests
 
 		log = open(sys.argv[1], 'a', buffering=1)
 		manager = Gio.DBusNodeInfo.new_for_xml('''<node><interface name='org.freedesktop.GeoClue2.Manager'>
-		  <method name='GetClient'><arg type='o' direction='out'/></method>
+		  <method name='GetClient'><arg type='o' direction='out'/></method><method name='CreateClient'><arg type='o' direction='out'/></method>
 		  <property name='AvailableAccuracyLevel' type='u' access='read'/></interface></node>''').interfaces[0]
 		client = Gio.DBusNodeInfo.new_for_xml('''<node><interface name='org.freedesktop.GeoClue2.Client'>
 		  <method name='Start'/><method name='Stop'/>
@@ -876,36 +898,55 @@ public class GeoClueDBusTests
 		  <property name='Description' type='s' access='read'/><property name='Timestamp' type='(tt)' access='read'/>
 		  </interface></node>''').interfaces[0]
 
-		props = {'DesktopId': GLib.Variant('s', ''), 'RequestedAccuracyLevel': GLib.Variant('u', 0), 'TimeThreshold': GLib.Variant('u', 0)}
+		props = {}
+		active = set()
+		counter = [0]
+		legacy = len(sys.argv) > 2 and sys.argv[2] == 'legacy'
 		loc = {'Latitude': GLib.Variant('d', 48.2082), 'Longitude': GLib.Variant('d', 16.3738), 'Accuracy': GLib.Variant('d', 12.5),
 		       'Altitude': GLib.Variant('d', 171.0), 'Speed': GLib.Variant('d', -1.0), 'Heading': GLib.Variant('d', 45.0),
 		       'Description': GLib.Variant('s', 'Vienna'), 'Timestamp': GLib.Variant('(tt)', (1700000000, 250000))}
 
+		def register_client(conn, n):
+		    path = '/org/freedesktop/GeoClue2/Client/%d' % n
+		    if n in props:
+		        return path
+		    props[n] = {'DesktopId': GLib.Variant('s', ''), 'RequestedAccuracyLevel': GLib.Variant('u', 0), 'TimeThreshold': GLib.Variant('u', 0)}
+		    def call(c, sender, p, iface, method, params, inv):
+		        if method == 'Start':
+		            log.write('start desktop=%s level=%d threshold=%d path=%d\n' % (props[n]['DesktopId'].get_string(), props[n]['RequestedAccuracyLevel'].get_uint32(), props[n]['TimeThreshold'].get_uint32(), n))
+		            active.add(n)
+		            inv.return_value(None)
+		            def emit():
+		                if n not in active:
+		                    return False
+		                c.emit_signal(None, path, 'org.freedesktop.GeoClue2.Client', 'LocationUpdated',
+		                              GLib.Variant('(oo)', ('/', '/org/freedesktop/GeoClue2/Location/1')))
+		                return True
+		            GLib.timeout_add(100, emit)
+		        else:
+		            log.write('stop path=%d\n' % n)
+		            active.discard(n)
+		            inv.return_value(None)
+		    def set_prop(c, sender, p, iface, name, value):
+		        props[n][name] = value
+		        return True
+		    conn.register_object(path, client, call, lambda c, s, p, i, name: props[n].get(name, GLib.Variant('o', '/')), set_prop)
+		    return path
+
 		def manager_call(conn, sender, path, iface, method, params, inv):
-		    log.write('getclient\n')
-		    inv.return_value(GLib.Variant('(o)', ('/org/freedesktop/GeoClue2/Client/1',)))
-
-		def client_call(conn, sender, path, iface, method, params, inv):
-		    if method == 'Start':
-		        log.write('start desktop=%s level=%d threshold=%d\n' % (props['DesktopId'].get_string(), props['RequestedAccuracyLevel'].get_uint32(), props['TimeThreshold'].get_uint32()))
-		        inv.return_value(None)
-		        def emit():
-		            conn.emit_signal(None, '/org/freedesktop/GeoClue2/Client/1', 'org.freedesktop.GeoClue2.Client', 'LocationUpdated',
-		                             GLib.Variant('(oo)', ('/', '/org/freedesktop/GeoClue2/Location/1')))
-		            return False
-		        GLib.timeout_add(100, emit)
+		    if method == 'CreateClient':
+		        if legacy:
+		            inv.return_dbus_error('org.freedesktop.DBus.Error.UnknownMethod', 'no CreateClient')
+		            return
+		        counter[0] += 1
+		        log.write('createclient\n')
+		        inv.return_value(GLib.Variant('(o)', (register_client(conn, counter[0]),)))
 		    else:
-		        log.write('stop\n')
-		        inv.return_value(None)
-
-		def client_set(conn, sender, path, iface, name, value):
-		    props[name] = value
-		    return True
+		        log.write('getclient\n')
+		        inv.return_value(GLib.Variant('(o)', (register_client(conn, 1),)))
 
 		def acquired(conn, name):
 		    conn.register_object('/org/freedesktop/GeoClue2/Manager', manager, manager_call, lambda *a: GLib.Variant('u', 8), None)
-		    conn.register_object('/org/freedesktop/GeoClue2/Client/1', client, client_call,
-		                         lambda c, s, p, i, n: props.get(n, GLib.Variant('o', '/')), client_set)
 		    conn.register_object('/org/freedesktop/GeoClue2/Location/1', location, None, lambda c, s, p, i, n: loc[n], None)
 
 		Gio.bus_own_name(Gio.BusType.SESSION, 'org.freedesktop.GeoClue2', Gio.BusNameOwnerFlags.NONE, acquired,
@@ -913,7 +954,7 @@ public class GeoClueDBusTests
 		GLib.MainLoop().run()
 		""";
 
-	static Process? StartFakeService(string logPath)
+	static Process? StartFakeService(string logPath, string? mode = null)
 	{
 		var script = Path.Combine(Path.GetTempPath(), "maui-gtk-fake-geoclue-" + Guid.NewGuid().ToString("N") + ".py");
 		File.WriteAllText(script, FakeGeoClue.Replace("\r\n", "\n"));
@@ -923,6 +964,8 @@ public class GeoClueDBusTests
 			var info = new ProcessStartInfo("python3") { RedirectStandardOutput = true, RedirectStandardError = true, UseShellExecute = false };
 			info.ArgumentList.Add(script);
 			info.ArgumentList.Add(logPath);
+			if (mode is not null)
+				info.ArgumentList.Add(mode);
 			var process = Process.Start(info)!;
 			var ready = process.StandardOutput.ReadLineAsync();
 			if (!ready.Wait(TimeSpan.FromSeconds(15)) || ready.Result != "ready")
@@ -981,6 +1024,98 @@ public class GeoClueDBusTests
 
 			Assert.Contains("start desktop=org.maui.gtk.tests level=8 threshold=0", log);
 			Assert.Contains("stop", log);
+		}
+		finally
+		{
+			try { process.Kill(); } catch (InvalidOperationException) { }
+			try { File.Delete(logPath); } catch (IOException) { }
+		}
+	}
+
+	static bool CanRunDBus() =>
+		OperatingSystem.IsLinux() && !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DBUS_SESSION_BUS_ADDRESS"));
+
+	static string ReadLog(string logPath)
+	{
+		try
+		{
+			return File.Exists(logPath) ? File.ReadAllText(logPath) : "";
+		}
+		catch (IOException)
+		{
+			return "";
+		}
+	}
+
+	[GtkFact]
+	public void OverlappingSessionsEachGetTheirOwnClient()
+	{
+		if (!CanRunDBus())
+			return;
+
+		var host = GtkHost.Instance!;
+		var logPath = Path.Combine(Path.GetTempPath(), "maui-gtk-geoclue-" + Guid.NewGuid().ToString("N") + ".log");
+		using var process = StartFakeService(logPath);
+		if (process is null)
+			return; // python3 / PyGObject unavailable
+
+		try
+		{
+			var source = new GeoClueSource(new GioGeoClueService(GLib.BusType.Session), "org.maui.gtk.tests");
+			var firstUpdates = 0;
+			var secondUpdates = 0;
+			using var first = source.Open(GeolocationAccuracy.Best, TimeSpan.Zero);
+			var second = source.Open(GeolocationAccuracy.Low, TimeSpan.FromSeconds(5));
+			first.LocationChanged += (_, _) => Interlocked.Increment(ref firstUpdates);
+			second.LocationChanged += (_, _) => Interlocked.Increment(ref secondUpdates);
+			first.Start();
+			second.Start();
+
+			host.Invoke(() => GtkTestHost.PumpUntil(() => Volatile.Read(ref firstUpdates) > 0 && Volatile.Read(ref secondUpdates) > 0, timeoutMs: 20000));
+			Assert.True(Volatile.Read(ref firstUpdates) > 0 && Volatile.Read(ref secondUpdates) > 0);
+
+			// the one-shot style session ends: only its own client may stop, the listener keeps receiving
+			second.Dispose();
+			host.Invoke(() => GtkTestHost.PumpUntil(() => ReadLog(logPath).Contains("stop path=2"), timeoutMs: 20000));
+			var seen = Volatile.Read(ref firstUpdates);
+			host.Invoke(() => GtkTestHost.PumpUntil(() => Volatile.Read(ref firstUpdates) >= seen + 2, timeoutMs: 20000));
+
+			var log = ReadLog(logPath);
+			Assert.True(Volatile.Read(ref firstUpdates) >= seen + 2);
+			Assert.Equal(2, log.Split('\n').Count(l => l == "createclient"));
+			Assert.DoesNotContain("getclient", log);
+			Assert.Contains("start desktop=org.maui.gtk.tests level=8 threshold=0 path=1", log);
+			Assert.Contains("start desktop=org.maui.gtk.tests level=5 threshold=5 path=2", log);
+			Assert.Contains("stop path=2", log);
+			Assert.DoesNotContain("stop path=1", log);
+		}
+		finally
+		{
+			try { process.Kill(); } catch (InvalidOperationException) { }
+			try { File.Delete(logPath); } catch (IOException) { }
+		}
+	}
+
+	[GtkFact]
+	public void ManagerWithoutCreateClientFallsBackToGetClient()
+	{
+		if (!CanRunDBus())
+			return;
+
+		var logPath = Path.Combine(Path.GetTempPath(), "maui-gtk-geoclue-" + Guid.NewGuid().ToString("N") + ".log");
+		using var process = StartFakeService(logPath, "legacy");
+		if (process is null)
+			return; // python3 / PyGObject unavailable
+
+		try
+		{
+			var client = new GioGeoClueService(GLib.BusType.Session).CreateClient();
+			Assert.NotNull(client);
+			client.Dispose();
+
+			var log = ReadLog(logPath);
+			Assert.Contains("getclient", log);
+			Assert.DoesNotContain("createclient", log);
 		}
 		finally
 		{

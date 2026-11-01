@@ -13,7 +13,8 @@ namespace Microsoft.Maui.Essentials.Gtk;
 /// <para><see cref="GetLocationAsync"/> returns the first fix, or <see langword="null"/> when <see cref="GeolocationRequest.Timeout"/>
 /// (when positive) elapses first; cancelling the token throws <see cref="OperationCanceledException"/>.
 /// <see cref="LocationChanged"/> and <see cref="ListeningFailed"/> are raised on the GTK main thread.</para>
-/// <para>Each request opens its own session, so listening and one-shot requests do not disturb each other.</para>
+/// <para>Each request opens its own session (its own GeoClue client on Linux), so listening and one-shot requests do not disturb each other.
+/// <see cref="GetLocationAsync"/> probes <see cref="IsEnabled"/> off the calling thread.</para>
 /// </remarks>
 sealed class GtkGeolocation : IGeolocation
 {
@@ -64,8 +65,11 @@ sealed class GtkGeolocation : IGeolocation
 		ArgumentNullException.ThrowIfNull(request);
 		cancelToken.ThrowIfCancellationRequested();
 
-		if (!SafeIsEnabled())
+		// the probe makes blocking system-bus calls: keep them off the caller's thread (often the GTK main thread)
+		if (!await Task.Run(SafeIsEnabled).ConfigureAwait(false))
 			throw new FeatureNotEnabledException("Location services are not enabled on device.");
+
+		cancelToken.ThrowIfCancellationRequested();
 
 		var tcs = new TaskCompletionSource<Location?>(TaskCreationOptions.RunContinuationsAsynchronously);
 		using var session = source.Open(request.DesiredAccuracy, TimeSpan.Zero);

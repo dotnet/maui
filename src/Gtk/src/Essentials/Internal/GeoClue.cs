@@ -288,6 +288,7 @@ sealed class GeoClueSession : ILocationSession
 /// GtkSharp4's <c>Variant</c> has no accessors, so replies are read from their printed form.
 /// </summary>
 /// <remarks>
+/// Every session has its own client (<c>Manager.CreateClient</c>; older GeoClue only has the per-peer <c>GetClient</c>, which sessions would share).
 /// A disposed client is stopped and kept for reuse: the binding cannot build the <c>o</c> argument of <c>Manager.DeleteClient</c>,
 /// so clients are recycled instead of deleted (GeoClue drops them when the process leaves the bus).
 /// </remarks>
@@ -339,7 +340,7 @@ sealed class GioGeoClueService : IGeoClueService
 		try
 		{
 			var connection = Connect();
-			var path = ParseObjectPath(Call(connection, BusName, ManagerPath, ManagerInterface, "GetClient", null));
+			var path = ParseObjectPath(CreateClientPath(connection));
 			return path is null
 				? throw new GeoClueException("GeoClue returned no client.", false)
 				: new GioGeoClueClient(this, connection, path);
@@ -353,6 +354,26 @@ sealed class GioGeoClueService : IGeoClueService
 			throw Wrap(ex);
 		}
 	}
+
+	/// <summary>
+	/// <c>Manager.CreateClient</c> (GeoClue 2.5+) returns a new client per call; <c>GetClient</c> returns the one client of this bus peer on every call,
+	/// which sessions would share (one stopping it stops all, each overwriting the others' accuracy), so it is only the fallback for older GeoClue.
+	/// </summary>
+	static string? CreateClientPath(GLib.DBusConnection connection)
+	{
+		try
+		{
+			return Call(connection, BusName, ManagerPath, ManagerInterface, "CreateClient", null);
+		}
+		catch (Exception ex) when (IsUnknownMethod(ex))
+		{
+			return Call(connection, BusName, ManagerPath, ManagerInterface, "GetClient", null);
+		}
+	}
+
+	internal static bool IsUnknownMethod(Exception ex) =>
+		ex.Message.Contains("UnknownMethod", StringComparison.OrdinalIgnoreCase)
+		|| ex.Message.Contains("No such method", StringComparison.OrdinalIgnoreCase);
 
 	internal void Recycle(GioGeoClueClient client)
 	{
@@ -453,12 +474,27 @@ sealed class GioGeoClueClient : IGeoClueClient
 		if (LocationUpdated is null)
 			return;
 
+		string? locationPath;
 		try
 		{
-			var locationPath = GioGeoClueService.ParseObjectPath(parameters?.Print(true));
-			if (locationPath is null or "/")
-				return;
+			locationPath = GioGeoClueService.ParseObjectPath(parameters?.Print(true));
+		}
+		catch (Exception)
+		{
+			return;
+		}
 
+		if (locationPath is null or "/")
+			return;
+
+		// the signal arrives on the GTK main loop: read the location (a blocking call) on a worker
+		_ = Task.Run(() => ReadAndRaise(locationPath));
+	}
+
+	void ReadAndRaise(string locationPath)
+	{
+		try
+		{
 			var printed = GioGeoClueService.Call(connection, GioGeoClueService.BusName, locationPath, GioGeoClueService.PropertiesInterface, "GetAll",
 				GLib.Variant.NewTuple(new[] { new GLib.Variant(GioGeoClueService.LocationInterface) }));
 
