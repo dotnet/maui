@@ -22,7 +22,10 @@ namespace Microsoft.Maui.Gtk.Hosting
 			mapper.MapGtk<global::Gtk.Widget>(nameof(IView.IsEnabled), (h, v, w) => w.Sensitive = v.IsEnabled);
 			mapper.MapGtk<global::Gtk.Widget>(nameof(IView.InputTransparent), (h, v, w) => UpdateInputTransparent(h, v));
 			mapper.MapGtk<global::Gtk.Widget>(nameof(IView.FlowDirection), (h, v, w) => UpdateFlowDirection(w, v));
-			mapper.MapGtk<global::Gtk.Widget>(nameof(IView.Semantics), (h, v, w) => UpdateSemantics(w, v));
+			mapper.MapGtk<global::Gtk.Widget>(nameof(IView.Semantics), (h, v, w) => GtkAccessibility.UpdateSemantics(w, v));
+			mapper.MapGtk<global::Gtk.Widget>(GtkAccessibility.IsInAccessibleTreeKey, (h, v, w) => GtkAccessibility.UpdateHidden(w, v));
+			mapper.MapGtk<global::Gtk.Widget>(GtkAccessibility.ExcludedWithChildrenKey, (h, v, w) => GtkAccessibility.UpdateHidden(w, v));
+			mapper.MapGtk<global::Gtk.Widget>(GtkAccessibility.LabeledByKey, (h, v, w) => GtkAccessibility.UpdateLabeledBy(w, v));
 			mapper.MapGtk<global::Gtk.Widget>(nameof(IToolTipElement.ToolTip), (h, v, w) => UpdateToolTip(h, v));
 			mapper.MapGtk<global::Gtk.Widget>(nameof(IView.Clip), (h, v, w) => UpdateClip(h, v));
 			mapper.MapGtk<global::Gtk.Widget>(nameof(IView.Shadow), (h, v, w) => UpdateShadow(h, v));
@@ -53,6 +56,7 @@ namespace Microsoft.Maui.Gtk.Hosting
 				if (args is FocusRequest request)
 					request.TrySetResult(w.GrabFocus());
 			});
+			commands.MapGtk<global::Gtk.Widget>(GtkAccessibility.SetSemanticFocusCommand, (h, v, args, w) => GtkAccessibility.SetSemanticFocus(w));
 			commands.MapGtk<global::Gtk.Widget>(nameof(IView.Unfocus), (h, v, args, w) =>
 			{
 				if (w.HasFocus && w.Root is global::Gtk.Window window)
@@ -122,16 +126,6 @@ namespace Microsoft.Maui.Gtk.Hosting
 					widget.Direction = global::Gtk.TextDirection.Rtl;
 					break;
 			}
-		}
-
-		static void UpdateSemantics(global::Gtk.Widget widget, IView view)
-		{
-			var semantics = view.Semantics;
-			var accessible = widget.Accessible;
-
-			// Name = the spoken label (SemanticProperties.Description); Description = the hint.
-			accessible.Name = semantics?.Description ?? string.Empty;
-			accessible.Description = semantics?.Hint ?? string.Empty;
 		}
 
 		static void UpdateToolTip(IViewHandler handler, IView view)

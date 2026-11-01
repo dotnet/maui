@@ -29,6 +29,9 @@ namespace Microsoft.Maui
 			platformView.SendAccessibilityEvent(EventTypes.ViewHoverEnter);
 #elif __IOS__ || MACCATALYST
 			UIAccessibility.PostNotification(UIAccessibilityPostNotification.LayoutChanged, platformView);
+#elif NETSTANDARD || !PLATFORM
+			// Platform-less builds (the GTK backend): a handler that maps this command moves the accessibility focus; others ignore it.
+			element.Handler.Invoke(nameof(SetSemanticFocus));
 #endif
 		}
 	}

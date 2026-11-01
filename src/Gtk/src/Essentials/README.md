@@ -26,7 +26,7 @@ window screenshots and announcements; default = active window of `Gtk.Applicatio
 | Email / Map | `mailto:` (no attachments/HTML) / `geo:` URIs |
 | FilePicker / MediaPicker | `Gtk.FileDialog`; filter strings: MIME types, `*.ext`, bare extensions. No camera capture |
 | Screenshot | `WidgetPaintable` -> `Gsk.Renderer.RenderTexture` -> PNG (JPEG via gdk-pixbuf). Also keyed DI hooks `Microsoft.Maui.ViewCapture` / `WindowCapture` used by `CaptureAsync` |
-| SemanticScreenReader | `Gtk.Accessible.Announce` (guarded: GTK >= 4.14) |
+| SemanticScreenReader | `Gtk.Accessible.Announce` on the window content (guarded: GTK >= 4.14; announcing on the toplevel crashes the Windows AccessKit backend) |
 | VersionTracking | Stock implementation over Preferences (not re-registered) |
 | Sensors, Contacts, Flashlight, Vibration, Haptics, Sms, PhoneDialer, Share, TTS, Geolocation | Registered stubs: `IsSupported == false`, calls throw `FeatureNotSupportedException` (Geolocation via GeoClue2 is a later item) |
 

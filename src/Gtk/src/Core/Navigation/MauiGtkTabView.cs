@@ -53,6 +53,7 @@ namespace Microsoft.Maui.Gtk.Platform
 			: base(global::Gtk.Orientation.Vertical, 0)
 		{
 			_bar.AddCssClass("linked");
+			_bar.AccessibleRole = global::Gtk.AccessibleRole.TabList;
 			Append(_bar);
 			Append(_stack);
 		}
@@ -120,10 +121,11 @@ namespace Microsoft.Maui.Gtk.Platform
 			content.Append(label);
 
 			var button = new GtkToggleButton { Child = content, Hexpand = true };
+			button.AccessibleRole = global::Gtk.AccessibleRole.Tab;
 			if (_tabs.Count > 0)
 				button.Group = _tabs[0].Button;
 
-			var host = new MauiGtkFillHost();
+			var host = new MauiGtkFillHost { AccessibleRole = global::Gtk.AccessibleRole.TabPanel };
 			var tab = new Tab(button, image, label, host);
 			_tabs.Insert(index, tab);
 
@@ -141,6 +143,8 @@ namespace Microsoft.Maui.Gtk.Platform
 				Select(0, raise: false);
 			else if (index <= _selected)
 				_selected++;
+
+			UpdateSelectedStates();
 
 			return host;
 		}
@@ -169,6 +173,8 @@ namespace Microsoft.Maui.Gtk.Platform
 				_selected = -1;
 				Select(Math.Min(index, _tabs.Count - 1), raise: false);
 			}
+
+			UpdateSelectedStates();
 		}
 
 		/// <summary>Removes every tab.</summary>
@@ -206,6 +212,12 @@ namespace Microsoft.Maui.Gtk.Platform
 			}
 		}
 
+		void UpdateSelectedStates()
+		{
+			for (int i = 0; i < _tabs.Count; i++)
+				GtkAccessibility.SetState(_tabs[i].Button, global::Gtk.AccessibleState.Selected, i == _selected);
+		}
+
 		void Select(int index, bool raise)
 		{
 			if (index < 0 || index >= _tabs.Count)
@@ -226,6 +238,8 @@ namespace Microsoft.Maui.Gtk.Platform
 			{
 				_updating = false;
 			}
+
+			UpdateSelectedStates();
 
 			if (changed && raise)
 				SelectedIndexChanged?.Invoke(index);

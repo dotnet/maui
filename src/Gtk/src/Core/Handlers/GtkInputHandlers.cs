@@ -157,11 +157,14 @@ namespace Microsoft.Maui.Gtk.Handlers
 	/// grouping and the exclusivity (<c>GroupName</c>/<c>RadioButtonGroup</c>), so every button is its own native group, led by an invisible
 	/// leader button that "unchecks" it.
 	/// </summary>
-	public sealed class MauiGtkRadioButton : global::Gtk.Box
+	public sealed class MauiGtkRadioButton : global::Gtk.Box, IGtkAccessibleHost
 	{
 		readonly global::Gtk.CheckButton _leader = new() { Visible = false };
 		readonly global::Gtk.CheckButton _button = new();
 		bool _updating;
+
+		// The inner radio button is the focusable control; the label and description belong to it.
+		global::Gtk.Widget IGtkAccessibleHost.AccessibleTarget => _button;
 
 		/// <summary>Creates the radio button.</summary>
 		public MauiGtkRadioButton()
@@ -172,6 +175,8 @@ namespace Microsoft.Maui.Gtk.Handlers
 			Append(_leader);
 			Append(_button);
 			_button.Group = _leader;
+			// GTK before 4.18 keeps the checkbox role on a grouped check button.
+			_button.AccessibleRole = global::Gtk.AccessibleRole.Radio;
 			_button.Toggled += (s, e) =>
 			{
 				if (!_updating)

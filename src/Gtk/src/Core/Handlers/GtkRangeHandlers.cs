@@ -205,6 +205,7 @@ namespace Microsoft.Maui.Gtk.Handlers
 		public MauiGtkStepper()
 			: base(global::Gtk.Orientation.Horizontal, 0)
 		{
+			AccessibleRole = global::Gtk.AccessibleRole.SpinButton;
 			AddCssClass("linked");
 			Halign = global::Gtk.Align.Start;
 			Valign = global::Gtk.Align.Center;
@@ -276,6 +277,10 @@ namespace Microsoft.Maui.Gtk.Handlers
 		{
 			_minus.Sensitive = _value > _minimum;
 			_plus.Sensitive = _value < _maximum;
+
+			GtkAccessibility.SetProperty(this, global::Gtk.AccessibleProperty.ValueMin, _minimum);
+			GtkAccessibility.SetProperty(this, global::Gtk.AccessibleProperty.ValueMax, _maximum);
+			GtkAccessibility.SetProperty(this, global::Gtk.AccessibleProperty.ValueNow, _value);
 		}
 	}
 

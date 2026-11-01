@@ -16,10 +16,13 @@ namespace Microsoft.Maui.Gtk.Handlers
 	/// so item 0 of the list is a placeholder row that shows the title: selecting it means "no selection" (<see cref="SelectedIndex"/> -1), and the
 	/// real items start at position 1.
 	/// </summary>
-	public sealed class MauiGtkPicker : global::Gtk.Box
+	public sealed class MauiGtkPicker : global::Gtk.Box, IGtkAccessibleHost
 	{
 		readonly global::Gtk.StringList _items = new(new[] { string.Empty });
 		readonly GtkDropDown _dropDown;
+
+		// The drop-down is the focusable combo box; the label and description belong to it.
+		global::Gtk.Widget IGtkAccessibleHost.AccessibleTarget => _dropDown;
 
 		/// <summary>Creates the picker.</summary>
 		public MauiGtkPicker()

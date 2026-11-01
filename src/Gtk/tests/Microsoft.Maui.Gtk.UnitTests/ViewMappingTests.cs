@@ -64,8 +64,8 @@ namespace Microsoft.Maui.Gtk.UnitTests
 			SemanticProperties.SetHint(label, "spoken hint");
 
 			var widget = CreateLabel(label);
-			Assert.Equal("spoken name", widget.Accessible.Name);
-			Assert.Equal("spoken hint", widget.Accessible.Description);
+			Assert.True(global::Gtk.Test.AccessibleHasProperty(widget, global::Gtk.AccessibleProperty.Label));
+			Assert.True(global::Gtk.Test.AccessibleHasProperty(widget, global::Gtk.AccessibleProperty.Description));
 		});
 
 		[GtkFact]

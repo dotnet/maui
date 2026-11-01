@@ -24,6 +24,8 @@ namespace Microsoft.Maui.Gtk.Handlers
 		public MauiGtkGraphicsView()
 		{
 			// The delegate must stay referenced for as long as GTK can call it.
+			// Drawn content is an image to assistive technology (a description makes it announceable).
+			AccessibleRole = global::Gtk.AccessibleRole.Img;
 			_drawFunc = OnDraw;
 			DrawFunc = _drawFunc;
 		}
@@ -255,7 +257,7 @@ namespace Microsoft.Maui.Gtk.Handlers
 		/// <summary>Creates the platform view for <paramref name="shapeView"/>.</summary>
 		/// <param name="shapeView">The virtual view.</param>
 		public static MauiGtkGraphicsView CreatePlatformView(IShapeView shapeView) =>
-			new() { Drawable = new ShapeDrawable(shapeView) };
+			new() { Drawable = new ShapeDrawable(shapeView), AccessibleRole = global::Gtk.AccessibleRole.Presentation };
 
 		/// <summary>Repaints the shape of <paramref name="handler"/> (any shape property changed).</summary>
 		/// <param name="handler">The handler.</param>

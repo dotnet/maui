@@ -4,6 +4,7 @@ using Microsoft.Maui.Controls.Gtk.Platform;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Gtk.Handlers;
 using Microsoft.Maui.Gtk.Hosting;
+using Microsoft.Maui.Gtk.Platform;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 
@@ -19,6 +20,7 @@ namespace Microsoft.Maui.Controls.Gtk.Hosting
 			// Backend hooks of the platform-less Controls build: gestures and modal pages.
 			GesturePlatformBackend.Factory = GtkGestureConnection.Create;
 			ModalNavigationBackend.Current = GtkModalNavigationBackend.Instance;
+			GtkAccessibility.AutomationSource = GtkControlsAutomation.Instance;
 
 			builder.ConfigureMauiHandlers(handlers =>
 			{
