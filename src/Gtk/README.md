@@ -57,7 +57,7 @@ windows and tizen only): the app runs on the JIT.
 | Step | Command |
 |------|---------|
 | .NET 10 SDK + `gtk` workload | Windows: GtkSharp `Docs/workload-install.md`. Linux/WSL: `eng/gtk/install-gtk-workload.sh [<SDK dir that has the workload>]` (copies manifest and packs into `~/.dotnet`) |
-| GTK 4 runtime (>= 4.14) | Debian 13 / Ubuntu 24.04: `libgtk-4-1 libadwaita-1-0` (`libwebkitgtk-6.0-4` for web views); Windows: downloaded by the workload |
+| GTK 4 runtime (>= 4.14) | Debian 13 / Ubuntu 24.04: `libgtk-4-1 libadwaita-1-0` (`libwebkitgtk-6.0-4` for web views); Windows: downloaded by the workload (web views also need the WebView2 Runtime) |
 | Text-to-speech (optional) | Debian 13 / Ubuntu 24.04: `libspeechd2` + `speech-dispatcher` and a synthesizer (e.g. `espeak-ng`); Windows: SAPI (built in) |
 | Packages | `pwsh eng/gtk/pack-local.ps1` (see Local feed) puts `Microsoft.Maui.*` `10.0.130-gtk.*`, the GTK packages and `Microsoft.Maui.Templates.net10` in `Packages/` |
 | Template | `dotnet new install Packages/Microsoft.Maui.Templates.net10.<version>.nupkg` (add `--debug:custom-hive <dir>` to keep your real templates untouched) |
@@ -158,7 +158,8 @@ Pass only GApplication options in `args`. Lifecycle: `ConfigureLifecycleEvents(e
 | SwipeView, SwipeItem(View) | `MauiGtkSwipePanel` | `GestureDrag`; content slides by `GtkViewState.PlatformOffsetX/Y`; reveal/execute, `RequestOpen/Close`; not animated |
 | MenuBar, MenuBarItem | `GMenu` tree in a `Gtk.PopoverMenuBar` above the window content | items are `GSimpleAction`s of the `menu` group; every accelerator of an item is bound window-wide (`GtkMenuAcceleratorBinding`: `ShortcutController`, Global scope), the first is shown; icons from file / stream sources (file = `GIcon` file, bare name = theme icon; font and URI sources: none) |
 | MenuFlyout*, `ContextFlyout` | `Gtk.PopoverMenu` over the `GMenu` | secondary click or long press on any view; separators split sections; accelerators are bound only while the view has the focus (Local scope); icons as above |
-| WebView, HybridWebView | `WebKit.WebView` (WebKitGTK 6; a `Gtk.Label` when it cannot be loaded) | see [`src/BlazorWebView/README.md`](src/BlazorWebView/README.md) |
+| WebView | Linux: `WebKit.WebView` (WebKitGTK 6). Windows: `MauiGtkWebView2Host`, a child-window host of a WebView2 control (needs the WebView2 Runtime). A `Gtk.Label` that says why when no engine is usable; the engine sits behind `IGtkWebEngine`, chosen by `GtkWebBackend` | see [`src/BlazorWebView/README.md`](src/BlazorWebView/README.md) |
+| HybridWebView | `WebKit.WebView` (WebKitGTK 6; a `Gtk.Label` when it cannot be loaded, also on Windows until its WebView2 transport lands) | see [`src/BlazorWebView/README.md`](src/BlazorWebView/README.md) |
 
 Not in this area: Shell, CollectionView, Maps, NavigationPage/Toolbar/FlyoutPage/TabbedPage.
 
@@ -173,7 +174,7 @@ Not in this area: Shell, CollectionView, Maps, NavigationPage/Toolbar/FlyoutPage
 
 | Project | Tests (Windows GTK 4.22 / Ubuntu 24.04 GTK 4.14, xvfb) |
 |---------|------|
-| `Microsoft.Maui.Gtk.UnitTests` (Core + Essentials + Handlers + Controls + Web + Maps) | Windows 954 passed, 17 skipped (WebKit: not shipped for Windows); Ubuntu 24.04 (GTK 4.14, xvfb) 971 passed, 0 skipped |
+| `Microsoft.Maui.Gtk.UnitTests` (Core + Essentials + Handlers + Controls + Web + Maps) | Windows 1031 passed, 6 skipped (HybridWebView and BlazorWebView WebKit tests: no Windows backend yet); Ubuntu 24.04 (GTK 4.14, xvfb) 1026 passed, 11 skipped (WebView2 and Windows-only tests) |
 | `Graphics.Cairo.Tests` | 125 passed, 0 skipped |
 | `Essentials.UnitTests` (net10.0) | 441 passed, 0 skipped |
 | `Core.UnitTests` / `Controls.Core.UnitTests` (net10.0) | 884 (+3 skipped) / 5869 (+30 skipped) passed |
@@ -193,6 +194,7 @@ Not in this area: Shell, CollectionView, Maps, NavigationPage/Toolbar/FlyoutPage
 - `SwipeItemView` is resolved by Controls to the content view handler (it is a `ContentView`); `Microsoft.Maui.Controls.Gtk` registers `SwipeItemView -> SwipeItemViewHandler`.
 - Windows builds pack/test `net10.0`/`netstandard` only (mobile/Windows TFMs are disabled locally by `Directory.Build.Override.props`).
 - Window position, maximum window size.
+- WebView on Windows is a native child window (WebView2 "airspace"): it is always drawn above the GTK content, so popovers, menus and tooltips that overlap it are hidden behind it; GTK containers do not clip it (a `ScrollView` around it neither scrolls nor clips it); `Opacity`, `Rotation`, `Scale`, clips and shadows of the view or of an ancestor are ignored. `HtmlWebViewSource.BaseUrl` is ignored and the HTML is limited to 2 MB (`NavigateToString`).
 - Accessibility: GTK fixes a widget's role when it joins a window, so a `HeadingLevel` set after the label is in a window keeps the old role (set it before, e.g. in XAML). `IsInAccessibleTree=false` hides the children too (GTK has only the hidden state). No `TabIndex`/`IsTabStop` (not in MAUI). Backends: Ubuntu 24.04 (GTK 4.14) AT-SPI publishes label, description, roles, `CHECKED`, `SENSITIVE`, `EDITABLE` (verified through `libatspi`) but not the `HIDDEN` state, the `LABELLED_BY` relation, the heading `LEVEL` or the spin button value (that needs `GtkAccessibleRange`, which a custom widget cannot implement through GtkSharp): they are set for backends that honour them. Windows: GTK 4.22.4 contains the AccessKit backend but runs the null (test) context also with `GTK_A11Y=accesskit`, so UI Automation sees the toplevel window only (probe: `UiaAccessibilityTests`); announcing on a toplevel crashes the process there, so announcements go to the window content.
 
 

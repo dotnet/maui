@@ -32,6 +32,8 @@
     <PackageReference Include="CairoSharp4" />
     <PackageReference Include="JavaScriptCoreSharp4" />
     <PackageReference Include="WebkitGtkSharp4" />
+    <!-- WebView2 backend of the web handlers on Windows (WebView2Loader.dll is loaded only there); version from eng/Versions.props. -->
+    <PackageReference Include="Microsoft.Web.WebView2" />
   </ItemGroup>
 
   <Import Project="$(MauiSrcDirectory)PublicAPI.targets" />

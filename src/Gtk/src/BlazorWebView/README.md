@@ -1,8 +1,25 @@
 # WebView, HybridWebView and BlazorWebView on GTK 4
 
-All three controls run on **WebKitGTK 6** (`libwebkitgtk-6.0`) through `WebkitGtkSharp4` / `JavaScriptCoreSharp4`. WebKitGTK exists on Linux only
+On Linux the controls run on **WebKitGTK 6** (`libwebkitgtk-6.0`) through `WebkitGtkSharp4` / `JavaScriptCoreSharp4`. WebKitGTK exists on Linux only
 (gvsbuild ships no WebKit): where it cannot be loaded each handler creates a `Gtk.Label` that says why, so an app with a web view still starts.
 `MAUI_GTK_DISABLE_WEBKIT=1` forces that placeholder; `GtkWebKit.IsAvailable` / `UnavailableReason` report the state.
+
+**Windows:** `WebView` runs on **WebView2** (`Microsoft.Web.WebView2`, referenced by `Microsoft.Maui.Gtk`; needs the WebView2 Runtime, part of Windows 11 and Edge).
+`GtkWebBackend` picks the engine at run time (Linux -> WebKitGTK, Windows -> WebView2, else a placeholder label); without the runtime the label reads
+"WebView2 Runtime not installed (https://go.microsoft.com/fwlink/p/?LinkId=2124703)". `MAUI_GTK_DISABLE_WEBVIEW2=1` forces the placeholder.
+HybridWebView and BlazorWebView still create WebKit views only, so on Windows they show the placeholder until their WebView2 transports land (the seams below are for them).
+
+### WebView2 backend
+
+| Piece | What it does |
+|---|---|
+| `MauiGtkWebView2Host` | empty focusable `Gtk.Widget` that owns the `CoreWebView2Controller`: created on *realize* with the toplevel's HWND (`gdk_win32_surface_get_handle`), closed on *unrealize*. Bounds = widget bounds + the surface transform, times `gdk_surface_get_scale`, pushed on size-allocate, map and every frame-clock layout (a position-only change does not allocate); visible exactly while mapped (a hidden ancestor hides it); GTK focus -> `MoveFocus`, a click inside -> GTK `grab_focus`, Tab out -> toplevel `SetFocus` + `child_focus`; toplevel moves (`EVENT_OBJECT_LOCATIONCHANGE`) -> `NotifyParentWindowPositionChanged` |
+| `GtkWebView2Environment` | availability probe (`GetAvailableBrowserVersionString`) and the one shared `CoreWebView2Environment`; user data folder `WEBVIEW2_USER_DATA_FOLDER`, else `%LOCALAPPDATA%\<process name>\WebView2` |
+| `IGtkWebEngine` | what the WebView handler needs from an engine: `GtkWebKitEngine` (the former handler code) and `MauiGtkWebView2Engine`. WebView2 queues scripts and the last navigation until the controller exists, and replays the address after a re-realization (history is lost) |
+| Seams for HybridWebView / BlazorWebView | `GtkWebBackend.CreatePlatformView` / `CreateEngine`; `MauiGtkWebView2Host.CoreWebView2Initialized` (raised per controller before the first navigation: add `WebResourceRequested` filters, document-created scripts, `WebMessageReceived`), `.CoreWebView2`, `.Controller`, `.Services` (fakes in tests); `GtkWebView2Environment.GetAsync` |
+
+WebView2 notes: the control exists only once the host is in a realized window (a view that is not in a window loads nothing yet); `HtmlWebViewSource.BaseUrl` is ignored and HTML is limited to 2 MB;
+the web view is a native child window, see "airspace" under Known limitations in the main README.
 
 | Control | Handler | Assembly | Register |
 |---|---|---|---|
@@ -17,15 +34,16 @@ Runtime packages: `libwebkitgtk-6.0-4` (Debian/Ubuntu), `webkitgtk6.0` (Fedora).
 
 | Member | Implementation |
 |---|---|
-| `Source` | `UrlWebViewSource` -> `LoadUri`, `HtmlWebViewSource` -> `LoadHtml(html, baseUrl)` |
-| `Navigating` | raised by the handler for loads the app starts (`Source`, `Reload`; WebKit raises no policy decision for those) and from WebKit's `decide-policy` for navigations the page starts (links, forms, back/forward); `Cancel` stops the load. `target=_blank` links load in the same view |
-| `Navigated` | `load-changed` Finished (Success) / `load-failed` (Failure); a navigation cancelled in `Navigating` raises nothing |
+| `Source` | `UrlWebViewSource` -> `LoadUri` (WebView2: `Navigate`), `HtmlWebViewSource` -> `LoadHtml(html, baseUrl)` (WebView2: `NavigateToString`, no base URL) |
+| `Navigating` | raised by the handler for loads the app starts (`Source`, `Reload`) and by the engine for navigations the page starts (links, forms, back/forward, redirects: WebKit `decide-policy`, WebView2 `NavigationStarting`); `Cancel` stops the load. WebKit repeats it for the app's own loads, WebView2 does not. `target=_blank` links load in the same view |
+| `Navigated` | WebKit `load-changed` Finished / `load-failed`, WebView2 `NavigationCompleted`; a navigation cancelled in `Navigating` raises nothing |
 | `GoBack`, `GoForward`, `Reload` | set the event (`Back`/`Forward`/`Refresh`) that the next `Navigating`/`Navigated` report; `CanGoBack/Forward` follow the back-forward list |
-| `UserAgent` | `Settings.UserAgent` (the WebKit default is read back when unset) |
-| `Eval`, `EvaluateJavaScriptAsync` | `EvaluateJavascript`; strings come back as they are, other values as JSON, `undefined`/`null` as `null` |
-| `ProcessTerminated` | `web-process-terminated` |
+| `UserAgent` | `Settings.UserAgent` (the engine default is read back when unset; WebView2 once the controller exists) |
+| `Eval`, `EvaluateJavaScriptAsync` | `EvaluateJavascript` / `ExecuteScriptAsync`; strings come back as they are, other values as JSON, `undefined`/`null` as `null` |
+| `ProcessTerminated` | `web-process-terminated` / `ProcessFailed` (browser or render process exited) |
 
-Not supported: the `Cookies` container is not synchronised.
+Cookies: on WebView2 the container's cookies for a URL are written to the browser before each navigation to it and the browser's cookies for it are added to the container after a successful load
+(cookies deleted in the browser stay in the container); the WebKitGTK `Cookies` container is not synchronised.
 
 Implementation note: GtkSharp's event wrappers of the `gboolean`-returning WebKit signals (`decide-policy`, `load-failed`) never fire, so `GtkWebKitSignals` connects them with `g_signal_connect_data`.
 
@@ -60,8 +78,11 @@ builder.Services.AddMauiBlazorWebView().UseGtkPlatformHandler();   // after the 
 | Group | Needs | Where it runs |
 |---|---|---|
 | Pure logic: scripts and message framing, availability decision, `GtkHybridWebViewResponder`, `GtkWebViewManager` against a fake transport, file provider | nothing | everywhere |
-| Placeholder handlers (`[GtkFact]`) | GTK 4 | Windows and Linux (on Linux with WebKit the same tests assert the real view) |
-| Real web views (`[WebKitFact]`): navigation, JavaScript, history, user agent, Hybrid messaging and `InvokeDotNet`, Blazor render + click | WebKitGTK 6 + display | Linux only; skipped with the reason on Windows; set `MAUI_GTK_REQUIRE_NATIVE=1` to make an unusable runtime a failure |
+| Engine choice, WebView2 availability decision, WebView2 script-result conversion (`WebBackendTests`); `MauiGtkWebView2Host` against a fake controller (`WebView2HostTests`: realize/unrealize, bounds at 100/150/200 %, position-only change, map/ancestor visibility, focus, toplevel moves) | GTK 4 | everywhere |
+| Placeholder handlers (`[GtkFact]`) | GTK 4 | Windows and Linux (with an engine the same tests assert the real view) |
+| WebView on the platform engine (`[WebEngineFact]`, `WebViewHandlerTests`): navigation, cancel, history, JavaScript, user agent, disconnect | WebKitGTK 6 + display, or the WebView2 Runtime | Linux (WebKit) and Windows (WebView2); skipped with the reason where no engine is usable |
+| Real WebView2 (`[WebView2Fact]`, `WebView2EngineTests`): queued operations, controller bounds and visibility, child window + input, re-realization, `CoreWebView2Initialized`, cookies, new-window links | WebView2 Runtime | Windows only |
+| Hybrid messaging and `InvokeDotNet`, Blazor render + click (`[WebKitFact]`) | WebKitGTK 6 + display | Linux only; skipped with the reason on Windows; set `MAUI_GTK_REQUIRE_NATIVE=1` to make an unusable runtime a failure |
 
 ```bash
 # Debian 13 / WSL, headless

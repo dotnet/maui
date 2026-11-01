@@ -68,6 +68,30 @@ namespace Microsoft.Maui.Gtk.Web
 				: ConvertResult(value.IsUndefined || value.IsNull, value.IsString, value.ToString, () => value.ToJson(0));
 
 		/// <summary>
+		/// Turns the JSON text WebView2's <c>ExecuteScriptAsync</c> returns into the string handed back to MAUI, like
+		/// <see cref="ConvertResult(bool, bool, Func{string?}, Func{string?})"/>: a JSON string is unquoted, <c>null</c> (also what
+		/// <c>undefined</c> and a throwing script give) is <see langword="null"/>, any other value stays JSON.
+		/// </summary>
+		/// <param name="json">The JSON text, or <see langword="null"/>.</param>
+		internal static string? ConvertWebView2Result(string? json)
+		{
+			if (string.IsNullOrEmpty(json) || json == "null")
+				return null;
+
+			if (json[0] != '"')
+				return json;
+
+			try
+			{
+				return JsonSerializer.Deserialize<string>(json);
+			}
+			catch (JsonException)
+			{
+				return json;
+			}
+		}
+
+		/// <summary>
 		/// Maps WebKit's navigation type to MAUI's navigation event. A pending event the app asked for (<c>GoBack</c>, <c>Reload</c>...) wins over
 		/// the WebKit type, because WebKit reports a programmatic load as <c>Other</c>.
 		/// </summary>
