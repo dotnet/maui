@@ -81,6 +81,11 @@ sealed class FakeHostServices : GtkWebView2HostServices
 
 	internal override void FocusToplevel(IntPtr hwnd) => FocusedToplevels.Add(hwnd);
 
+	/// <summary>Whether the window counts as active; independent of the desktop foreground state, which varies between runs.</summary>
+	public bool WindowActive = true;
+
+	internal override bool IsWindowActive(global::Gtk.Window window) => WindowActive;
+
 	sealed class Unwatch : IDisposable
 	{
 		readonly FakeHostServices _services;
@@ -342,6 +347,30 @@ public class WebView2HostTests
 	});
 
 	[GtkFact]
+	public void ARetiredHostNeverCreatesAControllerAgain() => GtkTestHost.Run(() =>
+	{
+		var f = Show();
+		try
+		{
+			f.Host.Engine.Dispose();
+			Assert.Null(f.Host.Controller);
+			Assert.Single(f.Services.Controllers);
+
+			f.Window.Child = null;
+			GtkTestHost.Pump(f.Window);
+			f.Window.Child = f.Content;
+			GtkTestHost.PumpUntil(() => f.Host.Controller is not null, f.Window, 500);
+
+			Assert.Null(f.Host.Controller);
+			Assert.Single(f.Services.Controllers);
+		}
+		finally
+		{
+			Done(f);
+		}
+	});
+
+	[GtkFact]
 	public void AControllerCompletedAfterUnrealizeIsClosedAndNotAdopted() => GtkTestHost.Run(() =>
 	{
 		var services = new FakeHostServices { AutoComplete = false };
@@ -495,16 +524,39 @@ public class WebView2HostTests
 			var other = new global::Gtk.Button { Label = "other", Focusable = true };
 			f.Content.Prepend(other);
 			GtkTestHost.Pump(f.Window);
-			Assert.True(GtkTestHost.PumpUntil(() => f.Window.IsActive, f.Window, 5000), "the window never became active");
+			f.Host.GrabFocus();
+			Assert.True(GtkTestHost.PumpUntil(() => f.Host.IsFocus, f.Window, 5000), "the host never took the focus");
+			f.Services.FocusedToplevels.Clear();
+
+			other.GrabFocus();
+			// Window activation and focus changes are delivered asynchronously: wait for the effect instead of pumping a fixed amount.
+			Assert.True(GtkTestHost.PumpUntil(() => f.Services.FocusedToplevels.Count > 0, f.Window, 5000), "the Win32 focus never returned to the toplevel");
+
+			Assert.False(f.Host.IsFocus);
+			Assert.Equal(new[] { FakeHostServices.FakeHandle }, f.Services.FocusedToplevels);
+		}
+		finally
+		{
+			Done(f);
+		}
+	});
+
+	[GtkFact]
+	public void AnotherWidgetTakingTheGtkFocusOfAnInactiveWindowLeavesTheWin32FocusAlone() => GtkTestHost.Run(() =>
+	{
+		var f = Show(new FakeHostServices { WindowActive = false });
+		try
+		{
+			var other = new global::Gtk.Button { Label = "other", Focusable = true };
+			f.Content.Prepend(other);
+			GtkTestHost.Pump(f.Window);
 			f.Host.GrabFocus();
 			GtkTestHost.Pump(f.Window);
-			Assert.Empty(f.Services.FocusedToplevels);
 
 			other.GrabFocus();
 			GtkTestHost.Pump(f.Window);
 
-			Assert.False(f.Host.IsFocus);
-			Assert.Equal(new[] { FakeHostServices.FakeHandle }, f.Services.FocusedToplevels);
+			Assert.Empty(f.Services.FocusedToplevels);
 		}
 		finally
 		{

@@ -172,7 +172,7 @@ namespace Microsoft.Maui.Gtk.Web
 			_host.ControllerFailed -= OnControllerFailed;
 			Detach();
 			AbandonQueue(null);
-			_host.CloseController();
+			_host.Retire();
 		}
 
 		void Enqueue(bool isNavigation, Action<CoreWebView2> run, Action<Exception?>? abandon = null)

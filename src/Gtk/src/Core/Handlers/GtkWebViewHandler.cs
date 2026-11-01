@@ -127,7 +127,9 @@ namespace Microsoft.Maui.Gtk.Handlers
 
 		void Reload()
 		{
-			if (_engine is null)
+			// Nothing is loaded yet (a platform engine whose control does not exist yet): there is nothing to reload, and the engine would
+			// neither perform nor report it, leaving a stale pending Refresh. The initial load the engine queued still runs.
+			if (_engine is null || string.IsNullOrEmpty(_engine.Uri))
 				return;
 
 			if (RaiseNavigating(WebNavigationEvent.Refresh, _engine.Uri))

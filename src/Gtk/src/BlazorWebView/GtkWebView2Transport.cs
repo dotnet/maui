@@ -227,14 +227,17 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			_ = task.ContinueWith(
 				t => GtkRuntime.Post(() =>
 				{
+					MemoryStream? stream = null;
 					try
 					{
 						var response = t.IsCompletedSuccessfully ? t.Result : GtkUriSchemeResponse.NotFound();
+						stream = new MemoryStream(response.Body, writable: false);
 						args.Response = environment.CreateWebResourceResponse(
-							new MemoryStream(response.Body, writable: false),
+							stream,
 							response.Status,
 							response.Reason,
 							WebView2BlazorProtocol.BuildResponseHeaders(response));
+						stream = null; // owned by the response now
 					}
 					catch (Exception e)
 					{
@@ -242,7 +245,17 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 					}
 					finally
 					{
-						deferral.Complete();
+						stream?.Dispose();
+
+						try
+						{
+							deferral.Complete();
+						}
+						catch (Exception e) when (e is System.Runtime.InteropServices.COMException or ObjectDisposedException or InvalidOperationException)
+						{
+							// The controller was closed meanwhile: nobody waits for the answer, and this runs on the GTK main loop.
+							_logger?.LogDebug(e, "The BlazorWebView request was abandoned: {Message}", e.Message);
+						}
 					}
 				}),
 				TaskScheduler.Default);

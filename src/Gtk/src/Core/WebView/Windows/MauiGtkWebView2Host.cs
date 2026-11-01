@@ -11,10 +11,12 @@ namespace Microsoft.Maui.Gtk.Web
 	/// </summary>
 	/// <remarks>
 	/// <para><b>Lifecycle.</b> The controller is created when the widget is realized (it then has a toplevel with an HWND) and closed when it is
-	/// unrealized; <see cref="MauiGtkWebView2Engine"/> replays the last navigation on the controller of a re-realization.</para>
+	/// unrealized; <see cref="MauiGtkWebView2Engine"/> replays the last navigation on the controller of a re-realization. Moving the widget to
+		/// another window unrealizes and realizes it, so the new controller is parented to the HWND of the new toplevel. A host whose engine was
+		/// disposed (<see cref="Retire"/>) never creates a controller again.</para>
 	/// <para><b>Placement.</b> <c>Bounds</c> are the widget's bounds in toplevel coordinates, plus the toplevel's surface transform (the client-side
 	/// decoration shadow), times the surface scale (<c>gdk_surface_get_scale</c>), in the pixels of the HWND's client area. They are pushed on every
-	/// size allocation, map, unmap, root change and at the end of every frame-clock layout phase (GTK does not notify a widget whose position
+	/// size allocation, map and at the end of every frame-clock layout phase (GTK does not notify a widget whose position
 	/// alone changed), only when they changed.</para>
 	/// <para><b>Visibility.</b> The web view is visible exactly while the widget is mapped, which GTK derives from the widget's own visibility and
 	/// that of all its ancestors (hidden pages of a stack, a hidden window, a collapsed container).</para>
@@ -37,6 +39,7 @@ namespace Microsoft.Maui.Gtk.Web
 		IntPtr _toplevelHandle;
 		int _generation;
 		bool _creating;
+		bool _retired;
 		bool _syncingFocus;
 		bool _returningFocus;
 		(int X, int Y, int Width, int Height)? _lastBounds;
@@ -132,7 +135,7 @@ namespace Microsoft.Maui.Gtk.Web
 
 		void BeginCreateController()
 		{
-			if (_controller is not null || _creating)
+			if (_retired || _controller is not null || _creating)
 				return;
 
 			if (Native is not { } native)
@@ -203,7 +206,14 @@ namespace Microsoft.Maui.Gtk.Web
 				controller.MoveFocusIn();
 		}
 
-		/// <summary>Closes the controller (unrealize, handler disconnect). A later realization creates a new one.</summary>
+		/// <summary>Closes the controller for good (the engine was disposed, the handler disconnected): a later realization creates none.</summary>
+		internal void Retire()
+		{
+			_retired = true;
+			CloseController();
+		}
+
+		/// <summary>Closes the controller (unrealize). A later realization creates a new one unless the host was retired.</summary>
 		internal void CloseController()
 		{
 			_generation++;
@@ -315,7 +325,7 @@ namespace Microsoft.Maui.Gtk.Web
 			if (_controller is null || _toplevelHandle == IntPtr.Zero || _returningFocus || _syncingFocus)
 				return;
 
-			if (Root is not global::Gtk.Window { IsActive: true })
+			if (Root is not global::Gtk.Window window || !_services.IsWindowActive(window))
 				return;
 
 			_services.FocusToplevel(_toplevelHandle);

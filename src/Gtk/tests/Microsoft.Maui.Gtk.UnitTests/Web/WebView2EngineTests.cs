@@ -291,6 +291,24 @@ public class WebView2EngineTests : IDisposable
 	});
 
 	[WebView2Fact]
+	public void ReloadBeforeTheControllerExistsRaisesNothingAndLeavesNoStaleRefresh() => GtkTestHost.Run(() =>
+	{
+		var navigating = new List<WebNavigationEvent>();
+		var navigated = new List<WebNavigatedEventArgs>();
+		var (view, _, host) = Create(new HtmlWebViewSource { Html = "<p>first</p>" });
+		view.Navigating += (s, e) => navigating.Add(e.NavigationEvent);
+		view.Navigated += (s, e) => navigated.Add(e);
+
+		view.Reload();
+		Assert.Empty(navigating);
+
+		Show(host);
+		Assert.True(GtkTestHost.PumpUntil(() => navigated.Count > 0, null, 20000));
+		Assert.DoesNotContain(WebNavigationEvent.Refresh, navigating);
+		Assert.All(navigated, e => Assert.NotEqual(WebNavigationEvent.Refresh, e.NavigationEvent));
+	});
+
+	[WebView2Fact]
 	public void ALinkThatOpensANewWindowNavigatesTheSameViewAndCanBeCancelled() => GtkTestHost.Run(() =>
 	{
 		var navigated = new List<WebNavigatedEventArgs>();

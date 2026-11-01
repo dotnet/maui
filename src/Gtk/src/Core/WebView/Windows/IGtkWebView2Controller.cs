@@ -70,6 +70,9 @@ namespace Microsoft.Maui.Gtk.Web
 
 		/// <summary>Gives the Win32 keyboard focus back to the GTK toplevel window.</summary>
 		internal virtual void FocusToplevel(IntPtr hwnd) => GtkWin32.Focus(hwnd);
+
+		/// <summary>Whether the toplevel window is the active window of the desktop (focus follows the window while it is not).</summary>
+		internal virtual bool IsWindowActive(global::Gtk.Window window) => window.IsActive;
 	}
 
 	/// <summary>An <see cref="IGtkWebView2Controller"/> over a real <see cref="CoreWebView2Controller"/>.</summary>
