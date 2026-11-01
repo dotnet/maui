@@ -12,6 +12,7 @@ namespace Microsoft.Maui.Gtk.Fonts
 		PangoCairo,
 		PangoFt2,
 		GObject,
+		GLib,
 	}
 
 	/// <summary>
@@ -46,6 +47,9 @@ namespace Microsoft.Maui.Gtk.Fonts
 					break;
 				case FontLibrary.PangoFt2:
 					stem = "pangoft2-1.0"; soname = "libpangoft2-1.0.so.0"; windows = "pangoft2-1.0-0.dll"; dylib = "libpangoft2-1.0.0.dylib";
+					break;
+				case FontLibrary.GLib:
+					stem = "glib-2.0"; soname = "libglib-2.0.so.0"; windows = "glib-2.0-0.dll"; dylib = "libglib-2.0.0.dylib";
 					break;
 				default:
 					stem = "gobject-2.0"; soname = "libgobject-2.0.so.0"; windows = "gobject-2.0-0.dll"; dylib = "libgobject-2.0.0.dylib";

@@ -102,6 +102,23 @@ namespace Microsoft.Maui.Gtk.Fonts
 		}
 
 		/// <summary>
+		/// Logs the message of a <c>GError*</c> returned by GLib/Pango and frees it with <c>g_error_free</c>.
+		/// <c>struct GError { GQuark domain; gint code; gchar *message; }</c>: the message pointer follows two 32-bit ints,
+		/// at offset 8 on both 32- and 64-bit.
+		/// </summary>
+		static unsafe void ConsumeGError(IntPtr error, string filePath)
+		{
+			try
+			{
+				Debug.WriteLine($"pango_font_map_add_font_file refused '{filePath}': {FromUtf8(Marshal.ReadIntPtr(error, 8))}");
+			}
+			finally
+			{
+				((delegate* unmanaged[Cdecl]<IntPtr, void>)FontNativeLibraries.GetExport(FontLibrary.GLib, "g_error_free"))(error);
+			}
+		}
+
+		/// <summary>
 		/// Whether the fontconfig entry points are usable: false once a fontconfig call found the library (or
 		/// a symbol) missing, e.g. a stripped container - in that case the font file is still written to the user
 		/// font directory, it is just not visible until the next process start.
@@ -128,7 +145,14 @@ namespace Microsoft.Maui.Gtk.Fonts
 			try
 			{
 				var fontMap = pango_cairo_font_map_get_default();
-				return fontMap != IntPtr.Zero && pango_font_map_add_font_file(fontMap, ToUtf8(filePath), out _) != 0;
+				if (fontMap == IntPtr.Zero)
+					return false;
+
+				var added = pango_font_map_add_font_file(fontMap, ToUtf8(filePath), out var error) != 0;
+				if (error != IntPtr.Zero)
+					ConsumeGError(error, filePath);
+
+				return added;
 			}
 			catch (Exception ex) when (IsMissingNativeSymbol(ex))
 			{

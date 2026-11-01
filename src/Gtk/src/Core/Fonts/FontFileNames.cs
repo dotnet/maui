@@ -27,7 +27,10 @@ namespace Microsoft.Maui.Gtk.Fonts
 			}
 		}
 
-		/// <summary>The family name (name id 1, else 16) of the first font in <paramref name="data"/>, or <see langword="null"/>.</summary>
+		/// <summary>
+		/// The family name of the first font in <paramref name="data"/>, or <see langword="null"/>. Prefers the typographic
+		/// family (name id 16, what fontconfig reports) over name id 1; English Windows names win over Mac Roman over the rest.
+		/// </summary>
 		internal static string? ReadFamilyName(byte[] data)
 		{
 			if (data is null || data.Length < 12)
@@ -69,6 +72,30 @@ namespace Microsoft.Maui.Gtk.Fonts
 			return null;
 		}
 
+		// Mac Roman 0x80-0xFF (0x00-0x7F is ASCII).
+		const string MacRomanHigh =
+			"ÄÅÇÉÑÖÜáàâäãåçéè" +
+			"êëíìîïñóòôöõúùûü" +
+			"†°¢£§•¶ß®©™´¨≠ÆØ" +
+			"∞±≤≥¥µ∂∑∏π∫ªºΩæø" +
+			"¿¡¬√ƒ≈∆«»… ÀÃÕŒœ" +
+			"–—“”‘’÷◊ÿŸ⁄€‹›ﬁﬂ" +
+			"‡·‚„‰ÂÊÁËÈÍÎÏÌÓÔ" +
+			"ÒÚÛÙıˆ˜¯˘˙˚¸˝˛ˇ";
+
+		/// <summary>Decodes Mac Roman (name table platform 1) bytes: ASCII below 0x80, <see cref="MacRomanHigh"/> above.</summary>
+		static string DecodeMacRoman(byte[] data, int offset, int length)
+		{
+			var chars = new char[length];
+			for (var i = 0; i < length; i++)
+			{
+				var b = data[offset + i];
+				chars[i] = b < 0x80 ? (char)b : MacRomanHigh[b - 0x80];
+			}
+
+			return new string(chars);
+		}
+
 		static string? ReadFromNameTable(byte[] data, int start, int length)
 		{
 			if (length < 6)
@@ -98,19 +125,19 @@ namespace Microsoft.Maui.Gtk.Fonts
 				if (stringOffset + stringLength > data.Length)
 					continue;
 
-				// Windows Unicode / Mac Roman are the only encodings worth decoding; prefer English, then name id 1.
+				// Windows Unicode / Mac Roman are the only encodings worth decoding; prefer English, then name id 16 over 1.
 				string text;
 				if (platform == 3 || platform == 0)
 					text = Encoding.BigEndianUnicode.GetString(data, stringOffset, stringLength);
 				else if (platform == 1)
-					text = Encoding.ASCII.GetString(data, stringOffset, stringLength);
+					text = DecodeMacRoman(data, stringOffset, stringLength);
 				else
 					continue;
 
 				if (string.IsNullOrWhiteSpace(text))
 					continue;
 
-				var score = (platform == 3 && language == 0x0409 ? 4 : platform == 1 && language == 0 ? 2 : 0) + (nameId == FamilyNameId ? 1 : 0);
+				var score = (platform == 3 && language == 0x0409 ? 4 : platform == 1 && language == 0 ? 2 : 0) + (nameId == TypographicFamilyNameId ? 1 : 0);
 				if (score > bestScore)
 				{
 					bestScore = score;
