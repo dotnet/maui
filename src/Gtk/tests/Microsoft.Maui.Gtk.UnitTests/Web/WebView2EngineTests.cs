@@ -178,6 +178,46 @@ public class WebView2EngineTests : IDisposable
 	});
 
 	[WebView2Fact]
+	public void TheVirtualViewCookiesAreSentForANavigationIssuedBeforeTheControllerExists() => GtkTestHost.Run(() =>
+	{
+		var navigated = new List<WebNavigatedEventArgs>();
+		var (view, handler, host) = Create();
+		view.Navigated += (s, e) => navigated.Add(e);
+		view.Cookies = new CookieContainer();
+		view.Cookies.Add(new Uri("https://early.maui-gtk.test/"), new Cookie("sid", "7", "/", "early.maui-gtk.test"));
+
+		// Not realized yet: the engine has no cookie store when the navigation is issued.
+		view.Source = new UrlWebViewSource { Url = "https://early.maui-gtk.test/page" };
+		Assert.Null(handler.Engine!.Cookies);
+		Show(host);
+		Assert.True(GtkTestHost.PumpUntil(() => navigated.Count > 0, null, 20000));
+
+		var cookies = GtkTestHost.Await(handler.Engine.Cookies!.GetAsync(new Uri("https://early.maui-gtk.test/")));
+		Assert.Contains(cookies.Cast<Cookie>(), c => c.Name == "sid" && c.Value == "7");
+	});
+
+	[WebView2Fact]
+	public void AScriptIssuedWhileTheHostIsUnrealizedDoesNotPreventShowingTheClosedAddressAgain() => GtkTestHost.Run(() =>
+	{
+		var navigated = new List<WebNavigatedEventArgs>();
+		var (view, handler, host) = Create(new UrlWebViewSource { Url = PageOne });
+		view.Navigated += (s, e) => navigated.Add(e);
+		var window = Show(host);
+		Assert.True(GtkTestHost.PumpUntil(() => navigated.Count == 1, null, 15000));
+
+		window.Child = null;
+		GtkTestHost.Pump(window);
+		Assert.Null(host.Controller);
+
+		view.Eval("document.title = 'scripted'");
+		var result = view.EvaluateJavaScriptAsync("1 + 1");
+
+		window.Child = host;
+		Assert.True(GtkTestHost.PumpUntil(() => navigated.Count == 2, window, 15000), "the page was not shown again");
+		Assert.Equal("2", GtkTestHost.Await(result));
+	});
+
+	[WebView2Fact]
 	public void TheHostRaisesCoreWebView2InitializedBeforeTheFirstNavigation() => GtkTestHost.Run(() =>
 	{
 		var events = new List<string>();

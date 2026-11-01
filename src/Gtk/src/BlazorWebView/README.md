@@ -15,7 +15,7 @@ On Linux the controls run on **WebKitGTK 6** (`libwebkitgtk-6.0`) through `Webki
 |---|---|
 | `MauiGtkWebView2Host` | empty focusable `Gtk.Widget` that owns the `CoreWebView2Controller`: created on *realize* with the toplevel's HWND (`gdk_win32_surface_get_handle`), closed on *unrealize*. Bounds = widget bounds + the surface transform, times `gdk_surface_get_scale`, pushed on size-allocate, map and every frame-clock layout (a position-only change does not allocate); visible exactly while mapped (a hidden ancestor hides it); GTK focus -> `MoveFocus`, a click inside -> GTK `grab_focus`, Tab out -> toplevel `SetFocus` + `child_focus`; toplevel moves (`EVENT_OBJECT_LOCATIONCHANGE`) -> `NotifyParentWindowPositionChanged` |
 | `GtkWebView2Environment` | availability probe (`GetAvailableBrowserVersionString`) and the one shared `CoreWebView2Environment`; user data folder `WEBVIEW2_USER_DATA_FOLDER`, else `%LOCALAPPDATA%\<process name>\WebView2` |
-| `IGtkWebEngine` | what the WebView handler needs from an engine: `GtkWebKitEngine` (the former handler code) and `MauiGtkWebView2Engine`. WebView2 queues scripts and the last navigation until the controller exists, and replays the address after a re-realization (history is lost) |
+| `IGtkWebEngine` | what the WebView handler needs from an engine: `GtkWebKitEngine` (the former handler code) and `MauiGtkWebView2Engine`. WebView2 queues scripts and the last navigation until the controller exists, and replays the address after a re-realization unless a navigation is queued (scripts queued meanwhile do not prevent it; history is lost) |
 | Seams for HybridWebView (used) / BlazorWebView | `GtkWebBackend.CreatePlatformView` / `CreateEngine`; `MauiGtkWebView2Host.CoreWebView2Initialized` (raised per controller before the first navigation: add `WebResourceRequested` filters, document-created scripts, `WebMessageReceived`), `.CoreWebView2`, `.Controller`, `.Services` (fakes in tests); `GtkWebView2Environment.GetAsync` |
 
 WebView2 notes: the control exists only once the host is in a realized window (a view that is not in a window loads nothing yet); `HtmlWebViewSource.BaseUrl` is ignored and HTML is limited to 2 MB;
@@ -42,7 +42,7 @@ Runtime packages: `libwebkitgtk-6.0-4` (Debian/Ubuntu), `webkitgtk6.0` (Fedora).
 | `Eval`, `EvaluateJavaScriptAsync` | `EvaluateJavascript` / `ExecuteScriptAsync`; strings come back as they are, other values as JSON, `undefined`/`null` as `null` |
 | `ProcessTerminated` | `web-process-terminated` / `ProcessFailed` (browser or render process exited) |
 
-Cookies: on WebView2 the container's cookies for a URL are written to the browser before each navigation to it and the browser's cookies for it are added to the container after a successful load
+Cookies: on WebView2 the container's cookies for a URL are written to the browser before each navigation to it (for a navigation issued before the control exists, such as the initial `Source`, when the engine is ready) and the browser's cookies for it are added to the container after a successful load
 (cookies deleted in the browser stay in the container); the WebKitGTK `Cookies` container is not synchronised.
 
 Implementation note: GtkSharp's event wrappers of the `gboolean`-returning WebKit signals (`decide-policy`, `load-failed`) never fire, so `GtkWebKitSignals` connects them with `g_signal_connect_data`.

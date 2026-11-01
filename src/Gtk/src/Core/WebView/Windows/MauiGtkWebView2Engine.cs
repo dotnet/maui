@@ -253,7 +253,7 @@ namespace Microsoft.Maui.Gtk.Web
 
 			Ready?.Invoke(this, EventArgs.Empty);
 
-			if (ReplayOnRecreate && _replay is { } replay && _queue.Count == 0)
+			if (ReplayOnRecreate && _replay is { } replay && !_queue.Exists(o => o.IsNavigation))
 			{
 				// A re-realized host: show what the closed controller showed.
 				var uri = replay();

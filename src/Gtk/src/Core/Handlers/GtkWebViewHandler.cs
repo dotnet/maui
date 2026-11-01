@@ -152,7 +152,17 @@ namespace Microsoft.Maui.Gtk.Handlers
 
 		void OnEngineHistoryChanged(object? sender, EventArgs e) => UpdateCanGoBackForward();
 
-		void OnEngineReady(object? sender, EventArgs e) => UpdateUserAgent();
+		string? _unsyncedCookieUrl;
+
+		void OnEngineReady(object? sender, EventArgs e)
+		{
+			UpdateUserAgent();
+
+			// A navigation issued before the engine had a cookie store (the initial Source load) is about to run: write its cookies first.
+			var url = _unsyncedCookieUrl;
+			_unsyncedCookieUrl = null;
+			SyncCookiesToEngine(url);
+		}
 
 		void OnEngineProcessTerminated(object? sender, EventArgs e) =>
 			View?.ProcessTerminated(new WebProcessTerminatedEventArgs());
@@ -217,7 +227,17 @@ namespace Microsoft.Maui.Gtk.Handlers
 		/// <summary>Writes the cookies of the virtual view's container for <paramref name="url"/> into the engine's store.</summary>
 		void SyncCookiesToEngine(string? url)
 		{
-			if (_engine?.Cookies is not { } store || View?.Cookies is not { } container || CookieUri(url) is not { } uri)
+			if (_engine is null || CookieUri(url) is not { } uri)
+				return;
+
+			if (_engine.Cookies is not { } store)
+			{
+				// The engine creates its cookie store later (WebView2: once the host is realized): write them when it is ready.
+				_unsyncedCookieUrl = url;
+				return;
+			}
+
+			if (View?.Cookies is not { } container)
 				return;
 
 			var cookies = container.GetCookies(uri);
