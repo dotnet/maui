@@ -204,7 +204,8 @@ namespace Microsoft.Maui.Controls.Platform
 							}
 						}
 
-						var itemWidth = width + horizontalMargin;
+						// Preserve the measured content width when WinUI rounds fractional container margins.
+						var itemWidth = Math.Ceiling(width + horizontalMargin);
 						if (hasMeasuredContent && width > 0 && _wrapGrid.ItemWidth != itemWidth)
 							_wrapGrid.ItemWidth = itemWidth;
 						_measuredItemWidth = width;
