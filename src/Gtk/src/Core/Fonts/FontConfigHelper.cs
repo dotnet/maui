@@ -8,7 +8,7 @@ using System.Text;
 namespace Microsoft.Maui.Gtk.Fonts
 {
 	/// <summary>
-	/// A thin P/Invoke layer over libfontconfig, used to make a font file that was written at
+	/// A thin layer over the fontconfig and Pango native libraries, used to make a font file that was written at
 	/// runtime (an <see cref="EmbeddedFont"/> extracted by <see cref="GtkEmbeddedFontLoader"/>)
 	/// usable by Pango <em>in this process</em>.
 	/// <para>
@@ -18,18 +18,15 @@ namespace Microsoft.Maui.Gtk.Fonts
 	/// follows makes the new family visible to font maps that have already been created.
 	/// </para>
 	/// <para>
-	/// Everything here is best-effort: if libfontconfig cannot be loaded (non-Linux, or a stripped
-	/// container) the helper turns itself off and callers fall back to name-based resolution.
+	/// The libraries are resolved per OS (<see cref="FontNativeLibraries"/>: Linux sonames, the Windows GTK runtime
+	/// <c>*-1.0-0.dll</c>, macOS dylibs) and called through function pointers. On Windows Pango's default font map is the
+	/// win32 one, not a fontconfig one: the font is added with <c>pango_font_map_add_font_file</c> and fontconfig only
+	/// reads the family name out of the file. Everything here is best-effort: if a library cannot be loaded the helper
+	/// turns itself off and callers fall back to name-based resolution.
 	/// </para>
 	/// </summary>
 	internal static class FontConfigHelper
 	{
-		// sonames, not link names: "libfontconfig.so" only exists when the -dev package is installed.
-		const string FontConfigLib = "libfontconfig.so.1";
-		const string PangoCairoLib = "libpangocairo-1.0.so.0";
-		const string PangoFt2Lib = "libpangoft2-1.0.so.0";
-		const string PangoLib = "libpango-1.0.so.0";
-
 		const int FcResultMatch = 0;
 		const int FcSetApplication = 1;
 
@@ -43,34 +40,70 @@ namespace Microsoft.Maui.Gtk.Fonts
 		static bool _fontConfigUnavailable;
 		static bool _pangoFlushUnavailable;
 
-		[DllImport(FontConfigLib, CallingConvention = CallingConvention.Cdecl)]
-		static extern int FcConfigAppFontAddFile(IntPtr config, byte[] file);
+		static unsafe int FcConfigAppFontAddFile(IntPtr config, byte[] file)
+		{
+			var fn = (delegate* unmanaged[Cdecl]<IntPtr, byte*, int>)FontNativeLibraries.GetExport(FontLibrary.FontConfig, "FcConfigAppFontAddFile");
+			fixed (byte* path = file)
+				return fn(config, path);
+		}
 
-		[DllImport(FontConfigLib, CallingConvention = CallingConvention.Cdecl)]
-		static extern IntPtr FcFreeTypeQuery(byte[] file, uint id, IntPtr blanks, out int count);
+		static unsafe IntPtr FcFreeTypeQuery(byte[] file, uint id, IntPtr blanks, out int count)
+		{
+			var fn = (delegate* unmanaged[Cdecl]<byte*, uint, IntPtr, int*, IntPtr>)FontNativeLibraries.GetExport(FontLibrary.FontConfig, "FcFreeTypeQuery");
+			int n;
+			IntPtr pattern;
+			fixed (byte* path = file)
+				pattern = fn(path, id, blanks, &n);
+			count = n;
+			return pattern;
+		}
 
-		[DllImport(FontConfigLib, CallingConvention = CallingConvention.Cdecl)]
-		static extern int FcPatternGetString(IntPtr pattern, byte[] obj, int n, out IntPtr value);
+		static unsafe int FcPatternGetString(IntPtr pattern, byte[] obj, int n, out IntPtr value)
+		{
+			var fn = (delegate* unmanaged[Cdecl]<IntPtr, byte*, int, IntPtr*, int>)FontNativeLibraries.GetExport(FontLibrary.FontConfig, "FcPatternGetString");
+			IntPtr v;
+			int result;
+			fixed (byte* name = obj)
+				result = fn(pattern, name, n, &v);
+			value = v;
+			return result;
+		}
 
-		[DllImport(FontConfigLib, CallingConvention = CallingConvention.Cdecl)]
-		static extern void FcPatternDestroy(IntPtr pattern);
+		static unsafe void FcPatternDestroy(IntPtr pattern)
+			=> ((delegate* unmanaged[Cdecl]<IntPtr, void>)FontNativeLibraries.GetExport(FontLibrary.FontConfig, "FcPatternDestroy"))(pattern);
 
-		[DllImport(FontConfigLib, CallingConvention = CallingConvention.Cdecl)]
-		static extern IntPtr FcConfigGetFonts(IntPtr config, int set);
+		static unsafe IntPtr FcConfigGetFonts(IntPtr config, int set)
+			=> ((delegate* unmanaged[Cdecl]<IntPtr, int, IntPtr>)FontNativeLibraries.GetExport(FontLibrary.FontConfig, "FcConfigGetFonts"))(config, set);
 
-		[DllImport(PangoCairoLib, CallingConvention = CallingConvention.Cdecl)]
-		static extern IntPtr pango_cairo_font_map_get_default();
+		static unsafe IntPtr pango_cairo_font_map_get_default()
+			=> ((delegate* unmanaged[Cdecl]<IntPtr>)FontNativeLibraries.GetExport(FontLibrary.PangoCairo, "pango_cairo_font_map_get_default"))();
 
-		[DllImport(PangoFt2Lib, CallingConvention = CallingConvention.Cdecl)]
-		static extern void pango_fc_font_map_config_changed(IntPtr fontMap);
+		static unsafe void pango_fc_font_map_config_changed(IntPtr fontMap)
+			=> ((delegate* unmanaged[Cdecl]<IntPtr, void>)FontNativeLibraries.GetExport(FontLibrary.PangoFt2, "pango_fc_font_map_config_changed"))(fontMap);
+
+		// calling the fontconfig entry points on any other font map (win32, DirectWrite, CoreText) is a GLib critical
+		static unsafe bool IsFcFontMap(IntPtr fontMap)
+		{
+			var getType = (delegate* unmanaged[Cdecl]<UIntPtr>)FontNativeLibraries.GetExport(FontLibrary.PangoFt2, "pango_fc_font_map_get_type");
+			var isA = (delegate* unmanaged[Cdecl]<IntPtr, UIntPtr, int>)FontNativeLibraries.GetExport(FontLibrary.GObject, "g_type_check_instance_is_a");
+			return isA(fontMap, getType()) != 0;
+		}
 
 		// Pango >= 1.56: loads a font file straight into a font map, without touching the fontconfig configuration.
-		[DllImport(PangoLib, CallingConvention = CallingConvention.Cdecl)]
-		static extern int pango_font_map_add_font_file(IntPtr fontMap, byte[] filename, out IntPtr error);
+		static unsafe int pango_font_map_add_font_file(IntPtr fontMap, byte[] filename, out IntPtr error)
+		{
+			var fn = (delegate* unmanaged[Cdecl]<IntPtr, byte*, IntPtr*, int>)FontNativeLibraries.GetExport(FontLibrary.Pango, "pango_font_map_add_font_file");
+			IntPtr e = IntPtr.Zero;
+			int result;
+			fixed (byte* path = filename)
+				result = fn(fontMap, path, &e);
+			error = e;
+			return result;
+		}
 
 		/// <summary>
-		/// Whether the fontconfig entry points could be resolved. False on Windows/macOS, or when
-		/// libfontconfig.so.1 is absent - in that case the font file is still written to the user
+		/// Whether the fontconfig entry points are usable: false once a fontconfig call found the library (or
+		/// a symbol) missing, e.g. a stripped container - in that case the font file is still written to the user
 		/// font directory, it is just not visible until the next process start.
 		/// </summary>
 		internal static bool IsAvailable
@@ -144,8 +177,9 @@ namespace Microsoft.Maui.Gtk.Fonts
 		}
 
 		/// <summary>
-		/// Asks fontconfig for the real family name inside a font file - the name Pango matches on,
-		/// which is generally not the file name. Returns null when it cannot be determined.
+		/// Reads the real family name inside a font file - the name Pango matches on, which is generally not the
+		/// file name. Asks fontconfig (also on Windows, where it only parses the file) and falls back to reading the
+		/// TrueType/OpenType <c>name</c> table directly (<see cref="FontFileNames"/>). Returns null when it cannot be determined.
 		/// </summary>
 		internal static string QueryFamilyName(string filePath)
 		{
@@ -157,23 +191,26 @@ namespace Microsoft.Maui.Gtk.Fonts
 				if (_familyNames.TryGetValue(filePath, out var cached))
 					return cached;
 
-				if (_fontConfigUnavailable)
-					return null;
+				string family = null;
 
-				string family;
+				if (!_fontConfigUnavailable)
+				{
+					try
+					{
+						// Two independent routes, because FcFreeTypeQuery lives in the fcfreetype half
+						// of libfontconfig and is not guaranteed to be exported by every build.
+						family = QueryFamilyByFreeType(filePath) ?? QueryFamilyFromAppFontSet(filePath);
+					}
+					catch (Exception ex) when (IsMissingNativeSymbol(ex))
+					{
+						Debug.WriteLine($"libfontconfig unavailable, cannot read the family name of '{filePath}': {ex.Message}");
+						_fontConfigUnavailable = true;
+					}
+				}
 
-				try
-				{
-					// Two independent routes, because FcFreeTypeQuery lives in the fcfreetype half
-					// of libfontconfig and is not guaranteed to be exported by every build.
-					family = QueryFamilyByFreeType(filePath) ?? QueryFamilyFromAppFontSet(filePath);
-				}
-				catch (Exception ex) when (IsMissingNativeSymbol(ex))
-				{
-					Debug.WriteLine($"libfontconfig unavailable, cannot read the family name of '{filePath}': {ex.Message}");
-					_fontConfigUnavailable = true;
-					return null;
-				}
+				// no fontconfig (or it could not read the file): parse the name table ourselves
+				if (string.IsNullOrWhiteSpace(family))
+					family = FontFileNames.TryReadFamilyName(filePath);
 
 				if (string.IsNullOrWhiteSpace(family))
 					family = null;
@@ -267,7 +304,8 @@ namespace Microsoft.Maui.Gtk.Fonts
 			{
 				var fontMap = pango_cairo_font_map_get_default();
 
-				if (fontMap != IntPtr.Zero)
+				// the win32 / CoreText font maps are not fontconfig backed: nothing to flush
+				if (fontMap != IntPtr.Zero && IsFcFontMap(fontMap))
 					pango_fc_font_map_config_changed(fontMap);
 			}
 			catch (Exception ex) when (IsMissingNativeSymbol(ex))

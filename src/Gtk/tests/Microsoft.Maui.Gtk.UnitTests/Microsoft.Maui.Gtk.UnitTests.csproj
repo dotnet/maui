@@ -25,6 +25,8 @@
 
   <ItemGroup>
     <None Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+    <!-- A real font whose family ("feather") is not installed on any host: NativeFontTests checks that Pango resolves it. -->
+    <None Include="..\..\..\SingleProject\Resizetizer\test\UnitTests\testdata\fonts\feather.ttf" Link="Fonts\feather.ttf" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

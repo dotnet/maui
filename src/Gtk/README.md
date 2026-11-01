@@ -120,7 +120,7 @@ Pass only GApplication options in `args`. Lifecycle: `ConfigureLifecycleEvents(e
 | Transforms | translation/scale/rotation (+ anchor) become the `Gsk.Transform` of the child allocation (`GtkViewState`). A transform change stores the values and queues an allocation of the parent, whose arrange re-applies them via `PlatformArrange` (a child is only allocated inside its parent's size-allocate). `RotationX/Y` ignored. |
 | Styling | `GtkStyle`: one `CssProvider` + class per widget (the only `StyleContext.AddProvider` use). Colour, font, spacing, decorations, padding, background (solid/linear/radial), borders are CSS. |
 | Dispatcher / ticker | `GtkDispatcher` (`GLib.Idle/Timeout`, inline on the GTK thread), `GtkTicker` (frame-clock tick callback on a main (non-modal, non-transient) window, re-anchored when that window unmaps; `Timeout` fallback). |
-| Fonts | `GtkFontManager` (`Font` -> CSS / `Pango.FontDescription`); `GtkEmbeddedFontLoader` (`pango_font_map_add_font_file` on Pango >= 1.56, else fontconfig `FcConfigAppFontAddFile`). Fonts registered by file name are opened from `Resources/Fonts`, `Fonts` or the app folder through `FontRegistrar.NativeFontStreamProvider` (Core hook, installed by `UseMauiGtkCore`; null = upstream Standard behaviour, font unresolved). |
+| Fonts | `GtkFontManager` (`Font` -> CSS / `Pango.FontDescription`); `GtkEmbeddedFontLoader` (`pango_font_map_add_font_file` on Pango >= 1.56, else fontconfig `FcConfigAppFontAddFile`). The native libraries are resolved per OS by `FontNativeLibraries` (`NativeLibrary.TryLoad` over Linux sonames / Windows `fontconfig-1.dll`, `pango-1.0-0.dll`, `pangocairo-1.0-0.dll`... / macOS dylibs, called through function pointers; no global `DllImportResolver`). On Windows Pango's default font map is the win32 one, so only `add_font_file` registers the font (fontconfig, which only reads the family name there, cannot); the family name falls back to a managed `name` table reader (`FontFileNames`) when fontconfig is missing. Windows Pango < 1.56: embedded fonts are not visible (no fallback). Fonts registered by file name are opened from `Resources/Fonts`, `Fonts` or the app folder through `FontRegistrar.NativeFontStreamProvider` (Core hook, installed by `UseMauiGtkCore`; null = upstream Standard behaviour, font unresolved). |
 | Images | `IGtkImageSourceService` -> `Gdk.Texture` for File/Stream/Uri/Font; `GtkImageLoader` replaces `ImageSourcePartLoader` (a no-op on `net10.0`). |
 
 ## Supported controls
@@ -166,12 +166,12 @@ Not in this area: Shell, CollectionView, Maps, NavigationPage/Toolbar/FlyoutPage
 |---|---|
 | Windows | `dotnet test src/Gtk/tests/Microsoft.Maui.Gtk.UnitTests` (GTK 4 runtime in `%LOCALAPPDATA%\Gtk\4.22.4\bin` or on `PATH`) |
 | Linux / WSL (headless) | `GDK_BACKEND=x11 dbus-run-session -- xvfb-run -a --server-args="-screen 0 1280x1024x24" dotnet test src/Gtk/tests/Microsoft.Maui.Gtk.UnitTests` |
-| Smoke | `dotnet run --project src/Gtk/samples/Maui.Gtk.Sample -- --smoke` (prints `SMOKE OK`; checks the SDK-copied image, font, icon, asset and `.desktop`; needs the `gtk` workload) |
+| Smoke | `dotnet run --project src/Gtk/samples/Maui.Gtk.Sample -- --smoke` (prints `SMOKE OK`; checks the SDK-copied image, font, icon, asset and `.desktop`, and that Pango resolves the `ConfigureFonts` alias to a real family; needs the `gtk` workload) |
 | Core hook tests | `dotnet test src/Core/tests/UnitTests/Core.UnitTests.csproj --filter "FullyQualifiedName~PlatformViewBackendTests"` |
 
 | Project | Tests (Windows GTK 4.22 / Ubuntu 24.04 GTK 4.14, xvfb) |
 |---------|------|
-| `Microsoft.Maui.Gtk.UnitTests` (Core + Essentials + Handlers + Controls + Web + Maps) | Windows 722 passed, 17 skipped (WebKit: not shipped for Windows); Ubuntu 24.04 (GTK 4.14, xvfb) 739 passed, 0 skipped |
+| `Microsoft.Maui.Gtk.UnitTests` (Core + Essentials + Handlers + Controls + Web + Maps) | Windows 731 passed, 17 skipped (WebKit: not shipped for Windows); Ubuntu 24.04 (GTK 4.14, xvfb) 748 passed, 0 skipped |
 | `Graphics.Cairo.Tests` | 125 passed, 0 skipped |
 | `Essentials.UnitTests` (net10.0) | 441 passed, 0 skipped |
 | `Core.UnitTests` / `Controls.Core.UnitTests` (net10.0) | 884 (+3 skipped) / 5869 (+30 skipped) passed |

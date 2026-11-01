@@ -10,6 +10,8 @@ namespace Maui.Gtk.Sample;
 /// </summary>
 static class SmokeTest
 {
+	const int MaxWaitMilliseconds = 20000;
+
 	public static bool Enabled { get; set; }
 
 	public static bool Succeeded { get; private set; }
@@ -20,9 +22,15 @@ static class SmokeTest
 	{
 		if (!Enabled)
 			return;
-
-		GLib.Timeout.Add(1500, () =>
+		// The first layout can take a few seconds on a cold host (loading the embedded font): poll until the page is
+		// arranged, up to a deadline, instead of guessing one delay.
+		var waited = 0;
+		GLib.Timeout.Add(500, () =>
 		{
+			waited += 500;
+			if (page.TitleLabel.Frame.Width <= 0 && waited < MaxWaitMilliseconds)
+				return true;
+
 			try
 			{
 				Verify(page);
@@ -79,6 +87,24 @@ static class SmokeTest
 			return;
 		}
 
+		// The alias must resolve to a family Pango really has, not silently fall back to the theme font.
+		var resolved = ResolveWithPango(page, registrar);
+		if (resolved is null || !resolved.Equals("Open Sans", StringComparison.OrdinalIgnoreCase))
+		{
+			Failure = $"Pango did not resolve the embedded font OpenSansRegular (got '{resolved}')";
+			return;
+		}
+
 		Succeeded = true;
+	}
+
+	static string? ResolveWithPango(MainPage page, IFontRegistrar registrar)
+	{
+		var family = new Microsoft.Maui.Gtk.Fonts.GtkFontManager(registrar).GetFontFamily("OpenSansRegular");
+		var description = new Pango.FontDescription { Family = family };
+		description.AbsoluteSize = 16 * 1024;
+
+		var widget = (global::Gtk.Widget)page.TitleLabel.Handler!.PlatformView!;
+		return widget.PangoContext.LoadFont(description)?.Describe().Family;
 	}
 }

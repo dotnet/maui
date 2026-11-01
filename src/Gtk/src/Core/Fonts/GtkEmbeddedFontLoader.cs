@@ -10,10 +10,12 @@ namespace Microsoft.Maui.Gtk.Fonts
 	/// GTK widget in this process.
 	/// </summary>
 	/// <remarks>
-	/// Unlike Windows, a font on Linux must be where fontconfig looks. The file is written to the user font directory
-	/// (<c>$XDG_DATA_HOME/fonts/&lt;application&gt;</c>) so it survives, then added to the running process: with
-	/// <c>pango_font_map_add_font_file</c> on Pango 1.56 or newer, otherwise with <c>FcConfigAppFontAddFile</c> followed by a Pango
-	/// cache flush (<see cref="FontConfigHelper"/>). Fonts with the same file name are not extracted twice.
+	/// On Linux a font must be where fontconfig looks: the file is written to the user font directory
+	/// (<c>$XDG_DATA_HOME/fonts/&lt;application&gt;</c>) so it survives; elsewhere (Windows, macOS, no home) to a per-application
+	/// temp folder. It is then added to the running process: with <c>pango_font_map_add_font_file</c> on Pango 1.56 or newer
+	/// (the route that works on every OS, including the win32 font map of the Windows GTK runtime), otherwise with
+	/// <c>FcConfigAppFontAddFile</c> followed by a Pango cache flush, which only helps a fontconfig backed font map
+	/// (<see cref="FontConfigHelper"/>). Fonts with the same file name are not extracted twice.
 	/// </remarks>
 	public sealed class GtkEmbeddedFontLoader : IEmbeddedFontLoader
 	{
