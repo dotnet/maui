@@ -1,4 +1,12 @@
-#nullable enable
+﻿#nullable enable
+Microsoft.Maui.Handlers.ContentButtonHandler
+Microsoft.Maui.Handlers.ContentButtonHandler.ContentButtonHandler() -> void
+Microsoft.Maui.Handlers.ContentButtonHandler.ContentButtonHandler(Microsoft.Maui.IPropertyMapper? mapper) -> void
+Microsoft.Maui.Handlers.ContentButtonHandler.ContentButtonHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper) -> void
+Microsoft.Maui.Handlers.IContentButtonHandler
+Microsoft.Maui.Handlers.IContentButtonHandler.PlatformView.get -> Google.Android.Material.Card.MaterialCardView!
+Microsoft.Maui.Handlers.IContentButtonHandler.VirtualView.get -> Microsoft.Maui.IContentButton!
+Microsoft.Maui.IContentButton
 override Microsoft.Maui.Handlers.WebViewHandler.NeedsContainer.get -> bool
 override Microsoft.Maui.Handlers.WebViewHandler.SetupContainer() -> void
 override Microsoft.Maui.Handlers.WebViewHandler.RemoveContainer() -> void
@@ -8,28 +16,41 @@ override Microsoft.Maui.Handlers.HybridWebViewHandler.RemoveContainer() -> void
 Microsoft.Maui.PlatformDrawable
 Microsoft.Maui.PlatformDrawable.PlatformDrawable(Android.Content.Context? context) -> void
 Microsoft.Maui.PlatformDrawable.PlatformDrawable(nint javaReference, Android.Runtime.JniHandleOwnership transfer) -> void
-override Microsoft.Maui.PlatformDrawable.JniPeerMembers.get -> Java.Interop.JniPeerMembers!
-override Microsoft.Maui.PlatformDrawable.ThresholdClass.get -> nint
-override Microsoft.Maui.PlatformDrawable.ThresholdType.get -> System.Type!
 *REMOVED*override Microsoft.Maui.Graphics.MauiDrawable.Dispose(bool disposing) -> void
 *REMOVED*override Microsoft.Maui.Graphics.MauiDrawable.OnBoundsChange(Android.Graphics.Rect! bounds) -> void
 *REMOVED*override Microsoft.Maui.Graphics.MauiDrawable.OnDraw(Android.Graphics.Drawables.Shapes.Shape? shape, Android.Graphics.Canvas? canvas, Android.Graphics.Paint? paint) -> void
+override Microsoft.Maui.Handlers.ContentButtonHandler.ConnectHandler(Google.Android.Material.Card.MaterialCardView! platformView) -> void
+override Microsoft.Maui.Handlers.ContentButtonHandler.CreatePlatformView() -> Google.Android.Material.Card.MaterialCardView!
+override Microsoft.Maui.Handlers.ContentButtonHandler.DisconnectHandler(Google.Android.Material.Card.MaterialCardView! platformView) -> void
+override Microsoft.Maui.Handlers.ContentButtonHandler.SetVirtualView(Microsoft.Maui.IView! view) -> void
 override Microsoft.Maui.Handlers.LabelHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
-override Microsoft.Maui.Platform.MauiScrollView.OnVisibilityChanged(Android.Views.View! changedView, Android.Views.ViewStates visibility) -> void
-override Microsoft.Maui.Platform.MauiScrollView.SetOnTouchListener(Android.Views.View.IOnTouchListener? touchListener) -> void
 override Microsoft.Maui.Platform.ContentViewGroup.HasOverlappingRendering.get -> bool
 override Microsoft.Maui.Platform.LayoutViewGroup.HasOverlappingRendering.get -> bool
-override Microsoft.Maui.Platform.WrapperView.HasOverlappingRendering.get -> bool
+override Microsoft.Maui.Platform.MauiHybridWebView.Dispose(bool disposing) -> void
 override Microsoft.Maui.Platform.MauiHybridWebView.OnAttachedToWindow() -> void
 override Microsoft.Maui.Platform.MauiHybridWebView.OnDetachedFromWindow() -> void
-override Microsoft.Maui.Platform.MauiHybridWebView.Dispose(bool disposing) -> void
 override Microsoft.Maui.Platform.MauiHybridWebView.OnSizeChanged(int width, int height, int oldWidth, int oldHeight) -> void
 override Microsoft.Maui.Platform.MauiHybridWebViewClient.OnPageFinished(Android.Webkit.WebView? view, string? url) -> void
 override Microsoft.Maui.Platform.MauiHybridWebViewClient.OnPageStarted(Android.Webkit.WebView? view, string? url, Android.Graphics.Bitmap? favicon) -> void
-override Microsoft.Maui.Platform.MauiWebView.OnAttachedToWindow() -> void
-override Microsoft.Maui.Platform.MauiWebView.OnSizeChanged(int width, int height, int oldWidth, int oldHeight) -> void
+override Microsoft.Maui.Platform.MauiPickerBase.OnTouchEvent(Android.Views.MotionEvent? e) -> bool
+override Microsoft.Maui.Platform.MauiScrollView.OnVisibilityChanged(Android.Views.View! changedView, Android.Views.ViewStates visibility) -> void
+override Microsoft.Maui.Platform.MauiScrollView.SetOnTouchListener(Android.Views.View.IOnTouchListener? touchListener) -> void
 override Microsoft.Maui.Platform.MauiSwipeRefreshLayout.OnInterceptTouchEvent(Android.Views.MotionEvent? ev) -> bool
 override Microsoft.Maui.Platform.MauiWebView.Dispose(bool disposing) -> void
+override Microsoft.Maui.Platform.MauiWebView.OnAttachedToWindow() -> void
 override Microsoft.Maui.Platform.MauiWebView.OnDetachedFromWindow() -> void
+override Microsoft.Maui.Platform.MauiWebView.OnSizeChanged(int width, int height, int oldWidth, int oldHeight) -> void
 override Microsoft.Maui.Platform.MauiWebView.OnTouchEvent(Android.Views.MotionEvent? e) -> bool
-override Microsoft.Maui.Platform.MauiPickerBase.OnTouchEvent(Android.Views.MotionEvent? e) -> bool
+override Microsoft.Maui.Platform.WrapperView.HasOverlappingRendering.get -> bool
+override Microsoft.Maui.PlatformDrawable.JniPeerMembers.get -> Java.Interop.JniPeerMembers!
+override Microsoft.Maui.PlatformDrawable.ThresholdClass.get -> nint
+override Microsoft.Maui.PlatformDrawable.ThresholdType.get -> System.Type!
+static Microsoft.Maui.Handlers.ContentButtonHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IContentButton!, Microsoft.Maui.Handlers.IContentButtonHandler!>!
+static Microsoft.Maui.Handlers.ContentButtonHandler.MapBackground(Microsoft.Maui.Handlers.IContentButtonHandler! handler, Microsoft.Maui.IContentButton! button) -> void
+static Microsoft.Maui.Handlers.ContentButtonHandler.MapContent(Microsoft.Maui.Handlers.IContentButtonHandler! handler, Microsoft.Maui.IContentButton! button) -> void
+static Microsoft.Maui.Handlers.ContentButtonHandler.MapCornerRadius(Microsoft.Maui.Handlers.IContentButtonHandler! handler, Microsoft.Maui.IContentButton! button) -> void
+static Microsoft.Maui.Handlers.ContentButtonHandler.MapIsEnabled(Microsoft.Maui.Handlers.IContentButtonHandler! handler, Microsoft.Maui.IContentButton! button) -> void
+static Microsoft.Maui.Handlers.ContentButtonHandler.MapPadding(Microsoft.Maui.Handlers.IContentButtonHandler! handler, Microsoft.Maui.IContentButton! button) -> void
+static Microsoft.Maui.Handlers.ContentButtonHandler.MapStrokeColor(Microsoft.Maui.Handlers.IContentButtonHandler! handler, Microsoft.Maui.IContentButton! button) -> void
+static Microsoft.Maui.Handlers.ContentButtonHandler.MapStrokeThickness(Microsoft.Maui.Handlers.IContentButtonHandler! handler, Microsoft.Maui.IContentButton! button) -> void
+static Microsoft.Maui.Handlers.ContentButtonHandler.Mapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IContentButton!, Microsoft.Maui.Handlers.IContentButtonHandler!>!
