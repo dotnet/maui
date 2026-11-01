@@ -718,7 +718,8 @@ namespace Microsoft.Maui.DeviceTests
 							Math.Abs(horizontalGap - horizontal) <= 1 &&
 							Math.Abs(verticalGap - vertical) <= 1;
 					});
-					Assert.True(matched, $"Expected gaps {horizontal}/{vertical}, got {horizontalGap}/{verticalGap}; first item {first?.ActualWidth}x{first?.ActualHeight}.");
+					var panel = handler.PlatformView.GetFirstDescendant<ItemsWrapGrid>();
+					Assert.True(matched, $"Expected gaps {horizontal}/{vertical}, got {horizontalGap}/{verticalGap}; first item {first?.ActualWidth}x{first?.ActualHeight}; panel item width {panel?.ItemWidth}.");
 				}
 
 				await AssertSpacing(30, 10);

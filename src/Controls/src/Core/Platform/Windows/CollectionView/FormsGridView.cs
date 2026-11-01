@@ -189,6 +189,10 @@ namespace Microsoft.Maui.Controls.Platform
 							if (Microsoft.UI.Xaml.Media.VisualTreeHelper.GetChild(_wrapGrid, i) is GridViewItem container &&
 								container.ContentTemplateRoot is UIElement content)
 							{
+								// Unrealized item controls report a provisional width of 88 for virtualization.
+								if (content is ItemContentControl { Content: null })
+									continue;
+
 								var margin = container.Margin;
 								var padding = container.Padding;
 								var height = Math.Max(0, _wrapGrid.ItemHeight - margin.Top - margin.Bottom - padding.Top - padding.Bottom);
