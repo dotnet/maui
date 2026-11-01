@@ -173,7 +173,7 @@ Not in this area: Shell, CollectionView, Maps, NavigationPage/Toolbar/FlyoutPage
 
 | Project | Tests (Windows GTK 4.22 / Ubuntu 24.04 GTK 4.14, xvfb) |
 |---------|------|
-| `Microsoft.Maui.Gtk.UnitTests` (Core + Essentials + Handlers + Controls + Web + Maps) | Windows 796 passed, 17 skipped (WebKit: not shipped for Windows); Ubuntu 24.04 (GTK 4.14, xvfb) 813 passed, 0 skipped |
+| `Microsoft.Maui.Gtk.UnitTests` (Core + Essentials + Handlers + Controls + Web + Maps) | Windows 935 passed, 17 skipped (WebKit: not shipped for Windows); Ubuntu 24.04 (GTK 4.14, xvfb) 952 passed, 0 skipped |
 | `Graphics.Cairo.Tests` | 125 passed, 0 skipped |
 | `Essentials.UnitTests` (net10.0) | 441 passed, 0 skipped |
 | `Core.UnitTests` / `Controls.Core.UnitTests` (net10.0) | 884 (+3 skipped) / 5869 (+30 skipped) passed |

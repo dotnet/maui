@@ -67,7 +67,11 @@ public class GtkGeolocationTests
 {
 	static Location Fix(double lat = 10, double lon = 20) => new(lat, lon, DateTimeOffset.UtcNow);
 
-	static GtkGeolocation Create(ILocationSource source) => new("org.maui.gtk.tests", source);
+	static GtkGeolocation Create(ILocationSource source)
+	{
+		_ = GtkHost.Instance; // installs the GTK-thread dispatcher: another test may have marked a main thread, and the events are marshalled there
+		return new("org.maui.gtk.tests", source);
+	}
 
 	[Fact]
 	public void IsEnabledFollowsTheSource()
