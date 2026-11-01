@@ -11,29 +11,34 @@ using Microsoft.Maui.Gtk.Web;
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
 	/// <summary>
-	/// What <see cref="GtkWebViewManager"/> needs from a web view: load a URI and run a script. Implemented over WebKitGTK by the handler;
-	/// a fake in the tests.
+	/// What <see cref="GtkWebViewManager"/> needs from a web view: load a URI and deliver a message to the page. Implemented over WebKitGTK
+	/// and over WebView2 by the handler; a fake in the tests.
 	/// </summary>
 	internal interface IGtkBlazorTransport
 	{
 		/// <summary>Navigates the web view to an absolute URI.</summary>
 		void LoadUri(string uri);
 
-		/// <summary>Runs a script in the page, ignoring its result.</summary>
-		void RunScript(string script);
+		/// <summary>Delivers a .NET-to-JavaScript message to the callbacks the page registered with <c>window.external.receiveMessage</c>.</summary>
+		void PostMessage(string message);
 	}
 
 	/// <summary>
-	/// A <see cref="WebViewManager"/> for WebKitGTK. The page is served through the <c>app://0.0.0.1/</c> custom scheme
-	/// (<see cref="RespondAsync"/>); messages travel as <c>window.external.sendMessage</c> (posted to
-	/// <c>webkit.messageHandlers.webwindowinterop</c>) and <c>__dispatchMessageCallback("...")</c>.
+	/// A <see cref="WebViewManager"/> for the GTK web engines. The page is served by <see cref="RespondAsync"/> from the app origin:
+	/// <c>app://0.0.0.1/</c> through a custom scheme on WebKitGTK, <c>https://0.0.0.1/</c> through <c>WebResourceRequested</c> on WebView2.
+	/// Messages travel as <c>window.external.sendMessage</c> / <c>receiveMessage</c>: over <c>webkit.messageHandlers.webwindowinterop</c> and
+	/// <c>__dispatchMessageCallback("...")</c> on WebKitGTK, over <c>chrome.webview</c> on WebView2.
 	/// </summary>
 	internal sealed class GtkWebViewManager : WebViewManager
 	{
-		/// <summary>The origin Blazor is served on. <c>https</c> cannot be served by an app on WebKit, so the <c>app</c> scheme is used (as on iOS).</summary>
+		/// <summary>The origin Blazor is served on with WebKitGTK. <c>https</c> cannot be served by an app on WebKit, so the <c>app</c> scheme is used (as on iOS).</summary>
 		internal static readonly Uri AppOriginUri = new(GtkWebViewScripts.AppScheme + "://" + BlazorWebView.AppHostAddress + "/");
 
+		/// <summary>The origin Blazor is served on with WebView2, which intercepts the <c>https</c> requests of a virtual host (as on Windows).</summary>
+		internal static readonly Uri WebView2AppOriginUri = new("https://" + BlazorWebView.AppHostAddress + "/");
+
 		readonly IGtkBlazorTransport _transport;
+		readonly Uri _appOrigin;
 		readonly string _contentRootRelativeToAppRoot;
 		readonly ILogger? _logger;
 
@@ -46,6 +51,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// <param name="contentRootRelativeToAppRoot">The folder of the host page, relative to the app package.</param>
 		/// <param name="hostPageRelativePath">The host page, relative to <paramref name="contentRootRelativeToAppRoot"/>.</param>
 		/// <param name="logger">The logger, if any.</param>
+		/// <param name="appOrigin">The origin the app is served on, or <see langword="null"/> for <see cref="AppOriginUri"/>.</param>
 		public GtkWebViewManager(
 			IGtkBlazorTransport transport,
 			IServiceProvider provider,
@@ -54,19 +60,24 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			JSComponentConfigurationStore jsComponents,
 			string contentRootRelativeToAppRoot,
 			string hostPageRelativePath,
-			ILogger? logger = null)
-			: base(provider, dispatcher, AppOriginUri, fileProvider, jsComponents, hostPageRelativePath)
+			ILogger? logger = null,
+			Uri? appOrigin = null)
+			: base(provider, dispatcher, appOrigin ?? AppOriginUri, fileProvider, jsComponents, hostPageRelativePath)
 		{
+			_appOrigin = appOrigin ?? AppOriginUri;
 			_transport = transport ?? throw new ArgumentNullException(nameof(transport));
 			_contentRootRelativeToAppRoot = contentRootRelativeToAppRoot;
 			_logger = logger;
 		}
 
+		/// <summary>The origin the app is served on.</summary>
+		internal Uri AppOrigin => _appOrigin;
+
 		/// <inheritdoc/>
 		protected override void NavigateCore(Uri absoluteUri) => _transport.LoadUri(absoluteUri.ToString());
 
 		/// <inheritdoc/>
-		protected override void SendMessage(string message) => _transport.RunScript(DispatchMessageScript(message));
+		protected override void SendMessage(string message) => _transport.PostMessage(message);
 
 		/// <summary>The script that hands a .NET-to-JavaScript message to the callbacks <c>window.external.receiveMessage</c> registered.</summary>
 		/// <param name="message">The message.</param>
@@ -91,7 +102,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		internal async Task<GtkUriSchemeResponse> RespondAsync(GtkUriSchemeRequest request)
 		{
 			// Pages fall back on the host page (client-side routing); files with an extension never do.
-			var allowFallbackOnHostPage = AppOriginUri.IsBaseOfPage(request.Url);
+			var allowFallbackOnHostPage = _appOrigin.IsBaseOfPage(request.Url);
 			var url = QueryStringHelper.RemovePossibleQueryString(request.Url);
 
 			_logger?.HandlingWebRequest(url);

@@ -16,7 +16,7 @@ checks, `IButtonHandler` and user mapper customisations keep working.
 | `src/Essentials` | `Microsoft.Maui.Essentials.Gtk` | Essentials on GTK 4 / Linux, see [`src/Essentials/README.md`](src/Essentials/README.md) |
 | `../Graphics/src/Graphics.Cairo` | `Microsoft.Maui.Graphics.Cairo` | `ICanvas` on Cairo/Pango, see its [README](../Graphics/src/Graphics.Cairo/README.md) |
 | `src/Controls` | `Microsoft.Maui.Controls.Gtk` | Controls handlers and `UseMauiGtk()`, see [`src/Controls/README.md`](src/Controls/README.md) |
-| `src/BlazorWebView` | `Microsoft.AspNetCore.Components.WebView.Maui.Gtk` | `BlazorWebView` on WebKitGTK; also documents `WebView` and `HybridWebView`, see its [README](src/BlazorWebView/README.md) |
+| `src/BlazorWebView` | `Microsoft.AspNetCore.Components.WebView.Maui.Gtk` | `BlazorWebView` on WebKitGTK (Linux) and WebView2 (Windows); also documents `WebView` and `HybridWebView`, see its [README](src/BlazorWebView/README.md) |
 | `src/Maps` | `Microsoft.Maui.Controls.Maps.Gtk` | `Map` on OSM slippy tiles, see [`src/Maps/README.md`](src/Maps/README.md) |
 
 Requires GTK >= 4.14 (guard newer APIs with `GtkRuntime.AtLeast(major, minor)`).
@@ -174,7 +174,7 @@ Not in this area: Shell, CollectionView, Maps, NavigationPage/Toolbar/FlyoutPage
 
 | Project | Tests (Windows GTK 4.22 / Ubuntu 24.04 GTK 4.14, xvfb) |
 |---------|------|
-| `Microsoft.Maui.Gtk.UnitTests` (Core + Essentials + Handlers + Controls + Web + Maps) | Windows 1053 passed, 2 skipped (BlazorWebView WebKit tests: no Windows backend yet); Ubuntu 24.04 (GTK 4.14, xvfb) 1043 passed, 12 skipped (WebView2 and Windows-only tests) |
+| `Microsoft.Maui.Gtk.UnitTests` (Core + Essentials + Handlers + Controls + Web + Maps) | TBD |
 | `Graphics.Cairo.Tests` | 125 passed, 0 skipped |
 | `Essentials.UnitTests` (net10.0) | 441 passed, 0 skipped |
 | `Core.UnitTests` / `Controls.Core.UnitTests` (net10.0) | 884 (+3 skipped) / 5869 (+30 skipped) passed |
@@ -194,7 +194,7 @@ Not in this area: Shell, CollectionView, Maps, NavigationPage/Toolbar/FlyoutPage
 - `SwipeItemView` is resolved by Controls to the content view handler (it is a `ContentView`); `Microsoft.Maui.Controls.Gtk` registers `SwipeItemView -> SwipeItemViewHandler`.
 - Windows builds pack/test `net10.0`/`netstandard` only (mobile/Windows TFMs are disabled locally by `Directory.Build.Override.props`).
 - Window position, maximum window size.
-- WebView and HybridWebView on Windows are a native child window (WebView2 "airspace"): they are always drawn above the GTK content, so popovers, menus and tooltips that overlap it are hidden behind it; GTK containers do not clip it (a `ScrollView` around it neither scrolls nor clips it); `Opacity`, `Rotation`, `Scale`, clips and shadows of the view or of an ancestor are ignored. `HtmlWebViewSource.BaseUrl` is ignored and the HTML is limited to 2 MB (`NavigateToString`).
+- WebView, HybridWebView and BlazorWebView on Windows are a native child window (WebView2 "airspace"): they are always drawn above the GTK content, so popovers, menus and tooltips that overlap it are hidden behind it; GTK containers do not clip it (a `ScrollView` around it neither scrolls nor clips it); `Opacity`, `Rotation`, `Scale`, clips and shadows of the view or of an ancestor are ignored. `HtmlWebViewSource.BaseUrl` is ignored and the HTML is limited to 2 MB (`NavigateToString`).
 - Accessibility: GTK fixes a widget's role when it joins a window, so a `HeadingLevel` set after the label is in a window keeps the old role (set it before, e.g. in XAML). `IsInAccessibleTree=false` hides the children too (GTK has only the hidden state). No `TabIndex`/`IsTabStop` (not in MAUI). Backends: Ubuntu 24.04 (GTK 4.14) AT-SPI publishes label, description, roles, `CHECKED`, `SENSITIVE`, `EDITABLE` (verified through `libatspi`) but not the `HIDDEN` state, the `LABELLED_BY` relation, the heading `LEVEL` or the spin button value (that needs `GtkAccessibleRange`, which a custom widget cannot implement through GtkSharp): they are set for backends that honour them. Windows: GTK 4.22.4 contains the AccessKit backend but runs the null (test) context also with `GTK_A11Y=accesskit`, so UI Automation sees the toplevel window only (probe: `UiaAccessibilityTests`); announcing on a toplevel crashes the process there, so announcements go to the window content.
 
 

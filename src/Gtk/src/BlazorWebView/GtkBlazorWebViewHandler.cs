@@ -17,11 +17,13 @@ using WebKitView = WebKit.WebView;
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
 	/// <summary>
-	/// <see cref="BlazorWebViewHandler"/> over a WebKitGTK 6 <c>WebKit.WebView</c> (a <c>Gtk.Label</c> placeholder when WebKitGTK cannot be loaded).
+	/// <see cref="BlazorWebViewHandler"/> over a WebKitGTK 6 <c>WebKit.WebView</c> (Linux) or a WebView2 control (Windows; see <see cref="WebView2Transport"/>);
+	/// a <c>Gtk.Label</c> placeholder when neither engine can be created.
 	/// </summary>
 	/// <remarks>
-	/// <para>The app is served from the <c>wwwroot</c> content next to the executable through the <c>app://0.0.0.1/</c> custom scheme. The page talks
-	/// to .NET through <c>webkit.messageHandlers.webwindowinterop</c>, exactly as on iOS. Links are routed through
+	/// <para>The app is served from the <c>wwwroot</c> content next to the executable: through the <c>app://0.0.0.1/</c> custom scheme on WebKitGTK
+	/// (the page talks to .NET through <c>webkit.messageHandlers.webwindowinterop</c>, exactly as on iOS), through <c>https://0.0.0.1/</c> intercepted by
+	/// <c>WebResourceRequested</c> on WebView2 (the page talks through <c>chrome.webview</c>, as on Windows). Links are routed through
 	/// <see cref="IBlazorWebView.UrlLoading"/>: <see cref="UrlLoadingStrategy.OpenExternally"/> opens the system browser.</para>
 	/// <para>Register it with <see cref="BlazorWebViewGtkExtensions.UseGtkPlatformHandler"/>.</para>
 	/// </remarks>
@@ -55,6 +57,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		const string UseBlockingDisposalSwitch = "BlazorWebView.UseBlockingDisposal";
 
 		WebKitView? _view;
+		IGtkBlazorTransport? _transport;
+		IDisposable? _transportLifetime;
+		Uri _appOrigin = GtkWebViewManager.AppOriginUri;
 		GtkWebKitSignals? _signals;
 		IDisposable? _route;
 		GtkWebViewManager? _webviewManager;
@@ -83,9 +88,17 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// <inheritdoc/>
 		protected override object CreatePlatformView()
 		{
-			var widget = GtkWebKit.CreatePlatformView("BlazorWebView");
+			var widget = GtkWebBackend.CreatePlatformView("BlazorWebView");
 			if (widget is not WebKitView view)
+			{
+				if (OperatingSystem.IsWindows() && IsWebView2Host(widget))
+				{
+					View?.BlazorWebViewInitializing(new BlazorWebViewInitializingEventArgs());
+					View?.BlazorWebViewInitialized(new BlazorWebViewInitializedEventArgs());
+				}
+
 				return widget;
+			}
 
 			View?.BlazorWebViewInitializing(new BlazorWebViewInitializingEventArgs());
 
@@ -118,8 +131,32 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			if (platformView is WebKitView view)
 			{
 				_view = view;
+				_transport = new WebKitTransport(view);
+				_appOrigin = GtkWebViewManager.AppOriginUri;
 				_signals = new GtkWebKitSignals(view, OnDecidePolicy, null);
 			}
+			else if (OperatingSystem.IsWindows() && platformView is global::Gtk.Widget widget)
+			{
+				AttachWebView2(widget);
+			}
+		}
+
+		static bool IsWebView2Host(global::Gtk.Widget widget) => OperatingSystem.IsWindows() && IsWebView2HostCore(widget);
+
+		// Isolated so that the WebView2 types are loaded only on Windows.
+		[System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+		static bool IsWebView2HostCore(global::Gtk.Widget widget) => widget is MauiGtkWebView2Host;
+
+		[System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+		void AttachWebView2(global::Gtk.Widget widget)
+		{
+			if (widget is not MauiGtkWebView2Host host)
+				return;
+
+			var transport = new WebView2Transport(host, () => _webviewManager, OnNavigationRequested, DeveloperTools.Enabled, Logger);
+			_transport = transport;
+			_transportLifetime = transport;
+			_appOrigin = GtkWebViewManager.WebView2AppOriginUri;
 		}
 
 		/// <inheritdoc/>
@@ -136,6 +173,13 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			_signals = null;
 			_route?.Dispose();
 			_route = null;
+			_transportLifetime?.Dispose();
+			_transportLifetime = null;
+			_transport = null;
+
+			// The WebView2 host is closed with its engine (the WebKit view needs no engine here).
+			if (OperatingSystem.IsWindows() && platformView is global::Gtk.Widget widget)
+				DisposeWebView2Engine(widget);
 
 			if (_webviewManager is { } manager)
 			{
@@ -163,6 +207,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 			base.DisconnectHandler(platformView);
 		}
+
+		[System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+		static void DisposeWebView2Engine(global::Gtk.Widget widget) => (widget as MauiGtkWebView2Host)?.Engine.Dispose();
 
 		/// <inheritdoc/>
 		public override IFileProvider CreateFileProvider(string contentRootDir) => new GtkMauiAssetFileProvider(contentRootDir);
@@ -235,7 +282,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 		void StartWebViewCoreIfPossible()
 		{
-			if (_hostPage is null || Services is null || _webviewManager is not null || _view is null || View is not { } virtualView)
+			if (_hostPage is null || Services is null || _webviewManager is not null || _transport is null || View is not { } virtualView)
 				return;
 
 			// We assume the host page is always in the root of the content directory, because it's
@@ -247,14 +294,15 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			var fileProvider = virtualView.CreateFileProvider(contentRootDir);
 
 			_webviewManager = new GtkWebViewManager(
-				new WebKitTransport(_view),
+				_transport,
 				Services,
 				new MauiDispatcher(Services.GetRequiredService<IDispatcher>()),
 				fileProvider,
 				virtualView.JSComponents,
 				contentRootDir,
 				hostPageRelativePath,
-				Logger);
+				Logger,
+				_appOrigin);
 
 			StaticContentHotReloadManager.AttachToWebViewManagerIfEnabled(_webviewManager);
 
@@ -306,7 +354,20 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			if (!Uri.TryCreate(requestUri, UriKind.Absolute, out var uri) || uri.Scheme == "about")
 				return false;
 
-			var callbackArgs = UrlLoadingEventArgs.CreateWithDefaultLoadingStrategy(uri, GtkWebViewManager.AppOriginUri);
+			if (!OnNavigationRequested(uri))
+				return false;
+
+			decision.Ignore();
+			return true;
+		}
+
+		/// <summary>Asks the app how to load a navigation the page started; returns <see langword="true"/> when the web view must not load it.</summary>
+		bool OnNavigationRequested(Uri uri)
+		{
+			if (View is not { } virtualView)
+				return false;
+
+			var callbackArgs = UrlLoadingEventArgs.CreateWithDefaultLoadingStrategy(uri, _appOrigin);
 			virtualView.UrlLoading(callbackArgs);
 
 			Logger.NavigationEvent(uri, callbackArgs.UrlLoadingStrategy);
@@ -314,13 +375,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			if (callbackArgs.UrlLoadingStrategy == UrlLoadingStrategy.OpenExternally)
 				Launcher.Default.OpenAsync(uri).FireAndForget(Logger);
 
-			if (callbackArgs.UrlLoadingStrategy != UrlLoadingStrategy.OpenInWebView)
-			{
-				decision.Ignore();
-				return true;
-			}
-
-			return false;
+			return callbackArgs.UrlLoadingStrategy != UrlLoadingStrategy.OpenInWebView;
 		}
 
 		sealed class WebKitTransport : IGtkBlazorTransport
@@ -334,7 +389,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 			public void LoadUri(string uri) => _view.LoadUri(uri);
 
-			public void RunScript(string script) => GtkWebViewScripting.Run(_view, script);
+			public void PostMessage(string message) => GtkWebViewScripting.Run(_view, GtkWebViewManager.DispatchMessageScript(message));
 		}
 
 		static readonly PropertyMapper<IBlazorWebView, BlazorWebViewHandler> GtkMapper = CreateMapper();

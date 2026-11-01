@@ -7,7 +7,7 @@ On Linux the controls run on **WebKitGTK 6** (`libwebkitgtk-6.0`) through `Webki
 **Windows:** `WebView` runs on **WebView2** (`Microsoft.Web.WebView2`, referenced by `Microsoft.Maui.Gtk`; needs the WebView2 Runtime, part of Windows 11 and Edge).
 `GtkWebBackend` picks the engine at run time (Linux -> WebKitGTK, Windows -> WebView2, else a placeholder label); without the runtime the label reads
 "WebView2 Runtime not installed (https://go.microsoft.com/fwlink/p/?LinkId=2124703)". `MAUI_GTK_DISABLE_WEBVIEW2=1` forces the placeholder.
-`HybridWebView` runs on WebView2 too (see "HybridWebView" below); BlazorWebView still creates WebKit views only, so on Windows it shows the placeholder until its WebView2 transport lands (the seams below are for it).
+`HybridWebView` and `BlazorWebView` run on WebView2 too (see "HybridWebView" and "BlazorWebView" below); the seams below are what they use.
 
 ### WebView2 backend
 
@@ -59,11 +59,11 @@ Implementation note: GtkSharp's event wrappers of the `gboolean`-returning WebKi
 ## BlazorWebView
 
 - `GtkWebViewManager : WebViewManager` navigates to `app://0.0.0.1/`, serves the framework files, the host page and `wwwroot/**` through the scheme (client-side routes without an extension fall back on the host page), and carries messages as `window.external.sendMessage` / `__dispatchMessageCallback("...")`.
-- A user script (document end, top frame) defines `window.external`, then calls `Blazor.start()`; the host page references `_framework/blazor.webview.js` with `autostart="false"` (as on every MAUI platform).
+- **WebView2 (Windows):** the app is served from `https://0.0.0.1/` (as on Windows MAUI): `WebView2Transport : IGtkBlazorTransport` (`BlazorWebView/GtkWebView2Transport.cs`) adds the filter `https://0.0.0.1/*` and answers `WebResourceRequested` with `GtkWebViewManager.RespondAsync` (a deferral, completed on the GTK thread), registers a document-created script that defines `window.external.sendMessage` / `receiveMessage` over `chrome.webview` and starts Blazor on `DOMContentLoaded`, receives page messages in `WebMessageReceived` (`MessageReceived` ignores pages outside the origin) and sends with `PostWebMessageAsString`. Every new `CoreWebView2` (first realization, re-realization) is configured before it navigates: the start page loads only after the script is registered. Links the page starts (`engine.Navigating`, `target=_blank`) go through `UrlLoading` like on WebKit. `GtkWebViewManager` takes the origin as a parameter (`app://0.0.0.1/` on WebKit). The shared `SharedSource/WebView2WebViewManager.cs` is not used (it is bound to the WinForms/WPF/WinUI controls). The control exists once the view is in a realized window; the airspace limits of the main README apply. the host page references `_framework/blazor.webview.js` with `autostart="false"` (as on every MAUI platform).
 - `IBlazorWebView.UrlLoading` decides links: `OpenInWebView` (default for the app origin), `OpenExternally` (system browser through `Launcher`), `CancelLoad`.
 - Files come from `<executable folder>/<content root>` (`GtkMauiAssetFileProvider`, rooted, `..` refused). `Microsoft.AspNetCore.Components.WebView.Maui.Gtk.targets` (imported automatically by the NuGet package; `Import` it for a project reference) copies the **static web assets** (`wwwroot/**`, `_framework/blazor.webview.js`, `_content/**`) to `<output>/wwwroot`, the job `ConvertStaticWebAssetsToMauiAssets` does on MAUI. It needs a project that uses the static web assets targets (`Microsoft.NET.Sdk.Razor`, as the MAUI Blazor template does). `GtkBlazorCopyStaticWebAssets=false` opts out.
-- Developer tools (`AddBlazorWebViewDeveloperTools()`) turn on WebKit's `enable-developer-extras`.
-- `BlazorWebViewInitializing/Initialized` fire with empty arguments: the net10.0 event args carry no GTK-specific members. Customise the view through `BlazorWebView.HandlerChanged` (`handler.PlatformView` is the `WebKit.WebView`).
+- Developer tools (`AddBlazorWebViewDeveloperTools()`) turn on WebKit's `enable-developer-extras`, or WebView2's `AreDevToolsEnabled` and default context menus (off otherwise).
+- `BlazorWebViewInitializing/Initialized` fire with empty arguments: the net10.0 event args carry no GTK-specific members. Customise the view through `BlazorWebView.HandlerChanged` (`handler.PlatformView` is the `WebKit.WebView` on Linux, the WebView2 host widget on Windows).
 
 Sample: `src/Gtk/samples/Maui.Gtk.BlazorSample` (`Microsoft.NET.Sdk.Razor`, one `BlazorWebView`, a counter component).
 
@@ -78,13 +78,13 @@ builder.Services.AddMauiBlazorWebView().UseGtkPlatformHandler();   // after the 
 
 | Group | Needs | Where it runs |
 |---|---|---|
-| Pure logic: scripts and message framing, availability decision, `GtkHybridWebViewResponder`, `GtkWebViewManager` against a fake transport, file provider | nothing | everywhere |
+| Pure logic: scripts and message framing, availability decision, `GtkHybridWebViewResponder`, `GtkWebViewManager` against a fake transport (both origins), the WebView2 shim script, request filter and response headers (`WebView2BlazorProtocolTests`), file provider | nothing | everywhere |
 | Engine choice, WebView2 availability decision, WebView2 script-result conversion (`WebBackendTests`); `MauiGtkWebView2Host` against a fake controller (`WebView2HostTests`: realize/unrealize, bounds at 100/150/200 %, position-only change, map/ancestor visibility, focus, toplevel moves) | GTK 4 | everywhere |
 | Placeholder handlers (`[GtkFact]`) | GTK 4 | Windows and Linux (with an engine the same tests assert the real view) |
 | WebView on the platform engine (`[WebEngineFact]`, `WebViewHandlerTests`): navigation, cancel, history, JavaScript, user agent, disconnect | WebKitGTK 6 + display, or the WebView2 Runtime | Linux (WebKit) and Windows (WebView2); skipped with the reason where no engine is usable |
 | Real WebView2 (`[WebView2Fact]`, `WebView2EngineTests`): queued operations, controller bounds and visibility, child window + input, re-realization, `CoreWebView2Initialized`, cookies, new-window links | WebView2 Runtime | Windows only |
 | HybridWebView page load, `InvokeDotNet`, raw messages, `EvaluateJavaScriptAsync`/`InvokeJavaScriptAsync`, foreign-origin messages, 400/404/405 answers (`[WebEngineFact]`, `HybridWebViewHandlerTests`; token header check `[WebView2Fact]`) | WebKitGTK 6 + display, or the WebView2 Runtime | Linux (WebKit) and Windows (WebView2); skipped with the reason where no engine is usable |
-| Blazor render + click (`[WebKitFact]`) | WebKitGTK 6 + display | Linux only; skipped with the reason on Windows; set `MAUI_GTK_REQUIRE_NATIVE=1` to make an unusable runtime a failure |
+| Blazor render + click, app origin, `UrlLoading` for foreign links, disconnect (`[WebEngineFact]`, `BlazorWebViewHandlerTests`) | WebKitGTK 6 + display, or the WebView2 Runtime | Linux (WebKit) and Windows (WebView2); skipped with the reason where no engine is usable | set `MAUI_GTK_REQUIRE_NATIVE=1` to make an unusable runtime a failure |
 
 ```bash
 # Debian 13 / WSL, headless
