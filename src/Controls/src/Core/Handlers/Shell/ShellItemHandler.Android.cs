@@ -925,6 +925,8 @@ namespace Microsoft.Maui.Controls.Handlers
         /// </summary>
         void IAppearanceObserver.OnAppearanceChanged(ShellAppearance appearance)
         {
+            BottomNavigationViewUtils.UpdateActiveIndicatorColor(_bottomNavigationView);
+
             if (appearance is not null)
             {
                 UpdateAppearance(appearance);

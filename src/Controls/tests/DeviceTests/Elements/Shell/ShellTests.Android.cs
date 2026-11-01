@@ -24,13 +24,15 @@ using Xunit;
 using static Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutTemplatedContentRenderer;
 using static Microsoft.Maui.DeviceTests.AssertHelpers;
 using AView = Android.Views.View;
-using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Shell)]
 	public partial class ShellTests
 	{
+		protected virtual MaterialToolbar GetShellToolbar(IElementHandler handler) =>
+			GetPlatformToolbar(handler);
+
 		[Fact(DisplayName = "Collapsible SearchHandler Icon Uses ForegroundColor Set On Parent Shell Element")]
 		public async Task CollapsibleSearchHandlerIconUsesForegroundColorSetOnParentShellElement()
 		{
@@ -47,11 +49,11 @@ namespace Microsoft.Maui.DeviceTests
 
 			var shell = await CreateShellAsync(shell => shell.Items.Add(tabBar));
 
-			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			await CreateHandlerAndAddToWindow(shell, async () =>
 			{
 				await OnLoadedAsync(page);
 
-				var toolbar = GetPlatformToolbar(handler);
+				var toolbar = GetShellToolbar(shell.Handler);
 				Assert.Equal(1, toolbar.Menu.Size());
 
 				using (var bitmap = RenderSearchIcon(toolbar))
@@ -182,12 +184,12 @@ namespace Microsoft.Maui.DeviceTests
 				shell.CurrentItem = new ContentPage();
 			});
 
-			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			await CreateHandlerAndAddToWindow(shell, async () =>
 			{
 				await shell.Navigation.PushAsync(secondPage);
-				await AssertEventually(() => GetPlatformToolbar(handler)?.NavigationIcon is not null);
+				await AssertEventually(() => GetShellToolbar(shell.Handler)?.NavigationIcon is not null);
 
-				var backButton = GetPlatformToolbar(handler).GetChildrenOfType<AppCompatImageButton>().First();
+				var backButton = GetShellToolbar(shell.Handler).GetChildrenOfType<AppCompatImageButton>().First();
 				using var backButtonBitmap = await backButton.ToBitmap(MauiContext);
 
 				var iconDrawable = (await icon.GetPlatformImageAsync(MauiContext)).Value;
@@ -226,12 +228,12 @@ namespace Microsoft.Maui.DeviceTests
 				shell.CurrentItem = new ContentPage();
 			});
 
-			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			await CreateHandlerAndAddToWindow(shell, async () =>
 			{
 				await shell.Navigation.PushAsync(secondPage);
-				await AssertEventually(() => GetPlatformToolbar(handler)?.NavigationIcon is not null);
+				await AssertEventually(() => GetShellToolbar(shell.Handler)?.NavigationIcon is not null);
 
-				var backButton = GetPlatformToolbar(handler).GetChildrenOfType<AppCompatImageButton>().First();
+				var backButton = GetShellToolbar(shell.Handler).GetChildrenOfType<AppCompatImageButton>().First();
 				using var backButtonBitmap = await backButton.ToBitmap(MauiContext);
 
 				Assert.False(GetDrawnBounds(backButtonBitmap).IsEmpty);

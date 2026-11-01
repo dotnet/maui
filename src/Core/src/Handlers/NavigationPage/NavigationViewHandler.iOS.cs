@@ -376,11 +376,13 @@ namespace Microsoft.Maui.Handlers
 				return (false, true);
 			}
 
+			public bool ShouldBeginInteractivePop() => ShouldPop();
+
 			public bool ShouldPop()
 			{
-				if (!_handlerRef.TryGetTarget(out var handler))
+				if (!_handlerRef.TryGetTarget(out var handler) || ((IElementHandler)handler).VirtualView is null)
 				{
-					return true;
+					return false;
 				}
 
 				// Ask the Controls layer if the current page handles the back button press.
@@ -607,7 +609,7 @@ namespace Microsoft.Maui.Handlers
 		public Action<UIViewController>? OnMidStackChanged { get; init; }
 
 		/// <summary>
-		/// Callback invoked when the native back button is tapped (shouldPopItem).
+		/// Callback invoked when the native back button is tapped or an interactive pop begins.
 		/// Returns true if the page handled the back press (prevents UIKit pop).
 		/// Wired to NavigationPage.CurrentPage.SendBackButtonPressed().
 		/// </summary>

@@ -678,6 +678,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		protected virtual void OnShellSectionSet()
 		{
 			_appearanceTracker = _context.CreateNavBarAppearanceTracker();
+			if (_appearanceTracker is ShellNavBarAppearanceTracker tracker)
+			{
+				tracker.CaptureDefaultAppearance(this);
+			}
+
 			UpdateTabBarItem();
 			((IShellController)_context.Shell).AddAppearanceObserver(this, ShellSection);
 			((IShellSectionController)ShellSection).AddDisplayedPageObserver(this, OnDisplayedPageChanged);

@@ -30,17 +30,32 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		protected override void ConnectHandler(ListViewBase platformView)
 		{
 			base.ConnectHandler(platformView);
+			UpdateItemsLayoutSubscription();
+		}
 
-			if (Layout is not null)
+		bool UpdateItemsLayoutSubscription()
+		{
+			var layout = Layout;
+			if (_layoutPropertyChangedProxy is not null &&
+				_layoutPropertyChangedProxy.TryGetSource(out var source) &&
+				ReferenceEquals(source, layout))
+			{
+				return false;
+			}
+
+			if (layout is not null)
 			{
 				_layoutPropertyChanged ??= LayoutPropertyChanged;
-				_layoutPropertyChangedProxy = new WeakNotifyPropertyChangedProxy(Layout, _layoutPropertyChanged);
+				_layoutPropertyChangedProxy ??= new WeakNotifyPropertyChangedProxy();
+				_layoutPropertyChangedProxy.Subscribe(layout, _layoutPropertyChanged);
 			}
 			else
 			{
 				_layoutPropertyChangedProxy?.Unsubscribe();
 				_layoutPropertyChangedProxy = null;
 			}
+
+			return true;
 		}
 
 		protected override void DisconnectHandler(ListViewBase platformView)
@@ -53,6 +68,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void LayoutPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
+			if (((IElementHandler)this).VirtualView is not TItemsView itemsView ||
+				!ReferenceEquals(sender, itemsView.ItemsLayout))
+			{
+				return;
+			}
+
 			if (e.PropertyName == GridItemsLayout.SpanProperty.PropertyName)
 				UpdateItemsLayoutSpan();
 			else if (e.PropertyName == GridItemsLayout.HorizontalItemSpacingProperty.PropertyName || e.PropertyName == GridItemsLayout.VerticalItemSpacingProperty.PropertyName)
@@ -79,6 +100,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public static void MapItemSizingStrategy(StructuredItemsViewHandler<TItemsView> handler, StructuredItemsView itemsView)
 		{
 
+		}
+
+		protected override void UpdateItemsLayout()
+		{
+			var layoutChanged = UpdateItemsLayoutSubscription();
+
+			if (layoutChanged && ListViewBase is FormsGridView gridView && Layout is GridItemsLayout gridLayout)
+			{
+				ConfigureGridView(gridView, gridLayout);
+			}
+
+			base.UpdateItemsLayout();
 		}
 
 		protected override ListViewBase SelectListViewBase()
@@ -210,23 +243,37 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		static ListViewBase CreateGridView(GridItemsLayout gridItemsLayout)
 		{
-			var gridView = new FormsGridView
-			{
-				Orientation = gridItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal
-					? Orientation.Horizontal
-					: Orientation.Vertical,
+			var gridView = new FormsGridView();
+			ConfigureGridView(gridView, gridItemsLayout, isInitialLayout: true);
+			return gridView;
+		}
 
-				Span = gridItemsLayout.Span,
-				ItemContainerStyle = GetItemContainerStyle(gridItemsLayout)
-			};
+		static void ConfigureGridView(FormsGridView gridView, GridItemsLayout gridItemsLayout, bool isInitialLayout = false)
+		{
+			var orientation = gridItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal
+				? Orientation.Horizontal
+				: Orientation.Vertical;
 
-			if (gridView.Orientation == Orientation.Horizontal)
+			var orientationChanged = gridView.Orientation != orientation;
+			if (isInitialLayout || orientationChanged)
 			{
-				ScrollViewer.SetVerticalScrollMode(gridView, WScrollMode.Disabled);
-				ScrollViewer.SetHorizontalScrollMode(gridView, WScrollMode.Enabled);
+				gridView.Orientation = orientation;
+
+				if (orientation == Orientation.Horizontal)
+				{
+					ScrollViewer.SetVerticalScrollMode(gridView, WScrollMode.Disabled);
+					ScrollViewer.SetHorizontalScrollMode(gridView, WScrollMode.Enabled);
+				}
+				else
+				{
+					gridView.ClearValue(ScrollViewer.VerticalScrollModeProperty);
+					gridView.ClearValue(ScrollViewer.HorizontalScrollModeProperty);
+					gridView.ClearValue(ScrollViewer.HorizontalScrollBarVisibilityProperty);
+				}
 			}
 
-			return gridView;
+			gridView.Span = gridItemsLayout.Span;
+			gridView.ItemContainerStyle = GetItemContainerStyle(gridItemsLayout);
 		}
 
 		static ListViewBase CreateVerticalListView(LinearItemsLayout listItemsLayout)

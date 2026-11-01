@@ -87,6 +87,13 @@ and `maui-pr-uitests` may not run automatically depending on the changed files.
 
 ## Setup-only retries
 
+Shared provisioning initializes `DOTNET_CLI_HOME` under the agent's per-job
+temporary directory before invoking .NET. It preserves an existing
+`NUGET_PACKAGES`, or pins the original user-profile package cache when unset,
+so NuGet restores and Arcade's MSBuild task imports use the same cache.
+An unwritable CLI-state directory fails preparation rather than changing
+permissions on the hosted agent's shared home directory.
+
 Shared test preparation uses **at most five total attempts per setup operation**,
 not five additional retries or five whole-job reruns. Azure task-level recovery
 uses `retryCountOnTaskFailure: 4`, with the agent's backoff and attempt diagnostics.

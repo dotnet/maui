@@ -26,39 +26,26 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public void ResetAppearance(UINavigationController controller)
 		{
-			if (_defaultAppearanceCaptured)
+			if (!_defaultAppearanceCaptured)
 			{
-				var navBar = controller.NavigationBar;
-				navBar.BarTintColor = _defaultBarTint;
-				navBar.TintColor = _defaultTint;
-				navBar.TitleTextAttributes = _defaultTitleAttributes;
+				return;
+			}
 
-				if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13, 1) || OperatingSystem.IsTvOSVersionAtLeast(13))
-				{
-					navBar.StandardAppearance = _defaultStandardAppearance;
-					navBar.ScrollEdgeAppearance = _defaultScrollEdgeAppearance;
-				}
+			var navBar = controller.NavigationBar;
+			navBar.BarTintColor = _defaultBarTint;
+			navBar.TintColor = _defaultTint;
+			navBar.TitleTextAttributes = _defaultTitleAttributes;
+
+			if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13, 1) || OperatingSystem.IsTvOSVersionAtLeast(13))
+			{
+				navBar.StandardAppearance = _defaultStandardAppearance;
+				navBar.ScrollEdgeAppearance = _defaultScrollEdgeAppearance;
 			}
 		}
 
 		public void SetAppearance(UINavigationController controller, ShellAppearance appearance)
 		{
-			var navBar = controller.NavigationBar;
-
-			if (!_defaultAppearanceCaptured)
-			{
-				_defaultBarTint = navBar.BarTintColor;
-				_defaultTint = navBar.TintColor;
-				_defaultTitleAttributes = navBar.TitleTextAttributes;
-				if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13, 1) || OperatingSystem.IsTvOSVersionAtLeast(13))
-				{
-					_defaultStandardAppearance = (UINavigationBarAppearance)navBar.StandardAppearance.Copy();
-					_defaultScrollEdgeAppearance = navBar.ScrollEdgeAppearance is UINavigationBarAppearance scrollEdge
-						? (UINavigationBarAppearance)scrollEdge.Copy()
-						: null;
-				}
-				_defaultAppearanceCaptured = true;
-			}
+			CaptureDefaultAppearance(controller);
 
 			if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13, 1) || OperatingSystem.IsTvOSVersionAtLeast(13))
 				UpdateiOS13NavigationBarAppearance(controller, appearance);
@@ -214,6 +201,27 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			// since we cannot set the Background Image directly, let's use the alpha in the background color to determine translucence
 			navBar.Translucent = appearance.BackgroundColor?.Alpha < 1.0f;
+		}
+
+		internal void CaptureDefaultAppearance(UINavigationController controller)
+		{
+			if (_defaultAppearanceCaptured)
+			{
+				return;
+			}
+
+			var navBar = controller.NavigationBar;
+
+			_defaultBarTint = navBar.BarTintColor;
+			_defaultTint = navBar.TintColor;
+			_defaultTitleAttributes = navBar.TitleTextAttributes;
+			if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13, 1) || OperatingSystem.IsTvOSVersionAtLeast(13))
+			{
+				_defaultStandardAppearance = (UINavigationBarAppearance)navBar.StandardAppearance.Copy();
+				_defaultScrollEdgeAppearance = (UINavigationBarAppearance)navBar.ScrollEdgeAppearance?.Copy();
+			}
+			_defaultAppearanceCaptured = true;
+
 		}
 	}
 }
