@@ -12,9 +12,9 @@ namespace Microsoft.Maui.Maps.Gtk
 	/// </summary>
 	/// <remarks>
 	/// <list type="bullet">
-	/// <item>Input: drag pans, wheel zooms about the pointer, double click zooms in, a click selects a pin or reports a map click.</item>
+	/// <item>Input: drag pans, wheel zooms about the pointer, pinch (<c>GestureZoom</c>) zooms about the fingers, double click zooms in, a click selects a pin or reports a map click.</item>
 	/// <item>Measure: minimum 0, natural 256x256 (the map normally fills the space MAUI arranges for it).</item>
-	/// <item>Tiles are drawn at 1 logical pixel per tile pixel; on HiDPI displays they are scaled by GTK.</item>
+	/// <item>Tiles are drawn at 1 logical pixel per tile pixel; at a scale factor above 1 the tiles of the next zoom level(s) are used so they stay sharp (capped at the tile source's maximum zoom).</item>
 	/// <item>All members must be used on the GTK main thread.</item>
 	/// </list>
 	/// </remarks>
@@ -46,6 +46,10 @@ namespace Microsoft.Maui.Maps.Gtk
 		global::Gtk.GestureClick? _click;
 		global::Gtk.EventControllerScroll? _scroll;
 		global::Gtk.EventControllerMotion? _motion;
+		global::Gtk.GestureZoom? _pinch;
+		int _pinchStartZoom;
+		double _pinchX;
+		double _pinchY;
 		double _dragStartX;
 		double _dragStartY;
 		double _dragLastX;
@@ -298,6 +302,11 @@ namespace Microsoft.Maui.Maps.Gtk
 			_motion = new global::Gtk.EventControllerMotion();
 			_motion.Motion += OnMotion;
 			AddController(_motion);
+
+			_pinch = new global::Gtk.GestureZoom();
+			_pinch.Begin += OnPinchBegin;
+			_pinch.ScaleChanged += OnPinchScaleChanged;
+			AddController(_pinch);
 		}
 
 		void DisconnectInput()
@@ -331,6 +340,14 @@ namespace Microsoft.Maui.Maps.Gtk
 				RemoveController(_motion);
 				_motion = null;
 			}
+
+			if (_pinch is not null)
+			{
+				_pinch.Begin -= OnPinchBegin;
+				_pinch.ScaleChanged -= OnPinchScaleChanged;
+				RemoveController(_pinch);
+				_pinch = null;
+			}
 		}
 
 		void OnDragStarted(object o, global::Gtk.DragStartedArgs args) => BeginDrag(args.StartX, args.StartY);
@@ -358,6 +375,29 @@ namespace Microsoft.Maui.Maps.Gtk
 				HandleWheel(-1);
 
 			args.RetVal = true;
+		}
+
+		void OnPinchBegin(object o, global::Gtk.BeginArgs args)
+		{
+			double x = _pointerX, y = _pointerY;
+			if (_pinch is not null && _pinch.GetBoundingBoxCenter(out double cx, out double cy))
+			{
+				x = cx;
+				y = cy;
+			}
+
+			BeginPinch(x, y);
+		}
+
+		void OnPinchScaleChanged(object o, global::Gtk.ScaleChangedArgs args)
+		{
+			if (_pinch is not null && _pinch.GetBoundingBoxCenter(out double cx, out double cy))
+			{
+				_pinchX = cx;
+				_pinchY = cy;
+			}
+
+			HandlePinch(args.Scale);
 		}
 
 		void OnMotion(object o, global::Gtk.MotionArgs args)
@@ -390,6 +430,29 @@ namespace Microsoft.Maui.Maps.Gtk
 
 			if (_scrollEnabled)
 				PanByPixels(-deltaX, -deltaY);
+		}
+
+		/// <summary>A pinch started: remembers the zoom and the focal point.</summary>
+		internal void BeginPinch(double x, double y)
+		{
+			_pinchStartZoom = _zoom;
+			_pinchX = x;
+			_pinchY = y;
+			GrabFocus();
+		}
+
+		/// <summary>
+		/// A pinch moved: <paramref name="scale"/> is the factor since the gesture began (GTK's convention). The zoom is an integer tile level, so
+		/// it follows <c>start + round(log2(scale))</c> while the focal point stays fixed.
+		/// </summary>
+		internal void HandlePinch(double scale)
+		{
+			if (!_zoomEnabled || !(scale > 0) || double.IsInfinity(scale))
+				return;
+
+			int target = ClampZoom(_pinchStartZoom + (int)Math.Round(Math.Log(scale, 2)));
+			if (target != _zoom)
+				ZoomAt(target - _zoom, _pinchX, _pinchY);
 		}
 
 		internal void HandleWheel(int steps)

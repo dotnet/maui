@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Maps.Gtk
 	/// <summary>A small least-recently-used cache. Not thread-safe.</summary>
 	internal sealed class LruCache<TKey, TValue> where TKey : notnull
 	{
-		readonly int _capacity;
+		int _capacity;
 		readonly Dictionary<TKey, LinkedListNode<KeyValuePair<TKey, TValue>>> _map;
 		readonly LinkedList<KeyValuePair<TKey, TValue>> _order = new();
 
@@ -20,6 +20,14 @@ namespace Microsoft.Maui.Maps.Gtk
 		}
 
 		public int Count => _map.Count;
+
+		/// <summary>Raises the capacity to at least <paramref name="capacity"/>; never lowers it.</summary>
+		/// <param name="capacity">The minimum capacity.</param>
+		public void EnsureCapacity(int capacity)
+		{
+			if (capacity > _capacity)
+				_capacity = capacity;
+		}
 
 		public bool TryGet(TKey key, out TValue value)
 		{

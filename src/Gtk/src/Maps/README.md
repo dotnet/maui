@@ -36,7 +36,7 @@ The call works before or after `UseMauiGtk()` (it re-applies `GtkHandlerMap` aft
 | `Map` feature | GTK |
 |---|---|
 | `MapType` | street / satellite / hybrid tile sources |
-| `IsScrollEnabled`, `IsZoomEnabled` | drag pans; wheel zooms about the pointer; double click zooms in |
+| `IsScrollEnabled`, `IsZoomEnabled` | drag pans; wheel zooms about the pointer; pinch (`GestureZoom`) zooms by whole levels about the fingers; double click zooms in |
 | `Pins` | teardrop marker coloured by `PinType`; click raises `MarkerClicked` and opens an info window (label + address) unless the handler sets `HideInfoWindow`; clicking the info window raises `InfoWindowClicked` |
 | `MapElements` | `Polyline`, `Polygon` (fill + stroke), `Circle` (radius in metres); property changes repaint |
 | `MoveToRegion`, `VisibleRegion` | fits the span at the largest zoom that contains it; `VisibleRegion` follows pans and zooms (coalesced on the idle loop) |
@@ -45,8 +45,11 @@ The call works before or after `UseMauiGtk()` (it re-applies `GtkHandlerMap` aft
 | `IsTrafficEnabled` | ignored (no free traffic tiles) |
 | `Geocoding` | `NominatimGeocoding : IGeocoding`, registered unless the app already registered one |
 
-Not supported: stroke cap/join/dash (the Controls map elements do not implement them), custom pin icons, rotation/tilt, pinch zoom,
-HiDPI-sharp tiles (tiles are 256 logical px and scaled by GTK), offline regions.
+HiDPI: at widget scale factor N > 1 the tiles of zoom + ceil(log2 N) are drawn at 256/2^k logical px (1:1 device pixels); capped at the tile
+source's maximum zoom, where GTK scales them. The texture cache grows to 200 * 2^k entries.
+
+Not supported: stroke cap/join/dash (the Controls map elements do not implement them), custom pin icons (the Controls `Pin` has no image
+property: only `Label`, `Address`, `Location`, `Type`), rotation/tilt, offline regions. Pinch zoom snaps to whole tile levels (no continuous scaling).
 
 ## Layout
 
@@ -60,6 +63,6 @@ HiDPI-sharp tiles (tiles are 256 logical px and scaled by GTK), offline regions.
 
 ## Tests
 
-`src/Gtk/tests/Microsoft.Maui.Gtk.UnitTests/Maps` (83 tests): projection and viewport math, tile source and options, LRU, disk cache, tile store
-(dedupe, concurrency, ordering, failures), HTTP fetcher and geocoder against stub handlers, handler mappers, input, and pixel tests on a real
+`src/Gtk/tests/Microsoft.Maui.Gtk.UnitTests/Maps` (88 tests): projection and viewport math, tile source and options, LRU, disk cache, tile store
+(dedupe, concurrency, ordering, failures), HTTP fetcher and geocoder against stub handlers, handler mappers, input (drag, wheel, pinch), HiDPI tile levels and layout, and pixel tests on a real
 window with a stub tile server (tile colour, placeholders, pins, polygon/polyline/circle, user marker, attribution). No test uses the network.

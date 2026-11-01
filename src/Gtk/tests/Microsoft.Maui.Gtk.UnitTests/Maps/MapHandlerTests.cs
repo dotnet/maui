@@ -665,6 +665,170 @@ namespace Microsoft.Maui.Gtk.UnitTests.Maps
 			AssertColor(Pixel(view, view.Width - 200, view.Height - 3), 40, 160, 40);
 		});
 
+
+		static (int Z, int X, int Y) ParseTileUrl(string url)
+		{
+			var parts = url.Split('/');
+			string last = parts[^1];
+			return (int.Parse(parts[^3]), int.Parse(parts[^2]), int.Parse(last.Substring(0, last.IndexOf('.'))));
+		}
+
+		[GtkFact]
+		public void PinchStepsTheZoomByWholeLevelsAboutTheFocalPoint() => GtkTestHost.Run(() =>
+		{
+			var map = NewMap();
+			using var host = Env.Host(map);
+			var view = host.View;
+			view.MoveTo(Paris, 10);
+			var anchor = view.Viewport.FromPixel(300, 90);
+
+			view.BeginPinch(300, 90);
+			view.HandlePinch(1.2); // < sqrt(2): still level 10
+			Assert.Equal(10, view.Zoom);
+			view.HandlePinch(2);
+			Assert.Equal(11, view.Zoom);
+			view.HandlePinch(4.1);
+			Assert.Equal(12, view.Zoom);
+			var moved = view.Viewport.ToPixel(anchor.Latitude, anchor.Longitude);
+			Assert.Equal(300, moved.X, 0);
+			Assert.Equal(90, moved.Y, 0);
+
+			// GTK reports the scale since the pinch began: spreading back and further out goes below the start.
+			view.HandlePinch(1);
+			Assert.Equal(10, view.Zoom);
+			view.HandlePinch(0.25);
+			Assert.Equal(8, view.Zoom);
+
+			// A new pinch measures from the current level.
+			view.BeginPinch(10, 10);
+			view.HandlePinch(2);
+			Assert.Equal(9, view.Zoom);
+		});
+
+		[GtkFact]
+		public void PinchIsClampedIgnoredWhenZoomIsDisabledAndTolerantOfBadScales() => GtkTestHost.Run(() =>
+		{
+			var map = NewMap();
+			using var host = Env.Host(map);
+			var view = host.View;
+			view.TileSource = new GtkMapTileSource("x/{z}/{x}/{y}", null, 12);
+			view.MoveTo(Paris, 11);
+
+			view.BeginPinch(50, 50);
+			view.HandlePinch(64);
+			Assert.Equal(12, view.Zoom); // the tile source's maximum
+			view.HandlePinch(1.0 / 4096);
+			Assert.Equal(0, view.Zoom);
+			view.HandlePinch(0);
+			view.HandlePinch(-3);
+			view.HandlePinch(double.NaN);
+			view.HandlePinch(double.PositiveInfinity);
+			Assert.Equal(0, view.Zoom);
+
+			view.MoveTo(Paris, 5);
+			view.IsZoomEnabled = false;
+			view.BeginPinch(50, 50);
+			view.HandlePinch(8);
+			Assert.Equal(5, view.Zoom);
+		});
+
+		[GtkFact]
+		public void ThePinchControllerDrivesTheZoomAndIsRemovedOnDetach() => GtkTestHost.Run(() =>
+		{
+			var map = NewMap();
+			var handler = (IElementHandler)map.ToHandler(Env.NewContext());
+			var view = (MauiGtkMapView)handler.PlatformView!;
+			view.MoveTo(Paris, 8);
+
+			var pinch = GtkTestHost.ControllerOf<global::Gtk.GestureZoom>(view);
+			Assert.NotNull(pinch);
+
+			// begin records the starting zoom; scale-changed is the factor since then.
+			GLib.Signal.Emit(pinch!, "begin", IntPtr.Zero);
+			GLib.Signal.Emit(pinch!, "scale-changed", 2.0);
+			Assert.Equal(9, view.Zoom);
+
+			handler.DisconnectHandler();
+			Assert.Null(GtkTestHost.ControllerOf<global::Gtk.GestureZoom>(view));
+		});
+
+		[GtkFact]
+		public void HiDpiScalesFetchTheNextZoomLevelsOfTiles() => GtkTestHost.Run(() =>
+		{
+			Assert.Equal(0, MauiGtkMapView.TileDensityLevels(1));
+			Assert.Equal(1, MauiGtkMapView.TileDensityLevels(2));
+			Assert.Equal(2, MauiGtkMapView.TileDensityLevels(3));
+			Assert.Equal(2, MauiGtkMapView.TileDensityLevels(4));
+
+			var environment = new MapsTestEnvironment();
+			environment.Options.StreetTiles = new GtkMapTileSource("https://t.example/{z}/{x}/{y}.png", "t", 19);
+			var map = NewMap();
+			using var host = environment.Host(map);
+			var view = host.View;
+
+			// Scale 1: tiles of the view's own zoom.
+			view.MoveTo(Paris, 5);
+			host.Pump();
+			Assert.True(host.PumpUntil(() => environment.Fetcher.Requests.Any(u => ParseTileUrl(u).Z == 5)));
+			Assert.DoesNotContain(environment.Fetcher.Requests, u => ParseTileUrl(u).Z == 6);
+
+			view.TileScaleOverride = 2;
+			view.MoveTo(Paris, 8);
+			host.Pump();
+			Assert.True(host.PumpUntil(() => environment.Fetcher.Requests.Any(u => ParseTileUrl(u).Z == 9)));
+			Assert.DoesNotContain(environment.Fetcher.Requests, u => ParseTileUrl(u).Z == 8);
+
+			view.TileScaleOverride = 4;
+			view.MoveTo(Paris, 11);
+			host.Pump();
+			Assert.True(host.PumpUntil(() => environment.Fetcher.Requests.Any(u => ParseTileUrl(u).Z == 13)));
+			Assert.DoesNotContain(environment.Fetcher.Requests, u => ParseTileUrl(u).Z is 11 or 12);
+
+			// Capped at the tile source's maximum zoom.
+			view.TileSource = new GtkMapTileSource("https://t.example/{z}/{x}/{y}.png", "t", 15);
+			view.MoveTo(Paris, 15);
+			host.Pump();
+			Assert.True(host.PumpUntil(() => environment.Fetcher.Requests.Any(u => ParseTileUrl(u).Z == 15)));
+			Assert.DoesNotContain(environment.Fetcher.Requests, u => ParseTileUrl(u).Z > 15 && ParseTileUrl(u).Z != 13);
+		});
+
+		[GtkFact]
+		public void HiDpiTilesAreLaidOutAtAFractionOfALogicalTile() => GtkTestHost.Run(() =>
+		{
+			// Tiles of zoom 7 (the view is at 6, scale 2) alternate red/blue by column, so a tile edge is visible in the pixels.
+			var environment = new MapsTestEnvironment(url =>
+			{
+				var (z, x, _) = ParseTileUrl(url);
+				return z == 7 && x % 2 == 0 ? TestImages.CreatePng(256, 256, 255, 0, 0) : TestImages.CreatePng(256, 256, 0, 0, 255);
+			});
+			environment.Options.StreetTiles = new GtkMapTileSource("https://t.example/{z}/{x}/{y}.png", null, 19);
+			var map = NewMap();
+			using var host = environment.Host(map);
+			var view = host.View;
+			view.TileScaleOverride = 2;
+			view.MoveTo(Paris, 6);
+			var viewport = view.Viewport;
+			// Every tile of the 400x300 view is 128 logical px wide: wait for all of them (at least 4 columns x 3 rows).
+			Assert.True(host.PumpUntil(() => environment.Fetcher.Requests.Count(u => ParseTileUrl(u).Z == 7) >= 12 && view.LoadedTileCount >= 12));
+			host.Pump(30);
+
+			int column = (int)Math.Floor((viewport.OriginX + 200) / 128);
+			double edge = (column + 1) * 128 - viewport.OriginX;
+			Assert.InRange(edge, 130, 270);
+
+			var left = Pixel(view, edge - 4, 100);
+			var right = Pixel(view, edge + 4, 100);
+			if (column % 2 == 0)
+			{
+				AssertColor(left, 255, 0, 0);
+				AssertColor(right, 0, 0, 255);
+			}
+			else
+			{
+				AssertColor(left, 0, 0, 255);
+				AssertColor(right, 255, 0, 0);
+			}
+		});
 		[GtkFact]
 		public void DrawingAndInputProduceNoGtkComplaints() => GtkTestHost.Run(() =>
 		{

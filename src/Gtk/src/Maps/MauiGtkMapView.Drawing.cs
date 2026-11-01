@@ -23,6 +23,9 @@ namespace Microsoft.Maui.Maps.Gtk
 		IMapPin[] _pins = Array.Empty<IMapPin>();
 		IMapElement[] _elements = Array.Empty<IMapElement>();
 		IMapPin? _selectedPin;
+
+		/// <summary>Forces the HiDPI scale used for tile selection (tests; the real value is the widget's scale factor).</summary>
+		internal int? TileScaleOverride { get; set; }
 		(double X, double Y, double Width, double Height)? _infoWindow;
 
 		/// <summary>The pins shown (a snapshot of <c>IMap.Pins</c>).</summary>
@@ -112,24 +115,36 @@ namespace Microsoft.Maui.Maps.Gtk
 			snapshot.Pop();
 		}
 
+		/// <summary>The extra zoom levels whose tiles are fetched so one logical pixel is backed by about <paramref name="scale"/> device pixels (0 at scale 1).</summary>
+		internal static int TileDensityLevels(int scale) => scale <= 1 ? 0 : (int)Math.Ceiling(Math.Log(scale, 2));
+
+		/// <summary>The widget scale factor (device pixels per logical pixel), or the test override.</summary>
+		int EffectiveScale => TileScaleOverride ?? Math.Max(1, ScaleFactor);
+
 		void DrawTiles(global::Gtk.Snapshot snapshot, MapViewport viewport, int width, int height)
 		{
-			int zoom = viewport.Zoom;
+			// On HiDPI displays tiles of the next zoom level(s) are used: each covers a half (or less) of a logical tile edge, so the texture keeps
+			// its 1:1 device pixels. Capped at the tile source's maximum zoom (then GTK scales the tile, as at scale 1).
+			int shift = Math.Max(0, Math.Min(TileDensityLevels(EffectiveScale), _tileSource.MaxZoom - viewport.Zoom));
+			int zoom = viewport.Zoom + shift;
+			double tileSize = (double)TileSize / (1 << shift);
+			_textures.EnsureCapacity(MaxTextureEntries << shift);
+
 			int tileCount = MercatorProjection.TileCount(zoom);
 			double originX = viewport.OriginX;
 			double originY = viewport.OriginY;
 
-			int firstX = (int)Math.Floor(originX / TileSize);
-			int lastX = (int)Math.Floor((originX + width - 1) / TileSize);
-			int firstY = Math.Max(0, (int)Math.Floor(originY / TileSize));
-			int lastY = Math.Min(tileCount - 1, (int)Math.Floor((originY + height - 1) / TileSize));
+			int firstX = (int)Math.Floor(originX / tileSize);
+			int lastX = (int)Math.Floor((originX + width - 1) / tileSize);
+			int firstY = Math.Max(0, (int)Math.Floor(originY / tileSize));
+			int lastY = Math.Min(tileCount - 1, (int)Math.Floor((originY + height - 1) / tileSize));
 
 			for (int tileY = firstY; tileY <= lastY; tileY++)
 			{
 				for (int tileX = firstX; tileX <= lastX; tileX++)
 				{
 					int wrappedX = ((tileX % tileCount) + tileCount) % tileCount;
-					var rect = Platform.Rect(tileX * TileSize - originX, tileY * TileSize - originY, TileSize, TileSize);
+					var rect = Platform.Rect(tileX * tileSize - originX, tileY * tileSize - originY, tileSize, tileSize);
 
 					if (!DrawTile(snapshot, _tileSource.UrlTemplate, zoom, wrappedX, tileY, rect))
 						DrawPlaceholder(snapshot, rect);
