@@ -58,6 +58,7 @@ windows and tizen only): the app runs on the JIT.
 |------|---------|
 | .NET 10 SDK + `gtk` workload | Windows: GtkSharp `Docs/workload-install.md`. Linux/WSL: `eng/gtk/install-gtk-workload.sh [<SDK dir that has the workload>]` (copies manifest and packs into `~/.dotnet`) |
 | GTK 4 runtime (>= 4.14) | Debian 13 / Ubuntu 24.04: `libgtk-4-1 libadwaita-1-0` (`libwebkitgtk-6.0-4` for web views); Windows: downloaded by the workload |
+| Text-to-speech (optional) | Debian 13 / Ubuntu 24.04: `libspeechd2` + `speech-dispatcher` and a synthesizer (e.g. `espeak-ng`); Windows: SAPI (built in) |
 | Packages | `pwsh eng/gtk/pack-local.ps1` (see Local feed) puts `Microsoft.Maui.*` `10.0.130-gtk.*`, the GTK packages and `Microsoft.Maui.Templates.net10` in `Packages/` |
 | Template | `dotnet new install Packages/Microsoft.Maui.Templates.net10.<version>.nupkg` (add `--debug:custom-hive <dir>` to keep your real templates untouched) |
 | App | `dotnet new maui --linux -n MyApp` (or `dotnet new maui-blazor --linux`; `--maui-gtk-version` pins the package version). On a Linux host the project has only the GTK head; elsewhere `net10.0-gtk4.22` is added to the mobile/Windows TFMs |

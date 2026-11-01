@@ -60,6 +60,7 @@ public class RegistrationTests
 		Assert.IsType<GtkScreenshot>(sp.GetRequiredService<IScreenshot>());
 		Assert.IsType<GtkSemanticScreenReader>(sp.GetRequiredService<ISemanticScreenReader>());
 		Assert.IsType<GtkShare>(sp.GetRequiredService<IShare>());
+		Assert.IsType<GtkTextToSpeech>(sp.GetRequiredService<ITextToSpeech>());
 		Assert.IsType<UnsupportedGeolocation>(sp.GetRequiredService<IGeolocation>());
 	}
 
@@ -99,7 +100,6 @@ public class RegistrationTests
 		Assert.Throws<FeatureNotSupportedException>(() => Accelerometer.Default.Start(SensorSpeed.Default));
 		Assert.Throws<FeatureNotSupportedException>(() => PhoneDialer.Default.Open("123"));
 		await Assert.ThrowsAsync<FeatureNotSupportedException>(() => Sms.Default.ComposeAsync(new SmsMessage("a", "b")));
-		await Assert.ThrowsAsync<FeatureNotSupportedException>(() => TextToSpeech.Default.SpeakAsync("x"));
 		await Assert.ThrowsAsync<FeatureNotSupportedException>(() => Geolocation.Default.GetLastKnownLocationAsync());
 		Assert.False(await Flashlight.Default.IsSupportedAsync());
 	}

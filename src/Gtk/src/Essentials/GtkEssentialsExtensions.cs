@@ -33,8 +33,8 @@ public static class GtkEssentialsExtensions
 	/// Services that already have a registration are left alone, so an app can replace any of them.</para>
 	/// <para>Registered: AppInfo, DeviceInfo, DeviceDisplay, FileSystem, Preferences, SecureStorage (libsecret), Connectivity,
 	/// Battery, Clipboard, Launcher, Browser, Email, Map, FilePicker, MediaPicker, Screenshot (also the keyed view/window
-	/// capture hooks used by <c>CaptureAsync</c>), SemanticScreenReader, and unsupported-feature stubs for sensors, Contacts,
-	/// Flashlight, Vibration, HapticFeedback, Sms, PhoneDialer, Share, TextToSpeech and Geolocation.</para>
+	/// capture hooks used by <c>CaptureAsync</c>), SemanticScreenReader, TextToSpeech (speech-dispatcher on Linux, SAPI on Windows), and unsupported-feature stubs for sensors, Contacts,
+	/// Flashlight, Vibration, HapticFeedback, Sms, PhoneDialer, Share and Geolocation.</para>
 	/// </remarks>
 	public static MauiAppBuilder UseMauiGtkEssentials(this MauiAppBuilder builder, Action<GtkEssentialsOptions>? configure = null)
 	{
@@ -89,7 +89,7 @@ public static class GtkEssentialsExtensions
 		services.TryAddSingleton<ISms>(_ => new UnsupportedSms());
 		services.TryAddSingleton<IPhoneDialer>(_ => new UnsupportedPhoneDialer());
 		services.TryAddSingleton<IShare>(_ => new GtkShare());
-		services.TryAddSingleton<ITextToSpeech>(_ => new UnsupportedTextToSpeech());
+		services.TryAddSingleton<ITextToSpeech>(_ => new GtkTextToSpeech());
 		services.TryAddSingleton<IGeolocation>(_ => new UnsupportedGeolocation());
 
 		return builder;

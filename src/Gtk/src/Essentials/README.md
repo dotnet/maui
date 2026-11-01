@@ -29,7 +29,8 @@ window screenshots and announcements; default = active window of `Gtk.Applicatio
 | Screenshot | `WidgetPaintable` -> `Gsk.Renderer.RenderTexture` -> PNG (JPEG via gdk-pixbuf). Also keyed DI hooks `Microsoft.Maui.ViewCapture` / `WindowCapture` used by `CaptureAsync` |
 | SemanticScreenReader | `Gtk.Accessible.Announce` on the window content (guarded: GTK >= 4.14; announcing on the toplevel crashes the Windows AccessKit backend) |
 | VersionTracking | Stock implementation over Preferences (not re-registered) |
-| Sensors, Contacts, Flashlight, Vibration, Haptics, Sms, PhoneDialer, TTS, Geolocation | Registered stubs: `IsSupported == false`, calls throw `FeatureNotSupportedException` (Geolocation via GeoClue2 is a later item) |
+| TextToSpeech | Linux: speech-dispatcher (`libspeechd.so.2`, bound at run time, one `SPDConnection` per utterance, end/cancel callbacks complete the task, `spd_cancel` on the token). Windows: SAPI `SAPI.SpVoice` via COM automation, polled `WaitUntilDone`, purge on cancel, pitch via `<pitch absmiddle>` XML. `GetLocalesAsync` lists the engine voices (`Locale.Id` = voice id, `Country` null); `SpeechOptions.Locale` picks the voice by id, then language tag, then primary language, else the engine default. Rate/pitch/volume are scaled from the MAUI ranges; utterances queue. No engine: `FeatureNotSupportedException` |
+| Sensors, Contacts, Flashlight, Vibration, Haptics, Sms, PhoneDialer, Geolocation | Registered stubs: `IsSupported == false`, calls throw `FeatureNotSupportedException` (Geolocation via GeoClue2 is a later item) |
 
 Notes
 

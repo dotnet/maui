@@ -165,15 +165,6 @@ sealed class UnsupportedPhoneDialer : IPhoneDialer
 	public void Open(string number) => throw Unsupported.Exception("PhoneDialer");
 }
 
-sealed class UnsupportedTextToSpeech : ITextToSpeech
-{
-	public Task<IEnumerable<Locale>> GetLocalesAsync() =>
-		Task.FromException<IEnumerable<Locale>>(Unsupported.Exception("TextToSpeech"));
-
-	public Task SpeakAsync(string text, SpeechOptions? options = default, CancellationToken cancelToken = default) =>
-		Task.FromException(Unsupported.Exception("TextToSpeech"));
-}
-
 /// <summary>Geolocation through GeoClue2 is a later item: until then every request fails with <see cref="FeatureNotSupportedException"/>.</summary>
 sealed class UnsupportedGeolocation : IGeolocation
 {
