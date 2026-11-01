@@ -45,10 +45,39 @@ namespace Microsoft.Maui.Controls.Gtk.Platform
 		/// <summary>The Pango markup of the spans of <paramref name="label"/>.</summary>
 		/// <param name="label">The label whose <see cref="Label.FormattedText"/> is converted.</param>
 		/// <param name="resolveFontFamily">Maps a MAUI font family (alias) to the installed family name, or <see langword="null"/> to use it as is.</param>
-		public static string FromFormattedText(Label label, Func<string?, string?>? resolveFontFamily = null)
+		public static string FromFormattedText(Label label, Func<string?, string?>? resolveFontFamily = null) =>
+			FromFormattedText(label, resolveFontFamily, null);
+
+		/// <summary>
+		/// A span's place in the text a <c>Gtk.Label</c> shows for <see cref="FromFormattedText(Label, Func{string?, string?}?)"/>: the span and
+		/// the UTF-8 byte range its (transformed) text occupies in the plain text, the unit of <c>Pango.Layout</c> indices.
+		/// </summary>
+		internal readonly struct SpanRange
+		{
+			public SpanRange(Span span, int start, int end)
+			{
+				Span = span;
+				Start = start;
+				End = end;
+			}
+
+			public Span Span { get; }
+
+			/// <summary>The byte index of the first character.</summary>
+			public int Start { get; }
+
+			/// <summary>The byte index after the last character.</summary>
+			public int End { get; }
+		}
+
+		/// <summary>The markup of the spans of <paramref name="label"/>; <paramref name="ranges"/> (when not <see langword="null"/>) receives the byte range of every span that has text.</summary>
+		internal static string FromFormattedText(Label label, Func<string?, string?>? resolveFontFamily, List<SpanRange>? ranges)
 		{
 			if (label is null)
 				throw new ArgumentNullException(nameof(label));
+
+			ranges?.Clear();
+			int plainBytes = 0;
 
 			var builder = new StringBuilder();
 			var spans = label.FormattedText?.Spans;
@@ -60,6 +89,10 @@ namespace Microsoft.Maui.Controls.Gtk.Platform
 				var text = TextTransformUtilities.GetTransformedText(span.Text, label.TextTransform);
 				if (string.IsNullOrEmpty(text))
 					continue;
+
+				int textBytes = Encoding.UTF8.GetByteCount(text);
+				ranges?.Add(new SpanRange(span, plainBytes, plainBytes + textBytes));
+				plainBytes += textBytes;
 
 				var attributes = new StringBuilder();
 

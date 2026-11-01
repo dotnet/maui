@@ -174,6 +174,10 @@ namespace Microsoft.Maui.Controls.Gtk.Platform
 			if (gtkButton == 2)
 				return;
 
+			// A tap on a span that has its own tap recognizer belongs to the span (GtkLabelSpanGestures).
+			if (_widget is global::Gtk.Label label && GtkLabelSpanGestures.IsTapOnSpan(label, args.X, args.Y, button))
+				return;
+
 			foreach (var recognizer in _view.GestureRecognizers.GetGesturesFor<TapGestureRecognizer>())
 			{
 				if ((recognizer.Buttons & button) == 0)

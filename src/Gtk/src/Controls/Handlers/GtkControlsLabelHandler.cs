@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Microsoft.Maui.Controls.Gtk.Platform;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Gtk.Fonts;
@@ -18,7 +19,9 @@ namespace Microsoft.Maui.Controls.Gtk.Handlers
 	/// <para>These mappings run after the Core mapping of the same key, so they replace the plain text it set. Colour, font, character
 	/// spacing, decorations and line height of the label stay CSS on the widget (<c>LineHeight</c> is Core's); spans add discrete Pango
 	/// attributes only for what they set.</para>
-	/// <para>Span gesture recognizers (tapping a span) are not supported.</para>
+	/// <para>Tap recognizers of a <see cref="Span"/> are hit-tested through the Pango layout (<c>GtkLabelSpanGestures</c>), honour
+	/// <c>Buttons</c> and <c>NumberOfTapsRequired</c>, can be added and removed at run time, and <c>Span.Region</c> is filled. A tap on a span
+	/// does not also fire the label's own tap recognizers. Other recognizer kinds on a span are not supported.</para>
 	/// </remarks>
 	public class GtkControlsLabelHandler : GtkLabelHandler
 	{
@@ -36,14 +39,28 @@ namespace Microsoft.Maui.Controls.Gtk.Handlers
 		{
 		}
 
+		/// <inheritdoc/>
+		protected override void DisconnectHandler(object platformView)
+		{
+			if (platformView is GtkLabel widget)
+				GtkLabelSpanGestures.For(widget)?.Dispose();
+			base.DisconnectHandler(platformView);
+		}
+
 		static void UpdateText(IElementHandler handler, Label label, GtkLabel widget)
 		{
+			var gestures = GtkLabelSpanGestures.For(widget) ?? new GtkLabelSpanGestures(widget, label);
 			if (label.HasFormattedTextSpans)
 			{
 				var fonts = GtkTextStyle.GetFontManager(handler) as GtkFontManager;
-				widget.Markup = GtkLabelMarkup.FromFormattedText(label, fonts is null ? null : family => fonts.GetFontFamily(family));
+				var ranges = new List<GtkLabelMarkup.SpanRange>();
+				widget.Markup = GtkLabelMarkup.FromFormattedText(label, fonts is null ? null : family => fonts.GetFontFamily(family), ranges);
+				gestures.Update(ranges);
+				return;
 			}
-			else if (label.TextType == TextType.Html)
+
+			gestures.Update(null);
+			if (label.TextType == TextType.Html)
 			{
 				widget.Markup = GtkLabelMarkup.FromHtml(label.Text);
 			}

@@ -487,6 +487,21 @@ public static class GtkTestHost
 		return null;
 	}
 
+	/// <summary>Every controller of the given kind attached to a widget.</summary>
+	public static List<T> ControllersOf<T>(Gtk.Widget widget) where T : Gtk.EventController
+	{
+		var result = new List<T>();
+		var controllers = widget.ObserveControllers();
+
+		for (uint i = 0; i < controllers.NItems; i++)
+		{
+			if (controllers.GetObject(i) is T match)
+				result.Add(match);
+		}
+
+		return result;
+	}
+
 	/// <summary>A short description of a widget for assertion messages.</summary>
 	public static string Describe(Gtk.Widget? widget) =>
 		widget is null
