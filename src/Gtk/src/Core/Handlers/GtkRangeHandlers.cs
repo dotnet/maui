@@ -1,5 +1,6 @@
 using System;
 using Microsoft.Maui.Gtk.Hosting;
+using Microsoft.Maui.Gtk.ImageSources;
 using Microsoft.Maui.Gtk.Platform;
 using Microsoft.Maui.Handlers;
 using GtkScale = Gtk.Scale;
@@ -10,7 +11,7 @@ namespace Microsoft.Maui.Gtk.Handlers
 	/// <see cref="SliderHandler"/> over a horizontal <c>Gtk.Scale</c>. The minimum/maximum/value live in the adjustment of the scale; the
 	/// track colours and the thumb colour are CSS (<c>trough</c>, <c>trough highlight</c>, <c>slider</c>).
 	/// </summary>
-	/// <remarks><c>ThumbImageSource</c> is accepted and ignored (a GTK scale thumb cannot show an arbitrary texture).</remarks>
+	/// <remarks><c>ThumbImageSource</c> is drawn as a CSS <c>background-image</c> on the <c>slider</c> node (any source type; it takes precedence over <c>ThumbColor</c>).</remarks>
 	public class GtkSliderHandler : SliderHandler
 	{
 		readonly GtkUpdateGuard _guard = new();
@@ -29,6 +30,9 @@ namespace Microsoft.Maui.Gtk.Handlers
 			: base(mapper ?? GtkMapper, commandMapper ?? GtkCommandMapper)
 		{
 		}
+
+		readonly GtkImageLoader _thumbLoader = new();
+		bool _hasThumbImage;
 
 		/// <inheritdoc/>
 		protected override object CreatePlatformView()
@@ -74,7 +78,50 @@ namespace Microsoft.Maui.Gtk.Handlers
 				}
 			}
 
+			_thumbLoader.Reset();
 			base.DisconnectHandler(platformView);
+		}
+
+		/// <summary>
+		/// <c>ThumbImageSource</c>: the decoded image replaces the <c>slider</c> node's look through CSS (inline PNG <c>background-image</c>, sized to the
+		/// image, no border or shadow); clearing it restores <c>ThumbColor</c>.
+		/// </summary>
+		void UpdateThumbImage(ISlider view, GtkScale scale)
+		{
+			_ = _thumbLoader.UpdateAsync(this, new GtkImageSourcePart(view.ThumbImageSource), texture =>
+			{
+				var style = GtkStyle.For(scale);
+				var url = GtkTextureCss.ToUrl(texture);
+				_hasThumbImage = url is not null;
+				style.ClearPrefix("background", " slider");
+				style.Set("min-width", null, " slider");
+				style.Set("min-height", null, " slider");
+				style.Set("border-color", null, " slider");
+				style.Set("box-shadow", null, " slider");
+
+				if (url is null || texture is null)
+				{
+					if (((IElementHandler)this).VirtualView is ISlider slider)
+						SetThumbColor(style, slider.ThumbColor);
+					return;
+				}
+
+				style.Set("background-image", url, " slider");
+				style.Set("background-size", "100% 100%", " slider");
+				style.Set("background-repeat", "no-repeat", " slider");
+				style.Set("background-color", "transparent", " slider");
+				style.Set("border-color", "transparent", " slider");
+				style.Set("box-shadow", "none", " slider");
+				style.Set("min-width", texture.Width + "px", " slider");
+				style.Set("min-height", texture.Height + "px", " slider");
+			});
+		}
+
+		// The theme paints the thumb with a background-image that would hide the colour.
+		static void SetThumbColor(GtkStyle style, Microsoft.Maui.Graphics.Color? color)
+		{
+			style.Set("background-color", color?.ToCss(), " slider");
+			style.Set("background-image", color is null ? null : "none", " slider");
 		}
 
 		// The virtual view is null once the handler disconnected; the generic VirtualView property would throw then.
@@ -130,8 +177,11 @@ namespace Microsoft.Maui.Gtk.Handlers
 				.MapGtk<GtkScale>(nameof(ISlider.MaximumTrackColor), (h, v, w) =>
 					GtkStyle.For(w).Set("background-color", v.MaximumTrackColor?.ToCss(), " trough"))
 				.MapGtk<GtkScale>(nameof(ISlider.ThumbColor), (h, v, w) =>
-					GtkStyle.For(w).Set("background-color", v.ThumbColor?.ToCss(), " slider"))
-				.MapGtk<GtkScale>(nameof(ISlider.ThumbImageSource), (h, v, w) => { /* a GTK scale thumb cannot show a texture */ })
+				{
+					if (!(h as GtkSliderHandler)?._hasThumbImage ?? true)
+						SetThumbColor(GtkStyle.For(w), v.ThumbColor);
+				})
+				.MapGtk<GtkScale>(nameof(ISlider.ThumbImageSource), (h, v, w) => (h as GtkSliderHandler)?.UpdateThumbImage(v, w))
 				.Build();
 
 		internal static readonly CommandMapper<ISlider, ISliderHandler> GtkCommandMapper =

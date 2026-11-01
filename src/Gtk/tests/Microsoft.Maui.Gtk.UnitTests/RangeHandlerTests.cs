@@ -130,11 +130,65 @@ namespace Microsoft.Maui.Gtk.UnitTests
 		});
 
 		[GtkFact]
-		public void SliderAcceptsAThumbImageSource() => GtkTestHost.Run(() =>
+		public void SliderTrackAndThumbColorsAreActuallyPainted() => GtkTestHost.Run(() =>
 		{
-			var slider = new Slider { ThumbImageSource = ImageSource.FromFile("thumb.png") };
-			var widget = GtkTestApp.CreateWidget<GtkScale>(slider);
-			Assert.NotNull(widget);
+			// Inner-node rules (trough, trough highlight, slider) only reach GTK through the display provider of GtkStyle.
+			var slider = new Slider { Minimum = 0, Maximum = 1, Value = 0.5, ThumbColor = Colors.Red, MinimumTrackColor = Colors.Lime, MaximumTrackColor = Colors.Purple };
+			using var host = new WindowHost(new Grid { Children = { slider } }, 200, 60);
+			host.Pump();
+			GtkTestHost.PumpUntil(() => CountColors(host.PlatformWindow.Child!).Red > 20, host.PlatformWindow);
+			var (red, lime, purple) = CountColors(host.PlatformWindow.Child!);
+			Assert.True(red > 20, $"thumb not red ({red})");
+			Assert.True(lime > 20, $"minimum track not lime ({lime})");
+			Assert.True(purple > 20, $"maximum track not purple ({purple})");
+
+			slider.ThumbColor = Colors.Blue;
+			Assert.True(GtkTestHost.PumpUntil(() => CountColors(host.PlatformWindow.Child!).Red == 0, host.PlatformWindow), "the old thumb colour is still painted");
+		});
+
+		static (int Red, int Lime, int Purple) CountColors(global::Gtk.Widget widget)
+		{
+			var bytes = GtkTestHost.RenderToBytes(widget, out int w, out int h);
+			int red = 0, lime = 0, purple = 0;
+			for (int i = 0; i < w * h; i++)
+			{
+				byte r = bytes[i * 4 + 2], g = bytes[i * 4 + 1], b = bytes[i * 4];
+				if (r > 200 && g < 60 && b < 60) red++;
+				else if (g > 200 && r < 60 && b < 60) lime++;
+				else if (r > 100 && r < 160 && g < 60 && b > 100 && b < 160) purple++;
+			}
+
+			return (red, lime, purple);
+		}
+
+		[GtkFact]
+		public void SliderThumbImageSourceReplacesTheThumbLook() => GtkTestHost.Run(() =>
+		{
+			GtkTestHost.ClearComplaints();
+			var data = TestImages.CreatePng(24, 24, 255, 0, 0);
+			var slider = new Slider { Minimum = 0, Maximum = 1, Value = 0, ThumbColor = Colors.Blue, ThumbImageSource = ImageSource.FromStream(() => new System.IO.MemoryStream(data)) };
+			using var host = new WindowHost(new Grid { Children = { slider } }, 200, 60);
+			var widget = (GtkScale)host.Widget(slider);
+
+			Assert.True(GtkTestHost.PumpUntil(() => Css(widget).Contains("data:image/png;base64,"), host.PlatformWindow), "the thumb image was never applied");
+			host.Pump();
+			var css = Css(widget);
+			Assert.Contains("min-width: 24px", css);
+			Assert.Contains("min-height: 24px", css);
+			Assert.DoesNotContain("rgba(0,0,255,1)", css);
+
+			var bounds = GtkTestHost.BoundsIn(widget, host.PlatformWindow.Child);
+			Assert.True(GtkTestHost.PumpUntil(() =>
+			{
+				var pixel = GtkTestHost.PixelAt(host.PlatformWindow.Child!, bounds.X + 12, bounds.Y + bounds.Height / 2);
+				return pixel.R > 200 && pixel.G < 60 && pixel.B < 60;
+			}, host.PlatformWindow), "the thumb image was never painted");
+
+			slider.ThumbImageSource = null!;
+			Assert.True(GtkTestHost.PumpUntil(() => !Css(widget).Contains("data:image"), host.PlatformWindow));
+			Assert.Contains("background-color: rgba(0,0,255,1)", Css(widget));
+			Assert.DoesNotContain("min-width", Css(widget));
+			GtkTestHost.AssertNoComplaints();
 		});
 
 		[GtkFact]

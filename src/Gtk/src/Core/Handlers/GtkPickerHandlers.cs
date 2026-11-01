@@ -27,7 +27,48 @@ namespace Microsoft.Maui.Gtk.Handlers
 		{
 			_dropDown = new GtkDropDown(_items, null) { Hexpand = true };
 			Append(_dropDown);
-			_dropDown.AddNotification("selected", (o, a) => SelectionChanged?.Invoke(this, EventArgs.Empty));
+			_dropDown.AddNotification("selected", (o, a) =>
+			{
+				ApplyTextAlignment();
+				SelectionChanged?.Invoke(this, EventArgs.Empty);
+			});
+			_dropDown.AddNotification("root", (o, a) => ApplyTextAlignment());
+			Popover?.AddNotification("visible", (o, a) => ApplyTextAlignment());
+		}
+
+		float _xalign;
+
+		/// <summary>
+		/// The horizontal position (0 start, 0.5 centre, 1 end) of the text of the drop-down button and of the rows of its popup list. The labels are
+		/// created by the drop-down (the rows when the list is realised), so the value is re-applied on selection, rooting and whenever the popup opens.
+		/// </summary>
+		public float TextXAlign
+		{
+			get => _xalign;
+			set
+			{
+				_xalign = value;
+				ApplyTextAlignment();
+			}
+		}
+
+		/// <summary>Applies <see cref="TextXAlign"/> to every label of the drop-down (button and popup rows).</summary>
+		public void ApplyTextAlignment() => ApplyTextAlignment(_dropDown);
+
+		void ApplyTextAlignment(global::Gtk.Widget parent)
+		{
+			for (var child = parent.FirstChild; child is not null; child = child.NextSibling)
+			{
+				if (child is global::Gtk.Label label)
+				{
+					label.Xalign = _xalign;
+					label.Hexpand = true;
+				}
+				else
+				{
+					ApplyTextAlignment(child);
+				}
+			}
 		}
 
 		/// <summary>Raised when the selected index changed (programmatically or by the user).</summary>
@@ -104,8 +145,8 @@ namespace Microsoft.Maui.Gtk.Handlers
 	/// <see cref="PickerHandler"/> over a <see cref="MauiGtkPicker"/> (<c>Gtk.DropDown</c> + <c>Gtk.StringList</c>).
 	/// </summary>
 	/// <remarks>
-	/// Text colour, font and letter spacing are CSS on the picker (they cascade to the drop-down and its list); the horizontal and vertical text
-	/// alignment have no GTK equivalent. <c>IsOpen</c> pops the drop-down's popover up.
+	/// Text colour, font and letter spacing are CSS on the picker (they cascade to the drop-down and its list); the horizontal text alignment sets the
+	/// <c>xalign</c> of the drop-down labels (button and list rows); the vertical one has no GTK equivalent (always centred). <c>IsOpen</c> pops the drop-down's popover up.
 	/// </remarks>
 	public class GtkPickerHandler : PickerHandler
 	{
@@ -222,7 +263,7 @@ namespace Microsoft.Maui.Gtk.Handlers
 				.MapGtk<MauiGtkPicker>(nameof(IPicker.TextColor), (h, v, w) => UpdateColor(w, v))
 				.MapGtk<MauiGtkPicker>(nameof(IPicker.Font), (h, v, w) => GtkTextStyle.SetFont(w, v.Font, GtkTextStyle.GetFontManager(h)))
 				.MapGtk<MauiGtkPicker>(nameof(IPicker.CharacterSpacing), (h, v, w) => GtkTextStyle.SetCharacterSpacing(w, v.CharacterSpacing))
-				.MapGtk<MauiGtkPicker>(nameof(ITextAlignment.HorizontalTextAlignment), (h, v, w) => { /* the drop-down lays its text out itself */ })
+				.MapGtk<MauiGtkPicker>(nameof(ITextAlignment.HorizontalTextAlignment), (h, v, w) => w.TextXAlign = GtkTextStyle.ToAlignment(v.HorizontalTextAlignment, v.FlowDirection))
 				.MapGtk<MauiGtkPicker>(nameof(ITextAlignment.VerticalTextAlignment), (h, v, w) => { /* a drop-down always centres its text vertically */ })
 				.MapGtk<MauiGtkPicker>(nameof(IPicker.IsOpen), (h, v, w) => UpdateIsOpen(h, v, w))
 				.Build();

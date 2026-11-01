@@ -25,6 +25,8 @@ namespace Microsoft.Maui.Gtk.Platform
 		readonly string _cssClass;
 		readonly Dictionary<string, SortedDictionary<string, string>> _rules = new(StringComparer.Ordinal);
 		global::Gtk.CssProvider? _provider;
+		global::Gtk.CssProvider? _innerProvider;
+		bool _innerAttached;
 
 		GtkStyle(global::Gtk.Widget widget)
 		{
@@ -93,12 +95,18 @@ namespace Microsoft.Maui.Gtk.Platform
 			Reload();
 		}
 
-		/// <summary>Returns the CSS text the provider currently holds (for diagnostics and tests).</summary>
-		public string ToCss()
+		/// <summary>Returns the CSS text the providers currently hold (for diagnostics and tests).</summary>
+		public string ToCss() => ToCss(descendants: null);
+
+		// descendants: null = every rule, false = rules of the widget's own node, true = rules of inner nodes (" trough", " slider", " check:checked").
+		string ToCss(bool? descendants)
 		{
 			var css = new StringBuilder();
 			foreach (var pair in _rules)
 			{
+				if (descendants is { } wanted && IsDescendantSelector(pair.Key) != wanted)
+					continue;
+
 				css.Append('.').Append(_cssClass).Append(pair.Key).Append(" {");
 				foreach (var declaration in pair.Value)
 					css.Append(' ').Append(declaration.Key).Append(": ").Append(declaration.Value).Append(';');
@@ -107,6 +115,9 @@ namespace Microsoft.Maui.Gtk.Platform
 
 			return css.ToString();
 		}
+
+		// A selector that is neither empty nor a state (":disabled") reaches an inner node of the widget.
+		static bool IsDescendantSelector(string selector) => selector.Length > 0 && selector[0] != ':';
 
 		void Reload()
 		{
@@ -119,7 +130,58 @@ namespace Microsoft.Maui.Gtk.Platform
 #pragma warning restore CS0612
 			}
 
-			_provider.LoadFromString(ToCss());
+			_provider.LoadFromString(ToCss(descendants: false));
+
+			// A provider added to a widget's own style context only styles the widget's own CSS node, never the inner nodes of the widget
+			// (the scale's trough/slider, a check's indicator, a text view's text). Rules for those go to a display provider that matches
+			// on the unique class and is attached while the widget is in a window.
+			var inner = ToCss(descendants: true);
+			if (inner.Length == 0)
+			{
+				DetachInnerProvider();
+				return;
+			}
+
+			if (_innerProvider is null)
+			{
+				_innerProvider = new global::Gtk.CssProvider();
+				_widget.AddNotification("root", (o, a) => SyncInnerProvider());
+			}
+
+			_innerProvider.LoadFromString(inner);
+			SyncInnerProvider();
+		}
+
+		void SyncInnerProvider()
+		{
+			if (_innerProvider is null)
+				return;
+
+			bool wanted = _widget.Root is not null;
+			if (wanted == _innerAttached)
+				return;
+
+			if (global::Gdk.Display.Default is not { } display)
+				return;
+
+#pragma warning disable CS0612
+			if (wanted)
+				global::Gtk.StyleContext.AddProviderForDisplay(display, _innerProvider, global::Gtk.StyleProviderPriority.Application);
+			else
+				global::Gtk.StyleContext.RemoveProviderForDisplay(display, _innerProvider);
+#pragma warning restore CS0612
+			_innerAttached = wanted;
+		}
+
+		void DetachInnerProvider()
+		{
+			if (_innerProvider is null || !_innerAttached || global::Gdk.Display.Default is not { } display)
+				return;
+
+#pragma warning disable CS0612
+			global::Gtk.StyleContext.RemoveProviderForDisplay(display, _innerProvider);
+#pragma warning restore CS0612
+			_innerAttached = false;
 		}
 
 		/// <summary>Sets <c>background-color</c>/<c>background-image</c> from a MAUI <see cref="Paint"/>; <see langword="null"/> clears them.</summary>

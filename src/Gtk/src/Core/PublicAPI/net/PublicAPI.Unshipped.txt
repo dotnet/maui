@@ -276,6 +276,7 @@ Microsoft.Maui.Gtk.Handlers.MauiGtkImageButton
 Microsoft.Maui.Gtk.Handlers.MauiGtkImageButton.MauiGtkImageButton() -> void
 Microsoft.Maui.Gtk.Handlers.MauiGtkImageButton.Picture.get -> Gtk.Picture!
 Microsoft.Maui.Gtk.Handlers.MauiGtkPicker
+Microsoft.Maui.Gtk.Handlers.MauiGtkPicker.ApplyTextAlignment() -> void
 Microsoft.Maui.Gtk.Handlers.MauiGtkPicker.DropDown.get -> Gtk.DropDown!
 Microsoft.Maui.Gtk.Handlers.MauiGtkPicker.GetItem(int index) -> string!
 Microsoft.Maui.Gtk.Handlers.MauiGtkPicker.ItemCount.get -> int
@@ -285,6 +286,8 @@ Microsoft.Maui.Gtk.Handlers.MauiGtkPicker.SelectedIndex.get -> int
 Microsoft.Maui.Gtk.Handlers.MauiGtkPicker.SelectedIndex.set -> void
 Microsoft.Maui.Gtk.Handlers.MauiGtkPicker.SelectionChanged -> System.EventHandler?
 Microsoft.Maui.Gtk.Handlers.MauiGtkPicker.SetItems(System.Collections.Generic.IList<string!>? items) -> void
+Microsoft.Maui.Gtk.Handlers.MauiGtkPicker.TextXAlign.get -> float
+Microsoft.Maui.Gtk.Handlers.MauiGtkPicker.TextXAlign.set -> void
 Microsoft.Maui.Gtk.Handlers.MauiGtkPicker.Title.get -> string!
 Microsoft.Maui.Gtk.Handlers.MauiGtkPicker.Title.set -> void
 Microsoft.Maui.Gtk.Handlers.MauiGtkPopupPicker

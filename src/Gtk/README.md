@@ -118,7 +118,7 @@ Pass only GApplication options in `args`. Lifecycle: `ConfigureLifecycleEvents(e
 | Platform offset | `GtkViewState.PlatformOffsetX/Y`: a translation the platform applies on top of `TranslationX/Y` (swipe, refresh), never overwritten by the view's transform mappers. |
 | Menus | `GtkMenuNode` tree (`GtkMenuModel.cs`) mirrors MAUI menus as `GLib.Menu` + `GSimpleAction`s (group `menu`); the root rebuilds the models on every change. `GtkWindowMenuBar` stacks the `PopoverMenuBar` above the root panel; `GtkContextFlyout` installs the secondary click / long press. `MenuFlyoutItemHandler` has no mapper constructor, so its GTK mappings are added once to the stock static mapper (they only act for `GtkMenuFlyoutItemHandler`). Icons use the `icon` model attribute (`GtkMenuIcons`); the `IconImageSource` key is mapped too because Controls raises it instead of `Source`. |
 | Transforms | translation/scale/rotation (+ anchor) become the `Gsk.Transform` of the child allocation (`GtkViewState`). A transform change stores the values and queues an allocation of the parent, whose arrange re-applies them via `PlatformArrange` (a child is only allocated inside its parent's size-allocate). `RotationX/Y` ignored. |
-| Styling | `GtkStyle`: one `CssProvider` + class per widget (the only `StyleContext.AddProvider` use). Colour, font, spacing, decorations, padding, background (solid/linear/radial), borders are CSS. |
+| Styling | `GtkStyle`: one `CssProvider` + class per widget (own-node rules) and, for inner-node rules (`" trough"`, `" slider"`, `" check:checked"`, `" text"`), a display provider matched on the class and attached while the widget has a root (GTK 4 widget providers never reach inner nodes). Colour, font, spacing, decorations, padding, background (solid/linear/radial/image), borders are CSS. Image paints (`ImageBrush`, `Page.BackgroundImageSource`) are a decoded texture as inline-PNG `background-image` (cover) via `GtkBackgroundImage`. |
 | Dispatcher / ticker | `GtkDispatcher` (`GLib.Idle/Timeout`, inline on the GTK thread), `GtkTicker` (frame-clock tick callback on a main (non-modal, non-transient) window, re-anchored when that window unmaps; `Timeout` fallback). |
 | Fonts | `GtkFontManager` (`Font` -> CSS / `Pango.FontDescription`); `GtkEmbeddedFontLoader` (`pango_font_map_add_font_file` on Pango >= 1.56, else fontconfig `FcConfigAppFontAddFile`). The native libraries are resolved per OS by `FontNativeLibraries` (`NativeLibrary.TryLoad` over Linux sonames / Windows `fontconfig-1.dll`, `pango-1.0-0.dll`, `pangocairo-1.0-0.dll`... / macOS dylibs, called through function pointers; no global `DllImportResolver`). On Windows Pango's default font map is the win32 one, so only `add_font_file` registers the font (fontconfig, which only reads the family name there, cannot); the family name falls back to a managed `name` table reader (`FontFileNames`) when fontconfig is missing. Windows Pango < 1.56: embedded fonts are not visible (no fallback). Fonts registered by file name are opened from `Resources/Fonts`, `Fonts` or the app folder through `FontRegistrar.NativeFontStreamProvider` (Core hook, installed by `UseMauiGtkCore`; null = upstream Standard behaviour, font unresolved). |
 | Images | `IGtkImageSourceService` -> `Gdk.Texture` for File/Stream/Uri/Font; `GtkImageLoader` replaces `ImageSourcePartLoader` (a no-op on `net10.0`). |
@@ -139,9 +139,9 @@ Pass only GApplication options in `args`. Lifecycle: `ConfigureLifecycleEvents(e
 | Switch, CheckBox | `Gtk.Switch`, `Gtk.CheckButton` | |
 | ActivityIndicator | `Gtk.Spinner` | `IsRunning` = spinning; colour = CSS `color` |
 | ProgressBar | `Gtk.ProgressBar` | colour on the `progress` node; RTL inverts |
-| Slider | `Gtk.Scale` | track/thumb colours are CSS; `ThumbImageSource` ignored; `DragStarted/Completed` from a capture-phase click |
+| Slider | `Gtk.Scale` | track/thumb colours are CSS; `ThumbImageSource` = inline-PNG `background-image` on the `slider` node, sized to the image (wins over `ThumbColor`); `DragStarted/Completed` from a capture-phase click |
 | Stepper | `MauiGtkStepper` (linked "-"/"+" buttons) | MAUI semantics: clamped, a button is insensitive at its bound |
-| Picker | `MauiGtkPicker` (`Gtk.DropDown` + `Gtk.StringList`) | a drop-down always has a selection, so row 0 is the title row = "no selection"; text alignment ignored |
+| Picker | `MauiGtkPicker` (`Gtk.DropDown` + `Gtk.StringList`) | a drop-down always has a selection, so row 0 is the title row = "no selection"; `HorizontalTextAlignment` sets the `xalign` of the button and list-row labels, vertical is always centred |
 | DatePicker | `MauiGtkDatePicker` (`MenuButton` + `Popover` + `Calendar`) | min/max clamp the date; label uses `Format` |
 | TimePicker | `MauiGtkTimePicker` (`MenuButton` + `Popover` + 2 `SpinButton`) | label uses `Format` on the time of day |
 | RadioButton | `MauiGtkRadioButton` (`CheckButton` in a private group) | MAUI owns grouping; string content = label, view content next to the indicator, template content replaces the indicator |
@@ -158,7 +158,7 @@ Pass only GApplication options in `args`. Lifecycle: `ConfigureLifecycleEvents(e
 | MenuFlyout*, `ContextFlyout` | `Gtk.PopoverMenu` over the `GMenu` | secondary click or long press on any view; separators split sections; accelerators are bound only while the view has the focus (Local scope); icons as above |
 | WebView, HybridWebView | `WebKit.WebView` (WebKitGTK 6; a `Gtk.Label` when it cannot be loaded) | see [`src/BlazorWebView/README.md`](src/BlazorWebView/README.md) |
 
-Not in this area: Shell, CollectionView, Maps, NavigationPage/Toolbar/FlyoutPage/TabbedPage. Image-paint backgrounds are unsupported.
+Not in this area: Shell, CollectionView, Maps, NavigationPage/Toolbar/FlyoutPage/TabbedPage.
 
 ## Tests
 
@@ -189,7 +189,7 @@ Not in this area: Shell, CollectionView, Maps, NavigationPage/Toolbar/FlyoutPage
 
 - `SwipeItemView` is resolved by Controls to the content view handler (it is a `ContentView`); `Microsoft.Maui.Controls.Gtk` registers `SwipeItemView -> SwipeItemViewHandler`.
 - Windows builds pack/test `net10.0`/`netstandard` only (mobile/Windows TFMs are disabled locally by `Directory.Build.Override.props`).
-- `RotationX`/`RotationY`, window position, maximum window size, image-paint backgrounds, animated scrolling.
+- `RotationX`/`RotationY`, window position, maximum window size, animated scrolling.
 - Accessibility goes through `Widget.Accessible` (GtkSharp's compat wrapper) for name and description only.
 
 ## Building

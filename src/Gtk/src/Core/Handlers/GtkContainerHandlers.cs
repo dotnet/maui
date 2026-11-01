@@ -213,7 +213,7 @@ namespace Microsoft.Maui.Gtk.Handlers
 			new GtkMapperBuilder<ILayout, ILayoutHandler>(LayoutHandler.Mapper)
 				.AddViewMappings()
 				// The stock layout background mapping throws on the platform-less assemblies, so it is not chained.
-				.MapGtk<MauiGtkPanel>(nameof(ILayout.Background), (h, v, panel) => GtkStyle.For(panel).SetBackground(v.Background), callStock: false)
+				.MapGtk<MauiGtkPanel>(nameof(ILayout.Background), (h, v, panel) => GtkBackgroundImage.Update(h, panel, v.Background), callStock: false)
 				.MapGtk<MauiGtkPanel>(nameof(ILayout.ClipsToBounds), (h, v, panel) => panel.ClipsToBounds = v.ClipsToBounds)
 				.Build();
 

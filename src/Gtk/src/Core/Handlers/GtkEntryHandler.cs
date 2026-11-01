@@ -122,7 +122,7 @@ namespace Microsoft.Maui.Gtk.Handlers
 			mapper.MapGtk<GtkEntry>(nameof(IEntry.TextColor), (h, v, w) => GtkTextStyle.SetColor(w, v.TextColor));
 			mapper.MapGtk<GtkEntry>(nameof(IEntry.Font), (h, v, w) => GtkTextStyle.SetFont(w, v.Font, GtkTextStyle.GetFontManager(h)));
 			mapper.MapGtk<GtkEntry>(nameof(IEntry.CharacterSpacing), (h, v, w) => GtkTextStyle.SetCharacterSpacing(w, v.CharacterSpacing));
-			mapper.MapGtk<GtkEntry>(nameof(IEntry.Background), (h, v, w) => GtkStyle.For(w).SetBackground(v.Background));
+			mapper.MapGtk<GtkEntry>(nameof(IEntry.Background), (h, v, w) => GtkBackgroundImage.Update(h, w, v.Background));
 			mapper.MapGtk<GtkEntry>(nameof(IEntry.Placeholder), (h, v, w) => w.PlaceholderText = v.Placeholder ?? string.Empty);
 			mapper.MapGtk<GtkEntry>(nameof(IEntry.PlaceholderColor), (h, v, w) => GtkTextStyle.SetColor(w, v.PlaceholderColor, " placeholder"));
 			mapper.MapGtk<GtkEntry>(nameof(IEntry.IsPassword), (h, v, w) => w.Visibility = !v.IsPassword);

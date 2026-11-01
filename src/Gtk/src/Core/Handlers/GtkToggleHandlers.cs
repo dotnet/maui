@@ -193,7 +193,7 @@ namespace Microsoft.Maui.Gtk.Handlers
 					style.Set("border-color", color.ToCss(), " check:checked");
 				}
 			});
-			mapper.MapGtk<GtkCheckButton>(nameof(ICheckBox.Background), (h, v, w) => GtkStyle.For(w).SetBackground(v.Background));
+			mapper.MapGtk<GtkCheckButton>(nameof(ICheckBox.Background), (h, v, w) => GtkBackgroundImage.Update(h, w, v.Background));
 		}
 	}
 }

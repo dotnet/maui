@@ -176,7 +176,7 @@ namespace Microsoft.Maui.Gtk.Handlers
 				GtkTextStyle.SetFont(w.PlaceholderLabel, v.Font, fonts);
 			});
 			mapper.MapGtk<MauiGtkEditor>(nameof(IEditor.CharacterSpacing), (h, v, w) => GtkTextStyle.SetCharacterSpacing(w.View, v.CharacterSpacing));
-			mapper.MapGtk<MauiGtkEditor>(nameof(IEditor.Background), (h, v, w) => GtkStyle.For(w.View).SetBackground(v.Background, " text"));
+			mapper.MapGtk<MauiGtkEditor>(nameof(IEditor.Background), (h, v, w) => GtkBackgroundImage.Update(h, w.View, v.Background, " text"));
 			mapper.MapGtk<MauiGtkEditor>(nameof(IEditor.Placeholder), (h, v, w) => w.SetPlaceholder(v.Placeholder));
 			mapper.MapGtk<MauiGtkEditor>(nameof(IEditor.PlaceholderColor), (h, v, w) => GtkTextStyle.SetColor(w.PlaceholderLabel, v.PlaceholderColor));
 			mapper.MapGtk<MauiGtkEditor>(nameof(IEditor.IsReadOnly), (h, v, w) => w.View.Editable = !v.IsReadOnly);

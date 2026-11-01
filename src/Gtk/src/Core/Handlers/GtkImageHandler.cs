@@ -76,7 +76,7 @@ namespace Microsoft.Maui.Gtk.Handlers
 		{
 			mapper.MapGtk<GtkPicture>(nameof(IImage.Aspect), (h, v, w) => w.ContentFit = ToContentFit(v.Aspect));
 			mapper.MapGtk<GtkPicture>(nameof(IImage.IsAnimationPlaying), (h, v, w) => (h as GtkImageHandler)?._animator?.SetPlaying(v.IsAnimationPlaying));
-			mapper.MapGtk<GtkPicture>(nameof(IImage.Background), (h, v, w) => GtkStyle.For(w).SetBackground(v.Background));
+			mapper.MapGtk<GtkPicture>(nameof(IImage.Background), (h, v, w) => GtkBackgroundImage.Update(h, w, v.Background));
 			mapper.MapGtk<GtkPicture>(nameof(IImage.Source), (h, v, w) =>
 			{
 				if (h is GtkImageHandler handler)

@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Gtk.Hosting
 			mapper.MapGtk<global::Gtk.Widget>(nameof(IView.AutomationId), (h, v, w) => UpdateAutomationId(w, v));
 			mapper.MapGtk<global::Gtk.Widget>(nameof(IView.Visibility), (h, v, w) => UpdateVisibility(h, v));
 			mapper.MapGtk<global::Gtk.Widget>(nameof(IView.Opacity), (h, v, w) => UpdateOpacity(h, v));
-			mapper.MapGtk<global::Gtk.Widget>(nameof(IView.Background), (h, v, w) => GtkStyle.For(w).SetBackground(v.Background));
+			mapper.MapGtk<global::Gtk.Widget>(nameof(IView.Background), (h, v, w) => GtkBackgroundImage.Update(h, w, v.Background));
 			mapper.MapGtk<global::Gtk.Widget>(nameof(IView.IsEnabled), (h, v, w) => w.Sensitive = v.IsEnabled);
 			mapper.MapGtk<global::Gtk.Widget>(nameof(IView.InputTransparent), (h, v, w) => UpdateInputTransparent(h, v));
 			mapper.MapGtk<global::Gtk.Widget>(nameof(IView.FlowDirection), (h, v, w) => UpdateFlowDirection(w, v));

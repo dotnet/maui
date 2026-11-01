@@ -158,7 +158,7 @@ namespace Microsoft.Maui.Gtk.Handlers
 				if (v is ITextStyle style)
 					GtkTextStyle.SetFont(w, style.Font, GtkTextStyle.GetFontManager(h));
 			});
-			mapper.MapGtk<MauiGtkButton>(nameof(IButton.Background), (h, v, w) => GtkStyle.For(w).SetBackground(v.Background));
+			mapper.MapGtk<MauiGtkButton>(nameof(IButton.Background), (h, v, w) => GtkBackgroundImage.Update(h, w, v.Background));
 			mapper.MapGtk<MauiGtkButton>(nameof(IButton.Padding), (h, v, w) => GtkTextStyle.SetPadding(w, v.Padding));
 			mapper.MapGtk<MauiGtkButton>(nameof(IButtonStroke.StrokeThickness), (h, v, w) => UpdateStroke(w, v));
 			mapper.MapGtk<MauiGtkButton>(nameof(IButtonStroke.StrokeColor), (h, v, w) => UpdateStroke(w, v));

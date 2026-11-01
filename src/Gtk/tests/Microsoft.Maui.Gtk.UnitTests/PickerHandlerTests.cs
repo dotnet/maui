@@ -94,6 +94,52 @@ namespace Microsoft.Maui.Gtk.UnitTests
 		});
 
 		[GtkFact]
+		public void PickerMapsHorizontalTextAlignmentToTheLabels() => GtkTestHost.Run(() =>
+		{
+			var picker = NewPicker("one", "two");
+			picker.SelectedIndex = 0;
+			picker.HorizontalTextAlignment = TextAlignment.End;
+			using var host = new WindowHost(new Grid { Children = { picker } }, 240, 80);
+			var widget = (MauiGtkPicker)host.Widget(picker);
+			host.Pump();
+
+			Assert.Equal(1f, widget.TextXAlign);
+			Assert.All(Labels(widget.DropDown), l => Assert.Equal(1f, l.Xalign));
+			Assert.NotEmpty(Labels(widget.DropDown));
+
+			picker.HorizontalTextAlignment = TextAlignment.Center;
+			Assert.Equal(0.5f, widget.TextXAlign);
+			Assert.All(Labels(widget.DropDown), l => Assert.Equal(0.5f, l.Xalign));
+
+			// A new selection builds a new button label: it must pick the alignment up too.
+			picker.SelectedIndex = 1;
+			Assert.All(Labels(widget.DropDown), l => Assert.Equal(0.5f, l.Xalign));
+
+			picker.HorizontalTextAlignment = TextAlignment.Start;
+			Assert.All(Labels(widget.DropDown), l => Assert.Equal(0f, l.Xalign));
+
+			// The rows of the popup list are created when it opens.
+			picker.HorizontalTextAlignment = TextAlignment.End;
+			picker.IsOpen = true;
+			Assert.True(GtkTestHost.PumpUntil(() => Labels(widget.DropDown).Count >= 3, host.PlatformWindow));
+			Assert.True(GtkTestHost.PumpUntil(() => Labels(widget.DropDown).TrueForAll(l => l.Xalign == 1f), host.PlatformWindow), "popup rows were not aligned");
+		});
+
+		static System.Collections.Generic.List<global::Gtk.Label> Labels(global::Gtk.Widget root)
+		{
+			var labels = new System.Collections.Generic.List<global::Gtk.Label>();
+			for (var child = root.FirstChild; child is not null; child = child.NextSibling)
+			{
+				if (child is global::Gtk.Label label)
+					labels.Add(label);
+				else
+					labels.AddRange(Labels(child));
+			}
+
+			return labels;
+		}
+
+		[GtkFact]
 		public void PickerMapsTextStyle() => GtkTestHost.Run(() =>
 		{
 			var picker = NewPicker("a");

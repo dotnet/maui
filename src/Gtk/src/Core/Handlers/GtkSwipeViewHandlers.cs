@@ -611,7 +611,7 @@ namespace Microsoft.Maui.Gtk.Handlers
 					if (v is ITextStyle style)
 						GtkTextStyle.SetFont(w, style.Font, GtkTextStyle.GetFontManager(h));
 				})
-				.MapGtk<MauiGtkButton>(nameof(ISwipeItemMenuItem.Background), (h, v, w) => GtkStyle.For(w).SetBackground(v.Background))
+				.MapGtk<MauiGtkButton>(nameof(ISwipeItemMenuItem.Background), (h, v, w) => GtkBackgroundImage.Update(h, w, v.Background))
 				.MapGtk<MauiGtkButton>(nameof(ISwipeItemMenuItem.Visibility), (h, v, w) => w.Visible = v.Visibility != Visibility.Collapsed)
 				.MapGtk<MauiGtkButton>(nameof(IMenuElement.Source), (h, v, w) =>
 				{
