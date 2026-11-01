@@ -145,9 +145,6 @@ namespace UITest.Appium
 			var sequence = new ActionSequence(touchDevice, 0);
 			sequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, (int)x, (int)y, TimeSpan.FromMilliseconds(5)));
 			sequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
-			// Hold the button before release, as in Mac2's W3C click recipe.
-			if (_appiumApp is AppiumCatalystApp)
-				sequence.AddAction(touchDevice.CreatePause(TimeSpan.FromMilliseconds(100)));
 			sequence.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
 			_appiumApp.Driver.PerformActions(new List<ActionSequence> { sequence });
 
