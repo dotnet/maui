@@ -158,12 +158,48 @@ namespace Microsoft.Maui.Gtk.UnitTests
 				Settle(host);
 				Assert.Equal(1, raised);
 
-				// Growing the list is a new chance to cross.
-				adjustment.Value = 0;
+				// Growing the list is a new chance to cross: two rows keep the end within the threshold, so only the addition can re-arm
+				// (scrolling away would re-arm on its own).
+				items.Add("more 1");
+				items.Add("more 2");
+				adjustment.Value = adjustment.Upper;
+				Assert.True(GtkTestHost.PumpUntil(() => raised == 2, host.PlatformWindow));
+			}
+		});
+
+		[GtkFact]
+		public void RemainingItemsThresholdIsNotRearmedByRemovingAnItemOfAGroupNearTheEnd() => GtkTestHost.Run(() =>
+		{
+			// Grouped sources are rebuilt as a whole on every change: only a rebuild with more rows re-arms.
+			var groups = new ObservableCollection<ObservableCollection<string>>
+			{
+				new(Items(50)),
+				new(Items(50)),
+			};
+			var (view, host) = Create(v =>
+			{
+				v.IsGrouped = true;
+				v.ItemsSource = groups;
+				v.RemainingItemsThreshold = 5;
+			});
+			using (host)
+			{
+				int raised = 0;
+				view.RemainingItemsThresholdReached += (_, _) => raised++;
+				var adjustment = Controller(view).Scroller.Vadjustment;
 				Settle(host);
-				for (int i = 0; i < 50; i++)
-					items.Add("more " + i);
+				adjustment.Value = adjustment.Upper;
+				Assert.True(GtkTestHost.PumpUntil(() => raised > 0, host.PlatformWindow));
 				Settle(host);
+				Assert.Equal(1, raised);
+
+				groups[1].RemoveAt(groups[1].Count - 1);
+				Settle(host);
+				groups[1][0] = "replaced";
+				Settle(host);
+				Assert.Equal(1, raised);
+
+				groups[1].Add("more");
 				adjustment.Value = adjustment.Upper;
 				Assert.True(GtkTestHost.PumpUntil(() => raised == 2, host.PlatformWindow));
 			}

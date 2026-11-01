@@ -292,10 +292,21 @@ public static class GtkTestHost
 	}
 
 	/// <summary>Resizes a test window and commits the new allocation (GTK 4 has no resize request).</summary>
+	/// <remarks>
+	/// A shown window follows its surface: on Windows the window manager applies the new size asynchronously, and under load a late
+	/// configure of the old size lands after the forced allocation and restores it. Re-apply until the window keeps the size (up to 3 s).
+	/// </remarks>
 	public static void Resize(Gtk.Window window, int width, int height)
 	{
 		window.SetDefaultSize(width, height);
-		Allocate(window, width, height);
+		PumpUntil(() =>
+		{
+			if (window.Width == width && window.Height == height)
+				return true;
+
+			Allocate(window, width, height);
+			return false;
+		}, window, 3000);
 		Pump(window);
 	}
 

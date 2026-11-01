@@ -113,7 +113,7 @@ namespace Microsoft.Maui.Controls.Gtk.Items
 		public event Action<int, int, int>? RowsChanged;
 
 		/// <summary>
-		/// Whether the last <see cref="RowsChanged"/> may have moved the end of the list away (rows were added or the model was rebuilt) as opposed to
+		/// Whether the last <see cref="RowsChanged"/> added rows (an insertion, or a rebuild that ended with more rows) as opposed to
 		/// rows being removed, replaced or moved in place.
 		/// </summary>
 		public bool LastChangeGrew { get; private set; }
@@ -208,7 +208,12 @@ namespace Microsoft.Maui.Controls.Gtk.Items
 			}
 
 			if (raise)
+			{
+				// A rebuild of the same model (grouped changes, Reset) grew only if it has more rows: removing, replacing or moving
+				// an item must not re-arm RemainingItemsThreshold. A new model is re-armed by the controller itself.
+				LastChangeGrew = _rows.Count > removed;
 				Raise(0, removed, _rows.Count);
+			}
 		}
 
 		void Raise(int position, int removed, int added)
