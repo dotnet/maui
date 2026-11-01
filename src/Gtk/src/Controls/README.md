@@ -51,4 +51,4 @@ front of the stock ones (see the Gtk README), so stock-mapper customisations sti
 
 `src/Gtk/tests/Microsoft.Maui.Gtk.UnitTests/Controls/` (xUnit, real widgets; `ControlsWindowHost` hosts a page in a `Gtk.Window`,
 `ControlsTestApp` builds an app with `UseMauiGtk()`): Navigation (16), Alerts and Labels (35), Gestures (20), Modal (6), CollectionView
-(21), CollectionView behaviour (scroll, threshold, sizing, reorder) (11), Carousel (7), Legacy lists (7), Shell (29), Shapes and Frame (10).
+(21), CollectionView behaviour (scroll, threshold, sizing, reorder) (14), Carousel (7), Legacy lists (7), Shell (30), Shapes and Frame (13).
