@@ -99,6 +99,9 @@ namespace Microsoft.Maui.Controls.Gtk.Items
 		/// <summary>Supplies a fixed row width (the carousel); applied to every row host.</summary>
 		public Func<int>? FixedRowWidth { get; set; }
 
+		/// <summary>Supplies a fixed row height (a vertical carousel); applied to every row host.</summary>
+		public Func<int>? FixedRowHeight { get; set; }
+
 		/// <summary>Raised after the rows were rebuilt or changed.</summary>
 		public event Action? SourceChanged;
 
@@ -413,7 +416,7 @@ namespace Microsoft.Maui.Controls.Gtk.Items
 		void OnSetup(object? sender, global::Gtk.SetupArgs args)
 		{
 			var item = (global::Gtk.ListItem)args.Object;
-			var host = new MauiGtkItemHost { FixedWidth = FixedRowWidth, ListItem = item, SharedSize = SharedSizeFor, ContentMeasured = OnHostMeasured };
+			var host = new MauiGtkItemHost { FixedWidth = FixedRowWidth, FixedHeight = FixedRowHeight, ListItem = item, SharedSize = SharedSizeFor, ContentMeasured = OnHostMeasured };
 			item.Child = host;
 
 			if (_view is ReorderableItemsView)
@@ -427,6 +430,7 @@ namespace Microsoft.Maui.Controls.Gtk.Items
 				return;
 
 			host.FixedWidth = FixedRowWidth;
+			host.FixedHeight = FixedRowHeight;
 			host.ListItem = item;
 			Bind(host, rowObject.Row);
 			host.Row = rowObject.Row;

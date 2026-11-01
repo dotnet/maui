@@ -6,22 +6,34 @@ using GtkBox = Gtk.Box;
 namespace Microsoft.Maui.Controls.Gtk.Items
 {
 	/// <summary>
-	/// The handler of <see cref="CarouselView"/> on GTK 4: a horizontal (or vertical) <c>Gtk.ListView</c> whose rows are as wide as the
-	/// viewport (minus the peek area), that snaps to the nearest item when scrolling settles.
+	/// The handler of <see cref="CarouselView"/> on GTK 4: a horizontal (or vertical) <c>Gtk.ListView</c> whose rows are as wide (as high for a
+	/// vertical carousel) as the viewport (minus the peek area), that snaps to the nearest item when scrolling settles.
 	/// </summary>
 	/// <remarks>
-	/// <para>The scroll position and <see cref="CarouselView.Position"/>/<see cref="CarouselView.CurrentItem"/> follow each other; scrolling
-	/// by the app is instant (<c>IsScrollAnimated</c> is ignored). No libadwaita dependency: the snap is a short timer after the last scroll
-	/// change.</para>
-	/// <para>Not supported: <see cref="CarouselView.Loop"/> (the carousel stops at both ends) and bounce.</para>
+	/// <para>The scroll position and <see cref="CarouselView.Position"/>/<see cref="CarouselView.CurrentItem"/> follow each other (also for a
+	/// vertical carousel); scrolling by the app is instant (<c>IsScrollAnimated</c> is ignored). No libadwaita dependency: the snap is a short
+	/// timer after the last scroll change.</para>
+	/// <para><see cref="CarouselView.Loop"/> wraps at the edges: dragging past the last page jumps to the first one and the other way round (a
+	/// jump, not a seamless ring; the wheel does not overshoot, so it does not wrap), and a <see cref="CarouselView.Position"/> past the end
+	/// wraps around. <see cref="CarouselView.IsBounceEnabled"/> <see langword="false"/> hides GTK's overshoot effect at the edges.</para>
 	/// </remarks>
 	public class GtkCarouselViewHandler : CarouselViewHandler
 	{
 		const uint SnapDelayMilliseconds = 120;
 
+		const long WrapCooldownMilliseconds = 400;
+
+		const string CarouselClass = "maui-carousel";
+
+		const string NoBounceClass = "maui-carousel-no-bounce";
+
+		static bool s_cssInstalled;
+
 		uint _snapTimer;
 		bool _updating;
 		int _lastWidth;
+		int _lastHeight;
+		long _lastWrapTick;
 
 		/// <summary>Creates the handler with the Controls mapper.</summary>
 		public GtkCarouselViewHandler()
@@ -55,11 +67,37 @@ namespace Microsoft.Maui.Controls.Gtk.Items
 			}
 		}
 
+		/// <summary>The height of one page of a vertical carousel: the viewport minus the peek area; 0 until the first layout.</summary>
+		internal int PageHeight
+		{
+			get
+			{
+				if (Controller is null || VirtualView is null)
+					return 0;
+
+				int viewport = Controller.Scroller.Height;
+				if (viewport <= 0)
+					return 0;
+
+				var insets = VirtualView.PeekAreaInsets;
+				return Math.Max(1, viewport - (int)Math.Round(insets.Top + insets.Bottom));
+			}
+		}
+
+		bool IsHorizontal => Controller?.List?.Orientation != global::Gtk.Orientation.Vertical;
+
+		/// <summary>The extent of one page along the scroll axis.</summary>
+		internal int PageSize => IsHorizontal ? PageWidth : PageHeight;
+
 		/// <inheritdoc/>
 		protected override object CreatePlatformView()
 		{
 			var context = MauiContext ?? throw new InvalidOperationException("MauiContext should have been set by the base class.");
-			Controller = new GtkItemsController(VirtualView, context) { FixedRowWidth = () => PageWidth };
+			Controller = new GtkItemsController(VirtualView, context)
+			{
+				FixedRowWidth = () => IsHorizontal ? PageWidth : 0,
+				FixedRowHeight = () => IsHorizontal ? 0 : PageHeight,
+			};
 			return Controller.Root;
 		}
 
@@ -74,8 +112,35 @@ namespace Microsoft.Maui.Controls.Gtk.Items
 				UpdateScrolling();
 				controller.Root.SizeAllocated += OnRootAllocated;
 				controller.Scroller.Hadjustment.ValueChanged += OnScrolled;
+				controller.Scroller.Vadjustment.ValueChanged += OnScrolled;
+				controller.Scroller.EdgeOvershot += OnEdgeOvershot;
 				controller.SourceChanged += OnSourceChanged;
+				UpdateBounce();
+				UpdateRowPadding();
 			}
+		}
+
+		// GTK pads every list row (and descendant selectors of a per-widget provider do not reach the rows): a page must be exactly as large
+		// as the viewport or the snap drifts by the padding of each page, so a display-wide rule keyed on a marker class removes it.
+		internal void UpdateRowPadding()
+		{
+			EnsureCss();
+			Controller?.List?.AddCssClass(CarouselClass);
+		}
+
+		static void EnsureCss()
+		{
+			if (s_cssInstalled || global::Gdk.Display.Default is not { } display)
+				return;
+
+			var provider = new global::Gtk.CssProvider();
+			provider.LoadFromString(
+				"listview." + CarouselClass + " > row { padding: 0; margin: 0; border: 0; min-height: 0; } " +
+				"scrolledwindow." + NoBounceClass + " overshoot, scrolledwindow." + NoBounceClass + " undershoot { background-image: none; }");
+#pragma warning disable CS0612 // StyleContext is deprecated since GTK 4.10 but is the only provider hook of a display in this binding.
+			global::Gtk.StyleContext.AddProviderForDisplay(display, provider, (uint)global::Gtk.StyleProviderPriority.Application);
+#pragma warning restore CS0612
+			s_cssInstalled = true;
 		}
 
 		/// <inheritdoc/>
@@ -87,6 +152,8 @@ namespace Microsoft.Maui.Controls.Gtk.Items
 			{
 				controller.Root.SizeAllocated -= OnRootAllocated;
 				controller.Scroller.Hadjustment.ValueChanged -= OnScrolled;
+				controller.Scroller.Vadjustment.ValueChanged -= OnScrolled;
+				controller.Scroller.EdgeOvershot -= OnEdgeOvershot;
 				controller.SourceChanged -= OnSourceChanged;
 				controller.Dispose();
 			}
@@ -98,12 +165,14 @@ namespace Microsoft.Maui.Controls.Gtk.Items
 		void OnRootAllocated(object? sender, EventArgs args)
 		{
 			int width = Controller?.Scroller.Width ?? 0;
-			if (width == _lastWidth)
+			int height = Controller?.Scroller.Height ?? 0;
+			if (width == _lastWidth && height == _lastHeight)
 				return;
 
 			_lastWidth = width;
+			_lastHeight = height;
 
-			// Pages are as wide as the viewport: measure them again and keep the current page in view.
+			// Pages are as large as the viewport: measure them again and keep the current page in view.
 			if (Controller is { } controller)
 			{
 				foreach (var host in controller.BoundHosts)
@@ -138,6 +207,81 @@ namespace Microsoft.Maui.Controls.Gtk.Items
 			});
 		}
 
+		void OnEdgeOvershot(object? sender, global::Gtk.EdgeOvershotArgs args) => HandleOvershoot(args.Pos);
+
+		internal void HandleOvershoot(global::Gtk.PositionType position)
+		{
+			bool horizontal = IsHorizontal;
+			switch (position)
+			{
+				case global::Gtk.PositionType.Right when horizontal:
+				case global::Gtk.PositionType.Bottom when !horizontal:
+					WrapAtEdge(end: true);
+					break;
+				case global::Gtk.PositionType.Left when horizontal:
+				case global::Gtk.PositionType.Top when !horizontal:
+					WrapAtEdge(end: false);
+					break;
+			}
+		}
+
+		/// <summary>
+		/// With <see cref="CarouselView.Loop"/>, jumps from the last page to the first one (<paramref name="end"/>) or from the first to the last
+		/// when the user dragged past the edge.
+		/// </summary>
+		/// <param name="end">Whether the overshoot was at the end of the carousel.</param>
+		/// <returns><see langword="true"/> when the carousel wrapped.</returns>
+		internal bool WrapAtEdge(bool end)
+		{
+			if (VirtualView is not { Loop: true } || Controller?.Source is not { Count: > 1 } source)
+				return false;
+
+			// The kinetic overshoot keeps reporting while it settles.
+			long now = Environment.TickCount64;
+			if (now - _lastWrapTick < WrapCooldownMilliseconds)
+				return false;
+
+			int current = NearestPage();
+			int target;
+			if (end && current == source.Count - 1)
+				target = 0;
+			else if (!end && current == 0)
+				target = source.Count - 1;
+			else
+				return false;
+
+			_lastWrapTick = now;
+			CancelSnap();
+			ScrollTo(target);
+			SetPosition(target);
+			return true;
+		}
+
+		/// <summary>The page <paramref name="index"/> stands for: wrapped around with <see cref="CarouselView.Loop"/>, else clamped.</summary>
+		internal int NormalizePage(int index, int count)
+		{
+			if (count <= 0)
+				return 0;
+
+			if (VirtualView is { Loop: true })
+				return ((index % count) + count) % count;
+
+			return Math.Max(0, Math.Min(index, count - 1));
+		}
+
+		/// <summary>Shows or hides GTK's overshoot effect at the edges according to <see cref="CarouselView.IsBounceEnabled"/>.</summary>
+		internal void UpdateBounce()
+		{
+			if (Controller is null || VirtualView is not { } carousel)
+				return;
+
+			EnsureCss();
+			if (carousel.IsBounceEnabled)
+				Controller.Scroller.RemoveCssClass(NoBounceClass);
+			else
+				Controller.Scroller.AddCssClass(NoBounceClass);
+		}
+
 		void CancelSnap()
 		{
 			if (_snapTimer != 0)
@@ -150,11 +294,11 @@ namespace Microsoft.Maui.Controls.Gtk.Items
 		/// <summary>The index of the page nearest to the scroll offset.</summary>
 		internal int NearestPage()
 		{
-			int width = PageWidth;
+			int width = PageSize;
 			if (width <= 0 || Controller is null)
 				return 0;
 
-			bool horizontal = Controller.List?.Orientation != global::Gtk.Orientation.Vertical;
+			bool horizontal = IsHorizontal;
 			double offset = horizontal ? Controller.Scroller.Hadjustment.Value : Controller.Scroller.Vadjustment.Value;
 			int count = Controller.Source?.Count ?? 0;
 			return Math.Max(0, Math.Min(count - 1, (int)Math.Round(offset / width)));
@@ -196,8 +340,8 @@ namespace Microsoft.Maui.Controls.Gtk.Items
 			if (Controller is null)
 				return;
 
-			int width = PageWidth;
-			bool horizontal = Controller.List?.Orientation != global::Gtk.Orientation.Vertical;
+			int width = PageSize;
+			bool horizontal = IsHorizontal;
 
 			_updating = true;
 			try
@@ -218,7 +362,12 @@ namespace Microsoft.Maui.Controls.Gtk.Items
 				return;
 
 			CancelSnap();
-			ScrollTo(Math.Max(0, Math.Min(carousel.Position, Controller.Source.Count - 1)));
+			int index = NormalizePage(carousel.Position, Controller.Source.Count);
+			ScrollTo(index);
+
+			// A looping position past the end stands for a page at the start.
+			if (index != carousel.Position)
+				SetPosition(index);
 		}
 
 		internal void UpdateCurrentItem()
@@ -262,9 +411,11 @@ namespace Microsoft.Maui.Controls.Gtk.Items
 				.MapGtk<GtkBox>(nameof(CarouselView.ItemsLayout), (h, v, w) =>
 				{
 					H(h)?.Controller?.UpdateLayout();
+					H(h)?.UpdateRowPadding();
 					H(h)?.UpdateScrolling();
 				})
 				.MapGtk<GtkBox>(nameof(CarouselView.IsSwipeEnabled), (h, v, w) => H(h)?.UpdateScrolling())
+				.MapGtk<GtkBox>(nameof(CarouselView.IsBounceEnabled), (h, v, w) => H(h)?.UpdateBounce())
 				.MapGtk<GtkBox>(nameof(CarouselView.PeekAreaInsets), (h, v, w) =>
 				{
 					foreach (var host in H(h)?.Controller?.BoundHosts ?? Array.Empty<MauiGtkItemHost>())

@@ -14,6 +14,9 @@ namespace Microsoft.Maui.Controls.Gtk.Items
 		/// <summary>Supplies the width every row has regardless of its content (a carousel page); <see langword="null"/> or 0 follows the content.</summary>
 		public Func<int>? FixedWidth { get; set; }
 
+		/// <summary>Supplies the height every row has regardless of its content (a page of a vertical carousel); <see langword="null"/> or 0 follows the content.</summary>
+		public Func<int>? FixedHeight { get; set; }
+
 		/// <summary>
 		/// A fixed row height in device-independent units (<c>ListView.RowHeight</c>), or 0 or less to follow the content. It is applied by this
 		/// host, never by writing <c>HeightRequest</c> into the hosted view, which belongs to the user's template.
@@ -78,6 +81,13 @@ namespace Microsoft.Maui.Controls.Gtk.Items
 				var size = view.Measure(double.PositiveInfinity, double.PositiveInfinity);
 				natural = GtkInterop.ToPixels(size.Width);
 				ContentMeasured?.Invoke(this, orientation, size.Width);
+				return;
+			}
+
+			int fixedHeight = FixedHeight?.Invoke() ?? 0;
+			if (fixedHeight > 0)
+			{
+				minimum = natural = fixedHeight;
 				return;
 			}
 
