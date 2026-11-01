@@ -23,12 +23,13 @@ window screenshots and announcements; default = active window of `Gtk.Applicatio
 | Battery | `/sys/class/power_supply` (no D-Bus); polled every 30 s only while subscribed |
 | Clipboard | `Gdk.Clipboard` (async read, `Changed` event) |
 | Launcher / Browser | `Gtk.UriLauncher` / `Gtk.FileLauncher` (OpenURI portal) |
+| Share | `GtkShare`, a desktop approximation (no share sheet): text to the clipboard, `Uri` opened with `Gtk.UriLauncher`; files (single or multiple) opened with `Gtk.FileLauncher` (OpenURI portal), falling back to `OpenContainingFolder` when no application handles them; every file is attempted, failures reported together |
 | Email / Map | `mailto:` (no attachments/HTML) / `geo:` URIs |
 | FilePicker / MediaPicker | `Gtk.FileDialog`; filter strings: MIME types, `*.ext`, bare extensions. No camera capture |
 | Screenshot | `WidgetPaintable` -> `Gsk.Renderer.RenderTexture` -> PNG (JPEG via gdk-pixbuf). Also keyed DI hooks `Microsoft.Maui.ViewCapture` / `WindowCapture` used by `CaptureAsync` |
 | SemanticScreenReader | `Gtk.Accessible.Announce` on the window content (guarded: GTK >= 4.14; announcing on the toplevel crashes the Windows AccessKit backend) |
 | VersionTracking | Stock implementation over Preferences (not re-registered) |
-| Sensors, Contacts, Flashlight, Vibration, Haptics, Sms, PhoneDialer, Share, TTS, Geolocation | Registered stubs: `IsSupported == false`, calls throw `FeatureNotSupportedException` (Geolocation via GeoClue2 is a later item) |
+| Sensors, Contacts, Flashlight, Vibration, Haptics, Sms, PhoneDialer, TTS, Geolocation | Registered stubs: `IsSupported == false`, calls throw `FeatureNotSupportedException` (Geolocation via GeoClue2 is a later item) |
 
 Notes
 

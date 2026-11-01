@@ -49,8 +49,11 @@ sealed class GtkLauncher : ILauncher
 		if (request?.File is null)
 			throw new ArgumentNullException(nameof(request));
 
-		var path = request.File.FullPath;
-		return GtkAsync.Begin<global::Gtk.FileLauncher, bool>(
+		return LaunchFileAsync(request.File.FullPath);
+	}
+
+	internal static Task<bool> LaunchFileAsync(string path) =>
+		GtkAsync.Begin<global::Gtk.FileLauncher, bool>(
 			callback =>
 			{
 				var launcher = new global::Gtk.FileLauncher(GLib.FileFactory.NewForPath(path));
@@ -58,7 +61,16 @@ sealed class GtkLauncher : ILauncher
 				return launcher;
 			},
 			(launcher, result) => launcher.LaunchFinish(result));
-	}
+
+	internal static Task<bool> OpenContainingFolderAsync(string path) =>
+		GtkAsync.Begin<global::Gtk.FileLauncher, bool>(
+			callback =>
+			{
+				var launcher = new global::Gtk.FileLauncher(GLib.FileFactory.NewForPath(path));
+				launcher.OpenContainingFolder(GtkEssentialsContext.GetParentWindow()!, null!, callback);
+				return launcher;
+			},
+			(launcher, result) => launcher.OpenContainingFolderFinish(result));
 
 	internal static Task<bool> LaunchUriAsync(string uri) =>
 		GtkAsync.Begin<global::Gtk.UriLauncher, bool>(

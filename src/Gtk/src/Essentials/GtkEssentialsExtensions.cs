@@ -88,7 +88,7 @@ public static class GtkEssentialsExtensions
 		services.TryAddSingleton<IHapticFeedback>(_ => new UnsupportedHapticFeedback());
 		services.TryAddSingleton<ISms>(_ => new UnsupportedSms());
 		services.TryAddSingleton<IPhoneDialer>(_ => new UnsupportedPhoneDialer());
-		services.TryAddSingleton<IShare>(_ => new UnsupportedShare());
+		services.TryAddSingleton<IShare>(_ => new GtkShare());
 		services.TryAddSingleton<ITextToSpeech>(_ => new UnsupportedTextToSpeech());
 		services.TryAddSingleton<IGeolocation>(_ => new UnsupportedGeolocation());
 

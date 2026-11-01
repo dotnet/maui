@@ -165,15 +165,6 @@ sealed class UnsupportedPhoneDialer : IPhoneDialer
 	public void Open(string number) => throw Unsupported.Exception("PhoneDialer");
 }
 
-sealed class UnsupportedShare : IShare
-{
-	public Task RequestAsync(ShareTextRequest request) => Task.FromException(Unsupported.Exception("Share"));
-
-	public Task RequestAsync(ShareFileRequest request) => Task.FromException(Unsupported.Exception("Share"));
-
-	public Task RequestAsync(ShareMultipleFilesRequest request) => Task.FromException(Unsupported.Exception("Share"));
-}
-
 sealed class UnsupportedTextToSpeech : ITextToSpeech
 {
 	public Task<IEnumerable<Locale>> GetLocalesAsync() =>
