@@ -458,6 +458,21 @@ public static class GtkTestHost
 		GLib.Signal.Emit(gesture, "pressed", 1, widget.Width / 2.0, widget.Height / 2.0);
 	}
 
+	/// <summary>Every controller of the given kind attached to a widget.</summary>
+	public static List<T> AllControllersOf<T>(Gtk.Widget widget) where T : Gtk.EventController
+	{
+		var result = new List<T>();
+		var controllers = widget.ObserveControllers();
+
+		for (uint i = 0; i < controllers.NItems; i++)
+		{
+			if (controllers.GetObject(i) is T match)
+				result.Add(match);
+		}
+
+		return result;
+	}
+
 	/// <summary>The first controller of the given kind attached to a widget, or null.</summary>
 	public static T? ControllerOf<T>(Gtk.Widget widget) where T : Gtk.EventController
 	{

@@ -14,30 +14,22 @@ namespace Microsoft.Maui.Gtk.Handlers
 	public sealed class MauiGtkRefreshPanel : MauiGtkPanel
 	{
 		/// <summary>The accumulated upward scroll, in pixels, that triggers a refresh.</summary>
-		public const double PullThreshold = 100;
+		public const double PullThreshold = GtkPullGesture.Threshold;
 
-		const double WheelStep = 40;
 		const int EdgeMargin = 8;
 
 		readonly global::Gtk.Spinner _spinner = new() { Visible = false, CanTarget = false };
-		readonly global::Gtk.EventControllerScroll _scroll;
+		readonly GtkPullGesture _pull;
 		global::Gtk.Widget? _content;
 		bool _isRefreshing;
-		double _pull;
 
 		/// <summary>Creates the panel.</summary>
 		public MauiGtkRefreshPanel()
 		{
 			_spinner.Parent = this;
 
-			// Capture phase: the pull is decided before the scrollable content (if any) sees the event.
-			_scroll = new global::Gtk.EventControllerScroll(global::Gtk.EventControllerScrollFlags.Vertical)
-			{
-				PropagationPhase = global::Gtk.PropagationPhase.Capture,
-			};
-			_scroll.Scroll += OnScroll;
-			_scroll.ScrollEnd += OnScrollEnd;
-			AddController(_scroll);
+			_pull = new GtkPullGesture(this, () => IsRefreshEnabled && !_isRefreshing, () => GtkPullGesture.IsAtTop(_content));
+			_pull.Requested += () => RefreshRequested?.Invoke();
 		}
 
 		/// <summary>The spinner shown while refreshing.</summary>
@@ -55,7 +47,7 @@ namespace Microsoft.Maui.Gtk.Handlers
 				_isRefreshing = value;
 				_spinner.Visible = value;
 				_spinner.Spinning = value;
-				_pull = 0;
+				_pull.Reset();
 				QueueAllocate();
 			}
 		}
@@ -80,58 +72,7 @@ namespace Microsoft.Maui.Gtk.Handlers
 		/// <summary>Feeds an upward scroll of <paramref name="pixels"/> (positive = pulling down) into the pull gesture.</summary>
 		/// <param name="pixels">The scroll distance; negative values (scrolling back) reset the pull.</param>
 		/// <returns><see langword="true"/> when the scroll was consumed by the pull.</returns>
-		internal bool Pull(double pixels)
-		{
-			if (!IsRefreshEnabled || _isRefreshing)
-				return false;
-
-			if (pixels <= 0 || !IsContentAtTop())
-			{
-				_pull = 0;
-				return false;
-			}
-
-			_pull += pixels;
-			if (_pull >= PullThreshold)
-			{
-				_pull = 0;
-				RefreshRequested?.Invoke();
-			}
-
-			return true;
-		}
-
-		void OnScroll(object o, global::Gtk.ScrollArgs args)
-		{
-			// dy < 0 scrolls up (towards the top edge): pulling down on the content.
-			double pixels = -args.Dy * (_scroll.Unit == Gdk.ScrollUnit.Wheel ? WheelStep : 1);
-			args.RetVal = Pull(pixels);
-		}
-
-		void OnScrollEnd(object? sender, EventArgs e) => _pull = 0;
-
-		bool IsContentAtTop()
-		{
-			var scrolled = FindScrolledWindow(_content);
-			if (scrolled?.Vadjustment is not { } adjustment)
-				return true;
-
-			return adjustment.Value <= adjustment.Lower + 0.5;
-		}
-
-		static global::Gtk.ScrolledWindow? FindScrolledWindow(global::Gtk.Widget? widget)
-		{
-			if (widget is global::Gtk.ScrolledWindow scrolled)
-				return scrolled;
-
-			for (var child = widget?.FirstChild; child is not null; child = child.NextSibling)
-			{
-				if (FindScrolledWindow(child) is { } found)
-					return found;
-			}
-
-			return null;
-		}
+		internal bool Pull(double pixels) => _pull.Feed(pixels);
 
 		/// <inheritdoc/>
 		protected override void ArrangeChildren(int width, int height)

@@ -5,6 +5,7 @@ using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Gtk.Hosting;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Gtk.Platform;
 using GtkBox = Gtk.Box;
 
 namespace Microsoft.Maui.Controls.Gtk.Items
@@ -73,6 +74,40 @@ namespace Microsoft.Maui.Controls.Gtk.Items
 			new() { Spacing = 12, VerticalOptions = LayoutOptions.Center, Children = { first, second } };
 	}
 
+	/// <summary>Builds the context menu of a legacy <see cref="Cell"/> from its <see cref="Cell.ContextActions"/>.</summary>
+	static class GtkCellContextActions
+	{
+		/// <summary>The menu tree for the current context actions of <paramref name="cell"/>, or <see langword="null"/> when it has none.</summary>
+		/// <remarks>Built when the menu opens, so it reflects the current text and enabled state of each item (a command's <c>CanExecute</c> included).</remarks>
+		/// <param name="cell">The cell.</param>
+		public static GtkMenuFlyoutNode? Build(Cell cell)
+		{
+			if (!cell.HasContextActions)
+				return null;
+
+			var root = new GtkMenuFlyoutNode();
+			foreach (var item in cell.ContextActions)
+			{
+				var captured = item;
+				root.Add(new GtkMenuItemNode
+				{
+					Text = item.Text ?? string.Empty,
+					IsEnabled = item.IsEnabled,
+					Clicked = () => ((IMenuItemController)captured).Activate(),
+				});
+			}
+
+			return root;
+		}
+
+		/// <summary>Opens the context menu of <paramref name="cell"/> on <paramref name="host"/> on a secondary click or a long press.</summary>
+		public static void Install(MauiGtkItemHost host, Cell cell) =>
+			GtkContextFlyout.Install(host, () => Build(cell));
+
+		/// <summary>Removes the context menu from <paramref name="host"/>.</summary>
+		public static void Remove(MauiGtkItemHost host) => GtkContextFlyout.Remove(host);
+	}
+
 	/// <summary>
 	/// The handler of the legacy <see cref="ListView"/> on GTK 4: a <c>Gtk.ListView</c> over the same C# <c>GListModel</c> as the
 	/// CollectionView, with each row a cell (view cell, text, image, switch or entry cell) shown as a view.
@@ -80,13 +115,19 @@ namespace Microsoft.Maui.Controls.Gtk.Items
 	/// <remarks>
 	/// Supported: items source and cell templates, selection (<see cref="ListView.SelectedItem"/>, <c>ItemSelected</c>, <c>ItemTapped</c>),
 	/// header and footer, grouping (a bold header row with the group's string), row height and separators.
-	/// Not supported: context actions, pull to refresh, uneven row heights beyond what the cell measures.
+	/// Context actions of the cells open as a popup menu on a secondary click or a long press (text and enabled state; no icon, no destructive styling).
+	/// Pull to refresh (<see cref="ListView.IsPullToRefreshEnabled"/>): scrolling up at the top edge past 100 px runs <c>Refreshing</c> and <c>RefreshCommand</c> and
+	/// sets <see cref="ListView.IsRefreshing"/>; a spinner over the top edge (in <see cref="ListView.RefreshControlColor"/>) shows while it is set.
+	/// Not supported: uneven row heights beyond what the cell measures.
 	/// </remarks>
 	public class GtkListViewHandler : ViewHandler<ListView, GtkBox>
 	{
 		readonly global::Gtk.SignalListItemFactory _factory = new();
 		readonly global::Gtk.ScrolledWindow _scroller = new() { Hexpand = true, Vexpand = true, PropagateNaturalHeight = false };
 		readonly HashSet<MauiGtkItemHost> _bound = new();
+		readonly global::Gtk.Overlay _overlay = new() { Hexpand = true, Vexpand = true };
+		readonly global::Gtk.Spinner _spinner = new() { Visible = false, CanTarget = false, Halign = global::Gtk.Align.Center, Valign = global::Gtk.Align.Start, MarginTop = 8 };
+		GtkPullGesture? _pull;
 		GtkItemsSource? _source;
 		global::Gtk.ListView? _list;
 		global::Gtk.SingleSelection? _selection;
@@ -125,7 +166,10 @@ namespace Microsoft.Maui.Controls.Gtk.Items
 		protected override GtkBox CreatePlatformView()
 		{
 			var box = new GtkBox(global::Gtk.Orientation.Vertical, 0) { Hexpand = true, Vexpand = true };
-			box.Append(_scroller);
+			_overlay.Child = _scroller;
+			_overlay.AddOverlay(_spinner);
+			box.Append(_overlay);
+			_pull = new GtkPullGesture(_overlay, () => VirtualView is { IsPullToRefreshEnabled: true, IsRefreshing: false }, () => GtkPullGesture.IsAtTop(_scroller));
 
 			_factory.Setup += (_, args) => ((global::Gtk.ListItem)args.Object).Child = new MauiGtkItemHost();
 			_factory.Bind += OnBind;
@@ -154,8 +198,39 @@ namespace Microsoft.Maui.Controls.Gtk.Items
 		}
 
 		/// <inheritdoc/>
+		protected override void ConnectHandler(GtkBox platformView)
+		{
+			base.ConnectHandler(platformView);
+			if (_pull is not null)
+				_pull.Requested += OnPullRequested;
+		}
+
+		// A pull past the threshold: the list decides whether a refresh is allowed (the command's CanExecute), sets IsRefreshing and runs
+		// Refreshing and RefreshCommand.
+		void OnPullRequested() => ((IListViewController)VirtualView).SendRefreshing();
+
+		/// <summary>Shows the spinner while the list is refreshing and pull to refresh is enabled.</summary>
+		internal void UpdateRefreshing()
+		{
+			bool refreshing = VirtualView.IsPullToRefreshEnabled && VirtualView.IsRefreshing;
+			_spinner.Visible = refreshing;
+			_spinner.Spinning = refreshing;
+			_pull?.Reset();
+		}
+
+		/// <summary>Applies <see cref="ListView.RefreshControlColor"/> to the spinner.</summary>
+		internal void UpdateRefreshColor() => GtkTextStyle.SetColor(_spinner, VirtualView.RefreshControlColor);
+
+		internal global::Gtk.Spinner Spinner => _spinner;
+
+		internal bool Pull(double pixels) => _pull?.Feed(pixels) ?? false;
+
+		/// <inheritdoc/>
 		protected override void DisconnectHandler(GtkBox platformView)
 		{
+			if (_pull is not null)
+				_pull.Requested -= OnPullRequested;
+
 			_source?.Detach();
 			foreach (var host in new List<MauiGtkItemHost>(_bound))
 				Release(host);
@@ -167,6 +242,8 @@ namespace Microsoft.Maui.Controls.Gtk.Items
 		{
 			if (host.View is Element element)
 				VirtualView.RemoveLogicalChild(element);
+
+			GtkCellContextActions.Remove(host);
 		}
 
 		bool IsGrouped => VirtualView.IsGroupingEnabled;
@@ -328,6 +405,7 @@ namespace Microsoft.Maui.Controls.Gtk.Items
 			host.Tag = cell;
 			if (cell is not null)
 			{
+				GtkCellContextActions.Install(host, cell);
 				host.MarginStart = host.MarginEnd = 8;
 				host.MarginTop = host.MarginBottom = 6;
 			}
@@ -420,6 +498,9 @@ namespace Microsoft.Maui.Controls.Gtk.Items
 				.MapGtk<GtkBox>(nameof(ListView.Footer), (h, v, w) => h.UpdateHeaderAndFooter())
 				.MapGtk<GtkBox>(nameof(ListView.FooterTemplate), (h, v, w) => h.UpdateHeaderAndFooter())
 				.MapGtk<GtkBox>(nameof(ListView.SeparatorVisibility), (h, v, w) => h.UpdateSeparators())
+				.MapGtk<GtkBox>(nameof(ListView.IsPullToRefreshEnabled), (h, v, w) => h.UpdateRefreshing())
+				.MapGtk<GtkBox>(nameof(ListView.IsRefreshing), (h, v, w) => h.UpdateRefreshing())
+				.MapGtk<GtkBox>(nameof(ListView.RefreshControlColor), (h, v, w) => h.UpdateRefreshColor())
 				.Build();
 
 			return (PropertyMapper<ListView, GtkListViewHandler>)mapper;
@@ -467,6 +548,7 @@ namespace Microsoft.Maui.Controls.Gtk.Items
 			{
 				if (host.View is Element element)
 					VirtualView?.RemoveLogicalChild(element);
+				GtkCellContextActions.Remove(host);
 				host.Clear();
 				_content.Remove(host);
 			}
@@ -511,6 +593,7 @@ namespace Microsoft.Maui.Controls.Gtk.Items
 			{
 				host.MarginStart = host.MarginEnd = 8;
 				host.MarginTop = host.MarginBottom = 6;
+				GtkCellContextActions.Install(host, cell);
 				var click = new global::Gtk.GestureClick();
 				click.Released += (_, _) =>
 					cell.GetType().GetMethod("OnTapped", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public)?.Invoke(cell, null);

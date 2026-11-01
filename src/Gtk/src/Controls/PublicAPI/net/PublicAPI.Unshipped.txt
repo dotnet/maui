@@ -71,6 +71,7 @@ override Microsoft.Maui.Controls.Gtk.Items.GtkCarouselViewHandler.DisconnectHand
 override Microsoft.Maui.Controls.Gtk.Items.GtkCollectionViewHandler.ConnectHandler(object! platformView) -> void
 override Microsoft.Maui.Controls.Gtk.Items.GtkCollectionViewHandler.CreatePlatformView() -> object!
 override Microsoft.Maui.Controls.Gtk.Items.GtkCollectionViewHandler.DisconnectHandler(object! platformView) -> void
+override Microsoft.Maui.Controls.Gtk.Items.GtkListViewHandler.ConnectHandler(Gtk.Box! platformView) -> void
 override Microsoft.Maui.Controls.Gtk.Items.GtkListViewHandler.CreatePlatformView() -> Gtk.Box!
 override Microsoft.Maui.Controls.Gtk.Items.GtkListViewHandler.DisconnectHandler(Gtk.Box! platformView) -> void
 override Microsoft.Maui.Controls.Gtk.Items.GtkTableViewHandler.CreatePlatformView() -> Gtk.ScrolledWindow!

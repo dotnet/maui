@@ -92,13 +92,14 @@ namespace Microsoft.Maui.Gtk.Platform
 			public global::Gtk.GestureClick? Click;
 			public global::Gtk.GestureLongPress? LongPress;
 			public GtkMenuFlyoutNode? Node;
+			public Func<GtkMenuFlyoutNode?>? NodeFactory;
 			public GtkMenuAcceleratorBinding? Accelerators;
 		}
 
 		static readonly ConditionalWeakTable<global::Gtk.Widget, Installation> s_installed = new();
 
 		/// <summary>Whether a context flyout is installed on <paramref name="widget"/>.</summary>
-		public static bool IsInstalled(global::Gtk.Widget widget) => s_installed.TryGetValue(widget, out var i) && i.Node is not null;
+		public static bool IsInstalled(global::Gtk.Widget widget) => s_installed.TryGetValue(widget, out var i) && (i.Node is not null || i.NodeFactory is not null);
 
 		/// <summary>The accelerator binding of the context flyout installed on <paramref name="widget"/>, or <see langword="null"/>.</summary>
 		public static GtkMenuAcceleratorBinding? GetAccelerators(global::Gtk.Widget widget) =>
@@ -132,7 +133,33 @@ namespace Microsoft.Maui.Gtk.Platform
 			}
 
 			installation.Node = node;
+			installation.NodeFactory = null;
+			AddGestures(widget, installation);
+		}
 
+		/// <summary>
+		/// Installs a context menu of <paramref name="widget"/> whose tree is built when it is opened (so it always reflects the current state of its
+		/// source); nothing opens while <paramref name="factory"/> returns <see langword="null"/>. Reinstalling replaces the factory.
+		/// </summary>
+		/// <param name="widget">The widget the menu belongs to.</param>
+		/// <param name="factory">Builds the tree, or returns <see langword="null"/> when there is nothing to show.</param>
+		public static void Install(global::Gtk.Widget widget, Func<GtkMenuFlyoutNode?> factory)
+		{
+			var installation = s_installed.GetValue(widget, static _ => new Installation());
+			installation.Accelerators?.Dispose();
+			installation.Accelerators = null;
+			installation.Node = null;
+			installation.NodeFactory = factory;
+			AddGestures(widget, installation);
+		}
+
+		/// <summary>The tree the menu of <paramref name="widget"/> would open now, or <see langword="null"/>.</summary>
+		/// <param name="widget">The widget.</param>
+		public static GtkMenuFlyoutNode? ResolveNode(global::Gtk.Widget widget) =>
+			s_installed.TryGetValue(widget, out var installation) ? installation.NodeFactory?.Invoke() ?? installation.Node : null;
+
+		static void AddGestures(global::Gtk.Widget widget, Installation installation)
+		{
 			if (installation.Click is not null)
 				return;
 
@@ -161,11 +188,12 @@ namespace Microsoft.Maui.Gtk.Platform
 			installation.Click = null;
 			installation.LongPress = null;
 			installation.Node = null;
+			installation.NodeFactory = null;
 		}
 
 		static void Popup(global::Gtk.Widget widget, Installation installation, double x, double y)
 		{
-			if (installation.Node is not { } node)
+			if ((installation.NodeFactory?.Invoke() ?? installation.Node) is not { } node)
 				return;
 
 			var popover = node.CreatePopover(widget, x, y);
@@ -174,6 +202,7 @@ namespace Microsoft.Maui.Gtk.Platform
 			popover.Closed += (o, args) => GLib.Idle.Add(() =>
 			{
 				popover.Unparent();
+				GC.KeepAlive(node); // a tree built for this popup lives (with its actions) until the popup closed
 				return false;
 			});
 			popover.Popup();
