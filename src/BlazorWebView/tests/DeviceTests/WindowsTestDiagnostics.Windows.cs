@@ -11,11 +11,33 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests
 		static bool _enabled;
 		static int _operationId;
 
-		internal static void Initialize()
+		internal static void Initialize(string? resultsFile = null)
 		{
-			var uploadRoot = Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT");
-			if (string.IsNullOrEmpty(uploadRoot))
+			if (_enabled)
 				return;
+
+			var uploadRoot = Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT");
+			var activation = "environment";
+			if (string.IsNullOrEmpty(uploadRoot))
+			{
+				if (resultsFile is null)
+				{
+					var arguments = Environment.GetCommandLineArgs();
+					resultsFile = arguments.Length > 1 ? arguments[1] : null;
+				}
+				if (string.IsNullOrEmpty(resultsFile) || !Path.IsPathFullyQualified(resultsFile))
+					return;
+
+				var marker = resultsFile + ".blazor-diagnostics";
+				if (!File.Exists(marker))
+					return;
+				if (File.ReadAllText(marker) != "windows-blazor-diagnostics-v1")
+					throw new InvalidDataException($"Invalid Windows Blazor diagnostic marker: {marker}");
+
+				uploadRoot = Path.GetDirectoryName(resultsFile)
+					?? throw new InvalidDataException($"Diagnostic results path has no directory: {resultsFile}");
+				activation = "results-marker";
+			}
 
 			var path = Path.Combine(uploadRoot, $"blazor-progress-{Environment.ProcessId}.log");
 			var stream = new FileStream(path, FileMode.CreateNew, FileAccess.Write, FileShare.Read);
@@ -29,7 +51,7 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests
 			Environment.SetEnvironmentVariable("XHARNESS_LOG_THREAD_ID", "true");
 			Environment.SetEnvironmentVariable("MAUI_BLAZOR_TEST_DIAGNOSTICS", "1");
 			_enabled = true;
-			WriteStage($"diagnostics-enabled path={path}");
+			WriteStage($"diagnostics-enabled activation={activation} path={path}");
 			AppDomain.CurrentDomain.UnhandledException += (_, args) =>
 				WriteStage($"unhandled-exception terminating={args.IsTerminating} exception={args.ExceptionObject}");
 		}

@@ -307,12 +307,26 @@ Helix work-item limit. `blazor-stdout.log` and `blazor-stderr.log` capture outpu
 before the app installs its managed logger.
 
 On Windows, the Blazor test app uses `HELIX_WORKITEM_UPLOAD_ROOT` to open
-`blazor-progress-<PID>.log` with automatic flushing. It captures the existing
+`blazor-progress-<PID>.log` with automatic flushing for unpackaged execution.
+Packaged activation must not depend on the broker inheriting that environment:
+the Blazor-only caller writes `<unchanged-results-path>.blazor-diagnostics` with
+the exact value `windows-blazor-diagnostics-v1`. The app checks that opt-in marker
+beside its existing result argument during construction, and again using the
+quoted full-suite `OnLaunched` argument before calling the original launch path.
+Without the upload-root environment, an unmarked result path does not enable
+the sink; invalid marker content or a log-file creation failure throws rather
+than continuing without diagnostics.
+Repeated activation does not replace or truncate the active log.
+
+The sink captures the existing
 Console/TestLogger/XHarness output, enables the pinned runner's
 `XHARNESS_LOG_TEST_START` and `XHARNESS_LOG_THREAD_ID` flags, and records app,
-headless-runner, and WebView2 await boundaries. The managed sink also applies to
-the packaged Blazor comparison; packaged launch, other test apps and native
-platforms, test selection, result generation, and execution budgets are unchanged.
+headless-runner, and WebView2 await boundaries. Run 1658250 qualified these logs
+only for unpackaged Blazor; its packaged PID timed out with no managed log.
+The explicit marker correction requires separate native evidence before packaged
+capture can be considered qualified. Packaged launch arguments, other test apps
+and native platforms, test selection, result generation, and execution budgets
+are unchanged.
 
 These files are observability, not test results or a hang fix. An absent/empty XML
 still means missing measurements. A completed run that does not reproduce the

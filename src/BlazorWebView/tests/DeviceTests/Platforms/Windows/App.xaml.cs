@@ -24,6 +24,8 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests.WinUI
 
 		protected override void OnLaunched(global::Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
 		{
+			// The full-suite activation supplies only the quoted result path; no caller environment is required.
+			WindowsTestDiagnostics.Initialize(args.Arguments?.Trim().Trim('"'));
 			WindowsTestDiagnostics.WriteStage("App.OnLaunched.start");
 			base.OnLaunched(args);
 			WindowsTestDiagnostics.WriteStage("App.OnLaunched.complete");

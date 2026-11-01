@@ -56,6 +56,15 @@ echo Test results file: %TEST_RESULTS_FILE%
 echo Is packaged: %IS_PACKAGED%
 echo Is Controls test: %IS_CONTROLS_TEST%
 
+if /i "%SCENARIO_NAME%"=="MauiBlazorWebView.DeviceTests" (
+    powershell -NoProfile -Command "$ErrorActionPreference = 'Stop'; [System.IO.File]::WriteAllText('%TEST_RESULTS_FILE%.blazor-diagnostics', 'windows-blazor-diagnostics-v1')"
+    if !ERRORLEVEL! NEQ 0 (
+        echo ERROR: Failed to create explicit Blazor diagnostic marker
+        exit /b 1
+    )
+    echo Blazor diagnostic marker: %TEST_RESULTS_FILE%.blazor-diagnostics
+)
+
 REM ========================================
 REM Install Windows App SDK Runtime
 REM ========================================
