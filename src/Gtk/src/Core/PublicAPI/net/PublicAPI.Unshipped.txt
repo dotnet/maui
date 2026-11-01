@@ -415,6 +415,10 @@ Microsoft.Maui.Gtk.Platform.GtkViewState.PlatformOffsetY.get -> double
 Microsoft.Maui.Gtk.Platform.GtkViewState.PlatformOffsetY.set -> void
 Microsoft.Maui.Gtk.Platform.GtkViewState.Rotation.get -> double
 Microsoft.Maui.Gtk.Platform.GtkViewState.Rotation.set -> void
+Microsoft.Maui.Gtk.Platform.GtkViewState.RotationX.get -> double
+Microsoft.Maui.Gtk.Platform.GtkViewState.RotationX.set -> void
+Microsoft.Maui.Gtk.Platform.GtkViewState.RotationY.get -> double
+Microsoft.Maui.Gtk.Platform.GtkViewState.RotationY.set -> void
 Microsoft.Maui.Gtk.Platform.GtkViewState.ScaleX.get -> double
 Microsoft.Maui.Gtk.Platform.GtkViewState.ScaleX.set -> void
 Microsoft.Maui.Gtk.Platform.GtkViewState.ScaleY.get -> double

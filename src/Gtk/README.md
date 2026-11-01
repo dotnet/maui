@@ -117,8 +117,8 @@ Pass only GApplication options in `args`. Lifecycle: `ConfigureLifecycleEvents(e
 | Container (clip/shadow) | `GtkWrapperView`, a single-child widget set as `ContainerView`. Clip = any `IShape` via `Gsk.Path`; shadow = outset shadow. |
 | Platform offset | `GtkViewState.PlatformOffsetX/Y`: a translation the platform applies on top of `TranslationX/Y` (swipe, refresh), never overwritten by the view's transform mappers. |
 | Menus | `GtkMenuNode` tree (`GtkMenuModel.cs`) mirrors MAUI menus as `GLib.Menu` + `GSimpleAction`s (group `menu`); the root rebuilds the models on every change. `GtkWindowMenuBar` stacks the `PopoverMenuBar` above the root panel; `GtkContextFlyout` installs the secondary click / long press. `MenuFlyoutItemHandler` has no mapper constructor, so its GTK mappings are added once to the stock static mapper (they only act for `GtkMenuFlyoutItemHandler`). Icons use the `icon` model attribute (`GtkMenuIcons`); the `IconImageSource` key is mapped too because Controls raises it instead of `Source`. |
-| Transforms | translation/scale/rotation (+ anchor) become the `Gsk.Transform` of the child allocation (`GtkViewState`). A transform change stores the values and queues an allocation of the parent, whose arrange re-applies them via `PlatformArrange` (a child is only allocated inside its parent's size-allocate). `RotationX/Y` ignored. |
 | Styling | `GtkStyle`: one `CssProvider` + class per widget (own-node rules) and, for inner-node rules (`" trough"`, `" slider"`, `" check:checked"`, `" text"`), a display provider matched on the class and attached while the widget has a root (GTK 4 widget providers never reach inner nodes). Colour, font, spacing, decorations, padding, background (solid/linear/radial/image), borders are CSS. Image paints (`ImageBrush`, `Page.BackgroundImageSource`) are a decoded texture as inline-PNG `background-image` (cover) via `GtkBackgroundImage`. |
+| Transforms | translation/scale/rotation (+ anchor) become the `Gsk.Transform` of the child allocation (`GtkViewState`). A transform change stores the values and queues an allocation of the parent, whose arrange re-applies them via `PlatformArrange` (a child is only allocated inside its parent's size-allocate). `RotationX/Y` add a Gsk perspective (1000 px) and `rotate3d` about the X/Y axis through the anchor, before the 2D rotation/scale. |
 | Dispatcher / ticker | `GtkDispatcher` (`GLib.Idle/Timeout`, inline on the GTK thread), `GtkTicker` (frame-clock tick callback on a main (non-modal, non-transient) window, re-anchored when that window unmaps; `Timeout` fallback). |
 | Fonts | `GtkFontManager` (`Font` -> CSS / `Pango.FontDescription`); `GtkEmbeddedFontLoader` (`pango_font_map_add_font_file` on Pango >= 1.56, else fontconfig `FcConfigAppFontAddFile`). The native libraries are resolved per OS by `FontNativeLibraries` (`NativeLibrary.TryLoad` over Linux sonames / Windows `fontconfig-1.dll`, `pango-1.0-0.dll`, `pangocairo-1.0-0.dll`... / macOS dylibs, called through function pointers; no global `DllImportResolver`). On Windows Pango's default font map is the win32 one, so only `add_font_file` registers the font (fontconfig, which only reads the family name there, cannot); the family name falls back to a managed `name` table reader (`FontFileNames`) when fontconfig is missing. Windows Pango < 1.56: embedded fonts are not visible (no fallback). Fonts registered by file name are opened from `Resources/Fonts`, `Fonts` or the app folder through `FontRegistrar.NativeFontStreamProvider` (Core hook, installed by `UseMauiGtkCore`; null = upstream Standard behaviour, font unresolved). |
 | Images | `IGtkImageSourceService` -> `Gdk.Texture` for File/Stream/Uri/Font; `GtkImageLoader` replaces `ImageSourcePartLoader` (a no-op on `net10.0`). |
@@ -134,7 +134,7 @@ Pass only GApplication options in `args`. Lifecycle: `ConfigureLifecycleEvents(e
 | Image | `Gtk.Picture` | animated GIF/APNG/WebP (gdk-pixbuf) play on the frame clock while `IsAnimationPlaying`, else hold the current frame (a playback clock only runs while playing: pause holds, play resumes from that frame), the first frame before playing. `ImageButton` has no `IsAnimationPlaying` (always first frame) |
 | Entry | `Gtk.Entry` | return type, vertical alignment: no GTK equivalent |
 | Editor | `MauiGtkEditor` (overlay, scrolled `TextView`) | placeholder label, grows with text |
-| ScrollView | `Gtk.ScrolledWindow` | programmatic scrolling is instant |
+| ScrollView | `Gtk.ScrolledWindow` | `ScrollToAsync` eases over 250 ms on the frame clock (`ScrollFinished` at the end; a new request replaces it); `animated: false` or an unmapped scroller scrolls instantly |
 | Border | `MauiGtkBorder` | any `IShape`; gradient fills through Cairo |
 | Switch, CheckBox | `Gtk.Switch`, `Gtk.CheckButton` | |
 | ActivityIndicator | `Gtk.Spinner` | `IsRunning` = spinning; colour = CSS `color` |
@@ -189,7 +189,7 @@ Not in this area: Shell, CollectionView, Maps, NavigationPage/Toolbar/FlyoutPage
 
 - `SwipeItemView` is resolved by Controls to the content view handler (it is a `ContentView`); `Microsoft.Maui.Controls.Gtk` registers `SwipeItemView -> SwipeItemViewHandler`.
 - Windows builds pack/test `net10.0`/`netstandard` only (mobile/Windows TFMs are disabled locally by `Directory.Build.Override.props`).
-- `RotationX`/`RotationY`, window position, maximum window size, animated scrolling.
+- Window position, maximum window size.
 - Accessibility goes through `Widget.Accessible` (GtkSharp's compat wrapper) for name and description only.
 
 ## Building

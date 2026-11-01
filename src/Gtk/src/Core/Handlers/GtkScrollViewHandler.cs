@@ -14,10 +14,20 @@ namespace Microsoft.Maui.Gtk.Handlers
 	/// handler (the same arrangement as the Windows handler: the handler is the panel's cross-platform layout so padding
 	/// and fill alignment are applied around the content).
 	/// </summary>
-	/// <remarks>Programmatic scrolling is instant (<c>animated</c> requests are honoured without animation).</remarks>
+	/// <remarks>
+	/// Programmatic scrolling that is not <see cref="ScrollToRequest.Instant"/> eases to the target over <see cref="ScrollAnimationMilliseconds"/>
+	/// on the frame clock of the scroller's window and then calls <see cref="IScrollView.ScrollFinished"/>; a newer request replaces a running
+	/// animation (the Controls layer completes the superseded one). A scroller that is not mapped has no frame clock and scrolls instantly.
+	/// </remarks>
 	public class GtkScrollViewHandler : ScrollViewHandler, ICrossPlatformLayout
 	{
+		/// <summary>Duration of an animated <c>ScrollToAsync</c>.</summary>
+		internal const int ScrollAnimationMilliseconds = 250;
+
 		MauiGtkPanel? _contentPanel;
+		uint _scrollTickId;
+		long _scrollStartTime;
+		double _scrollFromX, _scrollFromY, _scrollToX, _scrollToY;
 
 		/// <summary>Creates the handler with the stock mappers.</summary>
 		public GtkScrollViewHandler()
@@ -67,6 +77,7 @@ namespace Microsoft.Maui.Gtk.Handlers
 		{
 			if (platformView is GtkScrolledWindow scroller)
 			{
+				CancelScrollAnimation(scroller);
 				scroller.Hadjustment.ValueChanged -= OnScrolled;
 				scroller.Vadjustment.ValueChanged -= OnScrolled;
 			}
@@ -157,9 +168,15 @@ namespace Microsoft.Maui.Gtk.Handlers
 				if (args is not ScrollToRequest request)
 					return;
 
-				SetOffset(w.Hadjustment, request.HorizontalOffset);
-				SetOffset(w.Vadjustment, request.VerticalOffset);
-				v.ScrollFinished();
+				var handler = h as GtkScrollViewHandler;
+				handler?.CancelScrollAnimation(w);
+
+				if (request.Instant || handler is null || !handler.TryStartScrollAnimation(w, v, request))
+				{
+					SetOffset(w.Hadjustment, request.HorizontalOffset);
+					SetOffset(w.Vadjustment, request.VerticalOffset);
+					v.ScrollFinished();
+				}
 			});
 			commands.MapGtk<GtkScrolledWindow>(nameof(IView.InvalidateMeasure), (h, v, args, w) =>
 			{
@@ -168,10 +185,62 @@ namespace Microsoft.Maui.Gtk.Handlers
 			});
 		}
 
-		static void SetOffset(global::Gtk.Adjustment adjustment, double offset)
+		static void SetOffset(global::Gtk.Adjustment adjustment, double offset) =>
+			adjustment.Value = ClampOffset(adjustment, offset);
+
+		static double ClampOffset(global::Gtk.Adjustment adjustment, double offset)
 		{
 			double max = Math.Max(adjustment.Lower, adjustment.Upper - adjustment.PageSize);
-			adjustment.Value = Math.Max(adjustment.Lower, Math.Min(offset, max));
+			return Math.Max(adjustment.Lower, Math.Min(offset, max));
+		}
+
+		/// <summary>Starts easing the scroller to <paramref name="request"/>; <see langword="false"/> when it cannot animate (not mapped, already there).</summary>
+		bool TryStartScrollAnimation(GtkScrolledWindow scroller, IScrollView view, ScrollToRequest request)
+		{
+			_scrollFromX = scroller.Hadjustment.Value;
+			_scrollFromY = scroller.Vadjustment.Value;
+			_scrollToX = ClampOffset(scroller.Hadjustment, request.HorizontalOffset);
+			_scrollToY = ClampOffset(scroller.Vadjustment, request.VerticalOffset);
+
+			// Without a mapped window there is no frame clock to drive the animation.
+			if (!scroller.IsMapped || (_scrollFromX == _scrollToX && _scrollFromY == _scrollToY))
+				return false;
+
+			_scrollStartTime = 0;
+			_scrollTickId = scroller.AddTickCallback((widget, clock) => OnScrollTick(scroller, clock));
+			return true;
+		}
+
+		bool OnScrollTick(GtkScrolledWindow scroller, Gdk.FrameClock clock)
+		{
+			if (_scrollTickId == 0)
+				return false;
+
+			long now = clock.FrameTime;
+			if (_scrollStartTime == 0)
+				_scrollStartTime = now;
+
+			double progress = Math.Min(1, (now - _scrollStartTime) / (ScrollAnimationMilliseconds * 1000.0));
+			double eased = 1 - Math.Pow(1 - progress, 3);
+
+			scroller.Hadjustment.Value = _scrollFromX + (_scrollToX - _scrollFromX) * eased;
+			scroller.Vadjustment.Value = _scrollFromY + (_scrollToY - _scrollFromY) * eased;
+
+			if (progress < 1)
+				return true;
+
+			_scrollTickId = 0;
+			(((IElementHandler)this).VirtualView as IScrollView)?.ScrollFinished();
+			return false;
+		}
+
+		void CancelScrollAnimation(GtkScrolledWindow scroller)
+		{
+			if (_scrollTickId == 0)
+				return;
+
+			scroller.RemoveTickCallback(_scrollTickId);
+			_scrollTickId = 0;
 		}
 
 		static void UpdatePolicies(GtkScrolledWindow scroller, IScrollView view)

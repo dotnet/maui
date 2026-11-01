@@ -555,6 +555,8 @@ namespace Microsoft.Maui.Gtk.UnitTests
 			state.HasFrame = true;
 			state.TranslationX = 5;
 			state.Rotation = 90;
+			state.RotationX = 30;
+			state.RotationY = 40;
 			state.ScaleX = 2;
 			Assert.True(state.HasTransform);
 
@@ -564,6 +566,8 @@ namespace Microsoft.Maui.Gtk.UnitTests
 			Assert.True(copy.HasFrame);
 			Assert.Equal(5, copy.TranslationX);
 			Assert.Equal(90, copy.Rotation);
+			Assert.Equal(30, copy.RotationX);
+			Assert.Equal(40, copy.RotationY);
 			Assert.Equal(2, copy.ScaleX);
 		});
 

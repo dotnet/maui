@@ -35,6 +35,12 @@ namespace Microsoft.Maui.Gtk.Platform
 		/// <summary>See <see cref="ITransform.Rotation"/>, in degrees.</summary>
 		public double Rotation { get; set; }
 
+		/// <summary>See <see cref="ITransform.RotationX"/>, in degrees (a 3D rotation about the horizontal axis through the anchor).</summary>
+		public double RotationX { get; set; }
+
+		/// <summary>See <see cref="ITransform.RotationY"/>, in degrees (a 3D rotation about the vertical axis through the anchor).</summary>
+		public double RotationY { get; set; }
+
 		/// <summary>See <see cref="ITransform.Scale"/> combined with <see cref="ITransform.ScaleX"/>.</summary>
 		public double ScaleX { get; set; } = 1;
 
@@ -49,7 +55,7 @@ namespace Microsoft.Maui.Gtk.Platform
 
 		/// <summary>Whether any transform other than a plain translation to <see cref="Frame"/> applies.</summary>
 		public bool HasTransform =>
-			TranslationX != 0 || TranslationY != 0 || Rotation != 0 || ScaleX != 1 || ScaleY != 1;
+			TranslationX != 0 || TranslationY != 0 || Rotation != 0 || RotationX != 0 || RotationY != 0 || ScaleX != 1 || ScaleY != 1;
 
 		/// <summary>Whether <see cref="NaturalWidth"/>/<see cref="NaturalHeight"/> hold the GTK size MAUI last measured.</summary>
 		public bool HasMeasure { get; set; }
@@ -74,6 +80,8 @@ namespace Microsoft.Maui.Gtk.Platform
 			PlatformOffsetX = other.PlatformOffsetX;
 			PlatformOffsetY = other.PlatformOffsetY;
 			Rotation = other.Rotation;
+			RotationX = other.RotationX;
+			RotationY = other.RotationY;
 			ScaleX = other.ScaleX;
 			ScaleY = other.ScaleY;
 			AnchorX = other.AnchorX;

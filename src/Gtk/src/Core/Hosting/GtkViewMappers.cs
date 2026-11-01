@@ -34,6 +34,8 @@ namespace Microsoft.Maui.Gtk.Hosting
 			mapper.MapGtk<global::Gtk.Widget>(nameof(IView.ScaleX), (h, v, w) => UpdateTransform(h, v));
 			mapper.MapGtk<global::Gtk.Widget>(nameof(IView.ScaleY), (h, v, w) => UpdateTransform(h, v));
 			mapper.MapGtk<global::Gtk.Widget>(nameof(IView.Rotation), (h, v, w) => UpdateTransform(h, v));
+			mapper.MapGtk<global::Gtk.Widget>(nameof(IView.RotationX), (h, v, w) => UpdateTransform(h, v));
+			mapper.MapGtk<global::Gtk.Widget>(nameof(IView.RotationY), (h, v, w) => UpdateTransform(h, v));
 			mapper.MapGtk<global::Gtk.Widget>(nameof(IView.AnchorX), (h, v, w) => UpdateTransform(h, v));
 			mapper.MapGtk<global::Gtk.Widget>(nameof(IView.AnchorY), (h, v, w) => UpdateTransform(h, v));
 
@@ -162,6 +164,8 @@ namespace Microsoft.Maui.Gtk.Hosting
 			state.TranslationX = view.TranslationX;
 			state.TranslationY = view.TranslationY;
 			state.Rotation = view.Rotation;
+			state.RotationX = view.RotationX;
+			state.RotationY = view.RotationY;
 			state.ScaleX = view.Scale * view.ScaleX;
 			state.ScaleY = view.Scale * view.ScaleY;
 			state.AnchorX = view.AnchorX;

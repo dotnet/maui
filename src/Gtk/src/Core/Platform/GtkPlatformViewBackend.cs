@@ -172,17 +172,36 @@ namespace Microsoft.Maui.Gtk.Platform
 			parent.QueueDraw();
 		}
 
+		/// <summary>Distance (in pixels) of the viewer from the z=0 plane for <c>RotationX</c>/<c>RotationY</c>; a rotated view foreshortens by it.</summary>
+		const float PerspectiveDepth = 1000;
+
+		static Graphene.Vec3 CreateAxis(float x, float y, float z)
+		{
+			var axis = new Graphene.Vec3();
+			axis.Init(x, y, z);
+			return axis;
+		}
+
 		static Gsk.Transform CreateTransform(Rect frame, GtkViewState state, int width, int height)
 		{
 			var transform = new Gsk.Transform()
 				.Translate(GtkInterop.ToGraphene(frame.X + state.TranslationX + state.PlatformOffsetX, frame.Y + state.TranslationY + state.PlatformOffsetY));
 
-			if (state.Rotation != 0 || state.ScaleX != 1 || state.ScaleY != 1)
+			if (state.Rotation != 0 || state.RotationX != 0 || state.RotationY != 0 || state.ScaleX != 1 || state.ScaleY != 1)
 			{
 				double anchorX = state.AnchorX * width;
 				double anchorY = state.AnchorY * height;
 
 				transform = transform.Translate(GtkInterop.ToGraphene(anchorX, anchorY));
+				if (state.RotationX != 0 || state.RotationY != 0)
+				{
+					// One perspective for both 3D rotations, then the rotations about the axes through the anchor.
+					transform = transform.Perspective(PerspectiveDepth);
+					if (state.RotationX != 0)
+						transform = transform.Rotate3d((float)state.RotationX, CreateAxis(1, 0, 0));
+					if (state.RotationY != 0)
+						transform = transform.Rotate3d((float)state.RotationY, CreateAxis(0, 1, 0));
+				}
 				if (state.Rotation != 0)
 					transform = transform.Rotate((float)state.Rotation);
 				if (state.ScaleX != 1 || state.ScaleY != 1)

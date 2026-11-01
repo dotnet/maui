@@ -223,6 +223,78 @@ namespace Microsoft.Maui.Gtk.UnitTests
 		});
 
 		[GtkFact]
+		public void RotationXAndYTiltTheViewInPerspective() => GtkTestHost.Run(() =>
+		{
+			GtkTestHost.ClearComplaints();
+			var box = new Box
+			{
+				Color = Colors.Green,
+				WidthRequest = 100,
+				HeightRequest = 50,
+				HorizontalOptions = LayoutOptions.Start,
+				VerticalOptions = LayoutOptions.Start,
+			};
+
+			using var host = new WindowHost(new Grid { Children = { box } }, 400, 300);
+			var widget = host.Widget(box);
+			var flat = GtkTestHost.BoundsIn(widget, host.PlatformWindow.Child);
+			Assert.Equal(new Gdk.Rectangle(0, 0, 100, 50), flat);
+
+			// About the vertical axis through the anchor: narrower, still centred on the anchor.
+			foreach (double angle in new[] { 45.0, 70.0, -60.0 })
+			{
+				box.RotationY = angle;
+				host.Pump();
+				var tilted = GtkTestHost.BoundsIn(widget, host.PlatformWindow.Child);
+				Assert.True(tilted.Width < 100 && tilted.Width > 0, $"RotationY {angle}: width {tilted.Width}");
+				Assert.InRange(tilted.X + tilted.Width / 2, 45, 55);
+			}
+
+			// About the horizontal axis: shorter, still centred.
+			box.RotationY = 0;
+			foreach (double angle in new[] { 45.0, 70.0, -60.0 })
+			{
+				box.RotationX = angle;
+				host.Pump();
+				var tilted = GtkTestHost.BoundsIn(widget, host.PlatformWindow.Child);
+				Assert.True(tilted.Height < 50 && tilted.Height > 0, $"RotationX {angle}: height {tilted.Height}");
+				Assert.InRange(tilted.Width, 88, 112);
+				Assert.InRange(tilted.Y + tilted.Height / 2, 21, 29);
+			}
+
+			// Resetting restores the flat placement.
+			box.RotationX = 0;
+			host.Pump();
+			Assert.Equal(flat, GtkTestHost.BoundsIn(widget, host.PlatformWindow.Child));
+
+			AssertNoLayoutComplaints();
+		});
+
+		[GtkFact]
+		public void RotationXAndYFollowTheAnchor() => GtkTestHost.Run(() =>
+		{
+			var box = new Box
+			{
+				WidthRequest = 100,
+				HeightRequest = 50,
+				HorizontalOptions = LayoutOptions.Start,
+				VerticalOptions = LayoutOptions.Start,
+				RotationY = 60,
+			};
+
+			using var host = new WindowHost(new Grid { Children = { box } }, 400, 300);
+			var widget = host.Widget(box);
+			var centred = GtkTestHost.BoundsIn(widget, host.PlatformWindow.Child);
+
+			// Hinging on the left edge keeps that edge in place, so the view swings to one side of the centred placement.
+			box.AnchorX = 0;
+			host.Pump();
+			var hinged = GtkTestHost.BoundsIn(widget, host.PlatformWindow.Child);
+			Assert.True(hinged.X < centred.X + 2 && hinged.X <= 1, $"hinged {hinged}, centred {centred}");
+			Assert.True(hinged.X + hinged.Width < 100);
+		});
+
+		[GtkFact]
 		public void CollapsedViewsTakeNoSpaceAndHiddenViewsKeepTheirSlot() => GtkTestHost.Run(() =>
 		{
 			GtkTestHost.ClearComplaints();

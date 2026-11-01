@@ -585,6 +585,101 @@ namespace Microsoft.Maui.Gtk.UnitTests
 			Assert.Equal(120, scroll.ScrollY, 1);
 		});
 
+		static ScrollView CreateTallScroll()
+		{
+			var content = new VerticalStackLayout();
+			for (int i = 0; i < 20; i++)
+				content.Add(new ContentView { HeightRequest = 50 });
+
+			return new ScrollView { Content = content };
+		}
+
+		[GtkFact]
+		public void ScrollViewAnimatesAnimatedScrollRequests() => GtkTestHost.Run(() =>
+		{
+			var scroll = CreateTallScroll();
+			using var host = new WindowHost(scroll, 200, 200);
+			host.Pump();
+			var widget = (GtkScrolledWindow)host.Widget(scroll);
+
+			var task = scroll.ScrollToAsync(0, 400, true);
+			host.Pump(1);
+
+			// Not finished and not there yet: the scroll is driven by the frame clock.
+			Assert.False(task.IsCompleted);
+			Assert.True(widget.Vadjustment.Value < 400);
+
+			GtkTestHost.Await(task);
+			host.Pump();
+			Assert.Equal(400, widget.Vadjustment.Value, 1);
+			Assert.Equal(400, scroll.ScrollY, 1);
+		});
+
+		[GtkFact]
+		public void ScrollViewAnimationPassesIntermediateOffsetsMonotonically() => GtkTestHost.Run(() =>
+		{
+			var scroll = CreateTallScroll();
+			using var host = new WindowHost(scroll, 200, 200);
+			host.Pump();
+			var widget = (GtkScrolledWindow)host.Widget(scroll);
+			var seen = new System.Collections.Generic.List<double>();
+			widget.Vadjustment.ValueChanged += (_, _) => seen.Add(widget.Vadjustment.Value);
+
+			GtkTestHost.Await(scroll.ScrollToAsync(0, 300, true));
+
+			Assert.True(seen.Count > 2, "an animation reports more than the final value");
+			Assert.Equal(System.Linq.Enumerable.OrderBy(seen, v => v), seen);
+			Assert.Equal(300, seen[^1], 1);
+		});
+
+		[GtkFact]
+		public void ScrollViewNewRequestReplacesARunningAnimation() => GtkTestHost.Run(() =>
+		{
+			var scroll = CreateTallScroll();
+			using var host = new WindowHost(scroll, 200, 200);
+			host.Pump();
+			var widget = (GtkScrolledWindow)host.Widget(scroll);
+
+			scroll.ScrollToAsync(0, 700, true);
+			host.Pump(1);
+			var second = scroll.ScrollToAsync(0, 100, true);
+			GtkTestHost.Await(second);
+			host.Pump();
+
+			Assert.Equal(100, widget.Vadjustment.Value, 1);
+		});
+
+		[GtkFact]
+		public void ScrollViewInstantRequestCancelsARunningAnimation() => GtkTestHost.Run(() =>
+		{
+			var scroll = CreateTallScroll();
+			using var host = new WindowHost(scroll, 200, 200);
+			host.Pump();
+			var widget = (GtkScrolledWindow)host.Widget(scroll);
+
+			scroll.ScrollToAsync(0, 700, true);
+			host.Pump(1);
+			GtkTestHost.Await(scroll.ScrollToAsync(0, 50, false));
+			// (the superseded task itself is left pending by the Controls layer)
+
+			// The cancelled animation must not keep moving the scroller.
+			System.Threading.Thread.Sleep(400);
+			host.Pump();
+			Assert.Equal(50, widget.Vadjustment.Value, 1);
+		});
+
+		[GtkFact]
+		public void ScrollViewAnimatedRequestToTheCurrentOffsetCompletes() => GtkTestHost.Run(() =>
+		{
+			var scroll = CreateTallScroll();
+			using var host = new WindowHost(scroll, 200, 200);
+			host.Pump();
+
+			GtkTestHost.Await(scroll.ScrollToAsync(0, 0, true));
+			GtkTestHost.Await(scroll.ScrollToAsync(0, 100000, true));
+			Assert.True(scroll.ScrollY > 0);
+		});
+
 		[GtkFact]
 		public void ScrollViewPlacesItsContent() => GtkTestHost.Run(() =>
 		{
