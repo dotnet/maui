@@ -51,6 +51,7 @@ Microsoft.Maui.Controls.Gtk.Items.GtkTableViewHandler.GtkTableViewHandler() -> v
 Microsoft.Maui.Controls.Gtk.Items.GtkTableViewHandler.GtkTableViewHandler(Microsoft.Maui.IPropertyMapper? mapper) -> void
 Microsoft.Maui.Controls.Gtk.Platform.GtkLabelMarkup
 Microsoft.Maui.Hosting.GtkControlsExtensions
+override Microsoft.Maui.Controls.Gtk.Handlers.GtkControlsLabelHandler.DisconnectHandler(object! platformView) -> void
 override Microsoft.Maui.Controls.Gtk.Handlers.GtkControlsToolbarHandler.ConnectHandler(object! platformView) -> void
 override Microsoft.Maui.Controls.Gtk.Handlers.GtkControlsToolbarHandler.DisconnectHandler(object! platformView) -> void
 override Microsoft.Maui.Controls.Gtk.Handlers.GtkFrameHandler.ConnectHandler(object! platformView) -> void
