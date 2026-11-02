@@ -399,8 +399,10 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (PlatformView is NavigationView navView && navView.SelectedItem != selectedItem)
 				navView.SelectedItem = selectedItem;
 
-			if (_shellAppearanceElement is not null && PlatformView is MauiNavigationView mauiNavView)
-				mauiNavView.UpdateTopNavigationViewItemDisabledColor(_shellAppearanceElement.EffectiveTabBarDisabledColor?.AsPaint());
+			if (_shellAppearanceElement is not null)
+			{
+				UpdateAppearance(_shellAppearanceElement);
+			}
 
 			UpdateValue(Shell.TabBarIsVisibleProperty.PropertyName);
 		}
