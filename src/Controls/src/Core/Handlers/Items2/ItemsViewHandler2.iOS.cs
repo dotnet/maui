@@ -313,14 +313,36 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					((scrollDirection == UICollectionViewScrollDirection.Vertical && collectionView.Frame.Height == 0) ||
 					 (scrollDirection == UICollectionViewScrollDirection.Horizontal && collectionView.Frame.Width == 0));
 
+				var measurementWidth = widthConstraint;
+				var measurementHeight = heightConstraint;
+				if (VirtualView is CollectionView)
+				{
+					IView view = VirtualView;
+					// An explicit request or finite maximum can bound an otherwise unbounded probe.
+					if (scrollDirection == UICollectionViewScrollDirection.Vertical &&
+						!double.IsFinite(widthConstraint) &&
+						((double.IsFinite(view.Width) && view.Width >= 0) ||
+						 (double.IsFinite(view.MaximumWidth) && view.MaximumWidth >= 0)))
+					{
+						measurementWidth = ViewHandlerExtensions.ResolveConstraints(widthConstraint, view.Width, view.MinimumWidth, view.MaximumWidth);
+					}
+					else if (scrollDirection == UICollectionViewScrollDirection.Horizontal &&
+						!double.IsFinite(heightConstraint) &&
+						((double.IsFinite(view.Height) && view.Height >= 0) ||
+						 (double.IsFinite(view.MaximumHeight) && view.MaximumHeight >= 0)))
+					{
+						measurementHeight = ViewHandlerExtensions.ResolveConstraints(heightConstraint, view.Height, view.MinimumHeight, view.MaximumHeight);
+					}
+				}
+
 				// When the CollectionView has not yet been added to a window (pre-mount measurement),
 				// UICollectionViewCompositionalLayout hasn't run a layout pass and therefore
 				// CollectionViewContentSize is still zero. Force a layout pass with the given constraints
 				// so the layout can compute actual content size from its items.
 				// Skip unbounded CollectionView cross-axis probes to avoid measuring the synthetic frame.
 				bool canMeasureContent = VirtualView is not CollectionView ||
-					((scrollDirection != UICollectionViewScrollDirection.Horizontal || double.IsFinite(heightConstraint)) &&
-					 (scrollDirection != UICollectionViewScrollDirection.Vertical || double.IsFinite(widthConstraint)));
+					((scrollDirection != UICollectionViewScrollDirection.Horizontal || double.IsFinite(measurementHeight)) &&
+					 (scrollDirection != UICollectionViewScrollDirection.Vertical || double.IsFinite(measurementWidth)));
 
 				if (canMeasureContent && (collectionView.Window == null || frameIsZeroInScrollDirection))
 				{
@@ -345,8 +367,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					try
 					{
 						// Give the CollectionView a finite available size so the layout calculates correctly
-						var frameWidth = ClampConstraint(widthConstraint, UIView.UILayoutFittingExpandedSize.Width);
-						var frameHeight = ClampConstraint(heightConstraint, UIView.UILayoutFittingExpandedSize.Height);
+						var frameWidth = ClampConstraint(measurementWidth, UIView.UILayoutFittingExpandedSize.Width);
+						var frameHeight = ClampConstraint(measurementHeight, UIView.UILayoutFittingExpandedSize.Height);
 
 						collectionView.Frame = new CoreGraphics.CGRect(0, 0, frameWidth, frameHeight);
 						collectionView.SetNeedsLayout();

@@ -24,17 +24,19 @@ namespace Microsoft.Maui.DeviceTests
 	public partial class CollectionViewTests
 	{
 		[Theory]
-		[InlineData(0, false, double.PositiveInfinity, 250)]
-		[InlineData(1, false, double.PositiveInfinity, 250)]
-		[InlineData(3, false, double.PositiveInfinity, 250)]
-		[InlineData(3, true, double.PositiveInfinity, 250)]
-		[InlineData(3, false, 400, 400)]
+		[InlineData(0, false, double.PositiveInfinity, 250, -1, double.PositiveInfinity)]
+		[InlineData(1, false, double.PositiveInfinity, 250, -1, double.PositiveInfinity)]
+		[InlineData(3, false, double.PositiveInfinity, 250, -1, double.PositiveInfinity)]
+		[InlineData(3, true, double.PositiveInfinity, 250, -1, double.PositiveInfinity)]
+		[InlineData(3, false, 400, 400, -1, double.PositiveInfinity)]
+		[InlineData(3, false, double.PositiveInfinity, 300, 300, double.PositiveInfinity)]
+		[InlineData(3, false, double.PositiveInfinity, 300, -1, 300)]
 		public async Task HorizontalCollectionViewPreMountHeightRespectsConstraints(
-			int itemCount, bool isGrouped, double heightConstraint, double expectedHeight)
+			int itemCount, bool isGrouped, double heightConstraint, double expectedHeight, double heightRequest, double maximumHeight)
 		{
 			SetupBuilder();
 
-			await InvokeOnMainThreadAsync(async () =>
+			await InvokeOnMainThreadAsync(() =>
 			{
 				var items = new ObservableCollection<string>();
 				for (int i = 0; i < itemCount; i++)
@@ -45,6 +47,8 @@ namespace Microsoft.Maui.DeviceTests
 				var collectionView = new CollectionView
 				{
 					MinimumHeightRequest = 250,
+					HeightRequest = heightRequest,
+					MaximumHeightRequest = maximumHeight,
 					ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Horizontal),
 					IsGrouped = isGrouped,
 					ItemsSource = isGrouped
@@ -53,24 +57,21 @@ namespace Microsoft.Maui.DeviceTests
 					ItemTemplate = new DataTemplate(() => new Label { Text = "Project", WidthRequest = 200 })
 				};
 
-				var handler = await CreateHandlerAsync<CollectionViewHandler2>(collectionView);
+				// The test helper measures and arranges the view; this test needs an unmeasured handler.
+				var handler = new CollectionViewHandler2();
+				handler.SetMauiContext(MauiContext);
+				collectionView.Handler = handler;
 				try
 				{
 					var platformView = handler.Controller.CollectionView;
 					Assert.Null(platformView.Window);
+					Assert.Equal(0, platformView.CollectionViewLayout.CollectionViewContentSize.Width);
 					var originalFrame = platformView.Frame;
 
 					for (int i = 0; i < 2; i++)
 					{
 						var desiredSize = handler.GetDesiredSize(350, heightConstraint);
-						if (double.IsPositiveInfinity(heightConstraint))
-						{
-							Assert.Equal(expectedHeight, desiredSize.Height, 1);
-						}
-						else
-						{
-							Assert.InRange(desiredSize.Height, collectionView.MinimumHeightRequest, expectedHeight);
-						}
+						Assert.Equal(expectedHeight, desiredSize.Height, 1);
 						Assert.Equal(originalFrame, platformView.Frame);
 					}
 				}
@@ -88,7 +89,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			SetupBuilder();
 
-			await InvokeOnMainThreadAsync(async () =>
+			await InvokeOnMainThreadAsync(() =>
 			{
 				var collectionView = new CollectionView
 				{
@@ -99,7 +100,9 @@ namespace Microsoft.Maui.DeviceTests
 					ItemTemplate = new DataTemplate(() => new Label { Text = "Row", HeightRequest = 40 })
 				};
 
-				var handler = await CreateHandlerAsync<CollectionViewHandler2>(collectionView);
+				var handler = new CollectionViewHandler2();
+				handler.SetMauiContext(MauiContext);
+				collectionView.Handler = handler;
 				try
 				{
 					var platformView = handler.Controller.CollectionView;
@@ -129,29 +132,38 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory]
-		[InlineData(400)]
-		[InlineData(double.PositiveInfinity)]
-		public async Task VerticalCollectionViewPreMountHeightMeasuresContent(double heightConstraint)
+		[InlineData(350, 400, -1, double.PositiveInfinity)]
+		[InlineData(350, double.PositiveInfinity, -1, double.PositiveInfinity)]
+		[InlineData(double.PositiveInfinity, 400, 250, double.PositiveInfinity)]
+		[InlineData(double.PositiveInfinity, 400, -1, 250)]
+		[InlineData(350, 400, -1, 250)]
+		[InlineData(double.PositiveInfinity, 400, 300, 250)]
+		public async Task VerticalCollectionViewPreMountHeightMeasuresContent(
+			double widthConstraint, double heightConstraint, double widthRequest, double maximumWidth)
 		{
 			SetupBuilder();
 
-			await InvokeOnMainThreadAsync(async () =>
+			await InvokeOnMainThreadAsync(() =>
 			{
 				var collectionView = new CollectionView
 				{
+					WidthRequest = widthRequest,
+					MaximumWidthRequest = maximumWidth,
 					ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Vertical),
 					ItemsSource = new[] { "Task 1", "Task 2", "Task 3" },
 					ItemTemplate = new DataTemplate(() => new Label { Text = "Task", HeightRequest = 50 })
 				};
 
-				var handler = await CreateHandlerAsync<CollectionViewHandler2>(collectionView);
+				var handler = new CollectionViewHandler2();
+				handler.SetMauiContext(MauiContext);
+				collectionView.Handler = handler;
 				try
 				{
 					var platformView = handler.Controller.CollectionView;
 					Assert.Null(platformView.Window);
 					var originalFrame = platformView.Frame;
 
-					var desiredSize = handler.GetDesiredSize(350, heightConstraint);
+					var desiredSize = handler.GetDesiredSize(widthConstraint, heightConstraint);
 					Assert.Equal(150, desiredSize.Height, 1);
 					Assert.Equal(originalFrame, platformView.Frame);
 				}
