@@ -315,23 +315,25 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 				var measurementWidth = widthConstraint;
 				var measurementHeight = heightConstraint;
-				if (VirtualView is CollectionView)
+				if (VirtualView is CollectionView and IView view)
 				{
-					IView view = VirtualView;
-					// An explicit request or finite maximum can bound an otherwise unbounded probe.
-					if (scrollDirection == UICollectionViewScrollDirection.Vertical &&
-						!double.IsFinite(widthConstraint) &&
-						((double.IsFinite(view.Width) && view.Width >= 0) ||
-						 (double.IsFinite(view.MaximumWidth) && view.MaximumWidth >= 0)))
+					static double ResolveMeasurementConstraint(double constraint, double exact, double minimum, double maximum)
 					{
-						measurementWidth = ViewHandlerExtensions.ResolveConstraints(widthConstraint, view.Width, view.MinimumWidth, view.MaximumWidth);
+						// An explicit request or finite maximum can bound an otherwise unbounded probe.
+						return double.IsFinite(exact) || double.IsFinite(maximum)
+							? ViewHandlerExtensions.ResolveConstraints(constraint, exact, minimum, maximum)
+							: constraint;
+					}
+
+					if (scrollDirection == UICollectionViewScrollDirection.Vertical &&
+						!double.IsFinite(widthConstraint))
+					{
+						measurementWidth = ResolveMeasurementConstraint(widthConstraint, view.Width, view.MinimumWidth, view.MaximumWidth);
 					}
 					else if (scrollDirection == UICollectionViewScrollDirection.Horizontal &&
-						!double.IsFinite(heightConstraint) &&
-						((double.IsFinite(view.Height) && view.Height >= 0) ||
-						 (double.IsFinite(view.MaximumHeight) && view.MaximumHeight >= 0)))
+						!double.IsFinite(heightConstraint))
 					{
-						measurementHeight = ViewHandlerExtensions.ResolveConstraints(heightConstraint, view.Height, view.MinimumHeight, view.MaximumHeight);
+						measurementHeight = ResolveMeasurementConstraint(heightConstraint, view.Height, view.MinimumHeight, view.MaximumHeight);
 					}
 				}
 
