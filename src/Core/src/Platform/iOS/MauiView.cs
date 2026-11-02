@@ -15,6 +15,15 @@ namespace Microsoft.Maui.Platform
 	/// </summary>
 	public abstract class MauiView : UIView, ICrossPlatformLayoutBacking, IVisualTreeElementProvidable, IUIViewLifeCycleEvents, IPlatformMeasureInvalidationController
 	{
+		protected MauiView()
+		{
+		}
+
+		private protected MauiView(NativeHandle handle)
+			: base(handle)
+		{
+		}
+
 		/// <summary>
 		/// Flag indicating that parent views should be invalidated when this view is moved to a window.
 		/// This is used to trigger layout updates when the view hierarchy changes.
@@ -76,17 +85,29 @@ namespace Microsoft.Maui.Platform
 		/// </summary>
 		internal static void ApplyCellSafeAreaOverride(UIView cell, IView virtualView, UIView platformView)
 		{
-			if (virtualView.UsesSafeAreaEdges() && platformView is MauiView mauiView)
+			var mauiView = platformView as MauiView;
+
+			if (mauiView is null && platformView is WrapperView wrapperView)
+			{
+				var subviews = wrapperView.Subviews;
+
+				if (subviews.Length > 0 && subviews[0] is MauiView wrappedMauiView)
+				{
+					mauiView = wrappedMauiView;
+				}
+			}
+
+			if (virtualView.UsesSafeAreaEdges() && mauiView is not null)
 			{
 				var insets = ComputeCellSafeAreaInsets(cell, virtualView);
 				mauiView.CellSafeAreaOverride = insets != UIEdgeInsets.Zero
 					? insets.ToSafeAreaInsets()
 					: SafeAreaPadding.Empty;
 			}
-			else if (platformView is MauiView mv && !mv.CellSafeAreaOverride.IsEmpty)
+			else if (mauiView is not null && !mauiView.CellSafeAreaOverride.IsEmpty)
 			{
 				// Clear stale override from a previous template that used safe area edges.
-				mv.CellSafeAreaOverride = SafeAreaPadding.Empty;
+				mauiView.CellSafeAreaOverride = SafeAreaPadding.Empty;
 			}
 		}
 
@@ -776,7 +797,7 @@ namespace Microsoft.Maui.Platform
 			// Compare at device-pixel resolution to filter sub-pixel noise from animations
 			// that would otherwise trigger infinite layout invalidation cycles (#32586, #33934).
 			return oldApplyingSafeAreaAdjustments == _appliesSafeAreaAdjustments &&
-				   (oldSafeArea.EqualsAtPixelLevel(_safeArea) || !_appliesSafeAreaAdjustments);
+				   (oldSafeArea.EqualsAtPixelLevel(_safeArea, this.GetEffectiveDisplayScale()) || !_appliesSafeAreaAdjustments);
 		}
 
 		/// <summary>

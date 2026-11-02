@@ -171,7 +171,7 @@ namespace Microsoft.Maui.Controls.Platform
 		// The built-in notification is deliberately withheld until resolution has completed. Before the
 		// window has a service scope we cannot yet tell whether a factory is registered, and running the
 		// built-in hook then would leave an external backend with the built-in platform's hook installed
-		// (on Tizen, the back-button handler) in addition to its own. Resolution re-delivers.
+		// in addition to its own. Resolution re-delivers.
 		void DeliverPageAttached()
 		{
 			var pageHandler = _window.Page?.Handler;

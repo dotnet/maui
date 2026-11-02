@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public Issue35844(TestDevice device) : base(device) { }
 
 		[Test]
-		[Category(UITestCategories.Shell)]
+		[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 		public void ShellTitleViewResizesOnRotation()
 		{
 			App.WaitForElement("TitleViewGrid");

@@ -1,7 +1,11 @@
 using System;
+using System.IO;
 using System.Linq;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Xunit;
+
+using static Microsoft.Maui.Controls.Xaml.UnitTests.SourceGen.SourceGeneratorDriver;
 
 namespace Microsoft.Maui.Controls.SourceGen.UnitTests;
 
@@ -16,6 +20,10 @@ public class XamlIncrementalHotReloadCSharpExpressionTests : SourceGenXamlInitia
 {
 	public XamlIncrementalHotReloadCSharpExpressionTests() => XamlHotReloadState.Reset();
 	public void Dispose() => XamlHotReloadState.Reset();
+
+	GeneratorDriver? _driver;
+	Compilation? _compilation;
+	AdditionalXamlFile? _xamlFile;
 
 	const string ViewModelCode =
 """
@@ -630,5 +638,64 @@ public partial class TestPage : ContentPage
 			}
 		}
 		return null;
+	}
+
+	protected new (GeneratorDriverRunResult result, string? text) RunGenerator(
+		string xaml,
+		string code,
+		string noWarn = "",
+		string targetFramework = "",
+		string? path = null,
+		string lineinfo = "enable",
+		bool assertNoCompilationErrors = true,
+		bool enableIncrementalHotReload = false)
+	{
+		_compilation ??= CreateMauiCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText(code));
+		var workingDirectory = Environment.CurrentDirectory;
+		var nextFile = new AdditionalXamlFile(
+			Path.Combine(workingDirectory, path ?? "Test.xaml"),
+			xaml,
+			RelativePath: path ?? "Test.xaml",
+			TargetFramework: targetFramework,
+			NoWarn: noWarn,
+			ManifestResourceName: $"{_compilation.AssemblyName}.Test.xaml",
+			Lineinfo: lineinfo,
+			EnableIncrementalHotReload: enableIncrementalHotReload);
+
+		if (_driver is null)
+		{
+			_driver = CSharpGeneratorDriver.Create([new XamlGenerator().AsSourceGenerator()])
+				.AddAdditionalTexts([nextFile.Text])
+				.WithUpdatedAnalyzerConfigOptions(CreateAnalyzerConfigOptionsProvider(nextFile));
+		}
+		else
+		{
+			_driver = _driver.ReplaceAdditionalText(_xamlFile!.Text, nextFile.Text);
+		}
+
+		_driver = _driver.RunGeneratorsAndUpdateCompilation(_compilation, out var updatedCompilation, out _);
+		if (assertNoCompilationErrors)
+		{
+			var compilationErrors = updatedCompilation.GetDiagnostics()
+				.Where(d => d.Severity == DiagnosticSeverity.Error)
+				.Where(d => d.Location.SourceTree?.FilePath?.EndsWith(".xsg.cs", StringComparison.OrdinalIgnoreCase) == true)
+				.ToArray();
+
+			if (compilationErrors.Length > 0)
+			{
+				var errorMessages = string.Join(Environment.NewLine, compilationErrors.Select(e => $"{e.Id}: {e.GetMessage()} at {e.Location}"));
+				throw new InvalidOperationException($"Generated code has compilation errors:{Environment.NewLine}{errorMessages}");
+			}
+		}
+
+		_xamlFile = nextFile;
+		var result = _driver.GetRunResult();
+		var generated = result.Results.SingleOrDefault().GeneratedSources
+			.SingleOrDefault(gs => gs.HintName.EndsWith(".xsg.cs")
+				&& !gs.HintName.EndsWith(".handler.xsg.cs")
+				&& !gs.HintName.Contains(".uc.xsg", StringComparison.Ordinal))
+			.SourceText?.ToString();
+
+		return (result, generated);
 	}
 }

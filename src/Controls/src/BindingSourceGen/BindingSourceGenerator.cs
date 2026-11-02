@@ -92,11 +92,20 @@ public class BindingSourceGenerator : IIncrementalGenerator
 	private static bool IsSetBindingMethod(SyntaxNode node)
 	{
 		return node is InvocationExpressionSyntax invocation
-			&& invocation.Expression is MemberAccessExpressionSyntax method
-			&& method.Name.Identifier.Text == "SetBinding"
+			&& GetInvokedMethodName(invocation.Expression)?.Identifier.Text == "SetBinding"
 			&& invocation.ArgumentList.Arguments.Count >= 2
 			&& invocation.ArgumentList.Arguments[1].Expression is not LiteralExpressionSyntax
 			&& invocation.ArgumentList.Arguments[1].Expression is not ObjectCreationExpressionSyntax;
+	}
+
+	internal static SimpleNameSyntax? GetInvokedMethodName(ExpressionSyntax expression)
+	{
+		return expression switch
+		{
+			MemberAccessExpressionSyntax memberAccess => memberAccess.Name,
+			MemberBindingExpressionSyntax memberBinding => memberBinding.Name,
+			_ => null
+		};
 	}
 
 	private static bool IsCreateMethod(SyntaxNode node)
@@ -137,7 +146,11 @@ public class BindingSourceGenerator : IIncrementalGenerator
 		var enabledNullable = IsNullableContextEnabled(context);
 
 		var invocation = (InvocationExpressionSyntax)context.Node;
-		var method = (MemberAccessExpressionSyntax)invocation.Expression;
+		var methodName = GetInvokedMethodName(invocation.Expression);
+		if (methodName is null)
+		{
+			return Result<BindingInvocationDescription>.Failure(DiagnosticsFactory.UnableToResolvePath(invocation.GetLocation()));
+		}
 
 		var invocationParser = new InvocationParser(context);
 		var interceptedMethodTypeResult = invocationParser.ParseInvocation(invocation, t);
@@ -151,7 +164,7 @@ public class BindingSourceGenerator : IIncrementalGenerator
 		var interceptableLocation = context.SemanticModel.GetInterceptableLocation(invocation, t);
 #pragma warning restore RSEXPERIMENTAL002
 
-		var sourceCodeLocation = SourceCodeLocation.CreateFrom(method.Name.GetLocation());
+		var sourceCodeLocation = SourceCodeLocation.CreateFrom(methodName.GetLocation());
 
 
 		if (interceptableLocation == null || sourceCodeLocation == null)

@@ -56,7 +56,7 @@ Teardown(context =>
 });
 
 Task("connectToDevice")
-	.Does(() =>
+	.Does(() => RunUITestSetupWithRetry(() =>
 	{
 		if (!deviceBoot)
 		{
@@ -75,7 +75,7 @@ Task("connectToDevice")
 			GetSimulators(testDevice, dotnetToolPath);
 			ResetSimulators(testDevice, dotnetToolPath);
 		}
-	});
+	}));
 
 Task("Cleanup")
 	.Does(() =>
@@ -118,10 +118,10 @@ Task("uitest-build")
 
 Task("uitest-prepare")
 	.IsDependentOn("connectToDevice")
-	.Does(() =>
+	.Does(() => RunUITestSetupWithRetry(() =>
 	{
 		ExecutePrepareUITests(projectPath, testAppProjectPath, testDevice, testResultsPath, binlogDirectory, configuration, targetFramework, runtimeIdentifier, iosVersion, dotnetToolPath, headless);
-	});
+	}));
 
 Task("uitest")
 	.IsDependentOn("uitest-prepare")
@@ -248,7 +248,7 @@ void ExecuteUITests(string project, string app, string device, string resultsDir
 	var resultsFileName = SanitizeTestResultsFilename($"{name}-{config}-ios-{testFilter}");
 	var appiumLog = $"{binDir}/appium_ios_{resultsFileName}.log";
 
-	DotNetBuild(project, new DotNetBuildSettings
+	RunUITestSetupWithRetry(() => DotNetBuild(project, new DotNetBuildSettings
 	{
 		Configuration = config,
 		ToolPath = toolPath,
@@ -256,7 +256,7 @@ void ExecuteUITests(string project, string app, string device, string resultsDir
 			.Append("/p:ExtraDefineConstants=IOSUITEST")
 			.Append($"/p:_UseNativeAot={USE_NATIVE_AOT}")
 			.Append("/bl:" + binlog)
-	});
+	}));
 
 	var TEST_CONFIGURATION_ARGS = Argument("TEST_CONFIGURATION_ARGS", EnvironmentVariable("TEST_CONFIGURATION_ARGS") ?? "");
 
@@ -265,7 +265,7 @@ void ExecuteUITests(string project, string app, string device, string resultsDir
 	SetEnvironmentVariable("APPIUM_LOG_FILE", appiumLog);
 
 	Information("Run UITests project {0}", project);
-	RunTestWithLocalDotNet(project, config, pathDotnet: toolPath, noBuild: true, resultsFileNameWithoutExtension: resultsFileName);
+	RunUITestsWithRetry(project, config, toolPath, resultsFileName);
 	Information("UI Tests completed.");
 }
 

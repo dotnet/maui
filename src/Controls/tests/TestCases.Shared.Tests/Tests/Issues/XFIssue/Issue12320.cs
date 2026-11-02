@@ -13,7 +13,7 @@ public class Issue12320 : _IssuesUITest
 	public override string Issue => "[iOS] TabBarIsVisible = True/False doesn't work on Back Navigation When using BackButtonBehavior";
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void PopLogicExecutesWhenUsingBackButtonBehavior()
 	{
 		App.WaitForElementTillPageNavigationSettled("TestReady");

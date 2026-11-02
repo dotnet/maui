@@ -4,6 +4,7 @@ description: Reviews PR failures against the diff and the latest five completed 
 # Select a PAT from the shared pool for the isolated agent job.
 imports:
   - shared/gpt-6.1-sol.md
+  - shared/threat-detection.md
   - uses: shared/pat_pool.md
     with:
       environment: copilot-pat-pool

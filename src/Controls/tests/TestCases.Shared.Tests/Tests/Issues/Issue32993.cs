@@ -14,7 +14,7 @@ public class Issue32993 : _IssuesUITest
 	{ }
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void Issue32993TabBarUpdatesCorrectlyInRTLMode()
 	{
 		App.WaitForElement("Issue32993SetRTL");

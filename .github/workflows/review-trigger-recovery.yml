@@ -1,4 +1,4 @@
-# Recover authorized /review comments whose issue_comment webhook was not
+# Recover authorized /review and /review gate comments whose webhook was not
 # delivered by GitHub Actions. This is deterministic polling, not an agentic
 # workflow: no untrusted PR code is checked out or executed.
 

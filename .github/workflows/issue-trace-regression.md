@@ -1,5 +1,5 @@
 ---
-description: Traces a reported MAUI issue to evidence-backed candidate introducing commits or PRs.
+description: Traces reported MAUI regressions using cited version observations and bounded platform-specific source evidence.
 
 imports:
   - shared/gpt-6.1-sol.md
@@ -209,11 +209,11 @@ report structure. These rules also apply when the investigation skill is skipped
 
 For `boundary-only`, this is **preflight reporting, not a regression
 investigation**. Do not load the investigation skill or search source/history.
-Read identity, body/form fields, preflight, boundaries, gaps, diagnostics and human
+Read identity, body/form fields, preflight, boundaries, investigation, gaps, diagnostics and human
 comments together, using the known schema in one selection at the supplied path:
 
 ```bash
-jq '{issue:(.issue|{number,url,author,title,body,fields}),preflight,boundaries,gaps,commentsTruncated,diagnostics,comments:[.comments[]|select(.authorType=="User")]}' "$RUNNER_TEMP/gh-aw/issue-regression-${{ github.run_id }}/context.json"
+jq '{issue:(.issue|{number,url,author,title,body,fields}),preflight,boundaries,investigation:(.investigation|{selection,good,bad,gaps,releaseMetadata,observationsTruncated,comparison:(.comparison|{url,status,isForwardRange,totalCommits,commitsTruncated,filesPossiblyTruncated})}),gaps,commentsTruncated,diagnostics,comments:[.comments[]|select(.authorType=="User" and .isPriorReport!=true)]}' "$RUNNER_TEMP/gh-aw/issue-regression-${{ github.run_id }}/context.json"
 ```
 
 Use the native `add_comment` tool when available. If the runtime requires CLI
@@ -235,6 +235,12 @@ or predictions. Nest Version boundary and Candidate changes inside Regression An
 For all other modes, invoke **trace-regression** and follow
 `.github/skills/trace-regression/SKILL.md` for the investigation and single report.
 Do not substitute PR regression-risk analysis or run other review/fix skills.
+Use the frozen `investigation` pair and its provenance for source inspection
+without overwriting the original form boundaries. A published-release
+`mapped-source` record is a candidate-source lead, not proof of the installed
+MAUI package. Read bounded source excerpts with their representation and
+original line ranges; do not request a full file already represented by excerpts
+or treat omitted code as absent.
 
 - Repository: `${{ github.repository }}`
 - Issue: `${{ github.event.issue.number }}`

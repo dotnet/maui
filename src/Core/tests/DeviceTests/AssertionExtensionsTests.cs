@@ -23,6 +23,7 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.True(await AssertionExtensions.WaitForCollect(references));
 
 			Assert.True(root.EarlierReferenceWasAlive);
+			Assert.True(root.LaterReferenceWasAlive);
 			Assert.All(references, reference => Assert.False(reference.IsAlive));
 		}
 
@@ -88,16 +89,22 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			root.Target = new object();
 			var first = new WeakReference(root.Target);
+			var laterTarget = new object();
+			if (releaseDuringLaterWait)
+				root.LaterTarget = laterTarget;
+
 			var second = releaseDuringLaterWait
-				? new ReleaseOnCheckReference(new object(), root, first)
-				: new WeakReference(new object());
+				? new ReleaseOnCheckReference(laterTarget, root, first)
+				: new WeakReference(laterTarget);
 			return new[] { first, second };
 		}
 
 		sealed class StrongRoot
 		{
 			public object Target;
+			public object LaterTarget;
 			public bool EarlierReferenceWasAlive;
+			public bool LaterReferenceWasAlive;
 		}
 
 		sealed class ReleaseOnCheckReference : WeakReference
@@ -116,18 +123,23 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				get
 				{
-					if (_root.Target is not null)
-					{
-						// Release the real target only after its own bounded collection wait.
-						_root.EarlierReferenceWasAlive = _earlierReference.IsAlive;
-						_root.Target = null;
-						GC.Collect();
-						GC.WaitForPendingFinalizers();
-						GC.Collect();
-					}
-
-					return base.IsAlive;
+					return ReleaseEarlierReference() || base.IsAlive;
 				}
+			}
+
+			[MethodImpl(MethodImplOptions.NoInlining)]
+			bool ReleaseEarlierReference()
+			{
+				if (_root.Target is null)
+					return false;
+
+				_root.EarlierReferenceWasAlive = _earlierReference.IsAlive;
+				_root.LaterReferenceWasAlive = base.IsAlive;
+				GC.KeepAlive(_root.LaterTarget);
+				// Let the helper collect both targets after this frame has returned.
+				_root.Target = null;
+				_root.LaterTarget = null;
+				return _root.LaterReferenceWasAlive;
 			}
 		}
 	}

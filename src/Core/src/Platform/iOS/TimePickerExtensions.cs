@@ -40,50 +40,20 @@ public static class TimePickerExtensions
 	{
 		picker?.UpdateTime(timePicker);
 
-		var cultureInfo = Culture.CurrentCulture;
-
-		if (string.IsNullOrEmpty(timePicker.Format))
-		{
-			NSLocale locale = new NSLocale(cultureInfo.TwoLetterISOLanguageName);
-
-			if (picker is not null)
-			{
-				picker.Locale = locale;
-			}
-		}
-
 		var time = timePicker.Time;
 		var format = timePicker.Format;
 
-		// Determine which culture to use for consistent formatting
-		CultureInfo formattingCulture;
-		if (format != null)
-		{
-			if (format.Contains('t', StringComparison.Ordinal) || format.Contains('h', StringComparison.Ordinal))
-			{
-				formattingCulture = new CultureInfo("en-US");
-			}	
-			else if (format.Contains('H', StringComparison.Ordinal))
-			{
-				formattingCulture = new CultureInfo("de-DE");
-			}
-			else
-			{
-				formattingCulture = cultureInfo;
-			}
-				
-		}
-		else
-		{
-			formattingCulture = cultureInfo;
-		}
+		mauiTimePicker.Text = time?.ToFormattedString(format);
 
-		// Apply the same culture to both the text display and the picker
-		mauiTimePicker.Text = time?.ToFormattedString(format ?? string.Empty, formattingCulture);
-
-		if (picker != null && format != null)
+		if (picker is not null)
 		{
-			picker.Locale = new NSLocale(formattingCulture.TwoLetterISOLanguageName);
+			var localeIdentifier = !string.IsNullOrEmpty(format) && format.Contains('H', StringComparison.Ordinal)
+				? "de"
+				: !string.IsNullOrEmpty(format) && format.Contains('h', StringComparison.Ordinal)
+					? "en"
+					: CultureInfo.CurrentCulture.Name;
+
+			picker.Locale = new NSLocale(localeIdentifier);
 		}
 
 		mauiTimePicker.UpdateCharacterSpacing(timePicker);

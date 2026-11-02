@@ -2,6 +2,7 @@ parameters:
   androidPool: { }
   androidLinuxPool: { }
   iosPool: { }
+  iosXcodeVersion: ''
   windowsPool: { }
   windowsBuildPool: { }
   macosPool: { }
@@ -46,7 +47,9 @@ parameters:
     - 'ScrollView'
     - 'SearchBar,Shape,Slider'
     - 'SoftInput,Stepper,Switch,SwipeView'
-    - 'Shell'
+    # Shell remains the umbrella category for local runs. CI uses Shell1 and Shell2 on every platform.
+    - 'Shell1'
+    - 'Shell2'
     - 'TabbedPage,TableView,TimePicker,TitleView,ToolbarItem,Triggers'
     - 'ViewBaseTests,VisualStateManager,Window'
     - 'WebView'
@@ -196,6 +199,52 @@ stages:
                       platform: 'Android'
                       artifactName: 'uitest-snapshot-results-android-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
 
+  - stage: android_ui_tests_shell_renderer
+    displayName: Android UITests Shell Renderer
+    dependsOn: build_ui_tests_coreclr
+    jobs:
+      - ${{ each project in parameters.projects }}:
+        - ${{ if ne(project.android, '') }}:
+          - ${{ each api in parameters.androidApiLevels }}:
+            - ${{ if not(containsValue(project.androidApiLevelsExclude, api)) }}:
+              - job: shell_renderer_android_ui_tests_${{ project.name }}_${{ api }}
+                strategy:
+                  matrix:
+                    Shell1:
+                      CATEGORYGROUP: Shell1
+                    Shell2:
+                      CATEGORYGROUP: Shell2
+                timeoutInMinutes: 240
+                workspace:
+                  clean: all
+                displayName: ${{ coalesce(project.desc, project.name) }} Shell Renderer (API ${{ api }})
+                pool: ${{ parameters.androidLinuxPool }}
+                variables:
+                  APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
+                steps:
+                  - template: ui-tests-steps.yml
+                    parameters:
+                      platform: android
+                      version: ${{ api }}
+                      path: ${{ project.android }}
+                      app: ${{ project.app }}
+                      ${{ if eq(api, 27) }}:
+                        device: android-emulator-32_${{ api }}
+                      ${{ if not(eq(api, 27)) }}:
+                        device: android-emulator-64_${{ api }}
+                      provisionatorChannel: ${{ parameters.provisionatorChannel }}
+                      agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
+                      testFilter: $(CATEGORYGROUP)
+                      testConfigurationArgs: "ShellRenderer"
+                      headless: ${{ parameters.headless }}
+                      skipProvisioning: ${{ parameters.skipProvisioning }}
+                      runtimeVariant: "CoreCLR"
+
+                  - template: ui-tests-collect-snapshot-diffs.yml
+                    parameters:
+                      platform: 'Android Shell Renderer'
+                      artifactName: 'uitest-snapshot-results-android-shell-renderer-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
+
   - stage: android_ui_tests_material3
     displayName: Android UITests Material3
     dependsOn: build_ui_tests_material3
@@ -293,7 +342,11 @@ stages:
                 displayName: ${{ coalesce(project.desc, project.name) }} (v${{ version }})
                 pool: ${{ parameters.iosPool }}
                 variables:
-                  REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
+                  ${{ if ne(parameters.iosXcodeVersion, '') }}:
+                    XCODE: ${{ parameters.iosXcodeVersion }}
+                    REQUIRED_XCODE: ${{ parameters.iosXcodeVersion }}
+                  ${{ else }}:
+                    REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                   APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
                 steps:
                   - template: ui-tests-steps.yml
@@ -342,6 +395,9 @@ stages:
                   displayName: ${{ coalesce(project.desc, project.name) }} (v${{ version }})
                   pool: ${{ parameters.iosPool }}
                   variables:
+                    ${{ if ne(parameters.iosXcodeVersion, '') }}:
+                      XCODE: ${{ parameters.iosXcodeVersion }}
+                      REQUIRED_XCODE: ${{ parameters.iosXcodeVersion }}
                     APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
                   steps:
                     - template: ui-tests-steps.yml

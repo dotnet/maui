@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Using long-press navigation on back button using shell does not update the shell's current page";
 
 		[Test]
-		[Category(UITestCategories.Shell)]
+		[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 		public void ShellBackButtonShouldWorkOnLongPress()
 		{
 			App.WaitForElement("button");

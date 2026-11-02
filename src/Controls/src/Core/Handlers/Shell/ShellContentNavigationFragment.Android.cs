@@ -72,7 +72,7 @@ namespace Microsoft.Maui.Controls.Handlers
                 // Re-subscribe to NavigationRequested if it was unsubscribed in OnDestroyView.
                 // This handles the case where the fragment's view is destroyed and recreated
                 // (e.g., ViewPager2 offscreen recycling) — without this, navigation silently stops.
-                if (!_subscribedToNavigationRequested)
+                if (_stackNavigationManager is not null && !_subscribedToNavigationRequested)
                 {
                     var parentSection = _shellContent?.Parent as ShellSection;
                     if (parentSection is not null)
@@ -97,24 +97,12 @@ namespace Microsoft.Maui.Controls.Handlers
                         .CommitNowAllowingStateLoss();
                 }
 
+                if (IsCurrentContent)
+                {
+                    InitializeNavigation();
+                }
+
                 return _navigationContainer;
-            }
-
-            // Get the root page for this ShellContent
-            _rootPage = ((IShellContentController)_shellContent)?.GetOrCreateContent();
-            if (_rootPage is null)
-            {
-                return new FrameLayout(inflater.Context!);
-            }
-
-            // Subscribe to navigation events EARLY - before anything else
-            // This ensures we catch any navigation requests that come before the view is attached
-            var shellSection = _shellContent?.Parent as ShellSection;
-            if (shellSection is not null && !_subscribedToNavigationRequested)
-            {
-                _subscribedShellSection = shellSection;
-                ((IShellSectionController)shellSection).NavigationRequested += OnNavigationRequested;
-                _subscribedToNavigationRequested = true;
             }
 
             // Create FragmentContainerView for navigation stack
@@ -128,6 +116,54 @@ namespace Microsoft.Maui.Controls.Handlers
                 Id = _navigationContainerId,
                 LayoutParameters = new LP(LP.MatchParent, LP.MatchParent)
             };
+
+            // Keep offscreen fragments cached without creating never-selected pages or nav hosts.
+            // Previously initialized content still follows the existing view-recreation path.
+            if (_rootPage is not null || IsCurrentContent)
+            {
+                InitializeNavigation();
+            }
+
+            return _navigationContainer;
+        }
+
+        /// <inheritdoc />
+        public override void OnResume()
+        {
+            base.OnResume();
+
+            if (IsCurrentContent)
+            {
+                InitializeNavigation();
+            }
+        }
+
+        bool IsCurrentContent =>
+            _shellContent?.Parent is ShellSection shellSection &&
+            shellSection.IsVisibleSection &&
+            shellSection.CurrentItem == _shellContent;
+
+        internal void InitializeNavigation()
+        {
+            if (_stackNavigationManager is not null || _navigationContainer is null || _shellContent is null || _mauiContext is null)
+            {
+                return;
+            }
+
+            _rootPage = ((IShellContentController)_shellContent).GetOrCreateContent();
+            if (_rootPage is null)
+            {
+                return;
+            }
+
+            // Subscribe before the host is attached; initialization reconciles the section's stack.
+            var shellSection = _shellContent.Parent as ShellSection;
+            if (shellSection is not null && !_subscribedToNavigationRequested)
+            {
+                _subscribedShellSection = shellSection;
+                ((IShellSectionController)shellSection).NavigationRequested += OnNavigationRequested;
+                _subscribedToNavigationRequested = true;
+            }
 
             // Create StackNavigationManager with scoped context
             var scopedContext = _mauiContext.MakeScoped(fragmentManager: ChildFragmentManager);
@@ -146,14 +182,14 @@ namespace Microsoft.Maui.Controls.Handlers
                 .AddEx(_navigationContainerId, navHostFragment)
                 .CommitNowAllowingStateLoss();
 
-            _navigationContainer.ViewAttachedToWindow += OnNavigationContainerAttached;
-
             if (_navigationContainer.IsAttachedToWindow)
             {
                 ConnectAndInitialize();
             }
-
-            return _navigationContainer;
+            else
+            {
+                _navigationContainer.ViewAttachedToWindow += OnNavigationContainerAttached;
+            }
         }
 
         bool _subscribedToNavigationRequested;
@@ -190,7 +226,7 @@ namespace Microsoft.Maui.Controls.Handlers
             }
 
             // Subscribe to navigation events if not already subscribed
-            // (may have already been done in OnCreateView)
+            // (may have already been done in InitializeNavigation)
             var shellSection = _shellContent?.Parent as ShellSection;
             if (shellSection is not null && !_subscribedToNavigationRequested)
             {

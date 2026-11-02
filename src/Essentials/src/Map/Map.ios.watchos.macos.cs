@@ -120,31 +120,36 @@ namespace Microsoft.Maui.ApplicationModel
 			MKLaunchOptions launchOptions = null;
 			if (options.NavigationMode != NavigationMode.None)
 			{
-				var mode = MKDirectionsMode.Default;
-
-				switch (options.NavigationMode)
-				{
-					case NavigationMode.Driving:
-						mode = MKDirectionsMode.Driving;
-						break;
-					case NavigationMode.Transit:
-						mode = MKDirectionsMode.Transit;
-						break;
-					case NavigationMode.Walking:
-						mode = MKDirectionsMode.Walking;
-						break;
-					case NavigationMode.Default:
-						mode = MKDirectionsMode.Default;
-						break;
-				}
 				launchOptions = new MKLaunchOptions
 				{
-					DirectionsMode = mode
+					DirectionsMode = GetDirectionsMode(options.NavigationMode)
 				};
 			}
 
 			var mapItems = new[] { mapItem };
 			return Task.FromResult(MKMapItem.OpenMaps(mapItems, launchOptions));
 		}
+
+		internal static MKDirectionsMode GetDirectionsMode(NavigationMode navigationMode)
+		{
+#if IOS || MACCATALYST
+			var isCyclingAvailable =
+				OperatingSystem.IsIOSVersionAtLeast(14) || OperatingSystem.IsMacCatalystVersionAtLeast(14);
+#else
+			const bool isCyclingAvailable = false;
+#endif
+
+			return GetDirectionsMode(navigationMode, isCyclingAvailable);
+		}
+
+		internal static MKDirectionsMode GetDirectionsMode(NavigationMode navigationMode, bool isCyclingAvailable) =>
+			navigationMode switch
+			{
+				NavigationMode.Bicycling when isCyclingAvailable => MKDirectionsMode.Cycling,
+				NavigationMode.Driving => MKDirectionsMode.Driving,
+				NavigationMode.Transit => MKDirectionsMode.Transit,
+				NavigationMode.Walking => MKDirectionsMode.Walking,
+				_ => MKDirectionsMode.Default,
+			};
 	}
 }

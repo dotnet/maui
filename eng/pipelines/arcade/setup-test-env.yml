@@ -29,6 +29,7 @@ steps:
 
 - task: UseDotNet@2
   displayName: 'Use .NET SDK $(DOTNET_VERSION)'
+  retryCountOnTaskFailure: 4
   inputs:
     packageType: sdk
     version: $(DOTNET_VERSION)
@@ -37,6 +38,7 @@ steps:
 - ${{ if eq(parameters.installPackageArtifacts, true) }}:
   - task: DownloadPipelineArtifact@2
     displayName: Download PackageArtifacts
+    retryCountOnTaskFailure: 4
     inputs:
       artifactName: PackageArtifacts
       itemPattern: '**/*.nupkg'
@@ -44,6 +46,7 @@ steps:
 
   - task: DotNetCoreCLI@2
     displayName: Install dotnet preview without workloads
+    retryCountOnTaskFailure: 4
     inputs:
       projects: ${{ parameters.mauiSourcePath }}/src/DotNet/DotNet.csproj
       arguments: '-p:InstallWorkloadPacks=false -c ${{ parameters.buildConfig }} -bl:${{ parameters.repoLogPath }}/install-dotnet.binlog'
@@ -51,6 +54,8 @@ steps:
   - template: /eng/pipelines/common/run-dotnet-preview.yml
     parameters:
       displayName: Install dotnet preview workloads from PackageArtifacts
+      retryCountOnTaskFailure: 4
+      continueOnError: false
       mauiSourcePath: ${{ parameters.mauiSourcePath }}
       project: ${{ parameters.mauiSourcePath }}/src/DotNet/DotNet.csproj
       arguments: '-t:Install -c ${{ parameters.buildConfig }} -bl:${{ parameters.repoLogPath }}/install-dotnet-workload.binlog'
@@ -69,6 +74,7 @@ steps:
 - ${{ else }}:
   - task: DotNetCoreCLI@2
     displayName: Install dotnet preview
+    retryCountOnTaskFailure: 4
     inputs:
       projects: ${{ parameters.mauiSourcePath }}/src/DotNet/DotNet.csproj
       arguments: '-c ${{ parameters.buildConfig }} -bl:${{ parameters.repoLogPath }}/install-dotnet.binlog'
@@ -90,6 +96,8 @@ steps:
 - template: /eng/pipelines/common/run-dotnet-preview.yml
   parameters:
     displayName: Restore dotnet preview tools
+    retryCountOnTaskFailure: 4
+    continueOnError: false
     mauiSourcePath: ${{ parameters.mauiSourcePath }}
     command: tool
     arguments: restore

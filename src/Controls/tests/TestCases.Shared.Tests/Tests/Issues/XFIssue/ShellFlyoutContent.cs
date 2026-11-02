@@ -22,7 +22,7 @@ public class ShellFlyoutContent : _IssuesUITest
 	public override string Issue => "Shell Flyout Content";
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void FlyoutContentTests()
 	{
 		App.WaitForElement("PageLoaded");

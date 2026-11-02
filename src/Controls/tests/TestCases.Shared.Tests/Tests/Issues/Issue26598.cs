@@ -19,7 +19,7 @@ public class Issue26598 : _IssuesUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void TabBarShouldbeVisibleNavigatingBackFromNonTabbedPage()
 	{
 		// Is a iOS issue; see https://github.com/dotnet/maui/issues/26598

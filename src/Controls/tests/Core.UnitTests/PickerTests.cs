@@ -5,6 +5,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Maui.Graphics;
 using NSubstitute;
 using Xunit;
@@ -109,6 +110,38 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			picker.SelectedIndex = 2;
 
 			Assert.Equal(-1, picker.SelectedIndex);
+		}
+
+		// Confirms SelectedIndexProperty's coerceValue reuses the original boxed value instead of
+		// reboxing when the index is already in range, and still reboxes when it's clamped.
+		[Fact]
+		public void SelectedIndexCoerceValueReusesBoxWhenAlreadyInRange()
+		{
+			var picker = new Picker();
+			picker.Items.Add("John");
+			picker.Items.Add("Paul");
+			picker.Items.Add("George");
+			object boxedValue = 1;
+
+			var result = Picker.SelectedIndexProperty.CoerceValue(picker, boxedValue);
+
+			Assert.Same(boxedValue, result);
+			Assert.Equal(1, (int)result);
+		}
+
+		[Fact]
+		public void SelectedIndexCoerceValueReboxesWhenOutOfRange()
+		{
+			var picker = new Picker();
+			picker.Items.Add("John");
+			picker.Items.Add("Paul");
+			picker.Items.Add("George");
+			object boxedValue = 5;
+
+			var result = Picker.SelectedIndexProperty.CoerceValue(picker, boxedValue);
+
+			Assert.NotSame(boxedValue, result);
+			Assert.Equal(2, (int)result);
 		}
 
 		[Fact]
@@ -238,6 +271,73 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			picker.SelectedIndex = 2;
 			picker.SelectedIndex = -1;
+			picker.ItemsSource = new ObservableCollection<string>
+			{
+				"John",
+				"Paul",
+				"George"
+			};
+
+			Assert.Equal(-1, picker.SelectedIndex);
+			Assert.Null(picker.SelectedItem);
+		}
+
+		[Fact]
+		public void SelectedItemSetBeforeItemsSourceIsSelected()
+		{
+			// https://github.com/dotnet/maui/issues/30644
+			var selectedIndexChangedCount = 0;
+			var picker = new Picker();
+			picker.SelectedIndexChanged += (sender, args) => selectedIndexChangedCount++;
+
+			picker.SelectedItem = "Paul";
+			picker.ItemsSource = new ObservableCollection<string>
+			{
+				"John",
+				"Paul",
+				"George"
+			};
+
+			Assert.Equal(1, picker.SelectedIndex);
+			Assert.Equal("Paul", picker.SelectedItem);
+			// Same as when ItemsSource is set first and SelectedItem second
+			Assert.Equal(1, selectedIndexChangedCount);
+		}
+
+		[Fact]
+		public void SelectedItemBoundBeforeItemsSourceKeepsBoundValue()
+		{
+			// https://github.com/dotnet/maui/issues/30644
+			var paul = new PickerTestsContextFixture("Paul", "Paul");
+			var bindingContext = new PickerTestsBindingContext
+			{
+				Items = new ObservableCollection<object>
+				{
+					new PickerTestsContextFixture("John", "John"),
+					paul
+				},
+				SelectedItem = paul
+			};
+			var picker = new Picker
+			{
+				BindingContext = bindingContext,
+				ItemDisplayBinding = new Binding("DisplayName"),
+			};
+
+			picker.SetBinding(Picker.SelectedItemProperty, "SelectedItem");
+			picker.SetBinding(Picker.ItemsSourceProperty, "Items");
+
+			Assert.Equal(1, picker.SelectedIndex);
+			Assert.Same(paul, picker.SelectedItem);
+			Assert.Same(paul, bindingContext.SelectedItem);
+		}
+
+		[Fact]
+		public void SelectedItemNotInItemsSourceSetBeforeItemsSourceIsCleared()
+		{
+			var picker = new Picker();
+
+			picker.SelectedItem = "Ringo";
 			picker.ItemsSource = new ObservableCollection<string>
 			{
 				"John",
@@ -472,6 +572,28 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			items.Add(new { Name = "George" });
 			Assert.Equal(4, picker.Items.Count);
 			Assert.Equal("George", picker.Items[picker.Items.Count - 1]);
+		}
+
+		[Fact, Category(TestCategory.Memory)]
+		public async Task PickerDoesNotLeakWhenItemsSourceIsLongLivedCollection()
+		{
+			var sharedRoot = new ObservableCollection<string> { "a", "b", "c" };
+
+			WeakReference CreatePickerReference()
+			{
+				var picker = new Picker
+				{
+					ItemsSource = sharedRoot
+				};
+
+				return new WeakReference(picker);
+			}
+
+			var reference = CreatePickerReference();
+
+			Assert.False(await reference.WaitForCollect(), "Picker should be collected, but it was retained by the shared ObservableCollection's CollectionChanged subscription.");
+
+			GC.KeepAlive(sharedRoot);
 		}
 
 		[Fact]

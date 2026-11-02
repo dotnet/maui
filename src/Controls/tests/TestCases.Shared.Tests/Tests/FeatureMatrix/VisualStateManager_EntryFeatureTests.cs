@@ -9,6 +9,7 @@ public class VisualStateManager_EntryFeatureTests : _GalleryUITest
 {
 	public const string VisualStateManagerEntryFeatureTests = "VisualStateManager Feature Matrix";
 	public override string GalleryPageName => VisualStateManagerEntryFeatureTests;
+	protected override string GallerySubPageButton => "VSMEntryButton";
 
 	public VisualStateManager_EntryFeatureTests(TestDevice device)
 		: base(device)
@@ -18,8 +19,6 @@ public class VisualStateManager_EntryFeatureTests : _GalleryUITest
 	[Test, Order(1)]
 	public void VerifyVSM_Entry_InitialState()
 	{
-		App.WaitForElement("VSMEntryButton");
-		App.Tap("VSMEntryButton");
 		App.WaitForElement("EntryState");
 		var stateText = App.FindElement("EntryState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Normal"));

@@ -14,7 +14,7 @@ public class Issue37187 : _IssuesUITest
 	public override string Issue => "Shell flyout footer unsubscribes MeasureInvalidated when replaced";
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void ReplacedFooterDoesNotInvalidateCurrentFooterMeasure()
 	{
 		App.WaitForElement("PrepareFooters");

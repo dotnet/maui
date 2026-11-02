@@ -301,14 +301,6 @@ namespace Microsoft.Maui.Controls.SourceGen
 			defaultSeverity: DiagnosticSeverity.Info,
 			isEnabledByDefault: true);
 
-		public static DiagnosticDescriptor CSharpExpressionsRequirePreviewFeatures = new DiagnosticDescriptor(
-			id: "MAUIX2012",
-			title: "C# Expressions require EnablePreviewFeatures",
-			messageFormat: "XAML C# Expressions are an experimental feature. Add '<EnablePreviewFeatures>true</EnablePreviewFeatures>' to your project file to enable them.",
-			category: "XamlParsing",
-			defaultSeverity: DiagnosticSeverity.Error,
-			isEnabledByDefault: true);
-
 		public static DiagnosticDescriptor AsyncLambdaNotSupported = new DiagnosticDescriptor(
 			id: "MAUIX2013",
 			title: "Async lambda event handlers are not supported",

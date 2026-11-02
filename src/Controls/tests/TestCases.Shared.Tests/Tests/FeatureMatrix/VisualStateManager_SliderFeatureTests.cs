@@ -9,6 +9,7 @@ public class VisualStateManager_SliderFeatureTests : _GalleryUITest
 {
 	public const string VisualStateManagerSliderFeatureTests = "VisualStateManager Feature Matrix";
 	public override string GalleryPageName => VisualStateManagerSliderFeatureTests;
+	protected override string GallerySubPageButton => "VSMSliderButton";
 
 	public VisualStateManager_SliderFeatureTests(TestDevice device)
 		: base(device)
@@ -18,8 +19,6 @@ public class VisualStateManager_SliderFeatureTests : _GalleryUITest
 	[Test, Order(1)]
 	public void VerifyVSM_Slider_NormalState()
 	{
-		App.WaitForElement("VSMSliderButton");
-		App.Tap("VSMSliderButton");
 		App.WaitForElement("SliderState");
 		var stateText = App.FindElement("SliderState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Normal | Value: 50"));

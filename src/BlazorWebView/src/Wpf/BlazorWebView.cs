@@ -366,6 +366,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 			if (_webviewManager != null)
 			{
 				// Dispatch because this is going to be async, and we want to catch any errors
+				var logger = Services.GetService<ILogger<BlazorWebView>>() ?? NullLogger<BlazorWebView>.Instance;
 				_ = ComponentsDispatcher.InvokeAsync(async () =>
 				{
 					var newItems = (eventArgs.NewItems ?? Array.Empty<RootComponent>()).Cast<RootComponent>();
@@ -380,7 +381,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 					{
 						await item.RemoveFromWebViewManagerAsync(_webviewManager);
 					}
-				});
+				}).ObserveExceptionsAsync(logger);
 			}
 		}
 
@@ -437,13 +438,13 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 		/// </summary>
 		protected virtual async ValueTask DisposeAsyncCore()
 		{
-			// Dispose this component's contents that user-written disposal logic and Razor component disposal logic will
-			// complete first. Then dispose the WebView2 control. This order is critical because once the WebView2 is
-			// disposed it will prevent and Razor component code from working because it requires the WebView to exist.
+			// Keep JS interop available until component and scoped service disposal completes.
+			// Then stop sending messages before disposing the WebView2 control on the UI thread.
 			if (_webviewManager != null)
 			{
 				await _webviewManager.DisposeAsync()
-					.ConfigureAwait(false);
+					.ConfigureAwait(true);
+				_webviewManager.MarkAsDisposing();
 				_webviewManager = null;
 			}
 
@@ -458,9 +459,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 			{
 				return;
 			}
-
-			// Mark as disposing to prevent further message sending
-			_webviewManager?.MarkAsDisposing();
 
 			_isDisposed = true;
 

@@ -193,7 +193,7 @@ public partial class BindingAndMarkupHotReloadTests
 	}
 
 	[MetadataUpdateFact]
-	public void XReferenceBinding_RenamedUnregisteredName_DoesNotClearExistingSource()
+	public void XReferenceBinding_RenamedName_RetainsElementAndUpdatesSource()
 	{
 		const string pageStub = """
 			namespace TestAiAssisted;
@@ -233,7 +233,7 @@ public partial class BindingAndMarkupHotReloadTests
 			""";
 
 		using var harness = new XamlHotReloadTestHarness(
-			nameof(XReferenceBinding_RenamedUnregisteredName_DoesNotClearExistingSource),
+			nameof(XReferenceBinding_RenamedName_RetainsElementAndUpdatesSource),
 			PageClass,
 			pageStub,
 			BindingAndMarkupSource);
@@ -245,14 +245,22 @@ public partial class BindingAndMarkupHotReloadTests
 			var layout = Assert.IsType<VerticalStackLayout>(page.Content);
 			var caption = Assert.IsType<Label>(layout.Children[0]);
 			var formatted = Assert.IsType<Label>(layout.Children[1]);
+			Assert.Same(caption, page.FindByName<Label>("CaptionLabel"));
+			Assert.Equal("echo Caption V0", formatted.Text);
 
 			Assert.Same(page, live.ApplyUpdate<ContentPage>(1));
-			Assert.Equal("Caption V0", caption.Text);
-			Assert.Equal("echo Caption V0", formatted.Text);
+			Assert.Same(caption, layout.Children[0]);
+			Assert.Null(page.FindByName<Label>("CaptionLabel"));
+			Assert.Same(caption, page.FindByName<Label>("HeaderLabel"));
+			Assert.Equal("Caption V1", caption.Text);
+			Assert.Equal("mirror Caption V1", formatted.Text);
 
 			var registration = GetTextRegistration(formatted);
 			var binding = Assert.IsAssignableFrom<BindingBase>(registration.Binding);
 			Assert.Same(caption, binding.GetType().GetProperty("Source")!.GetValue(binding));
+
+			caption.Text = "Caption V2";
+			Assert.Equal("mirror Caption V2", formatted.Text);
 		});
 	}
 

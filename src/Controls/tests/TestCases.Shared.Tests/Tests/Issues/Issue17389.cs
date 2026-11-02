@@ -14,6 +14,7 @@ public class Issue17389 : _IssuesUITest
 
     public override string Issue => "InputTransparent should not affect background color on Windows layouts";
 
+#if TEST_FAILS_ON_CATALYST // Issue Link: https://github.com/dotnet/maui/issues/39775
     [Test, Order(1)]
     [Category(UITestCategories.Layout)]
     public void ValidateBackgroundColorDoesNotAffectInputTransparent()
@@ -30,19 +31,21 @@ public class Issue17389 : _IssuesUITest
 
         foreach (var layout in layouts)
         {
-            App.Tap(layout);
+            App.TapElement(layout);
         }
 
-        App.WaitForElement("Tap count: 4");
+        Assert.That(App.WaitForTextToBePresentInElement("TapCountLabel", "Tap count: 4"), Is.True);
         App.Click("ToggleInputTransparentButton");
+        Assert.That(App.WaitForTextToBePresentInElement("RedGrid", "InputTransparent=True"), Is.True);
 
         foreach (var layout in layouts)
         {
-            App.Tap(layout);
+            App.TapElement(layout);
         }
 
-        App.WaitForElement("Tap count: 0");
+        Assert.That(App.WaitForTextToBePresentInElement("TapCountLabel", "Tap count: 0"), Is.True);
     }
+#endif
 
     [Test, Order(2)]
     [Category(UITestCategories.Layout)]

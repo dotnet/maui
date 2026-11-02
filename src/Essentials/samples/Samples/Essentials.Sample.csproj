@@ -37,10 +37,6 @@
     <WinAppManifestPath>Platforms\Windows\Package.appxmanifest</WinAppManifestPath>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(UseMaui)' != 'true' and $(TargetFramework.Contains('-tizen'))">
-    <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" ExcludeAssets="runtime" />
-  </ItemGroup>
-
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.1.0" />
   </ItemGroup>

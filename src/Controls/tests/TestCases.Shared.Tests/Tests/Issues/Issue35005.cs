@@ -11,7 +11,7 @@ public class Issue35005 : _IssuesUITest
 	public override string Issue => "SearchHandler Query not shown on iOS/MacCatalyst at load time";
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void SearchHandlerQueryShouldBeVisibleOnLoad()
 	{
 		// Wait for the page to load

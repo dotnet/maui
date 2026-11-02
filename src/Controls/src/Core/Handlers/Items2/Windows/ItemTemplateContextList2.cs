@@ -7,12 +7,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items2;
 /// A lazily-populated read-only list that wraps an <see cref="IList"/> items source,
 /// creating <see cref="ItemTemplateContext2"/> instances on demand and caching them by index.
 /// Used for non-observable list sources.
+/// References the owner weakly, including contexts created after initial enumeration.
 /// </summary>
 internal class ItemTemplateContextList2 : IReadOnlyList<ItemTemplateContext2>
 {
 	readonly IList _itemsSource;
 	readonly DataTemplate _itemTemplate;
-	readonly BindableObject _container;
+	readonly WeakReference<BindableObject> _container;
 	readonly IMauiContext? _mauiContext;
 	readonly double _itemHeight;
 	readonly double _itemWidth;
@@ -42,7 +43,7 @@ internal class ItemTemplateContextList2 : IReadOnlyList<ItemTemplateContext2>
 	{
 		_itemsSource = itemsSource;
 		_itemTemplate = itemTemplate;
-		_container = container;
+		_container = new(container);
 		_mauiContext = mauiContext;
 		_itemHeight = itemHeight ?? 0;
 		_itemWidth = itemWidth ?? 0;

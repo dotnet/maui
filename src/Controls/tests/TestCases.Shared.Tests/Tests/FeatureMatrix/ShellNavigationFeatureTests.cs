@@ -4,11 +4,11 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
 
-[Category(UITestCategories.Shell)]
 public class ShellNavigationFeatureTests : _GalleryUITest
 {
 	public const string ShellFeatureMatrix = "Shell Feature Matrix";
 	public override string GalleryPageName => ShellFeatureMatrix;
+	protected override string GallerySubPageButton => "ShellNavigationButton";
 
 	public ShellNavigationFeatureTests(TestDevice device) : base(device) { }
 
@@ -106,10 +106,9 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 
 	// Shell.CurrentState, CurrentPage, CurrentItem, and Shell.Current reflect the initial Main tab.
 	[Test, Order(1)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void VerifyShellProperties_InitialState()
 	{
-		App.WaitForElement("ShellNavigationButton");
-		App.Tap("ShellNavigationButton");
 		App.WaitForElement("MainPageIdentityLabel");
 		Assert.That(App.FindElement("CurrentStateLabel").GetText(), Does.Contain("main"));
 		Assert.That(App.FindElement("CurrentPageLabel").GetText(), Is.EqualTo("ShellNavigation"));
@@ -119,6 +118,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 
 	// Shell properties update when switching flyout items (Main → Page2).
 	[Test, Order(2)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void VerifyShellProperties_FlyoutSwitch()
 	{
 		NavigateToPage2();
@@ -132,6 +132,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 
 	// Shell.CurrentPage updates when switching ShellContent tabs (Content1 → Content2) in Page3.
 	[Test, Order(3)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void VerifyShellProperties_ContentSwitch()
 	{
 		NavigateToPage3();
@@ -148,6 +149,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 
 	// Shell.CurrentPage updates when switching ShellSection tabs (TabA → TabB).
 	[Test, Order(4)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void VerifyShellProperties_TabSwitch()
 	{
 		NavigateToPage2();
@@ -167,6 +169,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 
 	// Tapping the back arrow with no BackButtonBehavior command pops the page.
 	[Test, Order(5)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void BackButton_TapBackArrow_NoCommand_NavigatesBack()
 	{
 		NavigateToDetail1AndWait();
@@ -178,6 +181,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 
 	// Relative route "navtest1" pushes NavTest1 onto the stack from Detail1.
 	[Test, Order(6)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void RelativeRoute_Detail1ToNavTest1()
 	{
 		App.WaitForElement("MainPageIdentityLabel");
@@ -189,6 +193,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 
 	// Forward push: NavTest1 → NavTest2 via relative route.
 	[Test, Order(7)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void ForwardNavigation_NavTest1ToNavTest2()
 	{
 		App.WaitForElement("NavTest1ToNavTest2Button");
@@ -198,6 +203,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 
 	// "../navtest3" pops NavTest2 then pushes NavTest3 in a single GoToAsync call.
 	[Test, Order(8)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void BackAndForwardNavigation_NavTest2ToNavTest3()
 	{
 		App.WaitForElement("NavTest2BackForwardButton");
@@ -207,6 +213,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 
 	// "../.." pops two levels at once, landing on Detail1.
 	[Test, Order(9)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void DoubleBackNavigation_NavTest3ToDetail1()
 	{
 		App.WaitForElement("NavTest3MultiBackButton");
@@ -216,6 +223,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 
 	// Absolute route "//page2" jumps directly across flyout items from Detail1.
 	[Test, Order(10)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void AbsoluteRoute_Detail1ToPage2()
 	{
 		App.WaitForElement("Detail1AbsoluteButton");
@@ -227,6 +235,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 
 	// "subdetail" resolves relative to the page that pushed it (Detail1 context).
 	[Test, Order(11)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void ContextualRoute_FromDetail1_SubDetailShowsDetail1Context()
 	{
 		App.WaitForElement("GoToMainButton");
@@ -248,6 +257,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 
 	// "subdetail" resolves relative to the page that pushed it (Detail2 context).
 	[Test, Order(12)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void ContextualRoute_FromDetail2_SubDetailShowsDetail2Context()
 	{
 		App.WaitForElement("Detail2ContextualNavButton");
@@ -266,6 +276,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 
 	// Unregistering a route prevents navigation to it.
 	[Test, Order(13)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void RouteRegistration_UnregisterRoute_NavigationFails()
 	{
 		App.WaitForElement("ToggleRouteButton");
@@ -276,6 +287,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 
 	// Re-registering a route restores navigation to it.
 	[Test, Order(14)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void RouteRegistration_ReRegisterRoute_NavigationSucceeds()
 	{
 		App.WaitForElement("ToggleRouteButton");
@@ -292,6 +304,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 
 	// ShellNavigatingEventArgs.Cancel() blocks the navigation; disabling it resumes normal flow.
 	[Test, Order(15)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void CancelNavigation_NavigationIsBlocked_StaysOnMain()
 	{
 		App.WaitForElement("MainPageIdentityLabel");
@@ -316,6 +329,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 
 	// Deferral delays navigation completion; the page still loads once the deferral is resolved.
 	[Test, Order(16)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void DeferralNavigation_NavigationCompletes_AfterDelay()
 	{
 		App.WaitForElement("MainPageIdentityLabel");
@@ -337,6 +351,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 
 	// Pushing OptionsPage adds it to the stack; count goes from 1 to 2.
 	[Test, Order(17)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void TabStack_OnPushAsync_EnterOptionsPage_TabStackCountIsTwo()
 	{
 		App.WaitForElement("MainPageIdentityLabel");
@@ -354,6 +369,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 
 	// Pushing SubPage1 from OptionsPage grows the stack to count 3.
 	[Test, Order(18)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void TabStack_OnPushAsync_SubPage1_TabStackCountIsThree()
 	{
 		App.WaitForElement("OptionsPageIdentityLabel");
@@ -368,6 +384,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 
 	// Pushing SubPage2 from SubPage1 grows the stack to count 4.
 	[Test, Order(19)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void TabStack_OnPushAsync_SubPage2_TabStackCountIsFour()
 	{
 		App.WaitForElement("OptionsSubPage1IdentityLabel");
@@ -382,6 +399,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 
 	// Popping SubPage2 shrinks the stack back to count 3.
 	[Test, Order(20)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void TabStack_OnPopAsync_SubPage2_TabStackCountIsThree()
 	{
 		App.WaitForElement("OptionsSubPage2IdentityLabel");
@@ -396,6 +414,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 
 	// PopToRoot clears the entire push stack and returns to the root (Main).
 	[Test, Order(21)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void TabStack_OnPopToRootAsync_ReturnsToMainPage()
 	{
 		App.WaitForElement("OptionsSubPage1IdentityLabel");
@@ -405,6 +424,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 
 	// InsertPageBefore inserts below the current page; we stay on OptionsPage (count = 3).
 	[Test, Order(22)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void TabStack_OnInsertPageBefore_InsertsPageBelowCurrentPage()
 	{
 		App.WaitForElement("MainPageIdentityLabel");
@@ -422,6 +442,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 
 	// RemovePage removes the inserted page, restoring the stack to count 2.
 	[Test, Order(23)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void TabStack_OnRemovePage_RemovesInsertedPage_CountBackToTwo()
 	{
 		App.WaitForElement("OptionsPageIdentityLabel");
@@ -436,6 +457,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 
 	// RemovePage is a no-op when there is nothing extra to remove.
 	[Test, Order(24)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void TabStack_OnRemovePage_NoOp_WhenNothingToRemove()
 	{
 		App.WaitForElement("OptionsPageIdentityLabel");
@@ -448,6 +470,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 
 	// Tab.Stack and INavigation.NavigationStack are identical after mixed insert/push operations.
 	[Test, Order(25)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void TabStack_GetNavigationStack_TabStackMatchesNavigationStack()
 	{
 		App.WaitForElement("OptionsPageIdentityLabel");
@@ -475,6 +498,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 
 	// Navigating event fires with Source=Pop; Current shows the page being left.
 	[Test, Order(26)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void NavEvents_Pop_NavigatingEvent_SourceIsPopAndCurrentIsPreviousPage()
 	{
 		App.WaitForElement("MainPageIdentityLabel");
@@ -497,6 +521,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 
 	// Navigated event fires with Source=Pop; Current is the landed page, Previous is the popped page.
 	[Test, Order(27)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void NavEvents_Pop_NavigatedEvent_CurrentIsLandedPagePreviousIsPopped()
 	{
 		App.WaitForElement("OptionsPageIdentityLabel");
@@ -511,6 +536,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 
 	// Navigating event fires with Source=Push; Current shows the page being pushed from.
 	[Test, Order(28)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void NavEvents_Push_NavigatingEvent_SourceIsPushAndCurrentIsPushedFromPage()
 	{
 		App.WaitForElement("OptionsPageIdentityLabel");
@@ -529,6 +555,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 
 	// Navigated event fires with Source=Push; Current is the new page, Previous is the source page.
 	[Test, Order(29)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void NavEvents_Push_NavigatedEvent_CurrentIsNewPagePreviousIsSourcePage()
 	{
 		App.WaitForElement("OptionsSubPage1IdentityLabel");
@@ -543,6 +570,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 
 	// Navigating event fires with Source=ShellItemChanged when switching flyout items.
 	[Test, Order(30)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void NavEvents_ShellItemChanged_NavigatingEvent_SourceIsShellItemChanged()
 	{
 		App.WaitForElement("OptionsSubPage1IdentityLabel");
@@ -564,6 +592,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 
 	// Navigated event fires with Source=ShellItemChanged; Current is the new item's page.
 	[Test, Order(31)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void NavEvents_ShellItemChanged_NavigatedEvent_CurrentIsPage2PreviousIsMain()
 	{
 		App.WaitForElement("Page2ContentA1PageLabel");
@@ -579,6 +608,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 	// GoToAsync source is determined by structural path change, not by the API called.
 	// "//main/MainContent" from Page2 crosses a ShellItem boundary → Source=ShellItemChanged.
 	[Test, Order(32)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void NavEvents_GoToAsyncAbsoluteRoute_NavigatingEvent_SourceIsShellItemChanged()
 	{
 		App.WaitForElement("Page2ContentA1PageLabel");
@@ -591,6 +621,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 
 	// Shell.Navigated also reports ShellItemChanged for the same GoToAsync absolute route.
 	[Test, Order(33)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void NavEvents_GoToAsyncAbsoluteRoute_NavigatedEvent_SourceIsShellItemChanged()
 	{
 		App.WaitForElement("MainPageIdentityLabel");
@@ -602,6 +633,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 #if TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/34318
 	// Navigating event fires with Source=ShellContentChanged when switching ShellContent tabs.
 	[Test, Order(34)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void NavEvents_ShellContentChanged_NavigatingEvent_SourceIsShellContentChanged()
 	{
 		App.WaitForElement("MainPageIdentityLabel");
@@ -621,6 +653,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 
 	// Navigated event confirms the content switch with correct Current and Previous pages.
 	[Test, Order(35)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void NavEvents_ShellContentChanged_NavigatedEvent_CurrentIsContent2PreviousIsContent1()
 	{
 		App.WaitForElement("Page3C2PageLabel");
@@ -637,6 +670,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 
 	// Navigating event fires with Source=ShellSectionChanged when switching ShellSection tabs.
 	[Test, Order(36)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void NavEvents_ShellSectionChanged_NavigatingEvent_SourceIsShellSectionChanged()
 	{
 		NavigateToPage2();
@@ -655,6 +689,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 
 	// Navigated event confirms the section switch with correct Current and Previous pages.
 	[Test, Order(37)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void NavEvents_ShellSectionChanged_NavigatedEvent_CurrentIsTabBPreviousIsTabA()
 	{
 		App.WaitForElement("Page2TabBPageLabel");
@@ -671,6 +706,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 
 	// Navigating event fires with Source=PopToRoot when the entire push stack is cleared.
 	[Test, Order(38)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void NavEvents_PopToRoot_NavigatingEvent_SourceIsPopToRoot()
 	{
 		App.WaitForElement("MainPageIdentityLabel");
@@ -687,6 +723,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 
 	// Navigated event confirms PopToRoot landed on Main with Source=PopToRoot.
 	[Test, Order(39)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void NavEvents_PopToRoot_NavigatedEvent_CurrentIsMainSourceIsPopToRoot()
 	{
 		App.WaitForElement("MainPageIdentityLabel");
@@ -698,6 +735,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 	// ── Pass Data ─────────────────────────────────────────────────────────────
 	// String query param (?name=...) is received by IQueryAttributable on the detail page.
 	[Test, Order(40)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void PassData_StringQueryParam_ReceivedByIQueryAttributable()
 	{
 		App.WaitForElement("MainPageIdentityLabel");
@@ -714,6 +752,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 
 	// Dictionary-based params are received by IQueryAttributable on the detail page.
 	[Test, Order(41)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void PassData_DictionaryParam_ReceivedByIQueryAttributable()
 	{
 		App.WaitForElement("QueryDataDetailPageIdentityLabel");
@@ -730,6 +769,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 
 	// ShellNavigationQueryParameters (single-use) are received by IQueryAttributable.
 	[Test, Order(42)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void PassData_SingleUseParams_ReceivedByIQueryAttributable()
 	{
 		App.WaitForElement("QueryDataDetailPageIdentityLabel");
@@ -746,6 +786,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 
 	// Both name and IQA labels receive the same param from string query (both set in ApplyQueryAttributes).
 	[Test, Order(43)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void PassData_StringQueryParam_BothLabelsReceiveSameValue()
 	{
 		App.WaitForElement("QueryDataDetailPageIdentityLabel");
@@ -763,6 +804,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 
 	// Backwards navigation with data passes ?backvalue to the previous page via IQueryAttributable.
 	[Test, Order(44)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void PassData_BackwardsNavigation_PassesDataToPreviousPage()
 	{
 		App.WaitForElement("QueryDataDetailPageIdentityLabel");
@@ -779,6 +821,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 
 	// Multiple string params (?name=&location=) are each received by IQueryAttributable.
 	[Test, Order(45)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void PassData_MultipleStringParams_ReceivedByIQueryAttributable()
 	{
 		// After test 45 cleanup we are already on MainPage
@@ -797,6 +840,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 
 	// IQueryAttributable receives decoded values for all data passing methods.
 	[Test, Order(46)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void PassData_IQueryAttributable_ReceivesDecodedValues()
 	{
 		App.WaitForElement("QueryDataDetailPageIdentityLabel");
@@ -814,6 +858,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 
 	// Dictionary data is retained in memory; navigating forward without data and back re-applies it.
 	[Test, Order(47)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void PassData_Dictionary_PersistsWhenNavigatingToIntermediatePageAndBack()
 	{
 		App.WaitForElement("QueryDataDetailPageIdentityLabel");
@@ -850,6 +895,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 	// Multi-page GoToAsync with prefixed params: intermediate page receives its own params,
 	// last page receives unprefixed params. Overlapping "name" key is scoped correctly.
 	[Test, Order(48)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void PassData_MultiPageNavigation_IntermediateAndLastPageReceiveCorrectParams()
 	{
 		App.WaitForElement("MainPageIdentityLabel");
@@ -890,6 +936,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 	// Verifies that overlapping param names are correctly scoped: intermediate gets
 	// "name=ForIntermediate" while detail gets "name=DetailValue" — they don't cross-contaminate.
 	[Test, Order(49)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void PassData_MultiPageNavigation_OverlappingParamNamesAreScopedCorrectly()
 	{
 		App.WaitForElement("MainPageIdentityLabel");
@@ -922,6 +969,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 #if TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/1625
 	// BackButtonBehavior.Text replaces the back button label with a custom string.
 	[Test, Order(50)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void BackButtonBehavior_TextOverride_CustomTextShownOnBackButton()
 	{
 		App.WaitForElement("MainPageIdentityLabel");
@@ -938,6 +986,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 
 	// BackButtonBehavior.CommandParameter passes the correct value to the back command.
 	[Test, Order(51)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void BackButtonBehavior_CommandParameter_CommandFiresWithCorrectParameter()
 	{
 		App.WaitForElement("MainPageIdentityLabel");
@@ -954,6 +1003,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 
 	// BackButtonBehavior.IsEnabled=false keeps the back button visible but ignores taps.
 	[Test, Order(52)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void BackButtonBehavior_IsEnabled_False_BackButtonDoesNotNavigate()
 	{
 		App.WaitForElement("MainPageIdentityLabel");
@@ -976,6 +1026,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 
 	// BackButtonBehavior.IsVisible=false hides the back button; programmatic navigation still works.
 	[Test, Order(53)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void BackButtonBehavior_IsVisible_False_ProgrammaticNavStillWorks()
 	{
 		App.WaitForElement("MainPageIdentityLabel");
@@ -988,6 +1039,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 #if TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/1625
 	// BackButtonBehavior.IconOverride replaces the default back arrow with a custom icon.
 	[Test, Order(54)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void BackButtonBehavior_IconOverride_CustomIconShownOnBackButton()
 	{
 		App.WaitForElement("Detail1GoBackButton");

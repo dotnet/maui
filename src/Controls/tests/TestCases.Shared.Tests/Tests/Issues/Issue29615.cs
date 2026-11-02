@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Flyout icon is displayed when flyout is disabled on iOS and MacCatalyst";
 
 		[Test]
-		[Category(UITestCategories.Shell)]
+		[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 		public void VerifyFlyoutIconIsNotPresentWhenDisabledFlyout()
 		{
 			App.WaitForElement("DisabledButton");

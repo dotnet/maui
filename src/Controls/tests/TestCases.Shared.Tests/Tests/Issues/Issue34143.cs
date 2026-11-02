@@ -11,7 +11,7 @@ public class Issue34143 : _IssuesUITest
 	public Issue34143(TestDevice device) : base(device) { }
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void TabBarShouldBeVisibleAfterNavigatingFromModalViaGoToAsync()
 	{
 		// Start on Home page

@@ -41,7 +41,7 @@ sets the drawer toggle purely from `FlyoutBehavior`, so both values can be `true
 
 What is guaranteed is **precedence**: the two share a single navigation slot, and the back button wins.
 A backend should check the back button first and only fall through to the drawer toggle, exactly as the
-built-in `ToolbarExtensions.UpdateBackButton` implementations do on Android and Tizen.
+built-in `ToolbarExtensions.UpdateBackButton` implementation does on Android.
 
 Ordering is also guaranteed: the drawer toggle backing value is updated *before* `BackButtonVisible`
 notifies, and the `DrawerToggleVisible` notification is raised *after* it. So a backend rendering the
@@ -94,10 +94,9 @@ window with no additional work from the backend.
 | Platform | Consumes `DrawerToggleVisible`? | Where |
 | -------- | ------------------------------- | ----- |
 | Android | Yes | `Controls.Platform.ToolbarExtensions.UpdateBackButton` selects a `DrawerArrowDrawable` with `Progress = 0` when the back button is hidden and the drawer toggle is visible. Shell additionally drives an `ActionBarDrawerToggle` from `ShellToolbarTracker`. |
-| Tizen | Yes | `Controls.Platform.ToolbarExtensions.UpdateBackButton` installs a menu button, and `UpdateTitleIcon` avoids clearing the icon while the drawer toggle is visible. |
 | Windows | No | The flyout toggle is rendered by `NavigationView`, not by the toolbar. |
 | iOS / MacCatalyst | No | The flyout toggle is owned by the flyout/navigation controller, not by the toolbar. |
 
-The `DrawerToggleVisible` property mapping is therefore registered only for Android and Tizen. Because
+The `DrawerToggleVisible` property mapping is therefore registered only for Android. Because
 that mapping and the `BackButtonVisible` mapping both call `UpdateBackButton`, a change that flips both
 values runs it twice; this is intentional and idempotent.

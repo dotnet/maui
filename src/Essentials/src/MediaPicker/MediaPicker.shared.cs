@@ -251,7 +251,6 @@ namespace Microsoft.Maui.Media
 		///   The <c>PhotosAddOnly</c> permission will be requested.</description></item>
 		///   <item><description><b>Windows</b>: Not supported. This property is ignored on Windows. The captured media is saved to a
 		///   temporary cache folder and the user can save it manually.</description></item>
-		///   <item><description><b>Tizen</b>: Not supported. This property is ignored on Tizen.</description></item>
 		/// </list>
 		/// </remarks>
 		public bool SaveToGallery { get; set; } = false;

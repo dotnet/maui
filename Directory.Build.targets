@@ -40,8 +40,8 @@
 
   <!-- platform version number information -->
   <PropertyGroup Condition="'$(_MauiTargetPlatformIsiOS)' == 'True'">
-    <SupportedOSPlatformVersion>13.0</SupportedOSPlatformVersion>
-    <TargetPlatformMinVersion>13.0</TargetPlatformMinVersion>
+    <SupportedOSPlatformVersion>15.0</SupportedOSPlatformVersion>
+    <TargetPlatformMinVersion>15.0</TargetPlatformMinVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(_MauiTargetPlatformIstvOS)' == 'True'">
     <SupportedOSPlatformVersion>10.0</SupportedOSPlatformVersion>
@@ -59,11 +59,6 @@
     <SupportedOSPlatformVersion>24.0</SupportedOSPlatformVersion>
     <TargetPlatformMinVersion>24.0</TargetPlatformMinVersion>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(_MauiTargetPlatformIsTizen)' == 'True'">
-    <SupportedOSPlatformVersion>6.5</SupportedOSPlatformVersion>
-    <TargetPlatformMinVersion>6.5</TargetPlatformMinVersion>
-  </PropertyGroup>
-
   <!--
     NOTE: The Contains('-windows10') is a bit of a hack
     because we don't want to set these properties for WPF projects...

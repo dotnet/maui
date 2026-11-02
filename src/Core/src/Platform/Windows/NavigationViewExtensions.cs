@@ -141,6 +141,37 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		internal static void UpdateTopNavigationViewItemDisabledColor(this MauiNavigationView navigationView, Paint? paint)
+		{
+			var brush = paint?.ToPlatform();
+
+			if (navigationView.TopNavArea is not null && brush is not null)
+			{
+				// Set both unselected-disabled and selected-disabled keys so the custom color
+				// applies regardless of whether the disabled tab is currently selected.
+				navigationView.TopNavArea.Resources["TopNavigationViewItemForegroundDisabled"] = brush;
+				navigationView.TopNavArea.Resources["TopNavigationViewItemForegroundSelectedDisabled"] = brush;
+
+				navigationView.TopNavArea.RefreshThemeResources();
+			}
+
+			if (navigationView.MenuItemsSource is IList<NavigationViewItemViewModel> items)
+			{
+				foreach (var item in items)
+				{
+					item.DisabledForeground = brush;
+
+					if (item.MenuItemsSource is { } subItems)
+					{
+						foreach (var subItem in subItems)
+						{
+							subItem.DisabledForeground = brush;
+						}
+					}
+				}
+			}
+		}
+
 		public static void UpdateTopNavigationViewItemBackgroundUnselectedColor(this MauiNavigationView navigationView, Paint? paint)
 		{
 			var brush = paint?.ToPlatform();

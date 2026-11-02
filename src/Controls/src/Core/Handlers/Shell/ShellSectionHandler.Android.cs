@@ -519,10 +519,34 @@ namespace Microsoft.Maui.Controls.Handlers
                 handler.SafeNotifyDataSetChanged();
 
                 var targetIndex = visibleItems.IndexOf(currentItem);
-                if (targetIndex >= 0 && handler._viewPager.CurrentItem != targetIndex)
+                if (targetIndex >= 0)
                 {
-                    handler._viewPager.SetCurrentItem(targetIndex, true);
+                    handler.InitializeCurrentContent();
+                    if (handler._viewPager.CurrentItem != targetIndex)
+                    {
+                        handler._viewPager.SetCurrentItem(targetIndex, true);
+                    }
                 }
+            }
+        }
+
+        internal void InitializeCurrentContent()
+        {
+            if (_parentFragment?.IsAdded != true || _adapter is null || VirtualView?.CurrentItem is null || !IsCurrentlyActiveSection())
+            {
+                return;
+            }
+
+            var fragmentManager = _parentFragment.ChildFragmentManager;
+            if (fragmentManager.IsStateSaved)
+            {
+                return;
+            }
+
+            var index = SectionController.GetItems().IndexOf(VirtualView.CurrentItem);
+            if (index >= 0 && fragmentManager.FindFragmentByTag($"f{_adapter.GetItemId(index)}") is ShellContentNavigationFragment fragment)
+            {
+                fragment.InitializeNavigation();
             }
         }
 

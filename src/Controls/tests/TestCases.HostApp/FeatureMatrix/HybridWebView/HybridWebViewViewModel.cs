@@ -19,11 +19,17 @@ public class HybridWebViewViewModel : INotifyPropertyChanged
 
 	public HybridWebViewViewModel()
 	{
+		ResetToDefaults();
+	}
+
+	public void ResetToDefaults()
+	{
 		DefaultFile = "index.html";
 		HybridRoot = "HybridWebView1";
 		Status = "Ready";
 		IsVisible = true;
 		HasShadow = false;
+		FlowDirection = FlowDirection.LeftToRight;
 		IsLeftToRight = true;
 	}
 	public string DefaultFile

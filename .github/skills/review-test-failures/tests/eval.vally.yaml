@@ -8,8 +8,8 @@ type: capability
 defaults:
   runs: 3
   timeout: 5m
-  model: gpt-6-astra
-  judge_model: gpt-6-astra
+  model: gpt-6.1-sol
+  judge_model: gpt-6.1-sol
   executor: copilot-sdk
 
 environment:

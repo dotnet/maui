@@ -81,7 +81,8 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="StrokeShape"/>.</summary>
 		public static readonly BindableProperty StrokeShapeProperty =
-			BindableProperty.Create(nameof(StrokeShape), typeof(IShape), typeof(Border), new Rectangle(),
+			BindableProperty.Create(nameof(StrokeShape), typeof(IShape), typeof(Border),
+				defaultValueCreator: static _ => new Rectangle(),
 				propertyChanging: (bindable, oldvalue, newvalue) =>
 				{
 					if (oldvalue is not null)

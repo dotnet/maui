@@ -859,6 +859,7 @@ Describe 'Invoke-AzdoPipelineQueue retry safety' {
             'Test-IsDispatcherBudgetException',
             'Get-DispatcherHttpTimeoutSeconds',
             'Invoke-DispatcherSleep',
+            'Get-AzdoQueueFailureMessage',
             'Get-CiFixPipelineDefinitions',
             'Test-IsTransientHttpException',
             'Get-HttpStatusCode',
@@ -1125,6 +1126,81 @@ Describe 'Invoke-AzdoPipelineQueue retry safety' {
             Should -Invoke Invoke-RestMethod -ModuleName QueueCiFixAzdoValidationTest -Times 1 -Exactly -ParameterFilter { $Method -eq 'Post' }
             Should -Invoke Get-AzdoDuplicateBuild -ModuleName QueueCiFixAzdoValidationTest -Times 0 -Exactly
             Should -Invoke Start-Sleep -ModuleName QueueCiFixAzdoValidationTest -Times 0 -Exactly
+        }
+
+        It 'includes bounded Azure response details for a nontransient POST failure' {
+            $exception = [System.Net.Http.HttpRequestException]::new(
+                'Response status code does not indicate success: 400 (Bad Request).',
+                $null,
+                [System.Net.HttpStatusCode]::BadRequest)
+            $errorRecord = [System.Management.Automation.ErrorRecord]::new(
+                $exception,
+                'AzdoQueueFailure',
+                [System.Management.Automation.ErrorCategory]::InvalidOperation,
+                $null)
+            $errorRecord.ErrorDetails = [System.Management.Automation.ErrorDetails]::new(
+                '{"message":"The build request is invalid for this source provider.","typeKey":"BuildRequestValidationFailed"}')
+
+            Mock Invoke-RestMethod {
+                throw $errorRecord
+            } -ModuleName QueueCiFixAzdoValidationTest
+            Mock Get-AzdoDuplicateBuild {
+                throw 'Duplicate lookup must not run for a nontransient failure.'
+            } -ModuleName QueueCiFixAzdoValidationTest
+
+            {
+                Invoke-QueueTestAzdoPipelineQueue `
+                    -DefinitionId 313 `
+                    -Context $script:queueContext `
+                    -AuthToken test-token
+            } | Should -Throw '*400 (Bad Request)*Azure response: The build request is invalid for this source provider. (Azure type: BuildRequestValidationFailed)*'
+
+            Should -Invoke Invoke-RestMethod -ModuleName QueueCiFixAzdoValidationTest -Times 1 -Exactly -ParameterFilter {
+                $Method -eq 'Post'
+            }
+            Should -Invoke Get-AzdoDuplicateBuild -ModuleName QueueCiFixAzdoValidationTest -Times 0 -Exactly
+        }
+
+        It 'redacts and truncates non-JSON Azure response details' {
+            $exception = [System.InvalidOperationException]::new('invalid request')
+            $errorRecord = [System.Management.Automation.ErrorRecord]::new(
+                $exception,
+                'AzdoQueueFailure',
+                [System.Management.Automation.ErrorCategory]::InvalidOperation,
+                $null)
+            $errorRecord.ErrorDetails = [System.Management.Automation.ErrorDetails]::new(
+                ('Bearer abc.def.ghi access_token=sensitive ' + ('x' * 400)))
+
+            $message = Get-QueueTestAzdoQueueFailureMessage `
+                -ErrorRecord $errorRecord `
+                -MaximumDetailLength 256
+
+            $message | Should -Match 'Bearer \[redacted\]'
+            $message | Should -Match 'access_token=\[redacted\]'
+            $message | Should -Match '\.\.\. \[truncated\]$'
+            $message | Should -Not -Match 'sensitive'
+            $message.Length | Should -BeLessOrEqual 300
+        }
+
+        It 'redacts quoted JSON credential fields while preserving safe fallback details' {
+            $exception = [System.InvalidOperationException]::new('invalid request')
+            $errorRecord = [System.Management.Automation.ErrorRecord]::new(
+                $exception,
+                'AzdoQueueFailure',
+                [System.Management.Automation.ErrorCategory]::InvalidOperation,
+                $null)
+            $errorRecord.ErrorDetails = [System.Management.Automation.ErrorDetails]::new(
+                '{"access_token":"sensitive","nested":{"client_assertion":"assertion"},"ID_TOKEN" : "id-secret","refresh_token":"refresh","token":"general","requestId":"safe-id"}')
+
+            $message = Get-QueueTestAzdoQueueFailureMessage -ErrorRecord $errorRecord
+
+            $message | Should -Match '"access_token":"\[redacted\]"'
+            $message | Should -Match '"client_assertion":"\[redacted\]"'
+            $message | Should -Match '"ID_TOKEN" : "\[redacted\]"'
+            $message | Should -Match '"refresh_token":"\[redacted\]"'
+            $message | Should -Match '"token":"\[redacted\]"'
+            $message | Should -Match '"requestId":"safe-id"'
+            $message | Should -Not -Match ':\s*"(?:sensitive|assertion|id-secret|refresh|general)"'
         }
 
         It 'caps HTTP timeouts and retry sleeps to the shared remaining budget' {

@@ -13,7 +13,7 @@ public class Issue32985_RapidNavigation : _IssuesUITest
     public override string Issue => "Shell rapid overlapping navigations should not drop pages";
 
     [Test]
-    [Category(UITestCategories.Shell)]
+    [ShardedTestCategory(UITestCategories.Shell, shard: 1)]
     public void RapidOverlappingPushShouldNotDropPages()
     {
         // Tap button that fires two rapid PushAsync calls

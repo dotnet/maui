@@ -1,3 +1,4 @@
+using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Xunit;
@@ -6,19 +7,31 @@ namespace Microsoft.Maui.Controls.SourceGen.UnitTests;
 
 public class MemberResolverTests
 {
+	private static bool ResolvesToStaticType(MemberResolutionResult result)
+	{
+		var property = typeof(MemberResolutionResult).GetProperty("ResolvesToStaticType");
+		return property?.GetValue(result) is true;
+	}
+
+	private static Compilation CreateCompilation(params string[] sources)
+	{
+		return CSharpCompilation.Create(
+			"TestAssembly",
+			sources.Select(source => CSharpSyntaxTree.ParseText(source)),
+			[MetadataReference.CreateFromFile(typeof(object).Assembly.Location)],
+			new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+	}
+
 	// Helper to create a type symbol from C# code
 	private static ITypeSymbol? GetTypeSymbol(string typeName, string code)
 	{
-		var compilation = CSharpCompilation.Create("TestAssembly",
-			new[] { CSharpSyntaxTree.ParseText(code) },
-			new[] { MetadataReference.CreateFromFile(typeof(object).Assembly.Location) },
-			new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+		var compilation = CreateCompilation(code);
 
 		var type = compilation.GetTypeByMetadataName(typeName);
 		return type;
 	}
 
-	private static ITypeSymbol GetPageType() => GetTypeSymbol("TestApp.MainPage", 
+	private static ITypeSymbol GetPageType() => GetTypeSymbol("TestApp.MainPage",
 @"namespace TestApp {
 	public class MainPage {
 		public string Title { get; set; }
@@ -44,7 +57,7 @@ public class MemberResolverTests
 	public void Resolve_ThisPrefix_ReturnsForcedThis()
 	{
 		var result = MemberResolver.Resolve("this.Title", GetPageType(), GetViewModelType());
-		
+
 		Assert.Equal(MemberLocation.ForcedThis, result.Location);
 		Assert.Equal("Title", result.Expression);
 		Assert.Equal("Title", result.RootIdentifier);
@@ -56,7 +69,7 @@ public class MemberResolverTests
 	public void Resolve_DotPrefix_ReturnsForcedDataType()
 	{
 		var result = MemberResolver.Resolve(".Name", GetPageType(), GetViewModelType());
-		
+
 		Assert.Equal(MemberLocation.ForcedDataType, result.Location);
 		Assert.Equal("Name", result.Expression);
 		Assert.Equal("Name", result.RootIdentifier);
@@ -68,7 +81,7 @@ public class MemberResolverTests
 	public void Resolve_BindingContextPrefix_ReturnsForcedDataType()
 	{
 		var result = MemberResolver.Resolve("BindingContext.Name", GetPageType(), GetViewModelType());
-		
+
 		Assert.Equal(MemberLocation.ForcedDataType, result.Location);
 		Assert.Equal("Name", result.Expression);
 		Assert.Equal("Name", result.RootIdentifier);
@@ -79,7 +92,7 @@ public class MemberResolverTests
 	public void Resolve_OnlyOnThis_ReturnsThis()
 	{
 		var result = MemberResolver.Resolve("LocalOnly", GetPageType(), GetViewModelType());
-		
+
 		Assert.Equal(MemberLocation.This, result.Location);
 		Assert.Equal("LocalOnly", result.Expression);
 		Assert.True(result.IsLocal);
@@ -89,7 +102,7 @@ public class MemberResolverTests
 	public void Resolve_OnlyOnDataType_ReturnsDataType()
 	{
 		var result = MemberResolver.Resolve("DataTypeOnly", GetPageType(), GetViewModelType());
-		
+
 		Assert.Equal(MemberLocation.DataType, result.Location);
 		Assert.Equal("DataTypeOnly", result.Expression);
 		Assert.True(result.IsBinding);
@@ -99,7 +112,7 @@ public class MemberResolverTests
 	public void Resolve_OnBoth_ReturnsBoth()
 	{
 		var result = MemberResolver.Resolve("SharedName", GetPageType(), GetViewModelType());
-		
+
 		Assert.Equal(MemberLocation.Both, result.Location);
 		Assert.True(result.IsAmbiguous);
 	}
@@ -108,7 +121,7 @@ public class MemberResolverTests
 	public void Resolve_OnNeither_ReturnsNeither()
 	{
 		var result = MemberResolver.Resolve("NonExistent", GetPageType(), GetViewModelType());
-		
+
 		Assert.Equal(MemberLocation.Neither, result.Location);
 		Assert.True(result.IsNotFound);
 	}
@@ -117,7 +130,7 @@ public class MemberResolverTests
 	public void Resolve_NestedProperty_ResolvesRoot()
 	{
 		var result = MemberResolver.Resolve("User.DisplayName", GetPageType(), GetViewModelType());
-		
+
 		Assert.Equal(MemberLocation.DataType, result.Location);
 		Assert.Equal("User.DisplayName", result.Expression);
 		Assert.Equal("User", result.RootIdentifier);
@@ -127,7 +140,7 @@ public class MemberResolverTests
 	public void Resolve_WithMethodCall_ResolvesRoot()
 	{
 		var result = MemberResolver.Resolve("User.ToString()", GetPageType(), GetViewModelType());
-		
+
 		Assert.Equal(MemberLocation.DataType, result.Location);
 		Assert.Equal("User", result.RootIdentifier);
 	}
@@ -136,7 +149,7 @@ public class MemberResolverTests
 	public void Resolve_NullDataType_OnlyChecksThis()
 	{
 		var result = MemberResolver.Resolve("Title", GetPageType(), null);
-		
+
 		Assert.Equal(MemberLocation.This, result.Location);
 	}
 
@@ -144,7 +157,7 @@ public class MemberResolverTests
 	public void Resolve_NullThisType_OnlyChecksDataType()
 	{
 		var result = MemberResolver.Resolve("Name", null, GetViewModelType());
-		
+
 		Assert.Equal(MemberLocation.DataType, result.Location);
 	}
 
@@ -152,7 +165,7 @@ public class MemberResolverTests
 	public void Resolve_BothNull_ReturnsNeither()
 	{
 		var result = MemberResolver.Resolve("Anything", null, null);
-		
+
 		Assert.Equal(MemberLocation.Neither, result.Location);
 	}
 
@@ -160,7 +173,7 @@ public class MemberResolverTests
 	public void Resolve_ExpressionWithOperators_ResolvesFirstIdentifier()
 	{
 		var result = MemberResolver.Resolve("User.Age > 18", GetPageType(), GetViewModelType());
-		
+
 		Assert.Equal(MemberLocation.DataType, result.Location);
 		Assert.Equal("User", result.RootIdentifier);
 	}
@@ -169,9 +182,86 @@ public class MemberResolverTests
 	public void Resolve_DotPrefixWithNestedPath_Works()
 	{
 		var result = MemberResolver.Resolve(".User.DisplayName", GetPageType(), GetViewModelType());
-		
+
 		Assert.Equal(MemberLocation.ForcedDataType, result.Location);
 		Assert.Equal("User.DisplayName", result.Expression);
 		Assert.Equal("User", result.RootIdentifier);
+	}
+
+	[Theory]
+	[InlineData("DateTime.Now")]
+	[InlineData("DateTime.Now.ToString()")]
+	[InlineData("System.DateTime.UtcNow")]
+	[InlineData("global::System.DateTime.Today")]
+	[InlineData("string.Empty")]
+	[InlineData("int.MaxValue")]
+	public void Resolve_StaticMemberAccess_RecognizesTypeRoot(string expression)
+	{
+		var compilation = CreateCompilation("global using System;");
+
+		var result = MemberResolver.Resolve(expression, GetPageType(), GetViewModelType(), compilation);
+
+		Assert.Equal(MemberLocation.Neither, result.Location);
+		Assert.True(ResolvesToStaticType(result));
+	}
+
+	[Theory]
+	[InlineData("global using Dt = System.DateTime;", "Dt.Now")]
+	[InlineData("global using Sys = System;", "Sys.DateTime.Now")]
+	public void Resolve_GlobalUsingAlias_RecognizesTypeRoot(string globalUsing, string expression)
+	{
+		var compilation = CreateCompilation(globalUsing);
+
+		var result = MemberResolver.Resolve(expression, GetPageType(), GetViewModelType(), compilation);
+
+		Assert.Equal(MemberLocation.Neither, result.Location);
+		Assert.True(ResolvesToStaticType(result));
+	}
+
+	[Theory]
+	[InlineData("DateTime")]
+	[InlineData("DateTimeProperty")]
+	public void Resolve_BareIdentifier_DoesNotResolveAsStaticMemberAccess(string expression)
+	{
+		var compilation = CreateCompilation("global using System;");
+
+		var result = MemberResolver.Resolve(expression, GetPageType(), GetViewModelType(), compilation);
+
+		Assert.Equal(MemberLocation.Neither, result.Location);
+		Assert.False(ResolvesToStaticType(result));
+	}
+
+	[Fact]
+	public void Resolve_FileScopedUsing_DoesNotApplyToGeneratedExpression()
+	{
+		var compilation = CreateCompilation("using System;");
+
+		var result = MemberResolver.Resolve("DateTime.Now", GetPageType(), GetViewModelType(), compilation);
+
+		Assert.Equal(MemberLocation.Neither, result.Location);
+		Assert.False(ResolvesToStaticType(result));
+	}
+
+	[Fact]
+	public void Resolve_MemberInheritedFromInterface_ReturnsDataType()
+	{
+		var compilation = CreateCompilation(
+"""
+namespace TestApp;
+
+public interface IBaseViewModel
+{
+	string Name { get; }
+}
+
+public interface IViewModel : IBaseViewModel
+{
+}
+""");
+		var dataType = compilation.GetTypeByMetadataName("TestApp.IViewModel");
+
+		var result = MemberResolver.Resolve("Name", GetPageType(), dataType);
+
+		Assert.Equal(MemberLocation.DataType, result.Location);
 	}
 }

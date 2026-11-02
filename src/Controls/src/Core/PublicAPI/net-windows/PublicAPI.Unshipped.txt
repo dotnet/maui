@@ -1,4 +1,5 @@
 #nullable enable
+override Microsoft.Maui.Controls.Handlers.Items.StructuredItemsViewHandler<TItemsView>.UpdateItemsLayout() -> void
 Microsoft.Maui.Controls.DragGestureRecognizer.SendDragStarting(Microsoft.Maui.Controls.View! element, System.Func<Microsoft.Maui.IElement?, Microsoft.Maui.Graphics.Point?>? getPosition = null, Microsoft.Maui.Controls.PlatformDragStartingEventArgs? platformArgs = null) -> Microsoft.Maui.Controls.DragStartingEventArgs!
 Microsoft.Maui.Controls.DragGestureRecognizer.SendDropCompleted(Microsoft.Maui.Controls.DropCompletedEventArgs! args) -> void
 Microsoft.Maui.Controls.DataPackageOperation.Move = 2 -> Microsoft.Maui.Controls.DataPackageOperation
@@ -310,3 +311,7 @@ static Microsoft.Maui.Controls.Platform.FormattedStringExtensions.ToRunAndColors
 ~static readonly Microsoft.Maui.Controls.TabbedPage.BadgeTextProperty -> Microsoft.Maui.Controls.BindableProperty
 static Microsoft.Maui.Controls.Shell.ResolveFlyoutItemTemplate(Microsoft.Maui.Controls.Shell? shell, Microsoft.Maui.Controls.BindableObject! flyoutItem) -> Microsoft.Maui.Controls.DataTemplate?
 static Microsoft.Maui.Controls.Internals.DependencyResolver.ResetResolver() -> void
+Microsoft.Maui.Controls.Picker.~Picker() -> void
+Microsoft.Maui.Controls.SwipeView.~SwipeView() -> void
+Microsoft.Maui.Controls.ShellContent.~ShellContent() -> void
+Microsoft.Maui.Controls.GradientBrush.~GradientBrush() -> void

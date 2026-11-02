@@ -13,7 +13,7 @@ public class Issue22060 : _IssuesUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void ShouldAppearFlyoutIconAndContentPageTitle()
 	{
 		App.EnterTextInShellSearchHandler("Hello");

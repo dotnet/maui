@@ -15,13 +15,14 @@ using Microsoft.Maui.Controls.Xaml;
 namespace Microsoft.Maui.Controls.SourceGen;
 
 using static GeneratorHelpers;
-using static LocationHelpers;
 
 [Generator(LanguageNames.CSharp)]
 public class XamlGenerator : IIncrementalGenerator
 {
 	public void Initialize(IncrementalGeneratorInitializationContext initContext)
 	{
+		// The pipeline closure keeps this token alive for exactly the lifetime of its generator driver.
+		var hotReloadSessionToken = new HotReloadSessionToken();
 #if DEBUG
 		// if (!System.Diagnostics.Debugger.IsAttached)
 		// {
@@ -43,7 +44,7 @@ public class XamlGenerator : IIncrementalGenerator
 
 		var projectItemProvider = initContext.AdditionalTextsProvider
 			.Combine(initContext.AnalyzerConfigOptionsProvider)
-			.Select(ComputeProjectItem)
+			.Select((tuple, ct) => ComputeProjectItem(tuple, ct, hotReloadSessionToken))
 			.WithTrackingName(TrackingNames.ProjectItemProvider);
 
 		var xamlProjectItemProviderForCB = projectItemProvider
@@ -112,27 +113,7 @@ public class XamlGenerator : IIncrementalGenerator
 			}
 			catch (Exception e)
 			{
-				IXmlLineInfo lineInfo;
-				string errorMessage;
-
-				if (e is XamlParseException xpe)
-				{
-					lineInfo = xpe.XmlInfo;
-					errorMessage = xpe.UnformattedMessage;
-				}
-				else if (e is XmlException xmlEx)
-				{
-					lineInfo = new XmlLineInfo(xmlEx.LineNumber, xmlEx.LinePosition);
-					errorMessage = StripLineInfoFromXmlExceptionMessage(xmlEx.Message);
-				}
-				else
-				{
-					lineInfo = new XmlLineInfo();
-					errorMessage = e.Message;
-				}
-
-				var location = xamlItem?.ProjectItem?.RelativePath is not null ? LocationCreate(xamlItem.ProjectItem.RelativePath, lineInfo, string.Empty) : null;
-				sourceProductionContext.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, location, errorMessage));
+				sourceProductionContext.ReportDiagnostic(XamlDiagnosticHelpers.CreateXamlParserDiagnostic(xamlItem?.ProjectItem, xamlItem?.SourceText, e));
 			}
 		});
 
@@ -141,7 +122,7 @@ public class XamlGenerator : IIncrementalGenerator
 		{
 			var (xamlItem, xmlnsCache, typeCache, compilation) = provider;
 
-			if (xamlItem?.ProjectItem?.RelativePath is not string relativePath)
+			if (xamlItem?.ProjectItem?.RelativePath is null)
 			{
 				throw new InvalidOperationException("Xaml item or target path is null");
 			}
@@ -153,33 +134,7 @@ public class XamlGenerator : IIncrementalGenerator
 			{
 				if (xamlItem != null && xamlItem.Exception != null)
 				{
-					IXmlLineInfo lineInfo;
-					string errorMessage;
-
-					if (xamlItem.Exception is XamlParseException xpe)
-					{
-						lineInfo = xpe.XmlInfo;
-						errorMessage = xpe.UnformattedMessage;
-					}
-					else if (xamlItem.Exception is XmlException xmlEx)
-					{
-						lineInfo = new XmlLineInfo(xmlEx.LineNumber, xmlEx.LinePosition);
-						errorMessage = StripLineInfoFromXmlExceptionMessage(xmlEx.Message);
-					}
-					else if (xamlItem.Exception.InnerException is XmlException innerXmlEx)
-					{
-						lineInfo = new XmlLineInfo(innerXmlEx.LineNumber, innerXmlEx.LinePosition);
-						errorMessage = StripLineInfoFromXmlExceptionMessage(innerXmlEx.Message);
-					}
-					else
-					{
-						// Try to extract line info from message if present
-						lineInfo = ExtractLineInfoFromMessage(xamlItem.Exception.Message);
-						errorMessage = StripLineInfoFromXmlExceptionMessage(xamlItem.Exception.Message);
-					}
-
-					var location = LocationCreate(relativePath, lineInfo, string.Empty);
-					sourceProductionContext.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, location, errorMessage));
+					sourceProductionContext.ReportDiagnostic(XamlDiagnosticHelpers.CreateXamlParserDiagnostic(xamlItem.ProjectItem, xamlItem.SourceText, xamlItem.Exception));
 				}
 				return;
 			}
@@ -218,14 +173,14 @@ public class XamlGenerator : IIncrementalGenerator
 				int previousVersion = 0;
 				var hadPreviousEntry = xamlItem.ProjectItem.EnableIncrementalHotReload
 					&& xamlItem.Xaml is not null
-					&& XamlHotReloadState.TryGetPrevious(assemblyName, targetFramework, stateKey, out previousXaml, out previousRoot, out previousNodeIds, out previousNextId, out previousVersion);
+					&& XamlHotReloadState.TryGetPrevious(assemblyName, targetFramework, stateKey, xamlItem.ProjectItem.HotReloadSessionToken, out previousXaml, out previousRoot, out previousNodeIds, out previousNextId, out previousVersion);
 				if (hadPreviousEntry
 					&& previousXaml != xamlItem.Xaml
 					&& canEmitUC)
 				{
 					var rootType = ucRootType!;
 					var accessModifier = ucAccessModifier;
-					var generatedFields = XamlHotReloadState.GetGeneratedFields(assemblyName, targetFramework, stateKey);
+					var generatedFields = XamlHotReloadState.GetGeneratedFields(assemblyName, targetFramework, stateKey, xamlItem.ProjectItem.HotReloadSessionToken);
 					var patchBody = InitializeComponentCodeWriter.TryGeneratePatchBody(
 						previousRoot,
 						previousNodeIds,
@@ -262,7 +217,7 @@ public class XamlGenerator : IIncrementalGenerator
 						// accumulate a version chain: accumulation retained stale/invalid intermediate patches
 						// and produced non-deterministic, sometimes-uncompilable output when an edit was
 						// reverted (the invalid value lingered forever). See the XIHR versioning fix.
-						XamlHotReloadState.Update(assemblyName, targetFramework, stateKey, xamlItem.Xaml!, parsedNewRoot, effectiveNewIds, newNextNodeId, previousVersion + 1);
+						XamlHotReloadState.Update(assemblyName, targetFramework, stateKey, xamlItem.Xaml!, parsedNewRoot, effectiveNewIds, newNextNodeId, previousVersion + 1, xamlItem.ProjectItem.HotReloadSessionToken);
 						ucCode = UpdateComponentCodeWriter.GenerateUpdateComponent(rootType, accessModifier, patchBody);
 					}
 					else if (emptyDiff)
@@ -271,7 +226,7 @@ public class XamlGenerator : IIncrementalGenerator
 						// edit). Refresh the cached XAML text + parsed tree, and emit an EMPTY UpdateComponent()
 						// so the method stays present across generations (a disappearing UC looks like a
 						// type-removal delta and crashes Roslyn's EnC tracking).
-						XamlHotReloadState.Update(assemblyName, targetFramework, stateKey, xamlItem.Xaml!, parsedNewRoot, effectiveNewIds, newNextNodeId, previousVersion);
+						XamlHotReloadState.Update(assemblyName, targetFramework, stateKey, xamlItem.Xaml!, parsedNewRoot, effectiveNewIds, newNextNodeId, previousVersion, xamlItem.ProjectItem.HotReloadSessionToken);
 						ucCode = UpdateComponentCodeWriter.GenerateUpdateComponent(rootType, accessModifier, (string?)null);
 					}
 					else
@@ -285,7 +240,7 @@ public class XamlGenerator : IIncrementalGenerator
 						{
 							freshIds = NodeIdHelper.AssignIds(parsedNewRoot, 0, out freshNextId);
 						}
-						XamlHotReloadState.Update(assemblyName, targetFramework, stateKey, xamlItem.Xaml!, parsedNewRoot, freshIds, freshNextId, 0);
+						XamlHotReloadState.Update(assemblyName, targetFramework, stateKey, xamlItem.Xaml!, parsedNewRoot, freshIds, freshNextId, 0, xamlItem.ProjectItem.HotReloadSessionToken);
 						ucCode = UpdateComponentCodeWriter.GenerateUpdateComponent(rootType, accessModifier, (string?)null);
 					}
 				}
@@ -312,7 +267,7 @@ public class XamlGenerator : IIncrementalGenerator
 						// XAML and the outer catch surfaces the real parse-error diagnostic — swallowing
 						// here just avoids reporting it twice.
 					}
-					XamlHotReloadState.Update(assemblyName, targetFramework, stateKey, xamlItem.Xaml, seedRoot, seedIds, seedNextId, 0);
+					XamlHotReloadState.Update(assemblyName, targetFramework, stateKey, xamlItem.Xaml, seedRoot, seedIds, seedNextId, 0, xamlItem.ProjectItem.HotReloadSessionToken);
 				}
 				// else: cache exists and XAML unchanged (or rootType lookup failed). Leave state untouched.
 
@@ -337,27 +292,7 @@ public class XamlGenerator : IIncrementalGenerator
 			}
 			catch (Exception e)
 			{
-				IXmlLineInfo lineInfo;
-				string errorMessage;
-
-				if (e is XamlParseException xpe)
-				{
-					lineInfo = xpe.XmlInfo;
-					errorMessage = xpe.UnformattedMessage;
-				}
-				else if (e is XmlException xmlEx)
-				{
-					lineInfo = new XmlLineInfo(xmlEx.LineNumber, xmlEx.LinePosition);
-					errorMessage = StripLineInfoFromXmlExceptionMessage(xmlEx.Message);
-				}
-				else
-				{
-					lineInfo = new XmlLineInfo();
-					errorMessage = e.Message;
-				}
-
-				var location = xamlItem?.ProjectItem?.RelativePath is not null ? LocationCreate(xamlItem.ProjectItem.RelativePath, lineInfo, string.Empty) : null;
-				sourceProductionContext.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, location, errorMessage));
+				sourceProductionContext.ReportDiagnostic(XamlDiagnosticHelpers.CreateXamlParserDiagnostic(xamlItem?.ProjectItem, xamlItem?.SourceText, e));
 			}
 		});
 
@@ -417,7 +352,10 @@ $"""
 		var sb = new StringBuilder();
 		sb.AppendLine(AutoGeneratedHeaderText);
 		sb.AppendLine("#nullable enable");
-		foreach (var xmlns in xmlnsCache.GlobalGeneratedXmlnsDefinitions)
+		foreach (var xmlns in xmlnsCache.GlobalGeneratedXmlnsDefinitions
+			.OrderBy(static xmlns => xmlns.XmlNamespace, StringComparer.Ordinal)
+			.ThenBy(static xmlns => xmlns.Target, StringComparer.Ordinal)
+			.ThenBy(static xmlns => xmlns.AssemblyName, StringComparer.Ordinal))
 			sb.AppendLine($"[assembly: global::Microsoft.Maui.Controls.XmlnsDefinition(\"{xmlns.XmlNamespace}\", \"{xmlns.Target}\", AssemblyName = \"{EscapeIdentifier(xmlns.AssemblyName)}\")]");
 
 		return sb.ToString();
@@ -566,44 +504,4 @@ $"""
 		}
 	}
 
-	static string StripLineInfoFromXmlExceptionMessage(string message)
-	{
-		// XmlException messages typically end with " Line X, position Y."
-		// We want to strip that since we're reporting location separately
-		var lineIndex = message.LastIndexOf(" Line ");
-		if (lineIndex > 0)
-		{
-			// Strip both the trailing period after the line info and any double periods
-			return message.Substring(0, lineIndex).TrimEnd('.', ' ');
-		}
-		return message;
-	}
-
-	static IXmlLineInfo ExtractLineInfoFromMessage(string message)
-	{
-		// Try to extract "Line X, position Y" from the message
-		var lineIndex = message.LastIndexOf(" Line ");
-		if (lineIndex > 0)
-		{
-			try
-			{
-				var lineInfoPart = message.Substring(lineIndex + 6); // Skip " Line "
-				var parts = lineInfoPart.Split(new[] { ", position " }, StringSplitOptions.None);
-				if (parts.Length == 2)
-				{
-					var lineStr = parts[0].Trim();
-					var posStr = parts[1].TrimEnd('.', ' ');
-					if (int.TryParse(lineStr, out int lineNumber) && int.TryParse(posStr, out int linePosition))
-					{
-						return new XmlLineInfo(lineNumber, linePosition);
-					}
-				}
-			}
-			catch
-			{
-				// Ignore parsing errors
-			}
-		}
-		return new XmlLineInfo();
-	}
 }

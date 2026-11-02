@@ -25,12 +25,6 @@ namespace Microsoft.Maui
 		{
 			LaunchActivatedEventArgs = launchActivatedEventArgs;
 		}
-#elif TIZEN
-		public ActivationState(IMauiContext context, Tizen.Applications.Bundle? savedInstance)
-			: this(context, GetPersistedState(savedInstance))
-		{
-			SavedInstance = savedInstance;
-		}
 #endif
 
 		public ActivationState(IMauiContext context)
@@ -53,8 +47,6 @@ namespace Microsoft.Maui
 		public Bundle? SavedInstance { get; }
 #elif WINDOWS
 		public UI.Xaml.LaunchActivatedEventArgs? LaunchActivatedEventArgs { get; }
-#elif TIZEN
-		public Tizen.Applications.Bundle? SavedInstance { get; }
 #endif
 
 #if ANDROID
@@ -67,9 +59,10 @@ namespace Microsoft.Maui
 			{
 				foreach (var k in keyset)
 				{
-#pragma warning disable 618 // TODO: one day use the API 33+ version: https://developer.android.com/reference/kotlin/android/os/BaseBundle?hl=en#get
+					// There is no type-safe replacement when the Bundle value's type is unknown.
+#pragma warning disable CS0618 // Preserve the existing behavior of converting arbitrary Bundle values to strings.
 					dict[k] = state?.Get(k)?.ToString();
-#pragma warning restore 618
+#pragma warning restore CS0618
 				}
 			}
 
@@ -97,22 +90,6 @@ namespace Microsoft.Maui
 			}
 
 			return state;
-		}
-#elif TIZEN
-		static PersistedState GetPersistedState(Tizen.Applications.Bundle? state)
-		{
-			var dict = new PersistedState();
-
-			var keyset = state?.Keys;
-			if (keyset != null)
-			{
-				foreach (var k in keyset)
-				{
-					dict[k] = state?.GetItem<string>(k);
-				}
-			}
-
-			return dict;
 		}
 #endif
 	}

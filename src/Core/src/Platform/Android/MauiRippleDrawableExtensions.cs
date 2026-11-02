@@ -54,15 +54,18 @@ static class MauiRippleDrawableExtensions
 
 		if (platformView is ShapeableImageView shapeableImageView)
 		{
+			var maxRadius = Math.Min(platformView.Width, platformView.Height) / 2;
+			var shapeRadius = maxRadius > 0 ? Math.Min(radius, maxRadius) : radius;
+
 			// Update the ShapeAppearanceModel to match the stroke radius
 			// so that the corners are rounded correctly.
 			shapeableImageView.ShapeAppearanceModel =
 				shapeableImageView.ShapeAppearanceModel
 					.ToBuilder()
-					.SetTopLeftCorner(CornerFamily.Rounded, radius)
-					.SetTopRightCorner(CornerFamily.Rounded, radius)
-					.SetBottomLeftCorner(CornerFamily.Rounded, radius)
-					.SetBottomRightCorner(CornerFamily.Rounded, radius)
+					.SetTopLeftCorner(CornerFamily.Rounded, shapeRadius)
+					.SetTopRightCorner(CornerFamily.Rounded, shapeRadius)
+					.SetBottomLeftCorner(CornerFamily.Rounded, shapeRadius)
+					.SetBottomRightCorner(CornerFamily.Rounded, shapeRadius)
 					.Build();
 		}
 

@@ -10,6 +10,32 @@ namespace Microsoft.Maui.TestCases.Tests
 	{
 		const string goToTestButtonId = "GoToTestButton";
 
+		/// <summary>
+		/// Ignores the current test only when running in the Android Shell Renderer configuration.
+		/// </summary>
+		public static void IgnoreOnAndroidShellRenderer(this UITestContextBase testBase, string reason)
+		{
+			if (testBase.Device == TestDevice.Android && string.Equals(
+				Environment.GetEnvironmentVariable("TEST_CONFIGURATION_ARGS"),
+				"ShellRenderer", StringComparison.OrdinalIgnoreCase))
+			{
+				Assert.Ignore(reason);
+			}
+		}
+
+		/// <summary>
+		/// Ignores the current test only when running in the Android Shell Handler configuration.
+		/// </summary>
+		public static void IgnoreOnAndroidShellHandler(this UITestContextBase testBase, string reason)
+		{
+			if (testBase.Device == TestDevice.Android && !string.Equals(
+				Environment.GetEnvironmentVariable("TEST_CONFIGURATION_ARGS"),
+				"ShellRenderer", StringComparison.OrdinalIgnoreCase))
+			{
+				Assert.Ignore(reason);
+			}
+		}
+
 		public static void Back(this UITestContextBase testBase)
 		{
 			if (testBase.Device == TestDevice.Android)

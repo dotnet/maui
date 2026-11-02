@@ -14,7 +14,7 @@ public class Issue25115 : _IssuesUITest
 	{ }
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void VerifyTabChevronIconColor()
 	{
 		App.WaitForElement("label");

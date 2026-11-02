@@ -54,7 +54,10 @@ namespace Microsoft.Maui.Controls
 				_tabbedPageManager = null;
 			}
 			else if (args.OldHandler != null && args.NewHandler == null)
+			{
 				DisconnectHandler();
+				_tabbedPageManager = null;
+			}
 		}
 
 		void DisconnectHandler()

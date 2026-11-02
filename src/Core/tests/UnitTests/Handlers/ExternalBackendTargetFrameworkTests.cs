@@ -38,8 +38,8 @@ namespace Microsoft.Maui.UnitTests.Handlers
 			var externalBackend = ReadTargetFrameworks(ExternalBackendProject);
 
 			// Compared as the raw MSBuild expression on purpose. Both sides expand the same
-			// $(MauiPlatforms), so keeping the expressions identical is what makes the platform set —
-			// including whether Tizen is currently enabled — impossible to drift between the two.
+			// $(MauiPlatforms), so keeping the expressions identical makes the platform set
+			// impossible to drift between the two.
 			Assert.Equal(core, externalBackend);
 		}
 
@@ -57,9 +57,8 @@ namespace Microsoft.Maui.UnitTests.Handlers
 		{
 			var externalBackend = ReadTargetFrameworks(ExternalBackendProject);
 
-			// Every platform target framework — Android, iOS, Mac Catalyst, Windows and Tizen — reaches
-			// both projects through this one property. Tizen is therefore gated purely by
-			// IncludeTizenTargetFrameworks, identically for Core and for this guard project.
+			// Every platform target framework — Android, iOS, Mac Catalyst and Windows — reaches
+			// both projects through this one property.
 			Assert.Contains("$(MauiPlatforms)", externalBackend, StringComparison.Ordinal);
 		}
 
@@ -68,13 +67,11 @@ namespace Microsoft.Maui.UnitTests.Handlers
 		[InlineData("FakeNativeViews.Android.cs")]
 		[InlineData("FakeNativeViews.iOS.cs")]
 		[InlineData("FakeNativeViews.Windows.cs")]
-		[InlineData("FakeNativeViews.Tizen.cs")]
 		public void EveryPlatformHasFakeNativeViewSources(string fileName)
 		{
 			// MultiTargeting.targets selects these by file suffix. A platform that is in the target
 			// framework list but has no sources would fail to compile the moment it is enabled, so the
-			// sources exist for every platform — including Tizen, which is currently gated off by
-			// IncludeTizenTargetFrameworks rather than by missing source.
+			// sources exist for every supported platform.
 			var source = ReadEmbeddedText($"ProjectFiles/{fileName}");
 
 			foreach (var type in new[] { "FakeNativeView", "FakeNativeLabel", "FakeNativeContentView", "FakeNativeLayoutView" })

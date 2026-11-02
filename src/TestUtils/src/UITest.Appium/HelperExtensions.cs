@@ -3081,6 +3081,16 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
+		/// Clears text from the search handler element for the shell.
+		/// </summary>
+		/// <param name="app">The IApp instance representing the application.</param>
+		/// <exception cref="InvalidOperationException">The search handler element cannot be found.</exception>
+		public static void ClearTextInShellSearchHandler(this IApp app)
+		{
+			app.GetShellSearchHandler().Clear();
+		}
+
+		/// <summary>
 		/// Executes a function with a timeout to prevent tests from hanging indefinitely
 		/// when the application becomes unresponsive (e.g., due to an infinite layout loop).
 		/// WDA (WebDriverAgent) waits for the app's main thread to be idle before executing

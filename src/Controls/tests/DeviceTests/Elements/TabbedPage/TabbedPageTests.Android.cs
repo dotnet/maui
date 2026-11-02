@@ -325,6 +325,99 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.True(success);
 		}
 
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task RebuildingBottomTabsPreservesFontIconColors(bool hasExplicitIconColor)
+		{
+			SetupBuilder();
+			var tabbedPage = CreateBasicTabbedPage(true, pages: new[]
+			{
+				CreatePage("Page 1"),
+				CreatePage("Page 2")
+			});
+			tabbedPage.SelectedTabColor = Colors.Magenta;
+			tabbedPage.UnselectedTabColor = Colors.Purple;
+
+			await CreateHandlerAndAddToWindow<TabbedViewHandler>(tabbedPage, async handler =>
+			{
+				await ValidateTabBarIconColor(tabbedPage, "Page 1", hasExplicitIconColor ? Colors.Lime : Colors.Magenta, true);
+
+				tabbedPage.Children.Clear();
+				var firstPage = CreatePage("Page 1");
+				var secondPage = CreatePage("Page 2");
+				tabbedPage.Children.Add(firstPage);
+				tabbedPage.Children.Add(secondPage);
+				await OnNavigatedToAsync(firstPage);
+
+				await ValidateTabBarIconColor(tabbedPage, "Page 1", hasExplicitIconColor ? Colors.Lime : Colors.Magenta, true);
+				await ValidateTabBarIconColor(tabbedPage, "Page 2", hasExplicitIconColor ? Colors.Lime : Colors.Purple, true);
+
+				tabbedPage.CurrentPage = secondPage;
+				await OnNavigatedToAsync(secondPage);
+
+				await ValidateTabBarIconColor(tabbedPage, "Page 1", hasExplicitIconColor ? Colors.Lime : Colors.Purple, true);
+				await ValidateTabBarIconColor(tabbedPage, "Page 2", hasExplicitIconColor ? Colors.Lime : Colors.Magenta, true);
+			});
+
+			ContentPage CreatePage(string title) => new()
+			{
+				Title = title,
+				IconImageSource = new FontImageSource
+				{
+					Glyph = "\u25CF",
+					Size = 24,
+					Color = hasExplicitIconColor ? Colors.Lime : null
+				}
+			};
+		}
+
+		[Fact]
+		public async Task ClearingBarBackgroundRestoresMaterial3ThemeColors()
+		{
+			if (!RuntimeFeature.IsMaterial3Enabled)
+				return;
+
+			SetupBuilder();
+
+			var tabbedPage = CreateBasicTabbedPage(bottomTabs: true);
+
+			await CreateHandlerAndAddToWindow<TabbedViewHandler>(tabbedPage, handler =>
+			{
+				var bottomNav = GetBottomNavigationView(handler);
+
+				var originalTextColors = bottomNav.ItemTextColor;
+				var originalIconColors = bottomNav.ItemIconTintList;
+
+				Assert.NotNull(originalTextColors);
+				Assert.NotNull(originalIconColors);
+
+				tabbedPage.BarBackgroundColor = Colors.Red;
+
+				var customizedTextColors = bottomNav.ItemTextColor;
+				var customizedIconColors = bottomNav.ItemIconTintList;
+
+				Assert.NotNull(customizedTextColors);
+				Assert.NotNull(customizedIconColors);
+
+				tabbedPage.BarBackgroundColor = null;
+
+				Assert.Equal(
+	originalTextColors.GetColorForState(
+		new[] { global::Android.Resource.Attribute.StateChecked }, global::Android.Graphics.Color.Transparent),
+	bottomNav.ItemTextColor.GetColorForState(
+		new[] { global::Android.Resource.Attribute.StateChecked }, global::Android.Graphics.Color.Transparent));
+
+				Assert.Equal(
+					originalIconColors.GetColorForState(
+						new[] { global::Android.Resource.Attribute.StateChecked }, global::Android.Graphics.Color.Transparent),
+					bottomNav.ItemIconTintList.GetColorForState(
+						new[] { global::Android.Resource.Attribute.StateChecked }, global::Android.Graphics.Color.Transparent));
+
+				return Task.CompletedTask;
+			});
+		}
+
 		[Fact]
 		public async Task ChangingBottomTabAttributesDoesntRecreateBottomTabs()
 		{

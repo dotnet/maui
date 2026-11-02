@@ -13,7 +13,7 @@ public class Issue32994 : _IssuesUITest
         public override string Issue => "Shell TabBarIsVisible binding not working on ShellContent";
 
         [Test, Order(1)]
-        [Category(UITestCategories.Shell)]
+        [ShardedTestCategory(UITestCategories.Shell, shard: 2)]
         public void TabBarVisibilityHidesOnPage1UsingDirectSet()
         {
                 App.WaitForElement("HidePage1TabBar");
@@ -22,7 +22,7 @@ public class Issue32994 : _IssuesUITest
         }
 
         [Test, Order(2)]
-        [Category(UITestCategories.Shell)]
+        [ShardedTestCategory(UITestCategories.Shell, shard: 2)]
         public void TabBarVisibilityShowsOnPage1UsingDirectSet()
         {
                 App.WaitForElement("ShowPage1TabBar");
@@ -31,7 +31,7 @@ public class Issue32994 : _IssuesUITest
         }
 
         [Test, Order(3)]
-        [Category(UITestCategories.Shell)]
+        [ShardedTestCategory(UITestCategories.Shell, shard: 2)]
         public void TabBarVisibilityShowsOnPage2UsingBinding()
         {
 #if WINDOWS
@@ -52,7 +52,7 @@ public class Issue32994 : _IssuesUITest
         }
 
         [Test, Order(4)]
-        [Category(UITestCategories.Shell)]
+        [ShardedTestCategory(UITestCategories.Shell, shard: 2)]
         public void TabBarVisibilityHidesOnPage2UsingBinding()
         {
 #if WINDOWS

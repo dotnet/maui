@@ -20,7 +20,23 @@
   <PropertyGroup>
     <StaticWebAssetBasePath>/</StaticWebAssetBasePath>
     <StaticWebAssetProjectMode>Root</StaticWebAssetProjectMode>
+    <!-- Controls automatic provider registration only. The AndroidX WebKit dependency remains available to apps that register the provider themselves. -->
+    <MauiEnableAndroidWebViewDragDrop Condition=" '$(MauiEnableAndroidWebViewDragDrop)' == '' ">true</MauiEnableAndroidWebViewDragDrop>
   </PropertyGroup>
+
+  <ItemGroup Condition=" '$(MauiEnableAndroidWebViewDragDrop)' == 'true' and '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'android' ">
+    <AndroidManifestOverlay Include="$(MSBuildThisFileDirectory)Android\DropDataContentProvider.xml" />
+  </ItemGroup>
+
+  <Target Name="_WarnAboutLegacyAndroidManifestMergerForWebViewDragDrop"
+      BeforeTargets="_GenerateJavaStubs"
+      Condition=" '$(MauiEnableAndroidWebViewDragDrop)' == 'true'
+        and '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'android'
+        and '$(AndroidManifestMerger)' == 'legacy' ">
+    <Warning
+        Code="MAUI1002"
+        Text="MauiEnableAndroidWebViewDragDrop is enabled, but AndroidManifestMerger is set to 'legacy', which ignores AndroidManifestOverlay items. Use 'manifestmerger.jar', or set MauiEnableAndroidWebViewDragDrop to false and declare androidx.webkit.DropDataContentProvider in Platforms/Android/AndroidManifest.xml." />
+  </Target>
 
   <Target Name="ConvertStaticWebAssetsToMauiAssets"
       BeforeTargets="GetMauiItems;ResizetizeCollectItems;_CollectBundleResources;_CollectHotRestartBundleResources;_CheckForContent"

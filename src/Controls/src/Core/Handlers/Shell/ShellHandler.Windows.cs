@@ -68,6 +68,8 @@ namespace Microsoft.Maui.Controls.Handlers
 			platformView.PaneOpening -= OnPaneOpening;
 			platformView.PaneClosing -= OnPaneClosing;
 			platformView.ItemInvoked -= OnMenuItemInvoked;
+
+			platformView.Disconnect();
 		}
 
 		void OnMenuItemInvoked(Microsoft.UI.Xaml.Controls.NavigationView sender, Microsoft.UI.Xaml.Controls.NavigationViewItemInvokedEventArgs args)

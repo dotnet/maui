@@ -55,6 +55,9 @@ pwsh -NoProfile -Command '& ./.github/scripts/Find-RegressionRisks.ps1 -PRNumber
 | `-BaseBranch` | No | `main` | Base branch for `git log` scope |
 | `-OutputDir` | No | — | Directory for output files |
 | `-WriteInlineFindings` | No | off | Emit `inline-findings.json` |
+| `-DiffFile` | No | live PR diff | Frozen diff of the current PR; historical fix diffs are fetched normally |
+| `-ChangedPathsFile` | No | live auto-detection | Frozen JSON array of changed file paths |
+| `-StrictEvidence` | No | off | Fail on unavailable history/API evidence instead of reporting no match |
 
 ## Outputs
 
@@ -75,6 +78,11 @@ When REVERT risks are detected, the regression tests from the reverted fix PRs a
 - **Unit/XAML tests** → `dotnet test <project> --filter <filter>`
 
 The expert reviewer agent (`maui-expert-reviewer.md`, dimension #6) reads `risks.json` to check for REVERT entries.
+
+The standalone `/review expert-review` gh-aw collector supplies its frozen diff,
+changed paths and pinned base with `-StrictEvidence`. Collection failures become explicit
+evidence gaps, not CLEAN results. It inspects regression-test source but does not
+execute any of those tests.
 
 ## Known Limitations
 

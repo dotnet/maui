@@ -21,19 +21,19 @@ public class Issue30381 : _IssuesUITest
         // Wait for the WebView to load the initial content before clicking the link
         Thread.Sleep(1000);
 
-        // Click the link via JavaScript to navigate to external URL
+        // Navigate to the bundled document without depending on an external site.
         App.Tap("ClickLinkButton");
-        App.WaitForTextToBePresentInElement("CanGoBackLabel", "CanGoBack: True");
+        Assert.That(App.WaitForTextToBePresentInElement("CanGoBackLabel", "CanGoBack: True"), Is.True);
         
         App.Tap("UpdateStatusButton");
-        App.WaitForTextToBePresentInElement("CanGoBackLabel", "CanGoBack: True");
-        App.WaitForTextToBePresentInElement("CanGoForwardLabel", "CanGoForward: False");
+        Assert.That(App.WaitForTextToBePresentInElement("CanGoBackLabel", "CanGoBack: True"), Is.True);
+        Assert.That(App.WaitForTextToBePresentInElement("CanGoForwardLabel", "CanGoForward: False"), Is.True);
 
         App.Tap("GoBackButton");
 
         App.Tap("UpdateStatusButton");
-        App.WaitForTextToBePresentInElement("CanGoBackLabel", "CanGoBack: False");
-        App.WaitForTextToBePresentInElement("CanGoForwardLabel", "CanGoForward: True");
+        Assert.That(App.WaitForTextToBePresentInElement("CanGoBackLabel", "CanGoBack: False"), Is.True);
+        Assert.That(App.WaitForTextToBePresentInElement("CanGoForwardLabel", "CanGoForward: True"), Is.True);
 
         App.Tap("GoForwardButton");
 

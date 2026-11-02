@@ -45,7 +45,7 @@ public static partial class AppHostBuilderExtensions
 
 	static MauiAppBuilder SetupXamlDefaults(this MauiAppBuilder builder)
 	{
-#if WINDOWS || ANDROID || IOS || MACCATALYST || TIZEN
+#if WINDOWS || ANDROID || IOS || MACCATALYST
 		DependencyService.Register<Xaml.ValueConverterProvider>();
 #endif
 		return builder;

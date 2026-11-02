@@ -26,6 +26,11 @@
     "InteractivityLocation": {
       "isHidden": true
     },
+    "LegacyEmpty": {
+      "longName": "Empty",
+      "shortName": "",
+      "isHidden": true
+    },
     "IncludeSampleContent": {
       "isHidden": true
     },

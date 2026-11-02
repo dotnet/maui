@@ -673,10 +673,21 @@ namespace Microsoft.Maui.Media
 					var outputFile = FileSystemUtils.GetTemporaryFile(Application.Context.CacheDir, outputFileName);
 					var outputPath = outputFile.AbsolutePath;
 
-					using (var outputStream = File.Create(outputPath))
+					try
 					{
-						currentStream.Position = 0;
-						await currentStream.CopyToAsync(outputStream);
+						using (var outputStream = File.Create(outputPath))
+						{
+							currentStream.Position = 0;
+							await currentStream.CopyToAsync(outputStream);
+						}
+					}
+					catch
+					{
+						try
+						{ File.Delete(outputPath); }
+						catch { }
+
+						throw;
 					}
 
 					// The output is now fully written and closed. If the input was a MAUI-owned

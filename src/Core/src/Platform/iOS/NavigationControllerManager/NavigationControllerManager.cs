@@ -13,12 +13,11 @@ namespace Microsoft.Maui.Platform
     /// Owns a UINavigationController and provides push/pop/insert/remove operations,
     /// completion tracking, and interactive pop gesture handling.
     ///
-    /// Currently used by <see cref="Microsoft.Maui.Handlers.NavigationViewHandler"/>.
+    /// Used by NavigationPage and Shell handlers.
     /// </summary>
     /// <remarks>
     /// Consumer-specific behavior is injected via <see cref="INavigationManagerDelegate"/>,
-    /// making this class reusable. In the future, Shell's handler could also adopt this
-    /// manager to share the same UINavigationController infrastructure.
+    /// making this class reusable.
     /// </remarks>
     internal class NavigationControllerManager : IDisposable
     {
@@ -29,7 +28,9 @@ namespace Microsoft.Maui.Platform
         TaskCompletionSource<bool>? _popCompletionTask;
         UIViewController[]? _pendingViewControllers;
         bool _firstLayoutCompleted;
+        bool _interactivePopGesturePending;
         bool _disposed;
+        UIGestureRecognizerDelegate? _gestureDelegate;
 
         /// <summary>
         /// The managed UINavigationController.
@@ -49,15 +50,21 @@ namespace Microsoft.Maui.Platform
         }
 
         /// <summary>
-        /// Sets up the interactive pop gesture recognizer with the managed back-button policy.
+        /// Sets up the interactive pop gesture recognizers with the managed back-button policy.
         /// Call after the navigation controller's view is loaded.
         /// </summary>
         public void SetupInteractivePopGesture()
         {
+            _gestureDelegate = new GestureDelegate(_navigationController, this);
             if (_navigationController.InteractivePopGestureRecognizer is not null)
             {
-                _navigationController.InteractivePopGestureRecognizer.Delegate =
-                    new GestureDelegate(_navigationController, this);
+                _navigationController.InteractivePopGestureRecognizer.Delegate = _gestureDelegate;
+            }
+
+            if ((OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26)) &&
+                _navigationController.InteractiveContentPopGestureRecognizer is { } contentPopGesture)
+            {
+                contentPopGesture.Delegate = _gestureDelegate;
             }
         }
 
@@ -208,7 +215,8 @@ namespace Microsoft.Maui.Platform
         /// </summary>
         internal bool HandleShouldPopItem()
         {
-            return _delegate.ShouldPop();
+            // The back callback was already evaluated when admitting the gesture.
+            return _interactivePopGesturePending || _delegate.ShouldPop();
         }
 
         #endregion
@@ -310,6 +318,7 @@ namespace Microsoft.Maui.Platform
                         return;
                     }
 
+                    manager._interactivePopGesturePending = false;
                     manager._delegate.OnNavigationControllerDidDisappear();
                 }
             }
@@ -342,6 +351,7 @@ namespace Microsoft.Maui.Platform
             }
 
             _disposed = true;
+            _interactivePopGesturePending = false;
 
             // Clear native delegates to prevent late callbacks (DidShowViewController,
             // WillShowViewController) from firing after the handler disconnects.
@@ -353,6 +363,13 @@ namespace Microsoft.Maui.Platform
             {
                 _navigationController.InteractivePopGestureRecognizer.Delegate = null!;
             }
+
+            if ((OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26)) &&
+                _navigationController.InteractiveContentPopGestureRecognizer is { } contentPopGesture)
+            {
+                contentPopGesture.Delegate = null!;
+            }
+            _gestureDelegate = null;
 
             // Complete all pending tasks with false rather than cancelling — preserves the
             // soft-fail contract Shell relies on (async void callers can't catch TaskCanceledException).
@@ -387,6 +404,8 @@ namespace Microsoft.Maui.Platform
                 {
                     return;
                 }
+
+                manager._interactivePopGesturePending = false;
 
                 // Resolve completion tasks
                 if (manager._completionTasks.TryGetValue(viewController, out var source))
@@ -472,11 +491,24 @@ namespace Microsoft.Maui.Platform
         {
             readonly WeakReference<UINavigationController> _navigationControllerRef;
             readonly WeakReference<NavigationControllerManager> _managerRef;
+            double _touchTimestamp = double.NaN;
+            bool? _shouldBegin;
 
             public GestureDelegate(UINavigationController navController, NavigationControllerManager manager)
             {
                 _navigationControllerRef = new WeakReference<UINavigationController>(navController);
                 _managerRef = new WeakReference<NavigationControllerManager>(manager);
+            }
+
+            public override bool ShouldReceiveTouch(UIGestureRecognizer recognizer, UITouch touch)
+            {
+                if (_touchTimestamp != touch.Timestamp)
+                {
+                    _touchTimestamp = touch.Timestamp;
+                    _shouldBegin = null;
+                }
+
+                return true;
             }
 
             public override bool ShouldBegin(UIGestureRecognizer recognizer)
@@ -492,10 +524,15 @@ namespace Microsoft.Maui.Platform
                     return false;
                 }
 
-                // Always allow the gesture — matches the renderer, which returns true
-                // and lets UIKit drive the interactive transition. After the gesture
-                // completes, OnInteractivePopCompleted syncs the MAUI stack.
-                return true;
+                if (!_managerRef.TryGetTarget(out var manager) || manager._disposed)
+                {
+                    return false;
+                }
+
+                // Both edge and content recognizers can ask about the same touch.
+                _shouldBegin ??= manager._delegate.ShouldBeginInteractivePop();
+                manager._interactivePopGesturePending = _shouldBegin.Value;
+                return manager._interactivePopGesturePending;
             }
         }
 

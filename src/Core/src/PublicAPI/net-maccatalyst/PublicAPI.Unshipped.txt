@@ -87,3 +87,5 @@ Microsoft.Maui.IImageSourcePaint.ImageSource.get -> Microsoft.Maui.IImageSource?
 Microsoft.Maui.Handlers.ViewHandler.SetContainerView(UIKit.UIView? containerView) -> void
 virtual Microsoft.Maui.Handlers.ViewHandler.ValidateContainerView(UIKit.UIView! containerView) -> void
 override Microsoft.Maui.Handlers.ViewHandler<TVirtualView, TPlatformView>.ValidateContainerView(UIKit.UIView! containerView) -> void
+override Microsoft.Maui.Platform.MauiPageControl.SizeThatFits(CoreGraphics.CGSize size) -> CoreGraphics.CGSize
+override Microsoft.Maui.Platform.PlatformTouchGraphicsView.MovedToWindow() -> void

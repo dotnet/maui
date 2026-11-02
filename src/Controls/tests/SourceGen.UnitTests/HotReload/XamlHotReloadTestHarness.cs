@@ -775,6 +775,15 @@ internal sealed class XamlHotReloadLiveSession : IDisposable
 				edits.Add(new SemanticEdit(SemanticEditKind.Update, previousUpdateComponent, nextUpdateComponent));
 			}
 
+			foreach (var nextField in nextType.GetMembers().OfType<IFieldSymbol>())
+			{
+				if (previousType.GetMembers(nextField.Name).OfType<IFieldSymbol>().Any())
+					continue;
+
+				edits.Add(new SemanticEdit(SemanticEditKind.Insert, null, nextField));
+				insertedSymbols.Add(nextField);
+			}
+
 			affectedTypes.Add(nextRoot.TypeName);
 		}
 

@@ -4,9 +4,7 @@ using PlatformView = Microsoft.Maui.Maps.Platform.MauiMKMapView;
 using PlatformView = Android.Gms.Maps.MapView;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
-#elif TIZEN
-using PlatformView = Tizen.NUI.BaseComponents.View;
-#elif (NETSTANDARD || !PLATFORM) || (NET6_0 && !IOS && !ANDROID && !TIZEN)
+#elif (NETSTANDARD || !PLATFORM) || (NET6_0 && !IOS && !ANDROID)
 using PlatformView = System.Object;
 #endif
 using System;

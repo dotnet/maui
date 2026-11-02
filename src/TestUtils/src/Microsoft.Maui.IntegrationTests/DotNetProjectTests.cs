@@ -20,13 +20,13 @@ public class DotNetProjectTests
 			"src",
 			"DotNet",
 			"DotNet.csproj");
-		var globalJson = JsonDocument.Parse(File.ReadAllText(Path.Combine(
-			TestEnvironment.GetMauiDirectory(),
-			"global.json")));
-		var sdkVersion = globalJson.RootElement
-			.GetProperty("tools")
-			.GetProperty("dotnet")
-			.GetString();
+		var sdkVersion = DotnetInternal.RunForOutput(
+			"--version",
+			"",
+			out var exitCode,
+			timeoutInSeconds: 60,
+			output: _output).Trim();
+		Assert.True(exitCode == 0, $"Unable to determine the installed .NET SDK version: {sdkVersion}");
 		Assert.False(string.IsNullOrEmpty(sdkVersion), "The .NET SDK version was empty.");
 
 		var extensionsPathWithoutSeparator = Path.Combine(

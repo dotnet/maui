@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			// Pass the owning ItemsView as the container so DataTemplateSelector
-			// implementations can inspect it (parity with iOS/Android/Tizen).
+			// implementations can inspect it (parity with iOS/Android).
 			var template = emptyViewTemplate.SelectDataTemplate(bindingContext, container);
 
 			var view = template.CreateContent() as View;
@@ -61,7 +61,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			// Pass the owning ItemsView as the container so DataTemplateSelector
-			// implementations can inspect it (parity with iOS/Android/Tizen).
+			// implementations can inspect it (parity with iOS/Android).
 			var dataTemplate = template.SelectDataTemplate(bindingContext, container);
 			var view = dataTemplate.CreateContent() as View;
 			if (view is not null)
