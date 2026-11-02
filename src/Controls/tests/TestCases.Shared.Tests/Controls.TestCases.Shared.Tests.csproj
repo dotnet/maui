@@ -32,10 +32,6 @@
     <DefineConstants>$(DefineConstants);MACCATALYST</DefineConstants>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(_MauiTargetPlatformIsTizen)' == 'True' ">
-    <DefineConstants>$(DefineConstants);TIZEN</DefineConstants>
-  </PropertyGroup>
-
   <PropertyGroup Condition=" '$(_MauiTargetPlatformIsWindows)' == 'True' ">
     <DefineConstants>$(DefineConstants); WINDOWS</DefineConstants>
   </PropertyGroup>

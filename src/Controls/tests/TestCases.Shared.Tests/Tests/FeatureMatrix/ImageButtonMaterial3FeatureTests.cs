@@ -121,7 +121,6 @@ public class ImageButtonMaterial3FeatureTests : _GalleryUITest
         VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
 
-#if TEST_FAILS_ON_ANDROID // Issue Link: https://github.com/dotnet/maui/issues/29956
     [Test, Order(6)]
     [Category(UITestCategories.Material3)]
     public void VerifyMaterial3ImageButtonAspect_AspectFillWithImageSourceFromUri()
@@ -137,7 +136,6 @@ public class ImageButtonMaterial3FeatureTests : _GalleryUITest
         App.WaitForElement("ImageButtonControl", timeout: TimeSpan.FromSeconds(3));
         VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
-#endif
 
     [Test, Order(7)]
     [Category(UITestCategories.Material3)]
@@ -269,7 +267,6 @@ public class ImageButtonMaterial3FeatureTests : _GalleryUITest
         VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
 
-#if TEST_FAILS_ON_ANDROID // Issue Link: https://github.com/dotnet/maui/issues/29956
     [Test, Order(15)]
     [Category(UITestCategories.Material3)]
     public void VerifyMaterial3ImageButtonAspect_AspectFillWithImageSourceFromFile()
@@ -301,7 +298,6 @@ public class ImageButtonMaterial3FeatureTests : _GalleryUITest
         App.WaitForElement("ImageButtonControl", timeout: TimeSpan.FromSeconds(3));
         VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
-#endif
 
     [Test, Order(17)]
     [Category(UITestCategories.Material3)]

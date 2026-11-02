@@ -1,12 +1,17 @@
 using System;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
+using Microsoft.Maui.HotReload;
 using Microsoft.Maui.Platform;
+using NSubstitute;
 using Xunit;
 
 namespace Microsoft.Maui.UnitTests.Hosting
 {
 	[Category(TestCategory.Core, TestCategory.Hosting)]
+	[Collection(MainThreadStaticStateCollection.Name)]
 	public class HostBuilderHandlerTests
 	{
 		[Fact]
@@ -63,6 +68,79 @@ namespace Microsoft.Maui.UnitTests.Hosting
 
 			Assert.NotNull(handlerService);
 			Assert.IsType<ViewHandlerStub>(handlerService);
+		}
+
+		[Fact]
+		public void HandlerCollectionFactoriesReceiveTheCurrentMauiContext()
+		{
+			var mauiApp = MauiApp.CreateBuilder()
+				.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddTransient(services => new ContextAwareService(services.GetRequiredService<IMauiContext>()));
+					handlers.AddHandler<IViewStub>(services => new ContextAwareHandlerStub(services.GetRequiredService<ContextAwareService>()));
+				})
+				.Build();
+			var mauiContext = new MauiContext(mauiApp.Services);
+
+			var handler = Assert.IsType<ContextAwareHandlerStub>(new ViewStub().ToHandler(mauiContext));
+
+			Assert.Same(mauiContext, handler.ContextAwareService.MauiContext);
+		}
+
+		[Fact]
+		public void HandlerCollectionFactoriesReceiveTheCurrentActivationServiceProvider()
+		{
+			var mauiApp = MauiApp.CreateBuilder()
+				.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<IViewStub>(services =>
+					{
+						var activationServices = services.GetRequiredService<IServiceProvider>();
+						return new ContextAwareHandlerStub(new ContextAwareService(activationServices.GetRequiredService<IMauiContext>()));
+					});
+				})
+				.Build();
+			var mauiContext = new MauiContext(mauiApp.Services);
+
+			var handler = Assert.IsType<ContextAwareHandlerStub>(new ViewStub().ToHandler(mauiContext));
+
+			Assert.Same(mauiContext, handler.ContextAwareService.MauiContext);
+		}
+
+		[Fact]
+		public void ApplicationHandlerFactoriesReceiveTheCurrentMauiContext()
+		{
+			var mauiApp = MauiApp.CreateBuilder()
+				.ConfigureMauiHandlers(handlers =>
+					handlers.AddHandler<IApplication>(services =>
+						new ContextAwareElementHandlerStub<IApplication>(
+							new ContextAwareService(services.GetRequiredService<IMauiContext>()))))
+				.Build();
+			var mauiContext = new MauiContext(mauiApp.Services);
+			var application = Substitute.For<IApplication>();
+
+			new object().SetApplicationHandler(application, mauiContext);
+
+			var handler = Assert.IsType<ContextAwareElementHandlerStub<IApplication>>(application.Handler);
+			Assert.Same(mauiContext, handler.ContextAwareService.MauiContext);
+		}
+
+		[Fact]
+		public void WindowHandlerFactoriesReceiveTheCurrentMauiContext()
+		{
+			var mauiApp = MauiApp.CreateBuilder()
+				.ConfigureMauiHandlers(handlers =>
+					handlers.AddHandler<IWindow>(services =>
+						new ContextAwareElementHandlerStub<IWindow>(
+							new ContextAwareService(services.GetRequiredService<IMauiContext>()))))
+				.Build();
+			var mauiContext = new MauiContext(mauiApp.Services);
+			var window = Substitute.For<IWindow>();
+
+			new object().SetWindowHandler(window, mauiContext);
+
+			var handler = Assert.IsType<ContextAwareElementHandlerStub<IWindow>>(window.Handler);
+			Assert.Same(mauiContext, handler.ContextAwareService.MauiContext);
 		}
 
 		[Fact]
@@ -275,6 +353,9 @@ namespace Microsoft.Maui.UnitTests.Hosting
 
 			Type handlerType = mauiHandlersFactory.GetHandlerType(typeof(ViewStub));
 			Assert.Null(handlerType);
+
+			Assert.IsType<ViewHandlerStub>(mauiHandlersFactory.GetHandler(typeof(ViewStub)));
+			Assert.Null(mauiHandlersFactory.GetHandlerType(typeof(ViewStub)));
 		}
 
 		[Fact]
@@ -307,8 +388,115 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			Assert.IsType<AlternateViewHandlerStub>(handlerService);
 		}
 
+		[Fact]
+		public void FactoryBasedHandlerRegistrationAppliesPendingHotReloadReplacement()
+		{
+			var mauiApp = MauiApp.CreateBuilder()
+				.ConfigureMauiHandlers(handlers => handlers.AddHandler<IViewStub>(_ => new ViewHandlerStub()))
+				.Build();
+			var mauiHandlersFactory = mauiApp.Services.GetRequiredService<IMauiHandlersFactory>();
+			MauiHotReloadHelper.RegisterHandlers(mauiHandlersFactory.GetCollection());
+
+			try
+			{
+				MauiHotReloadHelper.RegisterHandlerReplacement(typeof(ViewHandlerStub).FullName!, typeof(AlternateViewHandlerStub));
+
+				var initialHandler = mauiHandlersFactory.GetHandler(typeof(ViewStub));
+				var replacedHandler = mauiHandlersFactory.GetHandler(typeof(ViewStub));
+
+				Assert.IsType<ViewHandlerStub>(initialHandler);
+				Assert.IsType<AlternateViewHandlerStub>(replacedHandler);
+			}
+			finally
+			{
+				MauiHotReloadHelper.Reset();
+			}
+		}
+
+		[Fact]
+		public void FactoryBasedHandlerRegistrationAppliesPendingHotReloadReplacementOnce()
+		{
+			var mauiApp = MauiApp.CreateBuilder()
+				.ConfigureMauiHandlers(handlers => handlers.AddHandler<IViewStub>(_ => new ViewHandlerStub()))
+				.Build();
+			var mauiHandlersFactory = mauiApp.Services.GetRequiredService<IMauiHandlersFactory>();
+			var handlers = mauiHandlersFactory.GetCollection();
+			MauiHotReloadHelper.RegisterHandlers(handlers);
+
+			try
+			{
+				MauiHotReloadHelper.RegisterHandlerReplacement(typeof(ViewHandlerStub).FullName!, typeof(ViewHandlerStub));
+				var initialRegistrationCount = handlers.Count;
+
+				for (var i = 0; i < 5; i++)
+					Assert.IsType<ViewHandlerStub>(mauiHandlersFactory.GetHandler(typeof(ViewStub)));
+
+				Assert.Equal(initialRegistrationCount + 1, handlers.Count);
+			}
+			finally
+			{
+				MauiHotReloadHelper.Reset();
+			}
+		}
+
+		[Fact]
+		public async Task ActivatedHandlerTypeMetadataDoesNotRootServiceDescriptor()
+		{
+			try
+			{
+				var descriptorReference = RegisterActivatedHandlerType();
+
+				Assert.False(await descriptorReference.WaitForCollect(), "Activated handler metadata should not keep service descriptors alive.");
+			}
+			finally
+			{
+				MauiHotReloadHelper.Reset();
+			}
+
+			static WeakReference RegisterActivatedHandlerType()
+			{
+				var descriptor = ServiceDescriptor.Transient(typeof(IViewStub), static _ => new ViewHandlerStub());
+				MauiHotReloadHelper.RegisterHandlerType(descriptor, typeof(ViewHandlerStub));
+				return new WeakReference(descriptor);
+			}
+		}
+
 		class AlternateViewHandlerStub : ViewHandlerStub
 		{
+		}
+
+		class ContextAwareHandlerStub : ViewHandlerStub
+		{
+			public ContextAwareHandlerStub(ContextAwareService contextAwareService)
+			{
+				ContextAwareService = contextAwareService;
+			}
+
+			public ContextAwareService ContextAwareService { get; }
+		}
+
+		class ContextAwareElementHandlerStub<TVirtualView> : ElementHandler<TVirtualView, object>
+			where TVirtualView : class, IElement
+		{
+			public ContextAwareElementHandlerStub(ContextAwareService contextAwareService)
+				: base(new PropertyMapper<TVirtualView>())
+			{
+				ContextAwareService = contextAwareService;
+			}
+
+			public ContextAwareService ContextAwareService { get; }
+
+			protected override object CreatePlatformElement() => new object();
+		}
+
+		class ContextAwareService
+		{
+			public ContextAwareService(IMauiContext mauiContext)
+			{
+				MauiContext = mauiContext;
+			}
+
+			public IMauiContext MauiContext { get; }
 		}
 	}
 }

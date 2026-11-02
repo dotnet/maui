@@ -7,6 +7,7 @@ using AVFoundation;
 using CoreBluetooth;
 using MediaPlayer;
 using Speech;
+using UserNotifications;
 
 namespace Microsoft.Maui.ApplicationModel
 {
@@ -103,9 +104,13 @@ namespace Microsoft.Maui.ApplicationModel
 			internal static PermissionStatus GetAddressBookPermissionStatus()
 			{
 				var status = global::Contacts.CNContactStore.GetAuthorizationStatus(global::Contacts.CNEntityType.Contacts);
+
+				// CNAuthorizationStatus.Limited is only available on iOS 18+.
+				if (OperatingSystem.IsIOSVersionAtLeast(18) && status == global::Contacts.CNAuthorizationStatus.Limited)
+					return PermissionStatus.Limited;
+
 				return status switch
 				{
-					global::Contacts.CNAuthorizationStatus.Limited => PermissionStatus.Limited,
 					global::Contacts.CNAuthorizationStatus.Authorized => PermissionStatus.Granted,
 					global::Contacts.CNAuthorizationStatus.Denied => PermissionStatus.Denied,
 					global::Contacts.CNAuthorizationStatus.Restricted => PermissionStatus.Restricted,
@@ -290,6 +295,54 @@ namespace Microsoft.Maui.ApplicationModel
 				EnsureMainThread();
 
 				return AVPermissions.RequestPermissionAsync(AVAuthorizationMediaType.Audio);
+			}
+		}
+
+		public partial class PostNotifications : BasePlatformPermission
+		{
+			/// <inheritdoc/>
+			public override Task<PermissionStatus> CheckStatusAsync()
+			{
+				var tcs = new TaskCompletionSource<PermissionStatus>();
+
+				UNUserNotificationCenter.Current.GetNotificationSettings(settings =>
+				{
+					var authStatus = settings.AuthorizationStatus;
+
+					// UNAuthorizationStatus.Ephemeral is only available on iOS 14+.
+					if (authStatus == UNAuthorizationStatus.Authorized ||
+						authStatus == UNAuthorizationStatus.Provisional ||
+						(OperatingSystem.IsIOSVersionAtLeast(14) && authStatus == UNAuthorizationStatus.Ephemeral))
+					{
+						tcs.TrySetResult(PermissionStatus.Granted);
+					}
+					else if (authStatus == UNAuthorizationStatus.Denied)
+					{
+						tcs.TrySetResult(PermissionStatus.Denied);
+					}
+					else
+					{
+						tcs.TrySetResult(PermissionStatus.Unknown);
+					}
+				});
+
+				return tcs.Task;
+			}
+
+			/// <inheritdoc/>
+			public override async Task<PermissionStatus> RequestAsync()
+			{
+				var status = await CheckStatusAsync();
+				if (status == PermissionStatus.Granted)
+					return status;
+
+				var (granted, error) = await UNUserNotificationCenter.Current.RequestAuthorizationAsync(
+					UNAuthorizationOptions.Alert | UNAuthorizationOptions.Badge | UNAuthorizationOptions.Sound);
+
+				if (error is not null)
+					return PermissionStatus.Unknown;
+
+				return granted ? PermissionStatus.Granted : PermissionStatus.Denied;
 			}
 		}
 

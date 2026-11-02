@@ -1151,12 +1151,13 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.SetOrientationLandscape();
 			App.WaitForElement("SafeAreaEdgesValueLabel");
 
-			var (screenWidth, screenHeight) = GetScreenSize();
-
 			// Left: edge-to-edge
-			var leftRect = App.WaitForElement("LeftEdgeIndicator").GetRect();
-			Assert.That(leftRect.X, Is.EqualTo(0).Within(PixelTolerance),
-				$"None: left X ({leftRect.X}) should be = 0 (edge-to-edge)");
+			// Caught NUnit assertions remain recorded failures, so poll the constraint instead.
+			Assert.That(() => App.WaitForElement("LeftEdgeIndicator").GetRect().X,
+				Is.EqualTo(0).Within(PixelTolerance).After(15_000, 500),
+				"None: left X should be = 0 (edge-to-edge)");
+
+			var (screenWidth, screenHeight) = GetScreenSize();
 
 			// Right: edge-to-edge
 			var rightRect = App.WaitForElement("RightEdgeIndicator").GetRect();
@@ -1496,12 +1497,16 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.SetOrientationLandscape();
 			App.WaitForElement("SafeAreaEdgesValueLabel");
 
-			var (screenWidth, screenHeight) = GetScreenSize();
-
 			// ── Before keyboard ──
 			var leftBeforeRect = App.WaitForElement("LeftEdgeIndicator").GetRect();
-			Assert.That(leftBeforeRect.X, Is.EqualTo(0).Within(PixelTolerance),
-				$"Before keyboard - left X ({leftBeforeRect.X}) should be = 0 (edge-to-edge)");
+			Assert.That(() =>
+			{
+				leftBeforeRect = App.WaitForElement("LeftEdgeIndicator").GetRect();
+				return leftBeforeRect.X;
+			}, Is.EqualTo(0).Within(PixelTolerance).After(15_000, 500),
+				"Before keyboard - left X should be = 0 (edge-to-edge)");
+
+			var (screenWidth, screenHeight) = GetScreenSize();
 
 			var rightBeforeRect = App.WaitForElement("RightEdgeIndicator").GetRect();
 			var rightBeforeEdge = rightBeforeRect.X + rightBeforeRect.Width;

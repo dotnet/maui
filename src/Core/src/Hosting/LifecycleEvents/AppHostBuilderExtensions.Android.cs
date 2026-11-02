@@ -80,6 +80,8 @@ namespace Microsoft.Maui.LifecycleEvents
 					var mauiWindow = activity.GetWindow();
 					if (mauiWindow is not null)
 					{
+						UpdateStatusBarThemeOnConfigurationChange(mauiWindow);
+
 						if (newConfig is not null)
 						{
 							var density = newConfig.DensityDpi / DeviceDisplay.BaseLogicalDpi;
@@ -90,6 +92,12 @@ namespace Microsoft.Maui.LifecycleEvents
 						mauiWindow.FrameChanged(frame);
 					}
 				});
+		}
+
+		internal static void UpdateStatusBarThemeOnConfigurationChange(IWindow window)
+		{
+			if (window.StatusBarTheme == StatusBarTheme.Default)
+				window.Handler?.UpdateValue(nameof(IWindow.StatusBarTheme));
 		}
 	}
 }

@@ -137,6 +137,15 @@ namespace Microsoft.Maui.Controls.Platform
 
 		static async Task JumpToOffsetAsync(ScrollViewer scrollViewer, double targetHorizontalOffset, double targetVerticalOffset)
 		{
+			targetHorizontalOffset = Math.Clamp(targetHorizontalOffset, 0, scrollViewer.ScrollableWidth);
+			targetVerticalOffset = Math.Clamp(targetVerticalOffset, 0, scrollViewer.ScrollableHeight);
+
+			if (scrollViewer.HorizontalOffset == targetHorizontalOffset
+				&& scrollViewer.VerticalOffset == targetVerticalOffset)
+			{
+				return;
+			}
+
 			var tcs = new TaskCompletionSource<object>();
 
 			void ViewChanged(object s, ScrollViewerViewChangedEventArgs e)
@@ -146,16 +155,11 @@ namespace Microsoft.Maui.Controls.Platform
 
 			try
 			{
-				if (scrollViewer.HorizontalOffset == targetHorizontalOffset
-					&& scrollViewer.VerticalOffset == targetVerticalOffset)
-				{
-					// We're already centered, no need to adjust
-					tcs.TrySetResult(null);
-				}
-
 				scrollViewer.ViewChanged += ViewChanged;
-				scrollViewer.ChangeView(targetHorizontalOffset, targetVerticalOffset, null, true);
-				await tcs.Task;
+				if (scrollViewer.ChangeView(targetHorizontalOffset, targetVerticalOffset, null, true))
+				{
+					await tcs.Task;
+				}
 			}
 			finally
 			{
@@ -230,6 +234,33 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				// If ScrollViewer is not found, do nothing.
 				return;
+			}
+
+			if ((scrollToPosition == ScrollToPosition.Center || scrollToPosition == ScrollToPosition.End)
+				&& list.ContainerFromItem(targetItem) is UIElement targetContainer
+				&& targetContainer.RenderSize.Width > 0
+				&& targetContainer.RenderSize.Height > 0)
+			{
+				var position = targetContainer.TransformToVisual(scrollViewer).TransformPoint(Zero);
+				var leadingEdge = IsVertical(scrollViewer) ? position.Y : position.X;
+				var itemLength = IsVertical(scrollViewer) ? targetContainer.RenderSize.Height : targetContainer.RenderSize.Width;
+				var viewportLength = IsVertical(scrollViewer) ? scrollViewer.ViewportHeight : scrollViewer.ViewportWidth;
+
+				// Visible items can be adjusted without relying on ScrollIntoView to raise ViewChanged.
+				if (leadingEdge < viewportLength && leadingEdge + itemLength > 0)
+				{
+					var point = new UWPPoint(scrollViewer.HorizontalOffset, scrollViewer.VerticalOffset);
+					if (IsVertical(scrollViewer))
+						point.Y += position.Y;
+					else
+						point.X += position.X;
+
+					var offset = scrollToPosition == ScrollToPosition.Center
+						? AdjustToCenter(point, targetContainer.RenderSize, scrollViewer)
+						: AdjustToEnd(point, targetContainer.RenderSize, scrollViewer);
+					await JumpToOffsetAsync(scrollViewer, offset.X, offset.Y);
+					return;
+				}
 			}
 
 			var tcs = new TaskCompletionSource<object>();

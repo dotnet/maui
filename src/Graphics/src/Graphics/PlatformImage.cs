@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Maui.Graphics.Platform
 {
-#if NETSTANDARD || NETSTANDARD2_0 || NETSTANDARD2_1 || (NET6_0_OR_GREATER && !PLATFORM) || TIZEN || TIZEN40
+#if NETSTANDARD || NETSTANDARD2_0 || NETSTANDARD2_1 || (NET6_0_OR_GREATER && !PLATFORM)
 	/// <summary>
 	/// Provides a platform-agnostic implementation of an image.
 	/// </summary>
@@ -148,8 +148,8 @@ namespace Microsoft.Maui.Graphics.Platform
 			// Look into the byte array and get the size of the image
 			for (int i = 0; i <= 3; i++)
 			{
-				width = _bytes[i] | width << 8;
-				height = _bytes[i + 4] | height << 8;
+				width = _bytes[i + 16] | width << 8;
+				height = _bytes[i + 20] | height << 8;
 			}
 		}
 

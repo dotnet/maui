@@ -147,7 +147,7 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		/// <param name="script">The script to evaluate.</param>
 		/// <returns>A task that contains the result of the evaluation as a string.</returns>
-		/// <remarks>Native JavaScript evaluation is supported neither on Tizen nor GTK (Linux).</remarks>
+		/// <remarks>Native JavaScript evaluation is not supported on GTK (Linux).</remarks>
 		public async Task<string> EvaluateJavaScriptAsync(string script)
 		{
 			if (script == null)

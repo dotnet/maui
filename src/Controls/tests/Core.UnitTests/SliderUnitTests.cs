@@ -19,6 +19,32 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(50, slider.Value);
 		}
 
+		// Confirms ValueProperty's coerceValue reuses the original boxed value instead of reboxing
+		// when the value is already in range, and still reboxes to the clamped value when it's not.
+		[Fact]
+		public void ValueCoerceValueReusesBoxWhenAlreadyInRange()
+		{
+			var slider = new Slider(); // Minimum = 0, Maximum = 1
+			object boxedValue = 0.5d;
+
+			var result = Slider.ValueProperty.CoerceValue(slider, boxedValue);
+
+			Assert.Same(boxedValue, result);
+			Assert.Equal(0.5d, (double)result);
+		}
+
+		[Fact]
+		public void ValueCoerceValueReboxesWhenOutOfRange()
+		{
+			var slider = new Slider(); // Minimum = 0, Maximum = 1
+			object boxedValue = 2d;
+
+			var result = Slider.ValueProperty.CoerceValue(slider, boxedValue);
+
+			Assert.NotSame(boxedValue, result);
+			Assert.Equal(1d, (double)result);
+		}
+
 		// Tests for setting Min, Max, Value in all 6 possible orders
 		// Order: Min, Max, Value
 		[Theory]

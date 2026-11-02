@@ -21,6 +21,13 @@
     <style name="MauiAppBarLayout" parent="ThemeOverlay.AppCompat.Dark.ActionBar">
         <item name="android:background">?attr/colorPrimary</item>
     </style>
+
+    <!-- Shell content tab style (used by shellsectionlayout.axml) -->
+    <style name="MauiShellTabLayout" parent="Widget.MaterialComponents.TabLayout">
+        <item name="tabMode">scrollable</item>
+        <item name="tabGravity">fill</item>
+    </style>
+
     <style name="Maui.MainTheme" parent="Maui.MainTheme.Base">
       <!-- v35+ uses this to inject edge to edge opt out attribute value -->
     </style>

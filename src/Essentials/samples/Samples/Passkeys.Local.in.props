@@ -1,0 +1,33 @@
+<!-- TEMPLATE for local passkey testing. Copy to Passkeys.Local.props (git-ignored) and fill in, or
+     just run `pwsh ../Configure-Passkeys.ps1` which generates Passkeys.Local.props for you. This .in template is
+     committed for reference; the real Passkeys.Local.props is never committed. See ../README.md. -->
+<Project>
+
+  <!-- Default relying-party server URL, baked into the app via AssemblyMetadata (all platforms) and
+       read by PasskeysViewModel. Set this to your dev-tunnel URL, e.g.
+       https://abcd1234-5177.usw3.devtunnels.ms -->
+  <PropertyGroup>
+    <PasskeysServerUrl></PasskeysServerUrl>
+  </PropertyGroup>
+  <ItemGroup>
+    <AssemblyMetadata Include="PasskeysServerUrl" Value="$(PasskeysServerUrl)" />
+  </ItemGroup>
+
+  <!-- APPLE ONLY (delete this block for Windows/Android). Points at the git-ignored local entitlements
+       that carry webcredentials:<domain>. Generate it by copying Platforms/iOS/Entitlements.plist to
+       Platforms/iOS/Entitlements.Local.plist and adding a com.apple.developer.associated-domains array
+       with the single string "webcredentials:<your-tunnel-host>". -->
+  <PropertyGroup Condition="$(TargetFramework.Contains('-ios')) or $(TargetFramework.Contains('-maccatalyst'))">
+    <CodesignEntitlements>Platforms/iOS/Entitlements.Local.plist</CodesignEntitlements>
+  </PropertyGroup>
+
+  <!-- MAC CATALYST ONLY. A real signed macOS app needs the explicit provisioning profile that carries
+       Associated Domains; MtouchLink=None because this sample's runtime XAML inflation trips the default
+       Mac Catalyst linker. Fill in your Apple Development identity and profile name. -->
+  <PropertyGroup Condition="$(TargetFramework.Contains('-maccatalyst'))">
+    <CodesignKey>Apple Development: Your Name (XXXXXXXXXX)</CodesignKey>
+    <CodesignProvision>Your Provisioning Profile Name</CodesignProvision>
+    <MtouchLink>None</MtouchLink>
+  </PropertyGroup>
+
+</Project>

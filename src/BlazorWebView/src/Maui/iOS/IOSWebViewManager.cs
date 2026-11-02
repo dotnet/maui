@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui;
 using Microsoft.Maui.Platform;
 using ObjCRuntime;
 using UIKit;
@@ -73,7 +74,22 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		internal bool TryGetResponseContentInternal(string uri, bool allowFallbackOnHostPage, out int statusCode, out string statusMessage, out Stream content, out IDictionary<string, string> headers)
 		{
 			var defaultResult = TryGetResponseContent(uri, allowFallbackOnHostPage, out statusCode, out statusMessage, out content, out headers);
-			var hotReloadedResult = StaticContentHotReloadManager.TryReplaceResponseContent(_contentRootRelativeToAppRoot, uri, ref statusCode, ref content, headers);
+
+			// Deliberately goes through the same public seam an external backend uses, so the in-box
+			// handlers dogfood it. The caller owns the response, so applying the content is done here.
+			var hotReloadedResult = BlazorWebViewStaticContentHotReload.TryGetUpdatedStaticContent(
+				_contentRootRelativeToAppRoot, uri, out var hotReloadedContent, out var hotReloadedContentType);
+			if (hotReloadedResult)
+			{
+				statusCode = 200;
+				content?.Dispose();
+				content = hotReloadedContent!;
+				if (hotReloadedContentType is not null)
+				{
+					headers["Content-Type"] = hotReloadedContentType;
+				}
+			}
+
 			return defaultResult || hotReloadedResult;
 		}
 
@@ -99,8 +115,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 		internal sealed class WebViewUIDelegate : WKUIDelegate
 		{
-			private static readonly string LocalOK = NSBundle.FromIdentifier("com.apple.UIKit").GetLocalizedString("OK");
-			private static readonly string LocalCancel = NSBundle.FromIdentifier("com.apple.UIKit").GetLocalizedString("Cancel");
+			private static readonly string LocalOK = NSBundle.FromIdentifier("com.apple.UIKit")?.GetLocalizedString("OK") ?? "OK";
+			private static readonly string LocalCancel = NSBundle.FromIdentifier("com.apple.UIKit")?.GetLocalizedString("Cancel") ?? "Cancel";
 			private readonly BlazorWebViewHandler _webView;
 
 			public WebViewUIDelegate(BlazorWebViewHandler webView)
@@ -233,7 +249,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 						return null;
 					}
 
-					var del = (Action<string?>)GetExistingManagedDelegate(block);
+					var del = GetExistingManagedDelegate(block) as Action<string?>;
 					return del ?? new ActionStringTrampolineBlock((BlockLiteral*)block).Invoke;
 				}
 
@@ -265,8 +281,19 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 			public override void DecidePolicy(WKWebView webView, WKNavigationAction navigationAction, Action<WKNavigationActionPolicy> decisionHandler)
 			{
+				if (((IViewHandler)_webView).VirtualView is null)
+				{
+					decisionHandler(WKNavigationActionPolicy.Cancel);
+					return;
+				}
+
 				var requestUrl = navigationAction.Request.Url;
-				var uri = new Uri(requestUrl.ToString());
+				if (requestUrl?.ToString() is not string requestUrlString)
+				{
+					decisionHandler(WKNavigationActionPolicy.Cancel);
+					return;
+				}
+				var uri = new Uri(requestUrlString);
 
 				UrlLoadingStrategy strategy;
 

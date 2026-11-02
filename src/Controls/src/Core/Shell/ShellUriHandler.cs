@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Controls
 						if (page == null)
 							continue;
 
-						var route = Routing.GetRoute(page);
+						var route = Routing.GetResolvedRoute(page) ?? Routing.GetRoute(page);
 						buildUpPages.AddRange(CollapsePath(route, buildUpPages, false));
 					}
 
@@ -296,6 +296,7 @@ namespace Microsoft.Maui.Controls
 					continue;
 
 				var globalRouteMatch = globalRouteMatches[0];
+				bool pathParamsForwarded = false;
 
 				while (possibleRoutePath.NextSegment != null)
 				{
@@ -306,6 +307,13 @@ namespace Microsoft.Maui.Controls
 					possibleRoutePath.AddGlobalRoute(
 						globalRouteMatch.GlobalRouteMatches[matchIndex],
 						globalRouteMatch.SegmentsMatched[matchIndex]);
+
+					// Forward captured path parameters once
+					if (!pathParamsForwarded)
+					{
+						possibleRoutePath.MergePathParameters(globalRouteMatch.PathParameters);
+						pathParamsForwarded = true;
+					}
 				}
 			}
 
@@ -464,6 +472,10 @@ namespace Microsoft.Maui.Controls
 				for (int i = existingGlobalRoutes.Count; i < additionalRouteMatches.Count; i++)
 					requestBuilderWithNewSegments.AddGlobalRoute(additionalRouteMatches[i], segments[i - existingGlobalRoutes.Count]);
 
+				// Transfer path parameters captured during ExpandOutGlobalRoutes
+				// so template routes still deliver values through this code path.
+				requestBuilderWithNewSegments.MergePathParameters(routeRequestBuilder.PathParameters);
+
 				pureGlobalRoutesMatch.Add(requestBuilderWithNewSegments);
 			}
 
@@ -512,7 +524,8 @@ namespace Microsoft.Maui.Controls
 				if (localRouteStack.Count <= walkBackCurrentStackIndex)
 					break;
 
-				if (paths[0] == localRouteStack[walkBackCurrentStackIndex])
+				if (paths[0] == localRouteStack[walkBackCurrentStackIndex]
+				|| RouteTemplate.IsTemplateSegment(paths[0]))
 				{
 					paths.RemoveAt(0);
 				}
@@ -529,67 +542,97 @@ namespace Microsoft.Maui.Controls
 
 		static bool FindAndAddSegmentMatch(RouteRequestBuilder possibleRoutePath, HashSet<string> routeKeys)
 		{
-			// First search by collapsing global routes if user is registering routes like "route1/route2/route3"
-			foreach (var routeKey in routeKeys)
+			// Two-pass match enforces literal-route precedence over templated
+			// routes (the same priority ASP.NET Core / Blazor use). Pass 0
+			// considers only purely-literal route keys; pass 1 considers
+			// routes that contain "{param}" segments. Without this, a
+			// templated registration could win over an exact literal
+			// registration depending on HashSet iteration order.
+			for (int pass = 0; pass < 2; pass++)
 			{
-				var collapsedRoutes = CollapsePath(routeKey, possibleRoutePath.SegmentsMatched, true);
-				var collapsedRoute = String.Join(_pathSeparator, collapsedRoutes);
+				bool acceptingTemplates = pass == 1;
 
-				if (routeKey.StartsWith("//", StringComparison.Ordinal))
+				// First search by collapsing global routes if user is registering routes like "route1/route2/route3"
+				foreach (var routeKey in routeKeys)
 				{
-					var routeKeyPaths =
-						routeKey.Split(_pathSeparators, StringSplitOptions.RemoveEmptyEntries);
+					bool isTemplate = Routing.IsTemplateRoute(routeKey);
+					if (isTemplate != acceptingTemplates)
+						continue;
 
-					if (routeKeyPaths[0] == collapsedRoutes[0])
-						collapsedRoute = "//" + collapsedRoute;
-				}
+					var collapsedRoutes = CollapsePath(routeKey, possibleRoutePath.SegmentsMatched, true);
+					var collapsedRoute = String.Join(_pathSeparator, collapsedRoutes);
 
-				string collapsedMatch = possibleRoutePath.GetNextSegmentMatch(collapsedRoute);
-				if (!String.IsNullOrWhiteSpace(collapsedMatch))
-				{
-					possibleRoutePath.AddGlobalRoute(routeKey, collapsedMatch);
-					return true;
-				}
-
-				// If the registered route is a combination of shell items and global routes then we might end up here
-				// without the previous tree search finding the correct path
-				if ((possibleRoutePath.Shell != null) &&
-					(possibleRoutePath.Item == null || possibleRoutePath.Section == null || possibleRoutePath.Content == null))
-				{
-					var nextNode = possibleRoutePath.GetNodeLocation().WalkToNextNode();
-
-					while (nextNode != null)
+					if (routeKey.StartsWith("//", StringComparison.Ordinal))
 					{
-						// This means we've jumped to a branch that no longer corresponds with the route path we are searching
-						if ((possibleRoutePath.Item != null && nextNode.Item != possibleRoutePath.Item) ||
-							(possibleRoutePath.Section != null && nextNode.Section != possibleRoutePath.Section) ||
-							(possibleRoutePath.Content != null && nextNode.Content != possibleRoutePath.Content))
+						var routeKeyPaths =
+							routeKey.Split(_pathSeparators, StringSplitOptions.RemoveEmptyEntries);
+
+						if (routeKeyPaths[0] == collapsedRoutes[0])
+							collapsedRoute = "//" + collapsedRoute;
+					}
+
+					Dictionary<string, string> capturedParameters = isTemplate
+						? new Dictionary<string, string>(StringComparer.Ordinal)
+						: null;
+
+					// Look up template by original routeKey (not collapsed route)
+					// so constraints/defaults/catch-all are still applied after
+					// CollapsePath strips prefix segments.
+					RouteTemplate routeTemplate = null;
+					if (isTemplate)
+						Routing.TryGetRouteTemplate(routeKey, out routeTemplate);
+
+					string collapsedMatch = possibleRoutePath.GetNextSegmentMatch(collapsedRoute, capturedParameters, routeTemplate);
+					if (!String.IsNullOrWhiteSpace(collapsedMatch))
+					{
+						possibleRoutePath.AddGlobalRoute(routeKey, collapsedMatch, capturedParameters);
+						return true;
+					}
+
+					// If the registered route is a combination of shell items and global routes then we might end up here
+					// without the previous tree search finding the correct path
+					if ((possibleRoutePath.Shell != null) &&
+						(possibleRoutePath.Item == null || possibleRoutePath.Section == null || possibleRoutePath.Content == null))
+					{
+						var nextNode = possibleRoutePath.GetNodeLocation().WalkToNextNode();
+
+						while (nextNode != null)
 						{
+							// This means we've jumped to a branch that no longer corresponds with the route path we are searching
+							if ((possibleRoutePath.Item != null && nextNode.Item != possibleRoutePath.Item) ||
+								(possibleRoutePath.Section != null && nextNode.Section != possibleRoutePath.Section) ||
+								(possibleRoutePath.Content != null && nextNode.Content != possibleRoutePath.Content))
+							{
+								nextNode = nextNode.WalkToNextNode();
+								continue;
+							}
+
+							var leafSearch = new RouteRequestBuilder(possibleRoutePath);
+							if (!leafSearch.AddMatch(nextNode))
+							{
+								nextNode = nextNode.WalkToNextNode();
+								continue;
+							}
+
+							var collapsedLeafRoute = String.Join(_pathSeparator, CollapsePath(routeKey, leafSearch.SegmentsMatched, true));
+
+							if (routeKey.StartsWith("//", StringComparison.Ordinal))
+								collapsedLeafRoute = "//" + collapsedLeafRoute;
+
+							Dictionary<string, string> leafCaptured = isTemplate
+								? new Dictionary<string, string>(StringComparer.Ordinal)
+								: null;
+
+							string segmentMatch = leafSearch.GetNextSegmentMatch(collapsedLeafRoute, leafCaptured, routeTemplate);
+							if (!String.IsNullOrWhiteSpace(segmentMatch))
+							{
+								possibleRoutePath.AddMatch(nextNode);
+								possibleRoutePath.AddGlobalRoute(routeKey, segmentMatch, leafCaptured);
+								return true;
+							}
+
 							nextNode = nextNode.WalkToNextNode();
-							continue;
 						}
-
-						var leafSearch = new RouteRequestBuilder(possibleRoutePath);
-						if (!leafSearch.AddMatch(nextNode))
-						{
-							nextNode = nextNode.WalkToNextNode();
-							continue;
-						}
-
-						var collapsedLeafRoute = String.Join(_pathSeparator, CollapsePath(routeKey, leafSearch.SegmentsMatched, true));
-
-						if (routeKey.StartsWith("//", StringComparison.Ordinal))
-							collapsedLeafRoute = "//" + collapsedLeafRoute;
-
-						string segmentMatch = leafSearch.GetNextSegmentMatch(collapsedLeafRoute);
-						if (!String.IsNullOrWhiteSpace(segmentMatch))
-						{
-							possibleRoutePath.AddMatch(nextNode);
-							possibleRoutePath.AddGlobalRoute(routeKey, segmentMatch);
-							return true;
-						}
-
-						nextNode = nextNode.WalkToNextNode();
 					}
 				}
 			}
@@ -631,8 +674,17 @@ namespace Microsoft.Maui.Controls
 					for (var i = 0; i < pureGlobalRoutesMatch[0].GlobalRouteMatches.Count; i++)
 					{
 						var match = pureGlobalRoutesMatch[0];
-						possibleRoutePath.AddGlobalRoute(match.GlobalRouteMatches[i], match.SegmentsMatched[i]);
+						// Forward any path parameters captured during the
+						// secondary search so templated routes still deliver
+						// their values to ApplyQueryAttributes. Only forward
+						// once (on the first iteration); subsequent
+						possibleRoutePath.AddGlobalRoute(
+							match.GlobalRouteMatches[i],
+							match.SegmentsMatched[i]);
 					}
+
+					// Merge path parameters from the secondary search
+					possibleRoutePath.MergePathParameters(pureGlobalRoutesMatch[0].PathParameters);
 				}
 			}
 		}

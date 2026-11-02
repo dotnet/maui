@@ -49,11 +49,13 @@ parameters:
     demands:
       - ImageOverride -equals 1es-windows-2022
     os: windows
+# Hosted macOS does not yet provide Xcode 27; use the same image as PR builds.
 - name: MacOSPool
   type: object
   default:
-    name: Azure Pipelines
-    vmImage: macOS-15
+    name: AcesShared
+    demands:
+      - ImageOverride -equals $(AcesMacImageOverride)
     os: macOS
 
 resources:
@@ -146,6 +148,3 @@ extends:
         - Pack
         publishDependsOn:
         - Validate
-        # This is to enable SDL runs part of Post-Build Validation Stage
-        SDLValidationParameters:
-          enable: false
