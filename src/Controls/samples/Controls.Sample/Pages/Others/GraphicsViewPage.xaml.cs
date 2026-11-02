@@ -13,37 +13,37 @@ namespace Maui.Controls.Sample.Pages
 			InitializeComponent();
 		}
 
-		void OnButtonClicked(object sender, EventArgs e)
+		void OnButtonClicked(object? sender, EventArgs e)
 			=> GraphicsView.Invalidate();
 
-		void GraphicsView_DragInteraction(object sender, TouchEventArgs e)
+		void GraphicsView_DragInteraction(object? sender, TouchEventArgs e)
 			=> UpdateInteractions("Drag Touches", e);
 
-		void GraphicsView_CancelInteraction(object sender, EventArgs e)
+		void GraphicsView_CancelInteraction(object? sender, EventArgs e)
 			=> UpdateInteractions("Cancel Touches");
 
-		void GraphicsView_EndInteraction(object sender, TouchEventArgs e)
+		void GraphicsView_EndInteraction(object? sender, TouchEventArgs e)
 			=> UpdateInteractions("End Touches", e);
 
-		void GraphicsView_StartInteraction(object sender, TouchEventArgs e)
+		void GraphicsView_StartInteraction(object? sender, TouchEventArgs e)
 			=> UpdateInteractions("Start Touch", e);
 
-		void GraphicsView_StartHoverInteraction(object sender, TouchEventArgs e)
+		void GraphicsView_StartHoverInteraction(object? sender, TouchEventArgs e)
 			=> UpdateInteractions("Start Hover", e);
 
-		void GraphicsView_MoveHoverInteraction(object sender, TouchEventArgs e)
+		void GraphicsView_MoveHoverInteraction(object? sender, TouchEventArgs e)
 			=> UpdateInteractions("Move Hover", e);
 
-		void GraphicsView_EndHoverInteraction(object sender, EventArgs e)
+		void GraphicsView_EndHoverInteraction(object? sender, EventArgs e)
 			=> UpdateInteractions("End Hover");
 
-		void GraphicsView_Tapped(object sender, EventArgs args)
+		void GraphicsView_Tapped(object? sender, EventArgs args)
 			=> UpdateGestures("TapGestureRecognizer");
 
-		void GraphicsView_PanUpdated(object sender, PanUpdatedEventArgs args)
+		void GraphicsView_PanUpdated(object? sender, PanUpdatedEventArgs args)
 			=> UpdateGestures("PanGestureRecognizer");
 
-		void GraphicsView_PinchUpdated(object sender, PinchGestureUpdatedEventArgs args)
+		void GraphicsView_PinchUpdated(object? sender, PinchGestureUpdatedEventArgs args)
 			=> UpdateGestures("PinchGestureRecognizer ");
 
 		void UpdateInteractions(string name, TouchEventArgs e)

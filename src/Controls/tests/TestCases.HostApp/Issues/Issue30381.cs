@@ -97,7 +97,7 @@ public class Issue30381 : ContentPage
 
     void SetupWebView()
     {
-        MyWebView.Source = new HtmlWebViewSource
+        var source = new HtmlWebViewSource
         {
             Html = @"
             <html>
@@ -113,10 +113,16 @@ public class Issue30381 : ContentPage
             <body>
                 <h1>Welcome to Wikipedia</h1>
                 <p>Wikipedia is a free online encyclopedia.</p>
-                <p>Read more <a href='https://github.com/dotnet/maui' id='testLink'>here</a>.</p>
+                <p>Read more <a href='issue30381.html' id='testLink'>here</a>.</p>
             </body>
             </html>"
         };
+
+#if MACCATALYST
+        // HtmlWebViewSource's default origin is the bundle root; Catalyst assets are in Contents/Resources.
+        source.Html = source.Html.Replace("href='issue30381.html'", "href='Contents/Resources/issue30381.html'", StringComparison.Ordinal);
+#endif
+        MyWebView.Source = source;
 
         UpdateNavigationStatus();
     }
@@ -139,7 +145,7 @@ public class Issue30381 : ContentPage
         {
             MyWebView.GoBack();
         }
-        
+
         UpdateNavigationStatus();
     }
 
@@ -149,7 +155,7 @@ public class Issue30381 : ContentPage
         {
             MyWebView.GoForward();
         }
-        
+
         UpdateNavigationStatus();
     }
 
@@ -161,7 +167,7 @@ public class Issue30381 : ContentPage
 
     void OnWebViewNavigated(object sender, WebNavigatedEventArgs e)
     {
-        if (e.Url.Contains("github.com", StringComparison.OrdinalIgnoreCase))
+        if (e.Url.EndsWith("/issue30381.html", StringComparison.OrdinalIgnoreCase))
         {
             // Update navigation status after navigation completes
             UpdateNavigationStatus();

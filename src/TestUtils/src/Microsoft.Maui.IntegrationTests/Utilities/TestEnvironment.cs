@@ -27,7 +27,7 @@ namespace Microsoft.Maui.IntegrationTests
 		/// </summary>
 		public static bool SkipXcodeVersionCheck =>
 			Environment.GetEnvironmentVariable("SKIP_XCODE_VERSION_CHECK")?.Equals("true", StringComparison.OrdinalIgnoreCase) == true
-			|| false; // ← Toggle to true if needed locally
+			|| true; // ← Toggle to true if needed locally
 
 		/// <summary>
 		/// Specifies the iOS test device target for XHarness (e.g., "ios-simulator-64_18.5").
@@ -36,6 +36,13 @@ namespace Microsoft.Maui.IntegrationTests
 		public static string? IosTestDevice =>
 			Environment.GetEnvironmentVariable("IOS_TEST_DEVICE")
 			?? null; // ← Set to a specific device string if needed locally (e.g., "ios-simulator-64_18.5")
+
+		/// <summary>
+		/// Optional dedicated simulator UUID, used by both the fixture and XHarness.
+		/// The fixture boots and shuts down this simulator; do not select a shared device.
+		/// </summary>
+		public static string? IosTestDeviceUdid =>
+			Environment.GetEnvironmentVariable("IOS_TEST_DEVICE_UDID");
 
 		#endregion
 

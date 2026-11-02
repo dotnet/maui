@@ -21,6 +21,11 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty CommandParameterProperty = BindableProperty.Create(nameof(CommandParameter), typeof(object), typeof(SwipeItemView), null,
 			propertyChanged: CommandElement.OnCommandParameterChanged);
 
+		static SwipeItemView()
+		{
+			CommandProperty.DependsOn(CommandParameterProperty);
+		}
+
 		/// <summary>
 		/// Gets or sets the command invoked when this swipe item is activated. This is a bindable property.
 		/// </summary>
@@ -53,10 +58,11 @@ namespace Microsoft.Maui.Controls
 			Invoked?.Invoke(this, EventArgs.Empty);
 		}
 
-		void ICommandElement.CanExecuteChanged(object sender, EventArgs eventArgs)
-		{
-			IsEnabled = CommandElement.GetCanExecute(this);
-		}
+		protected override bool IsEnabledCore =>
+			base.IsEnabledCore && CommandElement.GetCanExecute(this, CommandProperty);
+
+		void ICommandElement.CanExecuteChanged(object sender, EventArgs e) =>
+			RefreshIsEnabledProperty();
 
 		WeakCommandSubscription ICommandElement.CleanupTracker { get; set; }
 	}

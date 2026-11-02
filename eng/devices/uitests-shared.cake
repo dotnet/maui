@@ -26,7 +26,8 @@ void RunUITestsWithRetry(string project, string config, string toolPath, string 
 {
 	int numOfRetries = IsCIBuild() ? 1 : 0;
 	var resultDirectory = MakeAbsolute(GetTestResultsDirectory()).FullPath;
-	var nunitDirectory = System.IO.Path.Combine(resultDirectory, $"nunit-{Guid.NewGuid():N}");
+	var runId = Convert.ToBase64String(Guid.NewGuid().ToByteArray()).TrimEnd('=').Replace('+', '-').Replace('/', '_');
+	var nunitDirectory = System.IO.Path.Combine(resultDirectory, $"n-{runId}");
 	var retryDirectory = System.IO.Path.Combine(nunitDirectory, "retry");
 	var resultsFile = System.IO.Path.Combine(resultDirectory, resultsFileName + ".trx");
 	string retrySettingsFile = null;

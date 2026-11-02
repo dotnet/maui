@@ -47,7 +47,9 @@ public class AOTTemplateTest : BaseTemplateTests
 			AddNoCodeSigningProps(extendedBuildProps);
 		}
 
-		string binLogFilePath = $"publish-{DateTime.UtcNow.ToFileTimeUtc()}.binlog";
+		string binLogFilePath = Path.Combine(
+			Path.GetDirectoryName(projectFile) ?? "",
+			$"publish-{DateTime.UtcNow.ToFileTimeUtc()}.binlog");
 		Assert.True(DotnetInternal.Build(projectFile, "Release", framework: framework, properties: extendedBuildProps, runtimeIdentifier: runtimeIdentifier, binlogPath: binLogFilePath, output: _output),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 
@@ -124,7 +126,9 @@ public class AOTTemplateTest : BaseTemplateTests
 			</Project>
 			""");
 
-		string binLogFilePath = $"publish-{DateTime.UtcNow.ToFileTimeUtc()}.binlog";
+		string binLogFilePath = Path.Combine(
+			Path.GetDirectoryName(projectFile) ?? "",
+			$"publish-{DateTime.UtcNow.ToFileTimeUtc()}.binlog");
 		Assert.True(DotnetInternal.Build(projectFile, "Release", framework: framework, properties: extendedBuildProps, runtimeIdentifier: runtimeIdentifier, binlogPath: binLogFilePath, output: _output),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 

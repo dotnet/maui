@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests"
+             x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Maui34056"
+             x:DataType="local:Maui34056PageViewModel">
+    <VerticalStackLayout>
+        <!-- Scenario 1: RelativeSource AncestorType inside DataTemplate with x:DataType (issue fix).
+             Mirrors the exact user reproduction case (inline x:DataType matches AncestorType). -->
+        <CollectionView x:Name="TestCollectionView"
+                        ItemsSource="{Binding Items}">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="local:Maui34056ItemViewModel">
+                    <Button x:Name="TestButton"
+                            Text="{Binding ItemName}"
+                            Command="{Binding x:DataType='local:Maui34056PageViewModel', Source={RelativeSource AncestorType={x:Type local:Maui34056PageViewModel}}, Path=TestCommand}" />
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <!-- Scenario 2: {RelativeSource Self} inside DataTemplate with x:DataType.
+             SourceGen must not use x:DataType as the source type; the source is the element itself.
+             Path=ItemName exists on Maui34056ItemViewModel to ensure the guard, not a failed lookup, prevents compiled binding. -->
+        <CollectionView x:Name="SelfBindingCollectionView"
+                        ItemsSource="{Binding Items}">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="local:Maui34056ItemViewModel">
+                    <Label x:Name="SelfBindingLabel"
+                           Text="{Binding Path=ItemName, Source={RelativeSource Self}}" />
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+        <!-- Scenario 3: RelativeSource AncestorType without inline x:DataType (regression guard).
+             The ambient DataTemplate x:DataType is Maui34056ItemViewModel, which has no TestCommand.
+             If SourceGen regressed and used ambient x:DataType instead of AncestorType as the source,
+             it would produce a different TypedBinding or fall back to runtime Binding, and the
+             TypedBinding<Maui34056PageViewModel, ICommand> assertion would fail, catching the regression. -->
+        <CollectionView x:Name="AncestorTypeNoInlineDataTypeCollectionView"
+                        ItemsSource="{Binding Items}">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="local:Maui34056ItemViewModel">
+                    <Button x:Name="AncestorTypeNoInlineDataTypeButton"
+                            Text="{Binding ItemName}"
+                            Command="{Binding Source={RelativeSource AncestorType={x:Type local:Maui34056PageViewModel}}, Path=TestCommand}" />
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+        <!-- Scenario 4: RelativeSource AncestorType for an Element subclass (ContentPage).
+             AncestorType=ContentPage derives from Element, so SourceGen selects FindAncestor mode
+             (not FindAncestorBindingContext). This verifies the HasImplicitConversion branch in
+             KnownMarkups.TryGetRelativeSourceAncestorType produces the correct mode. -->
+        <CollectionView x:Name="FindAncestorCollectionView"
+                        ItemsSource="{Binding Items}">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="local:Maui34056ItemViewModel">
+                    <Label x:Name="FindAncestorLabel"
+                           Text="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=Title}" />
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </VerticalStackLayout>
+</ContentPage>

@@ -16,7 +16,7 @@ public class Issue17389 : TestContentPage
 
     protected override void Init()
     {
-        tapCountLabel = new Label { Text = "Tap count: 0", HorizontalOptions = LayoutOptions.Center };
+        tapCountLabel = new Label { Text = "Tap count: 0", HorizontalOptions = LayoutOptions.Center, AutomationId = "TapCountLabel" };
 
         redGrid = CreateBackgroundTestGrid(Colors.Red, false, "RedGrid", out redGridLabel);
         greenGrid = CreateBackgroundTestGrid(Colors.Green, false, "GreenGrid", out greenGridLabel);

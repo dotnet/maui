@@ -10,6 +10,7 @@ using AndroidX.Activity.Result;
 using AndroidX.Activity.Result.Contract;
 using Microsoft.Maui.ApplicationModel;
 using Xunit;
+using ActivityFlags = Android.Content.ActivityFlags;
 using ActivityOptionsCompat = AndroidX.Core.App.ActivityOptionsCompat;
 using JavaObject = Java.Lang.Object;
 using JavaString = Java.Lang.String;
@@ -261,7 +262,7 @@ public class ActivityStateManagerRecreation_Tests
 	{
 		foreach (var appTask in activityManager.AppTasks ?? [])
 		{
-			if (appTask.TaskInfo?.TaskId == taskId)
+			if (appTask.TaskInfo is { } taskInfo && PlatformUtils.GetTaskId(taskInfo) == taskId)
 				return appTask;
 		}
 

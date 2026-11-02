@@ -160,12 +160,36 @@ public static class UITestRetry
             new XElement(ns + "Text", "NUnit reported failed tests or fixtures. " + string.Join(Environment.NewLine, messages))));
     }
 
+    static string GetAssemblyFullName(XElement test)
+    {
+        return (string)test.AncestorsAndSelf("test-suite")
+            .FirstOrDefault(suite => (string)suite.Attribute("type") == "Assembly")?.Attribute("fullname");
+    }
+
+    static bool IsPreservedIgnore(XElement original, XElement retry)
+    {
+        if (original.Name != "test-case" || retry.Name != "test-case" ||
+            (string)original.Attribute("runstate") != "Ignored" ||
+            (string)retry.Attribute("runstate") != "Ignored" ||
+            (string)retry.Attribute("result") != "Skipped" ||
+            (string)retry.Attribute("label") != "Ignored")
+            return false;
+
+        var originalReason = original.Elements("properties").Elements("property")
+            .Where(property => (string)property.Attribute("name") == "_SKIPREASON")
+            .Select(property => (string)property.Attribute("value")).SingleOrDefault();
+        var retryReason = retry.Elements("properties").Elements("property")
+            .Where(property => (string)property.Attribute("name") == "_SKIPREASON")
+            .Select(property => (string)property.Attribute("value")).SingleOrDefault();
+        return !string.IsNullOrEmpty(originalReason) && originalReason == retryReason &&
+            originalReason == (string)retry.Element("reason")?.Element("message");
+    }
+
     static bool FailureCompletedSuccessfully(XElement failure, IEnumerable<XDocument> retryReports)
     {
         var fullName = (string)failure.Attribute("fullname");
         var type = (string)failure.Attribute("type");
-        var assembly = (string)failure.AncestorsAndSelf("test-suite")
-            .FirstOrDefault(suite => (string)suite.Attribute("type") == "Assembly")?.Attribute("fullname");
+        var assembly = GetAssemblyFullName(failure);
         if (string.IsNullOrEmpty(fullName) || string.IsNullOrEmpty(assembly) ||
             (failure.Name == "test-suite" && string.IsNullOrEmpty(type)))
             return false;
@@ -177,14 +201,36 @@ public static class UITestRetry
             .SelectMany(report => report.Descendants(failure.Name)).Where(suite =>
             (string)suite.Attribute("fullname") == fullName &&
             (string)suite.Attribute("type") == type &&
-            (string)suite.AncestorsAndSelf("test-suite")
-                .FirstOrDefault(parent => (string)parent.Attribute("type") == "Assembly")?.Attribute("fullname") == assembly).ToList();
+            GetAssemblyFullName(suite) == assembly).ToList();
         return matches.Count > 0 && matches.All(suite =>
         {
             var cases = suite.DescendantsAndSelf("test-case").ToList();
-            return (string)suite.Attribute("result") == "Passed" &&
-                !suite.AncestorsAndSelf().Concat(cases).Any(node => (string)node.Attribute("label") == "Cancelled") &&
-                (suite.Name == "test-case" || (int.TryParse((string)suite.Attribute("total"), out var total) && total == cases.Count)) &&
+            if (suite.AncestorsAndSelf().Concat(cases).Any(node => (string)node.Attribute("label") == "Cancelled") ||
+                (suite.Name != "test-case" && (!int.TryParse((string)suite.Attribute("total"), out var total) || total != cases.Count)))
+                return false;
+
+            // Fixture setup can shadow a discovery-time Ignore with a parent error.
+            if ((string)failure.Attribute("site") == "Parent" &&
+                (string)failure.Attribute("label") == "Error" &&
+                failure.Ancestors("test-suite").Any(parent =>
+                    (string)parent.Attribute("type") == "TestFixture" &&
+                    (string)parent.Attribute("result") == "Failed" &&
+                    (string)parent.Attribute("site") == "SetUp") &&
+                IsPreservedIgnore(failure, suite))
+                return true;
+
+            var recoveredIgnoredFixture = suite.Name == "test-suite" &&
+                (string)suite.Attribute("result") == "Skipped" &&
+                (string)suite.Attribute("label") == "Ignored" &&
+                (string)suite.Attribute("site") == "Child" &&
+                cases.Any(test => (string)test.Attribute("result") == "Skipped") &&
+                cases.Where(test => (string)test.Attribute("result") == "Skipped").All(test =>
+                {
+                    var originals = failure.Descendants("test-case")
+                        .Where(original => (string)original.Attribute("fullname") == (string)test.Attribute("fullname")).ToList();
+                    return originals.Count == 1 && IsPreservedIgnore(originals[0], test);
+                });
+            return ((string)suite.Attribute("result") == "Passed" || recoveredIgnoredFixture) &&
                 cases.Any(test => (string)test.Attribute("result") == "Passed") &&
                 cases.All(test => (string)test.Attribute("result") == "Passed" || (string)test.Attribute("result") == "Skipped");
         });
@@ -196,8 +242,23 @@ public static class UITestRetry
         var failedIds = new HashSet<string>(original.Root.Element(ns + "Results")?.Elements()
             .Where(result => (string)result.Attribute("outcome") == "Failed")
             .Select(result => (string)result.Attribute("testId")) ?? Enumerable.Empty<string>());
+        var recoveredIgnores = originalReports.SelectMany(report => report.Descendants("test-case"))
+            .Where(test => (string)test.Attribute("result") == "Failed" &&
+                (string)test.Attribute("runstate") == "Ignored" &&
+                FailureCompletedSuccessfully(test, retryReports)).ToList();
+        var recoveredIgnoredIds = new HashSet<string>(original.Root.Element(ns + "TestDefinitions")?.Elements(ns + "UnitTest")
+            .Where(definition =>
+            {
+                var method = definition.Element(ns + "TestMethod");
+                var fullName = (string)method?.Attribute("className") + "." + (string)definition.Attribute("name");
+                return recoveredIgnores.Count(test =>
+                    (string)test.Attribute("fullname") == fullName &&
+                    GetAssemblyFullName(test) == (string)method?.Attribute("codeBase")) == 1;
+            })
+            .Select(definition => (string)definition.Attribute("id")) ?? Enumerable.Empty<string>());
         var unresolvedIds = new HashSet<string>(retry.Root.Element(ns + "Results")?.Elements()
-            .Where(result => (string)result.Attribute("outcome") != "Passed" && (string)result.Attribute("outcome") != "Failed")
+            .Where(result => (string)result.Attribute("outcome") != "Passed" && (string)result.Attribute("outcome") != "Failed" &&
+                !((string)result.Attribute("outcome") == "NotExecuted" && recoveredIgnoredIds.Contains((string)result.Attribute("testId"))))
             .Select(result => (string)result.Attribute("testId")).Where(failedIds.Contains) ?? Enumerable.Empty<string>());
         foreach (var section in new[] { "Results", "TestDefinitions", "TestEntries" })
         {
