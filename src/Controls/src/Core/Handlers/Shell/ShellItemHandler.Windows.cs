@@ -926,9 +926,8 @@ namespace Microsoft.Maui.Controls.Handlers
 
 			mauiNavView.UpdateTopNavAreaBackground(backgroundColor);
 			mauiNavView.UpdateTopNavigationViewItemUnselectedColor(unselectedColor);
-			// Update the fallback resources before overriding them with the disabled color.
-			mauiNavView.UpdateTopNavigationViewItemTextSelectedColor(titleColor ?? foregroundColor);
-			mauiNavView.UpdateTopNavigationViewItemTextColor(unselectedColor);
+			mauiNavView.UpdateTopNavigationViewItemTextSelectedColor(titleColor ?? foregroundColor, disabledColor);
+			mauiNavView.UpdateTopNavigationViewItemTextColor(unselectedColor, disabledColor);
 			mauiNavView.UpdateTopNavigationViewItemSelectedColor(foregroundColor ?? titleColor);
 			mauiNavView.UpdateTopNavigationViewItemDisabledColor(disabledColor);
 		}
