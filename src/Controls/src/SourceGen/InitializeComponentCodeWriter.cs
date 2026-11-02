@@ -163,6 +163,15 @@ $$"""
 							{
 								codeWriter.WriteLine($"global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.Register(this, \"{nodeId}\", {kvp.Value.ValueAccessor});");
 							}
+							string? dictionaryAccessor = null;
+							var dictionaryType = compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ResourceDictionary")!;
+							if (kvp.Value.Type.InheritsFrom(dictionaryType, sgcontext))
+								dictionaryAccessor = kvp.Value.ValueAccessor;
+							else if (kvp.Key is ElementNode owner
+								&& owner.Properties.Keys.Any(name => name.LocalName == "Resources"))
+								dictionaryAccessor = $"{kvp.Value.ValueAccessor}.Resources";
+							if (dictionaryAccessor != null)
+								codeWriter.WriteLine($"global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.RegisterResourceKeys({dictionaryAccessor}, new global::System.Collections.Generic.List<string>({dictionaryAccessor}.Keys).ToArray());");
 						}
 						// Register resource keys for hot reload (so UC can remove stale keys)
 						var resourceKeys = new System.Collections.Generic.List<string>();

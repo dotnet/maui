@@ -277,6 +277,7 @@ public static class XamlComponentRegistry
 	}
 
 	static readonly ConditionalWeakTable<object, HashSet<string>> s_resourceKeys = new();
+	static readonly ConditionalWeakTable<ResourceDictionary, ResourceDictionary> s_resourceDictionaries = new();
 	static readonly object s_resourceKeysLock = new();
 
 	/// <summary>
@@ -297,6 +298,34 @@ public static class XamlComponentRegistry
 		{
 			s_resourceKeys.Remove(page);
 			s_resourceKeys.Add(page, new HashSet<string>(keys, StringComparer.Ordinal));
+			if (page is ResourceDictionary dictionary)
+			{
+				s_resourceDictionaries.Remove(dictionary);
+				s_resourceDictionaries.Add(dictionary, dictionary.CreateHotReloadSnapshot());
+			}
+		}
+	}
+
+	/// <summary>
+	/// Applies regenerated XAML resources to a live dictionary, preserving entries added by application code.
+	/// </summary>
+	public static void UpdateResourceDictionary(ResourceDictionary dictionary, ResourceDictionary updated)
+	{
+		if (dictionary is null)
+			throw new ArgumentNullException(nameof(dictionary));
+		if (updated is null)
+			throw new ArgumentNullException(nameof(updated));
+
+		ResourceDictionary previous;
+		lock (s_resourceKeysLock)
+			previous = s_resourceDictionaries.TryGetValue(dictionary, out var snapshot) ? snapshot : new ResourceDictionary();
+
+		dictionary.UpdateFrom(updated, previous);
+
+		lock (s_resourceKeysLock)
+		{
+			s_resourceDictionaries.Remove(dictionary);
+			s_resourceDictionaries.Add(dictionary, updated.CreateHotReloadSnapshot());
 		}
 	}
 

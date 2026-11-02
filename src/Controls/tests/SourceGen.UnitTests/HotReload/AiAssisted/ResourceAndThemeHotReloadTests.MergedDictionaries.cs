@@ -14,19 +14,9 @@ namespace Microsoft.Maui.Controls.SourceGen.UnitTests.HotReload.AiAssisted;
 
 public partial class ResourceAndThemeHotReloadTests
 {
-	// Wave2 · Resources · P0-09 · RT-02
-	// Provenance: MAUI §1.1; public-app T1/T3
-	// Faithfulness: reaches the generic complex-property skip path (UpdateComponentCodeWriter
-	// ~L1194) for a non-root element's Resources property; fails (i.e. reclassify to GREEN) if the
-	// writer ever starts emitting real merged-dictionary patch code for this shape.
-	// Expected: DOC-SKIP-GUARD
-	[Fact]
-	public void MergedDictionaries_ComplexProperty_EmitsSkipMarker()
+	[MetadataUpdateFact]
+	public void MergedDictionaries_NestedResources_ReorderUpdatesConsumers()
 	{
-		// Root ContentPage.Resources is special-cased by the writer (it always resolves via
-		// TryEmitResourceDictionaryChange and never falls through to the generic marker below),
-		// so this guard targets a non-root element's Resources — the shape that is empirically
-		// declined via the generic complex-property path.
 		const string xamlV1 = """
 			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
 			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
@@ -70,12 +60,19 @@ public partial class ResourceAndThemeHotReloadTests
 			</ContentPage>
 			""";
 
-		using var harness = CreateHarness(nameof(MergedDictionaries_ComplexProperty_EmitsSkipMarker));
+		using var harness = CreateHarness(nameof(MergedDictionaries_NestedResources_ReorderUpdatesConsumers));
 		var generation = harness.Generate(xamlV1, xamlV2);
-		var updateComponentSource = generation[1].UpdateComponentSource;
-
-		Assert.NotNull(updateComponentSource);
-		Assert.Contains("// Complex property 'Resources' (ElementNode) \u2014 skipped (not yet supported)", updateComponentSource!, StringComparison.Ordinal);
+		harness.RunLive(generation, live =>
+		{
+			var page = live.GetInstance<ContentPage>();
+			var layout = Assert.IsType<VerticalStackLayout>(page.Content);
+			var label = Assert.IsType<Label>(Assert.Single(layout.Children));
+			Assert.Equal(Colors.Blue, label.TextColor);
+			Assert.Same(page, live.ApplyUpdate<ContentPage>(1));
+			Assert.Same(layout, page.Content);
+			Assert.Same(label, Assert.Single(layout.Children));
+			Assert.Equal(Colors.Red, label.TextColor);
+		});
 	}
 
 	// Wave2 · Resources · P1-01 · RT-10 (generator/compile-atomic anchor)

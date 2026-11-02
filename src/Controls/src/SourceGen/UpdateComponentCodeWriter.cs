@@ -84,6 +84,14 @@ static class UpdateComponentCodeWriter
 		// Emit diff summary as a comment for diagnostics
 		EmitDiffSummary(codeWriter, diff);
 
+		if (newIds?.FirstOrDefault(pair => pair.Value.Length == 0).Key is ElementNode dictionaryRoot
+			&& InheritsFrom(rootType, "global::Microsoft.Maui.Controls.ResourceDictionary"))
+		{
+			EmitResourceDictionaryChange(codeWriter, dictionaryRoot, "this", compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
+			codeWriter.Flush();
+			return codeWriter.InnerWriter.ToString();
+		}
+
 		// Emit child list changes FIRST (before property changes, since property diffs use post-change IDs)
 		int changeIdx = 0;
 		int addedCounter = 0;
@@ -100,13 +108,9 @@ static class UpdateComponentCodeWriter
 
 			if (isRoot)
 			{
-				INamedTypeSymbol? rootNodeType = null;
-				if (nodeDiff.NodeXmlType is { } xmlTypeRoot)
-					xmlTypeRoot.TryResolveTypeSymbol(null, compilation, xmlnsCache, typeCache, out rootNodeType);
-
 				foreach (var propDiff in nodeDiff.PropertyChanges)
 				{
-					EmitRootPropertyChange(codeWriter, propDiff, rootNodeType ?? rootType, compilation, xmlnsCache, typeCache, sourceProductionContext, projectItem);
+					EmitRootPropertyChange(codeWriter, propDiff, rootType, compilation, xmlnsCache, typeCache, sourceProductionContext, projectItem, newIds);
 				}
 				codeWriter.WriteLine();
 				continue;
@@ -144,7 +148,7 @@ static class UpdateComponentCodeWriter
 
 					foreach (var propDiff in nodeDiff.PropertyChanges)
 					{
-						EmitPropertyChange(codeWriter, castPrefix, propDiff, nodeType, varName, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
+						EmitPropertyChange(codeWriter, castPrefix, propDiff, nodeType, varName, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem, newIds);
 					}
 				}
 				else
@@ -1014,103 +1018,82 @@ static class UpdateComponentCodeWriter
 	}
 
 	/// <summary>
-	/// Emits code to patch the page's <c>Resources</c> dictionary from the new XAML node.
-	/// Removes old resource keys not present in the new XAML, then adds/updates all new keyed resources.
-	/// Tracks resource keys via <see cref="XamlComponentRegistry"/> so subsequent patches know what to remove.
+	/// Recreates a resource subtree with the normal inflation pipeline, then updates the live dictionary.
 	/// </summary>
-	/// <returns><see langword="true"/> if resource emission was handled; <see langword="false"/> to fall through.</returns>
-	static bool TryEmitResourceDictionaryChange(
+	static void EmitResourceDictionaryChange(
 		IndentedTextWriter codeWriter,
-		INode newNode,
+		INode? newNode,
+		string target,
 		Compilation compilation,
 		AssemblyAttributes xmlnsCache,
 		IDictionary<XmlType, INamedTypeSymbol> typeCache,
 		INamedTypeSymbol rootType,
 		SourceProductionContext sourceProductionContext,
-		ProjectItem? projectItem)
+		ProjectItem? projectItem,
+		IReadOnlyDictionary<ElementNode, string>? nodeIds = null)
 	{
-		// Collect resource elements from the new node
-		var resourceElements = new List<ElementNode>();
-		if (newNode is ListNode listNode)
+		var dictionary = new ElementNode(new XmlType(XamlParser.MauiUri, "ResourceDictionary", null),
+			XamlParser.MauiUri, newNode?.NamespaceResolver);
+		if (newNode is ElementNode element
+			&& element.XmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, typeCache, out var type)
+			&& type != null && (type.ToFQDisplayString() == "global::Microsoft.Maui.Controls.ResourceDictionary"
+				|| InheritsFrom(type, "global::Microsoft.Maui.Controls.ResourceDictionary")))
 		{
-			foreach (var item in listNode.CollectionItems)
-			{
-				if (item is ElementNode en)
-					resourceElements.Add(en);
-			}
+			foreach (var property in element.Properties)
+				if (property.Key != XmlName.xClass && property.Key != XmlName.xClassModifier)
+					dictionary.Properties.Add(property.Key, property.Value.Clone());
+			foreach (var item in element.CollectionItems)
+				dictionary.CollectionItems.Add(item.Clone());
 		}
-		else if (newNode is ElementNode singleElement)
+		else if (newNode is ListNode list)
 		{
-			resourceElements.Add(singleElement);
+			foreach (var item in list.CollectionItems)
+				dictionary.CollectionItems.Add(item.Clone());
 		}
+		else if (newNode != null)
+			dictionary.CollectionItems.Add(newNode.Clone());
 
-		// Verify all resources have x:Key — required for dictionary patching
-		var keyedResources = new List<(string key, ElementNode element)>();
-		foreach (var elem in resourceElements)
-		{
-			if (elem.Properties.TryGetValue(XmlName.xKey, out var keyNode) && keyNode is ValueNode keyVal && keyVal.Value is string key)
-				keyedResources.Add((key, elem));
-			// Resources without x:Key (e.g., implicit styles) are skipped
-		}
-
-		// Pre-compute which resources can actually be encoded as C# expressions.
-		// Resources we can't encode (custom types, converters, etc.) are left untouched.
-		var emittableResources = new List<(string key, string valueExpr)>();
-		foreach (var (key, elem) in keyedResources)
-		{
-			var valueExpr = BuildResourceValueExpression(elem, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
-			if (valueExpr != null)
-				emittableResources.Add((key, valueExpr));
-			else
-				codeWriter.WriteLine($"// Cannot encode resource '{key}' \u2014 left untouched");
-		}
-
-		// Bail out only if the previous emit registered no managed keys AND there is nothing new
-		// to emit. If we ever managed keys before, we must still emit the removal loop so that
-		// clearing all resources (or changing them to an empty / fully-unencodable set) takes
-		// effect — otherwise stale keys remain in this.Resources forever.
-		// The runtime helper GetResourceKeys returns Array.Empty when nothing was registered,
-		// so the emitted foreach degenerates to a no-op in the truly-never-emitted case.
-		if (keyedResources.Count == 0 && emittableResources.Count == 0)
-		{
-			codeWriter.WriteLine("foreach (var __rk in global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.GetResourceKeys(this))");
-			codeWriter.Indent++;
-			codeWriter.WriteLine("this.Resources.Remove(__rk);");
-			codeWriter.Indent--;
-			codeWriter.WriteLine("global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.RegisterResourceKeys(this, global::System.Array.Empty<string>());");
-			return true;
-		}
-
-		// Remove old resource keys that are no longer in the new XAML (only keys we manage).
-		// Include ALL keyed resources (not just emittable) so we don't accidentally remove
-		// a resource that became non-emittable but is still present in the XAML.
-		// IMPORTANT: enumerate in sorted order so generator output is deterministic
-		// (HashSet<string> enumeration order is implementation-defined).
-		var allNewKeysSorted = keyedResources.Select(kr => kr.key)
-			.Distinct(StringComparer.Ordinal)
-			.OrderBy(k => k, StringComparer.Ordinal)
-			.ToList();
-		codeWriter.WriteLine("foreach (var __rk in global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.GetResourceKeys(this))");
 		using (PrePost.NewBlock(codeWriter))
 		{
-			var allKeysList = string.Join(", ", allNewKeysSorted.Select(k => $"\"{EscapeString(k)}\""));
-			codeWriter.WriteLine($"if (global::System.Array.IndexOf(new string[] {{ {allKeysList} }}, __rk) < 0)");
-			codeWriter.Indent++;
-			codeWriter.WriteLine("this.Resources.Remove(__rk);");
-			codeWriter.Indent--;
+			var context = CreateConversionContext(compilation, sourceProductionContext, xmlnsCache, typeCache, rootType, projectItem, codeWriter);
+			context.UseLocalResourceFactories = true;
+			ElementNode? owner = null;
+			if (target.EndsWith(".Resources", StringComparison.Ordinal))
+			{
+				var ownerNode = newNode?.Parent is ListNode parentList ? parentList.Parent : newNode?.Parent;
+				var ownerType = ownerNode is ElementNode ownerElement
+					&& ownerElement.XmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, typeCache, out var resolvedOwner)
+					? resolvedOwner : rootType;
+				owner = new ElementNode(new XmlType("", "ResourceOwner", null), "", newNode?.NamespaceResolver);
+				context.Variables[owner] = new DirectValue(ownerType!, target.Substring(0, target.Length - ".Resources".Length));
+				var ancestor = owner;
+				for (var parent = ownerNode?.Parent; parent != null; parent = parent.Parent)
+				{
+					if (parent is not ElementNode parentElement || nodeIds?.TryGetValue(parentElement, out var id) != true)
+						continue;
+					var parentNode = new ElementNode(parentElement.XmlType, "", parentElement.NamespaceResolver);
+					ancestor.Parent = parentNode;
+					var accessor = id.Length == 0 ? "this"
+						: $"global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.GetComponent(this, \"{EscapeString(id)}\")";
+					context.Variables[parentNode] = new DirectValue(compilation.ObjectType, accessor);
+					ancestor = parentNode;
+				}
+			}
+			dictionary.Accept(new XamlNodeVisitor((node, parent) => node.Parent = parent), owner);
+			dictionary.Accept(new ExpandMarkupsVisitor(context), null);
+			dictionary.Accept(new PruneIgnoredNodesVisitor(false), null);
+			dictionary.Accept(new SimplifyTypeExtensionVisitor(), null);
+			if (!string.IsNullOrEmpty(context.ProjectItem.TargetFramework))
+				dictionary.Accept(new SimplifyOnPlatformVisitor(context.ProjectItem.TargetFramework), null);
+			dictionary.Accept(new CreateValuesVisitor(context), null);
+			dictionary.Accept(new SetNamescopesAndRegisterNamesVisitor(context), null);
+			dictionary.Accept(new SetResourcesVisitor(context), null);
+			dictionary.Accept(new SetPropertiesVisitor(context, true), null);
+
+			codeWriter.WriteLine($"global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.UpdateResourceDictionary({target}, {context.Variables[dictionary].ValueAccessor});");
+			foreach (var localMethod in context.LocalMethods)
+				codeWriter.WriteLine(localMethod);
 		}
-
-		// Add/update emittable resources
-		foreach (var (key, valueExpr) in emittableResources)
-		{
-			codeWriter.WriteLine($"this.Resources[\"{EscapeString(key)}\"] = {valueExpr};");
-		}
-
-		// Register only the keys we manage for next patch
-		var keysArrayExpr = string.Join(", ", emittableResources.Select(kr => $"\"{EscapeString(kr.key)}\""));
-		codeWriter.WriteLine($"global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.RegisterResourceKeys(this, new string[] {{ {keysArrayExpr} }});");
-
-		return true;
 	}
 
 	static bool TryEmitResourceDictionaryItemChange(
@@ -1232,9 +1215,16 @@ static class UpdateComponentCodeWriter
 		AssemblyAttributes xmlnsCache,
 		IDictionary<XmlType, INamedTypeSymbol> typeCache,
 		SourceProductionContext sourceProductionContext,
-		ProjectItem? projectItem)
+		ProjectItem? projectItem,
+		IReadOnlyDictionary<ElementNode, string>? nodeIds)
 	{
 		var propName = propDiff.PropertyName.LocalName;
+		if (propName == "Resources")
+		{
+			EmitResourceDictionaryChange(codeWriter, propDiff.Kind == PropertyDiffKind.Clear ? null : propDiff.NewNode,
+				"this.Resources", compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem, nodeIds);
+			return;
+		}
 
 		// "__MAUI_Content__" is synthetic — resolve via the root type's [ContentProperty]. See note in EmitPropertyChange.
 		if (propName == "__MAUI_Content__")
@@ -1280,10 +1270,6 @@ static class UpdateComponentCodeWriter
 
 		if (propDiff.NewNode != null)
 		{
-			// Resource dictionary: emit Clear() + re-add all keyed resources
-			if (propName == "Resources" && TryEmitResourceDictionaryChange(codeWriter, propDiff.NewNode, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem))
-				return;
-
 			if (TryEmitMarkupNodeChange(codeWriter, propDiff, rootType, "this", isRoot: true, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem))
 				return;
 			codeWriter.WriteLine($"// Complex root property '{propName}' ({propDiff.NewNode.GetType().Name}) — skipped (not yet supported)");
@@ -1315,9 +1301,16 @@ static class UpdateComponentCodeWriter
 		IDictionary<XmlType, INamedTypeSymbol> typeCache,
 		INamedTypeSymbol rootType,
 		SourceProductionContext sourceProductionContext,
-		ProjectItem? projectItem)
+		ProjectItem? projectItem,
+		IReadOnlyDictionary<ElementNode, string>? nodeIds)
 	{
 		var propName = propDiff.PropertyName.LocalName;
+		if (propName == "Resources" && nodeType != null)
+		{
+			EmitResourceDictionaryChange(codeWriter, propDiff.Kind == PropertyDiffKind.Clear ? null : propDiff.NewNode,
+				$"(({nodeType.ToFQDisplayString()}){varName}!).Resources", compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem, nodeIds);
+			return;
+		}
 
 		// "__MAUI_Content__" is a synthetic property name produced by the diff when the parent's
 		// direct text content (e.g. <Label>Hello</Label>) changes. Resolve it to the type's
@@ -1618,6 +1611,16 @@ static class UpdateComponentCodeWriter
 		// Use ExpandMarkupsVisitor to convert the MarkupNode, reusing the same
 		// classification and parsing logic as InitializeComponent.
 		var expandedNode = ExpandMarkupForUC(markupNode, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
+		if ((propDiff.OldNode is MarkupNode oldMarkup && oldMarkup.MarkupString.StartsWith("{DynamicResource ", StringComparison.Ordinal)
+				|| propDiff.OldNode is ElementNode { XmlType.Name: "DynamicResourceExtension" or "DynamicResource" })
+			&& (expandedNode is ValueNode { Value: Expression }
+				|| expandedNode is ElementNode { XmlType.Name: "BindingExtension" or "Binding" or "TemplateBindingExtension" or "TemplateBinding" })
+			&& InheritsFrom(ownerType, "global::Microsoft.Maui.Controls.Element")
+			&& FindStaticField(ownerType, $"{propName}Property") is { } property)
+		{
+			var target = isRoot ? "this" : $"(({ownerType.ToFQDisplayString()}){targetAccessor}!)";
+			codeWriter.WriteLine($"{target}.RemoveDynamicResource({property.ToFQDisplayString()});");
+		}
 
 		if (expandedNode is ValueNode valueNode && valueNode.Value is Expression)
 		{

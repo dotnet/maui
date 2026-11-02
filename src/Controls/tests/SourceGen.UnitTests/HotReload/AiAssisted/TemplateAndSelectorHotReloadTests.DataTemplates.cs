@@ -121,13 +121,11 @@ public partial class TemplateAndSelectorHotReloadTests
 		using var harness = CreateHarness();
 		var generation = harness.Generate(KeyedDataTemplateXaml("Alpha"), KeyedDataTemplateXaml("Bravo"));
 
-		// Generated-source oracle: the new factory lands in InitializeComponent, and UpdateComponent replaces
-		// the keyed entry with a bare template (the reason future realization stays deferred under #36482).
 		Assert.NotNull(generation[1].InitializeComponentSource);
 		Assert.Contains("Bravo", generation[1].InitializeComponentSource!, StringComparison.Ordinal);
 		Assert.NotNull(generation[1].UpdateComponentSource);
 		Assert.Contains(
-			"this.Resources[\"Row\"] = new global::Microsoft.Maui.Controls.DataTemplate();",
+			"UpdateResourceDictionary(this.Resources,",
 			generation[1].UpdateComponentSource!,
 			StringComparison.Ordinal);
 
@@ -143,6 +141,8 @@ public partial class TemplateAndSelectorHotReloadTests
 			// The update applies cleanly and the already-realized subtree is left intact.
 			Assert.Same(page, live.ApplyUpdate<ContentPage>(1));
 			Assert.Equal("Alpha", r1.Text);
+			var updatedTemplate = Assert.IsType<DataTemplate>(page.Resources["Row"]);
+			Assert.Equal("Bravo", Assert.IsType<Label>(updatedTemplate.CreateContent()).Text);
 		});
 	}
 
