@@ -37,6 +37,7 @@ public partial class EntryControlMainPage : ContentPage
 
 	private async void NavigateToOptionsPage_Clicked(object sender, EventArgs e)
 	{
+		EntryControl.Unfocus();
 		_viewModel.Reset();
 		await Navigation.PushAsync(new EntryOptionsPage(_viewModel));
 	}

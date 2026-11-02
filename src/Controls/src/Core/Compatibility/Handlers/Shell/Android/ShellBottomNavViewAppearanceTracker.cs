@@ -59,12 +59,23 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				bottomView.ItemTextColor = GetDefaultTabColorList(_shellContext.AndroidContext);
 				SetBackgroundColor(bottomView, ShellRenderer.DefaultBottomNavigationViewBackgroundColor);
 			}
+
+			AndroidSystemChrome.UpdateBottomChrome(
+				bottomView,
+				RuntimeFeature.IsMaterial3Enabled && _originalAppearanceCaptured
+					? null
+					: new SolidColorBrush(ShellRenderer.DefaultBottomNavigationViewBackgroundColor));
 		}
 
 		public virtual void SetAppearance(BottomNavigationView bottomView, IShellAppearanceElement appearance)
 		{
 			IShellAppearanceElement controller = appearance;
-			var backgroundColor = controller.EffectiveTabBarBackgroundColor;
+			var background = (appearance as ShellAppearance)?.EffectiveTabBarBackground;
+			if (background is null && appearance.EffectiveTabBarBackgroundColor is Color backgroundColor)
+			{
+				background = new SolidColorBrush(backgroundColor);
+			}
+
 			var foregroundColor = controller.EffectiveTabBarForegroundColor;
 			var disabledColor = controller.EffectiveTabBarDisabledColor;
 			var unselectedColor = controller.EffectiveTabBarUnselectedColor;
@@ -85,10 +96,42 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			bottomView.ItemTextColor = _itemTextColor;
 			bottomView.ItemIconTintList = _itemIconTint;
 
-			if (backgroundColor is null && RuntimeFeature.IsMaterial3Enabled && _originalAppearanceCaptured)
+			SetBackground(bottomView, background);
+			AndroidSystemChrome.UpdateBottomChrome(
+				bottomView,
+				background is null && RuntimeFeature.IsMaterial3Enabled && _originalAppearanceCaptured
+					? null
+					: background ?? new SolidColorBrush(ShellRenderer.DefaultBottomNavigationViewBackgroundColor));
+		}
+
+		void SetBackground(BottomNavigationView bottomView, Brush brush)
+		{
+			if (brush is GradientBrush)
+			{
+				// Keep gradients free of the Material elevation overlay.
+				var oldBackground = bottomView.Background;
+				if (oldBackground is GradientStrokeDrawable gradientBackground && !ReferenceEquals(oldBackground, _originalBackground))
+				{
+					gradientBackground.SetBrush(brush);
+					// Rebuild the shader at the existing bounds after brush changes.
+					gradientBackground.Shape = gradientBackground.Shape;
+					gradientBackground.InvalidateSelf();
+					return;
+				}
+				bottomView.Background = null;
+				bottomView.UpdateBackground(brush);
+				DisposeBackground(oldBackground);
+				return;
+			}
+
+			if (brush is null && RuntimeFeature.IsMaterial3Enabled && _originalAppearanceCaptured)
+			{
 				RestoreBackground(bottomView);
-			else
-				SetBackgroundColor(bottomView, backgroundColor);
+				return;
+			}
+
+			// Route solid/null through SetBackgroundColor so existing subclass overrides still run.
+			SetBackgroundColor(bottomView, (brush as SolidColorBrush)?.Color);
 		}
 
 		internal void CaptureNativeAppearance(BottomNavigationView bottomView)
@@ -104,7 +147,18 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void RestoreBackground(BottomNavigationView bottomView)
 		{
+			var oldBackground = bottomView.Background;
 			bottomView.SetBackground(_originalBackground);
+			DisposeBackground(oldBackground);
+		}
+
+		void DisposeBackground(Drawable background)
+		{
+			if (!ReferenceEquals(background, _originalBackground) &&
+				background is MaterialShapeDrawable or ColorChangeRevealDrawable or GradientStrokeDrawable or MauiDrawable)
+			{
+				background.Dispose();
+			}
 		}
 
 		protected virtual void SetBackgroundColor(BottomNavigationView bottomView, Color color)
@@ -117,8 +171,29 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var oldBackground = bottomView.Background;
 			var colorDrawable = oldBackground as ColorDrawable;
 			var colorChangeRevealDrawable = oldBackground as ColorChangeRevealDrawable;
-			AColor lastColor = colorChangeRevealDrawable?.EndColor ?? colorDrawable?.Color ?? Colors.Transparent.ToPlatform();
+			var materialFillColor = (oldBackground as MaterialShapeDrawable)?.FillColor;
+			AColor lastColor = colorChangeRevealDrawable?.EndColor ?? colorDrawable?.Color ??
+				(materialFillColor is not null ? new AColor(materialFillColor.DefaultColor) : AColor.Transparent);
 			AColor newColor = color.ToPlatform();
+
+			if (materialFillColor is not null && lastColor == newColor)
+				return;
+
+			// Coming from a gradient there's no meaningful color to reveal from, so apply the solid color
+			// directly (avoids a reveal-from-transparent flash) and dispose the outgoing gradient drawable,
+			// which ViewCompat.SetBackground would otherwise replace without disposing.
+			if (oldBackground is GradientStrokeDrawable or MauiDrawable)
+			{
+				var solidBackground = new MaterialShapeDrawable();
+				solidBackground.FillColor = ColorStateList.ValueOf(newColor);
+				solidBackground.InitializeElevationOverlay(bottomView.Context);
+
+#pragma warning disable CS0618 // Obsolete
+				ViewCompat.SetBackground(bottomView, solidBackground);
+#pragma warning restore CS0618 // Obsolete
+				DisposeBackground(oldBackground);
+				return;
+			}
 
 			if (menuView == null)
 			{
@@ -134,6 +209,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					};
 					backgroundColor.InitializeElevationOverlay(bottomView.Context);
 					bottomView.SetBackground(backgroundColor);
+					DisposeBackground(oldBackground);
 				}
 			}
 			else
@@ -151,6 +227,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				var touchPoint = new Point(child.Left + (child.Right - child.Left) / 2, child.Top + (child.Bottom - child.Top) / 2);
 				bottomView.SetBackground(new ColorChangeRevealDrawable(lastColor, newColor, touchPoint));
+				DisposeBackground(oldBackground);
 			}
 		}
 

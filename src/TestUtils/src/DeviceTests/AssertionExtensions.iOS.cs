@@ -18,6 +18,8 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public static partial class AssertionExtensions
 	{
+		const int PixelComponentCount = 4;
+
 		public static async Task WaitForKeyboardToShow(this UIView view, int timeout = 1000)
 		{
 			await AssertEventually(() => KeyboardAutoManagerScroll.IsKeyboardShowing, timeout: timeout, message: $"Timed out waiting for {view} to show keyboard").ConfigureAwait(false);
@@ -247,14 +249,15 @@ namespace Microsoft.Maui.DeviceTests
 #pragma warning disable CA1416 // Validate platform compatibility
 			UIGraphics.BeginImageContext(imageRect.Size);
 			var context = UIGraphics.GetCurrentContext();
-			view.Layer.RenderInContext(context);
+			if (context is not null)
+				view.Layer.RenderInContext(context);
 			var image = UIGraphics.GetImageFromCurrentImageContext();
 			UIGraphics.EndImageContext();
 #pragma warning restore CA1416 // Validate platform compatibility
 
-			logger?.LogDebug($"Finish: {image.Size}");
+			logger?.LogDebug($"Finish: {image?.Size}");
 
-			return Task.FromResult(image);
+			return Task.FromResult(image!);
 		}
 
 		public static UIColor ColorAtPoint(this UIImage bitmap, int x, int y)
@@ -272,26 +275,9 @@ namespace Microsoft.Maui.DeviceTests
 
 		public static byte[] GetPixel(this UIImage bitmap, int x, int y)
 		{
-			var cgImage = bitmap.CGImage!;
-			var width = cgImage.Width;
-			var height = cgImage.Height;
-			var colorSpace = CGColorSpace.CreateDeviceRGB();
-			var bitsPerComponent = 8;
-			var bytesPerRow = 4 * width;
-			var componentCount = 4;
+			var dataBytes = GetPixelData(bitmap, out _, out _, out var bytesPerRow);
 
-			var dataBytes = new byte[width * height * componentCount];
-
-			using var context = new CGBitmapContext(
-				dataBytes,
-				width, height,
-				bitsPerComponent, bytesPerRow,
-				colorSpace,
-				CGBitmapFlags.ByteOrder32Big | CGBitmapFlags.PremultipliedLast);
-
-			context.DrawImage(new CGRect(0, 0, width, height), cgImage);
-
-			var pixelLocation = (bytesPerRow * y) + componentCount * x;
+			var pixelLocation = (bytesPerRow * y) + PixelComponentCount * x;
 
 			var pixel = new byte[]
 			{
@@ -302,6 +288,28 @@ namespace Microsoft.Maui.DeviceTests
 			};
 
 			return pixel;
+		}
+
+		static byte[] GetPixelData(UIImage bitmap, out int width, out int height, out int bytesPerRow)
+		{
+			var cgImage = bitmap.CGImage!;
+			width = (int)cgImage.Width;
+			height = (int)cgImage.Height;
+			bytesPerRow = PixelComponentCount * width;
+
+			var dataBytes = new byte[width * height * PixelComponentCount];
+			using var colorSpace = CGColorSpace.CreateDeviceRGB();
+			using var context = new CGBitmapContext(
+				dataBytes,
+				width,
+				height,
+				8,
+				bytesPerRow,
+				colorSpace,
+				CGBitmapFlags.ByteOrder32Big | CGBitmapFlags.PremultipliedLast);
+
+			context.DrawImage(new CGRect(0, 0, width, height), cgImage);
+			return dataBytes;
 		}
 
 		public static UIImage AssertColorAtPoint(this UIImage bitmap, UIColor expectedColor, int x, int y, double? tolerance = null)
@@ -419,18 +427,25 @@ namespace Microsoft.Maui.DeviceTests
 
 		public static Task<UIImage> AssertContainsColor(this UIImage bitmap, UIColor expectedColor, Func<Graphics.RectF, Graphics.RectF>? withinRectModifier = null, double? tolerance = null)
 		{
+			var pixelData = GetPixelData(bitmap, out _, out _, out var bytesPerRow);
+			expectedColor.GetRGBA(out var red, out var green, out var blue, out var alpha);
+			var colorTolerance = tolerance ?? 0.000001;
+			var imageRect = new Graphics.RectF(0, 0, (float)bitmap.Size.Width.Value, (float)bitmap.Size.Height.Value);
+
+			if (withinRectModifier is not null)
+				imageRect = withinRectModifier.Invoke(imageRect);
+
 			return Task.Run(() =>
 			{
-				var imageRect = new Graphics.RectF(0, 0, (float)bitmap.Size.Width.Value, (float)bitmap.Size.Height.Value);
-
-				if (withinRectModifier is not null)
-					imageRect = withinRectModifier.Invoke(imageRect);
-
 				for (int x = (int)imageRect.X; x < (int)imageRect.Width; x++)
 				{
 					for (int y = (int)imageRect.Y; y < (int)imageRect.Height; y++)
 					{
-						if (ColorComparison.ARGBEquivalent(bitmap.ColorAtPoint(x, y), expectedColor, tolerance))
+						var pixelLocation = (bytesPerRow * y) + PixelComponentCount * x;
+						if (Math.Abs(pixelData[pixelLocation] / 255.0 - red) <= colorTolerance
+							&& Math.Abs(pixelData[pixelLocation + 1] / 255.0 - green) <= colorTolerance
+							&& Math.Abs(pixelData[pixelLocation + 2] / 255.0 - blue) <= colorTolerance
+							&& Math.Abs(pixelData[pixelLocation + 3] / 255.0 - alpha) <= colorTolerance)
 						{
 							return bitmap;
 						}
@@ -999,7 +1014,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				if (subview is T typed)
 					yield return typed;
-					
+
 				foreach (var descendant in FindAllDescendantViews<T>(subview))
 					yield return descendant;
 			}

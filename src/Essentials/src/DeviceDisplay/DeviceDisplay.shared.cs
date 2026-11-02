@@ -72,7 +72,7 @@ namespace Microsoft.Maui.Devices
 
 #if WINDOWS
 		internal const float BaseLogicalDpi = 96.0f;
-#elif ANDROID || TIZEN
+#elif ANDROID
 		internal const float BaseLogicalDpi = 160.0f;
 #endif
 
@@ -82,10 +82,10 @@ namespace Microsoft.Maui.Devices
 		/// Provides the default implementation for static usage of this API.
 		/// </summary>
 		public static IDeviceDisplay Current =>
-			currentImplementation ??= new DeviceDisplayImplementation();
+			EssentialsImplementation.GetOrCreate(ref currentImplementation, static () => new DeviceDisplayImplementation());
 
 		internal static void SetCurrent(IDeviceDisplay? implementation) =>
-			currentImplementation = implementation;
+			EssentialsImplementation.Set(ref currentImplementation, implementation);
 	}
 
 	sealed partial class DeviceDisplayImplementation : DeviceDisplayImplementationBase

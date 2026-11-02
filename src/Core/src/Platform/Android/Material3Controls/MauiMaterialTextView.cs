@@ -5,8 +5,7 @@ using Java.Lang;
 
 namespace Microsoft.Maui.Platform;
 
-// TODO: Material3 - make it public in .net 11
-internal class MauiMaterialTextView : MaterialTextView
+public class MauiMaterialTextView : MaterialTextView
 {
 	// Track text type to optimize layout events - FormattedText needs span recalculation, plain text doesn't
 	bool _isFormatted;

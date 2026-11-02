@@ -10,7 +10,7 @@ namespace Maui.Controls.Sample.Pages.MapsGalleries
 			InitializeComponent();
 		}
 
-		void OnClearMapElementsClicked(object sender, EventArgs args)
+		void OnClearMapElementsClicked(object? sender, EventArgs args)
 		{
 			MapElementsMap.MapElements.Clear();
 		}

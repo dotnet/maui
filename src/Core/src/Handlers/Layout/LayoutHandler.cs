@@ -5,8 +5,6 @@ using PlatformView = Microsoft.Maui.Platform.LayoutView;
 using PlatformView = Microsoft.Maui.Platform.LayoutViewGroup;
 #elif WINDOWS
 using PlatformView = Microsoft.Maui.Platform.LayoutPanel;
-#elif TIZEN
-using PlatformView = Microsoft.Maui.Platform.LayoutViewGroup;
 #elif (NETSTANDARD || !PLATFORM)
 using PlatformView = System.Object;
 #endif
@@ -17,7 +15,7 @@ namespace Microsoft.Maui.Handlers
 	/// Represents the view handler for the abstract <see cref="ILayout"/> view and its platform-specific implementation.
 	/// </summary>
 	/// <seealso href="https://learn.microsoft.com/dotnet/maui/user-interface/handlers/">Conceptual documentation on handlers</seealso>
-	public partial class LayoutHandler : ILayoutHandler
+	public partial class LayoutHandler : ILayoutHandler, ILayoutHandler<PlatformView>
 	{
 		public static IPropertyMapper<ILayout, ILayoutHandler> Mapper = new PropertyMapper<ILayout, ILayoutHandler>(ViewMapper)
 		{

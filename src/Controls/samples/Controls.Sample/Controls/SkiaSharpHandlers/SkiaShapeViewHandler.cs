@@ -3,9 +3,7 @@ using Microsoft.Maui;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Graphics;
 
-#if TIZEN
-using Tizen.UIExtensions.NUI.GraphicsView;
-#elif !(NETSTANDARD || !PLATFORM)
+#if !(NETSTANDARD || !PLATFORM)
 using Microsoft.Maui.Graphics.Skia.Views;
 #else
 using SkiaGraphicsView = System.Object;

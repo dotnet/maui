@@ -51,9 +51,12 @@ namespace Microsoft.Maui
 				if (error is null)
 					return name;
 
-				var uiFont = UIFont.FromName(name, 10);
-				if (uiFont != null)
-					return name;
+				if (name is not null)
+				{
+					var uiFont = UIFont.FromName(name, 10);
+					if (uiFont != null)
+						return name;
+				}
 
 				throw new NSErrorException(error);
 			}

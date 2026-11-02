@@ -26,7 +26,8 @@ namespace Microsoft.Maui.Controls
 
 		static readonly BindableProperty[] s_ingestBrushArray = new[]
 		{
-			Shell.FlyoutBackdropProperty
+			Shell.FlyoutBackdropProperty,
+			Shell.BackgroundProperty
 		};
 
 		static readonly BindableProperty[] s_ingestDoubleArray = new[]
@@ -38,6 +39,9 @@ namespace Microsoft.Maui.Controls
 		Color[] _colorArray = new Color[s_ingestArray.Length];
 		Brush[] _brushArray = new Brush[s_ingestBrushArray.Length];
 		double[] _doubleArray = new double[s_ingestDoubleArray.Length];
+		List<Brush> _backgroundBrushes;
+
+		internal IReadOnlyList<Brush> BackgroundBrushes => _backgroundBrushes;
 
 		/// <summary>Gets the background color of the Shell.</summary>
 		public Color BackgroundColor => _colorArray[0];
@@ -71,11 +75,25 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Gets the backdrop brush for the Shell flyout.</summary>
 		public Brush FlyoutBackdrop => _brushArray[0];
+
+		/// <summary>Gets the background brush of the Shell.</summary>
+		public Brush Background => _brushArray[1];
 		public double FlyoutWidth => _doubleArray[0];
 		public double FlyoutHeight => _doubleArray[1];
 
+		// Color-only fallback for platforms that don't consume the raw brush ladder (Windows, Tizen, iOS < 15).
 		Color IShellAppearanceElement.EffectiveTabBarBackgroundColor =>
 			TabBarBackgroundColor ?? BackgroundColor;
+
+		// TabBarBackgroundColor > supported Shell.Background brush > Shell.BackgroundColor.
+		internal Brush EffectiveTabBarBackground =>
+			TabBarBackgroundColor is not null
+				? new SolidColorBrush(TabBarBackgroundColor)
+				: Background is SolidColorBrush or LinearGradientBrush or RadialGradientBrush && !Brush.IsNullOrEmpty(Background)
+					? Background
+					: BackgroundColor is not null
+						? new SolidColorBrush(BackgroundColor)
+						: null;
 
 		Color IShellAppearanceElement.EffectiveTabBarDisabledColor =>
 			TabBarDisabledColor ?? DisabledColor;
@@ -98,7 +116,11 @@ namespace Microsoft.Maui.Controls
 				_doubleArray[i] = -1;
 		}
 
-		/// <inheritdoc/>
+		// Explicit crefs replace legacy unqualified inheritdoc entries during mdoc import.
+		/// <inheritdoc cref="object.Equals(object)"/>
+		/// <summary>Determines whether the specified object is equal to the current <see cref="ShellAppearance"/>.</summary>
+		/// <param name="obj">The object to compare with the current object.</param>
+		/// <returns><see langword="true"/> if the specified object is equal to the current object; otherwise, <see langword="false"/>.</returns>
 		public override bool Equals(object obj)
 		{
 			if (!(obj is ShellAppearance appearance))
@@ -125,7 +147,9 @@ namespace Microsoft.Maui.Controls
 			return true;
 		}
 
-		/// <inheritdoc/>
+		/// <inheritdoc cref="object.GetHashCode"/>
+		/// <summary>Serves as the default hash function.</summary>
+		/// <returns>A hash code for the current object.</returns>
 		public override int GetHashCode()
 		{
 			var hashCode = -1988429770;
@@ -165,6 +189,8 @@ namespace Microsoft.Maui.Controls
 				{
 					anySet = true;
 					_brushArray[i] = brushDataSet[i].Value;
+					if (i == 1 && brushDataSet[i].Value is Brush brush && brush is not ImmutableBrush)
+						AddBackgroundBrush(brush);
 				}
 			}
 
@@ -179,6 +205,21 @@ namespace Microsoft.Maui.Controls
 			}
 
 			return anySet;
+		}
+
+		void AddBackgroundBrush(Brush brush)
+		{
+			if (_backgroundBrushes is not null)
+			{
+				for (int i = 0; i < _backgroundBrushes.Count; i++)
+				{
+					if (ReferenceEquals(_backgroundBrushes[i], brush))
+						return;
+				}
+			}
+
+			// Empty child brushes can later replace the inherited background.
+			(_backgroundBrushes ??= new List<Brush>()).Add(brush);
 		}
 
 		/// <summary>Marks the appearance as complete by filling any remaining null values.</summary>

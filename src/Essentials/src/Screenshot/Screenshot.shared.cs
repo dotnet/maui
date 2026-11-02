@@ -82,22 +82,23 @@ namespace Microsoft.Maui.Media
 		/// <param name="element">The user-interface element to capture.</param>
 		/// <returns>An instance of <see cref="IScreenshotResult"/> with information about the captured screenshot.</returns>
 		Task<IScreenshotResult?> CaptureAsync(UI.Xaml.UIElement element);
-#elif TIZEN
-
-		/// <summary>
-		/// Captures a screenshot of the specified window.
-		/// </summary>
-		/// <param name="window">The window to capture.</param>
-		/// <returns>An instance of <see cref="IScreenshotResult"/> with information about the captured screenshot.</returns>
-		Task<IScreenshotResult> CaptureAsync(Tizen.NUI.Window window);
-
-		/// <summary>
-		/// Captures a screenshot of the specified view.
-		/// </summary>
-		/// <param name="view">The view to capture.</param>
-		/// <returns>An instance of <see cref="IScreenshotResult"/> with information about the captured screenshot.</returns>
-		Task<IScreenshotResult?> CaptureAsync(Tizen.NUI.BaseComponents.View view);
 #endif
+	}
+
+	/// <summary>
+	/// Provides platform-agnostic view-level screenshot capture.
+	/// Third-party platform backends should implement this interface on their <see cref="IScreenshot"/> implementation
+	/// to enable element-level screenshot capture.
+	/// </summary>
+	public interface IViewScreenshot
+	{
+		/// <summary>
+		/// Captures a screenshot of a platform view.
+		/// The implementation should cast <paramref name="platformView"/> to the appropriate platform type.
+		/// </summary>
+		/// <param name="platformView">The platform-specific view object to capture.</param>
+		/// <returns>An <see cref="IScreenshotResult"/> with the captured screenshot, or <see langword="null"/> if capture is not supported for the given view type.</returns>
+		Task<IScreenshotResult?> CaptureViewAsync(object platformView);
 	}
 
 	/// <summary>
@@ -163,10 +164,10 @@ namespace Microsoft.Maui.Media
 		/// Provides the default implementation for static usage of this API.
 		/// </summary>
 		public static IScreenshot Default =>
-			defaultImplementation ??= new ScreenshotImplementation();
+			EssentialsImplementation.GetOrCreate(ref defaultImplementation, static () => new ScreenshotImplementation());
 
 		internal static void SetDefault(IScreenshot? implementation) =>
-			defaultImplementation = implementation;
+			EssentialsImplementation.Set(ref defaultImplementation, implementation);
 	}
 
 	/// <summary>
@@ -249,24 +250,6 @@ namespace Microsoft.Maui.Media
 		public static Task<IScreenshotResult?> CaptureAsync(this IScreenshot screenshot, UI.Xaml.UIElement element) =>
 			screenshot.AsPlatform().CaptureAsync(element);
 
-#elif TIZEN
-		/// <summary>
-		/// Captures a screenshot of the specified window.
-		/// </summary>
-		/// <param name="screenshot">The object this method is invoked on.</param>
-		/// <param name="window">The window to capture.</param>
-		/// <returns>An instance of <see cref="IScreenshotResult"/> with information about the captured screenshot.</returns>
-		public static Task<IScreenshotResult> CaptureAsync(this IScreenshot screenshot, Tizen.NUI.Window window) =>
-			screenshot.AsPlatform().CaptureAsync(window);
-
-		/// <summary>
-		/// Captures a screenshot of the specified view.
-		/// </summary>
-		/// <param name="screenshot">The object this method is invoked on.</param>
-		/// <param name="view">The view to capture.</param>
-		/// <returns>An instance of <see cref="IScreenshotResult"/> with information about the captured screenshot.</returns>
-		public static Task<IScreenshotResult?> CaptureAsync(this IScreenshot screenshot, Tizen.NUI.BaseComponents.View view) =>
-			screenshot.AsPlatform().CaptureAsync(view);
 #endif
 	}
 

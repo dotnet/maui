@@ -304,7 +304,8 @@ namespace Microsoft.Maui.Controls
 				picker.ClearPendingSelectedIndex();
 			}
 
-			return selectedIndex.Clamp(-1, picker.Items.Count - 1);
+			var clamped = selectedIndex.Clamp(-1, picker.Items.Count - 1);
+			return clamped == selectedIndex ? value : (object)clamped;
 		}
 
 		void OnItemDisplayBindingChanged(BindingBase oldValue, BindingBase newValue)

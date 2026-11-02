@@ -5,7 +5,7 @@ public class Issue23708 : ContentPage
 {
 	public Issue23708()
 	{
-		var collectionView = new CollectionView
+		var collectionView = new CollectionView2
 		{
 			AutomationId = "GroupedCollectionView",
 			IsGrouped = true,

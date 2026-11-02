@@ -6,7 +6,7 @@
     xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
     xmlns:viewmodels="clr-namespace:Maui.Controls.Sample.ViewModels">
     <views:BasePage.BindingContext>
-        <viewmodels:OthersViewModel />
+        <viewmodels:OthersViewModel/>
     </views:BasePage.BindingContext>
     <!-- TODO: Create a ControlTemplate -->
     <Grid
@@ -46,21 +46,21 @@
             BackgroundColor="Transparent"
             ItemsSource="{Binding FilteredItems}"
             SelectionMode="Single"
-            SelectedItem="{Binding SelectedItem, Source={x:RelativeSource AncestorType={x:Type ContentPage}}, Mode=TwoWay}"
-            SelectionChangedCommand="{Binding NavigateCommand, Source={x:RelativeSource AncestorType={x:Type ContentPage}}}"
+            SelectedItem="{Binding SelectedItem, Source={x:RelativeSource AncestorType={x:Type views:BasePage}}, Mode=TwoWay}"
+            SelectionChangedCommand="{Binding NavigateCommand, Source={x:RelativeSource AncestorType={x:Type views:BasePage}}}"
             Margin="6, 12, 6, 0">
             <CollectionView.ItemsLayout>
-                <LinearItemsLayout  
+                <LinearItemsLayout
                     Orientation="Vertical"
                     ItemSpacing="6"/>
             </CollectionView.ItemsLayout>
             <CollectionView.ItemTemplate>
                 <DataTemplate>
-                    <Border     
+                    <Border
                         Style="{StaticResource GalleryItemContainerStyle}">
                         <Border.StrokeShape>
-                            <RoundRectangle  
-                                CornerRadius="0" />
+                            <RoundRectangle
+                                CornerRadius="0"/>
                         </Border.StrokeShape>
                         <Grid>
                             <StackLayout>
@@ -77,11 +77,20 @@
             </CollectionView.ItemTemplate>
         </CollectionView>
         <!-- FOOTER -->
-        <VerticalStackLayout Grid.Row="3" Margin="0,0,0,100">
-            <Button Margin="5" Text="Add Adorner to TestButton" Clicked="TestVisualTreeHelper" />
-            <Button Margin="5" Text="Enable Visual Diagnostics Element Picker (Will disable UI!)" Clicked="EnableElementPicker" />
-            <Button Margin="5" Text="Enable Test Window Overlay" Clicked="TestAddOverlayWindow" />
-            <Button Margin="5" Text="Disable Test Window Overlay" Clicked="TestRemoveOverlayWindow" />
+        <VerticalStackLayout Grid.Row="3"
+                Margin="0,0,0,100">
+            <Button Margin="5"
+                    Text="Add Adorner to TestButton"
+                    Clicked="TestVisualTreeHelper"/>
+            <Button Margin="5"
+                    Text="Enable Visual Diagnostics Element Picker (Will disable UI!)"
+                    Clicked="EnableElementPicker"/>
+            <Button Margin="5"
+                    Text="Enable Test Window Overlay"
+                    Clicked="TestAddOverlayWindow"/>
+            <Button Margin="5"
+                    Text="Disable Test Window Overlay"
+                    Clicked="TestRemoveOverlayWindow"/>
             <Button
                 x:Name="TestButton"
                 VerticalOptions="Center"

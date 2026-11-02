@@ -5,9 +5,7 @@ using PlatformView = Microsoft.Maui.Platform.MauiPageControl;
 using PlatformView = Microsoft.Maui.Platform.MauiPageControl;
 #elif WINDOWS
 using PlatformView = Microsoft.Maui.Platform.MauiPageControl;
-#elif TIZEN
-using PlatformView = Microsoft.Maui.Platform.MauiPageControl;
-#elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID && !TIZEN)
+#elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID)
 using PlatformView = System.Object;
 #endif
 
@@ -25,7 +23,10 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IIndicatorView.IndicatorSize)] = MapIndicatorSize,
 			[nameof(IIndicatorView.IndicatorColor)] = MapIndicatorColor,
 			[nameof(IIndicatorView.SelectedIndicatorColor)] = MapSelectedIndicatorColor,
-			[nameof(IIndicatorView.IndicatorsShape)] = MapIndicatorShape
+			[nameof(IIndicatorView.IndicatorsShape)] = MapIndicatorShape,
+#if __IOS__ || MACCATALYST
+			[nameof(IView.FlowDirection)] = MapFlowDirection,
+#endif
 		};
 
 		public static CommandMapper<IIndicatorView, IIndicatorViewHandler> CommandMapper = new(ViewCommandMapper)

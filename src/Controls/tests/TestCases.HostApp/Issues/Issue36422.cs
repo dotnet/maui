@@ -40,6 +40,7 @@ public class Issue36422 : ContentPage
         {
             var label = new Label();
             label.SetBinding(Label.TextProperty, ".");
+            label.SetBinding(AutomationIdProperty, ".");
 
             return new Border
             {

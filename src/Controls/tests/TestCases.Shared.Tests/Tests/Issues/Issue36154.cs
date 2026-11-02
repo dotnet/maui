@@ -30,7 +30,12 @@ public class Issue36154 : _IssuesUITest
 		// Swipe left (finger moves left) → reveals RightItems
 		App.DragCoordinates(centerX, centerY, centerX - 300, centerY);
 
-		Assert.That(App.WaitForTextToBePresentInElement("ResultLabel", "RIGHT invoked!"), Is.True);
+		// WaitForTextToBePresentInElement returns false (rather than throwing) on timeout, so assert on
+		// it: otherwise the test would pass even if the SwipeView invoke callback never updated the label.
+		Assert.That(
+			App.WaitForTextToBePresentInElement("ResultLabel", "RIGHT invoked!"),
+			Is.True,
+			"Timed out waiting for ResultLabel to display 'RIGHT invoked!' after the swipe.");
 		Assert.That(App.WaitForElement("ResultLabel").GetText(), Is.EqualTo("RIGHT invoked!"));
 	}
 }
