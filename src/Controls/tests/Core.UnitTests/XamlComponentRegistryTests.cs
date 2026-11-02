@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml;
 using Xunit;
 
@@ -11,108 +10,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests;
 
 public class XamlComponentRegistryTests
 {
-	[Fact]
-	public void UpdateResourceDictionary_RemovesStaleResourcesAndPreservesRuntimeAdditions()
-	{
-		var removedMerge = new ResourceDictionary { ["Merged"] = "old" };
-		var dictionary = new ResourceDictionary { ["Removed"] = "old", ["Changed"] = "old" };
-		dictionary.MergedDictionaries.Add(removedMerge);
-		XamlComponentRegistry.RegisterResourceKeys(dictionary, new[] { "Removed", "Changed" });
-		dictionary["Runtime"] = "preserved";
-		var runtimeMerge = new ResourceDictionary { ["Merged"] = "runtime" };
-		dictionary.MergedDictionaries.Add(runtimeMerge);
-		var updated = new ResourceDictionary { ["Changed"] = "new" };
-		var updatedMerge = new ResourceDictionary { ["Merged"] = "new" };
-		updated.MergedDictionaries.Add(updatedMerge);
-
-		XamlComponentRegistry.UpdateResourceDictionary(dictionary, updated);
-
-		Assert.False(dictionary.ContainsKey("Removed"));
-		Assert.Equal("new", dictionary["Changed"]);
-		Assert.Equal("preserved", dictionary["Runtime"]);
-		Assert.Equal("runtime", dictionary["Merged"]);
-		Assert.Equal(new[] { updatedMerge, runtimeMerge }, dictionary.MergedDictionaries);
-
-		XamlComponentRegistry.UpdateResourceDictionary(dictionary, new ResourceDictionary());
-
-		Assert.False(dictionary.ContainsKey("Changed"));
-		Assert.Equal("preserved", dictionary["Runtime"]);
-		Assert.Same(runtimeMerge, Assert.Single(dictionary.MergedDictionaries));
-	}
-
-	[Fact]
-	public void UpdateResourceDictionary_DoesNotMaterializeLazyResources()
-	{
-		var created = 0;
-		var dictionary = new ResourceDictionary();
-		dictionary.AddFactory("Removed", () => { created++; return new object(); });
-		XamlComponentRegistry.RegisterResourceKeys(dictionary, new[] { "Removed" });
-		var updated = new ResourceDictionary();
-		updated.AddFactory("Added", () => { created++; return new object(); });
-
-		XamlComponentRegistry.UpdateResourceDictionary(dictionary, updated);
-
-		Assert.Equal(0, created);
-		Assert.False(dictionary.ContainsKey("Removed"));
-		Assert.NotNull(dictionary["Added"]);
-		Assert.Equal(1, created);
-	}
-
-	[Fact]
-	public void UpdateResourceDictionary_NotifiesFinalValuesAndRemovedKeys()
-	{
-		var dictionary = new ResourceDictionary { ["Removed"] = "old" };
-		dictionary.MergedDictionaries.Add(new ResourceDictionary { ["Accent"] = "old" });
-		XamlComponentRegistry.RegisterResourceKeys(dictionary, new[] { "Removed" });
-		var updated = new ResourceDictionary();
-		updated.MergedDictionaries.Add(new ResourceDictionary { ["Accent"] = "first" });
-		updated.MergedDictionaries.Add(new ResourceDictionary { ["Accent"] = "last" });
-		var notifications = new List<ResourcesChangedEventArgs>();
-		((IResourceDictionary)dictionary).ValuesChanged += (_, args) => notifications.Add(args);
-
-		XamlComponentRegistry.UpdateResourceDictionary(dictionary, updated);
-
-		var notification = Assert.Single(notifications);
-		Assert.Contains("Removed", notification.Keys);
-		Assert.Contains("Accent", notification.Keys);
-		Assert.Equal("last", dictionary["Accent"]);
-	}
-
-	[Fact]
-	public void UpdateResourceDictionary_RemovedDynamicResourceFallsBackAndTracksReaddition()
-	{
-		var label = new Label();
-		label.SetDynamicResource(Label.TextProperty, "Caption");
-		var layout = new VerticalStackLayout { Children = { label } };
-		layout.Resources["Caption"] = "local";
-		var page = new ContentPage { Content = layout };
-		page.Resources["Caption"] = "outer";
-		XamlComponentRegistry.RegisterResourceKeys(layout.Resources, new[] { "Caption" });
-		Assert.Equal("local", label.Text);
-
-		XamlComponentRegistry.UpdateResourceDictionary(layout.Resources, new ResourceDictionary());
-		Assert.Equal("outer", label.Text);
-
-		layout.Resources["Caption"] = "readded";
-		Assert.Equal("readded", label.Text);
-	}
-
-	[Fact]
-	public void UpdateResourceDictionary_RemovedDynamicResourceClearsValueButKeepsSubscription()
-	{
-		var label = new Label();
-		label.SetDynamicResource(Label.TextProperty, "Caption");
-		var page = new ContentPage { Content = label };
-		page.Resources["Caption"] = "old";
-		XamlComponentRegistry.RegisterResourceKeys(page.Resources, new[] { "Caption" });
-		Assert.Equal("old", label.Text);
-
-		XamlComponentRegistry.UpdateResourceDictionary(page.Resources, new ResourceDictionary());
-		Assert.Null(label.Text);
-
-		page.Resources["Caption"] = "readded";
-		Assert.Equal("readded", label.Text);
-	}
 
 	[Fact]
 	public void TryGet_AfterRegister_ReturnsComponent()

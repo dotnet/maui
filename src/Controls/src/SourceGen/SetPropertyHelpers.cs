@@ -200,7 +200,7 @@ static class SetPropertyHelpers
 			}
 		}
 
-		string keyExpression;
+		// Generate the AddFactory call
 		if (isImplicitStyle)
 		{
 			// Get TargetType from Style
@@ -211,22 +211,14 @@ static class SetPropertyHelpers
 				return;
 			}
 
-			keyExpression = targetTypeExpr;
+			writer.WriteLine($"{parentVar.ValueAccessor}.AddFactory({targetTypeExpr}, () =>");
 		}
 		else
 		{
-			keyExpression = $"\"{CSharpExpressionHelpers.EscapeForString(key!)}\"";
+			writer.WriteLine($"{parentVar.ValueAccessor}.AddFactory(\"{CSharpExpressionHelpers.EscapeForString(key!)}\", () =>");
 		}
 
-		var returnType = isImplicitStyle ? context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Style")! : context.Compilation.ObjectType;
-		var delegateType = context.Compilation.GetTypeByMetadataName("System.Func`1")!.Construct(returnType);
-		var factoryName = context.UseLocalResourceFactories ? NamingHelpers.CreateUniqueVariableName(context, delegateType) : null;
-		if (factoryName != null)
-			writer.WriteLine($"{returnType.ToFQDisplayString()} {factoryName}()");
-		else
-			writer.WriteLine($"{parentVar.ValueAccessor}.AddFactory({keyExpression}, () =>");
-
-		using (PrePost.NewBlock(writer, begin: "{", end: factoryName != null ? "}" : $"}}, shared: {shared.ToString().ToLowerInvariant()});"))
+		using (PrePost.NewBlock(writer, begin: "{", end: $"}}, shared: {shared.ToString().ToLowerInvariant()});"))
 		{
 			// Create a temporary context for generating the lambda body
 			var lambdaContext = new SourceGenContext(
@@ -267,11 +259,6 @@ static class SetPropertyHelpers
 				// Fallback - shouldn't happen
 				writer.WriteLine($"return null!;");
 			}
-		}
-		if (factoryName != null)
-		{
-			// Explicit delegates avoid adding lambda cache fields to existing types during EnC.
-			writer.WriteLine($"{parentVar.ValueAccessor}.AddFactory({keyExpression}, new {delegateType.ToFQDisplayString()}({factoryName}), shared: {shared.ToString().ToLowerInvariant()});");
 		}
 	}
 

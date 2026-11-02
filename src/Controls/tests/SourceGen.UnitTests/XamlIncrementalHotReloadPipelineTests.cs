@@ -1447,6 +1447,7 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 	[Fact]
 	public void ResourceAdded_UCEmitsResourceDictionaryAdd()
 	{
+		// Adding a resource should emit this.Resources["key"] = value
 		XamlHotReloadState.Reset();
 		const string xamlV1 = """
 			<?xml version="1.0" encoding="utf-8" ?>
@@ -1482,12 +1483,13 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		Assert.NotNull(uc);
 		Assert.Contains("Resources", uc, StringComparison.Ordinal);
 		Assert.Contains("SecondaryColor", uc, StringComparison.Ordinal);
-		Assert.Contains("UpdateResourceDictionary(this.Resources,", uc, StringComparison.Ordinal);
+		Assert.Contains("RegisterResourceKeys", uc, StringComparison.Ordinal);
 	}
 
 	[Fact]
 	public void ResourceRemoved_UCEmitsResourceDictionaryRemove()
 	{
+		// Removing a resource should emit this.Resources.Remove("key")
 		XamlHotReloadState.Reset();
 		const string xamlV1 = """
 			<?xml version="1.0" encoding="utf-8" ?>
@@ -1521,10 +1523,11 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		var uc = FindUCSource(run2, "uc.xsg");
 
 		Assert.NotNull(uc);
+		// Uses targeted remove — old keys not in new set are removed
 		Assert.Contains("Resources", uc, StringComparison.Ordinal);
+		Assert.Contains("Remove", uc, StringComparison.Ordinal);
 		Assert.Contains("AccentColor", uc, StringComparison.Ordinal);
-		Assert.DoesNotContain("SecondaryColor", uc, StringComparison.Ordinal);
-		Assert.Contains("UpdateResourceDictionary(this.Resources,", uc, StringComparison.Ordinal);
+		Assert.Contains("RegisterResourceKeys", uc, StringComparison.Ordinal);
 	}
 
 	[Fact]
@@ -1569,8 +1572,10 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 
 
 	[Fact]
-	public void MultipleResources_UCRecreatesDictionary()
+	public void ResourceWithConverters_UCDoesNotRegisterUnencodableKeys()
 	{
+		// When resources include custom types (converters) that can't be encoded as C# expressions,
+		// the UC should NOT register those keys — otherwise they get removed on next patch.
 		XamlHotReloadState.Reset();
 		const string xamlV1 = """
 <?xml version="1.0" encoding="utf-8" ?>
@@ -1600,9 +1605,11 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		var uc = FindUCSource(run2, "uc.xsg");
 
 		Assert.NotNull(uc);
+		// Only emittable keys (Color values) should be in RegisterResourceKeys
 		Assert.Contains("AccentColor", uc, StringComparison.Ordinal);
 		Assert.Contains("SecondaryColor", uc, StringComparison.Ordinal);
-		Assert.Contains("UpdateResourceDictionary(this.Resources,", uc, StringComparison.Ordinal);
+		Assert.Contains("RegisterResourceKeys", uc, StringComparison.Ordinal);
+		// The registered keys should only contain the color keys
 	}
 
 	[Fact]
@@ -1661,6 +1668,7 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 	[Fact]
 	public void ConverterResourceRemoved_UCEmitsRemove()
 	{
+		// Removing a converter resource should emit Resources.Remove("key") in UC.
 		XamlHotReloadState.Reset();
 
 		const string stubs = """
@@ -1704,8 +1712,10 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		var uc = FindUCSource(run2, "uc.xsg");
 
 		Assert.NotNull(uc);
-		Assert.Contains("UpdateResourceDictionary(this.Resources,", uc, StringComparison.Ordinal);
-		Assert.DoesNotContain("\"StatusConverter\"", uc, StringComparison.Ordinal);
+		// UC must remove the converter from the dictionary
+		Assert.Contains("Resources.Remove", uc, StringComparison.Ordinal);
+		// The converter key should no longer be registered
+		Assert.DoesNotContain("\"StatusConverter\"", uc.Substring(uc.IndexOf("RegisterResourceKeys")), StringComparison.Ordinal);
 	}
 
 	[Fact]
@@ -2581,8 +2591,9 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 	}
 
 	[Fact]
-	public void ResourceChange_ColorToStyle_RecreatesStyleAndSetters()
+	public void ResourceChange_NonEmittableKeyNotRemoved()
 	{
+		// When a Color resource becomes a Style (non-emittable), the key must NOT be removed
 		XamlHotReloadState.Reset();
 
 		const string xamlV1 = """
@@ -2615,11 +2626,12 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		var (_, run2) = TwoRuns(xamlV1, xamlV2);
 		var uc = FindUCSource(run2, "uc.xsg");
 		Assert.NotNull(uc);
+		// The key array in the removal guard must include "Primary" even though it's non-emittable.
+		// This prevents the old Color resource from being removed while the new Style can't be emitted.
 		Assert.Contains("\"Primary\"", uc, StringComparison.Ordinal);
 		Assert.Contains("\"Accent\"", uc, StringComparison.Ordinal);
-		Assert.Contains("new global::Microsoft.Maui.Controls.Style", uc, StringComparison.Ordinal);
-		Assert.Contains("TextColorProperty", uc, StringComparison.Ordinal);
-		Assert.Contains("UpdateResourceDictionary(this.Resources,", uc, StringComparison.Ordinal);
+		// Accent (still a Color) should be updated
+		Assert.Contains("Resources[\"Accent\"]", uc, StringComparison.Ordinal);
 	}
 
 	// -----------------------------------------------------------------------

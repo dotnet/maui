@@ -21,7 +21,7 @@ enum PropertyDiffKind
 /// <summary>
 /// Describes a change to a single property on an element node.
 /// </summary>
-readonly struct PropertyDiff(XmlName propertyName, PropertyDiffKind kind, string? newValue, INode? newNode = null, string? oldValue = null, INode? oldNode = null)
+readonly struct PropertyDiff(XmlName propertyName, PropertyDiffKind kind, string? newValue, INode? newNode = null, string? oldValue = null)
 {
 	/// <summary>The XAML attribute name of the changed property (e.g. <c>Text</c>, <c>TextColor</c>).</summary>
 	public XmlName PropertyName { get; } = propertyName;
@@ -48,9 +48,6 @@ readonly struct PropertyDiff(XmlName propertyName, PropertyDiffKind kind, string
 	/// Only populated when the old value was a simple <see cref="ValueNode"/>.
 	/// </summary>
 	public string? OldValue { get; } = oldValue;
-
-	/// <summary>The previous complex node, used to remove replaced markup subscriptions.</summary>
-	public INode? OldNode { get; } = oldNode;
 }
 
 /// <summary>
@@ -1032,8 +1029,7 @@ static class XamlNodeDiff
 					{
 						// New is complex (MarkupNode/ElementNode/ListNode)
 						// Record with the new node so the code writer can handle it
-						diffs.Add(new PropertyDiff(name, PropertyDiffKind.Set, null, newPropNode,
-							oldNode: oldPropNode));
+						diffs.Add(new PropertyDiff(name, PropertyDiffKind.Set, null, newPropNode));
 					}
 				}
 				// else: unchanged — no diff entry

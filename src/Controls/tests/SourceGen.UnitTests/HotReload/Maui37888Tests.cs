@@ -18,6 +18,116 @@ public class Maui37888Tests
 	const string ResourceKey = "ExploratoryCaption";
 
 	[MetadataUpdateTheory]
+	[InlineData(false, false)]
+	[InlineData(false, true)]
+	[InlineData(true, true)]
+	public void AddingApplicationResources_UpdatesExistingAndNewConsumers(bool useMergedDictionary, bool explicitDictionary)
+	{
+		const string rootClass = "TestMaui37888.App";
+		const string codeBehind = """
+			namespace TestMaui37888;
+
+			public partial class App
+			{
+				public App() => InitializeComponent();
+			}
+			""";
+		const string additions = """
+			<x:String x:Key="AddedResource">Added</x:String>
+			<Style TargetType="{x:Type Label}">
+			  <Setter Property="BackgroundColor" Value="Red" />
+			</Style>
+			""";
+
+		IReadOnlyDictionary<string, XamlHotReloadDocument> Snapshot(bool addResources)
+		{
+			var resources = $$"""
+				<x:String x:Key="ExistingResource">Unchanged</x:String>
+				{{(addResources && !useMergedDictionary ? additions : "")}}
+				""";
+			if (explicitDictionary)
+				resources = $$"""
+					<ResourceDictionary>
+					  <ResourceDictionary.MergedDictionaries>
+					    <ResourceDictionary Source="Styles.xaml" />
+					  </ResourceDictionary.MergedDictionaries>
+					  {{resources}}
+					</ResourceDictionary>
+					""";
+
+			return new Dictionary<string, XamlHotReloadDocument>(StringComparer.Ordinal)
+			{
+				["MainPage.xaml"] = new XamlHotReloadDocument(
+					$$"""
+					<Application xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+					             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+					             x:Class="{{rootClass}}">
+					  <Application.Resources>
+					    {{resources}}
+					  </Application.Resources>
+					</Application>
+					""",
+					ManifestResourceName: "TestMaui37888.App.xaml"),
+				["Styles.xaml"] = new XamlHotReloadDocument(
+					$$"""
+					<ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+					                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+					  <x:String x:Key="MergedResource">Unchanged</x:String>
+					  {{(addResources && useMergedDictionary ? additions : "")}}
+					</ResourceDictionary>
+					""",
+					ManifestResourceName: "TestMaui37888.Styles.xaml"),
+			};
+		}
+
+		AppContext.TryGetSwitch(IncrementalHotReloadSwitch, out var previousSwitch);
+		var previousApplication = Application.Current;
+		AppContext.SetSwitch(IncrementalHotReloadSwitch, true);
+		SetMainThreadImplementation();
+
+		try
+		{
+			using var harness = new XamlHotReloadTestHarness(
+				nameof(AddingApplicationResources_UpdatesExistingAndNewConsumers),
+				rootClass,
+				codeBehind);
+			var generations = harness.GenerateDocuments(Snapshot(false), Snapshot(true));
+
+			harness.RunLive(generations, live =>
+			{
+				var application = live.GetInstance<Application>();
+				Application.Current = application;
+				var existingLabel = new Label();
+				var layout = new VerticalStackLayout { Children = { existingLabel } };
+#pragma warning disable CS0618
+				application.MainPage = new ContentPage { Content = layout };
+#pragma warning restore CS0618
+				application.Resources["RuntimeResource"] = "Preserved";
+				Assert.Null(existingLabel.BackgroundColor);
+
+				Assert.Same(application, live.ApplyUpdateThroughRuntimeHandler<Application>(1));
+
+				Assert.Same(existingLabel, layout.Children[0]);
+				Assert.Equal(Colors.Red, existingLabel.BackgroundColor);
+				var newLabel = new Label();
+				layout.Children.Add(newLabel);
+				Assert.Equal(Colors.Red, newLabel.BackgroundColor);
+				Assert.Equal("Added", application.Resources["AddedResource"]);
+				Assert.Equal("Unchanged", application.Resources["ExistingResource"]);
+				Assert.Equal("Preserved", application.Resources["RuntimeResource"]);
+				if (explicitDictionary)
+					Assert.Equal("Unchanged", application.Resources["MergedResource"]);
+			});
+		}
+		finally
+		{
+			Application.Current = previousApplication;
+			AppContext.SetSwitch(IncrementalHotReloadSwitch, previousSwitch);
+			ClearMainThreadImplementation();
+		}
+	}
+
+	[MetadataUpdateTheory]
 	[InlineData(false)]
 	[InlineData(true)]
 	public void ApplicationResourceUpdate_ReachesExistingAndNewConsumers(bool useMergedDictionary)
@@ -106,119 +216,13 @@ public class Maui37888Tests
 				generation[1].GeneratedRoots,
 				static root => root.TypeName.StartsWith("__XamlGeneratedCode__.__Type", StringComparison.Ordinal));
 			Assert.Contains("App resource V1", dictionaryUpdate.UpdateComponentSource, StringComparison.Ordinal);
-			Assert.Contains("UpdateResourceDictionary(this,", dictionaryUpdate.UpdateComponentSource, StringComparison.Ordinal);
+			Assert.Contains($"this[\"{ResourceKey}\"]", dictionaryUpdate.UpdateComponentSource, StringComparison.Ordinal);
 
 			harness.RunLive(generation, live =>
 			{
 				var application = live.GetInstance<Application>();
 				Application.Current = application;
 				VerifyConsumers(application, () => live.ApplyUpdateThroughRuntimeHandler<Application>(1));
-			});
-		}
-		finally
-		{
-			Application.Current = previousApplication;
-			AppContext.SetSwitch(IncrementalHotReloadSwitch, previousSwitch);
-			ClearMainThreadImplementation();
-		}
-	}
-
-	[MetadataUpdateTheory]
-	[InlineData(false, null, "Red")]
-	[InlineData(true, null, "Red")]
-	[InlineData(false, "Red", "Blue")]
-	[InlineData(true, "Red", "Blue")]
-	[InlineData(false, "Blue", null)]
-	[InlineData(true, "Blue", null)]
-	public void ApplicationImplicitStyleChanges_ReachExistingAndNewConsumers(bool useMergedDictionary, string? oldColor, string? newColor)
-	{
-		const string rootClass = "TestMaui37888.App";
-		const string codeBehind = """
-			namespace TestMaui37888;
-
-			public partial class App
-			{
-				public App() => InitializeComponent();
-			}
-			""";
-		static string Style(string? color) => color == null ? "" : $$"""
-			<Style TargetType="{x:Type Label}">
-			  <Setter Property="BackgroundColor" Value="{{color}}" />
-			</Style>
-			""";
-
-		IReadOnlyDictionary<string, XamlHotReloadDocument> Snapshot(string? color) =>
-			new Dictionary<string, XamlHotReloadDocument>(StringComparer.Ordinal)
-			{
-				["MainPage.xaml"] = new XamlHotReloadDocument(
-					$$"""
-					<Application xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-					             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-					             x:Class="{{rootClass}}">
-					  <Application.Resources>
-					    <ResourceDictionary>
-					      <ResourceDictionary.MergedDictionaries>
-					        <ResourceDictionary Source="Styles.xaml" />
-					      </ResourceDictionary.MergedDictionaries>
-					      {{(!useMergedDictionary ? Style(color) : "")}}
-					    </ResourceDictionary>
-					  </Application.Resources>
-					</Application>
-					""",
-					ManifestResourceName: "TestMaui37888.App.xaml"),
-				["Styles.xaml"] = new XamlHotReloadDocument(
-					$$"""
-					<ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-					                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
-					  <x:String x:Key="ExistingResource">Unchanged</x:String>
-					  {{(useMergedDictionary ? Style(color) : "")}}
-					</ResourceDictionary>
-					""",
-					ManifestResourceName: "TestMaui37888.Styles.xaml"),
-			};
-
-		AppContext.TryGetSwitch(IncrementalHotReloadSwitch, out var previousSwitch);
-		var previousApplication = Application.Current;
-		AppContext.SetSwitch(IncrementalHotReloadSwitch, true);
-		SetMainThreadImplementation();
-
-		try
-		{
-			using var harness = new XamlHotReloadTestHarness(
-				nameof(ApplicationImplicitStyleChanges_ReachExistingAndNewConsumers),
-				rootClass,
-				codeBehind);
-			var generation = harness.GenerateDocuments(Snapshot(oldColor), Snapshot(newColor), Snapshot(oldColor));
-
-			harness.RunLive(generation, live =>
-			{
-				var application = live.GetInstance<Application>();
-				Application.Current = application;
-				var existingLabel = new Label { Text = "Existing" };
-				var layout = new VerticalStackLayout { Children = { existingLabel } };
-#pragma warning disable CS0618
-				application.MainPage = new ContentPage { Content = layout };
-#pragma warning restore CS0618
-				Assert.Equal(oldColor switch { "Red" => Colors.Red, "Blue" => Colors.Blue, _ => null }, existingLabel.BackgroundColor);
-				Assert.Equal("Unchanged", application.Resources["ExistingResource"]);
-				application.Resources["RuntimeResource"] = "Preserved";
-
-				Assert.Same(application, live.ApplyUpdateThroughRuntimeHandler<Application>(1));
-
-				Assert.Same(existingLabel, layout.Children[0]);
-				var expected = newColor switch { "Red" => Colors.Red, "Blue" => Colors.Blue, _ => null };
-				Assert.Equal(expected, existingLabel.BackgroundColor);
-				var newLabel = new Label { Text = "New" };
-				layout.Children.Add(newLabel);
-				Assert.Equal(expected, newLabel.BackgroundColor);
-				Assert.Equal("Unchanged", application.Resources["ExistingResource"]);
-				Assert.Equal("Preserved", application.Resources["RuntimeResource"]);
-
-				live.ApplyUpdateThroughRuntimeHandler<Application>(2);
-				var restored = oldColor switch { "Red" => Colors.Red, "Blue" => Colors.Blue, _ => null };
-				Assert.Equal(restored, existingLabel.BackgroundColor);
-				Assert.Equal(restored, newLabel.BackgroundColor);
-				Assert.Equal("Preserved", application.Resources["RuntimeResource"]);
 			});
 		}
 		finally
@@ -280,8 +284,8 @@ public class Maui37888Tests
 		var updateComponentSource = generation[1].UpdateComponentSource;
 
 		Assert.NotNull(updateComponentSource);
-		Assert.Contains("UpdateResourceDictionary(this,", updateComponentSource, StringComparison.Ordinal);
-		Assert.DoesNotContain("XamlComponentRegistry.Register(this,", updateComponentSource, StringComparison.Ordinal);
+		Assert.Contains("if (__uc_0 is not null)", updateComponentSource, StringComparison.Ordinal);
+		Assert.Contains("this[\"FollowingResource\"] = __uc_1;", updateComponentSource, StringComparison.Ordinal);
 		harness.Compile(generation[1]);
 	}
 

@@ -19,7 +19,6 @@ static Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.RegisterComponent(obje
 static Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.RegisterResourceKeys(object! page, string![]! keys) -> void
 static Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.RegisterTemplateComponent(object! page, string! nodeId, object! component) -> void
 static Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.TryGet(object! page, string! nodeId, out object? component) -> bool
-static Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.UpdateResourceDictionary(Microsoft.Maui.Controls.ResourceDictionary! dictionary, Microsoft.Maui.Controls.ResourceDictionary! updated) -> void
 static Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.Unregister(object! page) -> void
 static Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.Unregister(object! page, string! nodeId) -> void
 static Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.UnregisterSubtree(object! page, string! nodeIdPrefix) -> void

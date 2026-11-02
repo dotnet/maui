@@ -14,74 +14,15 @@ namespace Microsoft.Maui.Controls.SourceGen.UnitTests.HotReload.AiAssisted;
 
 public partial class ResourceAndThemeHotReloadTests
 {
-	[MetadataUpdateFact]
-	public void NestedImplicitStyleUpdate_ResolvesAncestorResources()
-	{
-		static string Xaml(string text) => $$"""
-			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-			             x:Class="TestAiAssisted.MainPage">
-			  <ContentPage.Resources>
-			    <Color x:Key="Accent">Red</Color>
-			  </ContentPage.Resources>
-			  <VerticalStackLayout>
-			    <VerticalStackLayout.Resources>
-			      <Style TargetType="Label">
-			        <Setter Property="Text" Value="{{text}}" />
-			        <Setter Property="TextColor" Value="{StaticResource Accent}" />
-			      </Style>
-			    </VerticalStackLayout.Resources>
-			    <Label />
-			  </VerticalStackLayout>
-			</ContentPage>
-			""";
-
-		using var harness = CreateHarness(nameof(NestedImplicitStyleUpdate_ResolvesAncestorResources));
-		var generation = harness.Generate(Xaml("Before"), Xaml("After"));
-		harness.RunLive(generation, live =>
-		{
-			var page = live.GetInstance<ContentPage>();
-			var layout = Assert.IsType<VerticalStackLayout>(page.Content);
-			var label = Assert.IsType<Label>(Assert.Single(layout.Children));
-			Assert.Equal("Before", label.Text);
-			Assert.Equal(Colors.Red, label.TextColor);
-			live.ApplyUpdate<ContentPage>(1);
-			Assert.Same(label, Assert.Single(layout.Children));
-			Assert.Equal("After", label.Text);
-			Assert.Equal(Colors.Red, label.TextColor);
-		});
-	}
-
-	[MetadataUpdateFact]
-	public void ResourceUpdate_PreservesNonSharedFactories()
-	{
-		static string Xaml(string text) => $$"""
-			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-			             x:Class="TestAiAssisted.MainPage">
-			  <ContentPage.Resources>
-			    <Label x:Key="NonShared" x:Shared="False" Text="{{text}}" />
-			  </ContentPage.Resources>
-			</ContentPage>
-			""";
-
-		using var harness = CreateHarness(nameof(ResourceUpdate_PreservesNonSharedFactories));
-		var generation = harness.Generate(Xaml("Before"), Xaml("After"));
-		harness.RunLive(generation, live =>
-		{
-			var page = live.GetInstance<ContentPage>();
-			var original = Assert.IsType<Label>(page.Resources["NonShared"]);
-			Assert.Equal("Before", original.Text);
-			Assert.NotSame(original, page.Resources["NonShared"]);
-			live.ApplyUpdate<ContentPage>(1);
-			var updated = Assert.IsType<Label>(page.Resources["NonShared"]);
-			Assert.Equal("After", updated.Text);
-			Assert.NotSame(updated, page.Resources["NonShared"]);
-		});
-	}
-
-	[MetadataUpdateFact]
-	public void BasedOnStyle_ResourceUpdate_UsesUpdatedBaseStyle()
+	// Wave2 · Resources · P0-13 · RT-04
+	// Provenance: toolkit T31/T32; public-app T10/T11
+	// Faithfulness: reaches the resource-dictionary keyed-encode path (UpdateComponentCodeWriter
+	// ~L929, BuildResourceValueExpression); Style has no public parameterless constructor so it
+	// always fails encoding and is left untouched. Fails (i.e. reclassify to GREEN) if the writer
+	// ever gains a Style-aware resource-value builder.
+	// Expected: DOC-SKIP-GUARD
+	[Fact]
+	public void BasedOnStyle_ComplexResource_EmitsSkipMarker()
 	{
 		const string xamlV1 = """
 			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
@@ -116,20 +57,12 @@ public partial class ResourceAndThemeHotReloadTests
 			</ContentPage>
 			""";
 
-		using var harness = CreateHarness(nameof(BasedOnStyle_ResourceUpdate_UsesUpdatedBaseStyle));
+		using var harness = CreateHarness(nameof(BasedOnStyle_ComplexResource_EmitsSkipMarker));
 		var generation = harness.Generate(xamlV1, xamlV2);
-		harness.RunLive(generation, live =>
-		{
-			var page = live.GetInstance<ContentPage>();
-			var label = Assert.IsType<Label>(page.Content);
-			Assert.Equal(Colors.Red, label.TextColor);
-			Assert.Same(page, live.ApplyUpdate<ContentPage>(1));
-			Assert.Same(label, page.Content);
-			var derived = Assert.IsType<Style>(page.Resources["Derived"]);
-			Assert.Same(page.Resources["BaseB"], derived.BasedOn);
-			var newLabel = new Label { Style = derived };
-			Assert.Equal(Colors.Blue, newLabel.TextColor);
-		});
+		var updateComponentSource = generation[1].UpdateComponentSource;
+
+		Assert.NotNull(updateComponentSource);
+		Assert.Contains("// Cannot encode resource 'Derived' \u2014 left untouched", updateComponentSource!, StringComparison.Ordinal);
 	}
 	// Wave2 · Resources · P0-05 · RT-06
 	// Provenance: MAUI §3.2/3.3; public-app T15

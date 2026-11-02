@@ -488,11 +488,9 @@ namespace Microsoft.Maui.Controls
 			OnKeysChanged(new[] { key });
 		}
 
-		bool _updatingFromHotReload;
-
 		void OnKeysChanged(IEnumerable<string> keys)
 		{
-			if (keys == null || _updatingFromHotReload)
+			if (keys == null)
 				return;
 			RaiseValuesChanged(new ResourcesChangedEventArgs(keys, ResolveKey));
 		}
@@ -504,71 +502,6 @@ namespace Microsoft.Maui.Controls
 		internal void Reload()
 		{
 			OnKeysChanged(MergedResourcesKeys);
-		}
-
-		internal ResourceDictionary CreateHotReloadSnapshot()
-		{
-			var snapshot = new ResourceDictionary { _source = _source, _mergedInstance = _mergedInstance };
-			foreach (var entry in _innerDictionary)
-				snapshot._innerDictionary.Add(entry.Key, entry.Value);
-			if (_mergedDictionaries != null)
-				snapshot._mergedDictionaries = new ObservableCollection<ResourceDictionary>(_mergedDictionaries);
-			if (StyleSheets != null)
-				snapshot.StyleSheets = new List<StyleSheets.StyleSheet>(StyleSheets);
-			return snapshot;
-		}
-
-		internal void UpdateFrom(ResourceDictionary updated, ResourceDictionary previous)
-		{
-			var changedKeys = new HashSet<string>(MergedResourcesKeys, StringComparer.Ordinal);
-			_updatingFromHotReload = true;
-			try
-			{
-				foreach (var key in previous._innerDictionary.Keys)
-					_innerDictionary.Remove(key);
-				foreach (var entry in updated._innerDictionary)
-					_innerDictionary[entry.Key] = entry.Value;
-
-				// Remove only XAML-owned merges; dictionaries added by application code survive.
-				if (previous._mergedDictionaries != null)
-					foreach (var dictionary in previous._mergedDictionaries)
-						MergedDictionaries.Remove(dictionary);
-				if (updated._mergedDictionaries != null)
-					for (var i = 0; i < updated._mergedDictionaries.Count; i++)
-					{
-						_ = MergedDictionaries;
-						_mergedDictionaries.Insert(i, updated._mergedDictionaries[i]);
-						updated._mergedDictionaries[i].ValuesChanged -= updated.Item_ValuesChanged;
-					}
-
-				if (previous._mergedInstance != null || updated._mergedInstance != null)
-				{
-					_mergedInstanceChangedProxy?.Unsubscribe();
-					_source = updated._source;
-					_mergedInstance = updated._mergedInstance;
-					if (_mergedInstance != null)
-						SetSource(_source, _mergedInstance);
-				}
-
-				if (previous.StyleSheets != null)
-					foreach (var sheet in previous.StyleSheets)
-						StyleSheets?.Remove(sheet);
-				if (updated.StyleSheets != null)
-				{
-					StyleSheets ??= new List<StyleSheets.StyleSheet>();
-					foreach (var sheet in updated.StyleSheets)
-						StyleSheets.Add(sheet);
-				}
-			}
-			finally
-			{
-				_updatingFromHotReload = false;
-			}
-
-			changedKeys.UnionWith(MergedResourcesKeys);
-			OnKeysChanged(changedKeys);
-			if (previous.StyleSheets != null || updated.StyleSheets != null)
-				RaiseValuesChanged(ResourcesChangedEventArgs.StyleSheets);
 		}
 
 		readonly WeakEventManager _weakEventManager = new WeakEventManager();
