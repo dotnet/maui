@@ -86,7 +86,7 @@
 
   <!-- TypeScript compilation -->
   <ItemGroup>
-    <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="5.7.1">
+    <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="7.0.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
