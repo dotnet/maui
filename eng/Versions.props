@@ -117,7 +117,7 @@
     <!-- Other packages -->
     <MicrosoftCodeAnalysisNetAnalyzersVersion>9.0.0-preview*</MicrosoftCodeAnalysisNetAnalyzersVersion>
     <MicrosoftCodeAnalysisPublicApiAnalyzersVersion>4.14.0</MicrosoftCodeAnalysisPublicApiAnalyzersVersion>
-    <MicrosoftCodeAnalysisBannedApiAnalyzersVersion>4.14.0</MicrosoftCodeAnalysisBannedApiAnalyzersVersion>
+    <MicrosoftCodeAnalysisBannedApiAnalyzersVersion>5.6.0</MicrosoftCodeAnalysisBannedApiAnalyzersVersion>
     <MicrosoftIoRecyclableMemoryStreamVersion>3.0.1</MicrosoftIoRecyclableMemoryStreamVersion>
     <SystemNumericsVectorsVersion>4.6.1</SystemNumericsVectorsVersion>
     <SystemMemoryPackageVersion>4.6.3</SystemMemoryPackageVersion>
