@@ -42,7 +42,8 @@ public partial class ViewHandler
 
 	internal void ReconnectContainer()
 	{
-		if (PlatformView is null ||
+		if (VirtualView is not { } virtualView ||
+			PlatformView is null ||
 			ContainerView is not WrapperView wrapper ||
 			ReferenceEquals(wrapper.Child, PlatformView))
 		{
@@ -50,6 +51,14 @@ public partial class ViewHandler
 		}
 
 		wrapper.Child = PlatformView;
+
+		// Mappers skip default values while connecting, so replay what the retained wrapper owns to avoid stale state.
+		wrapper.RenderTransform = null;
+		wrapper.Projection = null;
+		wrapper.UpdateTransformation(virtualView);
+		wrapper.UpdateVisibility(virtualView);
+		wrapper.UpdateClip(virtualView);
+		wrapper.UpdateShadow(virtualView);
 	}
 
 	public static void MapTranslationX(IViewHandler handler, IView view)
