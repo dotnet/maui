@@ -31,7 +31,7 @@
       "rollForward": false
     },
     "microsoft.maui.cli": {
-      "version": "0.1.0-preview.10.26274.3",
+      "version": "0.1.0-preview.14.26531.2",
       "commands": [
         "maui"
       ],
