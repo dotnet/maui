@@ -46,7 +46,9 @@ namespace Microsoft.Maui.Platform
 			_isTemplateIndicator = false;
 
 			if ((_indicatorView as ITemplatedIndicatorView)?.IndicatorsLayoutOverride == null)
+			{
 				UpdateShapes();
+			}
 			else
 				UpdateIndicatorTemplate((_indicatorView as ITemplatedIndicatorView)?.IndicatorsLayoutOverride);
 

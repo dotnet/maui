@@ -15,6 +15,7 @@ namespace Microsoft.Maui.Platform
 		WeakReference<IIndicatorView>? _indicatorView;
 		bool _updatingPosition;
 		double _lastAppliedIndicatorSize = DefaultIndicatorSize;
+		WeakReference<UIView>? _indicatorLayoutView;
 
 		public MauiPageControl()
 		{
@@ -31,6 +32,9 @@ namespace Microsoft.Maui.Platform
 			if (indicatorView == null)
 			{
 				ValueChanged -= MauiPageControlValueChanged;
+				if (_indicatorLayoutView?.TryGetTarget(out var indicatorLayoutView) == true)
+					indicatorLayoutView.RemoveFromSuperview();
+				_indicatorLayoutView = null;
 			}
 			_indicatorView = indicatorView is null ? null : new(indicatorView);
 
@@ -52,6 +56,15 @@ namespace Microsoft.Maui.Platform
 		public override void LayoutSubviews()
 		{
 			base.LayoutSubviews();
+			IIndicatorView? indicatorView = null;
+			_indicatorView?.TryGetTarget(out indicatorView);
+
+			if ((indicatorView as ITemplatedIndicatorView)?.IndicatorsLayoutOverride is ILayout layout)
+			{
+				// The template host needs valid bounds before RTL child positioning runs.
+				layout.Arrange(Bounds.ToRectangle());
+				return;
+			}
 
 			if (_indicatorView?.TryGetTarget(out var templatedIndicator) == true
 				&& (templatedIndicator as ITemplatedIndicatorView)?.IndicatorsLayoutOverride is ILayout layout)
@@ -65,7 +78,8 @@ namespace Microsoft.Maui.Platform
 				return;
 
 			UpdateIndicatorSize();
-			if (_indicatorView?.TryGetTarget(out var indicatorView) == true && (indicatorView as ITemplatedIndicatorView)?.IndicatorsLayoutOverride == null)
+
+			if (indicatorView != null)
 			{
 				UpdateIndicatorShape();
 			}
@@ -85,6 +99,9 @@ namespace Microsoft.Maui.Platform
 
 		public void UpdateIndicatorSize()
 		{
+			if (_indicatorLayoutView != null)
+				return;
+
 			if (IndicatorSize == 0 || IndicatorSize == _lastAppliedIndicatorSize)
 				return;
 
@@ -123,8 +140,33 @@ namespace Microsoft.Maui.Platform
 		{
 			if (_indicatorView is null || !_indicatorView.TryGetTarget(out var indicatorView))
 				return;
-			this.UpdatePages(indicatorView.GetMaximumVisible());
+			this.UpdatePages((indicatorView as ITemplatedIndicatorView)?.IndicatorsLayoutOverride == null
+				? indicatorView.GetMaximumVisible() : 0);
 			UpdatePosition();
+		}
+
+		internal void UpdateIndicatorTemplate(ILayout? layout, IMauiContext? mauiContext)
+		{
+			if (_indicatorLayoutView?.TryGetTarget(out var oldLayoutView) == true)
+				oldLayoutView.RemoveFromSuperview();
+			_indicatorLayoutView = null;
+
+			if (layout != null)
+			{
+				if (mauiContext == null)
+					throw new InvalidOperationException("MauiContext is required to display an indicator template.");
+
+				var indicatorLayoutView = layout.ToPlatform(mauiContext);
+				_indicatorLayoutView = new(indicatorLayoutView);
+				AddSubview(indicatorLayoutView);
+			}
+			else
+			{
+				_lastAppliedIndicatorSize = DefaultIndicatorSize;
+			}
+
+			UpdateIndicatorCount();
+			SetNeedsLayout();
 		}
 
 		void UpdateIndicatorShape()
