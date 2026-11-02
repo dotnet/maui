@@ -1,7 +1,4 @@
-﻿using ObjCRuntime;
-using UIKit;
-
-namespace Microsoft.Maui.Handlers
+﻿namespace Microsoft.Maui.Handlers
 {
 	public partial class IndicatorViewHandler : ViewHandler<IIndicatorView, MauiPageControl>
 	{
@@ -12,8 +9,6 @@ namespace Microsoft.Maui.Handlers
 			base.ConnectHandler(platformView);
 
 			platformView?.SetIndicatorView(VirtualView);
-
-			UpdateIndicator();
 		}
 
 		protected override void DisconnectHandler(MauiPageControl platformView)
@@ -26,6 +21,14 @@ namespace Microsoft.Maui.Handlers
 		public static void MapCount(IIndicatorViewHandler handler, IIndicatorView indicator)
 		{
 			handler.PlatformView?.UpdateIndicatorCount();
+		}
+
+		internal static void MapFlowDirection(IIndicatorViewHandler handler, IIndicatorView indicator)
+		{
+			ViewMapper.UpdateProperty(handler, indicator, nameof(IView.FlowDirection));
+
+			var layoutHandler = (indicator as ITemplatedIndicatorView)?.IndicatorsLayoutOverride?.Handler;
+			layoutHandler?.UpdateValue(nameof(IView.FlowDirection));
 		}
 
 		public static void MapPosition(IIndicatorViewHandler handler, IIndicatorView indicator)
@@ -71,27 +74,11 @@ namespace Microsoft.Maui.Handlers
 			layoutHandler?.UpdateValue(nameof(IView.FlowDirection));
 		}
 
-		void UpdateIndicator()
+		internal static void MapIndicatorsLayoutOverride(IIndicatorViewHandler handler, IIndicatorView indicator)
 		{
-			if (VirtualView is ITemplatedIndicatorView iTemplatedIndicatorView)
-			{
-				var indicatorsLayoutOverride = iTemplatedIndicatorView.IndicatorsLayoutOverride;
-				UIView? handler;
-				if (MauiContext != null && indicatorsLayoutOverride != null)
-				{
-					ClearIndicators();
-					handler = indicatorsLayoutOverride.ToPlatform(MauiContext);
-					// SizeThatFits measures the template; its LayoutView must not measure again at final bounds.
-					PlatformView.MarkAsCrossPlatformLayoutBacking();
-					PlatformView.AddSubview(handler);
-				}
-			}
-
-			void ClearIndicators()
-			{
-				foreach (var child in PlatformView.Subviews)
-					child.RemoveFromSuperview();
-			}
+			handler.PlatformView.UpdateIndicatorTemplate(
+				(indicator as ITemplatedIndicatorView)?.IndicatorsLayoutOverride, handler.MauiContext);
+			handler.UpdateValue(nameof(IIndicatorView.HideSingle));
 		}
 	}
 }
