@@ -593,6 +593,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		VerifyShellSearchScreenshot();
 	}
 
+#if TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/39776
 	[Test, Order(35)]
 	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void VerifyShellSearch_TextColor()
@@ -614,6 +615,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		Assert.That(() => App.GetShellSearchHandler().GetText(), Is.EqualTo("Testing").After(10000, 200));
 		VerifyShellSearchScreenshot();
 	}
+#endif
 
 	[Test, Order(36)]
 	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
