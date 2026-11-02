@@ -95,6 +95,31 @@ public partial class BlazorWebViewTests
 			Assert.Equal("application/json", result.blobType);
 		});
 
+	// Android WebView writes the mimeType argument as Content-Type only for a response that has a stream, even an
+	// empty one. For a null stream it sends the status and the headers map alone, so that map must keep Content-Type.
+	[Theory]
+	[InlineData(true)]
+	[InlineData(false)]
+	public Task InterceptedResponseWithoutABodyIsServedWithASingleContentTypeHeader(bool isContentNull) =>
+		RunTest(async (blazorWebView, handler) =>
+		{
+			blazorWebView.WebResourceRequested += (sender, e) =>
+			{
+				if (e.Uri.AbsolutePath == "/api/content-type")
+				{
+					e.SetResponse(200, "OK", "application/json", isContentNull ? null : new MemoryStream());
+					e.Handled = true;
+				}
+			};
+
+			var result = await FetchContentTypeAsync(handler, "api/content-type");
+
+			Assert.NotNull(result);
+			Assert.Equal(200, result.status);
+			Assert.Equal("application/json", result.contentType);
+			Assert.Equal("application/json", result.blobType);
+		});
+
 	static Task<ContentTypeResult> FetchContentTypeAsync(BlazorWebViewHandler handler, string path) =>
 		WebViewHelpers.ExecuteAsyncScriptAndWaitForResult<ContentTypeResult>(handler.PlatformView,
 			$$"""
