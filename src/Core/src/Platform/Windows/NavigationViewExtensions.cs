@@ -26,7 +26,9 @@ namespace Microsoft.Maui.Platform
 		}
 
 		public static void UpdateTopNavigationViewItemTextColor(this MauiNavigationView navigationView, Paint? paint)
-			=> navigationView.UpdateTopNavigationViewItemTextColor(paint, null);
+		{
+			navigationView.UpdateTopNavigationViewItemTextColor(paint, null);
+		}
 
 		internal static void UpdateTopNavigationViewItemTextColor(this MauiNavigationView navigationView, Paint? paint, Paint? disabledPaint)
 		{
@@ -58,9 +60,13 @@ namespace Microsoft.Maui.Platform
 				}
 
 				if (disabledBrush is null)
+				{
 					navigationView.TopNavArea.Resources.Remove("TopNavigationViewItemForegroundDisabled");
+				}
 				else
+				{
 					navigationView.TopNavArea.Resources["TopNavigationViewItemForegroundDisabled"] = disabledBrush;
+				}
 
 				navigationView.TopNavArea.RefreshThemeResources();
 			}
@@ -75,7 +81,9 @@ namespace Microsoft.Maui.Platform
 		}
 
 		public static void UpdateTopNavigationViewItemTextSelectedColor(this MauiNavigationView navigationView, Paint? paint)
-			=> navigationView.UpdateTopNavigationViewItemTextSelectedColor(paint, null);
+		{
+			navigationView.UpdateTopNavigationViewItemTextSelectedColor(paint, null);
+		}
 
 		internal static void UpdateTopNavigationViewItemTextSelectedColor(this MauiNavigationView navigationView, Paint? paint, Paint? disabledPaint)
 		{
@@ -98,9 +106,13 @@ namespace Microsoft.Maui.Platform
 				}
 
 				if (disabledBrush is null)
+				{
 					navigationView.TopNavArea.Resources.Remove("TopNavigationViewItemForegroundSelectedDisabled");
+				}
 				else
+				{
 					navigationView.TopNavArea.Resources["TopNavigationViewItemForegroundSelectedDisabled"] = disabledBrush;
+				}
 
 				navigationView.TopNavArea.RefreshThemeResources();
 			}
