@@ -16,11 +16,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		UITabBarAppearance _defaultStandardAppearance;
 		UITabBarAppearance _defaultScrollEdgeAppearance;
 		bool _defaultAppearanceCaptured;
+		bool _appearanceSet;
 		UITabBarAppearance _tabBarAppearance;
 		public virtual void ResetAppearance(UITabBarController controller)
 		{
-			if (!_defaultAppearanceCaptured)
+			// Capturing defaults alone must not replace UIKit's untouched appearance.
+			if (!_defaultAppearanceCaptured || !_appearanceSet)
+			{
 				return;
+			}
 
 			var tabBar = controller.TabBar;
 
@@ -36,6 +40,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			tabBar.BarTintColor = _defaultBarTint;
 			tabBar.TintColor = _defaultTint;
 			tabBar.UnselectedItemTintColor = _defaultUnselectedTint;
+			_appearanceSet = false;
 		}
 
 		public virtual void SetAppearance(UITabBarController controller, ShellAppearance appearance)
@@ -46,6 +51,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				UpdateiOS15TabBarAppearance(controller, appearance);
 			else
 				UpdateTabBarAppearance(controller, appearance);
+
+			_appearanceSet = true;
 		}
 
 		public virtual void UpdateLayout(UITabBarController controller)
