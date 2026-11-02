@@ -399,10 +399,8 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (PlatformView is NavigationView navView && navView.SelectedItem != selectedItem)
 				navView.SelectedItem = selectedItem;
 
-			if (_shellAppearanceElement is not null)
-			{
-				UpdateAppearance(_shellAppearanceElement);
-			}
+			if (_shellAppearanceElement is not null && PlatformView is MauiNavigationView mauiNavView)
+				mauiNavView.UpdateTopNavigationViewItemDisabledColor(_shellAppearanceElement.EffectiveTabBarDisabledColor?.AsPaint());
 
 			UpdateValue(Shell.TabBarIsVisibleProperty.PropertyName);
 		}
@@ -856,9 +854,8 @@ namespace Microsoft.Maui.Controls.Handlers
 
 			mauiNavView.UpdateTopNavAreaBackground(backgroundColor);
 			mauiNavView.UpdateTopNavigationViewItemUnselectedColor(unselectedColor);
-			// Update the fallback resources before overriding them with the disabled color.
-			mauiNavView.UpdateTopNavigationViewItemTextSelectedColor(titleColor ?? foregroundColor);
-			mauiNavView.UpdateTopNavigationViewItemTextColor(unselectedColor);
+			mauiNavView.UpdateTopNavigationViewItemTextSelectedColor(titleColor ?? foregroundColor, disabledColor);
+			mauiNavView.UpdateTopNavigationViewItemTextColor(unselectedColor, disabledColor);
 			mauiNavView.UpdateTopNavigationViewItemSelectedColor(foregroundColor ?? titleColor);
 			mauiNavView.UpdateTopNavigationViewItemDisabledColor(disabledColor);
 		}
