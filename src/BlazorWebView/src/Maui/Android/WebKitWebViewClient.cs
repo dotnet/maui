@@ -217,6 +217,10 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			{
 				var contentType = headers["Content-Type"];
 
+				// Android WebView writes the mimeType argument as the Content-Type header and then appends every
+				// entry of responseHeaders, so leaving Content-Type in the map sends it twice ("text/css, text/css").
+				headers.Remove("Content-Type");
+
 				logger?.ResponseContentBeingSent(requestUri, statusCode);
 
 				return new WebResourceResponse(contentType, "UTF-8", statusCode, statusMessage, headers, content);
