@@ -313,6 +313,16 @@ public class MemoryTests : ControlsHandlerTestBase
 			return;
 #endif
 
+#if !WINDOWS
+		if (type == typeof(HybridWebView))
+		{
+			await Task.Delay(1000);
+			var references = await InvokeOnMainThreadAsync(CreateAndDisconnectHybridWebView);
+			await AssertionExtensions.WaitForGC(references);
+			return;
+		}
+#endif
+
 		WeakReference viewReference = null;
 		WeakReference platformViewReference = null;
 		WeakReference handlerReference = null;
@@ -414,6 +424,33 @@ public class MemoryTests : ControlsHandlerTestBase
 
 		await AssertionExtensions.WaitForGC(viewReference, handlerReference, platformViewReference);
 	}
+
+#if !WINDOWS
+	// The GC check must start after strong construction locals have left the setup frame.
+	[MethodImpl(MethodImplOptions.NoInlining)]
+	WeakReference[] CreateAndDisconnectHybridWebView()
+	{
+		var layout = new Grid();
+		var view = new HybridWebView { HybridRoot = "HybridTestRoot" };
+		layout.Add(view);
+		CreateHandler<LayoutHandler>(layout);
+
+		var viewHandler = view.Handler;
+		Assert.NotNull(viewHandler);
+		WeakReference[] references =
+		[
+			new(view),
+			new(viewHandler),
+			new(viewHandler.PlatformView)
+		];
+
+		if (viewHandler is IViewHandler disconnectableHandler)
+			disconnectableHandler.DisconnectHandler();
+
+		view.Handler = null;
+		return references;
+	}
+#endif
 
 	[Theory("Polygon and Polyline Points Replacement Does Not Leak Handler")]
 	[InlineData(typeof(Polygon))]
