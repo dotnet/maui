@@ -80,6 +80,14 @@ To build and run Blazor Desktop samples, check out the [Blazor Desktop](https://
 
 # Advanced Scenarios
 
+### Public CI Apple toolchains
+
+The macOS template `Build` category uses separate toolchains without removing
+coverage. Previous-framework (.NET 10) cases run on the hosted `macOS-26` image
+with Xcode 26.5, matching their Apple compatibility SDK. The complementary cases
+retain the GoldenGate/Xcode 27 compilation pool. Compound test
+filters use single-quoted arguments in the shared PowerShell runner.
+
 ### Compile using a local `.dotnet\dotnet` via `build.*` scripts on the root folder 
 
 This is the **recommended** method for provisioning the .NET SDK and workloads. It uses the Arcade build infrastructure. For more information, you can look [here](https://github.com/dotnet/arcade/blob/main/Documentation/ArcadeSdk.md#build-scripts-and-extensibility-points)
