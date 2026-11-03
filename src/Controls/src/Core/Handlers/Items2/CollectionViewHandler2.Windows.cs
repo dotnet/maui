@@ -40,6 +40,9 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 	bool _platformSelectionUpdateQueued;
 	Action<int>? _containerPreparedHandler;
 
+
+	internal override bool PreventGestureBubbling => true;
+
 	// Cache for MeasureFirstItem optimization
 	global::Windows.Foundation.Size _firstItemMeasuredSize = global::Windows.Foundation.Size.Empty;
 
