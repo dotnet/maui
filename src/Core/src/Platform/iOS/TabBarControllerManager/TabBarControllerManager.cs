@@ -81,10 +81,10 @@ namespace Microsoft.Maui.Platform
         /// </summary>
         public UITraitCollection TraitCollection => _tabBarController.TraitCollection;
 
-        public TabBarControllerManager(ITabBarManagerDelegate managerDelegate)
+        public TabBarControllerManager(ITabBarManagerDelegate managerDelegate, bool animateTabSwitches = true)
         {
             _delegate = managerDelegate ?? throw new ArgumentNullException(nameof(managerDelegate));
-            _tabBarController = new MauiTabBarController(this);
+            _tabBarController = new MauiTabBarController(this, animateTabSwitches);
         }
 
         /// <summary>
@@ -153,10 +153,12 @@ namespace Microsoft.Maui.Platform
         sealed class MauiTabBarController : UITabBarController
         {
             readonly WeakReference<TabBarControllerManager> _managerRef;
+            readonly bool _animateTabSwitches;
 
-            public MauiTabBarController(TabBarControllerManager manager)
+            public MauiTabBarController(TabBarControllerManager manager, bool animateTabSwitches)
             {
                 _managerRef = new WeakReference<TabBarControllerManager>(manager);
+                _animateTabSwitches = animateTabSwitches;
 
                 // Subscribe to tab reordering events
                 FinishedCustomizingViewControllers += HandleFinishedCustomizingViewControllers;
@@ -176,7 +178,24 @@ namespace Microsoft.Maui.Platform
                 get => base.SelectedViewController;
                 set
                 {
-                    base.SelectedViewController = value;
+                    if (!_animateTabSwitches && OperatingSystem.IsIOSVersionAtLeast(18))
+                    {
+                        // UIKit's tab fade exposes the controller background between opaque pages.
+                        var animationsEnabled = UIView.AnimationsEnabled;
+                        UIView.AnimationsEnabled = false;
+                        try
+                        {
+                            base.SelectedViewController = value;
+                        }
+                        finally
+                        {
+                            UIView.AnimationsEnabled = animationsEnabled;
+                        }
+                    }
+                    else
+                    {
+                        base.SelectedViewController = value;
+                    }
 
                     // If the selected view controller is the "More" navigation controller,
                     // do not update the current page

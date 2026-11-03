@@ -95,7 +95,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			get { return base.SelectedViewController; }
 			set
 			{
-				base.SelectedViewController = value;
+				if (OperatingSystem.IsIOSVersionAtLeast(18))
+				{
+					// UIKit's tab fade exposes the controller background between opaque pages.
+					UIView.PerformWithoutAnimation(() => base.SelectedViewController = value);
+				}
+				else
+				{
+					base.SelectedViewController = value;
+				}
 				if (Volatile.Read(ref _disposed) || Volatile.Read(ref _disconnected))
 					return;
 
