@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Runtime.Versioning;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Maui.Controls.Handlers.Items;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform.iOS;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
@@ -1115,6 +1116,13 @@ namespace Microsoft.Maui.Controls.Platform
 					return false;
 				}
 
+				if (recognizer is UITapGestureRecognizer &&
+					virtualView is not SelectableItemsView &&
+					IsTouchInSelectableCollectionView(touch.View, platformView))
+				{
+					return false;
+				}
+
 				if (touch.View == platformView)
 				{
 					return true;
@@ -1128,6 +1136,20 @@ namespace Microsoft.Maui.Controls.Platform
 					(touch.View.GestureRecognizers?.Length > 0 || platformView.GestureRecognizers?.Length > 0))
 				{
 					return true;
+				}
+
+				return false;
+			}
+
+			static bool IsTouchInSelectableCollectionView(UIView? touchView, UIView platformView)
+			{
+				for (var view = touchView; view is not null && view != platformView; view = view.Superview)
+				{
+					if (view is MauiCollectionView { AllowsSelection: true } collectionView &&
+						collectionView.IsDescendantOfView(platformView))
+					{
+						return true;
+					}
 				}
 
 				return false;
