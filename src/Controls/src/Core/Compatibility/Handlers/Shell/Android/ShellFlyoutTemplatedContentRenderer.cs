@@ -38,6 +38,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		AView _flyoutContentView;
 		ShellViewRenderer _contentView;
 		View _flyoutHeader;
+		View _flyoutFooter;
 		ContainerView _footerView;
 		int _actionBarHeight;
 		int _flyoutHeight;
@@ -385,15 +386,16 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			if (_footerView != null)
 			{
+				_footerView.LayoutChange -= OnFooterViewLayoutChange;
 				var oldFooterView = _footerView;
 				_rootView.RemoveView(_footerView);
 				_footerView = null;
 				oldFooterView.View = null;
 			}
 
-			var footer = ((IShellController)_shellContext.Shell).FlyoutFooter;
+			_flyoutFooter = ((IShellController)_shellContext.Shell).FlyoutFooter;
 
-			if (footer is null)
+			if (_flyoutFooter is null)
 			{
 				UpdateContentPadding();
 				return;
@@ -402,10 +404,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (_flyoutWidth == 0)
 				return;
 
-			_footerView = new ContainerView(_shellContext.AndroidContext, footer, MauiContext)
+			_footerView = new ContainerView(_shellContext.AndroidContext, _flyoutFooter, MauiContext)
 			{
 				MatchWidth = true
 			};
+
+			_footerView.LayoutChange += OnFooterViewLayoutChange;
 
 			var footerViewLP = new CoordinatorLayout.LayoutParams(0, 0)
 			{
@@ -416,6 +420,19 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_rootView.AddView(_footerView, footerViewLP);
 
 			UpdateContentPadding();
+		}
+
+		void OnFooterViewLayoutChange(object sender, AView.LayoutChangeEventArgs e)
+		{
+			if (e.Bottom - e.Top == e.OldBottom - e.OldTop)
+				return;
+
+			if (UpdateContentPadding() &&
+				(_flyoutContentView ?? _contentView?.PlatformView) is AView contentView)
+			{
+				// A direct RequestLayout during layout can be cleared by the current pass.
+				PlatformInterop.RequestLayoutIfNeeded(contentView);
+			}
 		}
 
 		void UpdateFooterLayout()
@@ -481,10 +498,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					returnValue = true;
 				}
 
-				// For scrollable content we use padding so once it's all the way scrolled up
-				// the bottom of the view isn't obscured by the footer view
-				// If you try to use Margin the RecylcerView won't render anything.
-				if (flyoutView is AndroidX.Core.View.IScrollingView &&
+				// MauiScrollView already reserves the footer space through its bottom margin.
+				// Adding the same offset as padding creates an extra gap at the end of scrolling.
+				// Other scrolling views, including the default RecyclerView, still need padding.
+				if (flyoutView is not MauiScrollView &&
+					flyoutView is AndroidX.Core.View.IScrollingView &&
 					flyoutView is ViewGroup vg)
 				{
 					if (vg.PaddingBottom != bottomOffset)
@@ -721,6 +739,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_flyoutHeader?.MeasureInvalidated -= OnFlyoutHeaderMeasureInvalidated;
 
 			_flyoutHeader = null;
+
+			_flyoutFooter = null;
+
+			if (_footerView != null)
+				_footerView.LayoutChange -= OnFooterViewLayoutChange;
 
 			_footerView?.View = null;
 
