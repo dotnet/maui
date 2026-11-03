@@ -155,7 +155,7 @@ static class SetPropertyHelpers
 	/// Adds a lazy resource to the ResourceDictionary using AddFactory.
 	/// The resource is created inside a lambda function for on-demand instantiation.
 	/// </summary>
-	public static void AddLazyResourceToResourceDictionary(IndentedTextWriter writer, ILocalValue parentVar, ElementNode node, SourceGenContext context)
+	public static void AddLazyResourceToResourceDictionary(IndentedTextWriter writer, ILocalValue parentVar, ElementNode node, SourceGenContext context, bool useLocalFactory = false)
 	{
 		// Get the type of the resource
 		if (!node.XmlType.TryResolveTypeSymbol(null, context.Compilation, context.XmlnsCache, context.TypeCache, out var type) || type is null)
@@ -200,7 +200,7 @@ static class SetPropertyHelpers
 			}
 		}
 
-		// Generate the AddFactory call
+		string keyExpression;
 		if (isImplicitStyle)
 		{
 			// Get TargetType from Style
@@ -211,14 +211,22 @@ static class SetPropertyHelpers
 				return;
 			}
 
-			writer.WriteLine($"{parentVar.ValueAccessor}.AddFactory({targetTypeExpr}, () =>");
+			keyExpression = targetTypeExpr;
 		}
 		else
 		{
-			writer.WriteLine($"{parentVar.ValueAccessor}.AddFactory(\"{CSharpExpressionHelpers.EscapeForString(key!)}\", () =>");
+			keyExpression = $"\"{CSharpExpressionHelpers.EscapeForString(key!)}\"";
 		}
 
-		using (PrePost.NewBlock(writer, begin: "{", end: $"}}, shared: {shared.ToString().ToLowerInvariant()});"))
+		var returnType = isImplicitStyle ? context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Style")! : context.Compilation.ObjectType;
+		var delegateType = context.Compilation.GetTypeByMetadataName("System.Func`1")!.Construct(returnType);
+		var factoryName = useLocalFactory ? NamingHelpers.CreateUniqueVariableName(context, delegateType) : null;
+		if (factoryName != null)
+			writer.WriteLine($"{returnType.ToFQDisplayString()} {factoryName}()");
+		else
+			writer.WriteLine($"{parentVar.ValueAccessor}.AddFactory({keyExpression}, () =>");
+
+		using (PrePost.NewBlock(writer, begin: "{", end: factoryName != null ? "}" : $"}}, shared: {shared.ToString().ToLowerInvariant()});"))
 		{
 			// Create a temporary context for generating the lambda body
 			var lambdaContext = new SourceGenContext(
@@ -260,12 +268,17 @@ static class SetPropertyHelpers
 				writer.WriteLine($"return null!;");
 			}
 		}
+		if (factoryName != null)
+		{
+			// Explicit delegates avoid introducing cached-lambda fields during metadata updates.
+			writer.WriteLine($"{parentVar.ValueAccessor}.AddFactory({keyExpression}, new {delegateType.ToFQDisplayString()}({factoryName}), shared: {shared.ToString().ToLowerInvariant()});");
+		}
 	}
 
 	/// <summary>
 	/// Gets the TargetType expression for a Style node.
 	/// </summary>
-	static string? GetStyleTargetTypeExpression(ElementNode node, SourceGenContext context)
+	internal static string? GetStyleTargetTypeExpression(ElementNode node, SourceGenContext context)
 	{
 		if (!node.Properties.TryGetValue(new XmlName("", "TargetType"), out var targetTypeNode))
 			return null;

@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using Microsoft.CodeAnalysis;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.SourceGen.UnitTests.HotReload;
 using Microsoft.Maui.Controls.Xaml;
@@ -16,6 +17,125 @@ public class Maui37888Tests
 {
 	const string IncrementalHotReloadSwitch = "Microsoft.Maui.RuntimeFeature.IsIncrementalHotReloadEnabled";
 	const string ResourceKey = "ExploratoryCaption";
+
+	[Theory]
+	[InlineData(false, false)]
+	[InlineData(false, true)]
+	[InlineData(true, false)]
+	public void AddedResourceRetainsOuterBindingContext(bool expressionBinding, bool referenceChild)
+		=> VerifyAddedResourceBindingContext(expressionBinding, referenceChild, applyUpdate: false);
+
+	[MetadataUpdateTheory]
+	[InlineData(false, false)]
+	[InlineData(false, true)]
+	[InlineData(true, false)]
+	public void AddedResourceResolvesOuterBindingAtRuntime(bool expressionBinding, bool referenceChild)
+		=> VerifyAddedResourceBindingContext(expressionBinding, referenceChild, applyUpdate: true);
+
+	static void VerifyAddedResourceBindingContext(bool expressionBinding, bool referenceChild, bool applyUpdate)
+	{
+		const string rootClass = "TestMaui37888.MainPage";
+		const string codeBehind = """
+			namespace TestMaui37888;
+			public class Person
+			{
+				public string FirstName { get; set; } = "Ada";
+			}
+			public partial class MainPage
+			{
+				public MainPage() => InitializeComponent();
+			}
+			""";
+		var addedResource = expressionBinding
+			? """<Label x:Key="Caption" Text="{FirstName}" />"""
+			: $$"""<Label x:Key="Caption" Text="{Binding Source={x:Reference {{(referenceChild ? "Owner" : "Page")}}}, Path={{(referenceChild ? "Text" : "Title")}}}" />""";
+		string Xaml(bool added) => $$"""
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             xmlns:local="clr-namespace:TestMaui37888"
+			             x:Class="{{rootClass}}" x:Name="Page" x:DataType="local:Person">
+			  <ContentPage.Resources>
+			    <ResourceDictionary>
+			      <x:String x:Key="Existing">Unchanged</x:String>
+			      <DataTemplate x:Key="ExistingTemplate">
+			        <Label x:Name="Page" />
+			      </DataTemplate>
+			      {{(added ? addedResource : "")}}
+			    </ResourceDictionary>
+			  </ContentPage.Resources>
+			  <Label x:Name="Owner" Text="Existing owner" />
+			</ContentPage>
+			""";
+		using var harness = new XamlHotReloadTestHarness(nameof(AddedResourceRetainsOuterBindingContext), rootClass, codeBehind);
+		var generations = harness.Generate(Xaml(false), Xaml(true));
+
+		Assert.DoesNotContain(generations[1].GeneratorResult.Diagnostics, diagnostic => diagnostic.Severity == DiagnosticSeverity.Error);
+		if (!applyUpdate)
+		{
+			Assert.NotEmpty(harness.Compile(generations[1]).PeImage);
+			return;
+		}
+
+		harness.RunLive(generations, live =>
+		{
+			var page = live.GetInstance<ContentPage>();
+			page.Title = "Existing page";
+			page.BindingContext = Activator.CreateInstance(page.GetType().Assembly.GetType("TestMaui37888.Person")!);
+			var owner = page.Content;
+			live.ApplyUpdate<ContentPage>(1);
+
+			Assert.Same(owner, page.Content);
+			var caption = Assert.IsType<Label>(page.Resources["Caption"]);
+			caption.BindingContext = page.BindingContext;
+			Assert.Equal(expressionBinding ? "Ada" : referenceChild ? "Existing owner" : "Existing page", caption.Text);
+		});
+	}
+
+	[MetadataUpdateTheory]
+	[InlineData(false)]
+	[InlineData(true)]
+	public void AddedResourcePreservesLazySharedSemantics(bool shared)
+	{
+		const string rootClass = "TestMaui37888.MainPage";
+		const string codeBehind = """
+			namespace TestMaui37888;
+			public class Token
+			{
+				public static int Created;
+				public Token() => Created++;
+			}
+			public partial class MainPage
+			{
+				public int Created => Token.Created;
+				public MainPage() => InitializeComponent();
+			}
+			""";
+		string Xaml(bool added) => $$"""
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             xmlns:local="clr-namespace:TestMaui37888" x:Class="{{rootClass}}">
+			  <ContentPage.Resources>
+			    <ResourceDictionary>
+			      <local:Token x:Key="Existing" />
+			      {{(added ? $"""<local:Token x:Key="Added" x:Shared="{shared}" />""" : "")}}
+			    </ResourceDictionary>
+			  </ContentPage.Resources>
+			</ContentPage>
+			""";
+		using var harness = new XamlHotReloadTestHarness(nameof(AddedResourcePreservesLazySharedSemantics), rootClass, codeBehind);
+		var generations = harness.Generate(Xaml(false), Xaml(true));
+		harness.RunLive(generations, live =>
+		{
+			var page = live.GetInstance<ContentPage>();
+			live.ApplyUpdate<ContentPage>(1);
+
+			Assert.Equal(0, page.GetType().GetProperty("Created")!.GetValue(page));
+			var first = page.Resources["Added"];
+			var second = page.Resources["Added"];
+			Assert.Equal(shared, ReferenceEquals(first, second));
+			Assert.Equal(shared ? 1 : 2, page.GetType().GetProperty("Created")!.GetValue(page));
+		});
+	}
 
 	[MetadataUpdateTheory]
 	[InlineData(false, false)]

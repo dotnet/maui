@@ -28,7 +28,7 @@ public partial class NestedControlHotReloadTests
 
 		var update = GetProbeCardUpdateV2(generation);
 		Assert.Contains("if (!this.Resources.ContainsKey(\"Fmt\"))", update, StringComparison.Ordinal);
-		Assert.Contains("this.Resources.Add(\"Fmt\",", update, StringComparison.Ordinal);
+		Assert.Contains("this.Resources.AddFactory(\"Fmt\",", update, StringComparison.Ordinal);
 		Assert.DoesNotContain("this.Resources[\"Fmt\"] =", update, StringComparison.Ordinal);
 		Assert.True(harness.Compile(generation[1]).PeImage.Length > 0);
 	}
