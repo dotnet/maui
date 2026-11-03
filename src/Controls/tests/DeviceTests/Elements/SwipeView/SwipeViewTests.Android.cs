@@ -445,8 +445,8 @@ namespace Microsoft.Maui.DeviceTests
 				var actionView = Assert.Single(
 					Enumerable.Range(0, platformView.ChildCount)
 						.Select(platformView.GetChildAt)
-						.OfType<ALinearLayoutCompat>()
-						.Where(view => view.ChildCount > 0));
+						.OfType<ALinearLayoutCompat>(),
+					view => view.ChildCount > 0);
 				var swipeButton = Assert.IsAssignableFrom<ATextView>(actionView.GetChildAt(0));
 
 				await AssertEventually(() =>
