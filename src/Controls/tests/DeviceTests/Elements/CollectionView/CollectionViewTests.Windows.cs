@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Items;
+using Microsoft.Maui.Controls.Handlers.Items2;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
@@ -19,6 +20,175 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class CollectionViewTests
 	{
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task LegacyGridLayoutReplacementUpdatesPanelAndSubscription(bool useItemTemplate)
+		{
+			SetupBuilder();
+
+			var items = new[] { "First", "Second", "Third", "Fourth", "Fifth", "Sixth", "Seventh", "Eighth" };
+			var originalLayout = new GridItemsLayout(2, ItemsLayoutOrientation.Vertical);
+			var collectionView = new CollectionView
+			{
+				WidthRequest = 400,
+				HeightRequest = 400,
+				ItemsSource = items,
+				ItemsLayout = originalLayout,
+				SelectionMode = Controls.SelectionMode.Single,
+				SelectedItem = items[0]
+			};
+
+			if (useItemTemplate)
+			{
+				collectionView.ItemTemplate = new Controls.DataTemplate(() =>
+				{
+					var label = new Label();
+					label.SetBinding(Label.TextProperty, ".");
+					return label;
+				});
+			}
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				var gridView = Assert.IsType<FormsGridView>(handler.PlatformView);
+				await AssertEventually(() => gridView.IsLoaded && gridView.ItemsPanelRoot is UI.Xaml.Controls.ItemsWrapGrid);
+
+				var replacementLayout = new GridItemsLayout(4, ItemsLayoutOrientation.Horizontal);
+				collectionView.ItemsLayout = replacementLayout;
+				gridView.UpdateLayout();
+
+				await AssertEventually(() =>
+					gridView.ItemsPanelRoot is UI.Xaml.Controls.ItemsWrapGrid panel &&
+					panel.Orientation == UI.Xaml.Controls.Orientation.Vertical &&
+					panel.MaximumRowsOrColumns == 4 &&
+					gridView.ContainerFromIndex(3) is UI.Xaml.Controls.GridViewItem item &&
+					item.ActualHeight > 0);
+
+				var first = Assert.IsType<UI.Xaml.Controls.GridViewItem>(gridView.ContainerFromIndex(0));
+				var firstPosition = first.TransformToVisual(gridView).TransformPoint(new global::Windows.Foundation.Point());
+				var previousY = firstPosition.Y;
+				for (int i = 1; i < 4; i++)
+				{
+					var item = Assert.IsType<UI.Xaml.Controls.GridViewItem>(gridView.ContainerFromIndex(i));
+					var position = item.TransformToVisual(gridView).TransformPoint(new global::Windows.Foundation.Point());
+					Assert.Equal(firstPosition.X, position.X, 1);
+					Assert.True(position.Y > previousY);
+					previousY = position.Y;
+				}
+
+				Assert.Same(gridView, handler.PlatformView);
+				Assert.Same(items[0], collectionView.SelectedItem);
+				Assert.Single(gridView.SelectedItems);
+				Assert.Equal(UI.Xaml.Controls.ScrollMode.Enabled, UI.Xaml.Controls.ScrollViewer.GetHorizontalScrollMode(gridView));
+				Assert.Equal(UI.Xaml.Controls.ScrollMode.Disabled, UI.Xaml.Controls.ScrollViewer.GetVerticalScrollMode(gridView));
+
+				replacementLayout.Span = 3;
+				await AssertEventually(() =>
+					gridView.ItemsPanelRoot is UI.Xaml.Controls.ItemsWrapGrid panel && panel.MaximumRowsOrColumns == 3);
+				originalLayout.Span = 7;
+				Assert.Equal(3, gridView.Span);
+
+				replacementLayout.HorizontalItemSpacing = 10;
+				replacementLayout.VerticalItemSpacing = 6;
+				var margin = Assert.Single(gridView.ItemContainerStyle.Setters.OfType<WSetter>(),
+					setter => setter.Property == FrameworkElement.MarginProperty);
+				Assert.Equal(new UI.Xaml.Thickness(5, 3, 5, 3), Assert.IsType<UI.Xaml.Thickness>(margin.Value));
+
+				collectionView.ItemsLayout = new GridItemsLayout(2, ItemsLayoutOrientation.Vertical);
+				gridView.UpdateLayout();
+				await AssertEventually(() =>
+					gridView.ItemsPanelRoot is UI.Xaml.Controls.ItemsWrapGrid panel &&
+					panel.Orientation == UI.Xaml.Controls.Orientation.Horizontal &&
+					panel.MaximumRowsOrColumns == 2);
+
+				Assert.Equal(UI.Xaml.Controls.ScrollMode.Disabled, UI.Xaml.Controls.ScrollViewer.GetHorizontalScrollMode(gridView));
+				Assert.Equal(UI.Xaml.Controls.ScrollMode.Enabled, UI.Xaml.Controls.ScrollViewer.GetVerticalScrollMode(gridView));
+				Assert.Equal(UI.Xaml.Controls.ScrollBarVisibility.Disabled, UI.Xaml.Controls.ScrollViewer.GetHorizontalScrollBarVisibility(gridView));
+				Assert.Same(items[0], collectionView.SelectedItem);
+				Assert.Single(gridView.SelectedItems);
+			});
+		}
+
+		[Theory]
+		[InlineData(ItemsUpdatingScrollMode.KeepItemsInView, false)]
+		[InlineData(ItemsUpdatingScrollMode.KeepItemsInView, true)]
+		[InlineData(ItemsUpdatingScrollMode.KeepLastItemInView, false)]
+		[InlineData(ItemsUpdatingScrollMode.KeepLastItemInView, true)]
+		public async Task CollectionView2SharedItemsSourceUpdatesWhileHidden(ItemsUpdatingScrollMode scrollMode, bool hiddenFirst)
+		{
+			SetupBuilderCollectionView2();
+
+			var items = new ObservableCollection<string> { "Item 1", "Item 2", "Item 3" };
+			var itemTemplate = new Controls.DataTemplate(() =>
+			{
+				var label = new Label { HeightRequest = 40 };
+				label.SetBinding(Label.TextProperty, ".");
+				return label;
+			});
+			var visible = new CollectionView
+			{
+				ItemsSource = items,
+				ItemTemplate = itemTemplate,
+				ItemsUpdatingScrollMode = scrollMode,
+				HeightRequest = 200
+			};
+			var hidden = new CollectionView
+			{
+				ItemsSource = items,
+				ItemTemplate = itemTemplate,
+				ItemsUpdatingScrollMode = scrollMode,
+				HeightRequest = 200,
+				IsVisible = false
+			};
+			var layout = new VerticalStackLayout();
+			layout.Add(hiddenFirst ? hidden : visible);
+			layout.Add(hiddenFirst ? visible : hidden);
+
+			await CreateHandlerAndAddToWindow<LayoutHandler>(layout, async handler =>
+			{
+				var visiblePlatformView = Assert.IsType<CollectionViewHandler2>(visible.Handler).PlatformView;
+				var hiddenPlatformView = Assert.IsType<CollectionViewHandler2>(hidden.Handler).PlatformView;
+				await AssertEventually(() => visiblePlatformView.IsLoaded && hiddenPlatformView.IsLoaded);
+
+				items.Add("Item 4");
+				handler.PlatformView.UpdateLayout();
+				await Task.Delay(100);
+
+				Assert.Equal(items, Assert.IsAssignableFrom<System.Collections.IEnumerable>(visiblePlatformView.ItemsSource)
+					.Cast<ItemTemplateContext2>().Select(context => Assert.IsType<string>(context.Item)));
+				Assert.Equal(items, Assert.IsAssignableFrom<System.Collections.IEnumerable>(hiddenPlatformView.ItemsSource)
+					.Cast<ItemTemplateContext2>().Select(context => Assert.IsType<string>(context.Item)));
+
+				hidden.IsVisible = true;
+				await AssertEventually(() => hidden.LogicalChildrenInternal.OfType<Label>()
+					.Any(label => label.Text == "Item 4" && label.IsLoaded));
+
+				// Hide after layout has queued a scroll but before the dispatcher executes it.
+				items.Add("Item 5");
+				handler.PlatformView.UpdateLayout();
+				hidden.IsVisible = false;
+				await Task.Delay(100);
+
+				items.RemoveAt(0);
+				items[0] = "Updated item";
+				items.Move(0, items.Count - 1);
+				items.Clear();
+				items.Add("After reset");
+				handler.PlatformView.UpdateLayout();
+				await Task.Delay(100);
+
+				Assert.Equal(items, Assert.IsAssignableFrom<System.Collections.IEnumerable>(visiblePlatformView.ItemsSource)
+					.Cast<ItemTemplateContext2>().Select(context => Assert.IsType<string>(context.Item)));
+				Assert.Equal(items, Assert.IsAssignableFrom<System.Collections.IEnumerable>(hiddenPlatformView.ItemsSource)
+					.Cast<ItemTemplateContext2>().Select(context => Assert.IsType<string>(context.Item)));
+
+				hidden.IsVisible = true;
+				await AssertEventually(() => hidden.LogicalChildrenInternal.OfType<Label>()
+					.Any(label => label.Text == "After reset" && label.IsLoaded));
+			});
+		}
+
 		[Theory]
 		[InlineData(false)]
 		[InlineData(true)]
@@ -175,6 +345,98 @@ namespace Microsoft.Maui.DeviceTests
 
 				items.Add("Item 2");
 				Assert.Equal(UI.Xaml.Visibility.Collapsed, emptyView.EmptyViewVisibility);
+			});
+		}
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task CollectionView2ItemsSourceCanBeClearedAndRestored(bool useItemTemplate)
+		{
+			SetupBuilderCollectionView2();
+
+			var items = new List<string> { "Item 1", "Item 2", "Item 3" };
+			var collectionView = new CollectionView
+			{
+				ItemsSource = items,
+				EmptyView = new Label { Text = "No items" },
+				HeightRequest = 300,
+				WidthRequest = 300
+			};
+
+			if (useItemTemplate)
+			{
+				collectionView.ItemTemplate = new Controls.DataTemplate(() =>
+				{
+					var label = new Label();
+					label.SetBinding(Label.TextProperty, ".");
+					return label;
+				});
+			}
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler2>(collectionView, async handler =>
+			{
+				for (int i = 0; i < 2; i++)
+				{
+					handler.PlatformView.UpdateLayout();
+					Assert.Equal(items.Count,
+						Assert.IsAssignableFrom<System.Collections.IEnumerable>(handler.PlatformView.ItemsSource)
+							.Cast<object>().Count());
+					var platformItemTemplate = handler.PlatformView.ItemTemplate;
+					Assert.NotNull(platformItemTemplate);
+
+					collectionView.ItemsSource = null;
+					handler.PlatformView.UpdateLayout();
+					Assert.Null(handler.PlatformView.ItemsSource);
+					Assert.Contains((View)collectionView.EmptyView, collectionView.LogicalChildrenInternal);
+					if (!useItemTemplate)
+					{
+						Assert.Same(platformItemTemplate, handler.PlatformView.ItemTemplate);
+					}
+					await Task.Yield();
+
+					items = new List<string>(items);
+					collectionView.ItemsSource = items;
+					handler.PlatformView.UpdateLayout();
+					Assert.DoesNotContain((View)collectionView.EmptyView, collectionView.LogicalChildrenInternal);
+					if (!useItemTemplate)
+					{
+						Assert.Same(platformItemTemplate, handler.PlatformView.ItemTemplate);
+					}
+				}
+
+				Assert.Equal(items.Count,
+					Assert.IsAssignableFrom<System.Collections.IEnumerable>(handler.PlatformView.ItemsSource)
+						.Cast<object>().Count());
+			});
+		}
+
+		[Fact(DisplayName = "CollectionView Header Keeps Its BindingContext")]
+		public async Task CollectionViewHeaderKeepsItsBindingContext()
+		{
+			SetupBuilder();
+
+			var context = new object();
+			var header = new Label();
+			var footer = new Label();
+			var lostContext = 0;
+			header.BindingContextChanged += (_, _) => { if (header.BindingContext is null) lostContext++; };
+			footer.BindingContextChanged += (_, _) => { if (footer.BindingContext is null) lostContext++; };
+
+			var collectionView = new CollectionView
+			{
+				BindingContext = context,
+				Header = header,
+				Footer = footer,
+				ItemsSource = new ObservableCollection<string> { "Item 1" },
+			};
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, handler =>
+			{
+				Assert.Same(context, header.BindingContext);
+				Assert.Same(context, footer.BindingContext);
+				Assert.Equal(0, lostContext);
+				return Task.CompletedTask;
 			});
 		}
 
@@ -755,6 +1017,109 @@ namespace Microsoft.Maui.DeviceTests
 			return cellContent.ToPlatform().GetParentOfType<ItemContentControl>().GetBoundingBox();
 		}
 
+		[Fact(DisplayName = "CollectionView2 restores focus to CollectionView")]
+		public async Task CollectionView2RestoresFocusToCollectionView()
+		{
+			SetupBuilderCollectionView2();
+
+			var data = new ObservableCollection<string>
+			{
+			"Item 1", "Item 2", "Item 3", "Item 4", "Item 5"
+			};
+
+			var collectionView = new CollectionView
+			{
+				ItemTemplate = new Controls.DataTemplate(() => new Label()),
+				SelectionMode = SelectionMode.None,
+				ItemsSource = data
+			};
+
+			var button = new Button { Text = "After" };
+			var layout = new VerticalStackLayout { collectionView, button };
+
+			await CreateHandlerAndAddToWindow<LayoutHandler>(layout, async handler =>
+			{
+				var mauiItemsView = (MauiItemsView)collectionView.Handler.PlatformView;
+
+				await AssertEventually(
+					() => mauiItemsView.IsTabStop,
+					timeout: 5000);
+
+				mauiItemsView.Focus(FocusState.Keyboard);
+				await Task.Delay(100);
+
+				button.ToPlatform().Focus(FocusState.Keyboard);
+				await Task.Delay(100);
+
+				mauiItemsView.Focus(FocusState.Keyboard);
+
+				await AssertEventually(() =>
+				{
+					var focused =
+						UI.Xaml.Input.FocusManager.GetFocusedElement(mauiItemsView.XamlRoot);
+
+					return object.ReferenceEquals(focused, mauiItemsView);
+				},
+				timeout: 3000,
+				message: "Focus was not restored to CollectionView");
+
+				var finalFocused =
+					UI.Xaml.Input.FocusManager.GetFocusedElement(mauiItemsView.XamlRoot);
+
+				Assert.Same(mauiItemsView, finalFocused);
+			});
+		}
+
+		[Fact(DisplayName = "CollectionView2 receives focus on first keyboard entry")]
+		public async Task CollectionView2ReceivesFocusOnFirstKeyboardEntry()
+		{
+			SetupBuilderCollectionView2();
+
+			var data = new ObservableCollection<string>
+			{
+			"Item 1", "Item 2", "Item 3", "Item 4", "Item 5"
+			};
+
+			var collectionView = new CollectionView
+			{
+				ItemTemplate = new Controls.DataTemplate(() => new Label()),
+				SelectionMode = SelectionMode.Single,
+				ItemsSource = data,
+				SelectedItem = data[3]
+			};
+
+			var button = new Button { Text = "Before" };
+			var layout = new VerticalStackLayout { button, collectionView };
+
+			await CreateHandlerAndAddToWindow<LayoutHandler>(layout, async handler =>
+			{
+				var mauiItemsView = (MauiItemsView)collectionView.Handler.PlatformView;
+
+				await AssertEventually(
+					() => mauiItemsView.IsTabStop,
+					timeout: 5000);
+
+				button.ToPlatform().Focus(FocusState.Keyboard);
+				await Task.Delay(100);
+
+				mauiItemsView.Focus(FocusState.Keyboard);
+
+				await AssertEventually(() =>
+				{
+					var focused =
+						UI.Xaml.Input.FocusManager.GetFocusedElement(mauiItemsView.XamlRoot);
+
+					return object.ReferenceEquals(focused, mauiItemsView);
+				},
+				timeout: 3000,
+				message: "CollectionView did not receive keyboard focus");
+
+				var finalFocused =
+					UI.Xaml.Input.FocusManager.GetFocusedElement(mauiItemsView.XamlRoot);
+
+				Assert.Same(mauiItemsView, finalFocused);
+			});
+		}
 		class Subscriber
 		{
 			public void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e) { }

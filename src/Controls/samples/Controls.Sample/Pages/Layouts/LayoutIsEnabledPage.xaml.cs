@@ -50,14 +50,14 @@ namespace Maui.Controls.Sample.Pages
 
 		public Command TheCommand { get; }
 
-		void OnDisableLayoutBtnClicked(object sender, EventArgs e)
+		void OnDisableLayoutBtnClicked(object? sender, EventArgs e)
 		{
 			MainLayout.IsEnabled = !MainLayout.IsEnabled;
 
-			((Button)sender).Text = MainLayout.IsEnabled ? "Disable Layout" : "Enable Layout";
+			((Button)sender!).Text = MainLayout.IsEnabled ? "Disable Layout" : "Enable Layout";
 		}
 
-		void OnDisableButtonBtnClicked(object sender, EventArgs e)
+		void OnDisableButtonBtnClicked(object? sender, EventArgs e)
 		{
 			DisabledButton.IsEnabled = !DisabledButton.IsEnabled;
 			DisabledCommandButton.IsEnabled = !DisabledCommandButton.IsEnabled;
@@ -65,7 +65,7 @@ namespace Maui.Controls.Sample.Pages
 			DisabledButton.Text = DisabledButton.IsEnabled ? "Enabled" : "Disabled";
 			DisabledCommandButton.Text = DisabledCommandButton.IsEnabled ? "Enabled" : "Disabled";
 
-			((Button)sender).Text = DisabledButton.IsEnabled ? "Disable Button" : "Enable Button";
+			((Button)sender!).Text = DisabledButton.IsEnabled ? "Disable Button" : "Enable Button";
 		}
 
 		void OnThe()

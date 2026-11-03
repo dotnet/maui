@@ -1,7 +1,7 @@
 ---
 name: "CI Failure Scanner (net11.0)"
 description: |
-  Scan net11.0 CI failures and create or advance one validated draft fix PR.
+  Manually investigate historical net11.0 CI failures.
   Findings and blocked investigations stay in run artifacts, never tracking issues.
 
 imports:
@@ -32,7 +32,6 @@ max-ai-credits: -1
 max-daily-ai-credits: -1
 
 on:
-  schedule: every 12h
   workflow_dispatch:
     inputs:
       dry_run:
@@ -70,6 +69,10 @@ safe-outputs:
 ---
 
 # Net11-branch CI fixes
+
+The .NET 11 servicing development branch is now `main`. This workflow is
+manual-only for historical investigations; use `ci-status-main` for current
+.NET 11 CI fixes.
 
 Follow the shared CI scan-and-fix protocol. Inspect only `net11.0` builds and
 target every fix PR at `net11.0`. Never create or reopen an issue.

@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Microsoft",
   "name": ".NET MAUI Blazor Hybrid 應用程式",
   "description": "此專案可用於建立適用於 iOS、Android、Mac Catalyst 和使用 Blazor Hybrid 的 WinUI 的 .NET MAUI 應用程式",
@@ -8,5 +8,5 @@
   "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "目標 DOTNET_TFM_VALUE",
   "symbols/IncludeSampleContent/displayName": "包含範例頁面(_I)",
   "symbols/IncludeSampleContent/description": "設定是否要新增範例頁面和樣式，以示範基本使用模式。",
-  "symbols/Empty/description": "設定是否要省略範例頁面和樣式，其示範基本使用模式。"
+  "symbols/empty/description": "設定是否要省略範例頁面和樣式，其示範基本使用模式。"
 }

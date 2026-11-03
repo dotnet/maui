@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Graphics
 		{
 			bool result = true;
 
-#if NETSTANDARD2_0 || TIZEN40
+#if NETSTANDARD2_0
 			result &= !(float.IsNaN(matrix.M11) || float.IsInfinity(matrix.M11));
 			result &= !(float.IsNaN(matrix.M12) || float.IsInfinity(matrix.M12));
 			result &= !(float.IsNaN(matrix.M21) || float.IsInfinity(matrix.M21));

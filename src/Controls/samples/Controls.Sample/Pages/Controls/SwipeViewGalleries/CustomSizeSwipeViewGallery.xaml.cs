@@ -11,17 +11,17 @@ namespace Maui.Controls.Sample.Pages.SwipeViewGalleries
 			InitializeComponent();
 		}
 
-		void OnContentClicked(object sender, EventArgs args)
+		void OnContentClicked(object? sender, EventArgs args)
 		{
 			DisplayAlertAsync("OnClicked", "The Content Button has been clicked.", "Ok");
 		}
 
-		void OnRightItemsClicked(object sender, EventArgs args)
+		void OnRightItemsClicked(object? sender, EventArgs args)
 		{
 			DisplayAlertAsync("OnClicked", "The RightItems Button has been clicked.", "Ok");
 		}
 
-		void OnButtonClicked(object sender, EventArgs e)
+		void OnButtonClicked(object? sender, EventArgs e)
 		{
 			DisplayAlertAsync("Custom SwipeItem", "Button Clicked!", "Ok");
 		}

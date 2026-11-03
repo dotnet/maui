@@ -132,9 +132,6 @@ PublicAPI
  ├─ net-maccatalyst
  │   ├─ PublicAPI.Shipped.txt
  │   └─ PublicAPI.Unshipped.txt
- ├─ net-tizen
- │   ├─ PublicAPI.Shipped.txt
- │   └─ PublicAPI.Unshipped.txt
  ├─ net-windows
  │   ├─ PublicAPI.Shipped.txt
  │   └─ PublicAPI.Unshipped.txt

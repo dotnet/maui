@@ -8,6 +8,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
+	[Obsolete("This type is obsolete on iOS and Mac Catalyst. Use Microsoft.Maui.Controls.Handlers.Items2.TemplatedCell2 instead.")]
 	public class CarouselTemplatedCell : TemplatedCell
 	{
 		public static NSString ReuseId = new NSString("Microsoft.Maui.Controls.CarouselTemplatedCell");

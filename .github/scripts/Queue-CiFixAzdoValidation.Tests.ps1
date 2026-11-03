@@ -221,6 +221,12 @@ Describe 'trusted workflow configuration' {
         $workflow | Should -Match 'Queue-CiFixAzdoValidation\.ps1 -DispatcherBudgetSeconds 420 -DispatcherDeadlineUnixSeconds \$env:CI_FIX_DISPATCHER_DEADLINE_UNIX_SECONDS'
     }
 
+    It 'subscribes to both direct scanners and both legacy fixers' {
+        $workflow = Get-Content -Raw -LiteralPath (Join-Path $PSScriptRoot '../workflows/ci-fix-azdo-validation.yml')
+
+        $workflow | Should -Match '(?m)^\s+workflows: \["CI Failure Scanner", "CI Failure Scanner \(net11\.0\)", "CI Failure Fixer \(main\)", "CI Failure Fixer \(net11\.0\)"\]\r?$'
+    }
+
     It 'requires exact-head originating build evidence before build-only readiness in both fixer prompts' {
         foreach ($workflowName in @('ci-status-fix.md', 'ci-status-fix-net11.md')) {
             $workflow = Get-Content -Raw -LiteralPath (
@@ -312,7 +318,9 @@ Describe 'Get-CiFixEventContext' {
 }
 
 Describe 'Test-TrustedCiFixWorkflowRun' {
-    It 'accepts only the trusted default-branch fixer completions' -ForEach @(
+    It 'accepts only trusted default-branch scanner and fixer completions' -ForEach @(
+        @{ Name = 'CI Failure Scanner'; Path = '.github/workflows/ci-status-main.lock.yml' }
+        @{ Name = 'CI Failure Scanner (net11.0)'; Path = '.github/workflows/ci-status-net11.lock.yml' }
         @{ Name = 'CI Failure Fixer (main)'; Path = '.github/workflows/ci-status-fix.lock.yml' }
         @{ Name = 'CI Failure Fixer (net11.0)'; Path = '.github/workflows/ci-status-fix-net11.lock.yml' }
     ) {
@@ -1815,8 +1823,8 @@ Describe 'full-script offline reconciliation' {
                 action = 'completed'
                 repository = [pscustomobject]@{ full_name = 'dotnet/maui' }
                 workflow_run = [pscustomobject]@{
-                    name = 'CI Failure Fixer (main)'
-                    path = '.github/workflows/ci-status-fix.lock.yml'
+                    name = 'CI Failure Scanner'
+                    path = '.github/workflows/ci-status-main.lock.yml'
                     head_branch = 'main'
                     head_repository = [pscustomobject]@{ full_name = 'dotnet/maui' }
                 }

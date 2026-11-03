@@ -81,6 +81,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		public static BuildExceptionCode NamescopeDuplicate = new BuildExceptionCode("XC", 0064, nameof(NamescopeDuplicate), "");
 		public static BuildExceptionCode ContentPropertyAttributeMissing = new BuildExceptionCode("XC", 0065, nameof(ContentPropertyAttributeMissing), "");
 		public static BuildExceptionCode InvalidXaml = new BuildExceptionCode("XC", 0066, nameof(InvalidXaml), "");
+		public static BuildExceptionCode DuplicatePropertyAssignment = new BuildExceptionCode("XC", 0067, nameof(DuplicatePropertyAssignment), ""); //warning
 
 
 		//Extensions
@@ -99,9 +100,11 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		public static BuildExceptionCode ResourceDictMissingKey = new BuildExceptionCode("XC", 0126, nameof(ResourceDictMissingKey), "");
 		public static BuildExceptionCode XKeyNotLiteral = new BuildExceptionCode("XC", 0127, nameof(XKeyNotLiteral), "");
 		public static BuildExceptionCode StaticResourceSyntax = new BuildExceptionCode("XC", 0128, nameof(StaticResourceSyntax), "");
+		public static BuildExceptionCode XSharedNotSupported = new BuildExceptionCode("XC", 0129, nameof(XSharedNotSupported), "");
 
 		//CSC equivalents
 		public static BuildExceptionCode ObsoleteProperty = new BuildExceptionCode("XC", 0618, nameof(ObsoleteProperty), ""); //warning
+		public static BuildExceptionCode ObsoletePropertyError = new BuildExceptionCode("XC", 0619, nameof(ObsoletePropertyError), ""); //error
 
 		public string Code { get; }
 		public string CodePrefix { get; }

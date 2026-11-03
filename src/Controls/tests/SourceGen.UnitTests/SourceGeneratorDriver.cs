@@ -18,7 +18,7 @@ public static class SourceGeneratorDriver
 {
 	private static MetadataReference[]? MauiReferences;
 
-	public record AdditionalFile(AdditionalText Text, string Kind, string RelativePath, string? TargetPath, string? ManifestResourceName, string? TargetFramework, string? NoWarn, string LineInfo="enable", bool EnablePreviewFeatures = true);
+	public record AdditionalFile(AdditionalText Text, string Kind, string RelativePath, string? TargetPath, string? ManifestResourceName, string? TargetFramework, string? NoWarn, string LineInfo = "enable", bool EnableIncrementalHotReload = false);
 	public static GeneratorDriverRunResult RunGenerator<T>(Compilation compilation, AdditionalFile additionalFile, bool assertNoCompilationErrors = true)
 		where T : IIncrementalGenerator, new()
 		=> RunGenerator<T>(compilation, additionalFiles: [additionalFile], assertNoCompilationErrors);
@@ -85,6 +85,36 @@ public static class SourceGeneratorDriver
 		return (runResult1, runResult2);
 	}
 
+	/// <summary>
+	/// Same as <see cref="RunGeneratorWithChanges{T}"/>, but additionally feeds the second generation's
+	/// output back into the compilation (<see cref="GeneratorDriver.RunGeneratorsAndUpdateCompilation"/>)
+	/// so callers can assert the regenerated code - including <c>.xsg.cs</c> (InitializeComponent) field
+	/// assignments - actually compiles, rather than only string-matching the raw generated text.
+	/// </summary>
+	public static (GeneratorDriverRunResult result1, GeneratorDriverRunResult result2, Compilation updatedCompilation2, ImmutableArray<Diagnostic> diagnostics2) RunGeneratorWithChangesAndUpdateCompilation<T>(Compilation compilation,
+		Func<GeneratorDriver, Compilation, (GeneratorDriver driver, Compilation compilation)> applyChanges, params AdditionalFile[] additionalFiles)
+		where T : IIncrementalGenerator, new()
+	{
+		ISourceGenerator generator = new T().AsSourceGenerator();
+
+		var options = new GeneratorDriverOptions(
+			disabledOutputs: IncrementalGeneratorOutputKind.None,
+			trackIncrementalGeneratorSteps: true);
+
+		GeneratorDriver driver = CSharpGeneratorDriver.Create([generator], driverOptions: options)
+			.AddAdditionalTexts(additionalFiles.Select(f => f.Text).ToImmutableArray())
+			.WithUpdatedAnalyzerConfigOptions(new CustomAnalyzerConfigOptionsProvider(additionalFiles));
+
+		driver = driver.RunGenerators(compilation);
+		GeneratorDriverRunResult runResult1 = driver.GetRunResult();
+
+		var change = applyChanges(driver, compilation);
+		var driver2 = change.driver.RunGeneratorsAndUpdateCompilation(change.compilation, out var updatedCompilation2, out var diagnostics2);
+		GeneratorDriverRunResult runResult2 = driver2.GetRunResult();
+
+		return (runResult1, runResult2, updatedCompilation2, diagnostics2);
+	}
+
 	public static Compilation CreateMauiCompilation(string name = $"{nameof(SourceGeneratorDriver)}.Generated")
 	{
 		var references = GetMauiReferences();
@@ -97,6 +127,9 @@ public static class SourceGeneratorDriver
 	}
 
 	public static AdditionalText ToAdditionalText(string path, string text) => CustomAdditionalText.From(path, text);
+
+	internal static AnalyzerConfigOptionsProvider CreateAnalyzerConfigOptionsProvider(params AdditionalFile[] additionalFiles) =>
+		new CustomAnalyzerConfigOptionsProvider(additionalFiles);
 
 	private static MetadataReference[] GetMauiReferences()
 	{
@@ -183,10 +216,9 @@ public static class SourceGeneratorDriver
 					"build_property.Configuration" => "Debug",
 #endif
 					"build_property.EnableMauiXamlDiagnostics" => "true",
-					"build_property.MauiXamlLineInfo" => _additionalFile.LineInfo != "default" ?  _additionalFile.LineInfo : null,
+					"build_property.EnableMauiIncrementalHotReload" => _additionalFile.EnableIncrementalHotReload ? "true" : "false",
+					"build_property.MauiXamlLineInfo" => _additionalFile.LineInfo != "default" ? _additionalFile.LineInfo : null,
 					"build_property.MauiXamlNoWarn" => _additionalFile.NoWarn,
-					"build_property.EnablePreviewFeatures" => _additionalFile.EnablePreviewFeatures ? "true" : null,
-
 					_ => null
 				};
 

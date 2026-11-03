@@ -19,12 +19,12 @@ namespace Maui.Controls.Sample.Pages
 			BindingContext = new ButtonPageViewModel();
 		}
 
-		void OnButtonClicked(object sender, System.EventArgs e)
+		void OnButtonClicked(object? sender, System.EventArgs e)
 		{
 			Debug.WriteLine("Clicked");
 		}
 
-		void Button_Clicked(System.Object sender, System.EventArgs e)
+		void Button_Clicked(System.Object? sender, System.EventArgs e)
 		{
 			if (ImageSourceButton.ImageSource is null)
 			{
@@ -36,7 +36,7 @@ namespace Maui.Controls.Sample.Pages
 			}
 		}
 
-		void OnPositionChange(object sender, System.EventArgs e)
+		void OnPositionChange(object? sender, System.EventArgs e)
 		{
 			var newPosition = ((int)positionChange.ContentLayout.Position) + 1;
 
@@ -48,21 +48,21 @@ namespace Maui.Controls.Sample.Pages
 					positionChange.ContentLayout.Spacing);
 		}
 
-		void OnDecreaseSpacing(object sender, System.EventArgs e)
+		void OnDecreaseSpacing(object? sender, System.EventArgs e)
 		{
 			positionChange.ContentLayout =
 				new Button.ButtonContentLayout(positionChange.ContentLayout.Position,
 					positionChange.ContentLayout.Spacing - 1);
 		}
 
-		void OnIncreasingSpacing(object sender, System.EventArgs e)
+		void OnIncreasingSpacing(object? sender, System.EventArgs e)
 		{
 			positionChange.ContentLayout =
 				new Button.ButtonContentLayout(positionChange.ContentLayout.Position,
 					positionChange.ContentLayout.Spacing + 1);
 		}
 
-		void OnLineBreakModeButtonClicked(object sender, System.EventArgs e)
+		void OnLineBreakModeButtonClicked(object? sender, System.EventArgs e)
 		{
 			LineBreakModeButton.LineBreakMode = ImageLineBreakModeButton.LineBreakMode = SelectLineBreakMode();
 		}
@@ -90,13 +90,13 @@ namespace Maui.Controls.Sample.Pages
 
 		int _backgroundCount;
 
-		void OnBackgroundButtonClicked(object sender, System.EventArgs e)
+		void OnBackgroundButtonClicked(object? sender, System.EventArgs e)
 		{
 			BackgroundButton.Text = $"Background tapped {_backgroundCount} times";
 			_backgroundCount++;
 		}
 
-		void OnChangeBrushButtonClicked(System.Object sender, System.EventArgs e)
+		void OnChangeBrushButtonClicked(System.Object? sender, System.EventArgs e)
 		{
 			UpdateButtonBrush();
 		}

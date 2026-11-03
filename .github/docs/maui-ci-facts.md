@@ -33,9 +33,10 @@ green base job alone is not causal proof, and missing evidence is reported expli
 
 ### Automated CI fixes
 
-`ci-status-main` and `ci-status-net11` scan the three pipelines every twelve
-hours and create fix PRs directly against their configured branch. They do not
-file CI-scan tracking issues or failure/no-op diagnostic issues. Findings that
+`ci-status-main` scans the three pipelines every twelve hours and creates fix
+PRs against `main`, the .NET 11 servicing development branch. `ci-status-net11`
+is manual-only for historical investigations after the net11-to-main promotion.
+They do not file CI-scan tracking issues or failure/no-op diagnostic issues. Findings that
 cannot be safely fixed remain in the run's evidence and analysis artifacts.
 Manual dispatch defaults to staged (`dry_run: true`), including PR updates.
 
@@ -50,6 +51,18 @@ CI-fix PR heads after a scanner completes, including PRs created with
 for older issue-linked PRs. They must not be scheduled alongside the direct
 scanners. The legacy issue reconciler and locking workflow do not produce new
 issues.
+
+### Branch promotion and servicing
+
+After the .NET 11 promotion, `main` owns .NET 11 servicing development. The
+main-to-net11 and net11-to-RC2 merge routes are retired; a future servicing cut
+must explicitly select its release branch rather than reuse the RC2 route.
+Official nightly builds exclude the historical `net10.0` and `net11.0` branches.
+
+.NET 10 SR13 publishes from `release/10.0.1xx-sr13`, independently of `main`.
+Preserve its release commit and packages, and keep publication on the .NET 10 channel during the
+.NET 11 transition. Do not cut over `inflight/current` or synchronize the internal
+`main` mirror as part of SR13 publication; those are separate .NET 11 operations.
 
 ### Pipeline definitions
 
@@ -86,6 +99,13 @@ and `maui-pr-uitests` may not run automatically depending on the changed files.
 - Helix work-item console output may live behind `helix.dot.net` and Azure Blob URLs.
 
 ## Setup-only retries
+
+Shared provisioning initializes `DOTNET_CLI_HOME` under the agent's per-job
+temporary directory before invoking .NET. It preserves an existing
+`NUGET_PACKAGES`, or pins the original user-profile package cache when unset,
+so NuGet restores and Arcade's MSBuild task imports use the same cache.
+An unwritable CLI-state directory fails preparation rather than changing
+permissions on the hosted agent's shared home directory.
 
 Shared test preparation uses **at most five total attempts per setup operation**,
 not five additional retries or five whole-job reruns. Azure task-level recovery
@@ -148,7 +168,24 @@ existing policies; shared agent setup does not wrap or resubmit those test runs.
 
 ## MAUI-specific quirks
 
+### Android activity isolation
+
+External-intent fixtures must remain scoped to the test package and an unhandled
+action after component sanitization, rather than opening the resolver or system
+settings. Assert that the original activity is `RESUMED` before and after
+navigation. `HasWindowFocus` is not a lifecycle check: the notification shade can
+take focus while that same activity remains resumed.
+
 ### XHarness exit-0 blind spot
+
+Windows device categories also require complete, parseable xUnit output. The
+Windows runner fails empty/malformed results and abnormal process exits, while
+preserving valid category results for upload. WinUI `Application.Exit()` may
+return `-1` normally; that code alone is not a crash. A successful build or a
+partial merged XML does not prove every category executed.
+The packaged launcher retains a native process handle before waiting: Windows
+PowerShell's .NET Framework cannot read `ExitCode` afterward without that handle.
+An unavailable exit code must not be treated as a successful exit.
 
 XHarness (iOS/Android device tests in `maui-pr-devicetests`) **exits with code 0 even
 when tests fail**. So the AzDO job shows ✅ "Succeeded", `ci-analysis` may report no
@@ -388,6 +425,7 @@ error XAGRDL0000: Could not GET '...pkgs.dev.azure.com/.../maven/v1/...'
 |---------|-------|-------|
 | `error CS####` | `maui-pr` | C# compiler error — check file/line |
 | `error XA####` | `maui-pr` | Android build error |
+| `java_home -X` / `Root element is missing` / invalid JDK `jar` path | `maui-pr` Android builds and integration tests | Android SDK discovery can inspect broken system registrations or archive parent directories even with `JAVA_HOME` set. `ProvisionJdk` must also publish the validated JDK home as `JavaSdkDirectory` for downstream MSBuild processes. Do not suppress these diagnostics or allow-list the tooling warnings. |
 | `error : ... Failed to load assembly` | `maui-pr` `Build <platform>` leg | **crossgen2 / ReadyToRun (R2R)** break — a failed **build job**, not a test, with no test name. Common after an SDK/runtime (`dotnet/dotnet`) bump on a flow PR. Job-level baseline diff: red on PR vs green on base ⇒ PR-caused. |
 | `error IL####` / `ILC####` / NativeAOT publish fail | `maui-pr` AOT legs, `Run Integration Tests – AOT` | **NativeAOT / ILC** trim-analysis break. May be pre-existing (e.g. HybridWebView `IL2026`) — confirm with a job- AND test-level baseline diff before attributing to the PR. |
 | `error NETSDK1144` | `maui-pr` TrimFull legs | Optimizing assemblies for size failed (often an ILLink warning promoted to error). Check whether the same leg is red on the base branch. |
@@ -395,6 +433,15 @@ error XAGRDL0000: Could not GET '...pkgs.dev.azure.com/.../maven/v1/...'
 | `WMC0612` / XBF `0x09C4` / `Property Not Found` after adding native Windows `x:DataType` | `maui-pr` Windows build/pack | The native XBF generator rejects the annotations introduced by #38735 on classic `{Binding}` templates. Restore the prior metadata without replacing bindings or converters. XML/source-only checks cannot validate XBF compilation; require an actual Windows build. |
 | `WMC9999` on overloaded table collections, `WMC0821` on open generic types, or invalid generated `XamlTypeInfo.g.cs` after adding native `[Bindable]` | `maui-pr` Windows build/pack | These were successive failures from #38735's new metadata in the Windows investigation on #39608. Restore the pre-cleanup native metadata baseline rather than changing public collection APIs, generic types, or generated code. Preserve existing runtime binding behavior and validate with the native Windows compiler. |
 | `error XAGRDL0000` / `401` / `No local versions` | `maui-pr` or official build | Gradle/Maven feed issue — see above |
+| Apple workload install cannot find a `net10.0` SDK pack | `maui-pr` SDK provisioning | The .NET 11 Apple manifests also install .NET 10 compatibility packs. Resolve the exact missing version's feed with `darc get-asset`; the current .NET 11 feed alone may not contain it. Do not copy another branch's compatibility feed without checking its manifest versions. |
+| `NETSDK1140` rejects the Apple target platform version | `maui-pr` build/pack | Align current Apple target-framework versions and SDK defaults in `Directory.Build.props` with the selected Apple SDK. net11.0 uses 26.5; the RC2 release branch uses 27.0. Preserve previous-.NET compatibility targets. |
+| Xcode 27 rejects native iOS 12.x / mapped macOS 10.15 deployment targets | `maui-pr` native interop archive | On branches using Apple 27, align the native framework and managed iOS minimum to 15.0, already used by app templates. This maps to macOS 12.0 for Mac Catalyst. Do not raise minimums on Apple 26.5 branches solely to match RC2. |
+| Apple `bgen.dll` exits 150 requesting a newer .NET runtime | `maui-pr` Apple binding generation | Keep bootstrap (`global.json`), workload provisioning (`MicrosoftNETSdkPackageVersion`), and SDK provenance pins aligned with a compatible host runtime. SDK `11.0.100-rc.2.26470.103` satisfies the Apple 27 generator's `26465.108` requirement and is already selected on net11.0. |
+| Resizetizer raster test assertions pass but `Dispose` fails with a Windows sharing violation | Helix Windows unit tests | Keep temporary images under `BaseTest.DestinationDirectory` and reuse its bounded, logged cleanup retries from #38124. Dispose raster tools deterministically; preserve all image assertions and let exhausted cleanup retries fail the test. |
+| `Svg.Animation` / `Svg.SceneGraph` `NU1603`, or `SKPathBuilder` `CS0246` | `maui-pr` restore/build | Release merges can preserve old `eng/Versions.props` pins while importing Skia 4 source and packaging changes. Restore the coordinated SkiaSharp/HarfBuzz/SVG dependency versions, not just the first missing package. |
+| Required Xcode is missing / requested iOS runtime is unavailable | `maui-pr` macOS provisioning | Select an image or agents providing the branch's required Xcode. net11.0 retains Aces with Xcode 26.5; RC2 needs the MAUI pool's Xcode 27 RC agents. Do not fall back to an unrelated Xcode or purge runtimes to repair a version mismatch. The legacy Provisionator task is unavailable in `dnceng-public`; enabling it prevents pipeline startup. |
+| `iOS 27.0 (universal) is not available for download` | `maui-pr` simulator provisioning | Request the `arm64` runtime on Apple Silicon agents; retain `universal` on Intel. Keep all downloads version-pinned. An unavailable download can also return exit code 70, so do not treat every exit 70 as a wedged CoreSimulator or delete installed runtimes. |
+| Helix monitor cannot use `NetCore-Svc-Public` | `maui-pr` release branches | The monitor must use the pipeline's selected Helix submission pool, with its Linux image demand, rather than independently selecting an unauthorized pool from the branch name. |
 | `XHarness timeout` | `maui-pr-devicetests` Helix logs | Test killed by infrastructure; may be transient |
 | `No test result files found` | `maui-pr-devicetests` Helix logs | Tests never ran or app crashed on launch |
 | UI test screenshot diff | `maui-pr-uitests` | Visual regression; check baseline images |
@@ -494,6 +541,21 @@ on appearance alone:
 If none of these hold, a failure on a path/platform the PR changes leans PR-caused. Note
 that **not every failure is a test** — a red build leg with no extracted test name still
 counts as a failure and must be classified, never silently dropped.
+
+**Build Insights report intake:** The automated review gatherer also reads the
+GitHub check reports for its captured PR head, accepting only the
+`build-insights` / `Build Insights` publisher/name pair. It explicitly requests
+all check runs, including earlier same-named reports, within its pagination cap.
+`context.json` exposes their metadata and bounded raw
+title, summary, and text in `buildInsights.reports`. These are untrusted,
+supplementary leads, not a replacement for direct Azure/Helix evidence, the
+local known-issue matcher, or baseline attribution. Collection `complete` does
+not certify pipeline coverage; pending, missing, or truncated reports cannot
+establish that a failure is absent. Collection errors remain explicit, and the
+no-results evaluation shortcuts do not fetch reports. Supplementary collection
+runs only after direct evidence, target-branch history, and baseline attribution,
+using the remaining gather budget. An exhausted budget leaves an explicit report
+collection limitation rather than delaying primary evidence.
 
 The gatherer's **legacy deterministic verdict ceiling** (`gate.verdictCeiling`)
 constrains legacy merge-readiness consumers, not the current skill's attribution

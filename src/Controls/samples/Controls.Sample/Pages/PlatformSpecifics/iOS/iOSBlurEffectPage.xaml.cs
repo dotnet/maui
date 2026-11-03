@@ -12,22 +12,22 @@ namespace Maui.Controls.Sample.Pages
 			InitializeComponent();
 		}
 
-		void OnNoBlurButtonClicked(object sender, EventArgs e)
+		void OnNoBlurButtonClicked(object? sender, EventArgs e)
 		{
 			image.On<iOS>().UseBlurEffect(BlurEffectStyle.None);
 		}
 
-		void OnExtraLightBlurButtonClicked(object sender, EventArgs e)
+		void OnExtraLightBlurButtonClicked(object? sender, EventArgs e)
 		{
 			image.On<iOS>().UseBlurEffect(BlurEffectStyle.ExtraLight);
 		}
 
-		void OnLightBlurButtonClicked(object sender, EventArgs e)
+		void OnLightBlurButtonClicked(object? sender, EventArgs e)
 		{
 			image.On<iOS>().UseBlurEffect(BlurEffectStyle.Light);
 		}
 
-		void OnDarkBlurButtonClicked(object sender, EventArgs e)
+		void OnDarkBlurButtonClicked(object? sender, EventArgs e)
 		{
 			image.On<iOS>().UseBlurEffect(BlurEffectStyle.Dark);
 		}
