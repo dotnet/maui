@@ -502,15 +502,16 @@ public class FlyoutPageFeatureTests : _GalleryUITest
 
 		App.WaitForElement("SetDetail2Button");
 		App.Tap("SetDetail2Button");
+		App.WaitForElement("BackToOriginalDetailButton2");
+		Assert.That(App.FindElement("Detail2BackButtonHandledLabel")?.GetText(), Is.EqualTo("False"));
 
 		App.TapBackArrow();
 
 		// If handled → STILL on new page
-		App.WaitForElement("BackToOriginalDetailButton2");
+		Assert.That(App.FindElement("BackToOriginalDetailButton2")?.IsDisplayed(), Is.True);
+		Assert.That(App.FindElement("Detail2BackButtonHandledLabel")?.GetText(), Is.EqualTo("True"));
+
 		App.Tap("BackToOriginalDetailButton2");
-
-		Assert.That(App.FindElement("BackButtonHandledLabel").GetText(), Is.EqualTo("True"));
-
 	}
 
 #endif
