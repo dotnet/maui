@@ -14,12 +14,14 @@ namespace Microsoft.Maui.Handlers
 	public partial class PickerHandler : ViewHandler<IPicker, MauiPicker>
 	{
 		protected AppCompatAlertDialog? _dialog;
+		ColorStateList? _defaultHintTextColors;
 
 		protected override MauiPicker CreatePlatformView() =>
 			new MauiPicker(Context);
 
 		protected override void ConnectHandler(MauiPicker platformView)
 		{
+			_defaultHintTextColors = platformView.HintTextColors;
 			platformView.Click += OnClick;
 
 			base.ConnectHandler(platformView);
@@ -37,6 +39,7 @@ namespace Microsoft.Maui.Handlers
 				_dialog = null;
 			}
 
+			_defaultHintTextColors = null;
 			base.DisconnectHandler(platformView);
 		}
 
@@ -58,7 +61,14 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapTitleColor(IPickerHandler handler, IPicker picker)
 		{
-			handler.PlatformView?.UpdateTitleColor(picker);
+			if (picker.TitleColor is null && handler is PickerHandler pickerHandler)
+			{
+				handler.PlatformView?.SetHintTextColor(pickerHandler._defaultHintTextColors);
+			}
+			else
+			{
+				handler.PlatformView?.UpdateTitleColor(picker);
+			}
 		}
 
 		public static void MapSelectedIndex(IPickerHandler handler, IPicker picker)

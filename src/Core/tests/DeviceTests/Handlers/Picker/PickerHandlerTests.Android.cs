@@ -40,6 +40,55 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyInitValue(picker, () => picker.TitleColor, GetNativeTitleColor, picker.TitleColor);
 		}
 
+		[Theory(DisplayName = "Clearing Title Color Restores Native Hint Colors")]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task ClearingTitleColorRestoresNativeHintColors(bool useMaterialPicker)
+		{
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var picker = new PickerStub
+				{
+					Title = "Select an Item"
+				};
+				var handler = CreateHandler(picker, useMaterialPicker ? typeof(PickerHandler2) : typeof(PickerHandler));
+				var platformPicker = Assert.IsAssignableFrom<EditText>(handler.PlatformView);
+				var defaultHintTextColors = platformPicker.HintTextColors;
+				Assert.NotNull(defaultHintTextColors);
+
+				try
+				{
+					foreach (var color in new[] { Colors.Red, Colors.Blue })
+					{
+						picker.TitleColor = color;
+						handler.UpdateValue(nameof(IPicker.TitleColor));
+						Assert.Equal(color.ToPlatform().ToArgb(), platformPicker.CurrentHintTextColor);
+
+						picker.TitleColor = null;
+						handler.UpdateValue(nameof(IPicker.TitleColor));
+
+						var restoredColors = platformPicker.HintTextColors;
+						Assert.NotNull(restoredColors);
+						Assert.Equal(defaultHintTextColors.DefaultColor, restoredColors.DefaultColor);
+						Assert.Equal(defaultHintTextColors.IsStateful, restoredColors.IsStateful);
+
+						platformPicker.Enabled = false;
+						Assert.Equal(
+							defaultHintTextColors.GetColorForState(platformPicker.GetDrawableState(), new AColor(defaultHintTextColors.DefaultColor)),
+							platformPicker.CurrentHintTextColor);
+						platformPicker.Enabled = true;
+						Assert.Equal(
+							defaultHintTextColors.GetColorForState(platformPicker.GetDrawableState(), new AColor(defaultHintTextColors.DefaultColor)),
+							platformPicker.CurrentHintTextColor);
+					}
+				}
+				finally
+				{
+					handler.DisconnectHandler();
+				}
+			});
+		}
+
 		[Fact(DisplayName = "Text Color Initializes Correctly")]
 		public async Task TextColorInitializesCorrectly()
 		{
