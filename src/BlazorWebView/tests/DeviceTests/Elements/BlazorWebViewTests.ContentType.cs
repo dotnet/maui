@@ -117,7 +117,16 @@ public partial class BlazorWebViewTests
 			Assert.NotNull(result);
 			Assert.Equal(200, result.status);
 			Assert.Equal("application/json", result.contentType);
-			Assert.Equal("application/json", result.blobType);
+
+			// For a null stream Android also leaves the response's internal MIME type empty, and up to 153 Chromium
+			// takes Blob.type from that instead of from the Content-Type header, so Blob.type is "" on older WebViews
+			// (109 on the API 33 emulator). Response::MimeType in 153 and 154:
+			// https://chromium.googlesource.com/chromium/src/+/refs/tags/153.0.8010.57/third_party/blink/renderer/core/fetch/response.cc#559
+			// https://chromium.googlesource.com/chromium/src/+/refs/tags/154.0.8037.154/third_party/blink/renderer/core/fetch/response.cc#559
+			if (!isContentNull)
+			{
+				Assert.Equal("application/json", result.blobType);
+			}
 		});
 
 	static Task<ContentTypeResult> FetchContentTypeAsync(BlazorWebViewHandler handler, string path) =>
