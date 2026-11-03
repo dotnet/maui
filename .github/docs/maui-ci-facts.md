@@ -33,9 +33,10 @@ green base job alone is not causal proof, and missing evidence is reported expli
 
 ### Automated CI fixes
 
-`ci-status-main` and `ci-status-net11` scan the three pipelines every twelve
-hours and create fix PRs directly against their configured branch. They do not
-file CI-scan tracking issues or failure/no-op diagnostic issues. Findings that
+`ci-status-main` scans the three pipelines every twelve hours and creates fix
+PRs against `main`, the .NET 11 servicing development branch. `ci-status-net11`
+is manual-only for historical investigations after the net11-to-main promotion.
+They do not file CI-scan tracking issues or failure/no-op diagnostic issues. Findings that
 cannot be safely fixed remain in the run's evidence and analysis artifacts.
 Manual dispatch defaults to staged (`dry_run: true`), including PR updates.
 
@@ -50,6 +51,18 @@ CI-fix PR heads after a scanner completes, including PRs created with
 for older issue-linked PRs. They must not be scheduled alongside the direct
 scanners. The legacy issue reconciler and locking workflow do not produce new
 issues.
+
+### Branch promotion and servicing
+
+After the .NET 11 promotion, `main` owns .NET 11 servicing development. The
+main-to-net11 and net11-to-RC2 merge routes are retired; a future servicing cut
+must explicitly select its release branch rather than reuse the RC2 route.
+Official nightly builds exclude the historical `net10.0` and `net11.0` branches.
+
+.NET 10 SR13 publishes from `release/10.0.1xx-sr13`, independently of `main`.
+Preserve its release commit and packages, and keep publication on the .NET 10 channel during the
+.NET 11 transition. Do not cut over `inflight/current` or synchronize the internal
+`main` mirror as part of SR13 publication; those are separate .NET 11 operations.
 
 ### Pipeline definitions
 
