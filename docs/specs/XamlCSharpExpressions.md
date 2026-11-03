@@ -106,6 +106,23 @@ Expressions can combine multiple sources. Each part is resolved using the simple
 
 Each interpolation hole is analyzed and bound appropriately.
 
+**Ternaries inside interpolation holes** are supported and automatically parenthesized.
+In C#, the first top-level `:` inside an interpolation hole begins the format specifier,
+so a raw conditional fails to compile (`CS8361`). XEPR wraps the conditional in
+parentheses for you:
+
+```xml
+<!-- Authored: -->
+<Label Text="{$'You clicked {Count} {Count == 1 ? 'time' : 'times'}.'}" />
+
+<!-- Generated: $"You clicked {Count} {(Count == 1 ? "time" : "times")}." -->
+```
+
+This applies only to a ternary that is the *entire* hole expression. Null-coalescing
+(`??`), null-conditional (`?.`, `?[`) and format specifiers (`{value:F2}`) are not
+affected. To combine a ternary with an explicit format specifier or alignment, write the
+parentheses yourself: `{$'{(IsVip ? Gold : Base):C2}'}`.
+
 **Operators and Mixed Sources:**
 
 ```xml
@@ -425,6 +442,7 @@ There are no dedicated ABP-specific diagnostics yet. Invalid ABP expressions cur
 | Negate bool | `{!Flag}` |
 | Combine bools | `{A &amp;&amp; B}` or `{A \|\| B}` |
 | Ternary | `{IsVip ? 'Gold' : 'Standard'}` |
+| Ternary in interpolation | `{$'{Count} {Count == 1 ? 'item' : 'items'}'}` |
 | Null-coalesce | `{Value ?? 'Default'}` |
 | Format string | `{$'{Value:F2}'}` |
 | Handle event | `{(s, e) => Action()}` |

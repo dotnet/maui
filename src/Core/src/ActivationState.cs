@@ -25,12 +25,6 @@ namespace Microsoft.Maui
 		{
 			LaunchActivatedEventArgs = launchActivatedEventArgs;
 		}
-#elif TIZEN
-		public ActivationState(IMauiContext context, Tizen.Applications.Bundle? savedInstance)
-			: this(context, GetPersistedState(savedInstance))
-		{
-			SavedInstance = savedInstance;
-		}
 #endif
 
 		public ActivationState(IMauiContext context)
@@ -53,8 +47,6 @@ namespace Microsoft.Maui
 		public Bundle? SavedInstance { get; }
 #elif WINDOWS
 		public UI.Xaml.LaunchActivatedEventArgs? LaunchActivatedEventArgs { get; }
-#elif TIZEN
-		public Tizen.Applications.Bundle? SavedInstance { get; }
 #endif
 
 #if ANDROID
@@ -87,31 +79,17 @@ namespace Microsoft.Maui
 				{
 					foreach (var k in s.Keys)
 					{
-						var key = k.ToString();
-						var val = s?[k]?.ToString();
+						if (k is null)
+							continue;
 
-						state[key] = val;
+						var key = k.ToString();
+						if (key is not null)
+							state[key] = s?[k]?.ToString();
 					}
 				}
 			}
 
 			return state;
-		}
-#elif TIZEN
-		static PersistedState GetPersistedState(Tizen.Applications.Bundle? state)
-		{
-			var dict = new PersistedState();
-
-			var keyset = state?.Keys;
-			if (keyset != null)
-			{
-				foreach (var k in keyset)
-				{
-					dict[k] = state?.GetItem<string>(k);
-				}
-			}
-
-			return dict;
 		}
 #endif
 	}

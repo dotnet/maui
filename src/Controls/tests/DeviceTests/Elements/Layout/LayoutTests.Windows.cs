@@ -47,6 +47,58 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory]
+		[InlineData(true, false, 1098)]
+		[InlineData(false, true, 1110)]
+		[InlineData(true, true, 1110)]
+		public async Task ChangingGridColumnsAndChildGridSpanUpdatesNativeBounds(bool changeWidth, bool changeSpan, double expandedWidth)
+		{
+			SetupLayoutBuilder();
+
+			var root = new Grid
+			{
+				ColumnDefinitions = new ColumnDefinitionCollection(
+					new ColumnDefinition(330),
+					new ColumnDefinition(GridLength.Star),
+					new ColumnDefinition(390)),
+				ColumnSpacing = 12,
+				Padding = 12,
+				WidthRequest = 1476,
+				HeightRequest = 300
+			};
+			var main = new Grid();
+			root.Add(main, 1);
+
+			await AttachAndRun(root, async (LayoutHandler handler) =>
+			{
+				var nativeMain = main.ToPlatform(MauiContext);
+				Assert.Equal(708, nativeMain.ActualWidth, 0.5);
+
+				for (int i = 0; i < 3; i++)
+				{
+					if (changeWidth)
+						root.ColumnDefinitions[2].Width = 0;
+					if (changeSpan)
+						Grid.SetColumnSpan(main, 2);
+
+					await AssertionExtensions.AssertEventually(() => Math.Abs(nativeMain.ActualWidth - expandedWidth) < 0.5);
+					Assert.Equal(expandedWidth, main.Width, 0.5);
+					var position = nativeMain.TransformToVisual(handler.PlatformView)
+						.TransformPoint(new global::Windows.Foundation.Point());
+					Assert.Equal(354, position.X, 0.5);
+					Assert.Equal(12, position.Y, 0.5);
+
+					if (changeWidth)
+						root.ColumnDefinitions[2].Width = 390;
+					if (changeSpan)
+						Grid.SetColumnSpan(main, 1);
+
+					await AssertionExtensions.AssertEventually(() => Math.Abs(nativeMain.ActualWidth - 708) < 0.5);
+					Assert.Equal(708, main.Width, 0.5);
+				}
+			});
+		}
+
+		[Theory]
 		[InlineData(false)]
 		[InlineData(true)]
 		public async Task InputTransparentLayoutContainerRemainsHitTestVisible(bool cascadeInputTransparent)

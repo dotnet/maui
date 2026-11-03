@@ -48,6 +48,9 @@ namespace Microsoft.Maui.Resizetizer
 			public static DpiPath Original =>
 				new DpiPath("drawable", 1.0m);
 
+			public static DpiPath OriginalNight =>
+				new DpiPath("drawable-night", 1.0m);
+
 			public static DpiPath[] Image
 				=> new[]
 				{
@@ -56,6 +59,16 @@ namespace Microsoft.Maui.Resizetizer
 					new DpiPath("drawable-xhdpi", 2.0m),
 					new DpiPath("drawable-xxhdpi", 3.0m),
 					new DpiPath("drawable-xxxhdpi", 4.0m),
+				};
+
+			public static DpiPath[] ImageNight
+				=> new[]
+				{
+					new DpiPath("drawable-night-mdpi", 1.0m),
+					new DpiPath("drawable-night-hdpi", 1.5m),
+					new DpiPath("drawable-night-xhdpi", 2.0m),
+					new DpiPath("drawable-night-xxhdpi", 3.0m),
+					new DpiPath("drawable-night-xxxhdpi", 4.0m),
 				};
 
 			public static DpiPath[] AppIcon
@@ -89,6 +102,11 @@ namespace Microsoft.Maui.Resizetizer
 		public static class Ios
 		{
 			public const string AppIconPath = "Assets.xcassets/{name}.appiconset";
+			public const string SplashImageName = "MauiSplashImage";
+			public const string SplashImageDarkName = "MauiSplashImageDark";
+			public const string SplashColorName = "MauiSplashColor";
+			public const string SplashImageSetPath = "Assets.xcassets/MauiSplashImage.imageset";
+			public const string SplashColorSetPath = "Assets.xcassets/MauiSplashColor.colorset";
 
 			public static DpiPath Original =>
 				new DpiPath("Resources", 1.0m);
@@ -99,6 +117,14 @@ namespace Microsoft.Maui.Resizetizer
 					new DpiPath("", 1.0m),
 					new DpiPath("", 2.0m, null,"@2x"),
 					new DpiPath("", 3.0m, null,"@3x"),
+				};
+
+			public static DpiPath[] SplashImageAsset
+				=> new[]
+				{
+					new DpiPath(SplashImageSetPath, 1.0m),
+					new DpiPath(SplashImageSetPath, 2.0m, null, "@2x"),
+					new DpiPath(SplashImageSetPath, 3.0m, null, "@3x"),
 				};
 
 			public static DpiPath[] AppIcon
@@ -281,40 +307,34 @@ namespace Microsoft.Maui.Resizetizer
 				};
 		}
 
-
-		public static class Tizen
+		public static class Generic
 		{
-			public static DpiPath Original => new DpiPath("res", 1.0m);
+			public static DpiPath Original =>
+				new DpiPath("", 1.0m);
 
 			public static DpiPath[] Image
 				=> new[]
 				{
-				new DpiPath("res/contents/default_All-LDPI", 0.8m),
-				new DpiPath("res/contents/default_All-MDPI", 1.0m),
-				new DpiPath("res/contents/default_All-HDPI", 1.5m),
-				new DpiPath("res/contents/default_All-XHDPI", 2.0m),
-				new DpiPath("res/contents/default_All-XXHDPI", 3.0m),
+					new DpiPath("", 1.0m),
+					new DpiPath("", 2.0m, null, "@2x"),
 				};
 
 			public static DpiPath[] AppIcon
 				=> new[]
 				{
-				new DpiPath("shared/res/hdpi", 1.0m, null, ".high", new SKSize(78, 78)),
-				new DpiPath("shared/res/xhdpi", 1.0m, null, ".xhigh", new SKSize(117, 117)),
+					new DpiPath("", 1.0m, null, "-16x16", new SKSize(16, 16)),
+					new DpiPath("", 1.0m, null, "-32x32", new SKSize(32, 32)),
+					new DpiPath("", 1.0m, null, "-48x48", new SKSize(48, 48)),
+					new DpiPath("", 1.0m, null, "-128x128", new SKSize(128, 128)),
+					new DpiPath("", 1.0m, null, "-256x256", new SKSize(256, 256)),
+					new DpiPath("", 1.0m, null, "-512x512", new SKSize(512, 512)),
+					new DpiPath("", 1.0m, null, "-1024x1024", new SKSize(1024, 1024)),
 				};
-
-			public static DpiPath[] SplashScreen
-				=> new[]
-				{
-				new DpiPath("res/contents/default_All-MDPI", 1.0m),
-				new DpiPath("res/contents/default_All-HDPI", 1.5m),
-				};
-
 		}
 
 		public static DpiPath GetOriginal(string platform)
 		{
-			switch (platform.ToLowerInvariant())
+			switch ((platform ?? string.Empty).ToLowerInvariant())
 			{
 				case "ios":
 					return DpiPath.Ios.Original;
@@ -324,16 +344,14 @@ namespace Microsoft.Maui.Resizetizer
 					return DpiPath.Windows.Original;
 				case "wpf":
 					return DpiPath.Wpf.Original;
-				case "tizen":
-					return DpiPath.Tizen.Original;
+				default:
+					return DpiPath.Generic.Original;
 			}
-
-			return null;
 		}
 
 		public static DpiPath[] GetDpis(string platform)
 		{
-			switch (platform.ToLowerInvariant())
+			switch ((platform ?? string.Empty).ToLowerInvariant())
 			{
 				case "ios":
 					return DpiPath.Ios.Image;
@@ -343,18 +361,16 @@ namespace Microsoft.Maui.Resizetizer
 					return DpiPath.Windows.Image;
 				case "wpf":
 					return DpiPath.Wpf.Image;
-				case "tizen":
-					return DpiPath.Tizen.Image;
+				default:
+					return DpiPath.Generic.Image;
 			}
-
-			return null;
 		}
 
 		public static DpiPath[] GetAppIconDpis(string platform, string appIconName)
 		{
-			DpiPath[] result = null;
+			DpiPath[] result;
 
-			switch (platform.ToLowerInvariant())
+			switch ((platform ?? string.Empty).ToLowerInvariant())
 			{
 				case "ios":
 					result = DpiPath.Ios.AppIcon;
@@ -368,8 +384,8 @@ namespace Microsoft.Maui.Resizetizer
 				case "wpf":
 					result = DpiPath.Wpf.AppIcon;
 					break;
-				case "tizen":
-					result = DpiPath.Tizen.AppIcon;
+				default:
+					result = DpiPath.Generic.AppIcon;
 					break;
 			}
 

@@ -120,6 +120,31 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void HiddenContentTakesNoSpace()
+		{
+			var mockViewHandler = Substitute.For<IViewHandler>();
+
+			// Android measures a GONE view at its full size, so the handler still reports one
+			mockViewHandler.GetDesiredSize(Arg.Any<double>(), Arg.Any<double>()).Returns(new Size(100, 200));
+
+			var contentView = new ContentView
+			{
+				Padding = new Thickness(10),
+				Content = new View
+				{
+					IsVisible = false,
+					IsPlatformEnabled = true,
+					Handler = mockViewHandler
+				},
+				IsPlatformEnabled = true,
+			};
+
+			ICrossPlatformLayout crossPlatformLayout = contentView;
+
+			Assert.Equal(new Size(20, 20), crossPlatformLayout.CrossPlatformMeasure(double.PositiveInfinity, double.PositiveInfinity));
+		}
+
+		[Fact]
 		public void WidthRequest()
 		{
 			View child;

@@ -304,7 +304,8 @@ namespace Microsoft.Maui.Controls
 				picker.ClearPendingSelectedIndex();
 			}
 
-			return selectedIndex.Clamp(-1, picker.Items.Count - 1);
+			var clamped = selectedIndex.Clamp(-1, picker.Items.Count - 1);
+			return clamped == selectedIndex ? value : (object)clamped;
 		}
 
 		void OnItemDisplayBindingChanged(BindingBase oldValue, BindingBase newValue)
@@ -552,7 +553,16 @@ namespace Microsoft.Maui.Controls
 			Handler?.UpdateValue(nameof(IPicker.Items));
 
 			if (!TryApplyPendingSelectedIndex(forceClamp: true))
-				ClampSelectedIndex(SelectedIndex);
+			{
+				var index = SelectedIndex;
+
+				// SelectedItem can be set before ItemsSource (e.g. because of the XAML attribute order),
+				// when it can't be found yet; select it now that the items are loaded
+				if (index < 0 && SelectedItem is not null)
+					index = ItemsSource.IndexOf(SelectedItem);
+
+				ClampSelectedIndex(index);
+			}
 		}
 
 		static void OnSelectedIndexChanged(object bindable, object oldValue, object newValue)

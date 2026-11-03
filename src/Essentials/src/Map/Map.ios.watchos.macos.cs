@@ -26,8 +26,15 @@ namespace Microsoft.Maui.ApplicationModel
 				options.Name = string.Empty;
 
 			NSDictionary dictionary = null;
+
+			// MKPlacemark is deprecated on iOS 26+ (bound as [UnsupportedOSPlatform("ios26.0")]) in favor of
+			// MKAddress / MKMapItem(location:address:), but it remains functional at runtime. Suppressing the
+			// analyzer here keeps the MKMapItem.OpenMaps launch — and with it MapLaunchOptions.Name and
+			// NavigationMode — behaving exactly as before. Migration is tracked by https://github.com/dotnet/maui/issues/36845.
+#pragma warning disable CA1416 // Validate platform compatibility
 			var placemark = new MKPlacemark(new CLLocationCoordinate2D(latitude, longitude), dictionary);
 			return OpenPlacemark(placemark, options);
+#pragma warning restore CA1416
 		}
 
 		[System.Runtime.Versioning.UnsupportedOSPlatform("ios11.0")]

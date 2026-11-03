@@ -22,7 +22,13 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty ProgressColorProperty = BindableProperty.Create(nameof(ProgressColor), typeof(Color), typeof(ProgressBar), null);
 
 		/// <summary>Bindable property for <see cref="Progress"/>.</summary>
-		public static readonly BindableProperty ProgressProperty = BindableProperty.Create(nameof(Progress), typeof(double), typeof(ProgressBar), 0d, coerceValue: (bo, v) => ((double)v).Clamp(0, 1));
+		public static readonly BindableProperty ProgressProperty = BindableProperty.Create(nameof(Progress), typeof(double), typeof(ProgressBar), 0d,
+			coerceValue: (bo, v) =>
+			{
+				var original = (double)v;
+				var clamped = original.Clamp(0, 1);
+				return clamped == original ? v : (object)clamped;
+			});
 
 		readonly Lazy<PlatformConfigurationRegistry<ProgressBar>> _platformConfigurationRegistry;
 

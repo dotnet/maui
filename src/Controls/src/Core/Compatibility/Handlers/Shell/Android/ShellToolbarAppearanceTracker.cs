@@ -1,4 +1,5 @@
 #nullable disable
+using System;
 using Android.Content.Res;
 using Android.Graphics.Drawables;
 using AndroidX.AppCompat.Widget;
@@ -29,8 +30,17 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public virtual void SetAppearance(AToolbar toolbar, IShellToolbarTracker toolbarTracker, ShellAppearance appearance)
 		{
+			if (appearance is null)
+			{
+				return;
+			}
+
 			var foreground = appearance.ForegroundColor;
-			var background = appearance.BackgroundColor;
+			var background = !Brush.IsNullOrEmpty(appearance.Background)
+				? appearance.Background
+				: appearance.BackgroundColor is not null
+					? new SolidColorBrush(appearance.BackgroundColor)
+					: null;
 			var titleColor = appearance.TitleColor;
 
 			SetColors(toolbar, toolbarTracker, foreground, background, titleColor);
@@ -46,12 +56,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				SetColors(toolbar, toolbarTracker,
 					ShellRenderer.DefaultForegroundColor,
-					ShellRenderer.DefaultBackgroundColor,
+					new SolidColorBrush(ShellRenderer.DefaultBackgroundColor),
 					ShellRenderer.DefaultTitleColor);
 			}
 		}
 
-		protected virtual void SetColors(AToolbar toolbar, IShellToolbarTracker toolbarTracker, Color foreground, Color background, Color title)
+		protected virtual void SetColors(AToolbar toolbar, IShellToolbarTracker toolbarTracker, Color foreground, Brush background, Color title)
 		{
 			if (_disposed)
 				return;
@@ -64,16 +74,20 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (RuntimeFeature.IsMaterial3Enabled)
 			{
 				shellToolbar.BarTextColor = title ?? _originalNativeTitleColor;
-				shellToolbar.BarBackground = new SolidColorBrush(background ?? _originalNativeBackgroundColor);
+				shellToolbar.BarBackground = background ?? new SolidColorBrush(_originalNativeBackgroundColor);
 				shellToolbar.IconColor = foreground ?? _originalNativeTitleColor;
 				toolbarTracker.TintColor = foreground;
 			}
 			else
 			{
 				shellToolbar.BarTextColor = title ?? ShellRenderer.DefaultTitleColor;
-				shellToolbar.BarBackground = new SolidColorBrush(background ?? ShellRenderer.DefaultBackgroundColor);
+				shellToolbar.BarBackground = background ?? new SolidColorBrush(ShellRenderer.DefaultBackgroundColor);
 				shellToolbar.IconColor = foreground ?? ShellRenderer.DefaultForegroundColor;
 			}
+
+			AndroidSystemChrome.UpdateTopChrome(
+				toolbar,
+				background is null ? null : shellToolbar.BarBackground);
 		}
 
 		void RestoreNativeColors(AToolbar toolbar, IShellToolbarTracker toolbarTracker)
@@ -90,7 +104,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			shellToolbar.BarBackground = new SolidColorBrush(_originalNativeBackgroundColor);
 			shellToolbar.IconColor = _originalNativeTitleColor;
 			toolbarTracker.TintColor = _originalNativeTitleColor;
-
+			AndroidSystemChrome.UpdateTopChrome(toolbar, null);
 		}
 
 		// Shell.Toolbar.BarTextColor is a cross-platform Color, so unlike the TabLayout/BottomNavigationView
@@ -122,6 +136,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 
 			_originalAppearanceCaptured = true;
+		}
+
+		[Obsolete("Use SetColors(AToolbar, IShellToolbarTracker, Color, Brush, Color) instead.")]
+		protected virtual void SetColors(AToolbar toolbar, IShellToolbarTracker toolbarTracker, Color foreground, Color background, Color title)
+		{
+			SetColors(toolbar, toolbarTracker, foreground, background is not null ? new SolidColorBrush(background) : null, title);
 		}
 
 		#region IDisposable

@@ -20,17 +20,14 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateMinimum(this SeekBar seekBar, ISlider slider) => UpdateValue(seekBar, slider);
 
-		// TODO: Make this public in NET 11.
-		internal static void UpdateMinimum(this Slider mSlider, ISlider slider)
+		public static void UpdateMinimum(this Slider mSlider, ISlider slider)
 		{
-
 			mSlider.ValueFrom = (float)slider.Minimum;
 		}
 
 		public static void UpdateMaximum(this SeekBar seekBar, ISlider slider) => UpdateValue(seekBar, slider);
 
-		// TODO: Make this public in NET 11.
-		internal static void UpdateMaximum(this Slider mSlider, ISlider slider)
+		public static void UpdateMaximum(this Slider mSlider, ISlider slider)
 		{
 			mSlider.ValueTo = (float)slider.Maximum;
 		}
@@ -44,8 +41,7 @@ namespace Microsoft.Maui.Platform
 			seekBar.Progress = (int)((value - min) / (max - min) * PlatformMaxValue);
 		}
 
-		// TODO: Make this public in NET 11.
-		internal static void UpdateValue(this Slider mSlider, ISlider slider)
+		public static void UpdateValue(this Slider mSlider, ISlider slider)
 		{
 			if ((float)slider.Value != mSlider.Value)
 			{
@@ -62,8 +58,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		// TODO: Make this public in NET 11.
-		internal static void UpdateMinimumTrackColor(this Slider mSlider, ISlider slider)
+		public static void UpdateMinimumTrackColor(this Slider mSlider, ISlider slider)
 		{
 			if (slider.MinimumTrackColor is not null)
 			{
@@ -80,8 +75,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		// TODO: Make this public in NET 11.
-		internal static void UpdateMaximumTrackColor(this Slider mSlider, ISlider slider)
+		public static void UpdateMaximumTrackColor(this Slider mSlider, ISlider slider)
 		{
 			if (slider.MaximumTrackColor is not null)
 			{
@@ -92,8 +86,7 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateThumbColor(this SeekBar seekBar, ISlider slider) =>
 			seekBar.Thumb?.SetColorFilter(slider.ThumbColor, FilterMode.SrcIn);
 
-		// TODO: Make this public in NET 11.
-		internal static void UpdateThumbColor(this Slider mSlider, ISlider slider)
+		public static void UpdateThumbColor(this Slider mSlider, ISlider slider)
 		{
 			if (slider.ThumbImageSource is not null && slider.Handler is not null)
 			{
@@ -180,8 +173,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		// TODO: Make this public in NET 11.
-		internal static async Task UpdateThumbImageSourceAsync(this Slider mSlider, ISlider slider, IImageSourceServiceProvider provider)
+		public static async Task UpdateThumbImageSourceAsync(this Slider mSlider, ISlider slider, IImageSourceServiceProvider provider)
 		{
 			var context = mSlider.Context;
 

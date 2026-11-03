@@ -199,8 +199,17 @@ namespace Microsoft.Maui.Platform
 
 		static bool HasExplicitSafeAreaEdges(AView view)
 		{
-			return view is ICrossPlatformLayoutBacking { CrossPlatformLayout: ISafeAreaView2 safeAreaView } &&
-				safeAreaView.HasExplicitSafeAreaEdges;
+			if (view is not ICrossPlatformLayoutBacking { CrossPlatformLayout: { } crossPlatformLayout })
+			{
+				return false;
+			}
+
+			return crossPlatformLayout switch
+			{
+				ISafeAreaView2 safeAreaView2 => safeAreaView2.HasExplicitSafeAreaEdges,
+				ISafeAreaElement => true,
+				_ => false
+			};
 		}
 
 		/// <summary>
@@ -274,7 +283,11 @@ namespace Microsoft.Maui.Platform
 
 		public virtual WindowInsetsCompat? OnApplyWindowInsets(AView? v, WindowInsetsCompat? insets)
 		{
-			if (insets is null || !insets.HasInsets || v is null ||
+			// Empty insets still reach a tracked view: once the keyboard closes on a window with
+			// no system bars (immersive, tablet in desktop windowing), every inset is zero, and
+			// skipping the dispatch would leave the keyboard-height padding on the view for good.
+			if (insets is null || v is null ||
+				(!insets.HasInsets && !IsViewTracked(v)) ||
 				(IsImeAnimating && !_viewsAttachedDuringImeAnimation.Contains(v)))
 			{
 				if (IsImeAnimating && v is not null)
@@ -414,10 +427,10 @@ namespace Microsoft.Maui.Platform
 
 		public bool HasTrackedView => _trackedViews.Count > 0;
 
-        public bool IsViewTracked(AView view)
-        {
-            return _trackedViews.Contains(view);
-        }
+		public bool IsViewTracked(AView view)
+		{
+			return _trackedViews.Contains(view);
+		}
 		public void ResetView(AView view)
 		{
 			if (view is IHandleWindowInsets customHandler)

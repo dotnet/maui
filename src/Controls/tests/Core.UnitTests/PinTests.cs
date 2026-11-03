@@ -114,5 +114,64 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.True(signaled);
 		}
+
+		[Fact]
+		public void ImageSourceDefaultsToNull()
+		{
+			var pin = new Pin();
+			Assert.Null(pin.ImageSource);
+		}
+
+		[Fact]
+		public void ImageSourceCanBeSet()
+		{
+			var pin = new Pin
+			{
+				ImageSource = ImageSource.FromFile("test.png")
+			};
+
+			Assert.NotNull(pin.ImageSource);
+			Assert.IsType<FileImageSource>(pin.ImageSource);
+		}
+
+		[Fact]
+		public void ImageSourcePropertyChanged()
+		{
+			var pin = new Pin();
+
+			bool signaled = false;
+			pin.PropertyChanged += (sender, args) =>
+			{
+				if (args.PropertyName == "ImageSource")
+					signaled = true;
+			};
+
+			pin.ImageSource = ImageSource.FromFile("test.png");
+
+			Assert.True(signaled);
+		}
+
+		[Fact]
+		public void ImageSourceBindableProperty()
+		{
+			var pin = new Pin();
+			pin.SetValue(Pin.ImageSourceProperty, ImageSource.FromFile("bound.png"));
+
+			Assert.NotNull(pin.ImageSource);
+			Assert.IsType<FileImageSource>(pin.ImageSource);
+		}
+
+		[Fact]
+		public void IMapPinImageSourceReturnsValue()
+		{
+			var pin = new Pin
+			{
+				ImageSource = ImageSource.FromFile("test.png")
+			};
+
+			// Access through interface to test explicit implementation
+			var mapPin = (Microsoft.Maui.Maps.IMapPin)pin;
+			Assert.NotNull(mapPin.ImageSource);
+		}
 	}
 }

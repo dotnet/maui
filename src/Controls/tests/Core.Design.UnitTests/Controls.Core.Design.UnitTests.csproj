@@ -9,7 +9,7 @@
   <ItemGroup>
     <Reference Include="System.Xaml" />
     <PackageReference Include="xunit" Version="$(XunitPackageVersion)" />
-    <PackageReference Include="Microsoft.VisualStudio.DesignTools.Extensibility" Version="17.5.33428.366" />
+    <PackageReference Include="Microsoft.VisualStudio.DesignTools.Extensibility" Version="17.10.34916.79" />
     <ProjectReference Include="..\..\src\Core.Design\Controls.Core.Design.csproj" />
   </ItemGroup>
   <ItemGroup>

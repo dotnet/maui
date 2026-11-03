@@ -59,12 +59,6 @@
     <Compile Remove="**\*.windows.cs" />
     <None Include="**\*.windows.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(_MauiTargetPlatformIsTizen)' != 'True' ">
-    <Compile Remove="**\**\*.Tizen.cs" />
-    <None Include="**\**\*.Tizen.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
-    <Compile Remove="**\Tizen\**\*.cs" />
-    <None Include="**\Tizen\**\*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
-  </ItemGroup>
   <ItemGroup>
     <Compile Remove="bin\**;obj\**" />
     <None Remove="bin\**;obj\**" />
@@ -99,11 +93,6 @@
   <!-- Mac Catalyst -->
   <PropertyGroup Condition=" '$(_MauiTargetPlatformIsMacCatalyst)' == 'True' ">
     <DefineConstants>$(DefineConstants);MACCATALYST;IOS</DefineConstants>
-  </PropertyGroup>
-
-  <!-- Tizen -->
-  <PropertyGroup Condition=" '$(_MauiTargetPlatformIsTizen)' == 'True' ">
-    <DefineConstants>$(DefineConstants);TIZEN</DefineConstants>
   </PropertyGroup>
 
   <!-- Windows -->
