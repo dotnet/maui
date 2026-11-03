@@ -81,10 +81,10 @@ namespace Microsoft.Maui.Platform
         /// </summary>
         public UITraitCollection TraitCollection => _tabBarController.TraitCollection;
 
-        public TabBarControllerManager(ITabBarManagerDelegate managerDelegate, bool animateTabSwitches = true)
+        public TabBarControllerManager(ITabBarManagerDelegate managerDelegate)
         {
             _delegate = managerDelegate ?? throw new ArgumentNullException(nameof(managerDelegate));
-            _tabBarController = new MauiTabBarController(this, animateTabSwitches);
+            _tabBarController = new MauiTabBarController(this);
         }
 
         /// <summary>
@@ -153,12 +153,10 @@ namespace Microsoft.Maui.Platform
         sealed class MauiTabBarController : UITabBarController
         {
             readonly WeakReference<TabBarControllerManager> _managerRef;
-            readonly bool _animateTabSwitches;
 
-            public MauiTabBarController(TabBarControllerManager manager, bool animateTabSwitches)
+            public MauiTabBarController(TabBarControllerManager manager)
             {
                 _managerRef = new WeakReference<TabBarControllerManager>(manager);
-                _animateTabSwitches = animateTabSwitches;
 
                 // Subscribe to tab reordering events
                 FinishedCustomizingViewControllers += HandleFinishedCustomizingViewControllers;
@@ -178,19 +176,10 @@ namespace Microsoft.Maui.Platform
                 get => base.SelectedViewController;
                 set
                 {
-                    if (!_animateTabSwitches && OperatingSystem.IsIOSVersionAtLeast(18))
+                    if (OperatingSystem.IsIOSVersionAtLeast(18))
                     {
                         // UIKit's tab fade exposes the controller background between opaque pages.
-                        var animationsEnabled = UIView.AnimationsEnabled;
-                        UIView.AnimationsEnabled = false;
-                        try
-                        {
-                            base.SelectedViewController = value;
-                        }
-                        finally
-                        {
-                            UIView.AnimationsEnabled = animationsEnabled;
-                        }
+                        UIView.PerformWithoutAnimation(() => base.SelectedViewController = value);
                     }
                     else
                     {

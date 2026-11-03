@@ -62,7 +62,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
         protected override UIView CreatePlatformElement()
         {
-            _tabManager = new TabBarControllerManager(managerDelegate: this, animateTabSwitches: false);
+            _tabManager = new TabBarControllerManager(managerDelegate: this);
             _tabBarController = _tabManager.TabBarController;
             return _tabManager.View;
         }
