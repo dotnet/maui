@@ -221,6 +221,8 @@ namespace Microsoft.Maui.Platform
 				_shadowCanvasCachedChildren.RemoveAt(0);
 			}
 
+			CachedChildren.Remove(_shadowCanvas);
+
 			_shadowVisual?.Dispose();
 			_shadowVisual = null;
 
