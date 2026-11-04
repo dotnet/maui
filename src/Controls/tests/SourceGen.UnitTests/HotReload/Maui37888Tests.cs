@@ -18,10 +18,212 @@ public class Maui37888Tests
 	const string IncrementalHotReloadSwitch = "Microsoft.Maui.RuntimeFeature.IsIncrementalHotReloadEnabled";
 	const string ResourceKey = "ExploratoryCaption";
 
+	[MetadataUpdateTheory]
+	[InlineData(false, false)]
+	[InlineData(true, false)]
+	[InlineData(false, true)]
+	[InlineData(true, true)]
+	public void AddedResourceReferencesRetainedExplicitSubtree(bool resourceOwner, bool namedCaption)
+	{
+		const string rootClass = "TestMaui37888.MainPage";
+		const string codeBehind = """
+			namespace TestMaui37888;
+			public partial class MainPage
+			{
+				public MainPage() => InitializeComponent();
+			}
+			""";
+		string Xaml(bool added) => $$"""
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="{{rootClass}}">
+			  <ContentPage.Resources>
+			    <ResourceDictionary>
+			      <Label x:Key="Existing" x:Name="ResourceOwner" Text="Resource owner" />
+			      {{(added ? $$"""<Label x:Key="Caption" {{(namedCaption ? """x:Name="CaptionName" """ : "")}} Text="{Binding Source={x:Reference {{(resourceOwner ? "ResourceOwner" : "Owner")}}}, Path=Text}" />""" : "")}}
+			    </ResourceDictionary>
+			  </ContentPage.Resources>
+			  <ContentPage.Content>
+			    <Label x:Name="Owner" Text="Content owner" />
+			  </ContentPage.Content>
+			</ContentPage>
+			""";
+		using var harness = new XamlHotReloadTestHarness(nameof(AddedResourceReferencesRetainedExplicitSubtree), rootClass, codeBehind);
+		var generations = harness.Generate(Xaml(false), Xaml(true));
+		harness.RunLive(generations, live =>
+		{
+			var page = live.GetInstance<ContentPage>();
+			var content = page.Content;
+			var existing = page.Resources["Existing"];
+			live.ApplyUpdate<ContentPage>(1);
+			Assert.Same(content, page.Content);
+			Assert.Same(existing, page.Resources["Existing"]);
+			Assert.Equal(resourceOwner ? "Resource owner" : "Content owner", Assert.IsType<Label>(page.Resources["Caption"]).Text);
+		});
+	}
+
+	[MetadataUpdateTheory]
+	[InlineData("net11.0-android", false)]
+	[InlineData("net11.0-ios", false)]
+	[InlineData("net11.0-maccatalyst", false)]
+	[InlineData("net11.0-android", true)]
+	public void AddedOnPlatformResourceUsesSelectedValue(string targetFramework, bool dictionaryRoot)
+	{
+		const string rootClass = "TestMaui37888.MainPage";
+		const string codeBehind = """
+			namespace TestMaui37888;
+			public partial class MainPage
+			{
+				public MainPage() => InitializeComponent();
+			}
+			""";
+		string Xaml(bool added)
+		{
+			var resources = $$"""
+				<x:String x:Key="Existing">Unchanged</x:String>
+				{{(added ? """<OnPlatform x:Key="Accent" x:TypeArguments="Color" Default="Red"><On Platform="Android,iOS,MacCatalyst" Value="Blue" /></OnPlatform>""" : "")}}
+				""";
+			return $$"""
+				<{{(dictionaryRoot ? "ResourceDictionary" : "ContentPage")}}
+				    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+				    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="{{rootClass}}">
+				  {{(dictionaryRoot ? resources : $"<ContentPage.Resources><ResourceDictionary>{resources}</ResourceDictionary></ContentPage.Resources>")}}
+				</{{(dictionaryRoot ? "ResourceDictionary" : "ContentPage")}}>
+				""";
+		}
+		IReadOnlyDictionary<string, XamlHotReloadDocument> Snapshot(bool added) =>
+			new Dictionary<string, XamlHotReloadDocument> { ["MainPage.xaml"] = new(Xaml(added), TargetFramework: targetFramework) };
+		using var harness = new XamlHotReloadTestHarness(nameof(AddedOnPlatformResourceUsesSelectedValue), rootClass, codeBehind);
+		var generations = harness.GenerateDocuments(Snapshot(false), Snapshot(true));
+		harness.RunLive(generations, live =>
+		{
+			if (dictionaryRoot)
+			{
+				var dictionary = live.GetInstance<Controls.ResourceDictionary>();
+				live.ApplyUpdate<Controls.ResourceDictionary>(1);
+				Assert.Equal(Colors.Blue, Assert.IsType<Color>(dictionary["Accent"]));
+			}
+			else
+			{
+				var page = live.GetInstance<ContentPage>();
+				live.ApplyUpdate<ContentPage>(1);
+				Assert.Equal(Colors.Blue, Assert.IsType<Color>(page.Resources["Accent"]));
+			}
+		});
+	}
+
+	[MetadataUpdateFact]
+	public void AddedNamedResourceRegistersLiveNameAndCompatibleField()
+	{
+		const string rootClass = "TestMaui37888.MainPage";
+		const string codeBehind = """
+			namespace TestMaui37888;
+			public partial class MainPage
+			{
+				public MainPage() => InitializeComponent();
+				public Microsoft.Maui.Controls.Label CaptionField => NamedCaption;
+			}
+			""";
+		string Xaml(int generation) => $$"""
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="{{rootClass}}">
+			  <ContentPage.Resources>
+			    <ResourceDictionary>
+			      <x:String x:Key="Existing">Unchanged</x:String>
+			      {{(generation >= 1 ? """
+			        <Label x:Key="Caption" x:Name="NamedCaption" Text="Added caption">
+			          <Label.Resources>
+			            <DataTemplate x:Key="NestedTemplate"><Label x:Name="NamedCaption" /></DataTemplate>
+			            <Style x:Key="NestedStyle" TargetType="ContentView">
+			              <Setter Property="Content"><Label x:Name="NamedCaption" /></Setter>
+			            </Style>
+			          </Label.Resources>
+			        </Label>
+			        """ : "")}}
+			      {{(generation >= 2 ? """<Label x:Key="Reference" Text="{Binding Source={x:Reference NamedCaption}, Path=Text}" />""" : "")}}
+			    </ResourceDictionary>
+			  </ContentPage.Resources>
+			  {{(generation == 0 ? """<Label x:Name="NamedCaption" />""" : "")}}
+			</ContentPage>
+			""";
+		using var harness = new XamlHotReloadTestHarness(nameof(AddedNamedResourceRegistersLiveNameAndCompatibleField), rootClass, codeBehind);
+		var generations = harness.Generate(Xaml(0), Xaml(1), Xaml(2));
+		harness.RunLive(generations, live =>
+		{
+			var page = live.GetInstance<ContentPage>();
+			live.ApplyUpdate<ContentPage>(1);
+			var caption = Assert.IsType<Label>(page.Resources["Caption"]);
+			Assert.Same(caption, page.FindByName<Label>("NamedCaption"));
+			Assert.Same(caption, page.GetType().GetProperty("CaptionField")!.GetValue(page));
+			var templateContent = Assert.IsType<Label>(Assert.IsType<DataTemplate>(caption.Resources["NestedTemplate"]).CreateContent());
+			Assert.NotSame(caption, templateContent);
+			_ = caption.Resources["NestedStyle"];
+			Assert.Same(caption, page.FindByName<Label>("NamedCaption"));
+			Assert.Same(caption, page.GetType().GetProperty("CaptionField")!.GetValue(page));
+			live.ApplyUpdate<ContentPage>(2);
+			Assert.Equal("Added caption", Assert.IsType<Label>(page.Resources["Reference"]).Text);
+		});
+	}
+
+	[MetadataUpdateTheory]
+	[InlineData(false, false)]
+	[InlineData(false, true)]
+	[InlineData(true, false)]
+	[InlineData(true, true)]
+	public void ResourceAdditionsPreserveConfiguredExistingResources(bool explicitDictionary, bool realizeExisting)
+	{
+		const string rootClass = "TestMaui37888.MainPage";
+		const string codeBehind = """
+			namespace TestMaui37888;
+			public class Token
+			{
+				public static int Created;
+				public Token() => Created++;
+				public string Value { get; set; }
+			}
+			public partial class MainPage
+			{
+				public MainPage() => InitializeComponent();
+				public int Created => Token.Created;
+				public string ExistingValue => ((Token)Resources["Existing"]).Value;
+			}
+			""";
+		string Xaml(bool added)
+		{
+			var resources = $$"""
+				<local:Token x:Key="Existing" Value="Configured" />
+				{{(added ? """<Style TargetType="Label"><Setter Property="TextColor" Value="Red" /></Style>""" : "")}}
+				""";
+			return $$"""
+				<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+				             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+				             xmlns:local="clr-namespace:TestMaui37888" x:Class="{{rootClass}}">
+				  <ContentPage.Resources>
+				    {{(explicitDictionary ? $"<ResourceDictionary>{resources}</ResourceDictionary>" : resources)}}
+				  </ContentPage.Resources>
+				  <Label />
+				</ContentPage>
+				""";
+		}
+		using var harness = new XamlHotReloadTestHarness(nameof(ResourceAdditionsPreserveConfiguredExistingResources), rootClass, codeBehind);
+		var generations = harness.Generate(Xaml(false), Xaml(true));
+		harness.RunLive(generations, live =>
+		{
+			var page = live.GetInstance<ContentPage>();
+			var existing = realizeExisting ? page.Resources["Existing"] : null;
+			live.ApplyUpdate<ContentPage>(1);
+			Assert.Equal(realizeExisting ? 1 : 0, page.GetType().GetProperty("Created")!.GetValue(page));
+			if (realizeExisting)
+				Assert.Same(existing, page.Resources["Existing"]);
+			Assert.Equal("Configured", page.GetType().GetProperty("ExistingValue")!.GetValue(page));
+			Assert.Equal(Colors.Red, Assert.IsType<Label>(page.Content).TextColor);
+		});
+	}
+
 	[Theory]
 	[InlineData(false, false)]
 	[InlineData(false, true)]
 	[InlineData(true, false)]
+	[InlineData(true, true)]
 	public void AddedResourceRetainsOuterBindingContext(bool expressionBinding, bool referenceChild)
 		=> VerifyAddedResourceBindingContext(expressionBinding, referenceChild, applyUpdate: false);
 
@@ -29,6 +231,7 @@ public class Maui37888Tests
 	[InlineData(false, false)]
 	[InlineData(false, true)]
 	[InlineData(true, false)]
+	[InlineData(true, true)]
 	public void AddedResourceResolvesOuterBindingAtRuntime(bool expressionBinding, bool referenceChild)
 		=> VerifyAddedResourceBindingContext(expressionBinding, referenceChild, applyUpdate: true);
 
@@ -53,7 +256,7 @@ public class Maui37888Tests
 			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
 			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 			             xmlns:local="clr-namespace:TestMaui37888"
-			             x:Class="{{rootClass}}" x:Name="Page" x:DataType="local:Person">
+			             x:Class="{{rootClass}}" x:Name="Page" x:DataType="{{(expressionBinding && referenceChild ? "{x:Type local:Person}" : "local:Person")}}">
 			  <ContentPage.Resources>
 			    <ResourceDictionary>
 			      <x:String x:Key="Existing">Unchanged</x:String>

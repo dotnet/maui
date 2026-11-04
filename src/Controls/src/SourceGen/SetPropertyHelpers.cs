@@ -157,6 +157,10 @@ static class SetPropertyHelpers
 	/// </summary>
 	public static void AddLazyResourceToResourceDictionary(IndentedTextWriter writer, ILocalValue parentVar, ElementNode node, SourceGenContext context, bool useLocalFactory = false)
 	{
+		// Nested resources need the same metadata-update-safe factory form as the outer addition.
+		for (SourceGenContext? enclosingContext = context; enclosingContext != null; enclosingContext = enclosingContext.ParentContext)
+			useLocalFactory |= enclosingContext.UseLocalResourceFactories;
+
 		// Get the type of the resource
 		if (!node.XmlType.TryResolveTypeSymbol(null, context.Compilation, context.XmlnsCache, context.TypeCache, out var type) || type is null)
 			return;

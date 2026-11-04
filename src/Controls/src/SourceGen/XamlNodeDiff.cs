@@ -1266,7 +1266,7 @@ static class XamlNodeDiff
 	/// Compares the effective string values of two property nodes.
 	/// Returns <see langword="true"/> if they are considered equal (no change).
 	/// </summary>
-	static bool NodeValueEquals(INode a, INode b)
+	internal static bool NodeValueEquals(INode a, INode b)
 	{
 		if (a is ValueNode va && b is ValueNode vb)
 			return StringEquals(va.Value?.ToString(), vb.Value?.ToString());
