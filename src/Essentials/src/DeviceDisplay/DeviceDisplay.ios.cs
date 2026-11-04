@@ -26,10 +26,10 @@ namespace Microsoft.Maui.Devices
 		static extern void CGDisplayModeRelease(IntPtr mode);
 
 		[DllImport(Constants.CoreGraphicsLibrary)]
-		static extern nuint CGDisplayModeGetWidth(IntPtr mode);
+		static extern nuint CGDisplayModeGetPixelWidth(IntPtr mode);
 
 		[DllImport(Constants.CoreGraphicsLibrary)]
-		static extern nuint CGDisplayModeGetHeight(IntPtr mode);
+		static extern nuint CGDisplayModeGetPixelHeight(IntPtr mode);
 
 		[DllImport(Constants.CoreGraphicsLibrary)]
 		static extern double CGDisplayModeGetRefreshRate(IntPtr mode);
@@ -93,8 +93,9 @@ namespace Microsoft.Maui.Devices
 
 			try
 			{
-				var width = (double)CGDisplayModeGetWidth(mode);
-				var height = (double)CGDisplayModeGetHeight(mode);
+				// DisplayInfo dimensions are physical pixels, not the mode's logical size.
+				var width = (double)CGDisplayModeGetPixelWidth(mode);
+				var height = (double)CGDisplayModeGetPixelHeight(mode);
 				var refreshRate = CGDisplayModeGetRefreshRate(mode);
 
 				// Get rotation from Core Graphics
