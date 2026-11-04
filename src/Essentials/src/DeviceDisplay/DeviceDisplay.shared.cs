@@ -110,6 +110,9 @@ namespace Microsoft.Maui.Devices
 		{
 			add
 			{
+				if (value is null)
+					return;
+
 				if (MainDisplayInfoChangedInternal is null)
 				{
 					SetCurrent(MainDisplayInfo);
