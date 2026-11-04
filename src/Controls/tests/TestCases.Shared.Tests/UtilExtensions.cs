@@ -36,6 +36,32 @@ namespace Microsoft.Maui.TestCases.Tests
 			}
 		}
 
+		/// <summary>
+		/// Ignores the current test only when running in the Windows CollectionView1 configuration.
+		/// </summary>
+		public static void IgnoreOnWindowsCV1(this UITestContextBase testBase, string reason)
+		{
+			if (testBase.Device == TestDevice.Windows &&
+				Environment.GetEnvironmentVariable("TEST_CONFIGURATION_ARGS")?.Contains(
+					"UseWindowsCV1:true", StringComparison.OrdinalIgnoreCase) == true)
+			{
+				Assert.Ignore(reason);
+			}
+		}
+
+		/// <summary>
+		/// Ignores the current test only when running in the Windows CollectionView2 configuration.
+		/// </summary>
+		public static void IgnoreOnWindowsCV2(this UITestContextBase testBase, string reason)
+		{
+			if (testBase.Device == TestDevice.Windows &&
+				Environment.GetEnvironmentVariable("TEST_CONFIGURATION_ARGS")?.Contains(
+					"UseWindowsCV1:true", StringComparison.OrdinalIgnoreCase) != true)
+			{
+				Assert.Ignore(reason);
+			}
+		}
+
 		public static void Back(this UITestContextBase testBase)
 		{
 			if (testBase.Device == TestDevice.Android)
