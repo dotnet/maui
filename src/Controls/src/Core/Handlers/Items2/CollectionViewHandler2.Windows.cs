@@ -41,7 +41,7 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 	Action<int>? _containerPreparedHandler;
 
 
-	internal override bool PreventGestureBubbling => true;
+	internal override bool PreventGestureBubbling => VirtualView.SelectionMode is not SelectionMode.None;
 
 	// Cache for MeasureFirstItem optimization
 	global::Windows.Foundation.Size _firstItemMeasuredSize = global::Windows.Foundation.Size.Empty;
