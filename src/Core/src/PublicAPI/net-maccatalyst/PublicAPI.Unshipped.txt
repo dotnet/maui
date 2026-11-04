@@ -1,3 +1,1 @@
 #nullable enable
-override Microsoft.Maui.Platform.MauiPageControl.SizeThatFits(CoreGraphics.CGSize size) -> CoreGraphics.CGSize
-override Microsoft.Maui.Platform.PlatformTouchGraphicsView.MovedToWindow() -> void

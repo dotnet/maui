@@ -1975,6 +1975,9 @@ Microsoft.Maui.Platform.MauiMaterialPicker
 Microsoft.Maui.Platform.MauiMaterialPicker.MauiMaterialPicker(Android.Content.Context! context) -> void
 Microsoft.Maui.Platform.MauiMaterialPickerBase
 Microsoft.Maui.Platform.MauiMaterialPickerBase.MauiMaterialPickerBase(Android.Content.Context! context) -> void
+Microsoft.Maui.Platform.MauiMaterialPickerTextInputLayout
+Microsoft.Maui.Platform.MauiMaterialPickerTextInputLayout.MauiMaterialPickerTextInputLayout(Android.Content.Context! context) -> void
+Microsoft.Maui.Platform.MauiMaterialPickerTextInputLayout.Picker.get -> Microsoft.Maui.Platform.MauiMaterialPicker!
 Microsoft.Maui.Platform.MauiMaterialSearchBarTextInputEditText
 Microsoft.Maui.Platform.MauiMaterialSearchBarTextInputEditText.MauiMaterialSearchBarTextInputEditText(Android.Content.Context! context) -> void
 Microsoft.Maui.Platform.MauiMaterialSearchBarTextInputEditText.SelectionChanged -> System.EventHandler?
@@ -2578,6 +2581,9 @@ override Microsoft.Maui.Handlers.GraphicsViewHandler.DisconnectHandler(Microsoft
 override Microsoft.Maui.Handlers.HybridWebViewHandler.ConnectHandler(Android.Webkit.WebView! platformView) -> void
 override Microsoft.Maui.Handlers.HybridWebViewHandler.CreatePlatformView() -> Android.Webkit.WebView!
 override Microsoft.Maui.Handlers.HybridWebViewHandler.DisconnectHandler(Android.Webkit.WebView! platformView) -> void
+override Microsoft.Maui.Handlers.HybridWebViewHandler.NeedsContainer.get -> bool
+override Microsoft.Maui.Handlers.HybridWebViewHandler.RemoveContainer() -> void
+override Microsoft.Maui.Handlers.HybridWebViewHandler.SetupContainer() -> void
 override Microsoft.Maui.Handlers.ImageButtonHandler.ConnectHandler(Google.Android.Material.ImageView.ShapeableImageView! platformView) -> void
 override Microsoft.Maui.Handlers.ImageButtonHandler.CreatePlatformView() -> Google.Android.Material.ImageView.ShapeableImageView!
 override Microsoft.Maui.Handlers.ImageButtonHandler.DisconnectHandler(Google.Android.Material.ImageView.ShapeableImageView! platformView) -> void
@@ -2621,9 +2627,9 @@ override Microsoft.Maui.Handlers.OpenWindowRequest.ToString() -> string!
 override Microsoft.Maui.Handlers.PickerHandler.ConnectHandler(Microsoft.Maui.Platform.MauiPicker! platformView) -> void
 override Microsoft.Maui.Handlers.PickerHandler.CreatePlatformView() -> Microsoft.Maui.Platform.MauiPicker!
 override Microsoft.Maui.Handlers.PickerHandler.DisconnectHandler(Microsoft.Maui.Platform.MauiPicker! platformView) -> void
-override Microsoft.Maui.Handlers.PickerHandler2.ConnectHandler(Microsoft.Maui.Platform.MauiMaterialPicker! platformView) -> void
-override Microsoft.Maui.Handlers.PickerHandler2.CreatePlatformView() -> Microsoft.Maui.Platform.MauiMaterialPicker!
-override Microsoft.Maui.Handlers.PickerHandler2.DisconnectHandler(Microsoft.Maui.Platform.MauiMaterialPicker! platformView) -> void
+override Microsoft.Maui.Handlers.PickerHandler2.ConnectHandler(Microsoft.Maui.Platform.MauiMaterialPickerTextInputLayout! platformView) -> void
+override Microsoft.Maui.Handlers.PickerHandler2.CreatePlatformView() -> Microsoft.Maui.Platform.MauiMaterialPickerTextInputLayout!
+override Microsoft.Maui.Handlers.PickerHandler2.DisconnectHandler(Microsoft.Maui.Platform.MauiMaterialPickerTextInputLayout! platformView) -> void
 override Microsoft.Maui.Handlers.ProgressBarHandler.CreatePlatformView() -> Android.Widget.ProgressBar!
 override Microsoft.Maui.Handlers.ProgressBarHandler2.CreatePlatformView() -> Google.Android.Material.ProgressIndicator.LinearProgressIndicator!
 override Microsoft.Maui.Handlers.RadioButtonHandler.ConnectHandler(Android.Views.View! platformView) -> void
@@ -2684,6 +2690,9 @@ override Microsoft.Maui.Handlers.ViewHandler<TVirtualView, TPlatformView>.Remove
 override Microsoft.Maui.Handlers.ViewHandler<TVirtualView, TPlatformView>.SetupContainer() -> void
 override Microsoft.Maui.Handlers.WebViewHandler.CreatePlatformView() -> Android.Webkit.WebView!
 override Microsoft.Maui.Handlers.WebViewHandler.DisconnectHandler(Android.Webkit.WebView! platformView) -> void
+override Microsoft.Maui.Handlers.WebViewHandler.NeedsContainer.get -> bool
+override Microsoft.Maui.Handlers.WebViewHandler.RemoveContainer() -> void
+override Microsoft.Maui.Handlers.WebViewHandler.SetupContainer() -> void
 override Microsoft.Maui.Handlers.WebViewHandler.SetVirtualView(Microsoft.Maui.IView! view) -> void
 override Microsoft.Maui.Handlers.WindowHandler.ConnectHandler(Android.App.Activity! platformView) -> void
 override Microsoft.Maui.Handlers.WindowHandler.CreatePlatformElement() -> Android.App.Activity!
@@ -2779,6 +2788,7 @@ override Microsoft.Maui.Platform.MauiMaterialEditText.OnMeasure(int widthMeasure
 override Microsoft.Maui.Platform.MauiMaterialEditText.OnSelectionChanged(int selStart, int selEnd) -> void
 override Microsoft.Maui.Platform.MauiMaterialPicker.Dispose(bool disposing) -> void
 override Microsoft.Maui.Platform.MauiMaterialPickerBase.DefaultMovementMethod.get -> Android.Text.Method.IMovementMethod?
+override Microsoft.Maui.Platform.MauiMaterialPickerBase.OnMeasure(int widthMeasureSpec, int heightMeasureSpec) -> void
 override Microsoft.Maui.Platform.MauiMaterialPickerBase.OnTouchEvent(Android.Views.MotionEvent? e) -> bool
 override Microsoft.Maui.Platform.MauiMaterialSearchBarTextInputEditText.OnMeasure(int widthMeasureSpec, int heightMeasureSpec) -> void
 override Microsoft.Maui.Platform.MauiMaterialSearchBarTextInputEditText.OnSelectionChanged(int selStart, int selEnd) -> void
@@ -3224,6 +3234,7 @@ static Microsoft.Maui.Handlers.PickerHandler.MapVerticalTextAlignment(Microsoft.
 static Microsoft.Maui.Handlers.PickerHandler2.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IPicker!, Microsoft.Maui.Handlers.PickerHandler2!>!
 static Microsoft.Maui.Handlers.PickerHandler2.MapBackground(Microsoft.Maui.Handlers.PickerHandler2! handler, Microsoft.Maui.IPicker! picker) -> void
 static Microsoft.Maui.Handlers.PickerHandler2.MapCharacterSpacing(Microsoft.Maui.Handlers.PickerHandler2! handler, Microsoft.Maui.IPicker! picker) -> void
+static Microsoft.Maui.Handlers.PickerHandler2.MapFlowDirection(Microsoft.Maui.Handlers.PickerHandler2! handler, Microsoft.Maui.IPicker! picker) -> void
 static Microsoft.Maui.Handlers.PickerHandler2.MapFocus(Microsoft.Maui.Handlers.PickerHandler2! handler, Microsoft.Maui.IPicker! picker, object? args) -> void
 static Microsoft.Maui.Handlers.PickerHandler2.MapFont(Microsoft.Maui.Handlers.PickerHandler2! handler, Microsoft.Maui.IPicker! picker) -> void
 static Microsoft.Maui.Handlers.PickerHandler2.MapHorizontalTextAlignment(Microsoft.Maui.Handlers.PickerHandler2! handler, Microsoft.Maui.IPicker! picker) -> void
