@@ -52,13 +52,15 @@ public partial class ViewHandler
 
 		wrapper.Child = PlatformView;
 
-		// Mappers skip default values while connecting, so replay what the retained wrapper owns to avoid stale state.
-		wrapper.RenderTransform = null;
-		wrapper.Projection = null;
-		wrapper.UpdateTransformation(virtualView);
-		wrapper.UpdateVisibility(virtualView);
-		wrapper.UpdateClip(virtualView);
-		wrapper.UpdateShadow(virtualView);
+		// Reset to a fresh wrapper's state so the mappers (which skip defaults while connecting) stay authoritative.
+		wrapper.ClearValue(UIElement.VisibilityProperty);
+		wrapper.ClearValue(UIElement.OpacityProperty);
+		wrapper.ClearValue(UIElement.RenderTransformProperty);
+		wrapper.ClearValue(UIElement.RenderTransformOriginProperty);
+		wrapper.ClearValue(UIElement.ProjectionProperty);
+		wrapper.Clip = null;
+		wrapper.Shadow = null;
+
 	}
 
 	public static void MapTranslationX(IViewHandler handler, IView view)
