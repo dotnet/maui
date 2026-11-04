@@ -85,7 +85,7 @@ namespace Microsoft.Maui.DeviceTests
 				shell.FlyoutHeader = layout;
 				shell.BindingContext = new { DisplayName = default(string), OrgName = default(string) };
 			},
-			async (shell, handler) =>
+			async shell =>
 			{
 				await OnFrameSetToNotEmpty(layout);
 
