@@ -176,15 +176,7 @@ namespace Microsoft.Maui.Platform
                 get => base.SelectedViewController;
                 set
                 {
-                    if (OperatingSystem.IsIOSVersionAtLeast(18))
-                    {
-                        // UIKit's tab fade exposes the controller background between opaque pages.
-                        UIView.PerformWithoutAnimation(() => base.SelectedViewController = value);
-                    }
-                    else
-                    {
-                        base.SelectedViewController = value;
-                    }
+                    base.SelectedViewController = value;
 
                     // If the selected view controller is the "More" navigation controller,
                     // do not update the current page

@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Controls.Handlers
         readonly Dictionary<UITableViewCell, UIColor?> _defaultMoreTextLabelTextColors = new();
         ShellSection? _currentSection;
         Page? _displayedPage;
-
+        UIColor? _defaultContentBackgroundColor;
         internal IShellSectionRenderer? CurrentRenderer { get; private set; }
 
         IShellItemController ShellItemController => (IShellItemController)VirtualView;
@@ -70,7 +70,7 @@ namespace Microsoft.Maui.Controls.Handlers
         protected override void ConnectHandler(UIView platformView)
         {
             base.ConnectHandler(platformView);
-
+            _defaultContentBackgroundColor = platformView.BackgroundColor;
             _shellContext = VirtualView!.FindParentOfType<Shell>()?.Handler as IShellContext;
 
             _appearanceTracker = _shellContext?.CreateTabBarAppearanceTracker();
@@ -486,6 +486,12 @@ namespace Microsoft.Maui.Controls.Handlers
             {
                 UpdateTabBarHidden();
             }
+            else if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName ||
+            e.PropertyName == VisualElement.BackgroundProperty.PropertyName ||
+            e.PropertyName == VisualElement.OpacityProperty.PropertyName)
+            {
+                ShellItemRenderer.UpdateContentBackground(PlatformView, _displayedPage, _defaultContentBackgroundColor);
+            }
         }
 
         #endregion
@@ -625,6 +631,7 @@ namespace Microsoft.Maui.Controls.Handlers
                 UpdateLargeTitles();
                 UpdateNavBarHidden();
             }
+            ShellItemRenderer.UpdateContentBackground(PlatformView, _displayedPage, _defaultContentBackgroundColor);
         }
 
         #endregion
