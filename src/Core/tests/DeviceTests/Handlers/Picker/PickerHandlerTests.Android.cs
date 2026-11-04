@@ -40,10 +40,8 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyInitValue(picker, () => picker.TitleColor, GetNativeTitleColor, picker.TitleColor);
 		}
 
-		[Theory(DisplayName = "Clearing Title Color Restores Native Hint Colors")]
-		[InlineData(false)]
-		[InlineData(true)]
-		public async Task ClearingTitleColorRestoresNativeHintColors(bool useMaterialPicker)
+		[Fact(DisplayName = "Clearing Title Color Restores Native Hint Colors")]
+		public async Task ClearingTitleColorRestoresNativeHintColors()
 		{
 			await InvokeOnMainThreadAsync(() =>
 			{
@@ -51,8 +49,8 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					Title = "Select an Item"
 				};
-				var handler = CreateHandler(picker, useMaterialPicker ? typeof(PickerHandler2) : typeof(PickerHandler));
-				var platformPicker = Assert.IsAssignableFrom<EditText>(handler.PlatformView);
+				var handler = CreateHandler(picker);
+				var platformPicker = handler.PlatformView;
 				var defaultHintTextColors = platformPicker.HintTextColors;
 				Assert.NotNull(defaultHintTextColors);
 
@@ -84,7 +82,45 @@ namespace Microsoft.Maui.DeviceTests
 				}
 				finally
 				{
-					handler.DisconnectHandler();
+					((IElementHandler)handler).DisconnectHandler();
+				}
+			});
+		}
+
+		[Fact(DisplayName = "Clearing Material Title Color Restores Native Hint Colors")]
+		public async Task ClearingMaterialTitleColorRestoresNativeHintColors()
+		{
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var picker = new PickerStub
+				{
+					Title = "Select an Item"
+				};
+				var handler = CreateHandler<PickerHandler2>(picker);
+				var platformPicker = handler.PlatformView;
+
+				try
+				{
+					var defaultHintTextColors = platformPicker.DefaultHintTextColor;
+
+					foreach (var color in new[] { Colors.Red, Colors.Blue })
+					{
+						picker.TitleColor = color;
+						handler.UpdateValue(nameof(IPicker.TitleColor));
+
+						var customColors = platformPicker.DefaultHintTextColor;
+						Assert.NotNull(customColors);
+						Assert.Equal(color.ToPlatform().ToArgb(), customColors.DefaultColor);
+
+						picker.TitleColor = null;
+						handler.UpdateValue(nameof(IPicker.TitleColor));
+
+						Assert.Equal(defaultHintTextColors, platformPicker.DefaultHintTextColor);
+					}
+				}
+				finally
+				{
+					((IElementHandler)handler).DisconnectHandler();
 				}
 			});
 		}
