@@ -129,6 +129,37 @@ public partial class BlazorWebViewTests
 			}
 		});
 
+	// The Task<Stream?> overload has to answer Android before the task completes, so it always hands WebView a stream,
+	// even when the task resolves to null. Android therefore writes mimeType as Content-Type in both cases.
+	[Theory]
+	[InlineData(true)]
+	[InlineData(false)]
+	public Task InterceptedAsyncResponseIsServedWithASingleContentTypeHeader(bool isContentNull) =>
+		RunTest(async (blazorWebView, handler) =>
+		{
+			blazorWebView.WebResourceRequested += (sender, e) =>
+			{
+				if (e.Uri.AbsolutePath == "/api/content-type")
+				{
+					e.SetResponse(200, "OK", "application/json", GetContentAsync(isContentNull));
+					e.Handled = true;
+				}
+			};
+
+			var result = await FetchContentTypeAsync(handler, "api/content-type");
+
+			Assert.NotNull(result);
+			Assert.Equal(200, result.status);
+			Assert.Equal("application/json", result.contentType);
+			Assert.Equal("application/json", result.blobType);
+
+			static async Task<Stream> GetContentAsync(bool isContentNull)
+			{
+				await Task.Delay(100);
+				return isContentNull ? null : new MemoryStream(Encoding.UTF8.GetBytes("{}"));
+			}
+		});
+
 	static Task<ContentTypeResult> FetchContentTypeAsync(BlazorWebViewHandler handler, string path) =>
 		WebViewHelpers.ExecuteAsyncScriptAndWaitForResult<ContentTypeResult>(handler.PlatformView,
 			$$"""
