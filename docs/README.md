@@ -17,5 +17,6 @@ The table below outlines the different docs in this folder and what they are hel
 | [Release Planning](ReleasePlanning.md) | Link to the .NET MAUI roadmap | Anyone interested in the project roadmap and future plans |
 | [Release Process](ReleaseProcess.md) | Describes the release process using the Arcade SDK for building, signing, and publishing packages | Contributors and maintainers involved in releasing .NET MAUI |
 | [Release Schedule](ReleaseSchedule.md) | Overview of .NET MAUI version releases | Anyone who is interested in .NET MAUI versions and release dates |
+| [TODO Comment Audit (2026-11-04)](reports/todo-comments/2026-11-04/README.md) | Snapshot inventory, area breakdown, and context-reviewed triage of `// TODO` comments | Contributors prioritizing implementation gaps, coverage debt, and comment cleanup |
 | [Triage process](TriageProcess.md)| Overview of the issue triage process used in the repo     | Anyone looking to understand the triage process on the repo  |
 | [UI Testing Guide](UITesting-Guide.md) | Comprehensive guidance for creating automated UI tests using Appium and NUnit | Contributors writing UI tests for .NET MAUI controls |
