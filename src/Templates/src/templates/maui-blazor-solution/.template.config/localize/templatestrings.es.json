@@ -1,4 +1,4 @@
-{
+﻿{
   "author": "Microsoft",
   "name": ".NET MAUI Blazor Hybrid y aplicación Web",
   "description": "Una aplicación de varios proyectos para crear una aplicación híbrida de Blazor .NET MAUI con un proyecto web de Blazor con una interfaz de usuario compartida.",
@@ -22,9 +22,15 @@
   "symbols/InteractivityPlatform/choices/WebAssembly/description": "Se ejecuta en el explorador mediante WebAssembly",
   "symbols/InteractivityPlatform/choices/Auto/displayName": "Automático (Servidor y WebAssembly)",
   "symbols/InteractivityPlatform/choices/Auto/description": "Usa el servidor al descargar los activos de WebAssembly y, a continuación, usa WebAssembly",
+  "symbols/InteractivityLocation/displayName": "Interactivity _location",
+  "symbols/InteractivityLocation/description": "Chooses which components will have interactive rendering enabled",
+  "symbols/InteractivityLocation/choices/InteractivePerPage/displayName": "Per page/component",
+  "symbols/InteractivityLocation/choices/InteractivePerPage/description": "Interactivity is applied on a per-page or per-component basis",
+  "symbols/InteractivityLocation/choices/InteractiveGlobal/displayName": "Global",
+  "symbols/InteractivityLocation/choices/InteractiveGlobal/description": "Interactivity is applied at the root level",
   "symbols/IncludeSampleContent/displayName": "_Incluir páginas de ejemplo",
   "symbols/IncludeSampleContent/description": "Configura si se van a agregar páginas de ejemplo y estilos para mostrar patrones de uso básicos.",
-  "symbols/empty/description": "Configura si se omiten las páginas de ejemplo y los estilos que muestran patrones de uso básicos.",
+  "symbols/Empty/description": "Configura si se omiten las páginas de ejemplo y los estilos que muestran patrones de uso básicos.",
   "symbols/AllInteractive/displayName": "_Enable representación interactiva globalmente en todo el sitio",
   "symbols/AllInteractive/description": "Configura si todas las páginas son interactivas aplicando un modo de representación interactivo en el nivel superior. Si es false, las páginas usarán la representación de servidor estático de forma predeterminada y se pueden marcar como interactivas por página o por componente.",
   "symbols/NoHttps/description": "Si se va a desactivar HTTPS. Esta opción solo se aplica si individual no se usa para --auth.",
