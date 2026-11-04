@@ -75,7 +75,16 @@ static class XmlTypeExtensions
 					continue;
 				if (symbol.IsGenericType && xmlType.TypeArguments is not null)
 				{
-					var typeArgs = xmlType.TypeArguments.Select(typeArg => typeArg.GetTypeSymbol(reportDiagnostic, compilation, xmlnsCache, typeCache)!).ToArray();
+					var typeArgs = new ITypeSymbol[xmlType.TypeArguments.Count];
+					for (var i = 0; i < typeArgs.Length; i++)
+					{
+						if (!xmlType.TypeArguments[i].TryResolveTypeSymbol(reportDiagnostic, compilation, xmlnsCache, typeCache, out var typeArg))
+						{
+							symbol = null;
+							return false;
+						}
+						typeArgs[i] = typeArg!;
+					}
 					symbol = symbol.Construct(typeArgs);
 				}
 				typeCache[xmlType] = symbol;
