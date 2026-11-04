@@ -1443,7 +1443,9 @@ namespace Microsoft.Maui.Platform
 		{
 			if (_isOpen)
 			{
-				if (_previousOpenSwipeItem == openSwipeItem)
+				// _isOpen is set by any partial swipe, so only skip the request when
+				// the items are actually fully open
+				if (_previousOpenSwipeItem == openSwipeItem && Math.Abs(_swipeOffset) == GetSwipeOpenDistance())
 					return;
 
 				ResetSwipe(false);
