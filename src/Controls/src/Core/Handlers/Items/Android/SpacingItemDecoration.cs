@@ -102,7 +102,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				isInLastRowCol = IsInLastSpanGroup(spanSizeLookup, view, position, itemCount, spanCount);
 
 				int spanIndex = GetSpanIndex(spanSizeLookup, view, position, spanCount);
-				int spanSize = spanSizeLookup.GetSpanSize(position);
+				int spanSize = GetSpanSize(spanSizeLookup, view, position);
 
 				// Distribute cross-axis spacing without adding insets at the grid's outer edges.
 				if (_orientation == ItemsLayoutOrientation.Vertical)
@@ -182,7 +182,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return false;
 			}
 
-			int span = GetSpanIndex(spanSizeLookup, view, position, spanCount) + spanSizeLookup.GetSpanSize(position);
+			int span = GetSpanIndex(spanSizeLookup, view, position, spanCount) + GetSpanSize(spanSizeLookup, view, position);
 
 			for (int i = position + 1; i < itemCount; i++)
 			{
@@ -198,6 +198,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			return true;
+		}
+
+		static int GetSpanSize(GridLayoutManager.SpanSizeLookup spanSizeLookup, AView view, int position)
+		{
+			// Avoid scanning the grouped adapter when native spans have already been assigned.
+			if (view.LayoutParameters is GridLayoutManager.LayoutParams layoutParams
+				&& layoutParams.SpanIndex != GridLayoutManager.LayoutParams.InvalidSpanId
+				&& layoutParams.SpanSize > 0)
+			{
+				return layoutParams.SpanSize;
+			}
+
+			return spanSizeLookup.GetSpanSize(position);
 		}
 
 		static int GetSpanIndex(GridLayoutManager.SpanSizeLookup spanSizeLookup, AView view, int position, int spanCount)
