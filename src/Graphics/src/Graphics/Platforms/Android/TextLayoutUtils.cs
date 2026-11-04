@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Graphics.Platform
 #pragma warning disable CS0618 // Type or member is obsolete
 #pragma warning disable CA1416 // Validate platform compatibility
 #pragma warning disable CA1422 // Validate platform compatibility
-			var layout = new StaticLayout(
+			using var layout = new StaticLayout(
 				spannedString, // Text to layout
 				textPaint, // Text paint (font, size, etc...) to use
 				finalWidth, // The maximum width the text can be
