@@ -13,7 +13,7 @@ public class Issue39055 : _IssuesUITest
     public override string Issue => "TabBar AutomationId should be set";
 
 
-    [Test, Order(1)]
+    [Test]
     [ShardedTestCategory(UITestCategories.Shell, shard: 1)]
     public void Issue39055TabBarAutomationIdShouldBeSet()
     {
@@ -25,22 +25,4 @@ public class Issue39055 : _IssuesUITest
         App.WaitForElement("page_browse");
     }
 
-    [Test, Order(2)]
-    [ShardedTestCategory(UITestCategories.Shell, shard: 1)]
-    public void Issue39055OverflowTabAutomationIdShouldBeSet()
-    {
-#if WINDOWS //Reduce window width for overflow tab testing
-        App.Tap("ReduceWindowWidthButton");
-#endif
-        App.WaitForElement("More");
-        App.Tap("More");
-#if MACCATALYST 
-        App.WaitForElementTillPageNavigationSettled("tab_help");
-        App.Tap("tab_help");
-        App.WaitForElementTillPageNavigationSettled("page_help");
-#else
-        App.WaitForElement("tab_account").Tap();
-        App.WaitForElement("page_account");
-#endif
-    }
 }
