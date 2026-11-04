@@ -3,6 +3,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Android.Graphics.Drawables;
+using Android.Runtime;
 using Android.Widget;
 using Bumptech.Glide;
 using Bumptech.Glide.Request;
@@ -114,33 +115,90 @@ namespace Microsoft.Maui.DeviceTests
 			}));
 		}
 
+		[Fact]
+		public async Task LoadDrawableAsyncCancelledAfterBufferingDoesNotReplaceImage()
+		{
+			using var cancellation = new CancellationTokenSource();
+			using var redBitmapStream = Assert.IsType<MemoryStream>(CreateBitmapStream(100, 100, Colors.Red.ToPlatform()));
+			using var redStream = new TrackingStream(redBitmapStream.ToArray(), cancellation);
+			redStream.AllowRead();
+			using var blueStream = CreateBitmapStream(100, 100, Colors.Blue.ToPlatform());
+			var service = new StreamImageSourceService();
+			using var imageView = new RequestTrackingImageView(MauiProgram.DefaultContext, redStream);
+
+			await InvokeOnMainThreadAsync(() => imageView.AttachAndRun(async () =>
+			{
+				try
+				{
+					using var blueResult = await WaitForStage(
+						service.LoadDrawableAsync(new StreamImageSourceStub(blueStream), imageView),
+						"the initial blue image to load");
+					Assert.NotNull(blueResult);
+					var blueDrawable = Assert.IsType<BitmapDrawable>(imageView.Drawable);
+					await blueDrawable.Bitmap.AssertContainsColor(Colors.Blue.ToPlatform());
+					var submissionCount = imageView.RequestSubmissionCount;
+					Assert.True(submissionCount > 0);
+
+					// Disposal occurs after buffering succeeds, immediately before submission.
+					await Assert.ThrowsAnyAsync<OperationCanceledException>(() => WaitForStage(
+						service.LoadDrawableAsync(new StreamImageSourceStub(redStream), imageView, cancellation.Token),
+						"the buffered red image load to observe cancellation"));
+
+					Assert.True(redStream.IsDisposed);
+					Assert.True(redStream.ReadStarted.Task.IsCompletedSuccessfully);
+					Assert.Equal(submissionCount, imageView.RequestSubmissionCount);
+					Assert.Same(blueDrawable, imageView.Drawable);
+					await blueDrawable.Bitmap.AssertContainsColor(Colors.Blue.ToPlatform());
+				}
+				finally
+				{
+					Glide.With(imageView).Clear(imageView);
+				}
+			}));
+		}
+
 		sealed class RequestTrackingImageView : ImageView
 		{
 			readonly TrackingStream _sourceStream;
+			readonly int _requestTagId;
 
 			public RequestTrackingImageView(global::Android.Content.Context context, TrackingStream sourceStream)
 				: base(context)
 			{
 				_sourceStream = sourceStream;
+				_requestTagId = context.Resources.GetIdentifier("glide_custom_view_target_tag", "id", context.PackageName);
+				Assert.NotEqual(0, _requestTagId);
 			}
 
 			public TaskCompletionSource<(IRequest Request, bool SourceDisposed)> RequestSubmitted { get; } =
 				new(TaskCreationOptions.RunContinuationsAsynchronously);
 
+			public int RequestSubmissionCount { get; private set; }
+
 			public override void SetTag(int key, Java.Lang.Object tag)
 			{
 				base.SetTag(key, tag);
 
-				if (tag is IRequest request)
+				if (key == _requestTagId && tag is not null)
+				{
+					using var javaClass = tag.Class;
+					Console.WriteLine($"Glide request tag: Java={javaClass.Name}, managed={tag.GetType().FullName}, sourceDisposed={_sourceStream.IsDisposed}");
+					var request = tag.JavaCast<IRequest>();
+					Assert.NotNull(request);
+					RequestSubmissionCount++;
 					RequestSubmitted.TrySetResult((request, _sourceStream.IsDisposed));
+				}
 			}
 		}
 
 		sealed class TrackingStream : MemoryStream
 		{
-			public TrackingStream(byte[] buffer)
+			readonly CancellationTokenSource _cancelOnDispose;
+
+			public TrackingStream(byte[] buffer, CancellationTokenSource cancelOnDispose = null)
 				: base(buffer)
 			{
+				_cancelOnDispose = cancelOnDispose;
 			}
 
 			public TaskCompletionSource<bool> ReadStarted { get; } =
@@ -176,6 +234,9 @@ namespace Microsoft.Maui.DeviceTests
 
 			protected override void Dispose(bool disposing)
 			{
+				if (disposing && !IsDisposed)
+					_cancelOnDispose?.Cancel();
+
 				IsDisposed = true;
 				base.Dispose(disposing);
 			}
