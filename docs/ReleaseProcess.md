@@ -6,6 +6,21 @@ The .NET MAUI release process uses Arcade and 1ES to build, sign, gather, and pu
 
 `azure-pipelines-internal.yml` builds, signs, and packs .NET MAUI on the internal Azure DevOps mirror. It registers the resulting assets in Maestro's Build Asset Registry (BAR). The BAR record and source commit identify the immutable assets used by a release.
 
+### Updating engineering dependencies
+
+Maestro owns the `Microsoft.DotNet.*` dependencies, including the Arcade toolset
+and XHarness. Update the toolset as a coordinated dependency change: keep
+`global.json` and `eng/Versions.props` aligned with `eng/Version.Details.xml`,
+including its source commit, and take the matching `eng/common` update and feed
+changes when required. An individual NuGet version bump does not update the
+tracked toolset or shared build infrastructure.
+
+Dependabot excludes these packages to avoid partial toolset upgrades. It also
+excludes Magick.NET major version updates: version 15 changed screenshot
+comparison behavior and removed Intel macOS support. A major upgrade requires
+explicit validation of the screenshot baselines and supported runner
+architectures; patch and minor updates remain enabled.
+
 ## Canonical release pipeline
 
 `eng/pipelines/ci-official-release.yml` is the only release pipeline. It is manually run in the internal `dnceng/internal` project.
