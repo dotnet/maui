@@ -80,10 +80,8 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 
 			Window = window;
 
-#if MACCATALYST
 			if (HasSceneManifest())
 				return true;
-#endif
 
 			window.MakeKeyAndVisible();
 			SetWindowReady();
@@ -91,9 +89,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 			return true;
 		}
 
-#if MACCATALYST
 		static bool HasSceneManifest() =>
 			NSBundle.MainBundle.InfoDictionary?.ContainsKey(new NSString("UIApplicationSceneManifest")) == true;
-#endif
 	}
 }
