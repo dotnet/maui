@@ -64,6 +64,21 @@ Preserve its release commit and packages, and keep publication on the .NET 10 ch
 .NET 11 transition. Do not cut over `inflight/current` or synchronize the internal
 `main` mirror as part of SR13 publication; those are separate .NET 11 operations.
 
+### Engineering dependency updates
+
+Maestro owns the `Microsoft.DotNet.*` dependencies, including the Arcade toolset
+and XHarness. Update the toolset as a coordinated dependency change: keep
+`global.json` and `eng/Versions.props` aligned with `eng/Version.Details.xml`,
+including its source commit, and take the matching `eng/common` update and feed
+changes when required. An individual NuGet version bump does not update the
+tracked toolset or shared build infrastructure.
+
+Dependabot excludes these packages to avoid partial toolset upgrades. It also
+excludes `Magick.NET-Q8-AnyCPU` major version updates: version 15 changed screenshot
+comparison behavior and removed Intel macOS support. A major upgrade requires
+explicit validation of the screenshot baselines and supported runner
+architectures; patch and minor updates remain enabled.
+
 ### Pipeline definitions
 
 **Organization**: `dnceng-public` / project `public`
