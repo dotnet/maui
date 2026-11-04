@@ -42,8 +42,7 @@ public partial class ViewHandler
 
 	internal void ReconnectContainer()
 	{
-		if (VirtualView is not { } virtualView ||
-			PlatformView is null ||
+		if (PlatformView is null ||
 			ContainerView is not WrapperView wrapper ||
 			ReferenceEquals(wrapper.Child, PlatformView))
 		{
@@ -59,8 +58,12 @@ public partial class ViewHandler
 		wrapper.ClearValue(UIElement.RenderTransformOriginProperty);
 		wrapper.ClearValue(UIElement.ProjectionProperty);
 		wrapper.Clip = null;
-		wrapper.Shadow = null;
 
+		// Clearing a shadow disposes and recreates it, so only clear one the view no longer has; MapShadow updates a kept one in place.
+		if (wrapper.Shadow is not null && VirtualView?.Shadow is null)
+		{
+			wrapper.Shadow = null;
+		}
 	}
 
 	public static void MapTranslationX(IViewHandler handler, IView view)
