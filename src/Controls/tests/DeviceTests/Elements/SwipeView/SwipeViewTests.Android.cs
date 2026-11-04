@@ -19,6 +19,71 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class SwipeViewTests : ControlsHandlerTestBase
 	{
+		[Fact]
+		// https://github.com/dotnet/maui/issues/22153
+		public async Task OpenWorksAgainAfterAPartialSwipe()
+		{
+			SetupBuilder();
+
+			var content = new Grid
+			{
+				WidthRequest = 300,
+				HeightRequest = 60,
+				Background = new SolidPaint(Colors.White)
+			};
+
+			var swipeView = new SwipeView()
+			{
+				WidthRequest = 300,
+				HeightRequest = 60,
+				RightItems = new SwipeItems { new SwipeItem { BackgroundColor = Colors.Red } },
+				Content = content
+			};
+
+			await AttachAndRun(swipeView, async (handler) =>
+			{
+				var platformView = ((SwipeViewHandler)handler).PlatformView;
+				var contentView = ((IView)content).ToPlatform();
+
+				// The swipe open distance is clamped to the content size, so wait for the layout
+				await AssertEventually(() => contentView.Width > 0, message: "SwipeView content was not laid out");
+
+				// Open programmatically once and remember the open position
+				swipeView.Open(OpenSwipeItem.RightItems, false);
+				await AssertEventually(() => contentView.TranslationX < 0, message: "SwipeView did not open");
+				var openTranslationX = contentView.TranslationX;
+
+				swipeView.Close(false);
+				await AssertEventually(() => contentView.TranslationX == 0, message: "SwipeView did not close");
+
+				// Start a partial swipe and leave it unfinished
+				var time = global::Android.OS.SystemClock.UptimeMillis();
+				var x = platformView.Width / 2f;
+				var y = platformView.Height / 2f;
+				await InvokeOnMainThreadAsync(() =>
+				{
+					using (var down = MotionEvent.Obtain(time, time, MotionEventActions.Down, x, y, 0))
+						platformView.DispatchTouchEvent(down);
+					using (var move1 = MotionEvent.Obtain(time, time + 50, MotionEventActions.Move, x - 20, y, 0))
+						platformView.DispatchTouchEvent(move1);
+					using (var move2 = MotionEvent.Obtain(time, time + 100, MotionEventActions.Move, x - 40, y, 0))
+						platformView.DispatchTouchEvent(move2);
+				});
+
+				// Opening the same items while the partial swipe is still in progress has to work
+				swipeView.Open(OpenSwipeItem.RightItems, false);
+
+				await AssertEventually(() => contentView.TranslationX == openTranslationX,
+					message: $"SwipeView did not reopen (TranslationX {contentView.TranslationX} instead of {openTranslationX})");
+
+				await InvokeOnMainThreadAsync(() =>
+				{
+					using (var cancel = MotionEvent.Obtain(time, time + 150, MotionEventActions.Cancel, x - 40, y, 0))
+						platformView.DispatchTouchEvent(cancel);
+				});
+			});
+		}
+
 		// Issue #23478: TalkBack's "double tap to activate" invokes View.PerformAccessibilityAction(ACTION_CLICK)
 		// on the focused SwipeItem, a code path distinct from the manual touch hit-testing SwipeView normally
 		// relies on to execute commands. This verifies the accessibility action reaches the bound Command.
