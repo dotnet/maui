@@ -332,6 +332,8 @@ namespace Microsoft.Maui.TestCases.Tests
 				before os version, because most visual testing differences come from different sceen size (a device thing), not OS version differences,
 				but both can happen.
 				*/
+				name ??= TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
+
 				string environmentName = "";
 				switch (_testDevice)
 				{
@@ -391,7 +393,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 					case TestDevice.Windows:
 						environmentName = "windows";
-						
+
 						// Check if the Windows CV1 handler is selected via TEST_CONFIGURATION_ARGS.
 						// This uses a separate snapshot directory for visual regression testing
 						var testConfigurationArgs = Environment.GetEnvironmentVariable("TEST_CONFIGURATION_ARGS") ?? "";
@@ -403,13 +405,17 @@ namespace Microsoft.Maui.TestCases.Tests
 
 					case TestDevice.Mac:
 						environmentName = "mac";
+						// Only native UI changes need Tahoe overrides; other Mac snapshots stay shared.
+						if (OperatingSystem.IsMacOSVersionAtLeast(26) && !OperatingSystem.IsMacOSVersionAtLeast(27) &&
+							File.Exists(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "snapshots", "mac-26", $"{name}.png")))
+						{
+							environmentName = "mac-26";
+						}
 						break;
 
 					default:
 						throw new NotImplementedException($"Unknown device type {_testDevice}");
 				}
-
-				name ??= TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
 
 				// Currently Android is the OS with the ripple animations, but Windows may also have some animations
 				// that need to finish before taking a screenshot.
@@ -694,7 +700,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		[DllImport(CoreGraphicsLibrary)]
 		static extern NativeRectangle CGDisplayBounds(uint display);
 
-		byte[] TakeScreenshot()
+		protected byte[] TakeScreenshot()
 		{
 			// Since the Appium screenshot on Mac (unlike Windows) is of the entire screen, not just the app,
 			// we are going to crop the screenshot to the app window bounds, including rounded corners.

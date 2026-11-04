@@ -53,31 +53,23 @@ public class Issue37427 : _IssuesUITest
 			.Select(preview => (preview.card, rect: App.WaitForElement($"37427Card{preview.card}PreviewColors").GetRect()))
 			.ToArray();
 
-		using var screenshot = new MagickImage(App.Screenshot());
-		double scaleX;
-		double scaleY;
 #if MACCATALYST
-		// The Mac2 driver captures the desktop and reports absolute desktop coordinates.
-		scaleX = 1;
-		scaleY = 1;
-		Assert.That(
-			window.X >= 0 &&
-			window.Y >= 0 &&
-			window.X + window.Width <= screenshot.Width &&
-			window.Y + window.Height <= screenshot.Height,
-			Is.True,
-			$"Expected the Appium window to fit inside the desktop screenshot, but got " +
-			$"window={window}, image={screenshot.Width}x{screenshot.Height}.");
+		using var screenshot = new MagickImage(TakeScreenshot());
+		Assert.That(screenshot.Width, Is.EqualTo(window.Width),
+			"Expected a density-normalized screenshot cropped to the Mac app window.");
+		Assert.That(screenshot.Height, Is.EqualTo(window.Height),
+			"Expected a density-normalized screenshot cropped to the Mac app window.");
 #else
+		using var screenshot = new MagickImage(App.Screenshot());
 		// iOS screenshots use native pixels while Appium rectangles use full-screen points.
 		Assert.That(window.X, Is.Zero);
 		Assert.That(window.Y, Is.Zero);
-		scaleX = (double)screenshot.Width / window.Width;
-		scaleY = (double)screenshot.Height / window.Height;
+#endif
+		double scaleX = (double)screenshot.Width / window.Width;
+		double scaleY = (double)screenshot.Height / window.Height;
 		Assert.That(scaleX, Is.EqualTo(scaleY).Within(0.05),
 			$"Expected the Appium window to use the screenshot's full-screen coordinate space, but got " +
 			$"window={window}, image={screenshot.Width}x{screenshot.Height}, scale={scaleX}x{scaleY}.");
-#endif
 		using var pixels = screenshot.GetPixels();
 
 		foreach (var (card, preview) in previews)
@@ -92,8 +84,8 @@ public class Issue37427 : _IssuesUITest
 
 			for (var column = 0; column < 5; column++)
 			{
-				var x = (int)((preview.X + preview.Width * (column + 0.5) / 5) * scaleX);
-				var y = (int)((preview.Y + preview.Height / 2) * scaleY);
+				var x = (int)((preview.X - window.X + preview.Width * (column + 0.5) / 5) * scaleX);
+				var y = (int)((preview.Y - window.Y + preview.Height / 2) * scaleY);
 				Assert.That(x, Is.InRange(0, (int)screenshot.Width - 1),
 					$"Card {card}, preview column {column} mapped outside screenshot width; " +
 					$"preview={preview}, window={window}, image={screenshot.Width}x{screenshot.Height}, scale={scaleX}x{scaleY}.");
