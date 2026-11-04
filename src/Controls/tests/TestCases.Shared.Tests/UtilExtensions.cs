@@ -209,10 +209,35 @@ namespace Microsoft.Maui.TestCases.Tests
 				var y = searchHandler.GetRect().Y + searchHandler.GetRect().Height;
 				app.TapCoordinates(searchHandler.GetRect().X + 10, y + 10);
 			}
+			else if (app is AppiumCatalystApp)
+			{
+				// Native clicks wait for idle and can lose the filtered result before dispatching the click.
+				var rect = app.WaitForElement(searchResultIdentifier).GetRect();
+				app.TapCoordinates(rect.CenterX(), rect.CenterY());
+			}
 			else
 			{
 				var searchResults = app.FindElements(searchResultIdentifier);
 				searchResults.First().Tap();
+			}
+		}
+
+		public static void TapShellBackArrowWithImageOverride(this IApp app, string imageAutomationId)
+		{
+			if (app is AppiumCatalystApp)
+			{
+				// Tahoe exposes the image-overridden button without its identifier and as disabled.
+				// Use pointer input on the navigation button rather than bypassing its command.
+				var rect = app.WaitForElement(AppiumQuery.ByXPath("//XCUIElementTypeNavigationBar/XCUIElementTypeButton[1]")).GetRect();
+				app.TapCoordinates(rect.CenterX(), rect.CenterY());
+			}
+			else if (app is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
+			{
+				app.Back();
+			}
+			else
+			{
+				app.TapBackArrow(imageAutomationId);
 			}
 		}
 	}
