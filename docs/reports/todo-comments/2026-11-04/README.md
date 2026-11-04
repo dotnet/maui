@@ -84,7 +84,7 @@ These dimensions overlap and must not be added together.
 | Repeated text or theme | Marker lines | Interpretation |
 | --- | ---: | --- |
 | Essentials test-runner app should perform setup | 20 | A shared harness concern repeated across sensor and battery tests. |
-| WebView2 / WASDK request-interception limitation | 8 | Four marker lines each in BlazorWebView and HybridWebView tests; not eight independently established bugs. |
+| WebView2 / Windows App SDK request-interception limitation | 8 | Four marker lines each in BlazorWebView and HybridWebView tests; not eight independently established bugs. |
 | Shapes should use a remapped mapper | 7 | A cross-shape refactoring theme. |
 | SecureStorage "Use Logger here?" | 6 | Logging consistency across platform implementations; not a security finding. |
 | Future removal of API linked to issue 30155 | 4 | One linked cleanup theme repeated in implementation and tests. |

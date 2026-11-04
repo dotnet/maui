@@ -22,6 +22,10 @@ Case-insensitive textual scan for `//` followed immediately by optional addition
 
 ## Inventory
 
+Source paths, identifiers, and comment spelling are reproduced verbatim in this section.
+
+<!-- cspell:disable -->
+
 ### src/Controls (210)
 
 | ID | Source | Role | Kind | Comment and following comment lines |
@@ -442,6 +446,8 @@ Case-insensitive textual scan for `//` followed immediately by optional addition
 | ---: | --- | --- | --- | --- |
 | 368 | [src/SingleProject/Resizetizer/src/DpiPath.cs:281](https://github.com/dotnet/maui/blob/43540f6afb5acc34a89cc8ef4bf0cdb48e3b7ef1/src/SingleProject/Resizetizer/src/DpiPath.cs#L281) | Product source / build tooling | Standalone / commented-code marker | // TODO: logo variants (targetsize, altform-unplated, altform-lightunplated) |
 | 369 | [src/SingleProject/Resizetizer/src/ResizeImageInfo.cs:189](https://github.com/dotnet/maui/blob/43540f6afb5acc34a89cc8ef4bf0cdb48e3b7ef1/src/SingleProject/Resizetizer/src/ResizeImageInfo.cs#L189) | Product source / build tooling | Standalone / commented-code marker | // TODO:<br>// - Parse out custom DPI's |
+
+<!-- cspell:enable -->
 
 ## Excluded raw-search matches
 
