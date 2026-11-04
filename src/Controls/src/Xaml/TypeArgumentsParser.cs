@@ -162,7 +162,7 @@ namespace Microsoft.Maui.Controls.Xaml
 				throw new XamlParseException("Only x:Type can be used as a type argument.", lineInfo);
 
 			var typeName = contents.Substring(separator).Trim();
-			var equals = typeName.IndexOf("=", StringComparison.Ordinal);
+			var equals = FindTopLevelEquals(typeName);
 			if (equals >= 0)
 			{
 				if (typeName.Substring(0, equals).Trim() != "TypeName")
@@ -177,6 +177,38 @@ namespace Microsoft.Maui.Controls.Xaml
 				typeName = typeName.Substring(1, typeName.Length - 2);
 			}
 			return ParseSingle(typeName, resolver, lineInfo);
+		}
+
+		static int FindTopLevelEquals(string expression)
+		{
+			int parenthesesCount = 0;
+			int bracesCount = 0;
+			char quote = '\0';
+			for (var i = 0; i < expression.Length; i++)
+			{
+				var current = expression[i];
+				if (quote != '\0')
+				{
+					if (current == quote)
+						quote = '\0';
+					continue;
+				}
+
+				if (current == '\'' || current == '"')
+					quote = current;
+				else if (current == '(')
+					parenthesesCount++;
+				else if (current == ')')
+					parenthesesCount--;
+				else if (current == '{')
+					bracesCount++;
+				else if (current == '}')
+					bracesCount--;
+				else if (current == '=' && parenthesesCount == 0 && bracesCount == 0)
+					return i;
+			}
+
+			return -1;
 		}
 	}
 }

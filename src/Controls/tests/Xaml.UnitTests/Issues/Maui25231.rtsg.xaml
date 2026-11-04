@@ -29,6 +29,8 @@
                       x:TypeArguments="scg:KeyValuePair({language:Type x:String},x:Int32)" />
             <scg:List x:Key="ScopedList" x:Name="ScopedList"
                       x:TypeArguments="{x:Type scoped:List(x:String)}" />
+            <scg:List x:Key="NestedNamedList"
+                      x:TypeArguments="{x:Type scg:List({x:Type TypeName=x:String})}" />
             <local:Maui25231TypeHolder x:Key="Types"
                                       TypeValue="ContentPage"
                                       GenericValue="scg:List(x:String)"

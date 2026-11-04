@@ -95,6 +95,7 @@ public partial class Maui25231 : Maui25231GenericBase<string>
 			Assert.IsType<List<KeyValuePair<string, int>>>(page.Resources["GenericList"]);
 			Assert.IsType<List<KeyValuePair<string, int>>>(page.NestedList);
 			Assert.IsType<List<List<string>>>(page.ScopedList);
+			Assert.IsType<List<List<string>>>(page.Resources["NestedNamedList"]);
 
 			var holder = Assert.IsType<Maui25231TypeHolder>(page.Resources["Types"]);
 			Assert.Equal(typeof(ContentPage), holder.TypeValue);
@@ -126,9 +127,26 @@ public partial class Maui25231 : Maui25231GenericBase<string>
 			var resolver = new XmlNamespaceManager(new NameTable());
 			resolver.AddNamespace("", XamlParser.MauiUri);
 			resolver.AddNamespace("x", XamlParser.X2009Uri);
+			resolver.AddNamespace("scg", "clr-namespace:System.Collections.Generic;assembly=mscorlib");
 			resolver.AddNamespace("other", XamlParser.MauiUri);
 
 			Assert.Throws<XamlParseException>(() => TypeArgumentsParser.ParseExpression(expression, resolver, null));
+		}
+
+		[Fact]
+		internal void NestedNamedTypeExtensionParsesAsGenericTypeArgument()
+		{
+			var resolver = new XmlNamespaceManager(new NameTable());
+			resolver.AddNamespace("x", XamlParser.X2009Uri);
+			resolver.AddNamespace("scg", "clr-namespace:System.Collections.Generic;assembly=mscorlib");
+
+			var type = Assert.Single(TypeArgumentsParser.ParseExpression(
+				"{x:Type scg:List({x:Type TypeName=x:String})}", resolver, null));
+
+			Assert.Equal("List", type.Name);
+			Assert.Single(type.TypeArguments);
+			Assert.Equal(XamlParser.X2009Uri, type.TypeArguments[0].NamespaceUri);
+			Assert.Equal("String", type.TypeArguments[0].Name);
 		}
 
 		[Theory]
