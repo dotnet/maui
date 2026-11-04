@@ -1118,7 +1118,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 				if (recognizer is UITapGestureRecognizer &&
 					virtualView is not SelectableItemsView &&
-					IsTouchInSelectableCollectionView(touch.View, platformView))
+					IsTouchOnSelectableCollectionViewItem(touch, platformView))
 				{
 					return false;
 				}
@@ -1141,14 +1141,16 @@ namespace Microsoft.Maui.Controls.Platform
 				return false;
 			}
 
-			static bool IsTouchInSelectableCollectionView(UIView? touchView, UIView platformView)
+			// Checks whether the touch occurred on an actual item within a selectable CollectionView.
+			static bool IsTouchOnSelectableCollectionViewItem(UITouch touch, UIView platformView)
 			{
-				for (var view = touchView; view is not null && view != platformView; view = view.Superview)
+				for (var view = touch.View; view is not null && view != platformView; view = view.Superview)
 				{
 					if (view is MauiCollectionView { AllowsSelection: true } collectionView &&
 						collectionView.IsDescendantOfView(platformView))
 					{
-						return true;
+						var location = touch.LocationInView(collectionView);
+						return collectionView.IndexPathForItemAtPoint(location) is not null;
 					}
 				}
 
