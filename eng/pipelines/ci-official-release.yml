@@ -578,6 +578,15 @@ extends:
                 EXPECTED_SCRIPT_HASH: $(PackageStatusScriptHash)
                 NUGET_ALREADY_ATTEMPTED_FILTERS: ${{ parameters.nugetAlreadyAttemptedPackFilters }}
 
+            - pwsh: |
+                $ErrorActionPreference = 'Continue'
+                Get-ChildItem Env: | Where-Object Name -match 'proxy'
+                netsh winhttp show proxy
+                Resolve-DnsName www.nuget.org
+                Resolve-DnsName api.nuget.org
+              displayName: Gather NuGet publishing network diagnostics
+              continueOnError: true
+
             - task: 1ES.PublishNuget@1
               displayName: Push workload packs to NuGet.org
               condition: and(succeeded(), eq(variables['NuGetPackagesToPublish'], 'true'))
@@ -655,6 +664,15 @@ extends:
               env:
                 EXPECTED_SCRIPT_HASH: $(PackageStatusScriptHash)
                 NUGET_ALREADY_ATTEMPTED_FILTERS: ${{ parameters.nugetAlreadyAttemptedManifestFilters }}
+
+            - pwsh: |
+                $ErrorActionPreference = 'Continue'
+                Get-ChildItem Env: | Where-Object Name -match 'proxy'
+                netsh winhttp show proxy
+                Resolve-DnsName www.nuget.org
+                Resolve-DnsName api.nuget.org
+              displayName: Gather NuGet publishing network diagnostics
+              continueOnError: true
 
             - task: 1ES.PublishNuget@1
               displayName: Push workload manifests to NuGet.org

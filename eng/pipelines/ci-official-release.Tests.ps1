@@ -27,6 +27,21 @@ Describe 'ci-official-release.yml' {
     $pipeline | Should -Match '!\$_.nonShipping -and \$_.name -match \$packageAssetFilter'
   }
 
+  It 'gathers non-blocking network diagnostics before every NuGet publish' {
+    $diagnosticsPattern = '(?s)- pwsh: \|\s*' +
+      [regex]::Escape('$ErrorActionPreference = ''Continue''') + '\s*' +
+      [regex]::Escape("Get-ChildItem Env: | Where-Object Name -match 'proxy'") +
+      '\s*netsh winhttp show proxy\s*' +
+      'Resolve-DnsName www\.nuget\.org\s*' +
+      'Resolve-DnsName api\.nuget\.org\s*' +
+      'displayName: Gather NuGet publishing network diagnostics\s*' +
+      'continueOnError: true\s*' +
+      '- task: 1ES\.PublishNuget@1'
+
+    [regex]::Matches($pipeline, $diagnosticsPattern).Count | Should -Be 2
+    [regex]::Matches($nonWorkloadTemplate, $diagnosticsPattern).Count | Should -Be 1
+  }
+
   It 'keeps workload gathering fail-fast and validates non-workload misses' {
     $gatherCommands = [regex]::Matches($pipeline, '(?m)^\s*& \$darc @gatherArguments.*$')
 

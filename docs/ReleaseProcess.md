@@ -110,6 +110,11 @@ Workload packs and manifests have separate manual approval points. Their product
 
 Before each publish, the job checks every expected package identity against NuGet.org and removes already-published package files from the task input. The 1ES task therefore receives only missing packages and is skipped when every package already exists. This is required because the NuGetCommand-backed external-feed task treats HTTP 409 as a failure even when `allowPackageConflicts` is set. Task-level retry is intentionally disabled because retrying a partially published batch without filtering can fail on the packages that succeeded during the first attempt.
 
+All NuGet publishing jobs (workload and non-workload) log proxy environment
+variables, WinHTTP proxy settings, and DNS resolution for `www.nuget.org` and
+`api.nuget.org` immediately before publishing. Diagnostic failures are reported
+but do not block publishing.
+
 NuGet.org may reserve a package version and return HTTP 409 before that package becomes visible through the flat-container API. When recovering during this validation window, set `nugetAlreadyAttemptedPackFilters` or `nugetAlreadyAttemptedManifestFilters` to the affected file names accepted by the previous task invocation. Leave the parameter for the other stage at `skip`. The availability step removes those files without requiring flat-container visibility, while post-publish verification still requires every expected identity to become available.
 
 After each publish, the pipeline polls NuGet.org for every expected package ID and normalized version with a 30-minute deadline, then fails with the missing identities if indexing does not complete. The manifest stage depends on successful pack publication and verification, so manifest approval is unavailable until every selected pack is resolvable.
