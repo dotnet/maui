@@ -8,8 +8,8 @@ signing, and publishing remain covered by the [release process](ReleaseProcess.m
 > [!IMPORTANT]
 > These are proposed branch names and responsibilities, not a statement that the
 > migration has happened. The next-candidate naming decision below must be resolved
-> before adopting the recurring rotation. This document does not rename branches
-> or change release automation.
+> before adopting the recurring rotation. This change does not rename production
+> branches or enable production release automation.
 
 ## Branch responsibilities
 
@@ -104,15 +104,18 @@ and continue the daily `net11`-to-`main` merges.
 
 ## One-click release automation
 
-Production orchestration could run as an internal Azure DevOps pipeline named
-`maui-release-rollover`, with its definition and scripts maintained in this
-repository. It is not implemented or enabled by this change. A separate GitHub
+The proposed activation point is a GitHub Action after a reviewed candidate
+merge into `net11`, with a zero-input **Run workflow** option for manual
+activation. Internal signed-build work would remain in Azure DevOps. Production
+orchestration is not implemented or enabled by this change. A separate GitHub
 Actions sandbox below exercises automatic activation after a dummy candidate
 merge without enabling production release operations.
 
 ### Operator experience
 
-The release owner opens the pipeline and selects **Run pipeline**. There are no
+Merging the reviewed candidate into `net11` would start the release preparation
+automatically, without an additional button. For manual activation, the release
+owner would open GitHub Actions and select **Run workflow**. Neither path has
 release fields to fill in: the owner does not select or type the release band, SR
 number, branch names, commit SHAs, build IDs, or channel names. Activation is the
 authorization to perform the configured routine branch rollover; there is no
@@ -153,7 +156,7 @@ build ID from the operator.
 
 ```mermaid
 flowchart TD
-    Activate["Release owner: Run pipeline (no release inputs)"] --> Resolve["Resolve trusted state and pin commits"]
+    Activate["Candidate merged into net11 or Run workflow (no release inputs)"] --> Resolve["Resolve trusted state and pin commits"]
     Resolve --> Check{"Prerequisites valid?"}
     Check -->|No| Stop["Stop and report the blocker"]
     Check -->|Yes| Apply["Cut release and advance candidate/inflight lanes"]
@@ -257,6 +260,25 @@ a sandbox integration ref after it is available for dispatch in GitHub.
 This exercises branch operations only. It does not validate production
 permissions, candidate approvals, signed builds, packages, dependency
 subscriptions, channel mappings, the internal mirror, or production rollback.
+
+### Live sandbox evidence
+
+The GitHub-hosted trial used `release-rollover-trial/sr1-2ad2e0af/` on
+2026-11-05. Both cycles were activated by actual candidate merges pushed to the
+dummy integration branch, not by a fabricated event payload or a local script.
+
+| Scenario | Observed result |
+|---|---|
+| [SR1 candidate merge](https://github.com/dotnet/maui/actions/runs/42035924272) | Created dummy release SR1 at the merge SHA, candidate SR2, and inflight SR3 automatically. |
+| Same activation rerun, attempt 2 | Reported `unchanged`, created no refs, and left every dummy ref at the same SHA. |
+| [SR2 candidate merge](https://github.com/dotnet/maui/actions/runs/42036225919) | Detected SR2 without version inputs and created dummy release SR2, candidate SR3, and inflight SR4. |
+| [Ordinary non-merge push](https://github.com/dotnet/maui/actions/runs/42036351766) | Failed as intended with the two-parent-merge diagnostic and created no release or next-cycle refs. |
+
+Distinct marker files confirmed that release SR1 contained the SR1 candidate
+change but not the future SR2 change; candidate SR2 contained both, and release
+SR2 subsequently included the future change. Run artifacts recorded exact source
+and output SHAs. The real development and release-lane refs were unchanged by
+the trial.
 
 ## Adoption scope
 
