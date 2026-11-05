@@ -1,6 +1,7 @@
 #nullable disable
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using CoreGraphics;
 using Foundation;
 using ObjCRuntime;
@@ -15,6 +16,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		public const int FooterTag = 222;
 
 		bool _disposed;
+		(CGPoint Offset, CGSize ViewportSize, nfloat HeaderHeight, Items.IItemsViewSource Source, int ItemCount)? _headerResizeAnchor;
 
 		public StructuredItemsViewController2(TItemsView structuredItemsView, UICollectionViewLayout layout)
 			: base(structuredItemsView, layout)
@@ -37,6 +39,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 
 			_disposed = true;
+			_headerResizeAnchor = null;
 
 			if (disposing)
 			{
@@ -247,6 +250,45 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			base.ViewWillLayoutSubviews();
 		}
 
+		public override void ViewDidLayoutSubviews()
+		{
+			base.ViewDidLayoutSubviews();
+
+			var anchor = _headerResizeAnchor;
+			_headerResizeAnchor = null;
+
+			var collectionView = CollectionView;
+			if (anchor is not { } resize || _disposed || ItemsView is null ||
+				collectionView.Window is null || collectionView.Tracking ||
+				collectionView.Dragging || collectionView.Decelerating ||
+				collectionView.HasUncommittedUpdates ||
+				collectionView.Bounds.Size != resize.ViewportSize ||
+				collectionView.ContentOffset.X != resize.Offset.X ||
+				!ReferenceEquals(ItemsSource, resize.Source) || ItemsSource.ItemCount != resize.ItemCount ||
+				collectionView.ViewWithTag(HeaderTag) is not { } header ||
+				header.Frame.Bottom <= resize.Offset.Y)
+			{
+				return;
+			}
+
+			var heightChange = header.Frame.Height - resize.HeaderHeight;
+			var minOffset = -collectionView.AdjustedContentInset.Top;
+			var maxOffset = NFloat.Max(minOffset,
+				collectionView.ContentSize.Height - collectionView.Bounds.Height + collectionView.AdjustedContentInset.Bottom);
+			var expectedOffset = NFloat.Clamp(resize.Offset.Y + heightChange, minOffset, maxOffset);
+
+			// Compositional layout anchors the items below a resized header. When the header
+			// itself is visible, keep its controls stationary instead, after self-sizing finishes.
+			if (heightChange != 0 && NFloat.Abs(collectionView.ContentOffset.Y - expectedOffset) < 1)
+			{
+				var offset = new CGPoint(resize.Offset.X, NFloat.Clamp(resize.Offset.Y, minOffset, maxOffset));
+				if (collectionView.ContentOffset != offset)
+				{
+					collectionView.SetContentOffset(offset, false);
+				}
+			}
+		}
+
 		void InvalidateLayoutIfItemsMeasureChanged()
 		{
 			// Header and footer cells (including group headers and footers) are supplementary
@@ -262,6 +304,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				if (header is TemplatedCell2 { MeasureInvalidated: true })
 				{
+					if (header.Tag == HeaderTag && !IsHorizontal && ItemsView is not null &&
+						!collectionView.Tracking && !collectionView.Dragging && !collectionView.Decelerating &&
+						!collectionView.HasUncommittedUpdates &&
+						collectionView.ContentOffset.Y >= 0 && collectionView.ContentOffset.Y < header.Frame.Bottom)
+					{
+						_headerResizeAnchor ??= (collectionView.ContentOffset, collectionView.Bounds.Size, header.Frame.Height, ItemsSource, ItemsSource.ItemCount);
+					}
+
 					collectionView.CollectionViewLayout.InvalidateLayout();
 					return;
 				}
