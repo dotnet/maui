@@ -78,7 +78,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			searchHandler.DataFlowDirection = DataFlowDirection.FromPlatform;
 			try
 			{
-				if ((searchHandler.Query ?? string.Empty) != (text ?? string.Empty))
+				var query = searchHandler.Query ?? string.Empty;
+				var nativeText = text ?? string.Empty;
+
+				// Ignore app-driven native updates that only reflect TextTransform.
+				if (query != nativeText &&
+					searchHandler.UpdateFormsText(query, searchHandler.TextTransform) != nativeText)
 				{
 					searchHandler.SetValue(SearchHandler.QueryProperty, text);
 				}
