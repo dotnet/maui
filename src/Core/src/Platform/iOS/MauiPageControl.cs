@@ -162,7 +162,7 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
-				_lastAppliedIndicatorSize = DefaultIndicatorSize;
+				_lastAppliedIndicatorSize = double.NaN;
 			}
 
 			UpdateIndicatorCount();
