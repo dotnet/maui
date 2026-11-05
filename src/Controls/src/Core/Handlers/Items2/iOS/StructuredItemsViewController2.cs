@@ -284,6 +284,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				var offset = new CGPoint(resize.Offset.X, NFloat.Clamp(resize.Offset.Y, minOffset, maxOffset));
 				if (collectionView.ContentOffset != offset)
 				{
+#if MACCATALYST
+					// The visible header supersedes the old item anchor, including queued restores.
+					if (collectionView is Items.MauiCollectionView mauiCollectionView)
+					{
+						mauiCollectionView.ClearPendingScrollRestore();
+					}
+#endif
 					collectionView.SetContentOffset(offset, false);
 				}
 			}
