@@ -298,8 +298,9 @@ handoffs. The routine rollover must not force-push history, delete historical
 release refs, or publish packages. Package publishing retains the separate gates
 in the [release process](ReleaseProcess.md).
 
-The daily `net11`-to-`main` merge PR runs on a schedule independently of release
-activation, stopping for conflicts or failed validation instead of guessing fixes.
+The proposed daily `net11`-to-`main` merge PR requires a separate scheduled
+workflow, stopping for conflicts or failed validation instead of guessing fixes.
+This PR does not implement that daily forwarding automation.
 
 ### Read-only planning trial
 
@@ -438,7 +439,26 @@ existed. The sandbox workflow was re-enabled with its scoped Actions token; no
 personal token, additional secret, or user-impersonation configuration was used.
 A rerun left the same two PRs and all output refs unchanged.
 
+The [clean-start visual replay](https://github.com/dotnet/maui/pull/39913#issuecomment-6661729586)
+documents the later full sandbox sequence with real GitHub screenshots:
+initial tracking PRs before any cut, two candidate merges, exact release refs,
+content isolation, preview retirement, and a duplicate-free rerun. The replay
+removed its dummy refs afterward and distinguishes manual/configuration checks
+from production automation.
+
 ## Adoption scope
+
+Merging this PR is not a complete production release transition. The clean-start
+sandbox proves the branch/PR lifecycle, not the following remaining work:
+
+| Surface | Remaining production requirement |
+|---|---|
+| Release cuts and rotation | Implement the protected production orchestrator, including persistent state advancement and recovery. The current mutation runner is sandbox-only. |
+| Daily forward merges | Implement the scheduled `net11`-to-`main` merge workflow. A manual merge does not validate unattended scheduling. |
+| New branch names | Review CI, protections, and readiness discovery for literal `net11` and `candidate/...`. Existing primary CI YAML filters list `net*.0`, not `net11`; server-side/manual runs are not proof that the proposed triggers are wired. |
+| Signed nightly builds | Deploy the internal mirrored source changes and validate signed artifacts and feed/channel handoff before changing `nightlyMode` from `legacy`. |
+| .NET 12 development | Update `main` and its dependency flow separately; creating `net11` does not change `main`'s SDK. |
+| Candidate naming | Resolve the production rotation policy before enabling release mutations. |
 
 Adopting this proposal requires coordinating the branch changes with their
 protections, pipeline branch filters, scheduled merges, dependency-update
