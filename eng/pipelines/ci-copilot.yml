@@ -1,4 +1,4 @@
-# Pipeline for full /review and existing-test-only /review gate.
+# Pipeline for full /review, existing-test-only /review gate, and explicit Windows device validation.
 # Full review remains the default; gate-only runs do not invoke Copilot.
 #
 # For more information, see:
@@ -25,6 +25,11 @@ parameters:
 
   - name: GateOnly
     displayName: 'Verify existing PR tests only'
+    type: boolean
+    default: false
+
+  - name: WindowsDeviceValidation
+    displayName: 'Run native Windows device validation without review automation'
     type: boolean
     default: false
 
@@ -81,7 +86,21 @@ variables:
     value: 150
 
 stages:
-- ${{ if eq(parameters.GateOnly, true) }}:
+- ${{ if eq(parameters.WindowsDeviceValidation, true) }}:
+  - template: arcade/stage-device-tests.yml
+    parameters:
+      androidPool: {}
+      applePools: []
+      runtimes: []
+      windowsPool: ${{ parameters.windowsPool }}
+      runWindowsTests: true
+      BuildConfiguration: Debug
+      TargetFrameworkVersion: net11.0
+      projects:
+      - name: graphics
+        path: src/Graphics/tests/DeviceTests/Graphics.DeviceTests.csproj
+        applicationId: com.microsoft.maui.graphics.devicetests
+- ${{ elseif eq(parameters.GateOnly, true) }}:
   - template: pr-review-gate.yml
     parameters:
       PRNumber: ${{ parameters.PRNumber }}
