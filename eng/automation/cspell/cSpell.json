@@ -23,7 +23,11 @@
         "devicectl",
         "xcdevice",
         "MAUIX",
-        "Parameterless"
+        "Parameterless",
+        "AUMID",
+        "MSIX",
+        "binlogs",
+        "runsettings"
     ],
     "ignoreWords": [],
     "patterns": [

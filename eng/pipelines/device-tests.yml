@@ -57,6 +57,11 @@ parameters:
   type: boolean
   default: false
 
+- name: platforms
+  displayName: Platforms for the secondary device-test pipeline
+  type: object
+  default: [ android, ios, catalyst, windows ]
+
 - name: androidPool
   type: object
   default:
@@ -131,6 +136,7 @@ stages:
 
     - template: common/device-tests.yml
       parameters:
+        platforms: ${{ parameters.platforms }}
         androidPool: ${{ parameters.androidPool }}
         iosPool: ${{ parameters.iosPool }}
         catalystPool: ${{ parameters.catalystPool }}
