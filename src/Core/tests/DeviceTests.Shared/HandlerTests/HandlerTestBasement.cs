@@ -319,7 +319,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			if (_mauiApp != null)
 			{
-				await ((IAsyncDisposable)_mauiApp).DisposeAsync();
+				await InvokeOnMainThreadAsync(() => ((IAsyncDisposable)_mauiApp).DisposeAsync().AsTask());
 			}
 
 			_mauiApp = null;
