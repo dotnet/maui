@@ -104,9 +104,11 @@ and continue the daily `net11`-to-`main` merges.
 
 ## One-click release automation
 
-The proposed implementation is an internal Azure DevOps pipeline named
+Production orchestration could run as an internal Azure DevOps pipeline named
 `maui-release-rollover`, with its definition and scripts maintained in this
-repository. It is not implemented or enabled by this documentation change.
+repository. It is not implemented or enabled by this change. A separate GitHub
+Actions sandbox below exercises automatic activation after a dummy candidate
+merge without enabling production release operations.
 
 ### Operator experience
 
@@ -203,6 +205,58 @@ whose repository is a disposable local Git repository. This is not a release for
 or an activation input for the proposed pipeline. The Azure pipeline, branch
 mutations, external integrations, and publishing are not implemented by this
 prototype.
+
+### GitHub Actions merge-triggered sandbox
+
+The **Release rollover sandbox** workflow runs automatically when a merge is
+pushed to `release-rollover-trial/<trial>/main`. That branch is an isolated dummy
+integration target, not the real `main` branch. In the proposed production
+workflow, the candidate still merges into `net11`, while real `main` receives
+daily fixes for .NET 12.
+
+The workflow derives the release band and SR number from the candidate ref
+matching the merge commit's second parent. It requires a two-parent merge, an
+unchanged integration HEAD, and an inflight branch containing that candidate.
+An ordinary commit, ambiguous candidate, missing source, divergent history, or
+destination at a different SHA stops the run instead of guessing. A shallow fetch
+that cannot prove ancestry also stops the run.
+
+For a dummy SR1 candidate merge, it creates only these sandbox refs:
+
+| Dummy output under `release-rollover-trial/<trial>/` | Source commit |
+|---|---|
+| `release/11.0.1xx-sr1` | The exact candidate merge commit on dummy `main`. |
+| `candidate/11.0.1xx-sr2` | The pinned old SR2 inflight commit, which must contain SR1's candidate changes. |
+| `inflight/11.0.1xx-sr3` | The same pinned old SR2 inflight commit. |
+
+This trial uses the proposed `candidate/...` naming clarification only inside
+the sandbox. It creates new refs and preserves historical source branches; it
+does not test renaming or deletion. The real naming policy remains unresolved.
+
+```mermaid
+flowchart LR
+    Merge["Merge dummy candidate into dummy main"] --> Action["GitHub Actions starts automatically"]
+    Action --> Guard["Validate merge and snapshot dummy source refs"]
+    Guard --> Create["Create dummy release and next-cycle refs"]
+    Create --> Verify["Verify exact SHAs and publish run summary"]
+```
+
+Each sandbox has a serialized workflow concurrency group. Existing outputs at
+the exact expected SHAs are left unchanged, so a rerun resumes missing creations
+or reports no changes. Creation is sequential, not a cross-ref transaction; a
+failed run can leave partial outputs recorded in its artifact. Existing targets
+are never updated, and moved source refs require inspection before resuming.
+
+The workflow uses its scoped `GITHUB_TOKEN`, with no new personal token or
+repository secret. It does not use `pull_request_target`, check out fork code, or
+run an AI agent. There is no trigger on real `main`, `net11`, `candidate/...`, or
+`inflight/...`. Normal merge commits are required for this trial; squash and
+rebase merges are not supported. The workflow can also be activated manually on
+a sandbox integration ref after it is available for dispatch in GitHub.
+
+This exercises branch operations only. It does not validate production
+permissions, candidate approvals, signed builds, packages, dependency
+subscriptions, channel mappings, the internal mirror, or production rollback.
 
 ## Adoption scope
 
