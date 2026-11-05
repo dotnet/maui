@@ -117,6 +117,14 @@ candidate PR merges into `net11`, or on zero-input manual activation. It checks 
 trusted `main`, not the merged PR's head, and requires only repository read access
 and scoped PR write access.
 
+Production PRs must be authored as `kubaflo`, with a short role description and
+a Mermaid graph highlighting the tracked lane. Local reconciliation uses the
+existing authenticated `gh` login. Unattended GitHub-hosted reconciliation is
+opt-in through `RELEASE_TRACKING_ENABLED=true` and requires an approved
+`RELEASE_TRACKING_TOKEN` authenticating as `kubaflo`; the default Actions bot is
+not an author fallback. This change does not install a user token or enable
+that production workflow automatically.
+
 The reconciler creates missing PRs as drafts, refreshes managed titles and
 descriptions, and never approves or merges them. A head-branch change requires a
 new PR: GitHub cannot retarget an existing PR's head. After both new-cycle PRs
@@ -185,6 +193,12 @@ The same deployment prerequisite applies when each new lane is created.
 The public PR and sandbox do not deploy internal mirrors, change Maestro
 subscriptions, or certify an actual signed nightly. They must not be reported as
 an operational nightly cutover until that internal evidence exists.
+
+The internal YAML preview accepted both the ordinary path and the
+scheduled-inflight template path, including the selection-stage dependency on
+`Pack`. The latter preview supplied explicit scheduled branch context through a
+root YAML override because preview requests do not adopt the queued system
+variables. It did not queue a build or execute signing or publishing.
 
 ## One-click release automation
 

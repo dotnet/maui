@@ -23,6 +23,7 @@ jobs:
   reconcile:
     if: >-
       github.repository == 'dotnet/maui' &&
+      vars.RELEASE_TRACKING_ENABLED == 'true' &&
       (github.event_name != 'pull_request' ||
        (github.event.pull_request.merged &&
         github.event.pull_request.head.repo.full_name == 'dotnet/maui' &&
@@ -31,7 +32,6 @@ jobs:
     timeout-minutes: 10
     permissions:
       contents: read
-      pull-requests: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -41,5 +41,9 @@ jobs:
       - name: Reconcile the current release tracking PRs
         shell: pwsh
         env:
-          GH_TOKEN: ${{ github.token }}
-        run: ./eng/scripts/Sync-ReleaseTrackingPullRequests.ps1
+          GH_TOKEN: ${{ secrets.RELEASE_TRACKING_TOKEN }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:GH_TOKEN)) {
+            throw 'Unattended PR reconciliation requires an approved RELEASE_TRACKING_TOKEN for kubaflo. No bot fallback is permitted.'
+          }
+          ./eng/scripts/Sync-ReleaseTrackingPullRequests.ps1

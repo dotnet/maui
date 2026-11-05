@@ -28,6 +28,12 @@ if ($SandboxPrefix -and $SandboxPrefix -cnotmatch '^release-rollover-trial/[a-z0
 }
 
 $repository = 'dotnet/maui'
+if (!$PlanOnly -and !$SandboxPrefix) {
+    $identity = Invoke-TrackingApi -Arguments @('user')
+    if ($identity.login -cne 'kubaflo') {
+        throw "Production tracking PRs must be created and maintained with kubaflo's authorized GitHub identity, not a bot fallback."
+    }
+}
 $scope = if ($SandboxPrefix) { $SandboxPrefix } else { 'production' }
 $base = if ($SandboxPrefix) { "$SandboxPrefix/main" } else { $state.fixBranch }
 $candidateHead = if ($SandboxPrefix) { "$SandboxPrefix/$($state.candidateBranch)" } else { $state.candidateBranch }
@@ -60,7 +66,33 @@ foreach ($route in $routes) {
         $null = Invoke-TrackingApi -Arguments @("repos/$repository/git/ref/heads/$([Uri]::EscapeDataString($branch))")
     }
     $marker = "<!-- maui-release-tracking:${scope}:$($route.role) -->"
-    $description = "$marker`n`nTracks ``$($route.head)`` into ``$base``.`n`n$($route.purpose)"
+    $currentNode = if ($route.role -ceq 'candidate') { 'Candidate' } else { 'Inflight' }
+    $graph = @(
+        '```mermaid'
+        'flowchart LR'
+        ('    Candidate["{0}"] -->|Release integration| Fixes["{1}"]' -f $candidateHead, $base)
+        ('    Inflight["{0}"] -.->|Next release preview only| Fixes' -f $inflightHead)
+        ('    Fixes -->|Cut release| Release["release/{0}-sr{1}"]' -f $state.releaseBand, $state.currentSr)
+        ('    Fixes -->|Daily forward merge| Features["{0} (features)"]' -f $state.featureBranch)
+        '    Inflight -->|Signed nightlies after cutover| Feed["ci.inflight dogfood feed"]'
+        "    style $currentNode stroke:#2563eb,stroke-width:3px"
+        '```'
+    ) -join "`n"
+    $description = @(
+        $marker
+        ''
+        "Tracks **``$($route.head)`` into ``$base``**."
+        ''
+        $route.purpose
+        ''
+        '#### Release workflow'
+        ''
+        'The highlighted branch is the lane tracked by this PR.'
+        ''
+        $graph
+        ''
+        '**Status:** draft tracking PR, not a release approval. Normal review and CI are required before integration. Versioned nightlies retain the legacy stream until the internal cutover is verified.'
+    ) -join "`n"
     if ($SandboxPrefix) {
         $description += "`n`nSandbox experiment only. This PR must not target a production branch."
     }

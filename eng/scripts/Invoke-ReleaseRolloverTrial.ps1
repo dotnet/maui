@@ -154,6 +154,8 @@ foreach ($sourceRef in @($integrationRef, $candidate.ref, $inflightRef)) {
 $trackingState = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../release-rollover.json') -Raw | ConvertFrom-Json
 $trackingState.currentSr = $sr + 1
 $trackingState.releaseBand = $band
+$trackingState.fixBranch = "$prefix/main"
+$trackingState.featureBranch = "$prefix/features"
 $trackingStatePath = Join-Path $env:RUNNER_TEMP 'sandbox-release-tracking-state.json'
 $trackingState | ConvertTo-Json | Set-Content -LiteralPath $trackingStatePath -Encoding utf8
 $result.trackingPullRequests = & (Join-Path $PSScriptRoot 'Sync-ReleaseTrackingPullRequests.ps1') `
