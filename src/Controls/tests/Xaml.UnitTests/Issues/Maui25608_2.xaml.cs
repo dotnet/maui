@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Concurrent;
+using System.Threading.Tasks;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Controls.Xaml.Diagnostics;
@@ -13,37 +15,41 @@ public partial class Maui25608_2
 	public Maui25608_2() => InitializeComponent();
 
 	[Collection("Issue")]
-	public class Test : IDisposable
+	public class Test : BaseTestFixture
 	{
-		bool enableDiagnosticsInitialState;
-		bool bindingFailureReported = false;
+		readonly bool enableDiagnosticsInitialState;
+		readonly ConcurrentDictionary<BindingBase, TaskCompletionSource<BindingBaseErrorEventArgs>> bindingFailures = new();
 
 		public Test()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
-			enableDiagnosticsInitialState = RuntimeFeature.EnableDiagnostics;
+			enableDiagnosticsInitialState = RuntimeFeature.EnableMauiDiagnostics;
 			RuntimeFeature.EnableMauiDiagnostics = true;
 			BindingDiagnostics.BindingFailed += BindingFailed;
 		}
 
-		public void Dispose()
+		protected override void Dispose(bool disposing)
 		{
-			BindingDiagnostics.BindingFailed -= BindingFailed;
-			RuntimeFeature.EnableMauiDiagnostics = enableDiagnosticsInitialState;
-			DispatcherProvider.SetCurrent(null);
-			AppInfo.SetCurrent(null);
+			if (disposing)
+			{
+				BindingDiagnostics.BindingFailed -= BindingFailed;
+				RuntimeFeature.EnableMauiDiagnostics = enableDiagnosticsInitialState;
+			}
+			base.Dispose(disposing);
 		}
 
 		void BindingFailed(object sender, BindingBaseErrorEventArgs args)
 		{
-			bindingFailureReported = true;
-			Assert.Equal("Mismatch between the specified x:DataType (Microsoft.Maui.Controls.VerticalStackLayout) and the current binding context (Microsoft.Maui.Controls.Xaml.UnitTests.Maui25608_2).", args.Message);
+			GetBindingFailure(args.Binding).TrySetResult(args);
 		}
+
+		TaskCompletionSource<BindingBaseErrorEventArgs> GetBindingFailure(BindingBase binding) =>
+			bindingFailures.GetOrAdd(binding, _ => new(TaskCreationOptions.RunContinuationsAsynchronously));
 
 		[Theory]
 		[XamlInflatorData]
-		internal void TestInvalidBindingWithRelativeSource(XamlInflator inflator)
+		internal async Task TestInvalidBindingWithRelativeSource(XamlInflator inflator)
 		{
 			if (inflator == XamlInflator.SourceGen)
 			{
@@ -57,7 +63,10 @@ public partial class Maui25608_2
 			var page = new Maui25608_2(inflator);
 
 			Assert.NotEqual(25, page.Image.HeightRequest);
-			Assert.True(bindingFailureReported);
+			var binding = page.Image.GetContext(VisualElement.HeightRequestProperty).Bindings.GetValue();
+			var failure = await GetBindingFailure(binding).Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+			Assert.Same(binding, failure.Binding);
+			Assert.Equal("Mismatch between the specified x:DataType (Microsoft.Maui.Controls.VerticalStackLayout) and the current binding context (Microsoft.Maui.Controls.Xaml.UnitTests.Maui25608_2).", failure.Message);
 		}
 	}
 }
