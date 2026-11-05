@@ -26,6 +26,10 @@ namespace Microsoft.Maui.DeviceTests
 				new ContentPage() { Title = "Detail", Content = new Label() { Text = "Detail" } },
 				new ContentPage() { Title = "Flyout", Content = new Label() { Text = "Flyout" } });
 
+			// On tablets the default layout behavior is split mode, where the flyout isn't
+			// hosted in the drawer; force the overlapping drawer so the test is deterministic
+			flyoutPage.FlyoutLayoutBehavior = FlyoutLayoutBehavior.Popover;
+
 			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Controls.Window(flyoutPage), async (handler) =>
 			{
 				bool detailTouched = false;
