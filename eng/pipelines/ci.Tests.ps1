@@ -67,7 +67,8 @@ Describe 'CI provisioning' {
   }
 
   It 'executes all previously submitted unit projects directly with Hot Reload enabled' {
-    @([regex]::Matches($unitStage, '(?m)^  - src/.*\.csproj$')).Count | Should -Be 13
+    @([regex]::Matches($unitStage, '(?m)^  - src/.*\.csproj$')).Count | Should -Be 14
+    $unitStage | Should -Match 'VisualTestUtils.MagickNet.Tests.csproj'
     $unitStage | Should -Match 'BlazorWebView.Windows.UnitTests.csproj'
     $unitStage | Should -Match 'src/TestUtils/tests/UITest.NUnit.Tests/UITest.NUnit.Tests.csproj'
     $unitStage | Should -Match 'src/TestUtils/tests/TestUtils.UnitTests/TestUtils.UnitTests.csproj'

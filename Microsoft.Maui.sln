@@ -250,6 +250,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestUtils.UnitTests", "src\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UITest.NUnit.Tests", "src\TestUtils\tests\UITest.NUnit.Tests\UITest.NUnit.Tests.csproj", "{4654C272-A9BC-4520-9780-56E4893C9B8E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VisualTestUtils.MagickNet.Tests", "src\TestUtils\tests\VisualTestUtils.MagickNet.Tests\VisualTestUtils.MagickNet.Tests.csproj", "{77D32E05-DF9A-4580-9F0E-E765D74B87EF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -655,6 +657,10 @@ Global
 		{4654C272-A9BC-4520-9780-56E4893C9B8E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4654C272-A9BC-4520-9780-56E4893C9B8E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4654C272-A9BC-4520-9780-56E4893C9B8E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{77D32E05-DF9A-4580-9F0E-E765D74B87EF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{77D32E05-DF9A-4580-9F0E-E765D74B87EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{77D32E05-DF9A-4580-9F0E-E765D74B87EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{77D32E05-DF9A-4580-9F0E-E765D74B87EF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -771,6 +777,7 @@ Global
 		{E2BFD1F1-07A8-8DBE-3661-894D0FE37D9C} = {25D0D27A-C5FE-443D-8B65-D6C987F4A80E}
 		{D1A81175-5251-4CDE-A21C-012FD3B7C276} = {6998CAA1-11D4-46B2-B80F-0AC882F58124}
 		{4654C272-A9BC-4520-9780-56E4893C9B8E} = {6998CAA1-11D4-46B2-B80F-0AC882F58124}
+		{77D32E05-DF9A-4580-9F0E-E765D74B87EF} = {6998CAA1-11D4-46B2-B80F-0AC882F58124}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0B8ABEAD-D2B5-4370-A187-62B5ABE4EE50}

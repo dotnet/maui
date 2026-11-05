@@ -14,6 +14,7 @@ parameters:
   - src/Essentials/test/UnitTests/Essentials.UnitTests.csproj
   - src/Essentials/test/ExternalBackendTests/Essentials.ExternalBackend.UnitTests.csproj
   - src/Graphics/tests/Graphics.Tests/Graphics.Tests.csproj
+  - src/TestUtils/tests/VisualTestUtils.MagickNet.Tests/VisualTestUtils.MagickNet.Tests.csproj
   - src/BlazorWebView/tests/MauiBlazorWebView.UnitTests/MauiBlazorWebView.UnitTests.csproj
   - src/BlazorWebView/tests/MauiBlazorWebView.ExternalHandler.UnitTests/MauiBlazorWebView.ExternalHandler.UnitTests.csproj
   - src/TestUtils/tests/UITest.NUnit.Tests/UITest.NUnit.Tests.csproj
