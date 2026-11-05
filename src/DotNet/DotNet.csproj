@@ -179,6 +179,11 @@
   </Target>
 
   <Target Name="_InstallToolRuntimes">
+    <!-- The bootstrap SDK may be too old to load the current Arcade task. -->
+    <Exec Command="&quot;$(DotNetToolPath)&quot; msbuild &quot;$(MSBuildProjectFullPath)&quot; -t:_InstallToolRuntimesCore -p:DotNetDirectory=&quot;$(DotNetDirectory)&quot; -nologo" />
+  </Target>
+
+  <Target Name="_InstallToolRuntimesCore">
     <PropertyGroup>
       <_ToolRuntimeInstallScript>$(MauiRootDirectory)eng/common/dotnet-install.sh</_ToolRuntimeInstallScript>
       <_ToolRuntimeInstallScript Condition="$([MSBuild]::IsOSPlatform('windows'))">$(MauiRootDirectory)eng/common/dotnet-install.cmd</_ToolRuntimeInstallScript>
