@@ -21,14 +21,17 @@ internal sealed class TestUiContext : SynchronizationContext
 
 	public TestUiContext()
 	{
-		new Thread(() =>
+		using (ExecutionContext.SuppressFlow())
 		{
-			ThreadId = Environment.CurrentManagedThreadId;
-			SetSynchronizationContext(this);
-			foreach (var item in _queue.GetConsumingEnumerable())
-				item.Callback(item.State);
-		})
-		{ IsBackground = true, Name = "xUnit UI execution proof" }.Start();
+			new Thread(() =>
+			{
+				ThreadId = Environment.CurrentManagedThreadId;
+				SetSynchronizationContext(this);
+				foreach (var item in _queue.GetConsumingEnumerable())
+					item.Callback(item.State);
+			})
+			{ IsBackground = true, Name = "xUnit UI execution proof" }.Start();
+		}
 	}
 
 	public override void Post(SendOrPostCallback callback, object? state) => _queue.Add((callback, state));
@@ -48,6 +51,20 @@ internal sealed class TestUiContext : SynchronizationContext
 
 public class WindowsUiTestFrameworkTests
 {
+	[Fact]
+	public async Task PreExistingUiThreadReceivesTheCallersExecutionContext()
+	{
+		var marker = new AsyncLocal<string?> { Value = "MTP caller context" };
+		await WindowsUiTestFramework.RunOnUiThread(async () =>
+		{
+			Assert.Equal("MTP caller context", marker.Value);
+			Assert.Equal(UiProofFramework.Context.ThreadId, Environment.CurrentManagedThreadId);
+			await Task.Yield();
+			Assert.Equal("MTP caller context", marker.Value);
+			Assert.Same(UiProofFramework.Context, SynchronizationContext.Current);
+		});
+	}
+
 	[Fact]
 	public async Task DispatchedFailuresAreNotConvertedIntoSuccessfulExecution() =>
 		await Assert.ThrowsAsync<InvalidOperationException>(() =>
