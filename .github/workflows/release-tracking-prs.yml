@@ -5,9 +5,11 @@ on:
     - cron: '20 */6 * * *'
   workflow_dispatch:
   push:
-    branches: [main]
-    paths:
-      - eng/release-rollover.json
+    branches:
+      - main
+      - net11
+      - 'candidate/*'
+      - 'inflight/*'
   pull_request:
     types: [closed]
     branches: [net11]
@@ -27,7 +29,8 @@ jobs:
       (github.event_name != 'pull_request' ||
        (github.event.pull_request.merged &&
         github.event.pull_request.head.repo.full_name == 'dotnet/maui' &&
-        startsWith(github.event.pull_request.head.ref, 'candidate/')))
+        (startsWith(github.event.pull_request.head.ref, 'candidate/') ||
+         startsWith(github.event.pull_request.head.ref, 'inflight/'))))
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:

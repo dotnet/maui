@@ -18,6 +18,24 @@ function Invoke-TrackingApi {
     return ($output -join "`n" | ConvertFrom-Json)
 }
 
+function Get-TrackingRef {
+    param ([string] $Branch)
+
+    $ref = "refs/heads/$Branch"
+    $output = @(& git ls-remote --heads -- "https://github.com/$repository.git" $ref)
+    if ($LASTEXITCODE -ne 0) {
+        throw "Unable to inspect tracking branch '$Branch'."
+    }
+    if ($output.Count -eq 0) {
+        return $null
+    }
+    if ($output.Count -ne 1 -or $output[0] -cnotmatch '^(?<sha>[0-9a-f]{40})\t(?<ref>refs/heads/.+)$' -or
+        $Matches.ref -cne $ref) {
+        throw "Unexpected tracking branch-ref response for '$Branch'."
+    }
+    return $Matches.sha
+}
+
 $state = & (Join-Path $PSScriptRoot 'Get-ReleaseRolloverPlan.ps1') -StatePath $StatePath -ResolveStateOnly |
     ConvertFrom-Json
 if ($state.repository -cne 'https://github.com/dotnet/maui.git') {
@@ -60,12 +78,56 @@ $note = @'
 > Are you waiting for the changes in this PR to be merged?
 > It would be very helpful if you could [test the resulting artifacts](https://github.com/dotnet/maui/wiki/Testing-PR-Builds) from this PR and let us know in a comment if this change resolves your issue. Thank you!
 '@
+if ($null -eq (Get-TrackingRef -Branch $base)) {
+    throw "Tracking target '$base' is missing; the reconciler will not invent its source."
+}
 $results = @()
+$restoredHeads = @()
 foreach ($route in $routes) {
-    foreach ($branch in @($base, $route.head)) {
-        $null = Invoke-TrackingApi -Arguments @("repos/$repository/git/ref/heads/$([Uri]::EscapeDataString($branch))")
-    }
     $marker = "<!-- maui-release-tracking:${scope}:$($route.role) -->"
+    $headSha = Get-TrackingRef -Branch $route.head
+    if ($null -eq $headSha) {
+        $pages = @(Invoke-TrackingApi -Arguments @(
+            "repos/$repository/pulls", '--method', 'GET', '--paginate', '--slurp',
+            '-f', 'state=closed', '-f', "base=$base", '-f', "head=dotnet:$($route.head)", '-F', 'per_page=100'
+        ))
+        $merged = @(foreach ($page in $pages) {
+            foreach ($pr in $page) {
+                if ($null -ne $pr.head.repo -and $pr.head.repo.full_name -ceq $repository -and
+                    $pr.head.ref -ceq $route.head -and $pr.base.ref -ceq $base -and $pr.merged_at -and
+                    ([string] $pr.body).IndexOf($marker, [StringComparison]::Ordinal) -ge 0) {
+                    $pr
+                }
+            }
+        })
+        if ($merged.Count -eq 0) {
+            throw "Tracking source '$($route.head)' is missing without a merged managed PR proving its source commit."
+        }
+        $latest = $merged | Sort-Object { [DateTimeOffset] $_.merged_at } -Descending | Select-Object -First 1
+        $proof = Invoke-TrackingApi -Arguments @("repos/$repository/pulls/$($latest.number)")
+        if (!$proof.merged -or $null -eq $proof.head.repo -or $proof.head.repo.full_name -cne $repository -or
+            $proof.head.ref -cne $route.head -or $proof.base.ref -cne $base -or
+            ([string] $proof.body).IndexOf($marker, [StringComparison]::Ordinal) -lt 0 -or
+            $proof.head.sha -cnotmatch '^[0-9a-f]{40}$') {
+            throw "Merged PR #$($latest.number) does not prove the missing tracking source."
+        }
+        $headSha = $proof.head.sha
+        if (!$PlanOnly) {
+            $restored = Invoke-TrackingApi -Arguments @(
+                "repos/$repository/git/refs", '--method', 'POST',
+                '-f', "ref=refs/heads/$($route.head)", '-f', "sha=$headSha"
+            )
+            if ($restored.ref -cne "refs/heads/$($route.head)" -or $restored.object.sha -cne $headSha) {
+                throw "Restored tracking branch does not match the merged PR's source commit."
+            }
+        }
+        $restoredHeads += [pscustomobject]@{
+            head = $route.head
+            sha = $headSha
+            mergedPullRequest = $proof.number
+            status = if ($PlanOnly) { 'would-restore' } else { 'restored' }
+        }
+    }
     $currentNode = if ($route.role -ceq 'candidate') { 'Candidate' } else { 'Inflight' }
     $graph = @(
         '```mermaid'
@@ -130,7 +192,7 @@ foreach ($route in $routes) {
     }
     else {
         $comparison = Invoke-TrackingApi -Arguments @(
-            "repos/$repository/compare/$([Uri]::EscapeDataString($base))...$([Uri]::EscapeDataString($route.head))"
+            "repos/$repository/compare/$([Uri]::EscapeDataString($base))...$headSha"
         )
         if ($comparison.ahead_by -eq 0) {
             $status = 'waiting-for-changes'
@@ -186,5 +248,6 @@ if (!$PlanOnly -and @($results | Where-Object { $null -ne $_.number }).Count -eq
     planOnly = [bool] $PlanOnly
     stateSha256 = $state.stateSha256
     routes = $results
+    restoredHeads = $restoredHeads
     closedObsolete = $closed
 } | ConvertTo-Json -Depth 6

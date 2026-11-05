@@ -113,9 +113,10 @@ Maintain these two draft PRs against the fixes branch, `net11`:
 
 `Release tracking PRs` reconciles these routes from the canonical release-state
 record every six hours, when that record changes on `main`, after a same-repo
-candidate PR merges into `net11`, or on zero-input manual activation. It checks out
-trusted `main`, not the merged PR's head, and requires only repository read access
-and scoped PR write access.
+candidate or inflight PR merges into `net11`, on pushes to the development and
+lane branches, or on zero-input manual activation. It checks out trusted `main`,
+not the merged PR's head. Its user credential needs PR write access and branch
+creation access for recovery; repository protections still apply.
 
 Production PRs must be authored as `kubaflo`, with a short role description and
 a Mermaid graph highlighting the tracked lane. Local reconciliation uses the
@@ -140,10 +141,27 @@ when real changes arrive; it does not add fake commits to satisfy a literal
 `net11`, so that route must wait for changes. Existing PRs can remain open while
 their diff becomes empty.
 
+Merge handling is automatic as well. If a tracking PR merges but the same lane
+is still current, its replacement waits until that head has new commits ahead of
+`net11`; the next lane push triggers reconciliation. Once the trusted release
+state advances, reconciliation creates the next candidate and preview PRs with
+updated SR numbers, branches, descriptions, and highlighted graphs, then retires
+obsolete managed previews. It does not increment the release state just because
+someone merged a preview PR.
+
+GitHub can automatically delete a head branch after merge. If a current lane ref
+is missing, the reconciler restores it only from a live, verified, same-repo
+merged managed PR's exact head SHA. It never resets an existing branch, invents
+the development target, restores an obsolete role from an older release state,
+or recreates a branch from an unrelated/unmerged PR.
+
 The release rollover must advance `currentSr` in the protected state record and
 invoke reconciliation after the new lane refs are ready. Updating the record also
 advances the titles and routes to candidate SR2 and inflight SR3. Branch pushes
 then update each PR's diff naturally.
+The rollover must call the reconciler directly rather than rely only on push
+events: writes using `GITHUB_TOKEN` may not emit another workflow activation.
+The scheduled reconciliation is a recovery path, not the primary merge trigger.
 
 For read-only inspection before deployment:
 

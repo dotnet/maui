@@ -64,6 +64,57 @@ $candidates = @(foreach ($entry in $snapshot.GetEnumerator()) {
         }
     }
 })
+$associatedPages = @(Invoke-GhJson -Arguments @(
+    "repos/$repository/commits/$mergeSha/pulls", '--paginate', '--slurp'
+))
+$mergedCandidates = @(foreach ($page in $associatedPages) {
+    foreach ($pr in $page) {
+        if ($null -ne $pr.head.repo -and $pr.head.repo.full_name -ceq $repository -and
+            $pr.base.ref -ceq "$prefix/main" -and $pr.head.sha -ceq $candidateSha -and
+            $pr.merge_commit_sha -ceq $mergeSha -and $pr.merged_at -and
+            ([string] $pr.body).IndexOf("<!-- maui-release-tracking:${prefix}:candidate -->", [StringComparison]::Ordinal) -ge 0 -and
+            "refs/heads/$($pr.head.ref)" -cmatch $pattern) {
+            [pscustomobject]@{
+                ref = "refs/heads/$($pr.head.ref)"
+                band = $Matches.band
+                sr = $Matches.sr
+                number = $pr.number
+            }
+        }
+    }
+})
+$restoredCandidateRef = $false
+if ($mergedCandidates.Count -gt 1) {
+    throw "Multiple merged managed candidate PRs claim this sandbox activation."
+}
+if ($mergedCandidates.Count -eq 1) {
+    $matched = $mergedCandidates[0]
+    $proof = Invoke-GhJson -Arguments @("repos/$repository/pulls/$($matched.number)")
+    if (!$proof.merged -or $proof.merge_commit_sha -cne $mergeSha -or
+        $proof.head.sha -cne $candidateSha -or "refs/heads/$($proof.head.ref)" -cne $matched.ref -or
+        $proof.base.ref -cne "$prefix/main" -or $null -eq $proof.head.repo -or
+        $proof.head.repo.full_name -cne $repository -or
+        ([string] $proof.body).IndexOf("<!-- maui-release-tracking:${prefix}:candidate -->", [StringComparison]::Ordinal) -lt 0) {
+        throw "The merged candidate PR does not match the pinned sandbox activation."
+    }
+    if ($snapshot.ContainsKey($matched.ref)) {
+        if ($snapshot[$matched.ref] -cne $candidateSha) {
+            throw "The merged candidate branch moved after the merge."
+        }
+    }
+    else {
+        $restored = Invoke-GhJson -Arguments @(
+            "repos/$repository/git/refs", '--method', 'POST',
+            '-f', "ref=$($matched.ref)", '-f', "sha=$candidateSha"
+        )
+        if ($restored.ref -cne $matched.ref -or $restored.object.sha -cne $candidateSha) {
+            throw "The restored candidate ref does not match the merged PR's source commit."
+        }
+        $snapshot.Add($matched.ref, $candidateSha)
+        $restoredCandidateRef = $true
+    }
+    $candidates = @($matched)
+}
 if ($candidates.Count -ne 1) {
     throw "The merge's second parent must match exactly one current sandbox candidate branch."
 }
@@ -106,6 +157,7 @@ $result = [ordered]@{
     mergeSha = $mergeSha
     candidateRef = $candidate.ref
     candidateSha = $candidateSha
+    restoredCandidateRef = $restoredCandidateRef
     inflightRef = $inflightRef
     inflightSha = $inflightSha
     operations = $operations
