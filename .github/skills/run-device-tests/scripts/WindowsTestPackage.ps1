@@ -13,6 +13,16 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
+function Import-WindowsTestAppxModule {
+    param([string] $Edition = $PSVersionTable.PSEdition)
+    if ($Edition -eq 'Core') {
+        Import-Module Appx -UseWindowsPowerShell -Global -ErrorAction Stop
+    }
+    else {
+        Import-Module Appx -Global -ErrorAction Stop
+    }
+}
+
 function Write-WindowsTestPackageState {
     param([string] $Path, [System.Collections.IDictionary] $State)
     $pending = "$Path.$([guid]::NewGuid().ToString('N')).next"
@@ -216,6 +226,9 @@ function Remove-WindowsTestPackage {
 }
 
 if (!$IsWindows) { throw 'MSIX package setup and cleanup require Windows.' }
+if ($Action -eq 'Install' -or ($Action -eq 'Cleanup' -and (Test-Path -LiteralPath $StatePath))) {
+    Import-WindowsTestAppxModule
+}
 switch ($Action) {
     Prepare { Initialize-WindowsTestPackage -Path $StatePath -Project $ProjectPath -TimeoutSeconds $TimeoutSeconds }
     Install { Install-WindowsTestPackage -Path $StatePath -Directory $PackageDirectory }

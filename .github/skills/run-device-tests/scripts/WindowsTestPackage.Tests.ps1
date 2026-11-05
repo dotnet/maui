@@ -53,6 +53,20 @@ Describe 'Owned MSIX installation and activation cleanup' {
         Mock Remove-WindowsTestCertificate {}
         Mock Stop-Process {}
     }
+    It 'loads Desktop-only Appx commands through Windows PowerShell when called from pwsh' {
+        Mock Import-Module {}
+        Import-WindowsTestAppxModule -Edition Core
+        Should -Invoke Import-Module -Times 1 -ParameterFilter {
+            $Name -eq 'Appx' -and $UseWindowsPowerShell -and $Global
+        }
+    }
+    It 'does not request a compatibility session from Windows PowerShell Desktop' {
+        Mock Import-Module {}
+        Import-WindowsTestAppxModule -Edition Desktop
+        Should -Invoke Import-Module -Times 1 -ParameterFilter {
+            $Name -eq 'Appx' -and !$UseWindowsPowerShell -and $Global
+        }
+    }
     It 'installs the exact owned MSIX and explicit x64 SDK dependencies' {
         $directory = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
         $null = New-PackageArchive $directory $state.IdentityName $state.Publisher

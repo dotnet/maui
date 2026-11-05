@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner;
+#if WINDOWS
+using Microsoft.Maui.Dispatching;
+#endif
 #if IOS || MACCATALYST
 using Microsoft.Win32.SafeHandles;
 #endif
@@ -28,6 +31,9 @@ class MauiTestApplication : Application
 			{
 				var services = IPlatformApplication.Current!.Services;
 				var runner = services.GetRequiredService<HeadlessTestRunner>();
+#if WINDOWS
+				WindowsUiTestFramework.ConfigureDispatcher(action => page.Dispatcher.DispatchAsync(action));
+#endif
 				var directory =
 #if IOS || MACCATALYST
 					Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
