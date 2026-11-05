@@ -43,13 +43,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		internal void AttachContent(TemplatedCell2 cell)
 		{
-			var platformView = cell.PlatformView;
+			var platformView = cell.PlatformView is GeneralWrapperView
+				? cell.PlatformView
+				: cell.PlatformHandler?.ToPlatform();
 			if (platformView is null)
 				return;
 
-			if (_platformView.TryGetTarget(out var previousView) && previousView != platformView)
+			if (_platformView.TryGetTarget(out var previousView) && previousView != platformView && previousView.Superview == this)
 				previousView.RemoveFromSuperview();
 
+			cell.PlatformView = platformView;
 			_handler.SetTarget(cell.PlatformHandler);
 			_platformView.SetTarget(platformView);
 			_template.SetTarget(cell.CurrentTemplate);
@@ -66,9 +69,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		internal void UpdateLayout(TemplatedCell2 cell)
 		{
+			if (cell.PlatformView is not GeneralWrapperView && cell.PlatformHandler is not null)
+			{
+				var currentPlatformView = cell.PlatformHandler.ToPlatform();
+				cell.PlatformView = currentPlatformView;
+				_platformView.SetTarget(currentPlatformView);
+			}
+
 			Frame = cell.Frame;
 			Layer.ZPosition = cell.Layer.ZPosition;
-			if (_platformView.TryGetTarget(out var platformView))
+			if (_platformView.TryGetTarget(out var platformView) && platformView is GeneralWrapperView)
 				platformView.Frame = Bounds;
 			Superview?.BringSubviewToFront(this);
 		}
