@@ -58,7 +58,6 @@ $mergeSha = $env:GITHUB_SHA
 if ($mergeSha -cnotmatch '^[0-9a-f]{40}$') {
     throw "The triggering commit must be a full Git SHA."
 }
-
 $snapshot = Get-TrialSnapshot
 if (!$snapshot.ContainsKey($integrationRef) -or $snapshot[$integrationRef] -cne $mergeSha) {
     throw "The sandbox integration branch moved; refusing a stale activation."
@@ -101,7 +100,7 @@ $previewPattern = "^$([Regex]::Escape($prefix))/inflight/(?<band>[1-9][0-9]*\.0\
 $mergedPreviews = @(foreach ($page in $associatedPages) {
     foreach ($pr in $page) {
         if ($null -ne $pr.head.repo -and $pr.head.repo.full_name -ceq $repository -and
-            $pr.base.ref -ceq "$prefix/main" -and $pr.head.sha -ceq $candidateSha -and
+            $pr.base.ref -ceq "$prefix/main" -and
             $pr.merge_commit_sha -ceq $mergeSha -and $pr.merged_at -and
             ([string] $pr.body).IndexOf("<!-- maui-release-tracking:${prefix}:inflight -->", [StringComparison]::Ordinal) -ge 0 -and
             $pr.head.ref -cmatch $previewPattern) {
@@ -123,8 +122,7 @@ if ($mergedPreviews.Count -eq 1) {
         throw "The merged preview does not identify a valid current sandbox SR."
     }
     $proof = Invoke-GhJson -Arguments @("repos/$repository/pulls/$($preview.number)")
-    if (!$proof.merged -or $proof.merge_commit_sha -cne $mergeSha -or
-        $proof.head.sha -cne $candidateSha -or $proof.head.ref -cne $preview.head -or
+    if (!$proof.merged -or $proof.merge_commit_sha -cne $mergeSha -or $proof.head.ref -cne $preview.head -or
         $proof.base.ref -cne "$prefix/main" -or $null -eq $proof.head.repo -or
         $proof.head.repo.full_name -cne $repository -or
         ([string] $proof.body).IndexOf("<!-- maui-release-tracking:${prefix}:inflight -->", [StringComparison]::Ordinal) -lt 0) {

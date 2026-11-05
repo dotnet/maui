@@ -118,13 +118,15 @@ lane branches, or on zero-input manual activation. It checks out trusted `main`,
 not the merged PR's head. Its user credential needs PR write access and branch
 creation access for recovery; repository protections still apply.
 
-Production PRs must be authored as `kubaflo`, with a short role description and
-a Mermaid graph highlighting the tracked lane. Local reconciliation uses the
-existing authenticated `gh` login. Unattended GitHub-hosted reconciliation is
-opt-in through `RELEASE_TRACKING_ENABLED=true` and requires an approved
-`RELEASE_TRACKING_TOKEN` authenticating as `kubaflo`; the default Actions bot is
-not an author fallback. This change does not install a user token or enable
-that production workflow automatically.
+GitHub-hosted reconciliation uses its repository-scoped `GITHUB_TOKEN`:
+new automated PRs are authored by `github-actions[bot]`. No personal token,
+repository secret, or user impersonation is needed. Each description has a short
+role explanation and a Mermaid graph highlighting its lane. Existing managed
+PRs can retain their original human author while the bot updates them; their
+authors cannot be changed in place. Newly recreated PRs use the bot.
+Sandbox titles explicitly identify the trial so they cannot be confused with
+real release trackers. Manual CLI reconciliation uses the caller's existing
+authenticated identity.
 
 The reconciler creates missing PRs as drafts, refreshes managed titles and
 descriptions, and never approves or merges them. A head-branch change requires a
@@ -377,9 +379,10 @@ deleted after merge, using exactly that merged PR's source SHA. A merged preview
 activates tracking-only reconciliation: it does not cut another release or
 advance the servicing cycle.
 
-The workflow uses its scoped `GITHUB_TOKEN`, with no new personal token or
-repository secret. It does not use `pull_request_target`, check out fork code, or
-run an AI agent. There is no trigger on real `main`, `net11`, `candidate/...`, or
+The workflow uses its repository-scoped `GITHUB_TOKEN` with contents/PR write
+permissions only in the mutation job; checkout does not persist credentials.
+It does not use `pull_request_target`, check out fork code,
+or run an AI agent. There is no trigger on real `main`, `net11`, `candidate/...`, or
 `inflight/...`. Normal merge commits are required for this trial; squash and
 rebase merges are not supported. The workflow can also be activated manually on
 a sandbox integration ref after it is available for dispatch in GitHub.
@@ -406,6 +409,21 @@ change but not the future SR2 change; candidate SR2 contained both, and release
 SR2 subsequently included the future change. Run artifacts recorded exact source
 and output SHAs. The real development and release-lane refs were unchanged by
 the trial.
+
+The subsequent [managed candidate PR merge trial](https://github.com/dotnet/maui/actions/runs/42042956214)
+merged a real dummy candidate PR, recovered its deleted head at the exact merged
+source SHA, created the next candidate/preview pair with updated graphs, and
+closed the obsolete preview. A repeated run after deliberate deletion of that
+merged dummy head restored it without creating duplicate PRs.
+
+The [managed preview PR merge trial](https://github.com/dotnet/maui/actions/runs/42043918558)
+performed tracking-only reconciliation, recovered current lane heads deleted
+after merge, and did not cut another release. Empty routes waited for real
+changes; after follow-up work arrived, reconciliation recreated the pair.
+
+Historical closed/merged trial records retain their original authors. The active
+workflow policy uses the Actions bot for new automated PRs, without replacing
+existing open PRs solely to change their author.
 
 ## Adoption scope
 

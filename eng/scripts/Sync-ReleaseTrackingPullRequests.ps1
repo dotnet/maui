@@ -46,16 +46,15 @@ if ($SandboxPrefix -and $SandboxPrefix -cnotmatch '^release-rollover-trial/[a-z0
 }
 
 $repository = 'dotnet/maui'
-if (!$PlanOnly -and !$SandboxPrefix) {
-    $identity = Invoke-TrackingApi -Arguments @('user')
-    if ($identity.login -cne 'kubaflo') {
-        throw "Production tracking PRs must be created and maintained with kubaflo's authorized GitHub identity, not a bot fallback."
-    }
-}
 $scope = if ($SandboxPrefix) { $SandboxPrefix } else { 'production' }
 $base = if ($SandboxPrefix) { "$SandboxPrefix/main" } else { $state.fixBranch }
 $candidateHead = if ($SandboxPrefix) { "$SandboxPrefix/$($state.candidateBranch)" } else { $state.candidateBranch }
 $inflightHead = if ($SandboxPrefix) { "$SandboxPrefix/$($state.inflightBranch)" } else { $state.inflightBranch }
+$releaseBranch = "release/$($state.releaseBand)-sr$($state.currentSr)"
+if ($SandboxPrefix) {
+    $releaseBranch = "$SandboxPrefix/$releaseBranch"
+}
+$nightlyLabel = if ($SandboxPrefix) { 'Nightly handoff (not published)' } else { 'ci.inflight dogfood feed' }
 $routes = @(
     [pscustomobject]@{
         role = 'candidate'
@@ -70,6 +69,11 @@ $routes = @(
         purpose = 'Visibility into the following release. Keep this PR in draft; do not merge it ahead of the current candidate.'
     }
 )
+if ($SandboxPrefix) {
+    $trialName = $SandboxPrefix.Split('/')[-1]
+    $routes[0].title = "[Sandbox $trialName] Release candidate $($state.releaseBand) SR$($state.currentSr)"
+    $routes[1].title = "[Sandbox $trialName] Next release preview $($state.releaseBand) SR$($state.currentSr + 1)"
+}
 $templatePath = Join-Path $PSScriptRoot '../../.github/PULL_REQUEST_TEMPLATE.md'
 $template = Get-Content -LiteralPath $templatePath -Raw
 $note = @'
@@ -134,9 +138,9 @@ foreach ($route in $routes) {
         'flowchart LR'
         ('    Candidate["{0}"] -->|Release integration| Fixes["{1}"]' -f $candidateHead, $base)
         ('    Inflight["{0}"] -.->|Next release preview only| Fixes' -f $inflightHead)
-        ('    Fixes -->|Cut release| Release["release/{0}-sr{1}"]' -f $state.releaseBand, $state.currentSr)
+        ('    Fixes -->|Cut release| Release["{0}"]' -f $releaseBranch)
         ('    Fixes -->|Daily forward merge| Features["{0} (features)"]' -f $state.featureBranch)
-        '    Inflight -->|Signed nightlies after cutover| Feed["ci.inflight dogfood feed"]'
+        ('    Inflight -->|Signed nightlies after cutover| Feed["{0}"]' -f $nightlyLabel)
         "    style $currentNode stroke:#2563eb,stroke-width:3px"
         '```'
     ) -join "`n"
