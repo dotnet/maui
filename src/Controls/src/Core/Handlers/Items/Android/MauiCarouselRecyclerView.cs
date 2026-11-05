@@ -21,6 +21,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		bool _disposed;
 		bool? _lastLoopValue;
 		bool _isInternalPositionUpdate;
+		bool _isUpdatingCurrentItem;
 		readonly float _touchSlop;
 		float _initialTouchX;
 		float _initialTouchY;
@@ -221,7 +222,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (oldItemViewAdapter != null && _initialized)
 			{
 				ItemsView.SetValueFromRenderer(CarouselView.PositionProperty, 0);
-				ItemsView.SetValueFromRenderer(CarouselView.CurrentItemProperty, null);
+				SetCurrentItemFromRenderer(null);
 			}
 
 			_gotoPosition = -1;
@@ -451,22 +452,21 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 									ScrollToPosition(carouselPosition);
 								}
 							}
-
 							else if (!scrollRequested && currentItemUpdated)
 							{
 								var updatedCurrentItemPosition =
-									observableItemsSource.GetPosition(Carousel.CurrentItem);
+									ItemsViewAdapter.ItemsSource.GetPosition(Carousel.CurrentItem);
 
 								if (updatedCurrentItemPosition >= 0)
 								{
+									_noNeedForScroll = true;
 									Carousel.SetValueFromRenderer(
 										CarouselView.PositionProperty,
 										updatedCurrentItemPosition);
 
 									if (Carousel.Loop)
 									{
-										// Use the loop-aware scrolling path.
-										ScrollToPosition(updatedCurrentItemPosition);
+										UpdateLoopCentering(ItemsViewAdapter.ItemsSource.Count);
 									}
 									else
 									{
@@ -476,7 +476,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 									}
 								}
 							}
-
 
 							// If we are adding or removing the last item we need to update
 							// the inset that we give to items so they are centered.
@@ -492,6 +491,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 							// Reset flag after collection operations complete,
 							// always reset even if ScrollTo was called or an exception occurred
 							_isInternalPositionUpdate = false;
+							_noNeedForScroll = false;
 						}
 					});
 		}
@@ -537,7 +537,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					Carousel.SetValueFromRenderer(CarouselView.PositionProperty, currentPosition);
 
 					var restoredItem = currentItem ?? ItemsViewAdapter.ItemsSource.GetItem(currentPosition);
-					Carousel.SetValueFromRenderer(CarouselView.CurrentItemProperty, restoredItem);
+					SetCurrentItemFromRenderer(restoredItem);
 				}
 			}
 
@@ -986,11 +986,40 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 
 			var item = ItemsViewAdapter.ItemsSource.GetItem(carouselPosition);
-			Carousel.SetValueFromRenderer(CarouselView.CurrentItemProperty, item);
+			SetCurrentItemFromRenderer(item);
+		}
+
+		void SetCurrentItemFromRenderer(object item)
+		{
+			var carousel = Carousel;
+			var wasUpdatingCurrentItem = _isUpdatingCurrentItem;
+			_isUpdatingCurrentItem = true;
+			try
+			{
+				carousel.SetValueFromRenderer(CarouselView.CurrentItemProperty, item);
+			}
+			finally
+			{
+				_isUpdatingCurrentItem = wasUpdatingCurrentItem;
+			}
+
+			// BindableObject drains nested assignments before the setter returns.
+			// Replay an application selection after renderer synchronization finishes.
+			if (!wasUpdatingCurrentItem && ReferenceEquals(Carousel, carousel)
+				&& !Equals(carousel.CurrentItem, item))
+			{
+				((IMauiCarouselRecyclerView)this).UpdateFromCurrentItem();
+			}
 		}
 
 		void IMauiCarouselRecyclerView.UpdateFromCurrentItem()
 		{
+			// Renderer synchronization is not a new application selection.
+			if (_isUpdatingCurrentItem)
+			{
+				return;
+			}
+
 			_currentItemUpdateCounter++;
 
 			if (_isInternalPositionUpdate)
@@ -999,9 +1028,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			var currentItemPosition = ItemsViewAdapter.ItemsSource.GetPosition(Carousel.CurrentItem);
-			var centeredPosition = GetCarouselViewCurrentIndex(Carousel.Position);
+			var carouselPosition = Carousel.Position;
 
-			if (_gotoPosition == -1 && currentItemPosition != centeredPosition)
+			if (_gotoPosition == -1 && currentItemPosition != carouselPosition)
 			{
 				_gotoPosition = currentItemPosition;
 				ScrollToItemPosition(currentItemPosition, Carousel.AnimateCurrentItemChanges);
