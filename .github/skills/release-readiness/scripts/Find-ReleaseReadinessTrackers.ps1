@@ -151,6 +151,7 @@ $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
 Import-Module (Join-Path $PSScriptRoot '..' '..' '..' 'scripts' 'shared' 'MauiReleaseVersioning.psm1') -Force
+. (Join-Path $PSScriptRoot 'ReleaseBranchRoles.ps1')
 
 # Strict regex contracts. These deliberately reject malformed/temporary refs
 # so abandoned, backup, or experimental branches don't masquerade as tracks.
@@ -166,9 +167,9 @@ $Script:StrictRcBranchRegex = '^release/(\d+)\.0\.\d+xx-rc(\d+)$'
 $Script:StrictStableTagRegex = '^(\d+)\.0\.(\d+)$'
 #   Preview tag: `<major>.0.0-preview.<N>.<YYYYMMDD>[.<build>]`
 #     e.g., 11.0.0-preview.5.26304.4
-$Script:StrictPreviewTagRegex = '^(\d+)\.0\.0-preview\.(\d+)\.\d+(?:\.\d+)?$'
+$Script:StrictPreviewTagRegex = '^(\d+)\.0\.(?:0|100)-preview\.(\d+)\.\d+(?:\.\d+)?$'
 #   RC tag: `<major>.0.0-rc.<N>.<YYYYMMDD>[.<build>]`
-$Script:StrictRcTagRegex = '^(\d+)\.0\.0-rc\.(\d+)\.\d+(?:\.\d+)?$'
+$Script:StrictRcTagRegex = '^(\d+)\.0\.(?:0|100)-rc\.(\d+)\.\d+(?:\.\d+)?$'
 # .NET 6 through the currently active majors use seven previews before RC1.
 # This is release policy, not a pointer to the current preview. If a future
 # major changes cadence, update this explicit invariant (and its RC tests)
@@ -457,6 +458,37 @@ function Get-ActiveMajorVersions {
     $majors = New-Object System.Collections.Generic.SortedSet[int]
     $mainMajor = Get-CurrentMajorVersion -Repo $Repo
     [void]$majors.Add($mainMajor)
+    $state = Get-ReadinessReleaseState -RepositoryPath $Repo
+    if ($state -and $state.releaseBand -match '^(\d+)\.') {
+        [void]$majors.Add([int]$Matches[1])
+    }
+
+    # Keep active historical servicing trains after main advances, without
+    # resurrecting every frozen preview branch from unsupported old majors.
+    $releaseHeads = Invoke-GitOrFail @('ls-remote', '--heads', 'origin', 'release/*-sr*') `
+        "Could not enumerate historical servicing trains"
+    foreach ($line in $releaseHeads) {
+        if ($line -match 'refs/heads/(release/(\d+)\.0\.\d+xx-sr(\d+))$') {
+            $releaseBranch = $Matches[1]
+            $releaseMajor = [int]$Matches[2]
+            $releaseSr = [int]$Matches[3]
+            if ($majors.Contains($releaseMajor)) { continue }
+            $source = Get-MainBranchForVersion -Major $releaseMajor -Repo $Repo
+            $sourceXml = & git -C $Repo show "origin/${source}:eng/Versions.props" 2>$null
+            if ($LASTEXITCODE -ne 0 -or ($sourceXml -join "`n") -notmatch "<MajorVersion>$releaseMajor</MajorVersion>") { continue }
+            $releaseXml = & git -C $Repo show "origin/${releaseBranch}:eng/Versions.props" 2>$null
+            if ($LASTEXITCODE -ne 0) { continue }
+            $version = Get-VersionFromGitRef -GitRef "origin/$releaseBranch" -Repo $Repo
+            if (-not $version -or $version.Tag -notmatch "^$releaseMajor\.0\.(\d+)$") { continue }
+            $patch = [int]$Matches[1]
+            if (-not (Test-IsPatchInSrCycle -SrNumber $releaseSr -Patch $patch)) { continue }
+            $tags = Get-StableTagsForMajor -Major $releaseMajor
+            $highestPatch = if ($tags.Count) { [int]($tags[-1] -split '\.')[2] } else { 0 }
+            $unshippedLatest = $patch -ge $highestPatch -and $version.Tag -notin $tags
+            $recent = if ($patch -ge $highestPatch) { Get-RecentCommitCount -Ref $releaseBranch -Days $ActivityWindowDays } else { 0 }
+            if ($unshippedLatest -or $recent -gt 0) { [void]$majors.Add($releaseMajor) }
+        }
+    }
 
     # Inspect any `net<N>.0` branches on origin, only N >= main's major.
     $lines = Invoke-GitOrFail @('ls-remote', '--heads', 'origin', 'net*.0') `
@@ -841,7 +873,8 @@ function Invoke-DetectionForMajor {
     #>
     param([Parameter(Mandatory)][int]$Major)
 
-    $mainBranchForMajor = Get-MainBranchForVersion -Major $Major -Repo $Repo
+    $roles = Resolve-ReadinessBranchRoles -Major $Major -RepositoryPath $Repo
+    $mainBranchForMajor = $roles.sourceBranch
 
     # ── Step 1: Inventory all shipped stable + prerelease tags for this major.
     # All helpers below use unary-comma return + plain assignment here. DON'T
@@ -892,15 +925,24 @@ function Invoke-DetectionForMajor {
         Write-Verbose "Inspecting branch $branch (sr$sr)..."
         $versionInfo = Get-VersionFromGitRef -GitRef "origin/$branch" -Repo $Repo
         if (-not $versionInfo) {
+            if ($roles.configured -and $branch -eq $roles.releaseBranch) {
+                throw "Cannot read configured release '$branch' metadata; no readiness tracker can be omitted as clean."
+            }
             Write-Warning "[major $Major] Could not read Versions.props from origin/$branch — skipping (fail-soft for this branch)"
             continue
         }
         if ($versionInfo.Tag -notmatch '^(\d+)\.0\.(\d+)$') {
+            if ($roles.configured -and $branch -eq $roles.releaseBranch) {
+                throw "Configured release '$branch' has invalid version metadata."
+            }
             Write-Warning "[major $Major] Versions.props on $branch produced unexpected tag '$($versionInfo.Tag)' — skipping"
             continue
         }
         $branchPatch = [int]$Matches[2]
         $branchMajor = [int]$Matches[1]
+        if ($branchMajor -ne $Major) {
+            throw "Release '$branch' declares major $branchMajor, not $Major; refusing to misclassify its train."
+        }
         $expectedTag = $versionInfo.Tag
         if (-not (Test-IsPatchInSrCycle -SrNumber $sr -Patch $branchPatch)) {
             $expectedPatchFloor = $sr * 10
@@ -991,7 +1033,42 @@ function Invoke-DetectionForMajor {
     # majors: if `<major>.0.0` hasn't shipped, this major is still in preview
     # phase and there is no SR cycle yet.
     $isPreGa = -not $shippedPatches.Contains(0)
-    if ($isPreGa) {
+    if ($roles.configured) {
+        # State selects this cycle; neither feature-main's version nor the largest
+        # retained inflight/candidate branch is evidence of the current candidate.
+        $selectedSr = [int]$roles.currentSr
+        $selectedReleaseExists = @($srBranches | Where-Object { $_.branch -eq $roles.releaseBranch }).Count -gt 0
+        $selectedShipped = @($stableTags | Where-Object {
+            $_ -match '^\d+\.0\.(\d+)$' -and [int][math]::Floor([int]$Matches[1] / 10) -eq $selectedSr
+        }).Count -gt 0
+        if (-not $selectedReleaseExists -and -not $selectedShipped) {
+            $candidateHeads = @(Invoke-GitOrFail @('ls-remote', '--heads', 'origin', "refs/heads/$($roles.candidateBranch)") `
+                "Could not inspect configured candidate")
+            if ($candidateHeads.Count -ne 1) {
+                throw "Configured candidate '$($roles.candidateBranch)' is missing; refusing to substitute '$mainBranchForMajor' or feature main."
+            }
+            $candidateVersion = Get-VersionFromGitRef -GitRef "origin/$($roles.candidateBranch)" -Repo $Repo
+            if (-not $candidateVersion -or $candidateVersion.Tag -notmatch "^$Major\.0\.\d+$") {
+                throw "Configured candidate '$($roles.candidateBranch)' has missing/mismatched version metadata."
+            }
+            $baselineTag = @($stableTags | Where-Object {
+                $_ -match '^\d+\.0\.(\d+)$' -and [int]$Matches[1] -lt ($selectedSr * 10)
+            } | Select-Object -Last 1)
+            $priorBranch = if ($selectedSr -gt 1) {
+                "release/$($roles.releaseBand)-sr$($selectedSr - 1)"
+            } else { $null }
+            $recent = Get-RecentCommitCount -Ref $roles.candidateBranch -Days $ActivityWindowDays
+            $tracker = New-Tracker -Major $Major -SrNumber $selectedSr -Mode 'candidate' `
+                -BranchName $roles.releaseBranch -SurveyRef $roles.candidateBranch -PriorSrBranch $priorBranch `
+                -PriorShippedPatch $highestShippedPatch -PriorShippedTag $highestShippedTag `
+                -ExpectedPatch ($selectedSr * 10) -ExpectedTag "$Major.0.$($selectedSr * 10)" `
+                -HasRecentActivityCount $recent
+            $tracker | Add-Member -NotePropertyName candidateTargetBranch -NotePropertyValue $roles.releaseBranch
+            $tracker.branchExists = $false
+            $tracker | Add-Member -NotePropertyName candidateBaselineRef -NotePropertyValue $(if ($baselineTag.Count) { $baselineTag[0] } else { $null })
+            $trackers.Add($tracker)
+        }
+    } elseif ($isPreGa) {
         Write-Host "[major $Major] Pre-GA (no tag $Major.0.0) — skipping Lane 2 (no SR candidate proposed)" -ForegroundColor DarkGray
     } else {
         $highestShippedSr = [int]([math]::Floor($highestShippedPatch / 10))
@@ -1065,7 +1142,7 @@ function Invoke-DetectionForMajor {
             $inflightPreviewsByNum[$previewN] = $branch
             Write-Host "  -> in-flight preview tracker: preview$previewN (no $Major.0.0-preview.$previewN.* tag yet, recent=$recent)" -ForegroundColor Green
         } else {
-            Write-Host "  -> preview$previewN branch '$branch' already shipped (tag $Major.0.0-preview.$previewN.* exists)" -ForegroundColor DarkGray
+            Write-Host "  -> preview$previewN branch '$branch' already shipped (verified tag for .NET $Major preview$previewN exists)" -ForegroundColor DarkGray
         }
     }
 
@@ -1084,7 +1161,7 @@ function Invoke-DetectionForMajor {
     #     major is in SR phase.
     $previewCandidateRef = $null
     $candidatePreviewVersionInfo = $null
-    $netMajorBranch = "net$Major.0"
+    $netMajorBranch = $mainBranchForMajor
     $netMajorExists = $false
     try {
         $netMajorCheck = Invoke-GitOrFail @('ls-remote', '--heads', 'origin', $netMajorBranch) `
@@ -1165,7 +1242,7 @@ function Invoke-DetectionForMajor {
     foreach ($entry in $rcBranches) {
         $rcN = [int]$entry.rcNumber
         if ($shippedRcs.Contains($rcN)) {
-            Write-Host "  -> rc$rcN branch '$($entry.branch)' already shipped (tag $Major.0.0-rc.$rcN.* exists)" -ForegroundColor DarkGray
+            Write-Host "  -> rc$rcN branch '$($entry.branch)' already shipped (verified tag for .NET $Major rc$rcN exists)" -ForegroundColor DarkGray
             continue
         }
 
@@ -1199,7 +1276,13 @@ function Invoke-DetectionForMajor {
         }
     }
 
-    return [pscustomobject]@{
+    foreach ($tracker in $trackers) {
+        $tracker | Add-Member -NotePropertyName sourceBranch -NotePropertyValue $roles.sourceBranch
+        $tracker | Add-Member -NotePropertyName featureBranch -NotePropertyValue $roles.featureBranch
+        $tracker | Add-Member -NotePropertyName nightlyBranch -NotePropertyValue $roles.nightlyBranch
+    }
+
+    return [PSCustomObject]@{
         majorVersion             = $Major
         mainBranch               = $mainBranchForMajor
         highestShippedPatch      = $highestShippedPatch
@@ -1245,8 +1328,11 @@ if ($AllActiveMajors) {
 } else {
     # Single-major mode (back-compat with prior callers and the test E2E).
     if ($MajorVersion -le 0) {
-        $MajorVersion = Get-CurrentMajorVersion -Repo $Repo
-        Write-Host "Detected MajorVersion=$MajorVersion from origin/main:eng/Versions.props" -ForegroundColor Cyan
+        $state = Get-ReadinessReleaseState -RepositoryPath $Repo
+        $MajorVersion = if ($state -and $state.releaseBand -match '^(\d+)\.') {
+            [int]$Matches[1]
+        } else { Get-CurrentMajorVersion -Repo $Repo }
+        Write-Host "Detected active MajorVersion=$MajorVersion (release state, otherwise origin/main)" -ForegroundColor Cyan
     }
     $single = Invoke-DetectionForMajor -Major $MajorVersion
     $result = [pscustomobject]@{

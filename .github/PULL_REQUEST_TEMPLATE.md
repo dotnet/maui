@@ -1,5 +1,6 @@
 <!--
-!!!!!!! MAIN IS THE ONLY ACTIVE BRANCH. MAKE SURE THIS PR IS TARGETING MAIN. !!!!!!! 
+Target net11 for .NET 11 fixes and main for next-major features.
+Use release/* or staging branches only for an explicitly coordinated release change.
 -->
 
 ### Description of Change
@@ -13,5 +14,6 @@
 Fixes #
 
 <!--
-Are you targeting main? All PRs should target the main branch unless otherwise noted.
+Verify the target branch follows the release workflow in docs/ReleaseBranchWorkflow.md.
+Infrastructure and documentation changes should target the branch where they apply.
 -->
