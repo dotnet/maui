@@ -30,6 +30,20 @@ function Get-TrialSnapshot {
     return ,$refs
 }
 
+function Invoke-TrialTracking {
+    param ([int] $CurrentSr, [string] $ReleaseBand)
+
+    $trackingState = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../release-rollover.json') -Raw | ConvertFrom-Json
+    $trackingState.currentSr = $CurrentSr
+    $trackingState.releaseBand = $ReleaseBand
+    $trackingState.fixBranch = "$prefix/main"
+    $trackingState.featureBranch = "$prefix/features"
+    $trackingStatePath = Join-Path $env:RUNNER_TEMP 'sandbox-release-tracking-state.json'
+    $trackingState | ConvertTo-Json | Set-Content -LiteralPath $trackingStatePath -Encoding utf8
+    return (& (Join-Path $PSScriptRoot 'Sync-ReleaseTrackingPullRequests.ps1') `
+        -StatePath $trackingStatePath -SandboxPrefix $prefix | ConvertFrom-Json)
+}
+
 if ($env:GITHUB_ACTIONS -cne 'true' -or $env:GITHUB_REPOSITORY -cne 'dotnet/maui' -or
     $env:GITHUB_EVENT_NAME -cnotin @('push', 'workflow_dispatch')) {
     throw "This writer runs only in the dotnet/maui sandbox GitHub Action."
@@ -83,6 +97,56 @@ $mergedCandidates = @(foreach ($page in $associatedPages) {
         }
     }
 })
+$previewPattern = "^$([Regex]::Escape($prefix))/inflight/(?<band>[1-9][0-9]*\.0\.[1-9][0-9]*xx)-sr(?<sr>[1-9][0-9]*)$"
+$mergedPreviews = @(foreach ($page in $associatedPages) {
+    foreach ($pr in $page) {
+        if ($null -ne $pr.head.repo -and $pr.head.repo.full_name -ceq $repository -and
+            $pr.base.ref -ceq "$prefix/main" -and $pr.head.sha -ceq $candidateSha -and
+            $pr.merge_commit_sha -ceq $mergeSha -and $pr.merged_at -and
+            ([string] $pr.body).IndexOf("<!-- maui-release-tracking:${prefix}:inflight -->", [StringComparison]::Ordinal) -ge 0 -and
+            $pr.head.ref -cmatch $previewPattern) {
+            [pscustomobject]@{
+                head = $pr.head.ref
+                band = $Matches.band
+                sr = $Matches.sr
+                number = $pr.number
+            }
+        }
+    }
+})
+if ($mergedPreviews.Count -gt 1 -or ($mergedPreviews.Count -eq 1 -and $mergedCandidates.Count -gt 0)) {
+    throw "Conflicting managed PR roles claim this sandbox activation."
+}
+if ($mergedPreviews.Count -eq 1) {
+    $preview = $mergedPreviews[0]
+    if ([long] $preview.sr -lt 2 -or [long] $preview.sr -gt ([int]::MaxValue - 1)) {
+        throw "The merged preview does not identify a valid current sandbox SR."
+    }
+    $proof = Invoke-GhJson -Arguments @("repos/$repository/pulls/$($preview.number)")
+    if (!$proof.merged -or $proof.merge_commit_sha -cne $mergeSha -or
+        $proof.head.sha -cne $candidateSha -or $proof.head.ref -cne $preview.head -or
+        $proof.base.ref -cne "$prefix/main" -or $null -eq $proof.head.repo -or
+        $proof.head.repo.full_name -cne $repository -or
+        ([string] $proof.body).IndexOf("<!-- maui-release-tracking:${prefix}:inflight -->", [StringComparison]::Ordinal) -lt 0) {
+        throw "The merged preview PR does not match the pinned sandbox activation."
+    }
+    $result = [ordered]@{
+        scope = 'sandbox-only'
+        status = 'tracking-only'
+        sourcePullRequest = $proof.number
+        mergeSha = $mergeSha
+        currentSr = ([int] $preview.sr) - 1
+        operations = @()
+        created = @()
+        trackingPullRequests = Invoke-TrialTracking -CurrentSr (([int] $preview.sr) - 1) -ReleaseBand $preview.band
+    }
+    $result | ConvertTo-Json -Depth 6 |
+        Set-Content -LiteralPath (Join-Path $env:RUNNER_TEMP 'release-rollover-trial-result.json') -Encoding utf8
+    '## Sandbox tracking reconciliation only: a preview merge does not authorize a release cut.' |
+        Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Encoding utf8
+    Write-Output ($result | ConvertTo-Json -Depth 6)
+    return
+}
 $restoredCandidateRef = $false
 if ($mergedCandidates.Count -gt 1) {
     throw "Multiple merged managed candidate PRs claim this sandbox activation."
@@ -203,15 +267,7 @@ foreach ($sourceRef in @($integrationRef, $candidate.ref, $inflightRef)) {
         throw "Sandbox source '$sourceRef' changed during execution."
     }
 }
-$trackingState = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../release-rollover.json') -Raw | ConvertFrom-Json
-$trackingState.currentSr = $sr + 1
-$trackingState.releaseBand = $band
-$trackingState.fixBranch = "$prefix/main"
-$trackingState.featureBranch = "$prefix/features"
-$trackingStatePath = Join-Path $env:RUNNER_TEMP 'sandbox-release-tracking-state.json'
-$trackingState | ConvertTo-Json | Set-Content -LiteralPath $trackingStatePath -Encoding utf8
-$result.trackingPullRequests = & (Join-Path $PSScriptRoot 'Sync-ReleaseTrackingPullRequests.ps1') `
-    -StatePath $trackingStatePath -SandboxPrefix $prefix | ConvertFrom-Json
+$result.trackingPullRequests = Invoke-TrialTracking -CurrentSr ($sr + 1) -ReleaseBand $band
 $result.status = if ($result.created.Count -eq 0) { 'unchanged' } else { 'completed' }
 $result | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath $resultPath -Encoding utf8
 $summary = @(

@@ -371,6 +371,12 @@ reconciler with a sandbox-scoped state file. Both dummy PRs target dummy `main`,
 never a real development branch. This exercises PR creation and repeated
 reconciliation without enabling the production release workflow.
 
+For an actual merged managed PR, the sandbox uses verified merge metadata rather
+than guessing its role from commit equality. It can restore a candidate head
+deleted after merge, using exactly that merged PR's source SHA. A merged preview
+activates tracking-only reconciliation: it does not cut another release or
+advance the servicing cycle.
+
 The workflow uses its scoped `GITHUB_TOKEN`, with no new personal token or
 repository secret. It does not use `pull_request_target`, check out fork code, or
 run an AI agent. There is no trigger on real `main`, `net11`, `candidate/...`, or
