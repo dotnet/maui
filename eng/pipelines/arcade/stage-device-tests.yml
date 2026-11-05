@@ -45,7 +45,7 @@ parameters:
   default: 'Release'
 - name: TargetFrameworkVersion
   type: string
-  default: 'net10.0'
+  default: 'net12.0'
 - name: appArtifactName
   type: string
   default: 'device_tests_app'
