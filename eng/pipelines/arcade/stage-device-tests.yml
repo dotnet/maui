@@ -92,7 +92,7 @@ stages:
             expectedOSMajor: ${{ apple.osMajor }}
             expectedArchitecture: Arm64
 
-    - ${{ if parameters.runWindowsTests }}:
+    - ${{ if eq(parameters.runWindowsTests, true) }}:
       - ${{ each packaging in split('packaged;unpackaged', ';') }}:
         - job: windows_${{ project.name }}_${{ packaging }}
           displayName: Windows ${{ project.name }} ${{ packaging }}

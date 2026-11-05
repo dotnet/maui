@@ -123,7 +123,7 @@ steps:
         --report-trx
         --results-directory "$(TestResultsDirectory)"
         -p:RuntimeIdentifier=$(TestRuntimeIdentifier)
-        -p:UseMonoRuntime=${{ not(parameters.useCoreClr) }}
+        -p:UseMonoRuntime=${{ ne(parameters.useCoreClr, true) }}
         -p:_DisableCheckForUnsupportedMonoMobileRuntime=true
         -p:MauiTestFilter="${{ replace(parameters.testFilter, ',', '%2C') }}"
         -bl:"$(TestResultsDirectory)/test.binlog"
@@ -141,7 +141,7 @@ steps:
         --framework ${{ parameters.targetFrameworkVersion }}-ios
         --device "$(TestDevice)"
         -p:RuntimeIdentifier=$(TestRuntimeIdentifier)
-        -p:UseMonoRuntime=${{ not(parameters.useCoreClr) }}
+        -p:UseMonoRuntime=${{ ne(parameters.useCoreClr, true) }}
         -p:_DisableCheckForUnsupportedMonoMobileRuntime=true
         -p:MauiTestFilter="${{ replace(parameters.testFilter, ',', '%2C') }}"
         -bl:"$(TestResultsDirectory)/test.binlog"
@@ -158,7 +158,7 @@ steps:
         --configuration ${{ parameters.deviceTestConfiguration }}
         --framework ${{ parameters.targetFrameworkVersion }}-maccatalyst
         -p:RuntimeIdentifier=$(TestRuntimeIdentifier)
-        -p:UseMonoRuntime=${{ not(parameters.useCoreClr) }}
+        -p:UseMonoRuntime=${{ ne(parameters.useCoreClr, true) }}
         -p:MauiTestFilter="${{ replace(parameters.testFilter, ',', '%2C') }}"
         -p:MauiTestResultsDirectory="$(TestResultsDirectory)"
         -bl:"$(TestResultsDirectory)/test.binlog"

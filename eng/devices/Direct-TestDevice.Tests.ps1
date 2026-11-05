@@ -20,6 +20,9 @@ Describe 'Direct native CI contracts' {
         $stage | Should -Match '(?s)name: coreclr\s+useCoreClr: true'
         $stage | Should -Match '(?s)name: mono\s+useCoreClr: false'
         $stage | Should -Match '(?s)platform: catalyst.*?useCoreClr: true'
+        @([regex]::Matches($steps, [regex]::Escape('UseMonoRuntime=${{ ne(parameters.useCoreClr, true) }}'))).Count |
+            Should -Be 3
+        $steps | Should -Not -Match 'not\(parameters.useCoreClr\)'
     }
 
     It 'retains mutually exclusive iOS Controls shards and Windows packaging modes' {
@@ -142,6 +145,7 @@ Describe 'Direct native CI contracts' {
         $stage | Should -Match 'requireWindows11: false'
         $stage | Should -Match ([regex]::Escape('requireWindows11: ${{ parameters.requireWindows11 }}'))
         $stage | Should -Not -Match 'displayName: Windows 11'
+        $stage | Should -Match ([regex]::Escape('if eq(parameters.runWindowsTests, true)'))
         $start | Should -Match ([regex]::Escape('if (![Environment]::UserInteractive)'))
         $start | Should -Match ([regex]::Escape('if ($RequireWindows11)'))
         $start | Should -Match ([regex]::Escape('$os.ProductType -ne 1'))
