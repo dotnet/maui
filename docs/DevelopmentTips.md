@@ -417,6 +417,13 @@ does not claim Windows 11 client-specific coverage from the retired Helix queue.
 Set `requireWindows11` when selecting a provisioned client pool; that check
 remains available rather than treating a server image as a client.
 
+The current Server 2022 image rejects the temporary package signer's chain with
+`0x800B0109` despite its public certificate being in the current user's
+`TrustedPeople` store. Packaged execution remains blocked until an authorized
+signing/agent owner provides an accepted trust chain or approved provisioning.
+The runner does not change machine trust, disable validation or substitute loose
+registration for signed-MSIX installation.
+
 The current Apple proxy does not register host `--report-trx`, and
 `--results-directory` alone does not collect native app results. For iOS, resolve
 the app container with `xcrun simctl get_app_container DEVICE APPLICATION_ID data`

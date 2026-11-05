@@ -65,6 +65,10 @@ The non-exportable private signing key stays in `CurrentUser\My`, selected only
 by public thumbprint; trust only the public certificate in the current user's
 `TrustedPeople` store. Never export private PFX/password material to results or
 binlogs, alter machine-wide trust, or replace a pre-existing user's package.
+The configured Server 2022 image currently rejects this signer with `0x800B0109`.
+Keep that packaged-execution prerequisite explicit: an authorized signing/agent
+owner must provide an accepted chain or approved provisioning. Do not silently
+move the certificate into a machine store or bypass deployment validation.
 `WindowsTestPackage.ps1` installs the signed MSIX and x64 dependencies through
 `Add-AppxPackage`. Standard evaluated `RunCommand`/`RunArguments` launch the
 `windows-launcher` DLL with its owned state file; the SDK appends its original MTP
