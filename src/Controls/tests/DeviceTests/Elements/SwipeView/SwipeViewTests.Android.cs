@@ -142,11 +142,80 @@ namespace Microsoft.Maui.DeviceTests
 				await AssertEventually(() => contentView.TranslationX == openTranslationX,
 					message: $"SwipeView did not reopen (TranslationX {contentView.TranslationX} instead of {openTranslationX})");
 
+				// Finishing the interrupted gesture must not snap the view closed again
 				await InvokeOnMainThreadAsync(() =>
 				{
-					using (var cancel = MotionEvent.Obtain(time, time + 150, MotionEventActions.Cancel, x - 40, y, 0))
-						platformView.DispatchTouchEvent(cancel);
+					using (var up = MotionEvent.Obtain(time, time + 150, MotionEventActions.Up, x - 40, y, 0))
+						platformView.DispatchTouchEvent(up);
 				});
+
+				await Task.Delay(500);
+				// The settle after the gesture recomputes the open position from dp, which
+				// can land one pixel away from the first open
+				Assert.True(Math.Abs(contentView.TranslationX - openTranslationX) <= 1.5f,
+					$"SwipeView closed when the gesture ended (TranslationX {contentView.TranslationX} instead of {openTranslationX})");
+				Assert.True(((ISwipeViewController)swipeView).IsOpen, "SwipeView.IsOpen is false while the swipe items are showing");
+			});
+		}
+
+		[Fact]
+		// https://github.com/dotnet/maui/issues/22153
+		public async Task OpenFromSwipeChangingKeepsTheSwipeViewOpen()
+		{
+			SetupBuilder();
+
+			var content = new Grid
+			{
+				WidthRequest = 300,
+				HeightRequest = 60,
+				Background = new SolidPaint(Colors.White)
+			};
+
+			var swipeView = new SwipeView()
+			{
+				WidthRequest = 300,
+				HeightRequest = 60,
+				RightItems = new SwipeItems { new SwipeItem { BackgroundColor = Colors.Red } },
+				Content = content
+			};
+
+			// The scenario from the issue: complete the open programmatically once the
+			// user has swiped far enough
+			swipeView.SwipeChanging += (sender, e) =>
+			{
+				if (e.Offset <= -15)
+					((SwipeView)sender).Open(OpenSwipeItem.RightItems, false);
+			};
+
+			await AttachAndRun(swipeView, async (handler) =>
+			{
+				var platformView = ((SwipeViewHandler)handler).PlatformView;
+				var contentView = ((IView)content).ToPlatform();
+
+				// The swipe open distance is clamped to the content size, so wait for the layout
+				await AssertEventually(() => contentView.Width > 0, message: "SwipeView content was not laid out");
+
+				var density = contentView.Context.Resources.DisplayMetrics.Density;
+				var time = global::Android.OS.SystemClock.UptimeMillis();
+				var x = platformView.Width / 2f;
+				var y = platformView.Height / 2f;
+				await InvokeOnMainThreadAsync(() =>
+				{
+					using (var down = MotionEvent.Obtain(time, time, MotionEventActions.Down, x, y, 0))
+						platformView.DispatchTouchEvent(down);
+					using (var move1 = MotionEvent.Obtain(time, time + 50, MotionEventActions.Move, x - 10 * density, y, 0))
+						platformView.DispatchTouchEvent(move1);
+					// The handler opens the SwipeView during this move
+					using (var move2 = MotionEvent.Obtain(time, time + 100, MotionEventActions.Move, x - 20 * density, y, 0))
+						platformView.DispatchTouchEvent(move2);
+					using (var up = MotionEvent.Obtain(time, time + 150, MotionEventActions.Up, x - 20 * density, y, 0))
+						platformView.DispatchTouchEvent(up);
+				});
+
+				await Task.Delay(500);
+				Assert.True(contentView.TranslationX < 0,
+					$"SwipeView closed when the gesture ended (TranslationX {contentView.TranslationX})");
+				Assert.True(((ISwipeViewController)swipeView).IsOpen, "SwipeView.IsOpen is false while the swipe items are showing");
 			});
 		}
 
