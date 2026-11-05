@@ -59,6 +59,13 @@ main-to-net11 and net11-to-RC2 merge routes are retired; a future servicing cut
 must explicitly select its release branch rather than reuse the RC2 route.
 Official nightly builds exclude the historical `net10.0` and `net11.0` branches.
 
+For the staged .NET 12 transition described in `docs/ReleaseBranchWorkflow.md`,
+literal `net11` preserves the pre-transition `main` history. Primary CI definitions
+explicitly include `net11` and `candidate/*`; the official definition includes
+`net11` for signed nightly, localization and API-scan routing. These changes must
+be deployed before assuming that branch creation activates the new CI routes.
+Do not treat the historical `net11.0` subscription target as the new branch.
+
 .NET 10 SR13 publishes from `release/10.0.1xx-sr13`, independently of `main`.
 Preserve its release commit and packages, and keep publication on the .NET 10 channel during the
 .NET 11 transition. Do not cut over `inflight/current` or synchronize the internal

@@ -25,6 +25,14 @@ signing, and publishing remain covered by the [release process](ReleaseProcess.m
 flow from `net11` to `main`; the proposal does not call for merging .NET 12 feature
 development back into `net11`.
 
+The public `net11` branch preserves all `main` history through
+`f3b45e183ce6d9bdb28b3e090d849ddfdbc37eb0`, before the .NET 12 transition.
+The branch name remains literal `net11`, distinct from historical `net11.0`.
+The primary build, device-test and UI-test YAML include `net11` and
+`candidate/*` in push/PR filters. The official build includes `net11` for its
+schedule, signing, localization and API scanning. Deploy these definitions and
+review server-side protections before relying on the new branch's CI.
+
 ## Initial migration and release cut
 
 | Existing branch | Replacement |
@@ -455,7 +463,7 @@ sandbox proves the branch/PR lifecycle, not the following remaining work:
 |---|---|
 | Release cuts and rotation | Implement the protected production orchestrator, including persistent state advancement and recovery. The current mutation runner is sandbox-only. |
 | Daily forward merges | Implement the scheduled `net11`-to-`main` merge workflow. A manual merge does not validate unattended scheduling. |
-| New branch names | Review CI, protections, and readiness discovery for literal `net11` and `candidate/...`. Existing primary CI YAML filters list `net*.0`, not `net11`; server-side/manual runs are not proof that the proposed triggers are wired. |
+| New branch names | Deploy the explicit `net11` / `candidate/*` CI YAML coverage in this PR and review protections and readiness discovery. Server-side/manual runs are not proof that the deployed branch triggers are wired. |
 | Signed nightly builds | Deploy the internal mirrored source changes and validate signed artifacts and feed/channel handoff before changing `nightlyMode` from `legacy`. |
 | .NET 12 development | Update `main` and its dependency flow separately; creating `net11` does not change `main`'s SDK. |
 | Candidate naming | Resolve the production rotation policy before enabling release mutations. |
