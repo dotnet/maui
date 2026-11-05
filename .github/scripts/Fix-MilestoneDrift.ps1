@@ -4,9 +4,9 @@
     Detects and fixes milestone drift for dotnet/maui releases.
 
 .DESCRIPTION
-    When PRs merge to inflight/current, they may get milestoned prematurely.
+    When PRs merge to staged candidate/inflight lanes, they may get milestoned prematurely.
     The actual release they ship in depends on which Candidate PR carries them
-    to main and which SR branch cut includes that commit. This script detects
+    to the train's fixes branch and which SR cut includes that commit. This script detects
     and reports (or optionally fixes) milestone mismatches.
 
     Modes:
@@ -163,7 +163,15 @@ function Test-PrBelongsToVersion([string]$BaseRef, [string]$MainBranch, [int]$Ma
     # PR targets the main branch for this version — always allowed
     if ($BaseRef -eq $MainBranch) { return $true }
 
-    # Allow inflight/darc branches only if they feed into this version's main branch
+    if ($BaseRef -match '^(?:candidate|inflight)/(\d+)\.0\.\d+xx-sr\d+$') {
+        return ([int]$Matches[1] -eq $Major)
+    }
+
+    if ($BaseRef -in @('inflight/current', 'inflight/candidate') -and $MainBranch -eq "net$Major") {
+        return $true
+    }
+
+    # Preserve the historical unversioned staging behavior for legacy trains.
     if ($BaseRef -match '^(inflight|darc)/') {
         # inflight/* and darc/* branches feed into 'main', so only allow when MainBranch is 'main'
         return ($MainBranch -eq 'main')
@@ -175,7 +183,7 @@ function Test-PrBelongsToVersion([string]$BaseRef, [string]$MainBranch, [int]$Ma
     }
 
     # Reject PRs explicitly targeting a different .NET version branch (net11.0, net12.0, etc.)
-    if ($BaseRef -match '^net(\d+)\.\d+$') {
+    if ($BaseRef -match '^net(\d+)(?:\.\d+)?$') {
         return ([int]$Matches[1] -eq $Major)
     }
 
@@ -1068,7 +1076,8 @@ function Invoke-AnalyzeSinglePr([int]$PrNum, [string]$ReleaseTag, [string]$Repo)
         } else {
             # Step 2: Fall back to Versions.props on the development branch HEAD.
             # All branches ultimately feed into the main development branch for their
-            # .NET version (main for .NET 10, net11.0 for .NET 11). Read from there
+            # .NET version, resolved from the configured fixes branch or legacy
+            # main/netN.0 ownership. Read from there
             # to get the current target version, regardless of which staging branch
             # the PR was merged to (inflight/current, inflight/candidate, darc/*, etc.).
             $mainBranch = Get-MainBranchForVersion $detectedMajor $Repo

@@ -71,7 +71,9 @@
       # the validator's URL-form OR query directly.
 
     Key things to verify after changes:
-      - inflight/* and darc/* PRs read from origin/main (they feed into main)
+      - versioned candidate/inflight PRs keep their explicit major/SR ownership
+      - configured servicing work reads net11, never next-major feature main
+      - historical unversioned staging keeps its legacy ownership when no new state applies
       - net11.0 PRs read from origin/net11.0 (never from origin/main)
       - PRs on release branches get the milestone from the branch name (not Versions.props)
       - Preview tags in tag mode find the correct previous tag (preview2 → preview3, not full history)
@@ -598,6 +600,14 @@ Describe 'ConvertBranchToMilestone' {
         ConvertBranchToMilestone 'release/10.0.1xx-sr10' | Should -Be '.NET 10 SR10'
     }
 
+    It 'maps versioned staging lanes without changing their release number' {
+        ConvertBranchToMilestone 'candidate/11.0.1xx-sr1' | Should -Be '.NET 11 SR1'
+        ConvertBranchToMilestone 'inflight/11.0.1xx-sr2' | Should -Be '.NET 11 SR2'
+        ConvertBranchToMilestone 'candidate/12.0.1xx-sr10' | Should -Be '.NET 12 SR10'
+        ConvertBranchToMilestone 'inflight/current' | Should -BeNullOrEmpty
+        ConvertBranchToMilestone 'net11' | Should -BeNullOrEmpty
+    }
+
     It 'maps preview branches' {
         ConvertBranchToMilestone 'release/11.0.1xx-preview1' | Should -Be '.NET 11.0-preview1'
         ConvertBranchToMilestone 'release/11.0.1xx-preview3' | Should -Be '.NET 11.0-preview3'
@@ -649,6 +659,23 @@ Describe 'Test-IsReleaseTag' {
 }
 
 Describe 'Test-PrBelongsToVersion' {
+    Context 'Versioned .NET 11 servicing while main develops .NET 12' {
+        It 'accepts the literal fixes branch and same-major staging refs' {
+            Test-PrBelongsToVersion 'net11' 'net11' 11 | Should -BeTrue
+            Test-PrBelongsToVersion 'candidate/11.0.1xx-sr1' 'net11' 11 | Should -BeTrue
+            Test-PrBelongsToVersion 'inflight/11.0.1xx-sr2' 'net11' 11 | Should -BeTrue
+            Test-PrBelongsToVersion 'inflight/current' 'net11' 11 | Should -BeTrue
+        }
+
+        It 'rejects feature-main and other-major staging branches' {
+            Test-PrBelongsToVersion 'main' 'net11' 11 | Should -BeFalse
+            Test-PrBelongsToVersion 'net12' 'net11' 11 | Should -BeFalse
+            Test-PrBelongsToVersion 'candidate/12.0.1xx-sr1' 'net11' 11 | Should -BeFalse
+            Test-PrBelongsToVersion 'inflight/12.0.1xx-sr2' 'net11' 11 | Should -BeFalse
+            Test-PrBelongsToVersion 'candidate/11.0.1xx-sr1' 'main' 12 | Should -BeFalse
+        }
+    }
+
     Context 'MainBranch = main (e.g. .NET 10)' {
         It 'allows PRs targeting main' {
             Test-PrBelongsToVersion 'main' 'main' 10 | Should -BeTrue
@@ -708,6 +735,73 @@ Describe 'Test-PrBelongsToVersion' {
         It 'rejects PRs targeting release/10.x branches' {
             Test-PrBelongsToVersion 'release/10.0.50' 'net11.0' 11 | Should -BeFalse
         }
+    }
+}
+
+Describe 'Get-MainBranchForVersion configured release ownership' {
+    BeforeEach {
+        $script:configuredState = '{"schemaVersion":1,"releaseBand":"11.0.1xx","fixBranch":"net11"}'
+        $script:featureMajor = 12
+        $script:literalServicingMajor = 0
+        Mock git -ModuleName MauiReleaseVersioning {
+            if ($args -contains 'origin/main:eng/release-rollover.json') {
+                if ($null -eq $script:configuredState) {
+                    $global:LASTEXITCODE = 1
+                    return
+                }
+                $global:LASTEXITCODE = 0
+                return $script:configuredState
+            }
+            if ($args -contains 'origin/main:eng/Versions.props') {
+                $global:LASTEXITCODE = 0
+                return "<Project><PropertyGroup><MajorVersion>$script:featureMajor</MajorVersion></PropertyGroup></Project>"
+            }
+            if ($args -contains 'check-ref-format') {
+                $global:LASTEXITCODE = 0
+                return
+            }
+            if ($args -contains 'origin/net11:eng/Versions.props' -and $script:literalServicingMajor -gt 0) {
+                $global:LASTEXITCODE = 0
+                return "<Project><PropertyGroup><MajorVersion>$script:literalServicingMajor</MajorVersion></PropertyGroup></Project>"
+            }
+            $global:LASTEXITCODE = 1
+        }
+    }
+
+    It 'selects configured net11 even before main changes its major' {
+        $script:featureMajor = 11
+        Get-MainBranchForVersion -Major 11 -Repo $TestDrive | Should -Be 'net11'
+    }
+
+    It 'keeps servicing separate from next-major feature development' {
+        Get-MainBranchForVersion -Major 11 -Repo $TestDrive | Should -Be 'net11'
+        Get-MainBranchForVersion -Major 12 -Repo $TestDrive | Should -Be 'main'
+        Get-MainBranchForVersion -Major 10 -Repo $TestDrive | Should -Be 'net10.0'
+    }
+
+    It 'retains historical resolution when no release state exists' {
+        $script:configuredState = $null
+        Get-MainBranchForVersion -Major 12 -Repo $TestDrive | Should -Be 'main'
+        Get-MainBranchForVersion -Major 10 -Repo $TestDrive | Should -Be 'net10.0'
+    }
+
+    It 'recognizes a matching literal servicing ref before state deployment' {
+        $script:configuredState = $null
+        $script:literalServicingMajor = 11
+        Get-MainBranchForVersion -Major 11 -Repo $TestDrive | Should -Be 'net11'
+        $script:featureMajor = 11
+        Get-MainBranchForVersion -Major 11 -Repo $TestDrive | Should -Be 'net11'
+    }
+
+    It 'does not select a literal branch with mismatched version metadata' {
+        $script:configuredState = $null
+        $script:literalServicingMajor = 12
+        Get-MainBranchForVersion -Major 11 -Repo $TestDrive | Should -Be 'net11.0'
+    }
+
+    It 'does not guess a branch from malformed configured state' {
+        $script:configuredState = '{"schemaVersion":1,"releaseBand":"11.0.1xx"}'
+        { Get-MainBranchForVersion -Major 11 -Repo $TestDrive } | Should -Throw '*missing*fixBranch*'
     }
 }
 

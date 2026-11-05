@@ -24,8 +24,8 @@ steps:
         exit 0
       fi
       # Validate BEFORE echoing/using to avoid any injection via the ref.
-      if ! [[ "${BASE_REF}" =~ ^(main|net[0-9]+\.0|inflight/[a-z0-9][a-z0-9._-]*|release/[0-9]+\.[0-9]+\.[0-9]+xx(-[a-z0-9.]+)?)$ ]]; then
-        echo "##vso[task.logissue type=error]The PR gate only supports targets 'main', 'netN.0', 'inflight/*', or 'release/*'. No workloads/SDK band or safe merge-base can be derived for this unsupported target."
+      if ! [[ "${BASE_REF}" =~ ^(main|net[0-9]+(\.0)?|inflight/[a-z0-9][a-z0-9._-]*|candidate/[1-9][0-9]*\.0\.[1-9][0-9]*xx-sr[1-9][0-9]*|release/[0-9]+\.[0-9]+\.[0-9]+xx(-[a-z0-9.]+)?)$ ]]; then
+        echo "##vso[task.logissue type=error]The PR gate only supports main, netN/netN.0, versioned candidate, inflight, or release targets. No workloads/SDK band or safe merge-base can be derived for this unsupported target."
         exit 1
       fi
       echo "PR #${PARAM_PR_NUMBER} base branch '${BASE_REF}' is supported by the gate."
@@ -103,9 +103,18 @@ steps:
 
       # Allowlist: only ever switch to a known protected base branch.
       # Validate BEFORE echoing/using to avoid any injection via the ref.
-      if ! [[ "${BASE_REF}" =~ ^(main|net[0-9]+\.0|inflight/[a-z0-9][a-z0-9._-]*|release/[0-9]+\.[0-9]+\.[0-9]+xx(-[a-z0-9.]+)?)$ ]]; then
-        echo "##vso[task.logissue type=error]Unexpected PR base branch (expected main, netN.0, inflight/*, or release/*). Refusing to switch."
+      if ! [[ "${BASE_REF}" =~ ^(main|net[0-9]+(\.0)?|inflight/[a-z0-9][a-z0-9._-]*|candidate/[1-9][0-9]*\.0\.[1-9][0-9]*xx-sr[1-9][0-9]*|release/[0-9]+\.[0-9]+\.[0-9]+xx(-[a-z0-9.]+)?)$ ]]; then
+        echo "##vso[task.logissue type=error]Unexpected PR base branch (expected main, netN/netN.0, versioned candidate, inflight, or release). Refusing to switch."
         exit 1
+      fi
+      if [[ "${BASE_REF}" =~ ^net[0-9]+$ || "${BASE_REF}" == candidate/* || "${BASE_REF}" =~ ^inflight/[0-9]+\.0\.[0-9]+xx-sr[0-9]+$ ]]; then
+        PROTECTED=$(curl -fsSL -H "Authorization: Bearer ${GH_TOKEN}" -H "Accept: application/vnd.github+json" \
+          "https://api.github.com/repos/dotnet/maui/branches/${BASE_REF}" \
+          | python3 -c "import sys,json;print(str(json.load(sys.stdin)['protected']).lower())") || exit 1
+        if [ "${PROTECTED}" != true ]; then
+          echo "##vso[task.logissue type=error]The new servicing/staging target must have branch protection before credential-bearing provisioning can run. Refusing to switch."
+          exit 1
+        fi
       fi
       echo "PR #${PARAM_PR_NUMBER} targets base branch: ${BASE_REF}"
 

@@ -32,6 +32,10 @@ The primary build, device-test and UI-test YAML include `net11` and
 `candidate/*` in push/PR filters. The official build includes `net11` for its
 schedule, signing, localization and API scanning. Deploy these definitions and
 review server-side protections before relying on the new branch's CI.
+The reviewer/gate and immutable snapshot validation recognize these names too,
+but provisioning with credentials requires the new servicing/staging targets to
+be protected. Until protection is configured, review setup fails explicitly
+instead of switching a credential-bearing worktree to an unprotected branch.
 
 ## Initial migration and release cut
 

@@ -66,6 +66,14 @@ explicitly include `net11` and `candidate/*`; the official definition includes
 be deployed before assuming that branch creation activates the new CI routes.
 Do not treat the historical `net11.0` subscription target as the new branch.
 
+Release-related tooling resolves the configured servicing branch independently
+of feature `main`: milestone ownership and review baselines must recognize
+literal `net11` and versioned candidate/inflight lanes. Credential-bearing
+review provisioning refuses the new servicing/staging targets until GitHub
+reports branch protection; the naming allowlist alone is not protection.
+The release migration must deploy those protections separately rather than
+bypass the refusal or grant extra pipeline permissions.
+
 .NET 10 SR13 publishes from `release/10.0.1xx-sr13`, independently of `main`.
 Preserve its release commit and packages, and keep publication on the .NET 10 channel during the
 .NET 11 transition. Do not cut over `inflight/current` or synchronize the internal
