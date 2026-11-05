@@ -102,6 +102,82 @@ from the old SR `N+1` inflight and becomes the SR `N+1` candidate, while the old
 inflight advances to SR `N+2`. Keep the release branch separate from these moves,
 and continue the daily `net11`-to-`main` merges.
 
+## One-click release automation
+
+The proposed implementation is an internal Azure DevOps pipeline named
+`maui-release-rollover`, with its definition and scripts maintained in this
+repository. It is not implemented or enabled by this documentation change.
+
+### Operator experience
+
+The release owner opens the pipeline and selects **Run pipeline**. There are no
+release fields to fill in: the owner does not select or type the release band, SR
+number, branch names, commit SHAs, build IDs, or channel names. Activation is the
+authorization to perform the configured routine branch rollover; there is no
+second routine approval prompt for those operations.
+
+The pipeline generates and records its resolved plan, checks prerequisites, runs
+the rollover, and reports the resulting refs and validation links. If a
+prerequisite is missing or the release state is ambiguous, it stops with an
+actionable explanation rather than guessing values or asking the operator to
+complete a release form.
+
+Normal candidate-PR reviews and any required external configuration or
+package-publication approvals remain separate. Activation must not bypass branch
+protections or existing service approval checks.
+
+### Automatic input resolution
+
+Each activation target is bound to one release train through a trusted,
+version-controlled release-state record. Initial setup defines the train and
+branch roles once, including the resolved candidate-naming policy. Multiple
+active trains must not be resolved by guessing from the highest branch number or
+from `main`, which represents a different .NET version in this proposal.
+
+| Input | Resolved automatically from |
+|---|---|
+| Release band and development branches | The configured release train and its `net11` / `main` branch roles. |
+| Current SR and candidate/inflight refs | The active lane state, validated against actual refs and the configured naming policy. |
+| Release source commit | The eligible, approved candidate merge into `net11`, with required validation at the exact selected commit. |
+| Next candidate and inflight names | The current SR number and the agreed SR `N+1` / SR `N+2` rotation rules. |
+| Build and BAR identities | Eligible signed-build evidence for the pinned release commit and configured official pipeline; never an unrelated latest build. |
+| Channel mappings, subscriptions, and mirror refs | Their trusted configuration, checked against the selected release train; never invented from branch-name similarity. |
+
+Candidate integration and its normal reviews must be complete before a release
+cut can proceed. The pipeline detects that state itself; the operator does not
+enter a merge SHA. When a signed build is needed, it queues or locates the build
+for the pinned commit and waits for eligible results instead of requesting a
+build ID from the operator.
+
+```mermaid
+flowchart TD
+    Activate["Release owner: Run pipeline (no release inputs)"] --> Resolve["Resolve trusted state and pin commits"]
+    Resolve --> Check{"Prerequisites valid?"}
+    Check -->|No| Stop["Stop and report the blocker"]
+    Check -->|Yes| Apply["Cut release and advance candidate/inflight lanes"]
+    Apply --> Verify["Verify integration, signed builds, and artifacts"]
+    Verify --> Report["Record next-cycle state and report results"]
+```
+
+### Execution safeguards
+
+Serialize runs per release train and persist a checkpoint for each completed
+operation. Recheck expected source SHAs before mutations, and resume the same
+recorded cycle after an interruption rather than starting a different plan.
+Advancing lane names alone must not make another release eligible: a new cycle
+requires a distinct approved candidate merge that has not already been released.
+Repeated activation without one reports the existing cycle or the missing
+prerequisite, rather than cutting the next SR accidentally.
+
+Only report success when the required integrations and validation have completed.
+Configuration PRs that still need owner approval are pending work, not successful
+handoffs. The routine rollover must not force-push history, delete historical
+release refs, or publish packages. Package publishing retains the separate gates
+in the [release process](ReleaseProcess.md).
+
+The daily `net11`-to-`main` merge PR runs on a schedule independently of release
+activation, stopping for conflicts or failed validation instead of guessing fixes.
+
 ## Adoption scope
 
 Adopting this proposal requires coordinating the branch changes with their
