@@ -106,6 +106,32 @@ Describe 'Direct native CI contracts' {
         $stop | Should -Not -Match 'killall|pkill|Stop-Process -Name'
     }
 
+    It 'initializes the owned AVD directory without overwriting the read-only PowerShell home' {
+        $setup = [regex]::Match($start, '(?s)    \$name = "maui-.*?\r?\n    Save-State')
+        $setup.Success | Should -BeTrue
+        $DeviceDirectory = Join-Path $TestDrive 'android-device'
+        $statePath = Join-Path $TestDrive 'device.json'
+        $state = @{}
+        function Save-State {
+            $state | ConvertTo-Json | Set-Content -LiteralPath $statePath
+        }
+        $originalHome = $HOME
+        $originalAvdHome = $env:ANDROID_AVD_HOME
+        try {
+            $ErrorActionPreference = 'Stop'
+            & ([scriptblock]::Create($setup.Value))
+            $recorded = Get-Content -LiteralPath $statePath -Raw | ConvertFrom-Json
+            $recorded.AvdHome | Should -Be (Join-Path $DeviceDirectory 'avd')
+            $recorded.AvdHome | Should -Exist
+            $env:ANDROID_AVD_HOME | Should -Be $recorded.AvdHome
+            $recorded.AvdName | Should -Match '^maui-[a-f0-9]{32}$'
+            $HOME | Should -Be $originalHome
+        }
+        finally {
+            $env:ANDROID_AVD_HOME = $originalAvdHome
+        }
+    }
+
     It 'has no submission or monitor path' {
         $stage + $steps | Should -Not -Match 'send-to-helix|helix_xharness|HelixAccessToken|HelixJobMonitor|xharness'
     }

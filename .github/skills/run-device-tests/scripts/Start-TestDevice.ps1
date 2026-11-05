@@ -55,14 +55,14 @@ if ($Platform -eq 'android') {
     & $manager "--sdk_root=$sdk" --install 'platform-tools' 'emulator' $image
 
     $name = "maui-$([guid]::NewGuid().ToString('N'))"
-    $home = Join-Path $DeviceDirectory 'avd'
-    New-Item -ItemType Directory -Force -Path $home | Out-Null
-    $env:ANDROID_AVD_HOME = $home
-    $state.AvdHome = $home
+    $avdHome = Join-Path $DeviceDirectory 'avd'
+    New-Item -ItemType Directory -Force -Path $avdHome | Out-Null
+    $env:ANDROID_AVD_HOME = $avdHome
+    $state.AvdHome = $avdHome
     $state.AvdName = $name
     $state.Adb = $adb
     Save-State
-    'no' | & $avdmanager create avd --force --name $name --package $image --path (Join-Path $home "$name.avd")
+    'no' | & $avdmanager create avd --force --name $name --package $image --path (Join-Path $avdHome "$name.avd")
 
     # Reserve both emulator ports until immediately before launching this job's emulator.
     $listeners = @()
