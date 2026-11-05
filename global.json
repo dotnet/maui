@@ -1,6 +1,11 @@
 {
   "tools": {
-    "dotnet": "12.0.100-alpha.1.26554.104"
+    "dotnet": "12.0.100-alpha.1.26554.104",
+    "runtimes": {
+      "dotnet": [
+        "10.0.14"
+      ]
+    }
   },
   "sdk": {
     "paths": [

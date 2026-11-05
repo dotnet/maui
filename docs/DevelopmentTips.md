@@ -33,8 +33,12 @@ minimum remains 17.0. The Apple workload manifests also require .NET 11
 packs. Their versions and source commits must match the compatibility
 dependencies in the selected macios build, including the separate iOS pin.
 
-CI compiles Apple frameworks, apps and packages on the GoldenGate Aces image
-until standard hosted images provide Xcode 27.1. Prebuilt iOS and Mac Catalyst
+CI compiles Apple frameworks, apps and packages on the GoldenGate Aces image.
+That image must include Xcode 27.1 before .NET 12 Apple jobs can build. Public
+CI cannot acquire the producer's internal Xcode package, and the shared
+Provisionator path requires separately configured credentials. Xcode selection
+verifies the actual major/minor version rather than accepting an older
+installation with the same major-version directory name. Prebuilt iOS and Mac Catalyst
 UI-test apps execute on `AcesShared` / `ACES_VM_SharedPool_Tahoe`, because the
 GoldenGate Appium execution environment has not been validated. iOS UI tests
 use Xcode 26.5. Both public and internal Mac Catalyst pool defaults use Tahoe
@@ -42,6 +46,11 @@ rather than the hosted macOS 14 image; the pool parameters remain
 overridable for image validation. These execution images do not determine the
 app's build SDK. Simulator runtime provisioning and its bounded recovery
 remain enabled.
+
+Android builds require JDK 21, which is selected by `JavaJdkVersion` in
+`eng/Versions.props`. The repository-local SDK also installs the .NET 10 runtime
+declared in `global.json` for tools such as Cake; this does not change the .NET 12
+target frameworks.
 
 Normal builds validate the Xcode version rather than bypassing an SDK mismatch.
 To use a particular installed Xcode without changing the global selection,

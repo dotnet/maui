@@ -39,8 +39,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		{
 			Assembly testAssembly = System.Reflection.Assembly.Load(assemblyName);
 			Version actual = testAssembly.GetName().Version;
-			// Currently we keep the assembly verison at 10.0.0.0
-			Assert.Equal(11, actual.Major);
+			Assert.Equal(12, actual.Major);
 			Assert.Equal(0, actual.Minor);
 			Assert.Equal(0, actual.Build);
 			Assert.Equal(0, actual.Revision);
@@ -86,7 +85,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			if (!string.IsNullOrEmpty(helixPayload))
 			{
 				var normalizedFile = file.Replace('\\', '/');
-				
+
 				// The MSBuild test files are copied to msbuild/ in the Helix payload
 				// Map paths like "src/Controls/tests/Xaml.UnitTests/MSBuild/X" to "msbuild/X"
 				var msbuildPrefix = "src/Controls/tests/Xaml.UnitTests/MSBuild/";
@@ -97,7 +96,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 					if (File.Exists(helixPath))
 						return helixPath;
 				}
-				
+
 				// Files from src/ folder are in the "src" correlation payload
 				// Map paths like "src/Controls/src/Build.Tasks/nuget/..." directly to "src/..." in payload
 				if (normalizedFile.StartsWith("src/", StringComparison.OrdinalIgnoreCase))
@@ -148,7 +147,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		{
 			if (string.IsNullOrEmpty(searchDirectory))
 				return null;
-			
+
 			if (File.Exists(IOPath.Combine(searchDirectory, "Microsoft.Maui.sln")))
 				return searchDirectory;
 
@@ -158,7 +157,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			var parent = Directory.GetParent(searchDirectory);
 			if (parent == null)
 				return null;
-				
+
 			return GetTopDirRecursive(parent.FullName, --maxSearchDepth);
 		}
 

@@ -1,8 +1,8 @@
 using System;
 using System.Globalization;
 using System.IO;
-using Microsoft.CodeAnalysis;
 using System.Linq;
+using Microsoft.CodeAnalysis;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.SourceGen.UnitTests
@@ -56,7 +56,7 @@ public partial class TestPage : ContentPage
 
 namespace Test;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Maui.Controls.SourceGen, Version=11.0.0.0, Culture=neutral, PublicKeyToken=null", "11.0.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Maui.Controls.SourceGen, Version=12.0.0.0, Culture=neutral, PublicKeyToken=null", "12.0.0.0")]
 public partial class TestPage
 {
 	private partial void InitializeComponent()
@@ -182,7 +182,7 @@ public partial class TestPage : ContentPage
 
 namespace Test;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Maui.Controls.SourceGen, Version=11.0.0.0, Culture=neutral, PublicKeyToken=null", "11.0.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Maui.Controls.SourceGen, Version=12.0.0.0, Culture=neutral, PublicKeyToken=null", "12.0.0.0")]
 public partial class TestPage
 {
 	private partial void InitializeComponent()
@@ -303,7 +303,7 @@ InitializeComponent();
 
 namespace Test;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Maui.Controls.SourceGen, Version=11.0.0.0, Culture=neutral, PublicKeyToken=null", "11.0.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Maui.Controls.SourceGen, Version=12.0.0.0, Culture=neutral, PublicKeyToken=null", "12.0.0.0")]
 public partial class TestPage
 {
 	private partial void InitializeComponent()

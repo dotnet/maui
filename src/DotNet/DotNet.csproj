@@ -40,6 +40,7 @@
     <_ProvisionDependsOn>
       _DownloadDotNetInstallScript;
       _InstallDotNet;
+      _InstallToolRuntimes;
       _AcquireWorkloadManifests;
       _InstallWorkloadPacks;
     </_ProvisionDependsOn>
@@ -175,6 +176,20 @@
         Lines="$(MicrosoftDotnetSdkInternalPackageVersion)"
         Condition="$([MSBuild]::IsOSPlatform('windows'))"
         Overwrite="true" />
+  </Target>
+
+  <Target Name="_InstallToolRuntimes">
+    <PropertyGroup>
+      <_ToolRuntimeInstallScript>$(MauiRootDirectory)eng/common/dotnet-install.sh</_ToolRuntimeInstallScript>
+      <_ToolRuntimeInstallScript Condition="$([MSBuild]::IsOSPlatform('windows'))">$(MauiRootDirectory)eng/common/dotnet-install.cmd</_ToolRuntimeInstallScript>
+    </PropertyGroup>
+    <InstallDotNetCore
+        GlobalJsonPath="$(MauiRootDirectory)global.json"
+        DotNetPath="$(DotNetDirectory)"
+        DotNetInstallScript="$(_ToolRuntimeInstallScript)"
+        VersionsPropsPath="$(MauiRootDirectory)eng/Versions.props"
+        Platform="$(Platform)"
+    />
   </Target>
 
   <ItemGroup>
