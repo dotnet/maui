@@ -21,15 +21,13 @@ namespace Microsoft.Maui
 			{
 				try
 				{
-					byte[] bytes;
+					byte[]? bytes = null;
 					using (var stream = await streamImageSource.GetStreamAsync(cancellationToken))
 					{
-						if (stream is null)
+						if (stream is not null)
 						{
-							throw new InvalidOperationException("Unable to load image stream.");
+							bytes = await Task.Run(() => GetStreamBytesAsync(stream, cancellationToken), cancellationToken);
 						}
-
-						bytes = await Task.Run(() => GetStreamBytesAsync(stream, cancellationToken), cancellationToken);
 					}
 
 					cancellationToken.ThrowIfCancellationRequested();
@@ -58,15 +56,13 @@ namespace Microsoft.Maui
 			{
 				try
 				{
-					byte[] bytes;
+					byte[]? bytes = null;
 					using (var stream = await streamImageSource.GetStreamAsync(cancellationToken).ConfigureAwait(false))
 					{
-						if (stream is null)
+						if (stream is not null)
 						{
-							throw new InvalidOperationException("Unable to load image stream.");
+							bytes = await Task.Run(() => GetStreamBytesAsync(stream, cancellationToken), cancellationToken).ConfigureAwait(false);
 						}
-
-						bytes = await Task.Run(() => GetStreamBytesAsync(stream, cancellationToken), cancellationToken).ConfigureAwait(false);
 					}
 
 					cancellationToken.ThrowIfCancellationRequested();
