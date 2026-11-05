@@ -391,7 +391,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 					case TestDevice.Windows:
 						environmentName = "windows";
-						
+
 						// Check if the Windows CV1 handler is selected via TEST_CONFIGURATION_ARGS.
 						// This uses a separate snapshot directory for visual regression testing
 						var testConfigurationArgs = Environment.GetEnvironmentVariable("TEST_CONFIGURATION_ARGS") ?? "";
@@ -706,7 +706,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			var height = windowBounds.Height;
 			var logicalWidth = width;
 			var logicalHeight = height;
-			const int cornerRadius = 12;
 
 			// Take the screenshot
 			var bytes = App.Screenshot();
@@ -766,16 +765,17 @@ namespace Microsoft.Maui.TestCases.Tests
 					$"are outside screenshot bounds {image.Width}x{image.Height}.");
 			}
 
-			int pixelCornerRadius = Math.Max(1, (int)Math.Round(cornerRadius * Math.Min(scaleX, scaleY)));
+			return CropMacScreenshot(image, new MagickGeometry(pixelX, pixelY, (uint)pixelWidth, (uint)pixelHeight), logicalWidth, logicalHeight);
+		}
 
-			// Draw a rounded rectangle with the physical-pixel app window bounds as mask.
-			using var surface = new MagickImage(MagickColors.Transparent, (uint)pixelWidth, (uint)pixelHeight);
-			new Drawables()
-				.RoundRectangle(0, 0, pixelWidth, pixelHeight, pixelCornerRadius, pixelCornerRadius)
-				.FillColor(MagickColors.Black)
-				.Draw(surface);
-
-			surface.Composite(image, -pixelX, -pixelY, CompositeOperator.SrcAtop);
+		internal static byte[] CropMacScreenshot(MagickImage image, MagickGeometry bounds, int logicalWidth, int logicalHeight)
+		{
+			int pixelWidth = (int)bounds.Width;
+			int pixelHeight = (int)bounds.Height;
+			using var surface = new MagickImage(image);
+			surface.Crop(bounds);
+			surface.ResetPage();
+			ApplyContentMask(surface, (double)pixelWidth / logicalWidth, (double)pixelHeight / logicalHeight);
 
 			// Keep committed snapshots density-independent and preserve the existing
 			// logical crop values (for example, the 29-point title-bar crop).
@@ -786,9 +786,30 @@ namespace Microsoft.Maui.TestCases.Tests
 					IgnoreAspectRatio = true,
 				};
 				surface.Resize(logicalSize);
+				ApplyContentMask(surface, 1, 1);
 			}
 
 			return surface.ToByteArray(MagickFormat.Png);
+
+			static void ApplyContentMask(MagickImage surface, double scaleX, double scaleY)
+			{
+				// Exclude the native border and corner blending before resampling, then
+				// restore a hard alpha boundary at logical resolution to prevent color fringes.
+				const int borderInset = 2;
+				const int cornerRadius = 24;
+				double insetX = borderInset * scaleX;
+				double insetY = borderInset * scaleY;
+				using var mask = new MagickImage(MagickColors.Black, surface.Width, surface.Height);
+				new Drawables()
+					.FillColor(MagickColors.White)
+					.StrokeWidth(0)
+					.RoundRectangle(insetX, insetY, surface.Width - insetX - 1, surface.Height - insetY - 1, cornerRadius * scaleX, cornerRadius * scaleY)
+					.Draw(mask);
+				mask.Threshold(new Percentage(99));
+				surface.Composite(mask, CompositeOperator.CopyAlpha);
+				surface.BackgroundColor = MagickColors.Transparent;
+				surface.Alpha(AlphaOption.Background);
+			}
 		}
 #endif
 	}
