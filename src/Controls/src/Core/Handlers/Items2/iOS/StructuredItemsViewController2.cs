@@ -15,6 +15,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		public const int FooterTag = 222;
 
 		bool _disposed;
+		WeakReference<SupplementaryContentView2> _headerContent;
+		WeakReference<SupplementaryContentView2> _footerContent;
 
 		public StructuredItemsViewController2(TItemsView structuredItemsView, UICollectionViewLayout layout)
 			: base(structuredItemsView, layout)
@@ -40,7 +42,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			if (disposing)
 			{
-
+				RemoveSupplementaryContent(true);
+				RemoveSupplementaryContent(false);
 			}
 
 			base.Dispose(disposing);
@@ -73,6 +76,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			// Clean up header view if no header content
 			if (ItemsView.Header is null && ItemsView.HeaderTemplate is null)
 			{
+				RemoveSupplementaryContent(true);
 				var headerView = CollectionView.ViewWithTag(HeaderTag);
 				headerView?.RemoveFromSuperview();
 			}
@@ -83,6 +87,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			// Clean up footer view if no footer content
 			if (ItemsView.Footer is null && ItemsView.FooterTemplate is null)
 			{
+				RemoveSupplementaryContent(false);
 				var footerView = CollectionView.ViewWithTag(FooterTag);
 				footerView?.RemoveFromSuperview();
 			}
@@ -138,6 +143,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		void UpdateDefaultSupplementaryView(DefaultCell2 cell, NSString elementKind)
 		{
+			RemoveSupplementaryContent(elementKind == UICollectionElementKindSectionKey.Header);
 			var obj = elementKind == UICollectionElementKindSectionKey.Header
 				? ItemsView.Header
 				: ItemsView.Footer;
@@ -151,6 +157,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		void UpdateTemplatedSupplementaryView(TemplatedCell2 cell, NSString elementKind)
 		{
 			bool isHeader = elementKind == UICollectionElementKindSectionKey.Header;
+			var content = GetSupplementaryContent(isHeader);
+			content.PrepareCell(cell);
 			cell.isHeaderOrFooterChanged = true;
 			cell.isSupplementaryView = true;
 
@@ -180,6 +188,34 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 
 			cell.isHeaderOrFooterChanged = false;
+			content.AttachContent(cell);
+		}
+
+		SupplementaryContentView2 GetSupplementaryContent(bool isHeader)
+		{
+			var reference = isHeader ? _headerContent : _footerContent;
+			if (reference is not null && reference.TryGetTarget(out var content))
+				return content;
+
+			content = new SupplementaryContentView2();
+			CollectionView.AddSubview(content);
+			if (isHeader)
+				_headerContent = new(content);
+			else
+				_footerContent = new(content);
+			return content;
+		}
+
+		void RemoveSupplementaryContent(bool isHeader)
+		{
+			var reference = isHeader ? _headerContent : _footerContent;
+			if (reference is not null && reference.TryGetTarget(out var content))
+				content.Unbind();
+
+			if (isHeader)
+				_headerContent = null;
+			else
+				_footerContent = null;
 		}
 
 		string DetermineViewReuseId(DataTemplate template, object item)
@@ -214,6 +250,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					footerView.Frame = new CGRect(footerView.Frame.X, emptyViewFrame.Bottom, footerView.Frame.Width, footerView.Frame.Height);
 				else
 					footerView.Frame = new CGRect(footerView.Frame.X, CollectionView.ContentSize.Height - footerView.Frame.Height, footerView.Frame.Width, footerView.Frame.Height);
+
+				if (_footerContent is not null && _footerContent.TryGetTarget(out var footerContent))
+					footerContent.UpdateLayout();
 			}
 
 			return emptyViewFrame;

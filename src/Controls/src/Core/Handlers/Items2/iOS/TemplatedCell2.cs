@@ -85,6 +85,31 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		internal UIView PlatformView { get; set; }
 
+		internal WeakReference<SupplementaryContentView2> SupplementaryContentView { get; set; }
+
+		internal void UseSupplementaryContent(IPlatformViewHandler handler, UIView platformView, DataTemplate template)
+		{
+			if (PlatformHandler is not null && PlatformHandler != handler)
+			{
+				Unbind();
+				PlatformView?.RemoveFromSuperview();
+			}
+
+			PlatformHandler = handler;
+			PlatformView = platformView;
+			CurrentTemplate = template;
+		}
+
+		internal void ReleaseSupplementaryContent()
+		{
+			_bound = false;
+			PlatformHandler = null;
+			PlatformView = null;
+			CurrentTemplate = null;
+			SupplementaryContentView = null;
+			UserInteractionEnabled = true;
+		}
+
 		MauiView CellSafeAreaView =>
 			PlatformView as MauiView ?? PlatformHandler?.PlatformView as MauiView;
 
@@ -106,8 +131,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			_bound = false;
 			ResetArrangeState();
+			UnbindView(PlatformHandler);
+		}
 
-			if (PlatformHandler?.VirtualView is View view)
+		internal static void UnbindView(IPlatformViewHandler platformHandler)
+		{
+			if (platformHandler?.VirtualView is View view)
 			{
 				//view.MeasureInvalidated -= MeasureInvalidated;
 				view.BindingContext = null;
@@ -224,6 +253,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			base.LayoutSubviews();
 
+			if (SupplementaryContentView is not null && SupplementaryContentView.TryGetTarget(out var supplementaryContent))
+				supplementaryContent.UpdateLayout(this);
+
 			if (PlatformHandler?.VirtualView is { } virtualView)
 			{
 				var boundsSize = Bounds.Size.ToSize();
@@ -313,6 +345,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		public void Bind(View virtualView, ItemsView itemsView)
 		{
+			CurrentTemplate = null;
 			BindVirtualView(virtualView, itemsView.BindingContext, itemsView, true);
 		}
 
