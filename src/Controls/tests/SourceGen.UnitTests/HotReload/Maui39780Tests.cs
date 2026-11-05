@@ -20,14 +20,14 @@ public class Maui39780Tests
 		}
 		""";
 
-	static string DictionaryXaml(bool basedOn) => $$"""
+	static string DictionaryXaml(bool basedOn, bool shared = true) => $$"""
 		<ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
 		                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 		                    x:Class="Test39780.Styles">
 		    <Style x:Key="BaseStyle" TargetType="Label">
 		        <Setter Property="FontSize" Value="24" />
 		    </Style>
-		    <Style TargetType="{{(basedOn ? "{x:Type Label}" : "Label")}}"{{(basedOn ? " BasedOn=\"{StaticResource BaseStyle}\"" : "")}}>
+		    <Style TargetType="{{(basedOn ? "{x:Type Label}" : "Label")}}" x:Shared="{{shared}}"{{(basedOn ? " BasedOn=\"{StaticResource BaseStyle}\"" : "")}}>
 		        <Setter Property="TextColor" Value="Red" />
 		        <Setter Property="BackgroundColor" Value="Red" />
 		    </Style>
@@ -42,7 +42,10 @@ public class Maui39780Tests
 		var xaml = DictionaryXaml(basedOn: true);
 		var generation = harness.Generate(xaml, xaml.Replace("Red", "Blue", StringComparison.Ordinal));
 
-		Assert.Contains(".TargetType.FullName!]", generation[1].UpdateComponentSource, StringComparison.Ordinal);
+		Assert.Contains("this.Remove(typeof(global::Microsoft.Maui.Controls.Label).FullName!);",
+			generation[1].UpdateComponentSource, StringComparison.Ordinal);
+		Assert.Contains("this.AddFactory(typeof(global::Microsoft.Maui.Controls.Label)", generation[1].UpdateComponentSource,
+			StringComparison.Ordinal);
 		harness.Compile(generation[1]);
 	}
 
@@ -127,13 +130,15 @@ public class Maui39780Tests
 	}
 
 	[MetadataUpdateTheory]
-	[InlineData(false)]
-	[InlineData(true)]
-	public void ImplicitStyleSetter_InMergedDictionary_UpdatesExistingLabel(bool basedOn)
+	[InlineData(false, true)]
+	[InlineData(true, true)]
+	[InlineData(false, false)]
+	[InlineData(true, false)]
+	public void ImplicitStyleSetter_InMergedDictionary_UpdatesExistingLabel(bool basedOn, bool shared)
 	{
 		using var harness = new XamlHotReloadTestHarness(nameof(ImplicitStyleSetter_InMergedDictionary_UpdatesExistingLabel),
 			"Test39780.Styles", DictionarySource);
-		var xaml = DictionaryXaml(basedOn);
+		var xaml = DictionaryXaml(basedOn, shared);
 		var generation = harness.Generate(xaml, xaml.Replace("Red", "Blue", StringComparison.Ordinal),
 			xaml.Replace("Red", "Green", StringComparison.Ordinal));
 
@@ -147,12 +152,21 @@ public class Maui39780Tests
 			page.Resources.MergedDictionaries.Add(dictionary);
 			Assert.Equal(Colors.Red, label.TextColor);
 			var baseStyle = dictionary["BaseStyle"];
+			var originalStyle = dictionary[typeof(Label).FullName!];
+			if (shared)
+				Assert.Same(originalStyle, dictionary[typeof(Label).FullName!]);
+			else
+				Assert.NotSame(originalStyle, dictionary[typeof(Label).FullName!]);
 
 			Assert.Same(dictionary, live.ApplyUpdate<MauiResourceDictionary>(1));
 			Assert.Equal(Colors.Blue, label.TextColor);
 			Assert.Equal(Colors.Blue, label.BackgroundColor);
 			var updatedStyle = Assert.IsType<Style>(dictionary[typeof(Label).FullName!]);
 			Assert.All(updatedStyle.Setters, setter => Assert.Equal(Colors.Blue, Assert.IsType<Color>(setter.Value)));
+			if (shared)
+				Assert.Same(updatedStyle, dictionary[typeof(Label).FullName!]);
+			else
+				Assert.NotSame(updatedStyle, dictionary[typeof(Label).FullName!]);
 			Assert.Same(baseStyle, dictionary["BaseStyle"]);
 			if (basedOn)
 				Assert.Equal(24, label.FontSize);

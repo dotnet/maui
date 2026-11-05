@@ -119,7 +119,7 @@ static class UpdateComponentCodeWriter
 		{
 			bool isRoot = string.IsNullOrEmpty(nodeDiff.NodeId);
 
-			if (TryEmitImplicitStyleSetterChange(codeWriter, nodeDiff, replacedStyles,
+			if (TryEmitImplicitStyleSetterChange(codeWriter, nodeDiff, replacedStyles, newIds,
 				compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem))
 				continue;
 
@@ -1287,6 +1287,7 @@ static class UpdateComponentCodeWriter
 		IndentedTextWriter codeWriter,
 		NodeDiff nodeDiff,
 		HashSet<ElementNode> replacedStyles,
+		IReadOnlyDictionary<ElementNode, string>? nodeIds,
 		Compilation compilation,
 		AssemblyAttributes xmlnsCache,
 		IDictionary<XmlType, INamedTypeSymbol> typeCache,
@@ -1330,14 +1331,24 @@ static class UpdateComponentCodeWriter
 			if (!string.IsNullOrEmpty(context.ProjectItem.TargetFramework))
 				replacement.Accept(new SimplifyOnPlatformVisitor(context.ProjectItem.TargetFramework), null);
 			replacement.Accept(new InferOnIdiomTypeArgumentsVisitor(context), null);
-			replacement.Accept(new CreateValuesVisitor(context), null);
-			replacement.Accept(new SetNamescopesAndRegisterNamesVisitor(context), null);
-			replacement.Accept(new SetResourcesVisitor(context), null);
-			replacement.Accept(new SetPropertiesVisitor(context, stopOnResourceDictionary: true), null);
+			if (replacement.IsLazyResource(dictionary, context))
+			{
+				var styleId = nodeIds?.TryGetValue(style, out var id) == true
+					? id : $"{style.LineNumber}_{style.LinePosition}";
+				SetPropertyHelpers.AddLazyResourceToResourceDictionary(codeWriter,
+					context.Variables[dictionary], replacement, context, replacementFactoryName: $"CreateStyle_{styleId}");
+			}
+			else
+			{
+				replacement.Accept(new CreateValuesVisitor(context), null);
+				replacement.Accept(new SetNamescopesAndRegisterNamesVisitor(context), null);
+				replacement.Accept(new SetResourcesVisitor(context), null);
+				replacement.Accept(new SetPropertiesVisitor(context, stopOnResourceDictionary: true), null);
+				var styleVariable = context.Variables[replacement].ValueAccessor;
+				codeWriter.WriteLine($"this[{styleVariable}.TargetType.FullName!] = {styleVariable};");
+			}
 			foreach (var localMethod in context.LocalMethods)
 				codeWriter.WriteLine(localMethod);
-			var styleVariable = context.Variables[replacement].ValueAccessor;
-			codeWriter.WriteLine($"this[{styleVariable}.TargetType.FullName!] = {styleVariable};");
 		}
 		return true;
 	}
