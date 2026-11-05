@@ -16,10 +16,11 @@ MauiBlazorWebView. The explicit minimum matrix is in
 `eng/pipelines/arcade/stage-device-tests.yml`:
 
 - Release Android API 33 on Linux x64: CoreCLR and Mono.
-- Release iOS simulator on macOS 15 and 26 arm64 (public), macOS 15 arm64
-  (internal): CoreCLR and Mono.
+- Release iOS simulator on the configured macOS 27 arm64 execution image:
+  CoreCLR and Mono. The former macOS 15/26 host coverage is an explicit gap,
+  not equivalent coverage under a different label.
 - Release Catalyst on the same Apple OS/architecture rows: CoreCLR.
-- Release Windows 11 x64: packaged and unpackaged, each suite. Packaged rows use
+- Release interactive Windows x64: packaged and unpackaged, each suite. Packaged rows use
   installed MSIX activation, not an unpackaged execution of the built binary.
 - iOS Controls has CollectionView, Shell, HybridWebView, and General shards.
   General must exclude all three individually executed categories.
@@ -42,19 +43,21 @@ on internal pools or expose submission/publication credentials to tests.
   is an agent provisioning failure, not permission to drop coverage. The pinned
   SDK may require an Xcode unavailable on an older OS; report this incompatibility
   explicitly rather than moving its row to a newer OS.
-- Windows: interactive Windows 11 x64 agents, Windows App SDK, signing support and
+- Windows: interactive Windows x64 agents, Windows App SDK, signing support and
   permission to install/remove a job-owned signing certificate. Baseline pool/image defaults are retained; runtime
-  checks reject a Server build agent or missing interactive desktop instead of
-  silently claiming Windows 11 coverage. No new custom agent capability is assumed.
+  checks reject a missing interactive desktop. The configured Server 2022 image
+  does not provide Windows 11 client-specific coverage; requireWindows11 rejects
+  Server hosts when explicitly selecting a client pool. No new custom agent capability is assumed.
   Packaged execution must retain package identity; an MSIX build followed by
   unpackaged binary execution does not cover the packaged scenario.
 
-The remaining environment questions are specific: which existing public/internal
-pool image supplies an interactive Windows 11 x64 client, and which baseline Apple
-image supplies macOS 15 arm64 with the Xcode required by the pinned workload?
-`applePoolsPublic`/`applePoolsInternal` retain the old Aces image by default, with
-explicit OS/architecture checks per row; do not silently move the macOS 15 row
-to macOS 26. The other pipeline retains its original MAUI execution pool.
+The configured GoldenGate image actually runs macOS 27 with Xcode 27.
+`applePoolsPublic`/`applePoolsInternal` label that default honestly and retain
+explicit OS/architecture checks per row. Restoring macOS 15/26 host coverage
+requires compatible execution agents and separate build/execution jobs; do not
+claim the current image covers those hosts. Windows 11 client coverage likewise
+requires a provisioned client pool. The other pipeline retains its original
+MAUI execution pool.
 
 Windows packaged jobs prepare a job-unique certificate/publisher and manifest
 copy while preserving the original application ID (including AppInfo assertions).

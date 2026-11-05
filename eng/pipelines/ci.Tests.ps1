@@ -93,4 +93,19 @@ Describe 'CI provisioning' {
       $uiPipeline | Should -Match "(?s)name: androidPoolLinux$scope.*?name: MAUI-DNCENG.*?ImageOverride -equals 1ESPT-Ubuntu22\.04"
     }
   }
+
+  It 'labels the current Apple execution image honestly and retains strict OS checks' {
+    $devicePipeline = Get-Content -LiteralPath (
+      Join-Path $PSScriptRoot 'ci-device-tests.yml') -Raw
+    $deviceStage = Get-Content -LiteralPath (
+      Join-Path $PSScriptRoot 'arcade/stage-device-tests.yml') -Raw
+    $startDevice = Get-Content -LiteralPath (
+      Join-Path $PSScriptRoot '../../.github/skills/run-device-tests/scripts/Start-TestDevice.ps1') -Raw
+
+    @([regex]::Matches($devicePipeline, 'name: macos27\r?\n\s+osMajor: 27')).Count |
+      Should -Be 2
+    $devicePipeline | Should -Not -Match 'name: macos(15|26)'
+    $deviceStage | Should -Match 'expectedOSMajor: \$\{\{ apple.osMajor \}\}'
+    $startDevice | Should -Match '\$version.Major -ne \$ExpectedOSMajor'
+  }
 }

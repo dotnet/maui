@@ -315,17 +315,26 @@ The device test projects include:
 
 ### Execution agents
 
-The public matrix preserves these execution environments:
+The direct matrix currently uses these execution environments:
 
-- **iOS / Mac Catalyst**: macOS 15 and 26 arm64
+- **iOS / Mac Catalyst**: macOS 27 arm64, both iOS runtimes and CoreCLR Catalyst
 - **Android**: Ubuntu 22.04 x64, API 33, both CoreCLR and Mono
 - **Windows**: interactive Windows x64, packaged and unpackaged
 
-Internal runs retain isolated internal pools and the macOS 15 Apple lane.
+The Android jobs use the emulator-capable `MAUI-DNCENG` execution pool, not the
+general-purpose NetCore build image, which does not expose `/dev/kvm`.
+Internal runs retain their separately configured pools.
 The other pipeline environment retains its per-suite APIs and configurations.
 Former submission agents are not assumed to be device-capable; missing runtime,
 OS, graphical session or signing support is a provisioning failure, not permission
 to silently drop the affected matrix row.
+
+The configured GoldenGate Apple image runs macOS 27 with the required Xcode 27.
+The initial direct migration does not preserve the retired Helix macOS 15/26
+host coverage. Restoring those hosts requires compatible execution agents and
+separate build/execution jobs; changing a lane's label does not provide that
+coverage. `applePoolsPublic` and `applePoolsInternal` remain configurable, and
+each row still checks its requested host OS and architecture before executing.
 
 ### Running Device Tests Locally
 

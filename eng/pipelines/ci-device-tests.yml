@@ -51,14 +51,8 @@ parameters:
 - name: applePoolsPublic
   type: object
   default:
-  - name: macos15
-    osMajor: 15
-    pool:
-      name: AcesShared
-      demands:
-      - ImageOverride -equals $(AcesMacImageOverride)
-  - name: macos26
-    osMajor: 26
+  - name: macos27
+    osMajor: 27
     pool:
       name: AcesShared
       demands:
@@ -66,8 +60,8 @@ parameters:
 - name: applePoolsInternal
   type: object
   default:
-  - name: macos15
-    osMajor: 15
+  - name: macos27
+    osMajor: 27
     pool:
       name: AcesShared
       demands:
