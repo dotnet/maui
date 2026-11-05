@@ -23,6 +23,7 @@ namespace Microsoft.Maui.Controls
 		
 		/// <summary>
 		/// The view scrolls to keep the last item visible as items are updated.
+		/// For grouped sources, this is the last data item in the last non-empty group, excluding headers and footers.
 		/// This is useful for chat-like interfaces where new items are added at the end.
 		/// </summary>
 		KeepLastItemInView

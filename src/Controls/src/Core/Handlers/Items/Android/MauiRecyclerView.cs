@@ -1113,8 +1113,25 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			if (ItemsView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepLastItemInView)
 			{
-				ScrollTo(new ScrollToRequestEventArgs(GetLayoutManager().ItemCount, 0,
-					Microsoft.Maui.Controls.ScrollToPosition.MakeVisible, true));
+				var source = ItemsViewAdapter.ItemsSource;
+				int itemCount = source.Count - (source.HasHeader ? 1 : 0) - (source.HasFooter ? 1 : 0);
+
+				if (source is ObservableGroupedSource groupedSource)
+				{
+					itemCount = 0;
+					for (int groupIndex = 0; groupIndex < groupedSource.GroupCount; groupIndex++)
+					{
+						var group = groupedSource.GetGroupItemsViewSource(groupIndex);
+						itemCount += group.Count - (group.HasHeader ? 1 : 0) - (group.HasFooter ? 1 : 0);
+					}
+				}
+
+				if (itemCount > 0)
+				{
+					// A negative group index selects the flat data-index path without an item lookup.
+					ScrollTo(new ScrollToRequestEventArgs(itemCount - 1, -1,
+						Microsoft.Maui.Controls.ScrollToPosition.MakeVisible, true));
+				}
 			}
 			else if (ItemsView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepScrollOffset)
 			{
