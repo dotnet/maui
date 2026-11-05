@@ -772,9 +772,12 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 			int pixelWidth = (int)bounds.Width;
 			int pixelHeight = (int)bounds.Height;
+			const int borderInset = 2;
+			const int cornerRadius = 24;
 			using var surface = new MagickImage(image);
 			surface.Crop(bounds);
 			surface.ResetPage();
+			using var unmaskedSurface = new MagickImage(surface);
 			ApplyContentMask(surface, (double)pixelWidth / logicalWidth, (double)pixelHeight / logicalHeight);
 
 			// Keep committed snapshots density-independent and preserve the existing
@@ -786,17 +789,25 @@ namespace Microsoft.Maui.TestCases.Tests
 					IgnoreAspectRatio = true,
 				};
 				surface.Resize(logicalSize);
+				unmaskedSurface.Resize(logicalSize);
 				ApplyContentMask(surface, 1, 1);
 			}
 
-			return surface.ToByteArray(MagickFormat.Png);
+			// Copy only the bottom corner patches so resampling cannot change nearby straight edges.
+			int cornerWidth = Math.Min(cornerRadius + borderInset, logicalWidth);
+			int cornerHeight = Math.Min(cornerRadius + borderInset, logicalHeight);
+			foreach (int cornerX in new[] { 0, logicalWidth - cornerWidth })
+			{
+				using var corner = new MagickImage(surface);
+				corner.Crop(new MagickGeometry(cornerX, logicalHeight - cornerHeight, (uint)cornerWidth, (uint)cornerHeight));
+				corner.ResetPage();
+				unmaskedSurface.Composite(corner, cornerX, logicalHeight - cornerHeight, CompositeOperator.Copy);
+			}
+
+			return unmaskedSurface.ToByteArray(MagickFormat.Png);
 
 			static void ApplyContentMask(MagickImage surface, double scaleX, double scaleY)
 			{
-				// Exclude the native border and corner blending before resampling, then
-				// restore a hard alpha boundary at logical resolution to prevent color fringes.
-				const int borderInset = 2;
-				const int cornerRadius = 24;
 				double insetX = borderInset * scaleX;
 				double insetY = borderInset * scaleY;
 				using var mask = new MagickImage(MagickColors.Black, surface.Width, surface.Height);

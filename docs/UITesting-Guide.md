@@ -435,10 +435,10 @@ For rapid development and debugging, you can run specific tests directly:
    dotnet test src/Controls/tests/TestCases.Mac.Tests/Controls.TestCases.Mac.Tests.csproj --filter "FullyQualifiedName~Issue11311"
    ```
 
-Mac screenshots retain logical window dimensions. The screenshot helper excludes
-the native window border and rounded corners with a transparent content mask
-before and after display-scale normalization, so desktop colors cannot bleed
-into the retained pixels. Review and regenerate affected visual baselines when
+Mac screenshots retain logical window dimensions. The screenshot helper masks
+only the bottom-left and bottom-right rounded-corner fringes before and after
+display-scale normalization. The top and straight edges are not inset or masked.
+Review and regenerate affected visual baselines when
 changing this mask; do not increase comparison tolerances to hide edge differences.
 
 ### Full Test Suite: Using Cake Build System
