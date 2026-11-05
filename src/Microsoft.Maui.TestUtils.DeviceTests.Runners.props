@@ -18,6 +18,8 @@
          NOTE: This file is imported directly from each device test csproj, NOT via Directory.Build.props,
          because adding Directory.Build.props to these folders breaks AppxPackageDir via Arcade SDK. -->
     <WindowsAppSDKSelfContained Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows' and '$(_MauiDeviceTestUnpackaged)' == 'true'">true</WindowsAppSDKSelfContained>
+    <!-- A command-line setting would also make referenced libraries run MakeAppx. -->
+    <GenerateAppxPackageOnBuild Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows' and '$(MauiTestPackaged)' == 'true'">true</GenerateAppxPackageOnBuild>
   </PropertyGroup>
   <ItemGroup>
     <Using Include="Xunit" />

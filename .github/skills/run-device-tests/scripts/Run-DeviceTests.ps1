@@ -346,6 +346,7 @@ try {
     )
     if ($Platform -eq 'windows') {
         $properties += @('-p:SelfContained=true', '-p:RuntimeIdentifierOverride=win-x64', '-p:UseMonoRuntime=false',
+            '-p:IsRidAgnostic=false',
             "-p:MauiTestResultsDirectory=$(ConvertTo-MSBuildPropertyValue $runDirectory)")
         if ($WindowsPackaging -eq 'packaged') {
             $windowsPackageState = Join-Path $runDirectory 'package-state.json'
@@ -365,7 +366,7 @@ try {
                 "-p:MauiTestPackageIdentityName=$($session.IdentityName)",
                 "-p:MauiTestPackagePublisher=$($session.Publisher)",
                 "-p:PackageCertificateThumbprint=$($session.CertificateThumbprint)",
-                '-p:AppxPackageSigningEnabled=true', '-p:GenerateAppxPackageOnBuild=true',
+                '-p:AppxPackageSigningEnabled=true',
                 '-p:UapAppxPackageBuildMode=SideloadOnly', '-p:AppxBundle=Never', '-p:ExtraDefineConstants=PACKAGED',
                 "-p:AppxPackageDir=$(ConvertTo-MSBuildPropertyValue (Join-Path $runDirectory 'msix/'))",
                 "-p:MauiTestLauncherPath=$(ConvertTo-MSBuildPropertyValue (Join-Path $launcherDirectory 'WindowsTestLauncher.dll'))",

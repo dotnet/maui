@@ -8,6 +8,7 @@ Describe 'Direct native CI contracts' {
         $deviceScripts = Join-Path $repoRoot '.github/skills/run-device-tests/scripts'
         $start = Get-Content (Join-Path $deviceScripts 'Start-TestDevice.ps1') -Raw
         $stop = Get-Content (Join-Path $deviceScripts 'Stop-TestDevice.ps1') -Raw
+        $localRunner = Get-Content (Join-Path $deviceScripts 'Run-DeviceTests.ps1') -Raw
     }
 
     It 'retains all five executed native suites' {
@@ -47,6 +48,47 @@ Describe 'Direct native CI contracts' {
         $steps | Should -Match 'Assert-TestResults.ps1'
         $steps | Should -Match 'failTaskOnMissingResultsFile: true'
         $steps | Should -Match 'failTaskOnFailedTests: true'
+    }
+
+    It 'keeps Windows reference builds RID-specific so PRI paths match the app reference query' {
+        $packaged = [regex]::Match($steps, '(?s)displayName: Build and sign owned MSIX.*?useExitCodeForErrors: true').Value
+        $run = [regex]::Match($steps, '(?s)displayName: Run Windows .*?useExitCodeForErrors: true').Value
+        $packaged | Should -Match '-p:IsRidAgnostic=false'
+        $run | Should -Match '-p:IsRidAgnostic=false'
+        $localRunner | Should -Match "'-p:IsRidAgnostic=false'"
+    }
+
+    It 'does not pass the app-only MSIX generation switch globally into referenced libraries' {
+        $steps | Should -Not -Match '-p:GenerateAppxPackageOnBuild=true'
+        $localRunner | Should -Not -Match '-p:GenerateAppxPackageOnBuild=true'
+    }
+
+    It 'enables MSIX generation in the test app without making its reference library a package' {
+        $directory = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
+        New-Item -ItemType Directory -Path $directory | Out-Null
+        $props = [Security.SecurityElement]::Escape((Join-Path $repoRoot 'src/Microsoft.Maui.TestUtils.DeviceTests.Runners.props'))
+        @'
+<Project>
+  <PropertyGroup><GenerateAppxPackageOnBuild>false</GenerateAppxPackageOnBuild></PropertyGroup>
+  <Target Name="Capture">
+    <WriteLinesToFile File="$(ProbeDirectory)/library.txt" Lines="$(GenerateAppxPackageOnBuild)" Overwrite="true" />
+  </Target>
+</Project>
+'@ | Set-Content (Join-Path $directory 'library.proj')
+        @"
+<Project>
+  <Import Project="$props" />
+  <Target Name="Capture">
+    <WriteLinesToFile File="`$(ProbeDirectory)/app.txt" Lines="`$(GenerateAppxPackageOnBuild)" Overwrite="true" />
+    <MSBuild Projects="library.proj" Targets="Capture" />
+  </Target>
+</Project>
+"@ | Set-Content (Join-Path $directory 'app.proj')
+        $output = & dotnet msbuild (Join-Path $directory 'app.proj') -nologo -v:quiet -t:Capture `
+            "-p:ProbeDirectory=$directory" -p:MauiTestPackaged=true -p:TargetFramework=net11.0-windows10.0.19041.0
+        if ($LASTEXITCODE -ne 0) { throw "Windows app-property probe failed: $output" }
+        (Get-Content (Join-Path $directory 'app.txt') -Raw).Trim() | Should -Be 'true'
+        (Get-Content (Join-Path $directory 'library.txt') -Raw).Trim() | Should -Be 'false'
     }
 
     It 'creates a job-owned simulator and uses only its recorded UDID in cleanup' {

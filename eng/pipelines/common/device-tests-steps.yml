@@ -67,7 +67,6 @@ steps:
           "-p:MauiTestPackagePublisher=$($state.Publisher)"
           "-p:PackageCertificateThumbprint=$($state.CertificateThumbprint)"
           '-p:AppxPackageSigningEnabled=true'
-          '-p:GenerateAppxPackageOnBuild=true'
           '-p:UapAppxPackageBuildMode=SideloadOnly'
           '-p:AppxBundle=Never'
           '-p:SelfContained=true'
@@ -99,6 +98,7 @@ steps:
         --framework ${{ parameters.targetFrameworkVersion }}-windows10.0.19041.0
         -p:RuntimeIdentifier=win-x64
         -p:RuntimeIdentifierOverride=win-x64
+        -p:IsRidAgnostic=false
         -p:MauiTestFilter="${{ replace(parameters.testFilter, ',', '%2C') }}"
         -p:MauiTestResultsDirectory="$(TestResultsDirectory)"
         $(DeviceTestArguments)
@@ -178,6 +178,7 @@ steps:
         --results-directory "$(TestResultsDirectory)"
         -p:RuntimeIdentifier=win-x64
         -p:RuntimeIdentifierOverride=win-x64
+        -p:IsRidAgnostic=false
         -p:MauiTestFilter="${{ replace(parameters.testFilter, ',', '%2C') }}"
         -p:MauiTestResultsDirectory="$(TestResultsDirectory)"
         $(DeviceTestArguments)
