@@ -52,6 +52,11 @@ Android builds require JDK 21, which is selected by `JavaJdkVersion` in
 declared in `global.json` for tools such as Cake; this does not change the .NET 12
 target frameworks.
 
+The .NET 12 Android binding generator no longer emits the legacy
+`ThresholdClass` and `ThresholdType` overrides on MAUI's native binding types.
+A net12-and-later-only PublicAPI supplement records those removals without
+changing shipped API history or the retained .NET 11 validation baseline.
+
 Normal builds validate the Xcode version rather than bypassing an SDK mismatch.
 To use a particular installed Xcode without changing the global selection,
 set `DEVELOPER_DIR` for the build command:

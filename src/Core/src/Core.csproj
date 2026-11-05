@@ -115,6 +115,11 @@
 
   <Import Project="$(MauiSrcDirectory)PublicAPI.targets" />
 
+  <ItemGroup Condition="'$(_MauiTargetPlatformIsAndroid)' == 'True' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net12.0'))">
+    <PublicAPIFiles Include="PublicAPI\net-android\net12\PublicAPI.Unshipped.txt" />
+    <AdditionalFiles Include="PublicAPI\net-android\net12\PublicAPI.Unshipped.txt" />
+  </ItemGroup>
+
   <Import Project="$(MauiRootDirectory)eng/ReplaceText.targets" />
 
   <Target Name="_GenerateBundledVersions"
