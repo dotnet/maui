@@ -23,16 +23,18 @@ The below parameters can be used with the `dotnet cake` command in the root of y
 
 > **Note:** For provisioning .NET SDK and workloads, prefer using `./build.sh -restore` (or `./build.cmd -restore` on Windows) instead of Cake. The Cake targets below are utility commands.
 
-#### Apple builds on .NET 11
+#### Apple builds on .NET 12
 
-The `net11.0` branch uses the Apple 27.0 workload and requires Xcode 27.
+The `net12.0` branch uses the .NET 12 alpha SDK and Apple workloads targeting
+iOS 27.1 and Mac Catalyst/macOS/tvOS 27.0, and requires Xcode 27.1.
 The managed and native iOS deployment minimum is 15.0; the Mac Catalyst
-minimum remains 17.0. The Apple workload manifests also require the .NET 10
-26.5.10322 compatibility SDK packs, which are pinned separately from the
-.NET 11 packs.
+minimum remains 17.0. The Apple workload manifests also require .NET 11
+27.0 compatibility SDK packs, which are pinned separately from the .NET 12
+packs. Their versions and source commits must match the compatibility
+dependencies in the selected macios build, including the separate iOS pin.
 
 CI compiles Apple frameworks, apps and packages on the GoldenGate Aces image
-until standard hosted images provide Xcode 27. Prebuilt iOS and Mac Catalyst
+until standard hosted images provide Xcode 27.1. Prebuilt iOS and Mac Catalyst
 UI-test apps execute on `AcesShared` / `ACES_VM_SharedPool_Tahoe`, because the
 GoldenGate Appium execution environment has not been validated. iOS UI tests
 use Xcode 26.5. Both public and internal Mac Catalyst pool defaults use Tahoe
@@ -46,7 +48,7 @@ To use a particular installed Xcode without changing the global selection,
 set `DEVELOPER_DIR` for the build command:
 
 ```bash
-DEVELOPER_DIR=/Applications/Xcode_27.app/Contents/Developer ./build.sh -restore -build
+DEVELOPER_DIR=/Applications/Xcode_27.1.app/Contents/Developer ./build.sh -restore -build
 ```
 
 #### Tizen backends on .NET 11
@@ -98,9 +100,9 @@ To build and run Blazor Desktop samples, check out the [Blazor Desktop](https://
 ### Public CI Apple toolchains
 
 The macOS template `Build` category uses separate toolchains without removing
-coverage. Previous-framework (.NET 10) cases run on the hosted `macOS-26` image
-with Xcode 26.5, matching their Apple compatibility SDK. The complementary cases
-retain the main branch's GoldenGate/Xcode 27 compilation pool. Compound test
+coverage. Previous-framework (.NET 11) cases run on the GoldenGate Aces image
+with Xcode 27.0, matching their Apple compatibility SDK. The complementary cases
+use Xcode 27.1 on that image. Compound test
 filters use single-quoted arguments in the shared PowerShell runner.
 
 ### Compile using a local `.dotnet\dotnet` via `build.*` scripts on the root folder 

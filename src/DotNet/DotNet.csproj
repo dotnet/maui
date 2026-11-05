@@ -2,6 +2,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <IsPackable>false</IsPackable>
+    <UseN1PackageVersions>false</UseN1PackageVersions>
     <!-- Suppress license validation as this project only provisions the .NET SDK -->
     <SuppressLicenseValidation>true</SuppressLicenseValidation>
     <InstallWorkloadPacks Condition=" '$(InstallWorkloadPacks)' == '' ">true</InstallWorkloadPacks>
