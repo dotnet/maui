@@ -440,11 +440,6 @@ the native window border and rounded corners with a transparent content mask
 before and after display-scale normalization, so desktop colors cannot bleed
 into the retained pixels. Review and regenerate affected visual baselines when
 changing this mask; do not increase comparison tolerances to hide edge differences.
-The crop regression tests can run without launching the HostApp:
-
-```bash
-dotnet test src/Controls/tests/TestCases.Mac.Tests/Controls.TestCases.Mac.Tests.csproj --filter "FullyQualifiedName~MacScreenshotTests"
-```
 
 ### Full Test Suite: Using Cake Build System
 
