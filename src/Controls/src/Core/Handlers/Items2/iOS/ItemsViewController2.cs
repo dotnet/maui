@@ -545,11 +545,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				return;
 			}
 
+			// Native bounds and self-sized content can differ by floating-point rounding.
+			const double sizeTolerance = 0.001;
 			if (afterLayout && CollectionView.Bounds is { } currentBounds &&
-				(IsHorizontal ? contentSize.Width > currentBounds.Width : contentSize.Height > currentBounds.Height))
+				(IsHorizontal ? contentSize.Width > currentBounds.Width + sizeTolerance : contentSize.Height > currentBounds.Height + sizeTolerance))
 			{
 				// Leave overflowing estimates for the pre-layout check. Caching them here
 				// can prevent an unconstrained collection inside a ScrollView from growing.
+				// UIKit need not schedule another pass when only its content size changed.
+				if (_initialized && contentSize != _previousContentSize)
+				{
+					CollectionView.SetNeedsLayout();
+				}
+
 				return;
 			}
 
@@ -566,8 +574,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					return;
 				}
 
-				var cvWidth = bounds.Width;
-				var cvHeight = bounds.Height;
+				var cvWidth = bounds.Width + sizeTolerance;
+				var cvHeight = bounds.Height + sizeTolerance;
 				bool invalidate = false;
 
 				// If both the previous content size and the current content size are larger

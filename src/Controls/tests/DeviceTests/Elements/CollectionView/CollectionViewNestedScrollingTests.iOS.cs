@@ -209,6 +209,91 @@ namespace Microsoft.Maui.DeviceTests
 		[Theory]
 		[InlineData(false)]
 		[InlineData(true)]
+		public async Task CappedCollectionViewResizesAfterRepeatedButtonClicks(bool isGrouped)
+		{
+			EnsureHandlerCreated(builder => builder.ConfigureMauiHandlers(handlers =>
+			{
+				handlers.AddHandler<CollectionView, CollectionViewHandler2>();
+				handlers.AddHandler<VerticalStackLayout, LayoutHandler>();
+				handlers.AddHandler<Grid, LayoutHandler>();
+				handlers.AddHandler<Border, BorderHandler>();
+				handlers.AddHandler<Label, LabelHandler>();
+				handlers.AddHandler<Button, ButtonHandler>();
+			}));
+
+			var heightLabel = new Label { Text = "Height: 0", FontSize = 16 };
+			var collectionView = new CollectionView
+			{
+				IsGrouped = isGrouped,
+				SelectionMode = SelectionMode.None,
+				ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Vertical) { ItemSpacing = 2 },
+				ItemTemplate = new DataTemplate(() =>
+				{
+					var label = new Label
+					{
+						FontSize = 13,
+						FontAttributes = FontAttributes.Bold,
+						LineBreakMode = LineBreakMode.TailTruncation
+					};
+					label.SetBinding(Label.TextProperty, ".");
+					return new Border
+					{
+						StrokeThickness = 0,
+						Padding = new Thickness(8, 4),
+						Margin = new Thickness(0, 2),
+						Content = label
+					};
+				})
+			};
+			collectionView.SizeChanged += (_, _) => heightLabel.Text = $"Height: {collectionView.Height:F2}";
+			var tenItems = new Button
+			{
+				Text = "10 Items",
+				Command = new Command(() => collectionView.ItemsSource = CreateItems(10, isGrouped))
+			};
+			var oneItem = new Button
+			{
+				Text = "one Item",
+				Command = new Command(() => collectionView.ItemsSource = CreateItems(1, isGrouped))
+			};
+			var grid = new Grid
+			{
+				MaximumHeightRequest = 180,
+				RowDefinitions = { new RowDefinition(GridLength.Star) }
+			};
+			grid.Add(collectionView);
+			var layout = new VerticalStackLayout
+			{
+				Padding = 20,
+				Children = { tenItems, oneItem, heightLabel, grid }
+			};
+
+			await CreateHandlerAndAddToWindow<LayoutHandler>(layout, async _ =>
+			{
+				var nativeCollection = Assert.IsType<CollectionViewHandler2>(collectionView.Handler).Controller.CollectionView;
+				for (int cycle = 0; cycle < 3; cycle++)
+				{
+					foreach (var button in new[] { tenItems, oneItem })
+					{
+						Assert.IsType<ButtonHandler>(button.Handler).PlatformView.SendActionForControlEvents(UIControlEvent.TouchUpInside);
+						var growing = button == tenItems;
+						await AssertEventually(() =>
+						{
+							var contentHeight = (double)nativeCollection.ContentSize.Height;
+							var expectedHeight = Math.Min(180, contentHeight);
+							return (growing ? contentHeight > 180 : contentHeight > 0 && contentHeight < 180) &&
+								Math.Abs(collectionView.Height - expectedHeight) <= 1 &&
+								Math.Abs(grid.Height - expectedHeight) <= 1 &&
+								heightLabel.Text == $"Height: {collectionView.Height:F2}";
+						}, message: $"Cycle {cycle + 1}: the collection should {(growing ? "grow" : "shrink")} after clicking {button.Text}.");
+					}
+				}
+			});
+		}
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
 		public Task ContentSizeResolvedDuringLayoutInvalidatesMeasure(bool horizontal) =>
 			InvokeOnMainThreadAsync(async () =>
 			{
@@ -234,9 +319,11 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 		[Theory]
-		[InlineData(false)]
-		[InlineData(true)]
-		public Task OverflowingContentGrowthIsHandledBeforeLayout(bool horizontal) =>
+		[InlineData(false, false)]
+		[InlineData(false, true)]
+		[InlineData(true, false)]
+		[InlineData(true, true)]
+		public Task OverflowingContentGrowthIsHandledBeforeLayout(bool horizontal, bool roundedBounds) =>
 			InvokeOnMainThreadAsync(async () =>
 			{
 				var collectionView = new CollectionView
@@ -247,7 +334,8 @@ namespace Microsoft.Maui.DeviceTests
 				var controller = handler.Controller;
 				var layout = new ContentSizeLayout { ResolvedContentSize = new CGSize(60, 60) };
 				controller.UpdateLayout(layout);
-				controller.CollectionView.Bounds = new CGRect(0, 0, 180, 180);
+				var viewportSize = roundedBounds ? 59.999999 : 60;
+				controller.CollectionView.Bounds = new CGRect(0, 0, viewportSize, viewportSize);
 				controller.ViewWillLayoutSubviews();
 				handler.MeasureInvalidations = 0;
 
