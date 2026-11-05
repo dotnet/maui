@@ -26,13 +26,13 @@ parameters:
   default:
     name: NetCore-Public
     demands:
-    - ImageOverride -equals 1ESPT-Ubuntu22.04
+    - ImageOverride -equals 1es-ubuntu-2204-open
 - name: androidPoolInternal
   type: object
   default:
     name: NetCore1ESPool-Internal
     demands:
-    - ImageOverride -equals 1ESPT-Ubuntu22.04
+    - ImageOverride -equals 1es-ubuntu-2204
 - name: windowsPoolPublic
   type: object
   default:
@@ -76,6 +76,13 @@ parameters:
   type: object
   default:
   - tfm: net11.0
+- name: runtimes
+  type: object
+  default:
+  - name: coreclr
+    useCoreClr: true
+  - name: mono
+    useCoreClr: false
 
 stages:
 - ${{ each targetFrameworkVersion in parameters.targetFrameworkVersions }}:
@@ -91,4 +98,5 @@ stages:
         applePools: ${{ parameters.applePoolsPublic }}
       runWindowsTests: true
       requireWindows11: ${{ parameters.requireWindows11 }}
+      runtimes: ${{ parameters.runtimes }}
       TargetFrameworkVersion: ${{ targetFrameworkVersion.tfm }}
