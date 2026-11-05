@@ -330,6 +330,83 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task ReconnectingVisibleContainerRestoresShadowHostVisibility()
+		{
+			var label = new Label
+			{
+				Text = "Shadow visibility",
+				BackgroundColor = Colors.Transparent,
+				WidthRequest = 100,
+				HeightRequest = 50,
+				Shadow = new Shadow
+				{
+					Brush = new SolidColorBrush(Colors.Black),
+					Radius = 8,
+					Offset = new Point(4, 4)
+				}
+			};
+
+			await AttachAndRun(label, async (LabelHandler handler) =>
+			{
+				var wrapper = Assert.IsType<WrapperView>(handler.ContainerView);
+				var parent = wrapper.Parent;
+				await AssertEventually(() => FindShadowHost() is not null);
+				var originalHost = FindShadowHost();
+				Assert.NotNull(originalHost);
+				Assert.Equal(Microsoft.UI.Xaml.Visibility.Visible, originalHost.Visibility);
+
+				label.IsVisible = false;
+				Assert.Equal(Microsoft.UI.Xaml.Visibility.Collapsed, wrapper.Visibility);
+				Assert.Equal(Microsoft.UI.Xaml.Visibility.Collapsed, handler.PlatformView.Visibility);
+				Assert.Equal(Microsoft.UI.Xaml.Visibility.Collapsed, originalHost.Visibility);
+
+				var oldPlatformView = handler.PlatformView;
+				var shadow = label.Shadow;
+				((IElementHandler)handler).DisconnectHandler();
+				label.IsVisible = true;
+				handler.SetVirtualView(label);
+
+				await AssertEventually(() => FindShadowHost() is not null);
+				Assert.Same(wrapper, handler.ContainerView);
+				Assert.Same(parent, wrapper.Parent);
+				Assert.NotSame(oldPlatformView, handler.PlatformView);
+				Assert.Same(handler.PlatformView, wrapper.Child);
+				Assert.Same(shadow, label.Shadow);
+				Assert.Equal(Microsoft.UI.Xaml.Visibility.Visible, wrapper.Visibility);
+				Assert.Equal(Microsoft.UI.Xaml.Visibility.Visible, handler.PlatformView.Visibility);
+				Assert.Equal(Microsoft.UI.Xaml.Visibility.Visible, FindShadowHost().Visibility);
+
+				int canvasCount = 0;
+				foreach (var child in wrapper.CachedChildren)
+				{
+					if (child is Canvas)
+						canvasCount++;
+				}
+				Assert.Equal(1, canvasCount);
+
+				UIElement FindShadowHost()
+				{
+					foreach (var child in wrapper.CachedChildren)
+					{
+						if (child is Canvas canvas)
+						{
+#pragma warning disable RS0030 // Inspect the native shadow host after asynchronous composition setup.
+							var hosts = canvas.Children;
+#pragma warning restore RS0030
+							foreach (var host in hosts)
+							{
+								if (Microsoft.UI.Xaml.Hosting.ElementCompositionPreview.GetElementChildVisual(host) is not null)
+									return host;
+							}
+						}
+					}
+
+					return null;
+				}
+			});
+		}
+
+		[Fact]
 		public async Task ReconnectingContainerPreservesWrapperInDifferentPanel()
 		{
 			var label = new Label
