@@ -109,6 +109,14 @@ Describe 'Direct native CI contracts' {
         $stop | Should -Not -Match 'killall|pkill|Stop-Process -Name'
     }
 
+    It 'checks immutable Android boot identity without depending on emulator console output' {
+        foreach ($script in @($start, $stop)) {
+            $script | Should -Match 'shell getprop ro.boot.qemu.avd_name'
+            $script | Should -Match 'shell getprop ro.kernel.qemu.avd_name'
+            $script | Should -Not -Match 'emu avd name'
+        }
+    }
+
     It 'initializes the owned AVD directory without overwriting the read-only PowerShell home' {
         $setup = [regex]::Match($start, '(?s)    \$name = "maui-.*?\r?\n    Save-State')
         $setup.Success | Should -BeTrue

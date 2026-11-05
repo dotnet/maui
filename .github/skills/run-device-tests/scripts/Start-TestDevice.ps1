@@ -103,7 +103,10 @@ if ($Platform -eq 'android') {
         $bootExit = $LASTEXITCODE
         $PSNativeCommandUseErrorActionPreference = $true
         if ($bootExit -eq 0 -and "$booted".Trim() -eq '1') {
-            $avdName = @(& $adb -s $state.Device emu avd name)[0]
+            $avdName = "$(& $adb -s $state.Device shell getprop ro.boot.qemu.avd_name)".Trim()
+            if (!$avdName) {
+                $avdName = "$(& $adb -s $state.Device shell getprop ro.kernel.qemu.avd_name)".Trim()
+            }
             if ($avdName -ne $state.AvdName) {
                 throw "Emulator serial $($state.Device) belongs to a different AVD."
             }

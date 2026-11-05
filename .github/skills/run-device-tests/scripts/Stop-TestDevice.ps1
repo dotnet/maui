@@ -11,7 +11,10 @@ $state = Get-Content -LiteralPath $statePath -Raw | ConvertFrom-Json
 $PSNativeCommandUseErrorActionPreference = $false
 if ($state.Platform -eq 'android' -and $state.Device) {
     $killFailed = $false
-    $name = @(& $state.Adb -s $state.Device emu avd name 2>$null)[0]
+    $name = "$(& $state.Adb -s $state.Device shell getprop ro.boot.qemu.avd_name 2>$null)".Trim()
+    if (!$name -and $LASTEXITCODE -eq 0) {
+        $name = "$(& $state.Adb -s $state.Device shell getprop ro.kernel.qemu.avd_name 2>$null)".Trim()
+    }
     if ($LASTEXITCODE -eq 0 -and $name -eq $state.AvdName) {
         & $state.Adb -s $state.Device logcat -d *> (Join-Path $ResultsDirectory 'logcat.log')
         & $state.Adb -s $state.Device emu kill
