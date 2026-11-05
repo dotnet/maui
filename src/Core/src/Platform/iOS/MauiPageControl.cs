@@ -66,14 +66,6 @@ namespace Microsoft.Maui.Platform
 				return;
 			}
 
-			if (_indicatorView?.TryGetTarget(out var templatedIndicator) == true
-				&& (templatedIndicator as ITemplatedIndicatorView)?.IndicatorsLayoutOverride is ILayout layout)
-			{
-				// The template host needs valid bounds before RTL child positioning runs.
-				layout.Arrange(Bounds.ToRectangle());
-				return;
-			}
-
 			if (Subviews.Length == 0)
 				return;
 
@@ -94,7 +86,10 @@ namespace Microsoft.Maui.Platform
 				return layout.Measure((double)size.Width, (double)size.Height).ToCGSize();
 			}
 
-			return base.SizeThatFits(size);
+			// Native indicator transforms do not contribute to UIPageControl's measured size.
+			var scale = IndicatorSize > 0 ? (float)IndicatorSize / DefaultIndicatorSize : 1;
+			var nativeSize = base.SizeThatFits(new CGSize(size.Width / scale, size.Height / scale));
+			return new CGSize(nativeSize.Width * scale, nativeSize.Height * scale);
 		}
 
 		public void UpdateIndicatorSize()

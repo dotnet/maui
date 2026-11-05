@@ -66,14 +66,6 @@
 			handler.PlatformView?.UpdateIndicatorShape(indicator);
 		}
 
-		internal static void MapFlowDirection(IIndicatorViewHandler handler, IIndicatorView indicator)
-		{
-			ViewMapper.UpdateProperty(handler, indicator, nameof(IView.FlowDirection));
-
-			var layoutHandler = (indicator as ITemplatedIndicatorView)?.IndicatorsLayoutOverride?.Handler;
-			layoutHandler?.UpdateValue(nameof(IView.FlowDirection));
-		}
-
 		internal static void MapIndicatorsLayoutOverride(IIndicatorViewHandler handler, IIndicatorView indicator)
 		{
 			handler.PlatformView.UpdateIndicatorTemplate(
