@@ -2,6 +2,10 @@
 
 The .NET MAUI release process uses Arcade and 1ES to build, sign, gather, and publish packages.
 
+For the proposed development-branch roles and servicing-release rotation, see the
+[versioned release branch workflow](ReleaseBranchWorkflow.md). That proposal does
+not change the publishing process below.
+
 ## Build and pack
 
 `azure-pipelines-internal.yml` builds, signs, and packs .NET MAUI on the internal Azure DevOps mirror. It registers the resulting assets in Maestro's Build Asset Registry (BAR). The BAR record and source commit identify the immutable assets used by a release.
