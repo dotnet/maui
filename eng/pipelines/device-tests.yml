@@ -93,11 +93,19 @@ parameters:
     name: Azure Pipelines
     vmImage: macOS-15
 
-- name: macOSHelixPool
+- name: appleDevicePools
   type: object
   default:
-    name: MAUI
-    vmImage: MAUI
+  - name: macos15
+    osMajor: 15
+    pool:
+      name: MAUI
+      vmImage: MAUI
+  - name: macos26
+    osMajor: 26
+    pool:
+      name: MAUI
+      vmImage: MAUI
 
 - name: targetFrameworkVersions
   type: object
@@ -107,32 +115,16 @@ parameters:
 stages:
 - ${{ each targetFrameworkVersion in parameters.targetFrameworkVersions }}:
 
-  # Run on dnceng-public (Helix)
+  # Direct execution on public device-capable agents.
   - ${{ if eq(variables['Build.DefinitionName'], 'maui-pr-devicetests') }}:
 
-    # Use Helix for iOS / Android / MacCatalyst / Windows Device Tests
     - template: /eng/pipelines/arcade/stage-device-tests.yml@self
       parameters:
-        buildPool: ${{ parameters.macOSHelixPool }}
-        testPool: ${{ parameters.macOSPool }}
-        windowsBuildPool: ${{ parameters.windowsPool }}
-        windowsTestPool: ${{ parameters.windowsPool }}
-        runAsPublic: true
+        androidPool: ${{ parameters.androidPool }}
+        applePools: ${{ parameters.appleDevicePools }}
+        windowsPool: ${{ parameters.windowsPool }}
         runWindowsTests: true
         TargetFrameworkVersion: ${{ targetFrameworkVersion.tfm }}
-        prepareSteps:
-        - template: /eng/pipelines/common/provision.yml@self
-          parameters:
-            checkoutDirectory: '$(System.DefaultWorkingDirectory)'
-            skipJdk: false
-            skipAndroidCommonSdks: false
-            skipAndroidPlatformApis: false
-            onlyAndroidPlatformDefaultApis: true
-            skipAndroidEmulatorImages: true
-            skipAndroidCreateAvds: true
-            skipProvisioning: true
-            skipXcode: false
-            skipSimulatorSetup: false
 
   # Run on xamarin public instance
   - ${{ else }}:
@@ -159,6 +151,7 @@ stages:
         projects:
         - name: essentials
           desc: Essentials
+          applicationId: com.microsoft.maui.essentials.devicetests
           androidApiLevelsExclude: [ 25, 27 ] # Ignore for now API25 since the runs's are not stable
           androidApiLevelsCoreClrExclude: [ 27, 25, 23]
           androidConfiguration: 'Release'
@@ -171,6 +164,7 @@ stages:
           windows: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj
         - name: graphics
           desc: Graphics
+          applicationId: com.microsoft.maui.graphics.devicetests
           androidApiLevelsExclude: [ 25, 28 ] # Ignore for now API25 since the runs's are not stable
           androidApiLevelsCoreClrExclude: [ 28, 25, 23]
           androidConfiguration: 'Release'
@@ -183,6 +177,7 @@ stages:
           windows: $(System.DefaultWorkingDirectory)/src/Graphics/tests/DeviceTests/Graphics.DeviceTests.csproj
         - name: core
           desc: Core
+          applicationId: com.microsoft.maui.core.devicetests
           androidApiLevelsExclude: [ 25 ] # Ignore for now API25 since the runs's are not stable
           androidApiLevelsCoreClrExclude: [ 28, 25, 23]
           androidConfiguration: 'Release'
@@ -195,6 +190,7 @@ stages:
           windows: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests/Core.DeviceTests.csproj
         - name: controls
           desc: Controls
+          applicationId: com.microsoft.maui.controls.devicetests
           androidApiLevelsExclude: [ 27, 25 ] # Ignore for now API25 since the runs's are not stable
           androidApiLevelsCoreClrExclude: [ 27, 25, 23]
           androidConfiguration: 'Debug'
@@ -207,6 +203,7 @@ stages:
           windows: $(System.DefaultWorkingDirectory)/src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj
         - name: blazorwebview
           desc: BlazorWebView
+          applicationId: com.microsoft.maui.mauiblazorwebview.devicetests
           androidApiLevelsExclude: [ 30, 29, 28, 27, 26, 25, 24, 23, 22, 21 ] # BlazorWebView requires a recent version of Chrome
           androidApiLevelsCoreClrExclude: [ 30, 29, 28, 27, 26, 25, 24, 23, 22, 21]
           androidConfiguration: 'Release'

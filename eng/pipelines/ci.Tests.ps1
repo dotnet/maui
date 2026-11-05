@@ -4,8 +4,8 @@ Describe 'CI provisioning' {
   BeforeAll {
     $provision = Get-Content -LiteralPath (
       Join-Path $PSScriptRoot 'common/provision.yml') -Raw
-    $helixStage = Get-Content -LiteralPath (
-      Join-Path $PSScriptRoot 'arcade/stage-helix-tests.yml') -Raw
+    $unitStage = Get-Content -LiteralPath (
+      Join-Path $PSScriptRoot 'arcade/stage-unit-tests.yml') -Raw
   }
 
   Describe 'SDK alignment' {
@@ -54,44 +54,6 @@ Describe 'CI provisioning' {
     }
   }
 
-  Describe 'Helix MSBuild test payload' {
-    BeforeAll {
-      $repoRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
-      [xml]$helixProject = Get-Content -LiteralPath (Join-Path $repoRoot 'eng/helix.proj') -Raw
-      $stagingTarget = $helixProject.SelectSingleNode("/Project/Target[@Name='PrepareMauiHelixPayload']")
-
-      # Execute the real staging target without restoring the Helix SDK or submitting jobs.
-      $stagingProject = Join-Path $TestDrive 'staging.proj'
-      Set-Content -LiteralPath $stagingProject -Value "<Project>$($stagingTarget.OuterXml)</Project>"
-      $payloadDir = Join-Path $TestDrive 'payload'
-      $output = & dotnet msbuild $stagingProject -nologo -v:minimal -t:PrepareMauiHelixPayload `
-        "-p:RepoRoot=$repoRoot/" "-p:MauiHelixPayloadDir=$payloadDir/"
-      if ($LASTEXITCODE -ne 0) {
-        throw "Helix payload staging failed with exit code ${LASTEXITCODE}: $output"
-      }
-    }
-
-    It 'publishes the staged source files at their source-relative paths' {
-      $helixProject.SelectSingleNode(
-        '/Project/ItemGroup/HelixCorrelationPayload[@Include="$(MauiHelixPayloadDir)src"]/Destination').InnerText |
-        Should -Be 'src'
-    }
-
-    It 'stages an unchanged copy of <File>' -TestCases @(
-      @{ File = 'src/Core/src/nuget/buildTransitive/Microsoft.Maui.Core.Before.targets' }
-      @{ File = 'src/Controls/src/Build.Tasks/nuget/buildTransitive/netstandard2.0/Microsoft.Maui.Controls.targets' }
-      @{ File = 'src/Maui.InTree.props' }
-      @{ File = 'src/Maui.InTree.targets' }
-    ) {
-      param($File)
-
-      $stagedFile = Join-Path $payloadDir $File
-      $stagedFile | Should -Exist
-      (Get-FileHash -LiteralPath $stagedFile).Hash |
-        Should -Be (Get-FileHash -LiteralPath (Join-Path $repoRoot $File)).Hash
-    }
-  }
-
   It 'fails before simulator setup when the required Xcode is missing' {
     $missingXcodeMatch = [regex]::Match(
       $provision,
@@ -104,19 +66,15 @@ Describe 'CI provisioning' {
     $missingXcodeMatch.Value | Should -Not -Match 'LATEST_XCODE'
   }
 
-  It 'runs the Helix monitor in the submission pool with the appropriate Linux image' {
-    $monitorMatch = [regex]::Match(
-      $helixStage,
-      '(?ms)^  - job: HelixJobMonitor\r?\n.*?(?=^    steps:)')
-
-    $monitorMatch.Success | Should -BeTrue
-    $monitorMatch.Value | Should -Match (
-      [regex]::Escape('name: ${{ parameters.helixPool.name }}'))
-    $monitorMatch.Value | Should -Not -Match 'DncEng(Public|Internal)BuildPool'
-    $monitorMatch.Value | Should -Match (
-      '(?s)eq\(variables\[''System.TeamProject''\], ''public''\).*?' +
-      'demands: ImageOverride -equals build\.azurelinux\.3\.amd64\.open')
-    $monitorMatch.Value | Should -Match (
-      '(?s)\$\{\{ else \}\}:.*?demands: ImageOverride -equals build\.azurelinux\.3\.amd64\r?\n')
+  It 'executes all previously submitted unit projects directly with Hot Reload enabled' {
+    @([regex]::Matches($unitStage, '(?m)^  - src/.*\.csproj$')).Count | Should -Be 13
+    $unitStage | Should -Match 'BlazorWebView.Windows.UnitTests.csproj'
+    $unitStage | Should -Match 'src/TestUtils/tests/UITest.NUnit.Tests/UITest.NUnit.Tests.csproj'
+    $unitStage | Should -Match 'src/TestUtils/tests/TestUtils.UnitTests/TestUtils.UnitTests.csproj'
+    $unitStage | Should -Match 'buildConfigurations: \[ Debug, Release \]'
+    $unitStage | Should -Match 'DOTNET_MODIFIABLE_ASSEMBLIES: debug'
+    $unitStage | Should -Match 'command: test'
+    $unitStage | Should -Match 'failTaskOnMissingResultsFile: true'
+    $unitStage | Should -Not -Match 'Helix|XHarness|--logger'
   }
 }

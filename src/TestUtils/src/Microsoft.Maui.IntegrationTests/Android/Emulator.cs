@@ -1,5 +1,5 @@
 ﻿using System.Diagnostics;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace Microsoft.Maui.IntegrationTests.Android
 {

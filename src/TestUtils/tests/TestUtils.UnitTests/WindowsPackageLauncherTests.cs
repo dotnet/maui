@@ -1,0 +1,164 @@
+using System.Diagnostics;
+using System.Text.Json;
+using Microsoft.Maui.TestUtils.WindowsTesting;
+using Xunit;
+
+namespace Microsoft.Maui.TestUtils.UnitTests;
+
+public class WindowsPackageLauncherTests
+{
+	public static bool IsWindows => OperatingSystem.IsWindows();
+
+	static PackagedTestState State(int timeout = 10)
+	{
+		var owner = Guid.NewGuid().ToString("N");
+		var name = "maui.tests." + owner;
+		return new()
+		{
+			OwnerId = owner,
+			IdentityName = name,
+			Publisher = "CN=MauiTests-" + owner,
+			PackageFullName = name + "_1.0.0.0_x64__publisher",
+			PackageFamilyName = name + "_publisher",
+			AppUserModelId = name + "_publisher!App",
+			InstallLocation = Path.GetFullPath("installed-test-package"),
+			TimeoutSeconds = timeout
+		};
+	}
+
+	static Process Child(string command)
+	{
+		var start = new ProcessStartInfo("pwsh") { UseShellExecute = false };
+		start.ArgumentList.Add("-NoProfile");
+		start.ArgumentList.Add("-Command");
+		start.ArgumentList.Add(command);
+		return Process.Start(start)!;
+	}
+
+	[Theory]
+	[InlineData("", "\"\"")]
+	[InlineData("two words", "\"two words\"")]
+	[InlineData("trailing\\", "\"trailing\\\\\"")]
+	[InlineData("a\"b", "\"a\\\"b\"")]
+	public void UsesWindowsArgvQuoting(string value, string expected) =>
+		Assert.Equal(expected, WindowsTestCommandLine.Quote(value));
+
+	[Fact(SkipUnless = nameof(IsWindows), Skip = "CommandLineToArgvW runtime verification requires Windows.")]
+	public void ActualCommandLineToArgvWRoundtripsTheCompleteMtpArgumentVector()
+	{
+		string[] arguments = ["--server", "--dotnet-test-pipe", "pipe-42", "--results-directory",
+			@"C:\path with spaces\", "--report-trx-filename", "quote\"name.trx", "", "Ω", "slash\\\"quote"];
+		Assert.Equal(arguments, WindowsTestCommandLine.ParseActivation(WindowsTestCommandLine.Format(arguments)));
+	}
+
+	[Fact]
+	public void RejectsNulBeforeCallingNativeActivation() =>
+		Assert.Throws<ArgumentException>(() => WindowsTestCommandLine.Format(["bad\0argument"]));
+
+	[Fact]
+	public void RejectsAStateFileThatNamesAnotherOwnersPackage()
+	{
+		var state = State();
+		state.IdentityName = "another-package";
+		Assert.Throws<InvalidOperationException>(() => PackagedTestSession.Validate(state));
+	}
+
+	[Fact]
+	public void LauncherStateJsonPreservesExactOwnershipAndPidTicks()
+	{
+		var state = State();
+		state.ProcessId = 12345;
+		state.ProcessStartUtcTicks = DateTime.UtcNow.Ticks;
+		var restored = JsonSerializer.Deserialize<PackagedTestState>(JsonSerializer.Serialize(state))!;
+		PackagedTestSession.Validate(restored);
+		Assert.Equal(state.Publisher, restored.Publisher);
+		Assert.Equal(state.AppUserModelId, restored.AppUserModelId);
+		Assert.Equal(state.ProcessStartUtcTicks, restored.ProcessStartUtcTicks);
+		Assert.Equal(state.ProcessId, restored.ProcessId);
+	}
+
+	[Theory]
+	[InlineData(0)]
+	[InlineData(23)]
+	public void ForwardsEveryMtpArgumentAndPropagatesTheActualActivatedPidExit(int exitCode)
+	{
+		var state = State();
+		state.ProcessExited = true;
+		string[] arguments = ["--server", "--dotnet-test-pipe", "the-pipe", "--results-directory", "with spaces"];
+		var saved = 0;
+		var result = PackagedTestSession.Run(state, arguments,
+			(aumid, commandLine) =>
+			{
+				Assert.Equal(state.AppUserModelId, aumid);
+				Assert.Equal(WindowsTestCommandLine.Format(arguments), commandLine);
+				return Child($"Start-Sleep -Milliseconds 200; exit {exitCode}");
+			}, _ => state.PackageFullName, value =>
+			{
+				if (saved++ == 0)
+					Assert.False(value.ProcessExited);
+			});
+		Assert.Equal(exitCode, result);
+		Assert.True(state.ProcessId > 0);
+		Assert.True(state.ProcessStartUtcTicks > 0);
+		Assert.True(state.ProcessIdentityVerified);
+		Assert.True(state.ProcessExited);
+		Assert.True(saved >= 3);
+	}
+
+	[Fact]
+	public void TimeoutStopsTheRecordedActivatedPidAndFails()
+	{
+		var state = State(timeout: 1);
+		var activatedPid = 0;
+		var result = PackagedTestSession.Run(state, ["--server"],
+			(_, _) =>
+			{
+				var child = Child("Start-Sleep -Seconds 30");
+				activatedPid = child.Id;
+				return child;
+			},
+			_ => state.PackageFullName, _ => { });
+		Assert.Equal(124, result);
+		Assert.Equal(activatedPid, state.ProcessId);
+		Assert.True(state.ProcessExited);
+	}
+
+	[Fact]
+	public void CancellationStopsOnlyTheRecordedActivatedPidAndFails()
+	{
+		var state = State();
+		using var cancellation = new CancellationTokenSource();
+		cancellation.Cancel();
+		var activatedPid = 0;
+		var result = PackagedTestSession.Run(state, ["--server"],
+			(_, _) =>
+			{
+				var child = Child("Start-Sleep -Seconds 30");
+				activatedPid = child.Id;
+				return child;
+			},
+			_ => state.PackageFullName, _ => { }, cancellation.Token);
+		Assert.Equal(130, result);
+		Assert.Equal(activatedPid, state.ProcessId);
+		Assert.True(state.ProcessExited);
+	}
+
+	[Fact]
+	public void AProcessFromAnotherPackageIsNeverTerminated()
+	{
+		var state = State();
+		using var child = Child("Start-Sleep -Seconds 30");
+		try
+		{
+			Assert.Throws<InvalidOperationException>(() => PackagedTestSession.Run(state, ["--server"],
+				(_, _) => Process.GetProcessById(child.Id), _ => "another-package", _ => { }));
+			Assert.False(child.HasExited);
+			Assert.False(state.ProcessIdentityVerified);
+		}
+		finally
+		{
+			if (!child.HasExited)
+			{ child.Kill(); child.WaitForExit(); }
+		}
+	}
+}

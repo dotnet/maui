@@ -98,6 +98,7 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+. (Join-Path $PSScriptRoot '../../../scripts/shared/XunitMtp.ps1')
 $RepoRoot = git rev-parse --show-toplevel
 
 # Normalize platform name (accept both "catalyst" and "maccatalyst")
@@ -521,13 +522,13 @@ function Invoke-TestRun {
             # warnings-as-errors here (matches Build-AndDeploy.ps1's deep-stage rationale).
             # Genuine CS-level compile ERRORS still fail the build.
             $testArgs = @(
-                "test", $projectPath,
+                "test", "--project", $projectPath,
                 "--configuration", "Debug",
-                "--logger", "console;verbosity=normal",
+                "--report-trx",
                 "-p:TreatWarningsAsErrors=false"
             ) + $hostOnlyTargetFrameworkArgs
             if ($Filter) {
-                $testArgs += @("--filter", $Filter)
+                $testArgs += @(Get-XunitMtpFilterArguments $Filter)
             }
 
             $scriptOutput = Invoke-WithoutGhTokens { & dotnet @testArgs 2>&1 }
@@ -563,13 +564,13 @@ function Invoke-TestRun {
             # bookkeeping (RS0016/RS0017 on a PR-added finalizer/public symbol) can't
             # false-FAIL the gate — see the XAML block above and Build-AndDeploy.ps1.
             $testArgs = @(
-                "test", $projectPath,
+                "test", "--project", $projectPath,
                 "--configuration", "Debug",
-                "--logger", "console;verbosity=normal",
+                "--report-trx",
                 "-p:TreatWarningsAsErrors=false"
             ) + $hostOnlyTargetFrameworkArgs
             if ($Filter) {
-                $testArgs += @("--filter", $Filter)
+                $testArgs += @(Get-XunitMtpFilterArguments $Filter)
             }
 
             $scriptOutput = Invoke-WithoutGhTokens { & dotnet @testArgs 2>&1 }
@@ -1677,7 +1678,36 @@ function Get-TestResultFromOutput {
         # Filter specified but tests not found in output — fall through to general parsing
     }
 
-    # --- dotnet test output ---
+    # Microsoft.Testing.Platform uses succeeded/failed/skipped summary counters.
+    $mtpSummaries = [regex]::Matches($content, '(?ms)^Test run summary:\s*(?<outcome>Passed!|Failed!)[^\r\n]*\r?\n(?<body>.*?)(?=\r?\n\S|\z)')
+    if ($mtpSummaries.Count -gt 0) {
+        $summary = $mtpSummaries[$mtpSummaries.Count - 1]
+        $counts = @{}
+        foreach ($name in @('total', 'succeeded', 'failed', 'skipped')) {
+            $match = [regex]::Match($summary.Groups['body'].Value, "(?im)^\s*${name}:\s*(\d+)\s*$")
+            if (-not $match.Success) {
+                return @{ Passed = $false; EnvError = $true; Error = "Incomplete MTP summary: missing $name."; Total = 0; Failed = 0; Skipped = 0 }
+            }
+            $counts[$name] = [int]$match.Groups[1].Value
+        }
+        if ($counts.total -eq 0 -or ($counts.succeeded + $counts.failed) -eq 0) {
+            return @{ Passed = $false; EnvError = $true; Error = "No selected test executed."; Total = $counts.total; Failed = 0; Skipped = $counts.skipped }
+        }
+        if ($summary.Groups['outcome'].Value -eq 'Failed!' -and $counts.failed -eq 0) {
+            return @{ Passed = $false; EnvError = $true; Error = "MTP reported an infrastructure failure."; Total = $counts.total; Failed = 0; Skipped = $counts.skipped }
+        }
+        return @{
+            Passed = $counts.failed -eq 0
+            PassCount = $counts.succeeded
+            FailCount = $counts.failed
+            Failed = $counts.failed
+            Total = $counts.total
+            Skipped = $counts.skipped
+            NativeLibLoadFailure = $hasNativeLibLoadFailure
+        }
+    }
+
+    # --- historical VSTest output ---
     # Check for "Test Run Failed" (dotnet test)
     if ($content -match "Test Run Failed") {
         $failCount = 0
@@ -3733,11 +3763,11 @@ for ($ri = 0; $ri -lt $withFixResults.Count; $ri++) {
     $combined = @($buildOut)
     if ($buildExit -eq 0) {
         $testArgs = @(
-            "test", $projFull,
+            "test", "--project", $projFull,
             "-c", "Debug",
-            "--logger", "console;verbosity=normal",
+            "--report-trx",
             "-p:TreatWarningsAsErrors=false"
-        ) + $hostOnlyTargetFrameworkArgs + @("--filter", $retryEntry.Filter)
+        ) + $hostOnlyTargetFrameworkArgs + @(Get-XunitMtpFilterArguments $retryEntry.Filter)
         $testOut = Invoke-WithoutGhTokens { & dotnet @testArgs 2>&1 }
         $combined += @($testOut)
     }

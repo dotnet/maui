@@ -15,7 +15,7 @@ using Xunit;
 // the whole assembly as a single collection for now, so all the tests run in sequence.
 // (Hopefully in the future we can untangle some of the singletons and run these in parallel,
 // because it'll be a lot faster.)
-[assembly: CollectionBehavior(CollectionBehavior.CollectionPerAssembly)]
+[assembly: CollectionBehavior(CollectionBehavior.CollectionPerAssembly, DisableTestParallelization = true)]
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {

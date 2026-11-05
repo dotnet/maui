@@ -1,38 +1,39 @@
-﻿#nullable enable
+#nullable enable
 using System;
+using System.Threading;
 using System.Threading.Tasks;
-using Android.OS;
-using AndroidX.AppCompat.App;
-using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
+namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner;
+
+public abstract class MauiTestActivity : MauiAppCompatActivity
 {
-	public abstract class MauiTestActivity : AppCompatActivity
+	int _started;
+	public TaskCompletionSource<NativeTestResult> Completion { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+	protected override void OnPostResume()
 	{
-		public TaskCompletionSource<Bundle> TaskCompletionSource { get; } = new TaskCompletionSource<Bundle>();
+		base.OnPostResume();
+		if (Interlocked.Exchange(ref _started, 1) != 0)
+			return;
 
-		protected override void OnCreate(Bundle? savedInstanceState)
+		MauiTestInstrumentation.Current.CurrentExecutionContext = this;
+		_ = RunTestsAsync();
+	}
+
+	async Task RunTestsAsync()
+	{
+		try
 		{
-			base.OnCreate(savedInstanceState);
-
-			// Do the work on the background thread to avoid a keyDispatchingTimedOut ANR
-			Task.Run(async () =>
-			{
-				try
-				{
-					var runner = MauiTestInstrumentation.Current.Services.GetRequiredService<HeadlessTestRunner>();
-
-					var bundle = await runner.RunTestsAsync();
-
-					TaskCompletionSource.TrySetResult(bundle);
-				}
-				catch (Exception ex)
-				{
-					TaskCompletionSource.TrySetException(ex);
-				}
-
-				Finish();
-			});
+			var result = await Task.Run(() => MauiTestInstrumentation.Current.RunTestsAsync());
+			Completion.TrySetResult(result);
+		}
+		catch (Exception exception)
+		{
+			Completion.TrySetException(exception);
+		}
+		finally
+		{
+			RunOnUiThread(Finish);
 		}
 	}
 }

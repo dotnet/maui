@@ -38,11 +38,11 @@ public partial class TestPage : ContentPage
 """;
 		var compilation = SourceGeneratorDriver.CreateMauiCompilation()
 			.WithOptions(new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, nullableContextOptions: NullableContextOptions.Enable))
-			.AddSyntaxTrees(CSharpSyntaxTree.ParseText(code));
+			.AddSyntaxTrees(CSharpSyntaxTree.ParseText(code, cancellationToken: TestContext.Current.CancellationToken));
 		var physicalPath = Path.Combine(Environment.CurrentDirectory, "Source", "Test.xaml");
 		var xamlFile = new AdditionalXamlFile(physicalPath, xaml, RelativePath: targetPath, TargetPath: targetPath);
 		var result = SourceGeneratorDriver.RunGenerator<XamlGenerator>(compilation, xamlFile);
-		var diagnostics = compilation.AddSyntaxTrees(result.GeneratedTrees).GetDiagnostics();
+		var diagnostics = compilation.AddSyntaxTrees(result.GeneratedTrees).GetDiagnostics(TestContext.Current.CancellationToken);
 		var warning = Assert.Single(diagnostics.Where(d => d.Id == "CS8622"));
 		var location = warning.Location.GetMappedLineSpan();
 
@@ -50,10 +50,10 @@ public partial class TestPage : ContentPage
 		Assert.Equal(3, location.StartLinePosition.Line);
 	}
 
-    [Fact]
-    public void DiagnosticShowsLocationInInputXamlFile()
-    {
-        var xaml =
+	[Fact]
+	public void DiagnosticShowsLocationInInputXamlFile()
+	{
+		var xaml =
 """
 <?xml version="1.0" encoding="UTF-8"?>
 <ContentPage
@@ -70,17 +70,17 @@ public partial class TestPage : ContentPage
 </ContentPage>
 """;
 
-        var (result, _) = RunGenerator(xaml, string.Empty);
+		var (result, _) = RunGenerator(xaml, string.Empty);
 
-        var generatedCode = result.GeneratedTrees.Single(tree => Path.GetFileName(tree.FilePath) == "Test.xaml.xsg.cs").ToString();
-        var expectedFilePath = Path.Combine(Environment.CurrentDirectory, "Test.xaml");
-        Assert.True(generatedCode.Contains(@$"#line 9 ""{expectedFilePath}""", StringComparison.Ordinal));
-    }
+		var generatedCode = result.GeneratedTrees.Single(tree => Path.GetFileName(tree.FilePath) == "Test.xaml.xsg.cs").ToString();
+		var expectedFilePath = Path.Combine(Environment.CurrentDirectory, "Test.xaml");
+		Assert.True(generatedCode.Contains(@$"#line 9 ""{expectedFilePath}""", StringComparison.Ordinal));
+	}
 
 	[Fact]
 	public void LineInfoDisabledDefault()
-    {
-        var xaml =
+	{
+		var xaml =
 """
 <?xml version="1.0" encoding="UTF-8"?>
 <ContentPage
@@ -97,10 +97,10 @@ public partial class TestPage : ContentPage
 </ContentPage>
 """;
 
-        var (result, _) = RunGenerator(xaml, string.Empty, lineinfo: "default");
+		var (result, _) = RunGenerator(xaml, string.Empty, lineinfo: "default");
 
-        var generatedCode = result.GeneratedTrees.Single(tree => Path.GetFileName(tree.FilePath) == "Test.xaml.xsg.cs").ToString();
-        var expectedFilePath = Path.Combine(Environment.CurrentDirectory, "Test.xaml");
-        Assert.False(generatedCode.Contains(@$"#line 9 ""{expectedFilePath}""", StringComparison.Ordinal));
-    }
+		var generatedCode = result.GeneratedTrees.Single(tree => Path.GetFileName(tree.FilePath) == "Test.xaml.xsg.cs").ToString();
+		var expectedFilePath = Path.Combine(Environment.CurrentDirectory, "Test.xaml");
+		Assert.False(generatedCode.Contains(@$"#line 9 ""{expectedFilePath}""", StringComparison.Ordinal));
+	}
 }

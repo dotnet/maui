@@ -498,7 +498,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public async Task StartTimerSimple()
 		{
-			var task = new TaskCompletionSource<bool>();
+			var task = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 
 			_ = Task.Factory.StartNew(() => Device.StartTimer(TimeSpan.FromMilliseconds(200), () =>
 			{
@@ -513,7 +513,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public async Task StartTimerMultiple()
 		{
-			var task = new TaskCompletionSource<int>();
+			var task = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
 
 			int steps = 0;
 			_ = Task.Factory.StartNew(() => Device.StartTimer(TimeSpan.FromMilliseconds(200), () =>

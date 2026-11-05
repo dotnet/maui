@@ -1,6 +1,6 @@
 ﻿using System;
 using Xunit;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace Microsoft.Maui.TestUtils.DeviceTests.Sample
 {

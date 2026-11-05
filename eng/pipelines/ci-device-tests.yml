@@ -1,110 +1,74 @@
 trigger:
   batch: true
   branches:
-    include:
-    - main
-    - release/*
-    - net*.0
-    - inflight/*
-    - darc-*
+    include: [ main, release/*, net*.0, inflight/*, darc-* ]
   tags:
-    include:
-    - '*'
+    include: [ '*' ]
   paths:
-    include:
-    - '*'
-    exclude:
-    - .github/**
-    - docs/*
-    - src/Templates/*
-    - CODE-OF-CONDUCT.md
-    - CONTRIBUTING.md
-    - LICENSE.TXT
-    - PATENTS.TXT
-    - README.md
-    - THIRD-PARTY-NOTICES.TXT
+    include: [ '*' ]
+    exclude: [ .github/**, docs/*, src/Templates/*, CODE-OF-CONDUCT.md, CONTRIBUTING.md, LICENSE.TXT, PATENTS.TXT, README.md, THIRD-PARTY-NOTICES.TXT ]
 
 pr:
   branches:
-    include:
-    - main
-    - release/*
-    - net*.0
-    - inflight/*
+    include: [ main, release/*, net*.0, inflight/* ]
   paths:
-    include:
-    - '*'
-    exclude:
-    - .github/**
-    - docs/*
-    - src/Templates/*
-    - CODE-OF-CONDUCT.md
-    - CONTRIBUTING.md
-    - LICENSE.TXT
-    - PATENTS.TXT
-    - README.md
-    - THIRD-PARTY-NOTICES.TXT
+    include: [ '*' ]
+    exclude: [ .github/**, docs/*, src/Templates/*, CODE-OF-CONDUCT.md, CONTRIBUTING.md, LICENSE.TXT, PATENTS.TXT, README.md, THIRD-PARTY-NOTICES.TXT ]
 
 variables:
 - template: /eng/common/templates/variables/pool-providers.yml@self
 - template: /eng/pipelines/common/variables.yml@self
 - template: /eng/pipelines/arcade/variables.yml@self
-# Include Helix access token for internal builds
-- ${{ if eq(variables['System.TeamProject'], 'internal') }}:
-  - group: DotNet-HelixApi-Access
 
 parameters:
-
-# Internal pools (dnceng)
-- name: windowsPoolInternal
+- name: androidPoolPublic
+  type: object
+  default:
+    name: NetCore-Public
+    demands:
+    - ImageOverride -equals 1ESPT-Ubuntu22.04
+- name: androidPoolInternal
   type: object
   default:
     name: NetCore1ESPool-Internal
     demands:
-        - ImageOverride -equals 1es-windows-2022
-    image: 1es-windows-2022
-    os: Windows
-
-- name: macOSTestPoolInternal
-  type: object
-  default:
-    name: AcesShared
-    demands:
-      - ImageOverride -equals $(AcesMacImageOverride)
-    os: macOS
-
-- name: macOSPoolInternal
-  type: object
-  default:
-    name: AcesShared
-    demands:
-      - ImageOverride -equals $(AcesMacImageOverride)
-    os: macOS
-
-# Public pools (dnceng-public)
+    - ImageOverride -equals 1ESPT-Ubuntu22.04
 - name: windowsPoolPublic
   type: object
   default:
     name: NetCore-Public
     demands:
-        - ImageOverride -equals 1es-windows-2022-open
-    image: 1es-windows-2022-open
-    os: Windows
-
-- name: macOSTestPoolPublic
+    - ImageOverride -equals 1es-windows-2022-open
+- name: windowsPoolInternal
   type: object
   default:
-    name: AcesShared
+    name: NetCore1ESPool-Internal
     demands:
-      - ImageOverride -equals $(AcesMacImageOverride)
-
-- name: macOSPoolPublic
+    - ImageOverride -equals 1es-windows-2022
+- name: applePoolsPublic
   type: object
   default:
-    name: AcesShared
-    demands:
+  - name: macos15
+    osMajor: 15
+    pool:
+      name: AcesShared
+      demands:
       - ImageOverride -equals $(AcesMacImageOverride)
-
+  - name: macos26
+    osMajor: 26
+    pool:
+      name: AcesShared
+      demands:
+      - ImageOverride -equals $(AcesMacImageOverride)
+- name: applePoolsInternal
+  type: object
+  default:
+  - name: macos15
+    osMajor: 15
+    pool:
+      name: AcesShared
+      demands:
+      - ImageOverride -equals $(AcesMacImageOverride)
 - name: targetFrameworkVersions
   type: object
   default:
@@ -112,37 +76,15 @@ parameters:
 
 stages:
 - ${{ each targetFrameworkVersion in parameters.targetFrameworkVersions }}:
-
-  # Use Helix for iOS / Android / MacCatalyst / Windows Device Tests
   - template: /eng/pipelines/arcade/stage-device-tests.yml@self
     parameters:
-      # Select pools based on pipeline - internal vs public
       ${{ if eq(variables['System.TeamProject'], 'internal') }}:
-        buildPool: ${{ parameters.macOSPoolInternal }}
-        testPool: ${{ parameters.windowsPoolInternal }}
-        windowsBuildPool: ${{ parameters.windowsPoolInternal }}
-        windowsTestPool: ${{ parameters.windowsPoolInternal }}
-        runAsPublic: false
-        HelixAccessToken: $(HelixApiAccessToken)
-        HelixInternal: true
+        androidPool: ${{ parameters.androidPoolInternal }}
+        windowsPool: ${{ parameters.windowsPoolInternal }}
+        applePools: ${{ parameters.applePoolsInternal }}
       ${{ else }}:
-        buildPool: ${{ parameters.macOSPoolPublic }}
-        testPool: ${{ parameters.windowsPoolPublic }}
-        windowsBuildPool: ${{ parameters.windowsPoolPublic }}
-        windowsTestPool: ${{ parameters.windowsPoolPublic }}
-        runAsPublic: true
+        androidPool: ${{ parameters.androidPoolPublic }}
+        windowsPool: ${{ parameters.windowsPoolPublic }}
+        applePools: ${{ parameters.applePoolsPublic }}
       runWindowsTests: true
       TargetFrameworkVersion: ${{ targetFrameworkVersion.tfm }}
-      prepareSteps:
-      - template: /eng/pipelines/common/provision.yml@self
-        parameters:
-          checkoutDirectory: '$(System.DefaultWorkingDirectory)'
-          skipJdk: false
-          skipAndroidCommonSdks: false
-          skipAndroidPlatformApis: false
-          onlyAndroidPlatformDefaultApis: true
-          skipAndroidEmulatorImages: true
-          skipAndroidCreateAvds: true
-          skipProvisioning: true
-          skipXcode: false
-          skipSimulatorSetup: false

@@ -59,6 +59,38 @@ BeforeAll {
     }
 }
 
+Describe 'Microsoft.Testing.Platform result summaries' {
+    It 'reads succeeded counters from a successful MTP run' {
+        $log = New-LogFile @'
+Test run summary: Passed!
+  total: 4
+  failed: 0
+  succeeded: 3
+  skipped: 1
+  duration: 1s
+'@
+        try {
+            $result = Get-TestResultFromOutput $log
+            $result.Passed | Should -BeTrue
+            $result.PassCount | Should -Be 3
+            $result.Skipped | Should -Be 1
+            $result.Total | Should -Be 4
+        }
+        finally { Remove-Item -LiteralPath $log }
+    }
+    It 'does not turn a failing or zero-selection MTP run into success' {
+        foreach ($counts in @(
+            "  total: 4`n  failed: 1`n  succeeded: 2`n  skipped: 1",
+            "  total: 0`n  failed: 0`n  succeeded: 0`n  skipped: 0",
+            "  total: 1`n  failed: 0`n  succeeded: 0`n  skipped: 1"
+        )) {
+            $log = New-LogFile "Test run summary: Failed!`n$counts`n  duration: 1s"
+            try { (Get-TestResultFromOutput $log).Passed | Should -BeFalse }
+            finally { Remove-Item -LiteralPath $log }
+        }
+    }
+}
+
 Describe 'Get-GateDeviceTestConfiguration — platform-safe packaging' {
     It 'uses Release for Android so the standalone XHarness APK contains its managed payload' {
         Get-GateDeviceTestConfiguration -DevicePlatform 'android' | Should -Be 'Release'

@@ -1,12 +1,13 @@
 using System.Runtime.InteropServices;
+using System.Runtime.CompilerServices;
 using Xunit;
 
 namespace Microsoft.Maui.Resizetizer.Tests
 {
 	public sealed class WindowsTheory : TheoryAttribute
 	{
-		public WindowsTheory()
-			: base()
+		public WindowsTheory([CallerFilePath] string sourceFilePath = null, [CallerLineNumber] int sourceLineNumber = -1)
+			: base(sourceFilePath, sourceLineNumber)
 		{
 			if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
 				Skip = $"Ignored unless on Windows";
@@ -15,8 +16,8 @@ namespace Microsoft.Maui.Resizetizer.Tests
 
 	public sealed class UnixTheory : TheoryAttribute
 	{
-		public UnixTheory()
-			: base()
+		public UnixTheory([CallerFilePath] string sourceFilePath = null, [CallerLineNumber] int sourceLineNumber = -1)
+			: base(sourceFilePath, sourceLineNumber)
 		{
 			if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
 				Skip = $"Ignored on Windows";

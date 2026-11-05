@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {

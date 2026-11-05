@@ -5,6 +5,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <MauiTestProject>true</MauiTestProject>
+    <OutputType>Exe</OutputType>
+    <EnableNUnitRunner>true</EnableNUnitRunner>
+    <IsTestingPlatformApplication>true</IsTestingPlatformApplication>
     <RootNamespace>Microsoft.Maui.TestCases.Tests</RootNamespace>
     <DefineConstants>$(DefineConstants);ANDROID;TEST_FAILS_ON_IOS;TEST_FAILS_ON_CATALYST;TEST_FAILS_ON_WINDOWS</DefineConstants>
   </PropertyGroup>
@@ -12,7 +15,8 @@
   <ItemGroup>
     <PackageReference Include="Appium.WebDriver" Version="8.0.0" />
     <PackageReference Include="NUnit" Version="4.0.1" />
-    <PackageReference Include="NUnit3TestAdapter" Version="4.5.0" />
+    <PackageReference Include="NUnit3TestAdapter" Version="6.1.0" />
+    <PackageReference Include="Microsoft.Testing.Extensions.TrxReport" Version="2.0.2" />
   </ItemGroup>
 
   <ItemGroup>

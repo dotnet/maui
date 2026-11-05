@@ -30,6 +30,7 @@ string DEVICE_UDID = "";
 string DEVICE_VERSION = "";
 string DEVICE_NAME = "";
 string DEVICE_OS = "";
+string ownedSimulatorUdid = "";
 
 Information($"Project File: {projectPath}");
 Information($"Build Binary Log (binlog): {binlogDirectory}");
@@ -169,53 +170,10 @@ void ExecuteTests(string project, string device, string resultsDir, string confi
 {
 	CleanResults(resultsDir);
 
-	var testApp = GetTestApplications(project, device, config, tfm, rid).FirstOrDefault();
-
-	var XCODE_PATH = Argument("xcode_path", "");
-
-	string xcode_args = "";
-	if (!String.IsNullOrEmpty(XCODE_PATH))
-	{
-		Information($"Setting XCODE_PATH: {XCODE_PATH}");
-		xcode_args = $"--xcode=\"{XCODE_PATH}\" ";
-	}
-
-	// Use longer launch timeout for CI builds to handle problematic conditions
-	var launchTimeout = IsCIBuild() ? "00:10:00" : "00:06:00";
-	Information($"Using launch timeout: {launchTimeout} (CI: {IsCIBuild()})");
-
-	Information($"Testing App: {testApp}");
-
-	RunMacAndiOSTests(project, device, resultsDir, config, tfm, rid, toolPath, projectPath, (category) =>
-	{
-		return new DotNetToolSettings
-		{
-			ToolPath = toolPath,
-			DiagnosticOutput = true,
-			ArgumentCustomization = args =>
-			{
-				args.Append("run xharness apple test " +
-					$"--app=\"{testApp}\" " +
-					$"--targets=\"{device}\" " +
-					$"--output-directory=\"{resultsDir}\" " +
-					$"--timeout=01:15:00 " +
-					$"--launch-timeout={launchTimeout} " +
-					xcode_args +
-					$"--verbosity=\"Debug\" " +
-					$"--set-env=\"TestFilter={category}\" ");
-
-				if (device.Contains("device"))
-				{
-					if (string.IsNullOrEmpty(DEVICE_UDID))
-					{
-						throw new Exception("No device was found to install the app on. See the Setup method for more details.");
-					}
-					args.Append($"--device=\"{DEVICE_UDID}\" ");
-				}
-				return args;
-			}
-		};
-	});
+	var selectedDevice = !string.IsNullOrEmpty(DEVICE_UDID) ? DEVICE_UDID :
+		!string.IsNullOrEmpty(udid) ? udid : EnvironmentVariable("DEVICE_UDID");
+	RunNativeTestWithLocalDotNet(project, config, tfm, rid, "ios", testFilter, selectedDevice,
+		resultsDir, toolPath, useCoreClr, Argument("xcode_path", ""));
 }
 
 void ExecutePrepareUITests(string project, string app, string device, string resultsDir, string binDir, string config, string tfm, string rid, string ver, string toolPath, bool headless)
@@ -316,7 +274,7 @@ void PerformCleanupIfNeeded(bool cleanupEnabled, bool createDeviceLogs)
 			var logDirectory = GetLogDirectory();
 			Information("Cleaning up...");
 			Information("Deleting XHarness simulator if exists...");
-			var sims = ListAppleSimulators().Where(s => s.Name.Contains("XHarness")).ToArray();
+			var sims = ListAppleSimulators().Where(s => s.Name.Contains("XHarness") || s.UDID == ownedSimulatorUdid).ToArray();
 			foreach (var sim in sims)
 			{
 				var timestamp = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss");
@@ -391,34 +349,22 @@ string GetDefaultRuntimeIdentifier(string testDeviceIdentifier)
 
 void InstallIpa(string testApp, string testAppPackageName, string testDevice, string testResultsDirectory, string version, string toolPath, bool headless)
 {
-	Information("Install with xharness: {0} testDevice:{1}", testApp, testDevice);
-	var settings = new DotNetToolSettings
-	{
-		ToolPath = toolPath,
-		DiagnosticOutput = true,
-		ArgumentCustomization = args =>
-		{
-			args.Append("run xharness apple install " +
-							$"--app=\"{testApp}\" " +
-							$"--targets=\"{testDevice}\" " +
-							$"--output-directory=\"{testResultsDirectory}\" " +
-							$"--verbosity=\"Debug\" ");
-
-			if (testDevice.Contains("device"))
-			{
-				if (string.IsNullOrEmpty(DEVICE_UDID))
-				{
-					throw new Exception("No device was found to install the app on. See the Setup method for more details.");
-				}
-				args.Append($"--device=\"{DEVICE_UDID}\" ");
-			}
-			return args;
-		}
-	};
+	Information("Install app: {0} testDevice:{1}", testApp, testDevice);
 
 	try
 	{
-		DotNetTool("tool", settings);
+		if (testDevice.Contains("device"))
+		{
+			if (string.IsNullOrEmpty(DEVICE_UDID))
+				throw new InvalidOperationException("No device was found to install the app on.");
+			RunAppleCommand("devicectl", "device", "install", "app", "--device", DEVICE_UDID, testApp);
+		}
+		else
+		{
+			var simulator = GetUDID(testDevice, toolPath);
+			RunAppleCommand("simctl", "bootstatus", simulator, "-b");
+			RunAppleCommand("simctl", "install", simulator, testApp);
+		}
 	}
 	finally
 	{
@@ -467,139 +413,119 @@ void InstallIpa(string testApp, string testAppPackageName, string testDevice, st
 string GetUDID(string testDevice, string tool)
 {
 	Information("Looking for simulator: {0}", testDevice);
-	string result = string.Empty;
-
-	DotNetTool("tool", new DotNetToolSettings
+	var selected = !string.IsNullOrEmpty(udid) ? udid : EnvironmentVariable("DEVICE_UDID");
+	if (string.IsNullOrEmpty(selected))
+		selected = ownedSimulatorUdid;
+	using (var devices = System.Text.Json.JsonDocument.Parse(RunAppleCommand("simctl", "list", "devices", "available", "--json")))
 	{
-		ToolPath = tool,
-		ArgumentCustomization = args => args.Append($"run xharness apple device {testDevice}"),
-		SetupProcessSettings = processSettings => 
+		var allDevices = devices.RootElement.GetProperty("devices").EnumerateObject()
+			.SelectMany(runtime => runtime.Value.EnumerateArray()).ToArray();
+		if (!string.IsNullOrEmpty(selected))
 		{
-			processSettings.RedirectStandardOutput = true;
-			processSettings.RedirectedStandardOutputHandler = line => 
-			{
-				// The output from this command returns the UDID of the simulator
-				// and NULL so we're filtering out the NULL
-				if (!string.IsNullOrWhiteSpace(line))
-				{
-					result = line;
-				}
-				
-				return line;
-			};
+			var match = allDevices.FirstOrDefault(simulator =>
+				string.Equals(simulator.GetProperty("udid").GetString(), selected, StringComparison.OrdinalIgnoreCase) ||
+				string.Equals(simulator.GetProperty("name").GetString(), selected, StringComparison.OrdinalIgnoreCase));
+			if (match.ValueKind == System.Text.Json.JsonValueKind.Undefined)
+				throw new InvalidOperationException($"Selected simulator '{selected}' is unavailable.");
+			return match.GetProperty("udid").GetString();
 		}
-	});
-
-	if(!string.IsNullOrWhiteSpace(result))
-		Information("Yay we found your device: {0}", result);
-	else
-		Information("No device found installed: {0}", testDevice);
-
-	return result;
+		var runtimeId = FindSimulatorRuntime(testDevice.Contains("_") ? testDevice.Split('_').Last() : iosVersion);
+		if (runtimeId == null)
+			throw new InvalidOperationException($"No installed iOS simulator runtime matches {testDevice}.");
+		var matching = devices.RootElement.GetProperty("devices").TryGetProperty(runtimeId, out var runtimeDevices) ?
+			runtimeDevices.EnumerateArray().ToArray() : Array.Empty<System.Text.Json.JsonElement>();
+		var booted = matching.FirstOrDefault(simulator => simulator.GetProperty("state").GetString() == "Booted");
+		if (booted.ValueKind != System.Text.Json.JsonValueKind.Undefined)
+			return booted.GetProperty("udid").GetString();
+		var deviceType = matching.FirstOrDefault(simulator => simulator.GetProperty("name").GetString().StartsWith("iPhone"));
+		var typeId = deviceType.ValueKind != System.Text.Json.JsonValueKind.Undefined &&
+			deviceType.TryGetProperty("deviceTypeIdentifier", out var type) ? type.GetString() :
+			"com.apple.CoreSimulator.SimDeviceType.iPhone-16";
+		ownedSimulatorUdid = RunAppleCommand("simctl", "create", $"MauiUITest-{Guid.NewGuid():N}", typeId, runtimeId).Trim();
+		return ownedSimulatorUdid;
+	}
 }
 
 void GetSimulators(string version, string tool)
 {
-	Information("Getting simulators for version {0}", version);
-	DotNetTool("tool", new DotNetToolSettings
+	var requestedVersion = version.Contains("_") ? version.Split('_').Last() : version;
+	if (FindSimulatorRuntime(requestedVersion) == null)
 	{
-		ToolPath = tool,
-		DiagnosticOutput = true,
-		ArgumentCustomization = args => args.Append("run xharness apple simulators install " +
-			$"\"{version}\" " +
-			$"--verbosity=\"Debug\" ")
-	});
+		if (requestedVersion == "latest")
+			RunAppleCommand("xcodebuild", "-downloadPlatform", "iOS");
+		else
+			RunAppleCommand("xcodebuild", "-downloadPlatform", "iOS", "-buildVersion", requestedVersion);
+	}
 }
 
 void ResetSimulators(string version, string tool)
 {
-	Information("Getting simulators for version {0}", version);
-	var logDirectory = GetLogDirectory();
-	DotNetTool("tool", new DotNetToolSettings
+	var simulator = GetUDID(version, tool);
+	if (simulator == ownedSimulatorUdid)
 	{
-		ToolPath = tool,
-		DiagnosticOutput = true,
-		ArgumentCustomization = args => args.Append("run xharness apple simulators reset-simulator " +
-			$"--output-directory=\"{logDirectory}\" " +
-			$"--target=\"{version}\" " +
-			$"--verbosity=\"Debug\" ")
-	});
+		using (var devices = System.Text.Json.JsonDocument.Parse(RunAppleCommand("simctl", "list", "devices", "available", "--json")))
+		{
+			if (devices.RootElement.GetProperty("devices").EnumerateObject()
+				.SelectMany(runtime => runtime.Value.EnumerateArray()).Any(candidate =>
+					candidate.GetProperty("udid").GetString() == simulator && candidate.GetProperty("state").GetString() == "Booted"))
+				RunAppleCommand("simctl", "shutdown", simulator);
+		}
+		RunAppleCommand("simctl", "erase", simulator);
+	}
+	RunAppleCommand("simctl", "bootstatus", simulator, "-b");
 }
 
 void GetDevices(string version, string tool)
 {
-	var deviceUdid = "";
-	var deviceName = "";
-	var deviceVersion = "";
-	var deviceOS = "";
-
-	var list = new List<string>();
-	bool isDevice = false;
-	// print the apple state of the machine
-	// this will print the connected devices
-	DotNetTool("tool", new DotNetToolSettings
+	EnsureDirectoryExists(GetLogDirectory());
+	var statePath = MakeAbsolute(GetLogDirectory()).CombineWithFilePath($"apple-devices-{Guid.NewGuid():N}.json").FullPath;
+	RunAppleCommand("devicectl", "list", "devices", "--json-output", statePath);
+	using (var state = System.Text.Json.JsonDocument.Parse(System.IO.File.ReadAllText(statePath)))
 	{
-		ToolPath = tool,
-		DiagnosticOutput = true,
-		ArgumentCustomization = args => args.Append("run xharness apple state --verbosity=\"Debug\" "),
-		SetupProcessSettings = processSettings =>
-			{
-				processSettings.RedirectStandardOutput = true;
-				processSettings.RedirectStandardError = true;
-				processSettings.RedirectedStandardOutputHandler = (output) =>
-				{
-					Information("Apple State: {0}", output);
-					if (output == "Connected Devices:")
-					{
-						isDevice = true;
-					}
-					else if (isDevice)
-					{
-						list.Add(output);
-					}
-					return output;
-				};
-			}
-	});
-	Information("List count: {0}", list.Count);
-	//this removes the extra lines from output
-	if (list.Count == 0)
-	{
-		throw new Exception($"No devices found");
-		return;
-	}
-	list.Remove(list.Last());
-	list.Remove(list.Last());
-	foreach (var item in list)
-	{
-		var stringToTest = $"Device: {item.Trim()}";
-		Information(stringToTest);
-		var regex = new System.Text.RegularExpressions.Regex(@"Device:\s+((?:[^\s]+(?:\s+[^\s]+)*)?)\s+([0-9A-Fa-f-]+)\s+([\d.]+)\s+(iPhone|iPad)\s+iOS");
-		var match = regex.Match(stringToTest);
-		if (match.Success)
+		foreach (var candidate in state.RootElement.GetProperty("result").GetProperty("devices").EnumerateArray())
 		{
-			deviceName = match.Groups[1].Value;
-			deviceUdid = match.Groups[2].Value;
-			deviceVersion = match.Groups[3].Value;
-			deviceOS = match.Groups[4].Value;
-			Information("DeviceName:{0} udid:{1} version:{2} os:{3}", deviceName, deviceUdid, deviceVersion, deviceOS);
-			if (version.Contains(deviceVersion.Split(".")[0]))
+			if (!candidate.TryGetProperty("deviceProperties", out var properties) ||
+				!properties.TryGetProperty("osVersionNumber", out var osVersion))
+				continue;
+			var deviceVersion = osVersion.GetString();
+			if (version.Contains(deviceVersion.Split('.')[0]))
 			{
-				Information("We want this device: {0} {1} because it matches {2}", deviceName, deviceVersion, version);
-				DEVICE_UDID = deviceUdid;
+				DEVICE_UDID = candidate.GetProperty("hardwareProperties").GetProperty("udid").GetString();
 				DEVICE_VERSION = deviceVersion;
-				DEVICE_NAME = deviceName;
-				DEVICE_OS = deviceOS;
+				DEVICE_NAME = properties.GetProperty("name").GetString();
+				DEVICE_OS = "iOS";
 				break;
 			}
 		}
-		else
-		{
-			Information("No match found for {0}", stringToTest);
-		}
 	}
 	if (string.IsNullOrEmpty(DEVICE_UDID))
+		throw new InvalidOperationException($"No devices found for version {version}");
+}
+
+string FindSimulatorRuntime(string version)
+{
+	using (var runtimes = System.Text.Json.JsonDocument.Parse(RunAppleCommand("simctl", "list", "runtimes", "--json")))
+		return runtimes.RootElement.GetProperty("runtimes").EnumerateArray()
+			.Where(runtime => runtime.GetProperty("isAvailable").GetBoolean() &&
+				runtime.GetProperty("identifier").GetString().Contains(".iOS-") &&
+				(version == "latest" || runtime.GetProperty("version").GetString().StartsWith(version, StringComparison.Ordinal)))
+			.OrderBy(runtime => new Version(runtime.GetProperty("version").GetString()))
+			.Select(runtime => runtime.GetProperty("identifier").GetString()).LastOrDefault();
+}
+
+string RunAppleCommand(params string[] arguments)
+{
+	var args = new ProcessArgumentBuilder();
+	foreach (var argument in arguments)
+		args.AppendQuoted(argument);
+	var output = new System.Text.StringBuilder();
+	var exitCode = StartProcess("xcrun", new ProcessSettings
 	{
-		throw new Exception($"No devices found for version {version}");
-	}
+		Arguments = args,
+		RedirectStandardOutput = true,
+		RedirectedStandardOutputHandler = line => { output.AppendLine(line); return line; }
+	});
+	if (exitCode != 0)
+		throw new InvalidOperationException($"xcrun {arguments[0]} failed with exit code {exitCode}.");
+	return output.ToString();
 }

@@ -10,7 +10,7 @@ namespace Tests
 	{
 		[Fact]
 		public async Task TextToSpeech_Speak_Fail_On_NetStandard() =>
-			await Assert.ThrowsAsync<NotImplementedInReferenceAssemblyException>(() => TextToSpeech.SpeakAsync("Xamarin Essentials!"));
+			await Assert.ThrowsAsync<NotImplementedInReferenceAssemblyException>(() => TextToSpeech.SpeakAsync("Xamarin Essentials!", cancelToken: TestContext.Current.CancellationToken));
 
 		// NormalizeRate tests — use arbitrary platform constants to verify math
 		const float PlatMin = 0.0f;

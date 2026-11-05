@@ -1,67 +1,144 @@
 parameters:
-  jobMatrix: []  # Should define jobMatrix.name, jobMatrix.displayName, jobMatrix.pool, jobMatrix.timeout, jobMatrix.testOS
+  jobMatrix: []
+  buildConfigurations: [ Debug, Release ]
   mauiSourcePath: $(Build.SourcesDirectory)
-  buildConfig: Debug
   repoLogPath: $(Build.Arcade.LogsPath)
-  publishTaskPrefix: '1ES.'
-  buildTaskProjects: '$(Build.SourcesDirectory)/Microsoft.Maui.BuildTasks.slnf'
+  publishTaskPrefix: ''
+  projects:
+  - src/Controls/tests/Xaml.UnitTests/Controls.Xaml.UnitTests.csproj
+  - src/SingleProject/Resizetizer/test/UnitTests/Resizetizer.UnitTests.csproj
+  - src/Controls/tests/Core.UnitTests/Controls.Core.UnitTests.csproj
+  - src/Controls/tests/BindingSourceGen.UnitTests/Controls.BindingSourceGen.UnitTests.csproj
+  - src/Controls/tests/SourceGen.UnitTests/SourceGen.UnitTests.csproj
+  - src/Core/tests/UnitTests/Core.UnitTests.csproj
+  - src/Essentials/test/UnitTests/Essentials.UnitTests.csproj
+  - src/Essentials/test/ExternalBackendTests/Essentials.ExternalBackend.UnitTests.csproj
+  - src/Graphics/tests/Graphics.Tests/Graphics.Tests.csproj
+  - src/BlazorWebView/tests/MauiBlazorWebView.UnitTests/MauiBlazorWebView.UnitTests.csproj
+  - src/BlazorWebView/tests/MauiBlazorWebView.ExternalHandler.UnitTests/MauiBlazorWebView.ExternalHandler.UnitTests.csproj
+  - src/TestUtils/tests/UITest.NUnit.Tests/UITest.NUnit.Tests.csproj
+  - src/TestUtils/tests/TestUtils.UnitTests/TestUtils.UnitTests.csproj
 
 stages:
 - stage: UnitTests
   displayName: Run Unit Tests
   dependsOn: []
   jobs:
-  - ${{ each job in parameters.jobMatrix }}:
-    - job: ${{ job.name }}
-      displayName: ${{ job.displayName }}
-      pool: ${{ job.pool }}
-      timeoutInMinutes: ${{ job.timeout }}
-      steps:
-      - checkout: self
-        clean: true
+  - ${{ each configuration in parameters.buildConfigurations }}:
+    - ${{ each job in parameters.jobMatrix }}:
+      - job: ${{ job.name }}_${{ configuration }}
+        displayName: ${{ job.displayName }} (${{ configuration }})
+        pool:
+          name: ${{ job.pool.name }}
+          ${{ if job.pool.vmImage }}:
+            vmImage: ${{ job.pool.vmImage }}
+          ${{ if job.pool.demands }}:
+            demands: ${{ job.pool.demands }}
+        timeoutInMinutes: 240
+        workspace:
+          clean: all
+        steps:
+        - checkout: self
+          clean: true
+          persistCredentials: false
 
-      - template: /eng/pipelines/common/provision.yml@self
-        parameters:
-          checkoutDirectory: '$(System.DefaultWorkingDirectory)'
-          skipJdk: false
-          skipAndroidCommonSdks: false
-          skipAndroidPlatformApis: false
-          onlyAndroidPlatformDefaultApis: true
-          skipAndroidEmulatorImages: true
-          skipAndroidCreateAvds: true
-          skipProvisioning: true
-          skipXcode: false
-          skipSimulatorSetup: false
-          base64Encode: true
-          outputVariableName: dotnetbuilds-internal-container-read-token-base64
-      
-      - script: dotnet cake --target=dotnet-buildtasks --configuration="${{ parameters.buildConfig }}" --verbosity=diagnostic
-        displayName: 🛠️ Provision SDK & Build BuildTasks
-        retryCountOnTaskFailure: 3
-        env:
-          DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
-          PRIVATE_BUILD: $(PrivateBuild)
+        - pwsh: |
+            $root = "$(Build.ArtifactStagingDirectory)/tests/$(System.JobId)/$(System.JobAttempt)"
+            New-Item -ItemType Directory -Force -Path $root | Out-Null
+            $projects = @'
+            ${{ convertToJson(parameters.projects) }}
+            '@ | ConvertFrom-Json
+            foreach ($project in $projects) {
+                New-Item -ItemType Directory -Force -Path (Join-Path $root $project.Replace('/', '_')) | Out-Null
+            }
+            New-Item -ItemType Directory -Force -Path (Join-Path $root 'BlazorWebView.Windows.UnitTests') | Out-Null
+            New-Item -ItemType Directory -Force -Path "${{ parameters.repoLogPath }}" | Out-Null
+          displayName: Initialize job results
 
-      - template: /eng/pipelines/common/run-dotnet-preview.yml
-        parameters:
-          displayName: Run Graphics.Tests - ${{ job.testOS }}
-          mauiSourcePath: ${{ parameters.mauiSourcePath }}
-          command: test
-          project: ${{ parameters.mauiSourcePath }}/src/Graphics/tests/Graphics.Tests/Graphics.Tests.csproj
-          arguments: '-c ${{ parameters.buildConfig }} --logger trx --results-directory $(Agent.TempDirectory)/Graphics.Tests /p:_SkipUpdateBuildNumber=true'
-          useExitCodeForErrors: true
+        - template: /eng/pipelines/common/provision.yml@self
+          parameters:
+            checkoutDirectory: ${{ parameters.mauiSourcePath }}
+            skipJdk: true
+            skipAndroidCommonSdks: true
+            skipAndroidPlatformApis: true
+            skipAndroidEmulatorImages: true
+            skipAndroidCreateAvds: true
+            skipXcode: true
+            skipSimulatorSetup: true
 
-      - task: PublishTestResults@2
-        inputs:
-          testResultsFormat: VSTest
-          testResultsFiles: $(Agent.TempDirectory)/Graphics.Tests/*.trx
-          testRunTitle: Graphics.Tests - ${{ job.testOS }}
+        - script: dotnet cake --target=dotnet-buildtasks --configuration="${{ configuration }}" --verbosity=diagnostic
+          displayName: Provision SDK and build BuildTasks
+          env:
+            DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
+            PRIVATE_BUILD: $(PrivateBuild)
 
-      - task: ${{ parameters.publishTaskPrefix }}PublishPipelineArtifact@1
-        displayName: Publish Logs
-        inputs:
-          targetPath: ${{ parameters.repoLogPath }}
-          artifact: Logs - Unit Tests ${{ job.testOS }} $(System.JobAttempt)
-        condition: always()
+        - ${{ each project in parameters.projects }}:
+          - template: /eng/pipelines/common/run-dotnet-preview.yml@self
+            parameters:
+              displayName: Test ${{ project }}
+              mauiSourcePath: ${{ parameters.mauiSourcePath }}
+              command: test
+              project: --project "${{ parameters.mauiSourcePath }}/${{ project }}"
+              arguments: >-
+                --configuration ${{ configuration }}
+                --report-trx
+                --results-directory "$(Build.ArtifactStagingDirectory)/tests/$(System.JobId)/$(System.JobAttempt)/${{ replace(project, '/', '_') }}"
+                -bl:"$(Build.ArtifactStagingDirectory)/tests/$(System.JobId)/$(System.JobAttempt)/${{ replace(project, '/', '_') }}/test.binlog"
+                -p:_SkipUpdateBuildNumber=true
+              continueOnError: false
+              useExitCodeForErrors: true
+              condition: succeededOrFailed()
+              envVariables:
+                DOTNET_MODIFIABLE_ASSEMBLIES: debug
 
-      - template: /eng/pipelines/common/fail-on-issue.yml
+          - pwsh: |
+              & "${{ parameters.mauiSourcePath }}/eng/scripts/Assert-TestResults.ps1" -ResultsDirectory "$(Build.ArtifactStagingDirectory)/tests/$(System.JobId)/$(System.JobAttempt)/${{ replace(project, '/', '_') }}"
+            displayName: Validate ${{ project }} results
+            condition: always()
+
+        - ${{ if eq(job.testOS, 'windows') }}:
+          - template: /eng/pipelines/common/run-dotnet-preview.yml@self
+            parameters:
+              displayName: Test BlazorWebView.Windows.UnitTests
+              mauiSourcePath: ${{ parameters.mauiSourcePath }}
+              command: test
+              project: --project "${{ parameters.mauiSourcePath }}/src/BlazorWebView/tests/BlazorWebView.Windows.UnitTests/BlazorWebView.Windows.UnitTests.csproj"
+              arguments: >-
+                --configuration ${{ configuration }}
+                --report-trx
+                --results-directory "$(Build.ArtifactStagingDirectory)/tests/$(System.JobId)/$(System.JobAttempt)/BlazorWebView.Windows.UnitTests"
+                -bl:"$(Build.ArtifactStagingDirectory)/tests/$(System.JobId)/$(System.JobAttempt)/BlazorWebView.Windows.UnitTests/test.binlog"
+                -p:_SkipUpdateBuildNumber=true
+              continueOnError: false
+              useExitCodeForErrors: true
+              condition: succeededOrFailed()
+              envVariables:
+                DOTNET_MODIFIABLE_ASSEMBLIES: debug
+          - pwsh: |
+              & "${{ parameters.mauiSourcePath }}/eng/scripts/Assert-TestResults.ps1" -ResultsDirectory "$(Build.ArtifactStagingDirectory)/tests/$(System.JobId)/$(System.JobAttempt)/BlazorWebView.Windows.UnitTests"
+            displayName: Validate Windows-only results
+            condition: always()
+
+        - task: PublishTestResults@2
+          condition: always()
+          inputs:
+            testResultsFormat: VSTest
+            testResultsFiles: '$(Build.ArtifactStagingDirectory)/tests/$(System.JobId)/$(System.JobAttempt)/**/*.trx'
+            testRunTitle: Unit tests - ${{ job.testOS }} - ${{ configuration }} - $(System.JobAttempt)
+            failTaskOnFailedTests: true
+            failTaskOnMissingResultsFile: true
+            failTaskOnFailureToPublishResults: true
+
+        - task: ${{ parameters.publishTaskPrefix }}PublishPipelineArtifact@1
+          condition: always()
+          displayName: Publish results
+          inputs:
+            targetPath: $(Build.ArtifactStagingDirectory)/tests/$(System.JobId)/$(System.JobAttempt)
+            artifact: UnitTests-${{ job.name }}-${{ configuration }}-$(System.JobAttempt)
+
+        - task: ${{ parameters.publishTaskPrefix }}PublishPipelineArtifact@1
+          condition: always()
+          displayName: Publish build logs
+          inputs:
+            targetPath: ${{ parameters.repoLogPath }}
+            artifact: UnitTestLogs-${{ job.name }}-${{ configuration }}-$(System.JobAttempt)

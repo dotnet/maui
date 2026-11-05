@@ -295,13 +295,14 @@ observes handler, mapper, and layout spans. Emitted operations: `SetVirtualView`
 `CreatePlatformElement`, `AssignHandler`, `ConnectHandler`, `ResolveMapper`, `UpdateProperties`, and
 `MapProperty` (tagged with `element.type`, `handler.type`, and, for `MapProperty`, `mapper.property`).
 
-## Running Device Tests on Helix
+## Running device tests directly
 
-.NET MAUI now supports running device tests on [.NET Engineering Services Helix](https://helix.dot.net) using XHarness. Helix provides cloud-based device testing infrastructure that enables running tests across multiple platforms and devices in parallel.
+.NET MAUI device tests run directly on their execution agents using `dotnet test`
+and Microsoft.Testing.Platform. Helix submission and XHarness are retired.
 
 ### Overview
 
-Device tests can be run on the following platforms via Helix:
+Device tests run on Android, iOS simulators, Mac Catalyst and Windows.
 
 
 The device test projects include:
@@ -312,16 +313,19 @@ The device test projects include:
 - `MauiBlazorWebView.DeviceTests` - Blazor WebView tests
 
 
-### Available Helix Queues
+### Execution agents
 
-Check available queues at [helix.dot.net](https://helix.dot.net). The public (default) configuration uses:
+The public matrix preserves these execution environments:
 
-- **iOS**: `osx.15.arm64.maui.open`, `osx.26.arm64.open`
-- **Mac Catalyst**: `osx.15.arm64.maui.open`, `osx.26.arm64.open`
-- **Android**: `ubuntu.2204.amd64.android.33.open`
-- **Windows**: `windows.11.amd64.client.open`
+- **iOS / Mac Catalyst**: macOS 15 and 26 arm64
+- **Android**: Ubuntu 22.04 x64, API 33, both CoreCLR and Mono
+- **Windows**: interactive Windows 11 x64, packaged and unpackaged
 
-Internal runs (`HelixInternal=True`) use `osx.15.arm64.iphone.maui` for iOS and Mac Catalyst, and the non-`.open` Android and Windows queues instead.
+Internal runs retain isolated internal pools and the macOS 15 Apple lane.
+The other pipeline environment retains its per-suite APIs and configurations.
+Former submission agents are not assumed to be device-capable; missing runtime,
+OS, graphical session or signing support is a provisioning failure, not permission
+to silently drop the affected matrix row.
 
 ### Running Device Tests Locally
 
@@ -346,42 +350,26 @@ Build the device test projects:
 ./build.sh -restore -build -configuration Release /p:BuildDeviceTests=true /bl:BuildDeviceTests.binlog -warnAsError false
 ```
 
-#### Step 3: Send to Helix
-Submit the tests to Helix for execution:
+#### Step 3: Run tests
 
-We need to set some variables. More info about Helix can be found [here](https://github.com/dotnet/arcade/blob/main/src/Microsoft.DotNet.Helix/Sdk/Readme.md) 
-
-
-```bash
-export BUILD_REASON=pr
-export BUILD_REPOSITORY_NAME=maui
-export BUILD_SOURCEBRANCH=main
-export SYSTEM_TEAMPROJECT=dnceng
-export SYSTEM_ACCESSTOKEN='' 
-```
+Select an exact device, not a shared default/booted device. The native host accepts
+`MauiTestFilter=Category=Shell` or
+`MauiTestFilter=SkipCategories=CollectionView,Shell,HybridWebView`.
 
 ```bash
-# Send to Helix for Android
-./eng/common/msbuild.sh ./eng/helix_xharness.proj /restore /p:TreatWarningsAsErrors=false /t:Test /p:TargetOS=android /bl:sendhelix_android.binlog -verbosity:diag
+# Android: substitute the serial of your emulator
+dotnet test --project src/Core/tests/DeviceTests/Core.DeviceTests.csproj --configuration Release --framework net11.0-android --device emulator-5554 --report-trx --results-directory artifacts/TestResults/Core-android -p:RuntimeIdentifier=android-x64
 
-# Send to Helix for iOS  
-./eng/common/msbuild.sh ./eng/helix_xharness.proj /restore /p:TreatWarningsAsErrors=false /t:Test /p:TargetOS=ios /bl:sendhelix_ios.binlog -verbosity:diag
+# iOS: substitute your exact simulator UDID
+dotnet test --project src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj --configuration Release --framework net11.0-ios --device YOUR-SIMULATOR-UDID -p:RuntimeIdentifier=iossimulator-arm64 -p:MauiTestFilter=Category=Shell
 
-# Send to Helix for Mac Catalyst
-./eng/common/msbuild.sh ./eng/helix_xharness.proj /restore /p:TreatWarningsAsErrors=false /t:Test /p:TargetOS=maccatalyst /bl:sendhelix_catalyst.binlog -verbosity:diag
+# Catalyst: explicitly give the native reporter its host destination
+dotnet test --project src/Core/tests/DeviceTests/Core.DeviceTests.csproj --configuration Release --framework net11.0-maccatalyst -p:MauiTestResultsDirectory="$PWD/artifacts/TestResults/Core-catalyst"
 ```
 
 ### Windows Commands
 
 For Windows development, use the corresponding `.cmd` files:
-
-```cmd
-set BUILD_REASON=pr
-set BUILD_REPOSITORY_NAME=maui
-set BUILD_SOURCEBRANCH=main
-set SYSTEM_TEAMPROJECT=dnceng
-set SYSTEM_ACCESSTOKEN=
-```
 
 ```cmd
 REM Build MSBuild tasks
@@ -390,44 +378,53 @@ REM Build MSBuild tasks
 REM Build device tests
 .\build.cmd -restore -build -configuration Release /p:BuildDeviceTests=true /bl:BuildDeviceTests.binlog -warnAsError false
 
-REM Send to Helix (Android example)
-.\eng\common\msbuild.cmd .\eng\helix_xharness.proj /restore /p:TreatWarningsAsErrors=false /t:Test /p:TargetOS=android /bl:sendhelix.binlog -verbosity:diag
+REM Run Android tests on the explicitly selected emulator
+dotnet test --project src/Core/tests/DeviceTests/Core.DeviceTests.csproj --configuration Release --framework net11.0-android --device emulator-5554 --report-trx --results-directory artifacts/TestResults/Core-android -p:RuntimeIdentifier=android-x64
 ```
 
 ### Configuration Details
 
-The Helix configuration is defined in `eng/helix_xharness.proj` and includes:
+The direct matrix is defined in `eng/pipelines/arcade/stage-device-tests.yml`.
+The common device templates provision job-owned devices, build and test in the
+same job, and always publish unique job/attempt result directories.
 
-- **Timeouts**: 2-hour work item timeout, 1-hour test timeout
-- **Test Discovery**: Automatically discovers test bundles for each scenario
-- **Platform Targeting**: Specific target frameworks per platform
-- **Queue Selection**: Platform-appropriate Helix queues
-- **XHarness Integration**: Uses XHarness for device orchestration
+- **Coverage**: all five suites, existing configurations, runtimes and API exclusions
+- **iOS shards**: CollectionView, Shell, HybridWebView, and General excluding those
+- **Windows**: packaged execution installs the signed MSIX and activates its AUMID
+  through the MTP launcher, preserving package identity and the complete server/pipe
+  arguments; building MSIX and executing its binary unpackaged is not equivalent
+- **Results**: genuine MTP TRX is required; missing, empty or failed results fail CI
+- **Ownership**: cleanup deletes only the current job's simulator or emulator
+
+The current Apple proxy does not register host `--report-trx`, and
+`--results-directory` alone does not collect native app results. For iOS, resolve
+the app container with `xcrun simctl get_app_container DEVICE APPLICATION_ID data`
+and copy its `Documents/TestResults/testResults.trx` before deleting the
+simulator. Catalyst uses the explicit `MauiTestResultsDirectory` host path.
+Never synthesize TRX from stdout.
 
 ### Troubleshooting
 
 #### Common Issues
 
 1. **Build failures**: Ensure you've built the MSBuild tasks first
-2. **Missing devices**: Check queue availability at [helix.dot.net](https://helix.dot.net)  
-3. **Authentication**: For CI scenarios, ensure proper Azure DevOps access tokens
+2. **Missing devices**: Check the execution pool's SDK/runtime and graphical-session requirements
+3. **Results**: Require a real TRX from the reporter, not merely a successful app launch
 4. **Timeouts**: Tests have generous timeouts but may need adjustment for complex scenarios
 
 #### Logging and Diagnostics
 
 - Use `/bl:filename.binlog` for detailed MSBuild logs
 - Add `-verbosity:diag` for maximum diagnostic output
-- Check Helix job results at the provided URL after submission
+- Inspect the job's published TRX, binlogs and device logs, including failed attempts
 
 ### CI Integration
 
 The device tests are integrated into the CI pipeline via:
 - `eng/pipelines/arcade/stage-device-tests.yml` - Pipeline template
-- `eng/test-configuration.json` - Test retry configuration
+- `eng/pipelines/common/device-tests-steps.yml` - Direct CLI and result collection
 - Automatic execution on PR builds for qualifying changes
 
 ### Additional Resources
 
-- [XHarness on Helix Documentation](https://github.com/dotnet/arcade/blob/main/src/Microsoft.DotNet.Helix/Sdk/tools/xharness-runner/Readme.md#android-apk-payloads)
-- [Helix Documentation](https://github.com/dotnet/arcade/tree/main/src/Microsoft.DotNet.Helix)
-- [Example Helix Run](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1115383&view=results)
+- [Direct device CI contracts](../.github/instructions/helix-device-tests.instructions.md)

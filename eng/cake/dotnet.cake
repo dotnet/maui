@@ -1,4 +1,7 @@
 #addin "nuget:?package=Cake.FileHelpers&version=3.2.1"
+#load "../../.github/scripts/shared/MtpTestArguments.cs"
+
+using System.Xml.Linq;
 
 // Contains .NET - related Cake targets
 
@@ -963,67 +966,65 @@ void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = nu
 
     Information("Run Test binlog: {0}", binlog);
 
-    var settings = new DotNetTestSettings
+    // Cake's DotNetTestSettings emits VSTest-only --logger and positional-project arguments.
+    // Root MTP mode takes --project and forwards extension options without a "--" separator.
+    var nunit = XDocument.Load(csproj).Descendants("EnableNUnitRunner").Any(element => element.Value == "true");
+    var args = new ProcessArgumentBuilder()
+        .Append("test").Append("--project").AppendQuoted(csproj)
+        .Append("--configuration").AppendQuoted(config)
+        .Append("--results-directory").AppendQuoted(resultsDirectory ?? MakeAbsolute(GetTestResultsDirectory()).FullPath)
+        .AppendQuoted($"-bl:{binlog}");
+    foreach (var argument in MtpTestArguments.DesktopReport(nunit, results))
+        args.AppendQuoted(argument);
+    if (noBuild)
+        args.Append("--no-build");
+    if (settingsFile != null)
+        args.Append("--settings").AppendQuoted(settingsFile);
+    // A retry's NUnit.Where already includes the original category constraint.
+    bool hasNUnitWhere = settingsFile != null &&
+        !string.IsNullOrWhiteSpace((string)XDocument.Load(settingsFile).Root.Element("NUnit")?.Element("Where"));
+    if (!hasNUnitWhere && !string.IsNullOrWhiteSpace(filter))
     {
-        Configuration = config,
-        NoBuild = noBuild,
-        // NUnit.Where replaces the VSTest filter; its category constraint is included in the settings.
-        Filter = settingsFile == null ? filter : null,
-        Settings = settingsFile == null ? null : new FilePath(settingsFile),
-        Loggers = {
-                $"trx;LogFileName={results}",
-                $"console;verbosity=normal"
-            },
-        ResultsDirectory = resultsDirectory == null ? GetTestResultsDirectory() : new DirectoryPath(resultsDirectory),
-        //    Verbosity = Cake.Common.Tools.DotNetCore.DotNetCoreVerbosity.Diagnostic,
-
-        ArgumentCustomization = args => 
-        { 
-            var loggerArg = GetMSBuildForwardingLoggerPath();
-            if (loggerArg != null)
-            {
-               args.Append(loggerArg);
-            }
-
-            args.Append($"-bl:{binlog}");
-            if(maxCpuCount > 0)
-            {
-               args.Append($"-maxcpucount:{maxCpuCount}");
-            }
-
-            if (argsExtra != null)
-            {
-                foreach (var prop in argsExtra)
-                {
-                    args.Append($"/p:{prop.Key}={prop.Value}");
-                }
-            }
-
-            // https://github.com/microsoft/vstest/issues/5112
-            args.Append($"/p:VStestUseMSBuildOutput=false");
-
-            if (!string.IsNullOrEmpty(nunitResultsDirectory))
-            {
-                args.Append("--").AppendQuoted($"NUnit.TestOutputXml={nunitResultsDirectory}");
-            }
-
-            return args;
-        }
-    };
-
-    if (!string.IsNullOrEmpty(pathDotnet))
-    {
-        settings.ToolPath = pathDotnet;
+        foreach (var argument in MtpTestArguments.DesktopFilter(filter, nunit))
+            args.AppendQuoted(argument);
     }
+    if (!string.IsNullOrEmpty(nunitResultsDirectory))
+        throw new InvalidOperationException("Set NUnit.TestOutputXml in the runsettings file, not on the MTP command line.");
+    if (maxCpuCount > 0)
+        args.Append($"-maxcpucount:{maxCpuCount}");
+    if (argsExtra != null)
+        foreach (var prop in argsExtra)
+            args.AppendQuoted($"/p:{prop.Key}={prop.Value}");
+    var loggerArg = GetMSBuildForwardingLoggerPath();
+    if (loggerArg != null)
+        args.Append(loggerArg);
 
     try
     {
-        DotNetTest(csproj, settings);
+        var exitCode = StartProcess(string.IsNullOrEmpty(pathDotnet) ? "dotnet" : pathDotnet,
+            new ProcessSettings { Arguments = args });
+        if (exitCode != 0)
+            throw new InvalidOperationException($"dotnet test failed with exit code {exitCode}.");
     }
     finally
     {
         Information("Test Run complete: {0}", results);
     }
+}
+
+void RunNativeTestWithLocalDotNet(string project, string config, string tfm, string rid, string platform,
+    string filter, string device, string resultsDirectory, string toolPath, bool useCoreClr, string xcodePath = null)
+{
+    var args = new ProcessArgumentBuilder();
+    foreach (var argument in MtpTestArguments.Native(project, config, tfm, rid, platform, filter, device,
+        MakeAbsolute(new DirectoryPath(resultsDirectory)).FullPath, useCoreClr))
+        args.AppendQuoted(argument);
+    var settings = new ProcessSettings { Arguments = args };
+    if (!string.IsNullOrWhiteSpace(xcodePath))
+        settings.EnvironmentVariables = new Dictionary<string, string> { ["DEVELOPER_DIR"] = xcodePath };
+    var exitCode = StartProcess(string.IsNullOrEmpty(toolPath) ? "dotnet" : toolPath, settings);
+    if (exitCode != 0)
+        throw new InvalidOperationException($"Native dotnet test failed with exit code {exitCode}.");
 }
 
 DirectoryPath PrepareSeparateBuildContext(string dirName, string props = null, string targets = null)
