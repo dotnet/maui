@@ -1,6 +1,7 @@
 [CmdletBinding()]
 param (
-    [string] $StatePath = (Join-Path $PSScriptRoot '../release-rollover.json')
+    [string] $StatePath = (Join-Path $PSScriptRoot '../release-rollover.json'),
+    [switch] $ResolveStateOnly
 )
 
 $ErrorActionPreference = 'Stop'
@@ -9,13 +10,13 @@ Set-StrictMode -Version Latest
 $stateBytes = [System.IO.File]::ReadAllBytes((Resolve-Path -LiteralPath $StatePath).Path)
 $stateHash = [Convert]::ToHexString([System.Security.Cryptography.SHA256]::HashData($stateBytes)).ToLowerInvariant()
 $state = [System.Text.Encoding]::UTF8.GetString($stateBytes).TrimStart([char] 0xFEFF) | ConvertFrom-Json
-foreach ($property in @('schemaVersion', 'repository', 'releaseBand', 'currentSr', 'fixBranch', 'featureBranch', 'candidateNamingPolicy')) {
+foreach ($property in @('schemaVersion', 'repository', 'releaseBand', 'currentSr', 'fixBranch', 'featureBranch', 'candidateNamingPolicy', 'nightlyMode')) {
     if ($property -notin $state.PSObject.Properties.Name -or
         [string]::IsNullOrWhiteSpace([string] $state.$property)) {
         throw "Release state is missing '$property'."
     }
 }
-foreach ($property in @('repository', 'releaseBand', 'fixBranch', 'featureBranch', 'candidateNamingPolicy')) {
+foreach ($property in @('repository', 'releaseBand', 'fixBranch', 'featureBranch', 'candidateNamingPolicy', 'nightlyMode')) {
     if ($state.$property -isnot [string]) {
         throw "Release-state property '$property' must be a string."
     }
@@ -33,6 +34,9 @@ if ([string] $state.currentSr -cnotmatch '^[1-9][0-9]*$' -or
 }
 if ($state.candidateNamingPolicy -cnotin @('unresolved', 'candidate')) {
     throw "The candidate naming policy must be 'unresolved' or 'candidate'."
+}
+if ($state.nightlyMode -cnotin @('legacy', 'versioned')) {
+    throw "The nightly mode must be 'legacy' or 'versioned'."
 }
 
 $repository = [string] $state.repository
@@ -78,6 +82,22 @@ foreach ($name in $targetNames.Values) {
         }
         $null = $queryRefs.Add($ref)
     }
+}
+
+if ($ResolveStateOnly) {
+    [pscustomobject][ordered]@{
+        repository = $repository
+        stateSha256 = $stateHash
+        releaseBand = $band
+        currentSr = $sr
+        fixBranch = $sourceNames.fixes
+        featureBranch = $sourceNames.features
+        candidateBranch = $sourceNames.candidate
+        inflightBranch = $sourceNames.inflight
+        nightlyMode = $state.nightlyMode
+        nightlyBranch = if ($state.nightlyMode -ceq 'legacy') { 'inflight/current' } else { $sourceNames.inflight }
+    } | ConvertTo-Json
+    return
 }
 
 $remoteOutput = @(& git ls-remote --heads -- $repository @($queryRefs))

@@ -1,0 +1,45 @@
+name: Release tracking PRs
+
+on:
+  schedule:
+    - cron: '20 */6 * * *'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - eng/release-rollover.json
+  pull_request:
+    types: [closed]
+    branches: [net11]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-tracking-prs
+  cancel-in-progress: false
+
+jobs:
+  reconcile:
+    if: >-
+      github.repository == 'dotnet/maui' &&
+      (github.event_name != 'pull_request' ||
+       (github.event.pull_request.merged &&
+        github.event.pull_request.head.repo.full_name == 'dotnet/maui' &&
+        startsWith(github.event.pull_request.head.ref, 'candidate/')))
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: false
+
+      - name: Reconcile the current release tracking PRs
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: ./eng/scripts/Sync-ReleaseTrackingPullRequests.ps1

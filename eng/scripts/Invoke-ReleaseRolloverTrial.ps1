@@ -110,6 +110,7 @@ $result = [ordered]@{
     inflightSha = $inflightSha
     operations = $operations
     created = @()
+    trackingPullRequests = $null
 }
 $resultPath = Join-Path $env:RUNNER_TEMP 'release-rollover-trial-result.json'
 $result | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath $resultPath -Encoding utf8
@@ -150,6 +151,13 @@ foreach ($sourceRef in @($integrationRef, $candidate.ref, $inflightRef)) {
         throw "Sandbox source '$sourceRef' changed during execution."
     }
 }
+$trackingState = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../release-rollover.json') -Raw | ConvertFrom-Json
+$trackingState.currentSr = $sr + 1
+$trackingState.releaseBand = $band
+$trackingStatePath = Join-Path $env:RUNNER_TEMP 'sandbox-release-tracking-state.json'
+$trackingState | ConvertTo-Json | Set-Content -LiteralPath $trackingStatePath -Encoding utf8
+$result.trackingPullRequests = & (Join-Path $PSScriptRoot 'Sync-ReleaseTrackingPullRequests.ps1') `
+    -StatePath $trackingStatePath -SandboxPrefix $prefix | ConvertFrom-Json
 $result.status = if ($result.created.Count -eq 0) { 'unchanged' } else { 'completed' }
 $result | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath $resultPath -Encoding utf8
 $summary = @(

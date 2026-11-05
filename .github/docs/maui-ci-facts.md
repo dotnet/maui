@@ -64,6 +64,21 @@ Preserve its release commit and packages, and keep publication on the .NET 10 ch
 .NET 11 transition. Do not cut over `inflight/current` or synchronize the internal
 `main` mirror as part of SR13 publication; those are separate .NET 11 operations.
 
+### Versioned inflight nightly migration
+
+The release-branch proposal in `docs/ReleaseBranchWorkflow.md` adds support for
+versioned `inflight/<band>-srN` sources without changing the existing
+`ci.inflight` package stream or the internal `dotnet-maui` signing/publishing path.
+Scheduled inflight runs select their eligible lane from
+`eng/release-rollover.json` at a pinned public `main` commit before packing.
+`nightlyMode: legacy` preserves `inflight/current`; `versioned` selects the state's
+`releaseBand` and `currentSr + 1`. Unselected retained lanes skip packing.
+
+This is a staged migration, not evidence that the new lanes are already building.
+Deploy the selection and branding changes to the internal mirrored source
+branches and verify signed artifacts/feed wiring before switching the canonical
+mode. Creating the public refs or passing the GitHub sandbox is not sufficient.
+
 ### Engineering dependency updates
 
 Maestro owns the `Microsoft.DotNet.*` dependencies, including the Arcade toolset

@@ -102,6 +102,90 @@ from the old SR `N+1` inflight and becomes the SR `N+1` candidate, while the old
 inflight advances to SR `N+2`. Keep the release branch separate from these moves,
 and continue the daily `net11`-to-`main` merges.
 
+## Rolling integration PRs
+
+Maintain these two draft PRs against the fixes branch, `net11`:
+
+| Title | Head | Purpose |
+|---|---|---|
+| `[Release candidate] 11.0.1xx SR1` | `candidate/11.0.1xx-sr1` | The current release's reviewed integration into `net11`. |
+| `[Next release preview] 11.0.1xx SR2` | `inflight/11.0.1xx-sr2` | Visibility into the following release, like the historical `inflight/current` tracking PR. Do not merge this ahead of the current candidate. |
+
+`Release tracking PRs` reconciles these routes from the canonical release-state
+record every six hours, when that record changes on `main`, after a same-repo
+candidate PR merges into `net11`, or on zero-input manual activation. It checks out
+trusted `main`, not the merged PR's head, and requires only repository read access
+and scoped PR write access.
+
+The reconciler creates missing PRs as drafts, refreshes managed titles and
+descriptions, and never approves or merges them. A head-branch change requires a
+new PR: GitHub cannot retarget an existing PR's head. After both new-cycle PRs
+exist, it closes obsolete PRs bearing its own scope marker. It does not adopt or
+close unrelated human-created PRs, including the legacy tracking PR, automatically.
+If an exact route already has an unmanaged PR or multiple open PRs, reconciliation
+stops for inspection rather than creating a duplicate.
+
+GitHub will not create a PR whose head has no commits ahead of its base. In that
+case the reconciler explicitly reports `waiting-for-changes` and creates the PR
+when real changes arrive; it does not add fake commits to satisfy a literal
+"always two" count. Initially, the SR1 candidate was seeded at the same commit as
+`net11`, so that route must wait for changes. Existing PRs can remain open while
+their diff becomes empty.
+
+The release rollover must advance `currentSr` in the protected state record and
+invoke reconciliation after the new lane refs are ready. Updating the record also
+advances the titles and routes to candidate SR2 and inflight SR3. Branch pushes
+then update each PR's diff naturally.
+
+For read-only inspection before deployment:
+
+```powershell
+pwsh -NoProfile -File eng/scripts/Sync-ReleaseTrackingPullRequests.ps1 -PlanOnly
+```
+
+## Nightly builds and dogfood feeds
+
+Versioned inflight branches must keep the same nightly contract as
+`inflight/current`: the internal `dotnet-maui` pipeline, daily 05:00 UTC signed
+builds, `ci.inflight` package branding, workload artifacts, BAR registration, and
+the configured dogfood feed. Renaming or creating a public branch alone does not
+provide any of those external integrations.
+
+The official schedule recognizes versioned `inflight/*xx-sr*` refs. A selection
+stage runs before packing on scheduled inflight builds and reads the release
+state from a pinned commit on public `main`. It selects only one publishing lane:
+
+| `nightlyMode` | Eligible nightly source |
+|---|---|
+| `legacy` | `inflight/current` |
+| `versioned` | `inflight/<releaseBand>-sr<currentSr+1>` |
+
+The checked-in mode remains **`legacy` during migration**. In versioned mode,
+SR1's inflight source is SR2; after the trusted release state advances to SR2,
+the source becomes SR3 automatically. Retained older inflight branches and the
+legacy branch skip packing when not selected, so they cannot make a retired
+stream appear fresh. Missing or invalid canonical state fails selection instead
+of falling back to another branch.
+
+Versioned inflight refs keep `PreReleaseVersionLabel=ci.inflight` and the existing
+signing path. `main`, candidate branches, tags, and other inflight experiments
+retain their existing branding. No feed or channel is invented from the SR name;
+the existing publishing and Maestro configuration must be preserved and verified.
+The readiness feed check continues measuring `ci.inflight`, not a fresh
+`ci.main` build.
+
+Before switching `nightlyMode` to `versioned`, deploy the schedule/selection,
+signing, and branding changes to the mirrored legacy and active versioned
+branches. Verify that the internal mirror has the exact selected public commit,
+that its default-channel/feed wiring matches the existing nightly contract, and
+that a signed internal build publishes the expected artifacts. Do not rewrite
+mirror history or promote workload-release packages as part of this migration.
+The same deployment prerequisite applies when each new lane is created.
+
+The public PR and sandbox do not deploy internal mirrors, change Maestro
+subscriptions, or certify an actual signed nightly. They must not be reported as
+an operational nightly cutover until that internal evidence exists.
+
 ## One-click release automation
 
 The proposed activation point is a GitHub Action after a reviewed candidate
@@ -249,6 +333,11 @@ the exact expected SHAs are left unchanged, so a rerun resumes missing creations
 or reports no changes. Creation is sequential, not a cross-ref transaction; a
 failed run can leave partial outputs recorded in its artifact. Existing targets
 are never updated, and moved source refs require inspection before resuming.
+
+After creating its next-cycle refs, the sandbox invokes the same tracking-PR
+reconciler with a sandbox-scoped state file. Both dummy PRs target dummy `main`,
+never a real development branch. This exercises PR creation and repeated
+reconciliation without enabling the production release workflow.
 
 The workflow uses its scoped `GITHUB_TOKEN`, with no new personal token or
 repository secret. It does not use `pull_request_target`, check out fork code, or
