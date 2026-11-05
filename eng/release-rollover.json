@@ -1,0 +1,9 @@
+{
+    "schemaVersion": 1,
+    "repository": "https://github.com/dotnet/maui.git",
+    "releaseBand": "11.0.1xx",
+    "currentSr": 1,
+    "fixBranch": "net11",
+    "featureBranch": "main",
+    "candidateNamingPolicy": "unresolved"
+}

@@ -178,6 +178,32 @@ in the [release process](ReleaseProcess.md).
 The daily `net11`-to-`main` merge PR runs on a schedule independently of release
 activation, stopping for conflicts or failed validation instead of guessing fixes.
 
+### Read-only planning trial
+
+A branch-planning prototype is available without release inputs:
+
+```powershell
+pwsh -NoProfile -File eng/scripts/Get-ReleaseRolloverPlan.ps1
+```
+
+It reads the proposed state in `eng/release-rollover.json`, queries branch refs
+without changing them, and emits a JSON snapshot with the derived release, next
+candidate, and next inflight names. The checked-in candidate-naming policy is
+deliberately `unresolved`; the trial must report that decision and any missing
+branches rather than silently choose a different workflow.
+
+Exit code `0` means only that branch planning completed. Exit code `2` means
+the plan is blocked by missing source refs, occupied destination names, or the
+unresolved naming policy; malformed state or Git failures also fail explicitly.
+Every result has `canExecute: false` and lists the release requirements that this
+prototype does not verify. A complete branch plan is not release readiness.
+
+For isolated development trials, `-StatePath` can point at a separate state file
+whose repository is a disposable local Git repository. This is not a release form
+or an activation input for the proposed pipeline. The Azure pipeline, branch
+mutations, external integrations, and publishing are not implemented by this
+prototype.
+
 ## Adoption scope
 
 Adopting this proposal requires coordinating the branch changes with their
