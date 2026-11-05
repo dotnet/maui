@@ -66,6 +66,37 @@ Describe 'Direct native CI contracts' {
         $localRunner | Should -Not -Match '-p:GenerateAppxPackageOnBuild=true'
     }
 
+    It 'uses addressable Android test assemblies without changing other platforms or Release optimization' -TestCases @(
+        @{ Framework = 'net11.0-android'; Expected = 'false' }
+        @{ Framework = 'net11.0-ios'; Expected = 'true' }
+        @{ Framework = 'net11.0-windows10.0.19041.0'; Expected = 'true' }
+    ) {
+        param($Framework, $Expected)
+        $directory = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
+        New-Item -ItemType Directory -Path $directory | Out-Null
+        $props = [Security.SecurityElement]::Escape((Join-Path $repoRoot 'src/Microsoft.Maui.TestUtils.DeviceTests.Runners.props'))
+        @"
+<Project>
+  <PropertyGroup>
+    <EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
+    <PublishReadyToRun>true</PublishReadyToRun>
+    <Optimize>true</Optimize>
+  </PropertyGroup>
+  <Import Project="$props" />
+  <Target Name="Capture">
+    <WriteLinesToFile File="`$(ProbeDirectory)/settings.txt" Lines="`$(EmbedAssembliesIntoApk);`$(PublishReadyToRun);`$(Optimize)" Overwrite="true" />
+  </Target>
+</Project>
+"@ | Set-Content (Join-Path $directory 'app.proj')
+        $output = & dotnet msbuild (Join-Path $directory 'app.proj') -nologo -v:quiet -t:Capture `
+            "-p:ProbeDirectory=$directory" "-p:TargetFramework=$Framework"
+        if ($LASTEXITCODE -ne 0) { throw "Android assembly-location settings probe failed: $output" }
+        $settings = @(Get-Content (Join-Path $directory 'settings.txt'))
+        $settings[0] | Should -Be $Expected
+        $settings[1] | Should -Be $Expected
+        $settings[2] | Should -Be 'true'
+    }
+
     It 'enables MSIX generation in the test app without making its reference library a package' {
         $directory = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
         New-Item -ItemType Directory -Path $directory | Out-Null

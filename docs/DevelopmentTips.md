@@ -421,6 +421,12 @@ and copy its `Documents/TestResults/testResults.trx` before deleting the
 simulator. Catalyst uses the explicit `MauiTestResultsDirectory` host path.
 Never synthesize TRX from stdout.
 
+Android xUnit/MTP hosts require an on-disk entry assembly. Their runner props
+therefore use SDK fast deployment (`EmbedAssembliesIntoApk=false`) and disable
+ReadyToRun, including in Release. Release compiler optimization is retained.
+These jobs do not validate bundled-assembly or ReadyToRun loading: both modes
+leave the entry assembly without the location required by the xUnit MTP host.
+
 ### Troubleshooting
 
 #### Common Issues

@@ -12,6 +12,9 @@
     <RunWithOpen Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">false</RunWithOpen>
     <MtouchInterpreter Condition="'$(MtouchInterpreter)' == '' and '$(UseMonoRuntime)' == 'true' and ($([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios' or $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst')">all</MtouchInterpreter>
     <AndroidUseInstrumentation Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">true</AndroidUseInstrumentation>
+    <!-- xUnit's MTP host requires an on-disk entry assembly, not an APK store or an in-memory ReadyToRun image. -->
+    <EmbedAssembliesIntoApk Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">false</EmbedAssembliesIntoApk>
+    <PublishReadyToRun Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">false</PublishReadyToRun>
     <!-- Bundle Windows App SDK alongside the unpackaged executable.
          Only applies to unpackaged builds (signaled by _MauiDeviceTestUnpackaged=true from Cake script).
          Packaged (MSIX) builds must NOT set this, as it prevents MSIX generation.
