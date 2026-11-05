@@ -425,6 +425,14 @@ Historical closed/merged trial records retain their original authors. The active
 workflow policy uses the Actions bot for new automated PRs, without replacing
 existing open PRs solely to change their author.
 
+The [final bot-backed merge trial](https://github.com/dotnet/maui/actions/runs/42046166565)
+merged a human-authored dummy candidate and automatically created candidate SR4
+and preview SR5 as `github-actions[bot]`, with refreshed titles and Mermaid graphs.
+The obsolete human-authored preview was closed only after the replacement pair
+existed. The sandbox workflow was re-enabled with its scoped Actions token; no
+personal token, additional secret, or user-impersonation configuration was used.
+A rerun left the same two PRs and all output refs unchanged.
+
 ## Adoption scope
 
 Adopting this proposal requires coordinating the branch changes with their
