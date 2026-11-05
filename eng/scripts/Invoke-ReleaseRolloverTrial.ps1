@@ -63,6 +63,36 @@ if (!$snapshot.ContainsKey($integrationRef) -or $snapshot[$integrationRef] -cne 
     throw "The sandbox integration branch moved; refusing a stale activation."
 }
 $commit = Invoke-GhJson -Arguments @("repos/$repository/git/commits/$mergeSha")
+if ($env:GITHUB_EVENT_NAME -ceq 'push') {
+    $pushEvent = Get-Content -LiteralPath $env:GITHUB_EVENT_PATH -Raw | ConvertFrom-Json
+    if ($pushEvent.ref -cne $integrationRef -or $pushEvent.after -cne $mergeSha -or
+        $pushEvent.repository.full_name -cne $repository -or $pushEvent.created -isnot [bool] -or $pushEvent.deleted) {
+        throw "The sandbox push event does not match the pinned integration ref."
+    }
+    if ($pushEvent.created) {
+        if (@($snapshot.Keys | Where-Object { $_.StartsWith("refs/heads/$prefix/release/", [StringComparison]::Ordinal) }).Count -gt 0) {
+            throw "A new sandbox integration branch cannot initialize over an existing release cycle."
+        }
+        $initialState = & (Join-Path $PSScriptRoot 'Get-ReleaseRolloverPlan.ps1') -ResolveStateOnly |
+            ConvertFrom-Json
+        $result = [ordered]@{
+            scope = 'sandbox-only'
+            status = 'initialized'
+            integrationRef = $integrationRef
+            sourceSha = $mergeSha
+            currentSr = $initialState.currentSr
+            operations = @()
+            created = @()
+            trackingPullRequests = Invoke-TrialTracking -CurrentSr $initialState.currentSr -ReleaseBand $initialState.releaseBand
+        }
+        $result | ConvertTo-Json -Depth 6 |
+            Set-Content -LiteralPath (Join-Path $env:RUNNER_TEMP 'release-rollover-trial-result.json') -Encoding utf8
+        '## Sandbox initialized: initial tracking PRs reconciled; no release was cut.' |
+            Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Encoding utf8
+        Write-Output ($result | ConvertTo-Json -Depth 6)
+        return
+    }
+}
 if (@($commit.parents).Count -ne 2) {
     throw "Activation requires a two-parent candidate merge, not a branch creation or ordinary commit."
 }

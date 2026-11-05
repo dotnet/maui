@@ -18,7 +18,7 @@ jobs:
     if: >-
       github.repository == 'dotnet/maui' &&
       startsWith(github.ref, 'refs/heads/release-rollover-trial/') &&
-      (github.event_name == 'workflow_dispatch' || (!github.event.created && !github.event.deleted))
+      (github.event_name == 'workflow_dispatch' || !github.event.deleted)
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
@@ -30,7 +30,7 @@ jobs:
           persist-credentials: false
           fetch-depth: 1
 
-      - name: Advance dummy release lanes
+      - name: Initialize or advance dummy release lanes
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}

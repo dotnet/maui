@@ -335,8 +335,13 @@ integration target, not the real `main` branch. In the proposed production
 workflow, the candidate still merges into `net11`, while real `main` receives
 daily fixes for .NET 12.
 
+For a clean start, create the dummy candidate/inflight source refs first, then
+create the dummy integration branch. Its creation event initializes the first
+two tracking PRs from the checked-in release state without cutting a release.
+Initialization refuses a namespace that already contains release refs.
+
 The workflow derives the release band and SR number from the candidate ref
-matching the merge commit's second parent. It requires a two-parent merge, an
+matching the merge commit's second parent. Release cuts require a two-parent merge, an
 unchanged integration HEAD, and an inflight branch containing that candidate.
 An ordinary commit, ambiguous candidate, missing source, divergent history, or
 destination at a different SHA stops the run instead of guessing. A shallow fetch
