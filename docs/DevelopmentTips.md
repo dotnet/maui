@@ -319,7 +319,7 @@ The public matrix preserves these execution environments:
 
 - **iOS / Mac Catalyst**: macOS 15 and 26 arm64
 - **Android**: Ubuntu 22.04 x64, API 33, both CoreCLR and Mono
-- **Windows**: interactive Windows 11 x64, packaged and unpackaged
+- **Windows**: interactive Windows x64, packaged and unpackaged
 
 Internal runs retain isolated internal pools and the macOS 15 Apple lane.
 The other pipeline environment retains its per-suite APIs and configurations.
@@ -395,6 +395,12 @@ same job, and always publish unique job/attempt result directories.
   arguments; building MSIX and executing its binary unpackaged is not equivalent
 - **Results**: genuine MTP TRX is required; missing, empty or failed results fail CI
 - **Ownership**: cleanup deletes only the current job's simulator or emulator
+
+Direct Windows jobs use the configured pipeline image, currently Windows Server
+2022. They require an interactive desktop and retain both packaging modes. This
+does not claim Windows 11 client-specific coverage from the retired Helix queue.
+Set `requireWindows11` when selecting a provisioned client pool; that check
+remains available rather than treating a server image as a client.
 
 The current Apple proxy does not register host `--report-trx`, and
 `--results-directory` alone does not collect native app results. For iOS, resolve

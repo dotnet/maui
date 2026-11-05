@@ -45,6 +45,9 @@ parameters:
     name: NetCore1ESPool-Internal
     demands:
     - ImageOverride -equals 1es-windows-2022
+- name: requireWindows11
+  type: boolean
+  default: false
 - name: applePoolsPublic
   type: object
   default:
@@ -87,4 +90,5 @@ stages:
         windowsPool: ${{ parameters.windowsPoolPublic }}
         applePools: ${{ parameters.applePoolsPublic }}
       runWindowsTests: true
+      requireWindows11: ${{ parameters.requireWindows11 }}
       TargetFrameworkVersion: ${{ targetFrameworkVersion.tfm }}

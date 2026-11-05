@@ -5,6 +5,7 @@ parameters:
   TargetFrameworkVersion: net11.0
   BuildConfiguration: Release
   runWindowsTests: true
+  requireWindows11: false
   runtimes:
   - name: coreclr
     useCoreClr: true
@@ -94,7 +95,7 @@ stages:
     - ${{ if parameters.runWindowsTests }}:
       - ${{ each packaging in split('packaged;unpackaged', ';') }}:
         - job: windows_${{ project.name }}_${{ packaging }}
-          displayName: Windows 11 ${{ project.name }} ${{ packaging }}
+          displayName: Windows ${{ project.name }} ${{ packaging }}
           pool: ${{ parameters.windowsPool }}
           timeoutInMinutes: 120
           cancelTimeoutInMinutes: 15
@@ -107,4 +108,4 @@ stages:
               deviceTestConfiguration: ${{ parameters.BuildConfiguration }}
               targetFrameworkVersion: ${{ parameters.TargetFrameworkVersion }}
               expectedArchitecture: X64
-              requireWindows11: true
+              requireWindows11: ${{ parameters.requireWindows11 }}

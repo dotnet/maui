@@ -68,10 +68,15 @@ Describe 'Direct native CI contracts' {
         $stage + $steps | Should -Not -Match 'send-to-helix|helix_xharness|HelixAccessToken|HelixJobMonitor|xharness'
     }
 
-    It 'applies the Windows 11 check only to Windows jobs' {
+    It 'allows explicit Windows 11 client validation without mislabeling the configured server pool' {
         $android = [regex]::Match($stage, '(?s)platform: android.*?expectedArchitecture: X64').Value
         $android | Should -Not -Match 'requireWindows11'
-        $stage | Should -Match '(?s)platform: windows.*?requireWindows11: true'
+        $stage | Should -Match 'requireWindows11: false'
+        $stage | Should -Match ([regex]::Escape('requireWindows11: ${{ parameters.requireWindows11 }}'))
+        $stage | Should -Not -Match 'displayName: Windows 11'
+        $start | Should -Match ([regex]::Escape('if (![Environment]::UserInteractive)'))
+        $start | Should -Match ([regex]::Escape('if ($RequireWindows11)'))
+        $start | Should -Match ([regex]::Escape('$os.ProductType -ne 1'))
     }
 
     It 'parses owned PowerShell files without errors' {
