@@ -48,6 +48,9 @@ parameters:
 - name: requireWindows11
   type: boolean
   default: false
+- name: runWindowsTests
+  type: boolean
+  default: true
 - name: applePoolsPublic
   type: object
   default:
@@ -90,7 +93,7 @@ stages:
         androidPool: ${{ parameters.androidPoolPublic }}
         windowsPool: ${{ parameters.windowsPoolPublic }}
         applePools: ${{ parameters.applePoolsPublic }}
-      runWindowsTests: true
+      runWindowsTests: ${{ parameters.runWindowsTests }}
       requireWindows11: ${{ parameters.requireWindows11 }}
       runtimes: ${{ parameters.runtimes }}
       TargetFrameworkVersion: ${{ targetFrameworkVersion.tfm }}

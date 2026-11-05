@@ -336,6 +336,9 @@ separate build/execution jobs; changing a lane's label does not provide that
 coverage. `applePoolsPublic` and `applePoolsInternal` remain configurable, and
 each row still checks its requested host OS and architecture before executing.
 
+For an Android-only device pipeline rerun, set `applePoolsPublic=[]` and
+`runWindowsTests=false`. Defaults retain all platforms and both mobile runtimes.
+
 ### Running Device Tests Locally
 
 The following commands assume you are on the root of the maui repository.

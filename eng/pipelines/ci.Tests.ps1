@@ -108,4 +108,11 @@ Describe 'CI provisioning' {
     $deviceStage | Should -Match 'expectedOSMajor: \$\{\{ apple.osMajor \}\}'
     $startDevice | Should -Match '\$version.Major -ne \$ExpectedOSMajor'
   }
+
+  It 'allows focused mobile reruns without disabling Windows coverage by default' {
+    $devicePipeline = Get-Content -LiteralPath (
+      Join-Path $PSScriptRoot 'ci-device-tests.yml') -Raw
+    $devicePipeline | Should -Match '(?s)name: runWindowsTests\s+type: boolean\s+default: true'
+    $devicePipeline | Should -Match ([regex]::Escape('runWindowsTests: ${{ parameters.runWindowsTests }}'))
+  }
 }
