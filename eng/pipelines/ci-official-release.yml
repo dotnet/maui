@@ -580,10 +580,12 @@ extends:
 
             - pwsh: |
                 $ErrorActionPreference = 'Continue'
-                Get-ChildItem Env: | Where-Object Name -match 'proxy'
+                Get-ChildItem Env: | Where-Object Name -match 'proxy' | Format-List Name,Value
                 netsh winhttp show proxy
                 Resolve-DnsName www.nuget.org
                 Resolve-DnsName api.nuget.org
+                Write-Host '##vso[task.setvariable variable=HTTP_PROXY]'
+                Write-Host '##vso[task.setvariable variable=HTTPS_PROXY]'
               displayName: Gather NuGet publishing network diagnostics
               continueOnError: true
 
@@ -667,10 +669,12 @@ extends:
 
             - pwsh: |
                 $ErrorActionPreference = 'Continue'
-                Get-ChildItem Env: | Where-Object Name -match 'proxy'
+                Get-ChildItem Env: | Where-Object Name -match 'proxy' | Format-List Name,Value
                 netsh winhttp show proxy
                 Resolve-DnsName www.nuget.org
                 Resolve-DnsName api.nuget.org
+                Write-Host '##vso[task.setvariable variable=HTTP_PROXY]'
+                Write-Host '##vso[task.setvariable variable=HTTPS_PROXY]'
               displayName: Gather NuGet publishing network diagnostics
               continueOnError: true
 
