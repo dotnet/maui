@@ -54,6 +54,12 @@ Describe 'Direct native CI contracts' {
         $steps | Should -Match 'failTaskOnFailedTests: true'
     }
 
+    It 'retains synchronous MTP diagnostics when a Windows test process crashes before TRX finalization' {
+        $run = [regex]::Match($steps, '(?s)displayName: Run Windows .*?useExitCodeForErrors: true').Value
+        $run | Should -Match '--diagnostic-synchronous-write'
+        $run | Should -Match ([regex]::Escape('--diagnostic-output-directory "$(TestResultsDirectory)/diagnostics"'))
+    }
+
     It 'keeps Windows reference builds RID-specific so PRI paths match the app reference query' {
         $packaged = [regex]::Match($steps, '(?s)displayName: Build and sign owned MSIX.*?useExitCodeForErrors: true').Value
         $run = [regex]::Match($steps, '(?s)displayName: Run Windows .*?useExitCodeForErrors: true').Value

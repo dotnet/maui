@@ -176,6 +176,9 @@ steps:
         --framework ${{ parameters.targetFrameworkVersion }}-windows10.0.19041.0
         --report-trx
         --results-directory "$(TestResultsDirectory)"
+        --diagnostic
+        --diagnostic-synchronous-write
+        --diagnostic-output-directory "$(TestResultsDirectory)/diagnostics"
         -p:RuntimeIdentifier=win-x64
         -p:RuntimeIdentifierOverride=win-x64
         -p:IsRidAgnostic=false
