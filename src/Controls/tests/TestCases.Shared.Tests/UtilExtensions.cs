@@ -212,7 +212,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			else if (app is AppiumCatalystApp)
 			{
 				// Native clicks wait for idle and can lose the filtered result before dispatching the click.
-				var rect = app.WaitForElement(searchResultIdentifier).GetRect();
+				var rect = app.WaitForElementAndGetRect(searchResultIdentifier);
 				app.TapCoordinates(rect.CenterX(), rect.CenterY());
 			}
 			else

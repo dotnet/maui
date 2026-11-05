@@ -54,7 +54,17 @@ namespace UITest.Appium
 		/// <param name="query">Represents the query that identify an element by parameters such as type, text it contains or identifier.</param>
 		public static void Tap(this IApp app, IQuery query)
 		{
-			RunWithTimeout(() => app.FindElement(query).Tap());
+			RunWithTimeout(() =>
+			{
+				try
+				{
+					app.FindElement(query).Tap();
+				}
+				catch (StaleElementReferenceException) when (app is AppiumCatalystApp)
+				{
+					app.WaitForElement(query).Tap();
+				}
+			});
 		}
 
 		/// <summary>
@@ -1418,9 +1428,15 @@ namespace UITest.Appium
 		/// <param name="withInertia">Whether swipes should cause inertia.</param>
 		public static void ScrollDown(this IApp app, string marked, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
 		{
-			var elementToScroll = FindElement(app, marked);
-
-			app.ScrollDown(elementToScroll, strategy, swipePercentage, swipeSpeed, withInertia);
+			try
+			{
+				var elementToScroll = FindElement(app, marked);
+				app.ScrollDown(elementToScroll, strategy, swipePercentage, swipeSpeed, withInertia);
+			}
+			catch (StaleElementReferenceException) when (app is AppiumCatalystApp)
+			{
+				app.ScrollDown(app.WaitForElement(marked), strategy, swipePercentage, swipeSpeed, withInertia);
+			}
 		}
 
 		/// <summary>

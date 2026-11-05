@@ -18,6 +18,9 @@ public class Issue17554 : _IssuesUITest
 		App.WaitForElement("NonDropTarget");
 
 		App.DragAndDrop("DragSource", "NonDropTarget");
-		App.WaitForElement("DropCompleted");
+		Assert.That(
+			App.WaitForTextEqualToElement("StatusLabel", "DropCompleted"),
+			Is.True,
+			"DropCompleted was not raised after dropping on a non-drop target.");
 	}
 }
