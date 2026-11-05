@@ -77,4 +77,20 @@ Describe 'CI provisioning' {
     $unitStage | Should -Match 'failTaskOnMissingResultsFile: true'
     $unitStage | Should -Not -Match 'Helix|XHarness|--logger'
   }
+
+  It 'uses the emulator-capable Android execution pool rather than a build-only image' {
+    $devicePipeline = Get-Content -LiteralPath (
+      Join-Path $PSScriptRoot 'ci-device-tests.yml') -Raw
+    $uiPipeline = Get-Content -LiteralPath (
+      Join-Path $PSScriptRoot 'ci-uitests.yml') -Raw
+
+    foreach ($scope in @('Public', 'Internal')) {
+      $devicePool = [regex]::Match($devicePipeline,
+        "(?s)- name: androidPool$scope\r?\n.*?default:\r?\n(?<pool>.*?)(?=\r?\n- name:)")
+      $devicePool.Success | Should -BeTrue
+      $devicePool.Groups['pool'].Value | Should -Match 'name: MAUI-DNCENG'
+      $devicePool.Groups['pool'].Value | Should -Match 'ImageOverride -equals 1ESPT-Ubuntu22\.04'
+      $uiPipeline | Should -Match "(?s)name: androidPoolLinux$scope.*?name: MAUI-DNCENG.*?ImageOverride -equals 1ESPT-Ubuntu22\.04"
+    }
+  }
 }
