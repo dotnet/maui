@@ -141,13 +141,19 @@ public partial class BlazorWebViewTests
 			await WebViewHelpers.WaitForControlDiv(bwvHandler.PlatformView, controlValueToWaitFor: "Static");
 
 			// DON'T use BlazorWebView.Dispatch to access scoped services; instead, just try to get it directly (and fail)
-			var jsInterop = bwv.Handler.MauiContext.Services.GetRequiredService<ExampleJsInterop>();
-
-			// Now when we try to use JSInterop, it will throw an exception
-			await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+			// xUnit v3 also awaits the test app's async disposal. Own the intentionally
+			// faulted service in a separate scope so its expected disposal error is asserted.
+			var scope = bwv.Handler.MauiContext.Services.CreateAsyncScope();
+			try
 			{
-				await jsInterop.UpdateControlDiv("this will fail!");
-			});
+				var jsInterop = scope.ServiceProvider.GetRequiredService<ExampleJsInterop>();
+				await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+					await jsInterop.UpdateControlDiv("this will fail!"));
+			}
+			finally
+			{
+				await Assert.ThrowsAsync<InvalidOperationException>(() => scope.DisposeAsync().AsTask());
+			}
 		});
 	}
 
