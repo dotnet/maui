@@ -193,6 +193,14 @@ steps:
         exit 1
       fi
 
+      SELECTED_XCODE_VERSION=$(DEVELOPER_DIR="$XCODE_PATH/Contents/Developer" xcodebuild -version | awk '/^Xcode / { print $2 }')
+      SELECTED_MAJOR_MINOR=$(echo "$SELECTED_XCODE_VERSION" | cut -d'.' -f1,2)
+      REQUIRED_MAJOR_MINOR=$(echo "$XCODE_MAJOR_MINOR" | cut -d'.' -f1,2)
+      if [[ "$SELECTED_MAJOR_MINOR" != "$REQUIRED_MAJOR_MINOR" ]]; then
+        echo "##vso[task.logissue type=error]Xcode at ${XCODE_PATH} is ${SELECTED_XCODE_VERSION}, but ${XCODE_MAJOR_MINOR} is required. Provision the matching Xcode before building."
+        exit 1
+      fi
+
       sudo xcode-select -s "$XCODE_PATH"
       xcrun xcode-select --print-path
       xcodebuild -version

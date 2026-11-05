@@ -59,7 +59,7 @@ public partial class TestPage : ContentPage
 
 namespace Test;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Maui.Controls.SourceGen, Version=11.0.0.0, Culture=neutral, PublicKeyToken=null", "11.0.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Maui.Controls.SourceGen, Version=12.0.0.0, Culture=neutral, PublicKeyToken=null", "12.0.0.0")]
 public partial class TestPage
 {
 	private partial void InitializeComponent()
@@ -430,10 +430,10 @@ public partial class TestPage : ContentPage
 
 		// Test with MacCatalyst where platform is not defined
 		var (result, generated) = RunGenerator(xaml, code, targetFramework: "net10.0-maccatalyst");
-		
+
 		// Should not have any errors (no TargetInvocationException)
 		Assert.False(result.Diagnostics.Any(d => d.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error));
-		
+
 		// Should generate default(double) for the value since no matching platform
 		// The generated code should include: double double0 = default;
 		Assert.Contains("double double0 = default;", generated, StringComparison.Ordinal);

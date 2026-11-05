@@ -134,6 +134,15 @@ An Android API baseline supplement applies only to .NET 12 and later, recording
 the binding generator's removal of generated `ThresholdClass` and `ThresholdType`
 overrides without deleting shipped history or changing the .NET 11 baseline.
 
+Android app builds require JDK 21. Cake and other .NET 10 tools require the
+runtime declared in `global.json`; provisioning reinstalls these tool runtimes
+after replacing the local SDK. Source-generator snapshots and XAML assembly
+assertions must match the current MAUI assembly version.
+
+An older Xcode behind a major-version alias does not satisfy the 27.1 pin.
+Public Apple CI requires an authorized image with Xcode 27.1; library compilation
+alone does not establish that native app builds or execution are available.
+
 Maestro channel mappings and incoming subscriptions are separate release
 configuration. Updating this repository does not configure dependency flow or
 promote a build; those external changes require release-owner approval.
