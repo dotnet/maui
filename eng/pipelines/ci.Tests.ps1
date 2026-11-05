@@ -115,4 +115,11 @@ Describe 'CI provisioning' {
     $devicePipeline | Should -Match '(?s)name: runWindowsTests\s+type: boolean\s+default: true'
     $devicePipeline | Should -Match ([regex]::Escape('runWindowsTests: ${{ parameters.runWindowsTests }}'))
   }
+
+  It 'allows focused Windows packaging reruns while retaining both modes by default' {
+    $devicePipeline = Get-Content -LiteralPath (
+      Join-Path $PSScriptRoot 'ci-device-tests.yml') -Raw
+    $devicePipeline | Should -Match '(?s)name: windowsPackaging\s+type: string\s+default: both\s+values: \[ both, packaged, unpackaged \]'
+    $devicePipeline | Should -Match ([regex]::Escape('windowsPackaging: ${{ parameters.windowsPackaging }}'))
+  }
 }

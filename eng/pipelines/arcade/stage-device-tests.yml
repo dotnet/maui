@@ -5,6 +5,7 @@ parameters:
   TargetFrameworkVersion: net11.0
   BuildConfiguration: Release
   runWindowsTests: true
+  windowsPackaging: both
   requireWindows11: false
   runtimes:
   - name: coreclr
@@ -93,7 +94,7 @@ stages:
             expectedArchitecture: Arm64
 
     - ${{ if eq(parameters.runWindowsTests, true) }}:
-      - ${{ each packaging in split('packaged;unpackaged', ';') }}:
+      - ${{ each packaging in split(iif(eq(parameters.windowsPackaging, 'both'), 'packaged;unpackaged', parameters.windowsPackaging), ';') }}:
         - job: windows_${{ project.name }}_${{ packaging }}
           displayName: Windows ${{ project.name }} ${{ packaging }}
           pool: ${{ parameters.windowsPool }}

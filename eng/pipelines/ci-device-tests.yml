@@ -51,6 +51,10 @@ parameters:
 - name: runWindowsTests
   type: boolean
   default: true
+- name: windowsPackaging
+  type: string
+  default: both
+  values: [ both, packaged, unpackaged ]
 - name: applePoolsPublic
   type: object
   default:
@@ -94,6 +98,7 @@ stages:
         windowsPool: ${{ parameters.windowsPoolPublic }}
         applePools: ${{ parameters.applePoolsPublic }}
       runWindowsTests: ${{ parameters.runWindowsTests }}
+      windowsPackaging: ${{ parameters.windowsPackaging }}
       requireWindows11: ${{ parameters.requireWindows11 }}
       runtimes: ${{ parameters.runtimes }}
       TargetFrameworkVersion: ${{ targetFrameworkVersion.tfm }}

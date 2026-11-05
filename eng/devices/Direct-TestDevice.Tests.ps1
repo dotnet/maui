@@ -28,7 +28,8 @@ Describe 'Direct native CI contracts' {
     It 'retains mutually exclusive iOS Controls shards and Windows packaging modes' {
         $stage | Should -Match 'CollectionView;Shell;HybridWebView;General'
         $stage | Should -Match 'SkipCategories=CollectionView,Shell,HybridWebView'
-        $stage | Should -Match "split\('packaged;unpackaged'"
+        $stage | Should -Match "windowsPackaging: both"
+        $stage | Should -Match "iif\(eq\(parameters.windowsPackaging, 'both'\), 'packaged;unpackaged'"
         $steps | Should -Match '_MauiDeviceTestUnpackaged=true'
         $steps | Should -Match 'Prepare unique MSIX identity'
         $steps | Should -Match 'Install signed MSIX'

@@ -338,6 +338,9 @@ each row still checks its requested host OS and architecture before executing.
 
 For an Android-only device pipeline rerun, set `applePoolsPublic=[]` and
 `runWindowsTests=false`. Defaults retain all platforms and both mobile runtimes.
+For Windows-only reruns, set `runtimes=[]` and `applePoolsPublic=[]`.
+`windowsPackaging` selects `both` (default), `packaged` or `unpackaged`;
+focusing a rerun does not remove either packaging mode from the default matrix.
 
 ### Running Device Tests Locally
 
