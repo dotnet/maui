@@ -36,7 +36,7 @@ function Invoke-PublicationFetch {
     $arguments = @('fetch', '--quiet', '--no-tags')
     $isShallow = @(& git rev-parse --is-shallow-repository)
     if ($LASTEXITCODE -ne 0) { throw 'Unable to inspect publication checkout history.' }
-    if ($isShallow[0] -ceq 'true') { $arguments += '--depth=32' }
+    if ($env:GITHUB_ACTIONS -ceq 'true' -and $isShallow[0] -ceq 'true') { $arguments += '--depth=32' }
     $null = & git @arguments -- $state.repository $Commit
     if ($LASTEXITCODE -ne 0) { throw "Unable to fetch pinned publication commit '$Commit'." }
 }

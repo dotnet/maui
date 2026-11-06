@@ -51,15 +51,17 @@ function Assert-PackageProperties {
     try {
         $output = @(& dotnet msbuild (Join-Path $fixture 'evaluate.proj') -nologo `
             "-p:BUILD_SOURCEBRANCH=refs/heads/$Branch" `
-            -getProperty:PatchVersion,PreReleaseVersionLabel,StabilizePackageVersion,DotNetFinalVersionKind,WorkloadVersionSuffix 2>&1)
+            -getProperty:PatchVersion,PreReleaseVersionLabel,StabilizePackageVersion,IsServicingBuild,DotNetFinalVersionKind,WorkloadVersionSuffix 2>&1)
         if ($LASTEXITCODE -ne 0) { throw "MSBuild property evaluation failed: $($output -join "`n")" }
         $properties = ($output -join "`n" | ConvertFrom-Json).Properties
         Assert-Release ([int] $properties.PatchVersion -eq $Patch) "Wrong evaluated patch on $Branch."
         Assert-Release ($properties.PreReleaseVersionLabel -ceq $Label) "Wrong evaluated label on $Branch."
         Assert-Release ($properties.StabilizePackageVersion -ceq $Stable) "Wrong stabilization on $Branch."
         if ($Stable -ceq 'true') {
+            Assert-Release ($properties.IsServicingBuild -ceq 'true') 'Servicing baselines must actually be enabled.'
             Assert-Release ($properties.DotNetFinalVersionKind -ceq 'release' -and $properties.WorkloadVersionSuffix -ceq '') 'Servicing must evaluate to stable workload versions.'
         } else {
+            Assert-Release ($properties.IsServicingBuild -ceq '') 'Servicing baselines leaked into CI.'
             Assert-Release ($properties.WorkloadVersionSuffix -ceq "-$Label") 'CI workload version suffix was contaminated by servicing.'
         }
     }
@@ -94,6 +96,7 @@ try {
     Assert-Refusal { Get-MauiReleaseVersionContent -Content $source.Replace('<PatchVersion>10</PatchVersion>', '<PatchVersion>10</PatchVersion><PatchVersion>10</PatchVersion>') -ReleaseBand '11.0.1xx' -Sr 1 -Role candidate } 'Duplicate properties must fail.'
     Assert-Refusal { Get-MauiReleaseVersionContent -Content $source.Replace('<PropertyGroup>', '<PropertyGroup Condition="false">') -ReleaseBand '11.0.1xx' -Sr 1 -Role candidate } 'Conditional version groups must fail.'
     Assert-Refusal { Get-MauiReleaseVersionContent -Content $source.Replace('refs/heads/inflight/current', 'refs/heads/unmanaged') -ReleaseBand '11.0.1xx' -Sr 1 -Role candidate } 'Unknown label conditions must not be blindly replaced.'
+    Assert-Refusal { Get-MauiReleaseVersionContent -Content $source.Replace(">true</IsServicingBuild>", ">false</IsServicingBuild>") -ReleaseBand '11.0.1xx' -Sr 1 -Role candidate } 'Unsupported servicing-baseline wiring must fail.'
     $hotfix = Get-MauiReleaseVersionContent -Content $source.Replace('<PatchVersion>10', '<PatchVersion>11') -ReleaseBand '11.0.1xx' -Sr 1 -Role candidate
     Assert-Release ((Get-MauiReleaseVersion $hotfix).patch -eq 11) 'Candidate must preserve a verified hotfix patch.'
     $crlf = Get-MauiReleaseVersionContent -Content ($source.Replace("`r`n", "`n").Replace("`n", "`r`n")) -ReleaseBand '11.0.1xx' -Sr 1 -Role candidate
@@ -173,6 +176,16 @@ try {
     Assert-Release ($publication.changedPaths.Count -eq 1 -and $publication.changedPaths[0] -ceq '.github/ISSUE_TEMPLATE/bug-report.yml') 'Post-ship commit changed unrelated files.'
     Assert-Release ((New-MauiReleaseContentCommit -RepositoryPath $repo -Parent $publication.sha `
         -Changes @{ '.github/ISSUE_TEMPLATE/bug-report.yml' = $releasedTemplate } -Message 'List verified published SR1').sha -ceq $publication.sha) 'Post-ship retry created an empty commit.'
+    $preparationRef = 'refs/maui-release-preparation/published-fixture'
+    $bundle = Join-Path $fixture 'published-version-housekeeping.bundle'
+    $null = Invoke-TestGit @('update-ref', $preparationRef, $publication.sha)
+    $null = Invoke-TestGit @('bundle', 'create', $bundle, $preparationRef, "^$base")
+    $null = Invoke-TestGit @('bundle', 'verify', $bundle)
+    $null = Invoke-TestGit @('fetch', '--quiet', $bundle, "${preparationRef}:refs/heads/published-metadata")
+    $persistedPublication = Invoke-TestGit @('rev-parse', 'published-metadata')
+    Assert-Release ($persistedPublication -ceq $publication.sha) 'Prepared metadata bundle did not preserve the exact commit.'
+    Assert-Release ((Get-MauiReleaseFile -RepositoryPath $repo -Commit $persistedPublication -Path '.github/ISSUE_TEMPLATE/bug-report.yml') -ceq $releasedTemplate) 'Applying the prepared metadata bundle lost its dropdown updates.'
+    $null = Invoke-TestGit @('update-ref', '-d', $preparationRef, $publication.sha)
     $null = Invoke-TestGit @('switch', '--quiet', '--detach', $base)
     [IO.File]::WriteAllText((Join-Path $repo 'conflict.txt'), 'Fixes side')
     $null = Invoke-TestGit @('add', 'conflict.txt')
