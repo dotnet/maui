@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection.Metadata;
@@ -44,24 +45,35 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 
-		public static async Task<bool> WaitForCollect(this WeakReference reference)
+		public static Task<bool> WaitForCollect(this WeakReference reference) =>
+			WaitForCollect(() => reference.IsAlive);
+
+		public static Task<bool> WaitForCollect(this WeakReference<object> reference) =>
+			WaitForCollect(() => reference.TryGetTarget(out _));
+
+		static async Task<bool> WaitForCollect(Func<bool> isAlive)
 		{
-			for (int i = 0; i < 40 && reference.IsAlive; i++)
+#if ANDROID
+			if (AppContext.TryGetSwitch("Microsoft.Android.Runtime.RuntimeFeature.IsCoreClrRuntime", out var coreClr) && coreClr)
+			{
+				// CLR finalization does not wait for the Java bridge's asynchronous collection.
+				var stopwatch = Stopwatch.StartNew();
+				while (isAlive() && stopwatch.Elapsed < TimeSpan.FromSeconds(10))
+				{
+					await Collect();
+					if (isAlive())
+						await Task.Delay(10);
+				}
+
+				return isAlive();
+			}
+#endif
+			for (int i = 0; i < 40 && isAlive(); i++)
 			{
 				await Collect();
 			}
 
-			return reference.IsAlive;
-		}
-
-		public static async Task<bool> WaitForCollect(this WeakReference<object> reference)
-		{
-			for (int i = 0; i < 40 && reference.TryGetTarget(out _); i++)
-			{
-				await Collect();
-			}
-
-			return reference.TryGetTarget(out _);
+			return isAlive();
 		}
 
 		public static async Task<bool> WaitForCollect(params WeakReference[] references)
