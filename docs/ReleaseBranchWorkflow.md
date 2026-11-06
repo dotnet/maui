@@ -372,9 +372,10 @@ handoffs. The routine rollover must not force-push history, delete historical
 release refs, or publish packages. Package publishing retains the separate gates
 in the [release process](ReleaseProcess.md).
 
-The proposed daily `net11`-to-`main` merge PR requires a separate scheduled
-workflow, stopping for conflicts or failed validation instead of guessing fixes.
-This PR does not implement that daily forwarding automation.
+Daily `net11`-to-`main` forward PRs require a separate trusted scheduled workflow,
+stopping for conflicts or failed validation instead of guessing fixes. Forward
+only a CI-normalized fixes tip, never the intermediate servicing integration tip.
+The candidate runner does not perform daily forwarding.
 
 ### Read-only planning trial
 
@@ -542,6 +543,42 @@ content isolation, preview retirement, and a duplicate-free rerun. The replay
 removed its dummy refs afterward and distinguishes manual/configuration checks
 from production automation.
 
+### Servicing configuration evidence (2026-11-06)
+
+The later `release-rollover-trial/config2-15d039f6/` trial exercised real content
+commits and actual managed candidate PR merges with the new helpers:
+
+| Scenario | Observed result |
+|---|---|
+| [Initialization](https://github.com/dotnet/maui/actions/runs/42187385854) | Created servicing/stable candidate SR1 at patch 10 and CI inflight SR2 at patch 20; no release cut. |
+| [SR1 merge and rollover](https://github.com/dotnet/maui/actions/runs/42187695506) | Release SR1 remained at approved merge `21277c05c32874316543b64ee4f4732e4cf77739`; fixes moved to a CI housekeeping child at patch 20, next candidate used servicing patch 20, and inflight SR3 used CI patch 30. |
+| [Housekeeping-tip retry](https://github.com/dotnet/maui/actions/runs/42187880344) | Reported `unchanged`, with no ref creations/updates and the same two tracking PRs. |
+| Original SR1 event rerun, attempt 2 | Reported `unchanged`; full ref snapshots and PR identities matched the completed cycle. |
+| [Second candidate merge](https://github.com/dotnet/maui/actions/runs/42188092513) | Release SR2 retained servicing patch 20 at approved merge `912ff52a20309843a2f718d592eddcfce6030b47`; normalized fixes and candidate SR3 used patch 30, while future inflight SR4 used patch 40. |
+
+MSBuild evaluated the actual hosted XML: releases/candidates enabled
+`IsServicingBuild=true`, stable package versions, and no workload suffix; the
+fixes tip used `-ci.main`, and the future sandbox inflight used `-ci.inflight`.
+The candidate runner changed no bug-template released-version entries. A live
+public-data preparation run found no verified .NET 11 servicing publication and
+created no metadata commit.
+
+An earlier housekeeping-tip trial failed because a depth-one checkout left its
+activation commit marked as a shallow root. The corrected fetch includes that
+activation tip. An isolated shallow-clone case reproduces the old failure and
+proves the corrected fetch reconstructs the identical next-lane integration.
+Local preparation uses full-history fetches; bounded fetches are confined to
+GitHub Actions checkouts and disposable test clones, not app-managed worktrees.
+
+The isolated business harness also verifies a published-release fixture produces
+one metadata commit, adds the version once to each dropdown, can be exported and
+applied as a Git bundle, and is unchanged on retry. That fixture is **not**
+production shipment evidence.
+Both owned dummy namespaces were removed and their remaining draft PRs closed
+after evidence capture. Public `main`, `net11`, candidate, and inflight ref
+snapshots remained identical. No production release, tag, package, channel, or
+mirror operation was performed.
+
 ## Adoption scope
 
 Merging this PR is not a complete production release transition. The clean-start
@@ -551,7 +588,7 @@ sandbox proves the branch/PR lifecycle, not the following remaining work:
 |---|---|
 | Release cuts and rotation | Implement the protected production orchestrator, including persistent state advancement and recovery. The current mutation runner is sandbox-only. |
 | Servicing and post-ship metadata | Reconcile real lane baselines/package metadata, wire these validated helpers into the protected production orchestrator, and integrate the prepared post-publication metadata commit. |
-| Daily forward merges | Implement the scheduled `net11`-to-`main` merge workflow. A manual merge does not validate unattended scheduling. |
+| Daily forward merges | Deploy and validate the separate trusted fix-forward PR workflow, including the CI-normalized source gate. A manual merge does not validate unattended scheduling. |
 | New branch names | Deploy the explicit `net11` / `candidate/*` CI YAML coverage in this PR and review protections and readiness discovery. Server-side/manual runs are not proof that the deployed branch triggers are wired. |
 | Signed nightly builds | Deploy the internal mirrored source changes and validate signed artifacts and feed/channel handoff before changing `nightlyMode` from `legacy`. |
 | .NET 12 development | Update `main` and its dependency flow separately; creating `net11` does not change `main`'s SDK. |

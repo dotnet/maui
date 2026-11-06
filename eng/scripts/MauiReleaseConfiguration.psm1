@@ -74,6 +74,18 @@ function Get-MauiReleaseVersion {
         $values.PreReleaseVersionIteration -cne '') {
         throw "Automatic servicing configuration requires the standard stabilization default and an empty prerelease iteration."
     }
+    foreach ($required in @(
+            @{ name = 'IsServicingBuild'; condition = "'`$(PreReleaseVersionLabel)' == 'servicing'"; value = 'true' },
+            @{ name = 'DotNetFinalVersionKind'; condition = "'`$(StabilizePackageVersion)' == 'true'"; value = 'release' }
+        )) {
+        $nodes = @($document.SelectNodes("/Project/PropertyGroup/$($required.name)"))
+        if ($nodes.Count -ne 1 -or $nodes[0].ParentNode -ne $versionGroup -or
+            $nodes[0].Attributes.Count -ne 1 -or
+            $nodes[0].GetAttribute('Condition').Trim() -cne $required.condition -or
+            $nodes[0].InnerText.Trim() -cne $required.value) {
+            throw "Versions.props has unsupported '$($required.name)' wiring; release configuration requires review."
+        }
+    }
     [pscustomobject]@{
         major = [int] $values.MajorVersion
         minor = [int] $values.MinorVersion
