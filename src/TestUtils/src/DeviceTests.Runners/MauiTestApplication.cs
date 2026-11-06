@@ -40,13 +40,15 @@ class MauiTestApplication : Application
 #else
 					Environment.CurrentDirectory;
 #endif
+#if WINDOWS
+				var exitCode = await runner.RunWithControllerAsync(
+					Path.Combine(directory, "TestResults"),
+					WindowsTestActivation.GetArguments(services.GetRequiredService<TestOptions>().TestAssembly));
+				Environment.Exit(exitCode);
+#else
 				var result = await runner.RunAsync(
 					Path.Combine(directory, "TestResults"),
-#if WINDOWS
-					WindowsTestActivation.GetArguments(services.GetRequiredService<TestOptions>().TestAssembly));
-#else
 					Environment.GetCommandLineArgs()[1..]);
-#endif
 #if IOS || MACCATALYST
 				WriteAppleResult(
 					$"TEST_RESULT: passed={result.Passed}\n" +
@@ -56,6 +58,7 @@ class MauiTestApplication : Application
 					(result.ExitCode != 0 && result.Failed == 0 ? $"TEST_RESULT: error=The test runner exited with code {result.ExitCode}.\n" : string.Empty));
 #endif
 				Environment.Exit(result.ExitCode);
+#endif
 			}
 			catch (Exception exception)
 			{

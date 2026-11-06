@@ -18,6 +18,23 @@ public sealed class HeadlessTestRunner(HeadlessRunnerOptions runnerOptions, Test
 
 	public async Task<NativeTestResult> RunAsync(string resultsDirectory, string[] arguments)
 	{
+		var (exitCode, consumer) = await RunTestsAsync(resultsDirectory, arguments);
+		if (consumer.TrxReportPath is null || !File.Exists(consumer.TrxReportPath))
+			throw new InvalidOperationException($"The test runner exited with {exitCode} without producing a TRX report.");
+
+		return new NativeTestResult(exitCode, consumer.TrxReportPath, consumer.Passed, consumer.Failed, consumer.Skipped);
+	}
+
+	internal async Task<int> RunWithControllerAsync(string resultsDirectory, string[] arguments)
+	{
+		// The TRX controller publishes the report after its child exits, on a separate message bus.
+		// Both processes must preserve MTP's exit code; the launching runner validates the final report.
+		var (exitCode, _) = await RunTestsAsync(resultsDirectory, arguments);
+		return exitCode;
+	}
+
+	async Task<(int ExitCode, ResultConsumer Consumer)> RunTestsAsync(string resultsDirectory, string[] arguments)
+	{
 		if (Interlocked.Exchange(ref _started, 1) != 0)
 			throw new InvalidOperationException("The native test application has already started a test run.");
 		if (options.TestAssembly is null)
@@ -58,10 +75,7 @@ public sealed class HeadlessTestRunner(HeadlessRunnerOptions runnerOptions, Test
 				builder.TestHost.AddDataConsumer(_ => consumer);
 			});
 
-		if (consumer.TrxReportPath is null || !File.Exists(consumer.TrxReportPath))
-			throw new InvalidOperationException($"The test runner exited with {exitCode} without producing a TRX report.");
-
-		return new NativeTestResult(exitCode, consumer.TrxReportPath, consumer.Passed, consumer.Failed, consumer.Skipped);
+		return (exitCode, consumer);
 	}
 
 	sealed class ResultConsumer : IDataConsumer
