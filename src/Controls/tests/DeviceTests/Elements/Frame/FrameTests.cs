@@ -57,7 +57,10 @@ namespace Microsoft.Maui.DeviceTests
 				}
 			};
 
-			var labelFrame =
+			Rect labelFrame;
+			try
+			{
+				labelFrame =
 					await AttachAndRun<Rect>(frame, async (handler) =>
 					{
 						(frame as IView).Measure(300, 300);
@@ -67,7 +70,11 @@ namespace Microsoft.Maui.DeviceTests
 
 						return frame.Content.Frame;
 					});
-
+			}
+			finally
+			{
+				await InvokeOnMainThreadAsync(() => frame.DisconnectHandlers());
+			}
 
 			// validate label is centered in the frame
 			Assert.True(Math.Abs(((300 - labelFrame.Width) / 2) - labelFrame.X) < 1);

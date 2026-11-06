@@ -73,6 +73,15 @@ Describe 'Direct native CI contracts' {
     It 'disconnects the Windows Frame layout tree even when its native assertions fail' {
         $fixture = Get-Content (Join-Path $repoRoot 'src/Controls/tests/DeviceTests/Elements/Frame/FrameTests.cs') -Raw
         $fixture | Should -Match '(?s)new ContentLayoutPanel\(layout,.*?\}, MauiContext\);\s*\}\s*finally\s*\{\s*layout\.DisconnectHandlers\(\);'
+        $fixture | Should -Match '(?s)BasicFrameTest\(\).*?finally\s*\{\s*await InvokeOnMainThreadAsync\(\(\) => frame\.DisconnectHandlers\(\)\);'
+    }
+
+    It 'disconnects Apple fixture content after native controllers and modals are detached' {
+        $fixture = Get-Content (Join-Path $repoRoot 'src/Controls/tests/DeviceTests/ControlsHandlerTestBase.iOS.cs') -Raw
+        $fixture.IndexOf('window.Content?.DisconnectHandlers()') |
+            Should -BeGreaterThan $fixture.IndexOf('await rootView.DismissViewControllerAsync(false)')
+        $fixture.IndexOf('window.Content?.DisconnectHandlers()') |
+            Should -BeLessThan $fixture.IndexOf('Assert.False(dangling')
     }
 
     It 'keeps Windows reference builds RID-specific so PRI paths match the app reference query' {
