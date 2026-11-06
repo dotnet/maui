@@ -566,6 +566,41 @@ jobs:
               CANDIDATE_ARG=()
               if [ "$MODE" = "candidate" ]; then
                 if [ -n "$CANDIDATE_TARGET" ]; then
+                  # PR smoke only: this explicit configured descriptor cannot
+                  # produce a report without a verified immutable baseline.
+                  if [ -z "$CANDIDATE_BASELINE" ]; then
+                    jq -n \
+                      --arg tracker "$CANONICAL" \
+                      --arg branch "$BRANCH_NAME" \
+                      --arg target "$CANDIDATE_TARGET" \
+                      --arg survey "$SURVEY_REF" \
+                      --arg source "$SOURCE_BRANCH" \
+                      '{
+                        schemaVersion: 1,
+                        kind: "release-readiness-smoke-diagnostic",
+                        phase: "pr-validation",
+                        trackerKey: $tracker,
+                        branchType: "sr",
+                        mode: "candidate",
+                        branchName: $branch,
+                        candidateTargetBranch: $target,
+                        surveyRef: $survey,
+                        sourceBranch: $source,
+                        status: "NOT_RUN",
+                        reasonCode: "missing-verified-candidate-baseline",
+                        reason: "No verified GA/prior stable-tag baseline is available. Fetch the genuine immutable anchor or supply a separately verified baseline.",
+                        candidateBaselineRef: null,
+                        reportGenerated: false,
+                        readinessVerdict: null,
+                        inventory: null,
+                        productionPublicationBlocked: true
+                      }' > "$OUT_DIR/smoke-diagnostic.json"
+                    echo "::warning title=Release readiness smoke NOT RUN::${CANONICAL} is blocked on a verified GA/prior baseline. No readiness report was generated; production report/publication remains blocked."
+                    printf '### %s — smoke NOT RUN\n\nBlocked on a verified GA/prior baseline. See smoke-diagnostic.json in the validation artifacts. No report or inventory was generated; production report/publication remains blocked, not Ready.\n\n' \
+                      "$CANONICAL" >> "$GITHUB_STEP_SUMMARY"
+                    echo "::endgroup::"
+                    continue
+                  fi
                   SR_ARG="$BRANCH_NAME"
                   CANDIDATE_ARG=(-Candidate -CandidateTargetBranch "$CANDIDATE_TARGET" -SurveyRef "$SURVEY_REF")
                   if [ -n "$CANDIDATE_BASELINE" ]; then

@@ -514,6 +514,12 @@ work. Those belong only in the Preview N+1 candidate/in-flight readiness report.
      - **Create path**: open a new issue with the mandatory `area-infrastructure` ownership label (creation fails rather than producing a tracker the lifecycle lookup cannot recognize); attach `report` / `s/triaged` best-effort.
    - **Activity gate**: skip new-issue creation when `recentCommitCount == 0` AND no open tracker issue exists. (Existing open issues are still refreshed.)
 3. **`validate`** — PR-trigger path. Runs the test suite + smoke-runs all three scripts. **Does not create or modify issues.**
+   A configured SR candidate descriptor with an explicit target but no verified
+   baseline records `validate-out/<tracker>/smoke-diagnostic.json` as **NOT RUN**
+   with a visible warning/step summary, then continues other trackers. This is
+   not a passed readiness report: inventory/verdict remain absent and production
+   reporting/publication remains blocked. Verified-baseline fixtures exercise the
+   actual SR1 output; all other smoke errors still fail validation.
 
 ### Reading trackers directly (ad-hoc status)
 
