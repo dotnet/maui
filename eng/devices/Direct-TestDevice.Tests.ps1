@@ -70,6 +70,13 @@ Describe 'Direct native CI contracts' {
         $application | Should -Not -Match 'args.Handled\s*='
     }
 
+    It 'disconnects Windows fixture content before its window and scoped services are torn down' {
+        $fixture = Get-Content (Join-Path $repoRoot 'src/Controls/tests/DeviceTests/ControlsHandlerTestBase.Windows.cs') -Raw
+        $fixture.IndexOf('window.Content?.DisconnectHandlers()') | Should -BeGreaterThan -1
+        $fixture.IndexOf('window.Content?.DisconnectHandlers()') |
+            Should -BeLessThan $fixture.IndexOf('window.Handler?.DisconnectHandler()')
+    }
+
     It 'keeps Windows reference builds RID-specific so PRI paths match the app reference query' {
         $packaged = [regex]::Match($steps, '(?s)displayName: Build and sign owned MSIX.*?useExitCodeForErrors: true').Value
         $run = [regex]::Match($steps, '(?s)displayName: Run Windows .*?useExitCodeForErrors: true').Value

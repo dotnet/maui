@@ -43,6 +43,7 @@ namespace Microsoft.Maui.DeviceTests
 				}
 				finally
 				{
+					window.Content?.DisconnectHandlers();
 					window.Handler?.DisconnectHandler();
 					await Task.Delay(10);
 					newWindow?.Close();
