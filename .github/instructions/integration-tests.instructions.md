@@ -1,6 +1,6 @@
 ---
 description: "Guidance for GitHub Copilot when working with .NET MAUI integration tests"
-applyTo: "src/TestUtils/src/Microsoft.Maui.IntegrationTests/**"
+applyTo: "src/TestUtils/src/Microsoft.Maui.IntegrationTests/**,src/TestUtils/src/Microsoft.Maui.DeviceTemplateTests/**"
 ---
 
 # .NET MAUI Integration Tests Guidelines
@@ -9,7 +9,12 @@ Integration tests validate end-to-end functionality by creating, building, and r
 
 ## Test Framework
 
-These integration tests use **NUnit** as the test framework.
+These integration tests use **xUnit** as the test framework.
+`AppleTemplateTests`, `AndroidTemplateTests`, and `AOTTemplateTest` live in
+`Microsoft.Maui.DeviceTemplateTests`, together with XHarness and device lifecycle helpers.
+Shared host build helper sources remain canonical in IntegrationTests and are linked into the device project.
+The local runner automatically routes device/AOT categories to this project; custom filters use both
+projects unless `-TestProject IntegrationTests` or `-TestProject DeviceTemplateTests` is specified.
 
 ## CI Infrastructure
 
@@ -223,7 +228,7 @@ dotnet test src/TestUtils/src/Microsoft.Maui.IntegrationTests \
   --filter "Category=Build"
 
 # Run specific test
-dotnet test src/TestUtils/src/Microsoft.Maui.IntegrationTests \
+dotnet test src/TestUtils/src/Microsoft.Maui.DeviceTemplateTests \
   --filter "FullyQualifiedName~AppleTemplateTests.RunOniOS"
 ```
 

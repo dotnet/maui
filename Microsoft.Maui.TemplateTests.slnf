@@ -1,0 +1,9 @@
+{
+  "solution": {
+    "path": "Microsoft.Maui.sln",
+    "projects": [
+      "src\\TestUtils\\src\\Microsoft.Maui.DeviceTemplateTests\\Microsoft.Maui.DeviceTemplateTests.csproj",
+      "src\\TestUtils\\src\\Microsoft.Maui.IntegrationTests\\Microsoft.Maui.IntegrationTests.csproj"
+    ]
+  }
+}

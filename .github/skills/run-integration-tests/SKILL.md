@@ -64,7 +64,8 @@ pwsh .github/skills/run-integration-tests/scripts/Run-IntegrationTests.ps1 -Cate
 | Parameter | Required | Default | Description |
 |-----------|----------|---------|-------------|
 | `-Category` | No | - | Test category to run (WindowsTemplates, Samples, Build, etc.) |
-| `-TestFilter` | No | - | Custom NUnit test filter expression |
+| `-TestFilter` | No | - | Custom VSTest filter expression for xUnit test names/traits |
+| `-TestProject` | No | Auto | `IntegrationTests` or `DeviceTemplateTests`; Auto routes device/AOT categories to the isolated project and custom filters to both projects |
 | `-Configuration` | No | Debug | Build configuration (Debug/Release) |
 | `-SkipBuild` | No | false | Skip build/pack step if already done |
 | `-SkipInstall` | No | false | Skip workload installation if already done |
@@ -100,6 +101,11 @@ pwsh .github/skills/run-integration-tests/scripts/Run-IntegrationTests.ps1 -Test
 - .NET SDK (version from global.json)
 - Sufficient disk space for build artifacts
 - Local SDK and workloads must be provisioned first
+
+The tests use xUnit. `AppleTemplateTests`, `AndroidTemplateTests`, and `AOTTemplateTest`
+are in `Microsoft.Maui.DeviceTemplateTests`; other template and sample build tests remain
+in `Microsoft.Maui.IntegrationTests`. Existing fully qualified test names are preserved.
+The Cake entry point for device template tests is `dotnet-device-template-test`.
 
 ### Provisioning the Local SDK (Required First Time)
 

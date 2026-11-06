@@ -262,6 +262,26 @@ Task("dotnet-integration-test")
             filter: Argument("filter", ""));
     });
 
+Task("dotnet-device-template-build")
+    .Does(() =>
+    {
+        var properties = new Dictionary<string, string>();
+        RunMSBuildWithDotNet("./src/TestUtils/src/Microsoft.Maui.DeviceTemplateTests/Microsoft.Maui.DeviceTemplateTests.csproj", properties, binlogPrefix: "device-template-");
+    });
+
+Task("dotnet-device-template-test")
+    .IsDependentOn("dotnet-device-template-build")
+    .Does(() =>
+    {
+        RunTestWithLocalDotNet(
+            "./src/TestUtils/src/Microsoft.Maui.DeviceTemplateTests/Microsoft.Maui.DeviceTemplateTests.csproj",
+            config: configuration,
+            pathDotnet: dotnetPath,
+            noBuild: true,
+            resultsFileNameWithoutExtension: Argument("resultsfilename", ""),
+            filter: Argument("filter", ""));
+    });
+
 Task("dotnet-test")
     .IsDependentOn("dotnet")
     .Description("Build the solutions")

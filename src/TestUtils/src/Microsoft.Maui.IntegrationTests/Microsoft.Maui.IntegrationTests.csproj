@@ -15,11 +15,4 @@
     <PackageReference Include="MSBuild.StructuredLogger" Version="2.3.246" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Compile Remove="TestResources\*" />
-    <EmbeddedResource Include="TestResources\*">
-      <LogicalName>%(FileName)%(Extension)</LogicalName>
-    </EmbeddedResource>
-  </ItemGroup>
-
 </Project>

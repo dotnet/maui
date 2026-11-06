@@ -308,6 +308,7 @@ stages:
         runAsPublic: false
       timeout: 120
       testCategory: AOT
+      testFilter: 'Category=AOT|Category=Build'
     - name: mac_aot_tests
       ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
         pool: ${{ parameters.MacOSPool.public }}
@@ -315,6 +316,7 @@ stages:
         pool: ${{ parameters.MacOSPool.internal }}
       timeout: 240
       testCategory: AOT
+      testFilter: 'Category=AOT|Category=Build'
 
     # Android template integration tests (maui + maui-blazor build/install/run on emulator).
     # Runs the Android templates with their default BuildProps across the supported .NET

@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(_MauiDotNetTfm)</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <IsIntegrationTestProject>true</IsIntegrationTestProject>
+    <RollForward>Major</RollForward>
+    <ShowLiveOutput>true</ShowLiveOutput>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="xunit" Version="$(XunitPackageVersion)" />
+    <PackageReference Include="MSBuild.StructuredLogger" Version="2.3.246" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Share host build helpers without referencing the integration test assembly. -->
+    <Compile Include="..\Microsoft.Maui.IntegrationTests\BaseBuildTest.cs" Link="Shared\BaseBuildTest.cs" />
+    <Compile Include="..\Microsoft.Maui.IntegrationTests\BaseTemplateTests.cs" Link="Shared\BaseTemplateTests.cs" />
+    <Compile Include="..\Microsoft.Maui.IntegrationTests\Usings.cs" Link="Shared\Usings.cs" />
+    <Compile Include="..\Microsoft.Maui.IntegrationTests\Utilities\*.cs" Link="Shared\Utilities\%(Filename)%(Extension)" />
+    <Compile Remove="TestResources\*" />
+    <EmbeddedResource Include="TestResources\*">
+      <LogicalName>%(FileName)%(Extension)</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
+</Project>

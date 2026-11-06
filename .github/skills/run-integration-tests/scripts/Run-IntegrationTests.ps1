@@ -43,6 +43,10 @@ param(
     [string]$TestFilter,
 
     [Parameter()]
+    [ValidateSet("Auto", "IntegrationTests", "DeviceTemplateTests")]
+    [string]$TestProject = "Auto",
+
+    [Parameter()]
     [ValidateSet("Debug", "Release")]
     [string]$Configuration = "Debug",
 
@@ -297,7 +301,18 @@ try {
         throw "Either -Category or -TestFilter must be specified"
     }
     
-    $testProjectPath = Join-Path $RepoRoot "src/TestUtils/src/Microsoft.Maui.IntegrationTests/Microsoft.Maui.IntegrationTests.csproj"
+    if ($TestProject -eq "Auto") {
+        if ($TestFilter) {
+            # Custom filters can span both assemblies; use the solution filter.
+            $testProjectPath = Join-Path $RepoRoot "Microsoft.Maui.TemplateTests.slnf"
+        }
+        else {
+            $TestProject = if ($Category -in @("AOT", "RunOnAndroid", "RunOniOS")) { "DeviceTemplateTests" } else { "IntegrationTests" }
+        }
+    }
+    if ($TestProject -ne "Auto") {
+        $testProjectPath = Join-Path $RepoRoot "src/TestUtils/src/Microsoft.Maui.$TestProject/Microsoft.Maui.$TestProject.csproj"
+    }
     
     $testArgs = @(
         "test",

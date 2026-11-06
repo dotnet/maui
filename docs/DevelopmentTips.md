@@ -254,7 +254,32 @@ If you want to test in-tree in VSCode, the `Build Platform Sample` command will 
 
 ### Integration Tests
 
-The Integration test project under `src/TestUtils/src/Microsoft.Maui.IntegrationTests` contains tests that build and/or run MAUI templates or other projects.
+The xUnit project under `src/TestUtils/src/Microsoft.Maui.IntegrationTests` contains template and sample build tests.
+`src/TestUtils/src/Microsoft.Maui.DeviceTemplateTests` separately owns `AppleTemplateTests`,
+`AndroidTemplateTests`, `AOTTemplateTest`, and the XHarness/device lifecycle helpers and launch resources.
+Their existing namespaces, test names, categories, and runtime/configuration cases are unchanged.
+Shared host build helpers are linked from IntegrationTests, not copied or referenced through its test assembly.
+Generated device template projects use `bin/device-template-test-dir` (or
+`$(AGENT_TEMPDIRECTORY)/device-template-test-dir` on CI), separate from the integration suite's `test-dir`.
+
+The local integration-test runner selects the device project for `AOT`, `RunOnAndroid`, and `RunOniOS`.
+For custom filters it runs both projects through `Microsoft.Maui.TemplateTests.slnf`; use
+`-TestProject DeviceTemplateTests` or `-TestProject IntegrationTests` to select one explicitly.
+Provision the repository-local SDK/workloads and matching package artifacts first; do not install
+test workloads into a shared SDK.
+
+```powershell
+pwsh .github/skills/run-integration-tests/scripts/Run-IntegrationTests.ps1 -Category RunOnAndroid -SkipBuild -SkipInstall
+pwsh .github/skills/run-integration-tests/scripts/Run-IntegrationTests.ps1 -TestProject DeviceTemplateTests -TestFilter "FullyQualifiedName~AppleLaunchTests|FullyQualifiedName~TestProjectIsolationTests" -SkipBuild -SkipInstall
+dotnet cake --target=dotnet-device-template-test --filter="Category=RunOniOS"
+```
+
+The existing integration pipeline routes device/AOT lanes to the isolated project and publishes its TRX
+results separately. These are **host-side** tests that generate and build apps before invoking XHarness;
+they are not the prebuilt device test apps submitted by `eng/helix_xharness.proj`.
+Running them on Helix would additionally require a host work-item payload containing the repository,
+package artifacts, SDK/workload provisioning, and the platform build toolchain. The existing app-bundle
+Helix runner does not provide that payload.
 
 These tests can be run using the Test Explorer in VS, or from the command line with `dotnet test`. Here's how to run an individual test with parameters from command line:
 

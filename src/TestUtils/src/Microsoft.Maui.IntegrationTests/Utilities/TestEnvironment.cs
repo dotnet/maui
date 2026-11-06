@@ -110,14 +110,17 @@ namespace Microsoft.Maui.IntegrationTests
 				return _testOutputDirectory;
 
 			// Set when running on Azure Pipelines https://docs.microsoft.com/en-us/azure/devops/pipelines/build/variables
+			var testDirectoryName = typeof(TestEnvironment).Assembly.GetName().Name == "Microsoft.Maui.DeviceTemplateTests"
+				? "device-template-test-dir"
+				: "test-dir";
 			var rootDir = Environment.GetEnvironmentVariable("AGENT_TEMPDIRECTORY");
 			if (Directory.Exists(rootDir))
 			{
-				_testOutputDirectory = Path.Combine(rootDir, $"test-dir");
+				_testOutputDirectory = Path.Combine(rootDir, testDirectoryName);
 			}
 			else
 			{
-				_testOutputDirectory = Path.Combine(GetMauiDirectory(), "bin", "test-dir");
+				_testOutputDirectory = Path.Combine(GetMauiDirectory(), "bin", testDirectoryName);
 			}
 
 			Directory.CreateDirectory(_testOutputDirectory);

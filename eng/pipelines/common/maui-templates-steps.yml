@@ -61,7 +61,9 @@ steps:
     DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
     PRIVATE_BUILD: $(PrivateBuild)
 
-- pwsh: ./build.ps1 --target=dotnet-integration-test --filter="Category=${{ parameters.category }}" --resultsfilename="integration-tests-${{ parameters.category }}" --verbosity=diagnostic
+- pwsh: |
+    $target = if ('${{ parameters.category }}' -in @('AOT', 'RunOnAndroid', 'RunOniOS')) { 'dotnet-device-template-test' } else { 'dotnet-integration-test' }
+    ./build.ps1 --target=$target --filter="Category=${{ parameters.category }}" --resultsfilename="integration-tests-${{ parameters.category }}" --verbosity=diagnostic
   displayName: Run ${{ parameters.category }} templates build tests
   workingDirectory: ${{ parameters.checkoutDirectory }}
 

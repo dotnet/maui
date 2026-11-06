@@ -164,7 +164,7 @@ jobs:
         env:
           IOS_TEST_DEVICE: ios-simulator-64_18.4
 
-    - pwsh: ./build.ps1 --target=dotnet-integration-test --filter="Category=${{ RunPlatform.testName }}" --resultsfilename="integration-run-${{ RunPlatform.testName }}" --verbosity=diagnostic
+    - pwsh: ./build.ps1 --target=dotnet-device-template-test --filter="Category=${{ RunPlatform.testName }}" --resultsfilename="integration-run-${{ RunPlatform.testName }}" --verbosity=diagnostic
       displayName: Run ${{ RunPlatform.testName }} templates run tests
       continueOnError: true
       # TODO: pass properly device type/version from top-level yml

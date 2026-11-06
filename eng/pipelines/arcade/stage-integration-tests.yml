@@ -19,6 +19,10 @@ stages:
       ${{ if job.condition }}:
         condition: ${{ job.condition }}
       variables:
+        ${{ if or(eq(job.testCategory, 'AOT'), eq(job.testCategory, 'RunOnAndroid'), eq(job.testCategory, 'RunOniOS'), startsWith(job.testName, 'RunOniOS')) }}:
+          testProject: Microsoft.Maui.DeviceTemplateTests
+        ${{ else }}:
+          testProject: Microsoft.Maui.IntegrationTests
         ${{ if job.xcodeVersion }}:
           XCODE: ${{ job.xcodeVersion }}
           REQUIRED_XCODE: ${{ job.xcodeVersion }}
@@ -48,9 +52,9 @@ stages:
           displayName: Run Integration Tests - $(testIdentifier) ${{ job.pool.os }}
           mauiSourcePath: ${{ parameters.mauiSourcePath }}
           command: test
-          project: ${{ parameters.mauiSourcePath }}/src/TestUtils/src/Microsoft.Maui.IntegrationTests/Microsoft.Maui.IntegrationTests.csproj
+          project: ${{ parameters.mauiSourcePath }}/src/TestUtils/src/$(testProject)/$(testProject).csproj
           arguments: >-
-            -c ${{ parameters.buildConfig }} --filter '$(testFilter)' --logger trx --results-directory $(Agent.TempDirectory)/Microsoft.Maui.IntegrationTests
+            -c ${{ parameters.buildConfig }} --filter '$(testFilter)' --logger trx --results-directory $(Agent.TempDirectory)/$(testProject)
           useExitCodeForErrors: true
           # Set IOS_TEST_DEVICE for all iOS-related tests (RunOniOS and RunOniOS_*)
           ${{ if or(eq(job.testCategory, 'RunOniOS'), startsWith(job.testName, 'RunOniOS')) }}:
@@ -60,7 +64,7 @@ stages:
       - task: PublishTestResults@2
         inputs:
           testResultsFormat: VSTest
-          testResultsFiles: '$(Agent.TempDirectory)/Microsoft.Maui.IntegrationTests/**/*.trx'
+          testResultsFiles: '$(Agent.TempDirectory)/$(testProject)/**/*.trx'
           testRunTitle: Integration Tests - ${{ job.name }}
           failTaskOnMissingResultsFile: true
         condition: always()
