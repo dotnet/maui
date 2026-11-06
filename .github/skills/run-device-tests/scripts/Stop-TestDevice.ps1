@@ -73,3 +73,53 @@ elseif ($state.Platform -eq 'ios' -and $state.Device) {
     & xcrun simctl delete $state.Device
     if ($LASTEXITCODE -ne 0) { throw "Could not delete job-owned simulator $($state.Device)." }
 }
+elseif ($state.Platform -eq 'windows') {
+    $diagnostics = Join-Path $ResultsDirectory 'diagnostics'
+    $ownedPids = [Collections.Generic.HashSet[int]]::new()
+    if (Test-Path -LiteralPath $diagnostics) {
+        Get-ChildItem -LiteralPath $diagnostics -Filter '*.diag' -File |
+            Select-String -Pattern "Started test host process\. PID: '([0-9]+)'" -AllMatches |
+            ForEach-Object {
+                foreach ($match in $_.Matches) { $null = $ownedPids.Add([int]$match.Groups[1].Value) }
+            }
+    }
+    if ($ownedPids.Count -eq 0) {
+        Write-Host 'No Windows test child PID was recorded; no application event logs were collected.'
+        return
+    }
+
+    $startTime = (Get-Item -LiteralPath $ResultsDirectory).CreationTimeUtc
+    $eventErrors = @()
+    $events = @(Get-WinEvent -FilterHashtable @{
+        LogName = 'Application'; Id = @(1000, 1026); StartTime = $startTime
+    } -ErrorAction SilentlyContinue -ErrorVariable eventErrors)
+    foreach ($eventError in $eventErrors) {
+        if ($eventError.FullyQualifiedErrorId -notlike 'NoMatchingEventsFound*') { throw $eventError }
+    }
+    $ownedEvents = @(
+        foreach ($event in $events) {
+            if ($event.TimeCreated.ToUniversalTime() -lt $startTime) { continue }
+            [xml]$xml = $event.ToXml()
+            $matchesProcess = $ownedPids.Contains([int]$event.ProcessId)
+            foreach ($data in $xml.Event.EventData.Data) {
+                if ($data.Name -notin @('ProcessId', 'FaultingProcessId')) { continue }
+                $value = $data.InnerText
+                $eventProcessId = 0
+                if ($value -match '^0x[0-9a-fA-F]+$') {
+                    $eventProcessId = [Convert]::ToInt32($value.Substring(2), 16)
+                }
+                elseif (![int]::TryParse($value, [ref]$eventProcessId)) { continue }
+                $matchesProcess = $matchesProcess -or $ownedPids.Contains($eventProcessId)
+            }
+            if ($matchesProcess) {
+                [pscustomobject]@{
+                    Id = $event.Id; RecordId = $event.RecordId; TimeCreated = $event.TimeCreated
+                    Provider = $event.ProviderName; Message = $event.Message; Xml = $event.ToXml()
+                }
+            }
+        }
+    )
+    ConvertTo-Json -InputObject $ownedEvents -Depth 4 |
+        Set-Content -LiteralPath (Join-Path $ResultsDirectory 'windows-application-events.json')
+    Write-Host "Collected $($ownedEvents.Count) application event(s) for the recorded Windows test child PID(s)."
+}

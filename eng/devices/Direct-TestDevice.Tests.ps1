@@ -219,6 +219,91 @@ Describe 'Direct native CI contracts' {
         $stop | Should -Not -Match 'killall|pkill|Stop-Process -Name'
     }
 
+    It 'collects only fresh Windows application errors for the recorded native child PID' {
+        $directory = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
+        New-Item -ItemType Directory -Path (Join-Path $directory 'diagnostics') -Force | Out-Null
+        '{"Platform":"windows"}' | Set-Content -LiteralPath (Join-Path $directory 'device.json')
+        "Started test host process. PID: '5656'. HasExited: 'False'." |
+            Set-Content -LiteralPath (Join-Path $directory 'diagnostics/controller.diag')
+        function Get-WinEvent {
+            [CmdletBinding()]
+            param([hashtable]$FilterHashtable)
+            throw 'The event query must be mocked.'
+        }
+        function New-TestEvent($ProcessId, $DataProcessId, $Message, $TimeCreated = [DateTime]::UtcNow) {
+            $record = [pscustomobject]@{
+                Id = 1000; RecordId = 1; ProviderName = 'Application Error'
+                ProcessId = $ProcessId; TimeCreated = $TimeCreated; Message = $Message
+                Payload = "<Event><EventData><Data Name='ProcessId'>$DataProcessId</Data></EventData></Event>"
+            }
+            $record | Add-Member -MemberType ScriptMethod -Name ToXml -Value { return $this.Payload }
+            return $record
+        }
+        $records = @(
+            (New-TestEvent 5656 '' 'owned runtime exception')
+            (New-TestEvent 2222 '0x1618' 'owned native fault')
+            (New-TestEvent 3333 '0xD05' 'foreign fault')
+            (New-TestEvent 5656 '' 'stale fault' ([DateTime]::UtcNow.AddHours(-1)))
+        )
+        Mock Get-WinEvent { $records }
+
+        & (Join-Path $deviceScripts 'Stop-TestDevice.ps1') -ResultsDirectory $directory
+
+        $captured = Get-Content -Raw -LiteralPath (Join-Path $directory 'windows-application-events.json') |
+            ConvertFrom-Json
+        @($captured).Message | Should -Be @('owned runtime exception', 'owned native fault')
+        Should -Invoke Get-WinEvent -Times 1 -Exactly -ParameterFilter {
+            $FilterHashtable.LogName -eq 'Application' -and
+            $FilterHashtable.Id.Count -eq 2 -and
+            $FilterHashtable.StartTime -ge [DateTime]::UtcNow.AddMinutes(-1)
+        }
+    }
+
+    It 'does not query Windows event logs without a recorded test child' {
+        $directory = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
+        New-Item -ItemType Directory -Path $directory | Out-Null
+        '{"Platform":"windows"}' | Set-Content -LiteralPath (Join-Path $directory 'device.json')
+
+        & (Join-Path $deviceScripts 'Stop-TestDevice.ps1') -ResultsDirectory $directory
+
+        (Join-Path $directory 'windows-application-events.json') | Should -Not -Exist
+    }
+
+    It 'reports Windows event-log access errors rather than treating them as no matching events' {
+        $directory = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
+        New-Item -ItemType Directory -Path (Join-Path $directory 'diagnostics') -Force | Out-Null
+        '{"Platform":"windows"}' | Set-Content -LiteralPath (Join-Path $directory 'device.json')
+        "Started test host process. PID: '5656'." |
+            Set-Content -LiteralPath (Join-Path $directory 'diagnostics/controller.diag')
+        function Get-WinEvent {
+            [CmdletBinding()]
+            param([hashtable]$FilterHashtable)
+            Write-Error -Message 'Windows application event log access denied.' -ErrorId EventLogAccessDenied
+        }
+
+        { & (Join-Path $deviceScripts 'Stop-TestDevice.ps1') -ResultsDirectory $directory } |
+            Should -Throw '*access denied*'
+        (Join-Path $directory 'windows-application-events.json') | Should -Not -Exist
+    }
+
+    It 'records an explicit empty Windows event result when the provider finds no matching events' {
+        $directory = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
+        New-Item -ItemType Directory -Path (Join-Path $directory 'diagnostics') -Force | Out-Null
+        '{"Platform":"windows"}' | Set-Content -LiteralPath (Join-Path $directory 'device.json')
+        "Started test host process. PID: '5656'." |
+            Set-Content -LiteralPath (Join-Path $directory 'diagnostics/controller.diag')
+        function Get-WinEvent {
+            [CmdletBinding()]
+            param([hashtable]$FilterHashtable)
+            Write-Error -Message 'No events were found.' -ErrorId NoMatchingEventsFound
+        }
+
+        & (Join-Path $deviceScripts 'Stop-TestDevice.ps1') -ResultsDirectory $directory
+
+        (Get-Content -Raw -LiteralPath (Join-Path $directory 'windows-application-events.json')).Trim() |
+            Should -Be '[]'
+    }
+
     It 'checks immutable Android boot identity without depending on emulator console output' {
         foreach ($script in @($start, $stop)) {
             $script | Should -Match 'shell getprop ro.boot.qemu.avd_name'
