@@ -1,2 +1,4 @@
 #nullable enable
 static Microsoft.Maui.Handlers.MenuFlyoutItemHandler.MapSource(Microsoft.Maui.Handlers.IMenuFlyoutItemHandler! handler, Microsoft.Maui.IMenuFlyoutItem! view) -> void
+override Microsoft.Maui.Handlers.ImageButtonHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect rect) -> void
+override Microsoft.Maui.Handlers.ButtonHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect rect) -> void
