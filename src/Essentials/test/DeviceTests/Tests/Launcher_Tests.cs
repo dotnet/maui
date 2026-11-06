@@ -67,7 +67,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			, Skip = "Doesn't work on Windows on CI"
 #endif
 			)]
-		public async Task CanOpen(string uri)
+		public Task CanOpen(string uri) => Utils.OnMainThread(async () =>
 		{
 #if __IOS__
 			if (DeviceInfo.DeviceType == DeviceType.Virtual && (uri.Contains("tel:", StringComparison.Ordinal) || uri.Contains("mailto:", StringComparison.Ordinal)))
@@ -78,7 +78,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 #endif
 
 			Assert.True(await Launcher.CanOpenAsync(uri).ConfigureAwait(false));
-		}
+		});
 
 		[Theory]
 		[InlineData("http://www.example.com")]
@@ -104,7 +104,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			, Skip = "Doesn't work on Windows on CI"
 #endif
 			)]
-		public async Task CanOpenUri(string uri)
+		public Task CanOpenUri(string uri) => Utils.OnMainThread(async () =>
 		{
 #if __IOS__
 			if (DeviceInfo.DeviceType == DeviceType.Virtual && (uri.Contains("tel:", StringComparison.Ordinal) || uri.Contains("mailto:", StringComparison.Ordinal)))
@@ -116,7 +116,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 #endif
 
 			Assert.True(await Launcher.CanOpenAsync(new Uri(uri)).ConfigureAwait(false));
-		}
+		});
 
 #if __IOS__
 		[Theory]
@@ -138,17 +138,17 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 
 		[Theory]
 		[InlineData("ms-invalidurifortest:abc")]
-		public async Task CanNotOpenUri(string uri)
+		public Task CanNotOpenUri(string uri) => Utils.OnMainThread(async () =>
 		{
 			Assert.False(await Launcher.CanOpenAsync(new Uri(uri)).ConfigureAwait(false));
-		}
+		});
 
 		[Theory]
 		[InlineData("ms-invalidurifortest:abc")]
-		public async Task CanNotOpen(string uri)
+		public Task CanNotOpen(string uri) => Utils.OnMainThread(async () =>
 		{
 			Assert.False(await Launcher.CanOpenAsync(uri).ConfigureAwait(false));
-		}
+		});
 
 		[Theory]
 		[InlineData("http://www.example.com")]
