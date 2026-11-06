@@ -1,0 +1,44 @@
+name: Isolated servicing forward validation
+
+on:
+  push:
+    branches:
+      - release-rollover-trial/forward-hosted-2ad2e0af/fixes
+
+permissions:
+  contents: read
+
+concurrency:
+  group: isolated-forward-hosted-2ad2e0af
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    if: github.repository == 'dotnet/maui'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Execute the unchanged forward helper in an isolated namespace
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $result = & ./eng/scripts/Sync-ServicingForwardPullRequest.ps1 `
+            -StatePath ./eng/forward-servicing-demo.json `
+            -SandboxPrefix release-rollover-trial/forward-hosted-2ad2e0af
+          $result | Set-Content -LiteralPath "$env:RUNNER_TEMP/forward-result.json" -Encoding utf8
+          Write-Output $result
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: isolated-forward-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/forward-result.json
+          if-no-files-found: error
