@@ -1,4 +1,4 @@
-﻿#nullable disable
+#nullable disable
 using System.ComponentModel;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls.Platform
 		object _previousDataContext;
 		Shell _shell;
 		bool _updatingVisualState;
-		ShellView ShellView => _shell.Handler?.PlatformView as ShellView;
+		ShellView ShellView => _shell?.Handler?.PlatformView as ShellView;
 
 		public ShellFlyoutItemView()
 		{
