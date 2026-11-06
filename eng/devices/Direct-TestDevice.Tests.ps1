@@ -73,7 +73,6 @@ Describe 'Direct native CI contracts' {
     It 'disconnects the Windows Frame layout tree even when its native assertions fail' {
         $fixture = Get-Content (Join-Path $repoRoot 'src/Controls/tests/DeviceTests/Elements/Frame/FrameTests.cs') -Raw
         $fixture | Should -Match '(?s)new ContentLayoutPanel\(layout,.*?\}, MauiContext\);\s*\}\s*finally\s*\{\s*layout\.DisconnectHandlers\(\);'
-        $fixture | Should -Match '(?s)BasicFrameTest\(\).*?finally\s*\{\s*await InvokeOnMainThreadAsync\(\(\) => frame\.DisconnectHandlers\(\)\);'
     }
 
     It 'disconnects Apple fixture content after native controllers and modals are detached' {

@@ -57,10 +57,7 @@ namespace Microsoft.Maui.DeviceTests
 				}
 			};
 
-			Rect labelFrame;
-			try
-			{
-				labelFrame =
+			var labelFrame =
 					await AttachAndRun<Rect>(frame, async (handler) =>
 					{
 						(frame as IView).Measure(300, 300);
@@ -70,15 +67,27 @@ namespace Microsoft.Maui.DeviceTests
 
 						return frame.Content.Frame;
 					});
-			}
-			finally
-			{
-				await InvokeOnMainThreadAsync(() => frame.DisconnectHandlers());
-			}
+
 
 			// validate label is centered in the frame
 			Assert.True(Math.Abs(((300 - labelFrame.Width) / 2) - labelFrame.X) < 1);
 			Assert.True(Math.Abs(((300 - labelFrame.Height) / 2) - labelFrame.Y) < 1);
+		}
+
+		[Fact]
+		public async Task FixtureDisposalDisconnectsInitializedViewTree()
+		{
+			SetupBuilder();
+
+			var content = new Label { Text = "Fixture-owned content" };
+			var frame = new Frame { Content = content };
+			await CreateHandlerAsync<FrameRenderer>(frame);
+			Assert.NotNull(content.Handler);
+
+			await DisposeAsync();
+
+			Assert.Null(frame.Handler);
+			Assert.Null(content.Handler);
 		}
 
 		[Fact(DisplayName = "Frame With Entry Measures")]

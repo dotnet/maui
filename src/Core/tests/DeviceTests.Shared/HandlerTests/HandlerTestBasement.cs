@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -29,6 +30,8 @@ namespace Microsoft.Maui.DeviceTests
 		IServiceProvider _servicesProvider;
 		IMauiContext _mauiContext;
 		bool _isCreated;
+		// Collection assertions must be able to release views before fixture teardown.
+		readonly List<WeakReference<IElementHandler>> _initializedHandlers = new();
 
 		public void EnsureHandlerCreated(Action<MauiAppBuilder> additionalCreationActions = null)
 		{
@@ -102,6 +105,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			mauiContext ??= MauiContext;
 			handler.SetMauiContext(mauiContext);
+			_initializedHandlers.Add(new WeakReference<IElementHandler>(handler));
 			element.Handler = handler;
 			handler.SetVirtualView(element);
 
@@ -319,7 +323,25 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			if (_mauiApp != null)
 			{
-				await InvokeOnMainThreadAsync(() => ((IAsyncDisposable)_mauiApp).DisposeAsync().AsTask());
+				await InvokeOnMainThreadAsync(async () =>
+				{
+					foreach (var reference in _initializedHandlers)
+					{
+						if (!reference.TryGetTarget(out var handler) || handler.VirtualView is null)
+							continue;
+
+						if (handler.VirtualView is IWindow window)
+							window.Content?.DisconnectHandlers();
+
+						if (handler.VirtualView is IView view)
+							view.DisconnectHandlers();
+						else
+							handler.DisconnectHandler();
+					}
+
+					_initializedHandlers.Clear();
+					await ((IAsyncDisposable)_mauiApp).DisposeAsync();
+				});
 			}
 
 			_mauiApp = null;
