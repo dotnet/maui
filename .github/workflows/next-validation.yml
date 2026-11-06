@@ -1,0 +1,46 @@
+name: Isolated production next-lane validation
+on:
+  push:
+    branches: ['release-rollover-trial/next-2ad2e0af/main']
+permissions:
+  contents: read
+concurrency:
+  group: isolated-next-lanes-2ad2e0af
+  cancel-in-progress: false
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 3b9f0f75cc271df18b93d1913373d4cf88622a96
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Run unchanged production next-lane code with bot token
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $state = @{
+            schemaVersion = 1
+            repository = 'https://github.com/dotnet/maui.git'
+            releaseBand = '11.0.1xx'
+            currentSr = 1
+            fixBranch = 'release-rollover-trial/next-2ad2e0af/main'
+            featureBranch = 'release-rollover-trial/next-2ad2e0af/features'
+            candidateNamingPolicy = 'candidate'
+            nightlyMode = 'legacy'
+          }
+          $statePath = Join-Path $env:RUNNER_TEMP 'isolated-next-state.json'
+          $state | ConvertTo-Json | Set-Content $statePath
+          ./eng/scripts/Sync-ReleaseNextLanes.ps1 -StatePath $statePath -SandboxPrefix release-rollover-trial/next-2ad2e0af -OutputDirectory (Join-Path $env:RUNNER_TEMP 'next-lanes')
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: isolated-next-lanes-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/next-lanes/
+          if-no-files-found: error
