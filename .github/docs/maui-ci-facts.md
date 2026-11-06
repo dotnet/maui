@@ -73,6 +73,20 @@ Most failures are in `maui-pr`. Focus on the first failing pipeline before other
 `/azp run maui-pr` (or `maui-pr-devicetests`, `maui-pr-uitests`). `maui-pr-devicetests`
 and `maui-pr-uitests` may not run automatically depending on the changed files.
 
+## Previous-runtime compatibility packs
+
+The .NET 11 SDK's .NET 10 compatibility manifests can reference runtime packs
+that have not reached the aggregate `dotnet-public` feed. A missing
+`Microsoft.NETCore.App.Runtime.Mono.*` or AOT pack during provisioning is then
+a dependency-feed failure, not a test failure. Look up the exact version with
+`darc get-asset` and verify every required package on its public build feed before
+adding that feed to `NuGet.config`. Preserve the SDK and manifest versions; do not
+remove previous-.NET coverage or fall back to private feeds.
+
+For SDK `11.0.100-rtm.26554.122`, the .NET 10 compatibility manifests require
+`10.0.15`. Public VMR build 339997 (`295ff616832ba1f8b192f8178c4188a133affe93`)
+publishes these packs to the `darc-pub-dotnet-dotnet-295ff616` feed.
+
 ## AzDO data sources
 
 - Primary access is **anonymous/public** REST: `builds`, `builds/{id}/timeline`,
