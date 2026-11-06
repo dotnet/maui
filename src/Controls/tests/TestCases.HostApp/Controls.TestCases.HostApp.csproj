@@ -10,9 +10,10 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <!-- Enable CSS support even though this project doesn't have MauiCss items, since some tests use CSS -->
     <MauiCssEnabled>true</MauiCssEnabled>
-    <!-- On CI, build universal binaries for iOS/MacCatalyst to support both x64 and arm64 test agents -->
+    <!-- Preserve universal binaries for MacCatalyst and the previous iOS target. -->
     <RuntimeIdentifiers Condition="$(TargetFramework.Contains('-maccatalyst')) and ('$(CI)' == 'true' or '$(TF_BUILD)' == 'true')">maccatalyst-x64;maccatalyst-arm64</RuntimeIdentifiers>
     <RuntimeIdentifiers Condition="$(TargetFramework.Contains('-ios')) and ('$(CI)' == 'true' or '$(TF_BUILD)' == 'true')">iossimulator-x64;iossimulator-arm64</RuntimeIdentifiers>
+    <RuntimeIdentifiers Condition="$(TargetFramework.Contains('-ios')) and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net12.0')) and ('$(CI)' == 'true' or '$(TF_BUILD)' == 'true')">iossimulator-arm64</RuntimeIdentifiers>
     <ExcludeMicrosoftNetTestSdk>true</ExcludeMicrosoftNetTestSdk>
     <MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
   <!-- NOTE: By default the UseMaterial3 flag value is false. If you change the UseMaterial3 flag, you MUST delete the artifacts folder 

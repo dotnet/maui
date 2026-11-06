@@ -142,6 +142,8 @@ assertions must match the current MAUI assembly version.
 An older Xcode behind a major-version alias does not satisfy the 27.1 pin.
 Public Apple CI requires an authorized image with Xcode 27.1; library compilation
 alone does not establish that native app builds or execution are available.
+The .NET 12 iOS test host and NativeAOT sample paths use `iossimulator-arm64`;
+the previous .NET 11 iOS target retains both simulator architectures.
 
 Maestro channel mappings and incoming subscriptions are separate release
 configuration. Updating this repository does not configure dependency flow or
