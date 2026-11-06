@@ -57,9 +57,16 @@ The .NET 12 Android binding generator no longer emits the legacy
 A net12-and-later-only PublicAPI supplement records those removals without
 changing shipped API history or the retained .NET 11 validation baseline.
 
+The obsolete `AllowImplicitXmlnsDeclarationAttribute` is removed only for
+.NET 12 and later, with a shared Controls API supplement preserving earlier
+baselines. Its guard checks both `NET12_0` and `NET12_0_OR_GREATER` because the
+pinned preview SDK does not yet emit the latter symbol.
+
 Keyboard service lookups use `JavaCast<InputMethodManager>()` to retain the
 managed Java peer when Android type maps are trimmed. A plain CLR cast alone
 does not preserve that peer in the current CoreCLR linker.
+These peers are borrowed from the context and must not be disposed by return-type
+mappings or keyboard helpers.
 
 .NET 12 iOS simulator builds use `iossimulator-arm64`; the Apple workload no
 longer accepts `iossimulator-x64`. Previous-framework host builds retain their

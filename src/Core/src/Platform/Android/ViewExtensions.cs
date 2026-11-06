@@ -821,8 +821,7 @@ namespace Microsoft.Maui.Platform
 
 		internal static bool HideSoftInput(this AView inputView)
 		{
-			using var service = inputView.Context?.GetSystemService(Context.InputMethodService);
-			using var inputMethodManager = service.JavaCast<InputMethodManager>();
+			var inputMethodManager = inputView.Context?.GetSystemService(Context.InputMethodService).JavaCast<InputMethodManager>();
 			var windowToken = inputView.WindowToken;
 
 			if (windowToken is not null && inputMethodManager is not null)
@@ -835,8 +834,7 @@ namespace Microsoft.Maui.Platform
 
 		internal static bool ShowSoftInput(this TextView inputView)
 		{
-			using var service = inputView.Context?.GetSystemService(Context.InputMethodService);
-			using var inputMethodManager = service.JavaCast<InputMethodManager>();
+			var inputMethodManager = inputView.Context?.GetSystemService(Context.InputMethodService).JavaCast<InputMethodManager>();
 
 			// The zero value for the second parameter comes from 
 			// https://developer.android.com/reference/android/view/inputmethod/InputMethodManager#showSoftInput(android.view.View,%20int)

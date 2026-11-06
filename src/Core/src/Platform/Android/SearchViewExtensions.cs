@@ -412,8 +412,7 @@ namespace Microsoft.Maui.Platform
 			editText.EnsureNoFullscreenFlag();
 
 			// Restart the input on the current focused EditText
-			using var service = editText.Context?.GetSystemService(Context.InputMethodService);
-			using var imm = service.JavaCast<InputMethodManager>();
+			var imm = editText.Context?.GetSystemService(Context.InputMethodService).JavaCast<InputMethodManager>();
 			imm?.RestartInput(editText);
 		}
 
