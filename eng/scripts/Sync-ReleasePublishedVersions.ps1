@@ -31,9 +31,18 @@ function Get-PublicationBranch {
     $Matches.sha
 }
 
+function Invoke-PublicationFetch {
+    param ([string] $Commit)
+    $arguments = @('fetch', '--quiet', '--no-tags')
+    $isShallow = @(& git rev-parse --is-shallow-repository)
+    if ($LASTEXITCODE -ne 0) { throw 'Unable to inspect publication checkout history.' }
+    if ($isShallow[0] -ceq 'true') { $arguments += '--depth=32' }
+    $null = & git @arguments -- $state.repository $Commit
+    if ($LASTEXITCODE -ne 0) { throw "Unable to fetch pinned publication commit '$Commit'." }
+}
+
 $baseSha = Get-PublicationBranch -Branch $state.featureBranch
-$null = & git fetch --quiet --no-tags --depth=32 -- $state.repository $baseSha
-if ($LASTEXITCODE -ne 0) { throw 'Unable to fetch the pinned feature branch.' }
+Invoke-PublicationFetch -Commit $baseSha
 $template = Get-MauiReleaseFile -RepositoryPath $repositoryPath -Commit $baseSha -Path '.github/ISSUE_TEMPLATE/bug-report.yml'
 $major = $state.releaseBand.Split('.')[0]
 $pages = @(Invoke-PublicationApi -Arguments @('repos/dotnet/maui/releases?per_page=100', '--paginate', '--slurp'))
@@ -59,14 +68,12 @@ foreach ($release in ($releases | Sort-Object { [version] $_.tag_name })) {
         throw 'Published tag does not resolve to a bounded immutable commit.'
     }
     $tagSha = $object.sha
-    $null = & git fetch --quiet --no-tags --depth=32 -- $state.repository $tagSha
-    if ($LASTEXITCODE -ne 0) { throw 'Unable to fetch the immutable published tag commit.' }
+    Invoke-PublicationFetch -Commit $tagSha
     $content = Get-MauiReleaseFile -RepositoryPath $repositoryPath -Commit $tagSha -Path 'eng/Versions.props'
     $verified = Get-MauiVerifiedPublishedVersion -Release $release -VersionContent $content `
         -ReleaseBand $state.releaseBand -CurrentSr $state.currentSr -TagCommit $tagSha
     $releaseSha = Get-PublicationBranch -Branch "release/$($state.releaseBand)-sr$($verified.sr)"
-    $null = & git fetch --quiet --no-tags --depth=32 -- $state.repository $releaseSha
-    if ($LASTEXITCODE -ne 0) { throw 'Unable to fetch the published servicing branch.' }
+    Invoke-PublicationFetch -Commit $releaseSha
     $null = & git merge-base --is-ancestor $tagSha $releaseSha
     if ($LASTEXITCODE -ne 0) { throw 'Published tag ancestry on its servicing branch is unverified; fetch complete history and retry.' }
     $liveRef = Invoke-PublicationApi -Arguments @("repos/dotnet/maui/git/ref/tags/$($release.tag_name)")
