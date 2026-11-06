@@ -104,6 +104,7 @@ stages:
           - template: /eng/pipelines/common/device-tests-steps.yml@self
             parameters:
               platform: windows
+              applicationId: ${{ project.applicationId }}
               path: $(Build.SourcesDirectory)/${{ project.path }}
               device: ${{ packaging }}
               deviceTestConfiguration: ${{ parameters.BuildConfiguration }}

@@ -85,6 +85,8 @@ Describe 'Direct native CI contracts' {
         $steps | Should -Match 'Get-AuthenticodeSignature -LiteralPath \$tool'
         $steps | Should -Match "signature.Status -ne 'Valid'"
         $steps | Should -Match 'nativeCrashExecutable: Microsoft.Maui.Controls.DeviceTests.exe'
+        ($stage -split 'platform: windows', 2)[1] |
+            Should -Match ([regex]::Escape('applicationId: ${{ project.applicationId }}'))
         $template | Should -Not -Match 'commandExitCode = 0'
     }
 
