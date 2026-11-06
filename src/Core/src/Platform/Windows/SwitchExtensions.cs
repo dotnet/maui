@@ -65,20 +65,64 @@ namespace Microsoft.Maui.Platform
 
 			if (view.IsOn)
 			{
-				// Match WinUI's hover opacity without reducing contrast in high-contrast themes.
-				var hoverBrush = trackColor is SolidColorBrush brush ? new SolidColorBrush(brush.Color) { Opacity = 0.9 } : null;
-				UpdateOnPointerOverResource(toggleSwitch.Resources, "Default", hoverBrush);
-				if (toggleSwitch.Resources.ThemeDictionaries.ContainsKey("Light"))
-					UpdateOnPointerOverResource(toggleSwitch.Resources, "Light", hoverBrush);
-				if (toggleSwitch.Resources.ThemeDictionaries.ContainsKey("Dark"))
-					UpdateOnPointerOverResource(toggleSwitch.Resources, "Dark", hoverBrush);
-				UpdateOnPointerOverResource(toggleSwitch.Resources, "HighContrast", trackColor);
+				UpdateOnPointerOverResources(toggleSwitch.Resources, trackColor);
 			}
 
 			toggleSwitch.RefreshThemeResources();
 		}
 
+		const string OnPointerOverResourceKey = "ToggleSwitchFillOnPointerOver";
+
+		static readonly ConditionalWeakTable<ResourceDictionary, SwitchHoverResourceState> s_switchHoverResourceStates = new();
 		static readonly ConditionalWeakTable<ResourceDictionary, HoverResourceState> s_hoverResourceStates = new();
+
+		sealed class SwitchHoverResourceState
+		{
+			public ResourceDictionary Resources { get; } = new();
+			public bool HasOriginalDirectValue { get; set; }
+			public object? OriginalDirectValue { get; set; }
+		}
+
+		static void UpdateOnPointerOverResources(ResourceDictionary resources, Brush? trackColor)
+		{
+			if (!s_switchHoverResourceStates.TryGetValue(resources, out var state))
+			{
+				if (trackColor is null)
+					return;
+
+				state = new SwitchHoverResourceState();
+				s_switchHoverResourceStates.Add(resources, state);
+			}
+
+			bool hasDirectValue = TryGetLocalHoverResource(resources, out var directValue);
+			if (trackColor is null)
+			{
+				if (state.HasOriginalDirectValue && !hasDirectValue)
+					resources[OnPointerOverResourceKey] = state.OriginalDirectValue;
+
+				UpdateOnPointerOverResource(state.Resources, "Default", null);
+				UpdateOnPointerOverResource(state.Resources, "HighContrast", null);
+				if (IsEmpty(state.Resources))
+					resources.MergedDictionaries.Remove(state.Resources);
+
+				s_switchHoverResourceStates.Remove(resources);
+				return;
+			}
+
+			// Direct entries precede merged resources; leave application theme dictionaries untouched.
+			if (hasDirectValue)
+			{
+				state.HasOriginalDirectValue = true;
+				state.OriginalDirectValue = directValue;
+				resources.Remove(OnPointerOverResourceKey);
+			}
+
+			UpdateOnPointerOverResource(state.Resources, "Default",
+				trackColor is SolidColorBrush brush ? new SolidColorBrush(brush.Color) { Opacity = 0.9 } : null);
+			UpdateOnPointerOverResource(state.Resources, "HighContrast", trackColor);
+			if (!resources.MergedDictionaries.Contains(state.Resources))
+				resources.MergedDictionaries.Add(state.Resources);
+		}
 
 		sealed class HoverResourceState
 		{
@@ -90,7 +134,6 @@ namespace Microsoft.Maui.Platform
 
 		static void UpdateOnPointerOverResource(ResourceDictionary resources, string theme, Brush? brush)
 		{
-			const string key = "ToggleSwitchFillOnPointerOver";
 			var themeResources = resources.ThemeDictionaries.TryGetValue(theme, out var dictionary)
 				? (ResourceDictionary)dictionary
 				: null;
@@ -109,33 +152,18 @@ namespace Microsoft.Maui.Platform
 			if (brush is null && state is null)
 				return;
 
-			bool hasCurrentValue = false;
-			object? currentValue = null;
-			// ResourceDictionary lookup can return fallback resources; only capture local entries.
-			foreach (var entry in themeResources)
-			{
-				if (key.Equals(entry.Key))
-				{
-					hasCurrentValue = true;
-					currentValue = entry.Value;
-					break;
-				}
-			}
+			bool hasCurrentValue = TryGetLocalHoverResource(themeResources, out var currentValue);
 
 			if (brush is null)
 			{
 				if (state is not null && hasCurrentValue && ReferenceEquals(currentValue, state.AppliedBrush))
 				{
 					if (state.HasOriginalValue)
-						themeResources[key] = state.OriginalValue;
+						themeResources[OnPointerOverResourceKey] = state.OriginalValue;
 					else
-						themeResources.Remove(key);
+						themeResources.Remove(OnPointerOverResourceKey);
 
-					if (state.CreatedDictionary &&
-						themeResources.Count == 0 &&
-						themeResources.MergedDictionaries.Count == 0 &&
-						themeResources.ThemeDictionaries.Count == 0 &&
-						themeResources.Source is null)
+					if (state.CreatedDictionary && IsEmpty(themeResources))
 					{
 						resources.ThemeDictionaries.Remove(theme);
 					}
@@ -162,8 +190,30 @@ namespace Microsoft.Maui.Platform
 			}
 
 			state.AppliedBrush = brush;
-			themeResources[key] = brush;
+			themeResources[OnPointerOverResourceKey] = brush;
 		}
+
+		static bool TryGetLocalHoverResource(ResourceDictionary resources, out object? value)
+		{
+			// ResourceDictionary lookup can return fallback resources; only capture local entries.
+			foreach (var entry in resources)
+			{
+				if (OnPointerOverResourceKey.Equals(entry.Key))
+				{
+					value = entry.Value;
+					return true;
+				}
+			}
+
+			value = null;
+			return false;
+		}
+
+		static bool IsEmpty(ResourceDictionary resources) =>
+			resources.Count == 0 &&
+			resources.MergedDictionaries.Count == 0 &&
+			resources.ThemeDictionaries.Count == 0 &&
+			resources.Source is null;
 
 		static readonly string[] toggleSwitchKnobKeys =
 		{
