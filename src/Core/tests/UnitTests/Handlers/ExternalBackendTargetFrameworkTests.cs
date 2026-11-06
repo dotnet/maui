@@ -84,17 +84,18 @@ namespace Microsoft.Maui.UnitTests.Handlers
 		{
 			var project = XDocument.Parse(ReadEmbeddedText(resourceName));
 
-			// The unconditioned TargetFrameworks element. Core also has a second, conditioned one for
-			// IncludePreviousTfms, which is not part of the shipping set.
+			// Compare the baseline and current-TFM expressions, including their conditions. Previous
+			// TFMs are selected separately and are not part of the guard project's current platform set.
 			var targetFrameworks = project
 				.Descendants()
-				.Where(e => e.Name.LocalName == "TargetFrameworks" && e.Attribute("Condition") is null)
-				.Select(e => e.Value.Trim())
+				.Where(e => e.Name.LocalName == "TargetFrameworks" &&
+					(e.Attribute("Condition") is null || e.Attribute("Condition")?.Value == "'$(IncludeCurrentTfms)' == 'true'"))
+				.Select(e => $"{e.Attribute("Condition")?.Value}:{e.Value.Trim()}")
 				.ToList();
 
-			Assert.Single(targetFrameworks);
+			Assert.Equal(2, targetFrameworks.Count);
 
-			return targetFrameworks[0];
+			return string.Join(";", targetFrameworks);
 		}
 
 		static string ReadEmbeddedText(string resourceName)

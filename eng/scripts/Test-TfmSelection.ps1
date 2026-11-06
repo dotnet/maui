@@ -93,4 +93,12 @@ foreach ($project in $projects) {
     Write-Host "PASS $name"
 }
 
+$coreProject = Join-Path $repoRoot 'src/Core/src/Core.csproj'
+$externalBackendProject = Join-Path $repoRoot 'src/Core/tests/ExternalBackend/Core.ExternalBackend.csproj'
+foreach ($includeCurrent in @('true', 'false')) {
+    $core = Get-FrameworkProperties $coreProject @("-p:IncludeCurrentTfms=$includeCurrent")
+    $externalBackend = Get-FrameworkProperties $externalBackendProject @("-p:IncludeCurrentTfms=$includeCurrent")
+    Assert-Equal $externalBackend.TargetFrameworks $core.TargetFrameworks "External backend mirrors Core with IncludeCurrentTfms=$includeCurrent"
+}
+Write-Host 'PASS external-backend fixture mirrors current and .NET Standard-only Core selections.'
 Write-Host "PASS TFM selection for $($projects.Count) projects (default, current, combined, previous-only, and applicable .NET Standard-only selections)."
