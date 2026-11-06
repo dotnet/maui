@@ -16,7 +16,7 @@
     <PackageReference Include="Appium.WebDriver" Version="8.0.0" />
     <PackageReference Include="NUnit" Version="4.0.1" />
     <PackageReference Include="NUnit3TestAdapter" Version="6.1.0" />
-    <PackageReference Include="Microsoft.Testing.Extensions.TrxReport" Version="2.0.2" />
+    <PackageReference Include="Microsoft.Testing.Extensions.TrxReport" Version="$(MicrosoftTestingPlatformVersion)" />
   </ItemGroup>
 
   <ItemGroup>
