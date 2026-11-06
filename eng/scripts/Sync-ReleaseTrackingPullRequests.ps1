@@ -158,6 +158,8 @@ foreach ($route in $routes) {
         $graph
         ''
         '**Status:** draft tracking PR, not a release approval. Normal review and CI are required before integration. Versioned nightlies retain the legacy stream until the internal cutover is verified.'
+        ''
+        'Candidate creation must preconfigure servicing packages. Cut the release at the approved integration commit, then restore the fixes lane to next-cycle CI branding before forwarding into the feature branch. A merge is not shipment; released-version metadata waits for verified publication.'
     ) -join "`n"
     if ($SandboxPrefix) {
         $description += "`n`nSandbox experiment only. This PR must not target a production branch."

@@ -183,6 +183,68 @@ For read-only inspection before deployment:
 pwsh -NoProfile -File eng/scripts/Sync-ReleaseTrackingPullRequests.ps1 -PlanOnly
 ```
 
+## Automatic servicing configuration and phase separation
+
+`eng/scripts/MauiReleaseConfiguration.psm1` implements deterministic version/content
+commits without changing a checkout, its index, or global Git configuration.
+It validates literal XML metadata against the trusted release band and SR before
+editing the specific properties. Unknown conditions, wrong majors/bands, duplicate
+properties, or a patch from another cycle stop preparation. Branch names never
+substitute for package-version evidence.
+
+| Phase | Actual configuration change |
+|---|---|
+| Create candidate SR N | Preserve its verified `PatchVersion` (including a hotfix within the cycle), set `PreReleaseVersionLabel=servicing`, remove the CI-label override, and set `StabilizePackageVersion=true`. |
+| Integrate approved candidate | Cut release SR N at the exact approved merge commit. No release version is added to the bug template. |
+| After the cut | Add a fixes-lane housekeeping child restoring `ci.main`, the standard inflight-label condition, and `StabilizePackageVersion=false`; advance `PatchVersion` to `(N+1)*10`. Forward this normalized fixes tip, not the intermediate servicing tip, into feature `main`. |
+| Create next lanes | Cleanly Git-merge normalized fixes with the pinned old inflight; configure candidate SR N+1 for servicing, then create inflight SR N+2 with CI branding and patch `(N+2)*10`. |
+| Verified stable publication | Prepare a separate metadata commit adding the published version once to **both** bug-report version dropdowns on the configured feature/default branch. |
+
+These are the focused servicing transitions used by
+[#35520](https://github.com/dotnet/maui/pull/35520) and
+[#39774](https://github.com/dotnet/maui/pull/39774), the separate next-cycle patch
+bump used by [#35879](https://github.com/dotnet/maui/pull/35879), and the two-dropdown
+housekeeping used by [#37685](https://github.com/dotnet/maui/pull/37685).
+SDK/dependency pins, assembly versions, and unrelated release toggles are retained.
+
+The next candidate includes the normalized fixes commit in its ancestry. Merely
+copying the old inflight tree would let a later ordinary Git merge silently retain
+the fixes branch's CI defaults, because servicing was unchanged relative to the
+older common ancestor. A real three-way merge preserves both approved fixes and
+future inflight content. Conflicts stop the operation; no file is blindly replaced.
+Future inflight content is never included in the release already cut.
+
+The current production SR2 ref was originally seeded with SR1 `PatchVersion=10`.
+This is **not** verified SR2 package metadata. The sandbox initializes new lanes
+with explicit, trusted one-cycle version transitions; it never rewrites an existing
+mismatched production lane. The real migration needs a separately reviewed metadata
+and baseline reconciliation before these helpers can be used there. This logic does
+not invent a .NET 11 GA/SR0 baseline or certify candidate inventory.
+
+### Published-version housekeeping
+
+`Prepare published release versions` runs on a GitHub Release `published` event
+(or a zero-input manual retry), using scripts from the trusted default branch.
+`Sync-ReleasePublishedVersions.ps1` selects stable published servicing Releases
+within the configured train, resolves each immutable tag, checks the exact
+`eng/Versions.props` version/stabilization and servicing-branch ancestry, and
+prepares a metadata commit against the pinned feature branch. A tag alone, draft
+Release, prerelease, CI build, or candidate merge is insufficient.
+
+This workflow has **contents-read permission only**. It uploads the pending commit
+as a Git bundle plus its verified evidence; it does not push or merge a production
+metadata change. This prepares the correct post-ship work automatically while the
+production mutation policy is unresolved. Human integration remains a production
+gate, not a claim that housekeeping was applied. If both dropdowns already contain
+the published version (including an existing `SR`-labeled entry), no empty commit is
+created. Repeated preparation at the same inputs yields the same commit.
+
+For local read-only preparation:
+
+```powershell
+pwsh -NoProfile -File eng/scripts/Sync-ReleasePublishedVersions.ps1 -OutputDirectory <artifact-directory>
+```
+
 ## Nightly builds and dogfood feeds
 
 Versioned inflight branches must keep the same nightly contract as
@@ -348,14 +410,19 @@ integration target, not the real `main` branch. In the proposed production
 workflow, the candidate still merges into `net11`, while real `main` receives
 daily fixes for .NET 12.
 
-For a clean start, create the dummy candidate/inflight source refs first, then
-create the dummy integration branch. Its creation event initializes the first
-two tracking PRs from the checked-in release state without cutting a release.
+For a clean start, create only the dummy integration branch at a verified source
+commit whose package metadata agrees with the trusted current SR. Its creation
+event creates a genuinely servicing-configured candidate and correctly versioned
+CI inflight lane, then initializes the first two tracking PRs without cutting a release.
 Initialization refuses a namespace that already contains release refs.
+Existing lane destinations must match the deterministic prepared commits exactly;
+an older manually seeded lane is not silently updated.
 
 The workflow derives the release band and SR number from the candidate ref
 matching the merge commit's second parent. Release cuts require a two-parent merge, an
-unchanged integration HEAD, and an inflight branch containing that candidate.
+unchanged integration HEAD (or its exact deterministic housekeeping child on
+retry), and an inflight branch containing that candidate with verified next-cycle
+package metadata. The approved merge must retain the candidate's version configuration.
 An ordinary commit, ambiguous candidate, missing source, divergent history, or
 destination at a different SHA stops the run instead of guessing. A shallow fetch
 that cannot prove ancestry also stops the run.
@@ -365,8 +432,9 @@ For a dummy SR1 candidate merge, it creates only these sandbox refs:
 | Dummy output under `release-rollover-trial/<trial>/` | Source commit |
 |---|---|
 | `release/11.0.1xx-sr1` | The exact candidate merge commit on dummy `main`. |
-| `candidate/11.0.1xx-sr2` | The pinned old SR2 inflight commit, which must contain SR1's candidate changes. |
-| `inflight/11.0.1xx-sr3` | The same pinned old SR2 inflight commit. |
+| dummy `main` | A housekeeping child of that exact merge: next-cycle patch, `ci.main`, non-stable packages. |
+| `candidate/11.0.1xx-sr2` | Servicing-configured child of a clean merge of normalized fixes and pinned old SR2 inflight. |
+| `inflight/11.0.1xx-sr3` | CI-configured child of the next candidate, with SR3 patch metadata. |
 
 This trial uses the proposed `candidate/...` naming clarification only inside
 the sandbox. It creates new refs and preserves historical source branches; it
@@ -380,11 +448,14 @@ flowchart LR
     Create --> Verify["Verify exact SHAs and publish run summary"]
 ```
 
-Each sandbox has a serialized workflow concurrency group. Existing outputs at
-the exact expected SHAs are left unchanged, so a rerun resumes missing creations
-or reports no changes. Creation is sequential, not a cross-ref transaction; a
-failed run can leave partial outputs recorded in its artifact. Existing targets
-are never updated, and moved source refs require inspection before resuming.
+Each sandbox has a serialized workflow concurrency group. Fixed commit identity,
+parent-derived commit time, and actual content changes make preparation deterministic.
+Existing outputs at the exact expected SHAs are left unchanged. Ref creation and
+the fixes housekeeping fast-forward are published with a single atomic Git push,
+without persisted credentials or force-pushing. No other existing target is updated.
+Retrying the original merge activation, or its verified housekeeping child, does
+not cut the next release, create more commits, or duplicate metadata. Moved sources
+or destinations require inspection.
 
 After creating its next-cycle refs, the sandbox invokes the same tracking-PR
 reconciler with a sandbox-scoped state file. Both dummy PRs target dummy `main`,
@@ -408,6 +479,19 @@ a sandbox integration ref after it is available for dispatch in GitHub.
 This exercises branch operations only. It does not validate production
 permissions, candidate approvals, signed builds, packages, dependency
 subscriptions, channel mappings, the internal mirror, or production rollback.
+
+The business-logic/isolated Git harness runs two real local candidate merges and
+evaluates package/workload properties with MSBuild, including the second-cycle
+ancestry requirement, wrong-cycle refusal, preserved content, immutable release
+cut, CI restoration, publication gating, and duplicate-free retries:
+
+```powershell
+pwsh -NoProfile -File eng/scripts/MauiReleaseConfiguration.Tests.ps1
+```
+
+The following live records predate servicing-preconfiguration changes and remain
+evidence for the earlier branch/PR prototype, not certification of the new content
+transitions or a production shipment.
 
 ### Live sandbox evidence
 
@@ -466,6 +550,7 @@ sandbox proves the branch/PR lifecycle, not the following remaining work:
 | Surface | Remaining production requirement |
 |---|---|
 | Release cuts and rotation | Implement the protected production orchestrator, including persistent state advancement and recovery. The current mutation runner is sandbox-only. |
+| Servicing and post-ship metadata | Reconcile real lane baselines/package metadata, wire these validated helpers into the protected production orchestrator, and integrate the prepared post-publication metadata commit. |
 | Daily forward merges | Implement the scheduled `net11`-to-`main` merge workflow. A manual merge does not validate unattended scheduling. |
 | New branch names | Deploy the explicit `net11` / `candidate/*` CI YAML coverage in this PR and review protections and readiness discovery. Server-side/manual runs are not proof that the deployed branch triggers are wired. |
 | Signed nightly builds | Deploy the internal mirrored source changes and validate signed artifacts and feed/channel handoff before changing `nightlyMode` from `legacy`. |

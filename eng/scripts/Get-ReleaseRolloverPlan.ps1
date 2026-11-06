@@ -164,6 +164,8 @@ if ($state.candidateNamingPolicy -ceq 'unresolved') {
     proposedTargets = $targetNames
     blockers = @($blockers.ToArray())
     unverifiedRequirements = @(
+        'Candidate servicing configuration and package metadata matching the trusted SR; branch names alone are insufficient.'
+        'Next inflight package metadata, CI branding, and clean integration with normalized fixes.'
         'Candidate merge approval and ancestry on the fixes branch.'
         'Required CI results at the selected release commit.'
         'Signed-build and BAR identities for that commit.'
