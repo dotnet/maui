@@ -59,10 +59,40 @@ main-to-net11 and net11-to-RC2 merge routes are retired; a future servicing cut
 must explicitly select its release branch rather than reuse the RC2 route.
 Official nightly builds exclude the historical `net10.0` and `net11.0` branches.
 
+For the staged .NET 12 transition described in `docs/ReleaseBranchWorkflow.md`,
+literal `net11` preserves the pre-transition `main` history. Primary CI definitions
+explicitly include `net11` and `candidate/*`; the official definition includes
+`net11` for signed nightly, localization and API-scan routing. These changes must
+be deployed before assuming that branch creation activates the new CI routes.
+Do not treat the historical `net11.0` subscription target as the new branch.
+
+Release-related tooling resolves the configured servicing branch independently
+of feature `main`: milestone ownership and review baselines must recognize
+literal `net11` and versioned candidate/inflight lanes. Credential-bearing
+review provisioning refuses the new servicing/staging targets until GitHub
+reports branch protection; the naming allowlist alone is not protection.
+The release migration must deploy those protections separately rather than
+bypass the refusal or grant extra pipeline permissions.
+
 .NET 10 SR13 publishes from `release/10.0.1xx-sr13`, independently of `main`.
 Preserve its release commit and packages, and keep publication on the .NET 10 channel during the
 .NET 11 transition. Do not cut over `inflight/current` or synchronize the internal
 `main` mirror as part of SR13 publication; those are separate .NET 11 operations.
+
+### Versioned inflight nightly migration
+
+The release-branch proposal in `docs/ReleaseBranchWorkflow.md` adds support for
+versioned `inflight/<band>-srN` sources without changing the existing
+`ci.inflight` package stream or the internal `dotnet-maui` signing/publishing path.
+Scheduled inflight runs select their eligible lane from
+`eng/release-rollover.json` at a pinned public `main` commit before packing.
+`nightlyMode: legacy` preserves `inflight/current`; `versioned` selects the state's
+`releaseBand` and `currentSr + 1`. Unselected retained lanes skip packing.
+
+This is a staged migration, not evidence that the new lanes are already building.
+Deploy the selection and branding changes to the internal mirrored source
+branches and verify signed artifacts/feed wiring before switching the canonical
+mode. Creating the public refs or passing the GitHub sandbox is not sufficient.
 
 ### Engineering dependency updates
 

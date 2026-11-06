@@ -587,6 +587,9 @@ function New-ReleaseHandoffModel {
             Get-HandoffProperty -Object $Readiness -Name 'PreviewNumber'
         }
         $branch = Get-HandoffProperty -Object $Readiness -Name 'Branch'
+        $surveyRef = Get-HandoffProperty -Object $Readiness -Name 'SurveyRef'
+        $sourceBranch = Get-HandoffProperty -Object $Readiness -Name 'SourceBranch' `
+            -Default (Get-HandoffProperty -Object $Readiness -Name 'InflightBranch')
         $mode = Get-HandoffProperty -Object $Readiness -Name 'Mode'
         $verdict = Get-HandoffProperty -Object $Readiness -Name 'Verdict'
         $checkState = Get-HandoffProperty -Object $Readiness -Name 'OverallStatus'
@@ -597,7 +600,12 @@ function New-ReleaseHandoffModel {
     } else {
         $metadata = Get-HandoffProperty -Object $Readiness -Name 'metadata'
         $branch = Get-HandoffProperty -Object $metadata -Name 'srBranch'
+        $surveyRef = $branch
+        $sourceBranch = Get-HandoffProperty -Object $metadata -Name 'sourceBranch' `
+            -Default (Get-HandoffProperty -Object $metadata -Name 'mainBranch')
         $mode = Get-HandoffProperty -Object $metadata -Name 'mode'
+        $targetBranch = Get-HandoffProperty -Object $metadata -Name 'targetSrBranch'
+        if ($mode -eq 'candidate' -and $targetBranch) { $branch = $targetBranch }
         $generatedAt = Get-HandoffProperty -Object $metadata -Name 'fetchedAt'
         $verdictObject = Get-HandoffProperty -Object $Readiness -Name 'verdict'
         $verdict = Get-HandoffProperty -Object $verdictObject -Name 'label'
@@ -658,6 +666,12 @@ function New-ReleaseHandoffModel {
 
     $releaseName = Get-HandoffProperty -Object $effectiveEvidence -Name 'ReleaseName'
     if ($PublicSafe) {
+        foreach ($coordinate in @('surveyRef', 'sourceBranch')) {
+            $value = Get-Variable -Name $coordinate -ValueOnly
+            if ($value -notmatch '^(?:main|net\d+(?:\.0)?|(?:release|candidate|inflight)/\d+\.\d+\.\d+xx-(?:sr|preview|rc)\d+|inflight/current)$') {
+                Set-Variable -Name $coordinate -Value $null
+            }
+        }
         $releaseName = ConvertTo-HandoffStructuredText -Value $releaseName -Kind name -PublicSafe $true
     }
     if ([string]::IsNullOrWhiteSpace([string]$releaseName)) { $releaseName = $defaultName }
@@ -688,6 +702,8 @@ function New-ReleaseHandoffModel {
         ReleaseName = ConvertTo-HandoffText -Value $releaseName -PublicSafe $PublicSafe
         ReleaseVersion = ConvertTo-HandoffText -Value $releaseVersion -PublicSafe $PublicSafe
         Branch = ConvertTo-HandoffText -Value $branch -PublicSafe $PublicSafe
+        SurveyRef = ConvertTo-HandoffText -Value $surveyRef -PublicSafe $PublicSafe
+        SourceBranch = ConvertTo-HandoffText -Value $sourceBranch -PublicSafe $PublicSafe
         Mode = ConvertTo-HandoffText -Value $mode -PublicSafe $PublicSafe
         Verdict = ConvertTo-HandoffText -Value $verdict -PublicSafe $PublicSafe
         CheckState = ConvertTo-HandoffText -Value $checkState -PublicSafe $PublicSafe
@@ -773,6 +789,8 @@ function Format-ReleaseHandoffMarkdown {
     [void]$builder.AppendLine("> **Release version:** ``$version``  ")
     [void]$builder.AppendLine("> **Readiness:** **$(Get-HandoffDisplayValue -Value $Model.Verdict -Reason 'readiness verdict was not supplied')** (``$(Get-HandoffDisplayValue -Value $Model.CheckState -Reason 'check state was not supplied')``)  ")
     [void]$builder.AppendLine("> **Branch:** ``$(Get-HandoffDisplayValue -Value $Model.Branch -Reason 'release branch was not supplied')``  ")
+    [void]$builder.AppendLine("> **Survey ref:** ``$(Get-HandoffDisplayValue -Value (Get-HandoffProperty $Model 'SurveyRef') -Reason 'survey ref was not supplied')``  ")
+    [void]$builder.AppendLine("> **Fix source:** ``$(Get-HandoffDisplayValue -Value (Get-HandoffProperty $Model 'SourceBranch') -Reason 'fix source was not supplied')``  ")
     [void]$builder.AppendLine("> **Mode:** ``$(Get-HandoffDisplayValue -Value $Model.Mode -Reason 'release mode was not supplied')``  ")
     [void]$builder.AppendLine("> **Readiness evidence generated:** $(Get-HandoffDisplayValue -Value $Model.ReadinessGeneratedAt -Reason 'readiness timestamp was not supplied')")
     [void]$builder.AppendLine()

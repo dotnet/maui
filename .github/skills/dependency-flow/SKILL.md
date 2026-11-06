@@ -40,7 +40,7 @@ These are configured via default channel mappings — builds are **automatically
 - **Servicing release branches** (`release/X.0.Yxx-srN`) all map to the **single** general SDK channel for that band (e.g., `release/10.0.1xx-sr6`, `release/10.0.1xx-sr7`, etc. all map to `.NET 10.0.1xx SDK`). There is **no** `.NET X.0.Yxx SDK SRn` channel — do not invent one.
 - **Preview release branches** (`release/X.0.Yxx-previewN`) map to dedicated per-preview channels (e.g., `release/11.0.1xx-preview3` → `.NET 11.0.1xx SDK Preview 3`). See **Subscription Authoring & Lifecycle** below for how to wire a new preview channel into the maui subscription set, including the [PR #35364](https://github.com/dotnet/maui/pull/35364) channel/branch mismatch trap.
 - **RC release branches** (`release/X.0.Yxx-rcN`) use dedicated per-RC channels (e.g., `.NET 10.0.1xx SDK RC 2`) **only while their cycle is active** — these default mappings are removed after the RC ships, so `get-default-channels` will show no RC sibling to copy from. If you can't find a sibling, stop and tell the user to escalate to release engineering — do not guess the channel name.
-- **Main/development branches** (`main`, `netN.0`, `release/X.0.Yxx`) map to the general SDK channel for that band.
+- **Main/development branches** (`main`, literal `netN`, historical `netN.0`, `release/X.0.Yxx`) map to the general SDK channel for their actual band. A renamed or newly created branch does not inherit another ref's mapping.
 - **Other shapes** also exist in dotnet/maui from time to time — point-sub-release branches (`-rc2.1`, `-preview6.1`), `inflight/*` mirrors, and vendor-suffixed branches (e.g., `release/10.0.1xx-meaipreview1`). Do not assume the four bullets above are complete — always check.
 
 **Always verify by listing existing mappings before constructing a command:**
@@ -48,6 +48,43 @@ These are configured via default channel mappings — builds are **automatically
 darc get-default-channels --source-repo https://github.com/dotnet/maui
 ```
 Find a sibling branch (e.g., the previous SR or the previous preview) and copy its channel exactly. If no sibling exists (common for RC branches outside an active cycle), stop and tell the user that release engineering needs to configure the channel mapping — do not guess the channel name.
+
+### Versioned release lanes and the next-major transition
+
+Resolve the configured roles before looking up channels or subscriptions:
+
+```powershell
+$roles = & ./eng/scripts/Get-ReleaseRolloverPlan.ps1 -ResolveStateOnly | ConvertFrom-Json
+```
+
+The `.NET 11` servicing train uses `net11` for fixes, the configured
+`candidate/<band>-srN` for staged release contents, and
+`inflight/<band>-sr<N+1>` for the following release. `main` is the separate
+next-major feature lane. Historical `net11.0` is not an alias for `net11`.
+Use the appropriate branch's metadata and full commit for dependency coherence;
+never select .NET 11 assets from whatever channel currently feeds feature `main`.
+
+Before calling a new lane operational, verify its exact public/internal refs,
+outward default-channel mapping, incoming subscriptions, pipeline schedule,
+signed-build identity, and published feed. Creating refs does not transfer any
+of these external records. The checked-in `nightlyMode: legacy` deliberately
+keeps `inflight/current` selected until deployment is verified; versioned mode
+follows the state-derived inflight lane, not the highest retained SR branch.
+
+Query subscriptions separately for the literal fixes branch, candidate branch,
+and active inflight branch. Do not copy the historical `net11.0` table below
+without inspecting live config, and do not interpret zero subscriptions on
+`net11` as a healthy flow inherited from `net11.0`. Maestro subscription target
+branches are immutable: a migration requires replacement subscription IDs while
+preserving all other intended settings, not an in-place target-branch update.
+Prepare the reviewed configuration change and honor the exact-command
+confirmation requirements below before applying it.
+
+When `main` moves to .NET 12, inspect its live .NET 12 channel separately from
+the `.NET 11.0.1xx SDK` servicing channel. A stale .NET 10 or .NET 11 mapping
+on `main` is a migration gap, not authority to put those assets into a .NET 12
+target. Do not invent per-SR channels or promote workload-release packages as
+part of routine branch rotation.
 
 ### Adding a new branch to the default channel mapping
 
