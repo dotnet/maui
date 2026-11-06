@@ -383,6 +383,45 @@ namespace Microsoft.Maui.DeviceTests
 			return Assert.IsType<ResourceDictionary>(resources.ThemeDictionaries[theme]);
 		}
 
+		[Fact]
+		public async Task CustomOnColorPreservesApplicationMergedResources()
+		{
+			var switchStub = new SwitchStub { IsOn = true };
+			await AttachAndRun(switchStub, handler =>
+			{
+				var toggleSwitch = handler.PlatformView;
+				var original = new ResourceDictionary
+				{
+					["ToggleSwitchFillOnPointerOver"] = new SolidColorBrush(Colors.Green.ToWindowsColor())
+				};
+				toggleSwitch.Resources.MergedDictionaries.Add(original);
+				switchStub.TrackColor = Colors.Red;
+				handler.UpdateValue(nameof(ISwitch.TrackColor));
+
+				var replacementBrush = new SolidColorBrush(Colors.Purple.ToWindowsColor());
+				var replacement = new ResourceDictionary { ["ToggleSwitchFillOnPointerOver"] = replacementBrush };
+				toggleSwitch.Resources.MergedDictionaries.Add(replacement);
+				switchStub.TrackColor = Colors.Blue;
+				handler.UpdateValue(nameof(ISwitch.TrackColor));
+				Assert.True(VisualStateManager.GoToState(toggleSwitch, "Normal", false));
+				Assert.True(VisualStateManager.GoToState(toggleSwitch, "PointerOver", false));
+				var track = toggleSwitch.GetDescendantByName<Rectangle>("SwitchKnobBounds");
+				Assert.NotNull(track);
+				var hover = Assert.IsType<SolidColorBrush>(track.Fill);
+				Assert.Equal(Colors.Blue.ToWindowsColor(), hover.Color);
+				Assert.Equal(0.9, hover.Opacity, 2);
+
+				switchStub.TrackColor = null;
+				handler.UpdateValue(nameof(ISwitch.TrackColor));
+				Assert.Equal(2, toggleSwitch.Resources.MergedDictionaries.Count);
+				Assert.Same(original, toggleSwitch.Resources.MergedDictionaries[0]);
+				Assert.Same(replacement, toggleSwitch.Resources.MergedDictionaries[1]);
+				Assert.True(VisualStateManager.GoToState(toggleSwitch, "Normal", false));
+				Assert.True(VisualStateManager.GoToState(toggleSwitch, "PointerOver", false));
+				Assert.Same(replacementBrush, track.Fill);
+			});
+		}
+
 		class DirectHoverSwitchHandler : SwitchHandler
 		{
 			public DirectHoverSwitchHandler()

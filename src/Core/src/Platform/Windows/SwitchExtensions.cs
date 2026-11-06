@@ -120,8 +120,12 @@ namespace Microsoft.Maui.Platform
 			UpdateOnPointerOverResource(state.Resources, "Default",
 				trackColor is SolidColorBrush brush ? new SolidColorBrush(brush.Color) { Opacity = 0.9 } : null);
 			UpdateOnPointerOverResource(state.Resources, "HighContrast", trackColor);
-			if (!resources.MergedDictionaries.Contains(state.Resources))
-				resources.MergedDictionaries.Add(state.Resources);
+			var mergedDictionaries = resources.MergedDictionaries;
+			if (mergedDictionaries.Count == 0 || !ReferenceEquals(mergedDictionaries[mergedDictionaries.Count - 1], state.Resources))
+			{
+				mergedDictionaries.Remove(state.Resources);
+				mergedDictionaries.Add(state.Resources);
+			}
 		}
 
 		sealed class HoverResourceState
