@@ -78,21 +78,19 @@ Describe 'Direct native CI contracts' {
         $application | Should -Not -Match 'args.Handled\s*='
     }
 
-    It 'keeps the temporary signed debugger opt-in limited to unpackaged Windows Controls' {
-        $template = Get-Content -Raw (Join-Path $repoRoot 'eng/pipelines/common/run-dotnet-preview.yml')
-        $template | Should -Match 'nativeCrashMonitor: false'
-        $steps | Should -Match "if and\(eq\(parameters.device, 'unpackaged'\), eq\(parameters.applicationId, 'com.microsoft.maui.controls.devicetests'\)\)"
-        $steps | Should -Match 'Get-AuthenticodeSignature -LiteralPath \$tool'
-        $steps | Should -Match "signature.Status -ne 'Valid'"
-        $steps | Should -Match 'nativeCrashExecutable: Microsoft.Maui.Controls.DeviceTests.exe'
-        ($stage -split 'platform: windows', 2)[1] |
-            Should -Match ([regex]::Escape('applicationId: ${{ project.applicationId }}'))
-        $template | Should -Not -Match 'commandExitCode = 0'
-    }
 
     It 'disconnects the Windows Frame layout tree even when its native assertions fail' {
         $fixture = Get-Content (Join-Path $repoRoot 'src/Controls/tests/DeviceTests/Elements/Frame/FrameTests.cs') -Raw
         $fixture | Should -Match '(?s)new ContentLayoutPanel\(layout,.*?\}, MauiContext\);\s*\}\s*finally\s*\{\s*layout\.DisconnectHandlers\(\);'
+    }
+
+    It 'retains and disposes the Windows attachment scope after disconnecting its handler' {
+        $fixture = Get-Content -Raw (
+            Join-Path $repoRoot 'src/Controls/tests/DeviceTests/ControlsHandlerTestBase.Windows.cs')
+        $fixture.IndexOf('windowContext = window.Handler.MauiContext as MauiContext') |
+            Should -BeLessThan $fixture.IndexOf('await runTests.Invoke()')
+        $fixture | Should -Match '(?s)window\.Handler\?\.DisconnectHandler\(\).*?finally\s*\{\s*try\s*\{\s*windowContext\?\.DisposeWindowScope\(\);'
+        $fixture | Should -Match '(?s)windowContext\?\.DisposeWindowScope\(\).*?finally\s*\{\s*appStub\.Handler\?\.DisconnectHandler\(\);'
     }
 
     It 'detaches Apple fixture controllers without prematurely disposing UIKit trait environments' {
@@ -419,121 +417,6 @@ Describe 'Direct native CI contracts' {
                 (Join-Path $deviceScripts $file), [ref]$null, [ref]$errors) | Out-Null
             $errors | Should -BeNullOrEmpty
         }
-        $errors = $null
-        [System.Management.Automation.Language.Parser]::ParseFile(
-            (Join-Path $repoRoot 'eng/devices/Watch-NativeWindowsCrash.ps1'), [ref]$null, [ref]$errors) | Out-Null
-        $errors | Should -BeNullOrEmpty
-    }
-}
-
-Describe 'Temporary native Windows debugger ownership' {
-    BeforeAll {
-        $repoRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
-        $path = Join-Path $PSScriptRoot 'Watch-NativeWindowsCrash.ps1'
-        $ast = [Management.Automation.Language.Parser]::ParseFile($path, [ref]$null, [ref]$null)
-        foreach ($name in @('Get-OwnedNativeTestProcess', 'Get-MtpNativeChildIds')) {
-            $function = $ast.Find({
-                $args[0] -is [Management.Automation.Language.FunctionDefinitionAst] -and
-                    $args[0].Name -eq $name
-            }, $true)
-            . ([scriptblock]::Create($function.Extent.Text))
-        }
-        function Get-CimInstance {
-            [CmdletBinding()]
-            param([string]$ClassName, [string]$Filter)
-            throw 'The CIM query must be mocked.'
-        }
-
-    }
-
-    It 'reads native child IDs while MTP still holds its diagnostic writer open' {
-        $directory = Join-Path $TestDrive 'live-diagnostics'
-        New-Item -ItemType Directory -Path $directory | Out-Null
-        $path = Join-Path $directory 'controller.diag'
-        $writer = [IO.StreamWriter]::new([IO.File]::Open(
-            $path, [IO.FileMode]::Create, [IO.FileAccess]::Write, [IO.FileShare]::Read))
-        try {
-            $writer.WriteLine("Started test host process. PID: '5656'. HasExited: 'False'.")
-            $writer.Flush()
-            @(Get-MtpNativeChildIds -DiagnosticDirectory $directory) | Should -Be @(5656)
-        }
-        finally { $writer.Dispose() }
-    }
-
-    It 'accepts only a fresh matching executable descended from this test task (<Case>)' -ForEach @(
-        @{ Case = 'owned'; Accept = $true }
-        @{ Case = 'foreign task'; Accept = $false }
-        @{ Case = 'foreign path'; Accept = $false }
-        @{ Case = 'wrong executable'; Accept = $false }
-        @{ Case = 'stale process'; Accept = $false }
-        @{ Case = 'cyclic ancestry'; Accept = $false }
-    ) {
-        $root = Join-Path $TestDrive 'workspace'
-        $started = [DateTime]::UtcNow.AddMinutes(-1)
-        $processes = @{
-            600 = [pscustomobject]@{
-                ProcessId = 600; ParentProcessId = 500
-                ExecutablePath = Join-Path $root 'artifacts/TestHost.exe'
-                CreationDate = [DateTime]::UtcNow
-            }
-            500 = [pscustomobject]@{ ProcessId = 500; ParentProcessId = 400 }
-            400 = [pscustomobject]@{ ProcessId = 400; ParentProcessId = 0 }
-        }
-        switch ($Case) {
-            'foreign task' { $processes[500].ParentProcessId = 300 }
-            'foreign path' { $processes[600].ExecutablePath = Join-Path $TestDrive 'foreign/TestHost.exe' }
-            'wrong executable' { $processes[600].ExecutablePath = Join-Path $root 'artifacts/Other.exe' }
-            'stale process' { $processes[600].CreationDate = $started.AddMinutes(-1) }
-            'cyclic ancestry' { $processes[500].ParentProcessId = 600 }
-        }
-        Mock Get-CimInstance { $processes[[int]($Filter -replace '\D', '')] }
-
-        $owned = Get-OwnedNativeTestProcess -NativeProcessId 600 -OwnerProcessId 400 `
-            -Root $root -Name TestHost.exe -Started $started
-
-        if ($Accept) { $owned.ProcessId | Should -Be 600 }
-        else { $owned | Should -BeNullOrEmpty }
-    }
-}
-
-Describe 'Native debugger wrapper exit preservation' {
-    BeforeAll {
-        $repoRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
-        $template = Get-Content -Raw -LiteralPath (Join-Path $repoRoot 'eng/pipelines/common/run-dotnet-preview.yml')
-        $begin = $template.IndexOf('$monitorJob = $null')
-        $end = $template.IndexOf('        if ($commandExitCode -ne 0)', $begin)
-        $wrapper = $template.Substring($begin, $end - $begin)
-        foreach ($entry in @{
-            nativeCrashMonitor = '$enableNativeMonitor'
-            mauiSourcePath = $repoRoot
-            nativeCrashTool = 'unused-procdump.exe'
-            nativeCrashResults = '$resultsDirectory'
-            nativeCrashExecutable = 'TestHost.exe'
-            command = 'test'
-            project = ''
-            arguments = ''
-        }.GetEnumerator()) {
-            $wrapper = $wrapper.Replace(('${{ parameters.' + $entry.Key + ' }}'), $entry.Value)
-        }
-
-        $script:NativeWrapper = [scriptblock]::Create($wrapper)
-    }
-
-    It 'preserves native exit <ExitCode> with monitoring <Enabled>' -ForEach @(
-        @{ ExitCode = 0; Enabled = $false }
-        @{ ExitCode = 23; Enabled = $false }
-        @{ ExitCode = 23; Enabled = $true }
-    ) {
-        $resultsDirectory = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
-        New-Item -ItemType Directory -Path $resultsDirectory | Out-Null
-        $enableNativeMonitor = $Enabled
-        $dotnetPath = 'Invoke-FakeNativeTest'
-        function Invoke-FakeNativeTest { $global:LASTEXITCODE = $ExitCode }
-
-        . $script:NativeWrapper
-
-        $commandExitCode | Should -Be $ExitCode
-        $monitorFailed | Should -BeFalse
     }
 }
 

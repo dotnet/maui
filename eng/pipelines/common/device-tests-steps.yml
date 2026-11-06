@@ -168,21 +168,6 @@ steps:
       useExitCodeForErrors: true
 
 - ${{ if eq(parameters.platform, 'windows') }}:
-  - ${{ if and(eq(parameters.device, 'unpackaged'), eq(parameters.applicationId, 'com.microsoft.maui.controls.devicetests')) }}:
-    - pwsh: |
-        $ErrorActionPreference = 'Stop'
-        $directory = Join-Path "$(Agent.TempDirectory)" "native-debugger-$([guid]::NewGuid().ToString('N'))"
-        New-Item -ItemType Directory -Path $directory | Out-Null
-        $tool = Join-Path $directory 'procdump64.exe'
-        Invoke-WebRequest -Uri 'https://live.sysinternals.com/procdump64.exe' -OutFile $tool
-        $signature = Get-AuthenticodeSignature -LiteralPath $tool
-        if ($signature.Status -ne 'Valid' -or
-            $signature.SignerCertificate.Subject -notmatch '(^|,\s*)O=Microsoft Corporation(,|$)') {
-            throw 'The downloaded native debugger does not have a valid Microsoft signature.'
-        }
-        Write-Host "##vso[task.setvariable variable=NativeCrashTool]$tool"
-      displayName: Prepare signed native debugger for the Windows Controls exit investigation
-      retryCountOnTaskFailure: 4
   - template: run-dotnet-preview.yml
     parameters:
       displayName: Run Windows ${{ parameters.device }} tests directly
@@ -208,11 +193,6 @@ steps:
         ${{ iif(eq(parameters.device, 'packaged'), '--no-build', '') }}
       continueOnError: false
       useExitCodeForErrors: true
-      ${{ if and(eq(parameters.device, 'unpackaged'), eq(parameters.applicationId, 'com.microsoft.maui.controls.devicetests')) }}:
-        nativeCrashMonitor: true
-        nativeCrashTool: $(NativeCrashTool)
-        nativeCrashResults: $(TestResultsDirectory)
-        nativeCrashExecutable: Microsoft.Maui.Controls.DeviceTests.exe
 
 - ${{ if eq(parameters.platform, 'ios') }}:
   - pwsh: |
