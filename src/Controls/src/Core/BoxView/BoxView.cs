@@ -155,7 +155,9 @@ namespace Microsoft.Maui.Controls
 				propertyName == IsVisibleProperty.PropertyName ||
 				propertyName == BackgroundProperty.PropertyName ||
 #if IOS || MACCATALYST
-				propertyName == WidthRequestProperty.PropertyName ||
+             
+			    propertyName == WidthRequestProperty.PropertyName ||
+				propertyName == HeightRequestProperty.PropertyName ||
 #endif
 				propertyName == CornerRadiusProperty.PropertyName)
 			{
