@@ -37,8 +37,11 @@ public partial class FontManagerTests : TestBase
 
 		Assert.Equal("Dokdo", font.FamilyName);
 
-		using var text = new NSString("Maui");
-		var measuredSize = text.GetSizeUsingAttributes(new UIStringAttributes { Font = font });
+		var measuredSize = await InvokeOnMainThreadAsync(() =>
+		{
+			using var text = new NSString("Maui");
+			return text.GetSizeUsingAttributes(new UIStringAttributes { Font = font });
+		});
 		Assert.True(measuredSize.Width > 0);
 		Assert.True(measuredSize.Height > 0);
 	}
