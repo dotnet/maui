@@ -52,7 +52,7 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.True(VisualStateManager.GoToState(toggleSwitch, "Normal", false));
 				Assert.Same(normal, track.Fill);
 
-				var highContrast = Assert.IsType<ResourceDictionary>(toggleSwitch.Resources.ThemeDictionaries["HighContrast"]);
+				var highContrast = GetHoverThemeResources(toggleSwitch, "HighContrast");
 				var highContrastHover = Assert.IsType<SolidColorBrush>(highContrast["ToggleSwitchFillOnPointerOver"]);
 				Assert.Equal(normal.Color, highContrastHover.Color);
 				Assert.Equal(normal.Opacity, highContrastHover.Opacity);
@@ -108,6 +108,7 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					Assert.DoesNotContain(themeKey, toggleSwitch.Resources.ThemeDictionaries.Keys);
 				}
+				Assert.Empty(toggleSwitch.Resources.MergedDictionaries);
 			});
 		}
 
@@ -132,6 +133,9 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData("HighContrast")]
 		[InlineData("Light")]
 		[InlineData("Dark")]
+		[InlineData("HighContrastBlack")]
+		[InlineData("HighContrastWhite")]
+		[InlineData("HighContrastCustom")]
 		public async Task NullOnColorPreservesConfiguredHoverResource(string theme)
 		{
 			await InvokeOnMainThreadAsync(() =>
@@ -147,6 +151,9 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData("HighContrast")]
 		[InlineData("Light")]
 		[InlineData("Dark")]
+		[InlineData("HighContrastBlack")]
+		[InlineData("HighContrastWhite")]
+		[InlineData("HighContrastCustom")]
 		public async Task CustomOnColorRestoresConfiguredHoverResource(string theme)
 		{
 			var switchStub = new SwitchStub { IsOn = true, TrackColor = Colors.Red };
@@ -165,11 +172,14 @@ namespace Microsoft.Maui.DeviceTests
 						{
 							switchStub.TrackColor = color;
 							handler.UpdateValue(nameof(ISwitch.TrackColor));
-							var brush = Assert.IsType<SolidColorBrush>(resources["ToggleSwitchFillOnPointerOver"]);
+							Assert.Same(handler.OriginalHoverBrush, resources["ToggleSwitchFillOnPointerOver"]);
+							bool highContrast = theme.StartsWith("HighContrast", StringComparison.Ordinal);
+							var hoverResources = GetHoverThemeResources(toggleSwitch, highContrast ? "HighContrast" : "Default");
+							var brush = Assert.IsType<SolidColorBrush>(hoverResources["ToggleSwitchFillOnPointerOver"]);
 							Assert.Equal(color.ToWindowsColor(), brush.Color);
-							Assert.Equal(theme == "HighContrast" ? 1 : 0.9, brush.Opacity, 2);
+							Assert.Equal(highContrast ? 1 : 0.9, brush.Opacity, 2);
 
-							if (theme != "HighContrast")
+							if (!highContrast)
 							{
 								Assert.True(VisualStateManager.GoToState(toggleSwitch, "Normal", false));
 								Assert.True(VisualStateManager.GoToState(toggleSwitch, "PointerOver", false));
@@ -183,7 +193,7 @@ namespace Microsoft.Maui.DeviceTests
 						handler.UpdateValue(nameof(ISwitch.TrackColor));
 						Assert.Same(handler.OriginalHoverBrush, resources["ToggleSwitchFillOnPointerOver"]);
 
-						if (theme != "HighContrast")
+						if (!theme.StartsWith("HighContrast", StringComparison.Ordinal))
 						{
 							Assert.True(VisualStateManager.GoToState(toggleSwitch, "Normal", false));
 							Assert.True(VisualStateManager.GoToState(toggleSwitch, "PointerOver", false));
@@ -205,6 +215,12 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData("Dark", true)]
 		[InlineData("Light", false)]
 		[InlineData("Dark", false)]
+		[InlineData("HighContrastBlack", true)]
+		[InlineData("HighContrastWhite", true)]
+		[InlineData("HighContrastCustom", true)]
+		[InlineData("HighContrastBlack", false)]
+		[InlineData("HighContrastWhite", false)]
+		[InlineData("HighContrastCustom", false)]
 		public async Task ClearingOnColorPreservesReplacedHoverResource(string theme, bool clearBeforeNextColor)
 		{
 			var switchStub = new SwitchStub { IsOn = true, TrackColor = Colors.Red };
@@ -239,7 +255,9 @@ namespace Microsoft.Maui.DeviceTests
 				var originalBrush = new SolidColorBrush(Colors.Green.ToWindowsColor());
 				var originalDictionary = new ResourceDictionary
 				{
-					["ToggleSwitchFillOnPointerOver"] = originalBrush
+					["ToggleSwitchFillOnPointerOver"] = originalBrush,
+					["ToggleSwitchKnobFillOn"] = originalBrush,
+					["DefaultOnlyResource"] = "value"
 				};
 				toggleSwitch.Resources.ThemeDictionaries["Default"] = originalDictionary;
 				Assert.DoesNotContain("HighContrast", toggleSwitch.Resources.ThemeDictionaries.Keys);
@@ -248,7 +266,12 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					switchStub.TrackColor = Colors.Red;
 					handler.UpdateValue(nameof(ISwitch.TrackColor));
-					Assert.Contains("HighContrast", toggleSwitch.Resources.ThemeDictionaries.Keys);
+					Assert.DoesNotContain("HighContrast", toggleSwitch.Resources.ThemeDictionaries.Keys);
+					Assert.Same(originalDictionary, toggleSwitch.Resources.ThemeDictionaries["Default"]);
+					Assert.Same(originalBrush, originalDictionary["ToggleSwitchKnobFillOn"]);
+					Assert.Equal("value", toggleSwitch.Resources["DefaultOnlyResource"]);
+					Assert.Same(originalBrush, originalDictionary["ToggleSwitchFillOnPointerOver"]);
+					Assert.Single(toggleSwitch.Resources.MergedDictionaries);
 
 					switchStub.TrackColor = null;
 					handler.UpdateValue(nameof(ISwitch.TrackColor));
@@ -271,7 +294,8 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var handler = CreateHandler(switchStub);
 				var resources = handler.PlatformView.Resources;
-				var themeResources = (ResourceDictionary)resources.ThemeDictionaries[theme];
+				var hoverResources = Assert.Single(resources.MergedDictionaries);
+				var themeResources = (ResourceDictionary)hoverResources.ThemeDictionaries[theme];
 				var additionalResources = new ResourceDictionary { ["OtherResource"] = "value" };
 				if (useMergedDictionary)
 					themeResources.MergedDictionaries.Add(additionalResources);
@@ -281,13 +305,98 @@ namespace Microsoft.Maui.DeviceTests
 				switchStub.TrackColor = null;
 				handler.UpdateValue(nameof(ISwitch.TrackColor));
 
-				Assert.Same(themeResources, resources.ThemeDictionaries[theme]);
+				Assert.Same(hoverResources, Assert.Single(resources.MergedDictionaries));
+				Assert.Same(themeResources, hoverResources.ThemeDictionaries[theme]);
 				Assert.DoesNotContain("ToggleSwitchFillOnPointerOver", themeResources.Keys);
 				if (useMergedDictionary)
 					Assert.Same(additionalResources, Assert.Single(themeResources.MergedDictionaries));
 				else
 					Assert.Equal("value", themeResources["OtherResource"]);
 			});
+		}
+
+		[Theory]
+		[InlineData(ElementTheme.Light, false)]
+		[InlineData(ElementTheme.Dark, false)]
+		[InlineData(ElementTheme.Light, true)]
+		[InlineData(ElementTheme.Dark, true)]
+		public async Task CustomOnColorOverridesAndRestoresDirectHoverResource(ElementTheme theme, bool clearBeforeNextColor)
+		{
+			var switchStub = new SwitchStub { IsOn = true };
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler<DirectHoverSwitchHandler>(switchStub);
+				var toggleSwitch = handler.PlatformView;
+				Assert.Same(handler.OriginalHoverBrush, toggleSwitch.Resources["ToggleSwitchFillOnPointerOver"]);
+				await toggleSwitch.AttachAndRun(() =>
+				{
+					toggleSwitch.RequestedTheme = theme;
+					toggleSwitch.ApplyTemplate();
+					var track = toggleSwitch.GetDescendantByName<Rectangle>("SwitchKnobBounds");
+					Assert.NotNull(track);
+
+					switchStub.TrackColor = Colors.Red;
+					handler.UpdateValue(nameof(ISwitch.TrackColor));
+					Assert.True(VisualStateManager.GoToState(toggleSwitch, "Normal", false));
+					Assert.True(VisualStateManager.GoToState(toggleSwitch, "PointerOver", false));
+					var hover = Assert.IsType<SolidColorBrush>(track.Fill);
+					Assert.Equal(Colors.Red.ToWindowsColor(), hover.Color);
+					Assert.Equal(0.9, hover.Opacity, 2);
+
+					switchStub.TrackColor = null;
+					handler.UpdateValue(nameof(ISwitch.TrackColor));
+					Assert.Same(handler.OriginalHoverBrush, toggleSwitch.Resources["ToggleSwitchFillOnPointerOver"]);
+					Assert.True(VisualStateManager.GoToState(toggleSwitch, "Normal", false));
+					Assert.True(VisualStateManager.GoToState(toggleSwitch, "PointerOver", false));
+					Assert.Same(handler.OriginalHoverBrush, track.Fill);
+
+					switchStub.TrackColor = Colors.Red;
+					handler.UpdateValue(nameof(ISwitch.TrackColor));
+					var replacement = new SolidColorBrush(Colors.Purple.ToWindowsColor());
+					toggleSwitch.Resources["ToggleSwitchFillOnPointerOver"] = replacement;
+					if (clearBeforeNextColor)
+					{
+						switchStub.TrackColor = null;
+						handler.UpdateValue(nameof(ISwitch.TrackColor));
+						Assert.Same(replacement, toggleSwitch.Resources["ToggleSwitchFillOnPointerOver"]);
+					}
+
+					switchStub.TrackColor = Colors.Blue;
+					handler.UpdateValue(nameof(ISwitch.TrackColor));
+					Assert.True(VisualStateManager.GoToState(toggleSwitch, "Normal", false));
+					Assert.True(VisualStateManager.GoToState(toggleSwitch, "PointerOver", false));
+					hover = Assert.IsType<SolidColorBrush>(track.Fill);
+					Assert.Equal(Colors.Blue.ToWindowsColor(), hover.Color);
+					Assert.Equal(0.9, hover.Opacity, 2);
+
+					switchStub.TrackColor = null;
+					handler.UpdateValue(nameof(ISwitch.TrackColor));
+					Assert.Same(replacement, toggleSwitch.Resources["ToggleSwitchFillOnPointerOver"]);
+					Assert.Empty(toggleSwitch.Resources.MergedDictionaries);
+				}, MauiContext);
+			});
+		}
+
+		static ResourceDictionary GetHoverThemeResources(ToggleSwitch toggleSwitch, string theme)
+		{
+			var resources = Assert.Single(toggleSwitch.Resources.MergedDictionaries);
+			return Assert.IsType<ResourceDictionary>(resources.ThemeDictionaries[theme]);
+		}
+
+		class DirectHoverSwitchHandler : SwitchHandler
+		{
+			public DirectHoverSwitchHandler()
+			{
+			}
+
+			public SolidColorBrush OriginalHoverBrush { get; } = new SolidColorBrush(Colors.Green.ToWindowsColor());
+
+			protected override ToggleSwitch CreatePlatformView()
+			{
+				var toggleSwitch = base.CreatePlatformView();
+				toggleSwitch.Resources["ToggleSwitchFillOnPointerOver"] = OriginalHoverBrush;
+				return toggleSwitch;
+			}
 		}
 
 		class ConfiguredHoverSwitchHandler : SwitchHandler
@@ -301,7 +410,7 @@ namespace Microsoft.Maui.DeviceTests
 			protected override ToggleSwitch CreatePlatformView()
 			{
 				var toggleSwitch = base.CreatePlatformView();
-				foreach (var theme in new[] { "Default", "HighContrast", "Light", "Dark" })
+				foreach (var theme in new[] { "Default", "HighContrast", "Light", "Dark", "HighContrastBlack", "HighContrastWhite", "HighContrastCustom" })
 				{
 					toggleSwitch.Resources.ThemeDictionaries[theme] = new ResourceDictionary
 					{
