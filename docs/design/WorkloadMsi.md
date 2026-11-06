@@ -12,6 +12,44 @@ MAUI uses the arcade `CreateVisualStudioWorkload` MSBuild task (from `Microsoft.
 
 The output flows into the VS insertion pipeline, which installs MAUI workload packs via the VS installer.
 
+## Stable net11 Manifest Installer Versions
+
+For `Microsoft.NET.Sdk.Maui.Manifest-11.0.100`, the MSI version is
+`(product major + 100).minor.patch`. For example, MAUI `11.0.0` uses MSI
+`111.0.0`, and servicing version `11.0.10` uses MSI `111.0.10`. This keeps the
+stable installer above the previously shipped RC2 version `88.0.61402` for the
+unchanged Visual Studio package group
+`PackageGroup.Microsoft.NET.Sdk.Maui.Manifest-11.0.100`.
+
+The rule is applied in `_SetMsiVersionFromNuGetVersion` in `workloads.csproj`
+for every build of that stable manifest band, not just GA. It changes only
+installer numbering: public/product and NuGet versions, component and drop
+versions, SDK dependencies, preview manifest identities, and other manifest
+bands retain their existing behavior. An explicit `WorkloadPackages.MsiVersion`
+continues to take precedence.
+
+The MSI major and minor must be at most `255`, and patch at most `65535`.
+Consequently, the offset rule supports product major up to `155`, minor up to
+`255`, and patch up to `65535`; out-of-range values fail the build with an
+explicit error instead of wrapping or falling back. Assigned MSI versions skip
+the legacy date-based `GenerateMsiVersion` task. This preserves the full patch
+number, including `15 -> 16`, `31 -> 32`, and patches above `255`, without using
+the old encoder's four-bit patch field.
+
+Run the focused cross-platform checks with an installed .NET SDK and PowerShell:
+
+```powershell
+pwsh -NoLogo -NoProfile -File src/Workload/workloads.Tests.ps1
+```
+
+These checks execute the actual packaging project's version-selection targets
+without restoring Windows signing tools. They cover RC2-to-stable ordering,
+successive servicing versions, large patches, MSI bounds, explicit overrides,
+and unchanged selection for older/preview bands. They do not execute the legacy
+encoder for unassigned preview versions or produce signed installers. Internal
+Windows build validation and a Visual Studio upgrade from RC2 are still required
+to validate the generated MSI/SWIX artifacts and installed-manifest replacement.
+
 ## WiX 6 Migration (completed in .NET 11)
 
 As of .NET 11, MAUI uses **WiX 6** (wix.exe CLI) instead of WiX 3 (candle.exe/light.exe). This migration was inspired by [dotnet/android#11743](https://github.com/dotnet/android/pull/11743) and follows the pattern from the `Xamarin.yaml-templates` `convert-v5/convert.proj`.
