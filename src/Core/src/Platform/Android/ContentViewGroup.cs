@@ -143,10 +143,7 @@ namespace Microsoft.Maui.Platform
 
 			CrossPlatformArrange(destination);
 
-			// Overlap-based padding otherwise stays stale after a safe-area view resizes. See #36269.
-			if (_isInsetListenerSet &&
-				(_didSafeAreaEdgeConfigurationChange ||
-					(changed && SafeAreaExtensions.ShouldReapplyInsetsForResize(CrossPlatformLayout, this))))
+			if (changed && _windowInsetsScope is not null)
 			{
 				_windowInsetsScope.OnParticipantLayoutChanged(this);
 			}

@@ -179,17 +179,10 @@ namespace Microsoft.Maui.Handlers
 
 		void UpdateIsPresented()
 		{
-			if (_flyoutView is not null)
-			{
-				if (VirtualView.IsPresented)
-				{
-					DrawerLayout.OpenDrawer(_flyoutView);
-				}
-				else
-				{
-					DrawerLayout.CloseDrawer(_flyoutView);
-				}
-			}
+			if (VirtualView.IsPresented)
+				MauiDrawerLayout.OpenFlyout();
+			else
+				MauiDrawerLayout.CloseFlyout();
 
 			InvalidateFlyoutSafeArea();
 		}
@@ -223,11 +216,8 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(MauiDrawerLayout platformView)
 		{
-			if (platformView is DrawerLayout dl)
-			{
-				dl.DrawerStateChanged += OnDrawerStateChanged;
-				dl.ViewAttachedToWindow += DrawerLayoutAttached;
-			}
+			platformView.OnPresentedChanged += HandlePresentedChanged;
+			platformView.ViewAttachedToWindow += DrawerLayoutAttached;
 		}
 
 		protected override void DisconnectHandler(MauiDrawerLayout platformView)
@@ -313,6 +303,8 @@ namespace Microsoft.Maui.Handlers
 			{
 				return;
 			}
+
+			InvalidateFlyoutSafeArea();
 
 			// Sync the virtual view's IsPresented property with the actual drawer state
 			if (VirtualView.FlyoutBehavior == FlyoutBehavior.Flyout)
