@@ -1,3 +1,5 @@
+// Android opens ListView context actions with a long press, entering contextual action mode.
+// iOS reveals actions with a swipe instead; this regression concerns Android's action-mode toolbar.
 #if ANDROID
 using NUnit.Framework;
 using UITest.Appium;
