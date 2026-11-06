@@ -20,6 +20,7 @@ namespace Microsoft.Maui.Controls
 		IList<BindingBase> _bindings;
 		BindableProperty _targetProperty;
 		WeakReference<BindableObject> _weakTarget;
+		SetterSpecificity _specificity;
 		BindableObject _proxyObject;
 		BindableProperty[] _bpProxies;
 		bool _applying;
@@ -134,7 +135,10 @@ namespace Microsoft.Maui.Controls
 						return;
 					}
 					// ManualValueSetter specificity ensures TwoWay bindings continue updating after ConvertBack.
-					targetObject.SetValueCore(_targetProperty, value, SetValueFlags.ClearDynamicResource, BindableObject.SetValuePrivateFlags.Default | BindableObject.SetValuePrivateFlags.Converted, specificity: SetterSpecificity.ManualValueSetter);
+					// BindingContext is the exception: a ManualValueSetter value there would stop the inherited
+					// binding context from flowing in (see BindableObject.SetInheritedBindingContext, #10792).
+					var specificity = ReferenceEquals(_targetProperty, BindableObject.BindingContextProperty) ? _specificity : SetterSpecificity.ManualValueSetter;
+					targetObject.SetValueCore(_targetProperty, value, SetValueFlags.ClearDynamicResource, BindableObject.SetValuePrivateFlags.Default | BindableObject.SetValuePrivateFlags.Converted, specificity: specificity);
 					_applying = false;
 				}
 			}
@@ -196,7 +200,21 @@ namespace Microsoft.Maui.Controls
 					_applying = false;
 				}
 			}
-			_proxyObject.BindingContext = context;
+			_specificity = specificity;
+
+			// When bound to BindingContextProperty, the context passed in is the target's own BindingContext
+			// (i.e. the result of this binding); the inherited context is stored in Context instead (#10792).
+			// The target value is computed right below, so don't let each child binding update it on its own.
+			var wasApplying = _applying;
+			_applying = true;
+			try
+			{
+				_proxyObject.BindingContext = Context ?? context;
+			}
+			finally
+			{
+				_applying = wasApplying;
+			}
 
 			if (this.GetRealizedMode(_targetProperty) == BindingMode.OneWayToSource)
 				return;
