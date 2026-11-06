@@ -137,6 +137,27 @@ Describe 'Direct native CI contracts' {
         $start | Should -Match 'simctl bootstatus \$state.Device -b'
         $stop | Should -Match 'simctl delete \$state.Device'
         $stop | Should -Not -Match 'delete unavailable|shutdown all|booted'
+        $stop | Should -Match 'Library/Logs/DiagnosticReports'
+        $stop | Should -Match ([regex]::Escape('Select-String -LiteralPath $_.FullName -SimpleMatch $state.Device -Quiet'))
+    }
+
+    It 'copies only fresh crash reports containing the owned simulator identity' {
+        $collection = [regex]::Match($stop, '(?s)    if \(Test-Path -LiteralPath \$hostReports\).*?(?=\r?\n    & xcrun)')
+        $collection.Success | Should -BeTrue
+        $ResultsDirectory = Join-Path $TestDrive 'simulator-results'
+        $hostReports = Join-Path $TestDrive 'host-reports'
+        New-Item -ItemType Directory -Path $ResultsDirectory, $hostReports | Out-Null
+        $state = [pscustomobject]@{ Device = [guid]::NewGuid().ToString() }
+        Set-Content -LiteralPath (Join-Path $hostReports 'owned.ips') -Value $state.Device
+        Set-Content -LiteralPath (Join-Path $hostReports 'foreign.ips') -Value ([guid]::NewGuid().ToString())
+        $stale = Join-Path $hostReports 'stale.ips'
+        Set-Content -LiteralPath $stale -Value $state.Device
+        [IO.File]::SetLastWriteTimeUtc($stale, [DateTime]::UtcNow.AddHours(-1))
+
+        & ([scriptblock]::Create($collection.Value))
+
+        @(Get-ChildItem -LiteralPath (Join-Path $ResultsDirectory 'crashes') -File).Name |
+            Should -Be @('owned.ips')
     }
 
     It 'selects the exact owned Android serial and never stops processes by name' {

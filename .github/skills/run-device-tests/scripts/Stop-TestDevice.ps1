@@ -40,6 +40,20 @@ elseif ($state.Platform -eq 'ios' -and $state.Device) {
     if (Test-Path -LiteralPath $crashes) {
         Copy-Item -LiteralPath $crashes -Destination (Join-Path $ResultsDirectory 'crashes') -Recurse
     }
+    $hostReports = Join-Path $HOME 'Library/Logs/DiagnosticReports'
+    if (Test-Path -LiteralPath $hostReports) {
+        $startTime = (Get-Item -LiteralPath $ResultsDirectory).CreationTimeUtc
+        $ownedReports = @(Get-ChildItem -LiteralPath $hostReports -Filter '*.ips' -File |
+            Where-Object {
+                $_.LastWriteTimeUtc -ge $startTime -and
+                (Select-String -LiteralPath $_.FullName -SimpleMatch $state.Device -Quiet)
+            })
+        if ($ownedReports.Count) {
+            $destination = Join-Path $ResultsDirectory 'crashes'
+            New-Item -ItemType Directory -Force -Path $destination | Out-Null
+            $ownedReports | Copy-Item -Destination $destination
+        }
+    }
     & xcrun simctl spawn $state.Device log show --last 15m --style compact *> (Join-Path $ResultsDirectory 'simulator.log')
     & xcrun simctl shutdown $state.Device
     & xcrun simctl delete $state.Device
