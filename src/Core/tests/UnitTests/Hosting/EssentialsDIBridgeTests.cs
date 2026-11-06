@@ -26,7 +26,15 @@ namespace Microsoft.Maui.UnitTests.Hosting
 	[Collection(MainThreadStaticStateCollection.Name)]
 	public class EssentialsDIBridgeTests : IDisposable
 	{
-		public void Dispose()
+		public EssentialsDIBridgeTests()
+		{
+			// Other hosting tests can initialize facades before this fixture runs.
+			ResetFacadeImplementations();
+		}
+
+		public void Dispose() => ResetFacadeImplementations();
+
+		static void ResetFacadeImplementations()
 		{
 			// Clear backing fields directly to avoid initializing platform defaults during cleanup
 			// and to cover platform-specific types without a common setter contract.
@@ -113,6 +121,18 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			// Platform-specific types may not exist in the current TFM (e.g. ActivityStateManager on non-Android)
 			if (type is not null)
 				ResetStaticField(type, fieldName);
+		}
+
+		[Fact]
+		public void NewFixtureClearsPreviouslyInitializedFacades()
+		{
+			_ = Preferences.Default;
+			_ = AppInfo.Current;
+
+			using var fixture = new EssentialsDIBridgeTests();
+
+			Assert.Null(GetStaticField(typeof(Preferences), "defaultImplementation"));
+			Assert.Null(GetStaticField(typeof(AppInfo), "currentImplementation"));
 		}
 
 		[Fact]
