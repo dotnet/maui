@@ -89,6 +89,13 @@ must finish its post-cut fixes housekeeping before it can be forwarded.
 Source/target refs are read-only; automation never guesses conflict resolutions,
 approves PRs, or auto-merges. Actual forward-PR CI remains a separate gate.
 
+The **Release tracking PRs** workflow prepares the next candidate/inflight
+branches and draft PR pair after a verified same-repository candidate merge into
+net11. Its merged-PR trigger uses default-branch workflow code and explicitly
+checks out trusted main, never PR code. A create-once release-lane receipt pins
+inputs/outputs for retries. This runner does not cut release refs, change net11,
+or advance canonical release/nightly state; those gates remain separate.
+
 .NET 10 SR13 publishes from `release/10.0.1xx-sr13`, independently of `main`.
 Preserve its release commit and packages, and keep publication on the .NET 10 channel during the
 .NET 11 transition. Do not cut over `inflight/current` or synchronize the internal

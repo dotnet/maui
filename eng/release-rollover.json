@@ -5,6 +5,6 @@
     "currentSr": 1,
     "fixBranch": "net11",
     "featureBranch": "main",
-    "candidateNamingPolicy": "unresolved",
+    "candidateNamingPolicy": "candidate",
     "nightlyMode": "legacy"
 }

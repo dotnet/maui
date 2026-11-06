@@ -56,8 +56,12 @@ An approved fix on inflight but not yet on `net11` is normal staged content:
 promotion through candidate integration, not a direct individual-fix merge,
 brings selected contents into `net11`.
 
-`candidateNamingPolicy=unresolved` blocks rotation **mutations**, not read-only
-reporting of these existing roles. When state advances to SR2, readiness selects
+The selected `candidateNamingPolicy=candidate` convention prepares candidate SR
+N+1 and future inflight SR N+2 after a verified candidate merge. Older
+`unresolved` configurations still block mutation, not read-only reporting.
+Production next-lane receipts advance the tracking PR pair only; they do not
+cut a release or change canonical `currentSr`/`nightlyMode`. When the approved
+release-state update advances to SR2, readiness selects
 `candidate/11.0.1xx-sr2` and versioned nightly `inflight/11.0.1xx-sr3`
 automatically. It never writes state.
 Resolved roles are configuration evidence only: branch existence does not prove

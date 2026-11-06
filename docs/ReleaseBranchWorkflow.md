@@ -7,9 +7,9 @@ signing, and publishing remain covered by the [release process](ReleaseProcess.m
 
 > [!IMPORTANT]
 > These are proposed branch names and responsibilities, not a statement that the
-> migration has happened. The next-candidate naming decision below must be resolved
-> before adopting the recurring rotation. This change does not rename production
-> branches or enable production release automation.
+> migration has happened. Candidate merges automatically prepare the next named
+> branches and tracking PRs once this automation is deployed on `main`. Actual
+> release cuts, tags, publishing, and signed nightly deployment remain separate.
 
 ## Branch responsibilities
 
@@ -97,17 +97,18 @@ flowchart LR
     OldInflight -.->|Carry over all changes at rotation| Promoted
 ```
 
-### Next-candidate naming decision
+### Recurring candidate naming
 
 The requested rotation above leaves two `inflight/...` branches and no
 `candidate/11.0.1xx-sr2`. A candidate must be identified before the same
 candidate-to-`net11` release flow can repeat.
 
-The proposed clarification is to name the previous candidate branch
+The selected convention is to name the next selected-content branch
 `candidate/11.0.1xx-sr2`, rather than `inflight/11.0.1xx-sr2`, after bringing over
 the old SR2 inflight changes. The old SR2 inflight branch still advances to
-`inflight/11.0.1xx-sr3`. This is a naming decision for the proposal, not an
-approved change to the requested rotation.
+`inflight/11.0.1xx-sr3`. The trusted configuration records
+`candidateNamingPolicy: candidate`; automation creates the next pair without
+renaming, deleting, or overwriting the historical source refs.
 
 With that clarification, the repeating cycle is:
 
@@ -138,10 +139,10 @@ approved individual fix; it does not mean merging the future preview into
 `net11` early.
 
 `Release tracking PRs` reconciles these routes from the canonical release-state
-record every six hours, when that record changes on `main`, after a same-repo
-candidate or inflight PR merges into `net11`, on pushes to the development and
-lane branches, or on zero-input manual activation. It checks out trusted `main`,
-not the merged PR's head. Its user credential needs PR write access and branch
+record every six hours, on pushes to `main`, after a same-repo candidate or
+inflight PR merges into `net11`, or on zero-input manual activation. The merged-PR
+trigger runs from the default branch and checks out trusted `main`, never the
+merged PR's workflow or scripts. Its credential needs PR write access and branch
 creation access for recovery; repository protections still apply.
 
 GitHub-hosted reconciliation uses its repository-scoped `GITHUB_TOKEN`:
@@ -313,14 +314,62 @@ scheduled-inflight template path, including the selection-stage dependency on
 root YAML override because preview requests do not adopt the queued system
 variables. It did not queue a build or execute signing or publishing.
 
-## One-click release automation
+## Automatic next-branch and PR preparation
+
+After a genuine servicing candidate SR `N` is merged into `net11`, the
+**Release tracking PRs** workflow runs `Sync-ReleaseNextLanes.ps1` and creates:
+
+- `candidate/<band>-sr<N+1>`, with selected next-cycle payload and servicing/stable
+  configuration.
+- `inflight/<band>-sr<N+2>`, with candidate ancestry, its own next-cycle patch and
+  CI branding.
+- The new candidate and draft future-preview PRs into `net11`. The obsolete
+  managed preview closes only after both replacement PRs exist.
+
+For SR1, these are **candidate SR2 and inflight SR3**, without another button or
+release-input form. This is production next-lane preparation, not only a sandbox.
+It never merges individual fixes or the new candidate/preview PRs.
+
+The runner re-reads the merged managed candidate PR, verifies the same-repository
+head and target, its maintainer merger's write permission, the exact two-parent
+integration, servicing metadata, and the pinned following inflight's ancestry
+and package version. An old CI-branded tracking PR that happened to become
+integrated before servicing setup does not advance the train. Ambiguous sources,
+wrong versions, conflicts, unexpected refs, and squash/rebase merges fail rather
+than invent a release approval.
+
+Before creating lanes or PRs, it publishes a bounded, create-once receipt at
+`automation/release-lanes/<band>-srN`. The receipt retains the approved merge,
+source and prepared commit identities. If a later API call fails, schedule or
+manual retry reconstructs the same plan and finishes missing writes. Existing
+output refs must match or preserve the prepared ancestry; newer approved work
+is never reset. Consumed historical candidate heads are not recreated as fresh
+PRs. The reconciler follows these verified receipts, so the unchanged initial
+configuration cannot reopen an obsolete PR pair after a completed integration.
+
+**This does not cut `release/*` or move `net11`.** The approved integration tip
+keeps its servicing settings until a captain separately cuts the release and
+applies CI housekeeping. The receipt exposes `preparedNormalizationSha`, the
+exact normalized child retained in next-candidate ancestry; use that approved
+commit for the later housekeeping fast-forward rather than independently
+creating a different normalization history. Until housekeeping, daily forwarding
+continues to refuse the servicing tip.
+
+The effective `trackingSr` selects the upcoming PR pair. It does not silently
+change the canonical `currentSr` used for release readiness or the selected
+signed-nightly source. Advance those release-state settings separately when the
+actual cut and nightly acceptance gates clear. The workflow never changes
+protections, channels, subscriptions, tags, packages, or feature `main`.
+
+### Remaining full release automation
 
 The proposed activation point is a GitHub Action after a reviewed candidate
 merge into `net11`, with a zero-input **Run workflow** option for manual
-activation. Internal signed-build work would remain in Azure DevOps. Production
-orchestration is not implemented or enabled by this change. A separate GitHub
-Actions sandbox below exercises automatic activation after a dummy candidate
-merge without enabling production release operations.
+activation. Internal signed-build work remains in Azure DevOps. The next-branch
+and PR preparation above is implemented; automatic release cuts, application of
+housekeeping, and canonical release-state advancement are not enabled. The
+separate sandbox below exercises those broader transitions without cutting
+production releases.
 
 ### Operator experience
 
@@ -459,8 +508,8 @@ pwsh -NoProfile -File eng/scripts/Get-ReleaseRolloverPlan.ps1
 It reads the proposed state in `eng/release-rollover.json`, queries branch refs
 without changing them, and emits a JSON snapshot with the derived release, next
 candidate, and next inflight names. The checked-in candidate-naming policy is
-deliberately `unresolved`; the trial must report that decision and any missing
-branches rather than silently choose a different workflow.
+`candidate`; configurations that still use `unresolved` remain blocked instead
+of silently choosing a different workflow.
 
 Exit code `0` means only that branch planning completed. Exit code `2` means
 the plan is blocked by missing source refs, occupied destination names, or the
@@ -470,9 +519,8 @@ prototype does not verify. A complete branch plan is not release readiness.
 
 For isolated development trials, `-StatePath` can point at a separate state file
 whose repository is a disposable local Git repository. This is not a release form
-or an activation input for the proposed pipeline. The Azure pipeline, branch
-mutations, external integrations, and publishing are not implemented by this
-prototype.
+or an activation input for the proposed pipeline. The read-only planner itself performs no branch mutations, Azure pipeline work,
+external integration changes, or publishing.
 
 ### GitHub Actions merge-triggered sandbox
 
@@ -508,9 +556,9 @@ For a dummy SR1 candidate merge, it creates only these sandbox refs:
 | `candidate/11.0.1xx-sr2` | Servicing-configured child of a clean merge of normalized fixes and pinned old SR2 inflight. |
 | `inflight/11.0.1xx-sr3` | CI-configured child of the next candidate, with SR3 patch metadata. |
 
-This trial uses the proposed `candidate/...` naming clarification only inside
-the sandbox. It creates new refs and preserves historical source branches; it
-does not test renaming or deletion. The real naming policy remains unresolved.
+This trial uses the selected `candidate/...` naming convention. It creates new
+refs and preserves historical source branches; it does not test renaming or
+deletion.
 
 ```mermaid
 flowchart LR
@@ -665,13 +713,14 @@ actual production evidence; merging this proposal does not satisfy them.
 
 | Surface | Remaining production requirement |
 |---|---|
-| Release cuts and rotation | Implement the protected production orchestrator, including persistent state advancement and recovery. The current mutation runner is sandbox-only. |
+| Next branches and tracking PRs | Deploy the implemented merged-candidate workflow from trusted main and verify the first production receipt, next pair, and unchanged retry. No release cut is performed. |
+| Release cuts and canonical state | Implement or perform the separately approved cut, CI housekeeping, and canonical release-state advancement. Next-lane preparation deliberately does not move net11 or create a release. |
 | Servicing and post-ship metadata | Reconcile real lane baselines/package metadata, wire these validated helpers into the protected production orchestrator, and integrate the prepared post-publication metadata commit. |
 | Daily forward merges | Deploy the scheduled forward-PR workflow and verify actual CI on its first eligible source snapshot. PR preparation is implemented; review/conflict resolution and merging remain separate. |
 | New branch names | Deploy the explicit `net11` / `candidate/*` CI YAML coverage in this PR and review protections and readiness discovery. Server-side/manual runs are not proof that the deployed branch triggers are wired. |
 | Signed nightly builds | Deploy the internal mirrored source changes and validate signed artifacts and feed/channel handoff before changing `nightlyMode` from `legacy`. |
 | .NET 12 development | Update `main` and its dependency flow separately; creating `net11` does not change `main`'s SDK. |
-| Candidate naming | Resolve the production rotation policy before enabling release mutations. |
+| Candidate naming | The configured convention creates next candidate SR N+1 and future inflight SR N+2 while retaining historical refs. |
 
 Adopting this proposal requires coordinating the branch changes with their
 protections, pipeline branch filters, scheduled merges, dependency-update

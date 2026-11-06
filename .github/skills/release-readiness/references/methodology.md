@@ -32,6 +32,13 @@ source-only commits require an explicit synchronization WATCH. Candidate-only
 inventory cannot certify the eventual source-branch cut when it omits fixes.
 No union or merge result is invented.
 
+Next-lane creation and release-cut state are distinct. After candidate
+integration, create-once `automation/release-lanes/<band>-srN` receipts let the
+tracking workflow recover and maintain the next PR pair. Those receipts do not
+declare a release cut or advance canonical `currentSr`/`nightlyMode`; readiness
+continues surveying the configured release until its separately approved state
+update.
+
 The compatibility JSON names `mainBranch`, `onMain`, `open-on-main`, and
 `merged-on-main-no-backport` refer to the **resolved fixes source**, not
 necessarily literal main. The .NET10 examples below intentionally retain their

@@ -365,6 +365,112 @@ function New-MauiReleaseLaneIntegrationCommit {
     [pscustomobject]@{ sha = $sha; parents = @($Fixes, $Inflight); message = $message.TrimEnd() }
 }
 
+function New-MauiReleaseNextLanePlan {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory)][string] $RepositoryPath,
+        [Parameter(Mandatory)][string] $ReleaseBand,
+        [Parameter(Mandatory)][ValidateRange(1, 214748360)][int] $Sr,
+        [Parameter(Mandatory)][ValidatePattern('^[0-9a-f]{40}$')][string] $Merge,
+        [Parameter(Mandatory)][ValidatePattern('^[0-9a-f]{40}$')][string] $Candidate,
+        [Parameter(Mandatory)][ValidatePattern('^[0-9a-f]{40}$')][string] $Inflight,
+        [string] $SandboxPrefix
+    )
+
+    $parents = (Invoke-MauiReleaseGit -RepositoryPath $RepositoryPath -Arguments @(
+        'show', '-s', '--format=%P', $Merge)).Trim().Split(' ')
+    if ($parents.Count -ne 2 -or $parents[1] -cne $Candidate) {
+        throw 'Next-lane preparation requires the exact two-parent candidate integration merge.'
+    }
+    $null = Invoke-MauiReleaseGit -RepositoryPath $RepositoryPath -Arguments @(
+        'merge-base', '--is-ancestor', $Candidate, $Inflight)
+    foreach ($commit in @($Candidate, $Merge)) {
+        $content = Get-MauiReleaseFile -RepositoryPath $RepositoryPath -Commit $commit -Path 'eng/Versions.props'
+        $null = Get-MauiReleaseVersionContent -Content $content -ReleaseBand $ReleaseBand -Sr $Sr -Role candidate
+        $version = Get-MauiReleaseVersion -Content $content
+        if ($version.label -cne 'servicing' -or !$version.stable -or $version.labelCount -ne 1) {
+            throw 'The approved candidate and merge must already have servicing/stable configuration.'
+        }
+    }
+    $candidateVersion = Get-MauiReleaseVersion -Content (
+        Get-MauiReleaseFile -RepositoryPath $RepositoryPath -Commit $Candidate -Path 'eng/Versions.props')
+    if ($version.patch -ne $candidateVersion.patch) {
+        throw 'The integration changed the approved candidate package version.'
+    }
+    $inflightContent = Get-MauiReleaseFile -RepositoryPath $RepositoryPath -Commit $Inflight -Path 'eng/Versions.props'
+    $null = Get-MauiReleaseVersionContent -Content $inflightContent -ReleaseBand $ReleaseBand -Sr ($Sr + 1) -Role inflight
+    $inflightVersion = Get-MauiReleaseVersion -Content $inflightContent
+    if ($inflightVersion.stable -or $inflightVersion.label -cne 'ci.main' -or $inflightVersion.labelCount -ne 2) {
+        throw 'The following inflight must have correct next-cycle CI metadata before preparing new lanes.'
+    }
+    $mergeContent = Get-MauiReleaseFile -RepositoryPath $RepositoryPath -Commit $Merge -Path 'eng/Versions.props'
+    $normalizedContent = Get-MauiReleaseVersionContent -Content $mergeContent -ReleaseBand $ReleaseBand `
+        -Sr ($Sr + 1) -SourceSr $Sr -Role fixes -SandboxPrefix $SandboxPrefix
+    $normalized = New-MauiReleaseContentCommit -RepositoryPath $RepositoryPath -Parent $Merge `
+        -Changes @{ 'eng/Versions.props' = $normalizedContent } `
+        -Message "Prepare normalized integration ancestry for $ReleaseBand SR$($Sr + 1)"
+    $integration = New-MauiReleaseLaneIntegrationCommit -RepositoryPath $RepositoryPath `
+        -Fixes $normalized.sha -Inflight $Inflight
+    $nextContent = Get-MauiReleaseVersionContent -Content (
+        Get-MauiReleaseFile -RepositoryPath $RepositoryPath -Commit $integration.sha -Path 'eng/Versions.props') `
+        -ReleaseBand $ReleaseBand -Sr ($Sr + 1) -Role candidate -SandboxPrefix $SandboxPrefix
+    $nextCandidate = New-MauiReleaseContentCommit -RepositoryPath $RepositoryPath -Parent $integration.sha `
+        -Changes @{ 'eng/Versions.props' = $nextContent } -Message "Configure candidate $ReleaseBand SR$($Sr + 1)"
+    $futureContent = Get-MauiReleaseVersionContent -Content $nextContent -ReleaseBand $ReleaseBand `
+        -Sr ($Sr + 2) -SourceSr ($Sr + 1) -Role inflight -SandboxPrefix $SandboxPrefix
+    $nextInflight = New-MauiReleaseContentCommit -RepositoryPath $RepositoryPath -Parent $nextCandidate.sha `
+        -Changes @{ 'eng/Versions.props' = $futureContent } -Message "Configure inflight $ReleaseBand SR$($Sr + 2)"
+    [pscustomobject][ordered]@{
+        mergeSha = $Merge
+        candidateSha = $Candidate
+        inflightSha = $Inflight
+        normalizedSha = $normalized.sha
+        nextCandidateSha = $nextCandidate.sha
+        nextInflightSha = $nextInflight.sha
+    }
+}
+
+function New-MauiReleaseLaneReceipt {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory)][string] $RepositoryPath,
+        [Parameter(Mandatory)][System.Collections.IDictionary] $Record
+    )
+
+    $blob = (Invoke-MauiReleaseGit -RepositoryPath $RepositoryPath -Arguments @('hash-object', '-w', '--stdin') `
+        -InputText (($Record | ConvertTo-Json -Depth 6) + "`n")).Trim()
+    $tree = (Invoke-MauiReleaseGit -RepositoryPath $RepositoryPath -Arguments @('mktree') `
+        -InputText "100644 blob $blob`trelease-lanes.json`n").Trim()
+    $epoch = (Invoke-MauiReleaseGit -RepositoryPath $RepositoryPath -Arguments @(
+        'show', '-s', '--format=%ct', $Record.plan.mergeSha)).Trim()
+    $environment = @{
+        GIT_AUTHOR_NAME = 'MAUI release automation'; GIT_COMMITTER_NAME = 'MAUI release automation'
+        GIT_AUTHOR_EMAIL = '41898282+github-actions[bot]@users.noreply.github.com'
+        GIT_COMMITTER_EMAIL = '41898282+github-actions[bot]@users.noreply.github.com'
+        GIT_AUTHOR_DATE = "$epoch +0000"; GIT_COMMITTER_DATE = "$epoch +0000"
+    }
+    (Invoke-MauiReleaseGit -RepositoryPath $RepositoryPath -Arguments @(
+        '-c', 'commit.gpgSign=false', 'commit-tree', $tree, '-p', $Record.plan.nextInflightSha
+    ) -Environment $environment -InputText "Prepare next release lanes after $($Record.releaseBand) SR$($Record.sr)`n").Trim()
+}
+
+function Get-MauiReleaseLaneReceipt {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory)][string] $RepositoryPath,
+        [Parameter(Mandatory)][ValidatePattern('^[0-9a-f]{40}$')][string] $Commit
+    )
+
+    $tree = Invoke-MauiReleaseGit -RepositoryPath $RepositoryPath -Arguments @('ls-tree', $Commit)
+    if ($tree -cnotmatch '^100644 blob [0-9a-f]{40}\trelease-lanes\.json\n$') {
+        throw 'Release-lane receipt must contain only its regular metadata file.'
+    }
+    $content = Invoke-MauiReleaseGit -RepositoryPath $RepositoryPath -Arguments @('show', "${Commit}:release-lanes.json")
+    if ([Text.Encoding]::UTF8.GetByteCount($content) -gt 8192) { throw 'Release-lane receipt exceeds its size bound.' }
+    $content | ConvertFrom-Json
+}
+
 Export-ModuleMember -Function Get-MauiReleaseVersion, Get-MauiReleaseVersionContent,
     Get-MauiReleasedVersionContent, Get-MauiVerifiedPublishedVersion,
-    Get-MauiReleaseFile, New-MauiReleaseContentCommit, New-MauiReleaseLaneIntegrationCommit
+    Get-MauiReleaseFile, New-MauiReleaseContentCommit, New-MauiReleaseLaneIntegrationCommit,
+    New-MauiReleaseNextLanePlan, New-MauiReleaseLaneReceipt, Get-MauiReleaseLaneReceipt
