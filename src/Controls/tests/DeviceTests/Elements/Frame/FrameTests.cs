@@ -81,7 +81,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			var content = new Label { Text = "Fixture-owned content" };
 			var frame = new Frame { Content = content };
-			await CreateHandlerAsync<FrameRenderer>(frame);
+			await CreateHandlerAsync(frame);
 			Assert.NotNull(content.Handler);
 
 			await DisposeAsync();
