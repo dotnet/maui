@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls
@@ -10,6 +11,7 @@ namespace Microsoft.Maui.Controls
 	public sealed class BindingCondition : Condition
 	{
 		readonly BindableProperty _boundProperty;
+		readonly BindableProperty _stateProperty;
 
 		BindingBase _binding;
 		object _triggerValue;
@@ -20,6 +22,7 @@ namespace Microsoft.Maui.Controls
 		public BindingCondition()
 		{
 			_boundProperty = BindableProperty.CreateAttached("Bound", typeof(object), typeof(BindingCondition), null, propertyChanged: OnBoundPropertyChanged);
+			_stateProperty = BindableProperty.CreateAttached("State", typeof(bool), typeof(BindingCondition), BooleanBoxes.FalseBox, propertyChanged: OnStatePropertyChanged);
 		}
 
 		/// <summary>
@@ -56,18 +59,22 @@ namespace Microsoft.Maui.Controls
 
 		internal override bool GetState(BindableObject bindable)
 		{
-			object newValue = bindable.GetValue(_boundProperty);
-			return EqualsToValue(newValue);
+			return (bool)bindable.GetValue(_stateProperty);
 		}
 
 		internal override void SetUp(BindableObject bindable)
 		{
 			if (Binding != null)
 				bindable.SetBinding(_boundProperty, Binding.Clone());
+
+			// Applying the binding doesn't raise a property change when the bound value equals the
+			// default value of _boundProperty (null), so evaluate the initial state explicitly (#6847).
+			bindable.SetValue(_stateProperty, EqualsToValue(bindable.GetValue(_boundProperty)));
 		}
 
 		internal override void TearDown(BindableObject bindable)
 		{
+			bindable.ClearValue(_stateProperty);
 			bindable.RemoveBinding(_boundProperty);
 			bindable.ClearValue(_boundProperty, SetterSpecificity.FromBinding);
 		}
@@ -90,13 +97,21 @@ namespace Microsoft.Maui.Controls
 
 		void OnBoundPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
-			bool oldState = EqualsToValue(oldValue);
-			bool newState = EqualsToValue(newValue);
-
-			if (newState == oldState)
+			// Not set up yet (the initial state is evaluated in SetUp), or already torn down.
+			if (!bindable.IsSet(_stateProperty))
 				return;
 
-			ConditionChanged?.Invoke(bindable, oldState, newState);
+			bool newState = EqualsToValue(newValue);
+			if ((bool)bindable.GetValue(_stateProperty) != newState)
+				bindable.SetValue(_stateProperty, newState);
+		}
+
+		void OnStatePropertyChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			if ((bool)oldValue == (bool)newValue)
+				return;
+
+			ConditionChanged?.Invoke(bindable, (bool)oldValue, (bool)newValue);
 		}
 	}
 }

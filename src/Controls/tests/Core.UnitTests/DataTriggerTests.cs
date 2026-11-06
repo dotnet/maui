@@ -149,5 +149,85 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(Colors.Green, boxview.Color);
 			Assert.Equal(.5, boxview.Opacity);
 		}
+
+		// https://github.com/dotnet/maui/issues/6847
+		[Fact]
+		public void SettersAppliedOnAttachIfBoundValueIsInitiallyNull()
+		{
+			var setterbp = BindableProperty.Create("bar", typeof(string), typeof(BindableObject), null);
+			var element = new MockElement();
+			var datatrigger = new DataTrigger(typeof(VisualElement))
+			{
+				Binding = new Binding("foo"),
+				Value = null,
+				Setters = {
+					new Setter { Property = setterbp, Value = "qux" },
+				}
+			};
+
+			element.SetValue(setterbp, "default");
+			element.BindingContext = new { foo = (string)null };
+			element.Triggers.Add(datatrigger);
+			Assert.Equal("qux", element.GetValue(setterbp));
+
+			element.BindingContext = new { foo = "foobar" };
+			Assert.Equal("default", element.GetValue(setterbp));
+
+			element.BindingContext = new { foo = (string)null };
+			Assert.Equal("qux", element.GetValue(setterbp));
+
+			element.Triggers.Remove(datatrigger);
+			Assert.Equal("default", element.GetValue(setterbp));
+		}
+
+		// https://github.com/dotnet/maui/issues/6847
+		[Fact]
+		public void SettersNotUnappliedWhenNullValueTriggerNeverMatched()
+		{
+			var setterbp = BindableProperty.Create("bar", typeof(string), typeof(BindableObject), null);
+			var element = new MockElement();
+			var datatrigger = new DataTrigger(typeof(VisualElement))
+			{
+				Binding = new Binding("foo"),
+				Value = "foobar",
+				Setters = {
+					new Setter { Property = setterbp, Value = "qux" },
+				}
+			};
+
+			element.SetValue(setterbp, "default");
+			element.BindingContext = new { foo = (string)null };
+			element.Triggers.Add(datatrigger);
+			Assert.Equal("default", element.GetValue(setterbp));
+
+			element.BindingContext = new { foo = "other" };
+			Assert.Equal("default", element.GetValue(setterbp));
+
+			element.BindingContext = new { foo = "foobar" };
+			Assert.Equal("qux", element.GetValue(setterbp));
+		}
+
+		// https://github.com/dotnet/maui/issues/6847
+		[Fact]
+		public void MultiTriggerWithNullBindingConditionAppliedOnAttach()
+		{
+			var setterbp = BindableProperty.Create("bar", typeof(string), typeof(BindableObject), null);
+			var element = new MockElement();
+			var multiTrigger = new MultiTrigger(typeof(VisualElement))
+			{
+				Conditions = {
+					new BindingCondition { Binding = new Binding("foo"), Value = null },
+					new BindingCondition { Binding = new Binding("baz"), Value = "ok" },
+				},
+				Setters = {
+					new Setter { Property = setterbp, Value = "qux" },
+				}
+			};
+
+			element.SetValue(setterbp, "default");
+			element.BindingContext = new { foo = (string)null, baz = "ok" };
+			element.Triggers.Add(multiTrigger);
+			Assert.Equal("qux", element.GetValue(setterbp));
+		}
 	}
 }
