@@ -33,6 +33,8 @@ class MauiTestApplication : Application
 				var runner = services.GetRequiredService<HeadlessTestRunner>();
 #if WINDOWS
 				WindowsUiTestFramework.ConfigureDispatcher(action => page.Dispatcher.DispatchAsync(action));
+				global::Microsoft.UI.Xaml.Application.Current.UnhandledException += (_, args) =>
+					Console.Error.WriteLine(args.Exception);
 #endif
 				var directory =
 #if IOS || MACCATALYST

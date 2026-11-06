@@ -63,6 +63,13 @@ Describe 'Direct native CI contracts' {
         $run | Should -Match ([regex]::Escape('--diagnostic-output-directory "$(TestResultsDirectory)/diagnostics"'))
     }
 
+    It 'logs the original WinUI exception without marking a native crash handled' {
+        $application = Get-Content (Join-Path $repoRoot 'src/TestUtils/src/DeviceTests.Runners/MauiTestApplication.cs') -Raw
+        $application | Should -Match 'Application.Current.UnhandledException \+='
+        $application | Should -Match ([regex]::Escape('Console.Error.WriteLine(args.Exception)'))
+        $application | Should -Not -Match 'args.Handled\s*='
+    }
+
     It 'keeps Windows reference builds RID-specific so PRI paths match the app reference query' {
         $packaged = [regex]::Match($steps, '(?s)displayName: Build and sign owned MSIX.*?useExitCodeForErrors: true').Value
         $run = [regex]::Match($steps, '(?s)displayName: Run Windows .*?useExitCodeForErrors: true').Value
