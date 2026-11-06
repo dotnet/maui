@@ -1178,8 +1178,8 @@ public static class IosNativeTestReports
             var report = System.IO.Path.Combine(container, "Documents", "TestResults", "testResults.trx");
             if (!System.IO.File.Exists(report))
                 throw new InvalidOperationException("Native app did not produce genuine TRX.");
-            // A failed pre-run container lookup must not allow an older report to pass either.
-            if (System.IO.File.GetLastWriteTimeUtc(report) < started ||
+            // Only fall back to file time when the pre-run container could not be inspected.
+            if ((string.IsNullOrEmpty(oldContainer) && System.IO.File.GetLastWriteTimeUtc(report) < started) ||
                 (oldHash != null && Hash(report) == oldHash))
                 throw new InvalidOperationException("The native result is stale: no new TRX was produced in this execution.");
             var destination = System.IO.Path.Combine(resultsDirectory, $"ios-{Guid.NewGuid():N}");

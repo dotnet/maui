@@ -133,6 +133,15 @@ Describe 'Cake genuine native iOS reports' {
             Should -Throw '*Native app did not produce genuine TRX*'
     }
 
+    It 'uses the pre-run absence rather than filesystem timestamp precision to identify a new report' {
+        [IosNativeTestReports]::Run($ProjectPath, 'owned-simulator', $ResultsDirectory, $ResolveContainer, {
+            [IO.File]::WriteAllText($script:NativeReport, $script:GoodTrx)
+            [IO.File]::SetLastWriteTimeUtc($script:NativeReport, [DateTime]::UtcNow.AddMilliseconds(-20))
+            return 0
+        }, $ValidateReport)
+        @(Get-ChildItem -LiteralPath $ResultsDirectory -Filter '*.trx' -Recurse).Count | Should -Be 1
+    }
+
     It 'rejects an unchanged native report even if its timestamp is refreshed' {
         Set-Content -LiteralPath $NativeReport $GoodTrx
         { [IosNativeTestReports]::Run($ProjectPath, 'owned-simulator', $ResultsDirectory, $ResolveContainer, {
