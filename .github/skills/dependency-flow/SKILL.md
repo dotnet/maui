@@ -57,7 +57,10 @@ Resolve the configured roles before looking up channels or subscriptions:
 $roles = & ./eng/scripts/Get-ReleaseRolloverPlan.ps1 -ResolveStateOnly | ConvertFrom-Json
 ```
 
-The `.NET 11` servicing train uses `net11` for fixes, the configured
+The `.NET 11` servicing train uses `net11` for initial fix-PR review and release
+integration. After approval, a maintainer manually retargets each fix PR to the
+active versioned inflight branch and merges it directly there; bots never
+retarget or merge. Required CI must cover the final base. Use the configured
 `candidate/<band>-srN` for staged release contents, and
 `inflight/<band>-sr<N+1>` for the following release. `main` is the separate
 next-major feature lane. Historical `net11.0` is not an alias for `net11`.

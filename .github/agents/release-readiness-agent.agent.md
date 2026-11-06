@@ -90,9 +90,12 @@ If the user wants the raw deterministic report with no judgment layer (e.g. for 
 
 Resolve current roles through
 `eng/scripts/Get-ReleaseRolloverPlan.ps1 -ResolveStateOnly` and the detector.
-For configured .NET11, literal `net11` owns fixes and release cuts;
+For configured .NET11, literal `net11` is the initial fix-review target and owns release integration/cuts;
 `candidate/11.0.1xx-sr1` is selected current content and
 `inflight/11.0.1xx-sr2` is future content. `main` owns .NET12 features.
+After approval, a maintainer manually retargets each individual fix PR to the
+active versioned inflight branch and merges it there, not directly into net11.
+Bots never retarget or merge. Verify CI against the final base.
 Integrate the candidate into `net11` before the captain cuts the release;
 daily forward flow is `net11 → main`, never features back into `net11`.
 Unresolved rotation naming does not prevent reporting existing roles.

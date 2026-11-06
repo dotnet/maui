@@ -446,10 +446,9 @@ function Get-ActiveMajorVersions {
         main is still on major N but net(N+1).0 has forked off to start the
         next major's preview cycle.
 
-        Older `net<N>.0` branches (N < main's major) are frozen artifacts
-        from previous major cycles — surveying them produces dead trackers
-        with no shipped tags (because they predate the modern preview-tag
-        scheme) and no recent activity. We exclude them.
+        Older trains remain active when their servicing release or coherent
+        fixes source has current work. Frozen historical preview branches alone
+        do not reactivate an old major.
 
         Returned list is sorted ascending and deduplicated.
     #>
@@ -484,9 +483,15 @@ function Get-ActiveMajorVersions {
             if (-not (Test-IsPatchInSrCycle -SrNumber $releaseSr -Patch $patch)) { continue }
             $tags = Get-StableTagsForMajor -Major $releaseMajor
             $highestPatch = if ($tags.Count) { [int]($tags[-1] -split '\.')[2] } else { 0 }
+            $sourceVersion = Get-VersionFromGitRef -GitRef "origin/$source" -Repo $Repo
+            $sourceRecent = 0
+            if ($sourceVersion -and $sourceVersion.Tag -match "^$releaseMajor\.0\.(\d+)$" -and
+                [int]$Matches[1] -ge $highestPatch) {
+                $sourceRecent = Get-RecentCommitCount -Ref $source -Days $ActivityWindowDays
+            }
             $unshippedLatest = $patch -ge $highestPatch -and $version.Tag -notin $tags
             $recent = if ($patch -ge $highestPatch) { Get-RecentCommitCount -Ref $releaseBranch -Days $ActivityWindowDays } else { 0 }
-            if ($unshippedLatest -or $recent -gt 0) { [void]$majors.Add($releaseMajor) }
+            if ($unshippedLatest -or $recent -gt 0 -or $sourceRecent -gt 0) { [void]$majors.Add($releaseMajor) }
         }
     }
 
@@ -945,6 +950,9 @@ function Invoke-DetectionForMajor {
         }
         $expectedTag = $versionInfo.Tag
         if (-not (Test-IsPatchInSrCycle -SrNumber $sr -Patch $branchPatch)) {
+            if ($roles.configured -and $branch -eq $roles.releaseBranch) {
+                throw "Configured release '$branch' declares patch $branchPatch outside SR$sr's [$($sr * 10)..$(($sr * 10) + 9)] range."
+            }
             $expectedPatchFloor = $sr * 10
             $isCutBeforeBump = Test-IsSrCutBeforeBump -SrNumber $sr `
                 -BranchPatch $branchPatch -HighestShippedPatch $highestShippedPatch
@@ -1037,7 +1045,7 @@ function Invoke-DetectionForMajor {
         # State selects this cycle; neither feature-main's version nor the largest
         # retained inflight/candidate branch is evidence of the current candidate.
         $selectedSr = [int]$roles.currentSr
-        $selectedReleaseExists = @($srBranches | Where-Object { $_.branch -eq $roles.releaseBranch }).Count -gt 0
+        $selectedReleaseExists = @($validSrBranches | Where-Object { $_.branch -eq $roles.releaseBranch }).Count -gt 0
         $selectedShipped = @($stableTags | Where-Object {
             $_ -match '^\d+\.0\.(\d+)$' -and [int][math]::Floor([int]$Matches[1] / 10) -eq $selectedSr
         }).Count -gt 0

@@ -12,6 +12,13 @@ new roles: .NET11 fixes `net11`, selected SR1 contents
 on `main` (.NET12). A release is cut from approved `net11` **after**
 candidate integration; daily forward flow is `net11 → main`.
 
+Individual fix PRs start against `net11` for review. After approval, a maintainer
+manually changes the base to the active versioned inflight branch and merges
+there. Bots never change the base or merge fixes. Required CI validates the
+final base. A merged fix on inflight but not yet on net11 is expected staged
+content; selected candidate promotion, not a direct individual-fix merge,
+establishes release integration ancestry.
+
 The five detection lanes retain historical release/tag semantics. Configured
 current-candidate detection is state-driven, including pre-GA bootstrap:
 feature-main's major, maximum retained branch suffix, or absent GA tags never

@@ -112,13 +112,20 @@ jobs:
     outputs:
       matrix: ${{ steps.detect.outputs.matrix }}
       has-trackers: ${{ steps.detect.outputs.has-trackers }}
+      canonical-sha: ${{ steps.canonical.outputs.sha }}
     permissions:
       contents: read
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: main
           fetch-depth: 0  # Find-Trackers needs full history + tags for tag-existence detection
           persist-credentials: false
+
+      - name: Pin canonical release configuration
+        id: canonical
+        shell: bash
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
       - name: Detect release-readiness trackers
         id: detect
@@ -316,6 +323,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: ${{ needs.detect-trackers.outputs.canonical-sha }}
           fetch-depth: 0
           persist-credentials: false
 

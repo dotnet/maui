@@ -66,6 +66,13 @@ explicitly include `net11` and `candidate/*`; the official definition includes
 be deployed before assuming that branch creation activates the new CI routes.
 Do not treat the historical `net11.0` subscription target as the new branch.
 
+Individual .NET11 fix PRs initially target `net11` for review. After approval,
+a maintainer manually retargets the PR to the active versioned inflight branch
+and merges it directly there; bots do not retarget or merge. Required CI must
+validate the final base. `net11` receives selected release contents through the
+separate candidate integration, not direct individual-fix merges. Milestone
+assignment must honor the final versioned staging base instead of net11's patch.
+
 Release-related tooling resolves the configured servicing branch independently
 of feature `main`: milestone ownership and review baselines must recognize
 literal `net11` and versioned candidate/inflight lanes. Credential-bearing

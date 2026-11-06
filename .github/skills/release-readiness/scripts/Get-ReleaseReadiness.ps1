@@ -4146,6 +4146,10 @@ function Classify-RegressionCandidate {
     $ctxMode = Get-MetadataValue -Container $Ctx -Name 'mode'
     $isCandidateMode = $ctxMode -eq 'candidate' -or $Ctx.srBranch -eq $Ctx.mainBranch
     $isShippedMode = $ctxMode -eq 'shipped'
+    $routingRoles = Get-MetadataValue -Container $Ctx -Name 'branchRoles'
+    $reviewLandingGuidance = if ($routingRoles -and $routingRoles.configured) {
+        "After approval, a maintainer manually retargets the fix PR from $($Ctx.mainBranch) to $($routingRoles.inflightBranch) and merges it directly there. Validate required CI against the final base; do not merge the individual fix directly into $($Ctx.mainBranch)."
+    } else { $null }
     $backportCommand = "/backport to $($Ctx.srBranch)"
     # Candidate mode surveys current main, but an already-selected Candidate cut
     # commit can lag it. Keep the row as a risk until the SR branch exists and
@@ -4173,9 +4177,23 @@ function Classify-RegressionCandidate {
             elseif ($isCandidateMode) { $candidateMergedGuidance }
             else { "On the merged source PR, post ``$backportCommand``" }
         }
-        'merged-non-main-only' { "Flow fix to $($Ctx.mainBranch) first, then rerun readiness to verify source ancestry before requesting a backport" }
+        'merged-non-main-only' {
+            if ($reviewLandingGuidance) {
+                if ($best.pr.baseRef -match "^(?:candidate|inflight)/$([regex]::Escape($routingRoles.releaseBand))-sr[1-9][0-9]*$") {
+                    "The fix is already staged on $($best.pr.baseRef). Bring selected contents into $($Ctx.mainBranch) through candidate integration, not a direct individual-fix merge; verify the approved release cut before requesting any backport."
+                } else {
+                    "Verify train compatibility before proposing this fix against $($Ctx.mainBranch); never merge next-major features backwards. $reviewLandingGuidance"
+                }
+            } else {
+                "Flow fix to $($Ctx.mainBranch) first, then rerun readiness to verify source ancestry before requesting a backport"
+            }
+        }
         'open-on-main' {
-            if ($isShippedMode) { $shippedOpenGuidance }
+            if ($reviewLandingGuidance) {
+                if ($isShippedMode) { "$shippedOpenGuidance $reviewLandingGuidance" }
+                else { $reviewLandingGuidance }
+            }
+            elseif ($isShippedMode) { $shippedOpenGuidance }
             elseif ($isCandidateMode) { $candidateOpenGuidance }
             else { "Wait for $($Ctx.mainBranch) merge; then post ``$backportCommand`` on the merged source PR" }
         }

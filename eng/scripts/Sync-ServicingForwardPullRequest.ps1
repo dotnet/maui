@@ -9,9 +9,13 @@ $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
 function Invoke-ForwardApi {
-    param ([string[]] $Arguments)
+    param ([string[]] $Arguments, [System.Collections.IDictionary] $InputObject)
 
-    $output = @(& gh api @Arguments)
+    $output = if ($PSBoundParameters.ContainsKey('InputObject')) {
+        @($InputObject | ConvertTo-Json -Depth 8 | & gh api @Arguments --input -)
+    } else {
+        @(& gh api @Arguments)
+    }
     if ($LASTEXITCODE -ne 0) {
         throw "Servicing forward-flow request failed: $($Arguments[0])."
     }
@@ -62,6 +66,82 @@ function Get-ForwardVersion {
     }
 }
 
+function Get-ForwardOwnership {
+    param ([string] $Commit)
+
+    $commitInfo = Invoke-ForwardApi -Arguments @("repos/$repository/git/commits/$Commit")
+    $tree = Invoke-ForwardApi -Arguments @("repos/$repository/git/trees/$($commitInfo.tree.sha)")
+    if (@($tree.tree).Count -ne 1 -or $tree.tree[0].path -cne 'forward-ownership.json' -or
+        $tree.tree[0].type -cne 'blob' -or $tree.tree[0].mode -cne '100644') {
+        throw 'The forward ownership checkpoint has an unsupported tree; refusing adoption.'
+    }
+    $blob = Invoke-ForwardApi -Arguments @("repos/$repository/git/blobs/$($tree.tree[0].sha)")
+    if ($blob.encoding -cne 'base64' -or $blob.size -lt 1 -or $blob.size -gt 8192) {
+        throw 'Unsupported forward ownership checkpoint encoding or size.'
+    }
+    $record = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($blob.content)) |
+        ConvertFrom-Json
+    foreach ($name in @('schemaVersion', 'repository', 'scope', 'sourceBranch', 'targetBranch',
+            'headBranch', 'sourceSha', 'previousHeadSha', 'stateSha256')) {
+        if ($name -notin $record.PSObject.Properties.Name) {
+            throw "Forward ownership checkpoint is missing '$name'."
+        }
+    }
+    if ($record.schemaVersion -ne 1 -or $record.repository -cne $repository -or
+        $record.scope -cne $scope -or $record.sourceBranch -cne $source -or
+        $record.targetBranch -cne $target -or $record.headBranch -cne $head -or
+        $record.sourceSha -cnotmatch '^[0-9a-f]{40}$' -or
+        ($record.previousHeadSha -and $record.previousHeadSha -cnotmatch '^[0-9a-f]{40}$') -or
+        $record.stateSha256 -cnotmatch '^[0-9a-f]{64}$' -or
+        ([string] $commitInfo.message).TrimEnd() -cne "Checkpoint managed servicing forward snapshot`n`nMaui-Servicing-Forward-Ownership: $scope") {
+        throw 'Forward ownership checkpoint does not match the managed route; refusing adoption.'
+    }
+    return $record
+}
+
+function Set-ForwardOwnership {
+    param ([string] $Parent, [AllowNull()][string] $PreviousHead)
+
+    $record = [ordered]@{
+        schemaVersion = 1
+        repository = $repository
+        scope = $scope
+        sourceBranch = $source
+        targetBranch = $target
+        headBranch = $head
+        sourceSha = $sourceSha
+        previousHeadSha = $PreviousHead
+        stateSha256 = $roles.stateSha256
+    }
+    $tree = Invoke-ForwardApi -Arguments @("repos/$repository/git/trees", '--method', 'POST') -InputObject @{
+        tree = @(@{
+            path = 'forward-ownership.json'; mode = '100644'; type = 'blob'
+            content = ($record | ConvertTo-Json)
+        })
+    }
+    $commit = Invoke-ForwardApi -Arguments @("repos/$repository/git/commits", '--method', 'POST') -InputObject @{
+        tree = $tree.sha
+        parents = @($Parent | Where-Object { $_ })
+        message = "Checkpoint managed servicing forward snapshot`n`nMaui-Servicing-Forward-Ownership: $scope"
+    }
+    if ($commit.sha -cnotmatch '^[0-9a-f]{40}$') { throw 'Invalid forward ownership checkpoint commit.' }
+    if ($Parent) {
+        $null = Invoke-ForwardApi -Arguments @(
+            "repos/$repository/git/refs/heads/$([Uri]::EscapeDataString($ownershipHead))",
+            '--method', 'PATCH', '-f', "sha=$($commit.sha)", '-F', 'force=false'
+        )
+    } else {
+        $null = Invoke-ForwardApi -Arguments @(
+            "repos/$repository/git/refs", '--method', 'POST',
+            '-f', "ref=refs/heads/$ownershipHead", '-f', "sha=$($commit.sha)"
+        )
+    }
+    if ((Get-ForwardRef -Branch $ownershipHead) -cne $commit.sha) {
+        throw 'Forward ownership checkpoint publication did not match its prepared commit.'
+    }
+    return $commit.sha
+}
+
 $roles = & (Join-Path $PSScriptRoot 'Get-ReleaseRolloverPlan.ps1') -StatePath $StatePath -ResolveStateOnly |
     ConvertFrom-Json
 if ($roles.repository -cne 'https://github.com/dotnet/maui.git') {
@@ -82,7 +162,8 @@ $head = if ($SandboxPrefix) {
 } else {
     'automation/forward-servicing-fixes'
 }
-if ($head -cin @($source, $target)) {
+$ownershipHead = "$head-ownership"
+if ($head -cin @($source, $target) -or $ownershipHead -cin @($source, $target)) {
     throw "The expendable forward-PR head must not be a development branch."
 }
 $sourceSha = Get-ForwardRef -Branch $source
@@ -142,6 +223,8 @@ if ($existing.Count -gt 1 -or ($existing.Count -eq 1 -and
     throw "The forward-flow route has duplicate or unmanaged PRs; refusing to overwrite them."
 }
 $headSha = Get-ForwardRef -Branch $head
+$ownershipSha = Get-ForwardRef -Branch $ownershipHead
+$ownership = if ($ownershipSha) { Get-ForwardOwnership -Commit $ownershipSha } else { $null }
 if ($null -ne $headSha -and $existing.Count -eq 0) {
     $closed = @(Invoke-ForwardApi -Arguments @(
         "repos/$repository/pulls", '--method', 'GET', '-f', 'state=closed',
@@ -150,7 +233,9 @@ if ($null -ne $headSha -and $existing.Count -eq 0) {
     $owned = @($closed | Where-Object {
         ([string] $_.body).IndexOf($marker, [StringComparison]::Ordinal) -ge 0 -and $_.head.sha -ceq $headSha
     })
-    if ($owned.Count -eq 0) {
+    $checkpointOwnsHead = $null -ne $ownership -and
+        ($headSha -ceq $ownership.sourceSha -or $headSha -ceq $ownership.previousHeadSha)
+    if ($owned.Count -eq 0 -and !$checkpointOwnsHead) {
         throw "An existing forward branch has no managed PR proving its source snapshot; refusing adoption."
     }
 }
@@ -194,6 +279,19 @@ $body = @"
 if (!$PlanOnly) {
     if ((Get-ForwardRef -Branch $source) -cne $sourceSha -or (Get-ForwardRef -Branch $target) -cne $targetSha) {
         throw "A forward-flow source or target moved after planning; retry with a fresh snapshot."
+    }
+    if ($headSha -cne $sourceSha) {
+        # Persist ownership before touching the expendable head. It is separate
+        # from the PR tree, so partial publication can be retried without adopting
+        # an unmanaged ref or forwarding checkpoint data into feature main.
+        if ($null -eq $ownership -or $ownership.sourceSha -cne $sourceSha -or
+            [string]$ownership.previousHeadSha -cne [string]$headSha -or
+            $ownership.stateSha256 -cne $roles.stateSha256) {
+            $ownershipSha = Set-ForwardOwnership -Parent $ownershipSha -PreviousHead $headSha
+        }
+        if ((Get-ForwardRef -Branch $source) -cne $sourceSha -or (Get-ForwardRef -Branch $target) -cne $targetSha) {
+            throw 'The forward-flow source or target moved after checkpointing; retry with a fresh snapshot.'
+        }
     }
     if ($null -eq $headSha) {
         $null = Invoke-ForwardApi -Arguments @(

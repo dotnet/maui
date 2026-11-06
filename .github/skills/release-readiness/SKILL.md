@@ -42,12 +42,19 @@ For the configured `11.0.1xx` / SR1 train:
 
 | Role | Ref |
 |---|---|
-| Stable fixes and release-cut source | literal `net11` (not historical `net11.0`) |
+| Initial fix review, release integration and cut source | literal `net11` (not historical `net11.0`) |
 | Next-major features | `main` (.NET 12); daily flow is `net11 → main`, never features back into `net11` |
 | Selected current content | `candidate/11.0.1xx-sr1` |
 | Future content | `inflight/11.0.1xx-sr2` |
 | Release after candidate integration | `release/11.0.1xx-sr1`, cut from approved `net11` |
 | Active nightly | resolver's `nightlyBranch`: `inflight/current` in legacy mode, versioned inflight in versioned mode |
+
+Fix PRs initially target `net11` for review. After approval, a maintainer manually
+retargets each PR to the active versioned inflight branch and merges it directly
+there. Bots must not retarget or merge. Required CI validates the final base.
+An approved fix on inflight but not yet on `net11` is normal staged content:
+promotion through candidate integration, not a direct individual-fix merge,
+brings selected contents into `net11`.
 
 `candidateNamingPolicy=unresolved` blocks rotation **mutations**, not read-only
 reporting of these existing roles. When state advances to SR2, readiness selects
@@ -561,8 +568,8 @@ This skill remains report-only: it MUST NOT post a comment, create a branch, or 
    /backport to release/<major>.0.1xx-sr<N>
    ```
 
-2. For `open-on-main`, wait for the source PR to merge, then recommend the same command. For `backport-in-progress`, do not trigger a duplicate backport.
-3. For `merged-non-main-only`, do **not** recommend the command yet. Verify the fix reaches the resolved fixes source (`net11` for this train), then rerun readiness. Never recommend merging .NET12 features backwards into `net11`.
+2. For `open-on-main` on the configured train, the maintainer first approves the net11-targeting fix, then manually retargets it to the active inflight and merges there. Wait for verified candidate promotion/release ancestry before recommending a backport; do not recommend merging the individual fix into net11. Historical trains retain their source-merge workflow. For `backport-in-progress`, do not trigger a duplicate backport.
+3. For `merged-non-main-only`, do **not** recommend the command yet. A fix already staged on versioned inflight follows normal candidate promotion into `net11`; do not ask for a direct individual-fix merge. Rerun readiness after selected integration/cut ancestry is verified. Never recommend merging .NET12 features backwards into `net11`.
 4. If the automation reports a conflict, recommend manually cherry-picking the source PR's **merge commit** onto the SR branch with `git cherry-pick -x`, resolving and testing the conflict, then opening a PR targeting the SR branch.
 
 Read [Gotcha #4](references/methodology.md#gotcha-4-source-to-sr-backport-workflow) for the generated PR shape and manual fallback commands.

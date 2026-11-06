@@ -34,9 +34,18 @@ Read and follow our [Pull Request template](/.github/PULL_REQUEST_TEMPLATE.md).
 The versioned [release workflow](/docs/ReleaseBranchWorkflow.md) separates
 servicing from next-major development:
 
-- Target `net11` for .NET 11 fixes.
+- Open .NET 11 fix PRs against `net11` for review.
+- After approval, a maintainer manually changes the PR's base to the active
+  versioned inflight branch (currently `inflight/11.0.1xx-sr2`) and merges the fix
+  directly there. Do not merge individual approved fixes into `net11`.
 - Target `main` for next-major features and API changes.
-- Use `release/*`, `candidate/*`, or `inflight/*` only for coordinated release work.
+- Contributors must not initially target a staging branch. Candidate integration
+  into `net11` and changes to `release/*` remain coordinated release work.
+
+Retargeting and merging are manual maintainer actions, not bot actions. Required
+CI must validate the final inflight base; approval against the initial review
+target does not replace that validation. `net11` receives selected contents
+through candidate integration before a release cut.
 
 Infrastructure and documentation changes should target the branch where they
 apply. The feature branch's SDK migration and internal release deployment are

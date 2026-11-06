@@ -15,7 +15,7 @@ signing, and publishing remain covered by the [release process](ReleaseProcess.m
 
 | Branch | Responsibility |
 |---|---|
-| `net11` | Contributor target for .NET 11 fixes. Receives the current candidate before a release is cut. |
+| `net11` | Initial review target for .NET 11 fix PRs, not their final landing branch. Receives the current candidate before a release is cut. |
 | `main` | .NET 12 development, including new features and daily forward merges from `net11`. It remains named `main`. |
 | `candidate/11.0.1xx-sr1` | Changes staged for the current servicing release, SR1, to be merged into `net11`. |
 | `inflight/11.0.1xx-sr2` | Changes staged for the following servicing release, SR2, while SR1 is prepared. |
@@ -44,8 +44,14 @@ instead of switching a credential-bearing worktree to an unprotected branch.
 | `inflight/current` | `inflight/11.0.1xx-sr2` |
 | `inflight/candidate` | `candidate/11.0.1xx-sr1` |
 
-Contributors target fixes at `net11`. Merge `candidate/11.0.1xx-sr1` into `net11`,
-then cut `release/11.0.1xx-sr1` from the selected `net11` commit. The release is cut
+Contributors open fix PRs against `net11` for review. After approval, a maintainer
+manually changes the PR's base to the active inflight branch, currently
+`inflight/11.0.1xx-sr2`, and merges the fix directly there. Individual fixes do
+not merge directly into `net11`; bots never change the base or merge them. Required CI
+must validate the final inflight base after the change.
+
+Separately, merge `candidate/11.0.1xx-sr1` into `net11`, then cut
+`release/11.0.1xx-sr1` from the selected `net11` commit. The release is cut
 from `net11`, not directly from the candidate or inflight branch. In parallel,
 merge `net11` into `main` daily so .NET 12 development receives the fixes.
 
@@ -53,7 +59,10 @@ merge `net11` into `main` daily so .NET 12 development receives the fixes.
 flowchart TD
     OldCurrent["inflight/current"] -->|Replace| InflightSR2["inflight/11.0.1xx-sr2"]
     OldCandidate["inflight/candidate"] -->|Replace| CandidateSR1["candidate/11.0.1xx-sr1"]
-    Fixes["Contributor fixes"] --> Net11["net11"]
+    Fixes["Fix PR initially targets net11 for review"] --> Approval["Maintainer approves"]
+    Approval -->|Maintainer manually changes base| InflightSR2
+    InflightSR2 -->|Merge approved fix directly here| Staged["Future fixes staged for SR2"]
+    Net11["net11: candidate integration and release cuts"]
     CandidateSR1 -->|Merge before release cut| Net11
     Net11 -->|Cut release branch| ReleaseSR1["release/11.0.1xx-sr1"]
     Net11 -->|Daily forward merges| Main["main (.NET 12)"]
@@ -122,6 +131,11 @@ Maintain these two draft PRs against the fixes branch, `net11`:
 |---|---|---|
 | `[Release candidate] 11.0.1xx SR1` | `candidate/11.0.1xx-sr1` | The current release's reviewed integration into `net11`. |
 | `[Next release preview] 11.0.1xx SR2` | `inflight/11.0.1xx-sr2` | Visibility into the following release, like the historical `inflight/current` tracking PR. Do not merge this ahead of the current candidate. |
+
+These are release integration trackers, not individual fix PRs. Keep their base
+at `net11`. The manual review-to-inflight retargeting rule applies to each
+approved individual fix; it does not mean merging the future preview into
+`net11` early.
 
 `Release tracking PRs` reconciles these routes from the canonical release-state
 record every six hours, when that record changes on `main`, after a same-repo
@@ -406,6 +420,21 @@ any ref or PR change. These are PR-preparation and merge-mechanics checks, not
 production deployment or automatic merge approval.
 The candidate runner does not perform this daily forwarding; the separate trusted
 forward-PR workflow does.
+
+Before creating or advancing the expendable head, the helper records ownership in
+the separate `automation/forward-servicing-fixes-ownership` branch. This bounded
+metadata checkpoint is never part of the forward PR's source tree. If publishing
+the head succeeds but creating the PR fails, the next run verifies the checkpoint
+and retries without adopting an unmanaged branch. A matching source SHA alone is
+not ownership proof. Normal retries reuse the checkpoint instead of producing
+duplicate metadata commits; checkpoint updates are fast-forward-only.
+
+A real GitHub failure-injection trial exercised both the first head publication
+and an advanced head after its earlier PR closed. In each case PR creation was
+deliberately stopped after the ref write, the next invocation recovered, and a
+further retry was unchanged. Both trial PRs and all four owned refs were removed.
+This proves the recovery protocol with actual GitHub objects, not production
+schedule, runtime, signing, or merge acceptance.
 
 The [hosted bot-token trial](https://github.com/dotnet/maui/actions/runs/42191569428)
 created one bot-authored draft PR containing only the intended servicing marker.

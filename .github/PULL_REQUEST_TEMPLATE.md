@@ -1,6 +1,9 @@
 <!--
-Target net11 for .NET 11 fixes and main for next-major features.
-Use release/* or staging branches only for an explicitly coordinated release change.
+Open .NET 11 fix PRs against net11 for review; target main for next-major features.
+After approval, a maintainer manually retargets the fix PR to the active inflight
+branch and merges it directly there. Do not merge individual fixes into net11.
+Bots must not retarget or merge. Candidate integration into net11 and release/*
+changes are separate, explicitly coordinated release work.
 -->
 
 ### Description of Change

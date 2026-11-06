@@ -1073,13 +1073,17 @@ function Invoke-AnalyzeSinglePr([int]$PrNum, [string]$ReleaseTag, [string]$Repo)
             $expectedMs = $releaseBranch.Milestone
             if ($versionInfo) { $ReleaseTag = $versionInfo.Tag }
             Write-Host "  Found in release branch: $($releaseBranch.Branch) → $expectedMs"
+        } elseif ($pr.BaseRef -match '^(?:candidate|inflight)/\d+\.0\.\d+xx-sr\d+$') {
+            $expectedMs = ConvertBranchToMilestone $pr.BaseRef
+            if ($versionInfo) { $ReleaseTag = $versionInfo.Tag }
+            Write-Host "  Versioned staging branch: $($pr.BaseRef) → $expectedMs"
         } else {
             # Step 2: Fall back to Versions.props on the development branch HEAD.
             # All branches ultimately feed into the main development branch for their
             # .NET version, resolved from the configured fixes branch or legacy
             # main/netN.0 ownership. Read from there
-            # to get the current target version, regardless of which staging branch
-            # the PR was merged to (inflight/current, inflight/candidate, darc/*, etc.).
+            # for unversioned staging branches (inflight/current, inflight/candidate,
+            # darc/*, etc.). Versioned staging has explicit cycle ownership above.
             $mainBranch = Get-MainBranchForVersion $detectedMajor $Repo
             $devBranch = "origin/$mainBranch"
             $branchVersionInfo = Get-VersionFromGitRef $devBranch $Repo

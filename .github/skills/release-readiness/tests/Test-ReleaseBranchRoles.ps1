@@ -266,6 +266,31 @@ try {
         Assert-Role $false $classified.candidateFixPrs[0].onMain 'compatibility onMain field checks actual fixes ancestry'
         Assert-Role candidate/11.0.1xx-sr1 $classified.candidateFixPrs[0].baseRef 'staged fix evidence names selected candidate'
         Assert-Role $true ($classified.recommendedAction -match 'into net11') 'staged fix recommendation integrates into net11, not main12'
+        $originalPrInfo = (Get-Command Get-PrInfo).ScriptBlock
+        $originalBackports = (Get-Command Get-BackportPrsForSr).ScriptBlock
+        try {
+            $routingFix = @{
+                number = 9110; title = 'Reviewed fix'; body = 'Fixes #43'
+                state = 'OPEN'; baseRefName = 'net11'; mergedAt = $null; mergeCommit = $null
+                files = @(@{ path = 'src/Core/src/Fixture.cs' })
+            }
+            Set-Item Function:Get-PrInfo -Value { param($Repo, $PrNumber) $routingFix }
+            Set-Item Function:Get-BackportPrsForSr -Value { param($Repo, $SrBranch, $SourcePrNumber) @() }
+            $reviewed = Classify-RegressionCandidate -Issue @{ number = 43; state = 'OPEN' } -CandidatePrs @(9110) -Ctx $context -SrContents $contents
+            Assert-Role open-on-main $reviewed.classification 'initial net11 review keeps compatibility classification'
+            Assert-Role $true ($reviewed.recommendedAction -match 'After approval, a maintainer manually retargets.*inflight/11.0.1xx-sr2') 'approved fix is manually retargeted to active inflight'
+            Assert-Role $false ($reviewed.recommendedAction -match 'Wait for.*net11 merge') 'readiness never requests a direct net11 fix merge'
+            $routingFix.state = 'MERGED'
+            $routingFix.baseRefName = 'inflight/11.0.1xx-sr2'
+            $routingFix.mergedAt = '2026-11-06T00:00:00Z'
+            $routingFix.mergeCommit = @{ oid = (Invoke-FixtureGit rev-parse origin/inflight/11.0.1xx-sr2).Trim() }
+            $stagedFix = Classify-RegressionCandidate -Issue @{ number = 43; state = 'OPEN' } -CandidatePrs @(9110) -Ctx $context -SrContents $contents
+            Assert-Role merged-non-main-only $stagedFix.classification 'merged inflight fix remains staged, not falsely released'
+            Assert-Role $true ($stagedFix.recommendedAction -match 'already staged.*through candidate integration') 'inflight fix follows candidate promotion rather than direct net11 flow'
+        } finally {
+            Set-Item Function:Get-PrInfo -Value $originalPrInfo
+            Set-Item Function:Get-BackportPrsForSr -Value $originalBackports
+        }
     } finally { Pop-Location; $env:GET_RELEASE_READINESS_TEST_MODE = $priorTestMode }
     $null = Invoke-FixtureGit checkout --quiet main
     Write-FixtureState -Sr 2
@@ -276,6 +301,42 @@ try {
     try { $null = Get-ReadinessNightlyParameters -Roles $rotated -Major 11 -RepositoryPath $fixture }
     catch { $missingLaneFailed = $_.Exception.Message -match 'UNKNOWN' }
     Assert-Role $true $missingLaneFailed 'missing rotated lane cannot borrow retained older inflight'
+    Write-FixtureState
+    $null = Invoke-FixtureGit checkout --quiet -b release/11.0.1xx-sr1 net11
+    Set-FixtureVersion 11 20
+    Commit-Fixture 'Incorrect SR1 release metadata'
+    $null = Invoke-FixtureGit fetch --quiet origin
+    $invalidReleaseFailed = $false
+    try {
+        & (Join-Path $scripts 'Find-ReleaseReadinessTrackers.ps1') -Repo $fixture -MajorVersion 11 -NoFetch -OutputJson $detectionPath
+    } catch { $invalidReleaseFailed = $_.Exception.Message -match "Configured release.*patch 20.*outside SR1" }
+    Assert-Role $true $invalidReleaseFailed 'rejected configured release cannot silently remove both release and candidate'
+    $null = Invoke-FixtureGit checkout --quiet main
+    $null = Invoke-FixtureGit branch -D release/11.0.1xx-sr1
+    $null = Invoke-FixtureGit checkout --quiet --orphan release/10.0.1xx-sr13 $ga
+    Set-FixtureVersion 10 130 'servicing'
+    $savedAuthorDate = $env:GIT_AUTHOR_DATE
+    $savedCommitterDate = $env:GIT_COMMITTER_DATE
+    try {
+        $env:GIT_AUTHOR_DATE = $env:GIT_COMMITTER_DATE = '2020-01-01T00:00:00Z'
+        Commit-Fixture 'Idle historical SR13'
+    } finally {
+        $env:GIT_AUTHOR_DATE = $savedAuthorDate
+        $env:GIT_COMMITTER_DATE = $savedCommitterDate
+    }
+    $null = Invoke-FixtureGit tag 10.0.130
+    $null = Invoke-FixtureGit checkout --quiet net10.0
+    Set-FixtureVersion 10 140
+    Commit-Fixture 'Fresh historical SR14 fixes'
+    $null = Invoke-FixtureGit checkout --quiet main
+    Write-FixtureState
+    $null = Invoke-FixtureGit fetch --quiet --prune origin
+    & (Join-Path $scripts 'Find-ReleaseReadinessTrackers.ps1') -Repo $fixture -AllActiveMajors -NoFetch -OutputJson $detectionPath
+    $historicalDetection = Get-Content $detectionPath -Raw | ConvertFrom-Json
+    Assert-Role 1 @($historicalDetection.majors | Where-Object majorVersion -eq 10).Count 'fresh fixes keep the historical servicing major active'
+    $historicalTrackers = @($historicalDetection.majors | Where-Object majorVersion -eq 10).trackers
+    Assert-Role 1 @($historicalTrackers | Where-Object canonicalKey -eq net10-sr14).Count 'fresh historical fixes retain SR14 despite an idle shipped branch'
+    Assert-Role 1 @($historicalTrackers | Where-Object { $_.canonicalKey -eq 'net10-sr13' -and $_.mode -eq 'shipped' }).Count 'fresh historical fixes retain the shipped SR13 follow-up'
     Write-Host "Passed: $passed; Failed: 0"
 } finally {
     if (Test-Path -LiteralPath $fixture) { Remove-Item -LiteralPath $fixture -Recurse -Force }

@@ -1376,6 +1376,62 @@ Describe 'Invoke-AnalyzeSinglePr — validation context seeding' {
     }
 }
 
+Describe 'Invoke-AnalyzeSinglePr - versioned staging precedence' {
+    BeforeEach {
+        $script:stagingBase = 'inflight/11.0.1xx-sr2'
+        Mock Get-PrInfo {
+            @{
+                Number = 42; Title = 'Staged fix'; Url = 'u'; Milestone = ''
+                BaseRef = $script:stagingBase; MergedAt = '2026-11-06T00:00:00Z'
+                MergeCommitSha = 'abc123'; Body = 'Fixes #7'
+            }
+        }
+        Mock Initialize-MilestoneValidationContext { }
+        Mock Get-AllTags { @('11.0.0') }
+        Mock Get-VersionFromGitRef { @{ Tag = '11.0.10'; PreLabel = 'ci.main'; PreIter = 0 } }
+        Mock Find-ReleaseBranchForCommit { $null }
+        Mock Get-MainBranchForVersion { 'net11' }
+        Mock Get-CurrentMajorVersion { 12 }
+        Mock Get-AllMilestones { @{ '.NET 11 SR1' = 101; '.NET 11 SR2' = 102 } }
+        Mock Get-LinkedIssues { @(7) }
+        Mock Get-IssueInfo { @{ Number = 7; Title = 'Linked bug'; Url = 'issue'; Milestone = '' } }
+        Mock Test-AndRecordCorrection { }
+        Mock Close-LinkedIssue { }
+    }
+
+    It 'uses <Base> for the PR and linked issue instead of net11 patch10' -ForEach @(
+        @{ Base = 'candidate/11.0.1xx-sr1'; Expected = '.NET 11 SR1' }
+        @{ Base = 'inflight/11.0.1xx-sr2'; Expected = '.NET 11 SR2' }
+    ) {
+        $script:stagingBase = $Base
+        $report = Invoke-AnalyzeSinglePr -PrNum 42 -ReleaseTag '' -Repo '.'
+        $report.ExpectedMilestone | Should -Be $Expected
+        $report.PrsChecked | Should -Be 1
+        $report.IssuesChecked | Should -Be 1
+        Assert-MockCalled Test-AndRecordCorrection -Times 1 -Exactly -ParameterFilter {
+            $ItemType -eq 'pr' -and $ExpectedMs -eq $Expected
+        }
+        Assert-MockCalled Test-AndRecordCorrection -Times 1 -Exactly -ParameterFilter {
+            $ItemType -eq 'issue' -and $ExpectedMs -eq $Expected
+        }
+        Assert-MockCalled Get-VersionFromGitRef -Times 0 -Exactly -ParameterFilter { $GitRef -eq 'origin/net11' }
+    }
+
+    It 'retains verified release ancestry ahead of the versioned staging name' {
+        Mock Find-ReleaseBranchForCommit { @{ Branch = 'release/11.0.1xx-sr1'; Milestone = '.NET 11 SR1' } }
+        (Invoke-AnalyzeSinglePr -PrNum 42 -ReleaseTag '' -Repo '.').ExpectedMilestone | Should -Be '.NET 11 SR1'
+    }
+
+    It 'keeps the development HEAD fallback for an unversioned staging base' {
+        $script:stagingBase = 'inflight/current'
+        Mock Get-VersionFromGitRef {
+            param($GitRef)
+            @{ Tag = if ($GitRef -eq 'origin/net11') { '11.0.20' } else { '11.0.10' }; PreLabel = 'ci.main'; PreIter = 0 }
+        }
+        (Invoke-AnalyzeSinglePr -PrNum 42 -ReleaseTag '' -Repo '.').ExpectedMilestone | Should -Be '.NET 11 SR2'
+    }
+}
+
 Describe 'Invoke-AnalyzeSinglePr — milestone-not-found skip report shape' {
     BeforeEach {
         # Same start-to-finish scaffolding as the validation-context seeding tests, but here we
