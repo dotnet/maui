@@ -63,6 +63,12 @@ existing simulator architectures, and Mac Catalyst builds still include both
 architectures. The shared device runner defaults to `net12.0`, matching the
 device-test projects' restored target frameworks.
 
+The legacy `eng/pipelines/ui-tests.yml` entrypoint uses the same ARM64 Aces
+Tahoe iOS execution image as `ci-uitests.yml`, not the old x64 pool demand.
+Its `iosXcodeVersion` parameter also matches the prebuilt-app execution
+toolchain. Both CoreCLR and enabled NativeAOT iOS jobs consume these settings;
+Apple app compilation still uses the separately pinned build Xcode.
+
 Normal builds validate the Xcode version rather than bypassing an SDK mismatch.
 To use a particular installed Xcode without changing the global selection,
 set `DEVELOPER_DIR` for the build command:
