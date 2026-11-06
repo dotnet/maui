@@ -57,6 +57,12 @@ The .NET 12 Android binding generator no longer emits the legacy
 A net12-and-later-only PublicAPI supplement records those removals without
 changing shipped API history or the retained .NET 11 validation baseline.
 
+.NET 12 iOS simulator builds use `iossimulator-arm64`; the Apple workload no
+longer accepts `iossimulator-x64`. Previous-framework host builds retain their
+existing simulator architectures, and Mac Catalyst builds still include both
+architectures. The shared device runner defaults to `net12.0`, matching the
+device-test projects' restored target frameworks.
+
 Normal builds validate the Xcode version rather than bypassing an SDK mismatch.
 To use a particular installed Xcode without changing the global selection,
 set `DEVELOPER_DIR` for the build command:

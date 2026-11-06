@@ -75,7 +75,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		public override IConfig GetTestConfig()
 		{
-			var frameworkVersion = "net10.0";
+			var frameworkVersion = "net12.0";
 #if DEBUG
 			var configuration = "Debug";
 #else
@@ -391,7 +391,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 					case TestDevice.Windows:
 						environmentName = "windows";
-						
+
 						// Check if the Windows CV1 handler is selected via TEST_CONFIGURATION_ARGS.
 						// This uses a separate snapshot directory for visual regression testing
 						var testConfigurationArgs = Environment.GetEnvironmentVariable("TEST_CONFIGURATION_ARGS") ?? "";
