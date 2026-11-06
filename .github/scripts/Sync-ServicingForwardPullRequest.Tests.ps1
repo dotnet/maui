@@ -2,7 +2,7 @@ param([string]$ForwardScriptPath)
 
 BeforeAll {
     $forwardScript = if ($ForwardScriptPath) { $ForwardScriptPath } else {
-        Join-Path $PSScriptRoot 'Sync-ServicingForwardPullRequest.ps1'
+        Join-Path $PSScriptRoot '../../eng/scripts/Sync-ServicingForwardPullRequest.ps1'
     }
     function New-FixtureSha {
         $global:MauiForwardFixture.Counter++
