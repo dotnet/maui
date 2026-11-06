@@ -23,16 +23,30 @@ if ($state.Platform -eq 'android' -and $state.Device) {
     if ($state.ProcessId) {
         $process = Get-Process -Id $state.ProcessId -ErrorAction SilentlyContinue
         if ($process -and $process.ProcessName -match '^(emulator|qemu)' -and
-            $process.StartTime.ToUniversalTime().ToString('O') -eq $state.ProcessStartTime) {
-            Stop-Process -Id $state.ProcessId -ErrorAction Stop
+            $process.StartTime.ToUniversalTime().Ticks -eq ([DateTime]$state.ProcessStartTime).ToUniversalTime().Ticks) {
             if (!$process.WaitForExit(30000)) {
-                throw "Could not stop the job-owned emulator PID $($state.ProcessId)."
+                Stop-Process -Id $state.ProcessId -ErrorAction Stop
+                if (!$process.WaitForExit(30000)) {
+                    throw "Could not stop the job-owned emulator PID $($state.ProcessId)."
+                }
             }
         }
     }
     if ($killFailed) { throw "Could not stop the job-owned AVD '$($state.AvdName)'." }
     if ($state.AvdHome -and (Test-Path -LiteralPath $state.AvdHome)) {
-        Remove-Item -LiteralPath $state.AvdHome -Recurse -Force
+        for ($attempt = 1; $attempt -le 3; $attempt++) {
+            try {
+                if ([IO.Directory]::Exists($state.AvdHome)) {
+                    [IO.Directory]::Delete($state.AvdHome, $true)
+                }
+                break
+            }
+            catch [IO.IOException] {
+                if ($attempt -eq 3) { throw }
+                Write-Warning "Owned AVD cleanup raced with emulator shutdown; retrying directory removal (attempt $attempt of 3): $_"
+                Start-Sleep -Milliseconds 250
+            }
+        }
     }
 }
 elseif ($state.Platform -eq 'ios' -and $state.Device) {

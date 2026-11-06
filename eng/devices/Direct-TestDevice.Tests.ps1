@@ -176,6 +176,52 @@ Describe 'Direct native CI contracts' {
         }
     }
 
+    It 'waits for the owned emulator before deleting its AVD directory' -TestCases @(
+        @{ RequiresTermination = $false }
+        @{ RequiresTermination = $true }
+    ) {
+        param($RequiresTermination)
+        $directory = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
+        $avdHome = Join-Path $directory 'device/avd'
+        New-Item -ItemType Directory -Force -Path $avdHome | Out-Null
+        Set-Content -LiteralPath (Join-Path $avdHome 'hardware-qemu.ini.lock') -Value 'owned lock'
+        $started = [DateTime]::UtcNow
+        @{
+            Platform = 'android'
+            Device = 'emulator-5554'
+            AvdName = 'owned-test-avd'
+            AvdHome = $avdHome
+            Adb = 'Invoke-TestAdb'
+            ProcessId = 12345
+            ProcessStartTime = $started.ToString('O')
+        } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $directory 'device.json')
+        function Invoke-TestAdb {
+            $global:LASTEXITCODE = 0
+            if ($args -contains 'getprop') { 'owned-test-avd' }
+        }
+        $process = [pscustomobject]@{
+            ProcessName = 'qemu-system-x86_64'
+            StartTime = $started
+            WaitCount = 0
+            RequiresTermination = $RequiresTermination
+            AvdHome = $avdHome
+        }
+        $process | Add-Member -MemberType ScriptMethod -Name WaitForExit -Value {
+            param($milliseconds)
+            if (![IO.Directory]::Exists($this.AvdHome)) { throw 'AVD was deleted before the emulator exited.' }
+            $this.WaitCount++
+            return !$this.RequiresTermination -or $this.WaitCount -gt 1
+        }
+        Mock Get-Process { $process } -ParameterFilter { $Id -eq 12345 }
+        Mock Stop-Process {}
+
+        & (Join-Path $deviceScripts 'Stop-TestDevice.ps1') -ResultsDirectory $directory
+
+        $avdHome | Should -Not -Exist
+        $process.WaitCount | Should -Be $(if ($RequiresTermination) { 2 } else { 1 })
+        Should -Invoke Stop-Process -Times $(if ($RequiresTermination) { 1 } else { 0 }) -Exactly
+    }
+
     It 'initializes the owned AVD directory without overwriting the read-only PowerShell home' {
         $setup = [regex]::Match($start, '(?s)    \$name = "maui-.*?\r?\n    Save-State')
         $setup.Success | Should -BeTrue
