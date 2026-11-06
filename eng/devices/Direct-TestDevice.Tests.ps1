@@ -68,6 +68,8 @@ Describe 'Direct native CI contracts' {
         $application | Should -Match 'Application.Current.UnhandledException \+='
         $application | Should -Match ([regex]::Escape('Console.OpenStandardError()'))
         $application | Should -Match ([regex]::Escape('output.WriteLine(args.Exception)'))
+        $application | Should -Match ([regex]::Escape('File.AppendAllText(fatalLog, args.Exception'))
+        $application | Should -Match ([regex]::Escape('AppDomain.CurrentDomain.UnhandledException +='))
         $application | Should -Not -Match 'args.Handled\s*='
     }
 

@@ -7,6 +7,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner;
 #if WINDOWS
+using System.Linq;
+using System.Reflection;
 using Microsoft.Maui.Dispatching;
 #endif
 #if IOS || MACCATALYST
@@ -33,11 +35,21 @@ class MauiTestApplication : Application
 				var runner = services.GetRequiredService<HeadlessTestRunner>();
 #if WINDOWS
 				WindowsUiTestFramework.ConfigureDispatcher(action => page.Dispatcher.DispatchAsync(action));
+				var errorDirectory = services.GetRequiredService<TestOptions>().TestAssembly
+					.GetCustomAttributes<AssemblyMetadataAttribute>()
+					.SingleOrDefault(attribute => attribute.Key == "MauiTestResultsDirectory")?.Value;
+				if (string.IsNullOrEmpty(errorDirectory))
+					errorDirectory = Path.Combine(Environment.CurrentDirectory, "TestResults");
+				Directory.CreateDirectory(errorDirectory);
+				var fatalLog = Path.Combine(errorDirectory, $"native-unhandled-{Environment.ProcessId}.log");
 				global::Microsoft.UI.Xaml.Application.Current.UnhandledException += (_, args) =>
 				{
+					File.AppendAllText(fatalLog, args.Exception + Environment.NewLine);
 					using var output = new StreamWriter(Console.OpenStandardError()) { AutoFlush = true };
 					output.WriteLine(args.Exception);
 				};
+				AppDomain.CurrentDomain.UnhandledException += (_, args) =>
+					File.AppendAllText(fatalLog, args.ExceptionObject + Environment.NewLine);
 #endif
 				var directory =
 #if IOS || MACCATALYST
