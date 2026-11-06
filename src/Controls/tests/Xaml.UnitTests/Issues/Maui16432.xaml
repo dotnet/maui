@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Maui16432">
+    <ContentPage.Resources>
+        <Style TargetType="Span" Class="accent">
+            <Setter Property="TextColor" Value="Blue" />
+        </Style>
+        <Style TargetType="Span" Class="warning">
+            <Setter Property="TextColor" Value="Red" />
+        </Style>
+        <Style TargetType="Span" Class="emphasis">
+            <Setter Property="FontAttributes" Value="Bold" />
+        </Style>
+    </ContentPage.Resources>
+    <Label x:Name="label">
+        <Label.FormattedText>
+            <FormattedString>
+                <Span Text="Accent" StyleClass="accent" />
+                <Span Text="Warning" class="warning" />
+                <Span Text="Combined" StyleClass="accent,emphasis" />
+            </FormattedString>
+        </Label.FormattedText>
+    </Label>
+</ContentPage>
