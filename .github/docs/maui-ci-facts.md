@@ -99,6 +99,17 @@ publishes these packs to the `darc-pub-dotnet-dotnet-295ff616` feed.
   inaccessible/expired/insufficient data — do not assume unrelated or PR-caused.
 - Helix work-item console output may live behind `helix.dot.net` and Azure Blob URLs.
 
+## UI execution checkout and artifacts
+
+UI execution jobs explicitly use a depth-one checkout without tags and do not
+persist checkout credentials. Build and packaging jobs keep their existing
+history/versioning behavior.
+
+Snapshot-diff artifact names include the stage, matrix-leg name, unique job ID,
+and attempt. The job ID distinguishes OS/API variants whose matrix legs share
+the same name; the attempt keeps job retries separate. Existing artifact prefixes
+and snapshot contents are unchanged.
+
 ## Setup-only retries
 
 Shared provisioning initializes `DOTNET_CLI_HOME` under the agent's per-job
