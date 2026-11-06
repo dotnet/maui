@@ -392,7 +392,7 @@ For read-only inspection:
 pwsh -NoProfile -File eng/scripts/Sync-ServicingForwardPullRequest.ps1 -PlanOnly
 ```
 
-The current `main` is still .NET 11, so the actual production inspection reports
+On 2026-11-06, `main` was still .NET 11, so the production inspection reported
 `waiting-for-feature-transition` without creating a branch or PR. Isolated
 metadata fixtures can validate draft-PR creation and content flow, but are not
 certification of a .NET 12 runtime migration.
@@ -406,6 +406,13 @@ any ref or PR change. These are PR-preparation and merge-mechanics checks, not
 production deployment or automatic merge approval.
 The candidate runner does not perform this daily forwarding; the separate trusted
 forward-PR workflow does.
+
+The [hosted bot-token trial](https://github.com/dotnet/maui/actions/runs/42191569428)
+created one bot-authored draft PR containing only the intended servicing marker.
+Attempt 2 reported `unchanged`, retaining the same source, target, automation head,
+and PR identity. This used a .NET 12 metadata fixture, not a runtime migration.
+The draft was then closed and all three owned trial refs removed; the production
+`main`, `net11`, candidate, and inflight ref snapshots were unchanged by cleanup.
 
 ### Read-only planning trial
 
@@ -613,6 +620,14 @@ mirror operation was performed.
 
 Merging this PR is not a complete production release transition. The clean-start
 sandbox proves the branch/PR lifecycle, not the following remaining work:
+
+The [production rollout tracker](https://github.com/dotnet/maui/issues/39988)
+preserves the full workflow, adoption order, evidence, and acceptance criteria.
+Its ten native sub-issues separate infrastructure acceptance, servicing preservation
+and protection, the .NET 12 transition, naming and baselines, production orchestration,
+dependency flow, signed nightly builds, daily forwarding, publication housekeeping, and
+the first complete production cycle. Close the tracker only after those gates have
+actual production evidence; merging this proposal does not satisfy them.
 
 | Surface | Remaining production requirement |
 |---|---|
