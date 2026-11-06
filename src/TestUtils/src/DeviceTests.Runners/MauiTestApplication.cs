@@ -34,7 +34,10 @@ class MauiTestApplication : Application
 #if WINDOWS
 				WindowsUiTestFramework.ConfigureDispatcher(action => page.Dispatcher.DispatchAsync(action));
 				global::Microsoft.UI.Xaml.Application.Current.UnhandledException += (_, args) =>
-					Console.Error.WriteLine(args.Exception);
+				{
+					using var output = new StreamWriter(Console.OpenStandardError()) { AutoFlush = true };
+					output.WriteLine(args.Exception);
+				};
 #endif
 				var directory =
 #if IOS || MACCATALYST

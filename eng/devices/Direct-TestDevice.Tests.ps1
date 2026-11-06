@@ -66,7 +66,8 @@ Describe 'Direct native CI contracts' {
     It 'logs the original WinUI exception without marking a native crash handled' {
         $application = Get-Content (Join-Path $repoRoot 'src/TestUtils/src/DeviceTests.Runners/MauiTestApplication.cs') -Raw
         $application | Should -Match 'Application.Current.UnhandledException \+='
-        $application | Should -Match ([regex]::Escape('Console.Error.WriteLine(args.Exception)'))
+        $application | Should -Match ([regex]::Escape('Console.OpenStandardError()'))
+        $application | Should -Match ([regex]::Escape('output.WriteLine(args.Exception)'))
         $application | Should -Not -Match 'args.Handled\s*='
     }
 
@@ -91,7 +92,7 @@ Describe 'Direct native CI contracts' {
 
     It 'awaits both native Frame color assertions before disposing the fixture' {
         $fixture = Get-Content (Join-Path $repoRoot 'src/Controls/tests/DeviceTests/Elements/Frame/FrameTests.cs') -Raw
-        [regex]::Matches($fixture, 'await platformView\.AssertContainsColor\(expectedColor, MauiContext\)').Count | Should -Be 2
+        [regex]::Matches($fixture, 'await platformView\.AssertContainsColor\(expectedColor, \(\(IElementHandler\)handler\)\.MauiContext\)').Count | Should -Be 2
         $fixture | Should -Not -Match '(?m)^\s*platformView\.AssertContainsColor\('
     }
 

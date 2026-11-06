@@ -152,7 +152,7 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAndAddToWindow<FrameRenderer>(frame, async handler =>
 			{
 				var platformView = handler.ToPlatform();
-				await platformView.AssertContainsColor(expectedColor, MauiContext);
+				await platformView.AssertContainsColor(expectedColor, ((IElementHandler)handler).MauiContext);
 			});
 		}
 
@@ -183,7 +183,7 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAndAddToWindow<FrameRenderer>(frame, async handler =>
 			{
 				var platformView = handler.ToPlatform();
-				await platformView.AssertContainsColor(expectedColor, MauiContext);
+				await platformView.AssertContainsColor(expectedColor, ((IElementHandler)handler).MauiContext);
 			});
 		}
 
