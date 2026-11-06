@@ -72,6 +72,9 @@ public sealed class HeadlessTestRunner(HeadlessRunnerOptions runnerOptions, Test
 			args.ToArray(), (builder, _) =>
 			{
 				builder.AddTrxReportProvider();
+#if WINDOWS
+				builder.AddCrashDumpProvider();
+#endif
 				builder.TestHost.AddDataConsumer(_ => consumer);
 			});
 

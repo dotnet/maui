@@ -181,6 +181,8 @@ steps:
         --diagnostic
         --diagnostic-synchronous-write
         --diagnostic-output-directory "$(TestResultsDirectory)/diagnostics"
+        --crashdump
+        --crashdump-type Mini
         -p:RuntimeIdentifier=win-x64
         -p:RuntimeIdentifierOverride=win-x64
         -p:IsRidAgnostic=false

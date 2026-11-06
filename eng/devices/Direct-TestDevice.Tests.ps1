@@ -61,6 +61,11 @@ Describe 'Direct native CI contracts' {
         $run = [regex]::Match($steps, '(?s)displayName: Run Windows .*?useExitCodeForErrors: true').Value
         $run | Should -Match '--diagnostic-synchronous-write'
         $run | Should -Match ([regex]::Escape('--diagnostic-output-directory "$(TestResultsDirectory)/diagnostics"'))
+        $run | Should -Match '--crashdump\s+--crashdump-type Mini'
+        $runnerProject = Get-Content (Join-Path $repoRoot 'src/TestUtils/src/DeviceTests.Runners/TestUtils.DeviceTests.Runners.csproj') -Raw
+        $runnerProject | Should -Match 'Include="Microsoft.Testing.Extensions.CrashDump" Version="\$\(MicrosoftTestingPlatformVersion\)" Condition="[^"]*windows'
+        $runner = Get-Content (Join-Path $repoRoot 'src/TestUtils/src/DeviceTests.Runners/HeadlessRunner/HeadlessTestRunner.cs') -Raw
+        $runner | Should -Match '(?s)#if WINDOWS\s+builder.AddCrashDumpProvider\(\);'
     }
 
     It 'logs the original WinUI exception without marking a native crash handled' {
