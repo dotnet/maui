@@ -480,7 +480,9 @@ namespace Microsoft.Maui.DeviceTests
 				layout.ToHandler(MauiContext);
 				frame.ToHandler(MauiContext);
 
-				await new ContentLayoutPanel(layout, widthConstraint, heightConstraint).AttachAndRun(async () =>
+				try
+				{
+					await new ContentLayoutPanel(layout, widthConstraint, heightConstraint).AttachAndRun(async () =>
 						{
 							await OnFrameSetToNotEmpty(layout);
 							await OnFrameSetToNotEmpty(frame);
@@ -497,6 +499,11 @@ namespace Microsoft.Maui.DeviceTests
 
 							await additionalTests.Invoke();
 						}, MauiContext);
+				}
+				finally
+				{
+					layout.DisconnectHandlers();
+				}
 			}
 			);
 

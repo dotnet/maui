@@ -70,11 +70,9 @@ Describe 'Direct native CI contracts' {
         $application | Should -Not -Match 'args.Handled\s*='
     }
 
-    It 'disconnects Windows fixture content before its window and scoped services are torn down' {
-        $fixture = Get-Content (Join-Path $repoRoot 'src/Controls/tests/DeviceTests/ControlsHandlerTestBase.Windows.cs') -Raw
-        $fixture.IndexOf('window.Content?.DisconnectHandlers()') | Should -BeGreaterThan -1
-        $fixture.IndexOf('window.Content?.DisconnectHandlers()') |
-            Should -BeLessThan $fixture.IndexOf('window.Handler?.DisconnectHandler()')
+    It 'disconnects the Windows Frame layout tree even when its native assertions fail' {
+        $fixture = Get-Content (Join-Path $repoRoot 'src/Controls/tests/DeviceTests/Elements/Frame/FrameTests.cs') -Raw
+        $fixture | Should -Match '(?s)new ContentLayoutPanel\(layout,.*?\}, MauiContext\);\s*\}\s*finally\s*\{\s*layout\.DisconnectHandlers\(\);'
     }
 
     It 'keeps Windows reference builds RID-specific so PRI paths match the app reference query' {
