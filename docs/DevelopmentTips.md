@@ -456,6 +456,9 @@ leave the entry assembly without the location required by the xUnit MTP host.
 - Use `/bl:filename.binlog` for detailed MSBuild logs
 - Add `-verbosity:diag` for maximum diagnostic output
 - Inspect the job's published TRX, binlogs and device logs, including failed attempts
+- Windows device CI enables MTP crash collection with `--crashdump --crashdump-type Mini`.
+  Dumps and test-sequence diagnostics are published with the job's results when
+  the native host crashes; a recovered partial TRX does not make that run successful.
 
 ### CI Integration
 

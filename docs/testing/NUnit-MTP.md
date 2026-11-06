@@ -10,7 +10,7 @@ works before the adapter's restored MSBuild targets are available.
 ## Dependencies
 
 The test hosts use NUnit **4.0.1**, NUnit3TestAdapter **6.1.0**, and
-Microsoft.Testing.Extensions.TrxReport **2.0.2**. The support library uses the same
+Microsoft.Testing.Extensions.TrxReport **2.5.1**. The support library uses the same
 NUnit framework version. Adapter 4.5.0 does not provide the required MTP host;
 adapter 5.x targets MTP 1.x. Adapter 6.x targets MTP 2.x.
 
@@ -18,8 +18,10 @@ These are intentional explicit project versions, not an assumption that the old
 VSTest adapter also works under the root MTP runner. The released
 [6.1.0 package manifest](https://api.nuget.org/v3-flatcontainer/nunit3testadapter/6.1.0/nunit3testadapter.nuspec)
 depends on Microsoft.Testing.Extensions.VSTestBridge and
-Microsoft.Testing.Platform.MSBuild **2.0.2**. No newer MTP minor is needed for
-these hosts. See also the [NUnit adapter documentation](https://docs.nunit.org/articles/vs-test-adapter/Index.html).
+Microsoft.Testing.Platform.MSBuild **2.0.2** as its minimum. The repository pins
+both modules and the reporter to its shared MTP **2.5.1** version so NUnit and
+xUnit hosts use compatible infrastructure. See also the
+[NUnit adapter documentation](https://docs.nunit.org/articles/vs-test-adapter/Index.html).
 
 ## Commands, settings, and results
 
@@ -100,9 +102,12 @@ must update the app's embedded metadata.
 
 The selected Android/iOS device is forwarded with `--device` when available.
 Android requests real MTP TRX output using `--report-trx`. iOS leaves the native
-report in the app's `Documents/TestResults`; Cake does not synthesize stdout TRX
-or copy the container report. Mac Catalyst sets `MauiTestResultsDirectory` to the
-requested host result directory. Nonzero process exits fail the task.
+report in the app's `Documents/TestResults`; Cake copies that genuine report from
+the selected simulator into the requested host result directory and validates it
+before cleanup. Missing, unchanged, empty and failed reports fail the task;
+stdout is never converted into TRX. Mac Catalyst sets `MauiTestResultsDirectory`
+to the requested host result directory. Nonzero process exits fail the task even
+when a passing report exists.
 
 Appium preparation, configuration, and NUnit retries remain separate from native
 test execution. UI installation/discovery primitives use `adb`, `simctl`, and
