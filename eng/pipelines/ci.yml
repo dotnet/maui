@@ -9,10 +9,13 @@ trigger:
   paths:
     include:
     - '*'
+    - .github/skills/run-device-tests/scripts/**
+    - .github/skills/run-integration-tests/scripts/**
+    - .github/scripts/shared/**
     exclude:
     - '**.md'
     - eng/Version.Details.xml
-    - .github/**
+    - .github
     - docs/*
     - LICENSE.TXT
     - PATENTS.TXT
@@ -28,10 +31,13 @@ pr:
   paths:
     include:
     - '*'
+    - .github/skills/run-device-tests/scripts/**
+    - .github/skills/run-integration-tests/scripts/**
+    - .github/scripts/shared/**
     exclude:
     - '**.md'
     - eng/Version.Details.xml
-    - .github/**
+    - .github
     - docs/*
     - LICENSE.TXT
     - PATENTS.TXT

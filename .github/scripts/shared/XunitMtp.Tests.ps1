@@ -56,6 +56,60 @@ Describe 'real TRX outcomes' {
         $summary.Skipped | Should -Be 1
         $summary.Errors | Should -Be 1
     }
+
+    Describe 'integration entrypoint arguments' {
+        BeforeAll {
+            $runnerPath = Join-Path $PSScriptRoot '../../skills/run-integration-tests/scripts/Run-IntegrationTests.ps1'
+            $source = Get-Content -Raw -LiteralPath $runnerPath
+            $ast = [System.Management.Automation.Language.Parser]::ParseInput($source, [ref]$null, [ref]$null)
+            $assignment = $ast.Find({
+                param($node)
+                $node -is [System.Management.Automation.Language.AssignmentStatementAst] -and
+                    $node.Left.Extent.Text -eq '$testArgs' -and
+                    $node.Operator -eq 'Equals'
+            }, $true)
+            $nextCommand = $ast.FindAll({
+                param($node)
+                $node -is [System.Management.Automation.Language.CommandAst] -and
+                    $node.GetCommandName() -eq 'Write-Host' -and
+                    $node.Extent.StartOffset -gt $assignment.Extent.EndOffset
+            }, $true) | Select-Object -First 1
+            $script:BuildIntegrationArguments = [scriptblock]::Create(
+                $source.Substring($assignment.Extent.StartOffset,
+                    $nextCommand.Extent.StartOffset - $assignment.Extent.StartOffset))
+            $testProjectPath = 'Integration Tests.csproj'
+            $Configuration = 'Release'
+            $resultsPath = Join-Path $TestDrive 'results'
+            $TestClass = @()
+            $Category = ''
+            $ArtifactsDirectory = ''
+        }
+
+        It 'translates legacy fully qualified selectors at the integration entrypoint' -TestCases @(
+            @{ Filter = 'FullyQualifiedName~BuildSample'; Expected = @('--filter-method', '*BuildSample*') }
+            @{ Filter = 'FullyQualifiedName=Tests.BuildSample'; Expected = @('--filter-method', 'Tests.BuildSample') }
+            @{ Filter = '/assembly/namespace/class/method'; Expected = @('--filter-query', '/assembly/namespace/class/method') }
+        ) {
+            param($Filter, $Expected)
+            $TestFilter = $Filter
+            . $script:BuildIntegrationArguments
+            $testArgs[-2..-1] | Should -Be $Expected
+        }
+
+        It 'round trips artifact path separators through the real MSBuild property parser' {
+            $TestFilter = ''
+            $Category = 'Build'
+            $ArtifactsDirectory = Join-Path $TestDrive 'validation,run;literal%2C'
+            . $script:BuildIntegrationArguments
+            $property = @($testArgs | Where-Object { $_ -like '-p:ArtifactsDir=*' })
+            $property.Count | Should -Be 1
+            $project = Join-Path $TestDrive 'Property.proj'
+            '<Project />' | Set-Content -LiteralPath $project
+            $actual = & dotnet msbuild $project -nologo @property -getProperty:ArtifactsDir
+            $LASTEXITCODE | Should -Be 0
+            "$actual".Trim() | Should -Be ([IO.Path]::GetFullPath($ArtifactsDirectory))
+        }
+    }
     It 'does not accept an empty or missing report as success' {
         $path = Join-Path $TestDrive 'empty.trx'
         '<TestRun><Results /></TestRun>' | Set-Content -LiteralPath $path

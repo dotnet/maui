@@ -13,7 +13,7 @@
     Test category to run (WindowsTemplates, Samples, Build, Blazor, MultiProject, etc.)
 
 .PARAMETER TestFilter
-    Native xUnit query filter. Overrides -Category if specified.
+    Native xUnit query or supported legacy test filter. Overrides -Category if specified.
 
 .PARAMETER TestClass
     Fully qualified xUnit test class names. Cannot be combined with -TestFilter.
@@ -86,6 +86,7 @@ if ($DotnetPath -and (-not $SkipBuild -or -not $SkipInstall)) {
     throw "-DotnetPath is only supported with -SkipBuild -SkipInstall; generated apps require the repository-local workload."
 }
 $RepoRoot = (Get-Item $PSScriptRoot).Parent.Parent.Parent.Parent.FullName
+. (Join-Path $RepoRoot '.github/scripts/shared/XunitMtp.ps1')
 $RunningOnWindows = $IsWindows -or $env:OS -eq 'Windows_NT'
 $RunningOnMacOS = $IsMacOS -or ((Get-Command uname -ErrorAction SilentlyContinue) -and ((uname) -eq 'Darwin'))
 
@@ -332,11 +333,12 @@ try {
         "--configuration", $Configuration
     )
     if ($ArtifactsDirectory) {
-        $testArgs += "-p:ArtifactsDir=$([IO.Path]::GetFullPath($ArtifactsDirectory))"
+        $artifactsProperty = [IO.Path]::GetFullPath($ArtifactsDirectory).Replace('%', '%25').Replace(';', '%3B').Replace(',', '%2C')
+        $testArgs += "-p:ArtifactsDir=$artifactsProperty"
     }
     $testArgs += @("--", "--report-trx", "--results-directory", $resultsPath, "--minimum-expected-tests", "1")
     if ($TestFilter) {
-        $testArgs += @("--filter-query", $TestFilter)
+        $testArgs += @(Get-XunitMtpFilterArguments $TestFilter)
     } elseif ($TestClass) {
         $testArgs += "--filter-class"
         $testArgs += $TestClass

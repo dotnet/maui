@@ -117,6 +117,29 @@ Describe 'CI provisioning' {
     $devicePipeline | Should -Match ([regex]::Escape('runWindowsTests: ${{ parameters.runWindowsTests }}'))
   }
 
+  It 'includes executable GitHub infrastructure below the excluded metadata directory' {
+    foreach ($pipeline in @('ci.yml', 'ci-device-tests.yml')) {
+      $source = Get-Content -Raw -LiteralPath (Join-Path $PSScriptRoot $pipeline)
+      $triggerSections = $source -split '(?m)^variables:' | Select-Object -First 1
+      @([regex]::Matches($triggerSections, '\.github/skills/run-device-tests/scripts/\*\*')).Count |
+        Should -Be 2
+      @([regex]::Matches($triggerSections, '\.github/scripts/shared/\*\*')).Count |
+        Should -Be 2
+      $triggerSections | Should -Not -Match '\.github/\*\*'
+      @([regex]::Matches($triggerSections, '\.github(?=\s|,)')).Count | Should -Be 2
+    }
+  }
+
+  It 'discovers Cake and integration argument regression checks on their implementation changes' {
+    $workflow = Get-Content -Raw -LiteralPath (
+      Join-Path $PSScriptRoot '../../.github/workflows/powershell-script-tests.yml')
+    $workflow | Should -Match "'eng/devices/\*\.cake'"
+    $workflow | Should -Match "'eng/cake/\*\*'"
+    $workflow | Should -Match "'eng/devices/Cake-Mtp\.Tests\.ps1'"
+    $workflow | Should -Match "'\.github/skills/run-integration-tests/scripts/\*\*'"
+    $workflow | Should -Match "'\.github/scripts'"
+  }
+
   It 'allows focused Windows packaging reruns while retaining both modes by default' {
     $devicePipeline = Get-Content -LiteralPath (
       Join-Path $PSScriptRoot 'ci-device-tests.yml') -Raw

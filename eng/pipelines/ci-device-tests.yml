@@ -5,15 +5,15 @@ trigger:
   tags:
     include: [ '*' ]
   paths:
-    include: [ '*' ]
-    exclude: [ .github/**, docs/*, src/Templates/*, CODE-OF-CONDUCT.md, CONTRIBUTING.md, LICENSE.TXT, PATENTS.TXT, README.md, THIRD-PARTY-NOTICES.TXT ]
+    include: [ '*', .github/skills/run-device-tests/scripts/**, .github/scripts/shared/** ]
+    exclude: [ .github, docs/*, src/Templates/*, CODE-OF-CONDUCT.md, CONTRIBUTING.md, LICENSE.TXT, PATENTS.TXT, README.md, THIRD-PARTY-NOTICES.TXT ]
 
 pr:
   branches:
     include: [ main, release/*, net*.0, inflight/* ]
   paths:
-    include: [ '*' ]
-    exclude: [ .github/**, docs/*, src/Templates/*, CODE-OF-CONDUCT.md, CONTRIBUTING.md, LICENSE.TXT, PATENTS.TXT, README.md, THIRD-PARTY-NOTICES.TXT ]
+    include: [ '*', .github/skills/run-device-tests/scripts/**, .github/scripts/shared/** ]
+    exclude: [ .github, docs/*, src/Templates/*, CODE-OF-CONDUCT.md, CONTRIBUTING.md, LICENSE.TXT, PATENTS.TXT, README.md, THIRD-PARTY-NOTICES.TXT ]
 
 variables:
 - template: /eng/common/templates/variables/pool-providers.yml@self
