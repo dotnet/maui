@@ -51,6 +51,12 @@ Every invocation has a unique child result directory, even when reusing the same
 ## Reporting and failure contract
 
 Android and Windows use host `--report-trx --results-directory`.
+The Android SDK proxy rewrites method identities to display names. The local
+runner also pulls the app's original `files/TestResults/testResults.trx` from
+external storage using the project's literal `ApplicationId` and exact device
+serial. That native report alone supplies counts and selector verification;
+the host proxy report is retained for diagnostics and must agree on outcomes.
+A pre-run snapshot rejects unchanged results on borrowed Android devices.
 The current Apple proxy does not register host `--report-trx`.
 iOS writes native `Documents/TestResults/testResults.trx`; the local runner
 extracts that genuine file through `simctl get_app_container` and rejects an

@@ -213,13 +213,41 @@ Describe 'Plain dotnet test local caller' -Skip:$IsWindows {
         New-Item -ItemType Directory -Force -Path (Join-Path $fixture '.git') | Out-Null
         '<Project><PropertyGroup><_MauiDotNetVersionMajor>11</_MauiDotNetVersionMajor><_MauiDotNetVersionMinor>0</_MauiDotNetVersionMinor></PropertyGroup></Project>' |
             Set-Content (Join-Path $fixture 'Directory.Build.props')
+        $projectDirectory = Join-Path $fixture 'src/Core/tests/DeviceTests'
+        New-Item -ItemType Directory -Force -Path $projectDirectory | Out-Null
+        '<Project><PropertyGroup><ApplicationId>com.microsoft.maui.devicetests</ApplicationId></PropertyGroup></Project>' |
+            Set-Content (Join-Path $projectDirectory 'Core.DeviceTests.csproj')
         $fake = Join-Path $TestDrive 'fake-dotnet'
         $originalSdkRoot = $env:ANDROID_SDK_ROOT
         $fakeSdk = Join-Path $TestDrive 'android-sdk'
         New-Item -ItemType Directory -Force -Path (Join-Path $fakeSdk 'platform-tools') | Out-Null
         $fakeAdb = Join-Path $fakeSdk 'platform-tools/adb'
-        "#!/usr/bin/env python3`nimport os, sys`nprint('x86_64')`nsys.exit(int(os.environ.get('MAUI_FAKE_ADB_EXIT', '0')))" |
-            Set-Content $fakeAdb
+        @'
+#!/usr/bin/env python3
+import json, os, pathlib, shutil, sys
+arguments = sys.argv[1:]
+if any(os.environ.get(name) for name in ("GH_TOKEN", "GITHUB_TOKEN", "COPILOT_GITHUB_TOKEN")):
+    sys.exit(99)
+with open(os.environ["MAUI_FAKE_ADB_ARGS"], "a") as output:
+    output.write(json.dumps(arguments) + "\n")
+if os.environ.get("MAUI_FAKE_ADB_EXIT", "0") != "0":
+    sys.exit(int(os.environ["MAUI_FAKE_ADB_EXIT"]))
+if "getprop" in arguments:
+    print("x86_64")
+elif "shell" in arguments:
+    if os.environ.get("MAUI_FAKE_CHECK_EXIT"):
+        sys.exit(int(os.environ["MAUI_FAKE_CHECK_EXIT"]))
+    print("present" if os.environ.get("MAUI_FAKE_PREVIOUS_TRX") else "absent")
+elif "pull" in arguments:
+    after = pathlib.Path(os.environ["MAUI_FAKE_NATIVE_READY"]).exists()
+    source = (os.environ.get("MAUI_FAKE_NATIVE_TRX", os.environ.get("MAUI_FAKE_TRX"))
+              if after else os.environ.get("MAUI_FAKE_PREVIOUS_TRX"))
+    if not source or os.environ.get("MAUI_FAKE_PULL_EXIT"):
+        sys.exit(1)
+    shutil.copyfile(source, arguments[-1])
+else:
+    sys.exit(98)
+'@ | Set-Content $fakeAdb
         & chmod +x $fakeAdb
         @'
 #!/usr/bin/env python3
@@ -231,6 +259,8 @@ if os.environ.get("MAUI_FAKE_ARGS"):
 if "--results-directory" in arguments and os.environ.get("MAUI_FAKE_TRX"):
     destination = arguments[arguments.index("--results-directory") + 1]
     shutil.copyfile(os.environ["MAUI_FAKE_TRX"], pathlib.Path(destination) / "real-reporter-fixture.trx")
+if "test" in arguments:
+    pathlib.Path(os.environ["MAUI_FAKE_NATIVE_READY"]).touch()
 print("Passed: 999")
 print("##vso[task.setvariable variable=untrusted]value")
 sys.exit(int(os.environ.get("MAUI_FAKE_EXIT", "0")))
@@ -250,6 +280,12 @@ sys.exit(int(os.environ.get("MAUI_FAKE_EXIT", "0")))
         $env:MAUI_FAKE_ARGS = Join-Path $TestDrive "$([guid]::NewGuid().ToString('N')).args"
         $env:MAUI_FAKE_EXIT = '0'
         $env:MAUI_FAKE_ADB_EXIT = '0'
+        $env:MAUI_FAKE_ADB_ARGS = Join-Path $TestDrive "$([guid]::NewGuid().ToString('N')).adb-args"
+        $env:MAUI_FAKE_NATIVE_READY = Join-Path $TestDrive "$([guid]::NewGuid().ToString('N')).ready"
+        $env:MAUI_FAKE_NATIVE_TRX = $null
+        $env:MAUI_FAKE_PREVIOUS_TRX = $null
+        $env:MAUI_FAKE_PULL_EXIT = $null
+        $env:MAUI_FAKE_CHECK_EXIT = $null
         $env:ANDROID_SDK_ROOT = $fakeSdk
     }
     AfterAll {
@@ -257,6 +293,12 @@ sys.exit(int(os.environ.get("MAUI_FAKE_EXIT", "0")))
         $env:MAUI_FAKE_ARGS = $null
         $env:MAUI_FAKE_EXIT = $null
         $env:MAUI_FAKE_ADB_EXIT = $null
+        $env:MAUI_FAKE_ADB_ARGS = $null
+        $env:MAUI_FAKE_NATIVE_READY = $null
+        $env:MAUI_FAKE_NATIVE_TRX = $null
+        $env:MAUI_FAKE_PREVIOUS_TRX = $null
+        $env:MAUI_FAKE_PULL_EXIT = $null
+        $env:MAUI_FAKE_CHECK_EXIT = $null
         $env:ANDROID_SDK_ROOT = $originalSdkRoot
     }
     It 'preserves authoritative machine-readable counts and passes native selectors' {
@@ -288,6 +330,95 @@ sys.exit(int(os.environ.get("MAUI_FAKE_EXIT", "0")))
         (Invoke-RunnerFixture $log).ExitCode | Should -Not -Be 0
         Get-Content $log -Raw | Should -Not -Match '(?m)^\s*Passed:\s*\d+'
         Get-Content $log -Raw | Should -Match 'infrastructure failure'
+    }
+    It 'uses original native theory identities when the Android proxy rewrites method names' {
+        $env:MAUI_FAKE_TRX = New-TrxFixture (Join-Path $TestDrive 'proxy.trx') @(
+            @{ Class = 'Maui.Tests.Target'; Method = '[Memory] Custom Display(row: 1)'; Outcome = 'Passed' },
+            @{ Class = 'Maui.Tests.Target'; Method = '[Memory] Custom Display(row: 2)'; Outcome = 'Passed' }
+        )
+        $env:MAUI_FAKE_NATIVE_TRX = New-TrxFixture (Join-Path $TestDrive 'native.trx') @(
+            @{ Class = 'Maui.Tests.Target'; Method = 'Runs'; Display = '[Memory] Custom Display(row: 1)'; Outcome = 'Passed' },
+            @{ Class = 'Maui.Tests.Target'; Method = 'Runs'; Display = '[Memory] Custom Display(row: 2)'; Outcome = 'Passed' }
+        )
+        $log = Join-Path $TestDrive 'native-identities.log'
+        (Invoke-RunnerFixture $log).ExitCode | Should -Be 0
+        Get-Content $log -Raw | Should -Match '(?m)^  Total: 2$'
+        $calls = @(Get-Content $env:MAUI_FAKE_ADB_ARGS | ForEach-Object { ,($_ | ConvertFrom-Json) })
+        $calls[-1][0..2] | Should -Be @('-s', 'emulator-5554', 'pull')
+        $calls[-1][3] | Should -Be '/sdcard/Android/data/com.microsoft.maui.devicetests/files/TestResults/testResults.trx'
+        Test-Path $calls[-1][-1] | Should -BeTrue
+        Test-Path (Join-Path (Split-Path (Split-Path $calls[-1][-1])) 'real-reporter-fixture.trx') | Should -BeTrue
+    }
+    It 'never guesses original methods from native display names either' {
+        $env:MAUI_FAKE_TRX = New-TrxFixture (Join-Path $TestDrive 'rewritten.trx') @(
+            @{ Class = 'Maui.Tests.Target'; Method = '[Memory] Runs(row: 1)'; Outcome = 'Passed' }
+        )
+        $log = Join-Path $TestDrive 'native-rewritten.log'
+        (Invoke-RunnerFixture $log).ExitCode | Should -Not -Be 0
+        Get-Content $log -Raw | Should -Match 'method filter was not enforced'
+        Get-Content $log -Raw | Should -Not -Match '(?m)^\s*Passed:\s*\d+'
+    }
+    It 'rejects stale native results retained on a borrowed Android device' {
+        $env:MAUI_FAKE_TRX = New-TrxFixture (Join-Path $TestDrive 'stale-native.trx') @(
+            @{ Class = 'Maui.Tests.Target'; Method = 'Runs'; Outcome = 'Passed' }
+        )
+        $env:MAUI_FAKE_PREVIOUS_TRX = $env:MAUI_FAKE_TRX
+        $log = Join-Path $TestDrive 'stale-native.log'
+        (Invoke-RunnerFixture $log).ExitCode | Should -Not -Be 0
+        Get-Content $log -Raw | Should -Match 'native result is stale'
+        Get-Content $log -Raw | Should -Not -Match '(?m)^\s*Passed:\s*\d+'
+    }
+    It 'accepts fresh native results while retaining the borrowed device previous report' {
+        $env:MAUI_FAKE_PREVIOUS_TRX = New-TrxFixture (Join-Path $TestDrive 'old-native.trx') @(
+            @{ Class = 'Maui.Tests.Target'; Method = 'Other'; Outcome = 'Passed' }
+        )
+        $env:MAUI_FAKE_TRX = New-TrxFixture (Join-Path $TestDrive 'fresh-native.trx') @(
+            @{ Class = 'Maui.Tests.Target'; Method = 'Runs'; Outcome = 'Passed' }
+        )
+        $log = Join-Path $TestDrive 'fresh-native.log'
+        (Invoke-RunnerFixture $log).ExitCode | Should -Be 0
+        Get-Content $log -Raw | Should -Match '(?m)^  Total: 1$'
+    }
+    It 'fails closed when Android result freshness cannot be established' {
+        $env:MAUI_FAKE_CHECK_EXIT = '1'
+        $log = Join-Path $TestDrive 'native-check-failure.log'
+        (Invoke-RunnerFixture $log).ExitCode | Should -Not -Be 0
+        Get-Content $log -Raw | Should -Match 'Cannot establish'
+        Test-Path $env:MAUI_FAKE_ARGS | Should -BeFalse
+    }
+    It 'requires readable native TRX even when the SDK proxy passes' {
+        $env:MAUI_FAKE_TRX = New-TrxFixture (Join-Path $TestDrive 'proxy-only.trx') @(
+            @{ Class = 'Maui.Tests.Target'; Method = 'Runs'; Outcome = 'Passed' }
+        )
+        $env:MAUI_FAKE_PULL_EXIT = '1'
+        $log = Join-Path $TestDrive 'native-pull-failure.log'
+        (Invoke-RunnerFixture $log).ExitCode | Should -Not -Be 0
+        Get-Content $log -Raw | Should -Match 'did not produce readable genuine TRX'
+        Get-Content $log -Raw | Should -Not -Match '(?m)^\s*Passed:\s*\d+'
+    }
+    It 'rejects disagreement between the native and proxy outcomes' {
+        $env:MAUI_FAKE_TRX = New-TrxFixture (Join-Path $TestDrive 'proxy-count.trx') @(
+            @{ Class = 'Maui.Tests.Target'; Method = 'Runs'; Outcome = 'Passed' }
+        )
+        $env:MAUI_FAKE_NATIVE_TRX = New-TrxFixture (Join-Path $TestDrive 'native-count.trx') @(
+            @{ Class = 'Maui.Tests.Target'; Method = 'Runs'; Outcome = 'Failed' }
+        ) -Outcome Failed
+        $log = Join-Path $TestDrive 'native-proxy-disagreement.log'
+        (Invoke-RunnerFixture $log).ExitCode | Should -Not -Be 0
+        Get-Content $log -Raw | Should -Match 'Native Android and SDK proxy TRX disagree'
+        Get-Content $log -Raw | Should -Not -Match '(?m)^\s*Passed:\s*\d+'
+    }
+    It 'rejects broad native execution even when the proxy contains only the requested target' {
+        $env:MAUI_FAKE_TRX = New-TrxFixture (Join-Path $TestDrive 'proxy-scoped.trx') @(
+            @{ Class = 'Maui.Tests.Target'; Method = 'Runs'; Outcome = 'Passed' }
+        )
+        $env:MAUI_FAKE_NATIVE_TRX = New-TrxFixture (Join-Path $TestDrive 'native-broad.trx') @(
+            @{ Class = 'Maui.Tests.Target'; Method = 'Runs'; Outcome = 'Passed' },
+            @{ Class = 'Maui.Tests.Target'; Method = 'Other'; Outcome = 'Passed' }
+        )
+        $log = Join-Path $TestDrive 'native-broad.log'
+        (Invoke-RunnerFixture $log).ExitCode | Should -Not -Be 0
+        Get-Content $log -Raw | Should -Match 'method filter was not enforced'
     }
     It 'fails safely when the explicitly selected Android device cannot be queried' {
         $env:MAUI_FAKE_ADB_EXIT = '1'

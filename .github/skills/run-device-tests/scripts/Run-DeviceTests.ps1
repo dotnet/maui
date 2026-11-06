@@ -397,10 +397,33 @@ try {
     }
     $nativePath = $null
     $nativeHash = $null
-    if ($Platform -eq 'ios') {
+    if ($Platform -in @('ios', 'android')) {
         [xml] $projectXml = Get-Content -LiteralPath $projectPath -Raw
         $applicationId = $projectXml.SelectSingleNode('/Project/PropertyGroup/ApplicationId').InnerText
         if ($applicationId -notmatch '^[A-Za-z0-9_.-]+$') { throw 'Expected a literal native ApplicationId.' }
+    }
+    if ($Platform -eq 'android') {
+        $androidNativePath = "/sdcard/Android/data/$applicationId/files/TestResults/testResults.trx"
+        $checkLog = Join-Path $runDirectory 'android-result-before.log'
+        $check = Invoke-DeviceDotnet -FilePath $adb -WorkingDirectory $RepoRoot -Arguments @(
+            '-s', $DeviceUdid, 'shell', "if [ -f '$androidNativePath' ]; then echo present; else echo absent; fi"
+        ) -LogPath $checkLog -TimeoutSeconds 30
+        $presence = (Get-Content -LiteralPath $checkLog -Raw).Trim()
+        if ($check.TimedOut -or $check.ExitCode -ne 0 -or $presence -notin @('present', 'absent')) {
+            throw 'Cannot establish whether the selected Android device has a previous native result.'
+        }
+        if ($presence -eq 'present') {
+            $previousPath = Join-Path $runDirectory 'android-result-before.trx'
+            $pull = Invoke-DeviceDotnet -FilePath $adb -WorkingDirectory $RepoRoot -Arguments @(
+                '-s', $DeviceUdid, 'pull', $androidNativePath, $previousPath
+            ) -LogPath (Join-Path $runDirectory 'android-pull-before.log') -TimeoutSeconds 30
+            if ($pull.TimedOut -or $pull.ExitCode -ne 0 -or !(Test-Path -LiteralPath $previousPath)) {
+                throw 'Cannot preserve the previous native Android result for freshness verification.'
+            }
+            $nativeHash = (Get-FileHash -LiteralPath $previousPath -Algorithm SHA256).Hash
+        }
+    }
+    if ($Platform -eq 'ios') {
         $oldContainer = & xcrun simctl get_app_container $DeviceUdid $applicationId data 2>$null
         if ($LASTEXITCODE -eq 0 -and $oldContainer) {
             $nativePath = Join-Path ("$oldContainer".Trim()) 'Documents/TestResults/testResults.trx'
@@ -431,12 +454,40 @@ try {
         Copy-Item -LiteralPath $nativePath -Destination (Join-Path $runDirectory 'testResults.trx')
     }
     $files = @(Get-ChildItem -LiteralPath $runDirectory -Filter '*.trx' -Recurse -File | ForEach-Object FullName)
+    if ($Platform -eq 'android') {
+        $files = @($files | Where-Object { $_ -ne (Join-Path $runDirectory 'android-result-before.trx') })
+        if ($files.Count -eq 0) { throw 'dotnet test did not produce genuine host TRX.' }
+        # The Android SDK proxy rewrites TestMethod.name to the display name.
+        # Keep its report for transport diagnostics, but verify selectors against the app's original TRX.
+        $proxySummary = Get-DeviceTestResultSummary -ResultFiles $files
+        $nativeDirectory = Join-Path $runDirectory 'android-native'
+        New-Item -ItemType Directory -Path $nativeDirectory | Out-Null
+        $nativePath = Join-Path $nativeDirectory 'testResults.trx'
+        $pull = Invoke-DeviceDotnet -FilePath $adb -WorkingDirectory $RepoRoot -Arguments @(
+            '-s', $DeviceUdid, 'pull', $androidNativePath, $nativePath
+        ) -LogPath (Join-Path $runDirectory 'android-pull-after.log') -TimeoutSeconds 30
+        if ($pull.TimedOut -or $pull.ExitCode -ne 0 -or !(Test-Path -LiteralPath $nativePath)) {
+            throw 'Native Android app did not produce readable genuine TRX.'
+        }
+        if ($nativeHash -and (Get-FileHash -LiteralPath $nativePath -Algorithm SHA256).Hash -eq $nativeHash) {
+            throw 'The native result is stale: no new TRX was produced in this execution.'
+        }
+        $files = @($nativePath)
+    }
     if ($files.Count -eq 0) {
         $marker = if ($Platform -eq 'windows') { 'WINDOWS_DEVICE_TEST_NO_RESULTS: ' } else { '' }
         throw "${marker}dotnet test did not produce genuine TRX."
     }
     $summary = Get-DeviceTestResultSummary -ResultFiles $files -IncludeClasses $IncludeClasses `
         -IncludeMethods $IncludeMethods -RequireClassIsolation:([bool]$IncludeClasses)
+    if ($Platform -eq 'android') {
+        if ($proxySummary.Errors -gt 0) { throw 'The Android SDK proxy reported run-level errors.' }
+        foreach ($counter in @('Total', 'Passed', 'Failed', 'Skipped')) {
+            if ($summary[$counter] -ne $proxySummary[$counter]) {
+                throw "Native Android and SDK proxy TRX disagree on $counter."
+            }
+        }
+    }
     if ($summary.Errors -gt 0 -or ($run.ExitCode -ne 0 -and $summary.Failed -eq 0)) {
         throw "Device test infrastructure failure: dotnet test exited $($run.ExitCode), run-level errors=$($summary.Errors)."
     }
