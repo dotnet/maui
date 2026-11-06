@@ -47,6 +47,10 @@ public sealed class HeadlessTestRunner(HeadlessRunnerOptions runnerOptions, Test
 
 		var consumer = new ResultConsumer();
 		Assembly.SetEntryAssembly(options.TestAssembly);
+#if ANDROID
+		// Android has no console input; xUnit still constructs its console helper.
+		Console.SetIn(TextReader.Null);
+#endif
 		var exitCode = await Xunit.MicrosoftTestingPlatform.TestPlatformTestFramework.RunAsync(
 			args.ToArray(), (builder, _) =>
 			{

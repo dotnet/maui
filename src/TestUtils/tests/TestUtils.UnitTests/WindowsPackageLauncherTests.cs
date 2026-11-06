@@ -26,11 +26,22 @@ public class WindowsPackageLauncherTests
 		};
 	}
 
-	static Process Child(string command)
+	static Process Child(int? exitCode = null)
 	{
-		var start = new ProcessStartInfo("pwsh") { UseShellExecute = false };
-		start.ArgumentList.Add("-NoProfile");
-		start.ArgumentList.Add("-Command");
+		var windows = OperatingSystem.IsWindows();
+		var start = new ProcessStartInfo(windows ? Path.Combine(Environment.SystemDirectory, "cmd.exe") : "/bin/sh")
+		{
+			UseShellExecute = false,
+			RedirectStandardInput = true
+		};
+		// Hold the native process until its PID/start time are recorded; no managed
+		// child runtime or sleeping grandchild is needed for timeout/cancellation.
+		var command = windows ? "set /p fixture=" : "read fixture";
+		if (exitCode.HasValue)
+			command += windows ? $" & exit {exitCode.Value}" : $"; exit {exitCode.Value}";
+		if (windows)
+			start.ArgumentList.Add("/d");
+		start.ArgumentList.Add(windows ? "/c" : "-c");
 		start.ArgumentList.Add(command);
 		return Process.Start(start)!;
 	}
@@ -86,13 +97,22 @@ public class WindowsPackageLauncherTests
 		state.ProcessExited = true;
 		string[] arguments = ["--server", "--dotnet-test-pipe", "the-pipe", "--results-directory", "with spaces"];
 		var saved = 0;
+		Process? child = null;
 		var result = PackagedTestSession.Run(state, arguments,
 			(aumid, commandLine) =>
 			{
 				Assert.Equal(state.AppUserModelId, aumid);
 				Assert.Equal(WindowsTestCommandLine.Format(arguments), commandLine);
-				return Child($"Start-Sleep -Milliseconds 200; exit {exitCode}");
-			}, _ => state.PackageFullName, value =>
+				return child = Child(exitCode);
+			}, processId =>
+			{
+				Assert.Equal(child!.Id, processId);
+				Assert.Equal(processId, state.ProcessId);
+				Assert.True(state.ProcessStartUtcTicks > 0);
+				child!.StandardInput.WriteLine("finish");
+				child.StandardInput.Close();
+				return state.PackageFullName;
+			}, value =>
 			{
 				if (saved++ == 0)
 					Assert.False(value.ProcessExited);
@@ -113,7 +133,7 @@ public class WindowsPackageLauncherTests
 		var result = PackagedTestSession.Run(state, ["--server"],
 			(_, _) =>
 			{
-				var child = Child("Start-Sleep -Seconds 30");
+				var child = Child();
 				activatedPid = child.Id;
 				return child;
 			},
@@ -133,7 +153,7 @@ public class WindowsPackageLauncherTests
 		var result = PackagedTestSession.Run(state, ["--server"],
 			(_, _) =>
 			{
-				var child = Child("Start-Sleep -Seconds 30");
+				var child = Child();
 				activatedPid = child.Id;
 				return child;
 			},
@@ -147,7 +167,7 @@ public class WindowsPackageLauncherTests
 	public void AProcessFromAnotherPackageIsNeverTerminated()
 	{
 		var state = State();
-		using var child = Child("Start-Sleep -Seconds 30");
+		using var child = Child();
 		try
 		{
 			Assert.Throws<InvalidOperationException>(() => PackagedTestSession.Run(state, ["--server"],

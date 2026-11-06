@@ -3,7 +3,7 @@ using Microsoft.Maui.TestUtils.DeviceTests.Runners;
 using Xunit;
 
 [assembly: TestFramework(typeof(Microsoft.Maui.TestUtils.UnitTests.UiProofFramework))]
-[assembly: CollectionBehavior(DisableTestParallelization = true)]
+[assembly: Xunit.v3.Parallelization(Mode = Xunit.Sdk.ParallelMode.None)]
 
 namespace Microsoft.Maui.TestUtils.UnitTests;
 

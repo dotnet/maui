@@ -32,7 +32,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			{
 				var view = AnimationReadyHandlerAsync.Prepare(new View { Opacity = 1 }, out var handler);
 
-				await Task.WhenAll(view.FadeToAsync(0, 2000), handler.DisableTicker());
+				await Task.WhenAll(view.FadeToAsync(0, 2000), handler.DisableTicker())
+					.WaitAsync(TestContext.Current.CancellationToken);
 
 				Assert.Equal(0, view.Opacity);
 			});
@@ -48,7 +49,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 				var handler = AnimationReadyHandlerAsync.Prepare(view1, view2);
 
-				await Task.WhenAll(SwapFadeViews(view1, view2), handler.DisableTicker());
+				await Task.WhenAll(SwapFadeViews(view1, view2), handler.DisableTicker())
+					.WaitAsync(TestContext.Current.CancellationToken);
 
 				Assert.Equal(0, view1.Opacity);
 				Assert.Equal(1, view2.Opacity);
@@ -83,7 +85,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				// RepeatFade is set to repeat a 1-second animation 5 times; if it runs all the way through,
 				// this test will timeout before it's finished. But disabling the ticker should cause it to
 				// finish immediately, so it'll be done before the test times out.
-				await Task.WhenAll(RepeatFade(view), handler.DisableTicker());
+				await Task.WhenAll(RepeatFade(view), handler.DisableTicker())
+					.WaitAsync(TestContext.Current.CancellationToken);
 
 				Assert.Equal(1, view.Opacity);
 			});
@@ -96,9 +99,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			{
 				var view = AnimationReadyHandlerAsync.Prepare(new View(), out var handler);
 
-				await handler.DisableTicker();
+				await handler.DisableTicker().WaitAsync(TestContext.Current.CancellationToken);
 
-				await view.RotateYToAsync(200);
+				await view.RotateYToAsync(200).WaitAsync(TestContext.Current.CancellationToken);
 
 				Assert.Equal(200, view.RotationY);
 			});
@@ -111,9 +114,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			{
 				var label = AnimationReadyHandlerAsync.Prepare(new Label { Text = "Foo" }, out var handler);
 
-				await handler.DisableTicker();
+				await handler.DisableTicker().WaitAsync(TestContext.Current.CancellationToken);
 
-				var result = await label.ScaleToAsync(2, 500);
+				var result = await label.ScaleToAsync(2, 500).WaitAsync(TestContext.Current.CancellationToken);
 
 				Assert.True(result);
 			});
@@ -126,14 +129,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			{
 				var label = AnimationReadyHandlerAsync.Prepare(new Label { Text = "Foo" }, out var handler);
 
-				await handler.DisableTicker();
+				await handler.DisableTicker().WaitAsync(TestContext.Current.CancellationToken);
 
 				var run = true;
 
 				while (run)
 				{
-					await label.ScaleToAsync(2, 500);
-					run = !(await label.ScaleToAsync(0.5, 500));
+					await label.ScaleToAsync(2, 500).WaitAsync(TestContext.Current.CancellationToken);
+					run = !(await label.ScaleToAsync(0.5, 500).WaitAsync(TestContext.Current.CancellationToken));
 				}
 			});
 		}

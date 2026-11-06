@@ -256,11 +256,16 @@ If you want to test in-tree in VSCode, the `Build Platform Sample` command will 
 
 The Integration test project under `src/TestUtils/src/Microsoft.Maui.IntegrationTests` contains tests that build and/or run MAUI templates or other projects.
 
-These tests can be run using the Test Explorer in VS, or from the command line with `dotnet test`. Here's how to run an individual test with parameters from command line:
+These tests can be run using Test Explorer in VS or `dotnet test`. Select template rows by category and their target-framework display name:
 
 ```bash
-dotnet test src/TestUtils/src/Microsoft.Maui.IntegrationTests --logger "console;verbosity=diagnostic" --filter "Name=Build\(%22maui%22,%22net7.0%22,%22Debug%22,False\)"
+dotnet test --project src/TestUtils/src/Microsoft.Maui.IntegrationTests/Microsoft.Maui.IntegrationTests.csproj --configuration Debug --filter-trait "Category=Build" --filter-display-name "*net11.0*" --report-trx --results-directory artifacts/TestResults/Integration
 ```
+
+CI translates its existing category, method and display-name selectors through
+the shared MTP argument helper. Display-name filters require xUnit v3 package
+4.0 or later. MTP extensions, including NUnit's VSTest bridge, use the same
+platform version to avoid incompatible runtime dependencies.
 
 Integration test commands terminate their process tree on timeout and report the command's PID and timeout duration, using the console when no test output helper is supplied. Emulator startup explicitly leaves the emulator running for the collection fixture to manage. Output draining waits at most 10 seconds after the parent exits, then reports if a descendant still holds the redirected pipes open.
 

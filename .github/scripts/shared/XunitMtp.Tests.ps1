@@ -21,6 +21,12 @@ Describe 'xUnit MTP filter translation' {
         @(Get-XunitMtpFilterArguments '(Category=One|Category=Two)&FullyQualifiedName!~Ignored') |
             Should -Be @('--filter-trait', 'Category=One', '--filter-trait', 'Category=Two', '--filter-not-method', '*Ignored*')
     }
+    It 'preserves target-framework theory row inclusion and exclusion alongside a category' {
+        @(Get-XunitMtpFilterArguments 'Category=Build&DisplayName~net10.0') |
+            Should -Be @('--filter-trait', 'Category=Build', '--filter-display-name', '*net10.0*')
+        @(Get-XunitMtpFilterArguments 'Category=Build&DisplayName!~net10.0') |
+            Should -Be @('--filter-trait', 'Category=Build', '--filter-not-display-name', '*net10.0*')
+    }
     It 'accepts native xUnit queries without translating their semantics' {
         @(Get-XunitMtpFilterArguments '/assembly/namespace/class/method') |
             Should -Be @('--filter-query', '/assembly/namespace/class/method')

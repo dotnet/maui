@@ -123,4 +123,27 @@ Describe 'CI provisioning' {
     $devicePipeline | Should -Match '(?s)name: windowsPackaging\s+type: string\s+default: both\s+values: \[ both, packaged, unpackaged \]'
     $devicePipeline | Should -Match ([regex]::Escape('windowsPackaging: ${{ parameters.windowsPackaging }}'))
   }
+
+  It 'runs integration matrix selectors through the shared MTP translator and real TRX validation' {
+    $integrationStage = Get-Content -LiteralPath (
+      Join-Path $PSScriptRoot 'arcade/stage-integration-tests.yml') -Raw
+    $integrationStage | Should -Match 'Get-XunitMtpFilterArguments'
+    $integrationStage | Should -Match 'project: --project'
+    $integrationStage | Should -Match '--report-trx'
+    $integrationStage | Should -Match 'continueOnError: false'
+    $integrationStage | Should -Match 'Assert-TestResults.ps1'
+    $integrationStage | Should -Match 'failTaskOnFailedTests: true'
+    $integrationStage | Should -Not -Match '--logger|--filter '
+  }
+
+  It 'does not inject native xUnit assembly attributes into the Appium HostApp' {
+    $hostProject = Join-Path $PSScriptRoot '../../src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj'
+    $output = & dotnet msbuild $hostProject -nologo -p:TargetFramework=net11.0-ios `
+      -p:RuntimeIdentifier=iossimulator-arm64 -getProperty:UseMicrosoftTestingPlatformRunner -getItem:Compile
+    if ($LASTEXITCODE -ne 0) { throw "HostApp evaluation failed: $output" }
+    $evaluation = $output | Out-String | ConvertFrom-Json
+    $evaluation.Properties.UseMicrosoftTestingPlatformRunner | Should -Not -Be 'true'
+    @($evaluation.Items.Compile | Where-Object { $_.Identity -match 'DeviceTests.Runners[/\\]TestAssemblyInfo.cs$' }).Count |
+      Should -Be 0
+  }
 }

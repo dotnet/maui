@@ -156,10 +156,10 @@
   </PropertyGroup>
   <PropertyGroup>
     <MicrosoftNETTestSdkPackageVersion>17.6.0</MicrosoftNETTestSdkPackageVersion>
-    <XunitPackageVersion>3.2.2</XunitPackageVersion>
+    <XunitPackageVersion>4.0.2</XunitPackageVersion>
     <XunitAssertPackageVersion>$(XunitPackageVersion)</XunitAssertPackageVersion>
     <XUnitAnalyzersPackageVersion>1.18.0</XUnitAnalyzersPackageVersion>
-    <MicrosoftTestingPlatformVersion>2.0.2</MicrosoftTestingPlatformVersion>
+    <MicrosoftTestingPlatformVersion>2.5.1</MicrosoftTestingPlatformVersion>
     <MicrosoftTestingExtensionsCodeCoverageVersion>18.1.0</MicrosoftTestingExtensionsCodeCoverageVersion>
     <NSubstitutePackageVersion>5.1.0</NSubstitutePackageVersion>
     <CoverletCollectorPackageVersion>6.0.0</CoverletCollectorPackageVersion>

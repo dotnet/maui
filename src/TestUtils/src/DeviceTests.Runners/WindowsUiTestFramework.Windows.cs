@@ -38,7 +38,8 @@ public class WindowsUiTestFramework : XunitTestFramework
 	}
 
 	protected override ITestFrameworkExecutor CreateExecutor(Assembly assembly) =>
-		new UiExecutor(new XunitTestAssembly(assembly, null, assembly.GetName().Version));
+		new UiExecutor(new XunitTestAssembly(assembly, configFilePath: null,
+			assemblyName: null, assemblyPath: null, targetFramework: null, uniqueID: null, version: assembly.GetName().Version));
 
 	sealed class UiExecutor(IXunitTestAssembly assembly) : XunitTestFrameworkExecutor(assembly)
 	{

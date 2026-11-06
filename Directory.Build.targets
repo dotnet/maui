@@ -33,6 +33,12 @@
     <PackageReference Include="Microsoft.Testing.Extensions.TrxReport" Version="$(MicrosoftTestingPlatformVersion)"
                       Condition="'@(PackageReference->WithMetadataValue('Identity', 'Microsoft.Testing.Extensions.TrxReport'))' == ''" />
   </ItemGroup>
+  <ItemGroup Condition="'$(EnableNUnitRunner)' == 'true'">
+    <PackageReference Include="Microsoft.Testing.Platform.MSBuild" Version="$(MicrosoftTestingPlatformVersion)"
+                      Condition="'@(PackageReference->WithMetadataValue('Identity', 'Microsoft.Testing.Platform.MSBuild'))' == ''" />
+    <PackageReference Include="Microsoft.Testing.Extensions.VSTestBridge" Version="$(MicrosoftTestingPlatformVersion)"
+                      Condition="'@(PackageReference->WithMetadataValue('Identity', 'Microsoft.Testing.Extensions.VSTestBridge'))' == ''" />
+  </ItemGroup>
 
   <PropertyGroup>
     <!-- Allows for MAUI Xaml Hot Reload Samples to run without checks  -->

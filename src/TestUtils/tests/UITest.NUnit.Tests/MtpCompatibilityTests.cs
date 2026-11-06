@@ -27,8 +27,14 @@ public class MtpCompatibilityTests
 		Assert.That(attachments, Has.Length.EqualTo(2), result.Trx.ToString());
 		Assert.That(attachments.Any(path => path.EndsWith("screenshot.png")), Is.True);
 		Assert.That(attachments.Any(path => path.EndsWith("appium.log")), Is.True);
+		var deploymentRoot = (string)result.Trx.Root.Element(Trx + "TestSettings")?.Element(Trx + "Deployment")?.Attribute("runDeploymentRoot") ?? "";
+		var relativeDirectory = (string)result.Trx.Descendants(Trx + "UnitTestResult").Single().Attribute("relativeResultsDirectory") ?? "";
 		foreach (var attachment in attachments)
-			Assert.That(File.Exists(attachment), Is.True);
+		{
+			var source = Path.IsPathRooted(attachment) ? attachment :
+				Path.Combine(result.Directory, deploymentRoot, "In", relativeDirectory, attachment);
+			Assert.That(File.Exists(source), Is.True, source);
+		}
 		UITestRetry.PreserveAttachments(result.Trx, result.Directory, Path.Combine(result.Directory, "raw", "attachments"));
 		var preserved = result.Trx.Descendants(Trx + "ResultFile").Select(file => (string)file.Attribute("path")).ToArray();
 		Assert.That(preserved.All(path => path.StartsWith(result.Directory, StringComparison.Ordinal)), Is.True);

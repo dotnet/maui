@@ -38,7 +38,7 @@ public static class MtpTestArguments
 			bool positiveGroup = false;
 			foreach (var alternative in alternatives)
 			{
-				var match = Regex.Match(alternative.Trim(), @"^(FullyQualifiedName|TestCategory|Category)(!~|!=|=|~)(.+)$",
+				var match = Regex.Match(alternative.Trim(), @"^(FullyQualifiedName|DisplayName|TestCategory|Category)(!~|!=|=|~)(.+)$",
 					RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
 				var property = match.Success ? match.Groups[1].Value : "FullyQualifiedName";
 				var operation = match.Success ? match.Groups[2].Value : "~";
@@ -48,7 +48,8 @@ public static class MtpTestArguments
 					throw UnsupportedFilter(filter);
 				var trait = property.Equals("Category", StringComparison.OrdinalIgnoreCase) ||
 					property.Equals("TestCategory", StringComparison.OrdinalIgnoreCase);
-				var kind = trait ? "trait" : "method";
+				var kind = trait ? "trait" :
+					property.Equals("DisplayName", StringComparison.OrdinalIgnoreCase) ? "display-name" : "method";
 				if (groupKind != null && groupKind != kind)
 					throw UnsupportedFilter(filter);
 				groupKind = kind;

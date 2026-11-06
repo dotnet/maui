@@ -15,6 +15,8 @@ public class MtpTestArgumentsTests
 	[TestCase("FullyQualifiedName~PaintTests", "--filter-method", "*PaintTests*")]
 	[TestCase("FullyQualifiedName=Example.PaintTests.Case", "--filter-method", "Example.PaintTests.Case")]
 	[TestCase("FullyQualifiedName!~PaintTests", "--filter-not-method", "*PaintTests*")]
+	[TestCase("DisplayName~net10.0", "--filter-display-name", "*net10.0*")]
+	[TestCase("DisplayName!~net10.0", "--filter-not-display-name", "*net10.0*")]
 	[TestCase("TestCategory=Core", "--filter-trait", "Category=Core")]
 	[TestCase("Category!=Slow", "--filter-not-trait", "Category=Slow")]
 	[TestCase("PaintTests", "--filter-method", "*PaintTests*")]
@@ -37,6 +39,13 @@ public class MtpTestArgumentsTests
 		Assert.That(MtpTestArguments.DesktopFilter(
 			"(FullyQualifiedName~First|FullyQualifiedName~Second)&Category=Core", false),
 			Is.EqualTo(new[] { "--filter-method", "*First*", "--filter-method", "*Second*", "--filter-trait", "Category=Core" }));
+	}
+
+	[Test]
+	public void TargetFrameworkRowsKeepTheirCategoryAndDisplayNameConstraint()
+	{
+		Assert.That(MtpTestArguments.DesktopFilter("Category=Build&DisplayName~net10.0", false),
+			Is.EqualTo(new[] { "--filter-trait", "Category=Build", "--filter-display-name", "*net10.0*" }));
 	}
 
 	[Test]
