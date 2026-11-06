@@ -39,6 +39,7 @@ on:
       - 'eng/pipelines/arcade/stage-unit-tests.yml'
       - 'eng/pipelines/arcade/stage-device-tests.yml'
       - 'eng/pipelines/common/device-tests*.yml'
+      - 'eng/pipelines/common/run-dotnet-preview.yml'
       - 'eng/pipelines/ci.Tests.ps1'
       - 'eng/pipelines/ci-copilot.yml'
       - 'eng/pipelines/ci-official.yml'

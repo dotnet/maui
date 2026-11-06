@@ -9,6 +9,10 @@ parameters:
     continueOnError: true
     retryCountOnTaskFailure: 0
     envVariables: []
+    nativeCrashMonitor: false
+    nativeCrashTool: ''
+    nativeCrashResults: ''
+    nativeCrashExecutable: ''
 
 steps:
   - powershell: |
@@ -45,8 +49,31 @@ steps:
         Write-Host "Print dotnet info: "
         & $dotnetPath --info
         Write-Host "Running command: $dotnetPath ${{ parameters.command }} ${{ parameters.project }} ${{ parameters.arguments }}"
-        & $dotnetPath ${{ parameters.command }} ${{ parameters.project }} ${{ parameters.arguments }}
-        $commandExitCode = $LASTEXITCODE
+        $monitorJob = $null
+        $monitorFailed = $false
+        if ([System.Convert]::ToBoolean("${{ parameters.nativeCrashMonitor }}")) {
+            $monitorJob = Start-Job -FilePath "${{ parameters.mauiSourcePath }}/eng/devices/Watch-NativeWindowsCrash.ps1" `
+                -ArgumentList "${{ parameters.nativeCrashTool }}", "${{ parameters.nativeCrashResults }}", `
+                    "${{ parameters.mauiSourcePath }}", "${{ parameters.nativeCrashExecutable }}", $PID -ErrorAction Stop
+        }
+        try {
+            & $dotnetPath ${{ parameters.command }} ${{ parameters.project }} ${{ parameters.arguments }}
+            $commandExitCode = $LASTEXITCODE
+        }
+        finally {
+            if ($monitorJob) {
+                New-Item -ItemType File -Force -Path "${{ parameters.nativeCrashResults }}/native-crash-monitor.stop" | Out-Null
+                $finished = Wait-Job -Job $monitorJob -Timeout 75
+                $monitorFailed = !$finished -or $monitorJob.State -ne 'Completed'
+                Receive-Job -Job $monitorJob -ErrorAction Continue
+                if (!$finished) { Stop-Job -Job $monitorJob }
+                Remove-Job -Job $monitorJob
+            }
+        }
+        if ($monitorFailed) {
+            Write-Host "##vso[task.logissue type=error]Native crash monitor failed; inspect the owned diagnostic artifacts."
+            if ($commandExitCode -eq 0) { $commandExitCode = 1 }
+        }
         if ($commandExitCode -ne 0) {
             if ([System.Convert]::ToBoolean("${{ parameters.continueOnError }}") -eq $false) {
                 # Hard fail — exit immediately
