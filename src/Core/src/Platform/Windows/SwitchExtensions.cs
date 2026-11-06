@@ -66,8 +66,12 @@ namespace Microsoft.Maui.Platform
 			if (view.IsOn)
 			{
 				// Match WinUI's hover opacity without reducing contrast in high-contrast themes.
-				UpdateOnPointerOverResource(toggleSwitch.Resources, "Default",
-					trackColor is SolidColorBrush brush ? new SolidColorBrush(brush.Color) { Opacity = 0.9 } : null);
+				var hoverBrush = trackColor is SolidColorBrush brush ? new SolidColorBrush(brush.Color) { Opacity = 0.9 } : null;
+				UpdateOnPointerOverResource(toggleSwitch.Resources, "Default", hoverBrush);
+				if (toggleSwitch.Resources.ThemeDictionaries.ContainsKey("Light"))
+					UpdateOnPointerOverResource(toggleSwitch.Resources, "Light", hoverBrush);
+				if (toggleSwitch.Resources.ThemeDictionaries.ContainsKey("Dark"))
+					UpdateOnPointerOverResource(toggleSwitch.Resources, "Dark", hoverBrush);
 				UpdateOnPointerOverResource(toggleSwitch.Resources, "HighContrast", trackColor);
 			}
 
@@ -78,6 +82,7 @@ namespace Microsoft.Maui.Platform
 
 		sealed class HoverResourceState
 		{
+			public bool CreatedDictionary { get; set; }
 			public bool HasOriginalValue { get; set; }
 			public object? OriginalValue { get; set; }
 			public Brush? AppliedBrush { get; set; }
@@ -89,6 +94,7 @@ namespace Microsoft.Maui.Platform
 			var themeResources = resources.ThemeDictionaries.TryGetValue(theme, out var dictionary)
 				? (ResourceDictionary)dictionary
 				: null;
+			bool createdDictionary = themeResources is null;
 
 			if (themeResources is null)
 			{
@@ -124,6 +130,15 @@ namespace Microsoft.Maui.Platform
 						themeResources[key] = state.OriginalValue;
 					else
 						themeResources.Remove(key);
+
+					if (state.CreatedDictionary &&
+						themeResources.Count == 0 &&
+						themeResources.MergedDictionaries.Count == 0 &&
+						themeResources.ThemeDictionaries.Count == 0 &&
+						themeResources.Source is null)
+					{
+						resources.ThemeDictionaries.Remove(theme);
+					}
 				}
 
 				s_hoverResourceStates.Remove(themeResources);
@@ -134,6 +149,7 @@ namespace Microsoft.Maui.Platform
 			{
 				state = new HoverResourceState
 				{
+					CreatedDictionary = createdDictionary,
 					HasOriginalValue = hasCurrentValue,
 					OriginalValue = currentValue
 				};
