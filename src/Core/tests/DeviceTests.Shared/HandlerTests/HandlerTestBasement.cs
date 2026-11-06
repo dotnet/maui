@@ -330,6 +330,11 @@ namespace Microsoft.Maui.DeviceTests
 						if (!reference.TryGetTarget(out var handler) || handler.VirtualView is null)
 							continue;
 
+#if ANDROID
+						if (handler.PlatformView is global::Java.Lang.Object nativeView && nativeView.Handle == IntPtr.Zero)
+							continue;
+#endif
+
 						if (handler.VirtualView is IWindow window)
 							window.Content?.DisconnectHandlers();
 
