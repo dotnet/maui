@@ -1,4 +1,5 @@
-﻿using CoreAnimation;
+﻿using System;
+using CoreAnimation;
 using ObjCRuntime;
 using UIKit;
 
@@ -6,6 +7,32 @@ namespace Microsoft.Maui.Platform
 {
 	public static class LayerExtensions
 	{
+		internal static float GetEffectiveCornerRadius(this CALayer layer, int cornerRadius)
+		{
+			var bounds = layer.Bounds;
+			if (bounds.Width <= 0 || bounds.Height <= 0)
+			{
+				return (float)cornerRadius;
+			}
+
+			return (float)Math.Min(cornerRadius, Math.Min(bounds.Width, bounds.Height) / 2);
+		}
+
+		internal static void UpdateBackgroundLayerCornerRadius(this UIView control, int cornerRadius)
+		{
+			if (cornerRadius < 0 || control.Layer?.Sublayers is not { Length: > 0 } sublayers)
+				return;
+
+			foreach (var sublayer in sublayers)
+			{
+				if (sublayer.Name == ViewExtensions.BackgroundLayerName)
+				{
+					sublayer.CornerRadius = sublayer.GetEffectiveCornerRadius(cornerRadius);
+					return;
+				}
+			}
+		}
+
 		public static void InsertBackgroundLayer(this UIView control, CALayer backgroundLayer, int index = -1)
 		{
 			control.RemoveBackgroundLayer();
