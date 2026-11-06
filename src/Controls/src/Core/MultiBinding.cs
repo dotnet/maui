@@ -202,18 +202,27 @@ namespace Microsoft.Maui.Controls
 			}
 			_specificity = specificity;
 
-			// When bound to BindingContextProperty, the context passed in is the target's own BindingContext
-			// (i.e. the result of this binding); the inherited context is stored in Context instead (#10792).
-			// The target value is computed right below, so don't let each child binding update it on its own.
-			var wasApplying = _applying;
-			_applying = true;
-			try
+			if (ReferenceEquals(_targetProperty, BindableObject.BindingContextProperty))
 			{
-				_proxyObject.BindingContext = Context ?? context;
+				// When bound to BindingContextProperty, the context passed in is the target's own BindingContext
+				// (i.e. the result of this binding); the inherited context is stored in Context instead (#10792).
+				// The target value is computed right below, so don't let each child binding update it on its own.
+				// This is restricted to BindingContext: for other targets, child updates must keep flowing so that
+				// a value previously written at ManualValueSetter specificity gets replaced by the new context's one.
+				var wasApplying = _applying;
+				_applying = true;
+				try
+				{
+					_proxyObject.BindingContext = Context ?? context;
+				}
+				finally
+				{
+					_applying = wasApplying;
+				}
 			}
-			finally
+			else
 			{
-				_applying = wasApplying;
+				_proxyObject.BindingContext = context;
 			}
 
 			if (this.GetRealizedMode(_targetProperty) == BindingMode.OneWayToSource)

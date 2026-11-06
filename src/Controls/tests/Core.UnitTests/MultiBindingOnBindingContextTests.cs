@@ -97,5 +97,41 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			parent.BindingContext = new MockViewModel("c");
 			Assert.Equal("c|c", label.BindingContext);
 		}
+
+		[Fact]
+		public void ReplacingMultiBindingOnBindingContextKeepsInheritedContext()
+		{
+			var label = new Label();
+			label.SetBinding(BindableObject.BindingContextProperty, CreateMultiBinding());
+			var parent = new StackLayout { Children = { label } };
+			parent.BindingContext = new Source { Property1 = "a", Property2 = "b" };
+			Assert.Equal("a|b", label.BindingContext);
+
+			// The inherited context must be recovered from the old MultiBinding, not resolved against "a|b"
+			label.SetBinding(BindableObject.BindingContextProperty, new Binding(nameof(Source.Property1)));
+
+			Assert.Equal("a", label.BindingContext);
+		}
+
+		[Fact]
+		public void OneWayMultiBindingUpdatesAfterSourceChangeThenContextReplacement()
+		{
+			var label = new Label();
+			label.SetBinding(Label.TextProperty, new MultiBinding
+			{
+				Converter = new JoinConverter(),
+				Bindings = { new Binding(nameof(MockViewModel.Text)), new Binding(nameof(MockViewModel.Text)) }
+			});
+
+			var vmA = new MockViewModel("a");
+			label.BindingContext = vmA;
+			Assert.Equal("a|a", label.Text);
+
+			vmA.Text = "b";
+			Assert.Equal("b|b", label.Text);
+
+			label.BindingContext = new MockViewModel("c");
+			Assert.Equal("c|c", label.Text);
+		}
 	}
 }
