@@ -26,8 +26,10 @@ namespace Microsoft.Maui.Controls.Platform
 			var inputType = editText.InputType;
 
 			bool isPasswordEnabled =
-				(inputType & InputTypes.TextVariationPassword) == InputTypes.TextVariationPassword ||
-				(inputType & InputTypes.NumberVariationPassword) == InputTypes.NumberVariationPassword;
+				(inputType.HasFlag(InputTypes.ClassText) &&
+					inputType.HasFlag(InputTypes.TextVariationPassword)) ||
+				(inputType.HasFlag(InputTypes.ClassNumber) &&
+					inputType.HasFlag(InputTypes.NumberVariationPassword));
 
 			var newText = textElement.UpdateFormsText(text,
 				isPasswordEnabled ? TextTransform.None : textElement.TextTransform);
