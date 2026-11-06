@@ -38,6 +38,7 @@ jobs:
       IncludeMacOSTargetFrameworks: 'false'
       IncludeWindowsTargetFrameworks: 'false'
       UseMonoRuntime: 'false'
+      MSBUILDDISABLENODEREUSE: '1'
       __PWSH_LOGIN_CHECKED: '1'
       GH_TOKEN: ''
       GITHUB_TOKEN: ''
@@ -115,6 +116,16 @@ jobs:
           IncludeIosTargetFrameworks: 'true'
         run: |
           $ErrorActionPreference = 'Stop'
+          $env:DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR = $env:DOTNET_ROOT
+          $env:MSBuildEnableWorkloadResolver = 'true'
+          $env:DOTNET_HOST_PATH = Join-Path $env:DOTNET_ROOT 'dotnet'
+          & dotnet build-server shutdown
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & dotnet msbuild src/Core/tests/DeviceTests/Core.DeviceTests.csproj `
+            -p:TargetFramework=net12.0-ios -p:RuntimeIdentifier=iossimulator-arm64 `
+            -getProperty:MSBuildEnableWorkloadResolver,MSBuildSDKsPath,NETCoreSdkVersion `
+            -getItem:SdkSupportedTargetPlatformIdentifier
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           & .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 `
             -Project Core -Platform ios -Configuration Release `
             -iOSVersion 27.1 -DeviceUdid $env:NET12_SIMULATOR_UDID `
