@@ -26,8 +26,10 @@ public partial class Maui34499ItemListView : ContentView
 [Category(TestCategory.Layout)]
 public class Issue34499NativeLayoutTests : ControlsHandlerTestBase
 {
-	[Fact]
-	public async Task SourceGenContentViewRendersItemsAfterDelayedBindingContextAndCollectionAdd()
+	[Theory]
+	[InlineData(true)]
+	[InlineData(false)]
+	public async Task SourceGenContentViewRendersItemsAfterDelayedBindingContextAndCollectionAdd(bool bindItemsSource)
 	{
 		EnsureHandlerCreated(builder =>
 		{
@@ -49,6 +51,9 @@ public class Issue34499NativeLayoutTests : ControlsHandlerTestBase
 			var list = new Maui34499ItemListView();
 			var page = new ContentPage
 			{
+				// AttachAndRun measures the root with infinite constraints, unlike an app window.
+				WidthRequest = 600,
+				HeightRequest = 800,
 				Content = new ScrollView
 				{
 					Content = new VerticalStackLayout
@@ -68,7 +73,11 @@ public class Issue34499NativeLayoutTests : ControlsHandlerTestBase
 			// Deliberately assign only to the ContentView, AFTER its generated InitializeComponent
 			// and after construction of the page tree, just like MainPage's constructor.
 			Assert.Null(list.BindingContext);
+			if (!bindItemsSource)
+				list.ItemStack.RemoveBinding(BindableLayout.ItemsSourceProperty);
 			list.BindingContext = model;
+			if (!bindItemsSource)
+				BindableLayout.SetItemsSource(list.ItemStack, model.Items);
 
 			await AttachAndRun(page, async _ =>
 			{
