@@ -34,6 +34,7 @@ namespace Microsoft.Maui.Controls.Platform
 			MenuItemTemplateSelector = CreateShellFlyoutTemplateSelector();
 			MenuItemsSource = FlyoutItems;
 			this.Loaded += OnLoaded;
+			SelectionChanged += OnFlyoutSelectionChanged;
 		}
 
 		void OnLoaded(object sender, RoutedEventArgs e)
@@ -70,6 +71,7 @@ namespace Microsoft.Maui.Controls.Platform
 		internal void Disconnect()
 		{
 			Loaded -= OnLoaded;
+			SelectionChanged -= OnFlyoutSelectionChanged;
 			ShellController.RemoveAppearanceObserver(this);
 
 			if (ItemRenderer?.PlatformView is NavigationView navigationView)
@@ -248,6 +250,17 @@ namespace Microsoft.Maui.Controls.Platform
 			if (newItem.CurrentItem is null)
 				throw new InvalidOperationException($"Content not found for active {newItem}. Title: {newItem.Title}. Route: {newItem.Route}.");
 
+			UpdateFlyoutSelection(newItem);
+
+			var handler = CreateShellItemView();
+			if (handler.VirtualView != newItem)
+			{
+				handler.SetVirtualView(newItem);
+			}
+		}
+
+		void UpdateFlyoutSelection(ShellItem newItem)
+		{
 			var navItems = FlyoutItems.OfType<NavigationViewItemViewModel>();
 
 			// Implicit items aren't items that are surfaced to the user 
@@ -273,9 +286,24 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 			}
 
-			var handler = CreateShellItemView();
-			if (handler.VirtualView != newItem)
-				handler.SetVirtualView(newItem);
+		}
+
+		void OnFlyoutSelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
+		{
+			var shell = Element;
+			if (shell is null)
+			{
+				return;
+			}
+
+			// WinUI can select the invoked item before Shell has accepted navigation.
+			DispatcherQueue.TryEnqueue(() =>
+			{
+				if (Element == shell && shell.CurrentItem?.CurrentItem is not null)
+				{
+					UpdateFlyoutSelection(shell.CurrentItem);
+				}
+			});
 		}
 
 		#region IAppearanceObserver
