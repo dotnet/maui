@@ -94,10 +94,12 @@ jobs:
       - name: Create a dedicated iOS 27.1 simulator
         run: |
           set -euo pipefail
-          runtime=$(xcrun simctl list runtimes -j | jq -er \
-            '.runtimes[] | select(.identifier == "com.apple.CoreSimulator.SimRuntime.iOS-27-1" and .isAvailable) | .identifier')
-          device_type=$(xcrun simctl list devicetypes -j | jq -er \
-            '.devicetypes[] | select(.identifier == "com.apple.CoreSimulator.SimDeviceType.iPhone-17") | .identifier')
+          runtime_info=$(xcrun simctl list runtimes -j | jq -ce \
+            '.runtimes[] | select(.identifier == "com.apple.CoreSimulator.SimRuntime.iOS-27-1" and .isAvailable)')
+          runtime=$(printf '%s' "$runtime_info" | jq -er '.identifier')
+          device_type=$(printf '%s' "$runtime_info" | jq -er \
+            '.supportedDeviceTypes | map(select(.productFamily == "iPhone")) | first | .identifier // error("The selected runtime has no compatible iPhone device type.")')
+          echo "Creating a dedicated $device_type simulator on $runtime."
           udid=$(xcrun simctl create "Maui-net12-$GITHUB_RUN_ID" "$device_type" "$runtime")
           if [[ ! "$udid" =~ ^[A-Fa-f0-9-]{36}$ ]]; then
             echo "::error::simctl did not return a simulator UUID."
