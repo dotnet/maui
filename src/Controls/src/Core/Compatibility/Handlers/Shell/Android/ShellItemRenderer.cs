@@ -838,7 +838,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		static void SetAutomationIdAccessibilityDelegate(AView view, string automationId)
 		{
 			var currentDelegate = ViewCompat.GetAccessibilityDelegate(view);
-			var originalDelegate = (currentDelegate as AutomationIdAccessibilityDelegate)?.WrappedDelegate ?? currentDelegate;
+			var originalDelegate = currentDelegate is AutomationIdAccessibilityDelegate automationIdDelegate
+				? automationIdDelegate.WrappedDelegate
+				: currentDelegate;
 
 			ViewCompat.SetAccessibilityDelegate(
 				view,
