@@ -1,4 +1,5 @@
-﻿using Microsoft.UI.Xaml.Controls;
+﻿using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Windows.UI;
 
@@ -17,7 +18,6 @@ namespace Microsoft.Maui.Platform
 		static readonly string[] toggleSwitchOnKeys =
 		{
 			"ToggleSwitchFillOn",
-			"ToggleSwitchFillOnPointerOver",
 			"ToggleSwitchFillOnPressed",
 			"ToggleSwitchFillOnDisabled"
 		};
@@ -62,7 +62,38 @@ namespace Microsoft.Maui.Platform
 				}
 			}
 
+			if (view.IsOn)
+			{
+				// Match WinUI's hover opacity without reducing contrast in high-contrast themes.
+				UpdateOnPointerOverResource(toggleSwitch.Resources, "Default",
+					trackColor is SolidColorBrush brush ? new SolidColorBrush(brush.Color) { Opacity = 0.9 } : null);
+				UpdateOnPointerOverResource(toggleSwitch.Resources, "HighContrast", trackColor);
+			}
+
 			toggleSwitch.RefreshThemeResources();
+		}
+
+		static void UpdateOnPointerOverResource(ResourceDictionary resources, string theme, Brush brush)
+		{
+			const string key = "ToggleSwitchFillOnPointerOver";
+			var themeResources = resources.ThemeDictionaries.TryGetValue(theme, out var dictionary)
+				? (ResourceDictionary)dictionary
+				: null;
+
+			if (brush is null)
+			{
+				themeResources?.Remove(key);
+			}
+			else
+			{
+				if (themeResources is null)
+				{
+					themeResources = new ResourceDictionary();
+					resources.ThemeDictionaries[theme] = themeResources;
+				}
+
+				themeResources[key] = brush;
+			}
 		}
 
 		static readonly string[] toggleSwitchKnobKeys =
