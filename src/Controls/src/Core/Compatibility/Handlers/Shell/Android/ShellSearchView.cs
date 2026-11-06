@@ -80,7 +80,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				var query = searchHandler.Query ?? string.Empty;
 				var nativeText = text ?? string.Empty;
-				var transformedQuery = searchHandler.UpdateFormsText(query, searchHandler.TextTransform);
+				var transformedQuery = Microsoft.Maui.Controls.Platform.EditTextExtensions.GetTexts(_textBlock, query, searchHandler).newText;
 
 				if (transformedQuery != nativeText)
 				{
