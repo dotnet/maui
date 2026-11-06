@@ -361,6 +361,16 @@ signed-nightly source. Advance those release-state settings separately when the
 actual cut and nightly acceptance gates clear. The workflow never changes
 protections, channels, subscriptions, tags, packages, or feature `main`.
 
+The [hosted next-lane trial](https://github.com/dotnet/maui/actions/runs/42296010618)
+ran unchanged production code with the repository bot token after a third real
+isolated candidate merge. It created the next candidate and draft preview PRs.
+Attempt 2 retained byte-identical complete ref snapshots and the same PR IDs.
+Earlier cycles proved recovery after injected PR-creation failure and retained
+newer future-lane work. Actual generated XML evaluated to servicing/stable patch
+40 for candidate SR4 and CI inflight patch 50 for SR5. The integration tip stayed
+at its approved merge; no release was cut. All owned trial refs and remaining
+draft PRs were removed after preserving the evidence.
+
 ### Remaining full release automation
 
 The proposed activation point is a GitHub Action after a reviewed candidate
