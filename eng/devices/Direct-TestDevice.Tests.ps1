@@ -95,6 +95,15 @@ Describe 'Direct native CI contracts' {
         $fixture | Should -Not -Match '(?m)^\s*platformView\.AssertContainsColor\('
     }
 
+    It 'uses the Blazor project application identity for native iOS report extraction' {
+        [xml] $project = Get-Content (Join-Path $repoRoot 'src/BlazorWebView/tests/DeviceTests/MauiBlazorWebView.DeviceTests.csproj') -Raw
+        $applicationId = $project.SelectSingleNode('/Project/PropertyGroup/ApplicationId').InnerText
+        $stage = Get-Content (Join-Path $repoRoot 'eng/pipelines/arcade/stage-device-tests.yml') -Raw
+        $stage | Should -Match ([regex]::Escape("applicationId: $applicationId"))
+        $manifest = Get-Content (Join-Path $repoRoot 'src/BlazorWebView/tests/DeviceTests/Platforms/iOS/Info.plist') -Raw
+        $manifest | Should -Not -Match '<key>CFBundleIdentifier</key>'
+    }
+
     It 'keeps Windows reference builds RID-specific so PRI paths match the app reference query' {
         $packaged = [regex]::Match($steps, '(?s)displayName: Build and sign owned MSIX.*?useExitCodeForErrors: true').Value
         $run = [regex]::Match($steps, '(?s)displayName: Run Windows .*?useExitCodeForErrors: true').Value
