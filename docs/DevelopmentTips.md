@@ -57,6 +57,10 @@ The .NET 12 Android binding generator no longer emits the legacy
 A net12-and-later-only PublicAPI supplement records those removals without
 changing shipped API history or the retained .NET 11 validation baseline.
 
+Keyboard service lookups use `JavaCast<InputMethodManager>()` to retain the
+managed Java peer when Android type maps are trimmed. A plain CLR cast alone
+does not preserve that peer in the current CoreCLR linker.
+
 .NET 12 iOS simulator builds use `iossimulator-arm64`; the Apple workload no
 longer accepts `iossimulator-x64`. Previous-framework host builds retain their
 existing simulator architectures, and Mac Catalyst builds still include both
