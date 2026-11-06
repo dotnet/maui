@@ -83,6 +83,18 @@ Describe 'Direct native CI contracts' {
             Should -BeLessThan $fixture.IndexOf('Assert.False(dangling')
     }
 
+    It 'creates Controls test windows only inside the dispatched native scope' {
+        $fixture = Get-Content (Join-Path $repoRoot 'src/Controls/tests/DeviceTests/ControlsHandlerTestBase.cs') -Raw
+        [regex]::Matches($fixture, 'CreateWindowForContent\(view\)').Count | Should -Be 1
+        $fixture | Should -Match '(?s)return InvokeOnMainThreadAsync\(async \(\) =>\s*\{\s*TestRunnerLogger\.LogDebug\([^;]+;\s*IWindow window = CreateWindowForContent\(view\);'
+    }
+
+    It 'awaits both native Frame color assertions before disposing the fixture' {
+        $fixture = Get-Content (Join-Path $repoRoot 'src/Controls/tests/DeviceTests/Elements/Frame/FrameTests.cs') -Raw
+        [regex]::Matches($fixture, 'await platformView\.AssertContainsColor\(expectedColor, MauiContext\)').Count | Should -Be 2
+        $fixture | Should -Not -Match '(?m)^\s*platformView\.AssertContainsColor\('
+    }
+
     It 'keeps Windows reference builds RID-specific so PRI paths match the app reference query' {
         $packaged = [regex]::Match($steps, '(?s)displayName: Build and sign owned MSIX.*?useExitCodeForErrors: true').Value
         $run = [regex]::Match($steps, '(?s)displayName: Run Windows .*?useExitCodeForErrors: true').Value

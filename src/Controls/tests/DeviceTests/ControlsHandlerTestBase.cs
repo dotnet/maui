@@ -104,7 +104,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		protected Task CreateHandlerAndAddToWindow(IElement view, Func<Task> action)
 		{
-			return CreateHandlerAndAddToWindow<IWindowHandler>(CreateWindowForContent(view), handler =>
+			return CreateHandlerAndAddToWindow<IWindowHandler>(view, handler =>
 			{
 				return action();
 			}, MauiContext, null);
@@ -121,7 +121,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		protected Task CreateHandlerAndAddToWindow(IElement view, Action action)
 		{
-			return CreateHandlerAndAddToWindow<IWindowHandler>(CreateWindowForContent(view), handler =>
+			return CreateHandlerAndAddToWindow<IWindowHandler>(view, handler =>
 			{
 				action();
 				return Task.CompletedTask;
