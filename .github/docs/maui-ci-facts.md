@@ -110,6 +110,16 @@ and attempt. The job ID distinguishes OS/API variants whose matrix legs share
 the same name; the attempt keeps job retries separate. Existing artifact prefixes
 and snapshot contents are unchanged.
 
+## Android memory-test collection
+
+Android's `View.ScrollabilityCache` can retain detached views through delayed
+scrollbar-fade callbacks in the main message queue. Android 13 schedules those
+callbacks at least 750ms later, so an immediate GC/`Task.Yield` loop can report
+pending native work as a leak. The device-test collector spaces Android collection
+attempts by 100ms while retaining the existing 40-attempt bound and weak-reference
+assertions. Check actual native retaining paths before changing handler ownership;
+the existing strongly rooted negative control must still reject a real retention.
+
 ## Setup-only retries
 
 Shared provisioning initializes `DOTNET_CLI_HOME` under the agent's per-job
