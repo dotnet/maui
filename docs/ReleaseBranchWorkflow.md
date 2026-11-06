@@ -310,9 +310,38 @@ handoffs. The routine rollover must not force-push history, delete historical
 release refs, or publish packages. Package publishing retains the separate gates
 in the [release process](ReleaseProcess.md).
 
-The proposed daily `net11`-to-`main` merge PR requires a separate scheduled
-workflow, stopping for conflicts or failed validation instead of guessing fixes.
-This PR does not implement that daily forwarding automation.
+The **Forward servicing fixes** workflow prepares a draft `net11`-to-`main`
+forward-merge PR daily at 06:40 UTC, on pushes to `net11`, or on zero-input
+manual activation. It reads trusted branch roles from `main` and uses a
+separate `automation/forward-servicing-fixes` head so GitHub's post-merge branch
+deletion cannot delete the servicing branch.
+
+Forwarding waits until the feature branch's actual major exceeds the servicing
+major. It also waits for post-cut fixes housekeeping: the source must have
+`ci.main` branding and `StabilizePackageVersion=false`, not transient servicing
+release settings. Existing managed PRs are refreshed without duplicates; head
+updates must be fast-forward-only. Conflicts, review and CI remain human-controlled
+prerequisites; the workflow never auto-merges or replaces feature-major SDK,
+dependency or API-baseline settings.
+
+For read-only inspection:
+
+```powershell
+pwsh -NoProfile -File eng/scripts/Sync-ServicingForwardPullRequest.ps1 -PlanOnly
+```
+
+The current `main` is still .NET 11, so the actual production inspection reports
+`waiting-for-feature-transition` without creating a branch or PR. Isolated
+metadata fixtures can validate draft-PR creation and content flow, but are not
+certification of a .NET 12 runtime migration.
+
+An isolated live PR comparison verified that a servicing marker was forwarded
+without changing the feature-major metadata. After manually merging that dummy
+PR, genuine new source work recreated the tracker; another source advance
+refreshed the same open PR without a force push, and repeated reconciliation
+created no duplicates. A transient servicing/stable fixture was refused without
+any ref or PR change. These are PR-preparation and merge-mechanics checks, not
+production deployment or automatic merge approval.
 
 ### Read-only planning trial
 
@@ -466,7 +495,7 @@ sandbox proves the branch/PR lifecycle, not the following remaining work:
 | Surface | Remaining production requirement |
 |---|---|
 | Release cuts and rotation | Implement the protected production orchestrator, including persistent state advancement and recovery. The current mutation runner is sandbox-only. |
-| Daily forward merges | Implement the scheduled `net11`-to-`main` merge workflow. A manual merge does not validate unattended scheduling. |
+| Daily forward merges | Deploy the scheduled forward-PR workflow and verify actual CI on its first eligible source snapshot. PR preparation is implemented; review/conflict resolution and merging remain separate. |
 | New branch names | Deploy the explicit `net11` / `candidate/*` CI YAML coverage in this PR and review protections and readiness discovery. Server-side/manual runs are not proof that the deployed branch triggers are wired. |
 | Signed nightly builds | Deploy the internal mirrored source changes and validate signed artifacts and feed/channel handoff before changing `nightlyMode` from `legacy`. |
 | .NET 12 development | Update `main` and its dependency flow separately; creating `net11` does not change `main`'s SDK. |

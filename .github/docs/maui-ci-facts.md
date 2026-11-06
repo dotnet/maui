@@ -74,6 +74,14 @@ reports branch protection; the naming allowlist alone is not protection.
 The release migration must deploy those protections separately rather than
 bypass the refusal or grant extra pipeline permissions.
 
+The daily **Forward servicing fixes** workflow prepares a draft merge PR from an
+expendable automation head, not from the `net11` source ref itself. It activates
+only when the feature branch has a later major and the fixes tip has CI-normalized
+`ci.main` / non-stable package metadata. A transient candidate servicing merge
+must finish its post-cut fixes housekeeping before it can be forwarded.
+Source/target refs are read-only; automation never guesses conflict resolutions,
+approves PRs, or auto-merges. Actual forward-PR CI remains a separate gate.
+
 .NET 10 SR13 publishes from `release/10.0.1xx-sr13`, independently of `main`.
 Preserve its release commit and packages, and keep publication on the .NET 10 channel during the
 .NET 11 transition. Do not cut over `inflight/current` or synchronize the internal
