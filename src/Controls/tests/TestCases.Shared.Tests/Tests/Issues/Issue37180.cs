@@ -14,10 +14,17 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Label)]
 		public void LabelBackgroundClearsWhenSetToNull()
 		{
+			Exception? exception = null;
+
 			App.WaitForElement("BackgroundLabel");
-			VerifyScreenshot("Issue37180_RedBackground");
+			VerifyScreenshotOrSetException(ref exception, "Issue37180_RedBackground");
 			App.Tap("SetBackgroundButton");
-			VerifyScreenshot("Issue37180_NoBackground");
+			VerifyScreenshotOrSetException(ref exception, "Issue37180_NoBackground");
+
+			if (exception is not null)
+			{
+				throw exception;
+			}
 		}
 	}
 }

@@ -14,15 +14,22 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Border)]
 		public void BindingOnStrokeShapeShouldWork()
 		{
+			Exception? exception = null;
+
 			App.WaitForElement("button");
 
 			// Border should have radius
-			VerifyScreenshot("BindingOnStrokeShapeWithRadius");
+			VerifyScreenshotOrSetException(ref exception, "BindingOnStrokeShapeWithRadius");
 
 			App.Click("button");
 
 			// The test passes if border radius is equal to 0
-			VerifyScreenshot("BindingOnStrokeShapeWithoutRadius");
+			VerifyScreenshotOrSetException(ref exception, "BindingOnStrokeShapeWithoutRadius");
+
+			if (exception is not null)
+			{
+				throw exception;
+			}
 		}
 	}
 }
