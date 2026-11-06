@@ -31,12 +31,12 @@ The managed and native iOS deployment minimum is 15.0; the Mac Catalyst
 minimum remains 17.0. The Apple workload manifests also require .NET 11
 27.0 compatibility SDK packs, which are pinned separately from the .NET 12
 packs. Their versions and source commits must match the compatibility
-dependencies in the selected macios build, including the separate iOS pin.
+dependencies in the selected `dotnet/macios` build, including the separate iOS pin.
 
 CI compiles Apple frameworks, apps and packages on the GoldenGate Aces image.
 That image must include Xcode 27.1 before .NET 12 Apple jobs can build. Public
 CI cannot acquire the producer's internal Xcode package, and the shared
-Provisionator path requires separately configured credentials. Xcode selection
+`Provisionator` path requires separately configured credentials. Xcode selection
 verifies the actual major/minor version rather than accepting an older
 installation with the same major-version directory name. Prebuilt iOS and Mac Catalyst
 UI-test apps execute on `AcesShared` / `ACES_VM_SharedPool_Tahoe`, because the
@@ -72,6 +72,9 @@ The `.NET 12 Apple validation` GitHub Actions lane uses the standard `xcode-27`
 runner, which is free for public repositories. It verifies the actual Xcode
 27.1 installation and runs existing Core device tests on a dedicated iOS
 simulator without changing Azure Pipelines billing or pool permissions.
+Device-test apps share a scene manifest and a registered `MauiTestSceneDelegate`
+for SDK 27 lifecycle requirements. Explicit app scene configurations take
+precedence over the shared manifest.
 
 .NET 12 iOS simulator builds use `iossimulator-arm64`; the Apple workload no
 longer accepts `iossimulator-x64`. Previous-framework host builds retain their
