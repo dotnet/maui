@@ -110,6 +110,66 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void SpanClassStylesRespondIndependentlyToThemeChanges()
+		{
+			var accent = new Span { StyleClass = new[] { "accent" } };
+			var warning = new Span { StyleClass = new[] { "warning" } };
+			var label = new Label { FormattedText = new FormattedString { Spans = { accent, warning } } };
+			var page = new ContentPage
+			{
+				Resources = new ResourceDictionary
+				{
+					new Style(typeof(Span))
+					{
+						Class = "accent",
+						Setters =
+						{
+							new Setter
+							{
+								Property = Span.TextColorProperty,
+								Value = new AppThemeBinding { Light = Colors.Blue, Dark = Colors.LightBlue }
+							}
+						}
+					},
+					new Style(typeof(Span))
+					{
+						Class = "warning",
+						Setters =
+						{
+							new Setter
+							{
+								Property = Span.TextColorProperty,
+								Value = new AppThemeBinding { Light = Colors.Red, Dark = Colors.Pink }
+							}
+						}
+					}
+				},
+				Content = label
+			};
+			app.LoadPage(page);
+
+			Assert.Equal(Colors.Blue, accent.TextColor);
+			Assert.Equal(Colors.Red, warning.TextColor);
+			SetAppTheme(AppTheme.Dark);
+			Assert.Equal(Colors.LightBlue, accent.TextColor);
+			Assert.Equal(Colors.Pink, warning.TextColor);
+			SetAppTheme(AppTheme.Light);
+			Assert.Equal(Colors.Blue, accent.TextColor);
+			Assert.Equal(Colors.Red, warning.TextColor);
+
+			accent.StyleClass = new[] { "warning" };
+			Assert.Equal(Colors.Red, accent.TextColor);
+			SetAppTheme(AppTheme.Dark);
+			Assert.Equal(Colors.Pink, accent.TextColor);
+
+			accent.StyleClass = null;
+			Assert.Null(accent.TextColor);
+			SetAppTheme(AppTheme.Light);
+			Assert.Null(accent.TextColor);
+			Assert.Equal(Colors.Red, warning.TextColor);
+		}
+
+		[Fact]
 		public void InitialThemeIsCorrect()
 		{
 			var changed = 0;
