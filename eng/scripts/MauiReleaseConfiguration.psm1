@@ -150,9 +150,9 @@ function Get-MauiReleaseVersionContent {
             @{ name = 'StabilizePackageVersion'; value = if ($Role -ceq 'candidate') { 'true' } else { 'false' } }
         )) {
         $pattern = "(?<open><$($change.name)(?: [^<>]*)?>)[^<]*(?<close></$($change.name)>)"
-        $matches = [Regex]::Matches($Content, $pattern)
-        if ($matches.Count -ne 1) { throw "Unsupported '$($change.name)' layout." }
-        $match = $matches[0]
+        $propertyMatches = [Regex]::Matches($Content, $pattern)
+        if ($propertyMatches.Count -ne 1) { throw "Unsupported '$($change.name)' layout." }
+        $match = $propertyMatches[0]
         $Content = $Content.Remove($match.Index, $match.Length).Insert(
             $match.Index, $match.Groups['open'].Value + $change.value + $match.Groups['close'].Value)
     }
@@ -199,7 +199,8 @@ function Get-MauiReleasedVersionContent {
             $last.Index + $last.Length
         }
         $position = $section.Index + $options[0].Groups['items'].Index + $offset
-        $Content = $Content.Insert($position, "        - $Tag$newline")
+        $separator = if ($position -gt 0 -and $Content[$position - 1] -cne [char] 10) { $newline } else { '' }
+        $Content = $Content.Insert($position, "${separator}        - $Tag$newline")
     }
     return $Content
 }

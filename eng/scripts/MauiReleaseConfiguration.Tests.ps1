@@ -4,7 +4,6 @@ param ([string] $OutputDirectory)
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 Import-Module (Join-Path $PSScriptRoot 'MauiReleaseConfiguration.psm1') -Force
-$root = (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path
 $fixture = Join-Path ([System.IO.Path]::GetTempPath()) "maui-release-test-$([Guid]::NewGuid().ToString('N'))"
 $remote = Join-Path $fixture 'remote.git'
 $repo = Join-Path $fixture 'repo'
@@ -75,8 +74,44 @@ try {
     $null = Invoke-TestGit @('init', '--quiet', '-b', 'main')
     $null = Invoke-TestGit @('config', 'user.name', 'MAUI release fixture')
     $null = Invoke-TestGit @('config', 'user.email', 'fixture@example.invalid')
-    $source = [IO.File]::ReadAllText((Join-Path $root 'eng/Versions.props'))
-    $template = [IO.File]::ReadAllText((Join-Path $root '.github/ISSUE_TEMPLATE/bug-report.yml'))
+    # Keep servicing fixtures independent of main's next-major transition and
+    # later publication updates to the real bug-report dropdowns.
+    $source = @'
+<Project>
+  <PropertyGroup>
+    <MajorVersion>11</MajorVersion>
+    <MinorVersion>0</MinorVersion>
+    <PatchVersion>10</PatchVersion>
+    <SdkBandVersion>11.0.100</SdkBandVersion>
+    <PreReleaseVersionLabel>ci.main</PreReleaseVersionLabel>
+    <PreReleaseVersionLabel Condition="'$(BUILD_SOURCEBRANCH)' == 'refs/heads/inflight/current'">ci.inflight</PreReleaseVersionLabel>
+    <PreReleaseVersionIteration>
+    </PreReleaseVersionIteration>
+    <IsServicingBuild Condition=" '$(PreReleaseVersionLabel)' == 'servicing' ">true</IsServicingBuild>
+    <StabilizePackageVersion Condition="'$(StabilizePackageVersion)' == ''">false</StabilizePackageVersion>
+    <DotNetFinalVersionKind Condition="'$(StabilizePackageVersion)' == 'true'">release</DotNetFinalVersionKind>
+    <WorkloadVersionSuffix Condition="'$(DotNetFinalVersionKind)' != 'release' and '$(PreReleaseVersionIteration)' == ''">-$(PreReleaseVersionLabel)</WorkloadVersionSuffix>
+    <WorkloadVersionSuffix Condition="'$(WorkloadVersionSuffix)' == '' and '$(DotNetFinalVersionKind)' != 'release'">-$(PreReleaseVersionLabel).$(PreReleaseVersionIteration)</WorkloadVersionSuffix>
+    <FixtureUnrelatedValue>unchanged</FixtureUnrelatedValue>
+  </PropertyGroup>
+</Project>
+'@
+    $template = @'
+name: Isolated release version fixture
+body:
+  - type: dropdown
+    id: version-with-bug
+    attributes:
+      options:
+        - 10.0.130
+        - 10.0.120
+  - type: dropdown
+    id: version-that-worked
+    attributes:
+      options:
+        - 10.0.120
+        - 10.0.130
+'@
     [IO.File]::WriteAllText((Join-Path $repo 'eng/Versions.props'), $source)
     [IO.File]::WriteAllText((Join-Path $repo '.github/ISSUE_TEMPLATE/bug-report.yml'), $template)
     [IO.File]::WriteAllText((Join-Path $fixture 'evaluate.proj'), '<Project><Import Project="Versions.props" /></Project>')

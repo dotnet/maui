@@ -520,7 +520,7 @@ cut, CI restoration, publication gating, and duplicate-free retries:
 pwsh -NoProfile -File eng/scripts/MauiReleaseConfiguration.Tests.ps1
 ```
 
-The following live records predate servicing-preconfiguration changes and remain
+The following live records predate the servicing setup changes and remain
 evidence for the earlier branch/PR prototype, not certification of the new content
 transitions or a production shipment.
 
@@ -598,7 +598,7 @@ activation commit marked as a shallow root. The corrected fetch includes that
 activation tip. An isolated shallow-clone case reproduces the old failure and
 proves the corrected fetch reconstructs the identical next-lane integration.
 Local preparation uses full-history fetches; bounded fetches are confined to
-GitHub Actions checkouts and disposable test clones, not app-managed worktrees.
+GitHub Actions checkouts and disposable test clones, not app-managed checkouts.
 
 The isolated business harness also verifies a published-release fixture produces
 one metadata commit, adds the version once to each dropdown, can be exported and
