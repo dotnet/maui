@@ -1,5 +1,7 @@
 using System;
+#if ANDROID
 using System.Diagnostics;
+#endif
 using System.Linq;
 using System.Net.Http;
 using System.Reflection.Metadata;
@@ -45,36 +47,49 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 
-		public static Task<bool> WaitForCollect(this WeakReference reference) =>
-			WaitForCollect(() => reference.IsAlive);
-
-		public static Task<bool> WaitForCollect(this WeakReference<object> reference) =>
-			WaitForCollect(() => reference.TryGetTarget(out _));
-
-		static async Task<bool> WaitForCollect(Func<bool> isAlive)
+		public static async Task<bool> WaitForCollect(this WeakReference reference)
 		{
 #if ANDROID
-			if (AppContext.TryGetSwitch("Microsoft.Android.Runtime.RuntimeFeature.IsCoreClrRuntime", out var coreClr) && coreClr)
-			{
-				// CLR finalization does not wait for the Java bridge's asynchronous collection.
-				var stopwatch = Stopwatch.StartNew();
-				while (isAlive() && stopwatch.Elapsed < TimeSpan.FromSeconds(10))
-				{
-					await Collect();
-					if (isAlive())
-						await Task.Delay(10);
-				}
-
-				return isAlive();
-			}
-#endif
-			for (int i = 0; i < 40 && isAlive(); i++)
+			return await WaitForAndroidCollection(() => reference.IsAlive);
+#else
+			for (int i = 0; i < 40 && reference.IsAlive; i++)
 			{
 				await Collect();
 			}
 
+			return reference.IsAlive;
+#endif
+		}
+
+		public static async Task<bool> WaitForCollect(this WeakReference<object> reference)
+		{
+#if ANDROID
+			return await WaitForAndroidCollection(() => reference.TryGetTarget(out _));
+#else
+			for (int i = 0; i < 40 && reference.TryGetTarget(out _); i++)
+			{
+				await Collect();
+			}
+
+			return reference.TryGetTarget(out _);
+#endif
+		}
+
+#if ANDROID
+		static async Task<bool> WaitForAndroidCollection(Func<bool> isAlive)
+		{
+			// Java-side release can finish after managed finalization.
+			var stopwatch = Stopwatch.StartNew();
+			while (isAlive() && stopwatch.Elapsed < TimeSpan.FromSeconds(10))
+			{
+				await Collect();
+				if (isAlive())
+					await Task.Delay(10);
+			}
+
 			return isAlive();
 		}
+#endif
 
 		public static async Task<bool> WaitForCollect(params WeakReference[] references)
 		{
