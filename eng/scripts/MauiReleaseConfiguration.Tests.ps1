@@ -128,6 +128,16 @@ try {
     $null = Invoke-TestGit (@('push', '--quiet', '--atomic', 'origin') + $refspecs)
     $after = @(& git --git-dir=$remote show-ref) -join "`n"
     Assert-Release ($before -ceq $after) 'Ref retry changed existing outputs.'
+    $shallow = Join-Path $fixture 'shallow'
+    $remoteUri = [Uri]::new($remote).AbsoluteUri
+    $null = & git clone --quiet --no-checkout --depth=1 --single-branch --branch main $remoteUri $shallow 2>&1
+    if ($LASTEXITCODE -ne 0) { throw 'Unable to initialize the shallow housekeeping checkout.' }
+    $null = & git -C $shallow fetch --quiet --depth=32 $remoteUri $merge1 $candidate1.sha $future 2>&1
+    if ($LASTEXITCODE -ne 0) { throw 'Unable to fetch the original merge sources in the shallow fixture.' }
+    Assert-Refusal { New-MauiReleaseLaneIntegrationCommit -RepositoryPath $shallow -Fixes $fixes2.sha -Inflight $future } 'The fixture must reproduce the omitted-activation shallow-root failure.'
+    $null = & git -C $shallow fetch --quiet --depth=32 $remoteUri $fixes2.sha $merge1 $candidate1.sha $future 2>&1
+    if ($LASTEXITCODE -ne 0) { throw 'Unable to fetch the activation tip in the shallow fixture.' }
+    Assert-Release ((New-MauiReleaseLaneIntegrationCommit -RepositoryPath $shallow -Fixes $fixes2.sha -Inflight $future).sha -ceq $integration.sha) 'Fetching the activation tip must reproduce the same integration commit on retry.'
     Assert-Release ((Invoke-TestGit @('ls-tree', '--name-only', $merge1)) -cnotmatch 'future-sr2') 'SR1 release leaked future changes.'
     Assert-Release ((Invoke-TestGit @('ls-tree', '--name-only', $candidate2.sha)) -cmatch 'future-sr2') 'Next candidate lost inflight changes.'
     Assert-Release ((Invoke-TestGit @('ls-tree', '--name-only', $candidate2.sha)) -cmatch 'approved-fix') 'Next candidate lost approved fixes.'

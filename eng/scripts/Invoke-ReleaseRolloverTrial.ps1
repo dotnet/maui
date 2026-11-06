@@ -331,7 +331,11 @@ if (!$snapshot.ContainsKey($inflightRef)) {
 }
 $inflightSha = $snapshot[$inflightRef]
 
-$null = & git fetch --no-tags --depth=32 -- "https://github.com/$repository.git" $mergeSha $candidateSha $inflightSha
+$fetchArguments = @('fetch', '--quiet', '--no-tags')
+$isShallow = @(& git rev-parse --is-shallow-repository)
+if ($LASTEXITCODE -ne 0) { throw 'Unable to inspect sandbox checkout history.' }
+if ($isShallow[0] -ceq 'true') { $fetchArguments += '--depth=32' }
+$null = & git @fetchArguments -- "https://github.com/$repository.git" $activationSha $mergeSha $candidateSha $inflightSha
 if ($LASTEXITCODE -ne 0) {
     throw "Unable to fetch the pinned sandbox source commits."
 }
