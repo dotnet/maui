@@ -86,7 +86,8 @@
         <NupkgVersion>$([System.Version]::Parse('%(WorkloadPackages.Version)').Major).$([System.Version]::Parse('%(WorkloadPackages.Version)').Minor).$([System.Version]::Parse('%(WorkloadPackages.Version)').Build)</NupkgVersion>
           <!-- Do not attempt to use NuGet package version for already released 6.0.4xx packages -->
         <IsNet6Manifest>$([System.String]::Copy('%(WorkloadPackages.Identity)').Contains('Manifest-6.0.4'))</IsNet6Manifest>
-        <!-- Limit the offset to the affected band so older bands retain their shipped numbering. -->
+        <!-- Add 100 to outrank shipped previews; MSI major max 255 limits product major to 155 (255 - 100).
+             Scope this to the affected band so older bands retain their shipped numbering. -->
         <UseMsiVersionMajorOffset>$([System.Text.RegularExpressions.Regex]::IsMatch('%(WorkloadPackages.Filename)', `^Microsoft\.NET\.Sdk\.Maui\.Manifest-11\.0\.100\.`))</UseMsiVersionMajorOffset>
       </WorkloadPackages>
     </ItemGroup>
