@@ -95,6 +95,44 @@ To build and run Blazor Desktop samples, check out the [Blazor Desktop](https://
 
 # Advanced Scenarios
 
+### Selecting current and previous target frameworks
+
+`IncludeCurrentTfms` defaults to `true`. Set it to `false` to omit the current
+.NET version from the shared library and app platform lists. Libraries that
+target .NET Standard keep those targets. Previous frameworks are controlled
+independently by `IncludePreviousTfms`, `IncludePreviousTfmsEssentials`, and
+`IncludePreviousTfmsGraphics` (all default to `false`).
+
+For example, build only the .NET Standard targets of Graphics:
+
+```powershell
+dotnet build src\Graphics\src\Graphics\Graphics.csproj -p:IncludeCurrentTfms=false
+```
+
+For previous-only builds, enable all applicable previous-framework switches so
+project references have matching targets:
+
+```powershell
+.\build.cmd -restore -build -projects src\Core\src\Core.csproj -p:IncludeCurrentTfms=false -p:IncludePreviousTfms=true -p:IncludePreviousTfmsEssentials=true -p:IncludePreviousTfmsGraphics=true
+```
+
+These are MSBuild properties; the `build.cmd`/`build.sh` entrypoints forward
+`-p:` arguments to MSBuild. Select projects that support the requested frameworks:
+current-only device-test and embedding apps have no platform targets when current
+TFMs are disabled. Single-target build tools and unit-test runners retain their
+own target framework; this switch does not retarget the SDK or install workloads.
+Explicit `TargetFramework`/`TargetFrameworks` overrides remain explicit selections.
+
+Run the evaluation regression tests without installing platform workloads:
+
+```powershell
+pwsh -NoProfile -File eng\scripts\Test-TfmSelection.ps1
+```
+
+The `maui-pr` Helix preparation jobs run the same tests with the provisioned SDK.
+They evaluate real projects with all platforms enabled, covering default,
+current-only, combined, previous-only, and applicable .NET Standard-only selections.
+
 ### Public CI Apple toolchains
 
 The macOS template `Build` category uses separate toolchains without removing

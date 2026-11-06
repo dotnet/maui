@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>netstandard2.1;netstandard2.0;$(_MauiDotNetTfm);$(MauiPlatforms)</TargetFrameworks>
+		<TargetFrameworks>netstandard2.1;netstandard2.0</TargetFrameworks>
+		<TargetFrameworks Condition="'$(IncludeCurrentTfms)' == 'true'">$(TargetFrameworks);$(_MauiDotNetTfm);$(MauiPlatforms)</TargetFrameworks>
 		<TargetFrameworks Condition="'$(IncludePreviousTfms)' == 'true'">$(TargetFrameworks);$(_MauiPreviousDotNetTfm);$(MauiPreviousPlatforms)</TargetFrameworks>
 		<!-- Suppresses the warnings about the package not having assemblies in lib/*/.dll.-->
 		<NoPackageAnalysis>true</NoPackageAnalysis>

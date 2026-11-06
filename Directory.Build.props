@@ -13,6 +13,7 @@
     <SignAssembly>false</SignAssembly>
     <MauiRootDirectory>$(MSBuildThisFileDirectory)</MauiRootDirectory>
     <MauiSrcDirectory>$(MSBuildThisFileDirectory)src/</MauiSrcDirectory>
+    <IncludeCurrentTfms Condition="'$(IncludeCurrentTfms)' == ''">true</IncludeCurrentTfms>
     <IncludePreviousTfms>false</IncludePreviousTfms>
     <IncludePreviousTfmsEssentials>false</IncludePreviousTfmsEssentials>
     <IncludePreviousTfmsGraphics>false</IncludePreviousTfmsGraphics>
@@ -174,7 +175,7 @@
 
   <Import Condition="Exists('Directory.Build.Override.props')" Project="Directory.Build.Override.props" />
 
-  <PropertyGroup>
+  <PropertyGroup Condition="'$(IncludeCurrentTfms)' == 'true'">
     <!-- Library: The Real TFMs -->
     <WindowsMauiPlatforms Condition="'$(WindowsMauiPlatforms)' == ''">net$(_MauiDotNetVersion)-windows$(WindowsTargetFrameworkVersion);net$(_MauiDotNetVersion)-windows$(Windows2TargetFrameworkVersion)</WindowsMauiPlatforms>
     <MauiPlatforms Condition="'$(IncludeWindowsTargetFrameworks)' == 'true'">$(WindowsMauiPlatforms);$(MauiPlatforms)</MauiPlatforms>
@@ -185,6 +186,9 @@
     <MauiPlatforms Condition="'$(IncludeIosTargetFrameworks)' == 'true'">net$(_MauiDotNetVersion)-ios$(IosTargetFrameworkVersion);$(MauiPlatforms)</MauiPlatforms>
     <MauiPlatforms Condition="'$(IncludeIosTargetFrameworks)' == 'true' and '$(IosTargetFrameworkVersion)' != '$(IosTargetFrameworkVersionSdkDefault)'">net$(_MauiDotNetVersion)-ios;$(MauiPlatforms)</MauiPlatforms>
 
+  </PropertyGroup>
+
+  <PropertyGroup>
     <!-- Library: Previous .NET -->
     <WindowsMauiPreviousPlatforms Condition="'$(WindowsMauiPreviousPlatforms)' == ''">net$(_MauiPreviousDotNetVersion)-windows$(WindowsPreviousTargetFrameworkVersion);net$(_MauiPreviousDotNetVersion)-windows$(Windows2PreviousTargetFrameworkVersion)</WindowsMauiPreviousPlatforms>
     <MauiPreviousPlatforms Condition="'$(IncludeWindowsTargetFrameworks)' == 'true'">$(WindowsMauiPreviousPlatforms);$(MauiPreviousPlatforms)</MauiPreviousPlatforms>
@@ -192,16 +196,25 @@
     <MauiPreviousPlatforms Condition="'$(IncludeMacCatalystTargetFrameworks)' == 'true'">net$(_MauiPreviousDotNetVersion)-maccatalyst$(MacCatalystPreviousTargetFrameworkVersion);$(MauiPreviousPlatforms)</MauiPreviousPlatforms>
     <MauiPreviousPlatforms Condition="'$(IncludeIosTargetFrameworks)' == 'true'">net$(_MauiPreviousDotNetVersion)-ios$(IosPreviousTargetFrameworkVersion);$(MauiPreviousPlatforms)</MauiPreviousPlatforms>
 
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(IncludeCurrentTfms)' == 'true'">
     <!-- App: Sample Apps -->
     <MauiSamplePlatforms Condition="'$(IncludeWindowsTargetFrameworks)' == 'true'">$(WindowsMauiPlatforms);$(MauiSamplePlatforms)</MauiSamplePlatforms>
     <MauiSamplePlatforms Condition="'$(IncludeAndroidTargetFrameworks)' == 'true'">net$(_MauiDotNetVersion)-android;$(MauiSamplePlatforms)</MauiSamplePlatforms>
     <MauiSamplePlatforms Condition="'$(IncludeMacCatalystTargetFrameworks)' == 'true'">net$(_MauiDotNetVersion)-maccatalyst;$(MauiSamplePlatforms)</MauiSamplePlatforms>
     <MauiSamplePlatforms Condition="'$(IncludeIosTargetFrameworks)' == 'true'">net$(_MauiDotNetVersion)-ios;$(MauiSamplePlatforms)</MauiSamplePlatforms>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <MauiSamplePreviousPlatforms Condition="'$(IncludeWindowsTargetFrameworks)' == 'true'">$(WindowsMauiPreviousPlatforms);$(MauiSamplePreviousPlatforms)</MauiSamplePreviousPlatforms>
     <MauiSamplePreviousPlatforms Condition="'$(IncludeAndroidTargetFrameworks)' == 'true'">net$(_MauiPreviousDotNetVersion)-android;$(MauiSamplePreviousPlatforms)</MauiSamplePreviousPlatforms>
     <MauiSamplePreviousPlatforms Condition="'$(IncludeMacCatalystTargetFrameworks)' == 'true'">net$(_MauiPreviousDotNetVersion)-maccatalyst;$(MauiSamplePreviousPlatforms)</MauiSamplePreviousPlatforms>
     <MauiSamplePreviousPlatforms Condition="'$(IncludeIosTargetFrameworks)' == 'true'">net$(_MauiPreviousDotNetVersion)-ios;$(MauiSamplePreviousPlatforms)</MauiSamplePreviousPlatforms>
 
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(IncludeCurrentTfms)' == 'true'">
     <!-- App: Device Tests TFMs -->
     <MauiDeviceTestsPlatforms Condition="'$(IncludeWindowsTargetFrameworks)' == 'true'">$(WindowsMauiPlatforms);$(MauiDeviceTestsPlatforms)</MauiDeviceTestsPlatforms>
     <MauiDeviceTestsPlatforms Condition="'$(IncludeAndroidTargetFrameworks)' == 'true'">net$(_MauiDotNetVersion)-android;$(MauiDeviceTestsPlatforms)</MauiDeviceTestsPlatforms>
@@ -219,14 +232,23 @@
     <MauiManualTestsPlatforms Condition="'$(IncludeAndroidTargetFrameworks)' == 'true'">net$(_MauiDotNetVersion)-android;$(MauiManualTestsPlatforms)</MauiManualTestsPlatforms>
     <MauiManualTestsPlatforms Condition="'$(IncludeMacCatalystTargetFrameworks)' == 'true'">net$(_MauiDotNetVersion)-maccatalyst;$(MauiManualTestsPlatforms)</MauiManualTestsPlatforms>
     <MauiManualTestsPlatforms Condition="'$(IncludeIosTargetFrameworks)' == 'true'">net$(_MauiDotNetVersion)-ios;$(MauiManualTestsPlatforms)</MauiManualTestsPlatforms>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <MauiManualTestsPreviousPlatforms Condition="'$(IncludeWindowsTargetFrameworks)' == 'true'">$(WindowsMauiPreviousPlatforms);$(MauiManualTestsPreviousPlatforms)</MauiManualTestsPreviousPlatforms>
     <MauiManualTestsPreviousPlatforms Condition="'$(IncludeAndroidTargetFrameworks)' == 'true'">net$(_MauiPreviousDotNetVersion)-android;$(MauiManualTestsPreviousPlatforms)</MauiManualTestsPreviousPlatforms>
     <MauiManualTestsPreviousPlatforms Condition="'$(IncludeMacCatalystTargetFrameworks)' == 'true'">net$(_MauiPreviousDotNetVersion)-maccatalyst;$(MauiManualTestsPreviousPlatforms)</MauiManualTestsPreviousPlatforms>
     <MauiManualTestsPreviousPlatforms Condition="'$(IncludeIosTargetFrameworks)' == 'true'">net$(_MauiPreviousDotNetVersion)-ios;$(MauiManualTestsPreviousPlatforms)</MauiManualTestsPreviousPlatforms>
 
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(IncludeCurrentTfms)' == 'true'">
     <!-- Library: Graphics TFMs -->
     <MauiGraphicsPlatforms>$(MauiPlatforms)</MauiGraphicsPlatforms>
     <MauiGraphicsPlatforms Condition="'$(IncludeMacOSTargetFrameworks)' == 'true'">$(MauiGraphicsPlatforms);net$(_MauiDotNetVersion)-macos$(MacosTargetFrameworkVersion)</MauiGraphicsPlatforms>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <!-- Library: Previous .NET Graphics TFMs -->
     <MauiGraphicsPreviousPlatforms>$(MauiPreviousPlatforms)</MauiGraphicsPreviousPlatforms>
     <MauiGraphicsPreviousPlatforms Condition="'$(IncludeMacOSTargetFrameworks)' == 'true'">$(MauiGraphicsPreviousPlatforms);net$(_MauiPreviousDotNetVersion)-macos$(MacosPreviousTargetFrameworkVersion)</MauiGraphicsPreviousPlatforms>

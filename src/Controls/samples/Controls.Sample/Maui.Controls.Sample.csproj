@@ -3,7 +3,7 @@
   <Import Condition=" '$(UseMaui)' != 'true' " Project="..\..\..\BlazorWebView\src\Maui\build\Microsoft.AspNetCore.Components.WebView.Maui.props" />
 
   <PropertyGroup>
-    <TargetFrameworks>$(MauiSamplePlatforms);$(_MauiDotNetTfm)</TargetFrameworks>
+    <TargetFrameworks Condition="'$(IncludeCurrentTfms)' == 'true'">$(MauiSamplePlatforms);$(_MauiDotNetTfm)</TargetFrameworks>
     <TargetFrameworks Condition=" '$(UseMaui)' != 'true' and '$(IncludePreviousTfms)' == 'true' ">$(TargetFrameworks);$(_MauiPreviousDotNetTfm);$(MauiSamplePreviousPlatforms)</TargetFrameworks>
     <OutputType Condition="$(TargetFramework.Contains('-'))">Exe</OutputType>
     <SingleProject>true</SingleProject>
