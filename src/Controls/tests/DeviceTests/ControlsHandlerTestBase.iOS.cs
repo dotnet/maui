@@ -82,8 +82,6 @@ namespace Microsoft.Maui.DeviceTests
 						await rootView.DismissViewControllerAsync(false);
 					}
 
-					window.Content?.DisconnectHandlers();
-
 					Assert.False(dangling, "Test failed to cleanup modals");
 				}
 			});

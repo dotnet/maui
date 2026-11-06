@@ -76,12 +76,11 @@ Describe 'Direct native CI contracts' {
         $fixture | Should -Match '(?s)new ContentLayoutPanel\(layout,.*?\}, MauiContext\);\s*\}\s*finally\s*\{\s*layout\.DisconnectHandlers\(\);'
     }
 
-    It 'disconnects Apple fixture content after native controllers and modals are detached' {
+    It 'detaches Apple fixture controllers without prematurely disposing UIKit trait environments' {
         $fixture = Get-Content (Join-Path $repoRoot 'src/Controls/tests/DeviceTests/ControlsHandlerTestBase.iOS.cs') -Raw
-        $fixture.IndexOf('window.Content?.DisconnectHandlers()') |
-            Should -BeGreaterThan $fixture.IndexOf('await rootView.DismissViewControllerAsync(false)')
-        $fixture.IndexOf('window.Content?.DisconnectHandlers()') |
-            Should -BeLessThan $fixture.IndexOf('Assert.False(dangling')
+        $fixture | Should -Match ([regex]::Escape('await whs.FinishedDisconnecting'))
+        $fixture | Should -Match ([regex]::Escape('vc?.RemoveFromParentViewController()'))
+        $fixture | Should -Not -Match ([regex]::Escape('window.Content?.DisconnectHandlers()'))
     }
 
     It 'creates Controls test windows only inside the dispatched native scope' {
