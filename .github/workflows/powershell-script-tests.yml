@@ -68,6 +68,7 @@ on:
       - 'src/Controls/src/Core/TableView/*.cs'
       - '.github/workflows/powershell-script-tests.yml'
       - 'src/Controls/tests/TestCases.Shared.Tests/UITest.cs'
+      - 'src/Controls/tests/DeviceTests/Elements/HybridWebView/HybridWebViewTestsBase.cs'
   workflow_dispatch:
 
 concurrency:
@@ -135,11 +136,11 @@ jobs:
 
           "::notice::Pester total=$($result.TotalCount) passed=$($result.PassedCount) failed=$($result.FailedCount) skipped=$($result.SkippedCount)"
 
-          if ($result.FailedCount -gt 0) {
+          if ($result.Result -ne 'Passed') {
             foreach ($test in $result.Failed) {
               "::error::Failed: $($test.ExpandedPath)"
             }
-            throw "Pester reported $($result.FailedCount) failing test(s)."
+            throw "Pester reported $($result.Result): $($result.FailedCount) failing test(s), $($result.FailedContainersCount) failed container(s)."
           }
 
           if ($result.TotalCount -lt 1) {

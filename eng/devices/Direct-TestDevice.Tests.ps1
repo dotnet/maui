@@ -515,6 +515,7 @@ Describe 'Native debugger wrapper exit preservation' {
         }.GetEnumerator()) {
             $wrapper = $wrapper.Replace(('${{ parameters.' + $entry.Key + ' }}'), $entry.Value)
         }
+
         $script:NativeWrapper = [scriptblock]::Create($wrapper)
     }
 
@@ -533,5 +534,59 @@ Describe 'Native debugger wrapper exit preservation' {
 
         $commandExitCode | Should -Be $ExitCode
         $monitorFailed | Should -BeFalse
+    }
+}
+
+Describe 'HybridWebView startup polling budget' {
+    BeforeAll {
+        $repoRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
+        $source = Get-Content -Raw -LiteralPath (
+            Join-Path $repoRoot 'src/Controls/tests/DeviceTests/Elements/HybridWebView/HybridWebViewTestsBase.cs')
+        $constants = [regex]::Matches($source,
+            'const int (?:MaxWaitTimes|WaitTimeInMS|PageLoadWaitTimes) = \d+;').Value -join "`n"
+        $retry = [regex]::Match($source,
+            '(?s)private static async Task Retry\(.*?(?=\r?\n\t\tpublic static async Task WaitForHybridWebViewLoaded)').Value
+        if (!('HybridReadinessBudgetRegression' -as [type])) {
+            Add-Type -TypeDefinition @"
+using System;
+using System.Threading.Tasks;
+public static class HybridReadinessBudgetRegression
+{
+    $constants
+    $retry
+    public static int Calls;
+    public static Task Run(bool ready, int attempts)
+    {
+        Calls = 0;
+        return Retry(() => { Calls++; return Task.FromResult(ready); },
+            timeout => Task.FromResult<Exception>(new InvalidOperationException("timeout=" + timeout)), attempts);
+    }
+}
+"@
+        }
+    }
+
+    It 'keeps JavaScript-result polling at 25 seconds and cold page startup at 60 seconds' {
+        $flags = [Reflection.BindingFlags]'Static,NonPublic'
+        $type = [HybridReadinessBudgetRegression]
+        $delay = $type.GetField('WaitTimeInMS', $flags).GetRawConstantValue()
+        $type.GetMethod('Retry', $flags).GetParameters()[2].DefaultValue * $delay | Should -Be 25000
+        $type.GetField('PageLoadWaitTimes', $flags).GetRawConstantValue() * $delay | Should -Be 60000
+        $page = [regex]::Match($source,
+            '(?s)public static async Task WaitForHybridWebViewLoaded.*?(?=public static async Task WaitForHtmlStatusSet)').Value
+        $page | Should -Match 'maxWaitTimes: PageLoadWaitTimes'
+        ($source -split 'public static async Task WaitForHtmlStatusSet', 2)[1] |
+            Should -Not -Match 'maxWaitTimes:'
+    }
+
+    It 'stops polling as soon as the real readiness predicate succeeds' {
+        [HybridReadinessBudgetRegression]::Run($true, 240).GetAwaiter().GetResult()
+        [HybridReadinessBudgetRegression]::Calls | Should -Be 1
+    }
+
+    It 'fails after the selected finite polling budget without accepting an unready page' {
+        { [HybridReadinessBudgetRegression]::Run($false, 1).GetAwaiter().GetResult() } |
+            Should -Throw '*timeout=250*'
+        [HybridReadinessBudgetRegression]::Calls | Should -Be 1
     }
 }

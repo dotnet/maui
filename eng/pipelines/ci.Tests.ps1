@@ -140,6 +140,19 @@ Describe 'CI provisioning' {
     $workflow | Should -Match "'\.github/scripts'"
   }
 
+  It 'fails the Pester gate on discovery failures even when every discovered test passed' {
+    $workflow = Get-Content -Raw -LiteralPath (
+      Join-Path $PSScriptRoot '../../.github/workflows/powershell-script-tests.yml')
+    $failureCheck = [regex]::Match($workflow,
+      '(?s)if \(\$result.Result -ne ''Passed''\) \{.*?(?=\r?\n\s+if \(\$result.TotalCount)').Value
+    $failureCheck | Should -Not -BeNullOrEmpty
+    $result = [pscustomobject]@{
+      Result = 'Failed'; FailedCount = 0; FailedContainersCount = 1; Failed = @()
+    }
+
+    { & ([scriptblock]::Create($failureCheck)) } | Should -Throw '*1 failed container*'
+  }
+
   It 'allows focused Windows packaging reruns while retaining both modes by default' {
     $devicePipeline = Get-Content -LiteralPath (
       Join-Path $PSScriptRoot 'ci-device-tests.yml') -Raw
