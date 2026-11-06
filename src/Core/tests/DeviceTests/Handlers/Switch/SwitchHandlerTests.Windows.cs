@@ -128,6 +128,112 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Theory]
+		[InlineData("Default")]
+		[InlineData("HighContrast")]
+		public async Task NullOnColorPreservesConfiguredHoverResource(string theme)
+		{
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<ConfiguredHoverSwitchHandler>(new SwitchStub { IsOn = true });
+				var resources = (ResourceDictionary)handler.PlatformView.Resources.ThemeDictionaries[theme];
+				Assert.Same(handler.OriginalHoverBrush, resources["ToggleSwitchFillOnPointerOver"]);
+			});
+		}
+
+		[Theory]
+		[InlineData("Default")]
+		[InlineData("HighContrast")]
+		public async Task CustomOnColorRestoresConfiguredHoverResource(string theme)
+		{
+			var switchStub = new SwitchStub { IsOn = true, TrackColor = Colors.Red };
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler<ConfiguredHoverSwitchHandler>(switchStub);
+				var toggleSwitch = handler.PlatformView;
+				var resources = (ResourceDictionary)toggleSwitch.Resources.ThemeDictionaries[theme];
+				await toggleSwitch.AttachAndRun(() =>
+				{
+					for (int cycle = 0; cycle < 2; cycle++)
+					{
+						foreach (var color in new[] { Colors.Blue, Colors.Red })
+						{
+							switchStub.TrackColor = color;
+							handler.UpdateValue(nameof(ISwitch.TrackColor));
+							var brush = Assert.IsType<SolidColorBrush>(resources["ToggleSwitchFillOnPointerOver"]);
+							Assert.Equal(color.ToWindowsColor(), brush.Color);
+							Assert.Equal(theme == "Default" ? 0.9 : 1, brush.Opacity, 2);
+						}
+
+						switchStub.TrackColor = null;
+						handler.UpdateValue(nameof(ISwitch.TrackColor));
+						Assert.Same(handler.OriginalHoverBrush, resources["ToggleSwitchFillOnPointerOver"]);
+
+						if (theme == "Default")
+						{
+							Assert.True(VisualStateManager.GoToState(toggleSwitch, "Normal", false));
+							Assert.True(VisualStateManager.GoToState(toggleSwitch, "PointerOver", false));
+							var track = toggleSwitch.GetDescendantByName<Rectangle>("SwitchKnobBounds");
+							Assert.NotNull(track);
+							Assert.Same(handler.OriginalHoverBrush, track.Fill);
+						}
+					}
+				}, MauiContext);
+			});
+		}
+
+		[Theory]
+		[InlineData("Default", true)]
+		[InlineData("HighContrast", true)]
+		[InlineData("Default", false)]
+		[InlineData("HighContrast", false)]
+		public async Task ClearingOnColorPreservesReplacedHoverResource(string theme, bool clearBeforeNextColor)
+		{
+			var switchStub = new SwitchStub { IsOn = true, TrackColor = Colors.Red };
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<ConfiguredHoverSwitchHandler>(switchStub);
+				var resources = (ResourceDictionary)handler.PlatformView.Resources.ThemeDictionaries[theme];
+				var replacement = new SolidColorBrush(Colors.Purple.ToWindowsColor());
+				resources["ToggleSwitchFillOnPointerOver"] = replacement;
+				if (clearBeforeNextColor)
+				{
+					switchStub.TrackColor = null;
+					handler.UpdateValue(nameof(ISwitch.TrackColor));
+					Assert.Same(replacement, resources["ToggleSwitchFillOnPointerOver"]);
+				}
+
+				switchStub.TrackColor = Colors.Blue;
+				handler.UpdateValue(nameof(ISwitch.TrackColor));
+				switchStub.TrackColor = null;
+				handler.UpdateValue(nameof(ISwitch.TrackColor));
+				Assert.Same(replacement, resources["ToggleSwitchFillOnPointerOver"]);
+			});
+		}
+
+		class ConfiguredHoverSwitchHandler : SwitchHandler
+		{
+			public ConfiguredHoverSwitchHandler()
+			{
+			}
+
+			public SolidColorBrush OriginalHoverBrush { get; } = new SolidColorBrush(Colors.Green.ToWindowsColor()) { Opacity = 0.65 };
+
+			protected override ToggleSwitch CreatePlatformView()
+			{
+				var toggleSwitch = base.CreatePlatformView();
+				foreach (var theme in new[] { "Default", "HighContrast" })
+				{
+					toggleSwitch.Resources.ThemeDictionaries[theme] = new ResourceDictionary
+					{
+						["ToggleSwitchFillOnPointerOver"] = OriginalHoverBrush
+					};
+				}
+
+				return toggleSwitch;
+			}
+		}
+
 		void SetIsOn(SwitchHandler switchHandler, bool value) =>
 			GetNativeSwitch(switchHandler).IsOn = value;
 

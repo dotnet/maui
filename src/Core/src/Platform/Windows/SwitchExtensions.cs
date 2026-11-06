@@ -1,4 +1,5 @@
-﻿using Microsoft.UI.Xaml;
+﻿using System.Runtime.CompilerServices;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Windows.UI;
@@ -73,6 +74,15 @@ namespace Microsoft.Maui.Platform
 			toggleSwitch.RefreshThemeResources();
 		}
 
+		static readonly ConditionalWeakTable<ResourceDictionary, HoverResourceState> s_hoverResourceStates = new();
+
+		sealed class HoverResourceState
+		{
+			public bool HasOriginalValue { get; set; }
+			public object? OriginalValue { get; set; }
+			public Brush? AppliedBrush { get; set; }
+		}
+
 		static void UpdateOnPointerOverResource(ResourceDictionary resources, string theme, Brush? brush)
 		{
 			const string key = "ToggleSwitchFillOnPointerOver";
@@ -80,20 +90,63 @@ namespace Microsoft.Maui.Platform
 				? (ResourceDictionary)dictionary
 				: null;
 
+			if (themeResources is null)
+			{
+				if (brush is null)
+					return;
+
+				themeResources = new ResourceDictionary();
+				resources.ThemeDictionaries[theme] = themeResources;
+			}
+
+			s_hoverResourceStates.TryGetValue(themeResources, out var state);
+			if (brush is null && state is null)
+				return;
+
+			bool hasCurrentValue = false;
+			object? currentValue = null;
+			// ResourceDictionary lookup can return fallback resources; only capture local entries.
+			foreach (var entry in themeResources)
+			{
+				if (key.Equals(entry.Key))
+				{
+					hasCurrentValue = true;
+					currentValue = entry.Value;
+					break;
+				}
+			}
+
 			if (brush is null)
 			{
-				themeResources?.Remove(key);
-			}
-			else
-			{
-				if (themeResources is null)
+				if (state is not null && hasCurrentValue && ReferenceEquals(currentValue, state.AppliedBrush))
 				{
-					themeResources = new ResourceDictionary();
-					resources.ThemeDictionaries[theme] = themeResources;
+					if (state.HasOriginalValue)
+						themeResources[key] = state.OriginalValue;
+					else
+						themeResources.Remove(key);
 				}
 
-				themeResources[key] = brush;
+				s_hoverResourceStates.Remove(themeResources);
+				return;
 			}
+
+			if (state is null)
+			{
+				state = new HoverResourceState
+				{
+					HasOriginalValue = hasCurrentValue,
+					OriginalValue = currentValue
+				};
+				s_hoverResourceStates.Add(themeResources, state);
+			}
+			else if (!hasCurrentValue || !ReferenceEquals(currentValue, state.AppliedBrush))
+			{
+				state.HasOriginalValue = hasCurrentValue;
+				state.OriginalValue = currentValue;
+			}
+
+			state.AppliedBrush = brush;
+			themeResources[key] = brush;
 		}
 
 		static readonly string[] toggleSwitchKnobKeys =
