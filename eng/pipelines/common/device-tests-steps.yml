@@ -141,6 +141,7 @@ steps:
         --framework ${{ parameters.targetFrameworkVersion }}-ios
         --device "$(TestDevice)"
         -p:RuntimeIdentifier=$(TestRuntimeIdentifier)
+        -p:CodesignRequireProvisioningProfile=false
         -p:UseMonoRuntime=${{ ne(parameters.useCoreClr, true) }}
         -p:_DisableCheckForUnsupportedMonoMobileRuntime=true
         -p:MauiTestFilter="${{ replace(parameters.testFilter, ',', '%2C') }}"
@@ -158,6 +159,7 @@ steps:
         --configuration ${{ parameters.deviceTestConfiguration }}
         --framework ${{ parameters.targetFrameworkVersion }}-maccatalyst
         -p:RuntimeIdentifier=$(TestRuntimeIdentifier)
+        -p:CodesignRequireProvisioningProfile=false
         -p:UseMonoRuntime=${{ ne(parameters.useCoreClr, true) }}
         -p:MauiTestFilter="${{ replace(parameters.testFilter, ',', '%2C') }}"
         -p:MauiTestResultsDirectory="$(TestResultsDirectory)"

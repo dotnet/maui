@@ -45,6 +45,9 @@ Describe 'Direct native CI contracts' {
         $steps.IndexOf('simctl get_app_container') | Should -BeLessThan $steps.IndexOf('Stop-TestDevice.ps1')
         $iosCommand = [regex]::Match($steps, '(?s)displayName: Run iOS tests directly.*?useExitCodeForErrors: true').Value
         $iosCommand | Should -Not -Match '--report-trx|--results-directory|MauiTestResultsDirectory'
+        $iosCommand | Should -Match '-p:CodesignRequireProvisioningProfile=false'
+        $catalystCommand = [regex]::Match($steps, '(?s)displayName: Run Mac Catalyst tests directly.*?useExitCodeForErrors: true').Value
+        $catalystCommand | Should -Match '-p:CodesignRequireProvisioningProfile=false'
     }
 
     It 'does not swallow failing subprocess exits or absent results' {
