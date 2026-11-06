@@ -125,7 +125,7 @@ public static class AppLaunch
 	{
 		ArgumentException.ThrowIfNullOrWhiteSpace(completionMarker);
 		var markerLine = new Regex(
-			@"^(?:\[\d{2}:\d{2}:\d{2}\.\d+\] )?(?:\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d+[+-]\d{4} [^\[\r\n]+\[\d+:\d+\] )?" +
+			@"^(?:\[\d{2}:\d{2}:\d{2}\.\d+\] )?(?:\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d+(?:[+-]\d{4})? [^\[\r\n]+\[\d+:\d+\] )?" +
 			Regex.Escape(completionMarker) + @"\s*$", RegexOptions.CultureInvariant);
 		return exitCode == 0 && Directory.Exists(resultDir) &&
 			File.Exists(Path.Combine(resultDir, "application.log")) &&

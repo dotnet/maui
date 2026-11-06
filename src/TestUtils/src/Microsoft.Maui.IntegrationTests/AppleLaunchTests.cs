@@ -13,6 +13,8 @@ public class AppleLaunchTests : IDisposable
 	[InlineData("[00:56:35.5968960] ")]
 	[InlineData("2026-09-25 00:56:35.596729+0200 TestApp[9876:26968677] ")]
 	[InlineData("[00:56:35.5968960] 2026-09-25 00:56:35.596729+0200 TestApp[9876:26968677] ")]
+	[InlineData("2026-11-05 17:28:15.975 Test72ef0b74eaf348569600[7232:40720] ")]
+	[InlineData("[17:28:15.9750000] 2026-11-05 17:28:15.975 TestApp[7232:40720] ")]
 	public void RequiresCompletionMarkerAndSuccessfulExit(string prefix)
 	{
 		File.WriteAllText(Path.Combine(_resultDir, "application.log"), $"{prefix}{CompletionMarker}\n");
@@ -41,6 +43,9 @@ public class AppleLaunchTests : IDisposable
 	[InlineData("MAUI_APP_COMPLETED_previous")]
 	[InlineData("Expected marker: MAUI_APP_COMPLETED_current")]
 	[InlineData("[00:56:35.5968960] Expected marker: MAUI_APP_COMPLETED_current")]
+	[InlineData("2026-11-05 17:28:15.975 TestApp[7232:40720] Expected marker: MAUI_APP_COMPLETED_current")]
+	[InlineData("2026-11-05 17:28:15.975 TestApp[7232:40720] MAUI_APP_COMPLETED_previous")]
+	[InlineData("2026-11-05 17:28:15.975 TestApp[7232:40720] MAUI_APP_COMPLETED_current_extra")]
 	[InlineData("MAUI_APP_COMPLETED_current_extra")]
 	public void RejectsSuccessfulExitWithoutThisAppsCompletion(string log)
 	{
