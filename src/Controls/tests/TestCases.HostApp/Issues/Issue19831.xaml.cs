@@ -5,6 +5,7 @@ namespace Maui.Controls.Sample.Issues;
 
 [XamlCompilation(XamlCompilationOptions.Compile)]
 [Issue(IssueTracker.Github, 19831, "[Android] Action mode menu doesn't disappear when switch on another tab", PlatformAffected.Android)]
+
 public partial class Issue19831 : Shell
 {
 	public Issue19831()
