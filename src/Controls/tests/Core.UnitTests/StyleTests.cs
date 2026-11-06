@@ -821,6 +821,36 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(20d, button.FontSize);
 		}
 
+		[Theory]
+		[InlineData(null)]
+		[InlineData("")]
+		[InlineData("missing")]
+		public void RemovingClassStylesRestoresImplicitViewStyle(string replacement)
+		{
+			var label = new Label { StyleClass = new[] { "accent" } };
+			var parent = new ContentView
+			{
+				Resources = new ResourceDictionary
+				{
+					new Style(typeof(Label))
+					{
+						Setters = { new Setter { Property = Label.TextColorProperty, Value = Colors.Black } }
+					},
+					new Style(typeof(Label))
+					{
+						Class = "accent",
+						Setters = { new Setter { Property = Label.TextColorProperty, Value = Colors.Blue } }
+					}
+				},
+				Content = label
+			};
+			Assert.Equal(Colors.Blue, label.TextColor);
+
+			label.StyleClass = replacement == null ? null : replacement.Length == 0 ? Array.Empty<string>() : new[] { replacement };
+
+			Assert.Equal(Colors.Black, label.TextColor);
+		}
+
 		[Fact]
 		public void ReplacingResourcesDoesNotOverrideManuallySetProperties()
 		{

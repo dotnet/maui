@@ -66,10 +66,10 @@ namespace Microsoft.Maui.Controls
 						Target.RemoveDynamicResource(classStyleProperty);
 
 				_styleClass = value;
+				_classStyleProperties = new List<BindableProperty>();
 
 				if (_styleClass != null)
 				{
-					_classStyleProperties = new List<BindableProperty>();
 					foreach (var styleClass in _styleClass)
 					{
 						var classStyleProperty = BindableProperty.Create("ClassStyle", typeof(IList<Style>), typeof(Element), default(IList<Style>),
@@ -77,11 +77,14 @@ namespace Microsoft.Maui.Controls
 						_classStyleProperties.Add(classStyleProperty);
 						Target.OnSetDynamicResource(classStyleProperty, Maui.Controls.Style.StyleClassPrefix + styleClass, SetterSpecificity.DefaultValue);
 					}
-
-					//reapply the css stylesheets
-					if (Target is Element targetelement)
-						targetelement.ApplyStyleSheets();
 				}
+
+				// Resource registration may not notify when the list is empty or no class resolves.
+				OnClassStyleChanged();
+
+				//reapply the css stylesheets
+				if (_styleClass != null && Target is Element targetelement)
+					targetelement.ApplyStyleSheets();
 			}
 		}
 
