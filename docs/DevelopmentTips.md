@@ -68,6 +68,11 @@ does not preserve that peer in the current CoreCLR linker.
 These peers are borrowed from the context and must not be disposed by return-type
 mappings or keyboard helpers.
 
+The `.NET 12 Apple validation` GitHub Actions lane uses the standard `xcode-27`
+runner, which is free for public repositories. It verifies the actual Xcode
+27.1 installation and runs existing Core device tests on a dedicated iOS
+simulator without changing Azure Pipelines billing or pool permissions.
+
 .NET 12 iOS simulator builds use `iossimulator-arm64`; the Apple workload no
 longer accepts `iossimulator-x64`. Previous-framework host builds retain their
 existing simulator architectures, and Mac Catalyst builds still include both

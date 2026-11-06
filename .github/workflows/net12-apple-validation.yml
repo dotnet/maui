@@ -1,0 +1,147 @@
+name: .NET 12 Apple validation
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/net12-apple-validation.yml'
+      - 'global.json'
+      - 'NuGet.config'
+      - 'Directory.Build.*'
+      - 'eng/Versions.props'
+      - 'eng/Version.Details.xml'
+      - 'src/DotNet/**'
+      - 'src/Core/**'
+      - 'src/Controls/**'
+      - 'src/Essentials/**'
+      - 'src/TestUtils/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: net12-apple-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ios-coreclr:
+    if: github.event.repository.private == false
+    name: iOS CoreCLR on Xcode 27.1
+    runs-on: xcode-27
+    timeout-minutes: 90
+    env:
+      CI: 'true'
+      BuildTaskOnlyBuild: 'true'
+      IncludeAndroidTargetFrameworks: 'false'
+      IncludeIosTargetFrameworks: 'false'
+      IncludeMacCatalystTargetFrameworks: 'false'
+      IncludeMacOSTargetFrameworks: 'false'
+      IncludeWindowsTargetFrameworks: 'false'
+      UseMonoRuntime: 'false'
+      __PWSH_LOGIN_CHECKED: '1'
+      GH_TOKEN: ''
+      GITHUB_TOKEN: ''
+      COPILOT_GITHUB_TOKEN: ''
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Checkout PR
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Verify the actual Apple toolchain
+        run: |
+          set -euo pipefail
+          test "$(uname -m)" = arm64
+          developer_dir=/Applications/Xcode_27.1.app/Contents/Developer
+          actual_version=$(DEVELOPER_DIR="$developer_dir" xcodebuild -version | awk '/^Xcode / { print $2 }')
+          if [[ "$(printf '%s' "$actual_version" | cut -d. -f1,2)" != 27.1 ]]; then
+            echo "::error::Required Xcode 27.1, found $actual_version."
+            exit 1
+          fi
+          printf 'DEVELOPER_DIR=%s\n' "$developer_dir" >> "$GITHUB_ENV"
+          DEVELOPER_DIR="$developer_dir" xcrun --sdk iphonesimulator --show-sdk-version
+          df -h .
+
+      - name: Provision the pinned SDK and tool runtimes
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/log/net12-apple
+          dotnet build src/DotNet/DotNet.csproj -c Release \
+            -p:InstallWorkloadPacks=false \
+            --verbosity minimal 2>&1 | tee artifacts/log/net12-apple/provision.log
+          printf '%s/.dotnet\n' "$GITHUB_WORKSPACE" >> "$GITHUB_PATH"
+          printf 'DOTNET_ROOT=%s/.dotnet\n' "$GITHUB_WORKSPACE" >> "$GITHUB_ENV"
+          .dotnet/dotnet --info
+          .dotnet/dotnet tool restore
+
+      - name: Install only the pinned iOS workload
+        run: |
+          set -euo pipefail
+          dotnet workload install ios --disable-parallel --skip-sign-check \
+            --skip-manifest-update --configfile NuGet.config \
+            --verbosity minimal 2>&1 | tee artifacts/log/net12-apple/workload.log
+
+      - name: Build MAUI build tasks
+        run: |
+          set -euo pipefail
+          dotnet build Microsoft.Maui.BuildTasks.slnf -c Release \
+            -p:CI=true -p:BuildTaskOnlyBuild=true \
+            --verbosity minimal 2>&1 | tee artifacts/log/net12-apple/buildtasks.log
+
+      - name: Create a dedicated iOS 27.1 simulator
+        run: |
+          set -euo pipefail
+          runtime=$(xcrun simctl list runtimes -j | jq -er \
+            '.runtimes[] | select(.identifier == "com.apple.CoreSimulator.SimRuntime.iOS-27-1" and .isAvailable) | .identifier')
+          device_type=$(xcrun simctl list devicetypes -j | jq -er \
+            '.devicetypes[] | select(.identifier == "com.apple.CoreSimulator.SimDeviceType.iPhone-17") | .identifier')
+          udid=$(xcrun simctl create "Maui-net12-$GITHUB_RUN_ID" "$device_type" "$runtime")
+          if [[ ! "$udid" =~ ^[A-Fa-f0-9-]{36}$ ]]; then
+            echo "::error::simctl did not return a simulator UUID."
+            exit 1
+          fi
+          printf 'NET12_SIMULATOR_UDID=%s\n' "$udid" >> "$GITHUB_ENV"
+          xcrun simctl boot "$udid"
+          xcrun simctl bootstatus "$udid" -b
+
+      - name: Build and run existing Core Entry device tests
+        shell: pwsh
+        env:
+          IncludeIosTargetFrameworks: 'true'
+        run: |
+          $ErrorActionPreference = 'Stop'
+          & .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 `
+            -Project Core -Platform ios -Configuration Release `
+            -iOSVersion 27.1 -DeviceUdid $env:NET12_SIMULATOR_UDID `
+            -IncludeClasses Microsoft.Maui.DeviceTests.EntryHandlerTests `
+            -Timeout 00:15:00 -OutputDirectory artifacts/log/net12-apple/device-tests
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Remove the dedicated simulator
+        if: always()
+        run: |
+          set -euo pipefail
+          if [[ "${NET12_SIMULATOR_UDID:-}" =~ ^[A-Fa-f0-9-]{36}$ ]]; then
+            state=$(xcrun simctl list devices -j | jq -er --arg udid "$NET12_SIMULATOR_UDID" \
+              '[.devices[][] | select(.udid == $udid) | .state] | first // "Absent"')
+            if [[ "$state" == Absent ]]; then
+              echo "The dedicated simulator was already removed."
+            else
+              if [[ "$state" != Shutdown ]]; then
+                xcrun simctl shutdown "$NET12_SIMULATOR_UDID"
+              fi
+              xcrun simctl delete "$NET12_SIMULATOR_UDID"
+            fi
+          fi
+
+      - name: Upload native validation evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: net12-apple-validation
+          path: artifacts/log/net12-apple
+          retention-days: 1
+          if-no-files-found: warn
