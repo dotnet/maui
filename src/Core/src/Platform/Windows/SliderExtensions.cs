@@ -5,8 +5,8 @@ using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Media.Imaging;
 
 namespace Microsoft.Maui.Platform
 {
@@ -109,6 +109,12 @@ namespace Microsoft.Maui.Platform
 			{
 				var service = provider.GetRequiredImageSourceService(thumbImageSource);
 				var nativeThumbImageSource = await service.GetImageSourceAsync(thumbImageSource);
+				if (thumbImageSource != slider.ThumbImageSource)
+				{
+					nativeThumbImageSource?.Dispose();
+					return;
+				}
+
 				var nativeThumbImage = nativeThumbImageSource?.Value;
 
 				// BitmapImage is a special case that has an event when the image is loaded
@@ -120,6 +126,9 @@ namespace Microsoft.Maui.Platform
 					void OnImageOpened(object sender, RoutedEventArgs e)
 					{
 						bitmapImage.ImageOpened -= OnImageOpened;
+
+						if (thumbImageSource != slider.ThumbImageSource)
+							return;
 
 						if (nativeSlider.TryGetFirstDescendant<Thumb>(out var thumb))
 						{

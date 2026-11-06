@@ -111,12 +111,51 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					// Update the Slider ThumbImageSource
 					slider.ThumbImageSource = new FileImageSourceStub(filename);
+					handler.UpdateValue(nameof(ISlider.ThumbImageSource));
 
 					await Task.Delay(100);
 
 					var nativeThumbSize = GetNativeThumbSize(handler);
 					Assert.Equal(nativeThumbSize.Height, thumbHeight);
 					Assert.Equal(nativeThumbSize.Width, thumbWidth);
+				}, MauiContext);
+			});
+		}
+
+		[Theory]
+		[InlineData(null)]
+		[InlineData("black.png")]
+		public async Task ChangingThumbImageSourceDoesNotApplyPendingFont(string filename)
+		{
+			var slider = new SliderStub();
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler(slider);
+				var nativeSlider = Assert.IsType<MauiSlider>(handler.PlatformView);
+				var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
+
+				await nativeSlider.AttachAndRun(async () =>
+				{
+					slider.ThumbImageSource = new FontImageSourceStub
+					{
+						Font = Font.OfSize("Dokdo", 24),
+						Glyph = "X",
+						Color = Colors.Red
+					};
+					var pending = nativeSlider.UpdateThumbImageSourceAsync(slider, provider, null);
+					Assert.False(pending.IsCompleted);
+
+					slider.ThumbImageSource = filename == null ? null : new FileImageSourceStub(filename);
+					await nativeSlider.UpdateThumbImageSourceAsync(slider, provider, null);
+					var currentImage = nativeSlider.ThumbImageSource;
+					if (filename == null)
+						Assert.Null(currentImage);
+					else
+						Assert.NotNull(currentImage);
+
+					await pending;
+					Assert.Same(currentImage, nativeSlider.ThumbImageSource);
 				}, MauiContext);
 			});
 		}
