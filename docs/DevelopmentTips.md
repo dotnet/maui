@@ -25,7 +25,7 @@ The below parameters can be used with the `dotnet cake` command in the root of y
 
 #### Apple builds on .NET 12
 
-The `net12.0` branch uses the .NET 12 alpha SDK and Apple workloads targeting
+The `main` branch uses the .NET 12 alpha SDK and Apple workloads targeting
 iOS 27.1 and Mac Catalyst/macOS/tvOS 27.0, and requires Xcode 27.1.
 The managed and native iOS deployment minimum is 15.0; the Mac Catalyst
 minimum remains 17.0. The Apple workload manifests also require .NET 11

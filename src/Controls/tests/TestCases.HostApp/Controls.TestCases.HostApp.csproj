@@ -10,7 +10,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <!-- Enable CSS support even though this project doesn't have MauiCss items, since some tests use CSS -->
     <MauiCssEnabled>true</MauiCssEnabled>
-    <!-- .NET 12 iOS simulator builds support arm64 only; Catalyst still supports both architectures. -->
+    <!-- Preserve universal binaries for MacCatalyst and the previous iOS target. -->
     <RuntimeIdentifiers Condition="$(TargetFramework.Contains('-maccatalyst')) and ('$(CI)' == 'true' or '$(TF_BUILD)' == 'true')">maccatalyst-x64;maccatalyst-arm64</RuntimeIdentifiers>
     <RuntimeIdentifiers Condition="$(TargetFramework.Contains('-ios')) and ('$(CI)' == 'true' or '$(TF_BUILD)' == 'true')">iossimulator-x64;iossimulator-arm64</RuntimeIdentifiers>
     <RuntimeIdentifiers Condition="$(TargetFramework.Contains('-ios')) and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net12.0')) and ('$(CI)' == 'true' or '$(TF_BUILD)' == 'true')">iossimulator-arm64</RuntimeIdentifiers>

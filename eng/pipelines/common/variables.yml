@@ -31,9 +31,9 @@ variables:
 - name: LocBranchPrefix
   value: 'loc-hb'
 - name: isLocHandoffBranch
-  value: $[in(variables['Build.SourceBranch'], 'refs/heads/net9.0', 'refs/heads/net10.0', 'refs/heads/main', 'refs/heads/net12.0')]
+  value: $[in(variables['Build.SourceBranch'], 'refs/heads/net9.0', 'refs/heads/net10.0', 'refs/heads/main')]
 - name: signingCondition
-  value: $[or( eq(variables['Sign'], 'true'), in(variables['Build.SourceBranch'], 'refs/heads/net9.0', 'refs/heads/net10.0', 'refs/heads/main', 'refs/heads/net12.0', 'refs/heads/inflight/current' ), startsWith(variables['Build.SourceBranch'], 'refs/tags/'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/') )]
+  value: $[or( eq(variables['Sign'], 'true'), in(variables['Build.SourceBranch'], 'refs/heads/net9.0', 'refs/heads/net10.0', 'refs/heads/main', 'refs/heads/inflight/current' ), startsWith(variables['Build.SourceBranch'], 'refs/tags/'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/') )]
 # Common Agent Pools in use
 # Hosted and Aces images receive new Xcode versions at different times.
 - name: HostedMacImage

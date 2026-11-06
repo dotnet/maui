@@ -253,7 +253,7 @@ stages:
       timeout: 240
       testCategory: Build
       testFilter: 'Category=Build&DisplayName!~net11.0'
-    # The .NET 11 compatibility workload requires Xcode 27.0, not the app SDK's Xcode 27.1.
+    # The retained .NET 11 workload uses Xcode 27.0 rather than the current SDK's Xcode 27.1.
     - name: mac_buildtemplate_previous_tests
       ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
         pool: ${{ parameters.MacOSPool.public }}

@@ -112,6 +112,45 @@ Updating SDK dependencies alone does not advance MAUI's product branding.
 Leaving the development branch on `preview.N` after publishing `rc.N` packages
 also causes newer nightly packages to sort below older RC packages in NuGet.
 
+### .NET 12 development
+
+`main` targets .NET 12; the pre-migration .NET 11 source is preserved on `net11`.
+Do not merge the .NET 12 dependency and framework changes back into `net11` or
+the .NET 11 servicing and release branches.
+
+Keep the SDK, Arcade toolset, runtime and platform dependencies coherent across
+`global.json`, `eng/Version.Details.xml`, `eng/Versions.props` and `NuGet.config`.
+The .NET 12 runtime manifests use the SDK package version, including its feature
+band and prerelease suffix. Android and Apple manifest package IDs must match
+their published bands, not an inferred stable band.
+
+The current Apple workloads require Xcode 27.1. Their retained .NET 11 SDK packs
+must match the versions and source commits in the current workload's dependency
+metadata, including each `CoherentParentDependency` relationship. The .NET 11
+template compatibility lane uses Xcode 27.0. Generated MAUI manifests, SDK packs
+and templates select .NET 12 as current and .NET 11 as previous through the shared
+version properties; do not replace historical compiler-test TFM inputs blindly.
+An Android API baseline supplement applies only to .NET 12 and later, recording
+the binding generator's removal of generated `ThresholdClass` and `ThresholdType`
+overrides without deleting shipped history or changing the .NET 11 baseline.
+
+Android app builds require JDK 21. Cake and other .NET 10 tools require the
+runtime declared in `global.json`; provisioning reinstalls these tool runtimes
+after replacing the local SDK. Source-generator snapshots and XAML assembly
+assertions must match the current MAUI assembly version.
+
+An older Xcode behind a major-version alias does not satisfy the 27.1 pin.
+Public Apple CI requires an authorized image with Xcode 27.1; library compilation
+alone does not establish that native app builds or execution are available.
+The .NET 12 iOS test host and NativeAOT sample paths use `iossimulator-arm64`;
+the previous .NET 11 iOS target retains both simulator architectures.
+Both UI pipeline entrypoints use the existing Tahoe route and an explicit Xcode
+version for prebuilt iOS app execution, separate from Xcode 27.1 app compilation.
+
+Maestro channel mappings and incoming subscriptions are separate release
+configuration. Updating this repository does not configure dependency flow or
+promote a build; those external changes require release-owner approval.
+
 ## `$(MauiVersion)`
 
 Right now the .NET MAUI workload is installed side-by-side per .NET

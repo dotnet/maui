@@ -30,7 +30,7 @@ schedules:
     - net*.0
     - inflight/current
     exclude:
-    # Main owns .NET 11; net12.0 owns .NET 12 development.
+    # Main owns .NET 12 development; older trains use their release branches.
     - net10.0
     - net11.0
   always: true

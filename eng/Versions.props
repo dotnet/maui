@@ -29,8 +29,8 @@
     <UsingToolXliff>false</UsingToolXliff>
   </PropertyGroup>
   <PropertyGroup>
-    <!-- Latest published MAUI release for the previous .NET SDK major version. -->
-    <MicrosoftMauiPreviousDotNetReleasedVersion>11.0.0-rc.2.26505.5</MicrosoftMauiPreviousDotNetReleasedVersion>
+    <!-- Current previous .NET SDK major version's stable release of MAUI packages -->
+    <MicrosoftMauiPreviousDotNetReleasedVersion>11.0.0</MicrosoftMauiPreviousDotNetReleasedVersion>
     <!-- dotnet/sdk -->
     <MicrosoftNETSdkPackageVersion>12.0.100-alpha.1.26555.106</MicrosoftNETSdkPackageVersion>
     <MicrosoftDotnetSdkInternalPackageVersion>$(MicrosoftNETSdkPackageVersion)</MicrosoftDotnetSdkInternalPackageVersion>
@@ -64,7 +64,7 @@
     <MicrosoftAgentsAIWorkflowsGeneratorsVersion>1.0.0-rc2</MicrosoftAgentsAIWorkflowsGeneratorsVersion>
     <MicrosoftAgentsAIHostingVersion>1.0.0-preview.260225.1</MicrosoftAgentsAIHostingVersion>
     <!-- xamarin/xamarin-android -->
-    <MicrosoftAndroidSdkWindowsPackageVersion>37.99.0-preview.1.356</MicrosoftAndroidSdkWindowsPackageVersion>
+    <MicrosoftAndroidSdkWindowsPackageVersion>37.99.0-preview.1.357</MicrosoftAndroidSdkWindowsPackageVersion>
     <MicrosoftNETSdkAndroidManifest110100rc2PackageVersion>37.2.0-rc.2.84</MicrosoftNETSdkAndroidManifest110100rc2PackageVersion>
     <AndroidNetPreviousVersion>$(MicrosoftNETSdkAndroidManifest110100rc2PackageVersion)</AndroidNetPreviousVersion>
     <!-- dotnet/macios -->
@@ -72,7 +72,7 @@
     <MicrosoftmacOSSdknet120_270PackageVersion>27.0.13384-net12-p1</MicrosoftmacOSSdknet120_270PackageVersion>
     <MicrosoftiOSSdknet120_271PackageVersion>27.1.12089-net12-p1</MicrosoftiOSSdknet120_271PackageVersion>
     <MicrosofttvOSSdknet120_270PackageVersion>27.0.13384-net12-p1</MicrosofttvOSSdknet120_270PackageVersion>
-    <!-- This is a subscription of the .NET 11 latest stable versions of our packages -->
+    <!-- Retained .NET 11 SDKs must match the .NET 12 workload manifests. -->
     <MicrosoftMacCatalystSdknet110_270PackageVersion>27.0.12262</MicrosoftMacCatalystSdknet110_270PackageVersion>
     <MicrosoftmacOSSdknet110_270PackageVersion>27.0.12262</MicrosoftmacOSSdknet110_270PackageVersion>
     <MicrosoftiOSSdknet110_270PackageVersion>27.0.12214</MicrosoftiOSSdknet110_270PackageVersion>
