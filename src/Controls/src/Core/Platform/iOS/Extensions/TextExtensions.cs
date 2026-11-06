@@ -53,7 +53,7 @@ namespace Microsoft.Maui.Controls.Platform
 			var newText = textElement.UpdateFormsText(text,
 				textInput.GetSecureTextEntry() ? TextTransform.Default : textElement.TextTransform);
 
-			if (!string.IsNullOrWhiteSpace(oldText))
+			if (oldText != newText)
 				newTextLength = newText.Length;
 
 			if (oldText != newText)
