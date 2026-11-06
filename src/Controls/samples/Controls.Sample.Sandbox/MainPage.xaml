@@ -1,3 +1,107 @@
 ﻿<ContentPage x:Class="Maui.Controls.Sample.MainPage"
-             xmlns:local="clr-namespace:Maui.Controls.Sample">
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             Title="Span style classes - issue 16432"
+             Background="{AppThemeBinding Light=White, Dark=#121212}">
+    <ContentPage.Resources>
+        <Style TargetType="Label">
+            <Setter Property="TextColor" Value="{AppThemeBinding Light=#202020, Dark=#F5F5F5}" />
+            <Setter Property="FontSize" Value="18" />
+        </Style>
+        <Style x:Key="AccentSpanStyle" TargetType="Span">
+            <Setter Property="TextColor" Value="{AppThemeBinding Light=#005A9E, Dark=#80CFFF}" />
+        </Style>
+        <Style x:Key="WarningSpanStyle" TargetType="Span">
+            <Setter Property="TextColor" Value="{AppThemeBinding Light=#A4262C, Dark=#FFB3B8}" />
+        </Style>
+        <Style TargetType="Span" Class="accent" BasedOn="{StaticResource AccentSpanStyle}" />
+        <Style TargetType="Span" Class="warning" BasedOn="{StaticResource WarningSpanStyle}" />
+        <Style TargetType="Span" Class="emphasis">
+            <Setter Property="FontAttributes" Value="Bold" />
+        </Style>
+    </ContentPage.Resources>
+
+    <Grid Padding="24">
+        <ScrollView>
+            <VerticalStackLayout Spacing="20">
+                <Label Text="Span.StyleClass"
+                       FontSize="26"
+                       FontAttributes="Bold" />
+                <Label Text="Issue 16432: different spans in one Label should use independent style classes and follow light/dark theme changes." />
+
+                <HorizontalStackLayout Spacing="12">
+                    <Button Text="Light theme"
+                            AutomationId="LightThemeButton"
+                            Background="#005A9E"
+                            TextColor="White"
+                            Clicked="OnLightThemeClicked" />
+                    <Button Text="Dark theme"
+                            AutomationId="DarkThemeButton"
+                            Background="#005A9E"
+                            TextColor="White"
+                            Clicked="OnDarkThemeClicked" />
+                </HorizontalStackLayout>
+
+                <Label Text="1. Existing support: explicit Span.Style"
+                       FontAttributes="Bold" />
+                <Label AutomationId="ExplicitStyleLabel">
+                    <Label.FormattedText>
+                        <FormattedString>
+                            <Span Text="Accent text" Style="{StaticResource AccentSpanStyle}" />
+                            <Span Text=" / " />
+                            <Span Text="warning text" Style="{StaticResource WarningSpanStyle}" />
+                        </FormattedString>
+                    </Label.FormattedText>
+                </Label>
+                <Label Text="Expected: blue accent and red warning text; both change shade when switching themes." />
+
+                <Label Text="2. Span.StyleClass"
+                       FontAttributes="Bold" />
+                <Label AutomationId="StyleClassLabel">
+                    <Label.FormattedText>
+                        <FormattedString>
+                            <Span x:Name="AccentSpan"
+                                  AutomationId="AccentSpan"
+                                  Text="Accent text"
+                                  StyleClass="accent" />
+                            <Span Text=" / " />
+                            <Span x:Name="WarningSpan"
+                                  AutomationId="WarningSpan"
+                                  Text="warning text"
+                                  class="warning" />
+                            <Span Text=" / " />
+                            <Span x:Name="EmphasizedSpan"
+                                  AutomationId="EmphasizedSpan"
+                                  Text="accent + emphasis"
+                                  StyleClass="accent,emphasis" />
+                        </FormattedString>
+                    </Label.FormattedText>
+                </Label>
+                <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+                    <Button Text="Swap"
+                            AutomationId="SwapClassesButton"
+                            Background="#005A9E"
+                            TextColor="White"
+                            Clicked="OnSwapClassesClicked" />
+                    <Button Grid.Column="1"
+                            Text="Clear"
+                            AutomationId="ClearClassesButton"
+                            Background="#005A9E"
+                            TextColor="White"
+                            Clicked="OnClearClassesClicked" />
+                    <Button Grid.Column="2"
+                            Text="Reset"
+                            AutomationId="ResetClassesButton"
+                            Background="#005A9E"
+                            TextColor="White"
+                            Clicked="OnResetClassesClicked" />
+                </Grid>
+                <Label x:Name="StyleClassStatusLabel"
+                       AutomationId="StyleClassStatusLabel"
+                       Text="Classes applied: blue / red / blue and bold." />
+                <Label Text="Swap: red / blue / red and bold. Clear: all text uses the Label color, with no bold. Reset: restore the original classes. Switch themes in each state; the explicit-style row should remain unchanged except for its theme colors." />
+                <Label Text="This sample uses XAML style classes. CSS span styling, nested spans, and triggers are not included." />
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
 </ContentPage>
