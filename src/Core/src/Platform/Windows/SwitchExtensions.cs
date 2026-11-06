@@ -73,7 +73,7 @@ namespace Microsoft.Maui.Platform
 			toggleSwitch.RefreshThemeResources();
 		}
 
-		static void UpdateOnPointerOverResource(ResourceDictionary resources, string theme, Brush brush)
+		static void UpdateOnPointerOverResource(ResourceDictionary resources, string theme, Brush? brush)
 		{
 			const string key = "ToggleSwitchFillOnPointerOver";
 			var themeResources = resources.ThemeDictionaries.TryGetValue(theme, out var dictionary)
