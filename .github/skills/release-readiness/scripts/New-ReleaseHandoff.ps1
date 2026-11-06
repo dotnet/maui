@@ -600,7 +600,9 @@ function New-ReleaseHandoffModel {
     } else {
         $metadata = Get-HandoffProperty -Object $Readiness -Name 'metadata'
         $branch = Get-HandoffProperty -Object $metadata -Name 'srBranch'
-        $surveyRef = $branch
+        $surveyRef = Get-HandoffProperty -Object $metadata -Name 'contentsRef'
+        if ([string]::IsNullOrWhiteSpace([string]$surveyRef)) { $surveyRef = $branch }
+        $surveyRef = $surveyRef -replace '^(?:origin/|refs/heads/)', ''
         $sourceBranch = Get-HandoffProperty -Object $metadata -Name 'sourceBranch' `
             -Default (Get-HandoffProperty -Object $metadata -Name 'mainBranch')
         $mode = Get-HandoffProperty -Object $metadata -Name 'mode'
@@ -666,8 +668,16 @@ function New-ReleaseHandoffModel {
 
     $releaseName = Get-HandoffProperty -Object $effectiveEvidence -Name 'ReleaseName'
     if ($PublicSafe) {
+        $verifiedSurveyTag = $false
+        if ($releaseType -eq 'sr' -and $mode -eq 'shipped') {
+            $shippedTag = [string](Get-HandoffProperty -Object $metadata -Name 'shippedTagVersion')
+            $surveyTag = [string]$surveyRef -creplace '^refs/tags/', ''
+            $verifiedSurveyTag = $shippedTag -cmatch '^[1-9][0-9]*\.0\.(?:0|[1-9][0-9]*)$' -and
+                $surveyTag -ceq $shippedTag
+        }
         foreach ($coordinate in @('surveyRef', 'sourceBranch')) {
             $value = Get-Variable -Name $coordinate -ValueOnly
+            if ($coordinate -eq 'surveyRef' -and $verifiedSurveyTag) { continue }
             if ($value -notmatch '^(?:main|net\d+(?:\.0)?|(?:release|candidate|inflight)/\d+\.\d+\.\d+xx-(?:sr|preview|rc)\d+|inflight/current)$') {
                 Set-Variable -Name $coordinate -Value $null
             }

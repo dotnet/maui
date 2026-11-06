@@ -237,6 +237,11 @@ not invent a .NET 11 GA/SR0 baseline or certify candidate inventory.
 
 ### Published-version housekeeping
 
+Publication preparation requires complete Git history before verifying tag
+ancestry. The hosted checkout fetches full history, and the helper restores
+complete history if a caller starts from a shallow clone. An older valid tag
+must not block newer housekeeping merely because it lies beyond a fetch limit.
+
 `Prepare published release versions` runs on a GitHub Release `published` event
 (or a zero-input manual retry), using scripts from the trusted default branch.
 `Sync-ReleasePublishedVersions.ps1` selects stable published servicing Releases

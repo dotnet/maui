@@ -9,6 +9,13 @@ Preview or SR readiness JSON first, gather separately verified public release
 evidence, then render both through `New-ReleaseHandoff.ps1`. Never select a build
 because it is merely the newest candidate.
 
+For SR reports, the handoff's survey identity comes from `metadata.contentsRef`
+when present, with the older `metadata.srBranch` fallback retained. In shipped
+mode this is the immutable assessed tag, while `Branch` remains the operational
+release branch and may already contain an unshipped hotfix. Public-safe output
+permits a stable tag only when it matches the report's `shippedTagVersion`;
+it never substitutes the mutable branch for those assessed contents.
+
 ## Privacy contract
 
 The repository implementation must remain safe for public forks:
