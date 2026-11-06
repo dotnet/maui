@@ -24,11 +24,20 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  ios-coreclr:
+  apple-coreclr:
     if: github.event.repository.private == false
-    name: iOS CoreCLR on Xcode 27.1
+    name: ${{ matrix.platform }} CoreCLR on Xcode 27.1
     runs-on: xcode-27
     timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [ios, maccatalyst]
+        include:
+          - platform: ios
+            rid: iossimulator-arm64
+          - platform: maccatalyst
+            rid: maccatalyst-arm64
     env:
       CI: 'true'
       BuildTaskOnlyBuild: 'true'
@@ -43,6 +52,8 @@ jobs:
       GH_TOKEN: ''
       GITHUB_TOKEN: ''
       COPILOT_GITHUB_TOKEN: ''
+      APPLE_PLATFORM: ${{ matrix.platform }}
+      APPLE_RID: ${{ matrix.rid }}
     defaults:
       run:
         shell: bash
@@ -78,10 +89,10 @@ jobs:
           .dotnet/dotnet --info
           .dotnet/dotnet tool restore
 
-      - name: Install only the pinned iOS workload
+      - name: Install only the pinned Apple workload
         run: |
           set -euo pipefail
-          dotnet workload install ios --disable-parallel --skip-sign-check \
+          dotnet workload install "$APPLE_PLATFORM" --disable-parallel --skip-sign-check \
             --skip-manifest-update --configfile NuGet.config \
             --verbosity minimal 2>&1 | tee artifacts/log/net12-apple/workload.log
 
@@ -93,6 +104,7 @@ jobs:
             --verbosity minimal 2>&1 | tee artifacts/log/net12-apple/buildtasks.log
 
       - name: Create a dedicated iOS 27.1 simulator
+        if: matrix.platform == 'ios'
         run: |
           set -euo pipefail
           runtime_info=$(xcrun simctl list runtimes -j | jq -ce \
@@ -111,6 +123,7 @@ jobs:
           xcrun simctl bootstatus "$udid" -b
 
       - name: Build and run existing Core Entry device tests
+        if: matrix.platform == 'ios'
         shell: pwsh
         env:
           IncludeIosTargetFrameworks: 'true'
@@ -134,7 +147,7 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Remove the dedicated simulator
-        if: always()
+        if: always() && matrix.platform == 'ios'
         run: |
           set -euo pipefail
           if [[ "${NET12_SIMULATOR_UDID:-}" =~ ^[A-Fa-f0-9-]{36}$ ]]; then
@@ -150,11 +163,33 @@ jobs:
             fi
           fi
 
+      - name: Build native sample and UI-test hosts
+        env:
+          IncludeIosTargetFrameworks: ${{ matrix.platform == 'ios' && 'true' || 'false' }}
+          IncludeMacCatalystTargetFrameworks: ${{ matrix.platform == 'maccatalyst' && 'true' || 'false' }}
+        run: |
+          set -euo pipefail
+          export DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR="$DOTNET_ROOT"
+          export MSBuildEnableWorkloadResolver=true
+          export DOTNET_HOST_PATH="$DOTNET_ROOT/dotnet"
+          dotnet build-server shutdown
+          for project in \
+            src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj \
+            src/Controls/samples/Controls.Sample.Profiling/Maui.Controls.Sample.Profiling.csproj \
+            src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj \
+            src/Essentials/samples/Samples/Essentials.Sample.csproj; do
+            log_name=$(basename "$project" .csproj)
+            dotnet build "$project" -c Release -f "net12.0-$APPLE_PLATFORM" -r "$APPLE_RID" \
+              -p:CodesignRequireProvisioningProfile=false \
+              --disable-build-servers --verbosity minimal 2>&1 |
+              tee "artifacts/log/net12-apple/$log_name-$APPLE_PLATFORM.log"
+          done
+
       - name: Upload native validation evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: net12-apple-validation
+          name: net12-apple-validation-${{ matrix.platform }}
           path: artifacts/log/net12-apple
           retention-days: 1
           if-no-files-found: warn

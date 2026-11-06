@@ -74,7 +74,9 @@ runner, which is free for public repositories. It verifies the actual Xcode
 simulator without changing Azure Pipelines billing or pool permissions.
 Device-test apps share a scene manifest and a registered `MauiTestSceneDelegate`
 for SDK 27 lifecycle requirements. Explicit app scene configurations take
-precedence over the shared manifest.
+precedence over the shared manifest. Only apps referencing the device-test
+runner receive it; UI hosts and samples use their own `MauiUISceneDelegate`
+configuration on both iOS and Mac Catalyst.
 
 .NET 12 iOS simulator builds use `iossimulator-arm64`; the Apple workload no
 longer accepts `iossimulator-x64`. Previous-framework host builds retain their

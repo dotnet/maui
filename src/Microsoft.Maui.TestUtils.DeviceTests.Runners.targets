@@ -17,7 +17,7 @@
     <PackageReference Include="xunit.runner.visualstudio" Version="$(XunitRunnerVisualStudioPackageVersion)" ExcludeAssets="all" />
   </ItemGroup>
 
-  <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios' or $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">
+  <ItemGroup Condition="@(ProjectReference->WithMetadataValue('Filename', 'TestUtils.DeviceTests.Runners')->Count()) &gt; 0 and ($([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios' or $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst')">
     <PartialAppManifest Include="$(MSBuildThisFileDirectory)TestUtils/src/DeviceTests.Runners/TestRunnerInfo.plist" Overwrite="false" />
   </ItemGroup>
 
