@@ -7,6 +7,7 @@ using System.Xml;
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.Maui.Controls.SourceGen.TypeConverters;
 using Microsoft.Maui.Controls.Xaml;
 
 using static System.String;
@@ -209,6 +210,13 @@ internal class KnownMarkups
 						context.Types[vnType] = resolvedType;
 				}
 			}
+		}
+
+		if (ancestorTypeSymbol is null && ancestorTypeNode is ValueNode { Value: string unresolvedType })
+		{
+			context.ReportConversionFailed((IXmlLineInfo)ancestorTypeNode, unresolvedType, Descriptors.TypeResolution);
+			value = "default";
+			return false;
 		}
 
 		// Get the AncestorLevel property (default is 1)

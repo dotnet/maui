@@ -32,13 +32,14 @@ minimum remains 17.0. The Apple workload manifests also require the .NET 10
 .NET 11 packs.
 
 CI compiles Apple frameworks, apps and packages on the GoldenGate Aces image
-until standard hosted images provide Xcode 27. Prebuilt iOS UI-test apps
-continue to execute on Tahoe with Xcode 26.5, and Mac Catalyst UI tests use
-macOS 14, because the GoldenGate Appium execution environment has not been
-validated. These execution images do not determine the app's build SDK.
-Simulator runtime provisioning and its bounded recovery remain enabled.
-The macOS 14 execution image is scheduled to retire on November 2, 2026;
-its replacement needs separate Mac2 validation.
+until standard hosted images provide Xcode 27. Prebuilt iOS and Mac Catalyst
+UI-test apps execute on `AcesShared` / `ACES_VM_SharedPool_Tahoe`, because the
+GoldenGate Appium execution environment has not been validated. iOS UI tests
+use Xcode 26.5. Both public and internal Mac Catalyst pool defaults use Tahoe
+rather than the hosted macOS 14 image; the pool parameters remain
+overridable for image validation. These execution images do not determine the
+app's build SDK. Simulator runtime provisioning and its bounded recovery
+remain enabled.
 
 Normal builds validate the Xcode version rather than bypassing an SDK mismatch.
 To use a particular installed Xcode without changing the global selection,
@@ -93,6 +94,14 @@ dotnet cake --target=VS --workloads=global --android --ios
 To build and run Blazor Desktop samples, check out the [Blazor Desktop](https://github.com/dotnet/maui/wiki/Blazor-Desktop) wiki topic.
 
 # Advanced Scenarios
+
+### Public CI Apple toolchains
+
+The macOS template `Build` category uses separate toolchains without removing
+coverage. Previous-framework (.NET 10) cases run on the hosted `macOS-26` image
+with Xcode 26.5, matching their Apple compatibility SDK. The complementary cases
+retain the main branch's GoldenGate/Xcode 27 compilation pool. Compound test
+filters use single-quoted arguments in the shared PowerShell runner.
 
 ### Compile using a local `.dotnet\dotnet` via `build.*` scripts on the root folder 
 

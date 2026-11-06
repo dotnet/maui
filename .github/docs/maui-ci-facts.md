@@ -33,9 +33,10 @@ green base job alone is not causal proof, and missing evidence is reported expli
 
 ### Automated CI fixes
 
-`ci-status-main` and `ci-status-net11` scan the three pipelines every twelve
-hours and create fix PRs directly against their configured branch. They do not
-file CI-scan tracking issues or failure/no-op diagnostic issues. Findings that
+`ci-status-main` scans the three pipelines every twelve hours and creates fix
+PRs against `main`, the .NET 11 servicing development branch. `ci-status-net11`
+is manual-only for historical investigations after the net11-to-main promotion.
+They do not file CI-scan tracking issues or failure/no-op diagnostic issues. Findings that
 cannot be safely fixed remain in the run's evidence and analysis artifacts.
 Manual dispatch defaults to staged (`dry_run: true`), including PR updates.
 
@@ -50,6 +51,33 @@ CI-fix PR heads after a scanner completes, including PRs created with
 for older issue-linked PRs. They must not be scheduled alongside the direct
 scanners. The legacy issue reconciler and locking workflow do not produce new
 issues.
+
+### Branch promotion and servicing
+
+After the .NET 11 promotion, `main` owns .NET 11 servicing development. The
+main-to-net11 and net11-to-RC2 merge routes are retired; a future servicing cut
+must explicitly select its release branch rather than reuse the RC2 route.
+Official nightly builds exclude the historical `net10.0` and `net11.0` branches.
+
+.NET 10 SR13 publishes from `release/10.0.1xx-sr13`, independently of `main`.
+Preserve its release commit and packages, and keep publication on the .NET 10 channel during the
+.NET 11 transition. Do not cut over `inflight/current` or synchronize the internal
+`main` mirror as part of SR13 publication; those are separate .NET 11 operations.
+
+### Engineering dependency updates
+
+Maestro owns the `Microsoft.DotNet.*` dependencies, including the Arcade toolset
+and XHarness. Update the toolset as a coordinated dependency change: keep
+`global.json` and `eng/Versions.props` aligned with `eng/Version.Details.xml`,
+including its source commit, and take the matching `eng/common` update and feed
+changes when required. An individual NuGet version bump does not update the
+tracked toolset or shared build infrastructure.
+
+Dependabot excludes these packages to avoid partial toolset upgrades. It also
+excludes `Magick.NET-Q8-AnyCPU` major version updates: version 15 changed screenshot
+comparison behavior and removed Intel macOS support. A major upgrade requires
+explicit validation of the screenshot baselines and supported runner
+architectures; patch and minor updates remain enabled.
 
 ### Pipeline definitions
 
@@ -154,6 +182,18 @@ existing policies; shared agent setup does not wrap or resubmit those test runs.
   **all** failed legs. Absence of evidence is not evidence — it is usually an unread log.
 
 ## MAUI-specific quirks
+
+### Windows packaged device-test deployment
+
+The Helix Windows runner installs the test MSIX and its x64 dependencies in one
+`Add-AppxPackage` operation with `ForceApplicationShutdown`. On disposable workers,
+Windows apps such as Web Experience can hold shared runtime dependencies open and
+block deployment with `0x80073D02` before any tests start.
+[Microsoft documents](https://learn.microsoft.com/powershell/module/appx/add-appxpackage#-forceapplicationshutdown)
+that this switch shuts down processes associated with the package **or its
+dependencies**; `ForceTargetApplicationShutdown` only covers the target package.
+Keep this behavior scoped to the Helix runner, not local developer deployment.
+Deployment errors still fail the work item and print the Appx deployment log.
 
 ### Android activity isolation
 
@@ -528,6 +568,21 @@ on appearance alone:
 If none of these hold, a failure on a path/platform the PR changes leans PR-caused. Note
 that **not every failure is a test** — a red build leg with no extracted test name still
 counts as a failure and must be classified, never silently dropped.
+
+**Build Insights report intake:** The automated review gatherer also reads the
+GitHub check reports for its captured PR head, accepting only the
+`build-insights` / `Build Insights` publisher/name pair. It explicitly requests
+all check runs, including earlier same-named reports, within its pagination cap.
+`context.json` exposes their metadata and bounded raw
+title, summary, and text in `buildInsights.reports`. These are untrusted,
+supplementary leads, not a replacement for direct Azure/Helix evidence, the
+local known-issue matcher, or baseline attribution. Collection `complete` does
+not certify pipeline coverage; pending, missing, or truncated reports cannot
+establish that a failure is absent. Collection errors remain explicit, and the
+no-results evaluation shortcuts do not fetch reports. Supplementary collection
+runs only after direct evidence, target-branch history, and baseline attribution,
+using the remaining gather budget. An exhausted budget leaves an explicit report
+collection limitation rather than delaying primary evidence.
 
 The gatherer's **legacy deterministic verdict ceiling** (`gate.verdictCeiling`)
 constrains legacy merge-readiness consumers, not the current skill's attribution

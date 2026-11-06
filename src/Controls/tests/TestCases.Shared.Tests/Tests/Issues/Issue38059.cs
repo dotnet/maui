@@ -24,6 +24,8 @@ public class Issue38059 : _IssuesUITest
     [ShardedTestCategory(UITestCategories.CollectionView)]
     public void Issue38059_UntemplatedHorizontalGridLayout()
     {
+        this.IgnoreOnWindowsCV1("https://github.com/dotnet/maui/issues/39874");
+
         App.WaitForElement("ChangeLayoutButton");
         App.Tap("ChangeLayoutButton");
         VerifyScreenshot();

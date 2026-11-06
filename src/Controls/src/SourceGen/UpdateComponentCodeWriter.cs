@@ -116,9 +116,14 @@ static class UpdateComponentCodeWriter
 		EmitNameChanges(codeWriter, diff, unregister: false, rootType, compilation, xmlnsCache, typeCache, generatedFields, templateNodeIds);
 
 		int compIdx = 0;
+		var replacedStyles = new HashSet<ElementNode>();
 		foreach (var nodeDiff in diff.NodeChanges)
 		{
 			bool isRoot = string.IsNullOrEmpty(nodeDiff.NodeId);
+
+			if (TryEmitImplicitStyleSetterChange(codeWriter, nodeDiff, replacedStyles, newIds,
+				compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem))
+				continue;
 
 			if (isRoot)
 			{
@@ -1330,6 +1335,76 @@ static class UpdateComponentCodeWriter
 
 		EmitResourceAdditions(codeWriter, implicitStyles, "this.Resources", compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem, nodeIds, existingNamedFields);
 
+		return true;
+	}
+
+	static bool TryEmitImplicitStyleSetterChange(
+		IndentedTextWriter codeWriter,
+		NodeDiff nodeDiff,
+		HashSet<ElementNode> replacedStyles,
+		IReadOnlyDictionary<ElementNode, string>? nodeIds,
+		Compilation compilation,
+		AssemblyAttributes xmlnsCache,
+		IDictionary<XmlType, INamedTypeSymbol> typeCache,
+		INamedTypeSymbol rootType,
+		SourceProductionContext sourceProductionContext,
+		ProjectItem? projectItem)
+	{
+		if (!InheritsFrom(rootType, "global::Microsoft.Maui.Controls.ResourceDictionary")
+			|| nodeDiff.NewNode is not ElementNode setter
+			|| setter.XmlType.Name != "Setter"
+			|| !setter.XmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, typeCache, out var setterType)
+			|| setterType?.ToFQDisplayString() != "global::Microsoft.Maui.Controls.Setter"
+			|| nodeDiff.PropertyChanges.Any(change => change.PropertyName.LocalName != "Value"
+				|| change.Kind != PropertyDiffKind.Set || change.NewNode is not null))
+			return false;
+
+		var parent = setter.Parent is ListNode setters ? setters.Parent : setter.Parent;
+		if (parent is not ElementNode style || style.XmlType.Name != "Style"
+			|| !style.XmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, typeCache, out var styleType)
+			|| styleType?.ToFQDisplayString() != "global::Microsoft.Maui.Controls.Style"
+			|| style.Properties.ContainsKey(XmlName.xKey)
+			|| style.Properties.ContainsKey(new XmlName("", "Class"))
+			|| style.Parent is not SGRootNode dictionary)
+			return false;
+
+		if (!replacedStyles.Add(style))
+			return true;
+
+		// Replacing the resource both converts Setter.Value through the IC pipeline and
+		// notifies existing implicit-style consumers. Mutating the lazy Setter does neither.
+		using (PrePost.NewBlock(codeWriter))
+		{
+			var context = CreateConversionContext(compilation, sourceProductionContext, xmlnsCache,
+				typeCache, rootType, projectItem, codeWriter);
+			context.Variables[dictionary] = new DirectValue(rootType, "this");
+			var replacement = (ElementNode)style.Clone();
+			replacement.Accept(new XamlNodeVisitor((node, parentNode) => node.Parent = parentNode), dictionary);
+			replacement.Accept(new ExpandMarkupsVisitor(context), null);
+			replacement.Accept(new PruneIgnoredNodesVisitor(), null);
+			replacement.Accept(new SimplifyTypeExtensionVisitor(), null);
+			if (!string.IsNullOrEmpty(context.ProjectItem.TargetFramework))
+				replacement.Accept(new SimplifyOnPlatformVisitor(context.ProjectItem.TargetFramework), null);
+			replacement.Accept(new InferOnIdiomTypeArgumentsVisitor(context), null);
+			if (replacement.IsLazyResource(dictionary, context))
+			{
+				var styleId = nodeIds?.TryGetValue(style, out var id) == true
+					? id : $"{style.LineNumber}_{style.LinePosition}";
+				SetPropertyHelpers.AddLazyResourceToResourceDictionary(codeWriter,
+					context.Variables[dictionary], replacement, context, replacementFactoryName: $"CreateStyle_{styleId}");
+			}
+			else
+			{
+				replacement.Accept(new CreateValuesVisitor(context), null);
+				replacement.Accept(new SetNamescopesAndRegisterNamesVisitor(context), null);
+				replacement.Accept(new SetResourcesVisitor(context), null);
+				replacement.Accept(new SetPropertiesVisitor(context, stopOnResourceDictionary: true), null);
+				var styleVariable = context.Variables[replacement].ValueAccessor;
+				codeWriter.WriteLine($"this[{styleVariable}.TargetType.FullName!] = {styleVariable};");
+			}
+			foreach (var localMethod in context.LocalMethods)
+				codeWriter.WriteLine(localMethod);
+		}
 		return true;
 	}
 

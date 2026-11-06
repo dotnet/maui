@@ -475,9 +475,17 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (appearance == null)
 			{
 				_appearanceTracker.ResetAppearance(this);
-				return;
 			}
-			_appearanceTracker.SetAppearance(this, appearance);
+			else
+			{
+				_appearanceTracker.SetAppearance(this, appearance);
+			}
+
+			// Refresh per-item badges after replacing the tab bar's appearance.
+			foreach (var renderer in _sectionRenderers.Values)
+			{
+				UpdateTabBarItemBadge(renderer.ViewController?.TabBarItem, renderer.ShellSection);
+			}
 		}
 
 		void AddRenderer(IShellSectionRenderer renderer)

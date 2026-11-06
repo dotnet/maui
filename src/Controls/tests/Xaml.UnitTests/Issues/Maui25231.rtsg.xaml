@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<local:Maui25231GenericBase
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:language="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:local="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests"
+    xmlns:scg="clr-namespace:System.Collections.Generic;assembly=mscorlib"
+    x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Maui25231"
+    x:TypeArguments="{language:Type TypeName=x:String}"
+    Title="Ancestor">
+    <ContentPage.Resources xmlns:scoped="clr-namespace:System.Collections.Generic;assembly=mscorlib">
+        <ResourceDictionary>
+            <x:Array x:Key="BareArray" Type="x:Double">
+                <x:Double>1.5</x:Double>
+                <x:Double>2.5</x:Double>
+            </x:Array>
+            <x:Array x:Key="GenericArray" Type="scg:List(x:String)">
+                <scg:List x:TypeArguments="x:String">
+                    <x:String>value</x:String>
+                </scg:List>
+            </x:Array>
+            <x:Array x:Key="MarkupArray" Type="{x:Type x:String}">
+                <x:String>value</x:String>
+            </x:Array>
+            <OnPlatform x:Key="Platform" x:TypeArguments="{language:Type x:Double}" Default="2.5" />
+            <scg:Dictionary x:Key="Dictionary" x:TypeArguments="{x:Type x:String}, x:Int32" />
+            <scg:List x:Key="GenericList" x:TypeArguments="{x:Type scg:KeyValuePair(x:String,x:Int32)}" />
+            <scg:List x:Key="NestedList" x:Name="NestedList"
+                      x:TypeArguments="scg:KeyValuePair({language:Type x:String},x:Int32)" />
+            <scg:List x:Key="ScopedList" x:Name="ScopedList"
+                      x:TypeArguments="{x:Type scoped:List(x:String)}" />
+            <scg:List x:Key="NestedNamedList"
+                      x:TypeArguments="{x:Type scg:List({x:Type TypeName=x:String})}" />
+            <local:Maui25231TypeHolder x:Key="Types"
+                                      TypeValue="ContentPage"
+                                      GenericValue="scg:List(x:String)"
+                                      BindableType="x:Double"
+                                      ExplicitType="scg:List(x:String)"
+                                      OverrideType="x:String"
+                                      OverrideBindableType="x:String"
+                                      MarkupType="{x:Type x:String}" />
+            <local:Maui25231ConstructorType x:Key="Constructor" Type="x:Double" />
+            <local:Maui25231OverrideConstructorType x:Key="OverrideConstructor" Type="x:String" />
+            <VisualStateGroup x:Key="VisualGroup" TargetType="Button" />
+            <VisualState x:Key="VisualState" TargetType="Label" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
+    <VerticalStackLayout>
+        <Label x:Name="RelativeLabel"
+               Text="{Binding Source={RelativeSource AncestorType='local:Maui25231'}, Path=Title}" />
+        <Label x:Name="GenericExtensionLabel"
+               Text="{local:Maui25231Generic x:TypeArguments={language:Type x:String}}" />
+        <Label x:Name="NamedGenericExtensionLabel"
+               Text="{local:Maui25231Generic x:TypeArguments={language:Type TypeName=x:String}}" />
+    </VerticalStackLayout>
+</local:Maui25231GenericBase>
