@@ -1023,9 +1023,43 @@ void RunNativeTestWithLocalDotNet(string project, string config, string tfm, str
     var settings = new ProcessSettings { Arguments = args };
     if (!string.IsNullOrWhiteSpace(xcodePath))
         settings.EnvironmentVariables = new Dictionary<string, string> { ["DEVELOPER_DIR"] = xcodePath };
+    if (platform == "ios")
+    {
+        IosNativeTestReports.Run(MakeAbsolute(File(project)).FullPath, device,
+            MakeAbsolute(new DirectoryPath(resultsDirectory)).FullPath,
+            (selector, applicationId) => GetIosNativeTestContainer(selector, applicationId, xcodePath),
+            () => StartProcess(string.IsNullOrEmpty(toolPath) ? "dotnet" : toolPath, settings),
+            reportDirectory =>
+            {
+                var reportArgs = new ProcessArgumentBuilder()
+                    .Append("-NoLogo").Append("-NoProfile").Append("-File")
+                    .AppendQuoted(rootFolder.CombineWithFilePath("eng/scripts/Assert-TestResults.ps1").FullPath)
+                    .Append("-ResultsDirectory").AppendQuoted(reportDirectory);
+                var reportExit = StartProcess("pwsh", new ProcessSettings { Arguments = reportArgs });
+                if (reportExit != 0)
+                    throw new InvalidOperationException($"Native iOS TRX validation failed with exit code {reportExit}.");
+            });
+        return;
+    }
     var exitCode = StartProcess(string.IsNullOrEmpty(toolPath) ? "dotnet" : toolPath, settings);
     if (exitCode != 0)
         throw new InvalidOperationException($"Native dotnet test failed with exit code {exitCode}.");
+}
+
+string GetIosNativeTestContainer(string device, string applicationId, string xcodePath)
+{
+    var output = new System.Text.StringBuilder();
+    var settings = new ProcessSettings
+    {
+        Arguments = new ProcessArgumentBuilder().Append("simctl").Append("get_app_container")
+            .AppendQuoted(device).AppendQuoted(applicationId).Append("data"),
+        RedirectStandardOutput = true,
+        RedirectedStandardOutputHandler = line => { output.AppendLine(line); return line; }
+    };
+    if (!string.IsNullOrWhiteSpace(xcodePath))
+        settings.EnvironmentVariables = new Dictionary<string, string> { ["DEVELOPER_DIR"] = xcodePath };
+    var exitCode = StartProcess("xcrun", settings);
+    return exitCode == 0 ? output.ToString().Trim() : null;
 }
 
 DirectoryPath PrepareSeparateBuildContext(string dirName, string props = null, string targets = null)
@@ -1114,4 +1148,59 @@ string GetMSBuildForwardingLoggerPath()
     var loggerArg = $"-dl:CentralLogger,\"{loggerDir}/Microsoft.TeamFoundation.DistributedTask.MSBuild.Logger.dll\"*ForwardingLogger,\"{loggerDir}/Microsoft.TeamFoundation.DistributedTask.MSBuild.Logger.dll\"";
 
     return loggerArg;
+}
+
+public static class IosNativeTestReports
+{
+    public static void Run(string project, string device, string resultsDirectory,
+        Func<string, string, string> getContainer, Func<int> execute, Action<string> validate)
+    {
+        if (string.IsNullOrWhiteSpace(device))
+            throw new InvalidOperationException("Native iOS tests require an explicit simulator UDID.");
+        var applicationId = XDocument.Load(project).Root.Elements("PropertyGroup")
+            .Elements("ApplicationId").Select(element => element.Value).FirstOrDefault();
+        if (string.IsNullOrEmpty(applicationId) ||
+            !System.Text.RegularExpressions.Regex.IsMatch(applicationId, @"\A[A-Za-z0-9_.-]+\z"))
+            throw new InvalidOperationException("Expected a literal native ApplicationId.");
+
+        var oldContainer = getContainer(device, applicationId);
+        var oldReport = string.IsNullOrEmpty(oldContainer) ? null :
+            System.IO.Path.Combine(oldContainer, "Documents", "TestResults", "testResults.trx");
+        var oldHash = oldReport != null && System.IO.File.Exists(oldReport) ? Hash(oldReport) : null;
+        var started = DateTime.UtcNow;
+        var exitCode = execute();
+        Exception reportFailure = null;
+        try
+        {
+            var container = getContainer(device, applicationId);
+            if (string.IsNullOrEmpty(container))
+                throw new InvalidOperationException("Could not resolve the native app result container.");
+            var report = System.IO.Path.Combine(container, "Documents", "TestResults", "testResults.trx");
+            if (!System.IO.File.Exists(report))
+                throw new InvalidOperationException("Native app did not produce genuine TRX.");
+            // A failed pre-run container lookup must not allow an older report to pass either.
+            if (System.IO.File.GetLastWriteTimeUtc(report) < started ||
+                (oldHash != null && Hash(report) == oldHash))
+                throw new InvalidOperationException("The native result is stale: no new TRX was produced in this execution.");
+            var destination = System.IO.Path.Combine(resultsDirectory, $"ios-{Guid.NewGuid():N}");
+            System.IO.Directory.CreateDirectory(destination);
+            System.IO.File.Copy(report, System.IO.Path.Combine(destination, "testResults.trx"));
+            validate(destination);
+        }
+        catch (Exception ex)
+        {
+            reportFailure = ex;
+        }
+        if (exitCode != 0)
+            throw new InvalidOperationException($"Native dotnet test failed with exit code {exitCode}.", reportFailure);
+        if (reportFailure != null)
+            System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(reportFailure).Throw();
+    }
+
+    static string Hash(string path)
+    {
+        using (var algorithm = System.Security.Cryptography.SHA256.Create())
+        using (var stream = System.IO.File.OpenRead(path))
+            return Convert.ToBase64String(algorithm.ComputeHash(stream));
+    }
 }

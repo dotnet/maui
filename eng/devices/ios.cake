@@ -172,6 +172,8 @@ void ExecuteTests(string project, string device, string resultsDir, string confi
 
 	var selectedDevice = !string.IsNullOrEmpty(DEVICE_UDID) ? DEVICE_UDID :
 		!string.IsNullOrEmpty(udid) ? udid : EnvironmentVariable("DEVICE_UDID");
+	if (string.IsNullOrEmpty(selectedDevice) && !device.Contains("device"))
+		selectedDevice = GetUDID(device, toolPath);
 	RunNativeTestWithLocalDotNet(project, config, tfm, rid, "ios", testFilter, selectedDevice,
 		resultsDir, toolPath, useCoreClr, Argument("xcode_path", ""));
 }
@@ -322,8 +324,7 @@ void PerformCleanupIfNeeded(bool cleanupEnabled, bool createDeviceLogs)
 				}
 
 				Information($"Deleting XHarness simulator {sim.Name} ({sim.UDID})...");
-				StartProcess("xcrun", $"simctl shutdown {sim.UDID}");
-				ExecuteWithRetries(() => StartProcess("xcrun", $"simctl delete {sim.UDID}"), 3);
+				DeleteSimulator(sim.UDID);
 			}
 		}
 	}
@@ -338,6 +339,22 @@ void PerformCleanupIfNeeded(bool cleanupEnabled, bool createDeviceLogs)
 			throw;
 		}
 	}
+}
+
+void DeleteSimulator(string simulator)
+{
+	StartProcess("xcrun", $"simctl shutdown {simulator}");
+	var deleted = false;
+	ExecuteWithRetries(() =>
+	{
+		var exitCode = StartProcess("xcrun", $"simctl delete {simulator}");
+		deleted = exitCode == 0;
+		return exitCode;
+	}, 3);
+	if (!deleted)
+		throw new InvalidOperationException($"Failed to delete simulator '{simulator}'.");
+	if (simulator == ownedSimulatorUdid)
+		ownedSimulatorUdid = "";
 }
 
 string GetDefaultRuntimeIdentifier(string testDeviceIdentifier)
