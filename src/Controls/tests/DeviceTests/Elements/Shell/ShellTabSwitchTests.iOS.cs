@@ -10,6 +10,7 @@ using Foundation;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
+using Microsoft.Maui.Controls.Platform.Compatibility;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
@@ -22,6 +23,119 @@ namespace Microsoft.Maui.DeviceTests
 	[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
 	public class ShellTabSwitchTests : ControlsHandlerTestBase
 	{
+		[Fact]
+		public async Task CustomItemRendererBackgroundIsPreservedForTransparentPages()
+		{
+			if (!OperatingSystem.IsIOSVersionAtLeast(18) && !OperatingSystem.IsMacCatalystVersionAtLeast(18))
+				return;
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				using var view = new UIView();
+				using var initialBackground = Colors.Gray.ToPlatform();
+				using var rendererBackground = Colors.Red.ToPlatform();
+				view.BackgroundColor = rendererBackground;
+
+				var backgroundState = new ShellItemRenderer.ContentBackgroundState
+				{
+					DefaultBackgroundColor = initialBackground
+				};
+				var transparentPage = new ContentPage();
+				var opaquePage = new ContentPage { Background = new SolidPaint(Colors.Blue) };
+
+				ShellItemRenderer.UpdateContentBackground(view, transparentPage, backgroundState);
+				Assert.True(ColorComparison.ARGBEquivalent(rendererBackground, view.BackgroundColor));
+
+				ShellItemRenderer.UpdateContentBackground(view, opaquePage, backgroundState);
+				Assert.True(backgroundState.OverrideApplied);
+
+				ShellItemRenderer.UpdateContentBackground(view, transparentPage, backgroundState);
+				Assert.False(backgroundState.OverrideApplied);
+				Assert.True(ColorComparison.ARGBEquivalent(rendererBackground, view.BackgroundColor));
+
+				ShellItemRenderer.UpdateContentBackground(view, opaquePage, backgroundState);
+				view.BackgroundColor = rendererBackground;
+				ShellItemRenderer.UpdateContentBackground(view, transparentPage, backgroundState);
+				Assert.True(ColorComparison.ARGBEquivalent(rendererBackground, view.BackgroundColor));
+			});
+		}
+
+		[Theory(DisplayName = "Displayed page background changes restore the captured native color")]
+		[InlineData(true, false)]
+		[InlineData(true, true)]
+		[InlineData(false, false)]
+		[InlineData(false, true)]
+		public async Task DisplayedPageBackgroundChangesRestoreCapturedNativeColor(bool useLegacyRenderer, bool excludeByOpacity)
+		{
+			if (!OperatingSystem.IsIOSVersionAtLeast(18))
+				return;
+
+			EnsureHandlerCreated(builder => builder.ConfigureMauiHandlers(handlers =>
+			{
+				SetupShellHandlers(handlers);
+				handlers.AddHandler(typeof(Shell), useLegacyRenderer ? typeof(ShellRenderer) : typeof(ShellHandler));
+				if (!useLegacyRenderer)
+				{
+					handlers.AddHandler<ShellItem, ShellItemHandler>();
+					handlers.AddHandler<ShellSection, ShellSectionHandler>();
+					handlers.AddHandler<ShellContent, ShellContentHandler>();
+				}
+			}));
+
+			var page = new ContentPage
+			{
+				Background = new SolidPaint(Colors.Transparent),
+				Content = new Grid { BackgroundColor = Colors.Black }
+			};
+			var shell = new Shell
+			{
+				FlyoutBehavior = FlyoutBehavior.Disabled,
+				Items =
+				{
+					new TabBar
+					{
+						Items =
+						{
+							new Tab { Title = "Current", Items = { new ShellContent { Content = page } } },
+							new Tab { Title = "Other", Items = { new ShellContent { Content = new ContentPage() } } }
+						}
+					}
+				}
+			};
+
+			await CreateHandlerAndAddToWindow(shell, async () =>
+			{
+				await Task.Delay(500);
+				var platformPage = ((IPlatformViewHandler)page.Handler).PlatformView;
+				var container = platformPage.FindParent(view => view.NextResponder is UITabBarController);
+				var controller = Assert.IsAssignableFrom<UITabBarController>(container?.NextResponder);
+				Assert.Same(page, shell.CurrentPage);
+
+				using var capturedDefault = Colors.Red.ToPlatform();
+				controller.View.BackgroundColor = capturedDefault;
+
+				page.Background = new SolidPaint(Colors.Black);
+				Assert.False(ColorComparison.ARGBEquivalent(capturedDefault, controller.View.BackgroundColor),
+					$"The opaque page should replace the captured backing color (legacy={useLegacyRenderer}).");
+
+				if (excludeByOpacity)
+					page.Opacity = 0.5;
+				else
+					page.Background = new SolidPaint(Colors.Transparent);
+
+				Assert.True(ColorComparison.ARGBEquivalent(capturedDefault, controller.View.BackgroundColor),
+					$"Excluding the page background should restore the captured red backing color (legacy={useLegacyRenderer}, opacity={excludeByOpacity}).");
+
+				if (excludeByOpacity)
+					page.Opacity = 1;
+				else
+					page.Background = new SolidPaint(Colors.Black);
+
+				Assert.False(ColorComparison.ARGBEquivalent(capturedDefault, controller.View.BackgroundColor),
+					$"Restoring an opaque page should replace the captured backing color again (legacy={useLegacyRenderer}, opacity={excludeByOpacity}).");
+			});
+		}
+
 		[Theory]
 		[InlineData(false)]
 		[InlineData(true)]
