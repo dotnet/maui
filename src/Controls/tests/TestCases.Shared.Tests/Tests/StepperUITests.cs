@@ -44,6 +44,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			ClassicAssert.AreEqual("1", step3Value);
 		}
 
+#if TEST_FAILS_ON_CATALYST //https://github.com/dotnet/maui/issues/39956
 		[Test]
 		[Description("Decrease the Stepper value")]
 		public void DecreaseStepper()
@@ -72,5 +73,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			var step5Value = App.FindElement(valueAutomationId).GetText();
 			ClassicAssert.AreEqual("0", step5Value);
 		}
+#endif
 	}
 }

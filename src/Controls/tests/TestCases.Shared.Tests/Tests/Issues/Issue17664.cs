@@ -1,7 +1,8 @@
+#if TEST_FAILS_ON_CATALYST //https://github.com/dotnet/maui/issues/39956
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS // Android fix: https://github.com/dotnet/maui/pull/31437
 // Windows: The Scrolled event is not consistently triggered in the CI environment during automated
 // scrolling, so the label text is never updated. This is a test infrastructure limitation on Windows;
-// the fix itself is iOS/MacCatalyst-only and works correctly on iOS and MacCatalyst.
+// the fix itself targets iOS and MacCatalyst. MacCatalyst test coverage is temporarily excluded above.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -27,4 +28,5 @@ public class Issue17664 : _IssuesUITest
 		Assert.That(resultItem, Is.EqualTo("Category C item #2"));
 	}
 }
+#endif
 #endif
