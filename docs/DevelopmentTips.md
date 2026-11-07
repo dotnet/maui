@@ -63,6 +63,8 @@ environment data rather than a property argument, preserving commas and
 semicolons without command-line property splitting.
 It invokes the pinned SDK's MSBuild assembly directly, avoiding the .NET CLI's
 comma-delimited logger path when the SDK directory itself contains a comma.
+This protects runtime provisioning, not arbitrary .NET CLI commands: workload
+restore can still fail on the CLI's own logger parsing for a comma SDK path.
 
 The .NET 12 Android binding generator no longer emits the legacy
 `ThresholdClass` and `ThresholdType` overrides on MAUI's native binding types.

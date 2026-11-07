@@ -280,16 +280,32 @@ jobs:
           $bootstrapDotnet = (Get-Command dotnet).Source
           & $bootstrapDotnet --version | Tee-Object (Join-Path $logs 'bootstrap-sdk-version.log')
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          $sdkRoot = Join-Path $env:RUNNER_TEMP 'Maui SDK with spaces,comma'
+          $sdkRoot = Join-Path $env:RUNNER_TEMP 'Maui SDK with spaces'
           $forwardRoot = $sdkRoot.Replace('\', '/') + '/'
-          $forwardArgument = $forwardRoot.Replace(',', '%2C')
           & $bootstrapDotnet build src/DotNet/DotNet.csproj -c Release `
-            "-p:DotNetDirectory=$forwardArgument" -p:InstallWorkloadPacks=false `
+            "-p:DotNetDirectory=$forwardRoot" -p:InstallWorkloadPacks=false `
             --verbosity minimal 2>&1 | Tee-Object (Join-Path $logs 'provision.log')
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-          $runtimeRoot = $sdkRoot + ';semi'
-          New-Item -ItemType Junction -Path $runtimeRoot -Target $sdkRoot | Out-Null
+          $runtimeRoot = $sdkRoot + ',comma;semi'
+          $sharedRuntimeRoot = Join-Path $runtimeRoot 'shared/Microsoft.NETCore.App'
+          New-Item -ItemType Directory -Path $sharedRuntimeRoot -Force | Out-Null
+          Copy-Item (Join-Path $sdkRoot 'dotnet.exe') (Join-Path $runtimeRoot 'dotnet.exe')
+          foreach ($name in @('host', 'sdk')) {
+            New-Item -ItemType Junction -Path (Join-Path $runtimeRoot $name) `
+              -Target (Join-Path $sdkRoot $name) | Out-Null
+          }
+          Get-ChildItem (Join-Path $sdkRoot 'shared/Microsoft.NETCore.App') -Directory |
+            Where-Object { $_.Name.StartsWith('12.') } | ForEach-Object {
+              New-Item -ItemType Junction -Path (Join-Path $sharedRuntimeRoot $_.Name) `
+                -Target $_.FullName | Out-Null
+            }
+          $globalJson = Get-Content global.json -Raw | ConvertFrom-Json
+          foreach ($version in $globalJson.tools.runtimes.dotnet) {
+            if (Test-Path (Join-Path $sharedRuntimeRoot $version)) {
+              throw "The isolated runtime-install control already contains $version."
+            }
+          }
           $dotnet = Join-Path $runtimeRoot 'dotnet.exe'
           $trailingRoot = $runtimeRoot + '\'
           $trailingArgument = $trailingRoot.Replace(',', '%2C').Replace(';', '%3B')
@@ -328,7 +344,6 @@ jobs:
           $installed = @(& $dotnet --list-runtimes)
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           $installed | Tee-Object (Join-Path $logs 'runtimes.log')
-          $globalJson = Get-Content global.json -Raw | ConvertFrom-Json
           foreach ($version in $globalJson.tools.runtimes.dotnet) {
             if (-not ($installed | Where-Object { $_.StartsWith("Microsoft.NETCore.App $version [") })) {
               throw "The custom SDK directory is missing the required tool runtime $version."
