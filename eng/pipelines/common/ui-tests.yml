@@ -197,7 +197,7 @@ stages:
                   - template: ui-tests-collect-snapshot-diffs.yml
                     parameters:
                       platform: 'Android'
-                      artifactName: 'uitest-snapshot-results-android-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
+                      artifactName: 'uitest-snapshot-results-android-$(System.StageName)-$(System.JobName)-$(System.JobId)-$(System.JobAttempt)'
 
   - stage: android_ui_tests_shell_renderer
     displayName: Android UITests Shell Renderer
@@ -243,7 +243,7 @@ stages:
                   - template: ui-tests-collect-snapshot-diffs.yml
                     parameters:
                       platform: 'Android Shell Renderer'
-                      artifactName: 'uitest-snapshot-results-android-shell-renderer-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
+                      artifactName: 'uitest-snapshot-results-android-shell-renderer-$(System.StageName)-$(System.JobName)-$(System.JobId)-$(System.JobAttempt)'
 
   - stage: android_ui_tests_material3
     displayName: Android UITests Material3
@@ -283,7 +283,7 @@ stages:
                   - template: ui-tests-collect-snapshot-diffs.yml
                     parameters:
                       platform: 'Android Material3'
-                      artifactName: 'uitest-snapshot-results-android-material3-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
+                      artifactName: 'uitest-snapshot-results-android-material3-$(System.StageName)-$(System.JobName)-$(System.JobId)-$(System.JobAttempt)'
 
 # SafeAreaEdges tests on Android API 36 with Pixel 3 XL
   - stage: android_ui_tests_safeareaedges
@@ -320,7 +320,7 @@ stages:
                 - template: ui-tests-collect-snapshot-diffs.yml
                   parameters:
                     platform: 'Android SafeAreaEdges'
-                    artifactName: 'uitest-snapshot-results-android-safeareaedges-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
+                    artifactName: 'uitest-snapshot-results-android-safeareaedges-$(System.StageName)-$(System.JobName)-$(System.JobId)-$(System.JobAttempt)'
 
   - stage: ios_ui_tests_coreclr
     displayName: iOS UITests CoreCLR
@@ -372,7 +372,7 @@ stages:
                   - template: ui-tests-collect-snapshot-diffs.yml
                     parameters:
                       platform: 'iOS'
-                      artifactName: 'uitest-snapshot-results-ios-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
+                      artifactName: 'uitest-snapshot-results-ios-$(System.StageName)-$(System.JobName)-$(System.JobId)-$(System.JobAttempt)'
 
   - ${{ if and(eq(parameters.BuildNativeAOT, true), eq(parameters.RunNativeAOT, true)) }}:
     - stage: ios_ui_tests_nativeaot
@@ -458,7 +458,7 @@ stages:
                   - template: ui-tests-collect-snapshot-diffs.yml
                     parameters:
                       platform: 'Windows'
-                      artifactName: 'uitest-snapshot-results-windows-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
+                      artifactName: 'uitest-snapshot-results-windows-$(System.StageName)-$(System.JobName)-$(System.JobId)-$(System.JobAttempt)'
 
   # Windows CV1 UI Tests - Testing CollectionView with UseWindowsCollectionView2Handler=false
   - stage: winui_ui_tests_cv1
@@ -494,7 +494,7 @@ stages:
                   - template: ui-tests-collect-snapshot-diffs.yml
                     parameters:
                       platform: 'Windows CV1'
-                      artifactName: 'uitest-snapshot-results-windows-cv1-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
+                      artifactName: 'uitest-snapshot-results-windows-cv1-$(System.StageName)-$(System.JobName)-$(System.JobId)-$(System.JobAttempt)'
   - stage: maccatalyst_ui_tests_coreclr
     displayName: MacCatalyst UITests CoreCLR
     dependsOn: build_ui_tests_coreclr
@@ -532,4 +532,4 @@ stages:
                   - template: ui-tests-collect-snapshot-diffs.yml
                     parameters:
                       platform: 'MacCatalyst'
-                      artifactName: 'uitest-snapshot-results-maccatalyst-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
+                      artifactName: 'uitest-snapshot-results-maccatalyst-$(System.StageName)-$(System.JobName)-$(System.JobId)-$(System.JobAttempt)'

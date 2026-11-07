@@ -344,6 +344,9 @@ namespace Microsoft.Maui.UnitTests
 		[Fact]
 		public void FullViewMapperStillDrivesTheExternalContainer()
 		{
+			// Controls remaps the shared ViewMapper during its static initialization.
+			RuntimeHelpers.RunClassConstructor(typeof(Controls.VisualElement).TypeHandle);
+
 			var view = new ViewStub
 			{
 				Background = new SolidPaint(Colors.Blue)

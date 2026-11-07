@@ -73,6 +73,20 @@ Most failures are in `maui-pr`. Focus on the first failing pipeline before other
 `/azp run maui-pr` (or `maui-pr-devicetests`, `maui-pr-uitests`). `maui-pr-devicetests`
 and `maui-pr-uitests` may not run automatically depending on the changed files.
 
+## Previous-runtime compatibility packs
+
+The .NET 11 SDK's .NET 10 compatibility manifests can reference runtime packs
+that have not reached the aggregate `dotnet-public` feed. A missing
+`Microsoft.NETCore.App.Runtime.Mono.*` or AOT pack during provisioning is then
+a dependency-feed failure, not a test failure. Look up the exact version with
+`darc get-asset` and verify every required package on its public build feed before
+adding that feed to `NuGet.config`. Preserve the SDK and manifest versions; do not
+remove previous-.NET coverage or fall back to private feeds.
+
+For SDK `11.0.100-rtm.26554.122`, the .NET 10 compatibility manifests require
+`10.0.15`. Public VMR build 339997 (`295ff616832ba1f8b192f8178c4188a133affe93`)
+publishes these packs to the `darc-pub-dotnet-dotnet-295ff616` feed.
+
 ## AzDO data sources
 
 - Primary access is **anonymous/public** REST: `builds`, `builds/{id}/timeline`,
@@ -84,6 +98,43 @@ and `maui-pr-uitests` may not run automatically depending on the changed files.
 - If a build returns **404** even with authenticated access, classify it as
   inaccessible/expired/insufficient data — do not assume unrelated or PR-caused.
 - Helix work-item console output may live behind `helix.dot.net` and Azure Blob URLs.
+
+## UI execution checkout and artifacts
+
+UI execution jobs explicitly use a depth-one checkout without tags and do not
+persist checkout credentials. Build and packaging jobs keep their existing
+history/versioning behavior.
+
+Snapshot-diff artifact names include the stage, matrix-leg name, unique job ID,
+and attempt. The job ID distinguishes OS/API variants whose matrix legs share
+the same name; the attempt keeps job retries separate. Existing artifact prefixes
+and snapshot contents are unchanged.
+
+UI screenshot, page-source, and device-log diagnostic filenames are bounded to
+96 characters. VSTest copies attachments beneath nested run, machine, and test
+directories; long test-method names can otherwise exceed Azure File Container's
+399-character path limit (`TF205023`). Only the descriptive prefix is shortened:
+the diagnostic kind, unique GUID, extension, contents, and test-result association
+are preserved.
+
+## Catalyst Helix orchestration budget
+
+The Catalyst sender job has the same 240-minute outer orchestration budget as
+the iOS and Windows sender jobs. This allows for setup and Helix queue waiting
+without cancelling work before a machine starts it; the existing per-work-item
+and test-execution deadlines remain unchanged. A Helix `-1234` result with the
+cancelled-job console message means the item did not run, not that a test crashed.
+Inspect cancelled job records as well as failed tasks when a build ends red.
+
+## Android memory-test collection
+
+Android's `View.ScrollabilityCache` can retain detached views through delayed
+scrollbar-fade callbacks in the main message queue. Android 13 schedules those
+callbacks at least 750ms later, so an immediate GC/`Task.Yield` loop can report
+pending native work as a leak. The device-test collector spaces Android collection
+attempts by 100ms while retaining the existing 40-attempt bound and weak-reference
+assertions. Check actual native retaining paths before changing handler ownership;
+the existing strongly rooted negative control must still reject a real retention.
 
 ## Setup-only retries
 

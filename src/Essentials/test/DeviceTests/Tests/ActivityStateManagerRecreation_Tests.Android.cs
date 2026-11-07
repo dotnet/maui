@@ -145,9 +145,10 @@ public class ActivityStateManagerRecreation_Tests
 					recreatedActivity.Finish();
 				if (originalActivity is { IsDestroyed: false, IsFinishing: false })
 					originalActivity.Finish();
+
+				manager.Dispose();
 			});
 
-			manager.Dispose();
 			ActivityResultRecreationState.Reset();
 		}
 	}
@@ -195,9 +196,10 @@ public class ActivityStateManagerRecreation_Tests
 			{
 				if (activity is { IsDestroyed: false, IsFinishing: false })
 					activity.Finish();
+
+				manager.Dispose();
 			});
 
-			manager.Dispose();
 			ActivityResultRecreationState.Reset();
 		}
 	}
@@ -251,9 +253,10 @@ public class ActivityStateManagerRecreation_Tests
 			{
 				if (activity is { IsDestroyed: false, IsFinishing: false })
 					activity.FinishAndRemoveTask();
+
+				manager.Dispose();
 			});
 
-			manager.Dispose();
 			ActivityResultRecreationState.Reset();
 		}
 	}

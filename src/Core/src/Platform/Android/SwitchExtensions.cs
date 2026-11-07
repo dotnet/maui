@@ -2,6 +2,7 @@ using System.Runtime.CompilerServices;
 using Android.Content.Res;
 using Android.Graphics.Drawables;
 using AndroidX.Core.Content;
+using APorterDuffMode = Android.Graphics.PorterDuff.Mode;
 using ASwitch = AndroidX.AppCompat.Widget.SwitchCompat;
 using MSwitch = Google.Android.Material.MaterialSwitch.MaterialSwitch;
 
@@ -102,6 +103,7 @@ namespace Microsoft.Maui.Platform
 				// Use ThumbTintList instead of SetColorFilter to preserve the thumb shadow
 				// SetColorFilter flattens the drawable and removes the shadow effect
 				aSwitch.ThumbTintList = ColorStateListExtensions.CreateDefault(thumbColor.ToPlatform());
+				aSwitch.ThumbDrawable?.SetTintMode(APorterDuffMode.SrcIn);
 
 				// Remember that a custom tint was applied so the platform default can be
 				// restored if ThumbColor is later cleared to null.
@@ -115,6 +117,8 @@ namespace Microsoft.Maui.Platform
 				// Rebuild the platform default thumb tint from the current theme's checked,
 				// normal, and disabled state colors so the native appearance is restored.
 				aSwitch.ThumbTintList = aSwitch.GetDefaultThumbColorStateList();
+				// AppCompat uses Multiply for its theme thumb when no widget mode is set.
+				aSwitch.ThumbDrawable?.SetTintMode(aSwitch.ThumbTintMode ?? APorterDuffMode.Multiply);
 				_customThumbTintApplied.Remove(aSwitch);
 			}
 		}

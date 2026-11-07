@@ -302,5 +302,21 @@ namespace Microsoft.Maui.ApplicationModel
 
 		void Application.IActivityLifecycleCallbacks.OnActivityStopped(Activity activity) =>
 			_onActivityStateChanged(activity, ActivityState.Stopped);
+
+		// Managed peers must not forward these Java default no-ops back through JNI.
+		void Application.IActivityLifecycleCallbacks.OnActivityPreCreated(Activity activity, Bundle? savedInstanceState) { }
+		void Application.IActivityLifecycleCallbacks.OnActivityPostCreated(Activity activity, Bundle? savedInstanceState) { }
+		void Application.IActivityLifecycleCallbacks.OnActivityPreStarted(Activity activity) { }
+		void Application.IActivityLifecycleCallbacks.OnActivityPostStarted(Activity activity) { }
+		void Application.IActivityLifecycleCallbacks.OnActivityPreResumed(Activity activity) { }
+		void Application.IActivityLifecycleCallbacks.OnActivityPostResumed(Activity activity) { }
+		void Application.IActivityLifecycleCallbacks.OnActivityPrePaused(Activity activity) { }
+		void Application.IActivityLifecycleCallbacks.OnActivityPostPaused(Activity activity) { }
+		void Application.IActivityLifecycleCallbacks.OnActivityPreStopped(Activity activity) { }
+		void Application.IActivityLifecycleCallbacks.OnActivityPostStopped(Activity activity) { }
+		void Application.IActivityLifecycleCallbacks.OnActivityPreSaveInstanceState(Activity activity, Bundle outState) { }
+		void Application.IActivityLifecycleCallbacks.OnActivityPostSaveInstanceState(Activity activity, Bundle outState) { }
+		void Application.IActivityLifecycleCallbacks.OnActivityPreDestroyed(Activity activity) { }
+		void Application.IActivityLifecycleCallbacks.OnActivityPostDestroyed(Activity activity) { }
 	}
 }

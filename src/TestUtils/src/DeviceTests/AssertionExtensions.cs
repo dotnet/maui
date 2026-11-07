@@ -25,7 +25,11 @@ namespace Microsoft.Maui.DeviceTests
 			GC.WaitForPendingFinalizers();
 			GC.Collect(2, GCCollectionMode.Forced, true);
 			await Task.Yield();
-#if IOS || MACCATALYST
+#if ANDROID
+			// Android's scrollbar-fade callbacks retain detached views until their timer expires
+			// (at least 750ms). Yielding alone can exhaust the collection loop before they run.
+			await Task.Delay(100);
+#elif IOS || MACCATALYST
 			// A finalized wrapper releases its native peer on the main thread (NSObject_Disposer), and a
 			// released view hands its layer to the pending Core Animation transaction, which frees it only
 			// when it commits. Each of those is what lets the next object in a native retain chain (a view's

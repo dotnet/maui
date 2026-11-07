@@ -12,7 +12,7 @@ namespace Microsoft.Maui
 		Never,
 
 		/// <summary>
-		/// Only show a clear button in the input field while the input field has focus and is being edited.
+		/// Only show a clear button while the input field has focus, contains text, and is being edited.
 		/// </summary>
 		WhileEditing
 	}

@@ -120,6 +120,22 @@ namespace Microsoft.Maui
 
 			public void OnActivityDestroyed(Activity activity) =>
 				IPlatformApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnDestroy>(del => del(activity));
+
+			// Managed peers must not forward these Java default no-ops back through JNI.
+			void IActivityLifecycleCallbacks.OnActivityPreCreated(Activity activity, Bundle? savedInstanceState) { }
+			void IActivityLifecycleCallbacks.OnActivityPostCreated(Activity activity, Bundle? savedInstanceState) { }
+			void IActivityLifecycleCallbacks.OnActivityPreStarted(Activity activity) { }
+			void IActivityLifecycleCallbacks.OnActivityPostStarted(Activity activity) { }
+			void IActivityLifecycleCallbacks.OnActivityPreResumed(Activity activity) { }
+			void IActivityLifecycleCallbacks.OnActivityPostResumed(Activity activity) { }
+			void IActivityLifecycleCallbacks.OnActivityPrePaused(Activity activity) { }
+			void IActivityLifecycleCallbacks.OnActivityPostPaused(Activity activity) { }
+			void IActivityLifecycleCallbacks.OnActivityPreStopped(Activity activity) { }
+			void IActivityLifecycleCallbacks.OnActivityPostStopped(Activity activity) { }
+			void IActivityLifecycleCallbacks.OnActivityPreSaveInstanceState(Activity activity, Bundle outState) { }
+			void IActivityLifecycleCallbacks.OnActivityPostSaveInstanceState(Activity activity, Bundle outState) { }
+			void IActivityLifecycleCallbacks.OnActivityPreDestroyed(Activity activity) { }
+			void IActivityLifecycleCallbacks.OnActivityPostDestroyed(Activity activity) { }
 		}
 	}
 }

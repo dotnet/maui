@@ -45,6 +45,13 @@
     Branch or full commit SHA to revert files from. Auto-detected from PR if not specified.
     A full commit SHA also selects frozen-fixture test detection from the local diff.
 
+.PARAMETER DeviceTestProject
+    Explicit device-test project when using a manual filter: Controls, Core, Essentials,
+    Graphics, or BlazorWebView. Otherwise the project is detected from changed tests.
+
+.PARAMETER IncludeClasses
+    Fully qualified device-test classes to include when using a manual filter.
+
 .PARAMETER RequireFullVerification
     If set, the script will fail if it cannot run full verification mode
     (i.e., if no fix files are detected). Without this flag, the script will
@@ -88,6 +95,13 @@ param(
 
     [Parameter(Mandatory = $false)]
     [string]$PRNumber,
+
+    [Parameter(Mandatory = $false)]
+    [ValidateSet("Controls", "Core", "Essentials", "Graphics", "BlazorWebView")]
+    [string]$DeviceTestProject,
+
+    [Parameter(Mandatory = $false)]
+    [string]$IncludeClasses,
 
     [Parameter(Mandatory = $false)]
     [switch]$RequireFullVerification,
@@ -206,6 +220,10 @@ if ($TestType -in @("UITest", "DeviceTest") -and -not $Platform) {
     throw "$TestType requires -Platform parameter (android, ios, catalyst, windows)."
 }
 
+if (($DeviceTestProject -or $IncludeClasses) -and $TestType -ne "DeviceTest") {
+    throw "-DeviceTestProject and -IncludeClasses require -TestType DeviceTest."
+}
+
 # ============================================================
 # Detect PR number if not provided
 # ============================================================
@@ -260,7 +278,7 @@ $BaselineScript = Join-Path $RepoRoot ".github/scripts/EstablishBrokenBaseline.p
 
 # Import Test-IsTestFile and Find-MergeBase from shared script
 $ExplicitBaseBranch = $BaseBranch
-. $BaselineScript
+. $BaselineScript -BaseBranch $ExplicitBaseBranch
 
 # Import the shared test detection script
 $DetectTestsScript = Join-Path $RepoRoot ".github/scripts/shared/Detect-TestsInDiff.ps1"
@@ -587,7 +605,7 @@ function Invoke-TestRun {
             if (-not $DetectedProject) {
                 Write-Warning "Could not determine device test project — defaulting to 'Controls'."
             }
-            $deviceProject = if ($DetectedProject) { $DetectedProject } else { "Controls" }
+            $deviceProject = if ($DeviceTestProject) { $DeviceTestProject } elseif ($DetectedProject) { $DetectedProject } else { "Controls" }
 
             $deviceTestScript = Join-Path $RepoRoot ".github/skills/run-device-tests/scripts/Run-DeviceTests.ps1"
             Write-Host "🧪 Running device tests: $deviceProject on $devicePlatform" -ForegroundColor Cyan
@@ -628,9 +646,10 @@ function Invoke-TestRun {
             # knows the PR's specific test class, run only that class instead of the whole
             # Category — so an unrelated crashing sibling test in the same category can't turn
             # the verdict INCONCLUSIVE. Empty on the main pipeline, so behaviour is unchanged.
-            if ($ClassFilter) {
-                $deviceParams.IncludeClasses = $ClassFilter
-                Write-Host "   Include class: $ClassFilter" -ForegroundColor Gray
+            $deviceClasses = if ($IncludeClasses) { $IncludeClasses } else { $ClassFilter }
+            if ($deviceClasses) {
+                $deviceParams.IncludeClasses = $deviceClasses
+                Write-Host "   Include class: $deviceClasses" -ForegroundColor Gray
             }
 
             # Additive method-level narrowing. When the gate knows the PR's specific methods,

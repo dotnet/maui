@@ -93,6 +93,166 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(xplatCharacterSpacing, values.PlatformViewValue);
 		}
 
+		[Theory]
+		[InlineData(ClearButtonVisibility.Never, false, false, UITextFieldViewMode.Never)]
+		[InlineData(ClearButtonVisibility.Never, false, true, UITextFieldViewMode.Never)]
+		[InlineData(ClearButtonVisibility.Never, true, false, UITextFieldViewMode.Never)]
+		[InlineData(ClearButtonVisibility.Never, true, true, UITextFieldViewMode.Never)]
+		[InlineData(ClearButtonVisibility.WhileEditing, false, false, UITextFieldViewMode.Never)]
+		[InlineData(ClearButtonVisibility.WhileEditing, false, true, UITextFieldViewMode.Never)]
+		[InlineData(ClearButtonVisibility.WhileEditing, true, false, UITextFieldViewMode.WhileEditing)]
+		[InlineData(ClearButtonVisibility.WhileEditing, true, true, UITextFieldViewMode.Never)]
+		public async Task ClearButtonModeInitializesForEditableContent(
+			ClearButtonVisibility visibility, bool hasText, bool isReadOnly, UITextFieldViewMode expected)
+		{
+			var entry = new EntryStub
+			{
+				Text = hasText ? "MAUI" : string.Empty,
+				IsReadOnly = isReadOnly,
+				ClearButtonVisibility = visibility
+			};
+
+			var actual = await GetValueAsync(entry, handler => handler.PlatformView.ClearButtonMode);
+			Assert.Equal(expected, actual);
+			Assert.Equal(visibility, entry.ClearButtonVisibility);
+		}
+
+		[Fact]
+		public async Task ClearButtonIsHiddenForUninitializedText()
+		{
+			var entry = new EntryStub { ClearButtonVisibility = ClearButtonVisibility.WhileEditing };
+
+			var actual = await GetValueAsync(entry, handler => handler.PlatformView.ClearButtonMode);
+			Assert.Equal(UITextFieldViewMode.Never, actual);
+			Assert.Equal(ClearButtonVisibility.WhileEditing, entry.ClearButtonVisibility);
+		}
+
+		[Fact]
+		public async Task ClearButtonModeTracksProgrammaticTextChanges()
+		{
+			var entry = new EntryStub
+			{
+				Text = "MAUI",
+				ClearButtonVisibility = ClearButtonVisibility.WhileEditing
+			};
+
+			await GetValueAsync(entry, handler =>
+			{
+				var platformView = handler.PlatformView;
+				Assert.Equal(UITextFieldViewMode.WhileEditing, platformView.ClearButtonMode);
+
+				entry.Text = string.Empty;
+				handler.UpdateValue(nameof(IEntry.Text));
+				Assert.Equal(UITextFieldViewMode.Never, platformView.ClearButtonMode);
+
+				entry.Text = "restored";
+				handler.UpdateValue(nameof(IEntry.Text));
+				Assert.Equal(UITextFieldViewMode.WhileEditing, platformView.ClearButtonMode);
+
+				platformView.Text = string.Empty;
+				Assert.Equal(string.Empty, entry.Text);
+				Assert.Equal(UITextFieldViewMode.Never, platformView.ClearButtonMode);
+
+				platformView.Text = "native";
+				Assert.Equal("native", entry.Text);
+				Assert.Equal(UITextFieldViewMode.WhileEditing, platformView.ClearButtonMode);
+
+				entry.ClearButtonVisibility = ClearButtonVisibility.Never;
+				handler.UpdateValue(nameof(IEntry.ClearButtonVisibility));
+				entry.Text = string.Empty;
+				handler.UpdateValue(nameof(IEntry.Text));
+				entry.Text = "still hidden";
+				handler.UpdateValue(nameof(IEntry.Text));
+				Assert.Equal(UITextFieldViewMode.Never, platformView.ClearButtonMode);
+				return true;
+			});
+		}
+
+		[Fact]
+		public async Task ClearButtonModeTracksNativeEditingAndReadOnlyChanges()
+		{
+			var entry = new EntryStub
+			{
+				Text = "MAUI",
+				CursorPosition = 4,
+				TextColor = Colors.Purple,
+				ClearButtonVisibility = ClearButtonVisibility.WhileEditing
+			};
+
+			await AttachAndRun(entry, async handler =>
+			{
+				var platformView = handler.PlatformView;
+				await AssertEventually(() => platformView.IsLoaded());
+				Assert.True(platformView.BecomeFirstResponder());
+				await AssertEventually(() => platformView.IsFirstResponder);
+				platformView.SelectedTextRange = platformView.GetTextRange(platformView.EndOfDocument, platformView.EndOfDocument);
+
+				for (int i = 0; i < 4; i++)
+					platformView.DeleteBackward();
+
+				await AssertEventually(() => entry.Text == string.Empty);
+				Assert.Equal(UITextFieldViewMode.Never, platformView.ClearButtonMode);
+
+				platformView.ResignFirstResponder();
+				await AssertEventually(() => !platformView.IsFirstResponder);
+				Assert.True(platformView.BecomeFirstResponder());
+				await AssertEventually(() => platformView.IsFirstResponder);
+				Assert.Equal(UITextFieldViewMode.Never, platformView.ClearButtonMode);
+
+				platformView.InsertText("restored");
+				await AssertEventually(() => entry.Text == "restored");
+				Assert.Equal(UITextFieldViewMode.WhileEditing, platformView.ClearButtonMode);
+				Assert.Equal(ClearButtonVisibility.WhileEditing, entry.ClearButtonVisibility);
+
+				var clearButton = GetNativeClearButton(handler);
+				Assert.NotNull(clearButton);
+				var image = clearButton.ImageForState(UIControlState.Normal);
+				Assert.NotNull(image);
+				Assert.Equal(UIImageRenderingMode.Automatic, image.RenderingMode);
+				Assert.Equal(byte.MaxValue, GetMaxAlpha(image));
+
+				entry.IsReadOnly = true;
+				handler.UpdateValue(nameof(IEntry.IsReadOnly));
+				Assert.Equal(UITextFieldViewMode.Never, platformView.ClearButtonMode);
+
+				entry.IsReadOnly = false;
+				handler.UpdateValue(nameof(IEntry.IsReadOnly));
+				Assert.Equal(UITextFieldViewMode.WhileEditing, platformView.ClearButtonMode);
+				Assert.Equal(ClearButtonVisibility.WhileEditing, entry.ClearButtonVisibility);
+			});
+		}
+
+		[Fact]
+		public async Task ClearButtonMappingReappliesColorWithoutModeChange()
+		{
+			var entry = new EntryStub
+			{
+				Text = "MAUI",
+				TextColor = Colors.Purple,
+				ClearButtonVisibility = ClearButtonVisibility.WhileEditing
+			};
+
+			await AttachAndRun(entry, async handler =>
+			{
+				var platformView = handler.PlatformView;
+				await AssertEventually(() => platformView.IsLoaded());
+				Assert.True(platformView.BecomeFirstResponder());
+				await AssertEventually(() => platformView.IsFirstResponder);
+				var clearButton = GetNativeClearButton(handler);
+				Assert.NotNull(clearButton);
+				clearButton.SetImage(null, UIControlState.Normal);
+				clearButton.SetImage(null, UIControlState.Highlighted);
+
+				handler.UpdateValue(nameof(IEntry.ClearButtonVisibility));
+
+				Assert.Equal(UITextFieldViewMode.WhileEditing, platformView.ClearButtonMode);
+				var image = clearButton.ImageForState(UIControlState.Normal);
+				Assert.NotNull(image);
+				Assert.Equal(UIImageRenderingMode.Automatic, image.RenderingMode);
+				Assert.Equal(byte.MaxValue, GetMaxAlpha(image));
+			});
+		}
+
 		[Fact(DisplayName = "Clear button image resets when TextColor is null")]
 		public async Task ClearButtonImageResetsWhenTextColorIsNull()
 		{

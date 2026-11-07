@@ -17,6 +17,8 @@ namespace Microsoft.Maui.Devices.Sensors
 	partial class GeolocationImplementation : IGeolocation
 	{
 		const long twoMinutes = 120000;
+		// Provider selection only needs the name, not the API 31 platform field.
+		const string fusedProvider = "fused";
 		static readonly string[] ignoredProviders = new string[] { LocationManager.PassiveProvider, "local_database" };
 
 		static ContinuousLocationListener? continuousListener;
@@ -277,8 +279,8 @@ namespace Microsoft.Maui.Devices.Sensors
 			if (enabledProviders is null)
 				return null;
 
-			if (enabledProviders.Contains(LocationManager.FusedProvider))
-				return LocationManager.FusedProvider;
+			if (enabledProviders.Contains(fusedProvider))
+				return fusedProvider;
 
 			var preferredProvider = accuracy switch
 			{
