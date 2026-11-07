@@ -71,6 +71,12 @@ public class TabbedPageManager
 			CreateAdapter = (fm, ctx) =>
 					new MultiPageFragmentStateAdapter<Page>(Element, fm, ctx) { CountOverride = Element.Children.Count }
 		};
+
+		if (OperatingSystem.IsAndroidVersionAtLeast(26) && ViewPager.GetChildAt(0) is AndroidX.RecyclerView.Widget.RecyclerView recyclerView)
+		{
+			// The pager's container focus highlight otherwise covers the entire page after keyboard input.
+			recyclerView.DefaultFocusHighlightEnabled = false;
+		}
 	}
 
 	internal IMauiContext MauiContext => _context;
