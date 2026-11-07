@@ -15,6 +15,13 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $PSNativeCommandUseErrorActionPreference = $true
+$baseDirectory = (Get-Location).Path
+$ResultsDirectory = [IO.Path]::GetFullPath($(if ([IO.Path]::IsPathRooted($ResultsDirectory)) {
+    $ResultsDirectory
+} else { Join-Path $baseDirectory $ResultsDirectory }))
+$DeviceDirectory = [IO.Path]::GetFullPath($(if ([IO.Path]::IsPathRooted($DeviceDirectory)) {
+    $DeviceDirectory
+} else { Join-Path $baseDirectory $DeviceDirectory }))
 New-Item -ItemType Directory -Force -Path $ResultsDirectory | Out-Null
 $statePath = Join-Path $ResultsDirectory 'device.json'
 if ($Platform -in @('ios', 'catalyst') -and !$IsMacOS) {
@@ -37,7 +44,7 @@ if ($ExpectedOSMajor) {
     }
 }
 
-$state = @{ Platform = $Platform }
+$state = @{ Platform = $Platform; DeviceDirectory = $DeviceDirectory }
 function Save-State {
     $state | ConvertTo-Json | Set-Content -LiteralPath $statePath
 }
@@ -55,10 +62,13 @@ if ($Platform -eq 'android') {
     & $manager "--sdk_root=$sdk" --install 'platform-tools' 'emulator' $image
 
     $name = "maui-$([guid]::NewGuid().ToString('N'))"
-    $avdHome = Join-Path $DeviceDirectory 'avd'
+    $deviceRoot = Join-Path $DeviceDirectory $name
+    $avdHome = Join-Path $deviceRoot 'avd'
+    New-Item -ItemType Directory -Path $deviceRoot | Out-Null
     New-Item -ItemType Directory -Force -Path $avdHome | Out-Null
     $env:ANDROID_AVD_HOME = $avdHome
     $state.AvdHome = $avdHome
+    $state.DeviceRoot = $deviceRoot
     $state.AvdName = $name
     $state.Adb = $adb
     Save-State

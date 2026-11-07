@@ -1024,9 +1024,19 @@ void RunNativeTestWithLocalDotNet(string project, string config, string tfm, str
         settings.EnvironmentVariables = new Dictionary<string, string> { ["DEVELOPER_DIR"] = xcodePath };
     if (platform == "ios")
     {
-        IosNativeTestReports.Run(MakeAbsolute(File(project)).FullPath, device,
+        IosNativeTestReports.RunForRuntime(rid, MakeAbsolute(File(project)).FullPath, device,
             MakeAbsolute(new DirectoryPath(resultsDirectory)).FullPath,
             (selector, applicationId) => GetIosNativeTestContainer(selector, applicationId, xcodePath),
+            arguments =>
+            {
+                var appleArgs = new ProcessArgumentBuilder();
+                foreach (var argument in arguments)
+                    appleArgs.AppendQuoted(argument);
+                var appleSettings = new ProcessSettings { Arguments = appleArgs };
+                if (!string.IsNullOrWhiteSpace(xcodePath))
+                    appleSettings.EnvironmentVariables = new Dictionary<string, string> { ["DEVELOPER_DIR"] = xcodePath };
+                return StartProcess("xcrun", appleSettings);
+            },
             () => StartProcess(string.IsNullOrEmpty(toolPath) ? "dotnet" : toolPath, settings),
             reportDirectory =>
             {
@@ -1151,11 +1161,70 @@ string GetMSBuildForwardingLoggerPath()
 
 public static class IosNativeTestReports
 {
+    public static void RunForRuntime(string runtimeIdentifier, string project, string device, string resultsDirectory,
+        Func<string, string, string> getSimulatorContainer, Func<string[], int> executeApple,
+        Func<int> execute, Action<string> validate)
+    {
+        if (runtimeIdentifier != "ios-arm64")
+        {
+            Run(project, device, resultsDirectory, getSimulatorContainer, execute, validate);
+            return;
+        }
+
+        var transferDirectory = System.IO.Path.Combine(resultsDirectory, $".ios-native-transfer-{Guid.NewGuid():N}");
+        System.IO.Directory.CreateDirectory(transferDirectory);
+        try
+        {
+            Run(project, device, resultsDirectory,
+                (selector, applicationId) => CopyPhysicalContainer(selector, applicationId, transferDirectory, executeApple),
+                execute, validate);
+        }
+        finally
+        {
+            System.IO.Directory.Delete(transferDirectory, true);
+        }
+    }
+
+    static string CopyPhysicalContainer(string device, string applicationId, string transferDirectory,
+        Func<string[], int> executeApple)
+    {
+        var snapshot = System.IO.Path.Combine(transferDirectory, Guid.NewGuid().ToString("N"));
+        System.IO.Directory.CreateDirectory(snapshot);
+        var appList = System.IO.Path.Combine(snapshot, "apps.json");
+        var exitCode = executeApple(new[] {
+            "devicectl", "device", "info", "apps", "--device", device,
+            "--bundle-id", applicationId, "--include-default-apps", "--json-output", appList, "--timeout", "60"
+        });
+        if (exitCode != 0)
+            throw new InvalidOperationException($"Native iOS device app lookup failed with exit code {exitCode}.");
+
+        using (var apps = System.Text.Json.JsonDocument.Parse(System.IO.File.ReadAllText(appList)))
+        {
+            // An absent app is normal before its first install; a failed lookup is not evidence of absence.
+            if (apps.RootElement.GetProperty("result").GetProperty("apps").GetArrayLength() == 0)
+                return snapshot;
+        }
+
+        // Documents exists even before MTP creates TestResults. Copying it distinguishes a missing
+        // report from a failed device transport without relying on localized devicectl error text.
+        exitCode = executeApple(new[] {
+            "devicectl", "device", "copy", "from", "--device", device,
+            "--domain-type", "appDataContainer", "--domain-identifier", applicationId,
+            "--source", "Documents", "--destination", System.IO.Path.Combine(snapshot, "Documents"),
+            "--timeout", "60"
+        });
+        if (exitCode != 0)
+            throw new InvalidOperationException($"Native iOS device report copy failed with exit code {exitCode}.");
+        if (!System.IO.Directory.Exists(System.IO.Path.Combine(snapshot, "Documents")))
+            throw new InvalidOperationException("Native iOS device report copy did not produce Documents.");
+        return snapshot;
+    }
+
     public static void Run(string project, string device, string resultsDirectory,
         Func<string, string, string> getContainer, Func<int> execute, Action<string> validate)
     {
         if (string.IsNullOrWhiteSpace(device))
-            throw new InvalidOperationException("Native iOS tests require an explicit simulator UDID.");
+            throw new InvalidOperationException("Native iOS tests require an explicit simulator UDID or physical device selector.");
         var applicationId = XDocument.Load(project).Root.Elements("PropertyGroup")
             .Elements("ApplicationId").Select(element => element.Value).FirstOrDefault();
         if (string.IsNullOrEmpty(applicationId) ||

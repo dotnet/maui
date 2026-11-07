@@ -5,20 +5,57 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+
+function Get-OwnedAvdHome {
+    param($State)
+
+    foreach ($path in @($State.DeviceDirectory, $State.DeviceRoot, $State.AvdHome)) {
+        if ([string]::IsNullOrWhiteSpace($path) -or ![IO.Path]::IsPathRooted($path)) {
+            throw 'Refusing AVD cleanup: ownership paths must be recorded as absolute paths.'
+        }
+    }
+    if ($State.AvdName -notmatch '^maui-[a-f0-9]{32}$') {
+        throw 'Refusing AVD cleanup: the recorded AVD name is not job-owned.'
+    }
+    $directory = [IO.Path]::TrimEndingDirectorySeparator([IO.Path]::GetFullPath($State.DeviceDirectory))
+    $root = [IO.Path]::TrimEndingDirectorySeparator([IO.Path]::GetFullPath($State.DeviceRoot))
+    $avdHome = [IO.Path]::TrimEndingDirectorySeparator([IO.Path]::GetFullPath($State.AvdHome))
+    $expectedRoot = Join-Path $directory $State.AvdName
+    $expectedHome = Join-Path $expectedRoot 'avd'
+    $comparison = if ($IsWindows) { [StringComparison]::OrdinalIgnoreCase } else { [StringComparison]::Ordinal }
+    if (![string]::Equals($root, $expectedRoot, $comparison) -or
+        ![string]::Equals($avdHome, $expectedHome, $comparison)) {
+        throw 'Refusing AVD cleanup: the directory is outside the recorded job-owned device root.'
+    }
+    for ($current = $avdHome; $current; $current = [IO.Path]::GetDirectoryName($current)) {
+        if (Test-Path -LiteralPath $current) {
+            $item = Get-Item -LiteralPath $current -Force
+            if ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) {
+                throw 'Refusing AVD cleanup: ownership paths cannot traverse symbolic links or junctions.'
+            }
+        }
+        if ([string]::Equals($current, $directory, $comparison)) { return $avdHome }
+    }
+    throw 'Refusing AVD cleanup: the ownership boundary could not be verified.'
+}
+
 $statePath = Join-Path $ResultsDirectory 'device.json'
 if (!(Test-Path -LiteralPath $statePath)) { return }
 $state = Get-Content -LiteralPath $statePath -Raw | ConvertFrom-Json
 $PSNativeCommandUseErrorActionPreference = $false
-if ($state.Platform -eq 'android' -and $state.Device) {
+if ($state.Platform -eq 'android') {
+    if ($state.AvdHome) { $state.AvdHome = Get-OwnedAvdHome -State $state }
     $killFailed = $false
-    $name = "$(& $state.Adb -s $state.Device shell getprop ro.boot.qemu.avd_name 2>$null)".Trim()
-    if (!$name -and $LASTEXITCODE -eq 0) {
-        $name = "$(& $state.Adb -s $state.Device shell getprop ro.kernel.qemu.avd_name 2>$null)".Trim()
-    }
-    if ($LASTEXITCODE -eq 0 -and $name -eq $state.AvdName) {
-        & $state.Adb -s $state.Device logcat -d *> (Join-Path $ResultsDirectory 'logcat.log')
-        & $state.Adb -s $state.Device emu kill
-        $killFailed = $LASTEXITCODE -ne 0
+    if ($state.Device) {
+        $name = "$(& $state.Adb -s $state.Device shell getprop ro.boot.qemu.avd_name 2>$null)".Trim()
+        if (!$name -and $LASTEXITCODE -eq 0) {
+            $name = "$(& $state.Adb -s $state.Device shell getprop ro.kernel.qemu.avd_name 2>$null)".Trim()
+        }
+        if ($LASTEXITCODE -eq 0 -and $name -eq $state.AvdName) {
+            & $state.Adb -s $state.Device logcat -d *> (Join-Path $ResultsDirectory 'logcat.log')
+            & $state.Adb -s $state.Device emu kill
+            $killFailed = $LASTEXITCODE -ne 0
+        }
     }
     if ($state.ProcessId) {
         $process = Get-Process -Id $state.ProcessId -ErrorAction SilentlyContinue

@@ -414,7 +414,10 @@ same job, and always publish unique job/attempt result directories.
   through the MTP launcher, preserving package identity and the complete server/pipe
   arguments; building MSIX and executing its binary unpackaged is not equivalent
 - **Results**: genuine MTP TRX is required; missing, empty or failed results fail CI
-- **Ownership**: cleanup deletes only the current job's simulator or emulator
+- **Ownership**: cleanup deletes only the current job's simulator or emulator.
+  Android records absolute provisioning paths and creates an exclusive named
+  device root; cleanup from another working directory rejects relative,
+  out-of-root or symbolic-link ownership paths rather than deleting foreign AVDs.
 
 Direct Windows jobs use the configured pipeline image, currently Windows Server
 2022. They require an interactive desktop and retain both packaging modes. This
@@ -435,6 +438,12 @@ the app container with `xcrun simctl get_app_container DEVICE APPLICATION_ID dat
 and copy its `Documents/TestResults/testResults.trx` before deleting the
 simulator. Catalyst uses the explicit `MauiTestResultsDirectory` host path.
 Never synthesize TRX from stdout.
+
+The retained Cake `ios-device`/`ios-arm64` lane instead copies the physical
+device's app `Documents` through `xcrun devicectl device copy from` with the
+`appDataContainer` domain. Pre-run and post-run snapshots reject unchanged
+reports; failed app lookup or copy transport is not treated as report absence.
+This transport has helper coverage but still needs real physical-device validation.
 
 Android xUnit/MTP hosts require an on-disk entry assembly. Their runner props
 therefore use SDK fast deployment (`EmbedAssembliesIntoApk=false`) and disable

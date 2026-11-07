@@ -78,14 +78,34 @@ Test run summary: Passed!
         }
         finally { Remove-Item -LiteralPath $log }
     }
-    It 'does not turn a failing or zero-selection MTP run into success' {
+    It 'classifies a genuine MTP assertion failure without an infrastructure error' {
+        $log = New-LogFile "Test run summary: Failed!`n  total: 4`n  failed: 1`n  succeeded: 2`n  skipped: 1`n  duration: 1s"
+        try {
+            $result = Get-TestResultFromOutput $log
+            $result.Passed | Should -BeFalse
+            $result.FailCount | Should -Be 1
+            $result.Failed | Should -Be 1
+            $result.PassCount | Should -Be 2
+            $result.Total | Should -Be 4
+            $result.Skipped | Should -Be 1
+            $result.ContainsKey('EnvError') | Should -BeFalse
+            $result.ContainsKey('BuildError') | Should -BeFalse
+        }
+        finally { Remove-Item -LiteralPath $log }
+    }
+    It 'rejects successful MTP headings when no selected test executed' {
         foreach ($counts in @(
-            "  total: 4`n  failed: 1`n  succeeded: 2`n  skipped: 1",
             "  total: 0`n  failed: 0`n  succeeded: 0`n  skipped: 0",
             "  total: 1`n  failed: 0`n  succeeded: 0`n  skipped: 1"
         )) {
-            $log = New-LogFile "Test run summary: Failed!`n$counts`n  duration: 1s"
-            try { (Get-TestResultFromOutput $log).Passed | Should -BeFalse }
+            $log = New-LogFile "Test run summary: Passed!`n$counts`n  duration: 1s"
+            try {
+                $result = Get-TestResultFromOutput $log
+                $result.Passed | Should -BeFalse
+                $result.EnvError | Should -BeTrue
+                $result.Error | Should -Be 'No selected test executed.'
+                $result.ContainsKey('BuildError') | Should -BeFalse
+            }
             finally { Remove-Item -LiteralPath $log }
         }
     }

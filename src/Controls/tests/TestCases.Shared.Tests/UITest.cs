@@ -62,7 +62,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			if (ciArtifactsDirectory != null)
 				ciArtifactsDirectory = Path.Combine(ciArtifactsDirectory, "Controls.TestCases.Shared.Tests");
 
-			string projectRootDirectory = Path.GetDirectoryName(AppDomain.CurrentDomain.BaseDirectory)!;
+			string projectRootDirectory = AppDomain.CurrentDomain.BaseDirectory;
 
 			_visualRegressionTester = new VisualRegressionTester(testRootDirectory: projectRootDirectory,
 				visualComparer: new MagickNetVisualComparer(),
@@ -391,7 +391,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 					case TestDevice.Windows:
 						environmentName = "windows";
-						
+
 						// Check if the Windows CV1 handler is selected via TEST_CONFIGURATION_ARGS.
 						// This uses a separate snapshot directory for visual regression testing
 						var testConfigurationArgs = Environment.GetEnvironmentVariable("TEST_CONFIGURATION_ARGS") ?? "";

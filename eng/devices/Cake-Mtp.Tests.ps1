@@ -68,6 +68,7 @@ Describe 'Direct Cake native execution' {
     It 'uses the common native builder and propagates failing process exits' {
         $source = Get-Content -Raw (Join-Path $RepoRoot 'eng/cake/dotnet.cake')
         $source | Should -Match 'MtpTestArguments.Native'
+        $source | Should -Match 'IosNativeTestReports.RunForRuntime\(rid,'
         $source | Should -Match 'Native dotnet test failed with exit code'
         $source | Should -Not -Match 'ignore-exit-code'
     }
@@ -209,6 +210,143 @@ Describe 'Cake genuine native iOS reports' {
         { [IosNativeTestReports]::Run($ProjectPath, '', $ResultsDirectory,
             $ResolveContainer, { throw 'must not launch' }, $ValidateReport) } |
             Should -Throw '*explicit simulator UDID*'
+    }
+
+    Describe 'Physical iOS report transport' {
+        BeforeEach {
+            $script:AppleCalls = [Collections.Generic.List[string[]]]::new()
+            $script:AppInstalled = $true
+            $script:LookupExit = 0
+            $script:CopyExit = 0
+            $script:Launched = $false
+            $script:ExecuteApple = [Func[string[], int]] {
+                param($arguments)
+                $script:AppleCalls.Add($arguments)
+                if ($arguments[2] -eq 'info') {
+                    if ($script:LookupExit -ne 0) { return $script:LookupExit }
+                    $jsonPath = $arguments[[Array]::IndexOf($arguments, '--json-output') + 1]
+                    $apps = if ($script:AppInstalled) { '[{"bundleIdentifier":"com.maui.tests"}]' } else { '[]' }
+                    [IO.File]::WriteAllText($jsonPath, '{"result":{"apps":' + $apps + '}}')
+                    return 0
+                }
+                if ($script:CopyExit -ne 0) { return $script:CopyExit }
+                $destination = $arguments[[Array]::IndexOf($arguments, '--destination') + 1]
+                [IO.Directory]::CreateDirectory($destination) | Out-Null
+                if ([IO.File]::Exists($script:NativeReport)) {
+                    [IO.Directory]::CreateDirectory((Join-Path $destination 'TestResults')) | Out-Null
+                    [IO.File]::Copy($script:NativeReport, (Join-Path $destination 'TestResults/testResults.trx'))
+                }
+                return 0
+            }
+            $script:NoSimulator = [Func[string, string, string]] { throw 'must not use simctl for physical iOS' }
+            $script:ExecutePhysical = [Func[int]] {
+                $script:Launched = $true
+                $script:AppInstalled = $true
+                [IO.File]::WriteAllText($script:NativeReport, $script:GoodTrx)
+                return 0
+            }
+        }
+
+        It 'routes ios-arm64 through the selected devicectl app container and copies genuine TRX' {
+            [IosNativeTestReports]::RunForRuntime('ios-arm64', $ProjectPath, 'physical-udid', $ResultsDirectory,
+                $NoSimulator, $ExecuteApple, $ExecutePhysical, $ValidateReport)
+            $AppleCalls.Count | Should -Be 4
+            foreach ($call in $AppleCalls) {
+                $call[0] | Should -BeExactly 'devicectl'
+                $call[[Array]::IndexOf($call, '--device') + 1] | Should -BeExactly 'physical-udid'
+            }
+            foreach ($call in @($AppleCalls | Where-Object { $_[2] -eq 'copy' })) {
+                $call[0..3] | Should -Be @('devicectl', 'device', 'copy', 'from')
+                $call[[Array]::IndexOf($call, '--domain-type') + 1] | Should -BeExactly 'appDataContainer'
+                $call[[Array]::IndexOf($call, '--domain-identifier') + 1] | Should -BeExactly 'com.maui.tests'
+                $call[[Array]::IndexOf($call, '--source') + 1] | Should -BeExactly 'Documents'
+            }
+            $reports = @(Get-ChildItem -LiteralPath $ResultsDirectory -Filter '*.trx' -Recurse -Force)
+            $reports.Count | Should -Be 1
+            [IO.File]::ReadAllText($reports[0].FullName) | Should -BeExactly $GoodTrx
+            @(Get-ChildItem -LiteralPath $ResultsDirectory -Filter '.ios-native-transfer-*' -Force).Count | Should -Be 0
+        }
+
+        It 'keeps <Rid> on simulator collection without invoking devicectl' -ForEach @(
+            @{ Rid = 'iossimulator-arm64' }
+            @{ Rid = 'iossimulator-x64' }
+        ) {
+            [IosNativeTestReports]::RunForRuntime($Rid, $ProjectPath, 'owned-simulator', $ResultsDirectory,
+                $ResolveContainer, { throw 'must not use devicectl for a simulator' }, $ExecutePhysical, $ValidateReport)
+            $ResolveCalls | Should -Be @('owned-simulator/com.maui.tests', 'owned-simulator/com.maui.tests')
+        }
+
+        It 'allows a confirmed absent app before the native install' {
+            $script:AppInstalled = $false
+            [IosNativeTestReports]::RunForRuntime('ios-arm64', $ProjectPath, 'physical-udid', $ResultsDirectory,
+                $NoSimulator, $ExecuteApple, $ExecutePhysical, $ValidateReport)
+            $AppleCalls.Count | Should -Be 3
+            $Launched | Should -BeTrue
+        }
+
+        It 'rejects exit zero with no physical report despite an older host TRX' {
+            Set-Content -LiteralPath (Join-Path $ResultsDirectory 'old.trx') $GoodTrx
+            { [IosNativeTestReports]::RunForRuntime('ios-arm64', $ProjectPath, 'physical-udid', $ResultsDirectory,
+                $NoSimulator, $ExecuteApple, { return 0 }, $ValidateReport) } |
+                Should -Throw '*Native app did not produce genuine TRX*'
+        }
+
+        It 'rejects an unchanged physical report even though it was freshly copied' {
+            Set-Content -LiteralPath $NativeReport $GoodTrx
+            { [IosNativeTestReports]::RunForRuntime('ios-arm64', $ProjectPath, 'physical-udid', $ResultsDirectory,
+                $NoSimulator, $ExecuteApple, { return 0 }, $ValidateReport) } |
+                Should -Throw '*native result is stale*'
+            @(Get-ChildItem -LiteralPath $ResultsDirectory -Filter '*.trx' -Recurse -Force).Count | Should -Be 0
+        }
+
+        It 'fails before launching on inaccessible device app discovery' {
+            $script:LookupExit = 7
+            { [IosNativeTestReports]::RunForRuntime('ios-arm64', $ProjectPath, 'physical-udid', $ResultsDirectory,
+                $NoSimulator, $ExecuteApple, $ExecutePhysical, $ValidateReport) } |
+                Should -Throw '*device app lookup failed with exit code 7*'
+            $Launched | Should -BeFalse
+        }
+
+        It 'does not treat pre-run report transport failure as report absence' {
+            $script:CopyExit = 9
+            { [IosNativeTestReports]::RunForRuntime('ios-arm64', $ProjectPath, 'physical-udid', $ResultsDirectory,
+                $NoSimulator, $ExecuteApple, $ExecutePhysical, $ValidateReport) } |
+                Should -Throw '*device report copy failed with exit code 9*'
+            $Launched | Should -BeFalse
+        }
+
+        It 'rejects post-run report transport failure after native exit zero' {
+            { [IosNativeTestReports]::RunForRuntime('ios-arm64', $ProjectPath, 'physical-udid', $ResultsDirectory,
+                $NoSimulator, $ExecuteApple, {
+                    $script:CopyExit = 13
+                    return 0
+                }, $ValidateReport) } | Should -Throw '*device report copy failed with exit code 13*'
+        }
+
+        It 'rejects exit zero when the native app is still absent after execution' {
+            $script:AppInstalled = $false
+            { [IosNativeTestReports]::RunForRuntime('ios-arm64', $ProjectPath, 'physical-udid', $ResultsDirectory,
+                $NoSimulator, $ExecuteApple, { return 0 }, $ValidateReport) } |
+                Should -Throw '*Native app did not produce genuine TRX*'
+            $AppleCalls.Count | Should -Be 2
+        }
+
+        It 'preserves a failing native exit when report transport also fails' {
+            { [IosNativeTestReports]::RunForRuntime('ios-arm64', $ProjectPath, 'physical-udid', $ResultsDirectory,
+                $NoSimulator, $ExecuteApple, {
+                    $script:CopyExit = 13
+                    return 17
+                }, $ValidateReport) } | Should -Throw '*Native dotnet test failed with exit code 17*'
+        }
+
+        It 'retains copied genuine TRX while preserving a failing native exit' {
+            { [IosNativeTestReports]::RunForRuntime('ios-arm64', $ProjectPath, 'physical-udid', $ResultsDirectory,
+                $NoSimulator, $ExecuteApple, {
+                    [IO.File]::WriteAllText($script:NativeReport, $script:GoodTrx)
+                    return 17
+                }, $ValidateReport) } | Should -Throw '*Native dotnet test failed with exit code 17*'
+            @(Get-ChildItem -LiteralPath $ResultsDirectory -Filter '*.trx' -Recurse -Force).Count | Should -Be 1
+        }
     }
 }
 

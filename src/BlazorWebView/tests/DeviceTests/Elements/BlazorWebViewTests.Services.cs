@@ -115,6 +115,7 @@ public partial class BlazorWebViewTests
 	[Fact]
 	public async Task BlazorWebViewWithoutDispatchFailsToGetScopedServices()
 	{
+		InvalidOperationException? expectedFailure = null;
 		EnsureHandlerCreated(additionalCreationActions: appBuilder =>
 		{
 			appBuilder.Services.AddMauiBlazorWebView();
@@ -141,20 +142,15 @@ public partial class BlazorWebViewTests
 			await WebViewHelpers.WaitForControlDiv(bwvHandler.PlatformView, controlValueToWaitFor: "Static");
 
 			// DON'T use BlazorWebView.Dispatch to access scoped services; instead, just try to get it directly (and fail)
-			// xUnit v3 also awaits the test app's async disposal. Own the intentionally
-			// faulted service in a separate scope so its expected disposal error is asserted.
-			var scope = bwv.Handler.MauiContext.Services.CreateAsyncScope();
-			try
-			{
-				var jsInterop = scope.ServiceProvider.GetRequiredService<ExampleJsInterop>();
-				await Assert.ThrowsAsync<InvalidOperationException>(async () =>
-					await jsInterop.UpdateControlDiv("this will fail!"));
-			}
-			finally
-			{
-				await Assert.ThrowsAsync<InvalidOperationException>(() => scope.DisposeAsync().AsTask());
-			}
+			var jsInterop = bwv.Handler.MauiContext.Services.GetRequiredService<ExampleJsInterop>();
+			expectedFailure = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+				await jsInterop.UpdateControlDiv("this will fail!"));
 		});
+
+		// Disposal awaits the same faulted lazy module task; unrelated teardown errors must still fail.
+		var disposalFailure = await Assert.ThrowsAsync<InvalidOperationException>(() => DisposeAsync().AsTask());
+		Assert.Same(expectedFailure, disposalFailure);
+		await DisposeAsync();
 	}
 
 	[Fact]

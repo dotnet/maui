@@ -328,14 +328,19 @@ Describe 'Direct native CI contracts' {
     ) {
         param($RequiresTermination)
         $directory = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
-        $avdHome = Join-Path $directory 'device/avd'
+        $deviceDirectory = Join-Path $directory 'device'
+        $avdName = "maui-$([guid]::NewGuid().ToString('N'))"
+        $deviceRoot = Join-Path $deviceDirectory $avdName
+        $avdHome = Join-Path $deviceRoot 'avd'
         New-Item -ItemType Directory -Force -Path $avdHome | Out-Null
         Set-Content -LiteralPath (Join-Path $avdHome 'hardware-qemu.ini.lock') -Value 'owned lock'
         $started = [DateTime]::UtcNow
         @{
             Platform = 'android'
             Device = 'emulator-5554'
-            AvdName = 'owned-test-avd'
+            AvdName = $avdName
+            DeviceDirectory = $deviceDirectory
+            DeviceRoot = $deviceRoot
             AvdHome = $avdHome
             Adb = 'Invoke-TestAdb'
             ProcessId = 12345
@@ -343,7 +348,7 @@ Describe 'Direct native CI contracts' {
         } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $directory 'device.json')
         function Invoke-TestAdb {
             $global:LASTEXITCODE = 0
-            if ($args -contains 'getprop') { 'owned-test-avd' }
+            if ($args -contains 'getprop') { $avdName }
         }
         $process = [pscustomobject]@{
             ProcessName = 'qemu-system-x86_64'
@@ -383,7 +388,8 @@ Describe 'Direct native CI contracts' {
             $ErrorActionPreference = 'Stop'
             & ([scriptblock]::Create($setup.Value))
             $recorded = Get-Content -LiteralPath $statePath -Raw | ConvertFrom-Json
-            $recorded.AvdHome | Should -Be (Join-Path $DeviceDirectory 'avd')
+            $recorded.DeviceRoot | Should -Be (Join-Path $DeviceDirectory $recorded.AvdName)
+            $recorded.AvdHome | Should -Be (Join-Path $recorded.DeviceRoot 'avd')
             $recorded.AvdHome | Should -Exist
             $env:ANDROID_AVD_HOME | Should -Be $recorded.AvdHome
             $recorded.AvdName | Should -Match '^maui-[a-f0-9]{32}$'
@@ -391,6 +397,100 @@ Describe 'Direct native CI contracts' {
         }
         finally {
             $env:ANDROID_AVD_HOME = $originalAvdHome
+        }
+    }
+
+    It 'cleans recorded relative provisioning paths from another working directory without deleting foreign data' {
+        $provisioning = Join-Path $TestDrive 'provisioning'
+        $cleanup = Join-Path $TestDrive 'cleanup'
+        $foreign = Join-Path $cleanup 'devices/avd/sentinel.txt'
+        New-Item -ItemType Directory -Force -Path $provisioning, (Split-Path $foreign) | Out-Null
+        Set-Content -LiteralPath $foreign -Value 'foreign'
+        $normalization = [regex]::Match($start, '(?s)\$baseDirectory =.*?(?=New-Item -ItemType Directory -Force -Path \$ResultsDirectory)')
+        $setup = [regex]::Match($start, '(?s)    \$name = "maui-.*?\r?\n    Save-State')
+        $normalization.Success | Should -BeTrue
+        $setup.Success | Should -BeTrue
+        $originalAvdHome = $env:ANDROID_AVD_HOME
+        Push-Location $provisioning
+        try {
+            $ResultsDirectory = 'results'
+            $DeviceDirectory = 'devices'
+            . ([scriptblock]::Create($normalization.Value))
+            New-Item -ItemType Directory -Path $ResultsDirectory | Out-Null
+            $statePath = Join-Path $ResultsDirectory 'device.json'
+            $state = @{ Platform = 'android'; DeviceDirectory = $DeviceDirectory }
+            function Save-State { $state | ConvertTo-Json | Set-Content -LiteralPath $statePath }
+            & ([scriptblock]::Create($setup.Value))
+            $recorded = Get-Content -LiteralPath $statePath -Raw | ConvertFrom-Json
+            [IO.Path]::IsPathRooted($recorded.AvdHome) | Should -BeTrue
+            $recorded.DeviceDirectory | Should -Be (Join-Path $provisioning 'devices')
+        }
+        finally {
+            Pop-Location
+            $env:ANDROID_AVD_HOME = $originalAvdHome
+        }
+        Push-Location $cleanup
+        try {
+            & pwsh -NoLogo -NoProfile -File (Join-Path $deviceScripts 'Stop-TestDevice.ps1') -ResultsDirectory $ResultsDirectory
+            $LASTEXITCODE | Should -Be 0
+        }
+        finally { Pop-Location }
+        $recorded.AvdHome | Should -Not -Exist
+        Get-Content -LiteralPath $foreign | Should -Be 'foreign'
+    }
+
+    It 'rejects ambiguous or tampered AVD ownership paths' -TestCases @(
+        @{ Kind = 'relative' }
+        @{ Kind = 'outside' }
+        @{ Kind = 'shared-root' }
+        @{ Kind = 'foreign-name' }
+        @{ Kind = 'symbolic-link' }
+    ) {
+        param($Kind)
+        $directory = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
+        $avdName = "maui-$([guid]::NewGuid().ToString('N'))"
+        $deviceDirectory = Join-Path $directory 'devices'
+        $deviceRoot = Join-Path $deviceDirectory $avdName
+        $avdHome = Join-Path $deviceRoot 'avd'
+        $foreign = Join-Path $directory 'foreign/avd'
+        New-Item -ItemType Directory -Force -Path $avdHome, $foreign | Out-Null
+        $state = @{
+            Platform = 'android'; AvdName = $avdName; DeviceDirectory = $deviceDirectory
+            DeviceRoot = $deviceRoot; AvdHome = $avdHome
+        }
+        switch ($Kind) {
+            relative { $state.AvdHome = 'devices/avd' }
+            outside { $state.AvdHome = $foreign }
+            shared-root { $state.DeviceRoot = $deviceDirectory; $state.AvdHome = Join-Path $deviceDirectory 'avd' }
+            foreign-name { $state.AvdName = 'pre-existing-user-device' }
+            symbolic-link {
+                Mock Get-Item { [pscustomobject]@{ Attributes = [IO.FileAttributes]::ReparsePoint } } `
+                    -ParameterFilter { $LiteralPath -eq $avdHome }
+            }
+        }
+        $state | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $directory 'device.json')
+        { & (Join-Path $deviceScripts 'Stop-TestDevice.ps1') -ResultsDirectory $directory } |
+            Should -Throw '*Refusing AVD cleanup*'
+        $avdHome | Should -Exist
+        $foreign | Should -Exist
+    }
+
+    It 'keeps snapshot baselines in the test binary directory with either base-directory spelling' {
+        $source = Get-Content -LiteralPath (Join-Path $repoRoot 'src/Controls/tests/TestCases.Shared.Tests/UITest.cs') -Raw
+        $rootExpression = [regex]::Match($source, 'string projectRootDirectory = ([^;]+);')
+        $rootExpression.Success | Should -BeTrue
+        $expression = $rootExpression.Groups[1].Value.Replace('AppDomain.CurrentDomain.BaseDirectory', 'baseDirectory')
+        Add-Type -TypeDefinition @"
+using System.IO;
+public static class SnapshotRootRegression
+{
+    public static string Get(string baseDirectory) => $expression;
+}
+"@
+        $binaryDirectory = Join-Path $TestDrive 'Release/net11.0'
+        foreach ($baseDirectory in @($binaryDirectory, "$binaryDirectory$([IO.Path]::DirectorySeparatorChar)")) {
+            [SnapshotRootRegression]::Get($baseDirectory).TrimEnd([IO.Path]::DirectorySeparatorChar) |
+                Should -Be $binaryDirectory
         }
     }
 
