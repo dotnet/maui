@@ -1443,6 +1443,7 @@ try {
                     "android", "test"
                     "--app", $appPath
                     "--package-name", $androidPackageName
+                    "--instrumentation", "$androidPackageName.TestInstrumentation"
                     "--device-id", $deviceUdidToUse
                     "-o", $testOutputDirectory
                     "--timeout", $Timeout
