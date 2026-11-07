@@ -39,6 +39,8 @@ stages:
     ${{ else }}:
       dependsOn:
       - ${{ platform }}_device_tests_${{ replace(parameters.targetFrameworkVersion.dependsOn, '.', '') }}
+    ${{ if eq(platform, 'catalyst') }}:
+      condition: and(succeeded(), eq(variables['RunExtendedTests'], 'true'))
     jobs:
 
     - ${{ if eq(platform, 'android') }}:
