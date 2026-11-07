@@ -384,6 +384,57 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task CustomOnColorResourcesSurviveGarbageCollection()
+		{
+			var switchStub = new SwitchStub { IsOn = true, TrackColor = Colors.Red };
+			var handler = await InvokeOnMainThreadAsync(() => CreateHandler<ConfiguredHoverSwitchHandler>(switchStub));
+			for (int cycle = 0; cycle < 3; cycle++)
+			{
+				await Task.Run(() =>
+				{
+					GC.Collect();
+					GC.WaitForPendingFinalizers();
+					GC.Collect();
+				});
+
+				await InvokeOnMainThreadAsync(() =>
+				{
+					switchStub.TrackColor = Colors.Blue;
+					handler.UpdateValue(nameof(ISwitch.TrackColor));
+					foreach (var theme in new[] { "Default", "HighContrast" })
+					{
+						var resources = GetHoverThemeResources(handler.PlatformView, theme);
+						var hover = Assert.IsType<SolidColorBrush>(resources["ToggleSwitchFillOnPointerOver"]);
+						Assert.Equal(Colors.Blue.ToWindowsColor(), hover.Color);
+						Assert.Equal(theme == "Default" ? 0.9 : 1, hover.Opacity, 2);
+					}
+				});
+
+				await Task.Run(() =>
+				{
+					GC.Collect();
+					GC.WaitForPendingFinalizers();
+					GC.Collect();
+				});
+				await InvokeOnMainThreadAsync(() =>
+				{
+					switchStub.TrackColor = null;
+					handler.UpdateValue(nameof(ISwitch.TrackColor));
+					Assert.Empty(handler.PlatformView.Resources.MergedDictionaries);
+					foreach (var theme in new[] { "Default", "HighContrast" })
+					{
+						var resources = (ResourceDictionary)handler.PlatformView.Resources.ThemeDictionaries[theme];
+						Assert.Same(handler.OriginalHoverBrush, resources["ToggleSwitchFillOnPointerOver"]);
+					}
+
+					switchStub.TrackColor = Colors.Red;
+					handler.UpdateValue(nameof(ISwitch.TrackColor));
+				});
+			}
+			GC.KeepAlive(handler);
+		}
+
+		[Fact]
 		public async Task CustomOnColorPreservesApplicationMergedResources()
 		{
 			var switchStub = new SwitchStub { IsOn = true };
