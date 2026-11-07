@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "scope": "release-rollover-trial/phaseplain-2ad2e0af",
+  "releaseBand": "11.0.1xx",
+  "sr": 1,
+  "fixBranch": "release-rollover-trial/phaseplain-2ad2e0af/main",
+  "featureBranch": "release-rollover-trial/phaseplain-2ad2e0af/features",
+  "pullRequest": 40024,
+  "plan": {
+    "mergeSha": "e83a1affc4509874ef012087c595fd0983dd122c",
+    "candidateSha": "cfebec0b914ac9698d390c788671702d23894793",
+    "inflightSha": "3f5a6e67c96f64297aefdf6171649fdf9c992efd",
+    "normalizedSha": "885d2c168c1bd70faaab238595a692ab2cf5333d",
+    "servicingSha": "e8d25962f093a2e2fff34ff83ea06c25beb75b5e",
+    "nextCandidateSha": "c99001570e3f45eea851c073f15fa88e373a1918",
+    "nextInflightSha": "ccc6243fab6dd6bfed7ad4d411be803d4aa21792"
+  }
+}
