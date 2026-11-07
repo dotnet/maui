@@ -112,7 +112,7 @@ function Get-MatchingReleaseBuild {
     return $null
 }
 
-function Queue-ReleaseBuildOnce {
+function Get-ReleaseDispatchRecord {
     param([int] $Definition, [string] $Branch, [string] $Commit, [hashtable] $Parameters,
         [string] $Stage, [object] $Record)
     $intentBranch = "$dispatchPrefix/$($Record.releaseBand)-sr$($Record.sr)/$Stage"
@@ -134,11 +134,21 @@ function Queue-ReleaseBuildOnce {
             }
         }
         if ($Stage -ceq 'signed' -and $saved.dispatch.commit -cne $Commit) { throw 'Signed-build checkpoint changed its release cut.' }
-        $Commit = $saved.dispatch.commit
+        return $saved
     }
+    return $null
+}
+
+function Queue-ReleaseBuildOnce {
+    param([int] $Definition, [string] $Branch, [string] $Commit, [hashtable] $Parameters,
+        [string] $Stage, [object] $Record)
+    $intentBranch = "$dispatchPrefix/$($Record.releaseBand)-sr$($Record.sr)/$Stage"
+    $saved = Get-ReleaseDispatchRecord -Definition $Definition -Branch $Branch -Commit $Commit `
+        -Parameters $Parameters -Stage $Stage -Record $Record
+    if ($saved) { $Commit = $saved.dispatch.commit }
     $existing = Get-MatchingReleaseBuild -Definition $Definition -Branch $Branch -Commit $Commit -Parameters $Parameters
     if ($existing) { return $existing }
-    if ($intent.Count) {
+    if ($saved) {
         throw "Dispatch intent '$intentBranch' exists without a visible matching Azure run. Queueing may have succeeded; reconcile it before any manual retry. No duplicate is submitted."
     }
     $intentRecord = [ordered]@{
@@ -176,6 +186,24 @@ function Queue-ReleaseBuildOnce {
         throw 'Azure queued a release build with unexpected identity; inspect the saved dispatch intent.'
     }
     return $build
+}
+
+function Get-CompletedReleaseDispatch {
+    param([string] $Branch, [string] $Commit, [object] $Record, [hashtable] $Parameters)
+    $null = Get-ReleaseDispatchRecord -Definition 1095 -Branch $Branch -Commit $Commit `
+        -Parameters @{} -Stage signed -Record $Record
+    $preparation = Get-ReleaseDispatchRecord -Definition 1445 -Branch main -Commit $Commit `
+        -Parameters $Parameters -Stage prepare -Record $Record
+    if (!$preparation) { throw 'Historical release has no pinned publication preparation identity; owner reconciliation is required.' }
+    $signed = Get-MatchingReleaseBuild -Definition 1095 -Branch $Branch -Commit $Commit -Parameters @{}
+    $prepared = Get-MatchingReleaseBuild -Definition 1445 -Branch main -Commit $preparation.dispatch.commit -Parameters $Parameters
+    foreach ($build in @($signed, $prepared)) {
+        if (!$build -or $build.status -cne 'completed' -or
+            'result' -notin $build.PSObject.Properties.Name -or $build.result -cne 'succeeded') {
+            throw 'Historical release has no verified successful signing and preparation; owner reconciliation is required.'
+        }
+    }
+    return @{ signed = $signed; prepared = $prepared }
 }
 
 try {
@@ -232,15 +260,37 @@ try {
         if (!$proof.merged -or $proof.merged_by.type -cne 'User' -or
             $proof.head.ref -cne $servicingHead -or $proof.head.sha -cne $verifiedPlan.servicingSha -or
             $proof.base.ref -cne $branch -or $proof.head.repo.full_name -cne 'dotnet/maui' -or
-            $proof.merge_commit_sha -cne $commit -or !([string]$proof.body).Contains($servicingMarker)) {
-            throw 'The live release tip is not the exact reviewed post-cut servicing merge.'
+            $proof.merge_commit_sha -cnotmatch '^[0-9a-f]{40}$' -or !([string]$proof.body).Contains($servicingMarker)) {
+            throw 'The release does not have a verified reviewed post-cut servicing merge.'
         }
+        $liveCommit = $commit
+        $commit = $proof.merge_commit_sha
         Fetch-PublishingCommit @($commit)
         $versionContent = Get-MauiReleaseFile -RepositoryPath $RepositoryPath -Commit $commit -Path 'eng/Versions.props'
         $null = Get-MauiReleaseVersionContent -Content $versionContent -ReleaseBand $roles.releaseBand -Sr $sr -Role servicing
         $stable = Get-MauiReleaseVersion -Content $versionContent
-        if (!$stable.stable -or $stable.label -cne 'servicing' -or $stable.labelCount -ne 1) {
+        if (!$stable.stable -or
+            (!$stable.branchDerivedLabels -and ($stable.label -cne 'servicing' -or $stable.labelCount -ne 1))) {
             throw 'The approved servicing PR did not produce stable release metadata.'
+        }
+        $parameters = @{
+            ghOwner = 'dotnet'; ghRepo = 'maui'; commitHash = $commit
+            pushWorkloadSet = $true; pushNugetOrg = $true; pushPackages = $false
+        }
+        $entry.sourceSha = $commit
+        if ($liveCommit -cne $commit) {
+            $null = Invoke-PublishingGit @('merge-base', '--is-ancestor', $commit, $liveCommit)
+            $entry.liveReleaseSha = $liveCommit
+            if ($PlanOnly) {
+                $entry.status = 'historical-release-awaiting-completed-dispatch-evidence'
+                continue
+            }
+            if (!$azureHeaders) { $azureHeaders = Get-ReleaseAzureHeaders }
+            $finished = Get-CompletedReleaseDispatch -Branch $branch -Commit $commit -Record $record -Parameters $parameters
+            $entry.signedBuild = @{ status = $finished.signed.status; result = $finished.signed.result }
+            $entry.preparationBuild = @{ status = $finished.prepared.status; result = $finished.prepared.result }
+            $entry.status = 'ready-for-publication-approval'
+            continue
         }
         if ($PlanOnly) { continue }
         if (!$azureHeaders) { $azureHeaders = Get-ReleaseAzureHeaders }
@@ -274,10 +324,6 @@ try {
         }
         # Prepare the immutable release set automatically. Customer publication
         # and workload promotion stay in the separately approved canonical run.
-        $parameters = @{
-            ghOwner = 'dotnet'; ghRepo = 'maui'; commitHash = $commit
-            pushWorkloadSet = $true; pushNugetOrg = $true; pushPackages = $false
-        }
         $prepared = Queue-ReleaseBuildOnce -Definition 1445 -Branch main -Commit $publisherHeads[0].objectId `
             -Parameters $parameters -Stage prepare -Record $record
         $preparedResult = if ('result' -in $prepared.PSObject.Properties.Name) { $prepared.result } else { $null }

@@ -27,6 +27,112 @@ BeforeAll {
     }
 }
 
+Describe 'Central label policy during release phases' {
+    BeforeAll {
+        $centralContent = @'
+<Project><PropertyGroup>
+    <MajorVersion>11</MajorVersion>
+    <MinorVersion>0</MinorVersion>
+    <PatchVersion>10</PatchVersion>
+    <SdkBandVersion>11.0.100</SdkBandVersion>
+    <PreReleaseVersionIteration></PreReleaseVersionIteration>
+    <PreReleaseVersionLabel>ci.main</PreReleaseVersionLabel>
+    <PreReleaseVersionLabel Condition="'$(BUILD_SOURCEBRANCH)' == 'refs/heads/inflight/current' or $([System.Text.RegularExpressions.Regex]::IsMatch('$(BUILD_SOURCEBRANCH)', '\Arefs/heads/inflight/[1-9][0-9]*\.0\.[1-9][0-9]*xx-sr[1-9][0-9]*\z'))">ci.inflight</PreReleaseVersionLabel>
+    <PreReleaseVersionLabel Condition="$([System.Text.RegularExpressions.Regex]::IsMatch('$(BUILD_SOURCEBRANCH)', '\Arefs/heads/release/[1-9][0-9]*\.0\.[1-9][0-9]*xx-sr[1-9][0-9]*\z'))">servicing</PreReleaseVersionLabel>
+    <StabilizePackageVersion Condition="'$(StabilizePackageVersion)' == ''">false</StabilizePackageVersion>
+    <IsServicingBuild Condition="'$(PreReleaseVersionLabel)' == 'servicing'">true</IsServicingBuild>
+    <DotNetFinalVersionKind Condition="'$(StabilizePackageVersion)' == 'true'">release</DotNetFinalVersionKind>
+</PropertyGroup></Project>
+'@
+    }
+
+    It 'preserves the recognized policy byte-for-byte instead of stamping a release label' {
+        (Get-MauiReleaseVersion -Content $centralContent).branchDerivedLabels | Should -BeTrue
+        (Get-MauiReleaseVersionContent -Content $centralContent -ReleaseBand '11.0.1xx' -Sr 1 -Role candidate) |
+            Should -BeExactly $centralContent
+        $servicing = Get-MauiReleaseVersionContent -Content $centralContent -ReleaseBand '11.0.1xx' -Sr 1 -Role servicing
+        $servicing | Should -BeExactly $centralContent.Replace('">false</StabilizePackageVersion>', '">true</StabilizePackageVersion>')
+        $future = Get-MauiReleaseVersionContent -Content $servicing -ReleaseBand '11.0.1xx' -Sr 2 -SourceSr 1 -Role inflight
+        $future | Should -BeExactly $centralContent.Replace('<PatchVersion>10</PatchVersion>', '<PatchVersion>20</PatchVersion>')
+    }
+
+    It 'requires stable package metadata and published tag evidence despite the default ci.main leaf' {
+        $release = [pscustomobject]@{
+            tag_name = '11.0.10'; draft = $false; prerelease = $false
+            published_at = '2026-11-07T00:00:00Z'; html_url = 'https://github.com/dotnet/maui/releases/tag/11.0.10'
+        }
+        $servicing = Get-MauiReleaseVersionContent -Content $centralContent -ReleaseBand '11.0.1xx' -Sr 1 -Role servicing
+        (Get-MauiVerifiedPublishedVersion -Release $release -VersionContent $servicing -ReleaseBand '11.0.1xx' `
+            -CurrentSr 1 -TagCommit ('a' * 40)).tag | Should -Be 11.0.10
+        { Get-MauiVerifiedPublishedVersion -Release $release -VersionContent $centralContent -ReleaseBand '11.0.1xx' `
+            -CurrentSr 1 -TagCommit ('a' * 40) } | Should -Throw '*stable servicing version metadata*'
+        $release.draft = $true
+        { Get-MauiVerifiedPublishedVersion -Release $release -VersionContent $servicing -ReleaseBand '11.0.1xx' `
+            -CurrentSr 1 -TagCommit ('a' * 40) } | Should -Throw '*not verified stable publication*'
+    }
+
+    It 'rejects altered conditions, label order, and intervening property side effects' {
+        { Get-MauiReleaseVersion -Content $centralContent.Replace('\z', '$') } | Should -Throw '*Unknown central*'
+        { Get-MauiReleaseVersion -Content $centralContent.Replace('>ci.inflight</', '>servicing</') } | Should -Throw '*in that order*'
+        { Get-MauiReleaseVersion -Content $centralContent.Replace('">ci.inflight</PreReleaseVersionLabel>',
+            '">ci.inflight</PreReleaseVersionLabel><FixtureSideEffect>true</FixtureSideEffect>') } | Should -Throw '*consecutive*'
+    }
+
+    It 'uses a separately recognized sandbox scope for both conditional labels' {
+        $scoped = Get-MauiReleaseVersionContent -Content $centralContent -ReleaseBand '11.0.1xx' -Sr 1 `
+            -Role candidate -SandboxPrefix release-rollover-trial/central-policy
+        (Get-MauiReleaseVersion -Content $scoped).labelSandboxPrefix | Should -Be release-rollover-trial/central-policy
+        (Get-MauiReleaseVersionContent -Content $scoped -ReleaseBand '11.0.1xx' -Sr 1 `
+            -Role candidate -SandboxPrefix release-rollover-trial/central-policy) | Should -BeExactly $scoped
+        { Get-MauiReleaseVersionContent -Content $scoped -ReleaseBand '11.0.1xx' -Sr 1 `
+            -Role candidate -SandboxPrefix release-rollover-trial/other-policy } | Should -Throw '*exact authorized sandbox scope*'
+        { Get-MauiReleaseVersionContent -Content $scoped -ReleaseBand '11.0.1xx' -Sr 1 `
+            -Role servicing } | Should -Throw '*exact authorized sandbox scope*'
+    }
+
+    It 'retains the policy through real next-lane, servicing, receipt, and completion commits' {
+        $fixture = Join-Path $TestDrive central-lanes
+        $null = New-Item -ItemType Directory -Force (Join-Path $fixture eng)
+        $null = New-Item -ItemType Directory -Force (Join-Path $fixture '.github/ISSUE_TEMPLATE')
+        $centralContent | Set-Content (Join-Path $fixture 'eng/Versions.props')
+        @'
+body:
+  - type: dropdown
+    id: version-with-bug
+    attributes:
+      options:
+        - 11.0.0
+  - type: dropdown
+    id: version-that-worked
+    attributes:
+      options:
+        - 11.0.0
+'@ | Set-Content (Join-Path $fixture '.github/ISSUE_TEMPLATE/bug-report.yml')
+        $null = Invoke-LaneFixtureGit @('init', '--quiet', '-b', 'net11')
+        $null = Invoke-LaneFixtureGit @('config', 'user.name', 'Central policy fixture')
+        $null = Invoke-LaneFixtureGit @('config', 'user.email', 'fixture@example.invalid')
+        $base = Commit-LaneFixture 'Central policy before SR1'
+        $candidate = New-LaneFixtureCandidate $base 1
+        $inflight = New-LaneFixtureConfig $candidate 2 inflight 1
+        $null = Invoke-LaneFixtureGit @('merge', '--quiet', '--no-ff', $candidate, '-m', 'Approve central-policy SR1')
+        $merge = Invoke-LaneFixtureGit @('rev-parse', 'HEAD')
+        $plan = New-MauiReleaseNextLanePlan -RepositoryPath $fixture -ReleaseBand '11.0.1xx' `
+            -Sr 1 -Merge $merge -Candidate $candidate -Inflight $inflight
+        foreach ($commit in @($plan.normalizedSha, $plan.servicingSha, $plan.nextCandidateSha, $plan.nextInflightSha)) {
+            (Get-MauiReleaseVersion -Content (Get-MauiReleaseFile -RepositoryPath $fixture `
+                -Commit $commit -Path 'eng/Versions.props')).branchDerivedLabels | Should -BeTrue
+        }
+        (Get-MauiReleaseCompletionPlan -RepositoryPath $fixture -LanePlan $plan -ReleaseBand '11.0.1xx' `
+            -Sr 1 -Fixes $plan.normalizedSha -Release $merge).restoreFixes | Should -BeFalse
+        $record = [ordered]@{
+            schemaVersion = 1; scope = 'production'; releaseBand = '11.0.1xx'; sr = 1
+            fixBranch = 'net11'; featureBranch = 'main'; pullRequest = 1; plan = $plan
+        }
+        $receipt = New-MauiReleaseLaneReceipt -RepositoryPath $fixture -Record $record
+        (Get-MauiReleaseLaneReceipt -RepositoryPath $fixture -Commit $receipt).plan.servicingSha | Should -Be $plan.servicingSha
+    }
+}
+
 Describe 'Next release lane preparation' {
     BeforeAll {
         $fixture = Join-Path $TestDrive 'lanes'

@@ -3,7 +3,7 @@
 The .NET MAUI release process uses Arcade and 1ES to build, sign, gather, and publish packages.
 
 For the proposed development-branch roles and servicing-release rotation, see the
-[versioned release branch workflow](ReleaseBranchWorkflow.md). That proposal does
+[versioned release branch workflow](ReleaseBranchWorkflow.md). That proposal
 keeps the canonical publishing/approval process below. Candidate integration can
 automatically cut the release and restore net11 CI settings, but servicing/stable
 configuration is a separate reviewed PR on the new release branch.
@@ -15,6 +15,10 @@ with `pushPackages=false`. This automatically prepares artifacts/audit, not
 NuGet.org publication or workload promotion. Existing federation, internal
 permissions and mirror deployment are required; the workflow grants none.
 Ambiguous queue responses retain durable intent refs and never blindly resubmit.
+Completed historical cycles retain their verified servicing/preparation source
+identities when a release branch later advances; a later hotfix is not
+implicitly signed or published, and does not block the next cycle. Offline plans
+cannot certify completed Azure runs.
 Final public publishing still requires the normal owner-approved canonical run
 and its manual approval/protected-service-connection gates.
 

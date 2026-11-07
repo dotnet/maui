@@ -6535,7 +6535,8 @@ function Build-VersionsPropsXml {
         # Optional servicing-flip fields. When $null, the element is omitted
         # (mirrors a freshly-cut SR branch that hasn't been flipped yet).
         [string]$PreReleaseVersionLabel,
-        [string]$StabilizePackageVersion
+        [string]$StabilizePackageVersion,
+        [switch]$BranchDerivedLabels
     )
     $labelLine = if ($null -ne $PreReleaseVersionLabel) {
         "    <PreReleaseVersionLabel>$PreReleaseVersionLabel</PreReleaseVersionLabel>`n"
@@ -6543,13 +6544,31 @@ function Build-VersionsPropsXml {
     $stabilizeLine = if ($null -ne $StabilizePackageVersion) {
         "    <StabilizePackageVersion Condition=`"'`$(StabilizePackageVersion)' == ''`">$StabilizePackageVersion</StabilizePackageVersion>`n"
     } else { "" }
+    $centralWiring = ''
+    if ($BranchDerivedLabels) {
+        Import-Module (Join-Path $PSScriptRoot '../../../../eng/scripts/MauiReleaseConfiguration.psm1') -Force
+        $conditions = & (Get-Module MauiReleaseConfiguration) {
+            Get-MauiBranchLabelCondition -Label ci.inflight
+            Get-MauiBranchLabelCondition -Label servicing
+        }
+        $labelLine = "    <PreReleaseVersionLabel>ci.main</PreReleaseVersionLabel>`n" +
+            "    <PreReleaseVersionLabel Condition=`"$($conditions[0])`">ci.inflight</PreReleaseVersionLabel>`n" +
+            "    <PreReleaseVersionLabel Condition=`"$($conditions[1])`">servicing</PreReleaseVersionLabel>`n"
+        $centralWiring = @"
+    <SdkBandVersion>$Major.$Minor.100</SdkBandVersion>
+    <PreReleaseVersionIteration></PreReleaseVersionIteration>
+    <IsServicingBuild Condition="'`$(PreReleaseVersionLabel)' == 'servicing'">true</IsServicingBuild>
+    <DotNetFinalVersionKind Condition="'`$(StabilizePackageVersion)' == 'true'">release</DotNetFinalVersionKind>
+
+"@
+    }
     @"
 <Project>
   <PropertyGroup>
     <MajorVersion>$Major</MajorVersion>
     <MinorVersion>$Minor</MinorVersion>
     <PatchVersion>$Patch</PatchVersion>
-$labelLine$stabilizeLine  </PropertyGroup>
+$labelLine$stabilizeLine$centralWiring  </PropertyGroup>
 </Project>
 "@
 }
@@ -6630,6 +6649,31 @@ function Get-CheckByAreaPrefix {
     param($Checks, [string]$Prefix)
     @($Checks | Where-Object { $_.Area.StartsWith($Prefix) }) | Select-Object -First 1
 }
+
+$centralSource = @{ Major=10; Minor=0; Patch=90; BranchDerivedLabels=$true; StabilizePackageVersion='false' }
+$centralStable = Invoke-ShipChecksWithMockedVersions `
+    -SrVersion @{ Major=10; Minor=0; Patch=80; BranchDerivedLabels=$true; StabilizePackageVersion='true' } `
+    -MainVersion $centralSource
+$centralStableCheck = Get-CheckByAreaPrefix -Checks $centralStable -Prefix 'Versions.props servicing flip'
+Assert-Eq -Label 'Central labels: reviewed stable metadata is valid despite the literal ci.main default' `
+    -Expected READY -Actual $centralStableCheck.Status
+Assert-Eq -Label 'Central labels: report explains effective SR label without claiming artifact proof' `
+    -Expected $true -Actual ($centralStableCheck.Details -match 'branch-derived.*not signed-artifact')
+$centralPending = Invoke-ShipChecksWithMockedVersions `
+    -SrVersion @{ Major=10; Minor=0; Patch=80; BranchDerivedLabels=$true; StabilizePackageVersion='false' } `
+    -MainVersion $centralSource
+$centralPendingCheck = Get-CheckByAreaPrefix -Checks $centralPending -Prefix 'Versions.props servicing flip'
+Assert-Eq -Label 'Central labels: automatic servicing label does not bypass stabilization review' `
+    -Expected BLOCKED -Actual $centralPendingCheck.Status
+Assert-Eq -Label 'Central labels: pending guidance preserves all three conditions' `
+    -Expected $true -Actual ($centralPendingCheck.NextAction -match 'Preserve.*all three branch-label')
+Assert-Eq -Label 'Central labels: pending guidance does not delete nightly conditions' `
+    -Expected $false -Actual ($centralPendingCheck.NextAction -match 'remove the nightly')
+$centralShipped = Invoke-ShipChecksWithMockedVersions `
+    -SrVersion @{ Major=10; Minor=0; Patch=80; BranchDerivedLabels=$true; StabilizePackageVersion='true' } `
+    -MainVersion $centralSource -Shipped
+Assert-Eq -Label 'Central labels: immutable shipped-tag metadata remains valid' `
+    -Expected READY -Actual (Get-CheckByAreaPrefix -Checks $centralShipped -Prefix 'Versions.props servicing flip').Status
 
 # Scenario 1: SR8 in-flight, main STILL at same cycle (10.0.80) — BLOCKED
 $checks1 = Invoke-ShipChecksWithMockedVersions `

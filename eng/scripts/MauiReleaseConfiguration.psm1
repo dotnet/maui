@@ -10,6 +10,22 @@ function Get-MauiInflightLabelCondition {
     return $condition
 }
 
+function Get-MauiBranchLabelCondition {
+    param (
+        [Parameter(Mandatory)][ValidateSet('ci.inflight', 'servicing')][string] $Label,
+        [string] $SandboxPrefix
+    )
+    $branch = if ($Label -ceq 'servicing') { 'release' } else { 'inflight' }
+    $condition = "`$([System.Text.RegularExpressions.Regex]::IsMatch('`$(BUILD_SOURCEBRANCH)', '\Arefs/heads/$branch/[1-9][0-9]*\.0\.[1-9][0-9]*xx-sr[1-9][0-9]*\z'))"
+    if ($Label -ceq 'ci.inflight') {
+        $condition = "'`$(BUILD_SOURCEBRANCH)' == 'refs/heads/inflight/current' or $condition"
+    }
+    if ($SandboxPrefix) {
+        $condition += " or `$([System.Text.RegularExpressions.Regex]::IsMatch('`$(BUILD_SOURCEBRANCH)', '\Arefs/heads/$([Regex]::Escape($SandboxPrefix))/$branch/[1-9][0-9]*\.0\.[1-9][0-9]*xx-sr[1-9][0-9]*\z'))"
+    }
+    return $condition
+}
+
 function Get-MauiReleaseVersion {
     [CmdletBinding()]
     param ([Parameter(Mandatory)][string] $Content)
@@ -45,19 +61,44 @@ function Get-MauiReleaseVersion {
     }
     $labels = @($document.SelectNodes('/Project/PropertyGroup/PreReleaseVersionLabel'))
     $defaultLabels = @($labels | Where-Object { !$_.HasAttribute('Condition') })
-    if ($defaultLabels.Count -ne 1 -or $labels.Count -gt 2 -or
+    $branchDerivedLabels = $labels.Count -eq 3
+    $labelSandboxPrefix = $null
+    if ($defaultLabels.Count -ne 1 -or $labels.Count -gt 3 -or
         $defaultLabels[0].Attributes.Count -ne 0 -or
         $defaultLabels[0].InnerText -cnotin @('ci.main', 'servicing')) {
         throw "Only existing ci.main or servicing package branding can be configured automatically."
     }
+    if ($branchDerivedLabels) {
+        if ($labels[0] -ne $defaultLabels[0] -or $labels[0].InnerText -cne 'ci.main' -or
+            $labels[1].InnerText -cne 'ci.inflight' -or $labels[2].InnerText -cne 'servicing') {
+            throw 'The central branch-label policy must contain ci.main, ci.inflight, and servicing in that order.'
+        }
+        $properties = @($versionGroup.SelectNodes('*'))
+        $labelIndex = [Array]::IndexOf($properties, $labels[0])
+        if ($labelIndex -lt 0 -or $labelIndex + 2 -ge $properties.Count -or
+            $properties[$labelIndex + 1] -ne $labels[1] -or $properties[$labelIndex + 2] -ne $labels[2] -or
+            $labelIndex + 2 -ge [Array]::IndexOf($properties, $document.SelectSingleNode('/Project/PropertyGroup/IsServicingBuild'))) {
+            throw 'Central branch labels must be consecutive properties before IsServicingBuild.'
+        }
+        if ($labels[1].GetAttribute('Condition') -cmatch 'refs/heads/(?<sandbox>release-rollover-trial/[a-z0-9][a-z0-9-]{0,40})/inflight/') {
+            $labelSandboxPrefix = $Matches.sandbox
+        }
+    }
     foreach ($label in $labels) {
         if ($label.ParentNode -ne $versionGroup -or $label.SelectNodes('*').Count -ne 0 -or
             ($label.HasAttribute('Condition') -and
-                ($label.Attributes.Count -ne 1 -or $label.InnerText -cne 'ci.inflight'))) {
+                ($label.Attributes.Count -ne 1 -or
+                    ($label.InnerText -cne 'ci.inflight' -and (!$branchDerivedLabels -or $label.InnerText -cne 'servicing'))))) {
             throw "Versions.props has an unsupported prerelease-label override."
         }
         if ($label.HasAttribute('Condition')) {
             $condition = $label.GetAttribute('Condition')
+            if ($branchDerivedLabels) {
+                if ($condition -cne (Get-MauiBranchLabelCondition -Label $label.InnerText -SandboxPrefix $labelSandboxPrefix)) {
+                    throw 'Unknown central branch-label condition requires review; it will not be replaced automatically.'
+                }
+                continue
+            }
             $sandbox = if ($condition -cmatch 'refs/heads/(?<sandbox>release-rollover-trial/[a-z0-9][a-z0-9-]{0,40})/inflight/') {
                 $Matches.sandbox
             } else { $null }
@@ -94,6 +135,8 @@ function Get-MauiReleaseVersion {
         label = $defaultLabels[0].InnerText
         stable = $values.StabilizePackageVersion -ceq 'true'
         labelCount = $labels.Count
+        branchDerivedLabels = $branchDerivedLabels
+        labelSandboxPrefix = $labelSandboxPrefix
     }
 }
 
@@ -120,6 +163,10 @@ function Get-MauiReleaseVersionContent {
         throw 'Candidate and servicing preparation preserve the verified cycle; CI lanes may advance exactly one verified cycle.'
     }
     $version = Get-MauiReleaseVersion -Content $Content
+    if ($version.branchDerivedLabels -and $version.labelSandboxPrefix -and
+        $version.labelSandboxPrefix -cne $SandboxPrefix) {
+        throw 'A scoped central label policy requires its exact authorized sandbox scope.'
+    }
     if ($version.major -ne $major -or $version.minor -ne 0 -or
         $version.sdkBand -cne $ReleaseBand.Replace('xx', '00') -or
         $version.patch -lt ([long] $SourceSr * 10) -or $version.patch -ge (([long] $SourceSr + 1) * 10)) {
@@ -131,19 +178,28 @@ function Get-MauiReleaseVersionContent {
     if ($labelMatches.Count -ne $version.labelCount) {
         throw 'Unsupported prerelease-label layout; no source content was replaced.'
     }
-    $indent = $labelMatches[0].Groups['indent'].Value
-    $replacement = "${indent}<PreReleaseVersionLabel>servicing</PreReleaseVersionLabel>$newline"
-    if ($Role -cne 'servicing') {
-        $condition = Get-MauiInflightLabelCondition -SandboxPrefix $SandboxPrefix
-        $condition = $condition.Replace('&', '&amp;').Replace('"', '&quot;').Replace('<', '&lt;').Replace('>', '&gt;')
-        $replacement = "${indent}<PreReleaseVersionLabel>ci.main</PreReleaseVersionLabel>$newline" +
-            "${indent}<PreReleaseVersionLabel Condition=`"$condition`">ci.inflight</PreReleaseVersionLabel>$newline"
-    }
-    # Match only XML-validated leaf properties, preserving all unrelated bytes.
-    for ($i = $labelMatches.Count - 1; $i -ge 0; $i--) {
-        $match = $labelMatches[$i]
-        $text = if ($i -eq 0) { $replacement } else { '' }
-        $Content = $Content.Remove($match.Index, $match.Length).Insert($match.Index, $text)
+    if (!$version.branchDerivedLabels -or ($SandboxPrefix -and $version.labelSandboxPrefix -cne $SandboxPrefix)) {
+        $indent = $labelMatches[0].Groups['indent'].Value
+        $replacement = "${indent}<PreReleaseVersionLabel>servicing</PreReleaseVersionLabel>$newline"
+        if ($Role -cne 'servicing' -or $version.branchDerivedLabels) {
+            $condition = if ($version.branchDerivedLabels) {
+                Get-MauiBranchLabelCondition -Label ci.inflight -SandboxPrefix $SandboxPrefix
+            } else { Get-MauiInflightLabelCondition -SandboxPrefix $SandboxPrefix }
+            $condition = $condition.Replace('&', '&amp;').Replace('"', '&quot;').Replace('<', '&lt;').Replace('>', '&gt;')
+            $replacement = "${indent}<PreReleaseVersionLabel>ci.main</PreReleaseVersionLabel>$newline" +
+                "${indent}<PreReleaseVersionLabel Condition=`"$condition`">ci.inflight</PreReleaseVersionLabel>$newline"
+            if ($version.branchDerivedLabels) {
+                $condition = Get-MauiBranchLabelCondition -Label servicing -SandboxPrefix $SandboxPrefix
+                $condition = $condition.Replace('&', '&amp;').Replace('"', '&quot;').Replace('<', '&lt;').Replace('>', '&gt;')
+                $replacement += "${indent}<PreReleaseVersionLabel Condition=`"$condition`">servicing</PreReleaseVersionLabel>$newline"
+            }
+        }
+        # Match only XML-validated leaf properties, preserving all unrelated bytes.
+        for ($i = $labelMatches.Count - 1; $i -ge 0; $i--) {
+            $match = $labelMatches[$i]
+            $text = if ($i -eq 0) { $replacement } else { '' }
+            $Content = $Content.Remove($match.Index, $match.Length).Insert($match.Index, $text)
+        }
     }
     foreach ($change in @(
             @{ name = 'PatchVersion'; value = if ($SourceSr -eq $Sr) { $version.patch } else { $Sr * 10 } },
@@ -239,7 +295,8 @@ function Get-MauiVerifiedPublishedVersion {
     }
     $null = Get-MauiReleaseVersionContent -Content $VersionContent -ReleaseBand $ReleaseBand -Sr $sr -Role servicing
     $version = Get-MauiReleaseVersion -Content $VersionContent
-    if ($version.patch -ne $patch -or $version.label -cne 'servicing' -or !$version.stable -or $version.labelCount -ne 1) {
+    if ($version.patch -ne $patch -or !$version.stable -or
+        (!$version.branchDerivedLabels -and ($version.label -cne 'servicing' -or $version.labelCount -ne 1))) {
         throw 'The immutable published tag disagrees with its stable servicing version metadata.'
     }
     [pscustomobject]@{
@@ -407,7 +464,8 @@ function New-MauiReleaseNextLanePlan {
     $inflightContent = Get-MauiReleaseFile -RepositoryPath $RepositoryPath -Commit $Inflight -Path 'eng/Versions.props'
     $null = Get-MauiReleaseVersionContent -Content $inflightContent -ReleaseBand $ReleaseBand -Sr ($Sr + 1) -Role inflight
     $inflightVersion = Get-MauiReleaseVersion -Content $inflightContent
-    if ($inflightVersion.stable -or $inflightVersion.label -cne 'ci.main' -or $inflightVersion.labelCount -ne 2) {
+    if ($inflightVersion.stable -or $inflightVersion.label -cne 'ci.main' -or
+        (!$inflightVersion.branchDerivedLabels -and $inflightVersion.labelCount -ne 2)) {
         throw 'The following inflight must have correct next-cycle CI metadata before preparing new lanes.'
     }
     $mergeContent = Get-MauiReleaseFile -RepositoryPath $RepositoryPath -Commit $Merge -Path 'eng/Versions.props'
@@ -531,7 +589,7 @@ function Get-MauiReleaseCompletionPlan {
     $housekeeping = Get-MauiReleaseVersion -Content (
         Get-MauiReleaseFile -RepositoryPath $RepositoryPath -Commit $LanePlan.normalizedSha -Path 'eng/Versions.props')
     if ($housekeeping.patch -ne (($Sr + 1) * 10) -or $housekeeping.label -cne 'ci.main' -or
-        $housekeeping.stable -or $housekeeping.labelCount -ne 2) {
+        $housekeeping.stable -or (!$housekeeping.branchDerivedLabels -and $housekeeping.labelCount -ne 2)) {
         throw 'Prepared housekeeping does not restore the next-cycle CI metadata.'
     }
     $template = Get-MauiReleaseFile -RepositoryPath $RepositoryPath -Commit $LanePlan.normalizedSha -Path '.github/ISSUE_TEMPLATE/bug-report.yml'

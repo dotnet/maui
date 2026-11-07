@@ -328,7 +328,7 @@ function Get-VersionsPropsState {
         Parses eng/Versions.props at $Ref and returns the version-bump state.
     .DESCRIPTION
         Returns @{ Major; Minor; Patch; PreReleaseVersionLabel; PreReleaseVersionIteration;
-                   StabilizePackageVersion; FullVersion } or $null if the file is
+                   StabilizePackageVersion; BranchDerivedLabels; FullVersion } or $null if the file is
         unreadable. FullVersion is "<Major>.<Minor>.<Patch>" — the version that this
         branch's builds would emit.
     #>
@@ -345,6 +345,12 @@ function Get-VersionsPropsState {
     $minor = _Extract $content 'MinorVersion'
     $patch = _Extract $content 'PatchVersion'
     if (-not $major -or -not $minor -or $null -eq $patch) { return $null }
+    $branchDerivedLabels = $false
+    if ([regex]::Matches($content, '<PreReleaseVersionLabel(?:\s[^>]*)?>').Count -ge 3) {
+        Import-Module (Join-Path $PSScriptRoot '../../../../eng/scripts/MauiReleaseConfiguration.psm1') -Force
+        $parsed = MauiReleaseConfiguration\Get-MauiReleaseVersion -Content $content
+        $branchDerivedLabels = $parsed.branchDerivedLabels
+    }
 
     @{
         Major                       = [int]$major
@@ -353,6 +359,7 @@ function Get-VersionsPropsState {
         PreReleaseVersionLabel      = (_Extract $content 'PreReleaseVersionLabel')
         PreReleaseVersionIteration  = (_Extract $content 'PreReleaseVersionIteration')
         StabilizePackageVersion     = (_Extract $content 'StabilizePackageVersion')
+        BranchDerivedLabels         = $branchDerivedLabels
         FullVersion                 = "$major.$minor.$patch"
     }
 }
@@ -1079,10 +1086,9 @@ function Get-ReleaseShipChecks {
     }
 
     # === Servicing-release flip ===
-    # When an SR branch is cut from main, two eng/Versions.props values MUST be
-    # flipped to switch the branch from "CI build" mode to "stable release" mode:
-    #   - PreReleaseVersionLabel:  ci.main  ->  servicing
-    #   - StabilizePackageVersion: false    ->  true   (default value, may be unset)
+    # Legacy metadata requires a servicing label and stabilization. A recognized
+    # central label policy already selects servicing on SR refs; preserve it and
+    # still require the separately reviewed stabilization change.
     #
     # Without these flips, the SR branch still produces prerelease packages
     # (`1.2.3-servicing-…` or `1.2.3-ci-…`) — never a stable `1.2.3` package.
@@ -1098,9 +1104,16 @@ function Get-ReleaseShipChecks {
         $expectedStabilize = 'true'
         $actualLabel = if ($vp.PreReleaseVersionLabel) { $vp.PreReleaseVersionLabel } else { '<unset>' }
         $actualStabilize = if ($vp.StabilizePackageVersion) { $vp.StabilizePackageVersion } else { '<unset>' }
-        $labelOk = ($vp.PreReleaseVersionLabel -eq $expectedLabel)
+        $centralLabels = [bool](Get-MetadataValue -Container $vp -Name 'BranchDerivedLabels' -Default $false)
+        $centralServicing = $centralLabels -and ($isShipped -or
+            $Ctx.srBranch -cmatch '^release/[1-9][0-9]*\.0\.[1-9][0-9]*xx-sr[1-9][0-9]*$')
+        $labelOk = ($vp.PreReleaseVersionLabel -eq $expectedLabel) -or $centralServicing
         $stabilizeOk = ($vp.StabilizePackageVersion -eq $expectedStabilize)
-        if ($labelOk -and $stabilizeOk) {
+        if ($centralServicing -and $stabilizeOk) {
+            $checks += New-ReadinessCheck -Area $flipArea -Status 'READY' `
+                -Details "``$versionsRef`` preserves the recognized branch-derived label policy and explicitly sets ``StabilizePackageVersion=true``. SR refs select ``servicing`` automatically; the literal ``ci.main`` default is not the effective SR label. Stable configuration is not signed-artifact or publication proof." `
+                -NextAction 'No label change needed; retain the central policy.'
+        } elseif ($labelOk -and $stabilizeOk) {
             # Provenance: was the flip done by an SR-direct commit, or just
             # inherited from the previous SR via the catch-up merge?
             #
@@ -1173,6 +1186,8 @@ function Get-ReleaseShipChecks {
             }
             $flipNextAction = if ($isShipped) {
                 "Inspect the published ``$versionsRef`` packages and release metadata. If stable assets are wrong, coordinate the release-owner hotfix/rebuild path; otherwise document why the tag is safe despite the configuration."
+            } elseif ($centralLabels) {
+                "After the last required backport, merge the separately reviewed servicing PR targeting ``$($Ctx.srBranch)``. Preserve ``PatchVersion`` and all three branch-label properties; set ``StabilizePackageVersion`` to ``true`` and rerun final CI. The automatic ``servicing`` label and ``IsServicingBuild=true`` alone do not stabilize packages."
             } else {
                 "After the last required backport, open a focused PR targeting ``$($Ctx.srBranch)``. Preserve ``PatchVersion``; replace the base ``ci.main`` label and remove the nightly-label conditional with ``<PreReleaseVersionLabel>servicing</PreReleaseVersionLabel>``, then set ``<StabilizePackageVersion Condition=`"'`$(StabilizePackageVersion)' == ''`">true</StabilizePackageVersion>``. Keep ``$($Ctx.mainBranch)`` on its next-cycle version and rerun final CI after the SR PR merges."
             }

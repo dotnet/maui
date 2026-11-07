@@ -231,6 +231,22 @@ suffix. `SdkBandVersion` remains `11.0.100` throughout the `11.0.1xx` train; a
 servicing patch increment is not an SDK feature-band change. Moving to a
 different band requires its own coherent SDK/workload and release-state update.
 
+The branch-derived label policy is proposed separately in
+[#40042](https://github.com/dotnet/maui/pull/40042), targeting current `main`.
+Adopt it on the .NET 11 source before the .NET 12 migration. The release helper
+strictly recognizes its three ordered label properties and preserves them
+byte-for-byte during production phase changes, rather than repeatedly stamping
+per-branch labels. Legacy one/two-label sources remain supported. Trial scopes
+use separately recognized conditions for both inflight and servicing refs.
+
+With that policy, cutting an SR branch immediately selects `servicing` and
+enables the existing `IsServicingBuild` condition, but does **not** stabilize its
+packages. The separate release-targeted PR still sets
+`StabilizePackageVersion=true` after review, without removing the central
+conditions or changing the patch. Readiness and verified-publication checks
+validate that distinction instead of mistaking the literal `ci.main` default
+for the effective SR label. No branch name alone proves stable publication.
+
 The next candidate includes the normalized fixes commit in its ancestry. A real
 three-way merge preserves both approved integration contents and future inflight
 payload. Conflicts stop the operation; no file is blindly replaced. The separate
@@ -415,6 +431,12 @@ connection, mirror overwrite or paid resource is created. Missing prerequisites
 fail explicitly. Dispatch intents are persisted before queue requests; an
 ambiguous response is reconciled by exact source/parameters before another queue,
 never blindly retried. The pipeline and source revisions are pinned.
+If a retained historical release branch advances after its signing and
+preparation have succeeded, recovery verifies those completed runs against the
+original servicing merge and saved preparation-source identity, then continues
+to later releases. It never signs the new hotfix implicitly or substitutes it
+for the approved package source. Offline plans report missing completion
+evidence rather than treating an intent as success.
 Canonical `currentSr`/`nightlyMode` advancement remains a reviewed state update,
 not an implied claim that signed nightlies or the entire release have shipped.
 
