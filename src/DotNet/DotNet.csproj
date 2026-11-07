@@ -185,7 +185,11 @@
       <!-- Windows argv parsing consumes backslashes immediately before a closing quote. -->
       <_ToolRuntimeDotNetDirectoryArgument Condition="$([MSBuild]::IsOSPlatform('windows'))">$([System.Text.RegularExpressions.Regex]::Replace(&quot;$(DotNetDirectory)&quot;, '(\\+)$', '$1$1'))</_ToolRuntimeDotNetDirectoryArgument>
     </PropertyGroup>
-    <Exec Command="&quot;$(DotNetToolPath)&quot; msbuild &quot;$(MSBuildProjectFullPath)&quot; -t:_InstallToolRuntimesCore -p:DotNetDirectory=&quot;$(_ToolRuntimeDotNetDirectoryArgument)&quot; -nologo" />
+    <Exec Condition="$([MSBuild]::IsOSPlatform('windows'))" Command="&quot;$(DotNetToolPath)&quot; msbuild &quot;$(MSBuildProjectFullPath)&quot; -t:_InstallToolRuntimesCore -p:DotNetDirectory=&quot;$(_ToolRuntimeDotNetDirectoryArgument)&quot; -nologo" />
+    <!-- Environment values remain data when the Unix shell expands the quoted arguments. -->
+    <Exec Condition="!$([MSBuild]::IsOSPlatform('windows'))"
+        Command="&quot;${MAUI_TOOL_RUNTIME_DOTNET}&quot; msbuild &quot;${MAUI_TOOL_RUNTIME_PROJECT}&quot; -t:_InstallToolRuntimesCore &quot;-p:DotNetDirectory=${MAUI_TOOL_RUNTIME_DIRECTORY}&quot; -nologo"
+        EnvironmentVariables="MAUI_TOOL_RUNTIME_DOTNET=$([MSBuild]::Escape('$(DotNetToolPath)'));MAUI_TOOL_RUNTIME_PROJECT=$([MSBuild]::Escape('$(MSBuildProjectFullPath)'));MAUI_TOOL_RUNTIME_DIRECTORY=$([MSBuild]::Escape('$(DotNetDirectory)'))" />
   </Target>
 
   <Target Name="_InstallToolRuntimesCore">

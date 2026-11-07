@@ -55,7 +55,9 @@ declared in `global.json` for tools such as Cake; this does not change the .NET 
 target frameworks. The fresh-SDK runtime bootstrap preserves custom Windows
 installation paths containing spaces or a trailing backslash. Its Windows
 entrypoint forwards arguments to the shared installer with PowerShell `-File`,
-without modifying the Arcade-owned scripts.
+without modifying the Arcade-owned scripts. On Unix, the child MSBuild process
+receives paths through quoted environment values so literal `$`, spaces, and
+apostrophes are not interpreted as shell syntax.
 
 The .NET 12 Android binding generator no longer emits the legacy
 `ThresholdClass` and `ThresholdType` overrides on MAUI's native binding types.

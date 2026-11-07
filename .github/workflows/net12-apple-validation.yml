@@ -89,6 +89,38 @@ jobs:
           .dotnet/dotnet --info
           .dotnet/dotnet tool restore
 
+      - name: Verify literal Unix bootstrap paths
+        run: |
+          set -euo pipefail
+          probe_root=$(mktemp -d "$RUNNER_TEMP/tool-runtime-path.XXXXXX")
+          sdk_root="$probe_root/Maui SDK literal \$sdk's"
+          project_root="$probe_root/Maui project literal \$repo"
+          mkdir -p "$sdk_root/shared/Microsoft.NETCore.App"
+          cp "$DOTNET_ROOT/dotnet" "$sdk_root/dotnet"
+          ln -s "$DOTNET_ROOT/host" "$sdk_root/host"
+          ln -s "$DOTNET_ROOT/sdk" "$sdk_root/sdk"
+          ln -s "$GITHUB_WORKSPACE" "$project_root"
+          for runtime in "$DOTNET_ROOT/shared/Microsoft.NETCore.App"/12.*; do
+            test -d "$runtime"
+            ln -s "$runtime" "$sdk_root/shared/Microsoft.NETCore.App/$(basename "$runtime")"
+          done
+          while IFS= read -r version; do
+            test ! -e "$sdk_root/shared/Microsoft.NETCore.App/$version"
+          done < <(jq -er '.tools.runtimes.dotnet[]' global.json)
+          dotnet msbuild "$project_root/src/DotNet/DotNet.csproj" \
+            -t:_InstallToolRuntimes "-p:DotNetDirectory=$sdk_root/" \
+            -verbosity:minimal -nologo 2>&1 |
+            tee artifacts/log/net12-apple/literal-bootstrap-path.log
+          grep -F "Tool runtime install directory: [$sdk_root/]" \
+            artifacts/log/net12-apple/literal-bootstrap-path.log
+          "$sdk_root/dotnet" --list-runtimes |
+            tee artifacts/log/net12-apple/literal-bootstrap-runtimes.log
+          while IFS= read -r version; do
+            test -f "$sdk_root/shared/Microsoft.NETCore.App/$version/libcoreclr.dylib"
+            grep -F "Microsoft.NETCore.App $version [$sdk_root/shared/Microsoft.NETCore.App]" \
+              artifacts/log/net12-apple/literal-bootstrap-runtimes.log
+          done < <(jq -er '.tools.runtimes.dotnet[]' global.json)
+
       - name: Install only the pinned Apple workload
         run: |
           set -euo pipefail
