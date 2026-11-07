@@ -130,10 +130,7 @@ namespace Microsoft.Maui.Handlers
 			if (virtualView?.VisualDiagnosticsOverlay?.IsPlatformViewInitialized == true)
 				virtualView.VisualDiagnosticsOverlay.Deinitialize();
 
-			if (_rootManager is { } rootManager)
-			{
-				rootManager.Disconnect((_, _) => CompleteRootManagerDisconnect(rootManager, lifecycle));
-			}
+			_rootManager = null;
 		}
 
 		void OnRootViewChanged(object? sender, EventArgs e)
@@ -189,9 +186,7 @@ namespace Microsoft.Maui.Handlers
 
 			var rootManager = handler.MauiContext.GetNavigationRootManager();
 			rootManager.Connect(
-				window.Content,
-				rootPrepared: rootView => rootPrepared(rootManager, rootView),
-				rootDiscarded: rootView => rootDiscarded(rootManager, rootView));
+				window.Content);
 		}
 
 		void UpdateVirtualViewFrame(Activity activity)
