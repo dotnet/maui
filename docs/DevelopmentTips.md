@@ -99,6 +99,12 @@ does not preserve that peer in the current CoreCLR linker.
 These peers are borrowed from the context and must not be disposed by return-type
 mappings or keyboard helpers.
 
+Windows Switch hover-resource state follows the live `ToggleSwitch`, not its
+temporary WinRT resource-dictionary wrappers. The owned theme dictionaries stay
+rooted through that per-control state so garbage collection cannot duplicate
+the override or lose cleanup/restoration state. Application resources and later
+replacements still take part in the existing restoration checks.
+
 The `.NET 12 Apple validation` GitHub Actions lane uses the standard `xcode-27`
 runner, which is free for public repositories. It verifies the actual Xcode
 27.1 installation and runs existing Core device tests on a dedicated iOS
