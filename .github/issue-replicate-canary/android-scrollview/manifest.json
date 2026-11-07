@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "issueNumber": 37323,
+  "commentId": 5262801924,
+  "platform": "android",
+  "targetRef": "main",
+  "targetSha": "b78a78f5d163fa531029316e0047a3d3ef8b6e20",
+  "author": "TamilarasanSF4853",
+  "issueText": "Historical canary snapshot for issue 37323: changing a bound ScrollView padding should move its rendered content. This generated candidate passed in the earlier fork trial; it did not establish that the reported bug was fixed.",
+  "sourceType": "attachment",
+  "sourceUrl": "https://github.com/user-attachments/files/30944795/ScrollViewBugIssue.zip",
+  "sourceCommit": "",
+  "sampleSha256": "d4ef0635fdb39ef3edb110383678d465c40a69486373652c11c15f6ef769b4c2"
+}
