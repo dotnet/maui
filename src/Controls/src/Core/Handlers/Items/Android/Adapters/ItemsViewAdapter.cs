@@ -21,6 +21,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		protected readonly TItemsView ItemsView;
 		readonly Func<View, Context, ItemContentView> _createItemContentView;
 		protected internal TItemsViewSource ItemsSource;
+		internal ItemsViewCollectionChangedDispatcher CollectionChangedDispatcher { get; }
 
 		IItemsViewSource IItemsViewAdapter.ItemsSource => ItemsSource;
 
@@ -31,6 +32,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		protected internal ItemsViewAdapter(TItemsView itemsView, Func<View, Context, ItemContentView> createItemContentView = null)
 		{
 			ItemsView = itemsView ?? throw new ArgumentNullException(nameof(itemsView));
+			CollectionChangedDispatcher = new ItemsViewCollectionChangedDispatcher(itemsView.Dispatcher);
 
 			UpdateUsingItemTemplate();
 
@@ -47,7 +49,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected virtual TItemsViewSource CreateItemsSource()
 		{
-			return (TItemsViewSource)ItemsSourceFactory.Create(ItemsView, this);
+			return (TItemsViewSource)ItemsSourceFactory.Create(ItemsView.ItemsSource, ItemsView, new AdapterNotifier(this), CollectionChangedDispatcher);
 		}
 
 		protected virtual void ItemsViewPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs property)
@@ -135,6 +137,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				if (disposing)
 				{
+					CollectionChangedDispatcher.Dispose();
 					ItemsSource?.Dispose();
 					ItemsView.PropertyChanged -= ItemsViewPropertyChanged;
 				}

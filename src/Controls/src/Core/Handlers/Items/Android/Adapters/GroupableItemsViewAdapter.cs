@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected override TItemsViewSource CreateItemsSource()
 		{
-			return (TItemsViewSource)ItemsSourceFactory.Create(ItemsView, this);
+			return (TItemsViewSource)ItemsSourceFactory.Create(ItemsView, this, CollectionChangedDispatcher);
 		}
 
 		public override int GetItemViewType(int position)
