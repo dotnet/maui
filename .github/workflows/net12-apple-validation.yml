@@ -497,6 +497,59 @@ jobs:
             [System.IO.File]::WriteAllText($driverPath, $originalDriver)
           }
 
+          $sourceBracketRoot = Join-Path $env:RUNNER_TEMP 'Maui source [1]'
+          $sourceSiblingRoot = Join-Path $env:RUNNER_TEMP 'Maui source 1'
+          New-Item -ItemType Junction -Path $sourceBracketRoot -Target $env:GITHUB_WORKSPACE | Out-Null
+          $sourceBracketProject = Join-Path $sourceBracketRoot 'src/DotNet/DotNet.csproj'
+          $safeToolsImport = '. $copiedToolsPath'
+          $unsafeToolsImport = ". (Join-Path `$PSScriptRoot '../../eng/common/tools.ps1')"
+          if (-not $originalDriver.Contains($safeToolsImport)) {
+            throw 'The source-bracket control cannot locate shared-tools initialization.'
+          }
+          try {
+            foreach ($phase in @('baseline', 'fixed', 'reverted', 'restored')) {
+              foreach ($version in $globalJson.tools.runtimes.dotnet) {
+                $destination = Join-Path $sharedRuntimeRoot $version
+                if (Test-Path -LiteralPath $destination) {
+                  Remove-Item -LiteralPath $destination -Recurse -Force
+                }
+              }
+              $usesUnsafeImport = $phase -in @('baseline', 'reverted')
+              $driverContent = if ($usesUnsafeImport) {
+                $originalDriver.Replace($safeToolsImport, $unsafeToolsImport)
+              } else {
+                $originalDriver
+              }
+              [System.IO.File]::WriteAllText($driverPath, $driverContent)
+              & $bootstrapDotnet msbuild $sourceBracketProject -t:_InstallToolRuntimes `
+                "-p:DotNetDirectory=$trailingArgument" -nologo `
+                -verbosity:minimal 2>&1 | Tee-Object (Join-Path $logs "source-bracket-$phase.log")
+              $sourceExitCode = $LASTEXITCODE
+              Write-Host "Literal-source bracket $phase exit code: $sourceExitCode"
+              if (($sourceExitCode -eq 0) -eq $usesUnsafeImport) {
+                throw "The source-bracket $phase did not discriminate literal initialization."
+              }
+            }
+            [System.IO.File]::WriteAllText($driverPath, $originalDriver)
+            $siblingCommon = Join-Path $sourceSiblingRoot 'eng/common'
+            [System.IO.Directory]::CreateDirectory($siblingCommon) | Out-Null
+            [System.IO.File]::WriteAllText((Join-Path $siblingCommon 'tools.ps1'), "throw 'Wrong checkout selected'")
+            foreach ($version in $globalJson.tools.runtimes.dotnet) {
+              Remove-Item -LiteralPath (Join-Path $sharedRuntimeRoot $version) -Recurse -Force
+            }
+            & $bootstrapDotnet msbuild $sourceBracketProject -t:_InstallToolRuntimes `
+              "-p:DotNetDirectory=$trailingArgument" -nologo `
+              -verbosity:minimal 2>&1 | Tee-Object (Join-Path $logs 'source-bracket-conflicting-sibling.log')
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+            foreach ($version in $globalJson.tools.runtimes.dotnet) {
+              if (-not (Test-Path -LiteralPath (Join-Path $sharedRuntimeRoot "$version/System.Private.CoreLib.dll"))) {
+                throw 'The bracket checkout with a conflicting sibling did not install the requested runtime.'
+              }
+            }
+          } finally {
+            [System.IO.File]::WriteAllText($driverPath, $originalDriver)
+          }
+
       - name: Upload bootstrap evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

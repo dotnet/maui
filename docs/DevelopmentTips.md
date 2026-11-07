@@ -57,7 +57,10 @@ installation paths containing spaces or a trailing backslash. Its Windows
 entrypoint uses PowerShell `-File` and the shared `InstallDotNet` function instead
 of forwarding paths through a CMD installer. It preserves the declared tool
 runtime and architecture entries without modifying the Arcade-owned scripts.
-The shared installer runs in an isolated staging directory; .NET file APIs copy
+Shared tools initialize from a literal-safe temporary context, using unchanged
+script copies and the explicitly selected global.json, so bracket-named checkouts
+cannot resolve to a sibling repository. The shared installer runs in an isolated
+staging directory; .NET file APIs copy
 its runtime files to the literal destination and verify it before success.
 This prevents PowerShell wildcard paths such as `sdk[1]` from matching `sdk1`
 and silently skipping installation, while preserving the existing SDK host.
