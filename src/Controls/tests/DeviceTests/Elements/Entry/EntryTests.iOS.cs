@@ -16,6 +16,89 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class EntryTests
 	{
+		class ClearButtonFirstEntryHandler : EntryHandler
+		{
+			public ClearButtonFirstEntryHandler() : base(new PropertyMapper<IEntry, IEntryHandler>(EntryHandler.Mapper)
+			{
+				[nameof(IEntry.ClearButtonVisibility)] = EntryHandler.MapClearButtonVisibility
+			})
+			{
+			}
+		}
+
+		[Theory]
+		[InlineData(ClearButtonVisibility.Never, false, false, UITextFieldViewMode.Never)]
+		[InlineData(ClearButtonVisibility.Never, false, true, UITextFieldViewMode.Never)]
+		[InlineData(ClearButtonVisibility.Never, true, false, UITextFieldViewMode.Never)]
+		[InlineData(ClearButtonVisibility.Never, true, true, UITextFieldViewMode.Never)]
+		[InlineData(ClearButtonVisibility.WhileEditing, false, false, UITextFieldViewMode.Never)]
+		[InlineData(ClearButtonVisibility.WhileEditing, false, true, UITextFieldViewMode.Never)]
+		[InlineData(ClearButtonVisibility.WhileEditing, true, false, UITextFieldViewMode.WhileEditing)]
+		[InlineData(ClearButtonVisibility.WhileEditing, true, true, UITextFieldViewMode.Never)]
+		public async Task ClearButtonModeInitializesAfterControlsTextMapping(
+			ClearButtonVisibility visibility, bool hasText, bool isReadOnly, UITextFieldViewMode expected)
+		{
+			SetupBuilder();
+			var entry = new Entry
+			{
+				Text = hasText ? "MAUI" : string.Empty,
+				IsReadOnly = isReadOnly,
+				ClearButtonVisibility = visibility
+			};
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<ClearButtonFirstEntryHandler>(entry);
+				if (hasText)
+					Assert.Equal("MAUI", GetPlatformControl(handler).Text);
+				else
+					Assert.True(string.IsNullOrEmpty(GetPlatformControl(handler).Text));
+				Assert.Equal(expected, GetPlatformControl(handler).ClearButtonMode);
+				Assert.Equal(visibility, entry.ClearButtonVisibility);
+			});
+		}
+
+		[Theory]
+		[InlineData(TextTransform.Default, "MiXeD")]
+		[InlineData(TextTransform.Uppercase, "MIXED")]
+		[InlineData(TextTransform.Lowercase, "mixed")]
+		public async Task ClearButtonModeTracksControlsTextAndTransform(TextTransform transform, string expected)
+		{
+			SetupBuilder();
+			var entry = new Entry
+			{
+				TextTransform = transform,
+				Text = "MiXeD",
+				ClearButtonVisibility = ClearButtonVisibility.WhileEditing
+			};
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<ClearButtonFirstEntryHandler>(entry);
+				var native = GetPlatformControl(handler);
+				handler.UpdateValue(nameof(IEntry.ClearButtonVisibility));
+				Assert.Equal(UITextFieldViewMode.WhileEditing, native.ClearButtonMode);
+				Assert.Equal(expected, native.Text);
+
+				entry.Text = string.Empty;
+				Assert.Equal(UITextFieldViewMode.Never, native.ClearButtonMode);
+
+				entry.Text = "MiXeD";
+				Assert.Equal(expected, native.Text);
+				Assert.Equal(UITextFieldViewMode.WhileEditing, native.ClearButtonMode);
+				Assert.Equal(ClearButtonVisibility.WhileEditing, entry.ClearButtonVisibility);
+
+				entry.TextTransform = TextTransform.Uppercase;
+				Assert.Equal("MIXED", native.Text);
+				Assert.Equal(UITextFieldViewMode.WhileEditing, native.ClearButtonMode);
+
+				entry.ClearButtonVisibility = ClearButtonVisibility.Never;
+				entry.Text = string.Empty;
+				entry.Text = "hidden";
+				Assert.Equal(UITextFieldViewMode.Never, native.ClearButtonMode);
+			});
+		}
+
 		static UITextField GetPlatformControl(EntryHandler handler) =>
 			(UITextField)handler.PlatformView;
 

@@ -15,8 +15,11 @@ namespace Microsoft.Maui.Controls
 
 		public static void MapText(IEntryHandler handler, Entry entry)
 		{
+			var wasEmpty = string.IsNullOrEmpty(handler.PlatformView?.Text);
 			Platform.TextExtensions.UpdateText(handler.PlatformView, entry);
 			EntryHandler.MapFormatting(handler, entry);
+			if (wasEmpty != string.IsNullOrEmpty(entry.Text))
+				handler.UpdateValue(nameof(IEntry.ClearButtonVisibility));
 		}
 
 		public static void MapCursorColor(EntryHandler handler, Entry entry) =>
