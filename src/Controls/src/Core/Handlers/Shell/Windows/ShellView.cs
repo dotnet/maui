@@ -97,6 +97,11 @@ namespace Microsoft.Maui.Controls.Platform
 				element.Handler?.DisconnectHandler();
 			}
 
+			foreach (var flyoutItem in this.GetChildren<ShellFlyoutItemView>())
+			{
+				flyoutItem?.Disconnect();
+			}
+
 			ItemRenderer = null;
 			Content = null;
 			Element = null;
