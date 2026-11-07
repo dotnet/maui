@@ -5,12 +5,20 @@
     An explicitly supplied device is borrowed, never deleted. Otherwise the runner
     provisions and cleans up its own emulator/simulator. Windows supports either
     unpackaged execution or an owned signed MSIX activated with its real identity.
+.PARAMETER ProjectPath
+    Explicit native test project inside RepoRoot, instead of a known Project alias.
+.PARAMETER TargetFramework
+    Optional explicit platform TFM. Defaults to the checkout's MAUI TFM.
 #>
-[CmdletBinding()]
+[CmdletBinding(DefaultParameterSetName = 'KnownProject')]
 param(
-    [Parameter(Mandatory, Position = 0)]
+    [Parameter(Mandatory, Position = 0, ParameterSetName = 'KnownProject')]
     [ValidateSet('Controls', 'Core', 'Essentials', 'Graphics', 'BlazorWebView')]
     [string] $Project,
+    [Parameter(Mandatory, ParameterSetName = 'ProjectPath')]
+    [string] $ProjectPath,
+    [ValidatePattern('^net[0-9]+\.[0-9]+-(android|ios|maccatalyst|windows)[0-9.]*$')]
+    [string] $TargetFramework,
     [ValidateSet('ios', 'maccatalyst', 'android', 'windows')]
     [string] $Platform,
     [string] $iOSVersion,
@@ -299,10 +307,28 @@ try {
         Graphics = 'src/Graphics/tests/DeviceTests/Graphics.DeviceTests.csproj'
         BlazorWebView = 'src/BlazorWebView/tests/DeviceTests/MauiBlazorWebView.DeviceTests.csproj'
     }
-    $projectPath = Join-Path $RepoRoot $projects[$Project]
-    $target = switch ($Platform) {
-        windows { "$tfm-windows10.0.19041.0" }
-        default { "$tfm-$Platform" }
+    if ($ProjectPath) {
+        $projectPath = [IO.Path]::GetFullPath($(if ([IO.Path]::IsPathRooted($ProjectPath)) {
+            $ProjectPath
+        } else { Join-Path $RepoRoot $ProjectPath }))
+        $rootPrefix = $RepoRoot.TrimEnd([IO.Path]::DirectorySeparatorChar) + [IO.Path]::DirectorySeparatorChar
+        $comparison = if ($IsWindows) { [StringComparison]::OrdinalIgnoreCase } else { [StringComparison]::Ordinal }
+        if (!$projectPath.StartsWith($rootPrefix, $comparison) -or
+            [IO.Path]::GetExtension($projectPath) -ne '.csproj' -or
+            !(Test-Path -LiteralPath $projectPath -PathType Leaf)) {
+            throw 'ProjectPath must identify an existing native test project inside RepoRoot.'
+        }
+    } else {
+        $projectPath = Join-Path $RepoRoot $projects[$Project]
+    }
+    $target = if ($TargetFramework) { $TargetFramework } else {
+        switch ($Platform) {
+            windows { "$tfm-windows10.0.19041.0" }
+            default { "$tfm-$Platform" }
+        }
+    }
+    if ($target -notmatch ("^net[0-9]+\.[0-9]+-" + [regex]::Escape($Platform) + '[0-9.]*$')) {
+        throw "TargetFramework '$target' does not match platform '$Platform'."
     }
     $architecture = [Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString().ToLowerInvariant()
     $rid = switch ($Platform) {

@@ -91,9 +91,12 @@ with a category constraint. Expressions that cannot be represented faithfully
 fail with guidance instead of silently running a different selection.
 An xUnit query beginning with `/`, such as `/[Category=Core]`, is forwarded using
 `--filter-query`. No no-tests exit code is suppressed.
+Distributed MSBuild loggers stay on the build commands, not on the MTP test
+command: forwarding `-dl` to the test host causes an invalid-arguments handshake
+failure. Test binlogs, genuine TRX and NUnit XML remain enabled.
 
-Native `testOnly`, `test`, and `buildAndTest` tasks in the Android, iOS, and
-Mac Catalyst Cake scripts now invoke `dotnet test --project` directly, not the
+Native `testOnly`, `test`, and `buildAndTest` tasks in the Android, iOS,
+Mac Catalyst and Windows Cake scripts now invoke `dotnet test --project`, not the
 desktop Appium helper or XHarness. Their native `--test-filter` accepts
 `Category=<name>` or `SkipCategories=<name>,<name>`. The value becomes the
 **build property** `MauiTestFilter`; commas are MSBuild-escaped so every excluded
@@ -108,6 +111,11 @@ before cleanup. Missing, unchanged, empty and failed reports fail the task;
 stdout is never converted into TRX. Mac Catalyst sets `MauiTestResultsDirectory`
 to the requested host result directory. Nonzero process exits fail the task even
 when a passing report exists.
+Windows delegates to the shared owned native runner with its explicit project,
+TFM and packaging mode. Packaged runs use the existing signed-MSIX activation
+path; unpackaged runs remain distinct. Neither mode discovers numeric category
+indexes or expects legacy XML files. Both require genuine TRX and retain the
+existing signed-package provisioning prerequisite.
 
 Appium preparation, configuration, and NUnit retries remain separate from native
 test execution. UI installation/discovery primitives use `adb`, `simctl`, and

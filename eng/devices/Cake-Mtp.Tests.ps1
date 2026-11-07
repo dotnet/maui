@@ -72,6 +72,28 @@ Describe 'Direct Cake native execution' {
         $source | Should -Not -Match 'ignore-exit-code'
     }
 
+    It 'does not forward a distributed MSBuild logger into the MTP test host' {
+        $source = Get-Content -Raw (Join-Path $RepoRoot 'eng/cake/dotnet.cake')
+        $test = [regex]::Match($source,
+            '(?s)void RunTestWithLocalDotNet\(.*?(?=void RunNativeTestWithLocalDotNet)').Value
+        $test | Should -Not -Match 'GetMSBuildForwardingLoggerPath\('
+        $test | Should -Match '-bl:'
+        ($source -split 'void RunTestWithLocalDotNet', 2)[0] |
+            Should -Match 'msbuildSettings.WithArgumentCustomization\(args => args.Append\(loggerArg\)\)'
+    }
+
+    It 'routes Windows native targets through the owned MTP and TRX runner for both packaging modes' {
+        $windows = Get-Content -Raw (Join-Path $PSScriptRoot 'windows.cake')
+        $windows | Should -Match 'ExecuteWindowsNativeTests\(buildOnly: true\)'
+        $windows | Should -Match 'ExecuteWindowsNativeTests\(buildOnly: false\)'
+        $windows | Should -Match 'Run-DeviceTests.ps1'
+        $windows | Should -Match 'Append\("-ProjectPath"\)'
+        $windows | Should -Match 'Append\("-TargetFramework"\)'
+        $windows | Should -Match 'isPackagedTestRun \? "packaged" : "unpackaged"'
+        $windows | Should -Match 'WithCriteria\(isPackagedTestRun && !isNativeProjectTestRun\)'
+        $windows | Should -Not -Match 'devicetestcategories|LaunchPackagedAndWait|originalIndex|TestResults-.*\.xml'
+    }
+
     It 'retains Appium preparation and NUnit retry execution' {
         foreach ($platform in @('ios', 'android', 'catalyst')) {
             $source = Get-Content -Raw (Join-Path $PSScriptRoot "$platform.cake")

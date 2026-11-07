@@ -996,9 +996,8 @@ void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = nu
     if (argsExtra != null)
         foreach (var prop in argsExtra)
             args.AppendQuoted($"/p:{prop.Key}={prop.Value}");
-    var loggerArg = GetMSBuildForwardingLoggerPath();
-    if (loggerArg != null)
-        args.Append(loggerArg);
+    // MTP forwards -dl to the test host, which rejects this MSBuild-only logger option.
+    // The build commands and test binlog retain their existing diagnostics.
 
     try
     {

@@ -267,12 +267,13 @@ sys.exit(int(os.environ.get("MAUI_FAKE_EXIT", "0")))
 '@ | Set-Content $fake
         & chmod +x $fake
         function Invoke-RunnerFixture {
-            param([string] $Log, [string[]] $Extra = @(), [switch] $OwnDevice, [string] $RunnerPath = $scriptPath)
+            param([string] $Log, [string[]] $Extra = @(), [switch] $OwnDevice, [string] $RunnerPath = $scriptPath, [string] $ProjectPath)
             $deviceArguments = if ($OwnDevice) { @() } else { @('-DeviceUdid', 'emulator-5554') }
+            $projectArguments = if ($ProjectPath) { @('-ProjectPath', $ProjectPath) } else { @('-Project', 'Core') }
             Invoke-DeviceDotnet -FilePath $pwsh -WorkingDirectory $fixture -LogPath $Log -TimeoutSeconds 60 -Arguments (
-                @('-NoProfile', '-File', $RunnerPath, '-RepoRoot', $fixture, '-Project', 'Core', '-Platform', 'android',
+                @('-NoProfile', '-File', $RunnerPath, '-RepoRoot', $fixture, '-Platform', 'android',
                   '-DotnetPath', $fake, '-OutputDirectory', (Join-Path $fixture 'logs'),
-                  '-IncludeClasses', 'Maui.Tests.Target', '-IncludeMethods', 'Runs', '-Timeout', '00:00:30') + $deviceArguments + $Extra)
+                  '-IncludeClasses', 'Maui.Tests.Target', '-IncludeMethods', 'Runs', '-Timeout', '00:00:30') + $projectArguments + $deviceArguments + $Extra)
         }
     }
     BeforeEach {
@@ -478,5 +479,44 @@ param($Platform, $ApiVersion, $ResultsDirectory, $DeviceDirectory)
         (Invoke-RunnerFixture -Log (Join-Path $TestDrive 'build-only.log') -Extra @('-BuildOnly')).ExitCode | Should -Be 0
         $arguments = Get-Content $env:MAUI_FAKE_ARGS -Raw | ConvertFrom-Json
         $arguments[0] | Should -Be 'build'
+    }
+
+    It 'runs an explicit native project without changing its requested target framework' {
+        $project = Join-Path $fixture 'NativeSample.csproj'
+        Copy-Item -LiteralPath (Join-Path $fixture 'src/Core/tests/DeviceTests/Core.DeviceTests.csproj') -Destination $project
+        $env:MAUI_FAKE_TRX = New-TrxFixture (Join-Path $TestDrive 'custom-project.trx') @(
+            @{ Class = 'Maui.Tests.Target'; Method = 'Runs'; Outcome = 'Passed' }
+        )
+
+        (Invoke-RunnerFixture -Log (Join-Path $TestDrive 'custom-project.log') -ProjectPath $project `
+            -Extra @('-TargetFramework', 'net11.0-android35.0')).ExitCode | Should -Be 0
+
+        $arguments = Get-Content -Raw $env:MAUI_FAKE_ARGS | ConvertFrom-Json
+        $arguments | Should -Contain $project
+        $arguments | Should -Contain 'net11.0-android35.0'
+    }
+
+    It 'rejects a project outside the selected checkout before launching dotnet' {
+        $project = Join-Path $TestDrive 'Outside.csproj'
+        '<Project />' | Set-Content -LiteralPath $project
+        $log = Join-Path $TestDrive 'outside-project.log'
+
+        (Invoke-RunnerFixture -Log $log -ProjectPath $project).ExitCode | Should -Not -Be 0
+
+        Get-Content -Raw $log | Should -Match 'inside RepoRoot'
+        $env:MAUI_FAKE_ARGS | Should -Not -Exist
+    }
+
+    It 'rejects a missing native project before launching dotnet' {
+        (Invoke-RunnerFixture -Log (Join-Path $TestDrive 'missing-project.log') `
+            -ProjectPath (Join-Path $fixture 'Missing.csproj')).ExitCode | Should -Not -Be 0
+        $env:MAUI_FAKE_ARGS | Should -Not -Exist
+    }
+
+    It 'rejects a target framework for a different platform before launching dotnet' {
+        $log = Join-Path $TestDrive 'wrong-platform.log'
+        (Invoke-RunnerFixture -Log $log -Extra @('-TargetFramework', 'net11.0-ios')).ExitCode | Should -Not -Be 0
+        Get-Content -Raw $log | Should -Match 'does not match platform'
+        $env:MAUI_FAKE_ARGS | Should -Not -Exist
     }
 }

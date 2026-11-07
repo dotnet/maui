@@ -26,6 +26,11 @@ Existing parameters remain supported: `Project`, `Platform`, `iOSVersion`,
 (01:00:00), `DeviceUdid`, and `SkipXcodeVersionCheck`.
 `WindowsPackaging` selects `unpackaged` (the existing default) or `packaged`.
 Optional `RepoRoot` and `DotnetPath` select an explicit checkout/SDK.
+Use `ProjectPath` instead of `Project` for another native test application inside
+the selected checkout, including the device-test sample. Optional
+`TargetFramework` preserves an explicitly selected platform TFM; it must match
+`Platform`. Windows Cake callers use these parameters rather than duplicating
+package activation or report validation.
 
 Without `DeviceUdid`, the runner provisions a unique iOS simulator or Android
 API 33 emulator using SDK tools, records its identity and cleans up only that
