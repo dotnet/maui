@@ -38,7 +38,11 @@ on:
     paths:
       - '.github/workflows/release-readiness.yml'
       - '.github/skills/release-readiness/**'
+      - '.github/agents/release-readiness-agent.agent.md'
       - '.github/scripts/shared/MauiReleaseVersioning.psm1'
+      - 'eng/release-rollover.json'
+      - 'eng/scripts/Get-ReleaseRolloverPlan.ps1'
+      - 'eng/scripts/Get-InflightNightlyEligibility.ps1'
 
   # ── Scoped base-repo event triggers (refresh ONLY the affected tracker) ──
   # These keep trackers fresh between the 3-hourly schedule when a MATERIAL
@@ -62,8 +66,10 @@ on:
     # freshness to stale. No path filter: any commit on these branches matters.
     branches:
       - main
-      - net11.0
+      - 'net*'
       - 'release/**'
+      - 'candidate/**'
+      - 'inflight/**'
 
 permissions:
   contents: read
@@ -106,12 +112,20 @@ jobs:
     outputs:
       matrix: ${{ steps.detect.outputs.matrix }}
       has-trackers: ${{ steps.detect.outputs.has-trackers }}
+      canonical-sha: ${{ steps.canonical.outputs.sha }}
     permissions:
       contents: read
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: main
           fetch-depth: 0  # Find-Trackers needs full history + tags for tag-existence detection
+          persist-credentials: false
+
+      - name: Pin canonical release configuration
+        id: canonical
+        shell: bash
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
       - name: Detect release-readiness trackers
         id: detect
@@ -219,7 +233,8 @@ jobs:
             [ .majors[].trackers[]
               | select(
                   ($fanout == "1" and $filter == "" and $major == "")
-                  or ($filter != "" and (.branchName == $filter or .surveyRef == $filter))
+                  or ($filter != "" and (.branchName == $filter or .surveyRef == $filter
+                      or .sourceBranch == $filter or .featureBranch == $filter or .nightlyBranch == $filter))
                   or ($major  != "" and ((.majorVersion | tostring) as $mv | ($major | split(",")) | index($mv) != null))
                 )
               | {
@@ -243,6 +258,9 @@ jobs:
                   expectedTag: (.expectedTag // ""),
                   # SR-only fields (null for prerelease trackers)
                   priorSrBranch:    (.priorSrBranch // ""),
+                  sourceBranch: (.sourceBranch // ""),
+                  candidateTargetBranch: (.candidateTargetBranch // ""),
+                  candidateBaselineRef: (.candidateBaselineRef // ""),
                   regressionLabels: (.regressionLabels // []),
                   # Prerelease-only fields (null for SR trackers)
                   previewNumber: (.previewNumber // null),
@@ -305,7 +323,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: ${{ needs.detect-trackers.outputs.canonical-sha }}
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Generate readiness report
         id: report
@@ -319,6 +339,9 @@ jobs:
           TRACKER_KEY:   ${{ matrix.canonicalKey }}
           ISSUE_TITLE:   ${{ matrix.issueTitle }}
           PRIOR_SR:      ${{ matrix.priorSrBranch }}
+          SOURCE_BRANCH: ${{ matrix.sourceBranch }}
+          CANDIDATE_TARGET: ${{ matrix.candidateTargetBranch }}
+          CANDIDATE_BASELINE: ${{ matrix.candidateBaselineRef }}
           REG_LABELS:    ${{ join(matrix.regressionLabels, ',') }}
           EXPECTED_TAG:  ${{ matrix.expectedTag }}
         shell: bash
@@ -357,12 +380,19 @@ jobs:
 
             CANDIDATE_ARG=()
             if [ "$MODE" = "candidate" ]; then
-              if [ -z "$PRIOR_SR" ]; then
+              if [ -n "$CANDIDATE_TARGET" ]; then
+                SR_ARG="$BRANCH_NAME"
+                CANDIDATE_ARG=(-Candidate -CandidateTargetBranch "$CANDIDATE_TARGET" -SurveyRef "$SURVEY_REF")
+                if [ -n "$CANDIDATE_BASELINE" ]; then
+                  CANDIDATE_ARG+=(-BaselineRef "$CANDIDATE_BASELINE")
+                fi
+              elif [ -z "$PRIOR_SR" ]; then
                 echo "::error::SR candidate tracker $TRACKER_KEY missing priorSrBranch"
                 exit 1
+              else
+                SR_ARG="$PRIOR_SR"
+                CANDIDATE_ARG=(-Candidate -SurveyRef "$SURVEY_REF")
               fi
-              SR_ARG="$PRIOR_SR"
-              CANDIDATE_ARG=(-Candidate)
             elif [ "$MODE" = "shipped" ]; then
               # Already-tagged SR: survey the branch directly (same as in-flight),
               # but pass -Shipped so the rendered header reads mode=shipped rather
@@ -375,6 +405,7 @@ jobs:
 
             pwsh -NoProfile -File .github/skills/release-readiness/scripts/Get-ReleaseReadiness.ps1 \
               -SrBranch "$SR_ARG" \
+              -MainBranch "$SOURCE_BRANCH" \
               "${CANDIDATE_ARG[@]}" \
               "${REG_LABEL_ARG[@]}" \
               -TrackerKey "$TRACKER_KEY" \
@@ -428,10 +459,11 @@ jobs:
               MODE="shipped"
             fi
           fi
-          echo "mode=$MODE" >> "$GITHUB_OUTPUT"
-          echo "issue_title=$ISSUE_TITLE" >> "$GITHUB_OUTPUT"
-
-          echo "body-file=$BODY_FILE" >> "$GITHUB_OUTPUT"
+          {
+            echo "mode=$MODE"
+            echo "issue_title=$ISSUE_TITLE"
+            echo "body-file=$BODY_FILE"
+          } >> "$GITHUB_OUTPUT"
           {
             echo "## ${TRACKER_KEY} (${BRANCH_TYPE})"
             echo ""
@@ -477,6 +509,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Run unit tests
         env:
@@ -484,8 +517,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          pwsh -NoProfile -File .github/skills/release-readiness/tests/Test-ReleaseReadiness.ps1
+          pwsh -NoProfile -File .github/skills/release-readiness/tests/Test-ReleaseReadiness.ps1 -SkipE2E
           pwsh -NoProfile -File .github/skills/release-readiness/tests/Test-ReleaseHandoff.ps1
+          pwsh -NoProfile -File .github/skills/release-readiness/tests/Test-ReleaseBranchRoles.ps1
 
       - name: Run Find-Trackers (no issue side-effects)
         env:
@@ -519,6 +553,9 @@ jobs:
             SURVEY_REF=$(echo "$tracker"  | jq -r '.surveyRef')
             MODE=$(echo "$tracker"        | jq -r '.mode')
             PRIOR_SR=$(echo "$tracker"    | jq -r '.priorSrBranch // ""')
+            SOURCE_BRANCH=$(echo "$tracker" | jq -r '.sourceBranch // ""')
+            CANDIDATE_TARGET=$(echo "$tracker" | jq -r '.candidateTargetBranch // ""')
+            CANDIDATE_BASELINE=$(echo "$tracker" | jq -r '.candidateBaselineRef // ""')
             REG_LABELS=$(echo "$tracker"  | jq -r '.regressionLabels // [] | join(",")')
 
             OUT_DIR="validate-out/${CANONICAL}"
@@ -536,8 +573,51 @@ jobs:
               REG_LABEL_ARG=(-RegressionLabels "$REG_LABELS")
               CANDIDATE_ARG=()
               if [ "$MODE" = "candidate" ]; then
-                SR_ARG="$PRIOR_SR"
-                CANDIDATE_ARG=(-Candidate)
+                if [ -n "$CANDIDATE_TARGET" ]; then
+                  # PR smoke only: this explicit configured descriptor cannot
+                  # produce a report without a verified immutable baseline.
+                  if [ -z "$CANDIDATE_BASELINE" ]; then
+                    jq -n \
+                      --arg tracker "$CANONICAL" \
+                      --arg branch "$BRANCH_NAME" \
+                      --arg target "$CANDIDATE_TARGET" \
+                      --arg survey "$SURVEY_REF" \
+                      --arg source "$SOURCE_BRANCH" \
+                      '{
+                        schemaVersion: 1,
+                        kind: "release-readiness-smoke-diagnostic",
+                        phase: "pr-validation",
+                        trackerKey: $tracker,
+                        branchType: "sr",
+                        mode: "candidate",
+                        branchName: $branch,
+                        candidateTargetBranch: $target,
+                        surveyRef: $survey,
+                        sourceBranch: $source,
+                        status: "NOT_RUN",
+                        reasonCode: "missing-verified-candidate-baseline",
+                        reason: "No verified GA/prior stable-tag baseline is available. Fetch the genuine immutable anchor or supply a separately verified baseline.",
+                        candidateBaselineRef: null,
+                        reportGenerated: false,
+                        readinessVerdict: null,
+                        inventory: null,
+                        productionPublicationBlocked: true
+                      }' > "$OUT_DIR/smoke-diagnostic.json"
+                    echo "::warning title=Release readiness smoke NOT RUN::${CANONICAL} is blocked on a verified GA/prior baseline. No readiness report was generated; production report/publication remains blocked."
+                    printf '### %s — smoke NOT RUN\n\nBlocked on a verified GA/prior baseline. See smoke-diagnostic.json in the validation artifacts. No report or inventory was generated; production report/publication remains blocked, not Ready.\n\n' \
+                      "$CANONICAL" >> "$GITHUB_STEP_SUMMARY"
+                    echo "::endgroup::"
+                    continue
+                  fi
+                  SR_ARG="$BRANCH_NAME"
+                  CANDIDATE_ARG=(-Candidate -CandidateTargetBranch "$CANDIDATE_TARGET" -SurveyRef "$SURVEY_REF")
+                  if [ -n "$CANDIDATE_BASELINE" ]; then
+                    CANDIDATE_ARG+=(-BaselineRef "$CANDIDATE_BASELINE")
+                  fi
+                else
+                  SR_ARG="$PRIOR_SR"
+                  CANDIDATE_ARG=(-Candidate -SurveyRef "$SURVEY_REF")
+                fi
               elif [ "$MODE" = "shipped" ]; then
                 # Mirror the production job: survey the branch directly but pass
                 # -Shipped so the smoke-run exercises the shipped code path (header
@@ -549,6 +629,7 @@ jobs:
               fi
               pwsh -NoProfile -File .github/skills/release-readiness/scripts/Get-ReleaseReadiness.ps1 \
                 -SrBranch "$SR_ARG" \
+                -MainBranch "$SOURCE_BRANCH" \
                 "${CANDIDATE_ARG[@]}" \
                 "${REG_LABEL_ARG[@]}" \
                 -TrackerKey "$CANONICAL" \
