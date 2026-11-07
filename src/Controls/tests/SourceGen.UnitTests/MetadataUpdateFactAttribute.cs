@@ -2,6 +2,7 @@
 
 using System;
 using System.Reflection.Metadata;
+using System.Runtime.CompilerServices;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.SourceGen.UnitTests;
@@ -51,7 +52,8 @@ internal static class MetadataUpdateRequirements
 /// </summary>
 public sealed class MetadataUpdateFactAttribute : FactAttribute
 {
-	public MetadataUpdateFactAttribute()
+	public MetadataUpdateFactAttribute([CallerFilePath] string? sourceFilePath = null, [CallerLineNumber] int sourceLineNumber = -1)
+		: base(sourceFilePath, sourceLineNumber)
 	{
 		Skip = MetadataUpdateRequirements.GetSkipReasonOrThrowIfMisconfigured();
 	}
@@ -63,7 +65,8 @@ public sealed class MetadataUpdateFactAttribute : FactAttribute
 /// </summary>
 public sealed class MetadataUpdateTheoryAttribute : TheoryAttribute
 {
-	public MetadataUpdateTheoryAttribute()
+	public MetadataUpdateTheoryAttribute([CallerFilePath] string? sourceFilePath = null, [CallerLineNumber] int sourceLineNumber = -1)
+		: base(sourceFilePath, sourceLineNumber)
 	{
 		Skip = MetadataUpdateRequirements.GetSkipReasonOrThrowIfMisconfigured();
 	}

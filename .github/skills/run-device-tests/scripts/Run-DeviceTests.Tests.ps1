@@ -1,1084 +1,522 @@
-#!/usr/bin/env pwsh
 #Requires -Modules Pester
 
 BeforeAll {
     $scriptPath = Join-Path $PSScriptRoot 'Run-DeviceTests.ps1'
-    $script:WindowsDeviceNoResultsMarker = 'WINDOWS_DEVICE_TEST_NO_RESULTS:'
-    $script:WindowsDeviceTargetTimeoutMarker = 'WINDOWS_DEVICE_TEST_TARGET_TIMEOUT:'
-
-    $tokens = $null
-    $parseErrors = $null
-    $ast = [System.Management.Automation.Language.Parser]::ParseFile($scriptPath, [ref]$tokens, [ref]$parseErrors)
-    if ($parseErrors -and $parseErrors.Count -gt 0) {
-        throw ($parseErrors | ForEach-Object { $_.Message }) -join [Environment]::NewLine
-    }
-
-    foreach ($functionName in @(
-        'ConvertTo-AzdoSafeConsole',
-        'Get-CategoryFiltersFromTestFilter',
-        'ConvertTo-DeviceTestClassFilterValue',
-        'New-AndroidDeviceTestClassFilterInjection',
-        'Get-XHarnessTestResultSnapshot',
-        'Get-FreshXHarnessTestResultFiles',
-        'New-XHarnessRunOutputDirectory',
-        'Select-WindowsDeviceTestCategories',
-        'Test-WindowsDeviceTestCategoryDiscovery',
-        'Start-WindowsDeviceTestProcess',
-        'Wait-ForPath',
-        'ConvertTo-DeviceTestCount',
-        'Get-DeviceTestResultSummary',
-        'Invoke-WindowsDeviceTestApp'
+    $errors = $null
+    $ast = [Management.Automation.Language.Parser]::ParseFile($scriptPath, [ref]$null, [ref]$errors)
+    if ($errors) { throw ($errors.Message -join "`n") }
+    foreach ($name in @(
+        'ConvertTo-AzdoSafeConsole', 'Invoke-WithoutGhTokens', 'ConvertTo-DeviceTestClassFilterValue',
+        'ConvertTo-DeviceTestMethodFilterValue', 'ConvertTo-DeviceTestCategoryFilter',
+        'ConvertTo-MSBuildPropertyValue', 'Invoke-DeviceDotnet', 'Get-DeviceTestResultSummary'
     )) {
         $function = $ast.Find({
-            $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
-            $args[0].Name -eq $functionName
+            $args[0] -is [Management.Automation.Language.FunctionDefinitionAst] -and $args[0].Name -eq $name
         }, $true)
-
-        if (-not $function) {
-            throw "Function '$functionName' not found"
-        }
-
+        if (!$function) { throw "Missing function '$name'." }
         Invoke-Expression $function.Extent.Text
     }
-}
 
-Describe 'Build isolation options' {
-    It 'supports rebuilding the full project graph for A/B Gate runs' {
-        $content = Get-Content $scriptPath -Raw
-        $content | Should -Match '\[switch\]\$Rebuild'
-        $content | Should -Match '(?s)if \(\$Rebuild\)\s*\{\s*\$buildArgs \+= "-t:Rebuild"\s*\}'
-    }
-
-    It 'keeps Windows category results scoped to the requested class and methods' {
-        $content = Get-Content $scriptPath -Raw
-        $content | Should -Match '\$summaryClassFilter\s*=\s*\$IncludeClasses'
-        $content | Should -Match '\$summaryMethodFilter\s*=\s*\$IncludeMethods'
-        $content | Should -Match '-RequireClassIsolation:\(-not \[string\]::IsNullOrWhiteSpace\(\$IncludeClasses\)\)'
-        $content | Should -Not -Match '\$summaryClassFilter\s*=\s*if\s*\(-not\s+\$useCategoryFiltering\)'
-    }
-}
-
-Describe 'Cross-platform device test class filtering' {
-    It 'normalizes comma/semicolon-separated class names for the XHarness include variable' {
-        ConvertTo-DeviceTestClassFilterValue `
-            -Value ' Microsoft.Maui.DeviceTests.NewTests;Microsoft.Maui.DeviceTests.ExistingTests, Microsoft.Maui.DeviceTests.NewTests ' |
-            Should -Be 'Microsoft.Maui.DeviceTests.NewTests,Microsoft.Maui.DeviceTests.ExistingTests'
-    }
-
-    It 'preserves normal execution when the host class filter is empty' {
-        ConvertTo-DeviceTestClassFilterValue -Value '  ' | Should -BeNullOrEmpty
-    }
-
-    It 'rejects control characters before using a PR-derived class filter' {
-        { ConvertTo-DeviceTestClassFilterValue -Value "Microsoft.Maui.Tests.Valid`nInjected" } |
-            Should -Throw -ExpectedMessage '*control character*'
-    }
-
-    It 'encodes Android class names instead of embedding PR-derived text as C# source' {
-        $tempRoot = Join-Path ([System.IO.Path]::GetTempPath()) "android-class-filter-$([guid]::NewGuid())"
-        New-Item -ItemType Directory -Path $tempRoot -Force | Out-Null
-
-        try {
-            $filter = 'Microsoft.Maui.Tests.Safe"; throw new System.Exception(); //'
-            $injection = New-AndroidDeviceTestClassFilterInjection -IncludeClasses $filter -TempRoot $tempRoot
-            $source = Get-Content $injection.SourcePath -Raw
-            $targets = Get-Content $injection.TargetsPath -Raw
-
-            $source | Should -Not -Match ([regex]::Escape($filter))
-            $source | Should -Match 'FromBase64String'
-            $source | Should -Match 'NUNIT_SKIPPED_CLASSES'
-            $targets | Should -Match ([regex]::Escape("'`$(MSBuildProjectName)' == '`$(MauiCopilotClassFilterTargetProject)'"))
-            $injection.TargetProject | Should -Be 'TestUtils.DeviceTests.Runners'
-        } finally {
-            Remove-Item -LiteralPath $tempRoot -Recurse -Force -ErrorAction SilentlyContinue
+    function New-TrxFixture {
+        param([string] $Path, [object[]] $Tests, [string] $Outcome = 'Completed')
+        $definitions = ''
+        $results = ''
+        $index = 0
+        foreach ($test in $Tests) {
+            $index++
+            $class = [Security.SecurityElement]::Escape($test.Class)
+            $method = [Security.SecurityElement]::Escape($test.Method)
+            $display = [Security.SecurityElement]::Escape($(if ($test.Display) { $test.Display } else { "$class.$method" }))
+            $definitions += "<UnitTest id='test-$index'><TestMethod className='$class' name='$method' /></UnitTest>"
+            $results += "<UnitTestResult testId='test-$index' testName='$display' outcome='$($test.Outcome)' />"
         }
-    }
-
-    It 'injects the class filter into the referenced shared runner before XHarness reads options' {
-        $tempRoot = Join-Path ([System.IO.Path]::GetTempPath()) "android-class-filter-build-$([guid]::NewGuid())"
-        $runnerDir = Join-Path $tempRoot 'Runner'
-        $appDir = Join-Path $tempRoot 'App'
-        New-Item -ItemType Directory -Path $runnerDir, $appDir -Force | Out-Null
-
-        try {
-            @'
-<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-  </PropertyGroup>
-</Project>
-'@ | Set-Content (Join-Path $runnerDir 'TestUtils.DeviceTests.Runners.csproj') -Encoding UTF8
-            'namespace Runner; public sealed class Marker { }' |
-                Set-Content (Join-Path $runnerDir 'Marker.cs') -Encoding UTF8
-
-            @'
-<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
-  </PropertyGroup>
-  <ItemGroup>
-    <ProjectReference Include="../Runner/TestUtils.DeviceTests.Runners.csproj" />
-  </ItemGroup>
-</Project>
-'@ | Set-Content (Join-Path $appDir 'App.csproj') -Encoding UTF8
-            @'
-_ = new Runner.Marker();
-System.Console.WriteLine(System.Environment.GetEnvironmentVariable("NUNIT_SKIPPED_CLASSES"));
-'@ | Set-Content (Join-Path $appDir 'Program.cs') -Encoding UTF8
-
-            $classFilter = 'Microsoft.Maui.Tests.One,Microsoft.Maui.Tests.Two'
-            $injection = New-AndroidDeviceTestClassFilterInjection -IncludeClasses $classFilter -TempRoot $tempRoot
-            $buildOutput = & dotnet build (Join-Path $appDir 'App.csproj') --nologo --verbosity quiet `
-                "/p:CustomAfterMicrosoftCSharpTargets=$($injection.TargetsPath)" `
-                "/p:MauiCopilotClassFilterSourcePath=$($injection.SourcePath)" `
-                "/p:MauiCopilotClassFilterTargetProject=$($injection.TargetProject)" 2>&1
-
-            $LASTEXITCODE | Should -Be 0 -Because ($buildOutput -join [Environment]::NewLine)
-
-            $runOutput = & dotnet (Join-Path $appDir 'bin/Debug/net8.0/App.dll') 2>&1
-            $LASTEXITCODE | Should -Be 0 -Because ($runOutput -join [Environment]::NewLine)
-            ($runOutput -join [Environment]::NewLine) |
-                Should -Match '\[Maui Copilot Gate\] XHarness class filter: Microsoft\.Maui\.Tests\.One,Microsoft\.Maui\.Tests\.Two'
-            @($runOutput)[-1] | Should -Be $classFilter
-        } finally {
-            Remove-Item -LiteralPath $tempRoot -Recurse -Force -ErrorAction SilentlyContinue
-        }
-    }
-
-    It 'uses the built-in XHarness class include variable for Apple runs' {
-        Get-Content $scriptPath -Raw |
-            Should -Match '--set-env=NUNIT_SKIPPED_CLASSES=\$IncludeClasses'
-    }
-
-    It 'does not reuse a stale XHarness result file when the current run produces none' {
-        $tempRoot = Join-Path ([System.IO.Path]::GetTempPath()) "xharness-results-$([guid]::NewGuid())"
-        New-Item -ItemType Directory -Path $tempRoot -Force | Out-Null
-
-        try {
-            $resultFile = Join-Path $tempRoot 'testResults.xml'
-            '<assemblies />' | Set-Content $resultFile -Encoding UTF8
-            $snapshot = Get-XHarnessTestResultSnapshot -OutputDirectory $tempRoot
-
-            @(Get-FreshXHarnessTestResultFiles -OutputDirectory $tempRoot -BeforeSnapshot $snapshot).Count |
-                Should -Be 0
-
-            '<assemblies><assembly /></assemblies>' | Set-Content $resultFile -Encoding UTF8
-            @(Get-FreshXHarnessTestResultFiles -OutputDirectory $tempRoot -BeforeSnapshot $snapshot) |
-                Should -Be @($resultFile)
-        } finally {
-            Remove-Item -LiteralPath $tempRoot -Recurse -Force -ErrorAction SilentlyContinue
-        }
-    }
-
-    It 'isolates repeated class-filtered XHarness invocations under the diagnostics root' {
-        $tempRoot = Join-Path ([System.IO.Path]::GetTempPath()) "xharness-run-root-$([guid]::NewGuid())"
-        New-Item -ItemType Directory -Path $tempRoot -Force | Out-Null
-
-        try {
-            '<assemblies />' | Set-Content (Join-Path $tempRoot 'testResults.xml') -Encoding UTF8
-
-            $first = New-XHarnessRunOutputDirectory -OutputDirectory $tempRoot
-            $second = New-XHarnessRunOutputDirectory -OutputDirectory $tempRoot
-
-            $first | Should -Not -Be $second
-            Test-Path -LiteralPath $first -PathType Container | Should -BeTrue
-            Test-Path -LiteralPath $second -PathType Container | Should -BeTrue
-            @(Get-ChildItem -LiteralPath $first -Force).Count | Should -Be 0
-            @(Get-ChildItem -LiteralPath $second -Force).Count | Should -Be 0
-            Test-Path -LiteralPath (Join-Path $tempRoot 'testResults.xml') | Should -BeTrue
-        } finally {
-            Remove-Item -LiteralPath $tempRoot -Recurse -Force -ErrorAction SilentlyContinue
-        }
-    }
-
-    It 'requires the trusted per-run XHarness result filename' {
-        $tempRoot = Join-Path ([System.IO.Path]::GetTempPath()) "xharness-result-name-$([guid]::NewGuid())"
-        New-Item -ItemType Directory -Path $tempRoot -Force | Out-Null
-
-        try {
-            $expectedName = "testResults-$([guid]::NewGuid().ToString('N')).xml"
-            '<assemblies />' | Set-Content (Join-Path $tempRoot 'testResults.xml') -Encoding UTF8
-            $snapshot = Get-XHarnessTestResultSnapshot `
-                -OutputDirectory $tempRoot `
-                -ResultFileName $expectedName
-
-            @(Get-FreshXHarnessTestResultFiles `
-                -OutputDirectory $tempRoot `
-                -BeforeSnapshot $snapshot `
-                -ResultFileName $expectedName).Count | Should -Be 0
-
-            $expectedFile = Join-Path $tempRoot $expectedName
-            '<assemblies><assembly /></assemblies>' | Set-Content $expectedFile -Encoding UTF8
-            @(Get-FreshXHarnessTestResultFiles `
-                -OutputDirectory $tempRoot `
-                -BeforeSnapshot $snapshot `
-                -ResultFileName $expectedName) | Should -Be @($expectedFile)
-        } finally {
-            Remove-Item -LiteralPath $tempRoot -Recurse -Force -ErrorAction SilentlyContinue
-        }
-    }
-
-    It 'uses the isolated XHarness directory for execution and fresh-result discovery' {
-        $content = Get-Content $scriptPath -Raw
-        $content | Should -Match 'New-XHarnessRunOutputDirectory -OutputDirectory \$OutputDirectory'
-        $content | Should -Match '"-o", \$testOutputDirectory'
-        $content | Should -Match 'results-file-name=\$xharnessResultFileName'
-        $content | Should -Match '(?s)Get-XHarnessTestResultSnapshot\s+`\s*-OutputDirectory \$testOutputDirectory\s+`\s*-ResultFileName \$xharnessResultFileName'
-        $content | Should -Match '(?s)Get-FreshXHarnessTestResultFiles\s+`\s*-OutputDirectory \$testOutputDirectory\s+`\s*-BeforeSnapshot \$xharnessResultSnapshot\s+`\s*-ResultFileName \$xharnessResultFileName'
+        "<TestRun xmlns='http://microsoft.com/schemas/VisualStudio/TeamTest/2010'><TestDefinitions>$definitions</TestDefinitions><Results>$results</Results><ResultSummary outcome='$Outcome'><Counters error='0' aborted='0' timeout='0'/></ResultSummary></TestRun>" |
+            Set-Content -LiteralPath $Path
+        return $Path
     }
 }
 
-Describe 'Windows device test category filtering' {
-    It 'extracts Category filters from VSTest-style expressions' {
-        Get-CategoryFiltersFromTestFilter -Filter 'Category=Window|Category=Button' |
-            Should -Be @('Window', 'Button')
+Describe 'Native selection properties' {
+    It 'normalizes and deduplicates comma/semicolon-separated class FQNs' {
+        ConvertTo-DeviceTestClassFilterValue ' Maui.Tests.Target;Maui.Tests.Other,Maui.Tests.Target ' |
+            Should -Be 'Maui.Tests.Target,Maui.Tests.Other'
     }
-
-    It 'selects matching discovered categories case-insensitively' {
-        Select-WindowsDeviceTestCategories `
-            -AllCategories @('Button', 'Window', 'Shell') `
-            -Filter 'Category=window' |
-            Should -Be @('Window')
+    It 'preserves empty selection' {
+        ConvertTo-DeviceTestClassFilterValue ' ' | Should -Be ''
     }
-
-    It 'returns all categories when no category filter is supplied' {
-        Select-WindowsDeviceTestCategories `
-            -AllCategories @('Button', 'Window') `
-            -Filter '' |
-            Should -Be @('Button', 'Window')
+    It 'rejects control characters before parsing a selector' {
+        { ConvertTo-DeviceTestClassFilterValue "Maui.Tests.Target`nInjected" } | Should -Throw '*control character*'
     }
-
-    It 'always requires category discovery for Controls' {
-        Test-WindowsDeviceTestCategoryDiscovery `
-            -Project 'Controls' `
-            -TestFilter '' `
-            -IncludeClasses 'Microsoft.Maui.Controls.DeviceTests.ButtonTests' |
-            Should -BeTrue
+    It 'rejects wildcard/query/source injection as a class name' -TestCases @(
+        @{ Value = 'Maui.Tests.*' }, @{ Value = 'Maui.Tests.Target" -p:Other=true' }, @{ Value = 'Unqualified' }
+    ) {
+        param($Value)
+        { ConvertTo-DeviceTestClassFilterValue $Value } | Should -Throw '*Invalid fully qualified*'
     }
-
-    It 'attempts category discovery for a filtered non-Controls project without class metadata' {
-        Test-WindowsDeviceTestCategoryDiscovery `
-            -Project 'Core' `
-            -TestFilter 'Category=Window' `
-            -IncludeClasses '' |
-            Should -BeTrue
+    It 'bounds the number of requested classes' {
+        $names = 1..65 | ForEach-Object { "Maui.Tests.Target$_" }
+        { ConvertTo-DeviceTestClassFilterValue ($names -join ',') } | Should -Throw '*64 classes*'
     }
-
-    It 'uses the class-filtered normal runner for a non-Controls Gate test' {
-        Test-WindowsDeviceTestCategoryDiscovery `
-            -Project 'Core' `
-            -TestFilter 'Category=Window' `
-            -IncludeClasses 'Microsoft.Maui.DeviceTests.WindowHandlerTests' |
-            Should -BeFalse
+    It 'expands simple methods into native class-qualified method filters' {
+        ConvertTo-DeviceTestMethodFilterValue -Value 'Runs;Other' -Classes 'Maui.Tests.Target' |
+            Should -Be 'Maui.Tests.Target.Runs,Maui.Tests.Target.Other'
     }
-
-    It 'uses the full-suite runner for an unfiltered non-Controls project' {
-        Test-WindowsDeviceTestCategoryDiscovery `
-            -Project 'Core' `
-            -TestFilter '' `
-            -IncludeClasses '' |
-            Should -BeFalse
+    It 'preserves already-qualified methods' {
+        ConvertTo-DeviceTestMethodFilterValue -Value 'Maui.Tests.Target.Runs' -Classes '' |
+            Should -Be 'Maui.Tests.Target.Runs'
     }
-
-    It 'passes the exact class filter and app working directory to the Windows child process' -Skip:(-not (Get-Command sh -ErrorAction SilentlyContinue)) {
-        $tempRoot = Join-Path ([System.IO.Path]::GetTempPath()) "windows-device-process-$([guid]::NewGuid())"
-        New-Item -ItemType Directory -Path $tempRoot -Force | Out-Null
-
-        try {
-            $script = Join-Path $tempRoot 'capture.sh'
-            $output = Join-Path $tempRoot 'process-output.txt'
-            @'
-#!/bin/sh
-printf '%s\n%s\n%s\n' "$PWD" "$NUNIT_SKIPPED_CLASSES" "$2" > "$1"
-'@ | Set-Content -LiteralPath $script -Encoding utf8 -NoNewline
-            & chmod +x $script
-
-            $classFilter = 'Microsoft.Maui.DeviceTests.WindowHandlerTests'
-            $process = Start-WindowsDeviceTestProcess `
-                -AppPath $script `
-                -ArgumentList @($output, 'argument with spaces') `
-                -IncludeClasses $classFilter
-            $process.WaitForExit()
-
-            $process.ExitCode | Should -Be 0
-            $lines = @(Get-Content -LiteralPath $output)
-            [System.IO.Path]::GetFileName($lines[0]) |
-                Should -Be ([System.IO.Path]::GetFileName($tempRoot))
-            $lines[1] | Should -Be $classFilter
-            $lines[2] | Should -Be 'argument with spaces'
-        } finally {
-            Remove-Item -LiteralPath $tempRoot -Recurse -Force -ErrorAction SilentlyContinue
-        }
+    It 'requires class scope for simple method names' {
+        { ConvertTo-DeviceTestMethodFilterValue -Value 'Runs' -Classes '' } | Should -Throw '*IncludeClasses*'
     }
-
-    It 'resolves a relative result directory before launching from the app directory' -Skip:(-not (Get-Command sh -ErrorAction SilentlyContinue)) {
-        $tempRoot = Join-Path ([System.IO.Path]::GetTempPath()) "windows-device-results-$([guid]::NewGuid())"
-        $appDirectory = Join-Path $tempRoot 'app'
-        $invocationDirectory = Join-Path $tempRoot 'invocation'
-        New-Item -ItemType Directory -Path $appDirectory, $invocationDirectory -Force | Out-Null
-
-        try {
-            $app = Join-Path $appDirectory 'device-tests.sh'
-            @'
-#!/bin/sh
-cat > "$1" <<'EOF'
-<assemblies>
-  <assembly total="1" passed="1" failed="0" skipped="0" errors="0">
-    <collection>
-      <test type="Microsoft.Maui.DeviceTests.WindowHandlerTests" method="Runs" name="Microsoft.Maui.DeviceTests.WindowHandlerTests.Runs" result="Pass" />
-    </collection>
-  </assembly>
-</assemblies>
-EOF
-'@ | Set-Content -LiteralPath $app -Encoding utf8 -NoNewline
-            & chmod +x $app
-
-            $script:WindowsDeviceTestPackageIds = @{
-                Core = 'com.microsoft.maui.core.devicetests'
-            }
-            Push-Location $invocationDirectory
-            try {
-                $exitCode = Invoke-WindowsDeviceTestApp `
-                    -AppPath $app `
-                    -Project 'Core' `
-                    -AppName 'Core.DeviceTests' `
-                    -OutputDirectory 'relative-results' `
-                    -TestFilter 'Category=Window' `
-                    -IncludeClasses 'Microsoft.Maui.DeviceTests.WindowHandlerTests' `
-                    -IncludeMethods 'Runs' `
-                    -Timeout '00:00:10'
-            } finally {
-                Pop-Location
-            }
-
-            $expectedResult = Join-Path $invocationDirectory 'relative-results/TestResults-com_microsoft_maui_core_devicetests.xml'
-            Test-Path -LiteralPath $expectedResult | Should -BeTrue
-            $exitCode | Should -Be 0
-            $script:WindowsDeviceTestSummary.Total | Should -Be 1
-            $script:WindowsDeviceTestSummary.Passed | Should -Be 1
-        } finally {
-            Remove-Item -LiteralPath $tempRoot -Recurse -Force -ErrorAction SilentlyContinue
-        }
+    It 'rejects method injection' {
+        { ConvertTo-DeviceTestMethodFilterValue -Value 'Runs*' -Classes 'Maui.Tests.Target' } |
+            Should -Throw '*Invalid device test method*'
     }
-
-    It 'bounds an exact-class run and identifies the requested target in the timeout' -Skip:(-not (Get-Command sh -ErrorAction SilentlyContinue)) {
-        $tempRoot = Join-Path ([System.IO.Path]::GetTempPath()) "windows-device-timeout-$([guid]::NewGuid())"
-        New-Item -ItemType Directory -Path $tempRoot -Force | Out-Null
-
-        try {
-            $app = Join-Path $tempRoot 'device-tests.sh'
-            @'
-#!/bin/sh
-exec sleep 30
-'@ | Set-Content -LiteralPath $app -Encoding utf8 -NoNewline
-            & chmod +x $app
-
-            $script:WindowsDeviceTestPackageIds = @{
-                Core = 'com.microsoft.maui.core.devicetests'
-            }
-
-            {
-                Invoke-WindowsDeviceTestApp `
-                    -AppPath $app `
-                    -Project 'Core' `
-                    -AppName 'Core.DeviceTests' `
-                    -OutputDirectory (Join-Path $tempRoot 'results') `
-                    -TestFilter 'Category=Window' `
-                    -IncludeClasses 'Microsoft.Maui.DeviceTests.WindowHandlerTests' `
-                    -IncludeMethods 'TargetMethod' `
-                    -Timeout '00:00:01'
-            } | Should -Throw -ExpectedMessage '*WINDOWS_DEVICE_TEST_TARGET_TIMEOUT:*within 1s*WindowHandlerTests*TargetMethod*'
-        } finally {
-            Remove-Item -LiteralPath $tempRoot -Recurse -Force -ErrorAction SilentlyContinue
-        }
+    It 'escapes MSBuild separators without double-interpreting literal escapes' {
+        ConvertTo-MSBuildPropertyValue 'A,B;C%2C' | Should -Be 'A%2CB%3BC%252C'
     }
-
-    It 'bounds a scoped Controls category run and emits the trusted target-timeout marker' -Skip:(-not (Get-Command sh -ErrorAction SilentlyContinue)) {
-        $tempRoot = Join-Path ([System.IO.Path]::GetTempPath()) "windows-controls-timeout-$([guid]::NewGuid())"
-        New-Item -ItemType Directory -Path $tempRoot -Force | Out-Null
-
-        try {
-            $app = Join-Path $tempRoot 'device-tests.sh'
-            @'
-#!/bin/sh
-if [ "$2" = "-1" ]; then
-    printf '%s\n' 'Window' > "$(dirname "$1")/devicetestcategories.txt"
-    exit 0
-fi
-exec sleep 30
-'@ | Set-Content -LiteralPath $app -Encoding utf8 -NoNewline
-            & chmod +x $app
-
-            $script:WindowsDeviceTestPackageIds = @{
-                Controls = 'com.microsoft.maui.controls.devicetests'
-            }
-
-            {
-                Invoke-WindowsDeviceTestApp `
-                    -AppPath $app `
-                    -Project 'Controls' `
-                    -AppName 'Controls.DeviceTests' `
-                    -OutputDirectory (Join-Path $tempRoot 'results') `
-                    -TestFilter 'Category=Window' `
-                    -IncludeClasses 'Microsoft.Maui.Controls.DeviceTests.ButtonTests' `
-                    -IncludeMethods 'TargetMethod' `
-                    -Timeout '00:00:01'
-            } | Should -Throw -ExpectedMessage '*WINDOWS_DEVICE_TEST_TARGET_TIMEOUT:*within 1s*ButtonTests*TargetMethod*'
-        } finally {
-            Remove-Item -LiteralPath $tempRoot -Recurse -Force -ErrorAction SilentlyContinue
-        }
+    It 'accepts native category include/exclude syntax' {
+        ConvertTo-DeviceTestCategoryFilter 'Category=Shell' | Should -Be 'Category=Shell'
+        ConvertTo-DeviceTestCategoryFilter 'SkipCategories=Shell,CollectionView' |
+            Should -Be 'SkipCategories=Shell,CollectionView'
     }
-
-    It 'waits for a Controls category process to finish writing its result XML' -Skip:(-not (Get-Command sh -ErrorAction SilentlyContinue)) {
-        $tempRoot = Join-Path ([System.IO.Path]::GetTempPath()) "windows-controls-result-flush-$([guid]::NewGuid())"
-        New-Item -ItemType Directory -Path $tempRoot -Force | Out-Null
-
-        try {
-            $app = Join-Path $tempRoot 'device-tests.sh'
-            @'
-#!/bin/sh
-if [ "$2" = "-1" ]; then
-    printf '%s\n' 'Window' > "$(dirname "$1")/devicetestcategories.txt"
-    exit 0
-fi
-result="${1%.xml}_Window.xml"
-: > "$result"
-sleep 4
-cat > "$result" <<'EOF'
-<assemblies>
-  <assembly total="1" passed="1" failed="0" skipped="0" errors="0">
-    <collection>
-      <test type="Microsoft.Maui.Controls.DeviceTests.ButtonTests" method="TargetMethod" name="TargetMethod" result="Pass" />
-    </collection>
-  </assembly>
-</assemblies>
-EOF
-'@ | Set-Content -LiteralPath $app -Encoding utf8 -NoNewline
-            & chmod +x $app
-
-            $script:WindowsDeviceTestPackageIds = @{
-                Controls = 'com.microsoft.maui.controls.devicetests'
-            }
-
-            $exitCode = Invoke-WindowsDeviceTestApp `
-                -AppPath $app `
-                -Project 'Controls' `
-                -AppName 'Controls.DeviceTests' `
-                -OutputDirectory (Join-Path $tempRoot 'results') `
-                -TestFilter 'Category=Window' `
-                -IncludeClasses 'Microsoft.Maui.Controls.DeviceTests.ButtonTests' `
-                -IncludeMethods 'TargetMethod' `
-                -Timeout '00:00:10'
-
-            $exitCode | Should -Be 0
-            $script:WindowsDeviceTestSummary.Total | Should -Be 1
-            $script:WindowsDeviceTestSummary.Passed | Should -Be 1
-        } finally {
-            Remove-Item -LiteralPath $tempRoot -Recurse -Force -ErrorAction SilentlyContinue
-        }
-    }
-
-    It 'trusts complete scoped category XML when only Windows process teardown times out' -Skip:(-not (Get-Command sh -ErrorAction SilentlyContinue)) {
-        $tempRoot = Join-Path ([System.IO.Path]::GetTempPath()) "windows-controls-teardown-$([guid]::NewGuid())"
-        New-Item -ItemType Directory -Path $tempRoot -Force | Out-Null
-
-        try {
-            $app = Join-Path $tempRoot 'device-tests.sh'
-            @'
-#!/bin/sh
-if [ "$2" = "-1" ]; then
-    printf '%s\n' 'Window' > "$(dirname "$1")/devicetestcategories.txt"
-    exit 0
-fi
-result="${1%.xml}_Window.xml"
-cat > "$result" <<'EOF'
-<assemblies>
-  <assembly total="1" passed="1" failed="0" skipped="0" errors="0">
-    <collection>
-      <test type="Microsoft.Maui.Controls.DeviceTests.ButtonTests" method="TargetMethod" name="TargetMethod" result="Pass" />
-    </collection>
-  </assembly>
-</assemblies>
-EOF
-exec sleep 30
-'@ | Set-Content -LiteralPath $app -Encoding utf8 -NoNewline
-            & chmod +x $app
-
-            $script:WindowsDeviceTestPackageIds = @{
-                Controls = 'com.microsoft.maui.controls.devicetests'
-            }
-
-            $exitCode = Invoke-WindowsDeviceTestApp `
-                -AppPath $app `
-                -Project 'Controls' `
-                -AppName 'Controls.DeviceTests' `
-                -OutputDirectory (Join-Path $tempRoot 'results') `
-                -TestFilter 'Category=Window' `
-                -IncludeClasses 'Microsoft.Maui.Controls.DeviceTests.ButtonTests' `
-                -IncludeMethods 'TargetMethod' `
-                -Timeout '00:00:01'
-
-            $exitCode | Should -Be 0
-            $script:WindowsDeviceTestSummary.Passed | Should -Be 1
-            $script:WindowsDeviceTestSummary.Failed | Should -Be 0
-        } finally {
-            Remove-Item -LiteralPath $tempRoot -Recurse -Force -ErrorAction SilentlyContinue
-        }
-    }
-
-    It 'trusts complete scoped XML when only Windows process teardown times out' -Skip:(-not (Get-Command sh -ErrorAction SilentlyContinue)) {
-        $tempRoot = Join-Path ([System.IO.Path]::GetTempPath()) "windows-device-teardown-$([guid]::NewGuid())"
-        New-Item -ItemType Directory -Path $tempRoot -Force | Out-Null
-
-        try {
-            $app = Join-Path $tempRoot 'device-tests.sh'
-            @'
-#!/bin/sh
-cat > "$1" <<'EOF'
-<assemblies>
-  <assembly total="1" passed="1" failed="0" skipped="0" errors="0">
-    <collection>
-      <test type="Microsoft.Maui.DeviceTests.WindowHandlerTests" method="TargetMethod" name="TargetMethod" result="Pass" />
-    </collection>
-  </assembly>
-</assemblies>
-EOF
-exec sleep 30
-'@ | Set-Content -LiteralPath $app -Encoding utf8 -NoNewline
-            & chmod +x $app
-
-            $script:WindowsDeviceTestPackageIds = @{
-                Core = 'com.microsoft.maui.core.devicetests'
-            }
-
-            $exitCode = Invoke-WindowsDeviceTestApp `
-                -AppPath $app `
-                -Project 'Core' `
-                -AppName 'Core.DeviceTests' `
-                -OutputDirectory (Join-Path $tempRoot 'results') `
-                -TestFilter 'Category=Window' `
-                -IncludeClasses 'Microsoft.Maui.DeviceTests.WindowHandlerTests' `
-                -IncludeMethods 'TargetMethod' `
-                -Timeout '00:00:01'
-
-            $exitCode | Should -Be 0
-            $script:WindowsDeviceTestSummary.Passed | Should -Be 1
-            $script:WindowsDeviceTestSummary.Failed | Should -Be 0
-        } finally {
-            Remove-Item -LiteralPath $tempRoot -Recurse -Force -ErrorAction SilentlyContinue
-        }
+    It 'rejects inherited VSTest/query syntax rather than broadening selection' {
+        { ConvertTo-DeviceTestCategoryFilter 'Category=Shell|Category=Button' } | Should -Throw '*TestFilter must*'
     }
 }
 
-Describe 'Get-DeviceTestResultSummary' {
-    It 'clamps negative result counts to zero' {
-        ConvertTo-DeviceTestCount -Value '-1' | Should -Be 0
-    }
-
-    BeforeEach {
-        $script:testDir = Join-Path ([System.IO.Path]::GetTempPath()) "windows-device-results-$([guid]::NewGuid())"
-        New-Item -ItemType Directory -Path $script:testDir -Force | Out-Null
-    }
-
-    AfterEach {
-        Remove-Item -LiteralPath $script:testDir -Recurse -Force -ErrorAction SilentlyContinue
-    }
-
-    It 'aggregates xUnit assembly counters from Windows device-test XML files' {
-        $file1 = Join-Path $script:testDir 'TestResults-One.xml'
-        $file2 = Join-Path $script:testDir 'TestResults-Two.xml'
-
-        @'
-<assemblies>
-  <assembly total="3" passed="2" failed="1" skipped="0" errors="0" />
-</assemblies>
-'@ | Set-Content $file1 -Encoding UTF8
-
-        @'
-<assemblies>
-  <assembly total="2" passed="1" failed="0" skipped="1" errors="0" />
-</assemblies>
-'@ | Set-Content $file2 -Encoding UTF8
-
-        $summary = Get-DeviceTestResultSummary -ResultFiles @($file1, $file2)
-
-        $summary.Total | Should -Be 5
-        $summary.Passed | Should -Be 3
+Describe 'Genuine TRX result interpretation' {
+    It 'counts passed, failed and skipped results' {
+        $path = New-TrxFixture (Join-Path $TestDrive 'counts.trx') @(
+            @{ Class = 'Maui.Tests.Target'; Method = 'Pass'; Outcome = 'Passed' },
+            @{ Class = 'Maui.Tests.Target'; Method = 'Fail'; Outcome = 'Failed' },
+            @{ Class = 'Maui.Tests.Target'; Method = 'Skip'; Outcome = 'NotExecuted' }
+        ) -Outcome Failed
+        $summary = Get-DeviceTestResultSummary -ResultFiles $path
+        $summary.Total | Should -Be 3
+        $summary.Passed | Should -Be 1
         $summary.Failed | Should -Be 1
         $summary.Skipped | Should -Be 1
         $summary.Errors | Should -Be 0
     }
-
-    It 'throws a descriptive error (not a null-ref) when a result file is empty' {
-        $emptyFile = Join-Path $script:testDir 'TestResults-Empty.xml'
-        New-Item -ItemType File -Path $emptyFile -Force | Out-Null
-
-        { Get-DeviceTestResultSummary -ResultFiles @($emptyFile) } |
-            Should -Throw -ExpectedMessage 'WINDOWS_DEVICE_TEST_NO_RESULTS:*empty or not valid XML*'
-    }
-
-    It 'throws a descriptive error (not a null-ref) when a result file is malformed' {
-        $badFile = Join-Path $script:testDir 'TestResults-Bad.xml'
-        '<assemblies><assembly total="1"' | Set-Content $badFile -Encoding UTF8
-
-        { Get-DeviceTestResultSummary -ResultFiles @($badFile) } |
-            Should -Throw -ExpectedMessage 'WINDOWS_DEVICE_TEST_NO_RESULTS:*empty or not valid XML*'
-    }
-
-    It 'counts only tests of the requested class when -IncludeClasses is set (matches on the xUnit type attribute)' {
-        $file = Join-Path $script:testDir 'TestResults-Suite.xml'
-
-        # Real xUnit v2 shape: the fully-qualified class is in `type`; `name` is the
-        # (often theory/DisplayName) label, NOT the FQN.
-        @'
-<assemblies>
-  <assembly total="5" passed="3" failed="1" skipped="1" errors="0">
-    <collection>
-      <test name="OneA" type="Microsoft.Maui.DeviceTests.EntryHandlerTests" method="OneA" result="Pass" />
-      <test name="OneB" type="Microsoft.Maui.DeviceTests.EntryHandlerTests" method="OneB" result="Fail" />
-      <test name="OneC" type="Microsoft.Maui.DeviceTests.EntryHandlerTests" method="OneC" result="Skip" />
-      <test name="TwoA" type="Microsoft.Maui.DeviceTests.LabelHandlerTests" method="TwoA" result="Pass" />
-      <test name="TwoB" type="Microsoft.Maui.DeviceTests.LabelHandlerTests" method="TwoB" result="Pass" />
-    </collection>
-  </assembly>
-</assemblies>
-'@ | Set-Content $file -Encoding UTF8
-
-        $summary = Get-DeviceTestResultSummary `
-            -ResultFiles @($file) `
-            -IncludeClasses 'Microsoft.Maui.DeviceTests.EntryHandlerTests'
-
-        $summary.Total | Should -Be 3
-        $summary.Passed | Should -Be 1
-        $summary.Failed | Should -Be 1
-        $summary.Skipped | Should -Be 1
-    }
-
-    It 'matches the class even when the test name is a theory/DisplayName string (regression: false INCONCLUSIVE #36577)' {
-        $file = Join-Path $script:testDir 'TestResults-Theory.xml'
-
-        # These `name` values never start with the FQN — the original name-based matcher
-        # counted 0 here and forced a false INCONCLUSIVE even though the tests ran.
-        @'
-<assemblies>
-  <assembly total="3" passed="2" failed="1" skipped="0" errors="0">
-    <collection>
-      <test name="PlatformView Transforms are not empty(size: 1)" type="Microsoft.Maui.DeviceTests.EntryHandlerTests" method="Transforms" result="Pass" />
-      <test name="CompletedFiresOnRealEnterKeyPress" type="Microsoft.Maui.DeviceTests.EntryHandlerTests" method="CompletedFiresOnRealEnterKeyPress" result="Pass" />
-      <test name="Updating Font Does Not Affect Alignment(initialSize: 10, newSize: 20)" type="Microsoft.Maui.DeviceTests.EntryHandlerTests" method="Font" result="Fail" />
-      <test name="Unrelated" type="Microsoft.Maui.DeviceTests.LabelHandlerTests" method="Unrelated" result="Pass" />
-    </collection>
-  </assembly>
-</assemblies>
-'@ | Set-Content $file -Encoding UTF8
-
-        $summary = Get-DeviceTestResultSummary `
-            -ResultFiles @($file) `
-            -IncludeClasses 'Microsoft.Maui.DeviceTests.EntryHandlerTests'
-
-        $summary.Total | Should -Be 3
-        $summary.Passed | Should -Be 2
-        $summary.Failed | Should -Be 1
-    }
-
-    It 'does not treat a class name as a prefix substring of another class' {
-        $file = Join-Path $script:testDir 'TestResults-Prefix.xml'
-
-        @'
-<assemblies>
-  <assembly total="2" passed="2" failed="0" skipped="0" errors="0">
-    <collection>
-      <test name="OneA" type="Microsoft.Maui.DeviceTests.EntryHandlerTests" method="OneA" result="Pass" />
-      <test name="OneB" type="Microsoft.Maui.DeviceTests.EntryHandlerTestsExtra" method="OneB" result="Fail" />
-    </collection>
-  </assembly>
-</assemblies>
-'@ | Set-Content $file -Encoding UTF8
-
-        $summary = Get-DeviceTestResultSummary `
-            -ResultFiles @($file) `
-            -IncludeClasses 'Microsoft.Maui.DeviceTests.EntryHandlerTests'
-
-        $summary.Total | Should -Be 1
-        $summary.Passed | Should -Be 1
-        $summary.Failed | Should -Be 0
-    }
-
-    It 'falls back to the fully-qualified name when a runner omits the type attribute' {
-        $file = Join-Path $script:testDir 'TestResults-NoType.xml'
-
-        @'
-<assemblies>
-  <assembly total="2" passed="1" failed="1" skipped="0" errors="0">
-    <collection>
-      <test name="Microsoft.Maui.DeviceTests.EntryHandlerTests.OneA" result="Pass" />
-      <test name="Microsoft.Maui.DeviceTests.LabelHandlerTests.TwoA" result="Fail" />
-    </collection>
-  </assembly>
-</assemblies>
-'@ | Set-Content $file -Encoding UTF8
-
-        $summary = Get-DeviceTestResultSummary `
-            -ResultFiles @($file) `
-            -IncludeClasses 'Microsoft.Maui.DeviceTests.EntryHandlerTests'
-
-        $summary.Total | Should -Be 1
-        $summary.Passed | Should -Be 1
-    }
-
-    It 'supports multiple comma/semicolon-separated classes in -IncludeClasses' {
-        $file = Join-Path $script:testDir 'TestResults-Multi.xml'
-
-        @'
-<assemblies>
-  <assembly total="3" passed="3" failed="0" skipped="0" errors="0">
-    <collection>
-      <test name="OneA" type="Microsoft.Maui.DeviceTests.EntryHandlerTests" method="OneA" result="Pass" />
-      <test name="TwoA" type="Microsoft.Maui.DeviceTests.LabelHandlerTests" method="TwoA" result="Pass" />
-      <test name="ThreeA" type="Microsoft.Maui.DeviceTests.ButtonHandlerTests" method="ThreeA" result="Pass" />
-    </collection>
-  </assembly>
-</assemblies>
-'@ | Set-Content $file -Encoding UTF8
-
-        $summary = Get-DeviceTestResultSummary `
-            -ResultFiles @($file) `
-            -IncludeClasses 'Microsoft.Maui.DeviceTests.EntryHandlerTests;Microsoft.Maui.DeviceTests.LabelHandlerTests'
-
-        $summary.Total | Should -Be 2
+    It 'counts every theory row using TestMethod identity, not display names' {
+        $path = New-TrxFixture (Join-Path $TestDrive 'theory.trx') @(
+            @{ Class = 'Maui.Tests.Target'; Method = 'Runs'; Display = 'custom row 1'; Outcome = 'Passed' },
+            @{ Class = 'Maui.Tests.Target'; Method = 'Runs'; Display = 'custom row 2'; Outcome = 'Passed' }
+        )
+        $summary = Get-DeviceTestResultSummary -ResultFiles $path -IncludeClasses 'Maui.Tests.Target' -IncludeMethods 'Runs'
         $summary.Passed | Should -Be 2
     }
+    It 'rejects broad class execution rather than accepting a passing target subset' {
+        $path = New-TrxFixture (Join-Path $TestDrive 'broad.trx') @(
+            @{ Class = 'Maui.Tests.Target'; Method = 'Runs'; Outcome = 'Passed' },
+            @{ Class = 'Maui.Tests.TargetOther'; Method = 'Runs'; Outcome = 'Passed' }
+        )
+        { Get-DeviceTestResultSummary -ResultFiles $path -IncludeClasses 'Maui.Tests.Target' } |
+            Should -Throw '*class filter was not enforced*'
+    }
+    It 'rejects sibling methods outside an exact requested selection' {
+        $path = New-TrxFixture (Join-Path $TestDrive 'sibling.trx') @(
+            @{ Class = 'Maui.Tests.Target'; Method = 'Runs'; Outcome = 'Passed' },
+            @{ Class = 'Maui.Tests.Target'; Method = 'Other'; Outcome = 'Failed' }
+        )
+        { Get-DeviceTestResultSummary -ResultFiles $path -IncludeClasses 'Maui.Tests.Target' -IncludeMethods 'Runs' } |
+            Should -Throw '*method filter was not enforced*'
+    }
+    It 'rejects a partial method match' {
+        $path = New-TrxFixture (Join-Path $TestDrive 'partial.trx') @(
+            @{ Class = 'Maui.Tests.Target'; Method = 'Runs'; Outcome = 'Passed' }
+        )
+        { Get-DeviceTestResultSummary -ResultFiles $path -IncludeClasses 'Maui.Tests.Target' -IncludeMethods 'Runs;Missing' } |
+            Should -Throw "*'Missing' did not execute*"
+    }
+    It 'rejects all-skipped verification evidence' {
+        $path = New-TrxFixture (Join-Path $TestDrive 'skipped.trx') @(
+            @{ Class = 'Maui.Tests.Target'; Method = 'Runs'; Outcome = 'NotExecuted' }
+        )
+        { Get-DeviceTestResultSummary -ResultFiles $path -IncludeClasses 'Maui.Tests.Target' } |
+            Should -Throw '*only skipped*'
+    }
+    It 'rejects empty discovery' {
+        $path = New-TrxFixture (Join-Path $TestDrive 'empty.trx') @()
+        { Get-DeviceTestResultSummary -ResultFiles $path } | Should -Throw '*contains no tests*'
+    }
+    It 'treats a run-level abort as an infrastructure failure even when a test passed' {
+        $path = New-TrxFixture (Join-Path $TestDrive 'aborted.trx') @(
+            @{ Class = 'Maui.Tests.Target'; Method = 'Runs'; Outcome = 'Passed' }
+        ) -Outcome Aborted
+        (Get-DeviceTestResultSummary -ResultFiles $path).Errors | Should -Be 1
+    }
+    It 'requires real TRX, not legacy xUnit XML or stdout' {
+        $path = Join-Path $TestDrive 'not-trx.xml'
+        '<assemblies><assembly passed="100" /></assemblies>' | Set-Content $path
+        { Get-DeviceTestResultSummary -ResultFiles $path } | Should -Throw '*Expected genuine TRX*'
+    }
+    It 'prohibits XML entity expansion' {
+        $path = Join-Path $TestDrive 'dtd.trx'
+        '<!DOCTYPE TestRun [<!ENTITY file SYSTEM "file:///not-readable">]><TestRun>&file;</TestRun>' | Set-Content $path
+        { Get-DeviceTestResultSummary -ResultFiles $path } | Should -Throw
+    }
+    It 'defangs entity-decoded logging directives in failed test names' {
+        $path = New-TrxFixture (Join-Path $TestDrive 'logging.trx') @(
+            @{ Class = 'Maui.Tests.Target'; Method = 'Runs'; Outcome = 'Failed'; Display = "name`n##vso[task.setvariable variable=unsafe]x" }
+        ) -Outcome Failed
+        $summary = Get-DeviceTestResultSummary -ResultFiles $path
+        $summary.FailedTests[0] | Should -Not -Match '[\r\n]|##vso\['
+    }
+}
 
-    It 'rejects a broad XHarness suite when class isolation was required' {
-        $file = Join-Path $script:testDir 'TestResults-Unfiltered.xml'
+Describe 'Native subprocess security and failures' {
+    BeforeAll {
+        $pwsh = (Get-Command pwsh).Source
+    }
+    It 'strips GH tokens at child start and restores the caller environment' {
+        $names = @('GH_TOKEN', 'GITHUB_TOKEN', 'COPILOT_GITHUB_TOKEN')
+        $original = @{}
+        try {
+            foreach ($name in $names) {
+                $original[$name] = [Environment]::GetEnvironmentVariable($name, 'Process')
+                [Environment]::SetEnvironmentVariable($name, 'unit-test-only-marker', 'Process')
+            }
+            $log = Join-Path $TestDrive 'credentials.log'
+            $run = Invoke-DeviceDotnet -FilePath $pwsh -Arguments @('-NoProfile', '-Command',
+                'if ($env:GH_TOKEN -or $env:GITHUB_TOKEN -or $env:COPILOT_GITHUB_TOKEN) { "LEAK"; exit 1 }; "clear"') `
+                -WorkingDirectory $TestDrive -LogPath $log -TimeoutSeconds 10
+            $run.ExitCode | Should -Be 0
+            Get-Content $log -Raw | Should -Not -Match 'LEAK|unit-test-only-marker'
+            foreach ($name in $names) {
+                [Environment]::GetEnvironmentVariable($name, 'Process') | Should -Be 'unit-test-only-marker'
+            }
+        }
+        finally {
+            foreach ($name in $names) { [Environment]::SetEnvironmentVariable($name, $original[$name], 'Process') }
+        }
+    }
+    It 'preserves nonzero process failure' {
+        $run = Invoke-DeviceDotnet -FilePath $pwsh -Arguments @('-NoProfile', '-Command', 'exit 23') `
+            -WorkingDirectory $TestDrive -LogPath (Join-Path $TestDrive 'exit.log') -TimeoutSeconds 10
+        $run.ExitCode | Should -Be 23
+        $run.TimedOut | Should -BeFalse
+    }
+    It 'kills only the timed-out child process tree and does not report success' {
+        $run = Invoke-DeviceDotnet -FilePath $pwsh -Arguments @('-NoProfile', '-Command', 'Start-Sleep -Seconds 60') `
+            -WorkingDirectory $TestDrive -LogPath (Join-Path $TestDrive 'timeout.log') -TimeoutSeconds 1
+        $run.TimedOut | Should -BeTrue
+        $run.ExitCode | Should -Not -Be 0
+    }
+}
 
+Describe 'Plain dotnet test local caller' -Skip:$IsWindows {
+    BeforeAll {
+        $pwsh = (Get-Command pwsh).Source
+        $fixture = Join-Path $TestDrive 'repo'
+        New-Item -ItemType Directory -Force -Path (Join-Path $fixture '.git') | Out-Null
+        '<Project><PropertyGroup><_MauiDotNetVersionMajor>11</_MauiDotNetVersionMajor><_MauiDotNetVersionMinor>0</_MauiDotNetVersionMinor></PropertyGroup></Project>' |
+            Set-Content (Join-Path $fixture 'Directory.Build.props')
+        $projectDirectory = Join-Path $fixture 'src/Core/tests/DeviceTests'
+        New-Item -ItemType Directory -Force -Path $projectDirectory | Out-Null
+        '<Project><PropertyGroup><ApplicationId>com.microsoft.maui.devicetests</ApplicationId></PropertyGroup></Project>' |
+            Set-Content (Join-Path $projectDirectory 'Core.DeviceTests.csproj')
+        $fake = Join-Path $TestDrive 'fake-dotnet'
+        $originalSdkRoot = $env:ANDROID_SDK_ROOT
+        $fakeSdk = Join-Path $TestDrive 'android-sdk'
+        New-Item -ItemType Directory -Force -Path (Join-Path $fakeSdk 'platform-tools') | Out-Null
+        $fakeAdb = Join-Path $fakeSdk 'platform-tools/adb'
         @'
-<assemblies>
-  <assembly total="2" passed="2" failed="0" skipped="0" errors="0">
-    <collection>
-      <test name="Target" type="Microsoft.Maui.DeviceTests.EntryHandlerTests" method="Target" result="Pass" />
-      <test name="Unrelated" type="Microsoft.Maui.DeviceTests.LabelHandlerTests" method="Unrelated" result="Pass" />
-    </collection>
-  </assembly>
-</assemblies>
-'@ | Set-Content $file -Encoding UTF8
-
-        { Get-DeviceTestResultSummary `
-                -ResultFiles @($file) `
-                -IncludeClasses 'Microsoft.Maui.DeviceTests.EntryHandlerTests' `
-                -RequireClassIsolation } |
-            Should -Throw -ExpectedMessage '*class filter was not enforced*1 test(s) outside*LabelHandlerTests*'
+#!/usr/bin/env python3
+import json, os, pathlib, shutil, sys
+arguments = sys.argv[1:]
+if any(os.environ.get(name) for name in ("GH_TOKEN", "GITHUB_TOKEN", "COPILOT_GITHUB_TOKEN")):
+    sys.exit(99)
+with open(os.environ["MAUI_FAKE_ADB_ARGS"], "a") as output:
+    output.write(json.dumps(arguments) + "\n")
+if os.environ.get("MAUI_FAKE_ADB_EXIT", "0") != "0":
+    sys.exit(int(os.environ["MAUI_FAKE_ADB_EXIT"]))
+if "getprop" in arguments:
+    print("x86_64")
+elif "shell" in arguments:
+    if os.environ.get("MAUI_FAKE_CHECK_EXIT"):
+        sys.exit(int(os.environ["MAUI_FAKE_CHECK_EXIT"]))
+    print("present" if os.environ.get("MAUI_FAKE_PREVIOUS_TRX") else "absent")
+elif "pull" in arguments:
+    after = pathlib.Path(os.environ["MAUI_FAKE_NATIVE_READY"]).exists()
+    source = (os.environ.get("MAUI_FAKE_NATIVE_TRX", os.environ.get("MAUI_FAKE_TRX"))
+              if after else os.environ.get("MAUI_FAKE_PREVIOUS_TRX"))
+    if not source or os.environ.get("MAUI_FAKE_PULL_EXIT"):
+        sys.exit(1)
+    shutil.copyfile(source, arguments[-1])
+else:
+    sys.exit(98)
+'@ | Set-Content $fakeAdb
+        & chmod +x $fakeAdb
+        @'
+#!/usr/bin/env python3
+import json, os, pathlib, shutil, sys
+arguments = sys.argv[1:]
+if os.environ.get("MAUI_FAKE_ARGS"):
+    with open(os.environ["MAUI_FAKE_ARGS"], "a") as output:
+        output.write(json.dumps(arguments) + "\n")
+if "--results-directory" in arguments and os.environ.get("MAUI_FAKE_TRX"):
+    destination = arguments[arguments.index("--results-directory") + 1]
+    shutil.copyfile(os.environ["MAUI_FAKE_TRX"], pathlib.Path(destination) / "real-reporter-fixture.trx")
+if "test" in arguments:
+    pathlib.Path(os.environ["MAUI_FAKE_NATIVE_READY"]).touch()
+print("Passed: 999")
+print("##vso[task.setvariable variable=untrusted]value")
+sys.exit(int(os.environ.get("MAUI_FAKE_EXIT", "0")))
+'@ | Set-Content $fake
+        & chmod +x $fake
+        function Invoke-RunnerFixture {
+            param([string] $Log, [string[]] $Extra = @(), [switch] $OwnDevice, [string] $RunnerPath = $scriptPath, [string] $ProjectPath)
+            $deviceArguments = if ($OwnDevice) { @() } else { @('-DeviceUdid', 'emulator-5554') }
+            $projectArguments = if ($ProjectPath) { @('-ProjectPath', $ProjectPath) } else { @('-Project', 'Core') }
+            Invoke-DeviceDotnet -FilePath $pwsh -WorkingDirectory $fixture -LogPath $Log -TimeoutSeconds 60 -Arguments (
+                @('-NoProfile', '-File', $RunnerPath, '-RepoRoot', $fixture, '-Platform', 'android',
+                  '-DotnetPath', $fake, '-OutputDirectory', (Join-Path $fixture 'logs'),
+                  '-IncludeClasses', 'Maui.Tests.Target', '-IncludeMethods', 'Runs', '-Timeout', '00:00:30') + $projectArguments + $deviceArguments + $Extra)
+        }
+    }
+    BeforeEach {
+        $env:MAUI_FAKE_TRX = $null
+        $env:MAUI_FAKE_ARGS = Join-Path $TestDrive "$([guid]::NewGuid().ToString('N')).args"
+        $env:MAUI_FAKE_EXIT = '0'
+        $env:MAUI_FAKE_ADB_EXIT = '0'
+        $env:MAUI_FAKE_ADB_ARGS = Join-Path $TestDrive "$([guid]::NewGuid().ToString('N')).adb-args"
+        $env:MAUI_FAKE_NATIVE_READY = Join-Path $TestDrive "$([guid]::NewGuid().ToString('N')).ready"
+        $env:MAUI_FAKE_NATIVE_TRX = $null
+        $env:MAUI_FAKE_PREVIOUS_TRX = $null
+        $env:MAUI_FAKE_PULL_EXIT = $null
+        $env:MAUI_FAKE_CHECK_EXIT = $null
+        $env:ANDROID_SDK_ROOT = $fakeSdk
+    }
+    AfterAll {
+        $env:MAUI_FAKE_TRX = $null
+        $env:MAUI_FAKE_ARGS = $null
+        $env:MAUI_FAKE_EXIT = $null
+        $env:MAUI_FAKE_ADB_EXIT = $null
+        $env:MAUI_FAKE_ADB_ARGS = $null
+        $env:MAUI_FAKE_NATIVE_READY = $null
+        $env:MAUI_FAKE_NATIVE_TRX = $null
+        $env:MAUI_FAKE_PREVIOUS_TRX = $null
+        $env:MAUI_FAKE_PULL_EXIT = $null
+        $env:MAUI_FAKE_CHECK_EXIT = $null
+        $env:ANDROID_SDK_ROOT = $originalSdkRoot
+    }
+    It 'preserves authoritative machine-readable counts and passes native selectors' {
+        $env:MAUI_FAKE_TRX = New-TrxFixture (Join-Path $TestDrive 'passing.trx') @(
+            @{ Class = 'Maui.Tests.Target'; Method = 'Runs'; Outcome = 'Passed' }
+        )
+        $log = Join-Path $TestDrive 'passing.log'
+        (Invoke-RunnerFixture $log).ExitCode | Should -Be 0
+        $output = Get-Content $log -Raw
+        $output | Should -Match '(?m)^  Passed: 1$'
+        $output | Should -Match '(?m)^  Failed: 0$'
+        $output | Should -Match '(?m)^  Skipped: 0$'
+        $output | Should -Match '(?m)^  Total: 1$'
+        $output | Should -Not -Match '(?m)^Passed: 999|##vso\['
+        $arguments = Get-Content $env:MAUI_FAKE_ARGS -Raw | ConvertFrom-Json
+        $arguments | Should -Contain 'test'
+        $arguments | Should -Contain '-p:MauiTestClasses=Maui.Tests.Target'
+        $arguments | Should -Contain '-p:MauiTestMethods=Maui.Tests.Target.Runs'
+        $arguments | Should -Contain '--device'
+        $arguments | Should -Contain 'emulator-5554'
+        $arguments | Should -Contain '-p:RuntimeIdentifier=android-x64'
+    }
+    It 'does not downgrade launcher failure after passing TRX into a Gate pass' {
+        $env:MAUI_FAKE_TRX = New-TrxFixture (Join-Path $TestDrive 'transport.trx') @(
+            @{ Class = 'Maui.Tests.Target'; Method = 'Runs'; Outcome = 'Passed' }
+        )
+        $env:MAUI_FAKE_EXIT = '23'
+        $log = Join-Path $TestDrive 'transport.log'
+        (Invoke-RunnerFixture $log).ExitCode | Should -Not -Be 0
+        Get-Content $log -Raw | Should -Not -Match '(?m)^\s*Passed:\s*\d+'
+        Get-Content $log -Raw | Should -Match 'infrastructure failure'
+    }
+    It 'uses original native theory identities when the Android proxy rewrites method names' {
+        $env:MAUI_FAKE_TRX = New-TrxFixture (Join-Path $TestDrive 'proxy.trx') @(
+            @{ Class = 'Maui.Tests.Target'; Method = '[Memory] Custom Display(row: 1)'; Outcome = 'Passed' },
+            @{ Class = 'Maui.Tests.Target'; Method = '[Memory] Custom Display(row: 2)'; Outcome = 'Passed' }
+        )
+        $env:MAUI_FAKE_NATIVE_TRX = New-TrxFixture (Join-Path $TestDrive 'native.trx') @(
+            @{ Class = 'Maui.Tests.Target'; Method = 'Runs'; Display = '[Memory] Custom Display(row: 1)'; Outcome = 'Passed' },
+            @{ Class = 'Maui.Tests.Target'; Method = 'Runs'; Display = '[Memory] Custom Display(row: 2)'; Outcome = 'Passed' }
+        )
+        $log = Join-Path $TestDrive 'native-identities.log'
+        (Invoke-RunnerFixture $log).ExitCode | Should -Be 0
+        Get-Content $log -Raw | Should -Match '(?m)^  Total: 2$'
+        $calls = @(Get-Content $env:MAUI_FAKE_ADB_ARGS | ForEach-Object { ,($_ | ConvertFrom-Json) })
+        $calls[-1][0..2] | Should -Be @('-s', 'emulator-5554', 'pull')
+        $calls[-1][3] | Should -Be '/sdcard/Android/data/com.microsoft.maui.devicetests/files/TestResults/testResults.trx'
+        Test-Path $calls[-1][-1] | Should -BeTrue
+        Test-Path (Join-Path (Split-Path (Split-Path $calls[-1][-1])) 'real-reporter-fixture.trx') | Should -BeTrue
+    }
+    It 'never guesses original methods from native display names either' {
+        $env:MAUI_FAKE_TRX = New-TrxFixture (Join-Path $TestDrive 'rewritten.trx') @(
+            @{ Class = 'Maui.Tests.Target'; Method = '[Memory] Runs(row: 1)'; Outcome = 'Passed' }
+        )
+        $log = Join-Path $TestDrive 'native-rewritten.log'
+        (Invoke-RunnerFixture $log).ExitCode | Should -Not -Be 0
+        Get-Content $log -Raw | Should -Match 'method filter was not enforced'
+        Get-Content $log -Raw | Should -Not -Match '(?m)^\s*Passed:\s*\d+'
+    }
+    It 'rejects stale native results retained on a borrowed Android device' {
+        $env:MAUI_FAKE_TRX = New-TrxFixture (Join-Path $TestDrive 'stale-native.trx') @(
+            @{ Class = 'Maui.Tests.Target'; Method = 'Runs'; Outcome = 'Passed' }
+        )
+        $env:MAUI_FAKE_PREVIOUS_TRX = $env:MAUI_FAKE_TRX
+        $log = Join-Path $TestDrive 'stale-native.log'
+        (Invoke-RunnerFixture $log).ExitCode | Should -Not -Be 0
+        Get-Content $log -Raw | Should -Match 'native result is stale'
+        Get-Content $log -Raw | Should -Not -Match '(?m)^\s*Passed:\s*\d+'
+    }
+    It 'accepts fresh native results while retaining the borrowed device previous report' {
+        $env:MAUI_FAKE_PREVIOUS_TRX = New-TrxFixture (Join-Path $TestDrive 'old-native.trx') @(
+            @{ Class = 'Maui.Tests.Target'; Method = 'Other'; Outcome = 'Passed' }
+        )
+        $env:MAUI_FAKE_TRX = New-TrxFixture (Join-Path $TestDrive 'fresh-native.trx') @(
+            @{ Class = 'Maui.Tests.Target'; Method = 'Runs'; Outcome = 'Passed' }
+        )
+        $log = Join-Path $TestDrive 'fresh-native.log'
+        (Invoke-RunnerFixture $log).ExitCode | Should -Be 0
+        Get-Content $log -Raw | Should -Match '(?m)^  Total: 1$'
+    }
+    It 'fails closed when Android result freshness cannot be established' {
+        $env:MAUI_FAKE_CHECK_EXIT = '1'
+        $log = Join-Path $TestDrive 'native-check-failure.log'
+        (Invoke-RunnerFixture $log).ExitCode | Should -Not -Be 0
+        Get-Content $log -Raw | Should -Match 'Cannot establish'
+        Test-Path $env:MAUI_FAKE_ARGS | Should -BeFalse
+    }
+    It 'requires readable native TRX even when the SDK proxy passes' {
+        $env:MAUI_FAKE_TRX = New-TrxFixture (Join-Path $TestDrive 'proxy-only.trx') @(
+            @{ Class = 'Maui.Tests.Target'; Method = 'Runs'; Outcome = 'Passed' }
+        )
+        $env:MAUI_FAKE_PULL_EXIT = '1'
+        $log = Join-Path $TestDrive 'native-pull-failure.log'
+        (Invoke-RunnerFixture $log).ExitCode | Should -Not -Be 0
+        Get-Content $log -Raw | Should -Match 'did not produce readable genuine TRX'
+        Get-Content $log -Raw | Should -Not -Match '(?m)^\s*Passed:\s*\d+'
+    }
+    It 'rejects disagreement between the native and proxy outcomes' {
+        $env:MAUI_FAKE_TRX = New-TrxFixture (Join-Path $TestDrive 'proxy-count.trx') @(
+            @{ Class = 'Maui.Tests.Target'; Method = 'Runs'; Outcome = 'Passed' }
+        )
+        $env:MAUI_FAKE_NATIVE_TRX = New-TrxFixture (Join-Path $TestDrive 'native-count.trx') @(
+            @{ Class = 'Maui.Tests.Target'; Method = 'Runs'; Outcome = 'Failed' }
+        ) -Outcome Failed
+        $log = Join-Path $TestDrive 'native-proxy-disagreement.log'
+        (Invoke-RunnerFixture $log).ExitCode | Should -Not -Be 0
+        Get-Content $log -Raw | Should -Match 'Native Android and SDK proxy TRX disagree'
+        Get-Content $log -Raw | Should -Not -Match '(?m)^\s*Passed:\s*\d+'
+    }
+    It 'rejects broad native execution even when the proxy contains only the requested target' {
+        $env:MAUI_FAKE_TRX = New-TrxFixture (Join-Path $TestDrive 'proxy-scoped.trx') @(
+            @{ Class = 'Maui.Tests.Target'; Method = 'Runs'; Outcome = 'Passed' }
+        )
+        $env:MAUI_FAKE_NATIVE_TRX = New-TrxFixture (Join-Path $TestDrive 'native-broad.trx') @(
+            @{ Class = 'Maui.Tests.Target'; Method = 'Runs'; Outcome = 'Passed' },
+            @{ Class = 'Maui.Tests.Target'; Method = 'Other'; Outcome = 'Passed' }
+        )
+        $log = Join-Path $TestDrive 'native-broad.log'
+        (Invoke-RunnerFixture $log).ExitCode | Should -Not -Be 0
+        Get-Content $log -Raw | Should -Match 'method filter was not enforced'
+    }
+    It 'fails safely when the explicitly selected Android device cannot be queried' {
+        $env:MAUI_FAKE_ADB_EXIT = '1'
+        $log = Join-Path $TestDrive 'adb-failure.log'
+        (Invoke-RunnerFixture $log).ExitCode | Should -Not -Be 0
+        Get-Content $log -Raw | Should -Match 'Cannot query selected Android device'
+        Get-Content $log -Raw | Should -Not -Match '(?m)^\s*Passed:\s*\d+'
+    }
+    It 'does not emit Gate success counts when owned-device cleanup fails after passing tests' {
+        $env:MAUI_FAKE_TRX = New-TrxFixture (Join-Path $TestDrive 'cleanup.trx') @(
+            @{ Class = 'Maui.Tests.Target'; Method = 'Runs'; Outcome = 'Passed' }
+        )
+        $scripts = Join-Path $TestDrive 'owned-runner'
+        New-Item -ItemType Directory -Path $scripts | Out-Null
+        $runner = Join-Path $scripts 'Run-DeviceTests.ps1'
+        Copy-Item $scriptPath $runner
+        @'
+param($Platform, $ApiVersion, $ResultsDirectory, $DeviceDirectory)
+@{ Platform='android'; Device='emulator-5554' } | ConvertTo-Json | Set-Content (Join-Path $ResultsDirectory 'device.json')
+'@ | Set-Content (Join-Path $scripts 'Start-TestDevice.ps1')
+        "throw 'Controlled device cleanup failure'" | Set-Content (Join-Path $scripts 'Stop-TestDevice.ps1')
+        $log = Join-Path $TestDrive 'cleanup-failure.log'
+        (Invoke-RunnerFixture -Log $log -OwnDevice -RunnerPath $runner).ExitCode | Should -Not -Be 0
+        Get-Content $log -Raw | Should -Match 'Controlled device cleanup failure'
+        Get-Content $log -Raw | Should -Not -Match '(?m)^\s*Passed:\s*\d+'
+    }
+    It 'reports genuine failing tests and retains their nonzero exit' {
+        $env:MAUI_FAKE_TRX = New-TrxFixture (Join-Path $TestDrive 'failing.trx') @(
+            @{ Class = 'Maui.Tests.Target'; Method = 'Runs'; Outcome = 'Failed' }
+        ) -Outcome Failed
+        $env:MAUI_FAKE_EXIT = '2'
+        $log = Join-Path $TestDrive 'failing.log'
+        (Invoke-RunnerFixture $log).ExitCode | Should -Be 2
+        Get-Content $log -Raw | Should -Match '(?m)^  Failed: 1$'
+    }
+    It 'never reuses a prior attempt result when the current invocation produces none' {
+        $env:MAUI_FAKE_TRX = New-TrxFixture (Join-Path $TestDrive 'first.trx') @(
+            @{ Class = 'Maui.Tests.Target'; Method = 'Runs'; Outcome = 'Passed' }
+        )
+        (Invoke-RunnerFixture (Join-Path $TestDrive 'first.log')).ExitCode | Should -Be 0
+        $env:MAUI_FAKE_TRX = $null
+        $log = Join-Path $TestDrive 'missing.log'
+        (Invoke-RunnerFixture $log).ExitCode | Should -Not -Be 0
+        Get-Content $log -Raw | Should -Not -Match '(?m)^\s*Passed:\s*\d+'
+    }
+    It 'builds the whole graph on Rebuild and invokes test with no-build' {
+        $env:MAUI_FAKE_TRX = New-TrxFixture (Join-Path $TestDrive 'rebuild.trx') @(
+            @{ Class = 'Maui.Tests.Target'; Method = 'Runs'; Outcome = 'Passed' }
+        )
+        (Invoke-RunnerFixture -Log (Join-Path $TestDrive 'rebuild.log') -Extra @('-Rebuild')).ExitCode | Should -Be 0
+        $commands = @(Get-Content $env:MAUI_FAKE_ARGS | ForEach-Object { ,($_ | ConvertFrom-Json) })
+        $commands.Count | Should -Be 2
+        $commands[0] | Should -Contain '-t:Rebuild'
+        $commands[1] | Should -Contain '--no-build'
+    }
+    It 'supports BuildOnly without requiring or cleaning up a borrowed device' {
+        (Invoke-RunnerFixture -Log (Join-Path $TestDrive 'build-only.log') -Extra @('-BuildOnly')).ExitCode | Should -Be 0
+        $arguments = Get-Content $env:MAUI_FAKE_ARGS -Raw | ConvertFrom-Json
+        $arguments[0] | Should -Be 'build'
     }
 
-    It 'requires an exact xUnit type match when validating class isolation' {
-        $file = Join-Path $script:testDir 'TestResults-ClassPrefix.xml'
+    It 'runs an explicit native project without changing its requested target framework' {
+        $project = Join-Path $fixture 'NativeSample.csproj'
+        Copy-Item -LiteralPath (Join-Path $fixture 'src/Core/tests/DeviceTests/Core.DeviceTests.csproj') -Destination $project
+        $env:MAUI_FAKE_TRX = New-TrxFixture (Join-Path $TestDrive 'custom-project.trx') @(
+            @{ Class = 'Maui.Tests.Target'; Method = 'Runs'; Outcome = 'Passed' }
+        )
 
-        @'
-<assemblies>
-  <assembly total="1" passed="1" failed="0" skipped="0" errors="0">
-    <collection>
-      <test name="Nested" type="Microsoft.Maui.DeviceTests.EntryHandlerTests.Nested" method="Nested" result="Pass" />
-    </collection>
-  </assembly>
-</assemblies>
-'@ | Set-Content $file -Encoding UTF8
+        (Invoke-RunnerFixture -Log (Join-Path $TestDrive 'custom-project.log') -ProjectPath $project `
+            -Extra @('-TargetFramework', 'net11.0-android35.0')).ExitCode | Should -Be 0
 
-        { Get-DeviceTestResultSummary `
-                -ResultFiles @($file) `
-                -IncludeClasses 'Microsoft.Maui.DeviceTests.EntryHandlerTests' `
-                -RequireClassIsolation } |
-            Should -Throw -ExpectedMessage '*class filter was not enforced*'
+        $arguments = Get-Content -Raw $env:MAUI_FAKE_ARGS | ConvertFrom-Json
+        $arguments | Should -Contain $project
+        $arguments | Should -Contain 'net11.0-android35.0'
     }
 
-    It 'accepts an XHarness result containing only the requested classes' {
-        $file = Join-Path $script:testDir 'TestResults-Isolated.xml'
+    It 'rejects a project outside the selected checkout before launching dotnet' {
+        $project = Join-Path $TestDrive 'Outside.csproj'
+        '<Project />' | Set-Content -LiteralPath $project
+        $log = Join-Path $TestDrive 'outside-project.log'
 
-        @'
-<assemblies>
-  <assembly total="2" passed="2" failed="0" skipped="0" errors="0">
-    <collection>
-      <test name="One" type="Microsoft.Maui.DeviceTests.EntryHandlerTests" method="One" result="Pass" />
-      <test name="Two" type="Microsoft.Maui.DeviceTests.EntryHandlerTests" method="Two" result="Pass" />
-    </collection>
-  </assembly>
-</assemblies>
-'@ | Set-Content $file -Encoding UTF8
+        (Invoke-RunnerFixture -Log $log -ProjectPath $project).ExitCode | Should -Not -Be 0
 
-        $summary = Get-DeviceTestResultSummary `
-            -ResultFiles @($file) `
-            -IncludeClasses 'Microsoft.Maui.DeviceTests.EntryHandlerTests' `
-            -RequireClassIsolation
-
-        $summary.Total | Should -Be 2
-        $summary.Passed | Should -Be 2
+        Get-Content -Raw $log | Should -Match 'inside RepoRoot'
+        $env:MAUI_FAKE_ARGS | Should -Not -Exist
     }
 
-    It 'does not accept an all-skipped class-filtered run as verification evidence' {
-        $file = Join-Path $script:testDir 'TestResults-Skipped.xml'
-
-        @'
-<assemblies>
-  <assembly total="1" passed="0" failed="0" skipped="1" errors="0">
-    <collection>
-      <test name="Target" type="Microsoft.Maui.DeviceTests.EntryHandlerTests" method="Target" result="Skip" />
-    </collection>
-  </assembly>
-</assemblies>
-'@ | Set-Content $file -Encoding UTF8
-
-        { Get-DeviceTestResultSummary `
-                -ResultFiles @($file) `
-                -IncludeClasses 'Microsoft.Maui.DeviceTests.EntryHandlerTests' `
-                -RequireClassIsolation } |
-            Should -Throw -ExpectedMessage '*only skipped tests*did not execute*'
+    It 'rejects a missing native project before launching dotnet' {
+        (Invoke-RunnerFixture -Log (Join-Path $TestDrive 'missing-project.log') `
+            -ProjectPath (Join-Path $fixture 'Missing.csproj')).ExitCode | Should -Not -Be 0
+        $env:MAUI_FAKE_ARGS | Should -Not -Exist
     }
 
-    It 'throws (not a false pass) when the requested class produced no tests, with diagnostics naming the classes present' {
-        $file = Join-Path $script:testDir 'TestResults-Missing.xml'
-
-        @'
-<assemblies>
-  <assembly total="1" passed="1" failed="0" skipped="0" errors="0">
-    <collection>
-      <test name="TwoA" type="Microsoft.Maui.DeviceTests.LabelHandlerTests" method="TwoA" result="Pass" />
-    </collection>
-  </assembly>
-</assemblies>
-'@ | Set-Content $file -Encoding UTF8
-
-        # The throw must distinguish "target class absent" from "no results at all": it
-        # reports the total tests found and a sample of the CLASSES present for diagnosis.
-        { Get-DeviceTestResultSummary `
-                -ResultFiles @($file) `
-                -IncludeClasses 'Microsoft.Maui.DeviceTests.EntryHandlerTests' } |
-            Should -Throw -ExpectedMessage '*did not run*Total tests found in result file(s): 1*Sample classes present*LabelHandlerTests*'
-    }
-
-    It 'reports a zero total when the result file has no <test> nodes at all' {
-        $file = Join-Path $script:testDir 'TestResults-NoTests.xml'
-
-        @'
-<assemblies>
-  <assembly total="0" passed="0" failed="0" skipped="0" errors="0">
-    <collection />
-  </assembly>
-</assemblies>
-'@ | Set-Content $file -Encoding UTF8
-
-        { Get-DeviceTestResultSummary `
-                -ResultFiles @($file) `
-                -IncludeClasses 'Microsoft.Maui.DeviceTests.EntryHandlerTests' } |
-            Should -Throw -ExpectedMessage '*Total tests found in result file(s): 0*'
-    }
-
-    # ─────────────────────────────────────────────────────────────────────────────
-    # Method-level scoping: when the gate knows the PR's specific methods, the tally
-    # counts ONLY those methods within the class — so a pre-existing/flaky failure in
-    # an unrelated sibling method of the same class cannot falsely redden the verdict.
-    # ─────────────────────────────────────────────────────────────────────────────
-
-    It 'counts only the requested methods within the class when -IncludeMethods is set' {
-        $file = Join-Path $script:testDir 'TestResults-Methods.xml'
-
-        @'
-<assemblies>
-  <assembly total="4" passed="3" failed="1" skipped="0" errors="0">
-    <collection>
-      <test name="Completed fires on real Enter key press" type="Microsoft.Maui.DeviceTests.EntryHandlerTests" method="CompletedFiresOnRealEnterKeyPress" result="Pass" />
-      <test name="Completed does not fire on IME candidate confirmation Enter" type="Microsoft.Maui.DeviceTests.EntryHandlerTests" method="CompletedDoesNotFireOnIMECandidateEnter" result="Pass" />
-      <test name="Unrelated sibling A" type="Microsoft.Maui.DeviceTests.EntryHandlerTests" method="SomeOtherEntryTest" result="Pass" />
-      <test name="Unrelated sibling B" type="Microsoft.Maui.DeviceTests.EntryHandlerTests" method="AnotherEntryTest" result="Fail" />
-    </collection>
-  </assembly>
-</assemblies>
-'@ | Set-Content $file -Encoding UTF8
-
-        $summary = Get-DeviceTestResultSummary `
-            -ResultFiles @($file) `
-            -IncludeClasses 'Microsoft.Maui.DeviceTests.EntryHandlerTests' `
-            -IncludeMethods 'CompletedFiresOnRealEnterKeyPress;CompletedDoesNotFireOnIMECandidateEnter'
-
-        $summary.Total | Should -Be 2
-        $summary.Passed | Should -Be 2
-        $summary.Failed | Should -Be 0
-    }
-
-    It 'excludes an unrelated sibling failure in the same class (regression: no false FAILED from method-scoping)' {
-        $file = Join-Path $script:testDir 'TestResults-Sibling.xml'
-
-        # The target method passes; a DIFFERENT method in the same class fails. Class-only
-        # scoping would report Failed=1 -> false FAILED. Method-scoping must report PASSED.
-        @'
-<assemblies>
-  <assembly total="2" passed="1" failed="1" skipped="0" errors="0">
-    <collection>
-      <test name="Completed fires on real Enter key press" type="Microsoft.Maui.DeviceTests.EntryHandlerTests" method="CompletedFiresOnRealEnterKeyPress" result="Pass" />
-      <test name="Pre-existing flaky Windows test" type="Microsoft.Maui.DeviceTests.EntryHandlerTests" method="UnrelatedFlakyTest" result="Fail" />
-    </collection>
-  </assembly>
-</assemblies>
-'@ | Set-Content $file -Encoding UTF8
-
-        # Sanity: class-only scoping DOES see the sibling failure (the false FAILED we fix).
-        $classOnly = Get-DeviceTestResultSummary `
-            -ResultFiles @($file) `
-            -IncludeClasses 'Microsoft.Maui.DeviceTests.EntryHandlerTests'
-        $classOnly.Failed | Should -Be 1
-
-        # Method-scoping ignores the unrelated sibling -> clean PASSED.
-        $scoped = Get-DeviceTestResultSummary `
-            -ResultFiles @($file) `
-            -IncludeClasses 'Microsoft.Maui.DeviceTests.EntryHandlerTests' `
-            -IncludeMethods 'CompletedFiresOnRealEnterKeyPress'
-        $scoped.Total | Should -Be 1
-        $scoped.Passed | Should -Be 1
-        $scoped.Failed | Should -Be 0
-    }
-
-    It 'preserves a GENUINE target-method failure under method-scoping (does not mask fix-incomplete)' {
-        $file = Join-Path $script:testDir 'TestResults-Genuine.xml'
-
-        # Mirrors build 14695686 (#36577): the PR added two methods; with the fix applied
-        # one target method still fails. Method-scoping must STILL report that failure.
-        @'
-<assemblies>
-  <assembly total="3" passed="2" failed="1" skipped="0" errors="0">
-    <collection>
-      <test name="Completed fires on real Enter key press" type="Microsoft.Maui.DeviceTests.EntryHandlerTests" method="CompletedFiresOnRealEnterKeyPress" result="Pass" />
-      <test name="Completed does not fire on IME candidate confirmation Enter" type="Microsoft.Maui.DeviceTests.EntryHandlerTests" method="CompletedDoesNotFireOnIMECandidateEnter" result="Fail" />
-      <test name="Unrelated sibling" type="Microsoft.Maui.DeviceTests.EntryHandlerTests" method="SomeOtherEntryTest" result="Pass" />
-    </collection>
-  </assembly>
-</assemblies>
-'@ | Set-Content $file -Encoding UTF8
-
-        $summary = Get-DeviceTestResultSummary `
-            -ResultFiles @($file) `
-            -IncludeClasses 'Microsoft.Maui.DeviceTests.EntryHandlerTests' `
-            -IncludeMethods 'CompletedFiresOnRealEnterKeyPress;CompletedDoesNotFireOnIMECandidateEnter'
-
-        $summary.Total | Should -Be 2
-        $summary.Passed | Should -Be 1
-        $summary.Failed | Should -Be 1
-        # The failing test must be named (type.method) so the verdict is auditable.
-        ($summary.FailedTests -join ';') | Should -BeLike '*EntryHandlerTests.CompletedDoesNotFireOnIMECandidateEnter*'
-    }
-
-    It 'defangs XML-derived failed-test identities before they reach the pipeline log' {
-        $file = Join-Path $script:testDir 'TestResults-LoggingCommand.xml'
-
-        @'
-<assemblies>
-  <assembly total="1" passed="0" failed="1" skipped="0" errors="0">
-    <collection>
-      <test name="Microsoft.Maui.DeviceTests.EntryHandlerTests.Target&#xA;##vso[task.setvariable variable=GateFailed]false" method="Target" result="Fail" />
-    </collection>
-  </assembly>
-</assemblies>
-'@ | Set-Content $file -Encoding UTF8
-
-        $summary = Get-DeviceTestResultSummary `
-            -ResultFiles @($file) `
-            -IncludeClasses 'Microsoft.Maui.DeviceTests.EntryHandlerTests'
-
-        $summary.Failed | Should -Be 1
-        $summary.FailedTests | Should -HaveCount 1
-        $summary.FailedTests[0] |
-            Should -Be 'Microsoft.Maui.DeviceTests.EntryHandlerTests.Target ## vso[task.setvariable variable=GateFailed]false'
-    }
-
-    It 'counts every data-case of a target [Theory] method (same method attribute, different display names)' {
-        $file = Join-Path $script:testDir 'TestResults-Theory-Method.xml'
-
-        @'
-<assemblies>
-  <assembly total="4" passed="3" failed="1" skipped="0" errors="0">
-    <collection>
-      <test name="Updating Font(initialSize: 10, newSize: 20)" type="Microsoft.Maui.DeviceTests.EntryHandlerTests" method="UpdatingFont" result="Pass" />
-      <test name="Updating Font(initialSize: 12, newSize: 24)" type="Microsoft.Maui.DeviceTests.EntryHandlerTests" method="UpdatingFont" result="Pass" />
-      <test name="Updating Font(initialSize: 14, newSize: 28)" type="Microsoft.Maui.DeviceTests.EntryHandlerTests" method="UpdatingFont" result="Fail" />
-      <test name="Unrelated" type="Microsoft.Maui.DeviceTests.EntryHandlerTests" method="Unrelated" result="Pass" />
-    </collection>
-  </assembly>
-</assemblies>
-'@ | Set-Content $file -Encoding UTF8
-
-        $summary = Get-DeviceTestResultSummary `
-            -ResultFiles @($file) `
-            -IncludeClasses 'Microsoft.Maui.DeviceTests.EntryHandlerTests' `
-            -IncludeMethods 'UpdatingFont'
-
-        $summary.Total | Should -Be 3
-        $summary.Passed | Should -Be 2
-        $summary.Failed | Should -Be 1
-    }
-
-    It 'recovers the method from the FQN name when a runner omits the method attribute' {
-        $file = Join-Path $script:testDir 'TestResults-Method-NoAttr.xml'
-
-        @'
-<assemblies>
-  <assembly total="2" passed="1" failed="1" skipped="0" errors="0">
-    <collection>
-      <test name="Microsoft.Maui.DeviceTests.EntryHandlerTests.CompletedFiresOnRealEnterKeyPress" type="Microsoft.Maui.DeviceTests.EntryHandlerTests" result="Pass" />
-      <test name="Microsoft.Maui.DeviceTests.EntryHandlerTests.UnrelatedFlakyTest" type="Microsoft.Maui.DeviceTests.EntryHandlerTests" result="Fail" />
-    </collection>
-  </assembly>
-</assemblies>
-'@ | Set-Content $file -Encoding UTF8
-
-        $summary = Get-DeviceTestResultSummary `
-            -ResultFiles @($file) `
-            -IncludeClasses 'Microsoft.Maui.DeviceTests.EntryHandlerTests' `
-            -IncludeMethods 'CompletedFiresOnRealEnterKeyPress'
-
-        $summary.Total | Should -Be 1
-        $summary.Passed | Should -Be 1
-        $summary.Failed | Should -Be 0
-    }
-
-    It 'throws a method-aware error when the class ran but none of the target methods did' {
-        $file = Join-Path $script:testDir 'TestResults-Method-Missing.xml'
-
-        # The class IS present (2 tests) but neither is a target method -> distinct from
-        # "class absent"; the throw must name the methods, not just the class.
-        @'
-<assemblies>
-  <assembly total="2" passed="2" failed="0" skipped="0" errors="0">
-    <collection>
-      <test name="Sibling one" type="Microsoft.Maui.DeviceTests.EntryHandlerTests" method="SiblingOne" result="Pass" />
-      <test name="Sibling two" type="Microsoft.Maui.DeviceTests.EntryHandlerTests" method="SiblingTwo" result="Pass" />
-    </collection>
-  </assembly>
-</assemblies>
-'@ | Set-Content $file -Encoding UTF8
-
-        { Get-DeviceTestResultSummary `
-                -ResultFiles @($file) `
-                -IncludeClasses 'Microsoft.Maui.DeviceTests.EntryHandlerTests' `
-                -IncludeMethods 'CompletedFiresOnRealEnterKeyPress' } |
-            Should -Throw -ExpectedMessage '*contained the class(es)*but none of the target method(s)*CompletedFiresOnRealEnterKeyPress*did not run*'
-    }
-
-    It 'rejects a partial method match instead of passing when one requested method never ran' {
-        $file = Join-Path $script:testDir 'TestResults-PartialMethods.xml'
-
-        @'
-<assemblies>
-  <assembly total="2" passed="2" failed="0" skipped="0" errors="0">
-    <collection>
-      <test name="Target A" type="Microsoft.Maui.DeviceTests.EntryHandlerTests" method="CompletedFiresOnRealEnterKeyPress" result="Pass" />
-      <test name="Unrelated sibling" type="Microsoft.Maui.DeviceTests.EntryHandlerTests" method="SomeOtherEntryTest" result="Pass" />
-    </collection>
-  </assembly>
-</assemblies>
-'@ | Set-Content $file -Encoding UTF8
-
-        { Get-DeviceTestResultSummary `
-                -ResultFiles @($file) `
-                -IncludeClasses 'Microsoft.Maui.DeviceTests.EntryHandlerTests' `
-                -IncludeMethods 'CompletedFiresOnRealEnterKeyPress;CompletedDoesNotFireOnIMECandidateEnter' } |
-            Should -Throw -ExpectedMessage '*did not contain every requested method*Missing: CompletedDoesNotFireOnIMECandidateEnter*'
+    It 'rejects a target framework for a different platform before launching dotnet' {
+        $log = Join-Path $TestDrive 'wrong-platform.log'
+        (Invoke-RunnerFixture -Log $log -Extra @('-TargetFramework', 'net11.0-ios')).ExitCode | Should -Not -Be 0
+        Get-Content -Raw $log | Should -Match 'does not match platform'
+        $env:MAUI_FAKE_ARGS | Should -Not -Exist
     }
 }

@@ -44,7 +44,7 @@ public sealed class WindowsFormsDispatcherTests
 
 			Assert.False(_fixture.WindowsFormsDispatcher.CheckAccess());
 			await DispatcherTestHelpers.AssertFailure(_fixture.WindowsFormsDispatcher, workItemKind, exception);
-			await _fixture.WindowsFormsDispatcher.InvokeAsync(() => { }).WaitAsync(TimeSpan.FromSeconds(5));
+			await _fixture.WindowsFormsDispatcher.InvokeAsync(() => { }).WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
 
 			Assert.Empty(unhandled);
 		}
@@ -92,7 +92,7 @@ public sealed class WindowsFormsDispatcherTests
 				_fixture.WindowsFormsDispatcher,
 				workItemKind,
 				cancellation.Token);
-			await _fixture.WindowsFormsDispatcher.InvokeAsync(() => { }).WaitAsync(TimeSpan.FromSeconds(5));
+			await _fixture.WindowsFormsDispatcher.InvokeAsync(() => { }).WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
 
 			Assert.Empty(unhandled);
 		}

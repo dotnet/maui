@@ -194,7 +194,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public async void UpdateMenuBarItemBindingContext()
+		public async Task UpdateMenuBarItemBindingContext()
 		{
 			bool fired = false;
 			var cmd = new Command(() => fired = true);

@@ -18,6 +18,30 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class WindowTests : ControlsHandlerTestBase
 	{
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task NativeAttachmentDisposesItsWindowScope(bool actionThrows)
+		{
+			SetupBuilder();
+			MauiContext windowContext = null;
+			var run = CreateHandlerAndAddToWindow<IWindowHandler>(new ContentPage(), handler =>
+			{
+				windowContext = Assert.IsType<MauiContext>(handler.MauiContext);
+				Assert.False(windowContext.IsWindowScopeDisposed);
+				if (actionThrows)
+					throw new InvalidOperationException("Window attachment failure");
+				return Task.CompletedTask;
+			});
+
+			if (actionThrows)
+				await Assert.ThrowsAsync<InvalidOperationException>(() => run);
+			else
+				await run;
+
+			Assert.True(windowContext.IsWindowScopeDisposed);
+		}
+
 		[Fact(DisplayName = "Swapping MainPage doesn't Crash")]
 		public async Task SwappingMainPageDoesntCrash()
 		{

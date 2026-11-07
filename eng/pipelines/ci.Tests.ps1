@@ -4,8 +4,8 @@ Describe 'CI provisioning' {
   BeforeAll {
     $provision = Get-Content -LiteralPath (
       Join-Path $PSScriptRoot 'common/provision.yml') -Raw
-    $helixStage = Get-Content -LiteralPath (
-      Join-Path $PSScriptRoot 'arcade/stage-helix-tests.yml') -Raw
+    $unitStage = Get-Content -LiteralPath (
+      Join-Path $PSScriptRoot 'arcade/stage-unit-tests.yml') -Raw
   }
 
   Describe 'SDK alignment' {
@@ -54,44 +54,6 @@ Describe 'CI provisioning' {
     }
   }
 
-  Describe 'Helix MSBuild test payload' {
-    BeforeAll {
-      $repoRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
-      [xml]$helixProject = Get-Content -LiteralPath (Join-Path $repoRoot 'eng/helix.proj') -Raw
-      $stagingTarget = $helixProject.SelectSingleNode("/Project/Target[@Name='PrepareMauiHelixPayload']")
-
-      # Execute the real staging target without restoring the Helix SDK or submitting jobs.
-      $stagingProject = Join-Path $TestDrive 'staging.proj'
-      Set-Content -LiteralPath $stagingProject -Value "<Project>$($stagingTarget.OuterXml)</Project>"
-      $payloadDir = Join-Path $TestDrive 'payload'
-      $output = & dotnet msbuild $stagingProject -nologo -v:minimal -t:PrepareMauiHelixPayload `
-        "-p:RepoRoot=$repoRoot/" "-p:MauiHelixPayloadDir=$payloadDir/"
-      if ($LASTEXITCODE -ne 0) {
-        throw "Helix payload staging failed with exit code ${LASTEXITCODE}: $output"
-      }
-    }
-
-    It 'publishes the staged source files at their source-relative paths' {
-      $helixProject.SelectSingleNode(
-        '/Project/ItemGroup/HelixCorrelationPayload[@Include="$(MauiHelixPayloadDir)src"]/Destination').InnerText |
-        Should -Be 'src'
-    }
-
-    It 'stages an unchanged copy of <File>' -TestCases @(
-      @{ File = 'src/Core/src/nuget/buildTransitive/Microsoft.Maui.Core.Before.targets' }
-      @{ File = 'src/Controls/src/Build.Tasks/nuget/buildTransitive/netstandard2.0/Microsoft.Maui.Controls.targets' }
-      @{ File = 'src/Maui.InTree.props' }
-      @{ File = 'src/Maui.InTree.targets' }
-    ) {
-      param($File)
-
-      $stagedFile = Join-Path $payloadDir $File
-      $stagedFile | Should -Exist
-      (Get-FileHash -LiteralPath $stagedFile).Hash |
-        Should -Be (Get-FileHash -LiteralPath (Join-Path $repoRoot $File)).Hash
-    }
-  }
-
   It 'fails before simulator setup when the required Xcode is missing' {
     $missingXcodeMatch = [regex]::Match(
       $provision,
@@ -104,19 +66,120 @@ Describe 'CI provisioning' {
     $missingXcodeMatch.Value | Should -Not -Match 'LATEST_XCODE'
   }
 
-  It 'runs the Helix monitor in the submission pool with the appropriate Linux image' {
-    $monitorMatch = [regex]::Match(
-      $helixStage,
-      '(?ms)^  - job: HelixJobMonitor\r?\n.*?(?=^    steps:)')
+  It 'executes all previously submitted unit projects directly with Hot Reload enabled' {
+    @([regex]::Matches($unitStage, '(?m)^  - src/.*\.csproj$')).Count | Should -Be 14
+    $unitStage | Should -Match 'VisualTestUtils.MagickNet.Tests.csproj'
+    $unitStage | Should -Match 'BlazorWebView.Windows.UnitTests.csproj'
+    $unitStage | Should -Match 'src/TestUtils/tests/UITest.NUnit.Tests/UITest.NUnit.Tests.csproj'
+    $unitStage | Should -Match 'src/TestUtils/tests/TestUtils.UnitTests/TestUtils.UnitTests.csproj'
+    $unitStage | Should -Match 'buildConfigurations: \[ Debug, Release \]'
+    $unitStage | Should -Match 'DOTNET_MODIFIABLE_ASSEMBLIES: debug'
+    $unitStage | Should -Match 'command: test'
+    $unitStage | Should -Match 'failTaskOnMissingResultsFile: true'
+    $unitStage | Should -Not -Match 'Helix|XHarness|--logger'
+  }
 
-    $monitorMatch.Success | Should -BeTrue
-    $monitorMatch.Value | Should -Match (
-      [regex]::Escape('name: ${{ parameters.helixPool.name }}'))
-    $monitorMatch.Value | Should -Not -Match 'DncEng(Public|Internal)BuildPool'
-    $monitorMatch.Value | Should -Match (
-      '(?s)eq\(variables\[''System.TeamProject''\], ''public''\).*?' +
-      'demands: ImageOverride -equals build\.azurelinux\.3\.amd64\.open')
-    $monitorMatch.Value | Should -Match (
-      '(?s)\$\{\{ else \}\}:.*?demands: ImageOverride -equals build\.azurelinux\.3\.amd64\r?\n')
+  It 'uses the emulator-capable Android execution pool rather than a build-only image' {
+    $devicePipeline = Get-Content -LiteralPath (
+      Join-Path $PSScriptRoot 'ci-device-tests.yml') -Raw
+    $uiPipeline = Get-Content -LiteralPath (
+      Join-Path $PSScriptRoot 'ci-uitests.yml') -Raw
+
+    foreach ($scope in @('Public', 'Internal')) {
+      $devicePool = [regex]::Match($devicePipeline,
+        "(?s)- name: androidPool$scope\r?\n.*?default:\r?\n(?<pool>.*?)(?=\r?\n- name:)")
+      $devicePool.Success | Should -BeTrue
+      $devicePool.Groups['pool'].Value | Should -Match 'name: MAUI-DNCENG'
+      $devicePool.Groups['pool'].Value | Should -Match 'ImageOverride -equals 1ESPT-Ubuntu22\.04'
+      $uiPipeline | Should -Match "(?s)name: androidPoolLinux$scope.*?name: MAUI-DNCENG.*?ImageOverride -equals 1ESPT-Ubuntu22\.04"
+    }
+  }
+
+  It 'labels the current Apple execution image honestly and retains strict OS checks' {
+    $devicePipeline = Get-Content -LiteralPath (
+      Join-Path $PSScriptRoot 'ci-device-tests.yml') -Raw
+    $deviceStage = Get-Content -LiteralPath (
+      Join-Path $PSScriptRoot 'arcade/stage-device-tests.yml') -Raw
+    $startDevice = Get-Content -LiteralPath (
+      Join-Path $PSScriptRoot '../../.github/skills/run-device-tests/scripts/Start-TestDevice.ps1') -Raw
+
+    @([regex]::Matches($devicePipeline, 'name: macos27\r?\n\s+osMajor: 27')).Count |
+      Should -Be 2
+    $devicePipeline | Should -Not -Match 'name: macos(15|26)'
+    $deviceStage | Should -Match 'expectedOSMajor: \$\{\{ apple.osMajor \}\}'
+    $startDevice | Should -Match '\$version.Major -ne \$ExpectedOSMajor'
+  }
+
+  It 'allows focused mobile reruns without disabling Windows coverage by default' {
+    $devicePipeline = Get-Content -LiteralPath (
+      Join-Path $PSScriptRoot 'ci-device-tests.yml') -Raw
+    $devicePipeline | Should -Match '(?s)name: runWindowsTests\s+type: boolean\s+default: true'
+    $devicePipeline | Should -Match ([regex]::Escape('runWindowsTests: ${{ parameters.runWindowsTests }}'))
+  }
+
+  It 'includes executable GitHub infrastructure below the excluded metadata directory' {
+    foreach ($pipeline in @('ci.yml', 'ci-device-tests.yml')) {
+      $source = Get-Content -Raw -LiteralPath (Join-Path $PSScriptRoot $pipeline)
+      $triggerSections = $source -split '(?m)^variables:' | Select-Object -First 1
+      @([regex]::Matches($triggerSections, '\.github/skills/run-device-tests/scripts/\*\*')).Count |
+        Should -Be 2
+      @([regex]::Matches($triggerSections, '\.github/scripts/shared/\*\*')).Count |
+        Should -Be 2
+      $triggerSections | Should -Not -Match '\.github/\*\*'
+      @([regex]::Matches($triggerSections, '\.github(?=\s|,)')).Count | Should -Be 2
+    }
+  }
+
+  It 'discovers Cake and integration argument regression checks on their implementation changes' {
+    $workflow = Get-Content -Raw -LiteralPath (
+      Join-Path $PSScriptRoot '../../.github/workflows/powershell-script-tests.yml')
+    $workflow | Should -Match "'eng/devices/\*\.cake'"
+    $workflow | Should -Match "'eng/cake/\*\*'"
+    $workflow | Should -Match "'eng/devices/Cake-Mtp\.Tests\.ps1'"
+    $workflow | Should -Match "'\.github/skills/run-integration-tests/scripts/\*\*'"
+    $workflow | Should -Match "'\.github/scripts'"
+  }
+
+  It 'fails the Pester gate on discovery failures even when every discovered test passed' {
+    $workflow = Get-Content -Raw -LiteralPath (
+      Join-Path $PSScriptRoot '../../.github/workflows/powershell-script-tests.yml')
+    $failureCheck = [regex]::Match($workflow,
+      '(?s)if \(\$result.Result -ne ''Passed''\) \{.*?(?=\r?\n\s+if \(\$result.TotalCount)').Value
+    $failureCheck | Should -Not -BeNullOrEmpty
+    $result = [pscustomobject]@{
+      Result = 'Failed'; FailedCount = 0; FailedContainersCount = 1; Failed = @()
+    }
+
+    { & ([scriptblock]::Create($failureCheck)) } | Should -Throw '*1 failed container*'
+  }
+
+  It 'allows focused Windows packaging reruns while retaining both modes by default' {
+    $devicePipeline = Get-Content -LiteralPath (
+      Join-Path $PSScriptRoot 'ci-device-tests.yml') -Raw
+    $devicePipeline | Should -Match '(?s)name: windowsPackaging\s+type: string\s+default: both\s+values: \[ both, packaged, unpackaged \]'
+    $devicePipeline | Should -Match ([regex]::Escape('windowsPackaging: ${{ parameters.windowsPackaging }}'))
+  }
+
+  It 'runs integration matrix selectors through the shared MTP translator and real TRX validation' {
+    $integrationStage = Get-Content -LiteralPath (
+      Join-Path $PSScriptRoot 'arcade/stage-integration-tests.yml') -Raw
+    $integrationStage | Should -Match 'Get-XunitMtpFilterArguments'
+    $integrationStage | Should -Match 'project: --project'
+    $integrationStage | Should -Match '--report-trx'
+    $integrationStage | Should -Match 'continueOnError: false'
+    $integrationStage | Should -Match 'Assert-TestResults.ps1'
+    $integrationStage | Should -Match 'failTaskOnFailedTests: true'
+    $integrationStage | Should -Not -Match '--logger|--filter '
+  }
+
+  It 'does not inject native xUnit assembly attributes into the Appium HostApp' {
+    $hostProject = Join-Path $PSScriptRoot '../../src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj'
+    $output = & dotnet msbuild $hostProject -nologo -p:TargetFramework=net11.0-ios `
+      -p:RuntimeIdentifier=iossimulator-arm64 -getProperty:UseMicrosoftTestingPlatformRunner -getItem:Compile
+    if ($LASTEXITCODE -ne 0) { throw "HostApp evaluation failed: $output" }
+    $evaluation = $output | Out-String | ConvertFrom-Json
+    $evaluation.Properties.UseMicrosoftTestingPlatformRunner | Should -Not -Be 'true'
+    @($evaluation.Items.Compile | Where-Object { $_.Identity -match 'DeviceTests.Runners[/\\]TestAssemblyInfo.cs$' }).Count |
+      Should -Be 0
   }
 }

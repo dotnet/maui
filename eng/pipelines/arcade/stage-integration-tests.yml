@@ -23,7 +23,7 @@ stages:
           XCODE: ${{ job.xcodeVersion }}
           REQUIRED_XCODE: ${{ job.xcodeVersion }}
         # Build the filter based on whether testName or testCategory is provided
-        # XUnit filter syntax: FullyQualifiedName~ for name matching, Category= for traits
+        # Translate the legacy matrix selectors into xUnit MTP arguments below.
         ${{ if job.testFilter }}:
           testFilter: ${{ job.testFilter }}
           testIdentifier: ${{ job.name }}
@@ -43,19 +43,37 @@ stages:
           # All other tests may build or run iOS/macOS targets and need Xcode
           skipXcode: ${{ eq(job.testCategory, 'RunOnAndroid') }}
 
+      - pwsh: |
+          . "${{ parameters.mauiSourcePath }}/.github/scripts/shared/XunitMtp.ps1"
+          $filterArguments = @(Get-XunitMtpFilterArguments -Filter $env:INTEGRATION_TEST_FILTER)
+          $quotedArguments = @($filterArguments | ForEach-Object { "'" + $_.Replace("'", "''") + "'" }) -join ' '
+          Write-Host "##vso[task.setvariable variable=IntegrationTestFilterArguments]$quotedArguments"
+        displayName: Translate integration test selection for MTP
+        env:
+          INTEGRATION_TEST_FILTER: $(testFilter)
+
       - template: /eng/pipelines/common/run-dotnet-preview.yml
         parameters:
           displayName: Run Integration Tests - $(testIdentifier) ${{ job.pool.os }}
           mauiSourcePath: ${{ parameters.mauiSourcePath }}
           command: test
-          project: ${{ parameters.mauiSourcePath }}/src/TestUtils/src/Microsoft.Maui.IntegrationTests/Microsoft.Maui.IntegrationTests.csproj
+          project: --project "${{ parameters.mauiSourcePath }}/src/TestUtils/src/Microsoft.Maui.IntegrationTests/Microsoft.Maui.IntegrationTests.csproj"
           arguments: >-
-            -c ${{ parameters.buildConfig }} --filter '$(testFilter)' --logger trx --results-directory $(Agent.TempDirectory)/Microsoft.Maui.IntegrationTests
+            --configuration ${{ parameters.buildConfig }}
+            $(IntegrationTestFilterArguments)
+            --report-trx
+            --results-directory "$(Agent.TempDirectory)/Microsoft.Maui.IntegrationTests"
+          continueOnError: false
           useExitCodeForErrors: true
           # Set IOS_TEST_DEVICE for all iOS-related tests (RunOniOS and RunOniOS_*)
           ${{ if or(eq(job.testCategory, 'RunOniOS'), startsWith(job.testName, 'RunOniOS')) }}:
             envVariables:
               IOS_TEST_DEVICE: ios-simulator-64
+
+      - pwsh: |
+          & "${{ parameters.mauiSourcePath }}/eng/scripts/Assert-TestResults.ps1" -ResultsDirectory "$(Agent.TempDirectory)/Microsoft.Maui.IntegrationTests"
+        displayName: Validate real integration test results
+        condition: always()
 
       - task: PublishTestResults@2
         inputs:
@@ -63,6 +81,8 @@ stages:
           testResultsFiles: '$(Agent.TempDirectory)/Microsoft.Maui.IntegrationTests/**/*.trx'
           testRunTitle: Integration Tests - ${{ job.name }}
           failTaskOnMissingResultsFile: true
+          failTaskOnFailedTests: true
+          failTaskOnFailureToPublishResults: true
         condition: always()
 
       - task: ${{ parameters.publishTaskPrefix }}PublishPipelineArtifact@1

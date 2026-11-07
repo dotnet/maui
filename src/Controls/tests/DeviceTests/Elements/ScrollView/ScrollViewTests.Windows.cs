@@ -620,6 +620,8 @@ namespace Microsoft.Maui.DeviceTests
 				var platformScrollView = scrollViewHandler.PlatformView;
 				await WaitForDispatcherIdle(platformScrollView.DispatcherQueue);
 				Assert.False(platformScrollView.IsTabStop);
+				var initiallyFocused = entry.IsFocused;
+				var initialFocusEvent = focused;
 
 				var unloaded = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 				Microsoft.UI.Xaml.RoutedEventHandler unloadedHandler = (_, _) => unloaded.TrySetResult();
@@ -636,6 +638,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				Assert.False(platformScrollView.IsLoaded);
 				Assert.Same(scrollViewHandler, scrollView.Handler);
+				var focusedWhileUnloaded = entry.IsFocused;
 
 				var loaded = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 				Microsoft.UI.Xaml.RoutedEventHandler loadedHandler = (_, _) => loaded.TrySetResult();
@@ -654,8 +657,8 @@ namespace Microsoft.Maui.DeviceTests
 				await WaitForDispatcherIdle(platformScrollView.DispatcherQueue);
 				Assert.False(platformScrollView.IsTabStop);
 
-				Assert.False(entry.IsFocused);
-				Assert.False(focused);
+				Assert.False(entry.IsFocused, $"Entry focus: initial={initiallyFocused}, unloaded={focusedWhileUnloaded}, initial event={initialFocusEvent}.");
+				Assert.False(focused, $"Entry received focus during the scenario; initial focus event={initialFocusEvent}.");
 			});
 		}
 

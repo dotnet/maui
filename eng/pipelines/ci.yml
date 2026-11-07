@@ -9,10 +9,13 @@ trigger:
   paths:
     include:
     - '*'
+    - .github/skills/run-device-tests/scripts/**
+    - .github/skills/run-integration-tests/scripts/**
+    - .github/scripts/shared/**
     exclude:
     - '**.md'
     - eng/Version.Details.xml
-    - .github/**
+    - .github
     - docs/*
     - LICENSE.TXT
     - PATENTS.TXT
@@ -28,10 +31,13 @@ pr:
   paths:
     include:
     - '*'
+    - .github/skills/run-device-tests/scripts/**
+    - .github/skills/run-integration-tests/scripts/**
+    - .github/scripts/shared/**
     exclude:
     - '**.md'
     - eng/Version.Details.xml
-    - .github/**
+    - .github
     - docs/*
     - LICENSE.TXT
     - PATENTS.TXT
@@ -129,29 +135,24 @@ parameters:
 
 stages:
 
-- template: /eng/pipelines/arcade/stage-helix-tests.yml@self
+- template: /eng/pipelines/arcade/stage-unit-tests.yml@self
   parameters:
-    ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
-      helixPool: ${{ parameters.WindowsPool.public }}
-      runAsPublic: true
-      helixInternal: 'False'
-    ${{ else }}:
-      helixPool: ${{ parameters.WindowsPool.internal }}
-      runAsPublic: false
-      helixInternal: 'True'
-      HelixAccessToken: $(HelixApiAccessToken)
-    prepareSteps:
-    - template: /eng/pipelines/common/provision.yml@self
-      parameters:
-        checkoutDirectory: '$(System.DefaultWorkingDirectory)'
-        skipJdk: false
-        skipAndroidCommonSdks: false
-        skipAndroidPlatformApis: false
-        onlyAndroidPlatformDefaultApis: true
-        skipAndroidEmulatorImages: true
-        skipAndroidCreateAvds: true
-        skipProvisioning: true
-        skipXcode: false
+    buildConfigurations: ${{ parameters.BuildConfigurations }}
+    jobMatrix:
+    - name: windows
+      displayName: Windows unit tests
+      testOS: windows
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.WindowsPool.public }}
+      ${{ else }}:
+        pool: ${{ parameters.WindowsPool.internal }}
+    - name: macos
+      displayName: macOS unit tests
+      testOS: macos
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:
+        pool: ${{ parameters.MacOSPool.internal }}
 
 - template: /eng/pipelines/arcade/stage-pack.yml@self
   parameters:

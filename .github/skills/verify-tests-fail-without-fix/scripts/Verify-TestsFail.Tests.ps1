@@ -59,6 +59,58 @@ BeforeAll {
     }
 }
 
+Describe 'Microsoft.Testing.Platform result summaries' {
+    It 'reads succeeded counters from a successful MTP run' {
+        $log = New-LogFile @'
+Test run summary: Passed!
+  total: 4
+  failed: 0
+  succeeded: 3
+  skipped: 1
+  duration: 1s
+'@
+        try {
+            $result = Get-TestResultFromOutput $log
+            $result.Passed | Should -BeTrue
+            $result.PassCount | Should -Be 3
+            $result.Skipped | Should -Be 1
+            $result.Total | Should -Be 4
+        }
+        finally { Remove-Item -LiteralPath $log }
+    }
+    It 'classifies a genuine MTP assertion failure without an infrastructure error' {
+        $log = New-LogFile "Test run summary: Failed!`n  total: 4`n  failed: 1`n  succeeded: 2`n  skipped: 1`n  duration: 1s"
+        try {
+            $result = Get-TestResultFromOutput $log
+            $result.Passed | Should -BeFalse
+            $result.FailCount | Should -Be 1
+            $result.Failed | Should -Be 1
+            $result.PassCount | Should -Be 2
+            $result.Total | Should -Be 4
+            $result.Skipped | Should -Be 1
+            $result.ContainsKey('EnvError') | Should -BeFalse
+            $result.ContainsKey('BuildError') | Should -BeFalse
+        }
+        finally { Remove-Item -LiteralPath $log }
+    }
+    It 'rejects successful MTP headings when no selected test executed' {
+        foreach ($counts in @(
+            "  total: 0`n  failed: 0`n  succeeded: 0`n  skipped: 0",
+            "  total: 1`n  failed: 0`n  succeeded: 0`n  skipped: 1"
+        )) {
+            $log = New-LogFile "Test run summary: Passed!`n$counts`n  duration: 1s"
+            try {
+                $result = Get-TestResultFromOutput $log
+                $result.Passed | Should -BeFalse
+                $result.EnvError | Should -BeTrue
+                $result.Error | Should -Be 'No selected test executed.'
+                $result.ContainsKey('BuildError') | Should -BeFalse
+            }
+            finally { Remove-Item -LiteralPath $log }
+        }
+    }
+}
+
 Describe 'Get-GateDeviceTestConfiguration — platform-safe packaging' {
     It 'uses Release for Android so the standalone XHarness APK contains its managed payload' {
         Get-GateDeviceTestConfiguration -DevicePlatform 'android' | Should -Be 'Release'

@@ -329,6 +329,6 @@ Describe 'Android retry TRX merging' {
         It 'does not replace a failed full TRX with a retry-only TRX' {
             $script:BuildAndRunHostAppContent | Should -Not -Match ([regex]::Escape('Copy-Item $retryTrxPath $trxFilePath'))
             $script:BuildAndRunHostAppContent | Should -Match 'preserving the original failing result'
-            $script:BuildAndRunHostAppContent | Should -Match ([regex]::Escape('if ($merged.Failed -eq 0)'))
+            $script:BuildAndRunHostAppContent | Should -Match ([regex]::Escape("if (`$merged.Failed -eq 0 -and `$merged.Outcome -ne 'Failed' -and `$retryAttempt.ExitCode -eq 0)"))
         }
 }

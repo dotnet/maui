@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using Microsoft.Maui.IntegrationTests.Android;
@@ -28,7 +27,7 @@ namespace Microsoft.Maui.IntegrationTests
 
 			if (!TestAvd.AcceptLicenses(out var licenseOutput))
 				throw new Exception($"Failed to accept SDK licenses.\n{licenseOutput}");
-			
+
 			if (!TestAvd.InstallAvd(out var installOutput))
 				throw new Exception($"Failed to install Test AVD.\n{installOutput}");
 
@@ -42,14 +41,6 @@ namespace Microsoft.Maui.IntegrationTests
 		{
 			// One-time teardown: cleanup emulator
 			Adb.KillEmulator(TestAvd.Id);
-
-			// adb.exe can lock certain files on windows, kill it after tests complete
-			if (TestEnvironment.IsWindows)
-			{
-				Adb.Run("kill-server", deviceId: TestAvd.Id);
-				foreach (var p in Process.GetProcessesByName("adb.exe"))
-					p.Kill();
-			}
 		}
 	}
 
@@ -60,7 +51,7 @@ namespace Microsoft.Maui.IntegrationTests
 		private readonly AndroidEmulatorFixture _emulatorFixture;
 		private string testPackage = "";
 
-		public AndroidTemplateTests(IntegrationTestFixture fixture, ITestOutputHelper output, AndroidEmulatorFixture emulatorFixture) 
+		public AndroidTemplateTests(IntegrationTestFixture fixture, ITestOutputHelper output, AndroidEmulatorFixture emulatorFixture)
 			: base(fixture, output)
 		{
 			_emulatorFixture = emulatorFixture;
@@ -70,7 +61,8 @@ namespace Microsoft.Maui.IntegrationTests
 		public override void Dispose()
 		{
 			// Per-test teardown
-			Adb.UninstallPackage(testPackage);
+			if (!string.IsNullOrEmpty(testPackage))
+				Adb.UninstallPackage(testPackage, _emulatorFixture.TestAvd.Id, output: _output);
 			base.Dispose();
 		}
 
@@ -108,17 +100,15 @@ namespace Microsoft.Maui.IntegrationTests
 				buildProps.Add("TrimmerSingleWarn=false");
 			}
 
-			AddInstrumentation(projectDir);
+			var completionMarker = AddInstrumentation(projectDir);
+			buildProps.Add($"AdbTarget=\"-s {_emulatorFixture.TestAvd.Id}\"");
 
-			Assert.True(DotnetInternal.Build(projectFile, config, target: "Install", framework: $"{framework}-android", properties: BuildProps, output: _output),
+			Assert.True(DotnetInternal.Build(projectFile, config, target: "Install", framework: $"{framework}-android", properties: buildProps, output: _output),
 				$"Project {Path.GetFileName(projectFile)} failed to install. Check test output/attachments for errors.");
 
-			// Write xh-results to the log directory for artifact collection
-			var xhResultsDir = Path.Combine(TestEnvironment.GetLogDirectory(), "xh-results", Path.GetFileName(projectDir));
-			Directory.CreateDirectory(xhResultsDir);
-
-			testPackage = $"com.companyname.{Path.GetFileName(projectDir).ToLowerInvariant()}";
-			Assert.True(XHarness.RunAndroid(testPackage, xhResultsDir, -1, output: _output),
+			var resultsDir = Path.Combine(TestEnvironment.GetLogDirectory(), "app-results", Path.GetFileName(projectDir));
+			Assert.True(AppLaunch.RunAndroid(testPackage, resultsDir, _emulatorFixture.TestAvd.Id, completionMarker,
+				output: _output, cancellationToken: TestContext.Current.CancellationToken),
 				$"Project {Path.GetFileName(projectFile)} failed to run. Check test output/attachments for errors.");
 		}
 
@@ -145,32 +135,34 @@ namespace Microsoft.Maui.IntegrationTests
 			// NativeAOT requires an explicit runtime identifier matching the emulator ABI
 			var runtimeIdentifier = _emulatorFixture.TestAvd.Abi == "arm64-v8a" ? "android-arm64" : "android-x64";
 
-			AddInstrumentation(projectDir);
+			var completionMarker = AddInstrumentation(projectDir);
+			buildProps.Add($"AdbTarget=\"-s {_emulatorFixture.TestAvd.Id}\"");
 
 			Assert.True(DotnetInternal.Build(projectFile, config, target: "Install", framework: $"{framework}-android",
 				properties: buildProps, runtimeIdentifier: runtimeIdentifier, output: _output),
 				$"Project {Path.GetFileName(projectFile)} failed to build and install. Check test output/attachments for errors.");
 
-			// Write xh-results to the log directory for artifact collection
-			var xhResultsDir = Path.Combine(TestEnvironment.GetLogDirectory(), "xh-results", Path.GetFileName(projectDir));
-			Directory.CreateDirectory(xhResultsDir);
-
-			testPackage = $"com.companyname.{Path.GetFileName(projectDir).ToLowerInvariant()}";
-			Assert.True(XHarness.RunAndroid(testPackage, xhResultsDir, -1, output: _output),
+			var resultsDir = Path.Combine(TestEnvironment.GetLogDirectory(), "app-results", Path.GetFileName(projectDir));
+			Assert.True(AppLaunch.RunAndroid(testPackage, resultsDir, _emulatorFixture.TestAvd.Id, completionMarker,
+				output: _output, cancellationToken: TestContext.Current.CancellationToken),
 				$"Project {Path.GetFileName(projectFile)} failed to run. Check test output/attachments for errors.");
 		}
 
-		void AddInstrumentation(string projectDir)
+		string AddInstrumentation(string projectDir)
 		{
+			testPackage = $"com.companyname.{Path.GetFileName(projectDir).ToLowerInvariant()}";
 			var androidDir = Path.Combine(projectDir, "Platforms", "Android");
 			var instDestination = Path.Combine(androidDir, "Instrumentation.cs");
 			FileUtilities.CreateFileFromResource("TemplateLaunchInstrumentation.cs", instDestination);
 			Assert.True(File.Exists(instDestination), "Failed to create Instrumentation.cs");
 			FileUtilities.ReplaceInFile(instDestination, "namespace mauitemplate", $"namespace {Path.GetFileName(projectDir)}");
+			var completionMarker = $"MAUI_APP_COMPLETED_{Guid.NewGuid():N}";
+			FileUtilities.ReplaceInFile(instDestination, "__MAUI_APP_COMPLETION_MARKER__", completionMarker);
 
 			FileUtilities.ReplaceInFile(Path.Combine(androidDir, "MainActivity.cs"),
 				"MainLauncher = true",
 				"MainLauncher = true, Name = \"com.microsoft.mauitemplate.MainActivity\"");
+			return completionMarker;
 		}
 
 		static void StripNonAndroidTfms(string projectFile, string framework)

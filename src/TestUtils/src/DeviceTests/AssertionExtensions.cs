@@ -1,4 +1,7 @@
 using System;
+#if ANDROID
+using System.Diagnostics;
+#endif
 using System.Linq;
 using System.Net.Http;
 using System.Reflection.Metadata;
@@ -46,23 +49,47 @@ namespace Microsoft.Maui.DeviceTests
 
 		public static async Task<bool> WaitForCollect(this WeakReference reference)
 		{
+#if ANDROID
+			return await WaitForAndroidCollection(() => reference.IsAlive);
+#else
 			for (int i = 0; i < 40 && reference.IsAlive; i++)
 			{
 				await Collect();
 			}
 
 			return reference.IsAlive;
+#endif
 		}
 
 		public static async Task<bool> WaitForCollect(this WeakReference<object> reference)
 		{
+#if ANDROID
+			return await WaitForAndroidCollection(() => reference.TryGetTarget(out _));
+#else
 			for (int i = 0; i < 40 && reference.TryGetTarget(out _); i++)
 			{
 				await Collect();
 			}
 
 			return reference.TryGetTarget(out _);
+#endif
 		}
+
+#if ANDROID
+		static async Task<bool> WaitForAndroidCollection(Func<bool> isAlive)
+		{
+			// Java-side release can finish after managed finalization.
+			var stopwatch = Stopwatch.StartNew();
+			while (isAlive() && stopwatch.Elapsed < TimeSpan.FromSeconds(10))
+			{
+				await Collect();
+				if (isAlive())
+					await Task.Delay(10);
+			}
+
+			return isAlive();
+		}
+#endif
 
 		public static async Task<bool> WaitForCollect(params WeakReference[] references)
 		{

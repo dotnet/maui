@@ -49,10 +49,13 @@ void RunUITestsWithRetry(string project, string config, string toolPath, string 
 			System.Runtime.ExceptionServices.ExceptionDispatchInfo testFailure = null;
 			try
 			{
+				EnsureDirectoryExists(attemptNUnitDirectory);
+				var attemptSettings = System.IO.Path.Combine(attemptNUnitDirectory, "nunit.runsettings");
+				UITestRetry.CreateRunSettings(null, attemptNUnitDirectory, retrySettingsFile).Save(attemptSettings);
 				RunTestWithLocalDotNet(project, config, pathDotnet: toolPath, noBuild: true,
 					resultsFileNameWithoutExtension: resultsFileName, filter: testFilter,
 					resultsDirectory: retryCount == 0 ? null : retryDirectory,
-					nunitResultsDirectory: attemptNUnitDirectory, settingsFile: retrySettingsFile);
+					settingsFile: attemptSettings);
 			}
 			catch (Exception ex)
 			{
@@ -69,7 +72,13 @@ void RunUITestsWithRetry(string project, string config, string toolPath, string 
 				var rawDirectory = System.IO.Path.Combine(attemptNUnitDirectory, "raw");
 				System.IO.Directory.CreateDirectory(rawDirectory);
 				if (System.IO.File.Exists(attemptResultsFile))
+				{
+					var attachmentResults = XDocument.Load(attemptResultsFile);
+					UITestRetry.PreserveAttachments(attachmentResults, attemptDirectory,
+						System.IO.Path.Combine(rawDirectory, "attachments"));
+					attachmentResults.Save(attemptResultsFile);
 					System.IO.File.Copy(attemptResultsFile, System.IO.Path.Combine(rawDirectory, resultsFileName + ".trx"));
+				}
 				foreach (var file in reportFiles)
 					System.IO.File.Copy(file, System.IO.Path.Combine(rawDirectory, System.IO.Path.GetFileName(file)));
 			}
@@ -102,7 +111,7 @@ void RunUITestsWithRetry(string project, string config, string toolPath, string 
 			{
 				if (reports.Length == 0)
 				{
-					Warning("No readable NUnit XML was produced; using the VSTest exit status for this attempt.");
+					throw new InvalidOperationException("No readable NUnit XML was produced; fixture failures cannot be reconciled.");
 				}
 				else
 				{

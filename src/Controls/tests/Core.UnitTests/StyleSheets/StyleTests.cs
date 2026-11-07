@@ -183,7 +183,7 @@ namespace Microsoft.Maui.Controls.StyleSheets.UnitTests
 		public CssDisabledTests()
 		{
 			// Save original value
-			AppContext.TryGetSwitch(CssSwitchName, out _originalCssEnabled);
+			_originalCssEnabled = RuntimeFeature.IsCssEnabled;
 
 			// Disable CSS for these tests
 			AppContext.SetSwitch(CssSwitchName, false);
@@ -206,7 +206,7 @@ namespace Microsoft.Maui.Controls.StyleSheets.UnitTests
 		public void StyleParseThrowsWhenCssDisabled()
 		{
 			var styleString = @"background-color: #ff0000;";
-			Assert.Throws<NotSupportedException>(() => 
+			Assert.Throws<NotSupportedException>(() =>
 				Style.Parse(new CssReader(new StringReader(styleString)), '}'));
 		}
 

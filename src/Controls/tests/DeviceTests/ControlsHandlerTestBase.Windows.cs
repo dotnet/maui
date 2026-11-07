@@ -35,18 +35,35 @@ namespace Microsoft.Maui.DeviceTests
 				var appStub = new MauiAppNewWindowStub(window);
 				UI.Xaml.Application.Current.SetApplicationHandler(appStub, applicationContext);
 				WWindow newWindow = null;
+				MauiContext windowContext = null;
 				try
 				{
 					ApplicationExtensions.CreatePlatformWindow(UI.Xaml.Application.Current, appStub, new Handlers.OpenWindowRequest());
 					newWindow = window.Handler.PlatformView as WWindow;
+					windowContext = window.Handler.MauiContext as MauiContext;
 					await runTests.Invoke();
 				}
 				finally
 				{
-					window.Handler?.DisconnectHandler();
-					await Task.Delay(10);
-					newWindow?.Close();
-					appStub.Handler?.DisconnectHandler();
+					// Disconnecting clears Window.Handler before Destroying can dispose its scope.
+					windowContext ??= window.Handler?.MauiContext as MauiContext;
+					try
+					{
+						window.Handler?.DisconnectHandler();
+						await Task.Delay(10);
+						newWindow?.Close();
+					}
+					finally
+					{
+						try
+						{
+							windowContext?.DisposeWindowScope();
+						}
+						finally
+						{
+							appStub.Handler?.DisconnectHandler();
+						}
+					}
 				}
 			});
 		}

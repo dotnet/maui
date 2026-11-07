@@ -62,7 +62,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			if (ciArtifactsDirectory != null)
 				ciArtifactsDirectory = Path.Combine(ciArtifactsDirectory, "Controls.TestCases.Shared.Tests");
 
-			string projectRootDirectory = Path.GetDirectoryName(AppDomain.CurrentDomain.BaseDirectory)!;
+			string projectRootDirectory = AppDomain.CurrentDomain.BaseDirectory;
 
 			_visualRegressionTester = new VisualRegressionTester(testRootDirectory: projectRootDirectory,
 				visualComparer: new MagickNetVisualComparer(),

@@ -5,6 +5,7 @@
 // accumulated and every ActivityStateChanged event fired N+1 times after N recreations.
 
 #if __ANDROID__
+using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,8 +18,13 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 	using MauiPlatform = Microsoft.Maui.ApplicationModel.Platform;
 
 	[Category("ActivityStateManager")]
-	public class ActivityStateManager_Tests
+	public class ActivityStateManager_Tests : IDisposable
 	{
+		// Keep registered Java callbacks rooted until fixture disposal unregisters them.
+		readonly ActivityStateManagerImplementation manager = new();
+
+		public void Dispose() => manager.Dispose();
+
 		/// <summary>
 		/// Verifies the fix for issue #36035: calling Init(Application) multiple times
 		/// (which happens on every Activity recreation) must keep the SAME listener
@@ -31,8 +37,6 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		public void Init_CalledMultipleTimes_SameListenerIsKept()
 		{
 			var app = (global::Android.App.Application)global::Android.App.Application.Context;
-			var manager = new ActivityStateManagerImplementation();
-
 			manager.Init(app);
 			var listenerAfterFirst = GetListener(manager);
 
@@ -64,8 +68,6 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		{
 			var app = (global::Android.App.Application)global::Android.App.Application.Context;
 			var activity = MauiPlatform.CurrentActivity;
-
-			var manager = new ActivityStateManagerImplementation();
 
 			int invocations = 0;
 			manager.ActivityStateChanged += (_, _) => Interlocked.Increment(ref invocations);
