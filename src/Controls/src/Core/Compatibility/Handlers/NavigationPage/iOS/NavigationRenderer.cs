@@ -1557,7 +1557,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				if (childView is not null)
 				{
-					childView.Frame = View.Bounds;
+					childView.Frame = this.GetNavigationContentBounds();
 				}
 			}
 
