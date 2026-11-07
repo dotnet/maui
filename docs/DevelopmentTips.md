@@ -54,8 +54,10 @@ Android builds require JDK 21, which is selected by `JavaJdkVersion` in
 declared in `global.json` for tools such as Cake; this does not change the .NET 12
 target frameworks. The fresh-SDK runtime bootstrap preserves custom Windows
 installation paths containing spaces or a trailing backslash. Its Windows
-entrypoint forwards arguments to the shared installer with PowerShell `-File`,
-without modifying the Arcade-owned scripts. The child executable, MSBuild assembly,
+entrypoint uses PowerShell `-File` and the shared `InstallDotNet` function instead
+of forwarding paths through a CMD installer. It preserves the declared tool
+runtime and architecture entries without modifying the Arcade-owned scripts.
+The child executable, MSBuild assembly,
 and project paths pass through quoted environment values on both platforms,
 preserving literal `%NAME%` in Windows paths and literal `$`, spaces, and
 apostrophes on Unix without inserting them into shell source.

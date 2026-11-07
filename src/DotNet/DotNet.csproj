@@ -198,11 +198,13 @@
     <PropertyGroup>
       <DotNetDirectory Condition="'$(MAUI_TOOL_RUNTIME_DIRECTORY)' != ''">$(MAUI_TOOL_RUNTIME_DIRECTORY)</DotNetDirectory>
       <_ToolRuntimeInstallScript>$(MauiRootDirectory)eng/common/dotnet-install.sh</_ToolRuntimeInstallScript>
-      <!-- -File preserves argument values instead of parsing them again as PowerShell code. -->
-      <_ToolRuntimeInstallScript Condition="$([MSBuild]::IsOSPlatform('windows'))">$(MSBuildThisFileDirectory)dotnet-install-tool-runtime.cmd</_ToolRuntimeInstallScript>
     </PropertyGroup>
     <Message Text="Tool runtime install directory: [$(DotNetDirectory)]" Importance="High" />
+    <Exec Condition="$([MSBuild]::IsOSPlatform('windows'))"
+        Command="powershell -ExecutionPolicy ByPass -NoProfile -File &quot;%MAUI_TOOL_RUNTIME_INSTALLER%&quot; -GlobalJsonPath &quot;%MAUI_TOOL_RUNTIME_GLOBAL_JSON%&quot; -VersionsPropsPath &quot;%MAUI_TOOL_RUNTIME_VERSIONS_PROPS%&quot; -Platform &quot;%MAUI_TOOL_RUNTIME_PLATFORM%&quot;"
+        EnvironmentVariables="MAUI_TOOL_RUNTIME_INSTALLER=$([MSBuild]::Escape('$(MSBuildThisFileDirectory)dotnet-install-tool-runtimes.ps1'));MAUI_TOOL_RUNTIME_DIRECTORY=$([MSBuild]::Escape('$(DotNetDirectory)'));MAUI_TOOL_RUNTIME_GLOBAL_JSON=$([MSBuild]::Escape('$(MauiRootDirectory)global.json'));MAUI_TOOL_RUNTIME_VERSIONS_PROPS=$([MSBuild]::Escape('$(MauiRootDirectory)eng/Versions.props'));MAUI_TOOL_RUNTIME_PLATFORM=$([MSBuild]::Escape('$(Platform)'))" />
     <InstallDotNetCore
+        Condition="!$([MSBuild]::IsOSPlatform('windows'))"
         GlobalJsonPath="$(MauiRootDirectory)global.json"
         DotNetPath="$(DotNetDirectory)"
         DotNetInstallScript="$(_ToolRuntimeInstallScript)"
