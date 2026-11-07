@@ -5,10 +5,12 @@
 // accumulated and every ActivityStateChanged event fired N+1 times after N recreations.
 
 #if __ANDROID__
+using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Android.OS;
+using Android.Runtime;
 using Microsoft.Maui.ApplicationModel;
 using Xunit;
 
@@ -28,11 +30,14 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		/// only the first call registers a listener.
 		/// </summary>
 		[Fact]
-		public void Init_CalledMultipleTimes_SameListenerIsKept()
-		{
+		public Task Init_CalledMultipleTimes_SameListenerIsKept() =>
+			MainThread.InvokeOnMainThreadAsync(() =>
+			{
 			var app = (global::Android.App.Application)global::Android.App.Application.Context;
 			var manager = new ActivityStateManagerImplementation();
 
+			try
+			{
 			manager.Init(app);
 			var listenerAfterFirst = GetListener(manager);
 
@@ -45,7 +50,12 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			Assert.NotNull(listenerAfterFirst);
 			Assert.Same(listenerAfterFirst, listenerAfterSecond);
 			Assert.Same(listenerAfterFirst, listenerAfterThird);
-		}
+			}
+			finally
+			{
+				manager.Dispose();
+			}
+			});
 
 		/// <summary>
 		/// Verifies that ActivityStateChanged fires exactly once per lifecycle event
@@ -60,13 +70,16 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		/// With the bug all three are different objects → fires three times.
 		/// </summary>
 		[Fact]
-		public void Init_CalledMultipleTimes_ActivityStateChangedFiresOnce()
-		{
+		public Task Init_CalledMultipleTimes_ActivityStateChangedFiresOnce() =>
+			MainThread.InvokeOnMainThreadAsync(() =>
+			{
 			var app = (global::Android.App.Application)global::Android.App.Application.Context;
 			var activity = MauiPlatform.CurrentActivity;
 
 			var manager = new ActivityStateManagerImplementation();
 
+			try
+			{
 			int invocations = 0;
 			manager.ActivityStateChanged += (_, _) => Interlocked.Increment(ref invocations);
 
@@ -87,7 +100,12 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 				l?.OnActivityResumed(activity);
 
 			Assert.Equal(1, invocations);
-		}
+			}
+			finally
+			{
+				manager.Dispose();
+			}
+			});
 
 		[Fact]
 		public async Task PendingRequest_IsAdoptedFromRecreatedActivityState()
@@ -107,6 +125,58 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			Assert.False(pendingRequest.IsCompleted);
 			Assert.True(requestState.TrySetResult(recreatedOwner, result));
 			Assert.Same(result, await pendingRequest);
+		}
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void DefaultLifecycleCallbacksDoNotReenterJni(bool useEssentialsListener)
+		{
+			var activity = MauiPlatform.CurrentActivity;
+			Assert.NotNull(activity);
+
+			var stateChanges = 0;
+			using Java.Lang.Object callbacks = useEssentialsListener
+				? new ActivityLifecycleContextListener((_, _) => stateChanges++, Array.Empty<IActivityForResultRequest>())
+				: new MauiApplication.ActivityLifecycleCallbacks();
+			using var savedState = new Bundle();
+			var interfaceMap = callbacks.GetType().GetInterfaceMap(typeof(global::Android.App.Application.IActivityLifecycleCallbacks));
+
+			var callbackNames = new[]
+			{
+				"onActivityPreCreated", "onActivityPostCreated",
+				"onActivityPreStarted", "onActivityPostStarted",
+				"onActivityPreResumed", "onActivityPostResumed",
+				"onActivityPrePaused", "onActivityPostPaused",
+				"onActivityPreStopped", "onActivityPostStopped",
+				"onActivityPreSaveInstanceState", "onActivityPostSaveInstanceState",
+				"onActivityPreDestroyed", "onActivityPostDestroyed"
+			};
+
+			foreach (var callbackName in callbackNames)
+			{
+				var managedName = char.ToUpperInvariant(callbackName[0]) + callbackName.Substring(1);
+				var methodIndex = Array.FindIndex(interfaceMap.InterfaceMethods, method => method.Name == managedName);
+				Assert.InRange(methodIndex, 0, interfaceMap.TargetMethods.Length - 1);
+				// Reject the recursive mapping before calling it can crash the test process.
+				Assert.False(interfaceMap.TargetMethods[methodIndex].DeclaringType.IsInterface,
+					$"{managedName} must not dispatch back through the Java default implementation.");
+
+				var hasState = callbackName.EndsWith("Created", StringComparison.Ordinal)
+					|| callbackName.EndsWith("SaveInstanceState", StringComparison.Ordinal);
+				var signature = hasState
+					? "(Landroid/app/Activity;Landroid/os/Bundle;)V"
+					: "(Landroid/app/Activity;)V";
+				var method = JNIEnv.GetMethodID(callbacks.Class.Handle, callbackName, signature);
+
+				// Exercise the Java callable wrapper, not just the managed implementation.
+				JNIEnv.CallVoidMethod(callbacks.Handle, method, hasState
+					? new[] { new JValue(activity), new JValue(savedState) }
+					: new[] { new JValue(activity) });
+			}
+
+			Assert.Equal(0, stateChanges);
+			GC.KeepAlive(activity);
 		}
 
 		// Reads the private 'lifecycleListener' field from ActivityStateManagerImplementation
