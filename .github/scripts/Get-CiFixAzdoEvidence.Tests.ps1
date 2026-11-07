@@ -14,6 +14,7 @@ BeforeAll {
     }
 
     foreach ($functionName in @(
+            'Initialize-CiFixProducerBudget',
             'Get-CiFixIssueField',
             'Invoke-CiFixAzdoRequest',
             'ConvertFrom-CiFixJsonResponse',
@@ -21,6 +22,10 @@ BeforeAll {
             'Get-CiFixFailedTaskRecords',
             'Get-CiFixPreviousAttemptReferences',
             'Resolve-CiFixPreviousAttemptTaskProvenance',
+            'Invoke-CiFixKustoQuery',
+            'ConvertFrom-CiFixKustoTable',
+            'Get-CiFixKustoBuildInventory',
+            'Get-CiFixBuildEvidenceFromInventory',
             'Get-CiFixBuildEvidence',
             'Get-CiFixBuildEvidenceBounded',
             'New-CiFixAzdoEvidence')) {
@@ -40,11 +45,186 @@ BeforeAll {
         'maui-pr-uitests' = 313
     }
     $script:AzdoBaseUri = 'https://dev.azure.com/dnceng-public/public/_apis/build'
+    $script:AzdoPublicProjectId = 'cbb18261-c48f-4abb-8651-8cdcb5474649'
+    $script:KustoQueryUri = 'https://engsrvprod.kusto.windows.net/v1/rest/query'
+    $script:KustoResourceUri = 'https://api.kusto.windows.net'
+    $script:KustoDatabase = 'engineeringdata'
     $script:TransientStatusCodes = @(408, 429, 500, 502, 503, 504)
     $script:MaxHttpAttempts = 3
     $script:HttpTimeoutSeconds = 60
     $script:RemainingDownloadBytes = 67108864
     $script:ProducerDeadlineUtc = [DateTime]::UtcNow.AddMinutes(10)
+    $script:AzureAuthoritativeReserveSeconds = 60
+    $script:KustoDiagnosticSecondsRemaining = 60.0
+    $script:KustoDiagnosticPerQuerySeconds = 20
+    $script:KustoDiagnosticHandoffSeconds = 1
+
+    function New-TestCiFixKustoResponse {
+        param(
+            [Parameter(Mandatory = $true)][object[]]$Columns,
+            [Parameter(Mandatory = $true)][object[]]$Rows
+        )
+
+        return [pscustomobject]@{
+            Succeeded = $true
+            Content = @{
+                Tables = @(
+                    @{
+                        TableName = 'Table_0'
+                        Columns = @($Columns | ForEach-Object {
+                                @{ ColumnName = $_; ColumnType = 'string'; DataType = 'String' }
+                            })
+                        Rows = @($Rows)
+                    }
+                )
+            } | ConvertTo-Json -Depth 20 -Compress
+            Error = ''
+        }
+    }
+
+    function Invoke-TestCiFixProductionKustoComparison {
+        param(
+            [Parameter(Mandatory = $true)][string]$Root,
+            [Parameter(Mandatory = $true)][int]$ProducerSeconds
+        )
+
+        $port = Get-Random -Minimum 30000 -Maximum 45000
+        $readyPath = Join-Path $Root 'azure-server.ready'
+        $serverJob = Start-Job -ArgumentList $port, $readyPath -ScriptBlock {
+            param($Port, $ReadyPath)
+
+            $listener = [Net.Sockets.TcpListener]::new([Net.IPAddress]::Loopback, $Port)
+            $listener.Start()
+            Set-Content -LiteralPath $ReadyPath -Value 'ready'
+            try {
+                foreach ($requestIndex in 1..2) {
+                    $client = $listener.AcceptTcpClient()
+                    try {
+                        $stream = $client.GetStream()
+                        $reader = [IO.StreamReader]::new(
+                            $stream,
+                            [Text.Encoding]::ASCII,
+                            $false,
+                            1024,
+                            $true)
+                        $requestLine = $reader.ReadLine()
+                        while (($line = $reader.ReadLine()) -ne '') {
+                            if ($null -eq $line) {
+                                break
+                            }
+                        }
+
+                        $content = if ($requestLine -match '/timeline\?') {
+                            '{"records":[{"id":"aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa","type":"Task","result":"failed","name":"Azure truth","attempt":1,"log":{"id":10}}]}'
+                        } elseif ($requestLine -match '/logs/10\?') {
+                            'Azure truth log'
+                        } else {
+                            throw "Unexpected request: $requestLine"
+                        }
+                        $contentBytes = [Text.Encoding]::UTF8.GetBytes($content)
+                        $headers = [Text.Encoding]::ASCII.GetBytes(
+                            "HTTP/1.1 200 OK`r`nContent-Length: $($contentBytes.Length)`r`nConnection: close`r`n`r`n")
+                        $stream.Write($headers, 0, $headers.Length)
+                        $stream.Write($contentBytes, 0, $contentBytes.Length)
+                    }
+                    finally {
+                        $client.Dispose()
+                    }
+                }
+            }
+            finally {
+                $listener.Stop()
+            }
+        }
+
+        $fakeBin = Join-Path $Root 'fake-az'
+        New-Item -ItemType Directory -Force -Path $fakeBin | Out-Null
+        $markerPath = Join-Path $Root 'az-invoked'
+        if ($IsWindows) {
+            $azPath = Join-Path $fakeBin 'az.cmd'
+            Set-Content -LiteralPath $azPath -Value @'
+@echo off
+echo invoked>>"%CI_FIX_FAKE_AZ_MARKER%"
+powershell -NoProfile -Command "Start-Sleep -Seconds 5"
+'@
+        } else {
+            $azPath = Join-Path $fakeBin 'az'
+            Set-Content -LiteralPath $azPath -Value @'
+#!/bin/sh
+printf 'invoked\n' >> "$CI_FIX_FAKE_AZ_MARKER"
+sleep 5
+'@
+            & chmod +x $azPath
+        }
+
+        $oldPath = $env:PATH
+        $oldMarker = $env:CI_FIX_FAKE_AZ_MARKER
+        $oldBaseUri = $script:AzdoBaseUri
+        $oldDeadline = $script:ProducerDeadlineUtc
+        $oldReserve = $script:AzureAuthoritativeReserveSeconds
+        $oldDiagnosticSeconds = $script:KustoDiagnosticSecondsRemaining
+        $oldPerQuerySeconds = $script:KustoDiagnosticPerQuerySeconds
+        $oldHandoffSeconds = $script:KustoDiagnosticHandoffSeconds
+        $oldRemainingBytes = $script:RemainingDownloadBytes
+        $observation = $null
+        try {
+            $readyDeadline = [DateTime]::UtcNow.AddSeconds(5)
+            while (-not (Test-Path -LiteralPath $readyPath) -and
+                [DateTime]::UtcNow -lt $readyDeadline) {
+                Start-Sleep -Milliseconds 25
+            }
+            if (-not (Test-Path -LiteralPath $readyPath)) {
+                throw 'Azure test server did not become ready'
+            }
+
+            $env:PATH = "$fakeBin$([IO.Path]::PathSeparator)$oldPath"
+            $env:CI_FIX_FAKE_AZ_MARKER = $markerPath
+            $script:AzdoBaseUri = "http://127.0.0.1:$port/_apis/build"
+            Initialize-CiFixProducerBudget -ProducerSeconds $ProducerSeconds
+            $script:RemainingDownloadBytes = 100000
+
+            $timer = [Diagnostics.Stopwatch]::StartNew()
+            $result = Get-CiFixBuildEvidence `
+                -BuildId 42 `
+                -OutputDirectory (Join-Path $Root 'evidence') `
+                -MaxFailedLogs 10 `
+                -TimelineByteLimit 10000 `
+                -LogByteLimit 10000 `
+                -Provider 'kusto-compare'
+            $timer.Stop()
+            $nextProbe = Invoke-CiFixKustoQuery -Query 'print Value=1'
+            $finalProbe = Invoke-CiFixKustoQuery -Query 'print Value=2'
+            $observation = [pscustomobject]@{
+                Result = $result
+                ElapsedSeconds = $timer.Elapsed.TotalSeconds
+                AzInvoked = Test-Path -LiteralPath $markerPath
+                AzInvocationCount = if (Test-Path -LiteralPath $markerPath) {
+                    @(Get-Content -LiteralPath $markerPath).Count
+                } else {
+                    0
+                }
+                NextProbe = $nextProbe
+                FinalProbe = $finalProbe
+                DiagnosticSecondsRemaining = $script:KustoDiagnosticSecondsRemaining
+            }
+        }
+        finally {
+            $env:PATH = $oldPath
+            $env:CI_FIX_FAKE_AZ_MARKER = $oldMarker
+            $script:AzdoBaseUri = $oldBaseUri
+            $script:ProducerDeadlineUtc = $oldDeadline
+            $script:AzureAuthoritativeReserveSeconds = $oldReserve
+            $script:KustoDiagnosticSecondsRemaining = $oldDiagnosticSeconds
+            $script:KustoDiagnosticPerQuerySeconds = $oldPerQuerySeconds
+            $script:KustoDiagnosticHandoffSeconds = $oldHandoffSeconds
+            $script:RemainingDownloadBytes = $oldRemainingBytes
+            Wait-Job -Job $serverJob -Timeout 3 | Out-Null
+            Stop-Job -Job $serverJob -ErrorAction SilentlyContinue
+            Remove-Job -Job $serverJob -Force
+        }
+
+        return $observation
+    }
 }
 
 Describe 'Get-CiFixAzdoEvidence' {
@@ -1654,6 +1834,635 @@ Describe 'Get-CiFixAzdoEvidence' {
     }
 }
 
+Describe 'CI-fix normalized exact-build provider contract' {
+    BeforeAll {
+        $columns = @(
+            'RowKind', 'BuildId', 'BuildScopeCount', 'PublicBuildCount',
+            'BuildStatus', 'BuildResult', 'BuildFinishTime', 'BuildIndexedAt',
+            'BuildLatestConflictCount', 'RawRecordCount', 'RecordCount',
+            'ReingestedRecordCount', 'LatestRecordConflictCount',
+            'DistinctTimelineCount', 'TimelineId', 'MinAttempt', 'MaxAttempt',
+            'InvalidAttemptCount', 'RetrySignalCount', 'RootRecordCount',
+            'JobRecordCount', 'TaskRecordCount', 'OrphanRecordCount',
+            'SentinelPathCount', 'PathShapeErrorCount', 'DuplicatePathCount',
+            'UnfinishedRelevantCount', 'InvalidRecordIdentityCount',
+            'InvalidLogScopeCount', 'FailedTaskCount',
+            'SelectableFailureCount', 'RecordMinIndexedAt',
+            'RecordMaxIndexedAt', 'RecordId', 'ParentId', 'Name', 'Result',
+            'ErrorCount', 'LogId', 'LogUri', 'Attempt', 'Path',
+            'RecordIndexedAt', 'ImmediateParentErrorCount',
+            'UnsupportedDepthCount', 'DisconnectedRecordCount')
+
+        function New-CertificateRow {
+            param(
+                [long]$BuildId = 42,
+                [object]$BuildScopeCount = 1,
+                [object]$PublicBuildCount = 1,
+                [string]$BuildStatus = 'completed',
+                [string]$BuildResult = 'failed',
+                [object]$BuildLatestConflictCount = 0,
+                [object]$RawRecordCount = 20,
+                [object]$RecordCount = 20,
+                [object]$ReingestedRecordCount = 0,
+                [object]$LatestRecordConflictCount = 0,
+                [object]$DistinctTimelineCount = 1,
+                [object]$MinAttempt = 1,
+                [object]$MaxAttempt = 1,
+                [object]$InvalidAttemptCount = 0,
+                [object]$RetrySignalCount = 0,
+                [object]$RootRecordCount = 1,
+                [object]$JobRecordCount = 2,
+                [object]$TaskRecordCount = 10,
+                [object]$OrphanRecordCount = 0,
+                [object]$SentinelPathCount = 0,
+                [object]$PathShapeErrorCount = 0,
+                [object]$DuplicatePathCount = 0,
+                [object]$UnfinishedRelevantCount = 0,
+                [object]$InvalidRecordIdentityCount = 0,
+                [object]$InvalidLogScopeCount = 0,
+                [object]$FailedTaskCount = 1,
+                [object]$SelectableFailureCount = 1,
+                [object]$ImmediateParentErrorCount = 0,
+                [object]$UnsupportedDepthCount = 0,
+                [object]$DisconnectedRecordCount = 0
+            )
+            return @(
+                'certificate', $BuildId, $BuildScopeCount, $PublicBuildCount,
+                $BuildStatus, $BuildResult, '2026-10-27T12:39:11Z',
+                '2026-10-27T13:21:56Z', $BuildLatestConflictCount,
+                $RawRecordCount, $RecordCount, $ReingestedRecordCount,
+                $LatestRecordConflictCount, $DistinctTimelineCount,
+                '33333333-3333-3333-3333-333333333333',
+                $MinAttempt, $MaxAttempt, $InvalidAttemptCount,
+                $RetrySignalCount, $RootRecordCount, $JobRecordCount,
+                $TaskRecordCount, $OrphanRecordCount, $SentinelPathCount,
+                $PathShapeErrorCount, $DuplicatePathCount,
+                $UnfinishedRelevantCount, $InvalidRecordIdentityCount,
+                $InvalidLogScopeCount, $FailedTaskCount,
+                $SelectableFailureCount, '2026-10-27T13:22:00Z',
+                '2026-10-27T13:22:00Z', '', '', '', '', $null, $null, '',
+                $null, '', '', $ImmediateParentErrorCount,
+                $UnsupportedDepthCount, $DisconnectedRecordCount)
+        }
+
+        function New-FailureRow {
+            param(
+                [long]$BuildId = 42,
+                [string]$RecordId = '11111111-1111-1111-1111-111111111111',
+                [long]$LogId = 10,
+                [string]$Name = 'failed task'
+            )
+            return @(
+                'failure', $BuildId, $null, $null, '', '', '', '', $null,
+                $null, $null, $null, $null, $null,
+                '33333333-3333-3333-3333-333333333333',
+                $null, $null, $null, $null, $null, $null, $null, $null,
+                $null, $null, $null, $null, $null, $null, $null, $null, '',
+                '', $RecordId, '22222222-2222-2222-2222-222222222222',
+                $Name, 'failed', 1, $LogId,
+                "https://dev.azure.com/dnceng-public/public/_apis/build/builds/$BuildId/logs/$LogId",
+                1, '001.001.001.001', '2026-10-27T13:22:00Z',
+                $null, $null, $null)
+        }
+    }
+
+    It 'accepts a complete normalized provider inventory and downloads logs through Azure' {
+        $inventory = [pscustomobject]@{
+            provider = 'future-mcp'
+            coverage = 'complete'
+            status = 'available'
+            complete = $true
+            indexedAt = '2026-10-27T13:22:00Z'
+            buildFinishTime = '2026-10-27T12:39:11Z'
+            truncated = $false
+            error = ''
+            failedTasks = @(
+                [pscustomobject]@{
+                    recordId = '11111111-1111-1111-1111-111111111111'
+                    name = 'failed task'
+                    logId = 10L
+                    rawLogId = '10'
+                    attempt = 1
+                    source = 'current'
+                    sourceTimelineId = '33333333-3333-3333-3333-333333333333'
+                    sourceRecordId = '11111111-1111-1111-1111-111111111111'
+                    sourceAttempt = 1
+                }
+            )
+        }
+        $requestInvoker = {
+            param($Uri, $MaxBytes)
+            [pscustomobject]@{
+                Succeeded = $true
+                StatusCode = 200
+                RedirectLocation = $null
+                Content = 'provider log'
+                Truncated = $false
+                Error = ''
+                Attempts = 1
+            }
+        }
+
+        $result = Get-CiFixBuildEvidenceFromInventory `
+            -BuildId 42 `
+            -Inventory $inventory `
+            -OutputDirectory (Join-Path $TestDrive 'complete-provider') `
+            -MaxFailedLogs 10 `
+            -LogByteLimit 10000 `
+            -RequestInvoker $requestInvoker
+
+        $result.complete | Should -BeTrue
+        $result.inventory.usedCoverage | Should -BeExactly 'complete'
+        $result.failedTasks[0].status | Should -BeExactly 'available'
+    }
+
+    It 'keeps a structurally valid single-attempt projection partial without source snapshot proof' {
+        $response = New-TestCiFixKustoResponse `
+            -Columns $columns `
+            -Rows @((New-CertificateRow), (New-FailureRow))
+
+        $result = Get-CiFixKustoBuildInventory `
+            -BuildId 42 `
+            -MaxRows 10 `
+            -QueryInvoker { param($Query) $response }
+
+        $result.coverage | Should -BeExactly 'partial'
+        $result.complete | Should -BeFalse
+        $result.failedTasks.Count | Should -Be 1
+        $result.failedTasks[0].recordId | Should -BeExactly '11111111-1111-1111-1111-111111111111'
+        $result.failedTasks[0].logId | Should -Be 10
+        $result.failedTasks[0].source | Should -BeExactly 'current'
+        $result.failedTasks[0].sourceRecordId | Should -BeExactly $result.failedTasks[0].recordId
+        $result.failedTasks[0].sourceAttempt | Should -Be 1
+        $result.failedTasks[0].provenanceValid | Should -BeTrue
+        $result.error | Should -Match 'independent source snapshot completeness metadata is unavailable'
+    }
+
+    It 'keeps an indexed empty projection partial without source snapshot proof' {
+        $response = New-TestCiFixKustoResponse `
+            -Columns $columns `
+            -Rows (, (New-CertificateRow -FailedTaskCount 0 -SelectableFailureCount 0))
+
+        $result = Get-CiFixKustoBuildInventory `
+            -BuildId 42 `
+            -QueryInvoker { param($Query) $response }
+
+        $result.coverage | Should -BeExactly 'partial'
+        $result.complete | Should -BeFalse
+        $result.failedTasks.Count | Should -Be 0
+        $result.error | Should -Match 'independent source snapshot completeness metadata is unavailable'
+    }
+
+    It 'distinguishes a not-indexed build from an indexed empty inventory' {
+        $notIndexed = New-TestCiFixKustoResponse `
+            -Columns $columns `
+            -Rows (, (New-CertificateRow `
+                    -BuildScopeCount 0 `
+                    -PublicBuildCount 0 `
+                    -RawRecordCount 0 `
+                    -RecordCount 0 `
+                    -RootRecordCount 0 `
+                    -JobRecordCount 0 `
+                    -TaskRecordCount 0 `
+                    -FailedTaskCount 0 `
+                    -SelectableFailureCount 0))
+
+        $notIndexedResult = Get-CiFixKustoBuildInventory `
+            -BuildId 42 `
+            -QueryInvoker { param($Query) $notIndexed }
+
+        $notIndexedResult.coverage | Should -BeExactly 'notIndexed'
+        $notIndexedResult.status | Should -BeExactly 'notIndexed'
+        $notIndexedResult.failedTasks.Count | Should -Be 0
+    }
+
+    It 'falls back for stale record ingestion' {
+        $certificate = New-CertificateRow
+        $certificate[31] = '2026-10-27T12:00:00Z'
+        $certificate[32] = '2026-10-27T12:00:00Z'
+        $response = New-TestCiFixKustoResponse `
+            -Columns $columns `
+            -Rows @($certificate, (New-FailureRow))
+
+        $result = Get-CiFixKustoBuildInventory `
+            -BuildId 42 `
+            -QueryInvoker { param($Query) $response }
+
+        $result.complete | Should -BeFalse
+        $result.status | Should -BeExactly 'stale'
+        $result.error | Should -Match 'indexing is missing or stale'
+    }
+
+    It 'falls back for ambiguous build scope' {
+        $response = New-TestCiFixKustoResponse `
+            -Columns $columns `
+            -Rows @(
+                (New-CertificateRow -BuildScopeCount 2 -PublicBuildCount 1),
+                (New-FailureRow))
+
+        $result = Get-CiFixKustoBuildInventory `
+            -BuildId 42 `
+            -QueryInvoker { param($Query) $response }
+
+        $result.complete | Should -BeFalse
+        $result.error | Should -Match 'scope is missing or ambiguous'
+    }
+
+    It 'falls back when a retry or prior-attempt signal is present' {
+        $response = New-TestCiFixKustoResponse `
+            -Columns $columns `
+            -Rows @((New-CertificateRow -MaxAttempt 2 -RetrySignalCount 3), (New-FailureRow))
+
+        $result = Get-CiFixKustoBuildInventory `
+            -BuildId 42 `
+            -QueryInvoker { param($Query) $response }
+
+        $result.coverage | Should -BeExactly 'partial'
+        $result.complete | Should -BeFalse
+        $result.error | Should -Match 'retry or invalid attempt'
+    }
+
+    It 'falls back when multiple timelines are present' {
+        $response = New-TestCiFixKustoResponse `
+            -Columns $columns `
+            -Rows @((New-CertificateRow -DistinctTimelineCount 2), (New-FailureRow))
+
+        $result = Get-CiFixKustoBuildInventory `
+            -BuildId 42 `
+            -QueryInvoker { param($Query) $response }
+
+        $result.coverage | Should -BeExactly 'partial'
+        $result.complete | Should -BeFalse
+        $result.error | Should -Match 'timeline identity'
+    }
+
+    It 'falls back for orphan or sentinel hierarchy records' {
+        $response = New-TestCiFixKustoResponse `
+            -Columns $columns `
+            -Rows @(
+                (New-CertificateRow `
+                        -OrphanRecordCount 1 `
+                        -SentinelPathCount 1 `
+                        -PathShapeErrorCount 1),
+                (New-FailureRow))
+
+        $result = Get-CiFixKustoBuildInventory `
+            -BuildId 42 `
+            -QueryInvoker { param($Query) $response }
+
+        $result.coverage | Should -BeExactly 'partial'
+        $result.error | Should -Match 'hierarchy is incomplete'
+    }
+
+    It 'rejects a child whose existing parent is not its immediate path parent' {
+        $response = New-TestCiFixKustoResponse `
+            -Columns $columns `
+            -Rows @(
+                (New-CertificateRow -ImmediateParentErrorCount 1),
+                (New-FailureRow))
+
+        $result = Get-CiFixKustoBuildInventory `
+            -BuildId 42 `
+            -QueryInvoker { param($Query) $response }
+
+        $result.complete | Should -BeFalse
+        $result.error | Should -Match 'hierarchy is incomplete'
+    }
+
+    It 'rejects unsupported hierarchy depths and disconnected records' {
+        $response = New-TestCiFixKustoResponse `
+            -Columns $columns `
+            -Rows @(
+                (New-CertificateRow `
+                        -UnsupportedDepthCount 1 `
+                        -DisconnectedRecordCount 1),
+                (New-FailureRow))
+
+        $result = Get-CiFixKustoBuildInventory `
+            -BuildId 42 `
+            -QueryInvoker { param($Query) $response }
+
+        $result.complete | Should -BeFalse
+        $result.error | Should -Match 'hierarchy is incomplete'
+    }
+
+    It 'falls back for unfinished task or job records' {
+        $response = New-TestCiFixKustoResponse `
+            -Columns $columns `
+            -Rows @((New-CertificateRow -UnfinishedRelevantCount 1), (New-FailureRow))
+
+        $result = Get-CiFixKustoBuildInventory `
+            -BuildId 42 `
+            -QueryInvoker { param($Query) $response }
+
+        $result.coverage | Should -BeExactly 'partial'
+        $result.error | Should -Match 'unfinished task or job'
+    }
+
+    It 'deduplicates reingested rows while remaining partial without source proof' {
+        $response = New-TestCiFixKustoResponse `
+            -Columns $columns `
+            -Rows @(
+                (New-CertificateRow `
+                        -RawRecordCount 25 `
+                        -RecordCount 20 `
+                        -ReingestedRecordCount 5),
+                (New-FailureRow))
+        $capturedQuery = $null
+
+        $result = Get-CiFixKustoBuildInventory `
+            -BuildId 42 `
+            -QueryInvoker {
+                param($Query)
+                $script:capturedQuery = $Query
+                $response
+            }
+
+        $result.complete | Should -BeFalse
+        $result.error | Should -Match 'independent source snapshot completeness metadata is unavailable'
+        $script:capturedQuery | Should -Match 'LatestRecordIngestedAt=max\(RecordIngestedAt\)'
+        $script:capturedQuery | Should -Match 'summarize arg_max\(RecordFingerprint, \*\) by TimelineId, RecordId'
+        $script:capturedQuery | Should -Match 'Depth != ParentDepth \+ 1'
+        $script:capturedQuery | Should -Match 'Path startswith strcat\(ParentPath, "\."\)'
+        $script:capturedQuery | Should -Match 'not\(Path matches regex'
+        $script:capturedQuery | Should -Match 'UnsupportedDepthCount=countif\(Depth !in \(0, 1, 2, 3\)\)'
+    }
+
+    It 'falls back when latest reingested rows conflict' {
+        $response = New-TestCiFixKustoResponse `
+            -Columns $columns `
+            -Rows @(
+                (New-CertificateRow -LatestRecordConflictCount 1),
+                (New-FailureRow))
+
+        $result = Get-CiFixKustoBuildInventory `
+            -BuildId 42 `
+            -QueryInvoker { param($Query) $response }
+
+        $result.complete | Should -BeFalse
+        $result.error | Should -Match 'latest timeline rows conflict'
+    }
+
+    It 'rejects duplicate selected record or log identities' {
+        $response = New-TestCiFixKustoResponse `
+            -Columns $columns `
+            -Rows @(
+                (New-CertificateRow -FailedTaskCount 2 -SelectableFailureCount 2),
+                (New-FailureRow),
+                (New-FailureRow -Name 'duplicate'))
+
+        $result = Get-CiFixKustoBuildInventory `
+            -BuildId 42 `
+            -QueryInvoker { param($Query) $response }
+
+        $result.complete | Should -BeFalse
+        $result.status | Should -BeExactly 'malformed'
+        $result.error | Should -Match 'duplicate or conflicting identities'
+    }
+
+    It 'marks provider row limits partial without silently dropping the signal' {
+        $response = New-TestCiFixKustoResponse `
+            -Columns $columns `
+            -Rows @(
+                (New-CertificateRow -FailedTaskCount 2 -SelectableFailureCount 2),
+                (New-FailureRow -LogId 10),
+                (New-FailureRow `
+                        -RecordId '44444444-4444-4444-4444-444444444444' `
+                        -LogId 11 `
+                        -Name 'second failed task'))
+
+        $result = Get-CiFixKustoBuildInventory `
+            -BuildId 42 `
+            -MaxRows 1 `
+            -QueryInvoker { param($Query) $response }
+
+        $result.coverage | Should -BeExactly 'partial'
+        $result.truncated | Should -BeTrue
+        $result.failedTasks.Count | Should -Be 1
+        $result.error | Should -Match 'row provider limit'
+    }
+
+    It 'rejects wrong or nonpublic log scope' {
+        $row = New-FailureRow
+        $row[39] = 'https://dev.azure.com/private/project/_apis/build/builds/42/logs/10'
+        $response = New-TestCiFixKustoResponse `
+            -Columns $columns `
+            -Rows @((New-CertificateRow), $row)
+
+        $result = Get-CiFixKustoBuildInventory `
+            -BuildId 42 `
+            -QueryInvoker { param($Query) $response }
+
+        $result.coverage | Should -BeExactly 'partial'
+        $result.status | Should -BeExactly 'malformed'
+        $result.failedTasks.Count | Should -Be 0
+        $result.error | Should -Match 'identity fields'
+    }
+
+    It 'rejects malformed certificate counts' {
+        $response = New-TestCiFixKustoResponse `
+            -Columns $columns `
+            -Rows @((New-CertificateRow -FailedTaskCount 'not-a-count'), (New-FailureRow))
+
+        $result = Get-CiFixKustoBuildInventory `
+            -BuildId 42 `
+            -QueryInvoker { param($Query) $response }
+
+        $result.coverage | Should -BeExactly 'partial'
+        $result.status | Should -BeExactly 'malformed'
+        $result.error | Should -Match "FailedTaskCount"
+    }
+
+    It 'uses only the projected Kusto inventory and remains incomplete when a subtree could be omitted' {
+        $kustoResponse = New-TestCiFixKustoResponse `
+            -Columns $columns `
+            -Rows @((New-CertificateRow), (New-FailureRow))
+        $requestedUris = [Collections.Generic.List[string]]::new()
+        $requestInvoker = {
+            param($Uri, $MaxBytes)
+            $requestedUris.Add($Uri)
+            if ($Uri -match '/timeline\?') {
+                throw "Kusto-only mode must not request the Azure timeline: $Uri"
+            }
+            if ($Uri -match '/logs/10\?') {
+                return [pscustomobject]@{
+                    Succeeded = $true
+                    StatusCode = 200
+                    RedirectLocation = $null
+                    Content = 'Kusto-selected log'
+                    Truncated = $false
+                    Error = ''
+                    Attempts = 1
+                }
+            }
+            throw "Unexpected URI: $Uri"
+        }
+
+        $result = Get-CiFixBuildEvidence `
+            -BuildId 42 `
+            -OutputDirectory (Join-Path $TestDrive 'provider-kusto-only') `
+            -MaxFailedLogs 10 `
+            -TimelineByteLimit 10000 `
+            -LogByteLimit 10000 `
+            -Provider 'kusto' `
+            -RequestInvoker $requestInvoker `
+            -KustoQueryInvoker { param($Query) $kustoResponse }
+
+        $result.complete | Should -BeFalse
+        $result.inventory.requestedCoverage | Should -BeExactly 'partial'
+        $result.inventory.usedProvider | Should -BeExactly 'kusto'
+        $result.inventory.usedCoverage | Should -BeExactly 'partial'
+        $result.inventory.fallbackUsed | Should -BeFalse
+        $result.inventory.projectedFailedTaskCount | Should -Be 1
+        $result.failedTasks.Count | Should -Be 1
+        $result.failedTasks[0].name | Should -BeExactly 'failed task'
+        @($requestedUris | Where-Object { $_ -match '/timeline\?' }).Count | Should -Be 0
+        @($requestedUris | Where-Object { $_ -match '/logs/10\?' }).Count | Should -Be 1
+    }
+
+    It 'uses comparison mode to find an entire subtree omitted from the Kusto projection' {
+        $kustoResponse = New-TestCiFixKustoResponse `
+            -Columns $columns `
+            -Rows @((New-CertificateRow), (New-FailureRow))
+        $requestedUris = [Collections.Generic.List[string]]::new()
+        $requestInvoker = {
+            param($Uri, $MaxBytes)
+            $requestedUris.Add($Uri)
+            $content = if ($Uri -match '/timeline\?') {
+                @'
+{"records":[
+  {"id":"aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa","type":"Task","result":"failed","name":"Azure task in retained subtree","attempt":1,"log":{"id":10}},
+  {"id":"bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb","type":"Task","result":"failed","name":"Azure task in omitted subtree","attempt":1,"log":{"id":11}}
+]}
+'@
+            } elseif ($Uri -match '/logs/(10|11)\?') {
+                'Azure-selected log'
+            } else {
+                throw "Unexpected URI: $Uri"
+            }
+            [pscustomobject]@{
+                Succeeded = $true
+                StatusCode = 200
+                RedirectLocation = $null
+                Content = $content
+                Truncated = $false
+                Error = ''
+                Attempts = 1
+            }
+        }
+
+        $result = Get-CiFixBuildEvidence `
+            -BuildId 42 `
+            -OutputDirectory (Join-Path $TestDrive 'provider-complete') `
+            -MaxFailedLogs 10 `
+            -TimelineByteLimit 10000 `
+            -LogByteLimit 10000 `
+            -Provider 'kusto-compare' `
+            -RequestInvoker $requestInvoker `
+            -KustoQueryInvoker { param($Query) $kustoResponse }
+
+        $result.complete | Should -BeTrue
+        $result.inventory.requestedProvider | Should -BeExactly 'kusto-compare'
+        $result.inventory.requestedCoverage | Should -BeExactly 'partial'
+        $result.inventory.usedProvider | Should -BeExactly 'azure'
+        $result.inventory.fallbackUsed | Should -BeTrue
+        $result.inventory.projectedFailedTaskCount | Should -Be 1
+        $result.failedTasks.Count | Should -Be 2
+        $result.failedTasks.name | Should -Contain 'Azure task in omitted subtree'
+        @($requestedUris | Where-Object { $_ -match '/timeline\?' }).Count | Should -Be 1
+        @($requestedUris | Where-Object { $_ -match '/logs/10\?' }).Count | Should -Be 1
+        @($requestedUris | Where-Object { $_ -match '/logs/11\?' }).Count | Should -Be 1
+    }
+
+    It 'keeps Kusto-only mode timeline-free when the structural certificate fails' {
+        $kustoResponse = New-TestCiFixKustoResponse `
+            -Columns $columns `
+            -Rows @(
+                (New-CertificateRow -MaxAttempt 2 -RetrySignalCount 1),
+                (New-FailureRow -LogId 20 -Name 'Kusto projection'))
+        $requestedUris = [Collections.Generic.List[string]]::new()
+        $requestInvoker = {
+            param($Uri, $MaxBytes)
+            $requestedUris.Add($Uri)
+            if ($Uri -match '/timeline\?') {
+                throw "Kusto-only mode must not request the Azure timeline: $Uri"
+            }
+            if ($Uri -notmatch '/logs/20\?') {
+                throw "Unexpected URI: $Uri"
+            }
+            [pscustomobject]@{
+                Succeeded = $true
+                StatusCode = 200
+                RedirectLocation = $null
+                Content = 'Kusto projection log'
+                Truncated = $false
+                Error = ''
+                Attempts = 1
+            }
+        }
+
+        $result = Get-CiFixBuildEvidence `
+            -BuildId 42 `
+            -OutputDirectory (Join-Path $TestDrive 'provider-fallback') `
+            -MaxFailedLogs 10 `
+            -TimelineByteLimit 10000 `
+            -LogByteLimit 10000 `
+            -Provider 'kusto' `
+            -RequestInvoker $requestInvoker `
+            -KustoQueryInvoker { param($Query) $kustoResponse }
+
+        $result.complete | Should -BeFalse
+        $result.failedTasks[0].name | Should -BeExactly 'Kusto projection'
+        $result.inventory.requestedProvider | Should -BeExactly 'kusto'
+        $result.inventory.requestedCoverage | Should -BeExactly 'partial'
+        $result.inventory.usedProvider | Should -BeExactly 'kusto'
+        $result.inventory.usedCoverage | Should -BeExactly 'partial'
+        $result.inventory.fallbackUsed | Should -BeFalse
+        $result.inventory.projectedFailedTaskCount | Should -Be 1
+        $result.inventory.projectedFailedTasks[0].name | Should -BeExactly 'Kusto projection'
+        @($requestedUris | Where-Object { $_ -match '/timeline\?' }).Count | Should -Be 0
+        @($requestedUris | Where-Object { $_ -match '/logs/20\?' }).Count | Should -Be 1
+    }
+
+    It 'skips the production Kusto comparison when only the Azure authority reserve remains' {
+        $observation = Invoke-TestCiFixProductionKustoComparison `
+            -Root (Join-Path $TestDrive 'production-kusto-skip') `
+            -ProducerSeconds 60
+
+        $observation.AzInvoked | Should -BeFalse
+        $observation.AzInvocationCount | Should -Be 0
+        $observation.NextProbe.Error | Should -Match 'Azure authority reserve'
+        $observation.FinalProbe.Error | Should -Match 'Azure authority reserve'
+        $observation.Result.complete | Should -BeTrue
+        $observation.Result.inventory.usedProvider | Should -BeExactly 'azure'
+        $observation.Result.inventory.fallbackUsed | Should -BeTrue
+        $observation.Result.inventory.error | Should -Match 'Azure authority reserve'
+        $observation.Result.failedTasks[0].name | Should -BeExactly 'Azure truth'
+    }
+
+    It 'bounds a slow production Kusto comparison and preserves an authoritative Azure attempt' {
+        $observation = Invoke-TestCiFixProductionKustoComparison `
+            -Root (Join-Path $TestDrive 'production-kusto-timeout') `
+            -ProducerSeconds 63
+
+        $observation.AzInvoked | Should -BeTrue
+        $observation.AzInvocationCount | Should -BeIn @(1, 2)
+        $observation.ElapsedSeconds | Should -BeLessThan 4.5
+        $observation.DiagnosticSecondsRemaining | Should -BeGreaterThan 3.5
+        $observation.DiagnosticSecondsRemaining | Should -BeLessThan 6
+        $observation.NextProbe.Succeeded | Should -BeFalse
+        $observation.NextProbe.Error |
+            Should -Match 'exceeded the 1-second limit|Azure authority reserve'
+        $observation.FinalProbe.Succeeded | Should -BeFalse
+        $observation.FinalProbe.Error | Should -Match 'Azure authority reserve'
+        $observation.Result.complete | Should -BeTrue
+        $observation.Result.inventory.usedProvider | Should -BeExactly 'azure'
+        $observation.Result.inventory.fallbackUsed | Should -BeTrue
+        $observation.Result.inventory.error | Should -Match 'exceeded the 1-second limit'
+        $observation.Result.failedTasks[0].name | Should -BeExactly 'Azure truth'
+    }
+}
+
 Describe 'CI-fixer workflow evidence wiring' {
     It 'keeps both branch twins on the same trusted producer contract' {
         $mainWorkflow = Get-Content -Raw -LiteralPath (Join-Path $PSScriptRoot '../workflows/ci-status-fix.md')
@@ -1662,6 +2471,7 @@ Describe 'CI-fixer workflow evidence wiring' {
         foreach ($workflow in @($mainWorkflow, $net11Workflow)) {
             $workflow | Should -Match 'Prefetch bounded Azure DevOps failure evidence'
             $workflow | Should -Match '\.github/scripts/Get-CiFixAzdoEvidence\.ps1'
+            $workflow | Should -Not -Match '-EvidenceProvider'
             $workflow | Should -Match '/tmp/gh-aw/agent/azdo-evidence'
             $workflow | Should -Match 'Do NOT improvise a second\s+Azure downloader'
             $workflow | Should -Match 'retrieval failure into a successful/noop'
