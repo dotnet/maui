@@ -189,6 +189,7 @@
   </Target>
 
   <Target Name="_InstallToolRuntimesCore">
+    <Message Text="Tool runtime install directory: [$(DotNetDirectory)]" Importance="High" />
     <PropertyGroup>
       <_ToolRuntimeInstallScript>$(MauiRootDirectory)eng/common/dotnet-install.sh</_ToolRuntimeInstallScript>
       <!-- -File preserves argument values instead of parsing them again as PowerShell code. -->
