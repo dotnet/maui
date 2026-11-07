@@ -23,6 +23,8 @@ public class CakeSimulatorHarness
     public string ownedSimulatorUdid = "owned-before-retry";
     public string udid = "";
     public string iosVersion = "latest";
+    public string RuntimeIdentifier = "com.apple.CoreSimulator.SimRuntime.iOS-27-0";
+    public string DevicesJson = "{\"devices\":{\"runtime\":[]}}";
     public Queue<int> DeleteExits = new Queue<int>();
     public List<string> Calls = new List<string>();
     public int StartProcess(string tool, string arguments)
@@ -36,15 +38,15 @@ public class CakeSimulatorHarness
     }
     void Information(string message, params object[] arguments) {}
     string EnvironmentVariable(string name) { return ""; }
-    string FindSimulatorRuntime(string version) { return "runtime"; }
+    string FindSimulatorRuntime(string version) { return RuntimeIdentifier; }
     string RunAppleCommand(params string[] arguments)
     {
         Calls.Add(string.Join(" ", arguments));
         if (arguments[1] == "create") return "owned-after-retry";
-        return "{\"devices\":{\"runtime\":[]}}";
+        return DevicesJson;
     }
     public void Delete(string simulator) { DeleteSimulator(simulator); }
-    public string Acquire() { return GetUDID("ios_simulator_latest", null); }
+    public string Acquire(string target = "ios_simulator_latest") { return GetUDID(target, null); }
     $delete
     $getUdid
 }
@@ -57,6 +59,32 @@ AfterAll {
 }
 
 Describe 'Direct Cake native execution' {
+    It 'preserves the legacy simulator profile instead of borrowing an arbitrary booted phone' -TestCases @(
+        @{ Target = 'ios_simulator_latest'; Runtime = 'com.apple.CoreSimulator.SimRuntime.iOS-27-0'; Profile = 'iPhone-11-Pro' }
+        @{ Target = 'ios_simulator_min'; Runtime = 'com.apple.CoreSimulator.SimRuntime.iOS-27-0'; Profile = 'iPhone-SE-3rd-generation' }
+        @{ Target = 'ios_simulator_min'; Runtime = 'com.apple.CoreSimulator.SimRuntime.iOS-15-0'; Profile = 'iPhone-6s' }
+    ) {
+        param($Target, $Runtime, $Profile)
+        $harness = [CakeSimulatorHarness]::new()
+        $harness.ownedSimulatorUdid = ''
+        $harness.RuntimeIdentifier = $Runtime
+        $harness.DevicesJson = '{"devices":{"runtime":[{"udid":"foreign-booted","name":"iPhone 17 Pro","state":"Booted","deviceTypeIdentifier":"com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro"}]}}'
+        $harness.Acquire($Target) | Should -Be 'owned-after-retry'
+        $create = @($harness.Calls | Where-Object { $_ -like 'simctl create *' })
+        $create.Count | Should -Be 1
+        $create[0] | Should -Match ([regex]::Escape("com.apple.CoreSimulator.SimDeviceType.$Profile $Runtime"))
+    }
+
+    It 'retains an explicitly selected simulator without creating or deleting it' {
+        $harness = [CakeSimulatorHarness]::new()
+        $harness.ownedSimulatorUdid = ''
+        $harness.udid = 'foreign-booted'
+        $harness.DevicesJson = '{"devices":{"runtime":[{"udid":"foreign-booted","name":"iPhone 17 Pro","state":"Booted"}]}}'
+        $harness.Acquire() | Should -Be 'foreign-booted'
+        @($harness.Calls | Where-Object { $_ -like 'simctl create *' -or $_ -like 'simctl delete *' }).Count |
+            Should -Be 0
+    }
+
     It 'has no executable XHarness dependency in any platform script' {
         foreach ($platform in @('ios', 'android', 'catalyst')) {
             $source = Get-Content -Raw (Join-Path $PSScriptRoot "$platform.cake")

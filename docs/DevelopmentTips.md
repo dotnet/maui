@@ -445,6 +445,12 @@ device's app `Documents` through `xcrun devicectl device copy from` with the
 reports; failed app lookup or copy transport is not treated as report absence.
 This transport has helper coverage but still needs real physical-device validation.
 
+Without an explicit simulator selector, the iOS Cake caller creates an owned
+iPhone 11 Pro, preserving the former runner's screenshot profile. Minimum-runtime
+targets retain iPhone 6s below iOS 16 and iPhone SE (3rd generation) thereafter.
+It does not borrow an arbitrary booted phone or select the first installed model,
+which would change screenshot geometry. An explicit UDID/name remains respected.
+
 Android xUnit/MTP hosts require an on-disk entry assembly. Their runner props
 therefore use SDK fast deployment (`EmbedAssembliesIntoApk=false`) and disable
 ReadyToRun, including in Release. Release compiler optimization is retained.

@@ -446,18 +446,18 @@ string GetUDID(string testDevice, string tool)
 				throw new InvalidOperationException($"Selected simulator '{selected}' is unavailable.");
 			return match.GetProperty("udid").GetString();
 		}
-		var runtimeId = FindSimulatorRuntime(testDevice.Contains("_") ? testDevice.Split('_').Last() : iosVersion);
+		var requestedVersion = testDevice.Contains("_") ? testDevice.Split('_').Last() : iosVersion;
+		var runtimeId = FindSimulatorRuntime(requestedVersion);
 		if (runtimeId == null)
 			throw new InvalidOperationException($"No installed iOS simulator runtime matches {testDevice}.");
-		var matching = devices.RootElement.GetProperty("devices").TryGetProperty(runtimeId, out var runtimeDevices) ?
-			runtimeDevices.EnumerateArray().ToArray() : Array.Empty<System.Text.Json.JsonElement>();
-		var booted = matching.FirstOrDefault(simulator => simulator.GetProperty("state").GetString() == "Booted");
-		if (booted.ValueKind != System.Text.Json.JsonValueKind.Undefined)
-			return booted.GetProperty("udid").GetString();
-		var deviceType = matching.FirstOrDefault(simulator => simulator.GetProperty("name").GetString().StartsWith("iPhone"));
-		var typeId = deviceType.ValueKind != System.Text.Json.JsonValueKind.Undefined &&
-			deviceType.TryGetProperty("deviceTypeIdentifier", out var type) ? type.GetString() :
-			"com.apple.CoreSimulator.SimDeviceType.iPhone-16";
+		// Preserve the former XHarness profile; arbitrary installed/booted phones change snapshot geometry.
+		var deviceType = "iPhone-11-Pro";
+		if (requestedVersion == "min")
+		{
+			var runtimeVersion = Version.Parse(runtimeId.Substring(runtimeId.LastIndexOf("iOS-", StringComparison.Ordinal) + 4).Replace('-', '.'));
+			deviceType = runtimeVersion.Major >= 16 ? "iPhone-SE-3rd-generation" : "iPhone-6s";
+		}
+		var typeId = "com.apple.CoreSimulator.SimDeviceType." + deviceType;
 		ownedSimulatorUdid = RunAppleCommand("simctl", "create", $"MauiUITest-{Guid.NewGuid():N}", typeId, runtimeId).Trim();
 		return ownedSimulatorUdid;
 	}
