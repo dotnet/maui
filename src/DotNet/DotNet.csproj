@@ -180,25 +180,24 @@
 
   <Target Name="_InstallToolRuntimes">
     <!-- The bootstrap SDK may be too old to load the current Arcade task. -->
-    <PropertyGroup>
-      <_ToolRuntimeDotNetDirectoryArgument>$(DotNetDirectory)</_ToolRuntimeDotNetDirectoryArgument>
-      <!-- Windows argv parsing consumes backslashes immediately before a closing quote. -->
-      <_ToolRuntimeDotNetDirectoryArgument Condition="$([MSBuild]::IsOSPlatform('windows'))">$([System.Text.RegularExpressions.Regex]::Replace(&quot;$(DotNetDirectory)&quot;, '(\\+)$', '$1$1'))</_ToolRuntimeDotNetDirectoryArgument>
-    </PropertyGroup>
-    <Exec Condition="$([MSBuild]::IsOSPlatform('windows'))" Command="&quot;$(DotNetToolPath)&quot; msbuild &quot;$(MSBuildProjectFullPath)&quot; -t:_InstallToolRuntimesCore -p:DotNetDirectory=&quot;$(_ToolRuntimeDotNetDirectoryArgument)&quot; -nologo" />
+    <!-- Keep the directory out of MSBuild's comma/semicolon-separated property arguments. -->
+    <Exec Condition="$([MSBuild]::IsOSPlatform('windows'))"
+        Command="&quot;$(DotNetToolPath)&quot; msbuild &quot;$(MSBuildProjectFullPath)&quot; -t:_InstallToolRuntimesCore -nologo"
+        EnvironmentVariables="MAUI_TOOL_RUNTIME_DIRECTORY=$([MSBuild]::Escape('$(DotNetDirectory)'))" />
     <!-- Environment values remain data when the Unix shell expands the quoted arguments. -->
     <Exec Condition="!$([MSBuild]::IsOSPlatform('windows'))"
-        Command="&quot;${MAUI_TOOL_RUNTIME_DOTNET}&quot; msbuild &quot;${MAUI_TOOL_RUNTIME_PROJECT}&quot; -t:_InstallToolRuntimesCore &quot;-p:DotNetDirectory=${MAUI_TOOL_RUNTIME_DIRECTORY}&quot; -nologo"
+        Command="&quot;${MAUI_TOOL_RUNTIME_DOTNET}&quot; msbuild &quot;${MAUI_TOOL_RUNTIME_PROJECT}&quot; -t:_InstallToolRuntimesCore -nologo"
         EnvironmentVariables="MAUI_TOOL_RUNTIME_DOTNET=$([MSBuild]::Escape('$(DotNetToolPath)'));MAUI_TOOL_RUNTIME_PROJECT=$([MSBuild]::Escape('$(MSBuildProjectFullPath)'));MAUI_TOOL_RUNTIME_DIRECTORY=$([MSBuild]::Escape('$(DotNetDirectory)'))" />
   </Target>
 
   <Target Name="_InstallToolRuntimesCore">
-    <Message Text="Tool runtime install directory: [$(DotNetDirectory)]" Importance="High" />
     <PropertyGroup>
+      <DotNetDirectory Condition="'$(MAUI_TOOL_RUNTIME_DIRECTORY)' != ''">$(MAUI_TOOL_RUNTIME_DIRECTORY)</DotNetDirectory>
       <_ToolRuntimeInstallScript>$(MauiRootDirectory)eng/common/dotnet-install.sh</_ToolRuntimeInstallScript>
       <!-- -File preserves argument values instead of parsing them again as PowerShell code. -->
       <_ToolRuntimeInstallScript Condition="$([MSBuild]::IsOSPlatform('windows'))">$(MSBuildThisFileDirectory)dotnet-install-tool-runtime.cmd</_ToolRuntimeInstallScript>
     </PropertyGroup>
+    <Message Text="Tool runtime install directory: [$(DotNetDirectory)]" Importance="High" />
     <InstallDotNetCore
         GlobalJsonPath="$(MauiRootDirectory)global.json"
         DotNetPath="$(DotNetDirectory)"

@@ -93,8 +93,8 @@ jobs:
         run: |
           set -euo pipefail
           probe_root=$(mktemp -d "$RUNNER_TEMP/tool-runtime-path.XXXXXX")
-          sdk_root="$probe_root/Maui SDK literal \$sdk's"
-          project_root="$probe_root/Maui project literal \$repo"
+          sdk_root="$probe_root/Maui SDK literal \$sdk's,comma;semi"
+          project_root="$probe_root/Maui project literal \$repo,comma"
           mkdir -p "$sdk_root/shared/Microsoft.NETCore.App"
           cp "$DOTNET_ROOT/dotnet" "$sdk_root/dotnet"
           ln -s "$DOTNET_ROOT/host" "$sdk_root/host"
@@ -107,8 +107,10 @@ jobs:
           while IFS= read -r version; do
             test ! -e "$sdk_root/shared/Microsoft.NETCore.App/$version"
           done < <(jq -er '.tools.runtimes.dotnet[]' global.json)
+          directory_argument="${sdk_root//,/%2C}"
+          directory_argument="${directory_argument//;/%3B}"
           dotnet msbuild "$project_root/src/DotNet/DotNet.csproj" \
-            -t:_InstallToolRuntimes "-p:DotNetDirectory=$sdk_root/" \
+            -t:_InstallToolRuntimes "-p:DotNetDirectory=$directory_argument/" \
             -verbosity:minimal -nologo 2>&1 |
             tee artifacts/log/net12-apple/literal-bootstrap-path.log
           grep -F "Tool runtime install directory: [$sdk_root/]" \
@@ -278,35 +280,43 @@ jobs:
           $bootstrapDotnet = (Get-Command dotnet).Source
           & $bootstrapDotnet --version | Tee-Object (Join-Path $logs 'bootstrap-sdk-version.log')
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          $sdkRoot = Join-Path $env:RUNNER_TEMP 'Maui SDK with spaces'
+          $sdkRoot = Join-Path $env:RUNNER_TEMP 'Maui SDK with spaces,comma'
           $forwardRoot = $sdkRoot.Replace('\', '/') + '/'
+          $forwardArgument = $forwardRoot.Replace(',', '%2C')
           & $bootstrapDotnet build src/DotNet/DotNet.csproj -c Release `
-            "-p:DotNetDirectory=$forwardRoot" -p:InstallWorkloadPacks=false `
+            "-p:DotNetDirectory=$forwardArgument" -p:InstallWorkloadPacks=false `
             --verbosity minimal 2>&1 | Tee-Object (Join-Path $logs 'provision.log')
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-          $dotnet = Join-Path $sdkRoot 'dotnet.exe'
-          $trailingRoot = $sdkRoot + '\'
+          $runtimeRoot = $sdkRoot + ';semi'
+          New-Item -ItemType Junction -Path $runtimeRoot -Target $sdkRoot | Out-Null
+          $dotnet = Join-Path $runtimeRoot 'dotnet.exe'
+          $trailingRoot = $runtimeRoot + '\'
+          $trailingArgument = $trailingRoot.Replace(',', '%2C').Replace(';', '%3B')
           $projectPath = Join-Path $env:GITHUB_WORKSPACE 'src/DotNet/DotNet.csproj'
           $originalProject = [System.IO.File]::ReadAllText($projectPath)
-          $escapedArgument = '-p:DotNetDirectory=&quot;$(_ToolRuntimeDotNetDirectoryArgument)&quot;'
-          $unescapedArgument = '-p:DotNetDirectory=&quot;$(DotNetDirectory)&quot;'
-          if (-not $originalProject.Contains($escapedArgument)) {
-            throw 'The Windows control could not locate the actual child-process argument.'
+          $environmentCommand = 'Command="&quot;$(DotNetToolPath)&quot; msbuild &quot;$(MSBuildProjectFullPath)&quot; -t:_InstallToolRuntimesCore -nologo"'
+          $unescapedCommand = 'Command="&quot;$(DotNetToolPath)&quot; msbuild &quot;$(MSBuildProjectFullPath)&quot; -t:_InstallToolRuntimesCore -p:DotNetDirectory=&quot;$(DotNetDirectory)&quot; -nologo"'
+          if (-not $originalProject.Contains($environmentCommand)) {
+            throw 'The Windows control could not locate the actual child-process command.'
           }
           try {
-            [System.IO.File]::WriteAllText($projectPath, $originalProject.Replace($escapedArgument, $unescapedArgument))
+            [System.IO.File]::WriteAllText($projectPath, $originalProject.Replace($environmentCommand, $unescapedCommand))
             & $bootstrapDotnet msbuild src/DotNet/DotNet.csproj -t:_InstallToolRuntimes `
-              "-p:DotNetDirectory=$trailingRoot" -nologo `
+              "-p:DotNetDirectory=$trailingArgument" -nologo `
               -verbosity:minimal 2>&1 | Tee-Object (Join-Path $logs 'unescaped-path.log')
             $baselineExitCode = $LASTEXITCODE
           } finally {
             [System.IO.File]::WriteAllText($projectPath, $originalProject)
           }
           Write-Host "Unescaped older-host probe exit code: $baselineExitCode"
+          if ($baselineExitCode -eq 0 -or
+              -not (Select-String -Path (Join-Path $logs 'unescaped-path.log') -SimpleMatch 'MSB1006')) {
+            throw 'The original Windows command did not reproduce the property-separator failure.'
+          }
 
           & $bootstrapDotnet msbuild src/DotNet/DotNet.csproj -t:_InstallToolRuntimes `
-            "-p:DotNetDirectory=$trailingRoot" -nologo `
+            "-p:DotNetDirectory=$trailingArgument" -nologo `
             -verbosity:minimal 2>&1 | Tee-Object (Join-Path $logs 'escaped-path.log')
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           $expectedDirectory = "Tool runtime install directory: [$trailingRoot]"
