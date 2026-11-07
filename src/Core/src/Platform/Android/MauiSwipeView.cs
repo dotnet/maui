@@ -1441,31 +1441,30 @@ namespace Microsoft.Maui.Platform
 
 		void ProgrammaticallyOpenSwipeItem(OpenSwipeItem openSwipeItem, bool animated)
 		{
+			var swipeDirection = GetSwipeDirection(openSwipeItem);
+
 			if (_isOpen)
 			{
-				if (_previousOpenSwipeItem == openSwipeItem)
-					return;
+				// _isOpen is also set by a partial swipe. When the items that are already
+				// showing are the requested ones, complete the swipe below without resetting
+				// first: the reset would clear Element.IsOpen and end the gesture tracking
+				// of a swipe that may still be in progress
+				if (_swipeDirection == swipeDirection)
+				{
+					if (Math.Abs(_swipeOffset) == GetSwipeOpenDistance())
+						return;
+				}
+				else
+				{
+					ResetSwipe(false);
 
-				ResetSwipe(false);
+					// The reset cleared the open state the current request already applied
+					UpdateIsOpen(true);
+				}
 			}
 
 			_previousOpenSwipeItem = openSwipeItem;
-
-			switch (openSwipeItem)
-			{
-				case OpenSwipeItem.BottomItems:
-					_swipeDirection = SwipeDirection.Up;
-					break;
-				case OpenSwipeItem.LeftItems:
-					_swipeDirection = SwipeDirection.Right;
-					break;
-				case OpenSwipeItem.RightItems:
-					_swipeDirection = SwipeDirection.Left;
-					break;
-				case OpenSwipeItem.TopItems:
-					_swipeDirection = SwipeDirection.Down;
-					break;
-			}
+			_swipeDirection = swipeDirection;
 
 			var swipeItems = GetSwipeItemsByDirection();
 
@@ -1481,6 +1480,15 @@ namespace Microsoft.Maui.Platform
 
 			_swipeOffset = Math.Abs(_swipeOffset);
 		}
+
+		static SwipeDirection GetSwipeDirection(OpenSwipeItem openSwipeItem) =>
+			openSwipeItem switch
+			{
+				OpenSwipeItem.BottomItems => SwipeDirection.Up,
+				OpenSwipeItem.LeftItems => SwipeDirection.Right,
+				OpenSwipeItem.TopItems => SwipeDirection.Down,
+				_ => SwipeDirection.Left,
+			};
 
 		void UpdateOffset(float swipeOffset)
 		{
