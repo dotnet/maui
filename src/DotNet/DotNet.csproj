@@ -180,7 +180,12 @@
 
   <Target Name="_InstallToolRuntimes">
     <!-- The bootstrap SDK may be too old to load the current Arcade task. -->
-    <Exec Command="&quot;$(DotNetToolPath)&quot; msbuild &quot;$(MSBuildProjectFullPath)&quot; -t:_InstallToolRuntimesCore -p:DotNetDirectory=&quot;$(DotNetDirectory)&quot; -nologo" />
+    <PropertyGroup>
+      <_ToolRuntimeDotNetDirectoryArgument>$(DotNetDirectory)</_ToolRuntimeDotNetDirectoryArgument>
+      <!-- Windows argv parsing consumes backslashes immediately before a closing quote. -->
+      <_ToolRuntimeDotNetDirectoryArgument Condition="$([MSBuild]::IsOSPlatform('windows'))">$([System.Text.RegularExpressions.Regex]::Replace(&quot;$(DotNetDirectory)&quot;, '(\\+)$', '$1$1'))</_ToolRuntimeDotNetDirectoryArgument>
+    </PropertyGroup>
+    <Exec Command="&quot;$(DotNetToolPath)&quot; msbuild &quot;$(MSBuildProjectFullPath)&quot; -t:_InstallToolRuntimesCore -p:DotNetDirectory=&quot;$(_ToolRuntimeDotNetDirectoryArgument)&quot; -nologo" />
   </Target>
 
   <Target Name="_InstallToolRuntimesCore">

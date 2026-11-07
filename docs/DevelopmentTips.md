@@ -52,7 +52,8 @@ remain enabled.
 Android builds require JDK 21, which is selected by `JavaJdkVersion` in
 `eng/Versions.props`. The repository-local SDK also installs the .NET 10 runtime
 declared in `global.json` for tools such as Cake; this does not change the .NET 12
-target frameworks.
+target frameworks. The fresh-SDK runtime bootstrap preserves custom Windows
+installation paths containing spaces or a trailing backslash.
 
 The .NET 12 Android binding generator no longer emits the legacy
 `ThresholdClass` and `ThresholdType` overrides on MAUI's native binding types.
@@ -79,6 +80,8 @@ for SDK 27 lifecycle requirements. Explicit app scene configurations take
 precedence over the shared manifest. Only apps referencing the device-test
 runner receive it; UI hosts and samples use their own `MauiUISceneDelegate`
 configuration on both iOS and Mac Catalyst.
+The manual-test app has its own scene configuration and is included in the
+native application builds; it does not depend on the headless device runner.
 
 .NET 12 iOS simulator builds use `iossimulator-arm64`; the Apple workload no
 longer accepts `iossimulator-x64`. Previous-framework host builds retain their

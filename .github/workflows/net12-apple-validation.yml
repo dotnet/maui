@@ -173,11 +173,35 @@ jobs:
           export MSBuildEnableWorkloadResolver=true
           export DOTNET_HOST_PATH="$DOTNET_ROOT/dotnet"
           dotnet build-server shutdown
+          if [[ "$APPLE_PLATFORM" == ios ]]; then
+            manual_manifest=src/Controls/tests/ManualTests/Platforms/iOS/Info.plist
+            backup=$(mktemp "$RUNNER_TEMP/manual-manifest.XXXXXX")
+            cp "$manual_manifest" "$backup"
+            trap 'cp "$backup" "$manual_manifest"; rm -f "$backup"' EXIT
+            /usr/libexec/PlistBuddy -c 'Delete :UIApplicationSceneManifest' "$manual_manifest"
+            set +e
+            dotnet build src/Controls/tests/ManualTests/Controls.ManualTests.csproj \
+              -c Release -f net12.0-ios -r iossimulator-arm64 \
+              -p:CodesignRequireProvisioningProfile=false \
+              --disable-build-servers --verbosity minimal 2>&1 |
+              tee artifacts/log/net12-apple/Controls.ManualTests-ios-missing-scene.log
+            baseline_exit=${PIPESTATUS[0]}
+            set -e
+            cp "$backup" "$manual_manifest"
+            rm -f "$backup"
+            trap - EXIT
+            if [[ "$baseline_exit" == 0 ]] ||
+                ! grep -q 'MT7199' artifacts/log/net12-apple/Controls.ManualTests-ios-missing-scene.log; then
+              echo "::error::The native manual-app negative control did not reproduce MT7199."
+              exit 1
+            fi
+          fi
           for project in \
             src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj \
             src/Controls/samples/Controls.Sample.Profiling/Maui.Controls.Sample.Profiling.csproj \
             src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj \
-            src/Essentials/samples/Samples/Essentials.Sample.csproj; do
+            src/Essentials/samples/Samples/Essentials.Sample.csproj \
+            src/Controls/tests/ManualTests/Controls.ManualTests.csproj; do
             log_name=$(basename "$project" .csproj)
             dotnet build "$project" -c Release -f "net12.0-$APPLE_PLATFORM" -r "$APPLE_RID" \
               -p:CodesignRequireProvisioningProfile=false \
@@ -191,5 +215,71 @@ jobs:
         with:
           name: net12-apple-validation-${{ matrix.platform }}
           path: artifacts/log/net12-apple
+          retention-days: 1
+          if-no-files-found: warn
+
+  windows-bootstrap:
+    if: github.event.repository.private == false
+    name: Windows SDK bootstrap path handling
+    runs-on: windows-latest
+    timeout-minutes: 30
+    env:
+      CI: 'true'
+      BuildTaskOnlyBuild: 'true'
+      __PWSH_LOGIN_CHECKED: '1'
+      GH_TOKEN: ''
+      GITHUB_TOKEN: ''
+      COPILOT_GITHUB_TOKEN: ''
+    steps:
+      - name: Checkout PR
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Provision and verify a custom SDK directory
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $PSNativeCommandUseErrorActionPreference = $false
+          $logs = Join-Path $env:GITHUB_WORKSPACE 'artifacts/log/net12-bootstrap'
+          New-Item -ItemType Directory -Path $logs -Force | Out-Null
+          $sdkRoot = Join-Path $env:RUNNER_TEMP 'Maui SDK with spaces'
+          $forwardRoot = $sdkRoot.Replace('\', '/') + '/'
+          & dotnet build src/DotNet/DotNet.csproj -c Release `
+            "-p:DotNetDirectory=$forwardRoot" -p:InstallWorkloadPacks=false `
+            --verbosity minimal 2>&1 | Tee-Object (Join-Path $logs 'provision.log')
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+          $dotnet = Join-Path $sdkRoot 'dotnet.exe'
+          $trailingRoot = $sdkRoot + '\'
+          & $dotnet msbuild src/DotNet/DotNet.csproj -t:_InstallToolRuntimes `
+            "-p:DotNetDirectory=$trailingRoot" `
+            "-p:_ToolRuntimeDotNetDirectoryArgument=$trailingRoot" -nologo `
+            -verbosity:minimal 2>&1 | Tee-Object (Join-Path $logs 'unescaped-path.log')
+          if ($LASTEXITCODE -eq 0) {
+            throw 'The unescaped Windows argument did not reproduce the provisioning failure.'
+          }
+
+          & $dotnet msbuild src/DotNet/DotNet.csproj -t:_InstallToolRuntimes `
+            "-p:DotNetDirectory=$trailingRoot" -nologo `
+            -verbosity:minimal 2>&1 | Tee-Object (Join-Path $logs 'escaped-path.log')
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+          $installed = @(& $dotnet --list-runtimes)
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $installed | Tee-Object (Join-Path $logs 'runtimes.log')
+          $globalJson = Get-Content global.json -Raw | ConvertFrom-Json
+          foreach ($version in $globalJson.tools.runtimes.dotnet) {
+            if (-not ($installed | Where-Object { $_.StartsWith("Microsoft.NETCore.App $version [") })) {
+              throw "The custom SDK directory is missing the required tool runtime $version."
+            }
+          }
+
+      - name: Upload bootstrap evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: net12-bootstrap-windows
+          path: artifacts/log/net12-bootstrap
           retention-days: 1
           if-no-files-found: warn
