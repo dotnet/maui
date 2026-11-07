@@ -295,8 +295,8 @@ jobs:
           $trailingArgument = $trailingRoot.Replace(',', '%2C').Replace(';', '%3B')
           $projectPath = Join-Path $env:GITHUB_WORKSPACE 'src/DotNet/DotNet.csproj'
           $originalProject = [System.IO.File]::ReadAllText($projectPath)
-          $environmentCommand = 'Command="&quot;$(DotNetToolPath)&quot; msbuild &quot;$(MSBuildProjectFullPath)&quot; -t:_InstallToolRuntimesCore -nologo"'
-          $unescapedCommand = 'Command="&quot;$(DotNetToolPath)&quot; msbuild &quot;$(MSBuildProjectFullPath)&quot; -t:_InstallToolRuntimesCore -p:DotNetDirectory=&quot;$(DotNetDirectory)&quot; -nologo"'
+          $environmentCommand = 'Command="&quot;$(DotNetToolPath)&quot; &quot;$(_ToolRuntimeMSBuildPath)&quot; &quot;$(MSBuildProjectFullPath)&quot; -t:_InstallToolRuntimesCore -nologo"'
+          $unescapedCommand = 'Command="&quot;$(DotNetToolPath)&quot; &quot;$(_ToolRuntimeMSBuildPath)&quot; &quot;$(MSBuildProjectFullPath)&quot; -t:_InstallToolRuntimesCore -p:DotNetDirectory=&quot;$(DotNetDirectory)&quot; -nologo"'
           if (-not $originalProject.Contains($environmentCommand)) {
             throw 'The Windows control could not locate the actual child-process command.'
           }

@@ -180,14 +180,18 @@
 
   <Target Name="_InstallToolRuntimes">
     <!-- The bootstrap SDK may be too old to load the current Arcade task. -->
+    <PropertyGroup>
+      <_ToolRuntimeMSBuildPath>$(DotNetDirectory)sdk/$(MicrosoftDotnetSdkInternalPackageVersion)/MSBuild.dll</_ToolRuntimeMSBuildPath>
+    </PropertyGroup>
+    <!-- The dotnet msbuild CLI injects a logger whose comma-delimited assembly path is not escaped. -->
     <!-- Keep the directory out of MSBuild's comma/semicolon-separated property arguments. -->
     <Exec Condition="$([MSBuild]::IsOSPlatform('windows'))"
-        Command="&quot;$(DotNetToolPath)&quot; msbuild &quot;$(MSBuildProjectFullPath)&quot; -t:_InstallToolRuntimesCore -nologo"
+        Command="&quot;$(DotNetToolPath)&quot; &quot;$(_ToolRuntimeMSBuildPath)&quot; &quot;$(MSBuildProjectFullPath)&quot; -t:_InstallToolRuntimesCore -nologo"
         EnvironmentVariables="MAUI_TOOL_RUNTIME_DIRECTORY=$([MSBuild]::Escape('$(DotNetDirectory)'))" />
     <!-- Environment values remain data when the Unix shell expands the quoted arguments. -->
     <Exec Condition="!$([MSBuild]::IsOSPlatform('windows'))"
-        Command="&quot;${MAUI_TOOL_RUNTIME_DOTNET}&quot; msbuild &quot;${MAUI_TOOL_RUNTIME_PROJECT}&quot; -t:_InstallToolRuntimesCore -nologo"
-        EnvironmentVariables="MAUI_TOOL_RUNTIME_DOTNET=$([MSBuild]::Escape('$(DotNetToolPath)'));MAUI_TOOL_RUNTIME_PROJECT=$([MSBuild]::Escape('$(MSBuildProjectFullPath)'));MAUI_TOOL_RUNTIME_DIRECTORY=$([MSBuild]::Escape('$(DotNetDirectory)'))" />
+        Command="&quot;${MAUI_TOOL_RUNTIME_DOTNET}&quot; &quot;${MAUI_TOOL_RUNTIME_MSBUILD}&quot; &quot;${MAUI_TOOL_RUNTIME_PROJECT}&quot; -t:_InstallToolRuntimesCore -nologo"
+        EnvironmentVariables="MAUI_TOOL_RUNTIME_DOTNET=$([MSBuild]::Escape('$(DotNetToolPath)'));MAUI_TOOL_RUNTIME_MSBUILD=$([MSBuild]::Escape('$(_ToolRuntimeMSBuildPath)'));MAUI_TOOL_RUNTIME_PROJECT=$([MSBuild]::Escape('$(MSBuildProjectFullPath)'));MAUI_TOOL_RUNTIME_DIRECTORY=$([MSBuild]::Escape('$(DotNetDirectory)'))" />
   </Target>
 
   <Target Name="_InstallToolRuntimesCore">

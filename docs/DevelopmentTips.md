@@ -61,6 +61,8 @@ apostrophes are not interpreted as shell syntax.
 On both platforms, the child reads its installation directory from that
 environment data rather than a property argument, preserving commas and
 semicolons without command-line property splitting.
+It invokes the pinned SDK's MSBuild assembly directly, avoiding the .NET CLI's
+comma-delimited logger path when the SDK directory itself contains a comma.
 
 The .NET 12 Android binding generator no longer emits the legacy
 `ThresholdClass` and `ThresholdType` overrides on MAUI's native binding types.
