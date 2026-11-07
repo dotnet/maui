@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - '.github/workflows/net12-apple-validation.yml'
+      - '.github/skills/run-device-tests/scripts/Run-DeviceTests.ps1'
       - 'global.json'
       - 'NuGet.config'
       - 'Directory.Build.*'
@@ -14,6 +15,7 @@ on:
       - 'src/Controls/**'
       - 'src/Essentials/**'
       - 'src/TestUtils/**'
+      - 'src/Microsoft.Maui.TestUtils.DeviceTests.Runners.targets'
   workflow_dispatch:
 
 permissions:
@@ -287,20 +289,32 @@ jobs:
             --verbosity minimal 2>&1 | Tee-Object (Join-Path $logs 'provision.log')
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
+          $globalJson = Get-Content global.json -Raw | ConvertFrom-Json
+          function New-IsolatedRuntimeSdk([string] $root) {
+            $shared = Join-Path $root 'shared/Microsoft.NETCore.App'
+            [System.IO.Directory]::CreateDirectory($shared) | Out-Null
+            [System.IO.File]::Copy((Join-Path $sdkRoot 'dotnet.exe'), (Join-Path $root 'dotnet.exe'))
+            Push-Location -LiteralPath $root
+            try {
+              foreach ($name in @('host', 'sdk')) {
+                New-Item -ItemType Junction -Path $name -Target (Join-Path $sdkRoot $name) | Out-Null
+              }
+            } finally {
+              Pop-Location
+            }
+            Push-Location -LiteralPath $shared
+            try {
+              Get-ChildItem -LiteralPath (Join-Path $sdkRoot 'shared/Microsoft.NETCore.App') -Directory |
+                Where-Object { $_.Name.StartsWith('12.') } | ForEach-Object {
+                  New-Item -ItemType Junction -Path $_.Name -Target $_.FullName | Out-Null
+                }
+            } finally {
+              Pop-Location
+            }
+          }
           $runtimeRoot = $sdkRoot + ',comma'
           $sharedRuntimeRoot = Join-Path $runtimeRoot 'shared/Microsoft.NETCore.App'
-          New-Item -ItemType Directory -Path $sharedRuntimeRoot -Force | Out-Null
-          Copy-Item (Join-Path $sdkRoot 'dotnet.exe') (Join-Path $runtimeRoot 'dotnet.exe')
-          foreach ($name in @('host', 'sdk')) {
-            New-Item -ItemType Junction -Path (Join-Path $runtimeRoot $name) `
-              -Target (Join-Path $sdkRoot $name) | Out-Null
-          }
-          Get-ChildItem (Join-Path $sdkRoot 'shared/Microsoft.NETCore.App') -Directory |
-            Where-Object { $_.Name.StartsWith('12.') } | ForEach-Object {
-              New-Item -ItemType Junction -Path (Join-Path $sharedRuntimeRoot $_.Name) `
-                -Target $_.FullName | Out-Null
-            }
-          $globalJson = Get-Content global.json -Raw | ConvertFrom-Json
+          New-IsolatedRuntimeSdk $runtimeRoot
           foreach ($version in $globalJson.tools.runtimes.dotnet) {
             if (Test-Path (Join-Path $sharedRuntimeRoot $version)) {
               throw "The isolated runtime-install control already contains $version."
@@ -424,6 +438,63 @@ jobs:
             [System.IO.File]::WriteAllText($projectPath, $originalProject)
             $env:SDK_TAG = $previousSdkTag
             $env:REPO_TAG = $previousRepoTag
+          }
+
+          $bracketRoot = Join-Path $env:RUNNER_TEMP 'Maui SDK [1]'
+          $siblingRoot = Join-Path $env:RUNNER_TEMP 'Maui SDK 1'
+          New-IsolatedRuntimeSdk $bracketRoot
+          New-Item -ItemType Junction -Path $siblingRoot -Target $runtimeRoot | Out-Null
+          $bracketDotnet = Join-Path $bracketRoot 'dotnet.exe'
+          $originalHostHash = (Get-FileHash -LiteralPath $bracketDotnet).Hash
+          $driverPath = Join-Path $env:GITHUB_WORKSPACE 'src/DotNet/dotnet-install-tool-runtimes.ps1'
+          $originalDriver = [System.IO.File]::ReadAllText($driverPath)
+          $literalRuntimeCall = 'Install-ToolRuntimeLiteral $installDirectory $version $architecture $runtime'
+          $wildcardRuntimeCall = 'InstallDotNet $installDirectory $version $architecture $runtime $true'
+          if (-not $originalDriver.Contains($literalRuntimeCall)) {
+            throw 'The bracket control cannot locate the actual runtime installer call.'
+          }
+          try {
+            foreach ($phase in @('baseline', 'fixed', 'reverted', 'restored')) {
+              $usesWildcardCall = $phase -in @('baseline', 'reverted')
+              foreach ($version in $globalJson.tools.runtimes.dotnet) {
+                $destination = Join-Path $bracketRoot "shared/Microsoft.NETCore.App/$version"
+                if (Test-Path -LiteralPath $destination) {
+                  Remove-Item -LiteralPath $destination -Recurse -Force
+                }
+                if (-not (Test-Path -LiteralPath (Join-Path $siblingRoot "shared/Microsoft.NETCore.App/$version"))) {
+                  throw 'The wildcard-matching sibling is missing its real runtime.'
+                }
+              }
+              $driverContent = if ($usesWildcardCall) {
+                $originalDriver.Replace($literalRuntimeCall, $wildcardRuntimeCall)
+              } else {
+                $originalDriver
+              }
+              [System.IO.File]::WriteAllText($driverPath, $driverContent)
+              $bracketLog = Join-Path $logs "bracket-$phase.log"
+              & $bootstrapDotnet msbuild $projectPath -t:_InstallToolRuntimes `
+                "-p:DotNetDirectory=$($bracketRoot.Replace('\', '/'))/" -nologo `
+                -verbosity:minimal 2>&1 | Tee-Object $bracketLog
+              $bracketExitCode = $LASTEXITCODE
+              if ($bracketExitCode -ne 0) {
+                throw "The bracket $phase command returned $bracketExitCode."
+              }
+              foreach ($version in $globalJson.tools.runtimes.dotnet) {
+                $destination = Join-Path $bracketRoot "shared/Microsoft.NETCore.App/$version"
+                $present = Test-Path -LiteralPath (Join-Path $destination 'System.Private.CoreLib.dll')
+                Write-Host "Literal-bracket $phase runtime $version present: $present"
+                if ($present -eq $usesWildcardCall) {
+                  throw "The bracket $phase did not discriminate literal destination installation."
+                }
+              }
+              if ((Get-FileHash -LiteralPath $bracketDotnet).Hash -ne $originalHostHash) {
+                throw 'Runtime staging overwrote the pinned SDK host.'
+              }
+            }
+            & $bracketDotnet --list-runtimes | Tee-Object (Join-Path $logs 'bracket-runtimes.log')
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          } finally {
+            [System.IO.File]::WriteAllText($driverPath, $originalDriver)
           }
 
       - name: Upload bootstrap evidence

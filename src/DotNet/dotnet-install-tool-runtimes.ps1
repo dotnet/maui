@@ -11,6 +11,41 @@ if ([string]::IsNullOrWhiteSpace($DotNetDirectory)) {
     throw 'The tool runtime installation directory is missing.'
 }
 . (Join-Path $PSScriptRoot '../../eng/common/tools.ps1')
+
+function Install-ToolRuntimeLiteral([string] $installDirectory, [string] $version, [string] $architecture, [string] $runtime) {
+    $temporaryRoot = [System.IO.Path]::GetTempPath()
+    if ($temporaryRoot -match '[\[\]*?`]') {
+        throw 'The shared installer requires a staging TEMP path without PowerShell wildcard characters.'
+    }
+    $stagingDirectory = Join-Path $temporaryRoot ('maui-tool-runtime-' + [Guid]::NewGuid().ToString('N'))
+    try {
+        [System.IO.Directory]::CreateDirectory($stagingDirectory) | Out-Null
+        InstallDotNet $stagingDirectory $version $architecture $runtime $true
+        [System.IO.Directory]::CreateDirectory($installDirectory) | Out-Null
+        foreach ($directory in [System.IO.Directory]::GetDirectories($stagingDirectory, '*', [System.IO.SearchOption]::AllDirectories)) {
+            $relative = $directory.Substring($stagingDirectory.Length + 1)
+            [System.IO.Directory]::CreateDirectory((Join-Path $installDirectory $relative)) | Out-Null
+        }
+        foreach ($file in [System.IO.Directory]::GetFiles($stagingDirectory, '*', [System.IO.SearchOption]::AllDirectories)) {
+            $relative = $file.Substring($stagingDirectory.Length + 1)
+            if ($relative -eq 'dotnet-install.ps1') {
+                continue
+            }
+            $destination = Join-Path $installDirectory $relative
+            $normalized = $relative.Replace('\', '/')
+            $versioned = $normalized.StartsWith('shared/', [StringComparison]::OrdinalIgnoreCase) -or
+                $normalized.StartsWith('host/fxr/', [StringComparison]::OrdinalIgnoreCase)
+            if ($versioned -or -not [System.IO.File]::Exists($destination)) {
+                [System.IO.File]::Copy($file, $destination, $versioned)
+            }
+        }
+    } finally {
+        if ([System.IO.Directory]::Exists($stagingDirectory)) {
+            Remove-Item -LiteralPath $stagingDirectory -Recurse -Force
+        }
+    }
+}
+
 $runtimeConfiguration = Get-Content -LiteralPath $GlobalJsonPath -Raw | ConvertFrom-Json
 $runtimes = $runtimeConfiguration.tools.PSObject.Properties['runtimes']
 
@@ -67,10 +102,17 @@ foreach ($runtimeProperty in $runtimes.Value.PSObject.Properties) {
         }
         $runtimeDirectory = Join-Path $installDirectory "shared/$sharedDirectory/$version"
         if (Test-Path -LiteralPath $runtimeDirectory -PathType Container) {
+            if ([System.IO.Directory]::GetFiles($runtimeDirectory).Length -eq 0) {
+                throw "The existing tool runtime directory '$runtimeDirectory' is empty."
+            }
             Write-Host "Runtime toolset '$runtime/$architecture v$version' already installed in '$runtimeDirectory'."
             continue
         }
 
-        InstallDotNet $installDirectory $version $architecture $runtime $true
+        Install-ToolRuntimeLiteral $installDirectory $version $architecture $runtime
+        if (-not [System.IO.Directory]::Exists($runtimeDirectory) -or
+            [System.IO.Directory]::GetFiles($runtimeDirectory).Length -eq 0) {
+            throw "The requested tool runtime was not installed at the literal directory '$runtimeDirectory'."
+        }
     }
 }
