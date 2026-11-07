@@ -362,10 +362,11 @@ jobs:
             throw 'The literal-percent SDK or project control is missing.'
           }
           $percentSdkVersion = & $percentDotnet --version
-          if ($LASTEXITCODE -ne 0 -or $percentSdkVersion -ne $globalJson.sdk.version) {
-            throw 'The literal-percent SDK does not execute natively with the pinned version.'
-          }
+          $percentSdkExitCode = $LASTEXITCODE
           $percentSdkVersion | Tee-Object (Join-Path $logs 'percent-sdk-version.log')
+          if ($percentSdkExitCode -ne 0 -or $percentSdkVersion -ne $globalJson.tools.dotnet) {
+            throw "The literal-percent SDK returned [$percentSdkVersion] (exit $percentSdkExitCode); expected [$($globalJson.tools.dotnet)]."
+          }
           $percentTrailingRoot = $percentRoot + '\'
           $percentArgument = $percentTrailingRoot.Replace('%', '%25')
           $expectedPercentDirectory = "Tool runtime install directory: [$percentTrailingRoot]"
