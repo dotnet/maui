@@ -155,8 +155,12 @@ static class SetPropertyHelpers
 	/// Adds a lazy resource to the ResourceDictionary using AddFactory.
 	/// Creates the resource on demand using a lambda, or a stable local function when replacing an entry.
 	/// </summary>
-	public static void AddLazyResourceToResourceDictionary(IndentedTextWriter writer, ILocalValue parentVar, ElementNode node, SourceGenContext context, string? replacementFactoryName = null)
+	public static void AddLazyResourceToResourceDictionary(IndentedTextWriter writer, ILocalValue parentVar, ElementNode node, SourceGenContext context, bool useLocalFactory = false, string? replacementFactoryName = null)
 	{
+		// Nested resources need the same metadata-update-safe factory form as the outer addition.
+		for (SourceGenContext? enclosingContext = context; enclosingContext != null; enclosingContext = enclosingContext.ParentContext)
+			useLocalFactory |= enclosingContext.UseLocalResourceFactories;
+
 		// Get the type of the resource
 		if (!node.XmlType.TryResolveTypeSymbol(null, context.Compilation, context.XmlnsCache, context.TypeCache, out var type) || type is null)
 			return;
@@ -218,16 +222,15 @@ static class SetPropertyHelpers
 			resourceKeyExpression = $"\"{CSharpExpressionHelpers.EscapeForString(key!)}\"";
 		}
 
-		if (replacementFactoryName is not null)
-		{
-			// A stable local function avoids anonymous-lambda identity churn across EnC deltas.
-			var returnType = isImplicitStyle ? "global::Microsoft.Maui.Controls.Style" : "object";
-			writer.WriteLine($"{returnType} {replacementFactoryName}()");
-		}
+		var returnType = isImplicitStyle ? context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Style")! : context.Compilation.ObjectType;
+		var delegateType = context.Compilation.GetTypeByMetadataName("System.Func`1")!.Construct(returnType);
+		var factoryName = replacementFactoryName ?? (useLocalFactory ? NamingHelpers.CreateUniqueVariableName(context, delegateType) : null);
+		if (factoryName is not null)
+			writer.WriteLine($"{returnType.ToFQDisplayString()} {factoryName}()");
 		else
 			writer.WriteLine($"{parentVar.ValueAccessor}.AddFactory({resourceKeyExpression}, () =>");
 
-		using (PrePost.NewBlock(writer, begin: "{", end: replacementFactoryName is not null
+		using (PrePost.NewBlock(writer, begin: "{", end: factoryName is not null
 			? "}" : $"}}, shared: {shared.ToString().ToLowerInvariant()});"))
 		{
 			// Create a temporary context for generating the lambda body
@@ -270,19 +273,22 @@ static class SetPropertyHelpers
 				writer.WriteLine($"return null!;");
 			}
 		}
-
-		if (replacementFactoryName is not null)
+		if (factoryName is not null)
 		{
-			var keyExpression = isImplicitStyle ? $"{resourceKeyExpression}.FullName!" : resourceKeyExpression;
-			writer.WriteLine($"{parentVar.ValueAccessor}.Remove({keyExpression});");
-			writer.WriteLine($"{parentVar.ValueAccessor}.AddFactory({resourceKeyExpression}, {replacementFactoryName}, shared: {shared.ToString().ToLowerInvariant()});");
+			if (replacementFactoryName is not null)
+			{
+				var keyExpression = isImplicitStyle ? $"{resourceKeyExpression}.FullName!" : resourceKeyExpression;
+				writer.WriteLine($"{parentVar.ValueAccessor}.Remove({keyExpression});");
+			}
+			// Explicit delegates avoid introducing cached-lambda fields during metadata updates.
+			writer.WriteLine($"{parentVar.ValueAccessor}.AddFactory({resourceKeyExpression}, new {delegateType.ToFQDisplayString()}({factoryName}), shared: {shared.ToString().ToLowerInvariant()});");
 		}
 	}
 
 	/// <summary>
 	/// Gets the TargetType expression for a Style node.
 	/// </summary>
-	static string? GetStyleTargetTypeExpression(ElementNode node, SourceGenContext context)
+	internal static string? GetStyleTargetTypeExpression(ElementNode node, SourceGenContext context)
 	{
 		if (!node.Properties.TryGetValue(new XmlName("", "TargetType"), out var targetTypeNode))
 			return null;
