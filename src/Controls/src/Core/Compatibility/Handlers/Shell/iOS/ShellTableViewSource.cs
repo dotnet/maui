@@ -29,6 +29,19 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		[UnconditionalSuppressMessage("Memory", "MEM0001", Justification = "All event subscribers are cleared by Disconnect when ShellTableViewController is disposed.")]
 		public event EventHandler<UIScrollView> ScrolledEvent;
 
+		internal void ForEachCachedView(Action<View> action)
+		{
+			if (_cells is null)
+			{
+				return;
+			}
+
+			foreach (var cell in _cells.Values)
+			{
+				action(cell.View);
+			}
+		}
+
 		public List<List<Element>> Groups
 		{
 			get
