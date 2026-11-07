@@ -253,6 +253,10 @@ CustomAgentLogsTmp/
 # Explicit test filter
 -TestFilter "Issue32030|ButtonUITests"
 
+# Explicit device-test scope for a manual filter (requires -TestType DeviceTest)
+-DeviceTestProject Essentials
+-IncludeClasses "Microsoft.Maui.Essentials.DeviceTests.ActivityStateManager_Tests"
+
 # Explicit fix files  
 -FixFiles @("src/Core/src/File.cs")
 
@@ -262,3 +266,9 @@ CustomAgentLogsTmp/
 # Full commit SHA (frozen-fixture mode uses the local immutable diff)
 -BaseBranch "$(git rev-parse HEAD^)"
 ```
+
+For manual device filters, specify the project and fully qualified classes together.
+A category alone does not identify a project; without an explicit or detected project,
+the runner uses Controls. Confirm the selected project, classes, frozen base SHA, and
+actual result-file case counts before accepting the verification outcome. Keep a supplied
+full-SHA baseline intact when importing the shared baseline helpers.
