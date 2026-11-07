@@ -64,6 +64,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		IShellTabBarAppearanceTracker _appearanceTracker;
 		ShellSection _currentSection;
 		Page _displayedPage;
+		readonly ContentBackgroundState _contentBackgroundState = new ContentBackgroundState();
 		bool _disposed;
 		bool _disconnected;
 		ShellItem _shellItem;
@@ -77,6 +78,22 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		IDisposable _moreContentOffsetObserver;
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The diagnostics subscription watcher is disposed and cleared in Disconnect.")]
 		IDisposable _nativeSubscriptionWatcher;
+
+		internal sealed class ContentBackgroundState
+		{
+			[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Native colors are retained for restoration and cleared in Reset.")]
+			internal UIColor DefaultBackgroundColor;
+			[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Native colors are retained for restoration and cleared in Reset.")]
+			internal UIColor OverrideBackgroundColor;
+			internal bool OverrideApplied;
+
+			internal void Reset()
+			{
+				DefaultBackgroundColor = null;
+				OverrideBackgroundColor = null;
+				OverrideApplied = false;
+			}
+		}
 
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The current section renderer is tracked while selected and cleared in Dispose or when removed.")]
 		internal IShellSectionRenderer CurrentRenderer { get; private set; }
@@ -163,6 +180,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		public override void ViewDidLoad()
 		{
 			base.ViewDidLoad();
+			_contentBackgroundState.DefaultBackgroundColor = View.BackgroundColor;
 			RegisterTabBar();
 
 			ShouldSelectViewController = (tabController, viewController) =>
@@ -350,6 +368,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_shellItem = null;
 				_currentSection = null;
 				_displayedPage = null;
+				_contentBackgroundState.Reset();
 			}
 
 			base.Dispose(disposing);
@@ -805,13 +824,68 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				UpdateLargeTitles();
 				UpdateNavBarHidden();
 			}
+			UpdateContentBackground(View, _displayedPage, _contentBackgroundState);
+		}
+
+		internal static void UpdateContentBackground(UIView view, IView page, ContentBackgroundState state)
+		{
+			if (!OperatingSystem.IsIOSVersionAtLeast(18) && !OperatingSystem.IsMacCatalystVersionAtLeast(18))
+			{
+				return;
+			}
+
+			var background = page?.Background;
+			// Only duplicate opaque solid backgrounds; translucent paints change composited opacity.
+			if (page?.Opacity < 1 || background.IsNullOrEmpty() || background.IsTransparent)
+			{
+				background = null;
+			}
+
+			if (state.OverrideApplied && AreBackgroundColorsEquivalent(view.BackgroundColor, state.OverrideBackgroundColor))
+			{
+				view.BackgroundColor = state.DefaultBackgroundColor;
+			}
+			else
+			{
+				state.DefaultBackgroundColor = view.BackgroundColor;
+			}
+
+			// UIKit's tab cross-fade exposes this backing view between the two pages.
+			view.UpdateBackground(background);
+			state.OverrideApplied = background is not null;
+			state.OverrideBackgroundColor = state.OverrideApplied ? view.BackgroundColor : null;
+		}
+
+		static bool AreBackgroundColorsEquivalent(UIColor color, UIColor expectedColor)
+		{
+			if (color is null || expectedColor is null)
+			{
+				return color is null && expectedColor is null;
+			}
+
+			color.GetRGBA(out nfloat red, out nfloat green, out nfloat blue, out nfloat alpha);
+			expectedColor.GetRGBA(out nfloat expectedRed, out nfloat expectedGreen, out nfloat expectedBlue, out nfloat expectedAlpha);
+
+			const double tolerance = 0.000001;
+			return Math.Abs(red - expectedRed) <= tolerance &&
+				Math.Abs(green - expectedGreen) <= tolerance &&
+				Math.Abs(blue - expectedBlue) <= tolerance &&
+				Math.Abs(alpha - expectedAlpha) <= tolerance;
 		}
 
 		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "The displayed page PropertyChanged subscription is removed in Disconnect and when the displayed page changes.")]
 		void OnDisplayedPagePropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == Shell.TabBarIsVisibleProperty.PropertyName)
+			{
 				UpdateTabBarHidden();
+			}
+			else if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName ||
+			e.PropertyName == VisualElement.BackgroundProperty.PropertyName ||
+			e.PropertyName == VisualElement.OpacityProperty.PropertyName)
+			{
+				UpdateContentBackground(View, _displayedPage, _contentBackgroundState);
+			}
 		}
 
 

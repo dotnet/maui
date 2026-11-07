@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Controls.Handlers
         readonly Dictionary<UITableViewCell, UIColor?> _defaultMoreTextLabelTextColors = new();
         ShellSection? _currentSection;
         Page? _displayedPage;
-
+        ShellItemRenderer.ContentBackgroundState? _contentBackgroundState;
         internal IShellSectionRenderer? CurrentRenderer { get; private set; }
 
         IShellItemController ShellItemController => (IShellItemController)VirtualView;
@@ -70,7 +70,11 @@ namespace Microsoft.Maui.Controls.Handlers
         protected override void ConnectHandler(UIView platformView)
         {
             base.ConnectHandler(platformView);
-
+            // Capture this connection's native default before observers can apply page backgrounds.
+            _contentBackgroundState = new()
+            {
+                DefaultBackgroundColor = platformView.BackgroundColor
+            };
             _shellContext = VirtualView!.FindParentOfType<Shell>()?.Handler as IShellContext;
 
             _appearanceTracker = _shellContext?.CreateTabBarAppearanceTracker();
@@ -199,6 +203,8 @@ namespace Microsoft.Maui.Controls.Handlers
             }
 
             ShellItemController.ItemsCollectionChanged -= OnItemsCollectionChanged;
+            _contentBackgroundState?.Reset();
+            _contentBackgroundState = null;
         }
 
         #endregion
@@ -482,9 +488,20 @@ namespace Microsoft.Maui.Controls.Handlers
 
         void OnDisplayedPagePropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
+            if (_contentBackgroundState is null)
+            {
+                return;
+            }
+
             if (e.PropertyName == Shell.TabBarIsVisibleProperty.PropertyName)
             {
                 UpdateTabBarHidden();
+            }
+            else if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName ||
+            e.PropertyName == VisualElement.BackgroundProperty.PropertyName ||
+            e.PropertyName == VisualElement.OpacityProperty.PropertyName)
+            {
+                ShellItemRenderer.UpdateContentBackground(PlatformView, _displayedPage, _contentBackgroundState);
             }
         }
 
@@ -606,6 +623,11 @@ namespace Microsoft.Maui.Controls.Handlers
 
         void OnDisplayedPageChanged(Page page)
         {
+            if (_contentBackgroundState is null)
+            {
+                return;
+            }
+
             if (page == _displayedPage)
             {
                 return;
@@ -625,6 +647,7 @@ namespace Microsoft.Maui.Controls.Handlers
                 UpdateLargeTitles();
                 UpdateNavBarHidden();
             }
+            ShellItemRenderer.UpdateContentBackground(PlatformView, _displayedPage, _contentBackgroundState);
         }
 
         #endregion
