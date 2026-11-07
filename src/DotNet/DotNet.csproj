@@ -191,7 +191,8 @@
   <Target Name="_InstallToolRuntimesCore">
     <PropertyGroup>
       <_ToolRuntimeInstallScript>$(MauiRootDirectory)eng/common/dotnet-install.sh</_ToolRuntimeInstallScript>
-      <_ToolRuntimeInstallScript Condition="$([MSBuild]::IsOSPlatform('windows'))">$(MauiRootDirectory)eng/common/dotnet-install.cmd</_ToolRuntimeInstallScript>
+      <!-- -File preserves argument values instead of parsing them again as PowerShell code. -->
+      <_ToolRuntimeInstallScript Condition="$([MSBuild]::IsOSPlatform('windows'))">$(MSBuildThisFileDirectory)dotnet-install-tool-runtime.cmd</_ToolRuntimeInstallScript>
     </PropertyGroup>
     <InstallDotNetCore
         GlobalJsonPath="$(MauiRootDirectory)global.json"

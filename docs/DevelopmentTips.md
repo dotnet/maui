@@ -53,7 +53,9 @@ Android builds require JDK 21, which is selected by `JavaJdkVersion` in
 `eng/Versions.props`. The repository-local SDK also installs the .NET 10 runtime
 declared in `global.json` for tools such as Cake; this does not change the .NET 12
 target frameworks. The fresh-SDK runtime bootstrap preserves custom Windows
-installation paths containing spaces or a trailing backslash.
+installation paths containing spaces or a trailing backslash. Its Windows
+entrypoint forwards arguments to the shared installer with PowerShell `-File`,
+without modifying the Arcade-owned scripts.
 
 The .NET 12 Android binding generator no longer emits the legacy
 `ThresholdClass` and `ThresholdType` overrides on MAUI's native binding types.
