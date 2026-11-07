@@ -287,7 +287,7 @@ jobs:
             --verbosity minimal 2>&1 | Tee-Object (Join-Path $logs 'provision.log')
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-          $runtimeRoot = $sdkRoot + ',comma;semi'
+          $runtimeRoot = $sdkRoot + ',comma'
           $sharedRuntimeRoot = Join-Path $runtimeRoot 'shared/Microsoft.NETCore.App'
           New-Item -ItemType Directory -Path $sharedRuntimeRoot -Force | Out-Null
           Copy-Item (Join-Path $sdkRoot 'dotnet.exe') (Join-Path $runtimeRoot 'dotnet.exe')
@@ -308,7 +308,7 @@ jobs:
           }
           $dotnet = Join-Path $runtimeRoot 'dotnet.exe'
           $trailingRoot = $runtimeRoot + '\'
-          $trailingArgument = $trailingRoot.Replace(',', '%2C').Replace(';', '%3B')
+          $trailingArgument = $trailingRoot.Replace(',', '%2C')
           $projectPath = Join-Path $env:GITHUB_WORKSPACE 'src/DotNet/DotNet.csproj'
           $originalProject = [System.IO.File]::ReadAllText($projectPath)
           $environmentCommand = 'Command="&quot;$(DotNetToolPath)&quot; &quot;$(_ToolRuntimeMSBuildPath)&quot; &quot;$(MSBuildProjectFullPath)&quot; -t:_InstallToolRuntimesCore -nologo"'

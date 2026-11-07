@@ -60,7 +60,8 @@ receives paths through quoted environment values so literal `$`, spaces, and
 apostrophes are not interpreted as shell syntax.
 On both platforms, the child reads its installation directory from that
 environment data rather than a property argument, preserving commas and
-semicolons without command-line property splitting.
+avoiding command-line property splitting. Unix SDK directories can also contain
+semicolons; the Windows runtime cannot start from a semicolon-containing SDK root.
 It invokes the pinned SDK's MSBuild assembly directly, avoiding the .NET CLI's
 comma-delimited logger path when the SDK directory itself contains a comma.
 This protects runtime provisioning, not arbitrary .NET CLI commands: workload
