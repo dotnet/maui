@@ -89,9 +89,10 @@ parameters:
   - name: iosPool
     type: object
     default:
-      name: AcesShared
+      name: MAUI
       demands:
-        - ImageOverride -equals ACES_VM_SharedPool_Tahoe
+        - macOS.Name -equals Tahoe
+        - macOS.Architecture -equals arm64
   
   - name: windowsBuildPool
     type: object
@@ -145,4 +146,3 @@ stages:
           ios: $(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.iOS.Tests/Controls.TestCases.iOS.Tests.csproj
           winui: $(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.WinUI.Tests/Controls.TestCases.WinUI.Tests.csproj
           mac: $(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.Mac.Tests/Controls.TestCases.Mac.Tests.csproj
-

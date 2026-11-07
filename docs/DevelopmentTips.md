@@ -38,10 +38,12 @@ That image must include Xcode 27.1 before .NET 12 Apple jobs can build. Public
 CI cannot acquire the producer's internal Xcode package, and the shared
 `Provisionator` path requires separately configured credentials. Xcode selection
 verifies the actual major/minor version rather than accepting an older
-installation with the same major-version directory name. Prebuilt iOS and Mac Catalyst
-UI-test apps execute on `AcesShared` / `ACES_VM_SharedPool_Tahoe`, because the
-GoldenGate Appium execution environment has not been validated. iOS UI tests
-use Xcode 26.5. Both public and internal Mac Catalyst pool defaults use Tahoe
+installation with the same major-version directory name. Prebuilt iOS UI-test
+apps execute on the `MAUI` pool with `macOS.Name=Tahoe` and
+`macOS.Architecture=arm64` demands; Mac Catalyst UI-test apps use
+`AcesShared` / `ACES_VM_SharedPool_Tahoe`. The GoldenGate Appium execution
+environment has not been validated. iOS UI tests use Xcode 26.5.
+Both public and internal Mac Catalyst pool defaults use Tahoe
 rather than the hosted macOS 14 image; the pool parameters remain
 overridable for image validation. These execution images do not determine the
 app's build SDK. Simulator runtime provisioning and its bounded recovery
@@ -84,8 +86,8 @@ existing simulator architectures, and Mac Catalyst builds still include both
 architectures. The shared device runner defaults to `net12.0`, matching the
 device-test projects' restored target frameworks.
 
-The legacy `eng/pipelines/ui-tests.yml` entrypoint uses the same ARM64 Aces
-Tahoe iOS execution image as `ci-uitests.yml`, not the old x64 pool demand.
+The legacy `eng/pipelines/ui-tests.yml` entrypoint uses the same ARM64 `MAUI`
+Tahoe iOS execution demands as `ci-uitests.yml`, not the old x64 pool demand.
 Its `iosXcodeVersion` parameter also matches the prebuilt-app execution
 toolchain. Both CoreCLR and enabled NativeAOT iOS jobs consume these settings;
 Apple app compilation still uses the separately pinned build Xcode.

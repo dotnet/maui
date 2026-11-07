@@ -144,8 +144,9 @@ Public Apple CI requires an authorized image with Xcode 27.1; library compilatio
 alone does not establish that native app builds or execution are available.
 The .NET 12 iOS test host and NativeAOT sample paths use `iossimulator-arm64`;
 the previous .NET 11 iOS target retains both simulator architectures.
-Both UI pipeline entrypoints use the existing Tahoe route and an explicit Xcode
-version for prebuilt iOS app execution, separate from Xcode 27.1 app compilation.
+Both UI pipeline entrypoints require Tahoe ARM64 agents in the existing `MAUI`
+pool and an explicit Xcode version for prebuilt iOS app execution, separate from
+Xcode 27.1 app compilation.
 
 Maestro channel mappings and incoming subscriptions are separate release
 configuration. Updating this repository does not configure dependency flow or
