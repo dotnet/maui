@@ -20,6 +20,85 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class CollectionViewTests : ControlsHandlerTestBase
 	{
+		[Theory]
+		[InlineData(ItemsLayoutOrientation.Vertical, ItemSizingStrategy.MeasureAllItems)]
+		[InlineData(ItemsLayoutOrientation.Vertical, ItemSizingStrategy.MeasureFirstItem)]
+		[InlineData(ItemsLayoutOrientation.Horizontal, ItemSizingStrategy.MeasureAllItems)]
+		[InlineData(ItemsLayoutOrientation.Horizontal, ItemSizingStrategy.MeasureFirstItem)]
+		public async Task GridItemOffsetsExcludeCrossAxisOuterSpacing(ItemsLayoutOrientation orientation, ItemSizingStrategy sizingStrategy)
+		{
+			SetupBuilder();
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var layout = new GridItemsLayout(2, orientation);
+				var collectionView = new CollectionView
+				{
+					ItemsLayout = layout,
+					ItemSizingStrategy = sizingStrategy,
+					FlowDirection = FlowDirection.LeftToRight,
+					ItemTemplate = new DataTemplate(() => new Grid
+					{
+						WidthRequest = 40,
+						HeightRequest = 40
+					}),
+					ItemsSource = new[] { "First", "Second", "Third", "Fourth" }
+				};
+				var handler = CreateHandler<CollectionViewHandler>(collectionView);
+				var recyclerView = handler.PlatformView;
+
+				// Use exact native constraints, not the AtMost click-test helper. Keep both
+				// groups visible even at high densities, with two equal cross-axis spans.
+				int itemSize = (int)recyclerView.Context.ToPixels(40);
+				int viewportSize = 8 * itemSize;
+				void MeasureAndLayout()
+				{
+					int spec = AView.MeasureSpec.MakeMeasureSpec(viewportSize, global::Android.Views.MeasureSpecMode.Exactly);
+					recyclerView.Measure(spec, spec);
+					recyclerView.Layout(0, 0, viewportSize, viewportSize);
+				}
+
+				void AssertChildBounds(int spacing)
+				{
+					for (int position = 0; position < 4; position++)
+					{
+						var holder = recyclerView.FindViewHolderForAdapterPosition(position);
+						Assert.NotNull(holder);
+						var child = holder.ItemView;
+						int span = position % 2;
+						int group = position / 2;
+						int crossStart = span == 0 ? 0 : viewportSize / 2 + spacing / 2;
+						int crossEnd = span == 0 ? viewportSize / 2 - spacing / 2 : viewportSize;
+						int mainStart = group * (itemSize + spacing);
+
+						// Raw child bounds exclude decorations: these assert flush outer edges,
+						// the full inter-span/inter-group gaps, and remeasured cell dimensions.
+						Assert.Equal(crossStart, orientation == ItemsLayoutOrientation.Vertical ? child.Left : child.Top);
+						Assert.Equal(crossEnd, orientation == ItemsLayoutOrientation.Vertical ? child.Right : child.Bottom);
+						Assert.Equal(mainStart, orientation == ItemsLayoutOrientation.Vertical ? child.Top : child.Left);
+						Assert.Equal(mainStart + itemSize, orientation == ItemsLayoutOrientation.Vertical ? child.Bottom : child.Right);
+					}
+				}
+
+				// Realize and verify the zero-spacing layout before changing either property.
+				MeasureAndLayout();
+				AssertChildBounds(0);
+
+				double requestedSpacing = recyclerView.Context.FromPixels(40);
+				// Android truncates each half-gap separately; derive the expected pixel gap
+				// from density conversion rather than assuming a dp/pixel round trip is exact.
+				int expectedSpacing = 2 * (int)recyclerView.Context.ToPixels(requestedSpacing / 2);
+				Assert.True(expectedSpacing > 0);
+				layout.HorizontalItemSpacing = requestedSpacing;
+				layout.VerticalItemSpacing = requestedSpacing;
+
+				// Let the handler replace/invalidate its own decoration via property changes.
+				// Do not construct a decoration or manually invalidate decoration/size caches.
+				MeasureAndLayout();
+				AssertChildBounds(expectedSpacing);
+			});
+		}
+
 		public static TheoryData<System.Type> SafeAreaItemViewTypes
 		{
 			get
