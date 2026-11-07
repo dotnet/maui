@@ -42,10 +42,13 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapText(IEntryHandler handler, IEntry entry)
 		{
+			var wasEmpty = string.IsNullOrEmpty(handler.PlatformView?.Text);
 			handler.PlatformView?.UpdateText(entry);
 
 			// Any text update requires that we update any attributed string formatting
 			MapFormatting(handler, entry);
+			if (wasEmpty != string.IsNullOrEmpty(entry.Text))
+				handler.UpdateValue(nameof(IEntry.ClearButtonVisibility));
 		}
 
 		public static void MapBackground(IEntryHandler handler, IEntry entry)
@@ -105,8 +108,11 @@ namespace Microsoft.Maui.Handlers
 		public static void MapPlaceholderColor(IEntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdatePlaceholder(entry);
 
-		public static void MapIsReadOnly(IEntryHandler handler, IEntry entry) =>
+		public static void MapIsReadOnly(IEntryHandler handler, IEntry entry)
+		{
 			handler.PlatformView?.UpdateIsReadOnly(entry);
+			handler.UpdateValue(nameof(IEntry.ClearButtonVisibility));
+		}
 
 		public static void MapKeyboard(IEntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdateKeyboard(entry);
@@ -214,6 +220,7 @@ namespace Microsoft.Maui.Handlers
 			{
 				if (sender is MauiTextField platformView && VirtualView is IEntry virtualView)
 				{
+					var isEmpty = string.IsNullOrEmpty(platformView.Text);
 					if (virtualView.SelectionLength > 0)
 					{
 						platformView.UpdateSelectionLength(virtualView);
@@ -223,18 +230,24 @@ namespace Microsoft.Maui.Handlers
 						platformView.UpdateCursorPosition(virtualView);
 					}
 					virtualView.IsFocused = true;
+					if (isEmpty)
+						virtualView.Handler?.UpdateValue(nameof(IEntry.ClearButtonVisibility));
 				}
 			}
 
 			void OnEditingChanged(object? sender, EventArgs e)
 			{
-				if (sender is MauiTextField platformView && VirtualView is not null)
+				if (sender is MauiTextField platformView && VirtualView is IEntry virtualView)
 				{
 					// Update cursor position before updating text so that when TextChanged event fires,
 					// the CursorPosition property reflects the current native cursor position
-					VirtualView.UpdateCursorPosition(platformView.GetCursorPosition());
+					virtualView.UpdateCursorPosition(platformView.GetCursorPosition());
 
-					VirtualView.UpdateText(platformView.Text);
+					var text = platformView.Text;
+					var emptinessChanged = string.IsNullOrEmpty(virtualView.Text) != string.IsNullOrEmpty(text);
+					virtualView.UpdateText(text);
+					if (emptinessChanged)
+						virtualView.Handler?.UpdateValue(nameof(IEntry.ClearButtonVisibility));
 				}
 			}
 
@@ -242,16 +255,24 @@ namespace Microsoft.Maui.Handlers
 			{
 				if (sender is MauiTextField platformView && VirtualView is IEntry virtualView)
 				{
-					virtualView.UpdateText(platformView.Text);
+					var text = platformView.Text;
+					var isEmpty = string.IsNullOrEmpty(text);
+					virtualView.UpdateText(text);
 					virtualView.IsFocused = false;
+					if (isEmpty)
+						virtualView.Handler?.UpdateValue(nameof(IEntry.ClearButtonVisibility));
 				}
 			}
 
 			void OnTextPropertySet(object? sender, EventArgs e)
 			{
-				if (sender is MauiTextField platformView)
+				if (sender is MauiTextField platformView && VirtualView is IEntry virtualView)
 				{
-					VirtualView?.UpdateText(platformView.Text);
+					var text = platformView.Text;
+					var emptinessChanged = string.IsNullOrEmpty(virtualView.Text) != string.IsNullOrEmpty(text);
+					virtualView.UpdateText(text);
+					if (emptinessChanged)
+						virtualView.Handler?.UpdateValue(nameof(IEntry.ClearButtonVisibility));
 				}
 			}
 

@@ -217,13 +217,14 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateClearButtonVisibility(this UITextField textField, IEntry entry)
 		{
-			if (entry.ClearButtonVisibility == ClearButtonVisibility.WhileEditing)
-			{
-				textField.ClearButtonMode = UITextFieldViewMode.WhileEditing;
+			var mode = entry.ClearButtonVisibility == ClearButtonVisibility.WhileEditing &&
+				!entry.IsReadOnly && !string.IsNullOrEmpty(textField.Text)
+					? UITextFieldViewMode.WhileEditing
+					: UITextFieldViewMode.Never;
+
+			textField.ClearButtonMode = mode;
+			if (mode == UITextFieldViewMode.WhileEditing)
 				textField.UpdateClearButtonColor(entry);
-			}
-			else
-				textField.ClearButtonMode = UITextFieldViewMode.Never;
 		}
 
 		internal static void UpdateClearButtonColor(this UITextField textField, IEntry entry)
