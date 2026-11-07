@@ -223,7 +223,8 @@ namespace Microsoft.Maui.Platform
 					: UITextFieldViewMode.Never;
 
 			textField.ClearButtonMode = mode;
-			if (mode == UITextFieldViewMode.WhileEditing)
+			// Preserve the native image's initial font sizing even while the button is hidden.
+			if (entry.ClearButtonVisibility == ClearButtonVisibility.WhileEditing)
 				textField.UpdateClearButtonColor(entry);
 		}
 

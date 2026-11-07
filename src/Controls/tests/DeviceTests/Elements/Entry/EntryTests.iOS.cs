@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
+using Foundation;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.DeviceTests.TestCases;
@@ -96,6 +97,47 @@ namespace Microsoft.Maui.DeviceTests
 				entry.Text = string.Empty;
 				entry.Text = "hidden";
 				Assert.Equal(UITextFieldViewMode.Never, native.ClearButtonMode);
+			});
+		}
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task ClearButtonImageSizeSurvivesEmptyInitialization(bool hasTextColor)
+		{
+			SetupBuilder();
+			var entry = new Entry
+			{
+				Text = string.Empty,
+				FontSize = 14,
+				TextColor = hasTextColor ? Colors.Blue : null,
+				ClearButtonVisibility = ClearButtonVisibility.WhileEditing
+			};
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				using var nativeDefault = new UITextField { BorderStyle = UITextBorderStyle.RoundedRect };
+				using var key = new NSString("clearButton");
+				var defaultButton = (UIButton)nativeDefault.ValueForKey(key);
+				var defaultImage = defaultButton.ImageForState(UIControlState.Highlighted);
+				Assert.NotNull(defaultImage);
+				var expectedHeight = defaultImage.Size.Height;
+
+				var handler = CreateHandler<ClearButtonFirstEntryHandler>(entry);
+				var native = GetPlatformControl(handler);
+				Assert.Equal(UITextFieldViewMode.Never, native.ClearButtonMode);
+
+				var clearButton = (UIButton)native.ValueForKey(key);
+				var initialImage = clearButton.ImageForState(UIControlState.Normal);
+				Assert.NotNull(initialImage);
+				Assert.Equal(expectedHeight, initialImage.Size.Height);
+
+				entry.Text = "MAUI";
+				Assert.Equal(UITextFieldViewMode.WhileEditing, native.ClearButtonMode);
+				var visibleImage = clearButton.ImageForState(UIControlState.Normal);
+				Assert.NotNull(visibleImage);
+				Assert.Equal(expectedHeight, visibleImage.Size.Height);
+				Assert.Equal(ClearButtonVisibility.WhileEditing, entry.ClearButtonVisibility);
 			});
 		}
 
