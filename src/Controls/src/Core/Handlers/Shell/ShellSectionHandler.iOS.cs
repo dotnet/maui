@@ -1202,6 +1202,7 @@ namespace Microsoft.Maui.Controls.Handlers
             else if (e.PropertyName == ShellSection.CurrentItemProperty.PropertyName)
             {
                 OnShellSectionCurrentItemChanged();
+                UpdateTabBarItemAutomationId();
             }
         }
 
@@ -1305,11 +1306,26 @@ namespace Microsoft.Maui.Controls.Handlers
                     image = TabbedViewExtensions.AutoResizeTabBarImage(_navigationController.TraitCollection, icon.Value);
                 }
                 _navigationController.TabBarItem = new UITabBarItem(section.Title, image, null);
-                _navigationController.TabBarItem.AccessibilityIdentifier = section.AutomationId ?? section.Title;
+                UpdateTabBarItemAutomationId(section);
 
                 // Reapply badge state after recreating UITabBarItem.
                 ShellItemHandler.UpdateTabBarItemBadge(_navigationController.TabBarItem, section);
             });
+        }
+
+        void UpdateTabBarItemAutomationId()
+        {
+            if (((IElementHandler)this).VirtualView is ShellSection section)
+            {
+                UpdateTabBarItemAutomationId(section);
+            }
+        }
+
+        void UpdateTabBarItemAutomationId(ShellSection section)
+        {
+            _navigationController.TabBarItem.AccessibilityIdentifier = section.AutomationId ??
+                section.CurrentItem?.AutomationId ??
+                section.Title;
         }
 
         void UpdateFlowDirection()
