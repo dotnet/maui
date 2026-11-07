@@ -255,11 +255,23 @@ jobs:
 
           $dotnet = Join-Path $sdkRoot 'dotnet.exe'
           $trailingRoot = $sdkRoot + '\'
-          & $bootstrapDotnet msbuild src/DotNet/DotNet.csproj -t:_InstallToolRuntimes `
-            "-p:DotNetDirectory=$trailingRoot" `
-            "-p:_ToolRuntimeDotNetDirectoryArgument=$trailingRoot" -nologo `
-            -verbosity:minimal 2>&1 | Tee-Object (Join-Path $logs 'unescaped-path.log')
-          Write-Host "Unescaped older-host probe exit code: $LASTEXITCODE"
+          $projectPath = Join-Path $env:GITHUB_WORKSPACE 'src/DotNet/DotNet.csproj'
+          $originalProject = [System.IO.File]::ReadAllText($projectPath)
+          $escapedArgument = '-p:DotNetDirectory=&quot;$(_ToolRuntimeDotNetDirectoryArgument)&quot;'
+          $unescapedArgument = '-p:DotNetDirectory=&quot;$(DotNetDirectory)&quot;'
+          if (-not $originalProject.Contains($escapedArgument)) {
+            throw 'The Windows control could not locate the actual child-process argument.'
+          }
+          try {
+            [System.IO.File]::WriteAllText($projectPath, $originalProject.Replace($escapedArgument, $unescapedArgument))
+            & $bootstrapDotnet msbuild src/DotNet/DotNet.csproj -t:_InstallToolRuntimes `
+              "-p:DotNetDirectory=$trailingRoot" -nologo `
+              -verbosity:minimal 2>&1 | Tee-Object (Join-Path $logs 'unescaped-path.log')
+            $baselineExitCode = $LASTEXITCODE
+          } finally {
+            [System.IO.File]::WriteAllText($projectPath, $originalProject)
+          }
+          Write-Host "Unescaped older-host probe exit code: $baselineExitCode"
 
           & $bootstrapDotnet msbuild src/DotNet/DotNet.csproj -t:_InstallToolRuntimes `
             "-p:DotNetDirectory=$trailingRoot" -nologo `
