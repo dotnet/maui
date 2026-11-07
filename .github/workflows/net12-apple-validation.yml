@@ -499,6 +499,81 @@ jobs:
             [System.IO.File]::WriteAllText($driverPath, $originalDriver)
           }
 
+          $partialRoot = Join-Path $env:RUNNER_TEMP 'Maui interrupted SDK'
+          New-IsolatedRuntimeSdk $partialRoot
+          $completeCheck = 'Assert-ToolRuntimeComplete $runtimeDirectory $runtime'
+          if (-not $originalDriver.Contains($completeCheck)) {
+            throw 'The interrupted-install control cannot locate runtime completeness validation.'
+          }
+          foreach ($version in $globalJson.tools.runtimes.dotnet) {
+            $partialVersion = Join-Path $partialRoot "shared/Microsoft.NETCore.App/$version"
+            [System.IO.Directory]::CreateDirectory($partialVersion) | Out-Null
+            foreach ($name in @('System.Private.CoreLib.dll', 'Microsoft.NETCore.App.deps.json')) {
+              [System.IO.File]::Copy((Join-Path $sharedRuntimeRoot "$version/$name"), (Join-Path $partialVersion $name))
+            }
+          }
+          try {
+            foreach ($phase in @('baseline', 'fixed', 'reverted', 'restored')) {
+              $skipCompleteness = $phase -in @('baseline', 'reverted')
+              $driverContent = if ($skipCompleteness) {
+                $originalDriver.Replace($completeCheck, '')
+              } else {
+                $originalDriver
+              }
+              [System.IO.File]::WriteAllText($driverPath, $driverContent)
+              $partialLog = Join-Path $logs "interrupted-$phase.log"
+              & $bootstrapDotnet msbuild $projectPath -t:_InstallToolRuntimes `
+                "-p:DotNetDirectory=$($partialRoot.Replace('\', '/'))/" -nologo `
+                -verbosity:minimal 2>&1 | Tee-Object $partialLog
+              $partialExitCode = $LASTEXITCODE
+              if ($skipCompleteness) {
+                if ($partialExitCode -ne 0) {
+                  throw "The incomplete-runtime $phase did not reproduce false success."
+                }
+              } elseif ($partialExitCode -eq 0 -or
+                  -not (Select-String -Path $partialLog -SimpleMatch "required file 'coreclr.dll' is missing or empty")) {
+                throw "The incomplete-runtime $phase did not fail explicitly for its missing loader."
+              }
+            }
+          } finally {
+            [System.IO.File]::WriteAllText($driverPath, $originalDriver)
+          }
+          foreach ($version in $globalJson.tools.runtimes.dotnet) {
+            Remove-Item -LiteralPath (Join-Path $partialRoot "shared/Microsoft.NETCore.App/$version") -Recurse -Force
+          }
+          $transferCopy = '[System.IO.File]::Copy($file, (Join-Path $transferDirectory $relative), $false)'
+          if (-not $originalDriver.Contains($transferCopy)) {
+            throw 'The interrupted-transfer control cannot locate the actual file-copy operation.'
+          }
+          try {
+            $interruptedDriver = $originalDriver.Replace($transferCopy,
+              "$transferCopy`r`n                throw 'Interrupted transfer control'")
+            [System.IO.File]::WriteAllText($driverPath, $interruptedDriver)
+            & $bootstrapDotnet msbuild $projectPath -t:_InstallToolRuntimes `
+              "-p:DotNetDirectory=$($partialRoot.Replace('\', '/'))/" -nologo `
+              -verbosity:minimal 2>&1 | Tee-Object (Join-Path $logs 'interrupted-transfer.log')
+            if ($LASTEXITCODE -eq 0) {
+              throw 'The interrupted transfer did not fail.'
+            }
+            foreach ($version in $globalJson.tools.runtimes.dotnet) {
+              if (Test-Path -LiteralPath (Join-Path $partialRoot "shared/Microsoft.NETCore.App/$version")) {
+                throw 'The interrupted transfer published a partial runtime version directory.'
+              }
+            }
+          } finally {
+            [System.IO.File]::WriteAllText($driverPath, $originalDriver)
+          }
+          foreach ($version in $globalJson.tools.runtimes.dotnet) {
+            $destination = Join-Path $partialRoot "shared/Microsoft.NETCore.App/$version"
+            if (Test-Path -LiteralPath $destination) {
+              throw 'The retry control unexpectedly already has its runtime.'
+            }
+          }
+          & $bootstrapDotnet msbuild $projectPath -t:_InstallToolRuntimes `
+            "-p:DotNetDirectory=$($partialRoot.Replace('\', '/'))/" -nologo `
+            -verbosity:minimal 2>&1 | Tee-Object (Join-Path $logs 'interrupted-repaired.log')
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
           $sourceBracketRoot = Join-Path $env:RUNNER_TEMP 'Maui source [1]'
           $sourceSiblingRoot = Join-Path $env:RUNNER_TEMP 'Maui source 1'
           New-Item -ItemType Junction -Path $sourceBracketRoot -Target $env:GITHUB_WORKSPACE | Out-Null

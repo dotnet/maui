@@ -36,9 +36,21 @@ function Install-ToolRuntimeLiteral([string] $installDirectory, [string] $versio
         $copiedToolsPath = Join-Path $commonDirectory 'tools.ps1'
         . $copiedToolsPath
         InstallDotNet $payloadDirectory $version $architecture $runtime $true
+        $framework = switch ($runtime) {
+            'dotnet' { 'Microsoft.NETCore.App' }
+            'aspnetcore' { 'Microsoft.AspNetCore.App' }
+            'windowsdesktop' { 'Microsoft.WindowsDesktop.App' }
+        }
+        $versionPath = "shared/$framework/$version"
+        $versionPayload = Join-Path $payloadDirectory $versionPath
+        Assert-ToolRuntimeComplete $versionPayload $runtime
         [System.IO.Directory]::CreateDirectory($installDirectory) | Out-Null
         foreach ($directory in [System.IO.Directory]::GetDirectories($payloadDirectory, '*', [System.IO.SearchOption]::AllDirectories)) {
             $relative = $directory.Substring($payloadDirectory.Length + 1)
+            $normalized = $relative.Replace('\', '/')
+            if ($normalized -eq $versionPath -or $normalized.StartsWith("$versionPath/", [StringComparison]::OrdinalIgnoreCase)) {
+                continue
+            }
             [System.IO.Directory]::CreateDirectory((Join-Path $installDirectory $relative)) | Out-Null
         }
         foreach ($file in [System.IO.Directory]::GetFiles($payloadDirectory, '*', [System.IO.SearchOption]::AllDirectories)) {
@@ -48,15 +60,74 @@ function Install-ToolRuntimeLiteral([string] $installDirectory, [string] $versio
             }
             $destination = Join-Path $installDirectory $relative
             $normalized = $relative.Replace('\', '/')
+            if ($normalized.StartsWith("$versionPath/", [StringComparison]::OrdinalIgnoreCase)) {
+                continue
+            }
             $versioned = $normalized.StartsWith('shared/', [StringComparison]::OrdinalIgnoreCase) -or
                 $normalized.StartsWith('host/fxr/', [StringComparison]::OrdinalIgnoreCase)
             if ($versioned -or -not [System.IO.File]::Exists($destination)) {
                 [System.IO.File]::Copy($file, $destination, $versioned)
             }
         }
+        $versionDestination = Join-Path $installDirectory $versionPath
+        $transferDirectory = Join-Path ([System.IO.Path]::GetDirectoryName($versionDestination)) ('maui-runtime-transfer-' + [Guid]::NewGuid().ToString('N'))
+        try {
+            [System.IO.Directory]::CreateDirectory($transferDirectory) | Out-Null
+            foreach ($directory in [System.IO.Directory]::GetDirectories($versionPayload, '*', [System.IO.SearchOption]::AllDirectories)) {
+                $relative = $directory.Substring($versionPayload.Length + 1)
+                [System.IO.Directory]::CreateDirectory((Join-Path $transferDirectory $relative)) | Out-Null
+            }
+            foreach ($file in [System.IO.Directory]::GetFiles($versionPayload, '*', [System.IO.SearchOption]::AllDirectories)) {
+                $relative = $file.Substring($versionPayload.Length + 1)
+                [System.IO.File]::Copy($file, (Join-Path $transferDirectory $relative), $false)
+            }
+            Assert-ToolRuntimeComplete $transferDirectory $runtime
+            [System.IO.Directory]::Move($transferDirectory, $versionDestination)
+        } finally {
+            if ([System.IO.Directory]::Exists($transferDirectory)) {
+                Remove-Item -LiteralPath $transferDirectory -Recurse -Force
+            }
+        }
     } finally {
         if ([System.IO.Directory]::Exists($stagingDirectory)) {
             Remove-Item -LiteralPath $stagingDirectory -Recurse -Force
+        }
+    }
+}
+
+function Assert-ToolRuntimeComplete([string] $runtimeDirectory, [string] $runtime) {
+    $requiredFiles = switch ($runtime) {
+        'dotnet' {
+            'System.Private.CoreLib.dll'
+            'Microsoft.NETCore.App.deps.json'
+            if ([Environment]::OSVersion.Platform -eq [PlatformID]::Win32NT) {
+                'coreclr.dll'
+                'clrjit.dll'
+                'hostpolicy.dll'
+            } elseif ([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform([System.Runtime.InteropServices.OSPlatform]::OSX)) {
+                'libcoreclr.dylib'
+                'libclrjit.dylib'
+                'libhostpolicy.dylib'
+            } else {
+                'libcoreclr.so'
+                'libclrjit.so'
+                'libhostpolicy.so'
+            }
+        }
+        'aspnetcore' {
+            'Microsoft.AspNetCore.App.deps.json'
+            'Microsoft.AspNetCore.Http.dll'
+        }
+        'windowsdesktop' {
+            'Microsoft.WindowsDesktop.App.deps.json'
+            'PresentationCore.dll'
+            'WindowsBase.dll'
+        }
+    }
+    foreach ($name in $requiredFiles) {
+        $file = Join-Path $runtimeDirectory $name
+        if (-not [System.IO.File]::Exists($file) -or ([System.IO.FileInfo]$file).Length -eq 0) {
+            throw "Incomplete tool runtime in '$runtimeDirectory': required file '$name' is missing or empty."
         }
     }
 }
@@ -118,9 +189,7 @@ foreach ($runtimeProperty in $runtimes.Value.PSObject.Properties) {
         }
         $runtimeDirectory = Join-Path $installDirectory "shared/$sharedDirectory/$version"
         if (Test-Path -LiteralPath $runtimeDirectory -PathType Container) {
-            if ([System.IO.Directory]::GetFiles($runtimeDirectory).Length -eq 0) {
-                throw "The existing tool runtime directory '$runtimeDirectory' is empty."
-            }
+            Assert-ToolRuntimeComplete $runtimeDirectory $runtime
             Write-Host "Runtime toolset '$runtime/$architecture v$version' already installed in '$runtimeDirectory'."
             continue
         }
@@ -130,5 +199,6 @@ foreach ($runtimeProperty in $runtimes.Value.PSObject.Properties) {
             [System.IO.Directory]::GetFiles($runtimeDirectory).Length -eq 0) {
             throw "The requested tool runtime was not installed at the literal directory '$runtimeDirectory'."
         }
+        Assert-ToolRuntimeComplete $runtimeDirectory $runtime
     }
 }

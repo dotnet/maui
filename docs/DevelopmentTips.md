@@ -64,6 +64,12 @@ staging directory; .NET file APIs copy
 its runtime files to the literal destination and verify it before success.
 This prevents PowerShell wildcard paths such as `sdk[1]` from matching `sdk1`
 and silently skipping installation, while preserving the existing SDK host.
+Existing runtime folders must contain their nonempty managed and native loader
+files. An interrupted installation fails explicitly instead of treating any
+nonempty version directory as a working runtime. New runtime files are copied
+to a temporary directory beside the destination and atomically renamed only
+after the copy completes, so retrying an interrupted transfer cannot skip a
+partially published version.
 The child executable, MSBuild assembly,
 and project paths pass through quoted environment values on both platforms,
 preserving literal `%NAME%` in Windows paths and literal `$`, spaces, and
