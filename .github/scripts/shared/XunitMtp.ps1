@@ -1,3 +1,18 @@
+function Get-CheckoutTestRunner {
+    param([Parameter(Mandatory)][string]$RepoRoot)
+
+    $settings = Get-Content -LiteralPath (Join-Path $RepoRoot 'global.json') -Raw |
+        ConvertFrom-Json -AsHashtable
+    $runner = 'VSTest'
+    if ($settings.ContainsKey('test') -and $settings.test.ContainsKey('runner')) {
+        $runner = $settings.test.runner
+    }
+    if ($runner -notin @('VSTest', 'Microsoft.Testing.Platform')) {
+        throw "Unsupported test runner '$runner' in the target checkout's global.json."
+    }
+    return $runner
+}
+
 function Get-XunitTestArguments {
     param(
         [Parameter(Mandatory)][string]$RepoRoot,
@@ -6,12 +21,7 @@ function Get-XunitTestArguments {
     )
 
     if ($Filter -match '[\r\n\x00]') { throw 'Test filters cannot contain control characters.' }
-    $settings = Get-Content -LiteralPath (Join-Path $RepoRoot 'global.json') -Raw |
-        ConvertFrom-Json -AsHashtable
-    $runner = 'VSTest'
-    if ($settings.ContainsKey('test') -and $settings.test.ContainsKey('runner')) {
-        $runner = $settings.test.runner
-    }
+    $runner = Get-CheckoutTestRunner -RepoRoot $RepoRoot
     switch ($runner) {
         'Microsoft.Testing.Platform' {
             return @('test', '--project', $ProjectPath, '--report-trx') +
@@ -53,6 +63,8 @@ function Read-XunitMtpResults {
     $rows = @($document.SelectNodes("/*[local-name()='TestRun']/*[local-name()='Results']/*[local-name()='UnitTestResult']"))
     if ($rows.Count -eq 0) { throw "No tests were recorded in '$Path'." }
     $summary = [ordered]@{ Total = $rows.Count; Passed = 0; Failed = 0; Skipped = 0; Errors = 0 }
+    $runSummary = $document.SelectSingleNode("/*[local-name()='TestRun']/*[local-name()='ResultSummary']")
+    $summary.Outcome = if ($runSummary) { $runSummary.GetAttribute('outcome') } else { $null }
     foreach ($row in $rows) {
         switch ($row.GetAttribute('outcome')) {
             'Passed' { $summary.Passed++ }

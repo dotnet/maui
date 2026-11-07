@@ -29,6 +29,9 @@ checkout's `global.json` test runner. MTP-enabled targets receive MTP arguments
 and translated filters; retained VSTest targets keep positional project paths,
 `--logger trx`, and their original `--filter`. Trusted script overlays do not
 implicitly migrate the target checkout's SDK or test protocol.
+The separate regression-review caller uses the same managed selector. Trusted
+UI launchers likewise retain the target's NUnit/VSTest protocol for initial and
+retry attempts instead of forcing an older host to speak MTP.
 
 ## Activation Guard
 

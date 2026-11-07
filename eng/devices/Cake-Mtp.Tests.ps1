@@ -13,6 +13,8 @@ BeforeAll {
     $ios = Get-Content -Raw (Join-Path $PSScriptRoot 'ios.cake')
     $delete = [regex]::Match($ios, '(?s)void DeleteSimulator\(.*?(?=\r?\nstring GetDefaultRuntimeIdentifier)').Value
     $getUdid = [regex]::Match($ios, '(?s)string GetUDID\(.*?(?=\r?\nvoid GetSimulators)').Value
+    $findRuntime = [regex]::Match($ios, '(?s)string FindSimulatorRuntime\(.*?(?=\r?\nstring RunAppleCommand)').Value
+    $getSimulators = [regex]::Match($ios, '(?s)void GetSimulators\(.*?(?=\r?\nvoid ResetSimulators)').Value
     if (!('CakeSimulatorHarness' -as [type])) {
         Add-Type -TypeDefinition @"
 using System;
@@ -24,6 +26,7 @@ public class CakeSimulatorHarness
     public string udid = "";
     public string iosVersion = "latest";
     public string RuntimeIdentifier = "com.apple.CoreSimulator.SimRuntime.iOS-27-0";
+    public string RuntimesJson = null;
     public string DevicesJson = "{\"devices\":{\"runtime\":[]}}";
     public Queue<int> DeleteExits = new Queue<int>();
     public List<string> Calls = new List<string>();
@@ -38,17 +41,23 @@ public class CakeSimulatorHarness
     }
     void Information(string message, params object[] arguments) {}
     string EnvironmentVariable(string name) { return ""; }
-    string FindSimulatorRuntime(string version) { return RuntimeIdentifier; }
     string RunAppleCommand(params string[] arguments)
     {
         Calls.Add(string.Join(" ", arguments));
         if (arguments[1] == "create") return "owned-after-retry";
+        if (arguments.Length > 2 && arguments[2] == "runtimes")
+            return RuntimesJson ?? "{\"runtimes\":[{\"isAvailable\":true,\"identifier\":\"" + RuntimeIdentifier +
+                "\",\"version\":\"" + RuntimeIdentifier.Split(new[] { "iOS-" }, StringSplitOptions.None).Last().Replace('-', '.') + "\"}]}";
         return DevicesJson;
     }
     public void Delete(string simulator) { DeleteSimulator(simulator); }
     public string Acquire(string target = "ios_simulator_latest") { return GetUDID(target, null); }
+    public string FindRuntime(string version) { return FindSimulatorRuntime(version); }
+    public void Prepare(string version) { GetSimulators(version, null); }
     $delete
     $getUdid
+    $findRuntime
+    $getSimulators
 }
 "@
     }
@@ -59,6 +68,24 @@ AfterAll {
 }
 
 Describe 'Direct Cake native execution' {
+    It 'resolves actual minimum and latest selectors using installed runtime JSON' {
+        $harness = [CakeSimulatorHarness]::new()
+        $harness.RuntimesJson = '{"runtimes":[{"isAvailable":true,"identifier":"com.apple.CoreSimulator.SimRuntime.iOS-27-0","version":"27.0"},{"isAvailable":false,"identifier":"com.apple.CoreSimulator.SimRuntime.iOS-12-0","version":"12.0"},{"isAvailable":true,"identifier":"com.apple.CoreSimulator.SimRuntime.tvOS-10-0","version":"10.0"},{"isAvailable":true,"identifier":"com.apple.CoreSimulator.SimRuntime.iOS-15-0","version":"15.0"}]}'
+        $harness.FindRuntime('min') | Should -Be 'com.apple.CoreSimulator.SimRuntime.iOS-15-0'
+        $harness.FindRuntime('latest') | Should -Be 'com.apple.CoreSimulator.SimRuntime.iOS-27-0'
+        $harness.FindRuntime('15') | Should -Be 'com.apple.CoreSimulator.SimRuntime.iOS-15-0'
+        $harness.Prepare('ios_simulator_min')
+        @($harness.Calls | Where-Object { $_ -like '*downloadPlatform*' }).Count | Should -Be 0
+    }
+
+    It 'fails an unavailable minimum selector without attempting to download buildVersion min' {
+        $harness = [CakeSimulatorHarness]::new()
+        $harness.RuntimesJson = '{"runtimes":[]}'
+        $harness.FindRuntime('min') | Should -BeNullOrEmpty
+        { $harness.Prepare('ios_simulator_min') } | Should -Throw '*requires an installed iOS runtime*'
+        @($harness.Calls | Where-Object { $_ -like '*downloadPlatform*' }).Count | Should -Be 0
+    }
+
     It 'preserves the legacy simulator profile instead of borrowing an arbitrary booted phone' -TestCases @(
         @{ Target = 'ios_simulator_latest'; Runtime = 'com.apple.CoreSimulator.SimRuntime.iOS-27-0'; Profile = 'iPhone-11-Pro' }
         @{ Target = 'ios_simulator_min'; Runtime = 'com.apple.CoreSimulator.SimRuntime.iOS-27-0'; Profile = 'iPhone-SE-3rd-generation' }

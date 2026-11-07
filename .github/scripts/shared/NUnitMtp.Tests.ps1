@@ -12,6 +12,55 @@ AfterAll {
 }
 
 Describe 'NUnit MTP command and result compatibility' {
+    It 'preserves legacy NUnit/VSTest invocation and retry options on retained targets' {
+        '{}' | Set-Content -LiteralPath (Join-Path $FixtureRoot 'global.json')
+        foreach ($noBuild in @($false, $true)) {
+            $arguments = @(Get-NUnitMtpArguments -RepoRoot $FixtureRoot -Project 'UI Tests.csproj' `
+                -Configuration Release -Filter 'TestCategory=Issues&FullyQualifiedName~Issue123' `
+                -ResultsDirectory $FixtureRoot -TrxFileName 'result.trx' `
+                -NUnitDirectory (Join-Path $FixtureRoot 'legacy') -NoBuild:$noBuild)
+            $arguments[0] | Should -Be 'UI Tests.csproj'
+            $arguments | Should -Contain '--logger'
+            $arguments | Should -Contain 'trx;LogFileName=result.trx'
+            $arguments | Should -Contain 'TestCategory=Issues&FullyQualifiedName~Issue123'
+            $arguments | Should -Not -Contain '--project'
+            $arguments | Should -Not -Contain '--report-trx'
+            ($arguments -contains '--no-build') | Should -Be $noBuild
+        }
+    }
+
+    It 'preserves legacy TRX failure and exit semantics without requiring MTP-only NUnit XML' -TestCases @(
+        @{ Outcome = 'Passed'; Summary = 'Completed'; Exit = 0; Expected = 0 }
+        @{ Outcome = 'Failed'; Summary = 'Failed'; Exit = 0; Expected = 1 }
+        @{ Outcome = 'Passed'; Summary = 'Failed'; Exit = 0; Expected = 1 }
+        @{ Outcome = 'Passed'; Summary = 'Completed'; Exit = 7; Expected = 7 }
+        @{ Outcome = 'NotExecuted'; Summary = 'Completed'; Exit = 0; Expected = 1 }
+    ) {
+        param($Outcome, $Summary, $Exit, $Expected)
+        '{}' | Set-Content -LiteralPath (Join-Path $FixtureRoot 'global.json')
+        $path = Join-Path $FixtureRoot 'legacy.trx'
+        "<TestRun><Results><UnitTestResult testName='Case' outcome='$Outcome' /></Results><ResultSummary outcome='$Summary' /></TestRun>" |
+            Set-Content -LiteralPath $path
+        $attempt = Complete-NUnitMtpAttempt -RepoRoot $FixtureRoot -TrxPath $path `
+            -NUnitDirectory (Join-Path $FixtureRoot 'no-xml') -ExitCode $Exit
+        $attempt.ExitCode | Should -Be $Expected
+        $attempt.Reports.Count | Should -Be 0
+    }
+
+    It 'uses target-checkout protocol selection for both real launcher attempts' {
+        $path = Join-Path $RepoRoot '.github/scripts/BuildAndRunHostApp.ps1'
+        $ast = [System.Management.Automation.Language.Parser]::ParseFile($path, [ref]$null, [ref]$null)
+        $commands = @($ast.FindAll({
+            param($node)
+            $node -is [System.Management.Automation.Language.CommandAst] -and
+                $node.GetCommandName() -eq 'Get-NUnitMtpArguments'
+        }, $true))
+        $commands.Count | Should -Be 2
+        foreach ($command in $commands) {
+            $command.Extent.Text | Should -Match '-RepoRoot \$RepoRoot'
+        }
+    }
+
     It 'forwards category and FQN filters without VSTest-only options' {
         $directory = Join-Path $FixtureRoot 'settings with spaces'
         $arguments = @(Get-NUnitMtpArguments -Project 'UI Tests.csproj' -Configuration Release `

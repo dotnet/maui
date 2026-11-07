@@ -32,6 +32,14 @@ The launcher and Cake now construct root-MTP commands with `--project`,
 `--report-trx-filename`. They do not use VSTest's `--logger`, positional project
 argument, or the VSTest `-- NUnit.Property=value` separator.
 
+The trusted local launcher also supports retained target checkouts whose
+`global.json` still selects VSTest. Both initial and retry attempts then retain
+the positional project, `--logger trx`, and unchanged NUnit filter contract.
+Those attempts validate genuine TRX and propagate process/run failures without
+requiring MTP-only XML reconciliation. Migrated targets keep the stricter MTP
+TRX/NUnit XML reconciliation described below. Script overlays alone never change
+the target checkout's SDK protocol.
+
 NUnit's MTP bridge accepts `--filter` with the existing category/FQN expressions,
 including `TestCategory=Issues`, `FullyQualifiedName~Issue123`, exact FQNs, and
 combined expressions. It accepts runsettings using `--settings`. Narrowed CI

@@ -468,6 +468,8 @@ void GetSimulators(string version, string tool)
 	var requestedVersion = version.Contains("_") ? version.Split('_').Last() : version;
 	if (FindSimulatorRuntime(requestedVersion) == null)
 	{
+		if (requestedVersion == "min")
+			throw new InvalidOperationException("The minimum simulator selector requires an installed iOS runtime.");
 		if (requestedVersion == "latest")
 			RunAppleCommand("xcodebuild", "-downloadPlatform", "iOS");
 		else
@@ -522,12 +524,15 @@ void GetDevices(string version, string tool)
 string FindSimulatorRuntime(string version)
 {
 	using (var runtimes = System.Text.Json.JsonDocument.Parse(RunAppleCommand("simctl", "list", "runtimes", "--json")))
-		return runtimes.RootElement.GetProperty("runtimes").EnumerateArray()
+	{
+		var matches = runtimes.RootElement.GetProperty("runtimes").EnumerateArray()
 			.Where(runtime => runtime.GetProperty("isAvailable").GetBoolean() &&
 				runtime.GetProperty("identifier").GetString().Contains(".iOS-") &&
-				(version == "latest" || runtime.GetProperty("version").GetString().StartsWith(version, StringComparison.Ordinal)))
+				(version == "latest" || version == "min" || runtime.GetProperty("version").GetString().StartsWith(version, StringComparison.Ordinal)))
 			.OrderBy(runtime => new Version(runtime.GetProperty("version").GetString()))
-			.Select(runtime => runtime.GetProperty("identifier").GetString()).LastOrDefault();
+			.Select(runtime => runtime.GetProperty("identifier").GetString());
+		return version == "min" ? matches.FirstOrDefault() : matches.LastOrDefault();
+	}
 }
 
 string RunAppleCommand(params string[] arguments)

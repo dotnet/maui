@@ -619,7 +619,7 @@ Write-Info "TRX file will be written to: $trxFilePath"
 try {
     $trxRunStart = Get-Date
     $nunitResultsDir = Join-Path $trxResultsDir ('n-' + [guid]::NewGuid().ToString('N'))
-    $testArgs = Get-NUnitMtpArguments -Project $TestProject -Configuration $Configuration `
+    $testArgs = Get-NUnitMtpArguments -RepoRoot $RepoRoot -Project $TestProject -Configuration $Configuration `
         -Filter $effectiveFilter -ResultsDirectory $trxResultsDir -TrxFileName $trxFileName -NUnitDirectory $nunitResultsDir
     Write-Info "Actual dotnet test args: $($testArgs -join ' ')"
     # Stream each line to this script's output stream *as it is produced* (via
@@ -699,7 +699,7 @@ try {
             Remove-Item $retryTrx -Force -ErrorAction SilentlyContinue
             
             $retryNUnitDirectory = Join-Path $nunitResultsDir 'retry'
-            $retryArgs = Get-NUnitMtpArguments -Project $TestProject -Configuration $Configuration `
+            $retryArgs = Get-NUnitMtpArguments -RepoRoot $RepoRoot -Project $TestProject -Configuration $Configuration `
                 -Filter $retryFilter -ResultsDirectory $trxResultsDir -TrxFileName "retry-$trxFileName" `
                 -NUnitDirectory $retryNUnitDirectory -NoBuild
             Write-Info "Retry args: dotnet test --filter '$retryFilter' --no-build"

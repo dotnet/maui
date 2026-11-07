@@ -21,6 +21,30 @@ Describe 'Target-checkout managed test protocol' {
             Should -Be @('test', '--project', 'Tests.csproj', '--report-trx', '--filter-method', '*Tests.One*')
     }
 
+    It 'uses the same target protocol in the separate regression-review caller' -TestCases @(
+        @{ Runner = 'VSTest'; Selector = '--filter' }
+        @{ Runner = 'Microsoft.Testing.Platform'; Selector = '--filter-method' }
+    ) {
+        param($Runner, $Selector)
+        @{ test = @{ runner = $Runner } } | ConvertTo-Json -Depth 3 |
+            Set-Content -LiteralPath (Join-Path $TestDrive 'global.json')
+        $path = Join-Path $PSScriptRoot '../Review-PR.ps1'
+        $ast = [System.Management.Automation.Language.Parser]::ParseFile($path, [ref]$null, [ref]$null)
+        $assignment = $ast.Find({
+            param($node)
+            $node -is [System.Management.Automation.Language.AssignmentStatementAst] -and
+                $node.Left.Extent.Text -eq '$testArguments' -and
+                $node.Right.Extent.Text.Contains('Get-XunitTestArguments')
+        }, $true)
+        $assignment | Should -Not -BeNullOrEmpty
+        $RepoRoot = $TestDrive
+        $resolvedProj = 'Regression Tests.csproj'
+        $t = @{ Filter = 'FullyQualifiedName~Regression.Case' }
+        . ([scriptblock]::Create($assignment.Extent.Text))
+        $testArguments | Should -Contain $Selector
+        $testArguments | Should -Contain $resolvedProj
+    }
+
     It 'fails explicit unknown runner configurations rather than silently falling back' {
         '{"test":{"runner":"Unknown"}}' | Set-Content -LiteralPath (Join-Path $TestDrive 'global.json')
         { Get-XunitTestArguments -RepoRoot $TestDrive -ProjectPath 'Tests.csproj' } |
