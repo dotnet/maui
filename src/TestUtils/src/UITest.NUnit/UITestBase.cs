@@ -80,7 +80,7 @@ namespace UITest.Appium.NUnit
 		{
 			try
 			{
-				
+
 				if (Device is TestDevice.Mac)
 				{
 					// For Mac, here needed to close the app itself, re-open happens on InitialSetup
@@ -90,7 +90,7 @@ namespace UITest.Appium.NUnit
 				{
 					Reset();
 				}
-					 
+
 			}
 			catch (Exception e)
 			{
@@ -340,7 +340,13 @@ namespace UITest.Appium.NUnit
 				TestContext.CurrentContext.Test.MethodName ??
 				TestContext.CurrentContext.Test.Name;
 
-			return Path.Combine(logDir, $"{name}-{_testDevice}{note}{filename}");
+			// VSTest adds nested attachment directories inside Azure's 399-character artifact paths.
+			const int maxDiagnosticFileNameLength = 96;
+			var prefix = $"{name}-{_testDevice}{note}";
+			if (prefix.Length + filename.Length > maxDiagnosticFileNameLength)
+				prefix = prefix[..Math.Max(0, maxDiagnosticFileNameLength - filename.Length)];
+
+			return Path.Combine(logDir, $"{prefix}{filename}");
 		}
 
 		void AddTestAttachment(string filePath, string? description = null)

@@ -110,6 +110,13 @@ and attempt. The job ID distinguishes OS/API variants whose matrix legs share
 the same name; the attempt keeps job retries separate. Existing artifact prefixes
 and snapshot contents are unchanged.
 
+UI screenshot, page-source, and device-log diagnostic filenames are bounded to
+96 characters. VSTest copies attachments beneath nested run, machine, and test
+directories; long test-method names can otherwise exceed Azure File Container's
+399-character path limit (`TF205023`). Only the descriptive prefix is shortened:
+the diagnostic kind, unique GUID, extension, contents, and test-result association
+are preserved.
+
 ## Android memory-test collection
 
 Android's `View.ScrollabilityCache` can retain detached views through delayed
