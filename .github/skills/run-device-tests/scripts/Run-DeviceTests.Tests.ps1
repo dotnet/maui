@@ -219,6 +219,70 @@ System.Console.WriteLine(System.Environment.GetEnvironmentVariable("NUNIT_SKIPPE
         }
     }
 
+    It 'snapshots Apple result files by pattern and ignores unrelated XML' {
+        $tempRoot = Join-Path ([System.IO.Path]::GetTempPath()) "xharness-apple-snapshot-$([guid]::NewGuid())"
+        $nestedRoot = Join-Path $tempRoot 'attempt'
+        New-Item -ItemType Directory -Path $nestedRoot -Force | Out-Null
+
+        try {
+            $iosResult = Join-Path $nestedRoot 'xunit-test-ios-simulator-64_27.1-20261107_005116.xml'
+            $catalystResult = Join-Path $tempRoot 'xunit-test-maccatalyst-20261107_005116.xml'
+            $unrelatedResult = Join-Path $tempRoot 'testResults.xml'
+            foreach ($path in @($iosResult, $catalystResult, $unrelatedResult)) {
+                '<assemblies />' | Set-Content -LiteralPath $path -Encoding UTF8
+            }
+
+            $snapshot = Get-XHarnessTestResultSnapshot `
+                -OutputDirectory $tempRoot `
+                -ResultFileName 'xunit-test-*.xml'
+
+            $snapshot.Count | Should -Be 2
+            $snapshot.ContainsKey($iosResult) | Should -BeTrue
+            $snapshot.ContainsKey($catalystResult) | Should -BeTrue
+            $snapshot.ContainsKey($unrelatedResult) | Should -BeFalse
+        } finally {
+            Remove-Item -LiteralPath $tempRoot -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    It 'accepts only new or changed Apple result files' {
+        $tempRoot = Join-Path ([System.IO.Path]::GetTempPath()) "xharness-apple-fresh-$([guid]::NewGuid())"
+        New-Item -ItemType Directory -Path $tempRoot -Force | Out-Null
+
+        try {
+            $unchangedResult = Join-Path $tempRoot 'xunit-test-ios-simulator-64_27.1-20261107_005116.xml'
+            '<assemblies />' | Set-Content -LiteralPath $unchangedResult -Encoding UTF8
+            $snapshot = Get-XHarnessTestResultSnapshot `
+                -OutputDirectory $tempRoot `
+                -ResultFileName 'xunit-test-*.xml'
+
+            @(Get-FreshXHarnessTestResultFiles `
+                -OutputDirectory $tempRoot `
+                -BeforeSnapshot $snapshot `
+                -ResultFileName 'xunit-test-*.xml').Count | Should -Be 0
+
+            $newResult = Join-Path $tempRoot 'xunit-test-ios-simulator-64_27.1-20261107_005117.xml'
+            '<assemblies />' | Set-Content -LiteralPath $newResult -Encoding UTF8
+            '<assemblies />' | Set-Content -LiteralPath (Join-Path $tempRoot 'unrelated.xml') -Encoding UTF8
+
+            @(Get-FreshXHarnessTestResultFiles `
+                -OutputDirectory $tempRoot `
+                -BeforeSnapshot $snapshot `
+                -ResultFileName 'xunit-test-*.xml') | Should -Be @($newResult)
+
+            '<assemblies><assembly /></assemblies>' | Set-Content -LiteralPath $unchangedResult -Encoding UTF8
+            $freshFiles = @(Get-FreshXHarnessTestResultFiles `
+                -OutputDirectory $tempRoot `
+                -BeforeSnapshot $snapshot `
+                -ResultFileName 'xunit-test-*.xml')
+            $freshFiles.Count | Should -Be 2
+            $freshFiles | Should -Contain $newResult
+            $freshFiles | Should -Contain $unchangedResult
+        } finally {
+            Remove-Item -LiteralPath $tempRoot -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+
     It 'uses the isolated XHarness directory for execution and fresh-result discovery' {
         $content = Get-Content $scriptPath -Raw
         $content | Should -Match 'New-XHarnessRunOutputDirectory -OutputDirectory \$OutputDirectory'

@@ -104,4 +104,9 @@
 
   <Import Project="$(MauiSrcDirectory)PublicAPI.targets" />
 
+  <ItemGroup Condition="'$(TargetFramework)' != '' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net12.0'))">
+    <PublicAPIFiles Include="PublicAPI\net12\PublicAPI.Unshipped.txt" />
+    <AdditionalFiles Include="PublicAPI\net12\PublicAPI.Unshipped.txt" />
+  </ItemGroup>
+
 </Project>

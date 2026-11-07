@@ -66,7 +66,7 @@ public partial class TestPage : ContentPage
 
 namespace Test;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Maui.Controls.SourceGen, Version=11.0.0.0, Culture=neutral, PublicKeyToken=null", "11.0.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Maui.Controls.SourceGen, Version=12.0.0.0, Culture=neutral, PublicKeyToken=null", "12.0.0.0")]
 public partial class TestPage
 {
 	private partial void InitializeComponent()
@@ -124,10 +124,10 @@ public partial class TestPage
 
 		var (result, generatedRaw) = RunGenerator(xaml, codeBehind);
 		Assert.False(result.Diagnostics.Any());
-		
+
 		// Replace the actual file path with placeholder for comparison
 		var generated = generatedRaw?.Replace(Path.Combine(Environment.CurrentDirectory, "Test.xaml"), "{{testXamlFilePath}}", StringComparison.Ordinal);
-		
+
 		Assert.Equal(expected, generated, ignoreLineEndingDifferences: true);
 	}
 
@@ -185,7 +185,7 @@ public partial class TestPage : ContentPage
 
 namespace Test;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Maui.Controls.SourceGen, Version=11.0.0.0, Culture=neutral, PublicKeyToken=null", "11.0.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Maui.Controls.SourceGen, Version=12.0.0.0, Culture=neutral, PublicKeyToken=null", "12.0.0.0")]
 public partial class TestPage
 {
 	private partial void InitializeComponent()
@@ -243,10 +243,10 @@ public partial class TestPage
 
 		var (result, generatedRaw) = RunGenerator(xaml, codeBehind);
 		Assert.False(result.Diagnostics.Any());
-		
+
 		// Replace the actual file path with placeholder for comparison
 		var generated = generatedRaw?.Replace(Path.Combine(Environment.CurrentDirectory, "Test.xaml"), "{{testXamlFilePath}}", StringComparison.Ordinal);
-		
+
 		Assert.Equal(expected, generated, ignoreLineEndingDifferences: true);
 	}
 }

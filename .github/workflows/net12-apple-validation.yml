@@ -1,0 +1,360 @@
+name: .NET 12 Apple validation
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/net12-apple-validation.yml'
+      - 'global.json'
+      - 'NuGet.config'
+      - 'Directory.Build.*'
+      - 'eng/Versions.props'
+      - 'eng/Version.Details.xml'
+      - 'src/DotNet/**'
+      - 'src/Core/**'
+      - 'src/Controls/**'
+      - 'src/Essentials/**'
+      - 'src/TestUtils/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: net12-apple-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  apple-coreclr:
+    if: github.event.repository.private == false
+    name: ${{ matrix.platform }} CoreCLR on Xcode 27.1
+    runs-on: xcode-27
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [ios, maccatalyst]
+        include:
+          - platform: ios
+            rid: iossimulator-arm64
+          - platform: maccatalyst
+            rid: maccatalyst-arm64
+    env:
+      CI: 'true'
+      BuildTaskOnlyBuild: 'true'
+      IncludeAndroidTargetFrameworks: 'false'
+      IncludeIosTargetFrameworks: 'false'
+      IncludeMacCatalystTargetFrameworks: 'false'
+      IncludeMacOSTargetFrameworks: 'false'
+      IncludeWindowsTargetFrameworks: 'false'
+      UseMonoRuntime: 'false'
+      MSBUILDDISABLENODEREUSE: '1'
+      __PWSH_LOGIN_CHECKED: '1'
+      GH_TOKEN: ''
+      GITHUB_TOKEN: ''
+      COPILOT_GITHUB_TOKEN: ''
+      APPLE_PLATFORM: ${{ matrix.platform }}
+      APPLE_RID: ${{ matrix.rid }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Checkout PR
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Verify the actual Apple toolchain
+        run: |
+          set -euo pipefail
+          test "$(uname -m)" = arm64
+          developer_dir=/Applications/Xcode_27.1.app/Contents/Developer
+          actual_version=$(DEVELOPER_DIR="$developer_dir" xcodebuild -version | awk '/^Xcode / { print $2 }')
+          if [[ "$(printf '%s' "$actual_version" | cut -d. -f1,2)" != 27.1 ]]; then
+            echo "::error::Required Xcode 27.1, found $actual_version."
+            exit 1
+          fi
+          printf 'DEVELOPER_DIR=%s\n' "$developer_dir" >> "$GITHUB_ENV"
+          DEVELOPER_DIR="$developer_dir" xcrun --sdk iphonesimulator --show-sdk-version
+          df -h .
+
+      - name: Provision the pinned SDK and tool runtimes
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/log/net12-apple
+          dotnet build src/DotNet/DotNet.csproj -c Release \
+            -p:InstallWorkloadPacks=false \
+            --verbosity minimal 2>&1 | tee artifacts/log/net12-apple/provision.log
+          printf '%s/.dotnet\n' "$GITHUB_WORKSPACE" >> "$GITHUB_PATH"
+          printf 'DOTNET_ROOT=%s/.dotnet\n' "$GITHUB_WORKSPACE" >> "$GITHUB_ENV"
+          .dotnet/dotnet --info
+          .dotnet/dotnet tool restore
+
+      - name: Verify literal Unix bootstrap paths
+        run: |
+          set -euo pipefail
+          probe_root=$(mktemp -d "$RUNNER_TEMP/tool-runtime-path.XXXXXX")
+          sdk_root="$probe_root/Maui SDK literal \$sdk's,comma;semi"
+          project_root="$probe_root/Maui project literal \$repo,comma"
+          mkdir -p "$sdk_root/shared/Microsoft.NETCore.App"
+          cp "$DOTNET_ROOT/dotnet" "$sdk_root/dotnet"
+          ln -s "$DOTNET_ROOT/host" "$sdk_root/host"
+          ln -s "$DOTNET_ROOT/sdk" "$sdk_root/sdk"
+          ln -s "$GITHUB_WORKSPACE" "$project_root"
+          for runtime in "$DOTNET_ROOT/shared/Microsoft.NETCore.App"/12.*; do
+            test -d "$runtime"
+            ln -s "$runtime" "$sdk_root/shared/Microsoft.NETCore.App/$(basename "$runtime")"
+          done
+          while IFS= read -r version; do
+            test ! -e "$sdk_root/shared/Microsoft.NETCore.App/$version"
+          done < <(jq -er '.tools.runtimes.dotnet[]' global.json)
+          directory_argument="${sdk_root//,/%2C}"
+          directory_argument="${directory_argument//;/%3B}"
+          dotnet msbuild "$project_root/src/DotNet/DotNet.csproj" \
+            -t:_InstallToolRuntimes "-p:DotNetDirectory=$directory_argument/" \
+            -verbosity:minimal -nologo 2>&1 |
+            tee artifacts/log/net12-apple/literal-bootstrap-path.log
+          grep -F "Tool runtime install directory: [$sdk_root/]" \
+            artifacts/log/net12-apple/literal-bootstrap-path.log
+          "$sdk_root/dotnet" --list-runtimes |
+            tee artifacts/log/net12-apple/literal-bootstrap-runtimes.log
+          while IFS= read -r version; do
+            test -f "$sdk_root/shared/Microsoft.NETCore.App/$version/libcoreclr.dylib"
+            grep -F "Microsoft.NETCore.App $version [$sdk_root/shared/Microsoft.NETCore.App]" \
+              artifacts/log/net12-apple/literal-bootstrap-runtimes.log
+          done < <(jq -er '.tools.runtimes.dotnet[]' global.json)
+
+      - name: Install only the pinned Apple workload
+        run: |
+          set -euo pipefail
+          dotnet workload install "$APPLE_PLATFORM" --disable-parallel --skip-sign-check \
+            --skip-manifest-update --configfile NuGet.config \
+            --verbosity minimal 2>&1 | tee artifacts/log/net12-apple/workload.log
+
+      - name: Build MAUI build tasks
+        run: |
+          set -euo pipefail
+          dotnet build Microsoft.Maui.BuildTasks.slnf -c Release \
+            -p:CI=true -p:BuildTaskOnlyBuild=true \
+            --verbosity minimal 2>&1 | tee artifacts/log/net12-apple/buildtasks.log
+
+      - name: Create a dedicated iOS 27.1 simulator
+        if: matrix.platform == 'ios'
+        run: |
+          set -euo pipefail
+          runtime_info=$(xcrun simctl list runtimes -j | jq -ce \
+            '.runtimes[] | select(.identifier == "com.apple.CoreSimulator.SimRuntime.iOS-27-1" and .isAvailable)')
+          runtime=$(printf '%s' "$runtime_info" | jq -er '.identifier')
+          device_type=$(printf '%s' "$runtime_info" | jq -er \
+            '.supportedDeviceTypes | map(select(.productFamily == "iPhone")) | first | .identifier // error("The selected runtime has no compatible iPhone device type.")')
+          echo "Creating a dedicated $device_type simulator on $runtime."
+          udid=$(xcrun simctl create "Maui-net12-$GITHUB_RUN_ID" "$device_type" "$runtime")
+          if [[ ! "$udid" =~ ^[A-Fa-f0-9-]{36}$ ]]; then
+            echo "::error::simctl did not return a simulator UUID."
+            exit 1
+          fi
+          printf 'NET12_SIMULATOR_UDID=%s\n' "$udid" >> "$GITHUB_ENV"
+          xcrun simctl boot "$udid"
+          xcrun simctl bootstatus "$udid" -b
+
+      - name: Build and run existing Core Entry device tests
+        if: matrix.platform == 'ios'
+        shell: pwsh
+        env:
+          IncludeIosTargetFrameworks: 'true'
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $env:DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR = $env:DOTNET_ROOT
+          $env:MSBuildEnableWorkloadResolver = 'true'
+          $env:DOTNET_HOST_PATH = Join-Path $env:DOTNET_ROOT 'dotnet'
+          & dotnet build-server shutdown
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & dotnet msbuild src/Core/tests/DeviceTests/Core.DeviceTests.csproj `
+            -p:TargetFramework=net12.0-ios -p:RuntimeIdentifier=iossimulator-arm64 `
+            -getProperty:MSBuildEnableWorkloadResolver,MSBuildSDKsPath,NETCoreSdkVersion `
+            -getItem:SdkSupportedTargetPlatformIdentifier
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 `
+            -Project Core -Platform ios -Configuration Release `
+            -iOSVersion 27.1 -DeviceUdid $env:NET12_SIMULATOR_UDID `
+            -IncludeClasses Microsoft.Maui.DeviceTests.EntryHandlerTests `
+            -Timeout 00:15:00 -OutputDirectory artifacts/log/net12-apple/device-tests
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Remove the dedicated simulator
+        if: always() && matrix.platform == 'ios'
+        run: |
+          set -euo pipefail
+          if [[ "${NET12_SIMULATOR_UDID:-}" =~ ^[A-Fa-f0-9-]{36}$ ]]; then
+            state=$(xcrun simctl list devices -j | jq -er --arg udid "$NET12_SIMULATOR_UDID" \
+              '[.devices[][] | select(.udid == $udid) | .state] | first // "Absent"')
+            if [[ "$state" == Absent ]]; then
+              echo "The dedicated simulator was already removed."
+            else
+              if [[ "$state" != Shutdown ]]; then
+                xcrun simctl shutdown "$NET12_SIMULATOR_UDID"
+              fi
+              xcrun simctl delete "$NET12_SIMULATOR_UDID"
+            fi
+          fi
+
+      - name: Build native sample and UI-test hosts
+        env:
+          IncludeIosTargetFrameworks: ${{ matrix.platform == 'ios' && 'true' || 'false' }}
+          IncludeMacCatalystTargetFrameworks: ${{ matrix.platform == 'maccatalyst' && 'true' || 'false' }}
+        run: |
+          set -euo pipefail
+          export DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR="$DOTNET_ROOT"
+          export MSBuildEnableWorkloadResolver=true
+          export DOTNET_HOST_PATH="$DOTNET_ROOT/dotnet"
+          dotnet build-server shutdown
+          if [[ "$APPLE_PLATFORM" == ios ]]; then
+            manual_manifest=src/Controls/tests/ManualTests/Platforms/iOS/Info.plist
+            backup=$(mktemp "$RUNNER_TEMP/manual-manifest.XXXXXX")
+            cp "$manual_manifest" "$backup"
+            trap 'cp "$backup" "$manual_manifest"; rm -f "$backup"' EXIT
+            /usr/libexec/PlistBuddy -c 'Delete :UIApplicationSceneManifest' "$manual_manifest"
+            set +e
+            dotnet build src/Controls/tests/ManualTests/Controls.ManualTests.csproj \
+              -c Release -f net12.0-ios -r iossimulator-arm64 \
+              -p:CodesignRequireProvisioningProfile=false \
+              --disable-build-servers --verbosity minimal 2>&1 |
+              tee artifacts/log/net12-apple/Controls.ManualTests-ios-missing-scene.log
+            baseline_exit=${PIPESTATUS[0]}
+            set -e
+            cp "$backup" "$manual_manifest"
+            rm -f "$backup"
+            trap - EXIT
+            if [[ "$baseline_exit" == 0 ]] ||
+                ! grep -q 'MT7199' artifacts/log/net12-apple/Controls.ManualTests-ios-missing-scene.log; then
+              echo "::error::The native manual-app negative control did not reproduce MT7199."
+              exit 1
+            fi
+          fi
+          for project in \
+            src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj \
+            src/Controls/samples/Controls.Sample.Profiling/Maui.Controls.Sample.Profiling.csproj \
+            src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj \
+            src/Essentials/samples/Samples/Essentials.Sample.csproj \
+            src/Controls/tests/ManualTests/Controls.ManualTests.csproj; do
+            log_name=$(basename "$project" .csproj)
+            dotnet build "$project" -c Release -f "net12.0-$APPLE_PLATFORM" -r "$APPLE_RID" \
+              -p:CodesignRequireProvisioningProfile=false \
+              --disable-build-servers --verbosity minimal 2>&1 |
+              tee "artifacts/log/net12-apple/$log_name-$APPLE_PLATFORM.log"
+          done
+
+      - name: Upload native validation evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: net12-apple-validation-${{ matrix.platform }}
+          path: artifacts/log/net12-apple
+          retention-days: 1
+          if-no-files-found: warn
+
+  windows-bootstrap:
+    if: github.event.repository.private == false
+    name: Windows SDK bootstrap path handling
+    runs-on: windows-latest
+    timeout-minutes: 30
+    env:
+      CI: 'true'
+      BuildTaskOnlyBuild: 'true'
+      __PWSH_LOGIN_CHECKED: '1'
+      GH_TOKEN: ''
+      GITHUB_TOKEN: ''
+      COPILOT_GITHUB_TOKEN: ''
+    steps:
+      - name: Checkout PR
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Provision and verify a custom SDK directory
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $PSNativeCommandUseErrorActionPreference = $false
+          $logs = Join-Path $env:GITHUB_WORKSPACE 'artifacts/log/net12-bootstrap'
+          New-Item -ItemType Directory -Path $logs -Force | Out-Null
+          $bootstrapDotnet = (Get-Command dotnet).Source
+          & $bootstrapDotnet --version | Tee-Object (Join-Path $logs 'bootstrap-sdk-version.log')
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $sdkRoot = Join-Path $env:RUNNER_TEMP 'Maui SDK with spaces'
+          $forwardRoot = $sdkRoot.Replace('\', '/') + '/'
+          & $bootstrapDotnet build src/DotNet/DotNet.csproj -c Release `
+            "-p:DotNetDirectory=$forwardRoot" -p:InstallWorkloadPacks=false `
+            --verbosity minimal 2>&1 | Tee-Object (Join-Path $logs 'provision.log')
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+          $runtimeRoot = $sdkRoot + ',comma'
+          $sharedRuntimeRoot = Join-Path $runtimeRoot 'shared/Microsoft.NETCore.App'
+          New-Item -ItemType Directory -Path $sharedRuntimeRoot -Force | Out-Null
+          Copy-Item (Join-Path $sdkRoot 'dotnet.exe') (Join-Path $runtimeRoot 'dotnet.exe')
+          foreach ($name in @('host', 'sdk')) {
+            New-Item -ItemType Junction -Path (Join-Path $runtimeRoot $name) `
+              -Target (Join-Path $sdkRoot $name) | Out-Null
+          }
+          Get-ChildItem (Join-Path $sdkRoot 'shared/Microsoft.NETCore.App') -Directory |
+            Where-Object { $_.Name.StartsWith('12.') } | ForEach-Object {
+              New-Item -ItemType Junction -Path (Join-Path $sharedRuntimeRoot $_.Name) `
+                -Target $_.FullName | Out-Null
+            }
+          $globalJson = Get-Content global.json -Raw | ConvertFrom-Json
+          foreach ($version in $globalJson.tools.runtimes.dotnet) {
+            if (Test-Path (Join-Path $sharedRuntimeRoot $version)) {
+              throw "The isolated runtime-install control already contains $version."
+            }
+          }
+          $dotnet = Join-Path $runtimeRoot 'dotnet.exe'
+          $trailingRoot = $runtimeRoot + '\'
+          $trailingArgument = $trailingRoot.Replace(',', '%2C')
+          $projectPath = Join-Path $env:GITHUB_WORKSPACE 'src/DotNet/DotNet.csproj'
+          $originalProject = [System.IO.File]::ReadAllText($projectPath)
+          $environmentCommand = 'Command="&quot;$(DotNetToolPath)&quot; &quot;$(_ToolRuntimeMSBuildPath)&quot; &quot;$(MSBuildProjectFullPath)&quot; -t:_InstallToolRuntimesCore -nologo"'
+          $unescapedCommand = 'Command="&quot;$(DotNetToolPath)&quot; &quot;$(_ToolRuntimeMSBuildPath)&quot; &quot;$(MSBuildProjectFullPath)&quot; -t:_InstallToolRuntimesCore -p:DotNetDirectory=&quot;$(DotNetDirectory)&quot; -nologo"'
+          if (-not $originalProject.Contains($environmentCommand)) {
+            throw 'The Windows control could not locate the actual child-process command.'
+          }
+          try {
+            [System.IO.File]::WriteAllText($projectPath, $originalProject.Replace($environmentCommand, $unescapedCommand))
+            & $bootstrapDotnet msbuild src/DotNet/DotNet.csproj -t:_InstallToolRuntimes `
+              "-p:DotNetDirectory=$trailingArgument" -nologo `
+              -verbosity:minimal 2>&1 | Tee-Object (Join-Path $logs 'unescaped-path.log')
+            $baselineExitCode = $LASTEXITCODE
+          } finally {
+            [System.IO.File]::WriteAllText($projectPath, $originalProject)
+          }
+          Write-Host "Unescaped older-host probe exit code: $baselineExitCode"
+          if ($baselineExitCode -eq 0 -or
+              -not (Select-String -Path (Join-Path $logs 'unescaped-path.log') -SimpleMatch 'MSB1006')) {
+            throw 'The original Windows command did not reproduce the property-separator failure.'
+          }
+
+          & $bootstrapDotnet msbuild src/DotNet/DotNet.csproj -t:_InstallToolRuntimes `
+            "-p:DotNetDirectory=$trailingArgument" -nologo `
+            -verbosity:minimal 2>&1 | Tee-Object (Join-Path $logs 'escaped-path.log')
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $expectedDirectory = "Tool runtime install directory: [$trailingRoot]"
+          if (-not (Get-Content (Join-Path $logs 'escaped-path.log') |
+              Where-Object { $_.Trim() -eq $expectedDirectory })) {
+            throw 'The child MSBuild process did not receive the exact custom SDK directory.'
+          }
+
+          $installed = @(& $dotnet --list-runtimes)
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $installed | Tee-Object (Join-Path $logs 'runtimes.log')
+          foreach ($version in $globalJson.tools.runtimes.dotnet) {
+            if (-not ($installed | Where-Object { $_.StartsWith("Microsoft.NETCore.App $version [") })) {
+              throw "The custom SDK directory is missing the required tool runtime $version."
+            }
+          }
+
+      - name: Upload bootstrap evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: net12-bootstrap-windows
+          path: artifacts/log/net12-bootstrap
+          retention-days: 1
+          if-no-files-found: warn

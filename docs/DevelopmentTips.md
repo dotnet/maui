@@ -23,30 +23,96 @@ The below parameters can be used with the `dotnet cake` command in the root of y
 
 > **Note:** For provisioning .NET SDK and workloads, prefer using `./build.sh -restore` (or `./build.cmd -restore` on Windows) instead of Cake. The Cake targets below are utility commands.
 
-#### Apple builds on .NET 11
+#### Apple builds on .NET 12
 
-The `net11.0` branch uses the Apple 27.0 workload and requires Xcode 27.
+The `main` branch uses the .NET 12 alpha SDK and Apple workloads targeting
+iOS 27.1 and Mac Catalyst/macOS/tvOS 27.0, and requires Xcode 27.1.
 The managed and native iOS deployment minimum is 15.0; the Mac Catalyst
-minimum remains 17.0. The Apple workload manifests also require the .NET 10
-26.5.10322 compatibility SDK packs, which are pinned separately from the
-.NET 11 packs.
+minimum remains 17.0. The Apple workload manifests also require .NET 11
+27.0 compatibility SDK packs, which are pinned separately from the .NET 12
+packs. Their versions and source commits must match the compatibility
+dependencies in the selected `dotnet/macios` build, including the separate iOS pin.
 
-CI compiles Apple frameworks, apps and packages on the GoldenGate Aces image
-until standard hosted images provide Xcode 27. Prebuilt iOS and Mac Catalyst
-UI-test apps execute on `AcesShared` / `ACES_VM_SharedPool_Tahoe`, because the
-GoldenGate Appium execution environment has not been validated. iOS UI tests
-use Xcode 26.5. Both public and internal Mac Catalyst pool defaults use Tahoe
+CI compiles Apple frameworks, apps and packages on the GoldenGate Aces image.
+That image must include Xcode 27.1 before .NET 12 Apple jobs can build. Public
+CI cannot acquire the producer's internal Xcode package, and the shared
+`Provisionator` path requires separately configured credentials. Xcode selection
+verifies the actual major/minor version rather than accepting an older
+installation with the same major-version directory name. Prebuilt iOS UI-test
+apps execute on the `MAUI` pool with `macOS.Name=Tahoe` and
+`macOS.Architecture=arm64` demands; Mac Catalyst UI-test apps use
+`AcesShared` / `ACES_VM_SharedPool_Tahoe`. The GoldenGate Appium execution
+environment has not been validated. iOS UI tests use Xcode 26.5.
+Both public and internal Mac Catalyst pool defaults use Tahoe
 rather than the hosted macOS 14 image; the pool parameters remain
 overridable for image validation. These execution images do not determine the
 app's build SDK. Simulator runtime provisioning and its bounded recovery
 remain enabled.
+
+Android builds require JDK 21, which is selected by `JavaJdkVersion` in
+`eng/Versions.props`. The repository-local SDK also installs the .NET 10 runtime
+declared in `global.json` for tools such as Cake; this does not change the .NET 12
+target frameworks. The fresh-SDK runtime bootstrap preserves custom Windows
+installation paths containing spaces or a trailing backslash. Its Windows
+entrypoint forwards arguments to the shared installer with PowerShell `-File`,
+without modifying the Arcade-owned scripts. On Unix, the child MSBuild process
+receives paths through quoted environment values so literal `$`, spaces, and
+apostrophes are not interpreted as shell syntax.
+On both platforms, the child reads its installation directory from that
+environment data rather than a property argument, preserving commas and
+avoiding command-line property splitting. Unix SDK directories can also contain
+semicolons; the Windows runtime cannot start from a semicolon-containing SDK root.
+It invokes the pinned SDK's MSBuild assembly directly, avoiding the .NET CLI's
+comma-delimited logger path when the SDK directory itself contains a comma.
+This protects runtime provisioning, not arbitrary .NET CLI commands: workload
+restore can still fail on the CLI's own logger parsing for a comma SDK path.
+
+The .NET 12 Android binding generator no longer emits the legacy
+`ThresholdClass` and `ThresholdType` overrides on MAUI's native binding types.
+A net12-and-later-only PublicAPI supplement records those removals without
+changing shipped API history or the retained .NET 11 validation baseline.
+
+The obsolete `AllowImplicitXmlnsDeclarationAttribute` is removed only for
+.NET 12 and later, with a shared Controls API supplement preserving earlier
+baselines. Its guard checks both `NET12_0` and `NET12_0_OR_GREATER` because the
+pinned preview SDK does not yet emit the latter symbol.
+
+Keyboard service lookups use `JavaCast<InputMethodManager>()` to retain the
+managed Java peer when Android type maps are trimmed. A plain CLR cast alone
+does not preserve that peer in the current CoreCLR linker.
+These peers are borrowed from the context and must not be disposed by return-type
+mappings or keyboard helpers.
+
+The `.NET 12 Apple validation` GitHub Actions lane uses the standard `xcode-27`
+runner, which is free for public repositories. It verifies the actual Xcode
+27.1 installation and runs existing Core device tests on a dedicated iOS
+simulator without changing Azure Pipelines billing or pool permissions.
+Device-test apps share a scene manifest and a registered `MauiTestSceneDelegate`
+for SDK 27 lifecycle requirements. Explicit app scene configurations take
+precedence over the shared manifest. Only apps referencing the device-test
+runner receive it; UI hosts and samples use their own `MauiUISceneDelegate`
+configuration on both iOS and Mac Catalyst.
+The manual-test app has its own scene configuration and is included in the
+native application builds; it does not depend on the headless device runner.
+
+.NET 12 iOS simulator builds use `iossimulator-arm64`; the Apple workload no
+longer accepts `iossimulator-x64`. Previous-framework host builds retain their
+existing simulator architectures, and Mac Catalyst builds still include both
+architectures. The shared device runner defaults to `net12.0`, matching the
+device-test projects' restored target frameworks.
+
+The legacy `eng/pipelines/ui-tests.yml` entrypoint uses the same ARM64 `MAUI`
+Tahoe iOS execution demands as `ci-uitests.yml`, not the old x64 pool demand.
+Its `iosXcodeVersion` parameter also matches the prebuilt-app execution
+toolchain. Both CoreCLR and enabled NativeAOT iOS jobs consume these settings;
+Apple app compilation still uses the separately pinned build Xcode.
 
 Normal builds validate the Xcode version rather than bypassing an SDK mismatch.
 To use a particular installed Xcode without changing the global selection,
 set `DEVELOPER_DIR` for the build command:
 
 ```bash
-DEVELOPER_DIR=/Applications/Xcode_27.app/Contents/Developer ./build.sh -restore -build
+DEVELOPER_DIR=/Applications/Xcode_27.1.app/Contents/Developer ./build.sh -restore -build
 ```
 
 #### Tizen backends on .NET 11
@@ -98,9 +164,9 @@ To build and run Blazor Desktop samples, check out the [Blazor Desktop](https://
 ### Public CI Apple toolchains
 
 The macOS template `Build` category uses separate toolchains without removing
-coverage. Previous-framework (.NET 10) cases run on the hosted `macOS-26` image
-with Xcode 26.5, matching their Apple compatibility SDK. The complementary cases
-retain the main branch's GoldenGate/Xcode 27 compilation pool. Compound test
+coverage. Previous-framework (.NET 11) cases run on the GoldenGate Aces image
+with Xcode 27.0, matching their Apple compatibility SDK. The complementary cases
+use Xcode 27.1 on that image. Compound test
 filters use single-quoted arguments in the shared PowerShell runner.
 
 ### Compile using a local `.dotnet\dotnet` via `build.*` scripts on the root folder 

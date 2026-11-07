@@ -3,6 +3,7 @@
   <Import Project="../Shared/Common.targets" />
 
   <PropertyGroup>
+    <UseN1PackageVersions>false</UseN1PackageVersions>
     <!-- NuGet package information -->
     <IsPackable>true</IsPackable>
     <PackageId>Microsoft.NET.Sdk.Maui.Manifest-$(DotNetMauiManifestVersionBand)</PackageId>

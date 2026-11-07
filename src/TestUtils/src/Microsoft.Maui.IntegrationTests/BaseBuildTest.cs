@@ -55,7 +55,7 @@ namespace Microsoft.Maui.IntegrationTests
 					throw new DirectoryNotFoundException($"Build artifact directory '{artifactDir}' was not found.");
 
 				var extraPacksDir = Path.Combine(TestEnvironment.GetTestDirectoryRoot(), "extra-packages");
-				
+
 				// Only delete and recreate if the directory doesn't exist or is empty
 				if (!Directory.Exists(extraPacksDir) || Directory.GetFiles(extraPacksDir).Length == 0)
 				{
@@ -142,8 +142,8 @@ namespace Microsoft.Maui.IntegrationTests
 
 	public abstract class BaseBuildTest : IClassFixture<IntegrationTestFixture>, IDisposable
 	{
-		public const string DotNetCurrent = "net11.0";
-		public const string DotNetPrevious = "net10.0";
+		public const string DotNetCurrent = "net12.0";
+		public const string DotNetPrevious = "net11.0";
 
 		// Versions of .NET MAUI that are used when testing the <MauiVersion> property. These should preferrably
 		// different to the defaults in the SDKs such that the tests can test what would happen if the user puts
@@ -159,7 +159,7 @@ namespace Microsoft.Maui.IntegrationTests
 		// not be the same as the default in MicrosoftMauiPreviousDotNetReleasedVersion in eng/Versions.props
 		// as this would result in the tests not testing anything. If the .NET 9 version of MAUI pulls in 8.0.100
 		// of the .NET 8 MAUI, then this should be 8.0.80 for example.
-		public const string MauiVersionPrevious = "10.0.30";
+		public const string MauiVersionPrevious = "11.0.0-rc.2.26505.5";
 
 		char[] invalidChars = { '{', '}', '(', ')', '$', ':', ';', '\"', '\'', ',', '=', '.', '-', ' ', };
 
@@ -171,7 +171,7 @@ namespace Microsoft.Maui.IntegrationTests
 		{
 			_fixture = fixture;
 			_output = output;
-			
+
 			// Constructor setup (equivalent to [SetUp])
 			if (Directory.Exists(TestDirectory))
 				Directory.Delete(TestDirectory, recursive: true);
@@ -295,7 +295,7 @@ namespace Microsoft.Maui.IntegrationTests
 				var jobAttempt = Environment.GetEnvironmentVariable("SYSTEM_JOBATTEMPT") ?? "1";
 				var attemptFolder = $"attempt-{jobAttempt}";
 				var publishDir = Path.Combine(LogDirectory, attemptFolder);
-				
+
 				if (!Directory.Exists(publishDir))
 				{
 					Directory.CreateDirectory(publishDir);
@@ -304,9 +304,9 @@ namespace Microsoft.Maui.IntegrationTests
 				if (Directory.Exists(TestDirectory))
 				{
 					// Copy all log, binlog, and specific txt files from test directory to publish directory
-					var logPatterns = new[] { 
-						"*.log", 
-						"*.binlog", 
+					var logPatterns = new[] {
+						"*.log",
+						"*.binlog",
 						"acw-map.txt",
 						"custom-linker-options*.txt",
 						"aot-compiler-path*.txt",

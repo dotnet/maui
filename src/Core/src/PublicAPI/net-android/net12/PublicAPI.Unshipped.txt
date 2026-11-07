@@ -1,0 +1,13 @@
+#nullable enable
+*REMOVED*override Microsoft.Maui.MauiViewGroup.ThresholdClass.get -> nint
+*REMOVED*override Microsoft.Maui.MauiViewGroup.ThresholdType.get -> System.Type!
+*REMOVED*override Microsoft.Maui.PlatformAppCompatTextView.ThresholdClass.get -> nint
+*REMOVED*override Microsoft.Maui.PlatformAppCompatTextView.ThresholdType.get -> System.Type!
+*REMOVED*override Microsoft.Maui.PlatformContentViewGroup.ThresholdClass.get -> nint
+*REMOVED*override Microsoft.Maui.PlatformContentViewGroup.ThresholdType.get -> System.Type!
+*REMOVED*override Microsoft.Maui.PlatformDrawable.ThresholdClass.get -> nint
+*REMOVED*override Microsoft.Maui.PlatformDrawable.ThresholdType.get -> System.Type!
+*REMOVED*override Microsoft.Maui.PlatformViewGroup.ThresholdClass.get -> nint
+*REMOVED*override Microsoft.Maui.PlatformViewGroup.ThresholdType.get -> System.Type!
+*REMOVED*override Microsoft.Maui.PlatformWrapperView.ThresholdClass.get -> nint
+*REMOVED*override Microsoft.Maui.PlatformWrapperView.ThresholdType.get -> System.Type!

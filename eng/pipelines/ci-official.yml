@@ -30,7 +30,7 @@ schedules:
     - net*.0
     - inflight/current
     exclude:
-    # Main owns .NET 11 development; older trains use their release branches.
+    # Main owns .NET 12 development; older trains use their release branches.
     - net10.0
     - net11.0
   always: true
@@ -49,7 +49,7 @@ parameters:
     demands:
       - ImageOverride -equals 1es-windows-2022
     os: windows
-# Hosted macOS does not yet provide Xcode 27; use the same image as PR builds.
+# Hosted macOS does not yet provide Xcode 27.1; use the same image as PR builds.
 - name: MacOSPool
   type: object
   default:

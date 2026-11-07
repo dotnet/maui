@@ -168,6 +168,7 @@ pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project Core -
 - Simulator/emulator selection and boot logic is handled by `.github/scripts/shared/Start-Emulator.ps1`
 - xharness manages test execution and reporting for iOS/MacCatalyst/Android
 - Class-filtered XHarness retries use isolated child output directories; Android also uses a per-run result filename so stale diagnostics or device-side XML cannot be reused
+- Android names the generated `<package>.TestInstrumentation` component explicitly. Package-only instrumentation lookup can fail on API 36 with `Invalid userId -2` before the test process starts.
 - Windows runs the built device-test app directly and reads its xUnit XML results, matching `eng/devices/windows.cake`
 
 ## Test Filtering
@@ -310,6 +311,7 @@ dotnet xharness apple test \
 dotnet xharness android test \
   --app path/to/app.apk \
   --package-name com.microsoft.maui.controls.devicetests \
+  --instrumentation com.microsoft.maui.controls.devicetests.TestInstrumentation \
   --device-id emulator-5554 \
   -o artifacts/log \
   --timeout 01:00:00 \

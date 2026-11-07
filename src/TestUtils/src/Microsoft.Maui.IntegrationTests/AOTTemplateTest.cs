@@ -10,7 +10,6 @@ public class AOTTemplateTest : BaseTemplateTests
 	[InlineData("maui", $"{DotNetCurrent}-android", "android-x64")]
 	[InlineData("maui", $"{DotNetCurrent}-ios", "ios-arm64")]
 	[InlineData("maui", $"{DotNetCurrent}-ios", "iossimulator-arm64")]
-	[InlineData("maui", $"{DotNetCurrent}-ios", "iossimulator-x64")]
 	[InlineData("maui", $"{DotNetCurrent}-maccatalyst", "maccatalyst-arm64")]
 	[InlineData("maui", $"{DotNetCurrent}-maccatalyst", "maccatalyst-x64")]
 	[InlineData("maui", $"{DotNetCurrent}-windows10.0.19041.0", "win-x64")]
@@ -67,7 +66,6 @@ public class AOTTemplateTest : BaseTemplateTests
 	[InlineData("maui", $"{DotNetCurrent}-android", "android-x64")]
 	[InlineData("maui", $"{DotNetCurrent}-ios", "ios-arm64")]
 	[InlineData("maui", $"{DotNetCurrent}-ios", "iossimulator-arm64")]
-	[InlineData("maui", $"{DotNetCurrent}-ios", "iossimulator-x64")]
 	[InlineData("maui", $"{DotNetCurrent}-maccatalyst", "maccatalyst-arm64")]
 	[InlineData("maui", $"{DotNetCurrent}-maccatalyst", "maccatalyst-x64")]
 	[InlineData("maui", $"{DotNetCurrent}-windows10.0.19041.0", "win-x64")]
@@ -147,7 +145,7 @@ public class AOTTemplateTest : BaseTemplateTests
 		{
 			"PublishAot=true",
 			"PublishAotUsingRuntimePack=true",  // TODO: This parameter will become obsolete https://github.com/dotnet/runtime/issues/87060 in net9
-			"_IsPublishing=true", // This makes 'dotnet build -r iossimulator-x64' equivalent to 'dotnet publish -r iossimulator-x64'
+			"_IsPublishing=true", // This makes 'dotnet build -r iossimulator-arm64' equivalent to 'dotnet publish -r iossimulator-arm64'
 			"IlcTreatWarningsAsErrors=false",
 			"TrimmerSingleWarn=false"
 		};

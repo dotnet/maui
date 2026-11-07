@@ -352,6 +352,14 @@ public class SimpleTemplateTest : BaseTemplateTests
 		string target = shouldPack ? "Pack" : "";
 		Assert.True(DotnetInternal.Build(projectFile, config, target: target, binlogPath: binlogDir, properties: buildProps, output: _output),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
+
+		if (!string.IsNullOrEmpty(mv))
+		{
+			using var assets = JsonDocument.Parse(File.ReadAllText(Path.Combine(projectDir, "obj", "project.assets.json")));
+			var controlsPackage = Assert.Single(assets.RootElement.GetProperty("libraries").EnumerateObject(),
+				package => package.Name.StartsWith("Microsoft.Maui.Controls/", StringComparison.Ordinal));
+			Assert.Equal($"Microsoft.Maui.Controls/{mv}", controlsPackage.Name);
+		}
 	}
 
 #if ENABLE_PREVIOUS_TFM_BUILDS

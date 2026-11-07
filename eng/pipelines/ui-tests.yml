@@ -65,6 +65,10 @@ parameters:
     type: boolean
     default: false
 
+  - name: iosXcodeVersion
+    type: string
+    default: '26.5'
+
   - name: androidPool
     type: object
     default:
@@ -85,11 +89,10 @@ parameters:
   - name: iosPool
     type: object
     default:
-      name: $(iosTestsVmPool)
-      vmImage: $(iosTestsVmImage)
+      name: MAUI
       demands:
-        - macOS.Name -equals Sequoia
-        - macOS.Architecture -equals x64
+        - macOS.Name -equals Tahoe
+        - macOS.Architecture -equals arm64
   
   - name: windowsBuildPool
     type: object
@@ -116,6 +119,7 @@ stages:
       androidPool: ${{ parameters.androidPool }}
       androidLinuxPool: ${{ parameters.androidPoolLinux }}
       iosPool: ${{ parameters.iosPool }}
+      iosXcodeVersion: ${{ parameters.iosXcodeVersion }}
       windowsPool: ${{ parameters.windowsPool }}
       windowsBuildPool: ${{ parameters.windowsBuildPool }}
       macosPool: ${{ parameters.macosPool }}
@@ -142,5 +146,3 @@ stages:
           ios: $(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.iOS.Tests/Controls.TestCases.iOS.Tests.csproj
           winui: $(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.WinUI.Tests/Controls.TestCases.WinUI.Tests.csproj
           mac: $(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.Mac.Tests/Controls.TestCases.Mac.Tests.csproj
-
-

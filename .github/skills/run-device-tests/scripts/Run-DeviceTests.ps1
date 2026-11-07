@@ -321,7 +321,7 @@ function Get-XHarnessTestResultSnapshot {
     }
 
     foreach ($file in @(Get-ChildItem -Path $OutputDirectory -File -Recurse -ErrorAction SilentlyContinue |
-            Where-Object { $_.Name -ieq $ResultFileName })) {
+            Where-Object { $_.Name -ilike $ResultFileName })) {
         $snapshot[$file.FullName] = "$($file.Length):$($file.LastWriteTimeUtc.Ticks)"
     }
 
@@ -341,7 +341,7 @@ function Get-FreshXHarnessTestResultFiles {
 
     $freshFiles = [System.Collections.Generic.List[string]]::new()
     foreach ($file in @(Get-ChildItem -Path $OutputDirectory -File -Recurse -ErrorAction SilentlyContinue |
-            Where-Object { $_.Name -ieq $ResultFileName })) {
+            Where-Object { $_.Name -ilike $ResultFileName })) {
         $fingerprint = "$($file.Length):$($file.LastWriteTimeUtc.Ticks)"
         if (-not $BeforeSnapshot.ContainsKey($file.FullName) -or $BeforeSnapshot[$file.FullName] -ne $fingerprint) {
             $freshFiles.Add($file.FullName)
@@ -1381,6 +1381,10 @@ try {
     $script:XHarnessDeviceTestResultFiles = @()
     $testOutputDirectory = $OutputDirectory
     $xharnessResultFileName = "testResults.xml"
+    if ($Platform -eq "ios" -or $Platform -eq "maccatalyst") {
+        # Apple XHarness converts results to target/timestamp-qualified xUnit files.
+        $xharnessResultFileName = "xunit-test-*.xml"
+    }
 
     if ($platformConfig.UsesXHarness) {
         # ═══════════════════════════════════════════════════════════
@@ -1439,6 +1443,7 @@ try {
                     "android", "test"
                     "--app", $appPath
                     "--package-name", $androidPackageName
+                    "--instrumentation", "$androidPackageName.TestInstrumentation"
                     "--device-id", $deviceUdidToUse
                     "-o", $testOutputDirectory
                     "--timeout", $Timeout

@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using Foundation;
 using UIKit;
 
 namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner;
@@ -7,6 +8,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner;
 /// <summary>
 /// Attaches the headless runner's window to its scene before starting tests.
 /// </summary>
+[Register(nameof(MauiTestSceneDelegate))]
 public class MauiTestSceneDelegate : MauiUISceneDelegate
 {
 	public override void WillConnect(UIScene scene, UISceneSession session, UISceneConnectionOptions connectionOptions)
