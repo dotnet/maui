@@ -23,8 +23,6 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 
 		const string s_company = "Microsoft";
 
-		const string s_versionPropsFile = "eng/Versions.props";
-
 		[Theory]
 		[MemberData(nameof(References))]
 		public void AssemblyTitle(string assemblyName)
@@ -45,28 +43,22 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			Assert.Equal(0, actual.Revision);
 		}
 
-		// [Theory]
-		// [MemberData(nameof(References))]
-		// public void FileVersion(string assemblyName)
-		// {
-		// 	Assembly testAssembly = System.Reflection.Assembly.Load(assemblyName);
-		// 	FileVersionInfo actual = FileVersionInfo.GetVersionInfo(testAssembly.Location);
-		// 	string versionString = GetFileFromRoot(s_versionPropsFile);
-		// 	//TODO read MajorVersion from Versions.props
-		// 	var xml = new System.Xml.XmlDocument();
-		// 	xml.LoadXml(versionString);
-		// 	var majorString = xml.SelectSingleNode("//MajorVersion").InnerText;
-		// 	var minorString = xml.SelectSingleNode("//MinorVersion").InnerText;
-		// 	Version expected = Version.Parse($"{majorString}.{minorString}.0.0");
-		// 	Assert.Equal(expected.Major, actual.FileMajorPart);
-		// 	Assert.Equal(expected.Minor, actual.FileMinorPart);
-		// 	// Fails locally
-		// 	//Assert.Equal(expected.Build, actual.FileBuildPart);
-		// 	//We need to enable this
-		// 	//	Assert.Equal(ThisAssembly.Git.Commits, version.FilePrivatePart);
-		// 	Assert.Equal(s_productName, actual.ProductName);
-		// 	Assert.Equal(s_company, actual.CompanyName);
-		// }
+		[Theory]
+		[MemberData(nameof(References))]
+		public void FileVersion(string assemblyName)
+		{
+			// Arcade uses a sentinel for local builds and a build-derived version for CI.
+			// Embed the evaluated version so this also works in a source-free Helix payload.
+			var metadata = Assert.Single(typeof(AssemblyInfoTests).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>(),
+				attribute => attribute.Key == "ExpectedFileVersion");
+			Version expected = Version.Parse(metadata.Value);
+			Assembly testAssembly = System.Reflection.Assembly.Load(assemblyName);
+			FileVersionInfo actual = FileVersionInfo.GetVersionInfo(testAssembly.Location);
+			Assert.Equal(expected.Major, actual.FileMajorPart);
+			Assert.Equal(expected.Minor, actual.FileMinorPart);
+			Assert.Equal(expected.Build, actual.FileBuildPart);
+			Assert.Equal(expected.Revision, actual.FilePrivatePart);
+		}
 
 		[Theory]
 		[MemberData(nameof(References))]

@@ -14,7 +14,8 @@ The pipeline accepts:
 
 - `ghOwner` and `ghRepo`: the GitHub owner and repository name used to resolve
   the BAR build. Keep `ghOwner: dotnet` and enter `ghRepo: android-libraries`
-  for an Android libraries release. For SkiaSharp, use `ghOwner: mono` and
+  for an Android libraries release or `ghRepo: maui-labs` for a MAUI Labs
+  release. For SkiaSharp, use `ghOwner: mono` and
   `ghRepo: SkiaSharp`. For SkiaSharp Extended, use `ghOwner: mono` and
   `ghRepo: SkiaSharp.Extended`.
 - Workload behavior is inferred for `dotnet/android`, `dotnet/macios`, and
@@ -115,6 +116,48 @@ NuGet.org may reserve a package version and return HTTP 409 before that package 
 After each publish, the pipeline polls NuGet.org for every expected package ID and normalized version with a 30-minute deadline, then fails with the missing identities if indexing does not complete. The manifest stage depends on successful pack publication and verification, so manifest approval is unavailable until every selected pack is resolvable.
 
 The production service connection must be protected by Azure DevOps Environment and/or service-connection approval checks outside repository YAML. Before production use, release owners must confirm that it owns every selected package ID and has enough quota for the maximum release payload. If one identity cannot cover the payload, publishing must be split into deterministic sequential batches rather than reintroducing repository API keys.
+
+## Workload sets and Visual Studio insertion
+
+Publishing a MAUI build to a workload release channel is the handoff to
+[`dotnet/workload-versions`](https://github.com/dotnet/workload-versions), not a
+direct Visual Studio insertion. The workload set selects the workload versions
+that ship together. The release handoff is:
+
+1. Promote the intended MAUI BAR build to the matching workload release channel
+   using `pushWorkloadSet: true` and `pushPackages: true` in the MAUI release
+   pipeline. This makes the build available for consumption; it does not by itself
+   update a workload set or create a Visual Studio PR. Release-branch default
+   channel setup is documented in
+   [Build Asset Manifest Promotion](../eng/README.md#build-asset-manifest-promotion).
+2. Review and merge the dependency update in the appropriate
+   `dotnet/workload-versions` release branch. Confirm that its
+   `eng/Version.Details.xml` selects the intended MAUI manifest version and source
+   commit, and follow that repository's
+   [release process](https://github.com/dotnet/workload-versions/blob/main/doc/release-process.md)
+   for workload set branding and verification.
+3. After the update flows to the internal mirror, run the workload staging
+   pipeline for that source branch. Visual Studio insertion is opt-in: the
+   [official pipeline](https://github.com/dotnet/workload-versions/blob/eng/eng/pipelines/official.yml)
+   defaults `createVSInsertion` to `false`. For an insertion, enable it, include
+   `maui` in `workloadDropNames`, and select the intended Visual Studio release
+   branches in `primaryVsInsertionBranches` (components and packs) and, if needed,
+   `secondaryVsInsertionBranches` (packs only). Do not assume the default target
+   of `main` is correct for a service release.
+4. The workload staging pipeline prepares the workload drops and its
+   [insertion job](https://github.com/dotnet/workload-versions/blob/eng/eng/pipelines/templates/jobs/workload-insertion-job.yml)
+   automatically creates or updates a Visual Studio insertion PR for each
+   configured target branch. The
+   [insertion task](https://github.com/dotnet/workload-versions/blob/eng/eng/pipelines/templates/steps/workload-insertion-steps.yml)
+   updates the workload component JSON values, including the selected MAUI
+   payload. Track the generated PR and its validation through merge; a successful
+   MAUI release or workload set dependency update alone does not establish that
+   Visual Studio has consumed the change.
+
+Workload set staging, Visual Studio insertion, and NuGet.org publishing are
+separate pipeline choices. Follow the workload repository's release approvals
+and verification steps rather than assuming that a dependency PR merge triggers
+all three.
 
 ## Required internal validation
 

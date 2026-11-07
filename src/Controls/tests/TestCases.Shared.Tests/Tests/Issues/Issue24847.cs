@@ -16,11 +16,18 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Brush)]
 		public void BackgroundFrameResizesFastAndCorrectly()
 		{
+			Exception? exception = null;
+
 			App.WaitForElement("ChangeSizeBtn");
-			VerifyScreenshot("BackgroundFrameResizesFastAndCorrectly");
+			VerifyScreenshotOrSetException(ref exception, "BackgroundFrameResizesFastAndCorrectly");
 
 			App.Tap("ChangeSizeBtn");
-			VerifyScreenshot("BackgroundFrameResizesFastAndCorrectlySizeChanged");
+			VerifyScreenshotOrSetException(ref exception, "BackgroundFrameResizesFastAndCorrectlySizeChanged");
+
+			if (exception is not null)
+			{
+				throw exception;
+			}
 		}
 	}
 }

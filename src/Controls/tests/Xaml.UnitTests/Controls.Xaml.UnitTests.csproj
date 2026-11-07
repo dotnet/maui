@@ -107,4 +107,10 @@
     <Content Include="MSBuild\_Directory.Build.targets" CopyToOutputDirectory="PreserveNewest" Link="MSBuild\_Directory.Build.targets" />
   </ItemGroup>
 
+  <Target Name="AddExpectedFileVersionMetadata" BeforeTargets="GetAssemblyAttributes" DependsOnTargets="GetAssemblyVersion">
+    <ItemGroup>
+      <AssemblyMetadata Include="ExpectedFileVersion" Value="$(FileVersion)" />
+    </ItemGroup>
+  </Target>
+
 </Project>

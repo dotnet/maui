@@ -1,3 +1,4 @@
+#if TEST_FAILS_ON_CATALYST //https://github.com/dotnet/maui/issues/39956
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -29,3 +30,4 @@ public class Issue33274 : _IssuesUITest
 		Assert.That(App.FindElement("Minimumlabel").GetText(), Is.EqualTo("1"));
 	}
 }
+#endif
