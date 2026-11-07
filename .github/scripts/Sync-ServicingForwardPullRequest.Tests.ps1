@@ -44,8 +44,8 @@ BeforeAll {
             $response = $null
             if ($endpoint -match '/contents/eng/Versions.props$') {
                 $major = if ($fields.ref -ceq $server.Target) { 12 } else { 11 }
-                $label = if ($server.Servicing -and $major -eq 11) { 'servicing' } else { 'ci.main' }
-                $stable = if ($server.Servicing -and $major -eq 11) { 'true' } else { 'false' }
+                $label = if ($major -eq 11) { $server.SourceLabel } else { 'ci.main' }
+                $stable = if ($major -eq 11) { $server.SourceStable } else { 'false' }
                 $xml = "<Project><PropertyGroup><MajorVersion>$major</MajorVersion><PreReleaseVersionLabel>$label</PreReleaseVersionLabel><StabilizePackageVersion>$stable</StabilizePackageVersion></PropertyGroup></Project>"
                 $response = @{ encoding = 'base64'; content = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($xml)) }
             }
@@ -127,7 +127,7 @@ Describe 'Servicing forward publication recovery' {
             Refs = @{ net11 = $source; main = $target }
             Trees = @{}; Commits = @{}; Blobs = @{}
             Prs = [Collections.Generic.List[object]]::new()
-            Counter = 1000; Writes = 0; FailPr = 0; FailHead = 0; Servicing = $false
+            Counter = 1000; Writes = 0; FailPr = 0; FailHead = 0; SourceLabel = 'ci.main'; SourceStable = 'false'
         }
         $statePath = Join-Path $TestDrive 'state.json'
         @{
@@ -219,8 +219,13 @@ Describe 'Servicing forward publication recovery' {
         $global:MauiForwardFixture.Writes | Should -Be $writes
     }
 
-    It 'does not checkpoint or forward a transient servicing tip' {
-        $global:MauiForwardFixture.Servicing = $true
+    It 'does not checkpoint or forward incomplete housekeeping <Label>/<Stable>' -ForEach @(
+        @{ Label = 'servicing'; Stable = 'true' }
+        @{ Label = 'servicing'; Stable = 'false' }
+        @{ Label = 'ci.main'; Stable = 'true' }
+    ) {
+        $global:MauiForwardFixture.SourceLabel = $Label
+        $global:MauiForwardFixture.SourceStable = $Stable
         (Invoke-ForwardFixture).status | Should -Be 'waiting-for-fixes-housekeeping'
         $global:MauiForwardFixture.Writes | Should -Be 0
     }

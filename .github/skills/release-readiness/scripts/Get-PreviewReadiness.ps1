@@ -2940,10 +2940,15 @@ if ($componentPinsCheck) {
     $checks += $componentPinsCheck
 }
 
+$nightlyParameters = @{}
+$nightlyMetadataError = $null
 if ($branchRoles.configured) {
     try {
-        $null = Get-ReadinessNightlyParameters -Roles $branchRoles -Major $majorVersion
+        $nightlyVersionContent = Get-ContentFromRepo -Path 'eng/Versions.props' -Ref $branchRoles.nightlyBranch
+        $nightlyParameters = Get-ReadinessNightlyParameters -Roles $branchRoles -Major $majorVersion `
+            -VersionContent $nightlyVersionContent
     } catch {
+        $nightlyMetadataError = $_.Exception.Message
         $checks += New-Check -Area 'Configured nightly lane metadata' -Status 'UNKNOWN' `
             -Details $_.Exception.Message `
             -NextAction "Verify ``$($branchRoles.nightlyBranch)`` version advance and active-lane publication. Configuration is not signed-build proof."
@@ -3013,7 +3018,7 @@ if ($Script:NightlyFeedHelperLoaded -and
         $nfBand = "$majorVersion.0.0-$nfLabel.$nfIteration"
         $nfBandPrefix = '^' + [regex]::Escape("$nfBand.")
 
-        $nightlyParameters = Get-ReadinessNightlyParameters -Roles $branchRoles -Major $majorVersion
+        if ($nightlyMetadataError) { throw $nightlyMetadataError }
         $nfFresh = Resolve-NightlyDogfoodFreshness -Feed $nfFeed -BandPrefixRegex $nfBandPrefix @nightlyParameters
         if ($null -eq $nfFresh) { $nfFresh = @{ unknown = $true } }
 
@@ -3022,8 +3027,10 @@ if ($Script:NightlyFeedHelperLoaded -and
         $nfFresh['laneLabel'] = $nfLaneLabel
         $nfFresh['feedUrl'] = $nfFeedUrl
         $nfFresh['versionPrefix'] = $nfBandPrefix
-        $nfFresh['branch'] = $branchRoles.nightlyBranch
-        $nfFresh['laneLabel'] += " · ``$($branchRoles.nightlyBranch)`` (feed evidence only, not signed-build proof)"
+        if ($branchRoles.configured -and $nfBuildType -eq 'inflight') {
+            $nfFresh['branch'] = $branchRoles.nightlyBranch
+            $nfFresh['laneLabel'] += " · ``$($branchRoles.nightlyBranch)`` (feed evidence only, not signed-build proof)"
+        }
 
         $report.NightlyFeed = $nfFresh
         $nightlyFeedBanner = Format-NightlyFeedBanner -Freshness $nfFresh -Now ([DateTime]::UtcNow)

@@ -268,8 +268,10 @@ function ConvertFrom-GhJsonArrayResult {
     }
 }
 
-function Invoke-Git([string]$Cmd) {
-    $argList = $Cmd -split ' ' | Where-Object { $_ -ne '' }
+function Invoke-Git([string]$Cmd, [string[]]$Arguments) {
+    $argList = if ($PSBoundParameters.ContainsKey('Arguments')) { $Arguments } else {
+        $Cmd -split ' ' | Where-Object { $_ -ne '' }
+    }
     $out = & git @argList 2>$null
     if ($LASTEXITCODE -ne 0) { return $null }
     return $out
@@ -2024,6 +2026,8 @@ function Get-CandidatePrResolution {
         REST API. Fail closed: an unreadable association excludes the PR (tracked
         separately as `unverifiable`, distinct from a confirmed non-maintainer
         `spoofer`, so a transient blip during a real cut isn't mislabeled).
+        The configured managed candidate also accepts github-actions[bot] after
+        verifying its Bot identity, exact same-repository head/base, and marker.
 
         The `gh pr list` projection requests the richer fields (createdAt, isDraft,
         mergeable, reviewDecision, state) the prominent section renders — all are
@@ -2100,6 +2104,25 @@ function Get-CandidatePrResolution {
             $res.unverifiable++
         } elseif ($maintainerAssociations -contains $assoc) {
             $res.candidates += $pr
+        } elseif ($roles -and $roles.configured -and
+            (Get-MetadataValue -Container (Get-MetadataValue -Container $pr -Name 'author') -Name 'login') -ceq 'github-actions[bot]') {
+            $proofRaw = Invoke-Gh @('api', "repos/$($Ctx.repo)/pulls/$($pr.number)") -Quiet
+            if (-not $proofRaw) { $res.unverifiable++; continue }
+            $proof = $proofRaw | ConvertFrom-Json
+            $user = Get-MetadataValue -Container $proof -Name 'user'
+            $head = Get-MetadataValue -Container $proof -Name 'head'
+            $base = Get-MetadataValue -Container $proof -Name 'base'
+            if ((Get-MetadataValue -Container $user -Name 'login') -ceq 'github-actions[bot]' -and
+                (Get-MetadataValue -Container $user -Name 'type') -ceq 'Bot' -and
+                (Get-MetadataValue -Container (Get-MetadataValue -Container $head -Name 'repo') -Name 'full_name') -ceq $Ctx.repo -and
+                (Get-MetadataValue -Container (Get-MetadataValue -Container $base -Name 'repo') -Name 'full_name') -ceq $Ctx.repo -and
+                (Get-MetadataValue -Container $head -Name 'ref') -ceq $roles.candidateBranch -and
+                (Get-MetadataValue -Container $base -Name 'ref') -ceq $Ctx.mainBranch -and
+                ([string](Get-MetadataValue -Container $proof -Name 'body')).Contains('<!-- maui-release-tracking:production:candidate -->')) {
+                $res.candidates += $pr
+            } else {
+                $res.spoofers++
+            }
         } else {
             $res.spoofers++
         }
@@ -2250,10 +2273,17 @@ function Resolve-Context {
           [switch]$InheritFromPriorSr, [switch]$Shipped,
           [string]$CandidateTargetBranch, [string]$SurveyRef, [string]$BaselineRef)
 
-    if ($SrBranch -notmatch '^release/(\d+)\.\d+\.\d+xx-sr[1-9]\d*$') {
-        throw "Expected a release/<major>.0.<band>xx-sr<N> branch, not '$SrBranch'."
+    if ($SrBranch -notmatch '^release/(\d+)\.\d+\.\d+xx-(?:sr|preview|rc)[1-9]\d*$') {
+        throw "Expected a versioned SR/Preview/RC release branch, not '$SrBranch'."
     }
     $major = [int]$Matches[1]
+    foreach ($revision in @($MainBranch, $SurveyRef, $BaselineRef) + @($ExcludeBranches)) {
+        if ([string]::IsNullOrWhiteSpace($revision)) { continue }
+        if ($revision -cnotmatch '^(?:refs/(?:heads|tags)/|origin/)?[A-Za-z0-9][A-Za-z0-9._/-]*(?:~[0-9]+|\^[0-9]+)?$' -or
+            $revision.Contains('..')) {
+            throw "Release revision '$revision' must identify one safe Git revision, not arguments or a range."
+        }
+    }
     $explicitSource = -not [string]::IsNullOrWhiteSpace($MainBranch)
     $roles = Resolve-ReadinessBranchRoles -Major $major -SourceBranch $MainBranch
     $MainBranch = $roles.sourceBranch
@@ -2333,7 +2363,7 @@ function Resolve-Context {
         if (-not $priorSrRef) {
             throw "Candidate '$targetSrBranch' has no verified GA/prior stable-tag baseline. Fetch the immutable tag or pass -BaselineRef <verified-ref>; no SR0 or clean inventory was inferred."
         }
-        $priorSrSha = Invoke-Git "rev-parse $priorSrRef"
+        $priorSrSha = Invoke-Git -Arguments @('rev-parse', '--verify', '--end-of-options', "$priorSrRef^{commit}")
         if (-not $priorSrSha) {
             throw "Candidate mode requires -SrBranch to be the prior SR (used as exclude baseline). '$priorSrRef' not found."
         }
@@ -2342,7 +2372,9 @@ function Resolve-Context {
                 $roles.candidateBranch
             } else { $MainBranch }
         }
-        $effectiveSrRef = if ($SurveyRef -match '^(origin/|refs/)') { $SurveyRef } else { "origin/$SurveyRef" }
+        $effectiveSrRef = if ($SurveyRef -match '^(origin/|refs/)' -or $SurveyRef -match '^[0-9a-f]{40}$') {
+            $SurveyRef
+        } else { "origin/$SurveyRef" }
         # Exclude prior SR from main, so we see only "new since last SR" commits
         $effectiveExcludes = @($priorSrRef)
         Write-Host "Candidate mode: surveying $effectiveSrRef vs prior SR $priorSrRef" -ForegroundColor Cyan
@@ -2386,13 +2418,13 @@ function Resolve-Context {
         Write-Host "  -InheritFromPriorSr active: SR-to-be contents will be augmented with $priorSrRef-only commits" -ForegroundColor Cyan
     }
 
-    $srHead = Invoke-Git "rev-parse $effectiveSrRef"
+    $srHead = Invoke-Git -Arguments @('rev-parse', '--verify', '--end-of-options', "$effectiveSrRef^{commit}")
     if (-not $srHead) {
         throw "Branch '$effectiveSrRef' not found. Did you push it? (try without -NoFetch)"
     }
-    $srSubject = Invoke-Git "log -1 --format=%s $effectiveSrRef"
+    $srSubject = Invoke-Git -Arguments @('log', '-1', '--format=%s', $srHead, '--')
 
-    $mainHead = Invoke-Git "rev-parse origin/$MainBranch"
+    $mainHead = Invoke-Git -Arguments @('rev-parse', '--verify', '--end-of-options', "origin/$MainBranch^{commit}")
     if (-not $mainHead) { throw "Fix-source branch 'origin/$MainBranch' not found. Fetch the configured source before reporting ancestry." }
     if ($roles.configured -and -not $explicitSource) {
         $sourceVersion = Get-VersionsPropsState -Ref "origin/$MainBranch"
@@ -3789,18 +3821,26 @@ function Classify-RegressionCandidate {
         if ($unreverted.Count -gt 0) {
             $prList = ($unreverted | ForEach-Object { "#$_" }) -join ', '
             if ($ctxModeEarly -eq 'candidate') {
-                $candidateOnSource = $Ctx.srBranch -eq $Ctx.mainBranch
-                if (-not $candidateOnSource) {
-                    $candidateHead = Get-MetadataValue -Container $Ctx -Name 'srHeadSha'
-                    $candidateOnSource = $candidateHead -and (Test-CommitOnBranch -Sha $candidateHead -BranchRef "origin/$($Ctx.mainBranch)")
+                $sourceFixes = @{}
+                foreach ($fixPr in $unreverted) {
+                    $fixCommits = @($fixingSrCommits | Where-Object {
+                        [int](Get-MetadataValue -Container $_ -Name 'backportPr' -Default 0) -eq $fixPr -or
+                        [int](Get-MetadataValue -Container $_ -Name 'sourcePr' -Default 0) -eq $fixPr -or
+                        $fixPr -in @(Get-MetadataValue -Container $_ -Name 'sourcePrs')
+                    })
+                    $sourceFixes[$fixPr] = $Ctx.srBranch -eq $Ctx.mainBranch -or @($fixCommits | Where-Object {
+                        $sha = [string](Get-MetadataValue -Container $_ -Name 'sha')
+                        $sha -and (Test-CommitOnBranch -Sha $sha -BranchRef "origin/$($Ctx.mainBranch)")
+                    }).Count -gt 0
                 }
+                $candidateOnSource = @($sourceFixes.Values | Where-Object { $_ }).Count -gt 0
                 return @{
                     classification    = if ($candidateOnSource) { 'merged-on-main-no-backport' } else { 'merged-non-main-only' }
                     confidence        = 'medium'
                     verifiedFromSrContents = $false
                     evidence          = @("Candidate survey of $($Ctx.srBranch) includes a fix for #$($Issue.number) via $prList, but the eventual SR cut ancestry is not yet available")
                     candidateFixPrs   = @($unreverted | ForEach-Object {
-                        @{ number = $_; baseRef = $Ctx.srBranch; state = 'MERGED'; onMain = [bool]$candidateOnSource; evidenceType = 'candidate-main-fix'; backports = @(); title = '' }
+                        @{ number = $_; baseRef = $Ctx.srBranch; state = 'MERGED'; onMain = [bool]$sourceFixes[$_]; evidenceType = 'candidate-main-fix'; backports = @(); title = '' }
                     })
                     recommendedAction = if ($candidateOnSource) { $candidateCutLagGuidance } else {
                         "Integrate the approved staged candidate into $($Ctx.mainBranch), then verify the release cut; staged contents alone do not prove source ancestry."
@@ -6254,6 +6294,8 @@ function Format-MarkdownReport {
                 # main merge' row + /backport action, hiding the main PR.
                 $openMain = Select-OpenMainFixPr -CandidateFixPrs $r.candidateFixPrs -MainBranch $mainBranchName
                 if ($openMain) {
+                    $landingRoles = Get-MetadataValue -Container $Data.metadata -Name 'branchRoles'
+                    $configuredLanding = $landingRoles -and $landingRoles.configured -and $mode -ne 'shipped'
                     $prLink = "[#$($openMain.number)]($RepoUrl/pull/$($openMain.number))"
                     $base = if ($openMain.baseRef) { "``$($openMain.baseRef)``" } else { "``$mainBranchName``" }
                     $postShipOpenFix = ($mode -eq 'shipped')
@@ -6261,8 +6303,12 @@ function Format-MarkdownReport {
                         prCell  = $prLink
                         baseCell = $base
                         issCell = $issCell
-                        statusCell = if ($postShipOpenFix) { '🔵 OPEN — post-ship fix decision' } else { "🔵 OPEN — awaiting $mainBranchName merge" }
-                        actionCell = if ($mode -eq 'candidate') {
+                        statusCell = if ($postShipOpenFix) { '🔵 OPEN — post-ship fix decision' } elseif ($configuredLanding) {
+                            '🔵 OPEN — maintainer review and inflight landing'
+                        } else { "🔵 OPEN — awaiting $mainBranchName merge" }
+                        actionCell = if ($configuredLanding) {
+                            "After approval, a maintainer manually retargets this PR to $($landingRoles.inflightBranch) and merges there after final-base CI; do not merge the individual fix into $mainBranchName."
+                        } elseif ($mode -eq 'candidate') {
                             "Watch for merge to $mainBranchName before the SR cut; rerun readiness after the release/...-srN branch is cut to get the exact backport command"
                         } elseif ($postShipOpenFix) {
                             "After merge, decide whether this warrants a hotfix to the shipped SR or should ride the next SR; no automatic current-SR backport applies."

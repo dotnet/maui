@@ -5365,6 +5365,31 @@ $md = Format-MarkdownReport -Data $mdData -RepoUrl 'https://github.com/dotnet/ma
                             -TrackerKey 'net10-sr7' -MaxBodyBytes 60000
 Assert-Eq -Label "ordinary report omits active-hotfix marker" -Expected $false `
     -Actual ($md -match 'release-readiness-hotfix:')
+$configuredInbound = $mdData.Clone()
+$configuredInbound.metadata = $mdData.metadata.Clone()
+$configuredInbound.metadata.mainBranch = 'net11'
+$configuredInbound.metadata.mode = 'candidate'
+$configuredInbound.metadata.priorSrBranch = $null
+$configuredInbound.metadata.priorSrRef = '11.0.0'
+$configuredInbound.metadata.targetSrBranch = 'release/11.0.1xx-sr1'
+$configuredInbound.metadata.nextSr = 1
+$configuredInbound.metadata.branchRoles = @{
+    configured = $true; inflightBranch = 'inflight/11.0.1xx-sr2'
+}
+$configuredInbound.regressions = @(@{
+    issue = 35003; title = 'Open fix under review'; state = 'OPEN'; classification = 'open-on-main'
+    candidateFixPrs = @(@{ number = 35103; baseRef = 'net11'; state = 'OPEN' })
+    recommendedAction = 'Review and manually retarget to inflight'
+})
+$configuredInbound.summary = @{ 'open-on-main' = 1 }
+$configuredInboundText = Format-MarkdownReport -Data $configuredInbound -RepoUrl 'https://github.com/dotnet/maui' `
+    -TrackerKey 'net11-sr1' -MaxBodyBytes 60000
+Assert-Eq -Label "configured populated inbound table directs manual inflight landing" -Expected $true `
+    -Actual ($configuredInboundText -match 'maintainer manually retargets this PR to inflight/11\.0\.1xx-sr2')
+Assert-Eq -Label "configured populated inbound table forbids direct net11 fix merge" -Expected $true `
+    -Actual ($configuredInboundText -match 'do not merge the individual fix into net11')
+Assert-Eq -Label "configured populated inbound table omits obsolete net11 merge instructions" -Expected $false `
+    -Actual ($configuredInboundText -match 'awaiting net11 merge|Watch for merge to net11')
 $internalMdData = $mdData.Clone()
 $internalMdData['ci'] = @{
     overall = 'green'

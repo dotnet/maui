@@ -73,6 +73,7 @@ try {
         $null = Invoke-FixtureGit branch $prerelease.Branch
         $null = Invoke-FixtureGit tag $prerelease.Tag
     }
+    $null = Invoke-FixtureGit branch net11.0 release/11.0.1xx-preview7
     $null = Invoke-FixtureGit branch net11
     $null = Invoke-FixtureGit checkout --quiet net11
     Set-FixtureVersion 11 10
@@ -118,6 +119,11 @@ try {
     Assert-Role custom-source (Resolve-ReadinessBranchRoles -Major 11 -RepositoryPath $fixture -SourceBranch custom-source).sourceBranch 'explicit source override is honored'
     $nightly = Get-ReadinessNightlyParameters -Roles $roles -Major 11 -RepositoryPath $fixture
     Assert-Role '^11\.0\.20-ci\.inflight\.' $nightly.InflightPrefixRegex 'nightly version prefix comes from selected lane'
+    $liveNightly = Get-ReadinessNightlyParameters -Roles $roles -Major 11 -RepositoryPath $fixture `
+        -VersionContent '<Project><MajorVersion>11</MajorVersion><PatchVersion>21</PatchVersion></Project>'
+    Assert-Role '^11\.0\.21-ci\.inflight\.' $liveNightly.InflightPrefixRegex 'live content overrides stale local patch20'
+    Assert-Role 0 (Get-ReadinessNightlyParameters -Roles (Resolve-ReadinessBranchRoles -Major 12 -RepositoryPath $fixture) `
+        -Major 12 -RepositoryPath $fixture).Count 'unconfigured major has no selected nightly constraints'
     $fetcher = {
         param($Url)
         if ($Url -like '*/v3/index.json') {
@@ -196,6 +202,11 @@ try {
         Assert-Role alternate-fixes $overridden.metadata.sourceBranch 'report honors explicit source override'
         Assert-Role net11 $overridden.metadata.srBranch 'report honors explicit content override independently'
         Assert-Role 1 @($overridden.srContents.sourcePrs | Where-Object { $_ -eq 9102 }).Count 'explicit survey override changes actual inventory'
+        $previewOut = Join-Path $fixture 'legacy-preview-report'
+        & (Join-Path $scripts 'Get-ReleaseReadiness.ps1') -SrBranch release/11.0.1xx-preview7 `
+            -MainBranch net11.0 -Phase commits -NoFetch -SkipMilestoneChecks -SkipMaestroChecks -OutputDir $previewOut
+        $legacyPreview = Get-Content (Join-Path $previewOut 'release-readiness.json') -Raw | ConvertFrom-Json
+        Assert-Role release/11.0.1xx-preview7 $legacyPreview.metadata.srBranch 'legacy prerelease survey still executes through entrypoint'
 
         $null = Invoke-FixtureGit branch release/11.0.1xx-sr1 net11
         $null = Invoke-FixtureGit fetch --quiet origin
@@ -259,13 +270,85 @@ try {
     try {
         $env:GET_RELEASE_READINESS_TEST_MODE = '1'
         . (Join-Path $scripts 'Get-ReleaseReadiness.ps1') -SrBranch release/11.0.1xx-sr1
+        foreach ($parameterName in @('MainBranch', 'SurveyRef', 'BaselineRef', 'ExcludeBranches')) {
+            $unsafeParameters = @{
+                SrBranch = 'release/11.0.1xx-sr1'; Repo = 'dotnet/maui'; Candidate = $true; NoFetch = $true
+            }
+            $unsafeParameters[$parameterName] = "candidate/11.0.1xx-sr1 --output=$fixture/injected.txt"
+            $rejectedArguments = $false
+            try { $null = Resolve-Context @unsafeParameters }
+            catch { $rejectedArguments = $_.Exception.Message -match 'one safe Git revision' }
+            Assert-Role $true $rejectedArguments "$parameterName rejects injected Git arguments before querying history"
+        }
+        Assert-Role $false (Test-Path (Join-Path $fixture 'injected.txt')) 'revision validation cannot redirect Git log output'
         $context = Resolve-Context -SrBranch release/11.0.1xx-sr1 -Repo dotnet/maui -Candidate -NoFetch
+        $pinnedContext = Resolve-Context -SrBranch release/11.0.1xx-sr1 -Repo dotnet/maui -Candidate `
+            -SurveyRef $context.srHeadSha -NoFetch
+        Assert-Role $context.srHeadSha $pinnedContext.srHeadSha 'one immutable commit remains a supported survey override'
         $contents = Get-SrCommits -Ctx $context
         $classified = Classify-RegressionCandidate -Issue @{ number = 42 } -CandidatePrs @() -Ctx $context -SrContents $contents
         Assert-Role 'merged-non-main-only' $classified.classification 'unintegrated staged fix is not falsely on net11'
         Assert-Role $false $classified.candidateFixPrs[0].onMain 'compatibility onMain field checks actual fixes ancestry'
         Assert-Role candidate/11.0.1xx-sr1 $classified.candidateFixPrs[0].baseRef 'staged fix evidence names selected candidate'
         Assert-Role $true ($classified.recommendedAction -match 'into net11') 'staged fix recommendation integrates into net11, not main12'
+        $sharedContents = $contents.Clone()
+        $sharedContents.commits = @(@{
+            sha = (Invoke-FixtureGit rev-parse 'origin/candidate/11.0.1xx-sr1~1').Trim()
+            sourcePr = 9101; sourcePrs = @(9101); backportPr = $null; fixedIssues = @(44)
+        })
+        $shared = Classify-RegressionCandidate -Issue @{ number = 44 } -CandidatePrs @() -Ctx $context -SrContents $sharedContents
+        Assert-Role merged-on-main-no-backport $shared.classification 'shared fixing commit is on source despite candidate-only child'
+        Assert-Role $true $shared.candidateFixPrs[0].onMain 'source ancestry belongs to fixing commit, not candidate tip'
+        $mixedContents = $sharedContents.Clone()
+        $mixedContents.commits = @($sharedContents.commits) + @(@{
+            sha = $context.srHeadSha; sourcePr = 9103; sourcePrs = @(9103); backportPr = $null; fixedIssues = @(44)
+        })
+        $mixed = Classify-RegressionCandidate -Issue @{ number = 44 } -CandidatePrs @() -Ctx $context -SrContents $mixedContents
+        Assert-Role $true @($mixed.candidateFixPrs | Where-Object number -eq 9101)[0].onMain 'mixed fixes retain source-integrated PR evidence'
+        Assert-Role $false @($mixed.candidateFixPrs | Where-Object number -eq 9103)[0].onMain 'mixed fixes do not relabel staged-only PR evidence'
+
+        $originalGh = (Get-Command Invoke-Gh).ScriptBlock
+        try {
+            $managedPr = @{
+                number = 9911; title = '[release] SR1 candidate'; headRefName = $context.srBranch
+                author = @{ login = 'github-actions[bot]' }
+            }
+            $botProofJson = @{
+                user = @{ login = 'github-actions[bot]'; type = 'Bot' }
+                head = @{ ref = $context.srBranch; repo = @{ full_name = 'dotnet/maui' } }
+                base = @{ ref = 'net11'; repo = @{ full_name = 'dotnet/maui' } }
+                body = '<!-- maui-release-tracking:production:candidate -->'
+            } | ConvertTo-Json -Depth 10
+            $botProof = $botProofJson | ConvertFrom-Json -AsHashtable
+            $proofReadUnavailable = $false
+            Set-Item Function:Invoke-Gh -Value {
+                param([string[]]$GhArgs, [switch]$Quiet)
+                if ($GhArgs[0] -eq 'pr') { return ConvertTo-Json -InputObject @($managedPr) -Depth 10 }
+                if ($GhArgs -contains '--jq') { return 'CONTRIBUTOR' }
+                if ($proofReadUnavailable) { return $null }
+                return $botProof | ConvertTo-Json -Depth 10
+            }
+            $acceptedBot = Get-CandidatePrResolution -Ctx $context
+            Assert-Role 1 @($acceptedBot.candidates).Count 'verified managed bot candidate is accepted'
+            foreach ($tamper in @(
+                { param($proof) $proof.body = '' }
+                { param($proof) $proof.user.type = 'User' }
+                { param($proof) $proof.user.login = 'unrelated-bot' }
+                { param($proof) $proof.head.repo.full_name = 'fork/maui' }
+                { param($proof) $proof.base.ref = 'main' }
+                { param($proof) $proof.head.ref = 'unrelated' }
+                { param($proof) $proof.head.repo = $null }
+            )) {
+                $botProof = $botProofJson | ConvertFrom-Json -AsHashtable
+                & $tamper $botProof
+                $rejectedBot = Get-CandidatePrResolution -Ctx $context
+                Assert-Role 0 @($rejectedBot.candidates).Count 'unverified bot identity, route, or marker is rejected'
+            }
+            $proofReadUnavailable = $true
+            $unverifiableBot = Get-CandidatePrResolution -Ctx $context
+            Assert-Role 0 @($unverifiableBot.candidates).Count 'missing bot proof fails closed'
+            Assert-Role 1 $unverifiableBot.unverifiable 'missing bot proof is not mislabeled as confirmed spoofing'
+        } finally { Set-Item Function:Invoke-Gh -Value $originalGh }
         $originalPrInfo = (Get-Command Get-PrInfo).ScriptBlock
         $originalBackports = (Get-Command Get-BackportPrsForSr).ScriptBlock
         try {

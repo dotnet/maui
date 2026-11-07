@@ -32,6 +32,18 @@ source-only commits require an explicit synchronization WATCH. Candidate-only
 inventory cannot certify the eventual source-branch cut when it omits fixes.
 No union or merge result is invented.
 
+Individual fixing commits determine source ancestry; an unrelated candidate-only
+child does not make an already-integrated fix disappear. Managed candidates from
+`github-actions[bot]` require the exact Bot identity, same-repository configured
+head/base, and production management marker; other non-maintainer candidates
+remain excluded. Revision overrides accept one validated Git revision, never
+additional arguments or ranges. Existing ad-hoc Preview/RC surveys remain valid.
+
+Preview reports read selected-nightly version metadata once through the live
+repository content helper, not a stale local tracking ref. Only configured,
+constrained inflight feed evidence receives branch provenance; an unconfigured
+major's band-only fallback is not attributed to a retained branch.
+
 Candidates retain CI/non-stable settings and include the upcoming version in
 both bug-template dropdowns. After candidate integration, create-once
 `automation/release-lanes/<band>-srN` receipts let the workflow recover the exact

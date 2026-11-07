@@ -50,13 +50,18 @@ function Resolve-ReadinessBranchRoles {
 
 function Get-ReadinessNightlyParameters {
     param([Parameter(Mandatory)]$Roles, [Parameter(Mandatory)][int]$Major,
-          [string]$RepositoryPath = (Get-Location).Path)
+          [string]$RepositoryPath = (Get-Location).Path,
+          [AllowEmptyString()][string]$VersionContent)
 
     if (-not $Roles.configured) { return @{} }
     $ref = "origin/$($Roles.nightlyBranch)"
-    $content = & git -C $RepositoryPath show "${ref}:eng/Versions.props" 2>$null
-    if ($LASTEXITCODE -ne 0) { throw "Cannot read active nightly lane '$ref'; feed freshness is UNKNOWN." }
-    $xml = $content -join "`n"
+    if ($PSBoundParameters.ContainsKey('VersionContent')) {
+        $xml = $VersionContent
+    } else {
+        $content = & git -C $RepositoryPath show "${ref}:eng/Versions.props" 2>$null
+        if ($LASTEXITCODE -ne 0) { throw "Cannot read active nightly lane '$ref'; feed freshness is UNKNOWN." }
+        $xml = $content -join "`n"
+    }
     if ($xml -notmatch '<MajorVersion>(\d+)</MajorVersion>' -or [int]$Matches[1] -ne $Major) {
         throw "Active nightly lane '$ref' does not identify .NET $Major; feed freshness is UNKNOWN."
     }
