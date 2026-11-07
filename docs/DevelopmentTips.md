@@ -55,9 +55,10 @@ declared in `global.json` for tools such as Cake; this does not change the .NET 
 target frameworks. The fresh-SDK runtime bootstrap preserves custom Windows
 installation paths containing spaces or a trailing backslash. Its Windows
 entrypoint forwards arguments to the shared installer with PowerShell `-File`,
-without modifying the Arcade-owned scripts. On Unix, the child MSBuild process
-receives paths through quoted environment values so literal `$`, spaces, and
-apostrophes are not interpreted as shell syntax.
+without modifying the Arcade-owned scripts. The child executable, MSBuild assembly,
+and project paths pass through quoted environment values on both platforms,
+preserving literal `%NAME%` in Windows paths and literal `$`, spaces, and
+apostrophes on Unix without inserting them into shell source.
 On both platforms, the child reads its installation directory from that
 environment data rather than a property argument, preserving commas and
 avoiding command-line property splitting. Unix SDK directories can also contain
