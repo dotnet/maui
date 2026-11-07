@@ -6,6 +6,56 @@ The .NET MAUI release process uses Arcade and 1ES to build, sign, gather, and pu
 
 `azure-pipelines-internal.yml` builds, signs, and packs .NET MAUI on the internal Azure DevOps mirror. It registers the resulting assets in Maestro's Build Asset Registry (BAR). The BAR record and source commit identify the immutable assets used by a release.
 
+### Branch-derived package labels
+
+`eng/Versions.props` selects `PreReleaseVersionLabel` from Azure Pipelines'
+full `BUILD_SOURCEBRANCH` ref before Arcade calculates package versions:
+
+| Source ref | Default label |
+|---|---|
+| `refs/heads/inflight/current` | `ci.inflight` |
+| `refs/heads/inflight/<major>.0.<band>xx-sr<N>` | `ci.inflight` |
+| `refs/heads/release/<major>.0.<band>xx-sr<N>` | `servicing` |
+| All other refs, or no source ref | `ci.main` |
+
+The versioned patterns require positive decimal major, band, and SR numbers
+without leading zeros, and match the complete ref. For example,
+`refs/heads/inflight/11.0.1xx-sr2` is recognized. `main`, `net11`, `net11.0`,
+candidate branches, Preview/RC and GA release branches, unknown or malformed
+branches, and `refs/pull/*` retain the `ci.main` default. PRs use their existing
+explicit `-p:PreReleaseVersionLabel=ci.pr<PR number>` override; the target branch
+is not used to infer servicing branding. Local builds without
+`BUILD_SOURCEBRANCH` also use the default, regardless of the checked-out branch.
+To evaluate another lane locally, supply the full ref with
+`-p:BUILD_SOURCEBRANCH=refs/heads/release/11.0.1xx-sr1`.
+
+This policy changes **labels only**, not the stable-package or publication
+decision. The existing `IsServicingBuild` rule still evaluates to `true` when
+the effective label is `servicing`; it does not make the package stable.
+`StabilizePackageVersion` still defaults to `false`, producing a prerelease
+package such as `11.0.10-servicing.<build suffix>`. A release owner must still
+explicitly enable `StabilizePackageVersion=true` for stable packages. That
+continues to set `DotNetFinalVersionKind=release` and remove the workload
+prerelease suffix. SDK bands, patch and assembly versions, previous-version
+testing, signing, manual approval, and public publication gates are unchanged.
+
+Explicit MSBuild command-line properties retain precedence, including
+`PreReleaseVersionLabel=preview` or `rc` with `PreReleaseVersionIteration`,
+`PreReleaseVersionLabel=ci.pr<PR number>`, `IsServicingBuild`, and
+`StabilizePackageVersion`. Preview/RC branch names alone do not select preview
+branding or servicing settings. Scheduled builds keep the branch-derived label
+and the existing `nightly` build tag; they no longer overwrite the label after
+package and workload versions have already been calculated.
+
+Inspect the resulting version without building, signing, or publishing:
+
+```bash
+dotnet msbuild src/Workload/Microsoft.Maui.Sdk/Microsoft.Maui.Sdk.csproj -nologo \
+  -p:OfficialBuildId=20261107.1 \
+  -p:BUILD_SOURCEBRANCH=refs/heads/release/11.0.1xx-sr1 \
+  -getProperty:PreReleaseVersionLabel,PackageVersion,IsServicingBuild,StabilizePackageVersion,DotNetFinalVersionKind,WorkloadVersionSuffix,SdkBandVersionForWorkload_FromRuntimeVersions
+```
+
 ## Canonical release pipeline
 
 `eng/pipelines/ci-official-release.yml` is the only release pipeline. It is manually run in the internal `dnceng/internal` project.
