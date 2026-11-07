@@ -6726,7 +6726,7 @@ function Add-SrNightlyFeedFreshness {
         $fresh['laneLabel'] = $laneLabel
         $fresh['feedUrl'] = $feedUrl
         $fresh['versionPrefix'] = $bandPrefix
-        if ($roles) {
+        if ($roles -and $roles.configured -and $buildType -ceq 'inflight' -and $nightlyParameters.Count) {
             $fresh['branch'] = $roles.nightlyBranch
             $fresh['laneLabel'] += " · ``$($roles.nightlyBranch)`` (feed evidence only, not signed-build proof)"
         }

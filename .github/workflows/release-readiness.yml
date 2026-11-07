@@ -43,6 +43,8 @@ on:
       - 'eng/release-rollover.json'
       - 'eng/scripts/Get-ReleaseRolloverPlan.ps1'
       - 'eng/scripts/Get-InflightNightlyEligibility.ps1'
+      - 'eng/scripts/MauiReleaseConfiguration.psm1'
+      - 'eng/scripts/MauiReleaseConfiguration.Tests.ps1'
 
   # ── Scoped base-repo event triggers (refresh ONLY the affected tracker) ──
   # These keep trackers fresh between the 3-hourly schedule when a MATERIAL

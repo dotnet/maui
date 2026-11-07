@@ -5,12 +5,17 @@ BeforeAll {
     $ast = [Management.Automation.Language.Parser]::ParseFile(
         (Join-Path $PSScriptRoot '../../eng/scripts/Sync-ReleaseNextLanes.ps1'), [ref]$tokens, [ref]$errors)
     if ($errors.Count) { throw ($errors | Out-String) }
-    $servicingPr = $ast.Find({
-        param($node)
-        $node -is [Management.Automation.Language.FunctionDefinitionAst] -and $node.Name -eq 'Sync-PostCutServicingPr'
-    }, $true)
-    Invoke-Expression $servicingPr.Extent.Text
-    function Invoke-NextLaneApi { throw 'The release fixture must not mutate remote PRs or refs.' }
+    foreach ($function in @($ast.EndBlock.Statements | Where-Object {
+        $_ -is [Management.Automation.Language.FunctionDefinitionAst]
+    })) { Invoke-Expression $function.Extent.Text }
+    $coordinator = @($ast.EndBlock.Statements | Where-Object { $_ -is [Management.Automation.Language.ForStatementAst] })
+    $sourceChecks = @($ast.EndBlock.Statements | Where-Object { $_ -is [Management.Automation.Language.ForEachStatementAst] })
+    $coordinatorBody = [scriptblock]::Create($coordinator[0].Extent.Text)
+    $sourceCheckBody = [scriptblock]::Create($sourceChecks[0].Extent.Text)
+    function Invoke-NextLaneApi {
+        param([string[]]$Arguments)
+        throw 'The release fixture must not mutate remote PRs or refs.'
+    }
     function Invoke-LaneFixtureGit {
         param([string[]] $Arguments)
         $output = @(& git -C $fixture @Arguments 2>&1)
@@ -23,9 +28,10 @@ BeforeAll {
         Invoke-LaneFixtureGit @('rev-parse', 'HEAD')
     }
     function New-LaneFixtureConfig([string] $Parent, [int] $Sr, [string] $Role, [int] $SourceSr = $Sr) {
-        $content = Get-MauiReleaseVersionContent -Content (
-            Get-MauiReleaseFile -RepositoryPath $fixture -Commit $Parent -Path 'eng/Versions.props') `
-            -ReleaseBand '11.0.1xx' -Sr $Sr -Role $Role -SourceSr $SourceSr
+        $sourceContent = Get-MauiReleaseFile -RepositoryPath $fixture -Commit $Parent -Path 'eng/Versions.props'
+        $scope = (Get-MauiReleaseVersion -Content $sourceContent).labelSandboxPrefix
+        $content = Get-MauiReleaseVersionContent -Content $sourceContent `
+            -ReleaseBand '11.0.1xx' -Sr $Sr -Role $Role -SourceSr $SourceSr -SandboxPrefix $scope
         (New-MauiReleaseContentCommit -RepositoryPath $fixture -Parent $Parent `
             -Changes @{ 'eng/Versions.props' = $content } -Message "Configure $Role SR$Sr").sha
     }
@@ -125,7 +131,12 @@ Describe 'Central label policy during release phases' {
 
     It 'retains the policy through real next-lane, servicing, receipt, and completion commits' {
         $index = 0
-        foreach ($content in @($centralContent, $automaticContent)) {
+        $scopedCentral = Get-MauiReleaseVersionContent -Content $centralContent -ReleaseBand '11.0.1xx' -Sr 1 `
+            -Role candidate -SandboxPrefix release-rollover-trial/scoped-central
+        $scopedAutomatic = Get-MauiReleaseVersionContent -Content $automaticContent -ReleaseBand '11.0.1xx' -Sr 1 `
+            -Role candidate -SandboxPrefix release-rollover-trial/scoped-automatic
+        foreach ($content in @($centralContent, $automaticContent, $scopedCentral, $scopedAutomatic)) {
+            $fixtureScope = (Get-MauiReleaseVersion -Content $content).labelSandboxPrefix
         $fixture = Join-Path $TestDrive "central-lanes-$($index++)"
         $null = New-Item -ItemType Directory -Force (Join-Path $fixture eng)
         $null = New-Item -ItemType Directory -Force (Join-Path $fixture '.github/ISSUE_TEMPLATE')
@@ -152,7 +163,7 @@ body:
         $null = Invoke-LaneFixtureGit @('merge', '--quiet', '--no-ff', $candidate, '-m', 'Approve central-policy SR1')
         $merge = Invoke-LaneFixtureGit @('rev-parse', 'HEAD')
         $plan = New-MauiReleaseNextLanePlan -RepositoryPath $fixture -ReleaseBand '11.0.1xx' `
-            -Sr 1 -Merge $merge -Candidate $candidate -Inflight $inflight
+            -Sr 1 -Merge $merge -Candidate $candidate -Inflight $inflight -SandboxPrefix $fixtureScope
         foreach ($commit in @($plan.normalizedSha, $plan.servicingSha, $plan.nextCandidateSha, $plan.nextInflightSha)) {
             (Get-MauiReleaseVersion -Content (Get-MauiReleaseFile -RepositoryPath $fixture `
                 -Commit $commit -Path 'eng/Versions.props')).branchDerivedLabels | Should -BeTrue
@@ -176,18 +187,123 @@ body:
             { Sync-PostCutServicingPr -Branch release/11.0.1xx-sr1 -Plan $badPlan -Sr 1 } |
                 Should -Throw '*exact approved candidate source*'
             $again = New-MauiReleaseNextLanePlan -RepositoryPath $fixture -ReleaseBand '11.0.1xx' `
-                -Sr 1 -Merge $merge -Candidate $candidate -Inflight $inflight
+                -Sr 1 -Merge $merge -Candidate $candidate -Inflight $inflight -SandboxPrefix $fixtureScope
             ($again | ConvertTo-Json) | Should -BeExactly ($plan | ConvertTo-Json)
             $null = Invoke-LaneFixtureGit @('merge', '--quiet', '--ff-only', $plan.normalizedSha)
             $null = Invoke-LaneFixtureGit @('merge', '--quiet', '--no-ff', $plan.nextCandidateSha, '-m', 'Approve automatic SR2')
             $merge2 = Invoke-LaneFixtureGit @('rev-parse', 'HEAD')
             $plan2 = New-MauiReleaseNextLanePlan -RepositoryPath $fixture -ReleaseBand '11.0.1xx' `
-                -Sr 2 -Merge $merge2 -Candidate $plan.nextCandidateSha -Inflight $plan.nextInflightSha
+                -Sr 2 -Merge $merge2 -Candidate $plan.nextCandidateSha -Inflight $plan.nextInflightSha -SandboxPrefix $fixtureScope
             $plan2.servicingSha | Should -Be $merge2
             (Sync-PostCutServicingPr -Branch release/11.0.1xx-sr2 -Plan $plan2 -Sr 2).status |
                 Should -Be branch-derived-stabilization
         }
         }
+    }
+}
+
+Describe 'Release coordinator recovery guards' {
+    BeforeEach {
+        $roles = [pscustomobject]@{ repository='https://github.com/dotnet/maui.git'; releaseBand='11.0.1xx'; fixBranch='net11'; featureBranch='main' }
+        $repository = 'dotnet/maui'
+        $scope = 'production'
+        $SandboxPrefix = $null
+        $lanePrefix = ''
+        $receiptPrefix = 'automation/release-lanes'
+        $trackingSr = 1
+        $RepositoryPath = $TestDrive
+        $CompleteRelease = $false
+        $lateSourceChange = $false
+        $results = [Collections.Generic.List[object]]::new()
+        $fixturePlan = [pscustomobject]@{
+            mergeSha='1'*40; candidateSha='2'*40; inflightSha='3'*40; normalizedSha='4'*40
+            servicingSha='1'*40; nextCandidateSha='5'*40; nextInflightSha='6'*40
+        }
+        $refs = @{
+            'automation/release-lanes/11.0.1xx-sr1'='7'*40
+            'net11'=$fixturePlan.mergeSha
+            'inflight/11.0.1xx-sr2'=$fixturePlan.inflightSha
+        }
+        Mock Get-NextLaneRef { param($Branch) $refs[$Branch] }
+        Mock Fetch-NextLaneCommit {}
+        Mock Get-NextLaneGit { '' }
+        Mock Get-MauiReleaseLaneReceipt {
+            [pscustomobject]@{
+                schemaVersion=1; scope='production'; releaseBand='11.0.1xx'; sr=1
+                fixBranch=$roles.fixBranch; featureBranch='main'; pullRequest=1; plan=$fixturePlan
+            }
+        }
+        Mock Get-ApprovedCandidateMerge {
+            param($Sr)
+            if ($Sr -eq 1) { [pscustomobject]@{ number=1; merge_commit_sha=$fixturePlan.mergeSha; head=@{sha=$fixturePlan.candidateSha} } }
+        }
+        Mock New-MauiReleaseNextLanePlan { $fixturePlan }
+        Mock New-MauiReleaseLaneReceipt { '7'*40 }
+        Mock Publish-NextLaneRef {
+            param($Branch,$Commit)
+            if (!$refs.ContainsKey($Branch)) { $refs[$Branch] = $Commit }
+            if ($lateSourceChange -and $Branch -like 'candidate/*') { $refs['inflight/11.0.1xx-sr2']='8'*40 }
+        }
+        Mock Sync-PostCutServicingPr { [pscustomobject]@{number=$null;url=$null;status='branch-derived-stabilization'} }
+        Mock Get-MauiReleaseCompletionPlan {
+            [pscustomobject]@{releaseSha=$fixturePlan.mergeSha;normalizationSha=$fixturePlan.normalizedSha;restoreFixes=$true;createRelease=$true}
+        }
+        Mock Invoke-NextLaneApi {
+            param($Arguments)
+            $uri = [Uri]("https://api.github.com/" + $Arguments[0])
+            if ($uri.Fragment -or !$uri.AbsolutePath.EndsWith('/net11%23servicing')) { throw 'Housekeeping API targeted the wrong URI.' }
+            $refs['net11#servicing']=$fixturePlan.normalizedSha
+        }
+    }
+
+    It 'refuses stale consumed inflight before any rollover write' {
+        $refs['inflight/11.0.1xx-sr2']='8'*40
+        { & $coordinatorBody } | Should -Throw '*advanced after its checkpoint*'
+        Should -Invoke Publish-NextLaneRef -Times 0
+        Should -Invoke Invoke-NextLaneApi -Times 0
+        $results.Count | Should -Be 0
+    }
+
+    It 'detects late source advancement before replacing the tracking routes' {
+        $lateSourceChange = $true
+        & $coordinatorBody
+        { & $sourceCheckBody } | Should -Throw '*Reconcile the new source*'
+        $results.Count | Should -Be 1
+        Should -Invoke Publish-NextLaneRef -Times 2
+        Should -Invoke Invoke-NextLaneApi -Times 0
+    }
+
+    It 'resumes only after both replacement lanes contain the complete advanced source' {
+        $refs['inflight/11.0.1xx-sr2']='8'*40
+        $refs['candidate/11.0.1xx-sr2']='9'*40
+        $refs['inflight/11.0.1xx-sr3']='a'*40
+        Mock Get-NextLaneGit {
+            param($Arguments)
+            if ($Arguments.Count -eq 3 -and $Arguments[0] -eq 'merge-base') { $Arguments[1] } else { '' }
+        }
+        & $coordinatorBody
+        & $sourceCheckBody
+        $results.Count | Should -Be 1
+        $refs['candidate/11.0.1xx-sr2'] | Should -Be ('9'*40)
+        $refs['inflight/11.0.1xx-sr3'] | Should -Be ('a'*40)
+        $refs['inflight/11.0.1xx-sr2'] | Should -Be ('8'*40)
+        Should -Invoke Invoke-NextLaneApi -Times 0
+        Mock Get-NextLaneGit {
+            param($Arguments)
+            if ($Arguments.Count -eq 3 -and $Arguments[2] -ceq ('a'*40)) { '3'*40 } else { $Arguments[1] }
+        }
+        { & $sourceCheckBody } | Should -Throw '*both replacement lanes*'
+    }
+
+    It 'URI-encodes the complete literal housekeeping branch' {
+        $roles.fixBranch = 'net11#servicing'
+        $refs['net11#servicing']=$fixturePlan.mergeSha
+        $CompleteRelease = $true
+        & $coordinatorBody
+        & $sourceCheckBody
+        $refs['net11#servicing'] | Should -Be $fixturePlan.normalizedSha
+        $refs.net11 | Should -Be $fixturePlan.mergeSha
+        Should -Invoke Invoke-NextLaneApi -Times 1 -ParameterFilter { $Arguments[0].EndsWith('/net11%23servicing') }
     }
 }
 

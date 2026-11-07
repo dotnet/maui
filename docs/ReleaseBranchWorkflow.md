@@ -387,6 +387,11 @@ output refs must match or preserve the prepared ancestry; newer approved work
 is never reset. Consumed historical candidate heads are not recreated as fresh
 PRs. The reconciler follows these verified receipts, so the unchanged initial
 configuration cannot reopen an obsolete PR pair after a completed integration.
+Recovery also rechecks the consumed inflight source before rollover writes and
+before retiring its tracking route. If new work landed there after the receipt,
+the runner explicitly requires reconciliation instead of reporting an older
+snapshot as ready. Complete branch names are URI-encoded for housekeeping API
+updates, so a literal `#` cannot redirect a write to another branch.
 
 **The deployed workflow cuts the release and restores net11 CI settings.** Its
 create-only release write happens before the non-forced CI fast-forward; the

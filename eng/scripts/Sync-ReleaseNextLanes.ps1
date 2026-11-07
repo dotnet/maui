@@ -128,6 +128,25 @@ function Publish-NextLaneRef {
     if ((Get-NextLaneRef $Branch) -cne $Commit) { throw "Next-lane target '$Branch' did not match its prepared commit." }
 }
 
+function Assert-ConsumedInflightSource {
+    param([int] $Sr, [string] $Commit)
+    $branch = "${lanePrefix}inflight/$($roles.releaseBand)-sr$($Sr + 1)"
+    $live = Get-NextLaneRef $branch
+    if ($live -and $live -cne $Commit) {
+        $message = "Consumed inflight '$branch' advanced after its checkpoint. Reconcile the new source into both replacement lanes before retiring that route; no ready result is inferred from the older receipt."
+        $replacements = @(
+            Get-NextLaneRef "${lanePrefix}candidate/$($roles.releaseBand)-sr$($Sr + 1)"
+            Get-NextLaneRef "${lanePrefix}inflight/$($roles.releaseBand)-sr$($Sr + 2)"
+        )
+        if (@($replacements | Where-Object { $_ }).Count -ne 2) { throw $message }
+        Fetch-NextLaneCommit (@($live) + $replacements)
+        if ((Get-NextLaneGit @('merge-base', $Commit, $live)) -cne $Commit) { throw $message }
+        foreach ($replacement in $replacements) {
+            if ((Get-NextLaneGit @('merge-base', $live, $replacement)) -cne $live) { throw $message }
+        }
+    }
+}
+
 function Sync-PostCutServicingPr {
     param([string] $Branch, [object] $Plan, [int] $Sr)
     $version = Get-MauiReleaseVersion -Content (
@@ -261,11 +280,12 @@ for ($attempt = 0; $attempt -lt 100; $attempt++) {
             $uploaded = Get-NextLaneRef $uploadBranch
             if ($uploaded) {
                 if ($uploaded -cne $expectedReceipt) { throw 'The owned receipt upload ref changed; refusing cleanup.' }
-                $null = Invoke-NextLaneApi @("repos/$repository/git/refs/heads/$uploadBranch", '--method', 'DELETE')
+                $null = Invoke-NextLaneApi @("repos/$repository/git/refs/heads/$([Uri]::EscapeDataString($uploadBranch))", '--method', 'DELETE')
             }
         }
         if ((Get-NextLaneRef $receiptBranch) -cne $expectedReceipt) { throw 'Next-lane receipt publication was not verified.' }
     }
+    Assert-ConsumedInflightSource -Sr $trackingSr -Commit $plan.inflightSha
     $nextCandidate = "${lanePrefix}candidate/$($roles.releaseBand)-sr$($trackingSr + 1)"
     $nextInflight = "${lanePrefix}inflight/$($roles.releaseBand)-sr$($trackingSr + 2)"
     $completion = $null
@@ -287,7 +307,7 @@ for ($attempt = 0; $attempt -lt 100; $attempt++) {
                 throw 'The integration branch moved after release planning; no housekeeping was applied.'
             }
             $null = Invoke-NextLaneApi @(
-                "repos/$repository/git/refs/heads/$($roles.fixBranch)", '--method', 'PATCH',
+                "repos/$repository/git/refs/heads/$([Uri]::EscapeDataString($roles.fixBranch))", '--method', 'PATCH',
                 '-f', "sha=$($completion.normalizationSha)", '-F', 'force=false')
         }
         $verifiedFixes = Get-NextLaneRef $roles.fixBranch
@@ -308,6 +328,7 @@ for ($attempt = 0; $attempt -lt 100; $attempt++) {
     }
     $results.Add([pscustomobject]@{
         integratedSr = $trackingSr; candidateMerge = $plan.mergeSha; receipt = $expectedReceipt
+        inflightSourceSha = $plan.inflightSha
         preparedNormalizationSha = $plan.normalizedSha
         nextCandidate = $nextCandidate; nextCandidateSha = $plan.nextCandidateSha
         nextInflight = $nextInflight; nextInflightSha = $plan.nextInflightSha
@@ -319,11 +340,17 @@ for ($attempt = 0; $attempt -lt 100; $attempt++) {
     $trackingSr++
 }
 if ($attempt -ge 100) { throw 'Next-lane receipt traversal exceeded its bound; review the configured starting cycle.' }
+foreach ($cycle in $results) {
+    Assert-ConsumedInflightSource -Sr $cycle.integratedSr -Commit $cycle.inflightSourceSha
+}
 $state.currentSr = $trackingSr
 $effectiveStatePath = Join-Path $outputPath 'tracking-state.json'
 $state | ConvertTo-Json | Set-Content -LiteralPath $effectiveStatePath -Encoding utf8
 $tracking = & (Join-Path $PSScriptRoot 'Sync-ReleaseTrackingPullRequests.ps1') `
     -StatePath $effectiveStatePath -SandboxPrefix $SandboxPrefix | ConvertFrom-Json
+foreach ($cycle in $results) {
+    Assert-ConsumedInflightSource -Sr $cycle.integratedSr -Commit $cycle.inflightSourceSha
+}
 $forward = if ($CompleteRelease -and $results.Count) {
     & (Join-Path $PSScriptRoot 'Sync-ServicingForwardPullRequest.ps1') -StatePath $StatePath `
         -SandboxPrefix $SandboxPrefix | ConvertFrom-Json

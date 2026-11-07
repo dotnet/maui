@@ -461,7 +461,8 @@ function New-MauiReleaseNextLanePlan {
         'merge-base', '--is-ancestor', $Candidate, $Inflight)
     foreach ($commit in @($Candidate, $Merge)) {
         $content = Get-MauiReleaseFile -RepositoryPath $RepositoryPath -Commit $commit -Path 'eng/Versions.props'
-        $null = Get-MauiReleaseVersionContent -Content $content -ReleaseBand $ReleaseBand -Sr $Sr -Role candidate
+        $null = Get-MauiReleaseVersionContent -Content $content -ReleaseBand $ReleaseBand -Sr $Sr -Role candidate `
+            -SandboxPrefix $SandboxPrefix
         $version = Get-MauiReleaseVersion -Content $content
         if ($version.label -cne 'ci.main' -or $version.stable) {
             throw 'Candidate integration must keep CI metadata; servicing belongs in a post-cut release PR.'
@@ -478,7 +479,8 @@ function New-MauiReleaseNextLanePlan {
         throw 'The candidate must already list its upcoming version in both bug-template dropdowns.'
     }
     $inflightContent = Get-MauiReleaseFile -RepositoryPath $RepositoryPath -Commit $Inflight -Path 'eng/Versions.props'
-    $null = Get-MauiReleaseVersionContent -Content $inflightContent -ReleaseBand $ReleaseBand -Sr ($Sr + 1) -Role inflight
+    $null = Get-MauiReleaseVersionContent -Content $inflightContent -ReleaseBand $ReleaseBand -Sr ($Sr + 1) -Role inflight `
+        -SandboxPrefix $SandboxPrefix
     $inflightVersion = Get-MauiReleaseVersion -Content $inflightContent
     if ($inflightVersion.stable -or $inflightVersion.label -cne 'ci.main' -or
         (!$inflightVersion.branchDerivedLabels -and $inflightVersion.labelCount -ne 2)) {

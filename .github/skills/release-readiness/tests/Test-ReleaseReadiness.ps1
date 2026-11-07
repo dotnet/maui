@@ -12127,6 +12127,46 @@ Assert-Eq -Label "hash: rendered shipCheck Details change → DIFFERENT" `
 Assert-Eq -Label "hash: rendered regression title change → DIFFERENT" `
     -Expected $false -Actual ($hGuidanceBase -eq (Get-ReportSemanticHash -Data $guidanceDifferentTitle -Verdict $guidanceV))
 
+Write-Host "`n[Unit] SR nightly provenance requires constrained configured inflight evidence" -ForegroundColor Cyan
+$nfProvOriginalVersions = (Get-Item function:Get-VersionsPropsState).ScriptBlock
+$nfProvOriginalResolve = (Get-Item function:Resolve-NightlyDogfoodFreshness).ScriptBlock
+$nfProvOriginalParameters = (Get-Item function:Get-ReadinessNightlyParameters).ScriptBlock
+$nfProvOriginalLoaded = $Script:NightlyFeedHelperLoaded
+try {
+    $Script:NightlyFeedHelperLoaded = $true
+    function Get-VersionsPropsState { param($Ref) @{ Major=10; Patch=80 } }
+    function Get-ReadinessNightlyParameters {
+        param($Roles,$Major)
+        if ($Roles.configured -and $script:nfProvenanceConstrained) {
+            @{ InflightPrefixRegex='^10\.0\.80-ci\.inflight\.'; RequireInflight=$true }
+        } else { @{} }
+    }
+    function Resolve-NightlyDogfoodFreshness { @{} + $script:nfProvenanceFresh }
+    foreach ($case in @(
+        @{ configured=$false; type='band'; constrained=$false; expected=$false },
+        @{ configured=$false; type='inflight'; constrained=$false; expected=$false },
+        @{ configured=$true; type='band'; constrained=$true; expected=$false },
+        @{ configured=$true; type='inflight'; constrained=$false; expected=$false },
+        @{ configured=$true; type='inflight'; constrained=$true; expected=$true }
+    )) {
+        $script:nfProvenanceConstrained = $case.constrained
+        $script:nfProvenanceFresh = if ($case.type -eq 'inflight') { $rInf } else { $rPrev }
+        $data = @{ metadata=@{ srRef='release/10.0.1xx-sr8'; branchRoles=@{
+            configured=$case.configured; nightlyBranch='inflight/current'
+        } } }
+        Add-SrNightlyFeedFreshness -Data $data
+        Assert-Eq -Label "Nightly branch provenance: configured=$($case.configured), type=$($case.type), constrained=$($case.constrained)" `
+            -Expected $case.expected -Actual $data.nightlyFeed.ContainsKey('branch')
+        Assert-Eq -Label "Nightly label provenance: configured=$($case.configured), type=$($case.type), constrained=$($case.constrained)" `
+            -Expected $case.expected -Actual ($data.nightlyFeed.laneLabel -match 'inflight/current')
+    }
+} finally {
+    Set-Item function:Get-VersionsPropsState $nfProvOriginalVersions
+    Set-Item function:Resolve-NightlyDogfoodFreshness $nfProvOriginalResolve
+    Set-Item function:Get-ReadinessNightlyParameters $nfProvOriginalParameters
+    $Script:NightlyFeedHelperLoaded = $nfProvOriginalLoaded
+}
+
 # ───── Engine-level fail-open under WarningPreference=Stop ─────
 # The helper's inner catch is hardened, but the SR engine's OUTER catch in
 # Add-SrNightlyFeedFreshness wraps non-helper work (band resolution, formatting) that can
