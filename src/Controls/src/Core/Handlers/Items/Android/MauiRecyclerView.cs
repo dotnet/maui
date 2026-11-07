@@ -464,9 +464,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				ScrollHelper.RemoveScrollListener();
 			}
 
-			if (ItemsView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepItemsInView)
+			if (ItemsView is CarouselView && ItemsView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepItemsInView)
 			{
-				// Keeping the current items in view is the default, so we don't need to watch for data changes
+				// CarouselView manages its position in response to collection changes.
 				_itemsUpdateScrollObserver.Stop(ItemsViewAdapter);
 			}
 			else
@@ -1113,12 +1113,38 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			if (ItemsView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepLastItemInView)
 			{
-				ScrollTo(new ScrollToRequestEventArgs(GetLayoutManager().ItemCount, 0,
-					Microsoft.Maui.Controls.ScrollToPosition.MakeVisible, true));
+				var source = ItemsViewAdapter.ItemsSource;
+				int itemCount = source.Count - (source.HasHeader ? 1 : 0) - (source.HasFooter ? 1 : 0);
+
+				if (source is ObservableGroupedSource groupedSource)
+				{
+					itemCount = 0;
+					for (int groupIndex = 0; groupIndex < groupedSource.GroupCount; groupIndex++)
+					{
+						var group = groupedSource.GetGroupItemsViewSource(groupIndex);
+						itemCount += group.Count - (group.HasHeader ? 1 : 0) - (group.HasFooter ? 1 : 0);
+					}
+				}
+
+				if (itemCount > 0)
+				{
+					// A negative group index selects the flat data-index path without an item lookup.
+					ScrollTo(new ScrollToRequestEventArgs(itemCount - 1, -1,
+						Microsoft.Maui.Controls.ScrollToPosition.MakeVisible, true));
+				}
 			}
 			else if (ItemsView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepScrollOffset)
 			{
 				ScrollHelper.UndoNextScrollAdjustment();
+			}
+			else if (ItemsView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepItemsInView
+				&& ItemsView is not CarouselView)
+			{
+				if (GetLayoutManager().ItemCount > 0)
+				{
+					ScrollTo(new ScrollToRequestEventArgs(0, -1,
+						Microsoft.Maui.Controls.ScrollToPosition.Start, false));
+				}
 			}
 		}
 
