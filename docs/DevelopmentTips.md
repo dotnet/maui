@@ -449,7 +449,7 @@ Without an explicit simulator selector, the iOS Cake caller creates an owned
 iPhone 11 Pro, preserving the former runner's screenshot profile. Minimum-runtime
 targets retain iPhone 6s below iOS 16 and iPhone SE (3rd generation) thereafter.
 It does not borrow an arbitrary booted phone or select the first installed model,
-which would change screenshot geometry. An explicit UDID/name remains respected.
+which would change screenshot geometry. An explicit device identifier/name remains respected.
 
 Android xUnit/MTP hosts require an on-disk entry assembly. Their runner props
 therefore use SDK fast deployment (`EmbedAssembliesIntoApk=false`) and disable

@@ -24,6 +24,12 @@ Test type is **auto-detected** from changed files. Override with `-TestType` if 
 
 **`-Platform` is required for UI and Device tests.** It selects which platform to verify the fix on. Unit and XAML tests do not require `-Platform`.
 
+Managed unit/XAML execution, including clean-rebuild retries, reads the target
+checkout's `global.json` test runner. MTP-enabled targets receive MTP arguments
+and translated filters; retained VSTest targets keep positional project paths,
+`--logger trx`, and their original `--filter`. Trusted script overlays do not
+implicitly migrate the target checkout's SDK or test protocol.
+
 ## Activation Guard
 
 🛑 **This skill ONLY verifies that existing tests reproduce a bug.** Do NOT activate for:

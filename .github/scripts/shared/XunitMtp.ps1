@@ -1,3 +1,31 @@
+function Get-XunitTestArguments {
+    param(
+        [Parameter(Mandatory)][string]$RepoRoot,
+        [Parameter(Mandatory)][string]$ProjectPath,
+        [string]$Filter
+    )
+
+    if ($Filter -match '[\r\n\x00]') { throw 'Test filters cannot contain control characters.' }
+    $settings = Get-Content -LiteralPath (Join-Path $RepoRoot 'global.json') -Raw |
+        ConvertFrom-Json -AsHashtable
+    $runner = 'VSTest'
+    if ($settings.ContainsKey('test') -and $settings.test.ContainsKey('runner')) {
+        $runner = $settings.test.runner
+    }
+    switch ($runner) {
+        'Microsoft.Testing.Platform' {
+            return @('test', '--project', $ProjectPath, '--report-trx') +
+                @(Get-XunitMtpFilterArguments $Filter)
+        }
+        'VSTest' {
+            $arguments = @('test', $ProjectPath, '--logger', 'trx')
+            if ($Filter) { $arguments += @('--filter', $Filter) }
+            return $arguments
+        }
+        default { throw "Unsupported test runner '$runner' in the target checkout's global.json." }
+    }
+}
+
 function Get-XunitMtpFilterArguments {
     param([string]$Filter)
 

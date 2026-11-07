@@ -521,15 +521,10 @@ function Invoke-TestRun {
             # FAILED. The gate verifies TEST BEHAVIOR, not API bookkeeping, so drop
             # warnings-as-errors here (matches Build-AndDeploy.ps1's deep-stage rationale).
             # Genuine CS-level compile ERRORS still fail the build.
-            $testArgs = @(
-                "test", "--project", $projectPath,
+            $testArgs = @(Get-XunitTestArguments -RepoRoot $RepoRoot -ProjectPath $projectPath -Filter $Filter) + @(
                 "--configuration", "Debug",
-                "--report-trx",
                 "-p:TreatWarningsAsErrors=false"
             ) + $hostOnlyTargetFrameworkArgs
-            if ($Filter) {
-                $testArgs += @(Get-XunitMtpFilterArguments $Filter)
-            }
 
             $scriptOutput = Invoke-WithoutGhTokens { & dotnet @testArgs 2>&1 }
             $scriptOutput | Out-File -FilePath $LogFile -Force -Encoding utf8
@@ -563,15 +558,10 @@ function Invoke-TestRun {
             # Drop warnings-as-errors so the product recompile's PublicAPI analyzer
             # bookkeeping (RS0016/RS0017 on a PR-added finalizer/public symbol) can't
             # false-FAIL the gate — see the XAML block above and Build-AndDeploy.ps1.
-            $testArgs = @(
-                "test", "--project", $projectPath,
+            $testArgs = @(Get-XunitTestArguments -RepoRoot $RepoRoot -ProjectPath $projectPath -Filter $Filter) + @(
                 "--configuration", "Debug",
-                "--report-trx",
                 "-p:TreatWarningsAsErrors=false"
             ) + $hostOnlyTargetFrameworkArgs
-            if ($Filter) {
-                $testArgs += @(Get-XunitMtpFilterArguments $Filter)
-            }
 
             $scriptOutput = Invoke-WithoutGhTokens { & dotnet @testArgs 2>&1 }
             $scriptOutput | Out-File -FilePath $LogFile -Force -Encoding utf8
@@ -3762,12 +3752,10 @@ for ($ri = 0; $ri -lt $withFixResults.Count; $ri++) {
     $buildExit = $LASTEXITCODE
     $combined = @($buildOut)
     if ($buildExit -eq 0) {
-        $testArgs = @(
-            "test", "--project", $projFull,
+        $testArgs = @(Get-XunitTestArguments -RepoRoot $RepoRoot -ProjectPath $projFull -Filter $retryEntry.Filter) + @(
             "-c", "Debug",
-            "--report-trx",
             "-p:TreatWarningsAsErrors=false"
-        ) + $hostOnlyTargetFrameworkArgs + @(Get-XunitMtpFilterArguments $retryEntry.Filter)
+        ) + $hostOnlyTargetFrameworkArgs
         $testOut = Invoke-WithoutGhTokens { & dotnet @testArgs 2>&1 }
         $combined += @($testOut)
     }

@@ -2,6 +2,66 @@ BeforeAll {
     . (Join-Path $PSScriptRoot 'XunitMtp.ps1')
 }
 
+Describe 'Target-checkout managed test protocol' {
+    It 'preserves VSTest filters for default and explicitly retained VSTest targets' -TestCases @(
+        @{ Settings = '{"tools":{"dotnet":"10.0.100"}}' }
+        @{ Settings = '{"test":{"runner":"VSTest"}}' }
+    ) {
+        param($Settings)
+        $Settings | Set-Content -LiteralPath (Join-Path $TestDrive 'global.json')
+        $filter = 'FullyQualifiedName~Tests.One|Category=Two'
+        @(Get-XunitTestArguments -RepoRoot $TestDrive -ProjectPath 'Tests With Spaces.csproj' -Filter $filter) |
+            Should -Be @('test', 'Tests With Spaces.csproj', '--logger', 'trx', '--filter', $filter)
+    }
+
+    It 'selects MTP only when the target checkout enables it' {
+        '{"test":{"runner":"Microsoft.Testing.Platform"}}' |
+            Set-Content -LiteralPath (Join-Path $TestDrive 'global.json')
+        @(Get-XunitTestArguments -RepoRoot $TestDrive -ProjectPath 'Tests.csproj' -Filter 'FullyQualifiedName~Tests.One') |
+            Should -Be @('test', '--project', 'Tests.csproj', '--report-trx', '--filter-method', '*Tests.One*')
+    }
+
+    It 'fails explicit unknown runner configurations rather than silently falling back' {
+        '{"test":{"runner":"Unknown"}}' | Set-Content -LiteralPath (Join-Path $TestDrive 'global.json')
+        { Get-XunitTestArguments -RepoRoot $TestDrive -ProjectPath 'Tests.csproj' } |
+            Should -Throw '*Unsupported test runner*'
+    }
+
+    It 'wires the target protocol into both managed gate paths and the clean-rebuild retry' -TestCases @(
+        @{ Runner = 'VSTest'; Selector = '--filter' }
+        @{ Runner = 'Microsoft.Testing.Platform'; Selector = '--filter-method' }
+    ) {
+        param($Runner, $Selector)
+        @{ test = @{ runner = $Runner } } | ConvertTo-Json -Depth 3 |
+            Set-Content -LiteralPath (Join-Path $TestDrive 'global.json')
+        $path = Join-Path $PSScriptRoot '../../skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1'
+        $ast = [System.Management.Automation.Language.Parser]::ParseFile($path, [ref]$null, [ref]$null)
+        $assignments = @($ast.FindAll({
+            param($node)
+            $node -is [System.Management.Automation.Language.AssignmentStatementAst] -and
+                $node.Left.Extent.Text -eq '$testArgs' -and
+                $node.Right.Extent.Text.Contains('Get-XunitTestArguments')
+        }, $true))
+        $assignments.Count | Should -Be 3
+        $RepoRoot = $TestDrive
+        $projectPath = $projFull = 'Managed Tests.csproj'
+        $Filter = 'FullyQualifiedName~Tests.One'
+        $retryEntry = @{ Filter = $Filter }
+        $hostOnlyTargetFrameworkArgs = @('-p:TargetFramework=net10.0')
+        foreach ($assignment in $assignments) {
+            . ([scriptblock]::Create($assignment.Extent.Text))
+            $testArgs | Should -Contain $Selector
+            $testArgs | Should -Contain '-p:TargetFramework=net10.0'
+            $testArgs | Should -Contain '-p:TreatWarningsAsErrors=false'
+            if ($Runner -eq 'VSTest') {
+                $testArgs | Should -Contain $Filter
+                $testArgs | Should -Not -Contain '--project'
+                $testArgs | Should -Not -Contain '--report-trx'
+            }
+        }
+    }
+}
+
 Describe 'xUnit MTP filter translation' {
     It 'preserves an empty selection as the complete suite' {
         @(Get-XunitMtpFilterArguments '').Count | Should -Be 0
