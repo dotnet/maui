@@ -32,12 +32,13 @@ source-only commits require an explicit synchronization WATCH. Candidate-only
 inventory cannot certify the eventual source-branch cut when it omits fixes.
 No union or merge result is invented.
 
-Next-lane creation and release-cut state are distinct. After candidate
-integration, create-once `automation/release-lanes/<band>-srN` receipts let the
-tracking workflow recover and maintain the next PR pair. Those receipts do not
-declare a release cut or advance canonical `currentSr`/`nightlyMode`; readiness
-continues surveying the configured release until its separately approved state
-update.
+Candidates retain CI/non-stable settings and include the upcoming version in
+both bug-template dropdowns. After candidate integration, create-once
+`automation/release-lanes/<band>-srN` receipts let the workflow recover the exact
+release cut, distinct net11 CI child, next pair and separate draft servicing PR
+targeting the release branch. The stable flip is not a candidate commit; signing
+waits for its reviewed release-branch merge. Receipts do not advance canonical
+`currentSr`/`nightlyMode`; readiness continues using the reviewed state.
 
 The compatibility JSON names `mainBranch`, `onMain`, `open-on-main`, and
 `merged-on-main-no-backport` refer to the **resolved fixes source**, not

@@ -42,11 +42,11 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Prepare next lanes after candidate integration and reconcile tracking PRs
+      - name: Cut the approved release, restore CI, and prepare the next lanes
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
-        run: ./eng/scripts/Sync-ReleaseNextLanes.ps1 -OutputDirectory '${{ runner.temp }}/release-next-lanes'
+        run: ./eng/scripts/Sync-ReleaseNextLanes.ps1 -CompleteRelease -OutputDirectory '${{ runner.temp }}/release-next-lanes'
 
       - name: Preserve next-lane preparation evidence
         if: always()

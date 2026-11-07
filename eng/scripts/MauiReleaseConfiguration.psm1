@@ -103,7 +103,7 @@ function Get-MauiReleaseVersionContent {
         [Parameter(Mandatory)][string] $Content,
         [Parameter(Mandatory)][string] $ReleaseBand,
         [Parameter(Mandatory)][ValidateRange(1, 214748362)][int] $Sr,
-        [Parameter(Mandatory)][ValidateSet('candidate', 'fixes', 'inflight')][string] $Role,
+        [Parameter(Mandatory)][ValidateSet('candidate', 'servicing', 'fixes', 'inflight')][string] $Role,
         [int] $SourceSr = $Sr,
         [string] $SandboxPrefix
     )
@@ -116,8 +116,8 @@ function Get-MauiReleaseVersionContent {
         throw 'Invalid sandbox prefix.'
     }
     if ($SourceSr -lt 1 -or $SourceSr -gt $Sr -or $SourceSr -lt ($Sr - 1) -or
-        ($Role -ceq 'candidate' -and $SourceSr -ne $Sr)) {
-        throw 'A candidate preserves its verified cycle; CI lanes may advance exactly one verified cycle.'
+        ($Role -cin @('candidate', 'servicing') -and $SourceSr -ne $Sr)) {
+        throw 'Candidate and servicing preparation preserve the verified cycle; CI lanes may advance exactly one verified cycle.'
     }
     $version = Get-MauiReleaseVersion -Content $Content
     if ($version.major -ne $major -or $version.minor -ne 0 -or
@@ -133,7 +133,7 @@ function Get-MauiReleaseVersionContent {
     }
     $indent = $labelMatches[0].Groups['indent'].Value
     $replacement = "${indent}<PreReleaseVersionLabel>servicing</PreReleaseVersionLabel>$newline"
-    if ($Role -cne 'candidate') {
+    if ($Role -cne 'servicing') {
         $condition = Get-MauiInflightLabelCondition -SandboxPrefix $SandboxPrefix
         $condition = $condition.Replace('&', '&amp;').Replace('"', '&quot;').Replace('<', '&lt;').Replace('>', '&gt;')
         $replacement = "${indent}<PreReleaseVersionLabel>ci.main</PreReleaseVersionLabel>$newline" +
@@ -147,7 +147,7 @@ function Get-MauiReleaseVersionContent {
     }
     foreach ($change in @(
             @{ name = 'PatchVersion'; value = if ($SourceSr -eq $Sr) { $version.patch } else { $Sr * 10 } },
-            @{ name = 'StabilizePackageVersion'; value = if ($Role -ceq 'candidate') { 'true' } else { 'false' } }
+            @{ name = 'StabilizePackageVersion'; value = if ($Role -ceq 'servicing') { 'true' } else { 'false' } }
         )) {
         $pattern = "(?<open><$($change.name)(?: [^<>]*)?>)[^<]*(?<close></$($change.name)>)"
         $propertyMatches = [Regex]::Matches($Content, $pattern)
@@ -168,9 +168,11 @@ function Get-MauiReleasedVersionContent {
     )
 
     if ($Tag -cnotmatch '^[1-9][0-9]*\.0\.(0|[1-9][0-9]*)$') {
-        throw 'Bug-template housekeeping accepts only a verified stable version.'
+        throw 'Bug-template housekeeping requires a valid release version.'
     }
     $newVersion = [System.Management.Automation.SemanticVersion]::new($Tag)
+    $Content = [Regex]::Replace($Content,
+        '(?m)^(        - [1-9][0-9]*\.0\.(?:0|[1-9][0-9]*)) \(candidate\)(\r?)$', '$1$2')
     foreach ($id in @('version-with-bug', 'version-that-worked')) {
         $sections = @([Regex]::Matches($Content, '(?ms)^  - type: [^\r\n]+.*?(?=^  - type: |\z)') |
             Where-Object { $_.Value -cmatch "(?m)^    id: $id[ \t]*`r?`$" })
@@ -186,7 +188,7 @@ function Get-MauiReleasedVersionContent {
                 [pscustomobject]@{ item = $item; version = $parsed }
             }
         })
-        if (@($versions | Where-Object { $_.version -eq $newVersion }).Count -gt 0) { continue }
+        if (@($versions | Where-Object { $_.version -eq $newVersion }).Count) { continue }
         if ($versions.Count -eq 0) { throw "Bug template '$id' contains no version insertion anchors." }
         $newline = if ($section.Value.Contains("`r`n")) { "`r`n" } else { "`n" }
         $following = @($versions | Where-Object {
@@ -235,7 +237,7 @@ function Get-MauiVerifiedPublishedVersion {
     if ($sr -lt 1 -or $sr -gt $CurrentSr -or !$ReleaseBand.StartsWith("$major.0.", [StringComparison]::Ordinal)) {
         throw 'Published version is outside the trusted active servicing train.'
     }
-    $null = Get-MauiReleaseVersionContent -Content $VersionContent -ReleaseBand $ReleaseBand -Sr $sr -Role candidate
+    $null = Get-MauiReleaseVersionContent -Content $VersionContent -ReleaseBand $ReleaseBand -Sr $sr -Role servicing
     $version = Get-MauiReleaseVersion -Content $VersionContent
     if ($version.patch -ne $patch -or $version.label -cne 'servicing' -or !$version.stable -or $version.labelCount -ne 1) {
         throw 'The immutable published tag disagrees with its stable servicing version metadata.'
@@ -342,8 +344,8 @@ function New-MauiReleaseLaneIntegrationCommit {
         [Parameter(Mandatory)][ValidatePattern('^[0-9a-f]{40}$')][string] $Inflight
     )
 
-    # Keep normalized fixes in candidate ancestry, so the next normal merge
-    # reapplies servicing instead of inheriting CI defaults from an older base.
+    # Keep the normalized integration and pinned future payload in ancestry;
+    # release-only servicing changes must never enter these candidate lanes.
     $tree = (Invoke-MauiReleaseGit -RepositoryPath $RepositoryPath -Arguments @(
         'merge-tree', '--write-tree', $Fixes, $Inflight)).Trim()
     if ($tree -cnotmatch '^[0-9a-f]{40}$') {
@@ -388,14 +390,19 @@ function New-MauiReleaseNextLanePlan {
         $content = Get-MauiReleaseFile -RepositoryPath $RepositoryPath -Commit $commit -Path 'eng/Versions.props'
         $null = Get-MauiReleaseVersionContent -Content $content -ReleaseBand $ReleaseBand -Sr $Sr -Role candidate
         $version = Get-MauiReleaseVersion -Content $content
-        if ($version.label -cne 'servicing' -or !$version.stable -or $version.labelCount -ne 1) {
-            throw 'The approved candidate and merge must already have servicing/stable configuration.'
+        if ($version.label -cne 'ci.main' -or $version.stable) {
+            throw 'Candidate integration must keep CI metadata; servicing belongs in a post-cut release PR.'
         }
     }
     $candidateVersion = Get-MauiReleaseVersion -Content (
         Get-MauiReleaseFile -RepositoryPath $RepositoryPath -Commit $Candidate -Path 'eng/Versions.props')
     if ($version.patch -ne $candidateVersion.patch) {
         throw 'The integration changed the approved candidate package version.'
+    }
+    $candidateTemplate = Get-MauiReleaseFile -RepositoryPath $RepositoryPath -Commit $Candidate -Path '.github/ISSUE_TEMPLATE/bug-report.yml'
+    $tag = "$($candidateVersion.major).0.$($candidateVersion.patch)"
+    if ((Get-MauiReleasedVersionContent -Content $candidateTemplate -Tag $tag) -cne $candidateTemplate) {
+        throw 'The candidate must already list its upcoming version in both bug-template dropdowns.'
     }
     $inflightContent = Get-MauiReleaseFile -RepositoryPath $RepositoryPath -Commit $Inflight -Path 'eng/Versions.props'
     $null = Get-MauiReleaseVersionContent -Content $inflightContent -ReleaseBand $ReleaseBand -Sr ($Sr + 1) -Role inflight
@@ -404,10 +411,19 @@ function New-MauiReleaseNextLanePlan {
         throw 'The following inflight must have correct next-cycle CI metadata before preparing new lanes.'
     }
     $mergeContent = Get-MauiReleaseFile -RepositoryPath $RepositoryPath -Commit $Merge -Path 'eng/Versions.props'
+    $servicingContent = Get-MauiReleaseVersionContent -Content $mergeContent -ReleaseBand $ReleaseBand `
+        -Sr $Sr -Role servicing
+    $servicing = New-MauiReleaseContentCommit -RepositoryPath $RepositoryPath -Parent $Merge `
+        -Changes @{ 'eng/Versions.props' = $servicingContent } `
+        -Message "Configure release $ReleaseBand SR$Sr for servicing"
     $normalizedContent = Get-MauiReleaseVersionContent -Content $mergeContent -ReleaseBand $ReleaseBand `
         -Sr ($Sr + 1) -SourceSr $Sr -Role fixes -SandboxPrefix $SandboxPrefix
+    $normalizedVersion = Get-MauiReleaseVersion -Content $normalizedContent
+    $mergeTemplate = Get-MauiReleaseFile -RepositoryPath $RepositoryPath -Commit $Merge -Path '.github/ISSUE_TEMPLATE/bug-report.yml'
+    $normalizedTemplate = Get-MauiReleasedVersionContent -Content $mergeTemplate `
+        -Tag "$($normalizedVersion.major).0.$($normalizedVersion.patch)"
     $normalized = New-MauiReleaseContentCommit -RepositoryPath $RepositoryPath -Parent $Merge `
-        -Changes @{ 'eng/Versions.props' = $normalizedContent } `
+        -Changes @{ 'eng/Versions.props' = $normalizedContent; '.github/ISSUE_TEMPLATE/bug-report.yml' = $normalizedTemplate } `
         -Message "Prepare normalized integration ancestry for $ReleaseBand SR$($Sr + 1)"
     $integration = New-MauiReleaseLaneIntegrationCommit -RepositoryPath $RepositoryPath `
         -Fixes $normalized.sha -Inflight $Inflight
@@ -416,16 +432,26 @@ function New-MauiReleaseNextLanePlan {
         -ReleaseBand $ReleaseBand -Sr ($Sr + 1) -Role candidate -SandboxPrefix $SandboxPrefix
     $nextCandidate = New-MauiReleaseContentCommit -RepositoryPath $RepositoryPath -Parent $integration.sha `
         -Changes @{ 'eng/Versions.props' = $nextContent } -Message "Configure candidate $ReleaseBand SR$($Sr + 1)"
+    $nextVersion = Get-MauiReleaseVersion -Content $nextContent
+    $template = Get-MauiReleaseFile -RepositoryPath $RepositoryPath -Commit $nextCandidate.sha -Path '.github/ISSUE_TEMPLATE/bug-report.yml'
+    $nextTemplate = Get-MauiReleasedVersionContent -Content $template -Tag "$($nextVersion.major).0.$($nextVersion.patch)"
+    $metadata = New-MauiReleaseContentCommit -RepositoryPath $RepositoryPath -Parent $nextCandidate.sha `
+        -Changes @{ '.github/ISSUE_TEMPLATE/bug-report.yml' = $nextTemplate } -Message "List upcoming MAUI $($nextVersion.major).0.$($nextVersion.patch) in bug template"
     $futureContent = Get-MauiReleaseVersionContent -Content $nextContent -ReleaseBand $ReleaseBand `
         -Sr ($Sr + 2) -SourceSr ($Sr + 1) -Role inflight -SandboxPrefix $SandboxPrefix
-    $nextInflight = New-MauiReleaseContentCommit -RepositoryPath $RepositoryPath -Parent $nextCandidate.sha `
-        -Changes @{ 'eng/Versions.props' = $futureContent } -Message "Configure inflight $ReleaseBand SR$($Sr + 2)"
+    $futureVersion = Get-MauiReleaseVersion -Content $futureContent
+    $futureTemplate = Get-MauiReleasedVersionContent -Content $nextTemplate `
+        -Tag "$($futureVersion.major).0.$($futureVersion.patch)"
+    $nextInflight = New-MauiReleaseContentCommit -RepositoryPath $RepositoryPath -Parent $metadata.sha `
+        -Changes @{ 'eng/Versions.props' = $futureContent; '.github/ISSUE_TEMPLATE/bug-report.yml' = $futureTemplate } `
+        -Message "Configure inflight $ReleaseBand SR$($Sr + 2) and list its version"
     [pscustomobject][ordered]@{
         mergeSha = $Merge
         candidateSha = $Candidate
         inflightSha = $Inflight
         normalizedSha = $normalized.sha
-        nextCandidateSha = $nextCandidate.sha
+        servicingSha = $servicing.sha
+        nextCandidateSha = $metadata.sha
         nextInflightSha = $nextInflight.sha
     }
 }
@@ -449,9 +475,12 @@ function New-MauiReleaseLaneReceipt {
         GIT_COMMITTER_EMAIL = '41898282+github-actions[bot]@users.noreply.github.com'
         GIT_AUTHOR_DATE = "$epoch +0000"; GIT_COMMITTER_DATE = "$epoch +0000"
     }
-    (Invoke-MauiReleaseGit -RepositoryPath $RepositoryPath -Arguments @(
-        '-c', 'commit.gpgSign=false', 'commit-tree', $tree, '-p', $Record.plan.nextInflightSha
-    ) -Environment $environment -InputText "Prepare next release lanes after $($Record.releaseBand) SR$($Record.sr)`n").Trim()
+    $arguments = @('-c', 'commit.gpgSign=false', 'commit-tree', $tree, '-p', $Record.plan.nextInflightSha)
+    if ('servicingSha' -in $Record.plan.PSObject.Properties.Name) {
+        $arguments += @('-p', $Record.plan.servicingSha)
+    }
+    (Invoke-MauiReleaseGit -RepositoryPath $RepositoryPath -Arguments $arguments `
+        -Environment $environment -InputText "Prepare next release lanes after $($Record.releaseBand) SR$($Record.sr)`n").Trim()
 }
 
 function Get-MauiReleaseLaneReceipt {
@@ -470,7 +499,60 @@ function Get-MauiReleaseLaneReceipt {
     $content | ConvertFrom-Json
 }
 
+function Get-MauiReleaseCompletionPlan {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory)][string] $RepositoryPath,
+        [Parameter(Mandatory)][object] $LanePlan,
+        [Parameter(Mandatory)][string] $ReleaseBand,
+        [Parameter(Mandatory)][int] $Sr,
+        [Parameter(Mandatory)][ValidatePattern('^[0-9a-f]{40}$')][string] $Fixes,
+        [AllowNull()][string] $Release
+    )
+
+    foreach ($sha in @($LanePlan.mergeSha, $LanePlan.normalizedSha)) {
+        if ($sha -cnotmatch '^[0-9a-f]{40}$') { throw 'Release completion requires pinned full commit SHAs.' }
+    }
+    $parent = (Invoke-MauiReleaseGit -RepositoryPath $RepositoryPath -Arguments @(
+        'show', '-s', '--format=%P', $LanePlan.normalizedSha)).Trim()
+    if ($parent -cne $LanePlan.mergeSha) {
+        throw 'CI housekeeping must be the exact prepared child of the approved integration merge.'
+    }
+    $content = Get-MauiReleaseFile -RepositoryPath $RepositoryPath -Commit $LanePlan.mergeSha -Path 'eng/Versions.props'
+    $version = Get-MauiReleaseVersion -Content $content
+    $null = Get-MauiReleaseVersionContent -Content $content -ReleaseBand $ReleaseBand -Sr $Sr -Role candidate
+    if ($version.stable -or $version.label -cne 'ci.main') {
+        throw 'The initial release cut must retain the approved candidate CI metadata.'
+    }
+    if ($Release -and $Release -cne $LanePlan.mergeSha) {
+        $null = Invoke-MauiReleaseGit -RepositoryPath $RepositoryPath -Arguments @(
+            'merge-base', '--is-ancestor', $LanePlan.mergeSha, $Release)
+    }
+    $housekeeping = Get-MauiReleaseVersion -Content (
+        Get-MauiReleaseFile -RepositoryPath $RepositoryPath -Commit $LanePlan.normalizedSha -Path 'eng/Versions.props')
+    if ($housekeeping.patch -ne (($Sr + 1) * 10) -or $housekeeping.label -cne 'ci.main' -or
+        $housekeeping.stable -or $housekeeping.labelCount -ne 2) {
+        throw 'Prepared housekeeping does not restore the next-cycle CI metadata.'
+    }
+    $template = Get-MauiReleaseFile -RepositoryPath $RepositoryPath -Commit $LanePlan.normalizedSha -Path '.github/ISSUE_TEMPLATE/bug-report.yml'
+    if ((Get-MauiReleasedVersionContent -Content $template -Tag "$($housekeeping.major).0.$($housekeeping.patch)") -cne $template) {
+        throw 'CI housekeeping must update the bug-template version in the same patch-bump commit.'
+    }
+    $restoreFixes = $Fixes -ceq $LanePlan.mergeSha
+    if (!$restoreFixes) {
+        $null = Invoke-MauiReleaseGit -RepositoryPath $RepositoryPath -Arguments @(
+            'merge-base', '--is-ancestor', $LanePlan.normalizedSha, $Fixes)
+    }
+    [pscustomobject]@{
+        releaseSha = $LanePlan.mergeSha
+        normalizationSha = $LanePlan.normalizedSha
+        createRelease = !$Release
+        restoreFixes = $restoreFixes
+    }
+}
+
 Export-ModuleMember -Function Get-MauiReleaseVersion, Get-MauiReleaseVersionContent,
     Get-MauiReleasedVersionContent, Get-MauiVerifiedPublishedVersion,
     Get-MauiReleaseFile, New-MauiReleaseContentCommit, New-MauiReleaseLaneIntegrationCommit,
-    New-MauiReleaseNextLanePlan, New-MauiReleaseLaneReceipt, Get-MauiReleaseLaneReceipt
+    New-MauiReleaseNextLanePlan, New-MauiReleaseLaneReceipt, Get-MauiReleaseLaneReceipt,
+    Get-MauiReleaseCompletionPlan

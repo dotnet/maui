@@ -9,7 +9,9 @@ signing, and publishing remain covered by the [release process](ReleaseProcess.m
 > These are proposed branch names and responsibilities, not a statement that the
 > migration has happened. Candidate merges automatically prepare the next named
 > branches and tracking PRs once this automation is deployed on `main`. Actual
-> release cuts, tags, publishing, and signed nightly deployment remain separate.
+> release cuts and next-cycle CI housekeeping are automatic too. Servicing/stable
+> configuration is a separate reviewed PR on the newly cut release branch.
+> Tags, public publication, and signed nightly deployment retain their own gates.
 
 ## Branch responsibilities
 
@@ -209,11 +211,12 @@ substitute for package-version evidence.
 
 | Phase | Actual configuration change |
 |---|---|
-| Create candidate SR N | Preserve its verified `PatchVersion` (including a hotfix within the cycle), set `PreReleaseVersionLabel=servicing`, remove the CI-label override, and set `StabilizePackageVersion=true`. |
-| Integrate approved candidate | Cut release SR N at the exact approved merge commit. No release version is added to the bug template. |
-| After the cut | Add a fixes-lane housekeeping child restoring `ci.main`, the standard inflight-label condition, and `StabilizePackageVersion=false`; advance `PatchVersion` to `(N+1)*10`. Forward this normalized fixes tip, not the intermediate servicing tip, into feature `main`. |
-| Create next lanes | Cleanly Git-merge normalized fixes with the pinned old inflight; configure candidate SR N+1 for servicing, then create inflight SR N+2 with CI branding and patch `(N+2)*10`. |
-| Verified stable publication | Prepare a separate metadata commit adding the published version once to **both** bug-report version dropdowns on the configured feature/default branch. |
+| Create candidate SR N | Preserve its verified patch and CI/non-stable settings. Add the plain upcoming version, such as `11.0.20`, to **both** bug-template dropdowns in its own commit, with no suffix. |
+| Integrate approved candidate | Automatically cut release SR N at the exact CI-configured candidate merge. Do not put servicing/stable configuration in the candidate. |
+| After the cut: net11 | In one commit, set patch `(N+1)*10`, `ci.main`, non-stable and add that same plain version to both bug-template dropdowns. Prepare the normalized forward PR when eligible. |
+| After the cut: release PR | Automatically open a separate draft servicing PR targeting the new release branch. Preserve its patch; set `servicing`, stable=true and no CI override. Human review, CI and merge are required. |
+| Create next lanes | Cleanly merge normalized integration ancestry and pinned future payload. The next candidate retains CI settings and the matching bug-template option. In one future-inflight commit, bump patch to `(N+2)*10` and add that same plain version to both dropdowns. |
+| Verified stable publication | Prepare an idempotent update on the feature/default branch adding any missing version only after verified publication. Existing plain version entries are not duplicated. |
 
 These are the focused servicing transitions used by
 [#35520](https://github.com/dotnet/maui/pull/35520) and
@@ -222,19 +225,24 @@ bump used by [#35879](https://github.com/dotnet/maui/pull/35879), and the two-dr
 housekeeping used by [#37685](https://github.com/dotnet/maui/pull/37685).
 SDK/dependency pins, assembly versions, and unrelated release toggles are retained.
 
-The next candidate includes the normalized fixes commit in its ancestry. Merely
-copying the old inflight tree would let a later ordinary Git merge silently retain
-the fixes branch's CI defaults, because servicing was unchanged relative to the
-older common ancestor. A real three-way merge preserves both approved fixes and
-future inflight content. Conflicts stop the operation; no file is blindly replaced.
+The bug-template version update belongs in the **same commit as its patch bump**:
+patch20 to30 adds `11.0.30`, not `11.0.20`, and neither option has a candidate
+suffix. `SdkBandVersion` remains `11.0.100` throughout the `11.0.1xx` train; a
+servicing patch increment is not an SDK feature-band change. Moving to a
+different band requires its own coherent SDK/workload and release-state update.
+
+The next candidate includes the normalized fixes commit in its ancestry. A real
+three-way merge preserves both approved integration contents and future inflight
+payload. Conflicts stop the operation; no file is blindly replaced. The separate
+servicing commit is a child of the initial release cut and is never part of
+candidate or future-lane ancestry.
 Future inflight content is never included in the release already cut.
 
-The current production SR2 ref was originally seeded with SR1 `PatchVersion=10`.
-This is **not** verified SR2 package metadata. The sandbox initializes new lanes
-with explicit, trusted one-cycle version transitions; it never rewrites an existing
-mismatched production lane. The real migration needs a separately reviewed metadata
-and baseline reconciliation before these helpers can be used there. This logic does
-not invent a .NET 11 GA/SR0 baseline or certify candidate inventory.
+The SR2 ref was originally seeded at patch10 and has been explicitly corrected
+to patch20 with CI branding. SR1 candidate retains patch10/CI metadata and now
+contains only its bug-template update relative to net11. Existing history was
+preserved through normal commits/merges. Wrong-cycle metadata is still refused;
+these transitions never invent a GA/SR0 baseline or certify release inventory.
 
 ### Published-version housekeeping
 
@@ -255,8 +263,11 @@ This workflow has **contents-read permission only**. It uploads the pending comm
 as a Git bundle plus its verified evidence; it does not push or merge a production
 metadata change. This prepares the correct post-ship work automatically while the
 production mutation policy is unresolved. Human integration remains a production
-gate, not a claim that housekeeping was applied. If both dropdowns already contain
-the published version (including an existing `SR`-labeled entry), no empty commit is
+gate, not a claim that housekeeping was applied. Upcoming versions are already
+prepared in the candidate PR as plain version numbers, with no candidate suffix.
+A dropdown entry alone is not shipment evidence. Verified publication can update
+the feature branch without duplicating the option. If both dropdowns already contain a published
+version (including an existing `SR`-labeled entry), no empty commit is
 created. Repeated preparation at the same inputs yields the same commit.
 
 For local read-only preparation:
@@ -316,11 +327,15 @@ variables. It did not queue a build or execute signing or publishing.
 
 ## Automatic next-branch and PR preparation
 
-After a genuine servicing candidate SR `N` is merged into `net11`, the
+After a genuine CI-configured candidate SR `N`, including upcoming bug-template
+metadata, is merged into `net11`, the
 **Release tracking PRs** workflow runs `Sync-ReleaseNextLanes.ps1` and creates:
 
-- `candidate/<band>-sr<N+1>`, with selected next-cycle payload and servicing/stable
-  configuration.
+- `release/<band>-srN` at the exact candidate merge, plus a separate draft
+  servicing PR targeting that release branch.
+- The normalized net11 next-cycle CI child, without changing the release cut.
+- `candidate/<band>-sr<N+1>`, with selected payload, CI settings and its own
+  bug-template version commit.
 - `inflight/<band>-sr<N+2>`, with candidate ancestry, its own next-cycle patch and
   CI branding.
 - The new candidate and draft future-preview PRs into `net11`. The obsolete
@@ -332,9 +347,9 @@ It never merges individual fixes or the new candidate/preview PRs.
 
 The runner re-reads the merged managed candidate PR, verifies the same-repository
 head and target, its maintainer merger's write permission, the exact two-parent
-integration, servicing metadata, and the pinned following inflight's ancestry
-and package version. An old CI-branded tracking PR that happened to become
-integrated before servicing setup does not advance the train. Ambiguous sources,
+integration, CI and bug-template metadata, and the pinned following inflight's
+ancestry and package version. An old tracking PR predating the bug-template
+preparation does not advance the train. Ambiguous sources,
 wrong versions, conflicts, unexpected refs, and squash/rebase merges fail rather
 than invent a release approval.
 
@@ -347,13 +362,18 @@ is never reset. Consumed historical candidate heads are not recreated as fresh
 PRs. The reconciler follows these verified receipts, so the unchanged initial
 configuration cannot reopen an obsolete PR pair after a completed integration.
 
-**This does not cut `release/*` or move `net11`.** The approved integration tip
-keeps its servicing settings until a captain separately cuts the release and
-applies CI housekeeping. The receipt exposes `preparedNormalizationSha`, the
-exact normalized child retained in next-candidate ancestry; use that approved
-commit for the later housekeeping fast-forward rather than independently
-creating a different normalization history. Until housekeeping, daily forwarding
-continues to refuse the servicing tip.
+**The deployed workflow cuts the release and restores net11 CI settings.** Its
+create-only release write happens before the non-forced CI fast-forward; the
+receipt makes a failure between them resumable. If net11 acquires unrelated work
+before normalization, the runner refuses to overwrite it. It then opens the
+separate release-targeted servicing PR and the next tracking pair, and prepares
+the normalized net11-to-main forward PR when eligible. A raw release-to-main PR
+is not used, so servicing configuration cannot overwrite feature-major settings.
+
+The initial cut retains the candidate's CI settings; the release becomes stable
+only after the separate servicing PR is reviewed and merged. The runner never
+merges that PR. Retries preserve an already merged servicing PR and its release
+descendants instead of moving the release back to the initial cut.
 
 The effective `trackingSr` selects the upcoming PR pair. It does not silently
 change the canonical `currentSr` used for release readiness or the selected
@@ -361,25 +381,42 @@ signed-nightly source. Advance those release-state settings separately when the
 actual cut and nightly acceptance gates clear. The workflow never changes
 protections, channels, subscriptions, tags, packages, or feature `main`.
 
-The [hosted next-lane trial](https://github.com/dotnet/maui/actions/runs/42296010618)
+The earlier [hosted next-lane trial](https://github.com/dotnet/maui/actions/runs/42296010618)
 ran unchanged production code with the repository bot token after a third real
 isolated candidate merge. It created the next candidate and draft preview PRs.
 Attempt 2 retained byte-identical complete ref snapshots and the same PR IDs.
-Earlier cycles proved recovery after injected PR-creation failure and retained
+That trial predates the corrected separate-servicing-PR phase order. Its cycles
+proved recovery after injected PR-creation failure and retained
 newer future-lane work. Actual generated XML evaluated to servicing/stable patch
 40 for candidate SR4 and CI inflight patch 50 for SR5. The integration tip stayed
 at its approved merge; no release was cut. All owned trial refs and remaining
 draft PRs were removed after preserving the evidence.
 
-### Remaining full release automation
+### Signed build and approval-ready publication preparation
 
 The proposed activation point is a GitHub Action after a reviewed candidate
 merge into `net11`, with a zero-input **Run workflow** option for manual
-activation. Internal signed-build work remains in Azure DevOps. The next-branch
-and PR preparation above is implemented; automatic release cuts, application of
-housekeeping, and canonical release-state advancement are not enabled. The
-separate sandbox below exercises those broader transitions without cutting
-production releases.
+activation. Internal signed-build work remains in Azure DevOps. Cuts, CI
+housekeeping, next lanes and post-cut servicing PR creation are implemented.
+The **Prepare signed release publication** workflow follows completion and polls
+hourly. It waits for the separate reviewed servicing PR merge, verifies that exact
+release tip in the existing internal mirror, and uses the existing OIDC identity
+to queue official signed pipeline1095. It never substitutes another source.
+
+After an exact successful signed build it queues canonical release pipeline1445
+with `pushPackages=false`, preparing the release artifacts/audit without customer
+publication or workload promotion. Public publishing still uses the canonical
+pipeline's human approvals and protected service connection. No authorization
+to remove those gates was inferred from unavailable user input.
+
+Existing federation, internal project access, and exact mirror synchronization
+must be deployed/authorized by their owners. No new PAT, permission, service
+connection, mirror overwrite or paid resource is created. Missing prerequisites
+fail explicitly. Dispatch intents are persisted before queue requests; an
+ambiguous response is reconciled by exact source/parameters before another queue,
+never blindly retried. The pipeline and source revisions are pinned.
+Canonical `currentSr`/`nightlyMode` advancement remains a reviewed state update,
+not an implied claim that signed nightlies or the entire release have shipped.
 
 ### Operator experience
 
@@ -542,7 +579,7 @@ daily fixes for .NET 12.
 
 For a clean start, create only the dummy integration branch at a verified source
 commit whose package metadata agrees with the trusted current SR. Its creation
-event creates a genuinely servicing-configured candidate and correctly versioned
+event creates a CI-configured candidate with its bug-template version and a correctly versioned
 CI inflight lane, then initializes the first two tracking PRs without cutting a release.
 Initialization refuses a namespace that already contains release refs.
 Existing lane destinations must match the deterministic prepared commits exactly;
@@ -563,7 +600,7 @@ For a dummy SR1 candidate merge, it creates only these sandbox refs:
 |---|---|
 | `release/11.0.1xx-sr1` | The exact candidate merge commit on dummy `main`. |
 | dummy `main` | A housekeeping child of that exact merge: next-cycle patch, `ci.main`, non-stable packages. |
-| `candidate/11.0.1xx-sr2` | Servicing-configured child of a clean merge of normalized fixes and pinned old SR2 inflight. |
+| `candidate/11.0.1xx-sr2` | CI-configured child of a clean merge of normalized integration and pinned old SR2 inflight, plus its bug-template commit. |
 | `inflight/11.0.1xx-sr3` | CI-configured child of the next candidate, with SR3 patch metadata. |
 
 This trial uses the selected `candidate/...` naming convention. It creates new
@@ -581,8 +618,9 @@ flowchart LR
 Each sandbox has a serialized workflow concurrency group. Fixed commit identity,
 parent-derived commit time, and actual content changes make preparation deterministic.
 Existing outputs at the exact expected SHAs are left unchanged. Ref creation and
-the fixes housekeeping fast-forward are published with a single atomic Git push,
-without persisted credentials or force-pushing. No other existing target is updated.
+the fixes housekeeping fast-forward are guarded, separately recoverable operations.
+The release is create-only and housekeeping never forces history. Servicing
+configuration is a separate draft PR on the new release branch.
 Retrying the original merge activation, or its verified housekeeping child, does
 not cut the next release, create more commits, or duplicate metadata. Moved sources
 or destinations require inspection.
@@ -672,7 +710,12 @@ content isolation, preview retirement, and a duplicate-free rerun. The replay
 removed its dummy refs afterward and distinguishes manual/configuration checks
 from production automation.
 
-### Servicing configuration evidence (2026-11-06)
+### Historical servicing prototype evidence (2026-11-06)
+
+The following runs used an earlier design that configured servicing before the
+candidate merge. They remain historical evidence only. The current policy keeps
+CI settings in the candidate, includes its upcoming bug-template version, and
+opens a separate servicing PR **after the release cut**.
 
 The later `release-rollover-trial/config2-15d039f6/` trial exercised real content
 commits and actual managed candidate PR merges with the new helpers:
@@ -723,9 +766,9 @@ actual production evidence; merging this proposal does not satisfy them.
 
 | Surface | Remaining production requirement |
 |---|---|
-| Next branches and tracking PRs | Deploy the implemented merged-candidate workflow from trusted main and verify the first production receipt, next pair, and unchanged retry. No release cut is performed. |
-| Release cuts and canonical state | Implement or perform the separately approved cut, CI housekeeping, and canonical release-state advancement. Next-lane preparation deliberately does not move net11 or create a release. |
-| Servicing and post-ship metadata | Reconcile real lane baselines/package metadata, wire these validated helpers into the protected production orchestrator, and integrate the prepared post-publication metadata commit. |
+| Cuts, CI housekeeping and next lanes | Deploy the implemented merged-candidate workflow from trusted main and verify the first real cut, CI child, separate servicing PR, next pair, and unchanged retry. |
+| Release state | Review canonical cycle/nightly advancement after the appropriate actual cut/deployment acceptance; no direct main write is performed. |
+| Servicing and post-ship metadata | Approve/merge the separate release-targeted servicing PR; integrate the prepared verified-publication metadata update without treating candidate options as shipment evidence. |
 | Daily forward merges | Deploy the scheduled forward-PR workflow and verify actual CI on its first eligible source snapshot. PR preparation is implemented; review/conflict resolution and merging remain separate. |
 | New branch names | Deploy the explicit `net11` / `candidate/*` CI YAML coverage in this PR and review protections and readiness discovery. Server-side/manual runs are not proof that the deployed branch triggers are wired. |
 | Signed nightly builds | Deploy the internal mirrored source changes and validate signed artifacts and feed/channel handoff before changing `nightlyMode` from `legacy`. |

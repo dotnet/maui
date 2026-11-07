@@ -4,7 +4,19 @@ The .NET MAUI release process uses Arcade and 1ES to build, sign, gather, and pu
 
 For the proposed development-branch roles and servicing-release rotation, see the
 [versioned release branch workflow](ReleaseBranchWorkflow.md). That proposal does
-not change the publishing process below.
+keeps the canonical publishing/approval process below. Candidate integration can
+automatically cut the release and restore net11 CI settings, but servicing/stable
+configuration is a separate reviewed PR on the new release branch.
+
+The public **Prepare signed release publication** workflow waits for that
+reviewed servicing merge and its exact internal mirror commit, queues existing
+signed pipeline1095, and after success queues canonical release pipeline1445
+with `pushPackages=false`. This automatically prepares artifacts/audit, not
+NuGet.org publication or workload promotion. Existing federation, internal
+permissions and mirror deployment are required; the workflow grants none.
+Ambiguous queue responses retain durable intent refs and never blindly resubmit.
+Final public publishing still requires the normal owner-approved canonical run
+and its manual approval/protected-service-connection gates.
 
 ## Build and pack
 

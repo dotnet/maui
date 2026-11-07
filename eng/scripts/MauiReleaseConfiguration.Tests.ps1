@@ -39,8 +39,20 @@ function Configure-Version {
     $content = Get-MauiReleaseVersionContent -Content (Read-Version $Parent) `
         -ReleaseBand '11.0.1xx' -Sr $Sr -Role $Role -SourceSr $SourceSr `
         -SandboxPrefix 'release-rollover-trial/config-test'
-    New-MauiReleaseContentCommit -RepositoryPath $repo -Parent $Parent `
-        -Changes @{ 'eng/Versions.props' = $content } -Message "Configure $Role SR$Sr"
+    $changes = @{ 'eng/Versions.props' = $content }
+    if ($Role -cin @('fixes', 'inflight')) {
+        $targetVersion = Get-MauiReleaseVersion -Content $content
+        $options = Get-MauiReleaseFile -RepositoryPath $repo -Commit $Parent -Path '.github/ISSUE_TEMPLATE/bug-report.yml'
+        $changes['.github/ISSUE_TEMPLATE/bug-report.yml'] = Get-MauiReleasedVersionContent -Content $options `
+            -Tag "$($targetVersion.major).0.$($targetVersion.patch)"
+    }
+    $configured = New-MauiReleaseContentCommit -RepositoryPath $repo -Parent $Parent `
+        -Changes $changes -Message "Configure $Role SR$Sr"
+    if ($Role -cne 'candidate') { return $configured }
+    $candidateTemplate = Get-MauiReleaseFile -RepositoryPath $repo -Commit $configured.sha -Path '.github/ISSUE_TEMPLATE/bug-report.yml'
+    $candidateTemplate = Get-MauiReleasedVersionContent -Content $candidateTemplate -Tag "11.0.$($Sr * 10)"
+    New-MauiReleaseContentCommit -RepositoryPath $repo -Parent $configured.sha `
+        -Changes @{ '.github/ISSUE_TEMPLATE/bug-report.yml' = $candidateTemplate } -Message "List upcoming candidate SR$Sr"
 }
 
 function Assert-PackageProperties {
@@ -149,6 +161,7 @@ body:
     $null = Invoke-TestGit @('commit', '--quiet', '-m', 'Additional isolated approved fix')
     $null = Invoke-TestGit @('merge', '--quiet', '--no-ff', 'candidate/11.0.1xx-sr1', '-m', 'Approve isolated SR1 candidate')
     $merge1 = Invoke-TestGit @('rev-parse', 'HEAD')
+    $release1 = Configure-Version $merge1 1 servicing
     $fixes2 = Configure-Version $merge1 2 fixes 1
     $integration = New-MauiReleaseLaneIntegrationCommit -RepositoryPath $repo -Fixes $fixes2.sha -Inflight $future
     $candidate2 = Configure-Version $integration.sha 2 candidate
@@ -156,7 +169,7 @@ body:
     Assert-Release ((New-MauiReleaseLaneIntegrationCommit -RepositoryPath $repo -Fixes $fixes2.sha -Inflight $future).sha -ceq $integration.sha) 'Next-lane merge retry was not deterministic.'
     $null = Invoke-TestGit @('remote', 'add', 'origin', $remote)
     $refspecs = @(
-        "${merge1}:refs/heads/release/11.0.1xx-sr1",
+        "$($release1.sha):refs/heads/release/11.0.1xx-sr1",
         "$($fixes2.sha):refs/heads/main",
         "$($candidate2.sha):refs/heads/candidate/11.0.1xx-sr2",
         "$($inflight3.sha):refs/heads/inflight/11.0.1xx-sr3"
@@ -179,9 +192,12 @@ body:
     Assert-Release ((Invoke-TestGit @('ls-tree', '--name-only', $merge1)) -cnotmatch 'future-sr2') 'SR1 release leaked future changes.'
     Assert-Release ((Invoke-TestGit @('ls-tree', '--name-only', $candidate2.sha)) -cmatch 'future-sr2') 'Next candidate lost inflight changes.'
     Assert-Release ((Invoke-TestGit @('ls-tree', '--name-only', $candidate2.sha)) -cmatch 'approved-fix') 'Next candidate lost approved fixes.'
-    Assert-Release ((Get-MauiReleaseFile -RepositoryPath $repo -Commit $fixes2.sha -Path '.github/ISSUE_TEMPLATE/bug-report.yml') -ceq $template) 'Integration falsely listed an unreleased version.'
-    Assert-PackageProperties $candidate1.sha 'candidate/11.0.1xx-sr1' 10 servicing true
-    Assert-PackageProperties $merge1 'release/11.0.1xx-sr1' 10 servicing true
+    $upcomingTemplate = Get-MauiReleasedVersionContent -Content $template -Tag '11.0.10'
+    $nextTemplate = Get-MauiReleasedVersionContent -Content $upcomingTemplate -Tag '11.0.20'
+    Assert-Release ((Get-MauiReleaseFile -RepositoryPath $repo -Commit $fixes2.sha -Path '.github/ISSUE_TEMPLATE/bug-report.yml') -ceq $nextTemplate) 'The CI patch bump must retain candidate metadata and add its own version.'
+    Assert-PackageProperties $candidate1.sha 'candidate/11.0.1xx-sr1' 10 ci.main false
+    Assert-PackageProperties $merge1 'release/11.0.1xx-sr1' 10 ci.main false
+    Assert-PackageProperties $release1.sha 'release/11.0.1xx-sr1' 10 servicing true
     Assert-PackageProperties $fixes2.sha net11 20 ci.main false
     Assert-PackageProperties $inflight3.sha 'inflight/11.0.1xx-sr3' 30 ci.inflight false
     Assert-PackageProperties $inflight3.sha 'release-rollover-trial/config-test/inflight/11.0.1xx-sr3' 30 ci.inflight false
@@ -189,22 +205,26 @@ body:
     $null = Invoke-TestGit @('switch', '--quiet', '--detach', $fixes2.sha)
     $null = Invoke-TestGit @('merge', '--quiet', '--no-ff', $candidate2.sha, '-m', 'Approve isolated SR2 candidate')
     $merge2 = Invoke-TestGit @('rev-parse', 'HEAD')
-    Assert-PackageProperties $merge2 'release/11.0.1xx-sr2' 20 servicing true
-    Assert-Release ((Read-Version $merge2) -ceq (Read-Version $candidate2.sha)) 'Second normal candidate merge did not carry servicing configuration.'
+    Assert-PackageProperties $merge2 'release/11.0.1xx-sr2' 20 ci.main false
+    Assert-Release ((Read-Version $merge2) -ceq (Read-Version $candidate2.sha)) 'Second normal candidate merge changed candidate CI configuration.'
+    $release2 = Configure-Version $merge2 2 servicing
+    Assert-PackageProperties $release2.sha 'release/11.0.1xx-sr2' 20 servicing true
     $release = [pscustomobject]@{ tag_name = '11.0.10'; draft = $false; prerelease = $false; published_at = '2026-11-06T08:00:00Z'; html_url = 'https://github.com/dotnet/maui/releases/tag/11.0.10' }
-    $verified = Get-MauiVerifiedPublishedVersion -Release $release -VersionContent (Read-Version $merge1) -ReleaseBand '11.0.1xx' -CurrentSr 2 -TagCommit $merge1
+    $verified = Get-MauiVerifiedPublishedVersion -Release $release -VersionContent (Read-Version $release1.sha) -ReleaseBand '11.0.1xx' -CurrentSr 2 -TagCommit $release1.sha
     foreach ($invalid in @(
             [pscustomobject]@{ tag_name = '11.0.10'; draft = $true; prerelease = $false; published_at = $release.published_at; html_url = $release.html_url },
             [pscustomobject]@{ tag_name = '11.0.10'; draft = $false; prerelease = $true; published_at = $release.published_at; html_url = $release.html_url },
             [pscustomobject]@{ tag_name = '11.0.10'; draft = $false; prerelease = $false; published_at = $null; html_url = $release.html_url },
             [pscustomobject]@{ tag_name = '11.0.11'; draft = $false; prerelease = $false; published_at = $release.published_at; html_url = $release.html_url }
         )) {
-        Assert-Refusal { Get-MauiVerifiedPublishedVersion -Release $invalid -VersionContent (Read-Version $merge1) -ReleaseBand '11.0.1xx' -CurrentSr 2 -TagCommit $merge1 } 'Unverified or mismatched publication was accepted.'
+        Assert-Refusal { Get-MauiVerifiedPublishedVersion -Release $invalid -VersionContent (Read-Version $release1.sha) -ReleaseBand '11.0.1xx' -CurrentSr 2 -TagCommit $release1.sha } 'Unverified or mismatched publication was accepted.'
     }
     Assert-Refusal { Get-MauiVerifiedPublishedVersion -Release $release -VersionContent (Read-Version $base) -ReleaseBand '11.0.1xx' -CurrentSr 2 -TagCommit $base } 'A CI version at a tag must not imply stable publication.'
     $releasedTemplate = Get-MauiReleasedVersionContent -Content $template -Tag $verified.tag
     Assert-Release ([Regex]::Matches($releasedTemplate, '(?m)^        - 11\.0\.10\r?$').Count -eq 2) 'Published version must appear exactly once in each dropdown.'
     Assert-Release ((Get-MauiReleasedVersionContent -Content $releasedTemplate -Tag $verified.tag) -ceq $releasedTemplate) 'Published-version retry duplicated entries.'
+    $oldMarkerTemplate = $upcomingTemplate.Replace('- 11.0.10', '- 11.0.10 (candidate)')
+    Assert-Release ((Get-MauiReleasedVersionContent -Content $oldMarkerTemplate -Tag $verified.tag) -ceq $releasedTemplate) 'Plain version housekeeping must remove old candidate suffixes without duplicating options.'
     Assert-Release ((Get-MauiReleasedVersionContent -Content ($template.Replace('- 10.0.130', '- 10.0.130 SR13')) -Tag '10.0.130') -ceq $template.Replace('- 10.0.130', '- 10.0.130 SR13')) 'Existing labeled versions must not be duplicated.'
     $publication = New-MauiReleaseContentCommit -RepositoryPath $repo -Parent $base `
         -Changes @{ '.github/ISSUE_TEMPLATE/bug-report.yml' = $releasedTemplate } -Message 'List verified published SR1'
@@ -236,11 +256,11 @@ body:
     $report = [pscustomobject]@{
         assertions = $assertions
         initial = @{ base = $base; candidate = $candidate1.sha; inflight = $inflight2.sha }
-        cycle1 = @{ release = $merge1; fixes = $fixes2.sha; integration = $integration.sha; candidate = $candidate2.sha; inflight = $inflight3.sha }
-        cycle2 = @{ release = $merge2 }
+        cycle1 = @{ cut = $merge1; release = $release1.sha; fixes = $fixes2.sha; integration = $integration.sha; candidate = $candidate2.sha; inflight = $inflight3.sha }
+        cycle2 = @{ cut = $merge2; release = $release2.sha }
         publication = @{ commit = $publication.sha; tag = $verified.tag; evidence = 'isolated published-release fixture, not a production shipment' }
         retry = 'same commits and refs; zero duplicate content or empty commits'
-        msbuild = 'candidate/release servicing stable; fixes/main ci.main; future inflight ci.inflight'
+        msbuild = 'candidate/cut/fixes ci.main; separate post-cut servicing commit stable; future inflight ci.inflight'
     }
     if ($OutputDirectory) {
         $null = New-Item -ItemType Directory -Path $OutputDirectory -Force

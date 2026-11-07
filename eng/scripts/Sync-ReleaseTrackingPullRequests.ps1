@@ -159,9 +159,9 @@ foreach ($route in $routes) {
         ''
         '**Status:** draft tracking PR, not a release approval. Normal review and CI are required before integration. Versioned nightlies retain the legacy stream until the internal cutover is verified.'
         ''
-        'Candidate creation must preconfigure servicing packages. Cut the release at the approved integration commit, then restore the fixes lane to next-cycle CI branding before forwarding into the feature branch. A merge is not shipment; released-version metadata waits for verified publication.'
+        'The candidate retains CI settings and includes the upcoming version in both bug-template dropdowns. After its approved merge, automation cuts the release branch and restores next-cycle CI on net11. Servicing/stable configuration is a separate reviewed PR targeting the release branch after the cut, never a candidate commit.'
         ''
-        'After a verified candidate merge, the tracking workflow automatically prepares the next candidate/inflight branches and PR pair. It does not cut a release or move the integration branch; release cutting and CI housekeeping remain separate approved steps.'
+        'The same workflow prepares the next candidate/inflight branches and draft PR pair. It never merges the separate servicing PR. Signing and publication preparation wait for that reviewed servicing merge and the existing internal deployment/authorization; public package publishing remains explicitly approved.'
     ) -join "`n"
     if ($SandboxPrefix) {
         $description += "`n`nSandbox experiment only. This PR must not target a production branch."

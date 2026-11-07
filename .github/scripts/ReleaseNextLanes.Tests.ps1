@@ -18,12 +18,33 @@ BeforeAll {
         (New-MauiReleaseContentCommit -RepositoryPath $fixture -Parent $Parent `
             -Changes @{ 'eng/Versions.props' = $content } -Message "Configure $Role SR$Sr").sha
     }
+    function New-LaneFixtureCandidate([string] $Parent, [int] $Sr) {
+        $configured = New-LaneFixtureConfig $Parent $Sr candidate
+        $template = Get-MauiReleaseFile -RepositoryPath $fixture -Commit $configured -Path '.github/ISSUE_TEMPLATE/bug-report.yml'
+        $template = Get-MauiReleasedVersionContent -Content $template -Tag "11.0.$($Sr * 10)"
+        (New-MauiReleaseContentCommit -RepositoryPath $fixture -Parent $configured `
+            -Changes @{ '.github/ISSUE_TEMPLATE/bug-report.yml' = $template } -Message 'List upcoming candidate version').sha
+    }
 }
 
 Describe 'Next release lane preparation' {
     BeforeAll {
         $fixture = Join-Path $TestDrive 'lanes'
         $null = New-Item -ItemType Directory -Force (Join-Path $fixture 'eng')
+        $null = New-Item -ItemType Directory -Force (Join-Path $fixture '.github/ISSUE_TEMPLATE')
+        @'
+body:
+  - type: dropdown
+    id: version-with-bug
+    attributes:
+      options:
+        - 11.0.0
+  - type: dropdown
+    id: version-that-worked
+    attributes:
+      options:
+        - 11.0.0
+'@ | Set-Content (Join-Path $fixture '.github/ISSUE_TEMPLATE/bug-report.yml')
         $null = Invoke-LaneFixtureGit @('init', '--quiet', '-b', 'net11')
         $null = Invoke-LaneFixtureGit @('config', 'user.name', 'Release lane fixture')
         $null = Invoke-LaneFixtureGit @('config', 'user.email', 'fixture@example.invalid')
@@ -42,7 +63,7 @@ Describe 'Next release lane preparation' {
 </PropertyGroup></Project>
 '@ | Set-Content (Join-Path $fixture 'eng/Versions.props')
         $base = Commit-LaneFixture 'Initial SR1'
-        $candidate = New-LaneFixtureConfig $base 1 candidate
+        $candidate = New-LaneFixtureCandidate $base 1
         $inflight = New-LaneFixtureConfig $candidate 2 inflight 1
         $null = Invoke-LaneFixtureGit @('checkout', '--quiet', '-b', 'inflight/11.0.1xx-sr2', $inflight)
         'future only' | Set-Content (Join-Path $fixture 'future-sr2.txt')
@@ -62,14 +83,43 @@ Describe 'Next release lane preparation' {
         $selected = Get-MauiReleaseVersion -Content (
             Get-MauiReleaseFile -RepositoryPath $fixture -Commit $plan.nextCandidateSha -Path 'eng/Versions.props')
         $selected.patch | Should -Be 20
-        $selected.label | Should -Be 'servicing'
-        $selected.stable | Should -BeTrue
+        $selected.label | Should -Be 'ci.main'
+        $selected.stable | Should -BeFalse
+        $template = Get-MauiReleaseFile -RepositoryPath $fixture -Commit $plan.nextCandidateSha -Path '.github/ISSUE_TEMPLATE/bug-report.yml'
+        ([regex]::Matches($template, '(?m)^        - 11\.0\.20\r?$')).Count | Should -Be 2
+        $template | Should -Not -Match '\(candidate\)'
+        $servicing = Get-MauiReleaseVersion -Content (
+            Get-MauiReleaseFile -RepositoryPath $fixture -Commit $plan.servicingSha -Path 'eng/Versions.props')
+        $servicing.label | Should -Be 'servicing'
+        $servicing.stable | Should -BeTrue
+        $servicing.patch | Should -Be 10
+        (Invoke-LaneFixtureGit @('show', '-s', '--format=%P', $plan.servicingSha)) | Should -Be $merge
+        $servicingPaths = @(Invoke-LaneFixtureGit @('diff', '--name-only', $merge, $plan.servicingSha))
+        $servicingPaths.Count | Should -Be 1
+        $servicingPaths[0] | Should -Be eng/Versions.props
+        & git -C $fixture merge-base --is-ancestor $plan.servicingSha $plan.nextCandidateSha
+        $LASTEXITCODE | Should -Be 1
         $future = Get-MauiReleaseVersion -Content (
             Get-MauiReleaseFile -RepositoryPath $fixture -Commit $plan.nextInflightSha -Path 'eng/Versions.props')
         $future.patch | Should -Be 30
         $future.label | Should -Be 'ci.main'
         $future.stable | Should -BeFalse
         $future.labelCount | Should -Be 2
+        foreach ($bump in @(
+                @{ Parent = $merge; Commit = $plan.normalizedSha; Version = '11.0.20' }
+                @{ Parent = $plan.nextCandidateSha; Commit = $plan.nextInflightSha; Version = '11.0.30' }
+            )) {
+            $paths = @((Invoke-LaneFixtureGit @('diff', '--name-only', $bump.Parent, $bump.Commit)) -split '\r?\n' |
+                Where-Object { $_ })
+            $paths.Count | Should -Be 2
+            $paths | Should -Contain 'eng/Versions.props'
+            $paths | Should -Contain '.github/ISSUE_TEMPLATE/bug-report.yml'
+            $options = Get-MauiReleaseFile -RepositoryPath $fixture -Commit $bump.Commit -Path '.github/ISSUE_TEMPLATE/bug-report.yml'
+            ([regex]::Matches($options, "(?m)^        - $([regex]::Escape($bump.Version))`r?`$")).Count | Should -Be 2
+            $options | Should -Not -Match '\(candidate\)'
+            (Get-MauiReleaseVersion -Content (Get-MauiReleaseFile -RepositoryPath $fixture `
+                -Commit $bump.Commit -Path 'eng/Versions.props')).sdkBand | Should -Be '11.0.100'
+        }
     }
 
     It 'preserves exact approved integration, pinned future payload, and normalized ancestry' {
@@ -109,6 +159,44 @@ Describe 'Next release lane preparation' {
         { New-MauiReleaseNextLanePlan -RepositoryPath $fixture -ReleaseBand '11.0.1xx' `
             -Sr 1 -Merge $merge -Candidate $candidate -Inflight $candidate } | Should -Throw '*does not match*'
         { Get-MauiReleaseLaneReceipt -RepositoryPath $fixture -Commit $merge } | Should -Throw '*metadata file*'
+    }
+
+    It 'plans a cut at the approved merge and a distinct next-cycle CI child' {
+        $completion = Get-MauiReleaseCompletionPlan -RepositoryPath $fixture -LanePlan $plan `
+            -ReleaseBand '11.0.1xx' -Sr 1 -Fixes $merge -Release $null
+        $completion.createRelease | Should -BeTrue
+        $completion.restoreFixes | Should -BeTrue
+        $completion.releaseSha | Should -Be $merge
+        $completion.normalizationSha | Should -Be $plan.normalizedSha
+        $completion.releaseSha | Should -Not -Be $completion.normalizationSha
+        (Get-MauiReleaseVersion -Content (Get-MauiReleaseFile -RepositoryPath $fixture `
+            -Commit $completion.releaseSha -Path 'eng/Versions.props')).stable | Should -BeFalse
+        $normalized = Get-MauiReleaseVersion -Content (Get-MauiReleaseFile -RepositoryPath $fixture `
+            -Commit $completion.normalizationSha -Path 'eng/Versions.props')
+        $normalized.patch | Should -Be 20
+        $normalized.label | Should -Be ci.main
+        $normalized.stable | Should -BeFalse
+    }
+
+    It 'recovers a cut without housekeeping and becomes unchanged after exact restoration' {
+        $partial = Get-MauiReleaseCompletionPlan -RepositoryPath $fixture -LanePlan $plan `
+            -ReleaseBand '11.0.1xx' -Sr 1 -Fixes $merge -Release $merge
+        $partial.createRelease | Should -BeFalse
+        $partial.restoreFixes | Should -BeTrue
+        $done = Get-MauiReleaseCompletionPlan -RepositoryPath $fixture -LanePlan $plan `
+            -ReleaseBand '11.0.1xx' -Sr 1 -Fixes $plan.normalizedSha -Release $merge
+        $done.createRelease | Should -BeFalse
+        $done.restoreFixes | Should -BeFalse
+    }
+
+    It 'refuses an occupied release name and unrelated integration movement' {
+        { Get-MauiReleaseCompletionPlan -RepositoryPath $fixture -LanePlan $plan `
+            -ReleaseBand '11.0.1xx' -Sr 1 -Fixes $merge -Release $candidate } | Should -Throw '*Git operation*'
+        { Get-MauiReleaseCompletionPlan -RepositoryPath $fixture -LanePlan $plan `
+            -ReleaseBand '11.0.1xx' -Sr 1 -Fixes $inflight -Release $null } | Should -Throw '*Git operation*'
+        $fake = [pscustomobject]@{ mergeSha = $merge; normalizedSha = $plan.nextInflightSha }
+        { Get-MauiReleaseCompletionPlan -RepositoryPath $fixture -LanePlan $fake `
+            -ReleaseBand '11.0.1xx' -Sr 1 -Fixes $merge -Release $null } | Should -Throw '*exact prepared child*'
     }
 
     It 'prepares a second normal candidate cycle without leaking SR3 payload backwards' {
