@@ -466,7 +466,9 @@ jobs:
                 }
               }
               $driverContent = if ($usesWildcardCall) {
-                $originalDriver.Replace($literalRuntimeCall, $wildcardRuntimeCall)
+                $originalDriver.Replace($literalRuntimeCall, $wildcardRuntimeCall).Replace(
+                  "`$ErrorActionPreference = 'Stop'",
+                  "`$ErrorActionPreference = 'Stop'`r`n. (Join-Path `$PSScriptRoot '../../eng/common/tools.ps1')")
               } else {
                 $originalDriver
               }
