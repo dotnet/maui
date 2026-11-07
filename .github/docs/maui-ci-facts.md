@@ -117,6 +117,15 @@ directories; long test-method names can otherwise exceed Azure File Container's
 the diagnostic kind, unique GUID, extension, contents, and test-result association
 are preserved.
 
+## Catalyst Helix orchestration budget
+
+The Catalyst sender job has the same 240-minute outer orchestration budget as
+the iOS and Windows sender jobs. This allows for setup and Helix queue waiting
+without cancelling work before a machine starts it; the existing per-work-item
+and test-execution deadlines remain unchanged. A Helix `-1234` result with the
+cancelled-job console message means the item did not run, not that a test crashed.
+Inspect cancelled job records as well as failed tasks when a build ends red.
+
 ## Android memory-test collection
 
 Android's `View.ScrollabilityCache` can retain detached views through delayed
