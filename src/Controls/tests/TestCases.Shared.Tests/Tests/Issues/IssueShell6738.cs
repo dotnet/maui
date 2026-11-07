@@ -26,16 +26,23 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 		public void EnsureFlyoutIconWithForegroundColor()
 		{
+			Exception? exception = null;
+
 			string changeColor = "IconColorChangeButton";
 			string defaultColor = "IconColorDefaultButton";
 			App.WaitForElement(changeColor);
 			App.Tap(changeColor);
 			App.WaitForElement(changeColor);
-			VerifyScreenshot();
+			VerifyScreenshotOrSetException(ref exception);
 			App.WaitForElement(defaultColor);
 			App.Tap(defaultColor);
 			App.WaitForElement(defaultColor);
-			VerifyScreenshot("EnsureFlyoutIconAsDefaultIconColor");
+			VerifyScreenshotOrSetException(ref exception, "EnsureFlyoutIconAsDefaultIconColor");
+
+			if (exception is not null)
+			{
+				throw exception;
+			}
 		}
 	}
 }

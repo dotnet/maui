@@ -49,7 +49,7 @@
     <!-- Microsoft.Build.Msix.props" cannot be imported again -->
     <!-- Found version-specific or distribution-specific runtime identifier(s)-->
     <!-- Ignoring trimming error AD0001 https://github.com/dotnet/runtime/issues/123503-->
-    <NoWarn>$(NoWarn);NETSDK1206;NU1702;IL6001;AD0001</NoWarn>
+    <NoWarn>$(NoWarn);NETSDK1206;NU1702;AD0001</NoWarn>
     <MSBuildWarningsAsMessages>$(MSBuildWarningsAsMessages);MSB4011;MSB3277;NETSDK1206;NU1702</MSBuildWarningsAsMessages>
   </PropertyGroup>
 

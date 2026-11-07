@@ -155,6 +155,7 @@ extends:
                 $sourceRepository = "https://github.com/$env:GH_OWNER/$env:GH_REPO".ToLowerInvariant()
                 $allowedRepositories = @(
                   'https://github.com/dotnet/maui',
+                  'https://github.com/dotnet/maui-labs',
                   'https://github.com/dotnet/android',
                   'https://github.com/dotnet/macios',
                   'https://github.com/dotnet/android-libraries',

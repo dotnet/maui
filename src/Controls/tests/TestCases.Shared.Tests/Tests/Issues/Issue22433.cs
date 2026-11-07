@@ -16,13 +16,15 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Button)]
 		public async Task ButtonLayoutAndSpacingTests()
 		{
+			Exception? exception = null;
+
 			App.WaitForElement("TestNavigateButtonLayout");
-			VerifyScreenshot("Issue22433_Default");
+			VerifyScreenshotOrSetException(ref exception, "Issue22433_Default");
 
 			App.Tap("TestNavigateButtonLayout");
 			App.WaitForElement("TestLayoutHeader");
 			await Task.Delay(500); // wait for nav animation
-			VerifyScreenshot("Issue22433_Layout");
+			VerifyScreenshotOrSetException(ref exception, "Issue22433_Layout");
 
 			App.WaitForElement("NavBackButton");
 			App.Tap("NavBackButton");
@@ -31,7 +33,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.Tap("TestNavigateButtonPadding");
 			App.WaitForElement("TestSpacingHeader");
 			await Task.Delay(500);  // wait for nav animation
-			VerifyScreenshot("Issue22433_Spacing");
+			VerifyScreenshotOrSetException(ref exception, "Issue22433_Spacing");
+
+			if (exception is not null)
+			{
+				throw exception;
+			}
 		}
 	}
 }

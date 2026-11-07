@@ -23,10 +23,17 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public void CollectionViewPreSelectionShouldUpdate()
 		{
+			Exception? exception = null;
+
 			App.WaitForElement("SingleSelection");
-			VerifyScreenshot();
+			VerifyScreenshotOrSetException(ref exception);
 			App.WaitForElement("MultipleSelection");
-			VerifyScreenshot();
+			VerifyScreenshotOrSetException(ref exception);
+
+			if (exception is not null)
+			{
+				throw exception;
+			}
 		}
 	}
 }
