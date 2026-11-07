@@ -356,6 +356,16 @@ jobs:
           New-Item -ItemType Junction -Path $percentRoot -Target $runtimeRoot | Out-Null
           New-Item -ItemType Junction -Path $percentRepo -Target $env:GITHUB_WORKSPACE | Out-Null
           $percentProject = Join-Path $percentRepo 'src/DotNet/DotNet.csproj'
+          $percentDotnet = Join-Path $percentRoot 'dotnet.exe'
+          if (-not (Test-Path -LiteralPath $percentDotnet) -or
+              -not (Test-Path -LiteralPath $percentProject)) {
+            throw 'The literal-percent SDK or project control is missing.'
+          }
+          $percentSdkVersion = & $percentDotnet --version
+          if ($LASTEXITCODE -ne 0 -or $percentSdkVersion -ne $globalJson.sdk.version) {
+            throw 'The literal-percent SDK does not execute natively with the pinned version.'
+          }
+          $percentSdkVersion | Tee-Object (Join-Path $logs 'percent-sdk-version.log')
           $percentTrailingRoot = $percentRoot + '\'
           $percentArgument = $percentTrailingRoot.Replace('%', '%25')
           $expectedPercentDirectory = "Tool runtime install directory: [$percentTrailingRoot]"
@@ -394,14 +404,14 @@ jobs:
               Write-Host "Literal-percent $phase exit code: $phaseExitCode; child reached: $childReached"
               if ($usesLiteralCommand) {
                 if ($phaseExitCode -eq 0 -or $childReached -or
-                    -not (Select-String -Path $logPath -SimpleMatch 'Maui SDK expanded')) {
+                    -not (Select-String -Path $logPath -SimpleMatch 'MSB3073')) {
                   throw "The $phase control did not reproduce cmd.exe's percent expansion before child startup."
                 }
               } elseif ($phaseExitCode -ne 0 -or -not $childReached) {
                 throw "The $phase child did not receive the exact literal-percent directory."
               }
             }
-            $percentInstalled = @(& (Join-Path $percentRoot 'dotnet.exe') --list-runtimes)
+            $percentInstalled = @(& $percentDotnet --list-runtimes)
             if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
             $percentInstalled | Tee-Object (Join-Path $logs 'percent-runtimes.log')
             foreach ($version in $globalJson.tools.runtimes.dotnet) {
