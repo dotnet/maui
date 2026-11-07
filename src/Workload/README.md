@@ -106,10 +106,13 @@ from `MicrosoftNETSdkPackageVersion` in `eng/Versions.props`. MAUI's package
 version uses its own `PreReleaseVersionLabel` and `PreReleaseVersionIteration`;
 the generated manifest and its current MAUI packs use that package version.
 
-The default prerelease label is
+The default prerelease label and stabilization are
 [derived from the build source branch](../../docs/ReleaseProcess.md#branch-derived-package-labels).
-This does not enable stable packages or public publication; servicing releases
-still require an explicit `StabilizePackageVersion=true` flip.
+Valid SR release refs with servicing branding automatically default to stable
+packages; other refs and explicit Preview/RC/PR-label overrides remain
+prerelease by default. Explicit `StabilizePackageVersion=true` or `false`
+overrides still win. Stable versioning does not enable public publication or
+bypass release approvals.
 
 When advancing MAUI to a new preview or release candidate, update both
 prerelease properties on the development branch as well as the release branch.

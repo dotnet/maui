@@ -29,23 +29,34 @@ is not used to infer servicing branding. Local builds without
 To evaluate another lane locally, supply the full ref with
 `-p:BUILD_SOURCEBRANCH=refs/heads/release/11.0.1xx-sr1`.
 
-This policy changes **labels only**, not the stable-package or publication
-decision. The existing `IsServicingBuild` rule still evaluates to `true` when
-the effective label is `servicing`; it does not make the package stable.
-`StabilizePackageVersion` still defaults to `false`, producing a prerelease
-package such as `11.0.10-servicing.<build suffix>`. A release owner must still
-explicitly enable `StabilizePackageVersion=true` for stable packages. That
-continues to set `DotNetFinalVersionKind=release` and remove the workload
-prerelease suffix. SDK bands, patch and assembly versions, previous-version
-testing, signing, manual approval, and public publication gates are unchanged.
+`StabilizePackageVersion` defaults to `true` only for a recognized SR release
+source ref with an effective `servicing` label. The default is `false` on
+`main`, `net11`, candidate and inflight branches, Preview/RC/GA release branches,
+unknown or malformed refs, and local builds without a source ref. Both defaults
+are evaluated in `eng/Versions.props`, before Arcade calculates versions.
+
+For example, `refs/heads/release/11.0.1xx-sr1` automatically produces stable
+`11.0.10` packages, sets `DotNetFinalVersionKind=release`, and removes the
+workload prerelease suffix. No separate stabilization flip is needed for a
+release branch containing this policy. The existing `IsServicingBuild` rule
+still evaluates to `true` when the effective label is `servicing`; that rule is
+independent of an explicit stabilization override. To build prerelease
+servicing packages instead, pass `-p:StabilizePackageVersion=false`.
+
+Stable package versions do **not** authorize publication or prove that a release
+has shipped. SDK bands, patch and assembly versions, previous-version testing,
+signing, manual approval, and public publication gates are unchanged.
 
 Explicit MSBuild command-line properties retain precedence, including
 `PreReleaseVersionLabel=preview` or `rc` with `PreReleaseVersionIteration`,
 `PreReleaseVersionLabel=ci.pr<PR number>`, `IsServicingBuild`, and
-`StabilizePackageVersion`. Preview/RC branch names alone do not select preview
-branding or servicing settings. Scheduled builds keep the branch-derived label
-and the existing `nightly` build tag; they no longer overwrite the label after
-package and workload versions have already been calculated.
+`StabilizePackageVersion=true` or `false`. A Preview, RC, or PR-label override
+keeps the default stabilization `false`, even on a recognized SR source ref,
+so prerelease branding is not stripped accidentally. An explicit stabilization
+`true` still wins on any source ref. Preview/RC branch names alone do not select
+preview branding or servicing settings. Scheduled builds keep the branch-derived
+label and stable default, plus the existing `nightly` build tag; they no longer
+overwrite the label after package and workload versions have been calculated.
 
 Inspect the resulting version without building, signing, or publishing:
 
