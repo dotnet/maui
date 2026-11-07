@@ -1,5 +1,16 @@
 BeforeAll {
     Import-Module (Join-Path $PSScriptRoot '../../eng/scripts/MauiReleaseConfiguration.psm1') -Force
+    $tokens = $null
+    $errors = $null
+    $ast = [Management.Automation.Language.Parser]::ParseFile(
+        (Join-Path $PSScriptRoot '../../eng/scripts/Sync-ReleaseNextLanes.ps1'), [ref]$tokens, [ref]$errors)
+    if ($errors.Count) { throw ($errors | Out-String) }
+    $servicingPr = $ast.Find({
+        param($node)
+        $node -is [Management.Automation.Language.FunctionDefinitionAst] -and $node.Name -eq 'Sync-PostCutServicingPr'
+    }, $true)
+    Invoke-Expression $servicingPr.Extent.Text
+    function Invoke-NextLaneApi { throw 'The release fixture must not mutate remote PRs or refs.' }
     function Invoke-LaneFixtureGit {
         param([string[]] $Arguments)
         $output = @(& git -C $fixture @Arguments 2>&1)
@@ -44,6 +55,26 @@ Describe 'Central label policy during release phases' {
     <DotNetFinalVersionKind Condition="'$(StabilizePackageVersion)' == 'true'">release</DotNetFinalVersionKind>
 </PropertyGroup></Project>
 '@
+        $automaticContent = $centralContent.Replace('">false</StabilizePackageVersion>',
+            '">$([System.Text.RegularExpressions.Regex]::IsMatch(''$(PreReleaseVersionLabel):$(BUILD_SOURCEBRANCH)'', ''\Aservicing:refs/heads/release/[1-9][0-9]*\.0\.[1-9][0-9]*xx-sr[1-9][0-9]*\z'').ToString().ToLowerInvariant())</StabilizePackageVersion>')
+    }
+
+    It 'preserves automatic stabilization instead of creating a manual flip' {
+        foreach ($role in @('candidate', 'servicing', 'fixes', 'inflight')) {
+            (Get-MauiReleaseVersionContent -Content $automaticContent -ReleaseBand '11.0.1xx' -Sr 1 -Role $role) |
+                Should -BeExactly $automaticContent
+        }
+        (Get-MauiReleaseVersion -Content $automaticContent).automaticStabilization | Should -BeTrue
+        { Get-MauiReleaseVersion -Content $automaticContent.Replace('servicing:refs/heads/release/', 'refs/heads/release/') } |
+            Should -Throw '*standard stabilization default*'
+        $scoped = Get-MauiReleaseVersionContent -Content $automaticContent -ReleaseBand '11.0.1xx' -Sr 1 `
+            -Role candidate -SandboxPrefix release-rollover-trial/auto-stable
+        (Get-MauiReleaseVersion -Content $scoped).automaticStabilization | Should -BeTrue
+        { Get-MauiVerifiedPublishedVersion -Release ([pscustomobject]@{
+                tag_name='11.0.10'; draft=$false; prerelease=$false; published_at='2026-11-07T00:00:00Z'
+                html_url='https://github.com/dotnet/maui/releases/tag/11.0.10'
+            }) -VersionContent $scoped -ReleaseBand '11.0.1xx' -CurrentSr 1 -TagCommit ('a'*40) } |
+            Should -Throw '*exact authorized sandbox scope*'
     }
 
     It 'preserves the recognized policy byte-for-byte instead of stamping a release label' {
@@ -62,8 +93,10 @@ Describe 'Central label policy during release phases' {
             published_at = '2026-11-07T00:00:00Z'; html_url = 'https://github.com/dotnet/maui/releases/tag/11.0.10'
         }
         $servicing = Get-MauiReleaseVersionContent -Content $centralContent -ReleaseBand '11.0.1xx' -Sr 1 -Role servicing
-        (Get-MauiVerifiedPublishedVersion -Release $release -VersionContent $servicing -ReleaseBand '11.0.1xx' `
-            -CurrentSr 1 -TagCommit ('a' * 40)).tag | Should -Be 11.0.10
+        foreach ($content in @($servicing, $automaticContent)) {
+            (Get-MauiVerifiedPublishedVersion -Release $release -VersionContent $content -ReleaseBand '11.0.1xx' `
+                -CurrentSr 1 -TagCommit ('a' * 40)).tag | Should -Be 11.0.10
+        }
         { Get-MauiVerifiedPublishedVersion -Release $release -VersionContent $centralContent -ReleaseBand '11.0.1xx' `
             -CurrentSr 1 -TagCommit ('a' * 40) } | Should -Throw '*stable servicing version metadata*'
         $release.draft = $true
@@ -91,10 +124,12 @@ Describe 'Central label policy during release phases' {
     }
 
     It 'retains the policy through real next-lane, servicing, receipt, and completion commits' {
-        $fixture = Join-Path $TestDrive central-lanes
+        $index = 0
+        foreach ($content in @($centralContent, $automaticContent)) {
+        $fixture = Join-Path $TestDrive "central-lanes-$($index++)"
         $null = New-Item -ItemType Directory -Force (Join-Path $fixture eng)
         $null = New-Item -ItemType Directory -Force (Join-Path $fixture '.github/ISSUE_TEMPLATE')
-        $centralContent | Set-Content (Join-Path $fixture 'eng/Versions.props')
+        $content | Set-Content (Join-Path $fixture 'eng/Versions.props')
         @'
 body:
   - type: dropdown
@@ -130,6 +165,29 @@ body:
         }
         $receipt = New-MauiReleaseLaneReceipt -RepositoryPath $fixture -Record $record
         (Get-MauiReleaseLaneReceipt -RepositoryPath $fixture -Commit $receipt).plan.servicingSha | Should -Be $plan.servicingSha
+        if ((Get-MauiReleaseVersion -Content $content).automaticStabilization) {
+            $plan.servicingSha | Should -Be $merge
+            $RepositoryPath = $fixture
+            $result = Sync-PostCutServicingPr -Branch release/11.0.1xx-sr1 -Plan $plan -Sr 1
+            $result.status | Should -Be branch-derived-stabilization
+            $result.number | Should -BeNullOrEmpty
+            $result.url | Should -BeNullOrEmpty
+            $badPlan = [pscustomobject]@{ mergeSha=$merge; servicingSha=$candidate }
+            { Sync-PostCutServicingPr -Branch release/11.0.1xx-sr1 -Plan $badPlan -Sr 1 } |
+                Should -Throw '*exact approved candidate source*'
+            $again = New-MauiReleaseNextLanePlan -RepositoryPath $fixture -ReleaseBand '11.0.1xx' `
+                -Sr 1 -Merge $merge -Candidate $candidate -Inflight $inflight
+            ($again | ConvertTo-Json) | Should -BeExactly ($plan | ConvertTo-Json)
+            $null = Invoke-LaneFixtureGit @('merge', '--quiet', '--ff-only', $plan.normalizedSha)
+            $null = Invoke-LaneFixtureGit @('merge', '--quiet', '--no-ff', $plan.nextCandidateSha, '-m', 'Approve automatic SR2')
+            $merge2 = Invoke-LaneFixtureGit @('rev-parse', 'HEAD')
+            $plan2 = New-MauiReleaseNextLanePlan -RepositoryPath $fixture -ReleaseBand '11.0.1xx' `
+                -Sr 2 -Merge $merge2 -Candidate $plan.nextCandidateSha -Inflight $plan.nextInflightSha
+            $plan2.servicingSha | Should -Be $merge2
+            (Sync-PostCutServicingPr -Branch release/11.0.1xx-sr2 -Plan $plan2 -Sr 2).status |
+                Should -Be branch-derived-stabilization
+        }
+        }
     }
 }
 

@@ -59,10 +59,20 @@ function Get-ForwardVersion {
     if ($labels.Count -ne 1 -or $stable.Count -ne 1) {
         throw "Version metadata at '$Commit' has ambiguous package-release settings."
     }
+    $stabilize = $stable[0].InnerText
+    if ($stabilize -cnotin @('true', 'false')) {
+        Import-Module (Join-Path $PSScriptRoot 'MauiReleaseConfiguration.psm1') -Force
+        $parsed = Get-MauiReleaseVersion -Content $xml.OuterXml
+        if (!$parsed.automaticStabilization) {
+            throw "Version metadata at '$Commit' has an unknown stabilization default."
+        }
+        # The configured forward source and target are development refs, not SR refs.
+        $stabilize = 'false'
+    }
     return [pscustomobject]@{
         major = [int] $nodes[0].InnerText
         label = $labels[0].InnerText
-        stabilize = $stable[0].InnerText
+        stabilize = $stabilize
     }
 }
 

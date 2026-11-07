@@ -26,6 +26,12 @@ function Get-MauiBranchLabelCondition {
     return $condition
 }
 
+function Get-MauiStabilizationDefault {
+    param ([string] $SandboxPrefix)
+    $branch = if ($SandboxPrefix) { "(?:release|$([Regex]::Escape($SandboxPrefix))/release)" } else { 'release' }
+    "`$([System.Text.RegularExpressions.Regex]::IsMatch('`$(PreReleaseVersionLabel):`$(BUILD_SOURCEBRANCH)', '\Aservicing:refs/heads/$branch/[1-9][0-9]*\.0\.[1-9][0-9]*xx-sr[1-9][0-9]*\z').ToString().ToLowerInvariant())"
+}
+
 function Get-MauiReleaseVersion {
     [CmdletBinding()]
     param ([Parameter(Mandatory)][string] $Content)
@@ -109,11 +115,18 @@ function Get-MauiReleaseVersion {
         }
     }
     $stable = $document.SelectSingleNode('/Project/PropertyGroup/StabilizePackageVersion')
+    $automaticStabilization = $branchDerivedLabels -and
+        $values.StabilizePackageVersion -ceq (Get-MauiStabilizationDefault -SandboxPrefix $labelSandboxPrefix)
     if ($stable.Attributes.Count -ne 1 -or
         $stable.GetAttribute('Condition') -cne "'`$(StabilizePackageVersion)' == ''" -or
-        $values.StabilizePackageVersion -cnotin @('true', 'false') -or
+        (!$automaticStabilization -and $values.StabilizePackageVersion -cnotin @('true', 'false')) -or
         $values.PreReleaseVersionIteration -cne '') {
         throw "Automatic servicing configuration requires the standard stabilization default and an empty prerelease iteration."
+    }
+    if ($automaticStabilization -and
+        [Array]::IndexOf($properties, $stable) -ge [Array]::IndexOf($properties,
+            $document.SelectSingleNode('/Project/PropertyGroup/DotNetFinalVersionKind'))) {
+        throw 'Automatic stabilization must precede the final-version condition.'
     }
     foreach ($required in @(
             @{ name = 'IsServicingBuild'; condition = "'`$(PreReleaseVersionLabel)' == 'servicing'"; value = 'true' },
@@ -137,6 +150,7 @@ function Get-MauiReleaseVersion {
         labelCount = $labels.Count
         branchDerivedLabels = $branchDerivedLabels
         labelSandboxPrefix = $labelSandboxPrefix
+        automaticStabilization = $automaticStabilization
     }
 }
 
@@ -203,7 +217,9 @@ function Get-MauiReleaseVersionContent {
     }
     foreach ($change in @(
             @{ name = 'PatchVersion'; value = if ($SourceSr -eq $Sr) { $version.patch } else { $Sr * 10 } },
-            @{ name = 'StabilizePackageVersion'; value = if ($Role -ceq 'servicing') { 'true' } else { 'false' } }
+            @{ name = 'StabilizePackageVersion'; value = if ($version.automaticStabilization) {
+                    Get-MauiStabilizationDefault -SandboxPrefix $SandboxPrefix
+                } elseif ($Role -ceq 'servicing') { 'true' } else { 'false' } }
         )) {
         $pattern = "(?<open><$($change.name)(?: [^<>]*)?>)[^<]*(?<close></$($change.name)>)"
         $propertyMatches = [Regex]::Matches($Content, $pattern)
@@ -295,7 +311,7 @@ function Get-MauiVerifiedPublishedVersion {
     }
     $null = Get-MauiReleaseVersionContent -Content $VersionContent -ReleaseBand $ReleaseBand -Sr $sr -Role servicing
     $version = Get-MauiReleaseVersion -Content $VersionContent
-    if ($version.patch -ne $patch -or !$version.stable -or
+    if ($version.patch -ne $patch -or !($version.stable -or $version.automaticStabilization) -or
         (!$version.branchDerivedLabels -and ($version.label -cne 'servicing' -or $version.labelCount -ne 1))) {
         throw 'The immutable published tag disagrees with its stable servicing version metadata.'
     }
@@ -470,7 +486,7 @@ function New-MauiReleaseNextLanePlan {
     }
     $mergeContent = Get-MauiReleaseFile -RepositoryPath $RepositoryPath -Commit $Merge -Path 'eng/Versions.props'
     $servicingContent = Get-MauiReleaseVersionContent -Content $mergeContent -ReleaseBand $ReleaseBand `
-        -Sr $Sr -Role servicing
+        -Sr $Sr -Role servicing -SandboxPrefix $SandboxPrefix
     $servicing = New-MauiReleaseContentCommit -RepositoryPath $RepositoryPath -Parent $Merge `
         -Changes @{ 'eng/Versions.props' = $servicingContent } `
         -Message "Configure release $ReleaseBand SR$Sr for servicing"
@@ -578,7 +594,8 @@ function Get-MauiReleaseCompletionPlan {
     }
     $content = Get-MauiReleaseFile -RepositoryPath $RepositoryPath -Commit $LanePlan.mergeSha -Path 'eng/Versions.props'
     $version = Get-MauiReleaseVersion -Content $content
-    $null = Get-MauiReleaseVersionContent -Content $content -ReleaseBand $ReleaseBand -Sr $Sr -Role candidate
+    $null = Get-MauiReleaseVersionContent -Content $content -ReleaseBand $ReleaseBand -Sr $Sr -Role candidate `
+        -SandboxPrefix $version.labelSandboxPrefix
     if ($version.stable -or $version.label -cne 'ci.main') {
         throw 'The initial release cut must retain the approved candidate CI metadata.'
     }

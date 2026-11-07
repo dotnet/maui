@@ -130,6 +130,14 @@ function Publish-NextLaneRef {
 
 function Sync-PostCutServicingPr {
     param([string] $Branch, [object] $Plan, [int] $Sr)
+    $version = Get-MauiReleaseVersion -Content (
+        Get-MauiReleaseFile -RepositoryPath $RepositoryPath -Commit $Plan.mergeSha -Path 'eng/Versions.props')
+    if ($version.automaticStabilization) {
+        if ($Plan.servicingSha -cne $Plan.mergeSha) {
+            throw 'Automatic stabilization must preserve the exact approved candidate source.'
+        }
+        return [pscustomobject]@{ number = $null; url = $null; status = 'branch-derived-stabilization' }
+    }
     $head = "${lanePrefix}automation/servicing/$($roles.releaseBand)-sr$Sr"
     $marker = "<!-- maui-release-servicing:${scope}:$($roles.releaseBand)-sr$Sr -->"
     $open = @(Invoke-NextLaneApi @('repos/dotnet/maui/pulls', '--method', 'GET',

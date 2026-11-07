@@ -159,9 +159,9 @@ foreach ($route in $routes) {
         ''
         '**Status:** draft tracking PR, not a release approval. Normal review and CI are required before integration. Versioned nightlies retain the legacy stream until the internal cutover is verified.'
         ''
-        'The candidate retains CI settings and includes the upcoming version in both bug-template dropdowns. After its approved merge, automation cuts the release branch and restores next-cycle CI on net11. Servicing/stable configuration is a separate reviewed PR targeting the release branch after the cut, never a candidate commit.'
+        'The candidate retains CI settings and includes the upcoming version in both bug-template dropdowns. After its approved merge, automation cuts the release branch and restores next-cycle CI on net11. The recognized SR branch policy automatically selects servicing/stable without a redundant flip PR; legacy sources retain a separate reviewed release-targeted servicing PR, never a candidate servicing commit.'
         ''
-        'The same workflow prepares the next candidate/inflight branches and draft PR pair. It never merges the separate servicing PR. Signing and publication preparation wait for that reviewed servicing merge and the existing internal deployment/authorization; public package publishing remains explicitly approved.'
+        'The same workflow prepares the next candidate/inflight branches and draft PR pair. It never merges a legacy servicing PR. Signing verifies the human-approved candidate cut under the automatic policy, or the reviewed legacy servicing merge, plus existing internal deployment/authorization. Public package publishing remains explicitly approved.'
     ) -join "`n"
     if ($SandboxPrefix) {
         $description += "`n`nSandbox experiment only. This PR must not target a production branch."

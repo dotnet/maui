@@ -328,7 +328,8 @@ function Get-VersionsPropsState {
         Parses eng/Versions.props at $Ref and returns the version-bump state.
     .DESCRIPTION
         Returns @{ Major; Minor; Patch; PreReleaseVersionLabel; PreReleaseVersionIteration;
-                   StabilizePackageVersion; BranchDerivedLabels; FullVersion } or $null if the file is
+                   StabilizePackageVersion; BranchDerivedLabels; AutomaticStabilization;
+                   FullVersion } or $null if the file is
         unreadable. FullVersion is "<Major>.<Minor>.<Patch>" — the version that this
         branch's builds would emit.
     #>
@@ -346,10 +347,12 @@ function Get-VersionsPropsState {
     $patch = _Extract $content 'PatchVersion'
     if (-not $major -or -not $minor -or $null -eq $patch) { return $null }
     $branchDerivedLabels = $false
+    $automaticStabilization = $false
     if ([regex]::Matches($content, '<PreReleaseVersionLabel(?:\s[^>]*)?>').Count -ge 3) {
         Import-Module (Join-Path $PSScriptRoot '../../../../eng/scripts/MauiReleaseConfiguration.psm1') -Force
         $parsed = MauiReleaseConfiguration\Get-MauiReleaseVersion -Content $content
         $branchDerivedLabels = $parsed.branchDerivedLabels
+        $automaticStabilization = $parsed.automaticStabilization
     }
 
     @{
@@ -360,6 +363,7 @@ function Get-VersionsPropsState {
         PreReleaseVersionIteration  = (_Extract $content 'PreReleaseVersionIteration')
         StabilizePackageVersion     = (_Extract $content 'StabilizePackageVersion')
         BranchDerivedLabels         = $branchDerivedLabels
+        AutomaticStabilization      = $automaticStabilization
         FullVersion                 = "$major.$minor.$patch"
     }
 }
@@ -1088,7 +1092,7 @@ function Get-ReleaseShipChecks {
     # === Servicing-release flip ===
     # Legacy metadata requires a servicing label and stabilization. A recognized
     # central label policy already selects servicing on SR refs; preserve it and
-    # still require the separately reviewed stabilization change.
+    # can also derive stabilization from the SR ref without a separate flip.
     #
     # Without these flips, the SR branch still produces prerelease packages
     # (`1.2.3-servicing-…` or `1.2.3-ci-…`) — never a stable `1.2.3` package.
@@ -1107,9 +1111,15 @@ function Get-ReleaseShipChecks {
         $centralLabels = [bool](Get-MetadataValue -Container $vp -Name 'BranchDerivedLabels' -Default $false)
         $centralServicing = $centralLabels -and ($isShipped -or
             $Ctx.srBranch -cmatch '^release/[1-9][0-9]*\.0\.[1-9][0-9]*xx-sr[1-9][0-9]*$')
+        $automaticStabilization = $centralServicing -and
+            [bool](Get-MetadataValue -Container $vp -Name 'AutomaticStabilization' -Default $false)
         $labelOk = ($vp.PreReleaseVersionLabel -eq $expectedLabel) -or $centralServicing
-        $stabilizeOk = ($vp.StabilizePackageVersion -eq $expectedStabilize)
-        if ($centralServicing -and $stabilizeOk) {
+        $stabilizeOk = ($vp.StabilizePackageVersion -eq $expectedStabilize) -or $automaticStabilization
+        if ($automaticStabilization) {
+            $checks += New-ReadinessCheck -Area $flipArea -Status 'READY' `
+                -Details "``$versionsRef`` preserves the recognized policy that automatically selects ``servicing`` and stabilization on strict SR release refs. No separate stabilization PR is needed. Configuration alone is not signed-artifact or publication proof; explicit build overrides remain authoritative." `
+                -NextAction 'Retain the automatic SR policy and verify final signed build/publication evidence.'
+        } elseif ($centralServicing -and $stabilizeOk) {
             $checks += New-ReadinessCheck -Area $flipArea -Status 'READY' `
                 -Details "``$versionsRef`` preserves the recognized branch-derived label policy and explicitly sets ``StabilizePackageVersion=true``. SR refs select ``servicing`` automatically; the literal ``ci.main`` default is not the effective SR label. Stable configuration is not signed-artifact or publication proof." `
                 -NextAction 'No label change needed; retain the central policy.'
@@ -1239,7 +1249,9 @@ function Get-ReleaseShipChecks {
             # StabilizePackageVersion defaults false when omitted; only explicit
             # true/non-false is bad.
             $mainLabelOk     = ($vpMain.PreReleaseVersionLabel -eq 'ci.main')
-            $mainStabilizeOk = [string]::IsNullOrEmpty($vpMain.StabilizePackageVersion) -or ($vpMain.StabilizePackageVersion -eq 'false')
+            $mainStabilizeOk = [string]::IsNullOrEmpty($vpMain.StabilizePackageVersion) -or
+                ($vpMain.StabilizePackageVersion -eq 'false') -or
+                [bool](Get-MetadataValue -Container $vpMain -Name 'AutomaticStabilization' -Default $false)
             $mainMainlineOk  = $mainLabelOk -and $mainStabilizeOk
 
             if (($mainPastMajor -or $mainBumpedThisCycle) -and (-not $mainMainlineOk)) {

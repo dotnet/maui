@@ -32,6 +32,8 @@ Describe 'Completed release publication identities' {
         $results = [Collections.Generic.List[object]]::new()
         $preparedResult = 'succeeded'
         $intentPackages = $false
+        $automaticPolicy = $false
+        $wrongCandidateBase = $false
         $signedSource = '2' * 40
         $publisherSource = 'c' * 40
         $plans = @{
@@ -46,7 +48,7 @@ Describe 'Completed release publication identities' {
                     [pscustomobject]@{ branch = 'automation/release-lanes/11.0.1xx-sr2'; sha = 'd' * 40 }
                 }
                 'release/11.0.1xx-sr1' { [pscustomobject]@{ sha = '3' * 40 } }
-                'release/11.0.1xx-sr2' { [pscustomobject]@{ sha = 'a' * 40 } }
+                'release/11.0.1xx-sr2' { [pscustomobject]@{ sha = if ($automaticPolicy) { '7' * 40 } else { 'a' * 40 } } }
                 'net11' { [pscustomobject]@{ sha = 'f' * 40 } }
                 'automation/release-dispatch/11.0.1xx-sr1/prepare' { [pscustomobject]@{ sha = 'e' * 40 } }
             }
@@ -89,12 +91,20 @@ Describe 'Completed release publication identities' {
                 base = [pscustomobject]@{ ref = $branch }
                 body = "<!-- maui-release-servicing:production:11.0.1xx-sr$sr -->"
             }
+            if ($automaticPolicy) {
+                $proof.merge_commit_sha = $plans[$sr].mergeSha
+                $proof.head.ref = "candidate/11.0.1xx-sr$sr"
+                $proof.head.sha = $plans[$sr].candidateSha
+                $proof.base.ref = if ($wrongCandidateBase) { 'main' } else { 'net11' }
+                $proof.base | Add-Member repo ([pscustomobject]@{ full_name = 'dotnet/maui' })
+                $proof.body = '<!-- maui-release-tracking:production:candidate -->'
+            }
             $proof
         }
         Mock Get-MauiReleaseFile {
             param($RepositoryPath, $Commit)
-            $patch = if ($Commit -eq ('a' * 40)) { 20 } else { 10 }
-            @"
+            $patch = if ($Commit -in @(('a' * 40), ('7' * 40))) { 20 } else { 10 }
+            $content = @"
 <Project><PropertyGroup>
     <MajorVersion>11</MajorVersion>
     <MinorVersion>0</MinorVersion>
@@ -107,6 +117,19 @@ Describe 'Completed release publication identities' {
     <DotNetFinalVersionKind Condition="'`$(StabilizePackageVersion)' == 'true'">release</DotNetFinalVersionKind>
 </PropertyGroup></Project>
 "@
+            if ($automaticPolicy) {
+                $expressions = & (Get-Module MauiReleaseConfiguration) {
+                    Get-MauiBranchLabelCondition -Label ci.inflight
+                    Get-MauiBranchLabelCondition -Label servicing
+                    Get-MauiStabilizationDefault
+                }
+                $labels = "<PreReleaseVersionLabel>ci.main</PreReleaseVersionLabel>`n" +
+                    "    <PreReleaseVersionLabel Condition=`"$($expressions[0])`">ci.inflight</PreReleaseVersionLabel>`n" +
+                    "    <PreReleaseVersionLabel Condition=`"$($expressions[1])`">servicing</PreReleaseVersionLabel>"
+                $content = $content.Replace('<PreReleaseVersionLabel>servicing</PreReleaseVersionLabel>', $labels).Replace(
+                    '">true</StabilizePackageVersion>', "`">$($expressions[2])</StabilizePackageVersion>")
+            }
+            $content
         }
         Mock Get-ReleaseAzureHeaders { @{ Accept = 'application/json' } }
         Mock Invoke-ReleaseAzure {
@@ -117,7 +140,9 @@ Describe 'Completed release publication identities' {
                     process = [pscustomobject]@{ yamlFilename = 'eng/pipelines/ci-official.yml' }
                 }
             } else {
-                [pscustomobject]@{ value = @([pscustomobject]@{ name = 'refs/heads/release/11.0.1xx-sr2'; objectId = 'a' * 40 }) }
+                [pscustomobject]@{ value = @([pscustomobject]@{
+                    name = 'refs/heads/release/11.0.1xx-sr2'; objectId = if ($automaticPolicy) { '7' * 40 } else { 'a' * 40 }
+                }) }
             }
         }
         Mock Get-MatchingReleaseBuild {
@@ -170,6 +195,33 @@ Describe 'Completed release publication identities' {
     It 'rejects a dispatch that requested customer publication' {
         $intentPackages = $true
         { & $sweepBody } | Should -Throw '*different release parameters*'
+        Should -Invoke Get-MatchingReleaseBuild -Times 0
+        Should -Invoke Invoke-RestMethod -Times 0
+    }
+
+    It 'uses the human-approved candidate cut directly when stabilization is branch-derived' {
+        $automaticPolicy = $true
+        $signedSource = '1' * 40
+        foreach ($plan in $plans.Values) { $plan.servicingSha = $plan.mergeSha }
+        & $sweepBody
+        $results.Count | Should -Be 2
+        $results[0].sourceSha | Should -Be $plans[1].mergeSha
+        $results[0].status | Should -Be ready-for-publication-approval
+        $results[1].sourceSha | Should -Be $plans[2].mergeSha
+        $results[1].status | Should -Be waiting-for-signed-build
+        $results[1].publicPublicationRequested | Should -BeFalse
+        Should -Invoke Invoke-PublishingApi -Times 0 -ParameterFilter { $Arguments -contains 'state=closed' }
+        Should -Invoke Get-MatchingReleaseBuild -Times 1 -ParameterFilter {
+            $Branch -ceq 'release/11.0.1xx-sr2' -and $Commit -ceq ('7' * 40)
+        }
+        Should -Invoke Invoke-RestMethod -Times 0
+    }
+
+    It 'does not substitute automatic defaults for exact candidate approval' {
+        $automaticPolicy = $true
+        $wrongCandidateBase = $true
+        foreach ($plan in $plans.Values) { $plan.servicingSha = $plan.mergeSha }
+        { & $sweepBody } | Should -Throw '*exact verified human-approved candidate integration*'
         Should -Invoke Get-MatchingReleaseBuild -Times 0
         Should -Invoke Invoke-RestMethod -Times 0
     }

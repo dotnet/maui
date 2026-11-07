@@ -56,23 +56,30 @@ function Configure-Version {
 }
 
 function Assert-PackageProperties {
-    param ([string] $Commit, [string] $Branch, [int] $Patch, [string] $Label, [string] $Stable)
+    param ([string] $Commit, [string] $Branch, [int] $Patch, [string] $Label, [string] $Stable,
+        [hashtable] $Overrides = @{})
     [IO.File]::WriteAllText((Join-Path $fixture 'Versions.props'), (Read-Version $Commit))
     Push-Location $fixture
     try {
+        $overrideArguments = @($Overrides.GetEnumerator() | ForEach-Object { "-p:$($_.Key)=$($_.Value)" })
+        $sourceRef = if ($Branch.StartsWith('refs/', [StringComparison]::Ordinal)) { $Branch } else { "refs/heads/$Branch" }
         $output = @(& dotnet msbuild (Join-Path $fixture 'evaluate.proj') -nologo `
-            "-p:BUILD_SOURCEBRANCH=refs/heads/$Branch" `
-            -getProperty:PatchVersion,PreReleaseVersionLabel,StabilizePackageVersion,IsServicingBuild,DotNetFinalVersionKind,WorkloadVersionSuffix 2>&1)
+            "-p:BUILD_SOURCEBRANCH=$sourceRef" `
+            -getProperty:PatchVersion,PreReleaseVersionLabel,StabilizePackageVersion,IsServicingBuild,DotNetFinalVersionKind,WorkloadVersionSuffix `
+            @overrideArguments 2>&1)
         if ($LASTEXITCODE -ne 0) { throw "MSBuild property evaluation failed: $($output -join "`n")" }
         $properties = ($output -join "`n" | ConvertFrom-Json).Properties
         Assert-Release ([int] $properties.PatchVersion -eq $Patch) "Wrong evaluated patch on $Branch."
         Assert-Release ($properties.PreReleaseVersionLabel -ceq $Label) "Wrong evaluated label on $Branch."
         Assert-Release ($properties.StabilizePackageVersion -ceq $Stable) "Wrong stabilization on $Branch."
-        if ($Stable -ceq 'true') {
+        if ($Label -ceq 'servicing') {
             Assert-Release ($properties.IsServicingBuild -ceq 'true') 'Servicing baselines must actually be enabled.'
-            Assert-Release ($properties.DotNetFinalVersionKind -ceq 'release' -and $properties.WorkloadVersionSuffix -ceq '') 'Servicing must evaluate to stable workload versions.'
         } else {
             Assert-Release ($properties.IsServicingBuild -ceq '') 'Servicing baselines leaked into CI.'
+        }
+        if ($Stable -ceq 'true') {
+            Assert-Release ($properties.DotNetFinalVersionKind -ceq 'release' -and $properties.WorkloadVersionSuffix -ceq '') 'Servicing must evaluate to stable workload versions.'
+        } else {
             Assert-Release ($properties.WorkloadVersionSuffix -ceq "-$Label") 'CI workload version suffix was contaminated by servicing.'
         }
     }
@@ -241,6 +248,39 @@ body:
     Assert-Release ($persistedPublication -ceq $publication.sha) 'Prepared metadata bundle did not preserve the exact commit.'
     Assert-Release ((Get-MauiReleaseFile -RepositoryPath $repo -Commit $persistedPublication -Path '.github/ISSUE_TEMPLATE/bug-report.yml') -ceq $releasedTemplate) 'Applying the prepared metadata bundle lost its dropdown updates.'
     $null = Invoke-TestGit @('update-ref', '-d', $preparationRef, $publication.sha)
+    $expressions = & (Get-Module MauiReleaseConfiguration) {
+        Get-MauiBranchLabelCondition -Label ci.inflight
+        Get-MauiBranchLabelCondition -Label servicing
+        Get-MauiStabilizationDefault
+    }
+    $legacyOverride = "<PreReleaseVersionLabel Condition=`"'`$(BUILD_SOURCEBRANCH)' == 'refs/heads/inflight/current'`">ci.inflight</PreReleaseVersionLabel>"
+    $centralLabels = "<PreReleaseVersionLabel Condition=`"$($expressions[0])`">ci.inflight</PreReleaseVersionLabel>`n" +
+        "    <PreReleaseVersionLabel Condition=`"$($expressions[1])`">servicing</PreReleaseVersionLabel>"
+    $automatic = $source.Replace($legacyOverride, $centralLabels).Replace(
+        '">false</StabilizePackageVersion>', "`">$($expressions[2])</StabilizePackageVersion>")
+    $automaticCommit = New-MauiReleaseContentCommit -RepositoryPath $repo -Parent $base `
+        -Changes @{ 'eng/Versions.props'=$automatic } -Message 'Derive stabilization from strict SR branches'
+    $automaticCandidate = Configure-Version $automaticCommit.sha 1 candidate
+    $automaticInflight = Configure-Version $automaticCandidate.sha 2 inflight 1
+    $automaticServicing = Configure-Version $automaticCandidate.sha 1 servicing
+    Assert-Release ($automaticServicing.sha -ceq $automaticCandidate.sha) 'Automatic servicing created a redundant flip commit.'
+    foreach ($branch in @('main', 'net11', 'candidate/11.0.1xx-sr1', 'refs/pull/1/merge')) {
+        Assert-PackageProperties $automaticCandidate.sha $branch 10 ci.main false
+    }
+    Assert-PackageProperties $automaticCandidate.sha 'release/11.0.1xx-sr1' 10 servicing true
+    Assert-PackageProperties $automaticCandidate.sha 'release-rollover-trial/config-test/release/11.0.1xx-sr1' 10 servicing true
+    Assert-PackageProperties $automaticInflight.sha 'inflight/11.0.1xx-sr2' 20 ci.inflight false
+    Assert-PackageProperties $automaticInflight.sha 'release-rollover-trial/config-test/inflight/11.0.1xx-sr2' 20 ci.inflight false
+    Assert-PackageProperties $automaticCandidate.sha 'release/11.0.1xx-sr1' 10 servicing false @{ StabilizePackageVersion='false' }
+    foreach ($label in @('preview', 'rc', 'ci.pr')) {
+        Assert-PackageProperties $automaticCandidate.sha 'release/11.0.1xx-sr1' 10 $label false @{ PreReleaseVersionLabel=$label }
+    }
+    Assert-PackageProperties $automaticCandidate.sha 'release/11.0.1xx-preview1' 10 ci.main false
+    $verifiedAutomatic = Get-MauiVerifiedPublishedVersion -Release $release -VersionContent $automatic `
+        -ReleaseBand '11.0.1xx' -CurrentSr 2 -TagCommit $automaticCommit.sha
+    Assert-Release ($verifiedAutomatic.tag -ceq $release.tag_name) 'Production automatic-stabilization publication metadata was not recognized.'
+    Assert-Refusal { Get-MauiVerifiedPublishedVersion -Release $release -VersionContent (Read-Version $automaticCandidate.sha) `
+        -ReleaseBand '11.0.1xx' -CurrentSr 2 -TagCommit $automaticCandidate.sha } 'Scoped automatic defaults must not certify production publication.'
     $null = Invoke-TestGit @('switch', '--quiet', '--detach', $base)
     [IO.File]::WriteAllText((Join-Path $repo 'conflict.txt'), 'Fixes side')
     $null = Invoke-TestGit @('add', 'conflict.txt')

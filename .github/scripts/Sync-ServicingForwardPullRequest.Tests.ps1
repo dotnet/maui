@@ -47,6 +47,7 @@ BeforeAll {
                 $label = if ($major -eq 11) { $server.SourceLabel } else { 'ci.main' }
                 $stable = if ($major -eq 11) { $server.SourceStable } else { 'false' }
                 $xml = "<Project><PropertyGroup><MajorVersion>$major</MajorVersion><PreReleaseVersionLabel>$label</PreReleaseVersionLabel><StabilizePackageVersion>$stable</StabilizePackageVersion></PropertyGroup></Project>"
+                if ($server.VersionContent.ContainsKey($major)) { $xml = $server.VersionContent[$major] }
                 $response = @{ encoding = 'base64'; content = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($xml)) }
             }
             elseif ($endpoint -match '/compare/(.+)\.\.\.(.+)$') {
@@ -128,6 +129,7 @@ Describe 'Servicing forward publication recovery' {
             Trees = @{}; Commits = @{}; Blobs = @{}
             Prs = [Collections.Generic.List[object]]::new()
             Counter = 1000; Writes = 0; FailPr = 0; FailHead = 0; SourceLabel = 'ci.main'; SourceStable = 'false'
+            VersionContent = @{}
         }
         $statePath = Join-Path $TestDrive 'state.json'
         @{
@@ -138,6 +140,41 @@ Describe 'Servicing forward publication recovery' {
     }
 
     AfterAll { Remove-Variable MauiForwardFixture -Scope Global }
+
+    It 'keeps development forwarding eligible with the recognized automatic SR policy' {
+        Import-Module (Join-Path $PSScriptRoot '../../eng/scripts/MauiReleaseConfiguration.psm1') -Force
+        $expressions = & (Get-Module MauiReleaseConfiguration) {
+            Get-MauiBranchLabelCondition -Label ci.inflight
+            Get-MauiBranchLabelCondition -Label servicing
+            Get-MauiStabilizationDefault
+        }
+        foreach ($major in @(11, 12)) {
+            $global:MauiForwardFixture.VersionContent[$major] = @"
+<Project><PropertyGroup>
+    <MajorVersion>$major</MajorVersion>
+    <MinorVersion>0</MinorVersion>
+    <PatchVersion>20</PatchVersion>
+    <SdkBandVersion>$major.0.100</SdkBandVersion>
+    <PreReleaseVersionIteration></PreReleaseVersionIteration>
+    <PreReleaseVersionLabel>ci.main</PreReleaseVersionLabel>
+    <PreReleaseVersionLabel Condition="$($expressions[0])">ci.inflight</PreReleaseVersionLabel>
+    <PreReleaseVersionLabel Condition="$($expressions[1])">servicing</PreReleaseVersionLabel>
+    <StabilizePackageVersion Condition="'`$(StabilizePackageVersion)' == ''">$($expressions[2])</StabilizePackageVersion>
+    <IsServicingBuild Condition="'`$(PreReleaseVersionLabel)' == 'servicing'">true</IsServicingBuild>
+    <DotNetFinalVersionKind Condition="'`$(StabilizePackageVersion)' == 'true'">release</DotNetFinalVersionKind>
+</PropertyGroup></Project>
+"@
+        }
+        (Invoke-ForwardFixture).status | Should -Be created
+        $global:MauiForwardFixture.Prs.Count | Should -Be 1
+        $writes = $global:MauiForwardFixture.Writes
+        (Invoke-ForwardFixture).status | Should -Be unchanged
+        $global:MauiForwardFixture.Writes | Should -Be $writes
+        $global:MauiForwardFixture.VersionContent[11] = $global:MauiForwardFixture.VersionContent[11].Replace(
+            '\Aservicing:refs/heads/release/', '\Arefs/heads/release/')
+        { Invoke-ForwardFixture } | Should -Throw '*standard stabilization default*'
+        $global:MauiForwardFixture.Writes | Should -Be $writes
+    }
 
     It 'recovers first-time ref publication after a failed PR creation, then becomes unchanged' {
         $global:MauiForwardFixture.FailPr = 1

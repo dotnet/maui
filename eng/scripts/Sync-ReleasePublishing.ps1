@@ -206,6 +206,43 @@ function Get-CompletedReleaseDispatch {
     return @{ signed = $signed; prepared = $prepared }
 }
 
+function Get-PublishingReleaseSource {
+    param([string] $Branch, [object] $Plan, [object] $Record)
+    $version = Get-MauiReleaseVersion -Content (
+        Get-MauiReleaseFile -RepositoryPath $RepositoryPath -Commit $Plan.mergeSha -Path 'eng/Versions.props')
+    if ($version.automaticStabilization) {
+        $proof = Invoke-PublishingApi @("repos/dotnet/maui/pulls/$($Record.pullRequest)")
+        $candidateBranch = "${prefix}candidate/$($roles.releaseBand)-sr$($Record.sr)"
+        $marker = "<!-- maui-release-tracking:${scope}:candidate -->"
+        if ($Plan.servicingSha -cne $Plan.mergeSha -or !$proof.merged -or !$proof.merged_at -or
+            $proof.merged_by.type -cne 'User' -or $null -eq $proof.head.repo -or $null -eq $proof.base.repo -or
+            $proof.head.repo.full_name -cne 'dotnet/maui' -or $proof.base.repo.full_name -cne 'dotnet/maui' -or
+            $proof.head.ref -cne $candidateBranch -or $proof.head.sha -cne $Plan.candidateSha -or
+            $proof.base.ref -cne $roles.fixBranch -or $proof.merge_commit_sha -cne $Plan.mergeSha -or
+            !([string]$proof.body).Contains($marker)) {
+            throw 'Automatic stabilization requires the exact verified human-approved candidate integration.'
+        }
+        return $Plan.mergeSha
+    }
+    $servicingHead = "${prefix}automation/servicing/$($roles.releaseBand)-sr$($Record.sr)"
+    $marker = "<!-- maui-release-servicing:${scope}:$($roles.releaseBand)-sr$($Record.sr) -->"
+    $closed = @(Invoke-PublishingApi @('repos/dotnet/maui/pulls', '--method', 'GET',
+        '-f', 'state=closed', '-f', "base=$Branch", '-f', "head=dotnet:$servicingHead", '-F', 'per_page=100'))
+    $approved = @($closed | Where-Object {
+        $_.merged_at -and $_.head.sha -ceq $Plan.servicingSha -and ([string]$_.body).Contains($marker)
+    })
+    if ($approved.Count -eq 0) { return $null }
+    if ($approved.Count -ne 1) { throw 'Multiple servicing merges claim the same release; publication is blocked.' }
+    $proof = Invoke-PublishingApi @("repos/dotnet/maui/pulls/$($approved[0].number)")
+    if (!$proof.merged -or $proof.merged_by.type -cne 'User' -or
+        $proof.head.ref -cne $servicingHead -or $proof.head.sha -cne $Plan.servicingSha -or
+        $proof.base.ref -cne $Branch -or $proof.head.repo.full_name -cne 'dotnet/maui' -or
+        $proof.merge_commit_sha -cnotmatch '^[0-9a-f]{40}$' -or !([string]$proof.body).Contains($marker)) {
+        throw 'The release does not have a verified reviewed post-cut servicing merge.'
+    }
+    return $proof.merge_commit_sha
+}
+
 try {
     $receipts = @(Get-PublishingRefs "$receiptPrefix/$($roles.releaseBand)-sr*" | Sort-Object branch)
     foreach ($receipt in $receipts) {
@@ -246,32 +283,17 @@ try {
             publicPublicationApprovalRequired = $true; publicPublicationRequested = $false
         }
         $results.Add($entry)
-        $servicingHead = "${prefix}automation/servicing/$($roles.releaseBand)-sr$sr"
-        $servicingMarker = "<!-- maui-release-servicing:${scope}:$($roles.releaseBand)-sr$sr -->"
-        $closed = @(Invoke-PublishingApi @('repos/dotnet/maui/pulls', '--method', 'GET',
-            '-f', 'state=closed', '-f', "base=$branch", '-f', "head=dotnet:$servicingHead", '-F', 'per_page=100'))
-        $approved = @($closed | Where-Object {
-            $_.merged_at -and $_.head.sha -ceq $verifiedPlan.servicingSha -and
-            ([string]$_.body).Contains($servicingMarker)
-        })
-        if ($approved.Count -eq 0) { $entry.status = 'waiting-for-servicing-pr-merge'; continue }
-        if ($approved.Count -ne 1) { throw 'Multiple servicing merges claim the same release; publication is blocked.' }
-        $proof = Invoke-PublishingApi @("repos/dotnet/maui/pulls/$($approved[0].number)")
-        if (!$proof.merged -or $proof.merged_by.type -cne 'User' -or
-            $proof.head.ref -cne $servicingHead -or $proof.head.sha -cne $verifiedPlan.servicingSha -or
-            $proof.base.ref -cne $branch -or $proof.head.repo.full_name -cne 'dotnet/maui' -or
-            $proof.merge_commit_sha -cnotmatch '^[0-9a-f]{40}$' -or !([string]$proof.body).Contains($servicingMarker)) {
-            throw 'The release does not have a verified reviewed post-cut servicing merge.'
-        }
         $liveCommit = $commit
-        $commit = $proof.merge_commit_sha
+        $commit = Get-PublishingReleaseSource -Branch $branch -Plan $verifiedPlan -Record $record
+        if (!$commit) { $entry.status = 'waiting-for-servicing-pr-merge'; continue }
         Fetch-PublishingCommit @($commit)
         $versionContent = Get-MauiReleaseFile -RepositoryPath $RepositoryPath -Commit $commit -Path 'eng/Versions.props'
-        $null = Get-MauiReleaseVersionContent -Content $versionContent -ReleaseBand $roles.releaseBand -Sr $sr -Role servicing
+        $null = Get-MauiReleaseVersionContent -Content $versionContent -ReleaseBand $roles.releaseBand -Sr $sr `
+            -Role servicing -SandboxPrefix $SandboxPrefix
         $stable = Get-MauiReleaseVersion -Content $versionContent
-        if (!$stable.stable -or
+        if (!($stable.stable -or $stable.automaticStabilization) -or
             (!$stable.branchDerivedLabels -and ($stable.label -cne 'servicing' -or $stable.labelCount -ne 1))) {
-            throw 'The approved servicing PR did not produce stable release metadata.'
+            throw 'The approved release source does not produce stable release metadata.'
         }
         $parameters = @{
             ghOwner = 'dotnet'; ghRepo = 'maui'; commitHash = $commit

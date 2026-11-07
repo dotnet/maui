@@ -6536,7 +6536,8 @@ function Build-VersionsPropsXml {
         # (mirrors a freshly-cut SR branch that hasn't been flipped yet).
         [string]$PreReleaseVersionLabel,
         [string]$StabilizePackageVersion,
-        [switch]$BranchDerivedLabels
+        [switch]$BranchDerivedLabels,
+        [switch]$AutomaticStabilization
     )
     $labelLine = if ($null -ne $PreReleaseVersionLabel) {
         "    <PreReleaseVersionLabel>$PreReleaseVersionLabel</PreReleaseVersionLabel>`n"
@@ -6554,6 +6555,10 @@ function Build-VersionsPropsXml {
         $labelLine = "    <PreReleaseVersionLabel>ci.main</PreReleaseVersionLabel>`n" +
             "    <PreReleaseVersionLabel Condition=`"$($conditions[0])`">ci.inflight</PreReleaseVersionLabel>`n" +
             "    <PreReleaseVersionLabel Condition=`"$($conditions[1])`">servicing</PreReleaseVersionLabel>`n"
+        if ($AutomaticStabilization) {
+            $expression = & (Get-Module MauiReleaseConfiguration) { Get-MauiStabilizationDefault }
+            $stabilizeLine = "    <StabilizePackageVersion Condition=`"'`$(StabilizePackageVersion)' == ''`">$expression</StabilizePackageVersion>`n"
+        }
         $centralWiring = @"
     <SdkBandVersion>$Major.$Minor.100</SdkBandVersion>
     <PreReleaseVersionIteration></PreReleaseVersionIteration>
@@ -6674,6 +6679,24 @@ $centralShipped = Invoke-ShipChecksWithMockedVersions `
     -MainVersion $centralSource -Shipped
 Assert-Eq -Label 'Central labels: immutable shipped-tag metadata remains valid' `
     -Expected READY -Actual (Get-CheckByAreaPrefix -Checks $centralShipped -Prefix 'Versions.props servicing flip').Status
+$automaticSource = @{ Major=10; Minor=0; Patch=90; BranchDerivedLabels=$true; AutomaticStabilization=$true }
+$automaticChecks = Invoke-ShipChecksWithMockedVersions `
+    -SrVersion @{ Major=10; Minor=0; Patch=80; BranchDerivedLabels=$true; AutomaticStabilization=$true } `
+    -MainVersion $automaticSource
+$automaticCheck = Get-CheckByAreaPrefix -Checks $automaticChecks -Prefix 'Versions.props servicing flip'
+Assert-Eq -Label 'Automatic stabilization: SR defaults are ready without a separate flip' `
+    -Expected READY -Actual $automaticCheck.Status
+Assert-Eq -Label 'Automatic stabilization: report does not request a redundant PR' `
+    -Expected $true -Actual ($automaticCheck.Details -match 'No separate stabilization PR')
+Assert-Eq -Label 'Automatic stabilization: configuration is not signed/publication evidence' `
+    -Expected $true -Actual ($automaticCheck.Details -match 'not signed-artifact or publication proof')
+Assert-Eq -Label 'Automatic stabilization: development source remains next-cycle CI' `
+    -Expected READY -Actual (Get-CheckByAreaPrefix -Checks $automaticChecks -Prefix 'Main bumped').Status
+$automaticShipped = Invoke-ShipChecksWithMockedVersions `
+    -SrVersion @{ Major=10; Minor=0; Patch=80; BranchDerivedLabels=$true; AutomaticStabilization=$true } `
+    -MainVersion $automaticSource -Shipped
+Assert-Eq -Label 'Automatic stabilization: immutable published configuration is supported' `
+    -Expected READY -Actual (Get-CheckByAreaPrefix -Checks $automaticShipped -Prefix 'Versions.props servicing flip').Status
 
 # Scenario 1: SR8 in-flight, main STILL at same cycle (10.0.80) — BLOCKED
 $checks1 = Invoke-ShipChecksWithMockedVersions `
