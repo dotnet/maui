@@ -76,6 +76,9 @@ releasing those references, so a pending callback cannot update a disconnected
 or subsequently reconnected handler. Android device
 results use the filename selected by instrumentation even if the runner was
 resolved before those options were applied.
+Required Android result XML and assembly marker files live in the application's
+files directory, not its cache. Android can evict an open cache file under
+storage pressure before the completed result is exported.
 Device-test fixtures that create temporary activity state managers unregister
 and dispose them on the main thread. Activity-recreation cleanup finishes the
 activity and releases its callback peer on that same lifecycle thread.

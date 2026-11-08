@@ -188,6 +188,17 @@ public class MemoryTests : ControlsHandlerTestBase
 	}
 
 #if ANDROID
+	[Fact("Required Test Results Are Not Cache Files")]
+	public void RequiredTestResultsAreNotCacheFiles()
+	{
+		var application = global::Android.App.Application.Context;
+		var filename = Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner.MauiTestInstrumentation.Current.RunnerOptions.TestResultsFilename;
+		var resultPath = System.IO.Path.Combine(application.FilesDir.AbsolutePath, filename);
+
+		Assert.True(System.IO.File.Exists(resultPath),
+			"The active test result must be written outside the evictable application cache.");
+	}
+
 	[Fact("Disconnected Template Removes Measure Subscription")]
 	[DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicFields, typeof(VisualElement))]
 	public async Task DisconnectedTemplateRemovesMeasureSubscription()

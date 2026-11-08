@@ -21,7 +21,8 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 			_runnerOptions = runnerOptions;
 			_options = options;
 
-			_resultsDirectory = Application.Context.CacheDir!.AbsolutePath;
+			// Android can evict cache entries while the result writer is still open.
+			_resultsDirectory = Application.Context.FilesDir!.AbsolutePath;
 		}
 
 		protected override bool LogExcludedTests => true;
@@ -40,7 +41,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 				.Select(assembly =>
 				{
 					// Android needs this file to "exist" but it uses the assembly actually.
-					var path = Path.Combine(Application.Context.CacheDir!.AbsolutePath, assembly.GetName().Name + ".dll");
+					var path = Path.Combine(_resultsDirectory, assembly.GetName().Name + ".dll");
 					if (!File.Exists(path))
 						File.Create(path).Close();
 
