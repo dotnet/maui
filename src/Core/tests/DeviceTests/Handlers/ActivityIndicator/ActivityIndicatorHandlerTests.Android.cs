@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Android.Views;
 using Android.Widget;
@@ -16,6 +17,33 @@ namespace Microsoft.Maui.DeviceTests
 
 		bool GetNativeIsRunning(ActivityIndicatorHandler activityIndicatorHandler) =>
 			GetNativeActivityIndicator(activityIndicatorHandler).Visibility == ViewStates.Visible;
+
+		[Fact(DisplayName = "Pending Update Does Not Retain Disconnected Indicator")]
+		public async Task PendingUpdateDoesNotRetainDisconnectedIndicator()
+		{
+			var references = await InvokeOnMainThreadAsync(CreateDisconnectedIndicatorWithPendingUpdate);
+			try
+			{
+				await AssertionExtensions.WaitForGC(references.VirtualView);
+			}
+			finally
+			{
+				GC.KeepAlive(references.PlatformView);
+			}
+		}
+
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		(WeakReference VirtualView, ProgressBar PlatformView) CreateDisconnectedIndicatorWithPendingUpdate()
+		{
+			var view = new ActivityIndicatorStub { IsRunning = true };
+			var handler = CreateHandler(view);
+			var platformView = handler.PlatformView;
+			Assert.False(platformView.IsAttachedToWindow);
+
+			((IElementHandler)handler).DisconnectHandler();
+
+			return (new WeakReference(view), platformView);
+		}
 
 		[Theory(DisplayName = "Visibility is set correctly")]
 		[InlineData(Visibility.Visible)]

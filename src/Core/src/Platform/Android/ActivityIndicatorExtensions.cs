@@ -1,4 +1,5 @@
-﻿using Android.Views;
+﻿using System;
+using Android.Views;
 using Android.Widget;
 
 namespace Microsoft.Maui.Platform
@@ -20,15 +21,16 @@ namespace Microsoft.Maui.Platform
 			// update continue to work correctly.
 			if (progressBar.IsInLayout || !progressBar.IsAttachedToWindow)
 			{
+				var activityIndicatorReference = new WeakReference<IActivityIndicator>(activityIndicator);
 				progressBar.Post(() =>
 				{
 					// Guard: skip if the view was disposed before the runnable fired.
-					if (!progressBar.IsDisposed())
+					if (!progressBar.IsDisposed() && activityIndicatorReference.TryGetTarget(out var currentActivityIndicator))
 					{
 						// Re-read the LIVE visibility here instead of capturing a snapshot before the
 						// Post(). Capturing a stale "show" value caused this deferred runnable to
 						// resurrect an indicator that was hidden after it was queued.
-						progressBar.Visibility = GetActivityIndicatorVisibility(activityIndicator);
+						progressBar.Visibility = GetActivityIndicatorVisibility(currentActivityIndicator);
 					}
 				});
 			}

@@ -79,6 +79,12 @@ resolved before those options were applied.
 Required Android result XML and assembly marker files live in the application's
 files directory, not its cache. Android can evict an open cache file under
 storage pressure before the completed result is exported.
+The visual runner also keeps its required assembly marker outside the cache.
+The result-storage assertion only runs under instrumentation; the visual test
+browser reports it as skipped because it does not produce a headless XML file.
+Deferred ActivityIndicator updates use a weak reference to the virtual control,
+so an unattached native view's pending callback does not retain a disconnected
+control while still reading live visibility when the update executes.
 Device-test fixtures that create temporary activity state managers unregister
 and dispose them on the main thread. Activity-recreation cleanup finishes the
 activity and releases its callback peer on that same lifecycle thread.

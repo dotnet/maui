@@ -119,7 +119,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 #elif ANDROID
 					// this is required to exist, but is not used
 					var assemblyFileName = assm.GetName().Name + ".dll";
-					assemblyFileName = Path.Combine(global::Android.App.Application.Context.CacheDir.AbsolutePath, assemblyFileName);
+					assemblyFileName = Path.Combine(global::Android.App.Application.Context.FilesDir.AbsolutePath, assemblyFileName);
 					if (!File.Exists(assemblyFileName))
 						File.Create(assemblyFileName).Close();
 #else

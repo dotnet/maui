@@ -188,7 +188,7 @@ public class MemoryTests : ControlsHandlerTestBase
 	}
 
 #if ANDROID
-	[Fact("Required Test Results Are Not Cache Files")]
+	[InstrumentedFact("Required Test Results Are Not Cache Files")]
 	public void RequiredTestResultsAreNotCacheFiles()
 	{
 		var application = global::Android.App.Application.Context;
@@ -197,6 +197,15 @@ public class MemoryTests : ControlsHandlerTestBase
 
 		Assert.True(System.IO.File.Exists(resultPath),
 			"The active test result must be written outside the evictable application cache.");
+	}
+
+	sealed class InstrumentedFactAttribute : FactAttribute
+	{
+		public InstrumentedFactAttribute(string displayName) : base(displayName)
+		{
+			if (Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner.MauiTestInstrumentation.Current is null)
+				Skip = "The visual runner does not produce headless instrumentation result files.";
+		}
 	}
 
 	[Fact("Disconnected Template Removes Measure Subscription")]
