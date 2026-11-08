@@ -59,6 +59,9 @@ The pinned .NET 12 Android SDK contains CoreCLR and NativeAOT targets, but no
 MonoVM target. Current Android device CI uses CoreCLR; retained .NET 11 Mono
 coverage remains enabled. Asking a current Android device app to use Mono fails
 explicitly instead of mixing Mono CoreLib with CoreCLR ReadyToRun compilation.
+The Android device lane's selected framework flows into both build properties
+and Helix bundle discovery; a retained `net11.0` request must not build or search
+the default `net12.0` outputs.
 The repository-local SDK also installs the .NET 10 runtime
 declared in `global.json` for tools such as Cake; this does not change the .NET 12
 target frameworks. The fresh-SDK runtime bootstrap preserves custom Windows

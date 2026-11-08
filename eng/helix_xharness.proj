@@ -22,7 +22,7 @@
         <DotNetCliVersion Condition="'$(TargetsWindows)' == 'true' and '$(DotNetCliVersion)' == ''">$(MicrosoftNETSdkPackageVersion)</DotNetCliVersion>
         <EnableAzurePipelinesReporter>true</EnableAzurePipelinesReporter>
         <FailOnTestFailure>true</FailOnTestFailure>
-        <TargetFrameworkToTest>$(_MauiDotNetTfm)</TargetFrameworkToTest>
+        <TargetFrameworkToTest Condition="'$(TargetFrameworkToTest)' == ''">$(_MauiDotNetTfm)</TargetFrameworkToTest>
     </PropertyGroup>
 
     <!-- 

@@ -127,7 +127,7 @@ stages:
               env:
                 DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
                 PRIVATE_BUILD: $(PrivateBuild)
-            - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) /p:BuildDeviceTests=true /p:UseMonoRuntime=${{ eq(runtimeVariant, 'mono') }} /p:_DisableCheckForUnsupportedMonoMobileRuntime=${{ eq(runtimeVariant, 'mono') }} /p:IncludeAndroidTargetFrameworks=true /p:IncludeIosTargetFrameworks=false /p:IncludeMacCatalystTargetFrameworks=false /p:IncludeMacOSTargetFrameworks=false /p:IncludeWindowsTargetFrameworks=false /bl:BuildAndroidDeviceTests.binlog
+            - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) /p:BuildDeviceTests=true /p:_MauiDotNetTfm=${{ parameters.TargetFrameworkVersion }} /p:_MauiDotNetVersion=${{ replace(parameters.TargetFrameworkVersion, 'net', '') }} /p:UseMonoRuntime=${{ eq(runtimeVariant, 'mono') }} /p:_DisableCheckForUnsupportedMonoMobileRuntime=${{ eq(runtimeVariant, 'mono') }} /p:IncludeAndroidTargetFrameworks=true /p:IncludeIosTargetFrameworks=false /p:IncludeMacCatalystTargetFrameworks=false /p:IncludeMacOSTargetFrameworks=false /p:IncludeWindowsTargetFrameworks=false /bl:BuildAndroidDeviceTests.binlog
               displayName: Build Android DeviceTests (${{ runtimeVariant }})
             - publish: ${{ parameters.checkoutDirectory }}/artifacts/bin
               displayName: Publish Succeeded Android Artifacts Directory
@@ -241,9 +241,9 @@ stages:
           parameters:
             HelixProjectPath: ${{ parameters.helixProject }}
             ${{ if eq(parameters.runAsPublic, true) }}:
-              HelixProjectArguments: /p:TargetOS=android /p:TestRunNameSuffix=_$(_BuildConfig)_CoreCLR /p:TestRunNamePrefix=DeviceTestsAndroid_CoreCLR_ /p:HelixInternal=False
+              HelixProjectArguments: /p:TargetOS=android /p:TargetFrameworkToTest=${{ parameters.TargetFrameworkVersion }} /p:TestRunNameSuffix=_$(_BuildConfig)_CoreCLR /p:TestRunNamePrefix=DeviceTestsAndroid_CoreCLR_ /p:HelixInternal=False
             ${{ else }}:
-              HelixProjectArguments: /p:TargetOS=android /p:TestRunNameSuffix=_$(_BuildConfig)_CoreCLR /p:TestRunNamePrefix=DeviceTestsAndroid_CoreCLR_ /p:HelixInternal=True
+              HelixProjectArguments: /p:TargetOS=android /p:TargetFrameworkToTest=${{ parameters.TargetFrameworkVersion }} /p:TestRunNameSuffix=_$(_BuildConfig)_CoreCLR /p:TestRunNamePrefix=DeviceTestsAndroid_CoreCLR_ /p:HelixInternal=True
             HelixAccessToken: ${{ parameters.HelixAccessToken }}
             HelixConfiguration: $(_BuildConfig)
             IncludeDotNetCli: true
@@ -409,9 +409,9 @@ stages:
           parameters:
             HelixProjectPath: ${{ parameters.helixProject }}
             ${{ if eq(parameters.runAsPublic, true) }}:
-              HelixProjectArguments: /p:TargetOS=android /p:TestRunNameSuffix=_$(_BuildConfig)_Mono /p:TestRunNamePrefix=DeviceTestsAndroid_Mono_ /p:HelixInternal=False
+              HelixProjectArguments: /p:TargetOS=android /p:TargetFrameworkToTest=${{ parameters.TargetFrameworkVersion }} /p:TestRunNameSuffix=_$(_BuildConfig)_Mono /p:TestRunNamePrefix=DeviceTestsAndroid_Mono_ /p:HelixInternal=False
             ${{ else }}:
-              HelixProjectArguments: /p:TargetOS=android /p:TestRunNameSuffix=_$(_BuildConfig)_Mono /p:TestRunNamePrefix=DeviceTestsAndroid_Mono_ /p:HelixInternal=True
+              HelixProjectArguments: /p:TargetOS=android /p:TargetFrameworkToTest=${{ parameters.TargetFrameworkVersion }} /p:TestRunNameSuffix=_$(_BuildConfig)_Mono /p:TestRunNamePrefix=DeviceTestsAndroid_Mono_ /p:HelixInternal=True
             HelixAccessToken: ${{ parameters.HelixAccessToken }}
             HelixConfiguration: $(_BuildConfig)
             IncludeDotNetCli: true
