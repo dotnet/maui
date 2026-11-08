@@ -15,6 +15,8 @@ namespace Microsoft.Maui.Platform
 {
 	public static class NavigationViewExtensions
 	{
+		static readonly ImageSourceRequestManager FlyoutIconRequests = new();
+
 		public static void UpdateTopNavAreaBackground(this MauiNavigationView navigationView, Paint? paint)
 		{
 			// Background property is set via {ThemeResource NavigationViewTopPaneBackground} in the Control Template
@@ -257,6 +259,7 @@ namespace Microsoft.Maui.Platform
 			if (paneContentGrid is null)
 				return;
 
+			ControlExtensions.BackgroundImageRequests.Begin(paneContentGrid);
 			var brush = paint?.ToPlatform();
 
 			if (brush is null)
@@ -326,18 +329,29 @@ namespace Microsoft.Maui.Platform
 
 		internal static async Task UpdateBackgroundImageSourceAsync(this MauiNavigationView navigationView, IImageSource? imageSource, IImageSourceServiceProvider? provider, Aspect aspect)
 		{
-			if (provider is null || imageSource is null)
-			{
-				return;
-			}
 			var paneContentGrid = navigationView.PaneContentGrid;
 			if (paneContentGrid is null)
 			{
 				return;
 			}
 
+			var request = ControlExtensions.BackgroundImageRequests.Begin(paneContentGrid);
+			if (imageSource is null)
+			{
+				paneContentGrid.Background = null;
+				return;
+			}
+			if (provider is null)
+				return;
+
 			var service = provider.GetRequiredImageSourceService(imageSource);
 			var nativeImageSource = await service.GetImageSourceAsync(imageSource);
+			if (!ControlExtensions.BackgroundImageRequests.IsCurrent(paneContentGrid, request) ||
+				navigationView.PaneContentGrid != paneContentGrid)
+			{
+				nativeImageSource?.Dispose();
+				return;
+			}
 
 			if (nativeImageSource is null)
 			{
@@ -380,11 +394,18 @@ namespace Microsoft.Maui.Platform
 			if (platformView is null)
 				return;
 
+			var request = FlyoutIconRequests.Begin(platformView);
+
 			if (provider is not null && imageSource is not null)
 			{
 				// Custom Icon
 				var service = provider.GetRequiredImageSourceService(imageSource);
 				var nativeImageSource = await service.GetImageSourceAsync(imageSource);
+				if (!FlyoutIconRequests.IsCurrent(platformView, request))
+				{
+					nativeImageSource?.Dispose();
+					return;
+				}
 
 				platformView.Source = null;
 

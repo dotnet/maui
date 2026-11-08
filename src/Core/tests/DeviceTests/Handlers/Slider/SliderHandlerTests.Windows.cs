@@ -1,6 +1,13 @@
-﻿using System.Threading.Tasks;
+using System;
+using System.IO;
+using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Media.Imaging;
 using Xunit;
 using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
@@ -156,6 +163,109 @@ namespace Microsoft.Maui.DeviceTests
 
 					await pending;
 					Assert.Same(currentImage, nativeSlider.ThumbImageSource);
+				}, MauiContext);
+			});
+		}
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task RebindingOrDisconnectingDoesNotApplyPendingThumbFont(bool disconnect)
+		{
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var slider = new SliderStub();
+				var handler = CreateHandler(slider);
+				var nativeSlider = Assert.IsType<MauiSlider>(handler.PlatformView);
+				var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
+				slider.ThumbImageSource = new FontImageSourceStub
+				{
+					Font = Font.OfSize("Dokdo", 24),
+					Glyph = "X",
+					Color = Colors.Red
+				};
+				var pending = nativeSlider.UpdateThumbImageSourceAsync(slider, provider, null);
+				Assert.False(pending.IsCompleted);
+				if (disconnect)
+					((IElementHandler)handler).DisconnectHandler();
+				else
+					handler.SetVirtualView(new SliderStub());
+				var current = nativeSlider.ThumbImageSource;
+				await pending;
+				Assert.Same(current, nativeSlider.ThumbImageSource);
+			});
+		}
+
+		[Theory]
+		[InlineData("current")]
+		[InlineData("replace")]
+		[InlineData("reload")]
+		[InlineData("clear")]
+		[InlineData("rebind")]
+		[InlineData("disconnect")]
+		public async Task LateBitmapImageOpenedOnlyResizesCurrentThumb(string update)
+		{
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var slider = new SliderStub();
+				var handler = CreateHandler(slider);
+				var nativeSlider = Assert.IsType<MauiSlider>(handler.PlatformView);
+				await nativeSlider.AttachAndRun(async () =>
+				{
+					await AssertEventually(() => nativeSlider.GetFirstDescendant<Thumb>() != null);
+					var thumb = nativeSlider.GetFirstDescendant<Thumb>();
+					var bitmap = new BitmapImage();
+					var result = new ImageSourceServiceResult(bitmap);
+					var provider = new ControlledImageSourceService
+					{
+						Result = Task.FromResult<IImageSourceServiceResult<ImageSource>>(result)
+					};
+					slider.ThumbImageSource = new FileImageSourceStub("red.png");
+					await nativeSlider.UpdateThumbImageSourceAsync(slider, provider, new Size(20, 20));
+					Assert.Equal(0, bitmap.PixelWidth);
+
+					switch (update)
+					{
+						case "replace":
+						case "reload":
+							if (update == "replace")
+								slider.ThumbImageSource = new FileImageSourceStub("black.png");
+							provider.Result = Task.FromResult<IImageSourceServiceResult<ImageSource>>(
+								new ImageSourceServiceResult(new WriteableBitmap(20, 20)));
+							await nativeSlider.UpdateThumbImageSourceAsync(slider, provider, new Size(20, 20));
+							break;
+						case "clear":
+							slider.ThumbImageSource = null;
+							await nativeSlider.UpdateThumbImageSourceAsync(slider, provider, new Size(20, 20));
+							break;
+						case "rebind":
+							handler.SetVirtualView(new SliderStub());
+							break;
+						case "disconnect":
+							((IElementHandler)handler).DisconnectHandler();
+							break;
+					}
+
+					thumb.Width = 20;
+					thumb.Height = 20;
+					var current = nativeSlider.ThumbImageSource;
+					var opened = new TaskCompletionSource();
+					void OnOpened(object sender, RoutedEventArgs args)
+					{
+						bitmap.ImageOpened -= OnOpened;
+						opened.SetResult();
+					}
+					bitmap.ImageOpened += OnOpened;
+					// Decode only after the replacement/clear, and observe the real WinUI event.
+					using var stream = BaseImageSourceServiceTests.CreateBitmapStream(37, 43, Colors.Red);
+					await bitmap.SetSourceAsync(stream.AsRandomAccessStream());
+					await opened.Task.WaitAsync(TimeSpan.FromSeconds(10));
+					Assert.Equal(37, bitmap.PixelWidth);
+					Assert.Equal(43, bitmap.PixelHeight);
+					Assert.Equal(update == "current" ? 37 : 20, thumb.Width);
+					Assert.Equal(update == "current" ? 43 : 20, thumb.Height);
+					Assert.Same(current, nativeSlider.ThumbImageSource);
+					Assert.Equal(update != "current", result.IsDisposed);
 				}, MauiContext);
 			});
 		}

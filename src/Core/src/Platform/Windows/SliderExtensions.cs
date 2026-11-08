@@ -12,6 +12,11 @@ namespace Microsoft.Maui.Platform
 {
 	public static class SliderExtensions
 	{
+		static readonly ImageSourceRequestManager ThumbImageRequests = new();
+
+		internal static void InvalidateThumbImageSource(this MauiSlider nativeSlider) =>
+			ThumbImageRequests.Begin(nativeSlider);
+
 		static void UpdateIncrement(this Slider nativeSlider, ISlider slider)
 		{
 			var difference = slider.Maximum - slider.Minimum;
@@ -88,7 +93,15 @@ namespace Microsoft.Maui.Platform
 
 		internal static async Task UpdateThumbImageSourceAsync(this MauiSlider nativeSlider, ISlider slider, IImageSourceServiceProvider? provider, Size? defaultThumbSize)
 		{
+			var request = ThumbImageRequests.Begin(nativeSlider);
+			var handler = slider.Handler;
 			var thumbImageSource = slider.ThumbImageSource;
+
+			bool IsCurrent() =>
+				ThumbImageRequests.IsCurrent(nativeSlider, request) &&
+				thumbImageSource == slider.ThumbImageSource &&
+				slider.Handler == handler &&
+				(handler == null || (handler.VirtualView == slider && handler.PlatformView == nativeSlider));
 
 			if (thumbImageSource == null)
 			{
@@ -109,7 +122,7 @@ namespace Microsoft.Maui.Platform
 			{
 				var service = provider.GetRequiredImageSourceService(thumbImageSource);
 				var nativeThumbImageSource = await service.GetImageSourceAsync(thumbImageSource);
-				if (thumbImageSource != slider.ThumbImageSource)
+				if (!IsCurrent())
 				{
 					nativeThumbImageSource?.Dispose();
 					return;
@@ -122,13 +135,22 @@ namespace Microsoft.Maui.Platform
 				if (nativeThumbImage is BitmapImage bitmapImage)
 				{
 					bitmapImage.ImageOpened += OnImageOpened;
+					ThumbImageRequests.SetCleanup(nativeSlider, request, () =>
+					{
+						bitmapImage.ImageOpened -= OnImageOpened;
+						nativeThumbImageSource?.Dispose();
+					});
 
 					void OnImageOpened(object sender, RoutedEventArgs e)
 					{
 						bitmapImage.ImageOpened -= OnImageOpened;
+						ThumbImageRequests.SetCleanup(nativeSlider, request, null);
 
-						if (thumbImageSource != slider.ThumbImageSource)
+						if (!IsCurrent())
+						{
+							nativeThumbImageSource?.Dispose();
 							return;
+						}
 
 						if (nativeSlider.TryGetFirstDescendant<Thumb>(out var thumb))
 						{
@@ -157,6 +179,7 @@ namespace Microsoft.Maui.Platform
 
 		internal static void UpdateBackgroundColor(this MauiSlider platformSlider, ISlider slider)
 		{
+			ControlExtensions.BackgroundImageRequests.Begin(platformSlider);
 			UpdateColor(platformSlider, BackgroundColorResourceKeys, slider.Background?.ToPlatform());
 		}
 
