@@ -274,6 +274,37 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact]
+		public async Task ResumingFragmentOfRemovedShellSectionDoesNotThrow()
+		{
+			SetupBuilder();
+
+			var firstPage = new ContentPage();
+			var removedSection = new ShellSection
+			{
+				Items = { new ShellContent { Content = new ContentPage() } }
+			};
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.Items.Add(new ShellContent { Content = firstPage });
+				shell.Items.Add(new FlyoutItem { Items = { removedSection } });
+			});
+
+			await CreateHandlerAndAddToWindow(shell, async () =>
+			{
+				await OnLoadedAsync(firstPage);
+
+				// As in ShellItemHandler.UpdateSections: the renderer of a removed section is disposed, which
+				// disconnects its handler, while FragmentManager keeps the wrapper fragment and can still resume
+				// it, e.g. when the section was removed while the app was in the background.
+				var renderer = ((IShellContext)shell.Handler).CreateShellSectionRenderer(removedSection);
+				var fragment = Assert.IsType<ShellSectionWrapperFragment>(renderer.Fragment);
+				renderer.Dispose();
+
+				Assert.Null(Record.Exception(fragment.OnResume));
+			});
+		}
+
 		protected override void SetupBuilder()
 		{
 			EnsureHandlerCreated(builder =>
