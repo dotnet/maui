@@ -438,6 +438,12 @@ candidate integration and signs that immutable cut. Legacy releases still wait
 for their separately reviewed servicing merge. Both paths require the exact
 source in the existing internal mirror and use the existing OIDC identity for
 official signed pipeline1095. No alternative source is substituted.
+The workflow uses only policy-allowed GitHub-owned actions. The dispatcher
+exchanges GitHub OIDC directly using the existing identity secrets; it does not
+use the policy-blocked `azure/login` action or save tokens between steps.
+An empty sweep and `-PlanOnly` require no Azure authentication. Successful
+workflow activation alone does not verify federation, internal queue permission,
+or signing/publication acceptance.
 
 After an exact successful signed build it queues canonical release pipeline1445
 with `pushPackages=false`, preparing the release artifacts/audit without customer
@@ -448,7 +454,11 @@ to remove those gates was inferred from unavailable user input.
 Existing federation, internal project access, and exact mirror synchronization
 must be deployed/authorized by their owners. No new PAT, permission, service
 connection, mirror overwrite or paid resource is created. Missing prerequisites
-fail explicitly. Dispatch intents are persisted before queue requests; an
+fail explicitly. Federation must match the actual GitHub OIDC subject for each
+activation event; checking out `main` does not change that subject. Access to
+public PR-validation pipelines or a release owner's CLI access does not prove
+the workflow identity can read the internal mirror or queue1095/1445.
+Dispatch intents are persisted before queue requests; an
 ambiguous response is reconciled by exact source/parameters before another queue,
 never blindly retried. The pipeline and source revisions are pinned.
 If a retained historical release branch advances after its signing and

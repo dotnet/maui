@@ -15,6 +15,12 @@ signed pipeline1095, and after success queues canonical release pipeline1445
 with `pushPackages=false`. This automatically prepares artifacts/audit, not
 NuGet.org publication or workload promotion. Existing federation, internal
 permissions and mirror deployment are required; the workflow grants none.
+Authentication uses an in-process GitHub OIDC exchange with the existing
+`AZDO_TRIGGER_CLIENT_ID` and `AZDO_TRIGGER_TENANT_ID` secrets, not `azure/login`,
+which the repository's selected-action policy blocks before any jobs start.
+The exchange occurs only after an eligible approved release is found; an empty
+sweep or `-PlanOnly` does not authenticate or queue builds. Tokens remain in the
+dispatcher's process, never in an Azure CLI cache, workflow output, or artifact.
 Ambiguous queue responses retain durable intent refs and never blindly resubmit.
 Completed historical cycles retain their verified release/preparation source
 identities when a release branch later advances; a later hotfix is not
