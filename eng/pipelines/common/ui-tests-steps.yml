@@ -9,6 +9,7 @@ parameters:
   provisionatorChannel: 'latest'
   configuration: "Release"
   runtimeVariant: "CoreCLR"
+  coreclrArtifactName: ui-tests-samples-coreclr
   useMaterial3: false # NEW PARAMETER - Enable Material3 build
   useWindowsCV1: false # NEW PARAMETER - Enable WindowsCollectionView1Handler test configuration
   testFilter: '' # comma-separated category list, expanded into ORed TestCategory= terms
@@ -40,7 +41,7 @@ steps:
   retryCountOnTaskFailure: 4
   condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'CoreCLR'), eq('${{ parameters.useMaterial3 }}', 'false'))
   inputs:
-    artifact: ui-tests-samples-coreclr
+    artifact: ${{ parameters.coreclrArtifactName }}
 
 - task: DownloadPipelineArtifact@2
   retryCountOnTaskFailure: 4

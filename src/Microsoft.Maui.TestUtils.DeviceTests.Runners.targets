@@ -5,6 +5,11 @@
     <DisableArcadeTestFramework>true</DisableArcadeTestFramework>
   </PropertyGroup>
 
+  <Target Name="_ValidateAndroidDeviceTestRuntime" BeforeTargets="PrepareForBuild"
+      Condition="$(TargetFramework.StartsWith('net12.0-android')) and '$(UseMonoRuntime)' == 'true'">
+    <Error Text="The pinned .NET 12 Android SDK supports CoreCLR or NativeAOT, not MonoVM. Use UseMonoRuntime=false for current Android device tests; retained .NET 11 Mono coverage is unchanged." />
+  </Target>
+
   <ItemGroup>
     <CompilerVisibleProperty Include="RootNamespace" />
     <CompilerVisibleProperty Include="ApplicationId" />

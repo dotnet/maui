@@ -50,7 +50,16 @@ app's build SDK. Simulator runtime provisioning and its bounded recovery
 remain enabled.
 
 Android builds require JDK 21, which is selected by `JavaJdkVersion` in
-`eng/Versions.props`. The repository-local SDK also installs the .NET 10 runtime
+`eng/Versions.props`. Android device apps and CoreCLR UI hosts build
+on the existing Linux pool independently of Apple compilation; regular Android,
+Shell-renderer and SafeAreaEdges UI jobs consume the Android-only artifacts.
+An unavailable Xcode image must not prevent Android APKs from building or tests
+from being submitted. Apple stages retain their own compiler-version checks.
+The pinned .NET 12 Android SDK contains CoreCLR and NativeAOT targets, but no
+MonoVM target. Current Android device CI uses CoreCLR; retained .NET 11 Mono
+coverage remains enabled. Asking a current Android device app to use Mono fails
+explicitly instead of mixing Mono CoreLib with CoreCLR ReadyToRun compilation.
+The repository-local SDK also installs the .NET 10 runtime
 declared in `global.json` for tools such as Cake; this does not change the .NET 12
 target frameworks. The fresh-SDK runtime bootstrap preserves custom Windows
 installation paths containing spaces or a trailing backslash. Its Windows

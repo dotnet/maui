@@ -10,6 +10,8 @@ parameters:
   type: object
 - name: testPool
   type: object
+- name: androidBuildPool
+  type: object
 - name: windowsBuildPool
   type: object
   default: {}
@@ -81,8 +83,63 @@ parameters:
       packageId: Microsoft.Maui.MauiBlazorWebView.DeviceTests
 
 stages:
+- ${{ each runtimeVariant in split('coreclr,mono', ',') }}:
+    - stage: devicetests_build_android_${{ runtimeVariant }}
+      displayName: ${{ parameters.TargetFrameworkVersion }} Android ${{ runtimeVariant }} Device Tests Build
+      dependsOn: []
+      # The pinned .NET 12 Android SDK no longer contains a MonoVM target.
+      condition: and(succeeded(), or(eq('${{ runtimeVariant }}', 'coreclr'), not(startsWith('${{ parameters.TargetFrameworkVersion }}', 'net12.0'))))
+      jobs:
+      - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/jobs/jobs.yml', '/eng/common/templates-official/jobs/jobs.yml@self') }}
+        parameters:
+          helixRepo: dotnet/maui
+          pool: ${{ parameters.androidBuildPool }}
+          enableMicrobuild: ${{ parameters.enableMicrobuild }}
+          enablePublishUsingPipelines: true
+          enablePublishBuildAssets: ${{ parameters.publishAssets }}
+          enableTelemetry: true
+          enableSourceBuild: ${{ parameters.enableSourceBuild }}
+          enableSourceIndex: ${{ parameters.enableSourceIndex }}
+          sourceIndexParams: ${{ parameters.sourceIndexParams }}
+          publishAssetsImmediately: true
+          enablePublishBuildArtifacts: true
+          enablePublishTestResults: false
+          workspace:
+            clean: all
+          jobs:
+          - job: builddevice_tests_android_${{ runtimeVariant }}
+            displayName: Build Android Device Tests (${{ runtimeVariant }})
+            timeoutInMinutes: 120
+            variables:
+            - name: _BuildConfig
+              value: ${{ parameters.BuildConfiguration }}
+            preSteps:
+            - checkout: self
+              fetchDepth: 1
+              clean: true
+            steps:
+            - ${{ each step in parameters.prepareSteps }}:
+              - ${{ each pair in step }}:
+                  ${{ pair.key }}: ${{ pair.value }}
+            - script: dotnet cake --target=dotnet-buildtasks --configuration="$(_BuildConfig)" --verbosity=diagnostic
+              displayName: Provision SDK & Build BuildTasks
+              retryCountOnTaskFailure: 4
+              env:
+                DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
+                PRIVATE_BUILD: $(PrivateBuild)
+            - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) /p:BuildDeviceTests=true /p:UseMonoRuntime=${{ eq(runtimeVariant, 'mono') }} /p:_DisableCheckForUnsupportedMonoMobileRuntime=${{ eq(runtimeVariant, 'mono') }} /p:IncludeAndroidTargetFrameworks=true /p:IncludeIosTargetFrameworks=false /p:IncludeMacCatalystTargetFrameworks=false /p:IncludeMacOSTargetFrameworks=false /p:IncludeWindowsTargetFrameworks=false /bl:BuildAndroidDeviceTests.binlog
+              displayName: Build Android DeviceTests (${{ runtimeVariant }})
+            - publish: ${{ parameters.checkoutDirectory }}/artifacts/bin
+              displayName: Publish Succeeded Android Artifacts Directory
+              condition: succeeded()
+              artifact: ${{ parameters.appArtifactName }}_android_${{ runtimeVariant }}
+            - publish: ${{ parameters.checkoutDirectory }}/artifacts/bin
+              displayName: Publish Failed Android Artifacts Directory
+              condition: not(succeeded())
+              artifact: ${{ parameters.appArtifactName }}_android_${{ runtimeVariant }}_failed_$(System.JobAttempt)
+
 - stage: devicetests_build_coreclr
-  displayName: ${{ parameters.TargetFrameworkVersion }} CoreCLR ios/catalyst/android Helix Tests
+  displayName: ${{ parameters.TargetFrameworkVersion }} CoreCLR iOS/MacCatalyst Device Tests Build
   dependsOn: []
   jobs:
   - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/jobs/jobs.yml', '/eng/common/templates-official/jobs/jobs.yml@self') }}
@@ -126,7 +183,7 @@ stages:
             DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
             PRIVATE_BUILD: $(PrivateBuild)
 
-        - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) /p:BuildDeviceTests=true /p:UseMonoRuntime=false /bl:BuildDeviceTests.binlog
+        - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) /p:BuildDeviceTests=true /p:UseMonoRuntime=false /p:IncludeAndroidTargetFrameworks=false /bl:BuildDeviceTests.binlog
           displayName: Build DeviceTests (CoreCLR)
 
         - publish: ${{ parameters.checkoutDirectory }}/artifacts/bin
@@ -141,8 +198,8 @@ stages:
 
 - stage: devicetests_android_coreclr
   displayName: ${{ parameters.TargetFrameworkVersion }} CoreCLR Android Helix Tests
-  dependsOn: 
-    - devicetests_build_coreclr
+  dependsOn:
+    - devicetests_build_android_coreclr
   jobs:
   - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/jobs/jobs.yml', '/eng/common/templates-official/jobs/jobs.yml@self') }}
     parameters:
@@ -177,7 +234,7 @@ stages:
           retryCountOnTaskFailure: 4
           condition: succeeded()
           inputs:
-            artifactName: ${{ parameters.appArtifactName }}_coreclr
+            artifactName: ${{ parameters.appArtifactName }}_android_coreclr
             targetPath: ${{ parameters.checkoutDirectory }}/artifacts/bin
 
         - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/steps/send-to-helix.yml', '/eng/common/templates-official/steps/send-to-helix.yml@self') }}
@@ -247,9 +304,9 @@ stages:
             WorkItemTimeout: 04:00:00
             XUnitWorkItemTimeout: 04:00:00
 
-# Smoke coverage that device tests still build and run on mobile (Android and iOS) under Mono.
+# Mono iOS compilation remains independent of the Android build above.
 - stage: devicetests_build_mono
-  displayName: ${{ parameters.TargetFrameworkVersion }} Mono Android/iOS Helix Tests
+  displayName: ${{ parameters.TargetFrameworkVersion }} Mono iOS Device Tests Build
   dependsOn: []
   jobs:
   - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/jobs/jobs.yml', '/eng/common/templates-official/jobs/jobs.yml@self') }}
@@ -293,7 +350,7 @@ stages:
             DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
             PRIVATE_BUILD: $(PrivateBuild)
 
-        - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) /p:BuildDeviceTests=true /p:UseMonoRuntime=true /p:_DisableCheckForUnsupportedMonoMobileRuntime=true /p:IncludeMacCatalystTargetFrameworks=false /bl:BuildDeviceTests.binlog
+        - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) /p:BuildDeviceTests=true /p:UseMonoRuntime=true /p:_DisableCheckForUnsupportedMonoMobileRuntime=true /p:IncludeAndroidTargetFrameworks=false /p:IncludeMacCatalystTargetFrameworks=false /bl:BuildDeviceTests.binlog
           displayName: Build DeviceTests (Mono)
 
         - publish: ${{ parameters.checkoutDirectory }}/artifacts/bin
@@ -308,8 +365,9 @@ stages:
 
 - stage: devicetests_android_mono
   displayName: ${{ parameters.TargetFrameworkVersion }} Mono Android Helix Tests Run
-  dependsOn: 
-    - devicetests_build_mono
+  dependsOn:
+    - devicetests_build_android_mono
+  condition: and(succeeded(), not(startsWith('${{ parameters.TargetFrameworkVersion }}', 'net12.0')))
   jobs:
   - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/jobs/jobs.yml', '/eng/common/templates-official/jobs/jobs.yml@self') }}
     parameters:
@@ -344,7 +402,7 @@ stages:
           retryCountOnTaskFailure: 4
           condition: succeeded()
           inputs:
-            artifactName: ${{ parameters.appArtifactName }}_mono
+            artifactName: ${{ parameters.appArtifactName }}_android_mono
             targetPath: ${{ parameters.checkoutDirectory }}/artifacts/bin
 
         - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/steps/send-to-helix.yml', '/eng/common/templates-official/steps/send-to-helix.yml@self') }}

@@ -113,6 +113,7 @@ stages:
     # Use Helix for iOS / Android / MacCatalyst / Windows Device Tests
     - template: /eng/pipelines/arcade/stage-device-tests.yml@self
       parameters:
+        androidBuildPool: ${{ parameters.androidPool }}
         buildPool: ${{ parameters.macOSHelixPool }}
         testPool: ${{ parameters.macOSPool }}
         windowsBuildPool: ${{ parameters.windowsPool }}

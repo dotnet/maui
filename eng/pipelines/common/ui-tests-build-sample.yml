@@ -11,6 +11,7 @@ parameters:
   testFilter: ''
   headless: true
   runtimeVariant: 'CoreCLR' #Mono, CoreCLR, NativeAOT
+  coreclrArtifactName: ui-tests-samples-coreclr
   useMaterial3: false # NEW PARAMETER - Enable Material3 build
   useWindowsCV1: false # NEW PARAMETER - Enable WindowsCollectionView1Handler testing (default false)
 
@@ -34,7 +35,7 @@ steps:
       skipProvisionator: false
 
 - task: PowerShell@2
-  condition: ne('${{ parameters.platform }}' , 'windows')
+  condition: and(ne('${{ parameters.platform }}', 'windows'), ne('${{ parameters.platform }}', 'android'))
   inputs:
     targetType: 'inline'
     script: |
@@ -102,7 +103,7 @@ steps:
 
 - publish: $(System.DefaultWorkingDirectory)/artifacts/bin
   condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'CoreCLR'), eq('${{ parameters.useMaterial3 }}', 'false'), succeeded())
-  artifact: ui-tests-samples-coreclr
+  artifact: ${{ parameters.coreclrArtifactName }}
 
 # Material3 artifacts
 - publish: $(System.DefaultWorkingDirectory)/artifacts/bin
@@ -131,7 +132,7 @@ steps:
 
 - publish: $(System.DefaultWorkingDirectory)/artifacts/bin
   condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'CoreCLR'), eq('${{ parameters.useMaterial3 }}', 'false'), failed())
-  artifact: ui-tests-samples-coreclr_failed_$(System.JobAttempt)
+  artifact: ${{ parameters.coreclrArtifactName }}_failed_$(System.JobAttempt)
 
 # Material3 failure artifacts
 - publish: $(System.DefaultWorkingDirectory)/artifacts/bin
