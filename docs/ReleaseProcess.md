@@ -5,7 +5,10 @@ The .NET MAUI release process uses Arcade and 1ES to build, sign, gather, and pu
 For the proposed development-branch roles and servicing-release rotation, see the
 [versioned release branch workflow](ReleaseBranchWorkflow.md). That proposal
 keeps the canonical publishing/approval process below. Candidate integration can
-automatically cut the release and restore net11 CI settings. Its recognized
+automatically cut the release and prepare a reviewed PR restoring net11 CI
+settings. A maintainer merges that normalization PR with **Create a merge commit**;
+next-lane activation and forward flow wait for its pinned ancestry. The workflow
+does not directly write protected `net11` or grant a bypass. Its recognized
 branch policy also defaults SR builds to servicing/stable, without a separate
 flip PR. Legacy sources retain the post-cut reviewed servicing PR.
 

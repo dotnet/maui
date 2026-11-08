@@ -9,7 +9,8 @@ signing, and publishing remain covered by the [release process](ReleaseProcess.m
 > These are proposed branch names and responsibilities, not a statement that the
 > migration has happened. Candidate merges automatically prepare the next named
 > branches and tracking PRs once this automation is deployed on `main`. Actual
-> release cuts and next-cycle CI housekeeping are automatic too. The recognized
+> release cuts are automatic; next-cycle CI housekeeping is prepared as a
+> reviewed PR so the protected `net11` branch is never written directly. The recognized
 > branch policy automatically stabilizes SR builds; legacy sources still use a
 > separate reviewed servicing PR on the newly cut release branch.
 > Tags, public publication, and signed nightly deployment retain their own gates.
@@ -214,7 +215,7 @@ substitute for package-version evidence.
 |---|---|
 | Create candidate SR N | Preserve its verified patch and CI/non-stable settings. Add the plain upcoming version, such as `11.0.20`, to **both** bug-template dropdowns in its own commit, with no suffix. |
 | Integrate approved candidate | Automatically cut release SR N at the exact CI-configured candidate merge. Do not put servicing/stable configuration in the candidate. |
-| After the cut: net11 | In one commit, set patch `(N+1)*10`, `ci.main`, non-stable and add that same plain version to both bug-template dropdowns. Prepare the normalized forward PR when eligible. |
+| After the cut: net11 | Prepare a draft normalization PR containing one commit: patch `(N+1)*10`, `ci.main`, non-stable and the same plain version in both bug-template dropdowns. A maintainer reviews it and uses Create a merge commit; next lanes and eligible forward flow wait for that ancestry. |
 | Release stabilization | With the recognized automatic policy, strict SR release refs select servicing/stable immediately and need no extra flip commit or PR. Legacy sources get a separate draft servicing PR after the cut; human review, CI and merge are required. |
 | Create next lanes | Cleanly merge normalized integration ancestry and pinned future payload. The next candidate retains CI settings and the matching bug-template option. In one future-inflight commit, bump patch to `(N+2)*10` and add that same plain version to both dropdowns. |
 | Verified stable publication | Prepare an idempotent update on the feature/default branch adding any missing version only after verified publication. Existing plain version entries are not duplicated. |
@@ -359,7 +360,8 @@ metadata, is merged into `net11`, the
 - `release/<band>-srN` at the exact candidate merge, automatically stabilized by
   its recognized branch policy. Only legacy sources need the separate draft
   servicing PR targeting that release branch.
-- The normalized net11 next-cycle CI child, without changing the release cut.
+- A draft normalization PR targeting protected `net11`, containing the pinned
+  next-cycle CI child without changing the release cut.
 - `candidate/<band>-sr<N+1>`, with selected payload, CI settings and its own
   bug-template version commit.
 - `inflight/<band>-sr<N+2>`, with candidate ancestry, its own next-cycle patch and
@@ -367,8 +369,9 @@ metadata, is merged into `net11`, the
 - The new candidate and draft future-preview PRs into `net11`. The obsolete
   managed preview closes only after both replacement PRs exist.
 
-For SR1, these are **candidate SR2 and inflight SR3**, without another button or
-release-input form. This is production next-lane preparation, not only a sandbox.
+For SR1, these are **candidate SR2 and inflight SR3**, after the normalization
+PR is approved and merged. That merge activates trusted reconciliation, without
+another button or release-input form. This is production next-lane preparation, not only a sandbox.
 It never merges individual fixes or the new candidate/preview PRs.
 
 The runner re-reads the merged managed candidate PR, verifies the same-repository
@@ -390,13 +393,20 @@ configuration cannot reopen an obsolete PR pair after a completed integration.
 Recovery also rechecks the consumed inflight source before rollover writes and
 before retiring its tracking route. If new work landed there after the receipt,
 the runner explicitly requires reconciliation instead of reporting an older
-snapshot as ready. Complete branch names are URI-encoded for housekeeping API
-updates, so a literal `#` cannot redirect a write to another branch.
+snapshot as ready. The full housekeeping base is passed as PR API data, not
+interpolated into a ref-update URL; no direct integration-ref update is issued.
 
-**The deployed workflow cuts the release and restores net11 CI settings.** Its
-create-only release write happens before the non-forced CI fast-forward; the
-receipt makes a failure between them resumable. If net11 acquires unrelated work
-before normalization, the runner refuses to overwrite it. It skips an unnecessary
+**The workflow cuts the release and prepares reviewed net11 CI restoration.**
+Its create-only release write happens before opening the draft normalization PR
+at `automation/normalization/<band>-srN`. The receipt makes this pause resumable:
+`waiting-for-normalization-approval` preserves the cut and current tracking SR,
+does not activate the replacement lanes, and does not prepare forward flow.
+A maintainer must review, run required CI and use **Create a merge commit**,
+not squash/rebase, so the exact prepared child remains an ancestor of `net11`.
+The merged-PR trigger then revalidates that ancestry and resumes the same receipt.
+Existing protections and bypass actors are never changed by this workflow.
+If net11 acquires unrelated work before normalization, the runner refuses to
+overwrite it. It skips an unnecessary
 stabilization PR for automatic-policy sources, opens the legacy servicing PR
 when required, reconciles the next tracking pair, and prepares
 the normalized net11-to-main forward PR when eligible. A raw release-to-main PR
@@ -821,7 +831,7 @@ actual production evidence; merging this proposal does not satisfy them.
 
 | Surface | Remaining production requirement |
 |---|---|
-| Cuts, CI housekeeping and next lanes | Deploy the implemented workflow and automatic SR policy, verify the exact cut, CI child, absence of a redundant flip PR, next pair, and unchanged retry. Legacy sources still require their servicing PR. |
+| Cuts, CI housekeeping and next lanes | Deploy the workflow and automatic SR policy; verify the exact cut, reviewed normalization PR/merge ancestry, absence of a redundant flip PR, next pair and unchanged retry. Legacy sources still require their servicing PR. |
 | Release state | Review canonical cycle/nightly advancement after the appropriate actual cut/deployment acceptance; no direct main write is performed. |
 | Servicing and post-ship metadata | Verify automatic SR stabilization or review the legacy servicing PR; integrate verified-publication metadata without treating candidate options or stable configuration as shipment evidence. |
 | Daily forward merges | Deploy the scheduled forward-PR workflow and verify actual CI on its first eligible source snapshot. PR preparation is implemented; review/conflict resolution and merging remain separate. |
