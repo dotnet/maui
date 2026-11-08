@@ -188,6 +188,40 @@ public class MemoryTests : ControlsHandlerTestBase
 	}
 
 #if ANDROID
+	[Fact("Disconnected Template Removes Measure Subscription")]
+	[DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicFields, typeof(VisualElement))]
+	public async Task DisconnectedTemplateRemovesMeasureSubscription()
+	{
+		SetupBuilder();
+
+		await InvokeOnMainThreadAsync(() =>
+		{
+			var itemsView = new CollectionView();
+			var itemsHandler = CreateHandler(itemsView);
+			var retainedView = new Label();
+			using var itemContent = new ItemContentView(MauiContext.Context);
+			using var holder = new TemplatedItemViewHolder(itemContent, new DataTemplate(() => retainedView));
+
+			try
+			{
+				holder.Bind(new object(), itemsView);
+				var measureEvent = typeof(VisualElement).GetField(nameof(VisualElement.MeasureInvalidated), BindingFlags.Instance | BindingFlags.NonPublic);
+				Assert.NotNull(measureEvent);
+				var subscribers = (measureEvent.GetValue(retainedView) as MulticastDelegate)?.GetInvocationList() ?? [];
+				Assert.Contains(subscribers, subscriber => ReferenceEquals(subscriber.Target, itemContent));
+
+				holder.Disconnect(itemsView);
+
+				subscribers = (measureEvent.GetValue(retainedView) as MulticastDelegate)?.GetInvocationList() ?? [];
+				Assert.DoesNotContain(subscribers, subscriber => ReferenceEquals(subscriber.Target, itemContent));
+			}
+			finally
+			{
+				itemsHandler.DisconnectHandler();
+			}
+		});
+	}
+
 	[Fact("FlyoutPage Detail Navigation Does Not Leak")]
 	public async Task FlyoutPageDetailNavigationDoesNotLeak()
 	{

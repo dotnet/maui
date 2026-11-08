@@ -45,8 +45,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		internal void Disconnect(ItemsView itemsView)
 		{
 			Recycle(itemsView);
-			View?.DisconnectHandlers();
 			_itemContentView.Recycle();
+			View?.DisconnectHandlers();
 			View = null;
 		}
 
