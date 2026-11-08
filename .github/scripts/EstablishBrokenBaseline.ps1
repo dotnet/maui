@@ -170,7 +170,7 @@ function Find-MergeBase {
     # main/net*.0/release and silently mis-bases inflight/current PRs on main
     # (gate build 14670709, #36274: 200+ file fix-set, broken without-fix build).
     $remoteBranches = git branch -r --format='%(refname:short)' 2>$null | Where-Object {
-        $_ -match '^origin/(main|master|net\d+\.\d+|release/.*|inflight/.*)$'
+        $_ -match '^origin/(main|master|net\d+(?:\.\d+)?|release/.*|inflight/.*|candidate/.*)$'
     }
 
     $bestMatch = $null
@@ -399,7 +399,7 @@ $baseInfo = Find-MergeBase -ExplicitBaseBranch $BaseBranch
 
 if (-not $baseInfo) {
     Write-Host "ERROR: Could not find merge base" -ForegroundColor Red
-    Write-Host "  Tried: PR metadata, common base branches (main, net*.0, release/*)" -ForegroundColor Yellow
+    Write-Host "  Tried: PR metadata, main, netN/netN.0, release/*, candidate/*, inflight/*" -ForegroundColor Yellow
     Write-Host "  Specify -BaseBranch explicitly to fix." -ForegroundColor Yellow
     return @{ Success = $false; Error = "Could not find merge base" }
 }

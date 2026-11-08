@@ -2,6 +2,36 @@
 
 The .NET MAUI release process uses Arcade and 1ES to build, sign, gather, and publish packages.
 
+For the proposed development-branch roles and servicing-release rotation, see the
+[versioned release branch workflow](ReleaseBranchWorkflow.md). That proposal
+keeps the canonical publishing/approval process below. Candidate integration can
+automatically cut the release and prepare a reviewed PR restoring net11 CI
+settings. A maintainer merges that normalization PR with **Create a merge commit**;
+next-lane activation and forward flow wait for its pinned ancestry. The workflow
+does not directly write protected `net11` or grant a bypass. Its recognized
+branch policy also defaults SR builds to servicing/stable, without a separate
+flip PR. Legacy sources retain the post-cut reviewed servicing PR.
+
+The public **Prepare signed release publication** workflow waits for that
+human-approved release source and its exact internal mirror commit, queues existing
+signed pipeline1095, and after success queues canonical release pipeline1445
+with `pushPackages=false`. This automatically prepares artifacts/audit, not
+NuGet.org publication or workload promotion. Existing federation, internal
+permissions and mirror deployment are required; the workflow grants none.
+Authentication uses an in-process GitHub OIDC exchange with the existing
+`AZDO_TRIGGER_CLIENT_ID` and `AZDO_TRIGGER_TENANT_ID` secrets, not `azure/login`,
+which the repository's selected-action policy blocks before any jobs start.
+The exchange occurs only after an eligible approved release is found; an empty
+sweep or `-PlanOnly` does not authenticate or queue builds. Tokens remain in the
+dispatcher's process, never in an Azure CLI cache, workflow output, or artifact.
+Ambiguous queue responses retain durable intent refs and never blindly resubmit.
+Completed historical cycles retain their verified release/preparation source
+identities when a release branch later advances; a later hotfix is not
+implicitly signed or published, and does not block the next cycle. Offline plans
+cannot certify completed Azure runs.
+Final public publishing still requires the normal owner-approved canonical run
+and its manual approval/protected-service-connection gates.
+
 ## Build and pack
 
 `azure-pipelines-internal.yml` builds, signs, and packs .NET MAUI on the internal Azure DevOps mirror. It registers the resulting assets in Maestro's Build Asset Registry (BAR). The BAR record and source commit identify the immutable assets used by a release.
