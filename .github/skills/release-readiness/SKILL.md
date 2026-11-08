@@ -88,9 +88,13 @@ before certifying release contents. No synthetic union is assumed.
 
 SR1 has no SR0. Its automatic inventory baseline must be an **existing** GA
 stable tag; later cycles use an existing prior-cycle stable tag. If none exists,
-report generation fails explicitly with a fetch / `-BaselineRef` instruction;
-the detector still emits the current candidate so it cannot silently disappear.
-An explicit baseline must be independently verified by the caller.
+generate a **Not Ready / BLOCKED** diagnostic with an incomplete survey and
+explicitly unrun contents/regression classification. Do not emit zero counts or
+source-PR/commit inventory files; remove stale inventory outputs when reusing an
+output directory. Keep the detector's current candidate visible. Fetch the real
+immutable tag or supply an independently verified `-BaselineRef` to complete the
+survey; Preview/RC tags are not automatic GA substitutes. An explicit nonexistent
+baseline remains a hard error.
 
 Historical majors remain independent: `.NET 10`, Preview/RC branches, explicit
 source/survey overrides, immutable shipped-tag bounds, tag retirement and

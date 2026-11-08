@@ -455,18 +455,7 @@ function New-MauiReleaseNextLanePlan {
     $parents = (Invoke-MauiReleaseGit -RepositoryPath $RepositoryPath -Arguments @(
         'show', '-s', '--format=%P', $Merge)).Trim().Split(' ')
     if ($parents.Count -ne 2 -or $parents[1] -cne $Candidate) {
-        if ($parents.Count -ne 1 -or $Merge -ceq $Candidate) {
-            throw 'Next-lane preparation requires the exact two-parent candidate integration merge or a verified exact-tree squash.'
-        }
-        $mergeTree = (Invoke-MauiReleaseGit -RepositoryPath $RepositoryPath -Arguments @(
-            'rev-parse', "${Merge}^{tree}")).Trim()
-        $candidateTree = (Invoke-MauiReleaseGit -RepositoryPath $RepositoryPath -Arguments @(
-            'rev-parse', "${Candidate}^{tree}")).Trim()
-        $base = (Invoke-MauiReleaseGit -RepositoryPath $RepositoryPath -Arguments @(
-            'merge-base', $parents[0], $Candidate)).Trim()
-        if ($mergeTree -cne $candidateTree -or $base -cne $parents[0]) {
-            throw 'A squash integration must preserve the exact approved candidate tree and include its integration base in candidate ancestry.'
-        }
+        throw 'Next-lane preparation requires the exact two-parent candidate integration merge.'
     }
     $null = Invoke-MauiReleaseGit -RepositoryPath $RepositoryPath -Arguments @(
         'merge-base', '--is-ancestor', $Candidate, $Inflight)

@@ -24,6 +24,10 @@ current-candidate detection is state-driven, including pre-GA bootstrap:
 feature-main's major, maximum retained branch suffix, or absent GA tags never
 make the current candidate disappear. SR1 requires an actual GA baseline
 tag or an explicitly verified `-BaselineRef`; no SR0/prior tag is invented.
+Without that automatic anchor, reporting remains visible as **Not Ready /
+BLOCKED**, with contents and regression classification explicitly **NOT RUN**.
+No zero inventory or source-PR export is inferred. Invalid explicit revisions
+still fail; the diagnostic never substitutes a Preview/RC tag for GA evidence.
 Missing required refs/metadata fail explicitly rather than producing a clean
 inventory. Candidate contents and source ancestry use different coordinates.
 The engine also checks ancestry in both directions. `candidateIntegration`

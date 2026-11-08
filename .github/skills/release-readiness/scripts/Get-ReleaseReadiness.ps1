@@ -2375,6 +2375,7 @@ function Resolve-Context {
     $effectiveSrRef = "origin/$SrBranch"
     $effectiveExcludes = $ExcludeBranches
     $priorSrRef = $null
+    $candidateBaselineMissingReason = $null
 
     if ($Candidate) {
         $mode = 'candidate'
@@ -2388,11 +2389,13 @@ function Resolve-Context {
             if ($tags.Count) { $tags[-1] } else { $null }
         } else { "origin/$SrBranch" }
         if (-not $priorSrRef) {
-            throw "Candidate '$targetSrBranch' has no verified GA/prior stable-tag baseline. Fetch the immutable tag or pass -BaselineRef <verified-ref>; no SR0 or clean inventory was inferred."
-        }
-        $priorSrSha = Invoke-Git -Arguments @('rev-parse', '--verify', '--end-of-options', "$priorSrRef^{commit}")
-        if (-not $priorSrSha) {
-            throw "Candidate mode requires -SrBranch to be the prior SR (used as exclude baseline). '$priorSrRef' not found."
+            $candidateBaselineMissingReason = "Candidate '$targetSrBranch' has no verified GA/prior stable-tag baseline. Content inventory and regression classification were not run; no SR0 or clean inventory was inferred."
+            Write-Warn $candidateBaselineMissingReason
+        } else {
+            $priorSrSha = Invoke-Git -Arguments @('rev-parse', '--verify', '--end-of-options', "$priorSrRef^{commit}")
+            if (-not $priorSrSha) {
+                throw "Candidate mode requires -SrBranch to be the prior SR (used as exclude baseline). '$priorSrRef' not found."
+            }
         }
         if (-not $SurveyRef) {
             $SurveyRef = if ($roles.configured -and $targetSrBranch -eq $roles.releaseBranch) {
@@ -2403,7 +2406,7 @@ function Resolve-Context {
             $SurveyRef
         } else { "origin/$SurveyRef" }
         # Exclude prior SR from main, so we see only "new since last SR" commits
-        $effectiveExcludes = @($priorSrRef)
+        $effectiveExcludes = @($priorSrRef | Where-Object { $_ })
         Write-Host "Candidate mode: surveying $effectiveSrRef vs prior SR $priorSrRef" -ForegroundColor Cyan
     }
     elseif ($Shipped) {
@@ -2508,6 +2511,7 @@ function Resolve-Context {
         mode = $mode
         priorSrBranch = if ($Candidate -and -not $explicitTarget) { $SrBranch } else { $null }
         priorSrRef = $priorSrRef
+        candidateBaselineMissingReason = $candidateBaselineMissingReason
         mainRevertBaselineRef = $mainRevertBaselineRef
         inheritFromPriorSr = [bool]($Candidate -and $InheritFromPriorSr)
         fetchedAt = (Get-Date).ToUniversalTime().ToString('o')
@@ -5151,7 +5155,10 @@ function Get-OverallVerdict {
     if ([bool](Get-MetadataValue -Container $Data -Name 'surveyIncomplete' -Default $false)) {
         $tier2 = $true
         $partialReason = Get-MetadataValue -Container $Data -Name 'surveyIncompleteReason' -Default 'Partial survey did not query every readiness axis.'
-        $reasons.Add("[Tier 2] $partialReason Rerun with ``-Phase all`` for a global verdict.") | Out-Null
+        $nextStep = if (Get-MetadataValue -Container $Data -Name 'inventory') {
+            'Resolve the verified inventory baseline before rerunning the complete survey.'
+        } else { 'Rerun with `-Phase all` for a global verdict.' }
+        $reasons.Add("[Tier 2] $partialReason $nextStep") | Out-Null
     }
     if ([bool](Get-MetadataValue -Container $Data -Name 'regressionScanIncomplete' -Default $false)) {
         $tier2 = $true
@@ -5785,6 +5792,9 @@ function Format-MarkdownReport {
     if ($mode -eq 'candidate') {
         $targetName = Get-MetadataValue -Container $ctx -Name 'targetSrBranch' -Default 'next SR'
         $baselineName = Get-MetadataValue -Container $ctx -Name 'priorSrRef' -Default $ctx.priorSrBranch
+        if (Get-MetadataValue -Container $ctx -Name 'candidateBaselineMissingReason') {
+            $baselineName = 'unavailable: no verified GA/prior stable tag'
+        }
         if ($inherits) {
             [void]$sb.AppendLine("# Release Readiness — CANDIDATE for $targetName ($srBranch + inherited from $($ctx.priorSrBranch))")
             [void]$sb.AppendLine()
@@ -6458,6 +6468,12 @@ function Format-MarkdownReport {
         }
         [void]$sb.AppendLine()
     }
+    elseif (Get-MetadataValue -Container $Data -Name 'inventory') {
+        [void]$sb.AppendLine('## Release contents — NOT RUN')
+        [void]$sb.AppendLine()
+        [void]$sb.AppendLine((Get-MetadataValue -Container $Data.inventory -Name 'reason'))
+        [void]$sb.AppendLine()
+    }
 
     # === Open SR-targeting PRs ===
     #
@@ -6782,11 +6798,18 @@ function Invoke-Main {
     $ctx['phase'] = $Phase
     $ctx['contentsRef'] = $ctx.srRef
 
+    $baselineMissingReason = Get-MetadataValue -Container $ctx -Name 'candidateBaselineMissingReason'
     $data = @{
         metadata = $ctx
         warnings = @()
-        surveyIncomplete = ($Phase -ne 'all')
-        surveyIncompleteReason = if ($Phase -ne 'all') { "Partial survey (-Phase $Phase) did not query every readiness axis." } else { $null }
+        surveyIncomplete = ($Phase -ne 'all' -or [bool]$baselineMissingReason)
+        surveyIncompleteReason = (@(
+            if ($Phase -ne 'all') { "Partial survey (-Phase $Phase) did not query every readiness axis." }
+            $baselineMissingReason
+        ) | Where-Object { $_ }) -join ' '
+    }
+    if ($baselineMissingReason) {
+        $data['inventory'] = @{ status = 'not-run'; baselineRef = $null; reason = $baselineMissingReason }
     }
 
     # Shipped mode: prefer the GitHub Release publication time for the report's
@@ -6872,7 +6895,7 @@ function Invoke-Main {
         Add-SrNightlyFeedFreshness -Data $data
     }
 
-    if ($Phase -in 'all', 'commits', 'regressions') {
+    if (($Phase -in 'all', 'commits', 'regressions') -and -not $baselineMissingReason) {
         $srContents = Get-SrCommits -Ctx $ctx
         $data['srContents'] = $srContents
     }
@@ -6899,6 +6922,11 @@ function Invoke-Main {
     # questions as blocking items at the top of the report.
     if ($Phase -in 'all', 'commits', 'regressions', 'open-prs') {
         $data['shipChecks'] = Get-ReleaseShipChecks -Ctx $ctx
+    }
+    if ($baselineMissingReason) {
+        $data['shipChecks'] = @(Get-MetadataValue -Container $data -Name 'shipChecks' -Default @()) + @(New-ReadinessCheck `
+            -Area 'Candidate inventory baseline' -Status 'BLOCKED' -Details $baselineMissingReason `
+            -NextAction 'Fetch the real immutable GA/prior stable tag, or supply an independently verified -BaselineRef <verified-ref>, then regenerate the complete readiness report. Do not substitute a Preview/RC tag or claim release readiness from this diagnostic.')
     }
 
     # P/0-labelled open PRs targeting the SR branch are release blockers (SR-lane
@@ -6983,7 +7011,10 @@ function Invoke-Main {
         }
     }
 
-    if ($Phase -in 'all', 'regressions') {
+    if ($baselineMissingReason) {
+        $data['regressionScanIncomplete'] = $true
+        $data['regressionFailedLabels'] = @('(not run: candidate inventory baseline is unavailable)')
+    } elseif ($Phase -in 'all', 'regressions') {
         if ($labels.Count -eq 0) {
             Write-Warn "No regression labels provided/inferred; skipping regressions phase. Pass -RegressionLabels or -InferRegressionLabels."
             $data['regressions'] = @()
@@ -7096,6 +7127,13 @@ function Invoke-Main {
 
             $commitsJson = $outputSrContents | ConvertTo-Json -Depth 10
             Set-Content -Path (Join-Path $OutputDir 'sr-commits.json') -Value $commitsJson -Encoding UTF8
+        } elseif ($baselineMissingReason) {
+            foreach ($name in @('sr-source-prs.txt', 'sr-commits.json')) {
+                $staleInventory = Join-Path $OutputDir $name
+                if (Test-Path -LiteralPath $staleInventory -PathType Leaf) {
+                    Remove-Item -LiteralPath $staleInventory
+                }
+            }
         }
         Write-Host "`nWrote outputs to: $OutputDir" -ForegroundColor Green
         Get-ChildItem $OutputDir | ForEach-Object { Write-Host "  $($_.Name) ($($_.Length) bytes)" }

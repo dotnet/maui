@@ -60,7 +60,7 @@ $routes = @(
         role = 'candidate'
         head = $candidateHead
         title = "[Release candidate] $($state.releaseBand) SR$($state.currentSr)"
-        purpose = 'Current release integration. Merge only after normal release review and validation. Create a merge commit is preferred. A squash is accepted only when its complete tree exactly matches the approved candidate and its parent is in candidate ancestry; other integration shapes or mixed-content integrations are rejected.'
+        purpose = 'Current release integration. Merge only after normal release review and validation. Use Create a merge commit, not squash or rebase: next-lane preparation verifies the exact two-parent candidate integration.'
     }
     [pscustomobject]@{
         role = 'inflight'

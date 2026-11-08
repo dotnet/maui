@@ -232,13 +232,36 @@ try {
         $bootstrap = Get-Content $detectionPath -Raw | ConvertFrom-Json
         Assert-Role 11 $bootstrap.majorVersion 'default detector uses configured major after main12 rollover'
         Assert-Role 1 @($bootstrap.trackers | Where-Object canonicalKey -eq net11-sr1).Count 'missing GA evidence never silently omits configured current candidate'
+        & (Join-Path $scripts 'Get-ReleaseReadiness.ps1') -SrBranch release/11.0.1xx-sr1 -Candidate `
+            -Phase commits -NoFetch -SkipMilestoneChecks -SkipMaestroChecks -OutputDir $out
+        $missingBaseline = Get-Content (Join-Path $out 'release-readiness.json') -Raw | ConvertFrom-Json
+        Assert-Role 'Not Ready' $missingBaseline.verdict.label 'missing bootstrap baseline is an explicit blocked report, never CLEAN'
+        Assert-Role BLOCKED @($missingBaseline.shipChecks |
+            Where-Object Area -eq 'Candidate inventory baseline')[0].Status 'missing inventory baseline remains a ship blocker'
+        Assert-Role not-run $missingBaseline.inventory.status 'absent baseline never produces a measured inventory'
+        Assert-Role $true $missingBaseline.surveyIncomplete 'missing inventory keeps the overall survey incomplete'
+        Assert-Role $false ($missingBaseline.PSObject.Properties.Name -contains 'srContents') 'unrun commit/source-PR counts are absent'
+        Assert-Role $false ($missingBaseline.PSObject.Properties.Name -contains 'regressions') 'unrun regressions are not reported as zero findings'
+        Assert-Role $false (Test-Path (Join-Path $out 'sr-source-prs.txt')) 'a prior source-PR inventory cannot survive a missing-baseline report'
+        Assert-Role $false (Test-Path (Join-Path $out 'sr-commits.json')) 'a prior commit inventory cannot survive a missing-baseline report'
+        $missingText = Get-Content (Join-Path $out 'release-readiness.md') -Raw
+        Assert-Role $true ($missingText -match 'Release contents.*NOT RUN') 'missing-baseline Markdown visibly labels the unrun contents'
+        Assert-Role $false ($missingText -match 'No blocking regressions|No risk-tier regressions|What.s New in SR.*0 commits') 'no clean/zero inventory is inferred from missing evidence'
         $failedClosed = $false
         try {
             & (Join-Path $scripts 'Get-ReleaseReadiness.ps1') -SrBranch release/11.0.1xx-sr1 -Candidate `
-                -Phase commits -NoFetch -SkipMilestoneChecks -SkipMaestroChecks -OutputDir (Join-Path $fixture 'missing-baseline')
-        } catch { $failedClosed = $_.Exception.Message -match 'no verified GA/prior stable-tag baseline' }
-        Assert-Role $true $failedClosed 'missing bootstrap baseline fails explicitly, never CLEAN'
+                -BaselineRef 11.0.999 -Phase commits -NoFetch -SkipMilestoneChecks -SkipMaestroChecks `
+                -OutputDir (Join-Path $fixture 'invalid-baseline')
+        } catch { $failedClosed = $_.Exception.Message -match 'not found' }
+        Assert-Role $true $failedClosed 'an explicitly supplied nonexistent baseline remains a hard error'
         $null = Invoke-FixtureGit tag 11.0.0 $ga
+        & (Join-Path $scripts 'Get-ReleaseReadiness.ps1') -SrBranch release/11.0.1xx-sr1 -Candidate `
+            -Phase commits -NoFetch -SkipMilestoneChecks -SkipMaestroChecks -OutputDir $out
+        $restoredBaseline = Get-Content (Join-Path $out 'release-readiness.json') -Raw | ConvertFrom-Json
+        Assert-Role 1 @($restoredBaseline.srContents.sourcePrs |
+            Where-Object { $_ -eq 9101 }).Count 'the real GA tag restores the measured candidate inventory'
+        Assert-Role 0 @($restoredBaseline.shipChecks |
+            Where-Object Area -eq 'Candidate inventory baseline').Count 'the missing-baseline blocker disappears only after verified evidence returns'
     } finally { Pop-Location; $env:PATH = $priorPath }
 
     $null = Invoke-FixtureGit checkout --quiet inflight/11.0.1xx-sr2

@@ -377,26 +377,12 @@ another button or release-input form. This is production next-lane preparation, 
 It never merges individual fixes or the new candidate/preview PRs.
 
 The runner re-reads the merged managed candidate PR, verifies the same-repository
-head and target, its maintainer merger's write permission, the verified
+head and target, its maintainer merger's write permission, the exact two-parent
 integration, CI and bug-template metadata, and the pinned following inflight's
 ancestry and package version. An old tracking PR predating the bug-template
 preparation does not advance the train. Ambiguous sources,
-wrong versions, conflicts and unexpected refs fail rather than invent a release
-approval.
-
-**Create a merge commit is preferred.** A production candidate squash is also
-accepted only when it has one parent, is a distinct commit from the candidate,
-its complete Git tree equals the approved candidate tree, and that parent is
-an ancestor of the candidate. This preserves every approved file and excludes
-unreviewed integration-base changes. Mixed-content squashes and other
-integration shapes remain rejected. The release cut is always the actual approved
-integration commit, never a reconstructed replacement.
-
-Candidate discovery ignores historical merges that no longer belong to the
-current integration history after an explicitly authorized reset. Those PRs
-cannot consume the new cycle or cause a duplicate-integration error. Existing
-durable receipts are still verified against their recorded source; resetting
-an integration branch does not erase a completed release.
+wrong versions, conflicts, unexpected refs, and squash/rebase merges fail rather
+than invent a release approval.
 
 Before creating lanes or PRs, it publishes a bounded, create-once receipt at
 `automation/release-lanes/<band>-srN`. The receipt retains the approved merge,
