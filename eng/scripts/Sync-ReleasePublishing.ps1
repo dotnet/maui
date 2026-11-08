@@ -64,14 +64,50 @@ function Fetch-PublishingCommit {
 }
 
 function Get-ReleaseAzureHeaders {
-    # azure/login performs the existing repository's OIDC exchange. Never
-    # persist the resulting token in a ref, artifact, output, or child build.
-    $output = @(& az account get-access-token --resource 499b84ac-1321-427f-aa17-267ca6975798 `
-        --query accessToken -o tsv --only-show-errors)
-    if ($LASTEXITCODE -ne 0 -or $output.Count -ne 1 -or [string]::IsNullOrWhiteSpace($output[0])) {
-        throw 'Azure DevOps authentication is unavailable; configure the existing federation and internal pipeline access, without adding a PAT.'
+    $tenantId = $env:AZDO_TRIGGER_TENANT_ID
+    $clientId = $env:AZDO_TRIGGER_CLIENT_ID
+    if ([string]::IsNullOrWhiteSpace($tenantId) -or [string]::IsNullOrWhiteSpace($clientId)) {
+        throw 'AZDO_TRIGGER_TENANT_ID and AZDO_TRIGGER_CLIENT_ID must be set.'
     }
-    @{ Authorization = 'Bearer ' + $output[0]; Accept = 'application/json' }
+    $requestToken = $env:ACTIONS_ID_TOKEN_REQUEST_TOKEN
+    $requestUrl = $env:ACTIONS_ID_TOKEN_REQUEST_URL
+    if ([string]::IsNullOrWhiteSpace($requestToken) -or [string]::IsNullOrWhiteSpace($requestUrl)) {
+        throw 'GitHub OIDC identity token request is unavailable.'
+    }
+
+    # Exchange in-process: the organization blocks azure/login, and tokens must
+    # not be persisted in CLI caches, workflow outputs, artifacts, or child builds.
+    $oidcResponse = Invoke-RestMethod -Method Get -Uri "$requestUrl&audience=api://AzureADTokenExchange" `
+        -Headers @{ Authorization = "Bearer $requestToken" } -TimeoutSec 60
+    if ($null -eq $oidcResponse -or 'value' -notin $oidcResponse.PSObject.Properties.Name -or
+        [string]::IsNullOrWhiteSpace([string]$oidcResponse.value)) {
+        throw 'GitHub OIDC token request returned no token.'
+    }
+    $oidcToken = [string]$oidcResponse.value
+    Write-Host "::add-mask::$oidcToken"
+    $oidcResponse = $null
+    $body = @{
+        grant_type = 'client_credentials'
+        client_id = $clientId
+        client_assertion_type = 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer'
+        client_assertion = $oidcToken
+        scope = '499b84ac-1321-427f-aa17-267ca6975798/.default'
+    }
+    try {
+        $tokenResponse = Invoke-RestMethod -Method Post `
+            -Uri "https://login.microsoftonline.com/$tenantId/oauth2/v2.0/token" `
+            -ContentType 'application/x-www-form-urlencoded' -Body $body -TimeoutSec 60
+    } finally {
+        $body.client_assertion = $null
+        $oidcToken = $null
+    }
+    if ($null -eq $tokenResponse -or 'access_token' -notin $tokenResponse.PSObject.Properties.Name -or
+        [string]::IsNullOrWhiteSpace([string]$tokenResponse.access_token)) {
+        throw 'Azure federation returned no Azure DevOps access token; verify the existing identity and internal pipeline access, without adding a PAT.'
+    }
+    $accessToken = [string]$tokenResponse.access_token
+    Write-Host "::add-mask::$accessToken"
+    @{ Authorization = 'Bearer ' + $accessToken; Accept = 'application/json' }
 }
 
 function Invoke-ReleaseAzure {
