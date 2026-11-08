@@ -31,18 +31,41 @@ concurrency:
 jobs:
   apple-coreclr:
     if: github.event.repository.private == false
-    name: ${{ matrix.platform }} CoreCLR on Xcode 27.1
+    name: ${{ matrix.platform }} ${{ matrix.project || 'native hosts' }} CoreCLR on Xcode 27.1
     runs-on: xcode-27
-    timeout-minutes: 240
+    timeout-minutes: 90
     strategy:
       fail-fast: false
       matrix:
-        platform: [ios, maccatalyst]
         include:
           - platform: ios
             rid: iossimulator-arm64
+            artifact: ios
+            project: ''
           - platform: maccatalyst
             rid: maccatalyst-arm64
+            artifact: maccatalyst
+            project: ''
+          - platform: ios
+            rid: iossimulator-arm64
+            artifact: ios-Core-full
+            project: Core
+          - platform: ios
+            rid: iossimulator-arm64
+            artifact: ios-Essentials-full
+            project: Essentials
+          - platform: ios
+            rid: iossimulator-arm64
+            artifact: ios-Graphics-full
+            project: Graphics
+          - platform: ios
+            rid: iossimulator-arm64
+            artifact: ios-BlazorWebView-full
+            project: BlazorWebView
+          - platform: ios
+            rid: iossimulator-arm64
+            artifact: ios-Controls-full
+            project: Controls
     env:
       CI: 'true'
       BuildTaskOnlyBuild: 'true'
@@ -59,6 +82,7 @@ jobs:
       COPILOT_GITHUB_TOKEN: ''
       APPLE_PLATFORM: ${{ matrix.platform }}
       APPLE_RID: ${{ matrix.rid }}
+      APPLE_TEST_PROJECT: ${{ matrix.project }}
     defaults:
       run:
         shell: bash
@@ -132,6 +156,9 @@ jobs:
       - name: Install only the pinned Apple workload
         run: |
           set -euo pipefail
+          pwsh -NoProfile -File src/DotNet/Verify-ToolRuntimePropertyResolution.ps1 \
+            -DotNetDirectory "$DOTNET_ROOT" \
+            -OutputDirectory artifacts/log/net12-apple/runtime-properties
           dotnet workload install "$APPLE_PLATFORM" --disable-parallel --skip-sign-check \
             --skip-manifest-update --configfile NuGet.config \
             --verbosity minimal 2>&1 | tee artifacts/log/net12-apple/workload.log
@@ -163,7 +190,7 @@ jobs:
           xcrun simctl bootstatus "$udid" -b
 
       - name: Build and run existing Core Entry device tests
-        if: matrix.platform == 'ios'
+        if: matrix.platform == 'ios' && matrix.project == ''
         shell: pwsh
         env:
           IncludeIosTargetFrameworks: 'true'
@@ -187,6 +214,7 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Build native sample and UI-test hosts
+        if: matrix.project == ''
         env:
           IncludeIosTargetFrameworks: ${{ matrix.platform == 'ios' && 'true' || 'false' }}
           IncludeMacCatalystTargetFrameworks: ${{ matrix.platform == 'maccatalyst' && 'true' || 'false' }}
@@ -232,36 +260,21 @@ jobs:
               tee "artifacts/log/net12-apple/$log_name-$APPLE_PLATFORM.log"
           done
 
-      - name: Build and run all five iOS device-test suites
-        if: matrix.platform == 'ios'
+      - name: Build and run the full iOS device-test suite
+        if: matrix.project != ''
         shell: pwsh
         env:
           IncludeIosTargetFrameworks: 'true'
         run: |
           $ErrorActionPreference = 'Stop'
-          $PSNativeCommandUseErrorActionPreference = $false
           $env:DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR = $env:DOTNET_ROOT
           $env:MSBuildEnableWorkloadResolver = 'true'
           $env:DOTNET_HOST_PATH = Join-Path $env:DOTNET_ROOT 'dotnet'
-          $results = @()
-          foreach ($project in @('Core', 'Essentials', 'Graphics', 'BlazorWebView', 'Controls')) {
-            $output = "artifacts/log/net12-apple/full-device-tests/$project"
-            New-Item -ItemType Directory -Path $output -Force | Out-Null
-            & pwsh -NoProfile -File .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 `
-              -Project $project -Platform ios -Configuration Release `
-              -iOSVersion 27.1 -DeviceUdid $env:NET12_SIMULATOR_UDID `
-              -Timeout 00:30:00 -OutputDirectory $output 2>&1 |
-              Tee-Object (Join-Path $output 'run.log')
-            $exitCode = $LASTEXITCODE
-            $results += [pscustomobject]@{ project = $project; exitCode = $exitCode }
-            if ($exitCode -ne 0) {
-              Write-Host "::error::$project iOS device tests exited with code $exitCode; see $output."
-            }
-          }
-          $results | ConvertTo-Json | Set-Content artifacts/log/net12-apple/full-device-tests/results.json
-          if (@($results | Where-Object exitCode -ne 0).Count -gt 0) {
-            throw 'One or more full iOS device-test suites failed. Remaining suites were still attempted.'
-          }
+          & .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 `
+            -Project $env:APPLE_TEST_PROJECT -Platform ios -Configuration Release `
+            -iOSVersion 27.1 -DeviceUdid $env:NET12_SIMULATOR_UDID `
+            -Timeout 00:30:00 -OutputDirectory artifacts/log/net12-apple/full-device-tests
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Remove the dedicated simulator
         if: always() && matrix.platform == 'ios'
@@ -284,7 +297,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: net12-apple-validation-${{ matrix.platform }}
+          name: net12-apple-validation-${{ matrix.artifact }}
           path: artifacts/log/net12-apple
           retention-days: 1
           if-no-files-found: warn
@@ -661,6 +674,15 @@ jobs:
           } finally {
             [System.IO.File]::WriteAllText($driverPath, $originalDriver)
           }
+
+      - name: Verify property-resolved tool runtime versions
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          & pwsh -NoProfile -File src/DotNet/Verify-ToolRuntimePropertyResolution.ps1 `
+            -DotNetDirectory (Join-Path $env:RUNNER_TEMP 'Maui SDK with spaces') `
+            -OutputDirectory artifacts/log/net12-bootstrap/runtime-properties
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Upload bootstrap evidence
         if: always()

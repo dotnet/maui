@@ -122,6 +122,10 @@ On both platforms, the child reads its installation directory from that
 environment data rather than a property argument, preserving commas and
 avoiding command-line property splitting. Unix SDK directories can also contain
 semicolons; the Windows runtime cannot start from a semicolon-containing SDK root.
+`src/DotNet/Verify-ToolRuntimePropertyResolution.ps1` exercises the real pinned
+MSBuild property-resolution path with a valid installed runtime and a traversal
+value that would otherwise resolve back to that same runtime. The Apple and
+Windows bootstrap lanes run this control without changing the shared installer.
 It invokes the pinned SDK's MSBuild assembly directly, avoiding the .NET CLI's
 comma-delimited logger path when the SDK directory itself contains a comma.
 This protects runtime provisioning, not arbitrary .NET CLI commands: workload
@@ -164,10 +168,11 @@ replacements still take part in the existing restoration checks.
 
 The `.NET 12 Apple validation` GitHub Actions lane uses the standard `xcode-27`
 runner, which is free for public repositories. It verifies the actual Xcode
-27.1 installation and runs existing Core Entry tests followed by the full Core,
-Essentials, Graphics, BlazorWebView and Controls device-test suites on a dedicated
-iOS simulator. Each suite saves its actual results and logs; a failed suite
-does not prevent the remaining suites from being attempted. The artifacts also
+27.1 installation and runs existing Core Entry tests and the full Core,
+Essentials, Graphics, BlazorWebView and Controls device-test suites. Full suites
+use independent matrix jobs and dedicated iOS simulators, so their native
+failure logs and XML upload immediately without waiting for another suite.
+Fail-fast is disabled; a failed suite does not cancel the others. The artifacts also
 record the checked-out source SHA. This does not change Azure Pipelines billing,
 pool permissions or required checks, and does not replace Appium, device AOT
 or signing validation.
