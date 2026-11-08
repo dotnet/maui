@@ -102,7 +102,11 @@ Create a merge commit, the coordinator reports waiting-for-normalization-approva
 preserves the cut/current tracking SR, and withholds next-lane activation and
 forward flow. Its same-repository merged-PR trigger also accepts the managed
 automation/normalization route. It does not merge either post-cut PR, advance canonical
-release/nightly state, or publish customer packages. The signed-publication
+release/nightly state, or publish customer packages. Completed production
+rollover prepares a draft canonical `currentSr` update after rechecking the cut,
+normalized fixes and replacement lanes; review/CI/merge still gate the actual
+state change. Its `nightlyMode` is preserved, so the first versioned-nightly
+activation still requires independently verified deployment. The signed-publication
 workflow uses existing federation/internal access, waits for a reviewed servicing
 merge and exact mirror source, queues the existing signed build, then canonical
 artifact preparation with pushPackages=false. Public release approvals remain.
