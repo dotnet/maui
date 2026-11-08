@@ -476,6 +476,34 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task ReplacingResourcesWhileOffRestoresOriginalDictionary()
+		{
+			var switchStub = new SwitchStub { IsOn = true, TrackColor = Colors.Red };
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<DirectHoverSwitchHandler>(switchStub);
+				var toggleSwitch = handler.PlatformView;
+				var originalResources = toggleSwitch.Resources;
+				var replacementBrush = new SolidColorBrush(Colors.Purple.ToWindowsColor());
+				var replacementResources = new ResourceDictionary
+				{
+					["ToggleSwitchFillOnPointerOver"] = replacementBrush
+				};
+
+				switchStub.IsOn = false;
+				handler.UpdateValue(nameof(ISwitch.IsOn));
+				toggleSwitch.Resources = replacementResources;
+				switchStub.TrackColor = Colors.Blue;
+				handler.UpdateValue(nameof(ISwitch.TrackColor));
+
+				Assert.Same(handler.OriginalHoverBrush, originalResources["ToggleSwitchFillOnPointerOver"]);
+				Assert.Empty(originalResources.MergedDictionaries);
+				Assert.Same(replacementBrush, replacementResources["ToggleSwitchFillOnPointerOver"]);
+				Assert.Empty(replacementResources.MergedDictionaries);
+			});
+		}
+
+		[Fact]
 		public async Task CustomOnColorPreservesApplicationMergedResources()
 		{
 			var switchStub = new SwitchStub { IsOn = true };

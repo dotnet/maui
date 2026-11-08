@@ -145,10 +145,11 @@ public class ActivityStateManagerRecreation_Tests
 					recreatedActivity.Finish();
 				if (originalActivity is { IsDestroyed: false, IsFinishing: false })
 					originalActivity.Finish();
-			});
 
-			manager.Dispose();
-			ActivityResultRecreationState.Reset();
+				// Native lifecycle dispatch must not race a disposed callback peer.
+				manager.Dispose();
+				ActivityResultRecreationState.Reset();
+			});
 		}
 	}
 
@@ -195,10 +196,10 @@ public class ActivityStateManagerRecreation_Tests
 			{
 				if (activity is { IsDestroyed: false, IsFinishing: false })
 					activity.Finish();
-			});
 
-			manager.Dispose();
-			ActivityResultRecreationState.Reset();
+				manager.Dispose();
+				ActivityResultRecreationState.Reset();
+			});
 		}
 	}
 
@@ -251,10 +252,10 @@ public class ActivityStateManagerRecreation_Tests
 			{
 				if (activity is { IsDestroyed: false, IsFinishing: false })
 					activity.FinishAndRemoveTask();
-			});
 
-			manager.Dispose();
-			ActivityResultRecreationState.Reset();
+				manager.Dispose();
+				ActivityResultRecreationState.Reset();
+			});
 		}
 	}
 

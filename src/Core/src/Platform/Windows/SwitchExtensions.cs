@@ -38,6 +38,14 @@ namespace Microsoft.Maui.Platform
 				return;
 			}
 
+			if (!view.IsOn &&
+				s_switchHoverResourceStates.TryGetValue(toggleSwitch, out var hoverState) &&
+				!ReferenceEquals(hoverState.SourceResources, toggleSwitch.Resources))
+			{
+				RestoreOnPointerOverResources(hoverState);
+				s_switchHoverResourceStates.Remove(toggleSwitch);
+			}
+
 			var trackColor = view.TrackColor?.ToPlatform();
 
 			if (trackColor is not null)
@@ -78,6 +86,12 @@ namespace Microsoft.Maui.Platform
 
 		sealed class SwitchHoverResourceState
 		{
+			public SwitchHoverResourceState(ResourceDictionary sourceResources)
+			{
+				SourceResources = sourceResources;
+			}
+
+			public ResourceDictionary SourceResources { get; }
 			public ResourceDictionary Resources { get; } = new();
 			public bool HasOriginalDirectValue { get; set; }
 			public object? OriginalDirectValue { get; set; }
@@ -88,26 +102,27 @@ namespace Microsoft.Maui.Platform
 		static void UpdateOnPointerOverResources(ToggleSwitch toggleSwitch, Brush? trackColor)
 		{
 			var resources = toggleSwitch.Resources;
-			if (!s_switchHoverResourceStates.TryGetValue(toggleSwitch, out var state))
+			s_switchHoverResourceStates.TryGetValue(toggleSwitch, out var state);
+			if (state is not null && !ReferenceEquals(state.SourceResources, resources))
+			{
+				RestoreOnPointerOverResources(state);
+				s_switchHoverResourceStates.Remove(toggleSwitch);
+				state = null;
+			}
+
+			if (state is null)
 			{
 				if (trackColor is null)
 					return;
 
-				state = new SwitchHoverResourceState();
+				state = new SwitchHoverResourceState(resources);
 				s_switchHoverResourceStates.Add(toggleSwitch, state);
 			}
 
 			bool hasDirectValue = TryGetLocalHoverResource(resources, out var directValue);
 			if (trackColor is null)
 			{
-				if (state.HasOriginalDirectValue && !hasDirectValue)
-					resources[OnPointerOverResourceKey] = state.OriginalDirectValue;
-
-				UpdateOnPointerOverResource(state.Resources, "Default", null, ref state.Default);
-				UpdateOnPointerOverResource(state.Resources, "HighContrast", null, ref state.HighContrast);
-				if (IsEmpty(state.Resources))
-					resources.MergedDictionaries.Remove(state.Resources);
-
+				RestoreOnPointerOverResources(state);
 				s_switchHoverResourceStates.Remove(toggleSwitch);
 				return;
 			}
@@ -129,6 +144,18 @@ namespace Microsoft.Maui.Platform
 				mergedDictionaries.Remove(state.Resources);
 				mergedDictionaries.Add(state.Resources);
 			}
+		}
+
+		static void RestoreOnPointerOverResources(SwitchHoverResourceState state)
+		{
+			var resources = state.SourceResources;
+			if (state.HasOriginalDirectValue && !TryGetLocalHoverResource(resources, out _))
+				resources[OnPointerOverResourceKey] = state.OriginalDirectValue;
+
+			UpdateOnPointerOverResource(state.Resources, "Default", null, ref state.Default);
+			UpdateOnPointerOverResource(state.Resources, "HighContrast", null, ref state.HighContrast);
+			if (IsEmpty(state.Resources))
+				resources.MergedDictionaries.Remove(state.Resources);
 		}
 
 		sealed class HoverResourceState

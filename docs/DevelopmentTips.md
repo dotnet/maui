@@ -76,6 +76,12 @@ releasing those references, so a pending callback cannot update a disconnected
 or subsequently reconnected handler. Android device
 results use the filename selected by instrumentation even if the runner was
 resolved before those options were applied.
+Device-test fixtures that create temporary activity state managers unregister
+and dispose them on the main thread. Activity-recreation cleanup finishes the
+activity and releases its callback peer on that same lifecycle thread.
+Windows Switch hover overrides track their originating resource dictionary.
+Replacing Resources restores and detaches the old dictionary's hover overrides
+before applying mappings to the replacement, including when the switch is off.
 The repository-local SDK also installs the .NET 10 runtime
 declared in `global.json` for tools such as Cake; this does not change the .NET 12
 target frameworks. The fresh-SDK runtime bootstrap preserves custom Windows
