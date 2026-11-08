@@ -267,9 +267,10 @@
     <CoreCompileDependsOn>$(CoreCompileDependsOn);CreateCompilerGeneratedFilesOutputPath</CoreCompileDependsOn>
   </PropertyGroup>
 
-  <PropertyGroup>
+  <PropertyGroup Condition="$(TargetFramework.StartsWith('net$(_MauiDotNetVersionMajor).$(_MauiDotNetVersionMinor)'))">
   	<!-- Setting TargetsCurrent=true is necessary until we get https://github.com/dotnet/sdk/pull/52031 -->
 		<!-- Ref: https://github.com/dotnet/macios/issues/24418 -->
+		<!-- Previous TFMs must select their own runtime workload instead. -->
 		<TargetsCurrent>true</TargetsCurrent>
   </PropertyGroup>
 </Project>

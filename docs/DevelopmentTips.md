@@ -62,6 +62,8 @@ explicitly instead of mixing Mono CoreLib with CoreCLR ReadyToRun compilation.
 The Android device lane's selected framework flows into both build properties
 and Helix bundle discovery; a retained `net11.0` request must not build or search
 the default `net12.0` outputs.
+The `TargetsCurrent` SDK workaround is restricted to current-version TFMs so
+retained Mono apps resolve their own AOT workload rather than net12 packs.
 The repository-local SDK also installs the .NET 10 runtime
 declared in `global.json` for tools such as Cake; this does not change the .NET 12
 target frameworks. The fresh-SDK runtime bootstrap preserves custom Windows
