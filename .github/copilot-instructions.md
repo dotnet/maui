@@ -177,8 +177,11 @@ When working with public API changes:
 - **If files are incorrect**: Revert all changes, then add only the necessary new API entries
 
 ### Branching
-- `main` - For bug fixes without API changes
-- The highest `netN.0` branch (by convention) - For new features and API changes. To find it, run `git fetch origin` then: `git for-each-ref --sort=-version:refname --count=1 --format='%(refname:lstrip=3)' refs/remotes/origin/net*.0`
+- Follow the configured roles in `eng/release-rollover.json` and `docs/ReleaseBranchWorkflow.md`, not the highest retained `netN.0` name.
+- Open .NET 11 fix PRs against literal `net11` for review. After approval, a maintainer manually retargets the PR to the active versioned inflight branch and merges it directly there. Do not merge individual fixes directly into `net11`.
+- Agents must not automatically retarget or merge fix PRs. Required CI validates the final inflight base.
+- `main` is the next-major feature/API branch for the configured .NET 12 transition. Historical servicing and explicitly coordinated release work retain their own targets.
+- `net11` receives selected contents through the separate candidate integration before a release cut.
 
 ### Git Workflow (Copilot CLI Rules)
 

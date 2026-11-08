@@ -3,9 +3,11 @@ trigger:
   branches:
     include:
     - main
+    - net11
     - release/*
     - net*.0
     - inflight/*
+    - candidate/*
     - darc-*
   tags:
     include:
@@ -28,9 +30,11 @@ pr:
   branches:
     include:
     - main
+    - net11
     - release/*
     - net*.0
     - inflight/*
+    - candidate/*
   paths:
     include:
     - '*'
@@ -71,7 +75,7 @@ parameters:
     default: '26.5'
 
   # Compile Apple apps on GoldenGate with Xcode 27; execute prebuilt apps on
-  # established Appium images until GoldenGate supports Simulator UI and Mac2.
+  # Tahoe until GoldenGate supports Simulator UI and Mac2.
   # Internal pools (dnceng)
   - name: androidPoolInternal
     type: object
@@ -111,8 +115,9 @@ parameters:
   - name: macosPoolInternal
     type: object
     default:
-      name: Azure Pipelines
-      vmImage: macOS-14
+      name: AcesShared
+      demands:
+        - ImageOverride -equals ACES_VM_SharedPool_Tahoe
 
   # Public pools (dnceng-public)
   - name: androidPoolPublic
@@ -153,8 +158,9 @@ parameters:
   - name: macosPoolPublic
     type: object
     default:
-      name: Azure Pipelines
-      vmImage: macOS-14
+      name: AcesShared
+      demands:
+        - ImageOverride -equals ACES_VM_SharedPool_Tahoe
 
 stages:
 

@@ -1,0 +1,57 @@
+name: Release tracking PRs
+
+on:
+  schedule:
+    - cron: '20 */6 * * *'
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+  # Merges into net11 must activate trusted default-branch automation even
+  # before the release tooling has been copied into that servicing branch.
+  # Never check out or execute PR-controlled workflow/script code here.
+  pull_request_target:
+    types: [closed]
+    branches: [net11]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-tracking-prs
+  cancel-in-progress: false
+
+jobs:
+  reconcile:
+    if: >-
+      github.repository == 'dotnet/maui' &&
+      (github.event_name != 'pull_request_target' ||
+       (github.event.pull_request.merged &&
+        github.event.pull_request.head.repo.full_name == 'dotnet/maui' &&
+        (startsWith(github.event.pull_request.head.ref, 'candidate/') ||
+         startsWith(github.event.pull_request.head.ref, 'inflight/'))))
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Cut the approved release, restore CI, and prepare the next lanes
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: ./eng/scripts/Sync-ReleaseNextLanes.ps1 -CompleteRelease -OutputDirectory '${{ runner.temp }}/release-next-lanes'
+
+      - name: Preserve next-lane preparation evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-next-lanes-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/release-next-lanes/
+          if-no-files-found: ignore

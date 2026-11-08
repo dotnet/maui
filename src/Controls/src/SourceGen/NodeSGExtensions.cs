@@ -29,6 +29,7 @@ static class NodeSGExtensions
 
 	static readonly ConcurrentDictionary<Type, ISGTypeConverter> lazyConverters = new();
 	static readonly ConcurrentDictionary<string, ISGTypeConverter> lazyRegistryConverters = new();
+	static readonly ConverterDelegate typeTypeConverter = CreateLazyConverter<TypeTypeConverter>();
 
 	// Lazy registry-based converter function (for non-source-gen converters)
 	static ConverterDelegate CreateLazyRegistryConverter(string typeName) =>
@@ -279,6 +280,9 @@ static class NodeSGExtensions
 		if (converter is not null && stringValue is not null)
 			return true;
 
+		if (toType.Equals(context.Compilation.GetTypeByMetadataName("System.Type"), SymbolEqualityComparer.Default))
+			return true;
+
 		if (toType.NullableAnnotation == NullableAnnotation.Annotated
 			&& toType.SpecialType == SpecialType.None
 			&& ((INamedTypeSymbol)toType).TypeArguments.Length == 1)
@@ -381,6 +385,9 @@ static class NodeSGExtensions
 
 		if (typeConverter is not null)
 			return valueNode.ConvertWithConverter(typeConverter, toType, writer, context, parentVar);
+
+		if (toType.Equals(context.Compilation.GetTypeByMetadataName("System.Type"), SymbolEqualityComparer.Default))
+			return typeTypeConverter(valueString, valueNode, toType, writer, context, parentVar);
 
 		return ValueForLanguagePrimitive(valueString, toType, context, valueNode);
 	}

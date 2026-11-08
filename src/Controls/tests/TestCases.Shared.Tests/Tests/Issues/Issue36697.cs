@@ -13,11 +13,18 @@ public class Issue36697 : _IssuesUITest
     [Category(UITestCategories.Button)]
     public void ButtonWithCharacterSpacingRestoresDefaultTextColorAfterNull()
     {
+        Exception? exception = null;
+
         App.WaitForElement("SetCharacterSpacingButton");
         App.Tap("SetCharacterSpacingButton");
         App.Tap("SetTextColorButton");
-        VerifyScreenshot("ButtonWithCharacterSpacingAfterTextColorSet");
+        VerifyScreenshotOrSetException(ref exception, "ButtonWithCharacterSpacingAfterTextColorSet");
         App.Tap("ResetTextColorButton");
-        VerifyScreenshot("ButtonWithCharacterSpacingAfterTextColorResetToNull");
+        VerifyScreenshotOrSetException(ref exception, "ButtonWithCharacterSpacingAfterTextColorResetToNull");
+
+        if (exception is not null)
+        {
+            throw exception;
+        }
     }
 }
