@@ -2,6 +2,27 @@
 
 The .NET MAUI release process uses Arcade and 1ES to build, sign, gather, and publish packages.
 
+For the proposed development-branch roles and servicing-release rotation, see the
+[versioned release branch workflow](ReleaseBranchWorkflow.md). That proposal
+keeps the canonical publishing/approval process below. Candidate integration can
+automatically cut the release and restore net11 CI settings. Its recognized
+branch policy also defaults SR builds to servicing/stable, without a separate
+flip PR. Legacy sources retain the post-cut reviewed servicing PR.
+
+The public **Prepare signed release publication** workflow waits for that
+human-approved release source and its exact internal mirror commit, queues existing
+signed pipeline1095, and after success queues canonical release pipeline1445
+with `pushPackages=false`. This automatically prepares artifacts/audit, not
+NuGet.org publication or workload promotion. Existing federation, internal
+permissions and mirror deployment are required; the workflow grants none.
+Ambiguous queue responses retain durable intent refs and never blindly resubmit.
+Completed historical cycles retain their verified release/preparation source
+identities when a release branch later advances; a later hotfix is not
+implicitly signed or published, and does not block the next cycle. Offline plans
+cannot certify completed Azure runs.
+Final public publishing still requires the normal owner-approved canonical run
+and its manual approval/protected-service-connection gates.
+
 ## Build and pack
 
 `azure-pipelines-internal.yml` builds, signs, and packs .NET MAUI on the internal Azure DevOps mirror. It registers the resulting assets in Maestro's Build Asset Registry (BAR). The BAR record and source commit identify the immutable assets used by a release.
