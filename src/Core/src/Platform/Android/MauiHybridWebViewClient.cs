@@ -289,6 +289,7 @@ namespace Microsoft.Maui.Platform
 			return true;
 		}
 
+		[DynamicDependency(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors, typeof(Java.IO.FileNotFoundException))]
 		private Stream? PlatformOpenAppPackageFile(string filename)
 		{
 			if (Handler is null)

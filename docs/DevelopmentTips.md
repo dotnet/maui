@@ -108,6 +108,11 @@ does not preserve that peer in the current CoreCLR linker.
 These peers are borrowed from the context and must not be disposed by return-type
 mappings or keyboard helpers.
 
+Android asset-opening boundaries retain the Java file-not-found exception peer's
+constructors so trimmed CoreCLR preserves its specific type. This keeps the
+FileSystem exception contract and HybridWebView's existing missing-file response
+without converting unrelated IO errors or disabling trimming.
+
 Windows Switch hover-resource state follows the live `ToggleSwitch`, not its
 temporary WinRT resource-dictionary wrappers. The owned theme dictionaries stay
 rooted through that per-control state so garbage collection cannot duplicate
@@ -118,6 +123,8 @@ The `.NET 12 Apple validation` GitHub Actions lane uses the standard `xcode-27`
 runner, which is free for public repositories. It verifies the actual Xcode
 27.1 installation and runs existing Core device tests on a dedicated iOS
 simulator without changing Azure Pipelines billing or pool permissions.
+Running validation is allowed to finish when new commits arrive; newer queued
+heads must obtain their own results and must not inherit an older run's evidence.
 Device-test apps share a scene manifest and a registered `MauiTestSceneDelegate`
 for SDK 27 lifecycle requirements. Explicit app scene configurations take
 precedence over the shared manifest. Only apps referencing the device-test

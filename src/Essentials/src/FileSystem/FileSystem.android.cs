@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading.Tasks;
 using Android.App;
@@ -30,6 +31,7 @@ namespace Microsoft.Maui.Storage
 			}
 		}
 
+		[DynamicDependency(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors, typeof(Java.IO.FileNotFoundException))]
 		Stream PlatformOpenAppPackageFile(string filename)
 		{
 			if (filename == null)
