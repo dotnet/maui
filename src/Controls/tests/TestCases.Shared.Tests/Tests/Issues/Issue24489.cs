@@ -17,14 +17,21 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Window)]
 		public void TitleBarIsImplemented1()
 		{
+			Exception? exception = null;
+
 			App.WaitForElement("ToggleButton");
-			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_Initial");
+			VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "_Initial");
 			App.WaitForElement("ToggleButton").Tap();
-			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_Removed");
+			VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "_Removed");
 			App.WaitForElement("ToggleButton").Tap();
-			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_Initial");
+			VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "_Initial");
 			App.WaitForElement("ToggleButton2").Tap();
-			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_TextAndSizeChanged");
+			VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "_TextAndSizeChanged");
+
+			if (exception is not null)
+			{
+				throw exception;
+			}
 		}
 	}
 }

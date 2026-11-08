@@ -17,14 +17,21 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
 		public void AccessibilityTraitsSetCorrectly()
 		{
+			Exception? exception = null;
+
 			App.WaitForElement("ToggleSelectionModeButton").Click();
-			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "None");
+			VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "None");
 			App.WaitForElement("ToggleSelectionModeButton").Click();
-			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "Single");
+			VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "Single");
 			App.WaitForElement("ToggleSelectionModeButton").Click();
-			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "Multiple");
+			VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "Multiple");
 			App.WaitForElement("ToggleSelectionModeButton").Click();
-			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "None");
+			VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "None");
+
+			if (exception is not null)
+			{
+				throw exception;
+			}
 		}
 	}
 }
