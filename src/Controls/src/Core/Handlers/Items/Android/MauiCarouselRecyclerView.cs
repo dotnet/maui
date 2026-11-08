@@ -140,7 +140,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override bool OnTouchEvent(MotionEvent e)
 		{
-			if (!IsSwipeEnabled)
+			if (!IsSwipeEnabled || Carousel is null)
 			{
 				return false;
 			}

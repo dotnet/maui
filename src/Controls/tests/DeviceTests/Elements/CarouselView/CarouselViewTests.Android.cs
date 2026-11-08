@@ -18,6 +18,35 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class CarouselViewTests
 	{
+		[Theory(DisplayName = "Touch After Disconnect Does Not Access Carousel")]
+		[InlineData(MotionEventActions.Down)]
+		[InlineData(MotionEventActions.Cancel)]
+		public async Task TouchAfterDisconnectDoesNotAccessCarousel(MotionEventActions action)
+		{
+			SetupBuilder();
+
+			var carouselView = new CarouselView
+			{
+				ItemsSource = new[] { 1, 2, 3 },
+				ItemTemplate = new DataTemplate(() => new Label()),
+				IsSwipeEnabled = true
+			};
+
+			await CreateHandlerAndAddToWindow<CarouselViewHandler>(carouselView, async handler =>
+			{
+				var recyclerView = Assert.IsType<MauiCarouselRecyclerView>(handler.PlatformView);
+				await recyclerView.WaitForLayoutOrNonZeroSize();
+				Assert.True(recyclerView.IsAttachedToWindow);
+				Assert.True(recyclerView.IsSwipeEnabled);
+
+				carouselView.Handler.DisconnectHandler();
+
+				var time = global::Android.OS.SystemClock.UptimeMillis();
+				using var touch = MotionEvent.Obtain(time, time, action, 100, 100, 0);
+				Assert.False(recyclerView.OnTouchEvent(touch));
+			});
+		}
+
 		[Theory(DisplayName = "Queued Collection Change Does Not Run After Disconnect")]
 		[InlineData(false)]
 		[InlineData(true)]
