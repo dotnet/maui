@@ -14,6 +14,9 @@ on:
       - 'src/Core/**'
       - 'src/Controls/**'
       - 'src/Essentials/**'
+      - 'src/Graphics/**'
+      - 'src/BlazorWebView/**'
+      - 'src/Compatibility/**'
       - 'src/TestUtils/**'
       - 'src/Microsoft.Maui.TestUtils.DeviceTests.Runners.targets'
   workflow_dispatch:
@@ -30,7 +33,7 @@ jobs:
     if: github.event.repository.private == false
     name: ${{ matrix.platform }} CoreCLR on Xcode 27.1
     runs-on: xcode-27
-    timeout-minutes: 90
+    timeout-minutes: 240
     strategy:
       fail-fast: false
       matrix:
@@ -83,6 +86,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p artifacts/log/net12-apple
+          git rev-parse HEAD > artifacts/log/net12-apple/source-sha.txt
           dotnet build src/DotNet/DotNet.csproj -c Release \
             -p:InstallWorkloadPacks=false \
             --verbosity minimal 2>&1 | tee artifacts/log/net12-apple/provision.log
@@ -182,23 +186,6 @@ jobs:
             -Timeout 00:15:00 -OutputDirectory artifacts/log/net12-apple/device-tests
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-      - name: Remove the dedicated simulator
-        if: always() && matrix.platform == 'ios'
-        run: |
-          set -euo pipefail
-          if [[ "${NET12_SIMULATOR_UDID:-}" =~ ^[A-Fa-f0-9-]{36}$ ]]; then
-            state=$(xcrun simctl list devices -j | jq -er --arg udid "$NET12_SIMULATOR_UDID" \
-              '[.devices[][] | select(.udid == $udid) | .state] | first // "Absent"')
-            if [[ "$state" == Absent ]]; then
-              echo "The dedicated simulator was already removed."
-            else
-              if [[ "$state" != Shutdown ]]; then
-                xcrun simctl shutdown "$NET12_SIMULATOR_UDID"
-              fi
-              xcrun simctl delete "$NET12_SIMULATOR_UDID"
-            fi
-          fi
-
       - name: Build native sample and UI-test hosts
         env:
           IncludeIosTargetFrameworks: ${{ matrix.platform == 'ios' && 'true' || 'false' }}
@@ -244,6 +231,54 @@ jobs:
               --disable-build-servers --verbosity minimal 2>&1 |
               tee "artifacts/log/net12-apple/$log_name-$APPLE_PLATFORM.log"
           done
+
+      - name: Build and run all five iOS device-test suites
+        if: matrix.platform == 'ios'
+        shell: pwsh
+        env:
+          IncludeIosTargetFrameworks: 'true'
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $PSNativeCommandUseErrorActionPreference = $false
+          $env:DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR = $env:DOTNET_ROOT
+          $env:MSBuildEnableWorkloadResolver = 'true'
+          $env:DOTNET_HOST_PATH = Join-Path $env:DOTNET_ROOT 'dotnet'
+          $results = @()
+          foreach ($project in @('Core', 'Essentials', 'Graphics', 'BlazorWebView', 'Controls')) {
+            $output = "artifacts/log/net12-apple/full-device-tests/$project"
+            New-Item -ItemType Directory -Path $output -Force | Out-Null
+            & pwsh -NoProfile -File .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 `
+              -Project $project -Platform ios -Configuration Release `
+              -iOSVersion 27.1 -DeviceUdid $env:NET12_SIMULATOR_UDID `
+              -Timeout 00:30:00 -OutputDirectory $output 2>&1 |
+              Tee-Object (Join-Path $output 'run.log')
+            $exitCode = $LASTEXITCODE
+            $results += [pscustomobject]@{ project = $project; exitCode = $exitCode }
+            if ($exitCode -ne 0) {
+              Write-Host "::error::$project iOS device tests exited with code $exitCode; see $output."
+            }
+          }
+          $results | ConvertTo-Json | Set-Content artifacts/log/net12-apple/full-device-tests/results.json
+          if (@($results | Where-Object exitCode -ne 0).Count -gt 0) {
+            throw 'One or more full iOS device-test suites failed. Remaining suites were still attempted.'
+          }
+
+      - name: Remove the dedicated simulator
+        if: always() && matrix.platform == 'ios'
+        run: |
+          set -euo pipefail
+          if [[ "${NET12_SIMULATOR_UDID:-}" =~ ^[A-Fa-f0-9-]{36}$ ]]; then
+            state=$(xcrun simctl list devices -j | jq -er --arg udid "$NET12_SIMULATOR_UDID" \
+              '[.devices[][] | select(.udid == $udid) | .state] | first // "Absent"')
+            if [[ "$state" == Absent ]]; then
+              echo "The dedicated simulator was already removed."
+            else
+              if [[ "$state" != Shutdown ]]; then
+                xcrun simctl shutdown "$NET12_SIMULATOR_UDID"
+              fi
+              xcrun simctl delete "$NET12_SIMULATOR_UDID"
+            fi
+          fi
 
       - name: Upload native validation evidence
         if: always()

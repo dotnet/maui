@@ -156,8 +156,13 @@ replacements still take part in the existing restoration checks.
 
 The `.NET 12 Apple validation` GitHub Actions lane uses the standard `xcode-27`
 runner, which is free for public repositories. It verifies the actual Xcode
-27.1 installation and runs existing Core device tests on a dedicated iOS
-simulator without changing Azure Pipelines billing or pool permissions.
+27.1 installation and runs existing Core Entry tests followed by the full Core,
+Essentials, Graphics, BlazorWebView and Controls device-test suites on a dedicated
+iOS simulator. Each suite saves its actual results and logs; a failed suite
+does not prevent the remaining suites from being attempted. The artifacts also
+record the checked-out source SHA. This does not change Azure Pipelines billing,
+pool permissions or required checks, and does not replace Appium, device AOT
+or signing validation.
 Running validation is allowed to finish when new commits arrive; newer queued
 heads must obtain their own results and must not inherit an older run's evidence.
 Device-test apps share a scene manifest and a registered `MauiTestSceneDelegate`
