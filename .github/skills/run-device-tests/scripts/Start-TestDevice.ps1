@@ -15,6 +15,23 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $PSNativeCommandUseErrorActionPreference = $true
+
+function Get-CompatibleIosDeviceType {
+    param([version]$RuntimeVersion, [object[]]$DeviceTypes)
+
+    $RuntimeVersion = [version]::new($RuntimeVersion.Major, $RuntimeVersion.Minor, [Math]::Max(0, $RuntimeVersion.Build))
+    $compatible = @($DeviceTypes | Where-Object {
+        $_.productFamily -eq 'iPhone' -and
+        [version]$_.minRuntimeVersionString -le $RuntimeVersion -and
+        [version]$_.maxRuntimeVersionString -ge $RuntimeVersion
+    } | Sort-Object { [version]$_.minRuntimeVersionString } -Descending)
+    $preferred = $compatible | Where-Object identifier -EQ 'com.apple.CoreSimulator.SimDeviceType.iPhone-16' |
+        Select-Object -First 1
+    if ($preferred) { return $preferred.identifier }
+    if (!$compatible.Count) { throw "No installed iPhone device type supports iOS $RuntimeVersion." }
+    return $compatible[0].identifier
+}
+
 $baseDirectory = (Get-Location).Path
 $ResultsDirectory = [IO.Path]::GetFullPath($(if ([IO.Path]::IsPathRooted($ResultsDirectory)) {
     $ResultsDirectory
@@ -137,9 +154,12 @@ elseif ($Platform -eq 'ios') {
             ($ApiVersion -match '^\d+$' -and ([version]$_.version).Major -eq [int]$ApiVersion))
     } | Sort-Object { [version]$_.version } -Descending | Select-Object -First 1
     if (!$runtime) { throw "Required iOS simulator runtime '$ApiVersion' is not installed." }
-    $state.Device = (& xcrun simctl create "maui-$([guid]::NewGuid().ToString('N'))" `
-        'com.apple.CoreSimulator.SimDeviceType.iPhone-16' $runtime.identifier).Trim()
-    if ($state.Device -notmatch '^[0-9A-Fa-f-]{36}$') { throw "Unexpected simulator UDID '$($state.Device)'." }
+    $deviceTypes = (& xcrun simctl list devicetypes --json | ConvertFrom-Json).devicetypes
+    $deviceType = Get-CompatibleIosDeviceType -RuntimeVersion $runtime.version -DeviceTypes $deviceTypes
+    $state.SimulatorName = "maui-$([guid]::NewGuid().ToString('N'))"
+    $state.Device = (& xcrun simctl create $state.SimulatorName $deviceType $runtime.identifier).Trim()
+    $simulatorId = [guid]::Empty
+    if (![guid]::TryParseExact($state.Device, 'D', [ref]$simulatorId)) { throw "Unexpected simulator UDID '$($state.Device)'." }
     Save-State
     & xcrun simctl boot $state.Device
     & xcrun simctl bootstatus $state.Device -b

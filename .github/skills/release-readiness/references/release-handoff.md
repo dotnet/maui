@@ -9,6 +9,13 @@ Preview or SR readiness JSON first, gather separately verified public release
 evidence, then render both through `New-ReleaseHandoff.ps1`. Never select a build
 because it is merely the newest candidate.
 
+For SR reports, the handoff's survey identity comes from `metadata.contentsRef`
+when present, with the older `metadata.srBranch` fallback retained. In shipped
+mode this is the immutable assessed tag, while `Branch` remains the operational
+release branch and may already contain an unshipped hotfix. Public-safe output
+permits a stable tag only when it matches the report's `shippedTagVersion`;
+it never substitutes the mutable branch for those assessed contents.
+
 ## Privacy contract
 
 The repository implementation must remain safe for public forks:
@@ -143,6 +150,11 @@ configuration, avoiding command injection from evidence files.
 ## SR workflow
 
 1. Run `Get-ReleaseReadiness.ps1` for the exact SR branch and mode.
+   For the configured pre-cut SR1 use `-SrBranch release/11.0.1xx-sr1
+   -Candidate`: the report automatically surveys `candidate/11.0.1xx-sr1`
+   and verifies stable fixes on `net11`. Do not invent SR0 when the GA/prior
+   immutable baseline is missing; fetch it or supply an independently verified
+   `-BaselineRef`. A missing bound is an explicit reporting failure, not Ready.
 2. Confirm the stable servicing version, selected MAUI build, SDK insertion,
    assessment, rollback, tag, and GitHub release from public evidence.
 3. Treat any breaking change as a release blocker unless the release process has
@@ -151,6 +163,18 @@ configuration, avoiding command injection from evidence files.
 5. Render with `New-ReleaseHandoff.ps1`.
 6. Preserve the SR report's shipped/hotfix/carry-forward semantics. Do not turn a
    post-ship follow-up into a retroactive "Not Ready" judgment.
+
+The normalized handoff keeps `Branch` (the proposed/actual release),
+`SurveyRef` (the selected staged evidence), and `SourceBranch` (stable fixes)
+separate. For active .NET11 these can be `release/11.0.1xx-sr1`,
+`candidate/11.0.1xx-sr1`, and `net11` respectively. The release is cut from
+approved `net11` after candidate integration, not directly from the staged
+ref. The configured nightly lane's feed freshness is read-only publication
+evidence, not proof of a signed release build. Do not replace historical
+shipped-tag evidence or human Release Captain Notes with current state.
+If `candidateIntegration` reports source-only commits, retain the synchronization
+WATCH and the warning that candidate-only contents are not the full prospective
+cut. Resolve the inventory gap before using the handoff to certify release scope.
 
 The shared renderer keeps the editorial structure consistent while the Preview
 and SR readiness engines retain their distinct release semantics.

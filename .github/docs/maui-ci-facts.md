@@ -59,10 +59,68 @@ main-to-net11 and net11-to-RC2 merge routes are retired; a future servicing cut
 must explicitly select its release branch rather than reuse the RC2 route.
 Official nightly builds exclude the historical `net10.0` and `net11.0` branches.
 
+For the staged .NET 12 transition described in `docs/ReleaseBranchWorkflow.md`,
+literal `net11` preserves the pre-transition `main` history. Primary CI definitions
+explicitly include `net11` and `candidate/*`; the official definition includes
+`net11` for signed nightly, localization and API-scan routing. These changes must
+be deployed before assuming that branch creation activates the new CI routes.
+Do not treat the historical `net11.0` subscription target as the new branch.
+
+Individual .NET11 fix PRs initially target `net11` for review. After approval,
+a maintainer manually retargets the PR to the active versioned inflight branch
+and merges it directly there; bots do not retarget or merge. Required CI must
+validate the final base. `net11` receives selected release contents through the
+separate candidate integration, not direct individual-fix merges. Milestone
+assignment must honor the final versioned staging base instead of net11's patch.
+
+Release-related tooling resolves the configured servicing branch independently
+of feature `main`: milestone ownership and review baselines must recognize
+literal `net11` and versioned candidate/inflight lanes. Credential-bearing
+review provisioning refuses the new servicing/staging targets until GitHub
+reports branch protection; the naming allowlist alone is not protection.
+The release migration must deploy those protections separately rather than
+bypass the refusal or grant extra pipeline permissions.
+
+The daily **Forward servicing fixes** workflow prepares a draft merge PR from an
+expendable automation head, not from the `net11` source ref itself. It activates
+only when the feature branch has a later major and the fixes tip has CI-normalized
+`ci.main` / non-stable package metadata. Candidates retain CI settings; their
+post-cut servicing flip is a separate reviewed PR on the release branch. The
+cut workflow prepares the normalized next-cycle net11-to-main PR directly too.
+Source/target refs are read-only; automation never guesses conflict resolutions,
+approves PRs, or auto-merges. Actual forward-PR CI remains a separate gate.
+
+The **Release tracking PRs** workflow prepares the next candidate/inflight
+branches and draft PR pair after a verified same-repository candidate merge into
+net11. Its merged-PR trigger uses default-branch workflow code and explicitly
+checks out trusted main, never PR code. A create-once release-lane receipt pins
+inputs/outputs for retries. The deployed workflow cuts the exact candidate merge,
+restores next-cycle CI on net11, opens the separate release-targeted servicing PR,
+and creates the next pair. It does not merge that servicing PR, advance canonical
+release/nightly state, or publish customer packages. The signed-publication
+workflow uses existing federation/internal access, waits for a reviewed servicing
+merge and exact mirror source, queues the existing signed build, then canonical
+artifact preparation with pushPackages=false. Public release approvals remain.
+
 .NET 10 SR13 publishes from `release/10.0.1xx-sr13`, independently of `main`.
 Preserve its release commit and packages, and keep publication on the .NET 10 channel during the
 .NET 11 transition. Do not cut over `inflight/current` or synchronize the internal
 `main` mirror as part of SR13 publication; those are separate .NET 11 operations.
+
+### Versioned inflight nightly migration
+
+The release-branch proposal in `docs/ReleaseBranchWorkflow.md` adds support for
+versioned `inflight/<band>-srN` sources without changing the existing
+`ci.inflight` package stream or the internal `dotnet-maui` signing/publishing path.
+Scheduled inflight runs select their eligible lane from
+`eng/release-rollover.json` at a pinned public `main` commit before packing.
+`nightlyMode: legacy` preserves `inflight/current`; `versioned` selects the state's
+`releaseBand` and `currentSr + 1`. Unselected retained lanes skip packing.
+
+This is a staged migration, not evidence that the new lanes are already building.
+Deploy the selection and branding changes to the internal mirrored source
+branches and verify signed artifacts/feed wiring before switching the canonical
+mode. Creating the public refs or passing the GitHub sandbox is not sufficient.
 
 ### Engineering dependency updates
 

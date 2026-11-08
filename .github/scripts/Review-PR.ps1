@@ -439,18 +439,20 @@ if ($DryRun) {
     # Auto-detect CI environment
     $isCI = $env:CI -or $env:TF_BUILD -or $env:GITHUB_ACTIONS -or $env:BUILD_BUILDID
 
-    # Detect the PR's TARGET (base) branch. PRs targeting the inflight release
-    # branches ('inflight/current', 'inflight/candidate') carry release-specific
-    # code that has diverged from main, so squash-merging them onto the (main-based)
+    # Servicing and staged release branches can use a different .NET train from
+    # main, so squash-merging them onto the (main-based)
     # pipeline branch produces false conflicts / build breaks. For those we test the
     # PR head branch AS-IS instead of merging it onto the pipeline base. PRs targeting
     # main or a netN.0 feature branch keep the squash-merge-onto-pipeline behavior.
     $baseRefName = [string]$prInfo.base.ref
     if ($baseRefName) { $baseRefName = $baseRefName.Trim() }
-    $inflightTargets = @('inflight/current', 'inflight/candidate')
-    $isInflightTarget = $baseRefName -and ($inflightTargets -contains $baseRefName)
+    $inflightTargets = @('inflight/current', 'inflight/candidate', 'net11')
+    $isInflightTarget = $baseRefName -and (
+        ($inflightTargets -contains $baseRefName) -or
+        $baseRefName -cmatch '^(?:candidate|inflight)/[1-9][0-9]*\.0\.[1-9][0-9]*xx-sr[1-9][0-9]*$'
+    )
     if ($isInflightTarget) {
-        Write-Host "  🎯 PR #$PRNumber targets '$baseRefName' (inflight release branch) — will test the PR branch directly (no squash-merge onto the pipeline base)." -ForegroundColor Cyan
+        Write-Host "  🎯 PR #$PRNumber targets '$baseRefName' (servicing or staged release branch) — will test the PR branch directly (no squash-merge onto the pipeline base)." -ForegroundColor Cyan
     } elseif ($baseRefName) {
         Write-Host "  🎯 PR #$PRNumber targets '$baseRefName' — squash-merge onto pipeline base." -ForegroundColor Gray
     }
@@ -691,7 +693,7 @@ if ($Phase -eq 'Setup') {
         New-Item -ItemType Directory -Force -Path $d | Out-Null
         $d
     }
-    if ($baseRefName -notmatch '^(main|net[0-9]+\.0|inflight/[a-z0-9][a-z0-9._-]*|release/[0-9]+\.[0-9]+\.[0-9]+xx(-[a-z0-9.]+)?)$' -or
+    if ($baseRefName -notmatch '^(main|net[0-9]+(\.0)?|inflight/[a-z0-9][a-z0-9._-]*|candidate/[1-9][0-9]*\.0\.[1-9][0-9]*xx-sr[1-9][0-9]*|release/[0-9]+\.[0-9]+\.[0-9]+xx(-[a-z0-9.]+)?)$' -or
         $reviewedBaseSha -notmatch '^[0-9a-fA-F]{40}$' -or
         $reviewedPrHeadSha -notmatch '^[0-9a-fA-F]{40}$' -or
         $reviewedTreeSha -notmatch '^[0-9a-fA-F]{40}$') {

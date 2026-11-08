@@ -39,6 +39,52 @@ BeforeAll {
     }
 }
 
+Describe 'Actual certificate ownership verification' {
+    BeforeAll {
+        function Remove-Item {
+            [CmdletBinding()]
+            param([string]$LiteralPath, [switch]$DeleteKey)
+            throw 'Certificate removal must be mocked.'
+        }
+    }
+    BeforeEach {
+        $owner = [guid]::NewGuid().ToString('N')
+        $publisher = "CN=MauiTests-$owner"
+        $thumbprint = 'A' * 40
+        Mock Test-Path { $true }
+        Mock Get-Item {
+            [pscustomobject]@{ Subject=$publisher; Thumbprint=$thumbprint; FriendlyName="MAUI test $owner" }
+        }
+        Mock Remove-Item {}
+    }
+    It 'rejects a syntactically valid foreign thumbprint without deleting a certificate or private key' {
+        Mock Get-Item { [pscustomobject]@{ Subject='CN=Foreign user certificate'; Thumbprint=$thumbprint; FriendlyName='user key' } }
+        { Remove-WindowsTestCertificate -Thumbprint $thumbprint -Publisher $publisher -OwnerId $owner } |
+            Should -Throw '*does not belong to the recorded test session*'
+        Should -Invoke Remove-Item -Times 0 -Exactly
+    }
+    It 'verifies both stores before removing either entry' {
+        Mock Get-Item {
+            if ($LiteralPath -like '*TrustedPeople*') {
+                return [pscustomobject]@{ Subject='CN=Foreign'; Thumbprint=$thumbprint; FriendlyName='' }
+            }
+            return [pscustomobject]@{ Subject=$publisher; Thumbprint=$thumbprint; FriendlyName="MAUI test $owner" }
+        }
+        { Remove-WindowsTestCertificate -Thumbprint $thumbprint -Publisher $publisher -OwnerId $owner } |
+            Should -Throw '*does not belong to the recorded test session*'
+        Should -Invoke Remove-Item -Times 0 -Exactly
+    }
+    It 'removes only the verified session certificate, including its owned private key' {
+        Remove-WindowsTestCertificate -Thumbprint $thumbprint -Publisher $publisher -OwnerId $owner
+        Should -Invoke Remove-Item -Times 1 -Exactly -ParameterFilter {
+            $LiteralPath -eq "Cert:\CurrentUser\My\$thumbprint" -and $DeleteKey
+        }
+        Should -Invoke Remove-Item -Times 1 -Exactly -ParameterFilter {
+            $LiteralPath -eq "Cert:\CurrentUser\TrustedPeople\$thumbprint" -and !$DeleteKey
+        }
+    }
+}
+
 Describe 'Owned MSIX installation and activation cleanup' {
     BeforeEach {
         $path = Join-Path $TestDrive "$([guid]::NewGuid().ToString('N')).json"

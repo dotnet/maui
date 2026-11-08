@@ -173,14 +173,24 @@ function Get-WindowsTestProcessPackage {
 }
 
 function Remove-WindowsTestCertificate {
-    param([string] $Thumbprint)
+    param([string] $Thumbprint, [string] $Publisher, [string] $OwnerId)
     if ($Thumbprint -notmatch '^[A-Fa-f0-9]{40}$') { throw 'Invalid owned certificate thumbprint.' }
+    $ownedPaths = @()
     foreach ($store in @('Cert:\CurrentUser\My', 'Cert:\CurrentUser\TrustedPeople')) {
         $path = "$store\$Thumbprint"
         if (Test-Path -LiteralPath $path) {
-            if ($store -eq 'Cert:\CurrentUser\My') { Remove-Item -LiteralPath $path -DeleteKey -ErrorAction Stop }
-            else { Remove-Item -LiteralPath $path -ErrorAction Stop }
+            $certificate = Get-Item -LiteralPath $path -ErrorAction Stop
+            if ($certificate.Thumbprint -ine $Thumbprint -or $certificate.Subject -cne $Publisher -or
+                ($store -eq 'Cert:\CurrentUser\My' -and $certificate.FriendlyName -cne "MAUI test $OwnerId")) {
+                throw 'Refusing to remove a certificate or private key that does not belong to the recorded test session.'
+            }
+            $ownedPaths += $path
         }
+    }
+    foreach ($path in $ownedPaths) {
+        if ($path.StartsWith('Cert:\CurrentUser\My\', [StringComparison]::OrdinalIgnoreCase)) {
+            Remove-Item -LiteralPath $path -DeleteKey -ErrorAction Stop
+        } else { Remove-Item -LiteralPath $path -ErrorAction Stop }
     }
 }
 
@@ -219,7 +229,9 @@ function Remove-WindowsTestPackage {
     }
     catch { $errors.Add($_.Exception.Message) }
     try {
-        if ($state.CertificateThumbprint) { Remove-WindowsTestCertificate $state.CertificateThumbprint }
+        if ($state.CertificateThumbprint) {
+            Remove-WindowsTestCertificate -Thumbprint $state.CertificateThumbprint -Publisher $state.Publisher -OwnerId $state.OwnerId
+        }
     }
     catch { $errors.Add($_.Exception.Message) }
     if ($errors.Count) { throw ($errors -join '; ') }

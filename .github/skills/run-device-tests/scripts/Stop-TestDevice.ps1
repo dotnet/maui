@@ -6,6 +6,23 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
+function Assert-OwnedIosSimulator {
+    param($State)
+
+    $identifier = [guid]::Empty
+    if (![guid]::TryParseExact([string]$State.Device, 'D', [ref]$identifier) -or
+        $State.SimulatorName -notmatch '^maui-[a-f0-9]{32}$') {
+        throw 'Refusing simulator cleanup: an individual UUID and job-owned simulator name are required.'
+    }
+    $json = & xcrun simctl list devices --json
+    if ($LASTEXITCODE -ne 0) { throw 'Could not verify the recorded simulator ownership.' }
+    $devices = ($json | ConvertFrom-Json).devices.PSObject.Properties.Value | ForEach-Object { $_ }
+    $owned = @($devices | Where-Object {
+        $_.udid -eq $State.Device -and $_.name -ceq $State.SimulatorName
+    })
+    if ($owned.Count -ne 1) { throw 'Refusing simulator cleanup: the UUID does not identify the recorded job-owned simulator.' }
+}
+
 function Get-OwnedAvdHome {
     param($State)
 
@@ -87,6 +104,7 @@ if ($state.Platform -eq 'android') {
     }
 }
 elseif ($state.Platform -eq 'ios' -and $state.Device) {
+    Assert-OwnedIosSimulator -State $state
     $crashes = Join-Path $HOME "Library/Developer/CoreSimulator/Devices/$($state.Device)/data/Library/Logs/CrashReporter"
     if (Test-Path -LiteralPath $crashes) {
         Copy-Item -LiteralPath $crashes -Destination (Join-Path $ResultsDirectory 'crashes') -Recurse

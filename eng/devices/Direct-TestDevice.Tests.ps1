@@ -9,6 +9,18 @@ Describe 'Direct native CI contracts' {
         $start = Get-Content (Join-Path $deviceScripts 'Start-TestDevice.ps1') -Raw
         $stop = Get-Content (Join-Path $deviceScripts 'Stop-TestDevice.ps1') -Raw
         $localRunner = Get-Content (Join-Path $deviceScripts 'Run-DeviceTests.ps1') -Raw
+        $startAst = [Management.Automation.Language.Parser]::ParseInput($start, [ref]$null, [ref]$null)
+        $typeSelector = $startAst.Find({
+            $args[0] -is [Management.Automation.Language.FunctionDefinitionAst] -and
+                $args[0].Name -eq 'Get-CompatibleIosDeviceType'
+        }, $true)
+        Invoke-Expression $typeSelector.Extent.Text
+        $stopAst = [Management.Automation.Language.Parser]::ParseInput($stop, [ref]$null, [ref]$null)
+        $ownershipCheck = $stopAst.Find({
+            $args[0] -is [Management.Automation.Language.FunctionDefinitionAst] -and
+                $args[0].Name -eq 'Assert-OwnedIosSimulator'
+        }, $true)
+        Invoke-Expression $ownershipCheck.Extent.Text
     }
 
     It 'retains all five executed native suites' {
@@ -191,6 +203,78 @@ Describe 'Direct native CI contracts' {
         if ($LASTEXITCODE -ne 0) { throw "Windows app-property probe failed: $output" }
         (Get-Content (Join-Path $directory 'app.txt') -Raw).Trim() | Should -Be 'true'
         (Get-Content (Join-Path $directory 'library.txt') -Raw).Trim() | Should -Be 'false'
+    }
+
+    It 'selects an iPhone profile compatible with older and current installed runtimes' -TestCases @(
+        @{ Runtime = '17.0'; Expected = 'iPhone-15' }
+        @{ Runtime = '27.0'; Expected = 'iPhone-16' }
+    ) {
+        param($Runtime, $Expected)
+        $types = @(
+            [pscustomobject]@{ productFamily='iPhone'; identifier='com.apple.CoreSimulator.SimDeviceType.iPhone-16'; minRuntimeVersionString='18.0.0'; maxRuntimeVersionString='65535.255.255' },
+            [pscustomobject]@{ productFamily='iPhone'; identifier='com.apple.CoreSimulator.SimDeviceType.iPhone-15'; minRuntimeVersionString='17.0.0'; maxRuntimeVersionString='65535.255.255' },
+            [pscustomobject]@{ productFamily='iPad'; identifier='ignored'; minRuntimeVersionString='13.0.0'; maxRuntimeVersionString='65535.255.255' }
+        )
+        Get-CompatibleIosDeviceType -RuntimeVersion $Runtime -DeviceTypes $types |
+            Should -Be "com.apple.CoreSimulator.SimDeviceType.$Expected"
+    }
+
+    It 'fails explicitly when no installed iPhone profile supports the requested runtime' {
+        { Get-CompatibleIosDeviceType -RuntimeVersion '12.0' -DeviceTypes @() } |
+            Should -Throw '*No installed iPhone device type supports*'
+    }
+
+    It 'rejects aggregate, malformed and foreign simulator state before mutation' -TestCases @(
+        @{ Kind = 'aggregate' }
+        @{ Kind = 'malformed' }
+        @{ Kind = 'foreign' }
+        @{ Kind = 'missing-name' }
+    ) {
+        param($Kind)
+        $directory = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
+        New-Item -ItemType Directory -Path $directory | Out-Null
+        $id = [guid]::NewGuid().ToString('D')
+        $name = "maui-$([guid]::NewGuid().ToString('N'))"
+        $state = @{ Platform='ios'; Device=$id; SimulatorName=$name }
+        switch ($Kind) {
+            aggregate { $state.Device = 'all' }
+            malformed { $state.Device = '../foreign-simulator' }
+            missing-name { $state.Remove('SimulatorName') }
+        }
+        $state | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $directory 'device.json')
+        $calls = [Collections.Generic.List[string]]::new()
+        function xcrun {
+            $calls.Add(($args -join ' '))
+            $global:LASTEXITCODE = 0
+            if (($args -join ' ') -eq 'simctl list devices --json') {
+                return (@{ devices=@{ runtime=@(@{ udid=$id; name='pre-existing-user-simulator' }) } } |
+                    ConvertTo-Json -Depth 5)
+            }
+            throw 'Unexpected simulator mutation.'
+        }
+        { & (Join-Path $deviceScripts 'Stop-TestDevice.ps1') -ResultsDirectory $directory } |
+            Should -Throw '*Refusing simulator cleanup*'
+        @($calls | Where-Object { $_ -match 'shutdown|delete|spawn' }).Count | Should -Be 0
+        $calls.Count | Should -Be $(if ($Kind -eq 'foreign') { 1 } else { 0 })
+    }
+
+    It 'requires a successful native ownership lookup even for a valid recorded UUID' -TestCases @(
+        @{ LookupExit = 0 }
+        @{ LookupExit = 1 }
+    ) {
+        param($LookupExit)
+        $id = [guid]::NewGuid().ToString('D')
+        $name = "maui-$([guid]::NewGuid().ToString('N'))"
+        function xcrun {
+            $global:LASTEXITCODE = $LookupExit
+            @{ devices=@{ runtime=@(@{ udid=$id; name=$name }) } } | ConvertTo-Json -Depth 5
+        }
+        if ($LookupExit -eq 0) {
+            { Assert-OwnedIosSimulator @{ Device=$id; SimulatorName=$name } } | Should -Not -Throw
+        } else {
+            { Assert-OwnedIosSimulator @{ Device=$id; SimulatorName=$name } } |
+                Should -Throw '*Could not verify the recorded simulator ownership*'
+        }
     }
 
     It 'creates a job-owned simulator and uses only its recorded UDID in cleanup' {

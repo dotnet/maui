@@ -1,0 +1,35 @@
+name: Forward servicing fixes
+
+on:
+  schedule:
+    - cron: '40 6 * * *'
+  workflow_dispatch:
+  push:
+    branches: [net11]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: forward-servicing-fixes
+  cancel-in-progress: false
+
+jobs:
+  reconcile:
+    if: github.repository == 'dotnet/maui'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: false
+
+      - name: Prepare the reviewed forward-merge PR
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: ./eng/scripts/Sync-ServicingForwardPullRequest.ps1
