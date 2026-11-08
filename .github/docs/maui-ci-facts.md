@@ -111,6 +111,14 @@ workflow uses existing federation/internal access, waits for a reviewed servicin
 merge and exact mirror source, queues the existing signed build, then canonical
 artifact preparation with pushPackages=false. Public release approvals remain.
 
+Configured servicing progress is independent of manual release tags. Readiness
+pins the first GA branch or preceding SR branch as its inventory baseline, keeps
+the current/prior cycle visible, and honors human closure per source/baseline
+snapshot. Tag creation, absence or movement cannot gate or advance cuts,
+normalization, replacement lanes or signing preparation. Stable tag-push
+milestone processing ignores the configured train; historical tag diagnostics
+and explicit manual release actions remain separate.
+
 .NET 10 SR13 publishes from `release/10.0.1xx-sr13`, independently of `main`.
 Preserve its release commit and packages, and keep publication on the .NET 10 channel during the
 .NET 11 transition. Do not cut over `inflight/current` or synchronize the internal

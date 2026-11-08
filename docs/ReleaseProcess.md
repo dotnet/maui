@@ -15,9 +15,15 @@ flip PR. Legacy sources retain the post-cut reviewed servicing PR.
 Completed rollover also prepares a draft canonical-state PR advancing
 `currentSr`; it waits for the exact cut, normalization and next lanes, and
 never merges itself. `nightlyMode` is retained. Switching from legacy to
-versioned nightlies requires separate owner-reviewed deployment evidence;
+versioned nightly builds requires separate owner-reviewed deployment evidence;
 in versioned mode, every cycle advance must verify its next selected nightly
 lane before the state PR is merged.
+
+Tags are a manual release-captain action, separate from configured servicing
+progress. No tag is created or moved by the cut/normalization/next-lane/signing
+preparation flow. Its readiness inventories use pinned GA/prior release-branch
+snapshots, not required tags. Missing or newly created tags do not block or
+advance the cycle or claim that packages shipped.
 
 The public **Prepare signed release publication** workflow waits for that
 human-approved release source and its exact internal mirror commit, queues existing

@@ -64,6 +64,7 @@ try {
     Set-FixtureVersion 11 0
     Commit-Fixture 'GA baseline'
     $ga = (Invoke-FixtureGit rev-parse HEAD).Trim()
+    $null = Invoke-FixtureGit branch release/11.0.1xx $ga
     $null = Invoke-FixtureGit tag 11.0.0
     foreach ($prerelease in @(
         @{ Branch = 'release/11.0.1xx-preview1'; Tag = '11.0.0-preview.1.26001.1' }
@@ -157,7 +158,9 @@ try {
     Assert-Role 0 @(@($detection.majors | Where-Object majorVersion -eq 11).trackers |
         Where-Object branchType -in @('preview', 'rc')).Count 'both historical .0 and SDK-band .100 shipped prerelease tags retire their lanes'
     Assert-Role $true ([string]::IsNullOrEmpty($sr1.priorSrBranch)) 'SR1 never fabricates SR0'
-    Assert-Role 11.0.0 $sr1.candidateBaselineRef 'SR1 uses real immutable GA anchor'
+    Assert-Role $ga $sr1.candidateBaselineRef 'SR1 pins the GA release branch without a tag dependency'
+    Assert-Role release/11.0.1xx $sr1.baselineBranch 'SR1 baseline is the owner-designated GA branch'
+    Assert-Role $true $sr1.tagIndependent 'configured progress does not infer lifecycle from tags'
     Assert-Role release/11.0.1xx-sr1 $sr1.candidateTargetBranch 'candidate target stays distinct from staged ref'
     Assert-Role $false $sr1.branchExists 'staged candidate does not imply release cut'
     Assert-Role 1 @($detection.majors | Where-Object majorVersion -eq 10).Count 'historical servicing major survives main rollover'
@@ -196,7 +199,7 @@ try {
         $null = Invoke-FixtureGit fetch --quiet origin
         $overrideOut = Join-Path $fixture 'override-report'
         & (Join-Path $scripts 'Get-ReleaseReadiness.ps1') -SrBranch release/11.0.1xx-sr1 -Candidate `
-            -MainBranch alternate-fixes -SurveyRef net11 -BaselineRef 11.0.0 `
+            -MainBranch alternate-fixes -SurveyRef net11 -BaselineRef $ga `
             -Phase commits -NoFetch -SkipMilestoneChecks -SkipMaestroChecks -OutputDir $overrideOut
         $overridden = Get-Content (Join-Path $overrideOut 'release-readiness.json') -Raw | ConvertFrom-Json
         Assert-Role alternate-fixes $overridden.metadata.sourceBranch 'report honors explicit source override'
@@ -217,6 +220,13 @@ try {
         $advance = @($cut.shipChecks | Where-Object Area -eq 'net11 bumped to SR2 cycle')
         Assert-Role BLOCKED $advance[0].Status 'feature main12 cannot satisfy net11 next-cycle advance'
         Assert-Role $true ($advance[0].NextAction -match 'net11') 'version-advance recommendation targets actual fixes source'
+        $null = Invoke-FixtureGit tag 11.0.10 release/11.0.1xx-sr1
+        & (Join-Path $scripts 'Find-ReleaseReadinessTrackers.ps1') -Repo $fixture -NoFetch -OutputJson $detectionPath
+        $taggedCut = Get-Content $detectionPath -Raw | ConvertFrom-Json
+        Assert-Role in-flight @($taggedCut.trackers |
+            Where-Object canonicalKey -eq net11-sr1)[0].mode 'creating a manual SR tag neither retires progress nor marks it shipped'
+        Assert-Role 2 @($cut.srContents.sourcePrs | Where-Object { $_ -in @(9101, 9102) }).Count 'cut inventory includes integrated fixes against the pinned GA branch'
+        Assert-Role $true ((Get-Content (Join-Path $cutOut 'release-readiness.md') -Raw) -match 'release-readiness-snapshot:') 'manual lifecycle is anchored to source snapshots, not tags'
         $null = Invoke-FixtureGit branch -D release/11.0.1xx-sr1
         $null = Invoke-FixtureGit fetch --quiet --prune origin
 
@@ -232,12 +242,25 @@ try {
         $bootstrap = Get-Content $detectionPath -Raw | ConvertFrom-Json
         Assert-Role 11 $bootstrap.majorVersion 'default detector uses configured major after main12 rollover'
         Assert-Role 1 @($bootstrap.trackers | Where-Object canonicalKey -eq net11-sr1).Count 'missing GA evidence never silently omits configured current candidate'
+        Assert-Role $ga @($bootstrap.trackers | Where-Object canonicalKey -eq net11-sr1)[0].candidateBaselineRef 'deleting a tag does not change the branch baseline'
+        & (Join-Path $scripts 'Get-ReleaseReadiness.ps1') -SrBranch release/11.0.1xx-sr1 -Candidate `
+            -Phase commits -NoFetch -SkipMilestoneChecks -SkipMaestroChecks -OutputDir $out
+        $withoutTag = Get-Content (Join-Path $out 'release-readiness.json') -Raw | ConvertFrom-Json
+        Assert-Role 1 @($withoutTag.srContents.sourcePrs | Where-Object { $_ -eq 9101 }).Count 'tag absence does not block measured contents'
+        $null = Invoke-FixtureGit tag 11.0.0 main
+        & (Join-Path $scripts 'Get-ReleaseReadiness.ps1') -SrBranch release/11.0.1xx-sr1 -Candidate `
+            -Phase commits -NoFetch -SkipMilestoneChecks -SkipMaestroChecks -OutputDir $out
+        $wrongTag = Get-Content (Join-Path $out 'release-readiness.json') -Raw | ConvertFrom-Json
+        Assert-Role $ga $wrongTag.metadata.priorSrRef 'an unrelated manual tag cannot substitute feature-main as the baseline'
+        Assert-Role candidate $wrongTag.metadata.mode 'creating a tag cannot mark the candidate shipped'
+        $null = Invoke-FixtureGit branch -D release/11.0.1xx
+        $null = Invoke-FixtureGit fetch --quiet --prune origin
         & (Join-Path $scripts 'Get-ReleaseReadiness.ps1') -SrBranch release/11.0.1xx-sr1 -Candidate `
             -Phase commits -NoFetch -SkipMilestoneChecks -SkipMaestroChecks -OutputDir $out
         $missingBaseline = Get-Content (Join-Path $out 'release-readiness.json') -Raw | ConvertFrom-Json
-        Assert-Role 'Not Ready' $missingBaseline.verdict.label 'missing bootstrap baseline is an explicit blocked report, never CLEAN'
-        Assert-Role BLOCKED @($missingBaseline.shipChecks |
-            Where-Object Area -eq 'Candidate inventory baseline')[0].Status 'missing inventory baseline remains a ship blocker'
+        Assert-Role $false ($missingBaseline.verdict.label -eq 'Ready') 'missing source evidence is explicit, never CLEAN'
+        Assert-Role UNKNOWN @($missingBaseline.shipChecks |
+            Where-Object Area -eq 'Candidate inventory baseline')[0].Status 'missing branch evidence is diagnostic, not a tag gate'
         Assert-Role not-run $missingBaseline.inventory.status 'absent baseline never produces a measured inventory'
         Assert-Role $true $missingBaseline.surveyIncomplete 'missing inventory keeps the overall survey incomplete'
         Assert-Role $false ($missingBaseline.PSObject.Properties.Name -contains 'srContents') 'unrun commit/source-PR counts are absent'
@@ -250,16 +273,17 @@ try {
         $failedClosed = $false
         try {
             & (Join-Path $scripts 'Get-ReleaseReadiness.ps1') -SrBranch release/11.0.1xx-sr1 -Candidate `
-                -BaselineRef 11.0.999 -Phase commits -NoFetch -SkipMilestoneChecks -SkipMaestroChecks `
+                -BaselineRef origin/nonexistent-source -Phase commits -NoFetch -SkipMilestoneChecks -SkipMaestroChecks `
                 -OutputDir (Join-Path $fixture 'invalid-baseline')
         } catch { $failedClosed = $_.Exception.Message -match 'not found' }
         Assert-Role $true $failedClosed 'an explicitly supplied nonexistent baseline remains a hard error'
-        $null = Invoke-FixtureGit tag 11.0.0 $ga
+        $null = Invoke-FixtureGit branch release/11.0.1xx $ga
+        $null = Invoke-FixtureGit fetch --quiet origin
         & (Join-Path $scripts 'Get-ReleaseReadiness.ps1') -SrBranch release/11.0.1xx-sr1 -Candidate `
             -Phase commits -NoFetch -SkipMilestoneChecks -SkipMaestroChecks -OutputDir $out
         $restoredBaseline = Get-Content (Join-Path $out 'release-readiness.json') -Raw | ConvertFrom-Json
         Assert-Role 1 @($restoredBaseline.srContents.sourcePrs |
-            Where-Object { $_ -eq 9101 }).Count 'the real GA tag restores the measured candidate inventory'
+            Where-Object { $_ -eq 9101 }).Count 'restoring the GA branch restores measured contents despite the unrelated tag'
         Assert-Role 0 @($restoredBaseline.shipChecks |
             Where-Object Area -eq 'Candidate inventory baseline').Count 'the missing-baseline blocker disappears only after verified evidence returns'
     } finally { Pop-Location; $env:PATH = $priorPath }

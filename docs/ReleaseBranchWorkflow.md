@@ -272,6 +272,15 @@ contains only its bug-template update relative to net11. Existing history was
 preserved through normal commits/merges. Wrong-cycle metadata is still refused;
 these transitions never invent a GA/SR0 baseline or certify release inventory.
 
+**Tags are manual and outside release progress.** Maintainers create them when
+releasing. The configured train does not create, move, require or infer shipping
+from tags. SR1 readiness pins the first GA branch `release/<band>`; later cycles
+pin the preceding SR release branch. A missing branch leaves inventory UNKNOWN /
+NOT RUN, not a missing-tag gate. Reports retain the configured cycle and prior
+cut, with human closure scoped to each exact source/baseline snapshot. Tags do not
+alter cut receipts, reviewed normalization, lane preparation or signed-build
+approval.
+
 ### Published-version housekeeping
 
 Publication preparation requires complete Git history before verifying tag
