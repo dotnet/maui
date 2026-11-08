@@ -79,6 +79,30 @@ public class MtpCompatibilityTests
 		Assert.That((string)first.Trx.Root.Element(Trx + "ResultSummary").Attribute("outcome"), Is.Not.EqualTo("Failed"),
 			first.Trx.ToString());
 		Assert.That(first.Trx.Descendants(Trx + "UnitTestResult").Count(), Is.EqualTo(3));
+		var outcomes = first.Trx.Descendants(Trx + "UnitTestResult")
+			.ToDictionary(row => (string)row.Attribute("testName"), row => (string)row.Attribute("outcome"));
+		Assert.That(outcomes[nameof(MtpProbeFixture.Attachment)], Is.EqualTo("Passed"));
+		Assert.That(outcomes[nameof(MtpProbeFixture.PassingSibling)], Is.EqualTo("Passed"));
+		Assert.That(outcomes[nameof(MtpProbeFixture.IgnoredSibling)], Is.EqualTo("NotExecuted"));
+	}
+
+	[Test]
+	public void SkippedRetryDoesNotRecoverANonignoredFailure()
+	{
+		var first = RunProbe("assert", FixtureFilter);
+		var retry = RunProbe("skip", FixtureFilter);
+		Assert.That(first.ExitCode, Is.Not.Zero, first.Output);
+		Assert.That((string)retry.NUnit.Descendants("test-case")
+			.Single(test => (string)test.Attribute("methodname") == nameof(MtpProbeFixture.Attachment))
+			.Attribute("result"), Is.EqualTo("Skipped"));
+		UITestRetry.ApplyNUnitFailures(first.Trx, new[] { first.NUnit });
+		UITestRetry.MergeResults(first.Trx, retry.Trx, new[] { first.NUnit }, new[] { retry.NUnit });
+		var outcomes = first.Trx.Descendants(Trx + "UnitTestResult")
+			.ToDictionary(row => (string)row.Attribute("testName"), row => (string)row.Attribute("outcome"));
+		Assert.That(outcomes[nameof(MtpProbeFixture.Attachment)], Is.EqualTo("Failed"));
+		Assert.That(outcomes[nameof(MtpProbeFixture.PassingSibling)], Is.EqualTo("Passed"));
+		Assert.That(outcomes[nameof(MtpProbeFixture.IgnoredSibling)], Is.EqualTo("NotExecuted"));
+		Assert.That((string)first.Trx.Root.Element(Trx + "ResultSummary").Attribute("outcome"), Is.EqualTo("Failed"));
 	}
 
 	static ProbeResult RunProbe(string mode, string filter, string where = null)
@@ -159,6 +183,8 @@ public class MtpProbeFixture
 		TestContext.AddTestAttachment(log, "Appium log");
 		if (Environment.GetEnvironmentVariable("NUNIT_MTP_PROBE") == "assert")
 			Assert.Fail("Test assertion failed.");
+		if (Environment.GetEnvironmentVariable("NUNIT_MTP_PROBE") == "skip")
+			Assert.Ignore("A nonignored test skipped on retry must not recover its earlier failure.");
 	}
 
 	[Test]

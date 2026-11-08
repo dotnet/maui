@@ -140,6 +140,14 @@ Describe 'CI provisioning' {
     $workflow | Should -Match "'\.github/scripts'"
   }
 
+  It 'includes shared executable UI helpers in both UI pipeline trigger paths' {
+    $source = Get-Content -Raw -LiteralPath (Join-Path $PSScriptRoot 'ci-uitests.yml')
+    $triggerSections = $source -split '(?m)^variables:' | Select-Object -First 1
+    @([regex]::Matches($triggerSections, '\.github/scripts/shared/\*\*')).Count | Should -Be 2
+    $triggerSections | Should -Not -Match '\.github/\*\*'
+    @([regex]::Matches($triggerSections, '\.github(?=\s|,)')).Count | Should -Be 2
+  }
+
   It 'fails the Pester gate on discovery failures even when every discovered test passed' {
     $workflow = Get-Content -Raw -LiteralPath (
       Join-Path $PSScriptRoot '../../.github/workflows/powershell-script-tests.yml')

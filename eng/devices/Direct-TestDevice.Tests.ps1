@@ -529,6 +529,7 @@ Describe 'Direct native CI contracts' {
         @{ Kind = 'shared-root' }
         @{ Kind = 'foreign-name' }
         @{ Kind = 'symbolic-link' }
+        @{ Kind = 'missing-home' }
     ) {
         param($Kind)
         $directory = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
@@ -550,6 +551,13 @@ Describe 'Direct native CI contracts' {
             symbolic-link {
                 Mock Get-Item { [pscustomobject]@{ Attributes = [IO.FileAttributes]::ReparsePoint } } `
                     -ParameterFilter { $LiteralPath -eq $avdHome }
+            }
+            missing-home {
+                $state.Remove('AvdHome')
+                $state.Device = 'emulator-5554'
+                $state.AvdName = 'pre-existing-user-device'
+                $state.Adb = 'InvokeForbiddenAdb'
+                function InvokeForbiddenAdb { throw 'Unowned emulator commands must never run.' }
             }
         }
         $state | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $directory 'device.json')

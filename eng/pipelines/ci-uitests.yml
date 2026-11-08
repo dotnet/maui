@@ -15,8 +15,9 @@ trigger:
   paths:
     include:
     - '*'
+    - .github/scripts/shared/**
     exclude:
-    - .github/**
+    - .github
     - docs/*
     - src/Templates/*
     - CODE-OF-CONDUCT.md
@@ -38,8 +39,9 @@ pr:
   paths:
     include:
     - '*'
+    - .github/scripts/shared/**
     exclude:
-    - .github/**
+    - .github
     - docs/*
     - src/Templates/*
     - CODE-OF-CONDUCT.md

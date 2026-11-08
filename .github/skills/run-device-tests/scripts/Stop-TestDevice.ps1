@@ -61,7 +61,9 @@ if (!(Test-Path -LiteralPath $statePath)) { return }
 $state = Get-Content -LiteralPath $statePath -Raw | ConvertFrom-Json
 $PSNativeCommandUseErrorActionPreference = $false
 if ($state.Platform -eq 'android') {
-    if ($state.AvdHome) { $state.AvdHome = Get-OwnedAvdHome -State $state }
+    if ($state.AvdHome -or $state.Device -or $state.ProcessId) {
+        $state.AvdHome = Get-OwnedAvdHome -State $state
+    }
     $killFailed = $false
     if ($state.Device) {
         $name = "$(& $state.Adb -s $state.Device shell getprop ro.boot.qemu.avd_name 2>$null)".Trim()

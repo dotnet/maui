@@ -60,6 +60,10 @@ The orchestration snapshots those files and rewrites TRX references before
 another attempt can overwrite them. Final retry reconciliation retains passing
 first-attempt coverage and unresolved fixture failures, including previously
 ignored test cases. The original attempt evidence remains available.
+Recovery checks retain each case's outcome: explicitly ignored siblings stay
+`NotExecuted`, and a failed nonignored test cannot recover merely by skipping
+its retry. Shared executable helper changes also trigger the UI pipeline's
+branch and pull-request validation paths.
 
 ## CPU-only compatibility checks
 
