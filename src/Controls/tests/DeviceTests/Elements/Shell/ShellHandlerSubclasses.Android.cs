@@ -294,9 +294,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				await OnLoadedAsync(firstPage);
 
-				// As in ShellItemHandler.UpdateSections: the renderer of a removed section is disposed, which
-				// disconnects its handler, while FragmentManager keeps the wrapper fragment and can still resume
-				// it, e.g. when the section was removed while the app was in the background.
+				// Removing a section disposes its renderer (see ShellItemHandler.UpdateSections).
 				var renderer = ((IShellContext)shell.Handler).CreateShellSectionRenderer(removedSection);
 				var fragment = Assert.IsType<ShellSectionWrapperFragment>(renderer.Fragment);
 				renderer.Dispose();

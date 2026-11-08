@@ -69,9 +69,7 @@ namespace Microsoft.Maui.Controls.Handlers
         {
             base.OnResume();
 
-            // The handler is disconnected when its ShellSection is removed, but FragmentManager still owns
-            // this fragment and can resume it afterwards, e.g. when the section was removed while the app was
-            // in the background. The typed VirtualView getter throws once disconnected, so check the untyped one.
+            // The typed VirtualView getter throws once the handler is disconnected.
             if (_handler is null || ((IElementHandler)_handler).VirtualView is null)
             {
                 return;
