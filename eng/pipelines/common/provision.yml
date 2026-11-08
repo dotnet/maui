@@ -207,9 +207,9 @@ steps:
       sudo xcodebuild -license accept
 
       sudo xcodebuild -runFirstLaunch
+    # A missing or mismatched preinstalled compiler cannot change during a task retry.
     displayName: Select Xcode Version
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
-    retryCountOnTaskFailure: 4
     timeoutInMinutes: 30
 
   - ${{ if ne(parameters.skipSimulatorSetup, 'true') }}:

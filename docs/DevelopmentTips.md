@@ -38,7 +38,10 @@ That image must include Xcode 27.1 before .NET 12 Apple jobs can build. Public
 CI cannot acquire the producer's internal Xcode package, and the shared
 `Provisionator` path requires separately configured credentials. Xcode selection
 verifies the actual major/minor version rather than accepting an older
-installation with the same major-version directory name. Prebuilt iOS UI-test
+installation with the same major-version directory name. Selection fails on
+the first attempt when the preinstalled compiler is missing or mismatched;
+repeating that deterministic check cannot provision a newer compiler.
+Prebuilt iOS UI-test
 apps execute on the `MAUI` pool with `macOS.Name=Tahoe` and
 `macOS.Architecture=arm64` demands; Mac Catalyst UI-test apps use
 `AcesShared` / `ACES_VM_SharedPool_Tahoe`. The GoldenGate Appium execution
