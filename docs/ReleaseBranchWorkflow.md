@@ -182,6 +182,11 @@ updated SR numbers, branches, descriptions, and highlighted graphs, then retires
 obsolete managed previews. It does not increment the release state just because
 someone merged a preview PR.
 
+After an explicitly authorized integration-branch reset, merged candidate PRs
+outside its pinned live history do not advance the cycle or count as duplicate
+integrations. A squash merge still in that history remains rejected; a reset
+does not relax the exact two-parent merge requirement or rewrite saved receipts.
+
 GitHub can automatically delete a head branch after merge. If a current lane ref
 is missing, the reconciler restores it only from a live, verified, same-repo
 merged managed PR's exact head SHA. It never resets an existing branch, invents
