@@ -600,7 +600,9 @@ function New-ReleaseHandoffModel {
     } else {
         $metadata = Get-HandoffProperty -Object $Readiness -Name 'metadata'
         $branch = Get-HandoffProperty -Object $metadata -Name 'srBranch'
-        $surveyRef = Get-HandoffProperty -Object $metadata -Name 'contentsRef'
+        $surveyRef = if (Get-HandoffProperty -Object $metadata -Name 'tagIndependent' -Default $false) {
+            Get-HandoffProperty -Object $metadata -Name 'srBranch'
+        } else { Get-HandoffProperty -Object $metadata -Name 'contentsRef' }
         if ([string]::IsNullOrWhiteSpace([string]$surveyRef)) { $surveyRef = $branch }
         $surveyRef = $surveyRef -replace '^(?:origin/|refs/heads/)', ''
         $sourceBranch = Get-HandoffProperty -Object $metadata -Name 'sourceBranch' `

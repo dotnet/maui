@@ -188,10 +188,12 @@ merged managed PR's exact head SHA. It never resets an existing branch, invents
 the development target, restores an obsolete role from an older release state,
 or recreates a branch from an unrelated/unmerged PR.
 
-The release rollover must advance `currentSr` in the protected state record and
-invoke reconciliation after the new lane refs are ready. Updating the record also
-advances the titles and routes to candidate SR2 and inflight SR3. Branch pushes
-then update each PR's diff naturally.
+After the exact cut, reviewed normalization and next-lane preparation are
+verified, the rollover prepares a draft **Release state** PR into the configured
+feature/default branch. It changes only `currentSr` in
+`eng/release-rollover.json`; the canonical file is not written directly.
+Merging the reviewed update makes candidate SR2 and inflight SR3 canonical.
+Branch pushes then update each PR's diff naturally.
 The rollover must call the reconciler directly rather than rely only on push
 events: writes using `GITHUB_TOKEN` may not emit another workflow activation.
 The scheduled reconciliation is a recovery path, not the primary merge trigger.
@@ -269,6 +271,15 @@ to patch20 with CI branding. SR1 candidate retains patch10/CI metadata and now
 contains only its bug-template update relative to net11. Existing history was
 preserved through normal commits/merges. Wrong-cycle metadata is still refused;
 these transitions never invent a GA/SR0 baseline or certify release inventory.
+
+**Tags are manual and outside release progress.** Maintainers create them when
+releasing. The configured train does not create, move, require or infer shipping
+from tags. SR1 readiness pins the first GA branch `release/<band>`; later cycles
+pin the preceding SR release branch. A missing branch leaves inventory UNKNOWN /
+NOT RUN, not a missing-tag gate. Reports retain the configured cycle and prior
+cut, with human closure scoped to each exact source/baseline snapshot. Tags do not
+alter cut receipts, reviewed normalization, lane preparation or signed-build
+approval.
 
 ### Published-version housekeeping
 
@@ -420,9 +431,22 @@ merges and release descendants instead of moving them back to the initial cut.
 
 The effective `trackingSr` selects the upcoming PR pair. It does not silently
 change the canonical `currentSr` used for release readiness or the selected
-signed-nightly source. Advance those release-state settings separately when the
-actual cut and nightly acceptance gates clear. The workflow never changes
-protections, channels, subscriptions, tags, packages, or feature `main`.
+signed-nightly source. Once rollover is complete, `canonicalStatePullRequest`
+identifies the prepared draft at `automation/state/<band>-srN`; while
+normalization is pending, no state PR is prepared. The runner rechecks the
+release, normalized fixes and both next-lane ancestries and refuses a stale
+canonical state snapshot or an unexpected existing proposal. Retries reuse the
+same proposal, including when unrelated feature commits have advanced its base.
+Human review, required CI and merge are still necessary.
+
+`nightlyMode` is preserved in that cycle update. The first `legacy` to
+`versioned` switch remains a separate owner-reviewed state change after exact
+internal mirroring, signed artifacts and feed/channel deployment have been
+verified. Once mode is `versioned`, advancing `currentSr` automatically selects
+inflight SR `N+1`; verify that newly selected lane's deployment before merging
+each state update. A completed rollover is not signed-nightly acceptance.
+No pipeline, channel, subscription, protection or public-publishing permission
+is changed by preparing this PR.
 
 The earlier [hosted next-lane trial](https://github.com/dotnet/maui/actions/runs/42296010618)
 ran unchanged production code with the repository bot token after a third real

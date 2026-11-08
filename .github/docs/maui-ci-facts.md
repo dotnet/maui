@@ -102,10 +102,22 @@ Create a merge commit, the coordinator reports waiting-for-normalization-approva
 preserves the cut/current tracking SR, and withholds next-lane activation and
 forward flow. Its same-repository merged-PR trigger also accepts the managed
 automation/normalization route. It does not merge either post-cut PR, advance canonical
-release/nightly state, or publish customer packages. The signed-publication
+release/nightly state, or publish customer packages. Completed production
+rollover prepares a draft canonical `currentSr` update after rechecking the cut,
+normalized fixes and replacement lanes; review/CI/merge still gate the actual
+state change. Its `nightlyMode` is preserved, so the first versioned-nightly
+activation still requires independently verified deployment. The signed-publication
 workflow uses existing federation/internal access, waits for a reviewed servicing
 merge and exact mirror source, queues the existing signed build, then canonical
 artifact preparation with pushPackages=false. Public release approvals remain.
+
+Configured servicing progress is independent of manual release tags. Readiness
+pins the first GA branch or preceding SR branch as its inventory baseline, keeps
+the current/prior cycle visible, and honors human closure per source/baseline
+snapshot. Tag creation, absence or movement cannot gate or advance cuts,
+normalization, replacement lanes or signing preparation. Stable tag-push
+milestone processing ignores the configured train; historical tag diagnostics
+and explicit manual release actions remain separate.
 
 .NET 10 SR13 publishes from `release/10.0.1xx-sr13`, independently of `main`.
 Preserve its release commit and packages, and keep publication on the .NET 10 channel during the

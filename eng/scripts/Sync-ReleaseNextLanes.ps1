@@ -149,11 +149,13 @@ function Assert-ConsumedInflightSource {
 
 function Sync-PostCutReleasePr {
     param([string] $Branch, [object] $Plan, [int] $Sr,
-        [ValidateSet('servicing', 'normalization')][string] $Kind)
+        [ValidateSet('servicing', 'normalization', 'state')][string] $Kind)
     $normalization = $Kind -ceq 'normalization'
+    $canonicalState = $Kind -ceq 'state'
+    $reviewRequired = $normalization -or $canonicalState
     $head = "${lanePrefix}automation/$Kind/$($roles.releaseBand)-sr$Sr"
     $marker = "<!-- maui-release-${Kind}:${scope}:$($roles.releaseBand)-sr$Sr -->"
-    $commit = if ($normalization) { $Plan.normalizedSha } else { $Plan.servicingSha }
+    $commit = if ($canonicalState) { $Plan.stateSha } elseif ($normalization) { $Plan.normalizedSha } else { $Plan.servicingSha }
     $pages = @(Invoke-NextLaneApi @('repos/dotnet/maui/pulls', '--method', 'GET', '--paginate', '--slurp',
         '-f', 'state=open', '-f', "base=$Branch", '-f', "head=dotnet:$head", '-F', 'per_page=100'))
     $open = @(foreach ($page in $pages) { foreach ($pr in $page) { $pr } })
@@ -168,7 +170,7 @@ function Sync-PostCutReleasePr {
         }
         return [pscustomobject]@{
             number = $open[0].number; url = $open[0].html_url
-            status = if ($normalization) { 'awaiting-approval' } else { 'unchanged' }
+            status = if ($reviewRequired) { 'awaiting-approval' } else { 'unchanged' }
         }
     }
     $pages = @(Invoke-NextLaneApi @('repos/dotnet/maui/pulls', '--method', 'GET', '--paginate', '--slurp',
@@ -197,7 +199,21 @@ function Sync-PostCutReleasePr {
     }
     if ($closed.Count) { throw "The $Kind PR was closed without the expected approved merge; a maintainer must review before recreation." }
     Publish-NextLaneRef -Branch $head -Commit $commit
-    $description = if ($normalization) {
+    $description = if ($canonicalState) {
+        @(
+            $marker
+            ''
+            "Advance canonical **``eng/release-rollover.json``** from SR$($Plan.previousSr) to SR$Sr after the verified cut, normalization and next-lane preparation."
+            ''
+            "Release cut: ``$($Plan.mergeSha)``. Next candidate: ``$($Plan.nextCandidate)``. Next inflight: ``$($Plan.nextInflight)``."
+            ''
+            "Only ``currentSr`` changes. ``nightlyMode`` remains **$($Plan.nightlyMode)**; SDK, package metadata, branch roles, release contents and access rules are unchanged."
+            ''
+            '**Review and required CI are mandatory. Automation never updates the default branch, approves, retargets or merges this PR.**'
+            'If nightlyMode is already versioned, advancing currentSr also selects the following inflight lane. Before merging, verify that exact lane has its protections, internal mirror, schedule, signed artifacts and existing feed/channel wiring deployed.'
+            'The first legacy-to-versioned switch is a separate owner-reviewed state change after that deployment evidence exists; this PR does not guess or certify it.'
+        ) -join "`n"
+    } elseif ($normalization) {
         @(
             $marker
             ''
@@ -236,7 +252,9 @@ function Sync-PostCutReleasePr {
 
 '@ + $template.Replace('<!-- Enter description of the fix in this section -->',
         "<!-- Enter description of the fix in this section -->`n`n$description").Replace('Fixes #', 'N/A - post-cut release configuration.')
-    $title = if ($normalization) {
+    $title = if ($canonicalState) {
+        "[Release state] Advance $($roles.releaseBand) to SR$Sr"
+    } elseif ($normalization) {
         "[Release housekeeping] $($roles.releaseBand) SR$($Sr + 1) CI normalization"
     } else { "[Servicing] $($roles.releaseBand) SR$Sr" }
     $created = Invoke-NextLaneApi @('repos/dotnet/maui/pulls', '--method', 'POST',
@@ -244,7 +262,7 @@ function Sync-PostCutReleasePr {
         '-f', "body=$body", '-F', 'draft=true')
     [pscustomobject]@{
         number = $created.number; url = $created.html_url
-        status = if ($normalization) { 'awaiting-approval' } else { 'created' }
+        status = if ($reviewRequired) { 'awaiting-approval' } else { 'created' }
     }
 }
 
@@ -264,6 +282,80 @@ function Sync-PostCutServicingPr {
 function Sync-PostCutNormalizationPr {
     param([string] $Branch, [object] $Plan, [int] $Sr)
     Sync-PostCutReleasePr -Branch $Branch -Plan $Plan -Sr $Sr -Kind normalization
+}
+
+function Sync-CanonicalReleaseStatePr {
+    param([object[]] $Cycles, [int] $NextSr)
+    if ($SandboxPrefix -or !$CompleteRelease -or !$Cycles.Count -or
+        $NextSr -le $roles.currentSr -or @($Cycles | Where-Object { !$_.nextLanesReady }).Count) {
+        throw 'Canonical state preparation requires completed production rollover cycles.'
+    }
+    $last = $Cycles[-1]
+    if ($last.integratedSr -ne ($NextSr - 1) -or !$last.releaseSha) {
+        throw 'The canonical cycle must follow the last verified release cut.'
+    }
+    $source = Get-NextLaneRef $roles.featureBranch
+    if (!$source) { throw 'The canonical state target branch is missing.' }
+    Fetch-NextLaneCommit @($source)
+    $content = Get-MauiReleaseFile -RepositoryPath $RepositoryPath -Commit $source -Path 'eng/release-rollover.json'
+    $hash = [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData(
+        [Text.Encoding]::UTF8.GetBytes($content))).ToLowerInvariant()
+    if ($hash -cne $roles.stateSha256) {
+        throw 'Canonical release state changed during rollover; retry from the latest trusted state.'
+    }
+    foreach ($target in @(
+        @{ branch = $roles.fixBranch; sha = $last.preparedNormalizationSha },
+        @{ branch = $last.releaseBranch; sha = $last.releaseSha },
+        @{ branch = $last.nextCandidate; sha = $last.nextCandidateSha },
+        @{ branch = $last.nextInflight; sha = $last.nextInflightSha }
+    )) {
+        $live = Get-NextLaneRef $target.branch
+        if (!$live) { throw "Canonical state cannot advance before '$($target.branch)' exists." }
+        Fetch-NextLaneCommit @($live)
+        $null = Get-NextLaneGit @('merge-base', '--is-ancestor', $target.sha, $live)
+    }
+    $pattern = [regex]::new('("currentSr"\s*:\s*)([1-9][0-9]*)')
+    $matches = $pattern.Matches($content)
+    if ($matches.Count -ne 1 -or [int]$matches[0].Groups[2].Value -ne $roles.currentSr) {
+        throw 'Canonical state must contain exactly the configured currentSr value.'
+    }
+    $updated = $pattern.Replace($content, [Text.RegularExpressions.MatchEvaluator]{
+        param($match)
+        $match.Groups[1].Value + $NextSr.ToString([Globalization.CultureInfo]::InvariantCulture)
+    })
+    $head = "automation/state/$($roles.releaseBand)-sr$NextSr"
+    $existing = Get-NextLaneRef $head
+    if ($existing) {
+        Fetch-NextLaneCommit @($existing)
+        $parents = (Get-NextLaneGit @('show', '-s', '--format=%P', $existing)).Split(' ')
+        if ($parents.Count -ne 1 -or
+            (Get-NextLaneGit @('diff', '--name-only', $parents[0], $existing)) -cne 'eng/release-rollover.json' -or
+            (Get-MauiReleaseFile -RepositoryPath $RepositoryPath -Commit $parents[0] -Path 'eng/release-rollover.json') -cne $content -or
+            (Get-MauiReleaseFile -RepositoryPath $RepositoryPath -Commit $existing -Path 'eng/release-rollover.json') -cne $updated) {
+            throw 'The canonical state head differs from its expected single-file update; refusing overwrite.'
+        }
+        $null = Get-NextLaneGit @('merge-base', '--is-ancestor', $parents[0], $source)
+        $prepared = $existing
+    } else {
+        $prepared = (New-MauiReleaseContentCommit -RepositoryPath $RepositoryPath -Parent $source `
+            -Changes @{ 'eng/release-rollover.json' = $updated } `
+            -Message "Advance canonical $($roles.releaseBand) to SR$NextSr").sha
+    }
+    if ((Get-NextLaneRef $roles.featureBranch) -cne $source) {
+        throw 'The canonical target moved before state-PR preparation; retry without overwriting it.'
+    }
+    Assert-ConsumedInflightSource -Sr $last.integratedSr -Commit $last.inflightSourceSha
+    if (!$existing) {
+        # An empty lease permits creation only, never replacement of another proposal.
+        $null = Get-NextLaneGit @('-c', 'credential.helper=', '-c', 'credential.helper=!gh auth git-credential',
+            'push', '--quiet', "--force-with-lease=refs/heads/${head}:", '--', $roles.repository, "${prepared}:refs/heads/$head")
+        if ((Get-NextLaneRef $head) -cne $prepared) { throw 'The canonical state head publication was not verified.' }
+    }
+    $proposal = [pscustomobject]@{
+        stateSha = $prepared; previousSr = $roles.currentSr; nightlyMode = $roles.nightlyMode
+        mergeSha = $last.releaseSha; nextCandidate = $last.nextCandidate; nextInflight = $last.nextInflight
+    }
+    Sync-PostCutReleasePr -Branch $roles.featureBranch -Plan $proposal -Sr $NextSr -Kind state
 }
 
 $null = New-Item -ItemType Directory -Force -Path $OutputDirectory
@@ -419,6 +511,9 @@ $forward = if ($CompleteRelease -and $results.Count -and !$housekeepingPending) 
     & (Join-Path $PSScriptRoot 'Sync-ServicingForwardPullRequest.ps1') -StatePath $StatePath `
         -SandboxPrefix $SandboxPrefix | ConvertFrom-Json
 } else { $null }
+$canonicalStatePr = if ($CompleteRelease -and !$SandboxPrefix -and $results.Count -and !$housekeepingPending) {
+    Sync-CanonicalReleaseStatePr -Cycles $results.ToArray() -NextSr $trackingSr
+} else { $null }
 $result = [ordered]@{
     scope = $scope
     status = if ($housekeepingPending) { 'waiting-for-normalization-approval' } elseif ($results.Count) { 'next-lanes-ready' } else { 'waiting-for-candidate-merge' }
@@ -430,6 +525,7 @@ $result = [ordered]@{
     cycles = @($results.ToArray())
     trackingPullRequests = $tracking
     forwardPullRequest = $forward
+    canonicalStatePullRequest = $canonicalStatePr
 }
 $result | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath (Join-Path $outputPath 'release-next-lanes-result.json') -Encoding utf8
 $result | ConvertTo-Json -Depth 10
