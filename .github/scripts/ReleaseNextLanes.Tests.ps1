@@ -442,7 +442,7 @@ body:
         $null = Invoke-LaneFixtureGit @('merge-base', '--is-ancestor', $plan.nextInflightSha, $receipt)
     }
 
-    It 'requires a real two-parent merge and the exact approved candidate parent' {
+    It 'refuses the candidate itself and a merge with the wrong approved candidate parent' {
         { New-MauiReleaseNextLanePlan -RepositoryPath $fixture -ReleaseBand '11.0.1xx' `
             -Sr 1 -Merge $candidate -Candidate $candidate -Inflight $inflight } | Should -Throw '*two-parent*'
         { New-MauiReleaseNextLanePlan -RepositoryPath $fixture -ReleaseBand '11.0.1xx' `

@@ -75,8 +75,15 @@ function Get-ApprovedCandidateMerge {
             }
         })
         $eligible = @()
+        $currentFixes = if ($matches.Count) { Get-NextLaneRef $roles.fixBranch } else { $null }
+        if ($matches.Count -and !$currentFixes) { throw 'The release integration branch is missing during candidate discovery.' }
+        if ($currentFixes) { Fetch-NextLaneCommit @($currentFixes) }
         foreach ($candidatePr in ($matches | Sort-Object merged_at -Descending)) {
-            Fetch-NextLaneCommit @($candidatePr.head.sha)
+            Fetch-NextLaneCommit @($candidatePr.head.sha, $candidatePr.merge_commit_sha)
+            if ((Get-NextLaneGit @('merge-base', $candidatePr.merge_commit_sha, $currentFixes)) -cne $candidatePr.merge_commit_sha) {
+                Write-Warning "Historical candidate PR #$($candidatePr.number) is not in the current integration history; it does not advance release lanes."
+                continue
+            }
             $candidateVersion = Get-MauiReleaseVersion -Content (
                 Get-MauiReleaseFile -RepositoryPath $RepositoryPath -Commit $candidatePr.head.sha -Path 'eng/Versions.props')
             $candidateTemplate = Get-MauiReleaseFile -RepositoryPath $RepositoryPath -Commit $candidatePr.head.sha -Path '.github/ISSUE_TEMPLATE/bug-report.yml'

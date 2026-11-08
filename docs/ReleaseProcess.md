@@ -12,6 +12,12 @@ does not directly write protected `net11` or grant a bypass. Its recognized
 branch policy also defaults SR builds to servicing/stable, without a separate
 flip PR. Legacy sources retain the post-cut reviewed servicing PR.
 
+Candidate integration prefers a merge commit; a squash requires exact
+candidate-tree equality and an integration parent already in candidate
+ancestry. Signing still uses the actual human-approved integration commit,
+not reconstructed history. Other integration shapes or unreviewed base
+changes do not satisfy this proof.
+
 Completed rollover also prepares a draft canonical-state PR advancing
 `currentSr`; it waits for the exact cut, normalization and next lanes, and
 never merges itself. `nightlyMode` is retained. Switching from legacy to
