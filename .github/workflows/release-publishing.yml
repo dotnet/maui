@@ -41,17 +41,12 @@ jobs:
           persist-credentials: false
           fetch-depth: 0
 
-      - name: Authenticate with existing Azure federation
-        uses: azure/login@7184910d9eb2b1c5e48f7073824a90609bb9b6d6 # v2.3.1
-        with:
-          client-id: ${{ secrets.AZDO_TRIGGER_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZDO_TRIGGER_TENANT_ID }}
-          allow-no-subscriptions: true
-
       - name: Queue exact signed build and approval-ready publication artifacts
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
+          AZDO_TRIGGER_CLIENT_ID: ${{ secrets.AZDO_TRIGGER_CLIENT_ID }}
+          AZDO_TRIGGER_TENANT_ID: ${{ secrets.AZDO_TRIGGER_TENANT_ID }}
         run: ./eng/scripts/Sync-ReleasePublishing.ps1 -OutputDirectory '${{ runner.temp }}/release-publishing'
 
       - name: Preserve publication preparation evidence

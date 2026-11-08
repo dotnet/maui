@@ -96,7 +96,12 @@ net11. Its merged-PR trigger uses default-branch workflow code and explicitly
 checks out trusted main, never PR code. A create-once release-lane receipt pins
 inputs/outputs for retries. The deployed workflow cuts the exact candidate merge,
 restores next-cycle CI on net11, opens the separate release-targeted servicing PR,
-and creates the next pair. It does not merge that servicing PR, advance canonical
+and creates the next pair. CI restoration is prepared as a reviewed normalization
+PR, never a direct protected net11 write. Until its pinned child is merged with
+Create a merge commit, the coordinator reports waiting-for-normalization-approval,
+preserves the cut/current tracking SR, and withholds next-lane activation and
+forward flow. Its same-repository merged-PR trigger also accepts the managed
+automation/normalization route. It does not merge either post-cut PR, advance canonical
 release/nightly state, or publish customer packages. The signed-publication
 workflow uses existing federation/internal access, waits for a reviewed servicing
 merge and exact mirror source, queues the existing signed build, then canonical

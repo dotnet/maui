@@ -147,38 +147,70 @@ function Assert-ConsumedInflightSource {
     }
 }
 
-function Sync-PostCutServicingPr {
-    param([string] $Branch, [object] $Plan, [int] $Sr)
-    $version = Get-MauiReleaseVersion -Content (
-        Get-MauiReleaseFile -RepositoryPath $RepositoryPath -Commit $Plan.mergeSha -Path 'eng/Versions.props')
-    if ($version.automaticStabilization) {
-        if ($Plan.servicingSha -cne $Plan.mergeSha) {
-            throw 'Automatic stabilization must preserve the exact approved candidate source.'
-        }
-        return [pscustomobject]@{ number = $null; url = $null; status = 'branch-derived-stabilization' }
-    }
-    $head = "${lanePrefix}automation/servicing/$($roles.releaseBand)-sr$Sr"
-    $marker = "<!-- maui-release-servicing:${scope}:$($roles.releaseBand)-sr$Sr -->"
-    $open = @(Invoke-NextLaneApi @('repos/dotnet/maui/pulls', '--method', 'GET',
+function Sync-PostCutReleasePr {
+    param([string] $Branch, [object] $Plan, [int] $Sr,
+        [ValidateSet('servicing', 'normalization')][string] $Kind)
+    $normalization = $Kind -ceq 'normalization'
+    $head = "${lanePrefix}automation/$Kind/$($roles.releaseBand)-sr$Sr"
+    $marker = "<!-- maui-release-${Kind}:${scope}:$($roles.releaseBand)-sr$Sr -->"
+    $commit = if ($normalization) { $Plan.normalizedSha } else { $Plan.servicingSha }
+    $pages = @(Invoke-NextLaneApi @('repos/dotnet/maui/pulls', '--method', 'GET', '--paginate', '--slurp',
         '-f', 'state=open', '-f', "base=$Branch", '-f', "head=dotnet:$head", '-F', 'per_page=100'))
+    $open = @(foreach ($page in $pages) { foreach ($pr in $page) { $pr } })
     if ($open.Count -gt 1 -or ($open.Count -eq 1 -and !([string]$open[0].body).Contains($marker))) {
-        throw 'The post-cut servicing route is duplicate or unmanaged; refusing adoption.'
+        throw "The post-cut $Kind route is duplicate or unmanaged; refusing adoption."
     }
     if ($open.Count) {
-        if ($open[0].head.sha -cne $Plan.servicingSha) { throw 'The servicing PR head differs from its pinned post-cut commit.' }
-        return [pscustomobject]@{ number = $open[0].number; url = $open[0].html_url; status = 'unchanged' }
+        if ($open[0].head.sha -cne $commit -or $null -eq $open[0].head.repo -or
+            $open[0].head.repo.full_name -cne $repository -or $open[0].head.ref -cne $head -or
+            $open[0].base.ref -cne $Branch) {
+            throw "The $Kind PR differs from its pinned post-cut route or commit."
+        }
+        return [pscustomobject]@{
+            number = $open[0].number; url = $open[0].html_url
+            status = if ($normalization) { 'awaiting-approval' } else { 'unchanged' }
+        }
     }
-    $closed = @(Invoke-NextLaneApi @('repos/dotnet/maui/pulls', '--method', 'GET',
+    $pages = @(Invoke-NextLaneApi @('repos/dotnet/maui/pulls', '--method', 'GET', '--paginate', '--slurp',
         '-f', 'state=closed', '-f', "base=$Branch", '-f', "head=dotnet:$head", '-F', 'per_page=100'))
+    $closed = @(foreach ($page in $pages) { foreach ($pr in $page) { $pr } })
     $merged = @($closed | Where-Object {
-        $_.merged_at -and $_.head.sha -ceq $Plan.servicingSha -and ([string]$_.body).Contains($marker)
+        $_.merged_at -and $_.head.sha -ceq $commit -and ([string]$_.body).Contains($marker)
     })
     if ($merged.Count -eq 1) {
+        if ($normalization) {
+            $proof = Invoke-NextLaneApi @("repos/$repository/pulls/$($merged[0].number)")
+            if (!$proof.merged -or !$proof.merged_at -or $proof.merged_by.type -cne 'User' -or
+                $null -eq $proof.head.repo -or $proof.head.repo.full_name -cne $repository -or
+                $proof.head.ref -cne $head -or $proof.head.sha -cne $commit -or
+                $proof.base.ref -cne $Branch -or !([string]$proof.body).Contains($marker) -or
+                $proof.merge_commit_sha -cnotmatch '^[0-9a-f]{40}$') {
+                throw 'CI normalization is not the verified same-repository maintainer merge.'
+            }
+            Fetch-NextLaneCommit @($proof.merge_commit_sha)
+            $parents = (Get-NextLaneGit @('show', '-s', '--format=%P', $proof.merge_commit_sha)).Split(' ')
+            if ($parents.Count -ne 2 -or $parents[1] -cne $commit) {
+                throw 'CI normalization requires Create a merge commit; squash and rebase merges cannot resume the pinned receipt.'
+            }
+        }
         return [pscustomobject]@{ number = $merged[0].number; url = $merged[0].html_url; status = 'merged' }
     }
-    if ($closed.Count) { throw 'The servicing PR was closed without the expected approved merge; a maintainer must review before recreation.' }
-    Publish-NextLaneRef -Branch $head -Commit $Plan.servicingSha
-    $description = @(
+    if ($closed.Count) { throw "The $Kind PR was closed without the expected approved merge; a maintainer must review before recreation." }
+    Publish-NextLaneRef -Branch $head -Commit $commit
+    $description = if ($normalization) {
+        @(
+            $marker
+            ''
+            "Restore **``$Branch``** to the next-cycle CI version after the exact SR$Sr release cut."
+            ''
+            "Approved candidate merge: ``$($Plan.mergeSha)``. Prepared normalization: ``$commit``."
+            "This pinned child commit changes only version metadata: patch $(($Sr + 1) * 10), CI/non-stable settings, and that same plain version in both bug-template dropdowns. SDK band and release contents are unchanged."
+            ''
+            '**A maintainer must review this PR, run required CI and use Create a merge commit. Do not squash or rebase.**'
+            'The reconciler does not update the protected integration ref, approve, retarget or merge this PR. Next-lane activation and forward-flow preparation wait for the normalization ancestry to be verified.'
+            'The create-once release cut is preserved while this PR is awaiting approval. No signing or public publication is certified.'
+        ) -join "`n"
+    } else { @(
         $marker
         ''
         "Configure **``$Branch``** for stable servicing after the approved candidate integration and automatic release cut."
@@ -194,7 +226,7 @@ function Sync-PostCutServicingPr {
         '```'
         ''
         'Required CI and human approval/merge remain mandatory. Automation does not merge this PR. No signing or package publication is certified by its creation.'
-    ) -join "`n"
+    ) -join "`n" }
     $template = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../../.github/PULL_REQUEST_TEMPLATE.md') -Raw
     $body = @'
 <!-- Please let the below note in for people that find this PR -->
@@ -204,10 +236,34 @@ function Sync-PostCutServicingPr {
 
 '@ + $template.Replace('<!-- Enter description of the fix in this section -->',
         "<!-- Enter description of the fix in this section -->`n`n$description").Replace('Fixes #', 'N/A - post-cut release configuration.')
+    $title = if ($normalization) {
+        "[Release housekeeping] $($roles.releaseBand) SR$($Sr + 1) CI normalization"
+    } else { "[Servicing] $($roles.releaseBand) SR$Sr" }
     $created = Invoke-NextLaneApi @('repos/dotnet/maui/pulls', '--method', 'POST',
-        '-f', "base=$Branch", '-f', "head=$head", '-f', "title=[Servicing] $($roles.releaseBand) SR$Sr",
+        '-f', "base=$Branch", '-f', "head=$head", '-f', "title=$title",
         '-f', "body=$body", '-F', 'draft=true')
-    [pscustomobject]@{ number = $created.number; url = $created.html_url; status = 'created' }
+    [pscustomobject]@{
+        number = $created.number; url = $created.html_url
+        status = if ($normalization) { 'awaiting-approval' } else { 'created' }
+    }
+}
+
+function Sync-PostCutServicingPr {
+    param([string] $Branch, [object] $Plan, [int] $Sr)
+    $version = Get-MauiReleaseVersion -Content (
+        Get-MauiReleaseFile -RepositoryPath $RepositoryPath -Commit $Plan.mergeSha -Path 'eng/Versions.props')
+    if ($version.automaticStabilization) {
+        if ($Plan.servicingSha -cne $Plan.mergeSha) {
+            throw 'Automatic stabilization must preserve the exact approved candidate source.'
+        }
+        return [pscustomobject]@{ number = $null; url = $null; status = 'branch-derived-stabilization' }
+    }
+    Sync-PostCutReleasePr -Branch $Branch -Plan $Plan -Sr $Sr -Kind servicing
+}
+
+function Sync-PostCutNormalizationPr {
+    param([string] $Branch, [object] $Plan, [int] $Sr)
+    Sync-PostCutReleasePr -Branch $Branch -Plan $Plan -Sr $Sr -Kind normalization
 }
 
 $null = New-Item -ItemType Directory -Force -Path $OutputDirectory
@@ -215,6 +271,7 @@ $outputPath = (Resolve-Path -LiteralPath $OutputDirectory).Path
 $results = [Collections.Generic.List[object]]::new()
 $trackingSr = [int]$roles.currentSr
 for ($attempt = 0; $attempt -lt 100; $attempt++) {
+    $housekeepingPending = $false
     $receiptBranch = "$receiptPrefix/$($roles.releaseBand)-sr$trackingSr"
     $receiptSha = Get-NextLaneRef $receiptBranch
     $record = $null
@@ -290,6 +347,7 @@ for ($attempt = 0; $attempt -lt 100; $attempt++) {
     $nextInflight = "${lanePrefix}inflight/$($roles.releaseBand)-sr$($trackingSr + 2)"
     $completion = $null
     $servicingPr = $null
+    $normalizationPr = $null
     $releaseBranch = "${lanePrefix}release/$($roles.releaseBand)-sr$trackingSr"
     if ($CompleteRelease) {
         $currentFixes = Get-NextLaneRef $roles.fixBranch
@@ -299,16 +357,15 @@ for ($attempt = 0; $attempt -lt 100; $attempt++) {
         if ($currentRelease) { Fetch-NextLaneCommit @($currentRelease) }
         $completion = Get-MauiReleaseCompletionPlan -RepositoryPath $RepositoryPath -LanePlan $plan `
             -ReleaseBand $roles.releaseBand -Sr $trackingSr -Fixes $currentFixes -Release $currentRelease
-        # Create-only release publication precedes the CI fast-forward. A saved
+        # Create-only release publication precedes reviewed CI normalization. A saved
         # receipt makes a failure between these operations safely resumable.
         Publish-NextLaneRef -Branch $releaseBranch -Commit $completion.releaseSha -AllowDescendants
         if ($completion.restoreFixes) {
             if ((Get-NextLaneRef $roles.fixBranch) -cne $currentFixes) {
                 throw 'The integration branch moved after release planning; no housekeeping was applied.'
             }
-            $null = Invoke-NextLaneApi @(
-                "repos/$repository/git/refs/heads/$([Uri]::EscapeDataString($roles.fixBranch))", '--method', 'PATCH',
-                '-f', "sha=$($completion.normalizationSha)", '-F', 'force=false')
+            $normalizationPr = Sync-PostCutNormalizationPr -Branch $roles.fixBranch -Plan $plan -Sr $trackingSr
+            $housekeepingPending = $normalizationPr.status -cne 'merged'
         }
         $verifiedFixes = Get-NextLaneRef $roles.fixBranch
         $verifiedRelease = Get-NextLaneRef $releaseBranch
@@ -317,14 +374,18 @@ for ($attempt = 0; $attempt -lt 100; $attempt++) {
         }
         Fetch-NextLaneCommit @($verifiedFixes, $verifiedRelease)
         $null = Get-NextLaneGit @('merge-base', '--is-ancestor', $plan.mergeSha, $verifiedRelease)
-        $null = Get-NextLaneGit @('merge-base', '--is-ancestor', $plan.normalizedSha, $verifiedFixes)
+        if (!$housekeepingPending) {
+            $null = Get-NextLaneGit @('merge-base', '--is-ancestor', $plan.normalizedSha, $verifiedFixes)
+        }
         $servicingPr = Sync-PostCutServicingPr -Branch $releaseBranch -Plan $plan -Sr $trackingSr
     }
-    $followingReceipt = Get-NextLaneRef "$receiptPrefix/$($roles.releaseBand)-sr$($trackingSr + 1)"
-    $followingMerge = if (!$followingReceipt) { Get-ApprovedCandidateMerge -Sr ($trackingSr + 1) } else { $null }
-    if (!$followingReceipt -and !$followingMerge) {
-        Publish-NextLaneRef -Branch $nextCandidate -Commit $plan.nextCandidateSha -AllowDescendants
-        Publish-NextLaneRef -Branch $nextInflight -Commit $plan.nextInflightSha -AllowDescendants
+    if (!$housekeepingPending) {
+        $followingReceipt = Get-NextLaneRef "$receiptPrefix/$($roles.releaseBand)-sr$($trackingSr + 1)"
+        $followingMerge = if (!$followingReceipt) { Get-ApprovedCandidateMerge -Sr ($trackingSr + 1) } else { $null }
+        if (!$followingReceipt -and !$followingMerge) {
+            Publish-NextLaneRef -Branch $nextCandidate -Commit $plan.nextCandidateSha -AllowDescendants
+            Publish-NextLaneRef -Branch $nextInflight -Commit $plan.nextInflightSha -AllowDescendants
+        }
     }
     $results.Add([pscustomobject]@{
         integratedSr = $trackingSr; candidateMerge = $plan.mergeSha; receipt = $expectedReceipt
@@ -336,7 +397,10 @@ for ($attempt = 0; $attempt -lt 100; $attempt++) {
         releaseSha = if ($CompleteRelease) { $plan.mergeSha } else { $null }
         completion = $completion
         servicingPullRequest = $servicingPr
+        normalizationPullRequest = $normalizationPr
+        nextLanesReady = !$housekeepingPending
     })
+    if ($housekeepingPending) { break }
     $trackingSr++
 }
 if ($attempt -ge 100) { throw 'Next-lane receipt traversal exceeded its bound; review the configured starting cycle.' }
@@ -351,18 +415,18 @@ $tracking = & (Join-Path $PSScriptRoot 'Sync-ReleaseTrackingPullRequests.ps1') `
 foreach ($cycle in $results) {
     Assert-ConsumedInflightSource -Sr $cycle.integratedSr -Commit $cycle.inflightSourceSha
 }
-$forward = if ($CompleteRelease -and $results.Count) {
+$forward = if ($CompleteRelease -and $results.Count -and !$housekeepingPending) {
     & (Join-Path $PSScriptRoot 'Sync-ServicingForwardPullRequest.ps1') -StatePath $StatePath `
         -SandboxPrefix $SandboxPrefix | ConvertFrom-Json
 } else { $null }
 $result = [ordered]@{
     scope = $scope
-    status = if ($results.Count) { 'next-lanes-ready' } else { 'waiting-for-candidate-merge' }
+    status = if ($housekeepingPending) { 'waiting-for-normalization-approval' } elseif ($results.Count) { 'next-lanes-ready' } else { 'waiting-for-candidate-merge' }
     configuredReleaseSr = $roles.currentSr
     trackingSr = $trackingSr
     releaseCompletionEnabled = [bool]$CompleteRelease
     releaseCutCreated = @($results | Where-Object { $_.completion -and $_.completion.createRelease }).Count -gt 0
-    integrationBranchChanged = @($results | Where-Object { $_.completion -and $_.completion.restoreFixes }).Count -gt 0
+    integrationBranchChanged = $false
     cycles = @($results.ToArray())
     trackingPullRequests = $tracking
     forwardPullRequest = $forward
