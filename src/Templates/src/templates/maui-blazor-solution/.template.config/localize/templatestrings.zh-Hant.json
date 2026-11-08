@@ -1,4 +1,4 @@
-{
+﻿{
   "author": "Microsoft",
   "name": ".NET MAUI Blazor Hybrid 和 Web 應用程式",
   "description": "用於使用共用使用者介面的 Blazor Web 專案建立 .NET MAUI Blazor 混合式應用程式的多專案應用程式。",
@@ -22,9 +22,15 @@
   "symbols/InteractivityPlatform/choices/WebAssembly/description": "使用 WebAssembly 在瀏覽器中執行",
   "symbols/InteractivityPlatform/choices/Auto/displayName": "自動 (伺服器和 WebAssembly)",
   "symbols/InteractivityPlatform/choices/Auto/description": "下載 WebAssembly 資產時使用伺服器，然後使用 WebAssembly",
+  "symbols/InteractivityLocation/displayName": "Interactivity _location",
+  "symbols/InteractivityLocation/description": "Chooses which components will have interactive rendering enabled",
+  "symbols/InteractivityLocation/choices/InteractivePerPage/displayName": "Per page/component",
+  "symbols/InteractivityLocation/choices/InteractivePerPage/description": "Interactivity is applied on a per-page or per-component basis",
+  "symbols/InteractivityLocation/choices/InteractiveGlobal/displayName": "Global",
+  "symbols/InteractivityLocation/choices/InteractiveGlobal/description": "Interactivity is applied at the root level",
   "symbols/IncludeSampleContent/displayName": "包含範例頁面(_I)",
   "symbols/IncludeSampleContent/description": "設定是否要新增範例頁面和樣式，以示範基本使用模式。",
-  "symbols/empty/description": "設定是否要省略範例頁面和樣式，其示範基本使用模式。",
+  "symbols/Empty/description": "設定是否要省略範例頁面和樣式，其示範基本使用模式。",
   "symbols/AllInteractive/displayName": "_啟用整個網站的全域互動式轉譯",
   "symbols/AllInteractive/description": "設定是否要在最高層級應用互動式轉譯模式，讓每一頁都能互動。若為 False，則頁面預設會使用靜態伺服器轉譯，而且可以按照頁面或按照元件標示為互動式。",
   "symbols/NoHttps/description": "是否要關閉 HTTPS。此選項僅適用於個人未用於 --auth 時。",
