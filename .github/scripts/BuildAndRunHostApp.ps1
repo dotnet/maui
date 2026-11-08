@@ -371,6 +371,19 @@ if (-not (Test-Path $TestProject)) {
 
 Write-Success "Test project: $TestProject"
 
+$testProjectName = [IO.Path]::GetFileNameWithoutExtension($TestProject)
+$attachmentRoots = @(
+    $HostAppLogsDir,
+    (Join-Path $RepoRoot "artifacts/bin/$testProjectName/$Configuration"),
+    (Join-Path (Split-Path $TestProject) "bin/$Configuration")
+)
+if ($env:BUILD_ARTIFACTSTAGINGDIRECTORY) {
+    $attachmentRoots += Join-Path $env:BUILD_ARTIFACTSTAGINGDIRECTORY 'Controls.TestCases.Shared.Tests'
+}
+if ($env:APPIUM_LOG_FILE) {
+    $attachmentRoots += [IO.Path]::GetDirectoryName([IO.Path]::GetFullPath($env:APPIUM_LOG_FILE))
+}
+
 #endregion
 
 #region Run Tests
@@ -636,7 +649,7 @@ try {
     # (Do NOT revert to a silent `$testOutput = & dotnet test ... 2>&1` capture.)
     Invoke-NUnitMtpProcess -TestArguments $testArgs | Tee-Object -Variable testOutput
     $firstAttempt = Complete-NUnitMtpAttempt -RepoRoot $RepoRoot -TrxPath $trxFilePath `
-        -NUnitDirectory $nunitResultsDir -ExitCode $script:NUnitMtpExitCode
+        -NUnitDirectory $nunitResultsDir -ExitCode $script:NUnitMtpExitCode -AllowedAttachmentRoots $attachmentRoots
 
     # Save test output to file
     $testOutput | Out-File -FilePath $testOutputFile -Encoding UTF8
@@ -705,7 +718,7 @@ try {
             Write-Info "Retry args: dotnet test --filter '$retryFilter' --no-build"
             $retryOutput = Invoke-NUnitMtpProcess -TestArguments $retryArgs
             $retryAttempt = Complete-NUnitMtpAttempt -RepoRoot $RepoRoot -TrxPath $retryTrx `
-                -NUnitDirectory $retryNUnitDirectory -ExitCode $script:NUnitMtpExitCode
+                -NUnitDirectory $retryNUnitDirectory -ExitCode $script:NUnitMtpExitCode -AllowedAttachmentRoots $attachmentRoots
             $retryOutput | ForEach-Object { Write-Output $_ }
             
             # Parse retry TRX and count how many passed on retry

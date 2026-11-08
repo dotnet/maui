@@ -66,13 +66,21 @@ if ($state.Platform -eq 'android') {
     }
     $killFailed = $false
     if ($state.Device) {
-        $name = "$(& $state.Adb -s $state.Device shell getprop ro.boot.qemu.avd_name 2>$null)".Trim()
+        $sdk = if ($env:ANDROID_SDK_ROOT) { $env:ANDROID_SDK_ROOT } else { $env:ANDROID_HOME }
+        if (!$sdk) { throw 'Android cleanup requires the configured Android SDK root.' }
+        $adb = Join-Path ([IO.Path]::GetFullPath($sdk)) 'platform-tools/adb'
+        $comparison = if ($IsWindows) { [StringComparison]::OrdinalIgnoreCase } else { [StringComparison]::Ordinal }
+        if (![IO.Path]::IsPathRooted([string]$state.Adb) -or
+            ![string]::Equals([IO.Path]::GetFullPath($state.Adb), $adb, $comparison)) {
+            throw 'Refusing Android cleanup: the recorded adb executable does not match the configured SDK.'
+        }
+        $name = "$(& $adb -s $state.Device shell getprop ro.boot.qemu.avd_name 2>$null)".Trim()
         if (!$name -and $LASTEXITCODE -eq 0) {
-            $name = "$(& $state.Adb -s $state.Device shell getprop ro.kernel.qemu.avd_name 2>$null)".Trim()
+            $name = "$(& $adb -s $state.Device shell getprop ro.kernel.qemu.avd_name 2>$null)".Trim()
         }
         if ($LASTEXITCODE -eq 0 -and $name -eq $state.AvdName) {
-            & $state.Adb -s $state.Device logcat -d *> (Join-Path $ResultsDirectory 'logcat.log')
-            & $state.Adb -s $state.Device emu kill
+            & $adb -s $state.Device logcat -d *> (Join-Path $ResultsDirectory 'logcat.log')
+            & $adb -s $state.Device emu kill
             $killFailed = $LASTEXITCODE -ne 0
         }
     }

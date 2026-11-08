@@ -416,6 +416,8 @@ Describe 'Direct native CI contracts' {
         $avdName = "maui-$([guid]::NewGuid().ToString('N'))"
         $deviceRoot = Join-Path $deviceDirectory $avdName
         $avdHome = Join-Path $deviceRoot 'avd'
+        $sdkDirectory = Join-Path $directory 'sdk'
+        $adbPath = Join-Path $sdkDirectory 'platform-tools/adb'
         New-Item -ItemType Directory -Force -Path $avdHome | Out-Null
         Set-Content -LiteralPath (Join-Path $avdHome 'hardware-qemu.ini.lock') -Value 'owned lock'
         $started = [DateTime]::UtcNow
@@ -426,7 +428,7 @@ Describe 'Direct native CI contracts' {
             DeviceDirectory = $deviceDirectory
             DeviceRoot = $deviceRoot
             AvdHome = $avdHome
-            Adb = 'Invoke-TestAdb'
+            Adb = $adbPath
             ProcessId = 12345
             ProcessStartTime = $started.ToString('O')
         } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $directory 'device.json')
@@ -434,6 +436,7 @@ Describe 'Direct native CI contracts' {
             $global:LASTEXITCODE = 0
             if ($args -contains 'getprop') { $avdName }
         }
+        Set-Alias -Name $adbPath -Value Invoke-TestAdb
         $process = [pscustomobject]@{
             ProcessName = 'qemu-system-x86_64'
             StartTime = $started
@@ -450,7 +453,12 @@ Describe 'Direct native CI contracts' {
         Mock Get-Process { $process } -ParameterFilter { $Id -eq 12345 }
         Mock Stop-Process {}
 
-        & (Join-Path $deviceScripts 'Stop-TestDevice.ps1') -ResultsDirectory $directory
+        $originalSdk = $env:ANDROID_SDK_ROOT
+        try {
+            $env:ANDROID_SDK_ROOT = $sdkDirectory
+            & (Join-Path $deviceScripts 'Stop-TestDevice.ps1') -ResultsDirectory $directory
+        }
+        finally { $env:ANDROID_SDK_ROOT = $originalSdk }
 
         $avdHome | Should -Not -Exist
         $process.WaitCount | Should -Be $(if ($RequiresTermination) { 2 } else { 1 })
@@ -530,6 +538,7 @@ Describe 'Direct native CI contracts' {
         @{ Kind = 'foreign-name' }
         @{ Kind = 'symbolic-link' }
         @{ Kind = 'missing-home' }
+        @{ Kind = 'foreign-adb' }
     ) {
         param($Kind)
         $directory = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
@@ -543,6 +552,8 @@ Describe 'Direct native CI contracts' {
             Platform = 'android'; AvdName = $avdName; DeviceDirectory = $deviceDirectory
             DeviceRoot = $deviceRoot; AvdHome = $avdHome
         }
+        $marker = Join-Path $directory 'foreign-executable-ran.txt'
+        $originalSdk = $env:ANDROID_SDK_ROOT
         switch ($Kind) {
             relative { $state.AvdHome = 'devices/avd' }
             outside { $state.AvdHome = $foreign }
@@ -559,12 +570,23 @@ Describe 'Direct native CI contracts' {
                 $state.Adb = 'InvokeForbiddenAdb'
                 function InvokeForbiddenAdb { throw 'Unowned emulator commands must never run.' }
             }
+            foreign-adb {
+                $state.Device = 'emulator-5554'
+                $state.Adb = Join-Path $directory 'foreign.ps1'
+                "'executed' | Set-Content -LiteralPath '$marker'" | Set-Content -LiteralPath $state.Adb
+            }
         }
         $state | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $directory 'device.json')
-        { & (Join-Path $deviceScripts 'Stop-TestDevice.ps1') -ResultsDirectory $directory } |
-            Should -Throw '*Refusing AVD cleanup*'
+        try {
+            $env:ANDROID_SDK_ROOT = Join-Path $directory 'sdk'
+            $expectedError = if ($Kind -eq 'foreign-adb') { '*does not match the configured SDK*' } else { '*Refusing AVD cleanup*' }
+            { & (Join-Path $deviceScripts 'Stop-TestDevice.ps1') -ResultsDirectory $directory } |
+                Should -Throw $expectedError
+        }
+        finally { $env:ANDROID_SDK_ROOT = $originalSdk }
         $avdHome | Should -Exist
         $foreign | Should -Exist
+        $marker | Should -Not -Exist
     }
 
     It 'keeps snapshot baselines in the test binary directory with either base-directory spelling' {

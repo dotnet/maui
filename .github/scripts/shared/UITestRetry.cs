@@ -153,9 +153,16 @@ public static class UITestRetry
 		return true;
 	}
 
-	public static void PreserveAttachments(XDocument trx, string resultsDirectory, string archiveDirectory)
+	public static void PreserveAttachments(XDocument trx, string resultsDirectory, string archiveDirectory,
+		IEnumerable<string> allowedAttachmentRoots = null)
 	{
 		XNamespace ns = "http://microsoft.com/schemas/VisualStudio/TeamTest/2010";
+		var comparison = System.IO.Path.DirectorySeparatorChar == '\\' ?
+			StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+		var roots = (allowedAttachmentRoots ?? Array.Empty<string>()).Concat(new[] { resultsDirectory })
+			.Select(root => System.IO.Path.TrimEndingDirectorySeparator(System.IO.Path.GetFullPath(root))).ToArray();
+		if (roots.Any(root => string.Equals(root, System.IO.Path.GetPathRoot(root), comparison)))
+			throw new System.IO.InvalidDataException("A filesystem root cannot be used as an attachment source root.");
 		var deployment = (string)trx.Root.Element(ns + "TestSettings")?.Element(ns + "Deployment")?.Attribute("runDeploymentRoot");
 		var index = 0;
 		foreach (var attachment in trx.Descendants(ns + "ResultFile"))
@@ -171,7 +178,29 @@ public static class UITestRetry
 				System.IO.Path.Combine(resultsDirectory, deployment ?? "", relativeDirectory, path),
 				System.IO.Path.Combine(resultsDirectory, path)
 			};
-			var source = candidates.FirstOrDefault(System.IO.File.Exists);
+			string source = null;
+			foreach (var candidate in candidates)
+			{
+				var fullPath = System.IO.Path.GetFullPath(candidate);
+				var root = roots.FirstOrDefault(allowedRoot =>
+				{
+					var relative = System.IO.Path.GetRelativePath(allowedRoot, fullPath);
+					return !System.IO.Path.IsPathRooted(relative) && relative != ".." &&
+						!relative.StartsWith(".." + System.IO.Path.DirectorySeparatorChar, comparison);
+				});
+				if (root == null)
+					throw new System.IO.InvalidDataException("TRX attachment source is outside the configured attachment roots.");
+				for (var current = fullPath; current != null; current = System.IO.Path.GetDirectoryName(current))
+				{
+					if ((System.IO.File.Exists(current) || System.IO.Directory.Exists(current)) &&
+						(System.IO.File.GetAttributes(current) & System.IO.FileAttributes.ReparsePoint) != 0)
+						throw new System.IO.InvalidDataException("TRX attachment sources cannot traverse symbolic links or junctions.");
+					if (string.Equals(current, root, comparison))
+						break;
+				}
+				if (source == null && System.IO.File.Exists(fullPath))
+					source = fullPath;
+			}
 			if (source == null)
 				throw new System.IO.FileNotFoundException("TRX attachment could not be preserved.", path);
 			// MTP reports absolute original paths, which the next attempt may overwrite.

@@ -70,6 +70,7 @@ Save-State
 if ($Platform -eq 'android') {
     $sdk = if ($env:ANDROID_SDK_ROOT) { $env:ANDROID_SDK_ROOT } else { $env:ANDROID_HOME }
     if (!$sdk) { throw 'ANDROID_SDK_ROOT or ANDROID_HOME must identify the provisioned SDK.' }
+    $sdk = [IO.Path]::GetFullPath($sdk)
     $adb = Join-Path $sdk 'platform-tools/adb'
     $manager = Join-Path $sdk 'cmdline-tools/latest/bin/sdkmanager'
     $avdmanager = Join-Path $sdk 'cmdline-tools/latest/bin/avdmanager'

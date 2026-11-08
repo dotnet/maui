@@ -30,6 +30,63 @@ public class RetryTests
 		}
 	}
 
+	[TestCase("relative")]
+	[TestCase("absolute")]
+	[TestCase("deployment")]
+	[TestCase("result-directory")]
+	public void RejectsExistingAttachmentsOutsideConfiguredRoots(string sourceKind)
+	{
+		var scope = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+		var results = Path.Combine(scope, "results");
+		var outside = Path.Combine(scope, "outside");
+		Directory.CreateDirectory(results);
+		Directory.CreateDirectory(outside);
+		var sentinel = Path.Combine(outside, "sentinel.txt");
+		File.WriteAllText(sentinel, "must not be imported");
+		var path = sourceKind == "absolute" ? sentinel :
+			sourceKind == "relative" ? Path.GetRelativePath(results, sentinel) : "sentinel.txt";
+		var deployment = sourceKind == "deployment" ? outside : "";
+		var relativeDirectory = sourceKind == "result-directory" ? outside : "";
+		var archive = Path.Combine(results, "raw");
+		try
+		{
+			var trx = AttachmentReport(path, deployment, relativeDirectory);
+			Assert.Throws<InvalidDataException>(() => UITestRetry.PreserveAttachments(trx, results, archive));
+			Assert.That(File.Exists(sentinel), Is.True);
+			Assert.That(Directory.Exists(archive), Is.False);
+		}
+		finally { Directory.Delete(scope, true); }
+	}
+
+	[Test]
+	public void PreservesAbsoluteAttachmentsOnlyWhenTheirRootIsExplicitlyAllowed()
+	{
+		var scope = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+		var results = Path.Combine(scope, "results");
+		var logs = Path.Combine(scope, "logs");
+		Directory.CreateDirectory(results);
+		Directory.CreateDirectory(logs);
+		var screenshot = Path.Combine(logs, "screenshot.png");
+		File.WriteAllText(screenshot, "legitimate screenshot");
+		try
+		{
+			var trx = AttachmentReport(screenshot);
+			UITestRetry.PreserveAttachments(trx, results, Path.Combine(results, "raw"), new[] { logs });
+			var path = (string)trx.Descendants().Single(element => element.Name.LocalName == "ResultFile").Attribute("path");
+			Assert.That(File.ReadAllText(path), Is.EqualTo("legitimate screenshot"));
+		}
+		finally { Directory.Delete(scope, true); }
+	}
+
+	static XDocument AttachmentReport(string path, string deployment = "", string relativeDirectory = "")
+	{
+		XNamespace ns = "http://microsoft.com/schemas/VisualStudio/TeamTest/2010";
+		return new XDocument(new XElement(ns + "TestRun",
+			new XElement(ns + "TestSettings", new XElement(ns + "Deployment", new XAttribute("runDeploymentRoot", deployment))),
+			new XElement(ns + "Results", new XElement(ns + "UnitTestResult", new XAttribute("relativeResultsDirectory", relativeDirectory),
+				new XElement(ns + "ResultFiles", new XElement(ns + "ResultFile", new XAttribute("path", path)))))));
+	}
+
 	[TestCase("FullyQualifiedName~Issue123")]
 	[TestCase("TestCategory=Issues&FullyQualifiedName~Issue123")]
 	public void ArbitraryFiltersFallBackToOriginalSelection(string filter)

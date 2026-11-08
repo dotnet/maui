@@ -26,6 +26,18 @@ void RunUITestsWithRetry(string project, string config, string toolPath, string 
 {
 	int numOfRetries = IsCIBuild() ? 1 : 0;
 	var resultDirectory = MakeAbsolute(GetTestResultsDirectory()).FullPath;
+	var projectFile = MakeAbsolute(File(project)).FullPath;
+	var projectName = System.IO.Path.GetFileNameWithoutExtension(projectFile);
+	var attachmentRoots = new List<string> {
+		System.IO.Path.Combine(rootFolder.FullPath, "artifacts", "bin", projectName, config),
+		System.IO.Path.Combine(System.IO.Path.GetDirectoryName(projectFile), "bin", config)
+	};
+	var ciArtifacts = EnvironmentVariable("BUILD_ARTIFACTSTAGINGDIRECTORY");
+	if (!string.IsNullOrEmpty(ciArtifacts))
+		attachmentRoots.Add(System.IO.Path.Combine(ciArtifacts, "Controls.TestCases.Shared.Tests"));
+	var appiumLog = EnvironmentVariable("APPIUM_LOG_FILE");
+	if (!string.IsNullOrEmpty(appiumLog))
+		attachmentRoots.Add(System.IO.Path.GetDirectoryName(System.IO.Path.GetFullPath(appiumLog)));
 	var runId = Convert.ToBase64String(Guid.NewGuid().ToByteArray()).TrimEnd('=').Replace('+', '-').Replace('/', '_');
 	var nunitDirectory = System.IO.Path.Combine(resultDirectory, $"n-{runId}");
 	var retryDirectory = System.IO.Path.Combine(nunitDirectory, "retry");
@@ -75,7 +87,7 @@ void RunUITestsWithRetry(string project, string config, string toolPath, string 
 				{
 					var attachmentResults = XDocument.Load(attemptResultsFile);
 					UITestRetry.PreserveAttachments(attachmentResults, attemptDirectory,
-						System.IO.Path.Combine(rawDirectory, "attachments"));
+						System.IO.Path.Combine(rawDirectory, "attachments"), attachmentRoots);
 					attachmentResults.Save(attemptResultsFile);
 					System.IO.File.Copy(attemptResultsFile, System.IO.Path.Combine(rawDirectory, resultsFileName + ".trx"));
 				}

@@ -40,6 +40,12 @@ requiring MTP-only XML reconciliation. Migrated targets keep the stricter MTP
 TRX/NUnit XML reconciliation described below. Script overlays alone never change
 the target checkout's SDK protocol.
 
+Attachment imports are restricted to the attempt's result directory and
+explicitly configured test-output, diagnostic and application-log directories.
+Report-provided paths cannot expand those roots: traversal, foreign absolute
+paths, symbolic links and junctions fail before their contents are copied.
+Legitimate absolute screenshot/log paths remain supported within those roots.
+
 NUnit's MTP bridge accepts `--filter` with the existing category/FQN expressions,
 including `TestCategory=Issues`, `FullyQualifiedName~Issue123`, exact FQNs, and
 combined expressions. It accepts runsettings using `--settings`. Narrowed CI

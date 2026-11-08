@@ -61,6 +61,20 @@ Describe 'NUnit MTP command and result compatibility' {
         }
     }
 
+    It 'passes configured attachment roots into both actual launcher result collectors' {
+        $source = Get-Content -LiteralPath (Join-Path $RepoRoot '.github/scripts/BuildAndRunHostApp.ps1') -Raw
+        $ast = [Management.Automation.Language.Parser]::ParseInput($source, [ref]$null, [ref]$null)
+        $commands = @($ast.FindAll({
+            param($node)
+            $node -is [Management.Automation.Language.CommandAst] -and
+                $node.GetCommandName() -eq 'Complete-NUnitMtpAttempt'
+        }, $true))
+        $commands.Count | Should -Be 2
+        foreach ($command in $commands) {
+            $command.Extent.Text | Should -Match '-AllowedAttachmentRoots \$attachmentRoots'
+        }
+    }
+
     It 'forwards category and FQN filters without VSTest-only options' {
         $directory = Join-Path $FixtureRoot 'settings with spaces'
         $arguments = @(Get-NUnitMtpArguments -Project 'UI Tests.csproj' -Configuration Release `

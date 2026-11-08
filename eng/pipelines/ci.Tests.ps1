@@ -148,6 +148,13 @@ Describe 'CI provisioning' {
     @([regex]::Matches($triggerSections, '\.github(?=\s|,)')).Count | Should -Be 2
   }
 
+  It 'schedules pipeline regressions when their protected implementation files change' {
+    $workflow = Get-Content -Raw -LiteralPath (
+      Join-Path $PSScriptRoot '../../.github/workflows/powershell-script-tests.yml')
+    $workflow | Should -Match "'eng/pipelines/ci-uitests\.yml'"
+    $workflow | Should -Match "'eng/pipelines/arcade/stage-integration-tests\.yml'"
+  }
+
   It 'fails the Pester gate on discovery failures even when every discovered test passed' {
     $workflow = Get-Content -Raw -LiteralPath (
       Join-Path $PSScriptRoot '../../.github/workflows/powershell-script-tests.yml')

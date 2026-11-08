@@ -38,6 +38,8 @@ resource. Supplying an exact UDID/serial borrows that device without deleting or
 stopping it. iOS major-version requests select an installed matching runtime;
 unavailable runtimes fail rather than silently changing the requested OS.
 Android SDK licenses must already be accepted.
+Android cleanup derives its executable from the configured SDK and rejects a
+persisted executable path that differs from that SDK's adb.
 The owned iOS simulator uses an installed iPhone profile compatible with the
 selected runtime. Cleanup revalidates its individual UUID and recorded unique
 name; aggregate selectors and foreign simulator state cannot reach deletion.

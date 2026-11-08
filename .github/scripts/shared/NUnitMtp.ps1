@@ -36,7 +36,8 @@ function Complete-NUnitMtpAttempt {
         [string]$RepoRoot,
         [string]$TrxPath,
         [string]$NUnitDirectory,
-        [int]$ExitCode
+        [int]$ExitCode,
+        [string[]]$AllowedAttachmentRoots = @()
     )
 
     if ((Get-CheckoutTestRunner -RepoRoot $RepoRoot) -eq 'VSTest') {
@@ -57,7 +58,7 @@ function Complete-NUnitMtpAttempt {
     $trx = [System.Xml.Linq.XDocument]::Load($TrxPath)
     $rawDirectory = Join-Path $NUnitDirectory 'raw'
     [void][System.IO.Directory]::CreateDirectory($rawDirectory)
-    [UITestRetry]::PreserveAttachments($trx, (Split-Path $TrxPath), (Join-Path $rawDirectory 'attachments'))
+    [UITestRetry]::PreserveAttachments($trx, (Split-Path $TrxPath), (Join-Path $rawDirectory 'attachments'), $AllowedAttachmentRoots)
     $trx.Save($TrxPath)
     Copy-Item -LiteralPath $TrxPath -Destination $rawDirectory
     $files = @(Get-ChildItem -LiteralPath $NUnitDirectory -Filter '*.xml' -File)

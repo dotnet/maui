@@ -36,6 +36,8 @@ on:
       - 'eng/cake/**'
       - 'eng/pipelines/ci.yml'
       - 'eng/pipelines/ci-device-tests.yml'
+      - 'eng/pipelines/ci-uitests.yml'
+      - 'eng/pipelines/arcade/stage-integration-tests.yml'
       - 'eng/pipelines/arcade/stage-unit-tests.yml'
       - 'eng/pipelines/arcade/stage-device-tests.yml'
       - 'eng/pipelines/common/device-tests*.yml'
