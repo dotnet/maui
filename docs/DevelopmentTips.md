@@ -148,6 +148,14 @@ constructors so trimmed CoreCLR preserves its specific type. This keeps the
 FileSystem exception contract and HybridWebView's existing missing-file response
 without converting unrelated IO errors or disabling trimming.
 
+Required Android device-test XML and assembly markers use application `FilesDir`,
+not the evictable cache. `HeadlessRunnerOptions.TestResultsFilename` accepts only
+a valid basename on Android, including the normal GUID names and names with
+spaces. Rooted paths, traversal, directory separators and invalid filenames
+throw before result-path construction instead of escaping into the cache.
+The result path still reads the instrumentation-selected filename at run time;
+iOS and Windows filename behavior is unchanged.
+
 Windows Switch hover-resource state follows the live `ToggleSwitch`, not its
 temporary WinRT resource-dictionary wrappers. The owned theme dictionaries stay
 rooted through that per-control state so garbage collection cannot duplicate

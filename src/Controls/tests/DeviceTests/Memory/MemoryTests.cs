@@ -199,6 +199,43 @@ public class MemoryTests : ControlsHandlerTestBase
 			"The active test result must be written outside the evictable application cache.");
 	}
 
+	[Theory("Required Result Filenames Reject Paths")]
+	[InlineData(null)]
+	[InlineData("")]
+	[InlineData(" ")]
+	[InlineData(".")]
+	[InlineData("..")]
+	[InlineData("../cache/testResults.xml")]
+	[InlineData("/cache/testResults.xml")]
+	[InlineData("nested/testResults.xml")]
+	[InlineData(@"..\cache\testResults.xml")]
+	[InlineData(@"C:\testResults.xml")]
+	[InlineData("testResults\0.xml")]
+	public void RequiredResultFilenamesRejectPaths(string filename)
+	{
+		var options = new Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunnerOptions
+		{
+			TestResultsFilename = "current.xml"
+		};
+
+		Assert.Throws<ArgumentException>(() => options.TestResultsFilename = filename);
+		Assert.Equal("current.xml", options.TestResultsFilename);
+	}
+
+	[Theory("Required Result Filenames Preserve Basenames")]
+	[InlineData("testResults.xml")]
+	[InlineData("testResults-59ef64b33f3d466887c4e875b7f53c46.xml")]
+	[InlineData("result with spaces.xml")]
+	public void RequiredResultFilenamesPreserveBasenames(string filename)
+	{
+		var options = new Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunnerOptions
+		{
+			TestResultsFilename = filename
+		};
+
+		Assert.Equal(filename, options.TestResultsFilename);
+	}
+
 	sealed class InstrumentedFactAttribute : FactAttribute
 	{
 		public InstrumentedFactAttribute(string displayName) : base(displayName)
