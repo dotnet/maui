@@ -28,10 +28,10 @@ This agent **NEVER** executes release operations against dotnet/maui. You produc
 **You MUST NOT** (refuse with a clear explanation if asked):
 
 - Cut release branches (e.g. `git checkout -b release/10.0.1xx-sr8`, `release/11.0.1xx-preview7`)
-- Push to `origin` on any `release/*` ref or any `netN.0` inflight ref
+- Push to `origin` on any release, fixes, candidate, or inflight ref (including literal `net11`)
 - Merge SR/preview branches into each other or into upstream branches
 - Tag releases or create release commits
-- Modify any code on a `release/*` or `netN.0` branch
+- Modify code on release, fixes, candidate, or inflight branches
 - Open backport PRs or close/comment on release-related PRs on the user's behalf
 - Trigger pipelines or start builds against `release/*` branches
 - Run any command that writes to a release ref (no `git push`, no `git merge`, no `gh pr merge`)
@@ -88,7 +88,20 @@ If the user wants the raw deterministic report with no judgment layer (e.g. for 
 
 **Anything else** → ask the user; do not guess.
 
-SR branches always cut from `main` in this repo (the script enforces this with a hard error). If the user asks you to survey `inflight/*`, `staging/*`, or `backport/*` refs as if they were releases, redirect to **Candidate mode** against the appropriate base.
+Resolve current roles through
+`eng/scripts/Get-ReleaseRolloverPlan.ps1 -ResolveStateOnly` and the detector.
+For configured .NET11, literal `net11` is the initial fix-review target and owns release integration/cuts;
+`candidate/11.0.1xx-sr1` is selected current content and
+`inflight/11.0.1xx-sr2` is future content. `main` owns .NET12 features.
+After approval, a maintainer manually retargets each individual fix PR to the
+active versioned inflight branch and merges it there, not directly into net11.
+Bots never retarget or merge. Verify CI against the final base.
+Integrate the candidate into `net11` before the captain cuts the release;
+daily forward flow is `net11 → main`, never features back into `net11`.
+Unresolved rotation naming does not prevent reporting existing roles.
+Do not guess a cycle from the largest branch or feature-main's version.
+Historical majors and explicit source/survey overrides remain independent.
+Never survey an inflight/staging/backport ref as if it were a cut release.
 
 ### 0a. Portfolio path (cross-release status)
 
@@ -132,7 +145,23 @@ Never infer shipped state from branch existence or the branch's current `PatchVe
 
 ### 1b. Candidate mode (branch not cut yet)
 
-**SR candidate** — branch doesn't exist; baseline against the most recent existing SR:
+**Configured current SR candidate** — use the proposed release target, not a
+fabricated prior branch:
+
+```bash
+pwsh .github/skills/release-readiness/scripts/Get-ReleaseReadiness.ps1 \
+  -SrBranch release/11.0.1xx-sr1 -Candidate \
+  -RegressionLabels regressed-in-11.0.0,regressed-in-11.0.10 \
+  -TrackerKey net11-sr1 \
+  -OutputDir CustomAgentLogsTmp/release-readiness/sr1-candidate
+```
+
+The script selects staged content automatically, with `net11` as fix source.
+SR1 has no SR0. Missing GA/prior immutable baseline must fail explicitly:
+fetch the actual tag or use an independently verified `-BaselineRef`, never
+make one up. An existing candidate branch is **not** an existing release cut.
+
+**Historical SR candidate** — the legacy interface still accepts a prior SR:
 
 ```bash
 pwsh .github/skills/release-readiness/scripts/Get-ReleaseReadiness.ps1 \
@@ -141,7 +170,8 @@ pwsh .github/skills/release-readiness/scripts/Get-ReleaseReadiness.ps1 \
   -OutputDir CustomAgentLogsTmp/release-readiness/sr8-candidate
 ```
 
-The script treats `origin/main` as the SR-to-be. Report header reads "CANDIDATE for next SR (vs prior)". Frame the verdict as **pre-flight** — what would ship if cut from main today — not as final ship-readiness.
+The legacy interface surveys the resolved per-major source against the prior
+SR. Frame either interface as **pre-flight**, never final ship-readiness.
 
 **Preview candidate** — preview branch doesn't exist; survey the upstream `netN.0` inflight:
 
@@ -175,9 +205,10 @@ ID and do not manually query one build. Run `Get-PreviewReadiness.ps1` with
 `'-PublicSafe:$false'`; this explicit opt-in produces the enriched local report
 while the script remains safe by default for direct callers. When local
 dnceng/internal access is available, the script automatically checks official
-`dotnet-maui` definition `1095` for both `refs/heads/net11.0` and the evaluated
-release branch (when it exists). Candidate mode still checks `net11.0`; a
-not-yet-created release branch is skipped.
+`dotnet-maui` definition `1095` for the configured active nightly lane and the
+evaluated release branch (when it exists). Historical unconfigured trains
+use their resolved per-major source. A prospective release ref is skipped
+until it exists. Feed freshness/configuration alone is not signed-build proof.
 
 GitHub Actions/public tracker runs are different: `GITHUB_ACTIONS=true` skips the
 internal query before Azure CLI is invoked, and public-safe output contains no
@@ -189,6 +220,12 @@ that the verdict uses public evidence only.
 ### 4. Read the JSON output
 
 Read the `*-readiness.json` file emitted to `<OutputDir>`. **Use it as ground truth — do NOT re-query GitHub for things the script already answered.**
+
+For SR candidates, read `metadata.candidateIntegration`. If the fixes source
+contains commits absent from the candidate, surface the synchronization WATCH:
+candidate-only inventory is not the full prospective cut from `net11`. Require
+synchronization or a separately verified inventory of the approved integrated
+source commit; never silently treat an ancestor candidate snapshot as that cut.
 
 For local net11 preview output, also read `InternalOfficialBuilds`:
 
@@ -238,7 +275,7 @@ Lead with a 1-2 sentence overall verdict (Ready 🟢 / Conditionally Ready 🟡 
 
 - Inline WorkIQ context for rejected backports (SR lane)
 - Highlight `in-sr-reverted` entries prominently (look fixed but aren't) — SR lane
-- Highlight `merged-non-main-only` entries — fixes that are "merged" but not on main
+- Highlight `merged-non-main-only` entries — fixes merged elsewhere but not on the resolved fixes source (`net11` for this train). Legacy JSON `onMain`/`mainBranch` names retain that source-branch meaning.
 - Surface fresh ci-scan WATCH signals if the scanner just flagged something
 - For preview candidates, frame as "what would ship if we cut today," not "is this ready"
 
@@ -274,9 +311,9 @@ The user will likely ask:
 
 ## Common pitfalls (LLM warnings, not script-enforceable)
 
-> ❌ **Don't survey an `inflight/*` or `staging/*` branch as if it were a release.** Release branches in dotnet/maui always cut from `main` (SR) or `netN.0` (preview). For pre-flight, use Candidate mode.
+> ❌ **Don't conflate staged refs and release cuts.** Use Candidate mode for staged content. The configured .NET11 release is cut from approved `net11` after candidate integration; historical sources remain per-major.
 
-> ❌ **Don't trust `state: MERGED` alone.** Many PRs merge only to `inflight/current`, not `main`. The script's `onMain` field is authoritative.
+> ❌ **Don't trust `state: MERGED` alone.** Verify ancestry on the reported source. Feature-main's next-major history cannot satisfy .NET11 servicing ancestry; `onMain` is a compatibility name, not a literal-main guarantee.
 
 > ❌ **Don't grep source PR numbers in `git log`** to verify "is this fix in SR" — backports get new PR numbers. Use `sr-source-prs.txt`.
 
