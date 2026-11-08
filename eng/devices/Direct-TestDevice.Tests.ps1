@@ -437,6 +437,12 @@ Describe 'Direct native CI contracts' {
             if ($args -contains 'getprop') { $avdName }
         }
         Set-Alias -Name $adbPath -Value Invoke-TestAdb
+        if ($IsWindows) {
+            Mock Get-CimInstance { [pscustomobject]@{ CommandLine="qemu -avd $avdName" } }
+        } else {
+            function Invoke-TestProcessCommand { $global:LASTEXITCODE = 0; "qemu -avd $avdName" }
+            Set-Alias -Name '/bin/ps' -Value Invoke-TestProcessCommand
+        }
         $process = [pscustomobject]@{
             ProcessName = 'qemu-system-x86_64'
             StartTime = $started
@@ -463,6 +469,52 @@ Describe 'Direct native CI contracts' {
         $avdHome | Should -Not -Exist
         $process.WaitCount | Should -Be $(if ($RequiresTermination) { 2 } else { 1 })
         Should -Invoke Stop-Process -Times $(if ($RequiresTermination) { 1 } else { 0 }) -Exactly
+    }
+
+    It 'rejects a matching-timestamp foreign emulator PID with or without a device serial' -TestCases @(
+        @{ WithDevice = $false }
+        @{ WithDevice = $true }
+    ) {
+        param($WithDevice)
+        $directory = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
+        $avdName = "maui-$([guid]::NewGuid().ToString('N'))"
+        $deviceDirectory = Join-Path $directory 'devices'
+        $deviceRoot = Join-Path $deviceDirectory $avdName
+        $avdHome = Join-Path $deviceRoot 'avd'
+        New-Item -ItemType Directory -Force -Path $avdHome | Out-Null
+        $time = [DateTime]::UtcNow
+        $sdk = Join-Path $directory 'sdk'
+        $adb = Join-Path $sdk 'platform-tools/adb'
+        $state = @{
+            Platform='android'; DeviceDirectory=$deviceDirectory; DeviceRoot=$deviceRoot
+            AvdHome=$avdHome; AvdName=$avdName; ProcessId=12345; ProcessStartTime=$time.ToString('O'); Adb=$adb
+        }
+        if ($WithDevice) { $state.Device = 'emulator-5554' }
+        $state | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $directory 'device.json')
+        function Invoke-OwnedAdb {
+            $global:LASTEXITCODE = 0
+            if ($args -contains 'getprop') { $avdName }
+        }
+        Set-Alias -Name $adb -Value Invoke-OwnedAdb
+        $process = [pscustomobject]@{ ProcessName='qemu-system-x86_64'; StartTime=$time }
+        $process | Add-Member -MemberType ScriptMethod -Name WaitForExit -Value { throw 'Must not wait on a foreign process.' }
+        Mock Get-Process { $process }
+        Mock Stop-Process {}
+        if ($IsWindows) {
+            Mock Get-CimInstance { [pscustomobject]@{ CommandLine='qemu -avd another-user-avd' } }
+        } else {
+            function Invoke-ForeignProcessCommand { $global:LASTEXITCODE = 0; 'qemu -avd another-user-avd' }
+            Set-Alias -Name '/bin/ps' -Value Invoke-ForeignProcessCommand
+        }
+        $originalSdk = $env:ANDROID_SDK_ROOT
+        try {
+            $env:ANDROID_SDK_ROOT = $sdk
+            { & (Join-Path $deviceScripts 'Stop-TestDevice.ps1') -ResultsDirectory $directory } |
+                Should -Throw '*does not run the recorded job-owned AVD*'
+        }
+        finally { $env:ANDROID_SDK_ROOT = $originalSdk }
+        Should -Invoke Stop-Process -Times 0 -Exactly
+        $avdHome | Should -Exist
     }
 
     It 'initializes the owned AVD directory without overwriting the read-only PowerShell home' {

@@ -112,7 +112,7 @@ public class WindowsPackageLauncherTests
 				child!.StandardInput.WriteLine("finish");
 				child.StandardInput.Close();
 				return state.PackageFullName;
-			}, value =>
+			}, _ => state.Publisher, value =>
 			{
 				if (saved++ == 0)
 					Assert.False(value.ProcessExited);
@@ -137,7 +137,7 @@ public class WindowsPackageLauncherTests
 				activatedPid = child.Id;
 				return child;
 			},
-			_ => state.PackageFullName, _ => { });
+			_ => state.PackageFullName, _ => state.Publisher, _ => { });
 		Assert.Equal(124, result);
 		Assert.Equal(activatedPid, state.ProcessId);
 		Assert.True(state.ProcessExited);
@@ -157,7 +157,7 @@ public class WindowsPackageLauncherTests
 				activatedPid = child.Id;
 				return child;
 			},
-			_ => state.PackageFullName, _ => { }, cancellation.Token);
+			_ => state.PackageFullName, _ => state.Publisher, _ => { }, cancellation.Token);
 		Assert.Equal(130, result);
 		Assert.Equal(activatedPid, state.ProcessId);
 		Assert.True(state.ProcessExited);
@@ -171,9 +171,49 @@ public class WindowsPackageLauncherTests
 		try
 		{
 			Assert.Throws<InvalidOperationException>(() => PackagedTestSession.Run(state, ["--server"],
-				(_, _) => Process.GetProcessById(child.Id), _ => "another-package", _ => { }));
+				(_, _) => Process.GetProcessById(child.Id), _ => "another-package", _ => state.Publisher, _ => { }));
 			Assert.False(child.HasExited);
 			Assert.False(state.ProcessIdentityVerified);
+		}
+		finally
+		{
+			if (!child.HasExited)
+			{ child.Kill(); child.WaitForExit(); }
+		}
+	}
+
+	[Theory]
+	[InlineData(false)]
+	[InlineData(true)]
+	public void RejectsForeignInstalledPackageBeforeActivation(bool consistentForeignIdentifiers)
+	{
+		var state = State();
+		if (consistentForeignIdentifiers)
+		{
+			state.IdentityName = "foreign.application";
+			state.PackageFullName = "foreign.application_1.0.0.0_x64__foreign";
+			state.PackageFamilyName = "foreign.application_foreign";
+			state.AppUserModelId = state.PackageFamilyName + "!App";
+		}
+		var activated = false;
+		Assert.Throws<InvalidOperationException>(() => PackagedTestSession.Run(state, [],
+			(_, _) => { activated = true; throw new InvalidOperationException("Must not activate."); },
+			_ => state.PackageFullName, _ => "CN=Foreign publisher", _ => { }));
+		Assert.False(activated);
+	}
+
+	[Fact]
+	public void RefusesTerminationWhenRegisteredPublisherNoLongerMatches()
+	{
+		var state = State(timeout: 1);
+		using var child = Child();
+		var publisherQueries = 0;
+		try
+		{
+			Assert.Throws<InvalidOperationException>(() => PackagedTestSession.Run(state, [],
+				(_, _) => Process.GetProcessById(child.Id), _ => state.PackageFullName,
+				_ => publisherQueries++ == 0 ? state.Publisher : "CN=Foreign publisher", _ => { }));
+			Assert.False(child.HasExited);
 		}
 		finally
 		{

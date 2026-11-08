@@ -3,6 +3,10 @@ using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.IO;
+using System.Linq;
+using System.Xml;
+using System.Xml.Linq;
 
 namespace Microsoft.Maui.TestUtils.WindowsTesting
 {
@@ -42,6 +46,29 @@ namespace Microsoft.Maui.TestUtils.WindowsTesting
 				return name.ToString();
 			}
 		}
+
+		public static string GetRegisteredPackagePublisher(string packageFullName)
+		{
+			if (!OperatingSystem.IsWindows())
+				throw new PlatformNotSupportedException("Installed package lookup requires Windows.");
+			uint length = 0;
+			var error = GetPackagePathByFullName(packageFullName, ref length, null);
+			if (error != 122)
+				throw new System.ComponentModel.Win32Exception(error, "Could not locate the registered package.");
+			var path = new StringBuilder((int)length);
+			error = GetPackagePathByFullName(packageFullName, ref length, path);
+			if (error != 0)
+				throw new System.ComponentModel.Win32Exception(error);
+			var settings = new XmlReaderSettings { DtdProcessing = DtdProcessing.Prohibit, XmlResolver = null };
+			using var reader = XmlReader.Create(Path.Combine(path.ToString(), "AppxManifest.xml"), settings);
+			var manifest = XDocument.Load(reader);
+			var identity = manifest.Root?.Elements().SingleOrDefault(element => element.Name.LocalName == "Identity");
+			return (string?)identity?.Attribute("Publisher") ??
+				throw new InvalidDataException("The registered package manifest has no publisher.");
+		}
+
+		[DllImport("kernel32.dll", CharSet = CharSet.Unicode, ExactSpelling = true)]
+		static extern int GetPackagePathByFullName(string packageFullName, ref uint length, StringBuilder? path);
 
 		[DllImport("kernel32.dll", CharSet = CharSet.Unicode, ExactSpelling = true)]
 		static extern int GetPackageFullName(IntPtr process, ref uint length, StringBuilder? name);

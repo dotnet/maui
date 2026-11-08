@@ -87,6 +87,43 @@ public class RetryTests
 				new XElement(ns + "ResultFiles", new XElement(ns + "ResultFile", new XAttribute("path", path)))))));
 	}
 
+	[TestCase(false)]
+	[TestCase(true)]
+	public void RejectsAnExistingRedirectedArchiveDestination(bool indexedDirectory)
+	{
+		var scope = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+		var results = Path.Combine(scope, "results");
+		var outside = Path.Combine(scope, "outside");
+		var archive = Path.Combine(results, "raw", "attachments");
+		Directory.CreateDirectory(results);
+		Directory.CreateDirectory(outside);
+		var source = Path.Combine(results, "screenshot.png");
+		File.WriteAllText(source, "owned screenshot");
+		var link = indexedDirectory ? Path.Combine(archive, "0") : archive;
+		Directory.CreateDirectory(Path.GetDirectoryName(link));
+		try
+		{
+			if (OperatingSystem.IsWindows())
+			{
+				var start = new System.Diagnostics.ProcessStartInfo(Path.Combine(Environment.SystemDirectory, "cmd.exe"))
+				{
+					UseShellExecute = false
+				};
+				foreach (var argument in new[] { "/d", "/c", $"mklink /J \"{link}\" \"{outside}\"" })
+					start.ArgumentList.Add(argument);
+				using var process = System.Diagnostics.Process.Start(start);
+				Assert.That(process.WaitForExit(30000), Is.True);
+				Assert.That(process.ExitCode, Is.Zero);
+			}
+			else
+				Directory.CreateSymbolicLink(link, outside);
+			Assert.Throws<InvalidDataException>(() =>
+				UITestRetry.PreserveAttachments(AttachmentReport(source), results, archive));
+			Assert.That(Directory.GetFiles(outside), Is.Empty);
+		}
+		finally { Directory.Delete(scope, true); }
+	}
+
 	[TestCase("FullyQualifiedName~Issue123")]
 	[TestCase("TestCategory=Issues&FullyQualifiedName~Issue123")]
 	public void ArbitraryFiltersFallBackToOriginalSelection(string filter)

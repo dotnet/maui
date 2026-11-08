@@ -45,6 +45,9 @@ explicitly configured test-output, diagnostic and application-log directories.
 Report-provided paths cannot expand those roots: traversal, foreign absolute
 paths, symbolic links and junctions fail before their contents are copied.
 Legitimate absolute screenshot/log paths remain supported within those roots.
+Archive destination ancestry is checked before directory creation and again
+before copying, so a test-produced symbolic link or junction cannot redirect
+the preserved evidence outside its result archive.
 
 NUnit's MTP bridge accepts `--filter` with the existing category/FQN expressions,
 including `TestCategory=Issues`, `FullyQualifiedName~Issue123`, exact FQNs, and

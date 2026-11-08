@@ -206,9 +206,28 @@ public static class UITestRetry
 			// MTP reports absolute original paths, which the next attempt may overwrite.
 			var destination = System.IO.Path.GetFullPath(System.IO.Path.Combine(archiveDirectory,
 				(index++).ToString(System.Globalization.CultureInfo.InvariantCulture), System.IO.Path.GetFileName(source)));
+			ValidateArchiveDestination(destination, resultsDirectory, comparison);
 			System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(destination));
+			ValidateArchiveDestination(destination, resultsDirectory, comparison);
 			System.IO.File.Copy(source, destination);
 			attachment.SetAttributeValue("path", destination);
+		}
+	}
+
+	static void ValidateArchiveDestination(string destination, string resultsDirectory, StringComparison comparison)
+	{
+		var root = System.IO.Path.TrimEndingDirectorySeparator(System.IO.Path.GetFullPath(resultsDirectory));
+		var relative = System.IO.Path.GetRelativePath(root, destination);
+		if (System.IO.Path.IsPathRooted(relative) || relative == ".." ||
+			relative.StartsWith(".." + System.IO.Path.DirectorySeparatorChar, comparison))
+			throw new System.IO.InvalidDataException("TRX attachment destination is outside the result archive.");
+		for (var current = destination; current != null; current = System.IO.Path.GetDirectoryName(current))
+		{
+			if ((System.IO.File.Exists(current) || System.IO.Directory.Exists(current)) &&
+				(System.IO.File.GetAttributes(current) & System.IO.FileAttributes.ReparsePoint) != 0)
+				throw new System.IO.InvalidDataException("TRX attachment destinations cannot traverse symbolic links or junctions.");
+			if (string.Equals(current, root, comparison))
+				break;
 		}
 	}
 

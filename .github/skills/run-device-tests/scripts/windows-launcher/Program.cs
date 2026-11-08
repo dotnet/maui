@@ -28,6 +28,7 @@ try
 			return process;
 		},
 		WindowsPackageInterop.GetProcessPackageFullName,
+		WindowsPackageInterop.GetRegisteredPackagePublisher,
 		value =>
 		{
 			var pending = path + "." + Guid.NewGuid().ToString("N") + ".next";

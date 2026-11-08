@@ -88,10 +88,23 @@ if ($state.Platform -eq 'android') {
         $process = Get-Process -Id $state.ProcessId -ErrorAction SilentlyContinue
         if ($process -and $process.ProcessName -match '^(emulator|qemu)' -and
             $process.StartTime.ToUniversalTime().Ticks -eq ([DateTime]$state.ProcessStartTime).ToUniversalTime().Ticks) {
-            if (!$process.WaitForExit(30000)) {
-                Stop-Process -Id $state.ProcessId -ErrorAction Stop
+            if ($IsWindows) {
+                $commandLine = (Get-CimInstance Win32_Process -Filter "ProcessId=$($state.ProcessId)" -ErrorAction Stop).CommandLine
+            } else {
+                $commandLine = (& /bin/ps -p $state.ProcessId -o command= 2>$null) -join ' '
+                if ($LASTEXITCODE -ne 0 -and !$process.HasExited) { throw 'Could not verify the recorded emulator process identity.' }
+            }
+            $avdName = [regex]::Escape($state.AvdName)
+            $ownedAvdArgument = '(?:^|\s)-avd\s+(?:"' + $avdName + '"|''' + $avdName + '''|' + $avdName + ')(?:\s|$)'
+            if (!$process.HasExited) {
+                if (!$commandLine -or $commandLine -notmatch $ownedAvdArgument) {
+                    throw 'Refusing to terminate a process that does not run the recorded job-owned AVD.'
+                }
                 if (!$process.WaitForExit(30000)) {
-                    throw "Could not stop the job-owned emulator PID $($state.ProcessId)."
+                    Stop-Process -Id $state.ProcessId -ErrorAction Stop
+                    if (!$process.WaitForExit(30000)) {
+                        throw "Could not stop the job-owned emulator PID $($state.ProcessId)."
+                    }
                 }
             }
         }

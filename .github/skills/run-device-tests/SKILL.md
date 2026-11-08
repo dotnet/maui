@@ -40,6 +40,8 @@ unavailable runtimes fail rather than silently changing the requested OS.
 Android SDK licenses must already be accepted.
 Android cleanup derives its executable from the configured SDK and rejects a
 persisted executable path that differs from that SDK's adb.
+PID cleanup additionally checks the actual emulator command line for the owned
+AVD argument before waiting for or terminating a still-running process.
 The owned iOS simulator uses an installed iPhone profile compatible with the
 selected runtime. Cleanup revalidates its individual UUID and recorded unique
 name; aggregate selectors and foreign simulator state cannot reach deletion.
@@ -98,6 +100,8 @@ its real exit code. Native WinUI startup recovers activation arguments through
 The app verifies both expected package name and publisher before running tests.
 There is no unpackaged or `Invoke-CommandInDesktopPackage` fallback.
 
+The launcher verifies the installed package's manifest publisher through its
+OS-registered package location before activation and again before termination.
 The state file records owner, package identity, certificate, activated PID and
 start time. Cleanup kills only that PID after matching start time and package
 identity and verifying the actual package registration's name and publisher

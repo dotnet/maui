@@ -26,7 +26,7 @@ internal static class PackagedTestSession
 {
 	public static void Validate(PackagedTestState state)
 	{
-		if (!Guid.TryParse(state.OwnerId, out var owner) || string.IsNullOrEmpty(state.IdentityName) ||
+		if (!Guid.TryParse(state.OwnerId, out var owner) || state.IdentityName != "maui.tests." + owner.ToString("N") ||
 			state.Publisher != "CN=MauiTests-" + owner.ToString("N") ||
 			!state.PackageFullName.StartsWith(state.IdentityName + "_", StringComparison.Ordinal) ||
 			!state.PackageFamilyName.StartsWith(state.IdentityName + "_", StringComparison.Ordinal) ||
@@ -37,9 +37,12 @@ internal static class PackagedTestSession
 
 	public static int Run(PackagedTestState state, string[] arguments,
 		Func<string, string, Process> activate, Func<int, string> getPackageName,
+		Func<string, string> getPackagePublisher,
 		Action<PackagedTestState> save, CancellationToken cancellationToken = default)
 	{
 		Validate(state);
+		if (getPackagePublisher(state.PackageFullName) != state.Publisher)
+			throw new InvalidOperationException("The installed package publisher does not belong to the test session.");
 		using var process = activate(state.AppUserModelId, WindowsTestCommandLine.Format(arguments));
 		state.ProcessId = process.Id;
 		state.ProcessStartUtcTicks = process.StartTime.ToUniversalTime().Ticks;
@@ -51,6 +54,13 @@ internal static class PackagedTestSession
 		state.ProcessIdentityVerified = true;
 		save(state);
 
+		void VerifyProcessOwnership()
+		{
+			var actualPackage = getPackageName(process.Id);
+			if (actualPackage != state.PackageFullName || getPackagePublisher(actualPackage) != state.Publisher)
+				throw new InvalidOperationException("The activated process package no longer belongs to the test session.");
+		}
+
 		try
 		{
 			var deadline = Stopwatch.StartNew();
@@ -58,6 +68,7 @@ internal static class PackagedTestSession
 			{
 				if (cancellationToken.IsCancellationRequested || deadline.Elapsed.TotalSeconds >= state.TimeoutSeconds)
 				{
+					VerifyProcessOwnership();
 					process.Kill();
 					if (!process.WaitForExit(30000))
 						throw new TimeoutException("The recorded activated process could not be stopped.");
@@ -76,6 +87,7 @@ internal static class PackagedTestSession
 		{
 			if (!process.HasExited)
 			{
+				VerifyProcessOwnership();
 				process.Kill();
 				if (!process.WaitForExit(30000))
 					throw new TimeoutException("The recorded activated process did not stop during cleanup.");
