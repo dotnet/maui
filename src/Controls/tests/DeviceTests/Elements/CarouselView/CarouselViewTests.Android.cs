@@ -1,4 +1,6 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Android.Views;
@@ -6,14 +8,73 @@ using Android.Widget;
 using AndroidX.RecyclerView.Widget;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Items;
+using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
+using Microsoft.Maui.TestUtils.DeviceTests.Runners;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	public partial class CarouselViewTests
 	{
+		[Theory(DisplayName = "Queued Collection Change Does Not Run After Disconnect")]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task QueuedCollectionChangeDoesNotRunAfterDisconnect(bool loop)
+		{
+			SetupBuilder();
+
+			var data = new ObservableCollection<int> { 1, 2, 3 };
+			var carouselView = new CarouselView
+			{
+				ItemsSource = data,
+				ItemTemplate = new DataTemplate(() => new Label()),
+				Loop = loop
+			};
+			var dispatcher = new CapturingDispatcher(TestDispatcher.Current);
+
+			await CreateHandlerAndAddToWindow<CarouselViewHandler>(carouselView, async handler =>
+			{
+				await handler.PlatformView.WaitForLayoutOrNonZeroSize();
+				var context = new MauiContext(handler.MauiContext.Services, handler.MauiContext.Context);
+				context.AddSpecific<IDispatcher>(dispatcher);
+				handler.SetMauiContext(context);
+
+				dispatcher.Capture = true;
+				data.Add(4);
+				dispatcher.Capture = false;
+				Assert.NotEmpty(dispatcher.PendingActions);
+
+				carouselView.Handler.DisconnectHandler();
+
+				foreach (var action in dispatcher.PendingActions)
+					Assert.Null(Record.Exception(action));
+			});
+		}
+
+		sealed class CapturingDispatcher(IDispatcher dispatcher) : IDispatcher
+		{
+			public bool Capture { get; set; }
+
+			public List<Action> PendingActions { get; } = new();
+
+			public bool IsDispatchRequired => dispatcher.IsDispatchRequired;
+
+			public bool Dispatch(Action action)
+			{
+				if (!Capture)
+					return dispatcher.Dispatch(action);
+
+				PendingActions.Add(action);
+				return true;
+			}
+
+			public bool DispatchDelayed(TimeSpan delay, Action action) => dispatcher.DispatchDelayed(delay, action);
+
+			public IDispatcherTimer CreateTimer() => dispatcher.CreateTimer();
+		}
+
 		[Theory(DisplayName = "Position Initializes Correctly")]
 		[InlineData(0)]
 		[InlineData(1)]

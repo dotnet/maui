@@ -8,6 +8,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version 2.0
+$runtimeVersionPattern = '\A\d+(?:\.\d+){0,3}(?:-[A-Za-z0-9.-]+)?(?:\+[A-Za-z0-9.-]+)?\z'
 if ([string]::IsNullOrWhiteSpace($DotNetDirectory)) {
     throw 'The tool runtime installation directory is missing.'
 }
@@ -161,7 +162,7 @@ foreach ($runtimeProperty in $runtimes.Value.PSObject.Properties) {
             throw "Tool runtime '$runtime' has an empty version."
         }
         $version = $declaredVersion
-        if ($version -notmatch '^\d+(?:\.\d+){0,3}(?:-[A-Za-z0-9.-]+)?(?:\+[A-Za-z0-9.-]+)?$') {
+        if ($version -notmatch $runtimeVersionPattern) {
             $propertyName = $version.Trim('$', '(', ')')
             if ($propertyName -notmatch '^[A-Za-z_][A-Za-z0-9_]*$') {
                 throw "Invalid runtime version or MSBuild property: $version."
@@ -174,6 +175,9 @@ foreach ($runtimeProperty in $runtimes.Value.PSObject.Properties) {
                 throw "Unable to resolve runtime version property '$propertyName' from $VersionsPropsPath."
             }
             $version = $version.Trim()
+        }
+        if ($version -notmatch $runtimeVersionPattern) {
+            throw "Invalid resolved tool runtime version: $version."
         }
 
         $installDirectory = if ($architecture -eq 'x86') {

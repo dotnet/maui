@@ -151,7 +151,7 @@ stages:
           onlyAndroidPlatformDefaultApis: true
           skipAndroidEmulatorImages: true
           skipAndroidCreateAvds: true
-          skipProvisioning: true
+          skipProvisionator: true
           skipXcode: true
           skipSimulatorSetup: true
       prepareSteps:
@@ -164,6 +164,6 @@ stages:
           onlyAndroidPlatformDefaultApis: true
           skipAndroidEmulatorImages: true
           skipAndroidCreateAvds: true
-          skipProvisioning: true
+          skipProvisionator: true
           skipXcode: false
           skipSimulatorSetup: false

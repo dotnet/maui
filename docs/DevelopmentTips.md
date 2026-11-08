@@ -70,7 +70,10 @@ Linux. Its preparation is Android-only and does not select Xcode or simulators;
 current Android CoreCLR builds remain independent on Linux.
 Android CollectionView teardown disconnects recycled template handlers and
 releases the old view and adapter references; ordinary recycling still reuses
-its content. GC checks must run after the owner is disconnected. Android device
+its content. GC checks must run after the owner is disconnected.
+CarouselView teardown also invalidates queued collection updates before
+releasing those references, so a pending callback cannot update a disconnected
+or subsequently reconnected handler. Android device
 results use the filename selected by instrumentation even if the runner was
 resolved before those options were applied.
 The repository-local SDK also installs the .NET 10 runtime
@@ -93,6 +96,8 @@ nonempty version directory as a working runtime. New runtime files are copied
 to a temporary directory beside the destination and atomically renamed only
 after the copy completes, so retrying an interrupted transfer cannot skip a
 partially published version.
+Runtime versions resolved from MSBuild properties must pass the same version
+syntax validation as literals before they become directory names.
 The child executable, MSBuild assembly,
 and project paths pass through quoted environment values on both platforms,
 preserving literal `%NAME%` in Windows paths and literal `$`, spaces, and

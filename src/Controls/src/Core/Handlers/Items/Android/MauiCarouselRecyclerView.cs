@@ -187,9 +187,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (ItemsView is not null)
 				ItemsView.Scrolled -= CarouselViewScrolled;
 
-			// Reset lifecycle state so the next element setup starts cleanly.
+			// Invalidate queued collection updates before releasing the old element.
+			_scrollToCounter++;
 			_initialized = false;
 			_lastLoopValue = null;
+			_isInternalPositionUpdate = false;
+			_noNeedForScroll = false;
+			_gotoPosition = -1;
 
 			ClearLayoutListener();
 			UnsubscribeCollectionItemsSourceChanged(ItemsViewAdapter);
@@ -307,7 +311,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void CollectionItemsSourceChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
 		{
-			if (!(ItemsViewAdapter.ItemsSource is IItemsViewSource observableItemsSource))
+			if (!(ItemsViewAdapter?.ItemsSource is IItemsViewSource observableItemsSource))
 				return;
 
 			// Set flag to disable animation during collection changes
@@ -431,7 +435,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 						{
 							// If someone called explicit ScrollTo before the dispatched
 							// callback was delivered then don't override it.
-							if (_scrollToCounter == savedScrollToCounter)
+							if (_scrollToCounter == savedScrollToCounter && Carousel is not null)
 							{
 								SetCurrentItem(carouselPosition);
 								UpdatePosition(carouselPosition);
@@ -517,7 +521,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				int loopedPosition = LoopedPosition(itemCount) + currentPosition;
 				ScrollToPosition(loopedPosition);
 			}
-			else	
+			else
 			{
 				ScrollToPosition(currentPosition);
 			}
