@@ -119,7 +119,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				if (weakReference.IsAlive && weakReference.Target is object x)
 				{
-					stringBuilder.Append($"Reference to {x} (type {x.GetType()} is still alive.\n");
+					stringBuilder.Append($"Reference to {x.GetType()} is still alive.\n");
 				}
 			}
 

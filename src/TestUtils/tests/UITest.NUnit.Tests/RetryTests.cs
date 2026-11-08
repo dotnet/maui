@@ -107,10 +107,9 @@ public class RetryTests
 			{
 				var start = new System.Diagnostics.ProcessStartInfo(Path.Combine(Environment.SystemDirectory, "cmd.exe"))
 				{
-					UseShellExecute = false
+					UseShellExecute = false,
+					Arguments = $"/d /c mklink /J \"{link}\" \"{outside}\""
 				};
-				foreach (var argument in new[] { "/d", "/c", $"mklink /J \"{link}\" \"{outside}\"" })
-					start.ArgumentList.Add(argument);
 				using var process = System.Diagnostics.Process.Start(start);
 				Assert.That(process.WaitForExit(30000), Is.True);
 				Assert.That(process.ExitCode, Is.Zero);
