@@ -190,6 +190,18 @@ Describe 'Owned MSIX installation and activation cleanup' {
         Should -Invoke Stop-Process -Times 1 -ParameterFilter { $Id -eq 12345 -and $Force }
         Should -Invoke Get-WindowsTestProcessPackage -Times 1 -ParameterFilter { $ProcessId -eq 12345 }
     }
+    It 'rejects a foreign process even when persisted package identity and start ticks match it' {
+        $time = [DateTime]::UtcNow
+        $state.ProcessId = 12345
+        $state.ProcessStartUtcTicks = $time.Ticks
+        $state.PackageFullName = 'foreign.application_1.0.0.0_x64__publisher'
+        Write-WindowsTestPackageState $path $state
+        Mock Get-Process { [pscustomobject]@{ StartTime=$time; HasExited=$false } }
+        Mock Get-WindowsTestProcessPackage { $state.PackageFullName }
+        { Remove-WindowsTestPackage $path } | Should -Throw '*process from another package*'
+        Should -Invoke Stop-Process -Times 0 -Exactly
+    }
+
     It 'never terminates a reused PID' {
         $state.ProcessId = 12345
         $state.ProcessStartUtcTicks = [DateTime]::UtcNow.AddMinutes(-10).Ticks

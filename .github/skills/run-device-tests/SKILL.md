@@ -100,7 +100,8 @@ There is no unpackaged or `Invoke-CommandInDesktopPackage` fallback.
 
 The state file records owner, package identity, certificate, activated PID and
 start time. Cleanup kills only that PID after matching start time and package
-identity, uninstalls only the job-owned main package and removes its signing
+identity and verifying the actual package registration's name and publisher
+against the owned session. It uninstalls only the job-owned main package and removes its signing
 certificate/private key. Shared SDK dependencies are never uninstalled. Cleanup
 verifies each actual certificate's subject and the private certificate's
 session-specific friendly name before deleting either certificate-store entry.

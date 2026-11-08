@@ -204,8 +204,15 @@ function Remove-WindowsTestPackage {
         if ($state.ProcessId -gt 0 -and !$state.ProcessExited) {
             $process = Get-Process -Id $state.ProcessId -ErrorAction SilentlyContinue
             if ($process -and !$process.HasExited) {
-                if ($process.StartTime.ToUniversalTime().Ticks -ne $state.ProcessStartUtcTicks -or
-                    (Get-WindowsTestProcessPackage $state.ProcessId) -cne $state.PackageFullName) {
+                if ($process.StartTime.ToUniversalTime().Ticks -ne $state.ProcessStartUtcTicks) {
+                    throw 'Refusing to terminate a reused PID or a process from another package.'
+                }
+                $actualPackage = Get-WindowsTestProcessPackage $state.ProcessId
+                $registration = @(Get-AppxPackage -Name $state.IdentityName |
+                    Where-Object PackageFullName -CEQ $actualPackage)
+                if ($actualPackage -cne $state.PackageFullName -or $registration.Count -ne 1 -or
+                    $registration[0].Name -cne $state.IdentityName -or
+                    $registration[0].Publisher -cne $state.Publisher) {
                     throw 'Refusing to terminate a reused PID or a process from another package.'
                 }
                 Stop-Process -Id $state.ProcessId -Force -ErrorAction Stop
