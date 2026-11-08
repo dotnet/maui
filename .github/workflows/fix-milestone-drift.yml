@@ -3,7 +3,7 @@ name: Milestone Management
 on:
   pull_request_target:
     types: [closed]
-    branches: [main, net*.0, inflight/*, release/*]
+    branches: [main, net11, net*.0, candidate/*, inflight/*, release/*]
 
   # When a release tag is pushed, audit the entire tag cohort and fix any
   # milestone drift, closing issues fixed by PRs that shipped in this tag.
@@ -54,7 +54,7 @@ on:
         type: boolean
         default: false
       close_fixed_issues:
-        description: '[PR-mode] Close issues linked as fixed by the PR (for PRs merged to net*.0 branches that GitHub does NOT auto-close). [Tag-mode] BULK: closes every linked open issue across the whole PrevTag..ReleaseTag range — use deliberately and with -apply only when you intend to fan out closures across the entire tag cohort.'
+        description: '[PR-mode] Close linked fixed issues for net11/net*.0 merges that GitHub does not auto-close. [Tag-mode] BULK: closes linked open issues across the whole PrevTag..ReleaseTag range; use deliberately.'
         required: false
         type: boolean
         default: false
@@ -74,8 +74,10 @@ jobs:
       - name: Checkout with full history
         uses: actions/checkout@v4
         with:
+          ref: main
           fetch-depth: 0
           fetch-tags: true
+          persist-credentials: false
 
       - name: Run milestone management
         env:
@@ -110,11 +112,11 @@ jobs:
             # Auto-trigger: set milestone on the merged PR
             ARGS+=('-PrNumber' "$INPUT_PR_NUMBER" '-Apply')
             # GitHub only auto-closes "fixes #N" issues for PRs merged to the
-            # default branch (main). For PRs merged to net*.0 development
+            # default branch (main). For PRs merged to net11/net*.0 development
             # branches the issue stays open, so we close it ourselves.
             # We deliberately do NOT auto-close for release/* or inflight/*
             # branches — those need extra human judgment.
-            if [[ "$PR_BASE_REF" == net*.0 ]]; then
+            if [[ "$PR_BASE_REF" == net11 || "$PR_BASE_REF" == net*.0 ]]; then
               ARGS+=('-CloseFixedIssues')
             fi
           else

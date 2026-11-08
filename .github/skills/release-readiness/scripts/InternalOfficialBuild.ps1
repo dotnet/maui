@@ -31,11 +31,13 @@ function Get-InternalOfficialBuildBranches {
     param(
         [Parameter(Mandatory = $true)][int]$MajorVersion,
         [Parameter(Mandatory = $true)][string]$ReleaseBranch,
-        [Parameter(Mandatory = $true)][bool]$ReleaseBranchExists
+        [Parameter(Mandatory = $true)][bool]$ReleaseBranchExists,
+        [string]$SourceBranch
     )
 
     $refs = [System.Collections.Generic.List[string]]::new()
-    [void]$refs.Add("refs/heads/net$MajorVersion.0")
+    if (-not $SourceBranch) { $SourceBranch = "net$MajorVersion.0" }
+    [void]$refs.Add("refs/heads/$SourceBranch")
     $releaseRef = "refs/heads/$ReleaseBranch"
     if ($ReleaseBranchExists -and -not $refs.Contains($releaseRef)) {
         [void]$refs.Add($releaseRef)
@@ -778,13 +780,14 @@ function Get-InternalOfficialBuildHealth {
         [Parameter(Mandatory = $true)][scriptblock]$BuildFetcher,
         [Parameter(Mandatory = $true)][scriptblock]$HeadFetcher,
         [AllowNull()][scriptblock]$BuildCurrencyFetcher,
+        [string]$SourceBranch,
         [bool]$GitHubActions = (Test-IsGitHubActions)
     )
 
     $branchRefs = @(Get-InternalOfficialBuildBranches `
         -MajorVersion $MajorVersion `
         -ReleaseBranch $ReleaseBranch `
-        -ReleaseBranchExists $ReleaseBranchExists)
+        -ReleaseBranchExists $ReleaseBranchExists -SourceBranch $SourceBranch)
 
     if ($MajorVersion -ne 11) {
         return [PSCustomObject]@{
