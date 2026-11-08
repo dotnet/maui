@@ -3,9 +3,11 @@ trigger:
   branches:
     include:
     - main
+    - net11
     - net*.0
     - release/*
     - inflight/*
+    - candidate/*
   paths:
     include:
     - '*'
@@ -22,9 +24,11 @@ pr:
   branches:
     include:
     - main
+    - net11
     - net*.0
     - release/*
     - inflight/*
+    - candidate/*
   paths:
     include:
     - '*'

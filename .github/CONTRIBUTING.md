@@ -29,6 +29,29 @@ Follow the style used by the [.NET Foundation](https://github.com/dotnet/runtime
 
 Read and follow our [Pull Request template](/.github/PULL_REQUEST_TEMPLATE.md).
 
+### Choosing a target branch
+
+The versioned [release workflow](/docs/ReleaseBranchWorkflow.md) separates
+servicing from next-major development:
+
+- Open .NET 11 fix PRs against `net11` for review.
+- After approval, a maintainer manually changes the PR's base to the active
+  versioned inflight branch (currently `inflight/11.0.1xx-sr2`) and merges the fix
+  directly there. Do not merge individual approved fixes into `net11`.
+- Target `main` for next-major features and API changes.
+- Contributors must not initially target a staging branch. Candidate integration
+  into `net11` and changes to `release/*` remain coordinated release work.
+
+Retargeting and merging are manual maintainer actions, not bot actions. Required
+CI must validate the final inflight base; approval against the initial review
+target does not replace that validation. `net11` receives selected contents
+through candidate integration before a release cut.
+
+Infrastructure and documentation changes should target the branch where they
+apply. The feature branch's SDK migration and internal release deployment are
+separate from creating these branch refs; consult the release workflow for
+current deployment requirements.
+
 ### Pull Request Requirements
 
 Please refer to our [Pull Request template](/.github/PULL_REQUEST_TEMPLATE.md).
@@ -63,4 +86,5 @@ All pull requests need to be reviewed and tested by at least two members of the 
 Once a pull request has two approvals, it will receive an "approved" label. As long as no UI or unit tests are failing, this pull request can be merged at this time.
 
 ## Merge Process
-Handler property PRs should target the main branch.
+Handler property fixes follow the target-branch rules above. Next-major handler
+features target `main`.
