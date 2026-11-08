@@ -42,6 +42,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			itemsView.RemoveLogicalChild(View);
 		}
 
+		internal void Disconnect(ItemsView itemsView)
+		{
+			Recycle(itemsView);
+			View?.DisconnectHandlers();
+			_itemContentView.Recycle();
+			View = null;
+		}
+
 		public void Bind(object itemBindingContext, ItemsView itemsView,
 			Action<Size> reportMeasure = null, Size? size = null)
 		{

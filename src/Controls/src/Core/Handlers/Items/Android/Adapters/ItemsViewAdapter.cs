@@ -25,6 +25,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		IItemsViewSource IItemsViewAdapter.ItemsSource => ItemsSource;
 
 		bool _disposed;
+		bool _disconnecting;
 		bool _usingItemTemplate = false;
 		DataTemplateSelector _itemTemplateSelector = null;
 
@@ -62,11 +63,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			if (holder is TemplatedItemViewHolder templatedItemViewHolder)
 			{
-				templatedItemViewHolder.Recycle(ItemsView);
+				if (_disconnecting)
+					templatedItemViewHolder.Disconnect(ItemsView);
+				else
+					templatedItemViewHolder.Recycle(ItemsView);
 			}
 
 			base.OnViewRecycled(holder);
 		}
+
+		internal void Disconnect() => _disconnecting = true;
 
 		public override void OnBindViewHolder(RecyclerView.ViewHolder holder, int position)
 		{

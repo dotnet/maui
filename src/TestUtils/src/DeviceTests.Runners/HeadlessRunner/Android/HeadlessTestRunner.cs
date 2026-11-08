@@ -14,22 +14,21 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 	{
 		readonly HeadlessRunnerOptions _runnerOptions;
 		readonly TestOptions _options;
-		readonly string _resultsPath;
+		readonly string _resultsDirectory;
 
 		public HeadlessTestRunner(HeadlessRunnerOptions runnerOptions, TestOptions options)
 		{
 			_runnerOptions = runnerOptions;
 			_options = options;
 
-			var cache = Application.Context.CacheDir!.AbsolutePath;
-			_resultsPath = Path.Combine(cache, _runnerOptions.TestResultsFilename);
+			_resultsDirectory = Application.Context.CacheDir!.AbsolutePath;
 		}
 
 		protected override bool LogExcludedTests => true;
 
 		public override TextWriter? Logger => null;
 
-		public override string TestsResultsFinalPath => _resultsPath;
+		public override string TestsResultsFinalPath => Path.Combine(_resultsDirectory, _runnerOptions.TestResultsFilename);
 
 		protected override int? MaxParallelThreads => System.Environment.ProcessorCount;
 

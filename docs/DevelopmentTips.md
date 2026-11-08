@@ -64,6 +64,15 @@ and Helix bundle discovery; a retained `net11.0` request must not build or searc
 the default `net12.0` outputs.
 The `TargetsCurrent` SDK workaround is restricted to current-version TFMs so
 retained Mono apps resolve their own AOT workload rather than net12 packs.
+The retained net11 Android Mono build uses the existing macOS build pool:
+the published `mobile-librarybuilder-net11` workload is not installable on
+Linux. Its preparation is Android-only and does not select Xcode or simulators;
+current Android CoreCLR builds remain independent on Linux.
+Android CollectionView teardown disconnects recycled template handlers and
+releases the old view and adapter references; ordinary recycling still reuses
+its content. GC checks must run after the owner is disconnected. Android device
+results use the filename selected by instrumentation even if the runner was
+resolved before those options were applied.
 The repository-local SDK also installs the .NET 10 runtime
 declared in `global.json` for tools such as Cake; this does not change the .NET 12
 target frameworks. The fresh-SDK runtime bootstrap preserves custom Windows

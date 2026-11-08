@@ -143,7 +143,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			// Stop listening for ScrollTo requests
-			oldElement.ScrollToRequested -= ScrollToRequested;
+			if (oldElement is not null)
+				oldElement.ScrollToRequested -= ScrollToRequested;
 
 			RemoveScrollListener();
 
@@ -154,6 +155,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				_itemsUpdateScrollObserver.Stop(ItemsViewAdapter);
 
 				// Unhook whichever adapter is active
+				ItemsViewAdapter.Disconnect();
 				SetAdapter(null);
 
 				_emptyViewAdapter?.Dispose();
@@ -177,6 +179,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			_itemTouchHelperCallback?.Dispose();
 			_itemTouchHelperCallback = null;
+
+			_emptyViewAdapter = null;
+			ItemsViewAdapter = null;
+			ItemsView = null;
 		}
 
 		public virtual void SetUpNewElement(TItemsView newElement)
