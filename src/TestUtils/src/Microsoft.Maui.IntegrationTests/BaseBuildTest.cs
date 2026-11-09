@@ -159,7 +159,7 @@ namespace Microsoft.Maui.IntegrationTests
 		// not be the same as the default in MicrosoftMauiPreviousDotNetReleasedVersion in eng/Versions.props
 		// as this would result in the tests not testing anything. If the .NET 9 version of MAUI pulls in 8.0.100
 		// of the .NET 8 MAUI, then this should be 8.0.80 for example.
-		public const string MauiVersionPrevious = "11.0.0-rc.1.26451.6";
+		public const string MauiVersionPrevious = "11.0.0-rc.2.26505.5";
 
 		char[] invalidChars = { '{', '}', '(', ')', '$', ':', ';', '\"', '\'', ',', '=', '.', '-', ' ', };
 
