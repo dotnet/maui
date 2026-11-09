@@ -58,7 +58,7 @@ namespace Microsoft.Maui.DeviceTests
 						if (windowHandle != IntPtr.Zero)
 						{
 							using var process = Process.GetCurrentProcess();
-							Console.WriteLine($"NATIVE_WINDOW_CLEANUP hwnd=0x{windowHandle.ToInt64():X} alive={IsNativeWindow(windowHandle)} processHandles={process.HandleCount}");
+							Console.WriteLine($"NATIVE_WINDOW_CLEANUP hwnd=0x{windowHandle.ToInt64():X} alive={IsNativeWindow(windowHandle)} processHandles={process.HandleCount} gdiObjects={GetGuiResources(process.Handle, 0)} userObjects={GetGuiResources(process.Handle, 1)}");
 						}
 					}
 					finally
@@ -79,6 +79,9 @@ namespace Microsoft.Maui.DeviceTests
 		[DllImport("user32.dll", EntryPoint = "IsWindow", ExactSpelling = true)]
 		[return: MarshalAs(UnmanagedType.Bool)]
 		static extern bool IsNativeWindow(IntPtr windowHandle);
+
+		[DllImport("user32.dll", ExactSpelling = true)]
+		static extern uint GetGuiResources(IntPtr processHandle, uint flags);
 
 		protected IEnumerable<WNavigationViewItem> GetNavigationViewItems(MauiNavigationView navigationView)
 		{
