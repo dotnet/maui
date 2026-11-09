@@ -43,14 +43,14 @@ parameters:
   default: DotNetBuildESRP
 
 - name: esrpOwners
-  displayName: ESRP release owners (individual Microsoft email addresses)
+  displayName: ESRP release owners (comma-separated Microsoft aliases or email addresses)
   type: string
   default: $(Build.RequestedForEmail)
 
 - name: esrpApprovers
-  displayName: ESRP release approvers (individual Microsoft email addresses, different from owners)
+  displayName: ESRP release approvers (comma-separated Microsoft aliases or email addresses)
   type: string
-  default: rumar@microsoft.com,maleib@microsoft.com,jodick@microsoft.com,alexsoto@microsoft.com,jflorkowski@microsoft.com,jopepper@microsoft.com
+  default: rumar,maleib,jodick,alexsoto,jflorkowski,jopepper
 
 - name: nugetIncludeFilters
   displayName: "[OPTIONAL] Semi-colon (';') separated list of nuget packages to include"

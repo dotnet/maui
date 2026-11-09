@@ -12,13 +12,20 @@ steps:
       throw 'Set nugetOrganization to the NuGet organization onboarded to ESRP and owning all selected packages.'
     }
 
-    $owners = @($env:ESRP_OWNERS.Split(',') | ForEach-Object { $_.Trim() })
-    $approvers = @($env:ESRP_APPROVERS.Split(',') | ForEach-Object { $_.Trim() })
-    foreach ($alias in @($owners) + @($approvers)) {
-      if ($alias -notmatch '^[^@\s,]+@microsoft\.com$') {
-        throw 'Set esrpOwners and esrpApprovers to comma-separated individual Microsoft email addresses.'
+    function Resolve-MicrosoftEmails([string] $value) {
+      foreach ($entry in $value.Split(',')) {
+        $alias = $entry.Trim()
+        if ($alias -notmatch '^[a-z0-9._-]+(@microsoft\.com)?$') {
+          throw 'Set esrpOwners and esrpApprovers to comma-separated individual Microsoft aliases or email addresses.'
+        }
+        if ($alias -notlike '*@*') {
+          $alias += '@microsoft.com'
+        }
+        $alias.ToLowerInvariant()
       }
     }
+    $owners = @(Resolve-MicrosoftEmails $env:ESRP_OWNERS)
+    $approvers = @(Resolve-MicrosoftEmails $env:ESRP_APPROVERS)
     $requester = $env:RELEASE_REQUESTER.Trim()
     if ($requester -notmatch '^[^@\s,]+@microsoft\.com$') {
       throw 'The release requester must have an individual Microsoft email address.'
