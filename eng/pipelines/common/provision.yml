@@ -630,7 +630,15 @@ steps:
     displayName: 'Isolate legacy JDK provisioning from Chrome apt feed'
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
 
-  - pwsh: dotnet build -t:ProvisionJdk -bl:"$(LogDirectory)/provision-jdk.binlog" ${{ parameters.checkoutDirectory }}/src/Provisioning/Provisioning.csproj -v:detailed
+  # Agents don't preinstall JDK 21, so this downloads it; the download host has
+  # intermittent 504 windows that outlast the task-level retry backoff.
+  - pwsh: |
+      foreach ($delay in 0, 30, 60, 120) {
+        Start-Sleep -Seconds $delay
+        dotnet build -t:ProvisionJdk -bl:"$(LogDirectory)/provision-jdk.binlog" ${{ parameters.checkoutDirectory }}/src/Provisioning/Provisioning.csproj -v:detailed
+        if ($LASTEXITCODE -eq 0) { exit 0 }
+      }
+      exit 1
     displayName: 'Provision JDK (maui cli)'
     condition: succeeded()
     retryCountOnTaskFailure: 4
