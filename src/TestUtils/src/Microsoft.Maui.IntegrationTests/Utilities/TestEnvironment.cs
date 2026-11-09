@@ -47,11 +47,10 @@ namespace Microsoft.Maui.IntegrationTests
 		#endregion
 
 		/// <summary>
-		/// Gets the appropriate iOS simulator runtime identifier based on the host architecture.
-		/// Returns "iossimulator-arm64" on ARM64 Macs and "iossimulator-x64" on Intel Macs.
+		/// Gets the iOS simulator runtime identifier. The .NET 12 iOS SDK only ships
+		/// "iossimulator-arm64" (iossimulator-x64 is no longer a valid RID).
 		/// </summary>
-		public static string IOSSimulatorRuntimeIdentifier =>
-			IsArm64 ? "iossimulator-arm64" : "iossimulator-x64";
+		public static string IOSSimulatorRuntimeIdentifier => "iossimulator-arm64";
 
 
 		static string _mauiDir = "";
