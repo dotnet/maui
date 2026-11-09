@@ -1,8 +1,0 @@
-{
-  "author": "Microsoft",
-  "name": ".NET MAUI Window (C#)",
-  "_name.comment": "{Locked}",
-  "description": "A window for displaying a page using C#.",
-  "postActions/openInEditor/description": "Opens NewWindow1.cs in the editor.",
-  "symbols/namespace/description": "Namespace for the generated code."
-}

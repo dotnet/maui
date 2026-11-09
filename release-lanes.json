@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "scope": "release-rollover-trial/sr1-sr2-20261109",
+  "releaseBand": "11.0.1xx",
+  "sr": 1,
+  "fixBranch": "release-rollover-trial/sr1-sr2-20261109/main",
+  "featureBranch": "release-rollover-trial/sr1-sr2-20261109/features",
+  "pullRequest": 40078,
+  "plan": {
+    "mergeSha": "1af153bce71bb0ac9c389a368122113b6290fd1c",
+    "candidateSha": "ee06b4533113461f0400c3cf456a5f13d46bdf14",
+    "inflightSha": "8ec5346649a1059e273dcd0d8ced02bfb54c38c0",
+    "normalizedSha": "54ed87ce161ceb929545ec1d11d08880b5930f9f",
+    "servicingSha": "1af153bce71bb0ac9c389a368122113b6290fd1c",
+    "nextCandidateSha": "953dbd8752e8399c9e04e1112f2cea6a94848988",
+    "nextInflightSha": "dc8696b66202f09cc538b3334475c21d5c0b9090"
+  }
+}
