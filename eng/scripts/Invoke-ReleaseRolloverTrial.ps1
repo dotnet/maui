@@ -72,13 +72,13 @@ if ($created) {
     $result = & (Join-Path $PSScriptRoot 'Sync-ReleaseNextLanes.ps1') -StatePath $statePath `
         -SandboxPrefix $prefix -StageRelease -OutputDirectory $output | ConvertFrom-Json
     $publishing = & (Join-Path $PSScriptRoot 'Sync-ReleasePublishing.ps1') -StatePath $statePath `
-        -SandboxPrefix $prefix -PlanOnly -OutputDirectory $output | ConvertFrom-Json
+        -SandboxPrefix $prefix -PlanOnly -PrepareServicing -OutputDirectory $output | ConvertFrom-Json
     $result | Add-Member -NotePropertyName publicationPlan -NotePropertyValue $publishing
 }
 $result | ConvertTo-Json -Depth 14 |
     Set-Content -LiteralPath (Join-Path $env:RUNNER_TEMP 'release-rollover-trial-result.json') -Encoding utf8
 if ($env:GITHUB_STEP_SUMMARY) {
-    "## Isolated release trial`n`nResult: **$($result.status)**. The approved source is staged under automation/release; real release cuts are manual. Staging remains CI/non-stable. Publication is plan-only and waits for a verified manual cut. No production refs, signing or packages were changed." |
+    "## Isolated release trial`n`nResult: **$($result.status)**. The candidate source is staged under automation/release and a separate servicing PR targets that staging branch. After reviewing and merging it with Create a merge commit, manually cut the dummy release at that exact merge. Publication is plan-only; servicing PR preparation is sandbox-only. No production refs, signing or packages were changed." |
         Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Encoding utf8
 }
 $result | ConvertTo-Json -Depth 14

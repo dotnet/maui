@@ -10,7 +10,7 @@ on:
   create:
   pull_request_target:
     types: [closed]
-    branches: ['release/*']
+    branches: ['automation/release/*']
 
 permissions:
   contents: read
@@ -45,7 +45,7 @@ jobs:
           persist-credentials: false
           fetch-depth: 0
 
-      - name: Wait for a verified manual release cut, then prepare exact signed publication
+      - name: Prepare reviewed staging configuration, then verify the manual cut before signing
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}

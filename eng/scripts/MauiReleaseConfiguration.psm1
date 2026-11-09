@@ -162,7 +162,8 @@ function Get-MauiReleaseVersionContent {
         [Parameter(Mandatory)][ValidateRange(1, 214748362)][int] $Sr,
         [Parameter(Mandatory)][ValidateSet('candidate', 'servicing', 'fixes', 'inflight')][string] $Role,
         [int] $SourceSr = $Sr,
-        [string] $SandboxPrefix
+        [string] $SandboxPrefix,
+        [switch] $ReviewedServicing
     )
 
     if ($ReleaseBand -cnotmatch '^(?<major>[1-9][0-9]*)\.0\.[1-9][0-9]*xx$') {
@@ -177,6 +178,9 @@ function Get-MauiReleaseVersionContent {
         throw 'Candidate and servicing preparation preserve the verified cycle; CI lanes may advance exactly one verified cycle.'
     }
     $version = Get-MauiReleaseVersion -Content $Content
+    if ($ReviewedServicing -and $Role -cne 'servicing') {
+        throw 'Reviewed servicing configuration is only valid for the servicing role.'
+    }
     if ($version.branchDerivedLabels -and $version.labelSandboxPrefix -and
         $version.labelSandboxPrefix -cne $SandboxPrefix) {
         throw 'A scoped central label policy requires its exact authorized sandbox scope.'
@@ -217,7 +221,7 @@ function Get-MauiReleaseVersionContent {
     }
     foreach ($change in @(
             @{ name = 'PatchVersion'; value = if ($SourceSr -eq $Sr) { $version.patch } else { $Sr * 10 } },
-            @{ name = 'StabilizePackageVersion'; value = if ($version.automaticStabilization) {
+            @{ name = 'StabilizePackageVersion'; value = if ($version.automaticStabilization -and !$ReviewedServicing) {
                     Get-MauiStabilizationDefault -SandboxPrefix $SandboxPrefix
                 } elseif ($Role -ceq 'servicing') { 'true' } else { 'false' } }
         )) {
@@ -465,7 +469,7 @@ function New-MauiReleaseNextLanePlan {
             -SandboxPrefix $SandboxPrefix
         $version = Get-MauiReleaseVersion -Content $content
         if ($version.label -cne 'ci.main' -or $version.stable) {
-            throw 'Candidate integration must keep CI metadata; servicing belongs in a post-cut release PR.'
+            throw 'Candidate integration must keep CI metadata; servicing belongs in a reviewed staging PR.'
         }
     }
     $candidateVersion = Get-MauiReleaseVersion -Content (
@@ -584,7 +588,9 @@ function Get-MauiReleaseCompletionPlan {
         [Parameter(Mandatory)][int] $Sr,
         [Parameter(Mandatory)][ValidatePattern('^[0-9a-f]{40}$')][string] $Fixes,
         [AllowNull()][string] $Release,
-        [AllowNull()][string] $Staging
+        [AllowNull()][string] $Staging,
+        [object] $ServicingPullRequest,
+        [string] $SandboxPrefix
     )
 
     foreach ($sha in @($LanePlan.mergeSha, $LanePlan.normalizedSha)) {
@@ -600,14 +606,16 @@ function Get-MauiReleaseCompletionPlan {
     $null = Get-MauiReleaseVersionContent -Content $content -ReleaseBand $ReleaseBand -Sr $Sr -Role candidate `
         -SandboxPrefix $version.labelSandboxPrefix
     if ($version.stable -or $version.label -cne 'ci.main') {
-        throw 'The initial release cut must retain the approved candidate CI metadata.'
+        throw 'The initial staging source must retain the approved candidate CI metadata.'
     }
     if ($Release -and $Release -cne $LanePlan.mergeSha) {
         $null = Invoke-MauiReleaseGit -RepositoryPath $RepositoryPath -Arguments @(
             'merge-base', '--is-ancestor', $LanePlan.mergeSha, $Release)
     }
     if ($Staging -and $Staging -cne $LanePlan.mergeSha) {
-        throw 'The create-once release staging ref must retain the exact approved candidate merge.'
+        $null = Assert-MauiReviewedServicingMerge -RepositoryPath $RepositoryPath -LanePlan $LanePlan `
+            -ReleaseBand $ReleaseBand -Sr $Sr -Commit $Staging -PullRequest $ServicingPullRequest `
+            -SandboxPrefix $SandboxPrefix
     }
     $housekeeping = Get-MauiReleaseVersion -Content (
         Get-MauiReleaseFile -RepositoryPath $RepositoryPath -Commit $LanePlan.normalizedSha -Path 'eng/Versions.props')
@@ -626,7 +634,7 @@ function Get-MauiReleaseCompletionPlan {
     }
     [pscustomobject]@{
         releaseSha = if ($Release) { $Release } else { $null }
-        stagingSha = $LanePlan.mergeSha
+        stagingSha = if ($Staging) { $Staging } else { $LanePlan.mergeSha }
         normalizationSha = $LanePlan.normalizedSha
         createStaging = !$Staging
         createRelease = $false
@@ -634,8 +642,65 @@ function Get-MauiReleaseCompletionPlan {
     }
 }
 
+function New-MauiReviewedServicingCommit {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory)][string] $RepositoryPath,
+        [Parameter(Mandatory)][object] $LanePlan,
+        [Parameter(Mandatory)][string] $ReleaseBand,
+        [Parameter(Mandatory)][int] $Sr,
+        [string] $SandboxPrefix
+    )
+    # Keep historical receipts reproducible, including their automatic-policy no-op.
+    # The separately reviewed head always makes stabilization explicit.
+    $content = Get-MauiReleaseVersionContent -Content (
+        Get-MauiReleaseFile -RepositoryPath $RepositoryPath -Commit $LanePlan.mergeSha -Path 'eng/Versions.props') `
+        -ReleaseBand $ReleaseBand -Sr $Sr -Role servicing -SandboxPrefix $SandboxPrefix -ReviewedServicing
+    New-MauiReleaseContentCommit -RepositoryPath $RepositoryPath -Parent $LanePlan.mergeSha `
+        -Changes @{ 'eng/Versions.props' = $content } -Message "Configure release $ReleaseBand SR$Sr for servicing"
+}
+
+function Assert-MauiReviewedServicingMerge {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory)][string] $RepositoryPath,
+        [Parameter(Mandatory)][object] $LanePlan,
+        [Parameter(Mandatory)][string] $ReleaseBand,
+        [Parameter(Mandatory)][int] $Sr,
+        [Parameter(Mandatory)][ValidatePattern('^[0-9a-f]{40}$')][string] $Commit,
+        [AllowNull()][object] $PullRequest,
+        [string] $SandboxPrefix
+    )
+    $prefix = if ($SandboxPrefix) { "$SandboxPrefix/" } else { '' }
+    $scope = if ($SandboxPrefix) { $SandboxPrefix } else { 'production' }
+    $head = New-MauiReviewedServicingCommit -RepositoryPath $RepositoryPath -LanePlan $LanePlan `
+        -ReleaseBand $ReleaseBand -Sr $Sr -SandboxPrefix $SandboxPrefix
+    $marker = "<!-- maui-release-servicing:${scope}:$ReleaseBand-sr$Sr -->"
+    if (!$PullRequest -or !$PullRequest.merged -or !$PullRequest.merged_at -or
+        $PullRequest.merged_by.type -cne 'User' -or
+        $null -eq $PullRequest.head.repo -or $null -eq $PullRequest.base.repo -or
+        $PullRequest.head.repo.full_name -cne 'dotnet/maui' -or $PullRequest.base.repo.full_name -cne 'dotnet/maui' -or
+        $PullRequest.head.ref -cne "${prefix}automation/servicing/$ReleaseBand-sr$Sr" -or
+        $PullRequest.head.sha -cne $head.sha -or
+        $PullRequest.base.ref -cne "${prefix}automation/release/$ReleaseBand-sr$Sr" -or
+        $PullRequest.merge_commit_sha -cne $Commit -or !([string]$PullRequest.body).Contains($marker)) {
+        throw 'Staging requires the exact same-repository human-reviewed servicing PR merge.'
+    }
+    $parents = (Invoke-MauiReleaseGit -RepositoryPath $RepositoryPath -Arguments @(
+        'show', '-s', '--format=%P', $Commit)).Trim().Split(' ')
+    if ($parents.Count -ne 2 -or $parents[0] -cne $LanePlan.mergeSha -or $parents[1] -cne $head.sha) {
+        throw 'Servicing must be the exact two-parent reviewed merge onto the receipt source.'
+    }
+    if ((Invoke-MauiReleaseGit -RepositoryPath $RepositoryPath -Arguments @(
+            'rev-parse', "${Commit}^{tree}")).Trim() -cne
+        (Invoke-MauiReleaseGit -RepositoryPath $RepositoryPath -Arguments @(
+            'rev-parse', "$($head.sha)^{tree}")).Trim()) {
+        throw 'The reviewed servicing merge contains changes outside the prepared configuration.'
+    }
+}
+
 Export-ModuleMember -Function Get-MauiReleaseVersion, Get-MauiReleaseVersionContent,
     Get-MauiReleasedVersionContent, Get-MauiVerifiedPublishedVersion,
     Get-MauiReleaseFile, New-MauiReleaseContentCommit, New-MauiReleaseLaneIntegrationCommit,
     New-MauiReleaseNextLanePlan, New-MauiReleaseLaneReceipt, Get-MauiReleaseLaneReceipt,
-    Get-MauiReleaseCompletionPlan
+    Get-MauiReleaseCompletionPlan, New-MauiReviewedServicingCommit, Assert-MauiReviewedServicingMerge
