@@ -12,16 +12,35 @@ steps:
       throw 'Set nugetOrganization to the NuGet organization onboarded to ESRP and owning all selected packages.'
     }
 
-    $owners = @($env:ESRP_OWNERS.Split(',') | ForEach-Object { $_.Trim() })
-    $approvers = @($env:ESRP_APPROVERS.Split(',') | ForEach-Object { $_.Trim() })
-    foreach ($alias in @($owners) + @($approvers)) {
-      if ($alias -notmatch '^[^@\s,]+@microsoft\.com$') {
-        throw 'Set esrpOwners and esrpApprovers to comma-separated individual Microsoft email addresses.'
+    function Resolve-MicrosoftEmails([string] $value) {
+      foreach ($entry in $value.Split(',')) {
+        $alias = $entry.Trim()
+        if ($alias -notmatch '^[a-z0-9._-]+(@microsoft\.com)?$') {
+          throw 'Set esrpOwners and esrpApprovers to comma-separated individual Microsoft aliases or email addresses.'
+        }
+        if ($alias -notlike '*@*') {
+          $alias += '@microsoft.com'
+        }
+        $alias.ToLowerInvariant()
       }
     }
-    if (@($owners | Where-Object { $_ -in $approvers }).Count -gt 0) {
-      throw 'ESRP release owners and approvers must be different individuals.'
+    $owners = @(Resolve-MicrosoftEmails $env:ESRP_OWNERS)
+    $approvers = @(Resolve-MicrosoftEmails $env:ESRP_APPROVERS)
+    $requester = $env:RELEASE_REQUESTER.Trim()
+    if ($requester -notmatch '^[^@\s,]+@microsoft\.com$') {
+      throw 'The release requester must have an individual Microsoft email address.'
     }
+    $ineligibleApprovers = @($owners) + @($requester)
+    $excludedApprovers = @($approvers | Where-Object { $_ -in $ineligibleApprovers })
+    if ($excludedApprovers.Count -gt 0) {
+      Write-Warning "Excluding release owners and the requester from ESRP approvers: $($excludedApprovers -join ', ')."
+    }
+    $approvers = @($approvers | Where-Object { $_ -notin $ineligibleApprovers } | Select-Object -Unique)
+    if ($approvers.Count -eq 0) {
+      throw 'Set esrpApprovers to include at least one individual who is neither a release owner nor the requester.'
+    }
+    Write-Host "##vso[task.setvariable variable=EsrpResolvedOwners]$($owners -join ',')"
+    Write-Host "##vso[task.setvariable variable=EsrpResolvedApprovers]$($approvers -join ',')"
 
     $packages = @(Get-ChildItem -LiteralPath $env:PACKAGES_PATH -Filter '*.nupkg' -File)
     if ($packages.Count -eq 0) {
@@ -39,6 +58,7 @@ steps:
     NUGET_ORGANIZATION: $(NuGetOrganization)
     ESRP_OWNERS: $(EsrpOwners)
     ESRP_APPROVERS: $(EsrpApprovers)
+    RELEASE_REQUESTER: $(Build.RequestedForEmail)
 
 - task: EsrpRelease@14
   displayName: Publish NuGet packages through ESRP Release
@@ -55,8 +75,8 @@ steps:
     contentsource: Folder
     folderlocation: $(EsrpNuGetSubmissionPath)
     waitforreleasecompletion: true
-    owners: $(EsrpOwners)
-    approvers: $(EsrpApprovers)
+    owners: $(EsrpResolvedOwners)
+    approvers: $(EsrpResolvedApprovers)
     serviceendpointurl: https://api.esrp.microsoft.com
     mainpublisher: ESRPRELPACMAN
     domaintenantid: 975f013f-7f24-47e8-a7d3-abc4752bf346
