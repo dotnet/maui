@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
@@ -51,7 +53,13 @@ namespace Microsoft.Maui.DeviceTests
 					{
 						window.Handler?.DisconnectHandler();
 						await Task.Delay(10);
+						var windowHandle = newWindow?.GetWindowHandle() ?? IntPtr.Zero;
 						newWindow?.Close();
+						if (windowHandle != IntPtr.Zero)
+						{
+							using var process = Process.GetCurrentProcess();
+							Console.WriteLine($"NATIVE_WINDOW_CLEANUP hwnd=0x{windowHandle.ToInt64():X} alive={IsNativeWindow(windowHandle)} processHandles={process.HandleCount}");
+						}
 					}
 					finally
 					{
@@ -67,6 +75,10 @@ namespace Microsoft.Maui.DeviceTests
 				}
 			});
 		}
+
+		[DllImport("user32.dll", EntryPoint = "IsWindow", ExactSpelling = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		static extern bool IsNativeWindow(IntPtr windowHandle);
 
 		protected IEnumerable<WNavigationViewItem> GetNavigationViewItems(MauiNavigationView navigationView)
 		{
