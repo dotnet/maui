@@ -181,6 +181,9 @@ Fail-fast is disabled; a failed suite does not cancel the others. The artifacts 
 record the checked-out source SHA. This does not change Azure Pipelines billing,
 pool permissions or required checks, and does not replace Appium, device AOT
 or signing validation.
+Launcher capability tests expect SMS, telephone and mail handlers to be
+unavailable on an iOS simulator; they assert `false` rather than skipping those
+cases or making the production launcher report unsupported capabilities.
 Running validation is allowed to finish when new commits arrive; newer queued
 heads must obtain their own results and must not inherit an older run's evidence.
 Device-test apps share a scene manifest and a registered `MauiTestSceneDelegate`
