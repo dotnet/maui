@@ -1,11 +1,13 @@
 #nullable enable
 using System;
-using System.Collections.Concurrent;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml;
+using System.Xml.Linq;
 using Microsoft.Testing.Extensions;
 using Microsoft.Testing.Platform.Extensions;
 using Microsoft.Testing.Platform.Extensions.Messages;
@@ -22,7 +24,7 @@ public sealed class HeadlessTestRunner(HeadlessRunnerOptions runnerOptions, Test
 		if (consumer.TrxReportPath is null || !File.Exists(consumer.TrxReportPath))
 			throw new InvalidOperationException($"The test runner exited with {exitCode} without producing a TRX report.");
 
-		return new NativeTestResult(exitCode, consumer.TrxReportPath, consumer.Passed, consumer.Failed, consumer.Skipped);
+		return NativeTestResult.ReadTrx(exitCode, consumer.TrxReportPath);
 	}
 
 	internal async Task<int> RunWithControllerAsync(string resultsDirectory, string[] arguments)
@@ -83,39 +85,39 @@ public sealed class HeadlessTestRunner(HeadlessRunnerOptions runnerOptions, Test
 
 	sealed class ResultConsumer : IDataConsumer
 	{
-		readonly ConcurrentDictionary<TestNodeUid, string> _outcomes = new();
 		public string? TrxReportPath { get; private set; }
-		public int Passed => _outcomes.Values.Count(value => value == "passed");
-		public int Failed => _outcomes.Values.Count(value => value == "failed");
-		public int Skipped => _outcomes.Values.Count(value => value == "skipped");
 		public string Uid => nameof(ResultConsumer);
 		public string DisplayName => nameof(ResultConsumer);
 		public string Description => "Native device test results";
 		public string Version => "1.0";
-		public Type[] DataTypesConsumed => [typeof(TestNodeUpdateMessage), typeof(SessionFileArtifact)];
+		public Type[] DataTypesConsumed => [typeof(SessionFileArtifact)];
 		public Task<bool> IsEnabledAsync() => Task.FromResult(true);
 
 		public Task ConsumeAsync(IDataProducer dataProducer, IData value, CancellationToken cancellationToken)
 		{
 			if (value is SessionFileArtifact artifact && artifact.FileInfo.Extension.Equals(".trx", StringComparison.OrdinalIgnoreCase))
 				TrxReportPath = artifact.FileInfo.FullName;
-			else if (value is TestNodeUpdateMessage { TestNode: var node })
-			{
-				var outcome = node.Properties.SingleOrDefault<TestNodeStateProperty>() switch
-				{
-					PassedTestNodeStateProperty => "passed",
-					FailedTestNodeStateProperty or ErrorTestNodeStateProperty or TimeoutTestNodeStateProperty => "failed",
-					SkippedTestNodeStateProperty => "skipped",
-					_ => null
-				};
-				if (outcome is not null)
-				{
-					_outcomes[node.Uid] = outcome;
-				}
-			}
 			return Task.CompletedTask;
 		}
 	}
 }
 
-public sealed record NativeTestResult(int ExitCode, string ResultsPath, int Passed, int Failed, int Skipped);
+public sealed record NativeTestResult(int ExitCode, string ResultsPath, int Passed, int Failed, int Skipped)
+{
+	internal static NativeTestResult ReadTrx(int exitCode, string resultsPath)
+	{
+		using var reader = XmlReader.Create(resultsPath, new XmlReaderSettings { DtdProcessing = DtdProcessing.Prohibit, XmlResolver = null });
+		var report = XDocument.Load(reader);
+		XNamespace ns = "http://microsoft.com/schemas/VisualStudio/TeamTest/2010";
+		var counters = report.Root?.Element(ns + "ResultSummary")?.Element(ns + "Counters")
+			?? throw new InvalidDataException("The native TRX report has no result counters.");
+
+		// Different nonserializable theory rows can share a TestNodeUid.
+		return new(exitCode, resultsPath, ReadCounter("passed"), ReadCounter("failed"), ReadCounter("notExecuted"));
+
+		int ReadCounter(string name) =>
+			int.Parse(counters.Attribute(name)?.Value
+				?? throw new InvalidDataException($"The native TRX report has no '{name}' counter."),
+				NumberStyles.None, CultureInfo.InvariantCulture);
+	}
+}
