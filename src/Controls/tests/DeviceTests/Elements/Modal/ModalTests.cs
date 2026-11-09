@@ -32,9 +32,9 @@ namespace Microsoft.Maui.DeviceTests
 	[Trait(RendererHandlerVariant.TraitName, RendererHandlerVariant.AndroidShellRenderer)] // See RendererHandlerVariant.cs
 #if IOS || MACCATALYST
 	[Trait(RendererHandlerVariant.NavigationViewVariantTraitName, RendererHandlerVariant.NavigationRenderer)] // See RendererHandlerVariant.cs
-																											  // This base class exercises PhoneFlyoutPageRenderer on iOS/MacCatalyst; the
-																											  // ModalTests_FlyoutViewHandler subclass overrides registration to exercise FlyoutViewHandler
-																											  // instead, so every test below runs against both variants.
+	// This base class exercises PhoneFlyoutPageRenderer on iOS/MacCatalyst; the
+	// ModalTests_FlyoutViewHandler subclass overrides registration to exercise FlyoutViewHandler
+	// instead, so every test below runs against both variants.
 	[Trait(RendererHandlerVariant.FlyoutViewVariantTraitName, RendererHandlerVariant.PhoneFlyoutPageRenderer)] // See RendererHandlerVariant.cs
 #endif
 	// This base class exercises TabbedRenderer on iOS/MacCatalyst; the
