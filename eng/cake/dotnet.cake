@@ -185,7 +185,7 @@ Task("dotnet-samples")
             }
             projectsToBuild = "./src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj";
             properties["_UseNativeAot"] = "true";
-            properties["RuntimeIdentifier"] = "iossimulator-x64";
+            properties["RuntimeIdentifier"] = "iossimulator-arm64";
             properties["BuildIpa"] = "true";
         }
         else
@@ -215,7 +215,7 @@ Task("uitests-apphost")
         {
             Information("Building for NativeAOT");
             properties.Add("_UseNativeAot", "true");
-            properties.Add("RuntimeIdentifier", "iossimulator-x64");
+            properties.Add("RuntimeIdentifier", "iossimulator-arm64");
         }
 
         var useMaterial3 = Argument("usematerial3", false);
