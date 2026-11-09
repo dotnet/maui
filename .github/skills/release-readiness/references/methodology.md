@@ -52,9 +52,12 @@ major's band-only fallback is not attributed to a retained branch.
 Candidates retain CI/non-stable settings and include the upcoming version in
 both bug-template dropdowns. After candidate integration, create-once
 `automation/release-lanes/<band>-srN` receipts let the workflow recover the exact
-release cut, distinct net11 CI child, next pair and separate draft servicing PR
-targeting the release branch. The stable flip is not a candidate commit; signing
-waits for its reviewed release-branch merge. Receipts do not advance canonical
+candidate source, distinct net11 CI child, next pair and separate draft servicing PR
+targeting `automation/release/<band>-srN` before a real cut. The stable flip is
+not a candidate commit. Review it and merge using Create a merge commit, then
+manually create the real release at that exact reviewed servicing merge; signing
+requires the exact cut and mirror. No post-cut servicing PR is opened.
+Receipts do not advance canonical
 `currentSr`/`nightlyMode`; readiness continues using the reviewed state.
 
 The compatibility JSON names `mainBranch`, `onMain`, `open-on-main`, and
@@ -242,7 +245,15 @@ flip PR; SR8 inherited the same diff through its catch-up merge from SR7:
 
 ### The workflow
 
-After the last required content backport, open a focused PR **targeting the
+For the configured release train, publication automatically opens the servicing
+PR against `automation/release/<band>-srN` before the real release exists.
+Review required CI and use **Create a merge commit**, then manually create
+`release/<band>-srN` at that exact merge. This is mandatory even when branch-derived
+metadata would already stabilize a release ref. A wrong existing real cut requires
+owner reconciliation, not a second post-cut servicing PR.
+
+The following is the historical .NET 10 workflow, not the configured staging
+handoff. After the last required content backport, open a focused PR **targeting the
 SR branch**. Keep `PatchVersion` unchanged and make only this versioning
 transition:
 

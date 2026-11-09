@@ -217,7 +217,7 @@ function Sync-StagedReleasePr {
             "Advance canonical **``eng/release-rollover.json``** from SR$($Plan.previousSr) to SR$Sr after verified staging, reviewed normalization and next-lane preparation."
             ''
             "Staged source: ``$($Plan.mergeSha)``. Next candidate: ``$($Plan.nextCandidate)``. Next inflight: ``$($Plan.nextInflight)``."
-            'No real release branch is required for this state update. A maintainer cuts it later from the verified staged source; staging does not authorize signing or stable outputs.'
+            'No real release branch or servicing review is required for this state update. Independently, the publication workflow opens a servicing PR against staging; after reviewing it and using Create a merge commit, a maintainer manually cuts the real release at that exact merge. Staging alone never authorizes signing.'
             ''
             "Only ``currentSr`` changes. ``nightlyMode`` remains **$($Plan.nightlyMode)**; SDK, package metadata, branch roles, release contents and access rules are unchanged."
             ''
@@ -236,7 +236,7 @@ function Sync-StagedReleasePr {
             ''
             '**A maintainer must review this PR, run required CI and use Create a merge commit. Do not squash or rebase.**'
             'The reconciler does not update the protected integration ref, approve, retarget or merge this PR. Next-lane activation and forward-flow preparation wait for the normalization ancestry to be verified.'
-            'The create-once automation/release staging ref is preserved while this PR awaits approval. The real release branch is cut manually later; no signing or stable output is authorized by staging.'
+            'The automation/release staging ref is created at the candidate source and may advance only through its separately reviewed servicing PR. After that PR is merged with Create a merge commit, the real release branch is manually cut at its exact merge. This normalization PR does not authorize signing.'
         ) -join "`n"
     }
     $template = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../../.github/PULL_REQUEST_TEMPLATE.md') -Raw
@@ -265,6 +265,22 @@ function Sync-StagedReleasePr {
 function Sync-StagedNormalizationPr {
     param([string] $Branch, [object] $Plan, [int] $Sr)
     Sync-StagedReleasePr -Branch $Branch -Plan $Plan -Sr $Sr -Kind normalization
+}
+
+function Get-NextLaneServicingProof {
+    param([string] $Staging, [object] $Plan)
+    if (!$Staging -or $Staging -ceq $Plan.mergeSha) { return $null }
+    Fetch-NextLaneCommit @($Staging)
+    $pages = @(Invoke-NextLaneApi @("repos/$repository/commits/$Staging/pulls", '--method', 'GET',
+        '--paginate', '--slurp', '-F', 'per_page=100'))
+    $matches = @(foreach ($page in $pages) {
+        foreach ($pr in $page) {
+            if ($pr.merged_at -and $pr.merge_commit_sha -ceq $Staging -and
+                $pr.base.ref.StartsWith("${lanePrefix}automation/release/", [StringComparison]::Ordinal)) { $pr }
+        }
+    })
+    if ($matches.Count -ne 1) { throw 'Advanced staging has no unique reviewed servicing PR.' }
+    Invoke-NextLaneApi @("repos/$repository/pulls/$($matches[0].number)")
 }
 
 function Sync-CanonicalReleaseStatePr {
@@ -297,7 +313,7 @@ function Sync-CanonicalReleaseStatePr {
         $null = Get-NextLaneGit @('merge-base', '--is-ancestor', $target.sha, $live)
     }
     if ((Get-NextLaneRef $last.stagingBranch) -cne $last.stagingSha) {
-        throw 'Canonical state cannot advance without the exact create-once staging source.'
+        throw 'Canonical state cannot advance after the verified staging snapshot changes; retry.'
     }
     $pattern = [regex]::new('("currentSr"\s*:\s*)([1-9][0-9]*)')
     $matches = $pattern.Matches($content)
@@ -338,7 +354,7 @@ function Sync-CanonicalReleaseStatePr {
     }
     $proposal = [pscustomobject]@{
         stateSha = $prepared; previousSr = $roles.currentSr; nightlyMode = $roles.nightlyMode
-        mergeSha = $last.stagingSha; nextCandidate = $last.nextCandidate; nextInflight = $last.nextInflight
+        mergeSha = $last.candidateMerge; nextCandidate = $last.nextCandidate; nextInflight = $last.nextInflight
     }
     Sync-StagedReleasePr -Branch $roles.featureBranch -Plan $proposal -Sr $NextSr -Kind state
 }
@@ -432,11 +448,15 @@ for ($attempt = 0; $attempt -lt 100; $attempt++) {
         $currentStaging = Get-NextLaneRef $stagingBranch
         if (!$currentFixes) { throw 'The integration branch disappeared before release completion.' }
         Fetch-NextLaneCommit @($currentFixes)
-        # A historical real release does not gate staging; publishing validates its ancestry separately.
+        # A historical real release never gates staging or independent next-cycle work.
+        $servicingProof = Get-NextLaneServicingProof -Staging $currentStaging -Plan $plan
         $completion = Get-MauiReleaseCompletionPlan -RepositoryPath $RepositoryPath -LanePlan $plan `
-            -ReleaseBand $roles.releaseBand -Sr $trackingSr -Fixes $currentFixes -Staging $currentStaging
-        # Staging is create-only and never authorizes a real release cut.
-        Publish-NextLaneRef -Branch $stagingBranch -Commit $completion.stagingSha
+            -ReleaseBand $roles.releaseBand -Sr $trackingSr -Fixes $currentFixes -Staging $currentStaging `
+            -ServicingPullRequest $servicingProof -SandboxPrefix $SandboxPrefix
+        # Automation only creates staging; its reviewed servicing PR may advance it.
+        if ($completion.createStaging) {
+            Publish-NextLaneRef -Branch $stagingBranch -Commit $completion.stagingSha
+        }
         if ($completion.restoreFixes) {
             if ((Get-NextLaneRef $roles.fixBranch) -cne $currentFixes) {
                 throw 'The integration branch moved after release planning; no housekeeping was applied.'
@@ -446,7 +466,7 @@ for ($attempt = 0; $attempt -lt 100; $attempt++) {
         $housekeepingPending = $normalizationPr.status -cne 'merged'
         $verifiedFixes = Get-NextLaneRef $roles.fixBranch
         $verifiedStaging = Get-NextLaneRef $stagingBranch
-        if (!$verifiedFixes -or $verifiedStaging -cne $plan.mergeSha) {
+        if (!$verifiedFixes -or $verifiedStaging -cne $completion.stagingSha) {
             throw 'The exact staging source or housekeeping branch could not be verified.'
         }
         Fetch-NextLaneCommit @($verifiedFixes)
@@ -469,7 +489,7 @@ for ($attempt = 0; $attempt -lt 100; $attempt++) {
         nextCandidate = $nextCandidate; nextCandidateSha = $plan.nextCandidateSha
         nextInflight = $nextInflight; nextInflightSha = $plan.nextInflightSha
         stagingBranch = if ($StageRelease) { $stagingBranch } else { $null }
-        stagingSha = if ($StageRelease) { $plan.mergeSha } else { $null }
+        stagingSha = if ($StageRelease) { $verifiedStaging } else { $null }
         releaseBranch = $releaseBranch
         releaseSha = if ($StageRelease) { $currentRelease } else { $null }
         completion = $completion

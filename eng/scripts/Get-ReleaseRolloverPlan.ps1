@@ -167,8 +167,9 @@ if ($state.candidateNamingPolicy -ceq 'unresolved') {
     manualReleaseBranch = "release/$band-sr$sr"
     blockers = @($blockers.ToArray())
     unverifiedRequirements = @(
-        'Candidate CI configuration, upcoming bug-template version, and package metadata matching the trusted SR; staging never selects stable branding.'
-        'Manual release cut at the verified staging source before any signing; legacy stable servicing requires a separate reviewed PR on the actual release branch.'
+        'Candidate CI configuration, upcoming bug-template version, and package metadata matching the trusted SR.'
+        'Separate human-reviewed servicing/stable PR against automation/release, merged with Create a merge commit before the manual release cut.'
+        'Manual release cut at that exact reviewed servicing merge, with matching internal mirror before any signing; no second post-cut servicing PR.'
         'Next inflight package metadata, CI branding, and clean integration with normalized fixes.'
         'Candidate merge approval and ancestry on the fixes branch.'
         'Required CI results at the selected release commit.'

@@ -85,8 +85,8 @@ The daily **Forward servicing fixes** workflow prepares a draft merge PR from an
 expendable automation head, not from the `net11` source ref itself. It activates
 only when the feature branch has a later major and the fixes tip has CI-normalized
 `ci.main` / non-stable package metadata. Candidates retain CI settings; their
-post-cut servicing flip is a separate reviewed PR on the release branch. The
-cut workflow prepares the normalized next-cycle net11-to-main PR directly too.
+servicing flip is a separate reviewed PR on automation/release before the
+manual cut. The staging workflow prepares the normalized next-cycle net11-to-main PR too.
 Source/target refs are read-only; automation never guesses conflict resolutions,
 approves PRs, or auto-merges. Actual forward-PR CI remains a separate gate.
 
@@ -94,21 +94,24 @@ The **Release tracking PRs** workflow prepares the next candidate/inflight
 branches and draft PR pair after a verified same-repository candidate merge into
 net11. Its merged-PR trigger uses default-branch workflow code and explicitly
 checks out trusted main, never PR code. A create-once release-lane receipt pins
-inputs/outputs for retries. The deployed workflow cuts the exact candidate merge,
-restores next-cycle CI on net11, opens the separate release-targeted servicing PR,
-and creates the next pair. CI restoration is prepared as a reviewed normalization
+inputs/outputs for retries. The deployed workflow stages the exact candidate merge,
+proposes next-cycle CI on net11 and creates the next pair. Independently, publication
+opens a servicing/stable PR targeting automation/release, before any real release.
+The maintainer reviews and merges using Create a merge commit, then manually
+creates the real release at that exact servicing merge. No post-cut servicing PR
+is opened. CI restoration is prepared as a reviewed normalization
 PR, never a direct protected net11 write. Until its pinned child is merged with
 Create a merge commit, the coordinator reports waiting-for-normalization-approval,
-preserves the cut/current tracking SR, and withholds next-lane activation and
+preserves staging/current tracking SR, and withholds next-lane activation and
 forward flow. Its same-repository merged-PR trigger also accepts the managed
-automation/normalization route. It does not merge either post-cut PR, advance canonical
+automation/normalization route. It does not merge either reviewed PR, advance canonical
 release/nightly state, or publish customer packages. Completed production
-rollover prepares a draft canonical `currentSr` update after rechecking the cut,
+rollover prepares a draft canonical `currentSr` update after rechecking staging,
 normalized fixes and replacement lanes; review/CI/merge still gate the actual
 state change. Its `nightlyMode` is preserved, so the first versioned-nightly
 activation still requires independently verified deployment. The signed-publication
 workflow uses existing federation/internal access, waits for a reviewed servicing
-merge and exact mirror source, queues the existing signed build, then canonical
+merge, exact manual cut and mirror source, queues the existing signed build, then canonical
 artifact preparation with pushPackages=false. Public release approvals remain.
 
 Configured servicing progress is independent of manual release tags. Readiness

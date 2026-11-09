@@ -1025,6 +1025,8 @@ function Get-ReleaseShipChecks {
             -NextAction "Synchronize the staged candidate with approved fixes, or independently inventory the approved integrated source commit before the captain cuts the release. Do not certify candidate-only contents as the full cut."
     }
     $configuredRoles = Get-MetadataValue -Container $Ctx -Name 'branchRoles'
+    $usesStagingServicing = $configuredRoles -and $configuredRoles.configured -and
+        $Ctx.srBranch -cmatch "^release/$([regex]::Escape($configuredRoles.releaseBand))-sr[1-9][0-9]*$"
     if ($configuredRoles -and $configuredRoles.configured) {
         try {
             $null = Get-ReadinessNightlyParameters -Roles $configuredRoles `
@@ -1101,7 +1103,8 @@ function Get-ReleaseShipChecks {
     # stable. This is exactly the trap the check exists to slam shut.
     #
     # Skip in candidate mode — the candidate IS main, where these values are
-    # SUPPOSED to read ci.main / false. The flip happens AFTER the SR is cut.
+    # SUPPOSED to read ci.main / false. The configured train reviews servicing
+    # separately on staging before the manual SR cut.
     if (-not $isCandidate -and $vp) {
         $flipArea = "Versions.props servicing flip (SR$targetSr)"
         $expectedLabel = 'servicing'
@@ -1116,9 +1119,15 @@ function Get-ReleaseShipChecks {
         $labelOk = ($vp.PreReleaseVersionLabel -eq $expectedLabel) -or $centralServicing
         $stabilizeOk = ($vp.StabilizePackageVersion -eq $expectedStabilize) -or $automaticStabilization
         if ($automaticStabilization) {
+            $reviewRequirement = if ($usesStagingServicing) {
+                "This metadata check does not verify the configured train's mandatory pre-cut staging servicing PR or exact manual cut."
+            } else { 'No separate stabilization PR is needed.' }
+            $reviewAction = if ($usesStagingServicing) {
+                'Retain the automatic SR policy; verify reviewed staging, the exact manual cut and final signed build/publication evidence.'
+            } else { 'Retain the automatic SR policy and verify final signed build/publication evidence.' }
             $checks += New-ReadinessCheck -Area $flipArea -Status 'READY' `
-                -Details "``$versionsRef`` preserves the recognized policy that automatically selects ``servicing`` and stabilization on strict SR release refs. No separate stabilization PR is needed. Configuration alone is not signed-artifact or publication proof; explicit build overrides remain authoritative." `
-                -NextAction 'Retain the automatic SR policy and verify final signed build/publication evidence.'
+                -Details "``$versionsRef`` preserves the recognized policy that automatically selects ``servicing`` and stabilization on strict SR release refs. $reviewRequirement Configuration alone is not signed-artifact or publication proof; explicit build overrides remain authoritative." `
+                -NextAction $reviewAction
         } elseif ($centralServicing -and $stabilizeOk) {
             $checks += New-ReadinessCheck -Area $flipArea -Status 'READY' `
                 -Details "``$versionsRef`` preserves the recognized branch-derived label policy and explicitly sets ``StabilizePackageVersion=true``. SR refs select ``servicing`` automatically; the literal ``ci.main`` default is not the effective SR label. Stable configuration is not signed-artifact or publication proof." `
@@ -1196,6 +1205,8 @@ function Get-ReleaseShipChecks {
             }
             $flipNextAction = if ($isShipped) {
                 "Inspect the published ``$versionsRef`` packages and release metadata. If stable assets are wrong, coordinate the release-owner hotfix/rebuild path; otherwise document why the tag is safe despite the configuration."
+            } elseif ($usesStagingServicing) {
+                "The configured train requires its automatically prepared servicing PR against ``automation/$($Ctx.srBranch)`` before the real cut. Review required CI and use Create a merge commit, then manually create ``$($Ctx.srBranch)`` at that exact merge. An existing misconfigured release ref requires owner reconciliation; do not open a second post-cut servicing PR or move the real ref automatically."
             } elseif ($centralLabels) {
                 "After the last required backport, merge the separately reviewed servicing PR targeting ``$($Ctx.srBranch)``. Preserve ``PatchVersion`` and all three branch-label properties; set ``StabilizePackageVersion`` to ``true`` and rerun final CI. The automatic ``servicing`` label and ``IsServicingBuild=true`` alone do not stabilize packages."
             } else {

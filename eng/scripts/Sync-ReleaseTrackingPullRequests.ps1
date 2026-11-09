@@ -141,7 +141,8 @@ foreach ($route in $routes) {
         ('    Candidate["{0}"] -->|Release integration| Fixes["{1}"]' -f $candidateHead, $base)
         ('    Inflight["{0}"] -.->|Next release preview only| Fixes' -f $inflightHead)
         ('    Fixes -->|Pin approved source| Staging["{0}"]' -f $stagingBranch)
-        ('    Staging -->|Maintainer manually cuts when releasing| Release["{0}"]' -f $releaseBranch)
+        '    Staging -->|Review servicing PR and Create a merge commit| Reviewed["Reviewed servicing merge on staging"]'
+        ('    Reviewed -->|Maintainer manually cuts at exact merge| Release["{0}"]' -f $releaseBranch)
         ('    Fixes -->|Daily forward merge| Features["{0} (features)"]' -f $state.featureBranch)
         ('    Inflight -->|Signed nightlies after cutover| Feed["{0}"]' -f $nightlyLabel)
         "    style $currentNode stroke:#2563eb,stroke-width:3px"
@@ -162,9 +163,9 @@ foreach ($route in $routes) {
         ''
         '**Status:** draft tracking PR, not a release approval. Normal review and CI are required before integration. Versioned nightlies retain the legacy stream until the internal cutover is verified.'
         ''
-        'The candidate retains CI settings and includes the upcoming version in both bug-template dropdowns. After its approved merge, automation pins automation/release and opens reviewed next-cycle CI normalization on net11. Staging remains CI/non-stable. A maintainer manually cuts the real release branch from that staged source only when ready to release; only actual release refs select automatic servicing/stable. Legacy sources require a separate reviewed PR on the actual release branch, never on staging or candidate.'
+        'The candidate retains CI settings and includes the upcoming version in both bug-template dropdowns. After its approved merge, automation pins automation/release and independently opens reviewed next-cycle CI normalization on net11. The publication workflow automatically opens a servicing/stable configuration PR against automation/release. Review it and merge using Create a merge commit, then manually create the real release branch at that exact reviewed servicing merge commit. No second post-cut servicing PR is opened.'
         ''
-        'After reviewed normalization, the same workflow prepares the next candidate/inflight branches, draft PR pair and canonical state PR without waiting for a real release cut. Publication explicitly waits for that manual cut and verifies its receipt source (or reviewed legacy servicing merge), plus the exact internal mirror and existing authorization. Public package publishing remains explicitly approved.'
+        'After reviewed normalization, the same workflow prepares the next candidate/inflight branches, draft PR pair and canonical state PR without waiting for servicing review or a real release cut. Publication waits for the exact reviewed staging merge to be manually cut and verifies the receipt, human approvals, two-parent merge and exact internal mirror. Public package publishing remains explicitly approved.'
     ) -join "`n"
     if ($SandboxPrefix) {
         $description += "`n`nSandbox experiment only. This PR must not target a production branch."
