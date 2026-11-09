@@ -19,9 +19,16 @@ steps:
         throw 'Set esrpOwners and esrpApprovers to comma-separated individual Microsoft email addresses.'
       }
     }
-    if (@($owners | Where-Object { $_ -in $approvers }).Count -gt 0) {
-      throw 'ESRP release owners and approvers must be different individuals.'
+    $excludedApprovers = @($approvers | Where-Object { $_ -in $owners })
+    if ($excludedApprovers.Count -gt 0) {
+      Write-Warning "Excluding release owners from ESRP approvers: $($excludedApprovers -join ', ')."
     }
+    $approvers = @($approvers | Where-Object { $_ -notin $owners } | Select-Object -Unique)
+    if ($approvers.Count -eq 0) {
+      throw 'Set esrpApprovers to include at least one individual who is not a release owner.'
+    }
+    Write-Host "##vso[task.setvariable variable=EsrpResolvedOwners]$($owners -join ',')"
+    Write-Host "##vso[task.setvariable variable=EsrpResolvedApprovers]$($approvers -join ',')"
 
     $packages = @(Get-ChildItem -LiteralPath $env:PACKAGES_PATH -Filter '*.nupkg' -File)
     if ($packages.Count -eq 0) {
@@ -55,8 +62,8 @@ steps:
     contentsource: Folder
     folderlocation: $(EsrpNuGetSubmissionPath)
     waitforreleasecompletion: true
-    owners: $(EsrpOwners)
-    approvers: $(EsrpApprovers)
+    owners: $(EsrpResolvedOwners)
+    approvers: $(EsrpResolvedApprovers)
     serviceendpointurl: https://api.esrp.microsoft.com
     mainpublisher: ESRPRELPACMAN
     domaintenantid: 975f013f-7f24-47e8-a7d3-abc4752bf346
