@@ -240,21 +240,33 @@ public partial class FlyoutControlMainPage : FlyoutPage
 	{
 		if (this.Detail is NavigationPage navPage)
 		{
+			var detailLayout = new VerticalStackLayout
+			{
+				Children =
+				{
+					new Label { Text = "Detail 2 - Content" },
+					new Button {
+						Text = "Back to Original Page",
+						AutomationId = "BackToOriginalDetailButton2",
+						Command = new Command(async () => await navPage.PopAsync())
+					}
+				}
+			};
+			if (_viewModel.ShouldHandleBackButton)
+			{
+				var handledLabel = new Label
+				{
+					AutomationId = "Detail2BackButtonHandledLabel",
+					BindingContext = _viewModel
+				};
+				handledLabel.SetBinding(Label.TextProperty, nameof(FlyoutPageViewModel.BackButtonHandled));
+				detailLayout.Children.Add(handledLabel);
+			}
+
 			var detailPage = new ContentPage
 			{
 				Title = "Detail 2",
-				Content = new VerticalStackLayout
-				{
-					Children =
-						{
-							new Label { Text = "Detail 2 - Content" },
-							new Button {
-								Text = "Back to Original Page",
-								AutomationId = "BackToOriginalDetailButton2",
-								Command = new Command(async () => await navPage.PopAsync())
-							}
-						}
-				}
+				Content = detailLayout
 			};
 			detailPage.NavigatedTo += OnPageNavigatedTo;
 			detailPage.NavigatingFrom += OnPageNavigatingFrom;

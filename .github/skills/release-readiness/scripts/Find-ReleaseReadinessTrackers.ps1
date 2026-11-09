@@ -637,7 +637,7 @@ function Get-RecentCommitCount {
         "create a NEW tracker issue" decisions.
     #>
     param([string]$Ref, [int]$Days)
-    $remoteRef = if ($Ref -match '^origin/') { $Ref } else { "origin/$Ref" }
+    $remoteRef = if ($Ref -match '^origin/' -or $Ref -cmatch '^[0-9a-f]{40}$') { $Ref } else { "origin/$Ref" }
     # Use --pretty=format:%H to count lines without a trailing newline.
     $lines = Invoke-GitOrFail @('--no-pager', 'log', $remoteRef, "--since=${Days}.days", '--pretty=format:%H') `
         "Could not count recent commits on $remoteRef"
@@ -867,6 +867,78 @@ function New-RcTracker {
     }
 }
 
+function Get-ConfiguredProgressSnapshot {
+    param([Parameter(Mandatory)][string]$Branch)
+    $lines = @(Invoke-GitOrFail @('ls-remote', '--heads', 'origin', "refs/heads/$Branch") "Could not inspect progress source '$Branch'")
+    if (!$lines.Count) { return $null }
+    if ($lines.Count -ne 1 -or $lines[0] -cnotmatch "^(?<sha>[0-9a-f]{40})`trefs/heads/$([regex]::Escape($Branch))$") {
+        throw "Unexpected progress source '$Branch'."
+    }
+    $sha = $Matches.sha
+    $version = Get-VersionFromGitRef -GitRef $sha -Repo $Repo
+    if (!$version) { throw "Cannot read the pinned progress source '$Branch' at $sha." }
+    [pscustomobject]@{ branch = $Branch; sha = $sha; version = $version }
+}
+
+function Get-ConfiguredServicingProgress {
+    param([Parameter(Mandatory)]$Roles, [Parameter(Mandatory)][int]$Major)
+    $trackers = [Collections.Generic.List[object]]::new()
+    $cycles = @([int]$Roles.currentSr)
+    if ($Roles.currentSr -gt 1) { $cycles += ([int]$Roles.currentSr - 1) }
+    foreach ($sr in $cycles) {
+        $branch = "release/$($Roles.releaseBand)-sr$sr"
+        $snapshot = Get-ConfiguredProgressSnapshot -Branch $branch
+        $candidate = !$snapshot
+        if ($candidate) {
+            if ($sr -ne $Roles.currentSr) { continue }
+            $snapshot = Get-ConfiguredProgressSnapshot -Branch $Roles.candidateBranch
+            if (!$snapshot) { throw 'The configured candidate source is missing; no alternate source is substituted.' }
+        }
+        $versionMatch = [regex]::Match($snapshot.version.Tag, "^$Major\.0\.(?<patch>[0-9]+)$")
+        if (!$versionMatch.Success -or [int]$versionMatch.Groups['patch'].Value -lt ($sr * 10) -or
+            [int]$versionMatch.Groups['patch'].Value -ge (($sr + 1) * 10)) {
+            $kind = if ($candidate) { 'Configured candidate' } else { 'Configured release' }
+            $actual = if ($versionMatch.Success) { $versionMatch.Groups['patch'].Value } else { "unverified ($($snapshot.version.Tag))" }
+            throw "$kind '$($snapshot.branch)' has patch $actual outside SR$sr; no progress source is substituted."
+        }
+        $patch = [int]$versionMatch.Groups['patch'].Value
+        $baselineBranch = if ($sr -eq 1) { "release/$($Roles.releaseBand)" } else { "release/$($Roles.releaseBand)-sr$($sr - 1)" }
+        $baseline = Get-ConfiguredProgressSnapshot -Branch $baselineBranch
+        if ($baseline) {
+            $boundMatch = [regex]::Match($baseline.version.Tag, "^$Major\.0\.(?<patch>[0-9]+)$")
+            if (!$boundMatch.Success -or [int]$boundMatch.Groups['patch'].Value -lt (($sr - 1) * 10) -or
+                [int]$boundMatch.Groups['patch'].Value -ge ($sr * 10)) {
+                throw "Progress baseline '$baselineBranch' does not identify the preceding GA/SR cycle."
+            }
+        }
+        $tracker = New-Tracker -Major $Major -SrNumber $sr -Mode $(if ($candidate) { 'candidate' } else { 'in-flight' }) `
+            -BranchName $branch -SurveyRef $snapshot.branch -ExpectedPatch $patch `
+            -HasRecentActivityCount (Get-RecentCommitCount -Ref $snapshot.sha -Days $ActivityWindowDays)
+        $tracker.branchExists = !$candidate
+        $tracker.priorShippedPatch = $null
+        $tracker.priorShippedTag = $null
+        $tracker | Add-Member -NotePropertyMembers @{
+            sourceBranch = $Roles.sourceBranch; featureBranch = $Roles.featureBranch
+            nightlyBranch = $Roles.nightlyBranch; tagIndependent = $true
+            baselineBranch = $baselineBranch
+            baselineSha = if ($baseline) { $baseline.sha } else { $null }
+        }
+        if ($candidate) {
+            $tracker | Add-Member -NotePropertyMembers @{
+                candidateTargetBranch = $branch
+                candidateBaselineRef = if ($baseline) { $baseline.sha } else { $null }
+            }
+        }
+        $trackers.Add($tracker)
+    }
+    [pscustomobject]@{
+        majorVersion = $Major; mainBranch = $Roles.sourceBranch
+        highestShippedPatch = $null; highestShippedTag = $null
+        highestShippedPreview = $null; highestShippedPreviewTag = $null
+        tagIndependent = $true; trackers = $trackers.ToArray()
+    }
+}
+
 function Invoke-DetectionForMajor {
     <#
     .SYNOPSIS
@@ -880,6 +952,9 @@ function Invoke-DetectionForMajor {
 
     $roles = Resolve-ReadinessBranchRoles -Major $Major -RepositoryPath $Repo
     $mainBranchForMajor = $roles.sourceBranch
+    if ($roles.configured) {
+        return Get-ConfiguredServicingProgress -Roles $roles -Major $Major
+    }
 
     # ── Step 1: Inventory all shipped stable + prerelease tags for this major.
     # All helpers below use unary-comma return + plain assignment here. DON'T
@@ -1315,8 +1390,8 @@ if (-not (Test-Path (Join-Path $Repo '.git'))) {
 }
 
 if (-not $NoFetch) {
-    Write-Host "Fetching origin (branches + tags)..." -ForegroundColor Cyan
-    Invoke-GitOrFail @('fetch', 'origin', '--tags', '--prune', '--quiet') `
+    Write-Host "Fetching origin branch snapshots..." -ForegroundColor Cyan
+    Invoke-GitOrFail @('fetch', 'origin', '--no-tags', '--prune', '--quiet') `
         "git fetch failed (fail-closed; cannot guess in-flight SRs from stale refs)" | Out-Null
 }
 
