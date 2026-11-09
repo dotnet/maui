@@ -7,6 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
 using System.Web;
+using Android.Content.Res;
 using Android.Graphics;
 using Android.Webkit;
 using Java.Net;
@@ -156,7 +157,8 @@ namespace Microsoft.Maui.Platform
 
 		private WebResourceResponse? GetResponse(string fullUrl, IWebResourceRequest request, ILogger? logger)
 		{
-			if (Handler is null || Handler is IViewHandler ivh && ivh.VirtualView is null)
+			var handler = Handler;
+			if (handler is null || ((IViewHandler)handler).VirtualView is not IHybridWebView virtualView)
 			{
 				return null;
 			}
@@ -167,6 +169,8 @@ namespace Microsoft.Maui.Platform
 				return null;
 			}
 
+			// A native request can finish after the UI thread disconnects its handler.
+			var assets = handler.Context.Assets;
 			logger?.LogDebug("Request for {Url} will be handled by .NET MAUI.", fullUrl);
 
 			if (relativePath is null)
@@ -196,7 +200,7 @@ namespace Microsoft.Maui.Platform
 					return error;
 				}
 
-				var contentBytesTask = Handler.InvokeDotNetAsync(stringBody: requestBody);
+				var contentBytesTask = handler.InvokeDotNetAsync(stringBody: requestBody);
 				var responseStream = new AsyncStream(contentBytesTask, logger);
 				return new WebResourceResponse("application/json", "UTF-8", 200, "OK", GetHeaders("application/json"), responseStream);
 			}
@@ -216,7 +220,7 @@ namespace Microsoft.Maui.Platform
 				// to propagate rather than be swallowed, matching how MAUI treats event handlers such
 				// as Button.Click. Developers who want to handle these exceptions can catch them in
 				// their own handler.
-				Handler.MessageReceived(messageBody);
+				handler.MessageReceived(messageBody);
 
 				return new WebResourceResponse(null, "UTF-8", 204, "No Content", null, new MemoryStream());
 			}
@@ -225,7 +229,7 @@ namespace Microsoft.Maui.Platform
 			string? contentType;
 			if (string.IsNullOrEmpty(relativePath))
 			{
-				relativePath = Handler.VirtualView.DefaultFile;
+				relativePath = virtualView.DefaultFile;
 				contentType = "text/html";
 			}
 			else
@@ -237,8 +241,8 @@ namespace Microsoft.Maui.Platform
 				}
 			}
 
-			var assetPath = FileSystemUtils.Combine(Handler.VirtualView.HybridRoot!, relativePath!);
-			var contentStream = assetPath is not null ? PlatformOpenAppPackageFile(assetPath) : null;
+			var assetPath = FileSystemUtils.Combine(virtualView.HybridRoot!, relativePath!);
+			var contentStream = assetPath is not null ? PlatformOpenAppPackageFile(assetPath, assets) : null;
 
 			if (contentStream is not null)
 			{
@@ -289,18 +293,13 @@ namespace Microsoft.Maui.Platform
 			return true;
 		}
 
-		private Stream? PlatformOpenAppPackageFile(string filename)
+		private static Stream? PlatformOpenAppPackageFile(string filename, AssetManager? assets)
 		{
-			if (Handler is null)
-			{
-				return null;
-			}
-
 			filename = FileSystemUtils.NormalizePath(filename);
 
 			try
 			{
-				return Handler.Context.Assets?.Open(filename);
+				return assets?.Open(filename);
 			}
 			catch (Java.IO.FileNotFoundException)
 			{
