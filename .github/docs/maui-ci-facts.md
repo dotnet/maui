@@ -532,6 +532,22 @@ error XAGRDL0000: Could not GET '...pkgs.dev.azure.com/.../maven/v1/...'
 | `XHarness timeout` | `maui-pr-devicetests` Helix logs | Test killed by infrastructure; may be transient |
 | `No test result files found` | `maui-pr-devicetests` Helix logs | Tests never ran or app crashed on launch |
 | UI test screenshot diff | `maui-pr-uitests` | Visual regression; check baseline images |
+| Copilot PAT selection reports every model unavailable almost immediately | Skill evaluation | A failed CLI probe is not proof of missing model entitlement. Copilot CLI 1.0.105 rejects the removed `--no-remote` option before authentication or inference; `--no-remote-export` is still accepted. Verify parser compatibility before changing credentials or models. The evaluator runs its token selector from trusted `main`, not the PR's copy. |
+
+### Native Windows resource evidence
+
+The temporary cleanup probe in [device run 1671453](https://dev.azure.com/dnceng-public/cbb18261-c48f-4abb-8651-8cdcb5474649/_build/results?buildId=1671453),
+log 937, reported `IsWindow=false` after every tracked window closure. Despite
+that destruction, process handles rose from 1,304 to 19,052 and GDI objects from
+144 to 15,834, while USER objects stayed between 39 and 56. Controls still exited
+`57005` while `SingleShellSectionWithMultipleChildren` was active.
+
+These observations rule out those HWNDs simply being left open. Together with
+the earlier symbolized `CTitleBar::InitializeComposition` allocation failure,
+they support investigating native title-bar resource retention, but do not
+identify every remaining managed or native owner. The probe is not a fix and is
+removed after capture. Do not substitute forced collection, raised quotas,
+skips, or disabled title bars for a verified lifetime correction.
 
 ## Merge-readiness criteria
 
