@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Foundation;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,6 +17,20 @@ namespace Microsoft.Maui.Platform
 		internal static void UpdateIsEnabled(this UIMenuElement uiMenuElement, IMenuFlyoutItem menuFlyoutItem)
 		{
 			uiMenuElement.UpdateIsEnabled(menuFlyoutItem.IsEnabled);
+		}
+
+		internal static void UpdateImageSource(this UIMenuElement uiMenuElement, IMenuFlyoutItem menuFlyoutItem, IMauiContext? mauiContext)
+		{
+			if (mauiContext == null)
+				return;
+
+			var image = menuFlyoutItem.Source.GetPlatformMenuImage(mauiContext);
+
+			if (uiMenuElement is UIAction action)
+				action.Image = image;
+
+			if (uiMenuElement is UICommand command)
+				command.Image = image;
 		}
 
 		internal static void UpdateIsEnabled(this UIMenuElement uiMenuElement, bool isEnabled)

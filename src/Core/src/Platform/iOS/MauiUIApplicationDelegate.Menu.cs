@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Versioning;
@@ -104,11 +104,13 @@ namespace Microsoft.Maui
 				bool isEnabled = menuElement.IsEnabled;
 
 				// Check if the parent MenuBarItem is disabled
-				if (isEnabled && menuElement is IElement element)
+				if (menuElement is IElement element)
 				{
-					var parent = element.Parent;
-					if (parent is IMenuBarItem menuBarItem && !menuBarItem.IsEnabled)
+					if (isEnabled && element.Parent is IMenuBarItem menuBarItem && !menuBarItem.IsEnabled)
 						isEnabled = false;
+
+					if (element.Handler?.PlatformView is UIMenuElement platformMenuElement)
+						command.Image = platformMenuElement.Image;
 				}
 
 				command.Attributes = isEnabled
@@ -130,4 +132,3 @@ namespace Microsoft.Maui
 		}
 	}
 }
-

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Foundation;
 using UIKit;
@@ -46,6 +46,11 @@ namespace Microsoft.Maui.Handlers
 		public static void MapIsEnabled(IMenuFlyoutItemHandler handler, IMenuFlyoutItem view)
 		{
 			handler.PlatformView?.UpdateIsEnabled(view);
+		}
+
+		public static void MapSource(IMenuFlyoutItemHandler handler, IMenuFlyoutItem view)
+		{
+			handler.PlatformView?.UpdateImageSource(view, handler.MauiContext);
 		}
 
 		internal static void Execute(UICommand uICommand)
