@@ -9,6 +9,9 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="../../src/UITest.Appium/UITest.Appium.csproj" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="xunit.v3.mtp-v2" Version="$(XunitPackageVersion)" />
     <PackageReference Include="Microsoft.Testing.Extensions.TrxReport" Version="$(MicrosoftTestingPlatformVersion)" />
     <Compile Include="../../src/DeviceTests/xUnitCustomizations.cs" Link="xUnitCustomizations.cs" />

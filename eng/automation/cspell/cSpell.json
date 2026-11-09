@@ -33,7 +33,11 @@
         "SWIX",
         "webauthn",
         "Passwordless",
-        "worktree"
+        "worktree",
+        "noninteractive",
+        "frontmatter",
+        "Vally",
+        "Markout"
     ],
     "ignoreWords": [],
     "patterns": [

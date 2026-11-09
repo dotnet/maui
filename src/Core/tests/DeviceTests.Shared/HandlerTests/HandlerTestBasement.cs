@@ -327,33 +327,38 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					await InvokeOnMainThreadAsync(async () =>
 					{
-						foreach (var reference in _initializedHandlers)
-						{
-							if (!reference.TryGetTarget(out var handler) || handler.VirtualView is null)
-								continue;
-
-#if ANDROID
-							if (handler.PlatformView is global::Java.Lang.Object nativeView && nativeView.Handle == IntPtr.Zero)
-								continue;
-#endif
-
-							if (handler.VirtualView is IWindow window)
-								window.Content?.DisconnectHandlers();
-
-							if (handler.VirtualView is IView view)
-								view.DisconnectHandlers();
-							else
-								handler.DisconnectHandler();
-						}
-
-						_initializedHandlers.Clear();
 						try
 						{
-							(_mauiContext as IDisposable)?.Dispose();
+							foreach (var reference in _initializedHandlers)
+							{
+								if (!reference.TryGetTarget(out var handler) || handler.VirtualView is null)
+									continue;
+
+#if ANDROID
+								if (handler.PlatformView is global::Java.Lang.Object nativeView && nativeView.Handle == IntPtr.Zero)
+									continue;
+#endif
+
+								if (handler.VirtualView is IWindow window)
+									window.Content?.DisconnectHandlers();
+
+								if (handler.VirtualView is IView view)
+									view.DisconnectHandlers();
+								else
+									handler.DisconnectHandler();
+							}
 						}
 						finally
 						{
-							await ((IAsyncDisposable)_mauiApp).DisposeAsync();
+							_initializedHandlers.Clear();
+							try
+							{
+								(_mauiContext as IDisposable)?.Dispose();
+							}
+							finally
+							{
+								await ((IAsyncDisposable)_mauiApp).DisposeAsync();
+							}
 						}
 					});
 				}

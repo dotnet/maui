@@ -3,6 +3,7 @@ using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Interactions;
 using OpenQA.Selenium.Appium.Mac;
+using OpenQA.Selenium.Appium.Windows;
 using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.UI;
 using UITest.Core;
@@ -141,6 +142,16 @@ namespace UITest.Appium
 
 		CommandResponse ClickCoordinates(float x, float y)
 		{
+			if (_appiumApp.Driver is WindowsDriver)
+			{
+				_appiumApp.Driver.ExecuteScript("windows: click", new Dictionary<string, object>
+				{
+					["x"] = (int)x,
+					["y"] = (int)y,
+				});
+				return CommandResponse.SuccessEmptyResponse;
+			}
+
 			OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerKind.Mouse);
 			var sequence = new ActionSequence(touchDevice, 0);
 			sequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, (int)x, (int)y, TimeSpan.FromMilliseconds(5)));
@@ -160,6 +171,17 @@ namespace UITest.Appium
 				return CommandResponse.FailedEmptyResponse;
 			}
 
+			if (_appiumApp.Driver is WindowsDriver)
+			{
+				_appiumApp.Driver.ExecuteScript("windows: click", new Dictionary<string, object>
+				{
+					["elementId"] = element.Id,
+					["times"] = 2,
+					["interClickDelayMs"] = 250,
+				});
+				return CommandResponse.SuccessEmptyResponse;
+			}
+
 			OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerKind.Mouse);
 			var sequence = new ActionSequence(touchDevice, 0);
 			sequence.AddAction(touchDevice.CreatePointerMove(element, 0, 0, TimeSpan.FromMilliseconds(5)));
@@ -176,6 +198,18 @@ namespace UITest.Appium
 
 		CommandResponse DoubleClickCoordinates(float x, float y)
 		{
+			if (_appiumApp.Driver is WindowsDriver)
+			{
+				_appiumApp.Driver.ExecuteScript("windows: click", new Dictionary<string, object>
+				{
+					["x"] = (int)x,
+					["y"] = (int)y,
+					["times"] = 2,
+					["interClickDelayMs"] = 250,
+				});
+				return CommandResponse.SuccessEmptyResponse;
+			}
+
 			OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerKind.Mouse);
 			var sequence = new ActionSequence(touchDevice, 0);
 			sequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, (int)x, (int)y, TimeSpan.FromMilliseconds(5)));
@@ -197,6 +231,16 @@ namespace UITest.Appium
 			if (element == null)
 			{
 				return CommandResponse.FailedEmptyResponse;
+			}
+
+			if (_appiumApp.Driver is WindowsDriver)
+			{
+				_appiumApp.Driver.ExecuteScript("windows: click", new Dictionary<string, object>
+				{
+					["elementId"] = element.Id,
+					["durationMs"] = 2000,
+				});
+				return CommandResponse.SuccessEmptyResponse;
 			}
 
 			OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerKind.Mouse);
