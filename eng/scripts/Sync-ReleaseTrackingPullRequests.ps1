@@ -51,8 +51,10 @@ $base = if ($SandboxPrefix) { "$SandboxPrefix/main" } else { $state.fixBranch }
 $candidateHead = if ($SandboxPrefix) { "$SandboxPrefix/$($state.candidateBranch)" } else { $state.candidateBranch }
 $inflightHead = if ($SandboxPrefix) { "$SandboxPrefix/$($state.inflightBranch)" } else { $state.inflightBranch }
 $releaseBranch = "release/$($state.releaseBand)-sr$($state.currentSr)"
+$stagingBranch = "automation/release/$($state.releaseBand)-sr$($state.currentSr)"
 if ($SandboxPrefix) {
     $releaseBranch = "$SandboxPrefix/$releaseBranch"
+    $stagingBranch = "$SandboxPrefix/$stagingBranch"
 }
 $nightlyLabel = if ($SandboxPrefix) { 'Nightly handoff (not published)' } else { 'ci.inflight dogfood feed' }
 $routes = @(
@@ -138,7 +140,9 @@ foreach ($route in $routes) {
         'flowchart LR'
         ('    Candidate["{0}"] -->|Release integration| Fixes["{1}"]' -f $candidateHead, $base)
         ('    Inflight["{0}"] -.->|Next release preview only| Fixes' -f $inflightHead)
-        ('    Fixes -->|Cut release| Release["{0}"]' -f $releaseBranch)
+        ('    Fixes -->|Pin approved source| Staging["{0}"]' -f $stagingBranch)
+        '    Staging -->|Review servicing PR and Create a merge commit| Reviewed["Reviewed servicing merge on staging"]'
+        ('    Reviewed -->|Maintainer manually cuts at exact merge| Release["{0}"]' -f $releaseBranch)
         ('    Fixes -->|Daily forward merge| Features["{0} (features)"]' -f $state.featureBranch)
         ('    Inflight -->|Signed nightlies after cutover| Feed["{0}"]' -f $nightlyLabel)
         "    style $currentNode stroke:#2563eb,stroke-width:3px"
@@ -159,9 +163,9 @@ foreach ($route in $routes) {
         ''
         '**Status:** draft tracking PR, not a release approval. Normal review and CI are required before integration. Versioned nightlies retain the legacy stream until the internal cutover is verified.'
         ''
-        'The candidate retains CI settings and includes the upcoming version in both bug-template dropdowns. After its approved merge, automation cuts the release branch and restores next-cycle CI on net11. The recognized SR branch policy automatically selects servicing/stable without a redundant flip PR; legacy sources retain a separate reviewed release-targeted servicing PR, never a candidate servicing commit.'
+        'The candidate retains CI settings and includes the upcoming version in both bug-template dropdowns. After its approved merge, automation pins automation/release and independently opens reviewed next-cycle CI normalization on net11. The publication workflow automatically opens a servicing/stable configuration PR against automation/release. Review it and merge using Create a merge commit, then manually create the real release branch at that exact reviewed servicing merge commit. No second post-cut servicing PR is opened.'
         ''
-        'The same workflow prepares the next candidate/inflight branches and draft PR pair. It never merges a legacy servicing PR. Signing verifies the human-approved candidate cut under the automatic policy, or the reviewed legacy servicing merge, plus existing internal deployment/authorization. Public package publishing remains explicitly approved.'
+        'After reviewed normalization, the same workflow prepares the next candidate/inflight branches, draft PR pair and canonical state PR without waiting for servicing review or a real release cut. Publication waits for the exact reviewed staging merge to be manually cut and verifies the receipt, human approvals, two-parent merge and exact internal mirror. Public package publishing remains explicitly approved.'
     ) -join "`n"
     if ($SandboxPrefix) {
         $description += "`n`nSandbox experiment only. This PR must not target a production branch."

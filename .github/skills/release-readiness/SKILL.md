@@ -59,11 +59,14 @@ brings selected contents into `net11`.
 The selected `candidateNamingPolicy=candidate` convention prepares candidate SR
 N+1 and future inflight SR N+2 after a verified candidate merge. Older
 `unresolved` configurations still block mutation, not read-only reporting.
-The deployed merged-candidate workflow also cuts the exact CI candidate merge,
-restores next-cycle CI on net11, and opens a separate draft servicing/stable PR
-targeting the release branch. The candidate itself includes its upcoming
+The deployed merged-candidate workflow stages the exact CI candidate merge and
+proposes reviewed next-cycle CI on net11. Independently, publication opens a
+separate draft servicing/stable PR targeting `automation/release/<band>-srN`
+before the real release exists. The candidate itself includes its upcoming
 bug-template version and never carries the servicing flip. Signing waits for
-that separate reviewed servicing merge. Receipts do not change canonical
+that separate human-reviewed two-parent servicing merge, followed by a manual
+real release cut at that exact merge and matching internal mirror. No post-cut
+servicing PR is opened. Receipts do not change canonical
 `currentSr`/`nightlyMode`. When the approved
 release-state update advances to SR2, readiness selects
 `candidate/11.0.1xx-sr2` and versioned nightly `inflight/11.0.1xx-sr3`

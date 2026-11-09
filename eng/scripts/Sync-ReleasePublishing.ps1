@@ -4,6 +4,7 @@ param (
     [string] $RepositoryPath = (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path,
     [Parameter(Mandatory)][string] $OutputDirectory,
     [switch] $PlanOnly,
+    [switch] $PrepareServicing,
     [string] $SandboxPrefix
 )
 
@@ -17,6 +18,9 @@ if ($SandboxPrefix -and (!$PlanOnly -or
     $SandboxPrefix -cnotmatch '^release-rollover-trial/[a-z0-9][a-z0-9-]{0,40}$' -or
     $roles.fixBranch -cne "$SandboxPrefix/main" -or $roles.featureBranch -cne "$SandboxPrefix/features")) {
     throw 'Sandbox publishing supports plan-only requests, never internal signing or public publication.'
+}
+if ($PrepareServicing -and (!$SandboxPrefix -or !$PlanOnly)) {
+    throw 'PrepareServicing is only supported for isolated plan-only trials; production prepares servicing automatically.'
 }
 $scope = if ($SandboxPrefix) { $SandboxPrefix } else { 'production' }
 $prefix = if ($SandboxPrefix) { "$SandboxPrefix/" } else { '' }
@@ -244,38 +248,98 @@ function Get-CompletedReleaseDispatch {
 
 function Get-PublishingReleaseSource {
     param([string] $Branch, [object] $Plan, [object] $Record)
-    $version = Get-MauiReleaseVersion -Content (
-        Get-MauiReleaseFile -RepositoryPath $RepositoryPath -Commit $Plan.mergeSha -Path 'eng/Versions.props')
-    if ($version.automaticStabilization) {
-        $proof = Invoke-PublishingApi @("repos/dotnet/maui/pulls/$($Record.pullRequest)")
-        $candidateBranch = "${prefix}candidate/$($roles.releaseBand)-sr$($Record.sr)"
-        $marker = "<!-- maui-release-tracking:${scope}:candidate -->"
-        if ($Plan.servicingSha -cne $Plan.mergeSha -or !$proof.merged -or !$proof.merged_at -or
-            $proof.merged_by.type -cne 'User' -or $null -eq $proof.head.repo -or $null -eq $proof.base.repo -or
-            $proof.head.repo.full_name -cne 'dotnet/maui' -or $proof.base.repo.full_name -cne 'dotnet/maui' -or
-            $proof.head.ref -cne $candidateBranch -or $proof.head.sha -cne $Plan.candidateSha -or
-            $proof.base.ref -cne $roles.fixBranch -or $proof.merge_commit_sha -cne $Plan.mergeSha -or
-            !([string]$proof.body).Contains($marker)) {
-            throw 'Automatic stabilization requires the exact verified human-approved candidate integration.'
-        }
-        return $Plan.mergeSha
+    $proof = Invoke-PublishingApi @("repos/dotnet/maui/pulls/$($Record.pullRequest)")
+    $candidateBranch = "${prefix}candidate/$($roles.releaseBand)-sr$($Record.sr)"
+    $candidateMarker = "<!-- maui-release-tracking:${scope}:candidate -->"
+    if (!$proof.merged -or !$proof.merged_at -or
+        $proof.merged_by.type -cne 'User' -or $null -eq $proof.head.repo -or $null -eq $proof.base.repo -or
+        $proof.head.repo.full_name -cne 'dotnet/maui' -or $proof.base.repo.full_name -cne 'dotnet/maui' -or
+        $proof.head.ref -cne $candidateBranch -or $proof.head.sha -cne $Plan.candidateSha -or
+        $proof.base.ref -cne $roles.fixBranch -or $proof.merge_commit_sha -cne $Plan.mergeSha -or
+        !([string]$proof.body).Contains($candidateMarker)) {
+        throw 'Servicing preparation requires the exact verified human-approved candidate integration.'
     }
+    $prepared = New-MauiReviewedServicingCommit -RepositoryPath $RepositoryPath -LanePlan $Plan `
+        -ReleaseBand $roles.releaseBand -Sr $Record.sr -SandboxPrefix $SandboxPrefix
     $servicingHead = "${prefix}automation/servicing/$($roles.releaseBand)-sr$($Record.sr)"
     $marker = "<!-- maui-release-servicing:${scope}:$($roles.releaseBand)-sr$($Record.sr) -->"
-    $closed = @(Invoke-PublishingApi @('repos/dotnet/maui/pulls', '--method', 'GET',
-        '-f', 'state=closed', '-f', "base=$Branch", '-f', "head=dotnet:$servicingHead", '-F', 'per_page=100'))
+    $pages = @(Invoke-PublishingApi @('repos/dotnet/maui/pulls', '--method', 'GET', '--paginate', '--slurp',
+        '-f', 'state=all', '-f', "base=$Branch", '-f', "head=dotnet:$servicingHead", '-F', 'per_page=100'))
+    $closed = @(foreach ($page in $pages) { foreach ($pr in $page) { $pr } })
     $approved = @($closed | Where-Object {
-        $_.merged_at -and $_.head.sha -ceq $Plan.servicingSha -and ([string]$_.body).Contains($marker)
+        $_.merged_at -and $_.head.sha -ceq $prepared.sha -and ([string]$_.body).Contains($marker)
     })
-    if ($approved.Count -eq 0) { return $null }
-    if ($approved.Count -ne 1) { throw 'Multiple servicing merges claim the same release; publication is blocked.' }
-    $proof = Invoke-PublishingApi @("repos/dotnet/maui/pulls/$($approved[0].number)")
-    if (!$proof.merged -or $proof.merged_by.type -cne 'User' -or
-        $proof.head.ref -cne $servicingHead -or $proof.head.sha -cne $Plan.servicingSha -or
-        $proof.base.ref -cne $Branch -or $proof.head.repo.full_name -cne 'dotnet/maui' -or
-        $proof.merge_commit_sha -cnotmatch '^[0-9a-f]{40}$' -or !([string]$proof.body).Contains($marker)) {
-        throw 'The release does not have a verified reviewed post-cut servicing merge.'
+    if ($approved.Count -eq 0) {
+        if ($closed.Count -gt 1 -or ($closed.Count -eq 1 -and
+            ($closed[0].state -cne 'open' -or $closed[0].head.sha -cne $prepared.sha -or
+                $null -eq $closed[0].head.repo -or $closed[0].head.repo.full_name -cne 'dotnet/maui' -or
+                !([string]$closed[0].body).Contains($marker)))) {
+            throw 'The staging servicing route is closed, mismatched or unmanaged; refusing recreation or adoption.'
+        }
+        if ($closed.Count -or ($PlanOnly -and !$PrepareServicing)) { return $null }
+        $live = @(Get-PublishingRefs $Branch)
+        if ($live.Count -ne 1 -or $live[0].sha -cne $Plan.mergeSha) {
+            throw 'Servicing preparation requires staging at the exact approved candidate source.'
+        }
+        $head = @(Get-PublishingRefs $servicingHead)
+        if ($head.Count -and ($head.Count -ne 1 -or $head[0].sha -cne $prepared.sha)) {
+            throw 'The create-once servicing head differs from the prepared configuration.'
+        }
+        if (!$head.Count) {
+            $uploadBranch = "${prefix}automation/servicing/upload-$([guid]::NewGuid().ToString('N'))"
+            try {
+                $null = Invoke-PublishingGit @('-c', 'credential.helper=', '-c', 'credential.helper=!gh auth git-credential',
+                    'push', '--quiet', '--', $roles.repository, "$($prepared.sha):refs/heads/$uploadBranch")
+                $null = Invoke-PublishingApi @('repos/dotnet/maui/git/refs', '--method', 'POST',
+                    '-f', "ref=refs/heads/$servicingHead", '-f', "sha=$($prepared.sha)")
+            } finally {
+                $uploaded = @(Get-PublishingRefs $uploadBranch)
+                if ($uploaded.Count) {
+                    if ($uploaded.Count -ne 1 -or $uploaded[0].sha -cne $prepared.sha) {
+                        throw 'The owned servicing upload ref changed; refusing cleanup.'
+                    }
+                    $null = Invoke-PublishingApi @("repos/dotnet/maui/git/refs/heads/$([Uri]::EscapeDataString($uploadBranch))", '--method', 'DELETE')
+                }
+            }
+        }
+        $head = @(Get-PublishingRefs $servicingHead)
+        $live = @(Get-PublishingRefs $Branch)
+        if ($head.Count -ne 1 -or $head[0].sha -cne $prepared.sha -or
+            $live.Count -ne 1 -or $live[0].sha -cne $Plan.mergeSha) {
+            throw 'The staging source or servicing head changed before PR creation.'
+        }
+        $description = @(
+            $marker
+            ''
+            "Configure **``$Branch``** for stable servicing before the maintainer's manual release cut."
+            ''
+            "Verified candidate source: ``$($Plan.mergeSha)``. Prepared servicing: ``$($prepared.sha)``."
+            'This separate PR targets automation/release, preserves the patch and changes only release version configuration to servicing/stable. It never targets the real release branch, candidate or net11.'
+            ''
+            '**Human review, required CI and Create a merge commit are mandatory. Do not squash or rebase. Automation never approves or merges this PR.**'
+            "After merging, manually create **``${prefix}release/$($roles.releaseBand)-sr$($Record.sr)``** at this PR's exact merge commit, not the original candidate source or a later descendant."
+            'Signing waits for that exact manual cut and matching internal mirror. Public publishing retains its existing approvals.'
+        ) -join "`n"
+        $template = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../../.github/PULL_REQUEST_TEMPLATE.md') -Raw
+        $note = @'
+<!-- Please let the below note in for people that find this PR -->
+> [!NOTE]
+> Are you waiting for the changes in this PR to be merged?
+> It would be very helpful if you could [test the resulting artifacts](https://github.com/dotnet/maui/wiki/Testing-PR-Builds) from this PR and let us know in a comment if this change resolves your issue. Thank you!
+'@
+        $body = $note + "`n`n" + $template.Replace('<!-- Enter description of the fix in this section -->',
+            "<!-- Enter description of the fix in this section -->`n`n$description").Replace('Fixes #', 'N/A - reviewed release servicing configuration.')
+        $null = Invoke-PublishingApi @('repos/dotnet/maui/pulls', '--method', 'POST',
+            '-f', "base=$Branch", '-f', "head=$servicingHead",
+            '-f', "title=[Servicing] $($Record.releaseBand) SR$($Record.sr)", '-f', "body=$body", '-F', 'draft=true')
+        return $null
     }
+    if ($approved.Count -ne 1 -or $closed.Count -ne 1) { throw 'Multiple servicing PRs claim the same release; publication is blocked.' }
+    $proof = Invoke-PublishingApi @("repos/dotnet/maui/pulls/$($approved[0].number)")
+    Fetch-PublishingCommit @($proof.merge_commit_sha)
+    Assert-MauiReviewedServicingMerge -RepositoryPath $RepositoryPath -LanePlan $Plan `
+        -ReleaseBand $roles.releaseBand -Sr $Record.sr -Commit $proof.merge_commit_sha `
+        -PullRequest $proof -SandboxPrefix $SandboxPrefix
     return $proof.merge_commit_sha
 }
 
@@ -305,29 +369,43 @@ try {
         }
         $branch = "${prefix}release/$($roles.releaseBand)-sr$sr"
         $release = @(Get-PublishingRefs $branch)
-        $fixes = @(Get-PublishingRefs $roles.fixBranch)
-        if (!$release.Count) { continue }
-        if ($release.Count -ne 1 -or $fixes.Count -ne 1) { throw 'Ambiguous release or integration refs.' }
-        Fetch-PublishingCommit @($fixes[0].sha, $release[0].sha)
-        $completed = Get-MauiReleaseCompletionPlan -RepositoryPath $RepositoryPath -LanePlan $verifiedPlan `
-            -ReleaseBand $roles.releaseBand -Sr $sr -Fixes $fixes[0].sha -Release $release[0].sha
-        if ($completed.restoreFixes) { throw 'Release CI housekeeping is still pending; signed publication preparation has not started.' }
-        $commit = $release[0].sha
+        $stagingBranch = "${prefix}automation/release/$($roles.releaseBand)-sr$sr"
+        $staging = @(Get-PublishingRefs $stagingBranch)
         $entry = [ordered]@{
-            releaseBranch = $branch; cutSha = $verifiedPlan.mergeSha; sourceSha = $commit; receiptSha = $receipt.sha
-            status = 'planned'; signedBuild = $null; preparationBuild = $null
+            releaseBranch = $branch; candidateMergeSha = $verifiedPlan.mergeSha
+            cutSha = $null; sourceSha = $null; receiptSha = $receipt.sha
+            stagingBranch = $stagingBranch; stagingSha = if ($staging.Count) { $staging[0].sha } else { $null }
+            status = 'waiting-for-staging'; signedBuild = $null; preparationBuild = $null
             publicPublicationApprovalRequired = $true; publicPublicationRequested = $false
         }
         $results.Add($entry)
-        $liveCommit = $commit
-        $commit = Get-PublishingReleaseSource -Branch $branch -Plan $verifiedPlan -Record $record
+        if (!$staging.Count) { continue }
+        if ($staging.Count -ne 1) { throw 'Ambiguous release staging ref.' }
+        Fetch-PublishingCommit @($staging[0].sha)
+        $commit = Get-PublishingReleaseSource -Branch $stagingBranch -Plan $verifiedPlan -Record $record
+        $expectedStaging = if ($commit) { $commit } else { $verifiedPlan.mergeSha }
+        if ($staging[0].sha -cne $expectedStaging) {
+            throw 'Release staging differs from the exact candidate source or reviewed servicing merge.'
+        }
         if (!$commit) { $entry.status = 'waiting-for-servicing-pr-merge'; continue }
+        $entry.cutSha = $commit
+        $entry.sourceSha = $commit
+        $entry.status = 'waiting-for-manual-release-cut'
+        if (!$release.Count) { continue }
+        $fixes = @(Get-PublishingRefs $roles.fixBranch)
+        if ($release.Count -ne 1 -or $fixes.Count -ne 1) { throw 'Ambiguous release or integration refs.' }
+        Fetch-PublishingCommit @($fixes[0].sha, $release[0].sha)
+        $completed = Get-MauiReleaseCompletionPlan -RepositoryPath $RepositoryPath -LanePlan $verifiedPlan `
+            -ReleaseBand $roles.releaseBand -Sr $sr -Fixes $fixes[0].sha
+        if ($completed.restoreFixes) { $entry.status = 'waiting-for-normalization-approval'; continue }
+        $entry.status = 'planned'
+        $liveCommit = $release[0].sha
         Fetch-PublishingCommit @($commit)
         $versionContent = Get-MauiReleaseFile -RepositoryPath $RepositoryPath -Commit $commit -Path 'eng/Versions.props'
         $null = Get-MauiReleaseVersionContent -Content $versionContent -ReleaseBand $roles.releaseBand -Sr $sr `
             -Role servicing -SandboxPrefix $SandboxPrefix
         $stable = Get-MauiReleaseVersion -Content $versionContent
-        if (!($stable.stable -or $stable.automaticStabilization) -or
+        if (!$stable.stable -or
             (!$stable.branchDerivedLabels -and ($stable.label -cne 'servicing' -or $stable.labelCount -ne 1))) {
             throw 'The approved release source does not produce stable release metadata.'
         }
@@ -351,6 +429,14 @@ try {
             continue
         }
         if ($PlanOnly) { continue }
+        $liveRelease = @(Get-PublishingRefs $branch)
+        if ($liveRelease.Count -ne 1 -or $liveRelease[0].sha -cne $commit) {
+            throw 'The manual release ref moved before signed dispatch; retry from a verified snapshot.'
+        }
+        $liveStaging = @(Get-PublishingRefs $stagingBranch)
+        if ($liveStaging.Count -ne 1 -or $liveStaging[0].sha -cne $commit) {
+            throw 'The reviewed staging ref moved before signed dispatch; retry from a verified snapshot.'
+        }
         if (!$azureHeaders) { $azureHeaders = Get-ReleaseAzureHeaders }
         $definition = Invoke-ReleaseAzure 'build/definitions/1095?api-version=7.1'
         if ($definition.repository.id -cne $mirrorId -or $definition.repository.type -cne 'TfsGit' -or
