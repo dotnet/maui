@@ -169,9 +169,9 @@
       <Uri>https://github.com/dotnet/xharness</Uri>
       <Sha>31e0b8e08f57890f7b7004b93361d69cd4b21079</Sha>
     </Dependency>
-    <Dependency Name="optimization.android-x64.MIBC.Runtime" Version="1.0.0-prerelease.26502.1">
+    <Dependency Name="optimization.android-x64.MIBC.Runtime" Version="1.0.0-prerelease.26527.2">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-optimization</Uri>
-      <Sha>f76644a0ec7ae579dd7ab1992dff419814c9f71f</Sha>
+      <Sha>411c91bafab37c89be7d08e8aab491a7763fcbdf</Sha>
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
