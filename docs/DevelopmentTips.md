@@ -76,7 +76,9 @@ releases the old view and adapter references; ordinary recycling still reuses
 its content. GC checks must run after the owner is disconnected.
 CarouselView teardown also invalidates queued collection updates before
 releasing those references, so a pending callback cannot update a disconnected
-or subsequently reconnected handler. Touch callbacks also reject disconnected
+or subsequently reconnected handler. The native regression retains the recycler
+across reconnection, verifies the old callback cannot change the new selection,
+and then verifies a new collection update still applies. Touch callbacks also reject disconnected
 carousels before accessing the released element. Android device
 results use the filename selected by instrumentation even if the runner was
 resolved before those options were applied.

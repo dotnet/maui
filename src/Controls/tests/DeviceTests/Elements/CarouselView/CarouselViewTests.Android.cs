@@ -10,6 +10,7 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Items;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Microsoft.Maui.TestUtils.DeviceTests.Runners;
 using Xunit;
@@ -80,6 +81,101 @@ namespace Microsoft.Maui.DeviceTests
 				foreach (var action in dispatcher.PendingActions)
 					Assert.Null(Record.Exception(action));
 			});
+		}
+
+		[Theory(DisplayName = "Queued Collection Change Does Not Affect Reconnected Carousel")]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task QueuedCollectionChangeDoesNotAffectReconnectedCarousel(bool loop)
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<CarouselView, RetainedCarouselViewHandler>();
+					handlers.AddHandler<IContentView, ContentViewHandler>();
+					handlers.AddHandler<Grid, LayoutHandler>();
+					handlers.AddHandler<Label, LabelHandler>();
+				});
+			});
+
+			var oldData = new ObservableCollection<int> { 1, 2, 3 };
+			var oldCarousel = new CarouselView
+			{
+				ItemsSource = oldData,
+				ItemTemplate = new DataTemplate(() => new Label()),
+				ItemsUpdatingScrollMode = ItemsUpdatingScrollMode.KeepLastItemInView,
+				Loop = loop
+			};
+			var dispatcher = new CapturingDispatcher(TestDispatcher.Current);
+
+			await CreateHandlerAndAddToWindow<CarouselViewHandler>(oldCarousel, async handler =>
+			{
+				var recyclerView = Assert.IsType<MauiCarouselRecyclerView>(handler.PlatformView);
+				await recyclerView.WaitForLayoutOrNonZeroSize();
+				var context = new MauiContext(handler.MauiContext.Services, handler.MauiContext.Context);
+				context.AddSpecific<IDispatcher>(dispatcher);
+				handler.SetMauiContext(context);
+
+				dispatcher.Capture = true;
+				oldData.Add(4);
+				dispatcher.Capture = false;
+				Assert.NotEmpty(dispatcher.PendingActions);
+				var oldActions = dispatcher.PendingActions.ToArray();
+				dispatcher.PendingActions.Clear();
+
+				var newData = new ObservableCollection<int> { 10, 20, 30, 40, 50 };
+				var newCarousel = new CarouselView
+				{
+					ItemsSource = Array.Empty<int>(),
+					ItemTemplate = new DataTemplate(() => new Label()),
+					ItemsUpdatingScrollMode = ItemsUpdatingScrollMode.KeepLastItemInView,
+					Loop = loop
+				};
+
+				oldCarousel.Handler.DisconnectHandler();
+				handler.SetVirtualView(newCarousel);
+				try
+				{
+					newCarousel.ItemsSource = newData;
+
+					Assert.Same(recyclerView, handler.PlatformView);
+					Assert.Equal(0, newCarousel.Position);
+					Assert.Equal(10, newCarousel.CurrentItem);
+
+					foreach (var action in oldActions)
+						action();
+
+					Assert.Equal(0, newCarousel.Position);
+					Assert.Equal(10, newCarousel.CurrentItem);
+
+					dispatcher.Capture = true;
+					newData.Add(60);
+					dispatcher.Capture = false;
+					Assert.NotEmpty(dispatcher.PendingActions);
+					foreach (var action in dispatcher.PendingActions.ToArray())
+						action();
+
+					Assert.Equal(5, newCarousel.Position);
+					Assert.Equal(60, newCarousel.CurrentItem);
+				}
+				finally
+				{
+					newCarousel.Handler.DisconnectHandler();
+				}
+			});
+		}
+
+		sealed class RetainedCarouselViewHandler : CarouselViewHandler
+		{
+			RecyclerView _retainedPlatformView;
+
+			public RetainedCarouselViewHandler()
+			{
+			}
+
+			protected override RecyclerView CreatePlatformView() =>
+				_retainedPlatformView ??= base.CreatePlatformView();
 		}
 
 		sealed class CapturingDispatcher(IDispatcher dispatcher) : IDispatcher
