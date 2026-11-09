@@ -59,11 +59,14 @@ brings selected contents into `net11`.
 The selected `candidateNamingPolicy=candidate` convention prepares candidate SR
 N+1 and future inflight SR N+2 after a verified candidate merge. Older
 `unresolved` configurations still block mutation, not read-only reporting.
-The deployed merged-candidate workflow also cuts the exact CI candidate merge,
-restores next-cycle CI on net11, and opens a separate draft servicing/stable PR
-targeting the release branch. The candidate itself includes its upcoming
+The deployed merged-candidate workflow stages the exact CI candidate merge and
+proposes reviewed next-cycle CI on net11. Independently, publication opens a
+separate draft servicing/stable PR targeting `automation/release/<band>-srN`
+before the real release exists. The candidate itself includes its upcoming
 bug-template version and never carries the servicing flip. Signing waits for
-that separate reviewed servicing merge. Receipts do not change canonical
+that separate human-reviewed two-parent servicing merge, followed by a manual
+real release cut at that exact merge and matching internal mirror. No post-cut
+servicing PR is opened. Receipts do not change canonical
 `currentSr`/`nightlyMode`. When the approved
 release-state update advances to SR2, readiness selects
 `candidate/11.0.1xx-sr2` and versioned nightly `inflight/11.0.1xx-sr3`
@@ -86,11 +89,20 @@ the candidate-only inventory is **not the full prospective cut**. Inventory the
 approved integrated source commit separately, or synchronize the staged snapshot,
 before certifying release contents. No synthetic union is assumed.
 
-SR1 has no SR0. Its automatic inventory baseline must be an **existing** GA
-stable tag; later cycles use an existing prior-cycle stable tag. If none exists,
-report generation fails explicitly with a fetch / `-BaselineRef` instruction;
-the detector still emits the current candidate so it cannot silently disappear.
-An explicit baseline must be independently verified by the caller.
+**Configured servicing progress is tag-independent.** Maintainers create tags
+manually when releasing; automation does not create/move tags, infer shipping
+from them, or require them for cuts, normalization, next lanes or signing
+preparation. SR1 inventories against `release/<band>` (the first GA branch);
+later SRs use the preceding `release/<band>-srN`. Both the content source and
+baseline are pinned to full commit SHAs at report time. The configured current
+cycle and its preceding cut remain visible independently of tags.
+
+If a preceding release branch is absent, emit an incomplete **UNKNOWN / NOT
+RUN** inventory diagnostic, not zero findings and not a missing-tag blocker.
+Remove stale inventory exports when reusing an output directory. Wrong source
+versions and invalid explicit revisions still fail. Human closure is honored
+for each exact source/baseline snapshot; a new snapshot can produce a new
+generation without tags or a false shipped claim.
 
 Historical majors remain independent: `.NET 10`, Preview/RC branches, explicit
 source/survey overrides, immutable shipped-tag bounds, tag retirement and
@@ -101,7 +113,7 @@ This skill has **four** PowerShell entry points, one Preview helper, and one wor
 
 | Script | Branch type | Purpose |
 |--------|-------------|---------|
-| [`Find-ReleaseReadinessTrackers.ps1`](scripts/Find-ReleaseReadinessTrackers.ps1) | all | Detects active in-flight & candidate trackers (SR, Preview, and RC) across all active majors using a five-lane algorithm and the **tag-existence rule** ("a release is in flight unless its tag already exists"). Emits a single tracker JSON consumed by the workflow. |
+| [`Find-ReleaseReadinessTrackers.ps1`](scripts/Find-ReleaseReadinessTrackers.ps1) | all | Uses configured cycle state and pinned branches for servicing progress; historical/unconfigured and Preview/RC trackers retain their tag rules. Emits the tracker JSON consumed by the workflow. |
 | [`Get-ReleaseReadiness.ps1`](scripts/Get-ReleaseReadiness.ps1) | SR | Full readiness report for a single SR branch (in-flight, `-Candidate`, or `-Shipped`). `-Shipped` surveys the same branch with post-ship verdict, carry-forward, and hotfix-vs-next-SR guidance semantics. |
 | [`Get-PreviewReadiness.ps1`](scripts/Get-PreviewReadiness.ps1) | Preview / RC | Full readiness report for a single prerelease branch (in-flight or candidate via `-Mode candidate -SurveyRef net<major>.0`). Preview reports include consumer-installability evidence; RC reports retain that check as `UNKNOWN` until RC workload-set package resolution is supported. |
 | [`PreviewInstallability.ps1`](scripts/PreviewInstallability.ps1) | Preview helper | Resolves the workload-set package, validates branch-pin coherence, probes manifest and representative pack availability, extracts platform prerequisites, and emits an isolated NuGet configuration for local validation. |
@@ -110,7 +122,13 @@ This skill has **four** PowerShell entry points, one Preview helper, and one wor
 
 Shared support code lives in [`PublicReportSanitizer.ps1`](scripts/PublicReportSanitizer.ps1) for public Markdown/JSON redaction and [`TrackerIssueLifecycle.sh`](scripts/TrackerIssueLifecycle.sh) for tested issue-selection and race-compensation primitives.
 
-### Tag-existence rule (canonical signal)
+### Historical tag-existence rule
+
+The rules below apply to historical/unconfigured trains and Preview/RC
+reporting. They do **not** control configured GA/SR progress, which uses branch
+snapshots and canonical cycle state. Automatic milestone processing also ignores
+stable tag-push events for that configured train; manual tag diagnostics remain
+available separately.
 
 The trackers detector is grounded in **tag existence as the source of truth for "shipped vs in-flight"**. A release is in-flight if and only if its expected tag has NOT been published — branch existence, commit recency, and milestone state are all secondary signals.
 
@@ -157,7 +175,7 @@ pwsh .github/skills/release-readiness/scripts/Find-ReleaseReadinessTrackers.ps1 
 
 ```bash
 # Configured current candidate: automatic staged ref + fixes source, no SR0.
-# Requires the real GA/prior tag locally, or an explicitly verified -BaselineRef.
+# Uses the pinned GA/prior release branch; no tag is required.
 pwsh .github/skills/release-readiness/scripts/Get-ReleaseReadiness.ps1 \
   -SrBranch release/11.0.1xx-sr1 -Candidate \
   -RegressionLabels regressed-in-11.0.0,regressed-in-11.0.10 \
@@ -478,7 +496,7 @@ work. Those belong only in the Preview N+1 candidate/in-flight readiness report.
 | `-ExcludeBranches` | No | resolved `origin/<source>` | Explicit inventory excludes; missing excludes fail instead of silently disappearing. |
 | `-CandidateTargetBranch` | No | automatic for the configured current SR | Proposed `release/...-srN`, distinct from the staged survey ref. Legacy callers without this continue to pass the prior SR in `-SrBranch`. |
 | `-SurveyRef` | No | configured candidate for current train, otherwise resolved source | Explicit candidate-content override. It does not change source-fix ownership. |
-| `-BaselineRef` | No | existing GA/prior-cycle stable tag for configured candidates | Explicit verified inventory bound, required when automatic immutable evidence does not exist. |
+| `-BaselineRef` | No | pinned GA/prior release-branch SHA for configured candidates | Explicit verified diagnostic inventory bound; normal configured progress does not require a tag. |
 | `-Phase` | No | `all` | `all`, `ci`, `commits`, `regressions`, or `open-prs`. |
 | `-TrackerKey` | No | — | Canonical key (e.g. `net10-sr8`) embedded in the markdown body for idempotent issue lookup. |
 | `-OutputDir` | No | — | If set, writes `release-readiness.{json,md}` and `sr-source-prs.txt`. |
@@ -751,7 +769,7 @@ are not signed-build proof. Public Actions never receives internal credentials.
 
 > ❌ **Don't run with `-InferRegressionLabels` for automated workflows** without surfacing the inferred labels for confirmation. Label inference is brittle for non-standard SR cycles.
 
-> ❌ **Don't infer "in-flight" from branch existence alone.** The detector uses the **tag-existence rule** — a release is in-flight if and only if its expected tag has not been published. Branches can linger after their release ships (and SR branches don't exist yet for SR candidates).
+> ❌ **Don't infer shipping from manual tags for the configured train.** Its progress uses cycle state and pinned branch snapshots. Historical/unconfigured and Preview/RC reporting retain their existing tag rules.
 
 ## Tests
 

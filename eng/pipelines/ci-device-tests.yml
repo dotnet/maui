@@ -10,7 +10,7 @@ trigger:
 
 pr:
   branches:
-    include: [ main, net11, release/*, net*.0, inflight/*, candidate/* ]
+    include: [ automation/release/*, main, net11, release/*, net*.0, inflight/*, candidate/* ]
   paths:
     include: [ '*', .github/skills/run-device-tests/scripts/**, .github/scripts/shared/** ]
     exclude: [ .github, docs/*, src/Templates/*, CODE-OF-CONDUCT.md, CONTRIBUTING.md, LICENSE.TXT, PATENTS.TXT, README.md, THIRD-PARTY-NOTICES.TXT ]

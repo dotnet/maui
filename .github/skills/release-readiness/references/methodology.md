@@ -22,8 +22,13 @@ establishes release integration ancestry.
 The five detection lanes retain historical release/tag semantics. Configured
 current-candidate detection is state-driven, including pre-GA bootstrap:
 feature-main's major, maximum retained branch suffix, or absent GA tags never
-make the current candidate disappear. SR1 requires an actual GA baseline
-tag or an explicitly verified `-BaselineRef`; no SR0/prior tag is invented.
+make the current candidate disappear. Configured SR1 uses the first GA branch
+`release/<band>`; later cycles use the preceding SR release branch. Each baseline
+and content source is pinned to a full SHA. Tags are manual release metadata and
+cannot gate, advance or retire servicing progress. No SR0/prior tag is invented.
+Without a preceding branch, reporting remains visible with **UNKNOWN / NOT RUN**
+inventory and regression classification. No zero inventory or source-PR export
+is inferred. Invalid explicit revisions and wrong versions still fail.
 Missing required refs/metadata fail explicitly rather than producing a clean
 inventory. Candidate contents and source ancestry use different coordinates.
 The engine also checks ancestry in both directions. `candidateIntegration`
@@ -47,9 +52,12 @@ major's band-only fallback is not attributed to a retained branch.
 Candidates retain CI/non-stable settings and include the upcoming version in
 both bug-template dropdowns. After candidate integration, create-once
 `automation/release-lanes/<band>-srN` receipts let the workflow recover the exact
-release cut, distinct net11 CI child, next pair and separate draft servicing PR
-targeting the release branch. The stable flip is not a candidate commit; signing
-waits for its reviewed release-branch merge. Receipts do not advance canonical
+candidate source, distinct net11 CI child, next pair and separate draft servicing PR
+targeting `automation/release/<band>-srN` before a real cut. The stable flip is
+not a candidate commit. Review it and merge using Create a merge commit, then
+manually create the real release at that exact reviewed servicing merge; signing
+requires the exact cut and mirror. No post-cut servicing PR is opened.
+Receipts do not advance canonical
 `currentSr`/`nightlyMode`; readiness continues using the reviewed state.
 
 The compatibility JSON names `mainBranch`, `onMain`, `open-on-main`, and
@@ -237,7 +245,15 @@ flip PR; SR8 inherited the same diff through its catch-up merge from SR7:
 
 ### The workflow
 
-After the last required content backport, open a focused PR **targeting the
+For the configured release train, publication automatically opens the servicing
+PR against `automation/release/<band>-srN` before the real release exists.
+Review required CI and use **Create a merge commit**, then manually create
+`release/<band>-srN` at that exact merge. This is mandatory even when branch-derived
+metadata would already stabilize a release ref. A wrong existing real cut requires
+owner reconciliation, not a second post-cut servicing PR.
+
+The following is the historical .NET 10 workflow, not the configured staging
+handoff. After the last required content backport, open a focused PR **targeting the
 SR branch**. Keep `PatchVersion` unchanged and make only this versioning
 transition:
 

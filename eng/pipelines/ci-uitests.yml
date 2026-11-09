@@ -30,6 +30,7 @@ trigger:
 pr:
   branches:
     include:
+    - automation/release/*
     - main
     - net11
     - release/*

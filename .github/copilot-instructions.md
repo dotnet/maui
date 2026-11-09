@@ -6,6 +6,26 @@ description: "Guidance for GitHub Copilot when working on the .NET MAUI reposito
 
 This document provides specific guidance for GitHub Copilot when working on the .NET MAUI repository. It serves as context for understanding the project structure, development workflow, and best practices.
 
+## Select the pull request base first
+
+| Requested work | Initial PR base |
+| --- | --- |
+| New features, API changes, or .NET 12 work, including .NET 12 fixes | `main` |
+| .NET 11 servicing fixes | Literal `net11`, for review |
+| Older servicing or coordinated release/infrastructure/documentation work | The explicitly applicable branch |
+
+Start a new .NET 11 fix from `net11`, not next-major `main`. After approval,
+only a maintainer retargets it to the active inflight lane and merges it after
+CI validates that final base. Agents must not retarget or merge individual
+fixes, and must not merge them directly into `net11`.
+
+Read [AGENTS.md](../AGENTS.md) and [CONTRIBUTING.md](CONTRIBUTING.md). Resolve
+current roles from `eng/release-rollover.json`; never guess from the highest
+retained `netN.0` branch, confuse `net11.0` with `net11`, or hard-code an old
+inflight SR. If the issue's intended release is unclear, ask a maintainer
+before creating the PR. The selected branch's `global.json`, not its name or
+planned migration, determines the SDK.
+
 ## Code Review Instructions
 
 When performing a code review on PRs that change functional code, run the pr-finalize skill to verify that the PR title and description accurately match the actual implementation. This ensures proper documentation and helps maintain high-quality commit messages.
@@ -17,8 +37,8 @@ When performing a code review on PRs that change functional code, run the pr-fin
 ### Key Technologies
 
 - **.NET SDK** - Version is **ALWAYS** defined in `global.json` at repository root
-  - **main branch**: Latest stable .NET version
-  - **Feature branches**: Each `netN.0` branch targets the .NET N SDK. By convention, the highest `netN.0` branch is the current development branch for new features and API changes.
+  - **`main`**: New features and .NET 12 work for the configured transition; read its `global.json` for the currently required SDK.
+  - **`net11`**: .NET 11 servicing review branch. Historical `netN.0` branches are not a rule for choosing a PR base.
 - **Cake build system** for compilation and packaging (`dotnet cake`)
 - **MSBuild** with custom build tasks (must build `Microsoft.Maui.BuildTasks.slnf` first)
 - **Testing frameworks**:

@@ -108,6 +108,7 @@ jobs:
               exit 1
             fi
             ARGS+=('-Tag' "$PUSH_TAG" '-Apply' '-CloseFixedIssues')
+            ARGS+=('-TagPushEvent')
           elif [ "$EVENT_NAME" = "pull_request_target" ]; then
             # Auto-trigger: set milestone on the merged PR
             ARGS+=('-PrNumber' "$INPUT_PR_NUMBER" '-Apply')

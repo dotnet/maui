@@ -449,7 +449,7 @@ if ($DryRun) {
     $inflightTargets = @('inflight/current', 'inflight/candidate', 'net11')
     $isInflightTarget = $baseRefName -and (
         ($inflightTargets -contains $baseRefName) -or
-        $baseRefName -cmatch '^(?:candidate|inflight)/[1-9][0-9]*\.0\.[1-9][0-9]*xx-sr[1-9][0-9]*$'
+        $baseRefName -cmatch '^(?:candidate|inflight|automation/release)/[1-9][0-9]*\.0\.[1-9][0-9]*xx-sr[1-9][0-9]*$'
     )
     if ($isInflightTarget) {
         Write-Host "  🎯 PR #$PRNumber targets '$baseRefName' (servicing or staged release branch) — will test the PR branch directly (no squash-merge onto the pipeline base)." -ForegroundColor Cyan
@@ -693,7 +693,7 @@ if ($Phase -eq 'Setup') {
         New-Item -ItemType Directory -Force -Path $d | Out-Null
         $d
     }
-    if ($baseRefName -notmatch '^(main|net[0-9]+(\.0)?|inflight/[a-z0-9][a-z0-9._-]*|candidate/[1-9][0-9]*\.0\.[1-9][0-9]*xx-sr[1-9][0-9]*|release/[0-9]+\.[0-9]+\.[0-9]+xx(-[a-z0-9.]+)?)$' -or
+    if ($baseRefName -notmatch '^(main|net[0-9]+(\.0)?|inflight/[a-z0-9][a-z0-9._-]*|(candidate|automation/release)/[1-9][0-9]*\.0\.[1-9][0-9]*xx-sr[1-9][0-9]*|release/[0-9]+\.[0-9]+\.[0-9]+xx(-[a-z0-9.]+)?)$' -or
         $reviewedBaseSha -notmatch '^[0-9a-fA-F]{40}$' -or
         $reviewedPrHeadSha -notmatch '^[0-9a-fA-F]{40}$' -or
         $reviewedTreeSha -notmatch '^[0-9a-fA-F]{40}$') {

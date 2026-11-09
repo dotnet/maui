@@ -295,15 +295,29 @@ Describe 'Release coordinator recovery guards' {
         { & $sourceCheckBody } | Should -Throw '*both replacement lanes*'
     }
 
-    It 'URI-encodes the complete literal housekeeping branch' {
+    It 'preserves the literal housekeeping PR base without writing the protected branch' {
         $roles.fixBranch = 'net11#servicing'
         $refs['net11#servicing']=$fixturePlan.mergeSha
         $CompleteRelease = $true
+        Mock Invoke-NextLaneApi {
+            [pscustomobject]@{
+                number=1; html_url='https://github.com/dotnet/maui/pull/1'
+                body='<!-- maui-release-normalization:production:11.0.1xx-sr1 -->'
+                head=@{ sha=$fixturePlan.normalizedSha; ref='automation/normalization/11.0.1xx-sr1'; repo=@{full_name='dotnet/maui'} }
+                base=@{ref=$roles.fixBranch}
+            }
+        }
         & $coordinatorBody
         & $sourceCheckBody
-        $refs['net11#servicing'] | Should -Be $fixturePlan.normalizedSha
+        $refs['net11#servicing'] | Should -Be $fixturePlan.mergeSha
         $refs.net11 | Should -Be $fixturePlan.mergeSha
-        Should -Invoke Invoke-NextLaneApi -Times 1 -ParameterFilter { $Arguments[0].EndsWith('/net11%23servicing') }
+        $results[0].normalizationPullRequest.status | Should -Be 'awaiting-approval'
+        $results[0].nextLanesReady | Should -BeFalse
+        $trackingSr | Should -Be 1
+        Should -Invoke Publish-NextLaneRef -Times 1
+        Should -Invoke Invoke-NextLaneApi -Times 1 -ParameterFilter {
+            $Arguments[0] -ceq 'repos/dotnet/maui/pulls' -and $Arguments -ccontains 'base=net11#servicing'
+        }
     }
 }
 
