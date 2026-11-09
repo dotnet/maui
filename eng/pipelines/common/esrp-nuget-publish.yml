@@ -1,0 +1,62 @@
+parameters:
+- name: packagesPath
+  type: string
+- name: serviceConnection
+  type: string
+  default: DotNetBuildESRP
+
+steps:
+- pwsh: |
+    $ErrorActionPreference = 'Stop'
+    if ([string]::IsNullOrWhiteSpace($env:NUGET_ORGANIZATION) -or $env:NUGET_ORGANIZATION -eq 'skip') {
+      throw 'Set nugetOrganization to the NuGet organization onboarded to ESRP and owning all selected packages.'
+    }
+
+    $owners = @($env:ESRP_OWNERS.Split(',') | ForEach-Object { $_.Trim() })
+    $approvers = @($env:ESRP_APPROVERS.Split(',') | ForEach-Object { $_.Trim() })
+    foreach ($alias in @($owners) + @($approvers)) {
+      if ($alias -notmatch '^[^@\s,]+@microsoft\.com$') {
+        throw 'Set esrpOwners and esrpApprovers to comma-separated individual Microsoft email addresses.'
+      }
+    }
+    if (@($owners | Where-Object { $_ -in $approvers }).Count -gt 0) {
+      throw 'ESRP release owners and approvers must be different individuals.'
+    }
+
+    $packages = @(Get-ChildItem -LiteralPath $env:PACKAGES_PATH -Filter '*.nupkg' -File)
+    if ($packages.Count -eq 0) {
+      throw 'No NuGet packages remain for the ESRP submission.'
+    }
+    $submissionPath = Join-Path $env:AGENT_TEMPDIRECTORY ("esrp-nuget-" + [guid]::NewGuid().ToString('N'))
+    New-Item -ItemType Directory -Path $submissionPath | Out-Null
+    $packages | Copy-Item -Destination $submissionPath
+    Write-Host "Staged $($packages.Count) packages for NuGet organization '$env:NUGET_ORGANIZATION'."
+    Write-Host "##vso[task.setvariable variable=EsrpNuGetSubmissionPath]$submissionPath"
+  displayName: Stage filtered NuGet packages for ESRP Release
+  condition: and(succeeded(), eq(variables['NuGetPackagesToPublish'], 'true'))
+  env:
+    PACKAGES_PATH: ${{ parameters.packagesPath }}
+    NUGET_ORGANIZATION: $(NuGetOrganization)
+    ESRP_OWNERS: $(EsrpOwners)
+    ESRP_APPROVERS: $(EsrpApprovers)
+
+- task: EsrpRelease@14
+  displayName: Publish NuGet packages through ESRP Release
+  condition: and(succeeded(), eq(variables['NuGetPackagesToPublish'], 'true'))
+  inputs:
+    connectedservicename: ${{ parameters.serviceConnection }}
+    usemanagedidentity: true
+    keyvaultname: DotNetEngKeyVault
+    signcertname: DotNet-ESRP-AuthSignCert
+    clientid: 28ec6507-2167-4eaa-a294-34408cf5dd0e
+    intent: PackageDistribution
+    contenttype: NuGet
+    organizationname: $(NuGetOrganization)
+    contentsource: Folder
+    folderlocation: $(EsrpNuGetSubmissionPath)
+    waitforreleasecompletion: true
+    owners: $(EsrpOwners)
+    approvers: $(EsrpApprovers)
+    serviceendpointurl: https://api.esrp.microsoft.com
+    mainpublisher: ESRPRELPACMAN
+    domaintenantid: 975f013f-7f24-47e8-a7d3-abc4752bf346
