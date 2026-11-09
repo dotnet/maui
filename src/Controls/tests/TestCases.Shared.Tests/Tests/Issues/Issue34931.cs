@@ -15,7 +15,7 @@ public class Issue34931 : _IssuesUITest
 	public override string Issue => "Shell flyout item template does not update selected visuals after DynamicResource changes";
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void FlyoutSelectedStateReflectsUpdatedDynamicResource()
 	{
 		App.WaitForElement("ChangeColorButton");

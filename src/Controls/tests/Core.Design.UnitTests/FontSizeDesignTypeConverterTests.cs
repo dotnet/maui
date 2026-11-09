@@ -1,3 +1,4 @@
+using System.Globalization;
 using Microsoft.Maui.Controls.Design;
 using Xunit;
 
@@ -55,6 +56,52 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			FontSizeDesignTypeConverter converter = new FontSizeDesignTypeConverter();
 			bool actual = converter.IsValid(value);
 			Assert.True(actual);
+		}
+
+		[Theory]
+		[InlineData("en-US", "12.5", true)]
+		[InlineData("fr-FR", "12.5", true)]
+		[InlineData("de-DE", "12.5", true)]
+		[InlineData("en-US", "1,234.5", true)]
+		[InlineData("fr-FR", "1,234.5", true)]
+		[InlineData("de-DE", "1,234.5", true)]
+		[InlineData("en-US", "1.234,5", false)]
+		[InlineData("fr-FR", "1.234,5", false)]
+		[InlineData("de-DE", "1.234,5", false)]
+		[InlineData("en-US", "12,5", true)]
+		[InlineData("fr-FR", "12,5", true)]
+		[InlineData("de-DE", "12,5", true)]
+		public void FontSizeDesignTypeConverter_NumericValuesUseInvariantCulture(string cultureName, string value, bool expected)
+		{
+			CultureInfo originalCulture = CultureInfo.CurrentCulture;
+			try
+			{
+				CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo(cultureName);
+				FontSizeDesignTypeConverter converter = new FontSizeDesignTypeConverter();
+				Assert.Equal(expected, converter.IsValid(value));
+			}
+			finally
+			{
+				CultureInfo.CurrentCulture = originalCulture;
+			}
+		}
+
+		[Fact]
+		public void FontSizeDesignTypeConverter_CustomDecimalSeparatorDoesNotAffectValidation()
+		{
+			CultureInfo originalCulture = CultureInfo.CurrentCulture;
+			try
+			{
+				CultureInfo culture = new CultureInfo("en-US", false);
+				culture.NumberFormat.NumberDecimalSeparator = ",";
+				CultureInfo.CurrentCulture = culture;
+				FontSizeDesignTypeConverter converter = new FontSizeDesignTypeConverter();
+				Assert.True(converter.IsValid("12.5"));
+			}
+			finally
+			{
+				CultureInfo.CurrentCulture = originalCulture;
+			}
 		}
 
 		[Theory]

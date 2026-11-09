@@ -2,6 +2,11 @@
 
 Post exactly `/issue triage` as a new comment on an **open issue** in
 `dotnet/maui`. The caller must currently have write, maintain or admin permission.
+Inherited repository write access from the
+[`dotnet/maui-external-partners` team](https://github.com/orgs/dotnet/teams/maui-external-partners)
+satisfies this requirement; no public team membership, admin grant or new token
+is required. See the [command access inventory](pr-review-workflow.md#command-access-and-other-entrypoints)
+for the other repository-owned commands and their target restrictions.
 The command proposes and applies evidence-backed manual issue labels and retains
 its explanation only in Actions artifacts, without posting a public triage report.
 Separate Policy Service replies triggered by feedback labels are unchanged.
@@ -150,6 +155,18 @@ retains link targets so canonical same-repository issue links are still fetched.
 Every evidence quote must survive the same prose filter, including content labels
 and narrow removals. Code/samples can inform analysis but cannot serve as
 authority quotations.
+Each prepared source includes its unmodified `body` and a citation-safe `prose`
+projection computed by the trusted `Get-Prose` routine. Filtering blanks forbidden
+spans without changing string length or line breaks. Choose contiguous verbatim
+quotes present in both `source.body` and `source.prose` with exact ordinal matching;
+prefer short complete prose sentences that support the label. Never strip markup
+or rewrite a quote, or cite across blanked code, quoted text or link-metadata spans.
+If eligible evidence is unavailable, withhold the label instead of emitting
+malformed evidence. The projection is a citation aid only, not proof of authority
+or semantic support; provenance, policy and whole-paragraph contradiction checks
+remain mandatory. Final validation recomputes prose from the freshly fetched
+original body and checks exact containment in both strings, never trusting an
+agent-supplied projection.
 Automatic area correction requires a fresh unconditional maintainer explanation
 of this reported issue's cause naming the exact replacement area. The removal
 and that specific addition must cite the same source and exact quotation.
@@ -586,11 +603,30 @@ also guards the registered-validator path; account type or write access alone
 cannot establish human evidence. Their label events remain chronology facts,
 not approvals.
 
+The separate native threat detector is instructed to perform its full analysis
+without delegation and emit one final verdict with all three boolean flags and a
+`reasons` array, including `[]` when empty, matching the existing regression-trace
+workflow's format contract. In gh-aw v0.86.2, a result without `reasons` and a
+second result with `reasons: []` count as conflicting raw verdicts even if all
+flags agree; the parser checks for conflicts before defaulting optional reasons.
+These instructions reduce that observed format failure, not guarantee model
+compliance. Native conflicting/malformed verdict handling and genuine-threat
+checks are unchanged. WTD3 still cancels label writes on a detection warning.
+Inspect the detection log, native safe-output counters and retained report:
+green job conclusions alone do not prove labels were applied. A blocked run
+leaves the command visible and does not post a triage status/report comment.
+
 The separate safe-output job checks out the exact trusted revision, imports only
 bounded regular JSON outside the checkout, binds it to the preparation job's
 independent context hash, and re-fetches/rechecks context and authority. It rejects
 stale context, fabricated quotes, wrong targets, unsupported labels, inconsistent
 intents and unsafe transitions, then renders its own artifact-only report.
+The source prose projections are computed before hashing each prepared/current
+snapshot, so the context hash and freshness checks cover this derived data too.
+Including both body and prose increases context size, potentially approaching
+twice the source-text portion; the existing 1 MiB JSON limit and all collection
+bounds remain unchanged. Oversized or incomplete evidence still aborts rather
+than truncating sources or salvaging partial proposals.
 Withheld labels must be unique and cannot overlap the proposed label delta.
 After evidence validation and report rendering, the final gate re-fetches the
 complete bounded snapshot and requires its hash to match the validated context
@@ -720,7 +756,7 @@ With actionlint 1.7.12, the compiler-generated `queue: max` field is not yet
 recognized. Other diagnostics can still be checked without editing the lock:
 
 ```bash
-actionlint -ignore 'unexpected key "queue" for "concurrency" section' \
+actionlint -ignore '^unexpected key "queue" for "concurrency" section\. expected one of "cancel-in-progress", "group"$' \
   .github/workflows/issue-triage.lock.yml
 ```
 

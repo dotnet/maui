@@ -171,7 +171,7 @@ namespace Microsoft.Maui.DeviceTests
 				if (UsesGlassButton)
 				{
 					// The floating close button supplies the localized "Done" label explicitly.
-					var expected = Foundation.NSBundle.FromIdentifier("com.apple.UIKit").GetLocalizedString("Done");
+					var expected = Foundation.NSBundle.FromIdentifier("com.apple.UIKit")?.GetLocalizedString("Done") ?? "Done";
 
 					Assert.False(string.IsNullOrEmpty(accessoryView.DoneButton?.AccessibilityLabel));
 					Assert.Equal(expected, accessoryView.DoneButton?.AccessibilityLabel);

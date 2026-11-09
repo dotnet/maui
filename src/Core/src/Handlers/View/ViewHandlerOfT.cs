@@ -5,17 +5,15 @@ using PlatformView = UIKit.UIView;
 using PlatformView = Android.Views.View;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
-#elif TIZEN
-using PlatformView = Tizen.NUI.BaseComponents.View;
-#elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID && !TIZEN)
+#elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID)
 using PlatformView = System.Object;
 #endif
 
 namespace Microsoft.Maui.Handlers
 {
-	public abstract partial class ViewHandler<TVirtualView, TPlatformView> : ViewHandler, IViewHandler
+	public abstract partial class ViewHandler<TVirtualView, TPlatformView> : ViewHandler, IViewHandler, IViewHandler<TVirtualView, TPlatformView>
 		where TVirtualView : class, IView
-#if !(NETSTANDARD || !PLATFORM) || IOS || ANDROID || WINDOWS || TIZEN
+#if !(NETSTANDARD || !PLATFORM) || IOS || ANDROID || WINDOWS
 		where TPlatformView : PlatformView
 #else
 		where TPlatformView : class

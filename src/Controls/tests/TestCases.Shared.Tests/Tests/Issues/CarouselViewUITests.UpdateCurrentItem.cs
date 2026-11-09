@@ -1,4 +1,4 @@
-﻿#if TEST_FAILS_ON_WINDOWS //For more information : https://github.com/dotnet/maui/issues/24482
+﻿#if ANDROID // Items2 still fails this scenario on Apple: https://github.com/dotnet/maui/issues/29312
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;

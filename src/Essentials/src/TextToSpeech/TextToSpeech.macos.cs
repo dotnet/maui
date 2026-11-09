@@ -30,8 +30,11 @@ namespace Microsoft.Maui.Media
 					if (options.Volume.HasValue)
 						ss.Volume = NormalizeVolume(options.Volume);
 
+					// Assigning null resets the synthesizer to the system default voice. The
+					// synthesizer instance is cached, so skipping the assignment would let a
+					// voice from a previous utterance leak into this one.
 					if (options.Locale != null)
-						ss.Voice = options.Locale.Id;
+						ss.Voice = string.IsNullOrWhiteSpace(options.Locale.Id) ? null : options.Locale.Id;
 
 					if (options.Rate.HasValue)
 						ss.Rate = options.Rate.Value;

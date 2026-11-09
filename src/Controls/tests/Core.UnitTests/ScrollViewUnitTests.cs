@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Microsoft.Maui.UnitTests;
 using NSubstitute;
 using Xunit;
 
@@ -913,7 +914,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var scrollView = new ScrollView { Content = layout };
 
 			// Parked before the handler exists, so the attach replays ScrollToRequested
-			_ = scrollView.ScrollToAsync(0, 100, false);
+			var original = scrollView.ScrollToAsync(0, 100, false);
 
 			// A subscriber (as a compatibility renderer would be) that issues a new request
 			// from inside the replayed event. The replay has already cleared the pending
@@ -935,6 +936,104 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			// Latest request wins; exactly what was sent, in order: the re-entrant one first
 			// (sent immediately, handler present) — the stale replay must not follow it
 			Assert.Equal(new[] { 250d }, handler.ScrollToRequests.ConvertAll(r => r.VerticalOffset));
+
+			// The superseded caller must not be stranded: nothing else will ever complete
+			// its task (the superseding request does not touch it), so yielding the replay
+			// completes it — without a scroll — instead of abandoning it
+			Assert.True(original.IsCompleted);
+			Assert.False(reentrant.IsCompleted);
+		}
+
+		[Fact]
+		public void DropCompletionIsPostedNotRunOnTheMutationStack()
+		{
+			// Capture dispatcher posts instead of running them, so the test can see when
+			// the completion happens relative to the mutation. The option is thread-static
+			// and this capture swallows posts, so it is restored in finally.
+			var posted = new System.Collections.Generic.List<Action>();
+			DispatcherProviderStubOptions.InvokeOnMainThread = posted.Add;
+			try
+			{
+				var item = new View();
+				var scrollView = new ScrollView { Content = new StackLayout { Children = { item } } };
+				var parent = new StackLayout { Children = { scrollView } };
+				scrollView.Handler = new ViewportProviderHandlerStub();
+
+				var task = scrollView.ScrollToAsync(item, ScrollToPosition.Start, false);
+
+				// The drop runs from inside Element.SetParent, before the Parent change has
+				// finished propagating. The caller's continuation must not run there, so
+				// after Remove returns the task is still pending and one post is queued
+				parent.Children.Remove(scrollView);
+				Assert.False(task.IsCompleted);
+				var completion = Assert.Single(posted);
+
+				completion();
+				Assert.True(task.IsCompleted);
+			}
+			finally
+			{
+				DispatcherProviderStubOptions.InvokeOnMainThread = null;
+			}
+		}
+
+		[Fact]
+		public void PostedDropCompletionReleasesOnlyTheDroppedTaskEvenIfANewRequestArrivesFirst()
+		{
+			var posted = new System.Collections.Generic.List<Action>();
+			DispatcherProviderStubOptions.InvokeOnMainThread = posted.Add;
+			try
+			{
+				var item = new View();
+				var scrollView = new ScrollView { Content = new StackLayout { Children = { item } } };
+				var parent = new StackLayout { Children = { scrollView } };
+				scrollView.Handler = new ViewportProviderHandlerStub();
+
+				var task1 = scrollView.ScrollToAsync(item, ScrollToPosition.Start, false);
+				parent.Children.Remove(scrollView);
+				var completion = Assert.Single(posted);
+				Assert.False(task1.IsCompleted);
+
+				// Before the post runs, the view is re-attached and a new request T2 parks,
+				// replacing the completion source. The post must be bound to T1's source,
+				// not read the field when it fires: T1 completes, T2 is untouched.
+				parent.Children.Add(scrollView);
+				var task2 = scrollView.ScrollToAsync(item, ScrollToPosition.End, false);
+
+				completion();
+				Assert.True(task1.IsCompleted);
+				Assert.False(task2.IsCompleted);
+			}
+			finally
+			{
+				DispatcherProviderStubOptions.InvokeOnMainThread = null;
+			}
+		}
+
+		[Fact]
+		public void SupersedingAParkedRequestCompletesTheSupersededCallersTask()
+		{
+			var item = new View();
+			var layout = new StackLayout { Children = { item } };
+			var scrollView = new ScrollView { Content = layout };
+			var handler = new ViewportProviderHandlerStub();
+			scrollView.Handler = handler;
+
+			// T1 parks for geometry. A direct request T2 then displaces it (latest wins).
+			// T1's request is over — nothing will ever scroll it — so T1's caller must be
+			// released rather than left awaiting forever, and T2 must be untouched
+			var task1 = scrollView.ScrollToAsync(item, ScrollToPosition.Start, false);
+			var task2 = scrollView.ScrollToAsync(0, 100, false);
+			Assert.True(task1.IsCompleted);
+			Assert.False(task2.IsCompleted);
+			Assert.Equal(100, Assert.Single(handler.ScrollToRequests).VerticalOffset);
+
+			// Same when the displacing request parks in T1's place instead of sending
+			var task3 = scrollView.ScrollToAsync(item, ScrollToPosition.End, false);
+			Assert.False(task3.IsCompleted);
+			var task4 = scrollView.ScrollToAsync(item, ScrollToPosition.Center, false);
+			Assert.True(task3.IsCompleted);
+			Assert.False(task4.IsCompleted);
 		}
 
 		[Fact]

@@ -14,7 +14,7 @@ public class Issue35088 : _IssuesUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void SearchHandlerBackgroundColorResetsToDefault()
 	{
 		App.WaitForElement("ResetColorButton");

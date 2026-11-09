@@ -15,7 +15,7 @@ public class Issue7290 : _IssuesUITest
 	public override string Issue => "[Android] DisplayActionSheet or DisplayAlert in OnAppearing does not work on Shell";
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void DisplayActionSheetAndDisplayAlertFromOnAppearing()
 	{
 		App.TapDisplayAlertButton("Cancel");

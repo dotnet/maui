@@ -12,7 +12,7 @@ public class Issue13243 : _IssuesUITest
 	public override string Issue => "Flyout Not Displayed on Android When FlyoutWidth Is Set Only for Desktop via OnIdiom";
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void ShouldDisplayFlyoutWhenOnIdiomHasNoDefaultValue()
 	{
 		App.WaitForElement("Label");

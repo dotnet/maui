@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "[Windows] Shell flyout template items do not have a margin applied on first show";
 
 		[Test]
-		[Category(UITestCategories.Shell)]
+		[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 		public void VerifyTemplateViewMarginOnInitialDisplay()
 		{
 			App.WaitForElement("MainPageLabel");

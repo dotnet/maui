@@ -44,7 +44,8 @@ stages:
     pool: ${{ parameters.pool }}
     templateContext:
       type: releaseJob
-      isProduction: true
+      # This job analyzes build outputs; it does not release them.
+      isProduction: false
       inputs:
       - input: pipelineArtifact
         artifactName: APIScanFiles

@@ -6,6 +6,7 @@ namespace Microsoft.Maui.TestCases.Tests;
 public class CollectionView_HeaderFooterFeatureTests : _GalleryUITest
 {
 	public const string HeaderFooterFeatureMatrix = "CollectionView Feature Matrix";
+	public const string HeaderFooterViewButton = "HeaderFooterViewButton";
 	public const string Options = "Options";
 	public const string Apply = "Apply";
 	public const string EmptyViewString = "EmptyViewString";
@@ -35,7 +36,6 @@ public class CollectionView_HeaderFooterFeatureTests : _GalleryUITest
 		: base(device)
 	{
 	}
-
 
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST //In CV2, unintended synchronization between the HeaderTemplate/FooterTemplate and Header/Footer views, related issue: https://github.com/dotnet/maui/issues/28504
 	[Test]

@@ -14,7 +14,7 @@ public class ShellFlyoutHeaderScrollViewContent : _IssuesUITest
 	public override string Issue => "Shell flyout header with ScrollView flyout content";
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void FlyoutHeaderReturnsToTopWhenScrollViewContentScrollsBack()
 	{
 		App.WaitForElement("RunButton");

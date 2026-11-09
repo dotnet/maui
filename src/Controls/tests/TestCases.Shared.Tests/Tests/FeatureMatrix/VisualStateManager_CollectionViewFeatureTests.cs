@@ -9,6 +9,7 @@ public class VisualStateManager_CollectionViewFeatureTests : _GalleryUITest
 {
 	public const string VisualStateManagerCollectionViewFeatureTests = "VisualStateManager Feature Matrix";
 	public override string GalleryPageName => VisualStateManagerCollectionViewFeatureTests;
+	protected override string GallerySubPageButton => "VSMCollectionViewButton";
 
 	public VisualStateManager_CollectionViewFeatureTests(TestDevice device)
 		: base(device)
@@ -18,8 +19,6 @@ public class VisualStateManager_CollectionViewFeatureTests : _GalleryUITest
 	[Test, Order(1)]
 	public void VerifyVSM_CollectionView_InitialState()
 	{
-		App.WaitForElement("VSMCollectionViewButton");
-		App.Tap("VSMCollectionViewButton");
 		App.WaitForElement("CVState");
 		var stateText = App.FindElement("CVState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Normal"));

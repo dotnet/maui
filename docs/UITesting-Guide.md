@@ -49,6 +49,62 @@ dotnet build ./src/Provisioning/Provisioning.csproj -t:ProvisionAppium -p:SkipAp
 - Xcode with command-line tools installed
 - iOS Simulator configured
 
+## Android Shell Handler and Renderer Lanes
+
+The main Android UI-test stage runs `Shell1` and `Shell2` as separate matrix jobs
+using Shell Handler. The separate `android_ui_tests_shell_renderer` stage runs the
+same two shards as separate matrix jobs using Shell Renderer. Each renderer job
+uses its shard category as the test filter, so the entire Shell suite is not
+repeated in each job. Both stages depend on `build_ui_tests_coreclr` and download
+the same `ui-tests-samples-coreclr` artifact; there is no separate app build or
+MSBuild property for Shell selection.
+
+Android Mono is not supported when targeting .NET 11 or later. Enabling
+`UseMonoRuntime=true` for `net11.0-android` fails with `NETSDK1242`, so there is no
+Android Mono build or test lane on this branch. Mono coverage requires a separate
+.NET 10-targeted app build; the shared templates' `Mono` option does not make a
+.NET 11 Android app compatible with Mono.
+
+The renderer lane sets `testConfigurationArgs: "ShellRenderer"`. The Android Cake
+runner forwards this through `TEST_CONFIGURATION_ARGS` to Appium, which passes it
+as an activity intent extra on startup and relaunch. `MainActivity` reads the
+setting before creating the window, and the Shell handler factory in
+`MauiProgram.cs` selects the renderer when each Shell is created. Without the
+setting, it selects Shell Handler. The selected implementation is logged to logcat
+under the `MauiUITests` tag.
+
+To run the renderer configuration locally with an already-built HostApp:
+
+```bash
+./build.sh -Script eng/devices/android.cake --target=uitest \
+  --test-filter="TestCategory=Shell" --TEST_CONFIGURATION_ARGS="ShellRenderer"
+```
+
+The `Shell` umbrella category still selects the complete suite locally. Use
+`TestCategory=Shell1` or `TestCategory=Shell2` to run an individual shard, matching
+the CI jobs.
+
+Omit `--TEST_CONFIGURATION_ARGS` (and unset that environment variable) to run the
+default Shell Handler configuration. Both configurations use the existing Android
+snapshot baselines.
+
+For a known renderer-only failure, call the shared test extension at the start of
+the affected test, including the tracking issue in the reason:
+
+```csharp
+this.IgnoreOnAndroidShellRenderer(
+    "Fails with Android ShellRenderer: https://github.com/dotnet/maui/issues/39461");
+```
+
+This reports the test as ignored only in the Android Shell Renderer configuration.
+The default Handler lane and other platforms continue running the test.
+
+For a known Handler-only failure, use
+`this.IgnoreOnAndroidShellHandler("Reason and tracking issue URL")` instead. This
+skips only the Android Handler configuration, leaving Renderer coverage enabled.
+Both helpers leave other platforms unaffected. Use only the relevant helper for
+each affected test and remove the call when its issue is fixed.
+
 ## Creating a UI Test
 
 ### Step 1: Create the HostApp Page
@@ -379,9 +435,105 @@ For rapid development and debugging, you can run specific tests directly:
    dotnet test src/Controls/tests/TestCases.Mac.Tests/Controls.TestCases.Mac.Tests.csproj --filter "FullyQualifiedName~Issue11311"
    ```
 
+Mac screenshots retain logical window dimensions. The screenshot helper masks
+only the bottom-left and bottom-right rounded-corner fringes before and after
+display-scale normalization. The top and straight edges are not inset or masked.
+Review and regenerate affected visual baselines when
+changing this mask; do not increase comparison tolerances to hide edge differences.
+
+### Multiple Screenshots in One Test
+
+When a test verifies multiple UI states, use `VerifyScreenshotOrSetException`
+with one exception variable for the entire test. This allows later states to be
+captured even when an earlier screenshot comparison fails:
+
+```csharp
+Exception? exception = null;
+
+VerifyScreenshotOrSetException(ref exception, "BeforeChange");
+App.Tap("ChangeButton");
+VerifyScreenshotOrSetException(ref exception, "AfterChange");
+
+if (exception is not null)
+{
+    throw exception;
+}
+```
+
+Keep the final rethrow after any cleanup so the test still fails if a screenshot
+failed. Preserve screenshot names, cropping, tolerances, and other options.
+UI interactions and assertions outside the screenshot helper still fail
+immediately; this pattern does not make an invalid UI state safe to continue.
+Tests capturing only one screenshot can continue to use `VerifyScreenshot`.
+
 ### Full Test Suite: Using Cake Build System
 
 For comprehensive CI-like test runs:
+
+Android, iOS, MacCatalyst, and Windows CI runs retry once after a failure using
+the shared UI test runner. For an exact category group such as
+`TestCategory=Editor|TestCategory=Effects|TestCategory=Essentials`, the second
+attempt runs only the individual tests that failed, except for feature matrices.
+Exact NUnit `fullname` selectors distinguish parameterized cases and retain the
+original category/shard constraint. A generated `retry.runsettings` file uses
+`NUnit.Where` instead of a
+VSTest command-line filter, avoiding argument quoting and length limits.
+NUnit XML provides inherited fixture and method categories; only categories in
+the original group are selected. Missing, incomplete, unmappable, or ambiguous
+test names fall back to the original filter with a warning. Custom filters retain
+their original selection, and local runs do not retry. No extra retry is added.
+
+Feature-matrix fixtures follow the `*FeatureTests` class naming convention.
+When one fails, the retry selects that exact NUnit fixture instance, including
+passing prerequisite tests, so ordered navigation and shared application state
+are preserved. Other feature matrices and passing ordinary tests are not
+selected. The original category/shard constraint still applies: tests outside
+that lane are not added. This costs a full fixture rerun only after a failure,
+without adding per-test app resets or extra retry attempts. New feature matrices
+must retain this naming convention to receive fixture-level retries.
+
+Feature-matrix subpage navigation belongs in fixture setup, not an `Order(1)`
+test. Override `_GalleryUITest.GallerySubPageButton` with the entry button's
+AutomationId and remove the corresponding wait/tap from the first test. Setup
+then opens the subpage even when only a later method or a category shard is
+selected. This reuses the existing once-per-fixture navigation without enabling
+`ResetAfterEachTest`. Navigation setup alone does not remove other focus,
+flyout, data, or nested-navigation dependencies; whole-fixture retries preserve
+those existing ordered flows within the original shard. Tests should still
+establish their own prerequisites, particularly when split across shards or
+selected individually for local runs.
+
+Explicitly separated preparation and test-project build phases on Android, iOS,
+MacCatalyst, and Windows CI allow at most five total attempts per failed phase,
+before test execution starts. These retries do not restart completed tests.
+Local runs and device-test Cake targets do not retry these phases. Shared agent
+provisioning also uses bounded setup-only recovery; see
+[Setup-only retries](../.github/docs/maui-ci-facts.md#setup-only-retries) for its
+coverage and limits.
+
+NUnit XML is checked whether VSTest succeeds or throws. Fixture-only failures
+such as `OneTimeTearDown` errors in other fixtures still retry their affected
+categories because they cannot safely be attributed to individual tests. They
+are recorded as TRX run errors if they persist. Missing or malformed reports are
+logged without replacing an existing VSTest exception.
+
+The published TRX combines untouched first-attempt results with retry results.
+Failures not reported by the retry, or only skipped/inconclusive on retry, remain
+failures. Failed NUnit cases must be confirmed passed by complete retry NUnit XML
+for the same fully qualified name and assembly, even if VSTest reports success.
+Fixture errors are cleared
+only when retry NUnit XML confirms that the same fixture in the same assembly
+completed successfully; omitted, skipped, or incomplete fixtures remain run
+errors, even if all retained test cases passed.
+
+Available raw TRX and NUnit XML files are copied before XML parsing,
+reconciliation, or retry selection, including for full-filter retries. The
+first attempt's snapshots are under `nunit-<id>/raw/` and the retry's snapshots
+under `nunit-<id>/retry/raw/`, beneath the result directory. Retry output always
+uses a separate directory, even when the first TRX is missing or malformed.
+Only the combined top-level TRX is published; if the first TRX cannot be read,
+the retry TRX is published instead. If raw reports cannot be archived, the runner
+stops without retrying or overwriting the available evidence.
 
 **Android:**
 

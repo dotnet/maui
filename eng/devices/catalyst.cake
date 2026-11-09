@@ -12,6 +12,7 @@ var testAppProjectPath = Argument("appproject", EnvironmentVariable("MAC_TEST_AP
 var testResultsPath = Argument("results", EnvironmentVariable("MAC_TEST_RESULTS") ?? GetTestResultsDirectory().FullPath);
 var runtimeIdentifier = Argument("rid", EnvironmentVariable("MAC_RUNTIME_IDENTIFIER") ?? GetDefaultRuntimeIdentifier());
 var deviceCleanupEnabled = Argument("cleanup", true);
+var useCoreClr = Argument("coreclr", false);
 
 // Directory setup
 var binlogDirectory = DetermineBinlogDirectory(projectPath, binlogArg).FullPath;
@@ -25,12 +26,13 @@ Information($"Build Runtime Identifier: {runtimeIdentifier}");
 Information($"Build Target Framework: {targetFramework}");
 Information($"Test Device: {testDevice}");
 Information($"Test Results Path: {testResultsPath}");
+Information("Use CoreCLR: {0}", useCoreClr);
 
 Task("buildOnly")
 	.WithCriteria(!string.IsNullOrEmpty(projectPath))
 	.Does(() =>
 	{
-		ExecuteBuild(projectPath, binlogDirectory, configuration, runtimeIdentifier, targetFramework, dotnetToolPath);
+		ExecuteBuild(projectPath, binlogDirectory, configuration, runtimeIdentifier, targetFramework, dotnetToolPath, useCoreClr);
 	});
 
 Task("testOnly")
@@ -65,10 +67,11 @@ Task("uitest")
 
 RunTarget(TARGET);
 
-void ExecuteBuild(string project, string binDir, string config, string rid, string tfm, string toolPath)
+void ExecuteBuild(string project, string binDir, string config, string rid, string tfm, string toolPath, bool useCoreClr)
 {
 	var projectName = System.IO.Path.GetFileNameWithoutExtension(project);
-	var binlog = $"{binDir}/{projectName}-{config}-catalyst.binlog";
+	var monoRuntime = useCoreClr ? "coreclr" : "mono";
+	var binlog = $"{binDir}/{projectName}-{config}-{monoRuntime}-catalyst.binlog";
 	DotNetBuild(project, new DotNetBuildSettings
 	{
 		Configuration = config,
@@ -78,10 +81,19 @@ void ExecuteBuild(string project, string binDir, string config, string rid, stri
 			MaxCpuCount = 0
 		},
 		ToolPath = toolPath,
-		ArgumentCustomization = args => args
-			.Append("/p:BuildIpa=true")
-			.Append($"/p:RuntimeIdentifier={rid}")
-			.Append($"/bl:{binlog}")
+		ArgumentCustomization = args =>
+		{
+			args
+				.Append("/p:BuildIpa=true")
+				.Append($"/p:RuntimeIdentifier={rid}")
+				.Append($"/bl:{binlog}");
+
+			if (useCoreClr)
+			{
+				args.Append("/p:UseMonoRuntime=false");
+			}
+			return args;
+		}
 	});
 }
 
@@ -111,47 +123,50 @@ void ExecuteUITests(string project, string app, string device, string resultsDir
 {
 	// Setup environment for UI tests
 	Information("Starting UI Tests...");
-	var testApp = GetTestApplications(app, device, config, tfm, rid).FirstOrDefault();
-
-	Information($"Testing Device: {device}");
-	Information($"Testing App Project: {app}");
-	Information($"Testing App: {testApp}");
-	Information($"Results Directory: {resultsDir}");
-
-	if (string.IsNullOrEmpty(testApp))
-	{
-		throw new Exception("UI Test application path not specified.");
-	}
-
-	// Launch the app so it can be found by the test runner
-	StartProcess("chmod", $"+x {testApp}/Contents/MacOS/Controls.TestCases.HostApp");
-
-	var p = new System.Diagnostics.Process();
-	p.StartInfo.UseShellExecute = true;
-	p.StartInfo.FileName = "open";
-	p.StartInfo.Arguments = testApp;
-	p.Start();
-
-	Information("Build UITests project {0}", project);
-
 	var name = System.IO.Path.GetFileNameWithoutExtension(project);
 	var binlog = $"{binDir}/{name}-{config}-mac.binlog";
 	var resultsFileName = SanitizeTestResultsFilename($"{name}-{config}-catalyst-{testFilter}");
 	var appiumLog = $"{binDir}/appium_mac_{resultsFileName}.log";
 
-	DotNetBuild(project, new DotNetBuildSettings
+	RunUITestSetupWithRetry(() =>
 	{
-		Configuration = config,
-		ToolPath = toolPath,
-		ArgumentCustomization = args => args
-			.Append("/p:ExtraDefineConstants=MACUITEST")
-			.Append("/bl:" + binlog)
+		var testApp = GetTestApplications(app, device, config, tfm, rid).FirstOrDefault();
+
+		Information($"Testing Device: {device}");
+		Information($"Testing App Project: {app}");
+		Information($"Testing App: {testApp}");
+		Information($"Results Directory: {resultsDir}");
+
+		if (string.IsNullOrEmpty(testApp))
+		{
+			throw new Exception("UI Test application path not specified.");
+		}
+
+		// Launch the app so it can be found by the test runner
+		StartProcess("chmod", $"+x {testApp}/Contents/MacOS/Controls.TestCases.HostApp");
+
+		var p = new System.Diagnostics.Process();
+		p.StartInfo.UseShellExecute = true;
+		p.StartInfo.FileName = "open";
+		p.StartInfo.Arguments = testApp;
+		p.Start();
+
+		Information("Build UITests project {0}", project);
+
+		DotNetBuild(project, new DotNetBuildSettings
+		{
+			Configuration = config,
+			ToolPath = toolPath,
+			ArgumentCustomization = args => args
+				.Append("/p:ExtraDefineConstants=MACUITEST")
+				.Append("/bl:" + binlog)
+		});
 	});
 
 	SetEnvironmentVariable("APPIUM_LOG_FILE", appiumLog);
 
 	Information("Run UITests project {0}", project);
-	RunTestWithLocalDotNet(project, config, pathDotnet: toolPath, noBuild: true, resultsFileNameWithoutExtension: resultsFileName);
+	RunUITestsWithRetry(project, config, toolPath, resultsFileName);
 	Information("UI Tests completed.");
 }
 

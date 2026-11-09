@@ -93,7 +93,26 @@ namespace Microsoft.Maui.Handlers
 
 		internal static void MapBackground(ILabelHandler handler, ILabel label)
 		{
-			handler.PlatformView?.UpdateBackground(label);
+			var platformView = handler.PlatformView;
+			if (platformView is null)
+				return;
+
+			if (label.Background.IsNullOrEmpty())
+			{
+				if (platformView.Background is MauiDrawable mauiDrawable)
+				{
+					platformView.Background = null;
+					mauiDrawable.Dispose();
+				}
+				else
+				{
+					platformView.Background = null;
+				}
+
+				return;
+			}
+
+			platformView.UpdateBackground(label);
 		}
 
 		public static void MapText(ILabelHandler handler, ILabel label)
@@ -144,8 +163,7 @@ namespace Microsoft.Maui.Handlers
 		}
 	}
 
-	// TODO: Material3 - make it public in .net 11
-	internal class LabelHandler2 : LabelHandler
+	public class LabelHandler2 : LabelHandler
 	{
 		protected override MauiMaterialTextView CreatePlatformView()
 		{

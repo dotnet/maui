@@ -67,6 +67,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			base.GetItemOffsets(outRect, view, parent, state);
 
+			// Nothing to apply; skip the row computations below entirely.
+			if (HorizontalOffset == 0 && VerticalOffset == 0)
+			{
+				return;
+			}
+
 			var adapter = parent.GetAdapter();
 			if (adapter is null)
 			{
@@ -87,39 +93,106 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			outRect.Top = VerticalOffset;
 
 			// Remove spacing on the outer edges so spacing only appears between items.
-			int rowCol;
-			int lastRowCol;
+			bool isInFirstRowCol;
+			bool isInLastRowCol;
 
 			if (parent.GetLayoutManager() is GridLayoutManager gridLayoutManager)
 			{
-				// Use SpanSizeLookup instead of position/spanCount so full-span items
-				// (group headers, footers, etc.) are accounted for when determining rows.
+				// Full-span items (group headers, footers, etc.) are accounted for via the SpanSizeLookup.
+				// Only the items that can share a row with `position` are inspected (at most spanCount of them);
+				// SpanSizeLookup.GetSpanGroupIndex(itemCount - 1) would walk every position in the adapter
+				// for every cell on every layout pass.
 				var spanSizeLookup = gridLayoutManager.GetSpanSizeLookup();
 				int spanCount = gridLayoutManager.SpanCount;
-				rowCol = spanSizeLookup.GetSpanGroupIndex(position, spanCount);
-				lastRowCol = spanSizeLookup.GetSpanGroupIndex(itemCount - 1, spanCount);
+				isInFirstRowCol = IsInFirstSpanGroup(spanSizeLookup, position, spanCount);
+				isInLastRowCol = IsInLastSpanGroup(spanSizeLookup, view, position, itemCount, spanCount);
 			}
 			else
 			{
 				// Linear layout: each item occupies exactly one row/column.
-				rowCol = position;
-				lastRowCol = itemCount - 1;
+				isInFirstRowCol = position == 0;
+				isInLastRowCol = position == itemCount - 1;
 			}
 
 			if (_orientation == ItemsLayoutOrientation.Vertical)
 			{
-				if (rowCol == 0)
+				if (isInFirstRowCol)
 					outRect.Top = 0;
-				if (rowCol == lastRowCol)
+				if (isInLastRowCol)
 					outRect.Bottom = 0;
 			}
 			else
 			{
-				if (rowCol == 0)
+				if (isInFirstRowCol)
 					outRect.Left = 0;
-				if (rowCol == lastRowCol)
+				if (isInLastRowCol)
 					outRect.Right = 0;
 			}
+		}
+
+		static bool IsInFirstSpanGroup(GridLayoutManager.SpanSizeLookup spanSizeLookup, int position, int spanCount)
+		{
+			// Every item occupies at least one span, so the first row holds at most spanCount items.
+			if (position >= spanCount)
+			{
+				return false;
+			}
+
+			int span = 0;
+
+			for (int i = 0; i <= position; i++)
+			{
+				int spanSize = spanSizeLookup.GetSpanSize(i);
+
+				// Item i did not fit on the first row, so neither does anything after it.
+				if (span + spanSize > spanCount)
+				{
+					return false;
+				}
+
+				span += spanSize;
+			}
+
+			return true;
+		}
+
+		static bool IsInLastSpanGroup(GridLayoutManager.SpanSizeLookup spanSizeLookup, AView view, int position, int itemCount, int spanCount)
+		{
+			// Every item occupies at least one span, so the last row holds at most spanCount items.
+			if (itemCount - 1 - position >= spanCount)
+			{
+				return false;
+			}
+
+			int span = GetSpanIndex(spanSizeLookup, view, position, spanCount) + spanSizeLookup.GetSpanSize(position);
+
+			for (int i = position + 1; i < itemCount; i++)
+			{
+				int spanSize = spanSizeLookup.GetSpanSize(i);
+
+				// Item i starts a new row, so `position` is not on the last one.
+				if (span + spanSize > spanCount)
+				{
+					return false;
+				}
+
+				span += spanSize;
+			}
+
+			return true;
+		}
+
+		static int GetSpanIndex(GridLayoutManager.SpanSizeLookup spanSizeLookup, AView view, int position, int spanCount)
+		{
+			// GridLayoutManager assigns spans to the whole row before measuring its children, so the
+			// LayoutParams already hold the answer; fall back to the lookup for anything not yet assigned.
+			if (view.LayoutParameters is GridLayoutManager.LayoutParams layoutParams
+				&& layoutParams.SpanIndex != GridLayoutManager.LayoutParams.InvalidSpanId)
+			{
+				return layoutParams.SpanIndex;
+			}
+
+			return spanSizeLookup.GetSpanIndex(position, spanCount);
 		}
 	}
 }

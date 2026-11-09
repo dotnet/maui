@@ -49,6 +49,14 @@ class AppiumAppleStepperActions : ICommandExecutionGroup
 		if (stepper is null)
 			return CommandResponse.FailedEmptyResponse;
 
+		// Mac2 on Tahoe reverses child order; prefer UIKit's action identifiers.
+		var increment = AppiumQuery.ByAccessibilityId($"{elementId}-Increment").FindElements(stepper, _appiumApp).FirstOrDefault();
+		if (increment is not null)
+		{
+			increment.Tap();
+			return CommandResponse.SuccessEmptyResponse;
+		}
+
 		var buttons = AppiumQuery.ByClass("XCUIElementTypeButton").FindElements(stepper, _appiumApp);
 
 		if (buttons is not null && buttons.Count > 1)
@@ -72,6 +80,13 @@ class AppiumAppleStepperActions : ICommandExecutionGroup
 
 		if (stepper is null)
 			return CommandResponse.FailedEmptyResponse;
+
+		var decrement = AppiumQuery.ByAccessibilityId($"{elementId}-Decrement").FindElements(stepper, _appiumApp).FirstOrDefault();
+		if (decrement is not null)
+		{
+			decrement.Tap();
+			return CommandResponse.SuccessEmptyResponse;
+		}
 
 		var buttons = AppiumQuery.ByClass("XCUIElementTypeButton").FindElements(stepper, _appiumApp);
 

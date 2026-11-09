@@ -17,17 +17,24 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Page)]
 		public void NavigationBarBackgroundShouldChange()
 		{
+			Exception? exception = null;
+
 			try
 			{
 				App.WaitForElement("lightThemeLabel");
-				VerifyScreenshot("NavigationBarBackgroundShouldChangeLightTheme");
+				VerifyScreenshotOrSetException(ref exception, "NavigationBarBackgroundShouldChangeLightTheme");
 				App.SetDarkTheme();
 				App.WaitForElement("darkThemeLabel");
-				VerifyScreenshot("NavigationBarBackgroundShouldChangeDarkTheme");
+				VerifyScreenshotOrSetException(ref exception, "NavigationBarBackgroundShouldChangeDarkTheme");
 			}
 			finally
 			{
 				App.SetLightTheme();
+			}
+
+			if (exception is not null)
+			{
+				throw exception;
 			}
 		}
 	}

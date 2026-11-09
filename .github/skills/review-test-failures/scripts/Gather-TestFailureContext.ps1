@@ -248,6 +248,282 @@ function Invoke-GhJson {
     return [string]$result.stdout | ConvertFrom-Json
 }
 
+function Get-BuildInsightsCheckReports {
+    param(
+        [string]$Repository,
+        [string]$HeadSha,
+        [int]$MaxPages = 3,
+        [int]$MaxReports = 8,
+        [int]$MaxReportCharacters = 65536
+    )
+
+    $result = [ordered]@{
+        queried = $false
+        complete = $false
+        reports = @()
+        errors = @()
+    }
+    $errors = New-Object System.Collections.Generic.List[string]
+    $reports = New-Object System.Collections.Generic.List[object]
+
+    if ($Repository -notmatch '^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$') {
+        $errors.Add("Build Insights check reports were not queried because the repository must be in owner/name form.")
+    }
+    if ($HeadSha -notmatch '^[0-9a-fA-F]{40}$') {
+        $errors.Add("Build Insights check reports were not queried because the captured PR head is not a 40-character commit SHA.")
+    }
+    if ($MaxPages -le 0) {
+        $errors.Add("Build Insights check reports were not queried because MaxPages must be greater than zero.")
+    }
+    if ($MaxReports -le 0) {
+        $errors.Add("Build Insights check reports were not queried because MaxReports must be greater than zero.")
+    }
+    if ($MaxReportCharacters -le 0) {
+        $errors.Add("Build Insights check reports were not queried because MaxReportCharacters must be greater than zero.")
+    }
+    if ($errors.Count -gt 0) {
+        $result.errors = $errors.ToArray()
+        return $result
+    }
+
+    $expectedTotal = $null
+    $fetchedCount = 0
+    $eligibleCount = 0
+    $seenIds = @{}
+    for ($page = 1; $page -le $MaxPages; $page++) {
+        try {
+            # Preflight the shared hard deadline so queried remains false when no request can start.
+            [void](Get-GatherRequestTimeoutSeconds)
+        }
+        catch {
+            $errors.Add("Build Insights check report collection could not start page $page`: $($_.Exception.Message)")
+            break
+        }
+
+        $result.queried = $true
+        try {
+            $response = Invoke-GhJson -Arguments @(
+                "api", "repos/$Repository/commits/$HeadSha/check-runs?filter=all&per_page=100&page=$page",
+                "--header", "Accept: application/vnd.github+json"
+            )
+        }
+        catch {
+            $errors.Add("Build Insights check report query failed on page $page`: $($_.Exception.Message)")
+            break
+        }
+
+        if ($null -eq $response) {
+            $errors.Add("Build Insights check report query returned an empty response on page $page.")
+            break
+        }
+        $propertyNames = @($response.PSObject.Properties.Name)
+        if ($propertyNames -notcontains "total_count" -or $propertyNames -notcontains "check_runs") {
+            $errors.Add("Build Insights check report response on page $page did not contain total_count and check_runs.")
+            break
+        }
+        if ($response.total_count -isnot [byte] -and
+            $response.total_count -isnot [int16] -and
+            $response.total_count -isnot [int32] -and
+            $response.total_count -isnot [int64]) {
+            $errors.Add("Build Insights check report response on page $page had a non-numeric total_count.")
+            break
+        }
+        $pageTotal = [int64]$response.total_count
+        if ($pageTotal -lt 0) {
+            $errors.Add("Build Insights check report response on page $page had a negative total_count.")
+            break
+        }
+        if ($response.check_runs -isnot [System.Array]) {
+            $errors.Add("Build Insights check report response on page $page did not contain a check_runs array.")
+            break
+        }
+
+        $pageRuns = @($response.check_runs)
+        if ($pageRuns.Count -gt 100) {
+            $errors.Add("Build Insights check report response on page $page exceeded the requested 100 check runs.")
+            break
+        }
+        if ($null -eq $expectedTotal) {
+            $expectedTotal = $pageTotal
+        }
+        elseif ($pageTotal -ne $expectedTotal) {
+            $errors.Add("Build Insights check report total_count changed from $expectedTotal to $pageTotal while paging the captured commit.")
+            $expectedTotal = [Math]::Max([int64]$expectedTotal, $pageTotal)
+        }
+
+        $fetchedCount += $pageRuns.Count
+        if ($fetchedCount -gt $expectedTotal) {
+            $errors.Add("Build Insights check report pages returned $fetchedCount check runs although total_count was $expectedTotal.")
+        }
+
+        foreach ($run in $pageRuns) {
+            if ($null -eq $run) {
+                $errors.Add("Build Insights check report response on page $page contained a null check run.")
+                continue
+            }
+            if ($run -is [string] -or $run -is [ValueType] -or $run -is [System.Array]) {
+                $errors.Add("Build Insights check report response on page $page contained a non-object check run.")
+                continue
+            }
+
+            $runProperties = @($run.PSObject.Properties.Name)
+            $appSlug = $null
+            if ($runProperties -contains "app" -and $null -ne $run.app -and
+                @($run.app.PSObject.Properties.Name) -contains "slug" -and
+                $run.app.slug -is [string]) {
+                $appSlug = $run.app.slug
+            }
+            $name = if ($runProperties -contains "name" -and $run.name -is [string]) { $run.name } else { $null }
+            $isExpectedPublisher = (
+                [string]::Equals($appSlug, "build-insights", [System.StringComparison]::Ordinal) -and
+                [string]::Equals($name, "Build Insights", [System.StringComparison]::Ordinal)
+            )
+            if (-not $isExpectedPublisher) {
+                continue
+            }
+
+            if ($runProperties -notcontains "head_sha" -or $run.head_sha -isnot [string] -or
+                -not [string]::Equals($run.head_sha, $HeadSha, [System.StringComparison]::OrdinalIgnoreCase)) {
+                $actualHead = if ($runProperties -contains "head_sha" -and $run.head_sha -is [string]) { $run.head_sha } else { "<invalid>" }
+                $errors.Add("Expected publisher '$appSlug/$name' returned a check run for head '$actualHead' instead of captured head '$HeadSha'; it was ignored.")
+                continue
+            }
+
+            $eligibleCount++
+            if ($eligibleCount -gt $MaxReports) {
+                continue
+            }
+
+            if ($runProperties -notcontains "id" -or
+                ($run.id -isnot [byte] -and $run.id -isnot [int16] -and $run.id -isnot [int32] -and $run.id -isnot [int64])) {
+                $errors.Add("Expected publisher '$appSlug/$name' returned a check run without a numeric id; it was ignored.")
+                continue
+            }
+            $reportId = [int64]$run.id
+            if ($seenIds.ContainsKey($reportId)) {
+                $errors.Add("Build Insights check report id $reportId appeared more than once while paging; the duplicate was ignored.")
+                continue
+            }
+            $seenIds[$reportId] = $true
+
+            $invalidFields = New-Object System.Collections.Generic.List[string]
+            $metadata = [ordered]@{}
+            foreach ($fieldName in @("status", "conclusion", "html_url", "details_url", "started_at", "completed_at")) {
+                $fieldValue = $null
+                if ($runProperties -contains $fieldName) {
+                    $fieldValue = $run.$fieldName
+                }
+                # ConvertFrom-Json can materialize ISO timestamps as date values.
+                if ($fieldName -in @("started_at", "completed_at") -and
+                    ($fieldValue -is [datetime] -or $fieldValue -is [datetimeoffset])) {
+                    $fieldValue = $fieldValue.ToUniversalTime().ToString("o", [System.Globalization.CultureInfo]::InvariantCulture)
+                }
+                elseif ($null -ne $fieldValue -and $fieldValue -isnot [string]) {
+                    $invalidFields.Add($fieldName)
+                }
+                $metadata[$fieldName] = $fieldValue
+            }
+
+            $output = $null
+            if ($runProperties -contains "output") {
+                $output = $run.output
+            }
+            $body = [ordered]@{ title = ""; summary = ""; text = "" }
+            if ($null -ne $output) {
+                if ($output -is [string] -or $output -is [ValueType] -or $output -is [System.Array]) {
+                    $invalidFields.Add("output")
+                }
+                else {
+                    $outputProperties = @($output.PSObject.Properties.Name)
+                    foreach ($fieldName in @("title", "summary", "text")) {
+                        if ($outputProperties -contains $fieldName) {
+                            $fieldValue = $output.$fieldName
+                            if ($null -eq $fieldValue) {
+                                $body[$fieldName] = ""
+                            }
+                            elseif ($fieldValue -is [string]) {
+                                $body[$fieldName] = $fieldValue
+                            }
+                            else {
+                                $invalidFields.Add("output.$fieldName")
+                            }
+                        }
+                    }
+                }
+            }
+            if ($invalidFields.Count -gt 0) {
+                $errors.Add("Build Insights check report id $reportId contained non-string field(s): $($invalidFields -join ', '); it was ignored.")
+                continue
+            }
+            if ([string]::IsNullOrWhiteSpace($body.title) -and
+                [string]::IsNullOrWhiteSpace($body.summary) -and
+                [string]::IsNullOrWhiteSpace($body.text)) {
+                $errors.Add("Build Insights check report id $reportId had no title, summary, or text; report content is unavailable.")
+            }
+
+            $remaining = $MaxReportCharacters
+            $boundedBody = [ordered]@{}
+            $truncated = $false
+            foreach ($fieldName in @("title", "summary", "text")) {
+                $value = $body[$fieldName]
+                if ($value.Length -le $remaining) {
+                    $boundedBody[$fieldName] = $value
+                    $remaining -= $value.Length
+                }
+                else {
+                    $boundedBody[$fieldName] = if ($remaining -gt 0) { $value.Substring(0, $remaining) } else { "" }
+                    $remaining = 0
+                    $truncated = $true
+                }
+            }
+            if ($truncated) {
+                $errors.Add("Build Insights check report id $reportId exceeded the $MaxReportCharacters-character title/summary/text cap and was truncated.")
+            }
+
+            $reports.Add([ordered]@{
+                    id = $reportId
+                    name = $name
+                    appSlug = $appSlug
+                    headSha = $run.head_sha
+                    status = $metadata.status
+                    conclusion = $metadata.conclusion
+                    checkUrl = $metadata.html_url
+                    detailsUrl = $metadata.details_url
+                    startedAt = $metadata.started_at
+                    completedAt = $metadata.completed_at
+                    title = $boundedBody.title
+                    summary = $boundedBody.summary
+                    text = $boundedBody.text
+                    truncated = $truncated
+                })
+        }
+
+        if ($fetchedCount -ge $expectedTotal) {
+            break
+        }
+        if ($pageRuns.Count -lt 100) {
+            $errors.Add("Build Insights check report pagination ended after $fetchedCount of $expectedTotal advertised check runs.")
+            break
+        }
+        if ($page -eq $MaxPages) {
+            $errors.Add("Build Insights check report pagination stopped at the MaxPages cap after $fetchedCount of $expectedTotal advertised check runs.")
+        }
+    }
+
+    if ($eligibleCount -gt $MaxReports) {
+        $errors.Add("Build Insights check report collection found $eligibleCount matching reports and retained only the first $MaxReports.")
+    }
+    if ($null -ne $expectedTotal -and $fetchedCount -lt $expectedTotal -and
+        -not @($errors | Where-Object { $_ -match "pagination|query failed|could not start" }).Count) {
+        $errors.Add("Build Insights check report collection read $fetchedCount of $expectedTotal advertised check runs.")
+    }
+
+    $result.complete = $result.queried -and $errors.Count -eq 0
+    $result.reports = $reports.ToArray()
+    $result.errors = $errors.ToArray()
+    return $result
+}
+
 function Get-PinnedPrDiff {
     param(
         [string]$Repository,
@@ -1099,7 +1375,14 @@ function Get-TestResultPresence {
 }
 
 function Write-SkippedTestReviewContext {
-    param([object]$Pr, [string]$Repository, [object]$Evaluation, [string]$OutputDirectory, [object[]]$Builds)
+    param(
+        [object]$Pr,
+        [string]$Repository,
+        [object]$Evaluation,
+        [string]$OutputDirectory,
+        [object[]]$Builds,
+        [object]$BuildInsights
+    )
 
     $shortSha = 'unknown'
     $commit = 'commit unavailable'
@@ -1143,6 +1426,12 @@ function Write-SkippedTestReviewContext {
         pr = [ordered]@{ number = $Pr.number; author = $login; headRefOid = $Pr.headRefOid; baseRefName = $Pr.baseRefName }
         evaluation = $Evaluation
         builds = @(ConvertTo-Array $Builds)
+    }
+    if ($PSBoundParameters.ContainsKey("BuildInsights") -and $null -ne $BuildInsights) {
+        $context["buildInsights"] = $BuildInsights
+        $context["limitations"] = @($BuildInsights.errors | ForEach-Object {
+                "Supplementary Build Insights report collection: $_"
+            })
     }
     $context | ConvertTo-Json -Depth 40 | Set-Content -LiteralPath (Join-Path $OutputDirectory 'context.json') -Encoding UTF8
     $Evaluation.report | Set-Content -LiteralPath (Join-Path $OutputDirectory 'context.md') -Encoding UTF8
@@ -2550,9 +2839,8 @@ function Get-AggregatedBaseLegMap {
 function Get-KnownBuildIssues {
     # Loads the repo's open "Known Build Error" issues (the dotnet Build Analysis
     # known-issues registry). Each such issue body carries one or more ```json blocks
-    # with an ErrorMessage (substring) and/or ErrorPattern (regex) field. We compile
-    # those into matchers so a PR failure whose message matches a documented known
-    # issue can be stamped as a known flake instead of being read as PR-caused.
+    # with an ErrorMessage (literal or ordered array of line literals) and/or
+    # ErrorPattern (regex) field. A match is a cross-reference hint, not a flake verdict.
     param([string]$Repository)
 
     $patterns = New-Object System.Collections.Generic.List[object]
@@ -2576,11 +2864,26 @@ function Get-KnownBuildIssues {
                 $pattern = [string]$obj.ErrorPattern
                 $isRegex = $true
             }
-            elseif (($obj.PSObject.Properties.Name -contains "ErrorMessage") -and $obj.ErrorMessage) {
-                $pattern = [string]$obj.ErrorMessage
-                $isRegex = $false
+            elseif ($obj.PSObject.Properties.Name -contains "ErrorMessage") {
+                if ($obj.ErrorMessage -is [System.Array]) {
+                    $validArray = $obj.ErrorMessage.Count -gt 0
+                    foreach ($expression in $obj.ErrorMessage) {
+                        if ($expression -isnot [string] -or [string]::IsNullOrWhiteSpace($expression)) {
+                            $validArray = $false
+                            break
+                        }
+                    }
+                    if (-not $validArray) {
+                        Write-Warning "Skipping invalid ErrorMessage array in Known Build Error #$($issue.number): expected non-empty strings."
+                        continue
+                    }
+                    $pattern = [string[]]$obj.ErrorMessage
+                }
+                elseif ($obj.ErrorMessage) {
+                    $pattern = [string]$obj.ErrorMessage
+                }
             }
-            if ([string]::IsNullOrWhiteSpace($pattern)) {
+            if ($pattern -isnot [System.Array] -and [string]::IsNullOrWhiteSpace($pattern)) {
                 continue
             }
             # Validate a declared regex; fall back to substring matching if it is invalid
@@ -2606,9 +2909,12 @@ function Get-KnownBuildIssues {
 function Test-KnownIssueMatch {
     # Returns the first known-issue {number,title,url} whose pattern matches $Text,
     # or $null. Regex matches use a short timeout to defang a pathological pattern.
+    # Literal arrays require every expression on distinct subsequent lines in one
+    # occurrence. Omitted occurrence text preserves standalone single-text matching.
     param(
         [object[]]$Patterns,
-        [string]$Text
+        [string]$Text,
+        [string[]]$OccurrenceTexts
     )
 
     if ([string]::IsNullOrWhiteSpace($Text) -or -not $Patterns) {
@@ -2618,6 +2924,10 @@ function Test-KnownIssueMatch {
         $Text = $Text.Substring(0, 20000)
     }
 
+    $arrayTexts = @($Text)
+    if ($PSBoundParameters.ContainsKey('OccurrenceTexts')) {
+        $arrayTexts = @($OccurrenceTexts)
+    }
     foreach ($p in $Patterns) {
         $hit = $false
         if ($p.isRegex) {
@@ -2628,6 +2938,27 @@ function Test-KnownIssueMatch {
                     [TimeSpan]::FromMilliseconds(250))
             }
             catch { $hit = $false }
+        }
+        elseif ($p.pattern -is [System.Array]) {
+            foreach ($arrayText in $arrayTexts) {
+                if ([string]::IsNullOrWhiteSpace($arrayText)) { continue }
+                if ($arrayText.Length -gt 20000) { $arrayText = $arrayText.Substring(0, 20000) }
+                $lines = $arrayText -split '\r\n|\n|\r'
+                $lineIndex = 0
+                $hit = $p.pattern.Count -gt 0
+                foreach ($expression in $p.pattern) {
+                    $found = $false
+                    while ($lineIndex -lt $lines.Count -and -not $found) {
+                        $found = $lines[$lineIndex].IndexOf($expression, [System.StringComparison]::OrdinalIgnoreCase) -ge 0
+                        $lineIndex++
+                    }
+                    if (-not $found) {
+                        $hit = $false
+                        break
+                    }
+                }
+                if ($hit) { break }
+            }
         }
         else {
             $hit = $Text.IndexOf([string]$p.pattern, [System.StringComparison]::OrdinalIgnoreCase) -ge 0
@@ -4601,11 +4932,15 @@ foreach ($failure in $dedupedFailures) {
     }
     $failure['retriedStillFailing'] = [bool]$retried
 
-    # Known-issue cross-reference: match the test name + failure messages against the
-    # repo's open "Known Build Error" registry. A hit is strong "documented flake /
-    # unrelated" evidence the classifier can cite by issue number.
+    # Arrays must match within one occurrence; scalar/regex rules keep aggregated text.
+    # A signature match is a hint, not a presumed flake verdict.
     $matchText = (@([string]$failure.testName) + @($failure.messages)) -join "`n"
-    $failure['matchesKnownIssue'] = Test-KnownIssueMatch -Patterns $knownIssues.patterns -Text $matchText
+    $occurrenceMatchTexts = @($failure.occurrences | ForEach-Object {
+        (@([string](Get-ObjectValue -Object $_ -Names @("testName", "name") -Default $failure.testName)) +
+            @([string](Get-ObjectValue -Object $_ -Names @("message", "errorMessage"))) +
+            @([string](Get-ObjectValue -Object $_ -Names @("stackTrace")))) -join "`n"
+    })
+    $failure['matchesKnownIssue'] = Test-KnownIssueMatch -Patterns $knownIssues.patterns -Text $matchText -OccurrenceTexts $occurrenceMatchTexts
 
     # ci-scan cross-reference: does this failure's exact test (or its failing leg) appear in the
     # multi-build base-branch failure registry for THIS PR's base branch family? A hit means the
@@ -5104,6 +5439,10 @@ $gate = [ordered]@{
     ciScanDemotions = $ciScanDemotions
 }
 
+# Supplementary reports may use only the budget left after primary evidence, history, and
+# baseline attribution. A slow check-runs request must not starve those authoritative sources.
+$buildInsights = Get-BuildInsightsCheckReports -Repository $Repository -HeadSha $pr.headRefOid
+
 $limitations = New-Object System.Collections.Generic.List[string]
 # Do NOT emit a standalone "no AzDO token" limitation. The gh-aw CI runner is intentionally
 # token-less (zero-auth by design), so AZDO_TOKEN is empty on every run -- reporting a permanent,
@@ -5132,6 +5471,9 @@ if ($prDiff.error) {
 }
 elseif ($prDiff.truncated) {
     $limitations.Add("PR patch evidence was truncated; omitted code cannot be treated as unchanged.")
+}
+foreach ($collectionError in @($buildInsights.errors)) {
+    $limitations.Add("Supplementary Build Insights report collection: $collectionError")
 }
 
 $context = [ordered]@{
@@ -5187,6 +5529,7 @@ $context = [ordered]@{
     }
     buildRefs = @($buildRefsById.Values)
     builds = $buildArray
+    buildInsights = $buildInsights
     visualEvidence = [ordered]@{
         skipped = [bool]$SkipVisualEvidence
         detected = $visualEvidenceArray.Count
@@ -5211,7 +5554,7 @@ $md.Add("# Test Failure Context for PR #$PrNumber")
 $md.Add("")
 $md.Add("Generated: $($context.generatedAtUtc)")
 $md.Add("")
-$md.Add("Read the adjacent [context.json](context.json) for structured evidence: ``scope.diff`` contains the PR patch; ``history`` contains the latest completed runs on the PR's target branch for each pipeline (five requested by default), including evidence-completeness notes. Current PR build gaps are separate from target-branch history gaps.")
+$md.Add("Read the adjacent [context.json](context.json) for structured evidence: ``scope.diff`` contains the PR patch; ``history`` contains the latest completed runs on the PR's target branch for each pipeline (five requested by default), including evidence-completeness notes; ``buildInsights`` contains untrusted supplementary GitHub Build Insights report bodies when available. Current PR build gaps are separate from target-branch history gaps.")
 $md.Add("")
 $md.Add("## Merge-readiness gate (deterministic)")
 $md.Add("")

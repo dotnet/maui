@@ -1,12 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
+#if IOS || MACCATALYST
+using CarouselViewHandler = Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2;
+using CollectionViewHandler = Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2;
+#else
 using Microsoft.Maui.Controls.Handlers.Items;
+#endif
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
@@ -18,39 +24,86 @@ namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.NavigationPage)]
 	[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
+	// This base class exercises NavigationRenderer on iOS/MacCatalyst; the
+	// NavigationPageNavigationHandlerTests subclass overrides registration to exercise
+	// NavigationViewHandler instead, so every test below runs against both variants.
+#if IOS || MACCATALYST
+	[Trait(RendererHandlerVariant.NavigationViewVariantTraitName, RendererHandlerVariant.NavigationRenderer)] // See RendererHandlerVariant.cs
+	// This base class exercises PhoneFlyoutPageRenderer on iOS/MacCatalyst; the
+	// NavigationPageTests_FlyoutViewHandler subclass overrides registration to exercise
+	// FlyoutViewHandler instead, so every test below runs against both variants.
+	[Trait(RendererHandlerVariant.FlyoutViewVariantTraitName, RendererHandlerVariant.PhoneFlyoutPageRenderer)] // See RendererHandlerVariant.cs
+#endif
+	// This base class exercises TabbedRenderer on iOS/MacCatalyst; the
+	// NavigationPageTests_TabbedViewHandler subclass overrides registration to exercise
+	// TabbedViewHandler instead, so every test below runs against both variants.
+	[Trait(RendererHandlerVariant.TabbedViewVariantTraitName, RendererHandlerVariant.TabbedRenderer)] // See RendererHandlerVariant.cs
 	public partial class NavigationPageTests : ControlsHandlerTestBase
 	{
-		void SetupBuilder()
+		protected virtual void SetupBuilder()
 		{
 			EnsureHandlerCreated(builder =>
 			{
 				builder.ConfigureMauiHandlers(handlers =>
 				{
-					handlers.AddHandler(typeof(Toolbar), typeof(ToolbarHandler));
-#if IOS || MACCATALYST
-					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationRenderer));
-					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedRenderer));
-#else
-					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
-					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedViewHandler));
-#endif
-					handlers.AddHandler(typeof(FlyoutPage), typeof(FlyoutViewHandler));
-					handlers.AddHandler(typeof(ScrollView), typeof(ScrollViewHandler));
-					handlers.AddHandler<Border, BorderHandler>();
-					handlers.AddHandler<Button, ButtonHandler>();
-					handlers.AddHandler<CarouselView, CarouselViewHandler>();
-					handlers.AddHandler<CollectionView, CollectionViewHandler>();
-					handlers.AddHandler<IContentView, ContentViewHandler>();
-					handlers.AddHandler<Label, LabelHandler>();
-					handlers.AddHandler<Layout, LayoutHandler>();
-					handlers.AddHandler<Page, PageHandler>();
-					handlers.AddHandler<RadioButton, RadioButtonHandler>();
-					handlers.AddHandler<Shape, ShapeViewHandler>();
-					handlers.AddHandler<Window, WindowHandlerStub>();
+					RegisterNavigationPageHandlers(handlers);
+					RegisterFlyoutPageHandler(handlers);
+					RegisterCommonHandlers(handlers);
 				});
 			});
 		}
 
+		// Registers the NavigationPage/TabbedPage/Toolbar handler mapping for this test variant.
+		protected virtual void RegisterNavigationPageHandlers(IMauiHandlersCollection handlers)
+		{
+			handlers.AddHandler(typeof(Toolbar), typeof(ToolbarHandler));
+#if IOS || MACCATALYST
+			handlers.AddHandler(typeof(NavigationPage), typeof(NavigationRenderer));
+#else
+			handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
+#endif
+			RegisterTabbedPageHandler(handlers);
+		}
+
+		// The base class exercises TabbedRenderer on iOS/MacCatalyst;
+		// NavigationPageTests_TabbedViewHandler overrides this to exercise TabbedViewHandler instead.
+		protected virtual void RegisterTabbedPageHandler(IMauiHandlersCollection handlers)
+		{
+#if IOS || MACCATALYST
+			handlers.AddHandler(typeof(TabbedPage), typeof(TabbedRenderer));
+#else
+			handlers.AddHandler(typeof(TabbedPage), typeof(TabbedViewHandler));
+#endif
+		}
+
+		// The base class exercises PhoneFlyoutPageRenderer on iOS/MacCatalyst;
+		// NavigationPageTests_FlyoutViewHandler overrides this to exercise FlyoutViewHandler instead.
+		protected virtual void RegisterFlyoutPageHandler(IMauiHandlersCollection handlers)
+		{
+#if IOS || MACCATALYST
+			handlers.AddHandler(typeof(FlyoutPage), typeof(PhoneFlyoutPageRenderer));
+#else
+			handlers.AddHandler(typeof(FlyoutPage), typeof(FlyoutViewHandler));
+#endif
+		}
+
+		// Handlers shared by every NavigationPage test variant, regardless of which
+		// NavigationPage/TabbedPage or FlyoutPage handler mapping is registered above.
+		protected static void RegisterCommonHandlers(IMauiHandlersCollection handlers)
+		{
+			handlers.AddHandler(typeof(ScrollView), typeof(ScrollViewHandler));
+			handlers.AddHandler<Border, BorderHandler>();
+			handlers.AddHandler<Button, ButtonHandler>();
+			handlers.AddHandler<CarouselView, CarouselViewHandler>();
+			handlers.AddHandler<CollectionView, CollectionViewHandler>();
+			handlers.AddHandler<IContentView, ContentViewHandler>();
+			handlers.AddHandler<Label, LabelHandler>();
+			handlers.AddHandler<Layout, LayoutHandler>();
+			handlers.AddHandler<Page, PageHandler>();
+			handlers.AddHandler<RadioButton, RadioButtonHandler>();
+			handlers.AddHandler<Shape, ShapeViewHandler>();
+			handlers.AddHandler<Window, WindowHandlerStub>();
+		}
 		[Fact]
 		public async Task PoppingNavigationPageDoesntCrash()
 		{
@@ -351,7 +404,6 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-#if TESTS_FAILS_ON_IOS && TESTS_FAILS_ON_MACCATALYST //For more information, see: https://github.com/dotnet/maui/issues/35985
 		[Fact(DisplayName = "Does Not Leak"
 #if WINDOWS || ANDROID
 			, Skip = "Failing https://github.com/dotnet/maui/issues/27411"
@@ -360,27 +412,35 @@ namespace Microsoft.Maui.DeviceTests
 		public async Task DoesNotLeak()
 		{
 			SetupBuilder();
-			var references = new List<WeakReference>();
 
-			{
-				var navPage = new NavigationPage(new ContentPage());
-				var window = new Window(navPage);
-
-				await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, (handler) =>
-				{
-					references.Add(new(navPage));
-					references.Add(new(navPage.Handler));
-					references.Add(new(navPage.Handler.PlatformView));
-					references.Add(new(handler));
-
-					// Just replace the page with a new one
-					window.Page = new ContentPage();
-				});
-			}
+			var references = await CreateNavigationPageLeakReferencesAsync();
 
 			await AssertionExtensions.WaitForGC(references.ToArray());
 		}
-#endif
+
+		// Extracted into a non-inlineable method so the `navPage`/`window` locals aren't hoisted into the
+		// caller's async state machine, which could keep them rooted past the WaitForGC await above.
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		async Task<List<WeakReference>> CreateNavigationPageLeakReferencesAsync()
+		{
+			var references = new List<WeakReference>();
+
+			var navPage = new NavigationPage(new ContentPage());
+			var window = new Window(navPage);
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, (handler) =>
+			{
+				references.Add(new(navPage));
+				references.Add(new(navPage.Handler));
+				references.Add(new(navPage.Handler.PlatformView));
+				references.Add(new(handler));
+
+				// Just replace the page with a new one
+				window.Page = new ContentPage();
+			});
+
+			return references;
+		}
 
 		[Fact(DisplayName = "Child Pages Do Not Leak"
 #if WINDOWS

@@ -1,4 +1,5 @@
 using CoreGraphics;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Platform
@@ -6,6 +7,15 @@ namespace Microsoft.Maui.Platform
 	public class LayoutView : MauiView
 	{
 		bool _userInteractionEnabled;
+
+		public LayoutView()
+		{
+		}
+
+		private protected LayoutView(NativeHandle handle)
+			: base(handle)
+		{
+		}
 
 		public override void SubviewAdded(UIView uiview)
 		{

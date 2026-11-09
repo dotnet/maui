@@ -438,19 +438,18 @@ internal static class LayoutFactory2
 				// Calculate page index accounting for ItemSpacing
 				var itemSpacing = itemsView.ItemsLayout is LinearItemsLayout linearLayout ? linearLayout.ItemSpacing : 0;
 
-				var effectiveItemWidth = env.Container.ContentSize.Width - sectionMargin * 2 + itemSpacing;
+				var containerSize = isHorizontal
+					? env.Container.ContentSize.Width
+					: env.Container.ContentSize.Height;
+				var effectiveItemSize = containerSize - sectionMargin * 2 + itemSpacing;
 
-				if (effectiveItemWidth <= 0)
+				if (effectiveItemSize <= 0)
 				{
 					return;
 				}
 
 				var pageOffset = isHorizontal ? offset.X : offset.Y;
-				var pageSize = isHorizontal
-					? env.Container.ContentSize.Width
-					: env.Container.ContentSize.Height;
-				double page = (pageOffset + sectionMargin) / effectiveItemWidth;
-
+				double page = (pageOffset + sectionMargin) / effectiveItemSize;
 				if (Math.Abs(page % 1) > (double.Epsilon * 100) || cv2Controller.ItemsSource.ItemCount <= 0)
 				{
 					return;
@@ -587,6 +586,36 @@ internal static class LayoutFactory2
 			_headerFooterInfo = headerFooterInfo;
 		}
 
+		public override void PrepareLayout()
+		{
+			base.PrepareLayout();
+
+			// Track the CollectionView's own bounds size so ShouldInvalidateLayoutForBoundsChange
+			// can tell a genuine resize of this CollectionView apart from an unrelated ancestor
+			// layout pass (e.g. a sibling's MaximumHeightRequest changing) that merely re-runs
+			// layout without actually changing this view's size. Mirrors ItemsViewLayout (CV1),
+			// which already guards against this — see dotnet/maui#36546.
+			if (CollectionView is { } collectionView)
+			{
+				_currentSize = collectionView.Bounds.Size;
+			}
+		}
+
+		public override bool ShouldInvalidateLayoutForBoundsChange(CGRect newBounds)
+		{
+			if (newBounds.Size.IsCloseTo(_currentSize))
+			{
+				var currentBounds = CollectionView.Bounds;
+				// Preserve the scroll position for unrelated layout passes, but let the native
+				// compositional layout handle bounds-origin changes produced by scrolling.
+				return newBounds.X == currentBounds.X && newBounds.Y == currentBounds.Y
+					? false
+					: base.ShouldInvalidateLayoutForBoundsChange(newBounds);
+			}
+
+			return true;
+		}
+
 		public override void FinalizeCollectionViewUpdates()
 		{
 			base.FinalizeCollectionViewUpdates();
@@ -629,20 +658,6 @@ internal static class LayoutFactory2
 				}
 			}
 		}
-
-		public override bool ShouldInvalidateLayoutForBoundsChange(CGRect newBounds)
-        {
-            // If the size hasn't changed, use the base implementation
-			if (newBounds.Size.IsCloseTo(_currentSize))
-            {
-                return base.ShouldInvalidateLayoutForBoundsChange(newBounds);
-            }
- 
-            // Size has changed (e.g., rotation), so we need to invalidate the layout
-            // to ensure cells are properly measured and displayed
-            _currentSize = newBounds.Size;
-            return true;
-        }
 
 		public override CGPoint TargetContentOffset(CGPoint proposedContentOffset, CGPoint scrollingVelocity)
 		{
@@ -734,6 +749,43 @@ internal static class LayoutFactory2
 			// Get the viewport of the UICollectionView at the current content offset
 			var contentOffset = CollectionView.ContentOffset;
 			var viewport = new CGRect(contentOffset, CollectionView.Bounds.Size);
+
+			var carouselController = (CollectionView.Delegate as CarouselViewDelegator2)?.ViewController;
+			if (carouselController?.DragStartPosition is >= 0)
+			{
+				var currentIndexPath = carouselController.GetScrollToIndexPath(carouselController.DragStartPosition);
+				var itemCount = (int)CollectionView.NumberOfItemsInSection(currentIndexPath.Section);
+				if (itemCount > 0)
+				{
+					var velocity = Configuration.ScrollDirection == UICollectionViewScrollDirection.Horizontal
+						? scrollingVelocity.X
+						: scrollingVelocity.Y;
+
+					if (velocity != 0)
+					{
+						var targetItem = (int)currentIndexPath.Item;
+
+						if (velocity > 0)
+							targetItem++;
+						else
+							targetItem--;
+
+						targetItem = Math.Clamp(targetItem, 0, itemCount - 1);
+						var targetIndexPath = NSIndexPath.FromItemSection(targetItem, currentIndexPath.Section);
+						var targetItemAttributes = LayoutAttributesForItem(targetIndexPath);
+
+						if (targetItemAttributes is not null)
+						{
+							return Items.SnapHelpers.AdjustContentOffset(
+								CollectionView.ContentOffset,
+								targetItemAttributes.Frame,
+								viewport,
+								alignment,
+								Configuration.ScrollDirection);
+						}
+					}
+				}
+			}
 
 			// Find the spot in the viewport we're trying to align with
 			var alignmentTarget = Items.SnapHelpers.FindAlignmentTarget(alignment, contentOffset, CollectionView, Configuration.ScrollDirection);

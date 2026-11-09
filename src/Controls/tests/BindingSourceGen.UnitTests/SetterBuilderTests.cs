@@ -12,6 +12,7 @@ public class SetterBuilderTests
 
 		Assert.Empty(setter.PatternMatchingExpressions);
 		Assert.Equal("source = value;", setter.AssignmentStatement);
+		Assert.Empty(setter.CopyBackStatements);
 	}
 
 	[Fact]
@@ -114,7 +115,7 @@ public class SetterBuilderTests
 	{
 		var setter = Setter.From(
 			[
-				new MemberAccess("Y", IsValueType: false, ContainingType: new TypeDescription("X"), MemberType: new TypeDescription("Z"), Kind: AccessorKind.Field, IsGetterInaccessible: true, IsSetterInaccessible: true)
+				new MemberAccess("Y", IsValueType: false, ContainingType: new TypeDescription("X"), MemberType: new TypeDescription("Z"), Kind: AccessorKind.Field, IsGetterAccessible: false, IsSetterAccessible: false)
 			]);
 		Assert.Empty(setter.PatternMatchingExpressions);
 		Assert.Equal("GetUnsafeField_Y(source) = value;", setter.AssignmentStatement);
@@ -125,7 +126,7 @@ public class SetterBuilderTests
 	{
 		var setter = Setter.From(
 			[
-				new MemberAccess("Y", IsValueType: false, ContainingType: new TypeDescription("X"), MemberType: new TypeDescription("Z"), Kind: AccessorKind.Property, IsGetterInaccessible: true, IsSetterInaccessible: true)
+				new MemberAccess("Y", IsValueType: false, ContainingType: new TypeDescription("X"), MemberType: new TypeDescription("Z"), Kind: AccessorKind.Property, IsGetterAccessible: false, IsSetterAccessible: false)
 			]);
 		Assert.Empty(setter.PatternMatchingExpressions);
 		Assert.Equal("SetUnsafeProperty_Y(source, value);", setter.AssignmentStatement);
@@ -136,7 +137,7 @@ public class SetterBuilderTests
 	{
 		var setter = Setter.From(
 			[
-				new MemberAccess("Y", IsValueType: false, ContainingType: new TypeDescription("X"), MemberType: new TypeDescription("Z"), Kind: AccessorKind.Property, IsGetterInaccessible: true, IsSetterInaccessible: false),
+				new MemberAccess("Y", IsValueType: false, ContainingType: new TypeDescription("X"), MemberType: new TypeDescription("Z"), Kind: AccessorKind.Property, IsGetterAccessible: false, IsSetterAccessible: true),
 				new MemberAccess("A"),
 			]);
 		Assert.Empty(setter.PatternMatchingExpressions);
@@ -160,5 +161,87 @@ public class SetterBuilderTests
 		Assert.Single(setter.PatternMatchingExpressions);
 		Assert.Equal("source.FooStruct is {} p0", setter.PatternMatchingExpressions[0]);
 		Assert.Equal("p0.Bar.Value = value;", setter.AssignmentStatement);
+	}
+
+	[Fact]
+	public void GeneratesSetterCapturingValueTypeIndexerResult()
+	{
+		// An indexer returns a copy, so update a local and assign it back through the indexer.
+		var setter = Setter.From([
+				new MemberAccess("Items"),
+				new IndexAccess("Item", 0, IsValueType: true),
+				new MemberAccess("Name")]);
+
+		Assert.Single(setter.PatternMatchingExpressions);
+		Assert.Equal("source.Items[0] is {} p0", setter.PatternMatchingExpressions[0]);
+		Assert.Equal("p0.Name = value;", setter.AssignmentStatement);
+		Assert.Equal(["source.Items[0] = p0;"], setter.CopyBackStatements);
+	}
+
+	[Fact]
+	public void GeneratesSetterCapturingValueTypeIndexerResultBehindConditionalAccess()
+	{
+		var setter = Setter.From([
+				new MemberAccess("Items"),
+				new ConditionalAccess(new IndexAccess("Item", 0, IsValueType: true)),
+				new MemberAccess("Name")]);
+
+		Assert.Equal(2, setter.PatternMatchingExpressions.Length);
+		Assert.Equal("source.Items is {} p0", setter.PatternMatchingExpressions[0]);
+		Assert.Equal("p0[0] is {} p1", setter.PatternMatchingExpressions[1]);
+		Assert.Equal("p1.Name = value;", setter.AssignmentStatement);
+		Assert.Equal(["p0[0] = p1;"], setter.CopyBackStatements);
+	}
+
+	[Fact]
+	public void GeneratesSetterWithoutCapturingValueTypeArrayElement()
+	{
+		// Array element access yields a variable, so the member can be assigned in place.
+		// Capturing would write to a copy and silently drop the value.
+		var setter = Setter.From([
+				new MemberAccess("Items"),
+				new IndexAccess("", 0, IsValueType: true, IsArrayElement: true),
+				new MemberAccess("Name")]);
+
+		Assert.Empty(setter.PatternMatchingExpressions);
+		Assert.Equal("source.Items[0].Name = value;", setter.AssignmentStatement);
+		Assert.Empty(setter.CopyBackStatements);
+	}
+
+	[Fact]
+	public void GeneratesSetterWithoutCapturingValueTypeField()
+	{
+		var setter = Setter.From([
+				new MemberAccess("Container"),
+				new MemberAccess("StructField", IsValueType: true, Kind: AccessorKind.Field),
+				new MemberAccess("Name")]);
+
+		Assert.Empty(setter.PatternMatchingExpressions);
+		Assert.Equal("source.Container.StructField.Name = value;", setter.AssignmentStatement);
+		Assert.Empty(setter.CopyBackStatements);
+	}
+
+	[Fact]
+	public void GeneratesSetterCopyingNestedValueTypeResultsBackInReverseOrder()
+	{
+		var setter = Setter.From([
+				new MemberAccess("Items"),
+				new IndexAccess("Item", 0, IsValueType: true),
+				new MemberAccess("Position", IsValueType: true, Kind: AccessorKind.Property),
+				new MemberAccess("X")]);
+
+		Assert.Equal(
+			[
+				"source.Items[0] is {} p0",
+				"p0.Position is {} p1",
+			],
+			setter.PatternMatchingExpressions);
+		Assert.Equal("p1.X = value;", setter.AssignmentStatement);
+		Assert.Equal(
+			[
+				"p0.Position = p1;",
+				"source.Items[0] = p0;",
+			],
+			setter.CopyBackStatements);
 	}
 }

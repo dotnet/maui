@@ -103,5 +103,16 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 				Assert.Equal(PermissionStatus.Denied, status);
 			}
 		}
+
+		[Fact]
+		public async Task PostNotifications_CheckStatus_ReturnsValidStatus()
+		{
+			var status = await Permissions.CheckStatusAsync<Permissions.PostNotifications>();
+			Assert.True(
+				status == PermissionStatus.Unknown ||
+				status == PermissionStatus.Granted ||
+				status == PermissionStatus.Denied,
+				$"Unexpected PostNotifications status: {status}");
+		}
 	}
 }

@@ -12,7 +12,7 @@ public class Issue34693 : _IssuesUITest
 	public override string Issue => "[Shell][iOS & Mac] SearchHandler retains previous page state when switching top tabs";
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void ShouldUpdateSearchViewOnPageNavigation()
 	{
 		App.WaitForElement("MainPageButton");

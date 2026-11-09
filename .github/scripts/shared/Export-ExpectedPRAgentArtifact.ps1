@@ -401,6 +401,12 @@ function Export-ExpectedPRAgentArtifact {
             -Pattern 'test-with-fix*.log' `
             -DestinationDirectory "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/gate/verify-tests-fail" `
             -Truncatable
+        Add-DirectPatternFiles `
+            -BoundaryRoot $repositoryPath `
+            -SourceDirectory (Join-Path $sourcePRAgentPath 'gate/verify-tests-fail') `
+            -Pattern 'test-failure*.log' `
+            -DestinationDirectory "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/gate/verify-tests-fail" `
+            -Truncatable
     }
 
     if ($null -ne $diagnosticsPath) {
@@ -408,7 +414,8 @@ function Export-ExpectedPRAgentArtifact {
             -BoundaryRoot $diagnosticsPath `
             -SourceDirectory $diagnosticsPath `
             -Pattern 'copilot_review_output*.md' `
-            -DestinationDirectory '.'
+            -DestinationDirectory '.' `
+            -Truncatable
     }
 
     if ($null -ne $tokenUsagePath) {
@@ -480,6 +487,10 @@ function Export-ExpectedPRAgentArtifact {
             -Force `
             -ErrorAction SilentlyContinue
         throw
+    }
+
+    if ($truncatedFiles -gt 0) {
+        Write-Warning "Tail-truncated $truncatedFiles allowlisted diagnostic files to the $MaxFileBytes-byte limit; structured reports and artifact limits remain unchanged."
     }
 
     return [pscustomobject]@{

@@ -161,6 +161,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_toolbarTracker.CanNavigateBack = _shellContent == null;
 
 			_appearanceTracker = _shellContext.CreateToolbarAppearanceTracker();
+			if (RuntimeFeature.IsMaterial3Enabled && _appearanceTracker is ShellToolbarAppearanceTracker concreteAppearanceTracker)
+			{
+				concreteAppearanceTracker.CaptureNativeColors(_toolbar);
+			}
 
 			((IShellController)_shellContext.Shell).AddAppearanceObserver(this, _page);
 

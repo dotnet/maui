@@ -11,7 +11,7 @@ public class Issue33688 : _IssuesUITest
 	public Issue33688(TestDevice device) : base(device) { }
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void BackButtonBehaviorTriggersWithCollectionView()
 	{
 		// Wait for main page to load

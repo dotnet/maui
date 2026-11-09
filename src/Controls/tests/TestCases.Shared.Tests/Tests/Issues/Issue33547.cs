@@ -12,7 +12,7 @@ public class Issue33547 : _IssuesUITest
 	public Issue33547(TestDevice device) : base(device) { }
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void PageShouldNotMoveOutsideViewportWhenEntryFocusedOnPageLoad()
 	{
 		App.WaitForElement("NavigationPushButton");

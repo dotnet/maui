@@ -10,7 +10,7 @@ public class Issue12669 : _IssuesUITest
     public override string Issue => "Changing Content property of ShellContent doesn't change visual content";
 
     [Test]
-    [Category(UITestCategories.Shell)]
+    [ShardedTestCategory(UITestCategories.Shell, shard: 2)]
     public void ShellContentShouldUpdateWhenContentPropertyChanges()
     {
         App.WaitForElement("OriginalContent");

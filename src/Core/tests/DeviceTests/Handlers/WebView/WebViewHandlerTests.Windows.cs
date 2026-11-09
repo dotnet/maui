@@ -274,19 +274,41 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					await platformView.EnsureCoreWebView2Async();
 
-					var navigated = new TaskCompletionSource();
-					platformView.CoreWebView2.NavigationCompleted += (_, _) => navigated.TrySetResult();
-					((IWebViewDelegate)platformView).LoadUrl("https://appdir/appdir-iframe-parent.html");
-					await navigated.Task.WaitAsync(TimeSpan.FromSeconds(10));
+					const string parentUrl = "https://appdir/appdir-iframe-parent.html";
+					var documentReady = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+					ulong? navigationId = null;
+					void OnNavigationStarting(CoreWebView2 sender, CoreWebView2NavigationStartingEventArgs args)
+					{
+						if (args.Uri == parentUrl)
+							navigationId = args.NavigationId;
+					}
+					void OnDocumentReady(CoreWebView2 sender, CoreWebView2DOMContentLoadedEventArgs args)
+					{
+						if (args.NavigationId == navigationId)
+							documentReady.TrySetResult();
+					}
 
-					var title = await WaitForTitleAsync(
-						platformView,
-						TimeSpan.FromSeconds(8),
-						"\"child:ok\"", "\"child:status\"", "\"child:denied\"");
+					platformView.CoreWebView2.NavigationStarting += OnNavigationStarting;
+					platformView.CoreWebView2.DOMContentLoaded += OnDocumentReady;
+					try
+					{
+						((IWebViewDelegate)platformView).LoadUrl(parentUrl);
+						await documentReady.Task.WaitAsync(TimeSpan.FromSeconds(10));
 
-					// The cross-origin (opaque-origin) iframe cannot read the appdir file
-					// via fetch under DenyCors.
-					Assert.Equal("\"child:denied\"", title);
+						var title = await WaitForTitleAsync(
+							platformView,
+							TimeSpan.FromSeconds(8),
+							"\"child:ok\"", "\"child:status\"", "\"child:denied\"");
+
+						// The cross-origin (opaque-origin) iframe cannot read the appdir file
+						// via fetch under DenyCors.
+						Assert.Equal("\"child:denied\"", title);
+					}
+					finally
+					{
+						platformView.CoreWebView2.NavigationStarting -= OnNavigationStarting;
+						platformView.CoreWebView2.DOMContentLoaded -= OnDocumentReady;
+					}
 				});
 			});
 		}
@@ -327,8 +349,6 @@ namespace Microsoft.Maui.DeviceTests
 				};
 
 				var handler = CreateHandler(webView);
-
-				var platformView = handler.PlatformView;
 
 				// Setup the view to be displayed/parented and run our tests on it
 				await AttachAndRun(webView, async (handler) =>
@@ -384,6 +404,71 @@ namespace Microsoft.Maui.DeviceTests
 					await handler.PlatformView.OnLoadedAsync();
 					await navigationComplete.Task;
 					navigationComplete = null;
+				});
+			});
+		}
+
+		[Fact(DisplayName = "CanGoBack Is False After Navigating Back To The First Page (Issue #37534)")]
+		public async Task CanGoBackIsFalseAfterReturningToFirstPage()
+		{
+			var pageLoadTimeout = TimeSpan.FromSeconds(5);
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var webView = new WebViewStub()
+				{
+					Width = 100,
+					Height = 100,
+					Source = new HtmlWebViewSourceStub { Html = "<h1>Page 1</h1>" }
+				};
+
+				var handler = CreateHandler(webView);
+
+				var platformView = handler.PlatformView;
+
+				// Setup the view to be displayed/parented and run our tests on it
+				await AttachAndRun(webView, async (handler) =>
+				{
+					async Task WaitForNavigationAsync(Action navigate)
+					{
+						var tcsNavigated = new TaskCompletionSource<bool>();
+						using var ctsTimeout = new CancellationTokenSource(pageLoadTimeout);
+						ctsTimeout.Token.Register(() => tcsNavigated.TrySetException(new TimeoutException("Failed to navigate")));
+
+						webView.NavigatedDelegate = (evnt, url, result) =>
+						{
+							if (result == WebNavigationResult.Success)
+								tcsNavigated.TrySetResult(true);
+						};
+
+						navigate();
+
+						Assert.True(await tcsNavigated.Task);
+					}
+
+					// Wait for the first page to finish loading
+					await WaitForNavigationAsync(() => { });
+
+					// Navigate to a second page, creating back history
+					await WaitForNavigationAsync(() =>
+					{
+						webView.Source = new HtmlWebViewSourceStub { Html = "<h1>Page 2</h1>" };
+						handler.UpdateValue(nameof(IWebView.Source));
+					});
+
+					Assert.True(webView.CanGoBack, "CanGoBack should be true after navigating to a second page.");
+
+					// Navigate back to the first page
+					await WaitForNavigationAsync(() =>
+					{
+						handler.Invoke(nameof(IWebView.GoBack), null);
+					});
+
+					// Regression test for https://github.com/dotnet/maui/issues/37534:
+					// CanGoBack should become false once there is no more back history left,
+					// instead of remaining stale as true (which caused GoBack() to repeatedly
+					// reload the same page instead of falling back to app-level navigation).
+					Assert.False(webView.CanGoBack, "CanGoBack should be false once there is no more back history.");
 				});
 			});
 		}

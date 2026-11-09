@@ -11,7 +11,7 @@ public class Issue29428 : _IssuesUITest
     public Issue29428(TestDevice device) : base(device) { }
 
     [Test]
-    [Category(UITestCategories.Shell)]
+    [ShardedTestCategory(UITestCategories.Shell, shard: 1)]
     public void ShellFlyoutNavigationEventOrderShouldBeCorrect()
     {
         App.WaitForElement("MainPageLabel");

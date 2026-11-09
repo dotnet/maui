@@ -277,6 +277,7 @@ namespace UITest.Appium
 				sequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
 				sequence.AddAction(touchDevice.CreatePause(TimeSpan.FromSeconds(1))); // Have to pause so the device doesn't think we are scrolling
 				sequence.AddAction(touchDevice.CreatePointerMove(destinationAppiumElement, 0, 0, TimeSpan.FromSeconds(1)));
+				sequence.AddAction(touchDevice.CreatePause(TimeSpan.FromMilliseconds(250))); // Let the target process drag-over before releasing
 				sequence.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
 				_appiumApp.Driver.PerformActions(new List<ActionSequence> { sequence });
 

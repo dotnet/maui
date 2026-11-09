@@ -32,18 +32,21 @@
     Repository in owner/name form. Default: dotnet/maui.
 
 .PARAMETER MainBranch
-    Stable branch used for ancestry checks. Default: main.
+    Explicit fixes-source override for ancestry. Defaults to per-major ownership
+    (net11 for the configured .NET11 train), not feature-main's current version.
 
 .PARAMETER ExcludeBranches
     Comma-separated branches to exclude when computing SR-only commits.
-    Default: origin/main. Do NOT add inflight/* refs — SR branches cut from
-    main; comparing against inflight produces wrong "what's shipping" answers.
+    Defaults to origin/<resolved-fixes-source>. Do not exclude inflight content
+    when computing actual release inventory.
 
 .PARAMETER Candidate
     Pre-flight / candidate mode. Use when the next SR branch doesn't exist
-    yet but you want to know "what WOULD ship in SRn+1 if cut from main
-    today?". With -Candidate, the script treats `origin/$MainBranch` as the
-    SR-to-be and uses the named -SrBranch as the prior-SR exclude baseline.
+    yet. The configured current train surveys its selected staged candidate.
+    Legacy callers pass the prior SR in -SrBranch and survey the per-major source.
+    With explicit -CandidateTargetBranch, -SrBranch can name the proposed release.
+    The selected survey ref is the SR-to-be. Its inventory uses an existing
+    GA/prior stable tag (configured mode) or the named prior SR (legacy mode).
 
 .PARAMETER InheritFromPriorSr
     Only valid with -Candidate. Models the dotnet/maui release workflow where
@@ -111,8 +114,11 @@ param(
     [string]$RegressionLabels,
     [switch]$InferRegressionLabels,
     [string]$Repo = 'dotnet/maui',
-    [string]$MainBranch = 'main',
-    [string]$ExcludeBranches = 'origin/main',
+    [string]$MainBranch,
+    [string]$ExcludeBranches,
+    [string]$CandidateTargetBranch,
+    [string]$SurveyRef,
+    [string]$BaselineRef,
     [ValidateSet('all', 'ci', 'commits', 'regressions', 'open-prs')]
     [string]$Phase = 'all',
     [string]$OutputDir,
@@ -171,6 +177,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
+. (Join-Path $PSScriptRoot 'ReleaseBranchRoles.ps1')
 
 # Shared nightly-feed freshness helpers (Get-NightlyFeedFreshness / Format-NightlyFeedBanner).
 # Defensive load: the banner is auxiliary signal, not part of the verdict, so a missing
@@ -202,7 +209,8 @@ function Select-OutputSrContents {
     return $srContents
 }
 
-# DETERMINISTIC RULE — SR branches in dotnet/maui ALWAYS cut from `main`.
+# Release cuts and staged content are distinct: current .NET11 cuts from net11
+# after candidate integration; historical sources are resolved per major.
 # Refuse to operate on any `inflight/*` or `staging/*` ref — those are
 # integration branches, not SR sources. This guard exists because conflating
 # the two leads to wrong "what's shipping" conclusions.
@@ -260,8 +268,10 @@ function ConvertFrom-GhJsonArrayResult {
     }
 }
 
-function Invoke-Git([string]$Cmd) {
-    $argList = $Cmd -split ' ' | Where-Object { $_ -ne '' }
+function Invoke-Git([string]$Cmd, [string[]]$Arguments) {
+    $argList = if ($PSBoundParameters.ContainsKey('Arguments')) { $Arguments } else {
+        $Cmd -split ' ' | Where-Object { $_ -ne '' }
+    }
     $out = & git @argList 2>$null
     if ($LASTEXITCODE -ne 0) { return $null }
     return $out
@@ -318,7 +328,8 @@ function Get-VersionsPropsState {
         Parses eng/Versions.props at $Ref and returns the version-bump state.
     .DESCRIPTION
         Returns @{ Major; Minor; Patch; PreReleaseVersionLabel; PreReleaseVersionIteration;
-                   StabilizePackageVersion; FullVersion } or $null if the file is
+                   StabilizePackageVersion; BranchDerivedLabels; AutomaticStabilization;
+                   FullVersion } or $null if the file is
         unreadable. FullVersion is "<Major>.<Minor>.<Patch>" — the version that this
         branch's builds would emit.
     #>
@@ -335,6 +346,14 @@ function Get-VersionsPropsState {
     $minor = _Extract $content 'MinorVersion'
     $patch = _Extract $content 'PatchVersion'
     if (-not $major -or -not $minor -or $null -eq $patch) { return $null }
+    $branchDerivedLabels = $false
+    $automaticStabilization = $false
+    if ([regex]::Matches($content, '<PreReleaseVersionLabel(?:\s[^>]*)?>').Count -ge 3) {
+        Import-Module (Join-Path $PSScriptRoot '../../../../eng/scripts/MauiReleaseConfiguration.psm1') -Force
+        $parsed = MauiReleaseConfiguration\Get-MauiReleaseVersion -Content $content
+        $branchDerivedLabels = $parsed.branchDerivedLabels
+        $automaticStabilization = $parsed.automaticStabilization
+    }
 
     @{
         Major                       = [int]$major
@@ -343,6 +362,8 @@ function Get-VersionsPropsState {
         PreReleaseVersionLabel      = (_Extract $content 'PreReleaseVersionLabel')
         PreReleaseVersionIteration  = (_Extract $content 'PreReleaseVersionIteration')
         StabilizePackageVersion     = (_Extract $content 'StabilizePackageVersion')
+        BranchDerivedLabels         = $branchDerivedLabels
+        AutomaticStabilization      = $automaticStabilization
         FullVersion                 = "$major.$minor.$patch"
     }
 }
@@ -479,7 +500,7 @@ function Get-ExpectedShipDate {
 
     if ($missedWindow) {
         $cadence = 'second-tuesday-missed'
-        $note = "Scheduled ship date for this SR was the 2nd Tuesday of $($candidate.ToString('MMMM yyyy')) (anchored on the main-bump for this cycle). That date has passed — coordinate with the release captain on the next valid window."
+        $note = "Scheduled ship date for this SR was the 2nd Tuesday of $($candidate.ToString('MMMM yyyy')) (anchored on the fixes-source version bump for this cycle). That date has passed — coordinate with the release captain on the next valid window."
     } else {
         $cadence = 'second-tuesday'
         $note = '.NET releases ship on the 2nd Tuesday of each month.'
@@ -997,12 +1018,30 @@ function Get-ReleaseShipChecks {
     $checks = @()
     $isCandidate = ($Ctx.mode -eq 'candidate')
     $isShipped = ($Ctx.mode -eq 'shipped')
+    $integration = Get-MetadataValue -Container $Ctx -Name 'candidateIntegration'
+    if ($isCandidate -and $integration -and $integration.sourceOnlyCommitCount -gt 0) {
+        $checks += New-ReadinessCheck -Area 'Candidate/source synchronization' -Status 'WATCH' `
+            -Details "Fixes source ``$($Ctx.mainBranch)`` contains $($integration.sourceOnlyCommitCount) commit(s) absent from selected ``$($Ctx.srBranch)`` (relationship: $($integration.status)). The candidate-only inventory is NOT the full prospective release cut from the fixes source." `
+            -NextAction "Synchronize the staged candidate with approved fixes, or independently inventory the approved integrated source commit before the captain cuts the release. Do not certify candidate-only contents as the full cut."
+    }
+    $configuredRoles = Get-MetadataValue -Container $Ctx -Name 'branchRoles'
+    if ($configuredRoles -and $configuredRoles.configured) {
+        try {
+            $null = Get-ReadinessNightlyParameters -Roles $configuredRoles `
+                -Major ([int]($configuredRoles.releaseBand -split '\.')[0])
+        } catch {
+            $checks += New-ReadinessCheck -Area 'Configured nightly lane metadata' -Status 'UNKNOWN' `
+                -Details $_.Exception.Message `
+                -NextAction "Verify ``$($configuredRoles.nightlyBranch)`` version advance and active-lane publication before relying on its dogfood bits. Configuration is not signed-build proof."
+        }
+    }
 
     # Determine the SR number from the SR branch name. In live-SR mode (not
     # candidate), srBranch IS the release branch (release/X.Y.Zxx-srN). In
     # candidate mode, srBranch is main and the prior-SR name lives in
     # priorSrBranch — we want NEXT SR (= prior + 1).
-    $srBranchName = if ($isCandidate) { $Ctx.priorSrBranch } else { $Ctx.srBranch }
+    $targetBranch = Get-MetadataValue -Container $Ctx -Name 'targetSrBranch'
+    $srBranchName = if ($targetBranch) { $targetBranch } elseif ($isCandidate) { $Ctx.priorSrBranch } else { $Ctx.srBranch }
     $srMatch = [regex]::Match($srBranchName, '^release/(\d+)\.(\d+)\.\d+xx-sr(\d+)$')
     if (-not $srMatch.Success) {
         $checks += New-ReadinessCheck -Area 'Versions.props bump' -Status 'UNKNOWN' `
@@ -1013,14 +1052,14 @@ function Get-ReleaseShipChecks {
     $major = [int]$srMatch.Groups[1].Value
     $minor = [int]$srMatch.Groups[2].Value
     $priorSr = [int]$srMatch.Groups[3].Value
-    $targetSr = if ($isCandidate) { $priorSr + 1 } else { $priorSr }
+    $targetSr = if ($isCandidate -and -not $targetBranch) { $priorSr + 1 } else { $priorSr }
     $expectedPatchPrefix = $targetSr * 10   # SR8 → 80, SR9 → 90, SR10 → 100
 
     # Which ref do we read Versions.props from?
     # Shipped mode: the immutable stable-tag contents.
     # Candidate mode: main (which would carry the bump once SR-prior cuts).
     $versionsRef = if ($isCandidate) {
-        "origin/$($Ctx.mainBranch)"
+        $Ctx.srRef
     } elseif ($isShipped) {
         Get-MetadataValue -Container $Ctx -Name 'contentsRef' -Default $Ctx.srRef
     } else {
@@ -1035,14 +1074,14 @@ function Get-ReleaseShipChecks {
     } else {
         $patchInRange = ($vp.Patch -ge $expectedPatchPrefix -and $vp.Patch -lt ($expectedPatchPrefix + 10))
         $majorMinorMatch = ($vp.Major -eq $major -and $vp.Minor -eq $minor)
-        $area = if ($isCandidate) { "Versions.props bump (main → SR$targetSr)" } else { "Versions.props bump (SR$targetSr)" }
+        $area = if ($isCandidate) { "Versions.props bump ($($Ctx.srBranch) → SR$targetSr)" } else { "Versions.props bump (SR$targetSr)" }
         if ($majorMinorMatch -and $patchInRange) {
             $checks += New-ReadinessCheck -Area $area -Status 'READY' `
                 -Details "``$versionsRef`` reports ``$($vp.FullVersion)`` — within expected SR$targetSr range [$expectedPatchPrefix..$($expectedPatchPrefix + 9)]." `
                 -NextAction "No bump needed."
         } else {
             $candidateHint = if ($isCandidate) {
-                " (Expected after SR$priorSr cut: bump main's PatchVersion from $($vp.Patch) to $expectedPatchPrefix.)"
+                " (Set the selected candidate's PatchVersion to the SR$targetSr range; feature main does not select this train.)"
             } else { "" }
             $checks += New-ReadinessCheck -Area $area -Status 'BLOCKED' `
                 -Details "``$versionsRef`` reports ``$($vp.FullVersion)``; expected ``$major.$minor.[$expectedPatchPrefix..$($expectedPatchPrefix + 9)]`` for SR$targetSr.$candidateHint" `
@@ -1051,10 +1090,9 @@ function Get-ReleaseShipChecks {
     }
 
     # === Servicing-release flip ===
-    # When an SR branch is cut from main, two eng/Versions.props values MUST be
-    # flipped to switch the branch from "CI build" mode to "stable release" mode:
-    #   - PreReleaseVersionLabel:  ci.main  ->  servicing
-    #   - StabilizePackageVersion: false    ->  true   (default value, may be unset)
+    # Legacy metadata requires a servicing label and stabilization. A recognized
+    # central label policy already selects servicing on SR refs; preserve it and
+    # can also derive stabilization from the SR ref without a separate flip.
     #
     # Without these flips, the SR branch still produces prerelease packages
     # (`1.2.3-servicing-…` or `1.2.3-ci-…`) — never a stable `1.2.3` package.
@@ -1070,9 +1108,22 @@ function Get-ReleaseShipChecks {
         $expectedStabilize = 'true'
         $actualLabel = if ($vp.PreReleaseVersionLabel) { $vp.PreReleaseVersionLabel } else { '<unset>' }
         $actualStabilize = if ($vp.StabilizePackageVersion) { $vp.StabilizePackageVersion } else { '<unset>' }
-        $labelOk = ($vp.PreReleaseVersionLabel -eq $expectedLabel)
-        $stabilizeOk = ($vp.StabilizePackageVersion -eq $expectedStabilize)
-        if ($labelOk -and $stabilizeOk) {
+        $centralLabels = [bool](Get-MetadataValue -Container $vp -Name 'BranchDerivedLabels' -Default $false)
+        $centralServicing = $centralLabels -and ($isShipped -or
+            $Ctx.srBranch -cmatch '^release/[1-9][0-9]*\.0\.[1-9][0-9]*xx-sr[1-9][0-9]*$')
+        $automaticStabilization = $centralServicing -and
+            [bool](Get-MetadataValue -Container $vp -Name 'AutomaticStabilization' -Default $false)
+        $labelOk = ($vp.PreReleaseVersionLabel -eq $expectedLabel) -or $centralServicing
+        $stabilizeOk = ($vp.StabilizePackageVersion -eq $expectedStabilize) -or $automaticStabilization
+        if ($automaticStabilization) {
+            $checks += New-ReadinessCheck -Area $flipArea -Status 'READY' `
+                -Details "``$versionsRef`` preserves the recognized policy that automatically selects ``servicing`` and stabilization on strict SR release refs. No separate stabilization PR is needed. Configuration alone is not signed-artifact or publication proof; explicit build overrides remain authoritative." `
+                -NextAction 'Retain the automatic SR policy and verify final signed build/publication evidence.'
+        } elseif ($centralServicing -and $stabilizeOk) {
+            $checks += New-ReadinessCheck -Area $flipArea -Status 'READY' `
+                -Details "``$versionsRef`` preserves the recognized branch-derived label policy and explicitly sets ``StabilizePackageVersion=true``. SR refs select ``servicing`` automatically; the literal ``ci.main`` default is not the effective SR label. Stable configuration is not signed-artifact or publication proof." `
+                -NextAction 'No label change needed; retain the central policy.'
+        } elseif ($labelOk -and $stabilizeOk) {
             # Provenance: was the flip done by an SR-direct commit, or just
             # inherited from the previous SR via the catch-up merge?
             #
@@ -1082,11 +1133,12 @@ function Get-ReleaseShipChecks {
             # merge from the previous SR (functionally fine, the branch WILL
             # produce stable packages, but worth surfacing so the release
             # captain knows there was no deliberate SR-direct flip PR).
-            $prevSrBranch = "release/$major.$minor.1xx-sr$($targetSr - 1)"
+            $prevSrBranch = if ($targetSr -gt 1) { "release/$major.$minor.1xx-sr$($targetSr - 1)" } else { "$major.$minor.0" }
             $prevSrRef    = if ($isShipped) {
                 Get-MetadataValue -Container $Ctx -Name 'previousStableTag'
             } else {
-                "origin/$prevSrBranch"
+                $priorCandidateRef = if ($targetSr -gt 1) { "origin/$prevSrBranch" } else { $prevSrBranch }
+                if (Invoke-Git "rev-parse --verify $priorCandidateRef") { $priorCandidateRef } else { $null }
             }
             $mainRef      = if ($Ctx -is [hashtable]) {
                 if ($Ctx.ContainsKey('mainBranch')) { "origin/$($Ctx['mainBranch'])" } else { 'origin/main' }
@@ -1144,8 +1196,10 @@ function Get-ReleaseShipChecks {
             }
             $flipNextAction = if ($isShipped) {
                 "Inspect the published ``$versionsRef`` packages and release metadata. If stable assets are wrong, coordinate the release-owner hotfix/rebuild path; otherwise document why the tag is safe despite the configuration."
+            } elseif ($centralLabels) {
+                "After the last required backport, merge the separately reviewed servicing PR targeting ``$($Ctx.srBranch)``. Preserve ``PatchVersion`` and all three branch-label properties; set ``StabilizePackageVersion`` to ``true`` and rerun final CI. The automatic ``servicing`` label and ``IsServicingBuild=true`` alone do not stabilize packages."
             } else {
-                "After the last required backport, open a focused PR targeting ``$($Ctx.srBranch)``. Preserve ``PatchVersion``; replace the base ``ci.main`` label and remove its ``inflight/current`` conditional with ``<PreReleaseVersionLabel>servicing</PreReleaseVersionLabel>``, then set ``<StabilizePackageVersion Condition=`"'`$(StabilizePackageVersion)' == ''`">true</StabilizePackageVersion>``. Keep ``main`` on its next-cycle version and rerun final CI after the SR PR merges."
+                "After the last required backport, open a focused PR targeting ``$($Ctx.srBranch)``. Preserve ``PatchVersion``; replace the base ``ci.main`` label and remove the nightly-label conditional with ``<PreReleaseVersionLabel>servicing</PreReleaseVersionLabel>``, then set ``<StabilizePackageVersion Condition=`"'`$(StabilizePackageVersion)' == ''`">true</StabilizePackageVersion>``. Keep ``$($Ctx.mainBranch)`` on its next-cycle version and rerun final CI after the SR PR merges."
             }
             $checks += New-ReadinessCheck -Area $flipArea -Status 'BLOCKED' `
                 -Details $flipDetails `
@@ -1169,7 +1223,8 @@ function Get-ReleaseShipChecks {
         $vpMain = Get-VersionsPropsState -Ref $mainRef
         $nextSr = $targetSr + 1
         $expectedNextPatchPrefix = $nextSr * 10
-        $mainArea = "Main bumped to SR$nextSr cycle"
+        $sourceLabel = if ($Ctx.mainBranch -eq 'main') { 'Main' } else { $Ctx.mainBranch }
+        $mainArea = "$sourceLabel bumped to SR$nextSr cycle"
 
         if (-not $vpMain) {
             $checks += New-ReadinessCheck -Area $mainArea -Status 'UNKNOWN' `
@@ -1194,7 +1249,9 @@ function Get-ReleaseShipChecks {
             # StabilizePackageVersion defaults false when omitted; only explicit
             # true/non-false is bad.
             $mainLabelOk     = ($vpMain.PreReleaseVersionLabel -eq 'ci.main')
-            $mainStabilizeOk = [string]::IsNullOrEmpty($vpMain.StabilizePackageVersion) -or ($vpMain.StabilizePackageVersion -eq 'false')
+            $mainStabilizeOk = [string]::IsNullOrEmpty($vpMain.StabilizePackageVersion) -or
+                ($vpMain.StabilizePackageVersion -eq 'false') -or
+                [bool](Get-MetadataValue -Container $vpMain -Name 'AutomaticStabilization' -Default $false)
             $mainMainlineOk  = $mainLabelOk -and $mainStabilizeOk
 
             if (($mainPastMajor -or $mainBumpedThisCycle) -and (-not $mainMainlineOk)) {
@@ -1207,15 +1264,15 @@ function Get-ReleaseShipChecks {
                 if (-not $mainLabelOk)     { $mainOffenders += "``PreReleaseVersionLabel=$($vpMain.PreReleaseVersionLabel)`` (expected ``ci.main``)" }
                 if (-not $mainStabilizeOk) { $mainOffenders += "``StabilizePackageVersion=$($vpMain.StabilizePackageVersion)`` (expected ``false``)" }
                 $checks += New-ReadinessCheck -Area $mainArea -Status 'BLOCKED' `
-                    -Details "``$mainRef`` reports ``$($vpMain.FullVersion)`` with $($mainOffenders -join ' and ') — main's version is already clear of the SR$targetSr cycle (no PatchVersion bump needed), but its mainline settings are configured for a stable/servicing build, not dev main. PRs merging to ``$($Ctx.mainBranch)`` would emit packages that misrepresent their ship vehicle." `
-                    -NextAction "On ``$($Ctx.mainBranch)`` restore the dev-main settings in ``eng/Versions.props``: set ``PreReleaseVersionLabel=ci.main`` and ``StabilizePackageVersion=false``. Only the SR branch flips to ``servicing``/``true``; main must stay on ci.main/false throughout SR$targetSr stabilization."
+                    -Details "``$mainRef`` reports ``$($vpMain.FullVersion)`` with $($mainOffenders -join ' and ') — its version is clear of SR$targetSr, but its source-line settings incorrectly select stable/servicing builds." `
+                    -NextAction "On ``$($Ctx.mainBranch)`` restore ``PreReleaseVersionLabel=ci.main`` and ``StabilizePackageVersion=false``. Only the SR branch flips to servicing/true."
             } elseif ($mainPastMajor) {
                 $checks += New-ReadinessCheck -Area $mainArea -Status 'READY' `
-                    -Details "``$mainRef`` reports ``$($vpMain.FullVersion)`` — main has moved past the $major.$minor train entirely (no bump needed for SR$targetSr stabilization)." `
+                    -Details "``$mainRef`` reports ``$($vpMain.FullVersion)`` — that source has moved past the $major.$minor train entirely (no bump needed for SR$targetSr stabilization)." `
                     -NextAction "No bump needed."
             } elseif ($mainBumpedThisCycle) {
                 $checks += New-ReadinessCheck -Area $mainArea -Status 'READY' `
-                    -Details "``$mainRef`` reports ``$($vpMain.FullVersion)`` — main is at or past ``$major.$minor.$expectedNextPatchPrefix`` so PRs merging during SR$targetSr stabilization target SR$nextSr correctly." `
+                    -Details "``$mainRef`` reports ``$($vpMain.FullVersion)`` — the fix source is at or past ``$major.$minor.$expectedNextPatchPrefix`` so new PRs target SR$nextSr correctly." `
                     -NextAction "No bump needed."
             } else {
                 $mainBumpTitle = "Update PatchVersion from $($vpMain.Patch) to $expectedNextPatchPrefix"
@@ -1233,9 +1290,9 @@ function Get-ReleaseShipChecks {
                     $mainlineKeepClause = "Keep ``SdkBandVersion`` unchanged, and in the SAME PR restore the dev-main mainline settings that are currently misconfigured for a stable/servicing build ($($mainFixNeeded -join ' and ')): set ``PreReleaseVersionLabel=ci.main`` and ``StabilizePackageVersion=false`` — leaving them as-is would keep ``$($Ctx.mainBranch)`` emitting servicing/stable packages"
                 }
                 $mainBumpDetails = if ($isShipped) {
-                    "``$mainRef`` still reports ``$($vpMain.FullVersion)`` even though SR$targetSr already shipped. New PR builds can continue claiming the shipped version until main advances to SR$nextSr."
+                    "``$mainRef`` still reports ``$($vpMain.FullVersion)`` even though SR$targetSr already shipped. New PR builds can continue claiming the shipped version until $($Ctx.mainBranch) advances to SR$nextSr."
                 } else {
-                    "``$mainRef`` reports ``$($vpMain.FullVersion)`` — same cycle as the SR being shipped. Once SR$targetSr tags, every PR currently merging to main as ``$($vpMain.FullVersion)`` would falsely claim to ship in SR$targetSr."
+                    "``$mainRef`` reports ``$($vpMain.FullVersion)`` — same cycle as the SR being shipped. New fix-source PRs would falsely claim to ship in SR$targetSr."
                 }
                 $mainBumpNextAction = if ($isShipped) {
                     "Open the focused ``$mainBumpTitle`` PR against ``$($Ctx.mainBranch)`` immediately. Change only ``<PatchVersion>$($vpMain.Patch)</PatchVersion>`` to ``<PatchVersion>$expectedNextPatchPrefix</PatchVersion>``; $mainlineKeepClause. This is post-ship containment, not a pre-ship gate."
@@ -1251,7 +1308,7 @@ function Get-ReleaseShipChecks {
 
     # === Bug template version listing ===
     # Issue templates live on the default branch (main) — they're global per repo.
-    $templateRef = "origin/$($Ctx.mainBranch)"
+    $templateRef = 'origin/main'
     $templateVersions = @(Get-BugTemplateVersions -Ref $templateRef)
     # Before ship, any entry in the target SR decade proves the dropdown is
     # prepared. After ship, users must be able to select the exact immutable
@@ -1798,7 +1855,8 @@ function Get-MilestoneHygieneChecks {
     # In candidate mode we're surveying main as the next SR/preview. The cycle
     # we're prepping is the prior branch's cycle number + 1. In in-flight mode
     # we use srBranch directly.
-    $branchToParse = if ($Ctx.mode -eq 'candidate') { $Ctx.priorSrBranch } else { $Ctx.srBranch }
+    $targetBranch = Get-MetadataValue -Container $Ctx -Name 'targetSrBranch'
+    $branchToParse = if ($targetBranch) { $targetBranch } elseif ($Ctx.mode -eq 'candidate') { $Ctx.priorSrBranch } else { $Ctx.srBranch }
     if (-not $branchToParse) { return @() }
 
     # Parse SR shape first (release/10.0.1xx-sr8), then preview (release/11.0.1xx-preview5).
@@ -1812,7 +1870,7 @@ function Get-MilestoneHygieneChecks {
     if ($srMatch.Success) {
         $major = [int]$srMatch.Groups[1].Value
         $cycleNum = [int]$srMatch.Groups[2].Value
-        if ($Ctx.mode -eq 'candidate') { $cycleNum++ }
+        if ($Ctx.mode -eq 'candidate' -and -not $targetBranch) { $cycleNum++ }
         # MAUI uses both legacy ".NET X.0 SRn" and current ".NET X SRn" forms;
         # treat either as satisfying the check so we don't trigger false BLOCKED
         # on historical milestones.
@@ -1995,6 +2053,8 @@ function Get-CandidatePrResolution {
         REST API. Fail closed: an unreadable association excludes the PR (tracked
         separately as `unverifiable`, distinct from a confirmed non-maintainer
         `spoofer`, so a transient blip during a real cut isn't mislabeled).
+        The configured managed candidate also accepts github-actions[bot] after
+        verifying its Bot identity, exact same-repository head/base, and marker.
 
         The `gh pr list` projection requests the richer fields (createdAt, isDraft,
         mergeable, reviewDecision, state) the prominent section renders — all are
@@ -2016,15 +2076,29 @@ function Get-CandidatePrResolution {
         nextSr = $null; versionBase = $null
     }
     if ($Ctx.mode -ne 'candidate') { return $res }
+    $targetBranch = Get-MetadataValue -Container $Ctx -Name 'targetSrBranch'
+    if ($targetBranch -and $targetBranch -match '^release/(\d+)\.(\d+)\.\d+xx-sr(\d+)$') {
+        $res.nextSr = "SR$($Matches[3])"
+        $res.versionBase = "$($Matches[1]).$($Matches[2]).$([int]$Matches[3] * 10)"
+    }
+    $roles = Get-MetadataValue -Container $Ctx -Name 'branchRoles'
+    if ($roles -and $roles.configured -and $targetBranch -eq $roles.releaseBranch) {
+        $res['selectedCandidate'] = $Ctx.srBranch
+        $res['integratedOnSource'] = Test-CommitOnBranch -Sha $Ctx.srHeadSha -BranchRef "origin/$($Ctx.mainBranch)"
+        if ($res.integratedOnSource) {
+            $res.mode = 'integrated'
+            return $res
+        }
+    }
 
     # Next-SR label + version base from priorSrBranch (release/MAJOR.MINOR.1xx-srN).
     # Full parse gives the version base (e.g. SR9 → 10.0.90) for the section header;
     # fall back to the loose 'srN$' match (nextSr only) if the branch is oddly shaped.
-    if ($Ctx.priorSrBranch -and $Ctx.priorSrBranch -match '^release/(\d+)\.(\d+)\.\d+xx-sr(\d+)$') {
+    if (-not $targetBranch -and $Ctx.priorSrBranch -and $Ctx.priorSrBranch -match '^release/(\d+)\.(\d+)\.\d+xx-sr(\d+)$') {
         $mj = [int]$Matches[1]; $mn = [int]$Matches[2]; $target = [int]$Matches[3] + 1
         $res.nextSr = "SR$target"
         $res.versionBase = "$mj.$mn.$($target * 10)"
-    } elseif ($Ctx.priorSrBranch -and $Ctx.priorSrBranch -match 'sr(\d+)$') {
+    } elseif (-not $targetBranch -and $Ctx.priorSrBranch -and $Ctx.priorSrBranch -match 'sr(\d+)$') {
         $res.nextSr = "SR$([int]$Matches[1] + 1)"
     }
 
@@ -2032,7 +2106,7 @@ function Get-CandidatePrResolution {
     # (not the SR branch, which may not exist yet in candidate mode).
     $raw = Invoke-Gh @('pr', 'list', '--repo', $Ctx.repo, '--state', 'open',
                        '--base', $Ctx.mainBranch, '--limit', '100',
-                       '--json', 'number,title,author,createdAt,updatedAt,isDraft,mergeable,reviewDecision,state,url')
+                       '--json', 'number,title,headRefName,author,createdAt,updatedAt,isDraft,mergeable,reviewDecision,state,url')
     if ($null -eq $raw) { $res.mode = 'query-failed'; return $res }
 
     $mainPrs = @()
@@ -2040,7 +2114,11 @@ function Get-CandidatePrResolution {
     if ($parsed) { $mainPrs = @($parsed) }
 
     # Word-boundary match so "CandidateView" doesn't spoof.
-    $titleMatches = @($mainPrs | Where-Object { $_.title -match '(?i)\bcandidate\b' })
+    $titleMatches = @($mainPrs | Where-Object {
+        if ($roles -and $roles.configured -and $targetBranch -eq $roles.releaseBranch) {
+            $_.headRefName -eq $Ctx.srBranch
+        } else { $_.title -match '(?i)\bcandidate\b' }
+    })
 
     # Author gating (see .DESCRIPTION). -Quiet so a transient lookup miss doesn't
     # embed a raw `gh ... exited` warning in the tracker body.
@@ -2053,6 +2131,25 @@ function Get-CandidatePrResolution {
             $res.unverifiable++
         } elseif ($maintainerAssociations -contains $assoc) {
             $res.candidates += $pr
+        } elseif ($roles -and $roles.configured -and
+            (Get-MetadataValue -Container (Get-MetadataValue -Container $pr -Name 'author') -Name 'login') -ceq 'github-actions[bot]') {
+            $proofRaw = Invoke-Gh @('api', "repos/$($Ctx.repo)/pulls/$($pr.number)") -Quiet
+            if (-not $proofRaw) { $res.unverifiable++; continue }
+            $proof = $proofRaw | ConvertFrom-Json
+            $user = Get-MetadataValue -Container $proof -Name 'user'
+            $head = Get-MetadataValue -Container $proof -Name 'head'
+            $base = Get-MetadataValue -Container $proof -Name 'base'
+            if ((Get-MetadataValue -Container $user -Name 'login') -ceq 'github-actions[bot]' -and
+                (Get-MetadataValue -Container $user -Name 'type') -ceq 'Bot' -and
+                (Get-MetadataValue -Container (Get-MetadataValue -Container $head -Name 'repo') -Name 'full_name') -ceq $Ctx.repo -and
+                (Get-MetadataValue -Container (Get-MetadataValue -Container $base -Name 'repo') -Name 'full_name') -ceq $Ctx.repo -and
+                (Get-MetadataValue -Container $head -Name 'ref') -ceq $roles.candidateBranch -and
+                (Get-MetadataValue -Container $base -Name 'ref') -ceq $Ctx.mainBranch -and
+                ([string](Get-MetadataValue -Container $proof -Name 'body')).Contains('<!-- maui-release-tracking:production:candidate -->')) {
+                $res.candidates += $pr
+            } else {
+                $res.spoofers++
+            }
         } else {
             $res.spoofers++
         }
@@ -2128,6 +2225,11 @@ function Get-CandidatePrChecks {
     } else {
         "Candidate PR for next SR cut"
     }
+    if ($Resolution.mode -eq 'integrated') {
+        return ,@(New-ReadinessCheck -Area $area -Status 'WATCH' `
+            -Details "Selected staged ref ``$($Ctx.srBranch)`` is integrated into fix source ``$($Ctx.mainBranch)``. No release branch has been cut; this is pre-flight evidence, not signed-build proof." `
+            -NextAction "The release captain cuts ``$($Ctx.targetSrBranch)`` from the approved ``$($Ctx.mainBranch)`` commit after required CI and release approvals.")
+    }
 
     # gh query failed → surface as WATCH (a missing signal, not a silent READY).
     if ($Resolution.mode -eq 'query-failed') {
@@ -2152,12 +2254,12 @@ function Get-CandidatePrChecks {
         }
         $rejectNote = if ($excludeNotes.Count -gt 0) { " ($($excludeNotes -join '; '))" } else { '' }
         $nextAction = if ($unverifiable -gt 0) {
-            "Verify ``gh auth status`` and rerun to re-check author association. When ready to cut, open a Candidate PR against ``$($Ctx.mainBranch)`` selecting the target main commit for the next SR."
+            "Verify ``gh auth status`` and rerun to re-check author association. When ready to cut, open a Candidate PR against ``$($Ctx.mainBranch)`` selecting the intended staged content for the next SR."
         } else {
-            "When ready to cut, open a Candidate PR against ``$($Ctx.mainBranch)`` selecting the target main commit for the next SR."
+            "When ready to cut, open a Candidate PR against ``$($Ctx.mainBranch)`` selecting the intended staged content for the next SR."
         }
         return ,@(New-ReadinessCheck -Area $area -Status 'WATCH' `
-            -Details "No open PR matching ``*Candidate*`` from a maintainer (OWNER/MEMBER/COLLABORATOR) found on ``$($Ctx.mainBranch)``$rejectNote. The Candidate PR is the mechanism that promotes a specific main commit as the SR cut point." `
+            -Details "No matching maintainer Candidate PR found on ``$($Ctx.mainBranch)``$rejectNote. The Candidate PR integrates selected staged content into the fixes source before the release cut." `
             -NextAction $nextAction)
     }
 
@@ -2184,7 +2286,7 @@ function Get-CandidatePrChecks {
         "Review and merge the Candidate PR when ready; the SR cut follows from its merge commit."
     }
     return ,@(New-ReadinessCheck -Area $area -Status 'WATCH' `
-        -Details "$($candidates.Count) open Candidate PR(s) on ``$($Ctx.mainBranch)``: $links. This PR promotes a specific main commit as the SR cut point — it must be merged (and the SR branch cut from it) before the SR cycle starts.$excludedSuffix" `
+        -Details "$($candidates.Count) open Candidate PR(s) on ``$($Ctx.mainBranch)``: $links. This PR integrates selected content into the fixes source — it must merge before the captain cuts the SR from that source.$excludedSuffix" `
         -NextAction $acceptNextAction)
 }
 
@@ -2195,21 +2297,60 @@ function Get-CandidatePrChecks {
 function Resolve-Context {
     param([string]$SrBranch, [string]$Repo, [string]$MainBranch,
           [string[]]$ExcludeBranches, [switch]$NoFetch, [switch]$Candidate,
-          [switch]$InheritFromPriorSr, [switch]$Shipped)
+          [switch]$InheritFromPriorSr, [switch]$Shipped,
+          [string]$CandidateTargetBranch, [string]$SurveyRef, [string]$BaselineRef)
+
+    if ($SrBranch -notmatch '^release/(\d+)\.\d+\.\d+xx-(?:sr|preview|rc)[1-9]\d*$') {
+        throw "Expected a versioned SR/Preview/RC release branch, not '$SrBranch'."
+    }
+    $major = [int]$Matches[1]
+    foreach ($revision in @($MainBranch, $SurveyRef, $BaselineRef) + @($ExcludeBranches)) {
+        if ([string]::IsNullOrWhiteSpace($revision)) { continue }
+        if ($revision -cnotmatch '^(?:refs/(?:heads|tags)/|origin/)?[A-Za-z0-9][A-Za-z0-9._/-]*(?:~[0-9]+|\^[0-9]+)?$' -or
+            $revision.Contains('..')) {
+            throw "Release revision '$revision' must identify one safe Git revision, not arguments or a range."
+        }
+    }
+    $explicitSource = -not [string]::IsNullOrWhiteSpace($MainBranch)
+    $roles = Resolve-ReadinessBranchRoles -Major $major -SourceBranch $MainBranch
+    $MainBranch = $roles.sourceBranch
+    if (-not $ExcludeBranches) { $ExcludeBranches = @("origin/$MainBranch") }
+    if (($CandidateTargetBranch -or $SurveyRef -or $BaselineRef) -and -not $Candidate) {
+        throw '-CandidateTargetBranch, -SurveyRef, and -BaselineRef require -Candidate.'
+    }
+    if ($Candidate -and -not $CandidateTargetBranch -and $roles.configured -and $SrBranch -eq $roles.releaseBranch) {
+        $CandidateTargetBranch = $roles.releaseBranch
+    }
+    $explicitTarget = -not [string]::IsNullOrWhiteSpace($CandidateTargetBranch)
+    if ($explicitTarget -and $InheritFromPriorSr) {
+        throw 'Staged candidates already include their selected content; -InheritFromPriorSr is only supported by the legacy prior-SR candidate interface.'
+    }
+    if ($explicitTarget -and $CandidateTargetBranch -notmatch "^release/$major\.\d+\.\d+xx-sr[1-9]\d*$") {
+        throw "Invalid candidate release target '$CandidateTargetBranch'."
+    }
+    $targetSrBranch = if ($Candidate -and -not $explicitTarget) {
+        $SrBranch -replace 'sr(\d+)$', "sr$([int]([regex]::Match($SrBranch, 'sr(\d+)$').Groups[1].Value) + 1)"
+    } elseif ($Candidate) { $CandidateTargetBranch } else { $SrBranch }
+    $tagIndependent = $roles.configured -and
+        $targetSrBranch -cmatch "^release/$([regex]::Escape($roles.releaseBand))-sr[1-9][0-9]*$"
+    if ($tagIndependent -and !$Candidate -and $Shipped) {
+        Write-Warn 'Configured servicing progress uses branch snapshots, not tag-derived shipped state. Tags remain a manual release action.'
+        $Shipped = $false
+    }
 
     if ($InheritFromPriorSr -and -not $Candidate) {
         throw "-InheritFromPriorSr is only valid with -Candidate (it models the SR cut-then-merge workflow)."
     }
 
     if ($Shipped -and $Candidate) {
-        throw "-Shipped and -Candidate are mutually exclusive: -Shipped surveys an existing (already-tagged) SR branch; -Candidate pre-flights main as the next SR."
+        throw "-Shipped and -Candidate are mutually exclusive."
     }
 
     # HARD VALIDATION — refuse inflight/staging refs as SR sources.
     # See $Script:ForbiddenSrPatterns at top of file for the rule rationale.
     foreach ($pat in $Script:ForbiddenSrPatterns) {
         if ($SrBranch -match $pat) {
-            throw "REFUSED: '$SrBranch' is not a valid SR branch — SR branches in dotnet/maui cut from `main`, never from inflight/staging/backport refs. Use a `release/X.Y.Zxx-srN` branch, or pass -Candidate to pre-flight `main`."
+            throw "REFUSED: '$SrBranch' is not a release branch. Use -Candidate for a staged-content survey."
         }
     }
     foreach ($eb in $ExcludeBranches) {
@@ -2224,7 +2365,8 @@ function Resolve-Context {
 
     if (-not $NoFetch) {
         Write-Host "Fetching latest refs..." -ForegroundColor Cyan
-        & git fetch --all --quiet 2>$null | Out-Null
+        & git fetch --all --no-tags --quiet 2>$null | Out-Null
+        if ($LASTEXITCODE) { throw 'Could not fetch release branch snapshots; no stale inventory was inferred.' }
     }
 
     # Candidate mode: swap roles — main becomes the "SR-to-be", named SrBranch
@@ -2240,17 +2382,55 @@ function Resolve-Context {
     $effectiveSrRef = "origin/$SrBranch"
     $effectiveExcludes = $ExcludeBranches
     $priorSrRef = $null
+    $candidateBaselineMissingReason = $null
+    $baselineBranch = $null
+    if ($tagIndependent -and !$BaselineRef) {
+        $number = [int]([regex]::Match($targetSrBranch, '-sr([1-9][0-9]*)$').Groups[1].Value)
+        $baselineBranch = if ($number -eq 1) { "release/$($roles.releaseBand)" } else { "release/$($roles.releaseBand)-sr$($number - 1)" }
+        $BaselineRef = Invoke-Git -Arguments @('rev-parse', '--verify', '--end-of-options', "origin/$baselineBranch^{commit}")
+        if ($BaselineRef) {
+            $baselineVersion = Get-VersionsPropsState -Ref $BaselineRef
+            if (!$baselineVersion -or $baselineVersion.Major -ne $major -or
+                $baselineVersion.Patch -lt (($number - 1) * 10) -or $baselineVersion.Patch -ge ($number * 10)) {
+                throw "Progress baseline '$baselineBranch' does not identify the preceding GA/SR cycle."
+            }
+        } else {
+            $candidateBaselineMissingReason = "Progress baseline branch '$baselineBranch' is missing. Inventory and regression classification were not run; tags are manual and are not a substitute."
+            Write-Warn $candidateBaselineMissingReason
+        }
+    }
 
     if ($Candidate) {
         $mode = 'candidate'
-        $priorSrRef = "origin/$SrBranch"
-        $priorSrSha = Invoke-Git "rev-parse $priorSrRef"
-        if (-not $priorSrSha) {
-            throw "Candidate mode requires -SrBranch to be the prior SR (used as exclude baseline). '$priorSrRef' not found."
+        $priorSrRef = if ($BaselineRef) { $BaselineRef } elseif ($tagIndependent) { $null } elseif ($explicitTarget) {
+            # SR1 has no SR0. Only an existing immutable GA/prior-cycle tag can
+            # automatically bound its inventory; never invent a baseline.
+            $targetNumber = [int]([regex]::Match($targetSrBranch, 'sr(\d+)$').Groups[1].Value)
+            $tags = @(git tag -l "$major.0.*" | Where-Object {
+                $_ -match "^\d+\.0\.(\d+)$" -and [int]$Matches[1] -lt ($targetNumber * 10)
+            } | Sort-Object { [int]($_ -split '\.')[2] })
+            if ($tags.Count) { $tags[-1] } else { $null }
+        } else { "origin/$SrBranch" }
+        if (-not $priorSrRef -and !$candidateBaselineMissingReason) {
+            $candidateBaselineMissingReason = "Candidate '$targetSrBranch' has no verified GA/prior stable-tag baseline. Content inventory and regression classification were not run; no SR0 or clean inventory was inferred."
+            Write-Warn $candidateBaselineMissingReason
+        } elseif ($priorSrRef) {
+            $priorSrSha = Invoke-Git -Arguments @('rev-parse', '--verify', '--end-of-options', "$priorSrRef^{commit}")
+            if (-not $priorSrSha) {
+                throw "Candidate mode requires -SrBranch to be the prior SR (used as exclude baseline). '$priorSrRef' not found."
+            }
+            if ($tagIndependent) { $priorSrRef = $priorSrSha }
         }
-        $effectiveSrRef = "origin/$MainBranch"
+        if (-not $SurveyRef) {
+            $SurveyRef = if ($roles.configured -and $targetSrBranch -eq $roles.releaseBranch) {
+                $roles.candidateBranch
+            } else { $MainBranch }
+        }
+        $effectiveSrRef = if ($SurveyRef -match '^(origin/|refs/)' -or $SurveyRef -match '^[0-9a-f]{40}$') {
+            $SurveyRef
+        } else { "origin/$SurveyRef" }
         # Exclude prior SR from main, so we see only "new since last SR" commits
-        $effectiveExcludes = @($priorSrRef)
+        $effectiveExcludes = @($priorSrRef | Where-Object { $_ })
         Write-Host "Candidate mode: surveying $effectiveSrRef vs prior SR $priorSrRef" -ForegroundColor Cyan
     }
     elseif ($Shipped) {
@@ -2258,6 +2438,10 @@ function Resolve-Context {
         # carry-forward, and hotfix-vs-next-SR guidance semantics.
         $mode = 'shipped'
         Write-Host "Shipped mode: surveying already-tagged SR branch $effectiveSrRef with post-ship semantics" -ForegroundColor Cyan
+    }
+    if ($tagIndependent -and !$Candidate) {
+        $priorSrRef = $BaselineRef
+        $effectiveExcludes = @($BaselineRef | Where-Object { $_ })
     }
 
     # Main-side revert detection needs a bounded release-window baseline, but the
@@ -2267,7 +2451,9 @@ function Resolve-Context {
     # introduced during this release cycle remain visible even after the current
     # SR inherits them. Candidate mode already names the prior SR explicitly.
     $mainRevertBaselineRef = $null
-    if ($Candidate) {
+    if ($tagIndependent) {
+        $mainRevertBaselineRef = $priorSrRef
+    } elseif ($Candidate) {
         $mainRevertBaselineRef = $priorSrRef
     } elseif ($SrBranch -match '^release/(\d+)\.(\d+)\.(\d+)xx-sr(\d+)$') {
         $baselineMajor = [int]$Matches[1]
@@ -2292,14 +2478,42 @@ function Resolve-Context {
         Write-Host "  -InheritFromPriorSr active: SR-to-be contents will be augmented with $priorSrRef-only commits" -ForegroundColor Cyan
     }
 
-    $srHead = Invoke-Git "rev-parse $effectiveSrRef"
+    $srHead = Invoke-Git -Arguments @('rev-parse', '--verify', '--end-of-options', "$effectiveSrRef^{commit}")
     if (-not $srHead) {
         throw "Branch '$effectiveSrRef' not found. Did you push it? (try without -NoFetch)"
     }
-    $srSubject = Invoke-Git "log -1 --format=%s $effectiveSrRef"
+    $srSubject = Invoke-Git -Arguments @('log', '-1', '--format=%s', $srHead, '--')
+    if ($tagIndependent) { $effectiveSrRef = $srHead }
 
-    $mainHead = Invoke-Git "rev-parse origin/$MainBranch"
-    if (-not $mainHead) { Write-Warn "Main branch 'origin/$MainBranch' not found" }
+    $mainHead = Invoke-Git -Arguments @('rev-parse', '--verify', '--end-of-options', "origin/$MainBranch^{commit}")
+    if (-not $mainHead) { throw "Fix-source branch 'origin/$MainBranch' not found. Fetch the configured source before reporting ancestry." }
+    if ($roles.configured -and -not $explicitSource) {
+        $sourceVersion = Get-VersionsPropsState -Ref "origin/$MainBranch"
+        if (-not $sourceVersion -or $sourceVersion.Major -ne $major) {
+            throw "Configured fixes source '$MainBranch' does not identify .NET $major; readiness is UNKNOWN."
+        }
+    }
+    $candidateIntegration = $null
+    if ($Candidate) {
+        & git merge-base --is-ancestor $srHead $mainHead 2>$null
+        if ($LASTEXITCODE -gt 1) { throw 'Could not verify candidate integration into the fixes source.' }
+        $sourceContainsCandidate = $LASTEXITCODE -eq 0
+        & git merge-base --is-ancestor $mainHead $srHead 2>$null
+        if ($LASTEXITCODE -gt 1) { throw 'Could not verify fixes-source coverage in the candidate.' }
+        $candidateContainsSource = $LASTEXITCODE -eq 0
+        $sourceOnlyCount = & git rev-list --count "$srHead..$mainHead" 2>$null
+        if ($LASTEXITCODE -ne 0) { throw 'Could not inventory fixes absent from the selected candidate.' }
+        $candidateIntegration = @{
+            status = if ($sourceContainsCandidate -and $candidateContainsSource) { 'aligned' }
+                elseif ($sourceContainsCandidate) { 'source-ahead' }
+                elseif ($candidateContainsSource) { 'candidate-ahead' } else { 'diverged' }
+            sourceContainsCandidate = $sourceContainsCandidate
+            candidateContainsSource = $candidateContainsSource
+            sourceOnlyCommitCount = [int]$sourceOnlyCount
+            candidateSha = $srHead
+            sourceSha = $mainHead
+        }
+    }
 
     # Validate exclude branches exist; drop missing with warning
     $validExcludes = @()
@@ -2308,22 +2522,30 @@ function Resolve-Context {
         if ($sha) {
             $validExcludes += $b
         } else {
-            Write-Warn "Exclude branch '$b' not found, dropping"
+            throw "Inventory exclude '$b' is missing; refusing a falsely complete inventory."
         }
     }
 
     @{
         repo = $Repo
-        srBranch = if ($Candidate) { $MainBranch } else { $SrBranch }
+        srBranch = if ($Candidate) { $SurveyRef -replace '^(origin/|refs/heads/)', '' } else { $SrBranch }
         srRef = $effectiveSrRef
         srHeadSha = $srHead
         srHeadSubject = $srSubject
         mainBranch = $MainBranch
+        sourceBranch = $MainBranch
+        targetSrBranch = $targetSrBranch
+        branchRoles = $roles
+        candidateIntegration = $candidateIntegration
+        tagIndependent = $tagIndependent
+        baselineBranch = $baselineBranch
+        progressSnapshot = if ($tagIndependent) { "$targetSrBranch@$srHead@$($priorSrRef)" } else { $null }
         mainHeadSha = $mainHead
         excludeBranches = $validExcludes
         mode = $mode
-        priorSrBranch = if ($Candidate) { $SrBranch } else { $null }
-        priorSrRef = if ($Candidate) { "origin/$SrBranch" } else { $null }
+        priorSrBranch = if ($Candidate -and -not $explicitTarget) { $SrBranch } else { $null }
+        priorSrRef = $priorSrRef
+        candidateBaselineMissingReason = $candidateBaselineMissingReason
         mainRevertBaselineRef = $mainRevertBaselineRef
         inheritFromPriorSr = [bool]($Candidate -and $InheritFromPriorSr)
         fetchedAt = (Get-Date).ToUniversalTime().ToString('o')
@@ -3113,7 +3335,7 @@ function Get-RegressionLabelsAuto {
     param($Ctx)
 
     # Parse SR version from branch name: release/10.0.1xx-sr7 -> 10.0
-    $branchMatch = [regex]::Match($Ctx.srBranch, '^release/(\d+)\.(\d+)\.\d+xx-sr(\d+)$')
+    $branchMatch = [regex]::Match((Get-MetadataValue -Container $Ctx -Name 'targetSrBranch' -Default $Ctx.srBranch), '^release/(\d+)\.(\d+)\.\d+xx-sr(\d+)$')
     if (-not $branchMatch.Success) {
         return @{
             mode = 'inferred'; confidence = 'low'
@@ -3611,7 +3833,7 @@ function Classify-RegressionCandidate {
     $targetSrRef  = Get-MetadataValue -Container $Ctx -Name 'contentsRef' `
         -Default (Get-MetadataValue -Container $Ctx -Name 'srRef')
     $targetIsDistinct = ($ctxModeEarly -ne 'candidate') -and [bool]$targetSrRef
-    $candidateCutLagGuidance = 'Fix is already merged on main, but the selected Candidate cut can lag current main. Rerun readiness after the release/...-srN branch exists to verify inclusion and get the exact backport command if needed.'
+    $candidateCutLagGuidance = "Fix is already merged on $($Ctx.mainBranch), but the selected Candidate cut can lag current $($Ctx.mainBranch). Rerun readiness after the release/...-srN branch exists to verify inclusion and get the exact backport command if needed."
 
     # === EARLY-EXIT: issue is already fixed by a commit IN the SR contents ===
     #
@@ -3664,15 +3886,30 @@ function Classify-RegressionCandidate {
         if ($unreverted.Count -gt 0) {
             $prList = ($unreverted | ForEach-Object { "#$_" }) -join ', '
             if ($ctxModeEarly -eq 'candidate') {
+                $sourceFixes = @{}
+                foreach ($fixPr in $unreverted) {
+                    $fixCommits = @($fixingSrCommits | Where-Object {
+                        [int](Get-MetadataValue -Container $_ -Name 'backportPr' -Default 0) -eq $fixPr -or
+                        [int](Get-MetadataValue -Container $_ -Name 'sourcePr' -Default 0) -eq $fixPr -or
+                        $fixPr -in @(Get-MetadataValue -Container $_ -Name 'sourcePrs')
+                    })
+                    $sourceFixes[$fixPr] = $Ctx.srBranch -eq $Ctx.mainBranch -or @($fixCommits | Where-Object {
+                        $sha = [string](Get-MetadataValue -Container $_ -Name 'sha')
+                        $sha -and (Test-CommitOnBranch -Sha $sha -BranchRef "origin/$($Ctx.mainBranch)")
+                    }).Count -gt 0
+                }
+                $candidateOnSource = @($sourceFixes.Values | Where-Object { $_ }).Count -gt 0
                 return @{
-                    classification    = 'merged-on-main-no-backport'
+                    classification    = if ($candidateOnSource) { 'merged-on-main-no-backport' } else { 'merged-non-main-only' }
                     confidence        = 'medium'
                     verifiedFromSrContents = $false
-                    evidence          = @("Candidate survey of current main includes a fix for #$($Issue.number) via $prList, but the eventual SR cut ancestry is not yet available")
+                    evidence          = @("Candidate survey of $($Ctx.srBranch) includes a fix for #$($Issue.number) via $prList, but the eventual SR cut ancestry is not yet available")
                     candidateFixPrs   = @($unreverted | ForEach-Object {
-                        @{ number = $_; baseRef = 'main'; state = 'MERGED'; onMain = $true; evidenceType = 'candidate-main-fix'; backports = @(); title = '' }
+                        @{ number = $_; baseRef = $Ctx.srBranch; state = 'MERGED'; onMain = [bool]$sourceFixes[$_]; evidenceType = 'candidate-main-fix'; backports = @(); title = '' }
                     })
-                    recommendedAction = $candidateCutLagGuidance
+                    recommendedAction = if ($candidateOnSource) { $candidateCutLagGuidance } else {
+                        "Integrate the approved staged candidate into $($Ctx.mainBranch), then verify the release cut; staged contents alone do not prove source ancestry."
+                    }
                 }
             }
             return @{
@@ -3851,7 +4088,7 @@ function Classify-RegressionCandidate {
                 $subreason = 'reverted-on-main'
                 $subreasonPr = [int]$pr.number
                 $confidence = 'medium'
-                $evidence += "PR #$($pr.number) merged to main but was later reverted on main — do not backport until a human verifies the current fix/revert chain"
+                $evidence += "PR #$($pr.number) merged to $($Ctx.mainBranch) but was later reverted there — do not backport until a human verifies the current fix/revert chain"
             }
             elseif ($mergedBackport) {
                 # backport landed but PR # is different from what we tracked → check sourcePrSet for backport #
@@ -3900,30 +4137,34 @@ function Classify-RegressionCandidate {
                 elseif ($pr.onMain) {
                     $verdict = 'merged-on-main-no-backport'
                     $confidence = 'medium'
-                    $evidence += "PR #$($pr.number) merged to main, no backport PR opened"
+                    $evidence += "PR #$($pr.number) merged to $($Ctx.mainBranch), no backport PR opened"
                 } else {
                     $verdict = 'merged-non-main-only'
                     $confidence = 'medium'
-                    $evidence += "PR #$($pr.number) merged but NOT on main (likely inflight-only)"
+                    $evidence += "PR #$($pr.number) merged but NOT on fix source $($Ctx.mainBranch)"
                 }
             }
             elseif ($pr.state -eq 'OPEN') {
                 if ($pr.baseRef -eq $Ctx.mainBranch) {
                     $verdict = 'open-on-main'
-                    $evidence += "PR #$($pr.number) is OPEN against main"
+                    $evidence += "PR #$($pr.number) is OPEN against $($Ctx.mainBranch)"
                 } else {
                     $verdict = 'needs-human-review'
                     $confidence = 'medium'
-                    if ($pr.baseRef -eq 'inflight/current') {
+                    $rolesForFix = Get-MetadataValue -Container $Ctx -Name 'branchRoles'
+                    $integrationRefs = if ($rolesForFix -and $rolesForFix.configured) {
+                        @($rolesForFix.candidateBranch, $rolesForFix.inflightBranch)
+                    } else { @('inflight/current') }
+                    if ($pr.baseRef -in $integrationRefs) {
                         $subreason = 'open-non-main-inflight'
                         $subreasonPr = [int]$pr.number
                         # inflight/current PRs reach main via normal Candidate promotion — do
                         # NOT instruct a captain to retarget. Wait for the merge + promotion flow.
-                        $evidence += "PR #$($pr.number) is OPEN against $($pr.baseRef) — wait for it to merge and flow to main via Candidate promotion, then rerun readiness. (Retargeting to main directly is an optional expedited path, not required.)"
+                        $evidence += "PR #$($pr.number) is OPEN against $($pr.baseRef) — wait for it to merge and reach $($Ctx.mainBranch) via Candidate promotion (candidate integration), then rerun readiness."
                     } else {
                         $subreason = 'open-non-main-other'
                         $subreasonPr = [int]$pr.number
-                        $evidence += "PR #$($pr.number) is OPEN against $($pr.baseRef), not main — wait for its content to reach main (via merge + forward-flow), then rerun readiness"
+                        $evidence += "PR #$($pr.number) is OPEN against $($pr.baseRef), not $($Ctx.mainBranch) — verify its content reaches that fix source before rerunning readiness; do not merge next-major features backwards"
                     }
                 }
             }
@@ -4010,12 +4251,16 @@ function Classify-RegressionCandidate {
     $ctxMode = Get-MetadataValue -Container $Ctx -Name 'mode'
     $isCandidateMode = $ctxMode -eq 'candidate' -or $Ctx.srBranch -eq $Ctx.mainBranch
     $isShippedMode = $ctxMode -eq 'shipped'
+    $routingRoles = Get-MetadataValue -Container $Ctx -Name 'branchRoles'
+    $reviewLandingGuidance = if ($routingRoles -and $routingRoles.configured) {
+        "After approval, a maintainer manually retargets the fix PR from $($Ctx.mainBranch) to $($routingRoles.inflightBranch) and merges it directly there. Validate required CI against the final base; do not merge the individual fix directly into $($Ctx.mainBranch)."
+    } else { $null }
     $backportCommand = "/backport to $($Ctx.srBranch)"
     # Candidate mode surveys current main, but an already-selected Candidate cut
     # commit can lag it. Keep the row as a risk until the SR branch exists and
     # ancestry can prove the fix was included.
     $candidateMergedGuidance = $candidateCutLagGuidance
-    $candidateOpenGuidance = 'Wait for the main merge before the SR cut; rerun readiness after the release/...-srN branch exists to get the exact backport command.'
+    $candidateOpenGuidance = "Wait for the $($Ctx.mainBranch) merge before the SR cut; rerun readiness after the release/...-srN branch exists to get the exact backport command."
     # Shipped mode: the SR already tagged, so the current-SR `/backport` command no
     # longer applies. Reframe as a human hotfix/next-SR decision (never an automatic
     # backport to an already-shipped SR).
@@ -4037,18 +4282,32 @@ function Classify-RegressionCandidate {
             elseif ($isCandidateMode) { $candidateMergedGuidance }
             else { "On the merged source PR, post ``$backportCommand``" }
         }
-        'merged-non-main-only' { 'Flow fix to main first, then rerun readiness to verify the merged source PR is on main before requesting a backport' }
+        'merged-non-main-only' {
+            if ($reviewLandingGuidance) {
+                if ($best.pr.baseRef -match "^(?:candidate|inflight)/$([regex]::Escape($routingRoles.releaseBand))-sr[1-9][0-9]*$") {
+                    "The fix is already staged on $($best.pr.baseRef). Bring selected contents into $($Ctx.mainBranch) through candidate integration, not a direct individual-fix merge; verify the approved release cut before requesting any backport."
+                } else {
+                    "Verify train compatibility before proposing this fix against $($Ctx.mainBranch); never merge next-major features backwards. $reviewLandingGuidance"
+                }
+            } else {
+                "Flow fix to $($Ctx.mainBranch) first, then rerun readiness to verify source ancestry before requesting a backport"
+            }
+        }
         'open-on-main' {
-            if ($isShippedMode) { $shippedOpenGuidance }
+            if ($reviewLandingGuidance) {
+                if ($isShippedMode) { "$shippedOpenGuidance $reviewLandingGuidance" }
+                else { $reviewLandingGuidance }
+            }
+            elseif ($isShippedMode) { $shippedOpenGuidance }
             elseif ($isCandidateMode) { $candidateOpenGuidance }
-            else { "Wait for main merge; then post ``$backportCommand`` on the merged source PR" }
+            else { "Wait for $($Ctx.mainBranch) merge; then post ``$backportCommand`` on the merged source PR" }
         }
         'needs-human-review' {
             switch ($best.subreason) {
                 'merged-backport-missing' { "Re-run readiness without ``-NoFetch`` (or verify the backport's merge target manually) — backport #$($best.subreasonPr) is MERGED on GitHub but absent from SR git contents" }
-                'open-non-main-inflight'  { "Wait for #$($best.subreasonPr) to merge and reach main via Candidate promotion, then rerun readiness (retargeting to main directly is an optional expedited path, not required)" }
-                'open-non-main-other'     { "Wait for #$($best.subreasonPr)'s content to reach main (merge + forward-flow), then rerun readiness" }
-                'reverted-on-main'        { "Manual review required: source PR #$($best.subreasonPr) was reverted on main; verify the revert chain or find a replacement fix before requesting any SR backport" }
+                'open-non-main-inflight'  { "Wait for #$($best.subreasonPr) to merge and reach $($Ctx.mainBranch) via Candidate promotion (candidate integration), then rerun readiness" }
+                'open-non-main-other'     { "Verify #$($best.subreasonPr)'s fix reaches $($Ctx.mainBranch) (forward-flow only when train-compatible, never next-major features backwards), then rerun readiness" }
+                'reverted-on-main'        { "Manual review required: source PR #$($best.subreasonPr) was reverted on $($Ctx.mainBranch); verify the revert chain or find a replacement fix before requesting any SR backport" }
                 default { 'Manual review required' }
             }
         }
@@ -4140,7 +4399,7 @@ function Get-RegressionCandidates {
     #
     # In-scope range for SR-N (cycleNum): patch ∈ [cycleNum*10, (cycleNum+1)*10 - 1]
     # (covers SR8 = 80..89, accommodating hotfix patches like 81/82/...)
-    $srBranchMatch = [regex]::Match($Ctx.srBranch, '^release/(\d+)\.0\.\d+xx-sr(\d+)$')
+    $srBranchMatch = [regex]::Match((Get-MetadataValue -Container $Ctx -Name 'targetSrBranch' -Default $Ctx.srBranch), '^release/(\d+)\.0\.\d+xx-sr(\d+)$')
     $scopeMajor = $null; $scopeMinPatch = $null; $scopeMaxPatch = $null; $scopeCycleNum = $null
     if ($srBranchMatch.Success) {
         $scopeMajor    = [int]$srBranchMatch.Groups[1].Value
@@ -4930,7 +5189,10 @@ function Get-OverallVerdict {
     if ([bool](Get-MetadataValue -Container $Data -Name 'surveyIncomplete' -Default $false)) {
         $tier2 = $true
         $partialReason = Get-MetadataValue -Container $Data -Name 'surveyIncompleteReason' -Default 'Partial survey did not query every readiness axis.'
-        $reasons.Add("[Tier 2] $partialReason Rerun with ``-Phase all`` for a global verdict.") | Out-Null
+        $nextStep = if (Get-MetadataValue -Container $Data -Name 'inventory') {
+            'Resolve the verified inventory baseline before rerunning the complete survey.'
+        } else { 'Rerun with `-Phase all` for a global verdict.' }
+        $reasons.Add("[Tier 2] $partialReason $nextStep") | Out-Null
     }
     if ([bool](Get-MetadataValue -Container $Data -Name 'regressionScanIncomplete' -Default $false)) {
         $tier2 = $true
@@ -4986,7 +5248,7 @@ function Get-OverallVerdict {
         }
     } elseif ($isCandidate -and $Data.ContainsKey('ci') -and $Data['ci'] -and
               $Data['ci'].overall -in @('red-needs-review', 'stale', 'partial-unknown', 'unknown')) {
-        $reasons.Add("[Advisory] Candidate mode — main CI is ``$($Data['ci'].overall)``. Re-evaluate after SR cut.") | Out-Null
+        $reasons.Add("[Advisory] Candidate mode — selected-ref CI is ``$($Data['ci'].overall)``. Re-evaluate after SR cut.") | Out-Null
     }
 
     # Ship-readiness checks (versions.props bumped, bug template updated,
@@ -5269,6 +5531,12 @@ function Get-ReportSemanticHash {
         # churn — only the one-time transition refreshes. Default 'in-flight' when
         # absent, matching Format-MarkdownReport's $mode default.
         mode = $modeForHash
+        branchCoordinates = @(
+            Get-MetadataValue -Container $Data.metadata -Name 'srRef'
+            Get-MetadataValue -Container $Data.metadata -Name 'mainBranch'
+            Get-MetadataValue -Container $Data.metadata -Name 'targetSrBranch'
+            Get-MetadataValue -Container (Get-MetadataValue -Container $Data.metadata -Name 'branchRoles') -Name 'nightlyBranch'
+        ) -join '|'
         shippedAnchor = if ($shippedInfoForHash) {
             $shipDateToken = if ($shipDateForHash) { $shipDateForHash.ToString('o') } else { '' }
             $hotfixVersion = [string](Get-MetadataValue -Container $shippedInfoForHash -Name 'liveVersion')
@@ -5428,6 +5696,8 @@ function Get-ReportSemanticHash {
                       } else { '' }
     }
 
+    $progressSnapshot = Get-MetadataValue -Container $Data.metadata -Name 'progressSnapshot'
+    if ($progressSnapshot) { $semantic['progressSnapshot'] = $progressSnapshot }
     $json = $semantic | ConvertTo-Json -Depth 5 -Compress
     $bytes = [System.Text.Encoding]::UTF8.GetBytes($json)
     $sha = [System.Security.Cryptography.SHA256]::Create()
@@ -5503,7 +5773,7 @@ function Format-MarkdownReport {
     # in metadata, but some renderer fixtures/callers omit it, and metadata may be
     # a hashtable (live survey) OR a pscustomobject (JSON round-trip). A null value
     # makes Select-OpenMainFixPr fall back to the first OPEN candidate.
-    $mainBranchName = Get-MetadataValue -Container $ctx -Name 'mainBranch'
+    $mainBranchName = Get-MetadataValue -Container $ctx -Name 'mainBranch' -Default 'main'
     $shortHead = if ($ctx.srHeadSha) { $ctx.srHeadSha.Substring(0, 8) } else { '?' }
 
     # Compute verdict + semantic hash (deterministic, used in markers)
@@ -5519,6 +5789,11 @@ function Format-MarkdownReport {
         [void]$sb.AppendLine("<!-- release-readiness-tracker: $TrackerKey -->")
     }
     [void]$sb.AppendLine("<!-- release-readiness-hash: sha=$semanticHash -->")
+    $progressSnapshot = Get-MetadataValue -Container $ctx -Name 'progressSnapshot'
+    if ($progressSnapshot) {
+        [void]$sb.AppendLine("<!-- release-readiness-snapshot: $progressSnapshot -->")
+        [void]$sb.AppendLine('> **Manual tags.** Servicing progress uses pinned release-branch snapshots and configured cycle state. Tag creation, absence or movement does not advance, retire or block this flow.')
+    }
     $hotfixMarkerInfo = Get-MetadataValue -Container $Data -Name 'shippedInfo'
     $shippedMarkerVersion = [string](Get-MetadataValue -Container $hotfixMarkerInfo -Name 'version')
     if ($shippedMarkerVersion) {
@@ -5556,14 +5831,26 @@ function Format-MarkdownReport {
     $shipTagSubPatch   = if ($shippedInfoRender) { Get-SrSubPatchFromVersion -Version $shipTagVersion } else { 0 }
 
     if ($mode -eq 'candidate') {
+        $targetName = Get-MetadataValue -Container $ctx -Name 'targetSrBranch' -Default 'next SR'
+        $baselineName = Get-MetadataValue -Container $ctx -Name 'priorSrRef' -Default $ctx.priorSrBranch
+        if (Get-MetadataValue -Container $ctx -Name 'candidateBaselineMissingReason') {
+            $baselineName = if (Get-MetadataValue -Container $ctx -Name 'tagIndependent' -Default $false) {
+                'unavailable: preceding release branch not resolved'
+            } else { 'unavailable: no verified GA/prior stable tag' }
+        }
         if ($inherits) {
-            [void]$sb.AppendLine("# Release Readiness — CANDIDATE for next SR (main + inherited from $($ctx.priorSrBranch))")
+            [void]$sb.AppendLine("# Release Readiness — CANDIDATE for $targetName ($srBranch + inherited from $($ctx.priorSrBranch))")
             [void]$sb.AppendLine()
-            [void]$sb.AppendLine("> 🛫 **Pre-flight mode (cut-then-merge).** Surveying ``$srBranch`` (== main) PLUS commits inherited from prior SR ``$($ctx.priorSrBranch)`` (the SR will be cut from main, then have the prior SR merged into it).")
+            [void]$sb.AppendLine("> 🛫 **Pre-flight mode (cut-then-merge).** Surveying ``$srBranch`` PLUS commits inherited from prior SR ``$($ctx.priorSrBranch)``. Fix source: ``$mainBranchName``.")
         } else {
-            [void]$sb.AppendLine("# Release Readiness — CANDIDATE for next SR (vs $($ctx.priorSrBranch))")
+            [void]$sb.AppendLine("# Release Readiness — CANDIDATE for $targetName (vs $baselineName)")
             [void]$sb.AppendLine()
-            [void]$sb.AppendLine("> 🛫 **Pre-flight mode.** Surveying ``$srBranch`` (== main) against prior SR ``$($ctx.priorSrBranch)``. Shows what WOULD ship if we cut the next SR today.")
+            [void]$sb.AppendLine("> 🛫 **Pre-flight mode.** Selected contents: ``$srBranch``; baseline: ``$baselineName``; stable fix source: ``$mainBranchName``. Staged refs are not release cuts; integrate approved candidate content into the fix source before cutting the release.")
+        }
+        $integrationForHeader = Get-MetadataValue -Container $ctx -Name 'candidateIntegration'
+        if ($integrationForHeader -and $integrationForHeader.sourceOnlyCommitCount -gt 0) {
+            [void]$sb.AppendLine()
+            [void]$sb.AppendLine("> ⚠️ **Candidate/source synchronization required.** ``$mainBranchName`` has $($integrationForHeader.sourceOnlyCommitCount) commit(s) absent from ``$srBranch``. This selected-content inventory is **not the full prospective cut** from the fixes source.")
         }
     } else {
         [void]$sb.AppendLine("# Release Readiness — $srBranch")
@@ -5644,9 +5931,9 @@ function Format-MarkdownReport {
         $majorForShip = $null
         if ($vpForShipDate -and $vpForShipDate.Major) { $majorForShip = [int]$vpForShipDate.Major }
         $bumpInfoForShip = if ($null -ne $majorForShip) {
-            Get-MainBumpDateForCycle -CycleBase $cycleBaseForShip -MajorVersion $majorForShip
+            Get-MainBumpDateForCycle -CycleBase $cycleBaseForShip -MajorVersion $majorForShip -MainRef "origin/$mainBranchName"
         } else {
-            Get-MainBumpDateForCycle -CycleBase $cycleBaseForShip
+            Get-MainBumpDateForCycle -CycleBase $cycleBaseForShip -MainRef "origin/$mainBranchName"
         }
         if ($bumpInfoForShip) { $mainBumpDateForShip = $bumpInfoForShip.Date }
     }
@@ -5867,7 +6154,11 @@ function Format-MarkdownReport {
         [void]$sb.AppendLine("_The Candidate PR promotes a specific ``$($ctx.mainBranch)`` commit as the base for cutting **$srLabel$verLabel**. The SR branch can't be cut until it merges, so its status gates the whole cycle._")
         [void]$sb.AppendLine()
 
-        if ($cpr.mode -eq 'query-failed') {
+        if ($cpr.mode -eq 'integrated') {
+            [void]$sb.AppendLine("Selected ``$srBranch`` is already integrated into ``$mainBranchName``. The captain must still approve and cut the release from that fix source; no new Candidate PR is required for unchanged staged content.")
+            [void]$sb.AppendLine()
+        }
+        elseif ($cpr.mode -eq 'query-failed') {
             [void]$sb.AppendLine("> ⚠️ Could not query open PRs on ``$($ctx.mainBranch)`` (``gh pr list`` failed). Candidate-PR status is unavailable — verify ``gh auth status`` and rerun.")
             [void]$sb.AppendLine()
         }
@@ -6083,16 +6374,22 @@ function Format-MarkdownReport {
                 # main merge' row + /backport action, hiding the main PR.
                 $openMain = Select-OpenMainFixPr -CandidateFixPrs $r.candidateFixPrs -MainBranch $mainBranchName
                 if ($openMain) {
+                    $landingRoles = Get-MetadataValue -Container $Data.metadata -Name 'branchRoles'
+                    $configuredLanding = $landingRoles -and $landingRoles.configured -and $mode -ne 'shipped'
                     $prLink = "[#$($openMain.number)]($RepoUrl/pull/$($openMain.number))"
-                    $base = if ($openMain.baseRef) { "``$($openMain.baseRef)``" } else { '`main`' }
+                    $base = if ($openMain.baseRef) { "``$($openMain.baseRef)``" } else { "``$mainBranchName``" }
                     $postShipOpenFix = ($mode -eq 'shipped')
                     [void]$openFixRows.Add(@{
                         prCell  = $prLink
                         baseCell = $base
                         issCell = $issCell
-                        statusCell = if ($postShipOpenFix) { '🔵 OPEN — post-ship fix decision' } else { '🔵 OPEN — awaiting main merge' }
-                        actionCell = if ($mode -eq 'candidate') {
-                            'Watch for merge to main before the SR cut; rerun readiness after the release/...-srN branch is cut to get the exact backport command'
+                        statusCell = if ($postShipOpenFix) { '🔵 OPEN — post-ship fix decision' } elseif ($configuredLanding) {
+                            '🔵 OPEN — maintainer review and inflight landing'
+                        } else { "🔵 OPEN — awaiting $mainBranchName merge" }
+                        actionCell = if ($configuredLanding) {
+                            "After approval, a maintainer manually retargets this PR to $($landingRoles.inflightBranch) and merges there after final-base CI; do not merge the individual fix into $mainBranchName."
+                        } elseif ($mode -eq 'candidate') {
+                            "Watch for merge to $mainBranchName before the SR cut; rerun readiness after the release/...-srN branch is cut to get the exact backport command"
                         } elseif ($postShipOpenFix) {
                             "After merge, decide whether this warrants a hotfix to the shipped SR or should ride the next SR; no automatic current-SR backport applies."
                         } else {
@@ -6192,7 +6489,7 @@ function Format-MarkdownReport {
         [void]$sb.AppendLine()
         $inheritedCommitCount = [int](Get-MetadataValue -Container $sc -Name 'inheritedCommitCount' -Default 0)
         if ($inherits -and $inheritedCommitCount -gt 0) {
-            [void]$sb.AppendLine("- **From main** (since prior SR): $($sc.primaryCommitCount) commits / $($sc.primarySourcePrs.Count) source PRs")
+            [void]$sb.AppendLine("- **From $srBranch** (since baseline): $($sc.primaryCommitCount) commits / $($sc.primarySourcePrs.Count) source PRs")
             [void]$sb.AppendLine("- **Inherited from $($ctx.priorSrBranch)** (will be merged in after cut): $inheritedCommitCount commits / $($sc.inheritedSourcePrs.Count) source PRs")
             [void]$sb.AppendLine("- **Total source PRs** (deduplicated): **$($sc.sourcePrs.Count)** (see ``sr-source-prs.txt``)")
         } else {
@@ -6212,6 +6509,12 @@ function Format-MarkdownReport {
                 [void]$sb.AppendLine("| $rs | $rp | $rc | $ro |")
             }
         }
+        [void]$sb.AppendLine()
+    }
+    elseif (Get-MetadataValue -Container $Data -Name 'inventory') {
+        [void]$sb.AppendLine('## Release contents — NOT RUN')
+        [void]$sb.AppendLine()
+        [void]$sb.AppendLine((Get-MetadataValue -Container $Data.inventory -Name 'reason'))
         [void]$sb.AppendLine()
     }
 
@@ -6472,7 +6775,9 @@ function Add-SrNightlyFeedFreshness {
         $feedUrl = "https://dev.azure.com/dnceng/public/_artifacts/feed/$feed"
         $bandPrefix = '^' + [regex]::Escape($band) + '-'
 
-        $fresh = Resolve-NightlyDogfoodFreshness -Feed $feed -BandPrefixRegex $bandPrefix
+        $roles = Get-MetadataValue -Container $ctx -Name 'branchRoles'
+        $nightlyParameters = if ($roles) { Get-ReadinessNightlyParameters -Roles $roles -Major $major } else { @{} }
+        $fresh = Resolve-NightlyDogfoodFreshness -Feed $feed -BandPrefixRegex $bandPrefix @nightlyParameters
         if ($null -eq $fresh) { $fresh = @{ unknown = $true } }
 
         $buildType = [string](Get-NightlyFeedProp $fresh 'buildType')
@@ -6480,6 +6785,10 @@ function Add-SrNightlyFeedFreshness {
         $fresh['laneLabel'] = $laneLabel
         $fresh['feedUrl'] = $feedUrl
         $fresh['versionPrefix'] = $bandPrefix
+        if ($roles -and $roles.configured -and $buildType -ceq 'inflight' -and $nightlyParameters.Count) {
+            $fresh['branch'] = $roles.nightlyBranch
+            $fresh['laneLabel'] += " · ``$($roles.nightlyBranch)`` (feed evidence only, not signed-build proof)"
+        }
 
         # Capture ONE timestamp and reuse it for both the banner render and the semantic-hash
         # tier (Get-ReportSemanticHash reads $Data['nightlyFeedNow']) so the two can never
@@ -6494,14 +6803,18 @@ function Add-SrNightlyFeedFreshness {
         # $WarningPreference='Stop', where a bare Write-Warning would be promoted to a
         # terminating error inside the catch and escape, crashing the unattended job.
         Write-Warning "Nightly-feed freshness check failed (non-fatal): $($_.Exception.Message)" -WarningAction Continue
+        $Data['nightlyFeed'] = @{ unknown = $true; reason = $_.Exception.Message }
+        $Data['nightlyFeedNow'] = [DateTime]::UtcNow
+        $Data['nightlyFeedBanner'] = Format-NightlyFeedBanner -Freshness $Data['nightlyFeed'] -Now $Data['nightlyFeedNow']
     }
 }
 
 function Invoke-Main {
-    $excludes = $ExcludeBranches -split ',' | ForEach-Object { $_.Trim() } | Where-Object { $_ }
+    $excludes = if ($ExcludeBranches) { $ExcludeBranches -split ',' | ForEach-Object { $_.Trim() } | Where-Object { $_ } } else { @() }
     $ctx = Resolve-Context -SrBranch $SrBranch -Repo $Repo -MainBranch $MainBranch `
                            -ExcludeBranches $excludes -NoFetch:$NoFetch -Candidate:$Candidate `
-                           -InheritFromPriorSr:$InheritFromPriorSr -Shipped:$Shipped
+                           -InheritFromPriorSr:$InheritFromPriorSr -Shipped:$Shipped `
+                           -CandidateTargetBranch $CandidateTargetBranch -SurveyRef $SurveyRef -BaselineRef $BaselineRef
 
     # Resolve regression labels
     $labelMode = 'explicit'
@@ -6528,11 +6841,18 @@ function Invoke-Main {
     $ctx['phase'] = $Phase
     $ctx['contentsRef'] = $ctx.srRef
 
+    $baselineMissingReason = Get-MetadataValue -Container $ctx -Name 'candidateBaselineMissingReason'
     $data = @{
         metadata = $ctx
         warnings = @()
-        surveyIncomplete = ($Phase -ne 'all')
-        surveyIncompleteReason = if ($Phase -ne 'all') { "Partial survey (-Phase $Phase) did not query every readiness axis." } else { $null }
+        surveyIncomplete = ($Phase -ne 'all' -or [bool]$baselineMissingReason)
+        surveyIncompleteReason = (@(
+            if ($Phase -ne 'all') { "Partial survey (-Phase $Phase) did not query every readiness axis." }
+            $baselineMissingReason
+        ) | Where-Object { $_ }) -join ' '
+    }
+    if ($baselineMissingReason) {
+        $data['inventory'] = @{ status = 'not-run'; baselineRef = $null; reason = $baselineMissingReason }
     }
 
     # Shipped mode: prefer the GitHub Release publication time for the report's
@@ -6618,7 +6938,7 @@ function Invoke-Main {
         Add-SrNightlyFeedFreshness -Data $data
     }
 
-    if ($Phase -in 'all', 'commits', 'regressions') {
+    if (($Phase -in 'all', 'commits', 'regressions') -and -not $baselineMissingReason) {
         $srContents = Get-SrCommits -Ctx $ctx
         $data['srContents'] = $srContents
     }
@@ -6645,6 +6965,11 @@ function Invoke-Main {
     # questions as blocking items at the top of the report.
     if ($Phase -in 'all', 'commits', 'regressions', 'open-prs') {
         $data['shipChecks'] = Get-ReleaseShipChecks -Ctx $ctx
+    }
+    if ($baselineMissingReason) {
+        $data['shipChecks'] = @(Get-MetadataValue -Container $data -Name 'shipChecks' -Default @()) + @(New-ReadinessCheck `
+            -Area 'Candidate inventory baseline' -Status $(if ($ctx.tagIndependent) { 'UNKNOWN' } else { 'BLOCKED' }) -Details $baselineMissingReason `
+            -NextAction $(if ($ctx.tagIndependent) { 'Fetch the preceding GA/SR release branch snapshot or supply an independently verified source SHA; do not create a tag to advance progress.' } else { 'Fetch the real immutable GA/prior stable tag, or supply an independently verified -BaselineRef <verified-ref>, then regenerate the complete readiness report.' }))
     }
 
     # P/0-labelled open PRs targeting the SR branch are release blockers (SR-lane
@@ -6729,7 +7054,10 @@ function Invoke-Main {
         }
     }
 
-    if ($Phase -in 'all', 'regressions') {
+    if ($baselineMissingReason) {
+        $data['regressionScanIncomplete'] = $true
+        $data['regressionFailedLabels'] = @('(not run: candidate inventory baseline is unavailable)')
+    } elseif ($Phase -in 'all', 'regressions') {
         if ($labels.Count -eq 0) {
             Write-Warn "No regression labels provided/inferred; skipping regressions phase. Pass -RegressionLabels or -InferRegressionLabels."
             $data['regressions'] = @()
@@ -6795,9 +7123,9 @@ function Invoke-Main {
         $majorForJson = $null
         if ($vpForJson -and $vpForJson.Major) { $majorForJson = [int]$vpForJson.Major }
         $bumpInfoForJson = if ($null -ne $majorForJson) {
-            Get-MainBumpDateForCycle -CycleBase $cycleBaseForJson -MajorVersion $majorForJson
+            Get-MainBumpDateForCycle -CycleBase $cycleBaseForJson -MajorVersion $majorForJson -MainRef "origin/$($ctx.mainBranch)"
         } else {
-            Get-MainBumpDateForCycle -CycleBase $cycleBaseForJson
+            Get-MainBumpDateForCycle -CycleBase $cycleBaseForJson -MainRef "origin/$($ctx.mainBranch)"
         }
         if ($bumpInfoForJson) {
             $mainBumpDateForJson = $bumpInfoForJson.Date
@@ -6842,6 +7170,13 @@ function Invoke-Main {
 
             $commitsJson = $outputSrContents | ConvertTo-Json -Depth 10
             Set-Content -Path (Join-Path $OutputDir 'sr-commits.json') -Value $commitsJson -Encoding UTF8
+        } elseif ($baselineMissingReason) {
+            foreach ($name in @('sr-source-prs.txt', 'sr-commits.json')) {
+                $staleInventory = Join-Path $OutputDir $name
+                if (Test-Path -LiteralPath $staleInventory -PathType Leaf) {
+                    Remove-Item -LiteralPath $staleInventory
+                }
+            }
         }
         Write-Host "`nWrote outputs to: $OutputDir" -ForegroundColor Green
         Get-ChildItem $OutputDir | ForEach-Object { Write-Host "  $($_.Name) ($($_.Length) bytes)" }

@@ -14,7 +14,7 @@ public class Issue15154 : _IssuesUITest
 	public override string Issue => "iOS Flyout title is not broken over multiple lines when you rotate your screen";
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void ShouldFlyoutTextWrapsInLandscape()
 	{
 		App.WaitForElement("OpenFlyoutButton");

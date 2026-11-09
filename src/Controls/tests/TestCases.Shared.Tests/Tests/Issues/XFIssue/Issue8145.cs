@@ -13,7 +13,7 @@ public class Issue8145 : _IssuesUITest
 	public override string Issue => "Shell System.ObjectDisposedException: Cannot access a disposed object. Object name: Android.Support.Design.Widget.BottomSheetDialog";
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void Issue8145ShellToolbarDisposedException()
 	{
 		App.WaitForElement("More");

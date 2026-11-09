@@ -24,7 +24,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "[iOS] Tabbar Disappears with linker";
 
 		[Test]
-		[Category(UITestCategories.Shell)]
+		[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 		public void EnsureTabBarStaysVisibleAfterPoppingPage()
 		{
 			App.WaitForElement(GoForward);

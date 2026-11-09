@@ -179,7 +179,7 @@ public static class BindingCodeWriter
 			AppendHandlersArray(binding);
 			Append(")");
 			Unindent();
-			
+
 			// Only generate property setters for the properties indicated by the flags
 			AppendBindingPropertySetters(propertyFlags);
 			AppendLine(";");
@@ -318,6 +318,10 @@ public static class BindingCodeWriter
 			}
 
 			AppendLine(setter.AssignmentStatement);
+			foreach (var copyBackStatement in setter.CopyBackStatements)
+			{
+				AppendLine(copyBackStatement);
+			}
 
 			if (setter.PatternMatchingExpressions.Length > 0)
 			{
@@ -392,7 +396,7 @@ public static class BindingCodeWriter
 			AppendBlankLine();
 			AppendLine('{');
 			Indent();
-			
+
 			if (propertyFlags.HasFlag(BindingPropertyFlags.Mode))
 				AppendLine("Mode = mode,");
 			if (propertyFlags.HasFlag(BindingPropertyFlags.Converter))
@@ -407,7 +411,7 @@ public static class BindingCodeWriter
 				AppendLine("FallbackValue = fallbackValue,");
 			if (propertyFlags.HasFlag(BindingPropertyFlags.TargetNullValue))
 				AppendLine("TargetNullValue = targetNullValue,");
-			
+
 			Unindent();
 			Append('}');
 		}
@@ -437,14 +441,14 @@ public static class BindingCodeWriter
 					bool isLastPart = member.Equals(binding.Path.Last());
 					bool needsGetterForLastPart = binding.RequiresAllUnsafeGetters;
 
-					if (member.IsGetterInaccessible && (!isLastPart || needsGetterForLastPart))
+					if (!member.IsGetterAccessible && (!isLastPart || needsGetterForLastPart))
 					{
 						// we don't need the unsafe getter if the item is the very last part of the path
 						// because we don't need to access its value while constructing the handlers array
 						AppendUnsafePropertyGetAccessors(member.MemberName, member.MemberType.GlobalName, member.ContainingType.GlobalName);
 					}
 
-					if (member.IsSetterInaccessible && isLastPart && binding.SetterOptions.IsWritable)
+					if (!member.IsSetterAccessible && isLastPart && binding.SetterOptions.IsWritable)
 					{
 						// We only need the unsafe setter if the item is the very last part of the path
 						AppendUnsafePropertySetAccessors(member.MemberName, member.MemberType.GlobalName, member.ContainingType.GlobalName);

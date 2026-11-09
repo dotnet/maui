@@ -19,6 +19,7 @@ namespace Microsoft.Maui.Controls.Platform
 		View _content;
 		object _previousDataContext;
 		Shell _shell;
+		bool _updatingVisualState;
 		ShellView ShellView => _shell.Handler?.PlatformView as ShellView;
 
 		public ShellFlyoutItemView()
@@ -66,7 +67,13 @@ namespace Microsoft.Maui.Controls.Platform
 
 			var element = bo as Element;
 			_shell = element?.FindParentOfType<Shell>();
-			DataTemplate dataTemplate = (_shell as IShellController)?.GetFlyoutItemDataTemplate(bo);
+
+			// Resolve the application supplied template through the same public contract external backends use.
+			// A null result means the application did not supply one, so fall back to the default flyout item cell.
+			DataTemplate dataTemplate = null;
+
+			if (bo != null && _shell != null)
+				dataTemplate = Shell.ResolveFlyoutItemTemplate(_shell, bo) ?? BaseShellItem.CreateDefaultFlyoutItemCell(bo);
 
 			if (bo != null)
 				bo.PropertyChanged += ShellElementPropertyChanged;
@@ -148,9 +155,19 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void UpdateVisualState()
 		{
-			if (_content?.BindingContext is BaseShellItem baseShellItem)
+			if (_updatingVisualState || _content?.BindingContext is not BaseShellItem baseShellItem)
 			{
+				return;
+			}
+
+			try
+			{
+				_updatingVisualState = true;
 				VisualStateManager.GoToState(_content, baseShellItem.IsChecked ? "Selected" : "Normal", force: true);
+			}
+			finally
+			{
+				_updatingVisualState = false;
 			}
 		}
 

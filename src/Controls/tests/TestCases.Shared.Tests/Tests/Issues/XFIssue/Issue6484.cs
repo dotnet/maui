@@ -13,7 +13,7 @@ public class Issue6484 : _IssuesUITest
 	public override string Issue => "[iOS] Shell - Go back two pages crashes the app with a NullReferenceException";
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void RemovingIntermediatePagesBreaksShell()
 	{
 		App.WaitForElementTillPageNavigationSettled("Success");

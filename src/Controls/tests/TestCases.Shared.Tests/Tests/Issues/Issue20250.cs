@@ -15,7 +15,7 @@ public class Issue20250 : _IssuesUITest
 	{ }
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void VerifySearchHandlerClearPlaceholderIconColor()
 	{
 		App.WaitForElement("label");

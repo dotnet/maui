@@ -9,6 +9,15 @@ BeforeAll {
         throw ($parseErrors | ForEach-Object { $_.Message }) -join [Environment]::NewLine
     }
 
+    $declarationFunction = $ast.Find({
+        $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+        $args[0].Name -eq 'Get-CSharpDeclarationEndLine'
+    }, $true)
+    if (-not $declarationFunction) {
+        throw "Function 'Get-CSharpDeclarationEndLine' not found"
+    }
+    Invoke-Expression $declarationFunction.Extent.Text
+
     $platformFunction = $ast.Find({
         $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
         $args[0].Name -eq 'Test-DeviceTestFileAppliesToPlatform'
@@ -72,6 +81,26 @@ public class QualifiedHelpers
         $deletedFile = Join-Path $TestDrive 'DeletedTests.cs'
 
         Test-CsFileHasTestMethods -RelativePath $deletedFile | Should -BeFalse
+    }
+}
+
+Describe 'Detect-TestsInDiff Foldable unit tests' {
+    It 'maps Foldable tests to the current unit test project' {
+        $repoRoot = Resolve-Path (Join-Path $PSScriptRoot '..' '..' '..')
+        $changedFile = 'src/Controls/Foldable/test/FoldableRegionHelperTests.cs'
+
+        Push-Location $repoRoot
+        try {
+            $tests = @(& $scriptPath -ChangedFiles $changedFile)
+        } finally {
+            Pop-Location
+        }
+
+        $test = $tests | Select-Object -First 1
+        $test.Type | Should -Be 'UnitTest'
+        $test.Project | Should -Be 'Controls.Foldable.UnitTests'
+        $test.ProjectPath | Should -Be 'src/Controls/Foldable/test/Controls.Foldable.UnitTests.csproj'
+        $test.Runner | Should -Be 'dotnet-test'
     }
 }
 

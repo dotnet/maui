@@ -23,8 +23,6 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 
 		const string s_company = "Microsoft";
 
-		const string s_versionPropsFile = "eng/Versions.props";
-
 		[Theory]
 		[MemberData(nameof(References))]
 		public void AssemblyTitle(string assemblyName)
@@ -40,34 +38,28 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			Assembly testAssembly = System.Reflection.Assembly.Load(assemblyName);
 			Version actual = testAssembly.GetName().Version;
 			// Currently we keep the assembly verison at 10.0.0.0
-			Assert.Equal(10, actual.Major);
+			Assert.Equal(11, actual.Major);
 			Assert.Equal(0, actual.Minor);
 			Assert.Equal(0, actual.Build);
 			Assert.Equal(0, actual.Revision);
 		}
 
-		// [Theory]
-		// [MemberData(nameof(References))]
-		// public void FileVersion(string assemblyName)
-		// {
-		// 	Assembly testAssembly = System.Reflection.Assembly.Load(assemblyName);
-		// 	FileVersionInfo actual = FileVersionInfo.GetVersionInfo(testAssembly.Location);
-		// 	string versionString = GetFileFromRoot(s_versionPropsFile);
-		// 	//TODO read MajorVersion from Versions.props
-		// 	var xml = new System.Xml.XmlDocument();
-		// 	xml.LoadXml(versionString);
-		// 	var majorString = xml.SelectSingleNode("//MajorVersion").InnerText;
-		// 	var minorString = xml.SelectSingleNode("//MinorVersion").InnerText;
-		// 	Version expected = Version.Parse($"{majorString}.{minorString}.0.0");
-		// 	Assert.Equal(expected.Major, actual.FileMajorPart);
-		// 	Assert.Equal(expected.Minor, actual.FileMinorPart);
-		// 	// Fails locally
-		// 	//Assert.Equal(expected.Build, actual.FileBuildPart);
-		// 	//We need to enable this
-		// 	//	Assert.Equal(ThisAssembly.Git.Commits, version.FilePrivatePart);
-		// 	Assert.Equal(s_productName, actual.ProductName);
-		// 	Assert.Equal(s_company, actual.CompanyName);
-		// }
+		[Theory]
+		[MemberData(nameof(References))]
+		public void FileVersion(string assemblyName)
+		{
+			// Arcade uses a sentinel for local builds and a build-derived version for CI.
+			// Embed the evaluated version so this also works in a source-free Helix payload.
+			var metadata = Assert.Single(typeof(AssemblyInfoTests).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>(),
+				attribute => attribute.Key == "ExpectedFileVersion");
+			Version expected = Version.Parse(metadata.Value);
+			Assembly testAssembly = System.Reflection.Assembly.Load(assemblyName);
+			FileVersionInfo actual = FileVersionInfo.GetVersionInfo(testAssembly.Location);
+			Assert.Equal(expected.Major, actual.FileMajorPart);
+			Assert.Equal(expected.Minor, actual.FileMinorPart);
+			Assert.Equal(expected.Build, actual.FileBuildPart);
+			Assert.Equal(expected.Revision, actual.FilePrivatePart);
+		}
 
 		[Theory]
 		[MemberData(nameof(References))]
@@ -86,7 +78,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			if (!string.IsNullOrEmpty(helixPayload))
 			{
 				var normalizedFile = file.Replace('\\', '/');
-				
+
 				// The MSBuild test files are copied to msbuild/ in the Helix payload
 				// Map paths like "src/Controls/tests/Xaml.UnitTests/MSBuild/X" to "msbuild/X"
 				var msbuildPrefix = "src/Controls/tests/Xaml.UnitTests/MSBuild/";
@@ -97,7 +89,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 					if (File.Exists(helixPath))
 						return helixPath;
 				}
-				
+
 				// Files from src/ folder are in the "src" correlation payload
 				// Map paths like "src/Controls/src/Build.Tasks/nuget/..." directly to "src/..." in payload
 				if (normalizedFile.StartsWith("src/", StringComparison.OrdinalIgnoreCase))
@@ -148,7 +140,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		{
 			if (string.IsNullOrEmpty(searchDirectory))
 				return null;
-			
+
 			if (File.Exists(IOPath.Combine(searchDirectory, "Microsoft.Maui.sln")))
 				return searchDirectory;
 
@@ -158,7 +150,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			var parent = Directory.GetParent(searchDirectory);
 			if (parent == null)
 				return null;
-				
+
 			return GetTopDirRecursive(parent.FullName, --maxSearchDepth);
 		}
 

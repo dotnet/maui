@@ -15,7 +15,7 @@ public class Issue29824 : _IssuesUITest
 
 
 	[Test, Order(1)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void ShellAppearanceUpdatesWhenChangingShellSectionToTab_1()
 	{
 		App.WaitForElement("HomePageButton");
@@ -26,7 +26,7 @@ public class Issue29824 : _IssuesUITest
 	}
 
 	[Test, Order(2)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void ShellAppearanceUpdatesWhenChangingShellSectionToTab_2()
 	{
 		App.WaitForElement("Settings");
@@ -42,7 +42,7 @@ public class Issue29824 : _IssuesUITest
 	}
 
 	[Test, Order(3)]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void ShellAppearanceUpdatesWhenChangingBetweenTabs()
 	{
 		App.WaitForElement("SettingsPageButton");

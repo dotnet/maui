@@ -1,6 +1,5 @@
-# Pipeline for running GitHub Copilot PR Reviewer Agent
-# This pipeline installs the Copilot CLI and invokes the PR reviewer agent
-# to conduct automated code reviews on pull requests.
+# Pipeline for full /review and existing-test-only /review gate.
+# Full review remains the default; gate-only runs do not invoke Copilot.
 #
 # For more information, see:
 # https://github.com/dotnet/maui/wiki/PR-Reviewer-Agent
@@ -24,6 +23,10 @@ parameters:
       - catalyst
       - windows
 
+  - name: GateOnly
+    displayName: 'Verify existing PR tests only'
+    type: boolean
+    default: false
 
   - name: androidPool
     type: object
@@ -36,7 +39,7 @@ parameters:
     default:
       name: AcesShared
       demands:
-        - ImageOverride -equals ACES_VM_SharedPool_Tahoe
+        - ImageOverride -equals $(AcesMacImageOverride)
 
   - name: macPool
     type: object
@@ -78,6 +81,17 @@ variables:
     value: 150
 
 stages:
+- ${{ if eq(parameters.GateOnly, true) }}:
+  - template: pr-review-gate.yml
+    parameters:
+      PRNumber: ${{ parameters.PRNumber }}
+      Platform: ${{ parameters.Platform }}
+      GateTaskTimeoutMinutes: ${{ variables.GateTaskTimeoutMinutes }}
+      androidPool: ${{ parameters.androidPool }}
+      iosPool: ${{ parameters.iosPool }}
+      macPool: ${{ parameters.macPool }}
+      windowsPool: ${{ parameters.windowsPool }}
+- ${{ else }}:
   - stage: ReviewPR
     displayName: 'Review Pull Request'
     jobs:
@@ -184,8 +198,8 @@ stages:
                 exit 0
               fi
               # Validate BEFORE echoing/using to avoid any injection via the ref.
-              if ! [[ "${BASE_REF}" =~ ^(main|net[0-9]+\.0|inflight/[a-z0-9][a-z0-9._-]*|release/[0-9]+\.[0-9]+\.[0-9]+xx(-[a-z0-9.]+)?)$ ]]; then
-                echo "##vso[task.logissue type=error]The Copilot PR reviewer only supports PRs targeting 'main', a 'netN.0' branch, an 'inflight/*' branch, or a 'release/*' servicing branch. This PR's base branch is not supported, so the review cannot run: no workloads/SDK band or safe merge-base can be derived for that base."
+              if ! [[ "${BASE_REF}" =~ ^(main|net[0-9]+(\.0)?|inflight/[a-z0-9][a-z0-9._-]*|candidate/[1-9][0-9]*\.0\.[1-9][0-9]*xx-sr[1-9][0-9]*|release/[0-9]+\.[0-9]+\.[0-9]+xx(-[a-z0-9.]+)?)$ ]]; then
+                echo "##vso[task.logissue type=error]The Copilot PR reviewer only supports main, netN/netN.0, versioned candidate, inflight, or release targets. No workloads/SDK band or safe merge-base can be derived for this unsupported target."
                 exit 1
               fi
               echo "PR #${PARAM_PR_NUMBER} base branch '${BASE_REF}' is supported by the reviewer."
@@ -263,9 +277,20 @@ stages:
 
               # Allowlist: only ever switch to a known protected base branch.
               # Validate BEFORE echoing/using to avoid any injection via the ref.
-              if ! [[ "${BASE_REF}" =~ ^(main|net[0-9]+\.0|inflight/[a-z0-9][a-z0-9._-]*|release/[0-9]+\.[0-9]+\.[0-9]+xx(-[a-z0-9.]+)?)$ ]]; then
-                echo "##vso[task.logissue type=error]Unexpected PR base branch (expected main, netN.0, inflight/*, or release/*). Refusing to switch."
+              if ! [[ "${BASE_REF}" =~ ^(main|net[0-9]+(\.0)?|inflight/[a-z0-9][a-z0-9._-]*|candidate/[1-9][0-9]*\.0\.[1-9][0-9]*xx-sr[1-9][0-9]*|release/[0-9]+\.[0-9]+\.[0-9]+xx(-[a-z0-9.]+)?)$ ]]; then
+                echo "##vso[task.logissue type=error]Unexpected PR base branch (expected main, netN/netN.0, versioned candidate, inflight, or release). Refusing to switch."
                 exit 1
+              fi
+              LITERAL_NET_PATTERN='^net[0-9]+$'
+              VERSIONED_INFLIGHT_PATTERN='^inflight/[0-9]+\.0\.[0-9]+xx-sr[0-9]+$'
+              if [[ "${BASE_REF}" =~ $LITERAL_NET_PATTERN || "${BASE_REF}" == candidate/* || "${BASE_REF}" =~ $VERSIONED_INFLIGHT_PATTERN ]]; then
+                PROTECTED=$(curl -fsSL -H "Authorization: Bearer ${GH_TOKEN}" -H "Accept: application/vnd.github+json" \
+                  "https://api.github.com/repos/dotnet/maui/branches/${BASE_REF}" \
+                  | python3 -c "import sys,json;print(str(json.load(sys.stdin)['protected']).lower())") || exit 1
+                if [ "${PROTECTED}" != true ]; then
+                  echo "##vso[task.logissue type=error]The new servicing/staging target must have branch protection before credential-bearing provisioning can run. Refusing to switch."
+                  exit 1
+                fi
               fi
               echo "PR #${PARAM_PR_NUMBER} targets base branch: ${BASE_REF}"
 
@@ -858,7 +883,7 @@ stages:
                   cp "$ADB_KEY_PUB" "$AVD_DIR/adbkey.pub"
                   echo "ADB key pre-authorized for emulator"
                 fi
-                
+
                 echo "=== Starting Emulator ==="
                 # Kill ALL stale emulator processes from previous step retries
                 for STALE_PID in $(pgrep -f "qemu-system" 2>/dev/null || true); do
@@ -873,7 +898,7 @@ stages:
                 adb kill-server 2>/dev/null || true
                 sleep 1
                 adb start-server
-                
+
                 # Retry loop: emulator sometimes fails to connect ADB on first launch
                 MAX_LAUNCH_ATTEMPTS=2
                 EMULATOR_PID=""
@@ -897,7 +922,7 @@ stages:
                   nohup emulator -avd Emulator_30 -gpu swiftshader_indirect -no-window -no-snapshot -no-audio -no-boot-anim -partition-size 2048 > /tmp/emulator.log 2>&1 &
                   EMULATOR_PID=$!
                   echo "Emulator PID: $EMULATOR_PID"
-                  
+
                   echo "Waiting for emulator device (adb wait-for-device, 120s timeout)..."
                   # Intentionally UNGUARDED (no `|| true`): this step has no `set -e`, so a non-zero
                   # exit (124 on timeout) does NOT abort — the `if [ $? -eq 0 ]` below drives the
@@ -1109,7 +1134,7 @@ stages:
           # UITest.cs picks ios-26 baseline when platformVersion starts with "26."
           - bash: |
               echo "=== Booting iOS Simulator ==="
-              
+
               # Pin the RUN to iOS 26.4 — the OS the ios-26 visual baselines were captured
               # on (PR #35061). The build SDK is newer (26.5, required by the net11 workload)
               # and its matching runtime is installed only so actool can compile; the app
@@ -1219,14 +1244,14 @@ stages:
                 echo "##vso[task.setvariable variable=DEVICE_UDID]"
                 exit 0
               fi
-              
+
               # Look for iPhone Xs (matches UI test baselines - required for snapshot tests)
               UDID=$(xcrun simctl list devices available --json | jq -r --arg rt "$RUNTIME" '
                 .devices[$rt] // [] |
                 map(select(.name == "iPhone Xs")) |
                 .[0].udid // empty
               ')
-              
+
               # If iPhone Xs doesn't exist, try iPhone 11 Pro (same 1125×2436 resolution)
               if [ -z "$UDID" ]; then
                 UDID=$(xcrun simctl list devices available --json | jq -r --arg rt "$RUNTIME" '
@@ -1240,7 +1265,7 @@ stages:
               else
                 echo "Found existing iPhone Xs: $UDID"
               fi
-              
+
               # If neither exists, try to create the right-size device. The selected
               # $RUNTIME can be a Ready-on-disk-but-unenrolled runtime that 'simctl create'
               # rejects with "Invalid runtime" (build 14686795, #36507 ios: create iPhone 11
@@ -1353,17 +1378,17 @@ stages:
                   ')
                 fi
               fi
-              
+
               if [ -z "$UDID" ]; then
                 # GRACEFUL DEGRADE (see the no-runtime branch above): a runtime exists but no
-                # iPhone device could be found or created. Don't nuke the whole review — warn
+                # iPhone device could be found or created. Don't fail the whole review — warn
                 # and continue without a simulator; the Gate self-degrades to INCONCLUSIVE and
                 # the expert review (Task 3) still runs.
                 echo "##vso[task.logissue type=warning]No iOS simulator could be found or created — continuing review WITHOUT a booted simulator (Gate iOS verification INCONCLUSIVE; expert review + deep stage still run)."
                 echo "##vso[task.setvariable variable=DEVICE_UDID]"
                 exit 0
               fi
-              
+
               # Shutdown any other booted simulators to avoid Appium connecting to wrong device
               xcrun simctl list devices booted --json | jq -r '
                 .devices | to_entries | map(.value) | flatten |
@@ -1373,14 +1398,14 @@ stages:
                 echo "Shutting down other simulator: $OTHER_UDID"
                 xcrun simctl shutdown "$OTHER_UDID" 2>/dev/null || true
               done
-              
+
               echo "Booting simulator: $UDID"
               xcrun simctl boot "$UDID" 2>/dev/null || echo "Simulator may already be booted"
               sleep 10
-              
+
               echo "Booted simulators:"
               xcrun simctl list devices booted
-              
+
               echo "##vso[task.setvariable variable=DEVICE_UDID]$UDID"
               echo "iOS Simulator UDID: $UDID"
             displayName: 'Boot iOS Simulator'
@@ -1594,7 +1619,7 @@ stages:
               if [ "$SETUP_RESULT" = "COMPLETED" ] && {
                 ! [[ "$REVIEWED_PR_HEAD_SHA" =~ ^[0-9a-fA-F]{40}$ ]] ||
                 ! [[ "$REVIEWED_BASE_SHA" =~ ^[0-9a-fA-F]{40}$ ]] ||
-                ! [[ "$REVIEWED_BASE_REF" =~ ^(main|net[0-9]+\.0|inflight/[a-z0-9][a-z0-9._-]*|release/[0-9]+\.[0-9]+\.[0-9]+xx(-[a-z0-9.]+)?)$ ]];
+                ! [[ "$REVIEWED_BASE_REF" =~ ^(main|net[0-9]+(\.0)?|inflight/[a-z0-9][a-z0-9._-]*|candidate/[1-9][0-9]*\.0\.[1-9][0-9]*xx-sr[1-9][0-9]*|release/[0-9]+\.[0-9]+\.[0-9]+xx(-[a-z0-9.]+)?)$ ]];
               }; then
                 echo "##vso[task.logissue type=error]Setup completed without a valid immutable review snapshot."
                 SETUP_RESULT="FAILED"
@@ -2169,7 +2194,7 @@ stages:
               BASE_REF="${REVIEWED_BASE_REF}"
               BASE_SHA="${REVIEWED_BASE_SHA}"
               PR_HEAD_SHA="${REVIEWED_PR_HEAD_SHA}"
-              if ! [[ "${BASE_REF}" =~ ^(main|net[0-9]+\.0|inflight/[a-z0-9][a-z0-9._-]*|release/[0-9]+\.[0-9]+\.[0-9]+xx(-[a-z0-9.]+)?)$ ]]; then
+              if ! [[ "${BASE_REF}" =~ ^(main|net[0-9]+(\.0)?|inflight/[a-z0-9][a-z0-9._-]*|candidate/[1-9][0-9]*\.0\.[1-9][0-9]*xx-sr[1-9][0-9]*|release/[0-9]+\.[0-9]+\.[0-9]+xx(-[a-z0-9.]+)?)$ ]]; then
                 echo "##vso[task.logissue type=error]Trusted Setup output did not contain a valid PR base branch."
                 exit 1
               fi
@@ -2815,7 +2840,7 @@ stages:
               BASE_REF="${REVIEWED_BASE_REF}"
               BASE_SHA="${REVIEWED_BASE_SHA}"
               PR_HEAD_SHA="${REVIEWED_PR_HEAD_SHA}"
-              if ! [[ "${BASE_REF}" =~ ^(main|net[0-9]+\.0|inflight/[a-z0-9][a-z0-9._-]*|release/[0-9]+\.[0-9]+\.[0-9]+xx(-[a-z0-9.]+)?)$ ]] ||
+              if ! [[ "${BASE_REF}" =~ ^(main|net[0-9]+(\.0)?|inflight/[a-z0-9][a-z0-9._-]*|candidate/[1-9][0-9]*\.0\.[1-9][0-9]*xx-sr[1-9][0-9]*|release/[0-9]+\.[0-9]+\.[0-9]+xx(-[a-z0-9.]+)?)$ ]] ||
                  ! [[ "${BASE_SHA}" =~ ^[0-9a-fA-F]{40}$ ]] ||
                  ! [[ "${PR_HEAD_SHA}" =~ ^[0-9a-fA-F]{40}$ ]] ||
                  ! git cat-file -e "${BASE_SHA}^{commit}" 2>/dev/null ||
@@ -2825,7 +2850,7 @@ stages:
               fi
               # Mirror trusted Setup's immutable snapshot semantics only after
               # provisioning and build-task steps have released DOTNET_TOKEN.
-              if [[ "${BASE_REF}" == inflight/* ]]; then
+              if [[ "${BASE_REF}" == inflight/* ]] || [[ "${BASE_REF}" == candidate/* || "${BASE_REF}" == net11 ]]; then
                 git checkout -b deep-uitests-pr-${{ parameters.PRNumber }} "${PR_HEAD_SHA}"
                 if git merge --no-edit "${BASE_SHA}"; then
                   echo "Merged immutable ${BASE_REF}@${BASE_SHA:0:7} into reviewed PR head"

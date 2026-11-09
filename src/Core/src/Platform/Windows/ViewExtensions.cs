@@ -398,11 +398,21 @@ namespace Microsoft.Maui.Platform
 				return;
 			}
 
-			var isTabStop = control.IsTabStop;
+			var isTabStopBinding = control.GetBindingExpression(Control.IsTabStopProperty)?.ParentBinding;
+			var isTabStopLocalValue = control.ReadLocalValue(Control.IsTabStopProperty);
+			if (isTabStopBinding is not null)
+				control.ClearValue(Control.IsTabStopProperty);
+
 			control.IsTabStop = false;
 			control.IsEnabled = false;
 			control.IsEnabled = true;
-			control.IsTabStop = isTabStop;
+
+			if (isTabStopBinding is not null)
+				control.SetBinding(Control.IsTabStopProperty, isTabStopBinding);
+			else if (isTabStopLocalValue is bool localValue)
+				control.IsTabStop = localValue;
+			else
+				control.ClearValue(Control.IsTabStopProperty);
 		}
 
 		internal static IWindow? GetHostedWindow(this IView? view)

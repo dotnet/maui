@@ -5365,6 +5365,31 @@ $md = Format-MarkdownReport -Data $mdData -RepoUrl 'https://github.com/dotnet/ma
                             -TrackerKey 'net10-sr7' -MaxBodyBytes 60000
 Assert-Eq -Label "ordinary report omits active-hotfix marker" -Expected $false `
     -Actual ($md -match 'release-readiness-hotfix:')
+$configuredInbound = $mdData.Clone()
+$configuredInbound.metadata = $mdData.metadata.Clone()
+$configuredInbound.metadata.mainBranch = 'net11'
+$configuredInbound.metadata.mode = 'candidate'
+$configuredInbound.metadata.priorSrBranch = $null
+$configuredInbound.metadata.priorSrRef = '11.0.0'
+$configuredInbound.metadata.targetSrBranch = 'release/11.0.1xx-sr1'
+$configuredInbound.metadata.nextSr = 1
+$configuredInbound.metadata.branchRoles = @{
+    configured = $true; inflightBranch = 'inflight/11.0.1xx-sr2'
+}
+$configuredInbound.regressions = @(@{
+    issue = 35003; title = 'Open fix under review'; state = 'OPEN'; classification = 'open-on-main'
+    candidateFixPrs = @(@{ number = 35103; baseRef = 'net11'; state = 'OPEN' })
+    recommendedAction = 'Review and manually retarget to inflight'
+})
+$configuredInbound.summary = @{ 'open-on-main' = 1 }
+$configuredInboundText = Format-MarkdownReport -Data $configuredInbound -RepoUrl 'https://github.com/dotnet/maui' `
+    -TrackerKey 'net11-sr1' -MaxBodyBytes 60000
+Assert-Eq -Label "configured populated inbound table directs manual inflight landing" -Expected $true `
+    -Actual ($configuredInboundText -match 'maintainer manually retargets this PR to inflight/11\.0\.1xx-sr2')
+Assert-Eq -Label "configured populated inbound table forbids direct net11 fix merge" -Expected $true `
+    -Actual ($configuredInboundText -match 'do not merge the individual fix into net11')
+Assert-Eq -Label "configured populated inbound table omits obsolete net11 merge instructions" -Expected $false `
+    -Actual ($configuredInboundText -match 'awaiting net11 merge|Watch for merge to net11')
 $internalMdData = $mdData.Clone()
 $internalMdData['ci'] = @{
     overall = 'green'
@@ -6510,7 +6535,9 @@ function Build-VersionsPropsXml {
         # Optional servicing-flip fields. When $null, the element is omitted
         # (mirrors a freshly-cut SR branch that hasn't been flipped yet).
         [string]$PreReleaseVersionLabel,
-        [string]$StabilizePackageVersion
+        [string]$StabilizePackageVersion,
+        [switch]$BranchDerivedLabels,
+        [switch]$AutomaticStabilization
     )
     $labelLine = if ($null -ne $PreReleaseVersionLabel) {
         "    <PreReleaseVersionLabel>$PreReleaseVersionLabel</PreReleaseVersionLabel>`n"
@@ -6518,13 +6545,35 @@ function Build-VersionsPropsXml {
     $stabilizeLine = if ($null -ne $StabilizePackageVersion) {
         "    <StabilizePackageVersion Condition=`"'`$(StabilizePackageVersion)' == ''`">$StabilizePackageVersion</StabilizePackageVersion>`n"
     } else { "" }
+    $centralWiring = ''
+    if ($BranchDerivedLabels) {
+        Import-Module (Join-Path $PSScriptRoot '../../../../eng/scripts/MauiReleaseConfiguration.psm1') -Force
+        $conditions = & (Get-Module MauiReleaseConfiguration) {
+            Get-MauiBranchLabelCondition -Label ci.inflight
+            Get-MauiBranchLabelCondition -Label servicing
+        }
+        $labelLine = "    <PreReleaseVersionLabel>ci.main</PreReleaseVersionLabel>`n" +
+            "    <PreReleaseVersionLabel Condition=`"$($conditions[0])`">ci.inflight</PreReleaseVersionLabel>`n" +
+            "    <PreReleaseVersionLabel Condition=`"$($conditions[1])`">servicing</PreReleaseVersionLabel>`n"
+        if ($AutomaticStabilization) {
+            $expression = & (Get-Module MauiReleaseConfiguration) { Get-MauiStabilizationDefault }
+            $stabilizeLine = "    <StabilizePackageVersion Condition=`"'`$(StabilizePackageVersion)' == ''`">$expression</StabilizePackageVersion>`n"
+        }
+        $centralWiring = @"
+    <SdkBandVersion>$Major.$Minor.100</SdkBandVersion>
+    <PreReleaseVersionIteration></PreReleaseVersionIteration>
+    <IsServicingBuild Condition="'`$(PreReleaseVersionLabel)' == 'servicing'">true</IsServicingBuild>
+    <DotNetFinalVersionKind Condition="'`$(StabilizePackageVersion)' == 'true'">release</DotNetFinalVersionKind>
+
+"@
+    }
     @"
 <Project>
   <PropertyGroup>
     <MajorVersion>$Major</MajorVersion>
     <MinorVersion>$Minor</MinorVersion>
     <PatchVersion>$Patch</PatchVersion>
-$labelLine$stabilizeLine  </PropertyGroup>
+$labelLine$stabilizeLine$centralWiring  </PropertyGroup>
 </Project>
 "@
 }
@@ -6605,6 +6654,49 @@ function Get-CheckByAreaPrefix {
     param($Checks, [string]$Prefix)
     @($Checks | Where-Object { $_.Area.StartsWith($Prefix) }) | Select-Object -First 1
 }
+
+$centralSource = @{ Major=10; Minor=0; Patch=90; BranchDerivedLabels=$true; StabilizePackageVersion='false' }
+$centralStable = Invoke-ShipChecksWithMockedVersions `
+    -SrVersion @{ Major=10; Minor=0; Patch=80; BranchDerivedLabels=$true; StabilizePackageVersion='true' } `
+    -MainVersion $centralSource
+$centralStableCheck = Get-CheckByAreaPrefix -Checks $centralStable -Prefix 'Versions.props servicing flip'
+Assert-Eq -Label 'Central labels: reviewed stable metadata is valid despite the literal ci.main default' `
+    -Expected READY -Actual $centralStableCheck.Status
+Assert-Eq -Label 'Central labels: report explains effective SR label without claiming artifact proof' `
+    -Expected $true -Actual ($centralStableCheck.Details -match 'branch-derived.*not signed-artifact')
+$centralPending = Invoke-ShipChecksWithMockedVersions `
+    -SrVersion @{ Major=10; Minor=0; Patch=80; BranchDerivedLabels=$true; StabilizePackageVersion='false' } `
+    -MainVersion $centralSource
+$centralPendingCheck = Get-CheckByAreaPrefix -Checks $centralPending -Prefix 'Versions.props servicing flip'
+Assert-Eq -Label 'Central labels: automatic servicing label does not bypass stabilization review' `
+    -Expected BLOCKED -Actual $centralPendingCheck.Status
+Assert-Eq -Label 'Central labels: pending guidance preserves all three conditions' `
+    -Expected $true -Actual ($centralPendingCheck.NextAction -match 'Preserve.*all three branch-label')
+Assert-Eq -Label 'Central labels: pending guidance does not delete nightly conditions' `
+    -Expected $false -Actual ($centralPendingCheck.NextAction -match 'remove the nightly')
+$centralShipped = Invoke-ShipChecksWithMockedVersions `
+    -SrVersion @{ Major=10; Minor=0; Patch=80; BranchDerivedLabels=$true; StabilizePackageVersion='true' } `
+    -MainVersion $centralSource -Shipped
+Assert-Eq -Label 'Central labels: immutable shipped-tag metadata remains valid' `
+    -Expected READY -Actual (Get-CheckByAreaPrefix -Checks $centralShipped -Prefix 'Versions.props servicing flip').Status
+$automaticSource = @{ Major=10; Minor=0; Patch=90; BranchDerivedLabels=$true; AutomaticStabilization=$true }
+$automaticChecks = Invoke-ShipChecksWithMockedVersions `
+    -SrVersion @{ Major=10; Minor=0; Patch=80; BranchDerivedLabels=$true; AutomaticStabilization=$true } `
+    -MainVersion $automaticSource
+$automaticCheck = Get-CheckByAreaPrefix -Checks $automaticChecks -Prefix 'Versions.props servicing flip'
+Assert-Eq -Label 'Automatic stabilization: SR defaults are ready without a separate flip' `
+    -Expected READY -Actual $automaticCheck.Status
+Assert-Eq -Label 'Automatic stabilization: report does not request a redundant PR' `
+    -Expected $true -Actual ($automaticCheck.Details -match 'No separate stabilization PR')
+Assert-Eq -Label 'Automatic stabilization: configuration is not signed/publication evidence' `
+    -Expected $true -Actual ($automaticCheck.Details -match 'not signed-artifact or publication proof')
+Assert-Eq -Label 'Automatic stabilization: development source remains next-cycle CI' `
+    -Expected READY -Actual (Get-CheckByAreaPrefix -Checks $automaticChecks -Prefix 'Main bumped').Status
+$automaticShipped = Invoke-ShipChecksWithMockedVersions `
+    -SrVersion @{ Major=10; Minor=0; Patch=80; BranchDerivedLabels=$true; AutomaticStabilization=$true } `
+    -MainVersion $automaticSource -Shipped
+Assert-Eq -Label 'Automatic stabilization: immutable published configuration is supported' `
+    -Expected READY -Actual (Get-CheckByAreaPrefix -Checks $automaticShipped -Prefix 'Versions.props servicing flip').Status
 
 # Scenario 1: SR8 in-flight, main STILL at same cycle (10.0.80) — BLOCKED
 $checks1 = Invoke-ShipChecksWithMockedVersions `
@@ -12034,6 +12126,46 @@ Assert-Eq -Label "hash: rendered shipCheck Details change → DIFFERENT" `
     -Expected $false -Actual ($hGuidanceBase -eq (Get-ReportSemanticHash -Data $guidanceDifferentDetails -Verdict $guidanceV))
 Assert-Eq -Label "hash: rendered regression title change → DIFFERENT" `
     -Expected $false -Actual ($hGuidanceBase -eq (Get-ReportSemanticHash -Data $guidanceDifferentTitle -Verdict $guidanceV))
+
+Write-Host "`n[Unit] SR nightly provenance requires constrained configured inflight evidence" -ForegroundColor Cyan
+$nfProvOriginalVersions = (Get-Item function:Get-VersionsPropsState).ScriptBlock
+$nfProvOriginalResolve = (Get-Item function:Resolve-NightlyDogfoodFreshness).ScriptBlock
+$nfProvOriginalParameters = (Get-Item function:Get-ReadinessNightlyParameters).ScriptBlock
+$nfProvOriginalLoaded = $Script:NightlyFeedHelperLoaded
+try {
+    $Script:NightlyFeedHelperLoaded = $true
+    function Get-VersionsPropsState { param($Ref) @{ Major=10; Patch=80 } }
+    function Get-ReadinessNightlyParameters {
+        param($Roles,$Major)
+        if ($Roles.configured -and $script:nfProvenanceConstrained) {
+            @{ InflightPrefixRegex='^10\.0\.80-ci\.inflight\.'; RequireInflight=$true }
+        } else { @{} }
+    }
+    function Resolve-NightlyDogfoodFreshness { @{} + $script:nfProvenanceFresh }
+    foreach ($case in @(
+        @{ configured=$false; type='band'; constrained=$false; expected=$false },
+        @{ configured=$false; type='inflight'; constrained=$false; expected=$false },
+        @{ configured=$true; type='band'; constrained=$true; expected=$false },
+        @{ configured=$true; type='inflight'; constrained=$false; expected=$false },
+        @{ configured=$true; type='inflight'; constrained=$true; expected=$true }
+    )) {
+        $script:nfProvenanceConstrained = $case.constrained
+        $script:nfProvenanceFresh = if ($case.type -eq 'inflight') { $rInf } else { $rPrev }
+        $data = @{ metadata=@{ srRef='release/10.0.1xx-sr8'; branchRoles=@{
+            configured=$case.configured; nightlyBranch='inflight/current'
+        } } }
+        Add-SrNightlyFeedFreshness -Data $data
+        Assert-Eq -Label "Nightly branch provenance: configured=$($case.configured), type=$($case.type), constrained=$($case.constrained)" `
+            -Expected $case.expected -Actual $data.nightlyFeed.ContainsKey('branch')
+        Assert-Eq -Label "Nightly label provenance: configured=$($case.configured), type=$($case.type), constrained=$($case.constrained)" `
+            -Expected $case.expected -Actual ($data.nightlyFeed.laneLabel -match 'inflight/current')
+    }
+} finally {
+    Set-Item function:Get-VersionsPropsState $nfProvOriginalVersions
+    Set-Item function:Resolve-NightlyDogfoodFreshness $nfProvOriginalResolve
+    Set-Item function:Get-ReadinessNightlyParameters $nfProvOriginalParameters
+    $Script:NightlyFeedHelperLoaded = $nfProvOriginalLoaded
+}
 
 # ───── Engine-level fail-open under WarningPreference=Stop ─────
 # The helper's inner catch is hardened, but the SR engine's OUTER catch in

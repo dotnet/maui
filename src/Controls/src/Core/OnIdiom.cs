@@ -84,8 +84,10 @@ namespace Microsoft.Maui.Controls
 				return onIdiom._isTVSet ? onIdiom.TV : (onIdiom._isDefaultSet ? onIdiom.Default : default(T));
 			else if (idiom == DeviceIdiom.Watch)
 				return onIdiom._isWatchSet ? onIdiom.Watch : (onIdiom._isDefaultSet ? onIdiom.Default : default(T));
-			else
+			else if (idiom == DeviceIdiom.Phone)
 				return onIdiom._isPhoneSet ? onIdiom.Phone : (onIdiom._isDefaultSet ? onIdiom.Default : default(T));
+			else
+				return onIdiom._isDefaultSet ? onIdiom.Default : default(T);
 		}
 
 		object IWrappedValue.Value => (T)this;

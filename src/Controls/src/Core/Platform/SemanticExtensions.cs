@@ -23,5 +23,24 @@ namespace Microsoft.Maui.Controls.Platform
 			tapGestureRecognizer = null;
 			return false;
 		}
+
+		internal static bool HasAccessibleLongPressGesture(this View virtualView) =>
+			HasAccessibleLongPressGesture(virtualView, out _);
+
+		internal static bool HasAccessibleLongPressGesture(
+			this View virtualView,
+			[NotNullWhen(true)] out LongPressGestureRecognizer? longPressGestureRecognizer)
+		{
+			foreach (var gesture in virtualView.GestureRecognizers)
+			{
+				if (gesture is LongPressGestureRecognizer lpgr)
+				{
+					longPressGestureRecognizer = lpgr;
+					return true;
+				}
+			}
+			longPressGestureRecognizer = null;
+			return false;
+		}
 	}
 }

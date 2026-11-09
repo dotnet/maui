@@ -25,7 +25,8 @@ namespace Microsoft.Maui.Controls
 
 		public bool TryGetSource([MaybeNullWhen(false)] out TSource source)
 		{
-			if (_source is not null && _source.TryGetTarget(out source))
+			var sourceReference = _source;
+			if (sourceReference is not null && sourceReference.TryGetTarget(out source))
 			{
 				return source is not null;
 			}
@@ -36,7 +37,8 @@ namespace Microsoft.Maui.Controls
 
 		public bool TryGetHandler([MaybeNullWhen(false)] out TEventHandler handler)
 		{
-			if (_handler is not null && _handler.TryGetTarget(out handler))
+			var handlerReference = _handler;
+			if (handlerReference is not null && handlerReference.TryGetTarget(out handler))
 			{
 				return handler is not null;
 			}
@@ -253,6 +255,51 @@ namespace Microsoft.Maui.Controls
 
 				if (s is PathGeometry pathGeometry)
 					pathGeometry.InvalidatePathGeometryRequested -= OnGeometryChanged;
+			}
+
+			base.Unsubscribe();
+		}
+	}
+
+	class WeakBrushChangedProxy : WeakEventProxy<Brush, EventHandler>
+	{
+		void OnBrushChanged(object? sender, EventArgs e)
+		{
+			if (TryGetHandler(out var handler))
+			{
+				handler(sender, e);
+			}
+			else
+			{
+				Unsubscribe();
+			}
+		}
+
+		public override void Subscribe(Brush source, EventHandler handler)
+		{
+			if (TryGetSource(out var s))
+			{
+				s.PropertyChanged -= OnBrushChanged;
+
+				if (s is GradientBrush g)
+					g.InvalidateGradientBrushRequested -= OnBrushChanged;
+			}
+
+			source.PropertyChanged += OnBrushChanged;
+			if (source is GradientBrush gradientBrush)
+				gradientBrush.InvalidateGradientBrushRequested += OnBrushChanged;
+
+			base.Subscribe(source, handler);
+		}
+
+		public override void Unsubscribe()
+		{
+			if (TryGetSource(out var s))
+			{
+				s.PropertyChanged -= OnBrushChanged;
+
+				if (s is GradientBrush g)
+					g.InvalidateGradientBrushRequested -= OnBrushChanged;
 			}
 
 			base.Unsubscribe();
