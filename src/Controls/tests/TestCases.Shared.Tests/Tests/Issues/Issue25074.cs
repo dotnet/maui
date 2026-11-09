@@ -14,12 +14,19 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Button)]
 		public void ButtonResizesWhenTitleOrImageChanges()
 		{
+			Exception? exception = null;
+
 			App.WaitForElement("Button1");
-			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "Original");
+			VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "Original");
 			App.Tap("Button1");
-			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "Altered");
+			VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "Altered");
 			App.Tap("Button1");
-			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "Original");
+			VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "Original");
+
+			if (exception is not null)
+			{
+				throw exception;
+			}
 		}
 	}
 }

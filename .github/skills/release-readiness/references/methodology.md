@@ -2,6 +2,67 @@
 
 This document captures the deterministic algorithms used by the SR and Preview readiness engines, including **the eight gotchas** discovered through real release analysis and the Preview **consumer-installability gate**.
 
+## Active-train role resolution
+
+`ReleaseBranchRoles.ps1` calls the trusted
+`Get-ReleaseRolloverPlan.ps1 -ResolveStateOnly` validator and reuses shared
+per-major source resolution. Only the matching configured train adopts the
+new roles: .NET11 fixes `net11`, selected SR1 contents
+`candidate/11.0.1xx-sr1`, future SR2 `inflight/11.0.1xx-sr2`, features
+on `main` (.NET12). A release is cut from approved `net11` **after**
+candidate integration; daily forward flow is `net11 → main`.
+
+Individual fix PRs start against `net11` for review. After approval, a maintainer
+manually changes the base to the active versioned inflight branch and merges
+there. Bots never change the base or merge fixes. Required CI validates the
+final base. A merged fix on inflight but not yet on net11 is expected staged
+content; selected candidate promotion, not a direct individual-fix merge,
+establishes release integration ancestry.
+
+The five detection lanes retain historical release/tag semantics. Configured
+current-candidate detection is state-driven, including pre-GA bootstrap:
+feature-main's major, maximum retained branch suffix, or absent GA tags never
+make the current candidate disappear. Configured SR1 uses the first GA branch
+`release/<band>`; later cycles use the preceding SR release branch. Each baseline
+and content source is pinned to a full SHA. Tags are manual release metadata and
+cannot gate, advance or retire servicing progress. No SR0/prior tag is invented.
+Without a preceding branch, reporting remains visible with **UNKNOWN / NOT RUN**
+inventory and regression classification. No zero inventory or source-PR export
+is inferred. Invalid explicit revisions and wrong versions still fail.
+Missing required refs/metadata fail explicitly rather than producing a clean
+inventory. Candidate contents and source ancestry use different coordinates.
+The engine also checks ancestry in both directions. `candidateIntegration`
+distinguishes aligned, source-ahead, candidate-ahead and diverged histories;
+source-only commits require an explicit synchronization WATCH. Candidate-only
+inventory cannot certify the eventual source-branch cut when it omits fixes.
+No union or merge result is invented.
+
+Individual fixing commits determine source ancestry; an unrelated candidate-only
+child does not make an already-integrated fix disappear. Managed candidates from
+`github-actions[bot]` require the exact Bot identity, same-repository configured
+head/base, and production management marker; other non-maintainer candidates
+remain excluded. Revision overrides accept one validated Git revision, never
+additional arguments or ranges. Existing ad-hoc Preview/RC surveys remain valid.
+
+Preview reports read selected-nightly version metadata once through the live
+repository content helper, not a stale local tracking ref. Only configured,
+constrained inflight feed evidence receives branch provenance; an unconfigured
+major's band-only fallback is not attributed to a retained branch.
+
+Candidates retain CI/non-stable settings and include the upcoming version in
+both bug-template dropdowns. After candidate integration, create-once
+`automation/release-lanes/<band>-srN` receipts let the workflow recover the exact
+release cut, distinct net11 CI child, next pair and separate draft servicing PR
+targeting the release branch. The stable flip is not a candidate commit; signing
+waits for its reviewed release-branch merge. Receipts do not advance canonical
+`currentSr`/`nightlyMode`; readiness continues using the reviewed state.
+
+The compatibility JSON names `mainBranch`, `onMain`, `open-on-main`, and
+`merged-on-main-no-backport` refer to the **resolved fixes source**, not
+necessarily literal main. The .NET10 examples below intentionally retain their
+historical branch names. For an active .NET11 operation substitute the reported
+fix source, never flow .NET12 features backwards.
+
 ## Gotcha #1: Cherry-Pick Number Swap
 
 ### The trap
@@ -89,7 +150,8 @@ Only `high` evidence produces an automatic classification; `medium`/`low` falls 
 
 A PR shows `state: MERGED` and a maintainer might assume the fix is on `main` and just needs a backport. But MAUI uses multiple long-lived branches:
 
-- `main` — current stable / shipped line
+- `net11` — configured .NET11 fixes / release-cut source
+- `main` — next-major (.NET12) features; historical .NET10 examples used main as their source
 - `inflight/current` — next iteration (post-SR)
 - `release/10.0.1xx-srN` — current SR
 
@@ -102,7 +164,8 @@ gh pr view 35609 --json baseRefName,mergedAt,mergeCommit
 
 ### The fix
 
-Don't trust `state: MERGED`. Resolve the merge commit and check ancestry against `main`:
+Don't trust `state: MERGED`. Resolve the merge commit and check ancestry against
+the reported fixes source (`main` in this historical .NET10 example):
 
 ```bash
 mergeSha=$(gh pr view $pr --json mergeCommit | jq -r .mergeCommit.oid)
@@ -117,14 +180,17 @@ The skill records `onMain`, `onInflight`, `onSr` independently. A PR can be merg
 
 ### The trap
 
-Do not treat a merged PR or an open SR fix branch as a backport candidate. A backport starts from a **merged source PR whose merge commit is on `main`**. Triggering the automation before that point is skipped; triggering it for `merged-non-main-only` bypasses the required mainline fix.
+Do not treat a merged PR or an open SR fix branch as a backport candidate. A
+backport starts from a **merged source PR whose merge commit is on the resolved
+fixes source** (`net11` for active .NET11). Triggering it for
+`merged-non-main-only` bypasses required source-ancestry verification.
 
 ### The automated path
 
 Confirm all of these first:
 
 1. Source PR state is `MERGED`.
-2. Its merge commit is an ancestor of `origin/main`.
+2. Its merge commit is an ancestor of `origin/<resolved-fixes-source>`.
 3. No OPEN or MERGED backport PR already targets the SR branch.
 
 Post this exact comment on the merged source PR:
@@ -162,7 +228,7 @@ Open the resulting PR against the SR branch, keep the generated branch/title con
 
 ### The trap
 
-A release branch cut from `main` normally retains CI versioning. Green CI does
+A release branch cut from the fixes source normally retains CI versioning. Green CI does
 not prove the branch will produce stable packages: it must use
 `PreReleaseVersionLabel=servicing` and `StabilizePackageVersion=true`.
 
@@ -189,24 +255,25 @@ transition:
 + <StabilizePackageVersion Condition="'$(StabilizePackageVersion)' == ''">true</StabilizePackageVersion>
 ```
 
-Keep the `main` version bump in its own `main` PR. After the servicing PR
+Keep the fixes-source version bump in its own source-targeted PR (`net11` for
+the configured train, `main` in the historical .NET10 examples). After the servicing PR
 merges, rerun final CI at the new SR HEAD. The report is advisory only: it
 must recommend this PR workflow, never edit a release branch directly.
 
-## Gotcha #6: Next-Cycle Main PatchVersion Bump
+## Gotcha #6: Next-Cycle Fixes-Source PatchVersion Bump
 
 ### The trap
 
-Cutting an SR branch does not automatically move `main` to the next release
-cycle. If both refs keep the same `PatchVersion`, new work merged to `main`
+Cutting an SR branch does not automatically move the fixes source to the next release
+cycle. If both refs keep the same `PatchVersion`, new work merged to that source
 continues to identify itself as part of the SR that is about to ship.
 
 Do not solve this by copying the release branch's servicing settings back to
-`main`. The two transitions are independent:
+the fixes source. The two transitions are independent:
 
 - The SR branch keeps its current `PatchVersion` and switches to
   `servicing`/stable package production.
-- `main` keeps `ci.main`/prerelease package production and advances only its
+- The fixes source keeps `ci.main`/prerelease package production and advances only its
   `PatchVersion`.
 
 ### Historical pattern
@@ -226,7 +293,8 @@ were unchanged in each PR.
 
 After `release/<major>.0.1xx-sr<N>` is cut and before SR<N> ships:
 
-1. Open a focused PR targeting `main`.
+1. Open a focused PR targeting the resolved fixes source (`net11` for the
+   configured train); moving feature-main to .NET12 does not clear this check.
 2. Change only `eng/Versions.props`:
 
    ```diff
@@ -236,7 +304,7 @@ After `release/<major>.0.1xx-sr<N>` is cut and before SR<N> ships:
 
 3. Title it `Update PatchVersion from <current> to <(N+1)*10>`.
 4. Keep `SdkBandVersion`, `PreReleaseVersionLabel=ci.main`, and
-   `StabilizePackageVersion=false` unchanged unless the main branch's
+   `StabilizePackageVersion=false` unchanged unless the fixes source's
    mainline settings are themselves misconfigured.
 5. Keep the PR separate from the SR servicing-flip PR and merge it before
    shipping the current SR.
@@ -247,11 +315,11 @@ For SR9 → SR10, that means changing only
 `Update PatchVersion from 90 to 100`.
 
 The readiness report must emit these instructions when the check is blocked,
-with one conditional variant: when `main` is already misconfigured for a
+with one conditional variant: when the fixes source is already misconfigured for a
 servicing/stable build (for example, `PreReleaseVersionLabel=servicing` or
 `StabilizePackageVersion=true`), the report instead instructs restoring
 `PreReleaseVersionLabel=ci.main` and `StabilizePackageVersion=false` in the
-same PR. It remains report-only and must not edit or push `main`.
+same PR. It remains report-only and must not edit or push the source branch.
 
 ## Gotcha #7: Default-Channel → Per-Build Feed → Ship Assessment
 
@@ -324,7 +392,8 @@ or identifiers into a public issue.
 Checking only one manually supplied build ID is also insufficient. A net11
 preview decision has two independent official-build surfaces:
 
-- `refs/heads/net11.0`, the survey/inflight source.
+- The configured active nightly lane, or the resolved per-major source for an
+  unconfigured historical train (historically `net11.0`).
 - The specific `refs/heads/release/11.0.1xx-previewN` branch, when it exists.
 
 A green release-branch build does not compensate for a red inflight build, and
@@ -338,7 +407,7 @@ formatting separate:
 
 1. Before any Azure invocation, skip when `GITHUB_ACTIONS=true` or the major is
    not net11.
-2. Build a unique ref list containing `net11.0` and, when it exists, the
+2. Build a unique ref list containing the resolved source/nightly lane and, when it exists, the
    evaluated release branch.
 3. Query a bounded, server-ordered window of definition-1095 builds independently
    for each ref. Prefer the newest build at exact branch HEAD, then any candidate

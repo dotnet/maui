@@ -28,14 +28,21 @@ public class TabbedPageFeatureTests : _GalleryUITest
 	[Test, Order(2)]
 	public void TabbedPage_InitialState_VerifyFunctionalState()
 	{
+		Exception? exception = null;
+
 		App.WaitForElement("TAB 3");
 		App.Tap("TAB 3");
 		App.WaitForElement("Tab3Label");
-		VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_1");
+		VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "_1");
 		App.WaitForElement("TAB 4");
 		App.Tap("TAB 4");
 		App.WaitForElement("Tab4Label");
-		VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_2");
+		VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "_2");
+
+		if (exception is not null)
+		{
+			throw exception;
+		}
 	}
 #endif
 
@@ -191,6 +198,8 @@ public class TabbedPageFeatureTests : _GalleryUITest
 	[Test, Order(13)]
 	public void TabbedPage_SelectedAndUnselectedTabColor_Verify()
 	{
+		Exception? exception = null;
+
 		App.WaitForElement("Options");
 		App.Tap("Options");
 		App.WaitForElement("PurpleSelectedButton");
@@ -200,10 +209,15 @@ public class TabbedPageFeatureTests : _GalleryUITest
 		App.WaitForElement("ApplyButton");
 		App.Tap("ApplyButton");
 		App.WaitForElement("Tab1Label");
-		VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_1");
+		VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "_1");
 		App.WaitForElement("TAB 2");
 		App.Tap("TAB 2");
-		VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_2");
+		VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "_2");
+
+		if (exception is not null)
+		{
+			throw exception;
+		}
 	}
 #endif
 
