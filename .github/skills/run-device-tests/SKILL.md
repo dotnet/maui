@@ -41,6 +41,8 @@ Android SDK licenses must already be accepted.
 In Azure CI, SDK package preparation uses the shared `Install-AndroidSdkPackage.ps1`
 policy: at most five attempts per package, with partial-download cleanup between
 attempts. SDK discovery must match the selected SDK before any package changes.
+Preparation restores originally absent SDK-user/temp variables as absent, not
+empty; native Android tools interpret empty temp paths as filesystem-root paths.
 Local startup still invokes `sdkmanager` once; tests and emulator boot are not retried.
 Android cleanup derives its executable from the configured SDK and rejects a
 persisted executable path that differs from that SDK's adb.

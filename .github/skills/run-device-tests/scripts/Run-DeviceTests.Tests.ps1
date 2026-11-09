@@ -530,7 +530,7 @@ Describe 'CI Android SDK provisioning' {
     BeforeEach {
         $savedExitCode = $global:LASTEXITCODE
         $savedEnvironment = @{}
-        foreach ($name in @('TF_BUILD', 'ANDROID_SDK_ROOT', 'ANDROID_HOME')) {
+        foreach ($name in @('TF_BUILD', 'ANDROID_SDK_ROOT', 'ANDROID_HOME', 'ANDROID_USER_HOME', 'TMPDIR', 'TMP', 'TEMP')) {
             $savedEnvironment[$name] = [Environment]::GetEnvironmentVariable($name)
         }
         $root = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
@@ -594,7 +594,12 @@ Describe 'CI Android SDK provisioning' {
         $global:LASTEXITCODE = $savedExitCode
         Remove-Variable -Name MauiNativeSdkTestState -Scope Global
         foreach ($name in $savedEnvironment.Keys) {
-            [Environment]::SetEnvironmentVariable($name, $savedEnvironment[$name])
+            if ($null -eq $savedEnvironment[$name]) {
+                if (Test-Path -LiteralPath "Env:$name") { Remove-Item -LiteralPath "Env:$name" }
+            }
+            else {
+                [Environment]::SetEnvironmentVariable($name, $savedEnvironment[$name])
+            }
         }
     }
 
@@ -633,5 +638,31 @@ Describe 'CI Android SDK provisioning' {
         { & $starterPath -Platform android -ApiVersion 33 -ResultsDirectory $results -DeviceDirectory $devices } |
             Should -Throw '*must resolve the selected SDK*'
         $installedPackages.Count | Should -Be 0
+    }
+
+    It 'preserves temp environment presence after SDK preparation (present=<Present>)' -TestCases @(
+        @{ Present = $false }, @{ Present = $true }
+    ) {
+        param($Present)
+        $temporaryDirectory = Join-Path $root 'original-temp'
+        [IO.Directory]::CreateDirectory($temporaryDirectory) | Out-Null
+        foreach ($name in @('ANDROID_USER_HOME', 'TMPDIR', 'TMP', 'TEMP')) {
+            if ($Present) {
+                [Environment]::SetEnvironmentVariable($name, $temporaryDirectory)
+            }
+            elseif (Test-Path -LiteralPath "Env:$name") {
+                Remove-Item -LiteralPath "Env:$name"
+            }
+        }
+
+        { & $starterPath -Platform android -ApiVersion 33 -ResultsDirectory $results -DeviceDirectory $devices } |
+            Should -Throw '*SDK packages ready*'
+
+        foreach ($name in @('ANDROID_USER_HOME', 'TMPDIR', 'TMP', 'TEMP')) {
+            (Test-Path -LiteralPath "Env:$name") | Should -Be $Present
+            if ($Present) {
+                [Environment]::GetEnvironmentVariable($name) | Should -Be $temporaryDirectory
+            }
+        }
     }
 }
