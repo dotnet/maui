@@ -798,11 +798,26 @@ namespace Microsoft.Maui.Platform
 				{
 					case SwipeDirection.Left:
 					case SwipeDirection.Right:
-						_contentView.Animate()?.TranslationX(offset)?.SetDuration(swipeAnimationDuration);
+						if (animated)
+							_contentView.Animate()?.TranslationX(offset)?.SetDuration(swipeAnimationDuration);
+						else
+						{
+							// A zero-duration animator needs a frame to run, so it can still be
+							// pending when the view is detached right after a programmatic open,
+							// keeping the view tree alive; apply the value directly instead
+							_contentView.Animate()?.Cancel();
+							_contentView.TranslationX = offset;
+						}
 						break;
 					case SwipeDirection.Up:
 					case SwipeDirection.Down:
-						_contentView.Animate()?.TranslationY(offset)?.SetDuration(swipeAnimationDuration);
+						if (animated)
+							_contentView.Animate()?.TranslationY(offset)?.SetDuration(swipeAnimationDuration);
+						else
+						{
+							_contentView.Animate()?.Cancel();
+							_contentView.TranslationY = offset;
+						}
 						break;
 				}
 			}
