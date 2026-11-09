@@ -367,15 +367,14 @@ stages:
       arch: ARM64
 
     # CoreCLR test variants - ARM64 (Apple Silicon) lanes
-    # .NET 12 iOS requires Xcode 27.1, which only the pay-as-you-go GitHub-hosted xcode-27 image has so far.
     - name: mac_runios_maui_debug_coreclr_arm64
-      pool:
-        name: GitHub-hosted Agents
-        vmImage: xcode-27
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:  
+        pool: ${{ parameters.MacOSPool.internal }}
       timeout: 45
       testName: RunOniOS_MauiDebug_CoreCLR
       arch: ARM64
-      xcodeVersion: '27.1'
 
     - name: mac_runios_maui_release_coreclr_arm64
       ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
