@@ -936,7 +936,7 @@ public class ResizetizerTests : BaseBuildTest
 
 	static bool SupportsAppleIconComposer(string platform)
 	{
-		if (!DotNetCurrent.StartsWith("net11.", StringComparison.OrdinalIgnoreCase))
+		if (!DotNetCurrent.StartsWith("net12.", StringComparison.OrdinalIgnoreCase))
 			return false;
 
 		var packsDirectory = Path.Combine(TestEnvironment.GetMauiDirectory(), ".dotnet", "packs");

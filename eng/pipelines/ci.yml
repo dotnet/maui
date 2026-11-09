@@ -257,16 +257,6 @@ stages:
         pool: ${{ parameters.MacOSPool.internal }}
       timeout: 240
       testCategory: Build
-      testFilter: 'Category=Build&DisplayName!~net10.0'
-    # The .NET 10 compatibility workload requires Xcode 26.5, not the app SDK's Xcode 27.
-    - name: mac_buildtemplate_previous_tests
-      pool:
-        name: Azure Pipelines
-        vmImage: macOS-26
-      timeout: 240
-      testCategory: Build
-      testFilter: 'Category=Build&DisplayName~net10.0'
-      xcodeVersion: '26.5'
 
     - name: win_blazortemplate_tests
       ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
@@ -323,7 +313,7 @@ stages:
 
     # Android template integration tests (maui + maui-blazor build/install/run on emulator).
     # Runs the Android templates with their default BuildProps across the supported .NET
-    # versions (net10/net11); the lane doesn't pin UseMonoRuntime, so it exercises whatever
+    # versions (net11/net12); the lane doesn't pin UseMonoRuntime, so it exercises whatever
     # the template default runtime is for each version rather than asserting a specific runtime.
     - name: linux_runandroid_tests
       pool: ${{ parameters.AndroidPoolLinux }}
