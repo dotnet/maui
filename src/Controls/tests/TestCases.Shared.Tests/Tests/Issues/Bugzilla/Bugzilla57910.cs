@@ -23,9 +23,25 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			for (int i = 0; i < 10; i++)
 			{
 				App.WaitForElement(ButtonId, timeout: TimeSpan.FromSeconds(45));
-				App.Tap(ButtonId);
+				TapNavigationButton(ButtonId);
 				App.WaitForElement(Button2Id, timeout: TimeSpan.FromSeconds(45));
-				App.Tap(Button2Id);
+				TapNavigationButton(Button2Id);
+			}
+
+			App.WaitForElement(ButtonId, timeout: TimeSpan.FromSeconds(45));
+		}
+
+		void TapNavigationButton(string automationId)
+		{
+			if (App is ICatalystApp)
+			{
+				// The fixture intentionally updates during navigation; don't wait for XCTest idle.
+				var rect = App.FindElement(automationId).GetRect();
+				App.TapCoordinates(rect.CenterX(), rect.CenterY());
+			}
+			else
+			{
+				App.Tap(automationId);
 			}
 		}
 	}

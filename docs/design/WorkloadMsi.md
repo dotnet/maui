@@ -12,6 +12,19 @@ MAUI uses the arcade `CreateVisualStudioWorkload` MSBuild task (from `Microsoft.
 
 The output flows into the VS insertion pipeline, which installs MAUI workload packs via the VS installer.
 
+## Manifest Installer Versions
+
+For `Microsoft.NET.Sdk.Maui.Manifest-11.0.100`, the MSI version is
+`(product major + 100).minor.patch`: `11.0.0` becomes `111.0.0` and `11.0.10`
+becomes `111.0.10`, above the previously shipped RC2 version `88.0.61402`.
+The band guard preserves existing numbering for older bands and previews.
+
+Explicit `MsiVersion` overrides take precedence. Public, NuGet, component and
+drop versions and SDK dependencies are unchanged. Assigned versions skip the
+legacy encoder; calculated MSI major/minor must fit `255` and patch `0..65535`,
+or the build fails. Signed Windows artifacts and a Visual Studio upgrade still
+require validation.
+
 ## WiX 6 Migration (completed in .NET 11)
 
 As of .NET 11, MAUI uses **WiX 6** (wix.exe CLI) instead of WiX 3 (candle.exe/light.exe). This migration was inspired by [dotnet/android#11743](https://github.com/dotnet/android/pull/11743) and follows the pattern from the `Xamarin.yaml-templates` `convert-v5/convert.proj`.

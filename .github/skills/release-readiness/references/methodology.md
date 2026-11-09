@@ -22,8 +22,13 @@ establishes release integration ancestry.
 The five detection lanes retain historical release/tag semantics. Configured
 current-candidate detection is state-driven, including pre-GA bootstrap:
 feature-main's major, maximum retained branch suffix, or absent GA tags never
-make the current candidate disappear. SR1 requires an actual GA baseline
-tag or an explicitly verified `-BaselineRef`; no SR0/prior tag is invented.
+make the current candidate disappear. Configured SR1 uses the first GA branch
+`release/<band>`; later cycles use the preceding SR release branch. Each baseline
+and content source is pinned to a full SHA. Tags are manual release metadata and
+cannot gate, advance or retire servicing progress. No SR0/prior tag is invented.
+Without a preceding branch, reporting remains visible with **UNKNOWN / NOT RUN**
+inventory and regression classification. No zero inventory or source-PR export
+is inferred. Invalid explicit revisions and wrong versions still fail.
 Missing required refs/metadata fail explicitly rather than producing a clean
 inventory. Candidate contents and source ancestry use different coordinates.
 The engine also checks ancestry in both directions. `candidateIntegration`

@@ -77,8 +77,8 @@
     <PackageReference Include="Microsoft.WixToolset.Util.wixext" GeneratePathProperty="true" PrivateAssets="all" />
   </ItemGroup>
 
-    <Target Name="_SetMsiVersionFromNuGetVersion" >
-    <!-- If %(MsiVersion) is not already set, and the manifest package is for a stable SDK band, use the NuGet package version as the MSI version -->
+  <Target Name="_SetMsiVersionFromNuGetVersion" >
+    <!-- Stable SDK bands use the NuGet version unless the major offset below applies. Explicit MSI versions take precedence. -->
     <!-- If %(UseNuGetVersionAsMsiVersion) is set to 'true', use the NuGet package version as the MSI version -->
     <ItemGroup>
       <WorkloadPackages Condition="'%(WorkloadPackages.Identity)' == '%(Identity)' and '%(WorkloadPackages.MsiVersion)' == ''" >
@@ -86,9 +86,22 @@
         <NupkgVersion>$([System.Version]::Parse('%(WorkloadPackages.Version)').Major).$([System.Version]::Parse('%(WorkloadPackages.Version)').Minor).$([System.Version]::Parse('%(WorkloadPackages.Version)').Build)</NupkgVersion>
           <!-- Do not attempt to use NuGet package version for already released 6.0.4xx packages -->
         <IsNet6Manifest>$([System.String]::Copy('%(WorkloadPackages.Identity)').Contains('Manifest-6.0.4'))</IsNet6Manifest>
+        <!-- Add 100 to outrank shipped previews; MSI major max 255 limits product major to 155 (255 - 100).
+             Scope this to the affected band so older bands retain their shipped numbering. -->
+        <UseNet11MsiVersionMajorOffset>$([System.Text.RegularExpressions.Regex]::IsMatch('%(WorkloadPackages.Filename)', `^Microsoft\.NET\.Sdk\.Maui\.Manifest-11\.0\.100\.`))</UseNet11MsiVersionMajorOffset>
       </WorkloadPackages>
+    </ItemGroup>
+    <Error
+        Condition="'%(WorkloadPackages.MsiVersion)' == '' and '%(WorkloadPackages.UseNet11MsiVersionMajorOffset)' == 'true' and
+          ($([System.Version]::Parse('%(WorkloadPackages.Version)').Major) &gt; 155 or
+           $([System.Version]::Parse('%(WorkloadPackages.Version)').Minor) &gt; 255 or
+           $([System.Version]::Parse('%(WorkloadPackages.Version)').Build) &lt; 0 or
+           $([System.Version]::Parse('%(WorkloadPackages.Version)').Build) &gt; 65535)"
+        Text="Cannot generate MSI version for '%(WorkloadPackages.Identity)' from '%(WorkloadPackages.Version)': (major + 100).minor.patch must have major/minor at most 255 and patch from 0 to 65535." />
+    <ItemGroup>
       <WorkloadPackages Condition="'%(WorkloadPackages.Identity)' == '%(Identity)' and '%(WorkloadPackages.MsiVersion)' == ''" >
-        <MsiVersion Condition="'%(WorkloadPackages.IsNet6Manifest)' != 'true' and ('%(WorkloadPackages.SdkBandPreviewMatch)' == '' or '%(WorkloadPackages.UseNuGetVersionAsMsiVersion)' == 'true')">%(WorkloadPackages.NupkgVersion)</MsiVersion>
+        <MsiVersion Condition="'%(WorkloadPackages.UseNet11MsiVersionMajorOffset)' == 'true'">$([MSBuild]::Add($([System.Version]::Parse('%(WorkloadPackages.Version)').Major), 100)).$([System.Version]::Parse('%(WorkloadPackages.Version)').Minor).$([System.Version]::Parse('%(WorkloadPackages.Version)').Build)</MsiVersion>
+        <MsiVersion Condition="'%(WorkloadPackages.UseNet11MsiVersionMajorOffset)' != 'true' and '%(WorkloadPackages.IsNet6Manifest)' != 'true' and ('%(WorkloadPackages.SdkBandPreviewMatch)' == '' or '%(WorkloadPackages.UseNuGetVersionAsMsiVersion)' == 'true')">%(WorkloadPackages.NupkgVersion)</MsiVersion>
       </WorkloadPackages>
     </ItemGroup>
   </Target>
@@ -102,6 +115,7 @@
     </PropertyGroup>
     <!-- Official dotnet builds use a version schema of yyyyMMdd.revision, for example 20220415.54 -->
     <GenerateCurrentVersion
+        Condition="'%(WorkloadPackages.MsiVersion)' == ''"
         SeedDate="$([System.DateTime]::UtcNow.ToString(yyyy-MM-dd))"
         OfficialBuildId="$([System.DateTime]::UtcNow.ToString(yyyyMMdd)).$([System.Version]::Parse('%(WorkloadPackages.Version)').Revision)"
         ComparisonDate="$(VersionComparisonDate)"
@@ -110,6 +124,7 @@
       <Output TaskParameter="GeneratedRevision" PropertyName="BuildNumberMinor" />
     </GenerateCurrentVersion>
     <GenerateMsiVersion
+        Condition="'%(WorkloadPackages.MsiVersion)' == ''"
         Major="$([System.Version]::Parse('%(WorkloadPackages.Version)').Major)"
         Minor="$([System.Version]::Parse('%(WorkloadPackages.Version)').Minor)"
         Patch="$([System.Version]::Parse('%(WorkloadPackages.Version)').Build)"

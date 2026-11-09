@@ -102,10 +102,22 @@ Create a merge commit, the coordinator reports waiting-for-normalization-approva
 preserves the cut/current tracking SR, and withholds next-lane activation and
 forward flow. Its same-repository merged-PR trigger also accepts the managed
 automation/normalization route. It does not merge either post-cut PR, advance canonical
-release/nightly state, or publish customer packages. The signed-publication
+release/nightly state, or publish customer packages. Completed production
+rollover prepares a draft canonical `currentSr` update after rechecking the cut,
+normalized fixes and replacement lanes; review/CI/merge still gate the actual
+state change. Its `nightlyMode` is preserved, so the first versioned-nightly
+activation still requires independently verified deployment. The signed-publication
 workflow uses existing federation/internal access, waits for a reviewed servicing
 merge and exact mirror source, queues the existing signed build, then canonical
 artifact preparation with pushPackages=false. Public release approvals remain.
+
+Configured servicing progress is independent of manual release tags. Readiness
+pins the first GA branch or preceding SR branch as its inventory baseline, keeps
+the current/prior cycle visible, and honors human closure per source/baseline
+snapshot. Tag creation, absence or movement cannot gate or advance cuts,
+normalization, replacement lanes or signing preparation. Stable tag-push
+milestone processing ignores the configured train; historical tag diagnostics
+and explicit manual release actions remain separate.
 
 .NET 10 SR13 publishes from `release/10.0.1xx-sr13`, independently of `main`.
 Preserve its release commit and packages, and keep publication on the .NET 10 channel during the
@@ -221,6 +233,33 @@ test-execution retries are unchanged. Android emulator boot, independent review
 gate preparation, and provisioning inside Helix/XHarness workers retain their
 existing policies; shared agent setup does not wrap or resubmit those test runs.
 
+## Apple SDK coherency
+
+Previous-.NET Apple SDK dependencies must match the child package names, versions
+and SHAs in the retained macios parent's `eng/Version.Details.xml`. An Xcode-band
+change can rename those child packages even when their .NET major stays the same.
+Update the corresponding `eng/Versions.props` properties and package feed together;
+do not remove `CoherentParentDependency` to hide a stale child package name.
+Check the child's declared Xcode requirement separately from the parent's.
+
+## Appium driver npm cache
+
+Appium driver installs and updates in Azure Pipelines use a checkout-local npm
+cache under `src/Provisioning/obj/appium-driver-npm-cache`, separate from the
+global Appium install's cache. This avoids permission failures from a shared
+user cache without deleting it, changing its ownership, or elevating driver
+installation. Local provisioning retains its existing npm cache configuration.
+
+## SearchHandler query cleanup and snapshots
+
+The Shell sharding change (#39359, backported in #39725) clears the query in
+`Issue35736.SearchHandlerClearIconUpdatesAtRuntime` after its screenshot. The
+following QueryIcon, ClearPlaceholderIcon, and ResetAll snapshots must show the
+cleared query, not an `A` leaked from the preceding test. Android and iOS baselines
+were updated with that cleanup; MacCatalyst needs the same state alignment.
+Keep the cleanup and verify the intended native icons before updating a baseline;
+do not restore leaked text or relax comparison tolerances to match an old image.
+
 ## Enumerate EVERY failed leg — Build Analysis is NOT exhaustive
 
 > 🚨 The single most common way to be **wrong** about "what's unique to this PR" is to
@@ -244,6 +283,27 @@ existing policies; shared agent setup does not wrap or resubmit those test runs.
 - Do not answer "nothing is unique to the PR" until you have confirmed you inspected
   **all** failed legs. Absence of evidence is not evidence — it is usually an unread log.
 
+## Test-job checkout
+
+UI execution and integration-test setup check out the requested commit at depth
+one without fetching tags. Fetching all tags can pull unrelated historical image
+objects despite the shallow depth, exhausting checkout time or the lifetime of
+the initial credential before any tests execute. These jobs consume prebuilt app
+or package artifacts and do not need release tags. Build-job checkout and
+tag-based versioning remain unchanged.
+
+UI execution jobs keep .NET CLI state under the agent's job-local temporary
+directory, not the image's shared user `.dotnet` directory. The job-level
+`DOTNET_CLI_HOME` is shared by tool restore and subsequent tool invocations so
+resolver caches remain available; it does not change `HOME` or the SDK root.
+Preserve `NUGET_PACKAGES` (or Arcade's normal user-profile cache when unset)
+before relocating CLI state. Otherwise NuGet restores under the new CLI home
+while Arcade's `NuGetPackageRoot` still imports tasks from the original cache,
+which can leave provisioning tasks such as `JsonPeek` unavailable.
+Bootstrap does not generate an unrelated ASP.NET development certificate.
+UI result publication fails if the expected TRX files are missing. A successful
+setup task or publisher warning is not evidence that the selected tests ran.
+
 ## MAUI-specific quirks
 
 ### Windows packaged device-test deployment
@@ -257,6 +317,10 @@ that this switch shuts down processes associated with the package **or its
 dependencies**; `ForceTargetApplicationShutdown` only covers the target package.
 Keep this behavior scoped to the Helix runner, not local developer deployment.
 Deployment errors still fail the work item and print the Appx deployment log.
+For `0x80073CF0` / missing `AppxManifest.xml`, inspect the actual input package
+and registered runtime state before assuming the payload is malformed. Failure
+diagnostics print runtime manifest presence and the newest deployment events;
+an unsorted `Select-Object -Last` can instead show old events baked into the image.
 
 ### Android activity isolation
 
@@ -265,6 +329,16 @@ action after component sanitization, rather than opening the resolver or system
 settings. Assert that the original activity is `RESUMED` before and after
 navigation. `HasWindowFocus` is not a lifecycle check: the notification shade can
 take focus while that same activity remains resumed.
+
+### Android UI-test failure diagnostics
+
+After the final Android UI-test failure, logcat collection uses the existing
+30-second ADB command deadline. Cake terminates the owned logcat process when its
+bounded wait expires. Log a diagnostic timeout and rethrow the original test
+failure; do not let an offline emulator block result publication until job
+cancellation, or treat missing diagnostics as a successful test. The standalone
+`logcat` target still fails on timeout. This does not repair emulator connectivity
+or change test assertions, execution categories, retry counts or test deadlines.
 
 ### XHarness exit-0 blind spot
 

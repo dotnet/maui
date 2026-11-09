@@ -10,6 +10,7 @@ parameters:
 steps:
 - checkout: self
   fetchDepth: 1
+  fetchTags: false
   clean: true
 
 - template: /eng/pipelines/common/enable-kvm.yml@self

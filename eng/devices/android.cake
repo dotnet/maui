@@ -290,7 +290,17 @@ void ExecuteUITests(string project, string app, string appPackageName, string de
 	SetEnvironmentVariable("APPIUM_LOG_FILE", appiumLog);
 
 	Information("Run UITests  project {0}", project);
-	RunUITestsWithRetry(project, config, toolPath, resultsFileName, () => WriteLogCat());
+	RunUITestsWithRetry(project, config, toolPath, resultsFileName, () =>
+	{
+		try
+		{
+			WriteLogCat();
+		}
+		catch (TimeoutException ex)
+		{
+			Warning("Logcat collection timed out; preserving the original UI-test failure: {0}", ex.Message);
+		}
+	});
 	Information("UI Tests completed.");
 }
 
@@ -582,8 +592,13 @@ void WriteLogCat(string filename = null)
 			return output;
 		};
 
-		var process = StartProcess($"{adb}", processSettings);
-		Information("exit code {0}", process);
+		using (var process = StartAndReturnProcess(adb, processSettings))
+		{
+			if (!process.WaitForExit(AdbCommandTimeoutSeconds * 1000))
+				throw new TimeoutException($"ADB logcat did not finish within {AdbCommandTimeoutSeconds} seconds.");
+
+			Information("exit code {0}", process.GetExitCode());
+		}
 	}
 
 	Information("Logcat written to {0}", location);
