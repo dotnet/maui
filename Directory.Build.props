@@ -139,6 +139,11 @@
     <TypeScriptCompileBlocked Condition=" '$(TypeScriptCompileBlocked)' == '' and '$(CI)' != 'true' and '$(TF_BUILD)' != 'true' ">true</TypeScriptCompileBlocked>
   </PropertyGroup>
 
+  <!-- The .NET 12 Apple SDKs reject apps without a UIApplicationSceneManifest (MT7199); our samples and test apps don't use scenes yet. -->
+  <PropertyGroup>
+    <ValidateSceneManifest Condition="'$(ValidateSceneManifest)' == ''">false</ValidateSceneManifest>
+  </PropertyGroup>
+
   <!-- Windows specific settings -->
   <PropertyGroup Condition="'$(_MauiTargetPlatformIsWindows)' == 'True'">
     <WindowsSdkPackageVersion>10.0.19041.44</WindowsSdkPackageVersion>
