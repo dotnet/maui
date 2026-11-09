@@ -24,30 +24,33 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			SetupBuilder();
 
-			var testCase = new WindowPageSwapTestCase(rootPageType);
-			var rootPage = testCase.GetNextPageType();
-			var window = new Window(rootPage);
-
-			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, async handler =>
+			await InvokeOnMainThreadAsync(async () =>
 			{
-				await OnLoadedAsync(testCase.Page);
+				var testCase = new WindowPageSwapTestCase(rootPageType);
+				var rootPage = testCase.GetNextPageType();
+				var window = new Window(rootPage);
 
-				var rootController = ((IPlatformViewHandler)rootPage.Handler).ViewController;
+				await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, async handler =>
+				{
+					await OnLoadedAsync(testCase.Page);
 
-				Assert.Same(window, rootPage.Window);
-				Assert.Equal(UIStatusBarStyle.Default, GetStatusBarStyleProvider(rootController).PreferredStatusBarStyle());
+					var rootController = ((IPlatformViewHandler)rootPage.Handler).ViewController;
 
-				window.StatusBarTheme = StatusBarTheme.Dark;
-				var styleProvider = GetStatusBarStyleProvider(rootController);
-				if (rootPageType == typeof(Shell))
-					Assert.IsType<Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer>(styleProvider);
-				Assert.Equal(UIStatusBarStyle.LightContent, styleProvider.PreferredStatusBarStyle());
+					Assert.Same(window, rootPage.Window);
+					Assert.Equal(UIStatusBarStyle.Default, GetStatusBarStyleProvider(rootController).PreferredStatusBarStyle());
 
-				window.StatusBarTheme = StatusBarTheme.Light;
-				Assert.Equal(UIStatusBarStyle.DarkContent, GetStatusBarStyleProvider(rootController).PreferredStatusBarStyle());
+					window.StatusBarTheme = StatusBarTheme.Dark;
+					var styleProvider = GetStatusBarStyleProvider(rootController);
+					if (rootPageType == typeof(Shell))
+						Assert.IsType<Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer>(styleProvider);
+					Assert.Equal(UIStatusBarStyle.LightContent, styleProvider.PreferredStatusBarStyle());
 
-				window.StatusBarTheme = StatusBarTheme.Default;
-				Assert.Equal(UIStatusBarStyle.Default, GetStatusBarStyleProvider(rootController).PreferredStatusBarStyle());
+					window.StatusBarTheme = StatusBarTheme.Light;
+					Assert.Equal(UIStatusBarStyle.DarkContent, GetStatusBarStyleProvider(rootController).PreferredStatusBarStyle());
+
+					window.StatusBarTheme = StatusBarTheme.Default;
+					Assert.Equal(UIStatusBarStyle.Default, GetStatusBarStyleProvider(rootController).PreferredStatusBarStyle());
+				});
 			});
 		}
 
