@@ -50,7 +50,7 @@ parameters:
 - name: esrpApprovers
   displayName: ESRP release approvers (individual Microsoft email addresses, different from owners)
   type: string
-  default: rumar@microsoft.com,jodick@microsoft.com,alexsoto@microsoft.com,jflorkowski@microsoft.com,jopepper@microsoft.com
+  default: rumar@microsoft.com,maleib@microsoft.com,jodick@microsoft.com,alexsoto@microsoft.com,jflorkowski@microsoft.com,jopepper@microsoft.com
 
 - name: nugetIncludeFilters
   displayName: "[OPTIONAL] Semi-colon (';') separated list of nuget packages to include"
