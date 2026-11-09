@@ -432,9 +432,9 @@ for ($attempt = 0; $attempt -lt 100; $attempt++) {
         $currentStaging = Get-NextLaneRef $stagingBranch
         if (!$currentFixes) { throw 'The integration branch disappeared before release completion.' }
         Fetch-NextLaneCommit @($currentFixes)
-        if ($currentRelease) { Fetch-NextLaneCommit @($currentRelease) }
+        # A historical real release does not gate staging; publishing validates its ancestry separately.
         $completion = Get-MauiReleaseCompletionPlan -RepositoryPath $RepositoryPath -LanePlan $plan `
-            -ReleaseBand $roles.releaseBand -Sr $trackingSr -Fixes $currentFixes -Release $currentRelease -Staging $currentStaging
+            -ReleaseBand $roles.releaseBand -Sr $trackingSr -Fixes $currentFixes -Staging $currentStaging
         # Staging is create-only and never authorizes a real release cut.
         Publish-NextLaneRef -Branch $stagingBranch -Commit $completion.stagingSha
         if ($completion.restoreFixes) {

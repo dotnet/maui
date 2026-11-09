@@ -420,6 +420,9 @@ snapshot as ready. The full housekeeping base is passed as PR API data, not
 interpolated into a ref-update URL; no direct integration-ref update is issued.
 
 **The workflow stages the source and prepares reviewed net11 CI restoration.**
+An existing real `release/<band>-srN` ref is informational in this path: its
+ancestry does not gate staging, normalization or next-lane preparation. Publishing
+still verifies that the real release contains the approved source before signing.
 Its create-only staging write happens before opening the draft normalization PR
 at `automation/normalization/<band>-srN`. The receipt makes this pause resumable:
 `waiting-for-normalization-approval` preserves staging and the current tracking SR,
