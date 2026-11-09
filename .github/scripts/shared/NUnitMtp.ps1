@@ -57,14 +57,19 @@ function Complete-NUnitMtpAttempt {
     }
     $trx = [System.Xml.Linq.XDocument]::Load($TrxPath)
     $rawDirectory = Join-Path $NUnitDirectory 'raw'
+    [UITestRetry]::ValidateArchiveDestination($rawDirectory, (Split-Path $TrxPath))
     [void][System.IO.Directory]::CreateDirectory($rawDirectory)
     [UITestRetry]::PreserveAttachments($trx, (Split-Path $TrxPath), (Join-Path $rawDirectory 'attachments'), $AllowedAttachmentRoots)
     $trx.Save($TrxPath)
-    Copy-Item -LiteralPath $TrxPath -Destination $rawDirectory
+    $rawTrxPath = Join-Path $rawDirectory (Split-Path $TrxPath -Leaf)
+    [UITestRetry]::ValidateArchiveDestination($rawTrxPath, (Split-Path $TrxPath))
+    Copy-Item -LiteralPath $TrxPath -Destination $rawTrxPath
     $files = @(Get-ChildItem -LiteralPath $NUnitDirectory -Filter '*.xml' -File)
     if ($files.Count -eq 0) { throw 'No NUnit XML was produced; fixture failures cannot be reconciled.' }
     [System.Xml.Linq.XDocument[]]$reports = @($files | ForEach-Object {
-        Copy-Item -LiteralPath $_.FullName -Destination $rawDirectory
+        $rawReportPath = Join-Path $rawDirectory $_.Name
+        [UITestRetry]::ValidateArchiveDestination($rawReportPath, (Split-Path $TrxPath))
+        Copy-Item -LiteralPath $_.FullName -Destination $rawReportPath
         [System.Xml.Linq.XDocument]::Load($_.FullName)
     })
     $nunitFailed = [UITestRetry]::ApplyNUnitFailures($trx, $reports)

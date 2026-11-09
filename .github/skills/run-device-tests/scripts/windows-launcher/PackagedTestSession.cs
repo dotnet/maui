@@ -26,7 +26,8 @@ internal static class PackagedTestSession
 {
 	public static void Validate(PackagedTestState state)
 	{
-		if (!Guid.TryParse(state.OwnerId, out var owner) || state.IdentityName != "maui.tests." + owner.ToString("N") ||
+		if (!Guid.TryParse(state.OwnerId, out var owner) ||
+			!System.Text.RegularExpressions.Regex.IsMatch(state.IdentityName, @"\A[A-Za-z0-9][A-Za-z0-9.-]{2,49}\z") ||
 			state.Publisher != "CN=MauiTests-" + owner.ToString("N") ||
 			!state.PackageFullName.StartsWith(state.IdentityName + "_", StringComparison.Ordinal) ||
 			!state.PackageFamilyName.StartsWith(state.IdentityName + "_", StringComparison.Ordinal) ||

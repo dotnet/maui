@@ -156,6 +156,7 @@ public static class UITestRetry
 	public static void PreserveAttachments(XDocument trx, string resultsDirectory, string archiveDirectory,
 		IEnumerable<string> allowedAttachmentRoots = null)
 	{
+		ValidateArchiveDestination(archiveDirectory, resultsDirectory);
 		XNamespace ns = "http://microsoft.com/schemas/VisualStudio/TeamTest/2010";
 		var comparison = System.IO.Path.DirectorySeparatorChar == '\\' ?
 			StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
@@ -206,16 +207,19 @@ public static class UITestRetry
 			// MTP reports absolute original paths, which the next attempt may overwrite.
 			var destination = System.IO.Path.GetFullPath(System.IO.Path.Combine(archiveDirectory,
 				(index++).ToString(System.Globalization.CultureInfo.InvariantCulture), System.IO.Path.GetFileName(source)));
-			ValidateArchiveDestination(destination, resultsDirectory, comparison);
+			ValidateArchiveDestination(destination, resultsDirectory);
 			System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(destination));
-			ValidateArchiveDestination(destination, resultsDirectory, comparison);
+			ValidateArchiveDestination(destination, resultsDirectory);
 			System.IO.File.Copy(source, destination);
 			attachment.SetAttributeValue("path", destination);
 		}
 	}
 
-	static void ValidateArchiveDestination(string destination, string resultsDirectory, StringComparison comparison)
+	public static void ValidateArchiveDestination(string destination, string resultsDirectory)
 	{
+		destination = System.IO.Path.GetFullPath(destination);
+		var comparison = System.IO.Path.DirectorySeparatorChar == '\\' ?
+			StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
 		var root = System.IO.Path.TrimEndingDirectorySeparator(System.IO.Path.GetFullPath(resultsDirectory));
 		var relative = System.IO.Path.GetRelativePath(root, destination);
 		if (System.IO.Path.IsPathRooted(relative) || relative == ".." ||

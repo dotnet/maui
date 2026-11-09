@@ -94,6 +94,47 @@ Describe 'NUnit MTP command and result compatibility' {
         $settings.RunSettings.NUnit.TestOutputXml | Should -Be $directory
     }
 
+    It 'rejects redirected raw reports even when the TRX has no attachments' -TestCases @(
+        @{ Redirect = 'directory' }
+        @{ Redirect = 'trx' }
+        @{ Redirect = 'xml' }
+    ) {
+        param($Redirect)
+        $directory = Join-Path $FixtureRoot "redirect-$Redirect"
+        $outside = Join-Path $FixtureRoot "outside-$Redirect"
+        [void][IO.Directory]::CreateDirectory($directory)
+        [void][IO.Directory]::CreateDirectory($outside)
+        $trxPath = Join-Path $directory 'result.trx'
+        '<TestRun xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010"><Results /></TestRun>' |
+            Set-Content -LiteralPath $trxPath
+        '<test-run result="Passed" />' | Set-Content -LiteralPath (Join-Path $directory 'nunit.xml')
+        $raw = Join-Path $directory 'raw'
+        if ($Redirect -eq 'directory') {
+            $kind = if ($IsWindows) { 'Junction' } else { 'SymbolicLink' }
+            New-Item -ItemType $kind -Path $raw -Target $outside | Out-Null
+        }
+        else {
+            [void][IO.Directory]::CreateDirectory($raw)
+            $name = if ($Redirect -eq 'trx') { 'result.trx' } else { 'nunit.xml' }
+            $sentinel = Join-Path $outside $name
+            'must not be overwritten' | Set-Content -LiteralPath $sentinel
+            if ($IsWindows) {
+                New-Item -ItemType Junction -Path (Join-Path $raw $name) -Target $outside | Out-Null
+            }
+            else {
+                New-Item -ItemType SymbolicLink -Path (Join-Path $raw $name) -Target $sentinel | Out-Null
+            }
+        }
+        { Complete-NUnitMtpAttempt -RepoRoot $RepoRoot -TrxPath $trxPath -NUnitDirectory $directory -ExitCode 0 } |
+            Should -Throw '*cannot traverse symbolic links or junctions*'
+        if ($Redirect -eq 'directory') {
+            @(Get-ChildItem -LiteralPath $outside).Count | Should -Be 0
+        }
+        else {
+            (Get-Content -LiteralPath $sentinel -Raw).Trim() | Should -Be 'must not be overwritten'
+        }
+    }
+
     It 'turns an MTP exit-zero fixture teardown failure into a job failure and archives attachment bytes' {
         $directory = Join-Path $FixtureRoot 'fixture'
         [void][IO.Directory]::CreateDirectory($directory)

@@ -82,6 +82,7 @@ void RunUITestsWithRetry(string project, string config, string toolPath, string 
 				// Preserve raw evidence before reconciliation or retry selection can fail.
 				reportFiles = GetFiles($"{attemptNUnitDirectory}/*.xml").Select(file => file.FullPath).ToArray();
 				var rawDirectory = System.IO.Path.Combine(attemptNUnitDirectory, "raw");
+				UITestRetry.ValidateArchiveDestination(rawDirectory, attemptDirectory);
 				System.IO.Directory.CreateDirectory(rawDirectory);
 				if (System.IO.File.Exists(attemptResultsFile))
 				{
@@ -89,10 +90,16 @@ void RunUITestsWithRetry(string project, string config, string toolPath, string 
 					UITestRetry.PreserveAttachments(attachmentResults, attemptDirectory,
 						System.IO.Path.Combine(rawDirectory, "attachments"), attachmentRoots);
 					attachmentResults.Save(attemptResultsFile);
-					System.IO.File.Copy(attemptResultsFile, System.IO.Path.Combine(rawDirectory, resultsFileName + ".trx"));
+					var rawTrxPath = System.IO.Path.Combine(rawDirectory, resultsFileName + ".trx");
+					UITestRetry.ValidateArchiveDestination(rawTrxPath, attemptDirectory);
+					System.IO.File.Copy(attemptResultsFile, rawTrxPath);
 				}
 				foreach (var file in reportFiles)
-					System.IO.File.Copy(file, System.IO.Path.Combine(rawDirectory, System.IO.Path.GetFileName(file)));
+				{
+					var rawReportPath = System.IO.Path.Combine(rawDirectory, System.IO.Path.GetFileName(file));
+					UITestRetry.ValidateArchiveDestination(rawReportPath, attemptDirectory);
+					System.IO.File.Copy(file, rawReportPath);
+				}
 			}
 			catch (Exception archiveException) when (archiveException is System.IO.IOException || archiveException is UnauthorizedAccessException)
 			{

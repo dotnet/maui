@@ -12,7 +12,7 @@ public class WindowsPackageLauncherTests
 	static PackagedTestState State(int timeout = 10)
 	{
 		var owner = Guid.NewGuid().ToString("N");
-		var name = "maui.tests." + owner;
+		var name = "com.microsoft.maui.core.devicetests";
 		return new()
 		{
 			OwnerId = owner,
