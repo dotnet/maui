@@ -32,9 +32,9 @@ namespace Microsoft.Maui.DeviceTests
 	[Trait(RendererHandlerVariant.TraitName, RendererHandlerVariant.AndroidShellRenderer)] // See RendererHandlerVariant.cs
 #if IOS || MACCATALYST
 	[Trait(RendererHandlerVariant.NavigationViewVariantTraitName, RendererHandlerVariant.NavigationRenderer)] // See RendererHandlerVariant.cs
-	// This base class exercises PhoneFlyoutPageRenderer on iOS/MacCatalyst; the
-	// ModalTests_FlyoutViewHandler subclass overrides registration to exercise FlyoutViewHandler
-	// instead, so every test below runs against both variants.
+																											  // This base class exercises PhoneFlyoutPageRenderer on iOS/MacCatalyst; the
+																											  // ModalTests_FlyoutViewHandler subclass overrides registration to exercise FlyoutViewHandler
+																											  // instead, so every test below runs against both variants.
 	[Trait(RendererHandlerVariant.FlyoutViewVariantTraitName, RendererHandlerVariant.PhoneFlyoutPageRenderer)] // See RendererHandlerVariant.cs
 #endif
 	// This base class exercises TabbedRenderer on iOS/MacCatalyst; the
@@ -782,10 +782,24 @@ namespace Microsoft.Maui.DeviceTests
 			var window = new Window(rootPage);
 			await rootPage.Navigation.PushModalAsync(modalPage);
 
-			await CreateHandlerAndAddToWindow<IWindowHandler>(window, async handler =>
+			await InvokeOnMainThreadAsync(async () =>
 			{
-				await OnLoadedAsync(modalPage);
-				Application.Current?.CloseWindow(window);
+				var application = Application.Current;
+				Assert.NotNull(application);
+				var destroyed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+				window.Destroying += (_, _) => destroyed.TrySetResult();
+
+				// Closing a window must not close the native window borrowed by the fixture.
+				application.OpenWindow(window);
+				try
+				{
+					await OnLoadedAsync(modalPage);
+				}
+				finally
+				{
+					application.CloseWindow(window);
+					await destroyed.Task.WaitAsync(TimeSpan.FromSeconds(15));
+				}
 			});
 
 			Assert.True(disappearingTriggered);
