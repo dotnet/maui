@@ -60,8 +60,8 @@ MAUI 8/9 projects should first stage a supported SDK/workload and MAUI 10 baseli
 this prototype is not tested as a direct 8/9-to-11 migration. It does not provide
 MAUI 6/7 or Xamarin.Forms migration coverage.
 
-This checkout is the MAUI 10 bridge prototype. Servicing release ownership and the
-corresponding MAUI 11 branch change still require agreement. Reconcile preview/RC
+This checkout carries the prototype forward in MAUI 11 packages. Placement in a
+MAUI 10 bridge servicing release still requires agreement. Reconcile preview/RC
 claims against the final package, SDK, workload, and public documentation before
 release. Never describe this prototype as already published.
 

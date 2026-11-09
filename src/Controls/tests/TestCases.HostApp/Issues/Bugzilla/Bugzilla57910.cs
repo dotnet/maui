@@ -106,7 +106,7 @@ namespace Maui.Controls.Sample.Issues
 						Header = $"Header! {_counter++}";
 						Footer = $"Footer! {_counter++}";
 
-						return true;
+						return _items.Any(item => item.State == ListItemViewModel.InstallableState.Downloading);
 					});
 #pragma warning restore CS0618 // Type or member is obsolete
 #pragma warning restore CS0612 // Type or member is obsolete
@@ -167,13 +167,13 @@ namespace Maui.Controls.Sample.Issues
 #pragma warning disable CS0618 // Type or member is obsolete
 					Device.StartTimer(TimeSpan.FromMilliseconds((1000)), () =>
 					{
-						DownloadProgressPercentage += 0.05d;
+						DownloadProgressPercentage = Math.Min(1d, DownloadProgressPercentage + 0.05d);
 						if (DownloadProgressPercentage > 0.99d)
 						{
 							State = InstallableState.Local;
 						}
 
-						return DownloadProgressPercentage != 1.0d;
+						return State != InstallableState.Local;
 					});
 #pragma warning restore CS0618 // Type or member is obsolete
 #pragma warning restore CS0612 // Type or member is obsolete

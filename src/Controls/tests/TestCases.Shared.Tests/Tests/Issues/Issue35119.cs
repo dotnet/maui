@@ -24,6 +24,7 @@ public class Issue35119 : _IssuesUITest
 		App.WaitForElement("Alert Title");
 		VerifyScreenshotOrSetException(ref exception, "Material3_AlertDialog", retryTimeout: TimeSpan.FromSeconds(2));
 		App.TapDisplayAlertButton("OK");
+		App.WaitForElement("Alert dismissed");
 
 		// Action Sheet
 		App.WaitForElement("ShowActionSheetButton");
@@ -31,14 +32,21 @@ public class Issue35119 : _IssuesUITest
 		App.WaitForElement("Action Sheet Title");
 		VerifyScreenshotOrSetException(ref exception, "Material3_ActionSheet", retryTimeout: TimeSpan.FromSeconds(2));
 		App.TapDisplayAlertButton("Cancel");
+		App.WaitForElement("ActionSheet result: Cancel");
 
 		// Prompt Dialog
 		App.WaitForElement("ShowPromptButton");
 		App.Tap("ShowPromptButton");
 		App.WaitForElement("Prompt Title");
-		App.DismissKeyboard();
+		Assert.That(App.WaitForKeyboardToShow(), Is.True, "The prompt keyboard must be visible before dismissing it.");
+		// Send ESC once; HideKeyboard's fallback BACK can also cancel the prompt.
+		App.SendKeys(111);
+		Assert.That(App.WaitForKeyboardToHide(), Is.True, "The prompt keyboard must finish hiding before the screenshot.");
+		App.WaitForElement("Prompt Title");
+		App.WaitForElement("Cancel");
 		VerifyScreenshotOrSetException(ref exception, "Material3_PromptDialog", tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		App.TapDisplayAlertButton("Cancel");
+		App.WaitForElement("Prompt result: cancelled");
 
 		if (exception is not null)
 		{

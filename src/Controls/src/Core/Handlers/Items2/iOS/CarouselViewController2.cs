@@ -741,12 +741,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		async Task UpdateInitialPosition()
 		{
-			if (ItemsView is not CarouselView carousel)
-			{
-				return;
-			}
-
-			if (!ItemsView.IsVisible)
+			if (ItemsView?.IsVisible != true)
 			{
 				// If the CarouselView is not visible we don't want to set the initial position
 				// since it will be set when the CarouselView becomes visible
@@ -767,7 +762,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				MainThread.BeginInvokeOnMainThread(() =>
 				{
-					if (!IsViewLoaded)
+					// Resolve the weak view after the delay instead of retaining it in the callback.
+					if (ItemsView is not CarouselView carousel ||
+						carousel.Handler is not CarouselViewHandler2 { PlatformView: not null } handler ||
+						!ReferenceEquals(handler.Controller, this) ||
+						!IsViewLoaded)
 					{
 						return;
 					}
