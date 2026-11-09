@@ -347,7 +347,14 @@ namespace Microsoft.Maui.DeviceTests
 						}
 
 						_initializedHandlers.Clear();
-						await ((IAsyncDisposable)_mauiApp).DisposeAsync();
+						try
+						{
+							(_mauiContext as IDisposable)?.Dispose();
+						}
+						finally
+						{
+							await ((IAsyncDisposable)_mauiApp).DisposeAsync();
+						}
 					});
 				}
 			}
