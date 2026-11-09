@@ -583,7 +583,8 @@ function Get-MauiReleaseCompletionPlan {
         [Parameter(Mandatory)][string] $ReleaseBand,
         [Parameter(Mandatory)][int] $Sr,
         [Parameter(Mandatory)][ValidatePattern('^[0-9a-f]{40}$')][string] $Fixes,
-        [AllowNull()][string] $Release
+        [AllowNull()][string] $Release,
+        [AllowNull()][string] $Staging
     )
 
     foreach ($sha in @($LanePlan.mergeSha, $LanePlan.normalizedSha)) {
@@ -605,6 +606,9 @@ function Get-MauiReleaseCompletionPlan {
         $null = Invoke-MauiReleaseGit -RepositoryPath $RepositoryPath -Arguments @(
             'merge-base', '--is-ancestor', $LanePlan.mergeSha, $Release)
     }
+    if ($Staging -and $Staging -cne $LanePlan.mergeSha) {
+        throw 'The create-once release staging ref must retain the exact approved candidate merge.'
+    }
     $housekeeping = Get-MauiReleaseVersion -Content (
         Get-MauiReleaseFile -RepositoryPath $RepositoryPath -Commit $LanePlan.normalizedSha -Path 'eng/Versions.props')
     if ($housekeeping.patch -ne (($Sr + 1) * 10) -or $housekeeping.label -cne 'ci.main' -or
@@ -622,8 +626,10 @@ function Get-MauiReleaseCompletionPlan {
     }
     [pscustomobject]@{
         releaseSha = $LanePlan.mergeSha
+        stagingSha = $LanePlan.mergeSha
         normalizationSha = $LanePlan.normalizedSha
-        createRelease = !$Release
+        createStaging = !$Staging
+        createRelease = $false
         restoreFixes = $restoreFixes
     }
 }
