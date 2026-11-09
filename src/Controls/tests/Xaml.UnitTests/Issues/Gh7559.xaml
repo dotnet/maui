@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<ContentPage
-        xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-        xmlns:local="using:Microsoft.Maui.Controls.Xaml.UnitTests"
-        x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Gh7559"
-        local:Gh7559A.Icon="LetterA" >
-</ContentPage>

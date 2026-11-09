@@ -1,8 +1,0 @@
-<Project>
-  <Target Name="SkipRemoteBuildVerifyXcodeVersion" AfterTargets="EvaluateRemoteBuild">
-    <PropertyGroup>
-      <IsRemoteBuild>False</IsRemoteBuild>
-    </PropertyGroup>
-    <Message Text="Setting IsRemoteBuild=False to avoid VerifyXcodeVersion warning" />
-  </Target>
-</Project>

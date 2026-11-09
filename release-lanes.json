@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "scope": "production",
+  "releaseBand": "11.0.1xx",
+  "sr": 1,
+  "fixBranch": "net11",
+  "featureBranch": "main",
+  "pullRequest": 40090,
+  "plan": {
+    "mergeSha": "0d1ea4928ba1471832d94481358cb012119fa111",
+    "candidateSha": "a0113d1550d40b627f8856797c3c3c5bf4a1f668",
+    "inflightSha": "52fb1996a7a0932c45e0fde610583d9d97d32125",
+    "normalizedSha": "5fbe38818d55d159715c151e78a79ea41f6a6a39",
+    "servicingSha": "0d1ea4928ba1471832d94481358cb012119fa111",
+    "nextCandidateSha": "35dc545f0b694ea32a8d4aea6c6a9708c436ae7c",
+    "nextInflightSha": "d1e85c4641244b653815881350d29218d7ecca87"
+  }
+}
