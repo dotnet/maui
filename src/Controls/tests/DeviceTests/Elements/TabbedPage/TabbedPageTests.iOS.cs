@@ -222,7 +222,7 @@ namespace Microsoft.Maui.DeviceTests
 				defaultAppearance.ConfigureWithDefaultBackground();
 				Assert.Equal(defaultAppearance.BackgroundEffect?.GetType(), tabBar.StandardAppearance.BackgroundEffect?.GetType());
 				Assert.True(ColorComparison.ARGBEquivalent(useSolidBackground ? Colors.Green.ToPlatform() : null, tabBar.BackgroundColor));
-				Assert.DoesNotContain(tabBar.Layer.Sublayers, layer => layer is CAGradientLayer);
+				Assert.DoesNotContain(tabBar.Layer.Sublayers ?? Array.Empty<CALayer>(), layer => layer is CAGradientLayer);
 				return Task.CompletedTask;
 			});
 		}
