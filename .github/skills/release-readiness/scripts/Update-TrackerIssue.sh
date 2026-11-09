@@ -22,11 +22,14 @@ MARKER="<!-- release-readiness-tracker: ${TRACKER_KEY} -->"
 # refs the report actually surveyed.
 HOTFIX_MARKER=$(LC_ALL=C grep -m1 -E '^<!-- release-readiness-hotfix: [^>]+ -->$' "$BODY_FILE" || true)
 SHIPPED_MARKER=$(LC_ALL=C grep -m1 -E '^<!-- release-readiness-shipped: [^>]+ -->$' "$BODY_FILE" || true)
+SNAPSHOT_MARKER=$(LC_ALL=C grep -m1 -E '^<!-- release-readiness-snapshot: [^>]+ -->$' "$BODY_FILE" || true)
 REPORT_HOTFIX_IN_PROGRESS=false
 [ -n "$HOTFIX_MARKER" ] && REPORT_HOTFIX_IN_PROGRESS=true
 CREATE_GENERATION=false
 GENERATION_MARKER=""
-if [ "$MODE" = "shipped" ]; then
+if [ -n "$SNAPSHOT_MARKER" ]; then
+  GENERATION_MARKER="$SNAPSHOT_MARKER"
+elif [ "$MODE" = "shipped" ]; then
   GENERATION_MARKER="$SHIPPED_MARKER"
   [ "$REPORT_HOTFIX_IN_PROGRESS" = "true" ] && GENERATION_MARKER="$HOTFIX_MARKER"
   if [ -z "$GENERATION_MARKER" ]; then
@@ -77,7 +80,7 @@ fi
 # never tracked (for example, a hotfix tag published before the first
 # scheduled updater run). Search the exact generated marker directly so
 # the result is not diluted by a generic-marker --limit window.
-if [ "$MODE" = "shipped" ]; then
+if [ "$MODE" = "shipped" ] || [ -n "$SNAPSHOT_MARKER" ]; then
   EXACT_OPEN=$(gh issue list \
     --repo "${GITHUB_REPOSITORY}" \
     --state open \

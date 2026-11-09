@@ -359,7 +359,7 @@ function Get-MauiReleaseFile {
     param (
         [Parameter(Mandatory)][string] $RepositoryPath,
         [Parameter(Mandatory)][ValidatePattern('^[0-9a-f]{40}$')][string] $Commit,
-        [Parameter(Mandatory)][ValidateSet('eng/Versions.props', '.github/ISSUE_TEMPLATE/bug-report.yml')][string] $Path
+        [Parameter(Mandatory)][ValidateSet('eng/Versions.props', '.github/ISSUE_TEMPLATE/bug-report.yml', 'eng/release-rollover.json')][string] $Path
     )
     $entry = Invoke-MauiReleaseGit -RepositoryPath $RepositoryPath -Arguments @('ls-tree', $Commit, '--', $Path)
     if ($entry -cnotmatch "^100644 blob [0-9a-f]{40}`t$([Regex]::Escape($Path))`n$") {

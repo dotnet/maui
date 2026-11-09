@@ -71,7 +71,8 @@ param(
     [string]$MergedAfter,
     [switch]$Apply,
     [switch]$CreateIssue,
-    [switch]$CloseFixedIssues
+    [switch]$CloseFixedIssues,
+    [switch]$TagPushEvent
 )
 
 # Resolve the "merged after" safety cutoff. PRs merged strictly before this
@@ -110,6 +111,17 @@ if ($MyInvocation.InvocationName -ne '.') {
 # to this script's caller (unlike dot-sourcing), which is why the conditional
 # StrictMode dance above is still needed for Pester compatibility.
 Import-Module (Join-Path $PSScriptRoot 'shared/MauiReleaseVersioning.psm1') -Force
+if ($TagPushEvent -and $Tag -cmatch '^(?<major>[1-9][0-9]*)\.0\.[0-9]+$') {
+    $tagMajor = [int]$Matches.major
+    $statePath = Join-Path $RepoPath 'eng/release-rollover.json'
+    if (Test-Path -LiteralPath $statePath) {
+        $state = & (Join-Path $PSScriptRoot '../../eng/scripts/Get-ReleaseRolloverPlan.ps1') -StatePath $statePath -ResolveStateOnly | ConvertFrom-Json
+        if ($state.releaseBand -cmatch "^$tagMajor\.0\.") {
+            Write-Warning 'Configured servicing tags are manual release metadata; a tag push does not change release progress or close its issues.'
+            return
+        }
+    }
+}
 
 #region ── Milestone mapping helpers ──────────────────────────────────────
 
