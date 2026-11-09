@@ -625,7 +625,7 @@ function Get-MauiReleaseCompletionPlan {
             'merge-base', '--is-ancestor', $LanePlan.normalizedSha, $Fixes)
     }
     [pscustomobject]@{
-        releaseSha = $Release
+        releaseSha = if ($Release) { $Release } else { $null }
         stagingSha = $LanePlan.mergeSha
         normalizationSha = $LanePlan.normalizedSha
         createStaging = !$Staging
