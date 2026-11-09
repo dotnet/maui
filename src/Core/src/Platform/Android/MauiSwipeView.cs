@@ -93,7 +93,10 @@ namespace Microsoft.Maui.Platform
 		{
 			base.OnTouchEvent(e);
 
-			if (e?.Action == MotionEventActions.Move && !ShouldInterceptTouch(e))
+			// ShouldInterceptTouch re-evaluates the swipe direction from the total pointer
+			// travel, so once a swipe is in progress it must not filter the moves anymore:
+			// a pointer that drifts out of the bounds would cancel the active gesture
+			if (e?.Action == MotionEventActions.Move && !_isSwiping && !ShouldInterceptTouch(e))
 				return true;
 
 			ProcessSwipingInteractions(e);
@@ -423,7 +426,9 @@ namespace Microsoft.Maui.Platform
 
 		bool ProcessTouchMove(APointF point)
 		{
-			if (_contentView == null || !TouchInsideContent(point) || _initialPoint == null)
+			// Only require the touch to be inside the content to start a swipe; once the
+			// gesture is in progress it has to keep tracking the pointer wherever it goes
+			if (_contentView == null || _initialPoint == null || (!_isSwiping && !TouchInsideContent(point)))
 				return false;
 
 			if (!_isOpen)
