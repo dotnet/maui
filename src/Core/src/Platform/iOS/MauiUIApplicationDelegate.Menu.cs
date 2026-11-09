@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Versioning;
@@ -132,3 +132,4 @@ namespace Microsoft.Maui
 		}
 	}
 }
+
