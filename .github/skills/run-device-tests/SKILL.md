@@ -38,6 +38,10 @@ resource. Supplying an exact UDID/serial borrows that device without deleting or
 stopping it. iOS major-version requests select an installed matching runtime;
 unavailable runtimes fail rather than silently changing the requested OS.
 Android SDK licenses must already be accepted.
+In Azure CI, SDK package preparation uses the shared `Install-AndroidSdkPackage.ps1`
+policy: at most five attempts per package, with partial-download cleanup between
+attempts. SDK discovery must match the selected SDK before any package changes.
+Local startup still invokes `sdkmanager` once; tests and emulator boot are not retried.
 Android cleanup derives its executable from the configured SDK and rejects a
 persisted executable path that differs from that SDK's adb.
 PID cleanup additionally checks the actual emulator command line for the owned

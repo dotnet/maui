@@ -70,14 +70,29 @@ Save-State
 if ($Platform -eq 'android') {
     $sdk = if ($env:ANDROID_SDK_ROOT) { $env:ANDROID_SDK_ROOT } else { $env:ANDROID_HOME }
     if (!$sdk) { throw 'ANDROID_SDK_ROOT or ANDROID_HOME must identify the provisioned SDK.' }
-    $sdk = [IO.Path]::GetFullPath($sdk)
+    $sdk = [IO.Path]::TrimEndingDirectorySeparator([IO.Path]::GetFullPath($sdk))
     $adb = Join-Path $sdk 'platform-tools/adb'
     $manager = Join-Path $sdk 'cmdline-tools/latest/bin/sdkmanager'
     $avdmanager = Join-Path $sdk 'cmdline-tools/latest/bin/avdmanager'
     $emulator = Join-Path $sdk 'emulator/emulator'
     $architecture = if ([Runtime.InteropServices.RuntimeInformation]::OSArchitecture -eq 'Arm64') { 'arm64-v8a' } else { 'x86_64' }
     $image = "system-images;android-$ApiVersion;google_apis;$architecture"
-    & $manager "--sdk_root=$sdk" --install 'platform-tools' 'emulator' $image
+    if ($env:TF_BUILD -eq 'True') {
+        $sdkOutput = & dotnet maui android sdk check --ci --json
+        $discoveredSdk = ($sdkOutput -join [Environment]::NewLine | ConvertFrom-Json).details.path
+        $comparison = if ($IsWindows) { [StringComparison]::OrdinalIgnoreCase } else { [StringComparison]::Ordinal }
+        if ([string]::IsNullOrWhiteSpace($discoveredSdk) -or
+            ![string]::Equals([IO.Path]::TrimEndingDirectorySeparator([IO.Path]::GetFullPath($discoveredSdk)), $sdk, $comparison)) {
+            throw "The Android SDK CLI must resolve the selected SDK '$sdk', not '$discoveredSdk'."
+        }
+        foreach ($package in @('platform-tools', 'emulator', $image)) {
+            & (Join-Path $baseDirectory 'eng/scripts/Install-AndroidSdkPackage.ps1') -Package $package
+            if ($LASTEXITCODE -ne 0) { throw "Android SDK package '$package' failed with exit code $LASTEXITCODE." }
+        }
+    }
+    else {
+        & $manager "--sdk_root=$sdk" --install 'platform-tools' 'emulator' $image
+    }
 
     $name = "maui-$([guid]::NewGuid().ToString('N'))"
     $deviceRoot = Join-Path $DeviceDirectory $name

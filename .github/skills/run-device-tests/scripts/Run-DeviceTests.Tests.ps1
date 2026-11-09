@@ -520,3 +520,118 @@ param($Platform, $ApiVersion, $ResultsDirectory, $DeviceDirectory)
         $env:MAUI_FAKE_ARGS | Should -Not -Exist
     }
 }
+
+Describe 'CI Android SDK provisioning' {
+    BeforeAll {
+        $starterPath = Join-Path $PSScriptRoot 'Start-TestDevice.ps1'
+        $installerPath = Join-Path $PSScriptRoot '../../../../eng/scripts/Install-AndroidSdkPackage.ps1'
+    }
+
+    BeforeEach {
+        $savedExitCode = $global:LASTEXITCODE
+        $savedEnvironment = @{}
+        foreach ($name in @('TF_BUILD', 'ANDROID_SDK_ROOT', 'ANDROID_HOME')) {
+            $savedEnvironment[$name] = [Environment]::GetEnvironmentVariable($name)
+        }
+        $root = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
+        $script:sdkPath = Join-Path $root 'sdk'
+        $script:devices = Join-Path $root 'devices'
+        $results = Join-Path $root 'results'
+        $scripts = Join-Path $root 'eng/scripts'
+        New-Item -ItemType Directory -Force -Path $sdkPath, $scripts | Out-Null
+        Copy-Item -LiteralPath $installerPath -Destination $scripts
+        $env:TF_BUILD = 'True'
+        $env:ANDROID_SDK_ROOT = $sdkPath
+        $env:ANDROID_HOME = $sdkPath
+        $script:installedPackages = [Collections.Generic.List[string]]::new()
+        $global:MauiNativeSdkTestState = @{
+            SdkPath = $sdkPath
+            DiscoveredSdk = $sdkPath
+            InstalledPackages = $installedPackages
+            ImageFailures = 0
+        }
+        $architecture = if ([Runtime.InteropServices.RuntimeInformation]::OSArchitecture -eq 'Arm64') { 'arm64-v8a' } else { 'x86_64' }
+        $image = "system-images;android-33;google_apis;$architecture"
+
+        Mock dotnet {
+            $global:LASTEXITCODE = 0
+            $fixture = $global:MauiNativeSdkTestState
+            if (($args[0..3] -join ' ') -eq 'maui android sdk check') {
+                return @{ details = @{ path = $fixture.DiscoveredSdk } } | ConvertTo-Json -Compress
+            }
+            if (($args[0..3] -join ' ') -ne 'maui android sdk install') {
+                throw "Unexpected SDK command: $args"
+            }
+            $package = $args[4]
+            $fixture.InstalledPackages.Add($package)
+            if ($package -like 'system-images;*') {
+                $attempts = @($fixture.InstalledPackages | Where-Object { $_ -eq $package }).Count
+                $partial = Join-Path $fixture.SdkPath ($package.Replace(';', [IO.Path]::DirectorySeparatorChar))
+                if ($attempts -le $fixture.ImageFailures) {
+                    New-Item -ItemType Directory -Force -Path $partial, (Join-Path $fixture.SdkPath '.temp') | Out-Null
+                    'partial archive' | Set-Content -LiteralPath (Join-Path $partial 'package.xml')
+                    $global:LASTEXITCODE = 7
+                }
+                elseif ($attempts -gt 1) {
+                    $partial | Should -Not -Exist
+                    (Join-Path $fixture.SdkPath '.temp') | Should -Not -Exist
+                }
+            }
+        }
+        Mock Start-Sleep {}
+        Mock New-Item {
+            if ($ItemType -ne 'Directory') { throw "Unexpected item type '$ItemType'." }
+            foreach ($directory in $Path) { [IO.Directory]::CreateDirectory($directory) }
+        }
+        Mock New-Item { throw 'SDK packages ready; stop before AVD creation.' } -ParameterFilter {
+            @($Path).Count -eq 1 -and (Split-Path (Split-Path "$Path" -Parent) -Leaf) -eq 'devices'
+        }
+        Push-Location $root
+    }
+
+    AfterEach {
+        Pop-Location
+        $global:LASTEXITCODE = $savedExitCode
+        Remove-Variable -Name MauiNativeSdkTestState -Scope Global
+        foreach ($name in $savedEnvironment.Keys) {
+            [Environment]::SetEnvironmentVariable($name, $savedEnvironment[$name])
+        }
+    }
+
+    It 'installs each required package through the shared installer exactly once' {
+        { & $starterPath -Platform android -ApiVersion 33 -ResultsDirectory $results -DeviceDirectory $devices } |
+            Should -Throw '*SDK packages ready*'
+        $installedPackages.Count | Should -Be 3
+        $installedPackages[0] | Should -Be 'platform-tools'
+        $installedPackages[1] | Should -Be 'emulator'
+        $installedPackages[2] | Should -Be $image
+    }
+
+    It 'cleans a partial image and retries only the failed package' {
+        $global:MauiNativeSdkTestState.ImageFailures = 1
+        { & $starterPath -Platform android -ApiVersion 33 -ResultsDirectory $results -DeviceDirectory $devices } |
+            Should -Throw '*SDK packages ready*'
+        @($installedPackages | Where-Object { $_ -eq 'platform-tools' }).Count | Should -Be 1
+        @($installedPackages | Where-Object { $_ -eq 'emulator' }).Count | Should -Be 1
+        @($installedPackages | Where-Object { $_ -eq $image }).Count | Should -Be 2
+        Should -Invoke Start-Sleep -Times 1 -Exactly
+    }
+
+    It 'fails after five image attempts without starting an emulator' {
+        $global:MauiNativeSdkTestState.ImageFailures = 5
+        { & $starterPath -Platform android -ApiVersion 33 -ResultsDirectory $results -DeviceDirectory $devices } |
+            Should -Throw '*failed after 5 total attempts*'
+        @($installedPackages | Where-Object { $_ -eq $image }).Count | Should -Be 5
+        Should -Invoke Start-Sleep -Times 4 -Exactly
+        Should -Invoke New-Item -Times 0 -Exactly -ParameterFilter {
+            @($Path).Count -eq 1 -and (Split-Path (Split-Path "$Path" -Parent) -Leaf) -eq 'devices'
+        }
+    }
+
+    It 'rejects an SDK discovery mismatch before installing or cleaning packages' {
+        $global:MauiNativeSdkTestState.DiscoveredSdk = Join-Path $root 'another-sdk'
+        { & $starterPath -Platform android -ApiVersion 33 -ResultsDirectory $results -DeviceDirectory $devices } |
+            Should -Throw '*must resolve the selected SDK*'
+        $installedPackages.Count | Should -Be 0
+    }
+}
