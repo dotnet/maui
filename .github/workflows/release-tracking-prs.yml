@@ -43,11 +43,11 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Cut the approved release, prepare reviewed CI restoration, and reconcile lanes
+      - name: Stage the approved source, prepare reviewed CI restoration, and reconcile lanes
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
-        run: ./eng/scripts/Sync-ReleaseNextLanes.ps1 -CompleteRelease -OutputDirectory '${{ runner.temp }}/release-next-lanes'
+        run: ./eng/scripts/Sync-ReleaseNextLanes.ps1 -StageRelease -OutputDirectory '${{ runner.temp }}/release-next-lanes'
 
       - name: Preserve next-lane preparation evidence
         if: always()
