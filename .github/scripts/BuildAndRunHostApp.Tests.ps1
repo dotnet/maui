@@ -155,7 +155,8 @@ Describe 'MacCatalyst Retina screenshot cropping' {
         $script:UiTestContent | Should -Match 'CGDisplayBounds\(CGMainDisplayID\(\)\)'
         $script:UiTestContent | Should -Match 'double scaleX = image\.Width / displayBounds\.Size\.Width'
         $script:UiTestContent | Should -Match 'double scaleY = image\.Height / displayBounds\.Size\.Height'
-        $script:UiTestContent | Should -Match 'surface\.Composite\(image, -pixelX, -pixelY, CompositeOperator\.SrcAtop\)'
+        $script:UiTestContent | Should -Match 'CropMacScreenshot\(image, new MagickGeometry\(pixelX, pixelY, \(uint\)pixelWidth, \(uint\)pixelHeight\), logicalWidth, logicalHeight\)'
+        $script:UiTestContent | Should -Match 'surface\.Composite\(mask, CompositeOperator\.CopyAlpha\)'
     }
 
     It 'normalizes the physical crop back to logical snapshot dimensions' {

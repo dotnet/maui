@@ -27,7 +27,13 @@
         "AUMID",
         "MSIX",
         "binlogs",
-        "runsettings"
+        "runsettings",
+        "PKCE",
+        "unregistration",
+        "SWIX",
+        "webauthn",
+        "Passwordless",
+        "worktree"
     ],
     "ignoreWords": [],
     "patterns": [
