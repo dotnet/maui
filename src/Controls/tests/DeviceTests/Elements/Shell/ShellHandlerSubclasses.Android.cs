@@ -274,6 +274,35 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact]
+		public async Task ResumingFragmentOfRemovedShellSectionDoesNotThrow()
+		{
+			SetupBuilder();
+
+			var firstPage = new ContentPage();
+			var removedSection = new ShellSection
+			{
+				Items = { new ShellContent { Content = new ContentPage() } }
+			};
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.Items.Add(new ShellContent { Content = firstPage });
+				shell.Items.Add(new FlyoutItem { Items = { removedSection } });
+			});
+
+			await CreateHandlerAndAddToWindow(shell, async () =>
+			{
+				await OnLoadedAsync(firstPage);
+
+				// Removing a section disposes its renderer (see ShellItemHandler.UpdateSections).
+				var renderer = ((IShellContext)shell.Handler).CreateShellSectionRenderer(removedSection);
+				var fragment = Assert.IsType<ShellSectionWrapperFragment>(renderer.Fragment);
+				renderer.Dispose();
+
+				Assert.Null(Record.Exception(fragment.OnResume));
+			});
+		}
+
 		protected override void SetupBuilder()
 		{
 			EnsureHandlerCreated(builder =>
