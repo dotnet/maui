@@ -794,6 +794,19 @@ one complete pass still does not establish that the intermittent abort is gone.
 The same native teardown change also passed the complete Catalyst Controls
 suite: 1,611 passes, 42 existing skips, no failures and a successful launcher
 exit (1,653 total, including the eight new inherited regression rows).
+Run 1673173 exposed a separate Core presentation-test lifetime: the native
+scroll view intentionally references its cross-platform layout weakly, while
+the test's last strong use preceded native layout and its assertion. The test
+now keeps that owner alive through native removal with `GC.KeepAlive`, without
+changing production ownership or collecting garbage. Genuine CI TRX reported
+2,613 passes, one zero-content-height assertion and 40 existing skips; the
+complete local native iOS Core suite after the lifetime fix passed 2,614 rows
+with the same 40 skips (2,654 total).
+That run's Mono General simulator log also captured the previously missing abort
+stack: `CustomDataTemplateSelectorSelector.OnSelectTemplate` unboxed a null item
+from `ItemsViewController2.DetermineCellReuseId`, reached through the carousel
+controller. This is a concrete managed exception crossing UIKit, not evidence
+of an unexplained runtime-only abort; native item-index lifetime is being checked.
 
 The shared NUnit/Appium MTP caller also has native execution evidence in
 [UI run 1670623](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1670623):

@@ -135,6 +135,8 @@ namespace Microsoft.Maui.DeviceTests
 					finally
 					{
 						scrollView.RemoveFromSuperview();
+						// The native scroll view intentionally holds the layout weakly.
+						GC.KeepAlive(layout);
 					}
 				}
 				finally
