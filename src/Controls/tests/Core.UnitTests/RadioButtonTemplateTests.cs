@@ -1,6 +1,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
 using Xunit;
@@ -73,6 +75,39 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.NotNull(root);
 			Assert.Equal(root.GetValue(property), value);
+		}
+
+		[Fact]
+		public void TemplateFromAppLevelImplicitStyleAddsTapGestureToCompositeRecognizers()
+		{
+			// https://github.com/dotnet/maui/issues/14949
+			// An application-level implicit style applies the ControlTemplate while the
+			// RadioButton is still being constructed. The tap gesture added during
+			// OnApplyTemplate must still end up in CompositeGestureRecognizers, which is
+			// the collection the iOS/MacCatalyst gesture manager attaches to.
+			ApplicationExtensions.CreateAndSetMockApplication();
+			try
+			{
+				var implicitStyle = new Style(typeof(RadioButton));
+				implicitStyle.Setters.Add(new Setter
+				{
+					Property = TemplatedView.ControlTemplateProperty,
+					Value = new ControlTemplate(() => new Grid { new ContentPresenter() })
+				});
+				Application.Current.Resources.Add(implicitStyle);
+
+				var radioButton = new RadioButton();
+
+				Assert.NotNull(radioButton.ControlTemplate);
+				var tapGesture = Assert.Single(radioButton.GestureRecognizers.OfType<TapGestureRecognizer>());
+				var compositeTapGesture = Assert.Single(((IGestureController)radioButton).CompositeGestureRecognizers.OfType<TapGestureRecognizer>());
+				Assert.Same(tapGesture, compositeTapGesture);
+				Assert.Same(radioButton, tapGesture.Parent);
+			}
+			finally
+			{
+				Application.ClearCurrent();
+			}
 		}
 
 		[Fact]
