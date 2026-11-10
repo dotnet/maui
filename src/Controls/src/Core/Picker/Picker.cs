@@ -596,12 +596,16 @@ namespace Microsoft.Maui.Controls
 
 			ClearPendingSelectedIndex();
 
-			if (ItemsSource != null)
-			{
-				SetSelectedIndexFromHandler(ItemsSource.IndexOf(selectedItem));
+			var index = ItemsSource != null ? ItemsSource.IndexOf(selectedItem) : Items.IndexOf(selectedItem);
+
+			// SelectedItem is usually updated from SelectedIndex, so they're already in sync. Setting SelectedIndex
+			// again is not only redundant: when SelectedIndex is being set (e.g. from a SelectedIndexChanged handler),
+			// the nested set is queued and replayed later with a stale value, making SelectedIndex and SelectedItem
+			// update each other forever (#8874).
+			if (index == SelectedIndex)
 				return;
-			}
-			SetSelectedIndexFromHandler(Items.IndexOf(selectedItem));
+
+			SetSelectedIndexFromHandler(index);
 		}
 
 		void SetPendingSelectedIndex(int selectedIndex)
