@@ -100,12 +100,11 @@ namespace Microsoft.Maui.DeviceTests
 		public Task NativePresentationControlsInsetStabilization(UIModalPresentationStyle style, int expectedHeight) =>
 			InvokeOnMainThreadAsync(async () =>
 			{
-				var scene = UIApplication.SharedApplication.GetKeyWindow().WindowScene;
-				using var window = new UIWindow(scene);
-				using var presenter = new UIViewController();
+				var window = UIApplication.SharedApplication.GetKeyWindow();
+				Assert.NotNull(window);
+				var presenter = window.RootViewController;
+				Assert.NotNull(presenter);
 				using var controller = new UIViewController { ModalPresentationStyle = style };
-				window.RootViewController = presenter;
-				window.Hidden = false;
 				try
 				{
 					await presenter.PresentViewControllerAsync(controller, false);
@@ -126,8 +125,8 @@ namespace Microsoft.Maui.DeviceTests
 				}
 				finally
 				{
-					await presenter.DismissViewControllerAsync(false);
-					window.Hidden = true;
+					if (controller.PresentingViewController is not null)
+						await controller.DismissViewControllerAsync(false);
 				}
 			});
 
