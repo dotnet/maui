@@ -806,7 +806,16 @@ That run's Mono General simulator log also captured the previously missing abort
 stack: `CustomDataTemplateSelectorSelector.OnSelectTemplate` unboxed a null item
 from `ItemsViewController2.DetermineCellReuseId`, reached through the carousel
 controller. This is a concrete managed exception crossing UIKit, not evidence
-of an unexplained runtime-only abort; native item-index lifetime is being checked.
+of an unexplained runtime-only abort. A real-detachment regression then passed
+without looping and failed with looping: removing the native view discarded the
+loop-index mapper while UIKit could still request cells. The mapper now remains
+owned until controller disposal, without retaining new native objects or changing
+template selectors. All 12 CarouselView rows passed on native iOS CoreCLR and
+Catalyst. The complete native iOS Mono General shard also passed 1,299 rows with
+14 existing skips (1,313 total), including the former crashing selector and both
+new mapping rows. Switching local runtime flavors required a full rebuild;
+the first incremental Mono attempt aborted at startup with a mismatched
+`System.Private.CoreLib` AOT module and is not counted as test coverage.
 
 The shared NUnit/Appium MTP caller also has native execution evidence in
 [UI run 1670623](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1670623):
