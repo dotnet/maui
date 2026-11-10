@@ -22,9 +22,9 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.FlyoutPage)]
 #if IOS || MACCATALYST
 	[Trait(RendererHandlerVariant.NavigationViewVariantTraitName, RendererHandlerVariant.NavigationRenderer)] // See RendererHandlerVariant.cs
-																											  // This base class exercises PhoneFlyoutPageRenderer on iOS/MacCatalyst; the
-																											  // FlyoutPageHandlerTests subclass overrides registration to exercise FlyoutViewHandler
-																											  // instead, so every test below runs against both variants.
+	// This base class exercises PhoneFlyoutPageRenderer on iOS/MacCatalyst; the
+	// FlyoutPageHandlerTests subclass overrides registration to exercise FlyoutViewHandler
+	// instead, so every test below runs against both variants.
 	[Trait(RendererHandlerVariant.FlyoutViewVariantTraitName, RendererHandlerVariant.PhoneFlyoutPageRenderer)] // See RendererHandlerVariant.cs
 #endif
 	public partial class FlyoutPageTests : ControlsHandlerTestBase

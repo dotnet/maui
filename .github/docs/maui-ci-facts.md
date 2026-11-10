@@ -589,6 +589,9 @@ and platform-element events. A native graphics control retained by WinUI/Win2D
 must not keep the removed overlay and its window alive through that drawable.
 The native overlay regression retains the graphics view, checks that its
 drawable is detached, and preserves the original overlay collection assertion.
+Popping a Windows modal must likewise disconnect its full handler graph, not
+only the modal's top-level handler; the FlyoutPage modal regression checks both
+child-page handlers as well as the original collection assertions.
 
 Native hosts default xUnit's `--long-running` threshold to 60 seconds and enable
 `--xunit-diagnostics on`, unless those options were supplied explicitly. These
@@ -628,6 +631,10 @@ only in the job-owned temporary directory when missing, and analysis failures
 remain explicit. A separate exact two-row attachment-lifetime invocation runs
 after the full Controls job, so an earlier suite crash cannot hide those closure
 assertions; it does not replace or filter the full-suite invocation.
+In [device run 1672521](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1672521),
+log 1039, the live process snapshot was captured successfully at 8,002 GDI
+objects as `native-process-4008.dmp`. The same run still failed normally, so
+the diagnostic capture did not hide the subsequent native termination.
 
 In [device run 1672389](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1672389),
 log 719, PageSheet's `PresentViewControllerAsync` task did not complete within
@@ -640,6 +647,10 @@ This rejects a missing active presenter or presentation order alone as the full
 explanation. Waiting for the owned controller's native appearance event verifies
 the lifecycle needed by the inset test without depending on that completion
 callback. Local pinned-SDK results do not establish that the CI failure is fixed.
+The actual native correction subsequently passed in
+[device run 1672414](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1672414),
+test run 46610588: 2,303 passes, no failures and 185 existing skips, including
+both native styles and the explicit FullScreen-then-PageSheet sequence.
 
 ## Merge-readiness criteria
 
