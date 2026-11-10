@@ -124,7 +124,9 @@ namespace Microsoft.Maui
 			}
 
 			if (!AppInfoUtils.IsPackagedApp)
+			{
 				fontSource = GetUnpackagedFontSource(fontSource);
+			}
 
 			return fontSource;
 		}
@@ -134,11 +136,15 @@ namespace Microsoft.Maui
 			var fragmentIndex = fontSource.IndexOf('#', StringComparison.Ordinal);
 			// Without a fragment, Win2D treats the source as an installed font family.
 			if (fragmentIndex < 0)
+			{
 				return fontSource;
+			}
 
 			var fontUri = new Uri(fontSource[..fragmentIndex], UriKind.RelativeOrAbsolute);
 			if (FontUriHelper.TryGetAppFontFileUri(fontUri, out var uri))
+			{
 				return uri + fontSource[fragmentIndex..];
+			}
 
 			// Preserve the original source if the file cannot be resolved.
 			return fontSource;

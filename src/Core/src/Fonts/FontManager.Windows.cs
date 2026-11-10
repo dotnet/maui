@@ -177,10 +177,12 @@ namespace Microsoft.Maui
 
 				// Resolve relative paths for Win2D, and convert packaged URIs to file URIs
 				// when the app is unpackaged.
-				if (!fontUri.IsAbsoluteUri || !AppInfoUtils.IsPackagedApp)
+				if (!AppInfoUtils.IsPackagedApp)
 				{
 					if (FontUriHelper.TryGetAppFontFileUri(fontUri, out var uri))
-						fontUri = new Uri(uri, UriKind.Absolute);
+					{
+						fontUri = new Uri(uri, UriKind.RelativeOrAbsolute);
+					}
 				}
 
 				using (var fontSet = new CanvasFontSet(fontUri))
