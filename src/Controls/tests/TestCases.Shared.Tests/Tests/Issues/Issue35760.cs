@@ -25,7 +25,11 @@ public class Issue35760 : _IssuesUITest
 		App.Click("GoToDetails");
 		App.WaitForElement("DetailsContent");
 		App.WaitForNoElement("Archive");
-		VerifyScreenshot();
+		// Match either toolbar title, excluding tab labels, so a stale title produces an assertion failure.
+		var title = App.WaitForElement(AppiumQuery.ByXPath(
+			"//android.widget.TextView[(@text='Messages' or @text='Details') and not(ancestor::android.widget.HorizontalScrollView)]"));
+		Assert.That(title.GetText(), Is.EqualTo("Details"),
+			"The toolbar title should update after switching tabs with context actions open.");
 	}
 }
 #endif
