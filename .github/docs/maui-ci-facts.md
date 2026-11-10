@@ -720,8 +720,27 @@ split-Flyout row read initial geometry before its detail pane finished layout.
 The lifecycle test now waits for its own event counters before the unchanged
 assertions and transitions; the split test awaits positive, non-overlapping
 initial pane widths before its unchanged geometry assertions. All three rows
-then passed together, with one pre-existing skip. A complete rerun is still
-required; the targeted result is not a full-suite success.
+then passed together, with one pre-existing skip. The subsequent complete
+Release CoreCLR Catalyst rerun passed all 1,603 runnable rows with 42 existing
+skips, no failures and a successful native launcher exit. This is local
+full-suite evidence for `9dc989040e`, not proof of Windows or Android success.
+
+Device run 1672894 exposed Android Controls ViewPager crashes on both runtimes.
+A local CoreCLR run of all 13 `ShellLazyStartupTests` reproduced the native
+RecyclerView termination. The fixture's `FinishedDestroying` property returned
+its loading task, its completion sources could run test code inline inside
+native lifecycle/layout callbacks, and cleanup disconnected the window before
+removing its owning fragment. The fixture now uses asynchronous continuations,
+waits for the actual fragment destruction signal and lets that native callback
+deliver window destruction before final handler cleanup. The same 13 native
+rows then passed with no skips; no production animation suppression, fixed
+delay or assertion change was needed. Full Android and Mono CI remain required.
+The same run's Essentials Mono log identified reactivation of a disposed
+`ActivityLifecycleContextListener`. Test-owned listener disposal now runs on
+the UI thread, after owned recreation activities actually reach `OnDestroy`.
+All nine lifecycle/recreation rows passed locally on CoreCLR; the local Mono
+invocation was blocked during restore by unrelated `net11.0-ios` target
+evaluation (`NETSDK1242`), so it is not Mono execution evidence.
 
 The shared NUnit/Appium MTP caller also has native execution evidence in
 [UI run 1670623](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1670623):

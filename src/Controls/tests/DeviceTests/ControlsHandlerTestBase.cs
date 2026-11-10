@@ -208,7 +208,7 @@ namespace Microsoft.Maui.DeviceTests
 
 							if (vc.Frame.Height < 0 && vc.Frame.Width < 0)
 							{
-								var batchTcs = new TaskCompletionSource();
+								var batchTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 								vc.BatchCommitted += OnBatchCommitted;
 								await batchTcs.Task.WaitAsync(timeOut.Value);
 								if (vc.Frame.Height < 0 && vc.Frame.Width < 0)
@@ -264,13 +264,15 @@ namespace Microsoft.Maui.DeviceTests
 
 #if !WINDOWS
 						bool isActivated = controlsWindow?.IsActivated ?? false;
-						bool isDestroyed = controlsWindow?.IsDestroyed ?? false;
 
 						if (isActivated)
 							window.Deactivated();
 
+#if !ANDROID
+						bool isDestroyed = controlsWindow?.IsDestroyed ?? false;
 						if (!isDestroyed)
 							window.Destroying();
+#endif
 #endif
 
 					}, mauiContext);
@@ -421,7 +423,7 @@ namespace Microsoft.Maui.DeviceTests
 		protected async Task OnLoadedAsync(VisualElement frameworkElement, TimeSpan? timeOut = null)
 		{
 			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
-			var source = new TaskCompletionSource();
+			var source = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 			if (frameworkElement.IsLoaded && frameworkElement.IsLoadedOnPlatform())
 			{
 				return;
@@ -454,7 +456,7 @@ namespace Microsoft.Maui.DeviceTests
 		protected async Task OnUnloadedAsync(VisualElement frameworkElement, TimeSpan? timeOut = null)
 		{
 			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
-			var source = new TaskCompletionSource();
+			var source = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 			if (!frameworkElement.IsLoaded && !frameworkElement.IsLoadedOnPlatform())
 			{
 				return;
@@ -541,7 +543,7 @@ namespace Microsoft.Maui.DeviceTests
 			}
 
 			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
-			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
+			TaskCompletionSource<object> taskCompletionSource = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
 			page.NavigatedTo += NavigatedTo;
 
@@ -555,8 +557,8 @@ namespace Microsoft.Maui.DeviceTests
 
 			void NavigatedTo(object sender, NavigatedToEventArgs e)
 			{
-				taskCompletionSource.SetResult(true);
 				page.NavigatedTo -= NavigatedTo;
+				taskCompletionSource.SetResult(true);
 			}
 		}
 
@@ -569,7 +571,7 @@ namespace Microsoft.Maui.DeviceTests
 			}
 
 			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
-			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
+			TaskCompletionSource<object> taskCompletionSource = new(TaskCreationOptions.RunContinuationsAsynchronously);
 			frameworkElement.BatchCommitted += OnBatchCommitted;
 
 			await taskCompletionSource.Task.WaitAsync(timeOut.Value);
