@@ -4,6 +4,7 @@ using System;
 using System.Diagnostics;
 using System.Numerics;
 using System.Threading.Tasks;
+using Microsoft.Maui.Graphics.Win2D;
 using Microsoft.UI.Composition;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -12,6 +13,7 @@ using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.UI.Xaml.Shapes;
 using Windows.Foundation;
 using Windows.Graphics.Imaging;
+using ShapeDrawable = Microsoft.Maui.Graphics.ShapeDrawable;
 
 
 namespace Microsoft.Maui.Platform
@@ -37,6 +39,15 @@ namespace Microsoft.Maui.Platform
 				if (element is Shape shape)
 				{
 					return shape.GetAlphaMask();
+				}
+				if (element is W2DGraphicsView graphicsView && graphicsView.Drawable is ShapeDrawable)
+				{
+					// RenderTargetBitmap does not capture Win2D content; use the live visual instead.
+					var visual = ElementCompositionPreview.GetElementVisual(element);
+					var surface = visual.Compositor.CreateVisualSurface();
+					surface.SourceVisual = visual;
+					surface.SourceSize = element.RenderSize.ToVector2();
+					return visual.Compositor.CreateSurfaceBrush(surface);
 				}
 				else if (element is FrameworkElement frameworkElement)
 				{
