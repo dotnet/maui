@@ -18,12 +18,13 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 	using MauiPlatform = Microsoft.Maui.ApplicationModel.Platform;
 
 	[Category("ActivityStateManager")]
-	public class ActivityStateManager_Tests : IDisposable
+	public class ActivityStateManager_Tests : IAsyncDisposable
 	{
 		// Keep registered Java callbacks rooted until fixture disposal unregisters them.
 		readonly ActivityStateManagerImplementation manager = new();
 
-		public void Dispose() => manager.Dispose();
+		public ValueTask DisposeAsync() =>
+			new(MainThread.InvokeOnMainThreadAsync(manager.Dispose));
 
 		/// <summary>
 		/// Verifies the fix for issue #36035: calling Init(Application) multiple times
