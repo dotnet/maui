@@ -329,7 +329,7 @@ namespace Microsoft.Maui.DeviceTests
 			}
 			catch (Xunit.Sdk.XunitException)
 			{
-				Microsoft.Maui.TestUtils.DeviceTests.Runners.MauiTestApplication.CaptureWindowsTestFailureDump(nameof(DoesNotLeakAsModal));
+				Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner.HeadlessTestRunner.CaptureWindowsTestFailureDump(nameof(DoesNotLeakAsModal));
 				throw;
 			}
 #else

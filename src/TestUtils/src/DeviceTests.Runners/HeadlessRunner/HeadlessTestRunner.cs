@@ -18,6 +18,12 @@ public sealed class HeadlessTestRunner(HeadlessRunnerOptions runnerOptions, Test
 {
 	int _started;
 
+#if WINDOWS
+	/// <summary>Requests an owned-process snapshot for a test failure when native diagnostics are enabled.</summary>
+	public static void CaptureWindowsTestFailureDump(string testName) =>
+		MauiTestApplication.CaptureWindowsTestFailureDump(testName);
+#endif
+
 	public async Task<NativeTestResult> RunAsync(string resultsDirectory, string[] arguments)
 	{
 		var (exitCode, consumer) = await RunTestsAsync(resultsDirectory, arguments);
