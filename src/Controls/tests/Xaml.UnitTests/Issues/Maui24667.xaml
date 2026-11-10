@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Maui24667">
+	<ContentPage.Resources>
+		<ResourceDictionary>
+			<ResourceDictionary.MergedDictionaries>
+				<ResourceDictionary Source="Maui24667Rd1.rt.xaml" />
+				<ResourceDictionary Source="Maui24667Rd2.rt.xaml" />
+			</ResourceDictionary.MergedDictionaries>
+
+			<Style x:Key="LabelBaseStyle" TargetType="Label">
+				<Setter Property="Padding" Value="10,7" />
+			</Style>
+			<Style TargetType="Label" ApplyToDerivedTypes="True" BaseResourceKey="LabelBaseStyle" />
+		</ResourceDictionary>
+	</ContentPage.Resources>
+	<StackLayout>
+		<Button x:Name="button" />
+		<Label x:Name="label" />
+	</StackLayout>
+</ContentPage>
