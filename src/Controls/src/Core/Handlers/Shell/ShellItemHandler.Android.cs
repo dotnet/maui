@@ -865,6 +865,7 @@ namespace Microsoft.Maui.Controls.Handlers
             }
 
             var shellItem = VirtualView;
+            UpdateTabBarAutomationIds();
 
             var shellSections = ((IShellItemController)shellItem).GetItems();
 

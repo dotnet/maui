@@ -490,7 +490,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			base.OnShellSectionPropertyChanged(sender, e);
 
-			if (e.IsOneOf(BaseShellItem.TitleProperty, BaseShellItem.IconProperty, BaseShellItem.IsEnabledProperty))
+			if (e.Is(ShellSection.CurrentItemProperty))
+			{
+				UpdateTabBarAutomationIds();
+			}
+			else if (e.IsOneOf(BaseShellItem.TitleProperty, BaseShellItem.IconProperty, BaseShellItem.IsEnabledProperty))
 			{
 				var shellSection = (ShellSection)sender;
 				var index = ((IShellItemController)ShellItem).GetItems().IndexOf(shellSection);
