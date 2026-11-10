@@ -114,14 +114,14 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.NotNull(window);
 				var presenter = window.RootViewController;
 				Assert.NotNull(presenter);
-				using var controller = new UIViewController { ModalPresentationStyle = style };
+				using var controller = new PresentationTrackingController { ModalPresentationStyle = style };
 				try
 				{
 					Console.WriteLine($"NATIVE_PRESENTATION: style={style}, phase=present, application={UIApplication.SharedApplication.ApplicationState}, scene={window.WindowScene?.ActivationState}, key={window.IsKeyWindow}, hidden={window.Hidden}, attached={presenter.IsViewLoaded && presenter.View.Window is not null}, presenting={presenter.IsBeingPresented}, dismissing={presenter.IsBeingDismissed}, existing={presenter.PresentedViewController?.GetType().Name}");
-					var presentation = presenter.PresentViewControllerAsync(controller, false);
+					presenter.PresentViewController(controller, false, null);
 					Console.WriteLine($"NATIVE_PRESENTATION: style={style}, phase=await presentation");
-					await presentation.WaitAsync(TimeSpan.FromSeconds(30));
-					Console.WriteLine($"NATIVE_PRESENTATION: style={style}, phase=presented");
+					await controller.Appeared.WaitAsync(TimeSpan.FromSeconds(30));
+					Console.WriteLine($"NATIVE_PRESENTATION: style={style}, phase=presented, attached={controller.View.Window is not null}, presenter={controller.PresentingViewController?.GetType().Name}");
 					Assert.NotNull(controller.PresentingViewController);
 					var layout = new SafeAreaLayoutStub();
 					using var scrollView = CreateScrollView(layout, null, 36);
@@ -181,6 +181,19 @@ namespace Microsoft.Maui.DeviceTests
 			public UIViewController Presenter { get; set; }
 			public override UIViewController PresentingViewController => Presenter;
 			public override UIResponder NextResponder => ParentViewController ?? base.NextResponder;
+		}
+
+		class PresentationTrackingController : UIViewController
+		{
+			readonly TaskCompletionSource _appeared = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+			public Task Appeared => _appeared.Task;
+
+			public override void ViewDidAppear(bool animated)
+			{
+				base.ViewDidAppear(animated);
+				_appeared.TrySetResult();
+			}
 		}
 
 		class SafeAreaLayoutStub : StubBase, ICrossPlatformLayout, ISafeAreaView2

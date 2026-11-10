@@ -165,7 +165,7 @@ architectures; patch and minor updates remain enabled.
 | Pipeline Name | Definition ID | Purpose |
 |---------------|---------------|---------|
 | `maui-pr` | **302** | Main build + unit/integration validation — check this first |
-| `maui-pr-devicetests` | **314** | Helix device tests (iOS, Android, Windows, MacCatalyst) |
+| `maui-pr-devicetests` | **314** | Native `dotnet test` device tests (iOS, Android, Windows, MacCatalyst) |
 | `maui-pr-uitests` | **313** | Appium-based UI tests |
 
 **Investigation priority order**: `maui-pr` → `maui-pr-devicetests` → `maui-pr-uitests`.
@@ -538,7 +538,7 @@ error XAGRDL0000: Could not GET '...pkgs.dev.azure.com/.../maven/v1/...'
 | `WMC0612` / XBF `0x09C4` / `Property Not Found` after adding native Windows `x:DataType` | `maui-pr` Windows build/pack | The native XBF generator rejects the annotations introduced by #38735 on classic `{Binding}` templates. Restore the prior metadata without replacing bindings or converters. XML/source-only checks cannot validate XBF compilation; require an actual Windows build. |
 | `WMC9999` on overloaded table collections, `WMC0821` on open generic types, or invalid generated `XamlTypeInfo.g.cs` after adding native `[Bindable]` | `maui-pr` Windows build/pack | These were successive failures from #38735's new metadata in the Windows investigation on #39608. Restore the pre-cleanup native metadata baseline rather than changing public collection APIs, generic types, or generated code. Preserve existing runtime binding behavior and validate with the native Windows compiler. |
 | Native exit `57005` / `0xDEAD`, with `CTitleBar::InitializeComposition` returning `E_OUTOFMEMORY` and growing composition/section handle counts | Windows device tests | Compare the native dump with [microsoft/microsoft-ui-xaml#12210](https://github.com/microsoft/microsoft-ui-xaml/issues/12210): extended title bars retain native resources after window closure, including on the pinned Windows App SDK 2.5.1. Fixture ownership corrections did not resolve the observed Controls crash. The exit code and aggregate handle counts do not exclude an in-repository owner leak: verify actual HWND destruction before attributing this solely to the SDK. Preserve real window closure and title-bar assertions; the reported reset workaround needs explicit approval and native validation, and a newer SDK report also describes reset-induced crashes. |
-| Catalyst Core stops after `NativePresentationControlsInsetStabilization(style: PageSheet, ...)` and an unbalanced appearance-transition warning | Native Core device tests | The last skipped Editor message was not the stalled test. `TEST_START:` tracing in build 1672335 identified the native modal-presentation row. Present its owned controller from the real key window's root controller, not a second `UIWindow` in the same scene; dismiss only the owned modal and never hide, replace or dispose the borrowed runner window/controller. Preserve both PageSheet and FullScreen inset assertions. |
+| Catalyst Core stops after `NativePresentationControlsInsetStabilization(style: PageSheet, ...)` | Native Core device tests | The last skipped Editor message was not the stalled test. `TEST_START:` tracing identified the native modal-presentation row. Present its owned controller from the real key window's root controller and await actual `ViewDidAppear`, with a bounded failure deadline. Dismiss only the owned modal; never hide, replace or dispose the borrowed runner window/controller. Preserve both PageSheet and FullScreen inset assertions and cover FullScreen followed by PageSheet explicitly. |
 | `Add-AppxPackage` fails with `0x800B0109` after trusting a job certificate in `CurrentUser\TrustedPeople` | Packaged Windows device tests | [MSIX deployment guidance](https://learn.microsoft.com/windows/msix/desktop/managing-your-msix-deployment-troubleshooting#step-3-verify-prerequisites) requires a chain trusted by the local computer, not just the current user. Use an accepted signer or explicitly approved agent provisioning. Do not silently change machine trust, export private keys, or substitute unpackaged execution. |
 | `error XAGRDL0000` / `401` / `No local versions` | `maui-pr` or official build | Gradle/Maven feed issue — see above |
 | Apple workload install cannot find a `net10.0` SDK pack | `maui-pr` SDK provisioning | The .NET 11 Apple manifests also install .NET 10 compatibility packs. Resolve the exact missing version's feed with `darc get-asset`; the current .NET 11 feed alone may not contain it. Do not copy another branch's compatibility feed without checking its manifest versions. |
@@ -591,6 +591,18 @@ option. The native message consumer also logs `TEST_START:` for each in-progress
 node, so a runtime or UI-thread stall does not depend on a diagnostic timer
 continuing to run. These messages never supply result counters; genuine TRX and
 the process exit code remain authoritative.
+
+In [device run 1672389](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1672389),
+log 719, PageSheet's `PresentViewControllerAsync` task did not complete within
+30 seconds even with an active application, foreground-active scene, key visible
+window, attached presenter and no existing presentation or transition. The native
+call itself returned, and the subsequent dismissal completed. Both the individual
+PageSheet row and explicit FullScreen-then-PageSheet sequence failed; the suite
+continued to a genuine TRX with 2,301 passes, two failures and 185 existing skips.
+This rejects a missing active presenter or presentation order alone as the full
+explanation. Waiting for the owned controller's native appearance event verifies
+the lifecycle needed by the inset test without depending on that completion
+callback. Local pinned-SDK results do not establish that the CI failure is fixed.
 
 ## Merge-readiness criteria
 
