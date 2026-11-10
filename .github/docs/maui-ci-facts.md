@@ -778,6 +778,22 @@ failure: the flyout-disposal test inspected header/footer native parents before
 attachment. It now awaits those exact parent relationships before all unchanged
 attachment and disposal assertions. The complete local Shell shard then passed
 all 507 native rows without skips.
+Two further native iOS fixture regressions demonstrated independent ownership
+defects: logical window destruction preceded native content removal, and the
+disconnect completion could resume callers before logical destruction.
+Both failed against the original fixture and passed after moving Apple window
+destruction into the native teardown owner and exposing its actual asynchronous
+disconnect task. The task also propagates teardown exceptions to the awaiting
+fixture instead of losing them through `async void`. This is direct lifecycle
+ordering evidence, not proof of the earlier intermittent abort's cause.
+The complete unfiltered local iOS Controls suite then passed 1,978 rows with
+23 existing skips and no failures (2,001 total), including all eight inherited
+rows for the two teardown regressions and the Shell attachment check. This
+native CoreCLR witness produced genuine TRX and a successful launcher exit;
+one complete pass still does not establish that the intermittent abort is gone.
+The same native teardown change also passed the complete Catalyst Controls
+suite: 1,611 passes, 42 existing skips, no failures and a successful launcher
+exit (1,653 total, including the eight new inherited regression rows).
 
 The shared NUnit/Appium MTP caller also has native execution evidence in
 [UI run 1670623](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1670623):

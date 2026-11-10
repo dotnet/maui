@@ -268,7 +268,7 @@ namespace Microsoft.Maui.DeviceTests
 						if (isActivated)
 							window.Deactivated();
 
-#if !ANDROID
+#if !ANDROID && !IOS && !MACCATALYST
 						bool isDestroyed = controlsWindow?.IsDestroyed ?? false;
 						if (!isDestroyed)
 							window.Destroying();
