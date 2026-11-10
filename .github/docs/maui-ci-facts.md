@@ -816,6 +816,12 @@ Catalyst. The complete native iOS Mono General shard also passed 1,299 rows with
 new mapping rows. Switching local runtime flavors required a full rebuild;
 the first incremental Mono attempt aborted at startup with a mismatched
 `System.Private.CoreLib` AOT module and is not counted as test coverage.
+The Windows fixture now captures each owned HWND before running its test and
+requires the real `IsWindow` API to report its destruction after native closure,
+before releasing the handler/window scopes. Successful checks log that exact
+handle and process. This stricter native teardown check needs Windows CI
+verification; it neither proves native title-bar/resource release nor treats
+managed `Closed` or garbage collection as evidence of HWND destruction.
 
 The shared NUnit/Appium MTP caller also has native execution evidence in
 [UI run 1670623](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1670623):
