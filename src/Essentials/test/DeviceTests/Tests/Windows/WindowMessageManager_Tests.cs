@@ -61,12 +61,16 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 
 		[Fact]
 		public Task ClosingMauiWindowDetachesItsWindowMessageHandler() =>
-			Utils.OnMainThread(() =>
+			Utils.OnMainThread(async () =>
 			{
 				var window = new MauiWinUIWindow();
+				var closed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+				window.Closed += (_, _) => closed.TrySetResult();
 				using var manager = WindowMessageManager.Get(window);
 				try
 				{
+					window.Content = new UI.Xaml.Controls.Grid();
+					window.Activate();
 					Assert.True(manager.IsAttached);
 				}
 				finally
@@ -74,6 +78,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 					window.Close();
 				}
 
+				await closed.Task.WaitAsync(TimeSpan.FromSeconds(10));
 				Assert.False(manager.IsAttached);
 			});
 
