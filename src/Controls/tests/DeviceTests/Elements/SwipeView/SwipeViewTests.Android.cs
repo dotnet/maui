@@ -19,6 +19,72 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class SwipeViewTests : ControlsHandlerTestBase
 	{
+		[Fact]
+		// https://github.com/dotnet/maui/issues/37089
+		public async Task SwipeKeepsTrackingWhenThePointerLeavesTheBounds()
+		{
+			SetupBuilder();
+
+			var content = new Grid
+			{
+				WidthRequest = 300,
+				HeightRequest = 60,
+				Background = new SolidPaint(Colors.White)
+			};
+
+			var swipeView = new SwipeView()
+			{
+				WidthRequest = 300,
+				HeightRequest = 60,
+				RightItems = new SwipeItems { new SwipeItem { BackgroundColor = Colors.Red } },
+				Content = content
+			};
+
+			await AttachAndRun(swipeView, async (handler) =>
+			{
+				var platformView = ((SwipeViewHandler)handler).PlatformView;
+				var contentView = ((IView)content).ToPlatform();
+
+				// The swipe open distance is clamped to the content size, so wait for the layout
+				await AssertEventually(() => contentView.Width > 0, message: "SwipeView content was not laid out");
+
+				var density = contentView.Context.Resources.DisplayMetrics.Density;
+				var time = global::Android.OS.SystemClock.UptimeMillis();
+				var x = platformView.Width / 2f;
+				var y = platformView.Height / 2f;
+				await InvokeOnMainThreadAsync(() =>
+				{
+					using (var down = MotionEvent.Obtain(time, time, MotionEventActions.Down, x, y, 0))
+						platformView.DispatchTouchEvent(down);
+					using (var move1 = MotionEvent.Obtain(time, time + 50, MotionEventActions.Move, x - 20 * density, y, 0))
+						platformView.DispatchTouchEvent(move1);
+				});
+
+				// The translation is applied by an animator, so wait for it
+				await AssertEventually(() => contentView.TranslationX < 0, message: "The swipe did not start");
+				var insideTranslationX = contentView.TranslationX;
+
+				// The pointer leaves the bounds vertically while the horizontal swipe continues
+				await InvokeOnMainThreadAsync(() =>
+				{
+					using (var move2 = MotionEvent.Obtain(time, time + 100, MotionEventActions.Move, x - 40 * density, y + platformView.Height, 0))
+						platformView.DispatchTouchEvent(move2);
+				});
+
+				await AssertEventually(() => contentView.TranslationX < insideTranslationX,
+					message: $"The swipe stopped tracking when the pointer left the bounds (TranslationX {contentView.TranslationX}, was {insideTranslationX})");
+
+				await InvokeOnMainThreadAsync(() =>
+				{
+					using (var cancel = MotionEvent.Obtain(time, time + 150, MotionEventActions.Cancel, x - 40 * density, y, 0))
+						platformView.DispatchTouchEvent(cancel);
+				});
+
+				// Wait for the cancel reset to settle so no animation outlives the test
+				await AssertEventually(() => contentView.TranslationX == 0, message: "SwipeView did not reset");
+			});
+		}
+
 		// Issue #23478: TalkBack's "double tap to activate" invokes View.PerformAccessibilityAction(ACTION_CLICK)
 		// on the focused SwipeItem, a code path distinct from the manual touch hit-testing SwipeView normally
 		// relies on to execute commands. This verifies the accessibility action reaches the bound Command.
