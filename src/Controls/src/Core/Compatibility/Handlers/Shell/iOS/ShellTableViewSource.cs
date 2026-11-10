@@ -105,6 +105,17 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 		}
 
+		internal void InvalidateTemplates()
+		{
+			if (_cells == null)
+				return;
+
+			foreach (var cell in _cells.Values)
+				cell.Disconnect(_context.Shell);
+
+			_cells.Clear();
+		}
+
 		internal void Disconnect()
 		{
 			ScrolledEvent = null;
