@@ -746,6 +746,26 @@ passed locally on CoreCLR. The local Mono invocation's cross-target restore
 also evaluated `net11.0-ios`, which the SDK rejects for Mono (`NETSDK1242`);
 that invocation is not Mono execution evidence.
 
+Run 1673020 completed 32 of 41 jobs successfully. Its additional Windows Core
+termination was not attributed to title-bar pressure: log 928 records
+`MauiWebView.LoadHtml` dereferencing a null `CoreWebView2` after initialization
+reported `COMException (0x80010108)`. Navigation now captures and checks the
+initialized native object for HTML loading, local-URL mapping and navigation
+callbacks, logging explicitly if no native object remains. Native Windows
+verification is still required; local cross-host build reached the Windows-only
+`MakePri.exe` prerequisite, not a successful Windows build.
+
+The iOS initial-inset assertion now waits for the real safe-area API value
+before its unchanged final assertion; all three focused iOS 27 CoreCLR rows
+passed. Two subsequent complete local General runs passed 1,289 rows with 14
+existing skips. However, an earlier local run and both General jobs in run
+1673020 terminated without genuine TRX. The local simulator log records
+`SIGABRT` after Carousel tests; the last test and its complete ten-row class
+both passed in fresh isolation. The full-pass repetitions do not establish an
+abort fix or justify accepting missing results. Temporary app exception hooks
+were removed; SDK launch logging was used for further diagnosis without
+changing exception modes or native failure handling.
+
 The shared NUnit/Appium MTP caller also has native execution evidence in
 [UI run 1670623](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1670623):
 123 genuine test runs contain 15,140 rows, with 14,852 passes, 267 skips and
