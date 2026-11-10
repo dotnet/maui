@@ -586,7 +586,10 @@ Native hosts default xUnit's `--long-running` threshold to 60 seconds and enable
 `--xunit-diagnostics on`, unless those options were supplied explicitly. These
 are liveness diagnostics, not test deadlines, retries or result evidence. Add
 them inside the headless host: the native SDK proxy does not expose every xUnit
-option. Genuine TRX and the process exit code remain authoritative.
+option. The native message consumer also logs `TEST_START:` for each in-progress
+node, so a runtime or UI-thread stall does not depend on a diagnostic timer
+continuing to run. These messages never supply result counters; genuine TRX and
+the process exit code remain authoritative.
 
 ## Merge-readiness criteria
 

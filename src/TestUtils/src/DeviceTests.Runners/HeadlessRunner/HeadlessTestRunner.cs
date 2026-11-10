@@ -91,13 +91,16 @@ public sealed class HeadlessTestRunner(HeadlessRunnerOptions runnerOptions, Test
 		public string DisplayName => nameof(ResultConsumer);
 		public string Description => "Native device test results";
 		public string Version => "1.0";
-		public Type[] DataTypesConsumed => [typeof(SessionFileArtifact)];
+		public Type[] DataTypesConsumed => [typeof(SessionFileArtifact), typeof(TestNodeUpdateMessage)];
 		public Task<bool> IsEnabledAsync() => Task.FromResult(true);
 
 		public Task ConsumeAsync(IDataProducer dataProducer, IData value, CancellationToken cancellationToken)
 		{
 			if (value is SessionFileArtifact artifact && artifact.FileInfo.Extension.Equals(".trx", StringComparison.OrdinalIgnoreCase))
 				TrxReportPath = artifact.FileInfo.FullName;
+			else if (value is TestNodeUpdateMessage { TestNode: var node } &&
+				node.Properties.SingleOrDefault<TestNodeStateProperty>() is InProgressTestNodeStateProperty)
+				Console.WriteLine($"TEST_START: {node.DisplayName}");
 			return Task.CompletedTask;
 		}
 	}
