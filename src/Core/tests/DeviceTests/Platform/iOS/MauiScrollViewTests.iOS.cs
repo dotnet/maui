@@ -98,6 +98,16 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(UIModalPresentationStyle.PageSheet, 580)]
 		[InlineData(UIModalPresentationStyle.FullScreen, 601)]
 		public Task NativePresentationControlsInsetStabilization(UIModalPresentationStyle style, int expectedHeight) =>
+			AssertNativePresentationControlsInsetStabilization(style, expectedHeight);
+
+		[Fact]
+		public async Task NativePageSheetPresentationAfterFullScreen()
+		{
+			await AssertNativePresentationControlsInsetStabilization(UIModalPresentationStyle.FullScreen, 601);
+			await AssertNativePresentationControlsInsetStabilization(UIModalPresentationStyle.PageSheet, 580);
+		}
+
+		static Task AssertNativePresentationControlsInsetStabilization(UIModalPresentationStyle style, int expectedHeight) =>
 			InvokeOnMainThreadAsync(async () =>
 			{
 				var window = UIApplication.SharedApplication.GetKeyWindow();
@@ -107,7 +117,11 @@ namespace Microsoft.Maui.DeviceTests
 				using var controller = new UIViewController { ModalPresentationStyle = style };
 				try
 				{
-					await presenter.PresentViewControllerAsync(controller, false);
+					Console.WriteLine($"NATIVE_PRESENTATION: style={style}, phase=present, application={UIApplication.SharedApplication.ApplicationState}, scene={window.WindowScene?.ActivationState}, key={window.IsKeyWindow}, hidden={window.Hidden}, attached={presenter.IsViewLoaded && presenter.View.Window is not null}, presenting={presenter.IsBeingPresented}, dismissing={presenter.IsBeingDismissed}, existing={presenter.PresentedViewController?.GetType().Name}");
+					var presentation = presenter.PresentViewControllerAsync(controller, false);
+					Console.WriteLine($"NATIVE_PRESENTATION: style={style}, phase=await presentation");
+					await presentation.WaitAsync(TimeSpan.FromSeconds(30));
+					Console.WriteLine($"NATIVE_PRESENTATION: style={style}, phase=presented");
 					Assert.NotNull(controller.PresentingViewController);
 					var layout = new SafeAreaLayoutStub();
 					using var scrollView = CreateScrollView(layout, null, 36);
@@ -126,7 +140,11 @@ namespace Microsoft.Maui.DeviceTests
 				finally
 				{
 					if (controller.PresentingViewController is not null)
-						await controller.DismissViewControllerAsync(false);
+					{
+						Console.WriteLine($"NATIVE_PRESENTATION: style={style}, phase=dismiss, presenting={controller.IsBeingPresented}, dismissing={controller.IsBeingDismissed}");
+						await controller.DismissViewControllerAsync(false).WaitAsync(TimeSpan.FromSeconds(30));
+						Console.WriteLine($"NATIVE_PRESENTATION: style={style}, phase=dismissed");
+					}
 				}
 			});
 

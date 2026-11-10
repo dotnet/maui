@@ -600,7 +600,7 @@ namespace Microsoft.Maui.DeviceTests
 			var phase = "initial load";
 			var reloadLoaded = false;
 			var focusDiagnostic = "No focus event observed.";
-			var focusTransfer = "No native focus transfer observed.";
+			var focusTransfers = new System.Collections.Generic.List<string>();
 
 			var scrollView = new ScrollView
 			{
@@ -627,16 +627,30 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAndAddToWindow<IWindowHandler>(window, async _ =>
 			{
 				var platformEntry = ((EntryHandler)entry.Handler).PlatformView;
-				void OnGettingFocus(Microsoft.UI.Xaml.UIElement sender, Microsoft.UI.Xaml.Input.GettingFocusEventArgs args)
+				var platformScrollView = ((ScrollViewHandler)scrollView.Handler).PlatformView;
+				void RecordFocus(string target, Microsoft.UI.Xaml.Input.GettingFocusEventArgs args)
 				{
 					var previous = args.OldFocusedElement;
-					focusTransfer = $"previous={previous?.GetType().Name}/{(previous as Microsoft.UI.Xaml.FrameworkElement)?.Name}, direction={args.Direction}, state={args.FocusState}";
+					var next = args.NewFocusedElement;
+					focusTransfers.Add($"{phase}: {target} GettingFocus previous={previous?.GetType().Name}/{(previous as Microsoft.UI.Xaml.FrameworkElement)?.Name}, next={next?.GetType().Name}, direction={args.Direction}, state={args.FocusState}, loaded={platformScrollView.IsLoaded}, tabStop={platformScrollView.IsTabStop}");
 				}
+				void OnGettingFocus(Microsoft.UI.Xaml.UIElement sender, Microsoft.UI.Xaml.Input.GettingFocusEventArgs args)
+				{
+					RecordFocus("Entry", args);
+				}
+				void OnScrollGettingFocus(Microsoft.UI.Xaml.UIElement sender, Microsoft.UI.Xaml.Input.GettingFocusEventArgs args) =>
+					RecordFocus("ScrollViewer", args);
+				void OnLoading(Microsoft.UI.Xaml.FrameworkElement sender, object args) =>
+					focusTransfers.Add($"{phase}: Loading, tabStop={platformScrollView.IsTabStop}");
+				var tabStopToken = platformScrollView.RegisterPropertyChangedCallback(
+					WControl.IsTabStopProperty, (_, _) =>
+						focusTransfers.Add($"{phase}: IsTabStop={platformScrollView.IsTabStop}, loaded={platformScrollView.IsLoaded}, focus={platformScrollView.FocusState}"));
 				platformEntry.GettingFocus += OnGettingFocus;
+				platformScrollView.GettingFocus += OnScrollGettingFocus;
+				platformScrollView.Loading += OnLoading;
 				try
 				{
 					var scrollViewHandler = (ScrollViewHandler)scrollView.Handler;
-					var platformScrollView = scrollViewHandler.PlatformView;
 					await WaitForDispatcherIdle(platformScrollView.DispatcherQueue);
 					Assert.False(platformScrollView.IsTabStop);
 					var initiallyFocused = entry.IsFocused;
@@ -663,6 +677,7 @@ namespace Microsoft.Maui.DeviceTests
 					var loaded = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 					Microsoft.UI.Xaml.RoutedEventHandler loadedHandler = (_, _) =>
 					{
+						focusTransfers.Add($"{phase}: Loaded, tabStop={platformScrollView.IsTabStop}");
 						reloadLoaded = true;
 						loaded.TrySetResult();
 					};
@@ -682,12 +697,16 @@ namespace Microsoft.Maui.DeviceTests
 					await WaitForDispatcherIdle(platformScrollView.DispatcherQueue);
 					Assert.False(platformScrollView.IsTabStop);
 
+					var focusTransfer = string.Join("; ", focusTransfers);
 					Assert.False(entry.IsFocused, $"Entry focus: initial={initiallyFocused}, unloaded={focusedWhileUnloaded}, initial event={initialFocusEvent}; {focusDiagnostic}; {focusTransfer}.");
 					Assert.False(focused, $"Entry received focus during the scenario; initial focus event={initialFocusEvent}; {focusDiagnostic}; {focusTransfer}.");
 				}
 				finally
 				{
 					platformEntry.GettingFocus -= OnGettingFocus;
+					platformScrollView.GettingFocus -= OnScrollGettingFocus;
+					platformScrollView.Loading -= OnLoading;
+					platformScrollView.UnregisterPropertyChangedCallback(WControl.IsTabStopProperty, tabStopToken);
 				}
 			});
 		}
