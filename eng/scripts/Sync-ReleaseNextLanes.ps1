@@ -75,11 +75,16 @@ function Get-ApprovedCandidateMerge {
                     ([string]$pr.body).Contains("<!-- maui-release-tracking:${scope}:candidate -->")) { $pr }
             }
         })
-        $eligible = @()
         $fixesSha = Get-NextLaneRef $roles.fixBranch
         if (!$fixesSha) { throw 'The configured release integration branch is missing.' }
         Fetch-NextLaneCommit @($fixesSha)
-        foreach ($candidatePr in ($matches | Sort-Object merged_at -Descending)) {
+        foreach ($candidatePr in ($matches | Sort-Object @{ Expression = { [DateTimeOffset]$_.merged_at }; Descending = $true },
+            @{ Expression = { [int]$_.number }; Descending = $true })) {
+            $candidatePr = Invoke-NextLaneApi @("repos/$repository/pulls/$($candidatePr.number)")
+            if (!$candidatePr.merged -or !$candidatePr.merged_at -or $candidatePr.merged_by.type -cne 'User' -or
+                $null -eq $candidatePr.head.repo -or $null -eq $candidatePr.base.repo -or
+                $candidatePr.head.repo.full_name -cne $repository -or $candidatePr.base.repo.full_name -cne $repository -or
+                $candidatePr.head.ref -cne $candidateBranch -or $candidatePr.base.ref -cne $roles.fixBranch) { continue }
             Fetch-NextLaneCommit @($candidatePr.head.sha, $candidatePr.merge_commit_sha)
             $null = & git -C $RepositoryPath merge-base --is-ancestor $candidatePr.merge_commit_sha $fixesSha
             $ancestryExitCode = $LASTEXITCODE
@@ -96,15 +101,15 @@ function Get-ApprovedCandidateMerge {
                 Write-Warning "Historical candidate PR #$($candidatePr.number) predates candidate version metadata preparation; it does not advance release lanes."
                 continue
             }
-            $eligible += $candidatePr
+            $Number = $candidatePr.number
+            break
         }
-        if ($eligible.Count -eq 0) { return $null }
-        if ($eligible.Count -ne 1) { throw 'Multiple prepared candidate integrations claim the same cycle; manual review is required.' }
-        $Number = $eligible[0].number
+        if (!$Number) { return $null }
     }
     $proof = Invoke-NextLaneApi @("repos/$repository/pulls/$Number")
     if (!$proof.merged -or !$proof.merged_at -or $null -eq $proof.head.repo -or
         $proof.head.repo.full_name -cne $repository -or $proof.head.ref -cne $candidateBranch -or
+        $null -eq $proof.base.repo -or $proof.base.repo.full_name -cne $repository -or
         $proof.base.ref -cne $roles.fixBranch -or
         !([string]$proof.body).Contains("<!-- maui-release-tracking:${scope}:candidate -->") -or
         $proof.head.sha -cnotmatch '^[0-9a-f]{40}$' -or $proof.merge_commit_sha -cnotmatch '^[0-9a-f]{40}$' -or
@@ -118,6 +123,65 @@ function Get-ApprovedCandidateMerge {
         }
     }
     return $proof
+}
+
+function Assert-CurrentLaneSource {
+    param([int] $Sr, [string] $Source)
+    $latest = Get-ApprovedCandidateMerge -Sr $Sr
+    if (!$latest -or $latest.merge_commit_sha -cne $Source) {
+        throw 'A newer candidate merge superseded this release plan; retry from its authoritative source.'
+    }
+}
+
+function Get-VerifiedLaneReceipt {
+    param([string] $Commit, [int] $Sr)
+    Fetch-NextLaneCommit @($Commit)
+    $saved = Get-MauiReleaseLaneReceipt -RepositoryPath $RepositoryPath -Commit $Commit
+    if ($saved.schemaVersion -ne 1 -or $saved.scope -cne $scope -or
+        $saved.releaseBand -cne $roles.releaseBand -or $saved.sr -ne $Sr -or
+        $saved.fixBranch -cne $roles.fixBranch -or $saved.featureBranch -cne $roles.featureBranch -or
+        [string]$saved.pullRequest -cnotmatch '^[1-9][0-9]*$') {
+        throw 'The durable next-lane receipt does not match the configured route.'
+    }
+    Fetch-NextLaneCommit @($saved.plan.mergeSha, $saved.plan.candidateSha, $saved.plan.inflightSha)
+    $reproduced = New-MauiReleaseNextLanePlan -RepositoryPath $RepositoryPath -ReleaseBand $roles.releaseBand `
+        -Sr $Sr -Merge $saved.plan.mergeSha -Candidate $saved.plan.candidateSha -Inflight $saved.plan.inflightSha `
+        -SandboxPrefix $SandboxPrefix
+    $expected = [ordered]@{
+        schemaVersion = 1; scope = $scope; releaseBand = $roles.releaseBand; sr = $Sr
+        fixBranch = $roles.fixBranch; featureBranch = $roles.featureBranch
+        pullRequest = [int]$saved.pullRequest; plan = $reproduced
+    }
+    if ('supersedes' -in $saved.PSObject.Properties.Name) { $expected.supersedes = $saved.supersedes }
+    if ((New-MauiReleaseLaneReceipt -RepositoryPath $RepositoryPath -Record $expected) -cne $Commit) {
+        throw 'The saved next-lane receipt does not reproduce the verified candidate plan.'
+    }
+    $saved
+}
+
+function Set-ManagedLaneRef {
+    param([string] $Branch, [string] $Commit, [string] $Expected, [int] $Sr, [string] $Source)
+    Assert-CurrentLaneSource -Sr $Sr -Source $Source
+    $current = [string](Get-NextLaneRef $Branch)
+    if ("$current" -cne "$Expected") {
+        throw "Managed lane '$Branch' changed concurrently (expected '$Expected', found '$current'); retry without overwriting it."
+    }
+    $null = Get-NextLaneGit @('-c', 'credential.helper=', '-c', 'credential.helper=!gh auth git-credential',
+        'push', '--quiet', "--force-with-lease=refs/heads/${Branch}:$Expected", '--',
+        $roles.repository, "${Commit}:refs/heads/$Branch")
+    if ((Get-NextLaneRef $Branch) -cne $Commit) { throw "Managed lane '$Branch' publication was not verified." }
+    Assert-CurrentLaneSource -Sr $Sr -Source $Source
+}
+
+function Sync-ReplacementLane {
+    param([string] $Branch, [string] $Commit, [string[]] $Previous, [int] $Sr, [string] $Source)
+    $live = Get-NextLaneRef $Branch
+    if ($live -and $live -cne $Commit -and $live -cin $Previous) {
+        Set-ManagedLaneRef -Branch $Branch -Commit $Commit -Expected $live -Sr $Sr -Source $Source
+    } else {
+        Assert-CurrentLaneSource -Sr $Sr -Source $Source
+        Publish-NextLaneRef -Branch $Branch -Commit $Commit -AllowDescendants
+    }
 }
 
 function Publish-NextLaneRef {
@@ -164,9 +228,18 @@ function Sync-StagedReleasePr {
     $normalization = $Kind -ceq 'normalization'
     $canonicalState = $Kind -ceq 'state'
     $reviewRequired = $normalization -or $canonicalState
-    $head = "${lanePrefix}automation/$Kind/$($roles.releaseBand)-sr$Sr"
+    $legacyHead = "${lanePrefix}automation/$Kind/$($roles.releaseBand)-sr$Sr"
+    $head = Get-MauiReleaseGenerationHead -Head $legacyHead -Source $Plan.mergeSha
     $marker = "<!-- maui-release-${Kind}:${scope}:$($roles.releaseBand)-sr$Sr -->"
     $commit = if ($canonicalState) { $Plan.stateSha } else { $Plan.normalizedSha }
+    # State proposals can have identical commits across sources, so also check provenance.
+    $legacyPages = @(Invoke-NextLaneApi @('repos/dotnet/maui/pulls', '--method', 'GET', '--paginate', '--slurp',
+        '-f', 'state=all', '-f', "base=$Branch", '-f', "head=dotnet:$legacyHead", '-F', 'per_page=100'))
+    $legacy = @(foreach ($page in $legacyPages) { foreach ($pr in $page) {
+        if ($pr.head.sha -ceq $commit -and ([string]$pr.body).Contains($marker) -and
+            (!$canonicalState -or ([string]$pr.body).Contains("Staged source: ``$($Plan.mergeSha)``."))) { $pr }
+    } })
+    if ($legacy.Count) { $head = $legacyHead }
     $pages = @(Invoke-NextLaneApi @('repos/dotnet/maui/pulls', '--method', 'GET', '--paginate', '--slurp',
         '-f', 'state=open', '-f', "base=$Branch", '-f', "head=dotnet:$head", '-F', 'per_page=100'))
     $open = @(foreach ($page in $pages) { foreach ($pr in $page) { $pr } })
@@ -209,6 +282,8 @@ function Sync-StagedReleasePr {
         return [pscustomobject]@{ number = $merged[0].number; url = $merged[0].html_url; status = 'merged' }
     }
     if ($closed.Count) { throw "The $Kind PR was closed without the expected approved merge; a maintainer must review before recreation." }
+    $sourceSr = if ($canonicalState) { $Plan.integratedSr } else { $Sr }
+    Assert-CurrentLaneSource -Sr $sourceSr -Source $Plan.mergeSha
     Publish-NextLaneRef -Branch $head -Commit $commit
     $description = if ($canonicalState) {
         @(
@@ -236,7 +311,7 @@ function Sync-StagedReleasePr {
             ''
             '**A maintainer must review this PR, run required CI and use Create a merge commit. Do not squash or rebase.**'
             'The reconciler does not update the protected integration ref, approve, retarget or merge this PR. Next-lane activation and forward-flow preparation wait for the normalization ancestry to be verified.'
-            'The automation/release staging ref is created at the candidate source and may advance only through its separately reviewed servicing PR. After that PR is merged with Create a merge commit, the real release branch is manually cut at its exact merge. This normalization PR does not authorize signing.'
+            'The automation/release staging ref starts at this candidate source and advances through its separately reviewed servicing PR. A newer maintainer candidate merge supersedes the old generation, never a concurrent unrelated edit. After servicing is merged with Create a merge commit, the real release branch is manually cut at its exact merge. This normalization PR does not authorize signing.'
         ) -join "`n"
     }
     $template = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../../.github/PULL_REQUEST_TEMPLATE.md') -Raw
@@ -253,9 +328,14 @@ function Sync-StagedReleasePr {
     } elseif ($normalization) {
         "[Release housekeeping] $($roles.releaseBand) SR$($Sr + 1) CI normalization"
     } else { "[Servicing] $($roles.releaseBand) SR$Sr" }
+    Assert-CurrentLaneSource -Sr $sourceSr -Source $Plan.mergeSha
     $created = Invoke-NextLaneApi @('repos/dotnet/maui/pulls', '--method', 'POST',
         '-f', "base=$Branch", '-f', "head=$head", '-f', "title=$title",
         '-f', "body=$body", '-F', 'draft=true')
+    if ($created.number -le 0 -or $created.head.ref -cne $head -or $created.head.sha -cne $commit -or
+        $created.base.ref -cne $Branch -or !([string]$created.body).Contains($marker)) {
+        throw "The created $Kind PR did not match its prepared route and source; retry reconciliation."
+    }
     [pscustomobject]@{
         number = $created.number; url = $created.html_url
         status = if ($reviewRequired) { 'awaiting-approval' } else { 'created' }
@@ -324,7 +404,7 @@ function Sync-CanonicalReleaseStatePr {
         param($match)
         $match.Groups[1].Value + $NextSr.ToString([Globalization.CultureInfo]::InvariantCulture)
     })
-    $head = "automation/state/$($roles.releaseBand)-sr$NextSr"
+    $head = Get-MauiReleaseGenerationHead -Head "automation/state/$($roles.releaseBand)-sr$NextSr" -Source $last.candidateMerge
     $existing = Get-NextLaneRef $head
     if ($existing) {
         Fetch-NextLaneCommit @($existing)
@@ -347,6 +427,7 @@ function Sync-CanonicalReleaseStatePr {
     }
     Assert-ConsumedInflightSource -Sr $last.integratedSr -Commit $last.inflightSourceSha
     if (!$existing) {
+        Assert-CurrentLaneSource -Sr $last.integratedSr -Source $last.candidateMerge
         # An empty lease permits creation only, never replacement of another proposal.
         $null = Get-NextLaneGit @('-c', 'credential.helper=', '-c', 'credential.helper=!gh auth git-credential',
             'push', '--quiet', "--force-with-lease=refs/heads/${head}:", '--', $roles.repository, "${prepared}:refs/heads/$head")
@@ -355,6 +436,7 @@ function Sync-CanonicalReleaseStatePr {
     $proposal = [pscustomobject]@{
         stateSha = $prepared; previousSr = $roles.currentSr; nightlyMode = $roles.nightlyMode
         mergeSha = $last.candidateMerge; nextCandidate = $last.nextCandidate; nextInflight = $last.nextInflight
+        integratedSr = $last.integratedSr
     }
     Sync-StagedReleasePr -Branch $roles.featureBranch -Plan $proposal -Sr $NextSr -Kind state
 }
@@ -369,23 +451,31 @@ for ($attempt = 0; $attempt -lt 100; $attempt++) {
     $receiptSha = Get-NextLaneRef $receiptBranch
     $record = $null
     if ($receiptSha) {
-        Fetch-NextLaneCommit @($receiptSha)
-        $record = Get-MauiReleaseLaneReceipt -RepositoryPath $RepositoryPath -Commit $receiptSha
-        if ($record.schemaVersion -ne 1 -or $record.scope -cne $scope -or
-            $record.releaseBand -cne $roles.releaseBand -or $record.sr -ne $trackingSr -or
-            $record.fixBranch -cne $roles.fixBranch -or $record.featureBranch -cne $roles.featureBranch -or
-            [string]$record.pullRequest -cnotmatch '^[1-9][0-9]*$') {
-            throw 'The durable next-lane receipt does not match the configured route.'
-        }
+        $record = Get-VerifiedLaneReceipt -Commit $receiptSha -Sr $trackingSr
     }
-    $proof = Get-ApprovedCandidateMerge -Sr $trackingSr -Number $(if ($record) { $record.pullRequest } else { 0 }) `
-        -PreviouslyRecorded:($null -ne $record)
-    if ($null -eq $proof) { break }
+    $proof = Get-ApprovedCandidateMerge -Sr $trackingSr
+    if ($null -eq $proof) {
+        if ($record) { throw 'The recorded release source is no longer an eligible candidate merge; reconcile the integration history.' }
+        break
+    }
+    $sameSource = $record -and $record.plan.mergeSha -ceq $proof.merge_commit_sha
+    $previousPlans = [Collections.Generic.List[object]]::new()
+    $previousReceipt = if ($record -and !$sameSource) { $receiptSha } elseif (
+        $record -and 'supersedes' -in $record.PSObject.Properties.Name) { $record.supersedes } else { $null }
+    $visited = [Collections.Generic.HashSet[string]]::new()
+    while ($previousReceipt) {
+        if (!$visited.Add($previousReceipt) -or $visited.Count -gt 100) { throw 'Superseded receipt traversal exceeded its bound.' }
+        $previousRecord = Get-VerifiedLaneReceipt -Commit $previousReceipt -Sr $trackingSr
+        $previousPlans.Add($previousRecord.plan)
+        $previousReceipt = if ('supersedes' -in $previousRecord.PSObject.Properties.Name) { $previousRecord.supersedes } else { $null }
+    }
+    $previousCandidates = @($previousPlans | ForEach-Object { $_.nextCandidateSha })
+    $previousInflights = @($previousPlans | ForEach-Object { $_.nextInflightSha })
     $fixesSha = Get-NextLaneRef $roles.fixBranch
     if (!$fixesSha) { throw 'The configured release integration branch is missing.' }
     $candidateBranch = "${lanePrefix}candidate/$($roles.releaseBand)-sr$trackingSr"
     $inflightBranch = "${lanePrefix}inflight/$($roles.releaseBand)-sr$($trackingSr + 1)"
-    $inflightSha = if ($record) { $record.plan.inflightSha } else { Get-NextLaneRef $inflightBranch }
+    $inflightSha = if ($sameSource) { $record.plan.inflightSha } else { Get-NextLaneRef $inflightBranch }
     if (!$inflightSha) { throw 'The pinned following-release inflight source is missing.' }
     Fetch-NextLaneCommit @($proof.merge_commit_sha, $proof.head.sha, $inflightSha, $fixesSha)
     $null = Get-NextLaneGit @('merge-base', '--is-ancestor', $proof.merge_commit_sha, $fixesSha)
@@ -396,8 +486,13 @@ for ($attempt = 0; $attempt -lt 100; $attempt++) {
         fixBranch = $roles.fixBranch; featureBranch = $roles.featureBranch
         pullRequest = [int]$proof.number; plan = $plan
     }
+    if ($record -and !$sameSource) {
+        $expectedRecord.supersedes = $receiptSha
+    } elseif ($record -and 'supersedes' -in $record.PSObject.Properties.Name) {
+        $expectedRecord.supersedes = $record.supersedes
+    }
     $expectedReceipt = New-MauiReleaseLaneReceipt -RepositoryPath $RepositoryPath -Record $expectedRecord
-    if ($receiptSha) {
+    if ($sameSource) {
         if ($expectedReceipt -cne $receiptSha) { throw 'The saved next-lane receipt does not reproduce the verified candidate plan.' }
     } else {
         if ($fixesSha -cne $plan.mergeSha) {
@@ -413,29 +508,21 @@ for ($attempt = 0; $attempt -lt 100; $attempt++) {
                 @{ branch = "${lanePrefix}inflight/$($roles.releaseBand)-sr$($trackingSr + 2)"; sha = $plan.nextInflightSha }
             )) {
             $existing = Get-NextLaneRef $target.branch
-            if ($existing -and $existing -cne $target.sha) { throw "An unmanaged or mismatched next lane '$($target.branch)' already exists." }
+            $previous = if ($target.branch -like "${lanePrefix}candidate/*") { $previousCandidates } else { $previousInflights }
+            if ($existing -and $existing -cne $target.sha -and $existing -cnotin $previous) {
+                throw "An unmanaged or concurrently edited next lane '$($target.branch)' already exists."
+            }
         }
         if ((Get-NextLaneRef $roles.fixBranch) -cne $fixesSha -or
             (Get-NextLaneRef $inflightBranch) -cne $inflightSha) {
             throw 'The release integration or inflight source moved before checkpoint publication.'
         }
-        # Upload the prepared object graph through a unique temporary ref, then
-        # create the durable receipt with create-only API semantics.
-        $uploadBranch = "$receiptPrefix/upload-$([guid]::NewGuid().ToString('N'))"
-        try {
-            $null = Get-NextLaneGit @('-c', 'credential.helper=', '-c', 'credential.helper=!gh auth git-credential',
-                'push', '--quiet', '--', $roles.repository, "${expectedReceipt}:refs/heads/$uploadBranch")
-            Publish-NextLaneRef -Branch $receiptBranch -Commit $expectedReceipt
-        } finally {
-            $uploaded = Get-NextLaneRef $uploadBranch
-            if ($uploaded) {
-                if ($uploaded -cne $expectedReceipt) { throw 'The owned receipt upload ref changed; refusing cleanup.' }
-                $null = Invoke-NextLaneApi @("repos/$repository/git/refs/heads/$([Uri]::EscapeDataString($uploadBranch))", '--method', 'DELETE')
-            }
-        }
+        Set-ManagedLaneRef -Branch $receiptBranch -Commit $expectedReceipt -Expected $receiptSha `
+            -Sr $trackingSr -Source $plan.mergeSha
         if ((Get-NextLaneRef $receiptBranch) -cne $expectedReceipt) { throw 'Next-lane receipt publication was not verified.' }
     }
     Assert-ConsumedInflightSource -Sr $trackingSr -Commit $plan.inflightSha
+    Assert-CurrentLaneSource -Sr $trackingSr -Source $plan.mergeSha
     $nextCandidate = "${lanePrefix}candidate/$($roles.releaseBand)-sr$($trackingSr + 1)"
     $nextInflight = "${lanePrefix}inflight/$($roles.releaseBand)-sr$($trackingSr + 2)"
     $completion = $null
@@ -448,13 +535,34 @@ for ($attempt = 0; $attempt -lt 100; $attempt++) {
         $currentStaging = Get-NextLaneRef $stagingBranch
         if (!$currentFixes) { throw 'The integration branch disappeared before release completion.' }
         Fetch-NextLaneCommit @($currentFixes)
+        if ($currentStaging -and $currentStaging -cne $plan.mergeSha) {
+            $oldStaging = @($previousPlans | Where-Object { $_.mergeSha -ceq $currentStaging }).Count -gt 0
+            foreach ($previousPlan in $previousPlans) {
+                if ($oldStaging) { break }
+                $oldProof = Get-NextLaneServicingProof -Staging $currentStaging -Plan $previousPlan
+                if ($oldProof -and $oldProof.head.sha -ceq (New-MauiReviewedServicingCommit -RepositoryPath $RepositoryPath `
+                    -LanePlan $previousPlan -ReleaseBand $roles.releaseBand -Sr $trackingSr -SandboxPrefix $SandboxPrefix).sha) {
+                    $null = Assert-MauiReviewedServicingMerge -RepositoryPath $RepositoryPath -LanePlan $previousPlan `
+                        -ReleaseBand $roles.releaseBand -Sr $trackingSr -Commit $currentStaging `
+                        -PullRequest $oldProof -SandboxPrefix $SandboxPrefix
+                    $oldStaging = $true
+                    break
+                }
+            }
+            if ($oldStaging) {
+                Set-ManagedLaneRef -Branch $stagingBranch -Commit $plan.mergeSha -Expected $currentStaging `
+                    -Sr $trackingSr -Source $plan.mergeSha
+                $currentStaging = $plan.mergeSha
+            }
+        }
         # A historical real release never gates staging or independent next-cycle work.
         $servicingProof = Get-NextLaneServicingProof -Staging $currentStaging -Plan $plan
         $completion = Get-MauiReleaseCompletionPlan -RepositoryPath $RepositoryPath -LanePlan $plan `
             -ReleaseBand $roles.releaseBand -Sr $trackingSr -Fixes $currentFixes -Staging $currentStaging `
             -ServicingPullRequest $servicingProof -SandboxPrefix $SandboxPrefix
-        # Automation only creates staging; its reviewed servicing PR may advance it.
+        # A missing staging ref starts at this candidate source.
         if ($completion.createStaging) {
+            Assert-CurrentLaneSource -Sr $trackingSr -Source $plan.mergeSha
             Publish-NextLaneRef -Branch $stagingBranch -Commit $completion.stagingSha
         }
         if ($completion.restoreFixes) {
@@ -478,8 +586,10 @@ for ($attempt = 0; $attempt -lt 100; $attempt++) {
         $followingReceipt = Get-NextLaneRef "$receiptPrefix/$($roles.releaseBand)-sr$($trackingSr + 1)"
         $followingMerge = if (!$followingReceipt) { Get-ApprovedCandidateMerge -Sr ($trackingSr + 1) } else { $null }
         if (!$followingReceipt -and !$followingMerge) {
-            Publish-NextLaneRef -Branch $nextCandidate -Commit $plan.nextCandidateSha -AllowDescendants
-            Publish-NextLaneRef -Branch $nextInflight -Commit $plan.nextInflightSha -AllowDescendants
+            Sync-ReplacementLane -Branch $nextCandidate -Commit $plan.nextCandidateSha -Previous $previousCandidates `
+                -Sr $trackingSr -Source $plan.mergeSha
+            Sync-ReplacementLane -Branch $nextInflight -Commit $plan.nextInflightSha -Previous $previousInflights `
+                -Sr $trackingSr -Source $plan.mergeSha
         }
     }
     $results.Add([pscustomobject]@{
@@ -501,6 +611,7 @@ for ($attempt = 0; $attempt -lt 100; $attempt++) {
 }
 if ($attempt -ge 100) { throw 'Next-lane receipt traversal exceeded its bound; review the configured starting cycle.' }
 foreach ($cycle in $results) {
+    Assert-CurrentLaneSource -Sr $cycle.integratedSr -Source $cycle.candidateMerge
     Assert-ConsumedInflightSource -Sr $cycle.integratedSr -Commit $cycle.inflightSourceSha
 }
 $state.currentSr = $trackingSr
@@ -509,6 +620,7 @@ $state | ConvertTo-Json | Set-Content -LiteralPath $effectiveStatePath -Encoding
 $tracking = & (Join-Path $PSScriptRoot 'Sync-ReleaseTrackingPullRequests.ps1') `
     -StatePath $effectiveStatePath -SandboxPrefix $SandboxPrefix | ConvertFrom-Json
 foreach ($cycle in $results) {
+    Assert-CurrentLaneSource -Sr $cycle.integratedSr -Source $cycle.candidateMerge
     Assert-ConsumedInflightSource -Sr $cycle.integratedSr -Commit $cycle.inflightSourceSha
 }
 $forward = if ($StageRelease -and $results.Count -and !$housekeepingPending) {
@@ -518,6 +630,9 @@ $forward = if ($StageRelease -and $results.Count -and !$housekeepingPending) {
 $canonicalStatePr = if ($StageRelease -and !$SandboxPrefix -and $results.Count -and !$housekeepingPending) {
     Sync-CanonicalReleaseStatePr -Cycles $results.ToArray() -NextSr $trackingSr
 } else { $null }
+foreach ($cycle in $results) {
+    Assert-CurrentLaneSource -Sr $cycle.integratedSr -Source $cycle.candidateMerge
+}
 $result = [ordered]@{
     scope = $scope
     status = if ($housekeepingPending) { 'waiting-for-normalization-approval' } elseif ($results.Count) { 'next-lanes-ready' } else { 'waiting-for-candidate-merge' }
