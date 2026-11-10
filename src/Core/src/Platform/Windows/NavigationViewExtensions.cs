@@ -337,10 +337,7 @@ namespace Microsoft.Maui.Platform
 
 			var request = ControlExtensions.BackgroundImageRequests.Begin(paneContentGrid);
 			if (imageSource is null)
-			{
-				paneContentGrid.Background = null;
 				return;
-			}
 			if (provider is null)
 				return;
 
@@ -354,12 +351,10 @@ namespace Microsoft.Maui.Platform
 			}
 
 			if (nativeImageSource is null)
-			{
-				paneContentGrid.Background = null;
 				return;
-			}
 
-			var BackgroundImage = new ImageBrush
+			var background = paneContentGrid.Background;
+			var backgroundImage = new ImageBrush
 			{
 				ImageSource = nativeImageSource?.Value,
 				Stretch = aspect switch
@@ -371,7 +366,13 @@ namespace Microsoft.Maui.Platform
 				}
 			};
 
-			paneContentGrid.Background = BackgroundImage;
+			paneContentGrid.Background = backgroundImage;
+			ControlExtensions.BackgroundImageRequests.SetCleanup(paneContentGrid, request, () =>
+			{
+				if (paneContentGrid.Background == backgroundImage)
+					paneContentGrid.Background = background;
+				nativeImageSource.Dispose();
+			});
 		}
 
 		public static async Task UpdateFlyoutIconAsync(this MauiNavigationView navigationView, IImageSource? imageSource, IImageSourceServiceProvider? provider)

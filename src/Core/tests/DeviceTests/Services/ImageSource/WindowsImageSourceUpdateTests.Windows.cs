@@ -76,15 +76,44 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					var pane = navigationView.PaneContentGrid;
 					Assert.NotNull(pane);
+					navigationView.UpdatePaneBackground(new SolidPaint(Colors.Blue));
+					var expected = pane.Background;
 					var pending = navigationView.UpdateBackgroundImageSourceAsync(FontSource(), provider, Aspect.Fill);
 					Assert.False(pending.IsCompleted);
 					if (clear)
+					{
 						await navigationView.UpdateBackgroundImageSourceAsync(null, provider, Aspect.Fill);
+						Assert.Same(expected, pane.Background);
+					}
 					else
 						navigationView.UpdatePaneBackground(new SolidPaint(Colors.Blue));
 					var current = pane.Background;
+					Assert.Equal(Colors.Blue.ToWindowsColor(), Assert.IsType<SolidColorBrush>(current).Color);
 					await pending;
 					Assert.Same(current, pane.Background);
+				}, MauiContext);
+			});
+		}
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task ClearingNavigationPaneImageRestoresBackground(bool configured)
+		{
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler<SliderHandler>(new SliderStub());
+				var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
+				var navigationView = new MauiNavigationView();
+				await navigationView.AttachAndRun(async () =>
+				{
+					navigationView.UpdatePaneBackground(configured ? new SolidPaint(Colors.Blue) : null);
+					var expected = navigationView.PaneContentGrid.Background;
+					Assert.NotNull(expected);
+					await navigationView.UpdateBackgroundImageSourceAsync(FontSource(), provider, Aspect.Fill);
+					Assert.IsType<ImageBrush>(navigationView.PaneContentGrid.Background);
+					await navigationView.UpdateBackgroundImageSourceAsync(null, provider, Aspect.Fill);
+					Assert.Same(expected, navigationView.PaneContentGrid.Background);
 				}, MauiContext);
 			});
 		}
