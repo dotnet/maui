@@ -13,6 +13,7 @@ parameters:
   runtimeVariant: 'CoreCLR' #Mono, CoreCLR, NativeAOT
   useMaterial3: false # NEW PARAMETER - Enable Material3 build
   useWindowsCV1: false # NEW PARAMETER - Enable WindowsCollectionView1Handler testing (default false)
+  includeIos: true # false builds the sample app without iOS target frameworks
 
 steps:
 - ${{ if eq(parameters.platform, 'ios')}}:
@@ -67,6 +68,9 @@ steps:
 - pwsh: |
     Get-Content $PSCommandPath
     $buildCommand = "./build.ps1 --target=uitests-apphost --configuration=${{ parameters.configuration }} --${{ parameters.platform }} --verbosity=diagnostic --usenuget=false --runtimevariant=${{ parameters.runtimeVariant }}"
+    if ("${{ parameters.includeIos }}" -eq "false") {
+        $buildCommand += " --excludeios=true"
+    }
     
     # Add Material3 build argument if enabled
     if (("${{ parameters.useMaterial3 }}" -eq "true") -and ("${{ parameters.platform }}" -eq "android")) {

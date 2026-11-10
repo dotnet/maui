@@ -130,6 +130,9 @@ namespace Microsoft.Maui.IntegrationTests
 
 		void RunOniOS(string id, string config, string framework, RuntimeVariant runtimeVariant, string? trimMode)
 		{
+			if (TestEnvironment.IsTargetFrameworkExcluded($"{framework}-ios"))
+				return; // Skip: this agent can't build this target framework.
+
 			var projectDir = TestDirectory;
 			var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 

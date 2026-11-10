@@ -52,6 +52,17 @@ namespace Microsoft.Maui.IntegrationTests
 		/// </summary>
 		public static string IOSSimulatorRuntimeIdentifier => "iossimulator-arm64";
 
+		/// <summary>
+		/// Target frameworks (e.g. "net12.0-ios") that this agent can't build, from the semicolon-separated
+		/// MAUI_INTEGRATION_EXCLUDED_TFMS environment variable. Tests skip them and generated projects drop them.
+		/// </summary>
+		public static string[] ExcludedTargetFrameworks =>
+			(Environment.GetEnvironmentVariable("MAUI_INTEGRATION_EXCLUDED_TFMS") ?? "")
+				.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+		public static bool IsTargetFrameworkExcluded(string targetFramework) =>
+			ExcludedTargetFrameworks.Any(excluded => targetFramework.StartsWith(excluded, StringComparison.OrdinalIgnoreCase));
+
 
 		static string _mauiDir = "";
 		public static string GetMauiDirectory()

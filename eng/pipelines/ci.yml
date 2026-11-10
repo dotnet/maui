@@ -84,7 +84,8 @@ parameters:
     demands:
         - ImageOverride -equals $(AcesMacImageOverride)
     os: macOS
-    buildScript: $(_buildScriptMacOS)
+    # .NET 12 iOS needs Xcode 27.1+, which public agents don't have (internal runs install it).
+    buildScript: $(_buildScriptMacOS) /p:IncludeIosTargetFrameworks=false
     sln: '$(Build.SourcesDirectory)/Microsoft.Maui-mac.slnf'
 
 - name: WindowsPool

@@ -232,6 +232,12 @@ Task("uitests-apphost")
             properties.Add("UseWindowsCollectionView2Handler", "false");
         }
 
+        if (Argument("excludeios", false))
+        {
+            Information("Building without iOS target frameworks");
+            properties.Add("IncludeIosTargetFrameworks", "false");
+        }
+
         if (useNuget)
         {
             properties.Add("UseWorkload", "true");

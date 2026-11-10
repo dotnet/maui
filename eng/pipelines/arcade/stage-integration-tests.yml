@@ -19,6 +19,9 @@ stages:
       ${{ if job.condition }}:
         condition: ${{ job.condition }}
       variables:
+        # .NET 12 iOS needs Xcode 27.1+, which public agents don't have (internal runs install it).
+        ${{ if eq(variables['System.TeamProject'], 'public') }}:
+          MAUI_INTEGRATION_EXCLUDED_TFMS: net12.0-ios
         ${{ if job.xcodeVersion }}:
           XCODE: ${{ job.xcodeVersion }}
           REQUIRED_XCODE: ${{ job.xcodeVersion }}
