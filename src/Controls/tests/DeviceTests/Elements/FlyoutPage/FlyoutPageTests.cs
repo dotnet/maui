@@ -322,7 +322,19 @@ namespace Microsoft.Maui.DeviceTests
 #endif
 			});
 
+#if WINDOWS
+			try
+			{
+				await AssertionExtensions.WaitForGC(references.ToArray());
+			}
+			catch (Xunit.Sdk.XunitException)
+			{
+				Microsoft.Maui.TestUtils.DeviceTests.Runners.MauiTestApplication.CaptureWindowsTestFailureDump(nameof(DoesNotLeakAsModal));
+				throw;
+			}
+#else
 			await AssertionExtensions.WaitForGC(references.ToArray());
+#endif
 		}
 
 		bool CanDeviceDoSplitMode(FlyoutPage page)

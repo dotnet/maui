@@ -671,6 +671,12 @@ release. The independent eight-row ownership/focus probe passed seven rows
 stale callback and both attachment-lifetime rows), but still failed modal
 ContentPage collection. That transient failure needs its own failure-time
 snapshot; the later pressure snapshot does not contain its retaining path.
+In run 1672685, MTP-triggered snapshots still arrived after the modal's test
+method had unwound: the isolated dump's two non-runner ContentPages and test
+window wrapper had no GC roots. The original assertion still failed in genuine TRX.
+The modal test therefore requests the same opt-in snapshot in its assertion
+exception handler before rethrowing unchanged. This is diagnostic only; it
+does not add a collection, drain, delay or accepted failure.
 
 In [device run 1672389](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1672389),
 log 719, PageSheet's `PresentViewControllerAsync` task did not complete within
