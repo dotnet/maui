@@ -63,7 +63,13 @@ Describe 'Direct native CI contracts' {
     }
 
     It 'does not swallow failing subprocess exits or absent results' {
-        @([regex]::Matches($steps, 'continueOnError: false')).Count | Should -Be 6
+        $commands = @([regex]::Matches($steps,
+            '(?ms)^\s+- template: run-dotnet-preview\.yml\r?\n.*?(?=^\s*-\s|\z)'))
+        $commands.Count | Should -Be 7
+        foreach ($command in $commands) {
+            $command.Value | Should -Match '(?m)^\s+continueOnError: false\s*$'
+            $command.Value | Should -Match '(?m)^\s+useExitCodeForErrors: true\s*$'
+        }
         $steps | Should -Match 'Assert-TestResults.ps1'
         $steps | Should -Match 'failTaskOnMissingResultsFile: true'
         $steps | Should -Match 'failTaskOnFailedTests: true'
