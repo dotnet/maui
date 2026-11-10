@@ -36,8 +36,6 @@ public partial class GraphicsTests : TestBase
 				_ => throw new ArgumentOutOfRangeException(nameof(operation))
 			};
 
-			// Warm up canvas-owned paint, then check explicit cleanup rather than GC or process memory.
-			run();
 			var existingPeers = GetTextPeers();
 			for (int i = 0; i < 20; i++)
 				run();
