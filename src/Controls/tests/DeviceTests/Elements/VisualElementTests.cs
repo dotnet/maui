@@ -14,6 +14,8 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task AlreadyLoadedReadinessCompletesSynchronously()
 		{
+			EnsureHandlerCreated(builder => builder.ConfigureMauiHandlers(handlers =>
+				handlers.AddHandler<Label, LabelHandler>()));
 			var label = new Label { Text = "Already loaded" };
 			await CreateHandlerAndAddToWindow<LabelHandler>(label, handler =>
 			{
