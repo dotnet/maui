@@ -150,7 +150,10 @@ namespace Microsoft.Maui
 			foreach (var ext in TypicalFontFileExtensions)
 			{
 				var fileName = $"{TypicalFontAssetsPath}{fontFile.FileNameWithExtension(ext)}";
-				var familyName = FindFontFamilyName(fileName);
+				// These are speculative fallback files, so they may not exist.
+				var familyName = FileSystemUtils.AppPackageFileExists(fileName)
+					? FindFontFamilyName(fileName)
+					: null;
 				var formatted = $"{fileName}#{familyName ?? fontFile.GetPostScriptNameWithSpaces()}";
 
 				yield return formatted;
@@ -172,15 +175,12 @@ namespace Microsoft.Maui
 			{
 				var fontUri = new Uri(fontFile, UriKind.RelativeOrAbsolute);
 
-				// Win2D in unpackaged apps can't load files using packaged schemes, such as `ms-appx://`
-				// so we have to first convert it to a `file://` scheme will the full file path.
-				// At this part of the load operation, the font URI does NOT yet have the font family name
-				// fragment component, so we don't have to remove it.
-				if (!AppInfoUtils.IsPackagedApp)
+				// Resolve relative paths for Win2D, and convert packaged URIs to file URIs
+				// when the app is unpackaged.
+				if (!fontUri.IsAbsoluteUri || !AppInfoUtils.IsPackagedApp)
 				{
-					var path = fontUri.LocalPath.TrimStart('/');
-					if (FileSystemUtils.TryGetAppPackageFileUri(path, out var uri))
-						fontUri = new Uri(uri, UriKind.RelativeOrAbsolute);
+					if (FontUriHelper.TryGetAppFontFileUri(fontUri, out var uri))
+						fontUri = new Uri(uri, UriKind.Absolute);
 				}
 
 				using (var fontSet = new CanvasFontSet(fontUri))
