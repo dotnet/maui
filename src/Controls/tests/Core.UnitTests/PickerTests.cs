@@ -46,6 +46,36 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			public object SelectedItem { get; set; }
 		}
 
+		class ClearSelectionBindingContext : BindableObject
+		{
+			int _selectedIndex = -1;
+			object _selectedItem;
+
+			public int SelectedIndex
+			{
+				get => _selectedIndex;
+				set
+				{
+					if (_selectedIndex == value)
+						return;
+					_selectedIndex = value;
+					OnPropertyChanged();
+				}
+			}
+
+			public object SelectedItem
+			{
+				get => _selectedItem;
+				set
+				{
+					if (Equals(_selectedItem, value))
+						return;
+					_selectedItem = value;
+					OnPropertyChanged();
+				}
+			}
+		}
+
 		class PickerTestValueConverter : IValueConverter
 		{
 			public bool ConvertCalled { get; private set; }
@@ -97,6 +127,107 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				OnPropertyChanged(IndexerChangedArgs);
 				OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, removeItems, index));
 			}
+		}
+
+		[Fact]
+		public void ClearButtonIsOptIn()
+		{
+			var picker = new Picker { Items = { "One" }, SelectedIndex = 0 };
+
+			Assert.False(picker.IsClearButtonVisible);
+			Assert.False(((IPicker)picker).ShouldShowClearButton());
+			Assert.False(((IPicker)picker).ClearSelection());
+			Assert.Equal(0, picker.SelectedIndex);
+		}
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void ClearSelectionPreservesOpenStateAndBindings(bool isOpen)
+		{
+			var context = new ClearSelectionBindingContext { SelectedIndex = 1, SelectedItem = "Two" };
+			var picker = new Picker
+			{
+				ItemsSource = new[] { "One", "Two" },
+				IsClearButtonVisible = true,
+				IsOpen = isOpen
+			};
+			picker.SetBinding(Picker.SelectedIndexProperty,
+				new Binding(nameof(Picker.SelectedIndex), source: context, mode: BindingMode.TwoWay));
+			picker.SetBinding(Picker.SelectedItemProperty,
+				new Binding(nameof(Picker.SelectedItem), source: context, mode: BindingMode.TwoWay));
+			var changes = 0;
+			picker.SelectedIndexChanged += (_, _) => changes++;
+
+			Assert.True(((IPicker)picker).ClearSelection());
+
+			Assert.Equal(-1, picker.SelectedIndex);
+			Assert.Null(picker.SelectedItem);
+			Assert.Equal(isOpen, picker.IsOpen);
+			Assert.Equal(-1, context.SelectedIndex);
+			Assert.Null(context.SelectedItem);
+			Assert.Equal(1, changes);
+			Assert.False(((IPicker)picker).ShouldShowClearButton());
+			Assert.False(((IPicker)picker).ClearSelection());
+			Assert.Equal(1, changes);
+
+			context.SelectedIndex = 0;
+			Assert.Equal(0, picker.SelectedIndex);
+			Assert.Equal("One", picker.SelectedItem);
+			Assert.True(((IPicker)picker).ShouldShowClearButton());
+		}
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void ClearSelectionDoesNotSelectNullItem(bool selectNull)
+		{
+			var picker = new Picker
+			{
+				ItemsSource = new object[] { null, "Two" },
+				IsClearButtonVisible = true,
+				SelectedIndex = selectNull ? 0 : 1
+			};
+			var changes = 0;
+			picker.SelectedIndexChanged += (_, _) => changes++;
+
+			Assert.True(((IPicker)picker).ClearSelection());
+
+			Assert.Equal(-1, picker.SelectedIndex);
+			Assert.Null(picker.SelectedItem);
+			Assert.Equal(1, changes);
+		}
+
+		[Fact]
+		public void DisabledPickerCannotBeCleared()
+		{
+			var picker = new Picker
+			{
+				Items = { "One" },
+				SelectedIndex = 0,
+				IsClearButtonVisible = true,
+				IsEnabled = false
+			};
+
+			Assert.False(((IPicker)picker).ClearSelection());
+			Assert.Equal(0, picker.SelectedIndex);
+		}
+
+		[Fact]
+		public void ClearButtonVisibilityTracksSelectionAndConfiguration()
+		{
+			var picker = new Picker { Items = { string.Empty }, IsClearButtonVisible = true };
+			Assert.False(((IPicker)picker).ShouldShowClearButton());
+
+			picker.SelectedIndex = 0;
+			Assert.True(((IPicker)picker).ShouldShowClearButton());
+			picker.IsClearButtonVisible = false;
+			Assert.False(((IPicker)picker).ShouldShowClearButton());
+			Assert.Equal(0, picker.SelectedIndex);
+
+			picker.IsClearButtonVisible = true;
+			picker.Items.Clear();
+			Assert.False(((IPicker)picker).ShouldShowClearButton());
 		}
 
 		[Fact]

@@ -12,6 +12,7 @@ public partial class PickerHandler2 : ViewHandler<IPicker, MauiMaterialPickerTex
 {
 	AppCompatAlertDialog? _dialog;
 	ColorStateList? _defaultHintTextColors;
+	PickerClearButtonManager? _clearButtonManager;
 
 	public static PropertyMapper<IPicker, PickerHandler2> Mapper =
 		new(ViewMapper)
@@ -28,6 +29,12 @@ public partial class PickerHandler2 : ViewHandler<IPicker, MauiMaterialPickerTex
 			[nameof(IView.FlowDirection)] = MapFlowDirection,
 			[nameof(ITextAlignment.VerticalTextAlignment)] = MapVerticalTextAlignment,
 			[nameof(IPicker.IsOpen)] = MapIsOpen,
+			[nameof(IPickerClearButton.IsClearButtonVisible)] = MapIsClearButtonVisible,
+			[nameof(IView.IsEnabled)] = static (handler, picker) =>
+			{
+				ViewHandler.MapIsEnabled(handler, picker);
+				handler.UpdateValue(nameof(IPickerClearButton.IsClearButtonVisible));
+			},
 		};
 
 	public static CommandMapper<IPicker, PickerHandler2> CommandMapper = new(ViewCommandMapper)
@@ -52,11 +59,14 @@ public partial class PickerHandler2 : ViewHandler<IPicker, MauiMaterialPickerTex
 		platformView.Picker.Click += OnClick;
 
 		base.ConnectHandler(platformView);
+		_clearButtonManager = new PickerClearButtonManager(platformView.Picker, ClearSelection);
 	}
 
 	protected override void DisconnectHandler(MauiMaterialPickerTextInputLayout platformView)
 	{
 		platformView.Picker.Click -= OnClick;
+		_clearButtonManager?.Dispose();
+		_clearButtonManager = null;
 
 		if (_dialog is not null)
 		{
@@ -98,7 +108,16 @@ public partial class PickerHandler2 : ViewHandler<IPicker, MauiMaterialPickerTex
 	public static void MapSelectedIndex(PickerHandler2 handler, IPicker picker)
 	{
 		handler.PlatformView?.UpdateSelectedIndex(picker);
+		handler.UpdateValue(nameof(IPickerClearButton.IsClearButtonVisible));
 	}
+
+	/// <summary>Updates the optional clear-selection affordance.</summary>
+	/// <param name="handler">The picker handler.</param>
+	/// <param name="picker">The picker.</param>
+	public static void MapIsClearButtonVisible(PickerHandler2 handler, IPicker picker) =>
+		handler._clearButtonManager?.Update(picker);
+
+	void ClearSelection() => VirtualView?.ClearSelection();
 
 	public static void MapCharacterSpacing(PickerHandler2 handler, IPicker picker)
 	{
@@ -124,6 +143,7 @@ public partial class PickerHandler2 : ViewHandler<IPicker, MauiMaterialPickerTex
 	public static void MapTextColor(PickerHandler2 handler, IPicker picker)
 	{
 		handler.PlatformView?.Picker.UpdateTextColor(picker.TextColor);
+		handler.UpdateValue(nameof(IPickerClearButton.IsClearButtonVisible));
 	}
 
 	public static void MapVerticalTextAlignment(PickerHandler2 handler, IPicker picker)
@@ -202,6 +222,7 @@ public partial class PickerHandler2 : ViewHandler<IPicker, MauiMaterialPickerTex
 			SetupDialogTitle(builder);
 			SetupDialogItems(builder);
 			builder.SetNegativeButton(AResource.String.Cancel, (o, args) => { });
+			builder.SetNeutralButton(Resource.String.maui_picker_clear_selection, (o, args) => { });
 
 			_dialog = builder.Create();
 		}
@@ -277,6 +298,7 @@ public partial class PickerHandler2 : ViewHandler<IPicker, MauiMaterialPickerTex
 		// Clean up ALL event handlers before nulling the reference
 		_dialog.ShowEvent -= OnDialogShown;  // Remove ShowEvent handler to prevent leak
 		_dialog.DismissEvent -= OnDialogDismiss;
+		_clearButtonManager?.SetDialog(null);
 		PlatformView?.Picker.ClearFocus();
 		PlatformView?.Picker.FocusableInTouchMode = false;
 
@@ -297,11 +319,13 @@ public partial class PickerHandler2 : ViewHandler<IPicker, MauiMaterialPickerTex
 		}
 
 		_dialog.ShowEvent -= OnDialogShown;
+		_clearButtonManager?.SetDialog(_dialog);
 		VirtualView.IsFocused = true;
 	}
 
 	static void Reload(PickerHandler2 handler)
 	{
 		handler.PlatformView?.UpdatePicker(handler.VirtualView);
+		handler.UpdateValue(nameof(IPickerClearButton.IsClearButtonVisible));
 	}
 }

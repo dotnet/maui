@@ -23,8 +23,23 @@ namespace Microsoft.Maui.Controls
 	/// The visual representation is similar to an <see cref="Entry"/>, but displays a picker interface instead of a keyboard.
 	/// </remarks>
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
-	public partial class Picker : View, IFontElement, ITextElement, ITextAlignmentElement, IElementConfiguration<Picker>, IPicker
+	public partial class Picker : View, IFontElement, ITextElement, ITextAlignmentElement, IElementConfiguration<Picker>, IPicker, IPickerClearButton
 	{
+		/// <summary>Bindable property for <see cref="IsClearButtonVisible"/>.</summary>
+		public static readonly BindableProperty IsClearButtonVisibleProperty =
+			BindableProperty.Create(nameof(IsClearButtonVisible), typeof(bool), typeof(Picker), false);
+
+		/// <summary>Gets or sets whether a clear button is shown when an item is selected. This is a bindable property.</summary>
+		/// <remarks>
+		/// Defaults to <see langword="false"/>. Supported on Android, iOS, Mac Catalyst, and Windows.
+		/// Clearing resets <see cref="SelectedIndex"/> to -1 without closing an open picker.
+		/// </remarks>
+		public bool IsClearButtonVisible
+		{
+			get => (bool)GetValue(IsClearButtonVisibleProperty);
+			set => SetValue(IsClearButtonVisibleProperty, value);
+		}
+
 		/// <summary>Bindable property for <see cref="TextColor"/>.</summary>
 		public static readonly BindableProperty TextColorProperty = TextElement.TextColorProperty;
 
@@ -596,7 +611,12 @@ namespace Microsoft.Maui.Controls
 
 			ClearPendingSelectedIndex();
 
-			if (ItemsSource != null)
+			if (selectedItem is null && SelectedIndex == -1)
+			{
+				return;
+			}
+
+			if (ItemsSource is not null)
 			{
 				SetSelectedIndexFromHandler(ItemsSource.IndexOf(selectedItem));
 				return;

@@ -4,4 +4,5 @@
   <string name="indicator_item_accessible_description_selected">Item %1$d of %2$d, selected</string>
   <string name="maui_date_picker_open">Open date picker</string>
   <string name="maui_time_picker_open">Open time picker</string>
+  <string name="maui_picker_clear_selection">Clear selection</string>
 </resources>
