@@ -43,6 +43,7 @@ public sealed class HeadlessTestRunner(HeadlessRunnerOptions runnerOptions, Test
 			throw new InvalidOperationException("ConfigureTests must specify the application's test assembly.");
 
 		var args = arguments.ToList();
+		args.AddRange(NativeTestArguments.GetDiagnosticArguments(args));
 		var metadata = options.TestAssembly.GetCustomAttributes<AssemblyMetadataAttribute>().ToArray();
 		var configuredResults = metadata.SingleOrDefault(attribute => attribute.Key == "MauiTestResultsDirectory")?.Value;
 		if (!string.IsNullOrEmpty(configuredResults))

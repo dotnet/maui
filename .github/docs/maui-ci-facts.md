@@ -582,6 +582,12 @@ test run 46605876, result 100104; Windows Core completed with 2,082 passes and
 111 existing skips. This proves release of that root, not resolution of every
 native SDK resource leak or the full Controls crash.
 
+Native hosts default xUnit's `--long-running` threshold to 60 seconds and enable
+`--xunit-diagnostics on`, unless those options were supplied explicitly. These
+are liveness diagnostics, not test deadlines, retries or result evidence. Add
+them inside the headless host: the native SDK proxy does not expose every xUnit
+option. Genuine TRX and the process exit code remain authoritative.
+
 ## Merge-readiness criteria
 
 Retained for the interactive investigator and legacy deterministic gate consumers.

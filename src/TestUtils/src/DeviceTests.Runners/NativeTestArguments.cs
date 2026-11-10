@@ -7,6 +7,16 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners;
 
 internal static class NativeTestArguments
 {
+	public static string[] GetDiagnosticArguments(IReadOnlyCollection<string> arguments)
+	{
+		var defaults = new List<string>();
+		if (!arguments.Any(argument => argument == "--long-running" || argument.StartsWith("--long-running=", StringComparison.Ordinal)))
+			defaults.AddRange(["--long-running", "60"]);
+		if (!arguments.Any(argument => argument == "--xunit-diagnostics" || argument.StartsWith("--xunit-diagnostics=", StringComparison.Ordinal)))
+			defaults.AddRange(["--xunit-diagnostics", "on"]);
+		return defaults.ToArray();
+	}
+
 	public static string[] GetNameArguments(string? names, string option)
 	{
 		if (string.IsNullOrWhiteSpace(names))

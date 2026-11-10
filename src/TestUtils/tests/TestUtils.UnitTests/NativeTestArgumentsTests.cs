@@ -5,6 +5,32 @@ namespace Microsoft.Maui.TestUtils.UnitTests;
 
 public class NativeTestArgumentsTests
 {
+	[Fact]
+	public void NativeHostsReportLongRunningTestsWithoutChangingTimeouts() =>
+		Assert.Equal(
+			["--long-running", "60", "--xunit-diagnostics", "on"],
+			NativeTestArguments.GetDiagnosticArguments([]));
+
+	[Theory]
+	[InlineData("--long-running", "120")]
+	[InlineData("--long-running=120", "")]
+	public void PreservesExplicitLongRunningThreshold(string option, string value) =>
+		Assert.Equal(
+			["--xunit-diagnostics", "on"],
+			NativeTestArguments.GetDiagnosticArguments([option, value]));
+
+	[Theory]
+	[InlineData("--xunit-diagnostics", "off")]
+	[InlineData("--xunit-diagnostics=off", "")]
+	public void PreservesExplicitDiagnosticPreference(string option, string value) =>
+		Assert.Equal(
+			["--long-running", "60"],
+			NativeTestArguments.GetDiagnosticArguments([option, value]));
+
+	[Fact]
+	public void DoesNotDuplicateNativeDiagnosticOptions() =>
+		Assert.Empty(NativeTestArguments.GetDiagnosticArguments(["--long-running", "0", "--xunit-diagnostics", "off"]));
+
 	[Theory]
 	[InlineData(null)]
 	[InlineData("")]
