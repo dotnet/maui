@@ -448,6 +448,53 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public async Task AbsoluteRoutePrefixedWithDotDotSegmentsPopsPagesFromPreviousSection()
+		{
+			var shellItem = new FlyoutItem();
+			shellItem.Items.Add(CreateShellSection<Tab>(shellContentRoute: "Page1"));
+			shellItem.Items.Add(CreateShellSection<Tab>(shellContentRoute: "Page2"));
+			shellItem.Items.Add(CreateShellSection<Tab>(shellContentRoute: "Page3"));
+			TestShell shell = new TestShell(shellItem);
+			shell.RegisterPage("Page4");
+			shell.RegisterPage("Page5");
+			var page3Section = shellItem.Items[2];
+
+			await shell.GoToAsync("//Page3");
+			await shell.GoToAsync("Page4");
+			await shell.GoToAsync("Page5");
+			Assert.Equal(3, page3Section.Stack.Count);
+
+			await shell.GoToAsync("//../../Page2");
+
+			Assert.Equal("//Page2", shell.CurrentState.Location.ToString());
+			Assert.Single(page3Section.Stack);
+		}
+
+		[Fact]
+		public async Task EachDotDotSegmentOnAbsoluteRoutePopsOnePageFromPreviousSection()
+		{
+			var shellItem = new FlyoutItem();
+			shellItem.Items.Add(CreateShellSection<Tab>(shellContentRoute: "Page1"));
+			shellItem.Items.Add(CreateShellSection<Tab>(shellContentRoute: "Page2"));
+			shellItem.Items.Add(CreateShellSection<Tab>(shellContentRoute: "Page3"));
+			TestShell shell = new TestShell(shellItem);
+			var page4 = shell.RegisterPage("Page4");
+			shell.RegisterPage("Page5");
+			var page3Section = shellItem.Items[2];
+
+			await shell.GoToAsync("//Page3");
+			await shell.GoToAsync("Page4");
+			await shell.GoToAsync("Page5");
+			Assert.Equal(3, page3Section.Stack.Count);
+
+			await shell.GoToAsync("//../Page2");
+
+			Assert.Equal("//Page2", shell.CurrentState.Location.ToString());
+			Assert.Equal(2, page3Section.Stack.Count);
+			Assert.Equal(page4, page3Section.Stack[1]);
+		}
+
+		[Fact]
 		public async Task PopToRootRemovesMiddlePagesBeforePoppingVisibleModalPages()
 		{
 			Routing.RegisterRoute("ModalTestPage", typeof(ShellModalTests.ModalTestPage));

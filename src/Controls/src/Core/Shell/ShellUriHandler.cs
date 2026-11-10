@@ -85,6 +85,30 @@ namespace Microsoft.Maui.Controls
 			return path.Replace(_pathSeparators[1], _pathSeparator[0]);
 		}
 
+		// When an absolute route is prefixed with ".." segments ("//../../Page2"), Uri
+		// normalization inside ConvertToStandardFormat silently discards those segments,
+		// so the number of pages each ".." should pop has to be captured up front
+		internal static int CountLeadingDotDotSegments(Uri request)
+		{
+			if (request == null || request.IsAbsoluteUri)
+				return 0;
+
+			var path = FormatUri(request.OriginalString);
+			if (!path.StartsWith("//", StringComparison.Ordinal))
+				return 0;
+
+			int count = 0;
+			foreach (var segment in RetrievePaths(path.Split('?')[0]))
+			{
+				if (segment != "..")
+					break;
+
+				count++;
+			}
+
+			return count;
+		}
+
 		internal static Uri CreateUri(string path)
 		{
 			path = FormatUri(path);

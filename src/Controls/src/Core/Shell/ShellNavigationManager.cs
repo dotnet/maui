@@ -68,6 +68,8 @@ namespace Microsoft.Maui.Controls
 
 			navigationRequest ??= ShellUriHandler.GetNavigationRequest(_shell, state.FullLocation, enableRelativeShellRoutes, shellNavigationParameters: shellNavigationParameters);
 
+			int leadingPops = ShellUriHandler.CountLeadingDotDotSegments(state.FullLocation);
+
 			bool isRelativePopping = ShellUriHandler.IsTargetRelativePop(shellNavigationParameters);
 			var parameters = shellNavigationParameters.Parameters ?? new ShellRouteParameters();
 
@@ -215,6 +217,18 @@ namespace Microsoft.Maui.Controls
 				// navigation path. So this waits until that's finished before returning from GotoAsync
 				if (_shell?.CurrentItem?.CurrentItem?.PendingNavigationTask != null)
 					await (_shell?.CurrentItem?.CurrentItem?.PendingNavigationTask ?? Task.CompletedTask);
+
+				// If an absolute route was prefixed with ".." segments ("//../../Page2"), those
+				// segments are no longer part of the resolved request, so pop one page per ".."
+				// off the section that's being navigated away from
+				if (leadingPops > 0 &&
+					currentShellSection != null &&
+					currentShellSection != _shell.CurrentItem?.CurrentItem)
+				{
+					var previousStack = currentShellSection.Stack.ToList();
+					for (int i = previousStack.Count - 1; i >= 1 && leadingPops > 0; i--, leadingPops--)
+						currentShellSection.Navigation.RemovePage(previousStack[i]);
+				}
 
 				if (!modalStackPreBuilt && currentShellSection?.Navigation.ModalStack.Count > 0)
 				{
