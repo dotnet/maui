@@ -208,11 +208,16 @@ steps:
         Microsoft.Maui.DeviceTests.WindowTests
         Microsoft.Maui.DeviceTests.FlyoutPageTests
         Microsoft.Maui.DeviceTests.Memory.WindowOverlayTests
+        Microsoft.Maui.DeviceTests.Memory.MemoryTests
         Microsoft.Maui.DeviceTests.ScrollViewTests
+        Microsoft.Maui.DeviceTests.ShellTests
         --filter-method
         "*NativeAttachmentDisposesItsWindowScope*"
         "*DoesNotLeakAsModal*"
-        "*DoesNotLeak"
+        "Microsoft.Maui.DeviceTests.Memory.WindowOverlayTests.DoesNotLeak"
+        "Microsoft.Maui.DeviceTests.ScrollViewTests.DoesNotLeak"
+        "*CollectionWaitKeepsRootedViewsAlive*"
+        "Microsoft.Maui.DeviceTests.ShellTests.PagesDoNotLeak"
         "*EntryDoesNotReceiveFocusWhenScrollViewReloads*"
         "*RemovingScrollViewDuringLoadingDoesNotStrandTemporaryTabStop*"
         "*QueuedTabStopRestoreDoesNotRunAfterDisconnect*"

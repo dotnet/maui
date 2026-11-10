@@ -43,6 +43,14 @@ namespace Microsoft.Maui.DeviceTests
 				drained.TrySetResult();
 			});
 			await drained.Task;
+#elif WINDOWS
+			// WinRT finalization can queue native release onto the owning UI thread.
+			var queue = await Microsoft.Maui.ApplicationModel.MainThread.InvokeOnMainThreadAsync(
+				Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread);
+			var drained = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+			if (queue is null || !queue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () => drained.TrySetResult()))
+				throw new InvalidOperationException("Unable to drain the Windows UI queue after collection.");
+			await drained.Task.WaitAsync(TimeSpan.FromSeconds(30));
 #endif
 		}
 

@@ -677,6 +677,14 @@ window wrapper had no GC roots. The original assertion still failed in genuine T
 The modal test therefore requests the same opt-in snapshot in its assertion
 exception handler before rethrowing unchanged. This is diagnostic only; it
 does not add a collection, drain, delay or accepted failure.
+Run 1672756 captured from that handler before the test unwound. The non-runner
+child ContentPage still had no GC root. The Windows collection helper now tests
+the deferred-native-release explanation by awaiting a low-priority UI-queue
+barrier after finalization, as the Apple helper already drains its native UI
+release queue. There is no sleep, quota change or weakened assertion. The
+focused probe also includes Shell page collection and both generic/non-generic
+rooted-object contrasts; native results must establish whether this candidate
+addresses the failure.
 
 In [device run 1672389](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1672389),
 log 719, PageSheet's `PresentViewControllerAsync` task did not complete within
