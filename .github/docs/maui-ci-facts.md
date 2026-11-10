@@ -569,6 +569,19 @@ identify every remaining managed or native owner. The probe is not a fix and is
 removed after capture. Do not substitute forced collection, raised quotas,
 skips, or disabled title bars for a verified lifetime correction.
 
+An independent repository-owned visual-root retention was subsequently reproduced
+in [device run 1672255](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1672255),
+log 553: `UnloadedWindowRootViewCanBeCollected` reached its collection assertion
+after observing native `Loaded`, `Unloaded` and window `Closed`, but the
+`WindowRootView` stayed alive. Its `UISettings.ColorValuesChanged` subscription
+was added on every template application and never removed. Scope that subscription
+to `Loaded`/`Unloaded`, refreshing current colors on reload rather than accumulating
+template subscriptions. The unchanged native regression passed in
+[device run 1672279](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1672279),
+test run 46605876, result 100104; Windows Core completed with 2,082 passes and
+111 existing skips. This proves release of that root, not resolution of every
+native SDK resource leak or the full Controls crash.
+
 ## Merge-readiness criteria
 
 Retained for the interactive investigator and legacy deterministic gate consumers.

@@ -597,7 +597,9 @@ namespace Microsoft.Maui.DeviceTests
 
 			var entry = new Entry();
 			var focused = false;
-			entry.Focused += (_, _) => focused = true;
+			var phase = "initial load";
+			var reloadLoaded = false;
+			var focusDiagnostic = "No focus event observed.";
 
 			var scrollView = new ScrollView
 			{
@@ -609,6 +611,13 @@ namespace Microsoft.Maui.DeviceTests
 						entry
 					}
 				}
+			};
+			entry.Focused += (_, _) =>
+			{
+				focused = true;
+				var platformScrollView = (scrollView.Handler as ScrollViewHandler)?.PlatformView;
+				var platformEntry = (entry.Handler as EntryHandler)?.PlatformView;
+				focusDiagnostic = $"phase={phase}, loaded={platformScrollView?.IsLoaded}, tabStop={platformScrollView?.IsTabStop}, reload Loaded event={reloadLoaded}, native focus={platformEntry?.FocusState}";
 			};
 			var page = new ContentPage { Content = scrollView };
 			var navigationPage = new NavigationPage(page);
@@ -628,6 +637,7 @@ namespace Microsoft.Maui.DeviceTests
 				platformScrollView.Unloaded += unloadedHandler;
 				try
 				{
+					phase = "push";
 					await navigationPage.PushAsync(new ContentPage { Content = new Label() });
 					await unloaded.Task.WaitAsync(TimeSpan.FromSeconds(5));
 				}
@@ -641,10 +651,15 @@ namespace Microsoft.Maui.DeviceTests
 				var focusedWhileUnloaded = entry.IsFocused;
 
 				var loaded = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-				Microsoft.UI.Xaml.RoutedEventHandler loadedHandler = (_, _) => loaded.TrySetResult();
+				Microsoft.UI.Xaml.RoutedEventHandler loadedHandler = (_, _) =>
+				{
+					reloadLoaded = true;
+					loaded.TrySetResult();
+				};
 				platformScrollView.Loaded += loadedHandler;
 				try
 				{
+					phase = "pop";
 					await navigationPage.PopAsync();
 					await loaded.Task.WaitAsync(TimeSpan.FromSeconds(5));
 				}
@@ -657,8 +672,8 @@ namespace Microsoft.Maui.DeviceTests
 				await WaitForDispatcherIdle(platformScrollView.DispatcherQueue);
 				Assert.False(platformScrollView.IsTabStop);
 
-				Assert.False(entry.IsFocused, $"Entry focus: initial={initiallyFocused}, unloaded={focusedWhileUnloaded}, initial event={initialFocusEvent}.");
-				Assert.False(focused, $"Entry received focus during the scenario; initial focus event={initialFocusEvent}.");
+				Assert.False(entry.IsFocused, $"Entry focus: initial={initiallyFocused}, unloaded={focusedWhileUnloaded}, initial event={initialFocusEvent}; {focusDiagnostic}.");
+				Assert.False(focused, $"Entry received focus during the scenario; initial focus event={initialFocusEvent}; {focusDiagnostic}.");
 			});
 		}
 
