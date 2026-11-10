@@ -7,8 +7,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner;
 #if WINDOWS
+using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using Microsoft.Maui.Dispatching;
 #endif
 #if IOS || MACCATALYST
@@ -47,9 +50,13 @@ class MauiTestApplication : Application
 					File.AppendAllText(fatalLog, args.Exception + Environment.NewLine);
 					using var output = new StreamWriter(Console.OpenStandardError()) { AutoFlush = true };
 					output.WriteLine(args.Exception);
+					WriteWindowsCrashDump(errorDirectory);
 				};
 				AppDomain.CurrentDomain.UnhandledException += (_, args) =>
+				{
 					File.AppendAllText(fatalLog, args.ExceptionObject + Environment.NewLine);
+					WriteWindowsCrashDump(errorDirectory);
+				};
 #endif
 				var directory =
 #if IOS || MACCATALYST
@@ -89,6 +96,61 @@ class MauiTestApplication : Application
 #endif
 		return new Window(page);
 	}
+
+#if WINDOWS
+	static int _windowsDumpStarted;
+
+	static void WriteWindowsCrashDump(string directory)
+	{
+		if (Interlocked.Exchange(ref _windowsDumpStarted, 1) != 0)
+			return;
+
+		var path = Path.Combine(directory, $"native-unhandled-{Environment.ProcessId}.dmp");
+		try
+		{
+			// DbgHelp must run off the faulting UI thread; never mark the exception handled.
+			Task.Factory.StartNew(() =>
+			{
+				var pending = path + ".pending";
+				using (var process = Process.GetCurrentProcess())
+				using (var dump = new FileStream(pending, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+				{
+					const MiniDumpType flags = MiniDumpType.WithFullMemory | MiniDumpType.WithHandleData |
+						MiniDumpType.WithFullMemoryInfo | MiniDumpType.WithThreadInfo;
+					if (!MiniDumpWriteDump(process.Handle, process.Id, dump.SafeFileHandle, flags,
+						IntPtr.Zero, IntPtr.Zero, IntPtr.Zero))
+					{
+						var error = Marshal.GetLastPInvokeError();
+						throw new Win32Exception(error, $"MiniDumpWriteDump failed with 0x{error:X8}.");
+					}
+				}
+				File.Move(pending, path);
+			}, CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default)
+				.WaitAsync(TimeSpan.FromSeconds(30)).GetAwaiter().GetResult();
+			Console.Error.WriteLine($"Native unhandled-exception dump: {path}");
+		}
+		catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or Win32Exception or TimeoutException)
+		{
+			Console.Error.WriteLine($"Could not capture native unhandled-exception dump '{path}': {exception}");
+		}
+	}
+
+	[Flags]
+	enum MiniDumpType : uint
+	{
+		WithFullMemory = 0x00000002,
+		WithHandleData = 0x00000004,
+		WithFullMemoryInfo = 0x00000800,
+		WithThreadInfo = 0x00001000
+	}
+
+	[DllImport("dbghelp.dll", SetLastError = true)]
+	[DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+	[return: MarshalAs(UnmanagedType.Bool)]
+	static extern bool MiniDumpWriteDump(IntPtr process, int processId,
+		Microsoft.Win32.SafeHandles.SafeFileHandle file, MiniDumpType dumpType,
+		IntPtr exceptionParameters, IntPtr userStreams, IntPtr callback);
+#endif
 
 #if IOS || MACCATALYST
 	static void WriteAppleResult(string result)

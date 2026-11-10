@@ -592,6 +592,25 @@ node, so a runtime or UI-thread stall does not depend on a diagnostic timer
 continuing to run. These messages never supply result counters; genuine TRX and
 the process exit code remain authoritative.
 
+Windows fixtures must close their owned native window before fallback handler
+and scope teardown, so `Destroying` sees the live handler and scoped services.
+Windows window destruction must disconnect the page's handler graph before
+disposing those services. In
+[device run 1672454](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1672454),
+log 692, a pending `StackNavigationManager.OnNavigated`/`Loaded` callback arranged
+a still-connected page after its service provider had been disposed. The resulting
+`ObjectDisposedException` terminated WinUI with `0xDEAD` after 65 passes; that
+failure is distinct from the earlier native title-bar allocation failure.
+Do not suppress the exception or replace native close with an arbitrary delay.
+
+The Windows native host's existing unhandled-exception hooks attempt one
+full-memory dump of their own process on a dedicated worker before termination.
+The dump includes handle and thread information and is written inside the
+unique result directory; a pending file is renamed only after a successful
+write. Capture has a bounded diagnostic wait, reports failures explicitly, and
+does not mark the original exception handled. This supplements MTP's crash
+collector, which did not produce its expected dump for these WinUI terminations.
+
 In [device run 1672389](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1672389),
 log 719, PageSheet's `PresentViewControllerAsync` task did not complete within
 30 seconds even with an active application, foreground-active scene, key visible
