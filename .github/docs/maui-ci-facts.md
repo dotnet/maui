@@ -822,6 +822,17 @@ before releasing the handler/window scopes. Successful checks log that exact
 handle and process. This stricter native teardown check needs Windows CI
 verification; it neither proves native title-bar/resource release nor treats
 managed `Closed` or garbage collection as evidence of HWND destruction.
+Completed native CI 1673292 tested functional head `8e446e8b16` and passed all
+Android and Apple jobs, plus the four other unpackaged Windows suites:
+35 of 41 jobs succeeded. Five installed-MSIX rows still failed the signing
+prerequisite; Windows Controls still terminated natively. Its log 992 records
+143 exact owned-HWND destruction checks passing before termination, with
+8,018 GDI objects observed at the snapshot threshold. The recovered report is
+explicitly failed and partial (332 passes, seven skips); it is not suite success.
+The handle checks establish destruction of those particular fixture HWNDs,
+not the release of their native title-bar objects or exclusion of every other
+repository-native owner. The Windows resource cause and approved packaged
+signing provisioning remain unresolved.
 
 The shared NUnit/Appium MTP caller also has native execution evidence in
 [UI run 1670623](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1670623):
