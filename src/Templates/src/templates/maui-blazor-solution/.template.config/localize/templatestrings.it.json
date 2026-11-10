@@ -1,4 +1,4 @@
-{
+﻿{
   "author": "Microsoft",
   "name": "App .NET MAUI Blazor Hybrid e Web",
   "description": "App multi-progetto per la creazione di un'applicazione i .NET MAUI Blazor Hybrid con un progetto Blazor Web con un'interfaccia utente condivisa.",
@@ -22,9 +22,15 @@
   "symbols/InteractivityPlatform/choices/WebAssembly/description": "Viene eseguito nel browser tramite WebAssembly",
   "symbols/InteractivityPlatform/choices/Auto/displayName": "Automatico (Server e WebAssembly)",
   "symbols/InteractivityPlatform/choices/Auto/description": "Usa Server durante il download degli asset WebAssembly, quindi usa WebAssembly",
+  "symbols/InteractivityLocation/displayName": "Interactivity _location",
+  "symbols/InteractivityLocation/description": "Chooses which components will have interactive rendering enabled",
+  "symbols/InteractivityLocation/choices/InteractivePerPage/displayName": "Per page/component",
+  "symbols/InteractivityLocation/choices/InteractivePerPage/description": "Interactivity is applied on a per-page or per-component basis",
+  "symbols/InteractivityLocation/choices/InteractiveGlobal/displayName": "Global",
+  "symbols/InteractivityLocation/choices/InteractiveGlobal/description": "Interactivity is applied at the root level",
   "symbols/IncludeSampleContent/displayName": "_Includi pagine di esempio",
   "symbols/IncludeSampleContent/description": "Consente di configurare se aggiungere pagine di esempio e stile per mostrare modelli di utilizzo di base.",
-  "symbols/empty/description": "Consente di configurare se omettere pagine di esempio e stile che mostrano modelli di utilizzo di base.",
+  "symbols/Empty/description": "Consente di configurare se omettere pagine di esempio e stile che mostrano modelli di utilizzo di base.",
   "symbols/AllInteractive/displayName": "_Abilita rendering interattivo a livello globale in tutto il sito",
   "symbols/AllInteractive/description": "Configura se rendere interattiva ogni pagina applicando una modalità di rendering interattiva al livello superiore. Se false, le pagine useranno il rendering statico del server per impostazione predefinita e possono essere contrassegnate come interattive per pagina o per componente.",
   "symbols/NoHttps/description": "Indica se disattivare HTTPS. Questa opzione si applica solo se l'opzione Individual non viene usata per --auth.",
