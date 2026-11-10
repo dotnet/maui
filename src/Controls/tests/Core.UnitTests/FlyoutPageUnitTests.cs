@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
+using NSubstitute;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -28,6 +29,54 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.Null(page.Flyout);
 			Assert.Null(page.Detail);
+		}
+
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public void DisplayInfoSubscriptionTracksWindowAndHandler(bool attachWindowFirst)
+		{
+			var page = new FlyoutPage
+			{
+				Flyout = new ContentPage { Title = "Flyout" },
+				Detail = new ContentPage()
+			};
+			var window = new Window();
+			var handler = Substitute.For<IViewHandler>();
+
+			if (attachWindowFirst)
+			{
+				window.Page = page;
+				Assert.Equal(0, mockDeviceDisplay.MainDisplayInfoChangedSubscriberCount);
+				page.Handler = handler;
+			}
+			else
+			{
+				page.Handler = handler;
+				Assert.Equal(0, mockDeviceDisplay.MainDisplayInfoChangedSubscriberCount);
+				window.Page = page;
+			}
+
+			Assert.Equal(1, mockDeviceDisplay.MainDisplayInfoChangedSubscriberCount);
+
+			page.Handler = Substitute.For<IViewHandler>();
+			Assert.Equal(1, mockDeviceDisplay.MainDisplayInfoChangedSubscriberCount);
+
+			page.Handler = null;
+			Assert.Same(window, page.Window);
+			Assert.Equal(0, mockDeviceDisplay.MainDisplayInfoChangedSubscriberCount);
+
+			page.Handler = handler;
+			Assert.Equal(1, mockDeviceDisplay.MainDisplayInfoChangedSubscriberCount);
+
+			window.Page = new ContentPage();
+			Assert.Equal(0, mockDeviceDisplay.MainDisplayInfoChangedSubscriberCount);
+
+			window.Page = page;
+			Assert.Equal(1, mockDeviceDisplay.MainDisplayInfoChangedSubscriberCount);
+
+			page.Handler = null;
+			Assert.Equal(0, mockDeviceDisplay.MainDisplayInfoChangedSubscriberCount);
 		}
 
 		[Fact]

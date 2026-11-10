@@ -197,17 +197,27 @@ steps:
 - ${{ if and(eq(parameters.platform, 'windows'), eq(parameters.device, 'unpackaged'), eq(parameters.applicationId, 'com.microsoft.maui.controls.devicetests')) }}:
   - template: run-dotnet-preview.yml
     parameters:
-      displayName: Verify native window attachment lifetime
+      displayName: Verify native ownership and focus regressions
       command: test
       project: --project "${{ parameters.path }}"
       arguments: >-
         --configuration ${{ parameters.deviceTestConfiguration }}
         --framework ${{ parameters.targetFrameworkVersion }}-windows10.0.19041.0
         --no-build
-        --filter-class Microsoft.Maui.DeviceTests.WindowTests
-        --filter-method "*NativeAttachmentDisposesItsWindowScope*"
+        --filter-class
+        Microsoft.Maui.DeviceTests.WindowTests
+        Microsoft.Maui.DeviceTests.FlyoutPageTests
+        Microsoft.Maui.DeviceTests.Memory.WindowOverlayTests
+        Microsoft.Maui.DeviceTests.ScrollViewTests
+        --filter-method
+        "*NativeAttachmentDisposesItsWindowScope*"
+        "*DoesNotLeakAsModal*"
+        "*DoesNotLeak"
+        "*EntryDoesNotReceiveFocusWhenScrollViewReloads*"
+        "*RemovingScrollViewDuringLoadingDoesNotStrandTemporaryTabStop*"
+        "*QueuedTabStopRestoreDoesNotRunAfterDisconnect*"
         --report-trx
-        --results-directory "$(TestResultsDirectory)/window-lifetime"
+        --results-directory "$(TestResultsDirectory)/ownership-regressions"
         -p:RuntimeIdentifier=win-x64
         -p:RuntimeIdentifierOverride=win-x64
         -p:IsRidAgnostic=false
@@ -240,18 +250,37 @@ steps:
           $summary = "$($dump.FullName).analysis.txt"
           & $analyzer analyze $dump.FullName -c 'dumpheap -stat' -c 'clrthreads' -c exit *> $summary
           if ($LASTEXITCODE -ne 0) { throw "Dump analysis failed with exit code $LASTEXITCODE. See $summary." }
-          foreach ($type in @('Microsoft.Maui.MauiWinUIWindow', 'Microsoft.Maui.WindowOverlay', 'Microsoft.Maui.Platform.WindowRootView')) {
+          $statistics = Get-Content -LiteralPath $summary
+          foreach ($type in @('Microsoft.Maui.MauiWinUIWindow', 'Microsoft.Maui.WindowOverlay', 'Microsoft.Maui.Platform.WindowRootView', 'Microsoft.Maui.Controls.FlyoutPage', 'Microsoft.Maui.Controls.ContentPage')) {
+              $typePattern = '^\s*([0-9a-fA-F]{12,16})\s+[\d,]+\s+[\d,]+\s+' + [regex]::Escape($type) + '\s*$'
+              $methodTables = @($statistics | ForEach-Object {
+                  if ($_ -match $typePattern) { $Matches[1] }
+              })
+              if (!$methodTables.Count) {
+                  Write-Host "No objects of exact type $type were listed in this snapshot."
+                  continue
+              }
               $objects = "$($dump.FullName).$type.objects.txt"
-              & $analyzer analyze $dump.FullName -c "dumpheap -type $type -short" -c exit *> $objects
+              $commands = @('analyze', $dump.FullName)
+              foreach ($methodTable in $methodTables) {
+                  $commands += @('-c', "dumpheap -mt $methodTable -short")
+              }
+              & $analyzer @commands -c exit *> $objects
               if ($LASTEXITCODE -ne 0) { throw "Object enumeration failed with exit code $LASTEXITCODE. See $objects." }
               $addresses = @(Get-Content -LiteralPath $objects |
                   Where-Object { $_ -match '^\s*[0-9a-fA-F]{12,16}\s*$' } |
-                  ForEach-Object { $_.Trim() } | Select-Object -First 3)
+                  ForEach-Object { $_.Trim() })
+              if (!$addresses.Count) { throw "No addresses were enumerated for $type despite its heap statistics entry. See $objects." }
+              $roots = "$($dump.FullName).$type.roots.txt"
+              $commands = @('analyze', $dump.FullName)
               foreach ($address in $addresses) {
-                  $roots = "$($dump.FullName).$type.$address.roots.txt"
-                  & $analyzer analyze $dump.FullName -c "gcroot $address" -c exit *> $roots
-                  if ($LASTEXITCODE -ne 0) { throw "Root analysis failed with exit code $LASTEXITCODE. See $roots." }
+                  $commands += @('-c', "dumpobj $address", '-c', "gcroot $address")
               }
+              & $analyzer @commands -c exit *> $roots
+              if ($LASTEXITCODE -ne 0) { throw "Root analysis failed with exit code $LASTEXITCODE. See $roots." }
+              $completed = @(Select-String -LiteralPath $roots -Pattern '^\s*Found \d+ unique roots\.\s*$')
+              if ($completed.Count -ne $addresses.Count) { throw "Root analysis completed $($completed.Count) of $($addresses.Count) objects for $type. See $roots." }
+              Write-Host "Analyzed all $($addresses.Count) objects of exact type $type."
           }
       }
     displayName: Analyze owned native process snapshots

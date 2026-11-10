@@ -626,15 +626,36 @@ objects, before a hard termination can bypass unhandled-exception callbacks.
 This only records evidence: it does not change resource quotas, force collection,
 reset title bars or convert a failed process into a successful test run.
 Windows jobs analyze any resulting owned snapshots on Windows, retaining heap
-statistics and sampled managed root paths alongside the dump. Tooling is installed
+statistics and managed root paths alongside the dump. Enumeration uses exact
+method tables from heap statistics, not substring matches that can select
+delegates or generated closure types instead of the requested objects. Root
+analysis covers every enumerated window, visual root, overlay, FlyoutPage and
+ContentPage, batching commands per type to reuse the root cache and requiring
+one completed root search per address. Tooling is installed
 only in the job-owned temporary directory when missing, and analysis failures
-remain explicit. A separate exact two-row attachment-lifetime invocation runs
-after the full Controls job, so an earlier suite crash cannot hide those closure
-assertions; it does not replace or filter the full-suite invocation.
+remain explicit. A separate targeted ownership/focus invocation runs after the
+full Controls job, so an earlier suite crash cannot hide the attachment-lifetime,
+modal/overlay collection and ScrollView reload/removal/disconnect assertions.
+It does not replace or filter the full-suite invocation.
 In [device run 1672521](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1672521),
 log 1039, the live process snapshot was captured successfully at 8,002 GDI
 objects as `native-process-4008.dmp`. The same run still failed normally, so
 the diagnostic capture did not hide the subsequent native termination.
+
+In [device run 1672577](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1672577),
+the two genuine attachment-lifetime rows passed in test run 46615240. The full
+Controls run still failed modal ContentPage collection and then terminated with
+`0xDEAD` (331 passes, one failure and seven existing skips). Its pressure snapshot
+`native-process-5552.dmp` exposed a global root through
+`DeviceDisplayImplementation.MainDisplayInfoChanged` to a FlyoutPage, its pages
+and an older MauiWinUIWindow. This does not establish that the HWND was destroyed,
+or that every native-resource owner has been identified. FlyoutPage's display
+listener must require both a logical window and a live handler, removing it on
+handler teardown even while the logical Window reference remains. The managed
+regression failed before this change and passes for both attachment orders,
+handler replacement/reconnection and window removal/readdition. Native results
+remain a separate requirement; this managed proof does not establish that the
+remaining modal collection failure or native termination is resolved.
 
 In [device run 1672389](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1672389),
 log 719, PageSheet's `PresentViewControllerAsync` task did not complete within
