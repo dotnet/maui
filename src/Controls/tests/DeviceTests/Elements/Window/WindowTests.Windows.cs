@@ -25,7 +25,17 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			SetupBuilder();
 			MauiContext windowContext = null;
-			var run = CreateHandlerAndAddToWindow<IWindowHandler>(new ContentPage(), handler =>
+			var window = new Window(new ContentPage());
+			var destroyingRaised = false;
+			var handlerConnectedDuringDestroying = false;
+			var scopeAliveDuringDestroying = false;
+			window.Destroying += (_, _) =>
+			{
+				destroyingRaised = true;
+				handlerConnectedDuringDestroying = window.Handler is not null;
+				scopeAliveDuringDestroying = windowContext is not null && !windowContext.IsWindowScopeDisposed;
+			};
+			var run = CreateHandlerAndAddToWindow<IWindowHandler>(window, handler =>
 			{
 				windowContext = Assert.IsType<MauiContext>(handler.MauiContext);
 				Assert.False(windowContext.IsWindowScopeDisposed);
@@ -40,6 +50,9 @@ namespace Microsoft.Maui.DeviceTests
 				await run;
 
 			Assert.True(windowContext.IsWindowScopeDisposed);
+			Assert.True(destroyingRaised);
+			Assert.True(handlerConnectedDuringDestroying);
+			Assert.True(scopeAliveDuringDestroying);
 		}
 
 		[Fact(DisplayName = "Swapping MainPage doesn't Crash")]

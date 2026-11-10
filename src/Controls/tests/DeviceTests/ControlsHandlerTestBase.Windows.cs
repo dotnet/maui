@@ -36,32 +36,54 @@ namespace Microsoft.Maui.DeviceTests
 				UI.Xaml.Application.Current.SetApplicationHandler(appStub, applicationContext);
 				WWindow newWindow = null;
 				MauiContext windowContext = null;
+				var closed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+				void OnClosed(object sender, UI.Xaml.WindowEventArgs args) => closed.TrySetResult();
 				try
 				{
 					ApplicationExtensions.CreatePlatformWindow(UI.Xaml.Application.Current, appStub, new Handlers.OpenWindowRequest());
 					newWindow = window.Handler.PlatformView as WWindow;
 					windowContext = window.Handler.MauiContext as MauiContext;
+					if (newWindow is not null)
+						newWindow.Closed += OnClosed;
 					await runTests.Invoke();
 				}
 				finally
 				{
-					// Disconnecting clears Window.Handler before Destroying can dispose its scope.
 					windowContext ??= window.Handler?.MauiContext as MauiContext;
 					try
 					{
-						window.Handler?.DisconnectHandler();
-						await Task.Delay(10);
-						newWindow?.Close();
+						if (newWindow is not null)
+						{
+							// Destroying needs the live handler and window scope during native closure.
+							if (!closed.Task.IsCompleted)
+								newWindow.Close();
+							await closed.Task.WaitAsync(TimeSpan.FromSeconds(5));
+						}
 					}
 					finally
 					{
 						try
 						{
-							windowContext?.DisposeWindowScope();
+							if (newWindow is not null)
+								newWindow.Closed -= OnClosed;
 						}
 						finally
 						{
-							appStub.Handler?.DisconnectHandler();
+							try
+							{
+								window.Handler?.DisconnectHandler();
+							}
+							finally
+							{
+								try
+								{
+									windowContext?.DisposeWindowScope();
+								}
+								finally
+								{
+									appStub.Handler?.DisconnectHandler();
+								}
+							}
 						}
 					}
 				}
