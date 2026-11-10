@@ -137,8 +137,6 @@ stages:
         windowsTestPool: ${{ parameters.windowsPoolPublic }}
         runAsPublic: true
       runWindowsTests: true
-      # .NET 12 iOS needs Xcode 27.1+, which public agents don't have (internal runs install it).
-      includeIos: ${{ ne(variables['System.TeamProject'], 'public') }}
       TargetFrameworkVersion: ${{ targetFrameworkVersion.tfm }}
       prepareSteps:
       - template: /eng/pipelines/common/provision.yml@self
