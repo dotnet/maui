@@ -108,6 +108,11 @@ class SourceGenContext(IndentedTextWriter writer, Compilation compilation, Sourc
 	public IList<string> LocalMethods { get; } = new List<string>();
 	public ProjectItem ProjectItem { get; } = projectItem;
 
+	//namespaces required as using directives when a type couldn't be resolved through an
+	//aggregated xmlns (e.g. the implicit/global one) and its resolution is deferred to the C# compiler
+	public ISet<string> FallbackUsings => ParentContext?.FallbackUsings ?? _fallbackUsings;
+	readonly HashSet<string> _fallbackUsings = new HashSet<string>();
+
 	public Dictionary<string, int> lastIdForName = [];
 
 	public void AddLocalMethod(string code)

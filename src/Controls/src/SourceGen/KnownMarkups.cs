@@ -61,6 +61,17 @@ internal class KnownMarkups
 				return true;
 			}
 
+			//fallback to guessing for aggregated xmlns (e.g. the implicit/global one). the type could come
+			//from another source generator, so emit the name unqualified and add the candidate namespaces
+			//as using directives, letting the C# compiler resolve it
+			if (context.XmlnsCache.ClrNamespacesForXmlns.TryGetValue(xmlType.NamespaceUri, out var namespaces))
+			{
+				foreach (var candidate in namespaces)
+					context.FallbackUsings.Add(candidate);
+				value = $"{xmlType.Name}.{membername}";
+				return true;
+			}
+
 			//FIXME
 			context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, null, $"Type not found {typename}"));
 			value = string.Empty;
