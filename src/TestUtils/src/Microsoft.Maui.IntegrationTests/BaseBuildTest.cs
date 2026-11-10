@@ -122,10 +122,18 @@ namespace Microsoft.Maui.IntegrationTests
 				var testDirBuildTargets = Path.Combine(TestEnvironment.GetTestDirectoryRoot(), "Directory.Build.targets");
 				if (!File.Exists(testDirBuildTargets))
 				{
-					File.WriteAllText(testDirBuildTargets, """
+					// Generated projects drop the target frameworks this agent can't build.
+					var excludedTfmsPattern = string.Join("|", TestEnvironment.ExcludedTargetFrameworks.Select(System.Text.RegularExpressions.Regex.Escape));
+					var excludeTfms = excludedTfmsPattern.Length == 0 ? "" : $"""
+						  <PropertyGroup Condition="'$(TargetFrameworks)' != ''">
+						    <TargetFrameworks>$([System.Text.RegularExpressions.Regex]::Replace('$(TargetFrameworks)', '\s*(?:{excludedTfmsPattern})[^;]*;?', ''))</TargetFrameworks>
+						  </PropertyGroup>
+						""";
+					File.WriteAllText(testDirBuildTargets, $"""
 						<Project>
 						  <!-- This file stops MSBuild from walking up the directory tree and inheriting
 						       the MAUI repo's Directory.Build.targets. -->
+						{excludeTfms}
 						</Project>
 						""");
 				}

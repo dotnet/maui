@@ -17,6 +17,8 @@ public class AOTTemplateTest : BaseTemplateTests
 	public void PublishNativeAOT(string id, string framework, string runtimeIdentifier)
 	{
 		SetTestIdentifier(id, framework, runtimeIdentifier);
+		if (TestEnvironment.IsTargetFrameworkExcluded(framework))
+			return; // Skip: this agent can't build this target framework.
 		bool isWindowsFramework = framework.Contains("windows", StringComparison.OrdinalIgnoreCase);
 		bool isApplePlatform = framework.Contains("ios", StringComparison.OrdinalIgnoreCase) || framework.Contains("maccatalyst", StringComparison.OrdinalIgnoreCase);
 		bool isAndroidPlatform = framework.Contains("android", StringComparison.OrdinalIgnoreCase);
@@ -73,6 +75,8 @@ public class AOTTemplateTest : BaseTemplateTests
 	public void PublishNativeAOTRootAllMauiAssemblies(string id, string framework, string runtimeIdentifier)
 	{
 		// This test follows the following guide: https://devblogs.microsoft.com/dotnet/creating-aot-compatible-libraries/#publishing-a-test-application-for-aot
+		if (TestEnvironment.IsTargetFrameworkExcluded(framework))
+			return; // Skip: this agent can't build this target framework.
 		bool isWindowsFramework = framework.Contains("windows", StringComparison.OrdinalIgnoreCase);
 		bool isApplePlatform = framework.Contains("ios", StringComparison.OrdinalIgnoreCase) || framework.Contains("maccatalyst", StringComparison.OrdinalIgnoreCase);
 		bool isAndroidPlatform = framework.Contains("android", StringComparison.OrdinalIgnoreCase);

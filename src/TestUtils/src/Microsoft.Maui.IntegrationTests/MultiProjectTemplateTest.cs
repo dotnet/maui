@@ -42,6 +42,12 @@ public class MultiProjectTemplateTest : BaseTemplateTests
 				$"Unable to remove WinUI project from solution. Check test output for errors.");
 		}
 
+		if (TestEnvironment.IsTargetFrameworkExcluded($"{DotNetCurrent}-ios"))
+		{
+			Assert.True(DotnetInternal.Run("sln", $"\"{solutionFile}\" remove \"{projectDir}/{name}.iOS/{name}.iOS.csproj\"", output: _output),
+				$"Unable to remove iOS project from solution. Check test output for errors.");
+		}
+
 		// TODO, we should not need this but hitting: https://github.com/dotnet/maui/issues/19840
 		var buildProps = BuildProps;
 		buildProps.Add("ResizetizerErrorOnDuplicateOutputFilename=false");
@@ -58,6 +64,8 @@ public class MultiProjectTemplateTest : BaseTemplateTests
 	public void BuildMultiProjectSinglePlatform(string config, string platformArg)
 	{
 		SetTestIdentifier(config, platformArg);
+		if (platformArg == "--ios" && TestEnvironment.IsTargetFrameworkExcluded($"{DotNetCurrent}-ios"))
+			return; // Skip: this agent can't build this target framework.
 		var projectDir = TestDirectory;
 		var name = Path.GetFileName(projectDir);
 		var solutionFile = Path.Combine(projectDir, $"{name}.sln");

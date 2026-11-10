@@ -89,7 +89,7 @@ public class ResizetizerTests : BaseBuildTest
 	{
 		SetTestIdentifier(platform);
 
-		if (!TestEnvironment.IsMacOS || !SupportsAppleIconComposer(platform))
+		if (!TestEnvironment.IsMacOS || !SupportsAppleIconComposer(platform) || TestEnvironment.IsTargetFrameworkExcluded($"{DotNetCurrent}-{platform}"))
 			return;
 
 		var projectDir = TestDirectory;

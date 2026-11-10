@@ -168,6 +168,8 @@ stages:
   - template: common/ui-tests.yml
     parameters:
       iosXcodeVersion: ${{ parameters.iosXcodeVersion }}
+      # .NET 12 iOS needs Xcode 27.1+, which public agents don't have (internal runs install it).
+      includeIos: ${{ ne(variables['System.TeamProject'], 'public') }}
       # Select pools based on pipeline - internal vs public
       ${{ if eq(variables['System.TeamProject'], 'internal') }}:
         androidPool: ${{ parameters.androidPoolInternal }}
