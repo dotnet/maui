@@ -195,7 +195,9 @@ someone merged a preview PR.
 After an explicitly authorized integration-branch reset, merged candidate PRs
 outside its pinned live history do not advance the cycle or count as duplicate
 integrations. A squash merge still in that history remains rejected; a reset
-does not relax the exact two-parent merge requirement or rewrite saved receipts.
+does not relax the exact two-parent merge requirement. If several eligible
+maintainer candidate merges remain in history, the latest merge is authoritative,
+not the first receipt or an older managed PR occupying the same cycle.
 
 GitHub can automatically delete a head branch after merge. If a current lane ref
 is missing, the reconciler restores it only from a live, verified, same-repo
@@ -410,12 +412,19 @@ preparation does not advance the train. Ambiguous sources,
 wrong versions, conflicts, unexpected refs, and squash/rebase merges fail rather
 than invent a release approval.
 
-Before creating lanes or PRs, it publishes a bounded, create-once receipt at
+Before creating lanes or PRs, it publishes a bounded receipt at
 `automation/release-lanes/<band>-srN`. The receipt retains the approved merge,
 source and prepared commit identities. If a later API call fails, schedule or
 manual retry reconstructs the same plan and finishes missing writes. Existing
-output refs must match or preserve the prepared ancestry; newer approved work
-is never reset. Consumed historical candidate heads are not recreated as fresh
+output refs must match or preserve the prepared ancestry. A newer maintainer
+candidate merge supersedes the canonical receipt using an exact SHA lease;
+the new receipt retains its predecessor as a commit parent and `supersedes`
+metadata, so previous plans remain reproducible. Only exact outputs from those
+verified previous plans may be replaced, including the previous candidate staging
+source or its exact reviewed servicing merge. Unrelated edits and concurrent
+newer sources are never overwritten. Actual API/Git failures remain explicit and
+retryable; historical failed checks or older PR routes do not veto the new source.
+Consumed historical candidate heads are not recreated as fresh
 PRs. The reconciler follows these verified receipts, so the unchanged initial
 configuration cannot reopen an obsolete PR pair after a completed integration.
 Recovery also rechecks the consumed inflight source before rollover writes and
@@ -428,8 +437,13 @@ interpolated into a ref-update URL; no direct integration-ref update is issued.
 An existing real `release/<band>-srN` ref is informational in this path: its
 ancestry does not gate staging, normalization or next-lane preparation. Publishing
 verifies the exact reviewed staging source and manual release cut before signing.
-Its create-only staging write happens before opening the draft normalization PR
-at `automation/normalization/<band>-srN`. The receipt makes this pause resumable:
+Its staging write happens before opening the draft normalization PR
+at `automation/normalization/<band>-srN/source-<candidate-merge-sha>`.
+Normalization, servicing and canonical-state PR heads are scoped to that full
+candidate merge SHA. Closed or merged PRs from an older source cannot occupy the
+new source's route. Existing unsuffixed PRs remain compatible only when their
+prepared head matches and, for identical-content state proposals, their recorded
+candidate source also matches. The receipt makes this pause resumable:
 `waiting-for-normalization-approval` preserves staging and the current tracking SR,
 does not activate the replacement lanes, and does not prepare forward flow.
 A maintainer must review, run required CI and use **Create a merge commit**,
@@ -442,16 +456,20 @@ reconciler before a real manual cut. The next-lane runner reconciles the next tr
 the normalized net11-to-main forward PR when eligible. A raw release-to-main PR
 is not used, so servicing configuration cannot overwrite feature-major settings.
 
-Staging starts at the exact approved candidate merge and may advance only to
+Within one source generation, staging starts at the exact approved candidate merge and may advance only to
 its verified human-reviewed servicing merge. Retries validate the exact PR,
 prepared head, two ordered parents and unchanged prepared tree; arbitrary
 descendants and mutations are rejected. Candidate and net11 retain CI metadata.
-Neither runner merges PRs or moves staging back to the initial candidate source.
+Neither runner merges PRs or moves reviewed staging back to the same generation's
+initial candidate source. Only a newer maintainer candidate merge can replace a
+verified older generation. Publication rechecks the canonical receipt and newer
+reachable candidate merges before creating a servicing PR or dispatching a build;
+a superseded source cannot sign while its new receipt is still being reconciled.
 
 The effective `trackingSr` selects the upcoming PR pair. It does not silently
 change the canonical `currentSr` used for release readiness or the selected
 signed-nightly source. Once rollover is complete, `canonicalStatePullRequest`
-identifies the prepared draft at `automation/state/<band>-srN`; while
+identifies the prepared draft at `automation/state/<band>-srN/source-<candidate-merge-sha>`; while
 normalization is pending, no state PR is prepared. The runner rechecks the
 exact staging source, normalized fixes and both next-lane ancestries and refuses a stale
 canonical state snapshot or an unexpected existing proposal. Retries reuse the
@@ -739,8 +757,8 @@ For a dummy SR1 candidate merge, it creates only these sandbox refs:
 
 | Dummy output under `release-rollover-trial/<trial>/` | Source commit |
 |---|---|
-| `automation/release/11.0.1xx-sr1` | The exact candidate merge commit on dummy `main`; create-once, CI/non-stable. |
-| `automation/normalization/11.0.1xx-sr1` | A housekeeping child of that exact merge, proposed in a draft PR to dummy `main`: next-cycle patch, `ci.main`, non-stable packages. |
+| `automation/release/11.0.1xx-sr1` | The latest authoritative candidate merge commit on dummy `main`; CI/non-stable until reviewed servicing. |
+| `automation/normalization/11.0.1xx-sr1/source-<candidate-merge-sha>` | A housekeeping child of that exact merge, proposed in a draft PR to dummy `main`: next-cycle patch, `ci.main`, non-stable packages. |
 | `candidate/11.0.1xx-sr2` | CI-configured child of a clean merge of normalized integration and pinned old SR2 inflight, plus its bug-template commit. |
 | `inflight/11.0.1xx-sr3` | CI-configured child of the next candidate, with SR3 patch metadata. |
 
@@ -762,8 +780,10 @@ Each sandbox has a serialized workflow concurrency group. Fixed commit identity,
 parent-derived commit time, and actual content changes make preparation deterministic.
 Existing outputs at the exact expected SHAs are left unchanged. Ref creation and
 reviewed fixes housekeeping are guarded, separately recoverable operations.
-Staging is created once and advances only through its reviewed servicing PR;
-the workflow never directly updates dummy integration for housekeeping or cuts
+Within one source generation, staging advances only through its reviewed servicing PR;
+a newer maintainer candidate merge can supersede verified older generated outputs
+using exact leases, just as in production. Unrelated edits remain protected.
+The workflow never directly updates dummy integration for housekeeping or cuts
 a release. The trial invokes publication with `-PlanOnly -PrepareServicing` to
 open the separate servicing PR against dummy staging. After review and
 **Create a merge commit**, manually create the dummy release at that exact

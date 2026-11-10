@@ -247,7 +247,7 @@ function Get-CompletedReleaseDispatch {
 }
 
 function Get-PublishingReleaseSource {
-    param([string] $Branch, [object] $Plan, [object] $Record)
+    param([string] $Branch, [object] $Plan, [object] $Record, [string] $ReceiptSha)
     $proof = Invoke-PublishingApi @("repos/dotnet/maui/pulls/$($Record.pullRequest)")
     $candidateBranch = "${prefix}candidate/$($roles.releaseBand)-sr$($Record.sr)"
     $candidateMarker = "<!-- maui-release-tracking:${scope}:candidate -->"
@@ -261,8 +261,16 @@ function Get-PublishingReleaseSource {
     }
     $prepared = New-MauiReviewedServicingCommit -RepositoryPath $RepositoryPath -LanePlan $Plan `
         -ReleaseBand $roles.releaseBand -Sr $Record.sr -SandboxPrefix $SandboxPrefix
-    $servicingHead = "${prefix}automation/servicing/$($roles.releaseBand)-sr$($Record.sr)"
+    Assert-PublishingSourceCurrent -Plan $Plan -Record $Record -ReceiptSha $ReceiptSha
+    $legacyHead = "${prefix}automation/servicing/$($roles.releaseBand)-sr$($Record.sr)"
+    $servicingHead = Get-MauiReleaseGenerationHead -Head $legacyHead -Source $Plan.mergeSha
     $marker = "<!-- maui-release-servicing:${scope}:$($roles.releaseBand)-sr$($Record.sr) -->"
+    $legacyPages = @(Invoke-PublishingApi @('repos/dotnet/maui/pulls', '--method', 'GET', '--paginate', '--slurp',
+        '-f', 'state=all', '-f', "base=$Branch", '-f', "head=dotnet:$legacyHead", '-F', 'per_page=100'))
+    $legacy = @(foreach ($page in $legacyPages) { foreach ($pr in $page) {
+        if ($pr.head.sha -ceq $prepared.sha -and ([string]$pr.body).Contains($marker)) { $pr }
+    } })
+    if ($legacy.Count) { $servicingHead = $legacyHead }
     $pages = @(Invoke-PublishingApi @('repos/dotnet/maui/pulls', '--method', 'GET', '--paginate', '--slurp',
         '-f', 'state=all', '-f', "base=$Branch", '-f', "head=dotnet:$servicingHead", '-F', 'per_page=100'))
     $closed = @(foreach ($page in $pages) { foreach ($pr in $page) { $pr } })
@@ -286,6 +294,7 @@ function Get-PublishingReleaseSource {
             throw 'The create-once servicing head differs from the prepared configuration.'
         }
         if (!$head.Count) {
+            Assert-PublishingSourceCurrent -Plan $Plan -Record $Record -ReceiptSha $ReceiptSha
             $uploadBranch = "${prefix}automation/servicing/upload-$([guid]::NewGuid().ToString('N'))"
             try {
                 $null = Invoke-PublishingGit @('-c', 'credential.helper=', '-c', 'credential.helper=!gh auth git-credential',
@@ -329,9 +338,15 @@ function Get-PublishingReleaseSource {
 '@
         $body = $note + "`n`n" + $template.Replace('<!-- Enter description of the fix in this section -->',
             "<!-- Enter description of the fix in this section -->`n`n$description").Replace('Fixes #', 'N/A - reviewed release servicing configuration.')
-        $null = Invoke-PublishingApi @('repos/dotnet/maui/pulls', '--method', 'POST',
+        Assert-PublishingSourceCurrent -Plan $Plan -Record $Record -ReceiptSha $ReceiptSha
+        $created = Invoke-PublishingApi @('repos/dotnet/maui/pulls', '--method', 'POST',
             '-f', "base=$Branch", '-f', "head=$servicingHead",
             '-f', "title=[Servicing] $($Record.releaseBand) SR$($Record.sr)", '-f', "body=$body", '-F', 'draft=true')
+        if ($created.number -le 0 -or $created.head.ref -cne $servicingHead -or
+            $created.head.sha -cne $prepared.sha -or $created.base.ref -cne $Branch -or
+            !([string]$created.body).Contains($marker)) {
+            throw 'The created servicing PR did not match its prepared route and source; retry reconciliation.'
+        }
         return $null
     }
     if ($approved.Count -ne 1 -or $closed.Count -ne 1) { throw 'Multiple servicing PRs claim the same release; publication is blocked.' }
@@ -341,6 +356,38 @@ function Get-PublishingReleaseSource {
         -ReleaseBand $roles.releaseBand -Sr $Record.sr -Commit $proof.merge_commit_sha `
         -PullRequest $proof -SandboxPrefix $SandboxPrefix
     return $proof.merge_commit_sha
+}
+
+function Assert-PublishingSourceCurrent {
+    param([object] $Plan, [object] $Record, [Parameter(Mandatory)][string] $ReceiptSha)
+    $receiptName = "$receiptPrefix/$($Record.releaseBand)-sr$($Record.sr)"
+    $live = @(Get-PublishingRefs $receiptName)
+    if ($live.Count -ne 1 -or $live[0].sha -cne $ReceiptSha) {
+        throw 'The release receipt changed during publication; retry from the latest candidate source.'
+    }
+    $candidateBranch = "${prefix}candidate/$($Record.releaseBand)-sr$($Record.sr)"
+    $pages = @(Invoke-PublishingApi @('repos/dotnet/maui/pulls', '--method', 'GET', '--paginate', '--slurp',
+        '-f', 'state=closed', '-f', "base=$($roles.fixBranch)", '-f', "head=dotnet:$candidateBranch", '-F', 'per_page=100'))
+    $current = Invoke-PublishingApi @("repos/dotnet/maui/pulls/$($Record.pullRequest)")
+    if ($current.merge_commit_sha -cne $Plan.mergeSha) {
+        throw 'The recorded candidate source changed during publication.'
+    }
+    foreach ($page in $pages) { foreach ($pr in $page) {
+        if (!$pr.merged_at -or [DateTimeOffset]$pr.merged_at -lt [DateTimeOffset]$current.merged_at -or
+            ([DateTimeOffset]$pr.merged_at -eq [DateTimeOffset]$current.merged_at -and [int]$pr.number -le [int]$current.number) -or
+            !([string]$pr.body).Contains("<!-- maui-release-tracking:${scope}:candidate -->")) { continue }
+        $newer = Invoke-PublishingApi @("repos/dotnet/maui/pulls/$($pr.number)")
+        if (!$newer.merged -or $newer.merged_by.type -cne 'User' -or
+            $null -eq $newer.head.repo -or $null -eq $newer.base.repo -or
+            $newer.head.repo.full_name -cne 'dotnet/maui' -or $newer.base.repo.full_name -cne 'dotnet/maui' -or
+            $newer.head.ref -cne $candidateBranch -or $newer.base.ref -cne $roles.fixBranch) { continue }
+        $fixes = @(Get-PublishingRefs $roles.fixBranch)
+        if ($fixes.Count -ne 1) { throw 'The candidate integration branch is missing or ambiguous.' }
+        Fetch-PublishingCommit @($newer.merge_commit_sha, $fixes[0].sha)
+        if ((Invoke-PublishingGit @('merge-base', $newer.merge_commit_sha, $fixes[0].sha)) -ceq $newer.merge_commit_sha) {
+            throw 'A newer human candidate merge supersedes publication bookkeeping; wait for its reconciliation.'
+        }
+    } }
 }
 
 try {
@@ -364,6 +411,7 @@ try {
             schemaVersion = 1; scope = $scope; releaseBand = $roles.releaseBand; sr = $sr
             fixBranch = $roles.fixBranch; featureBranch = $roles.featureBranch; pullRequest = [int]$record.pullRequest; plan = $verifiedPlan
         }
+        if ('supersedes' -in $record.PSObject.Properties.Name) { $verifiedRecord.supersedes = $record.supersedes }
         if ((New-MauiReleaseLaneReceipt -RepositoryPath $RepositoryPath -Record $verifiedRecord) -cne $receipt.sha) {
             throw 'The publishing receipt does not reproduce its approved release source.'
         }
@@ -382,7 +430,7 @@ try {
         if (!$staging.Count) { continue }
         if ($staging.Count -ne 1) { throw 'Ambiguous release staging ref.' }
         Fetch-PublishingCommit @($staging[0].sha)
-        $commit = Get-PublishingReleaseSource -Branch $stagingBranch -Plan $verifiedPlan -Record $record
+        $commit = Get-PublishingReleaseSource -Branch $stagingBranch -Plan $verifiedPlan -Record $record -ReceiptSha $receipt.sha
         $expectedStaging = if ($commit) { $commit } else { $verifiedPlan.mergeSha }
         if ($staging[0].sha -cne $expectedStaging) {
             throw 'Release staging differs from the exact candidate source or reviewed servicing merge.'
@@ -437,6 +485,7 @@ try {
         if ($liveStaging.Count -ne 1 -or $liveStaging[0].sha -cne $commit) {
             throw 'The reviewed staging ref moved before signed dispatch; retry from a verified snapshot.'
         }
+        Assert-PublishingSourceCurrent -Plan $verifiedPlan -Record $record -ReceiptSha $receipt.sha
         if (!$azureHeaders) { $azureHeaders = Get-ReleaseAzureHeaders }
         $definition = Invoke-ReleaseAzure 'build/definitions/1095?api-version=7.1'
         if ($definition.repository.id -cne $mirrorId -or $definition.repository.type -cne 'TfsGit' -or
@@ -449,6 +498,7 @@ try {
         if ($exactMirror.Count -ne 1 -or $exactMirror[0].objectId -cne $commit) {
             throw "Internal mirror '$branch' is not at approved cut $commit. Synchronize and authorize the existing mirror before dispatch; no alternative source is substituted."
         }
+        Assert-PublishingSourceCurrent -Plan $verifiedPlan -Record $record -ReceiptSha $receipt.sha
         $signed = Queue-ReleaseBuildOnce -Definition 1095 -Branch $branch -Commit $commit -Parameters @{} -Stage signed -Record $record
         $signedResult = if ('result' -in $signed.PSObject.Properties.Name) { $signed.result } else { $null }
         $entry.signedBuild = @{ status = $signed.status; result = $signedResult }
@@ -468,6 +518,7 @@ try {
         }
         # Prepare the immutable release set automatically. Customer publication
         # and workload promotion stay in the separately approved canonical run.
+        Assert-PublishingSourceCurrent -Plan $verifiedPlan -Record $record -ReceiptSha $receipt.sha
         $prepared = Queue-ReleaseBuildOnce -Definition 1445 -Branch main -Commit $publisherHeads[0].objectId `
             -Parameters $parameters -Stage prepare -Record $record
         $preparedResult = if ('result' -in $prepared.PSObject.Properties.Name) { $prepared.result } else { $null }
