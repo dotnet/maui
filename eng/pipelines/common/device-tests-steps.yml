@@ -194,6 +194,70 @@ steps:
       continueOnError: false
       useExitCodeForErrors: true
 
+- ${{ if and(eq(parameters.platform, 'windows'), eq(parameters.device, 'unpackaged'), eq(parameters.applicationId, 'com.microsoft.maui.controls.devicetests')) }}:
+  - template: run-dotnet-preview.yml
+    parameters:
+      displayName: Verify native window attachment lifetime
+      command: test
+      project: --project "${{ parameters.path }}"
+      arguments: >-
+        --configuration ${{ parameters.deviceTestConfiguration }}
+        --framework ${{ parameters.targetFrameworkVersion }}-windows10.0.19041.0
+        --no-build
+        --filter-class Microsoft.Maui.DeviceTests.WindowTests
+        --filter-method "*NativeAttachmentDisposesItsWindowScope*"
+        --report-trx
+        --results-directory "$(TestResultsDirectory)/window-lifetime"
+        -p:RuntimeIdentifier=win-x64
+        -p:RuntimeIdentifierOverride=win-x64
+        -p:IsRidAgnostic=false
+        $(DeviceTestArguments)
+      condition: always()
+      continueOnError: false
+      useExitCodeForErrors: true
+
+- ${{ if eq(parameters.platform, 'windows') }}:
+  - pwsh: |
+      $ErrorActionPreference = 'Stop'
+      $dumps = @(Get-ChildItem -LiteralPath "$(TestResultsDirectory)" -File -Filter 'native-process-*.dmp')
+      if (!$dumps.Count) {
+          Write-Host 'No owned native process snapshot was produced.'
+          exit 0
+      }
+      foreach ($name in @('GITHUB_TOKEN', 'GH_TOKEN', 'GH_ENTERPRISE_TOKEN', 'GITHUB_ENTERPRISE_TOKEN', 'COPILOT_GITHUB_TOKEN')) {
+          [Environment]::SetEnvironmentVariable($name, $null, 'Process')
+      }
+      $env:DOTNET_ROOT = "$(Build.SourcesDirectory)/.dotnet"
+      $dotnet = Join-Path $env:DOTNET_ROOT 'dotnet.exe'
+      $tools = "$(Agent.TempDirectory)/maui-dump-tools/$(System.JobId)/$(System.JobAttempt)"
+      $analyzer = Join-Path $tools 'dotnet-dump.exe'
+      if (!(Test-Path -LiteralPath $analyzer -PathType Leaf)) {
+          Write-Host 'Installing the missing dump analyzer into this job-owned tool directory.'
+          & $dotnet tool install dotnet-dump --tool-path $tools --allow-roll-forward
+          if ($LASTEXITCODE -ne 0) { throw "Dump analyzer installation failed with exit code $LASTEXITCODE." }
+      }
+      foreach ($dump in $dumps) {
+          $summary = "$($dump.FullName).analysis.txt"
+          & $analyzer analyze $dump.FullName -c 'dumpheap -stat' -c 'clrthreads' -c exit *> $summary
+          if ($LASTEXITCODE -ne 0) { throw "Dump analysis failed with exit code $LASTEXITCODE. See $summary." }
+          foreach ($type in @('Microsoft.Maui.MauiWinUIWindow', 'Microsoft.Maui.WindowOverlay', 'Microsoft.Maui.Platform.WindowRootView')) {
+              $objects = "$($dump.FullName).$type.objects.txt"
+              & $analyzer analyze $dump.FullName -c "dumpheap -type $type -short" -c exit *> $objects
+              if ($LASTEXITCODE -ne 0) { throw "Object enumeration failed with exit code $LASTEXITCODE. See $objects." }
+              $addresses = @(Get-Content -LiteralPath $objects |
+                  Where-Object { $_ -match '^\s*[0-9a-fA-F]{12,16}\s*$' } |
+                  ForEach-Object { $_.Trim() } | Select-Object -First 3)
+              foreach ($address in $addresses) {
+                  $roots = "$($dump.FullName).$type.$address.roots.txt"
+                  & $analyzer analyze $dump.FullName -c "gcroot $address" -c exit *> $roots
+                  if ($LASTEXITCODE -ne 0) { throw "Root analysis failed with exit code $LASTEXITCODE. See $roots." }
+              }
+          }
+      }
+    displayName: Analyze owned native process snapshots
+    condition: always()
+    timeoutInMinutes: 10
+
 - ${{ if eq(parameters.platform, 'ios') }}:
   - pwsh: |
       $ErrorActionPreference = 'Stop'

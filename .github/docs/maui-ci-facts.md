@@ -583,6 +583,13 @@ test run 46605876, result 100104; Windows Core completed with 2,082 passes and
 111 existing skips. This proves release of that root, not resolution of every
 native SDK resource leak or the full Controls crash.
 
+Windows overlay teardown must clear the owned graphics view's `Drawable`
+reference before removing that view, as well as unsubscribing borrowed frame
+and platform-element events. A native graphics control retained by WinUI/Win2D
+must not keep the removed overlay and its window alive through that drawable.
+The native overlay regression retains the graphics view, checks that its
+drawable is detached, and preserves the original overlay collection assertion.
+
 Native hosts default xUnit's `--long-running` threshold to 60 seconds and enable
 `--xunit-diagnostics on`, unless those options were supplied explicitly. These
 are liveness diagnostics, not test deadlines, retries or result evidence. Add
@@ -615,6 +622,12 @@ process's GDI-object count and request that same one-shot snapshot at 8,000
 objects, before a hard termination can bypass unhandled-exception callbacks.
 This only records evidence: it does not change resource quotas, force collection,
 reset title bars or convert a failed process into a successful test run.
+Windows jobs analyze any resulting owned snapshots on Windows, retaining heap
+statistics and sampled managed root paths alongside the dump. Tooling is installed
+only in the job-owned temporary directory when missing, and analysis failures
+remain explicit. A separate exact two-row attachment-lifetime invocation runs
+after the full Controls job, so an earlier suite crash cannot hide those closure
+assertions; it does not replace or filter the full-suite invocation.
 
 In [device run 1672389](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1672389),
 log 719, PageSheet's `PresentViewControllerAsync` task did not complete within

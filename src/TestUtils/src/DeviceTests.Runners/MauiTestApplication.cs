@@ -102,8 +102,11 @@ class MauiTestApplication : Application
 	static int _windowsDumpStarted;
 	static string? _windowsResourceDumpDirectory;
 
-	internal static void ConfigureWindowsResourceDiagnostics(string directory) =>
+	internal static void ConfigureWindowsResourceDiagnostics(string directory)
+	{
 		Volatile.Write(ref _windowsResourceDumpDirectory, directory);
+		Console.WriteLine($"Native resource diagnostics: process={Environment.ProcessId}, GDI snapshot threshold={GdiObjectSnapshotThreshold}.");
+	}
 
 	internal static void CaptureWindowsResourcePressureDump()
 	{
