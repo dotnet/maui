@@ -317,7 +317,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					LayoutParameters = lp
 				};
 
-				recyclerView.SetAdapter(new ShellFlyoutRecyclerAdapter(ShellContext, OnElementSelected));
+				var adapter = new ShellFlyoutRecyclerAdapter(ShellContext, OnElementSelected);
+				adapter.SetRecycledViewPool(recyclerView.GetRecycledViewPool());
+				recyclerView.SetAdapter(adapter);
 
 				return recyclerView;
 			}

@@ -1,4 +1,5 @@
 #nullable disable
+using System;
 using System.ComponentModel;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
@@ -39,6 +40,11 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 
 			_previousDataContext = args.NewValue;
+			UpdateContent();
+		}
+
+		void UpdateContent()
+		{
 			if (_content != null)
 			{
 				if (_content.BindingContext is INotifyPropertyChanged inpc)
@@ -56,17 +62,32 @@ namespace Microsoft.Maui.Controls.Platform
 				_content.BindingContext = null;
 				_content.Parent = null;
 				_content = null;
+				Content = null;
 			}
 
 			BindableObject bo = null;
 
-			if (args.NewValue is NavigationViewItemViewModel vm && vm.Data is BindableObject bindableObject)
+			if (_previousDataContext is NavigationViewItemViewModel vm && vm.Data is BindableObject bindableObject)
 				bo = bindableObject;
 			else
-				bo = (BindableObject)args.NewValue;
+				bo = (BindableObject)_previousDataContext;
 
 			var element = bo as Element;
-			_shell = element?.FindParentOfType<Shell>();
+			var shell = element?.FindParentOfType<Shell>();
+			if (_shell != shell)
+			{
+				if (_shell is not null)
+				{
+					_shell.FlyoutItemTemplateChanged -= OnFlyoutItemTemplateChanged;
+				}
+
+				_shell = shell;
+
+				if (_shell is not null)
+				{
+					_shell.FlyoutItemTemplateChanged += OnFlyoutItemTemplateChanged;
+				}
+			}
 
 			// Resolve the application supplied template through the same public contract external backends use.
 			// A null result means the application did not supply one, so fall back to the default flyout item cell.
@@ -80,7 +101,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (dataTemplate != null)
 			{
-				_content = (View)dataTemplate.CreateContent();
+				_content = (View)dataTemplate.CreateContent(bo, _shell);
 
 				// Set binding context before calling AddLogicalChild so parent binding context doesn't propagate to view
 				_content.BindingContext = bo;
@@ -98,6 +119,11 @@ namespace Microsoft.Maui.Controls.Platform
 				Content = platformView;
 				UpdateVisualState();
 			}
+		}
+
+		void OnFlyoutItemTemplateChanged(object sender, EventArgs e)
+		{
+			UpdateContent();
 		}
 
 		void ShellElementPropertyChanged(object sender, PropertyChangedEventArgs e)

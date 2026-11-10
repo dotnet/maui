@@ -23,6 +23,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		List<List<Element>> _flyoutGroupings;
 		Action<Element> _selectedCallback;
 		bool _disposed;
+		RecyclerView.RecycledViewPool _recycledViewPool;
 		readonly HashSet<ElementViewHolder> _viewHolders = new HashSet<ElementViewHolder>();
 		IMauiContext MauiContext => _shellContext.Shell.Handler.MauiContext;
 
@@ -36,6 +37,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			_listItems = GenerateItemList();
 			_selectedCallback = selectedCallback;
+		}
+
+		internal void SetRecycledViewPool(RecyclerView.RecycledViewPool recycledViewPool)
+		{
+			_recycledViewPool = recycledViewPool;
 		}
 
 		public override int ItemCount => _listItems.Count;
@@ -233,7 +239,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			bool changed = false;
 			foreach (var item in _listItems)
-				changed |= item.UpdateTemplate(Shell.ResolveFlyoutItemTemplate(Shell, item.Element));
+			{
+				var oldViewType = item.ViewType;
+				if (!item.UpdateTemplate(Shell.ResolveFlyoutItemTemplate(Shell, item.Element)))
+					continue;
+
+				// Evict pooled holders and reject holders recycled later for this obsolete type.
+				_recycledViewPool?.SetMaxRecycledViews(oldViewType, 0);
+				changed = true;
+			}
 
 			if (changed)
 				NotifyDataSetChanged();
