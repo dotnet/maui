@@ -95,6 +95,9 @@ namespace Microsoft.Maui.IntegrationTests.Apple
 						continue;
 					if (!runtime.TryGetProperty("version", out var versionProp))
 						continue;
+					// XHarness creates its iOS simulator as an iPhone 11 Pro, which newer runtimes (iOS 27.1+) no longer support.
+					if (!SupportsDeviceType(runtime, XHarnessIOSDeviceType))
+						continue;
 
 					var versionStr = versionProp.GetString();
 					if (Version.TryParse(versionStr, out var version))
@@ -117,6 +120,22 @@ namespace Microsoft.Maui.IntegrationTests.Apple
 				_output?.WriteLine($"Failed to detect iOS version: {ex.Message}");
 				return null;
 			}
+		}
+
+		const string XHarnessIOSDeviceType = "com.apple.CoreSimulator.SimDeviceType.iPhone-11-Pro";
+
+		static bool SupportsDeviceType(JsonElement runtime, string deviceType)
+		{
+			// Older simctl versions don't report supportedDeviceTypes; assume support there.
+			if (!runtime.TryGetProperty("supportedDeviceTypes", out var deviceTypes))
+				return true;
+
+			foreach (var supported in deviceTypes.EnumerateArray())
+			{
+				if (supported.TryGetProperty("identifier", out var identifier) && identifier.GetString() == deviceType)
+					return true;
+			}
+			return false;
 		}
 
 		string _udid = "";
