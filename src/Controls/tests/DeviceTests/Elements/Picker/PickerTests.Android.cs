@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using Android.Widget;
+using Android.Content;
+using Android.Views;
+using AndroidX.AppCompat.Widget;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
@@ -13,6 +16,109 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class PickerTests : ControlsHandlerTestBase
 	{
+		[Theory]
+		[InlineData(false, false)]
+		[InlineData(false, true)]
+		[InlineData(true, false)]
+		[InlineData(true, true)]
+		public async Task ClearButtonClearsWithoutOpeningPicker(bool material, bool rtl)
+		{
+			var picker = new Picker
+			{
+				Items = { "One", "Two" },
+				SelectedIndex = 1,
+				IsClearButtonVisible = true
+			};
+
+			if (material)
+			{
+				var handler = await CreateHandlerAsync<PickerHandler2>(picker);
+				await InvokeOnMainThreadAsync(() => AssertClearButton(picker, handler.PlatformView.Picker, rtl));
+			}
+			else
+			{
+				var handler = await CreateHandlerAsync<PickerHandler>(picker);
+				await InvokeOnMainThreadAsync(() => AssertClearButton(picker, handler.PlatformView, rtl));
+			}
+		}
+
+		static void AssertClearButton(Picker picker, AppCompatEditText platformPicker, bool rtl)
+		{
+			platformPicker.LayoutDirection = rtl ? LayoutDirection.Rtl : LayoutDirection.Ltr;
+			platformPicker.Layout(0, 0, 400, 100);
+			Assert.NotNull(platformPicker.GetCompoundDrawablesRelative()[2]);
+			var clicks = 0;
+			platformPicker.Click += (_, _) => clicks++;
+			var x = rtl ? 1 : platformPicker.Width - 1;
+			using var down = MotionEvent.Obtain(0, 0, MotionEventActions.Down, x, 50, 0);
+			using var up = MotionEvent.Obtain(0, 1, MotionEventActions.Up, x, 50, 0);
+
+			platformPicker.DispatchTouchEvent(down);
+			platformPicker.DispatchTouchEvent(up);
+
+			Assert.Equal(-1, picker.SelectedIndex);
+			Assert.Null(picker.SelectedItem);
+			Assert.False(picker.IsOpen);
+			Assert.Equal(0, clicks);
+			Assert.Null(platformPicker.GetCompoundDrawablesRelative()[2]);
+
+			picker.SelectedIndex = 0;
+			Assert.NotNull(platformPicker.GetCompoundDrawablesRelative()[2]);
+			picker.IsClearButtonVisible = false;
+			Assert.Null(platformPicker.GetCompoundDrawablesRelative()[2]);
+			Assert.Equal(0, picker.SelectedIndex);
+		}
+
+		[Fact]
+		public async Task ClearButtonKeepsAndroidDialogOpenAndClearsCheckedRow()
+		{
+			var picker = new Picker
+			{
+				Items = { "One", "Two" },
+				SelectedIndex = 1,
+				IsClearButtonVisible = true
+			};
+			_ = await CreateHandlerAsync<ClearablePickerHandler>(picker);
+
+			await CreateHandlerAndAddToWindow<ClearablePickerHandler>(picker, handler =>
+			{
+				picker.IsOpen = true;
+				try
+				{
+					var dialog = handler.Dialog;
+					Assert.NotNull(dialog);
+					var clearButton = dialog.GetButton((int)DialogButtonType.Neutral);
+					Assert.Equal(ViewStates.Visible, clearButton.Visibility);
+					clearButton.PerformClick();
+
+					Assert.Equal(-1, picker.SelectedIndex);
+					Assert.Null(picker.SelectedItem);
+					Assert.True(picker.IsOpen);
+					Assert.True(dialog.IsShowing);
+					Assert.Equal(-1, dialog.ListView.CheckedItemPosition);
+					Assert.Equal(ViewStates.Gone, clearButton.Visibility);
+
+					picker.SelectedIndex = 0;
+					Assert.Equal(ViewStates.Visible, clearButton.Visibility);
+					Assert.Equal(0, dialog.ListView.CheckedItemPosition);
+					picker.IsClearButtonVisible = false;
+					Assert.Equal(ViewStates.Gone, clearButton.Visibility);
+				}
+				finally
+				{
+					picker.IsOpen = false;
+				}
+				return Task.CompletedTask;
+			});
+		}
+
+		class ClearablePickerHandler : PickerHandler
+		{
+			public ClearablePickerHandler() { }
+
+			public AndroidX.AppCompat.App.AlertDialog Dialog => _dialog;
+		}
+
 		protected Task<string> GetPlatformControlText(MauiPicker platformView)
 		{
 			return InvokeOnMainThreadAsync(() => platformView.Text);

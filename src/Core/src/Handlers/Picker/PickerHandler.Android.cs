@@ -14,6 +14,7 @@ namespace Microsoft.Maui.Handlers
 	public partial class PickerHandler : ViewHandler<IPicker, MauiPicker>
 	{
 		protected AppCompatAlertDialog? _dialog;
+		PickerClearButtonManager? _clearButtonManager;
 
 		protected override MauiPicker CreatePlatformView() =>
 			new MauiPicker(Context);
@@ -23,11 +24,14 @@ namespace Microsoft.Maui.Handlers
 			platformView.Click += OnClick;
 
 			base.ConnectHandler(platformView);
+			_clearButtonManager = new PickerClearButtonManager(platformView, ClearSelection);
 		}
 
 		protected override void DisconnectHandler(MauiPicker platformView)
 		{
 			platformView.Click -= OnClick;
+			_clearButtonManager?.Dispose();
+			_clearButtonManager = null;
 
 			if (_dialog != null)
 			{
@@ -64,6 +68,7 @@ namespace Microsoft.Maui.Handlers
 		public static void MapSelectedIndex(IPickerHandler handler, IPicker picker)
 		{
 			handler.PlatformView?.UpdateSelectedIndex(picker);
+			handler.UpdateValue(nameof(IPickerClearButton.IsClearButtonVisible));
 		}
 
 		public static void MapCharacterSpacing(IPickerHandler handler, IPicker picker)
@@ -86,6 +91,7 @@ namespace Microsoft.Maui.Handlers
 		public static void MapTextColor(IPickerHandler handler, IPicker picker)
 		{
 			handler.PlatformView.UpdateTextColor(picker);
+			handler.UpdateValue(nameof(IPickerClearButton.IsClearButtonVisible));
 		}
 
 		public static void MapVerticalTextAlignment(IPickerHandler handler, IPicker picker)
@@ -116,6 +122,18 @@ namespace Microsoft.Maui.Handlers
 			// Ensure touch events propagate to parent views when disabled
 			platformView.Clickable = picker.IsEnabled;
 			platformView.Focusable = picker.IsEnabled;
+			handler.UpdateValue(nameof(IPickerClearButton.IsClearButtonVisible));
+		}
+
+		partial void UpdateClearButton()
+		{
+			if (VirtualView is { } picker)
+				_clearButtonManager?.Update(picker);
+		}
+
+		void ClearSelection()
+		{
+			VirtualView?.ClearSelection();
 		}
 
 		internal static void MapFocus(IPickerHandler handler, IPicker picker, object? args)
@@ -185,6 +203,7 @@ namespace Microsoft.Maui.Handlers
 					});
 
 					builder.SetNegativeButton(AResource.String.Cancel, (o, args) => { });
+					builder.SetNeutralButton(Resource.String.maui_picker_clear_selection, (o, args) => { });
 
 					_dialog = builder.Create();
 				}
@@ -214,6 +233,7 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			_dialog.DismissEvent -= OnDialogDismiss;
+			_clearButtonManager?.SetDialog(null);
 			VirtualView.IsFocused = false;
 			VirtualView.IsOpen = false;
 			_dialog = null;
@@ -227,12 +247,14 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			_dialog.ShowEvent -= OnDialogShown;
+			_clearButtonManager?.SetDialog(_dialog);
 			VirtualView.IsFocused = true;
 		}
 
 		static void Reload(IPickerHandler handler)
 		{
 			handler.PlatformView.UpdatePicker(handler.VirtualView);
+			handler.UpdateValue(nameof(IPickerClearButton.IsClearButtonVisible));
 		}
 	}
 }

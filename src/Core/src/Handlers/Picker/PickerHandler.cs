@@ -19,6 +19,12 @@ namespace Microsoft.Maui.Handlers
 #endif
 #if __ANDROID__
 			[nameof(IView.IsEnabled)] = MapIsEnabled,
+#elif __IOS__ || MACCATALYST
+			[nameof(IView.IsEnabled)] = static (handler, picker) =>
+			{
+				ViewHandler.MapIsEnabled(handler, picker);
+				handler.UpdateValue(nameof(IPickerClearButton.IsClearButtonVisible));
+			},
 #endif
 			[nameof(IPicker.CharacterSpacing)] = MapCharacterSpacing,
 			[nameof(IPicker.Font)] = MapFont,
@@ -30,6 +36,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(ITextAlignment.VerticalTextAlignment)] = MapVerticalTextAlignment,
 			[nameof(IPicker.Items)] = MapItems,
 			[nameof(IPicker.IsOpen)] = MapIsOpen,
+			[nameof(IPickerClearButton.IsClearButtonVisible)] = MapIsClearButtonVisible,
 		};
 
 		public static CommandMapper<IPicker, IPickerHandler> CommandMapper = new(ViewCommandMapper)
@@ -59,5 +66,16 @@ namespace Microsoft.Maui.Handlers
 		IPicker IPickerHandler.VirtualView => VirtualView;
 
 		PlatformView IPickerHandler.PlatformView => PlatformView;
+
+		/// <summary>Updates the optional clear-selection affordance.</summary>
+		/// <param name="handler">The picker handler.</param>
+		/// <param name="picker">The picker.</param>
+		public static void MapIsClearButtonVisible(IPickerHandler handler, IPicker picker)
+		{
+			if (handler is PickerHandler pickerHandler)
+				pickerHandler.UpdateClearButton();
+		}
+
+		partial void UpdateClearButton();
 	}
 }

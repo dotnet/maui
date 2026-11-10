@@ -3,6 +3,8 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:uwp="using:Microsoft.Maui.Platform">
 
+    <x:String x:Key="PickerClearSelectionAutomationName">Clear selection</x:String>
+
     <DataTemplate x:Key="ComboBoxHeader">
         <TextBlock
             Text="{Binding Title}" 
