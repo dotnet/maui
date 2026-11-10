@@ -49,6 +49,11 @@ public sealed class HeadlessTestRunner(HeadlessRunnerOptions runnerOptions, Test
 		if (!string.IsNullOrEmpty(configuredResults))
 			resultsDirectory = configuredResults;
 
+#if WINDOWS
+		if (args.Contains("--diagnostic"))
+			MauiTestApplication.ConfigureWindowsResourceDiagnostics(resultsDirectory);
+#endif
+
 		if (!args.Contains("--results-directory") && !args.Any(arg => arg.StartsWith("--results-directory=", StringComparison.Ordinal)))
 			args.AddRange(["--results-directory", resultsDirectory]);
 		if (!args.Contains("--report-trx"))
@@ -100,7 +105,12 @@ public sealed class HeadlessTestRunner(HeadlessRunnerOptions runnerOptions, Test
 				TrxReportPath = artifact.FileInfo.FullName;
 			else if (value is TestNodeUpdateMessage { TestNode: var node } &&
 				node.Properties.SingleOrDefault<TestNodeStateProperty>() is InProgressTestNodeStateProperty)
+			{
 				Console.WriteLine($"TEST_START: {node.DisplayName}");
+#if WINDOWS
+				MauiTestApplication.CaptureWindowsResourcePressureDump();
+#endif
+			}
 			return Task.CompletedTask;
 		}
 	}

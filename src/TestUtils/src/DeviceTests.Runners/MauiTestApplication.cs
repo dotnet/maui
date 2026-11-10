@@ -50,12 +50,12 @@ class MauiTestApplication : Application
 					File.AppendAllText(fatalLog, args.Exception + Environment.NewLine);
 					using var output = new StreamWriter(Console.OpenStandardError()) { AutoFlush = true };
 					output.WriteLine(args.Exception);
-					WriteWindowsCrashDump(errorDirectory);
+					WriteWindowsProcessDump(errorDirectory);
 				};
 				AppDomain.CurrentDomain.UnhandledException += (_, args) =>
 				{
 					File.AppendAllText(fatalLog, args.ExceptionObject + Environment.NewLine);
-					WriteWindowsCrashDump(errorDirectory);
+					WriteWindowsProcessDump(errorDirectory);
 				};
 #endif
 				var directory =
@@ -98,14 +98,45 @@ class MauiTestApplication : Application
 	}
 
 #if WINDOWS
+	const uint GdiObjectSnapshotThreshold = 8000;
 	static int _windowsDumpStarted;
+	static string? _windowsResourceDumpDirectory;
 
-	static void WriteWindowsCrashDump(string directory)
+	internal static void ConfigureWindowsResourceDiagnostics(string directory) =>
+		Volatile.Write(ref _windowsResourceDumpDirectory, directory);
+
+	internal static void CaptureWindowsResourcePressureDump()
+	{
+		var directory = Volatile.Read(ref _windowsResourceDumpDirectory);
+		if (directory is null || Volatile.Read(ref _windowsDumpStarted) != 0)
+			return;
+
+		try
+		{
+			using var process = Process.GetCurrentProcess();
+			var gdiObjects = GetGuiResources(process.Handle, 0);
+			var error = Marshal.GetLastPInvokeError();
+			if (gdiObjects == 0 && error != 0)
+				throw new Win32Exception(error);
+			if (gdiObjects >= GdiObjectSnapshotThreshold)
+			{
+				Console.Error.WriteLine($"Native resource pressure: process={process.Id}, GDI objects={gdiObjects}. Capturing an owned-process snapshot.");
+				WriteWindowsProcessDump(directory);
+			}
+		}
+		catch (Win32Exception exception)
+		{
+			Volatile.Write(ref _windowsResourceDumpDirectory, null);
+			Console.Error.WriteLine($"Could not inspect native GDI resource usage: {exception}");
+		}
+	}
+
+	static void WriteWindowsProcessDump(string directory)
 	{
 		if (Interlocked.Exchange(ref _windowsDumpStarted, 1) != 0)
 			return;
 
-		var path = Path.Combine(directory, $"native-unhandled-{Environment.ProcessId}.dmp");
+		var path = Path.Combine(directory, $"native-process-{Environment.ProcessId}.dmp");
 		try
 		{
 			// DbgHelp must run off the faulting UI thread; never mark the exception handled.
@@ -127,11 +158,11 @@ class MauiTestApplication : Application
 				File.Move(pending, path);
 			}, CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default)
 				.WaitAsync(TimeSpan.FromSeconds(30)).GetAwaiter().GetResult();
-			Console.Error.WriteLine($"Native unhandled-exception dump: {path}");
+			Console.Error.WriteLine($"Native process dump: {path}");
 		}
 		catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or Win32Exception or TimeoutException)
 		{
-			Console.Error.WriteLine($"Could not capture native unhandled-exception dump '{path}': {exception}");
+			Console.Error.WriteLine($"Could not capture native process dump '{path}': {exception}");
 		}
 	}
 
@@ -150,6 +181,10 @@ class MauiTestApplication : Application
 	static extern bool MiniDumpWriteDump(IntPtr process, int processId,
 		Microsoft.Win32.SafeHandles.SafeFileHandle file, MiniDumpType dumpType,
 		IntPtr exceptionParameters, IntPtr userStreams, IntPtr callback);
+
+	[DllImport("user32.dll", SetLastError = true)]
+	[DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+	static extern uint GetGuiResources(IntPtr process, uint flags);
 #endif
 
 #if IOS || MACCATALYST

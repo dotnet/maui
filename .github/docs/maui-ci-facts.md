@@ -610,6 +610,11 @@ unique result directory; a pending file is renamed only after a successful
 write. Capture has a bounded diagnostic wait, reports failures explicitly, and
 does not mark the original exception handled. This supplements MTP's crash
 collector, which did not produce its expected dump for these WinUI terminations.
+With `--diagnostic`, native test-start notifications also check the current
+process's GDI-object count and request that same one-shot snapshot at 8,000
+objects, before a hard termination can bypass unhandled-exception callbacks.
+This only records evidence: it does not change resource quotas, force collection,
+reset title bars or convert a failed process into a successful test run.
 
 In [device run 1672389](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1672389),
 log 719, PageSheet's `PresentViewControllerAsync` task did not complete within
