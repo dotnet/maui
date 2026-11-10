@@ -69,7 +69,8 @@ namespace Microsoft.Maui.Controls.Handlers
         {
             base.OnResume();
 
-            if (_handler is null || _handler.VirtualView is null)
+            // The typed VirtualView getter throws once the handler is disconnected.
+            if (_handler is null || ((IElementHandler)_handler).VirtualView is null)
             {
                 return;
             }
