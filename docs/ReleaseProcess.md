@@ -5,15 +5,19 @@ The .NET MAUI release process uses Arcade and 1ES to build, sign, gather, and pu
 For the proposed development-branch roles and servicing-release rotation, see the
 [versioned release branch workflow](ReleaseBranchWorkflow.md). That proposal
 keeps the canonical publishing/approval process below. Candidate integration can
-automatically cut the release and prepare a reviewed PR restoring net11 CI
+automatically create staging and prepare a reviewed PR restoring net11 CI
 settings. A maintainer merges that normalization PR with **Create a merge commit**;
 next-lane activation and forward flow wait for its pinned ancestry. The workflow
-does not directly write protected `net11` or grant a bypass. Its recognized
-branch policy also defaults SR builds to servicing/stable, without a separate
-flip PR. Legacy sources retain the post-cut reviewed servicing PR.
+does not directly write protected `net11` or grant a bypass. Independently, the
+publication workflow automatically opens a **servicing/stable configuration PR**
+against `automation/release/<band>-srN`, before a real release exists. Review
+it and merge using **Create a merge commit**, then manually create
+`release/<band>-srN` at that exact reviewed servicing merge commit. An old real
+release ref cannot block staging preparation or authorize publication. There is
+no second post-cut servicing PR.
 
 Completed rollover also prepares a draft canonical-state PR advancing
-`currentSr`; it waits for the exact cut, normalization and next lanes, and
+`currentSr`; it waits for verified staging, normalization and next lanes, not a real cut, and
 never merges itself. `nightlyMode` is retained. Switching from legacy to
 versioned nightly builds requires separate owner-reviewed deployment evidence;
 in versioned mode, every cycle advance must verify its next selected nightly
@@ -26,7 +30,8 @@ snapshots, not required tags. Missing or newly created tags do not block or
 advance the cycle or claim that packages shipped.
 
 The public **Prepare signed release publication** workflow waits for that
-human-approved release source and its exact internal mirror commit, queues existing
+human-reviewed staging servicing merge, the exact manual release cut and its
+matching internal mirror commit, queues existing
 signed pipeline1095, and after success queues canonical release pipeline1445
 with `pushPackages=false`. This automatically prepares artifacts/audit, not
 NuGet.org publication or workload promotion. Existing federation, internal

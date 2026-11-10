@@ -7,9 +7,10 @@ on:
   schedule:
     - cron: '45 * * * *'
   workflow_dispatch:
+  create:
   pull_request_target:
     types: [closed]
-    branches: ['release/*']
+    branches: ['automation/release/*']
 
 permissions:
   contents: read
@@ -22,6 +23,8 @@ jobs:
   prepare:
     if: >-
       github.repository == 'dotnet/maui' &&
+      (github.event_name != 'create' ||
+       (github.event.ref_type == 'branch' && startsWith(github.event.ref, 'release/'))) &&
       (github.event_name != 'pull_request_target' ||
        (github.event.pull_request.merged &&
         github.event.pull_request.head.repo.full_name == 'dotnet/maui' &&
@@ -33,6 +36,7 @@ jobs:
     timeout-minutes: 15
     permissions:
       contents: write
+      pull-requests: write
       id-token: write
     steps:
       - uses: actions/checkout@v4
@@ -41,7 +45,7 @@ jobs:
           persist-credentials: false
           fetch-depth: 0
 
-      - name: Queue exact signed build and approval-ready publication artifacts
+      - name: Prepare reviewed staging configuration, then verify the manual cut before signing
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}

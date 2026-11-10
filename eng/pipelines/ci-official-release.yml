@@ -32,6 +32,26 @@ parameters:
   type: boolean
   default: true
 
+- name: nugetOrganization
+  displayName: NuGet organization onboarded to ESRP and owning all selected packages
+  type: string
+  default: dotnetframework
+
+- name: esrpServiceConnection
+  displayName: ESRP Azure service connection
+  type: string
+  default: DotNetBuildESRP
+
+- name: esrpOwners
+  displayName: ESRP release owners (comma-separated Microsoft aliases or email addresses)
+  type: string
+  default: $(Build.RequestedForEmail)
+
+- name: esrpApprovers
+  displayName: ESRP release approvers (comma-separated Microsoft aliases or email addresses)
+  type: string
+  default: rumar,maleib,jodick,alexsoto,jflorkowski,jopepper
+
 - name: nugetIncludeFilters
   displayName: "[OPTIONAL] Semi-colon (';') separated list of nuget packages to include"
   type: string
@@ -65,6 +85,12 @@ variables:
 - group: AzureDevOps-Artifact-Feeds-Pats
 - name: isWorkload
   value: ${{ and(eq(parameters.ghOwner, 'dotnet'), in(parameters.ghRepo, 'android', 'macios', 'maui')) }}
+- name: NuGetOrganization
+  value: ${{ parameters.nugetOrganization }}
+- name: EsrpOwners
+  value: ${{ parameters.esrpOwners }}
+- name: EsrpApprovers
+  value: ${{ parameters.esrpApprovers }}
 
 resources:
   repositories:
@@ -579,15 +605,19 @@ extends:
                 EXPECTED_SCRIPT_HASH: $(PackageStatusScriptHash)
                 NUGET_ALREADY_ATTEMPTED_FILTERS: ${{ parameters.nugetAlreadyAttemptedPackFilters }}
 
-            - task: 1ES.PublishNuget@1
-              displayName: Push workload packs to NuGet.org
-              condition: and(succeeded(), eq(variables['NuGetPackagesToPublish'], 'true'))
-              inputs:
-                useDotNetTask: false
-                packagesToPush: '$(Pipeline.Workspace)\MauiPacksForNuGet\*.nupkg'
-                packageParentPath: '$(Pipeline.Workspace)\MauiPacksForNuGet'
-                nuGetFeedType: external
-                publishFeedCredentials: 'nuget.org (dotnetframework)'
+            - pwsh: |
+                $ErrorActionPreference = 'Continue'
+                Get-ChildItem Env: | Where-Object Name -match 'proxy' | Format-List Name,Value
+                netsh winhttp show proxy
+                Resolve-DnsName www.nuget.org
+                Resolve-DnsName api.nuget.org
+              displayName: Gather NuGet publishing network diagnostics
+              continueOnError: true
+
+            - template: /eng/pipelines/common/esrp-nuget-publish.yml@self
+              parameters:
+                packagesPath: '$(Pipeline.Workspace)\MauiPacksForNuGet'
+                serviceConnection: ${{ parameters.esrpServiceConnection }}
 
             - pwsh: |
                 $scriptPath = '$(Pipeline.Workspace)\MauiPacksForNuGet\nuget_release_packages.ps1'
@@ -657,15 +687,19 @@ extends:
                 EXPECTED_SCRIPT_HASH: $(PackageStatusScriptHash)
                 NUGET_ALREADY_ATTEMPTED_FILTERS: ${{ parameters.nugetAlreadyAttemptedManifestFilters }}
 
-            - task: 1ES.PublishNuget@1
-              displayName: Push workload manifests to NuGet.org
-              condition: and(succeeded(), eq(variables['NuGetPackagesToPublish'], 'true'))
-              inputs:
-                useDotNetTask: false
-                packagesToPush: '$(Pipeline.Workspace)\MauiManifestsForNuGet\*.nupkg'
-                packageParentPath: '$(Pipeline.Workspace)\MauiManifestsForNuGet'
-                nuGetFeedType: external
-                publishFeedCredentials: 'nuget.org (dotnetframework)'
+            - pwsh: |
+                $ErrorActionPreference = 'Continue'
+                Get-ChildItem Env: | Where-Object Name -match 'proxy' | Format-List Name,Value
+                netsh winhttp show proxy
+                Resolve-DnsName www.nuget.org
+                Resolve-DnsName api.nuget.org
+              displayName: Gather NuGet publishing network diagnostics
+              continueOnError: true
+
+            - template: /eng/pipelines/common/esrp-nuget-publish.yml@self
+              parameters:
+                packagesPath: '$(Pipeline.Workspace)\MauiManifestsForNuGet'
+                serviceConnection: ${{ parameters.esrpServiceConnection }}
 
             - pwsh: |
                 $scriptPath = '$(Pipeline.Workspace)\MauiManifestsForNuGet\nuget_release_packages.ps1'
@@ -686,3 +720,5 @@ extends:
 
     - ${{ if and(eq(variables.isWorkload, 'false'), eq(parameters.pushNugetOrg, true), eq(parameters.pushPackages, true), ne(parameters.commitHash, 'skip')) }}:
       - template: /eng/pipelines/common/non-workload-publish.yml@self
+        parameters:
+          esrpServiceConnection: ${{ parameters.esrpServiceConnection }}

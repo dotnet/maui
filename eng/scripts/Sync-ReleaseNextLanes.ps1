@@ -4,11 +4,12 @@ param (
     [string] $RepositoryPath = (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path,
     [Parameter(Mandatory)][string] $OutputDirectory,
     [string] $SandboxPrefix,
-    [switch] $CompleteRelease
+    [Alias('CompleteRelease')][switch] $StageRelease = $true
 )
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
+if (!$StageRelease) { throw 'Next-lane activation requires staging and reviewed normalization.' }
 Import-Module (Join-Path $PSScriptRoot 'MauiReleaseConfiguration.psm1') -Force
 $roles = & (Join-Path $PSScriptRoot 'Get-ReleaseRolloverPlan.ps1') -StatePath $StatePath -ResolveStateOnly |
     ConvertFrom-Json
@@ -157,26 +158,26 @@ function Assert-ConsumedInflightSource {
     }
 }
 
-function Sync-PostCutReleasePr {
+function Sync-StagedReleasePr {
     param([string] $Branch, [object] $Plan, [int] $Sr,
-        [ValidateSet('servicing', 'normalization', 'state')][string] $Kind)
+        [ValidateSet('normalization', 'state')][string] $Kind)
     $normalization = $Kind -ceq 'normalization'
     $canonicalState = $Kind -ceq 'state'
     $reviewRequired = $normalization -or $canonicalState
     $head = "${lanePrefix}automation/$Kind/$($roles.releaseBand)-sr$Sr"
     $marker = "<!-- maui-release-${Kind}:${scope}:$($roles.releaseBand)-sr$Sr -->"
-    $commit = if ($canonicalState) { $Plan.stateSha } elseif ($normalization) { $Plan.normalizedSha } else { $Plan.servicingSha }
+    $commit = if ($canonicalState) { $Plan.stateSha } else { $Plan.normalizedSha }
     $pages = @(Invoke-NextLaneApi @('repos/dotnet/maui/pulls', '--method', 'GET', '--paginate', '--slurp',
         '-f', 'state=open', '-f', "base=$Branch", '-f', "head=dotnet:$head", '-F', 'per_page=100'))
     $open = @(foreach ($page in $pages) { foreach ($pr in $page) { $pr } })
     if ($open.Count -gt 1 -or ($open.Count -eq 1 -and !([string]$open[0].body).Contains($marker))) {
-        throw "The post-cut $Kind route is duplicate or unmanaged; refusing adoption."
+        throw "The staged $Kind route is duplicate or unmanaged; refusing adoption."
     }
     if ($open.Count) {
         if ($open[0].head.sha -cne $commit -or $null -eq $open[0].head.repo -or
             $open[0].head.repo.full_name -cne $repository -or $open[0].head.ref -cne $head -or
             $open[0].base.ref -cne $Branch) {
-            throw "The $Kind PR differs from its pinned post-cut route or commit."
+            throw "The $Kind PR differs from its pinned staging route or commit."
         }
         return [pscustomobject]@{
             number = $open[0].number; url = $open[0].html_url
@@ -213,9 +214,10 @@ function Sync-PostCutReleasePr {
         @(
             $marker
             ''
-            "Advance canonical **``eng/release-rollover.json``** from SR$($Plan.previousSr) to SR$Sr after the verified cut, normalization and next-lane preparation."
+            "Advance canonical **``eng/release-rollover.json``** from SR$($Plan.previousSr) to SR$Sr after verified staging, reviewed normalization and next-lane preparation."
             ''
-            "Release cut: ``$($Plan.mergeSha)``. Next candidate: ``$($Plan.nextCandidate)``. Next inflight: ``$($Plan.nextInflight)``."
+            "Staged source: ``$($Plan.mergeSha)``. Next candidate: ``$($Plan.nextCandidate)``. Next inflight: ``$($Plan.nextInflight)``."
+            'No real release branch or servicing review is required for this state update. Independently, the publication workflow opens a servicing PR against staging; after reviewing it and using Create a merge commit, a maintainer manually cuts the real release at that exact merge. Staging alone never authorizes signing.'
             ''
             "Only ``currentSr`` changes. ``nightlyMode`` remains **$($Plan.nightlyMode)**; SDK, package metadata, branch roles, release contents and access rules are unchanged."
             ''
@@ -227,32 +229,16 @@ function Sync-PostCutReleasePr {
         @(
             $marker
             ''
-            "Restore **``$Branch``** to the next-cycle CI version after the exact SR$Sr release cut."
+            "Restore **``$Branch``** to the next-cycle CI version after pinning the exact SR$Sr staging source."
             ''
             "Approved candidate merge: ``$($Plan.mergeSha)``. Prepared normalization: ``$commit``."
             "This pinned child commit changes only version metadata: patch $(($Sr + 1) * 10), CI/non-stable settings, and that same plain version in both bug-template dropdowns. SDK band and release contents are unchanged."
             ''
             '**A maintainer must review this PR, run required CI and use Create a merge commit. Do not squash or rebase.**'
             'The reconciler does not update the protected integration ref, approve, retarget or merge this PR. Next-lane activation and forward-flow preparation wait for the normalization ancestry to be verified.'
-            'The create-once release cut is preserved while this PR is awaiting approval. No signing or public publication is certified.'
+            'The automation/release staging ref is created at the candidate source and may advance only through its separately reviewed servicing PR. After that PR is merged with Create a merge commit, the real release branch is manually cut at its exact merge. This normalization PR does not authorize signing.'
         ) -join "`n"
-    } else { @(
-        $marker
-        ''
-        "Configure **``$Branch``** for stable servicing after the approved candidate integration and automatic release cut."
-        ''
-        "Cut commit: ``$($Plan.mergeSha)``. This separate PR changes only release version configuration: preserves PatchVersion, sets servicing/stable, and removes CI overrides. The candidate itself retains CI settings and includes the upcoming version in both bug-template dropdowns."
-        ''
-        '```mermaid'
-        ('flowchart LR')
-        ('    Candidate["CI candidate + bug-template version"] -->|Approved merge| Integration["net11"]')
-        ('    Integration -->|Automatic cut| Release["{0}"]' -f $Branch)
-        ('    Servicing["This reviewed servicing PR"] --> Release')
-        ('    Release -->|After approval, merge and successful signed build| Publish["Approval-gated publication"]')
-        '```'
-        ''
-        'Required CI and human approval/merge remain mandatory. Automation does not merge this PR. No signing or package publication is certified by its creation.'
-    ) -join "`n" }
+    }
     $template = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../../.github/PULL_REQUEST_TEMPLATE.md') -Raw
     $body = @'
 <!-- Please let the below note in for people that find this PR -->
@@ -261,7 +247,7 @@ function Sync-PostCutReleasePr {
 > It would be very helpful if you could [test the resulting artifacts](https://github.com/dotnet/maui/wiki/Testing-PR-Builds) from this PR and let us know in a comment if this change resolves your issue. Thank you!
 
 '@ + $template.Replace('<!-- Enter description of the fix in this section -->',
-        "<!-- Enter description of the fix in this section -->`n`n$description").Replace('Fixes #', 'N/A - post-cut release configuration.')
+        "<!-- Enter description of the fix in this section -->`n`n$description").Replace('Fixes #', 'N/A - staged release configuration.')
     $title = if ($canonicalState) {
         "[Release state] Advance $($roles.releaseBand) to SR$Sr"
     } elseif ($normalization) {
@@ -276,33 +262,36 @@ function Sync-PostCutReleasePr {
     }
 }
 
-function Sync-PostCutServicingPr {
+function Sync-StagedNormalizationPr {
     param([string] $Branch, [object] $Plan, [int] $Sr)
-    $version = Get-MauiReleaseVersion -Content (
-        Get-MauiReleaseFile -RepositoryPath $RepositoryPath -Commit $Plan.mergeSha -Path 'eng/Versions.props')
-    if ($version.automaticStabilization) {
-        if ($Plan.servicingSha -cne $Plan.mergeSha) {
-            throw 'Automatic stabilization must preserve the exact approved candidate source.'
-        }
-        return [pscustomobject]@{ number = $null; url = $null; status = 'branch-derived-stabilization' }
-    }
-    Sync-PostCutReleasePr -Branch $Branch -Plan $Plan -Sr $Sr -Kind servicing
+    Sync-StagedReleasePr -Branch $Branch -Plan $Plan -Sr $Sr -Kind normalization
 }
 
-function Sync-PostCutNormalizationPr {
-    param([string] $Branch, [object] $Plan, [int] $Sr)
-    Sync-PostCutReleasePr -Branch $Branch -Plan $Plan -Sr $Sr -Kind normalization
+function Get-NextLaneServicingProof {
+    param([string] $Staging, [object] $Plan)
+    if (!$Staging -or $Staging -ceq $Plan.mergeSha) { return $null }
+    Fetch-NextLaneCommit @($Staging)
+    $pages = @(Invoke-NextLaneApi @("repos/$repository/commits/$Staging/pulls", '--method', 'GET',
+        '--paginate', '--slurp', '-F', 'per_page=100'))
+    $matches = @(foreach ($page in $pages) {
+        foreach ($pr in $page) {
+            if ($pr.merged_at -and $pr.merge_commit_sha -ceq $Staging -and
+                $pr.base.ref.StartsWith("${lanePrefix}automation/release/", [StringComparison]::Ordinal)) { $pr }
+        }
+    })
+    if ($matches.Count -ne 1) { throw 'Advanced staging has no unique reviewed servicing PR.' }
+    Invoke-NextLaneApi @("repos/$repository/pulls/$($matches[0].number)")
 }
 
 function Sync-CanonicalReleaseStatePr {
     param([object[]] $Cycles, [int] $NextSr)
-    if ($SandboxPrefix -or !$CompleteRelease -or !$Cycles.Count -or
+    if ($SandboxPrefix -or !$StageRelease -or !$Cycles.Count -or
         $NextSr -le $roles.currentSr -or @($Cycles | Where-Object { !$_.nextLanesReady }).Count) {
         throw 'Canonical state preparation requires completed production rollover cycles.'
     }
     $last = $Cycles[-1]
-    if ($last.integratedSr -ne ($NextSr - 1) -or !$last.releaseSha) {
-        throw 'The canonical cycle must follow the last verified release cut.'
+    if ($last.integratedSr -ne ($NextSr - 1) -or !$last.stagingSha) {
+        throw 'The canonical cycle must follow the last verified staging source.'
     }
     $source = Get-NextLaneRef $roles.featureBranch
     if (!$source) { throw 'The canonical state target branch is missing.' }
@@ -315,7 +304,6 @@ function Sync-CanonicalReleaseStatePr {
     }
     foreach ($target in @(
         @{ branch = $roles.fixBranch; sha = $last.preparedNormalizationSha },
-        @{ branch = $last.releaseBranch; sha = $last.releaseSha },
         @{ branch = $last.nextCandidate; sha = $last.nextCandidateSha },
         @{ branch = $last.nextInflight; sha = $last.nextInflightSha }
     )) {
@@ -323,6 +311,9 @@ function Sync-CanonicalReleaseStatePr {
         if (!$live) { throw "Canonical state cannot advance before '$($target.branch)' exists." }
         Fetch-NextLaneCommit @($live)
         $null = Get-NextLaneGit @('merge-base', '--is-ancestor', $target.sha, $live)
+    }
+    if ((Get-NextLaneRef $last.stagingBranch) -cne $last.stagingSha) {
+        throw 'Canonical state cannot advance after the verified staging snapshot changes; retry.'
     }
     $pattern = [regex]::new('("currentSr"\s*:\s*)([1-9][0-9]*)')
     $matches = $pattern.Matches($content)
@@ -363,9 +354,9 @@ function Sync-CanonicalReleaseStatePr {
     }
     $proposal = [pscustomobject]@{
         stateSha = $prepared; previousSr = $roles.currentSr; nightlyMode = $roles.nightlyMode
-        mergeSha = $last.releaseSha; nextCandidate = $last.nextCandidate; nextInflight = $last.nextInflight
+        mergeSha = $last.candidateMerge; nextCandidate = $last.nextCandidate; nextInflight = $last.nextInflight
     }
-    Sync-PostCutReleasePr -Branch $roles.featureBranch -Plan $proposal -Sr $NextSr -Kind state
+    Sync-StagedReleasePr -Branch $roles.featureBranch -Plan $proposal -Sr $NextSr -Kind state
 }
 
 $null = New-Item -ItemType Directory -Force -Path $OutputDirectory
@@ -448,38 +439,40 @@ for ($attempt = 0; $attempt -lt 100; $attempt++) {
     $nextCandidate = "${lanePrefix}candidate/$($roles.releaseBand)-sr$($trackingSr + 1)"
     $nextInflight = "${lanePrefix}inflight/$($roles.releaseBand)-sr$($trackingSr + 2)"
     $completion = $null
-    $servicingPr = $null
     $normalizationPr = $null
     $releaseBranch = "${lanePrefix}release/$($roles.releaseBand)-sr$trackingSr"
-    if ($CompleteRelease) {
+    $stagingBranch = "${lanePrefix}automation/release/$($roles.releaseBand)-sr$trackingSr"
+    if ($StageRelease) {
         $currentFixes = Get-NextLaneRef $roles.fixBranch
         $currentRelease = Get-NextLaneRef $releaseBranch
+        $currentStaging = Get-NextLaneRef $stagingBranch
         if (!$currentFixes) { throw 'The integration branch disappeared before release completion.' }
         Fetch-NextLaneCommit @($currentFixes)
-        if ($currentRelease) { Fetch-NextLaneCommit @($currentRelease) }
+        # A historical real release never gates staging or independent next-cycle work.
+        $servicingProof = Get-NextLaneServicingProof -Staging $currentStaging -Plan $plan
         $completion = Get-MauiReleaseCompletionPlan -RepositoryPath $RepositoryPath -LanePlan $plan `
-            -ReleaseBand $roles.releaseBand -Sr $trackingSr -Fixes $currentFixes -Release $currentRelease
-        # Create-only release publication precedes reviewed CI normalization. A saved
-        # receipt makes a failure between these operations safely resumable.
-        Publish-NextLaneRef -Branch $releaseBranch -Commit $completion.releaseSha -AllowDescendants
+            -ReleaseBand $roles.releaseBand -Sr $trackingSr -Fixes $currentFixes -Staging $currentStaging `
+            -ServicingPullRequest $servicingProof -SandboxPrefix $SandboxPrefix
+        # Automation only creates staging; its reviewed servicing PR may advance it.
+        if ($completion.createStaging) {
+            Publish-NextLaneRef -Branch $stagingBranch -Commit $completion.stagingSha
+        }
         if ($completion.restoreFixes) {
             if ((Get-NextLaneRef $roles.fixBranch) -cne $currentFixes) {
                 throw 'The integration branch moved after release planning; no housekeeping was applied.'
             }
-            $normalizationPr = Sync-PostCutNormalizationPr -Branch $roles.fixBranch -Plan $plan -Sr $trackingSr
-            $housekeepingPending = $normalizationPr.status -cne 'merged'
         }
+        $normalizationPr = Sync-StagedNormalizationPr -Branch $roles.fixBranch -Plan $plan -Sr $trackingSr
+        $housekeepingPending = $normalizationPr.status -cne 'merged'
         $verifiedFixes = Get-NextLaneRef $roles.fixBranch
-        $verifiedRelease = Get-NextLaneRef $releaseBranch
-        if (!$verifiedFixes -or !$verifiedRelease) {
-            throw 'The release cut or housekeeping branch could not be verified.'
+        $verifiedStaging = Get-NextLaneRef $stagingBranch
+        if (!$verifiedFixes -or $verifiedStaging -cne $completion.stagingSha) {
+            throw 'The exact staging source or housekeeping branch could not be verified.'
         }
-        Fetch-NextLaneCommit @($verifiedFixes, $verifiedRelease)
-        $null = Get-NextLaneGit @('merge-base', '--is-ancestor', $plan.mergeSha, $verifiedRelease)
+        Fetch-NextLaneCommit @($verifiedFixes)
         if (!$housekeepingPending) {
             $null = Get-NextLaneGit @('merge-base', '--is-ancestor', $plan.normalizedSha, $verifiedFixes)
         }
-        $servicingPr = Sync-PostCutServicingPr -Branch $releaseBranch -Plan $plan -Sr $trackingSr
     }
     if (!$housekeepingPending) {
         $followingReceipt = Get-NextLaneRef "$receiptPrefix/$($roles.releaseBand)-sr$($trackingSr + 1)"
@@ -495,10 +488,11 @@ for ($attempt = 0; $attempt -lt 100; $attempt++) {
         preparedNormalizationSha = $plan.normalizedSha
         nextCandidate = $nextCandidate; nextCandidateSha = $plan.nextCandidateSha
         nextInflight = $nextInflight; nextInflightSha = $plan.nextInflightSha
-        releaseBranch = if ($CompleteRelease) { $releaseBranch } else { $null }
-        releaseSha = if ($CompleteRelease) { $plan.mergeSha } else { $null }
+        stagingBranch = if ($StageRelease) { $stagingBranch } else { $null }
+        stagingSha = if ($StageRelease) { $verifiedStaging } else { $null }
+        releaseBranch = $releaseBranch
+        releaseSha = if ($StageRelease) { $currentRelease } else { $null }
         completion = $completion
-        servicingPullRequest = $servicingPr
         normalizationPullRequest = $normalizationPr
         nextLanesReady = !$housekeepingPending
     })
@@ -517,11 +511,11 @@ $tracking = & (Join-Path $PSScriptRoot 'Sync-ReleaseTrackingPullRequests.ps1') `
 foreach ($cycle in $results) {
     Assert-ConsumedInflightSource -Sr $cycle.integratedSr -Commit $cycle.inflightSourceSha
 }
-$forward = if ($CompleteRelease -and $results.Count -and !$housekeepingPending) {
+$forward = if ($StageRelease -and $results.Count -and !$housekeepingPending) {
     & (Join-Path $PSScriptRoot 'Sync-ServicingForwardPullRequest.ps1') -StatePath $StatePath `
         -SandboxPrefix $SandboxPrefix | ConvertFrom-Json
 } else { $null }
-$canonicalStatePr = if ($CompleteRelease -and !$SandboxPrefix -and $results.Count -and !$housekeepingPending) {
+$canonicalStatePr = if ($StageRelease -and !$SandboxPrefix -and $results.Count -and !$housekeepingPending) {
     Sync-CanonicalReleaseStatePr -Cycles $results.ToArray() -NextSr $trackingSr
 } else { $null }
 $result = [ordered]@{
@@ -529,8 +523,9 @@ $result = [ordered]@{
     status = if ($housekeepingPending) { 'waiting-for-normalization-approval' } elseif ($results.Count) { 'next-lanes-ready' } else { 'waiting-for-candidate-merge' }
     configuredReleaseSr = $roles.currentSr
     trackingSr = $trackingSr
-    releaseCompletionEnabled = [bool]$CompleteRelease
-    releaseCutCreated = @($results | Where-Object { $_.completion -and $_.completion.createRelease }).Count -gt 0
+    releaseStagingEnabled = [bool]$StageRelease
+    releaseStagingCreated = @($results | Where-Object { $_.completion -and $_.completion.createStaging }).Count -gt 0
+    releaseCutCreated = $false
     integrationBranchChanged = $false
     cycles = @($results.ToArray())
     trackingPullRequests = $tracking
