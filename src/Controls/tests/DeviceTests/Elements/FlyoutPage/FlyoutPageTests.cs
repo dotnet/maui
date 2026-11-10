@@ -227,7 +227,14 @@ namespace Microsoft.Maui.DeviceTests
 				if (!CanDeviceDoSplitMode(flyoutPage))
 					return;
 
-				await AssertEventually(() => flyoutPage.Flyout.GetBoundingBox().Width > 0);
+				await AssertEventually(() =>
+				{
+					var flyout = flyoutPage.Flyout.GetBoundingBox();
+					var detail = flyoutPage.Detail.GetBoundingBox();
+					var window = flyoutPage.GetBoundingBox();
+					return flyout.Width > 0 && detail.Width > 0 &&
+						flyout.Width + detail.Width <= window.Width;
+				}, message: "Split Flyout and Detail did not finish their initial layout");
 
 				var detailBounds = flyoutPage.Detail.GetBoundingBox();
 				var flyoutBounds = flyoutPage.Flyout.GetBoundingBox();

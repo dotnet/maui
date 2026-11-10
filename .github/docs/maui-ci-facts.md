@@ -702,6 +702,38 @@ fixture callback timeouts (1,520 passes and 42 existing skips); two affected
 methods passed fresh isolation. Do not equate that isolated result or the green
 CI lanes with resolution of the local full-run failures.
 
+The local Catalyst trace showed native navigation continuing through all ten
+push/pop operations while repeated readiness calls spent 50 ms waiting even
+when both managed and native state were already satisfied. Those branches now
+return immediately; transition waits, the 15-second fixture deadline and all
+assertions remain unchanged. Two native regressions require synchronous task
+completion only for already-satisfied loaded/unloaded states. The prescribed
+verification script, with the helper as its sole fix file and immutable baseline
+`832e96070e2346253ef3a7a6368d24ec41938ddc`, confirmed both regressions fail
+without the change and all four VisualElement cases pass with it. An initial
+attempt exposed a missing Label handler registration in the new test; that
+setup failure was corrected before the successful red/green run. The subsequent
+complete Release Catalyst run reported 1,600 passes, three failures and 42
+existing skips: none of the earlier 81 timeout failures recurred. Two lifecycle
+rows checked event counts before their observed events had arrived, and one
+split-Flyout row read initial geometry before its detail pane finished layout.
+The lifecycle test now waits for its own event counters before the unchanged
+assertions and transitions; the split test awaits positive, non-overlapping
+initial pane widths before its unchanged geometry assertions. All three rows
+then passed together, with one pre-existing skip. A complete rerun is still
+required; the targeted result is not a full-suite success.
+
+The shared NUnit/Appium MTP caller also has native execution evidence in
+[UI run 1670623](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1670623):
+123 genuine test runs contain 15,140 rows, with 14,852 passes, 267 skips and
+21 failures. This establishes that the earlier invalid-argument startup failure
+no longer prevents execution, not that the UI suite is green. Four jobs failed:
+three Catalyst visual comparisons, one iOS title-view rotation assertion, and
+17 Windows TimePicker rows led by an unsupported mouse-pointer action. The
+Windows action source was corrected later in `f0775ea468`; that earlier run
+does not validate the correction. These remaining failures are not classified
+as pre-existing or infrastructure without corresponding baseline evidence.
+
 In [device run 1672389](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1672389),
 log 719, PageSheet's `PresentViewControllerAsync` task did not complete within
 30 seconds even with an active application, foreground-active scene, key visible

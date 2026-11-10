@@ -129,9 +129,11 @@ namespace Microsoft.Maui.DeviceTests
 
 				await CreateHandlerAndAddToWindow<LayoutHandler>(parentLayout, async (handler) =>
 				{
+					await AssertEventually(() => loaded == 1, message: "Initial Loaded event did not fire");
 					parentLayout.Remove(layout);
 					await OnUnloadedAsync(layout);
 					await OnUnloadedAsync(editor);
+					await AssertEventually(() => unloaded == 1, message: "Unloaded event did not fire after parent removal");
 
 					Assert.Equal(1, loaded);
 					Assert.Equal(1, unloaded);
@@ -139,6 +141,7 @@ namespace Microsoft.Maui.DeviceTests
 					parentLayout.Add(layout);
 					await OnLoadedAsync(layout);
 					await OnLoadedAsync(editor);
+					await AssertEventually(() => loaded == 2, message: "Loaded event did not fire after parent reattachment");
 
 					Assert.Equal(2, loaded);
 					Assert.Equal(1, unloaded);
