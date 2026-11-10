@@ -352,6 +352,106 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(1, handler.MeasureInvalidations);
 			});
 
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task OverflowingContentGrowthSchedulesAnotherLayout(bool horizontal)
+		{
+			EnsureHandlerCreated(builder => builder.ConfigureMauiHandlers(handlers =>
+			{
+				handlers.AddHandler<CollectionView, GrowingContentCollectionViewHandler>();
+				handlers.AddHandler<VerticalStackLayout, LayoutHandler>();
+				handlers.AddHandler<HorizontalStackLayout, LayoutHandler>();
+			}));
+
+			var collectionView = new CollectionView
+			{
+				ItemsLayout = new LinearItemsLayout(horizontal ? ItemsLayoutOrientation.Horizontal : ItemsLayoutOrientation.Vertical)
+			};
+			Layout parent = horizontal
+				? new HorizontalStackLayout { Children = { collectionView } }
+				: new VerticalStackLayout { Children = { collectionView } };
+
+			await CreateHandlerAndAddToWindow<LayoutHandler>(parent, async _ =>
+			{
+				var handler = Assert.IsType<GrowingContentCollectionViewHandler>(collectionView.Handler);
+				var controller = Assert.IsType<GrowingContentController>(handler.Controller);
+				var layout = Assert.IsType<GrowingContentLayout>(controller.CollectionView.CollectionViewLayout);
+				await AssertEventually(() => Math.Abs((horizontal ? collectionView.Width : collectionView.Height) - 60) <= 1);
+				await Task.Delay(200);
+				var initialPasses = controller.CompletedLayoutPasses;
+				var initialInvalidations = handler.MeasureInvalidations;
+				await Task.Delay(200);
+				Assert.Equal(initialPasses, controller.CompletedLayoutPasses);
+				Assert.Equal(initialInvalidations, handler.MeasureInvalidations);
+
+				// Request only the pass that resolves growth, not the follow-up needed to measure it.
+				layout.PendingContentSize = horizontal ? new CGSize(300, 60) : new CGSize(60, 300);
+				controller.CollectionView.SetNeedsLayout();
+
+				await AssertEventually(() => layout.GrowthResolved,
+					message: "Content should grow during UIKit layout, after the pre-layout size check.");
+				await AssertEventually(() =>
+					handler.MeasureInvalidations > initialInvalidations &&
+					Math.Abs((horizontal ? collectionView.Width : collectionView.Height) - 300) <= 1,
+					message: "Overflowing content should automatically schedule remeasurement and resize the mounted collection.");
+				Assert.True(controller.CompletedLayoutPasses > initialPasses + 1);
+
+				await Task.Delay(200);
+				var settledPasses = controller.CompletedLayoutPasses;
+				var settledInvalidations = handler.MeasureInvalidations;
+				await Task.Delay(200);
+				Assert.Equal(settledPasses, controller.CompletedLayoutPasses);
+				Assert.Equal(settledInvalidations, handler.MeasureInvalidations);
+			});
+		}
+
+		public class GrowingContentCollectionViewHandler : MeasureTrackingCollectionViewHandler
+		{
+			protected override UICollectionViewLayout SelectLayout() => new GrowingContentLayout();
+
+			protected override ItemsViewController2<ReorderableItemsView> CreateController(
+				ReorderableItemsView itemsView, UICollectionViewLayout layout) =>
+				new GrowingContentController(itemsView, layout);
+		}
+
+		class GrowingContentController : ReorderableItemsViewController2<ReorderableItemsView>
+		{
+			public int CompletedLayoutPasses { get; private set; }
+
+			public GrowingContentController(ReorderableItemsView itemsView, UICollectionViewLayout layout)
+				: base(itemsView, layout)
+			{
+			}
+
+			public override void ViewDidLayoutSubviews()
+			{
+				// Resolve at the end of the native pass without invalidating UIKit's layout.
+				// The production post-layout check must schedule the next pre-layout check.
+				(CollectionView.CollectionViewLayout as GrowingContentLayout)?.ResolvePendingGrowth();
+				base.ViewDidLayoutSubviews();
+				CompletedLayoutPasses++;
+			}
+		}
+
+		class GrowingContentLayout : ContentSizeLayout
+		{
+			public CGSize? PendingContentSize { get; set; }
+			public bool GrowthResolved { get; private set; }
+
+			public GrowingContentLayout() => ResolvedContentSize = new CGSize(60, 60);
+
+			public void ResolvePendingGrowth()
+			{
+				if (PendingContentSize is { } size)
+				{
+					ResolvedContentSize = size;
+					PendingContentSize = null;
+					GrowthResolved = true;
+				}
+			}
+		}
+
 		public class MeasureTrackingCollectionViewHandler : CollectionViewHandler2
 		{
 			public int MeasureInvalidations { get; set; }
