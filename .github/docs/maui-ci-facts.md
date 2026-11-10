@@ -844,6 +844,12 @@ three Catalyst visual comparisons, one iOS title-view rotation assertion, and
 Windows action source was corrected later in `f0775ea468`; that earlier run
 does not validate the correction. These remaining failures are not classified
 as pre-existing or infrastructure without corresponding baseline evidence.
+NUnit MTP collection validates original TRX paths as well as raw archive
+destinations before reading or rewriting reports. Shared PowerShell collection,
+launcher retry merging and Cake collection reject symbolic-link/junction
+redirection within the result boundary; NUnit source XML is also validated before
+archival. Attachment-free reports do not bypass these checks. Rejected paths
+must leave outside XML bytes unchanged and cannot become successful collection.
 
 In [device run 1672389](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1672389),
 log 719, PageSheet's `PresentViewControllerAsync` task did not complete within

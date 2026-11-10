@@ -113,12 +113,13 @@ function Merge-RetryTrxResults {
         [System.Xml.Linq.XDocument[]]$RetryNUnitReports
     )
 
-    [xml]$origXml = Get-Content -LiteralPath $OriginalTrxPath -Raw -Encoding UTF8
-    [xml]$retryXml = Get-Content -LiteralPath $RetryTrxPath -Raw -Encoding UTF8
     if ($OriginalNUnitReports -and $RetryNUnitReports) {
+        [UITestRetry]::ValidateArchiveDestination($OriginalTrxPath, (Split-Path $OriginalTrxPath))
+        [UITestRetry]::ValidateArchiveDestination($RetryTrxPath, (Split-Path $RetryTrxPath))
         $original = [System.Xml.Linq.XDocument]::Load($OriginalTrxPath)
         $retry = [System.Xml.Linq.XDocument]::Load($RetryTrxPath)
         [UITestRetry]::MergeResults($original, $retry, $OriginalNUnitReports, $RetryNUnitReports)
+        [UITestRetry]::ValidateArchiveDestination($OriginalTrxPath, (Split-Path $OriginalTrxPath))
         $original.Save($OriginalTrxPath)
         $ns = [System.Xml.Linq.XNamespace]'http://microsoft.com/schemas/VisualStudio/TeamTest/2010'
         $summary = $original.Root.Element($ns + 'ResultSummary')
@@ -130,6 +131,8 @@ function Merge-RetryTrxResults {
             Outcome = $summary.Attribute('outcome').Value
         }
     }
+    [xml]$origXml = Get-Content -LiteralPath $OriginalTrxPath -Raw -Encoding UTF8
+    [xml]$retryXml = Get-Content -LiteralPath $RetryTrxPath -Raw -Encoding UTF8
     $nsUri = 'http://microsoft.com/schemas/VisualStudio/TeamTest/2010'
     $nsMgr = New-Object System.Xml.XmlNamespaceManager($origXml.NameTable)
     $nsMgr.AddNamespace('t', $nsUri)

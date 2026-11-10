@@ -135,6 +135,99 @@ Describe 'NUnit MTP command and result compatibility' {
         }
     }
 
+    It 'rejects a redirected original TRX before reading or rewriting outside XML' -TestCases @(
+        @{ Redirect = 'file' }
+        @{ Redirect = 'parent' }
+    ) {
+        param($Redirect)
+        $directory = Join-Path $FixtureRoot "original-$Redirect"
+        $outside = Join-Path $FixtureRoot "original-outside-$Redirect"
+        [void][IO.Directory]::CreateDirectory($directory)
+        [void][IO.Directory]::CreateDirectory($outside)
+        $sentinel = Join-Path $outside 'result.trx'
+        $original = '<TestRun xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010"><Results /></TestRun>'
+        [IO.File]::WriteAllText($sentinel, $original)
+        '<test-run result="Passed" />' | Set-Content -LiteralPath (Join-Path $directory 'nunit.xml')
+        if ($Redirect -eq 'parent') {
+            $link = Join-Path $directory 'redirected'
+            $kind = if ($IsWindows) { 'Junction' } else { 'SymbolicLink' }
+            New-Item -ItemType $kind -Path $link -Target $outside | Out-Null
+            $trxPath = Join-Path $link 'result.trx'
+        }
+        else {
+            $trxPath = Join-Path $directory 'result.trx'
+            [IO.File]::CreateSymbolicLink($trxPath, $sentinel) | Out-Null
+        }
+        { Complete-NUnitMtpAttempt -RepoRoot $RepoRoot -TrxPath $trxPath -NUnitDirectory $directory -ExitCode 0 } |
+            Should -Throw '*cannot traverse symbolic links or junctions*'
+        [IO.File]::ReadAllText($sentinel) | Should -BeExactly $original
+    }
+
+    It 'rejects redirected original and retry TRX paths in the actual launcher merge' -TestCases @(
+        @{ Redirect = 'original' }
+        @{ Redirect = 'retry' }
+    ) {
+        param($Redirect)
+        $ast = [Management.Automation.Language.Parser]::ParseFile(
+            (Join-Path $RepoRoot '.github/scripts/BuildAndRunHostApp.ps1'), [ref]$null, [ref]$null)
+        $function = $ast.Find({
+            $args[0] -is [Management.Automation.Language.FunctionDefinitionAst] -and
+                $args[0].Name -eq 'Merge-RetryTrxResults'
+        }, $true)
+        Invoke-Expression $function.Extent.Text
+        $directory = Join-Path $FixtureRoot "merge-redirect-$Redirect"
+        $outside = Join-Path $FixtureRoot "merge-outside-$Redirect"
+        [void][IO.Directory]::CreateDirectory($directory)
+        [void][IO.Directory]::CreateDirectory($outside)
+        $sentinel = Join-Path $outside 'result.trx'
+        $original = '<TestRun xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010"><Results /></TestRun>'
+        [IO.File]::WriteAllText($sentinel, $original)
+        foreach ($name in @('original', 'retry')) {
+            $path = Join-Path $directory "$name.trx"
+            if ($name -eq $Redirect) {
+                [IO.File]::CreateSymbolicLink($path, $sentinel) | Out-Null
+            }
+            else {
+                [IO.File]::WriteAllText($path, $original)
+            }
+        }
+        $report = [System.Xml.Linq.XDocument]::Parse('<test-run result="Passed" />')
+        { Merge-RetryTrxResults -OriginalTrxPath (Join-Path $directory 'original.trx') `
+            -RetryTrxPath (Join-Path $directory 'retry.trx') -FailedNames Case `
+            -OriginalNUnitReports @($report) -RetryNUnitReports @($report) } |
+            Should -Throw '*cannot traverse symbolic links or junctions*'
+        [IO.File]::ReadAllText($sentinel) | Should -BeExactly $original
+    }
+
+    It 'rejects redirected NUnit source XML before copying its outside contents' {
+        $directory = Join-Path $FixtureRoot 'redirected-source-xml'
+        $outside = Join-Path $FixtureRoot 'outside-source-xml'
+        [void][IO.Directory]::CreateDirectory($directory)
+        [void][IO.Directory]::CreateDirectory($outside)
+        $sentinel = Join-Path $outside 'nunit.xml'
+        $original = '<test-run result="Passed" />'
+        [IO.File]::WriteAllText($sentinel, $original)
+        [IO.File]::CreateSymbolicLink((Join-Path $directory 'nunit.xml'), $sentinel) | Out-Null
+        $trx = Join-Path $directory 'result.trx'
+        [IO.File]::WriteAllText($trx,
+            '<TestRun xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010"><Results /></TestRun>')
+        { Complete-NUnitMtpAttempt -RepoRoot $RepoRoot -TrxPath $trx -NUnitDirectory $directory -ExitCode 0 } |
+            Should -Throw '*cannot traverse symbolic links or junctions*'
+        Test-Path -LiteralPath (Join-Path $directory 'raw/nunit.xml') | Should -BeFalse
+        [IO.File]::ReadAllText($sentinel) | Should -BeExactly $original
+    }
+
+    It 'validates the Cake original report before loading and every rewritten TRX before saving' {
+        $source = Get-Content -LiteralPath (Join-Path $RepoRoot 'eng/devices/uitests-shared.cake') -Raw
+        $source.IndexOf('UITestRetry.ValidateArchiveDestination(attemptResultsFile, attemptDirectory);') |
+            Should -BeLessThan $source.IndexOf('XDocument.Load(attemptResultsFile)')
+        @([regex]::Matches($source, '\w+\.Save\((?:attemptResultsFile|resultsFile)\);')).Count |
+            Should -Be 3
+        @([regex]::Matches($source,
+            'UITestRetry\.ValidateArchiveDestination\((?:attemptResultsFile, attemptDirectory|resultsFile, resultDirectory)\);\s*\w+\.Save\((?:attemptResultsFile|resultsFile)\);')).Count |
+            Should -Be 3
+    }
+
     It 'turns an MTP exit-zero fixture teardown failure into a job failure and archives attachment bytes' {
         $directory = Join-Path $FixtureRoot 'fixture'
         [void][IO.Directory]::CreateDirectory($directory)

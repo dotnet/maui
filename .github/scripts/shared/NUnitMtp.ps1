@@ -55,11 +55,13 @@ function Complete-NUnitMtpAttempt {
         # Use the helper from this script's trusted snapshot, never the PR checkout.
         Add-Type -TypeDefinition (Get-Content -Raw -LiteralPath (Join-Path $PSScriptRoot 'UITestRetry.cs'))
     }
+    [UITestRetry]::ValidateArchiveDestination($TrxPath, (Split-Path $TrxPath))
     $trx = [System.Xml.Linq.XDocument]::Load($TrxPath)
     $rawDirectory = Join-Path $NUnitDirectory 'raw'
     [UITestRetry]::ValidateArchiveDestination($rawDirectory, (Split-Path $TrxPath))
     [void][System.IO.Directory]::CreateDirectory($rawDirectory)
     [UITestRetry]::PreserveAttachments($trx, (Split-Path $TrxPath), (Join-Path $rawDirectory 'attachments'), $AllowedAttachmentRoots)
+    [UITestRetry]::ValidateArchiveDestination($TrxPath, (Split-Path $TrxPath))
     $trx.Save($TrxPath)
     $rawTrxPath = Join-Path $rawDirectory (Split-Path $TrxPath -Leaf)
     [UITestRetry]::ValidateArchiveDestination($rawTrxPath, (Split-Path $TrxPath))
@@ -67,12 +69,14 @@ function Complete-NUnitMtpAttempt {
     $files = @(Get-ChildItem -LiteralPath $NUnitDirectory -Filter '*.xml' -File)
     if ($files.Count -eq 0) { throw 'No NUnit XML was produced; fixture failures cannot be reconciled.' }
     [System.Xml.Linq.XDocument[]]$reports = @($files | ForEach-Object {
+        [UITestRetry]::ValidateArchiveDestination($_.FullName, (Split-Path $TrxPath))
         $rawReportPath = Join-Path $rawDirectory $_.Name
         [UITestRetry]::ValidateArchiveDestination($rawReportPath, (Split-Path $TrxPath))
         Copy-Item -LiteralPath $_.FullName -Destination $rawReportPath
         [System.Xml.Linq.XDocument]::Load($_.FullName)
     })
     $nunitFailed = [UITestRetry]::ApplyNUnitFailures($trx, $reports)
+    [UITestRetry]::ValidateArchiveDestination($TrxPath, (Split-Path $TrxPath))
     $trx.Save($TrxPath)
     return [pscustomobject]@{
         ExitCode = if ($ExitCode -ne 0) { $ExitCode } elseif ($nunitFailed) { 1 } else { 0 }
