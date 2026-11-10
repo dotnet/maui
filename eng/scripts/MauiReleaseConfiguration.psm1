@@ -559,6 +559,10 @@ function New-MauiReleaseLaneReceipt {
     if ('servicingSha' -in $Record.plan.PSObject.Properties.Name) {
         $arguments += @('-p', $Record.plan.servicingSha)
     }
+    if ($Record.Contains('supersedes')) {
+        if ($Record.supersedes -cnotmatch '^[0-9a-f]{40}$') { throw 'Superseded receipt must be a full commit SHA.' }
+        $arguments += @('-p', $Record.supersedes)
+    }
     (Invoke-MauiReleaseGit -RepositoryPath $RepositoryPath -Arguments $arguments `
         -Environment $environment -InputText "Prepare next release lanes after $($Record.releaseBand) SR$($Record.sr)`n").Trim()
 }
@@ -660,6 +664,14 @@ function New-MauiReviewedServicingCommit {
         -Changes @{ 'eng/Versions.props' = $content } -Message "Configure release $ReleaseBand SR$Sr for servicing"
 }
 
+function Get-MauiReleaseGenerationHead {
+    param(
+        [Parameter(Mandatory)][string] $Head,
+        [Parameter(Mandatory)][ValidatePattern('^[0-9a-f]{40}$')][string] $Source
+    )
+    "$Head/source-$Source"
+}
+
 function Assert-MauiReviewedServicingMerge {
     [CmdletBinding()]
     param (
@@ -680,7 +692,10 @@ function Assert-MauiReviewedServicingMerge {
         $PullRequest.merged_by.type -cne 'User' -or
         $null -eq $PullRequest.head.repo -or $null -eq $PullRequest.base.repo -or
         $PullRequest.head.repo.full_name -cne 'dotnet/maui' -or $PullRequest.base.repo.full_name -cne 'dotnet/maui' -or
-        $PullRequest.head.ref -cne "${prefix}automation/servicing/$ReleaseBand-sr$Sr" -or
+        $PullRequest.head.ref -cnotin @(
+            "${prefix}automation/servicing/$ReleaseBand-sr$Sr",
+            (Get-MauiReleaseGenerationHead -Head "${prefix}automation/servicing/$ReleaseBand-sr$Sr" -Source $LanePlan.mergeSha)
+        ) -or
         $PullRequest.head.sha -cne $head.sha -or
         $PullRequest.base.ref -cne "${prefix}automation/release/$ReleaseBand-sr$Sr" -or
         $PullRequest.merge_commit_sha -cne $Commit -or !([string]$PullRequest.body).Contains($marker)) {
@@ -703,4 +718,5 @@ Export-ModuleMember -Function Get-MauiReleaseVersion, Get-MauiReleaseVersionCont
     Get-MauiReleasedVersionContent, Get-MauiVerifiedPublishedVersion,
     Get-MauiReleaseFile, New-MauiReleaseContentCommit, New-MauiReleaseLaneIntegrationCommit,
     New-MauiReleaseNextLanePlan, New-MauiReleaseLaneReceipt, Get-MauiReleaseLaneReceipt,
-    Get-MauiReleaseCompletionPlan, New-MauiReviewedServicingCommit, Assert-MauiReviewedServicingMerge
+    Get-MauiReleaseCompletionPlan, New-MauiReviewedServicingCommit, Assert-MauiReviewedServicingMerge,
+    Get-MauiReleaseGenerationHead

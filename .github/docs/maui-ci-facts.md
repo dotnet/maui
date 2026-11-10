@@ -93,8 +93,14 @@ approves PRs, or auto-merges. Actual forward-PR CI remains a separate gate.
 The **Release tracking PRs** workflow prepares the next candidate/inflight
 branches and draft PR pair after a verified same-repository candidate merge into
 net11. Its merged-PR trigger uses default-branch workflow code and explicitly
-checks out trusted main, never PR code. A create-once release-lane receipt pins
-inputs/outputs for retries. The deployed workflow stages the exact candidate merge,
+checks out trusted main, never PR code. A reproducible release-lane receipt pins
+inputs/outputs for same-source retries. A newer maintainer candidate merge
+supersedes stale cycle bookkeeping through an exact SHA lease, retaining its
+predecessor receipt and replacing only exact verified older generated outputs.
+Normalization, servicing and state PR heads use source-<full-candidate-merge-sha>
+suffixes, so historical PRs cannot block a newer source. Concurrent unrelated
+edits remain protected, and actual API/Git failures remain explicit.
+The deployed workflow stages the exact candidate merge,
 proposes next-cycle CI on net11 and creates the next pair. Independently, publication
 opens a servicing/stable PR targeting automation/release, before any real release.
 The maintainer reviews and merges using Create a merge commit, then manually
