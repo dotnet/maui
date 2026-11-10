@@ -1,3 +1,99 @@
 ﻿<ContentPage x:Class="Maui.Controls.Sample.MainPage"
-             xmlns:local="clr-namespace:Maui.Controls.Sample">
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             x:DataType="local:MainPage"
+             Title="Picker clear selection">
+    <Grid>
+        <ScrollView>
+            <VerticalStackLayout Padding="24" Spacing="16">
+                <Label Text="Picker clear selection"
+                       FontSize="24"
+                       FontAttributes="Bold"
+                       SemanticProperties.HeadingLevel="Level1" />
+                <Label AutomationId="InstructionLabel"
+                       Text="Tap the X to clear the selection. Android, Mac Catalyst, and Windows also provide a Clear button inside the open picker. Clearing should keep an open picker open." />
+
+                <Picker x:Name="TestPicker"
+                        AutomationId="ClearablePicker"
+                        Title="Choose a color"
+                        ItemsSource="{Binding Choices}"
+                        SelectedIndex="1"
+                        IsClearButtonVisible="{Binding IsToggled, Source={x:Reference ClearButtonSwitch}, x:DataType=Switch}"
+                        IsEnabled="{Binding IsToggled, Source={x:Reference EnabledSwitch}, x:DataType=Switch}" />
+
+                <Grid ColumnDefinitions="Auto,*"
+                      RowDefinitions="Auto,Auto,Auto"
+                      ColumnSpacing="16"
+                      RowSpacing="8">
+                    <Label Text="SelectedIndex:" />
+                    <Label Grid.Column="1"
+                           AutomationId="SelectedIndexLabel"
+                           Text="{Binding SelectedIndex, Source={x:Reference TestPicker}, x:DataType=Picker}" />
+                    <Label Grid.Row="1" Text="SelectedItem:" />
+                    <Label Grid.Row="1" Grid.Column="1"
+                           AutomationId="SelectedItemLabel"
+                           Text="{Binding SelectedItem, Source={x:Reference TestPicker}, x:DataType=Picker, TargetNullValue='(null)'}" />
+                    <Label Grid.Row="2" Text="IsOpen:" />
+                    <Label Grid.Row="2" Grid.Column="1"
+                           AutomationId="IsOpenLabel"
+                           Text="{Binding IsOpen, Source={x:Reference TestPicker}, x:DataType=Picker}" />
+                </Grid>
+                <Label x:Name="SelectionEventsLabel"
+                       AutomationId="SelectionEventsLabel"
+                       Text="SelectedIndexChanged events: 0" />
+
+                <Grid ColumnDefinitions="*,Auto"
+                      RowDefinitions="Auto,Auto,Auto"
+                      RowSpacing="8">
+                    <Label Text="Show clear button" VerticalOptions="Center" />
+                    <Switch x:Name="ClearButtonSwitch"
+                            Grid.Column="1"
+                            AutomationId="ClearButtonSwitch"
+                            SemanticProperties.Description="Show picker clear button"
+                            IsToggled="True" />
+                    <Label Grid.Row="1" Text="Picker enabled" VerticalOptions="Center" />
+                    <Switch x:Name="EnabledSwitch"
+                            Grid.Row="1" Grid.Column="1"
+                            AutomationId="EnabledSwitch"
+                            SemanticProperties.Description="Enable picker"
+                            IsToggled="True" />
+                    <Label Grid.Row="2" Text="Right-to-left" VerticalOptions="Center" />
+                    <Switch Grid.Row="2" Grid.Column="1"
+                            AutomationId="RtlSwitch"
+                            SemanticProperties.Description="Use right-to-left picker layout"
+                            Toggled="OnRtlToggled" />
+                </Grid>
+
+                <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="8" RowSpacing="8">
+                    <Button Text="Select Green"
+                            AutomationId="SelectItemButton"
+                            Clicked="OnSelectItemClicked" />
+                    <Button Grid.Column="1"
+                            Text="Clear in code"
+                            AutomationId="ClearSelectionButton"
+                            Clicked="OnClearSelectionClicked" />
+                    <Button Grid.Row="1"
+                            Text="Open picker"
+                            AutomationId="OpenPickerButton"
+                            IsEnabled="{Binding IsEnabled, Source={x:Reference TestPicker}, x:DataType=Picker}"
+                            Clicked="OnOpenPickerClicked" />
+                    <Button Grid.Row="1" Grid.Column="1"
+                            Text="Close picker"
+                            AutomationId="ClosePickerButton"
+                            Clicked="OnClosePickerClicked" />
+                </Grid>
+
+                <Label Text="Check: clearing sets SelectedIndex to -1 and SelectedItem to null, hides the X, and raises one selection-change event. If the picker remains open, close it without choosing another item; the selection should stay empty." />
+
+                <Label Text="Default behavior (clear button not enabled)"
+                       FontAttributes="Bold" />
+                <Picker AutomationId="DefaultPicker"
+                        Title="No clear button"
+                        ItemsSource="{Binding Choices}"
+                        SelectedIndex="1" />
+                <Label Text="Supported by this implementation: Android, iOS, Mac Catalyst, and Windows. On Windows, use Clear selection inside the open dropdown, then close it without choosing another item." />
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
 </ContentPage>
