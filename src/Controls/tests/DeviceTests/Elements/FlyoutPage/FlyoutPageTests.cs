@@ -22,9 +22,9 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.FlyoutPage)]
 #if IOS || MACCATALYST
 	[Trait(RendererHandlerVariant.NavigationViewVariantTraitName, RendererHandlerVariant.NavigationRenderer)] // See RendererHandlerVariant.cs
-	// This base class exercises PhoneFlyoutPageRenderer on iOS/MacCatalyst; the
-	// FlyoutPageHandlerTests subclass overrides registration to exercise FlyoutViewHandler
-	// instead, so every test below runs against both variants.
+																											  // This base class exercises PhoneFlyoutPageRenderer on iOS/MacCatalyst; the
+																											  // FlyoutPageHandlerTests subclass overrides registration to exercise FlyoutViewHandler
+																											  // instead, so every test below runs against both variants.
 	[Trait(RendererHandlerVariant.FlyoutViewVariantTraitName, RendererHandlerVariant.PhoneFlyoutPageRenderer)] // See RendererHandlerVariant.cs
 #endif
 	public partial class FlyoutPageTests : ControlsHandlerTestBase
@@ -89,7 +89,7 @@ namespace Microsoft.Maui.DeviceTests
 					// Set with new page
 					var navPage = new NavigationPage(new ContentPage()) { Title = "App Page" };
 					flyoutPage.Detail = navPage;
-          
+
 					// For NavigationPages, check the CurrentPage instead
 					var pageToCheck = navPage is NavigationPage np ? np.CurrentPage : navPage;
 					if (!pageToCheck.HasNavigatedTo)
@@ -99,7 +99,7 @@ namespace Microsoft.Maui.DeviceTests
 
 					// Set back to previous page
 					flyoutPage.Detail = currentDetailPage;
-          
+
 					// Check the current page again
 					var previousPageToCheck = currentDetailPage is NavigationPage cp ? cp.CurrentPage : currentDetailPage;
 					if (!previousPageToCheck.HasNavigatedTo)
@@ -315,6 +315,11 @@ namespace Microsoft.Maui.DeviceTests
 				references.Add(new WeakReference(flyoutPage.Detail));
 
 				await launcherPage.Navigation.PopModalAsync();
+#if WINDOWS
+				Assert.Null(flyoutPage.Handler);
+				Assert.Null(flyoutPage.Flyout.Handler);
+				Assert.Null(flyoutPage.Detail.Handler);
+#endif
 			});
 
 			await AssertionExtensions.WaitForGC(references.ToArray());
