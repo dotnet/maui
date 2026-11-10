@@ -424,8 +424,7 @@ namespace Microsoft.Maui.DeviceTests
 			var source = new TaskCompletionSource();
 			if (frameworkElement.IsLoaded && frameworkElement.IsLoadedOnPlatform())
 			{
-				await Task.Delay(50);
-				source.TrySetResult();
+				return;
 			}
 			else
 			{
@@ -458,8 +457,7 @@ namespace Microsoft.Maui.DeviceTests
 			var source = new TaskCompletionSource();
 			if (!frameworkElement.IsLoaded && !frameworkElement.IsLoadedOnPlatform())
 			{
-				await Task.Delay(50);
-				source.TrySetResult();
+				return;
 			}
 			// in the xplat code we switch Loaded to Unloaded if the window property is removed.
 			// This will happen before the the control has been unloaded at the platform level.

@@ -549,12 +549,17 @@ namespace Microsoft.Maui.DeviceTests
 
 			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(tabbedPage), async (handler) =>
 			{
+				void LogPhase(string phase) => Console.WriteLine(
+					$"TAB_NAV: {phase}; selected={tabbedPage.Children.IndexOf(tabbedPage.CurrentPage)}, loaded={tabbedPage.IsLoaded}, frame={tabbedPage.Frame}, nativeAttached={(tabbedPage.Handler?.PlatformView as UIKit.UIView)?.Window is not null}");
+
+				LogPhase("initial navigation readiness");
 				await OnNavigatedToAsync(pages[0].CurrentPage);
 				await OnLoadedAsync((pages[0].CurrentPage as ContentPage).Content);
 
 				for (var i = 0; i < pages.Length; i++)
 				{
 					NavigationPage navigationPage = pages[i];
+					LogPhase($"select tab {i}");
 					tabbedPage.CurrentPage = navigationPage;
 					await OnNavigatedToAsync(navigationPage.CurrentPage);
 					await OnLoadedAsync((navigationPage.CurrentPage as ContentPage).Content);
@@ -566,21 +571,28 @@ namespace Microsoft.Maui.DeviceTests
 							Text = $"Tab {i} Next Page"
 						}
 					};
+					LogPhase($"push tab {i}");
 					await navigationPage.PushAsync(nextPage);
+					LogPhase($"pushed tab {i}, waiting for content readiness");
 					await OnNavigatedToAsync(nextPage);
 					await OnLoadedAsync(nextPage.Content);
 				}
 
-				foreach (var navigationPage in pages)
+				for (var i = 0; i < pages.Length; i++)
 				{
+					var navigationPage = pages[i];
+					LogPhase($"select tab {i} for pop");
 					tabbedPage.CurrentPage = navigationPage;
 					await OnNavigatedToAsync(navigationPage.CurrentPage);
 					await OnLoadedAsync((navigationPage.CurrentPage as ContentPage).Content);
 					await AssertEventually(() => navigationPage.Navigation.NavigationStack.Count > 1);
+					LogPhase($"pop tab {i}");
 					await navigationPage.PopAsync();
+					LogPhase($"popped tab {i}, waiting for content readiness");
 					await OnNavigatedToAsync(navigationPage.CurrentPage);
 					await OnLoadedAsync((navigationPage.CurrentPage as ContentPage).Content);
 				}
+				LogPhase("complete");
 			});
 		}
 #endif

@@ -3,6 +3,7 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
+using Microsoft.Maui.Platform;
 using Xunit;
 using static Microsoft.Maui.DeviceTests.AssertHelpers;
 namespace Microsoft.Maui.DeviceTests
@@ -10,6 +11,28 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.VisualElement)]
 	public partial class VisualElementTests : ControlsHandlerTestBase
 	{
+		[Fact]
+		public async Task AlreadyLoadedReadinessCompletesSynchronously()
+		{
+			var label = new Label { Text = "Already loaded" };
+			await CreateHandlerAndAddToWindow<LabelHandler>(label, handler =>
+			{
+				Assert.True(label.IsLoaded);
+				Assert.True(label.IsLoadedOnPlatform());
+				Assert.True(OnLoadedAsync(label).IsCompletedSuccessfully);
+				return Task.CompletedTask;
+			});
+		}
+
+		[Fact]
+		public void AlreadyUnloadedReadinessCompletesSynchronously()
+		{
+			var label = new Label();
+			Assert.False(label.IsLoaded);
+			Assert.False(label.IsLoadedOnPlatform());
+			Assert.True(OnUnloadedAsync(label).IsCompletedSuccessfully);
+		}
+
 		[Fact]
 		public async Task CanCreateHandler()
 		{
