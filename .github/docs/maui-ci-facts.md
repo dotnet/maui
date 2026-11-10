@@ -751,9 +751,13 @@ termination was not attributed to title-bar pressure: log 928 records
 `MauiWebView.LoadHtml` dereferencing a null `CoreWebView2` after initialization
 reported `COMException (0x80010108)`. Navigation now captures and checks the
 initialized native object for HTML loading, local-URL mapping and navigation
-callbacks, logging explicitly if no native object remains. Native Windows
-verification is still required; local cross-host build reached the Windows-only
-`MakePri.exe` prerequisite, not a successful Windows build.
+callbacks, logging explicitly if no native object remains. Local cross-host
+build reached the Windows-only `MakePri.exe` prerequisite; it did not establish
+native Windows correctness.
+The guarded code subsequently passed the complete native Windows Core suite in
+run 1673078, log 943: 2,082 passes, 111 existing skips, no failures and a
+successful launcher exit. This resolves that concrete null-dereference
+verification, not the distinct Windows Controls resource problem.
 
 The iOS initial-inset assertion now waits for the real safe-area API value
 before its unchanged final assertion; all three focused iOS 27 CoreCLR rows
@@ -765,6 +769,15 @@ both passed in fresh isolation. The full-pass repetitions do not establish an
 abort fix or justify accepting missing results. Temporary app exception hooks
 were removed; SDK launch logging was used for further diagnosis without
 changing exception modes or native failure handling.
+The same iOS General shard also passed under debugger-only native exception
+capture (1,289 passes, 14 existing skips); no exception breakpoint fired.
+The debugger passed the runtime's normal `SIGUSR1` suspension signal through
+unchanged. This diagnostic run does not explain the earlier aborts.
+Run 1673078's iOS CoreCLR Shell shard instead reported one real assertion
+failure: the flyout-disposal test inspected header/footer native parents before
+attachment. It now awaits those exact parent relationships before all unchanged
+attachment and disposal assertions. The complete local Shell shard then passed
+all 507 native rows without skips.
 
 The shared NUnit/Appium MTP caller also has native execution evidence in
 [UI run 1670623](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1670623):
