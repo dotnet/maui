@@ -49,7 +49,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		Size _cachedConstraints;
 		Size _lastArrangedSize;
 		Size _lastNativeBoundsSize;
-		nfloat _lastArrangedContentWidth;
 
 		// Indicates the cell is being used as a supplementary view (group header/footer)
 		internal bool isSupplementaryView = false;
@@ -273,15 +272,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				{
 					ArrangeVirtualView(virtualView, boundsSize);
 				}
-				else if (_hasArrangedSize &&
-					ContentView.EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft &&
-					ContentView.Bounds.Width != _lastArrangedContentWidth)
-				{
-					// Preferred sizing may mirror the root in the old native coordinate space.
-					// Correct its position without another managed arrange of the item subtree.
-					PlatformHandler.PlatformArrange(virtualView.Frame);
-					_lastArrangedContentWidth = ContentView.Bounds.Width;
-				}
 			}
 		}
 
@@ -377,7 +367,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		void ArrangeVirtualView(IView virtualView, Size size)
 		{
-			_lastArrangedContentWidth = ContentView.Bounds.Width;
 			_isArranging = true;
 			try
 			{

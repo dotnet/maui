@@ -27,13 +27,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateTopNavigationViewItemTextColor(this MauiNavigationView navigationView, Paint? paint)
 		{
-			navigationView.UpdateTopNavigationViewItemTextColor(paint, null);
-		}
-
-		internal static void UpdateTopNavigationViewItemTextColor(this MauiNavigationView navigationView, Paint? paint, Paint? disabledPaint)
-		{
 			var brush = paint?.ToPlatform();
-			var disabledBrush = disabledPaint?.ToPlatform() ?? brush;
 
 			if (navigationView.TopNavArea is not null)
 			{
@@ -42,6 +36,7 @@ namespace Microsoft.Maui.Platform
 					navigationView.TopNavArea.Resources.Remove("TopNavigationViewItemForeground");
 					navigationView.TopNavArea.Resources.Remove("TopNavigationViewItemForegroundPointerOver");
 					navigationView.TopNavArea.Resources.Remove("TopNavigationViewItemForegroundPressed");
+					navigationView.TopNavArea.Resources.Remove("TopNavigationViewItemForegroundDisabled");
 
 					navigationView.TopNavArea.Resources.Remove("NavigationViewItemForeground");
 					navigationView.TopNavArea.Resources.Remove("NavigationViewItemForegroundPointerOver");
@@ -52,20 +47,12 @@ namespace Microsoft.Maui.Platform
 					navigationView.TopNavArea.Resources["TopNavigationViewItemForeground"] = brush;
 					navigationView.TopNavArea.Resources["TopNavigationViewItemForegroundPointerOver"] = brush;
 					navigationView.TopNavArea.Resources["TopNavigationViewItemForegroundPressed"] = brush;
+					navigationView.TopNavArea.Resources["TopNavigationViewItemForegroundDisabled"] = brush;
 
 					//The NavigationViewItemForeground color is applied to the Expand/Collapse Chevron icon
 					navigationView.TopNavArea.Resources["NavigationViewItemForeground"] = brush;
 					navigationView.TopNavArea.Resources["NavigationViewItemForegroundPointerOver"] = brush;
 					navigationView.TopNavArea.Resources["NavigationViewItemForegroundPressed"] = brush;
-				}
-
-				if (disabledBrush is null)
-				{
-					navigationView.TopNavArea.Resources.Remove("TopNavigationViewItemForegroundDisabled");
-				}
-				else
-				{
-					navigationView.TopNavArea.Resources["TopNavigationViewItemForegroundDisabled"] = disabledBrush;
 				}
 
 				navigationView.TopNavArea.RefreshThemeResources();
@@ -82,13 +69,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateTopNavigationViewItemTextSelectedColor(this MauiNavigationView navigationView, Paint? paint)
 		{
-			navigationView.UpdateTopNavigationViewItemTextSelectedColor(paint, null);
-		}
-
-		internal static void UpdateTopNavigationViewItemTextSelectedColor(this MauiNavigationView navigationView, Paint? paint, Paint? disabledPaint)
-		{
 			var brush = paint?.ToPlatform();
-			var disabledBrush = disabledPaint?.ToPlatform() ?? brush;
 
 			if (navigationView.TopNavArea is not null)
 			{
@@ -97,21 +78,14 @@ namespace Microsoft.Maui.Platform
 					navigationView.TopNavArea.Resources.Remove("TopNavigationViewItemForegroundSelected");
 					navigationView.TopNavArea.Resources.Remove("TopNavigationViewItemForegroundSelectedPointerOver");
 					navigationView.TopNavArea.Resources.Remove("TopNavigationViewItemForegroundSelectedPressed");
+					navigationView.TopNavArea.Resources.Remove("TopNavigationViewItemForegroundSelectedDisabled");
 				}
 				else
 				{
 					navigationView.TopNavArea.Resources["TopNavigationViewItemForegroundSelected"] = brush;
 					navigationView.TopNavArea.Resources["TopNavigationViewItemForegroundSelectedPointerOver"] = brush;
 					navigationView.TopNavArea.Resources["TopNavigationViewItemForegroundSelectedPressed"] = brush;
-				}
-
-				if (disabledBrush is null)
-				{
-					navigationView.TopNavArea.Resources.Remove("TopNavigationViewItemForegroundSelectedDisabled");
-				}
-				else
-				{
-					navigationView.TopNavArea.Resources["TopNavigationViewItemForegroundSelectedDisabled"] = disabledBrush;
+					navigationView.TopNavArea.Resources["TopNavigationViewItemForegroundSelectedDisabled"] = brush;
 				}
 
 				navigationView.TopNavArea.RefreshThemeResources();
@@ -171,8 +145,16 @@ namespace Microsoft.Maui.Platform
 		{
 			var brush = paint?.ToPlatform();
 
-			// Theme resources are updated by the text-color methods. Updating them again
-			// here replaces brushes after WinUI has already refreshed its theme resources.
+			if (navigationView.TopNavArea is not null && brush is not null)
+			{
+				// Set both unselected-disabled and selected-disabled keys so the custom color
+				// applies regardless of whether the disabled tab is currently selected.
+				navigationView.TopNavArea.Resources["TopNavigationViewItemForegroundDisabled"] = brush;
+				navigationView.TopNavArea.Resources["TopNavigationViewItemForegroundSelectedDisabled"] = brush;
+
+				navigationView.TopNavArea.RefreshThemeResources();
+			}
+
 			if (navigationView.MenuItemsSource is IList<NavigationViewItemViewModel> items)
 			{
 				foreach (var item in items)
