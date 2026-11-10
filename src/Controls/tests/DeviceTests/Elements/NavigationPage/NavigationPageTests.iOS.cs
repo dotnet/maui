@@ -25,6 +25,40 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class NavigationPageTests : ControlsHandlerTestBase
 	{
+		[Theory]
+		[InlineData(-1)]
+		[InlineData(24)]
+		[InlineData(56)]
+		public async Task TitleViewStaysWithinClippedNavigationBar(double heightRequest)
+		{
+			SetupBuilder();
+			var titleView = new Grid { HeightRequest = heightRequest };
+			titleView.Add(new Label { Text = "Title", FontSize = 18 });
+			var page = new ContentPage();
+			NavigationPage.SetTitleView(page, titleView);
+			var navigationPage = new NavigationPage(page);
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navigationPage), async _ =>
+			{
+				await OnNavigatedToAsync(page);
+				var controller = Assert.IsAssignableFrom<UINavigationController>(
+					(navigationPage.Handler as IPlatformViewHandler)?.ViewController);
+				var bar = controller.NavigationBar;
+				bar.ClipsToBounds = true;
+
+				await AssertEventually(() =>
+				{
+					bar.LayoutIfNeeded();
+					var container = controller.TopViewController.NavigationItem.TitleView;
+					if (container?.Superview is null || container.Bounds.Height <= 0)
+						return false;
+
+					var titleBounds = container.ConvertRectToView(container.Bounds, bar);
+					return titleBounds.Top >= -0.5 && titleBounds.Bottom <= bar.Bounds.Height + 0.5;
+				}, message: "TitleView must have a positive height and stay within the clipped navigation bar.");
+			});
+		}
+
 		// Runs against both variants: SetupBuilder() dispatches to whichever
 		// RegisterNavigationPageHandlers override is active (NavigationRenderer on the base
 		// class, NavigationViewHandler on NavigationPageNavigationHandlerTests). ViewController
