@@ -2,6 +2,9 @@ parameters:
   # Xcode
   skipXcode: false
   skipSimulatorSetup: false
+  # Internal runs install this Xcode from dotnet/macios' xcode-apple-silicon package; keep it
+  # in sync with XCODE_PACKAGE_VERSION in dotnet/macios' Make.config.
+  xcodePackageVersion: '27.2.0'
   # .NET NuGet caches
   clearCaches: true
   # Android - JDK
@@ -104,6 +107,32 @@ steps:
         github_token: ${{ parameters.gitHubToken }}
       env:
         PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
+
+  # The agent images lag behind the Xcode that the .NET Apple workloads require, so internal
+  # runs install the Xcode that dotnet/macios pins, from the same feed macios provisions from.
+  # The feed lives in the dnceng 'internal' project; the public project has no access to it.
+  - ${{ if eq(variables['System.TeamProject'], 'internal') }}:
+    - task: UniversalPackages@0
+      displayName: 'Download Xcode Universal Package'
+      condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
+      timeoutInMinutes: 60
+      retryCountOnTaskFailure: 3
+      inputs:
+        command: download
+        downloadDirectory: $(Agent.TempDirectory)/xcode-universal-package
+        feedsToUse: internal
+        vstsFeed: internal/macios-tools-internal
+        vstsFeedPackage: xcode-apple-silicon
+        vstsPackageVersion: ${{ parameters.xcodePackageVersion }}
+
+    - script: bash ${{ parameters.checkoutDirectory }}/eng/scripts/install-xcode-package.sh "$(Agent.TempDirectory)/xcode-universal-package"
+      displayName: 'Install Xcode Universal Package'
+      condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
+      timeoutInMinutes: 60
+
+    - script: rm -rf -- "$(Agent.TempDirectory)/xcode-universal-package"
+      displayName: 'Clean Xcode package download'
+      condition: and(always(), eq(variables['Agent.OS'], 'Darwin'))
 
   - script: |
       echo Remove old Xamarin Settings
