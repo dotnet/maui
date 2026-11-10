@@ -84,7 +84,7 @@ public partial class FontManagerTests : TestBase
 
 			var actual = manager.GetFontFamily(Font.OfSize(fontName, 30));
 
-			Assert.StartsWith(fontName + ", ", actual.Source);
+			Assert.StartsWith(fontName + ", ", actual.Source, StringComparison.Ordinal);
 			Assert.Equal(0, logger.ErrorCount);
 		});
 
