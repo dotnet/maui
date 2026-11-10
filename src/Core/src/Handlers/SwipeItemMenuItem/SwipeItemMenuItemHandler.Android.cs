@@ -16,10 +16,12 @@ namespace Microsoft.Maui.Handlers
 		const int IconDrawableSlot = 1;
 
 		Drawable? _appliedIconTintDrawable;
+		Drawable? _defaultBackground;
 
 		protected override void ConnectHandler(AView platformView)
 		{
 			base.ConnectHandler(platformView);
+			_defaultBackground = platformView.Background;
 			platformView.ViewAttachedToWindow += OnViewAttachedToWindow;
 		}
 
@@ -32,6 +34,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			platformView.ViewAttachedToWindow -= OnViewAttachedToWindow;
 			_appliedIconTintDrawable = null;
+			_defaultBackground = null;
 			base.DisconnectHandler(platformView);
 		}
 
@@ -76,7 +79,16 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapBackground(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem view)
 		{
-			handler.PlatformView.UpdateBackground(view.Background);
+			var background = view.Background;
+
+			if (background.IsNullOrEmpty() && handler is SwipeItemMenuItemHandler platformHandler)
+			{
+				handler.PlatformView.Background = platformHandler._defaultBackground;
+			}
+			else
+			{
+				handler.PlatformView.UpdateBackground(background);
+			}
 
 			if (handler.PlatformView is TextView textView)
 				textView.TextAlignment = ATextAlignment.Center;
