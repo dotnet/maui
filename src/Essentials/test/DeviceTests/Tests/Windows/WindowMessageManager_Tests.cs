@@ -59,6 +59,24 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 			});
 
 		[Fact]
+		public Task ClosingMauiWindowDetachesItsWindowMessageHandler() =>
+			Utils.OnMainThread(() =>
+			{
+				var window = new MauiWinUIWindow();
+				using var manager = WindowMessageManager.Get(window);
+				try
+				{
+					Assert.True(manager.IsAttached);
+				}
+				finally
+				{
+					window.Close();
+				}
+
+				Assert.False(manager.IsAttached);
+			});
+
+		[Fact]
 		public Task SubscribedWindowIsAttached() =>
 			Utils.OnMainThread(() =>
 			{
