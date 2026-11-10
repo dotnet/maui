@@ -93,7 +93,10 @@ namespace Microsoft.Maui.Platform
 		{
 			base.OnTouchEvent(e);
 
-			if (e?.Action == MotionEventActions.Move && !ShouldInterceptTouch(e))
+			// ShouldInterceptTouch re-evaluates the swipe direction from the total pointer
+			// travel, so once a swipe is in progress it must not filter the moves anymore:
+			// a pointer that drifts out of the bounds would cancel the active gesture
+			if (e?.Action == MotionEventActions.Move && !_isSwiping && !ShouldInterceptTouch(e))
 				return true;
 
 			ProcessSwipingInteractions(e);
@@ -423,7 +426,9 @@ namespace Microsoft.Maui.Platform
 
 		bool ProcessTouchMove(APointF point)
 		{
-			if (_contentView == null || !TouchInsideContent(point) || _initialPoint == null)
+			// Only require the touch to be inside the content to start a swipe; once the
+			// gesture is in progress it has to keep tracking the pointer wherever it goes
+			if (_contentView == null || _initialPoint == null || (!_isSwiping && !TouchInsideContent(point)))
 				return false;
 
 			if (!_isOpen)
@@ -793,11 +798,26 @@ namespace Microsoft.Maui.Platform
 				{
 					case SwipeDirection.Left:
 					case SwipeDirection.Right:
-						_contentView.Animate()?.TranslationX(offset)?.SetDuration(swipeAnimationDuration);
+						if (animated)
+							_contentView.Animate()?.TranslationX(offset)?.SetDuration(swipeAnimationDuration);
+						else
+						{
+							// A zero-duration animator needs a frame to run, so it can still be
+							// pending when the view is detached right after a programmatic open,
+							// keeping the view tree alive; apply the value directly instead
+							_contentView.Animate()?.Cancel();
+							_contentView.TranslationX = offset;
+						}
 						break;
 					case SwipeDirection.Up:
 					case SwipeDirection.Down:
-						_contentView.Animate()?.TranslationY(offset)?.SetDuration(swipeAnimationDuration);
+						if (animated)
+							_contentView.Animate()?.TranslationY(offset)?.SetDuration(swipeAnimationDuration);
+						else
+						{
+							_contentView.Animate()?.Cancel();
+							_contentView.TranslationY = offset;
+						}
 						break;
 				}
 			}
