@@ -685,6 +685,22 @@ release queue. There is no sleep, quota change or weakened assertion. The
 focused probe also includes Shell page collection and both generic/non-generic
 rooted-object contrasts; native results must establish whether this candidate
 addresses the failure.
+That candidate passed in
+[device run 1672813](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1672813):
+all eleven genuine ownership/focus rows passed, including the unchanged modal
+and Shell collection assertions and both rooted-object contrasts. The full
+Windows Controls process still terminated with `0xDEAD` while
+`SettingTitleIconImageSourceDoesntCrash` was running. MTP recovered 339 rows
+(332 passes, seven existing skips, no assertion failures), but preserved exit
+code 7 and reported the host crash. Those incomplete results are not a passing
+suite or proof that the remaining native resource owner is fixed.
+The completed matrix had 35 successful jobs and six failed jobs: unpackaged
+Windows Controls terminated natively, and all five packaged Windows suites
+failed their signing/deployment prerequisite. All Android, iOS and Catalyst
+jobs succeeded. A separate local full pinned Catalyst run still reported 81
+fixture callback timeouts (1,520 passes and 42 existing skips); two affected
+methods passed fresh isolation. Do not equate that isolated result or the green
+CI lanes with resolution of the local full-run failures.
 
 In [device run 1672389](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1672389),
 log 719, PageSheet's `PresentViewControllerAsync` task did not complete within
