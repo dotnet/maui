@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ResourceDictionary
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+	<Style TargetType="Button" ApplyToDerivedTypes="True" BasedOn="{StaticResource ButtonBaseStyle}" />
+</ResourceDictionary>
