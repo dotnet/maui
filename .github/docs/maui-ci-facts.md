@@ -734,13 +734,17 @@ removing its owning fragment. The fixture now uses asynchronous continuations,
 waits for the actual fragment destruction signal and lets that native callback
 deliver window destruction before final handler cleanup. The same 13 native
 rows then passed with no skips; no production animation suppression, fixed
-delay or assertion change was needed. Full Android and Mono CI remain required.
+delay or assertion change was needed. The complete local Release/CoreCLR
+Android Controls suite subsequently passed 1,331 rows with 13 existing skips,
+no failures and matching genuine host/native reports. Both Android runtimes
+still require their own CI evidence.
 The same run's Essentials Mono log identified reactivation of a disposed
 `ActivityLifecycleContextListener`. Test-owned listener disposal now runs on
 the UI thread, after owned recreation activities actually reach `OnDestroy`.
-All nine lifecycle/recreation rows passed locally on CoreCLR; the local Mono
-invocation was blocked during restore by unrelated `net11.0-ios` target
-evaluation (`NETSDK1242`), so it is not Mono execution evidence.
+All nine lifecycle/recreation rows and the complete 424-row Essentials suite
+passed locally on CoreCLR. The local Mono invocation's cross-target restore
+also evaluated `net11.0-ios`, which the SDK rejects for Mono (`NETSDK1242`);
+that invocation is not Mono execution evidence.
 
 The shared NUnit/Appium MTP caller also has native execution evidence in
 [UI run 1670623](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1670623):
