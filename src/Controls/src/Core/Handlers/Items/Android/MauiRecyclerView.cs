@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_getItemsLayout = getItemsLayout ?? throw new ArgumentNullException(nameof(getItemsLayout));
 			CreateAdapter = getAdapter ?? throw new ArgumentNullException(nameof(getAdapter));
 
-			_emptyCollectionObserver = new DataChangeObserver(UpdateEmptyViewVisibility);
+			_emptyCollectionObserver = new DataChangeObserver(_ => UpdateEmptyViewVisibility());
 			_itemsUpdateScrollObserver = new DataChangeObserver(AdjustScrollForItemUpdate);
 			_dispatchTouchEventToRecyclerView = DispatchTouchEventToRecyclerView;
 			_parentScrollGestureDispatcher = new ParentScrollGestureDispatcher(this);
@@ -308,6 +308,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var oldItemViewAdapter = ItemsViewAdapter;
 
 			_emptyCollectionObserver.Stop(oldItemViewAdapter);
+			_itemsUpdateScrollObserver.Stop(oldItemViewAdapter);
 
 			ItemsViewAdapter = CreateAdapter();
 
@@ -315,14 +316,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (GetAdapter() != _emptyViewAdapter)
 			{
-				_itemsUpdateScrollObserver.Stop(oldItemViewAdapter);
-
 				SetAdapter(null);
 
 				SwapAdapter(ItemsViewAdapter, true);
 			}
 
 			UpdateEmptyView();
+
+			UpdateItemsUpdatingScrollMode();
 
 			_itemTouchHelperCallback?.SetAdapter(ItemsViewAdapter as IItemTouchHelperAdapter);
 
@@ -1109,7 +1110,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return false;
 		}
 
-		internal void AdjustScrollForItemUpdate()
+		internal void AdjustScrollForItemUpdate(bool itemsInserted)
 		{
 			if (ItemsView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepLastItemInView)
 			{
@@ -1138,7 +1139,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				ScrollHelper.UndoNextScrollAdjustment();
 			}
 			else if (ItemsView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepItemsInView
-				&& ItemsView is not CarouselView)
+				&& itemsInserted && ItemsView is not CarouselView)
 			{
 				if (GetLayoutManager().ItemCount > 0)
 				{
