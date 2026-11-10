@@ -625,6 +625,10 @@ process's GDI-object count and request that same one-shot snapshot at 8,000
 objects, before a hard termination can bypass unhandled-exception callbacks.
 This only records evidence: it does not change resource quotas, force collection,
 reset title bars or convert a failed process into a successful test run.
+Diagnostic runs also request the same one-shot snapshot when MTP publishes a
+failed/error test node. This captures transient retention at the failure instead
+of waiting for a later resource-pressure threshold; the original failure and
+genuine TRX remain authoritative.
 Windows jobs analyze any resulting owned snapshots on Windows, retaining heap
 statistics and managed root paths alongside the dump. Enumeration uses exact
 method tables from heap statistics, not substring matches that can select
@@ -656,6 +660,17 @@ regression failed before this change and passes for both attachment orders,
 handler replacement/reconnection and window removal/readdition. Native results
 remain a separate requirement; this managed proof does not establish that the
 remaining modal collection failure or native termination is resolved.
+
+In [device run 1672626](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1672626),
+the complete pressure snapshot contained no exact FlyoutPage or WindowOverlay
+instances. Only two of 49 MauiWinUIWindow wrappers, two of 50 WindowRootViews and
+two of 51 ContentPages had GC roots; their paths belonged to the runner/current
+test window. This does not establish native HWND destruction or native-resource
+release. The independent eight-row ownership/focus probe passed seven rows
+(including ScrollView collection, overlay collection, reload focus, removal,
+stale callback and both attachment-lifetime rows), but still failed modal
+ContentPage collection. That transient failure needs its own failure-time
+snapshot; the later pressure snapshot does not contain its retaining path.
 
 In [device run 1672389](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1672389),
 log 719, PageSheet's `PresentViewControllerAsync` task did not complete within

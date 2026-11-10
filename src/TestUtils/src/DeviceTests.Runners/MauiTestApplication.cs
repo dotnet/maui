@@ -108,6 +108,16 @@ class MauiTestApplication : Application
 		Console.WriteLine($"Native resource diagnostics: process={Environment.ProcessId}, GDI snapshot threshold={GdiObjectSnapshotThreshold}.");
 	}
 
+	internal static void CaptureWindowsTestFailureDump(string testName)
+	{
+		var directory = Volatile.Read(ref _windowsResourceDumpDirectory);
+		if (directory is null || Volatile.Read(ref _windowsDumpStarted) != 0)
+			return;
+
+		Console.Error.WriteLine($"Native test failure: {testName}. Capturing an owned-process snapshot.");
+		WriteWindowsProcessDump(directory);
+	}
+
 	internal static void CaptureWindowsResourcePressureDump()
 	{
 		var directory = Volatile.Read(ref _windowsResourceDumpDirectory);

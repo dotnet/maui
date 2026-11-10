@@ -103,12 +103,19 @@ public sealed class HeadlessTestRunner(HeadlessRunnerOptions runnerOptions, Test
 		{
 			if (value is SessionFileArtifact artifact && artifact.FileInfo.Extension.Equals(".trx", StringComparison.OrdinalIgnoreCase))
 				TrxReportPath = artifact.FileInfo.FullName;
-			else if (value is TestNodeUpdateMessage { TestNode: var node } &&
-				node.Properties.SingleOrDefault<TestNodeStateProperty>() is InProgressTestNodeStateProperty)
+			else if (value is TestNodeUpdateMessage { TestNode: var node })
 			{
-				Console.WriteLine($"TEST_START: {node.DisplayName}");
+				var state = node.Properties.SingleOrDefault<TestNodeStateProperty>();
+				if (state is InProgressTestNodeStateProperty)
+				{
+					Console.WriteLine($"TEST_START: {node.DisplayName}");
 #if WINDOWS
-				MauiTestApplication.CaptureWindowsResourcePressureDump();
+					MauiTestApplication.CaptureWindowsResourcePressureDump();
+#endif
+				}
+#if WINDOWS
+				else if (state is FailedTestNodeStateProperty or ErrorTestNodeStateProperty)
+					MauiTestApplication.CaptureWindowsTestFailureDump(node.DisplayName);
 #endif
 			}
 			return Task.CompletedTask;

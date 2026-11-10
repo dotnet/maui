@@ -218,6 +218,8 @@ steps:
         "*QueuedTabStopRestoreDoesNotRunAfterDisconnect*"
         --report-trx
         --results-directory "$(TestResultsDirectory)/ownership-regressions"
+        --diagnostic
+        --diagnostic-output-directory "$(TestResultsDirectory)/ownership-regressions/diagnostics"
         -p:RuntimeIdentifier=win-x64
         -p:RuntimeIdentifierOverride=win-x64
         -p:IsRidAgnostic=false
@@ -229,7 +231,7 @@ steps:
 - ${{ if eq(parameters.platform, 'windows') }}:
   - pwsh: |
       $ErrorActionPreference = 'Stop'
-      $dumps = @(Get-ChildItem -LiteralPath "$(TestResultsDirectory)" -File -Filter 'native-process-*.dmp')
+      $dumps = @(Get-ChildItem -LiteralPath "$(TestResultsDirectory)" -File -Filter 'native-process-*.dmp' -Recurse)
       if (!$dumps.Count) {
           Write-Host 'No owned native process snapshot was produced.'
           exit 0
