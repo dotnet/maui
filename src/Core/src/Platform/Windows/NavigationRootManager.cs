@@ -196,7 +196,9 @@ namespace Microsoft.Maui.Platform
 		void OnRootViewActualThemeChanged(FrameworkElement sender, object args)
 		{
 			if (!_disconnected)
+			{
 				UpdateWindowTitleForeground();
+			}
 		}
 
 		void UpdateWindowTitleForeground()
