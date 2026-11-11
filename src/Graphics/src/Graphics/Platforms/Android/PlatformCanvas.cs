@@ -546,7 +546,7 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		protected override void PlatformDrawPath(PathF aPath)
 		{
-			var platformPath = aPath.AsAndroidPath();
+			using var platformPath = aPath.AsAndroidPath();
 
 			if (_shader != null)
 			{
@@ -560,13 +560,11 @@ namespace Microsoft.Maui.Graphics.Platform
 			{
 				_canvas.DrawPath(platformPath, CurrentState.StrokePaintWithAlpha);
 			}
-
-			platformPath.Dispose();
 		}
 
 		public override void ClipPath(PathF path, WindingMode windingMode = WindingMode.NonZero)
 		{
-			var platformPath = path.AsAndroidPath();
+			using var platformPath = path.AsAndroidPath();
 			platformPath.SetFillType(windingMode == WindingMode.NonZero ? Path.FillType.Winding : Path.FillType.EvenOdd);
 			_canvas.ClipPath(platformPath);
 		}
@@ -578,10 +576,9 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public override void FillPath(PathF path, WindingMode windingMode)
 		{
-			var platformPath = path.AsAndroidPath();
+			using var platformPath = path.AsAndroidPath();
 			platformPath.SetFillType(windingMode == WindingMode.NonZero ? Path.FillType.Winding : Path.FillType.EvenOdd);
 			_canvas.DrawPath(platformPath, CurrentState.FillPaintWithAlpha);
-			platformPath.Dispose();
 		}
 
 		public override void DrawString(string value, float x, float y, HorizontalAlignment horizAlignment)
