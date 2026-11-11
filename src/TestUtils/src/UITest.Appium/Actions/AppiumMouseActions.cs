@@ -95,11 +95,11 @@ namespace UITest.Appium
 
 		CommandResponse ClickElement(AppiumElement element)
 		{
-			string tagName = string.Empty;
+			string? identifier = null;
 
 			// If the click fails on catalyst we need to retrieve the element again
 			if (_appiumApp.Driver is MacDriver)
-				tagName = element.TagName;
+				identifier = element.GetAttribute("identifier");
 
 			try
 			{
@@ -121,19 +121,19 @@ namespace UITest.Appium
 			{
 				// Appium elements will sometimes become stale
 				// Which appears to happen if click fails, so, we retrieve it here
-				if (!String.IsNullOrWhiteSpace(tagName))
-					element = (AppiumElement)_appiumApp.FindElement(tagName);
-
-				if (element is null)
+				if (!String.IsNullOrWhiteSpace(identifier))
 				{
-					return CommandResponse.FailedEmptyResponse;
+					element = GetAppiumElement(_appiumApp.FindElement(identifier))
+						?? throw new NoSuchElementException($"Could not reacquire the click target '{identifier}'.");
 				}
 
 				// Some elements aren't "clickable" from an automation perspective (e.g., Frame renders as a Border
 				// with content in it; if the content is just a TextBlock, we'll end up here)
 
 				// All is not lost; we can figure out the location of the element in in the application window and Tap in that spot
-				PointF p = ElementToClickablePoint(element);
+				PointF p = _appiumApp.Driver is MacDriver
+					? new PointF(element.Location.X + element.Size.Width / 2f, element.Location.Y + element.Size.Height / 2f)
+					: ElementToClickablePoint(element);
 				ClickCoordinates(p.X, p.Y);
 				return CommandResponse.SuccessEmptyResponse;
 			}

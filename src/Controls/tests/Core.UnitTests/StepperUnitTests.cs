@@ -18,6 +18,44 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(2, stepper.Increment);
 		}
 
+		// Confirms ValueProperty's coerceValue reuses the original boxed value instead of reboxing
+		// when the value is already rounded/in range, and still reboxes when it isn't.
+		[Fact]
+		public void ValueCoerceValueReusesBoxWhenAlreadyRoundedAndInRange()
+		{
+			var stepper = new Stepper(); // Minimum = 0, Maximum = 100
+			object boxedValue = 50d;
+
+			var result = Stepper.ValueProperty.CoerceValue(stepper, boxedValue);
+
+			Assert.Same(boxedValue, result);
+			Assert.Equal(50d, (double)result);
+		}
+
+		[Fact]
+		public void ValueCoerceValueReboxesWhenRounded()
+		{
+			var stepper = new Stepper(); // Minimum = 0, Maximum = 100, rounds to 4 digits
+			object boxedValue = 1.23456d;
+
+			var result = Stepper.ValueProperty.CoerceValue(stepper, boxedValue);
+
+			Assert.NotSame(boxedValue, result);
+			Assert.Equal(1.2346d, (double)result);
+		}
+
+		[Fact]
+		public void ValueCoerceValueReboxesWhenOutOfRange()
+		{
+			var stepper = new Stepper(); // Minimum = 0, Maximum = 100
+			object boxedValue = 200d;
+
+			var result = Stepper.ValueProperty.CoerceValue(stepper, boxedValue);
+
+			Assert.NotSame(boxedValue, result);
+			Assert.Equal(100d, (double)result);
+		}
+
 		[Fact]
 		public void TestInvalidConstructor()
 		{

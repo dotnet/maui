@@ -19,7 +19,7 @@
 		<!-- NuGet package information -->
 		<IsPackable>true</IsPackable>
 		<PackageId>Microsoft.Maui.Controls</PackageId>
-		<Description>.NET Multi-platform App UI (.NET MAUI) is a cross-platform framework for creating native mobile and desktop apps with C# and XAML. Using .NET MAUI, you can develop apps that can run on Android, iOS, macOS, Tizen, and Windows from a single shared codebase.</Description>
+		<Description>.NET Multi-platform App UI (.NET MAUI) is a cross-platform framework for creating native mobile and desktop apps with C# and XAML. Using .NET MAUI, you can develop apps that can run on Android, iOS, macOS, and Windows from a single shared codebase.</Description>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 	</PropertyGroup>
 
@@ -32,6 +32,8 @@
 
 	<ItemGroup>
 		<None Include="README.md" Pack="true" PackagePath="\" />
+		<!-- A file path prevents NuGet from appending RecursiveDir a second time. -->
+		<None Include="skills\**\*.md" Pack="true" PackagePath="skills\%(RecursiveDir)%(Filename)%(Extension)" />
 	</ItemGroup>
 
 	<Import Project="$(MauiSrcDirectory)Workload\Shared\LibraryPacks.targets" />

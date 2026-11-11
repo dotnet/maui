@@ -5,9 +5,7 @@ using PlatformView = Microsoft.Maui.Platform.MauiLabel;
 using PlatformView = AndroidX.AppCompat.Widget.AppCompatTextView;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.Controls.TextBlock;
-#elif TIZEN
-using PlatformView = Tizen.UIExtensions.NUI.Label;
-#elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !TIZEN)
+#elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS)
 using PlatformView = System.Object;
 #endif
 
@@ -17,7 +15,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		public static IPropertyMapper<ILabel, ILabelHandler> Mapper = new PropertyMapper<ILabel, ILabelHandler>(ViewHandler.ViewMapper)
 		{
-#if IOS || TIZEN
+#if IOS
 			[nameof(ILabel.Background)] = MapBackground,
 			[nameof(ILabel.Opacity)] = MapOpacity,
 #elif WINDOWS
@@ -25,16 +23,22 @@ namespace Microsoft.Maui.Handlers
 			[nameof(ILabel.Height)] = MapHeight,
 			[nameof(ILabel.Opacity)] = MapOpacity,
 #endif
-#if TIZEN
-			[nameof(ILabel.Shadow)] = MapShadow,
-#endif
+#if IOS || MACCATALYST
+			// Attributed-text formatting must run after Text creates the native attributed string.
+			[nameof(ILabel.Text)] = MapText,
+			[nameof(ITextStyle.Font)] = MapFont,
+			[nameof(ITextStyle.CharacterSpacing)] = MapCharacterSpacing,
+#else
 			[nameof(ITextStyle.CharacterSpacing)] = MapCharacterSpacing,
 			[nameof(ITextStyle.Font)] = MapFont,
+#endif
 			[nameof(ITextAlignment.HorizontalTextAlignment)] = MapHorizontalTextAlignment,
 			[nameof(ITextAlignment.VerticalTextAlignment)] = MapVerticalTextAlignment,
 			[nameof(ILabel.LineHeight)] = MapLineHeight,
 			[nameof(ILabel.Padding)] = MapPadding,
+#if !IOS && !MACCATALYST
 			[nameof(ILabel.Text)] = MapText,
+#endif
 			[nameof(ITextStyle.TextColor)] = MapTextColor,
 			[nameof(ILabel.TextDecorations)] = MapTextDecorations,
 #if ANDROID

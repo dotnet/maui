@@ -304,7 +304,8 @@ namespace Microsoft.Maui.Controls
 				picker.ClearPendingSelectedIndex();
 			}
 
-			return selectedIndex.Clamp(-1, picker.Items.Count - 1);
+			var clamped = selectedIndex.Clamp(-1, picker.Items.Count - 1);
+			return clamped == selectedIndex ? value : (object)clamped;
 		}
 
 		void OnItemDisplayBindingChanged(BindingBase oldValue, BindingBase newValue)
@@ -552,7 +553,16 @@ namespace Microsoft.Maui.Controls
 			Handler?.UpdateValue(nameof(IPicker.Items));
 
 			if (!TryApplyPendingSelectedIndex(forceClamp: true))
-				ClampSelectedIndex(SelectedIndex);
+			{
+				var index = SelectedIndex;
+
+				// SelectedItem can be set before ItemsSource (e.g. because of the XAML attribute order),
+				// when it can't be found yet; select it now that the items are loaded
+				if (index < 0 && SelectedItem is not null)
+					index = ItemsSource.IndexOf(SelectedItem);
+
+				ClampSelectedIndex(index);
+			}
 		}
 
 		static void OnSelectedIndexChanged(object bindable, object oldValue, object newValue)
@@ -586,12 +596,16 @@ namespace Microsoft.Maui.Controls
 
 			ClearPendingSelectedIndex();
 
-			if (ItemsSource != null)
-			{
-				SetSelectedIndexFromHandler(ItemsSource.IndexOf(selectedItem));
+			var index = ItemsSource != null ? ItemsSource.IndexOf(selectedItem) : Items.IndexOf(selectedItem);
+
+			// SelectedItem is usually updated from SelectedIndex, so they're already in sync. Setting SelectedIndex
+			// again is not only redundant: when SelectedIndex is being set (e.g. from a SelectedIndexChanged handler),
+			// the nested set is queued and replayed later with a stale value, making SelectedIndex and SelectedItem
+			// update each other forever (#8874).
+			if (index == SelectedIndex)
 				return;
-			}
-			SetSelectedIndexFromHandler(Items.IndexOf(selectedItem));
+
+			SetSelectedIndexFromHandler(index);
 		}
 
 		void SetPendingSelectedIndex(int selectedIndex)

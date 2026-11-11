@@ -164,6 +164,20 @@ namespace Microsoft.Maui.Controls
 						break;
 				}
 			};
+
+			// Recognizers can be added while base constructors run, before the subscription
+			// above exists (e.g. an application-level implicit style applying a ControlTemplate
+			// that wires a tap gesture, https://github.com/dotnet/maui/issues/14949). Sync them
+			// into the composite collection the platform gesture managers attach to.
+			for (int i = 0; i < _gestureRecognizers.Count; i++)
+			{
+				var gestureRecognizer = _gestureRecognizers[i];
+				if (gestureRecognizer is IElementDefinition item && ValidateGesture(gestureRecognizer))
+				{
+					item.Parent = this;
+					GestureController.CompositeGestureRecognizers.Add(gestureRecognizer);
+				}
+			}
 		}
 
 		/// <summary>The collection of gesture recognizers associated with this view.</summary>

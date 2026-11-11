@@ -17,18 +17,25 @@ public class Issue33037 : _IssuesUITest
 	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void LargeTitleTransitionsOnScroll()
 	{
+		Exception? exception = null;
+
 		// Verify page loaded with large title visible
 		App.WaitForElement("PageTitle");
 
 		// Take a screenshot before scrolling to verify large title is shown
-		VerifyScreenshot("Issue33037_BeforeScroll");
+		VerifyScreenshotOrSetException(ref exception, "Issue33037_BeforeScroll");
 
 		// Scroll down to trigger the large title → standard title transition
 		App.ScrollDown("TestScrollView");
 		App.ScrollDown("TestScrollView");
 
 		// Take screenshot after scrolling — title should have transitioned to standard size
-		VerifyScreenshot("Issue33037_AfterScroll", retryTimeout: TimeSpan.FromSeconds(2));
+		VerifyScreenshotOrSetException(ref exception, "Issue33037_AfterScroll", retryTimeout: TimeSpan.FromSeconds(2));
+
+		if (exception is not null)
+		{
+			throw exception;
+		}
 	}
 }
 #endif

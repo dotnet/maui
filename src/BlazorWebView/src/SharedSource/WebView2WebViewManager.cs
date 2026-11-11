@@ -28,7 +28,7 @@ using System.Diagnostics;
 using Microsoft.AspNetCore.Components.WebView.Wpf;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Web.WebView2.Core;
-using WebView2Control = Microsoft.Web.WebView2.Wpf.WebView2CompositionControl;
+using WebView2Control = Microsoft.Web.WebView2.Wpf.IWebView2;
 using System.Reflection;
 #elif WEBVIEW2_MAUI
 using Microsoft.AspNetCore.Components.WebView.Maui;
@@ -227,7 +227,8 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 
 		/// <summary>
 		/// Marks the manager as disposing to prevent further operations.
-		/// This should be called by the owning control before starting disposal.
+		/// This should be called by the owning control after page disposal completes,
+		/// but before disposing the native WebView.
 		/// </summary>
 		internal void MarkAsDisposing()
 		{
@@ -284,15 +285,9 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 			ApplyDefaultWebViewSettings(developerTools);
 
 #if WEBVIEW2_MAUI
-			_blazorWebViewHandler.VirtualView.BlazorWebViewInitialized(new BlazorWebViewInitializedEventArgs
-			{
-				WebView = _webview,
-			});
+			_blazorWebViewHandler.VirtualView.BlazorWebViewInitialized(new BlazorWebViewInitializedEventArgs(_webview));
 #elif WEBVIEW2_WINFORMS || WEBVIEW2_WPF
-			_blazorWebViewInitialized?.Invoke(new BlazorWebViewInitializedEventArgs
-			{
-				WebView = _webview,
-			});
+			_blazorWebViewInitialized?.Invoke(new BlazorWebViewInitializedEventArgs(_webview));
 #endif
 
 			_webview.CoreWebView2.AddWebResourceRequestedFilter("*", CoreWebView2WebResourceContext.All);

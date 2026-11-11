@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading;
 using System.Xml;
 
@@ -36,12 +37,62 @@ static class GeneratorHelpers
 			: $"@{identifier}";
 	}
 
-	public static ProjectItem? ComputeProjectItem((AdditionalText additionalText, AnalyzerConfigOptionsProvider optionsProvider) tuple, CancellationToken cancellationToken)
+	//marker comment emitted into the generated body when a type resolution is deferred to the
+	//C# compiler (see KnownMarkups). It travels with the code that needs it (InitializeComponent,
+	//UpdateComponent, local methods, ...) and LiftFallbackUsings turns it into using directives.
+	public const string FallbackUsingMarker = "//__maui.sg.fallbackusing:";
+
+	public static bool IsValidClrNamespace(string ns)
+	{
+		if (string.IsNullOrEmpty(ns))
+			return false;
+		foreach (var part in ns.Split('.'))
+			if (!SyntaxFacts.IsValidIdentifier(part))
+				return false;
+		return true;
+	}
+
+	/// <summary>
+	/// Removes the <see cref="FallbackUsingMarker"/> lines from a generated file and inserts the
+	/// namespaces they carry as using directives right before the namespace declaration.
+	/// </summary>
+	public static string LiftFallbackUsings(string code, string newLine)
+	{
+		if (code.IndexOf(FallbackUsingMarker, StringComparison.Ordinal) < 0)
+			return code;
+
+		var usings = new SortedSet<string>(StringComparer.Ordinal);
+		var sb = new StringBuilder(code.Length);
+		var pos = 0;
+		while (pos < code.Length)
+		{
+			var eol = code.IndexOf('\n', pos);
+			var end = eol < 0 ? code.Length : eol + 1;
+			var line = code.Substring(pos, end - pos);
+			var trimmed = line.Trim();
+			if (trimmed.StartsWith(FallbackUsingMarker, StringComparison.Ordinal))
+				usings.Add(trimmed.Substring(FallbackUsingMarker.Length));
+			else
+				sb.Append(line);
+			pos = end;
+		}
+
+		code = sb.ToString();
+		var nsIndex = code.IndexOf("namespace ", StringComparison.Ordinal);
+		if (nsIndex < 0)
+			return code;
+		return code.Insert(nsIndex, string.Concat(usings.Select(u => $"using {u};{newLine}")) + newLine);
+	}
+
+	public static ProjectItem? ComputeProjectItem((AdditionalText additionalText, AnalyzerConfigOptionsProvider optionsProvider) tuple, CancellationToken cancellationToken, HotReloadSessionToken hotReloadSessionToken)
 	{
 		if (cancellationToken.IsCancellationRequested)
 			return null;
 
-		var projectItem = new ProjectItem(tuple.additionalText, tuple.optionsProvider.GetOptions(tuple.additionalText));
+		var projectItem = new ProjectItem(tuple.additionalText, tuple.optionsProvider.GetOptions(tuple.additionalText))
+		{
+			HotReloadSessionToken = hotReloadSessionToken,
+		};
 		return projectItem.Kind == "None" ? null : projectItem;
 	}
 
@@ -55,11 +106,11 @@ static class GeneratorHelpers
 		}
 		try
 		{
-			return new XamlProjectItemForIC(projectItem!, text.ToString());
+			return new XamlProjectItemForIC(projectItem!, text, text.ToString());
 		}
 		catch (Exception e)
 		{
-			return new XamlProjectItemForIC(projectItem!, e);
+			return new XamlProjectItemForIC(projectItem!, text, e);
 		}
 	}
 
@@ -69,14 +120,12 @@ static class GeneratorHelpers
 		var nsmgr = new XmlNamespaceManager(new NameTable());
 		nsmgr.AddNamespace("__f__", XamlParser.MauiUri);
 		nsmgr.AddNamespace("__g__", XamlParser.MauiGlobalUri);
-		if (assemblyCaches.AllowImplicitXmlns)
-		{
-			nsmgr.AddNamespace("", XamlParser.DefaultImplicitUri);
-			foreach (var xmlnsPrefix in assemblyCaches.XmlnsPrefixes)
-				nsmgr.AddNamespace(xmlnsPrefix.Prefix, xmlnsPrefix.XmlNamespace);
-		}
+		nsmgr.AddNamespace("", XamlParser.DefaultImplicitUri);
+		foreach (var xmlnsPrefix in assemblyCaches.XmlnsPrefixes)
+			nsmgr.AddNamespace(xmlnsPrefix.Prefix, xmlnsPrefix.XmlNamespace);
+
 		using var reader = XmlReader.Create(new StringReader(xaml),
-											new XmlReaderSettings { ConformanceLevel = assemblyCaches.AllowImplicitXmlns ? ConformanceLevel.Fragment : ConformanceLevel.Document },
+											new XmlReaderSettings { ConformanceLevel = ConformanceLevel.Fragment },
 											new XmlParserContext(nsmgr.NameTable, nsmgr, null, XmlSpace.None));
 		{
 			while (reader.Read())
@@ -132,7 +181,7 @@ static class GeneratorHelpers
 		}
 		catch (Exception xe)
 		{
-			return new XamlProjectItemForCB(projectItem!, xe);
+			return new XamlProjectItemForCB(projectItem!, text, xe);
 		}
 
 		if (root == null)
@@ -153,7 +202,7 @@ static class GeneratorHelpers
 			nsmgr.AddNamespace(attr.LocalName, attr.Value);
 		}
 
-		return new XamlProjectItemForCB(projectItem, root, nsmgr);
+		return new XamlProjectItemForCB(projectItem, text, root, nsmgr);
 	}
 
 	public static (XmlNode?, XmlNamespaceManager) LoadXmlDocument(SourceText text, AssemblyAttributes assemblyCaches, CancellationToken cancellationToken)
@@ -161,14 +210,12 @@ static class GeneratorHelpers
 		var nsmgr = new XmlNamespaceManager(new NameTable());
 		nsmgr.AddNamespace("__f__", XamlParser.MauiUri);
 		nsmgr.AddNamespace("__g__", XamlParser.MauiGlobalUri);
-		if (assemblyCaches.AllowImplicitXmlns)
-		{
-			nsmgr.AddNamespace("", XamlParser.DefaultImplicitUri);
-			foreach (var xmlnsPrefix in assemblyCaches.XmlnsPrefixes)
-				nsmgr.AddNamespace(xmlnsPrefix.Prefix, xmlnsPrefix.XmlNamespace);
-		}
+		nsmgr.AddNamespace("", XamlParser.DefaultImplicitUri);
+		foreach (var xmlnsPrefix in assemblyCaches.XmlnsPrefixes)
+			nsmgr.AddNamespace(xmlnsPrefix.Prefix, xmlnsPrefix.XmlNamespace);
+
 		using var reader = XmlReader.Create(new StringReader(text.ToString()),
-											new XmlReaderSettings { ConformanceLevel = assemblyCaches.AllowImplicitXmlns ? ConformanceLevel.Fragment : ConformanceLevel.Document },
+											new XmlReaderSettings { ConformanceLevel = ConformanceLevel.Fragment },
 											new XmlParserContext(nsmgr.NameTable, nsmgr, null, XmlSpace.None));
 
 
@@ -200,10 +247,6 @@ static class GeneratorHelpers
 		INamedTypeSymbol? xmlnsPrefixAttribute = compilation.GetTypesByMetadataName(typeof(XmlnsPrefixAttribute).FullName)
 			.FirstOrDefault(t => t.ContainingAssembly.Identity.Name == "Microsoft.Maui.Controls");
 
-		// [assembly: AllowImplicitXmlnsDeclaration]
-		INamedTypeSymbol? allowImplicitXmlnsAttribute = compilation.GetTypesByMetadataName(typeof(Xaml.Internals.AllowImplicitXmlnsDeclarationAttribute).FullName)
-			.FirstOrDefault(t => t.ContainingAssembly.Identity.Name == "Microsoft.Maui.Controls");
-
 		if (xmlnsDefinitonAttribute is null || internalsVisibleToAttribute is null)
 			return AssemblyAttributes.Empty;
 
@@ -211,10 +254,6 @@ static class GeneratorHelpers
 		var xmlnsDefinitions = new List<XmlnsDefinitionAttribute>();
 		var internalsVisible = new List<IAssemblySymbol>();
 		var xmlnsPrefixes = new List<XmlnsPrefixAttribute>();
-		var allowImplicitXmlns = compilation.Assembly.GetAttributes()
-			.Any(a =>
-				   SymbolEqualityComparer.Default.Equals(a.AttributeClass, allowImplicitXmlnsAttribute)
-				&& (a.ConstructorArguments.Length == 0 || a.ConstructorArguments[0].Value is bool b && b));
 		internalsVisible.Add(compilation.Assembly);
 
 		IList<IAssemblySymbol> assemblies = [compilation.Assembly];
@@ -294,7 +333,7 @@ static class GeneratorHelpers
 			}
 		}
 
-		return new AssemblyAttributes(xmlnsDefinitionsList, xmlnsPrefixes, [.. globalGeneratedXmlnsDefinitions.Distinct()], internalsVisible, clrNamespacesForXmlns, allowImplicitXmlns);
+		return new AssemblyAttributes(xmlnsDefinitionsList, xmlnsPrefixes, [.. globalGeneratedXmlnsDefinitions.Distinct()], internalsVisible, clrNamespacesForXmlns);
 	}
 
 	static void ApplyTransforms(XmlNode node, string? targetFramework, XmlNamespaceManager nsmgr)
@@ -385,8 +424,7 @@ static class GeneratorHelpers
 		}
 		catch (Exception e)
 		{
-			var location = xamlItem?.ProjectItem?.RelativePath is not null ? Location.Create(xamlItem.ProjectItem.RelativePath, new TextSpan(), new LinePositionSpan()) : null;
-			reportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, location, e.Message));
+			reportDiagnostic(XamlDiagnosticHelpers.CreateXamlParserDiagnostic(xamlItem?.ProjectItem, xamlItem?.SourceText, e));
 		}
 		return (code, xamlItem, diagnostics);
 	}

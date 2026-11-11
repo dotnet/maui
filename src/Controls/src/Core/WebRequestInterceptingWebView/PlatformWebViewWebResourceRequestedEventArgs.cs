@@ -161,9 +161,9 @@ public class PlatformWebViewWebResourceRequestedEventArgs
 		{
 			foreach (var key in rh.Keys)
 			{
-				if (key is Foundation.NSString keyString)
+				if (key is Foundation.NSString keyString && rh[keyString]?.ToString() is string value)
 				{
-					headers[keyString] = rh[keyString].ToString();
+					headers[keyString] = value;
 				}
 			}
 		}
@@ -290,7 +290,7 @@ public class PlatformWebViewWebResourceRequestedEventArgs
 			? new Dictionary<string, string>(rh, StringComparer.OrdinalIgnoreCase)
 			: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-	static global::Android.Runtime.JavaDictionary<string, string>? ToPlatformHeaders(IReadOnlyDictionary<string, string>? headers, out string contentType)
+	static global::Android.Runtime.JavaDictionary<string, string>? ToPlatformHeaders(IReadOnlyDictionary<string, string>? headers, bool hasContent, out string contentType)
 	{
 		contentType = "application/octet-stream";
 		if (headers?.Count > 0)
@@ -301,6 +301,13 @@ public class PlatformWebViewWebResourceRequestedEventArgs
 				if ("Content-Type".Equals(header.Key, StringComparison.OrdinalIgnoreCase))
 				{
 					contentType = header.Value;
+
+					// For a response with a body, Android WebView writes the mimeType argument as the Content-Type
+					// header and then appends every entry of responseHeaders, so adding it here too sends it twice.
+					if (hasContent)
+					{
+						continue;
+					}
 				}
 
 				dic.Add(header.Key, header.Value);
@@ -315,7 +322,7 @@ public class PlatformWebViewWebResourceRequestedEventArgs
 		// Android requires that we return immediately, even if the data is coming later
 
 		// create and send the response headers
-		var platformHeaders = ToPlatformHeaders(headers, out var contentType);
+		var platformHeaders = ToPlatformHeaders(headers, hasContent: content is not null, out var contentType);
 		Response = new global::Android.Webkit.WebResourceResponse(
 			contentType,
 			"UTF-8",
@@ -333,7 +340,7 @@ public class PlatformWebViewWebResourceRequestedEventArgs
 		var stream = new AsyncStream(contentTask, null);
 
 		// create and send the response headers
-		var platformHeaders = ToPlatformHeaders(headers, out var contentType);
+		var platformHeaders = ToPlatformHeaders(headers, hasContent: true, out var contentType);
 		Response = new global::Android.Webkit.WebResourceResponse(
 			contentType,
 			"UTF-8",

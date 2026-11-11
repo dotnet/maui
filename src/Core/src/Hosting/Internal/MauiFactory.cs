@@ -26,6 +26,9 @@ namespace Microsoft.Maui.Hosting.Internal
 		}
 
 		public object? GetService(Type serviceType)
+			=> GetService(serviceType, this);
+
+		protected object? GetService(Type serviceType, IServiceProvider implementationFactoryServiceProvider)
 		{
 			if (serviceType == null)
 				throw new ArgumentNullException(nameof(serviceType));
@@ -39,7 +42,7 @@ namespace Microsoft.Maui.Hosting.Internal
 					return singletonInstance;
 			}
 
-			var typeInstance = CreateInstance(descriptor);
+			var typeInstance = CreateInstance(descriptor, implementationFactoryServiceProvider);
 			if (descriptor.Lifetime == ServiceLifetime.Singleton)
 			{
 				_singletons[descriptor] = typeInstance;
@@ -47,7 +50,7 @@ namespace Microsoft.Maui.Hosting.Internal
 			return typeInstance;
 		}
 
-		object? CreateInstance(ServiceDescriptor item)
+		static object? CreateInstance(ServiceDescriptor item, IServiceProvider implementationFactoryServiceProvider)
 		{
 			if (item.ImplementationType != null)
 			{
@@ -58,7 +61,7 @@ namespace Microsoft.Maui.Hosting.Internal
 				return item.ImplementationInstance;
 
 			if (item.ImplementationFactory != null)
-				return item.ImplementationFactory(this);
+				return item.ImplementationFactory(implementationFactoryServiceProvider);
 
 			throw new InvalidOperationException($"You need to provide an {nameof(item.ImplementationType)}, an {nameof(item.ImplementationFactory)} or an {nameof(item.ImplementationInstance)}.");
 		}

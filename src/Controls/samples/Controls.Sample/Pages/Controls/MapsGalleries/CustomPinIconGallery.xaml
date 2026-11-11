@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:maps="clr-namespace:Microsoft.Maui.Controls.Maps;assembly=Microsoft.Maui.Controls.Maps"
+             x:Class="Maui.Controls.Sample.Pages.MapsGalleries.CustomPinIconGallery"
+             Title="Custom Pin Icons">
+    <Grid RowDefinitions="Auto,*">
+        <FlexLayout Wrap="Wrap" Padding="10" AlignItems="Center">
+            <Button Text="Add Custom Pins" Clicked="OnAddCustomPinsClicked" Margin="5"/>
+            <Button Text="Add Default Pin" Clicked="OnAddDefaultPinClicked" Margin="5"/>
+            <Button Text="Toggle Icon" Clicked="OnToggleIconClicked" Margin="5"/>
+            <Button Text="Move &amp; Rename" Clicked="OnMoveRenameClicked" Margin="5"/>
+            <Button Text="Clear" Clicked="OnClearClicked" Margin="5"/>
+        </FlexLayout>
+
+        <maps:Map x:Name="CustomPinMap" Grid.Row="1"/>
+    </Grid>
+</ContentPage>

@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var mauiApp = MauiApp.CreateBuilder()
 				.UseMauiApp<ApplicationStub>()
-				.ConfigureMauiHandlers(handlers => handlers.AddHandler<Button, ButtonHandlerStub>())
+				.ConfigureMauiHandlers(handlers => handlers.AddHandler<Button>(static _ => new ButtonHandlerStub()))
 				.Build();
 
 			Assert.NotNull(mauiApp.Services);

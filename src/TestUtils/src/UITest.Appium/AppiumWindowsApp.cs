@@ -58,9 +58,6 @@ namespace UITest.Appium
 
 			var options = new AppiumOptions();
 			SetGeneralAppiumOptions(config, options);
-			var args = config.GetProperty<Dictionary<string, string>>("TestConfigurationArgs");
-			if (args is not null && args.TryGetValue("test", out var testName))
-				options.AddAdditionalAppiumOption("appArguments", AppLaunchArguments.WindowsTestArgument(testName));
 			return options;
 		}
 	}

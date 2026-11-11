@@ -16,9 +16,6 @@ using Android.Content;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
 using ParentView = Microsoft.UI.Xaml.DependencyObject;
-#elif TIZEN
-using PlatformView = Tizen.NUI.BaseComponents.View;
-using ParentView = Tizen.NUI.BaseComponents.View;
 #else
 using PlatformView = System.Object;
 using ParentView = System.Object;

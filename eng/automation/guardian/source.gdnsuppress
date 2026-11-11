@@ -160,6 +160,213 @@
         "default"
       ],
      "createdDate": "2024-02-27 23:34:18Z"
+    },
+    "a32da5932044b7b2266f9c6a8b0043fe0442054e2844c11e596fa6692ab9b22a": {
+      "signature": "a32da5932044b7b2266f9c6a8b0043fe0442054e2844c11e596fa6692ab9b22a",
+      "alternativeSignatures": [],
+      "memberOf": [
+        "default"
+      ],
+      "justification": "PoliCheck 79607 false positive: Jonathan Dick is a contributor's proper name in .github/prompts/contributors.json, not profanity. Retain the contributor attribution as the term guidance requires for proper names.",
+      "createdDate": "2026-10-21 18:19:44Z"
+    },
+    "4720c81e959b7590428b61a95186fa926f59e3da3816b3156e830859fe7b59f5": {
+      "signature": "4720c81e959b7590428b61a95186fa926f59e3da3816b3156e830859fe7b59f5",
+      "alternativeSignatures": [],
+      "memberOf": [
+        "default"
+      ],
+      "justification": "PoliCheck 202278 false positive: the comment in CiScanReconcile.Core.Tests.ps1 describes a test-coverage gap if the parsed-clock guard is removed. The phrase refers to the missing validation, not an abbreviation for profanity; the guidance permits this non-offensive technical context.",
+      "createdDate": "2026-10-21 18:19:44Z"
+    },
+    "cabef1d4c6e914725f13a3499b28699e43f2c705e6b6df72c299e06cbb7999e2": {
+      "signature": "cabef1d4c6e914725f13a3499b28699e43f2c705e6b6df72c299e06cbb7999e2",
+      "alternativeSignatures": [],
+      "memberOf": [
+        "default"
+      ],
+      "justification": "PoliCheck 203588 false positive: Step 1 in ci-status-fix-net11.md uses Orient as a verb for reading project context before investigating CI. It does not name a geographic or sales region; the guidance permits non-geographical usage.",
+      "createdDate": "2026-10-21 18:19:44Z"
+    },
+    "4f616efee66abd8ca1f54c5e94e7b05f01cb6135de2a82acaada565d23d11224": {
+      "signature": "4f616efee66abd8ca1f54c5e94e7b05f01cb6135de2a82acaada565d23d11224",
+      "alternativeSignatures": [],
+      "memberOf": [
+        "default"
+      ],
+      "justification": "PoliCheck 203588 false positive: the Orient heading in ci-status-fix.md introduces reading repository context and instructions. This is a workflow-orientation verb, not a reference to East Asia or a sales region, so the non-geographical term guidance applies.",
+      "createdDate": "2026-10-21 18:19:44Z"
+    },
+    "f6bcb7d7c711c8f878208f304bcf751860208a2bb41ceca8f2a692471cecb691": {
+      "signature": "f6bcb7d7c711c8f878208f304bcf751860208a2bb41ceca8f2a692471cecb691",
+      "alternativeSignatures": [],
+      "memberOf": [
+        "default"
+      ],
+      "justification": "PoliCheck 203588 false positive: Step 1 in leak-fixer.md uses Orient for establishing the SDK and repository context before investigating memory leaks. The heading is not a geographical designation and is permitted by the term guidance.",
+      "createdDate": "2026-10-21 18:19:44Z"
+    },
+    "b64d0e86b80fe31233d65f6c76bee78aeb32b69ca2fe1d2a5f5ae2bf442d4c63": {
+      "signature": "b64d0e86b80fe31233d65f6c76bee78aeb32b69ca2fe1d2a5f5ae2bf442d4c63",
+      "alternativeSignatures": [],
+      "memberOf": [
+        "default"
+      ],
+      "justification": "PoliCheck 79515 false positive: capital P in dependency-flow/SKILL.md describes the uppercase letter in an SDK channel name and contrasts it with lowercase p. This is typographical case guidance, not a capital city; preserve the exact channel spelling.",
+      "createdDate": "2026-10-21 18:19:44Z"
+    },
+    "fffe2d655741360f57525598a89358b3b0645eccb5db4ef0c7fcfd8d357081e6": {
+      "signature": "fffe2d655741360f57525598a89358b3b0645eccb5db4ef0c7fcfd8d357081e6",
+      "alternativeSignatures": [],
+      "memberOf": [
+        "default"
+      ],
+      "justification": "PoliCheck 79618 false positive: Dokdo-Regular.ttf and Dokdo in Controls.Sample/MauiProgram.cs are the bundled font filename and registration alias. Both matches identify a font required by the sample, not islands on a map; preserve resource lookup and rendering.",
+      "createdDate": "2026-10-21 18:19:44Z"
+    },
+    "ab07a742dafe7c43d43fb646c8861f020a662ae3022da0fe728bdaa81a69e21f": {
+      "signature": "ab07a742dafe7c43d43fb646c8861f020a662ae3022da0fe728bdaa81a69e21f",
+      "alternativeSignatures": [],
+      "memberOf": [
+        "default"
+      ],
+      "justification": "PoliCheck 79618 false positive: Controls.Sample.Sandbox/MauiProgram.cs registers the bundled Dokdo-Regular.ttf font with its Dokdo alias. These two font identifiers are needed for sample font resolution and do not label islands on a map.",
+      "createdDate": "2026-10-21 18:19:44Z"
+    },
+    "a37bbe92b433064bd5ad2265d557c47663854de282760523737272f1a81b8a11": {
+      "signature": "a37bbe92b433064bd5ad2265d557c47663854de282760523737272f1a81b8a11",
+      "alternativeSignatures": [],
+      "memberOf": [
+        "default"
+      ],
+      "justification": "PoliCheck 217613 false positive: Windows.Xbox is the exact AnalyticsInfo.VersionInfo.DeviceFamily value matched by DeviceInfo.windows.cs. Changing its case to follow display-brand guidance would break the native device-family comparison; this is not a user-facing brand label.",
+      "createdDate": "2026-10-21 18:19:44Z"
+    },
+    "9c0c5934ac0f03fafd2c5ee0e5d891e1727fb7ab19f8ef601ebccf5f020b35f1": {
+      "signature": "9c0c5934ac0f03fafd2c5ee0e5d891e1727fb7ab19f8ef601ebccf5f020b35f1",
+      "alternativeSignatures": [],
+      "memberOf": [
+        "default"
+      ],
+      "justification": "PoliCheck 203588 false positive: orient in the MediaPicker RotateImage remarks describes physically rotating an image according to its EXIF orientation data. This is the positioning context explicitly permitted by the guidance, not a geographical region.",
+      "createdDate": "2026-10-21 18:19:44Z"
+    },
+    "d116e0b1af48ee92fa042faa1e27b2058b59aef57cf03235485bfa3f14b36c65": {
+      "signature": "d116e0b1af48ee92fa042faa1e27b2058b59aef57cf03235485bfa3f14b36c65",
+      "alternativeSignatures": [],
+      "memberOf": [
+        "default"
+      ],
+      "justification": "PoliCheck 79570 false positive: Binding Country in MapsPage.xaml references the existing MapsViewModel.Country property, not visible label prose. Preserve the binding identifier so address entry still works; the adjacent editable label uses Country/region name.",
+      "createdDate": "2026-10-21 18:19:44Z"
+    },
+    "d2713179a39c65e0611e447ed7230e087825e228d5b099876bee6d1459356e9b": {
+      "signature": "d2713179a39c65e0611e447ed7230e087825e228d5b099876bee6d1459356e9b",
+      "alternativeSignatures": [],
+      "memberOf": [
+        "default"
+      ],
+      "justification": "PoliCheck 79570 false positive: get => country in MapsViewModel.cs reads the backing field of the sample's existing Country property. This is a code identifier participating in the XAML binding, not a country/region label; retain the getter and binding behavior.",
+      "createdDate": "2026-10-21 18:19:44Z"
+    },
+    "a35868ee248be5b6a49ff78ec098f9fd1252be787df92a59fb9a2c287485198f": {
+      "signature": "a35868ee248be5b6a49ff78ec098f9fd1252be787df92a59fb9a2c287485198f",
+      "alternativeSignatures": [],
+      "memberOf": [
+        "default"
+      ],
+      "justification": "PoliCheck 79570 false positive: SetProperty(ref country, value) in MapsViewModel.cs updates the existing Country property's backing field and notifications. The matched identifier is not editable UI prose; preserve the sample's two-way binding behavior.",
+      "createdDate": "2026-10-21 18:19:44Z"
+    },
+    "51c2371476e2b333e4aee9bfa7335c70216bc0938a122af726459cf2ebddf4d9": {
+      "signature": "51c2371476e2b333e4aee9bfa7335c70216bc0938a122af726459cf2ebddf4d9",
+      "alternativeSignatures": [],
+      "memberOf": [
+        "default"
+      ],
+      "justification": "PoliCheck 79570 false positive: CountryName = Country in MapsViewModel.cs assigns the sample's bound property to the public Placemark.CountryName API. Preserve these symbol references and address data flow rather than rewriting identifiers as geographic labels.",
+      "createdDate": "2026-10-21 18:19:44Z"
+    },
+    "f25c3654c00ffc68867d8e8145bcda24f140bcd387ba6eda0ac36284e40d6e2e": {
+      "signature": "f25c3654c00ffc68867d8e8145bcda24f140bcd387ba6eda0ac36284e40d6e2e",
+      "alternativeSignatures": [],
+      "memberOf": [
+        "default"
+      ],
+      "justification": "PoliCheck 79570 false positive: both i.Country matches in TextToSpeechViewModel.cs read the existing public Locale.Country property to format a language and locale-code choice. Keep the API references and locale formatting; these are not editable country/region heading text.",
+      "createdDate": "2026-10-21 18:19:44Z"
+    },
+    "000ce4cb039a8e81ae101eaa8053a480fce4909cc059856d272fea9d3e15e9d4": {
+      "signature": "000ce4cb039a8e81ae101eaa8053a480fce4909cc059856d272fea9d3e15e9d4",
+      "alternativeSignatures": [],
+      "memberOf": [
+        "default"
+      ],
+      "justification": "PoliCheck 79570 false positive: PublicAPI/net/PublicAPI.Shipped.txt records the shipped Microsoft.Maui.Media.Locale.Country getter for the net target. Preserve the exact public member name and analyzer contract; geographic-label guidance does not rename shipped APIs.",
+      "createdDate": "2026-10-21 18:19:44Z"
+    },
+    "31b8fde9ab8412f9418c8ac784a39f6c1c7e047bcab827e24251d054b1e56a40": {
+      "signature": "31b8fde9ab8412f9418c8ac784a39f6c1c7e047bcab827e24251d054b1e56a40",
+      "alternativeSignatures": [],
+      "memberOf": [
+        "default"
+      ],
+      "justification": "PoliCheck 79570 false positive: PublicAPI/net-android/PublicAPI.Shipped.txt records the shipped Locale.Country getter for Android. Retain the identifier so the analyzer baseline continues to describe the existing public API rather than treating it as display prose.",
+      "createdDate": "2026-10-21 18:19:44Z"
+    },
+    "819accb8d6b9b59740194c07ea4ae7dfefa5dd01fe3c047ecb8b089e33ced2e1": {
+      "signature": "819accb8d6b9b59740194c07ea4ae7dfefa5dd01fe3c047ecb8b089e33ced2e1",
+      "alternativeSignatures": [],
+      "memberOf": [
+        "default"
+      ],
+      "justification": "PoliCheck 79570 false positive: PublicAPI/net-ios/PublicAPI.Shipped.txt preserves the shipped Locale.Country getter for iOS. The match is a public API symbol in the compatibility baseline, not a geographic list label, and must stay synchronized with that API.",
+      "createdDate": "2026-10-21 18:19:44Z"
+    },
+    "6959561238552838a03d8dd5952be921b556aa55280c094bb779a470f550b980": {
+      "signature": "6959561238552838a03d8dd5952be921b556aa55280c094bb779a470f550b980",
+      "alternativeSignatures": [],
+      "memberOf": [
+        "default"
+      ],
+      "justification": "PoliCheck 79570 false positive: PublicAPI/net-maccatalyst/PublicAPI.Shipped.txt contains the existing Locale.Country getter for MacCatalyst. Preserve the exact shipped API entry; changing this symbol as prose would invalidate the compatibility record.",
+      "createdDate": "2026-10-21 18:19:44Z"
+    },
+    "69339cf385a63347699cccf424b6daa0c33edd6151ac896bcb368cc3849138d4": {
+      "signature": "69339cf385a63347699cccf424b6daa0c33edd6151ac896bcb368cc3849138d4",
+      "alternativeSignatures": [],
+      "memberOf": [
+        "default"
+      ],
+      "justification": "PoliCheck 79570 false positive: PublicAPI/net-tizen/PublicAPI.Shipped.txt records the public Locale.Country getter for Tizen. This is a shipped member name needed by the API analyzer contract, not a user-facing country/region label.",
+      "createdDate": "2026-10-21 18:19:44Z"
+    },
+    "a1c6c466d575f48fba5298e61fed837fbb70c6bd85636e522c0a8e4a8ecc61fe": {
+      "signature": "a1c6c466d575f48fba5298e61fed837fbb70c6bd85636e522c0a8e4a8ecc61fe",
+      "alternativeSignatures": [],
+      "memberOf": [
+        "default"
+      ],
+      "justification": "PoliCheck 79570 false positive: PublicAPI/net-windows/PublicAPI.Shipped.txt lists the shipped Locale.Country getter for Windows. Keep this precise public symbol and compatibility baseline unchanged; only editable descriptive wording is updated.",
+      "createdDate": "2026-10-21 18:19:44Z"
+    },
+    "52ce41afb9266ec4bd8dc83553a5f786babf27e7f596c570e4f5ce407e1b8170": {
+      "signature": "52ce41afb9266ec4bd8dc83553a5f786babf27e7f596c570e4f5ce407e1b8170",
+      "alternativeSignatures": [],
+      "memberOf": [
+        "default"
+      ],
+      "justification": "PoliCheck 79570 false positive: PublicAPI/netstandard/PublicAPI.Shipped.txt records the existing Locale.Country getter for the .NET Standard contract. Preserve the shipped member spelling and analyzer baseline instead of renaming an API reference as label prose.",
+      "createdDate": "2026-10-21 18:19:44Z"
+    },
+    "59586a46aacb5d6a15efbbfa62810a8471c7b2fc6bb8863d2105ad4ab12f07b7": {
+      "signature": "59586a46aacb5d6a15efbbfa62810a8471c7b2fc6bb8863d2105ad4ab12f07b7",
+      "alternativeSignatures": [],
+      "memberOf": [
+        "default"
+      ],
+      "justification": "PoliCheck 79618 false positive: FontFamily=\"Dokdo\" in Controls.Sample/Pages/Controls/LabelPage.xaml references the font alias registered by MauiProgram.cs. The displayed text is Different Font, not a map label; preserve the alias so the font demonstration renders correctly.",
+      "createdDate": "2026-10-21 18:19:44Z"
     }
   }
 }

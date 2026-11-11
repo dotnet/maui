@@ -43,82 +43,67 @@ dotnet build ./src/Provisioning/Provisioning.csproj -t:ProvisionAppium -p:SkipAp
 - Set `JAVA_HOME` environment variable
 - Install Android API 30 SDK with x86/x64 emulator image
 
-#### Launch directly to a test page
-
-The Android HostApp accepts a `test` string intent extra containing the exact
-issue description (from `IssueAttribute`) or gallery title, matched
-case-insensitively. For example, after installing the HostApp:
-
-```bash
-adb shell am start -S -n com.microsoft.maui.uitests/com.microsoft.maui.uitests.MainActivity --es test '"Direct test launch"'
-```
-
-This creates the requested page as the initial window page without searching or
-tapping through the gallery. Use `-S` to stop the existing app before launching:
-the extra is read when the window is created, not when an already-running activity
-is brought to the foreground. Omit `--es test ...` for normal gallery startup.
-An empty or unrecognized test also opens the gallery; an unrecognized test is
-reported in debug output.
-
 ### iOS/MacCatalyst-Specific
 
 - macOS required
 - Xcode with command-line tools installed
 - iOS Simulator configured
 
-#### Launch directly on iOS
+## Android Shell Handler and Renderer Lanes
 
-iOS and MacCatalyst use the `test` environment variable with the same exact issue
-description or gallery title. After installing the iOS HostApp on a simulator:
+The main Android UI-test stage runs `Shell1` and `Shell2` as separate matrix jobs
+using Shell Handler. The separate `android_ui_tests_shell_renderer` stage runs the
+same two shards as separate matrix jobs using Shell Renderer. Each renderer job
+uses its shard category as the test filter, so the entire Shell suite is not
+repeated in each job. Both stages depend on `build_ui_tests_coreclr` and download
+the same `ui-tests-samples-coreclr` artifact; there is no separate app build or
+MSBuild property for Shell selection.
 
-```bash
-SIMCTL_CHILD_test="Direct test launch" xcrun simctl launch --terminate-running-process <simulator-udid> com.microsoft.maui.uitests
-```
+Android Mono is not supported when targeting .NET 11 or later. Enabling
+`UseMonoRuntime=true` for `net11.0-android` fails with `NETSDK1242`, so there is no
+Android Mono build or test lane on this branch. Mono coverage requires a separate
+.NET 10-targeted app build; the shared templates' `Mono` option does not make a
+.NET 11 Android app compatible with Mono.
 
-For a manually launched MacCatalyst app, set `test` in the app process's environment.
-On Windows, pass the description or gallery title as one `--test=...` command-line
-argument:
+The renderer lane sets `testConfigurationArgs: "ShellRenderer"`. The Android Cake
+runner forwards this through `TEST_CONFIGURATION_ARGS` to Appium, which passes it
+as an activity intent extra on startup and relaunch. `MainActivity` reads the
+setting before creating the window, and the Shell handler factory in
+`MauiProgram.cs` selects the renderer when each Shell is created. Without the
+setting, it selects Shell Handler. The selected implementation is logged to logcat
+under the `MauiUITests` tag.
 
-```powershell
-.\Controls.TestCases.HostApp.exe '--test=Direct test launch'
-```
-
-On all platforms, missing, empty, or unrecognized startup targets open the normal
-gallery. Unknown targets are reported in debug output. A startup target is consumed
-when the initial window is created, so terminate the previous app instance before
-changing it.
-
-### Direct launch in the UI test runner
-
-`_IssuesUITest` and `_GalleryUITest` configure their startup targets automatically
-on Android, iOS, and MacCatalyst.
-Fixture setup no longer searches for and taps the gallery's Go To Test button.
-Resets relaunch the current fixture's target, including fixtures that set
-`ResetAfterEachTest`; gallery subpage buttons are still selected after launch.
-Fixture teardown closes the app rather than launching an unused gallery.
-Tests of normal gallery startup can derive directly from `UITest` instead.
-
-Starting a new test and resetting the app stop with an explicit error if the
-previous app cannot be terminated. OS-command fallback termination succeeds only
-when the command starts, completes within its timeout, and exits with code zero; a failed command
-must not be treated as a successful close.
-
-Android, iOS, and MacCatalyst reuse the driver session and send the current target
-with each app launch. Android forwards the configured device UDID to Appium as
-well, so multiple running emulators do not select the wrong device. Windows uses
-`appArguments`; because WinAppDriver cannot change these capabilities on an
-existing session, changing the startup target recreates that session. Windows
-therefore retains gallery navigation by default until its native timing is
-validated; set `MAUI_UITEST_DIRECT_LAUNCH=true` to opt into direct fixture startup.
-Set it to `false` on any platform to compare the legacy navigation path.
-Do not infer a Windows speedup from eliminating gallery navigation alone.
-
-The startup argument, session reuse, and launch-command unit tests run without
-native UI automation:
+To run the renderer configuration locally with an already-built HostApp:
 
 ```bash
-dotnet test src/TestUtils/tests/UITest.Appium.Tests/UITest.Appium.Tests.csproj
+./build.sh -Script eng/devices/android.cake --target=uitest \
+  --test-filter="TestCategory=Shell" --TEST_CONFIGURATION_ARGS="ShellRenderer"
 ```
+
+The `Shell` umbrella category still selects the complete suite locally. Use
+`TestCategory=Shell1` or `TestCategory=Shell2` to run an individual shard, matching
+the CI jobs.
+
+Omit `--TEST_CONFIGURATION_ARGS` (and unset that environment variable) to run the
+default Shell Handler configuration. Both configurations use the existing Android
+snapshot baselines.
+
+For a known renderer-only failure, call the shared test extension at the start of
+the affected test, including the tracking issue in the reason:
+
+```csharp
+this.IgnoreOnAndroidShellRenderer(
+    "Fails with Android ShellRenderer: https://github.com/dotnet/maui/issues/39461");
+```
+
+This reports the test as ignored only in the Android Shell Renderer configuration.
+The default Handler lane and other platforms continue running the test.
+
+For a known Handler-only failure, use
+`this.IgnoreOnAndroidShellHandler("Reason and tracking issue URL")` instead. This
+skips only the Android Handler configuration, leaving Renderer coverage enabled.
+Both helpers leave other platforms unaffected. Use only the relevant helper for
+each affected test and remove the call when its issue is fixed.
 
 ## Creating a UI Test
 
@@ -449,6 +434,37 @@ For rapid development and debugging, you can run specific tests directly:
    ```bash
    dotnet test src/Controls/tests/TestCases.Mac.Tests/Controls.TestCases.Mac.Tests.csproj --filter "FullyQualifiedName~Issue11311"
    ```
+
+Mac screenshots retain logical window dimensions. The screenshot helper masks
+only the bottom-left and bottom-right rounded-corner fringes before and after
+display-scale normalization. The top and straight edges are not inset or masked.
+Review and regenerate affected visual baselines when
+changing this mask; do not increase comparison tolerances to hide edge differences.
+
+### Multiple Screenshots in One Test
+
+When a test verifies multiple UI states, use `VerifyScreenshotOrSetException`
+with one exception variable for the entire test. This allows later states to be
+captured even when an earlier screenshot comparison fails:
+
+```csharp
+Exception? exception = null;
+
+VerifyScreenshotOrSetException(ref exception, "BeforeChange");
+App.Tap("ChangeButton");
+VerifyScreenshotOrSetException(ref exception, "AfterChange");
+
+if (exception is not null)
+{
+    throw exception;
+}
+```
+
+Keep the final rethrow after any cleanup so the test still fails if a screenshot
+failed. Preserve screenshot names, cropping, tolerances, and other options.
+UI interactions and assertions outside the screenshot helper still fail
+immediately; this pattern does not make an invalid UI state safe to continue.
+Tests capturing only one screenshot can continue to use `VerifyScreenshot`.
 
 ### Full Test Suite: Using Cake Build System
 

@@ -41,6 +41,7 @@ namespace Microsoft.Maui.Controls.Xaml
 	{
 		// caches both Type and MemberInfo keys to their corresponding TypeConverter
 		static readonly ConcurrentDictionary<MemberInfo, TypeConverter> s_converterCache = new();
+		static readonly TypeTypeConverter s_typeTypeConverter = new();
 
 		internal static object ConvertTo(this object value, Type toType, Func<ParameterInfo> pinfoRetriever,
 			IServiceProvider serviceProvider, out Exception exception)
@@ -149,6 +150,15 @@ namespace Microsoft.Maui.Controls.Xaml
 				}
 				try
 				{
+					if (converter == null && toType == typeof(Type))
+					{
+						if (serviceProvider == null)
+						{
+							exception = new XamlParseException("An XAML type resolver is required to convert a type name.");
+							return null;
+						}
+						converter = s_typeTypeConverter;
+					}
 					if (converter is IExtendedTypeConverter xfExtendedTypeConverter)
 						return xfExtendedTypeConverter.ConvertFromInvariantString(str, serviceProvider);
 					if (converter is TypeConverter xfTypeConverter)

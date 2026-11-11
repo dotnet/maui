@@ -89,10 +89,14 @@ namespace Microsoft.Maui.Platform
 		WBrush? _selectedTitleColor;
 		WBrush? _unselectedTitleColor;
 		WBrush? _unselectedForeground;
+		WBrush? _disabledForeground;
 		WBrush? _iconColor;
 		ObservableCollection<NavigationViewItemViewModel>? _menuItemsSource;
 		WIconElement? _icon;
 		WeakReference<object>? _data;
+		string? _badgeText;
+		WBrush? _badgeBackground;
+		WBrush? _badgeForeground;
 
 		public object? Content
 		{
@@ -103,12 +107,18 @@ namespace Microsoft.Maui.Platform
 		public WIconElement? Icon
 		{
 			get { return _icon; }
-			set { this.SetProperty(ref _icon, value, OnPropertyChanged); }
+			set
+			{
+				if (this.SetProperty(ref _icon, value, OnPropertyChanged))
+				{
+					UpdateForeground();
+				}
+			}
 		}
 
 		public WBrush? Foreground
 		{
-			get => IconColor ?? (IsSelected ? SelectedForeground : UnselectedForeground);
+			get => IconColor ?? (!IsEnabled && DisabledForeground is not null ? DisabledForeground : (IsSelected ? SelectedForeground : UnselectedForeground));
 		}
 
 		public WBrush? Background
@@ -150,7 +160,7 @@ namespace Microsoft.Maui.Platform
 
 		public WBrush? TitleColor
 		{
-			get => IsSelected ? SelectedTitleColor : UnselectedTitleColor;
+			get => !IsEnabled && DisabledForeground is not null ? DisabledForeground : (IsSelected ? SelectedTitleColor : UnselectedTitleColor);
 		}
 
 		public WBrush? SelectedTitleColor
@@ -204,6 +214,19 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		public WBrush? DisabledForeground
+		{
+			get => _disabledForeground;
+			set
+			{
+				if (this.SetProperty(ref _disabledForeground, value, OnPropertyChanged))
+				{
+					OnPropertyChanged(nameof(TitleColor));
+					UpdateForeground();
+				}
+			}
+		}
+
 		void UpdateForeground()
 		{
 			OnPropertyChanged(nameof(Foreground));
@@ -242,9 +265,43 @@ namespace Microsoft.Maui.Platform
 				{
 					_isEnabled = value;
 					OnPropertyChanged(nameof(IsEnabled));
+					OnPropertyChanged(nameof(TitleColor));
+					UpdateForeground();
 				}
 			}
 		}
+
+		public string? BadgeText
+		{
+			get => _badgeText;
+			set
+			{
+				if (this.SetProperty(ref _badgeText, value, OnPropertyChanged))
+				{
+					OnPropertyChanged(nameof(BadgeValue));
+					OnPropertyChanged(nameof(BadgeVisibility));
+				}
+			}
+		}
+
+		public WBrush? BadgeBackground
+		{
+			get => _badgeBackground;
+			set { this.SetProperty(ref _badgeBackground, value, OnPropertyChanged); }
+		}
+
+		public WBrush? BadgeForeground
+		{
+			get => _badgeForeground;
+			set { this.SetProperty(ref _badgeForeground, value, OnPropertyChanged); }
+		}
+
+		public bool HasBadge => _badgeText is not null;
+
+		public int BadgeValue => int.TryParse(_badgeText, out var v) && v >= 0 ? v : -1;
+
+		public Microsoft.UI.Xaml.Visibility BadgeVisibility =>
+			HasBadge ? Microsoft.UI.Xaml.Visibility.Visible : Microsoft.UI.Xaml.Visibility.Collapsed;
 		void OnPropertyChanged(string args) =>
 			OnPropertyChanged(new PropertyChangedEventArgs(args));
 

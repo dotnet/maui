@@ -5,9 +5,7 @@ using PlatformView = Microsoft.Maui.Platform.ContentView;
 using PlatformView = Microsoft.Maui.Platform.ContentViewGroup;
 #elif WINDOWS
 using PlatformView = Microsoft.Maui.Platform.ContentPanel;
-#elif TIZEN
-using PlatformView = Microsoft.Maui.Platform.ContentViewGroup;
-#elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID && !TIZEN)
+#elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID)
 using PlatformView = System.Object;
 #endif
 
@@ -23,9 +21,6 @@ namespace Microsoft.Maui.Handlers
 			new PropertyMapper<IContentView, IContentViewHandler>(ViewMapper)
 			{
 				[nameof(IContentView.Content)] = MapContent,
-#if TIZEN
-				[nameof(IContentView.Background)] = MapBackground,
-#endif
 			};
 
 		public static CommandMapper<IContentView, IContentViewHandler> CommandMapper =
@@ -50,14 +45,6 @@ namespace Microsoft.Maui.Handlers
 
 		PlatformView IContentViewHandler.PlatformView => PlatformView;
 
-#if TIZEN
-		/// <summary>
-		/// Maps the abstract <see cref="IView.Background"/> property to the platform-specific implementations.
-		/// </summary>
-		/// <param name="handler">The associated handler.</param>
-		/// <param name="view">The associated <see cref="IContentView"/> instance.</param>
-		public static partial void MapBackground(IContentViewHandler handler, IContentView view);
-#endif
 
 		/// <summary>
 		/// Maps the abstract <see cref="IContentView.Content"/> property to the platform-specific implementations.

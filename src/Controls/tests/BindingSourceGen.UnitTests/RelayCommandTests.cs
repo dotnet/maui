@@ -127,6 +127,57 @@ public class RelayCommandTests
 	}
 
 	[Fact]
+	// https://github.com/dotnet/maui/issues/39657
+	public void DetectsRelayCommandMethodWhoseNameStartsWithOnFollowedByALowercaseLetter()
+	{
+		var source = """
+			using Microsoft.CodeAnalysis;
+			using Microsoft.CodeAnalysis.CSharp;
+			using System.Linq;
+
+			namespace System.Windows.Input
+			{
+				public interface ICommand
+				{
+					event System.EventHandler CanExecuteChanged;
+					bool CanExecute(object parameter);
+					void Execute(object parameter);
+				}
+			}
+
+			namespace CommunityToolkit.Mvvm.Input
+			{
+				[System.AttributeUsage(System.AttributeTargets.Method)]
+				public class RelayCommandAttribute : System.Attribute { }
+			}
+
+			namespace TestApp
+			{
+				public class MyViewModel
+				{
+					[CommunityToolkit.Mvvm.Input.RelayCommand]
+					private void OneOption()
+					{
+					}
+				}
+			}
+			""";
+
+		var compilation = Microsoft.CodeAnalysis.CSharp.CSharpCompilation.Create("test")
+			.AddSyntaxTrees(CSharpSyntaxTree.ParseText(source))
+			.AddReferences(MetadataReference.CreateFromFile(typeof(object).Assembly.Location));
+
+		var myViewModelType = compilation.GetTypeByMetadataName("TestApp.MyViewModel");
+		Assert.NotNull(myViewModelType);
+
+		// "On" is only stripped by CommunityToolkit when it's followed by an uppercase letter, so OneOption generates OneOptionCommand
+		var canInfer = myViewModelType.TryGetRelayCommandPropertyType("OneOptionCommand", compilation, out var commandType);
+
+		Assert.True(canInfer, "Should be able to infer OneOptionCommand from OneOption method with [RelayCommand]");
+		Assert.Equal("System.Windows.Input.ICommand", commandType!.ToDisplayString());
+	}
+
+	[Fact]
 	public void DetectsRelayCommandMethodWithOnPrefixAndAsyncSuffix()
 	{
 		var source = @"

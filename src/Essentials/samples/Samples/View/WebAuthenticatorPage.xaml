@@ -9,18 +9,19 @@
     </views:BasePage.BindingContext>
 
     <Grid RowDefinitions="Auto,*">
-        <Label Text="Quickly and easily authenticate and wait for callbacks on external urls." FontAttributes="Bold" Margin="12" />
+        <Label Text="Test browser authentication and callback delivery with the public reference broker." FontAttributes="Bold" Margin="12" />
 
         <ScrollView Grid.Row="1">
             <StackLayout Padding="12,0,12,12" Spacing="6">
 
-                <Button Text="Microsoft" Command="{Binding MicrosoftCommand}" BackgroundColor="#00A4EF" TextColor="White" />
-                <Button Text="Google" Command="{Binding GoogleCommand}" BackgroundColor="#d34836" TextColor="White" />
-                <Button Text="Facebook" Command="{Binding FacebookCommand}" BackgroundColor="#3b5998" TextColor="White" />
-                <Button Text="Apple" Command="{Binding AppleCommand}" BackgroundColor="Black" TextColor="White" />
+                <Button Text="Microsoft" Command="{Binding MicrosoftCommand}" IsEnabled="{Binding IsNotBusy}" BackgroundColor="#00A4EF" TextColor="White" />
+                <Button Text="Google" Command="{Binding GoogleCommand}" IsEnabled="{Binding IsNotBusy}" BackgroundColor="#d34836" TextColor="White" />
+                <Button Text="Facebook" Command="{Binding FacebookCommand}" IsEnabled="{Binding IsNotBusy}" BackgroundColor="#3b5998" TextColor="White" />
+                <Button Text="Apple" Command="{Binding AppleCommand}" IsEnabled="{Binding IsNotBusy}" BackgroundColor="Black" TextColor="White" />
+                <Button Text="Cancel authentication" Command="{Binding CancelCommand}" IsVisible="{Binding IsBusy}" />
 
-                <Label Text="Auth Token:" FontAttributes="Bold" Margin="12,12,12,0" />
-                <Label Text="{Binding AuthToken}" TextColor="Red" FontAttributes="Italic" />
+                <Label Text="Status:" FontAttributes="Bold" Margin="12,12,12,0" />
+                <Label Text="{Binding AuthenticationStatus}" FontAttributes="Italic" />
 
             </StackLayout>
         </ScrollView>

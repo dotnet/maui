@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		Task<Page> PopModalPlatformAsync(bool animated)
+		Task<Page> PopModalPlatformCoreAsync(bool animated)
 		{
 			var tcs = new TaskCompletionSource<Page>();
 			var poppedPage = CurrentPlatformModalPage;
@@ -67,7 +67,7 @@ namespace Microsoft.Maui.Controls.Platform
 			return tcs.Task;
 		}
 
-		Task PushModalPlatformAsync(Page modal, bool animated)
+		Task PushModalPlatformCoreAsync(Page modal, bool animated)
 		{
 			_ = modal ?? throw new ArgumentNullException(nameof(modal));
 
@@ -223,6 +223,16 @@ namespace Microsoft.Maui.Controls.Platform
 					}
 
 					var platform = newPage.ToPlatform();
+
+					if (popping &&
+						newPage is Shell shell &&
+						shell.Navigation.ModalStack.Count == 0 &&
+						shell.GetCurrentShellPage() is Page shellPage)
+					{
+						// A Shell item switch under the modal can reset its retained toolbar before it is shown again.
+						((IShellController)shell).AppearanceChanged(shellPage, false);
+					}
+
 					_waitingForIncomingPage = platform.OnLoaded(() => completedCallback?.Invoke());
 					Container.AddPage(windowManager.RootView);
 				}

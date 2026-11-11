@@ -23,11 +23,60 @@ The below parameters can be used with the `dotnet cake` command in the root of y
 
 > **Note:** For provisioning .NET SDK and workloads, prefer using `./build.sh -restore` (or `./build.cmd -restore` on Windows) instead of Cake. The Cake targets below are utility commands.
 
+#### Apple builds on .NET 11
+
+The `net11.0` branch uses the Apple 27.0 workload and requires Xcode 27.
+The managed and native iOS deployment minimum is 15.0; the Mac Catalyst
+minimum remains 17.0. The Apple workload manifests also require the .NET 10
+26.5.10322 compatibility SDK packs, which are pinned separately from the
+.NET 11 packs.
+
+The newer .NET 11 SDK also bundles .NET 10 runtime manifests requiring 10.0.15
+packs that are not yet on the public feeds. Provisioning pins only the .NET 10
+Mono/Emscripten manifests to `11.0.100-rtm.26480.113` (public 10.0.12 packs) and
+removes the bundled .NET 10 manifests before installing them. Integration tests
+use the same 10.0.12 framework, reference, linker and compiler packs through
+`src/Templates/TemplateTestExtraTargets.targets`. Remove both compatibility
+overrides together once all required 10.0.15 packs are publicly available;
+the current .NET 11 and Apple SDK pins are unchanged.
+
+CI compiles Apple frameworks, apps and packages on the GoldenGate Aces image
+until standard hosted images provide Xcode 27. Prebuilt iOS and Mac Catalyst
+UI-test apps execute on `AcesShared` / `ACES_VM_SharedPool_Tahoe`, because the
+GoldenGate Appium execution environment has not been validated. iOS UI tests
+use Xcode 26.5. Both public and internal Mac Catalyst pool defaults use Tahoe
+rather than the hosted macOS 14 image; the pool parameters remain
+overridable for image validation. These execution images do not determine the
+app's build SDK. Simulator runtime provisioning and its bounded recovery
+remain enabled.
+
+Normal builds validate the Xcode version rather than bypassing an SDK mismatch.
+To use a particular installed Xcode without changing the global selection,
+set `DEVELOPER_DIR` for the build command:
+
+```bash
+DEVELOPER_DIR=/Applications/Xcode_27.app/Contents/Developer ./build.sh -restore -build
+```
+
+#### Tizen backends on .NET 11
+
+Starting with .NET 11, this repository no longer includes a Tizen platform implementation or
+builds and packages Tizen target frameworks. Tizen backends must supply their own native
+dependencies, handlers, lifecycle integration, and resource and manifest processing outside
+this repository.
+
+Platform-neutral compatibility APIs remain available for external backends, including
+`DevicePlatform.Tizen`, the legacy `Device.Tizen` constant, `OnPlatformExtension.Tizen`,
+`PlatformConfiguration.Tizen`, and the managed `TizenSpecific` attached properties.
+External backends can use the [platform-neutral handler contracts](design/ExternalPlatformBackends.md)
+and register their platform folders with `MauiPlatformSpecificFolder`; the built-in
+`Platforms/Tizen` registration and `IncludeTizenTargetFrameworks` build switch have been removed.
+
 #### PublicAPI Management
 `--target=publicapi`
 - Clears and regenerates PublicAPI.Unshipped.txt files across all MAUI projects (Core, Controls, Essentials, Graphics)
 - Use this when you've added new public APIs and are getting build errors about missing API declarations
-- Automatically skips Windows-specific files when not running on Windows, and always skips Tizen files
+- Automatically skips Windows-specific files when not running on Windows
 
 ```bash
 dotnet cake --target=publicapi
@@ -54,6 +103,14 @@ dotnet cake --target=VS --workloads=global --android --ios
 To build and run Blazor Desktop samples, check out the [Blazor Desktop](https://github.com/dotnet/maui/wiki/Blazor-Desktop) wiki topic.
 
 # Advanced Scenarios
+
+### Public CI Apple toolchains
+
+The macOS template `Build` category uses separate toolchains without removing
+coverage. Previous-framework (.NET 10) cases run on the hosted `macOS-26` image
+with Xcode 26.5, matching their Apple compatibility SDK. The complementary cases
+retain the main branch's GoldenGate/Xcode 27 compilation pool. Compound test
+filters use single-quoted arguments in the shared PowerShell runner.
 
 ### Compile using a local `.dotnet\dotnet` via `build.*` scripts on the root folder 
 
@@ -224,6 +281,29 @@ The harness regression tests do not require MAUI workloads or an emulator:
 dotnet test src/TestUtils/src/Microsoft.Maui.IntegrationTests --filter "FullyQualifiedName~ToolRunnerTests|FullyQualifiedName~BuildWarningsUtilitiesTests"
 ```
 
+## Handler Initialization Attribution
+
+`Microsoft.Maui` contains opt-in instrumentation that attributes handler initialization time
+(`ElementHandler.SetVirtualView`, `PropertyMapper.UpdateProperties`/`UpdateProperty`) using
+`System.Diagnostics.Activity`. It is **compile-time** opt-in: it is only compiled when the
+`MauiEnableHandlerInstrumentation` MSBuild property is set to `true`, which defines the
+`HANDLER_INSTRUMENTATION` constant. A default build compiles none of it, so the handler/mapper hot
+paths are unchanged.
+
+```bash
+# Build Core (and anything referencing it) with the instrumentation compiled in
+dotnet build src/Core/src/Core.csproj -p:MauiEnableHandlerInstrumentation=true
+
+# Build and run the Core unit tests with the instrumented code path (also run in CI)
+dotnet cake --target=dotnet-test-handler-instrumentation
+```
+
+The spans are emitted on the same `ActivitySource` name/version as the rest of MAUI's diagnostics
+(`Microsoft.Maui`, `1.0.0`, see `DiagnosticsIdentity`), so a single `ActivityListener` subscription
+observes handler, mapper, and layout spans. Emitted operations: `SetVirtualView`,
+`CreatePlatformElement`, `AssignHandler`, `ConnectHandler`, `ResolveMapper`, `UpdateProperties`, and
+`MapProperty` (tagged with `element.type`, `handler.type`, and, for `MapProperty`, `mapper.property`).
+
 ## Running Device Tests on Helix
 
 .NET MAUI now supports running device tests on [.NET Engineering Services Helix](https://helix.dot.net) using XHarness. Helix provides cloud-based device testing infrastructure that enables running tests across multiple platforms and devices in parallel.
@@ -243,11 +323,14 @@ The device test projects include:
 
 ### Available Helix Queues
 
-Check available queues at [helix.dot.net](https://helix.dot.net). The current configuration uses:
+Check available queues at [helix.dot.net](https://helix.dot.net). The public (default) configuration uses:
 
-- **iOS**: `osx.15.arm64.Open`
-- **Mac Catalyst**: `osx.15.arm64.Open`  
+- **iOS**: `osx.15.arm64.maui.open`, `osx.26.arm64.open`
+- **Mac Catalyst**: `osx.15.arm64.maui.open`, `osx.26.arm64.open`
 - **Android**: `ubuntu.2204.amd64.android.33.open`
+- **Windows**: `windows.11.amd64.client.open`
+
+Internal runs (`HelixInternal=True`) use `osx.15.arm64.iphone.maui` for iOS and Mac Catalyst, and the non-`.open` Android and Windows queues instead.
 
 ### Running Device Tests Locally
 
@@ -348,7 +431,7 @@ The Helix configuration is defined in `eng/helix_xharness.proj` and includes:
 ### CI Integration
 
 The device tests are integrated into the CI pipeline via:
-- `eng/pipelines/common/stage-device-tests.yml` - Pipeline template
+- `eng/pipelines/arcade/stage-device-tests.yml` - Pipeline template
 - `eng/test-configuration.json` - Test retry configuration
 - Automatic execution on PR builds for qualifying changes
 

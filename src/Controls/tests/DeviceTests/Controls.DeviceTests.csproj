@@ -23,9 +23,11 @@
     <ApplicationTitle>Controls Tests</ApplicationTitle>
     <ApplicationId>com.microsoft.maui.controls.devicetests</ApplicationId>
     <ApplicationVersion>1</ApplicationVersion>
+    <MauiAndroidSystemBarsUseMauiChrome Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android' and '$(MauiAndroidSystemBarsUseMauiChrome)' == ''">true</MauiAndroidSystemBarsUseMauiChrome>
   </PropertyGroup>
 
   <ItemGroup>
+    <MauiFont Include="..\..\..\Core\tests\DeviceTests\Resources\Fonts\dokdo_regular.ttf" Link="Resources\Fonts\dokdo_regular.ttf" Condition="$(TargetFramework.Contains('-windows'))" />
     <MauiImage Include="Resources\Images\*" />
     <MauiImage Include="Resources\Images\white.png" Link="Resources\Images\white_tab.png"  BaseSize="23,23" />
     <MauiImage Remove="Resources\Images\red-embedded.png" />
@@ -40,7 +42,7 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">24.0</SupportedOSPlatformVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -54,6 +56,8 @@
     <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core.csproj" />
     <ProjectReference Include="..\..\..\Controls\Maps\src\Controls.Maps.csproj" />
     <ProjectReference Include="..\..\..\Essentials\src\Essentials.csproj" />
+    <ProjectReference Include="..\..\..\Core\maps\src\Maps.csproj" />
+    <ProjectReference Include="..\..\Maps\src\Controls.Maps.csproj" />
   </ItemGroup>
 
   <!-- include/exclude the *.<platform>.cs files -->
@@ -76,5 +80,10 @@
   </ItemGroup>
 
   <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
+
+  <ItemGroup>
+    <!-- Keep this reproduction on the pinned SourceGen path, even if the project default changes. -->
+    <MauiXaml Update="Xaml\Maui34499ItemListView.xaml" Inflator="SourceGen" />
+  </ItemGroup>
 
 </Project>

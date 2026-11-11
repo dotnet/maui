@@ -9,7 +9,9 @@ namespace Microsoft.Maui.Controls.StyleSheets.UnitTests
 {
 	using StackLayout = Microsoft.Maui.Controls.Compatibility.StackLayout;
 
-
+	// All CSS-related tests share this collection to prevent parallel execution,
+	// since CssDisabledTests modifies global AppContext state
+	[Collection("StyleSheet")]
 	public class StyleTests : BaseTestFixture
 	{
 		public StyleTests()
@@ -232,5 +234,120 @@ namespace Microsoft.Maui.Controls.StyleSheets.UnitTests
 			Assert.Equal(0.25, ve.ScaleY);
 		}
 
+		[Theory]
+		[InlineData("en-US")]
+		[InlineData("de-DE")]
+		[InlineData("fr-FR")]
+		public void TransformScaleWithSingleValueScalesBothAxes(string culture)
+		{
+			CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo(culture);
+
+			var styleString = @"transform: scale(2.5);";
+			var style = Style.Parse(new CssReader(new StringReader(styleString)), '}');
+			Assert.NotNull(style);
+
+			var ve = new VisualElement();
+			style.Apply(ve);
+
+			Assert.Equal(2.5, ve.ScaleX);
+			Assert.Equal(2.5, ve.ScaleY);
+		}
+
+		[Theory]
+		[InlineData("en-US")]
+		[InlineData("de-DE")]
+		[InlineData("fr-FR")]
+		public void TransformTranslateWithSingleValueTranslatesXOnly(string culture)
+		{
+			CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo(culture);
+
+			var styleString = @"transform: translate(10.5);";
+			var style = Style.Parse(new CssReader(new StringReader(styleString)), '}');
+			Assert.NotNull(style);
+
+			var ve = new VisualElement();
+			style.Apply(ve);
+
+			Assert.Equal(10.5, ve.TranslationX);
+			Assert.Equal(0, ve.TranslationY);
+		}
+
+		[Fact]
+		public void TransformScaleAndTranslateWithTwoValues()
+		{
+			var styleString = @"transform: scale(2,3) translate(10,20);";
+			var style = Style.Parse(new CssReader(new StringReader(styleString)), '}');
+			Assert.NotNull(style);
+
+			var ve = new VisualElement();
+			style.Apply(ve);
+
+			Assert.Equal(2, ve.ScaleX);
+			Assert.Equal(3, ve.ScaleY);
+			Assert.Equal(10, ve.TranslationX);
+			Assert.Equal(20, ve.TranslationY);
+		}
+
+	}
+
+	// All CSS-related tests share this collection to prevent parallel execution,
+	// since CssDisabledTests modifies global AppContext state
+	[Collection("StyleSheet")]
+	public class CssDisabledTests : BaseTestFixture
+	{
+		const string CssSwitchName = "Microsoft.Maui.RuntimeFeature.IsCssEnabled";
+		readonly bool _originalCssEnabled;
+
+		public CssDisabledTests()
+		{
+			// Save original value
+			AppContext.TryGetSwitch(CssSwitchName, out _originalCssEnabled);
+
+			// Disable CSS for these tests
+			AppContext.SetSwitch(CssSwitchName, false);
+			ApplicationExtensions.CreateAndSetMockApplication();
+		}
+
+		protected override void Dispose(bool disposing)
+		{
+			if (disposing)
+			{
+				// Restore original CSS setting
+				AppContext.SetSwitch(CssSwitchName, _originalCssEnabled);
+				Application.ClearCurrent();
+			}
+
+			base.Dispose(disposing);
+		}
+
+		[Fact]
+		public void StyleParseThrowsWhenCssDisabled()
+		{
+			var styleString = @"background-color: #ff0000;";
+			Assert.Throws<NotSupportedException>(() => 
+				Style.Parse(new CssReader(new StringReader(styleString)), '}'));
+		}
+
+		[Fact]
+		public void SettingStyleClassDoesNotThrowWhenCssDisabled()
+		{
+			// This simulates what happens in the test host app when CSS is disabled
+			// Setting StyleClass should not throw even when CSS is disabled
+			var label = new Label();
+
+			// This should NOT throw - the app should work even when CSS is disabled
+			// and no CSS stylesheets are actually used
+			label.StyleClass = new[] { "myclass" };
+		}
+
+		[Fact]
+		public void GetPropertyThrowsWhenCssDisabled()
+		{
+			// When CSS is disabled, GetProperty should throw because CSS operations are not supported
+			var ve = new VisualElement();
+			var stylable = (IStylable)ve;
+
+			Assert.Throws<NotSupportedException>(() => stylable.GetProperty("background-color", false));
+		}
 	}
 }

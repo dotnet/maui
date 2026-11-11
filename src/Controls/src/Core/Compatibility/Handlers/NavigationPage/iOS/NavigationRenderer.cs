@@ -121,7 +121,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			get { return this; }
 		}
 
-		//TODO: this was deprecated in iOS8.0 and is not called in 9.0+
+#pragma warning disable CS0809 // Obsolete override provides migration guidance beyond UIKit's platform obsoletion.
+		[Obsolete("NavigationRenderer.DidRotate is obsolete and will be removed in .NET 12. Use ViewWillTransitionToSize for size-transition work and ViewDidLayoutSubviews for final layout updates.")]
 		[System.Runtime.Versioning.UnsupportedOSPlatform("ios8.0")]
 		[System.Runtime.Versioning.UnsupportedOSPlatform("tvos")]
 		public override void DidRotate(UIInterfaceOrientation fromInterfaceOrientation)
@@ -133,6 +134,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var parentingViewController = GetParentingViewController();
 			parentingViewController?.UpdateLeftBarButtonItem();
 		}
+#pragma warning restore CS0809
 
 		public Task<bool> PopToRootAsync(Page page, bool animated = true)
 		{
@@ -625,7 +627,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				UpdateUseLargeTitles();
 			}
-			else if (e.PropertyName == NavigationPage.BackButtonTitleProperty.PropertyName || e.PropertyName == NavigationPage.TitleProperty.PropertyName)
+			else if (e.PropertyName == NavigationPage.BackButtonTitleProperty.PropertyName || e.PropertyName == NavigationPage.TitleProperty.PropertyName || e.PropertyName == NavigationPage.BackButtonAccessibilityLabelProperty.PropertyName)
 			{
 				var pack = (ParentingViewController)TopViewController;
 				pack?.UpdateTitleArea(pack.Child);
@@ -831,7 +833,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (t.Result)
 					return;
 
-				if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+				if (!_disposed && (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26)))
 				{
 					// Only dispose if the controller was actually removed from the navigation stack.
 					// On iOS 26, interrupted transitions and subsequent navigations can complete
@@ -841,7 +843,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 				else
 				{
-					// because we skip the normal pop process we need to dispose ourselves
+					// A removed controller still needs cleanup after the renderer is disposed.
 					controller?.Dispose();
 				}
 			}, TaskScheduler.FromCurrentSynchronizationContext());
@@ -1715,7 +1717,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				else if (e.PropertyName == NavigationPage.TitleIconImageSourceProperty.PropertyName ||
 					 e.PropertyName == NavigationPage.TitleViewProperty.PropertyName)
 					UpdateTitleArea(Child);
-				else if (e.PropertyName == NavigationPage.BackButtonTitleProperty.PropertyName)
+				else if (e.PropertyName == NavigationPage.BackButtonTitleProperty.PropertyName || e.PropertyName == NavigationPage.BackButtonAccessibilityLabelProperty.PropertyName)
 					UpdateBackButtonTitle(Child);
 				else if (e.PropertyName == NavigationPage.IconColorProperty.PropertyName)
 					UpdateIconColor();
@@ -1775,15 +1777,16 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				var rect = RectangleF.Empty;
 				var size = rect.Size;
 
-				UIGraphics.BeginImageContext(size);
-				var context = UIGraphics.GetCurrentContext();
-				context?.SetFillColor(1, 1, 1, 0);
-				context?.FillRect(rect);
-
-				var empty = UIGraphics.GetImageFromCurrentImageContext();
-				context?.Dispose();
-
-				return empty;
+				// UIGraphicsImageRenderer (iOS 10+) replaces the deprecated
+				// UIGraphics.BeginImageContext/GetImageFromCurrentImageContext APIs,
+				// which are unsupported on iOS 17.0+.
+				using var renderer = new UIGraphicsImageRenderer(size);
+				return renderer.CreateImage((UIGraphicsImageRendererContext rendererContext) =>
+				{
+					var context = rendererContext.CGContext;
+					context.SetFillColor(1, 1, 1, 0);
+					context.FillRect(rect);
+				});
 			}
 
 			/// <summary>
@@ -1866,18 +1869,30 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			public bool NeedsTitleViewContainer(Page page) => NavigationPage.GetTitleIconImageSource(page) != null || NavigationPage.GetTitleView(page) != null;
 
-			internal void UpdateBackButtonTitle(Page page) => UpdateBackButtonTitle(page.Title, NavigationPage.GetBackButtonTitle(page));
+			internal void UpdateBackButtonTitle(Page page) => UpdateBackButtonTitle(page.Title, NavigationPage.GetBackButtonTitle(page), NavigationPage.GetBackButtonAccessibilityLabel(page));
 
-			internal void UpdateBackButtonTitle(string title, string backButtonTitle)
+			internal void UpdateBackButtonTitle(string title, string backButtonTitle, string backButtonAccessibilityLabel = null)
 			{
 				if (!string.IsNullOrWhiteSpace(title))
+				{
 					NavigationItem.Title = title;
+				}
 
-				if (backButtonTitle != null)
+				if (backButtonTitle is not null || !string.IsNullOrEmpty(backButtonAccessibilityLabel))
+				{
 					// adding a custom event handler to UIBarButtonItem for navigating back seems to be ignored.
-					NavigationItem.BackBarButtonItem = new UIBarButtonItem { Title = backButtonTitle, Style = UIBarButtonItemStyle.Plain };
+					var barButtonItem = new UIBarButtonItem { Style = UIBarButtonItemStyle.Plain };
+					barButtonItem.Title = backButtonTitle ?? title;
+					if (!string.IsNullOrEmpty(backButtonAccessibilityLabel))
+					{
+						barButtonItem.AccessibilityLabel = backButtonAccessibilityLabel;
+					}
+					NavigationItem.BackBarButtonItem = barButtonItem;
+				}
 				else
+				{
 					NavigationItem.BackBarButtonItem = null;
+				}
 			}
 
 			internal void UpdateTitleArea(Page page)
@@ -1897,11 +1912,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (!(OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsMacCatalystVersionAtLeast(11)) && !isBackButtonTextSet)
 					backButtonText = "";
 
+				string backButtonAccessibilityLabel = NavigationPage.GetBackButtonAccessibilityLabel(page);
+
 				_navigation.TryGetTarget(out NavigationRenderer n);
 
 				// First page and we have a flyout detail to contend with
 				UpdateLeftBarButtonItem();
-				UpdateBackButtonTitle(page.Title ?? n?.NavPage.Title, backButtonText);
+				UpdateBackButtonTitle(page.Title ?? n?.NavPage.Title, backButtonText, backButtonAccessibilityLabel);
 
 				//var hadTitleView = NavigationItem.TitleView != null;
 				ClearTitleViewContainer();
@@ -1932,7 +1949,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			/// <summary>
 			/// Creates a Container with the appropriate configuration for the current iOS version.
-			/// For iOS 26+, uses autoresizing masks and sets frame from navigation bar to prevent layout issues.
+			/// For iOS 26+, uses autoresizing masks and the navigation bar width to prevent layout issues.
 			/// </summary>
 			Container CreateTitleViewContainer(View titleView, UINavigationBar navigationBar)
 			{
@@ -1953,7 +1970,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			void UpdateIconColor()
 			{
-				if (_navigation.TryGetTarget(out NavigationRenderer navigationRenderer))
+				if (_navigation.TryGetTarget(out NavigationRenderer navigationRenderer) && !navigationRenderer._disposed)
 					navigationRenderer.UpdateBarTextColor();
 			}
 
@@ -2168,7 +2185,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					primaries.Reverse();
 				}
 
-				if (secondaries is not null && secondaries.Count > 0)
+				// UIBarButtonItem(UIImage, UIMenu) is only available on iOS/MacCatalyst 14.0+.
+				if (secondaries is not null && secondaries.Count > 0 &&
+					(OperatingSystem.IsIOSVersionAtLeast(14) || OperatingSystem.IsMacCatalystVersionAtLeast(14)))
 				{
 					UIImage secondaryIcon = null;
 					if (_navigation.TryGetTarget(out NavigationRenderer navRenderer))
@@ -2294,6 +2313,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			return (Current.Handler as IPlatformViewHandler)?.ViewController;
 		}
+
+#if !MACCATALYST
+		public override UIViewController ChildViewControllerForStatusBarStyle() =>
+			(Current.Handler as IPlatformViewHandler)?.ViewController;
+#endif
 
 		public override UIViewController ChildViewControllerForHomeIndicatorAutoHidden =>
 			ChildViewControllerForStatusBarHidden();
@@ -2446,16 +2470,16 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 
 			/// <summary>
-			/// Creates a Container with an explicitly set frame from the navigation bar.
+			/// Creates a Container with an explicitly set width from the navigation bar.
 			/// Used on iOS 26+ to ensure proper sizing when using autoresizing masks.
 			/// </summary>
 			/// <param name="view">The MAUI view to display in the title</param>
 			/// <param name="bar">The navigation bar</param>
-			/// <param name="navigationBarFrame">The navigation bar frame to use for sizing</param>
+			/// <param name="navigationBarFrame">The navigation bar frame to use for width and tracking bar layout changes</param>
 			internal Container(View view, UINavigationBar bar, CGRect navigationBarFrame) : base(CGRect.Empty)
 			{
-				// Set frame to match navigation bar dimensions, starting at origin (0,0)
-				Frame = new CGRect(0, 0, navigationBarFrame.Width, navigationBarFrame.Height);
+				// The bar can be taller than UIKit's title area; only use it for the initial width.
+				Frame = new CGRect(0, 0, navigationBarFrame.Width, ToolbarHeight);
 				InitializeContainer(view, bar, navigationBarFrame.Height);
 			}
 
@@ -2547,16 +2571,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				get
 				{
-					// For iOS 26+, use the actual navigation bar height if available
-					if (_navigationBarHeight.HasValue)
-						return _navigationBarHeight.Value;
-
 					if (Superview?.Bounds.Height > 0)
 						return Superview.Bounds.Height;
 
 					// Fallback to device-specific defaults
-					// Note: iOS 26+ uses taller navigation bars, but this fallback
-					// should rarely be hit as we prefer using the actual navigation bar frame
 					return (DeviceInfo.Idiom == DeviceIdiom.Phone && DeviceDisplay.MainDisplayInfo.Orientation.IsLandscape()) ? 32 : 44;
 				}
 			}
@@ -2645,7 +2663,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					owner is ParentingViewController controller &&
 					controller.NavigationItem.TitleView == this)
 				{
-					// Compare the sizing height, not Frame.Height, which can exclude title margins.
+					// Track bar height changes independently of the title area and its margins.
 					controller.UpdateTitleArea(controller.Child);
 					return;
 				}

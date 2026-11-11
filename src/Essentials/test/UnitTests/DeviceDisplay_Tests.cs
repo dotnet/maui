@@ -167,6 +167,31 @@ namespace Tests
 		}
 
 		[Fact]
+		public void Null_MainDisplayInfoChanged_Does_Not_Start_Or_Stop_Listeners()
+		{
+			var display = new MyDisplay();
+
+			display.MainDisplayInfoChanged += null;
+			display.MainDisplayInfoChanged -= null;
+			Assert.Equal(0, display.StartedCount);
+			Assert.Equal(0, display.StoppedCount);
+
+			display.MainDisplayInfoChanged += OnChanged;
+			display.MainDisplayInfoChanged += null;
+			display.MainDisplayInfoChanged -= null;
+			Assert.Equal(1, display.StartedCount);
+			Assert.Equal(0, display.StoppedCount);
+
+			display.MainDisplayInfoChanged -= OnChanged;
+			Assert.Equal(1, display.StartedCount);
+			Assert.Equal(1, display.StoppedCount);
+
+			void OnChanged(object sender, DisplayInfoChangedEventArgs e)
+			{
+			}
+		}
+
+		[Fact]
 		public void Adding_Second_MainDisplayInfoChanged_Invokes_Correct_Members()
 		{
 			var onChangedInvokeCount = 0;

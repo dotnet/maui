@@ -151,6 +151,182 @@ static class SetPropertyHelpers
 		writer.WriteLine($"{parentVar.ValueAccessor}.Add({getNodeValue(node, context.Compilation.ObjectType).ValueAccessor});");
 	}
 
+	/// <summary>
+	/// Adds a lazy resource to the ResourceDictionary using AddFactory.
+	/// Creates the resource on demand using a lambda, or a stable local function when replacing an entry.
+	/// </summary>
+	public static void AddLazyResourceToResourceDictionary(IndentedTextWriter writer, ILocalValue parentVar, ElementNode node, SourceGenContext context, bool useLocalFactory = false, string? replacementFactoryName = null)
+	{
+		// Nested resources need the same metadata-update-safe factory form as the outer addition.
+		for (SourceGenContext? enclosingContext = context; enclosingContext != null; enclosingContext = enclosingContext.ParentContext)
+			useLocalFactory |= enclosingContext.UseLocalResourceFactories;
+
+		// Get the type of the resource
+		if (!node.XmlType.TryResolveTypeSymbol(null, context.Compilation, context.XmlnsCache, context.TypeCache, out var type) || type is null)
+			return;
+
+		// Determine if this is an implicit style
+		bool hasKey = node.Properties.TryGetValue(XmlName.xKey, out var keyNode);
+		bool isImplicitStyle = !hasKey && node.XmlType.Name == "Style";
+
+		// Validate x:Key if present (same validation as CanAddToResourceDictionary)
+		string? key = null;
+		if (hasKey)
+		{
+			if (keyNode is not ValueNode vKeyNode || vKeyNode.Value is not string keyStr)
+			{
+				context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, LocationCreate(context.ProjectItem.RelativePath!, (IXmlLineInfo)keyNode!, ""), "x:Key must be a string literal"));
+				return;
+			}
+			key = keyStr;
+
+			// Check for duplicate keys
+			if (!context.KeysInRD.TryGetValue(parentVar, out var keysInUse))
+			{
+				context.KeysInRD[parentVar] = keysInUse = [];
+			}
+			if (keysInUse.Contains(key))
+			{
+				var location = LocationCreate(context.ProjectItem.RelativePath!, (IXmlLineInfo)keyNode, key);
+				context.ReportDiagnostic(Diagnostic.Create(Descriptors.DuplicateKeyInRD, location, key));
+				return;
+			}
+			keysInUse.Add(key);
+		}
+
+		// Get the x:Shared attribute (default is true)
+		bool shared = true;
+		if (node.Properties.TryGetValue(XmlName.xShared, out var sharedNode))
+		{
+			if (sharedNode is ValueNode vn && vn.Value is string sharedStr)
+			{
+				shared = !sharedStr.Equals("false", StringComparison.OrdinalIgnoreCase);
+			}
+		}
+
+		string resourceKeyExpression;
+		if (isImplicitStyle)
+		{
+			// Get TargetType from Style
+			var targetTypeExpr = GetStyleTargetTypeExpression(node, context);
+			if (targetTypeExpr == null)
+			{
+				context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, LocationCreate(context.ProjectItem.RelativePath!, (IXmlLineInfo)node, ""), "Implicit style requires a TargetType"));
+				return;
+			}
+
+			resourceKeyExpression = targetTypeExpr;
+		}
+		else
+		{
+			resourceKeyExpression = $"\"{CSharpExpressionHelpers.EscapeForString(key!)}\"";
+		}
+
+		var returnType = isImplicitStyle ? context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Style")! : context.Compilation.ObjectType;
+		var delegateType = context.Compilation.GetTypeByMetadataName("System.Func`1")!.Construct(returnType);
+		var factoryName = replacementFactoryName ?? (useLocalFactory ? NamingHelpers.CreateUniqueVariableName(context, delegateType) : null);
+		if (factoryName is not null)
+			writer.WriteLine($"{returnType.ToFQDisplayString()} {factoryName}()");
+		else
+			writer.WriteLine($"{parentVar.ValueAccessor}.AddFactory({resourceKeyExpression}, () =>");
+
+		using (PrePost.NewBlock(writer, begin: "{", end: factoryName is not null
+			? "}" : $"}}, shared: {shared.ToString().ToLowerInvariant()});"))
+		{
+			// Create a temporary context for generating the lambda body
+			var lambdaContext = new SourceGenContext(
+				writer,
+				context.Compilation,
+				context.SourceProductionContext,
+				context.XmlnsCache,
+				context.TypeCache,
+				context.RootType,
+				null,
+				context.ProjectItem,
+				context.ReportDiagnostic)
+			{
+				ParentContext = context
+			};
+
+			// First pass: Create all values (node and its descendants) using CreateValuesVisitor
+			// This mirrors the normal flow: CreateValuesVisitor walks the entire tree first
+			node.Accept(new CreateValuesVisitor(lambdaContext), null);
+
+			// Second pass: Set namescopes and register names in the namescope
+			node.Accept(new SetNamescopesAndRegisterNamesVisitor(lambdaContext), null);
+
+			// Third pass: Set resources in ResourceDictionary
+			node.Accept(new SetResourcesVisitor(lambdaContext), null);
+
+			// Fourth pass: Set properties on all nodes using SetPropertiesVisitor
+			// stopOnResourceDictionary=true prevents infinite recursion if there are nested RDs
+			node.Accept(new SetPropertiesVisitor(lambdaContext, stopOnResourceDictionary: true), null);
+
+			// Return the created object
+			if (lambdaContext.Variables.TryGetValue(node, out var nodeVar))
+			{
+				writer.WriteLine($"return {nodeVar.ValueAccessor};");
+			}
+			else
+			{
+				// Fallback - shouldn't happen
+				writer.WriteLine($"return null!;");
+			}
+		}
+		if (factoryName is not null)
+		{
+			if (replacementFactoryName is not null)
+			{
+				var keyExpression = isImplicitStyle ? $"{resourceKeyExpression}.FullName!" : resourceKeyExpression;
+				writer.WriteLine($"{parentVar.ValueAccessor}.Remove({keyExpression});");
+			}
+			// Explicit delegates avoid introducing cached-lambda fields during metadata updates.
+			writer.WriteLine($"{parentVar.ValueAccessor}.AddFactory({resourceKeyExpression}, new {delegateType.ToFQDisplayString()}({factoryName}), shared: {shared.ToString().ToLowerInvariant()});");
+		}
+	}
+
+	/// <summary>
+	/// Gets the TargetType expression for a Style node.
+	/// </summary>
+	internal static string? GetStyleTargetTypeExpression(ElementNode node, SourceGenContext context)
+	{
+		if (!node.Properties.TryGetValue(new XmlName("", "TargetType"), out var targetTypeNode))
+			return null;
+
+		// Case 1: String value - TargetType="Label"
+		if (targetTypeNode is ValueNode valueNode && valueNode.Value is string typeName)
+		{
+			var typeSymbol = typeName.GetTypeSymbol(context, node);
+			if (typeSymbol != null)
+				return $"typeof({typeSymbol.ToFQDisplayString()})";
+			return null;
+		}
+
+		// Case 2: TypeExtension markup - TargetType="{x:Type Label}"
+		if (targetTypeNode is ElementNode elementNode &&
+			(elementNode.XmlType.Name == "TypeExtension" || elementNode.XmlType.Name == "Type"))
+		{
+			// TypeExtension can have TypeName as property or positional argument
+			if (elementNode.Properties.TryGetValue(new XmlName("", "TypeName"), out var typeNameNode) &&
+				typeNameNode is ValueNode tn)
+			{
+				var typeNameStr = tn.Value as string;
+				var typeSymbol = typeNameStr!.GetTypeSymbol(context, node);
+				if (typeSymbol != null)
+					return $"typeof({typeSymbol.ToFQDisplayString()})";
+			}
+			else if (elementNode.CollectionItems.Count > 0 && elementNode.CollectionItems[0] is ValueNode positionalArg)
+			{
+				var typeNameStr = positionalArg.Value as string;
+				var typeSymbol = typeNameStr!.GetTypeSymbol(context, node);
+				if (typeSymbol != null)
+					return $"typeof({typeSymbol.ToFQDisplayString()})";
+			}
+		}
+
+		return null;
+	}
+
 	static bool CanSet(ILocalValue parentVar, string localName, INode node, SourceGenContext context)
 	{
 		if (parentVar.Type.GetAllProperties(localName, context).FirstOrDefault() is not IPropertySymbol property)
@@ -393,7 +569,7 @@ static class SetPropertyHelpers
 		}
 	}
 
-	static bool CanGet(ILocalValue parentVar, string localName, SourceGenContext context, out ITypeSymbol? propertyType, out IPropertySymbol? propertySymbol)
+	internal static bool CanGet(ILocalValue parentVar, string localName, SourceGenContext context, out ITypeSymbol? propertyType, out IPropertySymbol? propertySymbol)
 	{
 		propertyType = null;
 		if ((propertySymbol = parentVar.Type.GetAllProperties(localName, context).FirstOrDefault()) == null)
@@ -405,7 +581,7 @@ static class SetPropertyHelpers
 		return true;
 	}
 
-	static bool CanGetValue(ILocalValue parentVar, IFieldSymbol? bpFieldSymbol, bool attached, SourceGenContext context, out ITypeSymbol? propertyType)
+	internal static bool CanGetValue(ILocalValue parentVar, IFieldSymbol? bpFieldSymbol, bool attached, SourceGenContext context, out ITypeSymbol? propertyType)
 	{
 		propertyType = null;
 		if (bpFieldSymbol == null)
@@ -777,6 +953,81 @@ static class SetPropertyHelpers
 
 	/// <summary>
 	/// Generates a TypedBinding for a C# expression that references x:DataType members.
+	/// Overload for UC: accepts string accessors instead of IC's ILocalValue/IFieldSymbol.
+	/// </summary>
+	internal static void SetExpressionBindingForUC(IndentedTextWriter writer, string targetAccessor, string bpFieldFqn, string expression, ITypeSymbol dataTypeSymbol, INamedTypeSymbol rootType, Compilation compilation)
+	{
+		var sourceTypeName = dataTypeSymbol.ToFQDisplayString();
+
+		var transformedExpression = CSharpExpressionHelpers.TransformQuotesWithSemantics(
+			expression, compilation, dataTypeSymbol, rootType);
+
+		var analysis = ExpressionAnalyzer.Analyze(transformedExpression, "__source", dataTypeSymbol, rootType, compilation);
+		var handlers = analysis.Handlers;
+
+		var expressionType = ResolveExpressionType(expression, dataTypeSymbol, context: null);
+		var propertyTypeName = expressionType?.ToFQDisplayString() ?? "object";
+
+		bool hasCaptures = analysis.Captures.Count > 0;
+		if (hasCaptures)
+		{
+			writer.WriteLine("{");
+			writer.Indent++;
+			foreach (var capture in analysis.Captures)
+			{
+				writer.WriteLine($"var {capture.CaptureVariable} = this.{capture.InvocationExpression};");
+			}
+		}
+
+		writer.WriteLine($"{targetAccessor}.SetBinding({bpFieldFqn},");
+		writer.Indent++;
+		writer.WriteLine($"new global::Microsoft.Maui.Controls.Internals.TypedBinding<{sourceTypeName}, {propertyTypeName}>(");
+		writer.Indent++;
+
+		var getterExpression = analysis.TransformedExpression;
+		if (getterExpression.Contains("?.") && !getterExpression.EndsWith("!", StringComparison.Ordinal))
+			getterExpression += "!";
+		writer.WriteLine($"__source => ({getterExpression}, true),");
+
+		// UC intentionally skips the ExpressionNotSettable diagnostic (Descriptors.ExpressionNotSettable)
+		// that IC emits for TwoWay-default BPs with non-settable expressions. During hot reload,
+		// the developer is iterating rapidly and a warning would be noise — the IC already warned at build time.
+		var writeInfo = GetExpressionWriteInfo(expression, dataTypeSymbol, context: null);
+		if (analysis.IsSettable && writeInfo.Kind == ExpressionWriteKind.DirectAssignment)
+			writer.WriteLine($"(__source, __value) => {analysis.TransformedExpression} = __value,");
+		else if (analysis.IsSettable && writeInfo.Kind == ExpressionWriteKind.StructCopyWriteback)
+			WriteStructCopyWritebackSetter(writer, writeInfo.Chain!);
+		else
+			writer.WriteLine("null,");
+
+		if (handlers.Count == 0)
+		{
+			writer.WriteLine($"null));");
+		}
+		else
+		{
+			writer.WriteLine($"new global::System.Tuple<global::System.Func<{sourceTypeName}, object>, string>[] {{");
+			writer.Indent++;
+			for (int i = 0; i < handlers.Count; i++)
+			{
+				var handler = handlers[i];
+				var comma = i < handlers.Count - 1 ? "," : "";
+				writer.WriteLine($"new(static __source => {handler.ParentExpression}, \"{handler.PropertyName}\"){comma}");
+			}
+			writer.Indent--;
+			writer.WriteLine($"}}));");
+		}
+		writer.Indent -= 2;
+
+		if (hasCaptures)
+		{
+			writer.Indent--;
+			writer.WriteLine("}");
+		}
+	}
+
+	/// <summary>
+	/// Generates a TypedBinding for a C# expression that references x:DataType members.
 	/// </summary>
 	static void SetExpressionBinding(IndentedTextWriter writer, ILocalValue parentVar, IFieldSymbol bpFieldSymbol, string expression, ITypeSymbol dataTypeSymbol, SourceGenContext context, ValueNode valueNode)
 	{
@@ -823,7 +1074,7 @@ static class SetPropertyHelpers
 			// TransformedExpression already has identifiers prefixed with __source. where needed
 			// Add null-forgiving operator if expression contains ?. to suppress nullability warnings
 			var getterExpression = analysis.TransformedExpression;
-			if (getterExpression.Contains("?."))
+			if (getterExpression.Contains("?.") && !getterExpression.EndsWith("!", StringComparison.Ordinal))
 				getterExpression += "!";
 			writer.WriteLine($"__source => ({getterExpression}, true),");
 
@@ -888,7 +1139,7 @@ static class SetPropertyHelpers
 	/// For example, "Price" on SimpleViewModel resolves to decimal, "User.DisplayName" resolves to string.
 	/// For complex expressions (operators, method calls, interpolation), returns null to fall back to object.
 	/// </summary>
-	static ITypeSymbol? ResolveExpressionType(string expression, ITypeSymbol dataType, SourceGenContext context)
+	internal static ITypeSymbol? ResolveExpressionType(string expression, ITypeSymbol dataType, SourceGenContext? context)
 	{
 		if (string.IsNullOrWhiteSpace(expression))
 			return null;
@@ -996,7 +1247,7 @@ static class SetPropertyHelpers
 	/// and if so, what kind of setter is needed.
 	/// Handles value type (struct) intermediates that require copy-modify-writeback.
 	/// </summary>
-	static ExpressionWriteInfo GetExpressionWriteInfo(string expression, ITypeSymbol dataType, SourceGenContext context)
+	static ExpressionWriteInfo GetExpressionWriteInfo(string expression, ITypeSymbol dataType, SourceGenContext? context)
 	{
 		var notWritable = new ExpressionWriteInfo { Kind = ExpressionWriteKind.NotWritable };
 

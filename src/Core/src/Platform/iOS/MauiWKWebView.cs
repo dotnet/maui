@@ -102,7 +102,7 @@ namespace Microsoft.Maui.Platform
 				// Use the provided baseUrl, or fall back to the app bundle path so that
 				// relative resources (images, CSS, JS) bundled with the app continue to resolve.
 				var resolvedBaseUrl = !string.IsNullOrEmpty(baseUrl)
-					? new NSUrl(baseUrl, true)
+					? ResolveBaseUrl(baseUrl)
 					: new NSUrl(NSBundle.MainBundle.BundlePath, true);
 
 				// LoadSimulatedRequest (iOS 15+ / macCatalyst 15+) is preferred over LoadHtmlString because:
@@ -124,6 +124,19 @@ namespace Microsoft.Maui.Platform
 					LoadHtmlString(html, resolvedBaseUrl);
 				}
 			}
+		}
+
+		// A BaseUrl that carries a scheme (https://, file://, a custom scheme) is already a URL and is used as is.
+		// Anything else is a file system path, such as NSBundle.MainBundle.BundlePath, and becomes a directory file URL.
+		// Treating every value as a path turned "https://example.com/" into a file URL under the current directory:
+		// https://github.com/dotnet/maui/issues/19792
+		static NSUrl ResolveBaseUrl(string baseUrl)
+		{
+			var url = NSUrl.FromString(baseUrl);
+			if (url is not null && !string.IsNullOrEmpty(url.Scheme))
+				return url;
+
+			return new NSUrl(baseUrl, true);
 		}
 
 		async Task LoadUrlAsync(string? url)

@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_CATALYST // Layout timeout on macOS 26 after update
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -22,3 +23,4 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
+#endif

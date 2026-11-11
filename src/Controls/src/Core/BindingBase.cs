@@ -170,6 +170,10 @@ namespace Microsoft.Maui.Controls
 
 		internal virtual object GetSourceValue(object value, Type targetPropertyType)
 		{
+			// A converter returning Binding.DoNothing means "leave the target untouched" (#11740)
+			if (ReferenceEquals(value, MultiBinding.DoNothing))
+				return value;
+
 			if (value == null && TargetNullValue != null)
 				return TargetNullValue;
 
@@ -189,7 +193,7 @@ namespace Microsoft.Maui.Controls
 			catch (FormatException)
 			{
 				value = null;
-				Application.Current?.FindMauiContext()?.CreateLogger<BindingBase>()?.LogWarning("FormatException");
+				MauiLogger<BindingBase>.Log(LogLevel.Warning, "FormatException");
 				return false;
 			}
 		}
@@ -204,7 +208,7 @@ namespace Microsoft.Maui.Controls
 			catch (FormatException)
 			{
 				value = null;
-				Application.Current?.FindMauiContext()?.CreateLogger<BindingBase>()?.LogWarning("FormatException");
+				MauiLogger<BindingBase>.Log(LogLevel.Warning, "FormatException");
 				return false;
 			}
 		}

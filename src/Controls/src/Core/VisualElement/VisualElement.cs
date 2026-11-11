@@ -234,8 +234,10 @@ namespace Microsoft.Maui.Controls
 					bindable.SetValue(TranslationYProperty, translationY);
 				else if (transformName.StartsWith("translate", StringComparison.OrdinalIgnoreCase))
 				{
+					// translate(tx) is the same as translate(tx, 0)
 					var translate = value.Split(',');
-					if (TryParseTransformValue(translate[0], out translationX) && TryParseTransformValue(translate[1], out translationY))
+					translationY = 0;
+					if (TryParseTransformValue(translate[0], out translationX) && (translate.Length == 1 || TryParseTransformValue(translate[1], out translationY)))
 					{
 						bindable.SetValue(TranslationXProperty, translationX);
 						bindable.SetValue(TranslationYProperty, translationY);
@@ -247,11 +249,16 @@ namespace Microsoft.Maui.Controls
 					bindable.SetValue(ScaleYProperty, scaleY);
 				else if (transformName.StartsWith("scale", StringComparison.OrdinalIgnoreCase))
 				{
+					// scale(s) is the same as scale(s, s)
 					var scale = value.Split(',');
-					if (TryParseTransformValue(scale[0], out scaleX) && TryParseTransformValue(scale[1], out scaleY))
+					if (TryParseTransformValue(scale[0], out scaleX))
 					{
-						bindable.SetValue(ScaleXProperty, scaleX);
-						bindable.SetValue(ScaleYProperty, scaleY);
+						scaleY = scaleX;
+						if (scale.Length == 1 || TryParseTransformValue(scale[1], out scaleY))
+						{
+							bindable.SetValue(ScaleXProperty, scaleX);
+							bindable.SetValue(ScaleYProperty, scaleY);
+						}
 					}
 				}
 				else if (transformName.StartsWith("rotateX", StringComparison.OrdinalIgnoreCase) && TryParseTransformValue(value, out rotateX))
@@ -279,7 +286,13 @@ namespace Microsoft.Maui.Controls
 		bool _isVisibleCumulative = (bool)IsVisibleProperty.DefaultValue;
 
 		/// <summary>Bindable property for <see cref="Opacity"/>.</summary>
-		public static readonly BindableProperty OpacityProperty = BindableProperty.Create(nameof(Opacity), typeof(double), typeof(VisualElement), 1d, coerceValue: (bindable, value) => ((double)value).Clamp(0, 1));
+		public static readonly BindableProperty OpacityProperty = BindableProperty.Create(nameof(Opacity), typeof(double), typeof(VisualElement), 1d,
+			coerceValue: (bindable, value) =>
+			{
+				var original = (double)value;
+				var clamped = original.Clamp(0, 1);
+				return clamped == original ? value : (object)clamped;
+			});
 
 		/// <summary>Bindable property for <see cref="BackgroundColor"/>.</summary>
 		public static readonly BindableProperty BackgroundColorProperty = BindableProperty.Create(nameof(BackgroundColor), typeof(Color), typeof(VisualElement), null);
@@ -1193,7 +1206,10 @@ namespace Microsoft.Maui.Controls
 				if (_resources != null)
 					((IResourceDictionary)_resources).ValuesChanged -= OnResourcesChanged;
 				_resources = value;
-				OnResourcesChanged(value);
+				// Use key-only propagation with an on-demand resolver to avoid resolving lazy resources (issue #35500).
+				OnResourcesChangedKeys(
+					value?.MergedResourcesKeys,
+					key => value is not null && value.TryGetValue(key, out var resource) ? resource : null);
 				if (_resources != null)
 					((IResourceDictionary)_resources).ValuesChanged += OnResourcesChanged;
 				OnPropertyChanged();
@@ -1513,7 +1529,7 @@ namespace Microsoft.Maui.Controls
 
 		private protected void InvokeMeasureInvalidated(InvalidationTrigger trigger)
 		{
-			MeasureInvalidated?.Invoke(this, new InvalidationEventArgs(trigger));
+			MeasureInvalidated?.Invoke(this, InvalidationEventArgs.GetCached(trigger));
 		}
 
 		/// <summary>
@@ -1613,8 +1629,9 @@ namespace Microsoft.Maui.Controls
 
 			var innerKeys = new HashSet<string>(StringComparer.Ordinal);
 			var changedResources = new List<KeyValuePair<string, object>>();
-			foreach (KeyValuePair<string, object> c in Resources)
-				innerKeys.Add(c.Key);
+			// Iterate keys only to avoid resolving lazy resources (issue #35500).
+			foreach (string key in Resources.Keys)
+				innerKeys.Add(key);
 			foreach (KeyValuePair<string, object> value in values)
 			{
 				if (innerKeys.Add(value.Key))
@@ -1628,6 +1645,116 @@ namespace Microsoft.Maui.Controls
 			}
 			if (changedResources.Count != 0)
 				OnResourcesChanged(changedResources);
+		}
+
+		internal override void OnParentResourcesChangedKeys(IEnumerable<string> keys)
+		{
+			if (keys == null)
+				return;
+
+			if (!((IResourcesProvider)this).IsResourcesCreated || Resources.Count == 0)
+			{
+				base.OnParentResourcesChangedKeys(keys);
+				return;
+			}
+
+			// Build a set of keys we already have in our resources (child takes precedence).
+			// Iterate keys only to avoid resolving lazy resources (issue #35500).
+			var innerKeys = new HashSet<string>(StringComparer.Ordinal);
+			foreach (string key in Resources.Keys)
+				innerKeys.Add(key);
+
+			// Filter parent keys - only include keys we don't have, except style classes which get merged
+			var filteredKeys = new List<string>();
+			var mergedStyleClasses = new List<KeyValuePair<string, object>>();
+
+			foreach (string key in keys)
+			{
+				if (innerKeys.Add(key))
+				{
+					// Key doesn't exist in our resources, include it
+					filteredKeys.Add(key);
+				}
+				else if (key.StartsWith(Style.StyleClassPrefix, StringComparison.Ordinal))
+				{
+					// Style classes need to be merged - child's styles combined with parent's styles
+					// For the keys-only path, we need to look up the parent's styles
+					var childStyles = Resources[key] as List<Style>;
+					if (childStyles != null && this.TryGetResource(key, out var parentValue) && parentValue is List<Style> parentStyles)
+					{
+						// Only merge if parent actually has different styles
+						// The parent's styles come from the merged resources lookup
+						var mergedClassStyles = new List<Style>(childStyles);
+						// Get styles from parent chain (excluding our own resources)
+						var parent = ((IElementDefinition)this).Parent;
+						if (parent?.TryGetResource(key, out var pValue) == true && pValue is List<Style> pStyles)
+						{
+							mergedClassStyles.AddRange(pStyles);
+							mergedStyleClasses.Add(new KeyValuePair<string, object>(key, mergedClassStyles));
+						}
+					}
+				}
+			}
+
+			if (mergedStyleClasses.Count > 0)
+				OnResourcesChanged(mergedStyleClasses);
+
+			if (filteredKeys.Count != 0)
+				OnResourcesChangedKeys(filteredKeys);
+		}
+
+		internal override void OnParentResourcesChangedKeys(IEnumerable<string> keys, Func<string, object> resolver)
+		{
+			if (keys == null)
+				return;
+
+			if (!((IResourcesProvider)this).IsResourcesCreated || Resources.Count == 0)
+			{
+				base.OnParentResourcesChangedKeys(keys, resolver);
+				return;
+			}
+
+			// Build a set of keys we already have in our resources (child takes precedence).
+			// Iterate keys only to avoid resolving lazy resources (issue #35500).
+			var innerKeys = new HashSet<string>(StringComparer.Ordinal);
+			foreach (string key in Resources.Keys)
+				innerKeys.Add(key);
+
+			// Filter parent keys - only include keys we don't have, except style classes which get merged
+			var filteredKeys = new List<string>();
+			var mergedStyleClasses = new List<KeyValuePair<string, object>>();
+
+			foreach (string key in keys)
+			{
+				if (innerKeys.Add(key))
+				{
+					// Key doesn't exist in our resources, include it
+					filteredKeys.Add(key);
+				}
+				else if (key.StartsWith(Style.StyleClassPrefix, StringComparison.Ordinal))
+				{
+					// Style classes need to be merged - child's styles combined with parent's styles
+					var parentStyles = resolver?.Invoke(key) as List<Style>;
+					var childStyles = Resources[key] as List<Style>;
+					if (parentStyles != null && childStyles != null)
+					{
+						var mergedClassStyles = new List<Style>(childStyles);
+						mergedClassStyles.AddRange(parentStyles);
+						mergedStyleClasses.Add(new KeyValuePair<string, object>(key, mergedClassStyles));
+					}
+					else if (parentStyles != null)
+					{
+						// Child has the key but it's not a style list - just include parent styles
+						mergedStyleClasses.Add(new KeyValuePair<string, object>(key, parentStyles));
+					}
+				}
+			}
+
+			if (mergedStyleClasses.Count > 0)
+				OnResourcesChanged(mergedStyleClasses);
+
+			if (filteredKeys.Count != 0)
+				OnResourcesChangedKeys(filteredKeys, resolver);
 		}
 
 		internal void UnmockBounds() => _mockX = _mockY = _mockWidth = _mockHeight = -1;
@@ -2514,6 +2641,16 @@ namespace Microsoft.Maui.Controls
 		}
 
 		partial void HandlePlatformUnloadedLoaded();
+
+#if IOS || MACCATALYST
+		/// <summary>
+		/// Re-evaluates the platform loaded/unloaded state for this element.
+		/// Called by handlers when the platform view enters the window asynchronously
+		/// (e.g., UINavigationController.ViewDidAppear under UITabBarController)
+		/// and the initial KVO-based loaded watcher may not have fired.
+		/// </summary>
+		internal void RefreshPlatformLoadedStatus() => HandlePlatformUnloadedLoaded();
+#endif
 
 		internal IView? ParentView => ((this as IView)?.Parent as IView);
 #nullable disable

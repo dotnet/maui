@@ -16,6 +16,9 @@ namespace Microsoft.Maui.TestCases.Tests
 				try
 				{
 					base.FixtureSetup();
+#if MACCATALYST					
+					NavigateToGallery();
+#endif					
 					break;
 				}
 				catch (Exception e)

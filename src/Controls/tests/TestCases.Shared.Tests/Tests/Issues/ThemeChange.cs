@@ -17,6 +17,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.LifeCycle)]
 		public void AppThemeShouldChange()
 		{
+			Exception? exception = null;
+
 			try
 			{
 				App.SetLightTheme();
@@ -24,15 +26,20 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 				App.SetDarkTheme();
 				_ = App.WaitForElement("labelVisibleOnlyInDarkMode");
-				VerifyScreenshot("AppThemeShouldChangeDarkTheme");
+				VerifyScreenshotOrSetException(ref exception, "AppThemeShouldChangeDarkTheme");
 
 				App.SetLightTheme();
 				_ = App.WaitForElement("labelVisibleOnlyInLightMode");
-				VerifyScreenshot("AppThemeShouldChangeLightTheme");
+				VerifyScreenshotOrSetException(ref exception, "AppThemeShouldChangeLightTheme");
 			}
 			finally
 			{
 				App.SetLightTheme();
+			}
+
+			if (exception is not null)
+			{
+				throw exception;
 			}
 		}
 	}

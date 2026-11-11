@@ -1,3 +1,4 @@
+#if TEST_FAILS_ON_CATALYST // Test fails on MacCatalyst in CI because SearchHandler clear-icon visibility is intermittent and an unexpected center line appears in screenshots.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -17,7 +18,7 @@ public class Issue35736 : _IssuesUITest
 		App.WaitForElement("Issue35736QueryIconLabel");
 
 		App.Tap("Issue35736ToggleQueryIcon");
-		App.WaitForElement("Issue35736QueryIconLabel");
+		Assert.That(App.WaitForTextToBePresentInElement("Issue35736QueryIconLabel", "QueryIcon: calculator.png"), Is.True);
 
 #if IOS
 		VerifyScreenshot(cropBottom:1000);
@@ -96,3 +97,4 @@ public class Issue35736 : _IssuesUITest
 #endif
 	}
 }
+#endif

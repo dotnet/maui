@@ -105,9 +105,9 @@ public class WindowsTemplateTest : BaseTemplateTests
 
 	[Theory]
 	[InlineData("maui", DotNetCurrent, "Release", false)]
-	[InlineData("maui", DotNetPrevious, "Release", true)]
+	[InlineData("maui", DotNetPrevious, "Release", false)]
 	[InlineData("maui-blazor", DotNetCurrent, "Release", false)]
-	[InlineData("maui-blazor", DotNetPrevious, "Release", true)]
+	[InlineData("maui-blazor", DotNetPrevious, "Release", false)]
 	public void PublishUnpackaged(string id, string framework, string config, bool usesRidGraph)
 	{
 		SetTestIdentifier(id, framework, config, usesRidGraph);
@@ -132,7 +132,11 @@ public class WindowsTemplateTest : BaseTemplateTests
 		var rid = usesRidGraph ? "win10-x64" : "win-x64";
 		var assetsRoot = Path.Combine(projectDir, $"bin/{config}/{framework}-windows10.0.19041.0/{rid}/publish");
 
-		AssetExists("dotnet_bot.scale-100.png");
+		if (id == "maui")
+		{
+			AssetExists("dotnet_bot.scale-100.png");
+		}
+
 		AssetExists("appiconLogo.scale-100.png");
 		AssetExists("OpenSans-Regular.ttf");
 		AssetExists("splashSplashScreen.scale-100.png");
@@ -147,13 +151,13 @@ public class WindowsTemplateTest : BaseTemplateTests
 	}
 
 	[Theory]
-	[InlineData("maui", DotNetCurrent, "Release", false)]
-	[InlineData("maui", DotNetPrevious, "Release", true)]
-	[InlineData("maui-blazor", DotNetCurrent, "Release", false)]
-	[InlineData("maui-blazor", DotNetPrevious, "Release", true)]
-	public void PublishPackaged(string id, string framework, string config, bool usesRidGraph)
+	[InlineData("maui", DotNetCurrent, "Release")]
+	[InlineData("maui", DotNetPrevious, "Release")]
+	[InlineData("maui-blazor", DotNetCurrent, "Release")]
+	[InlineData("maui-blazor", DotNetPrevious, "Release")]
+	public void PublishPackaged(string id, string framework, string config)
 	{
-		SetTestIdentifier(id, framework, config, usesRidGraph);
+		SetTestIdentifier(id, framework, config);
 		if (!TestEnvironment.IsWindows)
 		{
 			if (true) return; // Skip: "Running Windows templates is only supported on Windows."
@@ -174,11 +178,8 @@ public class WindowsTemplateTest : BaseTemplateTests
 		Assert.True(DotnetInternal.Publish(projectFile, config, framework: $"{framework}-windows10.0.19041.0", properties: BuildProps, output: _output),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 
-		var rid = usesRidGraph ? "win10-x64/" : "";
-		var prefix = framework == DotNetCurrent
-			? ""
-			: $"bin/{config}/{framework}-windows10.0.19041.0/";
-		var assetsRoot = Path.Combine(projectDir, $"{prefix}{rid}AppPackages/{name}_1.0.0.1_Test");
+		// MSIX packaging uses the project-root AppPackages directory for both target frameworks.
+		var assetsRoot = Path.Combine(projectDir, "AppPackages", $"{name}_1.0.0.1_Test");
 
 		AssetExists($"{name}_1.0.0.1_x64.msix");
 

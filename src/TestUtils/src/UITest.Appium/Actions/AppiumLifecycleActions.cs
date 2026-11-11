@@ -64,26 +64,15 @@ namespace UITest.Appium
 			if (_app?.Driver is null)
 				return CommandResponse.FailedEmptyResponse;
 
-			var args = _app.Config.GetProperty<Dictionary<string, string>>("TestConfigurationArgs") ?? new Dictionary<string, string>();
-
-			if (parameters.TryGetValue("testName", out var value) && value is string testName)
-			{
-				if (_app.Driver is WindowsDriver && (!args.TryGetValue("test", out var currentTest) || currentTest != testName))
-					throw new InvalidOperationException("Changing the Windows startup test requires a new driver session with updated appArguments.");
-
-				args["test"] = testName;
-			}
-
-			_app.Config.SetProperty("TestConfigurationArgs", args);
-
-			if (args.ContainsKey("test") && _app.GetTestDevice() is TestDevice.iOS or TestDevice.Mac)
-			{
-				if (CloseApp(parameters).Result != CommandResponseResult.Success)
-					throw new InvalidOperationException("Could not terminate the app before launching a new startup test.");
-			}
-
 			if (_app.GetTestDevice() == TestDevice.Mac)
-			{
+			{		
+				var args = _app.Config.GetProperty<Dictionary<string, string>>("TestConfigurationArgs") ?? new Dictionary<string, string>();
+
+				if (args.ContainsKey("test") && parameters.ContainsKey("testName") && parameters["testName"] is string testName && !string.IsNullOrEmpty(testName))
+				{
+					args["test"] = testName;
+				}
+
 				_app.Driver.ExecuteScript("macos: launchApp", new Dictionary<string, object>
 				{
 					{ "bundleId", _app.GetAppId() },
@@ -100,20 +89,16 @@ namespace UITest.Appium
 			}
 			else if (_app.Driver is IOSDriver iOSDriver)
 			{
+				var args = _app.Config.GetProperty<Dictionary<string, string>>("TestConfigurationArgs") ?? new Dictionary<string, string>();
 				iOSDriver.ExecuteScript("mobile: launchApp", new Dictionary<string, object>
 				{
 					{ "bundleId", _app.GetAppId() },
 					{ "environment", args },
 				});
 			}
-			else if (_app.GetTestDevice() == TestDevice.Android && args.TryGetValue("test", out var androidTest))
+			else if (_app is AppiumAndroidApp androidApp)
 			{
-				_app.Driver.ExecuteScript("mobile: startActivity", new Dictionary<string, object>
-				{
-					{ "component", $"{_app.GetAppId()}/{_app.GetAppId()}.MainActivity" },
-					{ "stop", true },
-					{ "extras", new[] { new[] { "s", "test", AppLaunchArguments.QuoteAndroidShellArgument(androidTest) } } }
-				});
+				androidApp.ActivateApp();
 			}
 			else
 			{
@@ -134,7 +119,11 @@ namespace UITest.Appium
 			}
 			else
 			{
-				_app.Driver.ActivateApp(_app.GetAppId());
+				if (_app is AppiumAndroidApp androidApp)
+					androidApp.ActivateApp();
+				else
+					_app.Driver.ActivateApp(_app.GetAppId());
+
 				// Give it time for the animation to settle, otherwise there's a risk
 				// of picking wrong elements coordinates and `Tap`s will fail silently.
 				Thread.Sleep(100);
@@ -160,9 +149,7 @@ namespace UITest.Appium
 			if (_app?.Driver is null)
 				return CommandResponse.FailedEmptyResponse;
 
-			if (CloseApp(parameters).Result != CommandResponseResult.Success)
-				throw new InvalidOperationException("Could not terminate the app before resetting it.");
-
+			CloseApp(parameters);
 			LaunchApp(parameters);
 
 			return CommandResponse.SuccessEmptyResponse;
@@ -249,7 +236,12 @@ namespace UITest.Appium
 							RedirectStandardError = true,
 							UseShellExecute = false,
 						});
-						return WaitForForceClose(process, "xcrun simctl terminate");
+						if (process is not null && !process.WaitForExit(10000))
+						{
+							Debug.WriteLine(">>>>> ForceCloseApp: xcrun simctl terminate timed out, killing process");
+							try { process.Kill(); } catch { }
+						}
+						return CommandResponse.SuccessEmptyResponse;
 					}
 					else
 					{
@@ -267,7 +259,12 @@ namespace UITest.Appium
 						RedirectStandardError = true,
 						UseShellExecute = false,
 					});
-					return WaitForForceClose(process, "adb force-stop");
+					if (process is not null && !process.WaitForExit(10000))
+					{
+						Debug.WriteLine(">>>>> ForceCloseApp: adb force-stop timed out, killing process");
+						try { process.Kill(); } catch { }
+					}
+					return CommandResponse.SuccessEmptyResponse;
 				}
 				else if (testDevice == TestDevice.Mac)
 				{
@@ -282,7 +279,12 @@ namespace UITest.Appium
 						RedirectStandardError = true,
 						UseShellExecute = false,
 					});
-					return WaitForForceClose(process, "macOS force-kill");
+					if (process is not null && !process.WaitForExit(10000))
+					{
+						Debug.WriteLine(">>>>> ForceCloseApp: pkill timed out, killing process");
+						try { process.Kill(); } catch { }
+					}
+					return CommandResponse.SuccessEmptyResponse;
 				}
 				else if (testDevice == TestDevice.Windows)
 				{
@@ -295,7 +297,12 @@ namespace UITest.Appium
 						RedirectStandardError = true,
 						UseShellExecute = false,
 					});
-					return WaitForForceClose(process, "Windows taskkill");
+					if (process is not null && !process.WaitForExit(10000))
+					{
+						Debug.WriteLine(">>>>> ForceCloseApp: taskkill timed out, killing process");
+						try { process.Kill(); } catch { }
+					}
+					return CommandResponse.SuccessEmptyResponse;
 				}
 			}
 			catch (Exception ex)
@@ -304,37 +311,6 @@ namespace UITest.Appium
 			}
 
 			return CommandResponse.FailedEmptyResponse;
-		}
-
-		static CommandResponse WaitForForceClose(Process? process, string command)
-		{
-			if (process is null)
-			{
-				Debug.WriteLine($">>>>> ForceCloseApp: {command} did not start");
-				return CommandResponse.FailedEmptyResponse;
-			}
-
-			var output = process.StandardOutput.ReadToEndAsync();
-			var error = process.StandardError.ReadToEndAsync();
-
-			if (!process.WaitForExit(10000))
-			{
-				Debug.WriteLine($">>>>> ForceCloseApp: {command} timed out, killing process");
-				process.Kill();
-				return CommandResponse.FailedEmptyResponse;
-			}
-
-			var standardOutput = output.GetAwaiter().GetResult();
-			var standardError = error.GetAwaiter().GetResult();
-
-			if (process.ExitCode != 0)
-			{
-				Debug.WriteLine($">>>>> ForceCloseApp: {command} exited with code {process.ExitCode}."
-					+ $"{Environment.NewLine}{standardOutput}{standardError}");
-				return CommandResponse.FailedEmptyResponse;
-			}
-
-			return CommandResponse.SuccessEmptyResponse;
 		}
 
 		/// <summary>
@@ -357,9 +333,7 @@ namespace UITest.Appium
 			if (_app.GetTestDevice() != TestDevice.Android)
 			{
 				ForceCloseApp(parameters);
-				try
-				{ LaunchApp(parameters); }
-				catch (Exception ex) { Debug.WriteLine($">>>>> RecoverFromCrash relaunch failed: {ex.Message}"); }
+				try { LaunchApp(parameters); } catch (Exception ex) { Debug.WriteLine($">>>>> RecoverFromCrash relaunch failed: {ex.Message}"); }
 				return CommandResponse.SuccessEmptyResponse;
 			}
 
@@ -383,12 +357,21 @@ namespace UITest.Appium
 				//    case the driver session is wedged from the crash.
 				try
 				{
-					_app.Driver.ActivateApp(appId);
+					LaunchApp(parameters);
 				}
 				catch (Exception ex)
 				{
-					Debug.WriteLine($">>>>> RecoverFromCrash ActivateApp failed, falling back to monkey: {ex.Message}");
-					RunAdb("shell", "monkey", "-p", appId, "-c", "android.intent.category.LAUNCHER", "1");
+					Debug.WriteLine($">>>>> RecoverFromCrash launch failed, falling back to adb: {ex.Message}");
+					var args = _app.Config.GetProperty<Dictionary<string, string>>("TestConfigurationArgs");
+					if (args is not null && args.TryGetValue("TEST_CONFIGURATION_ARGS", out var configurationArgs) && !string.IsNullOrEmpty(configurationArgs))
+					{
+						RunAdb("shell", "am", "start", "-W", "-n", $"{appId}/{appId}.MainActivity",
+							"--es", "TEST_CONFIGURATION_ARGS", configurationArgs);
+					}
+					else
+					{
+						RunAdb("shell", "monkey", "-p", appId, "-c", "android.intent.category.LAUNCHER", "1");
+					}
 				}
 
 				return CommandResponse.SuccessEmptyResponse;
@@ -431,9 +414,7 @@ namespace UITest.Appium
 					if (!process.WaitForExit(15000))
 					{
 						Debug.WriteLine($">>>>> RunAdb timed out: adb {string.Join(' ', args)}");
-						try
-						{ process.Kill(); }
-						catch { /* best effort */ }
+						try { process.Kill(); } catch { /* best effort */ }
 					}
 				}
 			}

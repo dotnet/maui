@@ -11,7 +11,10 @@ namespace Microsoft.Maui.Controls.Shapes
 	[ContentProperty("Children")]
 	public sealed class TransformGroup : Transform
 	{
-		readonly Dictionary<INotifyPropertyChanged, int> _subscribedTransforms = new();
+		readonly Dictionary<INotifyPropertyChanged, (WeakNotifyPropertyChangedProxy Proxy, int Count)> _subscribedTransforms = new();
+		WeakNotifyCollectionChangedProxy _childrenCollectionChangedProxy;
+		NotifyCollectionChangedEventHandler _childrenCollectionChanged;
+		PropertyChangedEventHandler _transformPropertyChanged;
 
 		/// <summary>Bindable property for <see cref="Children"/>.</summary>
 		public static readonly BindableProperty ChildrenProperty =
@@ -23,6 +26,12 @@ namespace Microsoft.Maui.Controls.Shapes
 		public TransformGroup()
 		{
 			Children = new TransformCollection();
+		}
+
+		~TransformGroup()
+		{
+			_childrenCollectionChangedProxy?.Unsubscribe();
+			ClearAllTransformSubscriptions();
 		}
 
 		/// <summary>
@@ -57,7 +66,9 @@ namespace Microsoft.Maui.Controls.Shapes
 				return;
 			}
 
-			collection.CollectionChanged += OnChildrenCollectionChanged;
+			_childrenCollectionChanged ??= OnChildrenCollectionChanged;
+			_childrenCollectionChangedProxy ??= new WeakNotifyCollectionChangedProxy();
+			_childrenCollectionChangedProxy.Subscribe(collection, _childrenCollectionChanged);
 
 			foreach (var transform in collection)
 			{
@@ -72,7 +83,7 @@ namespace Microsoft.Maui.Controls.Shapes
 				return;
 			}
 
-			collection.CollectionChanged -= OnChildrenCollectionChanged;
+			_childrenCollectionChangedProxy?.Unsubscribe();
 
 			ClearAllTransformSubscriptions();
 		}
@@ -115,39 +126,38 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		void SubscribeToTransformPropertyChanged(INotifyPropertyChanged item)
 		{
-			if (_subscribedTransforms.TryGetValue(item, out int count))
+			if (_subscribedTransforms.TryGetValue(item, out var subscription))
 			{
-				_subscribedTransforms[item] = count + 1;
+				_subscribedTransforms[item] = (subscription.Proxy, subscription.Count + 1);
 				return;
 			}
 
-			item.PropertyChanged += OnTransformPropertyChanged;
-			_subscribedTransforms[item] = 1;
+			_transformPropertyChanged ??= OnTransformPropertyChanged;
+			_subscribedTransforms[item] = (new WeakNotifyPropertyChangedProxy(item, _transformPropertyChanged), 1);
 		}
 
 		void UnsubscribeFromTransformPropertyChanged(INotifyPropertyChanged item)
 		{
-			if (!_subscribedTransforms.TryGetValue(item, out int count))
+			if (!_subscribedTransforms.TryGetValue(item, out var subscription))
 			{
 				return;
 			}
 
-			if (count > 1)
+			if (subscription.Count > 1)
 			{
-				_subscribedTransforms[item] = count - 1;
+				_subscribedTransforms[item] = (subscription.Proxy, subscription.Count - 1);
 				return;
 			}
 
-			item.PropertyChanged -= OnTransformPropertyChanged;
+			subscription.Proxy.Unsubscribe();
 			_subscribedTransforms.Remove(item);
 		}
 
-		// Unsubscribes all tracked transforms from PropertyChanged and clears the dictionary.
 		void ClearAllTransformSubscriptions()
 		{
-			foreach (var item in _subscribedTransforms)
+			foreach (var subscription in _subscribedTransforms.Values)
 			{
-				item.Key.PropertyChanged -= OnTransformPropertyChanged;
+				subscription.Proxy.Unsubscribe();
 			}
 
 			_subscribedTransforms.Clear();

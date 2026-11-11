@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -19,6 +19,291 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class SwipeViewTests : ControlsHandlerTestBase
 	{
+		[Fact]
+		// https://github.com/dotnet/maui/issues/37089
+		public async Task SwipeKeepsTrackingWhenThePointerLeavesTheBounds()
+		{
+			SetupBuilder();
+
+			var content = new Grid
+			{
+				WidthRequest = 300,
+				HeightRequest = 60,
+				Background = new SolidPaint(Colors.White)
+			};
+
+			var swipeView = new SwipeView()
+			{
+				WidthRequest = 300,
+				HeightRequest = 60,
+				RightItems = new SwipeItems { new SwipeItem { BackgroundColor = Colors.Red } },
+				Content = content
+			};
+
+			await AttachAndRun(swipeView, async (handler) =>
+			{
+				var platformView = ((SwipeViewHandler)handler).PlatformView;
+				var contentView = ((IView)content).ToPlatform();
+
+				// The swipe open distance is clamped to the content size, so wait for the layout
+				await AssertEventually(() => contentView.Width > 0, message: "SwipeView content was not laid out");
+
+				var density = contentView.Context.Resources.DisplayMetrics.Density;
+				var time = global::Android.OS.SystemClock.UptimeMillis();
+				var x = platformView.Width / 2f;
+				var y = platformView.Height / 2f;
+				await InvokeOnMainThreadAsync(() =>
+				{
+					using (var down = MotionEvent.Obtain(time, time, MotionEventActions.Down, x, y, 0))
+						platformView.DispatchTouchEvent(down);
+					using (var move1 = MotionEvent.Obtain(time, time + 50, MotionEventActions.Move, x - 20 * density, y, 0))
+						platformView.DispatchTouchEvent(move1);
+				});
+
+				// The translation is applied by an animator, so wait for it
+				await AssertEventually(() => contentView.TranslationX < 0, message: "The swipe did not start");
+				var insideTranslationX = contentView.TranslationX;
+
+				// The pointer leaves the bounds vertically while the horizontal swipe continues
+				await InvokeOnMainThreadAsync(() =>
+				{
+					using (var move2 = MotionEvent.Obtain(time, time + 100, MotionEventActions.Move, x - 40 * density, y + platformView.Height, 0))
+						platformView.DispatchTouchEvent(move2);
+				});
+
+				await AssertEventually(() => contentView.TranslationX < insideTranslationX,
+					message: $"The swipe stopped tracking when the pointer left the bounds (TranslationX {contentView.TranslationX}, was {insideTranslationX})");
+
+				await InvokeOnMainThreadAsync(() =>
+				{
+					using (var cancel = MotionEvent.Obtain(time, time + 150, MotionEventActions.Cancel, x - 40 * density, y, 0))
+						platformView.DispatchTouchEvent(cancel);
+				});
+
+				// Wait for the cancel reset to settle so no animation outlives the test
+				await AssertEventually(() => contentView.TranslationX == 0, message: "SwipeView did not reset");
+			});
+		}
+
+		[Fact]
+		// https://github.com/dotnet/maui/issues/22153
+		public async Task OpenWorksAgainAfterAPartialSwipe()
+		{
+			SetupBuilder();
+
+			var content = new Grid
+			{
+				WidthRequest = 300,
+				HeightRequest = 60,
+				Background = new SolidPaint(Colors.White)
+			};
+
+			var swipeView = new SwipeView()
+			{
+				WidthRequest = 300,
+				HeightRequest = 60,
+				RightItems = new SwipeItems { new SwipeItem { BackgroundColor = Colors.Red } },
+				Content = content
+			};
+
+			await AttachAndRun(swipeView, async (handler) =>
+			{
+				var platformView = ((SwipeViewHandler)handler).PlatformView;
+				var contentView = ((IView)content).ToPlatform();
+
+				// The swipe open distance is clamped to the content size, so wait for the layout
+				await AssertEventually(() => contentView.Width > 0, message: "SwipeView content was not laid out");
+
+				// Open programmatically once and remember the open position
+				swipeView.Open(OpenSwipeItem.RightItems, false);
+				await AssertEventually(() => contentView.TranslationX < 0, message: "SwipeView did not open");
+				var openTranslationX = contentView.TranslationX;
+
+				swipeView.Close(false);
+				await AssertEventually(() => contentView.TranslationX == 0, message: "SwipeView did not close");
+
+				// Start a partial swipe and leave it unfinished
+				var time = global::Android.OS.SystemClock.UptimeMillis();
+				var x = platformView.Width / 2f;
+				var y = platformView.Height / 2f;
+				await InvokeOnMainThreadAsync(() =>
+				{
+					using (var down = MotionEvent.Obtain(time, time, MotionEventActions.Down, x, y, 0))
+						platformView.DispatchTouchEvent(down);
+					using (var move1 = MotionEvent.Obtain(time, time + 50, MotionEventActions.Move, x - 20, y, 0))
+						platformView.DispatchTouchEvent(move1);
+					using (var move2 = MotionEvent.Obtain(time, time + 100, MotionEventActions.Move, x - 40, y, 0))
+						platformView.DispatchTouchEvent(move2);
+				});
+
+				// Opening the same items while the partial swipe is still in progress has to work
+				swipeView.Open(OpenSwipeItem.RightItems, false);
+
+				await AssertEventually(() => contentView.TranslationX == openTranslationX,
+					message: $"SwipeView did not reopen (TranslationX {contentView.TranslationX} instead of {openTranslationX})");
+
+				// Finishing the interrupted gesture must not snap the view closed again
+				await InvokeOnMainThreadAsync(() =>
+				{
+					using (var up = MotionEvent.Obtain(time, time + 150, MotionEventActions.Up, x - 40, y, 0))
+						platformView.DispatchTouchEvent(up);
+				});
+
+				await Task.Delay(500);
+				// The settle after the gesture recomputes the open position from dp, which
+				// can land one pixel away from the first open
+				Assert.True(Math.Abs(contentView.TranslationX - openTranslationX) <= 1.5f,
+					$"SwipeView closed when the gesture ended (TranslationX {contentView.TranslationX} instead of {openTranslationX})");
+				Assert.True(((ISwipeViewController)swipeView).IsOpen, "SwipeView.IsOpen is false while the swipe items are showing");
+			});
+		}
+
+		[Fact]
+		// https://github.com/dotnet/maui/issues/22153
+		public async Task OpenFromSwipeChangingKeepsTheSwipeViewOpen()
+		{
+			SetupBuilder();
+
+			var content = new Grid
+			{
+				WidthRequest = 300,
+				HeightRequest = 60,
+				Background = new SolidPaint(Colors.White)
+			};
+
+			var swipeView = new SwipeView()
+			{
+				WidthRequest = 300,
+				HeightRequest = 60,
+				RightItems = new SwipeItems { new SwipeItem { BackgroundColor = Colors.Red } },
+				Content = content
+			};
+
+			// The scenario from the issue: complete the open programmatically once the
+			// user has swiped far enough
+			swipeView.SwipeChanging += (sender, e) =>
+			{
+				if (e.Offset <= -15)
+					((SwipeView)sender).Open(OpenSwipeItem.RightItems, false);
+			};
+
+			await AttachAndRun(swipeView, async (handler) =>
+			{
+				var platformView = ((SwipeViewHandler)handler).PlatformView;
+				var contentView = ((IView)content).ToPlatform();
+
+				// The swipe open distance is clamped to the content size, so wait for the layout
+				await AssertEventually(() => contentView.Width > 0, message: "SwipeView content was not laid out");
+
+				var density = contentView.Context.Resources.DisplayMetrics.Density;
+				var time = global::Android.OS.SystemClock.UptimeMillis();
+				var x = platformView.Width / 2f;
+				var y = platformView.Height / 2f;
+				await InvokeOnMainThreadAsync(() =>
+				{
+					using (var down = MotionEvent.Obtain(time, time, MotionEventActions.Down, x, y, 0))
+						platformView.DispatchTouchEvent(down);
+					using (var move1 = MotionEvent.Obtain(time, time + 50, MotionEventActions.Move, x - 10 * density, y, 0))
+						platformView.DispatchTouchEvent(move1);
+					// The handler opens the SwipeView during this move
+					using (var move2 = MotionEvent.Obtain(time, time + 100, MotionEventActions.Move, x - 20 * density, y, 0))
+						platformView.DispatchTouchEvent(move2);
+					using (var up = MotionEvent.Obtain(time, time + 150, MotionEventActions.Up, x - 20 * density, y, 0))
+						platformView.DispatchTouchEvent(up);
+				});
+
+				await Task.Delay(500);
+				Assert.True(contentView.TranslationX < 0,
+					$"SwipeView closed when the gesture ended (TranslationX {contentView.TranslationX})");
+				Assert.True(((ISwipeViewController)swipeView).IsOpen, "SwipeView.IsOpen is false while the swipe items are showing");
+			});
+		}
+
+		[Fact]
+		// https://github.com/dotnet/maui/issues/22153
+		public async Task OpenTheOtherSideShowsItsItems()
+		{
+			SetupBuilder();
+
+			var content = new Grid
+			{
+				WidthRequest = 300,
+				HeightRequest = 60,
+				Background = new SolidPaint(Colors.White)
+			};
+
+			var swipeView = new SwipeView()
+			{
+				WidthRequest = 300,
+				HeightRequest = 60,
+				LeftItems = new SwipeItems { new SwipeItem { BackgroundColor = Colors.Green } },
+				RightItems = new SwipeItems { new SwipeItem { BackgroundColor = Colors.Red } },
+				Content = content
+			};
+
+			await AttachAndRun(swipeView, async (handler) =>
+			{
+				var platformView = ((SwipeViewHandler)handler).PlatformView;
+				var contentView = ((IView)content).ToPlatform();
+
+				// The swipe open distance is clamped to the content size, so wait for the layout
+				await AssertEventually(() => contentView.Width > 0, message: "SwipeView content was not laid out");
+
+				swipeView.Open(OpenSwipeItem.LeftItems, false);
+				await AssertEventually(() => contentView.TranslationX > 0, message: "SwipeView did not open the left items");
+
+				// Switching sides closes the left items and shows the right ones
+				swipeView.Open(OpenSwipeItem.RightItems, false);
+				await AssertEventually(() => contentView.TranslationX < 0,
+					message: $"SwipeView did not switch to the right items (TranslationX {contentView.TranslationX})");
+				Assert.True(((ISwipeViewController)swipeView).IsOpen, "SwipeView.IsOpen is false while the swipe items are showing");
+			});
+		}
+
+		[Fact]
+		// https://github.com/dotnet/maui/issues/22153
+		public async Task OpenAnEmptySideKeepsTheCurrentStateConsistent()
+		{
+			SetupBuilder();
+
+			var content = new Grid
+			{
+				WidthRequest = 300,
+				HeightRequest = 60,
+				Background = new SolidPaint(Colors.White)
+			};
+
+			var swipeView = new SwipeView()
+			{
+				WidthRequest = 300,
+				HeightRequest = 60,
+				RightItems = new SwipeItems { new SwipeItem { BackgroundColor = Colors.Red } },
+				Content = content
+			};
+
+			await AttachAndRun(swipeView, async (handler) =>
+			{
+				var platformView = ((SwipeViewHandler)handler).PlatformView;
+				var contentView = ((IView)content).ToPlatform();
+
+				// The swipe open distance is clamped to the content size, so wait for the layout
+				await AssertEventually(() => contentView.Width > 0, message: "SwipeView content was not laid out");
+
+				swipeView.Open(OpenSwipeItem.RightItems, false);
+				await AssertEventually(() => contentView.TranslationX < 0, message: "SwipeView did not open");
+				var openTranslationX = contentView.TranslationX;
+
+				// There are no left items, so nothing can open; the request must not
+				// leave IsOpen reporting an open state with a closed view
+				swipeView.Open(OpenSwipeItem.LeftItems, false);
+				await Task.Delay(500);
+
+				Assert.True(contentView.TranslationX == openTranslationX,
+					$"Opening an empty side changed the swipe state (TranslationX {contentView.TranslationX} instead of {openTranslationX})");
+				Assert.True(((ISwipeViewController)swipeView).IsOpen, "SwipeView.IsOpen is false while the swipe items are showing");
+			});
+		}
+
 		// Issue #23478: TalkBack's "double tap to activate" invokes View.PerformAccessibilityAction(ACTION_CLICK)
 		// on the focused SwipeItem, a code path distinct from the manual touch hit-testing SwipeView normally
 		// relies on to execute commands. This verifies the accessibility action reaches the bound Command.
@@ -219,6 +504,70 @@ namespace Microsoft.Maui.DeviceTests
 
 				await AssertEventually(() => swipeItem.Width > 0);
 				Assert.NotEqual(0, swipeItem.Width);
+			});
+		}
+
+		[Fact(DisplayName = "Execute Mode SwipeItem Measures Native Content Width (Issue 37700)")]
+		public async Task ExecuteModeSwipeItemMeasuresNativeContentWidth()
+		{
+			SetupBuilder();
+
+			var content = new VerticalStackLayout
+			{
+				HeightRequest = 60,
+				Background = new SolidColorBrush(Colors.White)
+			};
+
+			var swipeItem = new SwipeItem
+			{
+				Text = "OK"
+			};
+
+			var swipeItems = new SwipeItems
+			{
+				swipeItem
+			};
+			swipeItems.Mode = SwipeMode.Execute;
+
+			var swipeView = new SwipeView()
+			{
+				HeightRequest = 60,
+				WidthRequest = 300,
+				LeftItems = swipeItems,
+				Content = content
+			};
+
+			await AttachAndRun(swipeView, async (handler) =>
+			{
+				var platformView = ((SwipeViewHandler)handler).PlatformView;
+
+				swipeView.Open(OpenSwipeItem.LeftItems, false);
+
+				// The SwipeView adds children dynamically when opening it.
+				await AssertEventually(() => platformView.ChildCount > 1);
+
+				var actionView = platformView.GetChildAt(1) as ViewGroup;
+				Assert.NotNull(actionView);
+
+				await AssertEventually(() => actionView.ChildCount > 0);
+
+				var nativeSwipeItem = actionView.GetChildAt(0);
+				Assert.NotNull(nativeSwipeItem);
+
+				await AssertEventually(() => nativeSwipeItem.Width > 0);
+
+				int contentWidthPixels = platformView.Width;
+				int swipeItemWidthPixels = nativeSwipeItem.Width;
+
+				// Prior to the fix, a single Execute-mode SwipeItem was sized to
+				// contentWidth / items.Count, i.e. the entire SwipeView content
+				// width, instead of the native menu button's measured content size.
+				// With a single short-text item, the measured native width should be
+				// noticeably smaller than the full SwipeView content width.
+				Assert.True(swipeItemWidthPixels < contentWidthPixels,
+					$"Expected the Execute-mode SwipeItem width ({swipeItemWidthPixels}px) to be smaller " +
+					$"than the full SwipeView content width ({contentWidthPixels}px), matching the native " +
+					$"button's measured content size instead of the entire SwipeView width.");
 			});
 		}
 
@@ -445,8 +794,8 @@ namespace Microsoft.Maui.DeviceTests
 				var actionView = Assert.Single(
 					Enumerable.Range(0, platformView.ChildCount)
 						.Select(platformView.GetChildAt)
-						.OfType<ALinearLayoutCompat>()
-						.Where(view => view.ChildCount > 0));
+						.OfType<ALinearLayoutCompat>(),
+					view => view.ChildCount > 0);
 				var swipeButton = Assert.IsAssignableFrom<ATextView>(actionView.GetChildAt(0));
 
 				await AssertEventually(() =>

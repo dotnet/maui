@@ -394,8 +394,8 @@ function Test-CiScanFingerprint {
     .SYNOPSIS
         Validates a canonical ci-scan fingerprint against a twin configuration.
     .DESCRIPTION
-        Mirrors the producer-side contract enforced by Validate-CiScanManifest.ps1
-        (PR #36848) but is non-throwing and returns the parsed fields.
+        Preserves the retired issue producer's fingerprint contract (PR #36848)
+        for legacy backlog reconciliation; returns parsed fields without throwing.
 
         Charset is restricted to a small ASCII subset. That is deliberate: it makes
         homoglyph spoofing of the label/branch fields impossible, so a fingerprint that
