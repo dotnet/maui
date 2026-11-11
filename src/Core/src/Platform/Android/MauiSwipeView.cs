@@ -1452,16 +1452,20 @@ namespace Microsoft.Maui.Platform
 			if (_contentView == null)
 				return;
 
-			var openSwipeItem = e.OpenSwipeItem;
-			var animated = e.Animated;
-
-			UpdateIsOpen(true);
-			ProgrammaticallyOpenSwipeItem(openSwipeItem, animated);
+			ProgrammaticallyOpenSwipeItem(e.OpenSwipeItem, e.Animated);
 		}
 
 		void ProgrammaticallyOpenSwipeItem(OpenSwipeItem openSwipeItem, bool animated)
 		{
 			var swipeDirection = GetSwipeDirection(openSwipeItem);
+			var swipeItems = GetSwipeItemsByDirection(swipeDirection);
+
+			// An empty side cannot open: leave the view and the reported open state
+			// untouched instead of resetting and reporting open with nothing showing
+			if (swipeItems == null || swipeItems.Count == 0)
+				return;
+
+			UpdateIsOpen(true);
 
 			if (_isOpen)
 			{
@@ -1485,11 +1489,6 @@ namespace Microsoft.Maui.Platform
 
 			_previousOpenSwipeItem = openSwipeItem;
 			_swipeDirection = swipeDirection;
-
-			var swipeItems = GetSwipeItemsByDirection();
-
-			if (swipeItems == null || swipeItems.Count == 0)
-				return;
 
 			UpdateSwipeItems();
 
