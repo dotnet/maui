@@ -3,6 +3,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using CoreAnimation;
 using CoreGraphics;
+using Foundation;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Platform;
 using UIKit;
@@ -38,6 +39,36 @@ namespace Microsoft.Maui.Platform
 			_bounds = new CGRect();
 			_shape = new WeakReference<IShape?>(null);
 			ContentsScale = UIScreen.MainScreen.Scale;
+		}
+
+		/// <summary>
+		/// Core Animation creates the layer returned by presentationLayer by calling initWithLayer: on a new
+		/// native instance. Without this export that copy has no managed peer, so the first overridden selector
+		/// that reaches it (e.g. drawInContext: when a screen recorder such as Microsoft Clarity draws
+		/// presentation layers) fails with "Failed to marshal the Objective-C object". The copy takes over the
+		/// paint and shape of the layer it is created from, so it draws the same content.
+		/// </summary>
+		[Export("initWithLayer:")]
+		internal MauiCALayer(CALayer layer) : base(layer)
+		{
+			if (layer is not MauiCALayer mauiCALayer)
+			{
+				_shape = new WeakReference<IShape?>(null);
+				return;
+			}
+
+			_bounds = mauiCALayer._bounds;
+			_shape = mauiCALayer._shape;
+			_backgroundColor = mauiCALayer._backgroundColor;
+			_background = mauiCALayer._background;
+			_strokeThickness = mauiCALayer._strokeThickness;
+			_strokeColor = mauiCALayer._strokeColor;
+			_stroke = mauiCALayer._stroke;
+			_strokeLineCap = mauiCALayer._strokeLineCap;
+			_strokeLineJoin = mauiCALayer._strokeLineJoin;
+			_strokeDash = mauiCALayer._strokeDash;
+			_strokeDashOffset = mauiCALayer._strokeDashOffset;
+			_strokeMiterLimit = mauiCALayer._strokeMiterLimit;
 		}
 
 		protected override void Dispose(bool disposing)
