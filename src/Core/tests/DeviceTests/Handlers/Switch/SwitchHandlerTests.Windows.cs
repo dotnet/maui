@@ -377,6 +377,30 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact]
+		public async Task ClearingOnColorAfterGarbageCollectionRemovesHoverResources()
+		{
+			var switchStub = new SwitchStub { IsOn = true };
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<DirectHoverSwitchHandler>(switchStub);
+				var toggleSwitch = handler.PlatformView;
+
+				switchStub.TrackColor = Colors.Red;
+				handler.UpdateValue(nameof(ISwitch.TrackColor));
+
+				GC.Collect();
+				GC.WaitForPendingFinalizers();
+				GC.Collect();
+
+				switchStub.TrackColor = null;
+				handler.UpdateValue(nameof(ISwitch.TrackColor));
+
+				Assert.Empty(toggleSwitch.Resources.MergedDictionaries);
+				Assert.Same(handler.OriginalHoverBrush, toggleSwitch.Resources["ToggleSwitchFillOnPointerOver"]);
+			});
+		}
+
 		static ResourceDictionary GetHoverThemeResources(ToggleSwitch toggleSwitch, string theme)
 		{
 			var resources = Assert.Single(toggleSwitch.Resources.MergedDictionaries);
