@@ -207,7 +207,7 @@ $$"""
 			}
 		exit:
 			codeWriter.Flush();
-			return codeWriter.InnerWriter.ToString();
+			return GeneratorHelpers.LiftFallbackUsings(codeWriter.InnerWriter.ToString(), NewLine);
 		}
 	}
 
