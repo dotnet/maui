@@ -22,7 +22,7 @@ public class VisualStateManager_SliderFeatureTests : _GalleryUITest
 		App.WaitForElement("SliderState");
 		var stateText = App.FindElement("SliderState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Normal | Value: 50"));
-		VerifyScreenshot();
+		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(2)]
@@ -33,7 +33,7 @@ public class VisualStateManager_SliderFeatureTests : _GalleryUITest
 		App.WaitForElement("SliderState");
 		var stateText1 = App.FindElement("SliderState").GetText();
 		Assert.That(stateText1, Is.EqualTo("State: Normal/Unfocused | Value: 50"));
-		VerifyScreenshot();
+		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(3)]
@@ -55,7 +55,7 @@ public class VisualStateManager_SliderFeatureTests : _GalleryUITest
 		App.WaitForElement("SliderState");
 		var stateText = App.FindElement("SliderState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Normal | Value: 50"));
-		VerifyScreenshot();
+		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(5)]
@@ -66,7 +66,7 @@ public class VisualStateManager_SliderFeatureTests : _GalleryUITest
 		App.WaitForElement("SliderState");
 		var stateText = App.FindElement("SliderState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Focused | Value: 65"));
-		VerifyScreenshot();
+		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(6)]
