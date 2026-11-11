@@ -335,6 +335,13 @@ public class SimpleTemplateTest : BaseTemplateTests
 		var mv = framework == DotNetPrevious ? MauiVersionPrevious : MauiVersionCurrent;
 		if (!string.IsNullOrEmpty(mv))
 		{
+			if (framework == DotNetPrevious)
+			{
+				var versions = XDocument.Load(Path.Combine(TestEnvironment.GetMauiDirectory(), "eng", "Versions.props"));
+				var defaultVersion = versions.Descendants("MicrosoftMauiPreviousDotNetReleasedVersion").Single().Value;
+				Assert.NotEqual(defaultVersion, mv);
+			}
+
 			FileUtilities.ReplaceInFile(projectFile,
 				"</Project>",
 				$"<PropertyGroup><MauiVersion>{mv}</MauiVersion></PropertyGroup></Project>");
@@ -352,6 +359,14 @@ public class SimpleTemplateTest : BaseTemplateTests
 		string target = shouldPack ? "Pack" : "";
 		Assert.True(DotnetInternal.Build(projectFile, config, target: target, binlogPath: binlogDir, properties: buildProps, output: _output),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
+
+		if (!string.IsNullOrEmpty(mv))
+		{
+			using var assets = JsonDocument.Parse(File.ReadAllText(Path.Combine(projectDir, "obj", "project.assets.json")));
+			foreach (var targetFramework in assets.RootElement.GetProperty("targets").EnumerateObject())
+				Assert.True(targetFramework.Value.TryGetProperty($"Microsoft.Maui.Controls/{mv}", out _),
+					$"Target {targetFramework.Name} did not resolve Microsoft.Maui.Controls version {mv}.");
+		}
 	}
 
 #if ENABLE_PREVIOUS_TFM_BUILDS

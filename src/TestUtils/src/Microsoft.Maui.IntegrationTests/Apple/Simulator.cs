@@ -82,44 +82,47 @@ namespace Microsoft.Maui.IntegrationTests.Apple
 					return null;
 
 				using var doc = JsonDocument.Parse(output);
-				var runtimes = doc.RootElement.GetProperty("runtimes");
-
-				Version? preferredVersion = null; // iOS 18.x
-				Version? latestVersion = null;    // Any iOS version
-
-				foreach (var runtime in runtimes.EnumerateArray())
-				{
-					if (!runtime.TryGetProperty("platform", out var platform) || platform.GetString() != "iOS")
-						continue;
-					if (!runtime.TryGetProperty("isAvailable", out var available) || !available.GetBoolean())
-						continue;
-					if (!runtime.TryGetProperty("version", out var versionProp))
-						continue;
-					// XHarness creates its iOS simulator as an iPhone 11 Pro, which newer runtimes (iOS 27.1+) no longer support.
-					if (!SupportsDeviceType(runtime, XHarnessIOSDeviceType))
-						continue;
-
-					var versionStr = versionProp.GetString();
-					if (Version.TryParse(versionStr, out var version))
-					{
-						// Track latest overall
-						if (latestVersion == null || version > latestVersion)
-							latestVersion = version;
-
-						// Prefer iOS 18.x for XHarness compatibility (has iPhone XS device type)
-						if (version.Major == 18 && (preferredVersion == null || version > preferredVersion))
-							preferredVersion = version;
-					}
-				}
-
-				// Use 18.x if available, otherwise fall back to latest
-				return preferredVersion ?? latestVersion;
+				return SelectLatestIOSVersion(doc.RootElement.GetProperty("runtimes"));
 			}
 			catch (Exception ex)
 			{
 				_output?.WriteLine($"Failed to detect iOS version: {ex.Message}");
 				return null;
 			}
+		}
+
+		internal static Version? SelectLatestIOSVersion(JsonElement runtimes)
+		{
+			Version? preferredVersion = null; // iOS 18.x
+			Version? latestVersion = null;    // Any iOS version
+
+			foreach (var runtime in runtimes.EnumerateArray())
+			{
+				if (!runtime.TryGetProperty("platform", out var platform) || platform.GetString() != "iOS")
+					continue;
+				if (!runtime.TryGetProperty("isAvailable", out var available) || !available.GetBoolean())
+					continue;
+				if (!runtime.TryGetProperty("version", out var versionProp))
+					continue;
+				// XHarness creates its iOS simulator as an iPhone 11 Pro, which newer runtimes (iOS 27.1+) no longer support.
+				if (!SupportsDeviceType(runtime, XHarnessIOSDeviceType))
+					continue;
+
+				var versionStr = versionProp.GetString();
+				if (Version.TryParse(versionStr, out var version))
+				{
+					// Track latest overall
+					if (latestVersion == null || version > latestVersion)
+						latestVersion = version;
+
+					// Prefer iOS 18.x for XHarness compatibility (has iPhone XS device type)
+					if (version.Major == 18 && (preferredVersion == null || version > preferredVersion))
+						preferredVersion = version;
+				}
+			}
+
+			// Use 18.x if available, otherwise fall back to latest
+			return preferredVersion ?? latestVersion;
 		}
 
 		const string XHarnessIOSDeviceType = "com.apple.CoreSimulator.SimDeviceType.iPhone-11-Pro";
