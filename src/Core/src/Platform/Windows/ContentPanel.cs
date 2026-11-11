@@ -264,6 +264,7 @@ namespace Microsoft.Maui.Platform
 
 		public void UpdateBackground(Paint? background)
 		{
+			ControlExtensions.BackgroundImageRequests.Begin(this);
 			if (_borderPath is null)
 			{
 				return;
