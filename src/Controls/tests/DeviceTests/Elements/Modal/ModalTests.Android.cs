@@ -19,6 +19,40 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class ModalTests : ControlsHandlerTestBase
 	{
+		[Theory]
+		[InlineData(false, false)]
+		[InlineData(false, true)]
+		[InlineData(true, false)]
+		[InlineData(true, true)]
+		public async Task ImmediatePopAfterNonAnimatedPushDismissesDialog(bool useShell, bool animatedPop)
+		{
+			SetupBuilder();
+			var page = new ContentPage();
+			Page root = useShell ? new Shell { CurrentItem = page } : new NavigationPage(page);
+			var window = new Window(root);
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(window,
+				async handler =>
+				{
+					var fragmentManager = handler.MauiContext.GetFragmentManager();
+
+					for (int i = 0; i < 2; i++)
+					{
+						var modal = new ContentPage { BackgroundColor = Colors.Yellow };
+						await page.Navigation.PushModalAsync(modal, animated: false);
+						bool loadedAtPop = modal.IsLoaded;
+						var popped = await page.Navigation.PopModalAsync(animatedPop);
+
+						Assert.True(loadedAtPop);
+						Assert.Same(modal, popped);
+						Assert.Empty(page.Navigation.ModalStack);
+						await AssertEventually(() => !fragmentManager.Fragments
+							.OfType<ModalNavigationManager.ModalFragment>()
+							.Any(fragment => fragment.Dialog?.IsShowing == true));
+					}
+				});
+		}
+
 		[Fact]
 		public async Task ChangeModalStackWhileDeactivated()
 		{
