@@ -157,6 +157,12 @@ including its source commit, and take the matching `eng/common` update and feed
 changes when required. An individual NuGet version bump does not update the
 tracked toolset or shared build infrastructure.
 
+Stable Mono ToolChain and Emscripten workload manifests are published to
+NuGet.org. `src/DotNet/Dependencies/Workloads.csproj` adds that source only when
+restoring final runtime manifests; prerelease manifests retain the configured
+build feeds. Keep the pinned versions unchanged when repairing a missing-source
+`NU1102` failure rather than substituting the nearest older RTM package.
+
 Dependabot excludes these packages to avoid partial toolset upgrades. It also
 excludes `Magick.NET-Q8-AnyCPU` major version updates: version 15 changed screenshot
 comparison behavior and removed Intel macOS support. A major upgrade requires
