@@ -219,6 +219,91 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact]
+		// https://github.com/dotnet/maui/issues/22153
+		public async Task OpenTheOtherSideShowsItsItems()
+		{
+			SetupBuilder();
+
+			var content = new Grid
+			{
+				WidthRequest = 300,
+				HeightRequest = 60,
+				Background = new SolidPaint(Colors.White)
+			};
+
+			var swipeView = new SwipeView()
+			{
+				WidthRequest = 300,
+				HeightRequest = 60,
+				LeftItems = new SwipeItems { new SwipeItem { BackgroundColor = Colors.Green } },
+				RightItems = new SwipeItems { new SwipeItem { BackgroundColor = Colors.Red } },
+				Content = content
+			};
+
+			await AttachAndRun(swipeView, async (handler) =>
+			{
+				var platformView = ((SwipeViewHandler)handler).PlatformView;
+				var contentView = ((IView)content).ToPlatform();
+
+				// The swipe open distance is clamped to the content size, so wait for the layout
+				await AssertEventually(() => contentView.Width > 0, message: "SwipeView content was not laid out");
+
+				swipeView.Open(OpenSwipeItem.LeftItems, false);
+				await AssertEventually(() => contentView.TranslationX > 0, message: "SwipeView did not open the left items");
+
+				// Switching sides closes the left items and shows the right ones
+				swipeView.Open(OpenSwipeItem.RightItems, false);
+				await AssertEventually(() => contentView.TranslationX < 0,
+					message: $"SwipeView did not switch to the right items (TranslationX {contentView.TranslationX})");
+				Assert.True(((ISwipeViewController)swipeView).IsOpen, "SwipeView.IsOpen is false while the swipe items are showing");
+			});
+		}
+
+		[Fact]
+		// https://github.com/dotnet/maui/issues/22153
+		public async Task OpenAnEmptySideKeepsTheCurrentStateConsistent()
+		{
+			SetupBuilder();
+
+			var content = new Grid
+			{
+				WidthRequest = 300,
+				HeightRequest = 60,
+				Background = new SolidPaint(Colors.White)
+			};
+
+			var swipeView = new SwipeView()
+			{
+				WidthRequest = 300,
+				HeightRequest = 60,
+				RightItems = new SwipeItems { new SwipeItem { BackgroundColor = Colors.Red } },
+				Content = content
+			};
+
+			await AttachAndRun(swipeView, async (handler) =>
+			{
+				var platformView = ((SwipeViewHandler)handler).PlatformView;
+				var contentView = ((IView)content).ToPlatform();
+
+				// The swipe open distance is clamped to the content size, so wait for the layout
+				await AssertEventually(() => contentView.Width > 0, message: "SwipeView content was not laid out");
+
+				swipeView.Open(OpenSwipeItem.RightItems, false);
+				await AssertEventually(() => contentView.TranslationX < 0, message: "SwipeView did not open");
+				var openTranslationX = contentView.TranslationX;
+
+				// There are no left items, so nothing can open; the request must not
+				// leave IsOpen reporting an open state with a closed view
+				swipeView.Open(OpenSwipeItem.LeftItems, false);
+				await Task.Delay(500);
+
+				Assert.True(contentView.TranslationX == openTranslationX,
+					$"Opening an empty side changed the swipe state (TranslationX {contentView.TranslationX} instead of {openTranslationX})");
+				Assert.True(((ISwipeViewController)swipeView).IsOpen, "SwipeView.IsOpen is false while the swipe items are showing");
+			});
+		}
+
 		// Issue #23478: TalkBack's "double tap to activate" invokes View.PerformAccessibilityAction(ACTION_CLICK)
 		// on the focused SwipeItem, a code path distinct from the manual touch hit-testing SwipeView normally
 		// relies on to execute commands. This verifies the accessibility action reaches the bound Command.
