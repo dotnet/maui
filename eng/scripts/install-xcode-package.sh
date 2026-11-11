@@ -10,7 +10,7 @@
 set -euo pipefail
 
 PACKAGE_DIRECTORY=${1:?Usage: $0 <package-directory>}
-PACKAGE_DIRECTORY=$(cd -- "$PACKAGE_DIRECTORY" && pwd -P)
+PACKAGE_DIRECTORY=$(CDPATH='' cd -- "$PACKAGE_DIRECTORY" >/dev/null && pwd -P)
 MANIFEST="$PACKAGE_DIRECTORY/xcode-metadata.json"
 
 if [[ "$(sysctl -n hw.optional.arm64 2>/dev/null || echo 0)" != "1" ]]; then
