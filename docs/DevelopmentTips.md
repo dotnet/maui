@@ -107,6 +107,9 @@ is not sufficient. Apple SDK version validation is currently bypassed in the
 integration tests. Compound test filters use single-quoted arguments in the
 shared PowerShell runner.
 
+Internal jobs that install the pinned Xcode Universal Package select that exact
+application and verify its build version before compiling.
+
 The iOS simulator x64 NativeAOT cases target .NET 11 because the .NET 12 Apple
 workload no longer provides an x64 simulator runtime pack. They do not provide
 .NET 12 x64 simulator coverage.
