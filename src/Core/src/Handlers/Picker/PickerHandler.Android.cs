@@ -16,12 +16,15 @@ namespace Microsoft.Maui.Handlers
 		protected AppCompatAlertDialog? _dialog;
 		ColorStateList? _defaultHintTextColors;
 
-		protected override MauiPicker CreatePlatformView() =>
-			new MauiPicker(Context);
+		protected override MauiPicker CreatePlatformView()
+		{
+			var platformView = new MauiPicker(Context);
+			_defaultHintTextColors = platformView.HintTextColors;
+			return platformView;
+		}
 
 		protected override void ConnectHandler(MauiPicker platformView)
 		{
-			_defaultHintTextColors = platformView.HintTextColors;
 			platformView.Click += OnClick;
 
 			base.ConnectHandler(platformView);
@@ -39,7 +42,6 @@ namespace Microsoft.Maui.Handlers
 				_dialog = null;
 			}
 
-			_defaultHintTextColors = null;
 			base.DisconnectHandler(platformView);
 		}
 
