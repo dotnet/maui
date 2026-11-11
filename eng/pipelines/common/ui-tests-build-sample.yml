@@ -11,6 +11,7 @@ parameters:
   testFilter: ''
   headless: true
   runtimeVariant: 'CoreCLR' #Mono, CoreCLR, NativeAOT
+  coreclrArtifactName: 'ui-tests-samples-coreclr'
   useMaterial3: false # NEW PARAMETER - Enable Material3 build
   useWindowsCV1: false # NEW PARAMETER - Enable WindowsCollectionView1Handler testing (default false)
 
@@ -66,7 +67,13 @@ steps:
   
 - pwsh: |
     Get-Content $PSCommandPath
-    $buildCommand = "./build.ps1 --target=uitests-apphost --configuration=${{ parameters.configuration }} --${{ parameters.platform }} --verbosity=diagnostic --usenuget=false --runtimevariant=${{ parameters.runtimeVariant }}"
+    $buildCommand = "./build.ps1 --target=uitests-apphost --configuration=${{ parameters.configuration }} --verbosity=diagnostic --usenuget=false --runtimevariant=${{ parameters.runtimeVariant }}"
+    if ("${{ parameters.platform }}" -ne '') {
+        $buildCommand += " --${{ parameters.platform }}"
+    }
+    if ("${{ parameters.cakeArgs }}" -ne '') {
+        $buildCommand += " ${{ parameters.cakeArgs }}"
+    }
     
     # Add Material3 build argument if enabled
     if (("${{ parameters.useMaterial3 }}" -eq "true") -and ("${{ parameters.platform }}" -eq "android")) {
@@ -102,7 +109,7 @@ steps:
 
 - publish: $(System.DefaultWorkingDirectory)/artifacts/bin
   condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'CoreCLR'), eq('${{ parameters.useMaterial3 }}', 'false'), succeeded())
-  artifact: ui-tests-samples-coreclr
+  artifact: ${{ parameters.coreclrArtifactName }}
 
 # Material3 artifacts
 - publish: $(System.DefaultWorkingDirectory)/artifacts/bin
@@ -131,7 +138,7 @@ steps:
 
 - publish: $(System.DefaultWorkingDirectory)/artifacts/bin
   condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'CoreCLR'), eq('${{ parameters.useMaterial3 }}', 'false'), failed())
-  artifact: ui-tests-samples-coreclr_failed_$(System.JobAttempt)
+  artifact: ${{ parameters.coreclrArtifactName }}_failed_$(System.JobAttempt)
 
 # Material3 failure artifacts
 - publish: $(System.DefaultWorkingDirectory)/artifacts/bin

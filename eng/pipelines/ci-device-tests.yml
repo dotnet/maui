@@ -138,6 +138,18 @@ stages:
         runAsPublic: true
       runWindowsTests: true
       TargetFrameworkVersion: ${{ targetFrameworkVersion.tfm }}
+      androidPrepareSteps:
+      - template: /eng/pipelines/common/provision.yml@self
+        parameters:
+          checkoutDirectory: '$(System.DefaultWorkingDirectory)'
+          skipJdk: false
+          skipAndroidCommonSdks: false
+          skipAndroidPlatformApis: false
+          onlyAndroidPlatformDefaultApis: true
+          skipAndroidEmulatorImages: true
+          skipAndroidCreateAvds: true
+          skipXcode: true
+          skipSimulatorSetup: true
       prepareSteps:
       - template: /eng/pipelines/common/provision.yml@self
         parameters:
