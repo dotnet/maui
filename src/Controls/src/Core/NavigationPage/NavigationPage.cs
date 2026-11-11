@@ -499,8 +499,10 @@ namespace Microsoft.Maui.Controls
 
 		void FireAppearing(Page page)
 		{
-			if (HasAppeared)
-				page?.SendAppearing();
+			// The page already appeared when it became the CurrentPage. If it isn't the CurrentPage anymore, its
+			// Appearing handler started another navigation and it shouldn't appear a second time.
+			if (HasAppeared && page is not null && page == CurrentPage)
+				page.SendAppearing();
 		}
 
 
