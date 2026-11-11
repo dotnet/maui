@@ -10,6 +10,7 @@ namespace Microsoft.Maui.Platform
 		readonly WeakReference<Window> _platformWindow;
 		WindowRootView _rootView;
 		bool _disconnected = true;
+		bool _isWindowActive;
 		internal event EventHandler? OnApplyTemplateFinished;
 
 		public NavigationRootManager(Window platformWindow)
@@ -130,6 +131,7 @@ namespace Microsoft.Maui.Platform
 			if (_disconnected && _platformWindow.TryGetTarget(out var platformWindow))
 			{
 				platformWindow.Activated += OnWindowActivated;
+				_rootView.ActualThemeChanged += OnRootViewActualThemeChanged;
 				_disconnected = false;
 			}
 
@@ -139,6 +141,7 @@ namespace Microsoft.Maui.Platform
 		public virtual void Disconnect()
 		{
 			_rootView.OnWindowTitleBarContentSizeChanged -= WindowRootViewOnWindowTitleBarContentSizeChanged;
+			_rootView.ActualThemeChanged -= OnRootViewActualThemeChanged;
 
 			if (_platformWindow.TryGetTarget(out var platformWindow))
 			{
@@ -186,17 +189,19 @@ namespace Microsoft.Maui.Platform
 
 		void OnWindowActivated(object sender, WindowActivatedEventArgs e)
 		{
-			SolidColorBrush defaultForegroundBrush = (SolidColorBrush)Application.Current.Resources["TextFillColorPrimaryBrush"];
-			SolidColorBrush inactiveForegroundBrush = (SolidColorBrush)Application.Current.Resources["TextFillColorDisabledBrush"];
+			_isWindowActive = e.WindowActivationState != WindowActivationState.Deactivated;
+			UpdateWindowTitleForeground();
+		}
 
-			if (e.WindowActivationState == WindowActivationState.Deactivated)
-			{
-				_rootView.WindowTitleForeground = inactiveForegroundBrush;
-			}
-			else
-			{
-				_rootView.WindowTitleForeground = defaultForegroundBrush;
-			}
+		void OnRootViewActualThemeChanged(FrameworkElement sender, object args)
+		{
+			if (!_disconnected)
+				UpdateWindowTitleForeground();
+		}
+
+		void UpdateWindowTitleForeground()
+		{
+			VisualStateManager.GoToState(_rootView, _isWindowActive ? "WindowActivated" : "WindowDeactivated", false);
 		}
 	}
 }
