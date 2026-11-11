@@ -5,7 +5,7 @@
 # The package holds xcode-metadata.json and the Apple-signed Xcode .xip it describes.
 #
 # Usage: install-xcode-package.sh <package-directory> [expected-package-version]
-# Sets the XCODE pipeline variable to the installed major.minor version.
+# Sets XCODE and the installed build version for the subsequent selection step.
 
 set -euo pipefail
 
@@ -63,7 +63,7 @@ installed_build ()
 	/usr/libexec/PlistBuddy -c 'Print :ProductBuildVersion' "$XCODE_APP/Contents/version.plist" 2>/dev/null || true
 }
 
-if [[ "$(installed_build)" == "$BUILD_VERSION" ]]; then
+if [[ ! -L "$XCODE_APP" && "$(installed_build)" == "$BUILD_VERSION" ]]; then
 	echo "Xcode $PACKAGE_VERSION ($BUILD_VERSION) is already installed at $XCODE_APP."
 else
 	if [[ ! -f "$ARCHIVE" || -L "$ARCHIVE" ]]; then
@@ -102,7 +102,7 @@ fi
 sudo "$XCODEBUILD" -license accept
 sudo "$XCODEBUILD" -runFirstLaunch
 
-# The 'Select Xcode Version' step resolves XCODE (major.minor) to /Applications/Xcode_<major.minor>.*.app.
 xcode_major_minor=$(cut -d . -f 1-2 <<< "$PACKAGE_VERSION")
 echo "Installed Xcode $PACKAGE_VERSION ($BUILD_VERSION) at $XCODE_APP."
 echo "##vso[task.setvariable variable=XCODE]$xcode_major_minor"
+echo "##vso[task.setvariable variable=XCODE_PACKAGE_BUILD]$BUILD_VERSION"
