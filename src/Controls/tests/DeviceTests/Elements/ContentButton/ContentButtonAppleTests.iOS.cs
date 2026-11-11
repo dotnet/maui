@@ -68,6 +68,39 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task ContainerSafeAreaKeepsContentOutOfSystemInsets()
+		{
+			var label = new Label { Text = "Safe area content" };
+			var button = new ContentButton
+			{
+				Content = label,
+				SafeAreaEdges = SafeAreaEdges.Container,
+				HorizontalOptions = LayoutOptions.Fill,
+				VerticalOptions = LayoutOptions.Fill,
+			};
+			var page = new ContentPage { SafeAreaEdges = SafeAreaEdges.None, Content = button };
+
+			await CreateHandlerAndAddToWindow(page, async () =>
+			{
+				await AssertionExtensions.AssertEventually(() => label.Width > 0 && label.Height > 0);
+
+				var labelView = (UIView)label.Handler!.PlatformView!;
+				var window = labelView.Window!;
+				var insets = window.SafeAreaInsets;
+				var frame = labelView.ConvertRectToView(labelView.Bounds, window);
+
+				await AssertionExtensions.AssertEventually(() =>
+				{
+					frame = labelView.ConvertRectToView(labelView.Bounds, window);
+					return frame.Top >= insets.Top - 0.5 &&
+						frame.Left >= insets.Left - 0.5 &&
+						frame.Right <= window.Bounds.Width - insets.Right + 0.5 &&
+						frame.Bottom <= window.Bounds.Height - insets.Bottom + 0.5;
+				});
+			});
+		}
+
+		[Fact]
 		public async Task ContentIsPresentationOnlyAndUpdates()
 		{
 			var original = new Label { Text = "Original" };
@@ -77,19 +110,25 @@ namespace Microsoft.Maui.DeviceTests
 
 			await InvokeOnMainThreadAsync(() =>
 			{
+				var platformButton = Assert.IsType<MauiContentButton>(handler.PlatformView);
+				var container = platformButton.ContentContainerView;
+				Assert.False(container.UserInteractionEnabled);
+				Assert.True(container.AccessibilityElementsHidden);
+
 				var originalPlatformView = Assert.IsAssignableFrom<UIView>(original.Handler?.PlatformView);
-				Assert.Same(handler.PlatformView, originalPlatformView.Superview);
-				Assert.False(originalPlatformView.UserInteractionEnabled);
-				Assert.False(originalPlatformView.IsAccessibilityElement);
-				Assert.True(originalPlatformView.AccessibilityElementsHidden);
+				Assert.Same(container, originalPlatformView.Superview);
+				var originalAccessibility = originalPlatformView.IsAccessibilityElement;
+				var originalHidden = originalPlatformView.AccessibilityElementsHidden;
+				var originalInteraction = originalPlatformView.UserInteractionEnabled;
 
 				button.Content = replacement;
 
 				var replacementPlatformView = Assert.IsAssignableFrom<UIView>(replacement.Handler?.PlatformView);
-				Assert.Same(handler.PlatformView, replacementPlatformView.Superview);
+				Assert.Same(container, replacementPlatformView.Superview);
 				Assert.Null(originalPlatformView.Superview);
-				Assert.False(replacementPlatformView.UserInteractionEnabled);
-				Assert.True(replacementPlatformView.AccessibilityElementsHidden);
+				Assert.Equal(originalAccessibility, originalPlatformView.IsAccessibilityElement);
+				Assert.Equal(originalHidden, originalPlatformView.AccessibilityElementsHidden);
+				Assert.Equal(originalInteraction, originalPlatformView.UserInteractionEnabled);
 			});
 		}
 
@@ -206,9 +245,9 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal("Second action", handler.PlatformView.AccessibilityLabel);
 
 				var content = Assert.IsAssignableFrom<UIView>(second.Content.Handler?.PlatformView);
-				Assert.Same(handler.PlatformView, content.Superview);
-				Assert.True(content.AccessibilityElementsHidden);
-				Assert.False(content.IsAccessibilityElement);
+				var container = Assert.IsType<MauiContentButton>(handler.PlatformView).ContentContainerView;
+				Assert.Same(container, content.Superview);
+				Assert.True(container.AccessibilityElementsHidden);
 			});
 		}
 	}

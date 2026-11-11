@@ -1,9 +1,4 @@
 #nullable enable
-override Microsoft.Maui.Animations.PlatformTicker.IsRunning.get -> bool
-override Microsoft.Maui.Platform.LayoutPanel.OnCreateAutomationPeer() -> Microsoft.UI.Xaml.Automation.Peers.AutomationPeer!
-override Microsoft.Maui.Platform.MauiPasswordTextBox.OnCreateAutomationPeer() -> Microsoft.UI.Xaml.Automation.Peers.AutomationPeer!
-override Microsoft.Maui.Platform.ContentPanel.MeasureOverride(Windows.Foundation.Size availableSize) -> Windows.Foundation.Size
-override Microsoft.Maui.Platform.ContentPanel.OnCreateAutomationPeer() -> Microsoft.UI.Xaml.Automation.Peers.AutomationPeer!
 Microsoft.Maui.IContentButton
 Microsoft.Maui.Handlers.IContentButtonHandler
 Microsoft.Maui.Handlers.IContentButtonHandler.VirtualView.get -> Microsoft.Maui.IContentButton!
@@ -24,3 +19,4 @@ static Microsoft.Maui.Handlers.ContentButtonHandler.MapIsEnabled(Microsoft.Maui.
 static Microsoft.Maui.Handlers.ContentButtonHandler.MapPadding(Microsoft.Maui.Handlers.IContentButtonHandler! handler, Microsoft.Maui.IContentButton! button) -> void
 static Microsoft.Maui.Handlers.ContentButtonHandler.MapStrokeColor(Microsoft.Maui.Handlers.IContentButtonHandler! handler, Microsoft.Maui.IContentButton! button) -> void
 static Microsoft.Maui.Handlers.ContentButtonHandler.MapStrokeThickness(Microsoft.Maui.Handlers.IContentButtonHandler! handler, Microsoft.Maui.IContentButton! button) -> void
+override Microsoft.Maui.Handlers.ContentButtonHandler.SetVirtualView(Microsoft.Maui.IView! view) -> void

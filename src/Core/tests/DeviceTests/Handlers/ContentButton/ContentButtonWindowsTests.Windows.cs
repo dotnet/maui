@@ -1,4 +1,7 @@
 #nullable enable
+using System;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
@@ -8,6 +11,11 @@ using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Automation.Provider;
 using Xunit;
+using WButton = Microsoft.UI.Xaml.Controls.Button;
+using WGrid = Microsoft.UI.Xaml.Controls.Grid;
+using WRect = Windows.Foundation.Rect;
+using WSize = Windows.Foundation.Size;
+using WStackPanel = Microsoft.UI.Xaml.Controls.StackPanel;
 using WThickness = Microsoft.UI.Xaml.Thickness;
 
 namespace Microsoft.Maui.DeviceTests
@@ -15,6 +23,157 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Button)]
 	public class ContentButtonWindowsTests : CoreHandlerTestBase<ContentButtonHandler, ContentButtonStub>
 	{
+		[Fact]
+		public async Task ReplacingVirtualViewUpdatesLayoutAndReleasesOldPress()
+		{
+			var pressed = false;
+			var releases = 0;
+			var newReleases = 0;
+			var firstContent = new LabelStub { Text = "First" };
+			var secondContent = new LabelStub { Text = "Second" };
+			var first = new ContentButtonStub
+			{
+				Content = firstContent,
+				Width = 100,
+				Height = 50,
+				Pressed = () => pressed = true,
+				Released = () =>
+				{
+					pressed = false;
+					releases++;
+				}
+			};
+			var second = new ContentButtonStub
+			{
+				Content = secondContent,
+				Width = 180,
+				Height = 90,
+				Padding = new Thickness(5),
+				Released = () => newReleases++
+			};
+			var handler = await CreateHandlerAsync(first);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var platformButton = Assert.IsType<MauiContentButton>(handler.PlatformView);
+				var panel = platformButton.ContentPanel;
+				panel.Measure(new WSize(400, 300));
+				Assert.Equal(new WSize(100, 50), panel.DesiredSize);
+
+				PressActivationKey(handler);
+				Assert.True(pressed);
+				handler.SetVirtualView(first);
+				Assert.True(pressed);
+				Assert.Equal(0, releases);
+
+				handler.SetVirtualView(second);
+
+				Assert.Same(platformButton, handler.PlatformView);
+				Assert.Same(second, panel.CrossPlatformLayout);
+				Assert.Same(secondContent.Handler.PlatformView, panel.Content);
+				Assert.False(pressed);
+				Assert.Equal(1, releases);
+				Assert.Equal(0, newReleases);
+
+				panel.Measure(new WSize(400, 300));
+				Assert.Equal(new WSize(180, 90), panel.DesiredSize);
+				panel.Arrange(new WRect(0, 0, 180, 90));
+				Assert.Equal(new Graphics.Rect(5, 5, 170, 80), secondContent.Frame);
+			});
+		}
+
+		[Fact]
+		public async Task ActivationPressIsReleasedWhenFocusMoves()
+		{
+			var pressed = false;
+			var releases = 0;
+			var clicks = 0;
+			var button = new ContentButtonStub
+			{
+				Pressed = () => pressed = true,
+				Released = () =>
+				{
+					pressed = false;
+					releases++;
+				},
+				Clicked = () => clicks++
+			};
+			var handler = await CreateHandlerAsync(button);
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var platformButton = handler.PlatformView;
+				var otherButton = new WButton { Content = "Other" };
+				var root = new WStackPanel { Children = { platformButton, otherButton } };
+				await root.AttachAndRun(() =>
+				{
+					Assert.True(platformButton.Focus(FocusState.Programmatic));
+					PressActivationKey(handler);
+					Assert.True(pressed);
+
+					Assert.True(otherButton.Focus(FocusState.Programmatic));
+					Assert.False(pressed);
+					Assert.Equal(1, releases);
+					Assert.Equal(0, clicks);
+
+					((IElementHandler)handler).DisconnectHandler();
+					Assert.Equal(1, releases);
+				}, MauiContext);
+			});
+		}
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task OriginalTabStopsAreRestoredForRemainingAndRemovedDescendants(bool disconnect)
+		{
+			var handler = await CreateHandlerAsync(new ContentButtonStub());
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var platformButton = Assert.IsType<MauiContentButton>(handler.PlatformView);
+				var enabled = new WButton { IsTabStop = true };
+				var disabled = new WButton { IsTabStop = false };
+				var removed = new WButton { IsTabStop = true };
+				var root = new WGrid { Children = { enabled, disabled, removed } };
+				platformButton.SetPresentedContent(root);
+
+				Assert.False(enabled.IsTabStop);
+				Assert.False(disabled.IsTabStop);
+				Assert.False(removed.IsTabStop);
+				root.Children.Remove(removed);
+
+				if (disconnect)
+					((IElementHandler)handler).DisconnectHandler();
+				else
+					platformButton.ClearPresentedContent();
+
+				Assert.True(enabled.IsTabStop);
+				Assert.False(disabled.IsTabStop);
+				Assert.True(removed.IsTabStop);
+				Assert.True(root.IsHitTestVisible);
+				Assert.Null(platformButton.ContentPanel.Content);
+			});
+		}
+
+		[Fact]
+		public async Task RemovedPresentationDescendantIsNotRetained()
+		{
+			var handler = await CreateHandlerAsync(new ContentButtonStub());
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var platformButton = Assert.IsType<MauiContentButton>(handler.PlatformView);
+				var root = new WGrid();
+				var removed = PresentAndRemoveDescendant(platformButton, root);
+
+				await AssertionExtensions.WaitForGC(removed);
+
+				Assert.Same(root, platformButton.ContentPanel.Content);
+				platformButton.ClearPresentedContent();
+				GC.KeepAlive(handler);
+			});
+		}
+
 		[Fact]
 		public async Task NativeContentIsPresentationOnlyAndUpdates()
 		{
@@ -121,6 +280,25 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(new WThickness(0), platformButton.ContentPanel.Margin);
 				Assert.Equal(defaultStroke, platformButton.GetResource<object>("ButtonBorderThemeThickness"));
 			});
+		}
+
+		static void PressActivationKey(ContentButtonHandler handler)
+		{
+			// WinUI does not expose a constructor for synthetic activation-key events.
+			var keyDown = typeof(ContentButtonHandler).GetMethod("OnKeyDown", BindingFlags.Instance | BindingFlags.NonPublic);
+			Assert.NotNull(keyDown);
+			keyDown.Invoke(handler, new object?[] { handler.PlatformView, null });
+		}
+
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		static WeakReference PresentAndRemoveDescendant(MauiContentButton platformButton, WGrid root)
+		{
+			var descendant = new WButton { IsTabStop = true };
+			root.Children.Add(descendant);
+			platformButton.SetPresentedContent(root);
+			Assert.False(descendant.IsTabStop);
+			root.Children.Remove(descendant);
+			return new WeakReference(descendant);
 		}
 	}
 }

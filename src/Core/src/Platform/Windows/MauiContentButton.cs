@@ -1,6 +1,6 @@
 #nullable enable
 using System;
-using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Automation.Peers;
@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Platform
 {
 	internal sealed partial class MauiContentButton : MauiButton
 	{
-		readonly Dictionary<Control, bool> _contentTabStops = new();
+		readonly ConditionalWeakTable<Control, StrongBox<bool>> _contentTabStops = new();
 		FrameworkElement? _presentedContent;
 		bool _presentedContentHitTestVisible;
 
@@ -67,7 +67,7 @@ namespace Microsoft.Maui.Platform
 
 			foreach (var pair in _contentTabStops)
 			{
-				pair.Key.IsTabStop = pair.Value;
+				pair.Key.IsTabStop = pair.Value.Value;
 			}
 
 			_contentTabStops.Clear();
@@ -116,9 +116,9 @@ namespace Microsoft.Maui.Platform
 
 		void DisableTabStops(DependencyObject element)
 		{
-			if (element is Control control && !_contentTabStops.ContainsKey(control))
+			if (element is Control control && !_contentTabStops.TryGetValue(control, out _))
 			{
-				_contentTabStops.Add(control, control.IsTabStop);
+				_contentTabStops.Add(control, new StrongBox<bool>(control.IsTabStop));
 				control.IsTabStop = false;
 			}
 

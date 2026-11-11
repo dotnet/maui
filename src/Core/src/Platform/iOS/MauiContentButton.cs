@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Graphics;
@@ -6,26 +7,38 @@ using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
-	internal sealed class MauiContentButton : UIButton, ICrossPlatformLayoutBacking, IPlatformMeasureInvalidationController
+	internal sealed class MauiContentButton : UIButton, ICrossPlatformLayoutBacking, IPlatformMeasureInvalidationController, IUIViewLifeCycleEvents
 	{
-		readonly UIColor? _defaultBackgroundColor;
-		readonly CGColor? _defaultBorderColor;
-		readonly nfloat _defaultCornerRadius;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The owned child does not reference this button; proven safe in MemoryTests.HandlerDoesNotLeak.")]
+		readonly ContentContainer _contentContainer;
+
+		bool _nativeDefaultsCaptured;
+		UIColor? _defaultBackgroundColor;
+		CGColor? _defaultBorderColor;
+		nfloat _defaultBorderWidth;
+		nfloat _defaultCornerRadius;
 
 		bool _invalidateParentWhenMovedToWindow;
-		Size? _lastMeasuredSize;
-		double _lastMeasureHeight = double.NaN;
-		double _lastMeasureWidth = double.NaN;
 		WeakReference<UIView>? _contentView;
 		WeakReference<ICrossPlatformLayout>? _crossPlatformLayout;
 
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = IUIViewLifeCycleEvents.UnconditionalSuppressMessage)]
+		EventHandler? _movedToWindow;
+
 		internal MauiContentButton(IContentButton virtualView)
 		{
-			_defaultBackgroundColor = BackgroundColor;
-			_defaultBorderColor = Layer.BorderColor;
-			_defaultCornerRadius = Layer.CornerRadius;
 			ClipsToBounds = true;
 			IsAccessibilityElement = true;
+
+			// Disabling interaction and accessibility on this owned container keeps the
+			// presentation tree inert without changing state that belongs to the content views.
+			_contentContainer = new ContentContainer
+			{
+				UserInteractionEnabled = false,
+				IsAccessibilityElement = false,
+				AccessibilityElementsHidden = true,
+			};
+			AddSubview(_contentContainer);
 			SetVirtualView(virtualView);
 		}
 
@@ -35,11 +48,22 @@ namespace Microsoft.Maui.Platform
 			set
 			{
 				_crossPlatformLayout = value is null ? null : new(value);
-				InvalidateConstraintsCache();
+				_contentContainer.View = value as IView;
+				_contentContainer.CrossPlatformLayout = value;
+				_contentContainer.InvalidateContentMeasure();
+				SetNeedsLayout();
 			}
 		}
 
 		IContentButton? VirtualView => ((ICrossPlatformLayoutBacking)this).CrossPlatformLayout as IContentButton;
+
+		internal UIView ContentContainerView => _contentContainer;
+
+		event EventHandler? IUIViewLifeCycleEvents.MovedToWindow
+		{
+			add => _movedToWindow += value;
+			remove => _movedToWindow -= value;
+		}
 
 		internal void SetVirtualView(IContentButton? virtualView)
 		{
@@ -48,26 +72,42 @@ namespace Microsoft.Maui.Platform
 
 		internal void SetContent(UIView? content)
 		{
-			if (_contentView is not null && _contentView.TryGetTarget(out var previousContent))
+			if (_contentView is not null &&
+				_contentView.TryGetTarget(out var previousContent) &&
+				ReferenceEquals(previousContent.Superview, _contentContainer))
+			{
 				previousContent.RemoveFromSuperview();
+			}
 
 			_contentView = null;
 
 			if (content is not null)
 			{
 				content.RemoveFromSuperview();
-				content.UserInteractionEnabled = false;
-				content.IsAccessibilityElement = false;
-				content.AccessibilityElementsHidden = true;
-				AddSubview(content);
+				_contentContainer.AddSubview(content);
 				_contentView = new(content);
 			}
 
 			this.InvalidateMeasure();
 		}
 
+		// Handler subclasses can customize the view returned by CreatePlatformView, so
+		// defaults are captured on first use instead of during construction.
+		internal void CaptureNativeDefaults()
+		{
+			if (_nativeDefaultsCaptured)
+				return;
+
+			_nativeDefaultsCaptured = true;
+			_defaultBackgroundColor = BackgroundColor;
+			_defaultBorderColor = Layer.BorderColor;
+			_defaultBorderWidth = Layer.BorderWidth;
+			_defaultCornerRadius = Layer.CornerRadius;
+		}
+
 		internal void UpdateBackground(IContentButton button)
 		{
+			CaptureNativeDefaults();
 			this.RemoveBackgroundLayer();
 
 			if (button.Background.IsNullOrEmpty())
@@ -81,19 +121,22 @@ namespace Microsoft.Maui.Platform
 
 		internal void UpdateStrokeColor(IContentButton button)
 		{
+			CaptureNativeDefaults();
 			Layer.BorderColor = button.StrokeColor?.ToCGColor() ?? _defaultBorderColor;
 			UpdateBackground(button);
 		}
 
 		internal void UpdateStrokeThickness(IContentButton button)
 		{
-			Layer.BorderWidth = (nfloat)Math.Max(0, button.StrokeThickness);
+			CaptureNativeDefaults();
+			Layer.BorderWidth = button.StrokeThickness >= 0 ? (nfloat)button.StrokeThickness : _defaultBorderWidth;
 			UpdateBackground(button);
 			this.InvalidateMeasure();
 		}
 
 		internal void UpdateCornerRadius(IContentButton button)
 		{
+			CaptureNativeDefaults();
 			Layer.CornerRadius = button.CornerRadius >= 0 ? button.CornerRadius : _defaultCornerRadius;
 			UpdateBackground(button);
 			SetNeedsLayout();
@@ -101,44 +144,23 @@ namespace Microsoft.Maui.Platform
 
 		public override CGSize SizeThatFits(CGSize size)
 		{
-			if (VirtualView is not IContentButton button)
+			if (VirtualView is null)
 				return base.SizeThatFits(size);
 
-			var widthConstraint = (double)size.Width;
-			var heightConstraint = (double)size.Height;
-
-			if (widthConstraint == _lastMeasureWidth &&
-				heightConstraint == _lastMeasureHeight &&
-				_lastMeasuredSize is { } measuredSize)
-			{
-				return measuredSize.ToCGSize();
-			}
-
-			measuredSize = ((IContentView)button).CrossPlatformMeasure(widthConstraint, heightConstraint);
-			CacheMeasure(widthConstraint, heightConstraint, measuredSize);
-			return measuredSize.ToCGSize();
+			return _contentContainer.SizeThatFits(size);
 		}
 
 		public override void LayoutSubviews()
 		{
 			base.LayoutSubviews();
 
-			if (VirtualView is not IContentButton button)
-				return;
+			var bounds = new CGRect(CGPoint.Empty, Bounds.Size);
 
-			var bounds = Bounds.ToRectangle();
-			var widthConstraint = bounds.Width;
-			var heightConstraint = bounds.Height;
+			if (VirtualView is not null && !this.IsFinalMeasureHandledBySuperView())
+				_contentContainer.SizeThatFits(bounds.Size);
 
-			if (_lastMeasuredSize is null ||
-				(widthConstraint != _lastMeasureWidth || heightConstraint != _lastMeasureHeight) &&
-				!this.IsFinalMeasureHandledBySuperView())
-			{
-				var measuredSize = ((IContentView)button).CrossPlatformMeasure(widthConstraint, heightConstraint);
-				CacheMeasure(widthConstraint, heightConstraint, measuredSize);
-			}
-
-			((IContentView)button).CrossPlatformArrange(bounds);
+			_contentContainer.Frame = bounds;
+			_contentContainer.LayoutIfNeeded();
 		}
 
 		public override bool AccessibilityActivate()
@@ -170,25 +192,13 @@ namespace Microsoft.Maui.Platform
 			if (Window is null)
 				SendActionForControlEvents(UIControlEvent.TouchCancel);
 
+			_movedToWindow?.Invoke(this, EventArgs.Empty);
+
 			if (_invalidateParentWhenMovedToWindow && Window is not null)
 			{
 				_invalidateParentWhenMovedToWindow = false;
 				this.InvalidateAncestorsMeasures();
 			}
-		}
-
-		void CacheMeasure(double widthConstraint, double heightConstraint, Size measuredSize)
-		{
-			_lastMeasureWidth = widthConstraint;
-			_lastMeasureHeight = heightConstraint;
-			_lastMeasuredSize = measuredSize;
-		}
-
-		void InvalidateConstraintsCache()
-		{
-			_lastMeasureWidth = double.NaN;
-			_lastMeasureHeight = double.NaN;
-			_lastMeasuredSize = null;
 		}
 
 		void IPlatformMeasureInvalidationController.InvalidateAncestorsMeasuresWhenMovedToWindow()
@@ -198,9 +208,19 @@ namespace Microsoft.Maui.Platform
 
 		bool IPlatformMeasureInvalidationController.InvalidateMeasure(bool isPropagating)
 		{
-			InvalidateConstraintsCache();
+			_contentContainer.InvalidateContentMeasure();
 			SetNeedsLayout();
 			return true;
+		}
+
+		// Reuses MauiView's safe-area, keyboard and measure-cache behavior for the presented content.
+		sealed class ContentContainer : MauiView
+		{
+			internal void InvalidateContentMeasure()
+			{
+				InvalidateConstraintsCache();
+				SetNeedsLayout();
+			}
 		}
 	}
 }

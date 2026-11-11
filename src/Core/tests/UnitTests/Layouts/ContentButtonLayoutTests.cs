@@ -96,7 +96,27 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			button.MinimumWidth.Returns(90);
 			button.MaximumHeight.Returns(30);
 			Assert.Equal(new Size(90, 30), ContentButtonLayout.Measure(button, 200, 200));
-			child.Received().Measure(80, 30);
+			child.Received().Measure(90, 30);
+		}
+
+		[Fact]
+		public void MinimumLargerThanRequestedWidthMeasuresContentAtArrangedWidth()
+		{
+			var button = CreateButton();
+			var child = Substitute.For<IView>();
+			button.PresentedContent.Returns(child);
+			button.Width.Returns(80);
+			button.MinimumWidth.Returns(200);
+			child.Measure(200, double.PositiveInfinity).Returns(new Size(200, 20));
+			child.Measure(80, double.PositiveInfinity).Returns(new Size(80, 60));
+
+			var size = ContentButtonLayout.Measure(button, 300, double.PositiveInfinity);
+			ContentButtonLayout.Arrange(button, new Rect(Point.Zero, size));
+
+			Assert.Equal(new Size(200, 20), size);
+			child.Received().Measure(200, double.PositiveInfinity);
+			child.DidNotReceive().Measure(80, Arg.Any<double>());
+			child.Received().Arrange(new Rect(0, 0, 200, 20));
 		}
 
 		[Fact]

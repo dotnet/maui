@@ -1,5 +1,7 @@
+using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Android.Content.Res;
 using Android.OS;
 using Android.Views;
 using Android.Views.Accessibility;
@@ -27,25 +29,109 @@ namespace Microsoft.Maui.DeviceTests
 			await InvokeOnMainThreadAsync(() =>
 			{
 				Assert.Equal(1, handler.PlatformView.ChildCount);
-				var firstPlatformView = Assert.IsAssignableFrom<AView>(handler.PlatformView.GetChildAt(0));
-				Assert.Equal(ImportantForAccessibility.NoHideDescendants, firstPlatformView.ImportantForAccessibility);
+				var container = Assert.IsAssignableFrom<ViewGroup>(handler.PlatformView.GetChildAt(0));
+				var firstPlatformView = Assert.IsAssignableFrom<AView>(container.GetChildAt(0));
+				var firstImportance = firstPlatformView.ImportantForAccessibility;
+				Assert.Equal(ImportantForAccessibility.NoHideDescendants, container.ImportantForAccessibility);
 
 				button.Content = second;
 				handler.UpdateValue(nameof(IContentView.Content));
 
 				Assert.Equal(1, handler.PlatformView.ChildCount);
-				var secondPlatformView = Assert.IsAssignableFrom<AView>(handler.PlatformView.GetChildAt(0));
+				Assert.Same(container, handler.PlatformView.GetChildAt(0));
+				var secondPlatformView = Assert.IsAssignableFrom<AView>(container.GetChildAt(0));
+				var secondImportance = secondPlatformView.ImportantForAccessibility;
 				Assert.Same(second.Handler?.PlatformView, secondPlatformView);
 				Assert.Null(firstPlatformView.Parent);
-				Assert.NotEqual(ImportantForAccessibility.NoHideDescendants, firstPlatformView.ImportantForAccessibility);
-				Assert.Equal(ImportantForAccessibility.NoHideDescendants, secondPlatformView.ImportantForAccessibility);
+				Assert.Equal(firstImportance, firstPlatformView.ImportantForAccessibility);
+				Assert.Equal(ImportantForAccessibility.NoHideDescendants, container.ImportantForAccessibility);
 
 				button.Content = null;
 				handler.UpdateValue(nameof(IContentView.Content));
 
 				Assert.Equal(0, handler.PlatformView.ChildCount);
 				Assert.Null(secondPlatformView.Parent);
-				Assert.NotEqual(ImportantForAccessibility.NoHideDescendants, secondPlatformView.ImportantForAccessibility);
+				Assert.Equal(secondImportance, secondPlatformView.ImportantForAccessibility);
+				Assert.Equal(0, container.ChildCount);
+			});
+		}
+
+		[Fact]
+		public async Task PostedThemeChangeIsIgnoredAfterDisconnect()
+		{
+			await AttachAndRun(new ContentButtonStub(), async handler =>
+			{
+				var platformView = handler.PlatformView;
+				using var configuration = new Configuration(platformView.Resources!.Configuration!);
+				var nightMode = configuration.UiMode & UiMode.NightMask;
+				configuration.UiMode = (configuration.UiMode & ~UiMode.NightMask) |
+					(nightMode == UiMode.NightYes ? UiMode.NightNo : UiMode.NightYes);
+
+				platformView.DispatchConfigurationChanged(configuration);
+				((IElementHandler)handler).DisconnectHandler();
+				Assert.Null(((IElementHandler)handler).PlatformView);
+				Assert.Null(((IElementHandler)handler).VirtualView);
+
+				var completed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+				platformView.Post(() => completed.SetResult());
+				await completed.Task.WaitAsync(TimeSpan.FromSeconds(5));
+			});
+		}
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task RebindingReleasesOnlyThePreviouslyPressedView(bool replaceView)
+		{
+			var firstReleased = 0;
+			var secondReleased = 0;
+			var first = new ContentButtonStub { Released = () => firstReleased++ };
+			var second = new ContentButtonStub { Released = () => secondReleased++ };
+
+			await AttachAndRun(first, handler =>
+			{
+				var platformView = handler.PlatformView;
+				DispatchTouch(platformView, MotionEventActions.Down);
+
+				handler.SetVirtualView(replaceView ? second : first);
+				Assert.Equal(replaceView ? 1 : 0, firstReleased);
+				Assert.Equal(0, secondReleased);
+
+				DispatchTouch(platformView, MotionEventActions.Cancel);
+				Assert.Equal(1, firstReleased);
+				Assert.Equal(0, secondReleased);
+
+				DispatchTouch(platformView, MotionEventActions.Down);
+				DispatchTouch(platformView, MotionEventActions.Up);
+				Assert.Equal(replaceView ? 1 : 2, firstReleased);
+				Assert.Equal(replaceView ? 1 : 0, secondReleased);
+
+				return Task.CompletedTask;
+			});
+		}
+
+		[Fact]
+		public async Task PositionOnlyLayoutKeepsBackgroundWhileResizingRefreshesIt()
+		{
+			var button = new ContentButtonStub
+			{
+				Background = new LinearGradientPaintStub(Colors.Red, Colors.Blue),
+			};
+			var handler = await CreateHandlerAsync(button);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var platformView = handler.PlatformView;
+				platformView.Layout(0, 0, 160, 80);
+				Assert.True(platformView.TryGetMauiBackground(out _, out _, out var background, out _, out _));
+
+				platformView.Layout(20, 30, 180, 110);
+				Assert.True(platformView.TryGetMauiBackground(out _, out _, out var movedBackground, out _, out _));
+				Assert.Same(background, movedBackground);
+
+				platformView.Layout(20, 30, 200, 130);
+				Assert.True(platformView.TryGetMauiBackground(out _, out _, out var resizedBackground, out _, out _));
+				Assert.NotSame(background, resizedBackground);
 			});
 		}
 

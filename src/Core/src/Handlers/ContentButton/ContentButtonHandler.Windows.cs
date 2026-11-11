@@ -15,6 +15,17 @@ namespace Microsoft.Maui.Handlers
 		PointerEventHandler? _pointerReleasedHandler;
 		bool _isPressed;
 
+		public override void SetVirtualView(IView view)
+		{
+			if (_isPressed && !ReferenceEquals(VirtualView, view))
+				Release();
+
+			base.SetVirtualView(view);
+
+			if (PlatformView is MauiContentButton platformView)
+				platformView.ContentPanel.UpdateCrossPlatformLayout(VirtualView);
+		}
+
 		protected override Button CreatePlatformView()
 		{
 			var platformButton = new MauiContentButton();
@@ -30,6 +41,7 @@ namespace Microsoft.Maui.Handlers
 
 			platformView.Click += OnClick;
 			platformView.Unloaded += OnUnloaded;
+			platformView.LostFocus += OnLostFocus;
 			platformView.IsEnabledChanged += OnIsEnabledChanged;
 			platformView.AddHandler(UIElement.PointerPressedEvent, _pointerPressedHandler, true);
 			platformView.AddHandler(UIElement.PointerReleasedEvent, _pointerReleasedHandler, true);
@@ -51,6 +63,7 @@ namespace Microsoft.Maui.Handlers
 
 			platformView.Click -= OnClick;
 			platformView.Unloaded -= OnUnloaded;
+			platformView.LostFocus -= OnLostFocus;
 			platformView.IsEnabledChanged -= OnIsEnabledChanged;
 			platformView.RemoveHandler(UIElement.PointerPressedEvent, _pointerPressedHandler);
 			platformView.RemoveHandler(UIElement.PointerReleasedEvent, _pointerReleasedHandler);
@@ -195,6 +208,8 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		void OnUnloaded(object sender, RoutedEventArgs e) => Release();
+
+		void OnLostFocus(object sender, RoutedEventArgs e) => Release();
 
 		void Press()
 		{

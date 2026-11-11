@@ -26,8 +26,8 @@ namespace Microsoft.Maui.Platform
 		ShapeAppearanceModel? _defaultShapeAppearanceModel;
 		int _defaultStrokeWidth;
 		float _defaultRadius;
-		ImportantForAccessibility _contentImportantForAccessibility;
 		AView? _content;
+		ContentContainer? _contentContainer;
 		UiMode _nightMode;
 
 		internal event EventHandler? DetachedFromWindow;
@@ -93,10 +93,10 @@ namespace Microsoft.Maui.Platform
 
 		internal void SetContent(AView? content)
 		{
-			if (ReferenceEquals(_content, content) && content?.Parent == this)
+			if (ReferenceEquals(_content, content) && content?.Parent == _contentContainer)
 				return;
 
-			RestoreContentAccessibility();
+			_contentContainer?.RemoveAllViews();
 			RemoveAllViews();
 
 			_content = content;
@@ -104,16 +104,9 @@ namespace Microsoft.Maui.Platform
 				return;
 
 			content.RemoveFromParent();
-			_contentImportantForAccessibility = content.ImportantForAccessibility;
-			content.ImportantForAccessibility = ImportantForAccessibility.NoHideDescendants;
-			AddView(content);
-		}
-
-		void RestoreContentAccessibility()
-		{
-			_content?.ImportantForAccessibility = _contentImportantForAccessibility;
-
-			_content = null;
+			_contentContainer ??= new ContentContainer(_context);
+			_contentContainer.AddView(content);
+			AddView(_contentContainer);
 		}
 
 		internal void UpdateButtonBackground(IContentButton button)
@@ -283,12 +276,18 @@ namespace Microsoft.Maui.Platform
 			SetMeasuredDimension(
 				Math.Max(MinimumWidth, (int)_context.ToPixels(width)),
 				Math.Max(MinimumHeight, (int)_context.ToPixels(height)));
+
+			_contentContainer?.Measure(
+				MeasureSpec.MakeMeasureSpec(MeasuredWidth, MeasureSpecMode.Exactly),
+				MeasureSpec.MakeMeasureSpec(MeasuredHeight, MeasureSpecMode.Exactly));
 		}
 
 		protected override void OnLayout(bool changed, int left, int top, int right, int bottom)
 		{
 			if (CrossPlatformLayout is not IContentView contentView)
 				return;
+
+			_contentContainer?.Layout(0, 0, right - left, bottom - top);
 
 			var destination = _context.ToCrossPlatformRectInReferenceFrame(left, top, right, bottom);
 			contentView.CrossPlatformArrange(destination);
@@ -306,7 +305,9 @@ namespace Microsoft.Maui.Platform
 		{
 			if (disposing)
 			{
-				RestoreContentAccessibility();
+				SetContent(null);
+				_contentContainer?.Dispose();
+				_contentContainer = null;
 				CrossPlatformLayout = null;
 				_defaultBackground = null;
 				_defaultBackgroundState = null;
@@ -318,6 +319,23 @@ namespace Microsoft.Maui.Platform
 			}
 
 			base.Dispose(disposing);
+		}
+
+		sealed class ContentContainer : ViewGroup
+		{
+			public ContentContainer(Context context) : base(context)
+			{
+				// Keep presentation hidden even when its own semantics change.
+				ImportantForAccessibility = ImportantForAccessibility.NoHideDescendants;
+			}
+
+			protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec) =>
+				SetMeasuredDimension(MeasureSpec.GetSize(widthMeasureSpec), MeasureSpec.GetSize(heightMeasureSpec));
+
+			protected override void OnLayout(bool changed, int left, int top, int right, int bottom)
+			{
+				// The ContentButton's cross-platform layout arranges the presentation.
+			}
 		}
 	}
 }

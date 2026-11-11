@@ -2,6 +2,8 @@
 using System;
 using System.Threading.Tasks;
 using Android.Graphics.Drawables;
+using Android.Views;
+using Android.Views.Accessibility;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration;
@@ -25,6 +27,38 @@ namespace Microsoft.Maui.DeviceTests
 			handlers.AddHandler<Grid, LayoutHandler>();
 			handlers.AddHandler<Label, LabelHandler>();
 		}));
+
+		[Fact]
+		public async Task UpdatingPresentationSemanticsDoesNotExposeAccessibilityDescendants()
+		{
+			SetupBuilder();
+			var content = new Label { Text = "Presentation" };
+			var button = new ControlsContentButton { Content = content };
+			SemanticProperties.SetDescription(button, "Open details");
+
+			await CreateHandlerAndAddToWindow<ContentButtonHandler>(button, handler =>
+			{
+				var platformView = handler.PlatformView;
+				var container = Assert.IsAssignableFrom<ViewGroup>(platformView.GetChildAt(0));
+				var platformContent = Assert.IsAssignableFrom<global::Android.Views.View>(content.Handler!.PlatformView);
+
+				SemanticProperties.SetDescription(content, "Changed description");
+				SemanticProperties.SetHint(content, "Changed hint");
+
+				Assert.Equal(ImportantForAccessibility.Yes, platformContent.ImportantForAccessibility);
+				Assert.Equal(ImportantForAccessibility.NoHideDescendants, container.ImportantForAccessibility);
+				using var info = Assert.IsAssignableFrom<AccessibilityNodeInfo>(platformView.CreateAccessibilityNodeInfo());
+				Assert.Equal("android.widget.Button", info.ClassName);
+				Assert.Equal("Open details", info.ContentDescription);
+				Assert.Equal(0, info.ChildCount);
+
+				button.Content = null;
+				Assert.Null(platformContent.Parent);
+				Assert.Equal(ImportantForAccessibility.Yes, platformContent.ImportantForAccessibility);
+
+				return Task.CompletedTask;
+			});
+		}
 
 		[Fact]
 		public async Task ChildTextChangeAutomaticallyResizesNativeButton()

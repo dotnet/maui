@@ -17,6 +17,10 @@ namespace Microsoft.Maui.Handlers
 
 		public override void SetVirtualView(IView view)
 		{
+			// A live exchange must finish the old button's press before events target the new button.
+			if (((IElementHandler)this).VirtualView is IContentButton previousView && !ReferenceEquals(previousView, view))
+				_proxy.Release();
+
 			base.SetVirtualView(view);
 
 			if (PlatformView is MauiContentButton platformView)
@@ -29,7 +33,10 @@ namespace Microsoft.Maui.Handlers
 		protected override void ConnectHandler(UIButton platformView)
 		{
 			if (platformView is MauiContentButton contentButton)
+			{
+				contentButton.CaptureNativeDefaults();
 				_proxy.Connect(VirtualView, contentButton);
+			}
 
 			base.ConnectHandler(platformView);
 		}

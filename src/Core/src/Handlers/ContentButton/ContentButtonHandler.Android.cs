@@ -28,6 +28,9 @@ namespace Microsoft.Maui.Handlers
 
 		public override void SetVirtualView(IView view)
 		{
+			if (!ReferenceEquals(((IElementHandler)this).VirtualView, view))
+				ReleasePressed();
+
 			base.SetVirtualView(view);
 
 			if (PlatformView is MauiContentButton platformView)
@@ -140,7 +143,7 @@ namespace Microsoft.Maui.Handlers
 
 		static bool OnTouch(ContentButtonHandler? handler, MotionEvent? e)
 		{
-			if (handler?.VirtualView is not { } button)
+			if (handler is null || ((IElementHandler)handler).VirtualView is not IContentButton button)
 				return false;
 
 			switch (e?.ActionMasked)
@@ -160,7 +163,7 @@ namespace Microsoft.Maui.Handlers
 
 		static void OnClick(ContentButtonHandler? handler)
 		{
-			if (handler?.VirtualView is { IsEnabled: true } button)
+			if (((IElementHandler?)handler)?.VirtualView is IContentButton { IsEnabled: true } button)
 				button.Clicked();
 		}
 
@@ -170,18 +173,22 @@ namespace Microsoft.Maui.Handlers
 				return;
 
 			_isPressed = false;
-			VirtualView?.Released();
+			if (((IElementHandler)this).VirtualView is IContentButton button)
+				button.Released();
 		}
 
 		void OnNativeViewFocusChange(object? sender, AView.FocusChangeEventArgs e)
 		{
-			VirtualView?.IsFocused = e.HasFocus;
+			if (((IElementHandler)this).VirtualView is IView view)
+				view.IsFocused = e.HasFocus;
 		}
 
 		void OnPlatformViewLayoutChange(object? sender, AView.LayoutChangeEventArgs e)
 		{
-			if (sender is MauiContentButton platformView &&
-				VirtualView is { Background: { } background } virtualView &&
+			if ((e.Right - e.Left != e.OldRight - e.OldLeft ||
+				e.Bottom - e.Top != e.OldBottom - e.OldTop) &&
+				sender is MauiContentButton platformView &&
+				((IElementHandler)this).VirtualView is IContentButton { Background: { } background } virtualView &&
 				!background.IsNullOrEmpty())
 			{
 				platformView.UpdateButtonBackground(virtualView);
@@ -198,11 +205,12 @@ namespace Microsoft.Maui.Handlers
 			if (sender is not MauiContentButton platformView)
 				return;
 
-			var virtualView = VirtualView;
+			var elementHandler = (IElementHandler)this;
+			var virtualView = elementHandler.VirtualView;
 			platformView.Post(() =>
 			{
-				if (!ReferenceEquals(PlatformView, platformView) ||
-					!ReferenceEquals(VirtualView, virtualView) ||
+				if (!ReferenceEquals(elementHandler.PlatformView, platformView) ||
+					!ReferenceEquals(elementHandler.VirtualView, virtualView) ||
 					!ReferenceEquals(platformView.CrossPlatformLayout, virtualView) ||
 					virtualView is null)
 				{

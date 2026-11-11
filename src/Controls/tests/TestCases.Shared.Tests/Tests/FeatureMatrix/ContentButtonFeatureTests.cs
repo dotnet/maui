@@ -1,3 +1,5 @@
+using System.Globalization;
+using System.Text.RegularExpressions;
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -17,6 +19,13 @@ public class ContentButtonFeatureTests : _GalleryUITest
 	}
 
 	string Status => App.FindElement("ContentButtonStatus").GetText()!;
+
+	double GetStatusValue(string name)
+	{
+		var match = Regex.Match(Status, $@"\b{name}=(?<value>-?\d+(?:\.\d+)?)");
+		Assert.That(match.Success, Is.True, $"Status did not contain {name}: {Status}");
+		return double.Parse(match.Groups["value"].Value, CultureInfo.InvariantCulture);
+	}
 
 	void TapContentButton(double x = 0.5, double y = 0.5)
 	{
@@ -77,17 +86,25 @@ public class ContentButtonFeatureTests : _GalleryUITest
 		Assert.That(Status, Does.Contain("IsPressed=False"));
 	}
 
+#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST // Mouse drags do not pan a ScrollView on desktop.
 	[Test]
 	[Category(UITestCategories.Button)]
-	public void DraggingIntoScrollAncestorCancelsActivation()
+	public void ScrollingAncestorCancelsActivation()
 	{
 		ResetButton();
 		var rect = App.WaitForElement("ContentButtonControl").GetRect();
-		App.DragCoordinates(rect.X + rect.Width / 2, rect.Y + rect.Height / 2,
-			rect.X + rect.Width / 2, rect.Y + rect.Height + 80);
+
+		// The button moves with the scrolled content, so the pointer remains inside it.
+		// Only the ancestor's cancellation can prevent activation on release.
+		App.DragCoordinates(rect.X + rect.Width / 2, rect.Y + rect.Height * 0.8f,
+			rect.X + rect.Width / 2, rect.Y + rect.Height * 0.2f);
+
+		Assert.That(GetStatusValue("ScrollY"), Is.GreaterThan(0));
 		Assert.That(Status, Does.Contain("Commands=0; Clicks=0"));
+		Assert.That(GetStatusValue("Pressed"), Is.EqualTo(GetStatusValue("Released")));
 		Assert.That(Status, Does.Contain("IsPressed=False"));
 	}
+#endif
 
 	[Test]
 	[Category(UITestCategories.Button)]
@@ -98,6 +115,7 @@ public class ContentButtonFeatureTests : _GalleryUITest
 		App.DragCoordinates(rect.X + rect.Width / 2, rect.Y + rect.Height / 2,
 			rect.X + rect.Width * 1.1f, rect.Y + rect.Height / 2);
 		Assert.That(Status, Does.Contain("Commands=0; Clicks=0"));
+		Assert.That(GetStatusValue("Pressed"), Is.EqualTo(GetStatusValue("Released")));
 		Assert.That(Status, Does.Contain("IsPressed=False"));
 	}
 

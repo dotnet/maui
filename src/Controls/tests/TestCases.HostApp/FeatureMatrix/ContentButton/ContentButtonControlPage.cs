@@ -5,7 +5,9 @@ public class ContentButtonControlPage : ContentPage
 	readonly ContentButton _button;
 	readonly VerticalStackLayout _buttons = new() { Spacing = 12 };
 	readonly Label _status = new() { AutomationId = "ContentButtonStatus" };
+	readonly ScrollView _scroll;
 	int _commands, _clicks, _pressed, _released;
+	double _scrollY;
 	string _order = "";
 	string _pressAction = "";
 
@@ -79,7 +81,13 @@ public class ContentButtonControlPage : ContentPage
 		};
 		layout.Add(_status);
 		layout.Add(actions, 0, 1);
-		layout.Add(new ScrollView { AutomationId = "ContentButtonScroll", Content = _buttons, HeightRequest = 240 }, 0, 2);
+		_scroll = new ScrollView { AutomationId = "ContentButtonScroll", Content = _buttons, HeightRequest = 240 };
+		_scroll.Scrolled += (_, e) =>
+		{
+			_scrollY = e.ScrollY;
+			UpdateStatus();
+		};
+		layout.Add(_scroll, 0, 2);
 		Content = layout;
 		Reset();
 	}
@@ -112,9 +120,11 @@ public class ContentButtonControlPage : ContentPage
 		_button.Content = presentation;
 		_commands = _clicks = _pressed = _released = 0;
 		_order = "";
+		_scrollY = 0;
+		_ = _scroll?.ScrollToAsync(0, 0, false);
 		UpdateStatus();
 	}
 
 	void UpdateStatus() => _status.Text =
-		$"Commands={_commands}; Clicks={_clicks}; Pressed={_pressed}; Released={_released}; IsPressed={_button.IsPressed}; Order={_order}";
+		$"Commands={_commands}; Clicks={_clicks}; Pressed={_pressed}; Released={_released}; IsPressed={_button.IsPressed}; Order={_order}; ScrollY={_scrollY:0}";
 }

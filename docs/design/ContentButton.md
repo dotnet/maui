@@ -80,6 +80,10 @@ check content and inset dimensions, not just nonnegative sizes.
 Template replacement covers both a direct presenter and one nested in a layout,
 including returning to content without a template. Windows stroke-reset coverage
 compares against the native default captured before applying an explicit border.
+Native tests also cover replacing the virtual button on a connected handler while
+it is pressed. On Apple platforms, content is hosted in an owned inert container,
+so content views keep their own accessibility and input state when reused elsewhere.
+The container applies the inherited `SafeAreaEdges` behavior from `ContentView`.
 
 The following checks require real platform runs; adding a test does not certify
 that a platform has passed:
