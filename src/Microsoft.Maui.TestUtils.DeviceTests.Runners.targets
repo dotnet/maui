@@ -5,6 +5,10 @@
     <DisableArcadeTestFramework>true</DisableArcadeTestFramework>
   </PropertyGroup>
 
+  <ItemGroup Condition="'$(UseXHarnessSceneManifest)' == 'true' and '$(UseMicrosoftTestingPlatformRunner)' != 'true' and $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">
+    <PartialAppManifest Include="$(MSBuildThisFileDirectory)TestUtils/src/DeviceTests.Runners/HeadlessRunner/iOS/XHarnessSceneManifest.plist" />
+  </ItemGroup>
+
   <ItemGroup>
     <CompilerVisibleProperty Include="RootNamespace" />
     <CompilerVisibleProperty Include="ApplicationId" />
