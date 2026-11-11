@@ -3,6 +3,8 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <!-- Runtime manifests use the runtime's release suffix, not the SDK's build suffix. -->
     <_RuntimeManifestVersion>$(VersionBand)$([System.Text.RegularExpressions.Regex]::Match($(MicrosoftNETCoreAppRefPackageVersion), `-.*`))</_RuntimeManifestVersion>
+    <!-- Final runtime manifests are published to NuGet.org rather than the build feeds. -->
+    <RestoreAdditionalProjectSources Condition="'$(_RuntimeManifestVersion)' == '$(VersionBand)'">$(RestoreAdditionalProjectSources);https://api.nuget.org/v3/index.json</RestoreAdditionalProjectSources>
   </PropertyGroup>
   <ItemGroup>
     <PackageDownload Include="Microsoft.NET.Workload.Mono.ToolChain.Current.Manifest-$(DotNetVersionBand)"   Version="[$(_RuntimeManifestVersion)]" />
