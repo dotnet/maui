@@ -10,6 +10,7 @@ public class AOTTemplateTest : BaseTemplateTests
 	[InlineData("maui", $"{DotNetCurrent}-android", "android-x64")]
 	[InlineData("maui", $"{DotNetCurrent}-ios", "ios-arm64")]
 	[InlineData("maui", $"{DotNetCurrent}-ios", "iossimulator-arm64")]
+	[InlineData("maui", $"{DotNetPrevious}-ios", "iossimulator-x64")]
 	[InlineData("maui", $"{DotNetCurrent}-maccatalyst", "maccatalyst-arm64")]
 	[InlineData("maui", $"{DotNetCurrent}-maccatalyst", "maccatalyst-x64")]
 	[InlineData("maui", $"{DotNetCurrent}-windows10.0.19041.0", "win-x64")]
@@ -22,15 +23,17 @@ public class AOTTemplateTest : BaseTemplateTests
 		bool isAndroidPlatform = framework.Contains("android", StringComparison.OrdinalIgnoreCase);
 
 		if (isApplePlatform && !TestEnvironment.IsMacOS)
-			if (true) return; // Skip: "Publishing a MAUI iOS/macOS app with NativeAOT is only supported on a host MacOS system."
+			if (true)
+				return; // Skip: "Publishing a MAUI iOS/macOS app with NativeAOT is only supported on a host MacOS system."
 
 		if (isWindowsFramework && !TestEnvironment.IsWindows)
-			if (true) return; // Skip: "Publishing a MAUI Windows app with NativeAOT is only supported on a host Windows system."
+			if (true)
+				return; // Skip: "Publishing a MAUI Windows app with NativeAOT is only supported on a host Windows system."
 
 		var projectDir = TestDirectory;
 		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
-		Assert.True(DotnetInternal.New(id, projectDir, DotNetCurrent, output: _output),
+		Assert.True(DotnetInternal.New(id, projectDir, framework.Split('-')[0], output: _output),
 			$"Unable to create template {id}. Check test output for errors.");
 
 
@@ -66,6 +69,7 @@ public class AOTTemplateTest : BaseTemplateTests
 	[InlineData("maui", $"{DotNetCurrent}-android", "android-x64")]
 	[InlineData("maui", $"{DotNetCurrent}-ios", "ios-arm64")]
 	[InlineData("maui", $"{DotNetCurrent}-ios", "iossimulator-arm64")]
+	[InlineData("maui", $"{DotNetPrevious}-ios", "iossimulator-x64")]
 	[InlineData("maui", $"{DotNetCurrent}-maccatalyst", "maccatalyst-arm64")]
 	[InlineData("maui", $"{DotNetCurrent}-maccatalyst", "maccatalyst-x64")]
 	[InlineData("maui", $"{DotNetCurrent}-windows10.0.19041.0", "win-x64")]
@@ -78,15 +82,17 @@ public class AOTTemplateTest : BaseTemplateTests
 		bool isAndroidPlatform = framework.Contains("android", StringComparison.OrdinalIgnoreCase);
 
 		if (isApplePlatform && !TestEnvironment.IsMacOS)
-			if (true) return; // Skip: "Publishing a MAUI iOS/macOS app with NativeAOT is only supported on a host MacOS system."
+			if (true)
+				return; // Skip: "Publishing a MAUI iOS/macOS app with NativeAOT is only supported on a host MacOS system."
 
 		if (isWindowsFramework && !TestEnvironment.IsWindows)
-			if (true) return; // Skip: "Publishing a MAUI Windows app with NativeAOT is only supported on a host Windows system."
+			if (true)
+				return; // Skip: "Publishing a MAUI Windows app with NativeAOT is only supported on a host Windows system."
 
 		var projectDir = TestDirectory;
 		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
-		Assert.True(DotnetInternal.New(id, projectDir, DotNetCurrent, output: _output),
+		Assert.True(DotnetInternal.New(id, projectDir, framework.Split('-')[0], output: _output),
 			$"Unable to create template {id}. Check test output for errors.");
 
 

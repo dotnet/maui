@@ -4,6 +4,8 @@ parameters:
   skipSimulatorSetup: false
   # Internal runs install this Xcode from dotnet/macios' xcode-apple-silicon package; keep it
   # in sync with XCODE_PACKAGE_VERSION in dotnet/macios' Make.config.
+  installXcodePackage: true
+  requirePinnedXcodeVersion: false
   xcodePackageVersion: '27.2.0'
   # .NET NuGet caches
   clearCaches: true
@@ -111,7 +113,7 @@ steps:
   # The agent images lag behind the Xcode that the .NET Apple workloads require, so internal
   # runs install the Xcode that dotnet/macios pins, from the same feed macios provisions from.
   # The feed lives in the dnceng 'internal' project; the public project has no access to it.
-  - ${{ if eq(variables['System.TeamProject'], 'internal') }}:
+  - ${{ if and(eq(variables['System.TeamProject'], 'internal'), eq(parameters.installXcodePackage, true)) }}:
     - task: UniversalPackages@0
       displayName: 'Download Xcode Universal Package'
       condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
@@ -125,10 +127,14 @@ steps:
         vstsFeedPackage: xcode-apple-silicon
         vstsPackageVersion: ${{ parameters.xcodePackageVersion }}
 
-    - script: bash ${{ parameters.checkoutDirectory }}/eng/scripts/install-xcode-package.sh "$(Agent.TempDirectory)/xcode-universal-package"
+    - script: bash "$CHECKOUT_DIRECTORY/eng/scripts/install-xcode-package.sh" "$XCODE_PACKAGE_DIRECTORY" "$EXPECTED_XCODE_PACKAGE_VERSION"
       displayName: 'Install Xcode Universal Package'
       condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
       timeoutInMinutes: 60
+      env:
+        CHECKOUT_DIRECTORY: ${{ parameters.checkoutDirectory }}
+        XCODE_PACKAGE_DIRECTORY: $(Agent.TempDirectory)/xcode-universal-package
+        EXPECTED_XCODE_PACKAGE_VERSION: ${{ parameters.xcodePackageVersion }}
 
     - script: rm -rf -- "$(Agent.TempDirectory)/xcode-universal-package"
       displayName: 'Clean Xcode package download'
@@ -232,6 +238,21 @@ steps:
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
     retryCountOnTaskFailure: 4
     timeoutInMinutes: 30
+
+  - ${{ if eq(parameters.requirePinnedXcodeVersion, true) }}:
+    - script: |
+        set -euo pipefail
+        selected_version="$(xcodebuild -version | awk 'NR == 1 { print $2 }')"
+        if [[ -z "$EXPECTED_XCODE_VERSION" || -z "$selected_version" ]] ||
+           [[ "$selected_version" != "$EXPECTED_XCODE_VERSION" && "$selected_version" != "$EXPECTED_XCODE_VERSION".* ]]; then
+          echo "##vso[task.logissue type=error]Expected Xcode $EXPECTED_XCODE_VERSION, but selected ${selected_version:-unknown}."
+          exit 1
+        fi
+        echo "Selected Xcode $selected_version matches the requested version $EXPECTED_XCODE_VERSION."
+      displayName: Verify pinned Xcode version
+      condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
+      env:
+        EXPECTED_XCODE_VERSION: $(XCODE)
 
   - ${{ if ne(parameters.skipSimulatorSetup, 'true') }}:
     - script: |
