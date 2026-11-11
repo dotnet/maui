@@ -38,6 +38,9 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(Slider platformView)
 		{
+			if (platformView is MauiSlider mauiSlider)
+				mauiSlider.InvalidateThumbImageSource();
+
 			platformView.Loaded -= OnPlatformViewLoaded;
 			platformView.ValueChanged -= OnPlatformValueChanged;
 
