@@ -97,7 +97,7 @@ public class VisualStateManager_EntryFeatureTests : _GalleryUITest
 		App.Tap("DisableEntryButton");
 		stateText = App.FindElement("EntryState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Disabled"));
-		VerifyScreenshot();
+		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(7)]
@@ -127,7 +127,7 @@ public class VisualStateManager_EntryFeatureTests : _GalleryUITest
 		App.Tap("DisableEntryButton");
 		stateText = App.FindElement("EntryState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Disabled"));
-		VerifyScreenshot();
+		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(9)]

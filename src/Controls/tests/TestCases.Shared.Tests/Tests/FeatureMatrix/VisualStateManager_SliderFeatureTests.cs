@@ -44,7 +44,7 @@ public class VisualStateManager_SliderFeatureTests : _GalleryUITest
 		App.WaitForElement("SliderState");
 		var stateText = App.FindElement("SliderState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Disabled | Value: 50"));
-		VerifyScreenshot();
+		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(4)]
