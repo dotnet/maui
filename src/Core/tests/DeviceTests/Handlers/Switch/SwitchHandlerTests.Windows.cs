@@ -377,6 +377,62 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task CustomOnColorKeepsSingleHoverDictionaryAcrossGarbageCollections(bool populateThemeDictionary)
+		{
+			var switchStub = new SwitchStub { IsOn = true, TrackColor = Colors.Red };
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler(switchStub);
+				var toggleSwitch = handler.PlatformView;
+				if (populateThemeDictionary)
+				{
+					var hoverResources = Assert.Single(toggleSwitch.Resources.MergedDictionaries);
+					((ResourceDictionary)hoverResources.ThemeDictionaries["Default"])["OtherResource"] = "value";
+				}
+
+				for (int cycle = 0; cycle < 3; cycle++)
+				{
+					foreach (var color in new[] { null, Colors.Blue, null, Colors.Red })
+					{
+						CollectProjectedWrappers();
+						switchStub.TrackColor = color;
+						handler.UpdateValue(nameof(ISwitch.TrackColor));
+						CollectProjectedWrappers();
+
+						if (color is null && !populateThemeDictionary)
+						{
+							Assert.Empty(toggleSwitch.Resources.MergedDictionaries);
+							continue;
+						}
+
+						var hoverResources = Assert.Single(toggleSwitch.Resources.MergedDictionaries);
+						var defaultResources = Assert.IsType<ResourceDictionary>(hoverResources.ThemeDictionaries["Default"]);
+						if (color is null)
+						{
+							Assert.DoesNotContain("ToggleSwitchFillOnPointerOver", defaultResources.Keys);
+							Assert.Equal("value", defaultResources["OtherResource"]);
+							continue;
+						}
+
+						var brush = Assert.IsType<SolidColorBrush>(defaultResources["ToggleSwitchFillOnPointerOver"]);
+						Assert.Equal(color.ToWindowsColor(), brush.Color);
+					}
+				}
+			});
+
+			static void CollectProjectedWrappers()
+			{
+				for (int i = 0; i < 2; i++)
+				{
+					GC.Collect();
+					GC.WaitForPendingFinalizers();
+				}
+			}
+		}
+
 		static ResourceDictionary GetHoverThemeResources(ToggleSwitch toggleSwitch, string theme)
 		{
 			var resources = Assert.Single(toggleSwitch.Resources.MergedDictionaries);
