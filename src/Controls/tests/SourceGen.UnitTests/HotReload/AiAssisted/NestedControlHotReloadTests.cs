@@ -235,13 +235,6 @@ public partial class NestedControlHotReloadTests : IDisposable
 		return updateComponentSource!;
 	}
 
-	static void AssertProbeCardResourceDecline(string updateComponentSource)
-	{
-		Assert.Contains("XamlComponentRegistry.GetResourceKeys(this)", updateComponentSource, StringComparison.Ordinal);
-		Assert.Contains("XamlComponentRegistry.RegisterResourceKeys(this, global::System.Array.Empty<string>())", updateComponentSource, StringComparison.Ordinal);
-		Assert.DoesNotContain("ProbeConverterUpdated", updateComponentSource, StringComparison.Ordinal);
-	}
-
 	sealed class StubDispatcher : IDispatcher
 	{
 		public bool IsDispatchRequired => false;
