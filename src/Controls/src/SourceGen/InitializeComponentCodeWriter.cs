@@ -45,7 +45,6 @@ static class InitializeComponentCodeWriter
 
 			string accessModifier = "public";
 			INamedTypeSymbol? rootType = null;
-			ISet<string>? fallbackUsings = null;
 
 			var generatedDefaultCtor = false;
 			if (root.Properties.TryGetValue(XmlName.xClass, out var classNode))
@@ -92,7 +91,6 @@ static class InitializeComponentCodeWriter
 				codeWriter.WriteLine($"private partial void {methodName}()");
 				root!.XmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, typeCache, out var baseType);
 				var sgcontext = new SourceGenContext(codeWriter, compilation, sourceProductionContext, xmlnsCache, typeCache, rootType!, baseType, xamlItem.ProjectItem, sourceProductionContext.ReportDiagnostic);
-				fallbackUsings = sgcontext.FallbackUsings;
 
 				// Compute stable node IDs before Visit() mutates the tree (markup expansion etc.)
 				// Use cached effective IDs (from state) if available, to stay consistent with UC patches.
@@ -209,15 +207,7 @@ $$"""
 			}
 		exit:
 			codeWriter.Flush();
-			var code = codeWriter.InnerWriter.ToString();
-			if (fallbackUsings?.Count > 0)
-			{
-				//add the using directives required by fallback type resolutions right before the namespace declaration
-				var nsIndex = code.IndexOf("namespace ", StringComparison.Ordinal);
-				if (nsIndex >= 0)
-					code = code.Insert(nsIndex, string.Concat(fallbackUsings.OrderBy(static u => u, StringComparer.Ordinal).Select(u => $"using {u};{NewLine}")) + NewLine);
-			}
-			return code;
+			return GeneratorHelpers.LiftFallbackUsings(codeWriter.InnerWriter.ToString(), NewLine);
 		}
 	}
 
