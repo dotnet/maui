@@ -77,7 +77,9 @@ stages:
           - template: ui-tests-build-sample.yml
             parameters:
                 runtimeVariant: "CoreCLR"
-                cakeArgs: '--ios --catalyst'
+                cakeArgs:
+                  - '--ios'
+                  - '--catalyst'
                 skipProvisioning: ${{ parameters.skipProvisioning }}
 
   - stage: build_ui_tests_android_coreclr
