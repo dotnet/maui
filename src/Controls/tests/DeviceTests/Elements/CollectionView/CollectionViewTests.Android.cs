@@ -69,6 +69,10 @@ namespace Microsoft.Maui.DeviceTests
 						int group = position / 2;
 						int crossStart = span == 0 ? 0 : viewportSize / 2 + spacing / 2;
 						int crossEnd = span == 0 ? viewportSize / 2 - spacing / 2 : viewportSize;
+						if (orientation == ItemsLayoutOrientation.Vertical && collectionView.FlowDirection == FlowDirection.RightToLeft)
+						{
+							(crossStart, crossEnd) = (viewportSize - crossEnd, viewportSize - crossStart);
+						}
 						int mainStart = group * (itemSize + spacing);
 
 						// Raw child bounds exclude decorations: these assert flush outer edges,
@@ -96,6 +100,17 @@ namespace Microsoft.Maui.DeviceTests
 				// Do not construct a decoration or manually invalidate decoration/size caches.
 				MeasureAndLayout();
 				AssertChildBounds(expectedSpacing);
+
+				if (orientation == ItemsLayoutOrientation.Vertical)
+				{
+					collectionView.FlowDirection = FlowDirection.RightToLeft;
+					MeasureAndLayout();
+					AssertChildBounds(expectedSpacing);
+
+					collectionView.FlowDirection = FlowDirection.LeftToRight;
+					MeasureAndLayout();
+					AssertChildBounds(expectedSpacing);
+				}
 			});
 		}
 

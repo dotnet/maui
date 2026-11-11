@@ -298,9 +298,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
+			var previousLayoutDirection = LayoutDirection;
 			this.UpdateFlowDirection(ItemsView);
 
 			ReconcileFlowDirectionAndLayout();
+
+			if (LayoutDirection != previousLayoutDirection)
+			{
+				// Span offsets depend on direction and are cached on realized children.
+				InvalidateItemDecorations();
+			}
 		}
 
 		public virtual void UpdateAdapter()
