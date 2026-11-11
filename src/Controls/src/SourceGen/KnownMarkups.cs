@@ -61,6 +61,34 @@ internal class KnownMarkups
 				return true;
 			}
 
+			//fallback to guessing for aggregated xmlns (e.g. the implicit/global one). the type could come
+			//from another source generator, so defer its resolution to the C# compiler. only namespaces
+			//of the current assembly can still gain types from other generators, and aggregated xmlns can
+			//also point to other xmlns URIs, which aren't CLR namespaces: skip both
+			var candidates = context.XmlnsCache.XmlnsDefinitions
+				.Where(d => d.XmlNamespace == xmlType.NamespaceUri
+					&& d.AssemblyName == context.Compilation.Assembly.Name
+					&& GeneratorHelpers.IsValidClrNamespace(d.Target))
+				.Select(d => d.Target)
+				.Distinct()
+				.ToList();
+			if (candidates.Count == 1)
+			{
+				//a single candidate namespace: qualify fully, like the clr-namespace fallback
+				value = $"global::{candidates[0]}.{xmlType.Name}.{membername}";
+				return true;
+			}
+			if (candidates.Count > 1)
+			{
+				//multiple candidate namespaces: emit the name unqualified, plus marker lines that the
+				//final code writers lift into using directives (see GeneratorHelpers.LiftFallbackUsings),
+				//letting the C# compiler resolve (or report an ambiguity on) the name
+				foreach (var candidate in candidates)
+					writer.WriteLine($"{GeneratorHelpers.FallbackUsingMarker}{candidate}");
+				value = $"{xmlType.Name}.{membername}";
+				return true;
+			}
+
 			//FIXME
 			context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, null, $"Type not found {typename}"));
 			value = string.Empty;
