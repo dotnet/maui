@@ -257,6 +257,64 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.True(result, $"Expected (but did not find) a {nameof(AppCompatEditText)} child of the {nameof(NestedScrollView)}.");
 		}
 
+		[Fact]
+		public async Task ContentReparentsWhenHandlerIsRecreated()
+		{
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var content = new LayoutStub();
+				var contentHandler = CreateHandler<LayoutHandler>(content);
+				var scrollView = new ScrollViewStub { Content = content };
+				var originalHandler = CreateHandler(scrollView);
+				var originalInsetPanel = Assert.IsType<ContentViewGroup>(originalHandler.PlatformView.GetChildAt(0));
+
+				Assert.Equal(originalInsetPanel, contentHandler.PlatformView.Parent);
+
+				((IElementHandler)originalHandler).DisconnectHandler();
+
+				Assert.Equal(originalInsetPanel, contentHandler.PlatformView.Parent);
+
+				var newHandler = CreateHandler(scrollView);
+				var newInsetPanel = Assert.IsType<ContentViewGroup>(newHandler.PlatformView.GetChildAt(0));
+
+				Assert.NotSame(originalHandler, newHandler);
+				Assert.Equal(0, originalInsetPanel.ChildCount);
+				Assert.Equal(1, newInsetPanel.ChildCount);
+				Assert.Equal(contentHandler.PlatformView, newInsetPanel.GetChildAt(0));
+				Assert.Equal(newInsetPanel, contentHandler.PlatformView.Parent);
+			});
+		}
+
+		[Fact]
+		public async Task UpdatedContentReparentsIntoExistingInsetPanel()
+		{
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var content = new LayoutStub();
+				var contentHandler = CreateHandler<LayoutHandler>(content);
+				var originalHandler = CreateHandler(new ScrollViewStub { Content = content });
+				var originalInsetPanel = Assert.IsType<ContentViewGroup>(originalHandler.PlatformView.GetChildAt(0));
+
+				var replacedContent = new LayoutStub();
+				var replacedContentHandler = CreateHandler<LayoutHandler>(replacedContent);
+				var scrollView = new ScrollViewStub { Content = replacedContent };
+				var handler = CreateHandler(scrollView);
+				var insetPanel = Assert.IsType<ContentViewGroup>(handler.PlatformView.GetChildAt(0));
+
+				Assert.Equal(originalInsetPanel, contentHandler.PlatformView.Parent);
+
+				scrollView.Content = content;
+				handler.UpdateValue(nameof(IScrollView.Content));
+
+				Assert.Equal(insetPanel, handler.PlatformView.GetChildAt(0));
+				Assert.Equal(0, originalInsetPanel.ChildCount);
+				Assert.Equal(1, insetPanel.ChildCount);
+				Assert.Equal(contentHandler.PlatformView, insetPanel.GetChildAt(0));
+				Assert.Equal(insetPanel, contentHandler.PlatformView.Parent);
+				Assert.Null(replacedContentHandler.PlatformView.Parent);
+			});
+		}
+
 		[Theory]
 		[InlineData(ScrollBarVisibility.Always, true)]
 		[InlineData(ScrollBarVisibility.Default, true)]
