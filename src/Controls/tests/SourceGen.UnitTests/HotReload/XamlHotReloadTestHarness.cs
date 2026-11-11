@@ -335,7 +335,8 @@ internal sealed class XamlHotReloadTestHarness : IDisposable
 				options.ManifestResourceName,
 				options.TargetFramework,
 				options.NoWarn,
-				EnableIncrementalHotReload: true);
+				EnableIncrementalHotReload: true,
+				EnableDiagnostics: options.EnableDiagnostics);
 			files.Add(document.Key, new XamlHotReloadAdditionalFile(options, file));
 		}
 
@@ -500,7 +501,8 @@ internal sealed record XamlHotReloadDocument(
 	string? TargetPath = null,
 	string? ManifestResourceName = null,
 	string? TargetFramework = "net11.0",
-	string? NoWarn = null);
+	string? NoWarn = null,
+	bool EnableDiagnostics = true);
 
 internal sealed record XamlHotReloadSourceVersion(
 	string Xaml,
