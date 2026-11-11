@@ -7,6 +7,7 @@ using System.Windows.Input;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Devices;
+using Microsoft.Maui.Handlers;
 using static Microsoft.Maui.Controls.VisualElement;
 
 namespace Microsoft.Maui.Controls
@@ -14,8 +15,13 @@ namespace Microsoft.Maui.Controls
 	/// <summary>
 	/// Provides search functionality in a <see cref="Shell"/> application.
 	/// </summary>
-	public class SearchHandler : BindableObject, ISearchHandlerController, IPlaceholderElement, IFontElement, ITextElement, ITextAlignmentElement
+	public class SearchHandler : BindableObject, ISearchHandlerController, IPlaceholderElement, IFontElement, ITextElement, ITextAlignmentElement, IPlaceholder, ITextStyle
 	{
+		internal DataFlowDirection DataFlowDirection { get; set; }
+
+		// The shared character-spacing helpers require ITextStyle, which also requires a Font property.
+		Font ITextStyle.Font => this.ToFont();
+
 		/// <summary>Bindable property key for <see cref="IsFocused"/>.</summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static readonly BindablePropertyKey IsFocusedPropertyKey = BindableProperty.CreateReadOnly(nameof(IsFocused),
