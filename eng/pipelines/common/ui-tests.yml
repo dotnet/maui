@@ -77,6 +77,24 @@ stages:
           - template: ui-tests-build-sample.yml
             parameters:
                 runtimeVariant: "CoreCLR"
+                cakeArgs: '--ios --catalyst'
+                skipProvisioning: ${{ parameters.skipProvisioning }}
+
+  - stage: build_ui_tests_android_coreclr
+    displayName: Build UITests Android CoreCLR Sample App
+    dependsOn: []
+    jobs:
+      - job: build_ui_tests_android
+        displayName: Build Sample App (Android)
+        pool: ${{ parameters.androidPool }}
+        variables:
+          APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
+        steps:
+          - template: ui-tests-build-sample.yml
+            parameters:
+                platform: android
+                runtimeVariant: "CoreCLR"
+                coreclrArtifactName: 'ui-tests-samples-android-coreclr'
                 skipProvisioning: ${{ parameters.skipProvisioning }}
 
   # Material3 Build Stage - Separate CoreCLR build with UseMaterial3=true (Android-only)
@@ -154,7 +172,7 @@ stages:
                 skipProvisioning: ${{ parameters.skipProvisioning }}
   - stage: android_ui_tests_coreclr
     displayName: Android UITests CoreClr
-    dependsOn: build_ui_tests_coreclr
+    dependsOn: build_ui_tests_android_coreclr
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.android, '') }}:
@@ -192,6 +210,7 @@ stages:
                       headless: ${{ parameters.headless }}
                       skipProvisioning: ${{ parameters.skipProvisioning }}
                       runtimeVariant: "CoreCLR"
+                      coreclrArtifactName: 'ui-tests-samples-android-coreclr'
                   
                   # Collect and publish Android snapshot diffs
                   - template: ui-tests-collect-snapshot-diffs.yml
@@ -201,7 +220,7 @@ stages:
 
   - stage: android_ui_tests_shell_renderer
     displayName: Android UITests Shell Renderer
-    dependsOn: build_ui_tests_coreclr
+    dependsOn: build_ui_tests_android_coreclr
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.android, '') }}:
@@ -239,6 +258,7 @@ stages:
                       headless: ${{ parameters.headless }}
                       skipProvisioning: ${{ parameters.skipProvisioning }}
                       runtimeVariant: "CoreCLR"
+                      coreclrArtifactName: 'ui-tests-samples-android-coreclr'
 
                   - template: ui-tests-collect-snapshot-diffs.yml
                     parameters:
@@ -288,7 +308,7 @@ stages:
 # SafeAreaEdges tests on Android API 36 with Pixel 3 XL
   - stage: android_ui_tests_safeareaedges
     displayName: Android UITests SafeAreaEdges (API 36 Pixel 3 XL)
-    dependsOn: build_ui_tests_coreclr
+    dependsOn: build_ui_tests_android_coreclr
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.android, '') }}:
@@ -313,6 +333,7 @@ stages:
                     deviceType: 'pixel_3_xl' # Pixel 3 XL has notch display for SafeAreaEdges tests
                     provisionatorChannel: ${{ parameters.provisionatorChannel }}
                     runtimeVariant: "CoreCLR"
+                    coreclrArtifactName: 'ui-tests-samples-android-coreclr'
                     testFilter: 'SafeAreaEdges'
                     skipProvisioning: ${{ parameters.skipProvisioning }}
 

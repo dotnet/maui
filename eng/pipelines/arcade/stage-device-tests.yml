@@ -3,6 +3,9 @@ parameters:
 - name: prepareSteps
   type: stepList
   default: []
+- name: androidPrepareSteps
+  type: stepList
+  default: []
 - name: postSteps
   type: stepList
   default: []
@@ -82,7 +85,7 @@ parameters:
 
 stages:
 - stage: devicetests_build_coreclr
-  displayName: ${{ parameters.TargetFrameworkVersion }} CoreCLR ios/catalyst/android Helix Tests
+  displayName: ${{ parameters.TargetFrameworkVersion }} CoreCLR iOS/MacCatalyst Helix Tests - Build
   dependsOn: []
   jobs:
   - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/jobs/jobs.yml', '/eng/common/templates-official/jobs/jobs.yml@self') }}
@@ -103,7 +106,7 @@ stages:
         clean: all
       jobs:
       - job: builddevice_tests_coreclr
-        displayName: Build Device Tests (CoreCLR)
+        displayName: Build Device Tests iOS/MacCatalyst (CoreCLR)
         timeoutInMinutes: 120
         variables:
         - name: _BuildConfig
@@ -126,8 +129,8 @@ stages:
             DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
             PRIVATE_BUILD: $(PrivateBuild)
 
-        - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) /p:BuildDeviceTests=true /p:UseMonoRuntime=false /bl:BuildDeviceTests.binlog
-          displayName: Build DeviceTests (CoreCLR)
+        - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) /p:BuildDeviceTests=true /p:UseMonoRuntime=false /p:IncludeAndroidTargetFrameworks=false /bl:BuildDeviceTests.binlog
+          displayName: Build DeviceTests iOS/MacCatalyst (CoreCLR)
 
         - publish: ${{ parameters.checkoutDirectory }}/artifacts/bin
           displayName: Publish Succeeded Artifacts Directory
@@ -139,10 +142,67 @@ stages:
           condition: not(succeeded())
           artifact: ${{ parameters.appArtifactName }}_coreclr_failed_$(System.JobAttempt)
 
+- stage: devicetests_build_android_coreclr
+  displayName: ${{ parameters.TargetFrameworkVersion }} CoreCLR Android Helix Tests - Build
+  dependsOn: []
+  jobs:
+  - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/jobs/jobs.yml', '/eng/common/templates-official/jobs/jobs.yml@self') }}
+    parameters:
+      helixRepo: dotnet/maui
+      pool: ${{ parameters.buildPool }}
+      enableMicrobuild: ${{ parameters.enableMicrobuild }}
+      enablePublishUsingPipelines: true
+      enablePublishBuildAssets: ${{ parameters.publishAssets }}
+      enableTelemetry: true
+      enableSourceBuild: ${{ parameters.enableSourceBuild }}
+      enableSourceIndex: ${{ parameters.enableSourceIndex }}
+      sourceIndexParams: ${{ parameters.sourceIndexParams }}
+      publishAssetsImmediately: true
+      enablePublishBuildArtifacts: true
+      enablePublishTestResults: false
+      workspace:
+        clean: all
+      jobs:
+      - job: builddevice_tests_android_coreclr
+        displayName: Build Device Tests Android (CoreCLR)
+        timeoutInMinutes: 120
+        variables:
+        - name: _BuildConfig
+          value: ${{ parameters.BuildConfiguration }}
+        preSteps:
+        - checkout: self
+          fetchDepth: 1
+          clean: true
+
+        steps:
+        - ${{ each step in parameters.androidPrepareSteps }}:
+          - ${{ each pair in step }}:
+              ${{ pair.key }}: ${{ pair.value }}
+
+        - script: dotnet cake --target=dotnet-buildtasks --configuration="$(_BuildConfig)" --verbosity=diagnostic
+          displayName: Provision SDK & Build BuildTasks
+          retryCountOnTaskFailure: 4
+          env:
+            DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
+            PRIVATE_BUILD: $(PrivateBuild)
+
+        - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) /p:BuildDeviceTests=true /p:UseMonoRuntime=false /p:IncludeIosTargetFrameworks=false /p:IncludeMacCatalystTargetFrameworks=false /bl:BuildDeviceTests.binlog
+          displayName: Build DeviceTests Android (CoreCLR)
+
+        - publish: ${{ parameters.checkoutDirectory }}/artifacts/bin
+          displayName: Publish Succeeded Artifacts Directory
+          condition: succeeded()
+          artifact: ${{ parameters.appArtifactName }}_android_coreclr
+
+        - publish: ${{ parameters.checkoutDirectory }}/artifacts/bin
+          displayName: Publish Failed Artifacts Directory
+          condition: not(succeeded())
+          artifact: ${{ parameters.appArtifactName }}_android_coreclr_failed_$(System.JobAttempt)
+
 - stage: devicetests_android_coreclr
   displayName: ${{ parameters.TargetFrameworkVersion }} CoreCLR Android Helix Tests
   dependsOn: 
-    - devicetests_build_coreclr
+    - devicetests_build_android_coreclr
   jobs:
   - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/jobs/jobs.yml', '/eng/common/templates-official/jobs/jobs.yml@self') }}
     parameters:
@@ -177,7 +237,7 @@ stages:
           retryCountOnTaskFailure: 4
           condition: succeeded()
           inputs:
-            artifactName: ${{ parameters.appArtifactName }}_coreclr
+            artifactName: ${{ parameters.appArtifactName }}_android_coreclr
             targetPath: ${{ parameters.checkoutDirectory }}/artifacts/bin
 
         - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/steps/send-to-helix.yml', '/eng/common/templates-official/steps/send-to-helix.yml@self') }}
