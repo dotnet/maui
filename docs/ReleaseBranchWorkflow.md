@@ -261,18 +261,16 @@ byte-for-byte during production phase changes, rather than repeatedly stamping
 per-branch labels. Legacy one/two-label sources remain supported. Trial scopes
 use separately recognized conditions for both inflight and servicing refs.
 
-`StabilizePackageVersion` is an explicit boolean, defaulting to `false` on
-development/candidate/inflight and initial `automation/release/*` sources.
-The reviewed servicing configuration sets it to `true`; a release branch name
-alone never enables stable packages. The branch-derived label policy controls
-branding, not stabilization. Explicit MSBuild overrides remain authoritative.
-The setting is evaluated before Arcade, not overwritten by a later target.
+The policy also defaults `StabilizePackageVersion` to `true` when the effective
+label is `servicing` **and** the build source is a strict SR release ref.
+Development/candidate/inflight and initial `automation/release/*` refs remain non-stable. Explicit stabilization and
+Preview/RC/PR-label overrides remain authoritative; a Preview/RC override on an
+SR ref must not accidentally become a stable package. The setting is evaluated
+before Arcade, not overwritten by a later target.
 
 After an approved candidate merge, staging initially retains CI/non-stable output.
-The separate servicing PR changes the stabilization boolean from `false` to
-`true` on staging while preserving the ordered branch-label properties.
-Historical regex-policy sources remain readable so existing receipts and
-reviewed servicing commits can still be reproduced; new sources use the boolean.
+The separate servicing PR makes stabilization explicit on staging, including
+for automatic-policy sources, while preserving the ordered branch-label properties.
 Legacy sources receive the same pre-cut review with a literal servicing label.
 The receipt's original candidate and prepared next-lane identities remain unchanged.
 Readiness and
@@ -284,8 +282,8 @@ The next candidate includes the normalized fixes commit in its ancestry. A real
 three-way merge preserves both approved integration contents and future inflight
 payload. Conflicts stop the operation; no file is blindly replaced. Legacy
 servicing commits are children of the initial release cut and never enter
-candidate or future-lane ancestry. Creating the real release ref changes no
-source bytes after the reviewed servicing merge.
+candidate or future-lane ancestry. Automatic stabilization changes no release
+source bytes after the approved integration.
 Future inflight content is never included in the release already cut.
 
 The SR2 ref was originally seeded at patch10 and has been explicitly corrected
