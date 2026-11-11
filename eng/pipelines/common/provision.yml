@@ -281,6 +281,21 @@ steps:
       env:
         EXPECTED_XCODE_VERSION: $(XCODE)
 
+  - ${{ if eq(parameters.requirePinnedXcodeVersion, true) }}:
+    - script: |
+        set -euo pipefail
+        selected_version="$(xcodebuild -version | awk 'NR == 1 { print $2 }')"
+        if [[ -z "$EXPECTED_XCODE_VERSION" || -z "$selected_version" ]] ||
+           [[ "$selected_version" != "$EXPECTED_XCODE_VERSION" && "$selected_version" != "$EXPECTED_XCODE_VERSION".* ]]; then
+          echo "##vso[task.logissue type=error]Expected Xcode $EXPECTED_XCODE_VERSION, but selected ${selected_version:-unknown}."
+          exit 1
+        fi
+        echo "Selected Xcode $selected_version matches the requested version $EXPECTED_XCODE_VERSION."
+      displayName: Verify pinned Xcode version
+      condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
+      env:
+        EXPECTED_XCODE_VERSION: $(XCODE)
+
   - ${{ if ne(parameters.skipSimulatorSetup, 'true') }}:
     - script: |
         xcrun simctl runtime list -v || true

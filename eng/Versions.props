@@ -66,18 +66,18 @@
     <MicrosoftAgentsAIHostingVersion>1.0.0-preview.260225.1</MicrosoftAgentsAIHostingVersion>
     <!-- xamarin/xamarin-android -->
     <MicrosoftAndroidSdkWindowsPackageVersion>37.99.0-preview.1.358</MicrosoftAndroidSdkWindowsPackageVersion>
-    <MicrosoftNETSdkAndroidManifest110100PackageVersion>37.2.15</MicrosoftNETSdkAndroidManifest110100PackageVersion>
-    <AndroidNetPreviousVersion>$(MicrosoftNETSdkAndroidManifest110100PackageVersion)</AndroidNetPreviousVersion>
+    <MicrosoftNETSdkAndroidManifest110100rc2PackageVersion>37.2.0-rc.2.84</MicrosoftNETSdkAndroidManifest110100rc2PackageVersion>
+    <AndroidNetPreviousVersion>$(MicrosoftNETSdkAndroidManifest110100rc2PackageVersion)</AndroidNetPreviousVersion>
     <!-- dotnet/macios -->
     <MicrosoftMacCatalystSdknet120_270PackageVersion>27.0.13384-net12-p1</MicrosoftMacCatalystSdknet120_270PackageVersion>
     <MicrosoftmacOSSdknet120_270PackageVersion>27.0.13384-net12-p1</MicrosoftmacOSSdknet120_270PackageVersion>
     <MicrosoftiOSSdknet120_271PackageVersion>27.1.12089-net12-p1</MicrosoftiOSSdknet120_271PackageVersion>
     <MicrosofttvOSSdknet120_270PackageVersion>27.0.13384-net12-p1</MicrosofttvOSSdknet120_270PackageVersion>
-    <!-- This is a subscription of the .NET 11 latest stable versions of our packages -->
-    <MicrosoftMacCatalystSdknet110_270PackageVersion>27.0.12230</MicrosoftMacCatalystSdknet110_270PackageVersion>
-    <MicrosoftmacOSSdknet110_270PackageVersion>27.0.12230</MicrosoftmacOSSdknet110_270PackageVersion>
-    <MicrosoftiOSSdknet110_270PackageVersion>27.0.12230</MicrosoftiOSSdknet110_270PackageVersion>
-    <MicrosofttvOSSdknet110_270PackageVersion>27.0.12230</MicrosofttvOSSdknet110_270PackageVersion>
+    <!-- Previous .NET Apple SDKs selected by the current workload. -->
+    <MicrosoftMacCatalystSdknet110_270PackageVersion>27.0.12262</MicrosoftMacCatalystSdknet110_270PackageVersion>
+    <MicrosoftmacOSSdknet110_270PackageVersion>27.0.12262</MicrosoftmacOSSdknet110_270PackageVersion>
+    <MicrosoftiOSSdknet110_270PackageVersion>27.0.12214</MicrosoftiOSSdknet110_270PackageVersion>
+    <MicrosofttvOSSdknet110_270PackageVersion>27.0.12262</MicrosofttvOSSdknet110_270PackageVersion>
     <!-- wasdk -->
     <MicrosoftWindowsCsWin32PackageVersion>0.3.298</MicrosoftWindowsCsWin32PackageVersion>
     <MicrosoftWindowsSDKBuildToolsWinAppPackageVersion>0.7.1</MicrosoftWindowsSDKBuildToolsWinAppPackageVersion>
