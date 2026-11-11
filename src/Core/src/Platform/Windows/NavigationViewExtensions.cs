@@ -15,6 +15,8 @@ namespace Microsoft.Maui.Platform
 {
 	public static class NavigationViewExtensions
 	{
+		static readonly ImageSourceRequestManager FlyoutIconRequests = new();
+
 		public static void UpdateTopNavAreaBackground(this MauiNavigationView navigationView, Paint? paint)
 		{
 			// Background property is set via {ThemeResource NavigationViewTopPaneBackground} in the Control Template
@@ -257,6 +259,7 @@ namespace Microsoft.Maui.Platform
 			if (paneContentGrid is null)
 				return;
 
+			ControlExtensions.BackgroundImageRequests.Begin(paneContentGrid);
 			var brush = paint?.ToPlatform();
 
 			if (brush is null)
@@ -326,26 +329,32 @@ namespace Microsoft.Maui.Platform
 
 		internal static async Task UpdateBackgroundImageSourceAsync(this MauiNavigationView navigationView, IImageSource? imageSource, IImageSourceServiceProvider? provider, Aspect aspect)
 		{
-			if (provider is null || imageSource is null)
-			{
-				return;
-			}
 			var paneContentGrid = navigationView.PaneContentGrid;
 			if (paneContentGrid is null)
 			{
 				return;
 			}
 
+			var request = ControlExtensions.BackgroundImageRequests.Begin(paneContentGrid);
+			if (imageSource is null)
+				return;
+			if (provider is null)
+				return;
+
 			var service = provider.GetRequiredImageSourceService(imageSource);
 			var nativeImageSource = await service.GetImageSourceAsync(imageSource);
-
-			if (nativeImageSource is null)
+			if (!ControlExtensions.BackgroundImageRequests.IsCurrent(paneContentGrid, request) ||
+				navigationView.PaneContentGrid != paneContentGrid)
 			{
-				paneContentGrid.Background = null;
+				nativeImageSource?.Dispose();
 				return;
 			}
 
-			var BackgroundImage = new ImageBrush
+			if (nativeImageSource is null)
+				return;
+
+			var background = paneContentGrid.Background;
+			var backgroundImage = new ImageBrush
 			{
 				ImageSource = nativeImageSource?.Value,
 				Stretch = aspect switch
@@ -357,7 +366,13 @@ namespace Microsoft.Maui.Platform
 				}
 			};
 
-			paneContentGrid.Background = BackgroundImage;
+			paneContentGrid.Background = backgroundImage;
+			ControlExtensions.BackgroundImageRequests.SetCleanup(paneContentGrid, request, () =>
+			{
+				if (paneContentGrid.Background == backgroundImage)
+					paneContentGrid.Background = background;
+				nativeImageSource.Dispose();
+			});
 		}
 
 		public static async Task UpdateFlyoutIconAsync(this MauiNavigationView navigationView, IImageSource? imageSource, IImageSourceServiceProvider? provider)
@@ -380,11 +395,18 @@ namespace Microsoft.Maui.Platform
 			if (platformView is null)
 				return;
 
+			var request = FlyoutIconRequests.Begin(platformView);
+
 			if (provider is not null && imageSource is not null)
 			{
 				// Custom Icon
 				var service = provider.GetRequiredImageSourceService(imageSource);
 				var nativeImageSource = await service.GetImageSourceAsync(imageSource);
+				if (!FlyoutIconRequests.IsCurrent(platformView, request))
+				{
+					nativeImageSource?.Dispose();
+					return;
+				}
 
 				platformView.Source = null;
 
