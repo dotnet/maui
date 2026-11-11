@@ -4,8 +4,6 @@ using PlatformView = UIKit.UIButton;
 using PlatformView = Google.Android.Material.Card.MaterialCardView;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.Controls.Button;
-#elif TIZEN
-using PlatformView = Tizen.NUI.BaseComponents.View;
 #else
 using PlatformView = System.Object;
 #endif

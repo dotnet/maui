@@ -28,13 +28,9 @@ namespace Microsoft.Maui.Controls.Platform
 			if (_listener == null)
 				return;
 
-			// Right now this just disables long press, since we don't support a long press gesture
-			// in Forms. If we ever do, we'll need to selectively enable it, probably by hooking into the 
-			// InnerGestureListener and listening for the addition of any long press gesture recognizers.
-			// (since a long press will prevent a pan gesture from starting, we can't just leave support for it 
-			// on by default).
-			// Also, since the property is virtual we shouldn't just set it from the constructor.
-
+			// Enable long press when drag gestures or LongPressGestureRecognizer are present.
+			// Note: long press being enabled will prevent pan gestures from starting until
+			// the long press timeout elapses, so we only enable it when needed.
 			IsLongpressEnabled = _listener.EnableLongPressGestures;
 		}
 

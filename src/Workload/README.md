@@ -87,7 +87,6 @@ installed:
 * `maui-maccatalyst`
 * `maui-macos`
 * `maui-windows`
-* `maui-tizen`
 
 `maui-android` simply extends the `android` workload, adding the
 Android-specific platform implementation for MAUI.
@@ -98,6 +97,28 @@ developers would get from the choices of `mobile`, `maui`, or
 `desktop`:
 
 ![Workload Diagram](docs/workload-diagram.png)
+
+## Workload manifest and package versions
+
+The manifest's SDK feature band and MAUI's product version are independent.
+`DotNetMauiManifestVersionBand`, used in the manifest package ID, is derived
+from `MicrosoftNETSdkPackageVersion` in `eng/Versions.props`. MAUI's package
+version uses its own `PreReleaseVersionLabel` and `PreReleaseVersionIteration`;
+the generated manifest and its current MAUI packs use that package version.
+
+The default prerelease label and stabilization are
+[derived from the build source branch](../../docs/ReleaseProcess.md#branch-derived-package-labels).
+Valid SR release refs with servicing branding automatically default to stable
+packages; other refs and explicit Preview/RC/PR-label overrides remain
+prerelease by default. Explicit `StabilizePackageVersion=true` or `false`
+overrides still win. Stable versioning does not enable public publication or
+bypass release approvals.
+
+When advancing MAUI to a new preview or release candidate, update both
+prerelease properties on the development branch as well as the release branch.
+Updating SDK dependencies alone does not advance MAUI's product branding.
+Leaving the development branch on `preview.N` after publishing `rc.N` packages
+also causes newer nightly packages to sort below older RC packages in NuGet.
 
 ## `$(MauiVersion)`
 

@@ -118,6 +118,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 				Clicked += OnClicked;
 				item.PropertyChanged += OnPropertyChanged;
+				UpdateBadge(item);
 
 				if (item != null && !string.IsNullOrEmpty(item.AutomationId))
 					AccessibilityIdentifier = item.AutomationId;
@@ -169,6 +170,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				{
 					UpdateContentAndStyle(item);
 				}
+				else if (e.PropertyName == nameof(ToolbarItem.BadgeText) || e.PropertyName == nameof(ToolbarItem.BadgeColor) || e.PropertyName == nameof(ToolbarItem.BadgeTextColor))
+					UpdateBadge(item);
 #pragma warning disable CS0618 // Type or member is obsolete
 				else if (e.PropertyName == AutomationProperties.HelpTextProperty.PropertyName)
 					this.SetAccessibilityHint(item);
@@ -244,6 +247,41 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 #pragma warning disable CA1416, CA1422 // TODO: [UnsupportedOSPlatform("ios8.0")]
 				Style = UIBarButtonItemStyle.Bordered;
 #pragma warning restore CA1416, CA1422
+			}
+
+			void UpdateBadge(ToolbarItem item)
+			{
+				// UIBarButtonItem.Badge is only available on iOS 26+ / MacCatalyst 26+
+				if (!OperatingSystem.IsIOSVersionAtLeast(26) && !OperatingSystem.IsMacCatalystVersionAtLeast(26))
+					return;
+
+				var badgeText = item.BadgeText;
+
+				if (badgeText is null)
+				{
+#pragma warning disable CA1416 // Validate platform compatibility
+					this.Badge = null;
+#pragma warning restore CA1416
+					return;
+				}
+
+#pragma warning disable CA1416 // Validate platform compatibility
+				UIBarButtonItemBadge badge;
+				if (badgeText.Length == 0)
+					badge = UIBarButtonItemBadge.CreateIndicatorBadge();
+				else if (int.TryParse(badgeText, out var count) && count >= 0)
+					badge = UIBarButtonItemBadge.Create((nuint)count);
+				else
+					badge = UIBarButtonItemBadge.Create(badgeText);
+
+				if (item.BadgeColor is not null)
+					badge.BackgroundColor = item.BadgeColor.ToPlatform();
+
+				if (item.BadgeTextColor is not null)
+					badge.ForegroundColor = item.BadgeTextColor.ToPlatform();
+
+				this.Badge = badge;
+#pragma warning restore CA1416
 			}
 		}
 

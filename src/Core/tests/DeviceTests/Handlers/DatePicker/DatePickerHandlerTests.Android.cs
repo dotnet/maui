@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Android.Views;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Handlers;
 using Xunit;
 using AColor = Android.Graphics.Color;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -87,6 +90,143 @@ namespace Microsoft.Maui.DeviceTests
 
 			Assert.Equal(xplatCharacterSpacing, values.ViewValue);
 			Assert.Equal(expectedValue, values.PlatformViewValue, EmCoefficientPrecision);
+		}
+
+		[Fact(DisplayName = "Material3 Gradient Background Initializes Correctly")]
+		public async Task Material3GradientBackgroundInitializesCorrectly()
+		{
+			var datePicker = new DatePickerStub
+			{
+				Background = new LinearGradientPaintStub(Colors.Red, Colors.Orange),
+				Date = DateTime.Today,
+				Width = 200,
+				Height = 60
+			};
+
+			await AttachAndRun<DatePickerHandler2>(datePicker, async handler =>
+			{
+				await handler.PlatformView.AssertContainsColor(Colors.Red, MauiContext);
+				await handler.PlatformView.AssertContainsColor(Colors.Orange, MauiContext);
+			});
+		}
+
+		[Fact(DisplayName = "Material3 DatePicker Honors AtMost Height")]
+		public async Task Material3DatePickerHonorsAtMostHeight()
+		{
+			var datePicker = new DatePickerStub
+			{
+				Date = DateTime.Today,
+				Width = 200,
+				Height = 44
+			};
+
+			await AttachAndRun<DatePickerHandler2>(datePicker, handler =>
+			{
+				var widthMeasureSpec = View.MeasureSpec.MakeMeasureSpec(200, MeasureSpecMode.Exactly);
+				handler.PlatformView.Measure(widthMeasureSpec, View.MeasureSpec.MakeMeasureSpec(0, MeasureSpecMode.Unspecified));
+
+				var constrainedHeight = handler.PlatformView.MeasuredHeight - 1;
+				handler.PlatformView.Measure(widthMeasureSpec, View.MeasureSpec.MakeMeasureSpec(constrainedHeight, MeasureSpecMode.AtMost));
+
+				Assert.Equal(constrainedHeight, handler.PlatformView.MeasuredHeight);
+			});
+		}
+
+		[Fact(DisplayName = "Material3 Focus Enables Inner Field Focusability")]
+		public async Task Material3FocusEnablesInnerFieldFocusability()
+		{
+			var datePicker = new DatePickerStub
+			{
+				Date = DateTime.Today,
+				Width = 200,
+				Height = 44
+			};
+
+			await AttachAndRun<DatePickerHandler2>(datePicker, handler =>
+			{
+				var inputEditText = handler.PlatformView.InputEditText!;
+
+				// At rest the read-only field must never be an initial-focus candidate.
+				Assert.False(inputEditText.Focusable);
+
+				handler.InvokeWithResult(nameof(IView.Focus), new FocusRequest());
+
+				Assert.True(inputEditText.Focusable);
+				Assert.True(inputEditText.FocusableInTouchMode);
+			});
+		}
+
+		[Fact(DisplayName = "Material3 Unfocus Resets Inner Field Focusability")]
+		public async Task Material3UnfocusResetsInnerFieldFocusability()
+		{
+			var datePicker = new DatePickerStub
+			{
+				Date = DateTime.Today,
+				Width = 200,
+				Height = 44
+			};
+
+			await AttachAndRun<DatePickerHandler2>(datePicker, handler =>
+			{
+				var inputEditText = handler.PlatformView.InputEditText!;
+
+				handler.InvokeWithResult(nameof(IView.Focus), new FocusRequest());
+				Assert.True(inputEditText.Focusable);
+
+				handler.Invoke(nameof(IView.Unfocus), null);
+
+				Assert.False(inputEditText.Focusable);
+				Assert.False(inputEditText.FocusableInTouchMode);
+			});
+		}
+
+		[Fact(DisplayName = "Material3 IsFocused Syncs With Inner Field Focus")]
+		public async Task Material3IsFocusedSyncsWithInnerFieldFocus()
+		{
+			var datePicker = new DatePickerStub
+			{
+				Date = DateTime.Today,
+				Width = 200,
+				Height = 44
+			};
+
+			await AttachAndRun<DatePickerHandler2>(datePicker, async handler =>
+			{
+				handler.InvokeWithResult(nameof(IView.Focus), new FocusRequest());
+				await AssertEventually(() => datePicker.IsFocused);
+
+				handler.Invoke(nameof(IView.Unfocus), null);
+				await AssertEventually(() => !datePicker.IsFocused);
+			});
+		}
+
+		[Fact(DisplayName = "Material3 Disconnect While Focused Resets Focus State And Focusability")]
+		public async Task Material3DisconnectWhileFocusedResetsFocusStateAndFocusability()
+		{
+			var datePicker = new DatePickerStub
+			{
+				Date = DateTime.Today,
+				Width = 200,
+				Height = 44
+			};
+
+			await AttachAndRun<DatePickerHandler2>(datePicker, async handler =>
+			{
+				var inputEditText = handler.PlatformView.InputEditText!;
+
+				handler.InvokeWithResult(nameof(IView.Focus), new FocusRequest());
+				await AssertEventually(() => datePicker.IsFocused);
+				Assert.True(inputEditText.Focusable);
+
+				((IElementHandler)handler).DisconnectHandler();
+
+				// The platform view is reused across reconnects, so a disconnect while focused must reset
+				// both focus state and focusability; otherwise Controls remains focused while the read-only
+				// field becomes an initial-focus candidate on reconnect.
+				await AssertEventually(() => !datePicker.IsFocused);
+				Assert.False(inputEditText.Focusable);
+				Assert.False(inputEditText.FocusableInTouchMode);
+			});
 		}
 
 		MauiDatePicker GetNativeDatePicker(DatePickerHandler datePickerHandler) =>

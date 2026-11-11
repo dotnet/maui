@@ -68,16 +68,33 @@ Write-Host "Launched $aumid (PID $procId) with args: $AppArguments"
 
 try {
     $proc = Get-Process -Id $procId -ErrorAction Stop
+    # .NET Framework requires a retained handle to read ExitCode after WaitForExit.
+    $null = $proc.get_Handle()
 } catch {
-    Write-Error "App process $procId disappeared immediately after launch: $_"
+    Write-Error "Could not acquire a handle for app process ${procId}: $_" -ErrorAction Continue
     exit 3
 }
 
-if (-not $proc.WaitForExit($TimeoutSeconds * 1000)) {
-    Write-Warning "Timed out after ${TimeoutSeconds}s waiting for PID $procId to exit; killing it."
-    try { Stop-Process -Id $procId -Force -ErrorAction SilentlyContinue } catch {}
-    exit 2
+try {
+    if (-not $proc.WaitForExit($TimeoutSeconds * 1000)) {
+        Write-Warning "Timed out after ${TimeoutSeconds}s waiting for PID $procId to exit; killing it."
+        try { Stop-Process -Id $procId -Force -ErrorAction SilentlyContinue } catch {}
+        exit 2
+    }
+
+    # Calling the getter directly propagates errors instead of returning an empty PowerShell property.
+    $processExitCode = $proc.get_ExitCode()
+} catch {
+    Write-Error "Could not wait for app process $procId or read its exit code: $_" -ErrorAction Continue
+    exit 3
+} finally {
+    $proc.Dispose()
 }
 
-Write-Host "App PID $procId exited with code $($proc.ExitCode)"
+Write-Host "App PID $procId exited with code $processExitCode"
+# WinUI Application.Exit may return -1; other nonzero codes indicate a failed process.
+if ($processExitCode -notin @(0, -1)) {
+    Write-Error "Packaged test process crashed with exit code $processExitCode" -ErrorAction Continue
+    exit 3
+}
 exit 0

@@ -110,6 +110,7 @@ Describe 'Notification Center script safety' {
             ".github/workflows/**",
             ".github/skills/run-device-tests/scripts/*.ps1",
             ".github/skills/verify-tests-fail-without-fix/scripts/*.ps1",
+            ".github/skills/review-test-failures/scripts/*.ps1",
             "eng/scripts/**",
             "eng/pipelines/common/provision.yml",
             "eng/pipelines/common/ui-tests-steps.yml"
@@ -118,7 +119,7 @@ Describe 'Notification Center script safety' {
         }
     }
 
-    It 'discovers only the two coupled skill script suites' {
+    It 'discovers only the three coupled skill script suites' {
         $workflowContent = Get-Content -Raw -LiteralPath $pesterWorkflow
         $runPathStart = $workflowContent.IndexOf('$config.Run.Path = @(')
         $runPathEnd = $workflowContent.IndexOf(')', $runPathStart)
@@ -126,11 +127,12 @@ Describe 'Notification Center script safety' {
 
         foreach ($path in @(
             ".github/skills/run-device-tests/scripts",
-            ".github/skills/verify-tests-fail-without-fix/scripts"
+            ".github/skills/verify-tests-fail-without-fix/scripts",
+            ".github/skills/review-test-failures/scripts"
         )) {
             $runPathBlock | Should -Match ([regex]::Escape("'$path'"))
         }
-        ([regex]::Matches($runPathBlock, "'\.github/skills/")).Count | Should -Be 2
+        ([regex]::Matches($runPathBlock, "'\.github/skills/")).Count | Should -Be 3
         $runPathBlock | Should -Not -Match "'\.github/skills'"
         $workflowContent | Should -Not -Match ([regex]::Escape("- '.github/skills/**'"))
     }

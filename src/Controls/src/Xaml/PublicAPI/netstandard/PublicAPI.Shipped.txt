@@ -13,6 +13,8 @@
 ~Microsoft.Maui.Controls.Xaml.ArrayExtension.Type.set -> void
 ~Microsoft.Maui.Controls.Xaml.BindingExtension.Converter.get -> Microsoft.Maui.Controls.IValueConverter
 ~Microsoft.Maui.Controls.Xaml.BindingExtension.Converter.set -> void
+~Microsoft.Maui.Controls.Xaml.BindingExtension.ConverterCulture.get -> System.Globalization.CultureInfo
+~Microsoft.Maui.Controls.Xaml.BindingExtension.ConverterCulture.set -> void
 ~Microsoft.Maui.Controls.Xaml.BindingExtension.ConverterParameter.get -> object
 ~Microsoft.Maui.Controls.Xaml.BindingExtension.ConverterParameter.set -> void
 ~Microsoft.Maui.Controls.Xaml.BindingExtension.FallbackValue.get -> object
@@ -77,10 +79,14 @@
 ~Microsoft.Maui.Controls.Xaml.OnPlatformExtension.ConverterParameter.set -> void
 ~Microsoft.Maui.Controls.Xaml.OnPlatformExtension.Default.get -> object
 ~Microsoft.Maui.Controls.Xaml.OnPlatformExtension.Default.set -> void
+~Microsoft.Maui.Controls.Xaml.OnPlatformExtension.GTK.get -> object
+~Microsoft.Maui.Controls.Xaml.OnPlatformExtension.GTK.set -> void
 ~Microsoft.Maui.Controls.Xaml.OnPlatformExtension.iOS.get -> object
 ~Microsoft.Maui.Controls.Xaml.OnPlatformExtension.iOS.set -> void
 ~Microsoft.Maui.Controls.Xaml.OnPlatformExtension.MacCatalyst.get -> object
 ~Microsoft.Maui.Controls.Xaml.OnPlatformExtension.MacCatalyst.set -> void
+~Microsoft.Maui.Controls.Xaml.OnPlatformExtension.macOS.get -> object
+~Microsoft.Maui.Controls.Xaml.OnPlatformExtension.macOS.set -> void
 ~Microsoft.Maui.Controls.Xaml.OnPlatformExtension.ProvideValue(System.IServiceProvider serviceProvider) -> object
 ~Microsoft.Maui.Controls.Xaml.OnPlatformExtension.Tizen.get -> object
 ~Microsoft.Maui.Controls.Xaml.OnPlatformExtension.Tizen.set -> void
@@ -88,6 +94,8 @@
 ~Microsoft.Maui.Controls.Xaml.OnPlatformExtension.UWP.set -> void
 ~Microsoft.Maui.Controls.Xaml.OnPlatformExtension.WinUI.get -> object
 ~Microsoft.Maui.Controls.Xaml.OnPlatformExtension.WinUI.set -> void
+~Microsoft.Maui.Controls.Xaml.OnPlatformExtension.WPF.get -> object
+~Microsoft.Maui.Controls.Xaml.OnPlatformExtension.WPF.set -> void
 ~Microsoft.Maui.Controls.Xaml.ReferenceExtension.Name.get -> string
 ~Microsoft.Maui.Controls.Xaml.ReferenceExtension.Name.set -> void
 ~Microsoft.Maui.Controls.Xaml.ReferenceExtension.ProvideValue(System.IServiceProvider serviceProvider) -> object
@@ -188,4 +196,18 @@ Microsoft.Maui.Controls.Xaml.XamlCompilationAttribute.XamlCompilationOptions.set
 Microsoft.Maui.Controls.Xaml.XamlCompilationOptions
 Microsoft.Maui.Controls.Xaml.XamlCompilationOptions.Compile = 2 -> Microsoft.Maui.Controls.Xaml.XamlCompilationOptions
 Microsoft.Maui.Controls.Xaml.XamlCompilationOptions.Skip = 1 -> Microsoft.Maui.Controls.Xaml.XamlCompilationOptions
+Microsoft.Maui.Controls.Xaml.XamlComponentRegistry
 Microsoft.Maui.Controls.Xaml.XamlFilePathAttribute
+static Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.FindStaticResource(object! element, string! key) -> object?
+static Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.GetComponent(object! page, string! nodeId) -> object?
+static Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.GetInstances(System.Type! pageType) -> System.Collections.Generic.IReadOnlyList<object!>!
+static Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.GetResourceKeys(object! page) -> string![]!
+static Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.GetTemplateComponents(object! page, string! nodeId) -> System.Collections.Generic.IReadOnlyList<object!>!
+static Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.Register(object! page, string! nodeId, object! component) -> void
+static Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.RegisterComponent(object! element, string! nodeId) -> void
+static Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.RegisterResourceKeys(object! page, string![]! keys) -> void
+static Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.RegisterTemplateComponent(object! page, string! nodeId, object! component) -> void
+static Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.TryGet(object! page, string! nodeId, out object? component) -> bool
+static Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.Unregister(object! page, string! nodeId) -> void
+static Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.Unregister(object! page) -> void
+static Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.UnregisterSubtree(object! page, string! nodeIdPrefix) -> void

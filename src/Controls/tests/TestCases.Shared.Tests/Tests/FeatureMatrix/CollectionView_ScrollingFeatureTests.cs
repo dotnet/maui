@@ -30,6 +30,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 
 	public override string GalleryPageName => ScrollingFeatureMatrix;
 	protected override string GallerySubPageButton => "ScrollingButton";
+	protected override bool ResetAfterEachTest => true;
 
 	public CollectionView_ScrollingFeatureTests(TestDevice device)
 		: base(device)
@@ -2469,7 +2470,9 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.Tap("ScrollTo");
 		App.WaitForElement("ScrollToRequestedLabel");
 		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Fired"));
-		App.WaitForElement("Kiwi");
+		// ItemLabel reports the request before Kiwi is visible; wait for the scrolled index instead.
+		Assert.That(App.WaitForTextEqualToElement("LastIndexLabel", "12"), Is.True,
+			"Timed out waiting for the scroll to make Kiwi the last visible item.");
 		Assert.That(App.WaitForElement("LastIndexLabel").GetText(), Is.EqualTo("12"));
 		Assert.That(App.WaitForElement("ItemLabel").GetText(), Is.EqualTo("Kiwi"));
 		VerifyScreenshot();

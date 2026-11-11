@@ -90,6 +90,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				tabLayout.SetBackground(new ColorDrawable(background.ToPlatform(ShellRenderer.DefaultBackgroundColor)));
 				tabLayout.SetSelectedTabIndicatorColor(foreground.ToPlatform(ShellRenderer.DefaultForegroundColor));
 			}
+
+			AndroidSystemChrome.UpdateTopChrome(
+				tabLayout,
+				background is null && RuntimeFeature.IsMaterial3Enabled
+					? null
+					: new SolidColorBrush(background ?? ShellRenderer.DefaultBackgroundColor));
 		}
 
 		internal void CaptureNativeColors(TabLayout tabLayout)

@@ -63,8 +63,6 @@ requesting the theme default.
 ## Platforms
 
 The native implementations target Android, iOS, Mac Catalyst and Windows.
-Tizen is explicitly unsupported and throws `PlatformNotSupportedException` when
-its handler is created; it does not fall back to a non-interactive `ContentView`.
 GTK4 and AppKit backends are outside this implementation.
 
 ## Coverage and manual checks

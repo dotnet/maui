@@ -1,7 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:pageModels="clr-namespace:MauiApp._1.PageModels"             
+﻿<ContentPage xmlns:pageModels="clr-namespace:MauiApp._1.PageModels"             
              xmlns:models="clr-namespace:MauiApp._1.Models"
              xmlns:controls="clr-namespace:MauiApp._1.Pages.Controls"
              xmlns:pullToRefresh="clr-namespace:Syncfusion.Maui.Toolkit.PullToRefresh;assembly=Syncfusion.Maui.Toolkit"

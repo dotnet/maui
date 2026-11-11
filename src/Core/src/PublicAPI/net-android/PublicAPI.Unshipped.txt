@@ -1,3 +1,4 @@
+#nullable enable
 ﻿#nullable enable
 Microsoft.Maui.Handlers.ContentButtonHandler
 Microsoft.Maui.Handlers.ContentButtonHandler.ContentButtonHandler() -> void

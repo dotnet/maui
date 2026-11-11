@@ -1,3 +1,4 @@
+#nullable enable
 ﻿#nullable enable
 override Microsoft.Maui.Controls.GraphicsView.OnBindingContextChanged() -> void
 override Microsoft.Maui.Controls.Handlers.Compatibility.EntryCellRenderer.EntryCellTableViewCell.Dispose(bool disposing) -> void

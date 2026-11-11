@@ -60,9 +60,12 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					Context.IL.Emit(Ldnull);
 					Context.IL.Emit(Stloc, vardef);
 				}
-
 				return;
 			}
+
+			// Check if the type is marked as obsolete (typedef may be null for unresolvable types)
+			if (typedef != null)
+				SetPropertiesVisitor.LogObsoleteWarningOrError(Context, node, typedef.FullName, typedef.CustomAttributes);
 
 			if (typeref.FullName == "Microsoft.Maui.Controls.Xaml.ArrayExtension")
 			{

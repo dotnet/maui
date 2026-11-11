@@ -1,3 +1,4 @@
+#nullable enable
 ﻿#nullable enable
 Microsoft.Maui.FontManager.Dispose() -> void
 override Microsoft.Maui.Platform.MauiPageControl.SizeThatFits(CoreGraphics.CGSize size) -> CoreGraphics.CGSize

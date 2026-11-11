@@ -19,6 +19,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
 	public class ShellItemRenderer : UITabBarController, IShellItemRenderer, IAppearanceObserver, IUINavigationControllerDelegate, IDisconnectable
 	{
+#if !MACCATALYST
+		public override UIViewController ChildViewControllerForStatusBarStyle()
+			=> CurrentRenderer?.ViewController;
+#endif
+
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "This is a shared static Array.Empty cache and is not renderer-owned NSObject state.")]
 		readonly static UITableViewCell[] EmptyUITableViewCellArray = Array.Empty<UITableViewCell>();
 
@@ -430,6 +435,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		protected virtual void OnShellItemSet(ShellItem shellItem)
 		{
 			_appearanceTracker = _context.CreateTabBarAppearanceTracker();
+			if (_appearanceTracker is SafeShellTabBarAppearanceTracker tracker)
+			{
+				tracker.CaptureDefaultAppearance(this);
+			}
+
 			shellItem.PropertyChanged += OnElementPropertyChanged;
 			((IShellController)_context.Shell).AddAppearanceObserver(this, shellItem);
 			ShellItemController.ItemsCollectionChanged += OnItemsCollectionChanged;
@@ -446,6 +456,17 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				if (TabBar.Items is not null && index >= 0 && index < TabBar.Items.Length)
 					UpdateTabBarItemEnabled(TabBar.Items[index], shellSection.IsEnabled);
 			}
+			else if (e.PropertyName == BaseShellItem.BadgeTextProperty.PropertyName ||
+					 e.PropertyName == BaseShellItem.BadgeColorProperty.PropertyName ||
+					 e.PropertyName == BaseShellItem.BadgeTextColorProperty.PropertyName)
+			{
+				var shellSection = (ShellSection)sender;
+				var renderer = RendererForShellContent(shellSection);
+				if (renderer is not null)
+				{
+					UpdateTabBarItemBadge(renderer.ViewController?.TabBarItem, shellSection);
+				}
+			}
 		}
 
 
@@ -454,9 +475,17 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (appearance == null)
 			{
 				_appearanceTracker.ResetAppearance(this);
-				return;
 			}
-			_appearanceTracker.SetAppearance(this, appearance);
+			else
+			{
+				_appearanceTracker.SetAppearance(this, appearance);
+			}
+
+			// Refresh per-item badges after replacing the tab bar's appearance.
+			foreach (var renderer in _sectionRenderers.Values)
+			{
+				UpdateTabBarItemBadge(renderer.ViewController?.TabBarItem, renderer.ShellSection);
+			}
 		}
 
 		void AddRenderer(IShellSectionRenderer renderer)
@@ -485,7 +514,45 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				for (int tabIndex = 0; tabIndex < items.Count; tabIndex++)
 				{
 					TabBar.Items[tabIndex].Enabled = items[tabIndex].IsEnabled;
+					UpdateTabBarItemBadge(TabBar.Items[tabIndex], items[tabIndex]);
 				}
+			}
+		}
+
+		internal static void UpdateTabBarItemBadge(UITabBarItem tabBarItem, ShellSection shellSection)
+		{
+			if (tabBarItem is null)
+				return;
+
+			var badgeText = shellSection.BadgeText;
+			tabBarItem.BadgeValue = badgeText is null ? null : (badgeText.Length > 0 ? badgeText : "");
+
+			var badgeColor = shellSection.BadgeColor;
+			if (badgeColor is not null)
+			{
+				tabBarItem.BadgeColor = badgeColor.ToPlatform();
+			}
+			else
+			{
+				// Reset to system default
+				tabBarItem.BadgeColor = null;
+			}
+
+			var badgeTextColor = shellSection.BadgeTextColor;
+			if (badgeTextColor is not null)
+			{
+				var attrs = new UIStringAttributes { ForegroundColor = badgeTextColor.ToPlatform() };
+				tabBarItem.SetBadgeTextAttributes(attrs, UIControlState.Normal);
+				tabBarItem.SetBadgeTextAttributes(attrs, UIControlState.Selected);
+				tabBarItem.SetBadgeTextAttributes(attrs, UIControlState.Disabled);
+				tabBarItem.SetBadgeTextAttributes(attrs, UIControlState.Focused);
+			}
+			else
+			{
+				tabBarItem.SetBadgeTextAttributes(null, UIControlState.Normal);
+				tabBarItem.SetBadgeTextAttributes(null, UIControlState.Selected);
+				tabBarItem.SetBadgeTextAttributes(null, UIControlState.Disabled);
+				tabBarItem.SetBadgeTextAttributes(null, UIControlState.Focused);
 			}
 		}
 

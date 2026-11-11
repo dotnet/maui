@@ -24,10 +24,22 @@ namespace Microsoft.Maui.Maps
 		Location Location { get; }
 
 		/// <summary>
+		/// Gets the clustering identifier for this pin.
+		/// Pins with the same identifier will be grouped together when clustering is enabled.
+		/// </summary>
+		string ClusteringIdentifier { get; }
+
+		/// <summary>
 		/// Gets or sets the platform-specific marker identifier.
 		/// </summary>
 		/// <remarks>This should typically not be set by the developer. Doing so might result in unpredictable behavior.</remarks>
 		object? MarkerId { get; set; }
+
+		/// <summary>
+		/// Gets the custom image source for this pin's icon.
+		/// </summary>
+		/// <remarks>When set, this image will be used instead of the default platform pin icon.</remarks>
+		IImageSource? ImageSource { get; }
 
 		/// <summary>
 		/// Sends a marker click event.

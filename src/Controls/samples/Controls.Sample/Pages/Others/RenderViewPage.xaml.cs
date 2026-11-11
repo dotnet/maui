@@ -26,7 +26,7 @@ namespace Maui.Controls.Sample.Pages
 			BindingContext = vm = new RenderBindingModel();
 		}
 
-		async void RenderWindow_Clicked(object sender, EventArgs e)
+		async void RenderWindow_Clicked(object? sender, EventArgs e)
 		{
 			Reset();
 			stopwatch.Start();
@@ -38,7 +38,7 @@ namespace Maui.Controls.Sample.Pages
 			await RenderView(renderImage);
 		}
 
-		async void RenderButton_Clicked(object sender, EventArgs e)
+		async void RenderButton_Clicked(object? sender, EventArgs e)
 		{
 			Reset();
 			stopwatch.Start();
@@ -50,7 +50,7 @@ namespace Maui.Controls.Sample.Pages
 			await RenderView(renderImage);
 		}
 
-		async void RenderViewSaved_Clicked(object sender, EventArgs e)
+		async void RenderViewSaved_Clicked(object? sender, EventArgs e)
 		{
 			if (imageStream is not null)
 			{

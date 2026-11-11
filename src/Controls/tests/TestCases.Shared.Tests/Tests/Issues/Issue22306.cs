@@ -14,6 +14,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Button)]
 		public void ButtonsLayoutResolveWhenParentSizeChanges()
 		{
+			Exception? exception = null;
+
 #if IOS || ANDROID
 			try
 			{
@@ -22,12 +24,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 				WaitForAllElements();
 				var changeBoundsButton = App.WaitForElement("ChangeBoundsButton");
 				// Use retryTimeout to allow layout to settle
-				VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "Original", tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+				VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "Original", tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 
 				changeBoundsButton.Click();
 
 				WaitForAllElements();
-				VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "SizeButtonsDownPortrait", tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+				VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "SizeButtonsDownPortrait", tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 
 #if IOS || ANDROID
 				App.SetOrientationLandscape();
@@ -35,9 +37,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 				WaitForAllElements();
 				// Use retryTimeout to allow orientation change to settle
 #if ANDROID
-				VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "SizeButtonsDownLandscape", cropLeft: 125, tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+				VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "SizeButtonsDownLandscape", cropLeft: 125, tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 #else
-				VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "SizeButtonsDownLandscape", tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+				VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "SizeButtonsDownLandscape", tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 #endif
 
 				changeBoundsButton.Click();
@@ -46,13 +48,20 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 				App.SetOrientationPortrait();
 				WaitForAllElements();
 				// Cannot use the original screenshot as the black bar on bottom is not as dark after rotation
-				VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "Original2", tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+				// Android can consistently rerasterize the same post-rotation layout with minor antialiasing differences.
+				var finalPortraitTolerance = _testDevice == TestDevice.Android ? 2 : 0.5;
+				VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "Original2", tolerance: finalPortraitTolerance, retryTimeout: TimeSpan.FromSeconds(2));
 			}
 			finally
 			{
 				App.SetOrientationPortrait();
 			}
 #endif
+
+			if (exception is not null)
+			{
+				throw exception;
+			}
 		}
 
 		void WaitForAllElements()

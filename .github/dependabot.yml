@@ -40,6 +40,7 @@ updates:
       patterns:
         - "Microsoft.Graphics.Win2D"
         - "Microsoft.Windows.SDK.BuildTools"
+        - "Microsoft.Windows.SDK.BuildTools.WinApp"
         - "Microsoft.WindowsAppSDK"
         - "Microsoft.Web.WebView2"
     xunit:
@@ -52,7 +53,10 @@ updates:
   ignore:
     - dependency-name: "MicrosoftMauiGraphicsVersion"         # maestro
     - dependency-name: "Microsoft.Maui.Graphics*"             # maestro
-    - dependency-name: "Microsoft.DotNet.XHarness*"           # maestro
+    - dependency-name: "Microsoft.DotNet.*"                  # maestro: update the Arcade toolset and XHarness coherently
+    - dependency-name: "Magick.NET-Q8-AnyCPU"                 # major upgrades require screenshot and Intel macOS validation
+      update-types:
+        - "version-update:semver-major"
     - dependency-name: "Svg.*"                                # needs to be done manually because it relies on a specific verion of Fizzler
     - dependency-name: "Fizzler"                              # needs to be done manually because it is specific to the Svg.* version
     - dependency-name: "ExCSS"                                # needs to be done manually because it is specific to the Svg.* version

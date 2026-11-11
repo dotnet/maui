@@ -59,5 +59,17 @@ namespace Microsoft.Maui.Maps.Handlers
 			if (handler.PlatformView is MKCircleRenderer circleRenderer)
 				circleRenderer.FillColor = platformColor;
 		}
+
+		public static void MapIsVisible(IMapElementHandler handler, IMapElement mapElement)
+		{
+			handler.PlatformView.Alpha = mapElement.IsVisible ? 1 : 0;
+		}
+
+		public static void MapZIndex(IMapElementHandler handler, IMapElement mapElement)
+		{
+			// MapKit does not support fine-grained ZIndex on overlays.
+			// Overlays are drawn in the order they are added to the map.
+			// The property is accepted but has no visual effect on iOS/MacCatalyst.
+		}
 	}
 }

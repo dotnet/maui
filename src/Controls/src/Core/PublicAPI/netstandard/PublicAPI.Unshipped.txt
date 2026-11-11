@@ -1,3 +1,4 @@
+#nullable enable
 ﻿#nullable enable
 Microsoft.Maui.Controls.ContentButton
 Microsoft.Maui.Controls.ContentButton.BorderColor.get -> Microsoft.Maui.Graphics.Color?
