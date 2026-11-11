@@ -106,7 +106,7 @@ stages:
         clean: all
       jobs:
       - job: builddevice_tests_coreclr
-        displayName: Build Device Tests iOS/MacCatalyst (CoreCLR)
+        displayName: Build Device Tests iOS and MacCatalyst (CoreCLR)
         timeoutInMinutes: 120
         variables:
         - name: _BuildConfig
@@ -130,7 +130,7 @@ stages:
             PRIVATE_BUILD: $(PrivateBuild)
 
         - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) /p:BuildDeviceTests=true /p:UseMonoRuntime=false /p:IncludeAndroidTargetFrameworks=false /bl:BuildDeviceTests.binlog
-          displayName: Build DeviceTests iOS/MacCatalyst (CoreCLR)
+          displayName: Build DeviceTests iOS and MacCatalyst (CoreCLR)
 
         - publish: ${{ parameters.checkoutDirectory }}/artifacts/bin
           displayName: Publish Succeeded Artifacts Directory

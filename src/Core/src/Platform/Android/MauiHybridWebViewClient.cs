@@ -289,6 +289,8 @@ namespace Microsoft.Maui.Platform
 			return true;
 		}
 
+		// Java exceptions are instantiated through the type map rather than by managed code.
+		[DynamicDependency(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors, typeof(Java.IO.FileNotFoundException))]
 		private Stream? PlatformOpenAppPackageFile(string filename)
 		{
 			if (Handler is null)
