@@ -2333,10 +2333,11 @@ namespace Microsoft.Maui.Controls
 					element = shellItem.CurrentItem;
 					break;
 				case ShellSection shellSection:
-					var controller = (IShellSectionController)element;
-					// this is the same as .Last but easier and will add in the root if not null
-					// it generally wont be null but this is just in case
-					element = controller.PresentedPage ?? element;
+					// IShellSectionController.PresentedPage would return the top modal page when a modal
+					// is open, but modal pages are parented to the Window, so walking up from one never
+					// reaches the Shell. Use the top page of the section's own stack instead.
+					var stack = shellSection.Stack;
+					element = (stack.Count > 1 ? stack[stack.Count - 1] : ((IShellContentController)shellSection.CurrentItem)?.Page) ?? element;
 					break;
 			}
 
