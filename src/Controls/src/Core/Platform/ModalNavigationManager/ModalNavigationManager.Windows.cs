@@ -223,6 +223,16 @@ namespace Microsoft.Maui.Controls.Platform
 					}
 
 					var platform = newPage.ToPlatform();
+
+					if (popping &&
+						newPage is Shell shell &&
+						shell.Navigation.ModalStack.Count == 0 &&
+						shell.GetCurrentShellPage() is Page shellPage)
+					{
+						// A Shell item switch under the modal can reset its retained toolbar before it is shown again.
+						((IShellController)shell).AppearanceChanged(shellPage, false);
+					}
+
 					_waitingForIncomingPage = platform.OnLoaded(() => completedCallback?.Invoke());
 					Container.AddPage(windowManager.RootView);
 				}
