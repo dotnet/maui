@@ -8,10 +8,17 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 {
 	public partial class CountedImageSourceServiceStub
 	{
+		public Exception LoadException { get; set; }
+
+		public CancellationToken LoadCancellationToken { get; private set; }
+
 		public async Task<IImageSourceServiceResult> LoadDrawableAsync(IImageSource imageSource, global::Android.Widget.ImageView imageView, CancellationToken cancellationToken = default)
 		{
 			if (imageSource is not ICountedImageSourceStub imageSourceStub)
 				return null;
+
+			var loadException = LoadException;
+			LoadCancellationToken = cancellationToken;
 
 			try
 			{
@@ -22,6 +29,10 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 				{
 					if (imageSourceStub.Wait)
 						DoWork.WaitOne();
+
+					// Some image services report a normal failure even after cancellation.
+					if (loadException is not null)
+						throw loadException;
 
 					var color = imageSourceStub.Color.ToPlatform();
 
