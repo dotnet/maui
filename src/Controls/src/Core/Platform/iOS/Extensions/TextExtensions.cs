@@ -70,6 +70,9 @@ namespace Microsoft.Maui.Controls.Platform
 				else
 					textInput.ReplaceText(textRange, newText);
 
+				var updatedTextRange = textInput.GetTextRange(textInput.BeginningOfDocument, textInput.EndOfDocument);
+				var updatedTextLength = textInput.TextInRange(updatedTextRange)?.Length ?? 0;
+				cursorPosition = Math.Min(cursorPosition, updatedTextLength);
 				textInput.SetTextRange(cursorPosition, 0);
 			}
 		}
