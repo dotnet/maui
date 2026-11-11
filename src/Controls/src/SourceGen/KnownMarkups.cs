@@ -286,12 +286,16 @@ internal class KnownMarkups
 		returnType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Internals.DynamicResource")!;
 		string? key = null;
 		if (markupNode.CollectionItems.Count == 1)
-			key = ((ValueNode)markupNode.CollectionItems[0]).Value as string;
+			key = (markupNode.CollectionItems[0] as ValueNode)?.Value as string;
 		else if (markupNode.Properties.TryGetValue(new XmlName("", "Key"), out var keyNode))
-			key = ((ValueNode)keyNode).Value as string;
+			key = (keyNode as ValueNode)?.Value as string;
 
 		if (key is null)
-			throw new Exception();
+		{
+			// Nested markup must be evaluated before DynamicResourceExtension.ProvideValue.
+			value = string.Empty;
+			return false;
+		}
 		value = $"new global::Microsoft.Maui.Controls.Internals.DynamicResource(\"{CSharpExpressionHelpers.EscapeForString(key)}\")";
 		return true;
 	}
