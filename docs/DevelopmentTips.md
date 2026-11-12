@@ -40,6 +40,13 @@ use the same 10.0.12 framework, reference, linker and compiler packs through
 overrides together once all required 10.0.15 packs are publicly available;
 the current .NET 11 and Apple SDK pins are unchanged.
 
+Current Mono/Emscripten manifest versions use the SDK's full numeric version
+and the runtime's release suffix, matching the VMR's workload manifest versioning.
+For example, SDK `11.0.101-servicing.*` with runtime `11.0.1` requires manifest
+version `11.0.101`, while the package ID retains its `11.0.100` feature band.
+Adding a source for the older `11.0.100` manifests would restore `11.0.0`
+runtime packs rather than the servicing update.
+
 CI compiles Apple frameworks, apps and packages on the GoldenGate Aces image
 until standard hosted images provide Xcode 27. Prebuilt iOS UI-test apps
 continue to execute on Tahoe with Xcode 26.5, and Mac Catalyst UI tests use
