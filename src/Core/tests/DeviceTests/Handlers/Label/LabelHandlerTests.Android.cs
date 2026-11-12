@@ -157,6 +157,59 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.InRange(secondGap, expectedGap - 1, expectedGap + 1);
 		}
 
+		[Fact(DisplayName = "LineHeight Keeps Existing Transformation Method")]
+		public async Task LineHeightKeepsExistingTransformationMethod()
+		{
+			var label = new LabelStub()
+			{
+				Text = "First\nSecond\nThird",
+				Font = Font.SystemFontOfSize(30),
+				LineHeight = 2
+			};
+
+			var handler = await CreateHandlerAsync(label);
+
+			// A customized label can install its own transformation, such as all caps.
+			var (text, expectedGap, firstGap, secondGap) = await InvokeOnMainThreadAsync(() =>
+			{
+				var textView = GetPlatformLabel(handler);
+				textView.SetAllCaps(true);
+				label.LineHeight = 3;
+				handler.UpdateValue(nameof(ILabel.LineHeight));
+				var (expected, first, second) = GetBaselineGaps(handler);
+				return (textView.Layout.Text, expected, first, second);
+			});
+
+			Assert.Equal("FIRST\nSECOND\nTHIRD", text);
+			Assert.InRange(firstGap, expectedGap - 1, expectedGap + 1);
+			Assert.InRange(secondGap, expectedGap - 1, expectedGap + 1);
+		}
+
+		[Fact(DisplayName = "LineHeight Overrides Native Line Spacing")]
+		public async Task LineHeightOverridesNativeLineSpacing()
+		{
+			var label = new LabelStub()
+			{
+				Text = "First\nSecond\nThird",
+				Font = Font.SystemFontOfSize(30),
+				LineHeight = 2
+			};
+
+			var handler = await CreateHandlerAsync(label);
+
+			// Spacing set on the native view, for example by a custom handler, must not add to LineHeight.
+			var (expectedGap, firstGap, secondGap) = await InvokeOnMainThreadAsync(() =>
+			{
+				GetPlatformLabel(handler).SetLineSpacing(10, 1.5f);
+				label.LineHeight = 3;
+				handler.UpdateValue(nameof(ILabel.LineHeight));
+				return GetBaselineGaps(handler);
+			});
+
+			Assert.InRange(firstGap, expectedGap - 1, expectedGap + 1);
+			Assert.InRange(secondGap, expectedGap - 1, expectedGap + 1);
+		}
+
 		[Fact(DisplayName = "LineHeight Scales Html Lines By Their Own Height")]
 		public async Task LineHeightScalesHtmlLinesByTheirOwnHeight()
 		{

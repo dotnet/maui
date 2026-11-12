@@ -14,9 +14,11 @@ import android.view.View;
  * line, which made the gap below the first line larger than the others. Instead, every line but the
  * first gets extra space above it, from that line's own height, each time the text is laid out.
  * That follows font changes and lines enlarged by spans (for example HTML headings).
+ * A transformation already set on the TextView (for example all caps) is applied first.
  */
 public class PlatformLineHeightTransformationMethod implements TransformationMethod {
     private final float lineHeight;
+    private final TransformationMethod inner;
     private final LineHeightSpan span = new LineHeightSpan() {
         @Override
         public void chooseHeight(CharSequence text, int start, int end, int spanstartv, int lineTop, Paint.FontMetricsInt fm) {
@@ -29,8 +31,12 @@ public class PlatformLineHeightTransformationMethod implements TransformationMet
         }
     };
 
-    public PlatformLineHeightTransformationMethod(float lineHeight) {
+    public PlatformLineHeightTransformationMethod(float lineHeight, TransformationMethod current) {
         this.lineHeight = lineHeight;
+        // Unwrap an earlier instance so that updating LineHeight does not nest transformations
+        this.inner = current instanceof PlatformLineHeightTransformationMethod
+            ? ((PlatformLineHeightTransformationMethod) current).inner
+            : current;
     }
 
     public float getLineHeight() {
@@ -39,15 +45,19 @@ public class PlatformLineHeightTransformationMethod implements TransformationMet
 
     @Override
     public CharSequence getTransformation(CharSequence source, View view) {
-        if (source == null) {
+        CharSequence transformed = inner != null ? inner.getTransformation(source, view) : source;
+        if (transformed == null) {
             return null;
         }
-        SpannableString text = new SpannableString(source);
+        SpannableString text = new SpannableString(transformed);
         text.setSpan(span, 0, text.length(), Spanned.SPAN_INCLUSIVE_INCLUSIVE);
         return text;
     }
 
     @Override
     public void onFocusChanged(View view, CharSequence sourceText, boolean focused, int direction, Rect previouslyFocusedRect) {
+        if (inner != null) {
+            inner.onFocusChanged(view, sourceText, focused, direction, previouslyFocusedRect);
+        }
     }
 }
