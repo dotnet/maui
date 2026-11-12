@@ -20,6 +20,10 @@ namespace Issue29708.Controls
 	{
 	}
 
+	public class Maui29708PublicControl : Microsoft.Maui.Controls.Label
+	{
+	}
+
 	[AcceptEmptyServiceProvider]
 	internal class Maui29708TextExtension : IMarkupExtension<string>
 	{
@@ -64,6 +68,19 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 					Assert.Throws<BuildException>(() => MockCompiler.Compile(typeof(Maui29708External)));
 				else
 					Assert.Throws<XamlParseException>(() => new Maui29708External(inflator));
+			}
+
+			[Fact]
+			public void RuntimeGlobalMappingsDoNotLeakToOtherAssemblies()
+			{
+				var xmlType = new XmlType(XamlParser.MauiGlobalUri, nameof(Maui29708PublicControl), null);
+				var otherAssembly = typeof(Microsoft.Maui.Controls.ControlGallery.Issue3076Button).Assembly;
+
+				Assert.Equal(typeof(Maui29708PublicControl),
+					XamlParser.GetElementType(xmlType, null, typeof(Maui29708).Assembly, true, out var exception));
+				Assert.Null(exception);
+
+				Assert.Null(XamlParser.GetElementType(xmlType, null, otherAssembly, true, out _));
 			}
 		}
 	}
