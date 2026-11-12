@@ -360,6 +360,7 @@ namespace Microsoft.Maui.Platform
 		internal static void SetInputType(this EditText editText, ITextInput textInput)
 		{
 			var previousCursorPosition = editText.SelectionStart;
+			var previousSelectionEnd = editText.SelectionEnd;
 			var keyboard = textInput.Keyboard;
 
 			editText.InputType = keyboard.ToInputType();
@@ -420,8 +421,8 @@ namespace Microsoft.Maui.Platform
 			}
 
 			// If we implement the OnSelectionChanged method, this method is called after a keyboard layout change with SelectionStart = 0,
-			// Let's restore the cursor position to its previous location.
-			editText.SetSelection(previousCursorPosition);
+			// Let's restore the cursor position and selection to their previous location.
+			editText.SetSelection(previousCursorPosition, previousSelectionEnd);
 		}
 
 		internal static bool IsCompletedAction(this EditorActionEventArgs e, ImeAction currentInputImeFlag)

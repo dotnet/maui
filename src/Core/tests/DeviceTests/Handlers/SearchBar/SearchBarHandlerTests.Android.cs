@@ -31,24 +31,28 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory(DisplayName = "Updating Input Properties Keeps SearchBar ReadOnly")]
-		[InlineData(nameof(ISearchBar.Keyboard))]
-		[InlineData(nameof(ISearchBar.IsTextPredictionEnabled))]
-		[InlineData(nameof(ISearchBar.IsSpellCheckEnabled))]
-		public async Task UpdatingInputPropertiesKeepsSearchBarReadOnly(string propertyName)
+		[InlineData(nameof(ISearchBar.Keyboard), false)]
+		[InlineData(nameof(ISearchBar.IsTextPredictionEnabled), false)]
+		[InlineData(nameof(ISearchBar.IsTextPredictionEnabled), true)]
+		[InlineData(nameof(ISearchBar.IsSpellCheckEnabled), false)]
+		public async Task UpdatingInputPropertiesKeepsSearchBarReadOnly(string propertyName, bool isTextPredictionEnabled)
 		{
 			var searchBar = new SearchBarStub() { IsReadOnly = true };
 
-			var isReadOnly = await GetValueAsync(searchBar, handler =>
+			var (isReadOnly, keyListener) = await GetValueAsync(searchBar, handler =>
 			{
 				searchBar.Keyboard = Keyboard.Numeric;
-				searchBar.IsTextPredictionEnabled = false;
+				searchBar.IsTextPredictionEnabled = isTextPredictionEnabled;
 				searchBar.IsSpellCheckEnabled = false;
 				handler.UpdateValue(propertyName);
 
-				return GetNativeIsReadOnly(handler);
+				var editText = GetNativeSearchBar(handler).GetChildrenOfType<EditText>().First();
+				return (GetNativeIsReadOnly(handler), editText.KeyListener);
 			});
 
 			Assert.True(isReadOnly);
+			// Setting even a TYPE_NULL InputType installs a key listener, which lets hardware keys type into the text
+			Assert.Null(keyListener);
 		}
 
 		// Regression tests for https://github.com/dotnet/maui/issues/30779

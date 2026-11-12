@@ -241,26 +241,29 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory(DisplayName = "Updating Input Properties Keeps Entry ReadOnly")]
-		[InlineData(nameof(IEntry.Keyboard))]
-		[InlineData(nameof(IEntry.IsPassword))]
-		[InlineData(nameof(IEntry.IsTextPredictionEnabled))]
-		[InlineData(nameof(IEntry.IsSpellCheckEnabled))]
-		public async Task UpdatingInputPropertiesKeepsEntryReadOnly(string propertyName)
+		[InlineData(nameof(IEntry.Keyboard), false)]
+		[InlineData(nameof(IEntry.IsPassword), false)]
+		[InlineData(nameof(IEntry.IsTextPredictionEnabled), false)]
+		[InlineData(nameof(IEntry.IsTextPredictionEnabled), true)]
+		[InlineData(nameof(IEntry.IsSpellCheckEnabled), false)]
+		public async Task UpdatingInputPropertiesKeepsEntryReadOnly(string propertyName, bool isTextPredictionEnabled)
 		{
 			var entry = new EntryStub() { IsReadOnly = true };
 
-			var isReadOnly = await GetValueAsync(entry, handler =>
+			var (isReadOnly, keyListener) = await GetValueAsync(entry, handler =>
 			{
 				entry.Keyboard = Keyboard.Numeric;
 				entry.IsPassword = true;
-				entry.IsTextPredictionEnabled = false;
+				entry.IsTextPredictionEnabled = isTextPredictionEnabled;
 				entry.IsSpellCheckEnabled = false;
 				handler.UpdateValue(propertyName);
 
-				return GetNativeIsReadOnly(handler);
+				return (GetNativeIsReadOnly(handler), GetNativeEntry(handler).KeyListener);
 			});
 
 			Assert.True(isReadOnly);
+			// Setting even a TYPE_NULL InputType installs a key listener, which lets hardware keys type into the text
+			Assert.Null(keyListener);
 		}
 
 		[Fact(DisplayName = "ReadOnly Entry Does Not Show Clear Button When Focused")]
