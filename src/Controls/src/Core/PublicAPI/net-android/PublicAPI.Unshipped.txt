@@ -1,1 +1,6 @@
-#nullable enable
+﻿#nullable enable
+Microsoft.Maui.Controls.Internals.PromptArguments.PreselectInitialValue.get -> bool
+*REMOVED*~Microsoft.Maui.Controls.Internals.PromptArguments.PromptArguments(string title, string message, string accept = "OK", string cancel = "Cancel", string placeholder = null, int maxLength = -1, Microsoft.Maui.Keyboard keyboard = null, string initialValue = "") -> void
+~Microsoft.Maui.Controls.Internals.PromptArguments.PromptArguments(string title, string message, string accept = "OK", string cancel = "Cancel", string placeholder = null, int maxLength = -1, Microsoft.Maui.Keyboard keyboard = null, string initialValue = "", bool preselectInitialValue = false) -> void
+*REMOVED*~Microsoft.Maui.Controls.Page.DisplayPromptAsync(string title, string message, string accept = "OK", string cancel = "Cancel", string placeholder = null, int maxLength = -1, Microsoft.Maui.Keyboard keyboard = null, string initialValue = "") -> System.Threading.Tasks.Task<string>
+~Microsoft.Maui.Controls.Page.DisplayPromptAsync(string title, string message, string accept = "OK", string cancel = "Cancel", string placeholder = null, int maxLength = -1, Microsoft.Maui.Keyboard keyboard = null, string initialValue = "", bool preselectInitialValue = false) -> System.Threading.Tasks.Task<string>

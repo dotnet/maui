@@ -450,10 +450,11 @@ namespace Microsoft.Maui.Controls
 		/// <param name="maxLength">The maximum length of the user response.</param>
 		/// <param name="keyboard">The keyboard type to use for the user response.</param>
 		/// <param name="initialValue">A pre-defined response that will be displayed, and which can be edited by the user.</param>
+		/// <param name="preselectInitialValue">When <see langword="true"/>, the <paramref name="initialValue"/> text will be pre-selected so the user can easily overwrite it.</param>
 		/// <returns>A <see cref="Task"/> that displays a prompt display and returns the string value as entered by the user.</returns>
-		public Task<string> DisplayPromptAsync(string title, string message, string accept = "OK", string cancel = "Cancel", string placeholder = null, int maxLength = -1, Keyboard keyboard = default(Keyboard), string initialValue = "")
+		public Task<string> DisplayPromptAsync(string title, string message, string accept = "OK", string cancel = "Cancel", string placeholder = null, int maxLength = -1, Keyboard keyboard = default(Keyboard), string initialValue = "", bool preselectInitialValue = false)
 		{
-			var args = new PromptArguments(title, message, accept, cancel, placeholder, maxLength, keyboard, initialValue);
+			var args = new PromptArguments(title, message, accept, cancel, placeholder, maxLength, keyboard, initialValue, preselectInitialValue);
 
 			var window = Window;
 			if (IsPlatformEnabled)

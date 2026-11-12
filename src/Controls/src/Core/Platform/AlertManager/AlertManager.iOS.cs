@@ -122,6 +122,9 @@ namespace Microsoft.Maui.Controls.Platform
 				var alert = UIAlertController.Create(arguments.Title, arguments.Message, UIAlertControllerStyle.Alert);
 				var logicalActions = new Dictionary<UIAlertAction, LogicalDialogAction>();
 				var completed = 0;
+#if MACCATALYST
+				Action onPresented = null;
+#endif
 				bool Complete(Action setResult)
 				{
 					if (Interlocked.CompareExchange(ref completed, 1, 0) != 0)
@@ -135,6 +138,43 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					uiTextField.Placeholder = arguments.Placeholder;
 					uiTextField.Text = arguments.InitialValue;
+#if MACCATALYST
+					if (!string.IsNullOrEmpty(arguments.InitialValue))
+					{
+						// Catalyst selects the text while the alert opens.
+						void ApplyInitialSelection()
+						{
+							var end = uiTextField.EndOfDocument;
+							var start = arguments.PreselectInitialValue ? uiTextField.BeginningOfDocument : end;
+							var range = uiTextField.SelectedTextRange;
+
+							// Avoid re-entrant selection notifications when the range is already correct.
+							if (range is null ||
+								uiTextField.GetOffsetFromPosition(start, range.Start) != 0 ||
+								uiTextField.GetOffsetFromPosition(end, range.End) != 0)
+								uiTextField.SelectedTextRange = uiTextField.GetTextRange(start, end);
+						}
+
+						EventHandler selectionChanged = (_, _) => ApplyInitialSelection();
+						uiTextField.DidChangeSelection += selectionChanged;
+						onPresented = () =>
+						{
+							uiTextField.DidChangeSelection -= selectionChanged;
+						};
+					}
+#else
+					if (arguments.PreselectInitialValue && !string.IsNullOrEmpty(arguments.InitialValue))
+					{
+						// SelectedTextRange can only be set while the field is first responder.
+						// Defer the selection to EditingDidBegin, matching the same pattern
+						// used by the Entry handler (EntryHandler.iOS.cs OnEditingBegan).
+						uiTextField.EditingDidBegin += (s, e) =>
+						{
+							if (s is UITextField tf)
+								tf.SelectedTextRange = tf.GetTextRange(tf.BeginningOfDocument, tf.EndOfDocument);
+						};
+					}
+#endif
 					if (arguments.MaxLength > -1 && (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26)))
 					{
 						uiTextField.ShouldChangeCharactersInRanges = (textField, ranges, replacementString) =>
@@ -180,6 +220,9 @@ namespace Microsoft.Maui.Controls.Platform
 					PlatformView,
 					alert,
 					logicalActions: logicalActions,
+#if MACCATALYST
+					onPresented: onPresented,
+#endif
 					completion: arguments.Result.Task);
 			}
 
@@ -281,7 +324,8 @@ namespace Microsoft.Maui.Controls.Platform
 				UIAlertController alert,
 				ActionSheetArguments arguments = null,
 				IReadOnlyDictionary<UIAlertAction, LogicalDialogAction> logicalActions = null,
-				Task completion = null)
+				Task completion = null,
+				Action onPresented = null)
 			{
 				UIWindow presentingWindow = platformView;
 				var registration = new AlertRegistration();
@@ -346,7 +390,10 @@ namespace Microsoft.Maui.Controls.Platform
 								if (task.IsFaulted || task.IsCanceled)
 									registration.Dispose();
 								else
+								{
 									registration.Attach(sender, alert, logicalActions);
+									onPresented?.Invoke();
+								}
 							});
 						},
 						TaskScheduler.Default);
