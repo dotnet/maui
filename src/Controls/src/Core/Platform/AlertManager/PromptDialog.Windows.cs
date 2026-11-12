@@ -49,6 +49,8 @@ public sealed partial class PromptDialog : ContentDialog
 		set => TextBoxInput.InputScope = value;
 	}
 
+	public bool PreselectInitialValue { get; set; }
+
 	void Initialize()
 	{
 		var layout = new StackPanel();
@@ -63,5 +65,13 @@ public sealed partial class PromptDialog : ContentDialog
 		children.Add(TextBoxInput);
 
 		Content = layout;
+
+		Opened += OnOpened;
+	}
+
+	void OnOpened(ContentDialog sender, ContentDialogOpenedEventArgs args)
+	{
+		if (PreselectInitialValue && !string.IsNullOrEmpty(Input))
+			TextBoxInput.SelectAll();
 	}
 }
