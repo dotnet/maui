@@ -7,7 +7,7 @@ using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-// The four ways an extension property fails to resolve. The fixtures are .rt.xaml so the build does not
+// The ways an extension property fails to resolve. The fixtures are .rt.xaml so the build does not
 // process them; the source generator is driven explicitly, which is also the only inflator supporting the
 // feature. See ExtensionPropertyConventions.
 public partial class ScopedExtensionPropertiesErrors : ContentPage
@@ -70,6 +70,38 @@ public partial class {{xamlType.Name}} : ContentPage
 
 			Assert.True(result.Diagnostics.Any(d => d.Id == "MAUIX2002"));
 		}
+
+		[Fact]
+		public void AmbiguityInsideOneContainerIsNotHiddenByALessSpecificCandidate()
+		{
+			// NestedAmbiguityExtensions declares it for IView and BindableObject, the fallback container for object
+			var result = Generate(typeof(ScopedExtensionPropertiesNestedAmbiguity));
+
+			Assert.Contains(result.Diagnostics, d => d.Id == "MAUIX2021");
+			Assert.DoesNotContain("set_NestedAmbiguous", GeneratedCode(result), StringComparison.Ordinal);
+		}
+
+		[Fact]
+		public void UnassignableInstanceMemberIsNotHiddenByAnExtensionProperty()
+		{
+			var result = Generate(typeof(ScopedExtensionPropertiesReadOnlyMember));
+
+			Assert.Contains(result.Diagnostics, d => d.Id == "MAUIX2002");
+			Assert.DoesNotContain("set_ReadOnlyClr", GeneratedCode(result), StringComparison.Ordinal);
+		}
+
+		[Fact]
+		public void ContainerFromAnUnmappedAssemblyIsNotInScope()
+		{
+			// LeakedExtensions lives in a namespace the MAUI xmlns maps, but for another assembly
+			var result = Generate(typeof(ScopedExtensionPropertiesLeaked));
+
+			Assert.Contains(result.Diagnostics, d => d.Id == "MAUIX2002");
+			Assert.DoesNotContain("set_LeakedTag", GeneratedCode(result), StringComparison.Ordinal);
+		}
+
+		static string GeneratedCode(GeneratorDriverRunResult result)
+			=> string.Join("\n", result.GeneratedTrees.Select(t => t.ToString()));
 	}
 }
 
@@ -86,4 +118,19 @@ public partial class ScopedExtensionPropertiesQualified : ContentPage
 public partial class ScopedExtensionPropertiesLookalike : ContentPage
 {
 	public ScopedExtensionPropertiesLookalike() => InitializeComponent();
+}
+
+public partial class ScopedExtensionPropertiesNestedAmbiguity : ContentPage
+{
+	public ScopedExtensionPropertiesNestedAmbiguity() => InitializeComponent();
+}
+
+public partial class ScopedExtensionPropertiesReadOnlyMember : ContentPage
+{
+	public ScopedExtensionPropertiesReadOnlyMember() => InitializeComponent();
+}
+
+public partial class ScopedExtensionPropertiesLeaked : ContentPage
+{
+	public ScopedExtensionPropertiesLeaked() => InitializeComponent();
 }

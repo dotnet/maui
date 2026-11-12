@@ -90,7 +90,7 @@ static class SetPropertyHelpers
 
 		//An unqualified name may name an extension property brought in scope by the default xmlns
 		var scopedReported = false;
-		if (!asCollectionItem && !attached && CanSetScopedExtensionProperty(parentVar, propertyName, valueNode, context, out var scopedAccessors, out scopedReported))
+		if (!asCollectionItem && !attached && !hasBindableProperty && CanSetScopedExtensionProperty(parentVar, propertyName, valueNode, context, out var scopedAccessors, out scopedReported))
 		{
 			SetExtensionProperty(writer, parentVar, scopedAccessors!, valueNode, context, getNodeValue);
 			return;
@@ -1407,7 +1407,8 @@ static class SetPropertyHelpers
 	sealed class ExtensionPropertyAccessors
 	{
 		public IMethodSymbol Setter { get; set; } = null!;
-		public ITypeSymbol PropertyType { get; set; } = null!;
+		public IPropertySymbol Property { get; set; } = null!;
+		public ITypeSymbol PropertyType => Property.Type;
 		public ITypeSymbol ReceiverType { get; set; } = null!;
 	}
 
@@ -1422,56 +1423,69 @@ static class SetPropertyHelpers
 
 		var typename = memberName.Substring(0, dotIdx);
 		memberName = memberName.Substring(dotIdx + 1);
-		owner = new XmlType(propertyName.NamespaceURI, typename, null).GetTypeSymbol(null, context.Compilation, context.XmlnsCache, context.TypeCache);
-		return owner != null;
+		return new XmlType(propertyName.NamespaceURI, typename, null).TryResolveTypeSymbol(null, context.Compilation, context.XmlnsCache, context.TypeCache, out owner) && owner != null;
 	}
 
 	/// <summary>
 	/// Resolves the <c>set_Name</c> implementation method of a C# extension property declared by
 	/// <paramref name="container"/> and applicable to <paramref name="targetType"/>.
-	/// See <see cref="ExtensionPropertyConventions"/> for the rules shared with the runtime inflator and XamlC.
+	/// See <see cref="ExtensionPropertyConventions"/>.
 	/// </summary>
 	static ExtensionPropertyAccessors? ResolveExtensionProperty(INamedTypeSymbol container, ITypeSymbol targetType, string propertyName, SourceGenContext context, IXmlLineInfo lineInfo, out bool reported, bool report = true)
 	{
 		reported = false;
 
-		if (!container.IsStatic || container.IsGenericType)
-			return null;
-
 		if (!DeclaresExtensionProperty(container, propertyName))
 			return null;
 
-		var setterName = ExtensionPropertyConventions.SetterName(propertyName);
-		List<IMethodSymbol>? setters = null;
+		var candidates = new List<ExtensionPropertyAccessors>();
+		CollectExtensionSetters(container, targetType, propertyName, context, candidates);
 
-		foreach (var method in container.GetMembers(setterName).OfType<IMethodSymbol>())
-		{
-			//only assignment is supported, so the setter alone defines the receiver and the value type
-			if (!method.IsStatic || method.DeclaredAccessibility != Accessibility.Public || method.IsGenericMethod)
-				continue;
-			if (!method.ReturnsVoid || method.Parameters.Length != 2)
-				continue;
-
-			var receiver = method.Parameters[0];
-			if (receiver.RefKind != RefKind.None || !IsReceiverApplicable(receiver.Type, targetType, context))
-				continue;
-
-			(setters ??= []).Add(method);
-		}
-
-		var setter = MostSpecific(setters, context);
-		if (setter == null || !context.Compilation.IsSymbolAccessibleWithin(container, context.RootType))
-		{
+		var accessors = MostSpecific(candidates, context);
+		if (accessors == null)
 			reported = report && ReportExtensionPropertyResolution(propertyName, container, targetType, context, lineInfo);
-			return null;
-		}
 
-		return new ExtensionPropertyAccessors
+		return accessors;
+	}
+
+	/// <summary>
+	/// Adds, for every writable instance extension property named <paramref name="propertyName"/> that
+	/// <paramref name="container"/> declares for a receiver applicable to <paramref name="targetType"/>, the
+	/// implementation method the compiler emitted for its setter. Only the setter matching the declaration's
+	/// receiver and value type qualifies, so an ordinary static method that merely shares the
+	/// <c>set_Name</c> name is never mistaken for an accessor.
+	/// </summary>
+	static void CollectExtensionSetters(INamedTypeSymbol container, ITypeSymbol targetType, string propertyName, SourceGenContext context, List<ExtensionPropertyAccessors> candidates)
+	{
+		if (!container.IsStatic || container.IsGenericType)
+			return;
+		if (context.RootType != null && !context.Compilation.IsSymbolAccessibleWithin(container, context.RootType))
+			return;
+
+		var setterName = ExtensionPropertyConventions.SetterName(propertyName);
+		foreach (var (property, receiver) in GetExtensionPropertyDeclarations(container, propertyName))
 		{
-			Setter = setter,
-			PropertyType = setter.Parameters[1].Type,
-			ReceiverType = setter.Parameters[0].Type,
-		};
+			if (property.IsStatic || property.SetMethod == null || receiver == null)
+				continue;
+			if (!IsReceiverApplicable(receiver, targetType, context))
+				continue;
+
+			foreach (var method in container.GetMembers(setterName).OfType<IMethodSymbol>())
+			{
+				if (!method.IsStatic || method.DeclaredAccessibility != Accessibility.Public || method.IsGenericMethod)
+					continue;
+				if (!method.ReturnsVoid || method.Parameters.Length != 2 || method.Parameters[0].RefKind != RefKind.None)
+					continue;
+				if (!SymbolEqualityComparer.Default.Equals(method.Parameters[0].Type, receiver)
+					|| !SymbolEqualityComparer.Default.Equals(method.Parameters[1].Type, property.Type))
+					continue;
+				if (candidates.Any(c => SymbolEqualityComparer.Default.Equals(c.Setter, method)))
+					break;
+
+				candidates.Add(new ExtensionPropertyAccessors { Setter = method, Property = property, ReceiverType = receiver });
+				break;
+			}
+		}
 	}
 
 	/// <summary>
@@ -1480,18 +1494,48 @@ static class SetPropertyHelpers
 	/// </summary>
 	/// <remarks><paramref name="propertyName"/> is the extension property to look for, or <c>null</c> for any.</remarks>
 	static bool DeclaresExtensionProperty(INamedTypeSymbol container, string? propertyName)
+		=> GetExtensionPropertyDeclarations(container, propertyName).Any();
+
+	/// <summary>
+	/// The extension properties <paramref name="container"/> declares, with the receiver type of their
+	/// extension block, or <c>null</c> when the receiver cannot be determined.
+	/// </summary>
+	static IEnumerable<(IPropertySymbol property, ITypeSymbol? receiver)> GetExtensionPropertyDeclarations(INamedTypeSymbol container, string? propertyName)
 	{
 		foreach (var nested in container.GetTypeMembers())
 		{
 			if (nested.CanBeReferencedByName && ExtensionPropertyConventions.IsSpeakable(nested.MetadataName))
 				continue;
-			if ((propertyName == null ? nested.GetMembers() : nested.GetMembers(propertyName)).OfType<IPropertySymbol>().Any())
-				return true;
-			if (DeclaresExtensionProperty(nested, propertyName))
-				return true;
-		}
 
-		return false;
+			var blockReceiver = GetExtensionBlockReceiver(nested);
+			foreach (var property in (propertyName == null ? nested.GetMembers() : nested.GetMembers(propertyName)).OfType<IPropertySymbol>())
+				yield return (property, blockReceiver ?? GetMarkerReceiver(property));
+
+			foreach (var declaration in GetExtensionPropertyDeclarations(nested, propertyName))
+				yield return declaration;
+		}
+	}
+
+	//INamedTypeSymbol.ExtensionParameter is newer than the Microsoft.CodeAnalysis version this generator is built
+	//against, but it is there when running in a compiler that understands extension blocks
+	static readonly System.Reflection.PropertyInfo? s_extensionParameter = typeof(INamedTypeSymbol).GetProperty("ExtensionParameter");
+
+	static ITypeSymbol? GetExtensionBlockReceiver(INamedTypeSymbol extensionBlock)
+		=> (s_extensionParameter?.GetValue(extensionBlock) as IParameterSymbol)?.Type;
+
+	//Older compilers see the metadata shape instead: the property carries [ExtensionMarker("<M>$...")] naming a
+	//sibling marker type, whose `<Extension>$` method takes the receiver as its only parameter
+	static ITypeSymbol? GetMarkerReceiver(IPropertySymbol property)
+	{
+		var markerName = property.GetAttributes()
+			.FirstOrDefault(a => a.AttributeClass?.Name == "ExtensionMarkerAttribute" && a.ConstructorArguments.Length == 1)
+			?.ConstructorArguments[0].Value as string;
+		if (markerName == null)
+			return null;
+
+		var marker = property.ContainingType.GetTypeMembers().FirstOrDefault(t => t.MetadataName == markerName);
+		var markerMethod = marker?.GetMembers("<Extension>$").OfType<IMethodSymbol>().FirstOrDefault(m => m.Parameters.Length == 1);
+		return markerMethod?.Parameters[0].Type;
 	}
 
 	static bool ReportExtensionPropertyResolution(string propertyName, INamedTypeSymbol container, ITypeSymbol targetType, SourceGenContext context, IXmlLineInfo lineInfo)
@@ -1505,19 +1549,22 @@ static class SetPropertyHelpers
 	{
 		if (SymbolEqualityComparer.Default.Equals(receiverType, targetType))
 			return true;
+		if (receiverType.SpecialType == SpecialType.System_Object)
+			return true;
 		if (targetType.InheritsFrom(receiverType, context))
 			return true;
 		return receiverType.TypeKind == TypeKind.Interface && targetType.AllInterfaces.Any(i => SymbolEqualityComparer.Default.Equals(i, receiverType));
 	}
 
 	/// <summary>
-	/// Same rule as the setter overload, applied across the containers a xmlns brings in scope: the one
-	/// candidate whose receiver is at least as specific as every other one wins. Comparing every candidate
-	/// with every other, rather than folding them pairwise, is what makes the outcome independent of the
-	/// order the containers are enumerated in.
+	/// The one candidate whose receiver is at least as specific as every other one wins, as it would in C#.
+	/// Comparing every candidate with every other, rather than folding them pairwise, is what makes the
+	/// outcome independent of the order candidates are enumerated in.
 	/// </summary>
 	static ExtensionPropertyAccessors? MostSpecific(List<ExtensionPropertyAccessors> candidates, SourceGenContext context)
 	{
+		if (candidates.Count == 0)
+			return null;
 		if (candidates.Count == 1)
 			return candidates[0];
 
@@ -1546,67 +1593,60 @@ static class SetPropertyHelpers
 		return best;
 	}
 
-	//the setter whose receiver type is more derived than every other applicable one wins, as it would in C#
-	static IMethodSymbol? MostSpecific(List<IMethodSymbol>? candidates, SourceGenContext context)
-	{
-		if (candidates == null)
-			return null;
-		if (candidates.Count == 1)
-			return candidates[0];
-
-		IMethodSymbol? best = null;
-		foreach (var candidate in candidates)
-		{
-			var candidateType = candidate.Parameters[0].Type;
-			var isBest = true;
-			foreach (var other in candidates)
-			{
-				if (ReferenceEquals(other, candidate))
-					continue;
-				if (!IsReceiverApplicable(other.Parameters[0].Type, candidateType, context))
-				{
-					isBest = false;
-					break;
-				}
-			}
-			if (!isBest)
-				continue;
-			if (best != null)
-				return null; //ambiguous
-			best = candidate;
-		}
-
-		return best;
-	}
-
-	//the containers a xmlns brings in scope. Enumerating a clr namespace is expensive enough to remember
+	/// <summary>
+	/// The extension containers a xmlns brings in scope. Each [XmlnsDefinition] only brings in the namespace
+	/// of the assembly it names, so a referenced assembly reusing that namespace name contributes nothing.
+	/// Enumerating a clr namespace is expensive enough to remember.
+	/// </summary>
 	static INamedTypeSymbol[] GetExtensionContainersInScope(string xmlNamespace, SourceGenContext context)
 	{
 		context.extensionContainersInScope ??= [];
 		if (context.extensionContainersInScope.TryGetValue(xmlNamespace, out var cached))
 			return cached;
 
-		if (!context.XmlnsCache.ClrNamespacesForXmlns.TryGetValue(xmlNamespace, out var clrNamespaces))
+		var mappings = context.XmlnsCache.XmlnsDefinitions
+			.Where(d => d.XmlNamespace == xmlNamespace && d.Target != null && !d.Target.StartsWith("http", StringComparison.Ordinal))
+			.Select(d => (clrNamespace: d.Target, assemblyName: d.AssemblyName))
+			.ToList();
+		if (mappings.Count == 0)
 		{
-			XmlnsHelper.ParseXmlns(xmlNamespace, out _, out var ns, out _, out _);
-			clrNamespaces = ns == null || ns.StartsWith("http", StringComparison.Ordinal) ? [] : [ns];
+			XmlnsHelper.ParseXmlns(xmlNamespace, out _, out var ns, out var asm, out _);
+			if (ns != null && !ns.StartsWith("http", StringComparison.Ordinal))
+				//a clr-namespace without an assembly refers to the assembly declaring the XAML
+				mappings.Add((ns, string.IsNullOrEmpty(asm) ? context.Compilation.Assembly.Identity.Name : asm));
 		}
 
 		var containers = new List<INamedTypeSymbol>();
-		foreach (var clrNamespace in clrNamespaces)
+		foreach (var (clrNamespace, assemblyName) in mappings.Distinct())
 		{
-			var namespaceSymbol = ResolveNamespace(context.Compilation.GlobalNamespace, clrNamespace);
-			if (namespaceSymbol == null)
-				continue;
-
-			foreach (var type in namespaceSymbol.GetTypeMembers())
+			foreach (var assembly in GetAssemblies(assemblyName, context))
 			{
-				if (type.IsStatic && !type.IsGenericType && DeclaresExtensionProperty(type, propertyName: null))
-					containers.Add(type);
+				var namespaceSymbol = ResolveNamespace(assembly.GlobalNamespace, clrNamespace);
+				if (namespaceSymbol == null)
+					continue;
+
+				foreach (var type in namespaceSymbol.GetTypeMembers())
+				{
+					if (type.IsStatic && !type.IsGenericType && !containers.Contains(type, SymbolEqualityComparer.Default) && DeclaresExtensionProperty(type, propertyName: null))
+						containers.Add(type);
+				}
 			}
 		}
 
 		return context.extensionContainersInScope[xmlNamespace] = [.. containers];
+	}
+
+	static IEnumerable<IAssemblySymbol> GetAssemblies(string? assemblyName, SourceGenContext context)
+	{
+		var simpleName = string.IsNullOrEmpty(assemblyName) ? null : new System.Reflection.AssemblyName(assemblyName).Name;
+		if (simpleName == null || context.Compilation.Assembly.Identity.Name == simpleName)
+			yield return context.Compilation.Assembly;
+		foreach (var reference in context.Compilation.References)
+		{
+			if (context.Compilation.GetAssemblyOrModuleSymbol(reference) is IAssemblySymbol assembly
+				&& (simpleName == null || assembly.Identity.Name == simpleName))
+				yield return assembly;
+		}
 	}
 
 	static INamespaceSymbol? ResolveNamespace(INamespaceSymbol root, string clrNamespace)
@@ -1623,65 +1663,79 @@ static class SetPropertyHelpers
 	}
 
 	/// <summary>
-	/// Resolves an unqualified name against the extension containers the element's default xmlns brings in
-	/// scope, the way C# resolves an extension member against the namespaces a file imports.
+	/// An extension property never hides an instance member: C# binds a name the target declares to that
+	/// member, even when it cannot be assigned, and only falls back to extension members otherwise.
 	/// </summary>
-	static bool CanSetScopedExtensionProperty(ILocalValue parentVar, XmlName propertyName, INode node, SourceGenContext context, out ExtensionPropertyAccessors? accessors, out bool reported)
+	static bool HasAccessibleInstanceMember(ITypeSymbol targetType, string name, SourceGenContext context)
 	{
-		accessors = null;
-		reported = false;
+		bool IsAccessible(ISymbol symbol) => context.RootType == null || context.Compilation.IsSymbolAccessibleWithin(symbol, context.RootType);
+
+		//interface declarations are not members of a class: an explicitly implemented property hides nothing
+		var isInterface = targetType.TypeKind == TypeKind.Interface;
+		return targetType.GetAllMembers(name, context).Any(m =>
+			m is IPropertySymbol or IFieldSymbol
+			&& !m.IsStatic
+			&& (isInterface || m.ContainingType.TypeKind != TypeKind.Interface)
+			&& IsAccessible(m));
+	}
+
+	/// <summary>
+	/// Resolves an unqualified name against the extension containers the element's default xmlns brings in
+	/// scope, the way C# resolves an extension member against the namespaces a file imports. Every applicable
+	/// setter of every container in scope competes, so that an ambiguity inside one container is not hidden by
+	/// a less specific candidate from another.
+	/// </summary>
+	static ExtensionPropertyAccessors? ResolveScopedExtensionProperty(ITypeSymbol targetType, XmlName propertyName, INode node, SourceGenContext context, out string? xmlNamespace, out bool ambiguous)
+	{
+		xmlNamespace = null;
+		ambiguous = false;
 
 		//unprefixed attributes carry no namespace, the scope is the default xmlns declared for the element
 		if (propertyName.NamespaceURI != string.Empty || node.NamespaceResolver == null)
-			return false;
+			return null;
+		if (HasAccessibleInstanceMember(targetType, propertyName.LocalName, context))
+			return null;
 
-		var xmlNamespace = node.NamespaceResolver.LookupNamespace(string.Empty);
+		xmlNamespace = node.NamespaceResolver.LookupNamespace(string.Empty);
 		if (string.IsNullOrEmpty(xmlNamespace))
-			return false;
+			return null;
 
-		var lineInfo = (IXmlLineInfo)node;
-		List<ExtensionPropertyAccessors>? candidates = null;
-
+		var candidates = new List<ExtensionPropertyAccessors>();
 		foreach (var container in GetExtensionContainersInScope(xmlNamespace!, context))
-		{
-			if (!DeclaresExtensionProperty(container, propertyName.LocalName))
-				continue;
+			CollectExtensionSetters(container, targetType, propertyName.LocalName, context, candidates);
 
-			var candidate = ResolveExtensionProperty(container, parentVar.Type, propertyName.LocalName, context, lineInfo, out var candidateReported, report: false);
-			if (candidateReported || candidate == null)
-				continue;
+		var accessors = MostSpecific(candidates, context);
+		ambiguous = accessors == null && candidates.Count > 1;
+		return accessors;
+	}
 
-			(candidates ??= []).Add(candidate);
-		}
-
-		if (candidates == null)
-			return false;
+	static bool CanSetScopedExtensionProperty(ILocalValue parentVar, XmlName propertyName, INode node, SourceGenContext context, out ExtensionPropertyAccessors? accessors, out bool reported)
+	{
+		reported = false;
+		accessors = ResolveScopedExtensionProperty(parentVar.Type, propertyName, node, context, out var xmlNamespace, out var ambiguous);
 
 		//C# picks the most specific receiver, and refuses to guess between unrelated ones
-		accessors = MostSpecific(candidates, context);
-		if (accessors == null)
+		if (ambiguous)
 		{
-			var location = LocationCreate(context.ProjectItem.RelativePath!, lineInfo, propertyName.LocalName);
+			var location = LocationCreate(context.ProjectItem.RelativePath!, (IXmlLineInfo)node, propertyName.LocalName);
 			context.ReportDiagnostic(Diagnostic.Create(Descriptors.ExtensionPropertyAmbiguous, location, propertyName.LocalName, xmlNamespace, parentVar.Type.ToFQDisplayString()));
 			reported = true;
 			return false;
 		}
 
-		var propertyType = accessors.PropertyType;
+		return accessors != null && CanAssignExtensionProperty(accessors, node, context);
+	}
 
-		if (node is ValueNode vn)
-			return vn.CanConvertTo(propertyType, context);
+	/// <summary>
+	/// The extension property an attribute assigns, if any, without reporting anything. Lets markup
+	/// extensions that are evaluated before the assignment learn the type they have to provide.
+	/// </summary>
+	internal static IPropertySymbol? FindExtensionProperty(ITypeSymbol targetType, XmlName propertyName, INode node, SourceGenContext context)
+	{
+		if (TryGetQualifiedOwner(propertyName, context, out var container, out var memberName))
+			return ResolveExtensionProperty(container!, targetType, memberName, context, (IXmlLineInfo)node, out _, report: false)?.Property;
 
-		if (node is not ElementNode elementNode || !context.Variables.TryGetValue(elementNode, out var localVar))
-			return false;
-
-		return localVar.Type.InheritsFrom(propertyType, context)
-			|| (propertyType.IsInterface() && localVar.Type.Implements(propertyType))
-			|| propertyType.Equals(context.Compilation.ObjectType, SymbolEqualityComparer.Default)
-			|| context.Compilation.HasImplicitConversion(localVar.Type, propertyType)
-			|| HasDoubleImplicitConversion(localVar.Type, propertyType, context, out _)
-			|| HasExplicitConversion(localVar.Type, propertyType, context)
-			|| localVar.Type.Equals(context.Compilation.ObjectType, SymbolEqualityComparer.Default);
+		return ResolveScopedExtensionProperty(targetType, propertyName, node, context, out _, out _)?.Property;
 	}
 
 	//`reported` tells the caller a diagnostic was already emitted, so it must not also report an unresolved member
@@ -1692,37 +1746,29 @@ static class SetPropertyHelpers
 		if (!TryGetQualifiedOwner(propertyName, context, out var container, out var memberName))
 			return false;
 
-		var lineInfo = (IXmlLineInfo)node;
-		accessors = ResolveExtensionProperty(container!, parentVar.Type, memberName, context, lineInfo, out reported);
-		if (accessors == null)
-			return false;
+		accessors = ResolveExtensionProperty(container!, parentVar.Type, memberName, context, (IXmlLineInfo)node, out reported);
+		return accessors != null && CanAssignExtensionProperty(accessors, node, context);
+	}
 
+	//mirrors CanSet: the same conversions must be accepted for an extension property
+	static bool CanAssignExtensionProperty(ExtensionPropertyAccessors accessors, INode node, SourceGenContext context)
+	{
 		var propertyType = accessors.PropertyType;
 
 		if (node is ValueNode vn)
-			return vn.CanConvertTo(propertyType, context);
+			return vn.CanConvertTo(accessors.Property, context);
 
 		if (node is not ElementNode elementNode || !context.Variables.TryGetValue(elementNode, out var localVar))
 			return false;
 
-		//mirrors CanSet: the same conversions must be accepted for an extension property
-		if (localVar.Type.InheritsFrom(propertyType, context))
-			return true;
-		if (propertyType.IsInterface() && localVar.Type.Implements(propertyType))
-			return true;
-		if (propertyType.Equals(context.Compilation.ObjectType, SymbolEqualityComparer.Default))
-			return true;
-		if (context.Compilation.HasImplicitConversion(localVar.Type, propertyType))
-			return true;
-		if (HasDoubleImplicitConversion(localVar.Type, propertyType, context, out _))
-			return true;
-		if (HasExplicitConversion(localVar.Type, propertyType, context))
-			return true;
-		//a value typed as object is cast at runtime, exactly like an ordinary property assignment
-		if (localVar.Type.Equals(context.Compilation.ObjectType, SymbolEqualityComparer.Default))
-			return true;
-
-		return false;
+		return localVar.Type.InheritsFrom(propertyType, context)
+			|| (propertyType.IsInterface() && localVar.Type.Implements(propertyType))
+			|| propertyType.Equals(context.Compilation.ObjectType, SymbolEqualityComparer.Default)
+			|| context.Compilation.HasImplicitConversion(localVar.Type, propertyType)
+			|| HasDoubleImplicitConversion(localVar.Type, propertyType, context, out _)
+			|| HasExplicitConversion(localVar.Type, propertyType, context)
+			//a value typed as object is cast at runtime, exactly like an ordinary property assignment
+			|| localVar.Type.Equals(context.Compilation.ObjectType, SymbolEqualityComparer.Default);
 	}
 
 	/// <summary>
@@ -1751,7 +1797,7 @@ static class SetPropertyHelpers
 		{
 			using (context.ProjectItem.EnableLineInfo ? PrePost.NewLineInfo(writer, (IXmlLineInfo)node, context.ProjectItem) : PrePost.NoBlock())
 			{
-				var valueString = valueNode.ConvertTo(accessors.PropertyType, writer, context, parentVar);
+				var valueString = valueNode.ConvertTo(accessors.Property, writer, context, parentVar);
 				writer.WriteLine($"{setterAccessor}({receiverCast}{parentVar.ValueAccessor}, {valueString});");
 			}
 		}

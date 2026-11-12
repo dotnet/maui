@@ -1121,6 +1121,8 @@ internal class KnownMarkups
 				var bpFieldSymbol = parentVar.Type.GetBindableProperty(propertyName.NamespaceURI, ref localName, out System.Boolean attached, context, node as IXmlLineInfo);
 				var propertySymbol = parentVar.Type.GetAllProperties(localName, context).FirstOrDefault();
 				var typeandconverter = bpFieldSymbol?.GetBPTypeAndConverter(context);
+				if (typeandconverter == null && propertySymbol == null)
+					propertySymbol = SetPropertyHelpers.FindExtensionProperty(parentVar.Type, propertyName, node, context);
 
 				var propertyType = typeandconverter?.type ?? propertySymbol?.Type;
 				var converter = typeandconverter?.converter;
@@ -1132,7 +1134,15 @@ internal class KnownMarkups
 					converter = attributes.FirstOrDefault(ad => ad.AttributeClass?.ToString() == "System.ComponentModel.TypeConverterAttribute")?.ConstructorArguments[0].Value as ITypeSymbol;
 				}
 
-				if (propertyType!.Equals(context.Compilation.GetSpecialType(SpecialType.System_String), SymbolEqualityComparer.Default))
+				if (propertyType == null)
+				{
+					//no member to convert the resource to, let the assignment report it
+					returnType = context.Compilation.ObjectType;
+					value = string.Empty;
+					return false;
+				}
+
+				if (propertyType.Equals(context.Compilation.GetSpecialType(SpecialType.System_String), SymbolEqualityComparer.Default))
 				{
 					value = $"\"{vn.Value}\"";
 					returnType = context.Compilation.GetSpecialType(SpecialType.System_String);

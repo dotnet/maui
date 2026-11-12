@@ -72,7 +72,7 @@ public static class ScopedAmbiguousAExtensions
 		public string ScopedAmbiguous
 		{
 			get => string.Empty;
-			set => _ = value;
+			set => ThreeWayRecorder.Record(view, "A(IView):" + value);
 		}
 	}
 }

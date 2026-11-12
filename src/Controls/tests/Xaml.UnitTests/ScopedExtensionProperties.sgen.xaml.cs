@@ -33,13 +33,39 @@ public partial class ScopedExtensionProperties : ContentPage
 			=> Assert.Equal("from another assembly", new ScopedExtensionProperties().label1.ExternalScopedTag);
 
 		[Fact]
-		public void InstancePropertyWinsOverExtensionProperty()
+		public void BindablePropertyWinsOverExtensionProperty()
 		{
 			var page = new ScopedExtensionProperties();
 
 			Assert.Equal("ordinary property wins", page.label2.Text);
 			Assert.Null(page.label2.AutomationId);
 		}
+
+		[Fact]
+		public void ClrPropertyWinsOverExtensionProperty()
+		{
+			var page = new ScopedExtensionProperties();
+
+			Assert.Equal("instance wins", page.precedence.PlainClr);
+			Assert.Equal(string.Empty, ThreeWayRecorder.Get(page.precedence));
+		}
+
+		[Fact]
+		public void ExplicitInterfaceImplementationDoesNotHideExtensionProperty()
+			=> Assert.Equal("extension ExplicitTag:from xaml", ThreeWayRecorder.Get(new ScopedExtensionProperties().explicitInterface));
+
+		[Fact]
+		public void StaticResourceIsConvertedToTheExtensionPropertyType()
+		{
+			var page = new ScopedExtensionProperties();
+
+			Assert.Equal("from a resource", page.label7.ScopedTag);
+			Assert.Equal("from a resource", page.label8.ScopedTag);
+		}
+
+		[Fact]
+		public void HandwrittenMethodNamedLikeAnAccessorIsNotCalled()
+			=> Assert.Equal("extension(View):from xaml", ThreeWayRecorder.Get(new ScopedExtensionProperties().label9));
 
 		[Fact]
 		public void MostSpecificReceiverWinsAcrossContainersInScope()
@@ -63,7 +89,7 @@ public partial class ScopedExtensionProperties : ContentPage
 			// ScopedAmbiguous alone is ambiguous, see ScopedExtensionPropertiesErrors
 			var page = new ScopedExtensionProperties();
 
-			Assert.NotNull(page.label4);
+			Assert.Equal("A(IView):explicit wins", ThreeWayRecorder.Get(page.label4));
 		}
 
 		[Fact]

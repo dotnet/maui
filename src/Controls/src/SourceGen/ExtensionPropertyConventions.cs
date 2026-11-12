@@ -31,7 +31,9 @@ namespace Microsoft.Maui.Controls.SourceGen
 	/// member lookup with its <c>using</c> directives. That scope is the very map type names are resolved
 	/// through: <c>[XmlnsDefinition]</c>, including everything the MAUI global xmlns pulls in for a document
 	/// that declares no xmlns at all. Candidates are therefore never searched for outside the namespaces and
-	/// assemblies the document already imports, and the map is cached per xmlns.
+	/// assemblies the document already imports, and the map is cached per xmlns. An [XmlnsDefinition] only
+	/// imports its namespace from the assembly it names, so another referenced assembly reusing the namespace
+	/// name contributes no container.
 	/// </para>
 	/// <para>
 	/// Naming the container explicitly stays available, to reach a container the document does not import and
@@ -42,21 +44,28 @@ namespace Microsoft.Maui.Controls.SourceGen
 	/// <list type="bullet">
 	/// <item><description>the container is a non-generic static class;</description></item>
 	/// <item><description>the container declares an extension property with that name (see <see cref="IsSpeakable"/>);</description></item>
-	/// <item><description>the setter is a non-generic <c>public static void set_Name(TReceiver, TValue)</c> method on the container;</description></item>
+	/// <item><description>the extension property is an instance property with a setter, and the container has the
+	/// <c>public static void set_Name(TReceiver, TValue)</c> implementation method matching that declaration's
+	/// receiver and value type. A hand-written static method that merely has that name is not an accessor;</description></item>
 	/// <item><description>the receiver parameter is not by-ref and is assignable from the target element type;</description></item>
 	/// <item><description>the container is accessible from the assembly declaring the XAML;</description></item>
 	/// <item><description>when several setters apply, whether on one container or across the containers a xmlns
-	/// brings in scope, exactly one has a receiver type more derived than all the others.</description></item>
+	/// brings in scope, exactly one has a receiver type more derived than all the others. All the setters of all
+	/// the containers in scope compete together, so an ambiguity inside one container is never hidden by a less
+	/// specific candidate from another.</description></item>
 	/// </list>
 	/// <para>
 	/// Ordinary members win: an unqualified name is only looked up among extension properties once events,
 	/// dynamic resources, bindings, bindable properties and the target's own properties have all been tried.
+	/// As in C#, an accessible instance property or field of that name hides extension properties even when it
+	/// cannot be assigned (no public setter, value not convertible): that is reported as an unresolved member.
 	/// </para>
 	/// <para>
-	/// Only assignment is supported, so the selected <c>set_Name</c> method alone defines the receiver type and
-	/// the value type. Getters are never consulted: an extension property may be declared with its getter and
-	/// its setter in different extension blocks, with different receivers and even different value types, and
-	/// merging those into a single property shape would produce a shape no accessor actually has.
+	/// Only assignment is supported, so the extension property declaring the selected setter alone defines the
+	/// receiver type and the value type, and supplies the [TypeConverter] used to convert attribute values.
+	/// Getters are never consulted: an extension property may be declared with its getter and its setter in
+	/// different extension blocks, with different receivers and even different value types, and merging those
+	/// into a single property shape would produce a shape no accessor actually has.
 	/// Reading an extension property (to add items to the collection it returns, for instance) is not supported
 	/// either, so that the three inflators keep accepting exactly the same markup. Generic extension blocks
 	/// (<c>extension&lt;T&gt;(ICollection&lt;T&gt;)</c>) and static extension properties have no applicable
