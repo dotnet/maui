@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Automation.Peers;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WIconElement = Microsoft.UI.Xaml.Controls.IconElement;
 
@@ -97,6 +98,9 @@ namespace Microsoft.Maui.Platform
 		string? _badgeText;
 		WBrush? _badgeBackground;
 		WBrush? _badgeForeground;
+		string? _automationId;
+		AccessibilityView _accessibilityView = AccessibilityView.Content;
+
 
 		public object? Content
 		{
@@ -114,6 +118,18 @@ namespace Microsoft.Maui.Platform
 					UpdateForeground();
 				}
 			}
+		}
+
+		public string? AutomationId
+		{
+			get => _automationId;
+			set { this.SetProperty(ref _automationId, value, OnPropertyChanged); }
+		}
+
+		public AccessibilityView AccessibilityView
+		{
+			get => _accessibilityView;
+			set { this.SetProperty(ref _accessibilityView, value, OnPropertyChanged); }
 		}
 
 		public WBrush? Foreground
