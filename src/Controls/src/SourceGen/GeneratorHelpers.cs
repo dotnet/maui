@@ -187,6 +187,9 @@ static class GeneratorHelpers
 	}
 
 	public static AssemblyAttributes GetAssemblyAttributes(Compilation compilation, CancellationToken cancellationToken)
+		=> GetAssemblyAttributes(compilation, [], cancellationToken);
+
+	public static AssemblyAttributes GetAssemblyAttributes(Compilation compilation, IReadOnlyList<string> globalUsingNamespaces, CancellationToken cancellationToken)
 	{
 		// [assembly: XmlnsDefinition]
 		INamedTypeSymbol? xmlnsDefinitonAttribute = compilation.GetTypesByMetadataName(typeof(XmlnsDefinitionAttribute).FullName)
@@ -285,7 +288,7 @@ static class GeneratorHelpers
 			}
 		}
 
-		return new AssemblyAttributes(xmlnsDefinitionsList, xmlnsPrefixes, [.. globalGeneratedXmlnsDefinitions.Distinct()], internalsVisible, clrNamespacesForXmlns);
+		return new AssemblyAttributes(xmlnsDefinitionsList, xmlnsPrefixes, [.. globalGeneratedXmlnsDefinitions.Distinct()], internalsVisible, clrNamespacesForXmlns, globalUsingNamespaces);
 	}
 
 	static void ApplyTransforms(XmlNode node, string? targetFramework, XmlNamespaceManager nsmgr)
