@@ -86,10 +86,7 @@ namespace Microsoft.Maui.Platform
 				return layout.Measure((double)size.Width, (double)size.Height).ToCGSize();
 			}
 
-			// Native indicator transforms do not contribute to UIPageControl's measured size.
-			var scale = IndicatorSize > 0 ? (float)IndicatorSize / DefaultIndicatorSize : 1;
-			var nativeSize = base.SizeThatFits(new CGSize(size.Width / scale, size.Height / scale));
-			return new CGSize(nativeSize.Width * scale, nativeSize.Height * scale);
+			return base.SizeThatFits(size);
 		}
 
 		public void UpdateIndicatorSize()
