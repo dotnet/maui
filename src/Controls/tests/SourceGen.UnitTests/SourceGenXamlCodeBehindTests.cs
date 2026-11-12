@@ -848,6 +848,113 @@ using Microsoft.Maui.Controls;
 	}
 
 	[Fact]
+	public void PropertyElementsReuseTheGenericParentType()
+	{
+		const string code = """
+using System;
+using Microsoft.Maui.Controls;
+[assembly: XmlnsDefinition("http://tests/generic-parent", "First")]
+[assembly: XmlnsDefinition("http://tests/generic-parent", "Second")]
+namespace First
+{
+	public class Widget<T> : ContentView { public Type Target { get; set; } }
+	public class Widget : ContentView { }
+	public class Conflict : Label { }
+}
+namespace Second
+{
+	public class Widget : ContentView { }
+	public class Conflict : Label { }
+}
+""";
+		const string xaml = """
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:shared="http://tests/generic-parent" x:Class="Test.TestPage">
+  <shared:Widget x:TypeArguments="x:String">
+    <shared:Widget.Content><Label /></shared:Widget.Content>
+    <shared:Widget.Target>shared:Conflict</shared:Widget.Target>
+  </shared:Widget>
+</ContentPage>
+""";
+		var compilation = CreateMauiCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText(code));
+		var result = RunGenerator<XamlGenerator>(compilation,
+			new AdditionalXamlFile("GenericParent.xaml", xaml, Inflator: "Runtime"),
+			assertNoCompilationErrors: false, disabledOutputs: IncrementalGeneratorOutputKind.Implementation);
+		var warning = Assert.Single(ConflictWarnings(result));
+		Assert.Equal(xaml.LastIndexOf("shared:Conflict", StringComparison.Ordinal), warning.Location.SourceSpan.Start);
+	}
+
+	[Fact]
+	public void IgnoresTypeValuedPropertiesHiddenByDerivedProperties()
+	{
+		const string code = """
+using System;
+using Microsoft.Maui.Controls;
+namespace Test
+{
+	public class HiddenBase : ContentView { public Type Target { get; set; } }
+	public class HidingDerived : HiddenBase { public new string Target { get; set; } }
+}
+""";
+		const string xaml = """
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:shared="http://tests/collision" xmlns:local="clr-namespace:Test" x:Class="Test.TestPage">
+  <StackLayout>
+    <local:HidingDerived Target="shared:Conflict" />
+    <local:HiddenBase Target="shared:Conflict" />
+  </StackLayout>
+</ContentPage>
+""";
+		var compilation = CreateCollisionCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText(code));
+		var result = RunGenerator<XamlGenerator>(compilation,
+			new AdditionalXamlFile("Hidden.xaml", xaml, Inflator: "Runtime"),
+			assertNoCompilationErrors: false, disabledOutputs: IncrementalGeneratorOutputKind.Implementation);
+		var warning = Assert.Single(ConflictWarnings(result));
+		Assert.Equal(xaml.LastIndexOf("shared:Conflict", StringComparison.Ordinal), warning.Location.SourceSpan.Start);
+	}
+
+	[Fact]
+	public void FindsDataTypeDirectivesInsideMarkup()
+	{
+		const string xaml = """
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:shared="http://tests/collision" x:Class="Test.TestPage">
+  <Label Text="{Binding Name, x:DataType=shared:Conflict}" />
+</ContentPage>
+""";
+		var result = RunGenerator<XamlGenerator>(CreateCollisionCompilation(),
+			new AdditionalXamlFile("MarkupDataType.xaml", xaml, Inflator: "Runtime"),
+			assertNoCompilationErrors: false, disabledOutputs: IncrementalGeneratorOutputKind.Implementation);
+		var warning = Assert.Single(ConflictWarnings(result));
+		Assert.Equal(xaml.IndexOf("shared:Conflict", StringComparison.Ordinal), warning.Location.SourceSpan.Start);
+	}
+
+	[Fact]
+	public void IncompleteAttributesDoNotFailTheGenerator()
+	{
+		const string code = """
+using Microsoft.Maui.Controls;
+namespace Test { [ContentProperty()] public class Holder : ContentView { } }
+""";
+		const string xaml = """
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Test" x:Class="Test.TestPage">
+  <local:Holder>text</local:Holder>
+</ContentPage>
+""";
+		var compilation = CreateCollisionCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText(code));
+		var result = RunGenerator<XamlGenerator>(compilation,
+			new AdditionalXamlFile("Incomplete.xaml", xaml, Inflator: "Runtime"),
+			assertNoCompilationErrors: false, disabledOutputs: IncrementalGeneratorOutputKind.Implementation);
+		Assert.DoesNotContain(result.Diagnostics, d => d.Id == "CS8785");
+		Assert.All(result.Results, r => Assert.Null(r.Exception));
+	}
+
+	[Fact]
 	public void MarksTheValueRatherThanAnIdenticallyNamedMarkupProperty()
 	{
 		const string xaml = """

@@ -17,6 +17,7 @@ sealed class XamlTypeConflictAnalyzer
 {
 	readonly ProjectItem _projectItem;
 	readonly SourceText _sourceText;
+	readonly string _sourceString;
 	readonly Compilation _compilation;
 	readonly AssemblyAttributes _xmlns;
 	readonly CancellationToken _cancellationToken;
@@ -35,6 +36,7 @@ sealed class XamlTypeConflictAnalyzer
 	{
 		_projectItem = projectItem;
 		_sourceText = sourceText;
+		_sourceString = sourceText.ToString();
 		_compilation = compilation;
 		_xmlns = xmlns;
 		_cancellationToken = cancellationToken;
@@ -60,13 +62,21 @@ sealed class XamlTypeConflictAnalyzer
 		if (item?.Root is null || item.ProjectItem is null || item.SourceText is null)
 			return null;
 
-		var resolver = CreateNamespaceManager(xmlns);
-		using var reader = XmlReader.Create(new StringReader(item.SourceText.ToString()),
-			new XmlReaderSettings { ConformanceLevel = ConformanceLevel.Fragment },
-			new XmlParserContext(resolver.NameTable, resolver, null, XmlSpace.None));
-		var document = XDocument.Load(reader, LoadOptions.SetLineInfo | LoadOptions.PreserveWhitespace);
-		cancellationToken.ThrowIfCancellationRequested();
-		return new Document(item.ProjectItem, item.SourceText, document);
+		try
+		{
+			var resolver = CreateNamespaceManager(xmlns);
+			using var reader = XmlReader.Create(new StringReader(item.SourceText.ToString()),
+				new XmlReaderSettings { ConformanceLevel = ConformanceLevel.Fragment },
+				new XmlParserContext(resolver.NameTable, resolver, null, XmlSpace.None));
+			var document = XDocument.Load(reader, LoadOptions.SetLineInfo | LoadOptions.PreserveWhitespace);
+			cancellationToken.ThrowIfCancellationRequested();
+			return new Document(item.ProjectItem, item.SourceText, document);
+		}
+		catch (Exception exception) when (exception is not OperationCanceledException)
+		{
+			// Parse errors are reported by the main XAML pipeline.
+			return null;
+		}
 	}
 
 	internal static ImmutableArray<Diagnostic> Analyze((Document? document, AssemblyAttributes xmlns, Compilation compilation) input, CancellationToken cancellationToken)
@@ -76,7 +86,14 @@ sealed class XamlTypeConflictAnalyzer
 			return ImmutableArray<Diagnostic>.Empty;
 
 		var analyzer = new XamlTypeConflictAnalyzer(document.ProjectItem, document.SourceText, compilation, xmlns, cancellationToken);
-		analyzer.VisitElement(document.Xml.Root, CreateNamespaceManager(xmlns), new HashSet<string>(StringComparer.Ordinal));
+		try
+		{
+			analyzer.VisitElement(document.Xml.Root, CreateNamespaceManager(xmlns), new HashSet<string>(StringComparer.Ordinal), null, null);
+		}
+		catch (Exception exception) when (exception is not OperationCanceledException)
+		{
+			// Incomplete user code (e.g. attributes missing arguments while typing) must never fail the generator.
+		}
 		return analyzer._diagnostics.ToImmutable();
 	}
 
@@ -91,7 +108,7 @@ sealed class XamlTypeConflictAnalyzer
 		return manager;
 	}
 
-	void VisitElement(XElement element, XmlNamespaceManager resolver, HashSet<string> ignoredNamespaces)
+	void VisitElement(XElement element, XmlNamespaceManager resolver, HashSet<string> ignoredNamespaces, XmlType? parentXmlType, INamedTypeSymbol? parentType)
 	{
 		_cancellationToken.ThrowIfCancellationRequested();
 		resolver.PushScope();
@@ -130,9 +147,15 @@ sealed class XamlTypeConflictAnalyzer
 			if (dot >= 0)
 				name = name.Substring(0, dot);
 
-			var xmlType = new XmlType(element.Name.NamespaceName, name, arguments);
+			// A property element of its parent (<Owner.Prop> inside <Owner>) reuses the parent's type, including type arguments.
+			var parent = element.Parent;
+			var isParentProperty = dot >= 0 && parentXmlType is not null &&
+				parent?.Name.NamespaceName == element.Name.NamespaceName && parent.Name.LocalName == name;
+			var xmlType = isParentProperty ? parentXmlType! : new XmlType(element.Name.NamespaceName, name, arguments);
 			INamedTypeSymbol? elementType = null;
-			if (typeArgumentsAttribute is null || arguments is not null)
+			if (isParentProperty)
+				elementType = parentType;
+			else if (typeArgumentsAttribute is null || arguments is not null)
 			{
 				ReportIfAmbiguous(xmlType, GetNameSpan(element, dot >= 0));
 				elementType = ResolveUniqueType(xmlType);
@@ -155,10 +178,7 @@ sealed class XamlTypeConflictAnalyzer
 			if (dot >= 0)
 			{
 				var propertyName = element.Name.LocalName.Substring(dot + 1);
-				var parent = element.Parent;
-				var constructorElement = parent?.Name.NamespaceName == element.Name.NamespaceName &&
-					parent.Name.LocalName == name ? parent : null;
-				var kind = GetValueKind(elementType, xmlType, propertyName, attached: true, constructorElement);
+				var kind = GetValueKind(elementType, xmlType, propertyName, attached: !isParentProperty, isParentProperty ? parent : null);
 				VisitTextValues(element, kind, resolver, isPropertyElement: true);
 			}
 			else
@@ -169,7 +189,7 @@ sealed class XamlTypeConflictAnalyzer
 			}
 
 			foreach (var child in element.Elements())
-				VisitElement(child, resolver, ignoredNamespaces);
+				VisitElement(child, resolver, ignoredNamespaces, xmlType, elementType);
 		}
 		resolver.PopScope();
 	}
@@ -215,6 +235,8 @@ sealed class XamlTypeConflictAnalyzer
 			return;
 		foreach (var text in element.Nodes().OfType<XText>())
 		{
+			if (string.IsNullOrWhiteSpace(text.Value))
+				continue;
 			var value = GetTextValue(text);
 			var trimmed = value.Value.Trim();
 			if (trimmed.Length == 0 || trimmed.StartsWith("{}", StringComparison.Ordinal))
@@ -258,13 +280,13 @@ sealed class XamlTypeConflictAnalyzer
 
 	TypeValueKind GetValueKindCore(INamedTypeSymbol owner, string propertyName, bool attached)
 	{
-		foreach (var property in owner.GetAllProperties(propertyName, context: null))
+		// Member resolution selects the most-derived property; hidden base properties don't apply.
+		if (owner.GetAllProperties(propertyName, context: null).FirstOrDefault() is IPropertySymbol property)
 		{
 			var kind = KindFor(property.Type);
 			if (kind != TypeValueKind.None)
 				return kind;
-			if (UsesTypeConverter(property.GetAttributes()))
-				return TypeValueKind.Type;
+			return UsesTypeConverter(property.GetAttributes()) ? TypeValueKind.Type : TypeValueKind.None;
 		}
 
 		if (attached)
@@ -475,10 +497,13 @@ sealed class XamlTypeConflictAnalyzer
 			var start = expressionStart + property.Start;
 			var end = expressionStart + property.End;
 			var propertyName = property.Name ?? contentProperty;
-			var kind = GetValueKind(extensionType, xmlType, propertyName, attached: false, constructorMarkup: markup);
+			var isDataType = IsXamlDirective(property.Name, resolver, "DataType");
+			var kind = isDataType
+				? TypeValueKind.Type
+				: GetValueKind(extensionType, xmlType, propertyName, attached: false, constructorMarkup: markup);
 			if (kind == TypeValueKind.None && (isOnIdiom || (isOnPlatform && (!hasTargetPlatform || ReferenceEquals(property, platformValue)))))
 				kind = expectedKind;
-			if (property.Name is string qualifiedProperty && qualifiedProperty.LastIndexOf('.') is int dot && dot > 0)
+			if (!isDataType && property.Name is string qualifiedProperty && qualifiedProperty.LastIndexOf('.') is int dot && dot > 0)
 			{
 				var ownerName = qualifiedProperty.Substring(0, dot);
 				var ownerParts = ownerName.Split(':');
@@ -516,11 +541,14 @@ sealed class XamlTypeConflictAnalyzer
 	}
 
 	static bool IsTypeArguments(string? name, XmlNamespaceManager resolver)
+		=> IsXamlDirective(name, resolver, "TypeArguments");
+
+	static bool IsXamlDirective(string? name, XmlNamespaceManager resolver, string directive)
 	{
 		if (name is null)
 			return false;
 		var parts = name.Split(':');
-		return parts.Length == 2 && parts[1] == "TypeArguments" &&
+		return parts.Length == 2 && parts[1] == directive &&
 			(resolver.LookupNamespace(parts[0]) == XamlParser.X2009Uri || resolver.LookupNamespace(parts[0]) == XamlParser.X2006Uri);
 	}
 
@@ -679,7 +707,7 @@ sealed class XamlTypeConflictAnalyzer
 	{
 		var info = (IXmlLineInfo)text;
 		var start = _sourceText.Lines[info.LineNumber - 1].Start + info.LinePosition - 1;
-		var contents = _sourceText.ToString();
+		var contents = _sourceString;
 		if (text is XCData && contents.IndexOf("<![CDATA[", start, StringComparison.Ordinal) == start)
 			start += "<![CDATA[".Length;
 		var end = text is XCData

@@ -94,7 +94,9 @@ public class XamlGenerator : IIncrementalGenerator
 			.Select(GetAssemblyAttributes)
 			.WithTrackingName(TrackingNames.XmlnsDefinitionsProviderForIC);
 
+		// Select first: WithComparer clones the upstream transform, which would re-parse all code-behind.
 		var conflictCompilationProvider = compilationWithCodeBehindProvider
+			.Select(static (compilation, _) => compilation)
 			.WithComparer(new CompilationSignaturesComparer(includePrivateMembers: true));
 		var conflictXmlnsProvider = conflictCompilationProvider.Select(GetAssemblyAttributes);
 		var conflictDocumentProvider = xamlProjectItemProviderForCB

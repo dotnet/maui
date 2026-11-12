@@ -165,10 +165,9 @@ public class CrossAssemblyHotReloadTests
 
 	static IncrementalStepRunReason GetTrackedStepReason(GeneratorRunResult result, string trackingName)
 	{
-		return Assert.Single(result.TrackedSteps[trackingName]
-			.SelectMany(step => step.Outputs)
-			.Select(output => output.Reason)
-			.Distinct());
+		var step = Assert.Single(result.TrackedSteps[trackingName]);
+		var output = Assert.Single(step.Outputs);
+		return output.Reason;
 	}
 
 	static void AssertTrackedStepReasons(GeneratorRunResult result, Dictionary<string, IncrementalStepRunReason> expectedReasons)
