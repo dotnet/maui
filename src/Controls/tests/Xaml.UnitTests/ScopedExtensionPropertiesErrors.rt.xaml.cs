@@ -40,7 +40,7 @@ public partial class {{xamlType.Name}} : ContentPage
 			// ScopedAmbiguousAExtensions declares it for IView, ScopedAmbiguousBExtensions for BindableObject
 			var result = Generate(typeof(ScopedExtensionPropertiesErrors));
 
-			Assert.True(result.Diagnostics.Any(d => d.Id == "MAUIX2016"));
+			Assert.True(result.Diagnostics.Any(d => d.Id == "MAUIX2021"));
 		}
 
 		[Fact]
@@ -58,7 +58,7 @@ public partial class {{xamlType.Name}} : ContentPage
 			// not be assigned just because the qualifier was dropped
 			var result = Generate(typeof(ScopedExtensionPropertiesQualified));
 
-			Assert.True(result.Diagnostics.Any(d => d.Id == "MAUIX2015"));
+			Assert.True(result.Diagnostics.Any(d => d.Id == "MAUIX2020"));
 		}
 
 		[Fact]
