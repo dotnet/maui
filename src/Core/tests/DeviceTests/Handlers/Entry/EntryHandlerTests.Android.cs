@@ -224,6 +224,61 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidateHasColor(entry, expected);
 		}
 
+		[Fact(DisplayName = "ReadOnly Entry Is Still Focusable")]
+		public async Task ReadOnlyEntryIsFocusable()
+		{
+			var entry = new EntryStub() { IsReadOnly = true };
+
+			var focusable = await GetValueAsync(entry, handler =>
+				GetNativeEntry(handler).Focusable && GetNativeEntry(handler).FocusableInTouchMode);
+
+			Assert.True(focusable);
+		}
+
+		[Theory(DisplayName = "Updating Input Properties Keeps Entry ReadOnly")]
+		[InlineData(nameof(IEntry.Keyboard))]
+		[InlineData(nameof(IEntry.IsPassword))]
+		[InlineData(nameof(IEntry.IsTextPredictionEnabled))]
+		[InlineData(nameof(IEntry.IsSpellCheckEnabled))]
+		public async Task UpdatingInputPropertiesKeepsEntryReadOnly(string propertyName)
+		{
+			var entry = new EntryStub() { IsReadOnly = true };
+
+			var isReadOnly = await GetValueAsync(entry, handler =>
+			{
+				entry.Keyboard = Keyboard.Numeric;
+				entry.IsPassword = true;
+				entry.IsTextPredictionEnabled = false;
+				entry.IsSpellCheckEnabled = false;
+				handler.UpdateValue(propertyName);
+
+				return GetNativeIsReadOnly(handler);
+			});
+
+			Assert.True(isReadOnly);
+		}
+
+		[Fact(DisplayName = "ReadOnly Entry Does Not Show Clear Button When Focused")]
+		public async Task ReadOnlyEntryDoesNotShowClearButtonWhenFocused()
+		{
+			var entry = new EntryStub()
+			{
+				Text = "Test",
+				IsReadOnly = true,
+				ClearButtonVisibility = ClearButtonVisibility.WhileEditing
+			};
+
+			var handler = await CreateHandlerAsync(entry);
+
+			await InvokeOnMainThreadAsync(() => handler.PlatformView.AttachAndRun(async () =>
+			{
+				handler.PlatformView.RequestFocus();
+				await handler.PlatformView.WaitForFocused();
+
+				Assert.Null(handler.PlatformView.GetCompoundDrawables()[2]);
+			}));
+		}
+
 		[Fact(DisplayName = "Padding is the same after background changes")]
 		public async Task PaddingDoesntChangeAfterBackground()
 		{
@@ -375,12 +430,8 @@ namespace Microsoft.Maui.DeviceTests
 			return currentPlaceholderColor.ToColor();
 		}
 
-		bool GetNativeIsReadOnly(EntryHandler entryHandler)
-		{
-			var editText = GetNativeEntry(entryHandler);
-
-			return !editText.Focusable && !editText.FocusableInTouchMode;
-		}
+		bool GetNativeIsReadOnly(EntryHandler entryHandler) =>
+			!GetNativeEntry(entryHandler).OnCheckIsTextEditor();
 
 		bool GetNativeIsNumericKeyboard(EntryHandler entryHandler)
 		{

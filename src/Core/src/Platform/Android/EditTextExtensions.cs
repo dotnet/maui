@@ -105,6 +105,10 @@ namespace Microsoft.Maui.Platform
 
 		internal static void UpdateIsTextPredictionEnabled(this EditText editText, ITextInput textInput)
 		{
+			// Read-only text has no InputType (see SetInputType), and setting one would make it editable again
+			if (textInput.IsReadOnly)
+				return;
+
 			var keyboard = textInput.Keyboard;
 
 			// TextFlagAutoCorrect will correct "Whats" -> "What's"
@@ -118,6 +122,10 @@ namespace Microsoft.Maui.Platform
 
 		internal static void UpdateIsSpellCheckEnabled(this EditText editText, ITextInput textInput)
 		{
+			// Read-only text has no InputType (see SetInputType), and setting one would make it editable again
+			if (textInput.IsReadOnly)
+				return;
+
 			// TextFlagNoSuggestions disables spellchecking (the red squiggly lines)
 			if (!textInput.IsSpellCheckEnabled)
 				editText.InputType |= InputTypes.TextFlagNoSuggestions;
@@ -170,14 +178,8 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateIsReadOnly(this EditText editText, IEntry entry)
 		{
-			bool isEditable = !entry.IsReadOnly;
-
 			editText.SetInputType(entry);
-
-			editText.FocusableInTouchMode = isEditable;
-			editText.Focusable = isEditable;
-
-			editText.SetCursorVisible(isEditable);
+			editText.SetCursorVisible(!entry.IsReadOnly);
 		}
 
 		public static void UpdateKeyboard(this EditText editText, IEntry entry)
@@ -192,11 +194,8 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateIsReadOnly(this EditText editText, IEditor editor)
 		{
-			bool isReadOnly = !editor.IsReadOnly;
-
-			editText.FocusableInTouchMode = isReadOnly;
-			editText.Focusable = isReadOnly;
-			editText.SetCursorVisible(isReadOnly);
+			editText.SetInputType(editor);
+			editText.SetCursorVisible(!editor.IsReadOnly);
 		}
 
 		public static void UpdateClearButtonVisibility(this EditText editText, IEntry entry)
@@ -210,6 +209,7 @@ namespace Microsoft.Maui.Platform
 			bool hasText = entry.Text?.Length > 0;
 
 			bool shouldDisplayClearButton = entry.ClearButtonVisibility == ClearButtonVisibility.WhileEditing
+				&& !entry.IsReadOnly
 				&& hasText
 				&& isFocused;
 
@@ -402,6 +402,11 @@ namespace Microsoft.Maui.Platform
 				editText.KeyListener = LocalizedDigitsKeyListener.Create(inputType);
 				editText.SetRawInputType(inputType);
 			}
+
+			// Read-only text stays focusable. Without a key listener it isn't a text editor
+			// (InputType becomes TYPE_NULL), so it can't be typed into and doesn't show the keyboard.
+			if (textInput.IsReadOnly)
+				editText.KeyListener = null;
 
 			if (textInput is IElement element)
 			{

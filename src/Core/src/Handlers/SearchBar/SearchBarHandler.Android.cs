@@ -161,6 +161,8 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapIsReadOnly(ISearchBarHandler handler, ISearchBar searchBar)
 		{
+			handler.UpdateValue(nameof(ISearchBar.Text));
+
 			handler.QueryEditor?.UpdateIsReadOnly(searchBar);
 			handler.PlatformView?.UpdateCancelButtonState(searchBar);
 		}

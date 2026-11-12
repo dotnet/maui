@@ -119,6 +119,8 @@ public class SearchBarHandler2 : ViewHandler<ISearchBar, MauiMaterialSearchBarTe
 
     public static void MapIsReadOnly(SearchBarHandler2 handler, ISearchBar searchBar)
     {
+        handler.UpdateValue(nameof(ISearchBar.Text));
+
         handler.PlatformView?.EditText?.UpdateIsReadOnly(searchBar);
     }
 

@@ -125,6 +125,8 @@ public class EditorHandler2 : ViewHandler<IEditor, MauiMaterialEditText>
 
 	public static void MapIsReadOnly(EditorHandler2 handler, IEditor editor)
 	{
+		handler.UpdateValue(nameof(IEditor.Text));
+
 		handler.PlatformView?.UpdateIsReadOnly(editor);
 	}
 

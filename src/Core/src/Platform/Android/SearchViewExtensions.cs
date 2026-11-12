@@ -115,11 +115,8 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateIsReadOnly(this EditText editText, ISearchBar searchBar)
 		{
-			bool isReadOnly = !searchBar.IsReadOnly;
-
-			editText.FocusableInTouchMode = isReadOnly;
-			editText.Focusable = isReadOnly;
-			editText.SetCursorVisible(isReadOnly);
+			editText.SetInputType(searchBar);
+			editText.SetCursorVisible(!searchBar.IsReadOnly);
 		}
 
 		internal static void UpdateCancelButtonState(this SearchView searchView, ISearchBar searchBar)
@@ -199,7 +196,8 @@ namespace Microsoft.Maui.Platform
 		{
 			editText ??= searchView.GetFirstChildOfType<EditText>();
 
-			if (editText == null)
+			// Read-only text has no InputType (see EditTextExtensions.SetInputType)
+			if (editText == null || searchBar.IsReadOnly)
 				return;
 
 			if (searchBar.IsTextPredictionEnabled)
@@ -212,7 +210,8 @@ namespace Microsoft.Maui.Platform
 		{
 			editText ??= searchView.GetFirstChildOfType<EditText>();
 
-			if (editText == null)
+			// Read-only text has no InputType (see EditTextExtensions.SetInputType)
+			if (editText == null || searchBar.IsReadOnly)
 				return;
 
 			if (!searchBar.IsSpellCheckEnabled)

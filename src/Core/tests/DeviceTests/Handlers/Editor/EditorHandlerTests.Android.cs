@@ -26,16 +26,29 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.True(inputType.HasFlag(InputTypes.TextFlagMultiLine));
 		}
 
-		[Fact(DisplayName = "ReadOnly Keeps MultiLine Flag")]
-		public async Task InputTypeInitializesWithMultiLineFlag()
+		[Fact(DisplayName = "ReadOnly Keeps MultiLine")]
+		public async Task ReadOnlyKeepsMultiLine()
 		{
 			var editor = new EditorStub() { IsReadOnly = true };
-			var inputType = await GetValueAsync(editor, (handler) =>
+
+			// A read-only Editor has no key listener (InputType is TYPE_NULL), but keeps its multi-line layout
+			var maxLines = await GetValueAsync(editor, (handler) =>
 			{
-				return GetNativeEditor(handler).InputType;
+				return GetNativeEditor(handler).MaxLines;
 			});
 
-			Assert.True(inputType.HasFlag(InputTypes.TextFlagMultiLine));
+			Assert.NotEqual(1, maxLines);
+		}
+
+		[Fact(DisplayName = "ReadOnly Editor Is Still Focusable")]
+		public async Task ReadOnlyEditorIsFocusable()
+		{
+			var editor = new EditorStub() { IsReadOnly = true };
+
+			var focusable = await GetValueAsync(editor, handler =>
+				GetNativeEditor(handler).Focusable && GetNativeEditor(handler).FocusableInTouchMode);
+
+			Assert.True(focusable);
 		}
 
 		[Fact(DisplayName = "CharacterSpacing Initializes Correctly")]
@@ -124,7 +137,7 @@ namespace Microsoft.Maui.DeviceTests
 
 
 		bool GetNativeIsReadOnly(EditorHandler editorHandler) =>
-			!GetNativeEditor(editorHandler).Focusable;
+			!GetNativeEditor(editorHandler).OnCheckIsTextEditor();
 
 		bool GetNativeIsTextPredictionEnabled(EditorHandler editorHandler) =>
 			GetNativeEditor(editorHandler).InputType.HasFlag(InputTypes.TextFlagAutoCorrect);

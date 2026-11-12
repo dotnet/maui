@@ -122,6 +122,7 @@ namespace Microsoft.Maui.Handlers
 			handler.UpdateValue(nameof(IEntry.Text));
 
 			handler.PlatformView?.UpdateIsReadOnly(entry);
+			MapClearButtonVisibility(handler, entry);
 		}
 
 		public static void MapKeyboard(IEntryHandler handler, IEntry entry)

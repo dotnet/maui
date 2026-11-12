@@ -16,6 +16,41 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class SearchBarHandlerTests
 	{
+		[Fact(DisplayName = "ReadOnly SearchBar Is Still Focusable")]
+		public async Task ReadOnlySearchBarIsFocusable()
+		{
+			var searchBar = new SearchBarStub() { IsReadOnly = true };
+
+			var focusable = await GetValueAsync(searchBar, handler =>
+			{
+				var editText = GetNativeSearchBar(handler).GetChildrenOfType<EditText>().First();
+				return editText.Focusable && editText.FocusableInTouchMode;
+			});
+
+			Assert.True(focusable);
+		}
+
+		[Theory(DisplayName = "Updating Input Properties Keeps SearchBar ReadOnly")]
+		[InlineData(nameof(ISearchBar.Keyboard))]
+		[InlineData(nameof(ISearchBar.IsTextPredictionEnabled))]
+		[InlineData(nameof(ISearchBar.IsSpellCheckEnabled))]
+		public async Task UpdatingInputPropertiesKeepsSearchBarReadOnly(string propertyName)
+		{
+			var searchBar = new SearchBarStub() { IsReadOnly = true };
+
+			var isReadOnly = await GetValueAsync(searchBar, handler =>
+			{
+				searchBar.Keyboard = Keyboard.Numeric;
+				searchBar.IsTextPredictionEnabled = false;
+				searchBar.IsSpellCheckEnabled = false;
+				handler.UpdateValue(propertyName);
+
+				return GetNativeIsReadOnly(handler);
+			});
+
+			Assert.True(isReadOnly);
+		}
+
 		// Regression tests for https://github.com/dotnet/maui/issues/30779
 		// SearchBar.CursorPosition and SelectionLength were not updated when the user typed
 
@@ -388,7 +423,7 @@ namespace Microsoft.Maui.DeviceTests
 			if (editText is null)
 				return false;
 
-			return !editText.Focusable && !editText.FocusableInTouchMode;
+			return !editText.OnCheckIsTextEditor();
 		}
 
 		bool GetNativeIsNumericKeyboard(SearchBarHandler searchBarHandler)
