@@ -62,7 +62,7 @@ namespace Microsoft.Maui.Controls.Xaml
 			rootAssembly ??= view.GetType().Assembly;
 
 			if (XamlParser.s_xmlnsPrefixes == null)
-				XamlParser.GatherXmlnsDefinitionAndXmlnsPrefixAttributes(rootAssembly);
+				XamlParser.GatherXmlnsDefinitionAndXmlnsPrefixAttributes();
 
 			var nsmgr = new XmlNamespaceManager(new NameTable());
 			nsmgr.AddNamespace("", XamlParser.DefaultImplicitUri);
