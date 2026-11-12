@@ -1,5 +1,4 @@
 ﻿using System;
-using Android.Views;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -12,16 +11,12 @@ namespace Microsoft.Maui.Handlers
 				throw new InvalidOperationException($"{nameof(VirtualView)} must be set to create a ContentViewGroup");
 			}
 
-			var viewGroup = new ContentViewGroup(Context)
+			// No hardware layer: a SurfaceView in a layer, e.g. a video, isn't visible on Android 10 and 11, and the stroke
+			// isn't drawn around it on Android 12 (https://github.com/dotnet/maui/issues/40186)
+			return new ContentViewGroup(Context)
 			{
 				CrossPlatformLayout = VirtualView
 			};
-
-			// We only want to use a hardware layer for the entering view because its quite likely
-			// the view will invalidate several times the Drawable (Draw).
-			viewGroup.SetLayerType(LayerType.Hardware, null);
-
-			return viewGroup;
 		}
 
 		public override void SetVirtualView(IView view)

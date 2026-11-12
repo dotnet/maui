@@ -51,6 +51,26 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidateHasColor(border, expected, () => border.Background = new SolidPaintStub(expected), nameof(border.Background));
 		}
 
+		[Fact(DisplayName = "Border isn't drawn into a hardware layer")]
+		public async Task BorderIsNotDrawnIntoAHardwareLayer()
+		{
+			// https://github.com/dotnet/maui/issues/40186
+			var border = new BorderStub()
+			{
+				Content = new LabelStub { Text = "Layer" },
+				Shape = new RectangleShapeStub(),
+				Stroke = new SolidPaintStub(Colors.Black),
+				StrokeThickness = 2,
+				Height = 100,
+				Width = 300
+			};
+
+			var layerType = await GetValueAsync(border, handler => GetNativeBorder(handler).LayerType);
+
+			// In a hardware layer, a SurfaceView (e.g. a video) isn't visible on Android 10 and 11, and the stroke isn't drawn around it on Android 12
+			Assert.Equal(global::Android.Views.LayerType.None, layerType);
+		}
+
 		ContentViewGroup GetNativeBorder(BorderHandler borderHandler) =>
 			borderHandler.PlatformView;
 	}
