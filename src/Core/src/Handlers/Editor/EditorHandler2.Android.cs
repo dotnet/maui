@@ -44,7 +44,7 @@ public class EditorHandler2 : ViewHandler<IEditor, MauiMaterialEditText>
 
 	protected override MauiMaterialEditText CreatePlatformView()
 	{
-		var editText = new MauiMaterialEditText(MauiMaterialContextThemeWrapper.Create(Context))
+		var editText = new WideFocusedRectMaterialEditText(MauiMaterialContextThemeWrapper.Create(Context))
 		{
 			ImeOptions = ImeAction.Done,
 			Gravity = GravityFlags.Top,

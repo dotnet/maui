@@ -53,7 +53,7 @@ public class EntryHandler2 : ViewHandler<IEntry, MauiMaterialTextInputLayout>
 	{
 		var layout = new MauiMaterialTextInputLayout(Context);
 		layout.BoxBackgroundMode = TextInputLayout.BoxBackgroundOutline;
-		layout.AddView(new MauiMaterialEditText(layout.Context!));
+		layout.AddView(new WideFocusedRectMaterialEditText(layout.Context!));
 
 		// Store the original default hint colors before any customization
 		_defaultHintTextColors = layout.DefaultHintTextColor;

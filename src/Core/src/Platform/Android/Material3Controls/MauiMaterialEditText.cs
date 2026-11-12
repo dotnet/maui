@@ -34,13 +34,6 @@ public class MauiMaterialEditText : TextInputEditText
 		SelectionChanged?.Invoke(this, EventArgs.Empty);
 	}
 
-	public override void GetFocusedRect(global::Android.Graphics.Rect? r)
-	{
-		base.GetFocusedRect(r);
-
-		this.SpanFocusedRectAcrossWidth(r);
-	}
-
 	protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
 	{
 		var heightMode = MeasureSpec.GetMode(heightMeasureSpec);
