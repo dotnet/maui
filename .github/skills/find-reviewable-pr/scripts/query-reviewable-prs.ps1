@@ -100,7 +100,7 @@ $twoWeeksAgo = (Get-Date).AddDays(-14).ToString("yyyy-MM-dd")
 # Helper function to invoke GitHub CLI with retry logic
 function Invoke-GitHubWithRetry {
     param(
-        [string]$Command,
+        [string[]]$Arguments,
         [string]$Description,
         [int]$MaxRetries = 3
     )
@@ -112,7 +112,7 @@ function Invoke-GitHubWithRetry {
         try {
             # Reset LASTEXITCODE before running command
             $global:LASTEXITCODE = 0
-            $result = Invoke-Expression $Command 2>&1
+            $result = gh @Arguments 2>&1
             if ($LASTEXITCODE -eq 0) {
                 return $result
             }
@@ -210,7 +210,7 @@ function Get-ProjectBoardStatuses {
   }
 }
 "@
-            $result = Invoke-GitHubWithRetry -Command "gh api graphql -f query='$($graphqlQuery -replace "`r?`n", " " -replace "'", "'\''")'" -Description "fetch project board items"
+            $result = Invoke-GitHubWithRetry -Arguments @("api", "graphql", "-f", "query=$($graphqlQuery -replace "`r?`n", " ")") -Description "fetch project board items"
             $parsed = $result | ConvertFrom-Json
 
             foreach ($item in $parsed.data.node.items.nodes) {
@@ -365,7 +365,7 @@ function Add-UniquePRs {
 try {
     # Query 1: Milestoned PRs - dynamically fetch active SR and Preview milestones
     Write-Host "  Fetching active milestones..." -ForegroundColor Gray
-    $milestonesResult = Invoke-GitHubWithRetry -Command "gh api repos/dotnet/maui/milestones --jq '.[].title'" -Description "fetch milestones"
+    $milestonesResult = Invoke-GitHubWithRetry -Arguments @("api", "repos/dotnet/maui/milestones", "--jq", ".[].title") -Description "fetch milestones"
     $allMilestones = $milestonesResult -split "`n" | Where-Object { $_ -ne "" }
     
     # Filter for SR and Preview milestones only (ignore Servicing, Backlog, Planning)
@@ -377,7 +377,7 @@ try {
         Write-Host "  Fetching milestoned PRs (SR/Preview)..." -ForegroundColor Gray
         foreach ($milestone in $targetMilestones) {
             $searchQuery = "milestone:`"$milestone`""
-            $prResult = Invoke-GitHubWithRetry -Command "gh pr list --repo dotnet/maui --state open --search '$searchQuery' --limit 25 --json $jsonFields" -Description "fetch $milestone PRs"
+            $prResult = Invoke-GitHubWithRetry -Arguments @("pr", "list", "--repo", "dotnet/maui", "--state", "open", "--search", $searchQuery, "--limit", "25", "--json", $jsonFields) -Description "fetch $milestone PRs"
             $prs = $prResult | ConvertFrom-Json
             $added = Add-UniquePRs -prs $prs -allPRs ([ref]$allPRs) -seenNumbers ([ref]$seenPRNumbers)
             if ($added -gt 0) { Write-Host "    $milestone`: $added PRs" -ForegroundColor Gray }
@@ -388,56 +388,56 @@ try {
     
     # Query 2: P/0 priority PRs
     Write-Host "  Fetching P/0 priority PRs..." -ForegroundColor Gray
-    $prResult = Invoke-GitHubWithRetry -Command "gh pr list --repo dotnet/maui --state open --search 'label:p/0' --limit 25 --json $jsonFields" -Description "fetch P/0 PRs"
+    $prResult = Invoke-GitHubWithRetry -Arguments @("pr", "list", "--repo", "dotnet/maui", "--state", "open", "--search", "label:p/0", "--limit", "25", "--json", $jsonFields) -Description "fetch P/0 PRs"
     $prs = $prResult | ConvertFrom-Json
     $added = Add-UniquePRs -prs $prs -allPRs ([ref]$allPRs) -seenNumbers ([ref]$seenPRNumbers)
     Write-Host "    P/0: $added PRs" -ForegroundColor Gray
     
     # Query 3: Partner PRs
     Write-Host "  Fetching partner PRs..." -ForegroundColor Gray
-    $prResult = Invoke-GitHubWithRetry -Command "gh pr list --repo dotnet/maui --state open --search 'label:partner/syncfusion' --limit 25 --json $jsonFields" -Description "fetch partner PRs"
+    $prResult = Invoke-GitHubWithRetry -Arguments @("pr", "list", "--repo", "dotnet/maui", "--state", "open", "--search", "label:partner/syncfusion", "--limit", "25", "--json", $jsonFields) -Description "fetch partner PRs"
     $prs = $prResult | ConvertFrom-Json
     $added = Add-UniquePRs -prs $prs -allPRs ([ref]$allPRs) -seenNumbers ([ref]$seenPRNumbers)
     Write-Host "    Partner: $added PRs" -ForegroundColor Gray
     
     # Query 4: Community PRs
     Write-Host "  Fetching community PRs..." -ForegroundColor Gray
-    $prResult = Invoke-GitHubWithRetry -Command "gh pr list --repo dotnet/maui --state open --search 'label:`"community ✨`"' --limit 25 --json $jsonFields" -Description "fetch community PRs"
+    $prResult = Invoke-GitHubWithRetry -Arguments @("pr", "list", "--repo", "dotnet/maui", "--state", "open", "--search", 'label:"community ✨"', "--limit", "25", "--json", $jsonFields) -Description "fetch community PRs"
     $prs = $prResult | ConvertFrom-Json
     $added = Add-UniquePRs -prs $prs -allPRs ([ref]$allPRs) -seenNumbers ([ref]$seenPRNumbers)
     Write-Host "    Community: $added PRs" -ForegroundColor Gray
     
     # Query 5: Recently updated PRs (sorted by updated date)
     Write-Host "  Fetching recently updated PRs..." -ForegroundColor Gray
-    $prResult = Invoke-GitHubWithRetry -Command "gh pr list --repo dotnet/maui --state open --search 'sort:updated-desc' --limit 25 --json $jsonFields" -Description "fetch recently updated PRs"
+    $prResult = Invoke-GitHubWithRetry -Arguments @("pr", "list", "--repo", "dotnet/maui", "--state", "open", "--search", "sort:updated-desc", "--limit", "25", "--json", $jsonFields) -Description "fetch recently updated PRs"
     $prs = $prResult | ConvertFrom-Json
     $added = Add-UniquePRs -prs $prs -allPRs ([ref]$allPRs) -seenNumbers ([ref]$seenPRNumbers)
     Write-Host "    Recently updated: $added PRs" -ForegroundColor Gray
     
     # Query 6: Recently created PRs (sorted by created date)
     Write-Host "  Fetching recently created PRs..." -ForegroundColor Gray
-    $prResult = Invoke-GitHubWithRetry -Command "gh pr list --repo dotnet/maui --state open --search 'sort:created-desc' --limit 25 --json $jsonFields" -Description "fetch recently created PRs"
+    $prResult = Invoke-GitHubWithRetry -Arguments @("pr", "list", "--repo", "dotnet/maui", "--state", "open", "--search", "sort:created-desc", "--limit", "25", "--json", $jsonFields) -Description "fetch recently created PRs"
     $prs = $prResult | ConvertFrom-Json
     $added = Add-UniquePRs -prs $prs -allPRs ([ref]$allPRs) -seenNumbers ([ref]$seenPRNumbers)
     Write-Host "    Recently created: $added PRs" -ForegroundColor Gray
     
     # Query 7: Approved but not merged PRs
     Write-Host "  Fetching approved (not merged) PRs..." -ForegroundColor Gray
-    $prResult = Invoke-GitHubWithRetry -Command "gh pr list --repo dotnet/maui --state open --search 'review:approved' --limit 25 --json $jsonFields" -Description "fetch approved PRs"
+    $prResult = Invoke-GitHubWithRetry -Arguments @("pr", "list", "--repo", "dotnet/maui", "--state", "open", "--search", "review:approved", "--limit", "25", "--json", $jsonFields) -Description "fetch approved PRs"
     $prs = $prResult | ConvertFrom-Json
     $added = Add-UniquePRs -prs $prs -allPRs ([ref]$allPRs) -seenNumbers ([ref]$seenPRNumbers)
     Write-Host "    Approved (not merged): $added PRs" -ForegroundColor Gray
     
     # Query 8: Agent-reviewed PRs
     Write-Host "  Fetching agent-reviewed PRs..." -ForegroundColor Gray
-    $prResult = Invoke-GitHubWithRetry -Command "gh pr list --repo dotnet/maui --state open --search 'label:s/agent-reviewed' --limit 25 --json $jsonFields" -Description "fetch agent-reviewed PRs"
+    $prResult = Invoke-GitHubWithRetry -Arguments @("pr", "list", "--repo", "dotnet/maui", "--state", "open", "--search", "label:s/agent-reviewed", "--limit", "25", "--json", $jsonFields) -Description "fetch agent-reviewed PRs"
     $prs = $prResult | ConvertFrom-Json
     $added = Add-UniquePRs -prs $prs -allPRs ([ref]$allPRs) -seenNumbers ([ref]$seenPRNumbers)
     Write-Host "    Agent-reviewed: $added PRs" -ForegroundColor Gray
     
     # Query 9: Agent-approved PRs
     Write-Host "  Fetching agent-approved PRs..." -ForegroundColor Gray
-    $prResult = Invoke-GitHubWithRetry -Command "gh pr list --repo dotnet/maui --state open --search 'label:s/agent-approved' --limit 25 --json $jsonFields" -Description "fetch agent-approved PRs"
+    $prResult = Invoke-GitHubWithRetry -Arguments @("pr", "list", "--repo", "dotnet/maui", "--state", "open", "--search", "label:s/agent-approved", "--limit", "25", "--json", $jsonFields) -Description "fetch agent-approved PRs"
     $prs = $prResult | ConvertFrom-Json
     $added = Add-UniquePRs -prs $prs -allPRs ([ref]$allPRs) -seenNumbers ([ref]$seenPRNumbers)
     Write-Host "    Agent-approved: $added PRs" -ForegroundColor Gray
@@ -458,7 +458,7 @@ Write-Host "Fetching open PRs from dotnet/docs-maui..." -ForegroundColor Cyan
 
 $docsMauiPRs = @()
 try {
-    $docsResult = Invoke-GitHubWithRetry -Command "gh pr list --repo dotnet/docs-maui --state open --search 'sort:updated-desc' --limit 50 --json $jsonFields" -Description "fetch PRs from dotnet/docs-maui"
+    $docsResult = Invoke-GitHubWithRetry -Arguments @("pr", "list", "--repo", "dotnet/docs-maui", "--state", "open", "--search", "sort:updated-desc", "--limit", "50", "--json", $jsonFields) -Description "fetch PRs from dotnet/docs-maui"
     $docsMauiPRs = $docsResult | ConvertFrom-Json
     
     # Filter out drafts
