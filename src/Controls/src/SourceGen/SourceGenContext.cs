@@ -37,6 +37,7 @@ class SourceGenContext(IndentedTextWriter writer, Compilation compilation, Sourc
 	public IDictionary<INode, object> Values { get; } = new Dictionary<INode, object>();
 	public IDictionary<INode, ILocalValue> Variables { get; } = new Dictionary<INode, ILocalValue>();
 	public IReadOnlyDictionary<ElementNode, string>? NodeIds { get; set; }
+	public bool UseLocalResourceFactories { get; set; }
 	public void ReportDiagnostic(Diagnostic diagnostic)
 	{
 		if (ParentContext is not null)

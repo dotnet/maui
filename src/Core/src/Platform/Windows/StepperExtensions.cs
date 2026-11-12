@@ -26,6 +26,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateBackground(this MauiStepper platformStepper, IStepper stepper)
 		{
+			ControlExtensions.BackgroundImageRequests.Begin(platformStepper);
 			var background = stepper?.Background;
 			if (background == null)
 			{
