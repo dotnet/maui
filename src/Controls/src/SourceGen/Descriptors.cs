@@ -162,6 +162,14 @@ namespace Microsoft.Maui.Controls.SourceGen
 			defaultSeverity: DiagnosticSeverity.Error,
 			isEnabledByDefault: true);
 
+		internal static DiagnosticDescriptor ConflictingXmlnsType = new DiagnosticDescriptor(
+			id: "MAUIX2020",
+			title: new LocalizableResourceString(nameof(MauiGResources.ConflictingXmlnsTypeTitle), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			messageFormat: new LocalizableResourceString(nameof(MauiGResources.ConflictingXmlnsTypeMessage), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			category: "XamlInflation",
+			defaultSeverity: DiagnosticSeverity.Warning,
+			isEnabledByDefault: true);
+
 		public static DiagnosticDescriptor MemberResolution = new DiagnosticDescriptor(
 			id: "MAUIX2002",
 			title: new LocalizableResourceString(nameof(MauiGResources.SymbolResolution), MauiGResources.ResourceManager, typeof(MauiGResources)),

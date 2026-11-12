@@ -834,14 +834,13 @@ namespace Microsoft.Maui.Controls
 
 		static void BindingContextPropertyBindingChanging(BindableObject bindable, BindingBase oldBindingBase, BindingBase newBindingBase)
 		{
+			// Applies to every BindingBase (Binding, TypedBinding, MultiBinding), not only Binding (#10792)
 			object context = bindable._inheritedContext?.Target;
-			var oldBinding = oldBindingBase as Binding;
-			var newBinding = newBindingBase as Binding;
 
-			if (context == null && oldBinding != null)
-				context = oldBinding.Context;
-			if (context != null && newBinding != null)
-				newBinding.Context = context;
+			if (context == null && oldBindingBase != null)
+				context = oldBindingBase.Context;
+			if (context != null && newBindingBase != null)
+				newBindingBase.Context = context;
 		}
 
 		static void BindingContextPropertyChanged(BindableObject bindable, object oldvalue, object newvalue)

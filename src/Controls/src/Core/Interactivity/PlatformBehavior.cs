@@ -44,6 +44,9 @@ public abstract partial class PlatformBehavior<TView, TPlatformView> : Behavior<
 		{
 			ve.Loaded += OnLoaded;
 			ve.Unloaded += OnUnloaded;
+			// Loaded can fire before the element has a Handler (without a platform, it only needs a Window),
+			// so the Handler has to be watched as well
+			ve.HandlerChanged += OnHandlerChanged;
 		}
 		else
 		{
@@ -61,6 +64,7 @@ public abstract partial class PlatformBehavior<TView, TPlatformView> : Behavior<
 		{
 			ve.Loaded -= OnLoaded;
 			ve.Unloaded -= OnUnloaded;
+			ve.HandlerChanged -= OnHandlerChanged;
 		}
 		else
 		{
@@ -74,7 +78,7 @@ public abstract partial class PlatformBehavior<TView, TPlatformView> : Behavior<
 
 	void FireAttachedTo(TView bindable)
 	{
-		if (bindable?.Handler?.PlatformView is TPlatformView platformView)
+		if (bindable?.Handler?.PlatformView is TPlatformView platformView && platformView != _platformView)
 		{
 			_platformView = platformView;
 			OnAttachedTo(bindable, platformView);
@@ -100,22 +104,19 @@ public abstract partial class PlatformBehavior<TView, TPlatformView> : Behavior<
 
 	void OnLoaded(object? sender, EventArgs e)
 	{
-		if (sender is TView view && view.Handler.PlatformView is TPlatformView platformView)
-		{
-			OnAttachedTo(view, platformView);
-			_platformView = platformView;
-		}
+		if (sender is TView view)
+			FireAttachedTo(view);
 	}
 
 	void OnHandlerChanged(object? sender, EventArgs e)
 	{
-		if (sender is not TView visualElement)
+		if (sender is not TView view)
 			return;
 
-		if (visualElement.Handler is not null)
-			FireAttachedTo(visualElement);
-		else
-			FireDetachedFrom(visualElement);
+		if (view.Handler is null)
+			FireDetachedFrom(view);
+		else if (view is not VisualElement ve || ve.IsLoaded)
+			FireAttachedTo(view);
 	}
 
 	/// <summary>

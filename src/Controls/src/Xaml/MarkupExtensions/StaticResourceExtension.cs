@@ -29,6 +29,18 @@ namespace Microsoft.Maui.Controls.Xaml
 			if (!TryGetResource(Key, valueProvider.ParentObjects, out var resource, out var resourceDictionary)
 				&& !TryGetApplicationLevelResource(Key, out resource, out resourceDictionary))
 			{
+				// A base style living in a sibling merged dictionary isn't reachable while this
+				// ResourceDictionary is still being loaded (#24667): defer the lookup to apply time.
+				if (valueProvider.TargetObject is Style style
+					&& valueProvider.TargetProperty is PropertyInfo propertyInfo
+					&& propertyInfo.Name == nameof(Style.BasedOn)
+					&& serviceProvider.GetService(typeof(IRootObjectProvider)) is IRootObjectProvider rootProvider
+					&& rootProvider.RootObject is ResourceDictionary)
+				{
+					style.BaseResourceKey = Key;
+					return null;
+				}
+
 				var xmlLineInfo = serviceProvider.GetService(typeof(IXmlLineInfoProvider)) is IXmlLineInfoProvider xmlLineInfoProvider ? xmlLineInfoProvider.XmlLineInfo : null;
 				var ex = new XamlParseException($"StaticResource not found for key {Key}", xmlLineInfo);
 				if (Controls.Internals.ResourceLoader.ExceptionHandler2 is var ehandler && ehandler != null)

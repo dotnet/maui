@@ -148,6 +148,29 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact]
+		public async Task MovingToWindowAfterDisconnectDoesNotThrow()
+		{
+			// https://github.com/dotnet/maui/issues/39949
+			var image = new TStub
+			{
+				Source = new FileImageSourceStub("dotnet_bot.png"),
+			};
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler(image);
+				await image.WaitUntilLoaded();
+
+				var platformImageView = GetPlatformImageView(handler);
+				((IElementHandler)handler).DisconnectHandler();
+
+				// UIKit can remove the view from its window after the handler was disconnected,
+				// e.g. the TitleView of a page that is popped
+				platformImageView.MovedToWindow();
+			});
+		}
+
 		protected virtual bool UsesAnimatedImages => true;
 
 		UIImageView GetPlatformImageView(IImageHandler imageHandler) =>

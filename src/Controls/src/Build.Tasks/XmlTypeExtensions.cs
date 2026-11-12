@@ -106,7 +106,9 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 			IEnumerable<TypeReference> types = xmlType.GetTypeReferences(xmlnsDefinitions, module.Assembly.Name.Name, (typeInfo) =>
 			{
-				if (typeInfo.clrNamespace.StartsWith("http")) //aggregated xmlns, might result in a typeload exception
+				// Aggregated XML namespace targets are not CLR namespaces.
+				if (typeInfo.clrNamespace.StartsWith("http:", StringComparison.Ordinal)
+					|| typeInfo.clrNamespace.StartsWith("https:", StringComparison.Ordinal))
 					return null;
 				string typeName = typeInfo.typeName.Replace('+', '/'); //Nested types
 				var type = module.GetTypeDefinition(cache, (typeInfo.assemblyName, typeInfo.clrNamespace, typeName));

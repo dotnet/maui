@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading;
 using System.Xml;
 
@@ -34,6 +35,53 @@ static class GeneratorHelpers
 		return kind == SyntaxKind.None
 			? identifier
 			: $"@{identifier}";
+	}
+
+	//marker comment emitted into the generated body when a type resolution is deferred to the
+	//C# compiler (see KnownMarkups). It travels with the code that needs it (InitializeComponent,
+	//UpdateComponent, local methods, ...) and LiftFallbackUsings turns it into using directives.
+	public const string FallbackUsingMarker = "//__maui.sg.fallbackusing:";
+
+	public static bool IsValidClrNamespace(string ns)
+	{
+		if (string.IsNullOrEmpty(ns))
+			return false;
+		foreach (var part in ns.Split('.'))
+			if (!SyntaxFacts.IsValidIdentifier(part))
+				return false;
+		return true;
+	}
+
+	/// <summary>
+	/// Removes the <see cref="FallbackUsingMarker"/> lines from a generated file and inserts the
+	/// namespaces they carry as using directives right before the namespace declaration.
+	/// </summary>
+	public static string LiftFallbackUsings(string code, string newLine)
+	{
+		if (code.IndexOf(FallbackUsingMarker, StringComparison.Ordinal) < 0)
+			return code;
+
+		var usings = new SortedSet<string>(StringComparer.Ordinal);
+		var sb = new StringBuilder(code.Length);
+		var pos = 0;
+		while (pos < code.Length)
+		{
+			var eol = code.IndexOf('\n', pos);
+			var end = eol < 0 ? code.Length : eol + 1;
+			var line = code.Substring(pos, end - pos);
+			var trimmed = line.Trim();
+			if (trimmed.StartsWith(FallbackUsingMarker, StringComparison.Ordinal))
+				usings.Add(trimmed.Substring(FallbackUsingMarker.Length));
+			else
+				sb.Append(line);
+			pos = end;
+		}
+
+		code = sb.ToString();
+		var nsIndex = code.IndexOf("namespace ", StringComparison.Ordinal);
+		if (nsIndex < 0)
+			return code;
+		return code.Insert(nsIndex, string.Concat(usings.Select(u => $"using {u};{newLine}")) + newLine);
 	}
 
 	public static ProjectItem? ComputeProjectItem((AdditionalText additionalText, AnalyzerConfigOptionsProvider optionsProvider) tuple, CancellationToken cancellationToken, HotReloadSessionToken hotReloadSessionToken)
@@ -187,6 +235,9 @@ static class GeneratorHelpers
 	}
 
 	public static AssemblyAttributes GetAssemblyAttributes(Compilation compilation, CancellationToken cancellationToken)
+		=> GetAssemblyAttributes(compilation, [], cancellationToken);
+
+	public static AssemblyAttributes GetAssemblyAttributes(Compilation compilation, IReadOnlyList<string> globalUsingNamespaces, CancellationToken cancellationToken)
 	{
 		// [assembly: XmlnsDefinition]
 		INamedTypeSymbol? xmlnsDefinitonAttribute = compilation.GetTypesByMetadataName(typeof(XmlnsDefinitionAttribute).FullName)
@@ -285,7 +336,7 @@ static class GeneratorHelpers
 			}
 		}
 
-		return new AssemblyAttributes(xmlnsDefinitionsList, xmlnsPrefixes, [.. globalGeneratedXmlnsDefinitions.Distinct()], internalsVisible, clrNamespacesForXmlns);
+		return new AssemblyAttributes(xmlnsDefinitionsList, xmlnsPrefixes, [.. globalGeneratedXmlnsDefinitions.Distinct()], internalsVisible, clrNamespacesForXmlns, globalUsingNamespaces);
 	}
 
 	static void ApplyTransforms(XmlNode node, string? targetFramework, XmlNamespaceManager nsmgr)

@@ -32,6 +32,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateBackground(this TextBox textBox, IView view)
 		{
+			ControlExtensions.BackgroundImageRequests.Begin(textBox);
 			var brush = view.Background?.ToPlatform();
 
 			if (brush is null)
