@@ -171,7 +171,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void ClassChangesPreserveExplicitStyleAndLocalValues()
+		public void ClassChangesRespectStylePrecedenceAndPreserveLocalValues()
 		{
 			var span = new Span
 			{
@@ -192,10 +192,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Content = label
 			};
 
-			Assert.Equal(Colors.Green, span.TextColor);
+			Assert.Equal(Colors.Blue, span.TextColor);
 			span.StyleClass = new[] { "warning" };
-			Assert.Equal(Colors.Green, span.TextColor);
+			Assert.Equal(Colors.Red, span.TextColor);
 			span.TextColor = Colors.Purple;
+			span.StyleClass = new[] { "accent" };
+			Assert.Equal(Colors.Purple, span.TextColor);
 			span.StyleClass = null;
 			Assert.Equal(Colors.Purple, span.TextColor);
 			span.ClearValue(Span.TextColorProperty);

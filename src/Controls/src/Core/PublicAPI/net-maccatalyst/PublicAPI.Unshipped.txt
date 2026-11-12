@@ -1,1 +1,5 @@
-#nullable enable
+﻿#nullable enable
+~Microsoft.Maui.Controls.Span.StyleClass.get -> System.Collections.Generic.IList<string>
+~Microsoft.Maui.Controls.Span.StyleClass.set -> void
+~Microsoft.Maui.Controls.Span.class.get -> System.Collections.Generic.IList<string>
+~Microsoft.Maui.Controls.Span.class.set -> void
