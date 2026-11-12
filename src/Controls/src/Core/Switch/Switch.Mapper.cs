@@ -15,7 +15,8 @@ namespace Microsoft.Maui.Controls
 			VisualElement.RemapIfNeeded();
 
 #if IOS || MACCATALYST
-			SwitchHandler.Mapper.ReplaceMapping<Switch, ISwitchHandler>(nameof(OnColor), MapOnColor);
+			// Prepended, so an OnColor mapping that an app adds before the first Switch is created still runs
+			SwitchHandler.Mapper.PrependToMapping<Switch, ISwitchHandler>(nameof(OnColor), MapOnColor);
 #endif
 		}
 
