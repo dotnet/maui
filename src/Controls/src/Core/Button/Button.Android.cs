@@ -12,6 +12,7 @@ namespace Microsoft.Maui.Controls
 		public static void MapText(IButtonHandler handler, Button button)
 		{
 			handler.PlatformView?.UpdateText(button);
+			handler.UpdateValue(nameof(HorizontalTextAlignment));
 		}
 
 		public static void MapText(ButtonHandler handler, Button button) =>

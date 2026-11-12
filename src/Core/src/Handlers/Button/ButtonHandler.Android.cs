@@ -26,6 +26,10 @@ namespace Microsoft.Maui.Handlers
 		// Cached default Material theme text colors, captured before any MAUI property mapping.
 		// Restored when TextColor is set to null (e.g. when a VisualState setter is unapplied).
 		ColorStateList? _defaultTextColors;
+		GravityFlags _defaultGravity;
+		global::Android.Views.TextAlignment _defaultTextAlignment;
+		bool _horizontalTextAlignmentSet;
+		bool _verticalTextAlignmentSet;
 
 		protected override MaterialButton CreatePlatformView()
 		{
@@ -53,6 +57,9 @@ namespace Microsoft.Maui.Handlers
 
 			// Capture Material theme defaults before MAUI property mapping is applied
 			_defaultTextColors = platformView.TextColors;
+			_defaultGravity = platformView.Gravity;
+			_defaultTextAlignment = platformView.TextAlignment;
+			_horizontalTextAlignmentSet = _verticalTextAlignmentSet = false;
 
 			base.ConnectHandler(platformView);
 		}
@@ -69,13 +76,37 @@ namespace Microsoft.Maui.Handlers
 			platformView.LayoutChange -= OnPlatformViewLayoutChange;
 
 			_defaultTextColors = null;
+			_horizontalTextAlignmentSet = _verticalTextAlignmentSet = false;
+			if (platformView is MauiMaterialButton mauiButton)
+				mauiButton.AlignTextAndImage = false;
 
 			ImageSourceLoader.Reset();
 
 			base.DisconnectHandler(platformView);
 		}
 
-		// This is a Android-specific mapping
+		internal void UpdateTextAlignment(TextAlignment? horizontal, TextAlignment? vertical)
+		{
+			if (PlatformView is not { } platformView)
+				return;
+
+			const GravityFlags horizontalMask = GravityFlags.HorizontalGravityMask | GravityFlags.RelativeLayoutDirection;
+			var gravity = platformView.Gravity;
+			if (horizontal.HasValue || _horizontalTextAlignmentSet)
+			{
+				gravity = (gravity & ~horizontalMask) | (horizontal?.ToHorizontalGravityFlags() ?? (_defaultGravity & horizontalMask));
+				platformView.TextAlignment = horizontal?.ToTextAlignment() ?? _defaultTextAlignment;
+			}
+			if (vertical.HasValue || _verticalTextAlignmentSet)
+				gravity = (gravity & ~GravityFlags.VerticalGravityMask) | (vertical?.ToVerticalGravityFlags() ?? (_defaultGravity & GravityFlags.VerticalGravityMask));
+			platformView.Gravity = gravity;
+			_horizontalTextAlignmentSet = horizontal.HasValue;
+			_verticalTextAlignmentSet = vertical.HasValue;
+			if (platformView is MauiMaterialButton mauiButton)
+				mauiButton.AlignTextAndImage = horizontal.HasValue || vertical.HasValue;
+			platformView.Invalidate();
+		}
+
 		public static void MapBackground(IButtonHandler handler, IButton button)
 		{
 			handler.PlatformView?.UpdateBackground(button);

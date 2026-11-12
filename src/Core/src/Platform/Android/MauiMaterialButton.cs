@@ -21,6 +21,9 @@ namespace Microsoft.Maui.Platform
 		// custom layout pass where we simply swap the icon from the top to the
 		// bottom using SetCompoundDrawablesRelative.
 		internal const int IconGravityBottom = 0x1000;
+		global::Android.Graphics.Rect? _alignmentIconBounds;
+
+		internal bool AlignTextAndImage { get; set; }
 
 		public MauiMaterialButton(Context context)
 			: base(MauiMaterialContextThemeWrapper.Create(context))
@@ -93,6 +96,109 @@ namespace Microsoft.Maui.Platform
 					icon.SetBounds(0, 0, icon.IntrinsicWidth, icon.IntrinsicHeight);
 				}
 			}
+		}
+
+		protected override void OnDraw(global::Android.Graphics.Canvas canvas)
+		{
+			if (!AlignTextAndImage || Icon is not { } icon || Layout is not { } layout || Length() == 0)
+			{
+				base.OnDraw(canvas);
+				return;
+			}
+
+			// TextView anchors compound images separately from text. Move the image next to the
+			// actual text block, then translate both together without moving the button background.
+			var textLeft = float.MaxValue;
+			var textRight = float.MinValue;
+			for (var line = 0; line < layout.LineCount; line++)
+			{
+				textLeft = Math.Min(textLeft, layout.GetLineLeft(line));
+				textRight = Math.Max(textRight, layout.GetLineRight(line));
+			}
+			textLeft += CompoundPaddingLeft;
+			textRight += CompoundPaddingLeft;
+			var textHeight = layout.Height;
+			var verticalSpace = Math.Max(0, Height - ExtendedPaddingTop - ExtendedPaddingBottom - textHeight);
+			var verticalGravity = Gravity & GravityFlags.VerticalGravityMask;
+			var textTop = ExtendedPaddingTop + (verticalGravity == GravityFlags.Top ? 0
+				: verticalGravity == GravityFlags.Bottom ? verticalSpace : verticalSpace / 2f);
+
+			var imageWidth = IconSize > 0 ? IconSize : icon.IntrinsicWidth;
+			var imageHeight = IconSize > 0 ? IconSize : icon.IntrinsicHeight;
+			float imageLeft;
+			float imageTop;
+			float nativeImageLeft;
+			float nativeImageTop;
+			if (IsIconGravityHorizontal)
+			{
+				var imageOnLeft = (IconGravity is IconGravityStart or IconGravityTextStart) != (LayoutDirection == global::Android.Views.LayoutDirection.Rtl);
+				imageLeft = imageOnLeft ? textLeft - IconPadding - imageWidth : textRight + IconPadding;
+				imageTop = textTop + (textHeight - imageHeight) / 2f;
+				nativeImageLeft = imageOnLeft ? PaddingLeft : Width - PaddingRight - imageWidth;
+				nativeImageTop = CompoundPaddingTop + (Height - CompoundPaddingTop - CompoundPaddingBottom - imageHeight) / 2f;
+			}
+			else
+			{
+				imageLeft = (textLeft + textRight - imageWidth) / 2f;
+				imageTop = ForceBottomIconGravity ? textTop + textHeight + IconPadding : textTop - IconPadding - imageHeight;
+				nativeImageLeft = CompoundPaddingLeft + (Width - CompoundPaddingLeft - CompoundPaddingRight - imageWidth) / 2f;
+				nativeImageTop = ForceBottomIconGravity ? Height - PaddingBottom - imageHeight : PaddingTop;
+			}
+
+			var groupLeft = Math.Min(textLeft, imageLeft);
+			var groupTop = Math.Min(textTop, imageTop);
+			var groupWidth = Math.Max(textRight, imageLeft + imageWidth) - groupLeft;
+			var groupHeight = Math.Max(textTop + textHeight, imageTop + imageHeight) - groupTop;
+			var horizontalSpace = Math.Max(0, Width - PaddingLeft - PaddingRight - groupWidth);
+			var groupVerticalSpace = Math.Max(0, Height - PaddingTop - PaddingBottom - groupHeight);
+			var horizontalGravity = TextAlignment switch
+			{
+				global::Android.Views.TextAlignment.ViewStart => GravityFlags.Start,
+				global::Android.Views.TextAlignment.ViewEnd => GravityFlags.End,
+				global::Android.Views.TextAlignment.Center => GravityFlags.CenterHorizontal,
+				global::Android.Views.TextAlignment.TextStart => layout.GetParagraphDirection(0) == global::Android.Text.TextLayoutDirection.LeftToRight ? GravityFlags.Left : GravityFlags.Right,
+				global::Android.Views.TextAlignment.TextEnd => layout.GetParagraphDirection(0) == global::Android.Text.TextLayoutDirection.LeftToRight ? GravityFlags.Right : GravityFlags.Left,
+				_ => Gravity & (GravityFlags.HorizontalGravityMask | GravityFlags.RelativeLayoutDirection)
+			};
+			if ((horizontalGravity & GravityFlags.RelativeLayoutDirection) != 0 && LayoutDirection == global::Android.Views.LayoutDirection.Rtl)
+			{
+				horizontalGravity &= GravityFlags.HorizontalGravityMask;
+				horizontalGravity = horizontalGravity == GravityFlags.Left ? GravityFlags.Right
+					: horizontalGravity == GravityFlags.Right ? GravityFlags.Left : horizontalGravity;
+			}
+			else
+				horizontalGravity &= GravityFlags.HorizontalGravityMask;
+			var targetLeft = PaddingLeft + (horizontalGravity == GravityFlags.Left ? 0
+				: horizontalGravity == GravityFlags.Right ? horizontalSpace : horizontalSpace / 2f);
+			var targetTop = PaddingTop + (verticalGravity == GravityFlags.Top ? 0
+				: verticalGravity == GravityFlags.Bottom ? groupVerticalSpace : groupVerticalSpace / 2f);
+
+			var bounds = _alignmentIconBounds ??= new global::Android.Graphics.Rect();
+			icon.CopyBounds(bounds);
+			var left = (int)Math.Round(imageLeft - nativeImageLeft);
+			var top = (int)Math.Round(imageTop - nativeImageTop);
+			icon.SetBounds(left, top, left + imageWidth, top + imageHeight);
+			var saveCount = canvas.Save();
+			try
+			{
+				canvas.Translate(targetLeft - groupLeft, targetTop - groupTop);
+				base.OnDraw(canvas);
+			}
+			finally
+			{
+				canvas.RestoreToCount(saveCount);
+				icon.SetBounds(bounds.Left, bounds.Top, bounds.Right, bounds.Bottom);
+			}
+		}
+
+		protected override void Dispose(bool disposing)
+		{
+			if (disposing)
+			{
+				_alignmentIconBounds?.Dispose();
+				_alignmentIconBounds = null;
+			}
+			base.Dispose(disposing);
 		}
 
 		void CalculateIconSize(int widthMeasureSpec, int heightMeasureSpec)

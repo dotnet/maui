@@ -7,15 +7,189 @@ using AndroidX.AppCompat.Widget;
 using AndroidX.Core.Widget;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Xunit;
+using GravityFlags = Android.Views.GravityFlags;
+using MeasureSpecMode = Android.Views.MeasureSpecMode;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	public partial class ButtonTests
 	{
+		[Fact]
+		public async Task NativeAlignmentIsNotRewrittenWhenUnset()
+		{
+			var button = new Button { Text = "Initial title" };
+			var handler = await CreateHandlerAsync<ButtonHandler>(button);
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var platform = handler.PlatformView;
+				var gravity = GravityFlags.End | GravityFlags.Bottom;
+				platform.Gravity = gravity;
+				platform.TextAlignment = global::Android.Views.TextAlignment.ViewEnd;
+				button.Text = "Updated title";
+				Assert.Equal(gravity, platform.Gravity);
+				Assert.Equal(global::Android.Views.TextAlignment.ViewEnd, platform.TextAlignment);
+			});
+		}
+
+		[Theory]
+		[InlineData(TextAlignment.Start)]
+		[InlineData(TextAlignment.Center)]
+		[InlineData(TextAlignment.End)]
+		public async Task NativeTextAlignmentCanBeChangedAndCleared(TextAlignment alignment)
+		{
+			var button = new Button { Text = "First line\nSecond line" };
+			var handler = await CreateHandlerAsync<ButtonHandler>(button);
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var platform = handler.PlatformView;
+				var originalGravity = platform.Gravity;
+				var originalTextAlignment = platform.TextAlignment;
+				const GravityFlags horizontalMask = GravityFlags.HorizontalGravityMask | GravityFlags.RelativeLayoutDirection;
+				var horizontal = alignment switch
+				{
+					TextAlignment.Start => GravityFlags.Start,
+					TextAlignment.End => GravityFlags.End,
+					_ => GravityFlags.CenterHorizontal
+				};
+				var vertical = alignment switch
+				{
+					TextAlignment.Start => GravityFlags.Top,
+					TextAlignment.End => GravityFlags.Bottom,
+					_ => GravityFlags.CenterVertical
+				};
+
+				button.HorizontalTextAlignment = alignment;
+				Assert.Equal(horizontal, platform.Gravity & horizontalMask);
+				Assert.Equal(originalGravity & GravityFlags.VerticalGravityMask, platform.Gravity & GravityFlags.VerticalGravityMask);
+				Assert.Equal(alignment switch
+				{
+					TextAlignment.Start => global::Android.Views.TextAlignment.ViewStart,
+					TextAlignment.End => global::Android.Views.TextAlignment.ViewEnd,
+					_ => global::Android.Views.TextAlignment.Center
+				}, platform.TextAlignment);
+
+				button.VerticalTextAlignment = alignment;
+				Assert.Equal(vertical, platform.Gravity & GravityFlags.VerticalGravityMask);
+				button.ClearValue(Button.HorizontalTextAlignmentProperty);
+				Assert.Equal(originalGravity & horizontalMask, platform.Gravity & horizontalMask);
+				Assert.Equal(originalTextAlignment, platform.TextAlignment);
+				Assert.Equal(vertical, platform.Gravity & GravityFlags.VerticalGravityMask);
+
+				button.Text = string.Empty;
+				Assert.Equal(originalGravity, platform.Gravity);
+				button.Text = "Restored title";
+				Assert.Equal(vertical, platform.Gravity & GravityFlags.VerticalGravityMask);
+				button.ClearValue(Button.VerticalTextAlignmentProperty);
+				Assert.Equal(originalGravity, platform.Gravity);
+			});
+		}
+
+		[Theory]
+		[InlineData(Button.ButtonContentLayout.ImagePosition.Left, false)]
+		[InlineData(Button.ButtonContentLayout.ImagePosition.Top, false)]
+		[InlineData(Button.ButtonContentLayout.ImagePosition.Right, false)]
+		[InlineData(Button.ButtonContentLayout.ImagePosition.Bottom, false)]
+		[InlineData(Button.ButtonContentLayout.ImagePosition.Left, true)]
+		[InlineData(Button.ButtonContentLayout.ImagePosition.Top, true)]
+		[InlineData(Button.ButtonContentLayout.ImagePosition.Right, true)]
+		[InlineData(Button.ButtonContentLayout.ImagePosition.Bottom, true)]
+		public async Task ImageAndTextGroupRendersAtRequestedAlignment(Button.ButtonContentLayout.ImagePosition position, bool rtl)
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<Button, ButtonHandler>();
+				});
+			});
+			var button = new Button
+			{
+				Text = "A\nB",
+				ImageSource = "red.png",
+				TextColor = Colors.Blue,
+				BackgroundColor = Colors.White,
+				LineBreakMode = LineBreakMode.WordWrap,
+				FontSize = 20,
+				WidthRequest = 300,
+				HeightRequest = 260,
+				HorizontalOptions = LayoutOptions.Center,
+				VerticalOptions = LayoutOptions.Center,
+				Padding = new Thickness(24, 12, 8, 20),
+				FlowDirection = rtl ? FlowDirection.RightToLeft : FlowDirection.LeftToRight,
+				ContentLayout = new Button.ButtonContentLayout(position, 8)
+			};
+
+			await CreateHandlerAndAddToWindow(button, async () =>
+			{
+				var platform = Assert.IsType<ButtonHandler>(button.Handler).PlatformView;
+				await AssertHelpers.AssertEventually(() => platform.Icon is not null && platform.Layout is not null && platform.Width > 0 && platform.Height > 0);
+				foreach (var alignment in new[] { TextAlignment.Start, TextAlignment.Center, TextAlignment.End })
+				{
+					button.HorizontalTextAlignment = button.VerticalTextAlignment = alignment;
+					var width = platform.Width;
+					var height = platform.Height;
+					platform.Measure(
+						global::Android.Views.View.MeasureSpec.MakeMeasureSpec(width, MeasureSpecMode.Exactly),
+						global::Android.Views.View.MeasureSpec.MakeMeasureSpec(height, MeasureSpecMode.Exactly));
+					platform.Layout(0, 0, width, height);
+
+					using var bitmap = global::Android.Graphics.Bitmap.CreateBitmap(width, height, global::Android.Graphics.Bitmap.Config.Argb8888!)
+						?? throw new InvalidOperationException("Could not capture the Button.");
+					using var canvas = new global::Android.Graphics.Canvas(bitmap);
+					platform.Draw(canvas);
+					var pixels = new int[width * height];
+					bitmap.GetPixels(pixels, 0, width, 0, 0, width, height);
+					var image = FindDrawnContent(pixels, width, height, 0xFF0000);
+					var text = FindDrawnContent(pixels, width, height, 0x0000FF);
+					var left = Math.Min(image.Left, text.Left);
+					var top = Math.Min(image.Top, text.Top);
+					var groupWidth = Math.Max(image.Right, text.Right) - left;
+					var groupHeight = Math.Max(image.Bottom, text.Bottom) - top;
+					var horizontal = rtl && alignment != TextAlignment.Center
+						? alignment == TextAlignment.Start ? TextAlignment.End : TextAlignment.Start : alignment;
+					var expectedLeft = platform.PaddingLeft + (width - platform.PaddingLeft - platform.PaddingRight - groupWidth) *
+						(horizontal == TextAlignment.Start ? 0 : horizontal == TextAlignment.End ? 1 : 0.5);
+					var expectedTop = platform.PaddingTop + (height - platform.PaddingTop - platform.PaddingBottom - groupHeight) *
+						(alignment == TextAlignment.Start ? 0 : alignment == TextAlignment.End ? 1 : 0.5);
+					// Glyph ink excludes the font's leading and descent, unlike native text layout bounds.
+					Assert.InRange(Math.Abs(left - expectedLeft), 0, platform.TextSize);
+					Assert.InRange(Math.Abs(top - expectedTop), 0, platform.TextSize);
+					var gap = position switch
+					{
+						Button.ButtonContentLayout.ImagePosition.Top => text.Top - image.Bottom,
+						Button.ButtonContentLayout.ImagePosition.Bottom => image.Top - text.Bottom,
+						_ => (position == Button.ButtonContentLayout.ImagePosition.Left) != rtl
+							? text.Left - image.Right : image.Left - text.Right
+					};
+					Assert.InRange(gap, platform.IconPadding, platform.IconPadding + platform.TextSize);
+				}
+			});
+		}
+
+		static Rect FindDrawnContent(int[] pixels, int width, int height, int rgb)
+		{
+			var left = width;
+			var top = height;
+			var right = -1;
+			var bottom = -1;
+			for (var y = 0; y < height; y++)
+				for (var x = 0; x < width; x++)
+					if ((pixels[y * width + x] & 0xFFFFFF) == rgb)
+					{
+						left = Math.Min(left, x);
+						top = Math.Min(top, y);
+						right = Math.Max(right, x);
+						bottom = Math.Max(bottom, y);
+					}
+			Assert.True(right >= left && bottom >= top, $"Expected rendered color 0x{rgb:X6}.");
+			return new Rect(left, top, right - left + 1, bottom - top + 1);
+		}
+
 		AppCompatButton GetPlatformButton(ButtonHandler buttonHandler) =>
 			(AppCompatButton)buttonHandler.PlatformView;
 

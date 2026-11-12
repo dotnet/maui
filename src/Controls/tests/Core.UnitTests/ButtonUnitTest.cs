@@ -8,6 +8,115 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	public class ButtonUnitTest : VisualElementCommandSourceTests<Button>
 	{
 		[Fact]
+		public void TextAlignmentDefaultsAreNotExplicit()
+		{
+			var button = new Button();
+			Assert.Equal(TextAlignment.Center, button.HorizontalTextAlignment);
+			Assert.Equal(TextAlignment.Center, button.VerticalTextAlignment);
+			Assert.False(button.IsSetExplicitly(Button.HorizontalTextAlignmentProperty));
+			Assert.False(button.IsSetExplicitly(Button.VerticalTextAlignmentProperty));
+			Assert.IsAssignableFrom<ITextAlignment>(button);
+		}
+
+		[Theory]
+		[InlineData(TextAlignment.Start)]
+		[InlineData(TextAlignment.Center)]
+		[InlineData(TextAlignment.End)]
+		public void TextAlignmentCanBeSetAndCleared(TextAlignment alignment)
+		{
+			var button = new Button
+			{
+				HorizontalTextAlignment = alignment,
+				VerticalTextAlignment = alignment
+			};
+			Assert.Equal(alignment, button.HorizontalTextAlignment);
+			Assert.Equal(alignment, button.VerticalTextAlignment);
+			Assert.True(button.IsSetExplicitly(Button.HorizontalTextAlignmentProperty));
+			Assert.True(button.IsSetExplicitly(Button.VerticalTextAlignmentProperty));
+
+			button.ClearValue(Button.HorizontalTextAlignmentProperty);
+			button.ClearValue(Button.VerticalTextAlignmentProperty);
+			Assert.False(button.IsSetExplicitly(Button.HorizontalTextAlignmentProperty));
+			Assert.False(button.IsSetExplicitly(Button.VerticalTextAlignmentProperty));
+		}
+
+		[Theory]
+		[InlineData(TextAlignment.Justify)]
+		[InlineData((TextAlignment)(-1))]
+		[InlineData((TextAlignment)100)]
+		public void UnsupportedTextAlignmentIsRejected(TextAlignment alignment)
+		{
+			var button = new Button
+			{
+				HorizontalTextAlignment = TextAlignment.Start,
+				VerticalTextAlignment = TextAlignment.End
+			};
+			button.HorizontalTextAlignment = alignment;
+			button.VerticalTextAlignment = alignment;
+			Assert.Equal(TextAlignment.Start, button.HorizontalTextAlignment);
+			Assert.Equal(TextAlignment.End, button.VerticalTextAlignment);
+		}
+
+		[Fact]
+		public void AlignmentBindingAndStyleCanBeRemoved()
+		{
+			var source = new Button { HorizontalTextAlignment = TextAlignment.End };
+			var button = new Button();
+			button.SetBinding(Button.HorizontalTextAlignmentProperty,
+				new Binding(nameof(Button.HorizontalTextAlignment), source: source));
+			Assert.Equal(TextAlignment.End, button.HorizontalTextAlignment);
+			source.HorizontalTextAlignment = TextAlignment.Center;
+			Assert.Equal(TextAlignment.Center, button.HorizontalTextAlignment);
+			Assert.True(button.IsSetExplicitly(Button.HorizontalTextAlignmentProperty));
+			button.RemoveBinding(Button.HorizontalTextAlignmentProperty);
+			source.HorizontalTextAlignment = TextAlignment.Start;
+			Assert.Equal(TextAlignment.Center, button.HorizontalTextAlignment);
+
+			button.Style = new Style(typeof(Button))
+			{
+				Setters = { new Setter { Property = Button.VerticalTextAlignmentProperty, Value = TextAlignment.Center } }
+			};
+			Assert.True(button.IsSetExplicitly(Button.VerticalTextAlignmentProperty));
+			button.Style = null;
+			Assert.False(button.IsSetExplicitly(Button.VerticalTextAlignmentProperty));
+		}
+
+		[Fact]
+		public void SettingAndClearingCenterUpdatesHandler()
+		{
+			var button = new Button();
+			var handler = new AlignmentRecordingHandler();
+			button.Handler = handler;
+			var updates = handler.Updates;
+			button.HorizontalTextAlignment = TextAlignment.Center;
+			Assert.True(handler.Updates > updates);
+			Assert.True(handler.HorizontalIsExplicit);
+			updates = handler.Updates;
+			button.ClearValue(Button.HorizontalTextAlignmentProperty);
+			Assert.True(handler.Updates > updates);
+			Assert.False(handler.HorizontalIsExplicit);
+		}
+
+		class AlignmentRecordingHandler : Microsoft.Maui.Handlers.ViewHandler<IButton, object>
+		{
+			public int Updates { get; private set; }
+			public bool HorizontalIsExplicit { get; private set; }
+
+			public AlignmentRecordingHandler() : base(new PropertyMapper<Button, AlignmentRecordingHandler>
+			{
+				[nameof(Button.HorizontalTextAlignment)] = (handler, button) =>
+				{
+					handler.Updates++;
+					handler.HorizontalIsExplicit = button.IsSetExplicitly(Button.HorizontalTextAlignmentProperty);
+				}
+			})
+			{
+			}
+
+			protected override object CreatePlatformView() => new object();
+		}
+
+		[Fact]
 		public void MeasureInvalidatedOnTextChange()
 		{
 			var button = new Button();
