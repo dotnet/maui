@@ -63,6 +63,10 @@ namespace Microsoft.Maui.Handlers
 
 		public void OnWindowChanged()
 		{
+			// Guard against calling after handler disconnect
+			if (!this.IsConnected())
+				return;
+
 			if (SourceLoader.SourceManager.RequiresReload(PlatformView))
 				UpdateValue(nameof(IImage.Source));
 		}
