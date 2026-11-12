@@ -172,10 +172,15 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateLineHeight(this TextView textView, ILabel label)
 		{
-			// Add the extra space as a fixed amount instead of a multiplier: Android multiplies each
-			// line's own height, and the first line's height also holds the font's top padding.
-			if (label.LineHeight >= 0 && textView.Paint?.GetFontMetricsInt() is { } fontMetrics)
-				textView.SetLineSpacing((fontMetrics.Descent - fontMetrics.Ascent) * ((float)label.LineHeight - 1), 1);
+			if (label.LineHeight < 0)
+				return;
+
+			// The line spacing multiplier also scales the font padding of the first line, making its gap
+			// larger. Below API 23 Controls toggles SetSingleLine, which replaces the TransformationMethod.
+			if (OperatingSystem.IsAndroidVersionAtLeast(23))
+				textView.TransformationMethod = new PlatformLineHeightTransformationMethod((float)label.LineHeight);
+			else
+				textView.SetLineSpacing(0, (float)label.LineHeight);
 		}
 
 		internal static void Focus(this TextView textView, FocusRequest request)
