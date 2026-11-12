@@ -87,7 +87,8 @@ namespace Microsoft.Maui.Controls.Handlers
                 return;
             }
 
-            var page = ((IShellContentController)currentContent).GetOrCreateContent();
+            var page = shell.GetCurrentShellPage() ??
+                ((IShellContentController)currentContent).GetOrCreateContent();
 
             if (page is null)
             {
