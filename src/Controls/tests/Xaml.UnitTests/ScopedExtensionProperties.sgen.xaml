@@ -11,6 +11,9 @@
 		</ResourceDictionary>
 	</ContentView.Resources>
 	<StackLayout>
+		<StackLayout.Resources>
+			<x:String x:Key="tagResource">from a resource</x:String>
+		</StackLayout.Resources>
 		<!-- the container is brought in scope by the element's default xmlns -->
 		<Label x:Name="label0" ScopedTag="from the default xmlns" />
 
@@ -32,5 +35,18 @@
 
 		<!-- naming the container explicitly disambiguates what is otherwise ambiguous -->
 		<Label x:Name="label4" scoped:ScopedAmbiguousAExtensions.ScopedAmbiguous="explicit wins" />
+
+		<!-- a string resource is converted to the extension property type, scoped or qualified -->
+		<Label x:Name="label7" ScopedTag="{StaticResource tagResource}" />
+		<Label x:Name="label8" scoped:LabelScopedExtensions.ScopedTag="{StaticResource tagResource}" />
+
+		<!-- the extension accessor is called, not a hand-written set_Impostor(Label, string) -->
+		<Label x:Name="label9" Impostor="from xaml" />
+
+		<!-- a plain CLR property wins over the extension property of the same name -->
+		<ScopedPrecedenceView x:Name="precedence" PlainClr="instance wins" />
+
+		<!-- an explicitly implemented interface property does not hide the extension property -->
+		<ScopedPrecedenceView x:Name="explicitInterface" ExplicitTag="from xaml" />
 	</StackLayout>
 </ContentPage>
