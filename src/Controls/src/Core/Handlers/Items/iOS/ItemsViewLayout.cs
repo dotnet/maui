@@ -506,7 +506,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					: UICollectionViewScrollPosition.Right;
 				ItemsViewScrollHelper.ForceScrollToLastItem(CollectionView, position);
 			}
-			else if (ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepItemsInView)
+			else if (ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepItemsInView
+				&& CollectionView?.DataSource is not CarouselViewController)
 			{
 				ItemsViewScrollHelper.ScrollToFirstItem(CollectionView, _itemsLayout.Orientation);
 			}
