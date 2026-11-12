@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Microsoft.Maui.Controls.Internals;
@@ -360,11 +362,91 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 		}
 
+		[Fact]
+		public void CanExecuteDoesNotRefreshCollectedButtonBindings()
+		{
+			var command = new CommandWithoutWeakEventHandler();
+			var liveButton = new Button { Command = command };
+			using var entered = new ManualResetEventSlim();
+			using var release = new ManualResetEventSlim();
+
+			try
+			{
+				CreateFinalizerGate(entered, release);
+				GC.Collect();
+				Assert.True(entered.Wait(TimeSpan.FromSeconds(10)), "The finalizer gate did not start.");
+
+				var abandonedButton = CreateAbandonedButton(command);
+				GC.Collect();
+				Assert.False(HasTarget(abandonedButton));
+
+				command.CanExecuteResult = false;
+				command.ChangeCanExecute();
+				Assert.False(liveButton.IsEnabled);
+
+				command.CanExecuteResult = true;
+				command.ChangeCanExecute();
+				Assert.True(liveButton.IsEnabled);
+			}
+			finally
+			{
+				release.Set();
+				GC.WaitForPendingFinalizers();
+				GC.KeepAlive(liveButton);
+				GC.KeepAlive(command);
+			}
+		}
+
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		static WeakReference<Button> CreateAbandonedButton(ICommand command)
+		{
+			var button = new Button { BindingContext = new NullCommandParameter() };
+			button.SetBinding(Button.CommandParameterProperty,
+				new TypedBinding<NullCommandParameter, object>(model => (model.Value, true), null, null));
+			button.Command = command;
+			return new WeakReference<Button>(button);
+		}
+
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		static bool HasTarget(WeakReference<Button> reference) => reference.TryGetTarget(out _);
+
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		static void CreateFinalizerGate(ManualResetEventSlim entered, ManualResetEventSlim release)
+		{
+			var gate = new FinalizerGate(entered, release);
+			GC.KeepAlive(gate);
+		}
+
+		class NullCommandParameter
+		{
+			public object Value => null;
+		}
+
+		sealed class FinalizerGate
+		{
+			readonly ManualResetEventSlim _entered;
+			readonly ManualResetEventSlim _release;
+
+			public FinalizerGate(ManualResetEventSlim entered, ManualResetEventSlim release)
+			{
+				_entered = entered;
+				_release = release;
+			}
+
+			~FinalizerGate()
+			{
+				_entered.Set();
+				_release.Wait(TimeSpan.FromSeconds(30));
+			}
+		}
+
 		class CommandWithoutWeakEventHandler : ICommand
 		{
 			public event EventHandler CanExecuteChanged;
 
-			public bool CanExecute(object parameter) => true;
+			public bool CanExecuteResult { get; set; } = true;
+
+			public bool CanExecute(object parameter) => CanExecuteResult;
 
 			public void Execute(object parameter) { }
 
