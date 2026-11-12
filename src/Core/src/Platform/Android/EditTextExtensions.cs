@@ -33,6 +33,10 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateText(this EditText editText, IEditor editor)
 		{
+			// Setting the same text again would move the cursor to the end and drop the selection
+			if ((editText.Text ?? string.Empty) == (editor.Text ?? string.Empty))
+				return;
+
 			editText.Text = editor.Text;
 			editText.SetSelection(editText.Text?.Length ?? 0);
 		}

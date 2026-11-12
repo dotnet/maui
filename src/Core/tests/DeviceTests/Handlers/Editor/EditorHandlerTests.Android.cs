@@ -51,6 +51,28 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.True(focusable);
 		}
 
+		[Theory(DisplayName = "Updating IsReadOnly Keeps The Selection")]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task UpdatingIsReadOnlyKeepsSelection(bool isReadOnly)
+		{
+			var editor = new EditorStub() { Text = "abcdef" };
+
+			var selection = await GetValueAsync(editor, handler =>
+			{
+				var editText = GetNativeEditor(handler);
+				editText.SetSelection(1, 4);
+
+				editor.IsReadOnly = isReadOnly;
+				handler.UpdateValue(nameof(IEditor.IsReadOnly));
+
+				return (editText.SelectionStart, editText.SelectionEnd);
+			});
+
+			Assert.Equal((1, 4), selection);
+			Assert.Equal(3, editor.SelectionLength);
+		}
+
 		[Fact(DisplayName = "CharacterSpacing Initializes Correctly")]
 		public async Task CharacterSpacingInitializesCorrectly()
 		{
