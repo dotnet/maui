@@ -101,7 +101,7 @@ namespace Microsoft.Maui.Platform
 				ThumbImageRequests.IsCurrent(nativeSlider, request) &&
 				thumbImageSource == slider.ThumbImageSource &&
 				slider.Handler == handler &&
-				(handler == null || (handler.VirtualView == slider && handler.PlatformView == nativeSlider));
+				(handler == null || (handler.VirtualView == slider && ReferenceEquals(handler.PlatformView, nativeSlider)));
 
 			if (thumbImageSource == null)
 			{
