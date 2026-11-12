@@ -25,7 +25,9 @@ namespace Microsoft.Maui.Controls.Platform
 
 			var inputType = editText.InputType;
 
+			// A read-only EditText has no InputType flags (TYPE_NULL), so check IsPassword too
 			bool isPasswordEnabled =
+				inputView is Entry { IsPassword: true } ||
 				(inputType & InputTypes.TextVariationPassword) == InputTypes.TextVariationPassword ||
 				(inputType & InputTypes.NumberVariationPassword) == InputTypes.NumberVariationPassword;
 

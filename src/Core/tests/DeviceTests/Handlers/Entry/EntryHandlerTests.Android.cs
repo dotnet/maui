@@ -13,6 +13,11 @@ using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Xunit;
 using AColor = Android.Graphics.Color;
+using AEditText = Android.Widget.EditText;
+using ALinearLayout = Android.Widget.LinearLayout;
+using AView = Android.Views.View;
+using AViewGroup = Android.Views.ViewGroup;
+using FocusSearchDirection = Android.Views.FocusSearchDirection;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -277,6 +282,48 @@ namespace Microsoft.Maui.DeviceTests
 
 				Assert.Null(handler.PlatformView.GetCompoundDrawables()[2]);
 			}));
+		}
+
+		[Theory(DisplayName = "Tab Navigation Enters And Leaves A ReadOnly Entry")]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task TabNavigationEntersAndLeavesReadOnlyEntry(bool material3)
+		{
+			var entries = new[]
+			{
+				new EntryStub() { Text = "Before" },
+				new EntryStub() { Text = "Read-only", IsReadOnly = true },
+				new EntryStub() { Text = "After" },
+			};
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var layout = new ALinearLayout(MauiContext.Context) { Orientation = global::Android.Widget.Orientation.Vertical };
+				var editTexts = new AEditText[entries.Length];
+
+				for (int i = 0; i < entries.Length; i++)
+				{
+					AView platformView = material3
+						? CreateHandler<EntryHandler2>(entries[i]).PlatformView
+						: CreateHandler<EntryHandler>(entries[i]).PlatformView;
+
+					// Android doesn't focus zero-sized views, and nothing lays these out with MAUI here
+					layout.AddView(platformView, new ALinearLayout.LayoutParams(AViewGroup.LayoutParams.MatchParent, 150));
+					editTexts[i] = platformView as AEditText ?? ((AViewGroup)platformView).GetChildrenOfType<AEditText>().First();
+				}
+
+				await layout.AttachAndRun(async () =>
+				{
+					editTexts[0].RequestFocus();
+					await editTexts[0].WaitForFocused();
+
+					// Tab and Shift+Tab move the focus to FocusSearch(Forward) and FocusSearch(Backward)
+					Assert.Equal(editTexts[1], editTexts[0].FocusSearch(FocusSearchDirection.Forward));
+					Assert.True(editTexts[1].RequestFocus());
+					Assert.Equal(editTexts[2], editTexts[1].FocusSearch(FocusSearchDirection.Forward));
+					Assert.Equal(editTexts[0], editTexts[1].FocusSearch(FocusSearchDirection.Backward));
+				});
+			});
 		}
 
 		[Fact(DisplayName = "Padding is the same after background changes")]

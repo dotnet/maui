@@ -200,7 +200,7 @@ public class EntryHandler2 : ViewHandler<IEntry, MauiMaterialTextInputLayout>
 		handler.UpdateValue(nameof(IEntry.Text));
 
 		handler.PlatformView.EditText?.UpdateIsReadOnly(entry);
-		MapClearButtonVisibility(handler, entry);
+		handler.UpdateValue(nameof(IEntry.ClearButtonVisibility));
 	}
 
 	public static void MapKeyboard(EntryHandler2 handler, IEntry entry)

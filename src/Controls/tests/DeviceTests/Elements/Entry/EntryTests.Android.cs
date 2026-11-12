@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Threading.Tasks;
 using AndroidX.AppCompat.Widget;
+using Google.Android.Material.TextField;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
@@ -70,6 +71,74 @@ namespace Microsoft.Maui.DeviceTests
 			await SetValueAsync<string, EntryHandler>(entry, "TEsT", SetPlatformText);
 
 			Assert.Equal(2, entry.CursorPosition);
+		}
+
+		[Fact]
+		public async Task ReadOnlyPasswordEntryIgnoresTextTransform()
+		{
+			var entry = new Entry
+			{
+				Text = "AbCd",
+				IsPassword = true,
+				IsReadOnly = true,
+				TextTransform = TextTransform.Uppercase
+			};
+
+			var platformText = await GetValueAsync<string, EntryHandler>(entry, handler =>
+			{
+				entry.Text = "EfGh";
+				return GetPlatformControl(handler).Text;
+			});
+
+			Assert.Equal("EfGh", platformText);
+			Assert.Equal("EfGh", entry.Text);
+		}
+
+		[Fact]
+		public async Task ClearButtonFollowsIsReadOnly()
+		{
+			var entry = new Entry
+			{
+				Text = "Test",
+				ClearButtonVisibility = ClearButtonVisibility.WhileEditing
+			};
+
+			await AttachAndRun<EntryHandler>(entry, async handler =>
+			{
+				handler.PlatformView.RequestFocus();
+				await handler.PlatformView.WaitForFocused();
+				Assert.NotNull(handler.PlatformView.GetCompoundDrawables()[2]);
+
+				entry.IsReadOnly = true;
+				Assert.Null(handler.PlatformView.GetCompoundDrawables()[2]);
+
+				entry.IsReadOnly = false;
+				Assert.NotNull(handler.PlatformView.GetCompoundDrawables()[2]);
+			});
+		}
+
+		[Fact]
+		public async Task Material3ClearButtonFollowsIsReadOnly()
+		{
+			var entry = new Entry
+			{
+				Text = "Test",
+				ClearButtonVisibility = ClearButtonVisibility.WhileEditing
+			};
+
+			await AttachAndRun<EntryHandler2>(entry, async handler =>
+			{
+				var editText = handler.PlatformView.EditText!;
+				editText.RequestFocus();
+				await editText.WaitForFocused();
+				Assert.Equal(TextInputLayout.EndIconClearText, handler.PlatformView.EndIconMode);
+
+				entry.IsReadOnly = true;
+				Assert.Equal(TextInputLayout.EndIconNone, handler.PlatformView.EndIconMode);
+
+				entry.IsReadOnly = false;
+				Assert.Equal(TextInputLayout.EndIconClearText, handler.PlatformView.EndIconMode);
+			});
 		}
 
 		[Fact]
