@@ -10,6 +10,22 @@ namespace Microsoft.Maui.Controls.SourceGen;
 
 static class XamlDiagnosticHelpers
 {
+	public static bool IsSuppressed(string? noWarn, string diagnosticId)
+	{
+		if (string.IsNullOrEmpty(noWarn))
+			return false;
+
+		foreach (var id in noWarn!.Split(new[] { ',', ';', ' ' }, StringSplitOptions.RemoveEmptyEntries))
+		{
+			var code = id.Trim();
+			if (code.Equals(diagnosticId, StringComparison.OrdinalIgnoreCase) ||
+				(diagnosticId.StartsWith("MAUIX", StringComparison.OrdinalIgnoreCase) &&
+				 code == diagnosticId.Substring("MAUIX".Length)))
+				return true;
+		}
+		return false;
+	}
+
 	static readonly SourceInfo EmptySourceInfo = new(null, null, 0, 0, null);
 
 	public static Diagnostic CreateXamlParserDiagnostic(ProjectItem? projectItem, SourceText? sourceText, Exception exception)

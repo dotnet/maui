@@ -18,19 +18,19 @@ public static class SourceGeneratorDriver
 {
 	private static MetadataReference[]? MauiReferences;
 
-	public record AdditionalFile(AdditionalText Text, string Kind, string RelativePath, string? TargetPath, string? ManifestResourceName, string? TargetFramework, string? NoWarn, string LineInfo = "enable", bool EnableIncrementalHotReload = false);
-	public static GeneratorDriverRunResult RunGenerator<T>(Compilation compilation, AdditionalFile additionalFile, bool assertNoCompilationErrors = true)
+	public record AdditionalFile(AdditionalText Text, string Kind, string RelativePath, string? TargetPath, string? ManifestResourceName, string? TargetFramework, string? NoWarn, string LineInfo = "enable", bool EnableIncrementalHotReload = false, string Inflator = "SourceGen");
+	public static GeneratorDriverRunResult RunGenerator<T>(Compilation compilation, AdditionalFile additionalFile, bool assertNoCompilationErrors = true, IncrementalGeneratorOutputKind disabledOutputs = IncrementalGeneratorOutputKind.None)
 		where T : IIncrementalGenerator, new()
-		=> RunGenerator<T>(compilation, additionalFiles: [additionalFile], assertNoCompilationErrors);
+		=> RunGenerator<T>(compilation, additionalFiles: [additionalFile], assertNoCompilationErrors, disabledOutputs);
 
-	public static GeneratorDriverRunResult RunGenerator<T>(Compilation compilation, AdditionalFile[] additionalFiles, bool assertNoCompilationErrors = true)
+	public static GeneratorDriverRunResult RunGenerator<T>(Compilation compilation, AdditionalFile[] additionalFiles, bool assertNoCompilationErrors = true, IncrementalGeneratorOutputKind disabledOutputs = IncrementalGeneratorOutputKind.None)
 		where T : IIncrementalGenerator, new()
 	{
 		ISourceGenerator generator = new T().AsSourceGenerator();
 
 		// Tell the driver to track all the incremental generator outputs
 		var options = new GeneratorDriverOptions(
-			disabledOutputs: IncrementalGeneratorOutputKind.None,
+			disabledOutputs: disabledOutputs,
 			trackIncrementalGeneratorSteps: true);
 
 		GeneratorDriver driver = CSharpGeneratorDriver.Create([generator], driverOptions: options)
@@ -208,7 +208,7 @@ public static class SourceGeneratorDriver
 					"build_metadata.additionalfiles.TargetPath" => _additionalFile.TargetPath,
 					"build_metadata.additionalfiles.ManifestResourceName" => _additionalFile.ManifestResourceName,
 					"build_metadata.additionalfiles.RelativePath" => _additionalFile.RelativePath,
-					"build_metadata.additionalfiles.Inflator" => "SourceGen",
+					"build_metadata.additionalfiles.Inflator" => _additionalFile.Inflator,
 					"build_property.targetFramework" => _additionalFile.TargetFramework,
 #if RELEASE
 					"build_property.Configuration" => "Release",

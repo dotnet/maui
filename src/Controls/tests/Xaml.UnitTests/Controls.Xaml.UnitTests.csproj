@@ -77,6 +77,7 @@
     <MauiXaml Update="Issues\Issue1438.xaml" NoWarn="0612" />
     <MauiXaml Update="Issues\Issue2578.xaml" NoWarn="0612" />
     <MauiXaml Update="Issues\Issue2659.xaml" NoWarn="0612" />
+    <MauiXaml Update="XmlnsCollision.rt.xaml" NoWarn="2020" />
     
     <!-- Suppress XC0067/MAUIX2017 (property set multiple times) for test files that intentionally test this scenario -->
     <MauiXaml Update="Issues\Bz40906.xaml" NoWarn="67;2017" />

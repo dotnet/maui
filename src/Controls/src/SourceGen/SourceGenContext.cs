@@ -46,22 +46,8 @@ class SourceGenContext(IndentedTextWriter writer, Compilation compilation, Sourc
 		}
 
 		// Check if this diagnostic should be suppressed based on NoWarn
-		var noWarn = ProjectItem?.NoWarn;
-		if (!string.IsNullOrEmpty(noWarn))
-		{
-			var suppressedIds = noWarn!.Split(new[] { ',', ';', ' ' }, StringSplitOptions.RemoveEmptyEntries);
-			foreach (var id in suppressedIds)
-			{
-				var code = id.Trim();
-				// Match full ID (e.g., "MAUIX2015") or bare numeric suffix (e.g., "2015")
-				if (code.Equals(diagnostic.Id, StringComparison.OrdinalIgnoreCase) ||
-					(diagnostic.Id.StartsWith("MAUIX", StringComparison.OrdinalIgnoreCase) &&
-					 code == diagnostic.Id.Substring("MAUIX".Length)))
-				{
-					return; // Suppress this diagnostic
-				}
-			}
-		}
+		if (XamlDiagnosticHelpers.IsSuppressed(ProjectItem?.NoWarn, diagnostic.Id))
+			return;
 
 		if (_bufferedDiagnostics is not null)
 		{
