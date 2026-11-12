@@ -14,7 +14,7 @@ public class Issue39880 : _IssuesUITest
 	public override string Issue => "CollectionView with CanReorderItems crashes when an item is dragged onto a Footer or GroupFooter";
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
 	public void DraggingItemOntoFooterDoesNotCrash()
 	{
 		App.WaitForElement("Item39880C");
@@ -25,7 +25,7 @@ public class Issue39880 : _IssuesUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
 	public void DraggingItemOntoOwnGroupFooterDoesNotCrash()
 	{
 		App.WaitForElement("Item39880Banana");
