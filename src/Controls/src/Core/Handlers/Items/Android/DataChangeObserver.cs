@@ -9,11 +9,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 	internal class DataChangeObserver : RecyclerView.AdapterDataObserver
 	{
 		IntPtr _adapter;
-		readonly Action _onDataChange;
+		readonly Action<bool> _onDataChange;
 
 		public bool Observing { get; private set; }
 
-		public DataChangeObserver(Action onDataChange) : base()
+		public DataChangeObserver(Action<bool> onDataChange) : base()
 		{
 			_onDataChange = onDataChange;
 		}
@@ -45,37 +45,37 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public override void OnChanged()
 		{
 			base.OnChanged();
-			_onDataChange?.Invoke();
+			_onDataChange?.Invoke(false);
 		}
 
 		public override void OnItemRangeInserted(int positionStart, int itemCount)
 		{
 			base.OnItemRangeInserted(positionStart, itemCount);
-			_onDataChange?.Invoke();
+			_onDataChange?.Invoke(true);
 		}
 
 		public override void OnItemRangeChanged(int positionStart, int itemCount)
 		{
 			base.OnItemRangeChanged(positionStart, itemCount);
-			_onDataChange?.Invoke();
+			_onDataChange?.Invoke(false);
 		}
 
 		public override void OnItemRangeChanged(int positionStart, int itemCount, Object payload)
 		{
 			base.OnItemRangeChanged(positionStart, itemCount, payload);
-			_onDataChange?.Invoke();
+			_onDataChange?.Invoke(false);
 		}
 
 		public override void OnItemRangeRemoved(int positionStart, int itemCount)
 		{
 			base.OnItemRangeRemoved(positionStart, itemCount);
-			_onDataChange?.Invoke();
+			_onDataChange?.Invoke(false);
 		}
 
 		public override void OnItemRangeMoved(int fromPosition, int toPosition, int itemCount)
 		{
 			base.OnItemRangeMoved(fromPosition, toPosition, itemCount);
-			_onDataChange?.Invoke();
+			_onDataChange?.Invoke(false);
 		}
 
 		bool IsValidAdapter(Adapter adapter)
