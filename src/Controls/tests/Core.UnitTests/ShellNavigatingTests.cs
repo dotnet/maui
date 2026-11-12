@@ -260,6 +260,64 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 		}
 
+		[Fact]
+		public async Task OverlappingRelativePopsEachPopAPage()
+		{
+			Routing.RegisterRoute("overlapPopPage1", typeof(ShellTestPage));
+			Routing.RegisterRoute("overlapPopPage2", typeof(ContentPage));
+			TestShell shell = new TestShell(CreateShellItem(shellContentRoute: "root"));
+
+			await shell.GoToAsync($"overlapPopPage1?{nameof(ShellTestPage.SomeQueryParameter)}=1");
+			await shell.GoToAsync("overlapPopPage2");
+
+			ShellNavigatingDeferral deferral = null;
+			shell.Navigating += (_, args) => deferral = deferral ?? args.GetDeferral();
+
+			// The first pop resolves ".." against the current stack and then parks on the deferral.
+			var pop1 = shell.GoToAsync("..");
+			Assert.NotNull(deferral);
+			Assert.False(pop1.IsCompleted);
+
+			// The second pop completes while the first is still deferred.
+			await shell.GoToAsync("..");
+
+			deferral.Complete();
+			await pop1;
+
+			// Two ".." navigations should pop two pages, not replay the same stale target twice.
+			Assert.Equal("//root", shell.CurrentState.Location.ToString());
+			Assert.Single(shell.Navigation.NavigationStack);
+		}
+
+		[Fact]
+		public async Task OverlappingRelativePopsPreserveQueryParameters()
+		{
+			Routing.RegisterRoute("overlapQueryPage1", typeof(ShellTestPage));
+			Routing.RegisterRoute("overlapQueryPage2", typeof(ContentPage));
+			Routing.RegisterRoute("overlapQueryPage3", typeof(ContentPage));
+			TestShell shell = new TestShell(CreateShellItem(shellContentRoute: "root"));
+
+			await shell.GoToAsync($"overlapQueryPage1?{nameof(ShellTestPage.SomeQueryParameter)}=1");
+			var page1 = (ShellTestPage)shell.CurrentPage;
+			await shell.GoToAsync("overlapQueryPage2");
+			await shell.GoToAsync("overlapQueryPage3");
+
+			ShellNavigatingDeferral deferral = null;
+			shell.Navigating += (_, args) => deferral = deferral ?? args.GetDeferral();
+
+			var pop1 = shell.GoToAsync("..");
+			Assert.NotNull(deferral);
+
+			await shell.GoToAsync("..");
+
+			deferral.Complete();
+			await pop1;
+
+			Assert.Equal(2, shell.Navigation.NavigationStack.Count);
+			Assert.Same(page1, shell.CurrentPage);
+			Assert.Equal("1", page1.SomeQueryParameter);
+		}
+
 		[Theory]
 		[InlineData("PopToRoot")]
 		[InlineData("Pop")]
