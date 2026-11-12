@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="Maui.Controls.Sample.ButtonTextAlignmentPage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             Title="Button text alignment">
+    <ContentPage.Resources>
+        <Style x:Key="ScenarioButton" TargetType="Button">
+            <Setter Property="WidthRequest" Value="260" />
+            <Setter Property="HeightRequest" Value="120" />
+            <Setter Property="HorizontalOptions" Value="Start" />
+            <Setter Property="Padding" Value="16" />
+            <Setter Property="FontSize" Value="18" />
+            <Setter Property="BackgroundColor" Value="#512BD4" />
+            <Setter Property="TextColor" Value="White" />
+            <Setter Property="BorderColor" Value="#808080" />
+            <Setter Property="BorderWidth" Value="1" />
+        </Style>
+    </ContentPage.Resources>
+    <Grid>
+        <ScrollView AutomationId="ButtonAlignmentScrollView">
+            <VerticalStackLayout Padding="24" Spacing="16">
+                <Label Text="Button text alignment"
+                       FontSize="24"
+                       FontAttributes="Bold"
+                       SemanticProperties.HeadingLevel="Level1" />
+                <Label AutomationId="ButtonAlignmentInstructions"
+                       Text="Scenario for dotnet/maui#10463. On Android, iOS, and Windows, align text and its image together inside the padded Button. Native default clears the selected axis. Image-only Buttons remain unchanged. Mac Catalyst remains unverified." />
+
+                <Label Text="Unmodified default Button"
+                       FontAttributes="Bold" />
+                <Button x:Name="DefaultButton"
+                        AutomationId="DefaultAlignmentButton"
+                        Text="Default button"
+                        Clicked="OnScenarioClicked" />
+                <Label Text="The default Button above is not affected by the controls below." />
+
+                <VerticalStackLayout x:Name="ScenarioLayout" Spacing="12">
+                    <Label Text="Live text-only preview"
+                           FontAttributes="Bold" />
+                    <Button x:Name="TextPreview"
+                            AutomationId="TextAlignmentPreview"
+                            Style="{StaticResource ScenarioButton}"
+                            LineBreakMode="WordWrap"
+                            Clicked="OnScenarioClicked" />
+
+                    <Label Text="Live text and image preview"
+                           FontAttributes="Bold" />
+                    <Button x:Name="ImageTextPreview"
+                            AutomationId="ImageTextAlignmentPreview"
+                            Style="{StaticResource ScenarioButton}"
+                            LineBreakMode="WordWrap"
+                            Clicked="OnScenarioClicked" />
+                </VerticalStackLayout>
+
+                <Label x:Name="ClickStatusLabel"
+                       AutomationId="ButtonAlignmentClickStatus"
+                       Text="Clicks: 0" />
+                <Label x:Name="SettingsLabel"
+                       AutomationId="ButtonAlignmentSettings" />
+
+                <Label Text="Runtime controls"
+                       FontAttributes="Bold"
+                       SemanticProperties.HeadingLevel="Level2" />
+                <Label Text="Horizontal text alignment (Start/End follow layout direction)" />
+                <Picker x:Name="HorizontalAlignmentPicker"
+                        AutomationId="ButtonAlignmentHorizontal"
+                        Title="Horizontal text alignment" />
+                <Label Text="Vertical text alignment (Start is top; End is bottom)" />
+                <Picker x:Name="VerticalAlignmentPicker"
+                        AutomationId="ButtonAlignmentVertical"
+                        Title="Vertical text alignment" />
+                <Label Text="Preview text (enter a newline to test multiple lines)" />
+                <Editor x:Name="PreviewTextEditor"
+                        AutomationId="ButtonAlignmentTextEditor"
+                        SemanticProperties.Description="Text for both live Button previews"
+                        AutoSize="TextChanges"
+                        MinimumHeightRequest="80"
+                        Text="Save changes&#10;A second line of text" />
+
+                <Label Text="Image position relative to text" />
+                <Picker x:Name="ImagePositionPicker"
+                        AutomationId="ButtonAlignmentImagePosition"
+                        Title="Image position" />
+                <Label Text="Live preview line break mode" />
+                <Picker x:Name="LineBreakPicker"
+                        AutomationId="ButtonAlignmentLineBreakMode"
+                        Title="Line break mode" />
+
+                <Grid ColumnDefinitions="*,Auto"
+                      RowDefinitions="Auto,Auto,Auto,Auto,Auto"
+                      RowSpacing="8"
+                      ColumnSpacing="12">
+                    <Label Text="Show image in text/image preview" VerticalOptions="Center" />
+                    <Switch x:Name="ShowImageSwitch"
+                            Grid.Column="1"
+                            AutomationId="ButtonAlignmentShowImage"
+                            SemanticProperties.Description="Show image in the text and image preview"
+                            IsToggled="True" />
+                    <Label Grid.Row="1" Text="Enable scenario Buttons" VerticalOptions="Center" />
+                    <Switch x:Name="EnabledSwitch"
+                            Grid.Row="1" Grid.Column="1"
+                            AutomationId="ButtonAlignmentEnabled"
+                            SemanticProperties.Description="Enable scenario Buttons"
+                            IsToggled="True" />
+                    <Label Grid.Row="2" Text="Right-to-left scenario layout" VerticalOptions="Center" />
+                    <Switch x:Name="RtlSwitch"
+                            Grid.Row="2" Grid.Column="1"
+                            AutomationId="ButtonAlignmentRtl"
+                            SemanticProperties.Description="Use right-to-left layout for scenarios" />
+                    <Label Grid.Row="3" Text="Asymmetric padding (32,8,8,24)" VerticalOptions="Center" />
+                    <Switch x:Name="PaddingSwitch"
+                            Grid.Row="3" Grid.Column="1"
+                            AutomationId="ButtonAlignmentAsymmetricPadding"
+                            SemanticProperties.Description="Use asymmetric Button padding" />
+                    <Label Grid.Row="4" Text="Larger text (26 instead of 18)" VerticalOptions="Center" />
+                    <Switch x:Name="LargeTextSwitch"
+                            Grid.Row="4" Grid.Column="1"
+                            AutomationId="ButtonAlignmentLargeText"
+                            SemanticProperties.Description="Use larger Button text" />
+                </Grid>
+
+                <Label Text="Fixed comparison scenarios"
+                       FontAttributes="Bold"
+                       SemanticProperties.HeadingLevel="Level2" />
+                <Label Text="These keep their original text and wrapping. Enabled state, flow direction, padding, and font size still follow the switches." />
+                <VerticalStackLayout x:Name="ComparisonLayout" Spacing="12">
+                    <Label Text="Single line" FontAttributes="Bold" />
+                    <Button x:Name="SingleLineButton"
+                            AutomationId="ButtonAlignmentSingleLine"
+                            Style="{StaticResource ScenarioButton}"
+                            Text="Save"
+                            LineBreakMode="NoWrap"
+                            Clicked="OnScenarioClicked" />
+
+                    <Label Text="Explicit newline" FontAttributes="Bold" />
+                    <Button x:Name="MultilineButton"
+                            AutomationId="ButtonAlignmentMultiline"
+                            Style="{StaticResource ScenarioButton}"
+                            Text="Short line&#10;A longer second line"
+                            LineBreakMode="WordWrap"
+                            Clicked="OnScenarioClicked" />
+
+                    <Label Text="Word-wrapped title" FontAttributes="Bold" />
+                    <Button x:Name="WrappedButton"
+                            AutomationId="ButtonAlignmentWrapped"
+                            Style="{StaticResource ScenarioButton}"
+                            Text="A longer button title that should wrap within the available content width"
+                            LineBreakMode="WordWrap"
+                            Clicked="OnScenarioClicked" />
+
+                    <Label Text="Truncated title" FontAttributes="Bold" />
+                    <Button x:Name="TruncatedButton"
+                            AutomationId="ButtonAlignmentTruncated"
+                            Style="{StaticResource ScenarioButton}"
+                            Text="A longer button title that should be truncated instead of wrapping"
+                            LineBreakMode="TailTruncation"
+                            Clicked="OnScenarioClicked" />
+
+                    <Label Text="Image-only regular Button (not ImageButton)" FontAttributes="Bold" />
+                    <Button x:Name="ImageOnlyButton"
+                            AutomationId="ButtonAlignmentImageOnly"
+                            SemanticProperties.Description="Image-only regular Button"
+                            Style="{StaticResource ScenarioButton}"
+                            Clicked="OnScenarioClicked" />
+                </VerticalStackLayout>
+                <Label Text="Inspect native rendering before and after the alignment feature. Check all image positions and line break modes, change the text, and toggle RTL, padding, and font size. Current alignment may differ by platform; this page does not claim Start/Center/End support." />
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>
