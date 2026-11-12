@@ -93,6 +93,46 @@ namespace Microsoft.Maui.DeviceTests
 			values.PlatformViewValue.AssertHasFlag(expectedValue);
 		}
 
+		[Fact(DisplayName = "LineHeight Spaces All Lines Evenly")]
+		public async Task LineHeightSpacesAllLinesEvenly()
+		{
+			var label = new LabelStub()
+			{
+				Text = "First\nSecond\nThird",
+				Font = Font.SystemFontOfSize(30),
+				LineHeight = 3
+			};
+
+			var (expectedGap, firstGap, secondGap) = await GetValueAsync(label, handler => GetBaselineGaps(handler));
+
+			// The first line also holds the font's top padding, which must not make the
+			// space below it larger than the space below the other lines.
+			Assert.InRange(firstGap, expectedGap - 1, expectedGap + 1);
+			Assert.InRange(secondGap, expectedGap - 1, expectedGap + 1);
+		}
+
+		[Fact(DisplayName = "LineHeight Follows Font Size Changes")]
+		public async Task LineHeightFollowsFontSizeChanges()
+		{
+			var label = new LabelStub()
+			{
+				Text = "First\nSecond\nThird",
+				Font = Font.SystemFontOfSize(10),
+				LineHeight = 3
+			};
+
+			var handler = await CreateHandlerAsync(label);
+
+			var (expectedGap, _, secondGap) = await InvokeOnMainThreadAsync(() =>
+			{
+				label.Font = Font.SystemFontOfSize(30);
+				handler.UpdateValue(nameof(ITextStyle.Font));
+				return GetBaselineGaps(handler);
+			});
+
+			Assert.InRange(secondGap, expectedGap - 1, expectedGap + 1);
+		}
+
 		TextView GetPlatformLabel(LabelHandler labelHandler) =>
 			labelHandler.PlatformView;
 
@@ -119,7 +159,29 @@ namespace Microsoft.Maui.DeviceTests
 		PaintFlags GetNativeTextDecorations(LabelHandler labelHandler) =>
 			GetPlatformLabel(labelHandler).PaintFlags;
 
-		float GetNativeLineHeight(LabelHandler labelHandler) =>
-			GetPlatformLabel(labelHandler).LineSpacingMultiplier;
+		float GetNativeLineHeight(LabelHandler labelHandler)
+		{
+			var textView = GetPlatformLabel(labelHandler);
+			var fontMetrics = textView.Paint.GetFontMetricsInt();
+			return 1 + textView.LineSpacingExtra / (fontMetrics.Descent - fontMetrics.Ascent);
+		}
+
+		// Distances between consecutive baselines of a three-line label, plus the
+		// distance expected from the font height and the label's LineHeight.
+		(int expectedGap, int firstGap, int secondGap) GetBaselineGaps(LabelHandler labelHandler)
+		{
+			var textView = GetPlatformLabel(labelHandler);
+			textView.Measure(
+				global::Android.Views.View.MeasureSpec.MakeMeasureSpec(10000, MeasureSpecMode.AtMost),
+				global::Android.Views.View.MeasureSpec.MakeMeasureSpec(0, MeasureSpecMode.Unspecified));
+
+			var layout = textView.Layout;
+			var fontMetrics = textView.Paint.GetFontMetricsInt();
+			var expectedGap = (int)Math.Round((fontMetrics.Descent - fontMetrics.Ascent) * labelHandler.VirtualView.LineHeight);
+
+			return (expectedGap,
+				layout.GetLineBaseline(1) - layout.GetLineBaseline(0),
+				layout.GetLineBaseline(2) - layout.GetLineBaseline(1));
+		}
 	}
 }

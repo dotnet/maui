@@ -172,8 +172,10 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateLineHeight(this TextView textView, ILabel label)
 		{
-			if (label.LineHeight >= 0)
-				textView.SetLineSpacing(0, (float)label.LineHeight);
+			// Add the extra space as a fixed amount instead of a multiplier: Android multiplies each
+			// line's own height, and the first line's height also holds the font's top padding.
+			if (label.LineHeight >= 0 && textView.Paint?.GetFontMetricsInt() is { } fontMetrics)
+				textView.SetLineSpacing((fontMetrics.Descent - fontMetrics.Ascent) * ((float)label.LineHeight - 1), 1);
 		}
 
 		internal static void Focus(this TextView textView, FocusRequest request)
