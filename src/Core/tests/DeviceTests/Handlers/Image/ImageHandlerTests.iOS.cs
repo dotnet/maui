@@ -129,6 +129,26 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task OnWindowChangedAfterDisconnectDoesNotThrow()
+		{
+			// https://github.com/dotnet/maui/issues/39949
+			var image = new TStub();
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler(image);
+
+				((IElementHandler)handler).DisconnectHandler();
+
+				// UIKit still fires MovedToWindow on the detached UIImageView, e.g. while a
+				// navigation bar title view leaves the window during a pop
+				var exception = Record.Exception(() => handler.OnWindowChanged());
+
+				Assert.Null(exception);
+			});
+		}
+
+		[Fact]
 		public async Task MovingToWindowAfterDisconnectDoesNotThrow()
 		{
 			// https://github.com/dotnet/maui/issues/39949
