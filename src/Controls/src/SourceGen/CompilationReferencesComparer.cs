@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Controls.SourceGen;
 /// - Whitespace changes
 /// - Private member changes
 /// </summary>
-class CompilationSignaturesComparer : IEqualityComparer<Compilation>
+class CompilationSignaturesComparer(bool includePrivateMembers = false) : IEqualityComparer<Compilation>
 {
 	public bool Equals(Compilation x, Compilation y)
 	{
@@ -44,33 +44,43 @@ class CompilationSignaturesComparer : IEqualityComparer<Compilation>
 			|| x.ExternalReferences.Length != y.ExternalReferences.Length)
 			return false;
 
-		if (!x.ExternalReferences.OfType<PortableExecutableReference>().SequenceEqual(y.ExternalReferences.OfType<PortableExecutableReference>()))
+		if (!x.ExternalReferences.SequenceEqual(y.ExternalReferences))
 			return false;
 
 		// Compare type signatures (ignoring method implementations)
-		return GetSignatureString(x) == GetSignatureString(y);
+		return GetSignatureString(x, includePrivateMembers) == GetSignatureString(y, includePrivateMembers);
 	}
 
-	private static string GetSignatureString(Compilation compilation)
+	private static string GetSignatureString(Compilation compilation, bool includePrivateMembers)
 	{
 		var sb = new StringBuilder();
-		AppendNamespace(sb, compilation.Assembly.GlobalNamespace);
+		AppendAttributes(sb, compilation.Assembly.GetAttributes());
+		AppendNamespace(sb, compilation.Assembly.GlobalNamespace, includePrivateMembers);
 		return sb.ToString();
 	}
 
-	private static void AppendNamespace(StringBuilder sb, INamespaceSymbol ns)
+	private static void AppendAttributes(StringBuilder sb, IEnumerable<AttributeData> attributes)
 	{
-		foreach (var type in ns.GetTypeMembers().OrderBy(t => t.Name))
-			AppendType(sb, type);
-		foreach (var child in ns.GetNamespaceMembers().OrderBy(n => n.Name))
-			AppendNamespace(sb, child);
+		foreach (var attribute in attributes.Select(a => a.ToString()).OrderBy(a => a, StringComparer.Ordinal))
+			sb.Append('[').Append(attribute).Append(']');
 	}
 
-	private static void AppendType(StringBuilder sb, INamedTypeSymbol type)
+	private static void AppendNamespace(StringBuilder sb, INamespaceSymbol ns, bool includePrivateMembers)
+	{
+		foreach (var type in ns.GetTypeMembers().OrderBy(t => t.Name))
+			AppendType(sb, type, includePrivateMembers);
+		foreach (var child in ns.GetNamespaceMembers().OrderBy(n => n.Name))
+			AppendNamespace(sb, child, includePrivateMembers);
+	}
+
+	private static void AppendType(StringBuilder sb, INamedTypeSymbol type, bool includePrivateMembers)
 	{
 		sb.Append(type.DeclaredAccessibility).Append(' ');
 		sb.Append(type.TypeKind).Append(' ');
+		if (type.IsStatic)
+			sb.Append("static ");
 		sb.Append(type.ToFQDisplayString());
+		AppendAttributes(sb, type.GetAttributes());
 
 		if (type.BaseType != null && type.BaseType.SpecialType != SpecialType.System_Object)
 			sb.Append(':').Append(type.BaseType.ToFQDisplayString());
@@ -80,9 +90,8 @@ class CompilationSignaturesComparer : IEqualityComparer<Compilation>
 
 		sb.Append('{');
 
-		// Include non-private, non-compiler-generated members
 		foreach (var member in type.GetMembers()
-			.Where(m => m.DeclaredAccessibility != Accessibility.Private && !m.IsImplicitlyDeclared)
+			.Where(m => (includePrivateMembers || m.DeclaredAccessibility != Accessibility.Private) && !m.IsImplicitlyDeclared)
 			.OrderBy(m => m.Name)
 			.ThenBy(m => m.Kind))
 		{
@@ -100,6 +109,7 @@ class CompilationSignaturesComparer : IEqualityComparer<Compilation>
 					if (p.IsStatic)
 						sb.Append("static ");
 					sb.Append(p.Type.ToFQDisplayString()).Append(' ').Append(p.Name);
+					AppendAttributes(sb, p.GetAttributes());
 					if (p.GetMethod != null)
 						sb.Append("{get;}");
 					if (p.SetMethod != null)
@@ -111,13 +121,25 @@ class CompilationSignaturesComparer : IEqualityComparer<Compilation>
 					if (m.IsStatic)
 						sb.Append("static ");
 					sb.Append(m.ReturnType.ToFQDisplayString()).Append(' ').Append(m.Name);
+					AppendAttributes(sb, m.GetAttributes());
 					sb.Append('(');
 					sb.Append(string.Join(",", m.Parameters.Select(p => p.Type.ToFQDisplayString())));
 					sb.Append(')').Append(';');
 					break;
 
+				case IMethodSymbol m when m.MethodKind == MethodKind.Constructor:
+					sb.Append(m.DeclaredAccessibility).Append(" .ctor(");
+					foreach (var parameter in m.Parameters)
+					{
+						sb.Append(parameter.Type.ToFQDisplayString()).Append(' ').Append(parameter.Name);
+						AppendAttributes(sb, parameter.GetAttributes());
+						sb.Append(',');
+					}
+					sb.Append(");");
+					break;
+
 				case INamedTypeSymbol nested:
-					AppendType(sb, nested);
+					AppendType(sb, nested, includePrivateMembers);
 					break;
 			}
 		}
