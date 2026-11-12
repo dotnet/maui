@@ -152,6 +152,13 @@
   <data name="DuplicateTypeError" xml:space="preserve">
     <value>Multiple Types found for "{0}".</value>
   </data>
+  <data name="ConflictingXmlnsTypeTitle" xml:space="preserve">
+    <value>Conflicting XAML namespace types</value>
+  </data>
+  <data name="ConflictingXmlnsTypeMessage" xml:space="preserve">
+    <value>Type "{1}" in XML namespace "{0}" is ambiguous between: {2}.</value>
+    <comment>{0} is the XML namespace, {1} is the type name, and {2} is the list of matching types and assemblies.</comment>
+  </data>
   <data name="MemberResolution" xml:space="preserve">
     <value>No accessible property, BindableProperty, or event found for "{0}", or mismatching type between value and property.</value>
     <comment>{0} is a property name</comment>
