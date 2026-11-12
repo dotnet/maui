@@ -23,6 +23,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- Exercise MSBuild-generated global usings in Maui29708. -->
+    <Using Include="http29708.Controls" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="NSubstitute" Version="$(NSubstitutePackageVersion)" />
     <PackageReference Include="xunit" Version="$(XunitPackageVersion)" />
     <PackageReference Include="Mono.Cecil" Version="0.11.6" />
