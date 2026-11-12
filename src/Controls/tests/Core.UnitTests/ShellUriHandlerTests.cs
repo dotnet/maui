@@ -119,6 +119,36 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public void GlobalRouteMatchingIsIndependentOfRegistrationOrder(bool childFirst)
+		{
+			if (childFirst)
+			{
+				Routing.RegisterRoute("home", typeof(TestPage1));
+				Routing.RegisterRoute("home/savings/search/levels", typeof(ContentPage));
+				Routing.RegisterRoute("home/savings/search", typeof(TestPage3));
+				Routing.RegisterRoute("home/savings", typeof(TestPage2));
+			}
+			else
+			{
+				Routing.RegisterRoute("home", typeof(TestPage1));
+				Routing.RegisterRoute("home/savings", typeof(TestPage2));
+				Routing.RegisterRoute("home/savings/search", typeof(TestPage3));
+				Routing.RegisterRoute("home/savings/search/levels", typeof(ContentPage));
+			}
+
+			var shell = new TestShell(CreateShellItem(shellContentRoute: "root"));
+
+			var request = ShellUriHandler.GetNavigationRequest(shell, CreateUri("//root/home/savings/search"));
+
+			Assert.Equal(3, request.Request.GlobalRoutes.Count);
+			Assert.Equal("home", request.Request.GlobalRoutes[0]);
+			Assert.Equal("home/savings", request.Request.GlobalRoutes[1]);
+			Assert.Equal("home/savings/search", request.Request.GlobalRoutes[2]);
+		}
+
 		[Fact]
 		public async Task ShellSectionWithGlobalRouteRelative()
 		{
