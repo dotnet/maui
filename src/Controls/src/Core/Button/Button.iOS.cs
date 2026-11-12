@@ -191,6 +191,13 @@ namespace Microsoft.Maui.Controls
 			var titleInsets = new UIEdgeInsets();
 
 			var image = platformButton.CurrentImage;
+			if (button.Handler is ButtonHandler buttonHandler)
+			{
+				var hasText = !string.IsNullOrEmpty(button.Text);
+				buttonHandler.UpdateTextAlignment(
+					hasText && button.IsSetExplicitly(HorizontalTextAlignmentProperty) ? button.HorizontalTextAlignment : null,
+					hasText && button.IsSetExplicitly(VerticalTextAlignmentProperty) ? button.VerticalTextAlignment : null);
+			}
 
 			if (image is not null && !string.IsNullOrEmpty(platformButton.CurrentTitle))
 			{
@@ -270,7 +277,54 @@ namespace Microsoft.Maui.Controls
 				platformButton.ImageEdgeInsets = imageInsets;
 				platformButton.TitleEdgeInsets = titleInsets;
 			}
+
+			if (image is not null && !string.IsNullOrEmpty(platformButton.CurrentTitle) &&
+				(button.IsSetExplicitly(HorizontalTextAlignmentProperty) || button.IsSetExplicitly(VerticalTextAlignmentProperty)))
+			{
+				AlignImageAndTitle(platformButton, button, size, ref imageInsets, ref titleInsets);
+				platformButton.ImageEdgeInsets = imageInsets;
+				platformButton.TitleEdgeInsets = titleInsets;
+			}
 #pragma warning restore CA1416, CA1422
+		}
+
+		void AlignImageAndTitle(UIButton platformButton, Button button, Rect size, ref UIEdgeInsets imageInsets, ref UIEdgeInsets titleInsets)
+		{
+			var contentRect = platformButton.ContentRectForBounds(new CGRect(0, 0, size.Width, size.Height));
+			var imageRect = platformButton.ImageRectForContentRect(contentRect);
+			var titleRect = platformButton.TitleRectForContentRect(contentRect);
+			var left = Math.Min((double)imageRect.Left, (double)titleRect.Left);
+			var top = Math.Min((double)imageRect.Top, (double)titleRect.Top);
+			var width = Math.Max((double)imageRect.Right, (double)titleRect.Right) - left;
+			var height = Math.Max((double)imageRect.Bottom, (double)titleRect.Bottom) - top;
+			var padding = button.Padding.IsNaN ? ButtonHandler.DefaultPadding : button.Padding;
+			var border = Math.Max(0, button.BorderWidth);
+			double offsetX = 0;
+			double offsetY = 0;
+
+			if (button.IsSetExplicitly(HorizontalTextAlignmentProperty))
+			{
+				var available = Math.Max(0, size.Width - padding.HorizontalThickness - border * 2 - width);
+				var alignment = button.HorizontalTextAlignment;
+				if (((IVisualElementController)button).EffectiveFlowDirection.IsRightToLeft())
+					alignment = alignment == TextAlignment.Start ? TextAlignment.End : alignment == TextAlignment.End ? TextAlignment.Start : alignment;
+				offsetX = padding.Left + border - left + (alignment == TextAlignment.Start ? 0 : alignment == TextAlignment.End ? available : available / 2);
+			}
+			if (button.IsSetExplicitly(VerticalTextAlignmentProperty))
+			{
+				var available = Math.Max(0, size.Height - padding.VerticalThickness - border * 2 - height);
+				var alignment = button.VerticalTextAlignment;
+				offsetY = padding.Top + border - top + (alignment == TextAlignment.Start ? 0 : alignment == TextAlignment.End ? available : available / 2);
+			}
+
+			imageInsets.Left += (nfloat)offsetX;
+			imageInsets.Right -= (nfloat)offsetX;
+			imageInsets.Top += (nfloat)offsetY;
+			imageInsets.Bottom -= (nfloat)offsetY;
+			titleInsets.Left += (nfloat)offsetX;
+			titleInsets.Right -= (nfloat)offsetX;
+			titleInsets.Top += (nfloat)offsetY;
+			titleInsets.Bottom -= (nfloat)offsetY;
 		}
 
 		/// <summary>
@@ -451,6 +505,7 @@ namespace Microsoft.Maui.Controls
 		{
 			handler.PlatformView?.UpdateText(button);
 			handler.UpdateValue(nameof(CharacterSpacing));
+			handler.UpdateValue(nameof(HorizontalTextAlignment));
 		}
 
 		internal static void MapBorderWidth(IButtonHandler handler, Button button)

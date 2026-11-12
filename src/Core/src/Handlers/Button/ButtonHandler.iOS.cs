@@ -24,6 +24,11 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		readonly ButtonEventProxy _proxy = new ButtonEventProxy();
+		UIControlContentHorizontalAlignment _defaultHorizontalAlignment;
+		UIControlContentVerticalAlignment _defaultVerticalAlignment;
+		UITextAlignment _defaultTitleAlignment;
+		bool _horizontalTextAlignmentSet;
+		bool _verticalTextAlignmentSet;
 
 		protected override void SetupContainer()
 		{
@@ -36,6 +41,10 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(UIButton platformView)
 		{
+			_defaultHorizontalAlignment = platformView.HorizontalAlignment;
+			_defaultVerticalAlignment = platformView.VerticalAlignment;
+			_defaultTitleAlignment = platformView.TitleLabel.TextAlignment;
+			_horizontalTextAlignmentSet = _verticalTextAlignmentSet = false;
 			_proxy.Connect(VirtualView, platformView);
 
 			base.ConnectHandler(platformView);
@@ -44,8 +53,42 @@ namespace Microsoft.Maui.Handlers
 		protected override void DisconnectHandler(UIButton platformView)
 		{
 			_proxy.Disconnect(platformView);
+			_horizontalTextAlignmentSet = _verticalTextAlignmentSet = false;
 
 			base.DisconnectHandler(platformView);
+		}
+
+		internal void UpdateTextAlignment(TextAlignment? horizontal, TextAlignment? vertical)
+		{
+			if (PlatformView is not { } platformView)
+				return;
+
+			var imageGroup = platformView.CurrentImage is not null && !string.IsNullOrEmpty(platformView.CurrentTitle);
+			var horizontalAlignment = horizontal.HasValue
+				? imageGroup ? UIControlContentHorizontalAlignment.Center : horizontal.Value switch
+				{
+					TextAlignment.Start => UIControlContentHorizontalAlignment.Leading,
+					TextAlignment.End => UIControlContentHorizontalAlignment.Trailing,
+					_ => UIControlContentHorizontalAlignment.Center
+				}
+				: _horizontalTextAlignmentSet ? _defaultHorizontalAlignment : platformView.HorizontalAlignment;
+			var verticalAlignment = vertical.HasValue
+				? imageGroup ? UIControlContentVerticalAlignment.Center : vertical.Value.ToPlatformVertical()
+				: _verticalTextAlignmentSet ? _defaultVerticalAlignment : platformView.VerticalAlignment;
+			var titleAlignment = horizontal.HasValue
+				? horizontal.Value.ToPlatformHorizontal(platformView.EffectiveUserInterfaceLayoutDirection)
+				: _horizontalTextAlignmentSet ? _defaultTitleAlignment : platformView.TitleLabel.TextAlignment;
+			_horizontalTextAlignmentSet = horizontal.HasValue;
+			_verticalTextAlignmentSet = vertical.HasValue;
+			if (platformView.HorizontalAlignment != horizontalAlignment ||
+				platformView.VerticalAlignment != verticalAlignment ||
+				platformView.TitleLabel.TextAlignment != titleAlignment)
+			{
+				platformView.HorizontalAlignment = horizontalAlignment;
+				platformView.VerticalAlignment = verticalAlignment;
+				platformView.TitleLabel.TextAlignment = titleAlignment;
+				platformView.SetNeedsLayout();
+			}
 		}
 
 #if MACCATALYST
@@ -227,6 +270,7 @@ namespace Microsoft.Maui.Handlers
 				// Instead, the image is set internally and only applied to ImageView when the button is rendered.
 				// To ensure SizeThatFits is correct, and avoid race conditions, we have to force a layout.
 				button.LayoutIfNeeded();
+				Handler.UpdateValue(nameof(ITextAlignment.HorizontalTextAlignment));
 			}
 		}
 	}

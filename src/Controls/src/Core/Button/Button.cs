@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls
 	/// A button <see cref="View" /> that reacts to touch events.
 	/// </summary>
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
-	public partial class Button : View, IFontElement, ITextElement, IBorderElement, IButtonController, IElementConfiguration<Button>, IPaddingElement, IImageController, IViewController, IButtonElement, ICommandElement, IImageElement, IButton, ITextButton, IImageButton
+	public partial class Button : View, IFontElement, ITextElement, ITextAlignment, IBorderElement, IButtonController, IElementConfiguration<Button>, IPaddingElement, IImageController, IViewController, IButtonElement, ICommandElement, IImageElement, IButton, ITextButton, IImageButton
 	{
 		const double DefaultSpacing = 10;
 
@@ -109,6 +109,64 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty LineBreakModeProperty = BindableProperty.Create(
 			nameof(LineBreakMode), typeof(LineBreakMode), typeof(Button), LineBreakMode.NoWrap,
 			propertyChanged: (bindable, oldvalue, newvalue) => ((Button)bindable).InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged));
+
+		/// <summary>Identifies the <see cref="HorizontalTextAlignment"/> bindable property.</summary>
+		public static readonly BindableProperty HorizontalTextAlignmentProperty = BindableProperty.Create(
+			nameof(HorizontalTextAlignment), typeof(TextAlignment), typeof(Button), TextAlignment.Center,
+			validateValue: ValidateTextAlignment,
+			propertyChanged: (bindable, oldValue, newValue) => ((Button)bindable).InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged));
+
+		/// <summary>Identifies the <see cref="VerticalTextAlignment"/> bindable property.</summary>
+		public static readonly BindableProperty VerticalTextAlignmentProperty = BindableProperty.Create(
+			nameof(VerticalTextAlignment), typeof(TextAlignment), typeof(Button), TextAlignment.Center,
+			validateValue: ValidateTextAlignment,
+			propertyChanged: (bindable, oldValue, newValue) => ((Button)bindable).InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged));
+
+		/// <summary>
+		/// Gets or sets the horizontal alignment of the title and its image within the padded button.
+		/// This is a bindable property.
+		/// </summary>
+		/// <remarks>
+		/// Supports Start, Center, and End on Android, iOS, and Windows. Start and End follow the effective
+		/// flow direction. The reported default is Center, but native rendering is preserved until
+		/// the property is explicitly set. Clearing the value restores native alignment.
+		/// Image-only buttons retain their existing alignment.
+		/// </remarks>
+		public TextAlignment HorizontalTextAlignment
+		{
+			get => (TextAlignment)GetValue(HorizontalTextAlignmentProperty);
+			set => SetValue(HorizontalTextAlignmentProperty, value);
+		}
+
+		/// <summary>
+		/// Gets or sets the vertical alignment of the title and its image within the padded button.
+		/// This is a bindable property.
+		/// </summary>
+		/// <remarks>
+		/// Supports Start (top), Center, and End (bottom) on Android, iOS, and Windows. The reported default
+		/// is Center, but native rendering is preserved until the property is explicitly set.
+		/// Clearing the value restores native alignment. Image-only buttons retain their existing alignment.
+		/// </remarks>
+		public TextAlignment VerticalTextAlignment
+		{
+			get => (TextAlignment)GetValue(VerticalTextAlignmentProperty);
+			set => SetValue(VerticalTextAlignmentProperty, value);
+		}
+
+		static bool ValidateTextAlignment(BindableObject bindable, object value) =>
+			value is TextAlignment.Start or TextAlignment.Center or TextAlignment.End;
+
+		private protected override void OnBindablePropertySet(BindableProperty property, object original, object value, bool changed, bool willFirePropertyChanged)
+		{
+			base.OnBindablePropertySet(property, original, value, changed, willFirePropertyChanged);
+
+			// Setting or clearing Center changes explicit alignment even when the value is unchanged.
+			if (!changed && (property == HorizontalTextAlignmentProperty || property == VerticalTextAlignmentProperty))
+			{
+				InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+				Handler?.UpdateValue(property.PropertyName);
+			}
+		}
 
 		/// <summary>
 		/// Gets or sets the padding for the button. This is a bindable property.

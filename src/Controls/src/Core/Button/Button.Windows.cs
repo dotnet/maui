@@ -13,7 +13,9 @@ namespace Microsoft.Maui.Controls
 		{
 			var text = TextTransformUtilities.GetTransformedText(button.Text, button.TextTransform);
 			handler.PlatformView?.UpdateText(text);
-			button.Handler?.UpdateValue(nameof(Button.ContentLayout));
+			if (handler is not ButtonHandler)
+				handler.UpdateValue(nameof(ContentLayout));
+			handler.UpdateValue(nameof(HorizontalTextAlignment));
 		}
 
 		public static void MapLineBreakMode(IButtonHandler handler, Button button)
