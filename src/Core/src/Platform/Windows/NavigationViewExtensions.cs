@@ -356,7 +356,7 @@ namespace Microsoft.Maui.Platform
 			var background = paneContentGrid.Background;
 			var backgroundImage = new ImageBrush
 			{
-				ImageSource = nativeImageSource?.Value,
+				ImageSource = nativeImageSource.Value,
 				Stretch = aspect switch
 				{
 					Aspect.AspectFit => Stretch.Uniform,
