@@ -629,7 +629,8 @@ internal static class LayoutFactory2
 						: UICollectionViewScrollPosition.Right;
 				ItemsViewScrollHelper.ForceScrollToLastItem(CollectionView, position);
 			}
-			else if (_itemsLayout?.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepItemsInView)
+			else if (_itemsLayout?.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepItemsInView
+				&& CollectionView?.DataSource is not CarouselViewController2)
 			{
 				ItemsViewScrollHelper.ScrollToFirstItem(CollectionView, _itemsLayout.Orientation);
 			}
