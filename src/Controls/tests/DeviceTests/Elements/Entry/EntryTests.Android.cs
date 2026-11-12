@@ -286,17 +286,26 @@ namespace Microsoft.Maui.DeviceTests
 
 		// https://github.com/dotnet/maui/issues/34944: going down from an Entry with a keyboard or a D-pad focused the Button next to the Entry below,
 		// which spans the column of the first Entry too.
-		[Fact]
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
 		[Category(TestCategory.Entry)]
-		public async Task FocusMovesDownToTheEntryBelowThatSpansSeveralColumns()
+		public async Task FocusMovesDownToTheEntryBelowThatSpansSeveralColumns(bool material3)
 		{
 			EnsureHandlerCreated(builder =>
 			{
 				builder.ConfigureMauiHandlers(handlers =>
 				{
 					handlers.AddHandler<Layout, LayoutHandler>();
-					handlers.AddHandler<Entry, EntryHandler>();
 					handlers.AddHandler<Button, ButtonHandler>();
+					if (material3)
+					{
+						handlers.AddHandler<Entry, EntryHandler2>();
+					}
+					else
+					{
+						handlers.AddHandler<Entry, EntryHandler>();
+					}
 				});
 			});
 
@@ -317,15 +326,20 @@ namespace Microsoft.Maui.DeviceTests
 
 			await AttachAndRun(grid, async _ =>
 			{
-				var platformEntry = GetPlatformControl((EntryHandler)entry.Handler!);
-				var platformEntryBelow = GetPlatformControl((EntryHandler)entryBelow.Handler!);
-				await AssertEventually(() => platformEntry.IsLaidOut && platformEntryBelow.IsLaidOut);
+				var editText = GetFocusableEditText(entry);
+				var editTextBelow = GetFocusableEditText(entryBelow);
+				// The TextInputLayout of Material 3 attaches its EditText again, which then isn't IsLaidOut although it has its size
+				await AssertEventually(() => editText.Height > 0 && editTextBelow.Height > 0);
 
 				// Without a keyboard or a D-pad, the device is in touch mode, where a Button can't take the focus.
 				((ButtonHandler)button.Handler!).PlatformView.FocusableInTouchMode = true;
 
-				Assert.Same(platformEntryBelow, platformEntry.FocusSearch(global::Android.Views.FocusSearchDirection.Down));
+				Assert.Same(editTextBelow, editText.FocusSearch(global::Android.Views.FocusSearchDirection.Down));
 			});
 		}
+
+		// With Material 3, the EditText is inside the TextInputLayout of EntryHandler2.
+		static global::Android.Widget.EditText GetFocusableEditText(Entry entry) =>
+			entry.Handler is EntryHandler2 materialHandler ? materialHandler.PlatformView.EditText! : GetPlatformControl((EntryHandler)entry.Handler!);
 	}
 }
