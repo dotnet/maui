@@ -55,6 +55,27 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Null(keyListener);
 		}
 
+		[Theory(DisplayName = "Updating IsReadOnly Keeps The Selection")]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task UpdatingIsReadOnlyKeepsSelection(bool isReadOnly)
+		{
+			var searchBar = new SearchBarStub() { Text = "abcdef" };
+
+			var selection = await GetValueAsync(searchBar, handler =>
+			{
+				var editText = GetNativeSearchBar(handler).GetChildrenOfType<EditText>().First();
+				editText.SetSelection(1, 4);
+
+				searchBar.IsReadOnly = isReadOnly;
+				handler.UpdateValue(nameof(ISearchBar.IsReadOnly));
+
+				return (editText.SelectionStart, editText.SelectionEnd);
+			});
+
+			Assert.Equal((1, 4), selection);
+		}
+
 		// Regression tests for https://github.com/dotnet/maui/issues/30779
 		// SearchBar.CursorPosition and SelectionLength were not updated when the user typed
 

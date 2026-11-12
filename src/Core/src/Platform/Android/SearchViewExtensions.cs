@@ -20,6 +20,10 @@ namespace Microsoft.Maui.Platform
 		static readonly int[] s_EnabledState = [AAttribute.StateEnabled];
 		public static void UpdateText(this SearchView searchView, ISearchBar searchBar)
 		{
+			// Setting the same query again would move the cursor to the end and drop the selection
+			if ((searchView.Query ?? string.Empty) == (searchBar.Text ?? string.Empty))
+				return;
+
 			searchView.SetQuery(searchBar.Text, false);
 		}
 
