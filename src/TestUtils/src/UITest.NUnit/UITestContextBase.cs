@@ -74,7 +74,19 @@ namespace UITest.Appium.NUnit
 			if (reset || _uiTestContext == null)
 			{
 				_uiTestContext?.Dispose();
-				_uiTestContext = context.CreateUIClientContext(testConfig);
+				_uiTestContext = null;
+				try
+				{
+					_uiTestContext = context.CreateUIClientContext(testConfig);
+				}
+				catch (AndroidDeviceUnavailableException ex)
+				{
+					global::NUnit.Framework.TestContext.Error.WriteLine(ex.Message);
+					// Propagate a graceful stop to parent suites, allowing NUnit to publish results and run teardown.
+					global::NUnit.Framework.Internal.TestExecutionContext.CurrentContext.ExecutionStatus =
+						global::NUnit.Framework.Internal.TestExecutionStatus.StopRequested;
+					throw;
+				}
 			}
 
 			if (_uiTestContext == null)

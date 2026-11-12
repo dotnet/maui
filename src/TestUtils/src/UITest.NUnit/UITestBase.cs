@@ -236,7 +236,8 @@ namespace UITest.Appium.NUnit
 			var outcome = TestContext.CurrentContext.Result.Outcome;
 
 			// We only care about setup failures as regular test failures will already do logging
-			if (outcome.Status == ResultState.SetUpFailure.Status &&
+			if (UITestContext != null &&
+				outcome.Status == ResultState.SetUpFailure.Status &&
 				outcome.Site == ResultState.SetUpFailure.Site)
 			{
 				SaveDeviceDiagnosticInfo();

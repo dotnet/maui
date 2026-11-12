@@ -158,6 +158,8 @@ void RunUITestsWithRetry(string project, string config, string toolPath, string 
 
 			testFailure?.Throw();
 			reportFailure?.Throw();
+			if (UITestRetry.IsCancelled(reports))
+				throw new InvalidOperationException("UI test run was stopped; not retrying cancelled tests.");
 			XNamespace trxNamespace = "http://microsoft.com/schemas/VisualStudio/TeamTest/2010";
 			if (nunitFailed || retryResultsMissing || (string)originalResults?.Root.Element(trxNamespace + "ResultSummary")?.Attribute("outcome") == "Failed")
 				throw new InvalidOperationException("UI test results contain unresolved test or fixture failures.");
@@ -165,7 +167,7 @@ void RunUITestsWithRetry(string project, string config, string toolPath, string 
 		}
 		catch (Exception ex)
 		{
-			if (retryCount == numOfRetries || archiveFailed)
+			if (retryCount == numOfRetries || archiveFailed || UITestRetry.IsCancelled(reports))
 			{
 				onFinalFailure?.Invoke();
 				throw;

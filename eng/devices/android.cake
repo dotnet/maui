@@ -576,14 +576,20 @@ void WriteLogCat(string filename = null)
 	using (var fs = new System.IO.FileStream(location, System.IO.FileMode.Create))
 	using (var sw = new StreamWriter(fs))
 	{
-		processSettings.RedirectedStandardOutputHandler = (output) =>
+		using (var process = StartAndReturnProcess(adb, processSettings))
 		{
-			sw.WriteLine(output);
-			return output;
-		};
-
-		var process = StartProcess($"{adb}", processSettings);
-		Information("exit code {0}", process);
+			if (!process.WaitForExit(AdbCommandTimeoutSeconds * 1000))
+			{
+				process.Kill();
+				Warning("Logcat collection timed out after {0} seconds; stopping diagnostics.", AdbCommandTimeoutSeconds);
+				return;
+			}
+			foreach (var output in process.GetStandardOutput())
+				sw.WriteLine(output);
+			foreach (var error in process.GetStandardError())
+				Warning("ADB logcat: {0}", error);
+			Information("exit code {0}", process.GetExitCode());
+		}
 	}
 
 	Information("Logcat written to {0}", location);

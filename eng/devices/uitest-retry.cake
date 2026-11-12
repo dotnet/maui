@@ -6,6 +6,10 @@ using System.Text.RegularExpressions;
 
 public static class UITestRetry
 {
+    public static bool IsCancelled(IEnumerable<XDocument> reports) =>
+        reports.Any(report => report.Root?.DescendantsAndSelf()
+            .Any(node => (string)node.Attribute("label") == "Cancelled") == true);
+
     public static void RunSetup(Action setup, bool retry, Action<Exception> onRetry)
     {
         var maxAttempts = retry ? 5 : 1;

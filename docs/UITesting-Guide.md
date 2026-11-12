@@ -49,6 +49,22 @@ dotnet build ./src/Provisioning/Provisioning.csproj -t:ProvisionAppium -p:SkipAp
 - Xcode with command-line tools installed
 - iOS Simulator configured
 
+### Android device connectivity failures
+
+Before creating or retrying an Appium session, the harness checks that the
+selected device responds to `adb shell getprop sys.boot_completed` with `1`.
+It uses the configured `Udid` for both ADB and Appium, so another connected
+device cannot accidentally satisfy the check.
+
+If the device is unavailable, the harness attempts one ADB reconnect, followed
+by at most three readiness checks five seconds apart. Each ADB command has a
+five-second execution timeout; process termination and output collection are
+also bounded. If recovery fails, the harness logs an infrastructure error and
+requests a graceful NUnit stop instead of repeating Appium's session retries
+for every fixture. NUnit teardown and result publication still run, and the
+Cake runner does not retry the cancelled test batch. Ordinary assertion
+failures retain the existing test retry behavior.
+
 ## Android Shell Handler and Renderer Lanes
 
 The main Android UI-test stage runs `Shell1` and `Shell2` as separate matrix jobs

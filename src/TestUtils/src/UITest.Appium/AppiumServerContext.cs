@@ -29,9 +29,12 @@ namespace UITest.Appium
 
 			var testDevice = config.GetProperty<TestDevice>("TestDevice");
 			var driverUri = new Uri($"http://localhost:{Port}/wd/hub");
+			var androidConnection = testDevice == TestDevice.Android ? new AndroidDeviceConnection() : null;
 
 			while (true)
 			{
+				androidConnection?.EnsureReady(config.GetProperty<string>("Udid"));
+
 				try
 				{
 					// TODO: Create these IApp instances should not be hardcoded types

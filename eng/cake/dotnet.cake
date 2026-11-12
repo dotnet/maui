@@ -279,6 +279,7 @@ Task("dotnet-test")
             "**/Essentials.ExternalBackend.UnitTests.csproj",
             "**/Resizetizer.UnitTests.csproj",
             "**/VisualTestUtils.MagickNet.Tests.csproj",
+            "**/UITest.Appium.Tests.csproj",
             "**/Graphics.Tests.csproj",
             "**/MauiBlazorWebView.UnitTests.csproj",
         };

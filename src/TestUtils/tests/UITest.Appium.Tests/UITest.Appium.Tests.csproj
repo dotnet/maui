@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>$(_MauiDotNetTfm)</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <IsPackable>false</IsPackable>
+    <MauiTestProject>true</MauiTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="xunit" Version="$(XunitPackageVersion)" />
+    <ProjectReference Include="..\..\src\UITest.Appium\UITest.Appium.csproj" />
+    <ProjectReference Include="..\..\src\UITest.NUnit\UITest.NUnit.csproj" />
+    <Compile Include="..\..\..\..\eng\devices\uitest-retry.cake" Link="UITestRetry.cs" />
+  </ItemGroup>
+</Project>

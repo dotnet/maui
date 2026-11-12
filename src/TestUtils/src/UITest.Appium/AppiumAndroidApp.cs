@@ -116,6 +116,10 @@ namespace UITest.Appium
 
 			SetGeneralAppiumOptions(config, options);
 
+			var udid = config.GetProperty<string>("Udid");
+			if (!string.IsNullOrWhiteSpace(udid))
+				options.AddAdditionalAppiumOption(MobileCapabilityType.Udid, udid);
+
 			if (!string.IsNullOrEmpty(GetTestConfigurationArgs(config)))
 				options.AddAdditionalAppiumOption("autoLaunch", false);
 
