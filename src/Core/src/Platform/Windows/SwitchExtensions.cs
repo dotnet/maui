@@ -64,10 +64,7 @@ namespace Microsoft.Maui.Platform
 				}
 			}
 
-			if (view.IsOn)
-			{
-				UpdateOnPointerOverResources(toggleSwitch, trackColor);
-			}
+			UpdateOnPointerOverResources(toggleSwitch, view.IsOn ? trackColor : null);
 
 			toggleSwitch.RefreshThemeResources();
 		}
@@ -93,6 +90,7 @@ namespace Microsoft.Maui.Platform
 			var resources = toggleSwitch.Resources;
 			if (s_switchHoverResourceStates.TryGetValue(toggleSwitch, out var state) && !ReferenceEquals(state.Owner, resources))
 			{
+				ClearOnPointerOverResources(state);
 				s_switchHoverResourceStates.Remove(toggleSwitch);
 				state = null;
 			}
@@ -106,22 +104,15 @@ namespace Microsoft.Maui.Platform
 				s_switchHoverResourceStates.Add(toggleSwitch, state);
 			}
 
-			bool hasDirectValue = TryGetLocalHoverResource(resources, out var directValue);
 			if (trackColor is null)
 			{
-				if (state.HasOriginalDirectValue && !hasDirectValue)
-					resources[OnPointerOverResourceKey] = state.OriginalDirectValue;
-
-				UpdateOnPointerOverResource(state, "Default", null);
-				UpdateOnPointerOverResource(state, "HighContrast", null);
-				if (IsEmpty(state.Resources))
-					resources.MergedDictionaries.Remove(state.Resources);
-
+				ClearOnPointerOverResources(state);
 				s_switchHoverResourceStates.Remove(toggleSwitch);
 				return;
 			}
 
 			// Direct entries precede merged resources; leave application theme dictionaries untouched.
+			bool hasDirectValue = TryGetLocalHoverResource(resources, out var directValue);
 			if (hasDirectValue)
 			{
 				state.HasOriginalDirectValue = true;
@@ -151,6 +142,38 @@ namespace Microsoft.Maui.Platform
 			public Brush? AppliedBrush { get; set; }
 		}
 
+		static void ClearOnPointerOverResources(SwitchHoverResourceState state)
+		{
+			foreach (var entry in state.ThemeStates)
+				ClearOnPointerOverResource(state.Resources, entry.Key, entry.Value);
+
+			state.ThemeStates.Clear();
+			if (state.HasOriginalDirectValue && !TryGetLocalHoverResource(state.Owner, out _))
+				state.Owner[OnPointerOverResourceKey] = state.OriginalDirectValue;
+
+			if (IsEmpty(state.Resources))
+				state.Owner.MergedDictionaries.Remove(state.Resources);
+		}
+
+		static void ClearOnPointerOverResource(ResourceDictionary resources, string theme, HoverResourceState state)
+		{
+			var themeResources = state.Resources;
+			if (TryGetLocalHoverResource(themeResources, out var currentValue) && ReferenceEquals(currentValue, state.AppliedBrush))
+			{
+				if (state.HasOriginalValue)
+					themeResources[OnPointerOverResourceKey] = state.OriginalValue;
+				else
+					themeResources.Remove(OnPointerOverResourceKey);
+			}
+
+			// A detached dictionary can still be reused by the application; clean it without removing its replacement.
+			if (state.CreatedDictionary && IsEmpty(themeResources) &&
+				resources.ThemeDictionaries.TryGetValue(theme, out var dictionary) && ReferenceEquals(dictionary, themeResources))
+			{
+				resources.ThemeDictionaries.Remove(theme);
+			}
+		}
+
 		static void UpdateOnPointerOverResource(SwitchHoverResourceState switchState, string theme, Brush? brush)
 		{
 			var resources = switchState.Resources;
@@ -159,23 +182,22 @@ namespace Microsoft.Maui.Platform
 				: null;
 			bool createdDictionary = themeResources is null;
 
+			if (switchState.ThemeStates.TryGetValue(theme, out var state) && !ReferenceEquals(state.Resources, themeResources))
+			{
+				ClearOnPointerOverResource(resources, theme, state);
+				switchState.ThemeStates.Remove(theme);
+				state = null;
+			}
+
 			if (themeResources is null)
 			{
 				if (brush is null)
-				{
-					switchState.ThemeStates.Remove(theme);
 					return;
-				}
 
 				themeResources = new ResourceDictionary();
 				resources.ThemeDictionaries[theme] = themeResources;
 			}
 
-			if (switchState.ThemeStates.TryGetValue(theme, out var state) && !ReferenceEquals(state.Resources, themeResources))
-			{
-				switchState.ThemeStates.Remove(theme);
-				state = null;
-			}
 			if (brush is null && state is null)
 				return;
 
@@ -183,18 +205,8 @@ namespace Microsoft.Maui.Platform
 
 			if (brush is null)
 			{
-				if (state is not null && hasCurrentValue && ReferenceEquals(currentValue, state.AppliedBrush))
-				{
-					if (state.HasOriginalValue)
-						themeResources[OnPointerOverResourceKey] = state.OriginalValue;
-					else
-						themeResources.Remove(OnPointerOverResourceKey);
-
-					if (state.CreatedDictionary && IsEmpty(themeResources))
-					{
-						resources.ThemeDictionaries.Remove(theme);
-					}
-				}
+				if (state is not null)
+					ClearOnPointerOverResource(resources, theme, state);
 
 				switchState.ThemeStates.Remove(theme);
 				return;
