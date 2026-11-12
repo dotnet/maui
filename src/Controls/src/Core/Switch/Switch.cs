@@ -43,7 +43,6 @@ namespace Microsoft.Maui.Controls
 			propertyChanged: (bindable, oldValue, newValue) =>
 			{
 				((IView)bindable)?.Handler?.UpdateValue(nameof(ISwitch.TrackColor));
-				((IView)bindable)?.Handler?.UpdateValue(nameof(OnColor));
 			});
 
 		/// <summary>Bindable property for <see cref="OffColor"/>. This is a bindable property.</summary>

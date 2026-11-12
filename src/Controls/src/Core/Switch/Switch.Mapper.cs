@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls
 
 		private new static void RemapForControls()
 		{
-			VisualElement.RemapForControls();
+			VisualElement.RemapIfNeeded();
 
 #if IOS || MACCATALYST
 			SwitchHandler.Mapper.ReplaceMapping<Switch, ISwitchHandler>(nameof(OnColor), MapOnColor);
