@@ -5,6 +5,7 @@ using System.ComponentModel;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
+using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using WApp = Microsoft.UI.Xaml.Application;
@@ -19,6 +20,7 @@ namespace Microsoft.Maui.Controls.Handlers
 				{
 					[nameof(ShellItem.Title)] = MapTitle,
 					[nameof(ShellItem.CurrentItem)] = MapCurrentItem,
+					[nameof(Element.AutomationId)] = MapAutomationId,
 					[Shell.TabBarIsVisibleProperty.PropertyName] = MapTabBarIsVisible
 				};
 
@@ -44,6 +46,12 @@ namespace Microsoft.Maui.Controls.Handlers
 			return new MauiNavigationView();
 		}
 
+		internal static void MapAutomationId(ShellItemHandler handler, ShellItem shellItem)
+		{
+			if (shellItem is TabBar && ((IShellItemController)shellItem).ShowTabs && handler.PlatformView is NavigationView navigationView)
+				navigationView.SetAutomationPropertiesAutomationId(shellItem.AutomationId);
+		}
+
 		void OnNavigationViewLoaded(object sender, RoutedEventArgs e)
 		{
 			PlatformView?.Loaded -= OnNavigationViewLoaded;
@@ -58,6 +66,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 			if (mauiNavView is not null)
 			{
+				mauiNavView.SetAutomationProperties(VirtualView, MauiContext);
 				mauiNavView.PaneDisplayMode = NavigationViewPaneDisplayMode.Top;
 				mauiNavView.IsBackButtonVisible = NavigationViewBackButtonVisible.Collapsed;
 				mauiNavView.IsSettingsVisible = false;
@@ -376,6 +385,13 @@ namespace Microsoft.Maui.Controls.Handlers
 
 				void SetValues(BaseShellItem bsi, NavigationViewItemViewModel vm)
 				{
+					vm.AutomationId = VirtualView is TabBar &&
+						((IShellItemController)VirtualView).ShowTabs
+						? bsi is ShellSection shellSection
+							? shellSection.AutomationId ?? shellSection.CurrentItem?.AutomationId
+							: bsi.AutomationId
+						: null;
+					vm.AccessibilityView = (bool?)bsi.GetValue(AutomationProperties.IsInAccessibleTreeProperty) == false ? AccessibilityView.Raw : AccessibilityView.Content;
 					vm.Content = bsi.Title;
 
 					vm.IsEnabled = bsi.IsEnabled;
@@ -404,8 +420,11 @@ namespace Microsoft.Maui.Controls.Handlers
 
 			UpdateOverflowMenuItems();
 
-			if (PlatformView is NavigationView navView && navView.SelectedItem != selectedItem)
-				navView.SelectedItem = selectedItem;
+			if (PlatformView is NavigationView navView)
+			{
+				if (navView.SelectedItem != selectedItem)
+					navView.SelectedItem = selectedItem;
+			}
 
 			if (_shellAppearanceElement is not null)
 			{
@@ -697,6 +716,12 @@ namespace Microsoft.Maui.Controls.Handlers
 						break;
 					case nameof(BaseShellItem.Title):
 						_mainLevelTabs[i].Content = shellItem.Title;
+						break;
+					case var propertyName when propertyName == AutomationProperties.IsInAccessibleTreeProperty.PropertyName:
+						_mainLevelTabs[i].AccessibilityView =
+							(bool?)shellItem.GetValue(AutomationProperties.IsInAccessibleTreeProperty) == false
+								? AccessibilityView.Raw
+								: AccessibilityView.Content;
 						break;
 				}
 				return;
