@@ -105,14 +105,16 @@ namespace Microsoft.Maui.DeviceTests
 				var platformButton = handler.PlatformView;
 				var otherButton = new WButton { Content = "Other" };
 				var root = new WStackPanel { Children = { platformButton, otherButton } };
-				await root.AttachAndRun(() =>
+				await root.AttachAndRun(async () =>
 				{
 					Assert.True(platformButton.Focus(FocusState.Programmatic));
+					await AssertionExtensions.AssertEventually(() => platformButton.FocusState != FocusState.Unfocused);
 					PressActivationKey(handler);
 					Assert.True(pressed);
 
+					// WinUI raises LostFocus after Focus returns.
 					Assert.True(otherButton.Focus(FocusState.Programmatic));
-					Assert.False(pressed);
+					await AssertionExtensions.AssertEventually(() => !pressed, timeout: 2000);
 					Assert.Equal(1, releases);
 					Assert.Equal(0, clicks);
 

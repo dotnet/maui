@@ -86,7 +86,10 @@ public class ContentButtonFeatureTests : _GalleryUITest
 		Assert.That(Status, Does.Contain("IsPressed=False"));
 	}
 
-#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST // Mouse drags do not pan a ScrollView on desktop.
+	// Mouse drags do not pan a ScrollView on desktop. Android covers this through
+	// ContentButtonAndroidTests.ScrollingAncestorCancelsNativeActivation, which dispatches the gesture
+	// through the native ScrollView; the UiAutomator2 drag did not match native dispatch in CI.
+#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_ANDROID
 	[Test]
 	[Category(UITestCategories.Button)]
 	public void ScrollingAncestorCancelsActivation()

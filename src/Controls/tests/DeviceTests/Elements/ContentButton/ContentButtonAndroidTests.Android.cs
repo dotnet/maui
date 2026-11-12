@@ -61,6 +61,77 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task ScrollingAncestorCancelsNativeActivation()
+		{
+			EnsureHandlerCreated(builder => builder.ConfigureMauiHandlers(handlers =>
+			{
+				handlers.AddHandler<ControlsContentButton, ContentButtonHandler>();
+				handlers.AddHandler<Label, LabelHandler>();
+				handlers.AddHandler<ScrollView, ScrollViewHandler>();
+				handlers.AddHandler<Layout, LayoutHandler>();
+				handlers.AddHandler<VerticalStackLayout, LayoutHandler>();
+				handlers.AddHandler<BoxView, Microsoft.Maui.Controls.Handlers.BoxViewHandler>();
+			}));
+
+			var clicks = 0;
+			var pressed = 0;
+			var released = 0;
+			var status = new Label { Text = "Ready" };
+			var button = new ControlsContentButton { HeightRequest = 120, Content = new Label { Text = "Drag" } };
+			button.Clicked += (_, _) => status.Text = $"Clicks={++clicks}";
+			button.Pressed += (_, _) => status.Text = $"Pressed={++pressed}; status grows while the press is active";
+			button.Released += (_, _) => status.Text = $"Released={++released}";
+			var scroll = new ScrollView
+			{
+				HeightRequest = 240,
+				Content = new VerticalStackLayout { button, new BoxView { HeightRequest = 600 } },
+			};
+			scroll.Scrolled += (_, e) => status.Text = $"ScrollY={e.ScrollY:0}; scrolling updates the surrounding layout";
+			var root = new VerticalStackLayout { status, scroll };
+
+			await CreateHandlerAndAddToWindow<LayoutHandler>(root, async _ =>
+			{
+				await AssertionExtensions.AssertEventually(() => button.Height > 0 && scroll.Height > 0);
+
+				var scrollView = Assert.IsAssignableFrom<MauiScrollView>(scroll.Handler!.PlatformView);
+				var buttonView = Assert.IsAssignableFrom<global::Android.Views.View>(button.Handler!.PlatformView);
+				var scrollLocation = new int[2];
+				var buttonLocation = new int[2];
+				scrollView.GetLocationInWindow(scrollLocation);
+				buttonView.GetLocationInWindow(buttonLocation);
+
+				// Move within the button's bounds; only the ancestor's cancellation prevents activation.
+				var x = buttonLocation[0] - scrollLocation[0] + buttonView.Width / 2f;
+				var startY = buttonLocation[1] - scrollLocation[1] + buttonView.Height * 0.8f;
+				var endY = buttonLocation[1] - scrollLocation[1] + buttonView.Height * 0.2f;
+				// Deliver the gesture over real time so layout updates can run between moves.
+				var downTime = global::Android.OS.SystemClock.UptimeMillis();
+				Dispatch(scrollView, MotionEventActions.Down, downTime, downTime, x, startY);
+				for (var i = 1; i <= 10; i++)
+				{
+					await Task.Delay(25);
+					Dispatch(scrollView, MotionEventActions.Move, downTime, global::Android.OS.SystemClock.UptimeMillis(), x, startY + (endY - startY) * i / 10);
+				}
+				await Task.Delay(25);
+				Dispatch(scrollView, MotionEventActions.Up, downTime, global::Android.OS.SystemClock.UptimeMillis(), x, endY);
+
+				// Android posts click delivery after ACTION_UP.
+				await Task.Delay(500);
+
+				Assert.True(scrollView.ScrollY > 0, "The ScrollView should handle the drag.");
+				Assert.Equal(0, clicks);
+				Assert.Equal(pressed, released);
+				Assert.False(button.IsPressed);
+			});
+
+			static void Dispatch(global::Android.Views.View view, MotionEventActions action, long downTime, long eventTime, float x, float y)
+			{
+				using var motionEvent = MotionEvent.Obtain(downTime, eventTime, action, x, y, 0);
+				view.DispatchTouchEvent(motionEvent);
+			}
+		}
+
+		[Fact]
 		public async Task ChildTextChangeAutomaticallyResizesNativeButton()
 		{
 			SetupBuilder();
