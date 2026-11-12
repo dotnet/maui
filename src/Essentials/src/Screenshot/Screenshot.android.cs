@@ -54,8 +54,11 @@ namespace Microsoft.Maui.Media
 			// PixelCopy copies whatever the window shows inside the view's on-screen bounds,
 			// so for an individual view it would also capture overlapping siblings and miss
 			// parts that are scrolled or clipped out of sight. Only use it when the view is the
-			// whole window; otherwise render the view itself.
-			var window = GetActivity(view.Context)?.Window;
+			// whole window; otherwise render the view itself. A window's root view has a context
+			// that does not lead back to the activity, so look the activity up for root views.
+			var activity = GetActivity(view.Context)
+				?? (view.RootView == view ? ActivityStateManager.Default.GetCurrentActivity() : null);
+			var window = activity?.Window;
 			if (window?.DecorView?.RootView != view)
 				window = null;
 
