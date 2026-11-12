@@ -1,5 +1,11 @@
 # Template for build + pack on dnceng
 parameters:
+- name: dependsOn
+  type: object
+  default: []
+- name: condition
+  type: string
+  default: succeeded()
 - name: prepareSteps
   type: stepList
   default: []
@@ -35,7 +41,8 @@ parameters:
 stages:
 - stage: Pack
   displayName: Pack .NET MAUI
-  dependsOn: []
+  dependsOn: ${{ parameters.dependsOn }}
+  condition: ${{ parameters.condition }}
   jobs:
   # macOS job
   - template: ${{ iif(eq(parameters.is1ESPipeline, 'true'), '/eng/common/templates-official/jobs/jobs.yml@self', '/eng/common/templates/jobs/jobs.yml') }}

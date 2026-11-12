@@ -1447,7 +1447,7 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 	[Fact]
 	public void ResourceAdded_UCEmitsResourceDictionaryAdd()
 	{
-		// Adding a resource should emit this.Resources["key"] = value
+		// Additions must not overwrite existing resources or force their construction.
 		XamlHotReloadState.Reset();
 		const string xamlV1 = """
 			<?xml version="1.0" encoding="utf-8" ?>
@@ -1483,7 +1483,9 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		Assert.NotNull(uc);
 		Assert.Contains("Resources", uc, StringComparison.Ordinal);
 		Assert.Contains("SecondaryColor", uc, StringComparison.Ordinal);
-		Assert.Contains("RegisterResourceKeys", uc, StringComparison.Ordinal);
+		Assert.Contains("if (!this.Resources.ContainsKey(\"SecondaryColor\"))", uc, StringComparison.Ordinal);
+		Assert.Contains("AddFactory(\"SecondaryColor\"", uc, StringComparison.Ordinal);
+		Assert.DoesNotContain("this.Resources[\"AccentColor\"] =", uc, StringComparison.Ordinal);
 	}
 
 	[Fact]

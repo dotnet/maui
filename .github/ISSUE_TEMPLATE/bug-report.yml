@@ -42,6 +42,9 @@ body:
       label: Version with bug
       description: In what version do you see this issue? Run `dotnet workload list` to find your version.
       options:
+        - 11.0.20
+        - 11.0.10
+        - 11.0.0
         - 11.0.0-rc.2
         - 11.0.0-rc.1
         - 11.0.0-preview.7
@@ -78,35 +81,7 @@ body:
         - 10.0.0-preview.3
         - 10.0.0-preview.2
         - 10.0.0-preview.1
-        - 9.0.110 SR12
-        - 9.0.111 SR11.1
-        - 9.0.110 SR11
-        - 9.0.100 SR10
-        - 9.0.90 SR9
-        - 9.0.82 SR8.2
-        - 9.0.81 SR8.1
-        - 9.0.80 SR8
-        - 9.0.70 SR7
-        - 9.0.61 SR6.1
-        - 9.0.60 SR6
-        - 9.0.50 SR5
-        - 9.0.40 SR4
-        - 9.0.30 SR3
-        - 9.0.22 SR2.2
-        - 9.0.21 SR2.1
-        - 9.0.14 SR1.4
-        - 9.0.12 SR1.2
-        - 9.0.10 SR1
-        - 9.0.0 GA
-        - 9.0.0-rc.2.24503.2
-        - 9.0.0-rc.1.24453.9
-        - 9.0.0-preview.7.24407.4
-        - 9.0.0-preview.6.24327.7
-        - 9.0.0-preview.5.24307.10
-        - 9.0.0-preview.4.10690
-        - 9.0.0-preview.3.10457
-        - 9.0.0-preview.2.10293
-        - 9.0.0-preview.1.9973
+        - .NET 9 (Out of support, please specify exact version)
         - .NET 8 (Out of support, please specify exact version)
         - Nightly / CI build (Please specify exact version)
         - Unknown/Other
@@ -136,35 +111,7 @@ body:
         - .NET 6  (Please specify exact version)
         - .NET 7  (Please specify exact version)
         - .NET 8  (Please specify exact version)
-        - 9.0.0-preview.1.9973
-        - 9.0.0-preview.2.10293
-        - 9.0.0-preview.3.10457
-        - 9.0.0-preview.4.10690
-        - 9.0.0-preview.5.24307.10
-        - 9.0.0-preview.6.24327.7
-        - 9.0.0-preview.7.24407.4
-        - 9.0.0-rc.1.24453.9
-        - 9.0.0-rc.2.24503.2
-        - 9.0.0 GA
-        - 9.0.10 SR1
-        - 9.0.12 SR1.2
-        - 9.0.14 SR1.4
-        - 9.0.21 SR2.1
-        - 9.0.22 SR2.2
-        - 9.0.30 SR3
-        - 9.0.40 SR4
-        - 9.0.50 SR5
-        - 9.0.60 SR6
-        - 9.0.61 SR6.1
-        - 9.0.70 SR7
-        - 9.0.80 SR8
-        - 9.0.81 SR8.1
-        - 9.0.82 SR8.2
-        - 9.0.90 SR9
-        - 9.0.100 SR10
-        - 9.0.110 SR11
-        - 9.0.111 SR11.1
-        - 9.0.120 SR12
+        - .NET 9  (Please specify exact version)
         - 10.0.0-preview.1
         - 10.0.0-preview.2
         - 10.0.0-preview.3
@@ -201,6 +148,9 @@ body:
         - 11.0.0-preview.7
         - 11.0.0-rc.1
         - 11.0.0-rc.2
+        - 11.0.0
+        - 11.0.10
+        - 11.0.20
     validations:
       required: true
   - type: dropdown

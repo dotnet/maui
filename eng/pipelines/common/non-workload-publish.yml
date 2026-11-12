@@ -1,3 +1,8 @@
+parameters:
+- name: esrpServiceConnection
+  type: string
+  default: DotNetBuildESRP
+
 stages:
 - stage: publish_non_workload
   displayName: Release NuGet packages
@@ -45,15 +50,19 @@ stages:
       env:
         EXPECTED_SCRIPT_HASH: $(PackageStatusScriptHash)
 
-    - task: 1ES.PublishNuget@1
-      displayName: Push NuGet packages to NuGet.org
-      condition: and(succeeded(), eq(variables['NuGetPackagesToPublish'], 'true'))
-      inputs:
-        useDotNetTask: false
-        packagesToPush: '$(Pipeline.Workspace)\NuGetPackagesForRelease\*.nupkg'
-        packageParentPath: '$(Pipeline.Workspace)\NuGetPackagesForRelease'
-        nuGetFeedType: external
-        publishFeedCredentials: 'nuget.org (dotnetframework)'
+    - pwsh: |
+        $ErrorActionPreference = 'Continue'
+        Get-ChildItem Env: | Where-Object Name -match 'proxy' | Format-List Name,Value
+        netsh winhttp show proxy
+        Resolve-DnsName www.nuget.org
+        Resolve-DnsName api.nuget.org
+      displayName: Gather NuGet publishing network diagnostics
+      continueOnError: true
+
+    - template: /eng/pipelines/common/esrp-nuget-publish.yml@self
+      parameters:
+        packagesPath: '$(Pipeline.Workspace)\NuGetPackagesForRelease'
+        serviceConnection: ${{ parameters.esrpServiceConnection }}
 
     - pwsh: |
         $scriptPath = '$(Pipeline.Workspace)\NuGetPackagesForRelease\nuget_release_packages.ps1'

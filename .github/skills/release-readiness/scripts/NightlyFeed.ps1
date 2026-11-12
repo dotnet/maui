@@ -212,11 +212,17 @@ function Resolve-NightlyDogfoodFreshness {
         A freshness hashtable as returned by Get-NightlyFeedFreshness, augmented with a
         'buildType' key ('inflight' | 'band'); or @{ unknown = $true } when freshness
         could not be determined.
+    .PARAMETER RequireInflight
+        Configured active lanes set this with an exact version-base prefix read
+        from the selected nightly ref. No match stays no-match: do not borrow a
+        retained inflight band or ordinary main build. This is feed publication
+        evidence, not proof of the branch's signed-build identity.
     #>
     param(
         [Parameter(Mandatory)][string]$Feed,
         [Parameter(Mandatory)][string]$BandPrefixRegex,
         [string]$InflightPrefixRegex = 'ci\.inflight\.',
+        [bool]$RequireInflight = $false,
         [string]$Package = 'Microsoft.Maui.Controls',
         [int]$TimeoutSec = 20,
         [scriptblock]$Fetcher
@@ -232,6 +238,10 @@ function Resolve-NightlyDogfoodFreshness {
         return @{ unknown = $true }
     }
     if (Get-NightlyFeedProp $inflight 'matched') {
+        $inflight['buildType'] = 'inflight'
+        return $inflight
+    }
+    if ($RequireInflight) {
         $inflight['buildType'] = 'inflight'
         return $inflight
     }
@@ -482,4 +492,3 @@ function Format-ReportFreshnessBanner {
     }
     return "> 🕐 _Report generated $agePhrase._"
 }
-

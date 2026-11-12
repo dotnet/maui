@@ -257,6 +257,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			InvalidateMeasureIfContentSizeChanged();
 		}
 
+		public override void ViewDidLayoutSubviews()
+		{
+			base.ViewDidLayoutSubviews();
+
+			InvalidateMeasureIfContentSizeChanged(afterLayout: true);
+		}
+
 		void InvalidateLayoutIfItemsMeasureChanged()
 		{
 			var collectionView = CollectionView;
@@ -403,6 +410,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			ReloadData();
 			CollectionView.CollectionViewLayout.InvalidateLayout();
 
+			// UIKit can defer data-source callbacks while the collection has zero bounds.
+			// Refresh emptiness before measuring so a collapsed collection can grow again.
+			CheckForEmptySource();
+
 			// iOS/MacCatalyst: UIKit does not reset ContentOffset during ReloadData.
 			// ResetScrollTracking must run before the assignment so the UIKit-triggered
 			// scrollViewDidScroll callback computes delta from zero, not the stale previous offset.
@@ -527,10 +538,26 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				CollectionView.Frame.Width, CollectionView.Frame.Height);
 		}
 
-		void InvalidateMeasureIfContentSizeChanged()
+		void InvalidateMeasureIfContentSizeChanged(bool afterLayout = false)
 		{
 			if (CollectionView?.CollectionViewLayout?.CollectionViewContentSize is not { } contentSize)
 			{
+				return;
+			}
+
+			// Native bounds and self-sized content can differ by floating-point rounding.
+			const double sizeTolerance = 0.001;
+			if (afterLayout && CollectionView.Bounds is { } currentBounds &&
+				(IsHorizontal ? contentSize.Width > currentBounds.Width + sizeTolerance : contentSize.Height > currentBounds.Height + sizeTolerance))
+			{
+				// Leave overflowing estimates for the pre-layout check. Caching them here
+				// can prevent an unconstrained collection inside a ScrollView from growing.
+				// UIKit need not schedule another pass when only its content size changed.
+				if (_initialized && contentSize != _previousContentSize)
+				{
+					CollectionView.SetNeedsLayout();
+				}
+
 				return;
 			}
 
@@ -547,8 +574,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					return;
 				}
 
-				var cvWidth = bounds.Width;
-				var cvHeight = bounds.Height;
+				var cvWidth = bounds.Width + sizeTolerance;
+				var cvHeight = bounds.Height + sizeTolerance;
 				bool invalidate = false;
 
 				// If both the previous content size and the current content size are larger

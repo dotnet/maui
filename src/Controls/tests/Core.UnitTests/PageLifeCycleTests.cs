@@ -66,6 +66,34 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(firstPage, poppedPage.NavigatedFromArgs.DestinationPage);
 		}
 
+		[Fact]
+		// https://github.com/dotnet/maui/issues/20071
+		public async Task AppearingFiresOnceWhenPoppedToPagePushesFromAppearing()
+		{
+			var rootPage = new LCPage();
+			var childPage = new LCPage();
+			var nextPage = new LCPage();
+			Task pushTask = null;
+			int rootAppearingCount = 0;
+
+			NavigationPage navigationPage = new TestNavigationPage(true, rootPage)
+					.AddToTestWindow();
+			await navigationPage.PushAsync(childPage);
+
+			rootPage.Appearing += (_, _) =>
+			{
+				rootAppearingCount++;
+				pushTask ??= navigationPage.PushAsync(nextPage);
+			};
+
+			await navigationPage.PopAsync();
+			await pushTask;
+
+			Assert.Equal(1, rootAppearingCount);
+			Assert.Equal(nextPage, navigationPage.CurrentPage);
+			Assert.Equal(1, nextPage.AppearingCount);
+		}
+
 		[Theory]
 		[InlineData(false)]
 		[InlineData(true)]

@@ -59,10 +59,94 @@ main-to-net11 and net11-to-RC2 merge routes are retired; a future servicing cut
 must explicitly select its release branch rather than reuse the RC2 route.
 Official nightly builds exclude the historical `net10.0` and `net11.0` branches.
 
+For the staged .NET 12 transition described in `docs/ReleaseBranchWorkflow.md`,
+literal `net11` preserves the pre-transition `main` history. Primary CI definitions
+explicitly include `net11` and `candidate/*`; the official definition includes
+`net11` for signed nightly, localization and API-scan routing. These changes must
+be deployed before assuming that branch creation activates the new CI routes.
+Do not treat the historical `net11.0` subscription target as the new branch.
+
+Individual .NET11 fix PRs initially target `net11` for review. After approval,
+a maintainer manually retargets the PR to the active versioned inflight branch
+and merges it directly there; bots do not retarget or merge. Required CI must
+validate the final base. `net11` receives selected release contents through the
+separate candidate integration, not direct individual-fix merges. Milestone
+assignment must honor the final versioned staging base instead of net11's patch.
+
+Release-related tooling resolves the configured servicing branch independently
+of feature `main`: milestone ownership and review baselines must recognize
+literal `net11` and versioned candidate/inflight lanes. Credential-bearing
+review provisioning refuses the new servicing/staging targets until GitHub
+reports branch protection; the naming allowlist alone is not protection.
+The release migration must deploy those protections separately rather than
+bypass the refusal or grant extra pipeline permissions.
+
+The daily **Forward servicing fixes** workflow prepares a draft merge PR from an
+expendable automation head, not from the `net11` source ref itself. It activates
+only when the feature branch has a later major and the fixes tip has CI-normalized
+`ci.main` / non-stable package metadata. Candidates retain CI settings; their
+servicing flip is a separate reviewed PR on automation/release before the
+manual cut. The staging workflow prepares the normalized next-cycle net11-to-main PR too.
+Source/target refs are read-only; automation never guesses conflict resolutions,
+approves PRs, or auto-merges. Actual forward-PR CI remains a separate gate.
+
+The **Release tracking PRs** workflow prepares the next candidate/inflight
+branches and draft PR pair after a verified same-repository candidate merge into
+net11. Its merged-PR trigger uses default-branch workflow code and explicitly
+checks out trusted main, never PR code. A reproducible release-lane receipt pins
+inputs/outputs for same-source retries. A newer maintainer candidate merge
+supersedes stale cycle bookkeeping through an exact SHA lease, retaining its
+predecessor receipt and replacing only exact verified older generated outputs.
+Normalization, servicing and state PR heads use source-<full-candidate-merge-sha>
+suffixes, so historical PRs cannot block a newer source. Concurrent unrelated
+edits remain protected, and actual API/Git failures remain explicit.
+The deployed workflow stages the exact candidate merge,
+proposes next-cycle CI on net11 and creates the next pair. Independently, publication
+opens a servicing/stable PR targeting automation/release, before any real release.
+The maintainer reviews and merges using Create a merge commit, then manually
+creates the real release at that exact servicing merge. No post-cut servicing PR
+is opened. CI restoration is prepared as a reviewed normalization
+PR, never a direct protected net11 write. Until its pinned child is merged with
+Create a merge commit, the coordinator reports waiting-for-normalization-approval,
+preserves staging/current tracking SR, and withholds next-lane activation and
+forward flow. Its same-repository merged-PR trigger also accepts the managed
+automation/normalization route. It does not merge either reviewed PR, advance canonical
+release/nightly state, or publish customer packages. Completed production
+rollover prepares a draft canonical `currentSr` update after rechecking staging,
+normalized fixes and replacement lanes; review/CI/merge still gate the actual
+state change. Its `nightlyMode` is preserved, so the first versioned-nightly
+activation still requires independently verified deployment. The signed-publication
+workflow uses existing federation/internal access, waits for a reviewed servicing
+merge, exact manual cut and mirror source, queues the existing signed build, then canonical
+artifact preparation with pushPackages=false. Public release approvals remain.
+
+Configured servicing progress is independent of manual release tags. Readiness
+pins the first GA branch or preceding SR branch as its inventory baseline, keeps
+the current/prior cycle visible, and honors human closure per source/baseline
+snapshot. Tag creation, absence or movement cannot gate or advance cuts,
+normalization, replacement lanes or signing preparation. Stable tag-push
+milestone processing ignores the configured train; historical tag diagnostics
+and explicit manual release actions remain separate.
+
 .NET 10 SR13 publishes from `release/10.0.1xx-sr13`, independently of `main`.
 Preserve its release commit and packages, and keep publication on the .NET 10 channel during the
 .NET 11 transition. Do not cut over `inflight/current` or synchronize the internal
 `main` mirror as part of SR13 publication; those are separate .NET 11 operations.
+
+### Versioned inflight nightly migration
+
+The release-branch proposal in `docs/ReleaseBranchWorkflow.md` adds support for
+versioned `inflight/<band>-srN` sources without changing the existing
+`ci.inflight` package stream or the internal `dotnet-maui` signing/publishing path.
+Scheduled inflight runs select their eligible lane from
+`eng/release-rollover.json` at a pinned public `main` commit before packing.
+`nightlyMode: legacy` preserves `inflight/current`; `versioned` selects the state's
+`releaseBand` and `currentSr + 1`. Unselected retained lanes skip packing.
+
+This is a staged migration, not evidence that the new lanes are already building.
+Deploy the selection and branding changes to the internal mirrored source
+branches and verify signed artifacts/feed wiring before switching the canonical
+mode. Creating the public refs or passing the GitHub sandbox is not sufficient.
 
 ### Engineering dependency updates
 
@@ -72,6 +156,12 @@ and XHarness. Update the toolset as a coordinated dependency change: keep
 including its source commit, and take the matching `eng/common` update and feed
 changes when required. An individual NuGet version bump does not update the
 tracked toolset or shared build infrastructure.
+
+Stable Mono ToolChain and Emscripten workload manifests are published to
+NuGet.org. `src/DotNet/Dependencies/Workloads.csproj` adds that source only when
+restoring final runtime manifests; prerelease manifests retain the configured
+build feeds. Keep the pinned versions unchanged when repairing a missing-source
+`NU1102` failure rather than substituting the nearest older RTM package.
 
 Dependabot excludes these packages to avoid partial toolset upgrades. It also
 excludes `Magick.NET-Q8-AnyCPU` major version updates: version 15 changed screenshot

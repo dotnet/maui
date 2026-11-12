@@ -77,6 +77,7 @@ public static class TimePickerExtensions
 
 	public static void UpdateBackground(this TimePicker platformTimePicker, ITimePicker timePicker)
 	{
+		ControlExtensions.BackgroundImageRequests.Begin(platformTimePicker);
 		var brush = timePicker?.Background?.ToPlatform();
 
 		if (brush is null)

@@ -3,9 +3,11 @@ trigger:
   branches:
     include:
     - main
+    - net11
     - release/*
     - net*.0
     - inflight/*
+    - candidate/*
     - darc-*
   tags:
     include:
@@ -27,10 +29,13 @@ trigger:
 pr:
   branches:
     include:
+    - automation/release/*
     - main
+    - net11
     - release/*
     - net*.0
     - inflight/*
+    - candidate/*
   paths:
     include:
     - '*'

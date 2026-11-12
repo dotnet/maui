@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			UpdateSearchBarPlaceholder(uiTextField);
 			UpdateCancelButtonColor(cancelButton);
 			UpdateSearchBarBackgroundColor(uiTextField);
-			UpdateTextTransform(uiTextField);
+			UpdateText(uiTextField);
 		}
 
 		internal void UpdateFlowDirection(Shell shell)
@@ -88,9 +88,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				UpdateTextColor(_uiSearchBar.FindDescendantView<UITextField>());
 			}
-			else if (e.Is(SearchHandler.TextTransformProperty))
+			else if (e.IsOneOf(SearchHandler.QueryProperty, SearchHandler.TextTransformProperty))
 			{
-				UpdateTextTransform(_uiSearchBar.FindDescendantView<UITextField>());
+				UpdateText(_uiSearchBar.FindDescendantView<UITextField>());
 			}
 			else if (e.IsOneOf(SearchHandler.PlaceholderColorProperty, SearchHandler.PlaceholderProperty))
 			{
@@ -99,6 +99,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			else if (e.IsOneOf(SearchHandler.FontFamilyProperty, SearchHandler.FontAttributesProperty, SearchHandler.FontSizeProperty))
 			{
 				UpdateFont(_uiSearchBar.FindDescendantView<UITextField>());
+			}
+			else if (e.Is(SearchHandler.CharacterSpacingProperty))
+			{
+				UpdateCharacterSpacing(_uiSearchBar.FindDescendantView<UITextField>());
 			}
 			else if (e.Is(SearchHandler.CancelButtonColorProperty))
 			{
@@ -207,6 +211,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var targetColor = _searchHandler.PlaceholderColor;
 			var placeHolderColor = targetColor ?? Microsoft.Maui.Platform.ColorExtensions.PlaceholderColor.ToColor();
 			textField.AttributedPlaceholder = formatted.ToNSAttributedString(_fontManager, defaultHorizontalAlignment: _searchHandler.HorizontalTextAlignment, defaultColor: placeHolderColor);
+			UpdateCharacterSpacing(textField);
 
 			//Center placeholder
 			//var width = (_uiSearchBar.Frame.Width / 2) - textField.AttributedPlaceholder.Size.Width;
@@ -221,12 +226,33 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			//searchBarTextField.leftViewMode = .unlessEditing
 		}
 
-		void UpdateTextTransform(UITextField textField)
+		void UpdateText(UITextField textField)
+		{
+			if (textField is null)
+			{
+				return;
+			}
+
+			Platform.TextExtensions.UpdateText(textField, _searchHandler);
+			UpdateCharacterSpacing(textField);
+		}
+
+		void UpdateCharacterSpacing(UITextField textField)
 		{
 			if (textField == null)
 				return;
 
-			textField.Text = _searchHandler.UpdateFormsText(textField.Text, _searchHandler.TextTransform);
+			var hasSelection = textField.SelectedTextRange != null;
+			var cursorPosition = textField.GetCursorPosition();
+			var selectionLength = textField.GetSelectedTextLength();
+
+			textField.UpdateCharacterSpacing(_searchHandler);
+			UpdateSearchBarHorizontalTextAlignment(textField);
+
+			if (hasSelection)
+			{
+				textField.SetTextRange(cursorPosition, selectionLength);
+			}
 		}
 
 		void UpdateTextColor(UITextField textField)
