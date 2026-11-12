@@ -77,7 +77,8 @@ namespace Microsoft.Maui.DeviceTests
 
 					viewModel.Icon = CreateIcon("B", Colors.Blue);
 
-					MauiUIApplicationDelegate.Current.ValidateCommand(validatedCommand);
+					var appDelegate = (MauiUIApplicationDelegate.Current as MauiUIApplicationDelegate) ?? new TestApplicationDelegate();
+					appDelegate.ValidateCommand(validatedCommand);
 
 					var expectedImage = handler.PlatformView.Image;
 					Assert.NotNull(expectedImage);
@@ -114,6 +115,11 @@ namespace Microsoft.Maui.DeviceTests
 					OnPropertyChanged();
 				}
 			}
+		}
+
+		sealed class TestApplicationDelegate : MauiUIApplicationDelegate
+		{
+			protected override MauiApp CreateMauiApp() => throw new System.NotImplementedException();
 		}
 	}
 }
