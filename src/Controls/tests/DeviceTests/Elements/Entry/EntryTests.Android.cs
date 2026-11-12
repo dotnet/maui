@@ -73,13 +73,16 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(2, entry.CursorPosition);
 		}
 
-		[Fact]
-		public async Task ReadOnlyPasswordEntryIgnoresTextTransform()
+		// A read-only EditText has no InputType flags (TYPE_NULL): only a password Entry ignores TextTransform.
+		[Theory]
+		[InlineData(true, "EfGh")]
+		[InlineData(false, "EFGH")]
+		public async Task ReadOnlyEntryIgnoresTextTransformOnlyWhenItIsAPassword(bool isPassword, string expectedText)
 		{
 			var entry = new Entry
 			{
 				Text = "AbCd",
-				IsPassword = true,
+				IsPassword = isPassword,
 				IsReadOnly = true,
 				TextTransform = TextTransform.Uppercase
 			};
@@ -90,8 +93,8 @@ namespace Microsoft.Maui.DeviceTests
 				return GetPlatformControl(handler).Text;
 			});
 
-			Assert.Equal("EfGh", platformText);
-			Assert.Equal("EfGh", entry.Text);
+			Assert.Equal(expectedText, platformText);
+			Assert.Equal(expectedText, entry.Text);
 		}
 
 		[Fact]
