@@ -1,5 +1,4 @@
 using Foundation;
-using Microsoft.Maui.Controls.Handlers.Items2;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
@@ -21,9 +20,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 		}
 
-		internal static void ScrollToFirstItem(UICollectionView collectionView, ItemsLayoutOrientation orientation)
+		internal static void ScrollToFirstItem(UICollectionView? collectionView, ItemsLayoutOrientation orientation)
 		{
-			if (collectionView == null || collectionView.DataSource is CarouselViewController or CarouselViewController2)
+			if (collectionView == null)
 			{
 				return;
 			}
