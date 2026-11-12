@@ -394,6 +394,36 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.NotEqual(modalPageToolBar, rootPageToolbar);
 
 		}
+
+		[Fact]
+		public async Task ToolbarRecreatedWhenNavigationPageInsideModalPageIsReplaced()
+		{
+			var window = new TestWindow();
+			var startingPage = new TestNavigationPage(true, new ContentPage());
+			window.Page = startingPage;
+			await startingPage.NavigatingTask;
+
+			var tabbedPage = new TabbedPage
+			{
+				Children = { new NavigationPage(new ContentPage()) }
+			};
+
+			await startingPage.Navigation.PushModalAsync(tabbedPage);
+
+			IToolbarElement modalToolbarElement = tabbedPage;
+			var originalToolbar = modalToolbarElement.Toolbar;
+			Assert.IsType<NavigationPageToolbar>(originalToolbar);
+
+			tabbedPage.Children.RemoveAt(0);
+			tabbedPage.Children.Add(new NavigationPage(new ContentPage()));
+
+			// Replacing the NavigationPage should recreate the modal root's toolbar,
+			// not leave the disconnected one from the removed NavigationPage behind
+			var replacementToolbar = modalToolbarElement.Toolbar;
+			Assert.IsType<NavigationPageToolbar>(replacementToolbar);
+			Assert.NotSame(originalToolbar, replacementToolbar);
+		}
+
 		[Fact]
 		public void NavigationPageSetBackButtonAccessibilityLabel()
 		{
