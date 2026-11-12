@@ -113,6 +113,19 @@ public class XamlGenerator : IIncrementalGenerator
 			.Select(static (pair, ct) => GetAssemblyAttributes(pair.Left, pair.Right.ToArray(), ct))
 			.WithTrackingName(TrackingNames.XmlnsDefinitionsProviderForIC);
 
+		// Select first: WithComparer clones the upstream transform, which would re-parse all code-behind.
+		var conflictCompilationProvider = compilationWithCodeBehindProvider
+			.Select(static (compilation, _) => compilation)
+			.WithComparer(new CompilationSignaturesComparer(includePrivateMembers: true));
+		var conflictXmlnsProvider = conflictCompilationProvider.Select(GetAssemblyAttributes);
+		var conflictDocumentProvider = xamlProjectItemProviderForCB
+			.Combine(conflictXmlnsProvider)
+			.Select(XamlTypeConflictAnalyzer.ParseDocument);
+		var conflictDiagnosticsProvider = conflictDocumentProvider
+			.Combine(conflictXmlnsProvider, conflictCompilationProvider)
+			.Select(XamlTypeConflictAnalyzer.Analyze)
+			.WithTrackingName("XamlTypeConflictDiagnostics");
+
 		var xamlSourceProviderForIC = xamlProjectItemProviderForIC
 			.Combine(xmlnsDefinitionsProviderForIC, compilationWithCodeBehindProvider.Select(GetTypeCache), compilationWithCodeBehindProvider)
 			.WithTrackingName(TrackingNames.XamlSourceProviderForIC);
@@ -134,6 +147,12 @@ public class XamlGenerator : IIncrementalGenerator
 			{
 				sourceProductionContext.ReportDiagnostic(XamlDiagnosticHelpers.CreateXamlParserDiagnostic(xamlItem?.ProjectItem, xamlItem?.SourceText, e));
 			}
+		});
+
+		initContext.RegisterSourceOutput(conflictDiagnosticsProvider, static (context, diagnostics) =>
+		{
+			foreach (var diagnostic in diagnostics)
+				context.ReportDiagnostic(diagnostic);
 		});
 
 		// Register the XAML pipeline for InitializeComponent
