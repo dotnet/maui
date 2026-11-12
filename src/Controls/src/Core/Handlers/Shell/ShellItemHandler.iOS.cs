@@ -43,6 +43,7 @@ namespace Microsoft.Maui.Controls.Handlers
             new PropertyMapper<ShellItem, ShellItemHandler>(ElementMapper)
             {
                 [nameof(ShellItem.CurrentItem)] = MapCurrentItem,
+                [nameof(Element.AutomationId)] = MapAutomationId,
                 [Shell.TabBarIsVisibleProperty.PropertyName] = MapTabBarIsVisible,
                 [PlatformConfiguration.iOSSpecific.Page.PrefersHomeIndicatorAutoHiddenProperty.PropertyName] = MapPrefersHomeIndicatorAutoHidden,
                 [PlatformConfiguration.iOSSpecific.Page.PrefersStatusBarHiddenProperty.PropertyName] = MapPrefersStatusBarHidden,
@@ -297,6 +298,8 @@ namespace Microsoft.Maui.Controls.Handlers
         {
             _appearanceTracker?.UpdateLayout(_tabBarController);
             UpdateNavBarHidden();
+            UpdateTabBarAutomationIds();
+            UpdateMoreCellsEnabled();
         }
 
         void ITabBarManagerDelegate.OnTraitCollectionDidChange(UITraitCollection previousTraitCollection)
@@ -359,6 +362,7 @@ namespace Microsoft.Maui.Controls.Handlers
             UpdateTabBarHidden();
 
             GoTo(VirtualView.CurrentItem);
+            UpdateTabBarAutomationIds();
             UpdateMoreCellsEnabled();
         }
 
@@ -901,6 +905,7 @@ namespace Microsoft.Maui.Controls.Handlers
                 }
 
                 var cell = moreNavigationCells[i - 4];
+                cell.AccessibilityIdentifier = GetAutomationId(renderer.ShellSection);
 
 #pragma warning disable CA1416, CA1422 // TODO: 'UITableViewCell.TextLabel' is unsupported on: 'ios' 14.0 and later
                 if (!renderer.ShellSection.IsEnabled)
@@ -943,6 +948,19 @@ namespace Microsoft.Maui.Controls.Handlers
             }
         }
 
+        void UpdateTabBarAutomationIds()
+        {
+            if (VirtualView is not TabBar shellItem || !ShellItemController.ShowTabs)
+            {
+                return;
+            }
+
+            _tabBarController.TabBar.AccessibilityIdentifier = shellItem.AutomationId;
+        }
+
+        static string? GetAutomationId(ShellSection shellSection) =>
+            shellSection.AutomationId ?? shellSection.CurrentItem?.AutomationId;
+
         #endregion
 
         #region Trait Collection
@@ -982,6 +1000,14 @@ namespace Microsoft.Maui.Controls.Handlers
         #endregion
 
         #region Static Map Methods
+
+        internal static void MapAutomationId(ShellItemHandler handler, ShellItem shellItem)
+        {
+            if (shellItem is TabBar && ((IShellItemController)shellItem).ShowTabs)
+            {
+                handler.UpdateTabBarAutomationIds();
+            }
+        }
 
         public static void MapCurrentItem(ShellItemHandler handler, ShellItem shellItem)
         {
