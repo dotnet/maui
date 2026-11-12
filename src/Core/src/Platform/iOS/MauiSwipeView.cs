@@ -538,6 +538,11 @@ namespace Microsoft.Maui.Platform
 
 			if (!_isSwiping)
 			{
+				if (!ValidateSwipeDirection())
+				{
+					return;
+				}
+
 				RaiseSwipeStarted();
 				_isSwiping = true;
 			}

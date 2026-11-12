@@ -375,5 +375,71 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.True(Math.Abs(offsetAfterAttemptedClose) < Math.Abs(openOffset),
 				$"Expected swipe offset to shrink after the closing drag (frozen bug would keep it near {openOffset}), but got {offsetAfterAttemptedClose}.");
 		}
+
+		[Theory]
+		[InlineData(false, 61)]
+		[InlineData(true, 75)]
+		public async Task SwipeViewDoesNotStartOutsideBounds(bool attemptUnsupportedDirection, double outsideY)
+		{
+			SetupBuilder();
+
+			var content = new Grid
+			{
+				WidthRequest = 300,
+				HeightRequest = 60,
+				Background = new SolidPaint(Colors.White)
+			};
+			var swipeView = new SwipeView
+			{
+				WidthRequest = 300,
+				HeightRequest = 60,
+				RightItems = new SwipeItems { new SwipeItem { BackgroundColor = Colors.Red } },
+				Content = content
+			};
+			var swipeStartedCount = 0;
+			swipeView.SwipeStarted += (_, _) => swipeStartedCount++;
+
+			var handler = await CreateHandlerAsync<SwipeViewHandler>(swipeView);
+			var nativeView = GetPlatformControl(handler);
+			var handleTouchInteractions = typeof(MauiSwipeView).GetMethod(
+				"HandleTouchInteractions", BindingFlags.NonPublic | BindingFlags.Instance);
+			Assert.NotNull(handleTouchInteractions);
+			var offsetField = typeof(MauiSwipeView).GetField(
+				"_swipeOffset", BindingFlags.NonPublic | BindingFlags.Instance);
+			Assert.NotNull(offsetField);
+
+			await InvokeOnMainThreadAsync(() =>
+				nativeView.AttachAndRun(async () =>
+				{
+					var contentView = Assert.IsAssignableFrom<UIView>(content.Handler?.PlatformView);
+					await AssertEventually(() => contentView.Frame.Width == 300 && contentView.Frame.Height == 60,
+						message: "SwipeView content was not laid out at the expected size");
+					var initialFrame = contentView.Frame;
+
+					void Dispatch(GestureStatus status, double x, double y) =>
+						handleTouchInteractions.Invoke(nativeView, new object[] { status, new CGPoint(x, y) });
+
+					try
+					{
+						Dispatch(GestureStatus.Started, 280, 30);
+						if (attemptUnsupportedDirection)
+							Dispatch(GestureStatus.Running, 280, 45);
+
+						Assert.Equal(0, swipeStartedCount);
+						Assert.Equal(0d, (double)offsetField.GetValue(nativeView));
+
+						Dispatch(GestureStatus.Running, 130, outsideY);
+
+						Assert.Equal(0, swipeStartedCount);
+						Assert.Equal(0d, (double)offsetField.GetValue(nativeView));
+						Assert.Equal(initialFrame, contentView.Frame);
+					}
+					finally
+					{
+						Dispatch(GestureStatus.Completed, 130, outsideY);
+						swipeView.Close(false);
+					}
+				}));
+		}
 	}
 }
