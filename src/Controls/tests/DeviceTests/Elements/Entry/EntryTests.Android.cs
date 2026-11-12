@@ -3,8 +3,10 @@ using System.Threading.Tasks;
 using AndroidX.AppCompat.Widget;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Xunit;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -279,6 +281,50 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.True(platformEntry.InputType.HasFlag(global::Android.Text.InputTypes.ClassText));
 				Assert.True(platformEntry.InputType.HasFlag(global::Android.Text.InputTypes.TextVariationUri));
 				Assert.False(platformEntry.InputType.HasFlag(global::Android.Text.InputTypes.TextVariationPassword));
+			});
+		}
+
+		// https://github.com/dotnet/maui/issues/34944: going down from an Entry with a keyboard or a D-pad focused the Button next to the Entry below,
+		// which spans the column of the first Entry too.
+		[Fact]
+		[Category(TestCategory.Entry)]
+		public async Task FocusMovesDownToTheEntryBelowThatSpansSeveralColumns()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<Layout, LayoutHandler>();
+					handlers.AddHandler<Entry, EntryHandler>();
+					handlers.AddHandler<Button, ButtonHandler>();
+				});
+			});
+
+			var entry = new Entry();
+			var entryBelow = new Entry();
+			var button = new Button { Text = "Button" };
+			var grid = new Grid
+			{
+				WidthRequest = 300,
+				HeightRequest = 300,
+				ColumnDefinitions = { new ColumnDefinition(GridLength.Star), new ColumnDefinition(GridLength.Star), new ColumnDefinition(GridLength.Star) },
+				RowDefinitions = { new RowDefinition(GridLength.Star), new RowDefinition(GridLength.Star), new RowDefinition(GridLength.Star) },
+			};
+			grid.Add(entry, column: 1, row: 0);
+			grid.Add(entryBelow, column: 0, row: 1);
+			Grid.SetColumnSpan(entryBelow, 2);
+			grid.Add(button, column: 2, row: 1);
+
+			await AttachAndRun(grid, async _ =>
+			{
+				var platformEntry = GetPlatformControl((EntryHandler)entry.Handler!);
+				var platformEntryBelow = GetPlatformControl((EntryHandler)entryBelow.Handler!);
+				await AssertEventually(() => platformEntry.IsLaidOut && platformEntryBelow.IsLaidOut);
+
+				// Without a keyboard or a D-pad, the device is in touch mode, where a Button can't take the focus.
+				((ButtonHandler)button.Handler!).PlatformView.FocusableInTouchMode = true;
+
+				Assert.Same(platformEntryBelow, platformEntry.FocusSearch(global::Android.Views.FocusSearchDirection.Down));
 			});
 		}
 	}

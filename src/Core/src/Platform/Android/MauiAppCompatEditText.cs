@@ -18,5 +18,12 @@ namespace Microsoft.Maui.Platform
 
 			SelectionChanged?.Invoke(this, EventArgs.Empty);
 		}
+
+		public override void GetFocusedRect(global::Android.Graphics.Rect? r)
+		{
+			base.GetFocusedRect(r);
+
+			this.SpanFocusedRectAcrossWidth(r);
+		}
 	}
 }

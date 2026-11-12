@@ -103,6 +103,19 @@ namespace Microsoft.Maui.Platform
 			editText.UpdateIsSpellCheckEnabled(editor as ITextInput);
 		}
 
+		// TextView reports the bounds of its cursor as its focused rect, a narrow rect at the start of an empty EditText. The focus search of Android
+		// compares these rects to move the focus with a keyboard or a D-pad, so going down from an Entry could skip the Entry below that spans its
+		// column too (https://github.com/dotnet/maui/issues/34944). The rect spans the width of the EditText instead, and keeps the line of the
+		// cursor, which the window pans into view above the soft keyboard.
+		internal static void SpanFocusedRectAcrossWidth(this EditText editText, global::Android.Graphics.Rect? focusedRect)
+		{
+			if (focusedRect is not null)
+			{
+				focusedRect.Left = editText.ScrollX;
+				focusedRect.Right = editText.ScrollX + editText.Width;
+			}
+		}
+
 		internal static void UpdateIsTextPredictionEnabled(this EditText editText, ITextInput textInput)
 		{
 			var keyboard = textInput.Keyboard;
