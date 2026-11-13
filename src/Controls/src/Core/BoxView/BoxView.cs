@@ -154,6 +154,12 @@ namespace Microsoft.Maui.Controls
 				propertyName == FillProperty.PropertyName ||
 				propertyName == IsVisibleProperty.PropertyName ||
 				propertyName == BackgroundProperty.PropertyName ||
+#if IOS || MACCATALYST
+				// Request a shape redraw when resizing an initially empty BoxView on Apple platforms.
+				// Other platforms already redraw on resize and do not need this additional shape update.
+				propertyName == WidthRequestProperty.PropertyName ||
+				propertyName == HeightRequestProperty.PropertyName ||
+#endif
 				propertyName == CornerRadiusProperty.PropertyName)
 			{
 				Handler?.UpdateValue(nameof(IShapeView.Shape));
