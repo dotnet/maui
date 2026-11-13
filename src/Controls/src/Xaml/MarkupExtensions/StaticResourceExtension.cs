@@ -27,6 +27,7 @@ namespace Microsoft.Maui.Controls.Xaml
 				throw new ArgumentException(null, nameof(serviceProvider));
 
 			if (!TryGetResource(Key, valueProvider.ParentObjects, out var resource, out var resourceDictionary)
+				&& !ResourceDictionary.TryGetValueFromMergeTargets(Key, out resource, out resourceDictionary)
 				&& !TryGetApplicationLevelResource(Key, out resource, out resourceDictionary))
 			{
 				var xmlLineInfo = serviceProvider.GetService(typeof(IXmlLineInfoProvider)) is IXmlLineInfoProvider xmlLineInfoProvider ? xmlLineInfoProvider.XmlLineInfo : null;
