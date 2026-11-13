@@ -51,7 +51,8 @@ namespace Microsoft.Maui.Controls
 			propertyChanged: OnIsEnabledPropertyChanged, coerceValue: CoerceIsEnabledProperty);
 
 		/// <summary>Bindable property for <see cref="Text"/>.</summary>
-		public static readonly BindableProperty TextProperty = BindableProperty.Create(nameof(Text), typeof(string), typeof(MenuItem), null);
+		public static readonly BindableProperty TextProperty = BindableProperty.Create(nameof(Text), typeof(string), typeof(MenuItem), null,
+			propertyChanged: (bindable, oldValue, newValue) => MenuBar.UpdateWindowMenuBar((Element)bindable));
 
 		bool _isEnabledExplicit = (bool)IsEnabledProperty.DefaultValue;
 
