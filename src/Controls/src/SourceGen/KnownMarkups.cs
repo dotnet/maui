@@ -982,7 +982,17 @@ internal class KnownMarkups
 		if (node.TryGetPropertyName(node.Parent, out XmlName propertyName) && context.Variables.TryGetValue(node.Parent, out ILocalValue parentVar))
 		{
 			var localName = propertyName.LocalName;
-			bpFieldSymbol = parentVar.Type.GetBindableProperty(propertyName.NamespaceURI, ref localName, out bool attached, context, node as IXmlLineInfo);
+			if (node.Parent is ElementNode setter && setter.XmlType.IsOfAnyType("Setter")
+				&& localName == "Value"
+				&& setter.Properties.TryGetValue("Property", out var setterPropertyNode)
+				&& setterPropertyNode is ValueNode bindablePropertyNode)
+			{
+				bpFieldSymbol = bindablePropertyNode.GetBindableProperty(context);
+			}
+			else
+			{
+				bpFieldSymbol = parentVar.Type.GetBindableProperty(propertyName.NamespaceURI, ref localName, out _, context, node as IXmlLineInfo);
+			}
 			var propertySymbol = parentVar.Type.GetAllProperties(localName, context).FirstOrDefault();
 			var typeandconverter = bpFieldSymbol?.GetBPTypeAndConverter(context);
 			propertyType = typeandconverter?.type ?? propertySymbol?.Type;
