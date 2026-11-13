@@ -9,7 +9,6 @@ using Microsoft.Graphics.Canvas.UI.Xaml;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Storage;
 using WImageSource = Microsoft.UI.Xaml.Media.ImageSource;
 
 namespace Microsoft.Maui
@@ -124,28 +123,30 @@ namespace Microsoft.Maui
 				}
 			}
 
-			// Win2D in unpackaged apps can't load files using packaged schemes, such as `ms-appx://`
-			// so we have to first convert it to a `file://` scheme will the full file path.
 			if (!AppInfoUtils.IsPackagedApp)
 			{
-				// At this part of the load operation, the font URI contains the font family name fragment
-				// component, so we first have to remove it.
-				var fragment = "";
-				if (fontSource.IndexOf('#', StringComparison.OrdinalIgnoreCase) is int index && index >= 0)
-				{
-					fragment = fontSource[index..];
-					fontSource = fontSource[..index];
-				}
-
-				// Now we can convert the URI to a `file://` scheme with the full file path.
-				var fontUri = new Uri(fontSource, UriKind.RelativeOrAbsolute);
-				var path = fontUri.LocalPath.TrimStart('/');
-				if (FileSystemUtils.TryGetAppPackageFileUri(path, out var uri))
-				{
-					fontSource = uri + fragment;
-				}
+				fontSource = GetUnpackagedFontSource(fontSource);
 			}
 
+			return fontSource;
+		}
+
+		internal static string GetUnpackagedFontSource(string fontSource)
+		{
+			var fragmentIndex = fontSource.IndexOf('#', StringComparison.Ordinal);
+			// Without a fragment, Win2D treats the source as an installed font family.
+			if (fragmentIndex < 0)
+			{
+				return fontSource;
+			}
+
+			var fontUri = new Uri(fontSource[..fragmentIndex], UriKind.RelativeOrAbsolute);
+			if (FontUriHelper.TryGetAppFontFileUri(fontUri, out var uri))
+			{
+				return uri + fontSource[fragmentIndex..];
+			}
+
+			// Preserve the original source if the file cannot be resolved.
 			return fontSource;
 		}
 	}

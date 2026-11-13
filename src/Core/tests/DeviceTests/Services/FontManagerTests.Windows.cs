@@ -1,6 +1,9 @@
 ﻿using System;
 using System.IO;
+using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Storage;
 using Microsoft.UI.Xaml.Controls;
 using Xunit;
@@ -66,4 +69,57 @@ public partial class FontManagerTests : TestBase
 
 			Assert.Equal(expected, actual.Source);
 		});
+
+	[Theory]
+	[InlineData("Segoe MDL2 Assets")]
+	[InlineData("Segoe UI")]
+	public Task SystemFontDoesNotLogMissingFallbackFiles(string fontName) =>
+		InvokeOnMainThreadAsync(() =>
+		{
+			var logger = new FontManagerLogger();
+			using var services = new ServiceCollection()
+				.AddSingleton<ILogger<FontManager>>(logger)
+				.BuildServiceProvider();
+			var manager = new FontManager(new FontRegistrar(fontLoader: null), services);
+
+			var actual = manager.GetFontFamily(Font.OfSize(fontName, 30));
+
+			Assert.StartsWith(fontName + ", ", actual.Source, StringComparison.Ordinal);
+			Assert.Equal(0, logger.ErrorCount);
+		});
+
+	[Fact]
+	public Task CanReadFamilyNameFromRelativeFontFile() =>
+		InvokeOnMainThreadAsync(() =>
+		{
+			var manager = new FontManager(new RelativeFontRegistrar());
+
+			var actual = manager.GetFontFamily(Font.OfSize("relative-font", 12));
+
+			Assert.Equal("dokdo_regular.ttf#Dokdo", actual.Source);
+		});
+
+	sealed class RelativeFontRegistrar : IFontRegistrar
+	{
+		public string GetFont(string font) => "dokdo_regular.ttf";
+
+		public void Register(string filename, string alias) => throw new NotSupportedException();
+
+		public void Register(string filename, string alias, Assembly assembly) => throw new NotSupportedException();
+	}
+
+	sealed class FontManagerLogger : ILogger<FontManager>
+	{
+		public int ErrorCount { get; private set; }
+
+		public IDisposable BeginScope<TState>(TState state) => null;
+
+		public bool IsEnabled(LogLevel logLevel) => true;
+
+		public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+		{
+			if (logLevel >= LogLevel.Error)
+				ErrorCount++;
+		}
+	}
 }
