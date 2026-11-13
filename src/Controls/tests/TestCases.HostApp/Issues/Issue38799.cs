@@ -37,7 +37,9 @@ public class Issue38799 : TestShell
 		// Record focus loss *during* replacement, not HasFocus after removal:
 		// Android can clear focus as a side effect of removing all the children.
 		// That is too late to relinquish IME ownership while still in the hierarchy.
+#if ANDROID
 		bool replacing = false;
+#endif
 		bool lostFocusBeforeRemoval = false;
 		bool hadNativeFocus = false;
 
@@ -56,9 +58,13 @@ public class Issue38799 : TestShell
 				var nativeEntry = textEntry.Handler?.PlatformView as Android.Views.View;
 				hadNativeFocus = nativeEntry?.HasFocus == true;
 #endif
+#if ANDROID
 				replacing = true;
+#endif
 				textContent.Content = textLabel;
+#if ANDROID
 				replacing = false;
+#endif
 				replacements++;
 			}
 
