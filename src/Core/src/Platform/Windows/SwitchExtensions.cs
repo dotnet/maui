@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Platform
 
 			if (view.IsOn)
 			{
-				UpdateOnPointerOverResources(toggleSwitch, trackColor);
+				UpdateOnPointerOverResources(toggleSwitch.Resources, trackColor);
 			}
 
 			toggleSwitch.RefreshThemeResources();
@@ -73,50 +73,44 @@ namespace Microsoft.Maui.Platform
 
 		const string OnPointerOverResourceKey = "ToggleSwitchFillOnPointerOver";
 
-		// Native dictionaries can outlive their managed wrappers; retain their state with the control.
-		static readonly ConditionalWeakTable<ToggleSwitch, SwitchHoverResourceState> s_switchHoverResourceStates = new();
+		static readonly ConditionalWeakTable<ResourceDictionary, SwitchHoverResourceState> s_switchHoverResourceStates = new();
+		static readonly ConditionalWeakTable<ResourceDictionary, HoverResourceState> s_hoverResourceStates = new();
 
 		sealed class SwitchHoverResourceState
 		{
-			public SwitchHoverResourceState(ResourceDictionary ownerResources) => OwnerResources = ownerResources;
-
-			public ResourceDictionary OwnerResources { get; }
 			public ResourceDictionary Resources { get; } = new();
 			public bool HasOriginalDirectValue { get; set; }
 			public object? OriginalDirectValue { get; set; }
-			public HoverResourceState? DefaultTheme;
-			public HoverResourceState? HighContrastTheme;
 		}
 
-		static void UpdateOnPointerOverResources(ToggleSwitch toggleSwitch, Brush? trackColor)
+		static void UpdateOnPointerOverResources(ResourceDictionary resources, Brush? trackColor)
 		{
-			var resources = toggleSwitch.Resources;
-			s_switchHoverResourceStates.TryGetValue(toggleSwitch, out var state);
-			if (state is not null && !ReferenceEquals(state.OwnerResources, resources))
-			{
-				ClearOnPointerOverResources(state);
-				s_switchHoverResourceStates.Remove(toggleSwitch);
-				state = null;
-			}
-
-			if (state is null)
+			if (!s_switchHoverResourceStates.TryGetValue(resources, out var state))
 			{
 				if (trackColor is null)
 					return;
 
-				state = new SwitchHoverResourceState(resources);
-				s_switchHoverResourceStates.Add(toggleSwitch, state);
+				state = new SwitchHoverResourceState();
+				s_switchHoverResourceStates.Add(resources, state);
 			}
 
+			bool hasDirectValue = TryGetLocalHoverResource(resources, out var directValue);
 			if (trackColor is null)
 			{
-				ClearOnPointerOverResources(state);
-				s_switchHoverResourceStates.Remove(toggleSwitch);
+				if (state.HasOriginalDirectValue && !hasDirectValue)
+					resources[OnPointerOverResourceKey] = state.OriginalDirectValue;
+
+				UpdateOnPointerOverResource(state.Resources, "Default", null);
+				UpdateOnPointerOverResource(state.Resources, "HighContrast", null);
+				if (IsEmpty(state.Resources))
+					resources.MergedDictionaries.Remove(state.Resources);
+
+				s_switchHoverResourceStates.Remove(resources);
 				return;
 			}
 
 			// Direct entries precede merged resources; leave application theme dictionaries untouched.
-			if (TryGetLocalHoverResource(resources, out var directValue))
+			if (hasDirectValue)
 			{
 				state.HasOriginalDirectValue = true;
 				state.OriginalDirectValue = directValue;
@@ -124,8 +118,8 @@ namespace Microsoft.Maui.Platform
 			}
 
 			UpdateOnPointerOverResource(state.Resources, "Default",
-				trackColor is SolidColorBrush brush ? new SolidColorBrush(brush.Color) { Opacity = 0.9 } : null, ref state.DefaultTheme);
-			UpdateOnPointerOverResource(state.Resources, "HighContrast", trackColor, ref state.HighContrastTheme);
+				trackColor is SolidColorBrush brush ? new SolidColorBrush(brush.Color) { Opacity = 0.9 } : null);
+			UpdateOnPointerOverResource(state.Resources, "HighContrast", trackColor);
 			var mergedDictionaries = resources.MergedDictionaries;
 			if (mergedDictionaries.Count == 0 || !ReferenceEquals(mergedDictionaries[mergedDictionaries.Count - 1], state.Resources))
 			{
@@ -134,37 +128,20 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		static void ClearOnPointerOverResources(SwitchHoverResourceState state)
-		{
-			var resources = state.OwnerResources;
-			if (state.HasOriginalDirectValue && !TryGetLocalHoverResource(resources, out _))
-				resources[OnPointerOverResourceKey] = state.OriginalDirectValue;
-
-			UpdateOnPointerOverResource(state.Resources, "Default", null, ref state.DefaultTheme);
-			UpdateOnPointerOverResource(state.Resources, "HighContrast", null, ref state.HighContrastTheme);
-			if (IsEmpty(state.Resources))
-				resources.MergedDictionaries.Remove(state.Resources);
-		}
-
 		sealed class HoverResourceState
 		{
-			public HoverResourceState(ResourceDictionary resources) => Resources = resources;
-
-			public ResourceDictionary Resources { get; }
 			public bool CreatedDictionary { get; set; }
 			public bool HasOriginalValue { get; set; }
 			public object? OriginalValue { get; set; }
 			public Brush? AppliedBrush { get; set; }
 		}
 
-		static void UpdateOnPointerOverResource(ResourceDictionary resources, string theme, Brush? brush, ref HoverResourceState? state)
+		static void UpdateOnPointerOverResource(ResourceDictionary resources, string theme, Brush? brush)
 		{
 			var themeResources = resources.ThemeDictionaries.TryGetValue(theme, out var dictionary)
 				? (ResourceDictionary)dictionary
 				: null;
 			bool createdDictionary = themeResources is null;
-			if (state is not null && !ReferenceEquals(state.Resources, themeResources))
-				state = null;
 
 			if (themeResources is null)
 			{
@@ -175,6 +152,7 @@ namespace Microsoft.Maui.Platform
 				resources.ThemeDictionaries[theme] = themeResources;
 			}
 
+			s_hoverResourceStates.TryGetValue(themeResources, out var state);
 			if (brush is null && state is null)
 				return;
 
@@ -195,18 +173,19 @@ namespace Microsoft.Maui.Platform
 					}
 				}
 
-				state = null;
+				s_hoverResourceStates.Remove(themeResources);
 				return;
 			}
 
 			if (state is null)
 			{
-				state = new HoverResourceState(themeResources)
+				state = new HoverResourceState
 				{
 					CreatedDictionary = createdDictionary,
 					HasOriginalValue = hasCurrentValue,
 					OriginalValue = currentValue
 				};
+				s_hoverResourceStates.Add(themeResources, state);
 			}
 			else if (!hasCurrentValue || !ReferenceEquals(currentValue, state.AppliedBrush))
 			{
