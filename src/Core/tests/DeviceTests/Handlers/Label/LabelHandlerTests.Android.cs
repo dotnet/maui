@@ -228,6 +228,32 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.InRange(secondGap, expectedGap - 1, expectedGap + 1);
 		}
 
+		[Fact(DisplayName = "LineHeight Keeps Line Spacing Set By An Appended Mapping")]
+		public async Task LineHeightKeepsLineSpacingSetByAnAppendedMapping()
+		{
+			var label = new LabelStub()
+			{
+				Text = "First\nSecond\nThird",
+				Font = Font.SystemFontOfSize(30),
+				LineHeight = 2
+			};
+
+			// An app can customize the native line spacing in a mapping that runs after MAUI's.
+			var mapper = new PropertyMapper<ILabel, LabelHandler>(LabelHandler.Mapper);
+			mapper.AppendToMapping(nameof(ILabel.LineHeight), (handler, view) => handler.PlatformView.SetLineSpacing(20, 1));
+
+			var (extra, multiplier) = await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = new LabelHandler(mapper);
+				InitializeViewHandler(label, handler);
+				handler.GetDesiredSize(double.PositiveInfinity, double.PositiveInfinity);
+				return (handler.PlatformView.LineSpacingExtra, handler.PlatformView.LineSpacingMultiplier);
+			});
+
+			Assert.Equal(20, extra);
+			Assert.Equal(1, multiplier);
+		}
+
 		[Fact(DisplayName = "LineHeight Scales Html Lines By Their Own Height")]
 		public async Task LineHeightScalesHtmlLinesByTheirOwnHeight()
 		{
