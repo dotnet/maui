@@ -461,6 +461,40 @@ namespace Microsoft.Maui.DeviceTests
 			await AssertionExtensions.Collect();
 		}
 
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task CustomOnColorPreservesReplacedResources(bool hasDirectHoverResource)
+		{
+			var switchStub = new SwitchStub { IsOn = true, TrackColor = Colors.Red };
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<DirectHoverSwitchHandler>(switchStub);
+				var toggleSwitch = handler.PlatformView;
+				var resources = new ResourceDictionary();
+				var applicationResources = new ResourceDictionary { ["OtherResource"] = "value" };
+				resources.MergedDictionaries.Add(applicationResources);
+				var replacement = new SolidColorBrush(Colors.Purple.ToWindowsColor());
+				if (hasDirectHoverResource)
+					resources["ToggleSwitchFillOnPointerOver"] = replacement;
+				toggleSwitch.Resources = resources;
+
+				switchStub.TrackColor = Colors.Blue;
+				handler.UpdateValue(nameof(ISwitch.TrackColor));
+				Assert.Equal(2, resources.MergedDictionaries.Count);
+				Assert.Same(applicationResources, resources.MergedDictionaries[0]);
+
+				switchStub.TrackColor = null;
+				handler.UpdateValue(nameof(ISwitch.TrackColor));
+				Assert.Same(applicationResources, Assert.Single(resources.MergedDictionaries));
+				Assert.Equal("value", resources["OtherResource"]);
+				if (hasDirectHoverResource)
+					Assert.Same(replacement, resources["ToggleSwitchFillOnPointerOver"]);
+				else
+					Assert.DoesNotContain("ToggleSwitchFillOnPointerOver", resources.Keys);
+			});
+		}
+
 		[Fact]
 		public async Task CustomOnColorPreservesApplicationMergedResources()
 		{
