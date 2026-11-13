@@ -86,10 +86,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			[StructuredItemsView.ItemSizingStrategyProperty.PropertyName] = MapItemSizingStrategy,
 			[GroupableItemsView.GroupHeaderTemplateProperty.PropertyName] = MapHeaderTemplate,
 			[GroupableItemsView.GroupFooterTemplateProperty.PropertyName] = MapFooterTemplate,
+			[StructuredItemsView.AnchorModeProperty.PropertyName] = MapAnchorMode,
 		};
 	}
 
-	public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItemsView>
+	public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItemsView>, IScrollToEdgeHandler
 	{
 		// Reorderable
 		protected override ItemsViewController2<ReorderableItemsView> CreateController(ReorderableItemsView itemsView, UICollectionViewLayout layout)
@@ -103,19 +104,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		// Groupable
 		protected override void ScrollToRequested(object sender, ScrollToRequestEventArgs args)
 		{
-			if (WillNeedScrollAdjustment(args))
+			if (WillNeedScrollAdjustment(args) && !args.IsAnimated)
 			{
-				if (args.IsAnimated)
-				{
-					(Controller as GroupableItemsViewController2<ReorderableItemsView>)?.SetScrollAnimationEndedCallback(() => base.ScrollToRequested(sender, args));
-				}
-				else
-				{
-					base.ScrollToRequested(sender, args);
-				}
+				base.ScrollToRequested(sender, args);
 			}
 
+			// The base handler finds the item first: a newer request for one it finds supersedes what an earlier one left for
+			// later, as for the end of its animation below.
 			base.ScrollToRequested(sender, args);
+
+			if (WillNeedScrollAdjustment(args) && args.IsAnimated)
+			{
+				(Controller as GroupableItemsViewController2<ReorderableItemsView>)?.SetScrollAnimationEndedCallback(() => base.ScrollToRequested(sender, args));
+			}
 		}
 
 		public static void MapIsGrouped(CollectionViewHandler2 handler, GroupableItemsView itemsView)
@@ -226,6 +227,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			handler.UpdateLayout();
 		}
+
+		/// <summary>Maps <see cref="StructuredItemsView.AnchorMode"/> to the platform view.</summary>
+		/// <param name="handler">The handler for the collection view.</param>
+		/// <param name="itemsView">The collection view.</param>
+		public static void MapAnchorMode(CollectionViewHandler2 handler, StructuredItemsView itemsView)
+		{
+			handler.Controller?.UpdateAnchorMode();
+		}
+
+		bool IScrollToEdgeHandler.ScrollToStart(bool animate) => Controller?.ScrollToStart(animate) ?? false;
+
+		bool IScrollToEdgeHandler.ScrollToEnd(bool animate) => Controller?.ScrollToEnd(animate) ?? false;
 
 		Dictionary<string, object> _layoutPropertyCache = new();
 		IItemsLayout _subscribedItemsLayout;

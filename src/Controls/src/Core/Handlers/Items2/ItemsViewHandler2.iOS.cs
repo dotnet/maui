@@ -44,6 +44,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			ItemsView.ScrollToRequested -= ScrollToRequested;
 			_layout = null;
+			Controller?.DetachScrollAnchor();
 			Controller?.DisposeItemsSource();
 			Controller?.DisposeObserver();
 			base.DisconnectHandler(platformView);
@@ -189,6 +190,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				section = (int)indexPath.Section;
 				item = (int)indexPath.Item;
 
+				// A newer request: what an earlier scroll left for when its animation ends, or for the next layout, no longer
+				// applies. A request for an item the view doesn't have scrolls nowhere, and returned above, leaving it.
+				Controller.ScrollingToEdge(null);
+
 				// Clear any previously armed restore before issuing the new scroll. Otherwise the
 				// synchronous KVO contentOffset notification fired by this ScrollToItem call could be
 				// evaluated against a stale armed target and queue a restore back to the old position.
@@ -199,8 +204,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				}
 #endif
 
-				Controller.CollectionView.ScrollToItem(indexPath,
-					scrollPosition, args.IsAnimated);
+				// A scroll the app requests is judged by where it lands: the anchor doesn't scroll it back to the end.
+				var scrollAnchor = Controller.ScrollAnchor;
+				scrollAnchor?.ScrollRequesting();
+				try
+				{
+					Controller.CollectionView.ScrollToItem(indexPath,
+						scrollPosition, args.IsAnimated);
+				}
+				finally
+				{
+					scrollAnchor?.ScrollRequested(Controller.CollectionView);
+				}
 			}
 
 			// After non-animated scroll, arm KVO restore to recover from silent Mac Catalyst contentOffset shift

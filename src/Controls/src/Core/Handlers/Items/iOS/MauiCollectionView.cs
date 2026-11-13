@@ -194,6 +194,12 @@ public class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents, IPla
 
 	internal bool NeedsCellLayout { get; set; }
 
+	/// <summary>
+	/// Gets or sets whether the view follows an edge of its content (<see cref="ScrollAnchorMode"/>), in which case
+	/// <see cref="ItemsUpdatingScrollMode"/> doesn't scroll it.
+	/// </summary>
+	internal bool IsFollowingEdge { get; set; }
+
 	public MauiCollectionView(CGRect frame, UICollectionViewLayout layout) : base(frame, layout)
 	{
 	}

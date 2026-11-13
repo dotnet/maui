@@ -1,4 +1,6 @@
 #nullable disable
+using System.Collections;
+
 namespace Microsoft.Maui.Controls
 {
 	/// <summary>
@@ -115,6 +117,174 @@ namespace Microsoft.Maui.Controls
 		{
 			get => (ItemSizingStrategy)GetValue(ItemSizingStrategyProperty);
 			set => SetValue(ItemSizingStrategyProperty, value);
+		}
+
+		/// <summary>Bindable property for <see cref="AnchorMode"/>.</summary>
+		public static readonly BindableProperty AnchorModeProperty =
+			BindableProperty.Create(nameof(AnchorMode), typeof(ScrollAnchorMode), typeof(StructuredItemsView), ScrollAnchorMode.None,
+				propertyChanged: OnAnchorModeChanged);
+
+		/// <summary>
+		/// Gets or sets which edges of the content stay in view while the content changes. This is a bindable property.
+		/// </summary>
+		/// <value>A <see cref="ScrollAnchorMode"/> value. The default is <see cref="ScrollAnchorMode.None"/>.</value>
+		/// <remarks>
+		/// <para>
+		/// With <see cref="ScrollAnchorMode.End"/>, the view shows the end of its content when it first appears, and keeps it
+		/// in view while items are added or removed, any item (including the last one) grows or shrinks, the header or footer
+		/// changes, or the view resizes. Following never animates. When the user scrolls away from the end, the view stops
+		/// following it and <see cref="IsAnchored"/> becomes <see langword="false"/>; it follows again once the end is back in
+		/// view, whether the user scrolled there or the app did, with <see cref="ScrollToEnd(bool)"/> or
+		/// <see cref="ItemsView.ScrollTo(int, int, ScrollToPosition, bool)"/>.
+		/// </para>
+		/// <para>
+		/// <see cref="ScrollAnchorMode.Start"/> does the same for the start of the content, above the header: items added
+		/// before the first item while the view is at its start come into view instead of being added above it. The view
+		/// follows its start again once the user scrolls back to it, or the app calls <see cref="ScrollToStart(bool)"/>.
+		/// </para>
+		/// <para>
+		/// With both, the view follows whichever edge it is at, and starts at the end. When it is at both because its content
+		/// fits, it follows the end. Changing the anchor mode starts over, as when the view first appears.
+		/// </para>
+		/// <para>
+		/// While the view follows an edge, <see cref="ItemsView.ItemsUpdatingScrollMode"/> doesn't scroll it; while it
+		/// doesn't, <see cref="ItemsView.ItemsUpdatingScrollMode"/> applies as usual.
+		/// </para>
+		/// <para>
+		/// Anchoring applies to vertical layouts on Android, iOS, and Mac Catalyst. Elsewhere it has no effect, and
+		/// <see cref="IsAnchored"/> stays <see langword="false"/>.
+		/// </para>
+		/// </remarks>
+		public ScrollAnchorMode AnchorMode
+		{
+			get => (ScrollAnchorMode)GetValue(AnchorModeProperty);
+			set => SetValue(AnchorModeProperty, value);
+		}
+
+		static readonly BindablePropertyKey IsAnchoredPropertyKey =
+			BindableProperty.CreateReadOnly(nameof(IsAnchored), typeof(bool), typeof(StructuredItemsView), false);
+
+		/// <summary>Bindable property for <see cref="IsAnchored"/>.</summary>
+		public static readonly BindableProperty IsAnchoredProperty = IsAnchoredPropertyKey.BindableProperty;
+
+		/// <summary>
+		/// Gets whether the view follows an edge of its content that <see cref="AnchorMode"/> selects. This is a bindable property.
+		/// </summary>
+		/// <value>
+		/// <see langword="true"/> while the view follows the start or the end of its content; <see langword="false"/> after the
+		/// user scrolls away from it, and wherever the view can't follow it (before it has a handler, in a horizontal layout,
+		/// or on a platform that doesn't support anchoring).
+		/// </value>
+		/// <remarks>
+		/// Use it, for example, to show a "jump to latest" button that calls <see cref="ScrollToEnd(bool)"/> while the user
+		/// reads earlier items. A view that follows an edge is anchored by the time it first appears, so the button doesn't
+		/// show then.
+		/// </remarks>
+		public bool IsAnchored => (bool)GetValue(IsAnchoredProperty);
+
+		internal void SetIsAnchored(bool value) => SetValue(IsAnchoredPropertyKey, value);
+
+		/// <summary>Scrolls to the start of the content: before the first item, to the start of the header.</summary>
+		/// <param name="animate">Whether to animate the scroll.</param>
+		/// <remarks>
+		/// <para>
+		/// With <see cref="ScrollAnchorMode.Start"/>, the view follows its start again. Unlike scrolling to the first item with
+		/// <see cref="ItemsView.ScrollTo(int, int, ScrollToPosition, bool)"/>, it reaches the start when there's a header.
+		/// </para>
+		/// <para>
+		/// It scrolls to the start of vertical layouts on Android, iOS, and Mac Catalyst. Elsewhere, it scrolls to the first item.
+		/// Like <see cref="ItemsView.ScrollTo(int, int, ScrollToPosition, bool)"/>, it does nothing before the view has a handler.
+		/// </para>
+		/// </remarks>
+		public void ScrollToStart(bool animate = true)
+		{
+			// There's nothing to scroll yet, and reading ItemsSource now would use up a sequence that can be read only once.
+			if (Handler is null)
+			{
+				return;
+			}
+
+			if (Handler is IScrollToEdgeHandler handler && handler.ScrollToStart(animate))
+			{
+				return;
+			}
+
+			ScrollToFirstItem(animate);
+		}
+
+		/// <summary>Scrolls to the end of the content: past the last item, to the end of the footer.</summary>
+		/// <param name="animate">Whether to animate the scroll.</param>
+		/// <remarks>
+		/// <para>
+		/// With <see cref="ScrollAnchorMode.End"/>, the view follows its end again. Unlike scrolling to the last item with
+		/// <see cref="ItemsView.ScrollTo(int, int, ScrollToPosition, bool)"/>, it reaches the end when there's a footer.
+		/// </para>
+		/// <para>
+		/// It scrolls to the end of vertical layouts on Android, iOS, and Mac Catalyst. Elsewhere, it scrolls to the last item.
+		/// Like <see cref="ItemsView.ScrollTo(int, int, ScrollToPosition, bool)"/>, it does nothing before the view has a handler.
+		/// </para>
+		/// </remarks>
+		public void ScrollToEnd(bool animate = true)
+		{
+			// There's nothing to scroll yet, and reading ItemsSource now would use up a sequence that can be read only once.
+			if (Handler is null)
+			{
+				return;
+			}
+
+			if (Handler is IScrollToEdgeHandler handler && handler.ScrollToEnd(animate))
+			{
+				return;
+			}
+
+			ScrollToLastItem(animate);
+		}
+
+		// Where the platform can't scroll to the start of the content, the first item is as close as ScrollTo gets.
+		internal virtual void ScrollToFirstItem(bool animate)
+		{
+			if (CountItems(ItemsSource) > 0)
+			{
+				ScrollTo(0, position: ScrollToPosition.Start, animate: animate);
+			}
+		}
+
+		// Where the platform can't scroll to the end of the content, the last item is as close as ScrollTo gets.
+		internal virtual void ScrollToLastItem(bool animate)
+		{
+			var count = CountItems(ItemsSource);
+			if (count > 0)
+			{
+				ScrollTo(count - 1, position: ScrollToPosition.End, animate: animate);
+			}
+		}
+
+		internal static int CountItems(IEnumerable items)
+		{
+			if (items is ICollection collection)
+			{
+				return collection.Count;
+			}
+
+			var count = 0;
+			if (items is not null)
+			{
+				foreach (var _ in items)
+				{
+					count++;
+				}
+			}
+
+			return count;
+		}
+
+		static void OnAnchorModeChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			// Only a platform view that anchors reports being anchored; with anchoring off, the view never is.
+			if (((ScrollAnchorMode)newValue & (ScrollAnchorMode.Start | ScrollAnchorMode.End)) == 0)
+			{
+				((StructuredItemsView)bindable).SetIsAnchored(false);
+			}
 		}
 	}
 }

@@ -37,8 +37,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_pendingScrollAdjustment?.Invoke();
 		}
 
+		// Called for a newer scroll request that doesn't go through this helper (an animated scroll to an edge): the adjustment
+		// an earlier jump left for its layout no longer applies.
+		public void CancelPendingAdjustment()
+		{
+			_pendingScrollAdjustment = null;
+		}
+
 		public void AnimateScrollToPosition(int index, ScrollToPosition scrollToPosition)
 		{
+			// A newer request replaces an adjustment an earlier jump left for its layout.
+			_pendingScrollAdjustment = null;
+
 			if (scrollToPosition == ScrollToPosition.MakeVisible)
 			{
 				// MakeVisible matches the Android default of SnapAny, so we can just use the default
@@ -59,6 +69,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public void JumpScrollToPosition(int index, ScrollToPosition scrollToPosition, bool uniformSize = false)
 		{
+			// A newer request replaces an adjustment an earlier jump left for its layout.
+			_pendingScrollAdjustment = null;
+			LayoutAfterJump();
+
 			if (scrollToPosition == ScrollToPosition.MakeVisible)
 			{
 				// MakeVisible is the default behavior, so we don't need to do anything special
@@ -114,6 +128,60 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			// Kick off the Scroll to get the item into view; once it's in view, the pending adjustment will kick in
 			_recyclerView.ScrollToPosition(index);
+		}
+
+		// Scrolls, without animating, until the start of the first row meets the start of the viewport: the start of the
+		// content, above the header. Scrolling to the first position lines it up with the start of the viewport whenever
+		// it isn't wholly in view.
+		public void JumpScrollToStart()
+		{
+			// A newer request replaces an adjustment an earlier jump left for its layout.
+			_pendingScrollAdjustment = null;
+
+			if (_recyclerView.GetLayoutManager() is { ItemCount: > 0 })
+			{
+				LayoutAfterJump();
+				_recyclerView.ScrollToPosition(0);
+			}
+		}
+
+		// Scrolls, without animating, until the end of the lowest row meets the end of the viewport: the end of the
+		// content, past the footer.
+		public void JumpScrollToEnd()
+		{
+			if (_recyclerView.GetLayoutManager() is not { ItemCount: > 0 } layoutManager)
+			{
+				return;
+			}
+
+			// Scrolling to the last position lays it out lined up with the end of the viewport when it's out of view, but
+			// with the start when it's in view and taller than the viewport: once it's laid out, scroll the rest of the way.
+			_pendingScrollAdjustment = AdjustScrollToEnd;
+			LayoutAfterJump();
+			_recyclerView.ScrollToPosition(layoutManager.ItemCount - 1);
+		}
+
+		// A jump scrolls in the layout it asks for. Asked for during a layout, as when the app scrolls from the Scrolled event
+		// RecyclerView raises as it lays out, that layout is lost: ask again once the layout is over.
+		void LayoutAfterJump()
+		{
+			if (_recyclerView.IsInLayout)
+			{
+				_recyclerView.Post(_recyclerView.RequestLayout);
+			}
+		}
+
+		void AdjustScrollToEnd()
+		{
+			_pendingScrollAdjustment = null;
+
+			if (_recyclerView.GetLayoutManager() is { ItemCount: > 0 } layoutManager
+				&& layoutManager.FindViewByPosition(layoutManager.ItemCount - 1) is not null
+				&& OrientationHelper.CreateVerticalHelper(layoutManager) is { } helper
+				&& RecyclerViewScrollAnchor.GetDistanceToEnd(layoutManager, helper) is > 0 and var distance)
+			{
+				_recyclerView.ScrollBy(0, distance);
+			}
 		}
 
 		ARect GetViewRect(int index)

@@ -1,1 +1,12 @@
 #nullable enable
+Microsoft.Maui.Controls.ScrollAnchorMode
+Microsoft.Maui.Controls.ScrollAnchorMode.End = 2 -> Microsoft.Maui.Controls.ScrollAnchorMode
+Microsoft.Maui.Controls.ScrollAnchorMode.Start = 1 -> Microsoft.Maui.Controls.ScrollAnchorMode
+Microsoft.Maui.Controls.ScrollAnchorMode.None = 0 -> Microsoft.Maui.Controls.ScrollAnchorMode
+Microsoft.Maui.Controls.StructuredItemsView.AnchorMode.get -> Microsoft.Maui.Controls.ScrollAnchorMode
+Microsoft.Maui.Controls.StructuredItemsView.AnchorMode.set -> void
+Microsoft.Maui.Controls.StructuredItemsView.IsAnchored.get -> bool
+Microsoft.Maui.Controls.StructuredItemsView.ScrollToEnd(bool animate = true) -> void
+Microsoft.Maui.Controls.StructuredItemsView.ScrollToStart(bool animate = true) -> void
+~static readonly Microsoft.Maui.Controls.StructuredItemsView.AnchorModeProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.StructuredItemsView.IsAnchoredProperty -> Microsoft.Maui.Controls.BindableProperty
