@@ -1,1 +1,14 @@
 #nullable enable
+Microsoft.Maui.Controls.ScrollAnchorMode
+Microsoft.Maui.Controls.ScrollAnchorMode.End = 2 -> Microsoft.Maui.Controls.ScrollAnchorMode
+Microsoft.Maui.Controls.ScrollAnchorMode.None = 0 -> Microsoft.Maui.Controls.ScrollAnchorMode
+Microsoft.Maui.Controls.StructuredItemsView.AnchorMode.get -> Microsoft.Maui.Controls.ScrollAnchorMode
+Microsoft.Maui.Controls.StructuredItemsView.AnchorMode.set -> void
+Microsoft.Maui.Controls.StructuredItemsView.IsAnchored.get -> bool
+Microsoft.Maui.Controls.StructuredItemsView.ScrollToEnd(bool animate = true) -> void
+override Microsoft.Maui.Controls.Handlers.Items2.ItemsViewController2<TItemsView>.ViewDidLayoutSubviews() -> void
+~override Microsoft.Maui.Controls.Handlers.Items2.ItemsViewDelegator2<TItemsView, TViewController>.DecelerationEnded(UIKit.UIScrollView scrollView) -> void
+~override Microsoft.Maui.Controls.Handlers.Items2.ItemsViewDelegator2<TItemsView, TViewController>.DraggingEnded(UIKit.UIScrollView scrollView, bool willDecelerate) -> void
+~static Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2.MapAnchorMode(Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2 handler, Microsoft.Maui.Controls.StructuredItemsView itemsView) -> void
+~static readonly Microsoft.Maui.Controls.StructuredItemsView.AnchorModeProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.StructuredItemsView.IsAnchoredProperty -> Microsoft.Maui.Controls.BindableProperty

@@ -44,6 +44,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			ItemsView.ScrollToRequested -= ScrollToRequested;
 			_layout = null;
+			Controller?.DetachScrollAnchor();
 			Controller?.DisposeItemsSource();
 			Controller?.DisposeObserver();
 			base.DisconnectHandler(platformView);
@@ -199,8 +200,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				}
 #endif
 
-				Controller.CollectionView.ScrollToItem(indexPath,
-					scrollPosition, args.IsAnimated);
+				// A scroll the app requests is judged by where it lands: the anchor doesn't scroll it back to the end.
+				var scrollAnchor = Controller.ScrollAnchor;
+				scrollAnchor?.ScrollRequesting();
+				try
+				{
+					Controller.CollectionView.ScrollToItem(indexPath,
+						scrollPosition, args.IsAnimated);
+				}
+				finally
+				{
+					scrollAnchor?.ScrollRequested(Controller.CollectionView);
+				}
 			}
 
 			// After non-animated scroll, arm KVO restore to recover from silent Mac Catalyst contentOffset shift

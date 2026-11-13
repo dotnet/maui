@@ -63,5 +63,38 @@ namespace Microsoft.Maui.Controls
 			get => (DataTemplate)GetValue(GroupFooterTemplateProperty);
 			set => SetValue(GroupFooterTemplateProperty, value);
 		}
+
+		internal override void ScrollToLastItem(bool animate)
+		{
+			if (!IsGrouped)
+			{
+				base.ScrollToLastItem(animate);
+				return;
+			}
+
+			// The last item of the last group that has any.
+			var groupIndex = -1;
+			var itemIndex = -1;
+			var index = 0;
+			if (ItemsSource is System.Collections.IEnumerable groups)
+			{
+				foreach (var group in groups)
+				{
+					var count = CountItems(group as System.Collections.IEnumerable);
+					if (count > 0)
+					{
+						groupIndex = index;
+						itemIndex = count - 1;
+					}
+
+					index++;
+				}
+			}
+
+			if (groupIndex >= 0)
+			{
+				ScrollTo(itemIndex, groupIndex, ScrollToPosition.End, animate);
+			}
+		}
 	}
 }

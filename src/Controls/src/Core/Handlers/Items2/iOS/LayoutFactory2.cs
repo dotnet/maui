@@ -620,6 +620,12 @@ internal static class LayoutFactory2
 		{
 			base.FinalizeCollectionViewUpdates();
 
+			// While the view follows its end (ScrollAnchorMode.End), the anchor keeps it there instead.
+			if (CollectionView is Items.MauiCollectionView { IsFollowingEnd: true })
+			{
+				return;
+			}
+
 			if (_itemsLayout?.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepLastItemInView)
 			{
 				ForceScrollToLastItem(CollectionView);
