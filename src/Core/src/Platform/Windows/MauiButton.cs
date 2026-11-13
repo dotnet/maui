@@ -81,8 +81,8 @@ namespace Microsoft.Maui.Platform
 			if (!string.IsNullOrEmpty(_textBlock.Text) &&
 				_textBlock.Visibility == UI.Xaml.Visibility.Visible)
 			{
-				// Only add spacing if we have valid text
-				spacing = _spacing;
+				// Only add spacing if both the image and text are visible.
+				spacing = AdjustSpacing(_spacing);
 
 				if (_isHorizontalLayout)
 				{
@@ -145,7 +145,7 @@ namespace Microsoft.Maui.Platform
 			var x = 0.0;
 			var y = 0.0;
 
-			var spacing = _spacing;
+			var spacing = AdjustSpacing(_spacing);
 			if (string.IsNullOrEmpty(_textBlock.Text))
 			{
 				spacing = 0;
@@ -173,7 +173,7 @@ namespace Microsoft.Maui.Platform
 			if (!string.IsNullOrEmpty(_textBlock.Text) &&
 				_textBlock.Visibility == UI.Xaml.Visibility.Visible)
 			{
-				var (newX, newY) = ArrangePrimaryElement(_textBlock, x, y, _spacing, finalSize);
+				var (newX, newY) = ArrangePrimaryElement(_textBlock, x, y, AdjustSpacing(_spacing), finalSize);
 				x = newX;
 				y = newY;
 			}
@@ -269,13 +269,13 @@ namespace Microsoft.Maui.Platform
 		void SetupHorizontalLayout(double spacing)
 		{
 			_isHorizontalLayout = true;
-			_spacing = AdjustSpacing(spacing);
+			_spacing = spacing;
 		}
 
 		void SetupVerticalLayout(double spacing)
 		{
 			_isHorizontalLayout = false;
-			_spacing = AdjustSpacing(spacing);
+			_spacing = spacing;
 		}
 	}
 }
