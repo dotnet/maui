@@ -282,6 +282,29 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+#if IOS || MACCATALYST
+		// iOS shows new items from their start. Android's RecyclerView applies a scroll requested before it gets a new adapter to
+		// the new one.
+		[Fact(DisplayName = "ScrollToEnd right before ItemsSource is replaced doesn't scroll the new items")]
+		public async Task ScrollToEndRightBeforeItemsSourceIsReplacedDoesNotScrollTheNewItems()
+		{
+			SetupBuilder();
+			var collectionView = CreateAnchorCollectionView(CreateAnchorItems(40), ScrollAnchorMode.None);
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				await AssertEventually(() => GetDistanceFromStart(handler) <= AnchorTolerance, timeout: 3000, message: "The list should open at its start.");
+
+				// As many new items as before: what the scroll left for later is for the old items.
+				collectionView.ScrollToEnd(animate: false);
+				collectionView.ItemsSource = CreateAnchorItems(40);
+
+				await Task.Delay(500);
+				Assert.True(GetDistanceFromStart(handler) <= AnchorTolerance, $"The new items should show from their start. Position: {GetScrollPosition(handler)}.");
+			});
+		}
+#endif
+
 		[Theory(DisplayName = "ScrollToEnd reaches the end of a last item taller than the view")]
 		[InlineData(ScrollAnchorMode.None, false)]
 		[InlineData(ScrollAnchorMode.None, true)]
@@ -483,6 +506,38 @@ namespace Microsoft.Maui.DeviceTests
 
 				items.Add(new AnchorItem("Added", 40));
 				await AssertEventually(() => turnedOff, timeout: 3000, message: "Following the new item should scroll the list.");
+				await Task.Delay(500);
+				Assert.False(collectionView.IsAnchored, "With AnchorMode off, the list shouldn't follow its end.");
+
+				var position = GetScrollPosition(handler);
+				items.Add(new AnchorItem("Added after turning AnchorMode off", 40));
+				await Task.Delay(500);
+				Assert.True(position == GetScrollPosition(handler), "With AnchorMode off, a new item shouldn't move the list.");
+				Assert.False(collectionView.IsAnchored);
+			});
+		}
+
+		[Fact(DisplayName = "Turning AnchorMode off as the list first reports following the end stops following it")]
+		public async Task TurningAnchorModeOffAsTheListFirstReportsFollowingTheEndStopsFollowingIt()
+		{
+			SetupBuilder();
+			var items = CreateAnchorItems(40);
+			var collectionView = CreateAnchorCollectionView(items, ScrollAnchorMode.End);
+
+			// The first report comes as the handler starts anchoring the list.
+			var turnedOff = false;
+			collectionView.PropertyChanged += (_, e) =>
+			{
+				if (!turnedOff && e.PropertyName == StructuredItemsView.IsAnchoredProperty.PropertyName && collectionView.IsAnchored)
+				{
+					turnedOff = true;
+					collectionView.AnchorMode = ScrollAnchorMode.None;
+				}
+			};
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				await AssertEventually(() => turnedOff, timeout: 3000, message: "The list should report following its end.");
 				await Task.Delay(500);
 				Assert.False(collectionView.IsAnchored, "With AnchorMode off, the list shouldn't follow its end.");
 

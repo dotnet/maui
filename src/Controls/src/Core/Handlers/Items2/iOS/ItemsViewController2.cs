@@ -609,6 +609,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		public virtual void UpdateItemsSource()
 		{
+			// What an earlier ScrollTo, ScrollToStart or ScrollToEnd left for later was for the old items.
+			ScrollingToEdge(null);
+
 			ItemsSource?.Dispose();
 			ItemsSource = CreateItemsViewSource();
 

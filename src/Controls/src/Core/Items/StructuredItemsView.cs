@@ -172,12 +172,13 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		/// <value>
 		/// <see langword="true"/> while the view follows the start or the end of its content; <see langword="false"/> after the
-		/// user scrolls away from it, and wherever the view can't follow it (before it's displayed, in a horizontal layout,
+		/// user scrolls away from it, and wherever the view can't follow it (before it has a handler, in a horizontal layout,
 		/// or on a platform that doesn't support anchoring).
 		/// </value>
 		/// <remarks>
 		/// Use it, for example, to show a "jump to latest" button that calls <see cref="ScrollToEnd(bool)"/> while the user
-		/// reads earlier items.
+		/// reads earlier items. A view that follows an edge is anchored by the time it first appears, so the button doesn't
+		/// show then.
 		/// </remarks>
 		public bool IsAnchored => (bool)GetValue(IsAnchoredProperty);
 

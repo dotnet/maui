@@ -144,19 +144,20 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			if (_tracker.Update(metrics, collectionView.Dragging || collectionView.Decelerating, sizeChanged) is double edge)
 			{
-				Apply(() => collectionView.SetContentOffset(new CGPoint(collectionView.ContentOffset.X, edge - inset.Top), false));
+				ApplyOffset(collectionView, edge - inset.Top);
 			}
 
 			Publish(collectionView, itemsView, _tracker.IsAnchored);
 		}
 
-		// Scrolls without the scroll counting as one: the anchor knows where it put the view.
-		void Apply(Action scroll)
+		// Scrolls without the scroll counting as one: the anchor knows where it put the view. It takes the offset, not a
+		// callback, as the anchor looks after every layout pass: a callback that captures would allocate on each.
+		void ApplyOffset(UICollectionView collectionView, double offsetY)
 		{
 			_applying = true;
 			try
 			{
-				scroll();
+				collectionView.SetContentOffset(new CGPoint(collectionView.ContentOffset.X, offsetY), false);
 			}
 			finally
 			{
@@ -198,7 +199,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 
 			// Jump there, which stops any deceleration, then look again as for a new view that follows its start.
-			Apply(() => SetOffsetToStart(collectionView, animated: false));
+			ApplyOffset(collectionView, GetStartOffset(collectionView));
 			_tracker.Reset(ScrollAnchorMode.Start);
 			_offsetChangedDuringLayout = false;
 			collectionView.SetNeedsLayout();
@@ -221,9 +222,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				return;
 			}
 
-			// Stop any deceleration where it is, then look again as for a new view: that scrolls to the exact end once the
-			// rows there are measured, and before the view first appears when it isn't in a window yet.
-			Apply(() => SetOffsetToEnd(collectionView, animated: false));
+			// Jump to the end as laid out now, which stops any deceleration, then look again as for a new view: that scrolls to
+			// the exact end once the rows there are measured, and before the view first appears when it isn't in a window yet.
+			ApplyOffset(collectionView, GetEndOffset(collectionView));
 			_tracker.Reset(ScrollAnchorMode.End);
 			_offsetChangedDuringLayout = false;
 			collectionView.SetNeedsLayout();
@@ -269,7 +270,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		// Returns whether it scrolls: not when the view is at the start already.
 		static bool SetOffsetToStart(UICollectionView collectionView, bool animated)
 		{
-			var start = -collectionView.AdjustedContentInset.Top;
+			var start = GetStartOffset(collectionView);
 			if (Math.Abs(collectionView.ContentOffset.Y - start) <= 0.5)
 			{
 				return false;
@@ -283,8 +284,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		/// <returns>The offset it scrolls to, or <see langword="null"/> when the view is at the end already.</returns>
 		internal static double? SetOffsetToEnd(UICollectionView collectionView, bool animated)
 		{
-			var inset = collectionView.AdjustedContentInset;
-			var end = Math.Max(-inset.Top, collectionView.ContentSize.Height + inset.Bottom - collectionView.Bounds.Height);
+			var end = GetEndOffset(collectionView);
 			if (Math.Abs(collectionView.ContentOffset.Y - end) <= 0.5)
 			{
 				return null;
@@ -292,6 +292,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			collectionView.SetContentOffset(new CGPoint(collectionView.ContentOffset.X, end), animated);
 			return end;
+		}
+
+		// The offset that shows the start of the content, above the header.
+		static double GetStartOffset(UICollectionView collectionView) => -collectionView.AdjustedContentInset.Top;
+
+		// The offset that shows the end of the content as laid out now, past the footer.
+		static double GetEndOffset(UICollectionView collectionView)
+		{
+			var inset = collectionView.AdjustedContentInset;
+			return Math.Max(-inset.Top, collectionView.ContentSize.Height + inset.Bottom - collectionView.Bounds.Height);
 		}
 
 		/// <summary>Stops anchoring: the view no longer follows an edge.</summary>
