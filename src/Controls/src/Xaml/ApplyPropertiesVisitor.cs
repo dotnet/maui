@@ -106,6 +106,9 @@ namespace Microsoft.Maui.Controls.Xaml
 			var parentElement = parentNode as ElementNode;
 			propertyName = XmlName.Empty;
 
+			if (!Values.ContainsKey(node))
+				CreateDeferredMergedDictionary(node, parentNode);
+
 			//Simplify ListNodes with single elements
 			if (parentNode is ListNode pList && pList.CollectionItems.Count == 1)
 			{
@@ -228,6 +231,34 @@ namespace Microsoft.Maui.Controls.Xaml
 					Context.ExceptionHandler(xpe);
 				else
 					throw xpe;
+			}
+		}
+
+		void CreateDeferredMergedDictionary(ElementNode node, INode parentNode)
+		{
+			if (!Context.Types.TryGetValue(node, out var type)
+				|| !CreateValuesVisitor.IsDeferredMergedDictionary(node, parentNode, type, out var mergeTargetNode)
+				|| !Values.TryGetValue(mergeTargetNode, out var mergeTarget))
+				return;
+
+			try
+			{
+				Values[node] = ResourceDictionary.CreateMergedDictionary(mergeTarget as ResourceDictionary, () =>
+				{
+					try
+					{
+						return (ResourceDictionary)Activator.CreateInstance(type);
+					}
+					catch (TargetInvocationException tie) when (tie.InnerException is XamlParseException || tie.InnerException is XmlException)
+					{
+						System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(tie.InnerException).Throw();
+						throw;
+					}
+				});
+			}
+			catch (Exception e) when (Context.ExceptionHandler != null)
+			{
+				Context.ExceptionHandler(e);
 			}
 		}
 

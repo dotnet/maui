@@ -67,6 +67,15 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			if (typedef != null)
 				SetPropertiesVisitor.LogObsoleteWarningOrError(Context, node, typedef.FullName, typedef.CustomAttributes);
 
+			if (IsDeferredMergedDictionary(node, parentNode, typeref, Context, Module, out _))
+			{
+				// created by SetPropertiesVisitor when merged
+				var vardef = new VariableDefinition(typeref);
+				Context.Variables[node] = vardef;
+				Context.Body.Variables.Add(vardef);
+				return;
+			}
+
 			if (typeref.FullName == "Microsoft.Maui.Controls.Xaml.ArrayExtension")
 			{
 				var visitor = new SetPropertiesVisitor(Context);
@@ -367,6 +376,49 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 						yield return instruction;
 				}
 			}
+		}
+
+		/// <summary>
+		/// Empty elements of a ResourceDictionary subtype (typically an x:Class dictionary) added to
+		/// MergedDictionaries are created when they are merged rather than up front, so their
+		/// {StaticResource} can resolve resources from the preceding merged dictionaries (#29589).
+		/// </summary>
+		internal static bool IsDeferredMergedDictionary(ElementNode node, INode parentNode, TypeReference typeref, ILContext context, ModuleDefinition module, out ElementNode mergeTargetNode)
+		{
+			mergeTargetNode = null;
+			if (node.Properties.Count != 0 || node.CollectionItems.Count != 0 || typeref is null)
+				return false;
+
+			var typedef = typeref.ResolveCached(context.Cache);
+			var rdTypeRef = module.ImportReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "ResourceDictionary"));
+			if (typedef is null
+				|| typedef.IsAbstract
+				|| typeref.HasGenericParameters
+				|| TypeRefComparer.Default.Equals(typeref, rdTypeRef)
+				|| !typeref.InheritsFromOrImplements(context.Cache, rdTypeRef)
+				|| !typedef.Methods.Any(md => md.IsConstructor && !md.IsStatic && md.IsPublic && !md.HasParameters))
+				return false;
+
+			XmlName propertyName;
+			if (parentNode is ListNode listNode)
+			{
+				mergeTargetNode = listNode.Parent as ElementNode;
+				if (!SetPropertiesVisitor.TryGetPropertyName(listNode, mergeTargetNode, out propertyName))
+					return false;
+			}
+			else if (parentNode is ElementNode parentElement && SetPropertiesVisitor.TryGetPropertyName(node, parentNode, out propertyName))
+				mergeTargetNode = parentElement;
+			else
+				return false;
+
+			if (mergeTargetNode is null || propertyName.LocalName is null
+				|| (propertyName.LocalName != "MergedDictionaries"
+					&& !propertyName.LocalName.EndsWith(".MergedDictionaries", StringComparison.Ordinal)))
+			{
+				mergeTargetNode = null;
+				return false;
+			}
+			return true;
 		}
 
 		static bool IsXaml2009LanguagePrimitive(ElementNode node)

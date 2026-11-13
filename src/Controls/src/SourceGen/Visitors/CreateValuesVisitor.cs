@@ -363,6 +363,17 @@ class CreateValuesVisitor : IXamlNodeVisitor
 		if (node.IsLazyResource(parentNode, Context))
 			return;
 
+		if (node.XmlType.TryResolveTypeSymbol(null, Context.Compilation, Context.XmlnsCache, Context.TypeCache, out var type)
+			&& type is not null
+			&& node.IsDeferredMergedDictionary(parentNode, type, Context, out _))
+		{
+			// created by SetPropertiesVisitor when merged
+			var variableName = NamingHelpers.CreateUniqueVariableName(Context, type);
+			Writer.WriteLine($"{type.ToFQDisplayString()} {variableName} = default!;");
+			Context.Variables[node] = new LocalVariable(type, variableName);
+			return;
+		}
+
 		CreateValue(node, Writer, Context.Variables, Context.Compilation, Context.XmlnsCache, Context);
 	}
 
