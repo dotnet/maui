@@ -4,9 +4,11 @@
 	{
 		public string Html { get; set; }
 
+		public string BaseUrl { get; set; }
+
 		public void Load(IWebViewDelegate webViewDelegate)
 		{
-			webViewDelegate.LoadHtml(Html, null);
+			webViewDelegate.LoadHtml(Html, BaseUrl);
 		}
 	}
 }

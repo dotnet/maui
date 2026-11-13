@@ -134,6 +134,15 @@ namespace Microsoft.Maui.TestCases.Tests
 			// This is a bug in the test, the footer is not being found
 			//App.WaitForElement("This Is A Footer");
 
+			// Android exposes the horizontal grid RecyclerView as a GridView to accessibility.
+			var collectionViewBounds = App.FindElement(AppiumQuery.ByClass("android.widget.GridView")).GetRect();
+			var headerBounds = App.FindElement(AppiumQuery.ByXPath("//android.widget.GridView/*[1]")).GetRect();
+			TestContext.WriteLine($"CollectionView: top={collectionViewBounds.Y}, bottom={collectionViewBounds.Bottom}; header: top={headerBounds.Y}, bottom={headerBounds.Bottom}");
+			Assert.That(headerBounds.Y, Is.EqualTo(collectionViewBounds.Y),
+				"The full-span horizontal grid header should not have outer cross-axis spacing.");
+			Assert.That(headerBounds.Bottom, Is.EqualTo(collectionViewBounds.Bottom),
+				"The full-span horizontal grid header should fill the grid's cross axis.");
+
 			VerifyScreenshot();
 		}
 #endif

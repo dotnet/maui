@@ -11,7 +11,8 @@ namespace Microsoft.Maui.Controls
 	{
 		/// <summary>Bindable property for <see cref="Text"/>.</summary>
 		public static readonly BindableProperty TextProperty =
-			BindableProperty.Create(nameof(Text), typeof(string), typeof(MenuBarItem), null);
+			BindableProperty.Create(nameof(Text), typeof(string), typeof(MenuBarItem), null,
+				propertyChanged: (bindable, oldValue, newValue) => MenuBar.UpdateWindowMenuBar((Element)bindable));
 
 		/// <summary>Bindable property for <see cref="IsEnabled"/>.</summary>
 		public static readonly BindableProperty IsEnabledProperty = BindableProperty.Create(nameof(IsEnabled), typeof(bool),

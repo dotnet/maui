@@ -207,7 +207,7 @@ $$"""
 			}
 		exit:
 			codeWriter.Flush();
-			return codeWriter.InnerWriter.ToString();
+			return GeneratorHelpers.LiftFallbackUsings(codeWriter.InnerWriter.ToString(), NewLine);
 		}
 	}
 
@@ -388,7 +388,8 @@ $$"""
 		}
 
 		var templateNodeIds = NodeIdHelper.GetTemplateNodeIds(newRoot, effectiveNewIds!);
-		return UpdateComponentCodeWriter.GeneratePatchBody(diff, fromVersion, toVersion, rootType, compilation, xmlnsCache, typeCache, effectiveNewIds, sourceProductionContext, projectItem, generatedFields, templateNodeIds);
+		var previousResources = oldRoot.Properties.FirstOrDefault(property => property.Key.LocalName == "Resources").Value;
+		return UpdateComponentCodeWriter.GeneratePatchBody(diff, fromVersion, toVersion, rootType, compilation, xmlnsCache, typeCache, effectiveNewIds, sourceProductionContext, projectItem, generatedFields, templateNodeIds, previousResources);
 	}
 
 	static void WriteMultiLineString(IndentedTextWriter writer, string text)

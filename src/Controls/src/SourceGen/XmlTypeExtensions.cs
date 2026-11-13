@@ -55,7 +55,17 @@ static class XmlTypeExtensions
 		var extsuffixes = (name != "DataTemplate" && !name.EndsWith("Extension", StringComparison.Ordinal)) ? new[] { "Extension", string.Empty } : [string.Empty];
 		foreach (var suffix in extsuffixes)
 		{
-			var types = namespaces.Select(ns => $"{ns}.{name}{suffix}{genericSuffix}").SelectMany(typeName => compilation.GetTypesByMetadataName(typeName)).Where(ts => ts.IsPublicOrVisibleInternal(xmlnsCache.InternalsVisible)).Distinct(SymbolEqualityComparer.Default).Cast<INamedTypeSymbol>().ToArray();
+			var types = namespaces.Select(ns => $"{ns}.{name}{suffix}{genericSuffix}")
+				.SelectMany(typeName => compilation.GetTypesByMetadataName(typeName))
+				.Concat(xmlType.NamespaceUri == XamlParser.MauiGlobalUri
+					? xmlnsCache.GlobalUsingNamespaces
+						.Select(ns => compilation.Assembly.GetTypeByMetadataName($"{ns}.{name}{suffix}{genericSuffix}"))
+						.OfType<INamedTypeSymbol>()
+					: Enumerable.Empty<INamedTypeSymbol>())
+				.Where(ts => ts.IsPublicOrVisibleInternal(xmlnsCache.InternalsVisible))
+				.Distinct(SymbolEqualityComparer.Default)
+				.Cast<INamedTypeSymbol>()
+				.ToArray();
 
 			if (types.Length > 1)
 			{

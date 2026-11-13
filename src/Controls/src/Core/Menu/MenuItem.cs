@@ -1,4 +1,4 @@
-﻿#nullable disable
+#nullable disable
 using System;
 using System.Collections.Generic;
 using System.Windows.Input;
@@ -51,7 +51,8 @@ namespace Microsoft.Maui.Controls
 			propertyChanged: OnIsEnabledPropertyChanged, coerceValue: CoerceIsEnabledProperty);
 
 		/// <summary>Bindable property for <see cref="Text"/>.</summary>
-		public static readonly BindableProperty TextProperty = BindableProperty.Create(nameof(Text), typeof(string), typeof(MenuItem), null);
+		public static readonly BindableProperty TextProperty = BindableProperty.Create(nameof(Text), typeof(string), typeof(MenuItem), null,
+			propertyChanged: (bindable, oldValue, newValue) => MenuBar.UpdateWindowMenuBar((Element)bindable));
 
 		bool _isEnabledExplicit = (bool)IsEnabledProperty.DefaultValue;
 
@@ -188,16 +189,21 @@ namespace Microsoft.Maui.Controls
 
 		static void OnImageSourceChanged(BindableObject bindable, object oldvalue, object newValue)
 		{
+			var menuItem = (MenuItem)bindable;
+
 			if (oldvalue is ImageSource oldImageSource)
-				oldImageSource.SourceChanged -= ((MenuItem)bindable).OnImageSourceSourceChanged;
+				oldImageSource.SourceChanged -= menuItem.OnImageSourceSourceChanged;
 
 			if (newValue is ImageSource newImageSource)
-				newImageSource.SourceChanged += ((MenuItem)bindable).OnImageSourceSourceChanged;
+				newImageSource.SourceChanged += menuItem.OnImageSourceSourceChanged;
+
+			menuItem.Handler?.UpdateValue(nameof(IMenuElement.Source));
 		}
 
 		void OnImageSourceSourceChanged(object sender, EventArgs e)
 		{
 			OnPropertyChanged(IconImageSourceProperty.PropertyName);
+			Handler?.UpdateValue(nameof(IMenuElement.Source));
 		}
 
 		WeakCommandSubscription ICommandElement.CleanupTracker
