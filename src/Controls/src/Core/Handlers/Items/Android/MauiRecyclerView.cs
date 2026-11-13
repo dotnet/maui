@@ -494,8 +494,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
-			// A scroll the app requests is judged by where it lands: the anchor doesn't scroll it back to the end.
-			_scrollAnchor?.ScrollRequested(args.IsAnimated);
+			// A scroll the app requests is judged by where it lands: the anchor doesn't scroll it back to the end. A position
+			// past the adapter's last one scrolls nowhere, so there's nothing to judge.
+			if (position < ItemsViewAdapter.ItemCount)
+			{
+				_scrollAnchor?.ScrollRequested(args.IsAnimated);
+			}
 
 			if (args.IsAnimated)
 			{

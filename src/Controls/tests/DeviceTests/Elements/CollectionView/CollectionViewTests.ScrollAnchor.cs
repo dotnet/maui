@@ -62,7 +62,9 @@ namespace Microsoft.Maui.DeviceTests
 				await AssertEventually(() => Math.Abs(GetItemHeight(handler, items.Count - 1) - 160) <= AnchorTolerance, timeout: 3000, message: "The last item should grow.");
 				await AssertAtEnd(handler, "The last item growing should keep the end in view.");
 
+				// The view shows the end it had until the platform lays out the removal.
 				items.RemoveAt(items.Count - 1);
+				await AssertEventually(() => !ShowsItemOfHeight(handler, 160), timeout: 3000, message: "The removal should be laid out.");
 				await AssertAtEnd(handler, "Removing the last item should keep the end in view.");
 				Assert.True(collectionView.IsAnchored);
 			});
@@ -224,8 +226,10 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact(DisplayName = "A ScrollTo that finds nothing to scroll to keeps following the end")]
-		public async Task AScrollToThatFindsNothingKeepsFollowingTheEnd()
+		[Theory(DisplayName = "A ScrollTo that finds nothing to scroll to keeps following the end")]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task AScrollToThatFindsNothingKeepsFollowingTheEnd(bool byIndex)
 		{
 			SetupBuilder();
 			var items = CreateAnchorItems(40);
@@ -235,8 +239,17 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				await AssertAtEnd(handler, "The list should open at its end.");
 
-				// The item isn't in the list: the view doesn't scroll, so there's no request to judge.
-				collectionView.ScrollTo(new AnchorItem("Not in the list", 40), animate: false);
+				// The item isn't in the list, or the index is past its end: the view doesn't scroll, so there's no request to
+				// judge.
+				if (byIndex)
+				{
+					collectionView.ScrollTo(items.Count + 100, animate: false);
+				}
+				else
+				{
+					collectionView.ScrollTo(new AnchorItem("Not in the list", 40), animate: false);
+				}
+
 				items.Add(new AnchorItem("Added", 40));
 
 				await AssertEventually(() => Math.Abs(GetItemHeight(handler, items.Count - 1) - 40) <= AnchorTolerance, timeout: 3000, message: "The new item should be laid out in view.");
@@ -341,6 +354,51 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Theory(DisplayName = "A ScrollToStart or ScrollToEnd right after an animated ScrollTo wins")]
+		[InlineData(ScrollAnchorMode.None, ScrollAnchorMode.End)]
+		[InlineData(ScrollAnchorMode.End, ScrollAnchorMode.End)]
+		[InlineData(ScrollAnchorMode.None, ScrollAnchorMode.Start)]
+		[InlineData(ScrollAnchorMode.Start, ScrollAnchorMode.Start)]
+		public async Task AScrollToTheEdgeRightAfterAnAnimatedScrollToWins(ScrollAnchorMode anchorMode, ScrollAnchorMode edge)
+		{
+			SetupBuilder();
+			var items = CreateAnchorItems(40);
+			var collectionView = CreateAnchorCollectionView(items, anchorMode);
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				// The view is at the edge already, so the later request doesn't move it: it stops the earlier one there.
+				if (edge == ScrollAnchorMode.End)
+				{
+					collectionView.ScrollToEnd(animate: false);
+					await AssertAtEnd(handler, "The list should be at its end.");
+
+					collectionView.ScrollTo(0, position: ScrollToPosition.Start, animate: true);
+					collectionView.ScrollToEnd(animate: false);
+				}
+				else
+				{
+					await AssertEventually(() => GetDistanceFromStart(handler) <= AnchorTolerance, timeout: 3000, message: "The list should open at its start.");
+
+					collectionView.ScrollTo(items.Count - 1, position: ScrollToPosition.End, animate: true);
+					collectionView.ScrollToStart(animate: false);
+				}
+
+				// Long enough for the earlier animation to have ended, had it carried on.
+				await Task.Delay(1000);
+				if (edge == ScrollAnchorMode.End)
+				{
+					await AssertAtEnd(handler, "The later ScrollToEnd should win.");
+				}
+				else
+				{
+					Assert.True(GetDistanceFromStart(handler) <= AnchorTolerance, $"The later ScrollToStart should win. Distance from the start: {GetDistanceFromStart(handler)}.");
+				}
+
+				Assert.Equal(anchorMode != ScrollAnchorMode.None, collectionView.IsAnchored);
+			});
+		}
+
 #if ANDROID
 		[Fact(DisplayName = "A ScrollTo as new items are laid out wins over following the end")]
 		public async Task AScrollToAsNewItemsAreLaidOutWinsOverFollowingTheEnd()
@@ -397,6 +455,41 @@ namespace Microsoft.Maui.DeviceTests
 				items.Add(new AnchorItem("Added", 40));
 				await Task.Delay(500);
 				Assert.True(GetDistanceToEnd(handler) > AnchorTolerance, "With AnchorMode off, the list shouldn't follow its end.");
+				Assert.False(collectionView.IsAnchored);
+			});
+		}
+
+		[Fact(DisplayName = "Turning AnchorMode off from Scrolled as the view follows the end stops following it")]
+		public async Task TurningAnchorModeOffFromScrolledStopsFollowingTheEnd()
+		{
+			SetupBuilder();
+			var items = CreateAnchorItems(40);
+			var collectionView = CreateAnchorCollectionView(items, ScrollAnchorMode.End);
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				await AssertAtEnd(handler, "The list should open at its end.");
+
+				// The scroll that follows the new item raises Scrolled, before the anchor is done with it.
+				var turnedOff = false;
+				collectionView.Scrolled += (_, _) =>
+				{
+					if (!turnedOff)
+					{
+						turnedOff = true;
+						collectionView.AnchorMode = ScrollAnchorMode.None;
+					}
+				};
+
+				items.Add(new AnchorItem("Added", 40));
+				await AssertEventually(() => turnedOff, timeout: 3000, message: "Following the new item should scroll the list.");
+				await Task.Delay(500);
+				Assert.False(collectionView.IsAnchored, "With AnchorMode off, the list shouldn't follow its end.");
+
+				var position = GetScrollPosition(handler);
+				items.Add(new AnchorItem("Added after turning AnchorMode off", 40));
+				await Task.Delay(500);
+				Assert.True(position == GetScrollPosition(handler), "With AnchorMode off, a new item shouldn't move the list.");
 				Assert.False(collectionView.IsAnchored);
 			});
 		}
@@ -775,6 +868,26 @@ namespace Microsoft.Maui.DeviceTests
 			return recyclerView.FindViewHolderForAdapterPosition(hasHeader ? index + 1 : index)?.ItemView is { } view
 				? view.Height / (double)recyclerView.Resources.DisplayMetrics.Density
 				: double.NaN;
+#endif
+		}
+
+		// Whether an item laid out in view is the given height, in device-independent units.
+		static bool ShowsItemOfHeight(CollectionViewHandler handler, double height)
+		{
+#if IOS || MACCATALYST
+			return handler.Controller.CollectionView.VisibleCells.Any(cell => Math.Abs((double)cell.Frame.Height - height) <= AnchorTolerance);
+#else
+			var recyclerView = (RecyclerView)handler.PlatformView;
+			var layoutManager = recyclerView.GetLayoutManager();
+			for (var index = 0; index < layoutManager.ChildCount; index++)
+			{
+				if (Math.Abs(layoutManager.GetChildAt(index).Height / (double)recyclerView.Resources.DisplayMetrics.Density - height) <= AnchorTolerance)
+				{
+					return true;
+				}
+			}
+
+			return false;
 #endif
 		}
 
