@@ -179,6 +179,7 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			MapClearButtonVisibility(this, VirtualView);
+			PlatformView.HideSoftInputIfReadOnly(VirtualView, e.HasFocus);
 		}
 
 		// Check whether the touched position inbounds with clear button.

@@ -317,5 +317,8 @@ public class SearchBarHandler2 : ViewHandler<ISearchBar, MauiMaterialSearchBarTe
     void OnFocusChange(object? sender, View.FocusChangeEventArgs e)
     {
         VirtualView?.IsFocused = e.HasFocus;
+
+        if (VirtualView is not null)
+            PlatformView.HideSoftInputIfReadOnly(VirtualView, e.HasFocus);
     }
 }

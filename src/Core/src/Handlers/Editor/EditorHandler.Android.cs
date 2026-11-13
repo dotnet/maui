@@ -146,6 +146,10 @@ namespace Microsoft.Maui.Handlers
 			{
 				VirtualView?.Completed();
 			}
+			else if (VirtualView is not null)
+			{
+				PlatformView.HideSoftInputIfReadOnly(VirtualView, e.HasFocus);
+			}
 		}
 
 		public override void PlatformArrange(Rect frame)

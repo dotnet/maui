@@ -288,6 +288,7 @@ public class EntryHandler2 : ViewHandler<IEntry, MauiMaterialTextInputLayout>
 
 		VirtualView.IsFocused = e.HasFocus;
 		MapClearButtonVisibility(this, VirtualView);
+		PlatformView.HideSoftInputIfReadOnly(VirtualView, e.HasFocus);
 	}
 
 	void OnEditorAction(object? sender, EditorActionEventArgs e)

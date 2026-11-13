@@ -196,6 +196,10 @@ public class EditorHandler2 : ViewHandler<IEditor, MauiMaterialEditText>
 		{
 			VirtualView?.Completed();
 		}
+		else if (VirtualView is not null)
+		{
+			PlatformView.HideSoftInputIfReadOnly(VirtualView, e.HasFocus);
+		}
 	}
 
 	void OnSelectionChanged(object? sender, EventArgs e)

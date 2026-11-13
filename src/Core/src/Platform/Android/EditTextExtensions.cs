@@ -202,6 +202,13 @@ namespace Microsoft.Maui.Platform
 			editText.SetCursorVisible(!editor.IsReadOnly);
 		}
 
+		// A read-only input can get focus but can't be typed into, so it hides a keyboard that another input left open
+		internal static void HideSoftInputIfReadOnly(this View view, ITextInput textInput, bool hasFocus)
+		{
+			if (hasFocus && textInput.IsReadOnly)
+				view.HideSoftInput();
+		}
+
 		public static void UpdateClearButtonVisibility(this EditText editText, IEntry entry)
 		{
 			if (entry?.Handler is not EntryHandler entryHandler)
