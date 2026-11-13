@@ -7,6 +7,9 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class LabelHandler : ViewHandler<ILabel, AppCompatTextView>
 	{
+		// The font and kind of text that the line spacing of the last LineHeight mapping was computed for
+		(float FontSpacing, bool IsSpanned)? _lineHeightSource;
+
 		protected override AppCompatTextView CreatePlatformView()
 			=> new MauiTextView(Context);
 
@@ -18,6 +21,15 @@ namespace Microsoft.Maui.Handlers
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
+			// The line spacing depends on the font and on whether the text is spanned, which can change after
+			// LineHeight was mapped (for example in a Font mapping that runs later). Map LineHeight again then,
+			// through the mapper, so that Controls' rules and app customizations of the mapping still apply.
+			if (_lineHeightSource is { } lineHeightSource && GetLineHeightSource(PlatformView) is var currentSource && currentSource != lineHeightSource)
+			{
+				_lineHeightSource = currentSource;
+				UpdateValue(nameof(ILabel.LineHeight));
+			}
+
 			var size = base.GetDesiredSize(widthConstraint, heightConstraint);
 
 			// Android TextView reports full available width instead of actual text width when
@@ -160,7 +172,13 @@ namespace Microsoft.Maui.Handlers
 		public static void MapLineHeight(ILabelHandler handler, ILabel label)
 		{
 			handler.PlatformView?.UpdateLineHeight(label);
+
+			if (handler is LabelHandler labelHandler)
+				labelHandler._lineHeightSource = label.LineHeight >= 0 && handler.PlatformView is { } textView ? GetLineHeightSource(textView) : null;
 		}
+
+		static (float FontSpacing, bool IsSpanned) GetLineHeightSource(AppCompatTextView textView) =>
+			(textView.Paint?.FontSpacing ?? 0, textView.IsTextSpanned());
 	}
 
 	public class LabelHandler2 : LabelHandler

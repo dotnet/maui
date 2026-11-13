@@ -172,9 +172,22 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateLineHeight(this TextView textView, ILabel label)
 		{
-			if (label.LineHeight >= 0)
+			if (label.LineHeight < 0)
+				return;
+
+			// The line spacing multiplier also scales the font padding that TextView adds to the first line,
+			// making the gap below it larger, so plain text gets the same fixed extra on every line instead.
+			// Spanned text (HTML) keeps the multiplier, which spaces lines of different sizes by their own height.
+			if (!textView.IsTextSpanned() && textView.Paint?.GetFontMetricsInt() is { } fontMetrics)
+				textView.SetLineSpacing((fontMetrics.Descent - fontMetrics.Ascent) * ((float)label.LineHeight - 1), 1);
+			else
 				textView.SetLineSpacing(0, (float)label.LineHeight);
 		}
+
+		// Plain text is a java.lang.String. "is ISpanned" doesn't work here: in a trimmed app,
+		// formatted text (a SpannedString) can come back as a plain ICharSequence wrapper.
+		internal static bool IsTextSpanned(this TextView textView) =>
+			textView.TextFormatted is not Java.Lang.String;
 
 		internal static void Focus(this TextView textView, FocusRequest request)
 		{
