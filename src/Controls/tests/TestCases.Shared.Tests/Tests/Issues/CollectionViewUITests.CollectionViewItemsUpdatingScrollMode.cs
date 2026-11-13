@@ -30,7 +30,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 				App.Tap("AddItemAbove");
 			}
 
-			App.WaitForNoElement("Vegetables.jpg, 10");
+			App.WaitForElement("cover1.jpg, 0");
 		}
 
 #endif
