@@ -362,11 +362,23 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 
 			// A scroll the app requests: an anchor that follows the start judges where it lands.
-			double? target;
+			double? target = null;
 			_scrollAnchor?.ScrollRequesting();
 			try
 			{
-				target = CollectionViewScrollAnchor.ScrollToEndOnce(CollectionView, animate);
+				if (animate)
+				{
+					target = CollectionViewScrollAnchor.AnimateToEndOnce(CollectionView);
+				}
+				else
+				{
+					// Scroll to the end as laid out in the next layout, and the rest of the way in the one after, once the rows
+					// there are measured (see FinishScrollToEnd). The app can request another scroll from the Scrolled event either
+					// raises: that one wins.
+					FinishingScrollToEnd();
+					CollectionView.LayoutIfNeeded();
+					CollectionView.LayoutIfNeeded();
+				}
 			}
 			finally
 			{
@@ -377,8 +389,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				ScrollingToEdge(() => ScrollToEndAnimationEnded(end));
 			}
-			else
+			else if (animate)
 			{
+				// At the end as laid out: it still goes the rest of the way if measuring the rows there moves the end.
 				FinishingScrollToEnd();
 			}
 
@@ -405,7 +418,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		// Called once the view is laid out. A scroll to the end goes the rest of the way to the end, which the layout moves as
 		// it measures the rows the scroll brought into view, until a layout leaves the end where it is. It doesn't follow
-		// items added or removed meanwhile: those aren't the rows it scrolled to.
+		// items added or removed meanwhile: those aren't the rows it scrolled to. It stops for a newer scroll request, which
+		// the app can make from the Scrolled event its own scroll raises (see ScrollingToEdge).
 		void FinishScrollToEnd()
 		{
 			if (_finishingScrollToEnd is not nint count)
@@ -414,12 +428,20 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 
 			_finishingScrollToEnd = null;
-			if (ScrollDirection == UICollectionViewScrollDirection.Vertical
-				&& count == CountItems()
-				&& CollectionViewScrollAnchor.SetOffsetToEnd(CollectionView, animated: false) is not null)
+			if (ScrollDirection != UICollectionViewScrollDirection.Vertical || count != CountItems())
 			{
-				// The scroll brings rows into view: look again once the layout it causes has measured them.
-				FinishingScrollToEnd();
+				return;
+			}
+
+			// The scroll brings rows into view: look again once the layout it causes has measured them.
+			_finishingScrollToEnd = count;
+			if (CollectionViewScrollAnchor.SetOffsetToEnd(CollectionView, animated: false) is null)
+			{
+				_finishingScrollToEnd = null;
+			}
+			else if (_finishingScrollToEnd is not null)
+			{
+				CollectionView.SetNeedsLayout();
 			}
 		}
 

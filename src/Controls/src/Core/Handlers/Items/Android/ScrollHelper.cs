@@ -64,6 +64,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			// A newer request replaces an adjustment an earlier jump left for its layout.
 			_pendingScrollAdjustment = null;
+			LayoutAfterJump();
 
 			if (scrollToPosition == ScrollToPosition.MakeVisible)
 			{
@@ -132,6 +133,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (_recyclerView.GetLayoutManager() is { ItemCount: > 0 })
 			{
+				LayoutAfterJump();
 				_recyclerView.ScrollToPosition(0);
 			}
 		}
@@ -148,7 +150,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			// Scrolling to the last position lays it out lined up with the end of the viewport when it's out of view, but
 			// with the start when it's in view and taller than the viewport: once it's laid out, scroll the rest of the way.
 			_pendingScrollAdjustment = AdjustScrollToEnd;
+			LayoutAfterJump();
 			_recyclerView.ScrollToPosition(layoutManager.ItemCount - 1);
+		}
+
+		// A jump scrolls in the layout it asks for. Asked for during a layout, as when the app scrolls from the Scrolled event
+		// RecyclerView raises as it lays out, that layout is lost: ask again once the layout is over.
+		void LayoutAfterJump()
+		{
+			if (_recyclerView.IsInLayout)
+			{
+				_recyclerView.Post(_recyclerView.RequestLayout);
+			}
 		}
 
 		void AdjustScrollToEnd()
