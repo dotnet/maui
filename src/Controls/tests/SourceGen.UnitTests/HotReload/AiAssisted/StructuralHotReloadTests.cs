@@ -404,6 +404,63 @@ public class StructuralHotReloadTests
 		});
 	}
 
+	const string NestedContentContainersV1 = """
+		<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+		             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+		             x:Class="TestAiAssisted.MainPage">
+		  <Label Text="Before" />
+		</ContentPage>
+		""";
+
+	const string NestedContentContainersV2 = """
+		<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+		             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+		             x:Class="TestAiAssisted.MainPage">
+		  <RefreshView>
+		    <Border>
+		      <ScrollView>
+		        <Label Text="After" />
+		      </ScrollView>
+		    </Border>
+		  </RefreshView>
+		</ContentPage>
+		""";
+
+	[Fact]
+	public void NewContentContainersWithNewContent_CompileWithoutIViewCast()
+	{
+		// https://github.com/dotnet/maui/issues/36256: content assigned inside newly created content
+		// containers (RefreshView/Border/ScrollView.Content, typed View) must not be cast to IView (CS0266).
+		using var harness = CreateHarness();
+		var generation = harness.Generate(NestedContentContainersV1, NestedContentContainersV2);
+		var updateComponentSource = generation[1].UpdateComponentSource;
+
+		Assert.NotNull(updateComponentSource);
+		Assert.DoesNotContain(".Content = (global::Microsoft.Maui.IView)", updateComponentSource!, StringComparison.Ordinal);
+
+		var compilation = harness.Compile(generation[1]);
+		Assert.True(compilation.PeImage.Length > 0, "Generated V2 UpdateComponent should compile.");
+	}
+
+	[MetadataUpdateFact]
+	public void NewContentContainersWithNewContent_AppliesToExistingPage()
+	{
+		using var harness = CreateHarness();
+		var generation = harness.Generate(NestedContentContainersV1, NestedContentContainersV2);
+
+		harness.RunLive(generation, live =>
+		{
+			var page = live.GetInstance<ContentPage>();
+			Assert.Equal("Before", Assert.IsType<Label>(page.Content).Text);
+
+			Assert.Same(page, live.ApplyUpdate<ContentPage>(1));
+			var refreshView = Assert.IsType<RefreshView>(page.Content);
+			var border = Assert.IsType<Border>(refreshView.Content);
+			var scrollView = Assert.IsType<ScrollView>(border.Content);
+			Assert.Equal("After", Assert.IsType<Label>(scrollView.Content).Text);
+		});
+	}
+
 	[Fact]
 	public void ComplexPropertyWithNestedResources_IsExplicitlySkipped()
 	{
