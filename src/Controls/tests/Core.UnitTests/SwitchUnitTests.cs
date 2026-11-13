@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Maui.Graphics;
 using Xunit;
 using static Microsoft.Maui.Controls.Core.UnitTests.VisualStateTestHelpers;
 
@@ -100,6 +101,20 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			sw.IsToggled = true;
 
 			Assert.False(fired);
+		}
+
+		[Fact]
+		public void ChangingOnColorUpdatesOnColorAndTrackColorOnce()
+		{
+			var sw = new Switch();
+			var handler = new UpdateValueTrackingHandlerStub();
+			sw.Handler = handler;
+			handler.UpdatedProperties.Clear();
+
+			sw.OnColor = Colors.Red;
+
+			Assert.Single(handler.UpdatedProperties, nameof(Switch.OnColor));
+			Assert.Single(handler.UpdatedProperties, nameof(ISwitch.TrackColor));
 		}
 
 		[Fact]
