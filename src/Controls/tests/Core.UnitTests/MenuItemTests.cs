@@ -233,5 +233,67 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.True(fired);
 		}
+
+		[Fact]
+		public void SettingIconImageSourceUpdatesHandlerSource()
+		{
+			var item = new MenuFlyoutItem();
+			var handler = NSubstitute.Substitute.For<IElementHandler>();
+			item.Handler = handler;
+			NSubstitute.SubstituteExtensions.ClearReceivedCalls(handler);
+
+			item.IconImageSource = new FontImageSource { Glyph = "A" };
+
+			NSubstitute.SubstituteExtensions.Received(handler, 1).UpdateValue(nameof(IMenuElement.Source));
+		}
+
+		[Fact]
+		public void BindingIconImageSourceUpdatesHandlerSourceAtRuntime()
+		{
+			var viewModel = new IconBindingViewModel
+			{
+				Icon = new FontImageSource { Glyph = "A" }
+			};
+			var item = new MenuFlyoutItem { BindingContext = viewModel };
+			item.SetBinding(MenuItem.IconImageSourceProperty, nameof(IconBindingViewModel.Icon));
+
+			var handler = NSubstitute.Substitute.For<IElementHandler>();
+			item.Handler = handler;
+			NSubstitute.SubstituteExtensions.ClearReceivedCalls(handler);
+
+			viewModel.Icon = new FontImageSource { Glyph = "B" };
+
+			NSubstitute.SubstituteExtensions.Received(handler, 1).UpdateValue(nameof(IMenuElement.Source));
+		}
+
+		[Fact]
+		public void MutatingIconImageSourcePropertyUpdatesHandlerSourceAtRuntime()
+		{
+			var fontImageSource = new FontImageSource { Glyph = "A" };
+			var item = new MenuFlyoutItem { IconImageSource = fontImageSource };
+
+			var handler = NSubstitute.Substitute.For<IElementHandler>();
+			item.Handler = handler;
+			NSubstitute.SubstituteExtensions.ClearReceivedCalls(handler);
+
+			fontImageSource.Glyph = "B";
+
+			NSubstitute.SubstituteExtensions.Received(handler, 1).UpdateValue(nameof(IMenuElement.Source));
+		}
+
+		class IconBindingViewModel : BindableObject
+		{
+			ImageSource _icon;
+
+			public ImageSource Icon
+			{
+				get => _icon;
+				set
+				{
+					_icon = value;
+					OnPropertyChanged();
+				}
+			}
+		}
 	}
 }
