@@ -161,6 +161,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_toolbarTracker.CanNavigateBack = _shellContent == null;
 
 			_appearanceTracker = _shellContext.CreateToolbarAppearanceTracker();
+			if (RuntimeFeature.IsMaterial3Enabled && _appearanceTracker is ShellToolbarAppearanceTracker concreteAppearanceTracker)
+			{
+				concreteAppearanceTracker.CaptureNativeColors(_toolbar);
+			}
 
 			((IShellController)_shellContext.Shell).AddAppearanceObserver(this, _page);
 
@@ -220,6 +224,21 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_viewhandler = null;
 			_shellContent = null;
 			_shellPageContainer = null;
+		}
+
+		internal void DisposePage()
+		{
+			if (_destroyed)
+			{
+				return;
+			}
+			Destroy();
+
+			if (_page is not null)
+			{
+				_page.DisconnectHandlers();
+				_page = null;
+			}
 		}
 
 		protected override void Dispose(bool disposing)

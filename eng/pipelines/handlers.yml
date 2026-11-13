@@ -166,7 +166,7 @@ stages:
 
         - pwsh: ./build.ps1 --target=dotnet --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
           displayName: 'Install .NET'
-          retryCountOnTaskFailure: 3
+          retryCountOnTaskFailure: 4
           env:
             DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
             PRIVATE_BUILD: $(PrivateBuild)
@@ -272,6 +272,7 @@ stages:
             skipProvisionator: true
       - task: DownloadBuildArtifacts@0
         displayName: 'Download Packages'
+        retryCountOnTaskFailure: 4
         inputs:
           artifactName: nuget
           itemPattern: '**/*.nupkg'
@@ -280,7 +281,7 @@ stages:
         displayName: Move the downloaded artifacts
       - pwsh: ./build.ps1 --target=dotnet-local-workloads --verbosity=diagnostic
         displayName: 'Install .NET (Local Workloads)'
-        retryCountOnTaskFailure: 3
+        retryCountOnTaskFailure: 4
         env:
           DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
           PRIVATE_BUILD: $(PrivateBuild)
@@ -327,6 +328,3 @@ stages:
             skipProvisionator: false
           ${{ else }}:
             skipProvisionator: true
-
-- ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
-  - template: common/localization.yml

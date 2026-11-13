@@ -15,9 +15,13 @@ namespace Microsoft.Maui.Handlers
 	public partial class WindowHandler : ElementHandler<IWindow, Activity>
 	{
 		NavigationRootManager? _rootManager;
+		bool _disconnecting;
+		int _rootManagerLifecycle;
 
 		protected override void ConnectHandler(Activity platformView)
 		{
+			_disconnecting = false;
+			_rootManagerLifecycle++;
 			base.ConnectHandler(platformView);
 			if (OperatingSystem.IsAndroidVersionAtLeast(30))
 			{
@@ -34,8 +38,38 @@ namespace Microsoft.Maui.Handlers
 		{
 			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			var rootView = CreateRootViewFromContent(handler, window);
-			handler.PlatformView.SetContentView(rootView);
+			if (handler is WindowHandler windowHandler && windowHandler._disconnecting)
+				return;
+
+			View? publishedRoot = null;
+			ConnectRootViewFromContent(handler, window, (rootManager, rootView) =>
+			{
+				if (rootView is null)
+					return;
+
+				if (handler is WindowHandler currentHandler && currentHandler._disconnecting)
+				{
+					rootManager.Disconnect();
+					return;
+				}
+
+				var activity = ((IElementHandler)handler).PlatformView as Activity;
+				if (activity is null || activity.IsDestroyed || activity.IsFinishing)
+				{
+					rootManager.Disconnect();
+					return;
+				}
+
+				activity.SetContentView(rootView);
+				publishedRoot = rootView;
+			}, (_, rootView) =>
+			{
+				if (rootView is not null && ReferenceEquals(publishedRoot, rootView))
+				{
+					rootView.RemoveFromParent();
+					publishedRoot = null;
+				}
+			});
 		}
 
 		public static void MapX(IWindowHandler handler, IWindow view) =>
@@ -66,33 +100,65 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.OnConnectHandler(platformView);
 
-			_rootManager = MauiContext!.GetNavigationRootManager();
+			var rootManager = MauiContext!.GetNavigationRootManager();
+			if (_rootManager is not null && !ReferenceEquals(_rootManager, rootManager))
+				_rootManager.RootViewChanged -= OnRootViewChanged;
+
+			_rootManager = rootManager;
+			_rootManager.RootViewChanged -= OnRootViewChanged;
 			_rootManager.RootViewChanged += OnRootViewChanged;
 		}
 
 		private protected override void OnDisconnectHandler(object platformView)
 		{
 			base.OnDisconnectHandler(platformView);
+			_disconnecting = true;
+			var lifecycle = ++_rootManagerLifecycle;
 
-			DisconnectHandler(_rootManager);
+			var virtualView = ((IElementHandler)this).VirtualView as IWindow;
+			if (virtualView?.VisualDiagnosticsOverlay?.IsPlatformViewInitialized == true)
+				virtualView.VisualDiagnosticsOverlay.Deinitialize();
 
-			if (_rootManager != null)
-				_rootManager.RootViewChanged -= OnRootViewChanged;
-
-			// The MauiCoordinatorLayout will automatically unregister from the static registry
-			// when it's detached from the window, but we can ensure cleanup here as well
-			_rootManager = null;
+			if (_rootManager is { } rootManager)
+			{
+				rootManager.Disconnect((_, _) => CompleteRootManagerDisconnect(rootManager, lifecycle));
+			}
 		}
 
 		void OnRootViewChanged(object? sender, EventArgs e)
 		{
-			if (VirtualView.VisualDiagnosticsOverlay != null && _rootManager?.RootView is ViewGroup)
-			{
-				if (VirtualView.VisualDiagnosticsOverlay.IsPlatformViewInitialized)
-					VirtualView.VisualDiagnosticsOverlay.Deinitialize();
+			var virtualView = ((IElementHandler)this).VirtualView as IWindow;
+			if (virtualView is null)
+				return;
 
-				VirtualView.VisualDiagnosticsOverlay.Initialize();
+			if (_disconnecting)
+			{
+				if (virtualView.VisualDiagnosticsOverlay?.IsPlatformViewInitialized == true)
+					virtualView.VisualDiagnosticsOverlay.Deinitialize();
+
+				return;
 			}
+
+			if (virtualView.VisualDiagnosticsOverlay != null && _rootManager?.RootView is ViewGroup)
+			{
+				if (virtualView.VisualDiagnosticsOverlay.IsPlatformViewInitialized)
+					virtualView.VisualDiagnosticsOverlay.Deinitialize();
+
+				virtualView.VisualDiagnosticsOverlay.Initialize();
+			}
+		}
+
+		void CompleteRootManagerDisconnect(NavigationRootManager rootManager, int lifecycle)
+		{
+			if (lifecycle != _rootManagerLifecycle)
+				return;
+
+			rootManager.RootViewChanged -= OnRootViewChanged;
+
+			// The MauiCoordinatorLayout will automatically unregister from the static registry
+			// when it's detached from the window, but we can ensure cleanup here as well.
+			if (ReferenceEquals(_rootManager, rootManager))
+				_rootManager = null;
 		}
 
 		// This is here to try and ensure symmetry with disconnect code between test handler
@@ -102,18 +168,19 @@ namespace Microsoft.Maui.Handlers
 			navigationRootManager?.Disconnect();
 		}
 
-		internal static View? CreateRootViewFromContent(IWindowHandler handler, IWindow window)
+		internal static void ConnectRootViewFromContent(
+			IWindowHandler handler,
+			IWindow window,
+			Action<NavigationRootManager, View?> rootPrepared,
+			Action<NavigationRootManager, View?> rootDiscarded)
 		{
 			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
 			var rootManager = handler.MauiContext.GetNavigationRootManager();
-			rootManager.Connect(window.Content);
-
-			// The NavigationRootManager creates a MauiCoordinatorLayout which automatically
-			// registers its MauiWindowInsetListener in the static registry for child views to use
-			var rootView = rootManager.RootView;
-
-			return rootView;
+			rootManager.Connect(
+				window.Content,
+				rootPrepared: rootView => rootPrepared(rootManager, rootView),
+				rootDiscarded: rootView => rootDiscarded(rootManager, rootView));
 		}
 
 		void UpdateVirtualViewFrame(Activity activity)

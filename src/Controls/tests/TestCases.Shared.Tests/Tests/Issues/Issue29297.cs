@@ -13,7 +13,7 @@ public class Issue29297 : _IssuesUITest
 	public override string Issue => "Crash on shell navigation for Mac Catalyst";
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void Shell_Issue29297()
 	{
 		App.WaitForElement("Button");

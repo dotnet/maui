@@ -2,7 +2,9 @@
 using Android.Content;
 using Android.Content.Res;
 using Android.Views;
+using AndroidX.Core.Graphics;
 using AndroidX.Core.View;
+using AColor = Android.Graphics.Color;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Platform;
 
@@ -50,18 +52,50 @@ namespace Microsoft.Maui
 				return;
 			}
 
-			// Set appropriate system bar appearance for readability using API 30+ methods
 			var windowInsetsController = WindowCompat.GetInsetsController(window, window.DecorView);
 			if (windowInsetsController is not null)
 			{
-				// Automatically adjust icon/text colors based on app theme
 				var configuration = activity.Resources?.Configuration;
 				var isLightTheme = configuration is null ||
 					(configuration.UiMode & UiMode.NightMask) != UiMode.NightYes;
 
-				windowInsetsController.AppearanceLightStatusBars = isLightTheme;
+				windowInsetsController.AppearanceLightStatusBars =
+					GetStatusBarAppearance(activity, isLightTheme, RuntimeFeature.IsMaterial3Enabled);
+
 				windowInsetsController.AppearanceLightNavigationBars = isLightTheme;
 			}
 		}
+
+		internal static bool GetStatusBarAppearance(Context context, bool isLightTheme, bool isMaterial3)
+		{
+			// Material 3 draws its surface behind the transparent edge-to-edge status bar.
+			// The Material 2 app bar uses colorPrimary in the same area.
+			var backgroundAttribute = isMaterial3
+				? Resource.Attribute.colorSurface
+				: global::Android.Resource.Attribute.ColorPrimary;
+
+			return TryGetThemeColor(context, backgroundAttribute, out var backgroundColor)
+				? IsLightColor(backgroundColor)
+				: isLightTheme;
+		}
+
+		static bool TryGetThemeColor(Context context, int attribute, out AColor color)
+		{
+			color = default;
+
+			if (context.Theme is null)
+				return false;
+
+			using var ta = context.Theme.ObtainStyledAttributes([attribute]);
+
+			if (!ta.HasValue(0))
+				return false;
+
+			color = new AColor(ta.GetColor(0, 0));
+			return true;
+		}
+
+		static bool IsLightColor(AColor color) =>
+			ColorUtils.CalculateLuminance(color.ToArgb()) > 0.5;
 	}
 }

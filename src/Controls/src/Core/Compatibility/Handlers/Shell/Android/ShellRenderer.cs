@@ -6,6 +6,7 @@ using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.Views;
 using Android.Widget;
+using Microsoft.Maui.Platform;
 using AndroidX.DrawerLayout.Widget;
 using AndroidX.Fragment.App;
 using Microsoft.Maui.ApplicationModel;
@@ -93,13 +94,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		// These are the primary colors in our styles.xml file
 		public static Color DefaultBackgroundColor => ResolveThemeColor(Color.FromArgb("#2c3e50"), Color.FromArgb("#1B3147"));
-
-		public static readonly Color DefaultForegroundColor = Colors.White;
-		public static readonly Color DefaultTitleColor = Colors.White;
-		public static readonly Color DefaultUnselectedColor = Color.FromRgba(255, 255, 255, 180);
+		public static Color DefaultForegroundColor => ResolveThemeColor(Colors.Black, Colors.White);
+		public static Color DefaultTitleColor => Colors.White;
+		public static Color DefaultUnselectedColor => Color.FromRgba(255, 255, 255, 180);
 		internal static Color DefaultBottomNavigationViewBackgroundColor => ResolveThemeColor(Colors.White, Color.FromArgb("#1B3147"));
-
-		internal static bool IsDarkTheme => (Application.Current?.RequestedTheme == AppTheme.Dark);
+		internal static bool IsDarkTheme => Application.Current?.RequestedTheme == AppTheme.Dark;
 
 		static Color ResolveThemeColor(Color light, Color dark)
 		{
@@ -113,6 +112,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		IShellFlyoutRenderer _flyoutView;
 		FrameLayout _frameLayout;
+		FragmentManager _fragmentManager;
 		IMauiContext _mauiContext;
 		bool _disposed;
 
@@ -133,7 +133,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		protected Context AndroidContext { get; private set; }
 		protected Shell Element { get; private set; }
 		FragmentManager FragmentManager =>
-			Element.FindMauiContext().GetFragmentManager();
+			_fragmentManager ??= _mauiContext.GetFragmentManager();
 
 		protected virtual IShellObservableFragment CreateFragmentForPage(Page page)
 		{
@@ -182,6 +182,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		protected virtual void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
+			if (_disposed)
+				return;
+
 			if (e.PropertyName == Shell.CurrentItemProperty.PropertyName)
 				SwitchFragment(FragmentManager, _frameLayout, Element.CurrentItem);
 
@@ -218,6 +221,35 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		protected virtual void SwitchFragment(FragmentManager manager, AView targetView, ShellItem newItem, bool animate = true)
 		{
+			if (animate && newItem?.CurrentItem?.CurrentItem is IShellContentController shellContent)
+			{
+				bool? isNavBarVisible = null;
+
+				if (shellContent is BindableObject bindable &&
+					bindable.IsSet(Shell.NavBarIsVisibleProperty))
+				{
+					isNavBarVisible = Shell.GetNavBarIsVisible(bindable);
+				}
+
+				if (isNavBarVisible == null)
+				{
+					var destinationPage = shellContent.GetOrCreateContent();
+
+					if (destinationPage != null)
+						isNavBarVisible = Shell.GetNavBarIsVisible(destinationPage);
+				}
+
+				if (isNavBarVisible == false)
+				{
+					var rootView = _flyoutView?.AndroidView;
+
+					if (rootView != null && rootView.IsSoftInputShowing())
+					{
+						rootView.HideSoftInput();
+					}
+				}
+			}
+
 			var previousView = _currentView;
 			_currentView = CreateShellItemRenderer(newItem);
 			_currentView.ShellItem = newItem;
@@ -309,6 +341,15 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			CommandMapper.Invoke(this, Element, command, args);
 		}
 
+		internal void ReleaseDrawerCallbackBeforePageChange()
+		{
+			if (!OperatingSystem.IsAndroidVersionAtLeast(36))
+				return;
+
+			if (_flyoutView is ShellFlyoutRenderer shellFlyoutRenderer)
+				shellFlyoutRenderer.ReleaseDrawerCallbackBeforePageChange();
+		}
+
 		void IElementHandler.DisconnectHandler()
 		{
 			if (_disposed)
@@ -320,21 +361,33 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			Element.SizeChanged -= OnElementSizeChanged;
 			((IShellController)Element).RemoveAppearanceObserver(this);
 
+			if (_currentView is ShellItemRendererBase)
+			{
+				var currentFragment = _currentView.Fragment;
+				if (_fragmentManager is not null &&
+					!_fragmentManager.IsDestroyed(AndroidContext))
+				{
+					var transaction = _fragmentManager.BeginTransactionEx();
+					transaction.RemoveEx(currentFragment);
+					transaction.CommitAllowingStateLossEx();
+				}
+			}
+			else
+				_currentView?.Dispose();
+
+			_currentView = null;
+
 			if (_flyoutView is ShellFlyoutRenderer sfr)
 				sfr.Disconnect();
 			else
 				(_flyoutView as IDisposable)?.Dispose();
 
-			if (_currentView is ShellItemRendererBase sir)
-				sir.Disconnect();
-			else
-				_currentView.Dispose();
+			if (ReferenceEquals(Element.Handler, this))
+			{
+				Element.Handler = null;
+			}
 
-			_currentView = null;
-
-			Element = null;
-
-			_disposed = true;
+			// FragmentManager owns deferred destruction, which still reads IShellContext.Shell.
 		}
 	}
 }

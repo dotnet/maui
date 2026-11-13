@@ -222,6 +222,24 @@ namespace Microsoft.Maui.Controls.Xaml
 			return null;
 		}
 
+		[DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(AppThemeBindingExtension))]
+		[DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ArrayExtension))]
+		[DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BindingExtension))]
+		[DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(DataTemplateExtension))]
+		[DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(DynamicResourceExtension))]
+#pragma warning disable CS0618 // FontImageExtension is retained for runtime XAML compatibility.
+		[DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(FontImageExtension))]
+#pragma warning restore CS0618
+		[DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(NullExtension))]
+		[DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(OnIdiomExtension))]
+		[DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(OnPlatformExtension))]
+		[DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ReferenceExtension))]
+		[DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(RelativeSourceExtension))]
+		[DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(StaticExtension))]
+		[DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(StaticResourceExtension))]
+		[DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(StyleSheetExtension))]
+		[DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(TemplateBindingExtension))]
+		[DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(TypeExtension))]
 		static void Visit(RootNode rootnode, HydrationContext visitorContext, bool useDesignProperties)
 		{
 			rootnode.Accept(new XamlNodeVisitor((node, parent) => node.Parent = parent), null); //set parents for {StaticResource}

@@ -1,6 +1,5 @@
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Xml;
 using Microsoft.CodeAnalysis;
 using Microsoft.Maui.Controls.Xaml;
@@ -26,18 +25,18 @@ class ThicknessConverter : ISGTypeConverter
 				switch (thickness.Length)
 				{
 					case 2:
-						if (double.TryParse(thickness[0], NumberStyles.Number, CultureInfo.InvariantCulture, out double h)
-							&& double.TryParse(thickness[1], NumberStyles.Number, CultureInfo.InvariantCulture, out double v))
+						if (TryParseDouble(thickness[0], out double h)
+							&& TryParseDouble(thickness[1], out double v))
 						{
 							var thicknessType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Thickness")!;
 							return $"new {thicknessType.ToFQDisplayString()}({FormatInvariant(h)}, {FormatInvariant(v)})";
 						}
 						break;
 					case 4:
-						if (double.TryParse(thickness[0], NumberStyles.Number, CultureInfo.InvariantCulture, out double l)
-							&& double.TryParse(thickness[1], NumberStyles.Number, CultureInfo.InvariantCulture, out double t)
-							&& double.TryParse(thickness[2], NumberStyles.Number, CultureInfo.InvariantCulture, out double r)
-							&& double.TryParse(thickness[3], NumberStyles.Number, CultureInfo.InvariantCulture, out double b))
+						if (TryParseDouble(thickness[0], out double l)
+							&& TryParseDouble(thickness[1], out double t)
+							&& TryParseDouble(thickness[2], out double r)
+							&& TryParseDouble(thickness[3], out double b))
 						{
 							var thicknessType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Thickness")!;
 							return $"new {thicknessType.ToFQDisplayString()}({FormatInvariant(l)}, {FormatInvariant(t)}, {FormatInvariant(r)}, {FormatInvariant(b)})";
@@ -47,7 +46,7 @@ class ThicknessConverter : ISGTypeConverter
 			}
 			else
 			{ //single uniform thickness
-				if (double.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out double l))
+				if (TryParseDouble(value, out double l))
 				{
 					var thicknessType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Thickness")!;
 					return $"new {thicknessType.ToFQDisplayString()}({FormatInvariant(l)})";

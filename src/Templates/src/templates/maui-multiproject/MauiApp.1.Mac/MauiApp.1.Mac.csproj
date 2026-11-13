@@ -2,7 +2,7 @@
 
 	<PropertyGroup>
 		<TargetFramework>DOTNET_TFM-maccatalyst</TargetFramework>
-		<SupportedOSPlatformVersion>15.0</SupportedOSPlatformVersion>
+		<SupportedOSPlatformVersion>17.0</SupportedOSPlatformVersion>
 		<OutputType>Exe</OutputType>
 		<RootNamespace>MauiApp._1</RootNamespace>
 		<Nullable>enable</Nullable>

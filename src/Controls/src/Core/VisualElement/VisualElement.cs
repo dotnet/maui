@@ -34,14 +34,14 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="InputTransparent"/>.</summary>
 		public static readonly BindableProperty InputTransparentProperty = BindableProperty.Create(
-			nameof(InputTransparent), typeof(bool), typeof(VisualElement), default(bool),
+			nameof(InputTransparent), typeof(bool), typeof(VisualElement), BooleanBoxes.FalseBox,
 			propertyChanged: OnInputTransparentPropertyChanged, coerceValue: CoerceInputTransparentProperty);
 
 		bool _isEnabledExplicit = (bool)IsEnabledProperty.DefaultValue;
 
 		/// <summary>Bindable property for <see cref="IsEnabled"/>.</summary>
 		public static readonly BindableProperty IsEnabledProperty = BindableProperty.Create(nameof(IsEnabled), typeof(bool),
-			typeof(VisualElement), true, propertyChanged: OnIsEnabledPropertyChanged, coerceValue: CoerceIsEnabledProperty);
+			typeof(VisualElement), BooleanBoxes.TrueBox, propertyChanged: OnIsEnabledPropertyChanged, coerceValue: CoerceIsEnabledProperty);
 
 		static readonly BindablePropertyKey XPropertyKey = BindableProperty.CreateReadOnly(nameof(X), typeof(double), typeof(VisualElement), default(double));
 
@@ -270,11 +270,19 @@ namespace Microsoft.Maui.Controls
 									propertyChanged: (b, o, n) => { (((VisualElement)b).AnchorX, ((VisualElement)b).AnchorY) = (Point)n; });
 
 		/// <summary>Bindable property for <see cref="IsVisible"/>.</summary>
-		public static readonly BindableProperty IsVisibleProperty = BindableProperty.Create(nameof(IsVisible), typeof(bool), typeof(VisualElement), true,
+		public static readonly BindableProperty IsVisibleProperty = BindableProperty.Create(nameof(IsVisible), typeof(bool), typeof(VisualElement), BooleanBoxes.TrueBox,
 			propertyChanged: (bindable, oldvalue, newvalue) => ((VisualElement)bindable).OnIsVisibleChanged((bool)oldvalue, (bool)newvalue));
 
+		bool _isVisibleCumulative = (bool)IsVisibleProperty.DefaultValue;
+
 		/// <summary>Bindable property for <see cref="Opacity"/>.</summary>
-		public static readonly BindableProperty OpacityProperty = BindableProperty.Create(nameof(Opacity), typeof(double), typeof(VisualElement), 1d, coerceValue: (bindable, value) => ((double)value).Clamp(0, 1));
+		public static readonly BindableProperty OpacityProperty = BindableProperty.Create(nameof(Opacity), typeof(double), typeof(VisualElement), 1d,
+			coerceValue: (bindable, value) =>
+			{
+				var original = (double)value;
+				var clamped = original.Clamp(0, 1);
+				return clamped == original ? value : (object)clamped;
+			});
 
 		/// <summary>Bindable property for <see cref="BackgroundColor"/>.</summary>
 		public static readonly BindableProperty BackgroundColorProperty = BindableProperty.Create(nameof(BackgroundColor), typeof(Color), typeof(VisualElement), null);
@@ -636,7 +644,7 @@ namespace Microsoft.Maui.Controls
 		public bool InputTransparent
 		{
 			get { return (bool)GetValue(InputTransparentProperty); }
-			set { SetValue(InputTransparentProperty, value); }
+			set { SetValue(InputTransparentProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <summary>
@@ -649,7 +657,7 @@ namespace Microsoft.Maui.Controls
 		public bool IsEnabled
 		{
 			get { return (bool)GetValue(IsEnabledProperty); }
-			set { SetValue(IsEnabledProperty, value); }
+			set { SetValue(IsEnabledProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <summary>
@@ -717,12 +725,15 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Gets or sets a value that determines whether this element will be visible on screen and take up space in layouts. This is a bindable property.
 		/// </summary>
-		/// <remarks>When an element has <see cref="IsVisible"/> set to <see langword="false"/> it will no longer take up space in layouts or be eligible to receive any kind of input event.</remarks>
+		/// <remarks>
+		/// <para>This property represents the visibility set directly on the element. The effective visibility, available through <see cref="IView.Visibility"/>, also depends on the visibility of the element's ancestors.</para>
+		/// <para>When an element has <see cref="IsVisible"/> set to <see langword="false"/> it will no longer take up space in layouts or be eligible to receive any kind of input event.</para>
+		/// </remarks>
 		[TypeConverter(typeof(VisibilityConverter))]
 		public bool IsVisible
 		{
 			get { return (bool)GetValue(IsVisibleProperty); }
-			set { SetValue(IsVisibleProperty, value); }
+			set { SetValue(IsVisibleProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <summary>
@@ -1589,12 +1600,7 @@ namespace Microsoft.Maui.Controls
 
 		internal virtual void OnIsVisibleChanged(bool oldValue, bool newValue)
 		{
-			if (this is IView fe)
-			{
-				fe.Handler?.UpdateValue(nameof(IView.Visibility));
-			}
-
-			InvalidateMeasureInternal(InvalidationTrigger.Undefined);
+			(this as IPropertyPropagationController)?.PropagatePropertyChanged(IsVisibleProperty.PropertyName);
 		}
 
 		internal override void OnParentResourcesChanged(IEnumerable<KeyValuePair<string, object>> values)
@@ -1647,6 +1653,29 @@ namespace Microsoft.Maui.Controls
 		internal void ChangeVisualStateInternal() => ChangeVisualState();
 
 		bool _isPointerOver;
+		bool _isItemSelected;
+
+		/// <summary>
+		/// Gets or sets whether this element is in the Selected visual state.
+		/// Platform handlers (CollectionView, Shell flyout, IndicatorView) use this property
+		/// to select/deselect items. The setter includes an equality guard to avoid redundant
+		/// state recomputation and routes through <see cref="ChangeVisualState"/> so that
+		/// IsEnabled and other state priorities (Disabled, PointerOver, Normal) are respected.
+		/// </summary>
+		internal bool IsItemSelected
+		{
+			get => _isItemSelected;
+			set
+			{
+				if (_isItemSelected == value)
+				{
+					return;
+				}
+
+				_isItemSelected = value;
+				ChangeVisualState();
+			}
+		}
 
 		internal bool IsPointerOver
 		{
@@ -1668,26 +1697,37 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		protected internal virtual void ChangeVisualState()
 		{
-			if (!IsEnabled)
+			try
 			{
-				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Disabled);
-			}
-			else if (IsPointerOver)
-			{
-				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.PointerOver);
-			}
-			else
-			{
-				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Normal);
-			}
+				if (!IsEnabled)
+				{
+					VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Disabled);
+				}
+				else
+				{
+					bool isSelected = this.IsElementInSelectedState();
+					string targetState = isSelected ? VisualStateManager.CommonStates.Selected
+													: (IsPointerOver ? VisualStateManager.CommonStates.PointerOver : VisualStateManager.CommonStates.Normal);
 
-			if (IsEnabled)
+					VisualStateManager.GoToState(this, targetState);
+				}
+
+				if (IsEnabled)
+				{
+					// Focus needs to be handled independently; otherwise, if no actual Focus state is supplied
+					// in the control's visual states, the state can end up stuck in PointerOver after the pointer
+					// exits and the control still has focus.
+					VisualStateManager.GoToState(this,
+						IsFocused ? VisualStateManager.CommonStates.Focused : VisualStateManager.CommonStates.Unfocused);
+				}
+			}
+			catch (InvalidOperationException)
 			{
-				// Focus needs to be handled independently; otherwise, if no actual Focus state is supplied
-				// in the control's visual states, the state can end up stuck in PointerOver after the pointer
-				// exits and the control still has focus.
-				VisualStateManager.GoToState(this,
-					IsFocused ? VisualStateManager.CommonStates.Focused : VisualStateManager.CommonStates.Unfocused);
+				// Swallow "PlatformView cannot be null here" thrown when a visual state cascade fans out
+				// during handler disconnect (e.g. on Windows: navigating away from a focused control runs
+				// UpdateIsFocused(false) inside DisconnectHandler -> ChangeVisualState -> VSM Setter ->
+				// mapper -> strongly-typed PlatformView accessor). The handler/PlatformView has already
+				// been released, so there is nothing for the mapper to update. See dotnet/maui#27101.
 			}
 		}
 
@@ -1729,10 +1769,10 @@ namespace Microsoft.Maui.Controls
 			if (bindable is VisualElement visualElement)
 			{
 				visualElement._isEnabledExplicit = (bool)value;
-				return visualElement.IsEnabledCore;
+				return BooleanBoxes.Box(visualElement.IsEnabledCore);
 			}
 
-			return false;
+			return BooleanBoxes.FalseBox;
 		}
 
 		static void OnIsEnabledPropertyChanged(BindableObject bindable, object oldValue, object newValue)
@@ -1752,10 +1792,10 @@ namespace Microsoft.Maui.Controls
 			if (bindable is VisualElement visualElement)
 			{
 				visualElement._inputTransparentExplicit = (bool)value;
-				return visualElement.InputTransparentCore;
+				return BooleanBoxes.Box(visualElement.InputTransparentCore);
 			}
 
-			return false;
+			return BooleanBoxes.FalseBox;
 		}
 
 		static void OnInputTransparentPropertyChanged(BindableObject bindable, object oldValue, object newValue)
@@ -1825,7 +1865,28 @@ namespace Microsoft.Maui.Controls
 			if (propertyName == null || propertyName == InputTransparentProperty.PropertyName)
 				this.RefreshPropertyValue(InputTransparentProperty, _inputTransparentExplicit);
 
+			var effectiveVisibilityChanged = false;
+			if (propertyName == null || propertyName == IsVisibleProperty.PropertyName)
+				effectiveVisibilityChanged = UpdateEffectiveVisibility();
+
+			if (propertyName == IsVisibleProperty.PropertyName && !effectiveVisibilityChanged)
+				return;
+
 			PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, ((IVisualTreeElement)this).GetVisualChildren());
+
+			if (effectiveVisibilityChanged)
+				InvalidateMeasureInternal(InvalidationTrigger.Undefined);
+		}
+
+		bool UpdateEffectiveVisibility()
+		{
+			var isVisible = IsVisible && (Parent is not VisualElement parent || parent._isVisibleCumulative);
+			if (_isVisibleCumulative == isVisible)
+				return false;
+
+			_isVisibleCumulative = isVisible;
+			Handler?.UpdateValue(nameof(IView.Visibility));
+			return true;
 		}
 
 		/// <summary>
@@ -1861,6 +1922,7 @@ namespace Microsoft.Maui.Controls
 #nullable enable
 		Semantics? _semantics;
 		bool _isLoadedFired;
+		internal bool IsLoadedFired => _isLoadedFired;
 		EventHandler? _loaded;
 		EventHandler? _unloaded;
 		bool _watchingPlatformLoaded;
@@ -2064,7 +2126,7 @@ namespace Microsoft.Maui.Controls
 		bool IView.IsFocused
 		{
 			get => (bool)GetValue(IsFocusedProperty);
-			set => SetValue(IsFocusedPropertyKey, value, SetterSpecificity.FromHandler);
+			set => SetValue(IsFocusedPropertyKey, BooleanBoxes.Box(value), SetterSpecificity.FromHandler);
 		}
 
 		/// <inheritdoc/>
@@ -2077,7 +2139,7 @@ namespace Microsoft.Maui.Controls
 		Primitives.LayoutAlignment IView.VerticalLayoutAlignment => default;
 
 		/// <inheritdoc/>
-		Visibility IView.Visibility => IsVisible.ToVisibility();
+		Visibility IView.Visibility => _isVisibleCumulative.ToVisibility();
 
 		/// <inheritdoc/>
 		Semantics? IView.Semantics => UpdateSemantics();
@@ -2234,13 +2296,10 @@ namespace Microsoft.Maui.Controls
 
 			if (shadow is not null)
 			{
-				SetInheritedBindingContext(shadow, BindingContext);
+				shadow.Parent = this;
 				_shadowChanged ??= (sender, e) => OnPropertyChanged(nameof(Shadow));
 				_shadowProxy ??= new();
 				_shadowProxy.Subscribe(shadow, _shadowChanged);
-
-				OnParentResourcesChanged(this.GetMergedResources());
-				((IElementDefinition)this).AddResourcesChangedListener(shadow.OnParentResourcesChanged);
 			}
 		}
 
@@ -2250,10 +2309,13 @@ namespace Microsoft.Maui.Controls
 
 			if (shadow is not null)
 			{
-				((IElementDefinition)this).RemoveResourcesChangedListener(shadow.OnParentResourcesChanged);
-
 				SetInheritedBindingContext(shadow, null);
 				_shadowProxy?.Unsubscribe();
+
+				if (shadow.Parent == this)
+				{
+					shadow.Parent = null;
+				}
 			}
 		}
 
@@ -2411,8 +2473,10 @@ namespace Microsoft.Maui.Controls
 		{
 			// If I'm not attached to a window and I haven't started watching any platform events
 			// then it's not useful to wire anything up. We will just wait until
-			// This VE gets connected to the xplat Window before wiring up any events
-			if (!_watchingPlatformLoaded && newWindow is null)
+			// This VE gets connected to the xplat Window before wiring up any events.
+			// Exception: if a handler with a MauiContext is present (e.g., added to a native view via
+			// ToPlatform), we still wire up so the Loaded/Unloaded events can fire correctly.
+			if (!_watchingPlatformLoaded && newWindow is null && Handler?.MauiContext is null)
 				return;
 
 			if (_unloaded is null && _loaded is null)

@@ -25,12 +25,35 @@ namespace Microsoft.Maui.Controls
 			s_routeKeys = null;
 		}
 
-		internal static void RegisterImplicitPageRoute(Page page)
+		internal static Page RegisterImplicitPageRoute(Page page)
 		{
 			var route = GetRoute(page);
 			if (!IsUserDefined(route))
 			{
+				s_implicitPageRoutes.TryGetValue(route, out var previousPage);
 				s_implicitPageRoutes[route] = page;
+				s_routeKeys = null;
+
+				return previousPage;
+			}
+
+			return null;
+		}
+
+		internal static void UnregisterImplicitPageRoute(Page page, string route, Page previousPage = null)
+		{
+			if (s_implicitPageRoutes.TryGetValue(route, out var registeredPage) &&
+				ReferenceEquals(registeredPage, page))
+			{
+				if (previousPage is not null)
+				{
+					s_implicitPageRoutes[route] = previousPage;
+				}
+				else
+				{
+					s_implicitPageRoutes.Remove(route);
+				}
+
 				s_routeKeys = null;
 			}
 		}
@@ -247,6 +270,49 @@ namespace Microsoft.Maui.Controls
 		public static void SetRoute(Element obj, string value)
 		{
 			obj.SetValue(RouteProperty, value);
+		}
+
+		internal static void ValidateForDuplicates(Element element, string route)
+		{
+			// If setting the same route to the same element, no need to validate
+			var currentRoute = GetRoute(element);
+			if (currentRoute == route)
+			{
+				return;
+			}
+
+			// Only validate user-defined routes
+			if (string.IsNullOrEmpty(route) || !IsUserDefined(route))
+			{
+				return;
+			}
+
+			// Check for duplicate routes among siblings (elements with the same parent)
+			var parent = element.Parent;
+			if (parent == null)
+			{
+				return;
+			}
+
+			foreach (var child in parent.LogicalChildrenInternal)
+			{
+				if (child == element)
+					continue;
+
+				var siblingRoute = GetRoute(child);
+				if (siblingRoute == route)
+				{
+					throw new ArgumentException(
+						$"Duplicated Route: \"{route}\" is already registered to another element of type {child.GetType().Name}. " +
+						$"Routes must be unique among siblings to avoid navigation conflicts.",
+						nameof(route));
+				}
+			}
+		}
+
+		internal static void RemoveElementRoute(Element element)
+		{
+			// No longer needed with sibling-based validation, but keep for API compatibility
 		}
 
 		static void ValidateRoute(string route, RouteFactory routeFactory)

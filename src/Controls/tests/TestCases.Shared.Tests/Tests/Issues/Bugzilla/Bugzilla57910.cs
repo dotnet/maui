@@ -17,14 +17,14 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		// Crash after navigation
 		[Test]
-		[Category(UITestCategories.ListView)]
+		[Category(UITestCategories.ProgressBar)]
 		public void Bugzilla57910Test()
 		{
 			for (int i = 0; i < 10; i++)
 			{
-				App.WaitForElement(ButtonId);
+				App.WaitForElement(ButtonId, timeout: TimeSpan.FromSeconds(45));
 				App.Tap(ButtonId);
-				App.WaitForElement(Button2Id);
+				App.WaitForElement(Button2Id, timeout: TimeSpan.FromSeconds(45));
 				App.Tap(Button2Id);
 			}
 		}

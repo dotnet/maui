@@ -202,6 +202,29 @@ For complex expressions, use element syntax with CDATA to avoid escaping entirel
 - You need explicit char literals without semantic analysis
 - The escaped version is hard to read
 
+### Type References
+
+Types in expressions are resolved using C# rules: global usings, project usings, and fully qualified names. For types that are not in scope via C# usings, you can use **XAML xmlns prefixes** to reference them:
+
+```xml
+<ContentPage xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=..."
+             xmlns:local="clr-namespace:MyApp.Helpers">
+
+  <!-- xmlns prefix to reference a type not in global usings -->
+  <Label Text="{ios:Page.GetUseSafeArea(this)}" />
+
+  <!-- Same as writing the fully qualified name -->
+  <Label Text="{Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.GetUseSafeArea(this)}" />
+
+  <!-- Types in global usings don't need a prefix -->
+  <Label Text="{Math.Max(A, B)}" />
+</ContentPage>
+```
+
+The `prefix:Type` syntax is expanded to the fully qualified CLR type name before the expression is compiled. This reuses the same xmlns-to-namespace mappings already declared on the XAML document.
+
+**Note:** This is distinct from `{prefix:Name}` at the start of an expression, which is always interpreted as a markup extension (see [Disambiguation](#disambiguation)).
+
 ## Disambiguation
 
 When a `{...}` value could be interpreted as either a markup extension or an expression, disambiguation rules apply.
@@ -284,14 +307,111 @@ Complex expressions (operators, method calls) cannot generate a setter and are o
 - **Single expressions** — no multi-statement blocks or control flow
 - **Event lambdas require parameters** — `{(s, e) => ...}` not `{() => ...}`
 - **No async lambdas** — use regular methods for async event handling
-- **Static types need qualification** — use full path or ensure global usings are in place
+- **Static types need qualification** — use full path, global usings, or xmlns prefixes (see [Type References](#type-references))
+
+## Attached Bindable Properties
+
+Attached bindable properties (ABPs) can be accessed in expressions using target-qualified `target.(Type.Property)` parenthesized syntax, following the convention established by [x:Bind](https://learn.microsoft.com/en-us/windows/apps/develop/platform/xaml/x-bind-markup-extension#attached-properties).
+
+### Syntax
+
+```
+target.(Type.Property)
+```
+
+The parentheses distinguish an attached property access from a regular `Type.Property` static member access. `target` must currently be a named element or `this`. `Type` is resolved via C# usings or XAML xmlns prefixes (see [Type References](#type-references)).
+
+### Reading Attached Properties
+
+Because attached properties are set on `BindableObject`s (views), the primary use case is reading from a **named element**. `this` refers to the top-level element (the page/view root), not the element the attribute is on, so `this.(Grid.Row)` reads the row of the *page*, not the current element.
+
+**From a named element** (most common) — read an ABP from another element by `x:Name`:
+
+```xml
+<Grid>
+  <Button x:Name="myButton" Grid.Row="2" />
+  <Label Text="{myButton.(Grid.Row)}" />
+</Grid>
+```
+
+**From the page root** — `this` is the top-level element in the XAML file:
+
+```xml
+<!-- Reads Grid.Row of the page itself, NOT of the Label -->
+<Label Text="{this.(Grid.Row)}" />
+```
+
+**With xmlns prefix** — for types not in global usings (see [Type References](#type-references)):
+
+```xml
+<Label Text="{this.(ios:Page.UseSafeArea)}" />
+```
+
+**From BindingContext** — **not yet implemented**. The standalone `(Type.Property)` form is reserved for possible future BindingContext attached-property binding support and is currently rejected by the source generator:
+
+```xml
+<!-- Not yet implemented -->
+<Label Text="{(Grid.Row)}" />
+```
+
+### In Compound Expressions
+
+ABP access can appear anywhere a value is expected:
+
+```xml
+<!-- Arithmetic -->
+<Label Text="{myButton.(Grid.Row) * 100}" />
+
+<!-- String interpolation -->
+<Label Text="{$'Row {myButton.(Grid.Row)}, Col {myButton.(Grid.Column)}'}" />
+
+<!-- Ternary -->
+<Label Background="{myButton.(Grid.Row) == 0 ? Colors.Gray : Colors.White}" />
+
+<!-- Method argument -->
+<Label Text="{FormatPosition(myButton.(Grid.Row), myButton.(Grid.Column))}" />
+```
+
+### Two-Way Binding
+
+**Not yet implemented for attached bindable properties.** Target-qualified ABP expressions are lowered to static getter calls and are one-way initialization/binding inputs only. Supporting generated setters for ABPs needs a separate design decision.
+
+| Expression | Two-Way? |
+|------------|----------|
+| `{myBtn.(Grid.Row)}` | ❌ |
+| `{this.(Grid.Row)}` | ❌ |
+| `{myBtn.(Grid.Row) * 2}` | ❌ (compound) |
+
+### Change Notification
+
+**Not yet implemented for attached bindable properties.** The current rewrite does not add `PropertyChanged` subscriptions for ABP changes. Expressions are evaluated through the same expression pipeline as other generated values, but ABP-specific change tracking is future work.
+
+### Classification
+
+The `target.(Type.Property)` pattern is classified as a C# expression when it appears in an expression context (for example `{this.(Grid.Row)}` or `{myButton.(Grid.Row)}`). The source generator rewrites it to the corresponding static getter call (`Type.GetProperty(target)`) before generated C# is emitted.
+
+**Disambiguation from casts and grouping:**
+
+| Expression | Interpretation |
+|------------|---------------|
+| `{(int)Value}` | Cast — `int` is a keyword, not `Identifier.Identifier` |
+| `{(Value)}` | Grouping — single identifier, no dot |
+| `{(Grid.Row)}` | Reserved for future BindingContext ABP support — not yet implemented |
+| `{(a + b)}` | Grouping — contains operator, not `Identifier.Identifier` |
+
+The current rewrite is textual and target-qualified: `target.(X.Y)` becomes `X.GetY(target)`. XAML xmlns prefixes are resolved before this rewrite, so `this.(ios:Page.UseSafeArea)` becomes a fully qualified static getter call.
+
+### Diagnostics
+
+There are no dedicated ABP-specific diagnostics yet. Invalid ABP expressions currently surface through existing source-generator diagnostics or generated C# compilation errors.
 
 ## Future Considerations
 
 - **Parameterless event handlers** — `{() => ...}` and `{args => ...}`
 - **RelativeSource bindings** — `{RelativeSource Self.Width}`
-- **Attached properties** — `{grid1.(Grid.Row)}`
 - **Explicit two-way** — `{= Name, Mode=TwoWay}` or `{Name, set: value => Name = value}`
+- **Attached bindable property setters and change notification** — two-way ABP binding and ABP-specific `PropertyChanged` tracking
+- **BindingContext attached properties** — standalone `{(Type.Property)}` support when the BindingContext is a `BindableObject`
 
 ## Syntax Cheat Sheet
 
@@ -311,3 +431,6 @@ Complex expressions (operators, method calls) cannot generate a setter and are o
 | Force expression | `{= Foo}` |
 | Force page member | `{this.Foo}` |
 | Force BindingContext | `{.Foo}` |
+| Read attached from self | `{this.(Grid.Row)}` |
+| Read attached from element | `{myBtn.(Grid.Row)}` |
+| Read prefixed attached property | `{this.(ios:Page.UseSafeArea)}` |

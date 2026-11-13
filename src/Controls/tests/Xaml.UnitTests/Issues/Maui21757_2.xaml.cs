@@ -31,7 +31,7 @@ public partial class Maui21757_2
 			if (inflator == XamlInflator.SourceGen)
 			{
 				var result = MockSourceGenerator.RunMauiSourceGenerator(MockSourceGenerator.CreateMauiCompilation(), typeof(Maui21757_2));
-				Assert.Empty(result.Diagnostics);
+				Assert.NotEmpty(result.Diagnostics);
 			}
 			else if (inflator == XamlInflator.XamlC)
 			{

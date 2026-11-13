@@ -111,47 +111,50 @@ void ExecuteUITests(string project, string app, string device, string resultsDir
 {
 	// Setup environment for UI tests
 	Information("Starting UI Tests...");
-	var testApp = GetTestApplications(app, device, config, tfm, rid).FirstOrDefault();
-
-	Information($"Testing Device: {device}");
-	Information($"Testing App Project: {app}");
-	Information($"Testing App: {testApp}");
-	Information($"Results Directory: {resultsDir}");
-
-	if (string.IsNullOrEmpty(testApp))
-	{
-		throw new Exception("UI Test application path not specified.");
-	}
-
-	// Launch the app so it can be found by the test runner
-	StartProcess("chmod", $"+x {testApp}/Contents/MacOS/Controls.TestCases.HostApp");
-
-	var p = new System.Diagnostics.Process();
-	p.StartInfo.UseShellExecute = true;
-	p.StartInfo.FileName = "open";
-	p.StartInfo.Arguments = testApp;
-	p.Start();
-
-	Information("Build UITests project {0}", project);
-
 	var name = System.IO.Path.GetFileNameWithoutExtension(project);
 	var binlog = $"{binDir}/{name}-{config}-mac.binlog";
 	var resultsFileName = SanitizeTestResultsFilename($"{name}-{config}-catalyst-{testFilter}");
 	var appiumLog = $"{binDir}/appium_mac_{resultsFileName}.log";
 
-	DotNetBuild(project, new DotNetBuildSettings
+	RunUITestSetupWithRetry(() =>
 	{
-		Configuration = config,
-		ToolPath = toolPath,
-		ArgumentCustomization = args => args
-			.Append("/p:ExtraDefineConstants=MACUITEST")
-			.Append("/bl:" + binlog)
+		var testApp = GetTestApplications(app, device, config, tfm, rid).FirstOrDefault();
+
+		Information($"Testing Device: {device}");
+		Information($"Testing App Project: {app}");
+		Information($"Testing App: {testApp}");
+		Information($"Results Directory: {resultsDir}");
+
+		if (string.IsNullOrEmpty(testApp))
+		{
+			throw new Exception("UI Test application path not specified.");
+		}
+
+		// Launch the app so it can be found by the test runner
+		StartProcess("chmod", $"+x {testApp}/Contents/MacOS/Controls.TestCases.HostApp");
+
+		var p = new System.Diagnostics.Process();
+		p.StartInfo.UseShellExecute = true;
+		p.StartInfo.FileName = "open";
+		p.StartInfo.Arguments = testApp;
+		p.Start();
+
+		Information("Build UITests project {0}", project);
+
+		DotNetBuild(project, new DotNetBuildSettings
+		{
+			Configuration = config,
+			ToolPath = toolPath,
+			ArgumentCustomization = args => args
+				.Append("/p:ExtraDefineConstants=MACUITEST")
+				.Append("/bl:" + binlog)
+		});
 	});
 
 	SetEnvironmentVariable("APPIUM_LOG_FILE", appiumLog);
 
 	Information("Run UITests project {0}", project);
-	RunTestWithLocalDotNet(project, config, pathDotnet: toolPath, noBuild: true, resultsFileNameWithoutExtension: resultsFileName);
+	RunUITestsWithRetry(project, config, toolPath, resultsFileName);
 	Information("UI Tests completed.");
 }
 

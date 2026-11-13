@@ -13,6 +13,7 @@ namespace Microsoft.Maui.Platform
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		readonly MauiLabel _placeholderLabel;
 		nfloat? _defaultPlaceholderSize;
+		TextAlignment _verticalTextAlignment;
 
 		public MauiTextView()
 		{
@@ -32,6 +33,19 @@ namespace Microsoft.Maui.Platform
 		public override void WillMoveToWindow(UIWindow? window)
 		{
 			base.WillMoveToWindow(window);
+		}
+
+		public override UITextAlignment TextAlignment
+		{
+			get => base.TextAlignment;
+			set
+			{
+				if (base.TextAlignment != value)
+				{
+					base.TextAlignment = value;
+					UpdateHorizontalTextAlignment(value);
+				}
+			}
 		}
 
 		// Native Changed doesn't fire when the Text Property is set in code
@@ -66,7 +80,25 @@ namespace Microsoft.Maui.Platform
 			set => _placeholderLabel.TextColor = value;
 		}
 
-		public TextAlignment VerticalTextAlignment { get; set; }
+		public TextAlignment VerticalTextAlignment
+		{
+			get => _verticalTextAlignment;
+			set
+			{
+				if (_verticalTextAlignment != value)
+				{
+					_verticalTextAlignment = value;
+					ShouldCenterVertically();
+				}
+			}
+		}
+
+		/// <summary>
+		/// When true, the Editor is allowed to grow beyond its current frame to fit content
+		/// (AutoSize=TextChanges mode). When false, GetDesiredSize may cap the height to
+		/// preserve scrollability.
+		/// </summary>
+		internal bool AllowAutoGrowth { get; set; }
 
 		public override string? Text
 		{
@@ -136,6 +168,14 @@ namespace Microsoft.Maui.Platform
 			return placeholderLabel;
 		}
 
+		void UpdateHorizontalTextAlignment(UITextAlignment textAlignment)
+		{
+			if (_placeholderLabel is null)
+				return;
+
+			_placeholderLabel.TextAlignment = textAlignment;
+		}
+
 		void UpdatePlaceholderLabelFrame()
 		{
 			if (Bounds != CGRect.Empty && _placeholderLabel is not null)
@@ -170,7 +210,7 @@ namespace Microsoft.Maui.Platform
 			{
 				Maui.TextAlignment.Center => new CGPoint(0, -Math.Max(1, availableSpace / 2)),
 				Maui.TextAlignment.End => new CGPoint(0, -Math.Max(1, availableSpace)),
-				_ => ContentOffset,
+				_ => default,
 			};
 
 			// Scroll the content to the cursor position if it is hidden by the keyboard

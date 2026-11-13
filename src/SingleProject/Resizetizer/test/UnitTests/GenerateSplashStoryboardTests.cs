@@ -169,6 +169,18 @@ namespace Microsoft.Maui.Resizetizer.Tests
 		}
 
 		[Fact]
+		public void UnresizedRasterSplashReferencesBundledImageName()
+		{
+			var splash = new TaskItem("images/camera.png");
+
+			var task = GetNewTask(splash);
+			var success = task.Execute();
+
+			Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
+			AssertFile(_storyboard, "camera.png", "1", "1", "1", "1");
+		}
+
+		[Fact]
 		public void SingleImageWithOnlyPathSucceeds()
 		{
 			var items = new[]

@@ -8,6 +8,11 @@ using Xunit;
 namespace Microsoft.Maui.UnitTests.Hosting
 {
 	[Category(TestCategory.Core, TestCategory.Hosting)]
+	// Builds MauiApp instances that capture the static DispatcherProvider.Current
+	// via DI. Must be serialized with DispatcherTests (which mutates that singleton)
+	// to avoid ObjectDisposedException races on the DispatcherProviderStub's
+	// internal ThreadLocal during MauiApp.Build().
+	[Collection("MainThreadStaticState")]
 	public class HostBuilderServicesTests
 	{
 		[Fact]

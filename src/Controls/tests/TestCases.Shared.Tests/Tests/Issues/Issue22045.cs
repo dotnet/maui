@@ -13,7 +13,7 @@ public class Issue22045 : _IssuesUITest
 	public override string Issue => "[Android] OnSizeAllocated not reported for Android AppShell Flyout content";
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void GetValidSizeWhenContentViewInFlyoutContent()
 	{
 		App.WaitForElement("OpenFlyoutButton");

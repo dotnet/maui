@@ -91,6 +91,14 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
+		internal static void MapBackgroundColor(ISliderHandler handler, ISlider slider)
+		{
+			if (handler.PlatformView is MauiSlider mauiSlider)
+			{
+				mauiSlider.UpdateBackgroundColor(slider);
+			}
+		}
+
 		void OnPlatformViewLoaded(object sender, RoutedEventArgs e)
 		{
 			var platformView = sender as Slider;

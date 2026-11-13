@@ -36,4 +36,37 @@ namespace Microsoft.Maui.Platform
 			SetPadding(0, 0, 0, 0);
 		}
 	}
+
+	// TODO: net11 - Remove this class and update MauiShapeableImageView to public API with the same changes.
+	internal class MaterialShapeableImageView : ShapeableImageView
+	{
+		public MaterialShapeableImageView(Context context) : base(MauiMaterialContextThemeWrapper.Create(context))
+		{
+		}
+
+		public MaterialShapeableImageView(Context context, IAttributeSet? attrs) : base(MauiMaterialContextThemeWrapper.Create(context), attrs)
+		{
+		}
+
+		public MaterialShapeableImageView(Context context, IAttributeSet? attrs, int defStyle) : base(MauiMaterialContextThemeWrapper.Create(context), attrs, defStyle)
+		{
+		}
+
+		protected MaterialShapeableImageView(nint javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
+		{
+		}
+
+		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
+		{
+			// The padding has a few issues. This is a workaround for the following issue:
+			// https://github.com/material-components/material-components-android/issues/2063
+
+			// ShapeableImageView combines ContentPadding with Padding and updates
+			// Padding with the result.
+			base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
+
+			// We need to reset the padding to 0 to avoid a double padding.
+			SetPadding(0, 0, 0, 0);
+		}
+	}
 }

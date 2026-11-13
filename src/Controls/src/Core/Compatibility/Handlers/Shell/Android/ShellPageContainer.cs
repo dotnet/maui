@@ -14,8 +14,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 	{
 		static int? DarkBackground;
 		static int? LightBackground;
-
-
 		public IViewHandler Child { get; set; }
 
 		public bool IsInFragment { get; set; }
@@ -24,18 +22,39 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			Child = child;
 			IsInFragment = inFragment;
-			if (child.VirtualView.Background == null)
+			if (child.VirtualView.Background is null)
 			{
-				int color;
-				if (ShellRenderer.IsDarkTheme)
-					color = DarkBackground ??= ContextCompat.GetColor(context, AColorRes.BackgroundDark);
-				else
-					color = LightBackground ??= ContextCompat.GetColor(context, AColorRes.BackgroundLight);
+				bool isDark = ShellRenderer.IsDarkTheme;
+
+				int color = RuntimeFeature.IsMaterial3Enabled
+				 ? GetMaterial3Background(context)
+				 : GetResourceBackground(context, isDark);
 
 				child.PlatformView.SetBackgroundColor(new AColor(color));
 			}
 			child.PlatformView.RemoveFromParent();
 			AddView(child.PlatformView);
+		}
+
+		int GetMaterial3Background(Context context)
+		{
+			// Material 3 colorSurface automatically adapts to light/dark theme
+			// The theme resolution happens in GetThemeAttrColor based on the active theme
+			return ContextExtensions.GetThemeAttrColor(context, Resource.Attribute.colorSurface);
+		}
+
+		int GetResourceBackground(Context context, bool isDark)
+		{
+			int color;
+			if (isDark)
+			{
+				color = DarkBackground ??= ContextCompat.GetColor(context, AColorRes.BackgroundDark);
+			}
+			else
+			{
+				color = LightBackground ??= ContextCompat.GetColor(context, AColorRes.BackgroundLight);
+			}
+			return color;
 		}
 
 		protected override void OnLayout(bool changed, int l, int t, int r, int b)

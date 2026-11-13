@@ -20,7 +20,7 @@ permissions:
 jobs:
   main:
     runs-on: ubuntu-latest
-    if: ${{ github.repository_owner == 'dotnet' }}
+    if: ${{ github.repository == 'dotnet/maui' }}
     steps:
       - name: Checkout Actions
         uses: actions/checkout@v4

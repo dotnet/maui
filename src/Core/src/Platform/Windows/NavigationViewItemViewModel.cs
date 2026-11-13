@@ -82,12 +82,14 @@ namespace Microsoft.Maui.Platform
 
 		object? _content;
 		bool _isSelected;
+		bool _isEnabled;
 		WBrush? _selectedBackground;
 		WBrush? _unselectedBackground;
 		WBrush? _selectedForeground;
 		WBrush? _selectedTitleColor;
 		WBrush? _unselectedTitleColor;
 		WBrush? _unselectedForeground;
+		WBrush? _disabledForeground;
 		WBrush? _iconColor;
 		ObservableCollection<NavigationViewItemViewModel>? _menuItemsSource;
 		WIconElement? _icon;
@@ -102,12 +104,18 @@ namespace Microsoft.Maui.Platform
 		public WIconElement? Icon
 		{
 			get { return _icon; }
-			set { this.SetProperty(ref _icon, value, OnPropertyChanged); }
+			set
+			{
+				if (this.SetProperty(ref _icon, value, OnPropertyChanged))
+				{
+					UpdateForeground();
+				}
+			}
 		}
 
 		public WBrush? Foreground
 		{
-			get => IconColor ?? (IsSelected ? SelectedForeground : UnselectedForeground);
+			get => IconColor ?? (!IsEnabled && DisabledForeground is not null ? DisabledForeground : (IsSelected ? SelectedForeground : UnselectedForeground));
 		}
 
 		public WBrush? Background
@@ -149,7 +157,7 @@ namespace Microsoft.Maui.Platform
 
 		public WBrush? TitleColor
 		{
-			get => IsSelected ? SelectedTitleColor : UnselectedTitleColor;
+			get => !IsEnabled && DisabledForeground is not null ? DisabledForeground : (IsSelected ? SelectedTitleColor : UnselectedTitleColor);
 		}
 
 		public WBrush? SelectedTitleColor
@@ -203,6 +211,19 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		public WBrush? DisabledForeground
+		{
+			get => _disabledForeground;
+			set
+			{
+				if (this.SetProperty(ref _disabledForeground, value, OnPropertyChanged))
+				{
+					OnPropertyChanged(nameof(TitleColor));
+					UpdateForeground();
+				}
+			}
+		}
+
 		void UpdateForeground()
 		{
 			OnPropertyChanged(nameof(Foreground));
@@ -232,6 +253,20 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		public bool IsEnabled
+		{
+			get => _isEnabled;
+			set
+			{
+				if (_isEnabled != value)
+				{
+					_isEnabled = value;
+					OnPropertyChanged(nameof(IsEnabled));
+					OnPropertyChanged(nameof(TitleColor));
+					UpdateForeground();
+				}
+			}
+		}
 		void OnPropertyChanged(string args) =>
 			OnPropertyChanged(new PropertyChangedEventArgs(args));
 

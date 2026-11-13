@@ -22,16 +22,20 @@ public class ShellFlyoutContent : _IssuesUITest
 	public override string Issue => "Shell Flyout Content";
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void FlyoutContentTests()
 	{
 		App.WaitForElement("PageLoaded");
 		App.TapInShellFlyout(FlyoutItem);
+		App.WaitForElement("ToggleContent");
 		App.Tap("ToggleContent");
 		App.TapInShellFlyout("ContentView");
+		App.WaitForElement(FlyoutItem);
 		App.Tap(FlyoutItem);
+		App.WaitForElement("ToggleFlyoutContentTemplate");
 		App.Tap("ToggleFlyoutContentTemplate");
 		App.TapInShellFlyout(ResetButton);
+		App.WaitForElement(FlyoutItem);
 		App.Tap(FlyoutItem);
 	}
 }

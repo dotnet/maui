@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Linq;
 using Android.Content;
 using Android.Content.Res;
 using Android.Graphics;
@@ -20,6 +21,7 @@ using Google.Android.Material.BottomSheet;
 using Google.Android.Material.Navigation;
 using Google.Android.Material.Tabs;
 using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Controls.Diagnostics;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
@@ -36,6 +38,8 @@ public class TabbedPageManager
 	Fragment _tabLayoutFragment;
 	ColorStateList _originalTabTextColors;
 	ColorStateList _orignalTabIconColors;
+	Drawable _originalBottomNavigationViewBackground;
+	Drawable _originalTabLayoutBackground;
 	ColorStateList _newTabTextColors;
 	ColorStateList _newTabIconColors;
 	FragmentManager _fragmentManager;
@@ -63,6 +67,12 @@ public class TabbedPageManager
 	bool _tabItemStyleLoaded;
 	TabLayoutMediator _tabLayoutMediator;
 	IDisposable _pendingFragment;
+	readonly NativeElementRegistrationSet _nativeTabRegistrations = new NativeElementRegistrationSet();
+	readonly NativeElementRegistrationSet _nativeMoreRegistrations = new NativeElementRegistrationSet();
+	readonly List<IMenuItem> _registeredMenuItems = new List<IMenuItem>();
+	readonly List<AView> _moreItemViews = new List<AView>();
+	BottomSheetDialog _moreDialog;
+	int _tabRegistrationGeneration;
 
 	protected NavigationRootManager NavigationRootManager { get; }
 	public static bool IsDarkTheme => (Application.Current?.RequestedTheme ?? AppInfo.RequestedTheme) == AppTheme.Dark;
@@ -120,32 +130,73 @@ public class TabbedPageManager
 
 		if (Element is not null)
 		{
+			Application.Current!.RequestedThemeChanged -= OnRequestedThemeChanged;
+			_tabRegistrationGeneration++;
+			_nativeTabRegistrations.Clear();
+			CloseMoreDialog();
+			_registeredMenuItems.Clear();
 			Element.InternalChildren.ForEach(page => TeardownPage(page as Page));
 			((IPageController)Element).InternalChildren.CollectionChanged -= OnChildrenCollectionChanged;
 			Element.Appearing -= OnTabbedPageAppearing;
 			Element.Disappearing -= OnTabbedPageDisappearing;
+
 			RemoveTabs();
+
 			_viewPager.LayoutChange -= OnLayoutChanged;
-			_viewPager.Adapter = null;
+
+			if (_viewPager.Adapter is MultiPageFragmentStateAdapter<Page> oldAdapter)
+			{
+				// Order matters: BeginTeardown() first so ContainsItem/CreateFragment/GetItemId
+				// treat this adapter as empty; clearing Adapter afterward cancels any pending
+				// layout still in flight from NotifyDataSetChanged() before Dispose() runs.
+				oldAdapter.BeginTeardown();
+				_viewPager.Adapter = null;
+				oldAdapter.Dispose();
+			}
+			else
+			{
+				_viewPager.Adapter = null;
+			}
+
+			if (_currentBarBackground is GradientBrush currentGradientBrush)
+			{
+				if (ReferenceEquals(currentGradientBrush.Parent, Element))
+				{
+					currentGradientBrush.Parent = null;
+				}
+				currentGradientBrush.InvalidateGradientBrushRequested -= OnBarBackgroundChanged;
+			}
+			_currentBarBackground = null;
+
+			// Clear so this doesn't keep the old CurrentPage/TabbedPage reachable unnecessarily.
+			previousPage = null;
 		}
 
 		Element = tabbedPage;
+
 		if (Element is not null)
 		{
 			_viewPager.LayoutChange += OnLayoutChanged;
 			Element.Appearing += OnTabbedPageAppearing;
 			Element.Disappearing += OnTabbedPageDisappearing;
+
 			_viewPager.Adapter = new MultiPageFragmentStateAdapter<Page>(tabbedPage, FragmentManager, _context) { CountOverride = tabbedPage.Children.Count };
 
 			if (IsBottomTabPlacement)
 			{
-				_bottomNavigationView = new BottomNavigationView(_context.Context)
+				_bottomNavigationView = RuntimeFeature.IsMaterial3Enabled
+					? new BottomNavigationView(_context.Context, null, Resource.Attribute.bottomNavigationViewStyle)
+					: new BottomNavigationView(_context.Context);
+
+				_bottomNavigationView.LayoutParameters = new CoordinatorLayout.LayoutParams(AppBarLayout.LayoutParams.MatchParent, AppBarLayout.LayoutParams.WrapContent)
 				{
-					LayoutParameters = new CoordinatorLayout.LayoutParams(AppBarLayout.LayoutParams.MatchParent, AppBarLayout.LayoutParams.WrapContent)
-					{
-						Gravity = (int)GravityFlags.Bottom
-					}
+					Gravity = (int)GravityFlags.Bottom
 				};
+
+				if (RuntimeFeature.IsMaterial3Enabled)
+					_originalBottomNavigationViewBackground = _bottomNavigationView.Background;
+
+				BottomNavigationViewUtils.UpdateActiveIndicatorColor(_bottomNavigationView);
 			}
 			else
 			{
@@ -158,7 +209,17 @@ public class TabbedPageManager
 						TabGravity = TabLayout.GravityFill,
 						LayoutParameters = new AppBarLayout.LayoutParams(AppBarLayout.LayoutParams.MatchParent, AppBarLayout.LayoutParams.WrapContent)
 					};
+
+					if (RuntimeFeature.IsMaterial3Enabled)
+					{
+						_originalTabLayoutBackground = _tabLayout.Background;
+					}
 				}
+				_nativeTabRegistrations.Register(
+					Element,
+					_tabLayout,
+					NativeElementRoles.ShellTab,
+					NativeElementDiscriminators.TabBar);
 			}
 
 			OnChildrenCollectionChanged(null, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
@@ -168,9 +229,15 @@ public class TabbedPageManager
 			previousPage = tabbedPage.CurrentPage;
 
 			((IPageController)tabbedPage).InternalChildren.CollectionChanged += OnChildrenCollectionChanged;
+			Application.Current!.RequestedThemeChanged += OnRequestedThemeChanged;
 
 			SetTabLayout();
 		}
+	}
+
+	void OnRequestedThemeChanged(object sender, AppThemeChangedEventArgs e)
+	{
+		BottomNavigationViewUtils.UpdateActiveIndicatorColor(_bottomNavigationView);
 	}
 
 	protected virtual void OnLayoutChanged(object sender, AView.LayoutChangeEventArgs e)
@@ -218,6 +285,40 @@ public class TabbedPageManager
 
 	protected virtual void OnTabbedPageDisappearing(object sender, EventArgs e)
 	{
+		// Element.Navigation.NavigationStack is resolved through the
+		// NavigationProxy, which already walks the parent chain to find
+		// the nearest NavigationPage ancestor.
+		var navStack = Element?.Navigation?.NavigationStack;
+		if (navStack is not null && navStack.Count > 0)
+		{
+			// If the TabbedPage is no longer the top page in the nav stack,
+			// a page was pushed over it — remove tabs.
+			if (navStack[navStack.Count - 1] != Element)
+			{
+				RemoveTabs();
+				return;
+			}
+
+			// TabbedPage is still the top page in the nav stack, so this
+			// Disappearing was triggered by a modal overlay or app lifecycle.
+			// Keep tabs visible.
+			return;
+		}
+
+		// No NavigationPage ancestor — original behavior applies.
+		// This branch covers two cases (see PR #32878):
+		// 1. A modal page is pushed over a root TabbedPage — ModalStack contains
+		//    the modal, so we keep tabs alive and restore them on modal dismiss.
+		// 2. The TabbedPage itself was pushed as a modal — ModalStack includes the
+		//    TabbedPage, so tabs also stay. Disappearing only fires when something
+		//    is later shown over it, and the guard still holds.
+		// Do NOT simplify this check; removing it re-introduces the regression
+		// where tabs are destroyed on modal overlay.
+		if (Element?.Navigation?.ModalStack?.Count > 0)
+		{
+			return;
+		}
+
 		RemoveTabs();
 	}
 
@@ -257,7 +358,7 @@ public class TabbedPageManager
 			if (_tabplacementId == id)
 				return;
 
-			SetContentBottomMargin(_context.Context.Resources.GetDimensionPixelSize(Resource.Dimension.design_bottom_navigation_height));
+			SetContentBottomMargin(RuntimeFeature.IsMaterial3Enabled ? _context.Context.Resources.GetDimensionPixelSize(Resource.Dimension.m3_bottom_nav_min_height) : _context.Context.Resources.GetDimensionPixelSize(Resource.Dimension.design_bottom_navigation_height));
 		}
 		else
 		{
@@ -270,6 +371,8 @@ public class TabbedPageManager
 
 		if (_context?.Context is Context c)
 		{
+			// If IsStateSaved, the returned IDisposable must be disposed to unregister the
+			// FragmentLifecycleCallbacks, otherwise this manager stays rooted indefinitely.
 			_pendingFragment =
 				rootManager
 					.FragmentManager
@@ -307,6 +410,30 @@ public class TabbedPageManager
 
 	protected virtual void OnChildrenCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 	{
+		_tabRegistrationGeneration++;
+		CloseMoreDialog();
+		if (e.Action == NotifyCollectionChangedAction.Reset)
+		{
+			_nativeTabRegistrations.Clear();
+			_registeredMenuItems.Clear();
+			if (IsBottomTabPlacement && _bottomNavigationView is not null)
+			{
+				_nativeTabRegistrations.Register(
+					Element,
+					_bottomNavigationView,
+					NativeElementRoles.ShellTab,
+					NativeElementDiscriminators.TabBar);
+			}
+			else if (_tabLayout is not null)
+			{
+				_nativeTabRegistrations.Register(
+					Element,
+					_tabLayout,
+					NativeElementRoles.ShellTab,
+					NativeElementDiscriminators.TabBar);
+			}
+		}
+
 		e.Apply((o, i, c) => SetupPage((Page)o), (o, i) => TeardownPage((Page)o), Reset);
 
 		ViewPager2 pager = _viewPager;
@@ -325,6 +452,8 @@ public class TabbedPageManager
 			if (Element.Children.Count == 0)
 			{
 				bottomNavigationView.Menu.Clear();
+				_registeredMenuItems.Clear();
+				_nativeTabRegistrations.Retain(new object[] { bottomNavigationView });
 			}
 			else
 			{
@@ -342,6 +471,7 @@ public class TabbedPageManager
 			if (Element.Children.Count == 0)
 			{
 				tabs.RemoveAllTabs();
+				_nativeTabRegistrations.Retain(new object[] { tabs });
 				tabs.SetupWithViewPager(null);
 				_tabLayoutMediator?.Detach();
 				_tabLayoutMediator = null;
@@ -394,6 +524,7 @@ public class TabbedPageManager
 
 	void TeardownPage(Page page)
 	{
+		_nativeTabRegistrations.UnregisterOwner(page);
 		page.PropertyChanged -= OnPagePropertyChanged;
 	}
 
@@ -413,9 +544,14 @@ public class TabbedPageManager
 		if (e.PropertyName == Page.TitleProperty.PropertyName)
 		{
 			var index = Element.Children.IndexOf(page);
+			if (index < 0)
+				return;
 
 			if (IsBottomTabPlacement)
 			{
+				if (index >= _bottomNavigationView.Menu.Size())
+					return;
+
 				IMenuItem tab = _bottomNavigationView.Menu.GetItem(index);
 				tab.SetTitle(page.Title);
 			}
@@ -428,15 +564,34 @@ public class TabbedPageManager
 		else if (e.PropertyName == Page.IconImageSourceProperty.PropertyName)
 		{
 			var index = Element.Children.IndexOf(page);
+			if (index < 0)
+				return;
+
 			if (IsBottomTabPlacement)
 			{
+				if (index >= _bottomNavigationView.Menu.Size())
+					return;
+
+				var element = Element;
 				var menuItem = _bottomNavigationView.Menu.GetItem(index);
-				page.IconImageSource.LoadImage(
+				var source = page.IconImageSource;
+				var iconUpdateIsCurrent = BottomNavigationViewUtils.BeginMenuIconUpdate(
+					_bottomNavigationView,
+					index);
+				BottomNavigationViewUtils.SetMenuItemIcon(
+					menuItem,
+					source,
 					_context,
-					result =>
-					{
-						menuItem.SetIcon(result.Value);
-					});
+					() =>
+						iconUpdateIsCurrent() &&
+						ReferenceEquals(Element, element) &&
+						element is not null &&
+						ReferenceEquals(page.IconImageSource, source) &&
+						element.Children.IndexOf(page) == index &&
+						index >= 0 &&
+						index < _registeredMenuItems.Count &&
+						ReferenceEquals(_registeredMenuItems[index], menuItem))
+					.FireAndForget();
 				SetupBottomNavigationViewIconColor(page, menuItem, index);
 			}
 			else
@@ -490,11 +645,17 @@ public class TabbedPageManager
 
 	List<(string title, ImageSource icon, bool tabEnabled)> CreateTabList()
 	{
+		return CreateTabList(Element.Children.ToList());
+	}
+
+	static List<(string title, ImageSource icon, bool tabEnabled)> CreateTabList(
+		IReadOnlyList<Page> pages)
+	{
 		var items = new List<(string title, ImageSource icon, bool tabEnabled)>();
 
-		for (int i = 0; i < Element.Children.Count; i++)
+		for (int i = 0; i < pages.Count; i++)
 		{
-			var item = Element.Children[i];
+			var item = pages[i];
 			items.Add((item.Title, item.IconImageSource, item.IsEnabled));
 		}
 
@@ -503,8 +664,9 @@ public class TabbedPageManager
 
 	protected virtual void SetupBottomNavigationView()
 	{
-		var currentIndex = Element.Children.IndexOf(Element.CurrentPage);
-		var items = CreateTabList();
+		var pages = Element.Children.ToList();
+		var currentIndex = pages.IndexOf(Element.CurrentPage);
+		var items = CreateTabList(pages);
 
 		BottomNavigationViewUtils.SetupMenu(
 			_bottomNavigationView.Menu,
@@ -512,10 +674,103 @@ public class TabbedPageManager
 			items,
 			currentIndex,
 			_bottomNavigationView,
-			Element.FindMauiContext());
+			Element.FindMauiContext(),
+			menuItems => RegisterBottomMenuItems(menuItems, pages));
+
+		// SetupMenu recreates the BottomNavigationItemView instances after clearing the children and adding new items at runtime,
+		// which resets the per-item icon tint. Reapply the icon colors when the tab item style has already been loaded.
+		if (_tabItemStyleLoaded)
+		{
+			UpdateItemIconColor();
+		}
 
 		if (Element.CurrentPage == null && Element.Children.Count > 0)
 			Element.CurrentPage = Element.Children[0];
+	}
+
+	void RegisterBottomMenuItems(
+		IReadOnlyList<IMenuItem> menuItems,
+		IReadOnlyList<Page> pages)
+	{
+		var registrationItems = new List<(IMenuItem MenuItem, object Owner, bool IsMoreItem)>();
+		foreach (var previousMenuItem in _registeredMenuItems)
+		{
+			var retained = false;
+			foreach (var currentMenuItem in menuItems)
+			{
+				if (ReferenceEquals(currentMenuItem, previousMenuItem))
+				{
+					retained = true;
+					break;
+				}
+			}
+
+			if (!retained)
+				_nativeTabRegistrations.Unregister(previousMenuItem);
+		}
+
+		_registeredMenuItems.Clear();
+		_registeredMenuItems.AddRange(menuItems);
+
+		foreach (var menuItem in menuItems)
+		{
+			var isMoreItem = menuItem.ItemId == BottomNavigationViewUtils.MoreTabId;
+			if (!isMoreItem && (menuItem.ItemId < 0 || menuItem.ItemId >= pages.Count))
+				continue;
+
+			object owner = isMoreItem ? Element : pages[menuItem.ItemId];
+			registrationItems.Add((menuItem, owner, isMoreItem));
+			_nativeTabRegistrations.Register(
+				owner,
+				menuItem,
+				isMoreItem ? NativeElementRoles.ShellTabOverflow : NativeElementRoles.ShellTab,
+				NativeElementDiscriminators.LogicalModel);
+		}
+
+		var registrationGeneration = ++_tabRegistrationGeneration;
+		_bottomNavigationView.Post(() =>
+		{
+			if (registrationGeneration != _tabRegistrationGeneration ||
+				_bottomNavigationView is null ||
+				!_bottomNavigationView.IsAlive())
+				return;
+
+			var retainedElements = new List<object> { _bottomNavigationView };
+			foreach (var registrationItem in registrationItems)
+				retainedElements.Add(registrationItem.MenuItem);
+
+			if (_bottomNavigationView?.GetChildAt(0) is ViewGroup menuView)
+			{
+				var count = Math.Min(menuView.ChildCount, registrationItems.Count);
+				for (int index = 0; index < count; index++)
+				{
+					var registrationItem = registrationItems[index];
+					if (menuView.GetChildAt(index) is AView itemView)
+					{
+						retainedElements.Add(itemView);
+						_nativeTabRegistrations.RegisterExclusive(
+							registrationItem.Owner,
+							itemView,
+							registrationItem.IsMoreItem ? NativeElementRoles.ShellTabOverflow : NativeElementRoles.ShellTab,
+							NativeElementDiscriminators.RealizedView);
+					}
+				}
+			}
+
+			_nativeTabRegistrations.Retain(retainedElements);
+		});
+	}
+
+	void RegisterTopTab(TabLayout.Tab tab, int position)
+	{
+		if (position < 0 || position >= Element.Children.Count || tab.View is not AView tabView)
+			return;
+
+		_nativeTabRegistrations.RegisterExclusive(
+			Element.Children[position],
+			tabView,
+			NativeElementRoles.ShellTab,
+			NativeElementDiscriminators.RealizedView);
 	}
 
 	protected virtual void UpdateTabIcons()
@@ -559,7 +814,16 @@ public class TabbedPageManager
 			Color tintColor = Element.BarBackgroundColor;
 
 			if (tintColor == null)
-				_bottomNavigationView.SetBackground(null);
+			{
+				if (RuntimeFeature.IsMaterial3Enabled)
+				{
+					RestoreBottomNavigationViewBackground();
+				}
+				else
+				{
+					_bottomNavigationView.SetBackground(null);
+				}
+			}
 			else if (tintColor != null)
 				_bottomNavigationView.SetBackgroundColor(tintColor.ToPlatform());
 		}
@@ -568,7 +832,14 @@ public class TabbedPageManager
 			Color tintColor = Element.BarBackgroundColor;
 
 			if (tintColor == null)
+			{
 				_tabLayout.BackgroundTintMode = null;
+
+				if (RuntimeFeature.IsMaterial3Enabled)
+				{
+					RestoreTabLayoutBackground();
+				}
+			}
 			else
 			{
 				_tabLayout.BackgroundTintMode = PorterDuff.Mode.Src;
@@ -594,6 +865,14 @@ public class TabbedPageManager
 		{
 			newGradientBrush.Parent = Element;
 			newGradientBrush.InvalidateGradientBrushRequested += OnBarBackgroundChanged;
+			if (_bottomNavigationView is not null && _bottomNavigationView.Elevation > 0)
+			{
+				_bottomNavigationView.Elevation = 0;
+			}
+		}
+		else if (_currentBarBackground is SolidColorBrush && _bottomNavigationView is not null && _bottomNavigationView.Elevation == 0)
+		{
+			_bottomNavigationView.Elevation = _bottomNavigationView.Context.Resources.GetDimension(Resource.Dimension.design_bottom_navigation_elevation);
 		}
 
 		RefreshBarBackground();
@@ -606,10 +885,38 @@ public class TabbedPageManager
 
 	protected virtual void RefreshBarBackground()
 	{
+		bool shouldRestoreNativeBackground = RuntimeFeature.IsMaterial3Enabled &&
+			Brush.IsNullOrEmpty(_currentBarBackground) &&
+			Element.BarBackgroundColor is null;
+
 		if (IsBottomTabPlacement)
+		{
 			_bottomNavigationView.UpdateBackground(_currentBarBackground);
+
+			if (shouldRestoreNativeBackground)
+			{
+				RestoreBottomNavigationViewBackground();
+			}
+		}
 		else
+		{
 			_tabLayout.UpdateBackground(_currentBarBackground);
+
+			if (shouldRestoreNativeBackground)
+			{
+				RestoreTabLayoutBackground();
+			}
+		}
+	}
+
+	void RestoreBottomNavigationViewBackground()
+	{
+		_bottomNavigationView.SetBackground(_originalBottomNavigationViewBackground);
+	}
+
+	void RestoreTabLayoutBackground()
+	{
+		_tabLayout.SetBackground(_originalTabLayoutBackground);
 	}
 
 	protected virtual ColorStateList GetItemTextColorStates()
@@ -755,18 +1062,34 @@ public class TabbedPageManager
 
 	protected virtual void OnMoreSheetDismissed(object sender, EventArgs e)
 	{
-		var index = Element.Children.IndexOf(Element.CurrentPage);
-		using (var menu = _bottomNavigationView.Menu)
-		{
-			index = Math.Min(index, menu.Size() - 1);
-			if (index < 0)
-				return;
-			using (var menuItem = menu.GetItem(index))
-				menuItem.SetChecked(true);
-		}
+		ClearMoreRegistrations();
 
 		if (sender is BottomSheetDialog bsd)
+		{
 			bsd.DismissEvent -= OnMoreSheetDismissed;
+			if (ReferenceEquals(_moreDialog, bsd))
+				_moreDialog = null;
+			bsd.Dispose();
+		}
+
+		var index = Element.Children.IndexOf(Element.CurrentPage);
+		SetBottomMenuItemChecked(index);
+	}
+
+	void SetBottomMenuItemChecked(int index)
+	{
+		if (index < 0)
+			return;
+
+		using var menu = _bottomNavigationView.Menu;
+		var menuItemId = NativeBottomNavigationSelection.GetMenuItemId(
+			index,
+			Element.Children.Count,
+			_bottomNavigationView.MaxItemCount,
+			BottomNavigationViewUtils.MoreTabId);
+		var menuItem = menu.FindItem(menuItemId);
+		if (menuItem.IsAlive())
+			menuItem.SetChecked(true);
 	}
 
 	protected virtual void OnMoreItemSelected(int selectedIndex, BottomSheetDialog dialog)
@@ -774,8 +1097,68 @@ public class TabbedPageManager
 		if (selectedIndex >= 0 && _bottomNavigationView.SelectedItemId != selectedIndex && Element.Children.Count > selectedIndex)
 			Element.CurrentPage = Element.Children[selectedIndex];
 
-		dialog.Dismiss();
+		CloseMoreDialog();
+	}
+
+	void PrepareMoreRegistrations()
+	{
+		ClearMoreRegistrations();
+	}
+
+	void RegisterMoreRow(int pageIndex, AView view)
+	{
+		if (pageIndex < 0 || pageIndex >= Element.Children.Count)
+		{
+			DisposeMoreItemView(view);
+			return;
+		}
+
+		_moreItemViews.Add(view);
+		_nativeMoreRegistrations.Register(
+			Element.Children[pageIndex],
+			view,
+			NativeElementRoles.ShellTabOverflow,
+			NativeElementDiscriminators.OverflowRow);
+	}
+
+	void RegisterMoreDialog(BottomSheetDialog dialog)
+	{
+		if (dialog.Window?.DecorView is AView dialogView)
+		{
+			_nativeMoreRegistrations.Register(
+				Element,
+				dialogView,
+				NativeElementRoles.ShellTabOverflow,
+				NativeElementDiscriminators.RealizedView);
+		}
+	}
+
+	void ClearMoreRegistrations()
+	{
+		_nativeMoreRegistrations.Clear();
+		foreach (var view in _moreItemViews)
+			DisposeMoreItemView(view);
+		_moreItemViews.Clear();
+	}
+
+	static void DisposeMoreItemView(AView view)
+	{
+		if (view.Parent is ViewGroup parent)
+			parent.RemoveView(view);
+		view.Dispose();
+	}
+
+	void CloseMoreDialog()
+	{
+		var dialog = _moreDialog;
+		_moreDialog = null;
+		ClearMoreRegistrations();
+		if (dialog is null)
+			return;
+
 		dialog.DismissEvent -= OnMoreSheetDismissed;
+		if (dialog.IsShowing)
+			dialog.Dismiss();
 		dialog.Dispose();
 	}
 
@@ -1016,12 +1399,13 @@ public class TabbedPageManager
 			}
 
 			if (IsBottomTabPlacement)
-				_bottomNavigationView.SelectedItemId = position;
+				_tabbedPageManager.SetBottomMenuItemChecked(position);
 		}
 
 		void TabLayoutMediator.ITabConfigurationStrategy.OnConfigureTab(TabLayout.Tab p0, int p1)
 		{
 			p0.SetText(_tabbedPageManager.Element.Children[p1].Title);
+			_tabbedPageManager.RegisterTopTab(p0, p1);
 		}
 
 		bool NavigationBarView.IOnItemSelectedListener.OnNavigationItemSelected(IMenuItem item)
@@ -1032,10 +1416,19 @@ public class TabbedPageManager
 			var id = item.ItemId;
 			if (id == BottomNavigationViewUtils.MoreTabId)
 			{
+				_tabbedPageManager.CloseMoreDialog();
+				_tabbedPageManager.PrepareMoreRegistrations();
 				var items = _tabbedPageManager.CreateTabList();
-				var bottomSheetDialog = BottomNavigationViewUtils.CreateMoreBottomSheet(_tabbedPageManager.OnMoreItemSelected, _tabbedPageManager.Element.FindMauiContext(), items, _tabbedPageManager._bottomNavigationView.MaxItemCount);
+				var bottomSheetDialog = BottomNavigationViewUtils.CreateMoreBottomSheet(
+					_tabbedPageManager.OnMoreItemSelected,
+					_tabbedPageManager.Element.FindMauiContext(),
+					items,
+					_tabbedPageManager._bottomNavigationView.MaxItemCount,
+					_tabbedPageManager.RegisterMoreRow);
+				_tabbedPageManager._moreDialog = bottomSheetDialog;
 				bottomSheetDialog.DismissEvent += _tabbedPageManager.OnMoreSheetDismissed;
 				bottomSheetDialog.Show();
+				_tabbedPageManager.RegisterMoreDialog(bottomSheetDialog);
 			}
 			else
 			{

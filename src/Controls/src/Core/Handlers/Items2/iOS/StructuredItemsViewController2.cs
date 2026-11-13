@@ -48,6 +48,26 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		protected override bool IsHorizontal => (ItemsView?.ItemsLayout as ItemsLayout)?.Orientation == ItemsLayoutOrientation.Horizontal;
 
+		public override nint NumberOfSections(UICollectionView collectionView)
+		{
+			var count = base.NumberOfSections(collectionView);
+
+			// UICollectionViewCompositionalLayout does not render global boundary supplementary items
+			// (header/footer set on NSCollectionLayoutConfiguration) when there are 0 sections.
+			// Return at least 1 section so the header/footer remains visible when ItemsSource is empty.
+			// Only applies to non-grouped collections: grouped collections put group headers in
+			// per-section supplementary items, which would crash when accessing the empty group source.
+			if (count == 0
+				&& ItemsSource is not null && !(ItemsView is GroupableItemsView { IsGrouped: true })
+				&& (ItemsView?.Header is not null || ItemsView?.HeaderTemplate is not null
+					|| ItemsView?.Footer is not null || ItemsView?.FooterTemplate is not null))
+			{
+				return 1;
+			}
+
+			return count;
+		}
+
 		internal void UpdateHeaderView()
 		{
 			// Clean up header view if no header content
@@ -84,8 +104,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				case DefaultCell2 defaultCell:
 					UpdateDefaultSupplementaryView(defaultCell, elementKind);
+					defaultCell.Label.UpdateFlowDirection(ItemsView);
 					break;
 				case TemplatedCell2 templatedCell:
+					templatedCell.ScrollDirection = ScrollDirection;
 					UpdateTemplatedSupplementaryView(templatedCell, elementKind);
 					break;
 			}
@@ -227,36 +249,47 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		void InvalidateLayoutIfItemsMeasureChanged()
 		{
-			// If the header or footer is a view, we need to check if the measure has changed.
-			// We could then invalidate the layout for supplementary cell only `collectionView.IndexPathForCell(headerCell)` like we do on standard cells,
-			// but that causes other cells to oddly collapse (see Issue25362 UITest), so in this case we have to stick with `InvalidateLayout`.
+			// Header and footer cells (including group headers and footers) are supplementary
+			// views: their size comes from the layout, not from the visible item cells.
+			// Invalidating only the items leaves the old header height in place (#30924).
+			// Invalidating a single supplementary element makes other cells collapse
+			// (Issue25362), so the whole layout is invalidated instead.
 			var collectionView = CollectionView;
+			var headers = collectionView.GetVisibleSupplementaryViews(UICollectionElementKindSectionKey.Header);
+			var footers = collectionView.GetVisibleSupplementaryViews(UICollectionElementKindSectionKey.Footer);
 
-			if (ItemsView.Header is not null || ItemsView.HeaderTemplate is not null)
+			foreach (var header in headers)
 			{
-				var visibleHeaders = collectionView.GetVisibleSupplementaryViews(UICollectionElementKindSectionKey.Header);
-				foreach (var header in visibleHeaders)
+				if (header is TemplatedCell2 { MeasureInvalidated: true })
 				{
-					if (header is TemplatedCell2 { MeasureInvalidated: true })
-					{
-						collectionView.CollectionViewLayout.InvalidateLayout();
-						return;
-					}
+					collectionView.CollectionViewLayout.InvalidateLayout();
+					return;
 				}
 			}
 
-
-			if (ItemsView.Footer is not null || ItemsView.FooterTemplate is not null)
+			foreach (var footer in footers)
 			{
-				var visibleFooters = collectionView.GetVisibleSupplementaryViews(UICollectionElementKindSectionKey.Footer);
-				foreach (var footer in visibleFooters)
+				if (footer is TemplatedCell2 { MeasureInvalidated: true })
 				{
-					if (footer is TemplatedCell2 { MeasureInvalidated: true })
-					{
-						collectionView.CollectionViewLayout.InvalidateLayout();
-						return;
-					}
+					collectionView.CollectionViewLayout.InvalidateLayout();
+					return;
 				}
+			}
+		}
+
+		public override void UpdateFlowDirection()
+		{
+			base.UpdateFlowDirection();
+
+			// Update DefaultCell2 string-based header/footer flow direction via tag lookup
+			if (CollectionView.ViewWithTag(HeaderTag) is DefaultCell2 headerCell)
+			{
+				headerCell.Label.UpdateFlowDirection(ItemsView);
+			}
+
+			if (CollectionView.ViewWithTag(FooterTag) is DefaultCell2 footerCell)
+			{
+				footerCell.Label.UpdateFlowDirection(ItemsView);
 			}
 		}
 	}

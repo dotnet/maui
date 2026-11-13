@@ -177,6 +177,7 @@ public class Issue28986 : _IssuesUITest
 
 		// Open Soft Input test entry
 		App.Tap("SoftInputTestEntry");
+		Assert.That(App.WaitForKeyboardToShow(), Is.True, "Keyboard should be visible before validating the resized safe area");
 
 		// With AdjustNothing mode, the window doesn't resize or pan
 		// The MainGrid gets bottom padding from SoftInput, so ContentGrid should shrink
@@ -187,6 +188,7 @@ public class Issue28986 : _IssuesUITest
 		});
 
 		App.DismissKeyboard();
+		Assert.That(App.WaitForKeyboardToHide(), Is.True, "Keyboard should be hidden before validating the restored safe area");
 
 		App.RetryAssert(() =>
 		{

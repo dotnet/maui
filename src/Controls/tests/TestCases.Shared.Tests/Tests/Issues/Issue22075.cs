@@ -2,7 +2,7 @@
 using UITest.Appium;
 using UITest.Core;
 
-namespace Microsoft.Maui.TestCases.Tests.Issue
+namespace Microsoft.Maui.TestCases.Tests.Issues
 {
 	public class Issue22075 : _IssuesUITest
 	{

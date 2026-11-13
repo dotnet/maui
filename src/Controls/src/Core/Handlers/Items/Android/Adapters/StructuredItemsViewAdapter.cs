@@ -33,12 +33,42 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			base.ItemsViewPropertyChanged(sender, property);
 
-			if (property.Is(Microsoft.Maui.Controls.StructuredItemsView.HeaderProperty) || property.Is(Microsoft.Maui.Controls.StructuredItemsView.HeaderTemplateProperty))
+			if (property.Is(Microsoft.Maui.Controls.StructuredItemsView.HeaderProperty))
+			{
+				bool hadHeader = ItemsSource.HasHeader;
+				UpdateHasHeader();
+
+				// If the header was already present with a template and still is, only that position
+				// needs to be rebound instead of invalidating every attached item cell.
+				if (hadHeader && ItemsSource.HasHeader && ItemsView.HeaderTemplate is not null)
+				{
+					NotifyItemChanged(0);
+				}
+				else
+				{
+					NotifyDataSetChanged();
+				}
+			}
+			else if (property.Is(Microsoft.Maui.Controls.StructuredItemsView.HeaderTemplateProperty))
 			{
 				UpdateHasHeader();
 				NotifyDataSetChanged();
 			}
-			else if (property.Is(Microsoft.Maui.Controls.StructuredItemsView.FooterProperty) || property.Is(Microsoft.Maui.Controls.StructuredItemsView.FooterTemplateProperty))
+			else if (property.Is(Microsoft.Maui.Controls.StructuredItemsView.FooterProperty))
+			{
+				bool hadFooter = ItemsSource.HasFooter;
+				UpdateHasFooter();
+
+				if (hadFooter && ItemsSource.HasFooter && ItemsView.FooterTemplate is not null)
+				{
+					NotifyItemChanged(ItemCount - 1);
+				}
+				else
+				{
+					NotifyDataSetChanged();
+				}
+			}
+			else if (property.Is(Microsoft.Maui.Controls.StructuredItemsView.FooterTemplateProperty))
 			{
 				UpdateHasFooter();
 				NotifyDataSetChanged();
@@ -104,15 +134,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected override void BindTemplatedItemViewHolder(TemplatedItemViewHolder templatedItemViewHolder, object context)
 		{
-			if (ItemsView.ItemSizingStrategy == ItemSizingStrategy.MeasureFirstItem)
-			{
-				templatedItemViewHolder.Bind(context, ItemsView, _reportMeasure, _size);
+			var itemViewType = templatedItemViewHolder.ItemViewType;
+			if (ItemsView.ItemSizingStrategy == ItemSizingStrategy.MeasureFirstItem && itemViewType != ItemViewType.Header && itemViewType != ItemViewType.Footer && itemViewType != ItemViewType.GroupHeader && itemViewType != ItemViewType.GroupFooter)
+ 			{
+ 				templatedItemViewHolder.Bind(context, ItemsView, _reportMeasure, _size);
 
-				if (templatedItemViewHolder.ItemView is ItemContentView itemContentView)
-				{
-					itemContentView.RetrieveStaticSize = _retrieveStaticSize;
+ 				if (templatedItemViewHolder.ItemView is ItemContentView itemContentView)
+ 				{
+ 					itemContentView.RetrieveStaticSize = _retrieveStaticSize;
 				}
-			}
+ 			}
 			else
 			{
 				base.BindTemplatedItemViewHolder(templatedItemViewHolder, context);
@@ -167,6 +198,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		void SetStaticSize(Size size)
 		{
 			_size = size;
+		}
+
+		internal override void ClearMeasureCache()
+		{
+			_size = null;
 		}
 	}
 }

@@ -84,8 +84,12 @@ namespace Microsoft.Maui.Animations
 			var milliseconds = TimeSpan.FromMilliseconds(now - _lastUpdate).TotalMilliseconds;
 			_lastUpdate = now;
 
-			var animations = new List<Animation>(_animations);
-			animations.ForEach(OnAnimationTick);
+			Animation[] animations = [.._animations];
+
+			foreach (var animation in animations)
+			{
+				OnAnimationTick(animation);
+			}
 
 			if (_animations.Count == 0)
 				End();
@@ -111,12 +115,25 @@ namespace Microsoft.Maui.Animations
 
 		protected virtual void Dispose(bool disposing)
 		{
-			if (!_disposedValue)
+			if (_disposedValue)
 			{
-				if (disposing && Ticker is IDisposable disposable)
-					disposable.Dispose();
+				return;
+			}
 
-				_disposedValue = true;
+			_disposedValue = true;
+
+			if (!disposing)
+			{
+				return;
+			}
+
+			Ticker.Fire -= OnFire;
+			End();
+			_animations.Clear();
+
+			if (Ticker is IDisposable disposable)
+			{
+				disposable.Dispose();
 			}
 		}
 
@@ -129,8 +146,14 @@ namespace Microsoft.Maui.Animations
 
 		void ForceFinishAnimations()
 		{
-			var animations = new List<Animation>(_animations);
-			animations.ForEach(ForceFinish);
+			Animation[] animations = [.._animations];
+
+			foreach (var animation in animations)
+			{
+				ForceFinish(animation);
+			}
+
+
 			End();
 
 			void ForceFinish(Animation animation)

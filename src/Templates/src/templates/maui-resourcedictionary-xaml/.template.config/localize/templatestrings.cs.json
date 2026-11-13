@@ -1,4 +1,4 @@
-{
+﻿{
   "author": "Microsoft",
   "name": ".NET MAUI ResourceDictionary (XAML)",
   "description": "Úložiště pro prostředky, které používá aplikace .NET MAUI. Typickými prostředky ukládanými do úložiště ResourceDictionary jsou styly, šablony ovládacích prvků, datové šablony, převaděče či barvy.",

@@ -62,6 +62,12 @@ class SetNamescopesAndRegisterNamesVisitor(SourceGenContext context) : IXamlNode
 			namesInNamescope = Context.Scopes[parentNode].namesInScope;
 		}
 
+		if (node.IsOnPlatformDefaultValue)
+		{
+			Context.Scopes[node] = (namescope, namesInNamescope);
+			return;
+		}
+
 		if (setNameScope && Context.Variables[node].Type.InheritsFrom(Context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.BindableObject")!, Context))
 			using (PrePost.NewConditional(Writer, "!_MAUIXAML_SG_NAMESCOPE_DISABLE"))
 			{

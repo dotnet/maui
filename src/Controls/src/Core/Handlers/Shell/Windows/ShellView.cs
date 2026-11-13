@@ -67,6 +67,41 @@ namespace Microsoft.Maui.Controls.Platform
 
 		internal Shell Element { get; set; }
 
+		internal void Disconnect()
+		{
+			Loaded -= OnLoaded;
+			ShellController.RemoveAppearanceObserver(this);
+
+			if (ItemRenderer?.PlatformView is NavigationView navigationView)
+			{
+				navigationView.SelectionChanged -= TabSelectionChanged;
+			}
+
+			// These nodes aren't IView, so DisconnectHandlers only disconnects their pages.
+			var elements = new List<IElement>();
+			foreach (var item in Element.Items)
+			{
+				elements.Add(item);
+				foreach (var section in item.Items)
+				{
+					elements.Add(section);
+					foreach (var content in section.Items)
+					{
+						elements.Add(content);
+					}
+				}
+			}
+
+			foreach (var element in elements)
+			{
+				element.Handler?.DisconnectHandler();
+			}
+
+			ItemRenderer = null;
+			Content = null;
+			Element = null;
+		}
+
 		private protected override void OnApplyTemplateCore()
 		{
 			_shellSplitView = new ShellSplitView(RootSplitView);
@@ -207,6 +242,12 @@ namespace Microsoft.Maui.Controls.Platform
 
 		internal void SwitchShellItem(ShellItem newItem, bool animate = true)
 		{
+			if (newItem is null)
+				throw new InvalidOperationException("Active Shell Item not set. Have you added any Shell Items to your Shell?");
+
+			if (newItem.CurrentItem is null)
+				throw new InvalidOperationException($"Content not found for active {newItem}. Title: {newItem.Title}. Route: {newItem.Route}.");
+
 			var navItems = FlyoutItems.OfType<NavigationViewItemViewModel>();
 
 			// Implicit items aren't items that are surfaced to the user 
@@ -287,7 +328,10 @@ namespace Microsoft.Maui.Controls.Platform
 			return ItemRenderer;
 		}
 
-		void TabSelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args) =>
+		void TabSelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
+		{
 			Element?.Handler?.UpdateValue(nameof(Shell.CurrentItem));
+			UpdateHeaderVisibility();
+		}
 	}
 }

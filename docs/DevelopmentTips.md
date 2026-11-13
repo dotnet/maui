@@ -214,6 +214,16 @@ These tests can be run using the Test Explorer in VS, or from the command line w
 dotnet test src/TestUtils/src/Microsoft.Maui.IntegrationTests --logger "console;verbosity=diagnostic" --filter "Name=Build\(%22maui%22,%22net7.0%22,%22Debug%22,False\)"
 ```
 
+Integration test commands terminate their process tree on timeout and report the command's PID and timeout duration, using the console when no test output helper is supplied. Emulator startup explicitly leaves the emulator running for the collection fixture to manage. Output draining waits at most 10 seconds after the parent exits, then reports if a descendant still holds the redirected pipes open.
+
+A truncated binlog is reported as incomplete without replacing the original build failure; warning validation rejects incomplete logs. This includes truncation after `BuildFinished`, while the logger is still writing embedded imports or its end-of-file marker.
+
+The harness regression tests do not require MAUI workloads or an emulator:
+
+```bash
+dotnet test src/TestUtils/src/Microsoft.Maui.IntegrationTests --filter "FullyQualifiedName~ToolRunnerTests|FullyQualifiedName~BuildWarningsUtilitiesTests"
+```
+
 ## Running Device Tests on Helix
 
 .NET MAUI now supports running device tests on [.NET Engineering Services Helix](https://helix.dot.net) using XHarness. Helix provides cloud-based device testing infrastructure that enables running tests across multiple platforms and devices in parallel.
@@ -233,11 +243,14 @@ The device test projects include:
 
 ### Available Helix Queues
 
-Check available queues at [helix.dot.net](https://helix.dot.net). The current configuration uses:
+Check available queues at [helix.dot.net](https://helix.dot.net). The public (default) configuration uses:
 
-- **iOS**: `osx.15.arm64.Open`
-- **Mac Catalyst**: `osx.15.arm64.Open`  
+- **iOS**: `osx.15.arm64.maui.open`, `osx.26.arm64.open`
+- **Mac Catalyst**: `osx.15.arm64.maui.open`, `osx.26.arm64.open`
 - **Android**: `ubuntu.2204.amd64.android.33.open`
+- **Windows**: `windows.11.amd64.client.open`
+
+Internal runs (`HelixInternal=True`) use `osx.15.arm64.iphone.maui` for iOS and Mac Catalyst, and the non-`.open` Android and Windows queues instead.
 
 ### Running Device Tests Locally
 
@@ -338,7 +351,7 @@ The Helix configuration is defined in `eng/helix_xharness.proj` and includes:
 ### CI Integration
 
 The device tests are integrated into the CI pipeline via:
-- `eng/pipelines/common/stage-device-tests.yml` - Pipeline template
+- `eng/pipelines/arcade/stage-device-tests.yml` - Pipeline template
 - `eng/test-configuration.json` - Test retry configuration
 - Automatic execution on PR builds for qualifying changes
 

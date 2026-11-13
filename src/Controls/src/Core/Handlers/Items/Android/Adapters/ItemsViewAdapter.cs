@@ -8,13 +8,21 @@ using ViewGroup = Android.Views.ViewGroup;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
-	public class ItemsViewAdapter<TItemsView, TItemsViewSource> : RecyclerView.Adapter
+	// Lets Android layout helpers reach the items source without knowing the adapter's generic arguments.
+	internal interface IItemsViewAdapter
+	{
+		IItemsViewSource ItemsSource { get; }
+	}
+
+	public class ItemsViewAdapter<TItemsView, TItemsViewSource> : RecyclerView.Adapter, IItemsViewAdapter
 		where TItemsView : ItemsView
 		where TItemsViewSource : IItemsViewSource
 	{
 		protected readonly TItemsView ItemsView;
 		readonly Func<View, Context, ItemContentView> _createItemContentView;
 		protected internal TItemsViewSource ItemsSource;
+
+		IItemsViewSource IItemsViewAdapter.ItemsSource => ItemsSource;
 
 		bool _disposed;
 		bool _usingItemTemplate = false;
@@ -150,6 +158,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		protected virtual void BindTemplatedItemViewHolder(TemplatedItemViewHolder templatedItemViewHolder, object context)
 		{
 			templatedItemViewHolder.Bind(context, ItemsView);
+		}
+
+		/// <summary>
+		/// Clears any cached item size used by the MeasureFirstItem sizing strategy.
+		/// Called when the RecyclerView's size changes (e.g., after an orientation change).
+		/// </summary>
+		internal virtual void ClearMeasureCache()
+		{
 		}
 
 		void UpdateUsingItemTemplate()

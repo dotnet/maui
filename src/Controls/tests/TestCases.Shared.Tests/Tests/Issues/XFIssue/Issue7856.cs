@@ -13,7 +13,7 @@ public class Issue7856 : _IssuesUITest
 	public override string Issue => "[Bug] Shell BackButtonBehaviour TextOverride breaks back";
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void BackButtonBehaviorTest()
 	{
 		App.WaitForElementTillPageNavigationSettled("Tap to Navigate To the Page With BackButtonBehavior");
@@ -21,6 +21,13 @@ public class Issue7856 : _IssuesUITest
 		App.WaitForElement("Navigate again");
 		App.Tap("Navigate again");
 		App.WaitForElementTillPageNavigationSettled("Hello");
-		App.TapBackArrow("Test");
+		if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
+		{
+			App.TapBackArrow(); // In iOS 26, the previous page title is not shown along with the back arrow, so we use the default back arrow
+		}
+		else
+		{
+			App.TapBackArrow("Test");
+		}
 	}
 }

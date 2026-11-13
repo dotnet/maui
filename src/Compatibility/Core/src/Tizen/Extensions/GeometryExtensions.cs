@@ -68,8 +68,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			var path = new SKPath();
 			path.FillType = geometryGroup.FillRule == FillRule.Nonzero ? SKPathFillType.Winding : SKPathFillType.EvenOdd;
 
-			foreach (Geometry child in geometryGroup.Children)
+			var children = geometryGroup.Children;
+			if (children is null)
+				return path;
+
+			foreach (Geometry child in children)
 			{
+				if (child is null)
+					continue;
+
 #pragma warning disable IL2026
 				SKPath childPath = MakePath((dynamic)child);
 #pragma warning disable IL2026

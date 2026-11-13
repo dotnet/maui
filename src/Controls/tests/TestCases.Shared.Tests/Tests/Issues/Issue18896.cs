@@ -15,17 +15,20 @@ public class Issue18896 : _IssuesUITest
 	public override string Issue => "Can scroll ListView inside RefreshView";
 
 	[Test]
-	[Category(UITestCategories.ListView)]
+	[Category(UITestCategories.RefreshView)]
 	public void Issue18896Test()
 	{
 		App.WaitForElement("WaitForStubControl");
 
 		App.ScrollDown(ListView);
-
+#if ANDROID
+		App.ScrollUp(ListView, ScrollStrategy.Gesture, 0.9);
+#else
 		App.ScrollUp(ListView);
-
-		// Load images and hide scrollbar.
-		// The test passes if you are able to see the image, name, and location of each monkey.
-		VerifyScreenshot(retryDelay: TimeSpan.FromSeconds(2));
+#endif
+		// ListView with HasUnevenRows may have variable height row rendering that requires
+		// additional time for images to load and scrollbar to disappear.
+		// Use retryTimeout to adaptively wait for the UI to stabilize.
+		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(3));
 	}
 }

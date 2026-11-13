@@ -64,6 +64,9 @@ $script:TestPathPatterns = @(
     "*.Tests/*",
     "*.UnitTests/*",
     "*TestCases*",
+    "*TestUtils*",
+    "*DeviceTests.Runners*",
+    "*DeviceTests.Shared*",
     "*snapshots*",
     "*.png",
     "*.jpg",
@@ -160,9 +163,14 @@ function Find-MergeBase {
     # Fetch all remote refs to ensure we have latest
     git fetch origin 2>$null
 
-    # Get remote branches matching common base branch patterns
+    # Get remote branches matching common base branch patterns.
+    # inflight/* is included so this closest-base fallback can still pick the
+    # current integration branch (inflight/current) when the primary PR-number
+    # base resolution is unavailable — without it, this scan can only ever pick
+    # main/net*.0/release and silently mis-bases inflight/current PRs on main
+    # (gate build 14670709, #36274: 200+ file fix-set, broken without-fix build).
     $remoteBranches = git branch -r --format='%(refname:short)' 2>$null | Where-Object {
-        $_ -match '^origin/(main|master|net\d+\.\d+|release/.*)$'
+        $_ -match '^origin/(main|master|net\d+\.\d+|release/.*|inflight/.*)$'
     }
 
     $bestMatch = $null
@@ -336,10 +344,30 @@ if ($Restore) {
 }
 
 # ============================================================
+# AUTO-RESTORE: If a previous baseline is still active, restore it first
+# ============================================================
+# This prevents the Establish→fail→Establish loop that caused build #13539436
+# to waste 3.7 hours. Instead of erroring on a dirty tree, we detect that a
+# prior baseline was never restored and clean it up automatically.
+
+$existingState = Get-BaselineState
+if ($existingState) {
+    Write-Host "⚠️  Previous baseline still active — auto-restoring before re-establishing..." -ForegroundColor Yellow
+
+    foreach ($file in $existingState.RevertedFiles) {
+        Write-Host "  Restoring: $file" -ForegroundColor Gray
+        git checkout HEAD -- $file 2>&1 | Out-Null
+    }
+
+    Remove-BaselineState
+    Write-Host "  Previous baseline restored." -ForegroundColor Green
+}
+
+# ============================================================
 # FAIL-FAST: Require clean working directory
 # ============================================================
-# This check ensures every successful baseline establishment started from a clean state.
-# If this script completes without error, the baseline was valid - no checkpoint logging needed.
+# After auto-restore above, the tree should be clean. If it's still dirty,
+# something else is wrong (manual edits, uncommitted work, etc.).
 
 $dirtyFiles = git status --porcelain --untracked-files=no 2>$null
 if ($dirtyFiles) {

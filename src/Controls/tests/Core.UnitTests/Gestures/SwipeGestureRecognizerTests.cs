@@ -117,5 +117,56 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			((ISwipeGestureController)swipe).DetectSwipe(view, SwipeDirection.Up | SwipeDirection.Down);
 			Assert.Equal(SwipeDirection.Up, direction);
 		}
+
+		[Theory]
+		[InlineData(SwipeDirection.Up, 90.0, SwipeDirection.Right)]
+		[InlineData(SwipeDirection.Right, 90.0, SwipeDirection.Down)]
+		[InlineData(SwipeDirection.Down, 90.0, SwipeDirection.Left)]
+		[InlineData(SwipeDirection.Left, 90.0, SwipeDirection.Up)]
+		public void TransformSwipeDirectionForRotation_90DegreeClockwise_ReturnsCorrectDirection(
+			SwipeDirection direction, double rotation, SwipeDirection expected)
+		{
+			var result = Internals.SwipeGestureExtensions.TransformSwipeDirectionForRotation(direction, rotation);
+
+			Assert.Equal(expected, result);
+		}
+
+		[Theory]
+		[InlineData(SwipeDirection.Up, 180.0, SwipeDirection.Down)]
+		[InlineData(SwipeDirection.Right, 180.0, SwipeDirection.Left)]
+		[InlineData(SwipeDirection.Down, 180.0, SwipeDirection.Up)]
+		[InlineData(SwipeDirection.Left, 180.0, SwipeDirection.Right)]
+		public void TransformSwipeDirectionForRotation_180Degree_ReturnsCorrectDirection(
+			SwipeDirection direction, double rotation, SwipeDirection expected)
+		{
+			var result = Internals.SwipeGestureExtensions.TransformSwipeDirectionForRotation(direction, rotation);
+
+			Assert.Equal(expected, result);
+		}
+
+		[Theory]
+		[InlineData(SwipeDirection.Up, 270.0, SwipeDirection.Left)]
+		[InlineData(SwipeDirection.Right, 270.0, SwipeDirection.Up)]
+		[InlineData(SwipeDirection.Down, 270.0, SwipeDirection.Right)]
+		[InlineData(SwipeDirection.Left, 270.0, SwipeDirection.Down)]
+		public void TransformSwipeDirectionForRotation_270DegreeClockwise_ReturnsCorrectDirection(
+			SwipeDirection direction, double rotation, SwipeDirection expected)
+		{
+			var result = Internals.SwipeGestureExtensions.TransformSwipeDirectionForRotation(direction, rotation);
+
+			Assert.Equal(expected, result);
+		}
+
+		[Theory]
+		[InlineData(SwipeDirection.Up, double.NaN, SwipeDirection.Up)]
+		[InlineData(SwipeDirection.Right, double.PositiveInfinity, SwipeDirection.Right)]
+		[InlineData(SwipeDirection.Down, double.NegativeInfinity, SwipeDirection.Down)]
+		public void TransformSwipeDirectionForRotation_InvalidRotation_ReturnsOriginalDirection(
+			SwipeDirection direction, double rotation, SwipeDirection expected)
+		{
+			var result = Internals.SwipeGestureExtensions.TransformSwipeDirectionForRotation(direction, rotation);
+
+			Assert.Equal(expected, result);
+		}
 	}
 }

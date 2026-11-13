@@ -8,6 +8,7 @@ using AndroidX.AppCompat.Graphics.Drawable;
 using AndroidX.AppCompat.View.Menu;
 using AndroidX.AppCompat.Widget;
 using AndroidX.CoordinatorLayout.Widget;
+using AndroidX.Core.View;
 using AndroidX.Fragment.App;
 using Google.Android.Material.AppBar;
 using Microsoft.Maui.Controls;
@@ -230,6 +231,58 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expectedYInPixels, nativeView.TranslationY, precision: 1);
 		}
 
+		protected static WindowInsetsCompat CreateTopCutoutInsets(int statusBarTopInset, int displayCutoutTopInset)
+		{
+			return new WindowInsetsCompat.Builder()
+				.SetInsets(WindowInsetsCompat.Type.SystemBars(), AndroidX.Core.Graphics.Insets.Of(0, statusBarTopInset, 0, 0))
+				.SetInsets(WindowInsetsCompat.Type.DisplayCutout(), AndroidX.Core.Graphics.Insets.Of(0, displayCutoutTopInset, 0, 0))
+				.Build();
+		}
+
+		protected static void AssertTopInsets(WindowInsetsCompat insets, int expectedSystemBarsTop, int expectedDisplayCutoutTop, string message)
+		{
+			Assert.NotNull(insets);
+
+			var systemBars = insets.GetInsets(WindowInsetsCompat.Type.SystemBars());
+			var displayCutout = insets.GetInsets(WindowInsetsCompat.Type.DisplayCutout());
+
+			Assert.True(
+				(systemBars?.Top ?? 0) == expectedSystemBarsTop && (displayCutout?.Top ?? 0) == expectedDisplayCutoutTop,
+				$"{message} Actual SystemBars.Top={(systemBars?.Top ?? 0)}, DisplayCutout.Top={(displayCutout?.Top ?? 0)}.");
+		}
+
+		protected static CapturingWindowInsetsListener AttachCapturingWindowInsetsListener(AView rootView, AView descendantView)
+		{
+			var originalListener = MauiWindowInsetListener.FindListenerForView(descendantView)
+				?? throw new InvalidOperationException("Unable to locate the MauiWindowInsetListener for the current test view hierarchy.");
+
+			var capturingListener = new CapturingWindowInsetsListener(originalListener);
+			ViewCompat.SetOnApplyWindowInsetsListener(rootView, capturingListener);
+			return capturingListener;
+		}
+
+		protected sealed class CapturingWindowInsetsListener : Java.Lang.Object, IOnApplyWindowInsetsListener
+		{
+			readonly MauiWindowInsetListener _innerListener;
+
+			internal CapturingWindowInsetsListener(MauiWindowInsetListener innerListener)
+			{
+				_innerListener = innerListener ?? throw new ArgumentNullException(nameof(innerListener));
+			}
+
+			public int InvocationCount { get; private set; }
+
+			public WindowInsetsCompat LastAppliedInsets { get; private set; }
+
+			public WindowInsetsCompat OnApplyWindowInsets(AView v, WindowInsetsCompat insets)
+			{
+				var appliedInsets = _innerListener.OnApplyWindowInsets(v, insets) ?? insets;
+				LastAppliedInsets = appliedInsets;
+				InvocationCount++;
+				return appliedInsets;
+			}
+		}
+
 		class WindowTestFragment : Fragment
 		{
 			TaskCompletionSource<bool> _taskCompletionSource = new TaskCompletionSource<bool>();
@@ -258,6 +311,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				FakeActivityRootView = new FakeActivityRootView(ScopedMauiContext.Context);
 				FakeActivityRootView.LayoutParameters = new LinearLayoutCompat.LayoutParams(AViewGroup.LayoutParams.MatchParent, AViewGroup.LayoutParams.MatchParent);
+				handler.SetActivityRoot(FakeActivityRootView);
 				FakeActivityRootView.AddView(handler.PlatformViewUnderTest);
 #pragma warning disable XAOBS001 // Obsolete
 				handler.PlatformViewUnderTest.LayoutParameters = new FitWindowsFrameLayout.LayoutParams(AViewGroup.LayoutParams.MatchParent, AViewGroup.LayoutParams.MatchParent);

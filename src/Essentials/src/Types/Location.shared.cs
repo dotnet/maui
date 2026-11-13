@@ -103,6 +103,7 @@ namespace Microsoft.Maui.Devices.Sensors
 			Longitude = point.Longitude;
 			Timestamp = DateTime.UtcNow;
 			Altitude = point.Altitude;
+			AltitudeReferenceSystem = point.AltitudeReferenceSystem;
 			Accuracy = point.Accuracy;
 			VerticalAccuracy = point.VerticalAccuracy;
 			ReducedAccuracy = point.ReducedAccuracy;

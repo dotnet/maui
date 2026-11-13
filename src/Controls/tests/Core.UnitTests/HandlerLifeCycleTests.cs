@@ -74,6 +74,50 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void DisconnectHandlersReachesPageInsideShell()
+		{
+			// https://github.com/dotnet/maui/issues/36584
+			// ShellItem/ShellSection don't implement IView, so DisconnectHandlers() must
+			// keep traversing through them (instead of stopping) to reach the pages/handlers
+			// hosted inside a Shell.
+			var mauiApp = MauiApp.CreateBuilder()
+				.UseMauiApp<ApplicationStub>()
+				.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<ContentPage, HandlerStub>();
+					handlers.AddHandler<Button, HandlerStub>();
+					handlers.AddHandler<Shell, HandlerStub>();
+				})
+				.Build();
+
+			var mauiContext = new MauiContext(mauiApp.Services);
+
+			var button = new Button();
+			var page = new ContentPage { Content = button };
+			var shellContent = new ShellContent { Content = page };
+			var shellSection = new ShellSection();
+			shellSection.Items.Add(shellContent);
+			var shellItem = new ShellItem();
+			shellItem.Items.Add(shellSection);
+			var shell = new Shell();
+			shell.Items.Add(shellItem);
+
+			shell.ToHandler(mauiContext);
+			page.ToHandler(mauiContext);
+			button.ToHandler(mauiContext);
+
+			Assert.NotNull(shell.Handler);
+			Assert.NotNull(page.Handler);
+			Assert.NotNull(button.Handler);
+
+			shell.DisconnectHandlers();
+
+			Assert.Null(shell.Handler);
+			Assert.Null(page.Handler);
+			Assert.Null(button.Handler);
+		}
+
+		[Fact]
 		public void InterruptDisconnect()
 		{
 			var mauiApp1 = MauiApp.CreateBuilder()

@@ -20,7 +20,7 @@ public class Issue19500 : _IssuesUITest
 	{
 		var yPosLabel = App.WaitForElement(yPositionLabel);
 		App.ScrollDown("editor", ScrollStrategy.Gesture, withInertia: false);
-#if MACCATALYST
+#if MACCATALYST || IOS
 		App.ScrollDown("editor"); // To make sure the editor is scrolled down
 		var yPos = yPosLabel.GetText();
 		Assert.That(yPos,Is.GreaterThan("0")); // The Y position should be greater than 0 after scrolling down

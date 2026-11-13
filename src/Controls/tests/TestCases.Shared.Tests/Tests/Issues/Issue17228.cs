@@ -14,9 +14,13 @@ public class Issue17228 : _IssuesUITest
 	public override string Issue => "Back button image color can't be changed";
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void CustomBackButtonShouldBeRed()
 	{
+		if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
+		{
+			Assert.Ignore("Ignored due to a bug issue in iOS 26"); // Issue Link: https://github.com/dotnet/maui/issues/33966
+		}
 		App.WaitForElement("label");
 		VerifyScreenshot();
 	}

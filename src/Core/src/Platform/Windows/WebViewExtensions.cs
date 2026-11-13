@@ -1,5 +1,8 @@
 ﻿using System;
+using Microsoft.Maui.Graphics;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.Web.WebView2.Core;
 
 namespace Microsoft.Maui.Platform
 {
@@ -20,6 +23,44 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		internal static void UpdateBackground(this WebView2 platformWebView, IWebView webView)
+		{
+			Color? backgroundColor = null;
+
+			if (webView.Background is SolidPaint solidPaint)
+			{
+				backgroundColor = solidPaint.Color;
+			}
+			else if (webView.Background is GradientPaint gradientPaint)
+			{
+				// WebView2 only supports a solid DefaultBackgroundColor; use the gradient's
+				// start color as a best-effort approximation.
+				backgroundColor = gradientPaint.StartColor;
+			}
+
+			if (backgroundColor is not null)
+			{
+				platformWebView.DefaultBackgroundColor = backgroundColor.ToWindowsColor();
+
+				if (platformWebView.CoreWebView2 is not null)
+				{
+					platformWebView.CoreWebView2.Profile.PreferredColorScheme = CoreWebView2PreferredColorScheme.Light;
+				}
+			}
+			else
+			{
+				if (platformWebView.CoreWebView2 is not null)
+				{
+					platformWebView.CoreWebView2.Profile.PreferredColorScheme = platformWebView.ActualTheme switch
+					{
+						ElementTheme.Dark => CoreWebView2PreferredColorScheme.Dark,
+						ElementTheme.Light => CoreWebView2PreferredColorScheme.Light,
+						_ => CoreWebView2PreferredColorScheme.Auto
+					};
+				}
+			}
+		}
+
 		public static void UpdateUserAgent(this WebView2 platformWebView, IWebView webView)
 		{
 			if (platformWebView.CoreWebView2 == null)
@@ -33,8 +74,10 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateGoBack(this WebView2 platformWebView, IWebView webView)
 		{
-			if (platformWebView == null)
+			if (!platformWebView.IsValid())
+			{
 				return;
+			}
 
 			if (platformWebView.CoreWebView2.CanGoBack)
 				platformWebView.CoreWebView2.GoBack();
@@ -44,8 +87,10 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateGoForward(this WebView2 platformWebView, IWebView webView)
 		{
-			if (platformWebView == null)
+			if (!platformWebView.IsValid())
+			{
 				return;
+			}
 
 			if (platformWebView.CoreWebView2.CanGoForward)
 				platformWebView.CoreWebView2.GoForward();
@@ -60,8 +105,21 @@ namespace Microsoft.Maui.Platform
 
 		internal static void UpdateCanGoBackForward(this WebView2 platformWebView, IWebView webView)
 		{
-			webView.CanGoBack = platformWebView.CanGoBack;
-			webView.CanGoForward = platformWebView.CanGoForward;
+			// The WebView2 XAML control's CanGoBack/CanGoForward properties can become stale
+			// (e.g. remain true even when no history is left), so prefer CoreWebView2's values,
+			// which reflect the current navigation state synchronously. Guard with IsValid()
+			// since CoreWebView2 can throw if accessed after the control has been closed.
+			if (platformWebView.IsValid())
+			{
+				var coreWebView2 = platformWebView.CoreWebView2;
+				webView.CanGoBack = coreWebView2.CanGoBack;
+				webView.CanGoForward = coreWebView2.CanGoForward;
+			}
+			else
+			{
+				webView.CanGoBack = platformWebView.CanGoBack;
+				webView.CanGoForward = platformWebView.CanGoForward;
+			}
 		}
 
 		public static void Eval(this WebView2 platformWebView, IWebView webView, string script)

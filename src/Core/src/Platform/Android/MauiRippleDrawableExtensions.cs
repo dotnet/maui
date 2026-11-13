@@ -3,6 +3,8 @@ using System.Diagnostics.CodeAnalysis;
 using Android.Content;
 using Android.Content.Res;
 using Android.Graphics.Drawables;
+using Google.Android.Material.ImageView;
+using Google.Android.Material.Shape;
 using Microsoft.Maui.Graphics;
 using AColor = Android.Graphics.Color;
 using AView = Android.Views.View;
@@ -14,8 +16,11 @@ static class MauiRippleDrawableExtensions
 	const int MauiBackgroundDrawableId = 1001;
 	const int MauiStrokeDrawableId = 1002;
 
-	// Default obtained by running on Android 34 and inspecting the default drawable
-	const int DefaultCornerRadius = 4;
+	// Default corner radius for Material Design 2
+	const int DefaultCornerRadiusMaterial2 = 4;
+
+	// Default corner radius for Material Design 3
+	const int DefaultCornerRadiusMaterial3 = 20;
 	const int DefaultStrokeThicknessWithColor = 1;
 	const int DefaultStrokeThicknessNoColor = 0;
 	static readonly Color DefaultStrokeColor = Colors.Black;
@@ -46,6 +51,23 @@ static class MauiRippleDrawableExtensions
 		// and the background/mask are separate drawables.
 		gradientDrawable.SetCornerRadius(radius);
 		maskDrawable.SetCornerRadius(radius);
+
+		if (platformView is ShapeableImageView shapeableImageView)
+		{
+			var maxRadius = Math.Min(platformView.Width, platformView.Height) / 2;
+			var shapeRadius = maxRadius > 0 ? Math.Min(radius, maxRadius) : radius;
+
+			// Update the ShapeAppearanceModel to match the stroke radius
+			// so that the corners are rounded correctly.
+			shapeableImageView.ShapeAppearanceModel =
+				shapeableImageView.ShapeAppearanceModel
+					.ToBuilder()
+					.SetTopLeftCorner(CornerFamily.Rounded, shapeRadius)
+					.SetTopRightCorner(CornerFamily.Rounded, shapeRadius)
+					.SetBottomLeftCorner(CornerFamily.Rounded, shapeRadius)
+					.SetBottomRightCorner(CornerFamily.Rounded, shapeRadius)
+					.Build();
+		}
 
 		return true;
 	}
@@ -173,9 +195,14 @@ static class MauiRippleDrawableExtensions
 				: DefaultStrokeThicknessNoColor;
 		var strokeWidthPixels = (int)context.ToPixels(strokeWidth);
 
+		// Get default corner radius based on Material Design version
+		var defaultCornerRadius = RuntimeFeature.IsMaterial3Enabled
+					? DefaultCornerRadiusMaterial3
+					: DefaultCornerRadiusMaterial2;
+
 		var cornerRadius = button.CornerRadius >= 0
 			? button.CornerRadius
-			: DefaultCornerRadius;
+			: defaultCornerRadius;
 		var cornerRadiusPixels = (int)context.ToPixels(cornerRadius);
 
 		if (!defaultButtonLogic)

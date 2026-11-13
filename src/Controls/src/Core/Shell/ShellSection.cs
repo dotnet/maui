@@ -8,7 +8,6 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
@@ -22,7 +21,7 @@ namespace Microsoft.Maui.Controls
 	}
 
 	/// <summary>
-	/// Represents a group of tabs within a <see cref="ShellItem"/>. Contains <see cref="ShellContent"/> items.
+	/// Represents a group of tabs within a <see cref="Controls.ShellItem"/>. Contains <see cref="ShellContent"/> items.
 	/// </summary>
 	[ContentProperty(nameof(Items))]
 	[EditorBrowsable(EditorBrowsableState.Never)]
@@ -277,7 +276,7 @@ namespace Microsoft.Maui.Controls
 
 				_displayedPage = value;
 
-				foreach (var item in _displayedPageObservers)
+				foreach (var item in _displayedPageObservers.ToArray())
 					item.Callback(_displayedPage);
 			}
 		}
@@ -508,10 +507,10 @@ namespace Microsoft.Maui.Controls
 
 		Page GetOrCreateFromRoute(string route, ShellRouteParameters queryData, IServiceProvider services, bool isLast, bool isPopping)
 		{
-			var content = Routing.GetOrCreateContent(route, services) as Page;
-			if (content == null)
+			var element = Routing.GetOrCreateContent(route, services);
+			if (element is not Page content)
 			{
-				Application.Current?.FindMauiContext()?.CreateLogger<ShellSection>()?.LogWarning("Failed to Create Content For: {route}", route);
+				throw new InvalidOperationException($"Content for route {route} should be of type {nameof(Page)}, but was {element?.GetType().FullName ?? "null"}");
 			}
 
 			ShellNavigationManager.ApplyQueryAttributes(content, queryData, isLast, isPopping);
@@ -524,9 +523,9 @@ namespace Microsoft.Maui.Controls
 			if (globalRoutes == null || globalRoutes.Count == 0)
 			{
 				if (_navStack.Count == 2)
-					await OnPopAsync(animate ?? false);
+					await OnPopAsync(animate ?? true);
 				else
-					await OnPopToRootAsync(animate ?? false);
+					await OnPopToRootAsync(animate ?? true);
 
 				return;
 			}
@@ -844,9 +843,20 @@ namespace Microsoft.Maui.Controls
 				RequestType = NavigationRequestType.PopToRoot
 			};
 
-			InvokeNavigationRequest(args);
+			PresentedPageDisappearing();
 			var oldStack = _navStack;
 			_navStack = new List<Page> { null };
+
+			// NOTE:
+			// We intentionally raise PresentedPageAppearing (and thus SendPageAppearing/OnAppearing)
+			// before issuing the platform navigation request and awaiting its completion. This matches
+			// the behavior used for single-level Pop navigation and keeps Shell lifecycle events
+			// consistent across navigation patterns. At this point the root page may not yet be
+			// visually presented by the native stack (the pop-to-root animation can still be in
+			// progress), but Shell-level state (e.g., tab bar visibility) must already be updated
+			// so the platform reads the correct value when it commits the native navigation.
+			PresentedPageAppearing();
+			InvokeNavigationRequest(args);
 
 			if (args.Task != null)
 				await args.Task;
@@ -856,11 +866,14 @@ namespace Microsoft.Maui.Controls
 
 			for (int i = 1; i < oldStack.Count; i++)
 			{
-				oldStack[i].SendDisappearing();
+				// RemovePage is called for all pages. SendDisappearing is only called for
+				// intermediate pages; the top page's disappearing event was already fired
+				// by PresentedPageDisappearing() above to avoid duplicate lifecycle events.
+				if (i < oldStack.Count - 1)
+					oldStack[i].SendDisappearing();
 				RemovePage(oldStack[i]);
 			}
 
-			PresentedPageAppearing();
 		}
 
 		protected virtual Task OnPushAsync(Page page, bool animated)
@@ -958,7 +971,6 @@ namespace Microsoft.Maui.Controls
 				PresentedPageAppearing();
 
 			RemovePage(page);
-			page?.DisconnectHandlers();
 			var args = new NavigationRequestedEventArgs(page, false)
 			{
 				RequestType = NavigationRequestType.Remove
@@ -1019,6 +1031,24 @@ namespace Microsoft.Maui.Controls
 		{
 			var shellSection = (ShellSection)bindable;
 
+			var isFromHandler =
+				shellSection.GetContext(CurrentItemProperty)?.Values.GetSpecificity() == SetterSpecificity.FromHandler;
+
+			if (!isFromHandler &&
+				newValue is ShellContent newContent &&
+				shellSection.Parent?.Parent is Shell parentShell &&
+				shellSection.IsVisibleSection)
+			{
+				parentShell.NavigationManager.ProposeNavigationOutsideGotoAsync(
+					ShellNavigationSource.ShellContentChanged,
+					parentShell.CurrentItem,
+					shellSection,
+					newContent,
+					shellSection.Stack,
+					canCancel: false,
+					isAnimated: true);
+			}
+
 			if (oldValue is ShellContent oldShellItem)
 				oldShellItem.SendDisappearing();
 
@@ -1028,9 +1058,7 @@ namespace Microsoft.Maui.Controls
 			shellSection.PresentedPageAppearing();
 
 			if (shellSection.Parent?.Parent is IShellController shell && shellSection.IsVisibleSection)
-			{
 				shell.UpdateCurrentState(ShellNavigationSource.ShellContentChanged);
-			}
 
 			shellSection.SendStructureChanged();
 
@@ -1048,6 +1076,7 @@ namespace Microsoft.Maui.Controls
 		void RemovePage(Page page)
 		{
 			RemoveLogicalChild(page);
+			page?.DisconnectHandlers();
 		}
 
 		void SendAppearanceChanged() => ((IShellController)Parent?.Parent)?.AppearanceChanged(this, false);

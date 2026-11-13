@@ -19,7 +19,7 @@ public class Issue26598 : _IssuesUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void TabBarShouldbeVisibleNavigatingBackFromNonTabbedPage()
 	{
 		// Is a iOS issue; see https://github.com/dotnet/maui/issues/26598
@@ -36,7 +36,14 @@ public class Issue26598 : _IssuesUITest
 		App.WaitForElement("Issue26589NonTab");
 
 		// Case 3 - Navigate back to the HomeTab, the TabBar should be visible
-		App.TapBackArrow(back);
+		if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
+		{
+			App.TapBackArrow(); // In iOS 26, the previous page title is not shown along with the back arrow, so we use the default back arrow
+		}
+		else
+		{
+			App.TapBackArrow(back);
+		}
 		App.WaitForElement("RecentTab");
 		App.Click("RecentTab");
 		App.WaitForElement("HomeTab");

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using CoreLocation;
 using MapKit;
@@ -15,6 +16,7 @@ namespace Microsoft.Maui.Maps.Platform
 		WeakReference<IMapHandler> _handlerRef;
 		object? _lastTouchedView;
 		UITapGestureRecognizer? _mapClickedGestureRecognizer;
+		HashSet<IMapElement>? _trackedMapElements;
 
 		public MauiMKMapView(IMapHandler handler)
 		{
@@ -134,8 +136,17 @@ namespace Microsoft.Maui.Maps.Platform
 
 		internal void ClearMapElements()
 		{
-			var elements = Overlays;
+			// Clear MapElementId from tracked elements (not Handler.VirtualView.Elements,
+			// which returns an empty snapshot after ObservableCollection.Clear())
+			if (_trackedMapElements != null)
+			{
+				foreach (var element in _trackedMapElements)
+					element.MapElementId = null;
 
+				_trackedMapElements = null;
+			}
+
+			var elements = Overlays;
 			if (elements == null)
 				return;
 
@@ -145,10 +156,24 @@ namespace Microsoft.Maui.Maps.Platform
 			}
 		}
 
+		internal void PrepareForReuse()
+		{
+			ClearMapElements();
+
+			if (Annotations?.Length > 0)
+				RemoveAnnotations(Annotations);
+
+			_lastTouchedView = null;
+		}
+
 		internal void AddElements(IList elements)
 		{
+			_trackedMapElements ??= new HashSet<IMapElement>(ReferenceEqualityComparer.Instance);
+
 			foreach (IMapElement element in elements)
 			{
+				_trackedMapElements.Add(element);
+
 				IMKOverlay? overlay = null;
 				switch (element)
 				{
@@ -183,6 +208,9 @@ namespace Microsoft.Maui.Maps.Platform
 			{
 				if (element.MapElementId is IMKOverlay overlay)
 					RemoveOverlay(overlay);
+
+				_trackedMapElements?.Remove(element);
+				element.MapElementId = null;
 			}
 		}
 

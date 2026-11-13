@@ -9,11 +9,12 @@ namespace Microsoft.Maui.Controls.Shapes
 	/// <summary>
 	/// Base class for shape elements, such as <see cref="Ellipse"/>, <see cref="Line"/>, <see cref="Polygon"/>, <see cref="Polyline"/>, and <see cref="Rectangle"/>.
 	/// </summary>
-	public abstract partial class Shape : View, IShapeView, IShape
+	public abstract partial class Shape : View, IShapeView, IShape, IShapeWithStroke, IVersionedShape
 	{
 		WeakBrushChangedProxy? _fillProxy = null;
 		WeakBrushChangedProxy? _strokeProxy = null;
 		EventHandler? _fillChanged, _strokeChanged;
+		int _version;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="Shape"/> class.
@@ -26,6 +27,20 @@ namespace Microsoft.Maui.Controls.Shapes
 		{
 			_fillProxy?.Unsubscribe();
 			_strokeProxy?.Unsubscribe();
+		}
+
+		int IVersionedShape.Version => _version;
+
+		protected override void OnPropertyChanged(string? propertyName = null)
+		{
+			unchecked
+			{
+				// Increase the version before propagating the property changed notification
+				// so that any code responding to the notification can get the latest version.
+				++_version;
+			}
+
+			base.OnPropertyChanged(propertyName);
 		}
 
 		public abstract PathF GetPath();
@@ -57,8 +72,17 @@ namespace Microsoft.Maui.Controls.Shapes
 				},
 				propertyChanged: (bindable, oldvalue, newvalue) =>
 				{
+					var shape = (Shape)bindable;
+
 					if (newvalue != null)
-						(bindable as Shape)?.NotifyStrokeChanges();
+					{
+						shape.NotifyStrokeChanges();
+					}
+
+					if ((oldvalue is null) != (newvalue is null))
+					{
+						shape.InvalidateMeasure();
+					}
 				});
 
 		/// <summary>Bindable property for <see cref="StrokeThickness"/>.</summary>
@@ -116,6 +140,14 @@ namespace Microsoft.Maui.Controls.Shapes
 			set { SetValue(StrokeThicknessProperty, value); }
 			get { return (double)GetValue(StrokeThicknessProperty); }
 		}
+
+		/// <summary>
+		/// Gets the stroke inset used for path and measurement calculations.
+		/// </summary>
+		internal double GetPathStrokeInset(bool includeStroke = false) =>
+			Stroke is null && !includeStroke ? 0 : StrokeThickness;
+
+		internal virtual PathF GetPath(double strokeInset) => GetPath();
 
 		/// <summary>
 		/// Gets or sets the collection of values that specify the pattern of dashes and gaps in the shape's outline. This is a bindable property.
@@ -284,17 +316,42 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		PathF IShape.PathForBounds(Graphics.Rect viewBounds)
 		{
+			return PathForBounds(viewBounds, _includeStrokeInPathForBounds);
+		}
+
+		PathF IShapeWithStroke.PathForBounds(Graphics.Rect viewBounds, bool includeStroke)
+		{
+			// Dispatch through IShape so that derived shapes re-implementing IShape.PathForBounds
+			// are still honored, because IShapeWithStroke is internal and cannot be implemented by them.
+			var previousIncludeStroke = _includeStrokeInPathForBounds;
+			_includeStrokeInPathForBounds = includeStroke;
+
+			try
+			{
+				return ((IShape)this).PathForBounds(viewBounds);
+			}
+			finally
+			{
+				_includeStrokeInPathForBounds = previousIncludeStroke;
+			}
+		}
+
+		bool _includeStrokeInPathForBounds;
+
+		PathF PathForBounds(Graphics.Rect viewBounds, bool includeStroke)
+		{
 			_fallbackHeight = viewBounds.Height;
 			_fallbackWidth = viewBounds.Width;
 
-			var path = GetPath();
+			var strokeInset = GetPathStrokeInset(includeStroke);
+			var path = GetPath(strokeInset);
 
-			TransformPathForBounds(path, viewBounds);
+			TransformPathForBounds(path, viewBounds, strokeInset);
 
 			return path;
 		}
 
-		internal void TransformPathForBounds(PathF path, Graphics.Rect viewBounds)
+		internal void TransformPathForBounds(PathF path, Graphics.Rect viewBounds, double strokeInset)
 		{
 #if !(NETSTANDARD || !PLATFORM)
 
@@ -302,23 +359,43 @@ namespace Microsoft.Maui.Controls.Shapes
 			//       since default GetBoundsByFlattening(0.001) returns incorrect results for curves
 			RectF pathBounds = path.GetBoundsByFlattening(1);
 
-			viewBounds.X += StrokeThickness / 2;
-			viewBounds.Y += StrokeThickness / 2;
-			viewBounds.Width -= StrokeThickness;
-			viewBounds.Height -= StrokeThickness;
+			viewBounds.X += strokeInset / 2;
+			viewBounds.Y += strokeInset / 2;
+			viewBounds.Width -= strokeInset;
+			viewBounds.Height -= strokeInset;
 
 			Matrix3x2 transform;
 
 			if (Aspect == Stretch.None)
 			{
-				bool requireAdjustX = viewBounds.Left > pathBounds.Left;
-				bool requireAdjustY = viewBounds.Top > pathBounds.Top;
+				float translateX = 0;
+				float translateY = 0;
 
-				if (requireAdjustX || requireAdjustY)
+				// Check if path needs to be shifted right to fit within view bounds (left edge)
+				if (viewBounds.Left > pathBounds.Left)
 				{
-					transform = Matrix3x2.CreateTranslation(
-						(float)(pathBounds.X + viewBounds.Left - pathBounds.Left),
-						(float)(pathBounds.Y + viewBounds.Top - pathBounds.Top));
+					translateX = (float)(viewBounds.Left - pathBounds.Left);
+				}
+				// Check if path needs to be shifted left to fit within view bounds (right edge)
+				else if (pathBounds.Right > viewBounds.Right)
+				{
+					translateX = (float)(viewBounds.Right - pathBounds.Right);
+				}
+
+				// Check if path needs to be shifted down to fit within view bounds (top edge)
+				if (viewBounds.Top > pathBounds.Top)
+				{
+					translateY = (float)(viewBounds.Top - pathBounds.Top);
+				}
+				// Check if path needs to be shifted up to fit within view bounds (bottom edge)
+				else if (pathBounds.Bottom > viewBounds.Bottom)
+				{
+					translateY = (float)(viewBounds.Bottom - pathBounds.Bottom);
+				}
+
+				if (translateX != 0 || translateY != 0)
+				{
+					transform = Matrix3x2.CreateTranslation(translateX, translateY);
 				}
 				else
 				{
@@ -398,7 +475,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			var result = base.MeasureOverride(widthConstraint, heightConstraint);
 			RectF pathBounds;
 
-			if (result.Width != 0 && result.Height != 0)
+			if (result.Width != 0 && result.Height != 0 && result.Width > Margin.HorizontalThickness && result.Height > Margin.VerticalThickness)
 			{
 				return result;
 			}
@@ -413,7 +490,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			}
 			else
 			{
-			    pathBounds = this.GetPath().GetBoundsByFlattening(1);
+				pathBounds = this.GetPath().GetBoundsByFlattening(1);
 			}
 
 			SizeF boundsByFlattening = pathBounds.Size;
@@ -421,8 +498,9 @@ namespace Microsoft.Maui.Controls.Shapes
 			result.Height = boundsByFlattening.Height;
 			result.Width = boundsByFlattening.Width;
 
-			widthConstraint -= StrokeThickness;
-			heightConstraint -= StrokeThickness;
+			var strokeInset = GetPathStrokeInset();
+			widthConstraint -= strokeInset;
+			heightConstraint -= strokeInset;
 
 			double scaleX = widthConstraint / result.Width;
 			double scaleY = heightConstraint / result.Height;
@@ -470,8 +548,14 @@ namespace Microsoft.Maui.Controls.Shapes
 					break;
 			}
 
-			result.Height += StrokeThickness;
-			result.Width += StrokeThickness;
+			result.Height += strokeInset;
+			result.Width += strokeInset;
+			if (this is Line or Path or Polyline)
+			{
+				result.Height += Margin.VerticalThickness;
+				result.Width += Margin.HorizontalThickness;
+			}
+
 			return result;
 		}
 

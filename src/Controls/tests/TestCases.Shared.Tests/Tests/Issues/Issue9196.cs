@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "[Bug] [iOS] CollectionView EmptyView causes the application to crash";
 
 		[Test]
-		[Category(UITestCategories.CollectionView)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
 		public void EmptyViewShouldNotCrash()
 		{
 			App.WaitForElement(Success);

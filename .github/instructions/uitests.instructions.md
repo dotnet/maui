@@ -31,7 +31,13 @@ This document provides specific guidance for GitHub Copilot when writing UI test
    - Create corresponding Appium-based NUnit tests that inherit from `_IssuesUITest`
    - Use the `AutomationId` values to locate and interact with UI elements
    - Follow naming convention: `IssueXXXXX.cs` (matches the HostApp page file)
-   - Include appropriate `[Category(UITestCategories.XYZ)]` attributes (only ONE per test)
+   - Include one functional `[Category(UITestCategories.XYZ)]` attribute per test
+   - CollectionView tests use `[ShardedTestCategory(UITestCategories.CollectionView, shard: N)]`, which exposes both the `CollectionView` umbrella and one numbered CI shard category
+   - Shell tests use `[ShardedTestCategory(UITestCategories.Shell, shard: N)]`; CI uses `Shell1` and `Shell2` on Android, iOS, Windows, and MacCatalyst, while local umbrella runs continue to use `Shell`
+   - Omitted `shard` defaults to shard 1 so a new test cannot silently cease running; the rebalancing skill assigns the durable shard
+   - Put `ShardedTestCategory` on each test method; never put it on the class
+   - A fixture split across shards must initialize every shard in `FixtureSetup`; never use an `Order(1)` test as setup for later tests
+   - Dedicated stages using `testConfigurationArgs` (for example `ios_ui_tests_mono_cv1`) are separate configuration coverage and are not ordinary category-matrix shard entries
    - Test should validate expected behavior through UI interactions and assertions
 
 ### Base Class and Infrastructure
@@ -351,7 +357,7 @@ grep -r "tolerance:" src/Controls/tests/TestCases.Shared.Tests/Tests/
 
 ### Category Guidelines
 - Use appropriate categories from `UITestCategories`
-- **Only ONE** `[Category]` attribute per test
+- Use only one functional category attribute per test: either `[Category]` or `[ShardedTestCategory]`
 - Pick the most specific category that applies
 
 ### Test Categories
@@ -523,6 +529,17 @@ cat /tmp/ios_crash.log | grep -A 20 -B 5 "Exception"
 5. **Check for platform-specific issues** - iOS version compatibility, permissions, etc.
 6. If you can't determine the fix, **ask for guidance** with the full exception details
 
+### Dangerous System Commands (Never Run)
+
+**🚨 NEVER run these commands — they cause destructive system-wide side effects:**
+
+- **`tccutil reset`** — Wipes ALL macOS permissions (Accessibility, Camera, etc.) system-wide. This breaks Appium/WebDriverAgent, Xcode, and other tools. Once reset, permissions must be manually re-granted through System Settings.
+- **`csrutil disable`** — Disables System Integrity Protection
+- **`networksetup`** — Modifies network configuration
+- **`defaults delete`** on system domains — Resets system preferences
+
+**General rule:** Do not run commands that modify macOS system-level privacy, security, or permission settings. If you need to check permissions, read them — never reset or modify them.
+
 ## Before Committing
 
 Verify the following checklist before committing UI tests:
@@ -532,7 +549,7 @@ Verify the following checklist before committing UI tests:
 - [ ] Ensure file names follow the `IssueXXXXX` pattern and match between projects
 - [ ] Ensure test methods have descriptive names
 - [ ] Verify test inherits from `_IssuesUITest`
-- [ ] Confirm only ONE `[Category]` attribute per test
+- [ ] Confirm only one functional `[Category]` or `[ShardedTestCategory]` attribute per test
 - [ ] No inline `#if` directives in test code (use extension methods)
 - [ ] Test passes locally on at least one platform
 
@@ -720,3 +737,45 @@ grep -r "UITestEntry\|UITestEditor\|UITestSearchBar" src/Controls/tests/TestCase
 - Common helper methods
 - Platform-specific workarounds
 - UITest optimized control usage
+
+### Safe Area Testing (iOS/MacCatalyst)
+
+**⚠️ CRITICAL for macCatalyst safe area tests:**
+
+Safe area behavior differs significantly between macOS versions. Tests must account for this variability.
+
+| macOS Version | Title Bar Safe Area | CI Environment |
+|---------------|---------------------|----------------|
+| **macOS 14/15** | ~28px top inset | ✅ Used by CI |
+| **macOS 26 (Liquid Glass)** | ~0px top inset | ❌ Local dev only |
+
+**Rules for safe area tests:**
+
+1. **Use tolerances for safe area measurements** - Exact pixel values vary by macOS version
+2. **Test behavior, not exact values** - Verify content is NOT obscured, rather than checking exact padding pixels
+3. **Use `GetRect()` for child content position** - Measure where content actually appears, not parent size
+4. **Never hardcode safe area expectations** - Tests should pass on macOS 14/15 AND macOS 26
+
+**Example patterns:**
+
+```csharp
+// ❌ BAD: Hardcoded safe area value (breaks across macOS versions)
+var safeArea = element.GetRect();
+Assert.That(safeArea.Y, Is.EqualTo(28)); // Fails on macOS 26
+
+// ✅ GOOD: Test that content is not obscured by title bar
+var contentRect = App.WaitForElement("MyContent").GetRect();
+var titleBarRect = App.WaitForElement("TitleBar").GetRect();
+Assert.That(contentRect.Y, Is.GreaterThanOrEqualTo(titleBarRect.Height), 
+    "Content should not be obscured by title bar");
+
+// ✅ GOOD: Use tolerance for safe area (accounts for OS differences)
+Assert.That(contentRect.Y, Is.GreaterThan(0).And.LessThan(50), 
+    "Content should have some top padding but not excessive");
+```
+
+**Test category**: Use `UITestCategories.SafeAreaEdges` for safe area tests.
+
+**Platform scope**: Safe area tests should typically run on iOS and MacCatalyst (not just one).
+
+**See also**: `.github/instructions/safe-area-debugging.instructions.md` for investigation guidelines

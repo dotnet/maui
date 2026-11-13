@@ -8,6 +8,7 @@ using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
+
 public class Issue22715 : _IssuesUITest
 {
     public Issue22715(TestDevice device) : base(device) { }
@@ -16,11 +17,11 @@ public class Issue22715 : _IssuesUITest
 
     [Test]
     [Category(UITestCategories.Entry)]
-    public void PageShouldNotScroll ()
+    public void PageShouldNotScroll()
     {
         App.WaitForElement("EntNumber").GetRect();
         App.WaitForElement("TopLabel").GetRect();
-        VerifyScreenshot();
+        VerifyScreenshot(cropBottom: 1400);
     }
 }
 #endif

@@ -132,6 +132,18 @@ namespace Microsoft.Maui.Handlers
 			UpdateInsetView(scrollView, handler, crossPlatformLayout);
 		}
 
+		internal static void MapInvalidateMeasure(IScrollViewHandler handler, IView view, object? args)
+		{
+			handler.PlatformView.InvalidateMeasure(view);
+
+			var insetPanel = FindInsetPanel(handler);
+
+			if (insetPanel is not null)
+			{
+				PlatformInterop.RequestLayoutIfNeeded(insetPanel);
+			}
+		}
+
 		public static void MapHorizontalScrollBarVisibility(IScrollViewHandler handler, IScrollView scrollView)
 		{
 			handler.PlatformView.SetHorizontalScrollBarVisibility(scrollView.HorizontalScrollBarVisibility);
@@ -147,6 +159,14 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView.SetOrientation(scrollView.Orientation);
 		}
 
+		internal static void MapFlowDirection(IScrollViewHandler handler, IScrollView scrollView)
+		{
+			if (handler.PlatformView is MauiScrollView mauiScrollView && scrollView is IView view)
+			{
+				mauiScrollView.UpdateFlowDirection(view);
+			}
+		}
+
 		public static void MapRequestScrollTo(IScrollViewHandler handler, IScrollView scrollView, object? args)
 		{
 			if (args is not ScrollToRequest request)
@@ -154,6 +174,31 @@ namespace Microsoft.Maui.Handlers
 				return;
 			}
 
+			var context = handler.PlatformView.Context;
+
+			if (context == null)
+			{
+				return;
+			}
+
+			// A view that has been laid out at least once has geometry worth scrolling against: the
+			// platform clamps the offsets to the last completed layout. IsLayoutRequested must not gate
+			// this decision - see WaitToScrollOnLayout for why waiting on it never ends.
+			if (!handler.PlatformView.IsLaidOut)
+			{
+				WaitToScrollOnLayout(handler, request);
+
+				return;
+			}
+
+			ServeScrollTo(handler, request);
+		}
+
+		// Serves the request against the platform view's current geometry, without consulting the layout
+		// flags: the platform clamps the offsets to what it can measure, so serving is safe - and, unlike
+		// deferring, terminating - even for a view that has never been laid out.
+		static void ServeScrollTo(IScrollViewHandler handler, ScrollToRequest request)
+		{
 			var context = handler.PlatformView.Context;
 
 			if (context == null)
@@ -172,6 +217,93 @@ namespace Microsoft.Maui.Handlers
 						handler.VirtualView.ScrollFinished();
 					}
 				});
+		}
+
+		const int LayoutWaitTimeoutMillis = 4000;
+
+		// Waits for the platform view's first layout, then serves 'request' - once, and only once.
+		//
+		// Event-driven and bounded, unlike the flag-polled re-post it replaces: ViewRootImpl swallows
+		// requestLayout() while it is handling a layout-inside-layout request (the
+		// mHandlingLayoutInLayoutRequest guard), which leaves IsLayoutRequested set with no traversal
+		// ever scheduled again. A retry loop gated on that flag therefore spins at full looper
+		// throughput - the livelock - where an event listener cannot, because it runs exactly once per
+		// traversal and stops being registered at all as soon as it fires.
+		//
+		// Deferral is bounded so that it can never park a request the way the retry loop did: whichever
+		// signal arrives first serves the request, and a view that never lays out is served by the
+		// timeout. Nothing re-enters MapRequestScrollTo from here, so a deferred request cannot re-arm
+		// the wait behind itself.
+		static void WaitToScrollOnLayout(IScrollViewHandler handler, ScrollToRequest request)
+		{
+			var platformView = handler.PlatformView;
+			var observer = platformView.ViewTreeObserver;
+			var waiter = new LayoutWaiter(platformView, handler, request);
+
+			if (observer is { IsAlive: true })
+			{
+				observer.AddOnGlobalLayoutListener(waiter);
+			}
+
+			platformView.PostDelayed(waiter.OnTimeout, LayoutWaitTimeoutMillis);
+
+			// Arm the layout this is waiting for. A view that has never been laid out normally has a
+			// traversal on its way already; a latched IsLayoutRequested flag is not one, so it is left
+			// alone - requesting again would only re-latch it, which is how the retry loop got stuck.
+			if (!platformView.IsLayoutRequested)
+			{
+				platformView.RequestLayout();
+			}
+		}
+
+		sealed class LayoutWaiter : Java.Lang.Object, ViewTreeObserver.IOnGlobalLayoutListener
+		{
+			readonly MauiScrollView _view;
+			readonly IScrollViewHandler _handler;
+			readonly ScrollToRequest _request;
+			int _fired;
+
+			public LayoutWaiter(MauiScrollView view, IScrollViewHandler handler, ScrollToRequest request)
+			{
+				_view = view;
+				_handler = handler;
+				_request = request;
+			}
+
+			public void OnGlobalLayout()
+			{
+				// Fires for every layout of the window, not just ours: the wait is only satisfied once
+				// the view that deferred has itself been laid out.
+				if (_view.IsLaidOut)
+				{
+					Fire();
+				}
+			}
+
+			public void OnTimeout() =>
+				Fire();
+
+			void Fire()
+			{
+				// One-shot: the timeout is still pending when the layout event wins the race (and vice
+				// versa), and the request must be served exactly once either way.
+				if (System.Threading.Interlocked.Exchange(ref _fired, 1) != 0)
+				{
+					return;
+				}
+
+				var observer = _view.ViewTreeObserver;
+
+				if (observer is { IsAlive: true })
+				{
+					observer.RemoveOnGlobalLayoutListener(this);
+				}
+
+				if (_handler.IsConnected())
+				{
+					ServeScrollTo(_handler, _request);
+				}
+			}
 		}
 
 		/*
@@ -215,6 +347,8 @@ namespace Microsoft.Maui.Handlers
 
 			if (currentPaddingLayer is not null)
 			{
+				UpdateClipForShadow(currentPaddingLayer, handler.PlatformView, scrollView.PresentedContent);
+
 				// Only update if content has changed or is missing
 				if (currentPaddingLayer.ChildCount == 0 || currentPaddingLayer.GetChildAt(0) != nativeContent)
 				{
@@ -241,9 +375,19 @@ namespace Microsoft.Maui.Handlers
 				Tag = InsetPanelTag
 			};
 
+			UpdateClipForShadow(paddingShim, handler.PlatformView, scrollView.PresentedContent);
+
 			handler.PlatformView.RemoveAllViews();
 			paddingShim.AddView(nativeContent);
 			handler.PlatformView.SetContent(paddingShim);
+		}
+
+		static void UpdateClipForShadow(ContentViewGroup paddingShim, MauiScrollView scrollView, IView? content)
+		{
+			bool hasShadow = content?.Shadow is not null;
+			paddingShim.SetClipChildren(!hasShadow);
+			paddingShim.SetClipToPadding(!hasShadow);
+			scrollView.SetClipChildren(!hasShadow);
 		}
 
 		Size ICrossPlatformLayout.CrossPlatformMeasure(double widthConstraint, double heightConstraint)

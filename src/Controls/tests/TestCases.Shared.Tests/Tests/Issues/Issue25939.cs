@@ -16,6 +16,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Slider)]
 		public void SliderShouldChangeThumbImageAndResetIt()
 		{
+			if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
+			{
+				Assert.Ignore("Ignored due to a bug issue in iOS 26"); // Issue Link: https://github.com/dotnet/maui/issues/33967
+			}
 			App.WaitForElement("ChangeThumbImageSourceButton");
 			App.Click("ChangeThumbImageSourceButton");
 			App.Click("ResetThumbImageSourceButton");

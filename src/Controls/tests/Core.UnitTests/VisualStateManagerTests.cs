@@ -141,12 +141,64 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void GroupNamesMustBeUniqueWithinGroupList()
+		public void GroupWithDuplicateNameReplacesExisting()
 		{
 			IList<VisualStateGroup> vsgs = CreateTestStateGroups();
 			var secondGroup = new VisualStateGroup { Name = CommonStatesGroupName };
+			secondGroup.States.Add(new VisualState { Name = NormalStateName });
 
-			Assert.Throws<InvalidOperationException>(() => vsgs.Add(secondGroup));
+			// Adding a group with the same name should replace the existing one, not throw
+			vsgs.Add(secondGroup);
+			Assert.Single(vsgs);
+			Assert.Same(secondGroup, vsgs[0]);
+		}
+
+		[Fact]
+		public void ReplacingGroupUpdatesVisualStateAndValidationSubscription()
+		{
+			var label = new Label();
+			var originalMargin = new Thickness(1);
+			var replacementMargin = new Thickness(2);
+			var groups = new VisualStateGroupList
+			{
+				new VisualStateGroup
+				{
+					States =
+					{
+						new VisualState
+						{
+							Name = NormalStateName,
+							Setters =
+							{
+								new Setter { Property = View.MarginProperty, Value = originalMargin }
+							}
+						}
+					}
+				}
+			};
+
+			VisualStateManager.SetVisualStateGroups(label, groups);
+			Assert.Equal(originalMargin, label.Margin);
+
+			var replacementGroup = new VisualStateGroup
+			{
+				States =
+				{
+					new VisualState
+					{
+						Name = NormalStateName,
+						Setters =
+						{
+							new Setter { Property = View.MarginProperty, Value = replacementMargin }
+						}
+					}
+				}
+			};
+
+			groups[0] = replacementGroup;
+
+			Assert.Equal(replacementMargin, label.Margin);
+			Assert.Throws<InvalidOperationException>(() => replacementGroup.States.Add(new VisualState { Name = NormalStateName }));
 		}
 
 		[Fact]
@@ -311,6 +363,31 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void RemovingCurrentStateClearsStateAndUnappliesSetters()
+		{
+			var label = new Label();
+			var state = new VisualState
+			{
+				Name = NormalStateName,
+				Setters =
+				{
+					new Setter { Property = Label.TextProperty, Value = "Active" }
+				}
+			};
+			var group = new VisualStateGroup { States = { state } };
+
+			VisualStateManager.SetVisualStateGroups(label, new VisualStateGroupList { group });
+
+			Assert.Same(state, group.CurrentState);
+			Assert.Equal("Active", label.Text);
+
+			group.States.Remove(state);
+
+			Assert.Null(group.CurrentState);
+			Assert.Null(label.Text);
+		}
+
+		[Fact]
 		public void CanRemoveAGroupAndAddANewGroupWithTheSameName()
 		{
 			var stateGroups = new VisualStateGroupList();
@@ -330,6 +407,146 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			stateGroups.Remove(stateGroups[0]);
 
 			stateGroups.Add(new VisualStateGroup { Name = name });
+		}
+
+		[Fact]
+		public void ClearDetachesStateTriggers()
+		{
+			var (groups, trigger) = CreateAttachedStateTriggerGroup();
+
+			groups.Clear();
+
+			Assert.False(trigger.IsAttached);
+		}
+
+		[Fact]
+		public void RemoveDetachesStateTriggers()
+		{
+			var (groups, trigger) = CreateAttachedStateTriggerGroup();
+
+			groups.Remove(groups[0]);
+
+			Assert.False(trigger.IsAttached);
+		}
+
+		[Fact]
+		public void RemoveNonMemberReturnsFalse()
+		{
+			var group = new VisualStateGroup { Name = CommonStatesGroupName };
+			var groups = new VisualStateGroupList { group };
+
+			var removed = groups.Remove(new VisualStateGroup { Name = "Missing" });
+
+			Assert.False(removed);
+			Assert.Single(groups);
+			Assert.Same(group, groups[0]);
+		}
+
+		[Fact]
+		public void RemoveAtDetachesStateTriggers()
+		{
+			var (groups, trigger) = CreateAttachedStateTriggerGroup();
+
+			groups.RemoveAt(0);
+
+			Assert.False(trigger.IsAttached);
+		}
+
+		[Fact]
+		public void AddingDuplicateNamedGroupDetachesReplacedStateTriggers()
+		{
+			var (groups, trigger) = CreateAttachedStateTriggerGroup();
+
+			groups.Add(new VisualStateGroup { Name = groups[0].Name });
+
+			Assert.False(trigger.IsAttached);
+		}
+
+		[Fact]
+		public void ReplacingGroupByIndexDetachesStateTriggers()
+		{
+			var (groups, trigger) = CreateAttachedStateTriggerGroup();
+
+			groups[0] = new VisualStateGroup { Name = "Replacement" };
+
+			Assert.False(trigger.IsAttached);
+		}
+
+		[Fact]
+		public void ReplacingGroupByIndexWithSameGroupKeepsStateTriggersAttached()
+		{
+			var (groups, trigger) = CreateAttachedStateTriggerGroup();
+
+			groups[0] = groups[0];
+
+			Assert.True(trigger.IsAttached);
+		}
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void RemovingGroupDetachesTriggersBeforeUnapplyingSetters(bool replaceGroupList)
+		{
+			var label = new Label();
+			var trigger = new LifecycleStateTrigger();
+			var state = new VisualState
+			{
+				Name = NormalStateName,
+				StateTriggers = { trigger },
+				Setters = { new Setter { Property = Label.TextProperty, Value = "Active" } }
+			};
+			var group = new VisualStateGroup { States = { state } };
+			var groups = new VisualStateGroupList { group };
+			VisualStateManager.SetVisualStateGroups(label, groups);
+			_ = new Window { Page = new ContentPage { Content = label } };
+			Assert.True(trigger.IsAttached);
+			Assert.Equal("Active", label.Text);
+
+			bool? attachedWhenUnapplied = null;
+			label.PropertyChanged += (_, args) =>
+			{
+				if (args.PropertyName == Label.TextProperty.PropertyName)
+					attachedWhenUnapplied = trigger.IsAttached;
+			};
+
+			if (replaceGroupList)
+				VisualStateManager.SetVisualStateGroups(label, new VisualStateGroupList());
+			else
+				groups.Remove(group);
+
+			Assert.Equal(false, attachedWhenUnapplied);
+			Assert.Null(label.Text);
+			Assert.Null(group.CurrentState);
+			Assert.Equal(1, trigger.DetachCount);
+		}
+
+		static (VisualStateGroupList Groups, StateTriggerBase Trigger) CreateAttachedStateTriggerGroup()
+		{
+			var trigger = new TestStateTrigger();
+			var groups = new VisualStateGroupList
+			{
+				new VisualStateGroup
+				{
+					Name = CommonStatesGroupName,
+					States =
+					{
+						new VisualState
+						{
+							Name = NormalStateName,
+							StateTriggers = { trigger }
+						}
+					}
+				}
+			};
+
+			trigger.SendAttached();
+			Assert.True(trigger.IsAttached);
+
+			return (groups, trigger);
+		}
+
+		sealed class TestStateTrigger : StateTriggerBase
+		{
 		}
 
 
@@ -533,6 +750,324 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Debug.WriteLine($">>>>> VisualStateManagerTests ValidatePerformance: {watch.ElapsedMilliseconds}ms over {iterations} iterations; average of {average}ms");
 
+		}
+
+		[Fact]
+		// Regression test for https://github.com/dotnet/maui/issues/34363
+		// Button with locally-set BackgroundColor and TextColor should show the Disabled visual state
+		// when IsEnabled=false, even when the VSM originates from an implicit style.
+		public void ImplicitStyleDisabledVSMOverridesLocalValue()
+		{
+			var disabledColor = Colors.Gray;
+			var normalColor = Colors.Blue;
+			var localColor = Colors.Red;
+
+			var disabledTextColor = Colors.LightGray;
+			var normalTextColor = Colors.White;
+			var localTextColor = Colors.Green;
+
+			var normalState = new VisualState { Name = NormalStateName };
+			normalState.Setters.Add(new Setter { Property = Button.BackgroundColorProperty, Value = normalColor });
+			normalState.Setters.Add(new Setter { Property = Button.TextColorProperty, Value = normalTextColor });
+
+			var disabledState = new VisualState { Name = DisabledStateName };
+			disabledState.Setters.Add(new Setter { Property = Button.BackgroundColorProperty, Value = disabledColor });
+			disabledState.Setters.Add(new Setter { Property = Button.TextColorProperty, Value = disabledTextColor });
+
+			var vsgList = new VisualStateGroupList
+			{
+				new VisualStateGroup
+				{
+					Name = CommonStatesGroupName,
+					States = { normalState, disabledState }
+				}
+			};
+
+			var implicitStyle = new Style(typeof(Button))
+			{
+				Setters =
+				{
+					new Setter
+					{
+						Property = VisualStateManager.VisualStateGroupsProperty,
+						Value = vsgList
+					}
+				}
+			};
+
+			var button = new Button();
+
+			// Apply the implicit style (StyleImplicit = 0x080, below StyleBasedOn threshold — triggers implicit VSM downgrade)
+			((IStyle)implicitStyle).Apply(button, new SetterSpecificity(SetterSpecificity.StyleImplicit, 0, 0, 0));
+
+			// Locally set BackgroundColor and TextColor — ManualValueSetter wins over implicit VSM in Normal state
+			button.BackgroundColor = localColor;
+			button.TextColor = localTextColor;
+			Assert.Equal(localColor, button.BackgroundColor);
+			Assert.Equal(localTextColor, button.TextColor);
+
+			// Disable the button — the Disabled VSM state should override both locally-set values
+			button.IsEnabled = false;
+			Assert.Equal(disabledColor, button.BackgroundColor);
+			Assert.Equal(disabledTextColor, button.TextColor);
+
+			// Re-enable — Normal state does NOT override the local values (preserves #18103 behavior)
+			button.IsEnabled = true;
+			Assert.Equal(localColor, button.BackgroundColor);
+			Assert.Equal(localTextColor, button.TextColor);
+		}
+
+		[Fact]
+		// Custom (non-system) VSM states defined in an implicit style should NOT be promoted to full
+		// VSM priority. Only built-in MAUI system-driven states (Disabled, Focused, etc.) get promoted.
+		// This prevents implicit-style custom states from unexpectedly overriding manually-set values.
+		public void CustomImplicitStyleVSMStateDoesNotOverrideLocalValue()
+		{
+			const string customStateName = "Highlighted";
+			var highlightedColor = Colors.Yellow;
+			var localColor = Colors.Red;
+
+			var normalState = new VisualState { Name = NormalStateName };
+			var highlightedState = new VisualState { Name = customStateName };
+			highlightedState.Setters.Add(new Setter { Property = Button.BackgroundColorProperty, Value = highlightedColor });
+
+			var vsgList = new VisualStateGroupList
+			{
+				new VisualStateGroup
+				{
+					Name = CommonStatesGroupName,
+					States = { normalState, highlightedState }
+				}
+			};
+
+			var implicitStyle = new Style(typeof(Button))
+			{
+				Setters =
+				{
+					new Setter
+					{
+						Property = VisualStateManager.VisualStateGroupsProperty,
+						Value = vsgList
+					}
+				}
+			};
+
+			var button = new Button();
+			((IStyle)implicitStyle).Apply(button, new SetterSpecificity(SetterSpecificity.StyleImplicit, 0, 0, 0));
+
+			// Locally set BackgroundColor — ManualValueSetter wins over the implicit-style VSM in Normal state
+			button.BackgroundColor = localColor;
+			Assert.Equal(localColor, button.BackgroundColor);
+
+			// Transition to the custom state — custom state is NOT promoted, so ManualValueSetter still wins
+			VisualStateManager.GoToState(button, customStateName);
+			Assert.Equal(localColor, button.BackgroundColor);
+		}
+
+		[Fact]
+		// https://github.com/dotnet/maui/issues/35399
+		public void SelectHoverDeselectRestoresPointerOverState()
+		{
+			var element = new Label();
+			var groups = CreateStateGroupsWithSelectedAndPointerOver();
+			VisualStateManager.SetVisualStateGroups(element, groups);
+
+			// 1. Select the item (simulates CollectionView selection)
+			element.IsItemSelected = true;
+			Assert.Equal(VisualStateManager.CommonStates.Selected, groups[0].CurrentState.Name);
+
+			// 2. Simulate pointer hover while selected — Selected takes priority
+			SetIsPointerOver(element, true);
+			element.ChangeVisualState();
+			Assert.Equal(VisualStateManager.CommonStates.Selected, groups[0].CurrentState.Name);
+
+			// 3. Deselect while pointer is still hovering — should restore to PointerOver
+			element.IsItemSelected = false;
+			Assert.Equal(VisualStateManager.CommonStates.PointerOver, groups[0].CurrentState.Name);
+		}
+
+		[Fact]
+		// https://github.com/dotnet/maui/issues/35399
+		public void SelectedStatePreservedAcrossMouseHover()
+		{
+			var element = new Label();
+			var groups = CreateStateGroupsWithSelectedAndPointerOver();
+			VisualStateManager.SetVisualStateGroups(element, groups);
+
+			// Select the item (simulates Shell flyout item selection)
+			element.IsItemSelected = true;
+			Assert.Equal(VisualStateManager.CommonStates.Selected, groups[0].CurrentState.Name);
+
+			// Pointer enters — Selected should be preserved
+			SetIsPointerOver(element, true);
+			element.ChangeVisualState();
+			Assert.Equal(VisualStateManager.CommonStates.Selected, groups[0].CurrentState.Name);
+
+			// Pointer exits — Selected should still be preserved
+			SetIsPointerOver(element, false);
+			element.ChangeVisualState();
+			Assert.Equal(VisualStateManager.CommonStates.Selected, groups[0].CurrentState.Name);
+		}
+
+		[Fact]
+		// https://github.com/dotnet/maui/issues/35399
+		public void IsEnabledToggleWhileSelectedPreservesState()
+		{
+			var element = new Label();
+			var groups = CreateStateGroupsWithSelectedAndPointerOver();
+			VisualStateManager.SetVisualStateGroups(element, groups);
+
+			// Select the item
+			element.IsItemSelected = true;
+			Assert.Equal(VisualStateManager.CommonStates.Selected, groups[0].CurrentState.Name);
+
+			// Disable — should go to Disabled
+			element.IsEnabled = false;
+			Assert.Equal(DisabledStateName, groups[0].CurrentState.Name);
+			Assert.True(element.IsItemSelected); // selection flag preserved
+
+			// Re-enable — should restore to Selected since IsItemSelected is still true
+			element.IsEnabled = true;
+			Assert.Equal(VisualStateManager.CommonStates.Selected, groups[0].CurrentState.Name);
+		}
+
+		[Fact]
+		// https://github.com/dotnet/maui/issues/35399
+		public void SelectingWhileDisabledStaysDisabledUntilReEnabled()
+		{
+			var element = new Label();
+			var groups = CreateStateGroupsWithSelectedAndPointerOver();
+			VisualStateManager.SetVisualStateGroups(element, groups);
+
+			// Disable first
+			element.IsEnabled = false;
+			Assert.Equal(DisabledStateName, groups[0].CurrentState.Name);
+
+			// Select while disabled — visual state should remain Disabled
+			element.IsItemSelected = true;
+			Assert.Equal(DisabledStateName, groups[0].CurrentState.Name);
+
+			// Re-enable — now it should go to Selected
+			element.IsEnabled = true;
+			Assert.Equal(VisualStateManager.CommonStates.Selected, groups[0].CurrentState.Name);
+		}
+
+		[Fact]
+		// https://github.com/dotnet/maui/issues/35399
+		public void AssigningSameIsItemSelectedValueIsNoOp()
+		{
+			var element = new Label();
+			var groups = CreateStateGroupsWithSelectedAndPointerOver();
+			VisualStateManager.SetVisualStateGroups(element, groups);
+
+			// Select the item
+			element.IsItemSelected = true;
+			Assert.Equal(VisualStateManager.CommonStates.Selected, groups[0].CurrentState.Name);
+
+			// Manually set to Normal to detect if ChangeVisualState fires again
+			VisualStateManager.GoToState(element, VisualStateManager.CommonStates.Normal);
+			Assert.Equal(VisualStateManager.CommonStates.Normal, groups[0].CurrentState.Name);
+
+			// Assign same value — should be a no-op (equality guard)
+			element.IsItemSelected = true;
+			Assert.Equal(VisualStateManager.CommonStates.Normal, groups[0].CurrentState.Name);
+		}
+
+		[Theory]
+		[InlineData(StateTriggerRemovalOperation.Clear)]
+		[InlineData(StateTriggerRemovalOperation.Remove)]
+		[InlineData(StateTriggerRemovalOperation.RemoveAt)]
+		[InlineData(StateTriggerRemovalOperation.Replace)]
+		public void RemovingStateTriggerDetachesIt(StateTriggerRemovalOperation operation)
+		{
+			var trigger = new LifecycleStateTrigger();
+			var state = new VisualState { Name = "Active", StateTriggers = { trigger } };
+			var label = new Label();
+
+			VisualStateManager.SetVisualStateGroups(label, new VisualStateGroupList
+			{
+				new VisualStateGroup { States = { state } }
+			});
+
+			var page = new ContentPage { Content = label };
+			_ = new Window { Page = page };
+			Assert.True(trigger.IsAttached);
+
+			switch (operation)
+			{
+				case StateTriggerRemovalOperation.Clear:
+					state.StateTriggers.Clear();
+					break;
+				case StateTriggerRemovalOperation.Remove:
+					state.StateTriggers.Remove(trigger);
+					break;
+				case StateTriggerRemovalOperation.RemoveAt:
+					state.StateTriggers.RemoveAt(0);
+					break;
+				case StateTriggerRemovalOperation.Replace:
+					state.StateTriggers[0] = new LifecycleStateTrigger();
+					break;
+			}
+
+			Assert.False(trigger.IsAttached);
+			Assert.Equal(1, trigger.DetachCount);
+			Assert.Null(trigger.VisualState);
+		}
+
+		[Fact]
+		public void ReplacingStateTriggerWithSameInstanceDoesNotDetachIt()
+		{
+			var trigger = new LifecycleStateTrigger();
+			var state = new VisualState { Name = "Active", StateTriggers = { trigger } };
+			trigger.SendAttached();
+
+			state.StateTriggers[0] = trigger;
+
+			Assert.True(trigger.IsAttached);
+			Assert.Equal(0, trigger.DetachCount);
+			Assert.Same(state, trigger.VisualState);
+		}
+
+		static VisualStateGroupList CreateStateGroupsWithSelectedAndPointerOver()
+		{
+			return new VisualStateGroupList
+			{
+				new VisualStateGroup
+				{
+					Name = CommonStatesGroupName,
+					States =
+					{
+						new VisualState { Name = NormalStateName },
+						new VisualState { Name = VisualStateManager.CommonStates.Selected },
+						new VisualState { Name = VisualStateManager.CommonStates.PointerOver },
+						new VisualState { Name = DisabledStateName },
+					}
+				}
+			};
+		}
+
+		static void SetIsPointerOver(VisualElement element, bool value)
+		{
+			var field = typeof(VisualElement).GetField("_isPointerOver", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+			field!.SetValue(element, value);
+		}
+
+		public enum StateTriggerRemovalOperation
+		{
+			Clear,
+			Remove,
+			RemoveAt,
+			Replace,
+		}
+
+		sealed class LifecycleStateTrigger : StateTriggerBase
+		{
+			public int DetachCount { get; private set; }
+
+			protected override void OnDetached()
+			{
+				DetachCount++;
+			}
 		}
 	}
 }

@@ -202,6 +202,29 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(xplatIsEnabled, values.PlatformViewValue);
 		}
 
+		[Fact(DisplayName = "IsEnabled Updates Native Interaction State")]
+		public async Task IsEnabledUpdatesNativeInteractionState()
+		{
+			var editor = new EditorStub
+			{
+				IsEnabled = false
+			};
+
+			var handler = await CreateHandlerAsync(editor);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				Assert.False(handler.PlatformView.Editable);
+				Assert.False(handler.PlatformView.UserInteractionEnabled);
+
+				editor.IsEnabled = true;
+				handler.UpdateValue(nameof(IEditor.IsEnabled));
+
+				Assert.True(handler.PlatformView.Editable);
+				Assert.True(handler.PlatformView.UserInteractionEnabled);
+			});
+		}
+
 		static MauiTextView GetNativeEditor(EditorHandler editorHandler) =>
 			editorHandler.PlatformView;
 

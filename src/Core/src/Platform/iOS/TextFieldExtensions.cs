@@ -32,13 +32,29 @@ namespace Microsoft.Maui.Platform
 		{
 			if (entry.IsPassword && textField.IsFirstResponder)
 			{
+				var currentText = textField.Text;
 				textField.Enabled = false;
 				textField.SecureTextEntry = true;
 				textField.Enabled = entry.IsEnabled;
 				textField.BecomeFirstResponder();
+				if (!string.IsNullOrEmpty(currentText) && textField is MauiTextField mauiTextField)
+				{
+					mauiTextField.SuppressTextPropertySet(true);
+					try
+					{
+						textField.Text = string.Empty;
+						textField.InsertText(currentText);
+					}
+					finally
+					{
+						mauiTextField.SuppressTextPropertySet(false);
+					}
+				}
 			}
 			else
+			{
 				textField.SecureTextEntry = entry.IsPassword;
+			}
 #if MACCATALYST
 			textField.TextContentType = UITextContentType.OneTimeCode;
 #endif
@@ -72,9 +88,12 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateMaxLength(this UITextField textField, IEntry entry)
 		{
-			var newText = textField.AttributedText.TrimToMaxLength(entry.MaxLength);
-			if (newText != null && textField.AttributedText != newText)
+			var attributedText = textField.AttributedText;
+			var newText = attributedText.TrimToMaxLength(entry.MaxLength);
+			if (newText is not null && !ReferenceEquals(attributedText, newText))
+			{
 				textField.AttributedText = newText;
+			}
 		}
 
 		public static void UpdatePlaceholder(this UITextField textField, IEntry entry, Color? defaultPlaceholderColor = null)
@@ -211,32 +230,49 @@ namespace Microsoft.Maui.Platform
 		{
 			if (textField.ValueForKey(new NSString("clearButton")) is UIButton clearButton)
 			{
-				UIImage defaultClearImage = clearButton.ImageForState(UIControlState.Highlighted);
-
 				if (entry.TextColor is null)
 				{
-					clearButton.SetImage(defaultClearImage, UIControlState.Normal);
-					clearButton.SetImage(defaultClearImage, UIControlState.Highlighted);
+					// Setting TintColor to null allows the system to automatically apply the appropriate color based on the current theme (light or dark mode)
+					clearButton.TintColor = null;
+					// SetImage(null) releases the custom tinted bitmap so UIKit restores its system default.
+					// The color path (else branch) reads ImageForState(.Highlighted) to get that original
+					// image as the source for tinting. Without these calls, TintColor=null has no visual effect.
+					clearButton.SetImage(null, UIControlState.Normal);
+					clearButton.SetImage(null, UIControlState.Highlighted);
 				}
 				else
 				{
+					// On a null→color transition, UIKit restores the system image after SetImage(null),
+					// so ImageForState(Highlighted) returns the system clear button image as the tinting source.
+					UIImage? defaultClearImage = clearButton.ImageForState(UIControlState.Highlighted);
 					clearButton.TintColor = entry.TextColor.ToPlatform();
 
-					var tintedClearImage = GetClearButtonTintImage(defaultClearImage, entry.TextColor.ToPlatform());
-					clearButton.SetImage(tintedClearImage, UIControlState.Normal);
-					clearButton.SetImage(tintedClearImage, UIControlState.Highlighted);
+					var tintedClearImage = GetClearButtonTintImage(
+						defaultClearImage,
+						entry.TextColor.ToPlatform(),
+						(nfloat)textField.GetDisplayScale());
+					if (tintedClearImage is not null)
+					{
+						clearButton.SetImage(tintedClearImage, UIControlState.Normal);
+						clearButton.SetImage(tintedClearImage, UIControlState.Highlighted);
+					}
 				}
 			}
 		}
 
-		internal static UIImage? GetClearButtonTintImage(UIImage image, UIColor color)
+		internal static UIImage? GetClearButtonTintImage(UIImage? image, UIColor color, nfloat scale)
 		{
+			if (image is null)
+			{
+				return null;
+			}
+
 			var size = image.Size;
 
 			var renderer = new UIGraphicsImageRenderer(size, new UIGraphicsImageRendererFormat()
 			{
 				Opaque = false,
-				Scale = UIScreen.MainScreen.Scale,
+				Scale = scale,
 			});
 
 			if (renderer is null)
@@ -246,7 +282,19 @@ namespace Microsoft.Maui.Platform
 
 			return renderer.CreateImage((context) =>
 			{
-				image.Draw(CGPoint.Empty, CGBlendMode.Normal, 1.0f);
+				// Draw a bitmap-backed copy of the clear button's image rather than the image itself.
+				// Drawing the image directly produced reduced alpha, and since the SourceIn fill below
+				// caps the final color's alpha at the drawn shape's alpha, that reduced alpha made the
+				// tinted clear button appear dimmed. Drawing a plain CGImage-backed UIImage avoids this
+				// and renders at full opacity.
+				var bitmapImage = image.CGImage is CGImage cgImage
+					? new UIImage(cgImage, image.CurrentScale, image.Orientation)
+					: image;
+				// bitmapImage's Size can be smaller than the original image's Size, so drawing it at
+				// CGPoint.Empty shifts it to the top-left instead of centering it. Center it manually
+				// to preserve the original image's rendered position.
+				var origin = new CGPoint((size.Width - bitmapImage.Size.Width) / 2, (size.Height - bitmapImage.Size.Height) / 2);
+				bitmapImage.Draw(origin, CGBlendMode.Normal, 1.0f);
 				color.ColorWithAlpha(1.0f).SetFill();
 
 				var rect = new CGRect(CGPoint.Empty.X, CGPoint.Empty.Y, image.Size.Width, image.Size.Height);

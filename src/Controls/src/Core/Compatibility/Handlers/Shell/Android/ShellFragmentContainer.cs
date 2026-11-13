@@ -35,6 +35,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			base.OnDestroyView();
 			((IShellContentController)ShellContentTab).RecyclePage(_page);
+			// Only disconnect when ShellContent is removed from the Shell hierarchy (e.g. Shell.Items.Clear()).
+			// During normal navigation the page is still cached and will be reused.
+			if (ShellContentTab?.FindParentOfType<Shell>() == null)
+				_page?.DisconnectHandlers();
 			_page = null;
 		}
 	}

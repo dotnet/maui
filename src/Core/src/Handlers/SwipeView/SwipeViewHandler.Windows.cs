@@ -9,6 +9,9 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class SwipeViewHandler : ViewHandler<ISwipeView, WSwipeControl>
 	{
+		// Guard flag to prevent re-entrancy when CreateSwipeItems calls item.ToHandler(),
+		// which triggers MapVisibility, which calls UpdateValue back into MapLeftItems/MapRightItems.
+		bool _isRebuildingSwipeItems;
 		protected override WSwipeControl CreatePlatformView() => new();
 
 		public override void SetVirtualView(IView view)
@@ -83,11 +86,21 @@ namespace Microsoft.Maui.Handlers
 			if (!handler.PlatformView.IsLoaded)
 				return;
 
+			if (handler is SwipeViewHandler { _isRebuildingSwipeItems: true })
+			{
+				return;
+			}
+
 			UpdateSwipeItems(SwipeDirection.Left, handler, view, (items) => handler.PlatformView.LeftItems = items, view.LeftItems, handler.PlatformView.LeftItems);
 		}
 
 		public static void MapTopItems(ISwipeViewHandler handler, ISwipeView view)
 		{
+			if (handler is SwipeViewHandler { _isRebuildingSwipeItems: true })
+			{
+				return;
+			}
+
 			UpdateSwipeItems(SwipeDirection.Up, handler, view, (items) => handler.PlatformView.TopItems = items, view.TopItems, handler.PlatformView.TopItems);
 		}
 
@@ -96,11 +109,21 @@ namespace Microsoft.Maui.Handlers
 			if (!handler.PlatformView.IsLoaded)
 				return;
 
+			if (handler is SwipeViewHandler { _isRebuildingSwipeItems: true })
+			{
+				return;
+			}
+
 			UpdateSwipeItems(SwipeDirection.Right, handler, view, (items) => handler.PlatformView.RightItems = items, view.RightItems, handler.PlatformView.RightItems);
 		}
 
 		public static void MapBottomItems(ISwipeViewHandler handler, ISwipeView view)
 		{
+			if (handler is SwipeViewHandler { _isRebuildingSwipeItems: true })
+			{ 
+				return;
+			}
+
 			UpdateSwipeItems(SwipeDirection.Down, handler, view, (items) => handler.PlatformView.BottomItems = items, view.BottomItems, handler.PlatformView.BottomItems);
 		}
 
@@ -178,13 +201,40 @@ namespace Microsoft.Maui.Handlers
 
 			swipeItems.Mode = items.Mode.ToPlatform();
 
-			foreach (var item in items)
+			// Set the re-entrancy guard before calling ToHandler() on each item.
+			// ToHandler() triggers initial property mapping, which calls MapVisibility,
+			// which calls UpdateValue back into MapLeftItems/MapRightItems — causing N
+			// redundant rebuilds. The guard prevents those nested calls from re-entering.
+			if (handler is SwipeViewHandler concreteHandler)
 			{
-				if (CanAddSwipeItems(swipeItems) && item is ISwipeItemMenuItem &&
-					item.ToHandler(handler.MauiContext!).PlatformView is WSwipeItem swipeItem)
+				concreteHandler._isRebuildingSwipeItems = true;
+			}
+
+			try
+			{
+				foreach (var item in items)
 				{
-					swipeItem.BehaviorOnInvoked = items.SwipeBehaviorOnInvoked.ToPlatform();
-					swipeItems.Add(swipeItem);
+					if (item is ISwipeItemMenuItem menuItem)
+					{
+						// Always create the handler regardless of visibility so that subsequent
+						// visibility changes can propagate via the handler's UpdateValue mechanism.
+						var itemElementHandler = item.ToHandler(handler.MauiContext!);
+
+						if (CanAddSwipeItems(swipeItems) &&
+							menuItem.Visibility != Visibility.Collapsed &&
+							itemElementHandler.PlatformView is WSwipeItem swipeItem)
+						{
+							swipeItem.BehaviorOnInvoked = items.SwipeBehaviorOnInvoked.ToPlatform();
+							swipeItems.Add(swipeItem);
+						}
+					}
+				}
+			}
+			finally
+			{
+				if (handler is SwipeViewHandler concreteHandler2)
+				{ 
+					concreteHandler2._isRebuildingSwipeItems = false;
 				}
 			}
 

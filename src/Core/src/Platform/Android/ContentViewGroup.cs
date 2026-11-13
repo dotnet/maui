@@ -14,6 +14,14 @@ namespace Microsoft.Maui.Platform
 {
 	public class ContentViewGroup : PlatformContentViewGroup, ICrossPlatformLayoutBacking, IVisualTreeElementProvidable, IHandleWindowInsets
 	{
+		// When alpha < 1 and HasOverlappingRendering is true, Android renders into an
+		// offscreen buffer bounded by the view's own dimensions, clipping overflowing
+		// children. Return false only when semi-transparent so Android applies alpha
+		// per-child instead, avoiding the implicit clip.
+		// When fully opaque (Alpha >= 1), preserve the base class behavior so any
+		// future or subclass override is respected rather than hardcoding true.
+		public override bool HasOverlappingRendering => Alpha >= 1.0f && base.HasOverlappingRendering;
+
 		IBorderStroke? _clip;
 		readonly Context _context;
 		bool _didSafeAreaEdgeConfigurationChange = true;
@@ -144,7 +152,10 @@ namespace Microsoft.Maui.Platform
 
 			CrossPlatformArrange(destination);
 
-			if (_didSafeAreaEdgeConfigurationChange && _isInsetListenerSet)
+			// Overlap-based padding otherwise stays stale after a safe-area view resizes. See #36269.
+			if (_isInsetListenerSet &&
+				(_didSafeAreaEdgeConfigurationChange ||
+					(changed && SafeAreaExtensions.ShouldReapplyInsetsForResize(CrossPlatformLayout, this))))
 			{
 				ViewCompat.RequestApplyInsets(this);
 				_didSafeAreaEdgeConfigurationChange = false;
@@ -165,6 +176,7 @@ namespace Microsoft.Maui.Platform
 		/// </summary>
 		internal void MarkSafeAreaEdgeConfigurationChanged()
 		{
+			_isInsetListenerSet = MauiWindowInsetListenerExtensions.RefreshMauiWindowInsetListener(this, _context);
 			_didSafeAreaEdgeConfigurationChange = true;
 			// Ensure a layout pass so that OnLayout will trigger InvalidateWindowInsets
 			RequestLayout();
@@ -200,7 +212,7 @@ namespace Microsoft.Maui.Platform
 
 			var bounds = new Graphics.RectF(x, y, w, h);
 
-			Path? platformPath = clipShape.ToPlatform(bounds, strokeThickness, density, true);
+			Path? platformPath = clipShape.ToPlatform(bounds, strokeThickness, density, innerPath: true, includeShapeStroke: true);
 			return platformPath;
 		}
 

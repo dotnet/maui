@@ -4,8 +4,13 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml.Controls;
 using Xunit;
+using WControl = Microsoft.UI.Xaml.Controls.Control;
+using WDependencyProperty = Microsoft.UI.Xaml.DependencyProperty;
+using WSetter = Microsoft.UI.Xaml.Setter;
+using WStyle = Microsoft.UI.Xaml.Style;
 using WTextAlignment = Microsoft.UI.Xaml.TextAlignment;
 
 namespace Microsoft.Maui.DeviceTests
@@ -111,6 +116,73 @@ namespace Microsoft.Maui.DeviceTests
 				// Verify the text is still properly obfuscated after the "paste" operation
 				Assert.Equal(new string('●', entry.Text.Length), passwordTextBox.Text);
 			});
+		}
+
+		[Fact]
+		[Description("Password entry should not crash when platform text is set from empty")]
+		public async Task PasswordEntryPlatformSetDoesNotCrash()
+		{
+			var entry = new Entry
+			{
+				Text = string.Empty,
+				IsPassword = true
+			};
+
+			var handler = await CreateHandlerAsync<EntryHandler>(entry);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var platformControl = GetPlatformControl(handler);
+				var passwordTextBox = platformControl as Microsoft.Maui.Platform.MauiPasswordTextBox;
+
+				Assert.NotNull(passwordTextBox);
+				Assert.True(passwordTextBox.IsPassword);
+
+				// Setting Text on an empty password entry triggers TextChanging event which previously threw ArgumentOutOfRangeException
+				passwordTextBox.Text = "test";
+				Assert.Equal("test", passwordTextBox.Text);
+			});
+		}
+
+		[Fact]
+		public async Task UnfocusPreservesStyleOwnedTabStopState()
+		{
+			var entry = new Entry();
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var platformControl = GetPlatformControl(CreateHandler<EntryHandler>(entry));
+				platformControl.Style = CreateTabStopStyle(true);
+
+				Assert.True(platformControl.IsTabStop);
+				Assert.Same(
+					WDependencyProperty.UnsetValue,
+					platformControl.ReadLocalValue(WControl.IsTabStopProperty));
+
+				platformControl.Unfocus(entry);
+
+				Assert.True(platformControl.IsTabStop);
+				Assert.Same(
+					WDependencyProperty.UnsetValue,
+					platformControl.ReadLocalValue(WControl.IsTabStopProperty));
+
+				platformControl.Style = CreateTabStopStyle(false);
+				Assert.False(platformControl.IsTabStop);
+				Assert.Same(
+					WDependencyProperty.UnsetValue,
+					platformControl.ReadLocalValue(WControl.IsTabStopProperty));
+			});
+		}
+
+		static WStyle CreateTabStopStyle(bool isTabStop)
+		{
+			var style = new WStyle(typeof(TextBox));
+			style.Setters.Add(new WSetter
+			{
+				Property = WControl.IsTabStopProperty,
+				Value = isTabStop
+			});
+			return style;
 		}
 	}
 }

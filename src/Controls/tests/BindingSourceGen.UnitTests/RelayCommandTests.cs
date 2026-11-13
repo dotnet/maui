@@ -127,6 +127,58 @@ public class RelayCommandTests
 	}
 
 	[Fact]
+	public void DetectsRelayCommandMethodWithOnPrefixAndAsyncSuffix()
+	{
+		var source = @"
+			using Microsoft.CodeAnalysis;
+			using Microsoft.CodeAnalysis.CSharp;
+			using System.Linq;
+			using System.Threading.Tasks;
+
+			namespace System.Windows.Input
+			{
+				public interface ICommand
+				{
+					event System.EventHandler CanExecuteChanged;
+					bool CanExecute(object parameter);
+					void Execute(object parameter);
+				}
+			}
+
+			namespace CommunityToolkit.Mvvm.Input
+			{
+				[System.AttributeUsage(System.AttributeTargets.Method)]
+				public class RelayCommandAttribute : System.Attribute { }
+			}
+
+			namespace TestApp
+			{
+				public class MyViewModel
+				{
+					[CommunityToolkit.Mvvm.Input.RelayCommand]
+					private Task OnSaveAsync()
+					{
+						return Task.CompletedTask;
+					}
+				}
+			}
+			";
+
+		var compilation = Microsoft.CodeAnalysis.CSharp.CSharpCompilation.Create("test")
+			.AddSyntaxTrees(CSharpSyntaxTree.ParseText(source))
+			.AddReferences(MetadataReference.CreateFromFile(typeof(object).Assembly.Location));
+
+		var myViewModelType = compilation.GetTypeByMetadataName("TestApp.MyViewModel");
+		Assert.NotNull(myViewModelType);
+
+		var canInfer = myViewModelType.TryGetRelayCommandPropertyType("SaveCommand", compilation, out var commandType);
+
+		Assert.True(canInfer, "Should infer SaveCommand from OnSaveAsync method with [RelayCommand].");
+		Assert.NotNull(commandType);
+		Assert.Equal("System.Windows.Input.ICommand", commandType!.ToDisplayString());
+	}
+
+	[Fact]
 	public void DoesNotDetectCommandPropertyWithoutAttribute()
 	{
 		var source = """

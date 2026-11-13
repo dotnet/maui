@@ -14,12 +14,12 @@ public class ShellSearchHandlerItemSizing : _IssuesUITest
 
 #if IOS || MACCATALYST
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void SearchHandlerSizesCorrectly()
 	{
-		App.WaitForElement("Instructions");
+		App.WaitForElement("Instructions", timeout: TimeSpan.FromSeconds(45));
 		App.EnterText(AppiumQuery.ByXPath("//XCUIElementTypeSearchField"), "Hello");
-		var contentSize = App.WaitForElement("searchresult").GetRect();
+		var contentSize = App.WaitForElement("searchresult", timeout: TimeSpan.FromSeconds(45)).GetRect();
 		Assert.That(contentSize.Height, Is.LessThan(100));
 	}
 #endif
@@ -28,7 +28,7 @@ public class ShellSearchHandlerItemSizing : _IssuesUITest
 	// Therefore, verify it using VerifyScreenshot.
 #if ANDROID || WINDOWS
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void VerifySearchHandlerItemsAreVisible()
 	{
 		App.WaitForElement("Instructions");

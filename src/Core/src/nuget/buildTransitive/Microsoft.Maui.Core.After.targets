@@ -1,10 +1,5 @@
 <Project>
 
-  <PropertyGroup>
-    <!-- TODO: workaround https://github.com/xamarin/xamarin-android/issues/6809#issuecomment-1061115254 -->
-    <MSBuildWarningsAsMessages Condition=" '$(TargetPlatformIdentifier)' == 'Android' ">$(MSBuildWarningsAsMessages);XA4218</MSBuildWarningsAsMessages>
-  </PropertyGroup>
-
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.Maui.Core.BundledVersions.targets" />
 
   <!-- 
@@ -29,7 +24,7 @@
     
     <Error
         Code="MA003"
-        Text="The current .NET MAUI package version '$(MauiCorePackageVersion)' requires the .NET MAUI workload version to be at least '$(MauiMinimumSupportedWorkloadVersion)'. The current .NET MAUI workload version is '$(MauiWorkloadVersion)'." />
+        Text=".NET MAUI package version '$(MauiCorePackageVersion)' requires the .NET MAUI workload version to be at least '$(MauiMinimumSupportedWorkloadVersion)'. However, the installed .NET MAUI workload version for the target framework is '$(MauiWorkloadVersion)'." />
 
   </Target>
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
+using Microsoft.Maui;
 using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
@@ -11,7 +12,13 @@ namespace Microsoft.Maui.Controls
 	public class GestureElement : Element, ISpatialElement, IGestureRecognizers
 	{
 		readonly GestureRecognizerCollection _gestureRecognizers = new GestureRecognizerCollection();
-		internal event NotifyCollectionChangedEventHandler GestureRecognizersCollectionChanged;
+		readonly WeakEventManager _gestureWeakEventManager = new WeakEventManager();
+
+		internal event NotifyCollectionChangedEventHandler GestureRecognizersCollectionChanged
+		{
+			add => _gestureWeakEventManager.AddEventHandler(value, nameof(GestureRecognizersCollectionChanged));
+			remove => _gestureWeakEventManager.RemoveEventHandler(value, nameof(GestureRecognizersCollectionChanged));
+		}
 
 		/// <summary>Creates a new <see cref="Microsoft.Maui.Controls.GestureElement"/> object with default values.</summary>
 		public GestureElement()
@@ -51,7 +58,7 @@ namespace Microsoft.Maui.Controls
 						break;
 				}
 
-				GestureRecognizersCollectionChanged?.Invoke(sender, args);
+				_gestureWeakEventManager.HandleEvent(sender, args, nameof(GestureRecognizersCollectionChanged));
 			};
 		}
 

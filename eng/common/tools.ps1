@@ -34,6 +34,9 @@
 # Configures warning treatment in msbuild.
 [bool]$warnAsError = if (Test-Path variable:warnAsError) { $warnAsError } else { $true }
 
+# Specifies semi-colon delimited list of warning codes that should not be treated as errors.
+[string]$warnNotAsError = if (Test-Path variable:warnNotAsError) { $warnNotAsError } else { '' }
+
 # Specifies which msbuild engine to use for build: 'vs', 'dotnet' or unspecified (determined based on presence of tools.vs in global.json).
 [string]$msbuildEngine = if (Test-Path variable:msbuildEngine) { $msbuildEngine } else { $null }
 
@@ -732,7 +735,7 @@ function InitializeToolset() {
 
   '<Project Sdk="Microsoft.DotNet.Arcade.Sdk"/>' | Set-Content $proj
 
-  MSBuild-Core $proj $bl /t:__WriteToolsetLocation /clp:ErrorsOnly`;NoSummary /p:__ToolsetLocationOutputFile=$toolsetLocationFile
+  MSBuild-Core $proj $bl /t:__WriteToolsetLocation /clp:ErrorsOnly`;NoSummary /p:__ToolsetLocationOutputFile=$toolsetLocationFile /p:RestoreIgnoreFailedSources=true
 
   $path = Get-Content $toolsetLocationFile -Encoding UTF8 -TotalCount 1
   if (!(Test-Path $path)) {
@@ -824,11 +827,21 @@ function MSBuild-Core() {
 
   $cmdArgs = "$($buildTool.Command) /m /nologo /clp:Summary /v:$verbosity /nr:$nodeReuse /p:ContinuousIntegrationBuild=$ci"
 
+  # Add -mt flag for MSBuild multithreaded mode if enabled via environment variable
+  if ($env:MSBUILD_MT_ENABLED -eq "1") {
+    $cmdArgs += ' -mt'
+  }
+
   if ($warnAsError) {
     $cmdArgs += ' /warnaserror /p:TreatWarningsAsErrors=true'
   }
   else {
     $cmdArgs += ' /p:TreatWarningsAsErrors=false'
+  }
+
+  if ($warnAsError -and $warnNotAsError) {
+    $escapedWarnNotAsError = $warnNotAsError -replace ';', '%3B'
+    $cmdArgs += " /warnnotaserror:$warnNotAsError /p:AdditionalWarningsNotAsErrors=$escapedWarnNotAsError"
   }
 
   foreach ($arg in $args) {

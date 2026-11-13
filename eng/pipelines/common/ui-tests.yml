@@ -5,9 +5,11 @@ parameters:
   windowsPool: { }
   windowsBuildPool: { }
   macosPool: { }
-  androidApiLevels: [ 30 ]
   iosVersions: [ 'latest' ]
+  androidApiLevels: [ 30 ]
+  androidApiLevelsExtended: [ 36 ] # Separate API level for tests requiring Pixel 3 XL
   provisionatorChannel: 'latest'
+  defaultiOSVersion: '26.0'
   timeoutInMinutes: 180
   skipProvisioning: true
   BuildNativeAOT: false # Parameter to control whether NativeAOT artifacts should be built
@@ -15,28 +17,40 @@ parameters:
   categoryGroupsToTest:
     # Make sure that this list is always up-to-date with src/Controls/tests/TestCases.Shared.Tests/UITestCategories.cs
     # we might want to improve this somehow depending on how much the categories change over time
+    # Note: Material3 is intentionally excluded from this list and has its own dedicated build and test stages below with a separate test filter
     - 'Accessibility,ActionSheet,ActivityIndicator,Animation,AppLinks'
     - 'Border,BoxView,Brush,Button'
     - 'CarouselView'
+    # CollectionView remains the umbrella category for local runs. CI uses the explicit CollectionView1-7 shard categories below.
+    - 'CollectionView1'
+    - 'CollectionView2'
+    - 'CollectionView3'
+    - 'CollectionView4'
+    - 'CollectionView5'
+    - 'CollectionView6'
+    - 'CollectionView7'
     - 'Cells,CheckBox,ContextActions,CustomRenderers,DatePicker,Dispatcher,DisplayAlert,DisplayPrompt,DragAndDrop'
-    - 'CollectionView'
     - 'Entry'
-    - 'Editor,Effects,FlyoutPage,Focus,Fonts,Frame,Gestures,GraphicsView'
+    - 'Editor,Effects,Essentials,FlyoutPage,Focus,Fonts,Frame,Gestures,GraphicsView'
     - 'Image,ImageButton,IndicatorView,InputTransparent,IsEnabled,IsVisible'
     - 'Label'
     - 'Layout'
     - 'Lifecycle,ManualReview,Maps'
-    - 'ListView'
     - 'Navigation'
     - 'Page,Performance,Picker,ProgressBar'
     - 'RadioButton,RefreshView'
-    - 'SafeAreaEdges,Shadow'
+    # SafeAreaEdges runs on the common lanes, except on Android where it is excluded and runs
+    # in a dedicated notch-device (Pixel 3 XL) stage instead.
+    - 'SafeAreaEdges'
+    - 'Shadow'
     - 'ScrollView'
     - 'SearchBar,Shape,Slider'
     - 'SoftInput,Stepper,Switch,SwipeView'
-    - 'Shell'
-    - 'TabbedPage,TableView,TimePicker,TitleView,ToolbarItem'
-    - 'ViewBaseTests,Window'
+    # Shell remains the umbrella category for local runs. CI uses Shell1 and Shell2 on every platform.
+    - 'Shell1'
+    - 'Shell2'
+    - 'TabbedPage,TableView,TimePicker,TitleView,ToolbarItem,Triggers'
+    - 'ViewBaseTests,VisualStateManager,Window'
     - 'WebView'
 
   projects:
@@ -115,6 +129,27 @@ stages:
                 platform: windows
                 skipProvisioning: ${{ parameters.skipProvisioning }}
 
+  # Material3 Build Stage - Separate build with UseMaterial3=true (Android-only)
+  - stage: build_ui_tests_material3
+    displayName: Build UITests Material3 Sample App
+    dependsOn: []
+    jobs:
+      - job: build_ui_tests_material3
+        displayName: Build Sample App (Material3)
+        workspace:
+          clean: all
+        pool: ${{ parameters.androidPool }}
+        variables:
+          REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
+          APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
+        steps:
+          - template: ui-tests-build-sample.yml
+            parameters:
+                runtimeVariant: "Mono"
+                platform: android
+                useMaterial3: true
+                skipProvisioning: ${{ parameters.skipProvisioning }}
+
   - stage: android_ui_tests
     displayName: Android UITests
     dependsOn: build_ui_tests
@@ -126,9 +161,11 @@ stages:
               - job: android_ui_tests_${{ project.name }}_${{ api }}
                 strategy:
                   matrix:
+                    # SafeAreaEdges is excluded here; it runs on a dedicated Pixel 3 XL (notch) stage on Android
                     ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
-                      ${{ categoryGroup }}:
-                        CATEGORYGROUP: ${{ categoryGroup }}
+                      ${{ if ne(categoryGroup, 'SafeAreaEdges') }}:
+                        ${{ categoryGroup }}:
+                          CATEGORYGROUP: ${{ categoryGroup }}
                 timeoutInMinutes: 240 # how long to run the job before automatically cancelling
                 workspace:
                   clean: all
@@ -170,9 +207,11 @@ stages:
               - job: android_ui_tests_${{ project.name }}_${{ api }}
                 strategy:
                   matrix:
+                    # SafeAreaEdges is excluded here; it runs on a dedicated Pixel 3 XL (notch) stage on Android
                     ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
-                      ${{ categoryGroup }}:
-                        CATEGORYGROUP: ${{ categoryGroup }}
+                      ${{ if ne(categoryGroup, 'SafeAreaEdges') }}:
+                        ${{ categoryGroup }}:
+                          CATEGORYGROUP: ${{ categoryGroup }}
                 timeoutInMinutes: 240 # how long to run the job before automatically cancelling
                 workspace:
                   clean: all
@@ -205,6 +244,82 @@ stages:
                       platform: 'Android'
                       artifactName: 'uitest-snapshot-results-android-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
 
+  - stage: android_ui_tests_material3
+    displayName: Android UITests Material3
+    dependsOn: build_ui_tests_material3
+    jobs:
+      - ${{ each project in parameters.projects }}:
+        - ${{ if ne(project.android, '') }}:
+          - ${{ each api in parameters.androidApiLevelsExtended }}:
+            - ${{ if not(containsValue(project.androidApiLevelsExclude, api)) }}:
+              - job: M3_android_ui_tests_${{ project.name }}_${{ api }}
+                timeoutInMinutes: 240
+                workspace:
+                  clean: all
+                displayName: ${{ coalesce(project.desc, project.name) }} Material3 (API ${{ api }})
+                pool: ${{ parameters.androidLinuxPool }}
+                variables:
+                  REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
+                  APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
+                steps:
+                  - template: ui-tests-steps.yml
+                    parameters:
+                      platform: android
+                      version: ${{ api }}
+                      path: ${{ project.android }}
+                      app: ${{ project.app }}
+                      ${{ if eq(api, 27) }}:
+                        device: android-emulator-32_${{ api }}
+                      ${{ if not(eq(api, 27)) }}:
+                        device: android-emulator-64_${{ api }}
+                      deviceType: "pixel_3_xl"
+                      provisionatorChannel: ${{ parameters.provisionatorChannel }}
+                      useMaterial3: true
+                      testFilter: "Material3"
+                      skipProvisioning: ${{ parameters.skipProvisioning }}
+                  
+                  # Collect and publish Android Material3 snapshot diffs
+                  - template: ui-tests-collect-snapshot-diffs.yml
+                    parameters:
+                      platform: 'Android Material3'
+                      artifactName: 'uitest-snapshot-results-android-material3-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
+
+# SafeAreaEdges tests on Android API 36 with Pixel 3 XL
+  - stage: android_ui_tests_safeareaedges
+    displayName: Android UITests SafeAreaEdges (API 36 Pixel 3 XL)
+    dependsOn: build_ui_tests
+    jobs:
+      - ${{ each project in parameters.projects }}:
+        - ${{ if ne(project.android, '') }}:
+          - ${{ each api in parameters.androidApiLevelsExtended }}:
+            - job: android_ui_tests_safeareaedges_${{ project.name }}_${{ api }}
+              timeoutInMinutes: 240 # how long to run the job before automatically cancelling
+              workspace:
+                clean: all
+              displayName: ${{ coalesce(project.desc, project.name) }} SafeAreaEdges (API ${{ api }} Pixel 3 XL)
+              pool: ${{ parameters.androidLinuxPool }}
+              variables:
+                REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
+                APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
+              steps:
+                - template: ui-tests-steps.yml
+                  parameters:
+                    platform: android
+                    version: ${{ api }}
+                    path: ${{ project.android }}
+                    app: ${{ project.app }}
+                    device: android-emulator-64_${{ api }}
+                    deviceType: 'pixel_3_xl' # Pixel 3 XL has notch display for SafeAreaEdges tests
+                    provisionatorChannel: ${{ parameters.provisionatorChannel }}
+                    testFilter: 'SafeAreaEdges'
+                    skipProvisioning: ${{ parameters.skipProvisioning }}
+
+                # Collect and publish Android SafeAreaEdges snapshot diffs
+                - template: ui-tests-collect-snapshot-diffs.yml
+                  parameters:
+                    platform: 'Android SafeAreaEdges'
+                    artifactName: 'uitest-snapshot-results-android-safeareaedges-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
+
   - stage: ios_ui_tests_mono
     displayName: iOS UITests Mono
     dependsOn: build_ui_tests
@@ -232,7 +347,7 @@ stages:
                     parameters:
                       platform: ios
                       ${{ if eq(version, 'latest') }}:
-                        version: 18.5
+                        version: ${{ parameters.defaultiOSVersion }}
                       ${{ if ne(version, 'latest') }}:
                         version: ${{ version }}
                       path: ${{ project.ios }}
@@ -261,41 +376,42 @@ stages:
         - ${{ if ne(project.ios, '') }}:
           - ${{ each version in parameters.iosVersions }}:
             - ${{ if not(containsValue(project.iosVersionsExclude, version)) }}:
-              - job: CV1_ios_ui_tests_mono_${{ project.name }}_${{ replace(version, '.', '_') }}
-                timeoutInMinutes: ${{ parameters.timeoutInMinutes }} # how long to run the job before automatically cancelling
-                workspace:
-                  clean: all
-                displayName: ${{ coalesce(project.desc, project.name) }} (v${{ version }})
-                pool: ${{ parameters.iosPool }}
-                variables:
-                  REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
-                  APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
-                steps:
-                  - template: ui-tests-steps.yml
-                    parameters:
-                      platform: ios
-                      ${{ if eq(version, 'latest') }}:
-                        version: 18.5
-                      ${{ if ne(version, 'latest') }}:
-                        version: ${{ version }}
-                      path: ${{ project.ios }}
-                      app: ${{ project.app }}
-                      ${{ if eq(version, 'latest') }}:
-                        device: ios-simulator-64
-                      ${{ if ne(version, 'latest') }}:
-                        device: ios-simulator-64_${{ version }}
-                      provisionatorChannel: ${{ parameters.provisionatorChannel }}
-                      runtimeVariant : "Mono"
-                      testFilter: "CollectionView"
-                      headless: ${{ parameters.headless }}
-                      testConfigurationArgs: "CollectionView1"
-                      skipProvisioning: ${{ parameters.skipProvisioning }}
-                  
-                  # Collect and publish iOS CV1 snapshot diffs
-                  - template: ui-tests-collect-snapshot-diffs.yml
-                    parameters:
-                      platform: 'iOS CV1'
-                      artifactName: 'uitest-snapshot-results-ios-cv2-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
+              - ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
+                - ${{ if startsWith(categoryGroup, 'CollectionView') }}:
+                  - job: CV1_${{ categoryGroup }}_ios_ui_tests_mono_${{ project.name }}_${{ replace(version, '.', '_') }}
+                    timeoutInMinutes: ${{ parameters.timeoutInMinutes }} # how long to run the job before automatically cancelling
+                    workspace:
+                      clean: all
+                    displayName: ${{ coalesce(project.desc, project.name) }} (${{ categoryGroup }}, v${{ version }})
+                    pool: ${{ parameters.iosPool }}
+                    variables:
+                      REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
+                      APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
+                    steps:
+                      - template: ui-tests-steps.yml
+                        parameters:
+                          platform: ios
+                          ${{ if eq(version, 'latest') }}:
+                            version: ${{ parameters.defaultiOSVersion }}
+                          ${{ if ne(version, 'latest') }}:
+                            version: ${{ version }}
+                          path: ${{ project.ios }}
+                          app: ${{ project.app }}
+                          ${{ if eq(version, 'latest') }}:
+                            device: ios-simulator-64
+                          ${{ if ne(version, 'latest') }}:
+                            device: ios-simulator-64_${{ version }}
+                          provisionatorChannel: ${{ parameters.provisionatorChannel }}
+                          runtimeVariant : "Mono"
+                          testFilter: ${{ categoryGroup }}
+                          headless: ${{ parameters.headless }}
+                          testConfigurationArgs: "CollectionView1"
+                          skipProvisioning: ${{ parameters.skipProvisioning }}
+                      # Collect and publish iOS CV1 snapshot diffs
+                      - template: ui-tests-collect-snapshot-diffs.yml
+                        parameters:
+                          platform: 'iOS CV1'
+                          artifactName: 'uitest-snapshot-results-ios-cv1-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
 
   - stage: ios_ui_tests_mono_carv1
     displayName: iOS UITests Mono CarouselView1
@@ -319,7 +435,7 @@ stages:
                     parameters:
                       platform: ios
                       ${{ if eq(version, 'latest') }}:
-                        version: 18.5
+                        version: ${{ parameters.defaultiOSVersion }}
                       ${{ if ne(version, 'latest') }}:
                         version: ${{ version }}
                       path: ${{ project.ios }}
@@ -369,7 +485,7 @@ stages:
                       parameters:
                         platform: ios
                         ${{ if eq(version, 'latest') }}:
-                          version: 18.5
+                          version: ${{ parameters.defaultiOSVersion }}
                         ${{ if ne(version, 'latest') }}:
                           version: ${{ version }}
                         path: ${{ project.ios }}
@@ -393,9 +509,12 @@ stages:
               - job: winui_ui_tests_${{ project.name }}
                 strategy:
                   matrix:
+                    # WebView is excluded on Windows: Appium driver cannot attach to WebView2
+                    # (appium/appium#22217 / dotnet/maui#35334). Remove this filter once fixed.
                     ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
-                      ${{ categoryGroup }}:
-                        CATEGORYGROUP: ${{ categoryGroup }}
+                      ${{ if ne(categoryGroup, 'WebView') }}:
+                        ${{ categoryGroup }}:
+                          CATEGORYGROUP: ${{ categoryGroup }}
                 timeoutInMinutes: ${{ parameters.timeoutInMinutes }} # how long to run the job before automatically cancelling
                 workspace:
                   clean: all

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net;
+using Android.Views;
 using Android.Webkit;
 using static Android.Views.ViewGroup;
 using AWebView = Android.Webkit.WebView;
@@ -17,6 +18,22 @@ namespace Microsoft.Maui.Handlers
 		internal WebNavigationEvent _eventState;
 
 		protected internal string? UrlCanceled { get; set; }
+
+		public override bool NeedsContainer => true;
+
+		protected override void SetupContainer()
+		{
+			base.SetupContainer();
+			// Native parent clipping rejects off-screen WebView drawing without an empty Skia clip.
+			if (ContainerView is WrapperView wrapper)
+				wrapper.SetClipChildren(true);
+		}
+
+		protected override void RemoveContainer()
+		{
+			// Disconnect clears the platform view before removing the container.
+			WrapperView.RemoveContainer(((ViewHandler)this).PlatformView, Context, ContainerView, () => ContainerView = null);
+		}
 
 		protected override AWebView CreatePlatformView()
 		{
@@ -63,12 +80,26 @@ namespace Microsoft.Maui.Handlers
 					webChromeClient.Disconnect();
 			}
 
+			// Reset layout flag so a stale true value does not trigger ClearHistory()
+			// if this handler is re-connected (e.g., Shell tab switch). (#35788)
+			if (platformView is MauiWebView mauiWebView)
+			{
+				mauiWebView.IsLoadingForLayout = false;
+			}
+
 			platformView.SetWebViewClient(null!);
 			platformView.SetWebChromeClient(null);
 
 			platformView.StopLoading();
+			ContainerView?.RemoveFromParent();
+			HasContainer = false;
+
+			if (platformView.Parent is ViewGroup parent)
+				parent.RemoveView(platformView);
+			platformView.RemoveAllViews();
 
 			base.DisconnectHandler(platformView);
+			platformView.Destroy();
 		}
 
 		public static void MapSource(IWebViewHandler handler, IWebView webView)

@@ -5,6 +5,18 @@ public class MultiProjectTemplateTest : BaseTemplateTests
 {
 	public MultiProjectTemplateTest(IntegrationTestFixture fixture, ITestOutputHelper output) : base(fixture, output) { }
 
+	[Fact]
+	public void NewSolutionIncludesGitIgnore()
+	{
+		SetTestIdentifier();
+		var projectDir = TestDirectory;
+
+		Assert.True(DotnetInternal.New("maui-multiproject", projectDir, DotNetCurrent, output: _output),
+			$"Unable to create template maui-multiproject. Check test output for errors.");
+
+		AssertIncludesRootGitIgnore(projectDir);
+	}
+
 	[Theory]
 	[InlineData("Debug", "simplemulti")]
 	[InlineData("Release", "simplemulti")]

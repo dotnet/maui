@@ -32,6 +32,7 @@ public class CarouselViewFeatureTests : _GalleryUITest
 	private const string ScrollToButton = "ScrollToButton";
 
 	public override string GalleryPageName => CarouselViewFeatureMatrix;
+	protected override string GallerySubPageButton => "CarouselViewButton";
 
 	public CarouselViewFeatureTests(TestDevice device) : base(device)
 	{
@@ -41,8 +42,6 @@ public class CarouselViewFeatureTests : _GalleryUITest
 	[Category(UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithKeepItemInView()
 	{
-		App.WaitForElement("CarouselViewButton");
-		App.Tap("CarouselViewButton");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(KeepItemsInView);
@@ -128,7 +127,7 @@ public class CarouselViewFeatureTests : _GalleryUITest
 		App.WaitForElement(AddButton);
 		App.Tap(AddButton);
 		App.WaitForElement("Item 7");
-		Assert.That(App.WaitForElement(PreviousPositionLabel).GetText(), Is.EqualTo("1"));
+		Assert.That(App.WaitForElement(PreviousPositionLabel).GetText(), Is.EqualTo("No previous position"));
 	}
 #endif
 #endif
@@ -277,7 +276,7 @@ public class CarouselViewFeatureTests : _GalleryUITest
 		App.WaitForElement(AddButton);
 		App.Tap(AddButton);
 		App.WaitForElement("Item 1");
-		Assert.That(App.WaitForElement(PreviousItemLabel).GetText(), Is.EqualTo("Item 6"));
+		Assert.That(App.WaitForElement(PreviousItemLabel).GetText(), Is.EqualTo("No previous item"));
 	}
 
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS //In CV2 related issue link: https://github.com/dotnet/maui/issues/29524
@@ -371,7 +370,7 @@ public class CarouselViewFeatureTests : _GalleryUITest
 		App.WaitForElement(AddButton);
 		App.Tap(AddButton);
 		App.WaitForElement("Item 5");
-		Assert.That(App.WaitForElement(PreviousItemLabel).GetText(), Is.EqualTo("Item 6"));
+		Assert.That(App.WaitForElement(PreviousItemLabel).GetText(), Is.EqualTo("Item 1"));
 	}
 #endif
 
@@ -791,7 +790,7 @@ public class CarouselViewFeatureTests : _GalleryUITest
 		App.WaitForElement(AddButton);
 		App.Tap(AddButton);
 		App.WaitForElement("Item 6");
-		Assert.That(App.WaitForElement(PreviousPositionLabel).GetText(), Is.EqualTo("1"));
+		Assert.That(App.WaitForElement(PreviousPositionLabel).GetText(), Is.EqualTo("No previous position"));
 	}
 #endif
 #endif

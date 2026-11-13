@@ -53,7 +53,7 @@ param(
     [ValidateSet("android", "ios", "catalyst", "maccatalyst", "windows")]
     [string]$Platform,
 
-    [Parameter(Mandatory = $true, ParameterSetName = "TestFilter")]
+    [Parameter(Mandatory = $false, ParameterSetName = "TestFilter")]
     [string]$TestFilter,
 
     [Parameter(Mandatory = $true, ParameterSetName = "Category")]
@@ -66,6 +66,137 @@ param(
 
     [switch]$Rebuild
 )
+
+function Get-AndroidRetryClassification {
+    [CmdletBinding()]
+    param(
+        [AllowNull()]
+        [object]$TestRun
+    )
+
+    $isMixedRun =
+        $null -ne $TestRun -and
+        [int]$TestRun.Failed -gt 0 -and
+        [int]$TestRun.Passed -gt 0
+    $failedResults = if ($isMixedRun) {
+        @($TestRun.Results | Where-Object { $_.status -eq 'Failed' })
+    } else {
+        @()
+    }
+    $baselineFailures = @($failedResults | Where-Object {
+        ($_.error -as [string]) -match '(?i)Baseline snapshot not yet created'
+    })
+    $retryNames = @($failedResults |
+        Where-Object { ($_.error -as [string]) -notmatch '(?i)Baseline snapshot not yet created' } |
+        ForEach-Object { $_.name })
+
+    return [pscustomobject]@{
+        IsMixedRun = $isMixedRun
+        BaselineFailures = $baselineFailures
+        RetryNames = $retryNames
+    }
+}
+
+function Merge-RetryTrxResults {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$OriginalTrxPath,
+
+        [Parameter(Mandatory = $true)]
+        [string]$RetryTrxPath,
+
+        [Parameter(Mandatory = $true)]
+        [string[]]$FailedNames
+    )
+
+    [xml]$origXml = Get-Content -LiteralPath $OriginalTrxPath -Raw -Encoding UTF8
+    [xml]$retryXml = Get-Content -LiteralPath $RetryTrxPath -Raw -Encoding UTF8
+    $nsUri = 'http://microsoft.com/schemas/VisualStudio/TeamTest/2010'
+    $nsMgr = New-Object System.Xml.XmlNamespaceManager($origXml.NameTable)
+    $nsMgr.AddNamespace('t', $nsUri)
+    $retryNsMgr = New-Object System.Xml.XmlNamespaceManager($retryXml.NameTable)
+    $retryNsMgr.AddNamespace('t', $nsUri)
+
+    $retryByName = @{}
+    foreach ($retryResult in $retryXml.SelectNodes('//t:UnitTestResult', $retryNsMgr)) {
+        $retryByName[$retryResult.GetAttribute('testName')] = $retryResult
+    }
+
+    # A contains filter can rerun passing parameterizations with the same method
+    # name. Replace only entries that actually failed in the original run.
+    $failedNameSet = New-Object 'System.Collections.Generic.HashSet[string]'
+    foreach ($failedName in $FailedNames) {
+        [void]$failedNameSet.Add($failedName)
+    }
+
+    $replaced = 0
+    foreach ($origResult in $origXml.SelectNodes('//t:UnitTestResult', $nsMgr)) {
+        $testName = $origResult.GetAttribute('testName')
+        if ($failedNameSet.Contains($testName) -and $retryByName.ContainsKey($testName)) {
+            $imported = $origXml.ImportNode($retryByName[$testName], $true)
+            $origResult.ParentNode.ReplaceChild($imported, $origResult) | Out-Null
+            $replaced++
+        }
+    }
+
+    $allResults = @($origXml.SelectNodes('//t:UnitTestResult', $nsMgr))
+    $outcomes = @($allResults | ForEach-Object { $_.GetAttribute('outcome') })
+    $mergedTotal = $allResults.Count
+    $mergedPassed = @($outcomes | Where-Object { $_ -eq 'Passed' }).Count
+    $mergedNotExecuted = @($outcomes | Where-Object { $_ -eq 'NotExecuted' }).Count
+    $mergedInconclusive = @($outcomes | Where-Object { $_ -eq 'Inconclusive' }).Count
+    $mergedSkipped = $mergedNotExecuted + $mergedInconclusive
+    $mergedFailed = $mergedTotal - $mergedPassed - $mergedSkipped
+    $mergedExecuted = $mergedPassed + $mergedFailed
+
+    $resultSummary = $origXml.SelectSingleNode('//t:ResultSummary', $nsMgr)
+    if (-not $resultSummary) {
+        throw "Original TRX has no ResultSummary node."
+    }
+
+    $finalOutcome = if ($mergedFailed -gt 0) { 'Failed' } else { 'Completed' }
+    $resultSummary.SetAttribute('outcome', $finalOutcome)
+
+    $counters = $resultSummary.SelectSingleNode('t:Counters', $nsMgr)
+    if (-not $counters) {
+        throw "Original TRX has no ResultSummary/Counters node."
+    }
+    $counters.SetAttribute('total', $mergedTotal)
+    $counters.SetAttribute('executed', $mergedExecuted)
+    $counters.SetAttribute('passed', $mergedPassed)
+    $counters.SetAttribute('failed', $mergedFailed)
+    $counters.SetAttribute('notExecuted', $mergedNotExecuted)
+    $counters.SetAttribute('inconclusive', $mergedInconclusive)
+
+    # The original Output describes the failed first attempt. Replace it with an
+    # explicit final summary; detailed first-run and retry diagnostics remain in
+    # build-output.log and each UnitTestResult's ErrorInfo.
+    $output = $resultSummary.SelectSingleNode('t:Output', $nsMgr)
+    if (-not $output) {
+        $output = $origXml.CreateElement('Output', $nsUri)
+        $resultSummary.AppendChild($output) | Out-Null
+    }
+    $output.InnerText = @"
+MAUI Android retry merge replaced $replaced originally-failed result(s).
+Final merged result: $finalOutcome
+Total tests: $mergedTotal
+Passed: $mergedPassed
+Failed: $mergedFailed
+Skipped: $mergedSkipped
+"@
+
+    $origXml.Save($OriginalTrxPath)
+
+    return [PSCustomObject]@{
+        Total    = $mergedTotal
+        Passed   = $mergedPassed
+        Failed   = $mergedFailed
+        Skipped  = $mergedSkipped
+        Replaced = $replaced
+        Outcome  = $finalOutcome
+    }
+}
 
 # Script configuration
 $ErrorActionPreference = "Stop"
@@ -80,6 +211,12 @@ if ($Platform -eq "maccatalyst") {
 
 # Import shared utilities
 . "$PSScriptRoot/shared/shared-utils.ps1"
+
+# Derive the .NET TFM version from the checked-out repo (Directory.Build.props) so the
+# HostApp + test assemblies build for the branch's framework (e.g. net11.0-android on the
+# net11.0 branch) instead of a hardcoded net10.0.
+$DotNetTfm = Get-MauiTfmVersion -RepoRoot $RepoRoot
+Write-Info "Using .NET TFM version: net$DotNetTfm (from Directory.Build.props)"
 
 # Banner
 Write-Host @"
@@ -126,17 +263,17 @@ Write-Success "Prerequisites validated"
 
 # Set target framework and app identifiers
 if ($Platform -eq "android") {
-    $TargetFramework = "net10.0-android"
+    $TargetFramework = "net$DotNetTfm-android"
     $AppPackage = "com.microsoft.maui.uitests"
     $AppActivity = "com.microsoft.maui.uitests.MainActivity"
 } elseif ($Platform -eq "ios") {
-    $TargetFramework = "net10.0-ios"
+    $TargetFramework = "net$DotNetTfm-ios"
     $AppBundleId = "com.microsoft.maui.uitests"
 } elseif ($Platform -eq "catalyst") {
-    $TargetFramework = "net10.0-maccatalyst"
+    $TargetFramework = "net$DotNetTfm-maccatalyst"
     $AppBundleId = "com.microsoft.maui.uitests"
 } elseif ($Platform -eq "windows") {
-    $TargetFramework = "net10.0-windows10.0.19041.0"
+    $TargetFramework = "net$DotNetTfm-windows10.0.19041.0"
     $AppPackage = "com.microsoft.maui.uitests"
 }
 
@@ -219,19 +356,101 @@ Write-Success "Test project: $TestProject"
 
 #region Run Tests
 
-# Determine the filter to use
+# Determine the filter to use.
+# NOTE: The CI pipeline `maui-pr-uitests` (definition 313) uses `TestCategory=`
+# (see eng/pipelines/common/ui-tests-steps.yml lines 116-164). NUnit accepts
+# both `Category=` and `TestCategory=` but Cake's RunTestWithLocalDotNet uses
+# `TestCategory=` so we mirror that here for byte-for-byte parity with CI.
 if ($Category) {
-    $effectiveFilter = "Category=$Category"
+    $effectiveFilter = "TestCategory=$Category"
     Write-Step "Running UI tests with category: $Category"
-} else {
+} elseif ($TestFilter) {
     $effectiveFilter = $TestFilter
     Write-Step "Running UI tests with filter: $TestFilter"
+} else {
+    $effectiveFilter = $null
+    Write-Step "Running ALL UI tests (no filter)"
 }
 
 # Clear device logs before test
 if ($Platform -eq "android") {
     Write-Info "Clearing Android logcat buffer before test..."
     & adb -s $DeviceUdid logcat -c
+
+    # Wait for Android settings service to be available.
+    Write-Info "Waiting for Android settings service..."
+    $settingsReady = $false
+    for ($i = 0; $i -lt 30; $i++) {
+        $settingsCheck = & adb -s $DeviceUdid shell settings get global device_name 2>&1
+        if ($settingsCheck -and $settingsCheck -notmatch "Can't find service|error") {
+            $settingsReady = $true
+            Write-Success "Settings service ready (device_name=$settingsCheck)"
+            break
+        }
+        Write-Info "  Settings service not ready yet (attempt $($i+1)/30)..."
+        Start-Sleep -Seconds 5
+    }
+    if (-not $settingsReady) {
+        Write-Warn "Settings service may not be ready — tests might fail"
+    }
+
+    # Re-assert ANR/crash-dialog suppression right before dotnet test. The emulator-setup
+    # step sets `hide_error_dialogs` at boot, but the deep stage runs many categories on one
+    # emulator and a mid-run "System UI isn't responding" ANR overlaying the HostApp is the
+    # top "produced no results" cause — this global flag is idempotent, so re-assert it here.
+    if ($settingsReady) {
+        & adb -s $DeviceUdid shell settings put global hide_error_dialogs 1 2>$null
+    }
+
+    # Warm up the emulator / SystemUI right before launching the app for tests.
+    # On the deep-UI-test (platform-pool) stage the emulator may have sat idle
+    # for ~15-20 min during workload install + the app build, after which SystemUI
+    # can ANR — the app then launches but its first page never renders, so Appium's
+    # OneTimeSetUp times out ("Timed out waiting for Go To Test button"). This
+    # mirrors the gate's "Warm Up Android Emulator" step but runs at the precise
+    # moment (right before dotnet test), independent of how long the build took.
+    # We only touch SystemUI / the launcher here — never the HostApp itself
+    # (Appium's UiAutomator2 driver owns the HostApp lifecycle).
+    Write-Info "Warming up emulator/SystemUI before test..."
+    $bootChk = & adb -s $DeviceUdid shell getprop sys.boot_completed 2>$null
+    if ("$bootChk".Trim() -ne "1") {
+        Write-Warn "Device not responding before test — restarting adb server..."
+        & adb kill-server 2>$null; Start-Sleep -Seconds 2
+        & adb start-server 2>$null; Start-Sleep -Seconds 2
+        # Bound `adb wait-for-device` to 90s portably — the external `timeout` binary differs on
+        # Windows (interactive countdown) and may be absent, so use the .NET process timeout.
+        $waitProc = Start-Process -FilePath 'adb' -ArgumentList @('-s', $DeviceUdid, 'wait-for-device') -PassThru -NoNewWindow
+        if (-not $waitProc.WaitForExit(90000)) {
+            Write-Warn "adb wait-for-device timed out after 90s — killing"
+            try { $waitProc.Kill() } catch { <# best effort #> }
+        }
+    }
+    # Wake + dismiss any system dialogs (run twice for reliability).
+    foreach ($pass in 1..2) {
+        & adb -s $DeviceUdid shell input keyevent KEYCODE_WAKEUP 2>$null
+        & adb -s $DeviceUdid shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS 2>$null
+        & adb -s $DeviceUdid shell input keyevent KEYCODE_BACK 2>$null
+        Start-Sleep -Seconds 1
+    }
+    # If a SystemUI ANR ("isn't responding") dialog is up, force it away. HOME only
+    # backgrounds the launcher (the HostApp isn't running yet), so this is safe.
+    $winState = & adb -s $DeviceUdid shell dumpsys window 2>$null
+    if ("$winState" -match "Application Not Responding|ANR ") {
+        Write-Warn "ANR dialog detected before test — dismissing (HOME + close dialogs)"
+        & adb -s $DeviceUdid shell input keyevent KEYCODE_HOME 2>$null
+        Start-Sleep -Seconds 2
+        & adb -s $DeviceUdid shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS 2>$null
+        & adb -s $DeviceUdid shell input keyevent KEYCODE_BACK 2>$null
+    }
+    # Exercise the system briefly to confirm SystemUI is responsive, then clean up
+    # (force-stop targets the Settings app, never the HostApp).
+    & adb -s $DeviceUdid shell am start -a android.settings.SETTINGS 2>$null
+    Start-Sleep -Seconds 2
+    & adb -s $DeviceUdid shell am force-stop com.android.settings 2>$null
+    & adb -s $DeviceUdid shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS 2>$null
+    & adb -s $DeviceUdid shell input keyevent KEYCODE_HOME 2>$null
+    & adb -s $DeviceUdid logcat -c 2>$null
+    Write-Success "Emulator warmed up and responsive"
 }
 
 # Capture test start time for iOS logs
@@ -243,6 +462,33 @@ $testStartTime = Get-Date
 # The app has built-in file logging that writes directly to MAUI_LOG_FILE path
 $catalystAppProcess = $null
 if ($Platform -eq "catalyst") {
+    # Clear macOS-owned dialogs before every category, not just once at job
+    # startup. Both dialogs hide the HostApp's accessibility tree and otherwise
+    # turn every remaining fixture into the same WaitForElement timeout:
+    # - Setup Assistant's Apple Account sign-in pane can reappear mid-job.
+    # - A force-killed HostApp can leave the AppKit "unexpectedly quit while
+    #   reopening windows" alert, which also contaminates later categories.
+    # Trusted staged paths come first; repository paths are local-run fallbacks.
+    $dialogDismissals = @(
+        @{ FileName = "dismiss-apple-account-dialog.sh"; Label = "Apple Account dialog" },
+        @{ FileName = "dismiss-maccatalyst-app-recovery-dialog.sh"; Label = "MacCatalyst app recovery dialog" }
+    )
+    foreach ($dialog in $dialogDismissals) {
+        $dismissDialogCandidates = @(
+            [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot "../eng-scripts/$($dialog.FileName)")),
+            [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot "../../eng/scripts/$($dialog.FileName)"))
+        )
+        $dismissDialog = $dismissDialogCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+        if ($dismissDialog -and (Test-Path $dismissDialog)) {
+            try {
+                & chmod +x $dismissDialog 2>$null
+                & bash $dismissDialog 2>&1 | ForEach-Object { Write-Host $_ }
+            } catch {
+                Write-Warn "$($dialog.Label) dismissal failed (non-fatal): $_"
+            }
+        }
+    }
+
     # Determine runtime identifier
     $arch = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString().ToLower()
     $rid = if ($arch -eq "arm64") { "maccatalyst-arm64" } else { "maccatalyst-x64" }
@@ -260,35 +506,242 @@ if ($Platform -eq "catalyst") {
             & chmod +x $executablePath
         }
         
-        Write-Success "MacCatalyst app prepared (Appium will launch with test name)"
+        # Set MAC_APP_PATH so Appium mac2 driver can launch the app directly
+        $env:MAC_APP_PATH = $appPath
+        Write-Success "MacCatalyst app prepared (MAC_APP_PATH=$appPath)"
+
+        # Register the freshly-built .app with LaunchServices so the Appium
+        # mac2 driver can resolve it by bundle ID. WebDriverAgentMac looks the
+        # app up via LaunchServices (NSWorkspace) using the bundleId capability;
+        # a newly-built, unregistered Catalyst app is not in the LaunchServices
+        # database, so OneTimeSetUp fails for EVERY test with
+        # "The app representing com.microsoft.maui.uitests could not be found"
+        # (0 passed / all errored). Setting MAC_APP_PATH / options.App alone is
+        # NOT sufficient — the driver still resolves via bundleId. `lsregister -f`
+        # force-registers this exact bundle so the lookup succeeds.
+        # Probe multiple known lsregister locations (the short symlinked path and
+        # the canonical Versions/A path) so a differing framework symlink layout
+        # on any agent macOS version can't silently skip registration and leave
+        # every catalyst test failing.
+        $lsregisterCandidates = @(
+            "/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister",
+            "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister"
+        )
+        $lsregister = $lsregisterCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+        if ($lsregister) {
+            Write-Info "Registering app with LaunchServices (lsregister -f) via $lsregister ..."
+            & $lsregister -f $appPath 2>&1 | Out-Null
+            Write-Success "Registered MacCatalyst app with LaunchServices"
+        } else {
+            Write-Warn "lsregister not found at any known path; skipping LaunchServices registration"
+        }
     } else {
-        Write-Warning "MacCatalyst app not found at: $appPath"
-        Write-Warning "Test may use wrong app bundle if another version is registered"
+        Write-Warn "MacCatalyst app not found at: $appPath"
+        Write-Warn "Test may use wrong app bundle if another version is registered"
     }
     
     # Set log file path directly - app will write ILogger output here
     $env:MAUI_LOG_FILE = $deviceLogFile
 }
 
-Write-Info "Executing: dotnet test --filter `"$effectiveFilter`""
+# For Windows, point the test at the actual built HostApp .exe. UITest.cs
+# (TestDevice.Windows) otherwise computes the app path RELATIVE to the test
+# assembly ("../../../Controls.TestCases.HostApp/..."), which does NOT resolve to
+# the repo's `artifacts/bin` output layout — so WinAppDriver fails OneTimeSetUp
+# with "The system cannot find the file specified" and 0 tests run. Setting
+# WINDOWS_APP_PATH (honored first by UITest.cs) to the known build output fixes it.
+if ($Platform -eq "windows") {
+    $hostAppBin = Join-Path $RepoRoot "artifacts/bin/Controls.TestCases.HostApp/Debug/$TargetFramework"
+    $winAppExe = $null
+    if (Test-Path $hostAppBin) {
+        $winAppExe = Get-ChildItem -Path $hostAppBin -Filter "Controls.TestCases.HostApp.exe" -Recurse -ErrorAction SilentlyContinue |
+            Select-Object -First 1 -ExpandProperty FullName
+    }
+    if ($winAppExe) {
+        $env:WINDOWS_APP_PATH = $winAppExe
+        Write-Success "Set WINDOWS_APP_PATH=$winAppExe"
+    } else {
+        Write-Warn "Windows HostApp .exe not found under $hostAppBin — test will fall back to relative-path resolution (may fail to launch)"
+    }
+}
+
+$filterDisplay = if ($effectiveFilter) { "--filter `"$effectiveFilter`"" } else { "(no filter — all tests)" }
+Write-Info "Executing: dotnet test $filterDisplay"
 Write-Host ""
 
 # Set environment variables for the test
 $env:DEVICE_UDID = $DeviceUdid
 Write-Info "Set DEVICE_UDID environment variable: $DeviceUdid"
 
+# Set APPIUM_LOG_FILE so UITestBase saves screenshots/page-source to our log directory
+$appiumLogFile = Join-Path $HostAppLogsDir "appium.log"
+$env:APPIUM_LOG_FILE = $appiumLogFile
+Write-Info "Set APPIUM_LOG_FILE: $appiumLogFile (screenshots will be saved here)"
+
+# ── TRX setup (mirrors CI: eng/cake/dotnet.cake `RunTestWithLocalDotNet`) ──
+# CI writes one trx per test run via:
+#   --logger "trx;LogFileName=<sanitized-name>.trx"
+#   --logger "console;verbosity=normal"
+#   --results-directory <test-results-dir>
+#   /p:VStestUseMSBuildOutput=false
+# We reproduce that here so STEP 3's renderer can parse authoritative
+# pass/fail counts from the TRX (instead of scraping console output, which is
+# fragile when many tests run and lines get interleaved or wrapped).
+$trxResultsDir = Join-Path $HostAppLogsDir "TestResults"
+if (-not (Test-Path $trxResultsDir)) {
+    New-Item -ItemType Directory -Path $trxResultsDir -Force | Out-Null
+}
+# Sanitize the trx file name. NUnit/MSTest reject some characters. We keep
+# alpha-numeric, dash, underscore and dot — same set Cake's
+# SanitizeTestResultsFilename uses.
+$trxBaseName = if ($Category) { "$Category-$Platform" }
+               elseif ($TestFilter) { ($TestFilter -replace '[^A-Za-z0-9._-]', '_') }
+               else { "ALL-$Platform" }
+$trxBaseName = $trxBaseName -replace '[^A-Za-z0-9._-]', '_'
+$trxFileName = "$trxBaseName.trx"
+$trxFilePath = Join-Path $trxResultsDir $trxFileName
+# Pre-clean stale TRX so we never read a previous run's results
+if (Test-Path $trxFilePath) { Remove-Item $trxFilePath -Force -ErrorAction SilentlyContinue }
+
+Write-Info "TRX file will be written to: $trxFilePath"
+
 try {
-    # Run dotnet test and capture output
-    $testOutput = & dotnet test $TestProject --filter $effectiveFilter --logger "console;verbosity=detailed" 2>&1
-    
+    # Run dotnet test using the SAME loggers and arguments CI uses in
+    # `RunTestWithLocalDotNet` (eng/cake/dotnet.cake line 943-981).
+    $trxRunStart = Get-Date
+    $testArgs = @($TestProject,
+        "--logger", "trx;LogFileName=$trxFileName",
+        "--logger", "console;verbosity=normal",
+        "--results-directory", $trxResultsDir,
+        "/p:VStestUseMSBuildOutput=false")
+    if ($effectiveFilter) {
+        $testArgs = @($TestProject, "--filter", $effectiveFilter) + $testArgs[1..($testArgs.Length-1)]
+    }
+    Write-Info "Actual dotnet test args: $($testArgs -join ' ')"
+    # Stream each line to this script's output stream *as it is produced* (via
+    # Tee-Object pass-through) while still capturing every line into $testOutput.
+    # Streaming live is essential: the deep per-category loop runs this script
+    # under a bounded runner that detects hangs by watching the child's stdout
+    # for growth. `dotnet test` (which includes the multi-minute HostApp build)
+    # emits nothing until it finishes when its output is captured silently, so a
+    # slow-but-healthy build on a saturated agent looked identical to a hang and
+    # got idle-killed mid-build (observed: catalyst CollectionView killed 3x at
+    # ~26 min, whole category falsely failed). Tee gives the idle detector a real
+    # progress signal, keeps $testOutput for the TRX/marker logic below, and — via
+    # the success stream — still reaches gate callers that capture with `2>&1`.
+    # (Do NOT revert to a silent `$testOutput = & dotnet test ... 2>&1` capture.)
+    & dotnet test @testArgs 2>&1 | Tee-Object -Variable testOutput
+
     # Save test output to file
     $testOutput | Out-File -FilePath $testOutputFile -Encoding UTF8
-    
-    # Display test output
-    $testOutput | ForEach-Object { Write-Host $_ }
-    
+
+    # Surface the TRX path on a marker line so callers (Invoke-UITestWithRetry
+    # and Review-PR.ps1) can locate the authoritative results file regardless
+    # of where the working directory was when this script ran.
+    if (Test-Path $trxFilePath) {
+        Write-Output ">>> TRX_RESULT_FILE: $trxFilePath"
+    } else {
+        # dotnet test may have written the TRX with a slightly different name
+        # (e.g. LogFileName argument stripped on Windows, or it injected a
+        # timestamp). Fall back to scanning the results dir for any .trx
+        # written AFTER this run started — never pick up a stale TRX from a
+        # previous category that shares the same results directory.
+        $latestTrx = Get-ChildItem -Path $trxResultsDir -Filter "*.trx" -ErrorAction SilentlyContinue |
+                     Where-Object { $_.LastWriteTime -ge $trxRunStart } |
+                     Sort-Object LastWriteTime -Descending | Select-Object -First 1
+        if ($latestTrx) {
+            Write-Output ">>> TRX_RESULT_FILE: $($latestTrx.FullName)"
+        }
+    }
+
     $testExitCode = $LASTEXITCODE
     
+    # ── Per-test retry for flaky failures (Android emulator instability) ──
+    # Parse the TRX for failed tests and re-run them once. This catches
+    # emulator-induced timeouts and transient ADB failures that aren't
+    # real test bugs. Only retry on Android where flake rate is ~5%.
+    if ($testExitCode -ne 0 -and $Platform -eq 'android' -and (Test-Path $trxFilePath)) {
+        . "$PSScriptRoot/shared/Get-TrxResults.ps1"
+        $firstRun = Get-TrxResults -TrxPath $trxFilePath
+        $retryClassification = Get-AndroidRetryClassification -TestRun $firstRun
+        if ($retryClassification.IsMixedRun) {
+            # "Baseline snapshot not yet created" failures are brand-new VerifyScreenshot
+            # tests with no committed baseline — deterministic new-baseline results, not
+            # emulator flake. Retrying them wastes a full re-run (they can never pass
+            # without a committed baseline) and can exhaust the deep category time budget
+            # on snapshot-heavy PRs. Exclude them from the flaky-retry set; the downstream
+            # summary reclassifies them as "new baseline".
+            $baselineFailures = @($retryClassification.BaselineFailures)
+            $failedNames = @($retryClassification.RetryNames)
+            if ($baselineFailures.Count -gt 0) {
+                Write-Info "  ⚠ $($baselineFailures.Count) new-baseline failure(s) (no committed snapshot) excluded from flaky-retry — deterministic, not emulator flake."
+            }
+            if ($failedNames.Count -eq 0) {
+                Write-Info "  No flaky (non-baseline) failures to retry — skipping Android retry."
+            }
+            else {
+            Write-Host ""
+            Write-Warn "🔄 Retrying $($failedNames.Count) failed test(s) on Android..."
+            
+            # Build a FullyQualifiedName filter for just the failed tests.
+            # Strip parameter signatures (e.g. TestMethod(arg: "val")) because
+            # VSTest filter grammar treats ( ) | & ! as operators. Using the
+            # bare method name with ~ (contains) is safe and sufficient.
+            $safeNames = @($failedNames | ForEach-Object { $_ -replace '\(.*$', '' } | Select-Object -Unique)
+            $retryFilter = ($safeNames | ForEach-Object { "FullyQualifiedName~$_" }) -join ' | '
+            $retryTrx = Join-Path $trxResultsDir "retry-$trxBaseName.trx"
+            Remove-Item $retryTrx -Force -ErrorAction SilentlyContinue
+            
+            $retryArgs = @($TestProject, "--filter", $retryFilter,
+                "--logger", "trx;LogFileName=retry-$trxFileName",
+                "--logger", "console;verbosity=normal",
+                "--results-directory", $trxResultsDir,
+                "/p:VStestUseMSBuildOutput=false", "--no-build")
+            Write-Info "Retry args: dotnet test --filter '$retryFilter' --no-build"
+            $retryOutput = & dotnet test @retryArgs 2>&1
+            $retryOutput | ForEach-Object { Write-Output $_ }
+            
+            # Parse retry TRX and count how many passed on retry
+            $retryTrxPath = Join-Path $trxResultsDir "retry-$trxFileName"
+            if (Test-Path $retryTrxPath) {
+                $retryResults = Get-TrxResults -TrxPath $retryTrxPath
+                if ($retryResults) {
+                    $retryPassed = @($retryResults.Results | Where-Object { $_.status -eq 'Passed' }).Count
+                    $retryFailed = @($retryResults.Results | Where-Object { $_.status -eq 'Failed' }).Count
+                    Write-Host "  Retry results: $retryPassed passed, $retryFailed failed (of $($failedNames.Count) retried)" -ForegroundColor Cyan
+
+                    # Merge retry results into the original TRX: replace only the
+                    # retried test entries in the original with their retry outcomes,
+                    # preserving all tests that passed on the first run. This avoids
+                    # the prior bug where Copy-Item overwrote the full TRX with the
+                    # retry-only TRX, losing the first-run passing tests entirely.
+                    try {
+                        $merged = Merge-RetryTrxResults `
+                            -OriginalTrxPath $trxFilePath `
+                            -RetryTrxPath $retryTrxPath `
+                            -FailedNames $failedNames
+
+                        Write-Info "Merged retry results into original TRX ($($merged.Total) total, $($merged.Passed) passed, $($merged.Failed) failed)"
+                        if ($merged.Failed -eq 0) {
+                            Write-Success "All originally failing tests passed on retry!"
+                            $testExitCode = 0
+                        } else {
+                            Write-Warn "$($merged.Failed) test(s) still failing in the merged result"
+                        }
+                    } catch {
+                        # Keep the original failing TRX and nonzero exit code. A
+                        # retry-only success file is not a valid replacement because
+                        # it omits first-run passes and any failures excluded from retry.
+                        Write-Warn "Failed to merge retry TRX; preserving the original failing result: $_"
+                    }
+                    # Remove the retry TRX to prevent double-counting by downstream aggregators
+                    Remove-Item $retryTrxPath -Force -ErrorAction SilentlyContinue
+                }
+            }
+            }
+        }
+    }
+
     Write-Host ""
     Write-Info "Test output saved to: $testOutputFile"
     
@@ -311,7 +764,71 @@ try {
 
 #endregion
 
+#region Collect Test Artifacts (screenshots, page source)
+
+Write-Step "Collecting test artifacts (screenshots, page source)..."
+
+# Collect any screenshots/page source from the test assembly output directory
+# UITestBase saves these via TestContext.AddTestAttachment to the assembly dir
+$testAssemblyDirs = @(
+    (Join-Path $RepoRoot "artifacts/bin/Controls.TestCases.Android.Tests/Debug/net$DotNetTfm"),
+    (Join-Path $RepoRoot "artifacts/bin/Controls.TestCases.iOS.Tests/Debug/net$DotNetTfm"),
+    (Join-Path $RepoRoot "artifacts/bin/Controls.TestCases.Mac.Tests/Debug/net$DotNetTfm"),
+    (Join-Path $RepoRoot "artifacts/bin/Controls.TestCases.WinUI.Tests/Debug/net$DotNetTfm-windows10.0.19041.0")
+)
+
+$copiedCount = 0
+foreach ($dir in $testAssemblyDirs) {
+    if (Test-Path $dir) {
+        $artifacts = Get-ChildItem -Path $dir -File -Include "*.png","*.txt" -ErrorAction SilentlyContinue |
+            Where-Object { $_.Name -match "ScreenShot|PageSource" }
+        foreach ($artifact in $artifacts) {
+            Copy-Item -Path $artifact.FullName -Destination $HostAppLogsDir -Force
+            $copiedCount++
+        }
+    }
+}
+
+# Also check the HostAppLogsDir itself for screenshots saved via APPIUM_LOG_FILE
+$screenshotCount = (Get-ChildItem -Path $HostAppLogsDir -Filter "*.png" -ErrorAction SilentlyContinue).Count
+$pageSourceCount = (Get-ChildItem -Path $HostAppLogsDir -Filter "*PageSource*" -ErrorAction SilentlyContinue).Count
+Write-Info "Test artifacts collected: $screenshotCount screenshot(s), $pageSourceCount page source(s) (copied $copiedCount from assembly dir)"
+
+#endregion
+
 #region Capture Device Logs
+
+# Run a diagnostic command with a hard timeout so a wedged tool (notably
+# `xcrun simctl spawn booted log show`, which can hang indefinitely when the
+# simulator is left in a bad state after a test-host crash) cannot consume the
+# whole per-category time budget. Observed live: an iOS CollectionView run hit
+# MSBUILD MSB4166 (test-host node crash) mid-run, then `log show` hung for ~48
+# min until the loop's 50-min hard-kill, wasting the category. The command runs
+# in a child pwsh (so any redirection inside $Command still works) and the whole
+# process tree is killed on timeout. Returns $true if it finished in time.
+function Invoke-ScriptWithTimeout {
+    param(
+        [Parameter(Mandatory = $true)][string]$Command,
+        [int]$TimeoutSec = 120
+    )
+    $pwshExe = (Get-Process -Id $PID -ErrorAction SilentlyContinue).Path
+    if (-not $pwshExe) { $pwshExe = 'pwsh' }
+    $psi = [System.Diagnostics.ProcessStartInfo]::new()
+    $psi.FileName = $pwshExe
+    $psi.ArgumentList.Add('-NoProfile')
+    $psi.ArgumentList.Add('-NonInteractive')
+    $psi.ArgumentList.Add('-Command')
+    $psi.ArgumentList.Add($Command)
+    $psi.UseShellExecute = $false
+    $proc = [System.Diagnostics.Process]::Start($psi)
+    if (-not $proc.WaitForExit($TimeoutSec * 1000)) {
+        # Kill the entire tree (child pwsh + xcrun + log). Fall back to a plain
+        # kill if the tree overload is unavailable.
+        try { $proc.Kill($true) } catch { try { $proc.Kill() } catch { <# best effort #> } }
+        return $false
+    }
+    return $true
+}
 
 Write-Step "Capturing device logs..."
 
@@ -323,7 +840,7 @@ if ($Platform -eq "android") {
     & adb -s $DeviceUdid logcat -d | Select-String "com.microsoft.maui.uitests|DOTNET" > $deviceLogFile
     
     if ((Get-Item $deviceLogFile).Length -eq 0) {
-        Write-Warning "No logs found for com.microsoft.maui.uitests, dumping entire logcat..."
+        Write-Warn "No logs found for com.microsoft.maui.uitests, dumping entire logcat..."
         & adb -s $DeviceUdid logcat -d > $deviceLogFile
     }
     
@@ -337,9 +854,11 @@ if ($Platform -eq "android") {
     
     $iosLogCommand = "xcrun simctl spawn booted log show --predicate 'processImagePath contains `"Controls.TestCases.HostApp`"' --start `"$logStartTimeStr`" --style compact"
     
-    Invoke-Expression "$iosLogCommand > `"$deviceLogFile`" 2>&1"
-    
-    Write-Info "iOS logs saved to: $deviceLogFile"
+    if (Invoke-ScriptWithTimeout -Command "$iosLogCommand > `"$deviceLogFile`" 2>&1" -TimeoutSec 120) {
+        Write-Info "iOS logs saved to: $deviceLogFile"
+    } else {
+        Write-Warn "iOS log capture (log show) exceeded 120s and was killed — continuing without full device logs"
+    }
 } elseif ($Platform -eq "catalyst") {
     # App writes directly to $deviceLogFile via MAUI_LOG_FILE env var
     # Just verify the file exists and has content
@@ -350,7 +869,9 @@ if ($Platform -eq "android") {
         Write-Info "File logging output was minimal, using os_log fallback..."
         $logStartTimeStr = $testStartTime.AddMinutes(-1).ToString("yyyy-MM-dd HH:mm:ss")
         $catalystLogCommand = "log show --level debug --predicate 'process contains `"Controls.TestCases.HostApp`" OR processImagePath contains `"Controls.TestCases.HostApp`"' --start `"$logStartTimeStr`" --style compact"
-        Invoke-Expression "$catalystLogCommand > `"$deviceLogFile`" 2>&1"
+        if (-not (Invoke-ScriptWithTimeout -Command "$catalystLogCommand > `"$deviceLogFile`" 2>&1" -TimeoutSec 120)) {
+            Write-Warn "MacCatalyst os_log capture exceeded 120s and was killed — continuing"
+        }
     }
     
     Write-Info "MacCatalyst logs saved to: $deviceLogFile"
@@ -381,6 +902,8 @@ if (Test-Path $deviceLogFile) {
         Write-Host "  iOS Simulator Logs (Last 100 lines)" -ForegroundColor Cyan
     } elseif ($Platform -eq "catalyst") {
         Write-Host "  MacCatalyst App Logs (Last 100 lines)" -ForegroundColor Cyan
+    } elseif ($Platform -eq "windows") {
+        Write-Host "  Windows App Logs (Last 100 lines)" -ForegroundColor Cyan
     }
     Write-Host "═══════════════════════════════════════════════════════" -ForegroundColor Cyan
     
@@ -397,7 +920,7 @@ if (Test-Path $deviceLogFile) {
         Write-Host ""
         Write-Info "Full device log: $deviceLogFile"
     } else {
-        Write-Warning "Could not read device log file"
+        Write-Warn "Could not read device log file"
     }
     
     Write-Host "═══════════════════════════════════════════════════════" -ForegroundColor Cyan
@@ -427,7 +950,7 @@ Write-Host @"
 ╠═══════════════════════════════════════════════════════════╣
 ║  Platform:     $($Platform.ToUpper().PadRight(10))                             ║
 ║  Device:       $($DeviceUdid.Substring(0, [Math]::Min(40, $DeviceUdid.Length)).PadRight(40))      ║
-║  Test Filter:  $($effectiveFilter.Substring(0, [Math]::Min(40, $effectiveFilter.Length)).PadRight(40))      ║
+║  Test Filter:  $($(if ($effectiveFilter) { $effectiveFilter.Substring(0, [Math]::Min(40, $effectiveFilter.Length)) } else { '(all tests)' }).PadRight(40))      ║
 ║  Result:       SUCCESS ✅                                 ║
 ║  Logs:         $HostAppLogsDir
 ╚═══════════════════════════════════════════════════════════╝

@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "CollectionView with RefreshView Throws Exception During Pull-to-Refresh Actions";
 
 		[Test]
-		[Category(UITestCategories.CollectionView)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
 		public void CollectionViewWithHeaderAndRefreshViewShouldNotCrashOnPullToRefresh()
 		{
 			App.WaitForElement("UpdateData");

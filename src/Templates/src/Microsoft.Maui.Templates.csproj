@@ -56,14 +56,18 @@
       <PackageDestination>$([System.String]::Concat(%(RelativeDir), '%(Filename)%(Extension)'))</PackageDestination>
       <IntermediateLocation>$(IntermediateOutputPath)$([System.String]::Concat(%(RelativeDir), '%(Filename)%(Extension)'))</IntermediateLocation>
     </TemplateJsonInput>
-    <Content Include="templates\**\*" Exclude="templates\**\bin\**;templates\**\obj\**;@(TemplateJsonInput)" />
+    <TemplateDotFile Include="templates\**\.gitignore">
+      <PackageDestination>templates\%(RecursiveDir).gitignore</PackageDestination>
+      <IntermediateLocation>$(IntermediateOutputPath)dotfiles\templates\%(RecursiveDir)gitignore.gitignore</IntermediateLocation>
+    </TemplateDotFile>
+    <Content Include="templates\**\*" Exclude="templates\**\bin\**;templates\**\obj\**;@(TemplateJsonInput);@(TemplateDotFile)" />
     <!-- Only include cgmanifest.json when GenerateCgManifest is true (for CI builds) -->
     <Content Include="cgmanifest.json" Pack="true" PackagePath="content" Condition="'$(GenerateCgManifest)' == 'true'" />
     <Compile Remove="**\*" />
   </ItemGroup>
 
   <PropertyGroup>
-    <BeforePack>_UpdateTemplateVersions</BeforePack>
+    <BeforePack>_UpdateTemplateVersions;_UpdateTemplateDotFiles</BeforePack>
   </PropertyGroup>
 
   <Target Name="_UpdateTemplateVersions" DependsOnTargets="SetVersions;LocalizeTemplatesAfterBuild"
@@ -93,6 +97,19 @@
       <Content Include="%(TemplateJsonInput.IntermediateLocation)" PackagePath="$(ContentTargetFolders)\%(TemplateJsonInput.PackageDestination)" Pack="true" />
     </ItemGroup>
 
+  </Target>
+
+  <Target Name="_UpdateTemplateDotFiles"
+      Inputs="@(TemplateDotFile)"
+      Outputs="%(TemplateDotFile.IntermediateLocation)">
+    <Copy
+        SourceFiles="%(TemplateDotFile.Fullpath)"
+        DestinationFiles="%(TemplateDotFile.IntermediateLocation)" />
+
+    <ItemGroup>
+      <FileWrites Include="%(TemplateDotFile.IntermediateLocation)" />
+      <Content Include="%(TemplateDotFile.IntermediateLocation)" PackagePath="$(ContentTargetFolders)\%(TemplateDotFile.PackageDestination)" Pack="true" />
+    </ItemGroup>
   </Target>
 
   <Target Name="_CopyToTemplatePacks" AfterTargets="Pack">

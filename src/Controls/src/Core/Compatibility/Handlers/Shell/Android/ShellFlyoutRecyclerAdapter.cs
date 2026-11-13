@@ -6,6 +6,7 @@ using Android.Runtime;
 using Android.Views;
 using Android.Widget;
 using AndroidX.RecyclerView.Widget;
+using Microsoft.Maui.Controls.Diagnostics;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using AView = Android.Views.View;
@@ -22,6 +23,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		List<List<Element>> _flyoutGroupings;
 		Action<Element> _selectedCallback;
 		bool _disposed;
+		readonly HashSet<ElementViewHolder> _viewHolders = new HashSet<ElementViewHolder>();
 		IMauiContext MauiContext => _shellContext.Shell.Handler.MauiContext;
 
 		public ShellFlyoutRecyclerAdapter(IShellContext shellContext, Action<Element> selectedCallback)
@@ -83,14 +85,20 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			if (holder is ElementViewHolder evh)
 			{
+				evh.UnregisterNativeElement();
+				_viewHolders.Remove(evh);
+
 				// only clear out the Element if the item has been removed
 				bool found = false;
-				foreach (var item in _listItems)
+				if (_listItems is not null)
 				{
-					if (item.Element == evh.Element)
+					foreach (var item in _listItems)
 					{
-						found = true;
-						break;
+						if (item.Element == evh.Element)
+						{
+							found = true;
+							break;
+						}
 					}
 				}
 
@@ -106,8 +114,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var item = _listItems[position];
 			var elementHolder = (ElementViewHolder)holder;
 
+			_viewHolders.Add(elementHolder);
 			elementHolder.Bar.Visibility = item.DrawTopLine ? ViewStates.Visible : ViewStates.Gone;
 			elementHolder.Element = item.Element;
+			elementHolder.RegisterNativeElement(item.Element);
 		}
 
 		class ShellLinearLayout : LinearLayout
@@ -139,10 +149,32 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			var container = new ContainerView(parent.Context, content, MauiContext);
 			container.MatchWidth = true;
+
+			// In Auto or Disabled scroll modes, RecyclerView passes an EXACTLY heightMeasureSpec,
+			// causing items to be measured to the full RecyclerView height.
+			// Setting MeasureHeight = true forces UNSPECIFIED mode, allowing items to use their natural height (~48dp).
+			// This enables RecyclerView to detect when scrolling is needed and to create all required view holders.
+			if (_shellContext.Shell.FlyoutVerticalScrollMode != ScrollMode.Enabled)
+			{
+				container.MeasureHeight = true;
+			}
+
 			container.LayoutParameters = new LP(LP.MatchParent, LP.WrapContent);
 			linearLayout.AddView(container);
 
-			return new ElementViewHolder(content, linearLayout, bar, _selectedCallback, _shellContext.Shell);
+			var holder = new ElementViewHolder(
+				content,
+				linearLayout,
+				bar,
+				_selectedCallback,
+				_shellContext.Shell,
+				OnViewHolderDisposed);
+			return holder;
+		}
+
+		void OnViewHolderDisposed(ElementViewHolder holder)
+		{
+			_viewHolders.Remove(holder);
 		}
 
 		protected virtual List<AdapterListItem> GenerateItemList()
@@ -212,6 +244,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		internal void Disconnect()
 		{
+			foreach (var holder in _viewHolders)
+				holder.UnregisterNativeElement();
+			_viewHolders.Clear();
+
+			if (_shellContext is null)
+				return;
+
 			if (Shell is IShellController scc)
 				scc.FlyoutItemsChanged -= OnFlyoutItemsChanged;
 
@@ -244,9 +283,27 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			Element _element;
 			AView _itemView;
 			bool _disposed;
+			bool _updatingVisualState;
 			Shell _shell;
+			Action<ElementViewHolder> _disposedCallback;
+			readonly NativeElementRegistrationSet _nativeElementRegistrations = new NativeElementRegistrationSet();
 
-			public ElementViewHolder(View view, AView itemView, AView bar, Action<Element> selectedCallback, Shell shell) : base(itemView)
+			public ElementViewHolder(
+				View view,
+				AView itemView,
+				AView bar,
+				Action<Element> selectedCallback,
+				Shell shell) : this(view, itemView, bar, selectedCallback, shell, null)
+			{
+			}
+
+			internal ElementViewHolder(
+				View view,
+				AView itemView,
+				AView bar,
+				Action<Element> selectedCallback,
+				Shell shell,
+				Action<ElementViewHolder> disposedCallback) : base(itemView)
 			{
 				_itemView = itemView;
 				itemView.Click += OnClicked;
@@ -254,6 +311,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				Bar = bar;
 				_selectedCallback = selectedCallback;
 				_shell = shell;
+				_disposedCallback = disposedCallback;
 			}
 
 			public View View { get; }
@@ -264,16 +322,19 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				set
 				{
 					if (_element == value)
+					{
 						return;
+					}
 
-					if (View.Parent is BaseShellItem bsi)
-						bsi.RemoveLogicalChild(View);
+					if (View.Parent is BaseShellItem bsiParent)
+						bsiParent.RemoveLogicalChild(View);
 					else
 						_shell.RemoveLogicalChild(View);
 
-					if (_element != null && _element is BaseShellItem)
+					if (_element != null)
 					{
 						_element.PropertyChanged -= OnElementPropertyChanged;
+						((IElementDefinition)View)?.RemoveResourcesChangedListener(OnElementResourcesChanged);
 					}
 
 					_element = value;
@@ -289,6 +350,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 							_shell.AddLogicalChild(View);
 
 						_element.PropertyChanged += OnElementPropertyChanged;
+						((IElementDefinition)View)?.AddResourcesChangedListener(OnElementResourcesChanged);
 						UpdateVisualState();
 					}
 				}
@@ -296,12 +358,19 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			void UpdateVisualState()
 			{
-				if (Element is BaseShellItem baseShellItem && baseShellItem != null)
+				if (_updatingVisualState || Element is not BaseShellItem baseShellItem)
 				{
-					if (baseShellItem.IsChecked)
-						VisualStateManager.GoToState(View, "Selected");
-					else
-						VisualStateManager.GoToState(View, "Normal");
+					return;
+				}
+
+				try
+				{
+					_updatingVisualState = true;
+					VisualStateManager.GoToState(View, baseShellItem.IsChecked ? "Selected" : "Normal", force: true);
+				}
+				finally
+				{
+					_updatingVisualState = false;
 				}
 			}
 
@@ -311,12 +380,31 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					UpdateVisualState();
 			}
 
+			void OnElementResourcesChanged(object sender, ResourcesChangedEventArgs e)
+			{
+				UpdateVisualState();
+			}
+
 			void OnClicked(object sender, EventArgs e)
 			{
 				if (Element == null)
 					return;
 
 				_selectedCallback(Element);
+			}
+
+			internal void RegisterNativeElement(Element element)
+			{
+				_nativeElementRegistrations.RegisterExclusive(
+					element,
+					_itemView,
+					NativeElementRoles.ShellFlyout,
+					NativeElementDiscriminators.RealizedView);
+			}
+
+			internal void UnregisterNativeElement()
+			{
+				_nativeElementRegistrations.Clear();
 			}
 
 			protected override void Dispose(bool disposing)
@@ -328,11 +416,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				if (disposing)
 				{
+					_nativeElementRegistrations.Clear();
 					_itemView.Click -= OnClicked;
 
 					Element = null;
 					_itemView = null;
 					_selectedCallback = null;
+					_disposedCallback?.Invoke(this);
+					_disposedCallback = null;
 				}
 
 				base.Dispose(disposing);

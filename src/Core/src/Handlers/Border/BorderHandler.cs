@@ -42,9 +42,14 @@ namespace Microsoft.Maui.Handlers
 
 		public static CommandMapper<IBorderView, BorderHandler> CommandMapper = new(ViewCommandMapper)
 		{
+#if WINDOWS
+			[nameof(IView.InvalidateMeasure)] = MapInvalidateMeasure,
+#endif
 		};
 
+#if !WINDOWS
 		private Size _lastSize;
+#endif
 
 		public BorderHandler() : base(Mapper, CommandMapper)
 		{
@@ -65,16 +70,22 @@ namespace Microsoft.Maui.Handlers
 
 		PlatformView IBorderHandler.PlatformView => PlatformView;
 
+		// On Windows, ContentPanel.ContentPanelSizeChanged already handles size-based
+		// shape updates. Calling UpdateValue(Shape) during PlatformArrange on Windows
+		// causes Path.Data to be set during the WinUI arrange pass, which invalidates
+		// layout and can cause LayoutCycleException with many nested Borders (#32406).
 		/// <inheritdoc />
 		public override void PlatformArrange(Rect rect)
 		{
 			base.PlatformArrange(rect);
 
+#if !WINDOWS
 			if (_lastSize != rect.Size)
 			{
 				_lastSize = rect.Size;
 				UpdateValue(nameof(IBorderStroke.Shape));
 			}
+#endif
 		}
 
 		/// <summary>

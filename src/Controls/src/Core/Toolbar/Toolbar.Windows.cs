@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml.Controls;
@@ -12,7 +13,6 @@ namespace Microsoft.Maui.Controls
 	public partial class Toolbar
 	{
 		readonly ImageConverter _imageConverter = new ImageConverter();
-		readonly ImageSourceIconElementConverter _imageSourceIconElementConverter = new ImageSourceIconElementConverter();
 
 		NavigationRootManager? NavigationRootManager =>
 			MauiContext?.GetNavigationRootManager();
@@ -46,18 +46,7 @@ namespace Microsoft.Maui.Controls
 			{
 				var button = new AppBarButton();
 				button.SetBinding(AppBarButton.LabelProperty, "Text");
-
-				if (commandBar.IsDynamicOverflowEnabled && item.Order == ToolbarItemOrder.Secondary)
-				{
-					button.SetBinding(AppBarButton.IconProperty, "IconImageSource", _imageSourceIconElementConverter);
-				}
-				else if (!item.IconImageSource.IsNullOrEmpty())
-				{
-					var img = new WImage();
-					img.SetBinding(WImage.SourceProperty, "Value");
-					img.SetBinding(WImage.DataContextProperty, "IconImageSource", _imageConverter);
-					button.Content = img;
-				}
+				UpdateToolbarItemIcon(button, item, commandBar);
 
 				button.Command = new MenuItemCommand(item);
 				button.DataContext = item;
@@ -96,11 +85,74 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
-			if (e.PropertyName == nameof(ToolbarItem.Text) || e.PropertyName == nameof(ToolbarItem.IconImageSource))
+			if (e.PropertyName == nameof(ToolbarItem.IconImageSource))
+			{
+				if (sender is ToolbarItem item &&
+					FindToolbarItemButton(commandBar, item) is AppBarButton button)
+				{
+					UpdateToolbarItemIcon(button, item, commandBar);
+				}
+
+				var toolbarItems = new List<ToolbarItem>(ToolbarItems ?? Array.Empty<ToolbarItem>());
+				SetDefaultLabelPosition(commandBar, toolbarItems);
+				return;
+			}
+
+			if (e.PropertyName == nameof(ToolbarItem.Text))
 			{
 				var toolbarItems = new List<ToolbarItem>(ToolbarItems ?? Array.Empty<ToolbarItem>());
 				SetDefaultLabelPosition(commandBar, toolbarItems);
 			}
+		}
+
+		private void UpdateToolbarItemIcon(AppBarButton button, ToolbarItem item, CommandBar commandBar)
+		{
+			button.ClearValue(AppBarButton.IconProperty);
+			button.Content = null;
+
+			var source = item.IconImageSource;
+			if (source.IsNullOrEmpty())
+				return;
+
+			if (source is FontImageSource fontSource &&
+				fontSource.FontFamily is string fontFamily &&
+				MauiContext.Services.GetRequiredService<IFontRegistrar>().GetFont(fontFamily) is not null)
+			{
+				// Render registered app fonts like Image while retaining the native icon slot for the label.
+				var icon = new ImageIcon();
+				icon.SetBinding(ImageIcon.SourceProperty, "Value");
+				icon.DataContext = _imageConverter.Convert(source, typeof(object), MauiContext, string.Empty);
+				button.Icon = icon;
+			}
+			else if (source is FontImageSource ||
+				(commandBar.IsDynamicOverflowEnabled && item.Order == ToolbarItemOrder.Secondary))
+			{
+				button.Icon = source.ToIconSource(MauiContext)?.CreateIconElement();
+			}
+			else
+			{
+				var image = new WImage();
+				image.SetBinding(WImage.SourceProperty, "Value");
+				image.DataContext = _imageConverter.Convert(source, typeof(object), MauiContext, string.Empty);
+				button.Content = image;
+			}
+		}
+
+		private static AppBarButton? FindToolbarItemButton(CommandBar commandBar, ToolbarItem item)
+		{
+			foreach (var command in commandBar.PrimaryCommands)
+			{
+				if (command is AppBarButton button && ReferenceEquals(button.DataContext, item))
+					return button;
+			}
+
+			foreach (var command in commandBar.SecondaryCommands)
+			{
+				if (command is AppBarButton button && ReferenceEquals(button.DataContext, item))
+					return button;
+			}
+
+			return null;
 		}
 
 		private static void SetDefaultLabelPosition(CommandBar commandBar, IList<ToolbarItem> toolbarItems)

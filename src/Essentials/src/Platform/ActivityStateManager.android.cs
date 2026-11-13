@@ -65,7 +65,24 @@ namespace Microsoft.Maui.ApplicationModel
 
 	class ActivityStateManagerImplementation : IActivityStateManager
 	{
+		readonly IActivityForResultRequest[] activityResultRequests;
 		ActivityLifecycleContextListener? lifecycleListener;
+		Application? lifecycleApplication;
+
+		public ActivityStateManagerImplementation()
+			: this(CreateDefaultActivityResultRequests())
+		{
+		}
+
+		internal ActivityStateManagerImplementation(params IActivityForResultRequest[] activityResultRequests)
+		{
+			this.activityResultRequests = activityResultRequests;
+		}
+
+		static IActivityForResultRequest[] CreateDefaultActivityResultRequests() =>
+			MediaPickerImplementation.IsPhotoPickerAvailable
+				? [PickVisualMediaForResult.Instance, PickMultipleVisualMediaForResult.Instance]
+				: [];
 
 		public Activity? GetCurrentActivity() => lifecycleListener?.Activity;
 
@@ -73,7 +90,15 @@ namespace Microsoft.Maui.ApplicationModel
 
 		public void Init(Application application)
 		{
-			lifecycleListener = new ActivityLifecycleContextListener(OnActivityStateChanged);
+			if (lifecycleListener is not null)
+			{
+				return;
+			}
+
+			lifecycleListener = new ActivityLifecycleContextListener(
+				OnActivityStateChanged,
+				activityResultRequests);
+			lifecycleApplication = application;
 			application.RegisterActivityLifecycleCallbacks(lifecycleListener);
 		}
 
@@ -82,10 +107,10 @@ namespace Microsoft.Maui.ApplicationModel
 			if (activity.Application is not Application application)
 				throw new InvalidOperationException("Activity was not attached to an application.");
 
-			if (activity is ComponentActivity componentActivity && MediaPickerImplementation.IsPhotoPickerAvailable)
+			if (activity is ComponentActivity componentActivity)
 			{
-				PickVisualMediaForResult.Instance.Register(componentActivity);
-				PickMultipleVisualMediaForResult.Instance.Register(componentActivity);
+				foreach (var activityResultRequest in activityResultRequests)
+					activityResultRequest.Register(componentActivity, bundle);
 			}
 
 			Init(application);
@@ -121,6 +146,16 @@ namespace Microsoft.Maui.ApplicationModel
 
 		void OnActivityStateChanged(Activity activity, ActivityState ev)
 			=> ActivityStateChanged?.Invoke(null, new ActivityStateChangedEventArgs(activity, ev));
+
+		internal void Dispose()
+		{
+			if (lifecycleApplication is not null && lifecycleListener is not null)
+				lifecycleApplication.UnregisterActivityLifecycleCallbacks(lifecycleListener);
+
+			lifecycleListener?.Dispose();
+			lifecycleListener = null;
+			lifecycleApplication = null;
+		}
 	}
 
 	static class ActivityStateManagerExtensions
@@ -184,11 +219,15 @@ namespace Microsoft.Maui.ApplicationModel
 	class ActivityLifecycleContextListener : Java.Lang.Object, Application.IActivityLifecycleCallbacks
 	{
 		readonly Action<Activity, ActivityState> _onActivityStateChanged;
+		readonly IActivityForResultRequest[] _activityResultRequests;
 		readonly WeakReference<Activity?> _currentActivity = new(null);
 
-		public ActivityLifecycleContextListener(Action<Activity, ActivityState> onActivityStateChanged)
+		public ActivityLifecycleContextListener(
+			Action<Activity, ActivityState> onActivityStateChanged,
+			IActivityForResultRequest[] activityResultRequests)
 		{
 			_onActivityStateChanged = onActivityStateChanged;
+			_activityResultRequests = activityResultRequests;
 		}
 
 		public Context Context =>
@@ -206,8 +245,16 @@ namespace Microsoft.Maui.ApplicationModel
 			_onActivityStateChanged(activity, ActivityState.Created);
 		}
 
-		void Application.IActivityLifecycleCallbacks.OnActivityDestroyed(Activity activity) =>
+		void Application.IActivityLifecycleCallbacks.OnActivityDestroyed(Activity activity)
+		{
+			if (activity is ComponentActivity componentActivity)
+			{
+				foreach (var activityResultRequest in _activityResultRequests)
+					activityResultRequest.ActivityDestroyed(componentActivity);
+			}
+
 			_onActivityStateChanged(activity, ActivityState.Destroyed);
+		}
 
 		void Application.IActivityLifecycleCallbacks.OnActivityPaused(Activity activity)
 		{
@@ -221,8 +268,16 @@ namespace Microsoft.Maui.ApplicationModel
 			_onActivityStateChanged(activity, ActivityState.Resumed);
 		}
 
-		void Application.IActivityLifecycleCallbacks.OnActivitySaveInstanceState(Activity activity, Bundle outState) =>
+		void Application.IActivityLifecycleCallbacks.OnActivitySaveInstanceState(Activity activity, Bundle outState)
+		{
+			if (activity is ComponentActivity componentActivity)
+			{
+				foreach (var activityResultRequest in _activityResultRequests)
+					activityResultRequest.SaveInstanceState(componentActivity, outState);
+			}
+
 			_onActivityStateChanged(activity, ActivityState.SaveInstanceState);
+		}
 
 		void Application.IActivityLifecycleCallbacks.OnActivityStarted(Activity activity) =>
 			_onActivityStateChanged(activity, ActivityState.Started);

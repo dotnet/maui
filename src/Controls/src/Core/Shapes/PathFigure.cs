@@ -1,7 +1,9 @@
 #nullable disable
 using System;
 using System.Collections.Specialized;
+using System.Collections.Generic;
 using System.ComponentModel;
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Shapes
@@ -12,6 +14,10 @@ namespace Microsoft.Maui.Controls.Shapes
 	[ContentProperty("Segments")]
 	public sealed class PathFigure : BindableObject, IAnimatable
 	{
+		readonly WeakNotifyCollectionChangedProxy _segmentsCollectionProxy = new();
+		readonly List<PathSegment> _subscribedSegments = new();
+		NotifyCollectionChangedEventHandler _segmentsCollectionChanged;
+
 		/// <summary>
 		/// Initializes a new instance of the <see cref="PathFigure"/> class.
 		/// </summary>
@@ -19,6 +25,8 @@ namespace Microsoft.Maui.Controls.Shapes
 		{
 			Segments = new PathSegmentCollection();
 		}
+
+		~PathFigure() => _segmentsCollectionProxy.Unsubscribe();
 
 		/// <summary>Bindable property for <see cref="Segments"/>.</summary>
 		public static readonly BindableProperty SegmentsProperty =
@@ -36,11 +44,11 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		/// <summary>Bindable property for <see cref="IsClosed"/>.</summary>
 		public static readonly BindableProperty IsClosedProperty =
-			BindableProperty.Create(nameof(IsClosed), typeof(bool), typeof(PathFigure), false);
+			BindableProperty.Create(nameof(IsClosed), typeof(bool), typeof(PathFigure), BooleanBoxes.FalseBox);
 
 		/// <summary>Bindable property for <see cref="IsFilled"/>.</summary>
 		public static readonly BindableProperty IsFilledProperty =
-			BindableProperty.Create(nameof(IsFilled), typeof(bool), typeof(PathFigure), true);
+			BindableProperty.Create(nameof(IsFilled), typeof(bool), typeof(PathFigure), BooleanBoxes.TrueBox);
 
 		/// <summary>
 		/// Gets or sets the collection of path segments that define this figure. This is a bindable property.
@@ -65,7 +73,7 @@ namespace Microsoft.Maui.Controls.Shapes
 		/// </summary>
 		public bool IsClosed
 		{
-			set { SetValue(IsClosedProperty, value); }
+			set { SetValue(IsClosedProperty, BooleanBoxes.Box(value)); }
 			get { return (bool)GetValue(IsClosedProperty); }
 		}
 
@@ -74,7 +82,7 @@ namespace Microsoft.Maui.Controls.Shapes
 		/// </summary>
 		public bool IsFilled
 		{
-			set { SetValue(IsFilledProperty, value); }
+			set { SetValue(IsFilledProperty, BooleanBoxes.Box(value)); }
 			get { return (bool)GetValue(IsFilledProperty); }
 		}
 
@@ -94,29 +102,43 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		void UpdatePathSegmentCollection(PathSegmentCollection oldCollection, PathSegmentCollection newCollection)
 		{
-			if (oldCollection != null)
+			if (oldCollection is not null)
 			{
-				oldCollection.CollectionChanged -= OnPathSegmentCollectionChanged;
-
-				foreach (var oldPathSegment in oldCollection)
-				{
-					oldPathSegment.PropertyChanged -= OnPathSegmentPropertyChanged;
-				}
+				_segmentsCollectionProxy.Unsubscribe();
 			}
+
+			UnsubscribeFromAllPathSegmentPropertyChanged();
 
 			if (newCollection == null)
 				return;
 
-			newCollection.CollectionChanged += OnPathSegmentCollectionChanged;
+			_segmentsCollectionChanged ??= OnPathSegmentCollectionChanged;
+			_segmentsCollectionProxy.Subscribe(newCollection, _segmentsCollectionChanged);
 
 			foreach (var newPathSegment in newCollection)
 			{
-				newPathSegment.PropertyChanged += OnPathSegmentPropertyChanged;
+				SubscribeToPathSegmentPropertyChanged(newPathSegment);
 			}
 		}
 
 		void OnPathSegmentCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
+			if (e.Action == NotifyCollectionChangedAction.Reset)
+			{
+				UnsubscribeFromAllPathSegmentPropertyChanged();
+
+				if (sender is PathSegmentCollection pathSegmentCollection)
+				{
+					foreach (var pathSegment in pathSegmentCollection)
+					{
+						SubscribeToPathSegmentPropertyChanged(pathSegment);
+					}
+				}
+
+				Invalidate();
+				return;
+			}
+
 			if (e.OldItems != null)
 			{
 				foreach (var oldItem in e.OldItems)
@@ -124,7 +146,7 @@ namespace Microsoft.Maui.Controls.Shapes
 					if (!(oldItem is PathSegment oldPathSegment))
 						continue;
 
-					oldPathSegment.PropertyChanged -= OnPathSegmentPropertyChanged;
+					UnsubscribeFromPathSegmentPropertyChanged(oldPathSegment);
 				}
 			}
 
@@ -135,11 +157,41 @@ namespace Microsoft.Maui.Controls.Shapes
 					if (!(newItem is PathSegment newPathSegment))
 						continue;
 
-					newPathSegment.PropertyChanged += OnPathSegmentPropertyChanged;
+					SubscribeToPathSegmentPropertyChanged(newPathSegment);
 				}
 			}
 
 			Invalidate();
+		}
+
+		void SubscribeToPathSegmentPropertyChanged(PathSegment pathSegment)
+		{
+			if (_subscribedSegments.Contains(pathSegment))
+			{
+				return;
+			}
+
+			pathSegment.PropertyChanged += OnPathSegmentPropertyChanged;
+			_subscribedSegments.Add(pathSegment);
+		}
+
+		void UnsubscribeFromPathSegmentPropertyChanged(PathSegment pathSegment)
+		{
+			if (!_subscribedSegments.Contains(pathSegment))
+			{
+				return;
+			}
+
+			pathSegment.PropertyChanged -= OnPathSegmentPropertyChanged;
+			_subscribedSegments.Remove(pathSegment);
+		}
+
+		void UnsubscribeFromAllPathSegmentPropertyChanged()
+		{
+			for (int i = _subscribedSegments.Count - 1; i >= 0; i--)
+			{
+				UnsubscribeFromPathSegmentPropertyChanged(_subscribedSegments[i]);
+			}
 		}
 
 		void OnPathSegmentPropertyChanged(object sender, PropertyChangedEventArgs e)

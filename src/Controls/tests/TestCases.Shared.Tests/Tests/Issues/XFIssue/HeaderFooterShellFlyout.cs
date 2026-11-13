@@ -4,7 +4,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-[Category(UITestCategories.Shell)]
 public class HeaderFooterShellFlyout : _IssuesUITest
 {
 
@@ -28,6 +27,7 @@ public class HeaderFooterShellFlyout : _IssuesUITest
 
 #if IOS
     [Test]
+    [ShardedTestCategory(UITestCategories.Shell, shard: 1)]
     public void FlyoutHeaderWithZeroMarginShouldHaveNoY()
     {
         App.Tap("ZeroMarginHeader");
@@ -37,6 +37,7 @@ public class HeaderFooterShellFlyout : _IssuesUITest
 #endif
 
 	[Test]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void AFlyoutTests()
 	{
 		App.WaitForElement("PageLoaded");
@@ -66,9 +67,8 @@ public class HeaderFooterShellFlyout : _IssuesUITest
 		App.WaitForNoElement("Footer");
 
 		// verify header and footer react to size changes
-		// These tests are ignored on iOS and Catalyst because the header height doesn't update correctly. Refer to issue: https://github.com/dotnet/maui/issues/26397
 		// On Windows, the stack layout's AutomationId isn't behaving as expected, so the Y position of the first flyout item is used to verify header and footer sizes.
-#if ANDROID
+#if ANDROID || IOS || MACCATALYST
 
 		App.Tap(ResizeHeaderFooter);
 		var headerSizeSmall = App.WaitForElement("HeaderView").GetRect();

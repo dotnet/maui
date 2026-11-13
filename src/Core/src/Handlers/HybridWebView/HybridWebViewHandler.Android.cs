@@ -1,6 +1,5 @@
 ﻿using System;
 using Android.Webkit;
-using Java.Interop;
 using static Android.Views.ViewGroup;
 using AWebView = Android.Webkit.WebView;
 
@@ -8,10 +7,21 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class HybridWebViewHandler : ViewHandler<IHybridWebView, AWebView>
 	{
-		// This name matches the name of the API used in HybridWebView.js and must remain in sync
-		private const string HybridWebViewHostJsName = "hybridWebViewHost";
+		public override bool NeedsContainer => true;
 
-		private HybridWebViewJavaScriptInterface? _javaScriptInterface;
+		protected override void SetupContainer()
+		{
+			base.SetupContainer();
+			// Native parent clipping rejects off-screen WebView drawing without an empty Skia clip.
+			if (ContainerView is WrapperView wrapper)
+				wrapper.SetClipChildren(true);
+		}
+
+		protected override void RemoveContainer()
+		{
+			// Disconnect clears the platform view before removing the container.
+			WrapperView.RemoveContainer(((ViewHandler)this).PlatformView, Context, ContainerView, () => ContainerView = null);
+		}
 
 		protected override AWebView CreatePlatformView()
 		{
@@ -32,8 +42,8 @@ namespace Microsoft.Maui.Handlers
 
 			platformView.Settings.JavaScriptEnabled = true;
 
-			_javaScriptInterface = new HybridWebViewJavaScriptInterface(this);
-			platformView.AddJavascriptInterface(_javaScriptInterface, HybridWebViewHostJsName);
+			// JS -> .NET messages flow through the SendMessagePath HTTP endpoint in
+			// MauiHybridWebViewClient (gated by HasExpectedHeaders), not AddJavascriptInterface.
 
 			// Invoke the WebViewInitializing event to allow custom configuration of the web view
 			var initializingArgs = new WebViewInitializationStartedEventArgs(platformView.Settings);
@@ -44,24 +54,6 @@ namespace Microsoft.Maui.Handlers
 			VirtualView?.WebViewInitializationCompleted(initializedArgs);
 
 			return platformView;
-		}
-
-		private sealed class HybridWebViewJavaScriptInterface : HybridJavaScriptInterface
-		{
-			private readonly WeakReference<HybridWebViewHandler> _hybridWebViewHandler;
-
-			public HybridWebViewJavaScriptInterface(HybridWebViewHandler hybridWebViewHandler)
-			{
-				_hybridWebViewHandler = new(hybridWebViewHandler);
-			}
-
-			private HybridWebViewHandler? Handler => _hybridWebViewHandler is not null && _hybridWebViewHandler.TryGetTarget(out var h) ? h : null;
-
-			[JavascriptInterface]
-			public override void SendMessage(string message)
-			{
-				Handler?.MessageReceived(message);
-			}
 		}
 
 		protected override void ConnectHandler(AWebView platformView)
@@ -92,7 +84,8 @@ namespace Microsoft.Maui.Handlers
 			//platformView.SetWebChromeClient(null);
 
 			platformView.StopLoading();
-
+			ContainerView?.RemoveFromParent();
+			HasContainer = false;
 
 			base.DisconnectHandler(platformView);
 		}

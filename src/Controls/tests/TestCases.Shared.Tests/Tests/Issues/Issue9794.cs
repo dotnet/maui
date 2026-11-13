@@ -24,13 +24,20 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "[iOS] Tabbar Disappears with linker";
 
 		[Test]
-		[Category(UITestCategories.Shell)]
+		[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 		public void EnsureTabBarStaysVisibleAfterPoppingPage()
 		{
 			App.WaitForElement(GoForward);
 			App.Tap(GoForward);
 			App.WaitForElement("Click Back Button");
-			App.TapBackArrow(BackButtonIdentifier);
+			if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
+			{
+				App.TapBackArrow(); // In iOS 26, the previous page title is not shown along with the back arrow, so we use the default back arrow
+			}
+			else
+			{
+				App.TapBackArrow(BackButtonIdentifier);
+			}
 			App.WaitForElement(tab2);
 			App.Tap(tab2);
 			App.Tap(tab1);

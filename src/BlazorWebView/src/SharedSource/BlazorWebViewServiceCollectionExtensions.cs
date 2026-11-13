@@ -30,9 +30,11 @@ namespace Microsoft.Extensions.DependencyInjection
 		public static IWpfBlazorWebViewBuilder AddWpfBlazorWebView(this IServiceCollection services)
 #elif WEBVIEW2_MAUI
 #if ANDROID
-	    [System.Runtime.Versioning.SupportedOSPlatform("android23.0")]
+	    [System.Runtime.Versioning.SupportedOSPlatform(BlazorWebView.AndroidSupportedOSPlatformVersion)]
 #elif IOS
-		[System.Runtime.Versioning.SupportedOSPlatform("ios11.0")]
+		[System.Runtime.Versioning.SupportedOSPlatform(BlazorWebView.iOSSupportedOSPlatformVersion)]
+#elif MACCATALYST
+		[System.Runtime.Versioning.SupportedOSPlatform(BlazorWebView.MacCatalystSupportedOSPlatformVersion)]
 #endif
 		public static IMauiBlazorWebViewBuilder AddMauiBlazorWebView(this IServiceCollection services)
 #else

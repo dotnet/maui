@@ -1,0 +1,190 @@
+# Agent Workflow Labels
+
+GitHub labels for tracking outcomes of the AI agent PR review workflow (`Review-PR.ps1`).
+
+All labels use the **`s/agent-*`** prefix for easy querying on GitHub.
+
+---
+
+## Label Categories
+
+### Outcome Labels
+
+Mutually exclusive — exactly **one** is applied per PR review run.
+
+| Label | Color | Description | Applied When |
+|-------|-------|-------------|--------------|
+| `s/agent-approved` | 🟢 `#2E7D32` | AI agent recommends approval — PR fix is correct and optimal | Report phase recommends APPROVE |
+| `s/agent-changes-requested` | 🟠 `#E65100` | AI agent recommends changes — found a better alternative or issues | Report phase recommends REQUEST CHANGES |
+| `s/agent-review-incomplete` | 🔴 `#B71C1C` | AI agent could not complete all phases (blocker, timeout, error) | Agent exits without completing all phases |
+
+When a new outcome label is applied, any previously applied outcome label is automatically removed.
+
+### Signal Labels
+
+Additive — **multiple** can coexist on a single PR.
+
+| Label | Color | Description | Applied When |
+|-------|-------|-------------|--------------|
+| `s/agent-gate-passed` | 🟢 `#4CAF50` | Selected PR-test verification passed; inspect the report for mode and coverage | Validate phase or hosted gate passes |
+| `s/agent-gate-failed` | 🟠 `#FF9800` | AI could not verify tests catch the bug | Validate phase fails |
+| `s/agent-fix-win` | 🟢 `#66BB6A` | AI found a better alternative fix than the PR | Fix phase: alternative selected over PR's fix |
+| `s/agent-fix-pr-picked` | 🟠 `#FF7043` | AI could not beat the PR fix — PR is the best among all candidates | Fix phase: PR selected as best after comparison |
+
+Validate labels (`gate-passed`/`gate-failed`) are mutually exclusive with each other. Fix labels (`fix-win`/`fix-lose`) are mutually exclusive with each other.
+
+### Tracking Label
+
+Always applied on every completed agent run.
+
+| Label | Color | Description | Applied When |
+|-------|-------|-------------|--------------|
+| `s/agent-reviewed` | 🔵 `#1565C0` | PR was reviewed by AI agent workflow (full 4-phase review) | Every completed agent run |
+
+### Manual / Lock Labels
+
+Manual labels are applied by MAUI maintainers. The review lock is applied by the review trigger, not by AI.
+
+| Label | Color | Description | Applied When |
+|-------|-------|-------------|--------------|
+| `s/agent-fix-implemented` | 🟣 `#7B1FA2` | PR author implemented the agent's suggested fix | Maintainer applies when PR author adopts agent's recommendation |
+| `s/agent-review-in-progress` | 🟡 `#FBCA04` | AI review is currently running for this PR | Applied before triggering the async AzDO review pipeline and removed by pipeline cleanup; stale locks can be recovered after a conservative timeout |
+
+---
+
+## How It Works
+
+### Architecture
+
+```
+Review-PR.ps1
+├── Phase 1: Agent Review (Copilot CLI)
+│   ├── Pre-Flight → writes content.md
+│   ├── Validate   → writes content.md
+│   ├── Fix        → writes content.md
+│   └── Report     → writes content.md
+├── Phase 2: Post Comments (optional)
+└── Phase 3: Apply Labels  ← labels are applied here
+    ├── Parse content.md files
+    ├── Determine outcome + signal labels
+    ├── Apply via GitHub REST API
+    └── Non-fatal: errors warn but don't fail the workflow
+```
+
+The full outcome/alternative-fix labels above belong to hosted `/review` and
+local `Review-PR.ps1` reviews. The `/review gate` command applies only the gate pass/fail signals
+through `Post-PRGate.ps1`, never approval or full-review tracking labels, and only
+when the live PR head still matches the tested head. It assigns the existing
+gate labels without editing their repository-wide descriptions or colors.
+Required label-operation failures make publication incomplete rather than
+silently reporting success.
+`s/agent-review-in-progress` remains the shared async lock. It normally clears in
+the Azure cleanup stage; very old locks are treated as stale so cancellation
+does not permanently block another review or gate.
+
+### How Labels Are Parsed
+
+The `Parse-PhaseOutcomes` function in `Update-AgentLabels.ps1` reads `content.md` files from each phase directory:
+
+| Source File | What's Parsed | Resulting Label |
+|-------------|---------------|-----------------|
+| `gate/content.md` | `**Result:** ✅ PASSED` | `s/agent-gate-passed` |
+| `gate/content.md` | `**Result:** ❌ FAILED` | `s/agent-gate-failed` |
+| `try-fix/content.md` | `**Selected Fix:** Candidate ...` | `s/agent-fix-win` |
+| `try-fix/content.md` | `**Selected Fix:** PR ...` | `s/agent-fix-pr-picked` |
+| `report/content.md` | `Final Recommendation: APPROVE` | `s/agent-approved` |
+| `report/content.md` | `Final Recommendation: REQUEST CHANGES` | `s/agent-changes-requested` |
+| *(missing report)* | No report file exists | `s/agent-review-incomplete` |
+
+### Self-Bootstrapping
+
+Local full-review helpers create labels on first use via `Ensure-LabelExists`
+and update stale descriptions or colors. Hosted gate publication requires the
+existing gate signal labels and changes only their PR assignments; it does not
+require permission to manage repository-wide label definitions.
+
+---
+
+## Querying Labels
+
+All labels use the `s/agent-*` prefix, making them easy to filter on GitHub.
+
+### Common Queries
+
+```
+# PRs the agent approved
+is:pr label:s/agent-approved
+
+# PRs where agent found a better fix
+is:pr label:s/agent-fix-pr-picked
+
+# PRs where agent found better fix AND author implemented it
+is:pr label:s/agent-changes-requested label:s/agent-fix-implemented
+
+# PRs where tests don't catch the bug
+is:pr label:s/agent-gate-failed
+
+# Agent-reviewed PRs that are still open
+is:pr is:open label:s/agent-reviewed
+
+# All agent-reviewed PRs (total count)
+is:pr label:s/agent-reviewed
+```
+
+### Metrics You Can Derive
+
+| Metric | Query |
+|--------|-------|
+| Total agent reviews | `is:pr label:s/agent-reviewed` |
+| Approval rate | Compare `label:s/agent-approved` vs `label:s/agent-changes-requested` counts |
+| Validate pass rate | Compare `label:s/agent-gate-passed` vs `label:s/agent-gate-failed` counts |
+| Fix win rate | Compare `label:s/agent-fix-win` vs `label:s/agent-fix-pr-picked` counts |
+| Agent adoption rate | `label:s/agent-fix-implemented` / `label:s/agent-changes-requested` |
+| Incomplete review rate | `label:s/agent-review-incomplete` / `label:s/agent-reviewed` |
+
+---
+
+## Implementation Details
+
+### Files
+
+| File | Purpose |
+|------|---------|
+| `.github/scripts/shared/Update-AgentLabels.ps1` | Label helper module (all label logic) |
+| `.github/scripts/Review-PR.ps1` | Orchestrator that calls `Apply-AgentLabels` in Phase 4 |
+| `.github/workflows/review-trigger.yml` | `/review` and `/review gate` trigger that applies the shared in-progress lock before queueing |
+| `.github/scripts/Post-PRGate.ps1` | Publishes the hosted gate report and commit-bound gate signals only |
+| `eng/pipelines/ci-copilot.yml` | Full review by default; selects gate-only stages when `GateOnly` is true |
+| `eng/pipelines/pr-review-gate.yml` | Gate-only verification, fresh publication, and shared-lock cleanup |
+| `.github/skills/pr-review/SKILL.md` | Documents label system for the pr-review skill |
+
+### Key Functions
+
+| Function | Description |
+|----------|-------------|
+| `Apply-AgentLabels` | Main entry point — parses phases and applies all labels |
+| `Parse-PhaseOutcomes` | Reads `content.md` files, returns outcome/gate/fix results |
+| `Update-AgentOutcomeLabel` | Applies one outcome label, removes conflicting ones |
+| `Update-AgentSignalLabels` | Adds/removes validate and fix signal labels |
+| `Update-AgentReviewedLabel` | Ensures tracking label is present |
+| `Set-AgentReviewInProgress` | Applies the async review lock label |
+| `Clear-AgentReviewInProgress` | Removes the async review lock label |
+| `Test-AgentReviewInProgressIsStale` | Checks whether a lock label is old enough to recover |
+| `Ensure-LabelExists` | Creates or updates a label in the repository |
+
+### Design Principles
+
+- **Idempotent**: Safe to re-run — checks before add/remove, GitHub ignores duplicate adds
+- **Failure handling**: Local full-review label failures warn; required hosted gate signal failures fail publication explicitly
+- **Shared helpers**: Local full reviews and hosted gate publication use the same PR-label assignment helpers
+- **Self-bootstrapping**: Local full-review helpers create labels on first use; hosted publication uses existing gate signals
+- **Mutual exclusivity enforced**: Outcome labels and same-category signal labels automatically remove their counterpart
+
+---
+
+## Migrated From
+
+The following old infrastructure was removed as part of this implementation:
+
+- **`Update-VerificationLabels`** function in `verify-tests-fail.ps1` — removed (labels now come from `Review-PR.ps1` only)
+- **`s/ai-reproduction-confirmed`** / **`s/ai-reproduction-failed`** labels — superseded by `s/agent-gate-passed` / `s/agent-gate-failed`

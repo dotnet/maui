@@ -93,6 +93,90 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(xplatCharacterSpacing, values.PlatformViewValue);
 		}
 
+		[Fact(DisplayName = "Clear button image resets when TextColor is null")]
+		public async Task ClearButtonImageResetsWhenTextColorIsNull()
+		{
+			EntryStub entry = new EntryStub
+			{
+				Text = "MAUI",
+				ClearButtonVisibility = ClearButtonVisibility.WhileEditing,
+				TextColor = null
+			};
+
+			await AttachAndRun(entry, async (handler) =>
+			{
+				await AssertEventually(() => handler.PlatformView.IsLoaded());
+				Assert.True(handler.PlatformView.BecomeFirstResponder());
+				await AssertEventually(() => handler.PlatformView.IsFirstResponder);
+
+				var clearButton = GetNativeClearButton(handler);
+				Assert.NotNull(clearButton);
+
+				var defaultImage = clearButton.ImageForState(UIControlState.Normal);
+				Assert.NotNull(defaultImage);
+				Assert.Equal(UIImageRenderingMode.AlwaysOriginal, defaultImage.RenderingMode);
+
+				entry.TextColor = Colors.Purple;
+				handler.UpdateValue(nameof(IEntry.TextColor));
+
+				var tintedImage = clearButton.ImageForState(UIControlState.Normal);
+				Assert.NotNull(tintedImage);
+				Assert.Equal(UIImageRenderingMode.Automatic, tintedImage.RenderingMode);
+
+				entry.TextColor = null;
+				handler.UpdateValue(nameof(IEntry.TextColor));
+
+				// UIKit restores the original AlwaysOriginal system image when SetImage(null) is called
+				// on this private clearButton — ImageForState(.Highlighted) must return non-null for re-tinting to work.
+				var resetImage = clearButton.ImageForState(UIControlState.Normal);
+				Assert.NotNull(resetImage);
+				Assert.Equal(UIImageRenderingMode.AlwaysOriginal, resetImage.RenderingMode);
+
+				entry.TextColor = Colors.Blue;
+				handler.UpdateValue(nameof(IEntry.TextColor));
+
+				// Verify re-tinting works after reset (null→color→null→color)
+				// Confirms ImageForState(.Highlighted) returns the original after SetImage(null)
+				var retintedImage = clearButton.ImageForState(UIControlState.Normal);
+				Assert.NotNull(retintedImage);
+				Assert.Equal(UIImageRenderingMode.Automatic, retintedImage.RenderingMode);
+			});
+		}
+
+		[Fact(DisplayName = "Clear button tint matches TextColor at full opacity")]
+		public async Task ClearButtonTintMatchesTextColorAtFullOpacity()
+		{
+			EntryStub entry = new EntryStub
+			{
+				Text = "MAUI",
+				ClearButtonVisibility = ClearButtonVisibility.WhileEditing,
+				TextColor = null
+			};
+
+			await AttachAndRun(entry, async (handler) =>
+			{
+				await AssertEventually(() => handler.PlatformView.IsLoaded());
+				Assert.True(handler.PlatformView.BecomeFirstResponder());
+				await AssertEventually(() => handler.PlatformView.IsFirstResponder);
+
+				var clearButton = GetNativeClearButton(handler);
+				Assert.NotNull(clearButton);
+
+				entry.TextColor = Colors.Blue;
+				handler.UpdateValue(nameof(IEntry.TextColor));
+
+				var tintedImage = clearButton.ImageForState(UIControlState.Normal);
+				Assert.NotNull(tintedImage);
+
+				Assert.Equal(UIImageRenderingMode.Automatic, tintedImage.RenderingMode);
+
+				// the clear button was tinted from the system symbol image, which UIImage.Draw re-rasterizes
+				// at reduced opacity (~20%), so the glyph never reached full opacity and looked dimmed.
+				// The tinted glyph must contain fully opaque pixels so it matches TextColor.
+				Assert.Equal(byte.MaxValue, GetMaxAlpha(tintedImage));
+			});
+		}
+
 		[Fact]
 		public async Task NextMovesToNextEntry()
 		{
@@ -672,6 +756,30 @@ namespace Microsoft.Maui.DeviceTests
 			await ScrollHelper(async () => await ScrollToNext(entry, editor), entry, editor);
 		}
 
+		[Fact]
+		public async Task CursorPositionPreservedDuringInsertTextWithTextTransformUppercase()
+		{
+			var entry = new EntryStub();
+
+			await AttachAndRun(entry, (handler) =>
+			{
+				var textField = GetNativeEntry(handler);
+
+				textField.BecomeFirstResponder();
+
+				foreach (var c in "hello")
+				{
+					textField.InsertText(c.ToString());
+				}
+
+				UpdateCursorStartPosition(handler, 2);
+				Assert.Equal(2, GetCursorStartPosition(handler));
+
+				textField.InsertText("x");
+				Assert.Equal(3, GetCursorStartPosition(handler));
+			});
+		}
+
 		async Task ScrollHelper(Func<Task> func, params StubBase[] views)
 		{
 			EnsureHandlerCreated(builder =>
@@ -831,6 +939,46 @@ namespace Microsoft.Maui.DeviceTests
 
 		bool GetNativeClearButtonVisibility(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).ClearButtonMode == UITextFieldViewMode.WhileEditing;
+
+		static UIButton GetNativeClearButton(EntryHandler entryHandler) =>
+			GetNativeEntry(entryHandler).ValueForKey(new NSString("clearButton")) as UIButton;
+
+		static byte GetMaxAlpha(UIImage image)
+		{
+			const int bitsPerComponent = 8;
+			const int bytesPerPixel = 4; // R, G, B, A (CGImageAlphaInfo.PremultipliedLast)
+			const int alphaByteOffset = 3; // A is the 4th byte within each RGBA pixel
+
+			var cgImage = image.CGImage;
+			Assert.NotNull(cgImage);
+
+			var width = (int)cgImage.Width;
+			var height = (int)cgImage.Height;
+			var bytesPerRow = width * bytesPerPixel;
+			var pixels = new byte[height * bytesPerRow];
+
+			using var colorSpace = CGColorSpace.CreateDeviceRGB();
+			using (var context = new CGBitmapContext(pixels, width, height, bitsPerComponent, bytesPerRow, colorSpace, CGImageAlphaInfo.PremultipliedLast))
+			{
+				context.DrawImage(new CGRect(0, 0, width, height), cgImage);
+			}
+
+			byte maxAlpha = 0;
+			for (int i = alphaByteOffset; i < pixels.Length; i += bytesPerPixel)
+			{
+				if (pixels[i] == byte.MaxValue)
+				{
+					return byte.MaxValue;
+				}
+
+				if (pixels[i] > maxAlpha)
+				{
+					maxAlpha = pixels[i];
+				}
+			}
+
+			return maxAlpha;
+		}
 
 		UITextAlignment GetNativeHorizontalTextAlignment(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).TextAlignment;

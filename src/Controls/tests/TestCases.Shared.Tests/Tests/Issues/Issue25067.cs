@@ -12,7 +12,7 @@ public class Issue25067 : _IssuesUITest
 	public override string Issue => "[Android] SearchHandler default/custom icons";
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void SearchHandlerRendersDefaultSearchIconAndClearIcon()
 	{
 		App.WaitForElement("GoToDefault");
@@ -23,7 +23,7 @@ public class Issue25067 : _IssuesUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void SearchHandlerRendersCustomSearchIconAndClearIcon()
 	{
 		App.WaitForElement("GoToCustom");

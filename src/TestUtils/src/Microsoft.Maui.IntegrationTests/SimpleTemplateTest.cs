@@ -9,10 +9,8 @@ public class SimpleTemplateTest : BaseTemplateTests
 
 	[Theory]
 	// Parameters: short name, target framework, build config, use pack target, additionalDotNetNewParams, additionalDotNetBuildParams
-	// TODO: Re-enable net9.0 tests - see https://github.com/dotnet/maui/issues/XXXXX
-	// net9.0 tests use Xcode 26.0, net10.0 uses Xcode 26.2 - can't have both on same machine
-	// [InlineData("maui", DotNetPrevious, "Debug", false, "", "")]
-	// [InlineData("maui", DotNetPrevious, "Release", false, "", "")]
+	[InlineData("maui", DotNetPrevious, "Debug", false, "", "")]
+	[InlineData("maui", DotNetPrevious, "Release", false, "", "")]
 	[InlineData("maui", DotNetCurrent, "Debug", false, "", "")]
 	[InlineData("maui", DotNetCurrent, "Release", false, "", "TrimMode=partial")]
 	[InlineData("maui", DotNetCurrent, "Debug", false, "--sample-content", "")]
@@ -20,14 +18,14 @@ public class SimpleTemplateTest : BaseTemplateTests
 	//Debug not ready yet
 	//[InlineData("maui", DotNetCurrent, "Debug", false, "--sample-content", "UseMonoRuntime=false")]
 	//[InlineData("maui", DotNetCurrent, "Release", false, "--sample-content", "UseMonoRuntime=false EnablePreviewFeatures=true")]
-	// [InlineData("maui-blazor", DotNetPrevious, "Debug", false, "", "")]
-	// [InlineData("maui-blazor", DotNetPrevious, "Release", false, "", "")]
+	[InlineData("maui-blazor", DotNetPrevious, "Debug", false, "", "")]
+	[InlineData("maui-blazor", DotNetPrevious, "Release", false, "", "")]
 	[InlineData("maui-blazor", DotNetCurrent, "Debug", false, "", "")]
 	[InlineData("maui-blazor", DotNetCurrent, "Release", false, "", "TrimMode=partial")]
 	[InlineData("maui-blazor", DotNetCurrent, "Debug", false, "--empty", "")]
 	[InlineData("maui-blazor", DotNetCurrent, "Release", false, "--empty", "TrimMode=partial")]
-	// [InlineData("mauilib", DotNetPrevious, "Debug", true, "", "")]
-	// [InlineData("mauilib", DotNetPrevious, "Release", true, "", "")]
+	[InlineData("mauilib", DotNetPrevious, "Debug", true, "", "")]
+	[InlineData("mauilib", DotNetPrevious, "Release", true, "", "")]
 	[InlineData("mauilib", DotNetCurrent, "Debug", true, "", "")]
 	[InlineData("mauilib", DotNetCurrent, "Release", true, "", "TrimMode=partial")]
 	public void Build(string id, string framework, string config, bool shouldPack, string additionalDotNetNewParams, string additionalDotNetBuildParams)
@@ -45,12 +43,6 @@ public class SimpleTemplateTest : BaseTemplateTests
 				"</Project>",
 				"<PropertyGroup><Version>1.0.0-preview.1</Version></PropertyGroup></Project>");
 
-		// We only have these packs for Android
-		if (additionalDotNetBuildParams.Contains("UseMonoRuntime=false", StringComparison.OrdinalIgnoreCase))
-		{
-			OnlyAndroid(projectFile);
-		}
-
 		var buildProps = BuildProps;
 
 		if (additionalDotNetBuildParams is not "" and not null)
@@ -63,24 +55,38 @@ public class SimpleTemplateTest : BaseTemplateTests
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 	}
 
-	// TODO: Re-enable net9.0 tests - see https://github.com/dotnet/maui/issues/XXXXX
-	// [Theory]
-	// [InlineData("maui", DotNetPrevious, "Debug")]
-	// public void InstallPackagesIntoUnsupportedTfmFails(string id, string framework, string config)
-	// {
-	// 	var projectDir = TestDirectory;
-	// 	var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
-	//
-	// 	Assert.True(DotnetInternal.New(id, projectDir, framework, output: _output),
-	// 		$"Unable to create template {id}. Check test output for errors.");
-	//
-	// 	FileUtilities.ReplaceInFile(projectFile,
-	// 		"$(MauiVersion)",
-	// 		MauiPackageVersion);
-	//
-	// 	Assert.False(DotnetInternal.Build(projectFile, config, properties: BuildProps, msbuildWarningsAsErrors: true, output: _output),
-	// 		$"Project {Path.GetFileName(projectFile)} built, but should not have. Check test output/attachments for why.");
-	// }
+	[Theory]
+	[InlineData("maui")]
+	[InlineData("maui-blazor")]
+	[InlineData("mauilib")]
+	public void NewProjectIncludesGitIgnore(string id)
+	{
+		SetTestIdentifier(id);
+		var projectDir = TestDirectory;
+
+		Assert.True(DotnetInternal.New(id, projectDir, DotNetCurrent, output: _output),
+			$"Unable to create template {id}. Check test output for errors.");
+
+		AssertIncludesRootGitIgnore(projectDir);
+	}
+
+	[Theory]
+	[InlineData("maui", DotNetPrevious, "Debug")]
+	public void InstallPackagesIntoUnsupportedTfmFails(string id, string framework, string config)
+	{
+		var projectDir = TestDirectory;
+		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+
+		Assert.True(DotnetInternal.New(id, projectDir, framework, output: _output),
+			$"Unable to create template {id}. Check test output for errors.");
+
+		FileUtilities.ReplaceInFile(projectFile,
+			"$(MauiVersion)",
+			MauiPackageVersion);
+
+		Assert.False(DotnetInternal.Build(projectFile, config, properties: BuildProps, msbuildWarningsAsErrors: true, output: _output),
+			$"Project {Path.GetFileName(projectFile)} built, but should not have. Check test output/attachments for why.");
+	}
 
 	[Theory]
 	// with spaces
@@ -126,17 +132,16 @@ public class SimpleTemplateTest : BaseTemplateTests
 
 	[Theory]
 	// Parameters: short name, target framework, build config, use pack target, additionalDotNetBuildParams
-	// TODO: Re-enable net9.0 tests - see https://github.com/dotnet/maui/issues/XXXXX
-	// [InlineData("maui", DotNetPrevious, "Debug", false, "")]
-	// [InlineData("maui", DotNetPrevious, "Release", false, "")]
+	[InlineData("maui", DotNetPrevious, "Debug", false, "")]
+	[InlineData("maui", DotNetPrevious, "Release", false, "")]
 	[InlineData("maui", DotNetCurrent, "Debug", false, "")]
 	[InlineData("maui", DotNetCurrent, "Release", false, "TrimMode=partial")]
-	// [InlineData("maui-blazor", DotNetPrevious, "Debug", false, "")]
-	// [InlineData("maui-blazor", DotNetPrevious, "Release", false, "")]
+	[InlineData("maui-blazor", DotNetPrevious, "Debug", false, "")]
+	[InlineData("maui-blazor", DotNetPrevious, "Release", false, "")]
 	[InlineData("maui-blazor", DotNetCurrent, "Debug", false, "")]
 	[InlineData("maui-blazor", DotNetCurrent, "Release", false, "TrimMode=partial")]
-	// [InlineData("mauilib", DotNetPrevious, "Debug", true, "")]
-	// [InlineData("mauilib", DotNetPrevious, "Release", true, "")]
+	[InlineData("mauilib", DotNetPrevious, "Debug", true, "")]
+	[InlineData("mauilib", DotNetPrevious, "Release", true, "")]
 	[InlineData("mauilib", DotNetCurrent, "Debug", true, "")]
 	[InlineData("mauilib", DotNetCurrent, "Release", true, "TrimMode=partial")]
 	public void BuildWithMauiVersion(string id, string framework, string config, bool shouldPack, string additionalDotNetBuildParams)
@@ -232,9 +237,8 @@ public class SimpleTemplateTest : BaseTemplateTests
 	/// Tests the scenario where a .NET MAUI Library specifically uses UseMauiCore instead of UseMaui.
 	/// </summary>
 	[Theory]
-	// TODO: Re-enable net9.0 tests - see https://github.com/dotnet/maui/issues/XXXXX
-	// [InlineData("mauilib", DotNetPrevious, "Debug")]
-	// [InlineData("mauilib", DotNetPrevious, "Release")]
+	[InlineData("mauilib", DotNetPrevious, "Debug")]
+	[InlineData("mauilib", DotNetPrevious, "Release")]
 	[InlineData("mauilib", DotNetCurrent, "Debug")]
 	[InlineData("mauilib", DotNetCurrent, "Release")]
 	public void PackCoreLib(string id, string framework, string config)
@@ -348,9 +352,15 @@ public class SimpleTemplateTest : BaseTemplateTests
 		Assert.True(File.Exists(Path.Combine(projectDir, "Extensions.cs")),
 			"Expected Extensions.cs file was not created.");
 
-		// Verify we can build it (even if restore fails due to placeholder tokens, the project structure should be valid)
+		// Verify the project file contains required properties
 		var projectContent = File.ReadAllText(expectedProjectFile);
 		Assert.True(projectContent.Contains("<IsAspireSharedProject>true</IsAspireSharedProject>", StringComparison.Ordinal),
 			"Project file should contain Aspire-specific properties.");
+		Assert.True(projectContent.Contains("<UseMauiCore>true</UseMauiCore>", StringComparison.Ordinal),
+			"Project file should contain UseMauiCore property.");
+
+		// Verify the project actually builds
+		Assert.True(DotnetInternal.Build(expectedProjectFile, "Debug", properties: BuildProps, msbuildWarningsAsErrors: true, output: _output),
+			$"Project {Path.GetFileName(expectedProjectFile)} failed to build. Check test output/attachments for errors.");
 	}
 }

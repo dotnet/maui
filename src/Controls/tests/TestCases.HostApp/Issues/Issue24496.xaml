@@ -54,7 +54,7 @@
             <x:String>Test 4</x:String>
         </x:Array>
     </ContentPage.Resources>
-    <ScrollView>
+    <ScrollView AutomationId="ScrollViewId">
 
         <Grid 
             Padding="{x:OnPlatform Default='30,0', iOS='30,0,30,34'}"

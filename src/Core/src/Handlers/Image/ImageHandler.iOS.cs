@@ -1,4 +1,6 @@
 ﻿using System.Threading.Tasks;
+using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Primitives;
 using UIKit;
 
 namespace Microsoft.Maui.Handlers
@@ -22,7 +24,29 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.UpdateValue(nameof(IViewHandler.ContainerView));
 
-			handler.ToPlatform().UpdateBackground(image);
+			var platformView = handler.ToPlatform();
+
+			if (image.Background is ImageSourcePaint imagePaint)
+			{
+				var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
+				platformView.UpdateBackgroundImageSourceAsync(imagePaint.ImageSource, provider)
+					.FireAndForget(handler);
+			}
+			else if (image.Background.IsNullOrEmpty())
+			{
+				platformView.RemoveBackgroundLayer();
+				platformView.BackgroundColor = null;
+			}
+			else
+			{
+				platformView.UpdateBackground(image);
+			}
+
+			// After the container transition (wrapper added or removed), re-run the full
+			// opacity mapper so the container receives view.Opacity and the inner UIImageView
+			// is reset to alpha 1. Using UpdateOpacity(image) directly would only set the
+			// container alpha, leaving the inner view at its previous alpha and compounding it.
+			handler.UpdateValue(nameof(IView.Opacity));
 		}
 
 		public static void MapAspect(IImageHandler handler, IImage image) =>
@@ -67,9 +91,17 @@ namespace Microsoft.Maui.Handlers
 
 				Handler?.UpdateValue(nameof(IImage.IsAnimationPlaying));
 
-				if (Handler?.VirtualView is IImage image && image.Source is IStreamImageSource)
+				if (Handler?.VirtualView is IImage image &&
+					image.Source is IStreamImageSource &&
+					SourceCouldChangeMeasuredSize(image))
 					imageView.InvalidateMeasure(image);
 			}
 		}
+
+		static bool SourceCouldChangeMeasuredSize(IImage image) =>
+			!Dimension.IsExplicitSet(image.Width) ||
+			!Dimension.IsExplicitSet(image.Height) ||
+			image.HorizontalLayoutAlignment != LayoutAlignment.Fill ||
+			image.VerticalLayoutAlignment != LayoutAlignment.Fill;
 	}
 }

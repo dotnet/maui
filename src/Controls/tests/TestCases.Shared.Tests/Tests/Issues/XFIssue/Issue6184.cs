@@ -14,7 +14,7 @@ public class Issue6184 : _IssuesUITest
 	public override string Issue => "Throws exception when set isEnabled to false in ShellItem index > 5";
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void GitHubIssue6184()
 	{
 		App.WaitForElement("More");

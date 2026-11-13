@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using Android.Content;
 using Android.Content.Res;
 using Android.Graphics;
@@ -10,6 +12,10 @@ using Android.Text.Style;
 using Android.Views;
 using AndroidX.AppCompat.Graphics.Drawable;
 using AndroidX.AppCompat.Widget;
+using AndroidX.Core.View;
+using AndroidX.Core.View.Accessibility;
+using Microsoft.Maui.Controls.Diagnostics;
+using Google.Android.Material.AppBar;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Primitives;
 using AGraphics = Android.Graphics;
@@ -25,18 +31,26 @@ namespace Microsoft.Maui.Controls.Platform
 		static ColorStateList? _defaultTitleTextColor;
 		static int? _defaultNavigationIconColor;
 
+		// Track which ToolbarItem should currently be associated with each MenuItem ID to prevent race conditions
+		// This prevents stale async icon loading callbacks from updating the wrong toolbar items during navigation
+		static readonly ConcurrentDictionary<int, WeakReference<ToolbarItem>> _menuItemToolbarItemMap = new();
+
 		public static void UpdateIsVisible(this AToolbar nativeToolbar, Toolbar toolbar)
 		{
 			_ = nativeToolbar.Context ?? throw new ArgumentNullException(nameof(nativeToolbar.Context));
 
 			bool showNavBar = toolbar.IsVisible;
 			var lp = nativeToolbar.LayoutParameters;
+			var appBar = nativeToolbar.Parent?.GetParentOfType<AppBarLayout>();
 			if (lp == null)
 				return;
 
 			if (!showNavBar)
 			{
 				lp.Height = 0;
+				// Clear stale AppBarLayout padding so MeasuredHeight collapses to 0 and the
+				// inset listener stops consuming the top inset, preventing a blank gap (#34472, #35103).
+				appBar?.SetPadding(0, 0, 0, 0);
 			}
 			else
 			{
@@ -47,6 +61,7 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			nativeToolbar.LayoutParameters = lp;
+			AndroidX.Core.View.ViewCompat.RequestApplyInsets(nativeToolbar);
 		}
 
 		public static void UpdateTitleIcon(this AToolbar nativeToolbar, Toolbar toolbar)
@@ -56,17 +71,38 @@ namespace Microsoft.Maui.Controls.Platform
 
 			ImageSource source = toolbar.TitleIcon;
 
-			if (source == null || source.IsEmpty)
+			ToolbarTitleIconImageView? iconView = null;
+			for (int childIndex = 0; childIndex < nativeToolbar.ChildCount; childIndex++)
 			{
-				if (nativeToolbar.GetChildAt(0) is ToolbarTitleIconImageView existingImageView)
-					nativeToolbar.RemoveView(existingImageView);
+				var child = nativeToolbar.GetChildAt(childIndex);
+				if (child is ToolbarTitleIconImageView icon)
+				{
+					if (iconView is null)
+					{
+						iconView = icon; // Keep the first one found
+					}
+					else
+					{
+						nativeToolbar.RemoveView(icon); // Remove any extras (self-healing)
+					}
+				}
+			}
 
+			if (source is null || source.IsEmpty)
+			{
+				if (iconView is not null)
+				{
+					nativeToolbar.RemoveView(iconView);
+				}
 				return;
 			}
 
-			var iconView = new ToolbarTitleIconImageView(nativeToolbar.Context);
-			nativeToolbar.AddView(iconView, 0);
-			iconView.SetImageResource(global::Android.Resource.Color.Transparent);
+			if (iconView is null)
+			{
+				iconView = new ToolbarTitleIconImageView(nativeToolbar.Context);
+				nativeToolbar.AddView(iconView, 0);
+				iconView.SetImageResource(global::Android.Resource.Color.Transparent);
+			}
 
 			source.LoadImage(toolbar.Handler.MauiContext, (result) =>
 			{
@@ -227,10 +263,36 @@ namespace Microsoft.Maui.Controls.Platform
 			PropertyChangedEventHandler toolbarItemChanged,
 			List<IMenuItem> previousMenuItems,
 			List<ToolbarItem> previousToolBarItems,
-			Action<Context, IMenuItem, ToolbarItem>? updateMenuItemIcon = null)
+			Action<Context, IMenuItem, ToolbarItem>? updateMenuItemIcon = null,
+			NativeElementRegistrationSet? nativeElementRegistrations = null,
+			object? nativeToolbarOwner = null)
 		{
-			if (sortedToolbarItems == null || previousMenuItems == null)
+			if (previousMenuItems == null)
 				return;
+
+			if (nativeElementRegistrations is not null)
+			{
+				if (nativeToolbarOwner is null)
+					nativeElementRegistrations.Clear();
+				else
+				{
+					nativeElementRegistrations.AdvanceLifecycle();
+					RegisterToolbarChrome(toolbar, nativeToolbarOwner, nativeElementRegistrations);
+				}
+			}
+
+			var currentToolbarItems = sortedToolbarItems?.ToList() ?? new List<ToolbarItem>();
+			foreach (var previousToolbarItem in previousToolBarItems)
+			{
+				if (!currentToolbarItems.Any(item => ReferenceEquals(item, previousToolbarItem)))
+					nativeElementRegistrations?.UnregisterOwner(previousToolbarItem);
+			}
+			var sharedItemCount = Math.Min(previousToolBarItems.Count, currentToolbarItems.Count);
+			for (var itemIndex = 0; itemIndex < sharedItemCount; itemIndex++)
+			{
+				if (!ReferenceEquals(previousToolBarItems[itemIndex], currentToolbarItems[itemIndex]))
+					nativeElementRegistrations?.UnregisterOwner(previousToolBarItems[itemIndex]);
+			}
 
 			var menu = toolbar.Menu;
 
@@ -242,6 +304,11 @@ namespace Microsoft.Maui.Controls.Platform
 					var previousMenuItem = previousMenuItems[j];
 					if (menu.FindItem(previousMenuItem.ItemId) == null)
 					{
+						nativeElementRegistrations?.Unregister(previousMenuItem);
+
+						// Clean up the mapping for disposed MenuItems
+						_menuItemToolbarItemMap.TryRemove(previousMenuItem.ItemId, out _);
+
 						previousMenuItem.Dispose();
 						previousMenuItems.RemoveAt(j);
 					}
@@ -252,22 +319,38 @@ namespace Microsoft.Maui.Controls.Platform
 				toolbarItem.PropertyChanged -= toolbarItemChanged;
 
 			int i = 0;
-			foreach (var item in sortedToolbarItems)
+			foreach (var item in currentToolbarItems)
 			{
-				UpdateMenuItem(toolbar, item, i, mauiContext, tintColor, toolbarItemChanged, previousMenuItems, previousToolBarItems, updateMenuItemIcon);
+				UpdateMenuItem(
+					toolbar,
+					item,
+					i,
+					mauiContext,
+					tintColor,
+					toolbarItemChanged,
+					previousMenuItems,
+					previousToolBarItems,
+					updateMenuItemIcon,
+					nativeElementRegistrations);
 				i++;
 			}
 
 			int toolBarItemCount = i;
 			while (toolBarItemCount < previousMenuItems.Count)
 			{
-				menu?.RemoveItem(previousMenuItems[toolBarItemCount].ItemId);
-				previousMenuItems[toolBarItemCount].Dispose();
+				var menuItemToRemove = previousMenuItems[toolBarItemCount];
+				nativeElementRegistrations?.Unregister(menuItemToRemove);
+				menu?.RemoveItem(menuItemToRemove.ItemId);
+
+				// Clean up the mapping for disposed MenuItems
+				_menuItemToolbarItemMap.TryRemove(menuItemToRemove.ItemId, out _);
+
+				menuItemToRemove.Dispose();
 				previousMenuItems.RemoveAt(toolBarItemCount);
 			}
 
 			previousToolBarItems.Clear();
-			previousToolBarItems.AddRange(sortedToolbarItems);
+			previousToolBarItems.AddRange(currentToolbarItems);
 		}
 
 		static void UpdateMenuItem(AToolbar toolbar,
@@ -278,7 +361,8 @@ namespace Microsoft.Maui.Controls.Platform
 			PropertyChangedEventHandler toolbarItemChanged,
 			List<IMenuItem> previousMenuItems,
 			List<ToolbarItem> previousToolBarItems,
-			Action<Context, IMenuItem, ToolbarItem>? updateMenuItemIcon = null)
+			Action<Context, IMenuItem, ToolbarItem>? updateMenuItemIcon,
+			NativeElementRegistrationSet? nativeElementRegistrations)
 		{
 			var context = mauiContext?.Context ??
 					throw new ArgumentNullException($"{nameof(mauiContext.Context)}");
@@ -335,6 +419,12 @@ namespace Microsoft.Maui.Controls.Platform
 			menuitem.SetEnabled(item.IsEnabled);
 			menuitem.SetTitleOrContentDescription(item);
 
+			// Track which ToolbarItem should be associated with this MenuItem to prevent race conditions
+			_menuItemToolbarItemMap[menuitem.ItemId] = new WeakReference<ToolbarItem>(item);
+
+			// NOTE: Custom updateMenuItemIcon callbacks are responsible for their own
+			// race condition handling. The _menuItemToolbarItemMap guard only applies
+			// to the default UpdateMenuItemIcon path.
 			if (updateMenuItemIcon != null)
 				updateMenuItemIcon(context, menuitem, item);
 			else
@@ -346,6 +436,23 @@ namespace Microsoft.Maui.Controls.Platform
 				menuitem.SetShowAsAction(ShowAsAction.Never);
 
 			menuitem.SetOnMenuItemClickListener(new GenericMenuClickListener(((IMenuItemController)item).Activate));
+			var role = item.Order == ToolbarItemOrder.Secondary
+				? NativeElementRoles.ToolbarOverflow
+				: NativeElementRoles.ToolbarItem;
+			if (nativeElementRegistrations is not null)
+			{
+				nativeElementRegistrations.Register(
+					item,
+					menuitem,
+					role,
+					NativeElementDiscriminators.LogicalModel);
+				RegisterRealizedMenuItem(
+					toolbar,
+					menuitem,
+					item,
+					role,
+					nativeElementRegistrations);
+			}
 
 			if (item.Order != ToolbarItemOrder.Secondary && !OperatingSystem.IsAndroidVersionAtLeast(26) && (tintColor != null && tintColor != null))
 			{
@@ -358,6 +465,204 @@ namespace Microsoft.Maui.Controls.Platform
 						textView.SetTextColor(tintColor.MultiplyAlpha(0.302f).ToPlatform());
 				}
 			}
+
+			SetSemanticProperties(item, toolbar.FindViewById(menuitem.ItemId));
+		}
+
+		static void RegisterRealizedMenuItem(
+			AToolbar toolbar,
+			IMenuItem menuItem,
+			ToolbarItem toolbarItem,
+			string role,
+			NativeElementRegistrationSet nativeElementRegistrations)
+		{
+			var itemId = menuItem.ItemId;
+			var lifecycleEpoch = nativeElementRegistrations.LifecycleEpoch;
+			void RegisterCurrentView()
+			{
+				if (!nativeElementRegistrations.IsCurrent(lifecycleEpoch) ||
+					!toolbar.IsAlive() ||
+					!menuItem.IsAlive() ||
+					!_menuItemToolbarItemMap.TryGetValue(itemId, out var currentOwner) ||
+					!currentOwner.TryGetTarget(out var owner) ||
+					!ReferenceEquals(owner, toolbarItem))
+				{
+					return;
+				}
+
+				if (toolbar.HasExpandedActionView)
+				{
+					nativeElementRegistrations.UnregisterDiscriminator(
+						NativeElementDiscriminators.RealizedView);
+					return;
+				}
+
+				if (toolbar.FindViewById(itemId) is AView view && view.IsAlive())
+				{
+					nativeElementRegistrations.RegisterExclusive(
+						toolbarItem,
+						view,
+						role,
+						NativeElementDiscriminators.RealizedView);
+				}
+			}
+
+			RegisterCurrentView();
+			toolbar.Post(RegisterCurrentView);
+		}
+
+		internal static void RegisterToolbarChrome(
+			AToolbar toolbar,
+			object owner,
+			NativeElementRegistrationSet nativeElementRegistrations)
+		{
+			var lifecycleEpoch = nativeElementRegistrations.LifecycleEpoch;
+			void RegisterCurrentViews()
+			{
+				if (!nativeElementRegistrations.IsCurrent(lifecycleEpoch) ||
+					!toolbar.IsAlive())
+					return;
+
+				nativeElementRegistrations.RegisterExclusive(
+					owner,
+					toolbar,
+					NativeElementRoles.Toolbar,
+					NativeElementDiscriminators.ToolbarContainer);
+
+				if (toolbar.HasExpandedActionView)
+				{
+					nativeElementRegistrations.UnregisterDiscriminator(
+						NativeElementDiscriminators.TitleView);
+					nativeElementRegistrations.UnregisterDiscriminator(
+						NativeElementDiscriminators.RealizedView);
+					return;
+				}
+
+				global::Android.Widget.TextView? titleView = null;
+				for (var index = 0; index < toolbar.ChildCount; index++)
+				{
+					if (toolbar.GetChildAt(index) is global::Android.Widget.TextView textView &&
+						textView.IsAlive())
+					{
+						titleView = textView;
+						break;
+					}
+				}
+
+				if (titleView is null)
+				{
+					nativeElementRegistrations.UnregisterOwner(
+						owner,
+						NativeElementDiscriminators.TitleView);
+				}
+				else
+				{
+					nativeElementRegistrations.RegisterExclusive(
+						owner,
+						titleView,
+						NativeElementRoles.ToolbarTitle,
+						NativeElementDiscriminators.TitleView);
+				}
+
+				var overflowButton = FindToolbarOverflowButton(toolbar);
+				if (overflowButton is null)
+				{
+					nativeElementRegistrations.UnregisterOwner(
+						owner,
+						NativeElementDiscriminators.RealizedView);
+				}
+				else
+				{
+					nativeElementRegistrations.RegisterExclusive(
+						owner,
+						overflowButton,
+						NativeElementRoles.ToolbarOverflow,
+						NativeElementDiscriminators.RealizedView);
+				}
+			}
+
+			RegisterCurrentViews();
+			toolbar.Post(RegisterCurrentViews);
+			toolbar.PostDelayed(RegisterCurrentViews, 100);
+			toolbar.PostDelayed(RegisterCurrentViews, 500);
+		}
+
+		static AView? FindToolbarOverflowButton(AView view)
+		{
+			if (!view.IsAlive())
+				return null;
+
+			var typeName = view.GetType().Name;
+			if (view.Parent is ActionMenuView
+				&& view.Clickable
+				&& (typeName.Contains("Overflow", StringComparison.Ordinal)
+					|| (!string.IsNullOrWhiteSpace(view.ContentDescription)
+						&& typeName.Contains("Image", StringComparison.OrdinalIgnoreCase))))
+			{
+				return view;
+			}
+
+			if (view is not ViewGroup group)
+				return null;
+
+			for (var index = 0; index < group.ChildCount; index++)
+			{
+				if (group.GetChildAt(index) is AView child
+					&& FindToolbarOverflowButton(child) is { } overflowButton)
+				{
+					return overflowButton;
+				}
+			}
+
+			return null;
+		}
+
+		static void SetSemanticProperties(ToolbarItem menuItem, AView? view)
+		{
+			if (view == null)
+				return;
+
+			var semantics = SemanticProperties.UpdateSemantics(menuItem, null);
+			var desc = semantics?.Description;
+			var hint = semantics?.Hint;
+
+			// Only apply delegate if we have meaningful accessibility information
+			if (!string.IsNullOrWhiteSpace(desc) || !string.IsNullOrWhiteSpace(hint))
+			{
+				view.ImportantForAccessibility = ImportantForAccessibility.Yes;
+				ViewCompat.SetAccessibilityDelegate(view, new AccessibilityDelegateCompatImpl(desc, hint));
+			}
+			else
+			{
+				// Remove any previously set delegate if no accessibility info is present
+				ViewCompat.SetAccessibilityDelegate(view, null);
+			}
+		}
+
+		class AccessibilityDelegateCompatImpl : AccessibilityDelegateCompat
+		{
+			private readonly string? _desc;
+			private readonly string? _hint;
+
+			public AccessibilityDelegateCompatImpl(string? desc, string? hint)
+			{
+				_desc = desc;
+				_hint = hint;
+			}
+
+			public override void OnInitializeAccessibilityNodeInfo(AView? host, AccessibilityNodeInfoCompat? info)
+			{
+				base.OnInitializeAccessibilityNodeInfo(host, info);
+
+				if (host == null || info == null)
+					return;
+
+				if (!string.IsNullOrWhiteSpace(_desc))
+					info.ContentDescription = _desc;
+
+				if (!string.IsNullOrWhiteSpace(_hint))
+					info.HintText = _hint;
+			}
 		}
 
 		internal static void UpdateMenuItemIcon(this IMauiContext mauiContext, IMenuItem menuItem, ToolbarItem toolBarItem, Color? tintColor)
@@ -366,6 +671,13 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				var baseDrawable = result?.Value;
 				if (menuItem == null || !menuItem.IsAlive())
+				{
+					return;
+				}
+
+				if (!_menuItemToolbarItemMap.TryGetValue(menuItem.ItemId, out var weakRef)
+					|| !weakRef.TryGetTarget(out var currentToolbarItem)
+					|| !ReferenceEquals(currentToolbarItem, toolBarItem))
 				{
 					return;
 				}
@@ -385,6 +697,9 @@ namespace Microsoft.Maui.Controls.Platform
 						}
 
 						menuItem.SetIcon(iconDrawable);
+
+						// Setting the title, so that tooltip text is displayed in native color
+						menuItem.SetTitle(toolBarItem?.Text ?? string.Empty);
 					}
 				}
 				else
@@ -404,7 +719,9 @@ namespace Microsoft.Maui.Controls.Platform
 			PropertyChangedEventHandler toolbarItemChanged,
 			List<IMenuItem> currentMenuItems,
 			List<ToolbarItem> currentToolbarItems,
-			Action<Context, IMenuItem, ToolbarItem>? updateMenuItemIcon = null)
+			Action<Context, IMenuItem, ToolbarItem>? updateMenuItemIcon = null,
+			NativeElementRegistrationSet? nativeElementRegistrations = null,
+			object? nativeToolbarOwner = null)
 		{
 			if (toolbarItems == null)
 				return;
@@ -428,9 +745,29 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 
 			if (currentMenuItems[index].IsAlive())
-				UpdateMenuItem(toolbar, toolbarItem, index, mauiContext, tintColor, toolbarItemChanged, currentMenuItems, currentToolbarItems, updateMenuItemIcon);
+				UpdateMenuItem(
+					toolbar,
+					toolbarItem,
+					index,
+					mauiContext,
+					tintColor,
+					toolbarItemChanged,
+					currentMenuItems,
+					currentToolbarItems,
+					updateMenuItemIcon,
+					nativeElementRegistrations);
 			else
-				UpdateMenuItems(toolbar, toolbarItems, mauiContext, tintColor, toolbarItemChanged, currentMenuItems, currentToolbarItems, updateMenuItemIcon);
+				UpdateMenuItems(
+					toolbar,
+					toolbarItems,
+					mauiContext,
+					tintColor,
+					toolbarItemChanged,
+					currentMenuItems,
+					currentToolbarItems,
+					updateMenuItemIcon,
+					nativeElementRegistrations,
+					nativeToolbarOwner);
 		}
 	}
 }

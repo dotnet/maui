@@ -2,6 +2,7 @@
 using System;
 using System.ComponentModel;
 using System.Reflection;
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls
@@ -21,7 +22,7 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		public PropertyCondition()
 		{
-			_stateProperty = BindableProperty.CreateAttached("State", typeof(bool), typeof(PropertyCondition), false, propertyChanged: OnStatePropertyChanged);
+			_stateProperty = BindableProperty.CreateAttached("State", typeof(bool), typeof(PropertyCondition), BooleanBoxes.FalseBox, propertyChanged: OnStatePropertyChanged);
 		}
 
 		/// <summary>

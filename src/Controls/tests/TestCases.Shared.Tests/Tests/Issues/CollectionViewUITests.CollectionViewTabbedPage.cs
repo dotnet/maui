@@ -20,7 +20,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "If CollectionView in other Tab gets changed before it's displayed, it stays invisible";
 
 		[Test]
-		[Category(UITestCategories.CollectionView)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 		public void AddingItemToUnviewedCollectionViewShouldNotCrash()
 		{
 			App.WaitForElement(Add1);
@@ -30,7 +30,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		[Test]
-		[Category(UITestCategories.CollectionView)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
 		public void AddingGroupToUnviewedGroupedCollectionViewShouldNotCrash()
 		{
 			App.WaitForElement(Add2);

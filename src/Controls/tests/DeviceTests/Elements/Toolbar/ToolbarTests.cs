@@ -31,6 +31,12 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			EnsureHandlerCreated(builder =>
 			{
+#if IOS || MACCATALYST
+				builder.ConfigureImageSources(services =>
+				{
+					services.AddService<IControlledToolbarImageSource, ControlledToolbarImageSourceService>();
+				});
+#endif
 				builder.ConfigureMauiHandlers(handlers =>
 				{
 					handlers.AddHandler(typeof(Controls.Label), typeof(LabelHandler));

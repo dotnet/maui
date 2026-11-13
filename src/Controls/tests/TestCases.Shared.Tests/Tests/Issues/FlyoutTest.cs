@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{ }
 
 		[Test]
-		[Category(UITestCategories.Shell), Order(1)]
+		[ShardedTestCategory(UITestCategories.Shell, shard: 1), Order(1)]
 		public void VerifyHamburgerIcon()
 		{
 			App.WaitForElement("Tab1Page");
@@ -21,7 +21,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		[Test]
-		[Category(UITestCategories.Shell), Order(2)]
+		[ShardedTestCategory(UITestCategories.Shell, shard: 1), Order(2)]
 		public void VerifyFlyoutBackgroundColor()
 		{
 			App.WaitForElement("Tab1Page");

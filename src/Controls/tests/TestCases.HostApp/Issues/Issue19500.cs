@@ -1,4 +1,4 @@
-﻿#if MACCATALYST
+﻿#if MACCATALYST || IOS
 using UIKit;
 using Microsoft.Maui.Platform;
 #endif
@@ -50,7 +50,7 @@ public partial class Issue19500 : TestContentPage
 			Text = GetEditorText()
 		};
 
-#if MACCATALYST
+#if MACCATALYST || IOS
 		editor.HandlerChanged += (_, _) =>
 		{
 			if (editor.Handler?.PlatformView is MauiTextView mauiTextView)

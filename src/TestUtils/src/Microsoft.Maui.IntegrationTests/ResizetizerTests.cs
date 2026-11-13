@@ -1,3 +1,6 @@
+using Microsoft.Build.Framework;
+using Microsoft.Build.Logging.StructuredLogger;
+
 namespace Microsoft.Maui.IntegrationTests;
 
 [Trait("Category", "Build")]
@@ -14,22 +17,82 @@ public class ResizetizerTests : BaseBuildTest
 		""";
 
 	[Theory]
+	[InlineData("android", true, false)]
+	[InlineData("android", false, false)]
+	[InlineData("ios", true, false)]
+	[InlineData("ios", false, false)]
+	[InlineData("android", false, true)]
+	[InlineData("ios", false, true)]
+	public void PackagedResizetizerRendersSvgFiltersAndText(string platform, bool isAppIcon, bool isSplashScreen)
+	{
+		SetTestIdentifier(platform, isAppIcon, isSplashScreen);
+
+		var projectFile = Path.Combine(TestDirectory, "SvgFilters.csproj");
+		File.WriteAllText(Path.Combine(TestDirectory, "filtered.svg"),
+			"""
+			<svg width="456" height="456" viewBox="0 0 456 456" xmlns="http://www.w3.org/2000/svg">
+				<filter id="blur"><feGaussianBlur stdDeviation="8" /></filter>
+				<rect x="32" y="32" width="392" height="392" fill="#512BD4" filter="url(#blur)" />
+				<text x="64" y="256" font-family="Arial" font-size="64" fill="black">MAUI</text>
+			</svg>
+			""");
+		// Run the packaged task in MSBuild, not the test host's different SkiaSharp asset selection.
+		File.WriteAllText(projectFile,
+			$$"""
+			<Project Sdk="Microsoft.NET.Sdk">
+				<PropertyGroup>
+					<TargetFramework>{{DotNetCurrent}}</TargetFramework>
+				</PropertyGroup>
+				<ItemGroup>
+					<PackageReference Include="Microsoft.Maui.Resizetizer" Version="{{MauiPackageVersion}}" />
+					<Image Include="filtered.svg" IsAppIcon="{{isAppIcon}}" Condition="'{{isSplashScreen}}' != 'True'" />
+					<MauiSplashScreen Include="filtered.svg" Color="#512BD4" Condition="'{{isSplashScreen}}' == 'True'" />
+				</ItemGroup>
+				<Target Name="RenderSvg">
+					<MakeDir Directories="rendered" />
+					<ResizetizeImages PlatformType="{{platform}}" IntermediateOutputPath="rendered" Images="@(Image)"
+						Condition="'{{isSplashScreen}}' != 'True'" />
+					<GenerateSplashAndroidResources MauiSplashScreen="@(MauiSplashScreen)" IntermediateOutputPath="rendered"
+						Condition="'{{isSplashScreen}}' == 'True' and '{{platform}}' == 'android'" />
+					<GenerateSplashStoryboard MauiSplashScreen="@(MauiSplashScreen)" IntermediateOutputPath="rendered"
+						Condition="'{{isSplashScreen}}' == 'True' and '{{platform}}' == 'ios'" />
+				</Target>
+			</Project>
+			""");
+
+		Assert.True(DotnetInternal.Build(projectFile, "Debug", target: "RenderSvg", properties: BuildProps, output: _output),
+			"Packaged Resizetizer failed to render SVG filters and text. Check test output for errors.");
+		Assert.NotEmpty(Directory.GetFiles(Path.Combine(TestDirectory, "rendered"), "*.png", SearchOption.AllDirectories));
+		if (isSplashScreen)
+		{
+			var outputDirectory = Path.Combine(TestDirectory, "rendered");
+			if (platform == "android")
+			{
+				Assert.True(File.Exists(Path.Combine(outputDirectory, "values", "maui_colors.xml")));
+				Assert.True(File.Exists(Path.Combine(outputDirectory, "drawable", "maui_splash_image.xml")));
+				Assert.True(File.Exists(Path.Combine(outputDirectory, "drawable-v31", "maui_splash_image.xml")));
+			}
+			else
+			{
+				Assert.True(File.Exists(Path.Combine(outputDirectory, "MauiSplash.storyboard")));
+			}
+		}
+	}
+
+	[Theory]
 	// windows unpackaged/exe
-	[InlineData("maui", "classlib", true)] // net9.0
-	[InlineData("maui", "mauilib", true)] // net9.0-xxx
-	[InlineData("maui-blazor", "classlib", true)] // net9.0
-	[InlineData("maui-blazor", "mauilib", true)] // net9.0-xxx
-											   // windows packaged/msix
-	[InlineData("maui", "classlib", false)] // net9.0
-	[InlineData("maui", "mauilib", false)] // net9.0-xxx
-	[InlineData("maui-blazor", "classlib", false)] // net9.0
-	[InlineData("maui-blazor", "mauilib", false)] // net9.0-xxx
+	[InlineData("maui", "classlib", true)] // base TFM
+	[InlineData("maui", "mauilib", true)] // platform TFMs
+	[InlineData("maui-blazor", "classlib", true)] // base TFM
+	[InlineData("maui-blazor", "mauilib", true)] // platform TFMs
+												 // windows packaged/msix
+	[InlineData("maui", "classlib", false)] // base TFM
+	[InlineData("maui", "mauilib", false)] // platform TFMs
+	[InlineData("maui-blazor", "classlib", false)] // base TFM
+	[InlineData("maui-blazor", "mauilib", false)] // platform TFMs
 	public void CollectsAssets(string id, string libid, bool unpackaged)
 	{
 		SetTestIdentifier(id, libid, unpackaged);
-		// TODO: fix the tests as they have been disabled too long!
-		if (!TestEnvironment.IsWindows)
-			if (true) return; // Skip: "Running Windows templates is only supported on Windows."
 
 		// new app
 		var appDir = Path.Combine(TestDirectory, "theapp");
@@ -53,19 +116,7 @@ public class ResizetizerTests : BaseBuildTest
 			</Project>
 			""");
 
-		// toggle packaged / unpackaged
-		if (unpackaged)
-		{
-			FileUtilities.ReplaceInFile(appFile,
-				"</Project>",
-				"""
-				<PropertyGroup>
-					<WindowsPackageType>None</WindowsPackageType>
-				</PropertyGroup>
-				</Project>
-				""");
-
-		}
+		SetWindowsPackageType(appFile, unpackaged);
 
 		// add the svg file
 		File.WriteAllText(Path.Combine(libDir, "the_image.svg"), BlankSvgContents);
@@ -84,19 +135,462 @@ public class ResizetizerTests : BaseBuildTest
 			</Project>
 			""");
 
-		// build
-		Assert.True(DotnetInternal.Build(appFile, "Debug", properties: BuildProps, output: _output),
-			$"Project {Path.GetFileName(appFile)} failed to build. Check test output/attachments for errors.");
-
-		// assert
-		Assert.True(File.Exists(Path.Combine(appDir, $"obj\\Debug\\{DotNetCurrent}-android\\resizetizer\\r\\drawable-mdpi\\the_image.png")),
+		// build and assert Android
+		var androidFramework = $"{DotNetCurrent}-android";
+		Assert.True(DotnetInternal.Build(appFile, "Debug", framework: androidFramework, properties: BuildProps, output: _output),
+			$"Project {Path.GetFileName(appFile)} failed to build for Android. Check test output/attachments for errors.");
+		Assert.True(File.Exists(Path.Combine(appDir, "obj", "Debug", androidFramework, "resizetizer", "r", "drawable-mdpi", "the_image.png")),
 			"Android was missing the image file.");
-		Assert.True(File.Exists(Path.Combine(appDir, $"obj\\Debug\\{DotNetCurrent}-ios\\iossimulator-x64\\resizetizer\\r\\the_image.png")),
+
+		// build and assert iOS
+		var iosFramework = $"{DotNetCurrent}-ios";
+		var iosRuntimeIdentifier = TestEnvironment.IOSSimulatorRuntimeIdentifier;
+		Assert.True(DotnetInternal.Build(appFile, "Debug", framework: iosFramework, properties: BuildProps, runtimeIdentifier: iosRuntimeIdentifier, output: _output),
+			$"Project {Path.GetFileName(appFile)} failed to build for iOS. Check test output/attachments for errors.");
+		Assert.True(File.Exists(Path.Combine(appDir, "obj", "Debug", iosFramework, iosRuntimeIdentifier, "resizetizer", "r", "the_image.png")),
 			"iOS was missing the image file.");
-		Assert.True(File.Exists(Path.Combine(appDir, $"obj\\Debug\\{DotNetCurrent}-maccatalyst\\maccatalyst-x64\\resizetizer\\r\\the_image.png")),
+
+		// build and assert Mac Catalyst
+		var macCatalystFramework = $"{DotNetCurrent}-maccatalyst";
+		var macCatalystRuntimeIdentifier = TestEnvironment.IsArm64 ? "maccatalyst-arm64" : "maccatalyst-x64";
+		Assert.True(DotnetInternal.Build(appFile, "Debug", framework: macCatalystFramework, properties: BuildProps, runtimeIdentifier: macCatalystRuntimeIdentifier, output: _output),
+			$"Project {Path.GetFileName(appFile)} failed to build for Mac Catalyst. Check test output/attachments for errors.");
+		Assert.True(File.Exists(Path.Combine(appDir, "obj", "Debug", macCatalystFramework, macCatalystRuntimeIdentifier, "resizetizer", "r", "the_image.png")),
 			"Mac Catalyst was missing the image file.");
+
 		if (TestEnvironment.IsWindows)
-			Assert.True(File.Exists(Path.Combine(appDir, $"obj\\Debug\\{DotNetCurrent}-windows10.0.19041.0\\win-x64\\resizetizer\\r\\the_image.scale-100.png")),
+		{
+			var windowsFramework = $"{DotNetCurrent}-windows10.0.19041.0";
+			Assert.True(DotnetInternal.Build(appFile, "Debug", framework: windowsFramework, properties: GetWindowsBuildProps(), output: _output),
+				$"Project {Path.GetFileName(appFile)} failed to build for Windows. Check test output/attachments for errors.");
+			Assert.True(File.Exists(Path.Combine(appDir, "obj", "x64", "Debug", windowsFramework, "resizetizer", "r", "the_image.scale-100.png")),
 				"Windows was missing the image file.");
+		}
+	}
+
+	// Regression test for https://github.com/dotnet/maui/issues/23268: custom font assets were not
+	// copied into the Android assets folder on the *first* (clean) Release build — they only showed
+	// up after a second build. The fix makes _CollectMauiFontItems always run and map font paths
+	// predictively from @(MauiFont) instead of relying on a filesystem glob that was empty during
+	// first-build output inference. Release is required: the bug only reproduced in Release.
+	[Theory]
+	[InlineData("Release")]
+	public void FontsAreCopiedToAndroidAssetsOnFirstBuild(string config)
+	{
+		SetTestIdentifier(config);
+
+		var projectDir = TestDirectory;
+		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+
+		// The default maui template registers <MauiFont Include="Resources\Fonts\*" />, which includes
+		// OpenSans-Regular.ttf, so building it exercises the font pipeline without extra assets.
+		Assert.True(DotnetInternal.New("maui", projectDir, DotNetCurrent, output: _output),
+			"Unable to create template maui. Check test output for errors.");
+
+		var framework = $"{DotNetCurrent}-android";
+		var androidObjDir = Path.Combine(projectDir, "obj", config, framework);
+		const string fontFileName = "OpenSans-Regular.ttf";
+
+		// First (clean) build for Android only.
+		var firstBinlog = Path.Combine(projectDir, "first.binlog");
+		Assert.True(DotnetInternal.Build(projectFile, config, framework: framework, properties: BuildProps, binlogPath: firstBinlog, output: _output),
+			$"Project {Path.GetFileName(projectFile)} failed to build (first build). Check test output/attachments for errors.");
+
+		Assert.True(FontExistsInAndroidAssets(androidObjDir, fontFileName),
+			$"Font '{fontFileName}' was not copied into the Android assets folder under '{androidObjDir}' on the first build (regression #23268).");
+
+		// Second (incremental) build.
+		var secondBinlog = Path.Combine(projectDir, "second.binlog");
+		Assert.True(DotnetInternal.Build(projectFile, config, framework: framework, properties: BuildProps, binlogPath: secondBinlog, output: _output),
+			$"Project {Path.GetFileName(projectFile)} failed to build (incremental build). Check test output/attachments for errors.");
+
+		// ProcessMauiFonts is incremental and should be skipped (up-to-date) on the second build,
+		// while the always-run _CollectMauiFontItems must still execute and re-register the items.
+		Assert.True(WasTargetSkipped(secondBinlog, "ProcessMauiFonts"),
+			"ProcessMauiFonts should have been skipped (up-to-date) on the incremental build.");
+		Assert.True(WasTargetExecuted(secondBinlog, "_CollectMauiFontItems"),
+			"_CollectMauiFontItems should run on every build, even when ProcessMauiFonts is skipped.");
+		Assert.True(FontExistsInAndroidAssets(androidObjDir, fontFileName),
+			$"Font '{fontFileName}' is missing from the Android assets folder after an incremental build.");
+	}
+
+	// Regression test for https://github.com/dotnet/maui/issues/33092 (consolidated from #35962):
+	// after a successful build, deleting the generated font/splash intermediate outputs must
+	// re-trigger ProcessMauiFonts / ProcessMauiSplashScreens on the next build. This is guaranteed by
+	// tracking the generated files in mauifont.outputs / mauisplash.outputs manifests that feed the
+	// targets' Outputs (see _ReadMauiFontOutputs / _ReadMauiSplashOutputs), replacing the old stamp
+	// files whose timestamps could stay newer than the deleted outputs. It first deletes only the
+	// Apple MauiInfo.plist to verify that its separate manifest entry re-triggers font processing.
+	// A final no-op build asserts both targets are skipped when nothing changed.
+	[Fact]
+	public void BuildRegeneratesFontsAndSplashWhenIntermediateOutputsAreMissing()
+	{
+		SetTestIdentifier("MissingResizetizerOutputs");
+
+		// Builds every TFM of the default maui template (Android + iOS + MacCatalyst), which only
+		// fully builds on macOS, so this is gated accordingly. The Android first-build path is
+		// additionally covered on Windows by FontsAreCopiedToAndroidAssetsOnFirstBuild.
+		if (!TestEnvironment.IsMacOS)
+			return; // Skip: building the Apple TFMs (iOS/MacCatalyst) is only supported on macOS.
+
+		var projectDir = TestDirectory;
+		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+		const string config = "Debug";
+
+		Assert.True(DotnetInternal.New("maui", projectDir, DotNetCurrent, output: _output),
+			$"Unable to create template maui. Check test output for errors.");
+
+		Assert.True(DotnetInternal.Build(projectFile, config, properties: BuildProps, output: _output),
+			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
+
+		var intermediateOutputRoots = GetResizetizerOutputRoots(projectDir, config);
+		AssertBuiltTargetPlatforms(intermediateOutputRoots);
+		AssertIntermediateOutputsExist(intermediateOutputRoots);
+
+		var appleOutputRoots = intermediateOutputRoots
+			.Where(IsAppleTargetFramework)
+			.ToArray();
+		Assert.NotEmpty(appleOutputRoots);
+
+		foreach (var appleOutputRoot in appleOutputRoots)
+		{
+			var plistPath = Path.Combine(appleOutputRoot, "resizetizer", "f", "MauiInfo.plist");
+			Assert.True(File.Exists(plistPath), $"Missing generated font plist '{plistPath}'.");
+			File.Delete(plistPath);
+		}
+
+		var plistRecoveryBinlogPath = Path.Combine(projectDir, "plist-recovery.binlog");
+		Assert.True(DotnetInternal.Build(projectFile, config, properties: BuildProps, binlogPath: plistRecoveryBinlogPath, output: _output),
+			$"Project {Path.GetFileName(projectFile)} failed to rebuild missing font plists. Check test output/attachments for errors.");
+
+		AssertTargetExecuted(plistRecoveryBinlogPath, "ProcessMauiFonts", appleOutputRoots.Length);
+
+		foreach (var appleOutputRoot in appleOutputRoots)
+		{
+			var plistPath = Path.Combine(appleOutputRoot, "resizetizer", "f", "MauiInfo.plist");
+			Assert.True(File.Exists(plistPath), $"Missing regenerated font plist '{plistPath}'.");
+		}
+
+		foreach (var intermediateOutputRoot in intermediateOutputRoots)
+		{
+			DeleteDirectory(Path.Combine(intermediateOutputRoot, "resizetizer", "f"));
+			DeleteDirectory(Path.Combine(intermediateOutputRoot, "resizetizer", "sp"));
+		}
+
+		Assert.True(DotnetInternal.Build(projectFile, config, properties: BuildProps, output: _output),
+			$"Project {Path.GetFileName(projectFile)} failed to rebuild. Check test output/attachments for errors.");
+
+		AssertIntermediateOutputsExist(intermediateOutputRoots);
+
+		var noOpBinlogPath = Path.Combine(projectDir, "no-op.binlog");
+		Assert.True(DotnetInternal.Build(projectFile, config, properties: BuildProps, binlogPath: noOpBinlogPath, output: _output),
+			$"Project {Path.GetFileName(projectFile)} failed to no-op rebuild. Check test output/attachments for errors.");
+
+		AssertTargetSkipped(noOpBinlogPath, "ProcessMauiFonts", intermediateOutputRoots.Count);
+		AssertTargetSkipped(noOpBinlogPath, "ProcessMauiSplashScreens", intermediateOutputRoots.Count);
+		AssertIntermediateOutputsExist(intermediateOutputRoots);
+	}
+
+	static bool FontExistsInAndroidAssets(string androidObjDir, string fontFileName)
+	{
+		// A registered AndroidAsset is staged by .NET for Android into $(IntermediateOutputPath)assets/,
+		// i.e. obj/{config}/{tfm}/assets/ — a deterministic path (no RID segment for a default build).
+		// The intermediate resizetizer copy under resizetizer/f/ is NOT proof of registration; only the
+		// staged copy under assets/ is. Confirmed empirically with a Release net*-android build.
+		return File.Exists(Path.Combine(androidObjDir, "assets", fontFileName));
+	}
+
+	static bool WasTargetSkipped(string binlogPath, string targetName)
+	{
+		var (started, upToDateSkips) = GetTargetStatus(binlogPath, targetName);
+		// Each project instance that reaches the target emits exactly one TargetStarted, followed by
+		// either an OutputsUpToDate skip (up-to-date) or real task execution (no OutputsUpToDate skip).
+		// PreviouslyBuiltSuccessfully skips from extra request edges add no TargetStarted, so the
+		// target is "skipped" only when it ran at least once and *every* started instance was
+		// up-to-date. Requiring started == upToDateSkips (rather than upToDateSkips > 0) avoids a false
+		// positive if some instance actually executed while another was up-to-date.
+		return started > 0 && started == upToDateSkips;
+	}
+
+	static bool WasTargetExecuted(string binlogPath, string targetName)
+	{
+		var (started, upToDateSkips) = GetTargetStatus(binlogPath, targetName);
+		// Executions = started instances that did NOT end in an OutputsUpToDate skip. An always-run
+		// target (no Inputs/Outputs) requested via several edges still only adds
+		// PreviouslyBuiltSuccessfully skips (no OutputsUpToDate), so it correctly counts as executed.
+		return started - upToDateSkips > 0;
+	}
+
+	// Returns the number of TargetStarted events and the number of *up-to-date* skips
+	// (TargetSkipReason.OutputsUpToDate) for the target. Counting only OutputsUpToDate — rather than
+	// every TargetSkipped — is essential: when a target is requested through multiple edges (its own
+	// AfterTargets plus other targets' DependsOnTargets, e.g. ProcessMauiFonts pulled in by
+	// _CollectMauiFontItems and _ComputeAndroidResourcePaths), MSBuild emits a single OutputsUpToDate
+	// skip plus one PreviouslyBuiltSuccessfully skip per extra edge. A naive "any skip" or
+	// "started == skipped" check therefore misclassifies real multi-target builds.
+	static (int started, int upToDateSkips) GetTargetStatus(string binlogPath, string targetName)
+	{
+		int started = 0;
+		int upToDateSkips = 0;
+		if (File.Exists(binlogPath))
+		{
+			foreach (var record in new BinLogReader().ReadRecords(binlogPath))
+			{
+				switch (record.Args)
+				{
+					case TargetStartedEventArgs s when string.Equals(s.TargetName, targetName, StringComparison.Ordinal):
+						started++;
+						break;
+					case TargetSkippedEventArgs sk when string.Equals(sk.TargetName, targetName, StringComparison.Ordinal)
+						&& sk.SkipReason == TargetSkipReason.OutputsUpToDate:
+						upToDateSkips++;
+						break;
+				}
+			}
+		}
+		return (started, upToDateSkips);
+	}
+
+	static IReadOnlyList<string> GetResizetizerOutputRoots(string projectDir, string config)
+	{
+		var intermediateOutputPath = Path.Combine(projectDir, "obj", config);
+		var outputRoots = Directory
+			.GetFiles(intermediateOutputPath, "mauifont.outputs", SearchOption.AllDirectories)
+			.Select(Path.GetDirectoryName)
+			.Where(root => root is not null && File.Exists(Path.Combine(root, "mauisplash.outputs")))
+			.Cast<string>()
+			.OrderBy(root => root, StringComparer.OrdinalIgnoreCase)
+			.ToArray();
+
+		Assert.NotEmpty(outputRoots);
+		return outputRoots;
+	}
+
+	static void AssertBuiltTargetPlatforms(IReadOnlyList<string> intermediateOutputRoots)
+	{
+		// This is only reached from BuildRegeneratesFontsAndSplashWhenIntermediateOutputsAreMissing,
+		// which is gated to macOS (it builds the Apple TFMs), so only the Apple + Android roots are
+		// asserted here. Windows is covered separately by FontsAreCopiedToAndroidAssetsOnFirstBuild's
+		// sibling Windows lanes and CollectsAssets, and is never built by this macOS-only test.
+		Assert.Contains(intermediateOutputRoots, root => ContainsTargetFramework(root, $"{DotNetCurrent}-android"));
+		Assert.Contains(intermediateOutputRoots, root => ContainsTargetFramework(root, $"{DotNetCurrent}-ios"));
+		Assert.Contains(intermediateOutputRoots, root => ContainsTargetFramework(root, $"{DotNetCurrent}-maccatalyst"));
+	}
+
+	static bool ContainsTargetFramework(string path, string targetFramework) =>
+		path.Contains(targetFramework, StringComparison.OrdinalIgnoreCase);
+
+	static bool IsAppleTargetFramework(string path) =>
+		ContainsTargetFramework(path, $"{DotNetCurrent}-ios") ||
+		ContainsTargetFramework(path, $"{DotNetCurrent}-maccatalyst");
+
+	static void AssertIntermediateOutputsExist(IReadOnlyList<string> intermediateOutputRoots)
+	{
+		foreach (var intermediateOutputRoot in intermediateOutputRoots)
+		{
+			var fontsDir = Path.Combine(intermediateOutputRoot, "resizetizer", "f");
+			Assert.True(File.Exists(Path.Combine(fontsDir, "OpenSans-Regular.ttf")),
+				$"Missing OpenSans-Regular.ttf in {fontsDir}.");
+			Assert.True(File.Exists(Path.Combine(fontsDir, "OpenSans-Semibold.ttf")),
+				$"Missing OpenSans-Semibold.ttf in {fontsDir}.");
+
+			if (!ContainsTargetFramework(intermediateOutputRoot, $"{DotNetCurrent}-maccatalyst"))
+			{
+				var splashDir = Path.Combine(intermediateOutputRoot, "resizetizer", "sp");
+				// Assert a deterministic generated splash marker per platform instead of scanning the
+				// whole directory (confirmed with Release builds):
+				//  - Android: resizetizer/sp/drawable/maui_splash_image.xml
+				//  - iOS:     resizetizer/sp/MauiSplash.storyboard
+				var splashMarker = ContainsTargetFramework(intermediateOutputRoot, $"{DotNetCurrent}-android")
+					? Path.Combine(splashDir, "drawable", "maui_splash_image.xml")
+					: Path.Combine(splashDir, "MauiSplash.storyboard");
+				Assert.True(File.Exists(splashMarker),
+					$"Missing generated splash marker '{splashMarker}'.");
+			}
+		}
+	}
+
+	static void DeleteDirectory(string path)
+	{
+		if (Directory.Exists(path))
+			Directory.Delete(path, recursive: true);
+	}
+
+	static void AssertTargetSkipped(string binlogPath, string targetName, int minimumSkipCount)
+	{
+		Assert.True(File.Exists(binlogPath), $"Binlog not found: {binlogPath}");
+
+		// Count only up-to-date (OutputsUpToDate) skips — one per platform/project instance on a no-op
+		// build — via TargetSkippedEventArgs.SkipReason, instead of matching localized log text or
+		// counting the PreviouslyBuiltSuccessfully skips emitted for extra request edges.
+		var (_, upToDateSkips) = GetTargetStatus(binlogPath, targetName);
+
+		Assert.True(upToDateSkips >= minimumSkipCount,
+			$"Expected target '{targetName}' to be skipped as up-to-date at least {minimumSkipCount} times, but found {upToDateSkips}. See binlog: {binlogPath}");
+	}
+
+	static void AssertTargetExecuted(string binlogPath, string targetName, int minimumExecutionCount)
+	{
+		Assert.True(File.Exists(binlogPath), $"Binlog not found: {binlogPath}");
+
+		var (started, upToDateSkips) = GetTargetStatus(binlogPath, targetName);
+		var executions = started - upToDateSkips;
+
+		Assert.True(executions >= minimumExecutionCount,
+			$"Expected target '{targetName}' to execute at least {minimumExecutionCount} times, but found {executions}. See binlog: {binlogPath}");
+	}
+	[Theory]
+	[InlineData("maui", "mauilib", true)]
+	[InlineData("maui", "mauilib", false)]
+	public void AdditionalPropertiesExcludesImage(string id, string libid, bool unpackaged)
+	{
+		SetTestIdentifier(id, libid, unpackaged);
+
+		// new app
+		var appDir = Path.Combine(TestDirectory, "theapp");
+		var appFile = Path.Combine(appDir, $"{Path.GetFileName(appDir)}.csproj");
+		Assert.True(DotnetInternal.New(id, appDir, DotNetCurrent, output: _output),
+			$"Unable to create template {id}. Check test output for errors.");
+
+		// new lib
+		var libDir = Path.Combine(TestDirectory, "thelib");
+		var libFile = Path.Combine(libDir, $"{Path.GetFileName(libDir)}.csproj");
+		Assert.True(DotnetInternal.New(libid, libDir, DotNetCurrent, output: _output),
+			$"Unable to create template {libid}. Check test output for errors.");
+
+		// add a project reference with AdditionalProperties to exclude library images
+		FileUtilities.ReplaceInFile(appFile,
+			"</Project>",
+			"""
+			<ItemGroup>
+				<ProjectReference Include="..\thelib\thelib.csproj" AdditionalProperties="ExcludeLibraryImage=true" />
+			</ItemGroup>
+			</Project>
+			""");
+
+		SetWindowsPackageType(appFile, unpackaged);
+
+		// add the svg file to the library
+		File.WriteAllText(Path.Combine(libDir, "the_image.svg"), BlankSvgContents);
+
+		// add the <MauiImage> that is conditionally excluded based on AdditionalProperties
+		FileUtilities.ReplaceInFile(libFile,
+			"</Project>",
+			"""
+			<PropertyGroup>
+				<UseMaui>true</UseMaui>
+				<SingleProject>true</SingleProject>
+			</PropertyGroup>
+			<ItemGroup>
+				<MauiImage Include="the_image.svg" />
+				<MauiImage Remove="the_image.svg" Condition="'$(ExcludeLibraryImage)' == 'true'" />
+			</ItemGroup>
+			</Project>
+			""");
+
+		// build and assert Android - the image should NOT be collected because AdditionalProperties excluded it
+		var androidFramework = $"{DotNetCurrent}-android";
+		Assert.True(DotnetInternal.Build(appFile, "Debug", framework: androidFramework, properties: BuildProps, output: _output),
+			$"Project {Path.GetFileName(appFile)} failed to build for Android. Check test output/attachments for errors.");
+		Assert.False(File.Exists(Path.Combine(appDir, "obj", "Debug", androidFramework, "resizetizer", "r", "drawable-mdpi", "the_image.png")),
+			"Android should NOT have the image file (AdditionalProperties should have excluded it).");
+
+		if (TestEnvironment.IsWindows)
+		{
+			var windowsFramework = $"{DotNetCurrent}-windows10.0.19041.0";
+			Assert.True(DotnetInternal.Build(appFile, "Debug", framework: windowsFramework, properties: GetWindowsBuildProps(), output: _output),
+				$"Project {Path.GetFileName(appFile)} failed to build for Windows. Check test output/attachments for errors.");
+			Assert.False(File.Exists(Path.Combine(appDir, "obj", "x64", "Debug", windowsFramework, "resizetizer", "r", "the_image.scale-100.png")),
+				"Windows should NOT have the image file (AdditionalProperties should have excluded it).");
+		}
+	}
+
+	[Theory]
+	[InlineData("maui", "mauilib", true)]
+	[InlineData("maui", "mauilib", false)]
+	public void AdditionalPropertiesSelectsImageInLibrary(string id, string libid, bool unpackaged)
+	{
+		SetTestIdentifier(id, libid, unpackaged);
+
+		// new app
+		var appDir = Path.Combine(TestDirectory, "theapp");
+		var appFile = Path.Combine(appDir, $"{Path.GetFileName(appDir)}.csproj");
+		Assert.True(DotnetInternal.New(id, appDir, DotNetCurrent, output: _output),
+			$"Unable to create template {id}. Check test output for errors.");
+
+		// new lib
+		var libDir = Path.Combine(TestDirectory, "thelib");
+		var libFile = Path.Combine(libDir, $"{Path.GetFileName(libDir)}.csproj");
+		Assert.True(DotnetInternal.New(libid, libDir, DotNetCurrent, output: _output),
+			$"Unable to create template {libid}. Check test output for errors.");
+
+		// add a project reference with AdditionalProperties to select the alternate image
+		FileUtilities.ReplaceInFile(appFile,
+			"</Project>",
+			"""
+			<ItemGroup>
+				<ProjectReference Include="..\thelib\thelib.csproj" AdditionalProperties="UseAlternateImage=true" />
+			</ItemGroup>
+			</Project>
+			""");
+
+		SetWindowsPackageType(appFile, unpackaged);
+
+		// add two svg files to the library — the property selects which one is included
+		File.WriteAllText(Path.Combine(libDir, "default_image.svg"), BlankSvgContents);
+		File.WriteAllText(Path.Combine(libDir, "alternate_image.svg"), BlankSvgContents);
+
+		// add <MauiImage> that conditionally includes one file or the other based on the property
+		FileUtilities.ReplaceInFile(libFile,
+			"</Project>",
+			"""
+			<PropertyGroup>
+				<UseMaui>true</UseMaui>
+				<SingleProject>true</SingleProject>
+			</PropertyGroup>
+			<ItemGroup>
+				<MauiImage Condition="'$(UseAlternateImage)' != 'true'" Include="default_image.svg" />
+				<MauiImage Condition="'$(UseAlternateImage)' == 'true'" Include="alternate_image.svg" />
+			</ItemGroup>
+			</Project>
+			""");
+
+		// build and assert Android
+		var androidFramework = $"{DotNetCurrent}-android";
+		Assert.True(DotnetInternal.Build(appFile, "Debug", framework: androidFramework, properties: BuildProps, output: _output),
+			$"Project {Path.GetFileName(appFile)} failed to build for Android. Check test output/attachments for errors.");
+		Assert.True(File.Exists(Path.Combine(appDir, "obj", "Debug", androidFramework, "resizetizer", "r", "drawable-mdpi", "alternate_image.png")),
+			"Android was missing alternate_image — AdditionalProperties was not propagated.");
+		Assert.False(File.Exists(Path.Combine(appDir, "obj", "Debug", androidFramework, "resizetizer", "r", "drawable-mdpi", "default_image.png")),
+			"Android should NOT have default_image — AdditionalProperties should have selected the alternate.");
+
+		if (TestEnvironment.IsWindows)
+		{
+			var windowsFramework = $"{DotNetCurrent}-windows10.0.19041.0";
+			Assert.True(DotnetInternal.Build(appFile, "Debug", framework: windowsFramework, properties: GetWindowsBuildProps(), output: _output),
+				$"Project {Path.GetFileName(appFile)} failed to build for Windows. Check test output/attachments for errors.");
+			Assert.True(File.Exists(Path.Combine(appDir, "obj", "x64", "Debug", windowsFramework, "resizetizer", "r", "alternate_image.scale-100.png")),
+				"Windows was missing alternate_image — AdditionalProperties was not propagated.");
+			Assert.False(File.Exists(Path.Combine(appDir, "obj", "x64", "Debug", windowsFramework, "resizetizer", "r", "default_image.scale-100.png")),
+				"Windows should NOT have default_image — AdditionalProperties should have selected the alternate.");
+		}
+	}
+
+	static void SetWindowsPackageType(string projectFile, bool unpackaged)
+	{
+		FileUtilities.ReplaceInFile(
+			projectFile,
+			"<WindowsPackageType>None</WindowsPackageType>",
+			$"<WindowsPackageType>{(unpackaged ? "None" : "MSIX")}</WindowsPackageType>");
+	}
+
+	List<string> GetWindowsBuildProps()
+	{
+		var properties = BuildProps;
+		// Constrain restore without producing RID-specific app output that mismatches project-reference PRI output.
+		properties.Add("RuntimeIdentifiers=win-x64");
+		properties.Add("Platform=x64");
+		properties.Add("UseMonoRuntime=false");
+		return properties;
 	}
 }

@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.VisualStateManagerSliderPage"
+             Title="VisualStateManagerSliderPage">
+    <ContentPage.Resources>
+        <!-- Slider VSM -->
+        <Style TargetType="Slider"
+               x:Key="VsmSliderStyle">
+            <Setter Property="VisualStateManager.VisualStateGroups">
+                <VisualStateGroupList>
+                    <VisualStateGroup x:Name="CommonStates">
+                        <VisualState x:Name="Normal">
+                            <VisualState.Setters>
+                                <Setter Property="Opacity"
+                                        Value="1"/>
+                                <Setter Property="Scale"
+                                        Value="1.0"/>
+                                <Setter Property="MinimumTrackColor"
+                                        Value="#FFF63BCA"/>
+                                <Setter Property="MaximumTrackColor"
+                                        Value="#FFF1A6DE"/>
+                                <Setter Property="ThumbColor"
+                                        Value="#FFEB0875"/>
+                            </VisualState.Setters>
+                        </VisualState>
+                        <VisualState x:Name="Disabled">
+                            <VisualState.Setters>
+                                <Setter Property="Opacity"
+                                        Value="0.5"/>
+                                <Setter Property="MinimumTrackColor"
+                                        Value="#A3A3A3"/>
+                                <Setter Property="MaximumTrackColor"
+                                        Value="#E5E7EB"/>
+                                <Setter Property="ThumbColor"
+                                        Value="#9CA3AF"/>
+                                <Setter Property="Scale"
+                                        Value="1.0"/>
+                            </VisualState.Setters>
+                        </VisualState>
+                        <VisualState x:Name="Focused">
+                            <VisualState.Setters>
+                                <Setter Property="ThumbColor"
+                                        Value="#FF05432E"/>
+                                <Setter Property="MinimumTrackColor"
+                                        Value="#22C55E"/>
+                                <Setter Property="MaximumTrackColor"
+                                        Value="#86EFAC"/>
+                                <Setter Property="Scale"
+                                        Value="1.25"/>
+                            </VisualState.Setters>
+                        </VisualState>
+                    </VisualStateGroup>
+                </VisualStateGroupList>
+            </Setter>
+        </Style>
+    </ContentPage.Resources>
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20"
+                             Spacing="16">
+            <Label Text="VisualStateManager Feature Matrix"
+                   FontSize="20"/>
+
+            <VerticalStackLayout Padding="12"
+                                 Spacing="8">
+                <Label Text="Slider States (Normal/ Focused / Disabled)"
+                       FontAttributes="Bold"/>
+                <Slider x:Name="VSMSlider"
+                        AutomationId="VSMSlider"
+                        Minimum="0"
+                        Maximum="100"
+                        Value="50"
+                        Style="{StaticResource VsmSliderStyle}"
+                        Focused="OnSliderFocused"
+                        Unfocused="OnSliderUnfocused"
+                        ValueChanged="OnSliderValueChanged"/>
+
+                <!-- State output label -->
+                <Label x:Name="SliderState"
+                       AutomationId="SliderState"
+                       Text="State: Normal | Value: 50"
+                       FontSize="14"
+                       TextColor="#111827"/>
+
+                <HorizontalStackLayout Spacing="10">
+                    <Button x:Name="SliderFocusButton"
+                            Text="Focus"
+                            AutomationId="SliderFocus"
+                            Clicked="OnFocusSlider"/>
+                    <Button x:Name="SliderUnfocusButton"
+                            Text="Normal"
+                            AutomationId="SliderNormal"
+                            Clicked="OnUnfocusSlider"/>
+                </HorizontalStackLayout>
+                <HorizontalStackLayout Spacing="10">
+                    <Button x:Name="SliderDisableButton"
+                            Text="Disable"
+                            AutomationId="SliderDisable"
+                            Clicked="OnToggleSliderDisabled"/>
+                    <Button Text="Reset"
+                            AutomationId="SliderReset"
+                            Clicked="OnResetSlider"/>
+                </HorizontalStackLayout>
+            </VerticalStackLayout>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
+

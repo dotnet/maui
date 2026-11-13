@@ -10,7 +10,10 @@ class StaticCALayer : CALayer, IAutoSizableCALayer
 
 	protected override void Dispose(bool disposing)
 	{
-		_autosizeToSuperLayerBehavior.Detach();
+		if (disposing)
+		{
+			_autosizeToSuperLayerBehavior.Detach();
+		}
 		base.Dispose(disposing);
 	}
 

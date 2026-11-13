@@ -2,6 +2,7 @@
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
@@ -29,7 +30,7 @@ namespace Microsoft.Maui.Controls
 		public const string SwitchOffVisualState = "Off";
 
 		/// <summary>Bindable property for <see cref="IsToggled"/>. This is a bindable property.</summary>
-		public static readonly BindableProperty IsToggledProperty = BindableProperty.Create(nameof(IsToggled), typeof(bool), typeof(Switch), false, propertyChanged: (bindable, oldValue, newValue) =>
+		public static readonly BindableProperty IsToggledProperty = BindableProperty.Create(nameof(IsToggled), typeof(bool), typeof(Switch), BooleanBoxes.FalseBox, propertyChanged: (bindable, oldValue, newValue) =>
 		{
 			((Switch)bindable).Toggled?.Invoke(bindable, new ToggledEventArgs((bool)newValue));
 			((Switch)bindable).ChangeVisualState();
@@ -106,7 +107,7 @@ namespace Microsoft.Maui.Controls
 		public bool IsToggled
 		{
 			get { return (bool)GetValue(IsToggledProperty); }
-			set { SetValue(IsToggledProperty, value); }
+			set { SetValue(IsToggledProperty, BooleanBoxes.Box(value)); }
 		}
 
 		protected internal override void ChangeVisualState()
@@ -156,7 +157,7 @@ namespace Microsoft.Maui.Controls
 		bool ISwitch.IsOn
 		{
 			get => IsToggled;
-			set => SetValue(IsToggledProperty, value, SetterSpecificity.FromHandler);
+			set => SetValue(IsToggledProperty, BooleanBoxes.Box(value), SetterSpecificity.FromHandler);
 		}
 
 		private protected override string GetDebuggerDisplay()

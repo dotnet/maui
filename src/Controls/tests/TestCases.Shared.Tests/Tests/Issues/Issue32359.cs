@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		[Test]
-		[Category(UITestCategories.CollectionView)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 		public void VerticalGridCollectionViewRTLColumnMirroringShouldWork()
 		{
 			// Wait for CollectionView to load
@@ -35,7 +35,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		[Test]
-		[Category(UITestCategories.CollectionView)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 		public void VerticalGridCollectionViewLTRToRTLToggleShouldWork()
 		{
 			// Start in LTR (default)

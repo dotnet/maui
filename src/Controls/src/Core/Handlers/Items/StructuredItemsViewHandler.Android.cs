@@ -12,18 +12,112 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected override StructuredItemsViewAdapter<TItemsView, IItemsViewSource> CreateAdapter() => new(VirtualView);
 
+		// HeaderProperty and HeaderTemplateProperty (and the Footer equivalents) both route here, since the
+		// shared PropertyMapper maps them to the same action. _lastHeaderTemplate/_lastFooterTemplate let us
+		// tell a template swap (needs a full adapter rebuild) apart from a plain content change (doesn't).
+		// _headerTemplateSeen/_footerTemplateSeen guard the very first mapper pass, where a preconfigured
+		// template has no prior snapshot to compare against and must not be treated as a "change".
+		DataTemplate _lastHeaderTemplate;
+		DataTemplate _lastFooterTemplate;
+		bool _headerTemplateSeen;
+		bool _footerTemplateSeen;
+
 		public static void MapHeaderTemplate(StructuredItemsViewHandler<TItemsView> handler, StructuredItemsView itemsView)
 		{
+			handler.UpdateHeaderFooter(true);
 		}
 
 		public static void MapFooterTemplate(StructuredItemsViewHandler<TItemsView> handler, StructuredItemsView itemsView)
 		{
+			handler.UpdateHeaderFooter(false);
 		}
 
 		public static void MapItemsLayout(StructuredItemsViewHandler<TItemsView> handler, StructuredItemsView itemsView)
-			=> (handler.PlatformView as IMauiRecyclerView<TItemsView>)?.UpdateLayoutManager();
+		{
+			if (handler.PlatformView is IMauiRecyclerView<TItemsView> recyclerView)
+			{
+				recyclerView.UpdateAdapter();
+				recyclerView.UpdateScrollingMode();
+				recyclerView.UpdateLayoutManager();
+			}
+		}
 
 		public static void MapItemSizingStrategy(StructuredItemsViewHandler<TItemsView> handler, StructuredItemsView itemsView)
 			=> (handler.PlatformView as IMauiRecyclerView<TItemsView>)?.UpdateAdapter();
+
+		void UpdateHeaderFooter(bool isHeader)
+		{
+			var recyclerView = PlatformView as IMauiRecyclerView<TItemsView>;
+			var adapter = (recyclerView as RecyclerView)?.GetAdapter();
+
+			if (recyclerView is null || adapter is null)
+			{
+				return;
+			}
+
+			var currentTemplate = isHeader ? VirtualView.HeaderTemplate : VirtualView.FooterTemplate;
+
+			bool hasHeaderOrFooter = isHeader
+			? (VirtualView.Header ?? VirtualView.HeaderTemplate) != null
+			: (VirtualView.Footer ?? VirtualView.FooterTemplate) != null;
+
+			bool exists = isHeader
+			? DoesHeaderOrFooterExist(adapter, position: 0, ItemViewType.Header)
+			: DoesHeaderOrFooterExist(adapter, position: adapter.ItemCount - 1, ItemViewType.Footer);
+
+			// Seen-before guard: on the very first mapper pass there's no prior snapshot to compare against,
+			// so a preconfigured template/content must not be mistaken for a change and trigger a rebuild.
+			bool seenBefore = isHeader ? _headerTemplateSeen : _footerTemplateSeen;
+
+			bool templateChanged = seenBefore && !ReferenceEquals(isHeader ? _lastHeaderTemplate : _lastFooterTemplate, currentTemplate);
+
+			if (isHeader)
+			{
+				_lastHeaderTemplate = currentTemplate;
+				_headerTemplateSeen = true;
+			}
+			else
+			{
+				_lastFooterTemplate = currentTemplate;
+				_footerTemplateSeen = true;
+			}
+
+			if (hasHeaderOrFooter != exists)
+			{
+				// Header/footer was added or removed - item positions shift, so the adapter needs a full rebuild.
+				recyclerView.UpdateAdapter();
+			}
+			else if (hasHeaderOrFooter && exists && templateChanged)
+			{
+				// The template itself changed - the existing ViewHolder type may no longer apply.
+				recyclerView.UpdateAdapter();
+			}
+			else if (hasHeaderOrFooter && exists && currentTemplate is null && seenBefore)
+			{
+				// No template: header/footer content is baked into a SimpleViewHolder at creation time and
+				// OnBindViewHolder never rebinds it, so a content-only change still needs a full rebuild.
+				recyclerView.UpdateAdapter();
+			}
+
+			// Otherwise this is a content-only change on a templated header/footer;
+			// StructuredItemsViewAdapter.ItemsViewPropertyChanged already rebinds just that position.
+		}
+
+		bool DoesHeaderOrFooterExist(RecyclerView.Adapter adapter, int position, int expectedViewType)
+		{
+			if (position < 0 || position >= adapter.ItemCount)
+			{
+				return false;
+			}
+
+			try
+			{
+				return adapter.GetItemViewType(position) == expectedViewType;
+			}
+			catch
+			{
+				return false;
+			}
+		}
 	}
 }

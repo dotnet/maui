@@ -46,11 +46,17 @@ namespace Microsoft.Maui.Platform
 
 		static UIKeyCommand CreateMenuItemKeyCommand(this IMenuFlyoutItem virtualView, int index, UIImage? uiImage, Selector selector, UIKeyModifierFlags modifierFlags, string key)
 		{
+			// UIKeyCommand requires lowercase input for alphabetic keys. Using an uppercase letter
+			// (e.g. "S") combined with UIKeyModifierFlags.Shift causes Mac Catalyst to silently
+			// reject the UIKeyCommand, which makes the entire parent UIMenu non-functional.
+			// See: https://github.com/dotnet/maui/issues/35279
+			var normalizedKey = key.Length == 1 && char.IsAsciiLetter(key[0]) ? char.ToLowerInvariant(key[0]).ToString() : key;
+
 			var keyCommand = UIKeyCommand.Create(
 				title: virtualView.Text,
 				uiImage,
 				selector,
-				key,
+				normalizedKey,
 				modifierFlags,
 				new NSString(index.ToString()));
 

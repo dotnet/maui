@@ -184,6 +184,21 @@ public class RefreshViewViewModel : INotifyPropertyChanged
 		}
 	}
 
+	private string _refreshEventStatusText = "Not Raised";
+
+	public string RefreshEventStatusText
+	{
+		get => _refreshEventStatusText;
+		set
+		{
+			if (_refreshEventStatusText != value)
+			{
+				_refreshEventStatusText = value;
+				OnPropertyChanged();
+			}
+		}
+	}
+
 	protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
 	{
 		PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));

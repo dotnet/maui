@@ -63,7 +63,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		bool HasAnyGestures()
 		{
-			return (_panGestureHandler?.HasAnyGestures() ?? false) || (_tapGestureHandler?.HasAnyGestures() ?? false) || (_swipeGestureHandler?.HasAnyGestures() ?? false);
+			return (_panGestureHandler?.HasAnyGestures() ?? false) || (_tapGestureHandler?.HasAnyGestures() ?? false) || (_swipeGestureHandler?.HasAnyGestures() ?? false) || (_dragAndDropGestureHandler?.HasAnyDragGestures() ?? false);
 		}
 
 		// This is needed because GestureRecognizer callbacks can be delayed several hundred milliseconds
@@ -235,8 +235,8 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void SetStartingPosition(MotionEvent e1)
 		{
-			_lastX = e1.GetX();
-			_lastY = e1.GetY();
+			_lastX = e1.RawX;
+			_lastY = e1.RawY;
 		}
 
 		bool StartScrolling(MotionEvent e2)
@@ -247,10 +247,14 @@ namespace Microsoft.Maui.Controls.Platform
 			if (!_isScrolling && _scrollStartedDelegate != null)
 				_scrollStartedDelegate(e2.PointerCount);
 
+			// A PanUpdated handler can remove the view, which disposes this listener
+			if (_disposed)
+				return false;
+
 			_isScrolling = true;
 
-			float totalX = e2.GetX() - _lastX;
-			float totalY = e2.GetY() - _lastY;
+			float totalX = e2.RawX - _lastX;
+			float totalY = e2.RawY - _lastY;
 
 			return _scrollDelegate(totalX, totalY, e2.PointerCount) || _swipeDelegate(totalX, totalY);
 		}

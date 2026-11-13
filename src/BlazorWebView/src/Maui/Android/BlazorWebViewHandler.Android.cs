@@ -1,7 +1,9 @@
 using System;
 using System.Threading.Tasks;
+using Android.Views;
 using Android.Webkit;
 using Android.Widget;
+using AndroidX.Activity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
@@ -21,6 +23,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		private WebChromeClient? _webChromeClient;
 		private AndroidWebKitWebViewManager? _webviewManager;
 		internal AndroidWebKitWebViewManager? WebviewManager => _webviewManager;
+		private OnBackPressedCallback? _backPressedCallback;
 
 		private ILogger? _logger;
 		internal ILogger Logger => _logger ??= Services!.GetService<ILogger<BlazorWebViewHandler>>() ?? NullLogger<BlazorWebViewHandler>.Instance;
@@ -47,6 +50,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 				blazorAndroidWebView.Settings.JavaScriptEnabled = true;
 				blazorAndroidWebView.Settings.DomStorageEnabled = true;
+				blazorAndroidWebView.Settings.MinimumFontSize = 1;
+				blazorAndroidWebView.Settings.MinimumLogicalFontSize = 1;
 			}
 
 			_webViewClient = new WebKitWebViewClient(this);
@@ -60,11 +65,68 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			return blazorAndroidWebView;
 		}
 
+		/// <summary>
+		/// Connects the handler to the Android <see cref="AWebView"/> and registers a
+		/// <see cref="OnBackPressedCallback"/> so the WebView can consume back presses
+		/// before the containing page is popped or the back-to-home animation plays.
+		/// </summary>
+		/// <param name="platformView">The native Android <see cref="AWebView"/> instance associated with this handler.</param>
+		/// <remarks>
+		/// Uses AndroidX <see cref="OnBackPressedCallback"/> with <c>Enabled</c> as the sole
+		/// authority for whether this callback intercepts back presses. When <c>Enabled = false</c>
+		/// (WebView has no back history), the system predictive back-to-home animation plays naturally.
+		/// <c>Enabled</c> is updated after every navigation via <see cref="UpdateBackNavigationState"/>.
+		/// <para>
+		/// The callback is lifecycle-scoped to the <see cref="AndroidX.Activity.ComponentActivity"/>
+		/// so it is automatically removed when the activity is destroyed.
+		/// </para>
+		/// <para>
+		/// <b>Multiple instances:</b> The <see cref="AndroidX.Activity.OnBackPressedDispatcher"/>
+		/// is LIFO; the last-added callback fires first. If that WebView can't handle the back press
+		/// (e.g. it lost focus or was detached), <see cref="BlazorWebViewBackCallback.HandleOnBackPressed"/>
+		/// disables itself so the next callback in the stack gets a chance.
+		/// </para>
+		/// <para>
+		/// <b>Note:</b> This requires <see cref="Microsoft.Maui.ApplicationModel.Platform.CurrentActivity"/>
+		/// to be a <see cref="AndroidX.Activity.ComponentActivity"/> (which all MAUI apps use via
+		/// <c>MauiAppCompatActivity</c>). Custom activities not extending <c>ComponentActivity</c>
+		/// will not register this callback.
+		/// </para>
+		/// </remarks>
+		protected override void ConnectHandler(AWebView platformView)
+		{
+			base.ConnectHandler(platformView);
+
+			// Use OnBackPressedCallback (AndroidX) so that when the WebView has no back history
+			// (Enabled = false), the system predictive back-to-home animation plays naturally.
+			// Note: requires ComponentActivity — all MAUI apps satisfy this via MauiAppCompatActivity.
+			if (Microsoft.Maui.ApplicationModel.Platform.CurrentActivity is ComponentActivity activity)
+			{
+				var weakPlatformView = new WeakReference<AWebView>(platformView);
+				_backPressedCallback = new BlazorWebViewBackCallback(weakPlatformView, activity.OnBackPressedDispatcher);
+				activity.OnBackPressedDispatcher.AddCallback(activity, _backPressedCallback);
+			}
+		}
+
 		private const string AndroidFireAndForgetAsyncSwitch = "BlazorWebView.AndroidFireAndForgetAsync";
 
 		protected override void DisconnectHandler(AWebView platformView)
 		{
+			DisconnectRootComponents();
+
+			_backPressedCallback?.Remove();
+			_backPressedCallback?.Dispose();
+			_backPressedCallback = null;
+
 			platformView.StopLoading();
+
+			// Capture and null the client fields now, but dispose them only after the native view
+			// detaches them in DestroyPlatformView — the fire-and-forget path below doesn't await,
+			// so disposing here first would race ahead of that detach.
+			var webViewClient = _webViewClient;
+			var webChromeClient = _webChromeClient;
+			_webViewClient = null;
+			_webChromeClient = null;
 
 			if (_webviewManager != null)
 			{
@@ -88,18 +150,69 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 					disposalTask
 						.GetAwaiter()
 						.GetResult();
+
+					// Disposal already finished (we blocked on it above), so it's safe to tear down
+					// the native WebView synchronously right here.
+					DestroyPlatformView(platformView, webViewClient, webChromeClient);
 				}
 				else
 				{
-					// Otherwise, by default, we'll fire-and-forget the disposal task.
+					// Otherwise, by default, we'll fire-and-forget the disposal task. The native
+					// WebView must stay alive until the Blazor/JS teardown driven by disposal has
+					// actually completed, so the (Android-native-resource-releasing) teardown below
+					// is chained as a continuation instead of running immediately. Routed through the
+					// FireAndForget helper (rather than discarded directly) so any exception thrown by
+					// the continuation itself -- e.g. from DestroyPlatformView -- is logged instead of
+					// becoming an unobserved task exception.
 					disposalTask.FireAndForget(_logger);
+					DestroyPlatformViewAfterDisposalAsync(disposalTask, platformView, webViewClient, webChromeClient).FireAndForget(_logger);
 				}
 
 				_webviewManager = null;
 			}
+			else
+			{
+				// No WebViewManager was ever created (e.g. handler connected/disconnected before
+				// StartWebViewCoreIfPossible ran) -- nothing to await, so tear down immediately.
+				DestroyPlatformView(platformView, webViewClient, webChromeClient);
+			}
+		}
 
-			_webViewClient?.Dispose();
-			_webChromeClient?.Dispose();
+		// Android's WebView requires an explicit Destroy() call after removal from the view
+		// hierarchy, or it keeps native/Chromium state (and Activity/Context references) alive
+		// indefinitely. webViewClient/webChromeClient are disposed here, after being detached via
+		// SetWebViewClient(null)/SetWebChromeClient(null), so ordering is correct on both the
+		// synchronous and fire-and-forget teardown paths (see DisconnectHandler).
+		static void DestroyPlatformView(AWebView platformView, WebViewClient? webViewClient, WebChromeClient? webChromeClient)
+		{
+			platformView.SetWebViewClient(null!);
+			platformView.SetWebChromeClient(null);
+
+			if (platformView.Parent is ViewGroup parent)
+				parent.RemoveView(platformView);
+
+			platformView.RemoveAllViews();
+			platformView.Destroy();
+
+			webViewClient?.Dispose();
+			webChromeClient?.Dispose();
+		}
+
+		static async Task DestroyPlatformViewAfterDisposalAsync(Task disposalTask, AWebView platformView, WebViewClient? webViewClient, WebChromeClient? webChromeClient)
+		{
+			try
+			{
+				// AWebView.Destroy() must run on the UI thread; ConfigureAwait(true) ensures the
+				// continuation resumes there instead of on a background thread.
+				await disposalTask.ConfigureAwait(true);
+			}
+			catch
+			{
+				// Already logged/handled by the sibling disposalTask.FireAndForget(_logger) call;
+				// swallow here so this continuation still runs the native cleanup below.
+			}
+
+			DestroyPlatformView(platformView, webViewClient, webChromeClient);
 		}
 
 		private bool RequiredStartupPropertiesSet =>
@@ -181,6 +294,54 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			}
 
 			return await _webviewManager.TryDispatchAsync(workItem);
+		}
+
+		/// <summary>
+		/// Updates the back navigation callback's enabled state based on the WebView's current
+		/// <see cref="AWebView.CanGoBack"/> status. Call this after any navigation that may
+		/// change the WebView's history.
+		/// </summary>
+		internal void UpdateBackNavigationState()
+		{
+			if (_backPressedCallback is not null && PlatformView is not null)
+			{
+				_backPressedCallback.Enabled = PlatformView.CanGoBack();
+			}
+		}
+
+		sealed class BlazorWebViewBackCallback : OnBackPressedCallback
+		{
+			readonly WeakReference<AWebView> _weakWebView;
+			readonly OnBackPressedDispatcher _dispatcher;
+
+			public BlazorWebViewBackCallback(WeakReference<AWebView> weakWebView, OnBackPressedDispatcher dispatcher) : base(false)
+			{
+				_weakWebView = weakWebView;
+				_dispatcher = dispatcher;
+			}
+
+			public override void HandleOnBackPressed()
+			{
+				if (_weakWebView.TryGetTarget(out var webView) &&
+					webView.IsAttachedToWindow &&
+					webView.HasWindowFocus &&
+					webView.CanGoBack())
+				{
+					webView.GoBack();
+					return;
+				}
+
+				// Conditions not met (detached, unfocused, or no history) — disable so the next
+				// callback in the LIFO dispatcher stack can handle this back press. This is important
+				// for multiple BlazorWebView instances: the last-added callback fires first; if it
+				// can't handle the press it must yield rather than silently consuming the event.
+				// UpdateBackNavigationState() will re-enable this callback on the next navigation.
+				Enabled = false;
+
+				// Redispatch this same back press so it is not swallowed when this callback was
+				// stale-enabled and no longer able to handle.
+				_dispatcher.OnBackPressed();
+			}
 		}
 	}
 }

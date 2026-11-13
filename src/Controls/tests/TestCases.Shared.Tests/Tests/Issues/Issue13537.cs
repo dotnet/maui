@@ -18,39 +18,41 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "ApplyQueryAttributes should Trigger for all navigations";
 
 		[Test]
-		[Category(UITestCategories.Shell)]
+		[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 		public void ApplyQueryAttributeShouldTriggerforPushAndPopButton()
 		{
 			App.WaitForElement("HomePageTestLabel");
 			App.Tap("PushAsyncButton");
-			App.WaitForElement("InnerPageTestLabel");
+			// Verify ApplyQueryAttributes triggers on InnerPage when navigating via PushAsync
+			var result = App.WaitForElement("InnerPageTestLabel").GetText();
+			Assert.That(result, Is.EqualTo("Issue13537InnerPage QueryAttribute is triggered"));
 			App.Tap("PopAsyncButton");
-			var result = App.WaitForElement("HomePageTestLabel").GetText();
-			Assert.That(result, Is.EqualTo("Issue13537HomePage QueryAttribute is triggered"));
+			App.WaitForElement("HomePageTestLabel");
 		}
 
 #if TEST_FAILS_ON_CATALYST
 		//App.TapBackArrow doesnot actually tab the back arrow button instead it taps the first tab element on the screen as both have the same access identifier.
 		[Test]
-		[Category(UITestCategories.Shell)]
+		[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 		public void ApplyQueryAttributeShouldTriggerforPushAndBackButton()
 		{
 			App.WaitForElement("HomePageTestLabel");
 			App.Tap("PushAsyncButton");
-			App.WaitForElement("InnerPageTestLabel");
+			// Verify ApplyQueryAttributes triggers on InnerPage when navigating via PushAsync
+			var result = App.WaitForElement("InnerPageTestLabel").GetText();
+			Assert.That(result, Is.EqualTo("Issue13537InnerPage QueryAttribute is triggered"));
 #if IOS
 			App.Back();
 #else
 			App.TapBackArrow(backButtonIdentifier);
 #endif
-			var result = App.WaitForElement("HomePageTestLabel").GetText();
-			Assert.That(result, Is.EqualTo("Issue13537HomePage QueryAttribute is triggered"));
+			App.WaitForElement("HomePageTestLabel");
 		}
 #endif
 
 
 		[Test]
-		[Category(UITestCategories.Shell)]
+		[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 		public void ApplyQueryAttributeShouldTriggerforTab()
 		{
 			App.WaitForElement("Favorite");

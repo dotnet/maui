@@ -18,7 +18,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 #if TEST_FAILS_ON_WINDOWS // For more information, see :https://github.com/dotnet/maui/issues/28006
 		// KeepScrollOffset (src\Compatibility\ControlGallery\src\Issues.Shared\CollectionViewItemsUpdatingScrollMode.cs)
 		[Test]
-		[Category(UITestCategories.CollectionView)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 		public void KeepItemsInView()
 		{
 			App.WaitForElement("ScrollToMiddle");
@@ -36,8 +36,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // The test fails on iOS and macOS because Appium is unable to locate the Picker control elements resulting in a TimeoutException. For more information, see: https://github.com/dotnet/maui/issues/28024
 		// KeepScrollOffset (src\Compatibility\ControlGallery\src\Issues.Shared\CollectionViewItemsUpdatingScrollMode.cs)
+		// After scrolling to the middle, adding items above should not cause the view to scroll.
+		// Previously, the view would automatically scroll to show newly added items, which broke
+		// KeepScrollOffset semantics. With the fix, the visible items remain stable; adding 5 items
+		// above shifts indices so the previously visible "Vegetables.jpg, 10" becomes "FlowerBuds.jpg, 12".
 		[Test]
-		[Category(UITestCategories.CollectionView)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
 		public void KeepScrollOffset()
 		{
 			App.WaitForElement("SelectScrollMode");
@@ -47,13 +51,18 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("ScrollToMiddle");
 			App.Click("ScrollToMiddle");
 			App.WaitForElement("Vegetables.jpg, 10");
-			App.Click("AddItemAbove");
-			App.WaitForElement("photo.jpg, 9");
+
+			for (int i = 0; i < 5; i++)
+			{
+				App.Click("AddItemAbove");
+			}
+
+			App.WaitForElement("FlowerBuds.jpg, 12");
 		}
 
 		// KeepLastItemInView(src\Compatibility\ControlGallery\src\Issues.Shared\CollectionViewItemsUpdatingScrollMode.cs)
 		[Test]
-		[Category(UITestCategories.CollectionView)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 		public void KeepLastItemInView()
 		{
 			App.WaitForElement("SelectScrollMode");

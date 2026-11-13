@@ -100,6 +100,28 @@ namespace Microsoft.Maui.Graphics.Platform
 			coreGraphics.SetStrokeColorSpace(_colorSpace);
 			coreGraphics.SetPatternPhase(PatternPhase);
 
+			if (EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft)
+			{
+				coreGraphics.SaveState();
+				coreGraphics.TranslateCTM((nfloat)Bounds.Width, 0);
+				coreGraphics.ScaleCTM(-1, 1);
+				try
+				{
+					DrawContent(coreGraphics, dirtyRect);
+				}
+				finally
+				{
+					coreGraphics.RestoreState();
+				}
+			}
+			else
+			{
+				DrawContent(coreGraphics, dirtyRect);
+			}
+		}
+
+		void DrawContent(CoreGraphics.CGContext coreGraphics, CGRect dirtyRect)
+		{
 			if (Renderer is IGraphicsRenderer renderer)
 			{
 				renderer.Draw(coreGraphics, dirtyRect.AsRectangleF());

@@ -11,8 +11,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="xunit" Version="2.9.0" />
-    <PackageReference Include="MSBuild.StructuredLogger" Version="2.2.158" />
+    <PackageReference Include="xunit" Version="$(XunitPackageVersion)" />
+    <PackageReference Include="MSBuild.StructuredLogger" Version="2.3.246" />
   </ItemGroup>
 
   <ItemGroup>

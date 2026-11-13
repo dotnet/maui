@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 #if !(MACCATALYST || MACOS)
 using CoreTelephony;
 #endif
 using CoreFoundation;
+using Network;
 using SystemConfiguration;
 
 namespace Microsoft.Maui.Networking
@@ -19,144 +20,104 @@ namespace Microsoft.Maui.Networking
 
 	static class Reachability
 	{
-		internal const string HostName = "www.microsoft.com";
+		static NWPathMonitor sharedMonitor;
+		static readonly object monitorLock = new object();
+		static readonly ManualResetEventSlim initEvent = new ManualResetEventSlim(false);
 
-		internal static NetworkStatus RemoteHostStatus()
+		static NWPathMonitor SharedMonitor
 		{
-			using (var remoteHostReachability = new NetworkReachability(HostName))
+			get
 			{
-				var reachable = remoteHostReachability.TryGetFlags(out var flags);
-
-				if (!reachable)
-					return NetworkStatus.NotReachable;
-
-				if (!IsReachableWithoutRequiringConnection(flags))
-					return NetworkStatus.NotReachable;
-
-#if __IOS__
-				if ((flags & NetworkReachabilityFlags.IsWWAN) != 0)
-					return NetworkStatus.ReachableViaCarrierDataNetwork;
-#endif
-
-				return NetworkStatus.ReachableViaWiFiNetwork;
+				lock (monitorLock)
+				{
+					if (sharedMonitor == null)
+					{
+						sharedMonitor = new NWPathMonitor();
+						sharedMonitor.SnapshotHandler = _ => initEvent.Set();
+						sharedMonitor.SetQueue(DispatchQueue.DefaultGlobalQueue);
+						sharedMonitor.Start();
+					}
+				}
+				// Wait for the first path update to ensure CurrentPath is available.
+				// ManualResetEventSlim stays signaled once Set(), so subsequent calls return immediately.
+				initEvent.Wait(TimeSpan.FromSeconds(5));
+				return sharedMonitor;
 			}
 		}
 
-		internal static NetworkStatus InternetConnectionStatus()
+		static NWPath GetCurrentPath()
 		{
-			var status = NetworkStatus.NotReachable;
+			var monitor = SharedMonitor;
+			return monitor?.CurrentPath;
+		}
 
-			var defaultNetworkAvailable = IsNetworkAvailable(out var flags);
+		static NetworkStatus GetNetworkStatus()
+		{
+			var path = GetCurrentPath();
+			if (path == null || path.Status != NWPathStatus.Satisfied)
+				return NetworkStatus.NotReachable;
 
 #if __IOS__
-			// If it's a WWAN connection..
-			if ((flags & NetworkReachabilityFlags.IsWWAN) != 0)
-				status = NetworkStatus.ReachableViaCarrierDataNetwork;
+			if (path.UsesInterfaceType(NWInterfaceType.Cellular))
+				return NetworkStatus.ReachableViaCarrierDataNetwork;
 #endif
 
-			// If the connection is reachable and no connection is required, then assume it's WiFi
-			if (defaultNetworkAvailable)
-			{
-				status = NetworkStatus.ReachableViaWiFiNetwork;
-			}
-
-			// If the connection is on-demand or on-traffic and no user intervention
-			// is required, then assume WiFi.
-			if (((flags & NetworkReachabilityFlags.ConnectionOnDemand) != 0 || (flags & NetworkReachabilityFlags.ConnectionOnTraffic) != 0) &&
-				 (flags & NetworkReachabilityFlags.InterventionRequired) == 0)
-			{
-				status = NetworkStatus.ReachableViaWiFiNetwork;
-			}
-
-			return status;
+			return NetworkStatus.ReachableViaWiFiNetwork;
 		}
+
+		// RemoteHostStatus and InternetConnectionStatus previously had different
+		// implementations (DNS probe to www.microsoft.com vs default route check).
+		// With NWPathMonitor they share the same underlying path status.
+		internal static NetworkStatus RemoteHostStatus() => GetNetworkStatus();
+
+		internal static NetworkStatus InternetConnectionStatus() => GetNetworkStatus();
 
 		internal static IEnumerable<NetworkStatus> GetActiveConnectionType()
 		{
 			var status = new List<NetworkStatus>();
+			var path = GetCurrentPath();
 
-			var defaultNetworkAvailable = IsNetworkAvailable(out var flags);
+			if (path == null || path.Status != NWPathStatus.Satisfied)
+				return status;
 
 #if __IOS__
-			// If it's a WWAN connection.
-			if ((flags & NetworkReachabilityFlags.IsWWAN) != 0)
+			if (path.UsesInterfaceType(NWInterfaceType.Cellular))
 			{
 				status.Add(NetworkStatus.ReachableViaCarrierDataNetwork);
 			}
-			else if (defaultNetworkAvailable)
+			else if (path.UsesInterfaceType(NWInterfaceType.Wifi) || path.UsesInterfaceType(NWInterfaceType.Wired))
 #else
-			// If the connection is reachable and no connection is required, then assume it's WiFi
-			if (defaultNetworkAvailable)
+			if (path.UsesInterfaceType(NWInterfaceType.Wifi) || path.UsesInterfaceType(NWInterfaceType.Wired))
 #endif
 			{
-				status.Add(NetworkStatus.ReachableViaWiFiNetwork);
-			}
-			else if (((flags & NetworkReachabilityFlags.ConnectionOnDemand) != 0 || (flags & NetworkReachabilityFlags.ConnectionOnTraffic) != 0) &&
-					 (flags & NetworkReachabilityFlags.InterventionRequired) == 0)
-			{
-				// If the connection is on-demand or on-traffic and no user intervention
-				// is required, then assume WiFi.
 				status.Add(NetworkStatus.ReachableViaWiFiNetwork);
 			}
 
 			return status;
 		}
 
-		internal static bool IsNetworkAvailable(out NetworkReachabilityFlags flags)
+		internal static bool IsNetworkAvailable()
 		{
-			var ip = new IPAddress(0);
-			using (var defaultRouteReachability = new NetworkReachability(ip))
-			{
-				if (!defaultRouteReachability.TryGetFlags(out flags))
-					return false;
-
-				return IsReachableWithoutRequiringConnection(flags);
-			}
-		}
-
-		internal static bool IsReachableWithoutRequiringConnection(NetworkReachabilityFlags flags)
-		{
-			// Is it reachable with the current network configuration?
-			var isReachable = (flags & NetworkReachabilityFlags.Reachable) != 0;
-
-			// Do we need a connection to reach it?
-			var noConnectionRequired = (flags & NetworkReachabilityFlags.ConnectionRequired) == 0;
-
-#if __IOS__
-			// Since the network stack will automatically try to get the WAN up,
-			// probe that
-			if ((flags & NetworkReachabilityFlags.IsWWAN) != 0)
-				noConnectionRequired = true;
-#endif
-
-			return isReachable && noConnectionRequired;
+			var path = GetCurrentPath();
+			return path != null && path.Status == NWPathStatus.Satisfied;
 		}
 	}
 
 	class ReachabilityListener : IDisposable
 	{
-		NetworkReachability defaultRouteReachability;
-		NetworkReachability remoteHostReachability;
+		// Delay to allow connection status to stabilize before notifying listeners
+		const int ConnectionStatusChangeDelayMs = 100;
+
+		NWPathMonitor pathMonitor;
+		CancellationTokenSource cts = new CancellationTokenSource();
+		int pendingCallbacks;
 
 		internal ReachabilityListener()
 		{
-			var ip = new IPAddress(0);
-			defaultRouteReachability = new NetworkReachability(ip);
-#pragma warning disable CA1422 // obsolete in MacCatalyst 15, iOS 13
-			defaultRouteReachability.SetNotification(OnChange);
-			defaultRouteReachability.Schedule(CFRunLoop.Main, CFRunLoop.ModeDefault);
-#pragma warning restore CA1422
-
-			remoteHostReachability = new NetworkReachability(Reachability.HostName);
-
-			// Need to probe before we queue, or we wont get any meaningful values
-			// this only happens when you create NetworkReachability from a hostname
-			remoteHostReachability.TryGetFlags(out var flags);
-
-#pragma warning disable CA1422 // obsolete in MacCatalyst 15, iOS 13
-			remoteHostReachability.SetNotification(OnChange);
-			remoteHostReachability.Schedule(CFRunLoop.Main, CFRunLoop.ModeDefault);
-#pragma warning restore CA1422
+			pathMonitor = new NWPathMonitor();
+			pathMonitor.SnapshotHandler = OnPathUpdate;
+			pathMonitor.SetQueue(DispatchQueue.DefaultGlobalQueue);
+			pathMonitor.Start();
 
 #if !(MACCATALYST || MACOS)
 #pragma warning disable BI1234, CA1416 // Analyzer bug https://github.com/dotnet/roslyn-analyzers/issues/5938
@@ -171,16 +132,37 @@ namespace Microsoft.Maui.Networking
 
 		internal void Dispose()
 		{
-			defaultRouteReachability?.Dispose();
-			defaultRouteReachability = null;
-			remoteHostReachability?.Dispose();
-			remoteHostReachability = null;
+			cts?.Cancel();
+			cts?.Dispose();
+			cts = null;
+
+			if (pathMonitor != null)
+			{
+				pathMonitor.SnapshotHandler = null;
+				pathMonitor.Cancel();
+				pathMonitor.Dispose();
+				pathMonitor = null;
+			}
 
 #if !(MACCATALYST || MACOS)
 #pragma warning disable CA1416 // Analyzer bug https://github.com/dotnet/roslyn-analyzers/issues/5938
 			ConnectivityImplementation.CellularData.RestrictionDidUpdateNotifier = null;
 #pragma warning restore CA1416
 #endif
+		}
+
+		async void OnPathUpdate(NWPath path)
+		{
+			try
+			{
+				// Add in artificial delay so the connection status has time to change
+				await Task.Delay(ConnectionStatusChangeDelayMs);
+				ReachabilityChanged?.Invoke();
+			}
+			catch (Exception ex)
+			{
+				System.Diagnostics.Debug.WriteLine($"ReachabilityListener handler failed: {ex}");
+			}
 		}
 
 #if !(MACCATALYST || MACOS)
@@ -194,11 +176,45 @@ namespace Microsoft.Maui.Networking
 
 		async void OnChange(NetworkReachabilityFlags flags)
 		{
-			// Add in artifical delay so the connection status has time to change
-			// else it will return true no matter what.
-			await Task.Delay(100);
+			// Deduplicate: both watchers may fire for the same network change.
+			// Only the first callback runs the polling loop; subsequent ones are no-ops.
+			if (Interlocked.Increment(ref pendingCallbacks) > 1)
+				return;
 
-			ReachabilityChanged?.Invoke();
+			var token = cts?.Token ?? default;
+			if (token.IsCancellationRequested)
+				return;
+
+			// This function waits up to 1 second, checking the device's network status every 100 milliseconds.
+			// If the network status changes, it immediately triggers the ReachabilityChanged event.
+			var initialAccess = Connectivity.NetworkAccess;
+			const int pollingIntervalMs = 100;
+			const int maxWaitTimeMs = 1000;
+			int elapsedTime = 0;
+
+			try
+			{
+				while (elapsedTime < maxWaitTimeMs)
+				{
+					await Task.Delay(pollingIntervalMs, token);
+					elapsedTime += pollingIntervalMs;
+					var currentAccess = Connectivity.NetworkAccess;
+					if (currentAccess != initialAccess)
+					{
+						ReachabilityChanged?.Invoke();
+						return;
+					}
+				}
+				ReachabilityChanged?.Invoke();
+			}
+			catch (OperationCanceledException)
+			{
+				// Listener was disposed during polling, don't fire event
+			}
+			finally
+			{
+				Interlocked.Exchange(ref pendingCallbacks, 0);
+			}
 		}
 	}
 }

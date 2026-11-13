@@ -15,6 +15,8 @@
     <PackageReference Include="Svg.Skia" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="Svg.Custom" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="Svg.Model" GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="Svg.SceneGraph" GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="Svg.Animation" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="ShimSkiaSharp" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="Fizzler" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="ExCSS" GeneratePathProperty="true" PrivateAssets="all" />
@@ -39,12 +41,14 @@
     <_ResizetizerFiles Include="$(PkgSystem_ObjectModel)\lib\netstandard1.3\System.ObjectModel.dll" />
     <_ResizetizerFiles Include="$(PkgSvg_Custom)\lib\netstandard2.0\Svg.Custom.dll" />
     <_ResizetizerFiles Include="$(PkgSvg_Model)\lib\netstandard2.0\Svg.Model.dll" />
+    <_ResizetizerFiles Include="$(PkgSvg_SceneGraph)\lib\netstandard2.0\Svg.SceneGraph.dll" />
+    <_ResizetizerFiles Include="$(PkgSvg_Animation)\lib\netstandard2.0\Svg.Animation.dll" />
     <_ResizetizerFiles Include="$(PkgShimSkiaSharp)\lib\netstandard2.0\ShimSkiaSharp.dll" />
     <!-- <_ResizetizerFiles Include="$(PkgSvg_Skia)\lib\netstandard2.0\Svg.Skia.dll" /> -->
     <_ResizetizerFiles Include="$(PkgFizzler)\lib\netstandard2.0\Fizzler.dll" />
     <_ResizetizerFiles Include="$(PkgExCSS)\lib\netstandard2.0\ExCSS.dll" />
     <_ResizetizerFiles Include="$(PkgSystem_IO_UnmanagedMemoryStream)\lib\netstandard1.3\System.IO.UnmanagedMemoryStream.dll" />
-    <_ResizetizerFiles Include="$(PkgSkiaSharp)\lib\net462\SkiaSharp.dll" />
+    <_ResizetizerFiles Include="$(IntermediateOutputPath)adjustments\SkiaSharp.dll" />
     <_ResizetizerFiles Include="$(PkgSkiaSharp)\lib\net462\SkiaSharp.pdb" />
     <_ResizetizerFiles Include="$(PkgSkiaSharp_NativeAssets_macOS)\runtimes\osx\native\libSkiaSharp.dylib" />
     <_ResizetizerFiles Include="$(PkgSkiaSharp_NativeAssets_Win32)\runtimes\win-x86\native\libSkiaSharp.dll" Link="x86\libSkiaSharp.dll" Arch="x86/" />
@@ -54,9 +58,9 @@
     <_ResizetizerFiles Include="$(PkgSkiaSharp_NativeAssets_Linux_NoDependencies)\runtimes\linux-arm64\native\libSkiaSharp.so" Link="arm64\libSkiaSharp.so" Arch="arm64/" />
     <_ResizetizerFiles Include="$(PkgSkiaSharp_NativeAssets_Linux_NoDependencies)\runtimes\linux-musl-x64\native\libSkiaSharp.so" Link="musl-x64\libSkiaSharp.so" Arch="musl-x64/" />
     <_ResizetizerFiles Include="$(PkgSkiaSharp_NativeAssets_Linux_NoDependencies)\runtimes\linux-x64\native\libSkiaSharp.so" Link="x64\libSkiaSharp.so" Arch="x64/" />
-    <_ResizetizerFiles Include="$(PkgSkiaSharp_HarfBuzz)\lib\net462\SkiaSharp.HarfBuzz.dll" />
+    <_ResizetizerFiles Include="$(IntermediateOutputPath)adjustments\SkiaSharp.HarfBuzz.dll" />
     <_ResizetizerFiles Include="$(PkgSkiaSharp_HarfBuzz)\lib\net462\SkiaSharp.HarfBuzz.pdb" />
-    <_ResizetizerFiles Include="$(PkgHarfBuzzSharp)\lib\net462\HarfBuzzSharp.dll" />
+    <_ResizetizerFiles Include="$(IntermediateOutputPath)adjustments\HarfBuzzSharp.dll" />
     <_ResizetizerFiles Include="$(PkgHarfBuzzSharp)\lib\net462\HarfBuzzSharp.pdb" />
     <_ResizetizerFiles Include="$(PkgHarfBuzzSharp_NativeAssets_macOS)\runtimes\osx\native\libHarfBuzzSharp.dylib" />
     <_ResizetizerFiles Include="$(PkgHarfBuzzSharp_NativeAssets_Win32)\runtimes\win-x86\native\libHarfBuzzSharp.dll" Link="x86\libHarfBuzzSharp.dll" Arch="x86/" />

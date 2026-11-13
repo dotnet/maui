@@ -6,6 +6,7 @@ using System.Text;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Data;
 using Windows.UI.Core;
 using static Microsoft.Maui.Layouts.LayoutExtensions;
 
@@ -14,6 +15,17 @@ namespace Microsoft.Maui.Handlers
 	public partial class ScrollViewHandler : ViewHandler<IScrollView, ScrollViewer>, ICrossPlatformLayout
 	{
 		const string ContentPanelTag = "MAUIScrollViewContentPanel";
+		object? _isTabStopLocalValue;
+		bool _isTabStopValue;
+		Binding? _isTabStopBinding;
+		Binding? _temporaryTabStopBinding;
+		ScrollViewer? _tabStopPlatformView;
+		int _tabStopGeneration;
+		bool _isTabStopTemporary;
+		ScrollViewEventProxy? _eventProxy;
+
+		// Stores a scroll request that arrived before the content was laid out.
+		internal ScrollToRequest? PendingScrollToRequest { get; private set; }
 
 		protected override ScrollViewer CreatePlatformView()
 		{
@@ -33,13 +45,216 @@ namespace Microsoft.Maui.Handlers
 		protected override void ConnectHandler(ScrollViewer platformView)
 		{
 			base.ConnectHandler(platformView);
-			platformView.ViewChanged += ViewChanged;
+			_eventProxy ??= new ScrollViewEventProxy(this);
+			_eventProxy.Connect(platformView);
+			_tabStopPlatformView = platformView;
 		}
 
 		protected override void DisconnectHandler(ScrollViewer platformView)
 		{
+			// Cascade disconnect to the PresentedContent's handler. Without this, when the
+			// ScrollView is restored as ContentPage.Content after being swapped out, the
+			// PresentedContent's native view still has a stale parent (the old ContentPanel),
+			// causing a WinUI COM exception "Element already has a parent" (Issue #35277).
+			// Cascading here ensures ToPlatform() creates a fresh native view with no parent.
+			VirtualView?.PresentedContent?.Handler?.DisconnectHandler();
+			_eventProxy?.Disconnect(platformView);
+			_tabStopPlatformView = null;
+			_tabStopGeneration++;
+			RestoreIsTabStop(platformView);
 			base.DisconnectHandler(platformView);
-			platformView.ViewChanged -= ViewChanged;
+
+			if (PendingScrollToRequest is not null)
+			{
+				if (GetContentPanel(platformView) is { } contentPanel)
+				{
+					contentPanel.SizeChanged -= OnContentPanelSizeChanged;
+				}
+
+				VirtualView?.ScrollFinished();
+				PendingScrollToRequest = null;
+			}
+		}
+
+		void OnPlatformViewLoading(FrameworkElement sender, object args)
+		{
+			var scrollViewer = (ScrollViewer)sender;
+			if (!ReferenceEquals(_tabStopPlatformView, scrollViewer))
+				return;
+
+			BeginTemporaryTabStop(scrollViewer);
+			QueueTemporaryTabStopRestore(scrollViewer, restoreWhenLoaded: false);
+		}
+
+		void OnPlatformViewLoaded(object sender, RoutedEventArgs e)
+		{
+			var scrollViewer = (ScrollViewer)sender;
+			if (!ReferenceEquals(_tabStopPlatformView, scrollViewer) || !_isTabStopTemporary)
+				return;
+
+			// WinUI's load focus pass completes before Loaded handlers return. Keep the
+			// transient target through Loaded, then restore it on the next dispatcher turn.
+			QueueTemporaryTabStopRestore(scrollViewer, restoreWhenLoaded: true);
+		}
+
+		void OnPlatformViewUnloaded(object sender, RoutedEventArgs e)
+		{
+			var scrollViewer = (ScrollViewer)sender;
+			if (!ReferenceEquals(_tabStopPlatformView, scrollViewer))
+				return;
+
+			_tabStopGeneration++;
+			RestoreIsTabStop(scrollViewer);
+		}
+
+		void BeginTemporaryTabStop(ScrollViewer scrollViewer)
+		{
+			if (_isTabStopTemporary)
+				return;
+
+			// Preserve this ScrollViewer's customized state before giving its load-time
+			// focus pass a non-content target.
+			_isTabStopLocalValue = scrollViewer.ReadLocalValue(Control.IsTabStopProperty);
+			_isTabStopValue = scrollViewer.IsTabStop;
+			_isTabStopBinding = scrollViewer.GetBindingExpression(Control.IsTabStopProperty)?.ParentBinding;
+			_isTabStopTemporary = true;
+			// This binding both supplies the transient value and serves as an ownership
+			// token so restoration cannot overwrite a later native or mapper update.
+			_temporaryTabStopBinding = new Binding { Source = true };
+			scrollViewer.ClearValue(Control.IsTabStopProperty);
+			scrollViewer.SetBinding(Control.IsTabStopProperty, _temporaryTabStopBinding);
+		}
+
+		void QueueTemporaryTabStopRestore(ScrollViewer scrollViewer, bool restoreWhenLoaded)
+		{
+			var generation = ++_tabStopGeneration;
+			var handlerReference = new WeakReference<ScrollViewHandler>(this);
+			var platformViewReference = new WeakReference<ScrollViewer>(scrollViewer);
+			void RestoreIfCurrent()
+			{
+				if (handlerReference.TryGetTarget(out var handler) &&
+					platformViewReference.TryGetTarget(out var platformView) &&
+					generation == handler._tabStopGeneration &&
+					ReferenceEquals(handler._tabStopPlatformView, platformView) &&
+					platformView.IsLoaded == restoreWhenLoaded)
+				{
+					handler.RestoreIsTabStop(platformView);
+				}
+			}
+
+			var queued = restoreWhenLoaded
+				? scrollViewer.DispatcherQueue?.TryEnqueue(RestoreIfCurrent)
+				: scrollViewer.DispatcherQueue?.TryEnqueue(
+					Microsoft.UI.Dispatching.DispatcherQueuePriority.Low,
+					RestoreIfCurrent);
+
+			if (queued != true && restoreWhenLoaded)
+			{
+				RestoreIsTabStop(scrollViewer);
+			}
+		}
+
+		void RestoreIsTabStop(ScrollViewer scrollViewer)
+		{
+			if (!_isTabStopTemporary)
+				return;
+
+			// A mapper or app may update the native property from a Loaded callback.
+			// Only restore state while the handler still owns the temporary binding.
+			if (!ReferenceEquals(
+				scrollViewer.GetBindingExpression(Control.IsTabStopProperty)?.ParentBinding,
+				_temporaryTabStopBinding))
+			{
+				ResetTemporaryTabStop();
+				return;
+			}
+
+			// Restore the effective value before removing the temporary binding.
+			// Clearing directly while focused makes WinUI re-route focus into the content.
+			scrollViewer.IsTabStop = _isTabStopValue;
+
+			if (_isTabStopBinding is not null)
+				scrollViewer.SetBinding(Control.IsTabStopProperty, _isTabStopBinding);
+			else if (_isTabStopLocalValue is not bool)
+				scrollViewer.ClearValue(Control.IsTabStopProperty);
+
+			ResetTemporaryTabStop();
+		}
+
+		void ResetTemporaryTabStop()
+		{
+			_isTabStopLocalValue = null;
+			_isTabStopBinding = null;
+			_temporaryTabStopBinding = null;
+			_isTabStopTemporary = false;
+		}
+
+		sealed class ScrollViewEventProxy
+		{
+			readonly WeakReference<ScrollViewHandler> _handler;
+
+			public ScrollViewEventProxy(ScrollViewHandler handler) => _handler = new(handler);
+
+			public void Connect(ScrollViewer platformView)
+			{
+				platformView.Loading += OnLoading;
+				platformView.Loaded += OnLoaded;
+				platformView.Unloaded += OnUnloaded;
+				platformView.ViewChanged += OnViewChanged;
+			}
+
+			public void Disconnect(ScrollViewer platformView)
+			{
+				platformView.Loading -= OnLoading;
+				platformView.Loaded -= OnLoaded;
+				platformView.Unloaded -= OnUnloaded;
+				platformView.ViewChanged -= OnViewChanged;
+			}
+
+			void OnLoading(FrameworkElement sender, object args)
+			{
+				if (_handler.TryGetTarget(out var handler))
+				{
+					handler.OnPlatformViewLoading(sender, args);
+				}
+			}
+
+			void OnLoaded(object sender, RoutedEventArgs args)
+			{
+				if (_handler.TryGetTarget(out var handler))
+				{
+					handler.OnPlatformViewLoaded(sender, args);
+				}
+			}
+
+			void OnUnloaded(object sender, RoutedEventArgs args)
+			{
+				if (_handler.TryGetTarget(out var handler))
+				{
+					handler.OnPlatformViewUnloaded(sender, args);
+				}
+			}
+
+			void OnViewChanged(object? sender, ScrollViewerViewChangedEventArgs args)
+			{
+				if (_handler.TryGetTarget(out var handler) &&
+					((IElementHandler)handler).PlatformView is ScrollViewer platformView &&
+					ReferenceEquals(platformView, sender) &&
+					((IElementHandler)handler).VirtualView is not null)
+				{
+					handler.ViewChanged(sender, args);
+				}
+			}
+		}
+
+		void OnContentPanelSizeChanged(object sender, SizeChangedEventArgs e)
+		{
+			((FrameworkElement)sender).SizeChanged -= OnContentPanelSizeChanged;
+			if (PendingScrollToRequest is { } pending)
+			{
+				PendingScrollToRequest = null;
+				MapRequestScrollTo(this, VirtualView, pending);
+			}
 		}
 
 		public static void MapContent(IScrollViewHandler handler, IScrollView scrollView)
@@ -78,7 +293,33 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (args is ScrollToRequest request)
 			{
-				handler.PlatformView.ChangeView(request.HorizontalOffset, request.VerticalOffset, null, request.Instant);
+				if (handler is ScrollViewHandler scrollViewHandler)
+				{
+					bool notMeasuredYet = (request.VerticalOffset > 0 && handler.PlatformView.ScrollableHeight == 0 && handler.PlatformView.ExtentHeight == 0) ||
+										  (request.HorizontalOffset > 0 && handler.PlatformView.ScrollableWidth == 0 && handler.PlatformView.ExtentWidth == 0);
+					if (notMeasuredYet)
+					{
+						// Defer until ContentPanel.SizeChanged fires (after WinUI arrange pass).
+						// Only subscribe once; overwrite the pending request so the latest wins.
+						if (scrollViewHandler.PendingScrollToRequest is null && GetContentPanel(handler.PlatformView) is { } contentPanel)
+						{
+							contentPanel.SizeChanged += scrollViewHandler.OnContentPanelSizeChanged;
+						}
+						scrollViewHandler.PendingScrollToRequest = request;
+						return;
+					}
+				}
+
+				var targetHorizontalOffset = Math.Clamp(request.HorizontalOffset, 0, handler.PlatformView.ScrollableWidth);
+				var targetVerticalOffset = Math.Clamp(request.VerticalOffset, 0, handler.PlatformView.ScrollableHeight);
+
+				if (targetVerticalOffset == handler.PlatformView.VerticalOffset && targetHorizontalOffset == handler.PlatformView.HorizontalOffset)
+				{
+					handler.VirtualView.ScrollFinished();
+					return;
+				}
+
+				handler.PlatformView.ChangeView(targetHorizontalOffset, targetVerticalOffset, null, request.Instant);
 			}
 		}
 
@@ -140,20 +381,20 @@ namespace Microsoft.Maui.Handlers
 				{
 					currentPaddingLayer.CachedChildren.Clear();
 				}
-				
+
 				return;
+			}
+
+			if (currentPaddingLayer is not null)
+			{
+				currentPaddingLayer.CachedChildren.Clear();
 			}
 
 			var nativeContent = scrollView.PresentedContent.ToPlatform(handler.MauiContext);
 
 			if (currentPaddingLayer is not null)
 			{
-				// Only update if content has changed or is missing
-				if (currentPaddingLayer.CachedChildren.Count == 0 || currentPaddingLayer.CachedChildren[0] != nativeContent)
-				{
-					currentPaddingLayer.CachedChildren.Clear();
-					currentPaddingLayer.CachedChildren.Add(nativeContent);
-				}
+				currentPaddingLayer.CachedChildren.Add(nativeContent);
 			}
 			else
 			{

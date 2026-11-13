@@ -16,6 +16,7 @@ namespace Microsoft.Maui.Platform
 
 		internal StackPanel? TopNavArea { get; private set; }
 		internal ItemsRepeater? TopNavMenuItemsHost { get; private set; }
+		internal ItemsRepeater? TopNavMenuItemsOverflowHost { get; private set; }
 		internal Grid? PaneContentGrid { get; private set; }
 		internal event EventHandler? OnApplyTemplateFinished;
 		internal SplitView? RootSplitView { get; private set; }
@@ -83,6 +84,7 @@ namespace Microsoft.Maui.Platform
 			RootSplitView = (SplitView)GetTemplateChild("RootSplitView");
 			TopNavArea = (StackPanel)GetTemplateChild("TopNavArea");
 			TopNavMenuItemsHost = (ItemsRepeater)GetTemplateChild("TopNavMenuItemsHost");
+			TopNavMenuItemsOverflowHost = (ItemsRepeater)GetTemplateChild("TopNavMenuItemsOverflowHost");
 			ContentPaneTopPadding = (Grid)GetTemplateChild("ContentPaneTopPadding");
 			PaneToggleButtonGrid = (Grid)GetTemplateChild("PaneToggleButtonGrid");
 			ButtonHolderGrid = (Grid)GetTemplateChild("ButtonHolderGrid");
@@ -182,13 +184,14 @@ namespace Microsoft.Maui.Platform
 			{
 				case FlyoutBehavior.Flyout:
 					IsPaneToggleButtonVisible = true;
+					var flyoutMode = FlyoutPaneDisplayMode ?? NavigationViewPaneDisplayMode.LeftMinimal;
 					// WinUI bug: Setting PaneDisplayMode to the same value and updating SelectedItem during navigation
 					// causes the selection and selected item indicator to not update correctly.
 					// Workaround: Only set PaneDisplayMode when the value actually changes.
 					// Related: https://github.com/microsoft/microsoft-ui-xaml/issues/9812
-					if (PaneDisplayMode != NavigationViewPaneDisplayMode.LeftMinimal)
+					if (PaneDisplayMode != flyoutMode)
 					{
-						PaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal;
+						PaneDisplayMode = flyoutMode;
 					}
 					break;
 				case FlyoutBehavior.Locked:
@@ -370,6 +373,11 @@ namespace Microsoft.Maui.Platform
 			= DependencyProperty.Register(nameof(PaneToggleButtonWidth), typeof(double), typeof(MauiNavigationView),
 				new PropertyMetadata(DefaultPaneToggleButtonWidth, OnPaneToggleButtonSizeChanged));
 		private NavigationViewPaneDisplayMode? _pinPaneDisplayModeTo;
+
+		// Stores the preferred pane display mode for FlyoutBehavior.Flyout, set by CollapseStyle on Windows.
+		// When null, the default LeftMinimal is used. This ensures CollapseStyle.Partial (LeftCompact) survives
+		// layout-driven FlyoutBehavior re-evaluations (e.g. size/orientation changes).
+		internal NavigationViewPaneDisplayMode? FlyoutPaneDisplayMode { get; set; }
 
 		internal double PaneToggleButtonWidth
 		{

@@ -19,7 +19,7 @@ public class Issue7181 : _IssuesUITest
 	public override string Issue => "[Bug] Cannot update ToolbarItem text and icon";
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void ShellToolbarItemTests()
 	{
 		var count = 0;

@@ -15,12 +15,47 @@ namespace Microsoft.Maui.Platform
 	{
 		internal const string BackgroundLayerName = "MauiBackgroundLayer";
 
+		internal static double GetDisplayScale(this UIView view)
+		{
+			var window = view.Window;
+			var sceneScale = (double?)window?.WindowScene?.Screen.Scale;
+			return ResolveDisplayScale(sceneScale, sceneScale is null ? (double?)window?.Screen?.Scale : null);
+		}
+
+		internal static double ResolveDisplayScale(double? windowSceneScale, double? windowScale, double? fallbackScale = null)
+		{
+			var scale = windowSceneScale ?? windowScale ?? fallbackScale ?? (double)UIScreen.MainScreen.Scale;
+			return scale > 0 ? scale : 1;
+		}
+
+		internal static double GetEffectiveDisplayScale(this UIView view) =>
+			view.Window is not null && view.ContentScaleFactor > 0
+				? (double)view.ContentScaleFactor
+				: view.GetDisplayScale();
+
 		public static void UpdateIsEnabled(this UIView platformView, IView view)
 		{
-			if (platformView is not UIControl uiControl)
-				return;
+			if (platformView is UIControl uiControl)
+			{
+				// UIControl has native Enabled property with visual feedback
+				uiControl.Enabled = view.IsEnabled;
+			}
+			else
+			{
+				// UserInteractionEnabled is the single source of truth, always
+				// recomputed here from both IsEnabled and InputTransparent.
+				platformView.UpdateInteractionState(view);
+			}
+		}
 
-			uiControl.Enabled = view.IsEnabled;
+		// Single owner of UserInteractionEnabled: both UpdateIsEnabled and
+		// UpdateInputTransparent funnel through this so the flag is always
+		// recomputed from current state, never left stale by either one.
+		static void UpdateInteractionState(this UIView platformView, IView view)
+		{
+			platformView.UserInteractionEnabled = platformView is UIControl
+				? !view.InputTransparent
+				: view.IsEnabled && !view.InputTransparent;
 		}
 
 		public static void Focus(this UIView platformView, FocusRequest request)
@@ -77,12 +112,11 @@ namespace Microsoft.Maui.Platform
 
 			if (paint.IsNullOrEmpty())
 			{
-				if (platformView is LayoutView)
+				if (platformView is LayoutView or ContentView)
 					platformView.BackgroundColor = null;
 				else
 					return;
 			}
-
 
 			if (paint is SolidPaint solidPaint)
 			{
@@ -621,7 +655,7 @@ namespace Microsoft.Maui.Platform
 				return;
 			}
 
-			platformView.UserInteractionEnabled = !view.InputTransparent;
+			platformView.UpdateInteractionState(view);
 		}
 
 		public static void UpdateInputTransparent(this UIView platformView, bool isReadOnly, bool inputTransparent)
@@ -643,9 +677,11 @@ namespace Microsoft.Maui.Platform
 				}
 				else
 				{
-					if (platformView.Interactions is not null)
+					// Cache Interactions; each access marshals the whole native array (see #34396).
+					var interactions = platformView.Interactions;
+					if (interactions is not null)
 					{
-						foreach (var ia in platformView.Interactions)
+						foreach (var ia in interactions)
 						{
 							if (ia is UIToolTipInteraction toolTipInteraction)
 							{
@@ -734,27 +770,23 @@ namespace Microsoft.Maui.Platform
 				{
 					//The MovedToWindow fires multiple times during navigation animations, causing repeated OnLoadedCheck calls. 
 					//BeginInvokeOnMainThread ensures OnLoadedCheck executes after all window transitions are complete.
-					uiView.BeginInvokeOnMainThread(() => OnLoadedCheck(null));
+					uiView.BeginInvokeOnMainThread(() => OnLoadedCheck());
 				}
 			}
 			else
 			{
-				var boundKey = new NSString("bounds");
-				var frameKey = new NSString("frame");
-
-				var boundObserver = (NSObject)uiView.Layer.AddObserver(boundKey, Foundation.NSKeyValueObservingOptions.OldNew, (oc) => OnLoadedCheck(oc));
-				var frameObserver = (NSObject)uiView.Layer.AddObserver(frameKey, Foundation.NSKeyValueObservingOptions.OldNew, (oc) => OnLoadedCheck(oc));
-
-				observers.Add(new ActionDisposable(() => uiView.Layer.RemoveObserver(boundObserver, boundKey)));
-				observers.Add(new ActionDisposable(() => uiView.Layer.RemoveObserver(frameObserver, frameKey)));
+				// Not every view reaches a window, and one that doesn't is collected with this observation still
+				// active: KeyValueObservation keeps that safe where a managed KVO observer would not.
+				// (The layer's frame is derived and never notifies; bounds covers every layout-driven change.)
+				observers.Add(KeyValueObservation.ObserveBounds(uiView.Layer, () => OnLoadedCheck(observedChange: true)));
 			}
 
 			// OnLoaded is called at the point in time where the xplat view knows it's going to be attached to the window.
 			// So this just serves as a way to queue a call on the UI Thread to see if that's enough time for the window
 			// to get attached.
-			uiView.BeginInvokeOnMainThread(() => OnLoadedCheck(null));
+			uiView.BeginInvokeOnMainThread(() => OnLoadedCheck());
 
-			void OnLoadedCheck(NSObservedChange? nSObservedChange = null)
+			void OnLoadedCheck(bool observedChange = false)
 			{
 				if (disposable is not null)
 				{
@@ -764,14 +796,14 @@ namespace Microsoft.Maui.Platform
 						disposable = null;
 						action();
 					}
-					else if (nSObservedChange != null)
+					else if (observedChange)
 					{
 						// In some cases (FlyoutPage) the arrange and measure all take place before
 						// the view is added to the screen so this queues up a second check that
 						// hopefully will fire loaded once the view is added to the window.
 						// None of this code is great but I haven't found a better way
 						// for an outside observer to know when a subview is added to a window
-						uiView.BeginInvokeOnMainThread(() => OnLoadedCheck(null));
+						uiView.BeginInvokeOnMainThread(() => OnLoadedCheck());
 					}
 				}
 			}
@@ -1054,6 +1086,20 @@ namespace Microsoft.Maui.Platform
 		internal static void MarkAsCrossPlatformLayoutBacking(this UIView view)
 		{
 			view.Tag = NativeViewControlledByCrossPlatformLayout;
+		}
+
+		/// <summary>
+		/// Resets the transform of a view's layer to identity.
+		/// This is used when a WrapperView is created to prevent transform compounding
+		/// between the WrapperView and its child.
+		/// </summary>
+		internal static void ResetLayerTransform(this UIView? view)
+		{
+			if (view?.Layer is CALayer layer)
+			{
+				layer.Transform = CATransform3D.Identity;
+				layer.AnchorPoint = new CGPoint(0.5, 0.5);
+			}
 		}
 	}
 }

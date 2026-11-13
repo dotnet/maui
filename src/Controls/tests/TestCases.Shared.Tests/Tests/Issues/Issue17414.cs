@@ -13,7 +13,7 @@ public class Issue17414 : _IssuesUITest
 	{ }
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void VerifyFlyoutContentHasNoDefaultCornerRadius()
 	{
 		App.WaitForElement("MainPageLabel");

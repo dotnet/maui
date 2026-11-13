@@ -17,6 +17,42 @@ namespace Microsoft.Maui.Controls
 		readonly ObservableCollection<Maui.ISwipeItem> _swipeItems;
 
 		/// <summary>
+		/// Notifies the owning <see cref="SwipeView"/> (resolved via <see cref="Element.Parent"/>)
+		/// that something in this collection has changed so the handler can refresh the platform UI.
+		/// </summary>
+		/// <remarks>
+		/// Using <see cref="Element.Parent"/> (rather than a captured-closure subscription on the
+		/// SwipeView side) avoids leaking the owning SwipeView when a SwipeItems instance is
+		/// cached/shared across multiple SwipeView instances. When SwipeItems is reassigned to a
+		/// new owner, <c>AddLogicalChild</c> reassigns <see cref="Element.Parent"/> so notifications
+		/// always go to the current owner.
+		/// </remarks>
+		void NotifyOwner()
+		{
+			if (Parent is not SwipeView swipeView)
+			{
+				return;
+			}
+
+			if (this == swipeView.LeftItems)
+			{
+				swipeView.Handler?.UpdateValue(nameof(SwipeView.LeftItems));
+			}
+			else if (this == swipeView.RightItems)
+			{
+				swipeView.Handler?.UpdateValue(nameof(SwipeView.RightItems));
+			}
+			else if (this == swipeView.TopItems)
+			{
+				swipeView.Handler?.UpdateValue(nameof(SwipeView.TopItems));
+			}
+			else if (this == swipeView.BottomItems)
+			{
+				swipeView.Handler?.UpdateValue(nameof(SwipeView.BottomItems));
+			}
+		}
+
+		/// <summary>
 		/// Initializes a new instance of the <see cref="SwipeItems"/> class with the specified swipe items.
 		/// </summary>
 		/// <param name="swipeItems">The initial collection of swipe items.</param>
@@ -31,6 +67,22 @@ namespace Microsoft.Maui.Controls
 
 			_swipeItems = new ObservableCollection<Maui.ISwipeItem>(swipeItems) ?? throw new ArgumentNullException(nameof(swipeItems));
 			_swipeItems.CollectionChanged += OnSwipeItemsChanged;
+		}
+
+		// Override OnPropertyChanged so we can notify the owning SwipeView when Mode /
+		// SwipeBehaviorOnInvoked change. Filtering by property name avoids a Handler.UpdateValue
+		// storm on every base-Element property change (Parent, BindingContext, Style, etc.).
+		// The notification goes through Parent (a weak reference managed by AddLogicalChild),
+		// so the owning SwipeView is never rooted by this SwipeItems instance (issue #35481).
+		protected override void OnPropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string propertyName = null)
+		{
+			base.OnPropertyChanged(propertyName);
+
+			if (propertyName == ModeProperty.PropertyName ||
+				propertyName == SwipeBehaviorOnInvokedProperty.PropertyName)
+			{
+				NotifyOwner();
+			}
 		}
 
 		/// <summary>
@@ -157,6 +209,9 @@ namespace Microsoft.Maui.Controls
 			}
 
 			CollectionChanged?.Invoke(this, notifyCollectionChangedEventArgs);
+
+			// Notify the owning SwipeView so its handler can update the platform UI.
+			NotifyOwner();
 		}
 
 		IEnumerator IEnumerable.GetEnumerator()

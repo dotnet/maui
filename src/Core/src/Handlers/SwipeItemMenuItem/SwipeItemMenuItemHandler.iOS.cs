@@ -82,15 +82,18 @@ namespace Microsoft.Maui.Handlers
 		public static void MapBackground(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem view)
 		{
 			handler.PlatformView.UpdateBackground(view.Background);
+			handler.UpdateValue(nameof(ITextStyle.TextColor));
 		}
 
 		public static void MapVisibility(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem view)
 		{
 			var swipeView = handler.PlatformView.GetParentOfType<MauiSwipeView>();
 
-			swipeView?.UpdateIsVisibleSwipeItem(view);
-
+			// Update the native view's Hidden state BEFORE calling UpdateIsVisibleSwipeItem,
+			// so LayoutSwipeItems can use the correct Hidden state when repositioning items.
 			handler.PlatformView.UpdateVisibility(view.Visibility);
+
+			swipeView?.UpdateIsVisibleSwipeItem(view);
 		}
 
 		partial class SwipeItemMenuItemImageSourcePartSetter
@@ -118,10 +121,15 @@ namespace Microsoft.Maui.Handlers
 					try
 					{
 						button.SetImage(resizedImage.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate), UIControlState.Normal);
-						var tintColor = item.GetTextColor();
 
-						if (tintColor != null)
-							button.TintColor = tintColor.ToPlatform();
+						if (item.Source is IFontImageSource fontImageSource && fontImageSource.Color != null)
+							button.TintColor = fontImageSource.Color.ToPlatform();
+						else
+						{
+							var tintColor = item.GetTextColor();
+							if (tintColor != null)
+								button.TintColor = tintColor.ToPlatform();
+						}
 					}
 					catch (Exception)
 					{
@@ -129,6 +137,12 @@ namespace Microsoft.Maui.Handlers
 						Handler.MauiContext?.CreateLogger<SwipeItemMenuItemHandler>()?.LogWarning("Cannot load SwipeItem Icon");
 					}
 				}
+
+				var swipeView = button.GetParentOfType<MauiSwipeView>();
+				var desiredWidth = button.SizeThatFits(swipeView?.Bounds.Size ?? button.Bounds.Size).Width;
+
+				if (swipeView != null && Math.Abs(desiredWidth - button.Frame.Width) > double.Epsilon)
+					swipeView.UpdateSwipeItemSize(item);
 			}
 
 			static UIImage MaxResizeSwipeItemIconImage(UIImage sourceImage, nfloat maxWidth, nfloat maxHeight)

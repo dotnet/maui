@@ -257,6 +257,7 @@
     <!-- Library: Previous .NET Graphics TFMs -->
     <MauiGraphicsPreviousPlatforms>$(MauiPreviousPlatforms)</MauiGraphicsPreviousPlatforms>
     <MauiGraphicsPreviousPlatforms Condition="'$(IncludeMacOSTargetFrameworks)' == 'true'">$(MauiGraphicsPreviousPlatforms);net$(_MauiPreviousDotNetVersion)-macos$(MacosPreviousTargetFrameworkVersion)</MauiGraphicsPreviousPlatforms>
+
   </PropertyGroup>
 
   <PropertyGroup>

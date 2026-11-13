@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Controls
 			=> UpdateIndicatorLayout((IndicatorView)bindable, newValue));
 
 		/// <summary>Bindable property for <see cref="HideSingle"/>.</summary>
-		public static readonly BindableProperty HideSingleProperty = BindableProperty.Create(nameof(HideSingle), typeof(bool), typeof(IndicatorView), true);
+		public static readonly BindableProperty HideSingleProperty = BindableProperty.Create(nameof(HideSingle), typeof(bool), typeof(IndicatorView), BooleanBoxes.TrueBox);
 
 		/// <summary>Bindable property for <see cref="IndicatorColor"/>.</summary>
 		public static readonly BindableProperty IndicatorColorProperty = BindableProperty.Create(nameof(IndicatorColor), typeof(Color), typeof(IndicatorView), Colors.LightGrey);
@@ -60,10 +60,18 @@ namespace Microsoft.Maui.Controls
 
 		static readonly BindableProperty IndicatorLayoutProperty = BindableProperty.Create(nameof(IndicatorLayout), typeof(IBindableLayout), typeof(IndicatorView), null, propertyChanged: TemplateUtilities.OnContentChanged);
 
+		readonly WeakNotifyCollectionChangedProxy _collectionChangedProxy = new();
+		readonly NotifyCollectionChangedEventHandler _collectionChangedEventHandler;
+
 		/// <summary>
 		/// Initializes a new instance of the <see cref="IndicatorView"/> class.
 		/// </summary>
-		public IndicatorView() { }
+		public IndicatorView()
+		{
+			_collectionChangedEventHandler = OnCollectionChanged;
+		}
+
+		~IndicatorView() => _collectionChangedProxy.Unsubscribe();
 
 		/// <summary>
 		/// Gets or sets the shape of the indicators.
@@ -155,7 +163,7 @@ namespace Microsoft.Maui.Controls
 		public bool HideSingle
 		{
 			get => (bool)GetValue(HideSingleProperty);
-			set => SetValue(HideSingleProperty, value);
+			set => SetValue(HideSingleProperty, BooleanBoxes.Box(value));
 		}
 
 		/// <summary>
@@ -237,11 +245,11 @@ namespace Microsoft.Maui.Controls
 
 		void ResetItemsSource(IEnumerable oldItemsSource)
 		{
-			if (oldItemsSource is INotifyCollectionChanged oldCollection)
-				oldCollection.CollectionChanged -= OnCollectionChanged;
+			if (oldItemsSource is INotifyCollectionChanged)
+				_collectionChangedProxy.Unsubscribe();
 
 			if (ItemsSource is INotifyCollectionChanged collection)
-				collection.CollectionChanged += OnCollectionChanged;
+				_collectionChangedProxy.Subscribe(collection, _collectionChangedEventHandler);
 
 			OnCollectionChanged(ItemsSource, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
 

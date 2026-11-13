@@ -18,20 +18,20 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
 	public const string ItemsLayoutHorizontalList = "ItemsLayoutHorizontalList";
 	public const string ItemsLayoutHorizontalGrid = "ItemsLayoutHorizontalGrid";
 	public const string ItemsLayoutVerticalGrid = "ItemsLayoutVerticalGrid";
-
+	public const string FlowDirectionLTR = "FlowDirectionLeftToRight";
+	public const string FlowDirectionRTL = "FlowDirectionRightToLeft";
 	public override string GalleryPageName => GroupingFeatureMatrix;
+	protected override string GallerySubPageButton => "GroupingButton";
 
 	public CollectionView_GroupingFeatureTests(TestDevice device)
 		: base(device)
 	{
 	}
 
-	[Test, Order(1)]
-	[Category(UITestCategories.CollectionView)]
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
 	public void VerifyGroupFooterTemplate_WithFooterString()
 	{
-		App.WaitForElement("GroupingButton");
-		App.Tap("GroupingButton");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(GroupFooterTemplateGrid);
@@ -46,7 +46,7 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
 	public void VerifyGroupFooterTemplate_WithHeaderString()
 	{
 		App.WaitForElement(Options);
@@ -63,7 +63,7 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
 	public void VerifyGroupFooterTemplate_WithBasicItemTemplate()
 	{
 		App.WaitForElement(Options);
@@ -81,7 +81,7 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 	public void VerifyGroupHeaderTemplate_WithFooterString()
 	{
 		App.WaitForElement(Options);
@@ -98,7 +98,7 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 	public void VerifyGroupHeaderTemplate_WithHeaderString()
 	{
 		App.WaitForElement(Options);
@@ -115,7 +115,7 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
 	public void VerifyGroupHeaderTemplate_WithBasicItemTemplate()
 	{
 		App.WaitForElement(Options);
@@ -133,7 +133,7 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 	public void VerifyGroupHeaderAndFooterTemplate_WithObservableCollection()
 	{
 		App.WaitForElement(Options);
@@ -149,7 +149,7 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
 	public void VerifyGroupHeaderAndFooterTemplate_WithItemSourceNull()
 	{
 		App.WaitForElement(Options);
@@ -167,7 +167,7 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
 	public void VerifyIsGroupedFalse_WithItemSourceObservableCollection()
 	{
 		App.WaitForElement(Options);
@@ -181,7 +181,7 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
 	public void VerifyIsGroupedFalse_WithHeaderAndFooterString()
 	{
 		App.WaitForElement(Options);
@@ -197,7 +197,7 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 	public void VerifyIsGroupedFalse_WithBasicItemTemplate()
 	{
 		App.WaitForElement(Options);
@@ -212,7 +212,7 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
 
 #if TEST_FAILS_ON_WINDOWS // [Windows] NullReferenceException thrown When Toggling IsGrouped to True in ObservableCollection Binding Issue Link: https://github.com/dotnet/maui/issues/28824
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
 	public void VerifyIsGrouped_WithFooterString()
 	{
 		App.WaitForElement(Options);
@@ -227,7 +227,7 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
 	public void VerifyIsGrouped_WithHeaderString()
 	{
 		App.WaitForElement(Options);
@@ -246,7 +246,7 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
 	//Test fails on CV2 , GroupHeader and GroupFooter template is not visible  Issue Link: https://github.com/dotnet/maui/issues/28509
 	//Test fails on CV2 , ItemsLayout does not change Issue Link: https://github.com/dotnet/maui/issues/28656
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
 	public void VerifyGroupHeaderAndFooterTemplate_WithVerticalListAndGroupedList()
 	{
 		App.WaitForElement(Options);
@@ -268,7 +268,7 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
 	public void VerifyGroupHeaderAndFooterTemplate_WithGroupedList()
 	{
 		App.WaitForElement(Options);
@@ -288,7 +288,7 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
 	public void VerifyIsGrouped_WithGroupHeaderAndGroupFooterTemplate()
 	{
 		App.WaitForElement(Options);
@@ -310,7 +310,7 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 	public void VerifyIsGroupedTrue_WithItemSourceGroupedList()
 	{
 		App.WaitForElement(Options);
@@ -326,7 +326,7 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
 	public void VerifyIsGrouped_WithVerticalListAndGroupedList()
 	{
 		App.WaitForElement(Options);
@@ -344,7 +344,7 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
 	public void VerifyIsGroupedTrue_WithBasicTemplateWhenGroupedList()
 	{
 		App.WaitForElement(Options);
@@ -366,7 +366,7 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
 #if TEST_FAILS_ON_WINDOWS
 	//ItemsLayout does not change its default value on windows Issue Link: https://github.com/dotnet/maui/issues/27946
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
 	public void VerifyGroupHeaderAndFooterTemplate_WithHorizontalListAndObservableCollection()
 	{
 		App.WaitForElement(Options);
@@ -387,7 +387,7 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
 	public void VerifyGroupHeaderAndFooterTemplate_WithHorizontalGridAndObservableCollection()
 	{
 		App.WaitForElement(Options);
@@ -408,7 +408,7 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
 	public void VerifyGroupHeaderAndFooterTemplate_WithVerticalGridAndObservableCollection()
 	{
 		App.WaitForElement(Options);
@@ -428,7 +428,7 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 	public void VerifyGroupHeaderAndFooterTemplate_WithVerticalListAndObservableCollection()
 	{
 		App.WaitForElement(Options);
@@ -446,7 +446,7 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 	public void VerifyIsGrouped_WithHorizontalListAndGroupedList()
 	{
 		App.WaitForElement(Options);
@@ -467,7 +467,30 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
+	public void VerifyFlowDirectionRTLIsGrouped_WithHorizontalListAndGroupedList()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(ItemsLayoutHorizontalList);
+		App.Tap(ItemsLayoutHorizontalList);
+		App.WaitForElement(ItemsSourceGroupedList);
+		App.Tap(ItemsSourceGroupedList);
+		App.WaitForElement(IsGroupedTrue);
+		App.Tap(IsGroupedTrue);
+		App.WaitForElement(FlowDirectionRTL);
+		App.Tap(FlowDirectionRTL);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("Fruits");
+		App.WaitForElement("Apple");
+		App.ScrollLeft("CollectionViewControl");
+		App.WaitForElement("Carrot");
+		App.WaitForElement("Vegetables");
+	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 	public void VerifyIsGrouped_WithHorizontalGridAndGroupedList()
 	{
 		App.WaitForElement(Options);
@@ -488,7 +511,27 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+	public void VerifyFlowDirectionRTLIsGrouped_WithHorizontalGridAndGroupedList()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(ItemsLayoutHorizontalGrid);
+		App.Tap(ItemsLayoutHorizontalGrid);
+		App.WaitForElement(ItemsSourceGroupedList);
+		App.Tap(ItemsSourceGroupedList);
+		App.WaitForElement(IsGroupedTrue);
+		App.Tap(IsGroupedTrue);
+		App.WaitForElement(FlowDirectionRTL);
+		App.Tap(FlowDirectionRTL);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("Fruits");
+		VerifyScreenshot();
+	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
 	public void VerifyGroupHeaderAndFooterTemplate_WithHorizontalListAndGroupedList()
 	{
 		App.WaitForElement(Options);
@@ -506,7 +549,7 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement("GroupHeaderTemplate");
-		App.WaitForElement("Apple");
+		App.WaitForElement("Banana"); // Changed from Apple to Banana because Appium taps, scrolls, or drags the Apple icon instead of the CollectionView Apple item.
 		App.ScrollRight("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 500);
 		App.ScrollRight("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 500);
 		App.WaitForElement("Carrot");
@@ -516,7 +559,37 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
+	public void VerifyFlowDirectionRTLGroupHeaderAndFooterTemplate_WithHorizontalListAndGroupedList()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(GroupHeaderTemplateGrid);
+		App.Tap(GroupHeaderTemplateGrid);
+		App.WaitForElement(GroupFooterTemplateGrid);
+		App.Tap(GroupFooterTemplateGrid);
+		App.WaitForElement(ItemsLayoutHorizontalList);
+		App.Tap(ItemsLayoutHorizontalList);
+		App.WaitForElement(ItemsSourceGroupedList);
+		App.Tap(ItemsSourceGroupedList);
+		App.WaitForElement(IsGroupedTrue);
+		App.Tap(IsGroupedTrue);
+		App.WaitForElement(FlowDirectionRTL);
+		App.Tap(FlowDirectionRTL);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("GroupHeaderTemplate");
+		App.WaitForElement("Banana"); // Changed from Apple to Banana because Appium taps, scrolls, or drags the Apple icon instead of the CollectionView Apple item.
+		App.ScrollLeft("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 500);
+		App.ScrollLeft("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 500);
+		App.WaitForElement("Carrot");
+		App.ScrollLeft("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 500);
+		App.ScrollLeft("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 500);
+		App.WaitForElement("GroupFooterTemplate");
+	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
 	public void VerifyGroupHeaderAndFooterTemplate_WithHorizontalGridAndGroupedList()
 	{
 		App.WaitForElement(Options);
@@ -534,7 +607,7 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement("GroupHeaderTemplate");
-		App.WaitForElement("Apple");
+		App.WaitForElement("Banana"); // Changed from Apple to Banana because Appium taps, scrolls, or drags the Apple icon instead of the CollectionView Apple item.
 		App.ScrollRight("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 500);
 		App.ScrollRight("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 500);
 		App.WaitForElement("Carrot");
@@ -542,7 +615,35 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+	public void VerifyFlowDirectionRTLGroupHeaderAndFooterTemplate_WithHorizontalGridAndGroupedList()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(GroupHeaderTemplateGrid);
+		App.Tap(GroupHeaderTemplateGrid);
+		App.WaitForElement(GroupFooterTemplateGrid);
+		App.Tap(GroupFooterTemplateGrid);
+		App.WaitForElement(ItemsLayoutHorizontalGrid);
+		App.Tap(ItemsLayoutHorizontalGrid);
+		App.WaitForElement(ItemsSourceGroupedList);
+		App.Tap(ItemsSourceGroupedList);
+		App.WaitForElement(IsGroupedTrue);
+		App.Tap(IsGroupedTrue);
+		App.WaitForElement(FlowDirectionRTL);
+		App.Tap(FlowDirectionRTL);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("GroupHeaderTemplate");
+		App.WaitForElement("Banana"); // Changed from Apple to Banana because Appium taps, scrolls, or drags the Apple icon instead of the CollectionView Apple item.
+		App.ScrollLeft("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 500);
+		App.ScrollLeft("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 500);
+		App.WaitForElement("Carrot");
+		App.WaitForElement("GroupFooterTemplate");
+	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
 	public void VerifyGroupHeaderAndFooterTemplate_WithVerticalGridAndGroupedList()
 	{
 		App.WaitForElement(Options);
@@ -560,13 +661,37 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement("GroupHeaderTemplate");
-		App.WaitForElement("Apple");
+		App.WaitForElement("Banana"); // Changed from Apple to Banana because Appium taps, scrolls, or drags the Apple icon instead of the CollectionView Apple item.
 		App.WaitForElement("Carrot");
 		App.WaitForElement("GroupFooterTemplate");
 	}
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
+	public void VerifyFlowDirectionRTLGroupHeaderAndFooterTemplate_WithVerticalGridAndGroupedList()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(GroupHeaderTemplateGrid);
+		App.Tap(GroupHeaderTemplateGrid);
+		App.WaitForElement(GroupFooterTemplateGrid);
+		App.Tap(GroupFooterTemplateGrid);
+		App.WaitForElement(ItemsLayoutVerticalGrid);
+		App.Tap(ItemsLayoutVerticalGrid);
+		App.WaitForElement(ItemsSourceGroupedList);
+		App.Tap(ItemsSourceGroupedList);
+		App.WaitForElement(IsGroupedTrue);
+		App.Tap(IsGroupedTrue);
+		App.WaitForElement(FlowDirectionRTL);
+		App.Tap(FlowDirectionRTL);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("GroupHeaderTemplate");
+		VerifyScreenshot();
+	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
 	public void VerifyIsGrouped_WithVerticalGridAndGroupedList()
 	{
 		App.WaitForElement(Options);
@@ -580,9 +705,29 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement("Fruits");
-		App.WaitForElement("Apple");
+		App.WaitForElement("Banana"); // Changed from Apple to Banana because Appium taps, scrolls, or drags the Apple icon instead of the CollectionView Apple item.
 		App.WaitForElement("Carrot");
 		App.WaitForElement("Vegetables");
+	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
+	public void VerifyFlowDirectionRTLIsGrouped_WithVerticalGridAndGroupedList()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(ItemsLayoutVerticalGrid);
+		App.Tap(ItemsLayoutVerticalGrid);
+		App.WaitForElement(ItemsSourceGroupedList);
+		App.Tap(ItemsSourceGroupedList);
+		App.WaitForElement(IsGroupedTrue);
+		App.Tap(IsGroupedTrue);
+		App.WaitForElement(FlowDirectionRTL);
+		App.Tap(FlowDirectionRTL);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("Fruits");
+		VerifyScreenshot();
 	}
 #endif
 #endif
@@ -591,7 +736,7 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
 //CollectionView Displays Blank UI When Changing IsGrouped and ItemsSourceType Issue Link: https://github.com/dotnet/maui/issues/28826
 //[Windows] NullReferenceException thrown When Toggling IsGrouped to True in ObservableCollection Binding: https://github.com/dotnet/maui/issues/28824
         [Test]
-        [Category(UITestCategories.CollectionView)]
+        [ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
         public void VerifyIsGroupedTrue_WithItemSourceObservableCollection()
         {
             App.WaitForElement(Options);
@@ -607,7 +752,7 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
         }
  
         [Test]
-        [Category(UITestCategories.CollectionView)]
+        [ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
         public void VerifyIsGroupedFalse_WithItemSourceGroupedList()
         {
             App.WaitForElement(Options);
@@ -621,7 +766,7 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
         }
  
         [Test]
-        [Category(UITestCategories.CollectionView)]
+        [ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
         public void VerifyIsGroupedTrue_WithBasicTemplateWhenObservableCollection()
         {
             App.WaitForElement(Options);
@@ -639,7 +784,7 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
         }
        
         [Test]
-        [Category(UITestCategories.CollectionView)]
+        [ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
         public void VerifyIsGrouped_WithHorizontalListAndObservableCollection()
         {
             App.WaitForElement(Options);
@@ -651,14 +796,14 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
             App.WaitForElement(Apply);
             App.Tap(Apply);
             App.WaitForNoElement("Fruits");
-            App.WaitForElement("Apple");
+            App.WaitForElement("Banana"); // Changed from Apple to Banana because Appium taps, scrolls, or drags the Apple icon instead of the CollectionView Apple item.
             App.ScrollRight("CollectionViewControl");
             App.WaitForElement("Carrot");
             App.WaitForNoElement("Vegetables");
         }
  
         [Test]
-        [Category(UITestCategories.CollectionView)]
+        [ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
         public void VerifyIsGrouped_WithHorizontalGridAndObservableCollection()
         {
             App.WaitForElement(Options);
@@ -670,14 +815,14 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
             App.WaitForElement(Apply);
             App.Tap(Apply);
             App.WaitForNoElement("Fruits");
-            App.WaitForElement("Apple");
+            App.WaitForElement("Banana"); // Changed from Apple to Banana because Appium taps, scrolls, or drags the Apple icon instead of the CollectionView Apple item.
             App.ScrollRight("CollectionViewControl");
             App.WaitForElement("Carrot");
             App.WaitForNoElement("Vegetables");
         }
  
         [Test]
-        [Category(UITestCategories.CollectionView)]
+        [ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
         public void VerifyIsGrouped_WithVerticalGridAndObservableCollection()
         {
             App.WaitForElement(Options);
@@ -689,13 +834,13 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
             App.WaitForElement(Apply);
             App.Tap(Apply);
             App.WaitForNoElement("Fruits");
-            App.WaitForElement("Apple");
+            App.WaitForElement("Banana"); // Changed from Apple to Banana because Appium taps, scrolls, or drags the Apple icon instead of the CollectionView Apple item.
             App.WaitForElement("Carrot");
             App.WaitForNoElement("Vegetables");
         }
  
         [Test]
-        [Category(UITestCategories.CollectionView)]
+        [ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
         public void VerifyIsGrouped_WithVerticalListAndObservableCollection()
         {
             App.WaitForElement(Options);
@@ -705,14 +850,14 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
             App.WaitForElement(Apply);
             App.Tap(Apply);
             App.WaitForNoElement("Fruits");
-            App.WaitForElement("Apple");
+            App.WaitForElement("Banana"); // Changed from Apple to Banana because Appium taps, scrolls, or drags the Apple icon instead of the CollectionView Apple item.
             App.WaitForElement("Carrot");
             App.WaitForNoElement("Vegetables");
         }
  
 // [Android] Group Header/Footer Repeated for All Items When IsGrouped is True for ObservableCollection Issue Link: https://github.com/dotnet/maui/issues/28827
         [Test]
-        [Category(UITestCategories.CollectionView)]
+        [ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
         public void VerifyIsGrouped_WithGroupHeaderAndFooterTemplateAndObservableCollection()
         {
             App.WaitForElement(Options);
@@ -727,17 +872,15 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
             App.Tap(Apply);
             App.WaitForNoElement("GroupHeaderTemplate");
             App.WaitForNoElement("GroupFooterTemplate");
-            App.WaitForElement("Apple");
+            App.WaitForElement("Banana"); // Changed from Apple to Banana because Appium taps, scrolls, or drags the Apple icon instead of the CollectionView Apple item.
             App.WaitForElement("Carrot");
         }
 #endif
 
-#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_IOS
-	//CanMixGroups Set to False Still Allows Reordering Between Groups in CollectionView on Catalyst Issue Link : https://github.com/dotnet/maui/issues/28530
-	//Test fails on CV2 . GroupHeader and GroupFooter template is not visible  Issue Link: https://github.com/dotnet/maui/issues/28509
-	//.NET MAUI CollectionView does not reorder when grouped on windows Issue Link:  https://github.com/dotnet/maui/issues/13027
+#if TEST_FAILS_ON_WINDOWS //.NET MAUI CollectionView does not reorder when grouped on windows Issue Link:  https://github.com/dotnet/maui/issues/13027
+
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
 	public void VerifyCanMixGroupsFalseWithCanReorderItems()
 	{
 		App.WaitForElement(Options);
@@ -750,14 +893,36 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
 		App.Tap(IsGroupedTrue);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		var initialY = App.WaitForElement("Apple").GetRect().Y;
-		App.DragAndDrop("Apple", "Potato");
+		var initialY = App.WaitForElement("Banana").GetRect().Y;
+		App.DragAndDrop("Banana", "Potato"); // Changed from Apple to Banana because Appium taps, scrolls, or drags the Apple icon instead of the CollectionView Apple item.
 		var newY = App.WaitForElement("Carrot").GetRect().Y;
-		Assert.That(newY, Is.GreaterThan(initialY), "The Y position of 'Carrot' should be greater than Apple after the drag-and-drop operation.");
+		Assert.That(newY, Is.GreaterThan(initialY), "The Y position of 'Carrot' should be greater than Banana after the drag-and-drop operation.");
 	}
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
+	public void VerifyFlowDirectionRTLCanMixGroupsFalseWithCanReorderItems()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(ItemsSourceGroupedList);
+		App.Tap(ItemsSourceGroupedList);
+		App.WaitForElement("CanReorderItemsTrue");
+		App.Tap("CanReorderItemsTrue");
+		App.WaitForElement(IsGroupedTrue);
+		App.Tap(IsGroupedTrue);
+		App.WaitForElement(FlowDirectionRTL);
+		App.Tap(FlowDirectionRTL);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		var initialY = App.WaitForElement("Banana").GetRect().Y;
+		App.DragAndDrop("Banana", "Potato"); // Changed from Apple to Banana because Appium taps, scrolls, or drags the Apple icon instead of the CollectionView Apple item.
+		var newY = App.WaitForElement("Carrot").GetRect().Y;
+		Assert.That(newY, Is.GreaterThan(initialY), "The Y position of 'Carrot' should be greater than Banana after the drag-and-drop operation.");
+	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
 	public void VerifyCanMixGroupsTrueWithCanReorderItems()
 	{
 		App.WaitForElement(Options);
@@ -772,14 +937,38 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
 		App.Tap(IsGroupedTrue);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		var initialY = App.WaitForElement("Apple").GetRect().Y;
-		App.DragAndDrop("Apple", "Potato");
-		var newY = App.WaitForElement("Apple").GetRect().Y;
-		Assert.That(newY, Is.GreaterThan(initialY), "The Y position of 'Apple' should be greater after the drag-and-drop operation.");
+		var initialY = App.WaitForElement("Banana").GetRect().Y;
+		App.DragAndDrop("Banana", "Potato"); // Changed from Apple to Banana because Appium taps, scrolls, or drags the Apple icon instead of the CollectionView Apple item.
+		var newY = App.WaitForElement("Banana").GetRect().Y;
+		Assert.That(newY, Is.GreaterThan(initialY), "The Y position of 'Banana' should be greater after the drag-and-drop operation.");
 	}
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
+	public void VerifyFlowDirectionRTLCanMixGroupsTrueWithCanReorderItems()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement("CanMixGroupsTrue");
+		App.Tap("CanMixGroupsTrue");
+		App.WaitForElement(ItemsSourceGroupedList);
+		App.Tap(ItemsSourceGroupedList);
+		App.WaitForElement("CanReorderItemsTrue");
+		App.Tap("CanReorderItemsTrue");
+		App.WaitForElement(IsGroupedTrue);
+		App.Tap(IsGroupedTrue);
+		App.WaitForElement(FlowDirectionRTL);
+		App.Tap(FlowDirectionRTL);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		var initialY = App.WaitForElement("Banana").GetRect().Y;
+		App.DragAndDrop("Banana", "Potato"); // Changed from Apple to Banana because Appium taps, scrolls, or drags the Apple icon instead of the CollectionView Apple item.
+		var newY = App.WaitForElement("Banana").GetRect().Y;
+		Assert.That(newY, Is.GreaterThan(initialY), "The Y position of 'Banana' should be greater after the drag-and-drop operation.");
+	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
 	public void VerifyCanReorderItemsTrueWithCanMixGroups()
 	{
 		App.WaitForElement(Options);
@@ -794,14 +983,38 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
 		App.Tap(IsGroupedTrue);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		var initialY = App.WaitForElement("Apple").GetRect().Y;
-		App.DragAndDrop("Apple", "Potato");
-		var newY = App.WaitForElement("Apple").GetRect().Y;
-		Assert.That(newY, Is.GreaterThan(initialY), "The Y position of 'Apple' should be greater after the drag-and-drop operation.");
+		var initialY = App.WaitForElement("Banana").GetRect().Y;
+		App.DragAndDrop("Banana", "Potato"); // Changed from Apple to Banana because Appium taps, scrolls, or drags the Apple icon instead of the CollectionView Apple item.
+		var newY = App.WaitForElement("Banana").GetRect().Y;
+		Assert.That(newY, Is.GreaterThan(initialY), "The Y position of 'Banana' should be greater after the drag-and-drop operation.");
 	}
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
+	public void VerifyFlowDirectionRTLCanReorderItemsTrueWithCanMixGroups()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement("CanReorderItemsTrue");
+		App.Tap("CanReorderItemsTrue");
+		App.WaitForElement(ItemsSourceGroupedList);
+		App.Tap(ItemsSourceGroupedList);
+		App.WaitForElement("CanMixGroupsTrue");
+		App.Tap("CanMixGroupsTrue");
+		App.WaitForElement(IsGroupedTrue);
+		App.Tap(IsGroupedTrue);
+		App.WaitForElement(FlowDirectionRTL);
+		App.Tap(FlowDirectionRTL);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		var initialY = App.WaitForElement("Banana").GetRect().Y;
+		App.DragAndDrop("Banana", "Potato"); // Changed from Apple to Banana because Appium taps, scrolls, or drags the Apple icon instead of the CollectionView Apple item.
+		var newY = App.WaitForElement("Banana").GetRect().Y;
+		Assert.That(newY, Is.GreaterThan(initialY), "The Y position of 'Banana' should be greater after the drag-and-drop operation.");
+	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
 	public void VerifyCanReorderItemsFalseWithCanMixGroups()
 	{
 		App.WaitForElement(Options);
@@ -814,10 +1027,32 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
 		App.Tap(IsGroupedTrue);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		var initialY = App.WaitForElement("Apple").GetRect().Y;
-		App.DragAndDrop("Apple", "Potato");
-		var newY = App.WaitForElement("Apple").GetRect().Y;
-		Assert.That(newY, Is.EqualTo(initialY), "The Y position of 'Apple' should be Same Value after the drag-and-drop operation.");
+		var initialY = App.WaitForElement("Banana").GetRect().Y;
+		App.DragAndDrop("Banana", "Potato"); // Changed from Apple to Banana because Appium taps, scrolls, or drags the Apple icon instead of the CollectionView Apple item.
+		var newY = App.WaitForElement("Banana").GetRect().Y;
+		Assert.That(newY, Is.EqualTo(initialY), "The Y position of 'Banana' should be Same Value after the drag-and-drop operation.");
+	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
+	public void VerifyFlowDirectionRTLCanReorderItemsFalseWithCanMixGroups()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(ItemsSourceGroupedList);
+		App.Tap(ItemsSourceGroupedList);
+		App.WaitForElement("CanMixGroupsTrue");
+		App.Tap("CanMixGroupsTrue");
+		App.WaitForElement(IsGroupedTrue);
+		App.Tap(IsGroupedTrue);
+		App.WaitForElement(FlowDirectionRTL);
+		App.Tap(FlowDirectionRTL);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		var initialY = App.WaitForElement("Banana").GetRect().Y;
+		App.DragAndDrop("Banana", "Potato"); // Changed from Apple to Banana because Appium taps, scrolls, or drags the Apple icon instead of the CollectionView Apple item.
+		var newY = App.WaitForElement("Banana").GetRect().Y;
+		Assert.That(newY, Is.EqualTo(initialY), "The Y position of 'Banana' should be Same Value after the drag-and-drop operation.");
 	}
 #endif
 }

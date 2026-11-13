@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue28986_ParentChildTest"
+             Title="Issue28986 - Parent Child SafeArea">
+
+    <Grid x:Name="ParentGrid"
+          BackgroundColor="#FFEB3B"
+          SafeAreaEdges="None,Container,None,None"
+          AutomationId="ParentGrid">
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Top Indicator -->
+        <Label Grid.Row="0"
+               Text="↑ Parent handles TOP safe area ↑"
+               BackgroundColor="#FF5722"
+               TextColor="White"
+               HorizontalTextAlignment="Center"
+               AutomationId="TopIndicator"/>
+
+        <!-- Middle Content Area -->
+        <VerticalStackLayout Grid.Row="1"
+                             BackgroundColor="#00BCD4"
+                             VerticalOptions="Center"
+                             Spacing="20"
+                             Padding="20">
+
+            <Label Text="SafeAreaEdges Independent Handling Demo"
+                   FontSize="20"
+                   FontAttributes="Bold"
+                   HorizontalTextAlignment="Center"
+                   AutomationId="TitleLabel"/>
+
+            <Label x:Name="StatusLabel"
+                   Text="Parent: Top=Container, Bottom=None | Child: Bottom=Container"
+                   HorizontalTextAlignment="Center"
+                   AutomationId="StatusLabel"/>
+
+            <Button Text="Toggle Parent Top SafeArea"
+                    Clicked="OnToggleParentTop"
+                    HorizontalOptions="Center"
+                    AutomationId="ToggleParentTopButton"/>
+
+            <Button Text="Toggle Parent Bottom SafeArea"
+                    Clicked="OnToggleParentBottom"
+                    HorizontalOptions="Center"
+                    AutomationId="ToggleParentBottomButton"/>
+
+            <Button Text="Toggle Child Bottom SafeArea"
+                    Clicked="OnToggleChildBottom"
+                    HorizontalOptions="Center"
+                    AutomationId="ToggleChildBottomButton"/>
+
+            <Label Text="Expected behavior:"
+                   FontAttributes="Bold"
+                   Margin="0,20,0,0"
+                   AutomationId="ExpectedLabel"/>
+
+            <Label Text="• Top indicator stays below notch/status bar (parent handles top)&#x0a;• Bottom indicator stays above home indicator (child handles bottom)&#x0a;• Both work INDEPENDENTLY - no conflict!&#x0a;• Runtime changes to parent do NOT disrupt child's handling&#x0a;• NO DOUBLE PADDING when both parent and child handle same edge"
+                   FontSize="12"
+                   AutomationId="ExpectedDetailsLabel"/>
+
+        </VerticalStackLayout>
+
+        <!-- Bottom Indicator -->
+        <Grid Grid.Row="2"
+              BackgroundColor="#9C27B0"
+              x:Name="ChildGrid"
+              SafeAreaEdges="None,None,None,Container"
+              AutomationId="ChildGrid">
+
+            <Label Text="↓ Child handles BOTTOM safe area ↓"
+                   BackgroundColor="#8BC34A"
+                   HorizontalTextAlignment="Center"
+                   AutomationId="BottomIndicator"/>
+
+        </Grid>
+    </Grid>
+</ContentPage>

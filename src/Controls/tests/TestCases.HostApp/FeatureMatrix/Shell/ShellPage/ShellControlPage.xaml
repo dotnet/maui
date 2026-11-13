@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Shell
+        x:Class="Maui.Controls.Sample.ShellControlPage"
+        xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+        xmlns:local="clr-namespace:Maui.Controls.Sample"
+        x:DataType="local:ShellViewModel"
+        Shell.BackgroundColor="{Binding BackgroundColor}"
+        Shell.ForegroundColor="{Binding ForegroundColor}"
+        Shell.TitleColor="{Binding TitleColor}"
+        Shell.DisabledColor="{Binding DisabledColor}"
+        Shell.UnselectedColor="{Binding UnselectedColor}"
+        FlowDirection="{Binding FlowDirection}">
+
+        <TabBar>
+                <ShellContent x:Name="homePage"
+                              Title="Home"
+                              Route="home"
+                              Icon="coffee.png"
+                              Shell.PresentationMode="{Binding PresentationMode}">
+                        <ContentPage BackgroundColor="Lavender"
+                                     Shell.NavBarVisibilityAnimationEnabled="{Binding NavBarVisibilityAnimationEnabled}">
+                                <Grid RowDefinitions="Auto,*">
+                                        <!-- Top content -->
+                                        <VerticalStackLayout Grid.Row="0"
+                                                             Spacing="5"
+                                                             Padding="10">
+                                                <Label Text="Shell Page"
+                                                       FontSize="18"
+                                                       HorizontalOptions="Center"/>
+                                                <Button Text="Options"
+                                                        AutomationId="Options"
+                                                        Clicked="NavigateToOptionsPage_Clicked"
+                                                        BackgroundColor="WhiteSmoke"
+                                                        TextColor="Black"/>
+                                        </VerticalStackLayout>
+
+                                        <!-- Bottom controls -->
+                                        <ScrollView Grid.Row="1">
+                                                <VerticalStackLayout Padding="10"
+                                                                     Spacing="5">
+                                                        <!-- NavBar Visibility Controls -->
+                                                        <Label Text="NavBarIsVisible"
+                                                               FontAttributes="Bold"
+                                                               Margin="0,10,0,5"/>
+                                                        <Grid ColumnDefinitions="*,*"
+                                                              ColumnSpacing="10">
+                                                                <Button Grid.Column="0"
+                                                                        Text="Show"
+                                                                        AutomationId="NavBarShowButton"
+                                                                        Clicked="OnNavBarVisibleClicked"
+                                                                        BackgroundColor="WhiteSmoke"
+                                                                        TextColor="Black"/>
+                                                                <Button Grid.Column="1"
+                                                                        Text="Hide"
+                                                                        AutomationId="NavBarHideButton"
+                                                                        Clicked="OnNavBarHiddenClicked"
+                                                                        BackgroundColor="WhiteSmoke"
+                                                                        TextColor="Black"/>
+                                                        </Grid>
+
+                                                        <!-- NavBar Animation Controls -->
+                                                        <Label Text="NavBarVisibilityAnimationEnabled"
+                                                               FontAttributes="Bold"
+                                                               Margin="0,10,0,5"/>
+                                                        <Grid ColumnDefinitions="*,*"
+                                                              ColumnSpacing="10">
+                                                                <Button Grid.Column="0"
+                                                                        Text="True"
+                                                                        AutomationId="NavBarAnimTrueButton"
+                                                                        Clicked="OnNavBarAnimTrueClicked"
+                                                                        BackgroundColor="WhiteSmoke"
+                                                                        TextColor="Black"/>
+                                                                <Button Grid.Column="1"
+                                                                        Text="False"
+                                                                        AutomationId="NavBarAnimFalseButton"
+                                                                        Clicked="OnNavBarAnimFalseClicked"
+                                                                        BackgroundColor="WhiteSmoke"
+                                                                        TextColor="Black"/>
+                                                        </Grid>
+
+                                                        <!-- Presentation Mode Controls -->
+                                                        <Label Text="PresentationMode"
+                                                               FontAttributes="Bold"
+                                                               Margin="0,10,0,5"/>
+                                                        <Grid  ColumnDefinitions="*,*,*"
+                                                               ColumnSpacing="10">
+                                                                <Button Grid.Column="0"
+                                                                        Text="NotAnimated"
+                                                                        AutomationId="NotAnimatedButton"
+                                                                        Clicked="OnGoToNotAnimated"
+                                                                        BackgroundColor="WhiteSmoke"
+                                                                        TextColor="Black"/>
+                                                                <Button Grid.Column="1"
+                                                                        Text="Animated"
+                                                                        AutomationId="AnimatedButton"
+                                                                        Clicked="OnGoToAnimated"
+                                                                        BackgroundColor="WhiteSmoke"
+                                                                        TextColor="Black"/>
+                                                                <Button Grid.Column="2"
+                                                                        Text="Modal"
+                                                                        AutomationId="ModalButton"
+                                                                        Clicked="OnGoToModal"
+                                                                        BackgroundColor="WhiteSmoke"
+                                                                        TextColor="Black"/>
+                                                        </Grid>
+
+                                                        <Grid ColumnDefinitions="*,*"
+                                                              ColumnSpacing="10"
+                                                              Margin="0,5,0,0">
+                                                                <Button Grid.Column="0"
+                                                                        Text="ModalAnimated"
+                                                                        AutomationId="ModalAnimatedButton"
+                                                                        Clicked="OnGoToModalAnimated"
+                                                                        BackgroundColor="WhiteSmoke"
+                                                                        TextColor="Black"/>
+                                                                <Button Grid.Column="1"
+                                                                        Text="ModalNotAnimated"
+                                                                        AutomationId="ModalNotAnimatedButton"
+                                                                        Clicked="OnGoToModalNotAnimated"
+                                                                        BackgroundColor="WhiteSmoke"
+                                                                        TextColor="Black"/>
+                                                        </Grid>
+
+                                                        <Label Text="TitleView"
+                                                               FontAttributes="Bold"
+                                                               Margin="0,10,0,5"/>
+                                                        <Grid ColumnDefinitions="*,*"
+                                                              ColumnSpacing="10">
+                                                                <Button Grid.Column="0"
+                                                                        Text="Show TitleView"
+                                                                        AutomationId="ShowTitleViewButton"
+                                                                        Clicked="OnShowTitleViewClicked"
+                                                                        BackgroundColor="WhiteSmoke"
+                                                                        TextColor="Black"/>
+                                                                <Button Grid.Column="1"
+                                                                        Text="Hide TitleView"
+                                                                        AutomationId="HideTitleViewButton"
+                                                                        Clicked="OnHideTitleViewClicked"
+                                                                        BackgroundColor="WhiteSmoke"
+                                                                        TextColor="Black"/>
+                                                        </Grid>
+
+                                                        <Label Text="NavBarHasShadow"
+                                                               FontAttributes="Bold"
+                                                               Margin="0,10,0,5"/>
+                                                        <Grid ColumnDefinitions="*,*"
+                                                              ColumnSpacing="10">
+                                                                <Button Grid.Column="0"
+                                                                        Text="True"
+                                                                        AutomationId="ShadowTrue"
+                                                                        Clicked="OnNavBarHasShadowTrueClicked"
+                                                                        BackgroundColor="WhiteSmoke"
+                                                                        TextColor="Black"/>
+                                                                <Button Grid.Column="1"
+                                                                        Text="False"
+                                                                        AutomationId="ShadowFalse"
+                                                                        Clicked="OnNavBarHasShadowFalseClicked"
+                                                                        BackgroundColor="WhiteSmoke"
+                                                                        TextColor="Black"/>
+                                                        </Grid>
+                                                </VerticalStackLayout>
+                                        </ScrollView>
+                                </Grid>
+                        </ContentPage>
+                </ShellContent>
+
+                <ShellContent x:Name="tab1Item"
+                              Title="Tab1"
+                              AutomationId="Tab1"
+                              Icon="groceries.png">
+                        <ContentPage>
+                                <VerticalStackLayout>
+                                        <Label Text="Tab1 Content"
+                                               Padding="20"/>
+                                        <Button Text="Go to Home"
+                                                Clicked="OnGoToHomeClicked"
+                                                AutomationId="Tab1GoToHomeButton"/>
+
+
+                                </VerticalStackLayout>
+                        </ContentPage>
+                </ShellContent>
+
+
+                <ShellContent x:Name="tab2Item"
+                              Title="Tab2"
+                              AutomationId="Tab2"
+                              IsVisible="{Binding IsVisible, Mode=TwoWay}"
+                              Icon="menu_icon.png">
+                        <ContentPage>
+                                <VerticalStackLayout>
+                                        <Label Text="Tab2 Content"
+                                               Padding="20"/>
+                                        <Button Text="Go to Home"
+                                                Clicked="OnGoToHomeClicked"
+                                                AutomationId="Tab2GoToHomeButton"/>
+                                </VerticalStackLayout>
+                        </ContentPage>
+                </ShellContent>
+
+                <ShellContent x:Name="tab3Item"
+                              Title="Tab3"
+                              AutomationId="Tab3"
+                              IsEnabled="{Binding IsEnabled}"
+                              Icon="bank.png">
+                        <ContentPage>
+                                <VerticalStackLayout>
+                                        <Label Text="Tab3 Content"
+                                               AutomationId="Tab3Label"
+                                               Padding="20"/>
+                                        <Button Text="Go to Home"
+                                                Clicked="OnGoToHomeClicked"
+                                                AutomationId="Tab3GoToHomeButton"/>
+                                </VerticalStackLayout>
+                        </ContentPage>
+                </ShellContent>
+
+        </TabBar>
+</Shell>

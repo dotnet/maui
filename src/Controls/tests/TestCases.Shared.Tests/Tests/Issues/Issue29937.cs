@@ -14,7 +14,7 @@ public class Issue29937 : _IssuesUITest
 	public override string Issue => "[iOS/MacCatalyst] Setting SelectedItem Programmatically and Then Immediately Setting ItemsSource to Null Causes a Crash";
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
 	public void SettingSelectedItemAndItemSourceShouldNotCrash()
 	{
 		App.WaitForElement("MauiButton");

@@ -1,6 +1,8 @@
 ﻿using System;
 using Android.Content;
 using Android.Graphics.Drawables;
+using Android.Views;
+using Android.Views.Accessibility;
 using Android.Widget;
 using Microsoft.Maui.Graphics;
 using AColor = Android.Graphics.Color;
@@ -21,6 +23,8 @@ namespace Microsoft.Maui.Platform
 		IIndicatorView? _indicatorView;
 
 		bool _isTemplateIndicator;
+		
+		static readonly IndicatorAccessibilityDelegate _accessibilityDelegate = new();
 
 		public MauiPageControl(Context? context) : base(context)
 		{
@@ -61,6 +65,9 @@ namespace Microsoft.Maui.Platform
 				var drawableToUse = index == i ? _currentPageShape : _pageShape;
 				if (drawableToUse != view.Drawable)
 					view.SetImageDrawable(drawableToUse);
+
+				// Update accessibility information
+				UpdateIndicatorAccessibility(view, i, index);
 			}
 		}
 
@@ -98,6 +105,9 @@ namespace Microsoft.Maui.Platform
 					}
 				}));
 
+				// Set up accessibility after click listener so Clickable state is set correctly
+				SetupIndicatorAccessibility(imageView, i, index);
+
 				AddView(imageView);
 			}
 
@@ -134,6 +144,51 @@ namespace Microsoft.Maui.Platform
 			{
 				if (indicatorPositionPaint.Color is Color c)
 					_currentPageShape = GetShape(c.ToPlatform());
+			}
+		}
+
+		void SetupIndicatorAccessibility(ImageView imageView, int position, int selectedPosition)
+		{
+			if (_indicatorView is null)
+			{
+				return;
+			}
+
+			imageView.ImportantForAccessibility = ImportantForAccessibility.Yes;
+			
+			// Set accessibility delegate to prevent "button" announcement
+			imageView.SetAccessibilityDelegate(_accessibilityDelegate);
+			
+			// Set the accessibility content description
+			UpdateIndicatorAccessibility(imageView, position, selectedPosition);
+		}
+
+		void UpdateIndicatorAccessibility(ImageView imageView, int position, int selectedPosition)
+		{
+			if (_indicatorView is null || Context is null)
+			{
+				return;
+			}
+
+			var itemNumber = position + 1;
+			var totalItems = _indicatorView.GetMaximumVisible();
+			var isSelected = position == selectedPosition;
+
+			// Use localized string resources for TalkBack announcements
+			var contentDescription = isSelected
+				? Context.GetString(Resource.String.indicator_item_accessible_description_selected, new Java.Lang.Integer(itemNumber), new Java.Lang.Integer(totalItems))
+				: Context.GetString(Resource.String.indicator_item_accessible_description, new Java.Lang.Integer(itemNumber), new Java.Lang.Integer(totalItems));
+
+			imageView.ContentDescription = contentDescription;
+
+			// Prevent "double tap to activate" announcement for the already-selected indicator
+			imageView.Clickable = !isSelected;
+
+			// Force TalkBack to announce the updated description for the selected item
+			if (isSelected && imageView.IsAccessibilityFocused)
+			{
+				// Send accessibility event to make TalkBack re-announce the updated content
+				imageView.SendAccessibilityEvent(EventTypes.ViewAccessibilityFocused);
 			}
 		}
 
@@ -204,6 +259,22 @@ namespace Microsoft.Maui.Platform
 					_command = null;
 				}
 				base.Dispose(disposing);
+			}
+		}
+
+		class IndicatorAccessibilityDelegate : AccessibilityDelegate
+		{
+			public override void OnInitializeAccessibilityNodeInfo(AView? host, AccessibilityNodeInfo? info)
+			{
+				if (host is null || info is null)
+				{
+					return;
+				}
+	
+				base.OnInitializeAccessibilityNodeInfo(host, info);
+
+				// Set class name to avoid "button" announcement
+				info.ClassName = "android.view.View";
 			}
 		}
 	}

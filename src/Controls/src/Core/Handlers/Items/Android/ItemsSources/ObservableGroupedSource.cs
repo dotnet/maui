@@ -33,6 +33,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 		}
 
+		internal int GroupCount => _groups.Count;
+
 		public bool HasHeader { get; set; }
 		public bool HasFooter { get; set; }
 		public bool ObserveChanges { get; set; } = true;
@@ -144,6 +146,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public IItemsViewSource GetGroupItemsViewSource(int groupIndex)
 		{
+			// The uint cast is being used as an optimization to handle both negative numbers and out-of-bounds indices in a single comparison
+			if ((uint) groupIndex >= (uint) _groups.Count)
+			{
+				System.Diagnostics.Debug.WriteLine($"Invalid Group index: {groupIndex}, Group count: {_groups.Count}");
+				return null;
+			}
+
 			return _groups[groupIndex];
 		}
 
@@ -226,10 +235,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			for (int n = 0; n < _groupSource.Count; n++)
 			{
-				var source = ItemsSourceFactory.Create(_groupSource[n] as IEnumerable, _groupableItemsView, this);
-				source.HasFooter = _hasGroupFooters;
-				source.HasHeader = _hasGroupHeaders;
-				_groups.Add(source);
+				var group = _groupSource[n];
+
+				if (group is IEnumerable list && group is not string) // Exclude string: it implements IEnumerable<char> but is a scalar value, not a group
+				{
+					var source = ItemsSourceFactory.Create(list, _groupableItemsView, this);
+					source.HasFooter = _hasGroupFooters;
+					source.HasHeader = _hasGroupHeaders;
+					_groups.Add(source);
+				}
 			}
 		}
 
@@ -284,14 +298,44 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void Add(NotifyCollectionChangedEventArgs args)
 		{
+			var count = 0;
+
+			foreach (var item in args.NewItems)
+			{
+				// Count only real groups (IEnumerable but not string); flat scalar items like strings
+				// must not trigger a section insertion — they would cause _groups[groupIndex] to be
+				// out-of-range after UpdateGroupTracking skips non-group items.
+				// string implements IEnumerable<char> but is a scalar value, not a group.
+				if (item is IEnumerable and not string)
+				{
+					count++;
+				}
+			}
+
+			if (count == 0)
+			{
+				return;
+			}
+
 			var groupIndex = args.NewStartingIndex > -1 ? args.NewStartingIndex : _groupSource.IndexOf(args.NewItems[0]);
 			var groupCount = args.NewItems.Count;
+			var previousGroupCount = _groups.Count;
 
 			UpdateGroupTracking();
 
 			// Determine the absolute starting position and the number of items in the groups being added
 			var absolutePosition = GetAbsolutePosition(_groups[groupIndex], 0);
 			var itemCount = CountItemsInGroups(groupIndex, groupCount);
+
+			if (itemCount == 0)
+			{
+				if (previousGroupCount == 0 && GroupCount > 0)
+				{
+					_notifier.NotifyDataSetChanged();
+				}
+
+				return;
+			}
 
 			if (itemCount == 1)
 			{
@@ -304,6 +348,24 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void Remove(NotifyCollectionChangedEventArgs args)
 		{
+			var count = 0;
+
+			foreach (var item in args.OldItems)
+			{
+				// Count only real groups (IEnumerable but not string); flat scalar items like strings
+				// must not trigger a section removal — they would cause _groups[groupIndex] to be
+				// out-of-range after UpdateGroupTracking skips non-group items.
+				if (item is IEnumerable and not string)
+				{
+					count++;
+				}
+			}
+
+			if (count == 0)
+			{
+				return;
+			}
+
 			var groupIndex = args.OldStartingIndex;
 
 			if (groupIndex < 0)
@@ -321,19 +383,27 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			// Figure out how many items are in the groups we're removing
 			var itemCount = CountItemsInGroups(groupIndex, groupCount);
+			var previousGroupCount = _groups.Count;
 
-			if (itemCount == 1)
+			UpdateGroupTracking();
+
+			if (itemCount == 0)
 			{
-				_notifier.NotifyItemRemoved(this, absolutePosition);
-
-				UpdateGroupTracking();
+				if (previousGroupCount > 0 && GroupCount == 0)
+				{
+					_notifier.NotifyDataSetChanged();
+				}
 
 				return;
 			}
 
-			_notifier.NotifyItemRangeRemoved(this, absolutePosition, itemCount);
+			if (itemCount == 1)
+			{
+				_notifier.NotifyItemRemoved(this, absolutePosition);
+				return;
+			}
 
-			UpdateGroupTracking();
+			_notifier.NotifyItemRangeRemoved(this, absolutePosition, itemCount);
 		}
 
 		void Replace(NotifyCollectionChangedEventArgs args)
@@ -409,23 +479,32 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			absolutePosition = AdjustIndexForHeader(absolutePosition);
 
-			var group = 0;
-			var localIndex = 0;
-
-			while (absolutePosition > 0)
+			// The ItemsView header sits before every group; keep returning (0, 0) for it as before.
+			if (absolutePosition < 0)
 			{
-				localIndex += 1;
-
-				if (localIndex == _groups[group].Count)
-				{
-					group += 1;
-					localIndex = 0;
-				}
-
-				absolutePosition -= 1;
+				return (0, 0);
 			}
 
-			return (group, localIndex);
+			// Walk group by group rather than position by position: this is called for every span-size
+			// lookup, so an O(position) walk here makes large grouped grids O(n²) to lay out.
+			// Counts are read live on purpose; ReorderableItemsViewAdapter mutates groups with
+			// ObserveChanges disabled, so a cached prefix table could not be kept in sync.
+			var lastGroup = _groups.Count - 1;
+
+			for (int group = 0; group < lastGroup; group++)
+			{
+				var groupCount = _groups[group].Count;
+
+				if (absolutePosition < groupCount)
+				{
+					return (group, absolutePosition);
+				}
+
+				absolutePosition -= groupCount;
+			}
+
+			// Positions past the end resolve into the final group instead of indexing outside _groups.
+			return (Math.Max(lastGroup, 0), absolutePosition);
 		}
 
 		int AdjustIndexForHeader(int index)

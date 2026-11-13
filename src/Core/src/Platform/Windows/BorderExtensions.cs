@@ -21,7 +21,9 @@ namespace Microsoft.Maui.Platform
 
 			var strokeThickness = borderPath?.StrokeThickness ?? 0;
 			var pathSize = new Graphics.Rect(0, 0, width - strokeThickness, height - strokeThickness);
-			var shapePath = borderShape.PathForBounds(pathSize);
+			var shapePath = borderShape is IShapeWithStroke shapeWithStroke
+				? shapeWithStroke.PathForBounds(pathSize, includeStroke: true)
+				: borderShape.PathForBounds(pathSize);
 			var geometry = shapePath.AsPathGeometry();
 
 			if (borderPath is not null)
@@ -75,6 +77,10 @@ namespace Microsoft.Maui.Platform
 					borderPath.StrokeDashArray.Add(value);
 				}
 			}
+			else if (borderDashArray is null || borderDashArray.Length == 0)
+			{
+				borderPath.StrokeDashArray = null;
+			}
 		}
 
 		public static void UpdateBorderDashOffset(this Path borderPath, double borderDashOffset)
@@ -113,7 +119,7 @@ namespace Microsoft.Maui.Platform
 					break;
 			}
 
-			borderPath.StrokeStartLineCap = borderPath.StrokeEndLineCap = wLineCap;
+			borderPath.StrokeStartLineCap = borderPath.StrokeEndLineCap = borderPath.StrokeDashCap = wLineCap;
 		}
 
 		public static void UpdateStrokeLineJoin(this Path borderPath, LineJoin strokeLineJoin)

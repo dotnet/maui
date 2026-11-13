@@ -16,6 +16,7 @@ using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Platform.Compatibility;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Xunit;
@@ -29,6 +30,53 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Shell)]
 	public partial class ShellTests
 	{
+		[Fact(DisplayName = "Collapsible SearchHandler Icon Uses ForegroundColor Set On Parent Shell Element")]
+		public async Task CollapsibleSearchHandlerIconUsesForegroundColorSetOnParentShellElement()
+		{
+			SetupBuilder();
+
+			var page = new ContentPage();
+			Shell.SetSearchHandler(page, new SearchHandler { SearchBoxVisibility = SearchBoxVisibility.Collapsible });
+
+			// The color is set on the TabBar, not on the page or on the Shell.
+			var tabBar = new TabBar { Items = { new ShellContent { Content = page } } };
+			Shell.SetBackgroundColor(tabBar, Colors.White);
+			Shell.SetTitleColor(tabBar, Colors.Black);
+			Shell.SetForegroundColor(tabBar, Colors.Red);
+
+			var shell = await CreateShellAsync(shell => shell.Items.Add(tabBar));
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			{
+				await OnLoadedAsync(page);
+
+				var toolbar = GetPlatformToolbar(handler);
+				Assert.Equal(1, toolbar.Menu.Size());
+
+				using (var bitmap = RenderSearchIcon(toolbar))
+					await bitmap.AssertContainsColor(Colors.Red);
+
+				Shell.SetForegroundColor(tabBar, Colors.Lime);
+
+				using (var bitmap = RenderSearchIcon(toolbar))
+				{
+					await bitmap.AssertContainsColor(Colors.Lime);
+					await bitmap.AssertDoesNotContainColor(Colors.Red);
+				}
+			});
+
+			static global::Android.Graphics.Bitmap RenderSearchIcon(MaterialToolbar toolbar)
+			{
+				// The collapsible SearchHandler is the only menu item.
+				var icon = toolbar.Menu.GetItem(0).Icon;
+				var bitmap = global::Android.Graphics.Bitmap.CreateBitmap(icon.IntrinsicWidth, icon.IntrinsicHeight, global::Android.Graphics.Bitmap.Config.Argb8888);
+				using var canvas = new global::Android.Graphics.Canvas(bitmap);
+				icon.SetBounds(0, 0, canvas.Width, canvas.Height);
+				icon.Draw(canvas);
+				return bitmap;
+			}
+		}
+
 		[Fact(DisplayName = "No crash going back using 'Shell.Current.GoToAsync(\"..\")'")]
 		public async Task GoingBackUsingGoToAsyncMethod()
 		{
@@ -114,6 +162,178 @@ namespace Microsoft.Maui.DeviceTests
 					Assert.True(appBar.Elevation > 0);
 				else
 					Assert.True(appBar.Elevation == 0);
+			});
+		}
+
+		[Fact(DisplayName = "Back button IconOverride keeps its aspect ratio")]
+		public async Task BackButtonIconOverrideKeepsItsAspectRatio()
+		{
+			SetupBuilder();
+
+			var icon = new FontImageSource { Glyph = "\u2039" };
+			var secondPage = new ContentPage();
+			Shell.SetBackButtonBehavior(secondPage, new BackButtonBehavior { IconOverride = icon });
+
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.CurrentItem = new ContentPage();
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			{
+				await shell.Navigation.PushAsync(secondPage);
+				await AssertEventually(() => GetPlatformToolbar(handler)?.NavigationIcon is not null);
+
+				var backButton = GetPlatformToolbar(handler).GetChildrenOfType<AppCompatImageButton>().First();
+				using var backButtonBitmap = await backButton.ToBitmap(MauiContext);
+
+				var iconDrawable = (await icon.GetPlatformImageAsync(MauiContext)).Value;
+				iconDrawable.SetBounds(0, 0, iconDrawable.IntrinsicWidth, iconDrawable.IntrinsicHeight);
+				using var iconBitmap = global::Android.Graphics.Bitmap.CreateBitmap(iconDrawable.IntrinsicWidth, iconDrawable.IntrinsicHeight, global::Android.Graphics.Bitmap.Config.Argb8888);
+				using (var canvas = new global::Android.Graphics.Canvas(iconBitmap))
+				{
+					iconDrawable.Draw(canvas);
+				}
+
+				var expected = GetDrawnBounds(iconBitmap);
+				var actual = GetDrawnBounds(backButtonBitmap);
+				Assert.Equal((double)expected.Width() / expected.Height(), (double)actual.Width() / actual.Height(), 0.15);
+			});
+		}
+
+		[Fact(DisplayName = "Back button IconOverride with an extreme aspect ratio is still drawn")]
+		public async Task BackButtonIconOverrideWithExtremeAspectRatioIsDrawn()
+		{
+			SetupBuilder();
+
+			byte[] iconBytes;
+			using (var iconBitmap = global::Android.Graphics.Bitmap.CreateBitmap(1000, 1, global::Android.Graphics.Bitmap.Config.Argb8888))
+			using (var stream = new System.IO.MemoryStream())
+			{
+				iconBitmap.EraseColor(global::Android.Graphics.Color.White);
+				iconBitmap.Compress(global::Android.Graphics.Bitmap.CompressFormat.Png, 100, stream);
+				iconBytes = stream.ToArray();
+			}
+
+			var secondPage = new ContentPage();
+			Shell.SetBackButtonBehavior(secondPage, new BackButtonBehavior { IconOverride = ImageSource.FromStream(() => new System.IO.MemoryStream(iconBytes)) });
+
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.CurrentItem = new ContentPage();
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			{
+				await shell.Navigation.PushAsync(secondPage);
+				await AssertEventually(() => GetPlatformToolbar(handler)?.NavigationIcon is not null);
+
+				var backButton = GetPlatformToolbar(handler).GetChildrenOfType<AppCompatImageButton>().First();
+				using var backButtonBitmap = await backButton.ToBitmap(MauiContext);
+
+				Assert.False(GetDrawnBounds(backButtonBitmap).IsEmpty);
+			});
+		}
+
+		static global::Android.Graphics.Rect GetDrawnBounds(global::Android.Graphics.Bitmap bitmap)
+		{
+			var pixels = new int[bitmap.Width * bitmap.Height];
+			bitmap.GetPixels(pixels, 0, bitmap.Width, 0, 0, bitmap.Width, bitmap.Height);
+
+			int left = bitmap.Width, top = bitmap.Height, right = -1, bottom = -1;
+			for (int i = 0; i < pixels.Length; i++)
+			{
+				if (global::Android.Graphics.Color.GetAlphaComponent(pixels[i]) > 127)
+				{
+					left = Math.Min(left, i % bitmap.Width);
+					right = Math.Max(right, i % bitmap.Width);
+					top = Math.Min(top, i / bitmap.Width);
+					bottom = Math.Max(bottom, i / bitmap.Width);
+				}
+			}
+
+			return new global::Android.Graphics.Rect(left, top, right + 1, bottom + 1);
+		}
+
+		[Fact(DisplayName = "Hidden Shell navigation bar clears app bar inset padding")]
+		public async Task HiddenShellNavigationBarClearsAppBarInsetPadding()
+		{
+			SetupBuilder();
+			const int statusBarTopInset = 24;
+			const int displayCutoutTopInset = 96;
+
+			var contentPage = new ContentPage()
+			{
+				Title = "Test",
+				Content = new Label { Text = "Content" }
+			};
+
+			var syntheticInsets = CreateTopCutoutInsets(statusBarTopInset, displayCutoutTopInset);
+
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.CurrentItem = new FlyoutItem() { Items = { contentPage } };
+			});
+
+			await CreateHandlerAndAddToWindow<ShellRenderer>(shell, async (handler) =>
+			{
+				await OnLoadedAsync(contentPage);
+				await OnNavigatedToAsync(contentPage);
+
+				MaterialToolbar platformToolbar = null;
+				await AssertEventually(() =>
+				{
+					platformToolbar = GetPlatformToolbar(handler);
+					return platformToolbar?.LayoutParameters?.Height > 0;
+				},
+					timeout: 2000,
+					message: "Toolbar did not render before Shell.NavBarIsVisible was toggled.");
+
+				Assert.NotNull(platformToolbar);
+				var appBar = platformToolbar.Parent.GetParentOfType<AppBarLayout>();
+				var rootCoordinator = appBar?.Parent.GetParentOfType<CoordinatorLayout>();
+				Assert.NotNull(appBar);
+				Assert.NotNull(rootCoordinator);
+				var capturingListener = AttachCapturingWindowInsetsListener(rootCoordinator, platformToolbar);
+
+				ViewCompat.DispatchApplyWindowInsets(rootCoordinator, syntheticInsets);
+
+				await AssertEventually(() => capturingListener.InvocationCount > 0,
+					timeout: 2000,
+					message: "The Shell root did not receive the initial synthetic window insets dispatch.");
+
+				await AssertEventually(() => appBar.PaddingTop == displayCutoutTopInset,
+					timeout: 2000,
+					message: "AppBar never received the synthetic display cutout top inset before the Shell navigation bar was hidden.");
+
+				AssertTopInsets(capturingListener.LastAppliedInsets, expectedSystemBarsTop: 0, expectedDisplayCutoutTop: 0,
+					message: "Visible Shell app bar should consume the synthetic top insets.");
+
+				var visibleInsetsInvocationCount = capturingListener.InvocationCount;
+
+				Shell.SetNavBarIsVisible(contentPage, false);
+
+				await AssertEventually(() => platformToolbar.LayoutParameters?.Height == 0 && platformToolbar.Height == 0,
+					timeout: 2000,
+					message: "Toolbar did not fully collapse after Shell.NavBarIsVisible was set to false.");
+
+				await AssertEventually(() => capturingListener.InvocationCount > visibleInsetsInvocationCount && appBar.PaddingTop == 0,
+					timeout: 2000,
+					message: "Shell.NavBarIsVisible did not trigger an inset redispatch that cleared the AppBar top padding.");
+
+				// Re-dispatch the synthetic insets now that the nav bar is hidden so we can assert
+				// with known values that the app bar no longer consumes the top insets.
+				var hiddenInsetsInvocationCount = capturingListener.InvocationCount;
+				ViewCompat.DispatchApplyWindowInsets(rootCoordinator, syntheticInsets);
+
+				await AssertEventually(() => capturingListener.InvocationCount > hiddenInsetsInvocationCount,
+					timeout: 2000,
+					message: "Expected an additional inset dispatch after re-injecting synthetic insets post-nav-bar-hide.");
+
+				AssertTopInsets(capturingListener.LastAppliedInsets,
+					expectedSystemBarsTop: statusBarTopInset,
+					expectedDisplayCutoutTop: displayCutoutTopInset,
+					message: "Hidden Shell app bar should stop consuming the synthetic top insets.");
 			});
 		}
 

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using CoreGraphics;
 using Microsoft.Maui.Graphics;
 using UIKit;
 
@@ -6,10 +7,9 @@ namespace Microsoft.Maui.Platform
 {
 	public static partial class SwipeViewExtensions
 	{
-		internal static Size GetSwipeItemSize(this ISwipeView swipeView, ISwipeItem swipeItem, UIView contentView, SwipeDirection? swipeDirection)
+		internal static Size GetSwipeItemSize(this ISwipeView swipeView, ISwipeItem swipeItem, UIView contentView, SwipeDirection? swipeDirection, double executeModeItemWidth=0)
 		{
 			var items = GetSwipeItemsByDirection(swipeView, swipeDirection);
-			double threshold = swipeView.Threshold;
 			if (items == null)
 				return Size.Zero;
 
@@ -20,19 +20,23 @@ namespace Microsoft.Maui.Platform
 			{
 				if (swipeItem is ISwipeItemMenuItem)
 				{
-					return new Size(items.Mode == SwipeMode.Execute ? (threshold > 0 ? threshold : contentWidth) / items.Count : (threshold < SwipeItemWidth ? SwipeItemWidth : threshold), contentHeight);
+					if (items.Mode == SwipeMode.Execute)
+					{
+						return new Size(
+							executeModeItemWidth>0 ? executeModeItemWidth : SwipeItemWidth,
+							contentHeight);
+					}
+
+					return new Size(SwipeItemWidth, contentHeight);
 				}
 
 				if (swipeItem is ISwipeItemView horizontalSwipeItemView)
 				{
 					var swipeItemViewSizeRequest = horizontalSwipeItemView.Measure(double.PositiveInfinity, double.PositiveInfinity);
 
-					double swipeItemWidth;
-
-					if (swipeItemViewSizeRequest.Width > 0)
-						swipeItemWidth = threshold > swipeItemViewSizeRequest.Width ? threshold : swipeItemViewSizeRequest.Width;
-					else
-						swipeItemWidth = threshold > SwipeItemWidth ? threshold : SwipeItemWidth;
+					double swipeItemWidth = swipeItemViewSizeRequest.Width > 0
+						? swipeItemViewSizeRequest.Width
+						: SwipeItemWidth;
 
 					return new Size(swipeItemWidth, contentHeight);
 				}
@@ -42,25 +46,53 @@ namespace Microsoft.Maui.Platform
 				if (swipeItem is ISwipeItemMenuItem)
 				{
 					var swipeItemHeight = GetSwipeItemHeight(swipeView, swipeDirection, contentView);
-					return new Size(contentWidth / items.Count, (threshold > 0 && threshold < swipeItemHeight) ? threshold : swipeItemHeight);
+					return new Size(contentWidth / items.Count, swipeItemHeight);
 				}
 
 				if (swipeItem is ISwipeItemView verticalSwipeItemView)
 				{
 					var swipeItemViewSizeRequest = verticalSwipeItemView.Measure(double.PositiveInfinity, double.PositiveInfinity);
 
-					double swipeItemHeight;
-
-					if (swipeItemViewSizeRequest.Width > 0)
-						swipeItemHeight = threshold > swipeItemViewSizeRequest.Height ? threshold : (float)swipeItemViewSizeRequest.Height;
-					else
-						swipeItemHeight = threshold > contentHeight ? threshold : contentHeight;
+					double swipeItemHeight = swipeItemViewSizeRequest.Height > 0
+						? swipeItemViewSizeRequest.Height
+						: contentHeight;
 
 					return new Size(contentWidth / items.Count, swipeItemHeight);
 				}
 			}
 
 			return Size.Zero;
+		}
+
+		internal static double GetExecuteModeItemWidth(
+			this ISwipeView swipeView,
+			UIView contentView,
+			SwipeDirection? swipeDirection,
+			IReadOnlyList<UIView> platformItems)
+		{
+			var items = GetSwipeItemsByDirection(swipeView, swipeDirection);
+			if (items?.Mode != SwipeMode.Execute || !swipeDirection.IsHorizontalSwipe())
+				return SwipeItemWidth;
+
+			double totalWidth = 0;
+			int visibleItemCount = 0;
+
+			for (int i = 0; i < platformItems.Count; i++)
+			{
+				var platformItem = platformItems[i];
+				if (platformItem.Hidden)
+					continue;
+
+				totalWidth += platformItem.SizeThatFits(contentView.Bounds.Size).Width;
+				visibleItemCount++;
+			}
+
+			if (visibleItemCount == 0)
+				return SwipeItemWidth;
+
+			return totalWidth > contentView.Bounds.Width
+				? contentView.Bounds.Width / visibleItemCount
+				: totalWidth / visibleItemCount;
 		}
 
 		internal static double GetSwipeItemHeight(this ISwipeView swipeView, SwipeDirection? swipeDirection, UIView contentView)

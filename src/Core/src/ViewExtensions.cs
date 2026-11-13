@@ -1,4 +1,5 @@
 ﻿using Microsoft.Maui.Graphics;
+using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.Media;
 using System.Collections.Generic;
@@ -21,7 +22,6 @@ using ParentView = Tizen.NUI.BaseComponents.View;
 #else
 using PlatformView = System.Object;
 using ParentView = System.Object;
-using System;
 #endif
 
 namespace Microsoft.Maui
@@ -44,28 +44,51 @@ namespace Microsoft.Maui
 				viewToDisconnect.Handler?.DisconnectHandler();
 			}
 
-			void BuildFlatList(IView view, List<IView> flatList)
+			// Non-IView IVisualTreeElement nodes (e.g. ShellItem/ShellSection) can't be added to
+			// the flat list, but traversal must continue through them since their descendants
+			// (e.g. pages hosted inside a Shell) can still be IView.
+			static void BuildFlatList(object element, List<IView> flatList)
 			{
-				if (view is IHandlerDisconnectPolicies HandlerPropertiess && HandlerPropertiess.DisconnectPolicy == HandlerDisconnectPolicy.Manual)
+				if (element is IHandlerDisconnectPolicies handlerProperties && handlerProperties.DisconnectPolicy == HandlerDisconnectPolicy.Manual)
 				{
 					return;
 				}
 
-				flatList.Add(view);
+				if (element is IView elementView)
+				{
+					flatList.Add(elementView);
+				}
 
-				if (view is IVisualTreeElement vte)
+				if (element is IVisualTreeElement vte)
 				{
 					foreach (var child in vte.GetVisualChildren())
 					{
-						if (child is IView childView)
-						{
-							BuildFlatList(childView, flatList);
-						}
+						BuildFlatList(child, flatList);
 					}
 				}
 			}
 		}
 
+		/// <summary>
+		/// Captures a screenshot of the specified <paramref name="view"/>.
+		/// </summary>
+		/// <remarks>
+		/// On non-built-in platform TFMs (e.g. <c>net10.0-macos</c> AppKit backends,
+		/// <c>net10.0</c> Linux/GTK backends) where MAUI does not ship a screenshot
+		/// implementation, capture is routed through a keyed DI hook. Third-party
+		/// platform backends can opt in by registering a
+		/// <see cref="Func{T, TResult}"/> of <see cref="object"/> to
+		/// <c>Task&lt;IScreenshotResult?&gt;</c> under the service key
+		/// <c>"Microsoft.Maui.ViewCapture"</c>:
+		/// <code>
+		/// builder.Services.AddKeyedSingleton&lt;Func&lt;object, Task&lt;IScreenshotResult?&gt;&gt;&gt;(
+		///     "Microsoft.Maui.ViewCapture",
+		///     (_, _) =&gt; platformView =&gt; ((AppKit.NSView)platformView).CaptureAsync());
+		/// </code>
+		/// If no hook is registered (or the <see cref="IElementHandler.PlatformView"/>
+		/// is <see langword="null"/>), the returned task resolves to
+		/// <see langword="null"/>.
+		/// </remarks>
 		public static Task<IScreenshotResult?> CaptureAsync(this IView view)
 		{
 #if PLATFORM
@@ -77,7 +100,7 @@ namespace Microsoft.Maui
 
 			return CaptureAsync(platformView);
 #else
-			return Task.FromResult<IScreenshotResult?>(null);
+			return ScreenshotDispatch.CaptureAsync(view?.Handler, ScreenshotDispatch.ViewCaptureKey);
 #endif
 		}
 

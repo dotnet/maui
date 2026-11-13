@@ -21,20 +21,19 @@ public partial class OptionsPage : ContentPage
 	}
 	private void OnPaddingChanged(object sender, TextChangedEventArgs e)
 	{
-
 		string[] parts = PaddingEntry.Text.Split(',');
 		if (parts.Length == 4 &&
-			double.TryParse(parts[0], out double left) &&
-			double.TryParse(parts[1], out double top) &&
-			double.TryParse(parts[2], out double right) &&
-			double.TryParse(parts[3], out double bottom))
+			double.TryParse(parts[0], NumberStyles.Any, CultureInfo.InvariantCulture, out double left) &&
+			double.TryParse(parts[1], NumberStyles.Any, CultureInfo.InvariantCulture, out double top) &&
+			double.TryParse(parts[2], NumberStyles.Any, CultureInfo.InvariantCulture, out double right) &&
+			double.TryParse(parts[3], NumberStyles.Any, CultureInfo.InvariantCulture, out double bottom))
 		{
 			_viewModel.Padding = new Thickness(left, top, right, bottom);
 		}
 	}
 	private void OnStrokeThicknessChanged(object sender, TextChangedEventArgs e)
 	{
-		if (double.TryParse(StrokeThicknessEntry.Text, out double strokeThickness))
+		if (double.TryParse(StrokeThicknessEntry.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out double strokeThickness))
 		{
 			_viewModel.StrokeThickness = strokeThickness;
 		}
@@ -115,7 +114,7 @@ public partial class OptionsPage : ContentPage
 		if (_viewModel == null)
 			return;
 
-		if (double.TryParse(MiterLimitEntry.Text, out var miterLimit))
+		if (double.TryParse(MiterLimitEntry.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out var miterLimit))
 		{
 			_viewModel.StrokeMiterLimit = miterLimit;
 		}
@@ -139,24 +138,48 @@ public partial class OptionsPage : ContentPage
 			}
 		}
 	}
+	private Color _shadowColor = Colors.Black;
+
 	private void OnShadowEntryChanged(object sender, TextChangedEventArgs e)
 	{
 		if (BindingContext is BorderViewModel viewModel)
 		{
 			try
 			{
-				double offsetX = double.Parse(OffsetXEntry.Text);
-				double offsetY = double.Parse(OffsetYEntry.Text);
-				double radius = double.Parse(RadiusEntry.Text);
-				float opacity = float.Parse(OpacityEntry.Text, System.Globalization.CultureInfo.InvariantCulture);
+				double offsetX = double.Parse(OffsetXEntry.Text, CultureInfo.InvariantCulture);
+				double offsetY = double.Parse(OffsetYEntry.Text, CultureInfo.InvariantCulture);
+				double radius = double.Parse(RadiusEntry.Text, CultureInfo.InvariantCulture);
+				float opacity = float.Parse(OpacityEntry.Text, CultureInfo.InvariantCulture);
 
-				viewModel.UpdateShadow(offsetX, offsetY, radius, opacity);
+				viewModel.UpdateShadow(offsetX, offsetY, radius, opacity, _shadowColor);
 			}
 			catch
 			{
 				// Optional: Show validation error
 			}
 		}
+	}
+
+	private void OnShadowColorClicked(object sender, EventArgs e)
+	{
+		if (sender is Button button && button.BackgroundColor != Colors.Transparent)
+		{
+			_shadowColor = button.BackgroundColor;
+			OnShadowEntryChanged(sender, new TextChangedEventArgs(string.Empty, string.Empty));
+		}
+	}
+
+	private void OnBackgroundColorClicked(object sender, EventArgs e)
+	{
+		if (sender is Button button && button.BackgroundColor != Colors.Transparent)
+		{
+			_viewModel.Background = new SolidColorBrush(button.BackgroundColor);
+		}
+	}
+
+	private void OnGradientStrokeClicked(object sender, EventArgs e)
+	{
+		_viewModel.SetGradientStroke();
 	}
 	private void OnContentOptionChanged(object sender, CheckedChangedEventArgs e)
 	{

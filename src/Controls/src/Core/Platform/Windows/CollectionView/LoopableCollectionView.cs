@@ -32,6 +32,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		internal bool IsLoopingEnabled { get; set; }
 		internal bool CenterMode { get; set; }
+		internal int RealCount => _internal.Count;
 
 		// This is just a facade to fool the ListView; we very definitely will not be modifying it
 		public bool IsReadOnly => true;

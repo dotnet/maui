@@ -9,6 +9,47 @@ namespace Microsoft.Maui.ApplicationModel
 	/// </summary>
 	public static partial class MainThread
 	{
+		// Internal backing for custom platform backends and dispatcher fallback.
+		// On supported platforms (Android, iOS, Windows), the Platform* methods are used directly.
+		// On netstandard/external TFMs, this provides the implementation as a single atomic state object.
+		//
+		// Lifetime: This field is set once during MauiApp initialization and is expected to live
+		// for the duration of the application. It is NOT cleared on MauiApp.Dispose() because:
+		//   1. Custom backends typically have a single long-lived MauiApp instance.
+		//   2. Rebuilding calls SetCustomImplementation again, atomically replacing the old reference.
+		//   3. After disposal, callers should not invoke MainThread APIs; behavior is undefined.
+#nullable enable
+		static MainThreadImplementation? s_mainThreadImplementation;
+#nullable restore
+
+		sealed class MainThreadImplementation
+		{
+			readonly Func<bool> _isMainThread;
+			readonly Action<Action> _beginInvokeOnMainThread;
+
+			public MainThreadImplementation(Func<bool> isMainThread, Action<Action> beginInvokeOnMainThread)
+			{
+				_isMainThread = isMainThread;
+				_beginInvokeOnMainThread = beginInvokeOnMainThread;
+			}
+
+			public bool IsMainThread() => _isMainThread();
+
+			public void BeginInvokeOnMainThread(Action action) => _beginInvokeOnMainThread(action);
+		}
+
+		internal static void SetCustomImplementation(Func<bool> isMainThread, Action<Action> beginInvokeOnMainThread)
+		{
+			Volatile.Write(ref s_mainThreadImplementation, new MainThreadImplementation(
+				isMainThread ?? throw new ArgumentNullException(nameof(isMainThread)),
+				beginInvokeOnMainThread ?? throw new ArgumentNullException(nameof(beginInvokeOnMainThread))));
+		}
+
+		internal static void ClearCustomImplementation()
+		{
+			Volatile.Write(ref s_mainThreadImplementation, null);
+		}
+
 		/// <summary>
 		/// True if the current thread is the UI thread.
 		/// </summary>

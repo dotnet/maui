@@ -28,6 +28,7 @@ public partial class ScrollViewControlMainPage : ContentPage
 	private async void NavigateToOptionsPage_Clicked(object sender, EventArgs e)
 	{
 		BindingContext = _viewModel = new ScrollViewViewModel();
+		_viewModel.ScrollToRequestedText = "Not Raised";
 		_viewModel.ScrollX = 0;
 		_viewModel.ScrollY = 0;
 		_viewModel.ContentSize = new Size(0, 0);
@@ -81,5 +82,27 @@ public partial class ScrollViewControlMainPage : ContentPage
 			if (vm.Content != null)
 				await MyScrollView.ScrollToAsync(vm.Content, position, true);
 		}
+	}
+
+	private void OnScrollViewScrollToRequested(object sender, ScrollToRequestedEventArgs e)
+	{
+		if (BindingContext is ScrollViewViewModel vm)
+		{
+			vm.ScrollToRequestedText = "Raised";
+
+			vm.RequestedScrollX = e.ScrollX;
+			vm.RequestedScrollY = e.ScrollY;
+			vm.RequestedPosition = e.Position;
+			vm.RequestedAnimate = e.ShouldAnimate;
+			vm.Mode = e.Mode;
+			vm.RequestedElementTypeName = e.Element?.GetType().Name ?? string.Empty;
+		}
+	}
+
+	private async void OnScrollToPixelClicked(object sender, EventArgs e)
+	{
+		double x = 150;
+		double y = 300;
+		await MyScrollView.ScrollToAsync(x, y, true);
 	}
 }

@@ -1,13 +1,14 @@
 #nullable disable
 namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompat
 {
+	using Microsoft.Maui.Controls.Internals;
 	using FormsElement = Maui.Controls.Application;
 
 	/// <summary>AppCompat application instance on Android.</summary>
 	public static class Application
 	{
 		/// <summary>Bindable property for <see cref="SendDisappearingEventOnPause"/>.</summary>
-		public static readonly BindableProperty SendDisappearingEventOnPauseProperty = BindableProperty.Create(nameof(SendDisappearingEventOnPause), typeof(bool), typeof(Application), true);
+		public static readonly BindableProperty SendDisappearingEventOnPauseProperty = BindableProperty.Create(nameof(SendDisappearingEventOnPause), typeof(bool), typeof(Application), BooleanBoxes.TrueBox);
 
 		/// <summary>Returns a Boolean value that controls whether the disappearing event is sent when the application is paused.</summary>
 		/// <param name="element">The platform specific element on which to perform the operation.</param>
@@ -22,7 +23,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompa
 		/// <param name="value">The new property value to assign.</param>
 		public static void SetSendDisappearingEventOnPause(BindableObject element, bool value)
 		{
-			element.SetValue(SendDisappearingEventOnPauseProperty, value);
+			element.SetValue(SendDisappearingEventOnPauseProperty, BooleanBoxes.Box(value));
 		}
 
 		/// <summary>Returns a Boolean value that controls whether the disappearing event is sent when the application is paused.</summary>
@@ -43,7 +44,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompa
 		}
 
 		/// <summary>Bindable property for <see cref="SendAppearingEventOnResume"/>.</summary>
-		public static readonly BindableProperty SendAppearingEventOnResumeProperty = BindableProperty.Create(nameof(SendAppearingEventOnResume), typeof(bool), typeof(Application), true);
+		public static readonly BindableProperty SendAppearingEventOnResumeProperty = BindableProperty.Create(nameof(SendAppearingEventOnResume), typeof(bool), typeof(Application), BooleanBoxes.TrueBox);
 
 		/// <summary>Returns a Boolean value that controls whether the appearing event is sent when the application resumes.</summary>
 		/// <param name="element">The platform specific element on which to perform the operation.</param>
@@ -58,7 +59,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompa
 		/// <param name="value">The new property value to assign.</param>
 		public static void SetSendAppearingEventOnResume(BindableObject element, bool value)
 		{
-			element.SetValue(SendAppearingEventOnResumeProperty, value);
+			element.SetValue(SendAppearingEventOnResumeProperty, BooleanBoxes.Box(value));
 		}
 
 		/// <summary>Returns a Boolean value that controls whether the appearing event is sent when the application resumes.</summary>
@@ -79,7 +80,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompa
 		}
 
 		/// <summary>Bindable property for <see cref="ShouldPreserveKeyboardOnResume"/>.</summary>
-		public static readonly BindableProperty ShouldPreserveKeyboardOnResumeProperty = BindableProperty.Create(nameof(ShouldPreserveKeyboardOnResume), typeof(bool), typeof(Application), false);
+		public static readonly BindableProperty ShouldPreserveKeyboardOnResumeProperty = BindableProperty.Create(nameof(ShouldPreserveKeyboardOnResume), typeof(bool), typeof(Application), BooleanBoxes.FalseBox);
 
 		/// <summary>Returns a Boolean value that controls whether the keyboard state should be preserved when the application resumes.</summary>
 		/// <param name="element">The platform specific element on which to perform the operation.</param>
@@ -94,7 +95,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompa
 		/// <param name="value">The new property value to assign.</param>
 		public static void SetShouldPreserveKeyboardOnResume(BindableObject element, bool value)
 		{
-			element.SetValue(ShouldPreserveKeyboardOnResumeProperty, value);
+			element.SetValue(ShouldPreserveKeyboardOnResumeProperty, BooleanBoxes.Box(value));
 		}
 
 		/// <summary>Returns a Boolean value that controls whether the keyboard state should be preserved when the application resumes.</summary>

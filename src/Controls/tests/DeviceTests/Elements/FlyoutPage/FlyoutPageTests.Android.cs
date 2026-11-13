@@ -43,5 +43,84 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.True(appbarLayout.GetChildAt(1) is global::Android.Widget.FrameLayout, "The second child of the view group should be a FrameLayout");
 			});
 		}
+
+		[Fact]
+		public async Task SwappingDetailThenReplacingWindowRootDoesNotCrash()
+		{
+			SetupBuilder();
+
+			var flyoutPage = CreateFlyoutPage(
+				typeof(FlyoutPage),
+				new NavigationPage(new ContentPage { Title = "Initial Detail" }),
+				new ContentPage { Title = "Flyout" });
+			var window = new Controls.Window(flyoutPage);
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, async handler =>
+			{
+				var rootManager = handler.MauiContext.GetNavigationRootManager();
+				var oldRootView = Assert.IsType<ContainerView>(rootManager.RootView);
+
+				flyoutPage.Detail = new NavigationPage(new ContentPage { Title = "Replacement Detail" });
+
+				var replacementRoot = new ContentPage { Title = "Replacement Root" };
+				window.Page = replacementRoot;
+				await OnLoadedAsync(replacementRoot);
+
+				Assert.Null(oldRootView.CurrentView);
+				Assert.Null(oldRootView.MainView);
+				AssertPageAttachedToRoot(replacementRoot, rootManager);
+			});
+		}
+
+		[Fact]
+		public async Task NestedFlyoutPageDetailSurvivesRootReplacement()
+		{
+			SetupBuilder();
+
+			var nestedDetail = new ContentPage
+			{
+				Title = "Nested Detail",
+				Content = new Label { Text = "Nested detail content" }
+			};
+			var nestedFlyout = CreateFlyoutPage(
+				typeof(FlyoutPage),
+				new NavigationPage(nestedDetail),
+				new ContentPage { Title = "Nested Flyout" });
+			var rootNavigation = new NavigationPage(new ContentPage { Title = "Root Page" });
+			var window = new Controls.Window(rootNavigation);
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, async handler =>
+			{
+				await rootNavigation.PushAsync(nestedFlyout);
+				await OnLoadedAsync(nestedDetail);
+				Assert.True(nestedDetail.Handler?.PlatformView is AView { IsAttachedToWindow: true });
+
+				var rootManager = handler.MauiContext.GetNavigationRootManager();
+				var replacementRoot = new ContentPage { Title = "Replacement Root" };
+
+				window.Page = replacementRoot;
+				await OnLoadedAsync(replacementRoot);
+
+				AssertPageAttachedToRoot(replacementRoot, rootManager);
+			});
+		}
+
+		static void AssertPageAttachedToRoot(Page page, NavigationRootManager rootManager)
+		{
+			var rootView = rootManager.RootView;
+			var platformView = page.ToPlatform();
+
+			Assert.NotNull(rootView);
+			Assert.NotNull(platformView);
+			Assert.True(platformView.IsAttachedToWindow);
+
+			for (AView current = platformView; current is not null; current = current.Parent as AView)
+			{
+				if (ReferenceEquals(current, rootView))
+					return;
+			}
+
+			Assert.Fail("The replacement page's platform view is not hosted by the navigation root.");
+		}
 	}
 }

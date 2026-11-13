@@ -3,7 +3,7 @@ using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
-namespace Maui.Controls.TestCases.Tests.Issues;
+namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue33227 : _IssuesUITest
 {
@@ -14,7 +14,7 @@ public class Issue33227 : _IssuesUITest
     public override string Issue => "Shell NavigationBar colors persist when navigating between pages";
 
     [Test]
-    [Category(UITestCategories.Shell)]
+    [ShardedTestCategory(UITestCategories.Shell, shard: 2)]
     public void ShellColorsResetOnNavigation()
     {
 #if WINDOWS

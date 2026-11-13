@@ -129,6 +129,50 @@ if ($LASTEXITCODE -ne 0) {
 }
 Write-Host "✅ GitHub CLI authenticated" -ForegroundColor Green
 
+function ConvertFrom-GitHubTimestamp {
+    <#
+    .SYNOPSIS
+        Converts a GitHub API timestamp to a UTC [datetime], independent of the host culture.
+    .DESCRIPTION
+        NEVER call `[datetime]::Parse($value)` on a value that came out of `ConvertFrom-Json`.
+        `ConvertFrom-Json` already materializes an ISO-8601 JSON value as a `[datetime]`, so
+        `::Parse` first renders it back to a string with the INVARIANT culture
+        ('MM/dd/yyyy HH:mm:ss') and then reads it back with the CURRENT culture. On any
+        dd/MM locale (en-GB, de-DE, pl-PL, ...) that asymmetry either throws outright --
+
+            String '09/30/2026 21:39:41' was not recognized as a valid DateTime.
+
+        -- or, worse, silently transposes day and month whenever the day is <= 12, so
+        '2026-07-01' round-trips to 2026-01-07 and every age/staleness calculation is wrong
+        by months. The round-trip also drops the offset, leaving `Kind = Unspecified` so a
+        later `.ToUniversalTime()` re-applies the LOCAL offset.
+
+        Passing the already-typed `[datetime]` straight through avoids the round-trip
+        entirely; genuine strings are parsed with the invariant culture plus RoundtripKind
+        so the UTC marker survives.
+    #>
+    [CmdletBinding()]
+    param([AllowNull()]$Value)
+
+    if ($null -eq $Value) { return $null }
+    if ($Value -is [datetime]) { return ([datetime]$Value) }
+    if ($Value -is [datetimeoffset]) { return ([datetimeoffset]$Value).UtcDateTime }
+
+    $text = [string]$Value
+    if ([string]::IsNullOrWhiteSpace($text)) { return $null }
+
+    $parsed = [datetime]::MinValue
+    if ([datetime]::TryParse(
+            $text,
+            [cultureinfo]::InvariantCulture,
+            [System.Globalization.DateTimeStyles]::RoundtripKind,
+            [ref]$parsed)) {
+        return $parsed
+    }
+
+    return $null
+}
+
 Write-Host "Querying GitHub issues..." -ForegroundColor Cyan
 
 # Labels to exclude from triage results
@@ -188,8 +232,8 @@ try {
     # Sort SR milestones by due date (soonest first) or by SR number
     if ($srMilestones.Count -gt 0) {
         $sortedSR = $srMilestones | Sort-Object { 
-            $parsedDate = [DateTime]::MinValue
-            if ($_.DueOn -and [DateTime]::TryParse($_.DueOn, [ref]$parsedDate)) {
+            $parsedDate = ConvertFrom-GitHubTimestamp -Value $_.DueOn
+            if ($null -ne $parsedDate) {
                 $parsedDate
             } else {
                 [DateTime]::MaxValue
@@ -264,15 +308,23 @@ try {
         -not $hasBlockingLabel
     }
     
-    # Apply date filters
+    # Apply date filters. GitHub timestamps are UTC, so the cutoffs are computed in UTC
+    # too -- mixing a UTC instant with a local-time cutoff skews the boundary by the
+    # host's offset (up to +/-14h) and misclassifies issues created near it.
     if ($MinAge -gt 0) {
-        $minDate = (Get-Date).AddDays(-$MinAge)
-        $issues = $issues | Where-Object { [DateTime]::Parse($_.createdAt) -lt $minDate }
+        $minDate = (Get-Date).ToUniversalTime().AddDays(-$MinAge)
+        $issues = $issues | Where-Object {
+            $created = ConvertFrom-GitHubTimestamp -Value $_.createdAt
+            $null -ne $created -and $created.ToUniversalTime() -lt $minDate
+        }
     }
     
     if ($MaxAge -gt 0) {
-        $maxDate = (Get-Date).AddDays(-$MaxAge)
-        $issues = $issues | Where-Object { [DateTime]::Parse($_.createdAt) -gt $maxDate }
+        $maxDate = (Get-Date).ToUniversalTime().AddDays(-$MaxAge)
+        $issues = $issues | Where-Object {
+            $created = ConvertFrom-GitHubTimestamp -Value $_.createdAt
+            $null -ne $created -and $created.ToUniversalTime() -gt $maxDate
+        }
     }
     
     # Filter to only issues with area labels if requested
@@ -325,8 +377,12 @@ foreach ($issue in $issues) {
     $platformLabel = ($issue.labels | Where-Object { $_.name -like "platform/*" } | Select-Object -First 1)?.name ?? "unknown"
     $areaLabels = ($issue.labels | Where-Object { $_.name -like "area-*" } | ForEach-Object { $_.name -replace "^area-", "" }) -join ", "
     
-    $createdDate = [DateTime]::Parse($issue.createdAt)
-    $ageInDays = [Math]::Round(((Get-Date) - $createdDate).TotalDays)
+    $createdDate = ConvertFrom-GitHubTimestamp -Value $issue.createdAt
+    $ageInDays = if ($null -ne $createdDate) {
+        [Math]::Round(((Get-Date).ToUniversalTime() - $createdDate.ToUniversalTime()).TotalDays)
+    } else {
+        0
+    }
     
     # gh issue list returns comments as an array, count them
     $commentCount = if ($issue.comments) { $issue.comments.Count } else { 0 }

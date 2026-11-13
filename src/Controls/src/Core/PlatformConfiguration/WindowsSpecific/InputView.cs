@@ -3,6 +3,7 @@ using System;
 
 namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 {
+	using Microsoft.Maui.Controls.Internals;
 	using FormsElement = Maui.Controls.InputView;
 
 	/// <summary>Provides access to reading order detection on the Windows platform.</summary>
@@ -16,7 +17,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 		/// <param name="value"><see langword="true"/> to detect reading order from content.</param>
 		public static void SetDetectReadingOrderFromContent(BindableObject element, bool value)
 		{
-			element.SetValue(DetectReadingOrderFromContentProperty, value);
+			element.SetValue(DetectReadingOrderFromContentProperty, BooleanBoxes.Box(value));
 		}
 
 		/// <summary>Gets whether reading order (LTR/RTL) is detected from content on Windows.</summary>
@@ -42,7 +43,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 		public static IPlatformElementConfiguration<Windows, FormsElement> SetDetectReadingOrderFromContent(
 			this IPlatformElementConfiguration<Windows, FormsElement> config, bool value)
 		{
-			config.Element.SetValue(DetectReadingOrderFromContentProperty, value);
+			config.Element.SetValue(DetectReadingOrderFromContentProperty, BooleanBoxes.Box(value));
 			return config;
 		}
 	}

@@ -70,31 +70,75 @@ public static partial class AppHostBuilderExtensions
 		handlersCollection.AddHandler<CollectionView, CollectionViewHandler>();
 		handlersCollection.AddHandler<CarouselView, CarouselViewHandler>();
 #endif
-		handlersCollection.AddHandler<Application, ApplicationHandler>();
-		handlersCollection.AddHandler<ActivityIndicator, ActivityIndicatorHandler>();
-		handlersCollection.AddHandler<BoxView, BoxViewHandler>();
-		handlersCollection.AddHandler<Button, ButtonHandler>();
-		handlersCollection.AddHandler<DatePicker, DatePickerHandler>();
+#if ANDROID
+		if (RuntimeFeature.IsMaterial3Enabled)
+		{
+			handlersCollection.AddHandler<Label, LabelHandler2>();
+			handlersCollection.AddHandler<Editor, EditorHandler2>();
+			handlersCollection.AddHandler<Picker, PickerHandler2>();
+			handlersCollection.AddHandler<RadioButton, RadioButtonHandler2>();
+			handlersCollection.AddHandler<TimePicker, TimePickerHandler2>();
+			handlersCollection.AddHandler<Switch, SwitchHandler2>();
+			handlersCollection.AddHandler<ProgressBar, ProgressBarHandler2>();
+			handlersCollection.AddHandler<ActivityIndicator, ActivityIndicatorHandler2>();
+			handlersCollection.AddHandler<Image, ImageHandler2>();
+			handlersCollection.AddHandler<SearchBar, SearchBarHandler2>();
+			handlersCollection.AddHandler<Slider, SliderHandler2>();
+			handlersCollection.AddHandler<DatePicker, DatePickerHandler2>();
+            handlersCollection.AddHandler<Entry, EntryHandler2>();
+		}
+		else
+		{
+			handlersCollection.AddHandler<Label, LabelHandler>();
+			handlersCollection.AddHandler<Editor, EditorHandler>();
+			handlersCollection.AddHandler<Picker, PickerHandler>();
+			handlersCollection.AddHandler<RadioButton, RadioButtonHandler>();
+			handlersCollection.AddHandler<TimePicker, TimePickerHandler>();
+			handlersCollection.AddHandler<Switch, SwitchHandler>();
+			handlersCollection.AddHandler<ProgressBar, ProgressBarHandler>();
+			handlersCollection.AddHandler<ActivityIndicator, ActivityIndicatorHandler>();
+			handlersCollection.AddHandler<Image, ImageHandler>();
+			handlersCollection.AddHandler<SearchBar, SearchBarHandler>();
+			handlersCollection.AddHandler<Slider, SliderHandler>();
+			handlersCollection.AddHandler<DatePicker, DatePickerHandler>();
+            handlersCollection.AddHandler<Entry, EntryHandler>();
+		}
+#else
+		handlersCollection.AddHandler<Label, LabelHandler>();
 		handlersCollection.AddHandler<Editor, EditorHandler>();
-		handlersCollection.AddHandler<Entry, EntryHandler>();
-		handlersCollection.AddHandler<GraphicsView, GraphicsViewHandler>();
-		handlersCollection.AddHandler<Image, ImageHandler>();
-		handlersCollection.AddHandler<Layout, LayoutHandler>();
 		handlersCollection.AddHandler<Picker, PickerHandler>();
+		handlersCollection.AddHandler<RadioButton, RadioButtonHandler>();
+		handlersCollection.AddHandler<TimePicker, TimePickerHandler>();
+		handlersCollection.AddHandler<Switch, SwitchHandler>();
 		handlersCollection.AddHandler<ProgressBar, ProgressBarHandler>();
-		handlersCollection.AddHandler<ScrollView, ScrollViewHandler>();
+		handlersCollection.AddHandler<ActivityIndicator, ActivityIndicatorHandler>();
+		handlersCollection.AddHandler<Image, ImageHandler>();
 		handlersCollection.AddHandler<SearchBar, SearchBarHandler>();
 		handlersCollection.AddHandler<Slider, SliderHandler>();
+		handlersCollection.AddHandler<DatePicker, DatePickerHandler>();
+        handlersCollection.AddHandler<Entry, EntryHandler>();
+#endif
+		handlersCollection.AddHandler<Application, ApplicationHandler>();
+		handlersCollection.AddHandler<BoxView, BoxViewHandler>();
+		handlersCollection.AddHandler<Button, ButtonHandler>();
+		handlersCollection.AddHandler<GraphicsView, GraphicsViewHandler>();
+		handlersCollection.AddHandler<Layout, LayoutHandler>();
+		handlersCollection.AddHandler<ScrollView, ScrollViewHandler>();
 		handlersCollection.AddHandler<Stepper, StepperHandler>();
-		handlersCollection.AddHandler<Switch, SwitchHandler>();
-		handlersCollection.AddHandler<TimePicker, TimePickerHandler>();
 		handlersCollection.AddHandler<Page, PageHandler>();
 		handlersCollection.AddHandler<WebView, WebViewHandler>();
 		if (RuntimeFeature.IsHybridWebViewSupported)
 		{
-			// NOTE: not registered under NativeAOT or TrimMode=Full scenarios
+			// NOTE: not registered under NativeAOT or TrimMode=Full scenarios.
+			// IL2026/IL3050 are suppressed because the RuntimeFeature.IsHybridWebViewSupported guard
+			// has [FeatureGuard(RequiresUnreferencedCodeAttribute)] and [FeatureGuard(RequiresDynamicCodeAttribute)]
+			// annotations that should suppress these warnings. The Android NativeAOT ILC does not honor
+			// [FeatureGuard] for warning suppression (unlike the iOS/macCatalyst ILC), so we suppress explicitly.
+#pragma warning disable IL2026, IL3050
 			handlersCollection.AddHandler<HybridWebView, HybridWebViewHandler>();
+#pragma warning restore IL2026, IL3050
 		}
+
 		handlersCollection.AddHandler<Border, BorderHandler>();
 		handlersCollection.AddHandler<IContentView, ContentViewHandler>();
 		handlersCollection.AddHandler<ContentView, ContentViewHandler>();
@@ -108,7 +152,6 @@ public static partial class AppHostBuilderExtensions
 		handlersCollection.AddHandler<Window, WindowHandler>();
 		handlersCollection.AddHandler<ImageButton, ImageButtonHandler>();
 		handlersCollection.AddHandler<IndicatorView, IndicatorViewHandler>();
-		handlersCollection.AddHandler<RadioButton, RadioButtonHandler>();
 		handlersCollection.AddHandler<RefreshView, RefreshViewHandler>();
 		handlersCollection.AddHandler<SwipeItem, SwipeItemMenuItemHandler>();
 		handlersCollection.AddHandler<SwipeView, SwipeViewHandler>();

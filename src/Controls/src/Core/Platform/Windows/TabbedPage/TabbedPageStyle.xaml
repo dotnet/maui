@@ -7,6 +7,7 @@
             x:Name="navViewItem"
             Content="{Binding Content}"
             Background="{Binding Background}" 
+            IsEnabled="{Binding IsEnabled}"
             IsSelected="{Binding IsSelected, Mode=TwoWay}"
             MenuItemsSource="{Binding MenuItemsSource}"
             Icon="{Binding Icon}"

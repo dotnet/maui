@@ -16,6 +16,7 @@ using AndroidX.ViewPager2.Widget;
 using Google.Android.Material.AppBar;
 using Google.Android.Material.Tabs;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Controls.Diagnostics;
 using Microsoft.Maui.Platform;
 using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
 using AView = Android.Views.View;
@@ -29,7 +30,16 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void TabLayoutMediator.ITabConfigurationStrategy.OnConfigureTab(TabLayout.Tab tab, int position)
 		{
-			tab.SetText(new String(SectionController.GetItems()[position].Title));
+			var shellContent = SectionController.GetItems()[position];
+			tab.SetText(new String(shellContent.Title));
+			if (tab.View is AView tabView)
+			{
+				_nativeTabRegistrations.RegisterExclusive(
+					shellContent,
+					tabView,
+					NativeElementRoles.ShellTab,
+					NativeElementDiscriminators.RealizedView);
+			}
 		}
 
 		void UpdateCurrentItem(ShellContent content)
@@ -77,6 +87,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		IShellToolbarTracker _toolbarTracker;
 		ViewPager2 _viewPager;
 		bool _disposed;
+		readonly NativeElementRegistrationSet _nativeTabRegistrations = new NativeElementRegistrationSet();
 		IShellController ShellController => _shellContext.Shell;
 		public event EventHandler AnimationFinished;
 		Fragment IShellObservableFragment.Fragment => this;
@@ -84,6 +95,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		protected IShellContext ShellContext => _shellContext;
 		IShellSectionController SectionController => (IShellSectionController)ShellSection;
 		IMauiContext MauiContext => ShellContext.Shell.Handler.MauiContext;
+		Toolbar _shellToolbar;
 
 		public ShellSectionRenderer(IShellContext shellContext)
 		{
@@ -108,11 +120,16 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			int actionBarHeight = context.GetActionBarHeight();
 
-			var shellToolbar = new Toolbar(shellSection);
-			ShellToolbarTracker.ApplyToolbarChanges(_shellContext.Shell.Toolbar, shellToolbar);
-			_toolbar = (AToolbar)shellToolbar.ToPlatform(_shellContext.Shell.FindMauiContext());
+			_shellToolbar = new Toolbar(shellSection);
+			ShellToolbarTracker.ApplyToolbarChanges(_shellContext.Shell.Toolbar, _shellToolbar);
+			_toolbar = (AToolbar)_shellToolbar.ToPlatform(_shellContext.Shell.FindMauiContext());
 			appbar.AddView(_toolbar);
 			_tablayout = PlatformInterop.CreateShellTabLayout(context, appbar, actionBarHeight);
+			_nativeTabRegistrations.Register(
+				shellSection,
+				_tablayout,
+				NativeElementRoles.ShellTab,
+				NativeElementDiscriminators.TabBar);
 
 			var pagerContext = MauiContext.MakeScoped(layoutInflater: inflater, fragmentManager: ChildFragmentManager);
 			var adapter = new ShellFragmentStateAdapter(shellSection, ChildFragmentManager, pagerContext);
@@ -135,7 +152,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 
 			_toolbarTracker = _shellContext.CreateTrackerForToolbar(_toolbar);
-			_toolbarTracker.SetToolbar(shellToolbar);
+			_toolbarTracker.SetToolbar(_shellToolbar);
 			_toolbarTracker.Page = currentPage;
 
 			_viewPager.CurrentItem = currentIndex;
@@ -148,7 +165,18 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_tablayout.LayoutChange += OnTabLayoutChange;
 
 			_tabLayoutAppearanceTracker = _shellContext.CreateTabLayoutAppearanceTracker(ShellSection);
+
+			if (RuntimeFeature.IsMaterial3Enabled && _tabLayoutAppearanceTracker is ShellTabLayoutAppearanceTracker concreteTabLayoutAppearanceTracker)
+			{
+				concreteTabLayoutAppearanceTracker.CaptureNativeColors(_tablayout);
+			}
+
 			_toolbarAppearanceTracker = _shellContext.CreateToolbarAppearanceTracker();
+
+			if (RuntimeFeature.IsMaterial3Enabled && _toolbarAppearanceTracker is ShellToolbarAppearanceTracker concreteToolbarAppearanceTracker)
+			{
+				concreteToolbarAppearanceTracker.CaptureNativeColors(_toolbar);
+			}
 
 			HookEvents();
 
@@ -160,6 +188,26 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (e.PropertyName == ShellContent.TitleProperty.PropertyName && sender is ShellContent shellContent)
 			{
 				UpdateTabTitle(shellContent);
+			}
+			else if (e.PropertyName == ShellContent.ContentProperty.PropertyName && sender is ShellContent changedContent)
+			{
+				// The page inside this ShellContent changed — force ViewPager2 to recreate the
+				// fragment so it picks up the new content.
+				if (_viewPager?.Adapter is ShellFragmentStateAdapter adapter)
+				{
+					adapter.InvalidateShellContent(changedContent);
+					SafeNotifyDataSetChanged();
+
+					// Keep toolbar state in sync when the active tab's content page is replaced.
+					if (ShellSection?.CurrentItem == changedContent && _toolbarTracker is not null)
+					{
+						var page = ((IShellContentController)changedContent).GetOrCreateContent();
+						if (page is not null)
+						{
+							_toolbarTracker.Page = page;
+						}
+					}
+				}
 			}
 		}
 
@@ -190,12 +238,21 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				var tab = _tablayout.GetTabAt(i);
 
 				if (tab.View != null)
+				{
 					AutomationPropertiesProvider.AccessibilitySettingsChanged(tab.View, items[i]);
+					_nativeTabRegistrations.RegisterExclusive(
+						items[i],
+						tab.View,
+						NativeElementRoles.ShellTab,
+						NativeElementDiscriminators.RealizedView);
+				}
 			}
 		}
 
 		void Destroy()
 		{
+			_nativeTabRegistrations.Clear();
+
 			if (_rootView != null)
 			{
 				// Clean up the coordinator layout and local listener first
@@ -228,6 +285,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_toolbarTracker = null;
 			_tablayout = null;
 			_toolbar = null;
+			_shellToolbar = null;
 			_viewPager = null;
 			_rootView = null;
 
@@ -240,6 +298,17 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			Destroy();
 			base.OnDestroy();
 		}
+
+		public override void OnHiddenChanged(bool hidden)
+		{
+			base.OnHiddenChanged(hidden);
+
+			if (!hidden && _shellToolbar?.Handler != null)
+			{
+				_shellToolbar.Handler.UpdateValue(nameof(Toolbar.TitleView));
+			}
+		}
+
 		protected override void Dispose(bool disposing)
 		{
 			if (_disposed)
@@ -260,6 +329,24 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected virtual void OnItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
+			if (e.Action == NotifyCollectionChangedAction.Reset)
+			{
+				_nativeTabRegistrations.Clear();
+				if (_tablayout is not null)
+				{
+					_nativeTabRegistrations.Register(
+						ShellSection,
+						_tablayout,
+						NativeElementRoles.ShellTab,
+						NativeElementDiscriminators.TabBar);
+				}
+			}
+			else if (e.OldItems is not null)
+			{
+				foreach (ShellContent oldItem in e.OldItems)
+					_nativeTabRegistrations.UnregisterOwner(oldItem);
+			}
+
 			UpdateTablayoutVisibility();
 
 			if (_viewPager?.Adapter is ShellFragmentStateAdapter adapter)

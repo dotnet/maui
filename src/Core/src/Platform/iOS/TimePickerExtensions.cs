@@ -40,45 +40,20 @@ public static class TimePickerExtensions
 	{
 		picker?.UpdateTime(timePicker);
 
-		var cultureInfo = Culture.CurrentCulture;
-
-		if (string.IsNullOrEmpty(timePicker.Format))
-		{
-			NSLocale locale = new NSLocale(cultureInfo.TwoLetterISOLanguageName);
-
-			if (picker is not null)
-			{
-				picker.Locale = locale;
-			}
-		}
-
 		var time = timePicker.Time;
 		var format = timePicker.Format;
 
-		mauiTimePicker.Text = time?.ToFormattedString(format, cultureInfo);
+		mauiTimePicker.Text = time?.ToFormattedString(format);
 
-		if (format is not null)
+		if (picker is not null)
 		{
-			if (format.Contains('H', StringComparison.Ordinal))
-			{
-				var ci = new CultureInfo("de-DE");
-				NSLocale locale = new NSLocale(ci.TwoLetterISOLanguageName);
+			var localeIdentifier = !string.IsNullOrEmpty(format) && format.Contains('H', StringComparison.Ordinal)
+				? "de"
+				: !string.IsNullOrEmpty(format) && format.Contains('h', StringComparison.Ordinal)
+					? "en"
+					: CultureInfo.CurrentCulture.Name;
 
-				if (picker is not null)
-				{
-					picker.Locale = locale;
-				}
-			}
-			else if (format.Contains('h', StringComparison.Ordinal))
-			{
-				var ci = new CultureInfo("en-US");
-				NSLocale locale = new NSLocale(ci.TwoLetterISOLanguageName);
-
-				if (picker is not null)
-				{
-					picker.Locale = locale;
-				}
-			}
+			picker.Locale = new NSLocale(localeIdentifier);
 		}
 
 		mauiTimePicker.UpdateCharacterSpacing(timePicker);
@@ -86,7 +61,9 @@ public static class TimePickerExtensions
 
 	public static void UpdateTextAlignment(this MauiTimePicker textField, ITimePicker timePicker)
 	{
-		// TODO: Update TextAlignment based on the EffectiveFlowDirection property.
+		UISemanticContentAttribute updateValue = textField.SemanticContentAttribute;
+
+		textField.TextAlignment = (updateValue == UISemanticContentAttribute.ForceRightToLeft) ? UITextAlignment.Right : UITextAlignment.Left;
 	}
 
 	internal static void UpdateIsOpen(this UIDatePicker picker, ITimePicker timePicker)

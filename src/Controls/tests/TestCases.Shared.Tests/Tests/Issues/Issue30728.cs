@@ -13,7 +13,7 @@ public class Issue30728 : _IssuesUITest
 	{ }
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[ShardedTestCategory(UITestCategories.Shell, shard: 2)]
 	public void VerifyTabBarIconIsLoaded()
 	{
 		App.WaitForElement("Tab 1");

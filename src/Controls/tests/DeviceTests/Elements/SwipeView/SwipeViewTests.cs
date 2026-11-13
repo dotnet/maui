@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Handlers.Items;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
@@ -20,6 +21,8 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler(typeof(VerticalStackLayout), typeof(LayoutHandler));
 					handlers.AddHandler(typeof(Grid), typeof(LayoutHandler));
 					handlers.AddHandler(typeof(Button), typeof(ButtonHandler));
+					handlers.AddHandler(typeof(Label), typeof(LabelHandler));
+					handlers.AddHandler(typeof(CollectionView), typeof(CollectionViewHandler));
 					handlers.AddHandler<SwipeView, SwipeViewHandler>();
 					handlers.AddHandler<SwipeItem, SwipeItemMenuItemHandler>();
 					handlers.AddHandler<SwipeItemView, SwipeItemViewHandler>();

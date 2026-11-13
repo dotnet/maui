@@ -29,7 +29,15 @@ namespace Microsoft.Maui.Controls
 				}
 			}
 
-			Inner.Add(item);
+			// Restore declaration order when CurrentItem is set during XAML loading.
+			if (Routing.IsImplicit(item) && Inner.Contains(item))
+			{
+				RestoreDeclarationOrder(item);
+			}
+			else
+			{
+				Inner.Add(item);
+			}
 		}
 	}
 }

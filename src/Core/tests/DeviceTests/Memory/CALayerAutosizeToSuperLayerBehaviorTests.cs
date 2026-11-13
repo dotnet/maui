@@ -25,7 +25,7 @@ namespace Microsoft.Maui.DeviceTests.Memory
 			WeakReference layerReference = null;
 			WeakReference sublayerReference = null;
 
-			await InvokeOnMainThreadAsync(() =>
+			await InvokeOnMainThreadAsync(async () =>
 			{
 				var view = new UIView();
 				viewReference = new(view);
@@ -40,7 +40,7 @@ namespace Microsoft.Maui.DeviceTests.Memory
 				sublayer.AutoSizeToSuperLayer();
 				view.Frame = new CoreGraphics.CGRect(0, 0, 100, 100);
 
-				view.AttachAndRun(() => view.Frame = new CoreGraphics.CGRect(0, 0, 200, 200));
+				await view.AttachAndRun(() => view.Frame = new CoreGraphics.CGRect(0, 0, 200, 200));
 			});
 
 			await AssertionExtensions.WaitForGC(viewReference, layerReference, sublayerReference);

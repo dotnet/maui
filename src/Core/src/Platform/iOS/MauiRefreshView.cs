@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
-using CoreFoundation;
 using CoreGraphics;
 using Microsoft.Maui.Graphics;
 using ObjCRuntime;
@@ -16,6 +15,8 @@ namespace Microsoft.Maui.Platform
 		bool _isRefreshing;
 		bool _isEnabled = true;
 		bool _isRefreshEnabled = true;
+		bool _originalAlwaysBounceVertical;
+		bool _hasStoredAlwaysBounceVertical;
 		nfloat _originalY;
 		nfloat _refreshControlHeight;
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
@@ -43,6 +44,8 @@ namespace Microsoft.Maui.Platform
 				{
 					if (_isRefreshing)
 					{
+						// Store the current scroll position when refresh starts
+						StoreCurrentScrollPosition();
 						TryOffsetRefresh(this, IsRefreshing);
 						_refreshControl.BeginRefreshing();
 					}
@@ -76,6 +79,11 @@ namespace Microsoft.Maui.Platform
 		{
 			if (view is UIScrollView scrollView)
 			{
+				// ContentOffset.Y < 0 means the scroll view is mid-pull (being dragged down for refresh).
+				// Adjusting the offset here would fight the  bail out early.gesture 
+				if (refreshing && scrollView.ContentOffset.Y < 0)
+					return true;
+
 				if (refreshing)
 					scrollView.SetContentOffset(new CGPoint(0, _originalY - _refreshControlHeight), true);
 				else
@@ -102,6 +110,18 @@ namespace Microsoft.Maui.Platform
 			return false;
 		}
 
+		void StoreCurrentScrollPosition()
+		{
+			// _refreshControlParent is set to the innermost UIScrollView by TryInsertRefresh.
+    		// If it's not a UIScrollView (unexpected), we leave _originalY as-is.
+			if (_refreshControlParent is UIScrollView scrollView)
+			{
+				// If content fits entirely in the viewport, the offset is always 0.
+				// Explicitly setting it here avoids capturing any floating-point noise.
+				_originalY = (scrollView.ContentSize.Height <= scrollView.Bounds.Height) ? 0 : scrollView.ContentOffset.Y;
+			}
+		}
+
 		bool TryRemoveRefresh(UIView view, int index = 0)
 		{
 			_refreshControlParent = view;
@@ -112,6 +132,18 @@ namespace Microsoft.Maui.Platform
 			{
 				if (CanUseRefreshControlProperty())
 					scrollView.RefreshControl = null;
+
+				if (_hasStoredAlwaysBounceVertical)
+				{
+					// Restore only while the value still matches the override applied by RefreshView.
+					// The wrapped control may have updated its own scrolling policy in the meantime.
+					if (scrollView.AlwaysBounceVertical)
+					{
+						scrollView.AlwaysBounceVertical = _originalAlwaysBounceVertical;
+					}
+
+					_hasStoredAlwaysBounceVertical = false;
+				}
 
 				return true;
 			}
@@ -140,6 +172,13 @@ namespace Microsoft.Maui.Platform
  
 			if (view is UIScrollView scrollView)
 			{
+				// Store the original value before attaching the refresh control.
+				if (!_hasStoredAlwaysBounceVertical)
+				{
+					_originalAlwaysBounceVertical = scrollView.AlwaysBounceVertical;
+					_hasStoredAlwaysBounceVertical = true;
+				}
+
 				if (CanUseRefreshControlProperty())
 					scrollView.RefreshControl = _refreshControl;
 				else

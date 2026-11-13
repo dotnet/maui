@@ -35,7 +35,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		[TestCase("DataTemplate", "HorizontalListCode", 19, 6)]
 		[TestCase("DataTemplate", "VerticalGridCode", 19, 6)]
 		[TestCase("DataTemplate", "HorizontalGridCode", 19, 6)]
-		[Category(UITestCategories.CollectionView)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 		[FailsOnWindowsWhenRunningOnXamarinUITest("This test is failing, likely due to product issue.")]
 		public void VisitAndUpdateItemsSource(string collectionTestName, string subGallery, int firstItem, int lastItem)
 		{

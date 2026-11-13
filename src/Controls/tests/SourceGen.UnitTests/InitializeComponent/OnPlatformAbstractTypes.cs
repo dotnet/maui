@@ -284,10 +284,10 @@ public partial class TestPage : ContentPage
 		// Should NOT contain "new Brush()" - that would be a compiler error
 		Assert.DoesNotContain("new global::Microsoft.Maui.Controls.Brush()", generated, StringComparison.Ordinal);
 		
-		// Should generate default instead of trying to instantiate the type
-		// The pattern is: Brush brush0 = default;
+		// Should generate default! instead of trying to instantiate the type (reference types use default!)
+		// The pattern is: Brush brush0 = default!;
 		Assert.Contains("Brush", generated, StringComparison.Ordinal);
-		Assert.Contains("= default;", generated, StringComparison.Ordinal);
+		Assert.Contains("= default!;", generated, StringComparison.Ordinal);
 		
 		// There should be no compilation errors
 		Assert.False(result.Diagnostics.Any(d => d.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error),
@@ -339,9 +339,9 @@ public partial class TestPage : ContentPage
 		// Should NOT contain "new View()" - that would be a compiler error due to protected ctor
 		Assert.DoesNotContain("new global::Microsoft.Maui.Controls.View()", generated, StringComparison.Ordinal);
 		
-		// Should generate default instead of trying to instantiate the type
+		// Should generate default! instead of trying to instantiate the type (reference types use default!)
 		Assert.Contains("View", generated, StringComparison.Ordinal);
-		Assert.Contains("= default;", generated, StringComparison.Ordinal);
+		Assert.Contains("= default!;", generated, StringComparison.Ordinal);
 		
 		// There should be no compilation errors
 		Assert.False(result.Diagnostics.Any(d => d.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error),

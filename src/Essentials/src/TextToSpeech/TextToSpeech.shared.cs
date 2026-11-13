@@ -152,6 +152,52 @@ namespace Microsoft.Maui.Media
 		internal const float RateDefault = 1.0f;
 		internal const float RateMin = 0.1f;
 
+		internal static float NormalizeRate(float rate, float platformMin, float platformMax, float platformNormal)
+		{
+			const float min = RateMin, normal = RateDefault, max = RateMax;
+
+			if (rate <= min)
+			{
+				return platformMin;
+			}
+
+			if (rate >= max)
+			{
+				return platformMax;
+			}
+
+			return rate <= normal
+				? platformMin + ((rate - min) / (normal - min)) * (platformNormal - platformMin)
+				: platformNormal + ((rate - normal) / (max - normal)) * (platformMax - platformNormal);
+		}
+
+		internal static string ProsodyRate(float rate)
+		{
+			// Map MAUI rate range [0.1, 2.0] to Windows SSML rate constants
+			// 1.0 should be "medium" (normal speed)
+			if (rate <= 0.25f)
+			{
+				return "x-slow";
+			}
+
+			if (rate <= 0.75f)
+			{
+				return "slow";
+			}
+
+			if (rate <= 1.25f)
+			{
+				return "medium";
+			}
+
+			if (rate <= 1.75f)
+			{
+				return "fast";
+			}
+
+			return "x-fast";
+		}
+
 		SemaphoreSlim? semaphore;
 
 		public Task<IEnumerable<Locale>> GetLocalesAsync() =>
@@ -215,11 +261,11 @@ namespace Microsoft.Maui.Media
 		public string Language { get; }
 
 		/// <summary>
-		/// Gets the country name or code.
+		/// Gets the country/region name or code.
 		/// </summary>
 		/// <remarks>
 		/// <para>This value may vary between platforms.</para>
-		/// <para>For Android this used the ISO 3166 alpha-2 country code or UN M.49 numeric-3 area code.</para>
+		/// <para>For Android this used the ISO 3166 alpha-2 country/region code or UN M.49 numeric-3 area code.</para>
 		/// <para>For iOS and Windows this field is not used and <see langword="null"/> .</para>
 		/// </remarks>
 		public string Country { get; }

@@ -77,10 +77,19 @@ namespace Microsoft.Maui.IntegrationTests.Android
 			var launchArgs = $"-verbose -detect-image-hang -port {Port} -avd {Name}";
 			launchArgs += TestEnvironment.IsRunningOnCI ? " -no-window -no-boot-anim -no-audio -no-snapshot -cache-size 512" : string.Empty;
 
-			// Emulator process does not stop once the emulator is running, end it after 15 seconds and then begin polling for boot success
+			// Stop capturing startup output after 15 seconds, but leave the emulator running while polling for boot success.
 			output?.WriteLine($"Launching AVD: {Name}...");
-			var emulatorOutput = ToolRunner.Run(EmulatorTool, launchArgs, out _, timeoutInSeconds: 15, output: output);
+			var emulatorOutput = ToolRunner.Run(EmulatorTool, launchArgs, out _, timeoutInSeconds: 15, output: output, killOnTimeout: false);
 			File.WriteAllText(logFile, emulatorOutput);
+
+			if (emulatorOutput.Contains("failed to initialize HVF", StringComparison.OrdinalIgnoreCase))
+			{
+				output?.WriteLine("ERROR: Apple Hypervisor Framework (HVF) is not available on this agent.");
+				output?.WriteLine("The Android emulator requires HVF for ARM64 hardware acceleration.");
+				output?.WriteLine("This agent's VM image likely lacks the com.apple.security.hypervisor entitlement.");
+				output?.WriteLine("Consider using an agent image with HVF support (e.g., ACES_arm64_Sequoia_Xcode instead of ACES_VM_SharedPool_Tahoe).");
+			}
+
 			return Adb.WaitForEmulator(timeToWaitInSeconds, Id, output: output);
 		}
 

@@ -23,6 +23,7 @@ namespace Microsoft.Maui.Controls
 		public bool IsReadOnly => Inner.IsReadOnly;
 		IList _inner;
 		IList _visibleItems;
+		bool _isItemsCleared;
 
 		protected ShellElementCollection()
 		{
@@ -119,9 +120,29 @@ namespace Microsoft.Maui.Controls
 			}
 
 			Inner.Clear();
+			_isItemsCleared = true;
 			CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, list));
 		}
 
+		protected void RestoreDeclarationOrder(BaseShellItem item)
+		{
+			if (!Inner.Contains(item))
+			{
+				return;
+			}
+
+			PauseCollectionChanged();
+
+			try
+			{
+				Inner.Remove(item);
+				Inner.Add(item);
+			}
+			finally
+			{
+				ResumeCollectionChanged();
+			}
+		}
 		public virtual void Add(BaseShellItem item) => Inner.Add(item);
 
 		public virtual bool Contains(BaseShellItem item) => Inner.Contains(item);
@@ -152,6 +173,13 @@ namespace Microsoft.Maui.Controls
 						OnElementControllerInserting(controller);
 
 					CheckVisibility(element);
+				}
+				// When items are cleared, the flyout behavior is set to disabled state. When adding items again, we need to update the flyout behavior. The flyout state should be updated only when the second item is added to the view.
+				if (_isItemsCleared && Count == 2 && this is ShellItemCollection shellItemCollection)
+				{
+					var shell = shellItemCollection[0].Parent as Shell;
+					shell?.NotifyFlyoutBehaviorObservers();
+					_isItemsCleared = false;
 				}
 			}
 
@@ -251,7 +279,34 @@ namespace Microsoft.Maui.Controls
 		void BaseShellItemPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == nameof(BaseShellItem.IsVisible))
+			{
 				CheckVisibility((BaseShellItem)sender);
+			}
+			// When dynamically updating TabBarIsVisible through ShellContent
+			else if (e.PropertyName == Shell.TabBarIsVisibleProperty.PropertyName)
+			{
+				if (sender is ShellContent shellContent)
+				{
+					var shell = shellContent.FindParentOfType<Shell>();
+					if (shell is not null)
+					{
+						var displayedPage = shell.GetCurrentShellPage();
+
+						// Check whether the displayed page is in the current ShellContent
+						if (displayedPage is not null && shellContent is IShellContentController contentController && contentController.Page == displayedPage)
+						{
+							var shellContentValue = (bool)shellContent.GetValue(Shell.TabBarIsVisibleProperty);
+							var pageValue = (bool)displayedPage.GetValue(Shell.TabBarIsVisibleProperty);
+
+							if (shellContentValue != pageValue)
+							{
+								// Update the value to the page through SetTabBarIsVisible
+								Shell.SetTabBarIsVisible(displayedPage, shellContentValue);
+							}
+						}
+					}
+				}
+			}
 		}
 
 		void OnShellElementControllerItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)

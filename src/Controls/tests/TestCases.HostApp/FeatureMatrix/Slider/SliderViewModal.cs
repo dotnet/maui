@@ -221,6 +221,51 @@ namespace Maui.Controls.Sample
 			}
 		}
 
+		private string _valueChangedStatus = "Not Raised";
+
+		public string ValueChangedStatus
+		{
+			get => _valueChangedStatus;
+			set
+			{
+				if (_valueChangedStatus != value)
+				{
+					_valueChangedStatus = value;
+					OnPropertyChanged();
+				}
+			}
+		}
+
+		private double _oldValue;
+		public double OldValue
+		{
+			get => _oldValue;
+			set
+			{
+				if (_oldValue != value)
+				{
+					_oldValue = value;
+					OnPropertyChanged();
+				}
+			}
+		}
+
+		private double _newValue;
+		public double NewValue
+		{
+			get => _newValue;
+			set
+			{
+				if (_newValue != value)
+				{
+					_newValue = value;
+					OnPropertyChanged();
+				}
+			}
+		}
+
+
+
 		public ICommand DragStartedCommand { get; }
 		public ICommand DragCompletedCommand { get; }
 

@@ -45,7 +45,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 			base.UpdateItemTemplate();
 
-			ListViewBase.GroupStyleSelector = new GroupHeaderStyleSelector();
+			ListViewBase.GroupStyle.Clear();
+			ListViewBase.GroupStyle.Add(new GroupStyle
+			{
+				HeaderTemplate = (Microsoft.UI.Xaml.DataTemplate)Microsoft.UI.Xaml.Application.Current.Resources["GroupHeaderTemplate"]
+			});
 		}
 	}
 }

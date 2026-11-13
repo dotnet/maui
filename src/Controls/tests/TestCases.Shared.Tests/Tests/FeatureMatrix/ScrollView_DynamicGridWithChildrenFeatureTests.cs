@@ -12,6 +12,7 @@ public class ScrollView_DynamicGridWithChildrenFeatureTests : _GalleryUITest
 
 	public const string ScrollViewDynamicGridWithChildrenFeatureTests = "ScrollView With LayoutOptions Feature Matrix";
 	public override string GalleryPageName => ScrollViewDynamicGridWithChildrenFeatureTests;
+	protected override string GallerySubPageButton => "DynamicGridLayoutButton";
 
 	public ScrollView_DynamicGridWithChildrenFeatureTests(TestDevice device)
 		: base(device)
@@ -21,8 +22,6 @@ public class ScrollView_DynamicGridWithChildrenFeatureTests : _GalleryUITest
 	[Test, Order(1)]
 	public void VerifyGridWithAddChildren_RowWise()
 	{
-		App.WaitForElement("DynamicGridLayoutButton");
-		App.Tap("DynamicGridLayoutButton");
 		App.WaitForElement("ScrollViewWithDynamicGridLayout");
 		App.WaitForElement("RowButton");
 		App.Tap("RowButton");

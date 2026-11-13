@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui;
@@ -216,6 +217,116 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			{
 				PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 			}
+		}
+
+		// A shared FormattedString must not prevent Label GC after the Label's handler is disconnected.
+
+		[Fact]
+		public void SharedFormattedStringDoesNotPreventLabelGC()
+		{
+			var sharedFs = new FormattedString();
+			sharedFs.Spans.Add(new Span { Text = "Hello " });
+			sharedFs.Spans.Add(new Span { Text = "World", FontAttributes = FontAttributes.Bold });
+
+			var weakRef = CreateLabelWithSharedFormattedString(sharedFs);
+
+			RunGCLoop();
+
+			Assert.False(weakRef.IsAlive,
+				"Label should be GC-eligible after handler disconnect even when a shared FormattedString is still alive.");
+			GC.KeepAlive(sharedFs);
+		}
+
+		[Fact]
+		public void SharedFormattedStringWithGestureSpansDoesNotPreventLabelGC()
+		{
+			// Spans with gesture recognizers create an additional per-span retention path
+			// via GestureRecognizersCollectionChanged. This test verifies that chain is also broken.
+			var sharedFs = new FormattedString();
+			var span = new Span { Text = "Tap me" };
+			span.GestureRecognizers.Add(new TapGestureRecognizer());
+			sharedFs.Spans.Add(span);
+
+			var weakRef = CreateLabelWithSharedFormattedString(sharedFs);
+
+			RunGCLoop();
+
+			Assert.False(weakRef.IsAlive,
+				"Label should be GC-eligible even when shared FormattedString has spans with gesture recognizers.");
+			GC.KeepAlive(sharedFs);
+		}
+
+		[Fact]
+		public void MultipleLabelsWithSharedFormattedStringAreAllGCEligible()
+		{
+			var sharedFs = new FormattedString();
+			sharedFs.Spans.Add(new Span { Text = "Shared text" });
+
+			var weakRefs = CreateMultipleLabelsWithSharedFormattedString(sharedFs, count: 5);
+
+			RunGCLoop();
+
+			for (int i = 0; i < weakRefs.Length; i++)
+			{
+				Assert.False(weakRefs[i].IsAlive,
+					$"Label[{i}] should be GC-eligible after handler disconnect even when a shared FormattedString is still alive.");
+			}
+			GC.KeepAlive(sharedFs);
+		}
+
+		[Fact]
+		public void LiveLabelIsNotCollectedWhenHandlerStillAttached()
+		{
+			// Sanity check: a Label whose handler is still attached must NOT be collected.
+			var sharedFs = new FormattedString();
+			sharedFs.Spans.Add(new Span { Text = "Shared" });
+
+			var liveLabel = new Label { FormattedText = sharedFs };
+			liveLabel.Handler = new HandlerStub();
+			var liveRef = new WeakReference(liveLabel);
+
+			var deadRef = CreateLabelWithSharedFormattedString(sharedFs);
+
+			RunGCLoop();
+
+			Assert.False(deadRef.IsAlive, "Disconnected Label should be collected.");
+			Assert.True(liveRef.IsAlive, "Label still attached to a handler must NOT be collected.");
+			GC.KeepAlive(liveLabel);
+		}
+
+		// Runs multiple GC cycles to improve collection reliability across GC generations.
+		static void RunGCLoop(int iterations = 3)
+		{
+			for (int i = 0; i < iterations; i++)
+			{
+				GC.Collect();
+				GC.WaitForPendingFinalizers();
+				GC.Collect();
+			}
+		}
+
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		static WeakReference CreateLabelWithSharedFormattedString(FormattedString sharedFs)
+		{
+			var label = new Label { FormattedText = sharedFs };
+			// Simulate full page lifecycle: attach handler (page push) then disconnect (page pop).
+			label.Handler = new HandlerStub();
+			label.Handler = null;
+			return new WeakReference(label);
+		}
+
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		static WeakReference[] CreateMultipleLabelsWithSharedFormattedString(FormattedString sharedFs, int count)
+		{
+			var refs = new WeakReference[count];
+			for (int i = 0; i < count; i++)
+			{
+				var label = new Label { FormattedText = sharedFs };
+				label.Handler = new HandlerStub();
+				label.Handler = null;
+				refs[i] = new WeakReference(label);
+			}
+			return refs;
 		}
 	}
 }

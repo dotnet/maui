@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using CoreGraphics;
 using CoreImage;
+using CoreText;
 using Foundation;
 using ImageIO;
 using Microsoft.Maui.Graphics;
@@ -43,6 +44,25 @@ namespace Microsoft.Maui
 
 			return renderer.CreateImage((context) =>
 			{
+				if (OperatingSystem.IsIOSVersionAtLeast(26))
+				{
+					using var line = new CTLine(attString);
+					var glyphBounds = line.GetBounds(CTLineBoundsOptions.UseGlyphPathBounds);
+					if (glyphBounds.Width > 0 && glyphBounds.Height > 0)
+					{
+						// Center the visible ink, rather than the font's ascent and descent.
+						var cgContext = context.CGContext;
+						cgContext.TextMatrix = CGAffineTransform.MakeIdentity();
+						cgContext.TranslateCTM(0, imagesize.Height);
+						cgContext.ScaleCTM(1, -1);
+						cgContext.TextPosition = new CGPoint(
+							imagesize.Width / 2 - glyphBounds.GetMidX(),
+							imagesize.Height / 2 - glyphBounds.GetMidY());
+						line.Draw(cgContext);
+						return;
+					}
+				}
+
 				var ctx = new NSStringDrawingContext();
 
 				var boundingRect = attString.GetBoundingRect(imagesize, 0, ctx);
@@ -59,8 +79,12 @@ namespace Microsoft.Maui
 
 		internal static UIImage? GetPlatformImage(this IFileImageSource imageSource)
 		{
-			var filename = imageSource.File;
-			return UIImage.FromBundle(filename) ?? UIImage.FromFile(filename);
+			var file = imageSource.File;
+
+			// On iOS/MacCatalyst, MauiImage assets are flattened into the app bundle root.
+			// UIImage.FromBundle() therefore requires just the base filename without path or extension.
+			var bundleName = Path.GetFileNameWithoutExtension(file);
+			return UIImage.FromBundle(bundleName) ?? UIImage.FromFile(file);
 		}
 
 		internal static CGImageSource? GetPlatformImageSource(this IFileImageSource imageSource, out int scale)

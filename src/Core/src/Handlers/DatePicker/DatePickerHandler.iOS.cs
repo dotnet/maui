@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.Maui.Graphics;
 using UIKit;
 
 namespace Microsoft.Maui.Handlers
@@ -80,7 +81,7 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateTextColor(datePicker);
 		}
 
-		public static partial void MapFlowDirection(DatePickerHandler handler, IDatePicker datePicker)
+		public static partial void MapFlowDirection(IDatePickerHandler handler, IDatePicker datePicker)
 		{
 			handler.PlatformView?.UpdateFlowDirection(datePicker);
 			handler.PlatformView?.UpdateTextAlignment(datePicker);
@@ -106,13 +107,26 @@ namespace Microsoft.Maui.Handlers
 		static void OnStarted(object? sender)
 		{
 			if (sender is IDatePickerHandler datePickerHandler && datePickerHandler.VirtualView != null)
+			{
 				datePickerHandler.VirtualView.IsFocused = datePickerHandler.VirtualView.IsOpen = true;
+
+				// Notify VoiceOver that the date picker popup has appeared
+				if (datePickerHandler.PlatformView?.InputView is not null)
+				{
+					datePickerHandler.PlatformView.PostAccessibilityFocusNotification(datePickerHandler.PlatformView.InputView);
+				}
+			}
 		}
 
 		static void OnEnded(object? sender)
 		{
 			if (sender is IDatePickerHandler datePickerHandler && datePickerHandler.VirtualView != null)
+			{
 				datePickerHandler.VirtualView.IsFocused = datePickerHandler.VirtualView.IsOpen = false;
+
+				// Restore VoiceOver focus to the date picker field when the popup closes
+				datePickerHandler.PlatformView?.PostAccessibilityFocusNotification();
+			}
 		}
 
 		static void OnDoneClicked(object? sender)
@@ -170,6 +184,31 @@ namespace Microsoft.Maui.Handlers
 			public override void DoneClicked()
 			{
 				DatePickerHandler.OnDoneClicked(Handler);
+			}
+		}
+
+		//TODO: Make it public in .NET 11.
+		internal static void MapBackground(IDatePickerHandler handler, IDatePicker datePicker)
+		{
+			if (handler.PlatformView is not MauiDatePicker platformView)
+			{
+				return;
+			}
+
+			if (datePicker.Background is ImageSourcePaint image)
+			{
+				var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
+				platformView.UpdateBackgroundImageSourceAsync(image.ImageSource, provider)
+					.FireAndForget(handler);
+			}
+			else if (datePicker.Background.IsNullOrEmpty())
+			{
+				platformView.RemoveBackgroundLayer();
+				platformView.BackgroundColor = null;
+			}
+			else
+			{
+				platformView.UpdateBackground(datePicker);
 			}
 		}
 	}

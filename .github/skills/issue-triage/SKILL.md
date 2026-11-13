@@ -9,6 +9,11 @@ compatibility: Requires GitHub CLI (gh) installed and authenticated. Run `gh aut
 
 # Issue Triage Skill
 
+For the hosted, maintainer-only `/issue triage` label command, use
+[issue-triage-labels](../issue-triage-labels/SKILL.md) and the
+[command documentation](../../docs/issue-triage.md). This interactive skill retains
+its human-approved milestone workflow.
+
 This skill helps triage open GitHub issues in the dotnet/maui repository by:
 1. Initializing a session with current milestones and labels
 2. Loading a batch of issues into memory

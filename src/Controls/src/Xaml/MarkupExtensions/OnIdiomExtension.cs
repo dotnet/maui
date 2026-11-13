@@ -92,8 +92,30 @@ namespace Microsoft.Maui.Controls.Xaml
 							  ?? throw new InvalidOperationException("Cannot determine property to provide the value for.");
 
 			var value = GetValue();
-			if (value == null && propertyType.IsValueType)
-				return Activator.CreateInstance(propertyType);
+			// The value returns null when no value is specified for the OnIdiom.
+			if (value == null)
+			{
+				if (bp != null)
+				{
+					object targetObject = valueProvider.TargetObject;
+					if (targetObject is Setter)
+					{
+						return null;
+					}
+					else
+					{
+						// If the target object is a BindableObject, retrieve the default value from it.
+						return bp.GetDefaultValue(targetObject as BindableObject);
+					}
+				}
+
+				if (propertyType.IsValueType)
+				{
+					return Activator.CreateInstance(propertyType);
+				}
+
+				return null;
+			}
 
 			if (Converter != null)
 				return Converter.Convert(value, propertyType, ConverterParameter, CultureInfo.CurrentUICulture);

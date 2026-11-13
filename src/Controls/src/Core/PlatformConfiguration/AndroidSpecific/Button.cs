@@ -1,6 +1,7 @@
 #nullable disable
 namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 {
+	using Microsoft.Maui.Controls.Internals;
 	using Microsoft.Maui.Graphics;
 	using FormsElement = Maui.Controls.Button;
 
@@ -24,7 +25,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 		/// <param name="value"><see langword="true"/> to use default padding; otherwise, <see langword="false"/>.</param>
 		public static void SetUseDefaultPadding(BindableObject element, bool value)
 		{
-			element.SetValue(UseDefaultPaddingProperty, value);
+			element.SetValue(UseDefaultPaddingProperty, BooleanBoxes.Box(value));
 		}
 
 		/// <summary>Returns <see langword="true"/> if the button will use the default padding. Otherwise, returns <see langword="false"/>.</summary>
@@ -63,7 +64,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 		/// <param name="value"><see langword="true"/> to use default shadow; otherwise, <see langword="false"/>.</param>
 		public static void SetUseDefaultShadow(BindableObject element, bool value)
 		{
-			element.SetValue(UseDefaultShadowProperty, value);
+			element.SetValue(UseDefaultShadowProperty, BooleanBoxes.Box(value));
 		}
 
 		/// <summary>Returns <see langword="true"/> if the button will use the default shadow. Otherwise, returns <see langword="false"/>.</summary>

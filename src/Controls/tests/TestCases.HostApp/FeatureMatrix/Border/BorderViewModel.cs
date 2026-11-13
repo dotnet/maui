@@ -1,5 +1,4 @@
 using System.ComponentModel;
-using System.Globalization;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls.Shapes;
 
@@ -23,6 +22,22 @@ public class BorderViewModel : INotifyPropertyChanged
 
 	public BorderViewModel()
 	{
+		SetLabelContent();
+	}
+
+	public void Reset()
+	{
+		Padding = 5;
+		StrokeThickness = 1;
+		StrokeDashArray = null;
+		StrokeDashOffset = 0;
+		StrokeLineJoin = PenLineJoin.Miter;
+		StrokeMiterLimit = 10.0;
+		StrokeShape = new Microsoft.Maui.Controls.Shapes.Rectangle();
+		StrokeLineCap = PenLineCap.Flat;
+		Stroke = Brush.Red;
+		Background = new SolidColorBrush(Colors.LightGray);
+		Shadow = null;
 		SetLabelContent();
 	}
 
@@ -50,7 +65,7 @@ public class BorderViewModel : INotifyPropertyChanged
 	{
 		ContentView = new Image
 		{
-			Source = "dotnet_bot.png", // Make sure this image is added to your resources
+			Source = "dotnet_bot.png",
 			WidthRequest = 100,
 			HeightRequest = 100,
 			HorizontalOptions = LayoutOptions.Center,
@@ -160,13 +175,13 @@ public class BorderViewModel : INotifyPropertyChanged
 	public IShape CreatePolygonShape() => new Polygon
 	{
 		Points = new PointCollection
-	{
-		new Point(150, 0),
-		new Point(250, 70),
-		new Point(210, 180),
-		new Point(85, 180),
-		new Point(40, 70)
-	}
+		{
+			new Point(150, 0),
+			new Point(250, 70),
+			new Point(210, 180),
+			new Point(85, 180),
+			new Point(40, 70)
+		}
 	};
 
 	private PenLineCap _strokeLineCap = PenLineCap.Flat;
@@ -190,6 +205,27 @@ public class BorderViewModel : INotifyPropertyChanged
 		set { _stroke = value; OnPropertyChanged(nameof(Stroke)); }
 	}
 
+	public void SetGradientStroke()
+	{
+		Stroke = new LinearGradientBrush
+		{
+			StartPoint = new Point(0, 0),
+			EndPoint = new Point(1, 1),
+			GradientStops = new GradientStopCollection
+			{
+				new GradientStop(Colors.Red, 0.0f),
+				new GradientStop(Colors.Blue, 1.0f)
+			}
+		};
+	}
+
+	private Brush _background = new SolidColorBrush(Colors.LightGray);
+	public Brush Background
+	{
+		get => _background;
+		set { _background = value; OnPropertyChanged(nameof(Background)); }
+	}
+
 	private Shadow _shadow = null;
 	public Shadow Shadow
 	{
@@ -206,9 +242,14 @@ public class BorderViewModel : INotifyPropertyChanged
 
 	public void UpdateShadow(double offsetX, double offsetY, double radius, float opacity)
 	{
+		UpdateShadow(offsetX, offsetY, radius, opacity, Colors.Black);
+	}
+
+	public void UpdateShadow(double offsetX, double offsetY, double radius, float opacity, Color brushColor)
+	{
 		Shadow = new Shadow
 		{
-			Brush = new SolidColorBrush(Colors.Black),
+			Brush = new SolidColorBrush(brushColor),
 			Offset = new Point(offsetX, offsetY),
 			Radius = (float)radius,
 			Opacity = opacity

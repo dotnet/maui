@@ -3,9 +3,14 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Threading;
+using CoreGraphics;
 using Foundation;
+using Microsoft.Maui.Controls.Diagnostics;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
+using Microsoft.Maui.Diagnostics;
 using Microsoft.Maui.Graphics;
 using ObjCRuntime;
 using UIKit;
@@ -14,6 +19,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
 	public class ShellItemRenderer : UITabBarController, IShellItemRenderer, IAppearanceObserver, IUINavigationControllerDelegate, IDisconnectable
 	{
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "This is a shared static Array.Empty cache and is not renderer-owned NSObject state.")]
 		readonly static UITableViewCell[] EmptyUITableViewCellArray = Array.Empty<UITableViewCell>();
 
 		#region IShellItemRenderer
@@ -46,21 +52,37 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		#endregion IAppearanceObserver
 
-		readonly IShellContext _context;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The shell context is retained for the tab renderer lifetime and released in Dispose after observers are removed.")]
+		IShellContext _context;
 		readonly Dictionary<UIViewController, IShellSectionRenderer> _sectionRenderers = new Dictionary<UIViewController, IShellSectionRenderer>();
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The appearance tracker is owned by this renderer and disposed in Dispose.")]
 		IShellTabBarAppearanceTracker _appearanceTracker;
 		ShellSection _currentSection;
 		Page _displayedPage;
 		bool _disposed;
+		bool _disconnected;
 		ShellItem _shellItem;
 		static UIColor _defaultMoreTextLabelTextColor;
+		readonly NativeElementRegistrationSet _nativeTabBarRegistrations = new NativeElementRegistrationSet();
+		readonly NativeElementRegistrationSet _nativeVisibleTabRegistrations = new NativeElementRegistrationSet();
+		readonly NativeElementRegistrationSet _nativeMoreRegistrations = new NativeElementRegistrationSet();
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The More table view is retained only while observed and cleared in Disconnect.")]
+		UITableView _moreTableView;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The content offset observer is disposed when the More table changes and in Disconnect.")]
+		IDisposable _moreContentOffsetObserver;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The diagnostics subscription watcher is disposed and cleared in Disconnect.")]
+		IDisposable _nativeSubscriptionWatcher;
 
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The current section renderer is tracked while selected and cleared in Dispose or when removed.")]
 		internal IShellSectionRenderer CurrentRenderer { get; private set; }
 
 		public ShellItemRenderer(IShellContext context)
 		{
 			this.DisableiOS18ToolbarTabs();
 			_context = context;
+			_nativeSubscriptionWatcher = NativeElementSubscriptionWatcher<ShellItemRenderer>.Attach(
+				this,
+				static renderer => renderer.OnNativeElementSubscriptionAdded());
 		}
 
 		public override UIViewController SelectedViewController
@@ -69,6 +91,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			set
 			{
 				base.SelectedViewController = value;
+				if (Volatile.Read(ref _disposed) || Volatile.Read(ref _disconnected))
+					return;
 
 				var renderer = RendererForViewController(value);
 				if (renderer != null)
@@ -90,6 +114,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		[Preserve(AllMembers = true)]
 		public virtual void DidShowViewController(UINavigationController navigationController, [Transient] UIViewController viewController, bool animated)
 		{
+			if (_disposed || _disconnected)
+				return;
+
 			var renderer = RendererForViewController(this.SelectedViewController);
 			if (renderer != null)
 			{
@@ -101,6 +128,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public override void TraitCollectionDidChange(UITraitCollection previousTraitCollection)
 		{
+			// UITabBarController re-evaluates which tabs go into More here (on iOS 27, after a
+			// size class change such as folding a foldable iPhone), so it has to run.
+			base.TraitCollectionDidChange(previousTraitCollection);
+
+			// That re-evaluation resets CustomizableViewControllers, which adds an Edit button
+			// to the More page; Shell keeps it empty (see CreateTabRenderers).
+			if (CustomizableViewControllers?.Length > 0)
+				CustomizableViewControllers = Array.Empty<UIViewController>();
+
 			if (previousTraitCollection.VerticalSizeClass == TraitCollection.VerticalSizeClass)
 				return;
 
@@ -116,14 +152,23 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			_appearanceTracker?.UpdateLayout(this);
 			UpdateNavBarHidden();
+			RegisterVisibleTabViews();
 		}
 
 		public override void ViewDidLoad()
 		{
 			base.ViewDidLoad();
+			RegisterTabBar();
 
 			ShouldSelectViewController = (tabController, viewController) =>
 			{
+				// Prevent UIKit from popping the active tab to root while its navigation transition is in progress.
+				if ((OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26)) && ReferenceEquals(viewController, SelectedViewController) &&
+					SelectedViewController.GetTransitionCoordinator() is not null)
+				{
+					return false;
+				}
+
 				bool accept = true;
 				var renderer = RendererForViewController(viewController);
 				if (renderer is not null)
@@ -142,8 +187,96 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			};
 		}
 
+		void RegisterTabBar()
+		{
+			if (_disconnected || ShellItem is null || !IsViewLoaded)
+				return;
+
+			_nativeTabBarRegistrations.Register(
+				ShellItem,
+				TabBar,
+				NativeElementRoles.ShellTab,
+				NativeElementDiscriminators.TabBar);
+		}
+
+		public override void ViewDidAppear(bool animated)
+		{
+			base.ViewDidAppear(animated);
+			RegisterTabBar();
+			ApplyInitialDisabledState();
+		}
+
+		void ApplyInitialDisabledState()
+		{
+			if (TabBar.Items is null)
+				return;
+
+			var items = ShellItemController?.GetItems();
+			if (items is null)
+				return;
+
+			// When there are more tabs than iOS can display (> 5), iOS creates a "More" tab.
+			// Only iterate visible tab items, excluding the system "More" tab.
+			int visibleTabs = Math.Min(items.Count, TabBar.Items.Length);
+			if (items.Count > TabBar.Items.Length)
+				visibleTabs = TabBar.Items.Length - 1;
+
+			for (int i = 0; i < visibleTabs; i++)
+			{
+				if (!items[i].IsEnabled)
+					UpdateTabBarItemEnabled(TabBar.Items[i], false);
+			}
+		}
+
+		void UpdateTabBarItemEnabled(UITabBarItem tabBarItem, bool isEnabled)
+		{
+			tabBarItem.Enabled = isEnabled;
+
+			var disabledColor = Shell.GetTabBarDisabledColor(_context.Shell)?.ToPlatform();
+			if (disabledColor is null)
+				return;
+
+			// Per-item text attributes needed for dynamic enable/disable changes
+			var textAttributes = isEnabled ? null : new UIStringAttributes { ForegroundColor = disabledColor };
+			tabBarItem.SetTitleTextAttributes(textAttributes, UIControlState.Disabled);
+
+			// Tint icon image since UITabBarAppearance.Disabled.IconColor doesn't work
+			if (tabBarItem.Image is not null)
+			{
+				tabBarItem.Image = isEnabled
+					? tabBarItem.Image.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate)
+					: CreateTintedImage(tabBarItem.Image, disabledColor).ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
+			}
+		}
+
+		UIImage CreateTintedImage(UIImage image, UIColor color)
+		{
+			var renderer = new UIGraphicsImageRenderer(image.Size, new UIGraphicsImageRendererFormat { Opaque = false, Scale = image.CurrentScale });
+			return renderer.CreateImage(ctx =>
+			{
+				image.Draw(new CGRect(CGPoint.Empty, image.Size));
+				color.SetFill();
+				ctx.FillRect(new CGRect(CGPoint.Empty, image.Size), CGBlendMode.SourceIn);
+			});
+		}
+
 		void IDisconnectable.Disconnect()
 		{
+			if (_disconnected)
+				return;
+
+			_disconnected = true;
+			_nativeSubscriptionWatcher?.Dispose();
+			_nativeSubscriptionWatcher = null;
+			_nativeTabBarRegistrations.Clear();
+			_nativeVisibleTabRegistrations.Clear();
+			_nativeMoreRegistrations.Clear();
+			_moreContentOffsetObserver?.Dispose();
+			_moreContentOffsetObserver = null;
+			_moreTableView = null;
+			if (ReferenceEquals(MoreNavigationController.WeakDelegate, this))
+				MoreNavigationController.WeakDelegate = null;
+
 			if (_sectionRenderers != null)
 			{
 				foreach (var kvp in _sectionRenderers.ToList())
@@ -171,6 +304,22 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				ShellItemController.ItemsCollectionChanged -= OnItemsCollectionChanged;
 		}
 
+		void OnNativeElementSubscriptionAdded()
+		{
+			if (Volatile.Read(ref _disposed) || Volatile.Read(ref _disconnected))
+				return;
+
+			BeginInvokeOnMainThread(() =>
+			{
+				if (_disposed)
+					return;
+
+				RegisterTabBar();
+				RegisterVisibleTabViews();
+				UpdateMoreCellsEnabled();
+			});
+		}
+
 		protected override void Dispose(bool disposing)
 		{
 			if (_disposed)
@@ -190,6 +339,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				_sectionRenderers.Clear();
 				CurrentRenderer = null;
+				_appearanceTracker?.Dispose();
+				_appearanceTracker = null;
+				_context = null;
 				_shellItem = null;
 				_currentSection = null;
 				_displayedPage = null;
@@ -198,6 +350,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			base.Dispose(disposing);
 		}
 
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "The ShellItem.PropertyChanged subscription is removed in Disconnect before the shell item is released.")]
 		protected virtual void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == ShellItem.CurrentItemProperty.PropertyName)
@@ -206,8 +359,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 		}
 
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "The ShellItemController.ItemsCollectionChanged subscription is removed in Disconnect before the shell item is released.")]
 		protected virtual void OnItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
+			_nativeMoreRegistrations.Clear();
+
 			if (e.OldItems != null)
 			{
 				foreach (ShellSection shellSection in e.OldItems)
@@ -220,6 +376,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 						RemoveRenderer(renderer);
 					}
 				}
+
+				// Recalculate IsInMoreTab for remaining renderers since tab positions shifted after removal.
+				UpdateIsInMoreTabForRenderers();
 			}
 
 			if (e.NewItems != null && e.NewItems.Count > 0)
@@ -263,6 +422,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 
 			UpdateTabBarHidden();
+			View.SetNeedsLayout();
+			if (SelectedViewController == MoreNavigationController)
+				UpdateMoreCellsEnabled();
 		}
 
 		protected virtual void OnShellItemSet(ShellItem shellItem)
@@ -273,6 +435,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			ShellItemController.ItemsCollectionChanged += OnItemsCollectionChanged;
 		}
 
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Each ShellSection.PropertyChanged subscription is removed in Disconnect and RemoveRenderer.")]
 		protected virtual void OnShellSectionPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == BaseShellItem.IsEnabledProperty.PropertyName)
@@ -280,9 +443,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				var shellSection = (ShellSection)sender;
 				var renderer = RendererForShellContent(shellSection);
 				var index = ViewControllers.ToList().IndexOf(renderer.ViewController);
-				TabBar.Items[index].Enabled = shellSection.IsEnabled;
+				if (TabBar.Items is not null && index >= 0 && index < TabBar.Items.Length)
+					UpdateTabBarItemEnabled(TabBar.Items[index], shellSection.IsEnabled);
 			}
 		}
+
 
 		protected virtual void UpdateShellAppearance(ShellAppearance appearance)
 		{
@@ -324,6 +489,22 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 		}
 
+		void UpdateIsInMoreTabForRenderers()
+		{
+			const int maxTabs = 5;
+			var currentViewControllers = ViewControllers;
+			if (currentViewControllers == null)
+				return;
+
+			bool willUseMore = currentViewControllers.Length > maxTabs;
+			for (int i = 0; i < currentViewControllers.Length; i++)
+			{
+				var renderer = RendererForViewController(currentViewControllers[i]);
+				if (renderer != null)
+					renderer.IsInMoreTab = willUseMore && i >= maxTabs - 1;
+			}
+		}
+
 		void CreateTabRenderers()
 		{
 			if (ShellItem.CurrentItem == null)
@@ -361,18 +542,51 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void UpdateMoreCellsEnabled()
 		{
-			var moreNavigationCells = GetMoreNavigationCells();
-			var viewControllersLength = ViewControllers.Length;
-			// now that they are applied we can set the enabled state of the TabBar items
-			for (int i = 4; i < viewControllersLength; i++)
-			{
-				if ((i - 4) >= (moreNavigationCells.Length))
-				{
-					break;
-				}
+			if (_disposed || _disconnected || ShellItem is null)
+				return;
 
-				var renderer = RendererForViewController(ViewControllers[i]);
-				var cell = moreNavigationCells[i - 4];
+			var moreTableView = MoreNavigationController.TopViewController.View as UITableView;
+			if (!ReferenceEquals(_moreTableView, moreTableView))
+			{
+				_moreContentOffsetObserver?.Dispose();
+				_moreTableView = moreTableView;
+				if (_moreTableView is not null)
+				{
+					_moreContentOffsetObserver = _moreTableView.AddObserver(
+						"contentOffset",
+						NSKeyValueObservingOptions.New,
+						_ => OnMoreTableScrolled());
+				}
+			}
+
+			if (moreTableView?.Window is null)
+			{
+				_nativeMoreRegistrations.Clear();
+				return;
+			}
+
+			var viewControllersLength = ViewControllers.Length;
+			var retainedCells = new List<object>();
+			// now that they are applied we can set the enabled state of the TabBar items
+			foreach (var cell in moreTableView.VisibleCells)
+			{
+				var indexPath = moreTableView.IndexPathForCell(cell);
+				if (indexPath is null)
+					continue;
+
+				var sectionIndex = 4 + (int)indexPath.Row;
+				if (sectionIndex < 4 || sectionIndex >= viewControllersLength)
+					continue;
+
+				var renderer = RendererForViewController(ViewControllers[sectionIndex]);
+				if (renderer is null)
+					continue;
+				retainedCells.Add(cell);
+				_nativeMoreRegistrations.Register(
+					renderer.ShellSection,
+					cell,
+					NativeElementRoles.ShellTabOverflow,
+					NativeElementDiscriminators.OverflowRow);
 
 #pragma warning disable CA1416, CA1422 // TODO: 'UITableViewCell.TextLabel' is unsupported on: 'ios' 14.0 and later
 				if (!renderer.ShellSection.IsEnabled)
@@ -391,14 +605,98 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				}
 #pragma warning restore CA1416, CA1422
 			}
+			_nativeMoreRegistrations.Retain(retainedCells);
+		}
 
-			UITableViewCell[] GetMoreNavigationCells()
+		void OnMoreTableScrolled()
+		{
+			if (_disposed)
+				return;
+
+			UpdateMoreCellsEnabled();
+		}
+
+		void RegisterVisibleTabViews()
+		{
+			if (_disconnected)
+				return;
+
+			if (!NativeElementDiagnostics.IsRegistrationEnabled)
 			{
-				if (MoreNavigationController.TopViewController.View is UITableView uITableView && uITableView.Window is not null)
-					return uITableView.VisibleCells;
-
-				return EmptyUITableViewCellArray;
+				if (_nativeVisibleTabRegistrations.HasRegistrations)
+					_nativeVisibleTabRegistrations.Clear();
+				return;
 			}
+
+			if (ShellItem is null)
+				return;
+
+			var sections = ShellItemController.GetItems();
+			var controls = TabBar.Subviews
+				.OfType<UIControl>()
+				.OrderBy(control => control.Frame.X)
+				.ToList();
+			if (TabBar.EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft)
+				controls.Reverse();
+
+			var tabBarItems = TabBar.Items;
+			var tabBarItemCount = tabBarItems?.Length ?? 0;
+			var viewControllerCount = ViewControllers?.Length ?? 0;
+			UITabBarItem moreItem = null;
+			var lastItemIsMore = false;
+			if (viewControllerCount > tabBarItemCount &&
+				tabBarItems?.LastOrDefault() is UITabBarItem lastItem)
+			{
+				var candidate = MoreNavigationController.TabBarItem;
+				lastItemIsMore = candidate is not null &&
+					(ReferenceEquals(lastItem, candidate) || lastItem.Handle == candidate.Handle);
+				if (lastItemIsMore)
+					moreItem = lastItem;
+			}
+
+			var canMapRealizedViews = NativeTabBarRegistrationPlanner.TryPlan(
+				sections.Count,
+				viewControllerCount,
+				tabBarItemCount,
+				controls.Count,
+				lastItemIsMore,
+				out var slotCount,
+				out var hasMore);
+			if (hasMore && moreItem is not null)
+			{
+				_nativeVisibleTabRegistrations.Register(
+					ShellItem,
+					moreItem,
+					NativeElementRoles.ShellTabOverflow,
+					NativeElementDiscriminators.TabBarItem);
+			}
+
+			if (!canMapRealizedViews)
+			{
+				if (hasMore && moreItem is not null)
+					_nativeVisibleTabRegistrations.Retain(new[] { moreItem });
+				else
+					_nativeVisibleTabRegistrations.Clear();
+				return;
+			}
+
+			var retainedElements = new List<object>(slotCount + 1);
+			for (int index = 0; index < slotCount; index++)
+			{
+				var isMore = hasMore && index == slotCount - 1;
+				var control = controls[index];
+				retainedElements.Add(control);
+				_nativeVisibleTabRegistrations.RegisterExclusive(
+					isMore ? (object)ShellItem : sections[index],
+					control,
+					isMore ? NativeElementRoles.ShellTabOverflow : NativeElementRoles.ShellTab,
+					NativeElementDiscriminators.RealizedView);
+			}
+
+			if (hasMore && moreItem is not null)
+				retainedElements.Add(moreItem);
+
+			_nativeVisibleTabRegistrations.Retain(retainedElements);
 		}
 
 		void GoTo(ShellSection shellSection)
@@ -442,6 +740,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 		}
 
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "The displayed page PropertyChanged subscription is removed in Disconnect and when the displayed page changes.")]
 		void OnDisplayedPagePropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == Shell.TabBarIsVisibleProperty.PropertyName)
@@ -455,11 +754,19 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (page is null || !OperatingSystem.IsIOSVersionAtLeast(11))
 				return;
 
+			// Shell doesn't have the property PrefersLargeTitles, so we should not update the large titles
+			// if users doen't explicitly set the LargeTitleDisplay property on the Page.
+			// todo net 11: Add PrefersLargeTitles to Shell and use that here.
+			if (!page.IsSet(PlatformConfiguration.iOSSpecific.Page.LargeTitleDisplayProperty))
+			{
+				return;
+			}
+
 			var largeTitleDisplayMode = page.OnThisPlatform().LargeTitleDisplay();
 
 			if (SelectedViewController is UINavigationController navigationController)
 			{
-				navigationController.NavigationBar.PrefersLargeTitles = largeTitleDisplayMode == LargeTitleDisplayMode.Always;
+				navigationController.NavigationBar.PrefersLargeTitles = largeTitleDisplayMode != LargeTitleDisplayMode.Never;
 				var top = navigationController.TopViewController;
 				if (top is not null)
 				{
