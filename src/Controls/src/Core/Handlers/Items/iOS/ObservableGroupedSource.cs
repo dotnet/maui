@@ -364,6 +364,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		int GetGroupCount(int groupIndex)
 		{
+			// UIKit can still query an old section while a group removal or reset is being processed.
+			if (groupIndex < 0 || groupIndex >= _groupSource.Count)
+			{
+				return 0;
+			}
+
 			switch (_groupSource[groupIndex])
 			{
 				case IList list:
