@@ -342,7 +342,7 @@ stages:
           clean: true
 
         steps:
-        - ${{ each step in parameters.prepareSteps }}:
+        - ${{ each step in parameters.androidPrepareSteps }}:
           - ${{ each pair in step }}:
               ${{ pair.key }}: ${{ pair.value }}
 
