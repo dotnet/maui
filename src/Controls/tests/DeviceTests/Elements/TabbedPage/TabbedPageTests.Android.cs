@@ -33,6 +33,51 @@ namespace Microsoft.Maui.DeviceTests
 	public partial class TabbedPageTests : ControlsHandlerTestBase
 	{
 		[Theory]
+		[InlineData(true, true)]
+		[InlineData(true, false)]
+		[InlineData(false, true)]
+		[InlineData(false, false)]
+		public async Task FocusedPagerDoesNotHighlightPage(bool bottomTabs, bool darkBackground)
+		{
+			if (!OperatingSystem.IsAndroidVersionAtLeast(26))
+			{
+				return;
+			}
+
+			SetupBuilder();
+
+			var backgroundColor = darkBackground ? Colors.Black : Colors.White;
+			var tabbedPage = CreateBasicTabbedPage(bottomTabs, pages: new[]
+			{
+				new ContentPage { Title = "Page 1", BackgroundColor = backgroundColor },
+				new ContentPage { Title = "Page 2", BackgroundColor = backgroundColor }
+			});
+			tabbedPage.Background = new SolidColorBrush(backgroundColor);
+
+			await CreateHandlerAndAddToWindow<TabbedViewHandler>(tabbedPage, async handler =>
+			{
+				await OnNavigatedToAsync(tabbedPage.CurrentPage);
+
+				var viewPager = Assert.IsType<ViewPager2>(handler.PlatformView);
+				var recyclerView = Assert.IsType<RecyclerView>(viewPager.GetChildAt(0));
+				await AssertEventually(() => recyclerView.Width > 0 && recyclerView.Height > 0 && recyclerView.ChildCount > 0);
+
+				using (var beforeFocus = await recyclerView.ToBitmap(MauiContext))
+					beforeFocus.AssertColorAtCenter(backgroundColor.ToPlatform());
+
+				// Leave touch mode and focus the same container that receives default keyboard focus.
+				Assert.True(recyclerView.RequestFocusFromTouch());
+				Assert.True(recyclerView.IsFocused);
+				recyclerView.JumpDrawablesToCurrentState();
+
+				using (var afterFocus = await recyclerView.ToBitmap(MauiContext))
+					afterFocus.AssertColorAtCenter(backgroundColor.ToPlatform());
+
+				Assert.False(recyclerView.DefaultFocusHighlightEnabled);
+			});
+		}
+
+		[Theory]
 		[InlineData(false)]
 		[InlineData(true)]
 		public async Task BadgePropertiesUpdateNativeTab(bool bottomTabs)
