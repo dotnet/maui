@@ -37,6 +37,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_pendingScrollAdjustment?.Invoke();
 		}
 
+		// Called for a newer scroll request that doesn't go through this helper (an animated scroll to an edge): the adjustment
+		// an earlier jump left for its layout no longer applies.
+		public void CancelPendingAdjustment()
+		{
+			_pendingScrollAdjustment = null;
+		}
+
 		public void AnimateScrollToPosition(int index, ScrollToPosition scrollToPosition)
 		{
 			// A newer request replaces an adjustment an earlier jump left for its layout.

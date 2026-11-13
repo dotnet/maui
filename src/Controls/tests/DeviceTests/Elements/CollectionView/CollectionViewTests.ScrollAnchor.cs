@@ -937,9 +937,11 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory(DisplayName = "Changing AnchorMode during an animated ScrollTo shows the edge it selects")]
-		[InlineData(ScrollAnchorMode.Start)]
-		[InlineData(ScrollAnchorMode.End)]
-		public async Task ChangingAnchorModeDuringAnAnimatedScrollToShowsTheEdgeItSelects(ScrollAnchorMode edge)
+		[InlineData(ScrollAnchorMode.Start, 50)]
+		[InlineData(ScrollAnchorMode.End, 50)]
+		[InlineData(ScrollAnchorMode.Start, 0)]
+		[InlineData(ScrollAnchorMode.End, 0)]
+		public async Task ChangingAnchorModeDuringAnAnimatedScrollToShowsTheEdgeItSelects(ScrollAnchorMode edge, int delay)
 		{
 			SetupBuilder();
 			var items = CreateAnchorItems(40);
@@ -961,8 +963,13 @@ namespace Microsoft.Maui.DeviceTests
 					collectionView.ScrollTo(items.Count - 1, position: ScrollToPosition.End, animate: true);
 				}
 
-				// A few frames into the animation: the newer change wins.
-				await Task.Delay(50);
+				// A few frames into the animation, or before its first frame, while the view is still at that edge and nothing
+				// needs to scroll it there: the newer change wins.
+				if (delay > 0)
+				{
+					await Task.Delay(delay);
+				}
+
 				collectionView.AnchorMode = edge;
 
 				await Task.Delay(1500);
@@ -976,6 +983,131 @@ namespace Microsoft.Maui.DeviceTests
 				}
 
 				Assert.True(collectionView.IsAnchored);
+			});
+		}
+
+		[Theory(DisplayName = "Changing AnchorMode as ScrollToEnd reports following the end shows the edge it selects")]
+		[InlineData(true)]
+		[InlineData(false)]
+		public async Task ChangingAnchorModeAsScrollToEndReportsFollowingTheEndShowsTheEdgeItSelects(bool animate)
+		{
+			SetupBuilder();
+			var collectionView = CreateAnchorCollectionView(CreateAnchorItems(40), ScrollAnchorMode.End);
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				await AssertAtEnd(handler, "The list should open at its end.");
+				ScrollPlatformViewBy(handler, -200);
+				await AssertEventually(() => !collectionView.IsAnchored, timeout: 3000, message: "Scrolling away from the end should stop following it.");
+
+				// The app hears that the list follows its end again, and follows its start instead: the newer change wins.
+				var changedMode = false;
+				collectionView.PropertyChanged += (_, e) =>
+				{
+					if (!changedMode && e.PropertyName == StructuredItemsView.IsAnchoredProperty.PropertyName && collectionView.IsAnchored)
+					{
+						changedMode = true;
+						collectionView.AnchorMode = ScrollAnchorMode.Start;
+					}
+				};
+
+				collectionView.ScrollToEnd(animate);
+				Assert.True(changedMode, "ScrollToEnd should report that the list follows its end.");
+
+				// Long enough for an animated scroll to the end to have ended, had it carried on.
+				await Task.Delay(1500);
+				Assert.True(GetDistanceFromStart(handler) <= AnchorTolerance, $"Following the start should show it. Position: {GetScrollPosition(handler)}.");
+				Assert.True(collectionView.IsAnchored);
+			});
+		}
+
+		[Fact(DisplayName = "An animated ScrollToStart right after ScrollToEnd stays at the start")]
+		public async Task AnAnimatedScrollToStartRightAfterScrollToEndStaysAtTheStart()
+		{
+			SetupBuilder();
+
+			// One item taller than the view: scrolling to it lines up its start, and ScrollToEnd scrolls the rest of the way
+			// once it's laid out.
+			var collectionView = CreateAnchorCollectionView(new ObservableCollection<AnchorItem> { new("Tall", 600) }, ScrollAnchorMode.None);
+			collectionView.Header = null;
+			collectionView.Footer = null;
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				await AssertEventually(() => GetDistanceFromStart(handler) <= AnchorTolerance, timeout: 3000, message: "The list should open at its start.");
+
+				collectionView.ScrollToEnd(animate: false);
+				collectionView.ScrollToStart(animate: true);
+
+				// Long enough for the animation, and for what ScrollToEnd left for the next layout, to have run.
+				await Task.Delay(1500);
+				Assert.True(GetDistanceFromStart(handler) <= AnchorTolerance, $"The later ScrollToStart should win. Position: {GetScrollPosition(handler)}.");
+			});
+		}
+
+#if ANDROID
+		// RecyclerView applies the new item as the scroll starts, outside a layout: the look after the scroll still counts the
+		// move as the scroll's. On iOS and Mac Catalyst, UICollectionView resizes its content as the item is inserted, and an
+		// offset change outside a drag that comes with a size change is the platform laying out (as when the keyboard resizes
+		// the viewport): the anchor keeps following the end there.
+		[Fact(DisplayName = "Scrolling away as an item is added stops following the end")]
+		public async Task ScrollingAwayAsAnItemIsAddedStopsFollowingTheEnd()
+		{
+			SetupBuilder();
+			var items = CreateAnchorItems(40);
+			var collectionView = CreateAnchorCollectionView(items, ScrollAnchorMode.End);
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				await AssertAtEnd(handler, "The list should open at its end.");
+
+				// The scroll applies the new item before it moves the view: the move is still a scroll away from the end, not the
+				// platform laying out the new item.
+				items.Add(new AnchorItem("Added", 40));
+				ScrollPlatformViewBy(handler, -200);
+
+				await AssertEventually(() => !collectionView.IsAnchored, timeout: 3000, message: "Scrolling away from the end should stop following it.");
+				await Task.Delay(500);
+				Assert.True(GetDistanceToEnd(handler) > 100, $"The list shouldn't be pulled back to its end. Position: {GetScrollPosition(handler)}.");
+				Assert.False(collectionView.IsAnchored);
+			});
+		}
+#endif
+
+		[Fact(DisplayName = "A ScrollTo from Scrolled as ItemsSource is replaced wins")]
+		public async Task AScrollToFromScrolledAsItemsSourceIsReplacedWins()
+		{
+			SetupBuilder();
+			var collectionView = CreateAnchorCollectionView(CreateAnchorItems(40), ScrollAnchorMode.End);
+
+			// ScrollTo(0) shows the first item at the top: with no header, that's the start of the content.
+			collectionView.Header = null;
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				await AssertAtEnd(handler, "The list should open at its end.");
+
+				// Away from the end, so the new items scroll the view as they replace the old ones.
+				ScrollPlatformViewBy(handler, -200);
+				await AssertEventually(() => !collectionView.IsAnchored, timeout: 3000, message: "Scrolling away from the end should stop following it.");
+
+				// The app asks for the start as soon as the new items scroll the view: the newer request wins over showing their
+				// end.
+				var scrolledToStart = false;
+				collectionView.Scrolled += (_, _) =>
+				{
+					if (!scrolledToStart)
+					{
+						scrolledToStart = true;
+						collectionView.ScrollTo(0, position: ScrollToPosition.Start, animate: false);
+					}
+				};
+
+				collectionView.ItemsSource = new ObservableCollection<AnchorItem>(Enumerable.Range(0, 40).Select(index => new AnchorItem($"New {index}", 50)));
+				await AssertEventually(() => scrolledToStart, timeout: 3000, message: "Replacing the items should scroll the list.");
+				await Task.Delay(1000);
+				Assert.True(GetDistanceFromStart(handler) <= AnchorTolerance, $"The ScrollTo should win. Position: {GetScrollPosition(handler)}.");
+				Assert.False(collectionView.IsAnchored);
 			});
 		}
 

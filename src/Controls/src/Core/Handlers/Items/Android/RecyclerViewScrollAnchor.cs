@@ -133,9 +133,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			Restart();
 		}
 
-		// Measures from scratch, and goes to the edge the view now follows.
+		// Measures from scratch, and goes to the edge the view now follows. It's newer than a scroll the anchor was about to
+		// make for an earlier request, as when the app changes AnchorMode as it hears the view follows an edge.
 		void Restart()
 		{
+			_scrollRequests++;
 			_requestPending = false;
 			_requestLandsLater = false;
 			ResetMeasurement();
