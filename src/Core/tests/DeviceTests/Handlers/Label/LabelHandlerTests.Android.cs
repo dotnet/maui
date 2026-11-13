@@ -111,6 +111,24 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.InRange(secondGap, expectedGap - 1, expectedGap + 1);
 		}
 
+		[Fact(DisplayName = "LineHeight Spaces Wrapped Lines Evenly")]
+		public async Task LineHeightSpacesWrappedLinesEvenly()
+		{
+			// One paragraph that wraps, unlike the newline-separated lines above.
+			var label = new LabelStub()
+			{
+				Text = "First line second line third line fourth line",
+				Font = Font.SystemFontOfSize(30),
+				LineHeight = 2
+			};
+
+			// Narrow enough to wrap, wide enough to break only at the spaces
+			var (expectedGap, firstGap, secondGap) = await GetValueAsync(label, handler => GetBaselineGaps(handler, widthPixels: 500));
+
+			Assert.InRange(firstGap, expectedGap - 1, expectedGap + 1);
+			Assert.InRange(secondGap, expectedGap - 1, expectedGap + 1);
+		}
+
 		[Fact(DisplayName = "LineHeight Follows Font Size Changes")]
 		public async Task LineHeightFollowsFontSizeChanges()
 		{
@@ -217,11 +235,12 @@ namespace Microsoft.Maui.DeviceTests
 			// taller than the TextView's base font.
 			const string html = "<h1>First<br>Second<br>Third</h1>";
 
-			var (_, naturalFirstGap, naturalSecondGap) = await GetHtmlBaselineGaps(html, lineHeight: 1);
-			var (_, firstGap, secondGap) = await GetHtmlBaselineGaps(html, lineHeight: 2);
+			var (_, _, naturalGap) = await GetHtmlBaselineGaps(html, lineHeight: 1);
+			var (_, _, gap) = await GetHtmlBaselineGaps(html, lineHeight: 2);
 
-			Assert.InRange(firstGap, 2 * naturalFirstGap - 1, 2 * naturalFirstGap + 1);
-			Assert.InRange(secondGap, 2 * naturalSecondGap - 1, 2 * naturalSecondGap + 1);
+			// Spanned text keeps the line spacing multiplier, so only the gaps after the
+			// first line are compared: they must double with the heading's own height.
+			Assert.InRange(gap, 2 * naturalGap - 1, 2 * naturalGap + 1);
 		}
 
 		TextView GetPlatformLabel(LabelHandler labelHandler) =>
@@ -250,17 +269,27 @@ namespace Microsoft.Maui.DeviceTests
 		PaintFlags GetNativeTextDecorations(LabelHandler labelHandler) =>
 			GetPlatformLabel(labelHandler).PaintFlags;
 
-		float GetNativeLineHeight(LabelHandler labelHandler) =>
-			(GetPlatformLabel(labelHandler).TransformationMethod as PlatformLineHeightTransformationMethod)?.LineHeight
-				?? GetPlatformLabel(labelHandler).LineSpacingMultiplier;
-
-		// Distances between consecutive baselines of a three-line label, plus the
-		// distance expected from the font height and the label's LineHeight.
-		(int expectedGap, int firstGap, int secondGap) GetBaselineGaps(LabelHandler labelHandler)
+		float GetNativeLineHeight(LabelHandler labelHandler)
 		{
 			var textView = GetPlatformLabel(labelHandler);
+			if (textView.LineSpacingMultiplier != 1)
+				return textView.LineSpacingMultiplier;
+
+			var fontMetrics = textView.Paint.GetFontMetricsInt();
+			return 1 + textView.LineSpacingExtra / (fontMetrics.Descent - fontMetrics.Ascent);
+		}
+
+		// Distances between the first three baselines of a label, plus the distance
+		// expected from the font height and the label's LineHeight.
+		(int expectedGap, int firstGap, int secondGap) GetBaselineGaps(LabelHandler labelHandler, int widthPixels = 10000)
+		{
+			// A MAUI layout pass asks the handler for its size first, which refreshes the line spacing.
+			// The stubs have an explicit size, so measure the platform view directly afterwards.
+			labelHandler.GetDesiredSize(double.PositiveInfinity, double.PositiveInfinity);
+
+			var textView = GetPlatformLabel(labelHandler);
 			textView.Measure(
-				global::Android.Views.View.MeasureSpec.MakeMeasureSpec(10000, MeasureSpecMode.AtMost),
+				global::Android.Views.View.MeasureSpec.MakeMeasureSpec(widthPixels, MeasureSpecMode.AtMost),
 				global::Android.Views.View.MeasureSpec.MakeMeasureSpec(0, MeasureSpecMode.Unspecified));
 
 			var layout = textView.Layout;

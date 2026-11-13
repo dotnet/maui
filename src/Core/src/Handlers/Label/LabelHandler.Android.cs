@@ -7,6 +7,8 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class LabelHandler : ViewHandler<ILabel, AppCompatTextView>
 	{
+		bool _isLineHeightMapped;
+
 		protected override AppCompatTextView CreatePlatformView()
 			=> new MauiTextView(Context);
 
@@ -18,6 +20,11 @@ namespace Microsoft.Maui.Handlers
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
+			// The line spacing depends on the font and on whether the text has spans, which can change
+			// after LineHeight was mapped (for example a platform customization changing the text size).
+			if (_isLineHeightMapped)
+				PlatformView?.UpdateLineHeight(VirtualView);
+
 			var size = base.GetDesiredSize(widthConstraint, heightConstraint);
 
 			// Android TextView reports full available width instead of actual text width when
@@ -160,6 +167,9 @@ namespace Microsoft.Maui.Handlers
 		public static void MapLineHeight(ILabelHandler handler, ILabel label)
 		{
 			handler.PlatformView?.UpdateLineHeight(label);
+
+			if (handler is LabelHandler labelHandler)
+				labelHandler._isLineHeightMapped = label.LineHeight >= 0;
 		}
 	}
 
