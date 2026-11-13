@@ -1460,15 +1460,13 @@ namespace Microsoft.Maui.Controls
 			if (Application.Current is not null &&
 				(DeviceInfo.Platform != DevicePlatform.Android || !RuntimeFeature.IsMaterial3Enabled))
 			{
-				// This is only the default, so it must not win over a Style setter like a regular binding would
 				this.SetBinding(Shell.FlyoutBackgroundColorProperty,
 					new AppThemeBinding
 					{
 						Light = Colors.White,
 						Dark = Colors.Black,
 						Mode = BindingMode.OneWay
-					},
-					new SetterSpecificity());
+					});
 			}
 
 			ShellController.FlyoutItemsChanged += (_, __) => Handler?.UpdateValue(nameof(FlyoutItems));
