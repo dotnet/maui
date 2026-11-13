@@ -3,6 +3,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using CoreAnimation;
 using CoreGraphics;
+using Foundation;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Platform;
 using UIKit;
@@ -38,6 +39,36 @@ namespace Microsoft.Maui.Platform
 			_bounds = new CGRect();
 			_shape = new WeakReference<IShape?>(null);
 			ContentsScale = UIScreen.MainScreen.Scale;
+		}
+
+		/// <summary>
+		/// Core Animation creates the layer returned by presentationLayer by calling initWithLayer: on a new
+		/// native instance. Without this export that copy has no managed peer, so the first overridden selector
+		/// that reaches it (e.g. drawInContext: when a screen recorder such as Microsoft Clarity draws
+		/// presentation layers) fails with "Failed to marshal the Objective-C object". The copy takes over the
+		/// paint and shape of the layer it is created from, so it draws the same content.
+		/// </summary>
+		[Export("initWithLayer:")]
+		internal MauiCALayer(CALayer layer) : base(layer)
+		{
+			if (layer is not MauiCALayer mauiCALayer)
+			{
+				_shape = new WeakReference<IShape?>(null);
+				return;
+			}
+
+			_bounds = mauiCALayer._bounds;
+			_shape = mauiCALayer._shape;
+			_backgroundColor = mauiCALayer._backgroundColor;
+			_background = mauiCALayer._background;
+			_strokeThickness = mauiCALayer._strokeThickness;
+			_strokeColor = mauiCALayer._strokeColor;
+			_stroke = mauiCALayer._stroke;
+			_strokeLineCap = mauiCALayer._strokeLineCap;
+			_strokeLineJoin = mauiCALayer._strokeLineJoin;
+			_strokeDash = mauiCALayer._strokeDash;
+			_strokeDashOffset = mauiCALayer._strokeDashOffset;
+			_strokeMiterLimit = mauiCALayer._strokeMiterLimit;
 		}
 
 		protected override void Dispose(bool disposing)
@@ -86,7 +117,13 @@ namespace Microsoft.Maui.Platform
 		{
 			base.DrawInContext(ctx);
 
-			var clipPath = GetClipPath();
+			var requiresUnclippedStroke = RequiresUnclippedStroke();
+			var clipPath = requiresUnclippedStroke ? GetBorderClipPath() : GetClipPath();
+
+			if (requiresUnclippedStroke)
+			{
+				ctx.SaveState();
+			}
 
 			if (clipPath! != null!)
 				ctx.AddPath(clipPath);
@@ -94,6 +131,12 @@ namespace Microsoft.Maui.Platform
 			ctx.Clip();
 
 			DrawBackground(ctx);
+
+			if (requiresUnclippedStroke)
+			{
+				ctx.RestoreState();
+			}
+
 			DrawBorder(ctx);
 		}
 
@@ -314,12 +357,30 @@ namespace Microsoft.Maui.Platform
 			if (_shape.TryGetTarget(out var shape))
 			{
 				var bounds = _bounds.ToRectangle();
+				var path = shape is IShapeWithStroke shapeWithStroke
+					? shapeWithStroke.PathForBounds(bounds, includeStroke: true)
+					: shape.PathForBounds(bounds);
+				return path?.AsCGPath();
+			}
+
+			return null;
+		}
+
+		CGPath? GetBorderClipPath()
+		{
+			if (_shape.TryGetTarget(out var shape))
+			{
+				var bounds = _bounds.ToRectangle().Inset(_strokeThickness / 2);
 				var path = shape.PathForBounds(bounds);
 				return path?.AsCGPath();
 			}
 
 			return null;
 		}
+
+		bool RequiresUnclippedStroke() =>
+			_strokeLineJoin is not CGLineJoin.Miter ||
+			_strokeMiterLimit != CanvasDefaults.DefaultMiterLimit;
 
 		void SetDefaultBackgroundColor()
 		{
@@ -351,13 +412,14 @@ namespace Microsoft.Maui.Platform
 				ctx.SetLineDash(_strokeDashOffset * _strokeThickness, _strokeDash);
 
 			// The Stroke is inner and we are clipping the outer, for that reason, we use the double to get the correct value.
-			ctx.SetLineWidth(2 * _strokeThickness);
+			var requiresUnclippedStroke = RequiresUnclippedStroke();
+			ctx.SetLineWidth(requiresUnclippedStroke ? _strokeThickness : 2 * _strokeThickness);
 
 			ctx.SetLineCap(_strokeLineCap);
 			ctx.SetLineJoin(_strokeLineJoin);
 			ctx.SetMiterLimit(_strokeMiterLimit * _strokeThickness / 4);
 
-			var clipPath = GetClipPath();
+			var clipPath = requiresUnclippedStroke ? GetBorderClipPath() : GetClipPath();
 
 			if (clipPath! != null!)
 				ctx.AddPath(clipPath);

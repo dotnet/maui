@@ -834,6 +834,8 @@ internal class TabbedViewManager
             Element.CurrentTab = tabs[0];
         }
 
+        UpdateItemIconColor();
+
         // Set listener AFTER menu population and initial selection.
         // Adding items to an empty BNV auto-selects item 0, firing OnNavigationItemSelected
         // before we establish the correct selection — poisoning Shell's CurrentItem.

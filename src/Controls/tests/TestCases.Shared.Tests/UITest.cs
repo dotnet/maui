@@ -391,7 +391,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 					case TestDevice.Windows:
 						environmentName = "windows";
-						
+
 						// Check if the Windows CV1 handler is selected via TEST_CONFIGURATION_ARGS.
 						// This uses a separate snapshot directory for visual regression testing
 						var testConfigurationArgs = Environment.GetEnvironmentVariable("TEST_CONFIGURATION_ARGS") ?? "";
@@ -426,29 +426,12 @@ namespace Microsoft.Maui.TestCases.Tests
 
 				var actualImage = new ImageSnapshot(screenshotPngBytes, ImageSnapshotFormat.PNG);
 
-				int androidStatusBarHeight = 0;
-				if (_testDevice == TestDevice.Android && cropTop <= 0)
-				{
-					var systemBars = App.GetSystemBars();
-					if (!systemBars.TryGetValue("statusBar", out var statusBarObject) ||
-						statusBarObject is not IDictionary<string, object> statusBar ||
-						!statusBar.TryGetValue("height", out var heightObject) ||
-						heightObject is null)
-					{
-						throw new InvalidOperationException("Unable to read Android statusBar.height from GetSystemBars(). Screenshot cropping requires this value.");
-					}
-
-					androidStatusBarHeight = Convert.ToInt32(heightObject);
-					if (androidStatusBarHeight < 0)
-						throw new InvalidOperationException($"GetSystemBars() returned an invalid Android status bar height: {androidStatusBarHeight}.");
-				}
-
 				// For Android and iOS, crop off the OS status bar at the top since it's not part of the
 				// app itself and contains the time, which always changes. For WinUI, crop off the title
 				// bar at the top as it varies slightly based on OS theme and is also not part of the app.
 				int cropFromTop = _testDevice switch
 				{
-					TestDevice.Android => androidStatusBarHeight,
+					TestDevice.Android => environmentName == "android-notch-36" ? 112 : 60,
 					TestDevice.iOS => environmentName == "ios-iphonex" ? 90 : 110,
 					TestDevice.Windows => 32,
 					TestDevice.Mac => 29,
@@ -711,7 +694,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		[DllImport(CoreGraphicsLibrary)]
 		static extern NativeRectangle CGDisplayBounds(uint display);
 
-		byte[] TakeScreenshot()
+		protected byte[] TakeScreenshot()
 		{
 			// Since the Appium screenshot on Mac (unlike Windows) is of the entire screen, not just the app,
 			// we are going to crop the screenshot to the app window bounds, including rounded corners.
@@ -723,7 +706,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			var height = windowBounds.Height;
 			var logicalWidth = width;
 			var logicalHeight = height;
-			const int cornerRadius = 12;
 
 			// Take the screenshot
 			var bytes = App.Screenshot();
@@ -783,16 +765,20 @@ namespace Microsoft.Maui.TestCases.Tests
 					$"are outside screenshot bounds {image.Width}x{image.Height}.");
 			}
 
-			int pixelCornerRadius = Math.Max(1, (int)Math.Round(cornerRadius * Math.Min(scaleX, scaleY)));
+			return CropMacScreenshot(image, new MagickGeometry(pixelX, pixelY, (uint)pixelWidth, (uint)pixelHeight), logicalWidth, logicalHeight);
+		}
 
-			// Draw a rounded rectangle with the physical-pixel app window bounds as mask.
-			using var surface = new MagickImage(MagickColors.Transparent, (uint)pixelWidth, (uint)pixelHeight);
-			new Drawables()
-				.RoundRectangle(0, 0, pixelWidth, pixelHeight, pixelCornerRadius, pixelCornerRadius)
-				.FillColor(MagickColors.Black)
-				.Draw(surface);
-
-			surface.Composite(image, -pixelX, -pixelY, CompositeOperator.SrcAtop);
+		internal static byte[] CropMacScreenshot(MagickImage image, MagickGeometry bounds, int logicalWidth, int logicalHeight)
+		{
+			int pixelWidth = (int)bounds.Width;
+			int pixelHeight = (int)bounds.Height;
+			const int borderInset = 2;
+			const int cornerRadius = 24;
+			using var surface = new MagickImage(image);
+			surface.Crop(bounds);
+			surface.ResetPage();
+			using var unmaskedSurface = new MagickImage(surface);
+			ApplyContentMask(surface, (double)pixelWidth / logicalWidth, (double)pixelHeight / logicalHeight);
 
 			// Keep committed snapshots density-independent and preserve the existing
 			// logical crop values (for example, the 29-point title-bar crop).
@@ -803,9 +789,38 @@ namespace Microsoft.Maui.TestCases.Tests
 					IgnoreAspectRatio = true,
 				};
 				surface.Resize(logicalSize);
+				unmaskedSurface.Resize(logicalSize);
+				ApplyContentMask(surface, 1, 1);
 			}
 
-			return surface.ToByteArray(MagickFormat.Png);
+			// Copy only the bottom corner patches so resampling cannot change nearby straight edges.
+			int cornerWidth = Math.Min(cornerRadius + borderInset, logicalWidth);
+			int cornerHeight = Math.Min(cornerRadius + borderInset, logicalHeight);
+			foreach (int cornerX in new[] { 0, logicalWidth - cornerWidth })
+			{
+				using var corner = new MagickImage(surface);
+				corner.Crop(new MagickGeometry(cornerX, logicalHeight - cornerHeight, (uint)cornerWidth, (uint)cornerHeight));
+				corner.ResetPage();
+				unmaskedSurface.Composite(corner, cornerX, logicalHeight - cornerHeight, CompositeOperator.Copy);
+			}
+
+			return unmaskedSurface.ToByteArray(MagickFormat.Png);
+
+			static void ApplyContentMask(MagickImage surface, double scaleX, double scaleY)
+			{
+				double insetX = borderInset * scaleX;
+				double insetY = borderInset * scaleY;
+				using var mask = new MagickImage(MagickColors.Black, surface.Width, surface.Height);
+				new Drawables()
+					.FillColor(MagickColors.White)
+					.StrokeWidth(0)
+					.RoundRectangle(insetX, insetY, surface.Width - insetX - 1, surface.Height - insetY - 1, cornerRadius * scaleX, cornerRadius * scaleY)
+					.Draw(mask);
+				mask.Threshold(new Percentage(99));
+				surface.Composite(mask, CompositeOperator.CopyAlpha);
+				surface.BackgroundColor = MagickColors.Transparent;
+				surface.Alpha(AlphaOption.Background);
+			}
 		}
 #endif
 	}

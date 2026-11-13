@@ -12,13 +12,13 @@ public class Issue32995 : Shell
 			AutomationId = "Tab2",
 			IsEnabled = false,
 			Items =
-			{
+   			{
 				new ShellContent
 				{
 					Content = new ContentPage
-					{
-						Content = new Label
-						{
+	 				{
+	  					Content = new Label
+	  					{
 							Text = "Tab2 Content",
 							AutomationId = "Tab2Label",
 							HorizontalOptions = LayoutOptions.Center,
@@ -34,17 +34,17 @@ public class Issue32995 : Shell
 			Title = "Tab1",
 			Icon = "coffee.png",
 			Items =
-			{
+   			{
 				new ShellContent
 				{
 					Content = new ContentPage
 					{
-						Content = new VerticalStackLayout
-						{
+	  					Content = new VerticalStackLayout
+	  					{
 							Padding = 20,
 							Spacing = 15,
 							Children =
-							{
+	   						{
 								new Label { Text = "Tab1", FontAttributes = FontAttributes.Bold },
 								new Button
 								{
@@ -58,11 +58,11 @@ public class Issue32995 : Shell
 									AutomationId = "DisableButton",
 									Command = new Command(() => tab2.IsEnabled = false)
 								}
-							}
-						}
-					}
+	   						}
+	 					}
+	 				}
 				}
-			}
+   			}
 		};
 
 		Items.Add(tab1);

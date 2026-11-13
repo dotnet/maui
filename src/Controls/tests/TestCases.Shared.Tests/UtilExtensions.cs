@@ -10,6 +10,58 @@ namespace Microsoft.Maui.TestCases.Tests
 	{
 		const string goToTestButtonId = "GoToTestButton";
 
+		/// <summary>
+		/// Ignores the current test only when running in the Android Shell Renderer configuration.
+		/// </summary>
+		public static void IgnoreOnAndroidShellRenderer(this UITestContextBase testBase, string reason)
+		{
+			if (testBase.Device == TestDevice.Android && string.Equals(
+				Environment.GetEnvironmentVariable("TEST_CONFIGURATION_ARGS"),
+				"ShellRenderer", StringComparison.OrdinalIgnoreCase))
+			{
+				Assert.Ignore(reason);
+			}
+		}
+
+		/// <summary>
+		/// Ignores the current test only when running in the Android Shell Handler configuration.
+		/// </summary>
+		public static void IgnoreOnAndroidShellHandler(this UITestContextBase testBase, string reason)
+		{
+			if (testBase.Device == TestDevice.Android && !string.Equals(
+				Environment.GetEnvironmentVariable("TEST_CONFIGURATION_ARGS"),
+				"ShellRenderer", StringComparison.OrdinalIgnoreCase))
+			{
+				Assert.Ignore(reason);
+			}
+		}
+
+		/// <summary>
+		/// Ignores the current test only when running in the Windows CollectionView1 configuration.
+		/// </summary>
+		public static void IgnoreOnWindowsCV1(this UITestContextBase testBase, string reason)
+		{
+			if (testBase.Device == TestDevice.Windows &&
+				Environment.GetEnvironmentVariable("TEST_CONFIGURATION_ARGS")?.Contains(
+					"UseWindowsCV1:true", StringComparison.OrdinalIgnoreCase) == true)
+			{
+				Assert.Ignore(reason);
+			}
+		}
+
+		/// <summary>
+		/// Ignores the current test only when running in the Windows CollectionView2 configuration.
+		/// </summary>
+		public static void IgnoreOnWindowsCV2(this UITestContextBase testBase, string reason)
+		{
+			if (testBase.Device == TestDevice.Windows &&
+				Environment.GetEnvironmentVariable("TEST_CONFIGURATION_ARGS")?.Contains(
+					"UseWindowsCV1:true", StringComparison.OrdinalIgnoreCase) != true)
+			{
+				Assert.Ignore(reason);
+			}
+		}
+
 		public static void Back(this UITestContextBase testBase)
 		{
 			if (testBase.Device == TestDevice.Android)
@@ -157,10 +209,35 @@ namespace Microsoft.Maui.TestCases.Tests
 				var y = searchHandler.GetRect().Y + searchHandler.GetRect().Height;
 				app.TapCoordinates(searchHandler.GetRect().X + 10, y + 10);
 			}
+			else if (app is AppiumCatalystApp)
+			{
+				// Native clicks wait for idle and can lose the filtered result before dispatching the click.
+				var rect = app.WaitForElementAndGetRect(searchResultIdentifier);
+				app.TapCoordinates(rect.CenterX(), rect.CenterY());
+			}
 			else
 			{
 				var searchResults = app.FindElements(searchResultIdentifier);
 				searchResults.First().Tap();
+			}
+		}
+
+		public static void TapShellBackArrowWithImageOverride(this IApp app, string imageAutomationId)
+		{
+			if (app is AppiumCatalystApp)
+			{
+				// Tahoe exposes the image-overridden button without its identifier and as disabled.
+				// Use pointer input on the navigation button rather than bypassing its command.
+				var rect = app.WaitForElement(AppiumQuery.ByXPath("//XCUIElementTypeNavigationBar/XCUIElementTypeButton[1]")).GetRect();
+				app.TapCoordinates(rect.CenterX(), rect.CenterY());
+			}
+			else if (app is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
+			{
+				app.Back();
+			}
+			else
+			{
+				app.TapBackArrow(imageAutomationId);
 			}
 		}
 	}

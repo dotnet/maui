@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using Android.Content;
-using Android.Content.Res;
 using Android.Graphics.Drawables;
 using Android.OS;
 using Android.Views;
@@ -93,7 +92,7 @@ namespace Microsoft.Maui.Controls.Platform
 				throw new InvalidOperationException("Root View Needs to be set");
 		}
 
-		Task<Page> PopModalPlatformCoreAsync(bool animated)
+		async Task<Page> PopModalPlatformCoreAsync(bool animated)
 		{
 			Page modal = CurrentPlatformModalPage;
 			_platformModalPages.Remove(modal);
@@ -106,7 +105,14 @@ namespace Microsoft.Maui.Controls.Platform
 			// If for the dialog is null what we want to do?
 			if (dialogFragment is null)
 			{
-				return Task.FromResult(modal);
+				return modal;
+			}
+
+			// A deferred pop can arrive before the first layout starts the entrance animation.
+			// Wait for it so the entrance and exit animations cannot replace each other.
+			if (animated && dialogFragment.IsAnimated && dialogFragment.View is not null)
+			{
+				await dialogFragment.AnimationTask;
 			}
 
 			var source = new TaskCompletionSource<Page>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -135,7 +141,7 @@ namespace Microsoft.Maui.Controls.Platform
 				source.TrySetResult(modal);
 			}
 
-			return source.Task;
+			return await source.Task;
 
 			void OnAnimationEnded(object? sender, AAnimation.AnimationEndEventArgs e)
 			{
@@ -195,17 +201,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (animated)
 			{
-				TaskCompletionSource<bool> animationCompletionSource = new(TaskCreationOptions.RunContinuationsAsynchronously);
-
-				dialogFragment.AnimationEnded += OnAnimationEnded;
-
-				void OnAnimationEnded(object? sender, EventArgs e)
-				{
-					dialogFragment.AnimationEnded -= OnAnimationEnded;
-					animationCompletionSource.SetResult(true);
-				}
-
-				await animationCompletionSource.Task;
+				await dialogFragment.AnimationTask;
 			}
 			else
 			{
@@ -230,10 +226,10 @@ namespace Microsoft.Maui.Controls.Platform
 			IMauiContext _mauiWindowContext;
 			NavigationRootManager? _navigationRootManager;
 			static readonly ColorDrawable TransparentColorDrawable = new(AColor.Transparent);
-			bool _pendingAnimation = true;
+			readonly TaskCompletionSource<bool> _animationCompletionSource = new(TaskCreationOptions.RunContinuationsAsynchronously);
 			bool _pendingNavigation = true;
 
-			internal event EventHandler? AnimationEnded;
+			internal Task AnimationTask => _animationCompletionSource.Task;
 			internal event EventHandler? PresentationCompleted;
 
 			public bool IsAnimated { get; internal set; }
@@ -241,6 +237,7 @@ namespace Microsoft.Maui.Controls.Platform
 			public ModalFragment(IMauiContext mauiContext, Page modal)
 			{
 				_modal = modal;
+				_modal.Loaded += OnModalLoaded;
 				_modal.PropertyChanged += OnModalPagePropertyChanged;
 				_modal.HandlerChanged += OnPageHandlerChanged;
 				_mauiWindowContext = mauiContext;
@@ -263,17 +260,19 @@ namespace Microsoft.Maui.Controls.Platform
 					dialog.Window.SetSoftInputMode(attributes.SoftInputMode);
 				}
 
-				// Enable edge-to-edge on the modal's own Window so its system bars match the
-				// main window. The modal Dialog has a separate Window that does not inherit the
-				// activity's WindowCompat.EnableEdgeToEdge configuration, so it must be applied here.
-				WindowCompat.EnableEdgeToEdge(dialog.Window);
-
-				// EnableEdgeToEdge handles transparency/scrim but not bar icon colors; apply those
-				// from the app theme so the modal's status/navigation bar icons match the main window.
-				var modalActivity = Context?.GetActivity();
-				if (modalActivity is not null)
+				if (OperatingSystem.IsAndroidVersionAtLeast(30) && Context?.GetActivity() is global::Android.App.Activity activity)
 				{
-					dialog.Window.ConfigureTranslucentSystemBars(modalActivity);
+					dialog.Window.ConfigureTranslucentSystemBars(activity);
+				}
+				else if (mainActivityWindow is not null)
+				{
+					// Fallback for API < 30: Apply legacy translucent behavior
+					var navigationBarColor = mainActivityWindow.NavigationBarColor;
+					var statusBarColor = mainActivityWindow.StatusBarColor;
+#pragma warning disable CA1422
+					dialog.Window.SetNavigationBarColor(new AColor(navigationBarColor));
+					dialog.Window.SetStatusBarColor(new AColor(statusBarColor));
+#pragma warning restore CA1422
 				}
 
 				if (RuntimeFeature.UseMauiAndroidSystemBarBackgrounds && mainActivityWindow is not null)
@@ -284,22 +283,6 @@ namespace Microsoft.Maui.Controls.Platform
 				UpdateModalWindowChrome(dialog.Window, Context);
 
 				return dialog;
-			}
-
-			public override void OnConfigurationChanged(Configuration newConfig)
-			{
-				base.OnConfigurationChanged(newConfig);
-
-				// Re-apply system bar icon colors to the modal's own Dialog window on a theme
-				// (light/dark) change. The Dialog is a separate Window that OnCreateDialog configures
-				// once; like the activity, it must be re-applied here so the modal's status/navigation
-				// bar icons track the theme. EnableEdgeToEdge handles transparency/scrim, not icon colors.
-				var modalActivity = Context?.GetActivity();
-				if (Dialog?.Window is { } dialogWindow && modalActivity is not null)
-				{
-					dialogWindow.ConfigureTranslucentSystemBars(modalActivity);
-					UpdateModalWindowChrome(dialogWindow, Context);
-				}
 			}
 
 			static void CopySystemBarForegroundAppearance(AWindow sourceWindow, AWindow targetWindow)
@@ -473,12 +456,20 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				base.OnResume();
 
-				// Signal that the modal is fully presented and ready
-				FirePresentationCompleted();
+				// OnResume can precede attachment; an immediate pop requires a loaded platform view.
+				if (_modal.IsLoaded)
+					FirePresentationCompleted();
+			}
+
+			void OnModalLoaded(object? sender, EventArgs e)
+			{
+				if (IsResumed)
+					FirePresentationCompleted();
 			}
 
 			public override void OnDismiss(IDialogInterface dialog)
 			{
+				_modal.Loaded -= OnModalLoaded;
 				_modal.PropertyChanged -= OnModalPagePropertyChanged;
 				_modal.HandlerChanged -= OnPageHandlerChanged;
 
@@ -506,13 +497,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			void FireAnimationEnded()
 			{
-				if (!_pendingAnimation)
-				{
-					return;
-				}
-
-				_pendingAnimation = false;
-				AnimationEnded?.Invoke(this, EventArgs.Empty);
+				_animationCompletionSource.TrySetResult(true);
 			}
 
 			void FirePresentationCompleted()
@@ -521,6 +506,7 @@ namespace Microsoft.Maui.Controls.Platform
 					return;
 
 				_pendingNavigation = false;
+				_modal?.Loaded -= OnModalLoaded;
 				PresentationCompleted?.Invoke(this, EventArgs.Empty);
 			}
 

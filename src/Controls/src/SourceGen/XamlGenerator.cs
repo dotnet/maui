@@ -8,14 +8,15 @@ using System.Xml;
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 
+using Microsoft.Maui.Controls.BindingSourceGen;
 using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls.SourceGen;
 
 using static GeneratorHelpers;
-using static LocationHelpers;
 
 [Generator(LanguageNames.CSharp)]
 public class XamlGenerator : IIncrementalGenerator
@@ -30,17 +31,33 @@ public class XamlGenerator : IIncrementalGenerator
 		// 	System.Diagnostics.Debugger.Launch();
 		// }
 #endif
-		// Only provide a new Compilation when the references or syntax trees change
+		var globalUsingNamespacesProvider = initContext.SyntaxProvider
+			.CreateSyntaxProvider(
+				static (node, _) => node is UsingDirectiveSyntax directive
+					&& directive.GlobalKeyword.IsKind(SyntaxKind.GlobalKeyword)
+					&& directive.Alias is null
+					&& !directive.StaticKeyword.IsKind(SyntaxKind.StaticKeyword),
+				static (context, ct) => GetGlobalUsingNamespace(context, ct))
+			.Where(static ns => ns is not null)
+			.Select(static (ns, _) => ns!)
+			.Collect()
+			.Select(static (namespaces, _) => new EquatableArray<string>(
+				namespaces.Distinct(StringComparer.Ordinal).OrderBy(static ns => ns, StringComparer.Ordinal).ToArray()));
+
+		// Keep the current compilation when a global using changes, even if its type signatures do not.
 		var referenceCompilationProvider = initContext.CompilationProvider
-			.WithComparer(new CompilationSignaturesComparer())
-			.WithTrackingName(TrackingNames.CompilationProvider);
+			.Combine(globalUsingNamespacesProvider)
+			.WithComparer(new CompilationAndGlobalUsingsComparer())
+			.WithTrackingName(TrackingNames.CompilationProvider)
+			.Select(static (pair, _) => pair.Item1);
 
 		var referenceTypeCacheProvider = referenceCompilationProvider
 			.Select(GetTypeCache)
 			.WithTrackingName(TrackingNames.ReferenceTypeCacheProvider);
 
 		var xmlnsDefinitionsProvider = referenceCompilationProvider
-			.Select(GetAssemblyAttributes)
+			.Combine(globalUsingNamespacesProvider)
+			.Select(static (pair, ct) => GetAssemblyAttributes(pair.Left, pair.Right.ToArray(), ct))
 			.WithTrackingName(TrackingNames.XmlnsDefinitionsProvider);
 
 		var projectItemProvider = initContext.AdditionalTextsProvider
@@ -92,8 +109,22 @@ public class XamlGenerator : IIncrementalGenerator
 
 		//this xmlnsDefinitionProvider is computed AFTER feeding the codebehind into the compilation, and allows correct assemblySymbol comparisons
 		var xmlnsDefinitionsProviderForIC = compilationWithCodeBehindProvider
-			.Select(GetAssemblyAttributes)
+			.Combine(globalUsingNamespacesProvider)
+			.Select(static (pair, ct) => GetAssemblyAttributes(pair.Left, pair.Right.ToArray(), ct))
 			.WithTrackingName(TrackingNames.XmlnsDefinitionsProviderForIC);
+
+		// Select first: WithComparer clones the upstream transform, which would re-parse all code-behind.
+		var conflictCompilationProvider = compilationWithCodeBehindProvider
+			.Select(static (compilation, _) => compilation)
+			.WithComparer(new CompilationSignaturesComparer(includePrivateMembers: true));
+		var conflictXmlnsProvider = conflictCompilationProvider.Select(GetAssemblyAttributes);
+		var conflictDocumentProvider = xamlProjectItemProviderForCB
+			.Combine(conflictXmlnsProvider)
+			.Select(XamlTypeConflictAnalyzer.ParseDocument);
+		var conflictDiagnosticsProvider = conflictDocumentProvider
+			.Combine(conflictXmlnsProvider, conflictCompilationProvider)
+			.Select(XamlTypeConflictAnalyzer.Analyze)
+			.WithTrackingName("XamlTypeConflictDiagnostics");
 
 		var xamlSourceProviderForIC = xamlProjectItemProviderForIC
 			.Combine(xmlnsDefinitionsProviderForIC, compilationWithCodeBehindProvider.Select(GetTypeCache), compilationWithCodeBehindProvider)
@@ -114,28 +145,14 @@ public class XamlGenerator : IIncrementalGenerator
 			}
 			catch (Exception e)
 			{
-				IXmlLineInfo lineInfo;
-				string errorMessage;
-
-				if (e is XamlParseException xpe)
-				{
-					lineInfo = xpe.XmlInfo;
-					errorMessage = xpe.UnformattedMessage;
-				}
-				else if (e is XmlException xmlEx)
-				{
-					lineInfo = new XmlLineInfo(xmlEx.LineNumber, xmlEx.LinePosition);
-					errorMessage = StripLineInfoFromXmlExceptionMessage(xmlEx.Message);
-				}
-				else
-				{
-					lineInfo = new XmlLineInfo();
-					errorMessage = e.Message;
-				}
-
-				var location = xamlItem?.ProjectItem?.RelativePath is not null ? LocationCreate(xamlItem.ProjectItem.RelativePath, lineInfo, string.Empty) : null;
-				sourceProductionContext.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, location, errorMessage));
+				sourceProductionContext.ReportDiagnostic(XamlDiagnosticHelpers.CreateXamlParserDiagnostic(xamlItem?.ProjectItem, xamlItem?.SourceText, e));
 			}
+		});
+
+		initContext.RegisterSourceOutput(conflictDiagnosticsProvider, static (context, diagnostics) =>
+		{
+			foreach (var diagnostic in diagnostics)
+				context.ReportDiagnostic(diagnostic);
 		});
 
 		// Register the XAML pipeline for InitializeComponent
@@ -143,7 +160,7 @@ public class XamlGenerator : IIncrementalGenerator
 		{
 			var (xamlItem, xmlnsCache, typeCache, compilation) = provider;
 
-			if (xamlItem?.ProjectItem?.RelativePath is not string relativePath)
+			if (xamlItem?.ProjectItem?.RelativePath is null)
 			{
 				throw new InvalidOperationException("Xaml item or target path is null");
 			}
@@ -155,33 +172,7 @@ public class XamlGenerator : IIncrementalGenerator
 			{
 				if (xamlItem != null && xamlItem.Exception != null)
 				{
-					IXmlLineInfo lineInfo;
-					string errorMessage;
-
-					if (xamlItem.Exception is XamlParseException xpe)
-					{
-						lineInfo = xpe.XmlInfo;
-						errorMessage = xpe.UnformattedMessage;
-					}
-					else if (xamlItem.Exception is XmlException xmlEx)
-					{
-						lineInfo = new XmlLineInfo(xmlEx.LineNumber, xmlEx.LinePosition);
-						errorMessage = StripLineInfoFromXmlExceptionMessage(xmlEx.Message);
-					}
-					else if (xamlItem.Exception.InnerException is XmlException innerXmlEx)
-					{
-						lineInfo = new XmlLineInfo(innerXmlEx.LineNumber, innerXmlEx.LinePosition);
-						errorMessage = StripLineInfoFromXmlExceptionMessage(innerXmlEx.Message);
-					}
-					else
-					{
-						// Try to extract line info from message if present
-						lineInfo = ExtractLineInfoFromMessage(xamlItem.Exception.Message);
-						errorMessage = StripLineInfoFromXmlExceptionMessage(xamlItem.Exception.Message);
-					}
-
-					var location = LocationCreate(relativePath, lineInfo, string.Empty);
-					sourceProductionContext.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, location, errorMessage));
+					sourceProductionContext.ReportDiagnostic(XamlDiagnosticHelpers.CreateXamlParserDiagnostic(xamlItem.ProjectItem, xamlItem.SourceText, xamlItem.Exception));
 				}
 				return;
 			}
@@ -339,27 +330,7 @@ public class XamlGenerator : IIncrementalGenerator
 			}
 			catch (Exception e)
 			{
-				IXmlLineInfo lineInfo;
-				string errorMessage;
-
-				if (e is XamlParseException xpe)
-				{
-					lineInfo = xpe.XmlInfo;
-					errorMessage = xpe.UnformattedMessage;
-				}
-				else if (e is XmlException xmlEx)
-				{
-					lineInfo = new XmlLineInfo(xmlEx.LineNumber, xmlEx.LinePosition);
-					errorMessage = StripLineInfoFromXmlExceptionMessage(xmlEx.Message);
-				}
-				else
-				{
-					lineInfo = new XmlLineInfo();
-					errorMessage = e.Message;
-				}
-
-				var location = xamlItem?.ProjectItem?.RelativePath is not null ? LocationCreate(xamlItem.ProjectItem.RelativePath, lineInfo, string.Empty) : null;
-				sourceProductionContext.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, location, errorMessage));
+				sourceProductionContext.ReportDiagnostic(XamlDiagnosticHelpers.CreateXamlParserDiagnostic(xamlItem?.ProjectItem, xamlItem?.SourceText, e));
 			}
 		});
 
@@ -387,6 +358,19 @@ $"""
 			, Encoding.UTF8));
 		});
 
+		initContext.RegisterSourceOutput(globalUsingNamespacesProvider, static (context, namespaces) =>
+		{
+			if (namespaces.Length == 0)
+				return;
+
+			var sb = new StringBuilder();
+			sb.AppendLine(AutoGeneratedHeaderText);
+			sb.AppendLine("#nullable enable");
+			foreach (var ns in namespaces)
+				sb.AppendLine($"[assembly: global::Microsoft.Maui.Controls.XmlnsDefinition({Microsoft.CodeAnalysis.CSharp.SymbolDisplay.FormatLiteral(XamlParser.MauiGlobalUri, true)}, {Microsoft.CodeAnalysis.CSharp.SymbolDisplay.FormatLiteral(ns, true)})]");
+			context.AddSource("Global.Usings.Xmlns.cs", SourceText.From(sb.ToString(), Encoding.UTF8));
+		});
+
 		// Register the global xmlns definitions. create equivalent XmlnsDefintion for the global ones, so most of the 1sr and 3rd party tooling should keep working
 		initContext.RegisterSourceOutput(xmlnsDefinitionsProvider, static (sourceProductionContext, xmlnsCache) =>
 		{
@@ -394,6 +378,33 @@ $"""
 			if (!string.IsNullOrEmpty(source))
 				sourceProductionContext.AddSource("Global.Xmlns.cs", SourceText.From(source!, Encoding.UTF8));
 		});
+	}
+
+	private static string? GetGlobalUsingNamespace(GeneratorSyntaxContext context, CancellationToken cancellationToken)
+	{
+		var name = ((UsingDirectiveSyntax)context.Node).Name;
+		if (name is null || name.DescendantNodesAndSelf().OfType<AliasQualifiedNameSyntax>()
+			.Any(static alias => alias.Alias.Identifier.Text != "global"))
+			return null;
+
+		if (context.SemanticModel.GetSymbolInfo(name, cancellationToken).Symbol is not INamespaceSymbol ns)
+			return null;
+
+		var parts = new Stack<string>();
+		for (var current = ns; !current.IsGlobalNamespace; current = current.ContainingNamespace)
+			parts.Push(current.Name);
+		return parts.Count == 0 ? null : string.Join(".", parts);
+	}
+
+	private sealed class CompilationAndGlobalUsingsComparer : IEqualityComparer<(Compilation Compilation, EquatableArray<string> GlobalUsings)>
+	{
+		private readonly CompilationSignaturesComparer _compilationComparer = new();
+
+		public bool Equals((Compilation Compilation, EquatableArray<string> GlobalUsings) x, (Compilation Compilation, EquatableArray<string> GlobalUsings) y)
+			=> x.GlobalUsings.Equals(y.GlobalUsings) && _compilationComparer.Equals(x.Compilation, y.Compilation);
+
+		public int GetHashCode((Compilation Compilation, EquatableArray<string> GlobalUsings) value)
+			=> value.GlobalUsings.GetHashCode();
 	}
 
 	private static string GetHintName(ProjectItem? projectItem, string suffix)
@@ -419,7 +430,10 @@ $"""
 		var sb = new StringBuilder();
 		sb.AppendLine(AutoGeneratedHeaderText);
 		sb.AppendLine("#nullable enable");
-		foreach (var xmlns in xmlnsCache.GlobalGeneratedXmlnsDefinitions)
+		foreach (var xmlns in xmlnsCache.GlobalGeneratedXmlnsDefinitions
+			.OrderBy(static xmlns => xmlns.XmlNamespace, StringComparer.Ordinal)
+			.ThenBy(static xmlns => xmlns.Target, StringComparer.Ordinal)
+			.ThenBy(static xmlns => xmlns.AssemblyName, StringComparer.Ordinal))
 			sb.AppendLine($"[assembly: global::Microsoft.Maui.Controls.XmlnsDefinition(\"{xmlns.XmlNamespace}\", \"{xmlns.Target}\", AssemblyName = \"{EscapeIdentifier(xmlns.AssemblyName)}\")]");
 
 		return sb.ToString();
@@ -568,44 +582,4 @@ $"""
 		}
 	}
 
-	static string StripLineInfoFromXmlExceptionMessage(string message)
-	{
-		// XmlException messages typically end with " Line X, position Y."
-		// We want to strip that since we're reporting location separately
-		var lineIndex = message.LastIndexOf(" Line ");
-		if (lineIndex > 0)
-		{
-			// Strip both the trailing period after the line info and any double periods
-			return message.Substring(0, lineIndex).TrimEnd('.', ' ');
-		}
-		return message;
-	}
-
-	static IXmlLineInfo ExtractLineInfoFromMessage(string message)
-	{
-		// Try to extract "Line X, position Y" from the message
-		var lineIndex = message.LastIndexOf(" Line ");
-		if (lineIndex > 0)
-		{
-			try
-			{
-				var lineInfoPart = message.Substring(lineIndex + 6); // Skip " Line "
-				var parts = lineInfoPart.Split(new[] { ", position " }, StringSplitOptions.None);
-				if (parts.Length == 2)
-				{
-					var lineStr = parts[0].Trim();
-					var posStr = parts[1].TrimEnd('.', ' ');
-					if (int.TryParse(lineStr, out int lineNumber) && int.TryParse(posStr, out int linePosition))
-					{
-						return new XmlLineInfo(lineNumber, linePosition);
-					}
-				}
-			}
-			catch
-			{
-				// Ignore parsing errors
-			}
-		}
-		return new XmlLineInfo();
-	}
 }

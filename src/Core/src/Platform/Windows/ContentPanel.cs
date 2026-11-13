@@ -264,6 +264,7 @@ namespace Microsoft.Maui.Platform
 
 		public void UpdateBackground(Paint? background)
 		{
+			ControlExtensions.BackgroundImageRequests.Begin(this);
 			if (_borderPath is null)
 			{
 				return;
@@ -367,12 +368,14 @@ namespace Microsoft.Maui.Platform
 			}
 			else if (clipGeometry is IRoundRectangle roundedRectangle)
 			{
-				clipPath = roundedRectangle.InnerPathForBounds(pathSize, strokeThickness / 2);
+				clipPath = roundedRectangle.InnerPathForBounds(pathSize, strokeThickness / 2, includeShapeStroke: true);
 				IsInnerPath = true;
 			}
 			else
 			{
-				clipPath = clipGeometry.PathForBounds(pathSize);
+				clipPath = clipGeometry is IShapeWithStroke shapeWithStroke
+				? shapeWithStroke.PathForBounds(pathSize, includeStroke: true)
+				: clipGeometry.PathForBounds(pathSize);
 				IsInnerPath = false;
 			}
 

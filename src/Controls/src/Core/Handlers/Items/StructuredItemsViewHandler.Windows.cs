@@ -30,17 +30,32 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		protected override void ConnectHandler(ListViewBase platformView)
 		{
 			base.ConnectHandler(platformView);
+			UpdateItemsLayoutSubscription();
+		}
 
-			if (Layout is not null)
+		bool UpdateItemsLayoutSubscription()
+		{
+			var layout = Layout;
+			if (_layoutPropertyChangedProxy is not null &&
+				_layoutPropertyChangedProxy.TryGetSource(out var source) &&
+				ReferenceEquals(source, layout))
+			{
+				return false;
+			}
+
+			if (layout is not null)
 			{
 				_layoutPropertyChanged ??= LayoutPropertyChanged;
-				_layoutPropertyChangedProxy = new WeakNotifyPropertyChangedProxy(Layout, _layoutPropertyChanged);
+				_layoutPropertyChangedProxy ??= new WeakNotifyPropertyChangedProxy();
+				_layoutPropertyChangedProxy.Subscribe(layout, _layoutPropertyChanged);
 			}
 			else
 			{
 				_layoutPropertyChangedProxy?.Unsubscribe();
 				_layoutPropertyChangedProxy = null;
 			}
+
+			return true;
 		}
 
 		protected override void DisconnectHandler(ListViewBase platformView)
@@ -53,6 +68,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void LayoutPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
+			if (((IElementHandler)this).VirtualView is not TItemsView itemsView ||
+				!ReferenceEquals(sender, itemsView.ItemsLayout))
+			{
+				return;
+			}
+
 			if (e.PropertyName == GridItemsLayout.SpanProperty.PropertyName)
 				UpdateItemsLayoutSpan();
 			else if (e.PropertyName == GridItemsLayout.HorizontalItemSpacingProperty.PropertyName || e.PropertyName == GridItemsLayout.VerticalItemSpacingProperty.PropertyName)
@@ -79,6 +100,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public static void MapItemSizingStrategy(StructuredItemsViewHandler<TItemsView> handler, StructuredItemsView itemsView)
 		{
 
+		}
+
+		protected override void UpdateItemsLayout()
+		{
+			var layoutChanged = UpdateItemsLayoutSubscription();
+
+			if (layoutChanged && ListViewBase is FormsGridView gridView && Layout is GridItemsLayout gridLayout)
+			{
+				ConfigureGridView(gridView, gridLayout);
+			}
+
+			base.UpdateItemsLayout();
 		}
 
 		protected override ListViewBase SelectListViewBase()
@@ -210,23 +243,37 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		static ListViewBase CreateGridView(GridItemsLayout gridItemsLayout)
 		{
-			var gridView = new FormsGridView
-			{
-				Orientation = gridItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal
-					? Orientation.Horizontal
-					: Orientation.Vertical,
+			var gridView = new FormsGridView();
+			ConfigureGridView(gridView, gridItemsLayout, isInitialLayout: true);
+			return gridView;
+		}
 
-				Span = gridItemsLayout.Span,
-				ItemContainerStyle = GetItemContainerStyle(gridItemsLayout)
-			};
+		static void ConfigureGridView(FormsGridView gridView, GridItemsLayout gridItemsLayout, bool isInitialLayout = false)
+		{
+			var orientation = gridItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal
+				? Orientation.Horizontal
+				: Orientation.Vertical;
 
-			if (gridView.Orientation == Orientation.Horizontal)
+			var orientationChanged = gridView.Orientation != orientation;
+			if (isInitialLayout || orientationChanged)
 			{
-				ScrollViewer.SetVerticalScrollMode(gridView, WScrollMode.Disabled);
-				ScrollViewer.SetHorizontalScrollMode(gridView, WScrollMode.Enabled);
+				gridView.Orientation = orientation;
+
+				if (orientation == Orientation.Horizontal)
+				{
+					ScrollViewer.SetVerticalScrollMode(gridView, WScrollMode.Disabled);
+					ScrollViewer.SetHorizontalScrollMode(gridView, WScrollMode.Enabled);
+				}
+				else
+				{
+					gridView.ClearValue(ScrollViewer.VerticalScrollModeProperty);
+					gridView.ClearValue(ScrollViewer.HorizontalScrollModeProperty);
+					gridView.ClearValue(ScrollViewer.HorizontalScrollBarVisibilityProperty);
+				}
 			}
 
-			return gridView;
+			gridView.Span = gridItemsLayout.Span;
+			gridView.ItemContainerStyle = GetItemContainerStyle(gridItemsLayout);
 		}
 
 		static ListViewBase CreateVerticalListView(LinearItemsLayout listItemsLayout)
@@ -254,8 +301,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		static WStyle GetItemContainerStyle(GridItemsLayout layout)
 		{
-			var h = layout?.HorizontalItemSpacing ?? 0;
-			var v = layout?.VerticalItemSpacing ?? 0;
+			var h = (layout?.HorizontalItemSpacing ?? 0) / 2;
+			var v = (layout?.VerticalItemSpacing ?? 0) / 2;
 			var margin = WinUIHelpers.CreateThickness(h, v, h, v);
 
 			var style = new WStyle(typeof(GridViewItem));
@@ -263,6 +310,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (_gridViewItemStyle is not null)
 			{
 				style.BasedOn = _gridViewItemStyle;
+			}
+
+			if (layout.Orientation == ItemsLayoutOrientation.Vertical)
+			{
+				style.Setters.Add(new WSetter(FrameworkElement.MinHeightProperty, 0d));
+			}
+			else
+			{
+				style.Setters.Add(new WSetter(FrameworkElement.MinWidthProperty, 0d));
 			}
 
 			style.Setters.Add(new WSetter(FrameworkElement.MarginProperty, margin));
@@ -280,7 +336,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		static WStyle GetVerticalItemContainerStyle(LinearItemsLayout layout)
 		{
-			var v = layout?.ItemSpacing ?? 0;
+			var v = (layout?.ItemSpacing ?? 0) / 2;
 			var margin = WinUIHelpers.CreateThickness(0, v, 0, v);
 
 			var style = new WStyle(typeof(ListViewItem));
@@ -300,7 +356,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		static WStyle GetHorizontalItemContainerStyle(LinearItemsLayout layout)
 		{
-			var h = layout?.ItemSpacing ?? 0;
+			var h = (layout?.ItemSpacing ?? 0) / 2;
 			var padding = WinUIHelpers.CreateThickness(h, 0, h, 0);
 
 			var style = new WStyle(typeof(ListViewItem));

@@ -167,6 +167,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			ShouldSelectViewController = (tabController, viewController) =>
 			{
+				// Prevent UIKit from popping the active tab to root while its navigation transition is in progress.
+				if ((OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26)) && ReferenceEquals(viewController, SelectedViewController) &&
+					SelectedViewController.GetTransitionCoordinator() is not null)
+				{
+					return false;
+				}
+
 				bool accept = true;
 				var renderer = RendererForViewController(viewController);
 				if (renderer is not null)
@@ -428,7 +435,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		protected virtual void OnShellItemSet(ShellItem shellItem)
 		{
 			_appearanceTracker = _context.CreateTabBarAppearanceTracker();
+			if (_appearanceTracker is SafeShellTabBarAppearanceTracker tracker)
+			{
+				tracker.CaptureDefaultAppearance(this);
+			}
+
 			shellItem.PropertyChanged += OnElementPropertyChanged;
+			TabBar.AccessibilityIdentifier = shellItem.AutomationId;
 			((IShellController)_context.Shell).AddAppearanceObserver(this, shellItem);
 			ShellItemController.ItemsCollectionChanged += OnItemsCollectionChanged;
 		}
@@ -463,9 +476,17 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (appearance == null)
 			{
 				_appearanceTracker.ResetAppearance(this);
-				return;
 			}
-			_appearanceTracker.SetAppearance(this, appearance);
+			else
+			{
+				_appearanceTracker.SetAppearance(this, appearance);
+			}
+
+			// Refresh per-item badges after replacing the tab bar's appearance.
+			foreach (var renderer in _sectionRenderers.Values)
+			{
+				UpdateTabBarItemBadge(renderer.ViewController?.TabBarItem, renderer.ShellSection);
+			}
 		}
 
 		void AddRenderer(IShellSectionRenderer renderer)
@@ -634,6 +655,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					cell,
 					NativeElementRoles.ShellTabOverflow,
 					NativeElementDiscriminators.OverflowRow);
+				cell.AccessibilityIdentifier = renderer.ShellSection.AutomationId
+					?? renderer.ShellSection.CurrentItem?.AutomationId;
 
 #pragma warning disable CA1416, CA1422 // TODO: 'UITableViewCell.TextLabel' is unsupported on: 'ios' 14.0 and later
 				if (!renderer.ShellSection.IsEnabled)

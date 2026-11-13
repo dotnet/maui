@@ -83,8 +83,8 @@ Describe 'Review tests workflow contract' {
         $workflow | Should -Match 'roles: \[admin, maintain, write\]'
         $workflow | Should -Match 'persist-credentials: false'
         $evalSpec = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../skills/review-test-failures/tests/eval.vally.yaml') -Raw
-        $evalSpec | Should -Match '(?m)^  model: gpt-6-astra\r?$'
-        $evalSpec | Should -Match '(?m)^  judge_model: gpt-6-astra\r?$'
+        $evalSpec | Should -Match '(?m)^  model: gpt-6.1-sol\r?$'
+        $evalSpec | Should -Match '(?m)^  judge_model: gpt-6.1-sol\r?$'
         $workflow | Should -Match '-SkipVisualEvidence'
         $workflow | Should -Not -Match 'Publish-TestVisualAssets|Merge-TestVisualsIntoComment'
         $workflowBody | Should -Match 'Invoke \*\*review-test-failures\*\*'
@@ -387,7 +387,7 @@ Refresh /review tests.
         $script:capturedCopilotArguments | Should -Not -Contain '--allow-all'
         $script:capturedCopilotArguments | Should -Not -Contain '--allow-all-paths'
         $script:capturedCopilotArguments | Should -Not -Contain 'write'
-        $script:capturedCopilotArguments | Should -Contain 'gpt-6-astra'
+        $script:capturedCopilotArguments | Should -Contain 'gpt-6.1-sol'
     }
 
     It 'refuses a no-results report when frozen evidence exists, including legacy format <SkipLine>' -ForEach @(

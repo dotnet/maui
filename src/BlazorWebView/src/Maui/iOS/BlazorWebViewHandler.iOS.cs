@@ -135,6 +135,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// <inheritdoc />
 		protected override void DisconnectHandler(WKWebView platformView)
 		{
+			DisconnectRootComponents();
+
 			platformView.StopLoading();
 			_staticContentResponseCache.Clear();
 
@@ -294,6 +296,12 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 					return;
 				}
 
+				if (_webViewHandler._webviewManager is not { } webviewManager)
+				{
+					logger.LogDebug("Ignoring request for {Url} because the BlazorWebView has been disconnected.", url);
+					return;
+				}
+
 				// 2. If this is an app request, then assume the request is for a Blazor resource.
 				StaticContentCacheRequestBehavior? cacheRequestBehavior = null;
 				if (_webViewHandler._staticContentResponseCache.TryGet(url, out var cachedResponse))
@@ -316,7 +324,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 					}
 				}
 
-				var responseBytes = GetResponseBytes(url, out var contentType, statusCode: out var statusCode);
+				var responseBytes = GetResponseBytes(webviewManager, url, out var contentType, statusCode: out var statusCode);
 				if (statusCode == 200)
 				{
 					// By default local caching is disabled so that user scripts are always re-executed. Applications can
@@ -420,7 +428,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				urlSchemeTask.DidFinish();
 			}
 
-			private byte[] GetResponseBytes(string? url, out string contentType, out int statusCode)
+			private byte[] GetResponseBytes(IOSWebViewManager webviewManager, string? url, out string contentType, out int statusCode)
 			{
 				// The typed VirtualView property throws when disconnected; use the nullable interface property.
 				if (((IViewHandler)_webViewHandler).VirtualView is null || _webViewHandler._webviewManager is null)
@@ -435,7 +443,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 				_webViewHandler.Logger.HandlingWebRequest(url);
 
-				if (_webViewHandler._webviewManager!.TryGetResponseContentInternal(url, allowFallbackOnHostPage, out statusCode, out var statusMessage, out var content, out var headers))
+				if (webviewManager.TryGetResponseContentInternal(url, allowFallbackOnHostPage, out statusCode, out var statusMessage, out var content, out var headers))
 				{
 					statusCode = 200;
 					using var ms = new MemoryStream();

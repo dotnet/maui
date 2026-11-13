@@ -16,11 +16,18 @@ public class Issue32404 : _IssuesUITest
     [ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
     public void FlowDirectionShouldWorkOnEmptyView()
     {
+        Exception? exception = null;
+
         App.WaitForElement("Issue32404ToggleButton");
         App.Tap("Issue32404ToggleButton");
-        VerifyScreenshot("FlowDirectionShouldWorkOnEmptyView_RightToLeft");
+        VerifyScreenshotOrSetException(ref exception, "FlowDirectionShouldWorkOnEmptyView_RightToLeft");
         App.Tap("Issue32404ToggleButton");
-        VerifyScreenshot("FlowDirectionShouldWorkOnEmptyView_LeftToRight");
+        VerifyScreenshotOrSetException(ref exception, "FlowDirectionShouldWorkOnEmptyView_LeftToRight");
+
+        if (exception is not null)
+        {
+            throw exception;
+        }
     }
 }
 #endif

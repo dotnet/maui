@@ -948,7 +948,7 @@ namespace Microsoft.Maui.Controls
 			RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#FEF7FF") : Color.FromArgb("#2c3e50"),
 			RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#141218") : Color.FromArgb("#1B3147"));
 		static Color DefaultForegroundColor => ResolveThemeColor(
-			RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#1D1B20") : Colors.White,
+			RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#1D1B20") : Colors.Black,
 			RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#E6E0E9") : Colors.White);
 		static Color DefaultTitleColor => ResolveThemeColor(
 			RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#1D1B20") : Colors.White,
@@ -1460,13 +1460,15 @@ namespace Microsoft.Maui.Controls
 			if (Application.Current is not null &&
 				(DeviceInfo.Platform != DevicePlatform.Android || !RuntimeFeature.IsMaterial3Enabled))
 			{
+				// This is only the default, so it must not win over a Style setter like a regular binding would
 				this.SetBinding(Shell.FlyoutBackgroundColorProperty,
 					new AppThemeBinding
 					{
 						Light = Colors.White,
 						Dark = Colors.Black,
 						Mode = BindingMode.OneWay
-					});
+					},
+					new SetterSpecificity());
 			}
 
 			ShellController.FlyoutItemsChanged += (_, __) => Handler?.UpdateValue(nameof(FlyoutItems));
@@ -2192,7 +2194,7 @@ namespace Microsoft.Maui.Controls
 			return defaultValue();
 		}
 
-		ShellAppearance GetAppearanceForPivot(Element pivot)
+		internal ShellAppearance GetAppearanceForPivot(Element pivot)
 		{
 			// this algorithm is pretty simple
 			// 1) Get the "CurrentPage" by walking down from the pivot
@@ -2333,10 +2335,11 @@ namespace Microsoft.Maui.Controls
 					element = shellItem.CurrentItem;
 					break;
 				case ShellSection shellSection:
-					var controller = (IShellSectionController)element;
-					// this is the same as .Last but easier and will add in the root if not null
-					// it generally wont be null but this is just in case
-					element = controller.PresentedPage ?? element;
+					// IShellSectionController.PresentedPage would return the top modal page when a modal
+					// is open, but modal pages are parented to the Window, so walking up from one never
+					// reaches the Shell. Use the top page of the section's own stack instead.
+					var stack = shellSection.Stack;
+					element = (stack.Count > 1 ? stack[stack.Count - 1] : ((IShellContentController)shellSection.CurrentItem)?.Page) ?? element;
 					break;
 			}
 

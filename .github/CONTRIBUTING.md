@@ -4,6 +4,27 @@ Thank you for your interest in contributing to .NET MAUI! In this document, we'l
 
 First and foremost: if you are thinking about contributing a bigger change or feature, **please open an issue or talk to a core team member first**! By doing this we can coordinate and see if the change you are going to work on is something that aligns with out current priorities and is something we can commit to reviewing and merging within reasonable time. We would want to prevent that you are investing a lot of your valuable time in something that might not be in line with what we want for .NET MAUI.
 
+## Choose your PR base before starting
+
+| Your change | Initial PR base |
+| --- | --- |
+| New features, API changes, or .NET 12 work (including .NET 12 fixes) | **`main`** |
+| .NET 11 servicing fix | **`net11`**, for review |
+| Older servicing or explicitly coordinated release work | Ask the maintainer for the applicable branch |
+
+GitHub's default `main` base is **not** the target for every bug fix. Start
+.NET 11 servicing work from literal `net11`, not `main` or historical
+`net11.0`. If the issue's intended release is unclear, ask before starting.
+Infrastructure and documentation changes follow the branch where they apply.
+Agents should also read [AGENTS.md](/AGENTS.md).
+
+For .NET 11 fixes, review against `net11` comes first. After approval, a
+maintainer retargets the PR to the active versioned inflight lane and validates
+CI there before merging. Contributors and agents must not merge individual
+fixes directly into `net11` or initially target a staging lane. See the
+[release workflow](/docs/ReleaseBranchWorkflow.md) for that separate integration
+and release process.
+
 ## Code of Conduct
 
 Please see our [Code of Conduct](/.github/CODE_OF_CONDUCT.md).
@@ -28,6 +49,20 @@ Follow the style used by the [.NET Foundation](https://github.com/dotnet/runtime
 - We use hard tabs over spaces.
 
 Read and follow our [Pull Request template](/.github/PULL_REQUEST_TEMPLATE.md).
+
+### Choosing a target branch
+
+Use the [initial-base table above](#choose-your-pr-base-before-starting).
+The active inflight branch advances with the canonical
+[release-state record](/eng/release-rollover.json), so do not copy an old SR
+number into a new PR. Retargeting and merging are manual maintainer actions,
+not bot actions. Approval against `net11` does not replace CI on the final
+inflight base.
+
+The feature branch's SDK migration and internal release deployment are separate
+from creating these branch refs. The intended route is `main` for .NET 12 and
+`net11` for .NET 11 servicing review; read the selected branch's `global.json`
+for the actual SDK required at that point in the transition.
 
 ### Pull Request Requirements
 
@@ -63,4 +98,5 @@ All pull requests need to be reviewed and tested by at least two members of the 
 Once a pull request has two approvals, it will receive an "approved" label. As long as no UI or unit tests are failing, this pull request can be merged at this time.
 
 ## Merge Process
-Handler property PRs should target the main branch.
+Handler property fixes follow the target-branch rules above. Next-major handler
+features target `main`.

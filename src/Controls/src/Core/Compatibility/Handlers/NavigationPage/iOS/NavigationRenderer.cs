@@ -833,7 +833,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (t.Result)
 					return;
 
-				if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+				if (!_disposed && (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26)))
 				{
 					// Only dispose if the controller was actually removed from the navigation stack.
 					// On iOS 26, interrupted transitions and subsequent navigations can complete
@@ -843,7 +843,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 				else
 				{
-					// because we skip the normal pop process we need to dispose ourselves
+					// A removed controller still needs cleanup after the renderer is disposed.
 					controller?.Dispose();
 				}
 			}, TaskScheduler.FromCurrentSynchronizationContext());
@@ -1949,7 +1949,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			/// <summary>
 			/// Creates a Container with the appropriate configuration for the current iOS version.
-			/// For iOS 26+, uses autoresizing masks and sets frame from navigation bar to prevent layout issues.
+			/// For iOS 26+, uses autoresizing masks and the navigation bar width to prevent layout issues.
 			/// </summary>
 			Container CreateTitleViewContainer(View titleView, UINavigationBar navigationBar)
 			{
@@ -1970,7 +1970,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			void UpdateIconColor()
 			{
-				if (_navigation.TryGetTarget(out NavigationRenderer navigationRenderer))
+				if (_navigation.TryGetTarget(out NavigationRenderer navigationRenderer) && !navigationRenderer._disposed)
 					navigationRenderer.UpdateBarTextColor();
 			}
 
@@ -2470,16 +2470,16 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 
 			/// <summary>
-			/// Creates a Container with an explicitly set frame from the navigation bar.
+			/// Creates a Container with an explicitly set width from the navigation bar.
 			/// Used on iOS 26+ to ensure proper sizing when using autoresizing masks.
 			/// </summary>
 			/// <param name="view">The MAUI view to display in the title</param>
 			/// <param name="bar">The navigation bar</param>
-			/// <param name="navigationBarFrame">The navigation bar frame to use for sizing</param>
+			/// <param name="navigationBarFrame">The navigation bar frame to use for width and tracking bar layout changes</param>
 			internal Container(View view, UINavigationBar bar, CGRect navigationBarFrame) : base(CGRect.Empty)
 			{
-				// Set frame to match navigation bar dimensions, starting at origin (0,0)
-				Frame = new CGRect(0, 0, navigationBarFrame.Width, navigationBarFrame.Height);
+				// The bar can be taller than UIKit's title area; only use it for the initial width.
+				Frame = new CGRect(0, 0, navigationBarFrame.Width, ToolbarHeight);
 				InitializeContainer(view, bar, navigationBarFrame.Height);
 			}
 
@@ -2571,16 +2571,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				get
 				{
-					// For iOS 26+, use the actual navigation bar height if available
-					if (_navigationBarHeight.HasValue)
-						return _navigationBarHeight.Value;
-
 					if (Superview?.Bounds.Height > 0)
 						return Superview.Bounds.Height;
 
 					// Fallback to device-specific defaults
-					// Note: iOS 26+ uses taller navigation bars, but this fallback
-					// should rarely be hit as we prefer using the actual navigation bar frame
 					return (DeviceInfo.Idiom == DeviceIdiom.Phone && DeviceDisplay.MainDisplayInfo.Orientation.IsLandscape()) ? 32 : 44;
 				}
 			}
@@ -2669,7 +2663,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					owner is ParentingViewController controller &&
 					controller.NavigationItem.TitleView == this)
 				{
-					// Compare the sizing height, not Frame.Height, which can exclude title margins.
+					// Track bar height changes independently of the title area and its margins.
 					controller.UpdateTitleArea(controller.Child);
 					return;
 				}

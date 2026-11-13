@@ -93,7 +93,10 @@ namespace Microsoft.Maui.Platform
 		{
 			base.OnTouchEvent(e);
 
-			if (e?.Action == MotionEventActions.Move && !ShouldInterceptTouch(e))
+			// ShouldInterceptTouch re-evaluates the swipe direction from the total pointer
+			// travel, so once a swipe is in progress it must not filter the moves anymore:
+			// a pointer that drifts out of the bounds would cancel the active gesture
+			if (e?.Action == MotionEventActions.Move && !_isSwiping && !ShouldInterceptTouch(e))
 				return true;
 
 			ProcessSwipingInteractions(e);
@@ -423,7 +426,9 @@ namespace Microsoft.Maui.Platform
 
 		bool ProcessTouchMove(APointF point)
 		{
-			if (_contentView == null || !TouchInsideContent(point) || _initialPoint == null)
+			// Only require the touch to be inside the content to start a swipe; once the
+			// gesture is in progress it has to keep tracking the pointer wherever it goes
+			if (_contentView == null || _initialPoint == null || (!_isSwiping && !TouchInsideContent(point)))
 				return false;
 
 			if (!_isOpen)
@@ -766,7 +771,6 @@ namespace Microsoft.Maui.Platform
 					item.Handler.DisconnectHandler();
 				}
 			}
-
 			_swipeItems.Clear();
 
 			if (_actionView != null)
@@ -794,11 +798,26 @@ namespace Microsoft.Maui.Platform
 				{
 					case SwipeDirection.Left:
 					case SwipeDirection.Right:
-						_contentView.Animate()?.TranslationX(offset)?.SetDuration(swipeAnimationDuration);
+						if (animated)
+							_contentView.Animate()?.TranslationX(offset)?.SetDuration(swipeAnimationDuration);
+						else
+						{
+							// A zero-duration animator needs a frame to run, so it can still be
+							// pending when the view is detached right after a programmatic open,
+							// keeping the view tree alive; apply the value directly instead
+							_contentView.Animate()?.Cancel();
+							_contentView.TranslationX = offset;
+						}
 						break;
 					case SwipeDirection.Up:
 					case SwipeDirection.Down:
-						_contentView.Animate()?.TranslationY(offset)?.SetDuration(swipeAnimationDuration);
+						if (animated)
+							_contentView.Animate()?.TranslationY(offset)?.SetDuration(swipeAnimationDuration);
+						else
+						{
+							_contentView.Animate()?.Cancel();
+							_contentView.TranslationY = offset;
+						}
 						break;
 				}
 			}
@@ -1118,7 +1137,12 @@ namespace Microsoft.Maui.Platform
 
 			foreach (var swipeItem in swipeItems)
 			{
-				if (swipeItem is ISwipeItemView)
+				// Execute mode sizes each menu item to its measured native content width
+				// (see GetSwipeItemSize) instead of a fixed contentWidth * 0.8 open distance,
+				// so the swipe/open threshold must be computed from that same per-item sizing
+				// below — otherwise the drag can end far short of (or past) the rendered
+				// SwipeItem(s), leaving a dead gap during the swipe.
+				if (swipeItem is ISwipeItemView || (swipeItem is ISwipeItemMenuItem && swipeItems.Mode == SwipeMode.Execute))
 					useSwipeItemsSize = true;
 
 				if (GetIsVisible(swipeItem))
@@ -1200,13 +1224,13 @@ namespace Microsoft.Maui.Platform
 					return new Size(swipeItemWidth, contentHeight);
 				}
 
-				if (swipeItem is ISwipeItem)
+				if (swipeItem is ISwipeItemMenuItem)
 				{
-					return new Size(
-						items.Mode == SwipeMode.Execute
-							? contentWidth / items.Count
-							: SwipeViewExtensions.SwipeItemWidth,
-						contentHeight);
+					double swipeItemWidth = items.Mode == SwipeMode.Execute
+						? GetExecuteModeItemWidth(contentWidth, contentHeight)
+						: SwipeViewExtensions.SwipeItemWidth;
+
+					return new Size(swipeItemWidth, contentHeight);
 				}
 			}
 			else
@@ -1230,6 +1254,32 @@ namespace Microsoft.Maui.Platform
 			}
 
 			return Size.Zero;
+		}
+
+		double GetExecuteModeItemWidth(double contentWidth, double contentHeight)
+		{
+			double totalWidth = 0;
+			int visibleItemCount = 0;
+
+			foreach (var pair in _swipeItems)
+			{
+				if (pair.Key is not ISwipeItemMenuItem || !GetIsVisible(pair.Key) || pair.Value is not AView view)
+				{
+					continue;
+				}
+
+				view.Measure(
+					MeasureSpec.MakeMeasureSpec(0, MeasureSpecMode.Unspecified),
+					MeasureSpec.MakeMeasureSpec((int)_context.ToPixels(contentHeight), MeasureSpecMode.Exactly));
+
+				double measuredWidth = _context.FromPixels(view.MeasuredWidth);
+				totalWidth += measuredWidth;
+				visibleItemCount++;
+			}
+
+			return visibleItemCount == 0
+				? SwipeViewExtensions.SwipeItemWidth
+				: totalWidth > contentWidth ? contentWidth / visibleItemCount : totalWidth / visibleItemCount;
 		}
 
 		float GetSwipeItemHeight()
@@ -1278,8 +1328,8 @@ namespace Microsoft.Maui.Platform
 
 				if (swipeButton?.Visibility == ViewStates.Visible)
 				{
-					var swipeItemX = swipeButton.Left / _density;
-					var swipeItemY = swipeButton.Top / _density;
+					var swipeItemX = (_actionView.GetX() + swipeButton.GetX()) / _density;
+					var swipeItemY = (_actionView.GetY() + swipeButton.GetY()) / _density;
 					var swipeItemHeight = swipeButton.Height / _density;
 					var swipeItemWidth = swipeButton.Width / _density;
 
@@ -1404,45 +1454,43 @@ namespace Microsoft.Maui.Platform
 			if (_contentView == null)
 				return;
 
-			var openSwipeItem = e.OpenSwipeItem;
-			var animated = e.Animated;
-
-			UpdateIsOpen(true);
-			ProgrammaticallyOpenSwipeItem(openSwipeItem, animated);
+			ProgrammaticallyOpenSwipeItem(e.OpenSwipeItem, e.Animated);
 		}
 
 		void ProgrammaticallyOpenSwipeItem(OpenSwipeItem openSwipeItem, bool animated)
 		{
+			var swipeDirection = GetSwipeDirection(openSwipeItem);
+			var swipeItems = GetSwipeItemsByDirection(swipeDirection);
+
+			// An empty side cannot open: leave the view and the reported open state
+			// untouched instead of resetting and reporting open with nothing showing
+			if (swipeItems == null || swipeItems.Count == 0)
+				return;
+
+			UpdateIsOpen(true);
+
 			if (_isOpen)
 			{
-				if (_previousOpenSwipeItem == openSwipeItem)
-					return;
+				// _isOpen is also set by a partial swipe. When the items that are already
+				// showing are the requested ones, complete the swipe below without resetting
+				// first: the reset would clear Element.IsOpen and end the gesture tracking
+				// of a swipe that may still be in progress
+				if (_swipeDirection == swipeDirection)
+				{
+					if (Math.Abs(_swipeOffset) == GetSwipeOpenDistance())
+						return;
+				}
+				else
+				{
+					ResetSwipe(false);
 
-				ResetSwipe(false);
+					// The reset cleared the open state the current request already applied
+					UpdateIsOpen(true);
+				}
 			}
 
 			_previousOpenSwipeItem = openSwipeItem;
-
-			switch (openSwipeItem)
-			{
-				case OpenSwipeItem.BottomItems:
-					_swipeDirection = SwipeDirection.Up;
-					break;
-				case OpenSwipeItem.LeftItems:
-					_swipeDirection = SwipeDirection.Right;
-					break;
-				case OpenSwipeItem.RightItems:
-					_swipeDirection = SwipeDirection.Left;
-					break;
-				case OpenSwipeItem.TopItems:
-					_swipeDirection = SwipeDirection.Down;
-					break;
-			}
-
-			var swipeItems = GetSwipeItemsByDirection();
-
-			if (swipeItems == null || swipeItems.Count == 0)
-				return;
+			_swipeDirection = swipeDirection;
 
 			UpdateSwipeItems();
 
@@ -1453,6 +1501,15 @@ namespace Microsoft.Maui.Platform
 
 			_swipeOffset = Math.Abs(_swipeOffset);
 		}
+
+		static SwipeDirection GetSwipeDirection(OpenSwipeItem openSwipeItem) =>
+			openSwipeItem switch
+			{
+				OpenSwipeItem.BottomItems => SwipeDirection.Up,
+				OpenSwipeItem.LeftItems => SwipeDirection.Right,
+				OpenSwipeItem.TopItems => SwipeDirection.Down,
+				_ => SwipeDirection.Left,
+			};
 
 		void UpdateOffset(float swipeOffset)
 		{

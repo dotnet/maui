@@ -1,4 +1,11 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- Build-task and full restores share assets paths but evaluate different target frameworks. -->
+  <ItemDefinitionGroup>
+    <ProjectToBuild>
+      <RestoreInParallel>false</RestoreInParallel>
+    </ProjectToBuild>
+  </ItemDefinitionGroup>
+
   <!-- Build tasks always needed first -->
   <ItemGroup Condition="'$(BuildDeviceTests)' != 'true'">
     <ProjectToBuild Include="$(RepoRoot)Microsoft.Maui.BuildTasks.slnf" BuildInParallel="false">

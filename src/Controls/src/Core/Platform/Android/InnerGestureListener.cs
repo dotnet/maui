@@ -253,6 +253,10 @@ namespace Microsoft.Maui.Controls.Platform
 			if (!_isScrolling && _scrollStartedDelegate != null)
 				_scrollStartedDelegate(e2.PointerCount);
 
+			// A PanUpdated handler can remove the view, which disposes this listener
+			if (_disposed)
+				return false;
+
 			_isScrolling = true;
 
 			float totalX = e2.RawX - _lastX;

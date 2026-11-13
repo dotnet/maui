@@ -8,7 +8,6 @@ using System.Xml;
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Text;
 
 using Microsoft.Maui.Controls.Xaml;
 
@@ -33,33 +32,7 @@ static class CodeBehindCodeWriter
 		{
 			if (xamlItem.Exception != null)
 			{
-				IXmlLineInfo lineInfo;
-				string errorMessage;
-
-				if (xamlItem.Exception is XamlParseException xpe)
-				{
-					lineInfo = xpe.XmlInfo;
-					errorMessage = xpe.UnformattedMessage;
-				}
-				else if (xamlItem.Exception is XmlException xmlEx)
-				{
-					lineInfo = new XmlLineInfo(xmlEx.LineNumber, xmlEx.LinePosition);
-					errorMessage = StripLineInfoFromXmlExceptionMessage(xmlEx.Message);
-				}
-				else if (xamlItem.Exception.InnerException is XmlException innerXmlEx)
-				{
-					lineInfo = new XmlLineInfo(innerXmlEx.LineNumber, innerXmlEx.LinePosition);
-					errorMessage = StripLineInfoFromXmlExceptionMessage(innerXmlEx.Message);
-				}
-				else
-				{
-					// Try to extract line info from message if present
-					lineInfo = ExtractLineInfoFromMessage(xamlItem.Exception.Message);
-					errorMessage = StripLineInfoFromXmlExceptionMessage(xamlItem.Exception.Message);
-				}
-
-				var location = projItem!.RelativePath is not null ? LocationHelpers.LocationCreate(projItem.RelativePath, lineInfo, string.Empty) : null;
-				reportDiagnostic?.Invoke(Diagnostic.Create(Descriptors.XamlParserError, location, errorMessage));
+				reportDiagnostic?.Invoke(XamlDiagnosticHelpers.CreateXamlParserDiagnostic(projItem, xamlItem.SourceText, xamlItem.Exception));
 			}
 			return "";
 		}
@@ -524,7 +497,7 @@ static class CodeBehindCodeWriter
 
 			var xmlType = new XmlType(node.NamespaceURI, node.LocalName,
 									  typeArguments != null
-									  ? TypeArgumentsParser.ParseExpression(typeArguments, nsmgr, null)
+									  ? TypeArgumentsParser.ParseExpression(typeArguments, GetNamespacesInScope(node, root, nsmgr), null)
 									  : null);
 
 			var accessModifier = fieldModifier?.ToLowerInvariant().Replace("notpublic", "internal") ?? "private"; //notpublic is WPF for internal
@@ -534,6 +507,28 @@ static class CodeBehindCodeWriter
 			// Fields use trimmed identifiers, but runtime namescope lookups must preserve the XAML name.
 			yield return (xamlName.Trim(), xmlType.GetTypeSymbol(reportDiagnostic, compilation, xmlnsCache, typeCache)?.ToFQDisplayString() ?? "", accessModifier, xmlType, xamlName);
 		}
+	}
+
+	static XmlNamespaceManager GetNamespacesInScope(XmlNode node, XmlNode root, XmlNamespaceManager rootNamespaces)
+	{
+		var namespaces = new XmlNamespaceManager(rootNamespaces.NameTable);
+		foreach (var entry in rootNamespaces.GetNamespacesInScope(XmlNamespaceScope.ExcludeXml))
+			namespaces.AddNamespace(entry.Key, entry.Value);
+
+		var ancestors = new Stack<XmlNode>();
+		for (var current = node; current != null && current != root; current = current.ParentNode)
+			ancestors.Push(current);
+		while (ancestors.Count > 0)
+		{
+			foreach (XmlAttribute attribute in ancestors.Pop().Attributes!)
+			{
+				if (attribute.Name == "xmlns")
+					namespaces.AddNamespace("", attribute.Value);
+				else if (attribute.Prefix == "xmlns")
+					namespaces.AddNamespace(attribute.LocalName, attribute.Value);
+			}
+		}
+		return namespaces;
 	}
 
 	static string? GetAttributeValue(XmlNode node, string localName, params string[] namespaceURIs)
@@ -560,44 +555,4 @@ static class CodeBehindCodeWriter
 		return null;
 	}
 
-	static string StripLineInfoFromXmlExceptionMessage(string message)
-	{
-		// XmlException messages typically end with " Line X, position Y."
-		// We want to strip that since we're reporting location separately
-		var lineIndex = message.LastIndexOf(" Line ");
-		if (lineIndex > 0)
-		{
-			// Strip both the trailing period after the line info and any double periods
-			return message.Substring(0, lineIndex).TrimEnd('.', ' ');
-		}
-		return message;
-	}
-
-	static IXmlLineInfo ExtractLineInfoFromMessage(string message)
-	{
-		// Try to extract "Line X, position Y" from the message
-		var lineIndex = message.LastIndexOf(" Line ");
-		if (lineIndex > 0)
-		{
-			try
-			{
-				var lineInfoPart = message.Substring(lineIndex + 6); // Skip " Line "
-				var parts = lineInfoPart.Split(new[] { ", position " }, StringSplitOptions.None);
-				if (parts.Length == 2)
-				{
-					var lineStr = parts[0].Trim();
-					var posStr = parts[1].TrimEnd('.', ' ');
-					if (int.TryParse(lineStr, out int lineNumber) && int.TryParse(posStr, out int linePosition))
-					{
-						return new XmlLineInfo(lineNumber, linePosition);
-					}
-				}
-			}
-			catch
-			{
-				// Ignore parsing errors
-			}
-		}
-		return new XmlLineInfo();
-	}
 }

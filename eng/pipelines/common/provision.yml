@@ -36,6 +36,21 @@ parameters:
 
 steps:
 
+- pwsh: |
+    $ErrorActionPreference = 'Stop'
+    $nugetPackages = $env:NUGET_PACKAGES
+    if ([string]::IsNullOrWhiteSpace($nugetPackages)) {
+      $nugetPackages = Join-Path ([Environment]::GetFolderPath('UserProfile')) '.nuget/packages'
+    }
+    $cliHome = Join-Path $env:AGENT_TEMPDIRECTORY "dotnet-cli-home-$($env:SYSTEM_JOBID)"
+    New-Item -ItemType Directory -Path $cliHome -Force | Out-Null
+    $writeCheck = Join-Path $cliHome 'write-check.tmp'
+    [IO.File]::WriteAllText($writeCheck, '')
+    Remove-Item -LiteralPath $writeCheck -ErrorAction Stop
+    Write-Host "##vso[task.setvariable variable=NUGET_PACKAGES]$nugetPackages"
+    Write-Host "##vso[task.setvariable variable=DOTNET_CLI_HOME]$cliHome"
+  displayName: Initialize writable .NET CLI state
+
 # Four task retries mean five total attempts. Android package installs retry
 # individually in Provisioning.csproj; do not also retry their enclosing tasks.
 ##################################################

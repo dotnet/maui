@@ -18,11 +18,13 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Diagnostics;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
 using AColor = Android.Graphics.Color;
 using AView = Android.Views.View;
 using IMenu = Android.Views.IMenu;
 using LP = Android.Views.ViewGroup.LayoutParams;
 using Orientation = Android.Widget.Orientation;
+using AndroidX.Core.View.Accessibility;
 
 namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
@@ -42,6 +44,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void IAppearanceObserver.OnAppearanceChanged(ShellAppearance appearance)
 		{
 			_shellAppearance = appearance;
+			BottomNavigationViewUtils.UpdateActiveIndicatorColor(_bottomView);
 
 			if (appearance is not null)
 				SetAppearance(appearance);
@@ -246,6 +249,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				}
 
 				innerLayout.Click += clickCallback;
+				SetAutomationIdAccessibilityDelegate(innerLayout, GetAutomationId(shellContent));
 
 				var image = new ImageView(Context);
 				var lp = new LinearLayout.LayoutParams((int)Context.ToPixels(32), (int)Context.ToPixels(32))
@@ -486,7 +490,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			base.OnShellSectionPropertyChanged(sender, e);
 
-			if (e.IsOneOf(BaseShellItem.TitleProperty, BaseShellItem.IconProperty, BaseShellItem.IsEnabledProperty))
+			if (e.Is(ShellSection.CurrentItemProperty))
+			{
+				UpdateTabBarAutomationIds();
+			}
+			else if (e.IsOneOf(BaseShellItem.TitleProperty, BaseShellItem.IconProperty, BaseShellItem.IsEnabledProperty))
 			{
 				var shellSection = (ShellSection)sender;
 				var index = ((IShellItemController)ShellItem).GetItems().IndexOf(shellSection);
@@ -799,6 +807,50 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			using (var menu = _bottomView.Menu)
 				SetupMenu(menu, _bottomView.MaxItemCount, ShellItem);
+
+			if (ShellItem is TabBar && ShellItemController.ShowTabs)
+			{
+				UpdateTabBarAutomationIds();
+			}
+		}
+
+		void UpdateTabBarAutomationIds()
+		{
+			SetAutomationIdAccessibilityDelegate(_bottomView, ShellItem.AutomationId);
+
+			var shellItems = ((IShellItemController)ShellItem).GetItems();
+			var visibleItemCount = shellItems.Count > _bottomView.MaxItemCount
+				? _bottomView.MaxItemCount - 1
+				: shellItems.Count;
+
+			for (int i = 0; i < visibleItemCount; i++)
+			{
+
+				// Get the native view corresponding to this menu item
+				var itemView = _bottomView.FindViewById(i);
+
+				if (itemView is not null)
+				{
+					SetAutomationIdAccessibilityDelegate(itemView, GetAutomationId(shellItems[i]));
+				}
+			}
+		}
+
+		static string GetAutomationId(ShellSection shellSection) =>
+			shellSection.AutomationId ?? shellSection.CurrentItem?.AutomationId;
+
+		static void SetAutomationIdAccessibilityDelegate(AView view, string automationId)
+		{
+			var currentDelegate = ViewCompat.GetAccessibilityDelegate(view);
+			var originalDelegate = currentDelegate is AutomationIdAccessibilityDelegate automationIdDelegate
+				? automationIdDelegate.WrappedDelegate
+				: currentDelegate;
+
+			ViewCompat.SetAccessibilityDelegate(
+				view,
+				string.IsNullOrEmpty(automationId)
+					? originalDelegate
+					: new AutomationIdAccessibilityDelegate(automationId, originalDelegate));
 		}
 
 		protected virtual void UpdateTabBarVisibility()
@@ -828,6 +880,25 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				SetAppearance(_shellAppearance);
 			}
+		}
+	}
+	
+	sealed class AutomationIdAccessibilityDelegate : AccessibilityDelegateCompatWrapper
+	{
+		readonly string _automationId;
+
+		public AutomationIdAccessibilityDelegate(string automationId, AccessibilityDelegateCompat originalDelegate)
+			: base(originalDelegate)
+		{
+			_automationId = automationId;
+		}
+
+		public override void OnInitializeAccessibilityNodeInfo(
+			AView host,
+			AccessibilityNodeInfoCompat info)
+		{
+			base.OnInitializeAccessibilityNodeInfo(host, info);
+			info.ViewIdResourceName = $"{host.Context.PackageName}:id/{_automationId}";
 		}
 	}
 }

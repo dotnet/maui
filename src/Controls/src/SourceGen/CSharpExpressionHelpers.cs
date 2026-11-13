@@ -1216,6 +1216,9 @@ static class CSharpExpressionHelpers
 		@"(?<![a-zA-Z0-9_])([a-zA-Z_]\w*):([A-Z]\w*)",
 		RegexOptions.Compiled);
 
+	internal static IEnumerable<Match> GetXmlnsPrefixMatches(string code)
+		=> MatchesOutsideLiteralSegments(code, XmlnsPrefixPattern);
+
 	/// <summary>
 	/// Resolves xmlns prefixes in expression code to fully qualified CLR type names.
 	/// E.g., "local:ExprHelper.GetValue()" → "Microsoft.Maui.Controls.Xaml.UnitTests.ExprHelper.GetValue()"

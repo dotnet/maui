@@ -83,6 +83,7 @@ public class TabbedPageManager
 	{
 		if (Element is not null)
 		{
+			Application.Current!.RequestedThemeChanged -= OnRequestedThemeChanged;
 			_tabRegistrationGeneration++;
 			_nativeTabRegistrations.Clear();
 			CloseMoreDialog();
@@ -113,10 +114,12 @@ public class TabbedPageManager
 			}
 
 			((IPageController)tabbedPage).InternalChildren.CollectionChanged += OnChildrenCollectionChanged;
+			Application.Current!.RequestedThemeChanged += OnRequestedThemeChanged;
 
 			// Create adapter and delegate to TabbedViewManager
 			_adapter = new TabbedPageTabbedViewSourceAdapter(Element);
 			_tabbedViewManager.SetElement(_adapter);
+			BottomNavigationViewUtils.UpdateActiveIndicatorColor(BottomNavigationView);
 			ScheduleBadgeUpdate();
 			ScheduleNativeTabRegistration();
 
@@ -127,6 +130,11 @@ public class TabbedPageManager
 			_tabbedViewManager.SetElement(null);
 			_adapter = null;
 		}
+	}
+
+	void OnRequestedThemeChanged(object sender, AppThemeChangedEventArgs e)
+	{
+		BottomNavigationViewUtils.UpdateActiveIndicatorColor(BottomNavigationView);
 	}
 
 	protected virtual void OnLayoutChanged(object sender, AView.LayoutChangeEventArgs e)
@@ -651,7 +659,23 @@ public class TabbedPageManager
 	protected virtual void SetupBottomNavigationView()
 	{
 		_tabbedViewManager.SetupBottomNavigationView();
+		UpdateBottomNavigationItemIconColors();
 		ScheduleNativeTabRegistration();
+	}
+
+	void UpdateBottomNavigationItemIconColors()
+	{
+#pragma warning disable XAOBS001 // Type or member is obsolete
+		if (BottomNavigationView?.GetChildAt(0) is not BottomNavigationMenuView menuView)
+			return;
+
+		var count = Math.Min(BottomNavigationView.Menu.Size(), menuView.ChildCount);
+		for (int index = 0; index < count; index++)
+		{
+			if (menuView.GetChildAt(index) is BottomNavigationItemView itemView)
+				itemView.SetIconTintList(_tabbedViewManager.GetItemIconTintColorState(index));
+		}
+#pragma warning restore XAOBS001
 	}
 
 	void RegisterBottomMenuItems(

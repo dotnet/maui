@@ -59,9 +59,6 @@ namespace Microsoft.Maui.HotReload
 			if (!IsSupported)
 				return;
 
-			if (!IsEnabled)
-				return;
-
 			currentViews.Remove(view);
 		}
 		public static bool IsReplacedView(IHotReloadableView view, IView newView)

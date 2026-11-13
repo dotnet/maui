@@ -87,6 +87,64 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			Assert.Equal(40, frame.Left);
 		}
 
+		[Theory]
+		[InlineData(LayoutAlignment.Center, 15)]
+		[InlineData(LayoutAlignment.End, 10)]
+		[InlineData(LayoutAlignment.Fill, 15)]
+		public void HorizontalAlignmentPreservedWhenContentAndMarginsExceedBounds(LayoutAlignment alignment, double expectedX)
+		{
+			var element = Substitute.For<IView>();
+			element.Margin.Returns(new Thickness(20, 0, 20, 0));
+			element.DesiredSize.Returns(new Size(410, 100));
+			element.Width.Returns(370);
+			element.HorizontalLayoutAlignment.Returns(alignment);
+
+			var frame = element.ComputeFrame(new Rect(0, 0, 400, 100));
+
+			Assert.Equal(expectedX, frame.X);
+			Assert.Equal(370, frame.Width);
+		}
+
+		[Theory]
+		[InlineData(LayoutAlignment.Center, 15)]
+		[InlineData(LayoutAlignment.End, 10)]
+		[InlineData(LayoutAlignment.Fill, 15)]
+		public void VerticalAlignmentPreservedWhenContentAndMarginsExceedBounds(LayoutAlignment alignment, double expectedY)
+		{
+			var element = Substitute.For<IView>();
+			element.Margin.Returns(new Thickness(0, 20, 0, 20));
+			element.DesiredSize.Returns(new Size(100, 410));
+			element.Height.Returns(370);
+			element.VerticalLayoutAlignment.Returns(alignment);
+
+			var frame = element.ComputeFrame(new Rect(0, 0, 100, 400));
+
+			Assert.Equal(expectedY, frame.Y);
+			Assert.Equal(370, frame.Height);
+		}
+
+		[Theory]
+		[InlineData(LayoutAlignment.Center, false, 20)]
+		[InlineData(LayoutAlignment.End, false, 20)]
+		[InlineData(LayoutAlignment.Center, true, 10)]
+		[InlineData(LayoutAlignment.End, true, 0)]
+		public void MarginOverflowClampingPreservesFlexLayoutAlignment(LayoutAlignment alignment, bool flexLayout, double expectedPosition)
+		{
+			var element = Substitute.For<IView>();
+			element.Margin.Returns(new Thickness(20));
+			element.DesiredSize.Returns(new Size(60, 60));
+			element.HorizontalLayoutAlignment.Returns(alignment);
+			element.VerticalLayoutAlignment.Returns(alignment);
+			if (flexLayout)
+			{
+				element.Parent.Returns(Substitute.For<IFlexLayout>());
+			}
+
+			var frame = element.ComputeFrame(new Rect(0, 0, 40, 40));
+
+			Assert.Equal(new Rect(expectedPosition, expectedPosition, 20, 20), frame);
+		}
+
 		[Fact]
 		public void DesiredSizeIncludesMargin()
 		{

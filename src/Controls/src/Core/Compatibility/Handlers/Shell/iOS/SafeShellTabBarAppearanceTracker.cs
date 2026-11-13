@@ -16,11 +16,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		UITabBarAppearance _defaultStandardAppearance;
 		UITabBarAppearance _defaultScrollEdgeAppearance;
 		bool _defaultAppearanceCaptured;
+		bool _appearanceSet;
 		UITabBarAppearance _tabBarAppearance;
 		public virtual void ResetAppearance(UITabBarController controller)
 		{
-			if (!_defaultAppearanceCaptured)
+			// Capturing defaults alone must not replace UIKit's untouched appearance.
+			if (!_defaultAppearanceCaptured || !_appearanceSet)
+			{
 				return;
+			}
 
 			var tabBar = controller.TabBar;
 
@@ -36,32 +40,19 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			tabBar.BarTintColor = _defaultBarTint;
 			tabBar.TintColor = _defaultTint;
 			tabBar.UnselectedItemTintColor = _defaultUnselectedTint;
+			_appearanceSet = false;
 		}
 
 		public virtual void SetAppearance(UITabBarController controller, ShellAppearance appearance)
 		{
-			var tabBar = controller.TabBar;
-
-			if (!_defaultAppearanceCaptured)
-			{
-				_defaultBarTint = tabBar.BarTintColor;
-				_defaultTint = tabBar.TintColor;
-				_defaultUnselectedTint = tabBar.UnselectedItemTintColor;
-				_defaultBackgroundColor = tabBar.BackgroundColor;
-				if (OperatingSystem.IsIOSVersionAtLeast(15) || OperatingSystem.IsMacCatalystVersionAtLeast(15) || OperatingSystem.IsTvOSVersionAtLeast(15))
-				{
-					_defaultStandardAppearance = (UITabBarAppearance)tabBar.StandardAppearance.Copy();
-					_defaultScrollEdgeAppearance = tabBar.ScrollEdgeAppearance is UITabBarAppearance scrollEdge
-						? (UITabBarAppearance)scrollEdge.Copy()
-						: null;
-				}
-				_defaultAppearanceCaptured = true;
-			}
+			CaptureDefaultAppearance(controller);
 
 			if (OperatingSystem.IsIOSVersionAtLeast(15) || OperatingSystem.IsMacCatalystVersionAtLeast(15) || OperatingSystem.IsTvOSVersionAtLeast(15))
 				UpdateiOS15TabBarAppearance(controller, appearance);
 			else
 				UpdateTabBarAppearance(controller, appearance);
+
+			_appearanceSet = true;
 		}
 
 		public virtual void UpdateLayout(UITabBarController controller)
@@ -162,6 +153,26 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			// Set disabled color for text-only tabs
 			if (disabledColor is not null && disabledColor.IsNotDefault())
 				UITabBarItem.Appearance.SetTitleTextAttributes(new UIStringAttributes { ForegroundColor = disabledColor.ToPlatform() }, UIControlState.Disabled);
+		}
+
+		internal void CaptureDefaultAppearance(UITabBarController controller)
+		{
+			if (_defaultAppearanceCaptured)
+			{
+				return;
+			}
+
+			var tabBar = controller.TabBar;
+			_defaultBarTint = tabBar.BarTintColor;
+			_defaultTint = tabBar.TintColor;
+			_defaultUnselectedTint = tabBar.UnselectedItemTintColor;
+			_defaultBackgroundColor = tabBar.BackgroundColor;
+			if (OperatingSystem.IsIOSVersionAtLeast(15) || OperatingSystem.IsMacCatalystVersionAtLeast(15) || OperatingSystem.IsTvOSVersionAtLeast(15))
+			{
+				_defaultStandardAppearance = (UITabBarAppearance)tabBar.StandardAppearance.Copy();
+				_defaultScrollEdgeAppearance = (UITabBarAppearance)tabBar.ScrollEdgeAppearance?.Copy();
+			}
+			_defaultAppearanceCaptured = true;
 		}
 	}
 }

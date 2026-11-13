@@ -34,16 +34,19 @@ public static class UITestRetry
             throw new InvalidOperationException("The original filter is not an exact category group.");
 
         var categories = originalFilter.Split('|').Select(term => term.Substring("TestCategory=".Length)).ToArray();
-        var failedCategories = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var originalCategoryFilter = "(" + string.Join(" or ", categories.Select(category => $"cat == {QuoteFilterValue(category)}")) + ")";
+        var filters = new HashSet<string>(StringComparer.Ordinal);
+        var reportList = reports.ToList();
         var reportCount = 0;
-        foreach (var report in reports)
+        foreach (var report in reportList)
         {
             reportCount++;
             var run = report.Root;
             var cases = run?.Descendants("test-case").ToList();
             if (run?.Name != "test-run" || (string)run.Attribute("result") != "Failed" ||
-                (string)run.Attribute("label") == "Cancelled" || cases.Count == 0 ||
+                (string)run.Attribute("label") == "Cancelled" || run.Element("failure") != null || cases.Count == 0 ||
                 (int?)run.Attribute("total") != cases.Count ||
+                cases.Any(test => (string)test.Attribute("label") == "Cancelled") ||
                 cases.Any(test => !new[] { "Passed", "Failed", "Skipped", "Inconclusive", "Warning" }.Contains((string)test.Attribute("result"))))
                 throw new InvalidOperationException("NUnit did not produce a complete failed test run.");
 
@@ -55,21 +58,67 @@ public static class UITestRetry
 
             foreach (var failure in failures)
             {
-                var matches = failure.AncestorsAndSelf()
+                // Feature-matrix fixtures use ordered tests for navigation and shared state.
+                var fixture = failure.AncestorsAndSelf("test-suite")
+                    .FirstOrDefault(suite => (string)suite.Attribute("type") == "TestFixture");
+                var fixtureClass = (string)fixture?.Attribute("classname");
+                if (fixture != null && string.IsNullOrWhiteSpace(fixtureClass))
+                    throw new InvalidOperationException("A failed fixture is missing its NUnit classname.");
+                var featureMatrix = fixtureClass?.EndsWith("FeatureTests", StringComparison.Ordinal) == true;
+                var categoryNodes = featureMatrix ? fixture.DescendantsAndSelf().Concat(fixture.Ancestors()) : failure.AncestorsAndSelf();
+                var matches = categoryNodes
                     .Elements("properties").Elements("property")
                     .Where(property => (string)property.Attribute("name") == "Category")
                     .Select(property => (string)property.Attribute("value"))
                     .Intersect(categories, StringComparer.OrdinalIgnoreCase).ToList();
                 if (matches.Count == 0)
                     throw new InvalidOperationException("A failure could not be mapped to the original category group.");
-                failedCategories.UnionWith(matches);
+
+                if (featureMatrix)
+                {
+                    var fixtureName = (string)fixture.Attribute("fullname");
+                    if (string.IsNullOrWhiteSpace(fixtureName) ||
+                        reportList.SelectMany(item => item.Descendants("test-suite"))
+                            .Count(suite => (string)suite.Attribute("type") == "TestFixture" &&
+                                (string)suite.Attribute("fullname") == fixtureName) != 1)
+                        throw new InvalidOperationException("A feature-matrix fixture does not have a unique NUnit fullname.");
+                    filters.Add($"({originalCategoryFilter} and test == {QuoteFilterValue(fixtureName)})");
+                    continue;
+                }
+
+                var categoryFilter = "(" + string.Join(" or ", matches.Select(category => $"cat == {QuoteFilterValue(category)}")) + ")";
+                if (failure.Name == "test-case")
+                {
+                    var fullName = (string)failure.Attribute("fullname");
+                    if (string.IsNullOrWhiteSpace(fullName) ||
+                        reportList.SelectMany(item => item.Descendants("test-case"))
+                            .Count(test => (string)test.Attribute("fullname") == fullName) != 1)
+                        throw new InvalidOperationException("A failed test does not have a unique NUnit fullname.");
+                    filters.Add($"({categoryFilter} and test == {QuoteFilterValue(fullName)})");
+                }
+                else
+                {
+                    // A fixture error needs category recovery, not just its failed child tests.
+                    filters.Add(categoryFilter);
+                }
             }
         }
 
         if (reportCount == 0)
             throw new InvalidOperationException("No NUnit result files were found.");
 
-        return string.Join("|", categories.Where(failedCategories.Contains).Select(category => $"TestCategory={category}"));
+        return string.Join(" or ", filters);
+    }
+
+    static string QuoteFilterValue(string value)
+    {
+        return "'" + value.Replace("\\", "\\\\").Replace("'", "\\'") + "'";
+    }
+
+    public static XDocument CreateRunSettings(string filter)
+    {
+        return new XDocument(new XElement("RunSettings",
+            new XElement("NUnit", new XElement("Where", filter))));
     }
 
     public static bool ApplyNUnitFailures(XDocument trx, IEnumerable<XDocument> reports)
@@ -111,30 +160,77 @@ public static class UITestRetry
             new XElement(ns + "Text", "NUnit reported failed tests or fixtures. " + string.Join(Environment.NewLine, messages))));
     }
 
-    static bool FixtureCompletedSuccessfully(XElement failure, IEnumerable<XDocument> retryReports)
+    static string GetAssemblyFullName(XElement test)
+    {
+        return (string)test.AncestorsAndSelf("test-suite")
+            .FirstOrDefault(suite => (string)suite.Attribute("type") == "Assembly")?.Attribute("fullname");
+    }
+
+    static bool IsPreservedIgnore(XElement original, XElement retry)
+    {
+        if (original.Name != "test-case" || retry.Name != "test-case" ||
+            (string)original.Attribute("runstate") != "Ignored" ||
+            (string)retry.Attribute("runstate") != "Ignored" ||
+            (string)retry.Attribute("result") != "Skipped" ||
+            (string)retry.Attribute("label") != "Ignored")
+            return false;
+
+        var originalReason = original.Elements("properties").Elements("property")
+            .Where(property => (string)property.Attribute("name") == "_SKIPREASON")
+            .Select(property => (string)property.Attribute("value")).SingleOrDefault();
+        var retryReason = retry.Elements("properties").Elements("property")
+            .Where(property => (string)property.Attribute("name") == "_SKIPREASON")
+            .Select(property => (string)property.Attribute("value")).SingleOrDefault();
+        return !string.IsNullOrEmpty(originalReason) && originalReason == retryReason &&
+            originalReason == (string)retry.Element("reason")?.Element("message");
+    }
+
+    static bool FailureCompletedSuccessfully(XElement failure, IEnumerable<XDocument> retryReports)
     {
         var fullName = (string)failure.Attribute("fullname");
         var type = (string)failure.Attribute("type");
-        var assembly = (string)failure.AncestorsAndSelf("test-suite")
-            .FirstOrDefault(suite => (string)suite.Attribute("type") == "Assembly")?.Attribute("fullname");
-        if (failure.Name != "test-suite" || string.IsNullOrEmpty(fullName) || string.IsNullOrEmpty(type) || string.IsNullOrEmpty(assembly))
+        var assembly = GetAssemblyFullName(failure);
+        if (string.IsNullOrEmpty(fullName) || string.IsNullOrEmpty(assembly) ||
+            (failure.Name == "test-suite" && string.IsNullOrEmpty(type)))
             return false;
 
-        // NUnit IDs are attempt-specific; match the fully qualified suite within its assembly.
+        // NUnit IDs are attempt-specific; match the fully qualified name within its assembly.
         var matches = retryReports.Where(report => report.Root?.Name == "test-run" &&
             new[] { "Passed", "Failed", "Skipped", "Inconclusive", "Warning" }.Contains((string)report.Root.Attribute("result")) &&
             int.TryParse((string)report.Root.Attribute("total"), out var total) && total == report.Descendants("test-case").Count())
-            .SelectMany(report => report.Descendants("test-suite")).Where(suite =>
+            .SelectMany(report => report.Descendants(failure.Name)).Where(suite =>
             (string)suite.Attribute("fullname") == fullName &&
             (string)suite.Attribute("type") == type &&
-            (string)suite.AncestorsAndSelf("test-suite")
-                .FirstOrDefault(parent => (string)parent.Attribute("type") == "Assembly")?.Attribute("fullname") == assembly).ToList();
+            GetAssemblyFullName(suite) == assembly).ToList();
         return matches.Count > 0 && matches.All(suite =>
         {
-            var cases = suite.Descendants("test-case").ToList();
-            return (string)suite.Attribute("result") == "Passed" &&
-                !suite.AncestorsAndSelf().Concat(cases).Any(node => (string)node.Attribute("label") == "Cancelled") &&
-                int.TryParse((string)suite.Attribute("total"), out var total) && total == cases.Count &&
+            var cases = suite.DescendantsAndSelf("test-case").ToList();
+            if (suite.AncestorsAndSelf().Concat(cases).Any(node => (string)node.Attribute("label") == "Cancelled") ||
+                (suite.Name != "test-case" && (!int.TryParse((string)suite.Attribute("total"), out var total) || total != cases.Count)))
+                return false;
+
+            // Fixture setup can shadow a discovery-time Ignore with a parent error.
+            if ((string)failure.Attribute("site") == "Parent" &&
+                (string)failure.Attribute("label") == "Error" &&
+                failure.Ancestors("test-suite").Any(parent =>
+                    (string)parent.Attribute("type") == "TestFixture" &&
+                    (string)parent.Attribute("result") == "Failed" &&
+                    (string)parent.Attribute("site") == "SetUp") &&
+                IsPreservedIgnore(failure, suite))
+                return true;
+
+            var recoveredIgnoredFixture = suite.Name == "test-suite" &&
+                (string)suite.Attribute("result") == "Skipped" &&
+                (string)suite.Attribute("label") == "Ignored" &&
+                (string)suite.Attribute("site") == "Child" &&
+                cases.Any(test => (string)test.Attribute("result") == "Skipped") &&
+                cases.Where(test => (string)test.Attribute("result") == "Skipped").All(test =>
+                {
+                    var originals = failure.Descendants("test-case")
+                        .Where(original => (string)original.Attribute("fullname") == (string)test.Attribute("fullname")).ToList();
+                    return originals.Count == 1 && IsPreservedIgnore(originals[0], test);
+                });
+            return ((string)suite.Attribute("result") == "Passed" || recoveredIgnoredFixture) &&
                 cases.Any(test => (string)test.Attribute("result") == "Passed") &&
                 cases.All(test => (string)test.Attribute("result") == "Passed" || (string)test.Attribute("result") == "Skipped");
         });
@@ -143,6 +239,27 @@ public static class UITestRetry
     public static void MergeResults(XDocument original, XDocument retry, IEnumerable<XDocument> originalReports, IEnumerable<XDocument> retryReports)
     {
         XNamespace ns = "http://microsoft.com/schemas/VisualStudio/TeamTest/2010";
+        var failedIds = new HashSet<string>(original.Root.Element(ns + "Results")?.Elements()
+            .Where(result => (string)result.Attribute("outcome") == "Failed")
+            .Select(result => (string)result.Attribute("testId")) ?? Enumerable.Empty<string>());
+        var recoveredIgnores = originalReports.SelectMany(report => report.Descendants("test-case"))
+            .Where(test => (string)test.Attribute("result") == "Failed" &&
+                (string)test.Attribute("runstate") == "Ignored" &&
+                FailureCompletedSuccessfully(test, retryReports)).ToList();
+        var recoveredIgnoredIds = new HashSet<string>(original.Root.Element(ns + "TestDefinitions")?.Elements(ns + "UnitTest")
+            .Where(definition =>
+            {
+                var method = definition.Element(ns + "TestMethod");
+                var fullName = (string)method?.Attribute("className") + "." + (string)definition.Attribute("name");
+                return recoveredIgnores.Count(test =>
+                    (string)test.Attribute("fullname") == fullName &&
+                    GetAssemblyFullName(test) == (string)method?.Attribute("codeBase")) == 1;
+            })
+            .Select(definition => (string)definition.Attribute("id")) ?? Enumerable.Empty<string>());
+        var unresolvedIds = new HashSet<string>(retry.Root.Element(ns + "Results")?.Elements()
+            .Where(result => (string)result.Attribute("outcome") != "Passed" && (string)result.Attribute("outcome") != "Failed" &&
+                !((string)result.Attribute("outcome") == "NotExecuted" && recoveredIgnoredIds.Contains((string)result.Attribute("testId"))))
+            .Select(result => (string)result.Attribute("testId")).Where(failedIds.Contains) ?? Enumerable.Empty<string>());
         foreach (var section in new[] { "Results", "TestDefinitions", "TestEntries" })
         {
             var destination = original.Root.Element(ns + section);
@@ -151,9 +268,10 @@ public static class UITestRetry
                 throw new InvalidOperationException($"TRX is missing {section}.");
 
             var key = section == "TestDefinitions" ? "id" : "testId";
-            var replacedIds = new HashSet<string>(source.Elements().Select(node => (string)node.Attribute(key)));
+            var replacements = source.Elements().Where(node => !unresolvedIds.Contains((string)node.Attribute(key))).ToList();
+            var replacedIds = new HashSet<string>(replacements.Select(node => (string)node.Attribute(key)));
             destination.Elements().Where(node => replacedIds.Contains((string)node.Attribute(key))).Remove();
-            destination.Add(source.Elements().Select(node => new XElement(node)));
+            destination.Add(replacements.Select(node => new XElement(node)));
         }
 
         var results = original.Root.Element(ns + "Results").Elements().ToList();
@@ -178,16 +296,17 @@ public static class UITestRetry
         if (results.Any(result => (string)result.Attribute("outcome") == "Failed"))
             mergedSummary.SetAttributeValue("outcome", "Failed");
 
-        // Passing test records cannot preserve fixture-level setup or teardown errors.
+        // TRX alone may omit NUnit failures or report their cases as passed.
         foreach (var run in originalReports.Select(report => report.Root).Where(run => (string)run?.Attribute("result") == "Failed"))
         {
-            var failures = run.Descendants("test-suite").Where(suite =>
-                (string)suite.Attribute("result") == "Failed" && (string)suite.Attribute("site") != "Child").ToList();
+            var failures = run.Descendants().Where(node =>
+                (string)node.Attribute("result") == "Failed" &&
+                (node.Name == "test-case" || (node.Name == "test-suite" && (string)node.Attribute("site") != "Child"))).ToList();
             if (run.Element("failure") != null ||
                 (failures.Count == 0 && !run.Descendants("test-case").Any(test => (string)test.Attribute("result") == "Failed")))
                 failures.Add(run);
 
-            foreach (var failure in failures.Where(failure => !FixtureCompletedSuccessfully(failure, retryReports)))
+            foreach (var failure in failures.Where(failure => !FailureCompletedSuccessfully(failure, retryReports)))
                 AddNUnitRunError(mergedSummary, failure);
         }
 

@@ -438,19 +438,18 @@ internal static class LayoutFactory2
 				// Calculate page index accounting for ItemSpacing
 				var itemSpacing = itemsView.ItemsLayout is LinearItemsLayout linearLayout ? linearLayout.ItemSpacing : 0;
 
-				var effectiveItemWidth = env.Container.ContentSize.Width - sectionMargin * 2 + itemSpacing;
+				var containerSize = isHorizontal
+					? env.Container.ContentSize.Width
+					: env.Container.ContentSize.Height;
+				var effectiveItemSize = containerSize - sectionMargin * 2 + itemSpacing;
 
-				if (effectiveItemWidth <= 0)
+				if (effectiveItemSize <= 0)
 				{
 					return;
 				}
 
 				var pageOffset = isHorizontal ? offset.X : offset.Y;
-				var pageSize = isHorizontal
-					? env.Container.ContentSize.Width
-					: env.Container.ContentSize.Height;
-				double page = (pageOffset + sectionMargin) / effectiveItemWidth;
-
+				double page = (pageOffset + sectionMargin) / effectiveItemSize;
 				if (Math.Abs(page % 1) > (double.Epsilon * 100) || cv2Controller.ItemsSource.ItemCount <= 0)
 				{
 					return;
@@ -623,40 +622,17 @@ internal static class LayoutFactory2
 
 			if (_itemsLayout?.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepLastItemInView)
 			{
-				ForceScrollToLastItem(CollectionView);
+				var position = Configuration.ScrollDirection == UICollectionViewScrollDirection.Vertical
+					? UICollectionViewScrollPosition.Bottom
+					: CollectionView.EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft
+						? UICollectionViewScrollPosition.Left
+						: UICollectionViewScrollPosition.Right;
+				ItemsViewScrollHelper.ForceScrollToLastItem(CollectionView, position);
 			}
-		}
-
-		void ForceScrollToLastItem(UICollectionView collectionView)
-		{
-			var sections = (int)collectionView.NumberOfSections();
-
-			if (sections == 0)
+			else if (_itemsLayout?.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepItemsInView
+				&& CollectionView?.DataSource is not CarouselViewController2)
 			{
-				return;
-			}
-
-			for (int section = sections - 1; section >= 0; section--)
-			{
-				var itemCount = collectionView.NumberOfItemsInSection(section);
-				if (itemCount > 0)
-				{
-					var lastIndexPath = NSIndexPath.FromItemSection(itemCount - 1, section);
-					if (Configuration.ScrollDirection == UICollectionViewScrollDirection.Vertical)
-					{
-						collectionView.ScrollToItem(lastIndexPath, UICollectionViewScrollPosition.Bottom, true);
-					}
-					else
-					{
-						// Adjust scroll position for RTL layouts
-						var layoutDirection = collectionView.EffectiveUserInterfaceLayoutDirection;
-						var scrollPosition = layoutDirection == UIUserInterfaceLayoutDirection.RightToLeft
-							? UICollectionViewScrollPosition.Left
-							: UICollectionViewScrollPosition.Right;
-						collectionView.ScrollToItem(lastIndexPath, scrollPosition, true);
-					}
-					return;
-				}
+				ItemsViewScrollHelper.ScrollToFirstItem(CollectionView, _itemsLayout.Orientation);
 			}
 		}
 

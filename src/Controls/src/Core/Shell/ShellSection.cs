@@ -8,7 +8,6 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
@@ -519,17 +518,17 @@ namespace Microsoft.Maui.Controls
 
 		Page GetOrCreateFromRoute(string route, string resolvedRoute, ShellRouteParameters queryData, IServiceProvider services, bool isLast, bool isPopping)
 		{
-			var content = Routing.GetOrCreateContent(route, services) as Page;
-			if (content == null)
+			var element = Routing.GetOrCreateContent(route, services);
+			if (element is not Page content)
 			{
-				MauiLogger<ShellSection>.Log(LogLevel.Warning, $"Failed to Create Content For: {route}");
+				throw new InvalidOperationException($"Content for route {route} should be of type {nameof(Page)}, but was {element?.GetType().FullName ?? "null"}");
 			}
 
 			// For template routes (e.g. "product/{sku}"), store the resolved value
 			// (e.g. "product/seed-tomato") in a separate attached property. The
 			// page's Route stays as the registered template key so factory
 			// lookups and stack-reuse comparisons still work.
-			if (content != null && resolvedRoute != null && resolvedRoute != route
+			if (resolvedRoute != null && resolvedRoute != route
 				&& Routing.IsTemplateRoute(route))
 			{
 				Routing.SetResolvedRoute(content, resolvedRoute);

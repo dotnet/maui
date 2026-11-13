@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Automation.Peers;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WIconElement = Microsoft.UI.Xaml.Controls.IconElement;
 
@@ -89,6 +90,7 @@ namespace Microsoft.Maui.Platform
 		WBrush? _selectedTitleColor;
 		WBrush? _unselectedTitleColor;
 		WBrush? _unselectedForeground;
+		WBrush? _disabledForeground;
 		WBrush? _iconColor;
 		ObservableCollection<NavigationViewItemViewModel>? _menuItemsSource;
 		WIconElement? _icon;
@@ -96,6 +98,9 @@ namespace Microsoft.Maui.Platform
 		string? _badgeText;
 		WBrush? _badgeBackground;
 		WBrush? _badgeForeground;
+		string? _automationId;
+		AccessibilityView _accessibilityView = AccessibilityView.Content;
+
 
 		public object? Content
 		{
@@ -106,12 +111,30 @@ namespace Microsoft.Maui.Platform
 		public WIconElement? Icon
 		{
 			get { return _icon; }
-			set { this.SetProperty(ref _icon, value, OnPropertyChanged); }
+			set
+			{
+				if (this.SetProperty(ref _icon, value, OnPropertyChanged))
+				{
+					UpdateForeground();
+				}
+			}
+		}
+
+		public string? AutomationId
+		{
+			get => _automationId;
+			set { this.SetProperty(ref _automationId, value, OnPropertyChanged); }
+		}
+
+		public AccessibilityView AccessibilityView
+		{
+			get => _accessibilityView;
+			set { this.SetProperty(ref _accessibilityView, value, OnPropertyChanged); }
 		}
 
 		public WBrush? Foreground
 		{
-			get => IconColor ?? (IsSelected ? SelectedForeground : UnselectedForeground);
+			get => IconColor ?? (!IsEnabled && DisabledForeground is not null ? DisabledForeground : (IsSelected ? SelectedForeground : UnselectedForeground));
 		}
 
 		public WBrush? Background
@@ -153,7 +176,7 @@ namespace Microsoft.Maui.Platform
 
 		public WBrush? TitleColor
 		{
-			get => IsSelected ? SelectedTitleColor : UnselectedTitleColor;
+			get => !IsEnabled && DisabledForeground is not null ? DisabledForeground : (IsSelected ? SelectedTitleColor : UnselectedTitleColor);
 		}
 
 		public WBrush? SelectedTitleColor
@@ -207,6 +230,19 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		public WBrush? DisabledForeground
+		{
+			get => _disabledForeground;
+			set
+			{
+				if (this.SetProperty(ref _disabledForeground, value, OnPropertyChanged))
+				{
+					OnPropertyChanged(nameof(TitleColor));
+					UpdateForeground();
+				}
+			}
+		}
+
 		void UpdateForeground()
 		{
 			OnPropertyChanged(nameof(Foreground));
@@ -245,6 +281,8 @@ namespace Microsoft.Maui.Platform
 				{
 					_isEnabled = value;
 					OnPropertyChanged(nameof(IsEnabled));
+					OnPropertyChanged(nameof(TitleColor));
+					UpdateForeground();
 				}
 			}
 		}

@@ -3,21 +3,21 @@
   "isRoot": true,
   "tools": {
     "cake.tool": {
-      "version": "4.0.0",
+      "version": "6.3.0",
       "commands": [
         "dotnet-cake"
       ],
       "rollForward": false
     },
     "powershell": {
-      "version": "7.4.0",
+      "version": "7.6.9",
       "commands": [
         "pwsh"
       ],
       "rollForward": false
     },
     "api-tools": {
-      "version": "1.3.5",
+      "version": "1.4.1",
       "commands": [
         "api-tools"
       ],
@@ -31,7 +31,7 @@
       "rollForward": false
     },
     "microsoft.maui.cli": {
-      "version": "0.1.0-preview.10.26274.3",
+      "version": "0.1.0-preview.14.26555.4",
       "commands": [
         "maui"
       ],

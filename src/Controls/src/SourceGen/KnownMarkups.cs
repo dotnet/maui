@@ -7,6 +7,7 @@ using System.Xml;
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.Maui.Controls.SourceGen.TypeConverters;
 using Microsoft.Maui.Controls.Xaml;
 
 using static System.String;
@@ -27,8 +28,14 @@ internal class KnownMarkups
 		returnType = context.Compilation.ObjectType;
 		if (!markupNode.Properties.TryGetValue(new XmlName("", "Member"), out INode ntype)
 			&& !markupNode.Properties.TryGetValue(new XmlName(null, "Member"), out ntype))
+		{
+			if (markupNode.CollectionItems.Count == 0)
+				throw new XamlParseException("Syntax for x:Static is [Member=][prefix:]typeName.staticMemberName", markupNode as IXmlLineInfo);
+
 			ntype = markupNode.CollectionItems[0];
-		var member = ((ValueNode)ntype).Value as string;
+		}
+
+		var member = (ntype as ValueNode)?.Value as string;
 
 		if (IsNullOrEmpty(member) || !member!.Contains("."))
 		{
@@ -51,6 +58,34 @@ internal class KnownMarkups
 			if (xmlType.NamespaceUri.GetClrNamespace() is var ns && ns is not null)
 			{
 				value = $"global::{ns}.{xmlType.Name}.{membername}";
+				return true;
+			}
+
+			//fallback to guessing for aggregated xmlns (e.g. the implicit/global one). the type could come
+			//from another source generator, so defer its resolution to the C# compiler. only namespaces
+			//of the current assembly can still gain types from other generators, and aggregated xmlns can
+			//also point to other xmlns URIs, which aren't CLR namespaces: skip both
+			var candidates = context.XmlnsCache.XmlnsDefinitions
+				.Where(d => d.XmlNamespace == xmlType.NamespaceUri
+					&& d.AssemblyName == context.Compilation.Assembly.Name
+					&& GeneratorHelpers.IsValidClrNamespace(d.Target))
+				.Select(d => d.Target)
+				.Distinct()
+				.ToList();
+			if (candidates.Count == 1)
+			{
+				//a single candidate namespace: qualify fully, like the clr-namespace fallback
+				value = $"global::{candidates[0]}.{xmlType.Name}.{membername}";
+				return true;
+			}
+			if (candidates.Count > 1)
+			{
+				//multiple candidate namespaces: emit the name unqualified, plus marker lines that the
+				//final code writers lift into using directives (see GeneratorHelpers.LiftFallbackUsings),
+				//letting the C# compiler resolve (or report an ambiguity on) the name
+				foreach (var candidate in candidates)
+					writer.WriteLine($"{GeneratorHelpers.FallbackUsingMarker}{candidate}");
+				value = $"{xmlType.Name}.{membername}";
 				return true;
 			}
 
@@ -205,6 +240,13 @@ internal class KnownMarkups
 			}
 		}
 
+		if (ancestorTypeSymbol is null && ancestorTypeNode is ValueNode { Value: string unresolvedType })
+		{
+			context.ReportConversionFailed((IXmlLineInfo)ancestorTypeNode, unresolvedType, Descriptors.TypeResolution);
+			value = "default";
+			return false;
+		}
+
 		// Get the AncestorLevel property (default is 1)
 		int ancestorLevel = 1;
 		if (markupNode.Properties.TryGetValue(new XmlName("", "AncestorLevel"), out INode? ancestorLevelNode)
@@ -272,12 +314,16 @@ internal class KnownMarkups
 		returnType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Internals.DynamicResource")!;
 		string? key = null;
 		if (markupNode.CollectionItems.Count == 1)
-			key = ((ValueNode)markupNode.CollectionItems[0]).Value as string;
+			key = (markupNode.CollectionItems[0] as ValueNode)?.Value as string;
 		else if (markupNode.Properties.TryGetValue(new XmlName("", "Key"), out var keyNode))
-			key = ((ValueNode)keyNode).Value as string;
+			key = (keyNode as ValueNode)?.Value as string;
 
 		if (key is null)
-			throw new Exception();
+		{
+			// Nested markup must be evaluated before DynamicResourceExtension.ProvideValue.
+			value = string.Empty;
+			return false;
+		}
 		value = $"new global::Microsoft.Maui.Controls.Internals.DynamicResource(\"{CSharpExpressionHelpers.EscapeForString(key)}\")";
 		return true;
 	}
@@ -936,7 +982,17 @@ internal class KnownMarkups
 		if (node.TryGetPropertyName(node.Parent, out XmlName propertyName) && context.Variables.TryGetValue(node.Parent, out ILocalValue parentVar))
 		{
 			var localName = propertyName.LocalName;
-			bpFieldSymbol = parentVar.Type.GetBindableProperty(propertyName.NamespaceURI, ref localName, out bool attached, context, node as IXmlLineInfo);
+			if (node.Parent is ElementNode setter && setter.XmlType.IsOfAnyType("Setter")
+				&& localName == "Value"
+				&& setter.Properties.TryGetValue("Property", out var setterPropertyNode)
+				&& setterPropertyNode is ValueNode bindablePropertyNode)
+			{
+				bpFieldSymbol = bindablePropertyNode.GetBindableProperty(context);
+			}
+			else
+			{
+				bpFieldSymbol = parentVar.Type.GetBindableProperty(propertyName.NamespaceURI, ref localName, out _, context, node as IXmlLineInfo);
+			}
 			var propertySymbol = parentVar.Type.GetAllProperties(localName, context).FirstOrDefault();
 			var typeandconverter = bpFieldSymbol?.GetBPTypeAndConverter(context);
 			propertyType = typeandconverter?.type ?? propertySymbol?.Type;

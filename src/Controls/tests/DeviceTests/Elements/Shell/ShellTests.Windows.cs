@@ -32,6 +32,80 @@ namespace Microsoft.Maui.DeviceTests
 			return Task.CompletedTask;
 		}
 
+		[Theory]
+		[InlineData(false, false)]
+		[InlineData(true, false)]
+		[InlineData(false, true)]
+		public async Task SearchHandlerFocusTracksDetachment(bool replaceSearchHandler, bool disconnectHandler)
+		{
+			SetupBuilder();
+
+			var searchHandler = new SearchHandler { SearchBoxVisibility = SearchBoxVisibility.Expanded };
+			var focusedEvents = 0;
+			searchHandler.Focused += (_, _) => focusedEvents++;
+			var page = new ContentPage();
+			Shell.SetSearchHandler(page, searchHandler);
+
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.Items.Add(page);
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async _ =>
+			{
+				var itemHandler = Assert.IsType<ShellItemHandler>(shell.CurrentItem.Handler);
+				var navigationView = Assert.IsType<MauiNavigationView>(itemHandler.PlatformView);
+				var searchBox = navigationView.AutoSuggestBox;
+				Assert.NotNull(searchBox);
+				await AssertEventually(() => searchBox.IsLoaded);
+
+				Assert.True(searchBox.Focus(FocusState.Programmatic));
+				await AssertEventually(() => searchHandler.IsFocused);
+				Assert.Equal(1, focusedEvents);
+
+				if (disconnectHandler)
+				{
+					shell.CurrentItem.Handler.DisconnectHandler();
+				}
+				else
+				{
+					var replacement = replaceSearchHandler
+						? new SearchHandler { SearchBoxVisibility = SearchBoxVisibility.Expanded }
+						: null;
+					var destination = new ContentPage();
+					Shell.SetSearchHandler(destination, replacement);
+					await shell.Navigation.PushAsync(destination);
+
+					if (replacement is not null)
+					{
+						Assert.Same(searchBox, navigationView.AutoSuggestBox);
+						var focusedElement = Microsoft.UI.Xaml.Input.FocusManager.GetFocusedElement(searchBox.XamlRoot) as DependencyObject;
+						while (focusedElement is not null && focusedElement != searchBox)
+							focusedElement = WVisualTreeHelper.GetParent(focusedElement);
+						Assert.Equal(focusedElement == searchBox, replacement.IsFocused);
+					}
+					else
+					{
+						Assert.Equal(Microsoft.UI.Xaml.Visibility.Collapsed, searchBox.Visibility);
+					}
+				}
+
+				Assert.False(searchHandler.IsFocused);
+
+				if (!disconnectHandler)
+				{
+					await shell.Navigation.PopAsync();
+					await AssertEventually(() => searchBox.IsLoaded &&
+						searchBox.Visibility == Microsoft.UI.Xaml.Visibility.Visible &&
+						IsViewLaidOut(searchBox));
+					Assert.Same(searchBox, navigationView.AutoSuggestBox);
+					Assert.True(searchBox.Focus(FocusState.Programmatic));
+					await AssertEventually(() => searchHandler.IsFocused);
+					Assert.Equal(2, focusedEvents);
+				}
+			});
+		}
+
 		[Fact(DisplayName = "Shell Title Updates Correctly")]
 		public async Task ShellTitleUpdatesCorrectly()
 		{
@@ -137,6 +211,36 @@ namespace Microsoft.Maui.DeviceTests
 				await AssertEventually(() => IsViewLaidOut(shell.Handler.PlatformView));
 
 				await ValidateHasColor(shell, expectedColor, typeof(ShellHandler));
+			});
+		}
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task ClearingFlyoutBackgroundImageRestoresBackground(bool configured)
+		{
+			SetupBuilder();
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.FlyoutBehavior = FlyoutBehavior.Locked;
+				if (configured)
+					shell.FlyoutBackground = new SolidColorBrush(Colors.Blue);
+				shell.Items.Add(new ContentPage());
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async handler =>
+			{
+				var navigationView = handler.PlatformView;
+				await AssertEventually(() => IsViewLaidOut(navigationView));
+				var expected = Assert.IsType<UI.Xaml.Media.SolidColorBrush>(navigationView.PaneContentGrid.Background).Color;
+				if (configured)
+					Assert.Equal(Colors.Blue.ToWindowsColor(), expected);
+				handler.GetRequiredService<IFontRegistrar>().Register("dokdo_regular.ttf", "Dokdo");
+				var image = new FontImageSource { FontFamily = "Dokdo", Glyph = "X", Size = 24 };
+				shell.FlyoutBackgroundImage = image;
+				await AssertEventually(() => navigationView.PaneContentGrid.Background is UI.Xaml.Media.ImageBrush);
+				shell.FlyoutBackgroundImage = null;
+				Assert.Equal(expected, Assert.IsType<UI.Xaml.Media.SolidColorBrush>(navigationView.PaneContentGrid.Background).Color);
 			});
 		}
 

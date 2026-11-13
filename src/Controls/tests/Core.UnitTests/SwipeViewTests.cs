@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using System.Windows.Input;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
@@ -419,6 +421,35 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void SwipeItemViewIsNotRetainedByCommand()
+		{
+			var command = new TestCommand();
+			var swipeItemView = CreateSwipeItemViewWeakReference(command);
+
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+			GC.Collect();
+
+			Assert.False(swipeItemView.IsAlive);
+			GC.KeepAlive(command);
+		}
+
+		[Fact]
+		public void ClearingCommandReEnablesSwipeItemView()
+		{
+			var swipeItemView = new SwipeItemView
+			{
+				Command = new Command(() => { }, () => false)
+			};
+
+			Assert.False(swipeItemView.IsEnabled);
+
+			swipeItemView.Command = null;
+
+			Assert.True(swipeItemView.IsEnabled);
+		}
+
+		[Fact]
 		public void SwipeItemViewCommandCanExecuteUpdatesIsEnabled()
 		{
 			var expectedParameter = new object();
@@ -451,6 +482,24 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			command.ChangeCanExecute();
 
 			Assert.False(swipeItemView.IsEnabled);
+		}
+
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		static WeakReference CreateSwipeItemViewWeakReference(ICommand command)
+		{
+			var swipeItemView = new SwipeItemView { Command = command };
+			return new WeakReference(swipeItemView);
+		}
+
+		sealed class TestCommand : ICommand
+		{
+			public event EventHandler CanExecuteChanged;
+
+			public bool CanExecute(object parameter) => true;
+
+			public void Execute(object parameter)
+			{
+			}
 		}
 
 		[Fact]

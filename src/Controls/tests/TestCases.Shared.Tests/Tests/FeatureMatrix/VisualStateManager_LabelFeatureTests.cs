@@ -9,6 +9,7 @@ public class VisualStateManager_LabelFeatureTests : _GalleryUITest
 {
 	public const string VisualStateManagerLabelFeatureTests = "VisualStateManager Feature Matrix";
 	public override string GalleryPageName => VisualStateManagerLabelFeatureTests;
+	protected override string GallerySubPageButton => "VSMLabelButton";
 
 	public VisualStateManager_LabelFeatureTests(TestDevice device)
 		: base(device)
@@ -18,12 +19,10 @@ public class VisualStateManager_LabelFeatureTests : _GalleryUITest
 	[Test, Order(1)]
 	public void VerifyVSM_Label_InitialState()
 	{
-		App.WaitForElement("VSMLabelButton");
-		App.Tap("VSMLabelButton");
 		App.WaitForElement("LabelState");
 		var labelText = App.FindElement("LabelState").GetText();
 		Assert.That(labelText, Is.EqualTo("State: Normal"));
-		VerifyScreenshot();
+		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(2)]
@@ -34,7 +33,7 @@ public class VisualStateManager_LabelFeatureTests : _GalleryUITest
 		App.WaitForElement("LabelState");
 		var labelText = App.FindElement("LabelState").GetText();
 		Assert.That(labelText, Is.EqualTo("State: Selected"));
-		VerifyScreenshot();
+		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(3)]
@@ -45,7 +44,7 @@ public class VisualStateManager_LabelFeatureTests : _GalleryUITest
 		App.WaitForElement("LabelState");
 		var labelText = App.FindElement("LabelState").GetText();
 		Assert.That(labelText, Is.EqualTo("State: Disabled"));
-		VerifyScreenshot();
+		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(4)]
@@ -56,7 +55,7 @@ public class VisualStateManager_LabelFeatureTests : _GalleryUITest
 		App.WaitForElement("LabelState");
 		var labelText = App.FindElement("LabelState").GetText();
 		Assert.That(labelText, Is.EqualTo("State: Normal"));
-		VerifyScreenshot();
+		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(5)]
@@ -74,7 +73,7 @@ public class VisualStateManager_LabelFeatureTests : _GalleryUITest
 		App.WaitForElement("LabelState");
 		labelText = App.FindElement("LabelState").GetText();
 		Assert.That(labelText, Is.EqualTo("State: Disabled"));
-		VerifyScreenshot();
+		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(6)]
@@ -87,7 +86,7 @@ public class VisualStateManager_LabelFeatureTests : _GalleryUITest
 		App.WaitForElement("LabelState");
 		var labelText = App.FindElement("LabelState").GetText();
 		Assert.That(labelText, Is.EqualTo("State: Disabled"));
-		VerifyScreenshot();
+		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(7)]

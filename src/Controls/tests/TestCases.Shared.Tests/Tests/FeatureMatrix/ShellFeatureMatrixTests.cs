@@ -14,6 +14,7 @@ public class ShellFeatureTests : _GalleryUITest
 {
 	public const string ShellFeatureMatrix = "Shell Feature Matrix";
 	public override string GalleryPageName => ShellFeatureMatrix;
+	protected override string GallerySubPageButton => ShellFlyoutButton;
 	public const string Options = "Options";
 	public const string Apply = "Apply";
 	public const string Header = "Header";
@@ -32,8 +33,6 @@ public class ShellFeatureTests : _GalleryUITest
 	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void VerifyShellFlyout_Header()
 	{
-		App.WaitForElement(ShellFlyoutButton);
-		App.Tap(ShellFlyoutButton);
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("FlyoutHeader");

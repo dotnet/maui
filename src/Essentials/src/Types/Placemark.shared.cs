@@ -47,12 +47,12 @@ namespace Microsoft.Maui.Devices.Sensors
 		public Location Location { get; set; }
 
 		/// <summary>
-		/// Gets or sets the country ISO standard code.
+		/// Gets or sets the ISO country/region code.
 		/// </summary>
 		public string CountryCode { get; set; }
 
 		/// <summary>
-		/// Gets or sets the country name.
+		/// Gets or sets the country/region name.
 		/// </summary>
 		public string CountryName { get; set; }
 

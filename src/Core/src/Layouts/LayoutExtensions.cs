@@ -95,7 +95,9 @@ namespace Microsoft.Maui.Layouts
 			double frameX = startX + startMargin;
 			var availableWidth = boundsWidth - desiredWidth;
 
-			if (clampMarginOverflow && availableWidth < 0 && startMargin > 0 && desiredWidth - startMargin - endMargin <= boundsWidth)
+			// Preserve alignment when content overflows; clamp only when margins leave no room for it.
+			if (clampMarginOverflow && availableWidth < 0 && startMargin > 0 &&
+				startMargin + endMargin >= boundsWidth && desiredWidth - startMargin - endMargin <= boundsWidth)
 			{
 				availableWidth = 0;
 			}
@@ -133,7 +135,7 @@ namespace Microsoft.Maui.Layouts
 			var availableHeight = bounds.Height - desiredHeight;
 
 			if (view.Parent is not IFlexLayout && availableHeight < 0 && margin.Top > 0 &&
-				desiredHeight - margin.VerticalThickness <= bounds.Height)
+				margin.VerticalThickness >= bounds.Height && desiredHeight - margin.VerticalThickness <= bounds.Height)
 			{
 				availableHeight = 0;
 			}
@@ -173,7 +175,9 @@ namespace Microsoft.Maui.Layouts
 
 			var contentSize = Size.Zero;
 
-			if (content != null)
+			// Collapsed content takes no space, as in the layout managers. Android measures a GONE view
+			// at its full size, so without this check a hidden child kept its height there.
+			if (content != null && content.Visibility != Visibility.Collapsed)
 			{
 				contentSize = content.Measure(widthConstraint - inset.HorizontalThickness,
 					heightConstraint - inset.VerticalThickness);
@@ -204,7 +208,7 @@ namespace Microsoft.Maui.Layouts
 
 			var contentSize = Size.Zero;
 
-			if (content != null)
+			if (content != null && content.Visibility != Visibility.Collapsed)
 			{
 				contentSize = content.Measure(widthConstraint - inset.HorizontalThickness,
 					heightConstraint - inset.VerticalThickness);

@@ -3,9 +3,11 @@ trigger:
   branches:
     include:
     - main
+    - net11
     - net*.0
     - release/*
     - inflight/*
+    - candidate/*
   paths:
     include:
     - '*'
@@ -21,10 +23,13 @@ trigger:
 pr:
   branches:
     include:
+    - automation/release/*
     - main
+    - net11
     - net*.0
     - release/*
     - inflight/*
+    - candidate/*
   paths:
     include:
     - '*'
@@ -252,6 +257,16 @@ stages:
         pool: ${{ parameters.MacOSPool.internal }}
       timeout: 240
       testCategory: Build
+      testFilter: 'Category=Build&DisplayName!~net10.0'
+    # The .NET 10 compatibility workload requires Xcode 26.5, not the app SDK's Xcode 27.
+    - name: mac_buildtemplate_previous_tests
+      pool:
+        name: Azure Pipelines
+        vmImage: macOS-26
+      timeout: 240
+      testCategory: Build
+      testFilter: 'Category=Build&DisplayName~net10.0'
+      xcodeVersion: '26.5'
 
     - name: win_blazortemplate_tests
       ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:

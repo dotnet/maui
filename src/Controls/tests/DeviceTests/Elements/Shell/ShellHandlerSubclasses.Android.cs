@@ -274,6 +274,35 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact]
+		public async Task ResumingFragmentOfRemovedShellSectionDoesNotThrow()
+		{
+			SetupBuilder();
+
+			var firstPage = new ContentPage();
+			var removedSection = new ShellSection
+			{
+				Items = { new ShellContent { Content = new ContentPage() } }
+			};
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.Items.Add(new ShellContent { Content = firstPage });
+				shell.Items.Add(new FlyoutItem { Items = { removedSection } });
+			});
+
+			await CreateHandlerAndAddToWindow(shell, async () =>
+			{
+				await OnLoadedAsync(firstPage);
+
+				// Removing a section disposes its renderer (see ShellItemHandler.UpdateSections).
+				var renderer = ((IShellContext)shell.Handler).CreateShellSectionRenderer(removedSection);
+				var fragment = Assert.IsType<ShellSectionWrapperFragment>(renderer.Fragment);
+				renderer.Dispose();
+
+				Assert.Null(Record.Exception(fragment.OnResume));
+			});
+		}
+
 		protected override void SetupBuilder()
 		{
 			EnsureHandlerCreated(builder =>
@@ -313,13 +342,13 @@ namespace Microsoft.Maui.DeviceTests
 		// NativeShellHandler nests the toolbar inside an outer CoordinatorLayout — walk up to find it.
 		protected override bool IsBackButtonVisible(IElementHandler handler)
 		{
-			if (GetShellHandlerToolbar(handler)?.NavigationIcon is DrawerArrowDrawable drawerArrow)
+			if (GetShellToolbar(handler)?.NavigationIcon is DrawerArrowDrawable drawerArrow)
 				return drawerArrow.Progress == 1;
 
 			return false;
 		}
 
-		MaterialToolbar GetShellHandlerToolbar(IElementHandler handler)
+		protected override MaterialToolbar GetShellToolbar(IElementHandler handler)
 		{
 			// Direct NativeShellHandler: toolbar lives in nested CoordinatorLayout of shell.CurrentPage.
 			if (handler is NativeShellHandler nativeShell)
@@ -426,6 +455,7 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
 					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedViewHandler));
 					handlers.AddHandler(typeof(FlyoutPage), typeof(FlyoutViewHandler));
+					handlers.AddHandler(typeof(ReentrantFlyoutPage), typeof(ReentrantFlyoutViewHandler));
 					handlers.AddHandler(typeof(Controls.ContentView), typeof(ContentViewHandler));
 					handlers.AddHandler(typeof(ScrollView), typeof(ScrollViewHandler));
 				});

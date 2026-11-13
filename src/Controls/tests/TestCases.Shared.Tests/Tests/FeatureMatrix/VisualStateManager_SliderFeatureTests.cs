@@ -9,6 +9,7 @@ public class VisualStateManager_SliderFeatureTests : _GalleryUITest
 {
 	public const string VisualStateManagerSliderFeatureTests = "VisualStateManager Feature Matrix";
 	public override string GalleryPageName => VisualStateManagerSliderFeatureTests;
+	protected override string GallerySubPageButton => "VSMSliderButton";
 
 	public VisualStateManager_SliderFeatureTests(TestDevice device)
 		: base(device)
@@ -18,12 +19,10 @@ public class VisualStateManager_SliderFeatureTests : _GalleryUITest
 	[Test, Order(1)]
 	public void VerifyVSM_Slider_NormalState()
 	{
-		App.WaitForElement("VSMSliderButton");
-		App.Tap("VSMSliderButton");
 		App.WaitForElement("SliderState");
 		var stateText = App.FindElement("SliderState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Normal | Value: 50"));
-		VerifyScreenshot();
+		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(2)]
@@ -34,7 +33,7 @@ public class VisualStateManager_SliderFeatureTests : _GalleryUITest
 		App.WaitForElement("SliderState");
 		var stateText1 = App.FindElement("SliderState").GetText();
 		Assert.That(stateText1, Is.EqualTo("State: Normal/Unfocused | Value: 50"));
-		VerifyScreenshot();
+		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(3)]
@@ -45,7 +44,7 @@ public class VisualStateManager_SliderFeatureTests : _GalleryUITest
 		App.WaitForElement("SliderState");
 		var stateText = App.FindElement("SliderState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Disabled | Value: 50"));
-		VerifyScreenshot();
+		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(4)]
@@ -56,7 +55,7 @@ public class VisualStateManager_SliderFeatureTests : _GalleryUITest
 		App.WaitForElement("SliderState");
 		var stateText = App.FindElement("SliderState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Normal | Value: 50"));
-		VerifyScreenshot();
+		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(5)]
@@ -67,7 +66,7 @@ public class VisualStateManager_SliderFeatureTests : _GalleryUITest
 		App.WaitForElement("SliderState");
 		var stateText = App.FindElement("SliderState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Focused | Value: 65"));
-		VerifyScreenshot();
+		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(6)]

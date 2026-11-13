@@ -288,16 +288,18 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 	/// </summary>
 	void PlatformSelectionChanged(WItemsView sender, ItemsViewSelectionChangedEventArgs args)
 	{
-		if (_ignorePlatformSelectionChange || PlatformView is null || _platformSelectionUpdateQueued)
+		if (_ignorePlatformSelectionChange ||
+			!ReferenceEquals(((IElementHandler)this).PlatformView, sender) ||
+			_platformSelectionUpdateQueued)
 			return;
 
 		_platformSelectionUpdateQueued = true;
 		if (!sender.DispatcherQueue.TryEnqueue(() =>
 		{
 			_platformSelectionUpdateQueued = false;
-			if (ReferenceEquals(PlatformView, sender))
+			if (ReferenceEquals(((IElementHandler)this).PlatformView, sender))
 			{
-				UpdateVirtualSelection();
+				UpdateVirtualSelection(sender);
 			}
 		}))
 		{
@@ -308,14 +310,16 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 	/// <summary>
 	/// Reads the current platform selection state and updates the virtual (MAUI) selection accordingly.
 	/// </summary>
-	void UpdateVirtualSelection()
+	void UpdateVirtualSelection(WItemsView platformView)
 	{
-		if (_ignorePlatformSelectionChange || ItemsView is null || PlatformView is null)
+		if (_ignorePlatformSelectionChange ||
+			!ReferenceEquals(((IElementHandler)this).PlatformView, platformView) ||
+			((IElementHandler)this).VirtualView is null)
 		{
 			return;
 		}
 
-		switch (PlatformView.SelectionMode)
+		switch (platformView.SelectionMode)
 		{
 			case ItemsViewSelectionMode.Single:
 				UpdateVirtualSingleSelection();
@@ -328,7 +332,10 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 				break;
 		}
 
-		UpdateVisualStates();
+		if (ReferenceEquals(((IElementHandler)this).PlatformView, platformView))
+		{
+			UpdateVisualStates();
+		}
 	}
 
 	void UpdateVisualStates()
@@ -387,7 +394,11 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 		ItemsView.SelectionChanged -= VirtualSelectionChanged;
 		ItemsView.SelectedItem = selectedItem;
 
-		ItemsView.SelectionChanged += VirtualSelectionChanged;
+		if (((IElementHandler)this).PlatformView is not null &&
+			((IElementHandler)this).VirtualView is not null)
+		{
+			ItemsView.SelectionChanged += VirtualSelectionChanged;
+		}
 	}
 
 	void UpdateVirtualMultipleSelection()
@@ -403,7 +414,11 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 			ItemsView.UpdateSelectedItems(newSelection);
 		}
 
-		ItemsView.SelectionChanged += VirtualSelectionChanged;
+		if (((IElementHandler)this).PlatformView is not null &&
+			((IElementHandler)this).VirtualView is not null)
+		{
+			ItemsView.SelectionChanged += VirtualSelectionChanged;
+		}
 	}
 
 	static bool SelectionListsAreEqual(IList<object> list1, IList<object> list2)
@@ -476,7 +491,7 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 	/// </summary>
 	void UpdatePlatformSelection()
 	{
-		if (PlatformView is null || ItemsView is null)
+		if (((IElementHandler)this).PlatformView is null || ((IElementHandler)this).VirtualView is null)
 		{
 			return;
 		}

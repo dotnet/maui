@@ -68,6 +68,21 @@ namespace Microsoft.Maui.Platform
 			alertDialog.UpdateFlowDirectionCore(platformPicker);
 		}
 
+		internal static void UpdateTitle(this MauiMaterialPickerTextInputLayout platformPicker, IPicker picker)
+		{
+			platformPicker.Hint = picker.Title;
+		}
+
+		internal static void UpdateSelectedIndex(this MauiMaterialPickerTextInputLayout platformPicker, IPicker picker)
+		{
+			UpdatePickerTextCore(platformPicker.Picker, picker);
+		}
+
+		internal static void UpdatePicker(this MauiMaterialPickerTextInputLayout platformPicker, IPicker picker)
+		{
+			UpdatePickerTextCore(platformPicker.Picker, picker);
+		}
+
 		public static void UpdateTitleColorCore(this AppCompatEditText platformPicker, IPicker picker)
 		{
 			var titleColor = picker.TitleColor;
@@ -88,7 +103,11 @@ namespace Microsoft.Maui.Platform
 		public static void UpdatePickerCore(this AppCompatEditText platformPicker, IPicker picker)
 		{
 			platformPicker.Hint = picker.Title;
+			UpdatePickerTextCore(platformPicker, picker);
+		}
 
+		static void UpdatePickerTextCore(this AppCompatEditText platformPicker, IPicker picker)
+		{
 			if (picker.SelectedIndex == -1 || picker.SelectedIndex >= picker.GetCount())
 			{
 				platformPicker.Text = null;

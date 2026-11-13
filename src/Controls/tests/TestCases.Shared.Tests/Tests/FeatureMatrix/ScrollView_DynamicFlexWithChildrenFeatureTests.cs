@@ -12,6 +12,7 @@ public class ScrollView_DynamicFlexWithChildrenFeatureTests : _GalleryUITest
 
 	public const string ScrollViewDynamicFlexWithChildrenFeatureTests = "ScrollView With LayoutOptions Feature Matrix";
 	public override string GalleryPageName => ScrollViewDynamicFlexWithChildrenFeatureTests;
+	protected override string GallerySubPageButton => "DynamicFlexLayoutButton";
 	public ScrollView_DynamicFlexWithChildrenFeatureTests(TestDevice device)
 		: base(device)
 	{
@@ -20,8 +21,6 @@ public class ScrollView_DynamicFlexWithChildrenFeatureTests : _GalleryUITest
 	[Test, Order(1)]
 	public void VerifyFlexWithAddChildren_RowDirection()
 	{
-		App.WaitForElement("DynamicFlexLayoutButton");
-		App.Tap("DynamicFlexLayoutButton");
 		App.WaitForElement("ScrollViewWithDynamicFlexLayout");
 		App.WaitForElement("RowButton");
 		App.Tap("RowButton");
