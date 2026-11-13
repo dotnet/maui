@@ -226,11 +226,11 @@ namespace Microsoft.Maui.Platform
 				textField.ClearButtonMode = UITextFieldViewMode.Never;
 		}
 
-		internal static void UpdateClearButtonColor(this UITextField textField, IEntry entry)
+		internal static void UpdateClearButtonColor(this UITextField textField, ITextStyle textStyle)
 		{
 			if (textField.ValueForKey(new NSString("clearButton")) is UIButton clearButton)
 			{
-				if (entry.TextColor is null)
+				if (textStyle.TextColor is null)
 				{
 					// Setting TintColor to null allows the system to automatically apply the appropriate color based on the current theme (light or dark mode)
 					clearButton.TintColor = null;
@@ -245,11 +245,11 @@ namespace Microsoft.Maui.Platform
 					// On a null→color transition, UIKit restores the system image after SetImage(null),
 					// so ImageForState(Highlighted) returns the system clear button image as the tinting source.
 					UIImage? defaultClearImage = clearButton.ImageForState(UIControlState.Highlighted);
-					clearButton.TintColor = entry.TextColor.ToPlatform();
+					clearButton.TintColor = textStyle.TextColor.ToPlatform();
 
 					var tintedClearImage = GetClearButtonTintImage(
 						defaultClearImage,
-						entry.TextColor.ToPlatform(),
+						textStyle.TextColor.ToPlatform(),
 						(nfloat)textField.GetDisplayScale());
 					if (tintedClearImage is not null)
 					{

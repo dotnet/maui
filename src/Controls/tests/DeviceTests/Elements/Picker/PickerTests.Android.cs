@@ -9,6 +9,7 @@ using AndroidX.AppCompat.Widget;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Xunit;
 
@@ -72,14 +73,17 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task ClearButtonKeepsAndroidDialogOpenAndClearsCheckedRow()
 		{
+			EnsureHandlerCreated(builder => builder.ConfigureMauiHandlers(handlers =>
+			{
+				handlers.AddHandler<Picker, ClearablePickerHandler>();
+			}));
+
 			var picker = new Picker
 			{
 				Items = { "One", "Two" },
 				SelectedIndex = 1,
 				IsClearButtonVisible = true
 			};
-			_ = await CreateHandlerAsync<ClearablePickerHandler>(picker);
-
 			await CreateHandlerAndAddToWindow<ClearablePickerHandler>(picker, handler =>
 			{
 				picker.IsOpen = true;

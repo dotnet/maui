@@ -265,6 +265,10 @@ namespace Microsoft.Maui.Handlers
 			platformView.ClearButtonMode = picker.ShouldShowClearButton()
 				? UITextFieldViewMode.Always
 				: UITextFieldViewMode.Never;
+			if (picker.ShouldShowClearButton())
+			{
+				platformView.UpdateClearButtonColor(picker);
+			}
 #if MACCATALYST
 			if (_dialogClearButton is { } button)
 			{
@@ -328,6 +332,7 @@ namespace Microsoft.Maui.Handlers
 		public static void MapTextColor(IPickerHandler handler, IPicker picker)
 		{
 			handler.PlatformView?.UpdateTextColor(picker);
+			handler.UpdateValue(nameof(IPickerClearButton.IsClearButtonVisible));
 		}
 
 		public static void MapVerticalTextAlignment(IPickerHandler handler, IPicker picker)

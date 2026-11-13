@@ -133,6 +133,7 @@ public partial class PickerHandler2 : ViewHandler<IPicker, MauiMaterialPickerTex
 			platformView.Picker.UpdateFont(picker, fontManager);
 			platformView.Typeface = fontManager.GetTypeface(picker.Font);
 		}
+		handler.UpdateValue(nameof(IPickerClearButton.IsClearButtonVisible));
 	}
 
 	public static void MapHorizontalTextAlignment(PickerHandler2 handler, IPicker picker)
@@ -280,6 +281,7 @@ public partial class PickerHandler2 : ViewHandler<IPicker, MauiMaterialPickerTex
 		_dialog.DismissEvent += OnDialogDismiss;
 
 		_dialog.Show();
+		_clearButtonManager?.SetDialog(_dialog);
 		VirtualView.IsOpen = true;
 	}
 
@@ -319,7 +321,6 @@ public partial class PickerHandler2 : ViewHandler<IPicker, MauiMaterialPickerTex
 		}
 
 		_dialog.ShowEvent -= OnDialogShown;
-		_clearButtonManager?.SetDialog(_dialog);
 		VirtualView.IsFocused = true;
 	}
 

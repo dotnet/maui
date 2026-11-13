@@ -43,13 +43,17 @@ namespace Microsoft.Maui.Platform
 				if (!_visible)
 					_originalDrawables = _view.GetCompoundDrawablesRelative();
 
+				var density = _view.Resources?.DisplayMetrics?.Density ?? 1;
+				// Keep the icon within the text line so toggling it cannot increase the field height.
+				var size = Math.Max(1, (int)Math.Min(20 * density, _view.LineHeight));
+				_drawable.SetBounds(0, 0, size, size);
 				_view.UpdateClearButtonColor(picker.TextColor, _drawable);
-				_view.SetCompoundDrawablesRelativeWithIntrinsicBounds(
+				_view.SetCompoundDrawablesRelative(
 					_originalDrawables?[0], _originalDrawables?[1], _drawable, _originalDrawables?[3]);
 			}
 			else if (_visible)
 			{
-				_view.SetCompoundDrawablesRelativeWithIntrinsicBounds(
+				_view.SetCompoundDrawablesRelative(
 					_originalDrawables?[0], _originalDrawables?[1], _originalDrawables?[2], _originalDrawables?[3]);
 				_originalDrawables = null;
 			}
@@ -144,7 +148,7 @@ namespace Microsoft.Maui.Platform
 			SetDialog(null);
 			if (_visible)
 			{
-				_view.SetCompoundDrawablesRelativeWithIntrinsicBounds(
+				_view.SetCompoundDrawablesRelative(
 					_originalDrawables?[0], _originalDrawables?[1], _originalDrawables?[2], _originalDrawables?[3]);
 			}
 			_picker = null;

@@ -5,20 +5,28 @@ using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Media;
+using WGridLength = Microsoft.UI.Xaml.GridLength;
+using WGridUnitType = Microsoft.UI.Xaml.GridUnitType;
+using WThickness = Microsoft.UI.Xaml.Thickness;
+using WVisibility = Microsoft.UI.Xaml.Visibility;
 
 namespace Microsoft.Maui.Platform
 {
-	internal sealed class MauiPicker : ComboBox
+	internal sealed partial class MauiPicker : ComboBox
 	{
-		Grid? _selectionParent;
+		Panel? _selectionParent;
 		Grid? _selectionHost;
 		ContentPresenter? _selectionPresenter;
 		Border? _popupBorder;
-		UIElement? _popupContent;
+		FrameworkElement? _popupContent;
 		int _popupContentRow;
-		bool _templateApplied;
 		bool _clearButtonsEnabled;
 		bool _showClearButtons;
+
+		internal MauiPicker()
+		{
+			Loaded += OnLoaded;
+		}
 
 		internal Button? ClearButton { get; private set; }
 		internal Button? PopupClearButton { get; private set; }
@@ -35,10 +43,22 @@ namespace Microsoft.Maui.Platform
 				return;
 			}
 
-			ApplyTemplate();
-			if (_templateApplied)
-				AddClearButtons();
+			// Handler mappings can run before WinUI has resolved the control's theme template.
+			if (!IsLoaded)
+				return;
 
+			ApplyTemplate();
+			AddClearButtons();
+			UpdateClearButtonVisibility();
+		}
+
+		void OnLoaded(object sender, RoutedEventArgs e)
+		{
+			if (!_clearButtonsEnabled)
+				return;
+
+			ApplyTemplate();
+			AddClearButtons();
 			UpdateClearButtonVisibility();
 		}
 
@@ -53,9 +73,8 @@ namespace Microsoft.Maui.Platform
 		{
 			RemoveClearButtons();
 			base.OnApplyTemplate();
-			_templateApplied = true;
 
-			if (_clearButtonsEnabled)
+			if (_clearButtonsEnabled && IsLoaded)
 			{
 				AddClearButtons();
 				UpdateClearButtonVisibility();
@@ -67,20 +86,50 @@ namespace Microsoft.Maui.Platform
 			if (ClearButton is not null)
 				return;
 
-			if (GetTemplateChild("ContentPresenter") is not ContentPresenter presenter ||
-				VisualTreeHelper.GetParent(presenter) is not Grid parent ||
-				GetTemplateChild("PopupBorder") is not Border popupBorder ||
-				popupBorder.Child is not UIElement popupContent)
+			if (GetTemplateChild("ContentPresenter") is not ContentPresenter presenter)
 			{
 				throw new NotSupportedException(
-					"Picker.IsClearButtonVisible requires a ComboBox template with ContentPresenter in a Grid and a populated PopupBorder.");
+					"Picker.IsClearButtonVisible requires a ComboBox template with a ContentPresenter named 'ContentPresenter'.");
+			}
+
+			if (presenter.Parent is not Panel parent)
+			{
+				throw new NotSupportedException(
+					"Picker.IsClearButtonVisible requires the ComboBox template's ContentPresenter to be a child of a Panel.");
+			}
+
+			if (GetTemplateChild("PopupBorder") is not Border popupBorder)
+			{
+				throw new NotSupportedException(
+					"Picker.IsClearButtonVisible requires a ComboBox template with a Border named 'PopupBorder'.");
+			}
+
+			if (popupBorder.Child is not FrameworkElement popupContent)
+			{
+				throw new NotSupportedException(
+					"Picker.IsClearButtonVisible requires the ComboBox template's PopupBorder to have a FrameworkElement child.");
 			}
 
 			var clearButton = CreateClearButton("MauiPickerClearButton");
-			var popupClearButton = CreateClearButton("MauiPickerPopupClearButton");
+			clearButton.SetBinding(ForegroundProperty, new Binding { Source = this, Path = new PropertyPath(nameof(Foreground)) });
+			var transparent = new SolidColorBrush(Microsoft.UI.Colors.Transparent);
+			clearButton.Background = transparent;
+			clearButton.BorderThickness = new WThickness(0);
+			clearButton.Resources["ButtonBackground"] = transparent;
+			clearButton.Resources["ButtonBackgroundPointerOver"] = transparent;
+			clearButton.Resources["ButtonBackgroundPressed"] = transparent;
+			clearButton.Resources["ButtonBackgroundDisabled"] = transparent;
+			clearButton.Content = new FontIcon
+			{
+				FontFamily = new FontFamily("Segoe MDL2 Assets"),
+				Glyph = "\uE10A",
+				FontSize = 12
+			};
+			var popupButtonTemplate = (DataTemplate)Application.Current.Resources["PickerPopupClearButtonTemplate"];
+			var popupClearButton = CreateClearButton("MauiPickerPopupClearButton", (Button)popupButtonTemplate.LoadContent());
 			var selectionHost = new Grid();
-			selectionHost.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-			selectionHost.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+			selectionHost.ColumnDefinitions.Add(new ColumnDefinition { Width = new WGridLength(1, WGridUnitType.Star) });
+			selectionHost.ColumnDefinitions.Add(new ColumnDefinition { Width = WGridLength.Auto });
 			Grid.SetRow(selectionHost, Grid.GetRow(presenter));
 			Grid.SetColumn(selectionHost, Grid.GetColumn(presenter));
 			Grid.SetRowSpan(selectionHost, Grid.GetRowSpan(presenter));
@@ -100,8 +149,8 @@ namespace Microsoft.Maui.Platform
 			children.Insert(index, selectionHost);
 
 			var popupHost = new Grid();
-			popupHost.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-			popupHost.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+			popupHost.RowDefinitions.Add(new RowDefinition { Height = WGridLength.Auto });
+			popupHost.RowDefinitions.Add(new RowDefinition { Height = new WGridLength(1, WGridUnitType.Star) });
 			popupBorder.Child = null;
 			_popupContentRow = Grid.GetRow(popupContent);
 			Grid.SetRow(popupContent, 1);
@@ -121,28 +170,25 @@ namespace Microsoft.Maui.Platform
 			PopupClearButton = popupClearButton;
 		}
 
-		Button CreateClearButton(string name)
+		Button CreateClearButton(string name, Button? button = null)
 		{
-			var button = new Button
-			{
-				Name = name,
-				Content = new SymbolIcon(Symbol.Cancel),
-				MinWidth = 32,
-				MinHeight = 32,
-				Padding = new Thickness(4),
-				VerticalAlignment = VerticalAlignment.Center
-			};
+			button ??= new Button();
+			button.Name = name;
+			button.Content = new SymbolIcon(Symbol.Cancel);
+			button.MinWidth = 32;
+			button.MinHeight = 32;
+			button.Padding = new WThickness(4);
+			button.VerticalAlignment = VerticalAlignment.Center;
 			AutomationProperties.SetAutomationId(button, name);
 			AutomationProperties.SetName(button, (string)Application.Current.Resources["PickerClearSelectionAutomationName"]);
 			button.SetBinding(IsEnabledProperty, new Binding { Source = this, Path = new PropertyPath(nameof(IsEnabled)) });
-			button.SetBinding(ForegroundProperty, new Binding { Source = this, Path = new PropertyPath(nameof(Foreground)) });
 			button.Click += OnClearButtonClicked;
 			return button;
 		}
 
 		void UpdateClearButtonVisibility()
 		{
-			var visibility = _showClearButtons ? Visibility.Visible : Visibility.Collapsed;
+			var visibility = _showClearButtons ? WVisibility.Visible : WVisibility.Collapsed;
 			if (ClearButton is not null)
 				ClearButton.Visibility = visibility;
 			if (PopupClearButton is not null)
@@ -151,7 +197,6 @@ namespace Microsoft.Maui.Platform
 
 		void OnClearButtonClicked(object sender, RoutedEventArgs e)
 		{
-			e.Handled = true;
 			if (!IsEnabled || !_showClearButtons)
 				return;
 
@@ -205,11 +250,11 @@ namespace Microsoft.Maui.Platform
 			button.ClearValue(ForegroundProperty);
 		}
 
-		static UIElementCollection GetChildren(Grid grid)
+		static UIElementCollection GetChildren(Panel panel)
 		{
-			// Native template grids cannot be replaced with MauiPanel; access only during template setup/cleanup.
+			// Native template panels cannot be replaced with MauiPanel; access only during template setup/cleanup.
 #pragma warning disable RS0030
-			return grid.Children;
+			return panel.Children;
 #pragma warning restore RS0030
 		}
 	}
