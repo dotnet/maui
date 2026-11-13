@@ -125,6 +125,8 @@ public class EditorHandler2 : ViewHandler<IEditor, MauiMaterialEditText>
 
 	public static void MapIsReadOnly(EditorHandler2 handler, IEditor editor)
 	{
+		handler.UpdateValue(nameof(IEditor.Text));
+
 		handler.PlatformView?.UpdateIsReadOnly(editor);
 	}
 
@@ -193,6 +195,10 @@ public class EditorHandler2 : ViewHandler<IEditor, MauiMaterialEditText>
 		if (!e.HasFocus)
 		{
 			VirtualView?.Completed();
+		}
+		else if (VirtualView is not null)
+		{
+			PlatformView.HideSoftInputIfReadOnly(VirtualView, e.HasFocus);
 		}
 	}
 
