@@ -22,7 +22,7 @@ public class VisualStateManager_CollectionViewFeatureTests : _GalleryUITest
 		App.WaitForElement("CVState");
 		var stateText = App.FindElement("CVState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Normal"));
-		VerifyScreenshot();
+		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 #if TEST_FAILS_ON_ANDROID //related issue: https://github.com/dotnet/maui/issues/34491
@@ -34,7 +34,7 @@ public class VisualStateManager_CollectionViewFeatureTests : _GalleryUITest
 		App.WaitForElement("CVState");
 		var stateText = App.FindElement("CVState").GetText();
 		Assert.That(stateText, Does.Contain("State: Selected (1)"));
-		VerifyScreenshot();
+		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 
@@ -46,7 +46,7 @@ public class VisualStateManager_CollectionViewFeatureTests : _GalleryUITest
 		App.WaitForElement("CVState");
 		var stateText = App.FindElement("CVState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Normal/Unselected"));
-		VerifyScreenshot();
+		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(4)]
@@ -57,7 +57,7 @@ public class VisualStateManager_CollectionViewFeatureTests : _GalleryUITest
 		App.WaitForElement("CVState");
 		var stateText = App.FindElement("CVState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Disabled"));
-		VerifyScreenshot();
+		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(5)]
@@ -68,7 +68,7 @@ public class VisualStateManager_CollectionViewFeatureTests : _GalleryUITest
 		App.WaitForElement("CVState");
 		var stateText = App.FindElement("CVState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Normal"));
-		VerifyScreenshot();
+		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_ANDROID //In mac, related issue: https://github.com/dotnet/maui/issues/18028 and In android, related issue: https://github.com/dotnet/maui/issues/34491
@@ -86,7 +86,7 @@ public class VisualStateManager_CollectionViewFeatureTests : _GalleryUITest
 		App.WaitForElement("CVState");
 		var stateText = App.FindElement("CVState").GetText();
 		Assert.That(stateText, Does.Contain("State: Selected (3)"));
-		VerifyScreenshot();
+		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 

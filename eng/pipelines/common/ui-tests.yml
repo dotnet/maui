@@ -460,7 +460,7 @@ stages:
                       platform: 'Windows'
                       artifactName: 'uitest-snapshot-results-windows-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
 
-  # Windows CV1 UI Tests - Testing CollectionView with UseWindowsCollectionView2Handler=false
+  # Windows CV1 UI Tests - Run the same CollectionView shards with UseWindowsCollectionView2Handler=false
   - stage: winui_ui_tests_cv1
     displayName: WinUI UITests CV1
     dependsOn: build_ui_tests_windows_cv1
@@ -468,6 +468,12 @@ stages:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.winui, '') }}:
               - job: CV1_winui_ui_tests_${{ project.name }}
+                strategy:
+                  matrix:
+                    ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
+                      ${{ if startsWith(categoryGroup, 'CollectionView') }}:
+                        ${{ categoryGroup }}:
+                          CATEGORYGROUP: ${{ categoryGroup }}
                 timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
                 workspace:
                   clean: all
@@ -486,7 +492,7 @@ stages:
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       runtimeVariant: "CoreCLR"
                       useWindowsCV1: true
-                      testFilter: "CollectionView"
+                      testFilter: $(CATEGORYGROUP)
                       testConfigurationArgs: "UseWindowsCV1:true"
                       skipProvisioning: ${{ parameters.skipProvisioning }}
 

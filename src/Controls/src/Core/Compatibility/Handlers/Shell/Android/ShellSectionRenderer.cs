@@ -425,6 +425,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				if (newIndex >= 0)
 				{
+					_toolbarTracker.Page = ((IShellContentController)ShellSection.CurrentItem).GetOrCreateContent();
 					_viewPager.CurrentItem = newIndex;
 				}
 			}

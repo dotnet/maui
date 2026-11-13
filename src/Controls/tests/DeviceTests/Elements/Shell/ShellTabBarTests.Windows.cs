@@ -10,6 +10,7 @@ using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Automation.Provider;
 using Xunit;
 using static Microsoft.Maui.DeviceTests.AssertHelpers;
+using NativeAutomationProperties = Microsoft.UI.Xaml.Automation.AutomationProperties;
 using NavigationView = Microsoft.UI.Xaml.Controls.NavigationView;
 using WButton = Microsoft.UI.Xaml.Controls.Button;
 using WFrameworkElement = Microsoft.UI.Xaml.FrameworkElement;
@@ -175,23 +176,31 @@ namespace Microsoft.Maui.DeviceTests
 			}
 		}
 
-		[Fact(DisplayName = "Shell TabBar visibility toggle")]
-		public async Task ShellTabBarVisibilityToggleWorks()
+		[Theory(DisplayName = "Shell TabBar visibility toggle")]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task ShellTabBarVisibilityToggleWorks(bool initiallyVisible)
 		{
-			await RunShellTabBarTests(shell => { },
+			await RunShellTabBarTests(shell =>
+			{
+				shell.CurrentItem.AutomationId = "tab_bar";
+				Shell.SetTabBarIsVisible(shell.CurrentPage, initiallyVisible);
+			},
 			(shell) =>
 			{
-				var shellItemHandler = shell.CurrentItem.Handler as ShellItemHandler;
-				var navView = shellItemHandler.PlatformView as MauiNavigationView;
+				var navView = Assert.IsType<MauiNavigationView>(shell.CurrentItem.Handler.PlatformView);
+				foreach (var visible in new[] { initiallyVisible, !initiallyVisible, initiallyVisible, !initiallyVisible })
+				{
+					Shell.SetTabBarIsVisible(shell.CurrentPage, visible);
+					Assert.Equal(visible
+						? UI.Xaml.Controls.NavigationViewPaneDisplayMode.Top
+						: UI.Xaml.Controls.NavigationViewPaneDisplayMode.LeftMinimal, navView.PaneDisplayMode);
+					if (visible)
+						Assert.True(navView.IsPaneVisible);
+					Assert.Equal(visible ? "tab_bar" : string.Empty, NativeAutomationProperties.GetAutomationId(navView) ?? string.Empty);
+				}
 
-				Shell.SetTabBarIsVisible(shell.CurrentPage, false);
-				Assert.True(navView.PaneDisplayMode == UI.Xaml.Controls.NavigationViewPaneDisplayMode.LeftMinimal);
-
-				Shell.SetTabBarIsVisible(shell.CurrentPage, true);
-				Assert.True(navView.IsPaneVisible);
-				Assert.True(navView.PaneDisplayMode == UI.Xaml.Controls.NavigationViewPaneDisplayMode.Top);
-
-				return Task.FromResult(true);
+				return Task.CompletedTask;
 			});
 		}
 
