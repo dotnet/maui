@@ -53,6 +53,7 @@ namespace Microsoft.Maui.DeviceTests
 					items.Add(new AnchorItem($"Added {i}", 40));
 				}
 
+				await AssertEventually(() => Math.Abs(GetItemHeight(handler, items.Count - 1) - 40) <= AnchorTolerance, timeout: 3000, message: "The new items should be laid out in view.");
 				await AssertAtEnd(handler, "New items should keep the end in view.");
 
 				items[^1].Height = 160;
@@ -217,7 +218,29 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.DoesNotContain(false, anchoredChanges);
 
 				items.Add(new AnchorItem("Added after jumping", 40));
+				await AssertEventually(() => Math.Abs(GetItemHeight(handler, items.Count - 1) - 40) <= AnchorTolerance, timeout: 3000, message: "The new item should be laid out in view.");
 				await AssertAtEnd(handler, "New items should keep the end in view again.");
+				Assert.True(collectionView.IsAnchored, "The list should still follow its end.");
+			});
+		}
+
+		[Fact(DisplayName = "A ScrollTo that finds nothing to scroll to keeps following the end")]
+		public async Task AScrollToThatFindsNothingKeepsFollowingTheEnd()
+		{
+			SetupBuilder();
+			var items = CreateAnchorItems(40);
+			var collectionView = CreateAnchorCollectionView(items, ScrollAnchorMode.End);
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				await AssertAtEnd(handler, "The list should open at its end.");
+
+				// The item isn't in the list: the view doesn't scroll, so there's no request to judge.
+				collectionView.ScrollTo(new AnchorItem("Not in the list", 40), animate: false);
+				items.Add(new AnchorItem("Added", 40));
+
+				await AssertEventually(() => Math.Abs(GetItemHeight(handler, items.Count - 1) - 40) <= AnchorTolerance, timeout: 3000, message: "The new item should be laid out in view.");
+				await AssertAtEnd(handler, "The new item should keep the end in view.");
 				Assert.True(collectionView.IsAnchored, "The list should still follow its end.");
 			});
 		}
