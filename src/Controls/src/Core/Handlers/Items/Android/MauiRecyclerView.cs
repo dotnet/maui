@@ -494,6 +494,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
+			// A scroll the app requests is judged by where it lands: the anchor doesn't scroll it back to the end.
+			_scrollAnchor?.ScrollRequested(args.IsAnimated);
+
 			if (args.IsAnimated)
 			{
 				ScrollHelper.AnimateScrollToPosition(position, args.ScrollToPosition);
@@ -650,9 +653,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		protected virtual void ScrollToRequested(object sender, ScrollToRequestEventArgs args)
 		{
 			(GetSnapManager()?.GetCurrentSnapHelper() as SingleSnapHelper)?.ResetCurrentTargetPosition();
-
-			// A scroll the app requests is judged by where it lands: the anchor doesn't scroll it back to the end.
-			_scrollAnchor?.ScrollRequested(args.IsAnimated);
 			ScrollTo(args);
 		}
 
