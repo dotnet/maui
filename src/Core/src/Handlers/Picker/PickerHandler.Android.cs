@@ -81,6 +81,7 @@ namespace Microsoft.Maui.Handlers
 			var fontManager = handler.GetRequiredService<IFontManager>();
 
 			handler.PlatformView?.UpdateFont(picker, fontManager);
+			handler.UpdateValue(nameof(IPickerClearButton.IsClearButtonVisible));
 		}
 
 		public static void MapHorizontalTextAlignment(IPickerHandler handler, IPicker picker)
@@ -220,6 +221,7 @@ namespace Microsoft.Maui.Handlers
 				_dialog.DismissEvent += OnDialogDismiss;
 
 				_dialog.Show();
+				_clearButtonManager?.SetDialog(_dialog);
 
 				VirtualView.IsOpen = true;
 			}
@@ -247,7 +249,6 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			_dialog.ShowEvent -= OnDialogShown;
-			_clearButtonManager?.SetDialog(_dialog);
 			VirtualView.IsFocused = true;
 		}
 

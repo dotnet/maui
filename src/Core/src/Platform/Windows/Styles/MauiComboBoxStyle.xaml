@@ -5,6 +5,10 @@
 
     <x:String x:Key="PickerClearSelectionAutomationName">Clear selection</x:String>
 
+    <DataTemplate x:Key="PickerPopupClearButtonTemplate">
+        <Button Foreground="{ThemeResource ButtonForeground}" />
+    </DataTemplate>
+
     <DataTemplate x:Key="ComboBoxHeader">
         <TextBlock
             Text="{Binding Title}" 

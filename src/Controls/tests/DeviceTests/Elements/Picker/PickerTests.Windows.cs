@@ -7,12 +7,14 @@ using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Automation.Provider;
 using Microsoft.UI.Xaml.Markup;
 using Microsoft.UI.Xaml.Media;
 using Xunit;
+using AutomationProperties = Microsoft.UI.Xaml.Automation.AutomationProperties;
+using ContentPresenter = Microsoft.UI.Xaml.Controls.ContentPresenter;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -44,11 +46,14 @@ namespace Microsoft.Maui.DeviceTests
 				await AssertEventually(() => native.ClearButton?.IsLoaded == true);
 				Assert.Equal(UI.Xaml.Visibility.Visible, native.ClearButton.Visibility);
 				Assert.False(string.IsNullOrEmpty(AutomationProperties.GetName(native.ClearButton)));
+				Assert.Equal(rtl ? UI.Xaml.FlowDirection.RightToLeft : UI.Xaml.FlowDirection.LeftToRight, native.FlowDirection);
 				native.UpdateLayout();
 				var presenter = native.GetDescendantByName<ContentPresenter>("ContentPresenter");
-				var presenterBounds = presenter.TransformToVisual(native).TransformBounds(
+				// Compare physical positions outside the picker's mirrored RTL coordinate space.
+				var root = native.XamlRoot.Content;
+				var presenterBounds = presenter.TransformToVisual(root).TransformBounds(
 					new global::Windows.Foundation.Rect(0, 0, presenter.ActualWidth, presenter.ActualHeight));
-				var buttonBounds = native.ClearButton.TransformToVisual(native).TransformBounds(
+				var buttonBounds = native.ClearButton.TransformToVisual(root).TransformBounds(
 					new global::Windows.Foundation.Rect(0, 0, native.ClearButton.ActualWidth, native.ClearButton.ActualHeight));
 				Assert.True(native.ClearButton.ActualWidth >= 32);
 				Assert.True(rtl ? buttonBounds.Right <= presenterBounds.Left : presenterBounds.Right <= buttonBounds.Left);
@@ -131,7 +136,14 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(UI.Xaml.Visibility.Collapsed, native.ClearButton.Visibility);
 				picker.SelectedIndex = 1;
 				picker.Items.RemoveAt(1);
+				Assert.Equal(0, picker.SelectedIndex);
+				Assert.Equal(UI.Xaml.Visibility.Visible, native.ClearButton.Visibility);
+				Assert.Equal(UI.Xaml.Visibility.Visible, native.PopupClearButton.Visibility);
+				picker.Items.Clear();
+				Assert.Equal(-1, picker.SelectedIndex);
 				Assert.Equal(UI.Xaml.Visibility.Collapsed, native.ClearButton.Visibility);
+				Assert.Equal(UI.Xaml.Visibility.Collapsed, native.PopupClearButton.Visibility);
+				picker.Items.Add("One");
 				picker.SelectedIndex = 0;
 				Assert.Equal(UI.Xaml.Visibility.Visible, native.ClearButton.Visibility);
 
