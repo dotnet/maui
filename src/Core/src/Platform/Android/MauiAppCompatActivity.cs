@@ -79,6 +79,30 @@ namespace Microsoft.Maui
 			_mauiOnBackPressedCallback.Enabled = ShouldRegisterPredictiveBackCallback();
 		}
 
+		// Gives callbacks registered by the app on this Activity's dispatcher a chance to handle back,
+		// without involving MAUI's own callback (which would run HandleBackNavigation and could fall
+		// through to base.OnBackPressed()). Returns false when the app has no enabled callback, so the
+		// caller can keep its existing behavior.
+		internal bool TryDispatchBackToAppCallbacks()
+		{
+			if (_mauiOnBackPressedCallback is null)
+				return false;
+
+			_mauiOnBackPressedCallback.Enabled = false;
+			try
+			{
+				if (!OnBackPressedDispatcher.HasEnabledCallbacks)
+					return false;
+
+				OnBackPressedDispatcher.OnBackPressed();
+				return true;
+			}
+			finally
+			{
+				UpdatePredictiveBackRegistration();
+			}
+		}
+
 		bool ShouldRegisterPredictiveBackCallback()
 		{
 			var services = IPlatformApplication.Current?.Services;
