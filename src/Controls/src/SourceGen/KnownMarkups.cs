@@ -947,7 +947,17 @@ internal class KnownMarkups
 		// Get the target property type for type conversion
 		ITypeSymbol? propertyType = null;
 		IFieldSymbol? bpFieldSymbol = null;
-		if (node.TryGetPropertyName(node.Parent, out XmlName propertyName) && context.Variables.TryGetValue(node.Parent, out ILocalValue parentVar))
+		if (node.Parent is ElementNode setterNode
+			&& setterNode.XmlType.IsOfAnyType("Setter", "PropertyCondition")
+			&& setterNode.Properties.TryGetValue(new XmlName("", "Property"), out var setterPropertyNode)
+			&& setterPropertyNode is ValueNode setterPropertyValueNode)
+		{
+			// Inside a Setter, the value targets the bindable property referenced by Setter.Property,
+			// not Setter.Value (typed object). Matches AppThemeBindingExtension.ProvideValue at runtime.
+			bpFieldSymbol = setterPropertyValueNode.GetBindableProperty(context);
+			propertyType = bpFieldSymbol?.GetBPTypeAndConverter(context)?.type;
+		}
+		else if (node.TryGetPropertyName(node.Parent, out XmlName propertyName) && context.Variables.TryGetValue(node.Parent, out ILocalValue parentVar))
 		{
 			var localName = propertyName.LocalName;
 			bpFieldSymbol = parentVar.Type.GetBindableProperty(propertyName.NamespaceURI, ref localName, out bool attached, context, node as IXmlLineInfo);
