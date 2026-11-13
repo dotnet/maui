@@ -38,6 +38,13 @@
     <ProjectReference Include="..\..\..\..\src\BlazorWebView\src\Maui\Microsoft.AspNetCore.Components.WebView.Maui.csproj" />
   </ItemGroup>
 
+  <!-- Used by Maui40045Tests to run the CA2252 analyzer over generated code -->
+  <Target Name="_AddNetAnalyzersPathMetadata" BeforeTargets="GetAssemblyAttributes" DependsOnTargets="ResolveLockFileAnalyzers">
+    <ItemGroup>
+      <AssemblyMetadata Include="NetAnalyzersPath" Value="%(Analyzer.FullPath)" Condition="'%(Analyzer.Filename)' == 'Microsoft.CodeAnalysis.NetAnalyzers'" />
+    </ItemGroup>
+  </Target>
+
   <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
 
 </Project>
