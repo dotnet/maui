@@ -73,6 +73,46 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(3, editor.SelectionLength);
 		}
 
+		[Theory(DisplayName = "Turning Off IsReadOnly Restores Editing")]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task TurningOffIsReadOnlyRestoresEditing(bool material3)
+		{
+			// The input properties change while the Editor is read-only and must apply once it's editable again
+			var editor = new EditorStub() { Text = "123456", IsReadOnly = true };
+			var expected = new EditorStub() { Text = "123456", Keyboard = Keyboard.Numeric, IsTextPredictionEnabled = false, IsSpellCheckEnabled = false };
+
+			var (keyListener, isTextEditor, inputType, expectedInputType, text, selection) = await InvokeOnMainThreadAsync(() =>
+			{
+				var expectedInputType = ((AppCompatEditText)CreateEditorHandler(expected, material3).PlatformView).InputType;
+
+				var handler = CreateEditorHandler(editor, material3);
+				var editText = (AppCompatEditText)handler.PlatformView;
+				editText.SetSelection(1, 4);
+
+				editor.Keyboard = Keyboard.Numeric;
+				handler.UpdateValue(nameof(IEditor.Keyboard));
+				editor.IsTextPredictionEnabled = false;
+				handler.UpdateValue(nameof(IEditor.IsTextPredictionEnabled));
+				editor.IsSpellCheckEnabled = false;
+				handler.UpdateValue(nameof(IEditor.IsSpellCheckEnabled));
+
+				editor.IsReadOnly = false;
+				handler.UpdateValue(nameof(IEditor.IsReadOnly));
+
+				return (editText.KeyListener, editText.OnCheckIsTextEditor(), editText.InputType, expectedInputType, editText.Text, (editText.SelectionStart, editText.SelectionEnd));
+			});
+
+			Assert.NotNull(keyListener);
+			Assert.True(isTextEditor);
+			Assert.Equal(expectedInputType, inputType);
+			Assert.Equal("123456", text);
+			Assert.Equal((1, 4), selection);
+		}
+
+		IViewHandler CreateEditorHandler(EditorStub editor, bool material3) =>
+			material3 ? CreateHandler<EditorHandler2>(editor) : CreateHandler<EditorHandler>(editor);
+
 		[Fact(DisplayName = "CharacterSpacing Initializes Correctly")]
 		public async Task CharacterSpacingInitializesCorrectly()
 		{

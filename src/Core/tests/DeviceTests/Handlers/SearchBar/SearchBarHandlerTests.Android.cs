@@ -76,6 +76,49 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal((1, 4), selection);
 		}
 
+		[Theory(DisplayName = "Turning Off IsReadOnly Restores Editing")]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task TurningOffIsReadOnlyRestoresEditing(bool material3)
+		{
+			// The input properties change while the SearchBar is read-only and must apply once it's editable again
+			var searchBar = new SearchBarStub() { Text = "123456", IsReadOnly = true };
+			var expected = new SearchBarStub() { Text = "123456", Keyboard = Keyboard.Numeric, IsTextPredictionEnabled = false, IsSpellCheckEnabled = false };
+
+			var (keyListener, isTextEditor, inputType, expectedInputType, text, selection) = await InvokeOnMainThreadAsync(() =>
+			{
+				var expectedInputType = GetQueryEditText(CreateSearchBarHandler(expected, material3)).InputType;
+
+				var handler = CreateSearchBarHandler(searchBar, material3);
+				var editText = GetQueryEditText(handler);
+				editText.SetSelection(1, 4);
+
+				searchBar.Keyboard = Keyboard.Numeric;
+				handler.UpdateValue(nameof(ISearchBar.Keyboard));
+				searchBar.IsTextPredictionEnabled = false;
+				handler.UpdateValue(nameof(ISearchBar.IsTextPredictionEnabled));
+				searchBar.IsSpellCheckEnabled = false;
+				handler.UpdateValue(nameof(ISearchBar.IsSpellCheckEnabled));
+
+				searchBar.IsReadOnly = false;
+				handler.UpdateValue(nameof(ISearchBar.IsReadOnly));
+
+				return (editText.KeyListener, editText.OnCheckIsTextEditor(), editText.InputType, expectedInputType, editText.Text, (editText.SelectionStart, editText.SelectionEnd));
+			});
+
+			Assert.NotNull(keyListener);
+			Assert.True(isTextEditor);
+			Assert.Equal(expectedInputType, inputType);
+			Assert.Equal("123456", text);
+			Assert.Equal((1, 4), selection);
+		}
+
+		IViewHandler CreateSearchBarHandler(SearchBarStub searchBar, bool material3) =>
+			material3 ? CreateHandler<SearchBarHandler2>(searchBar) : CreateHandler<SearchBarHandler>(searchBar);
+
+		static EditText GetQueryEditText(IViewHandler handler) =>
+			handler is SearchBarHandler2 handler2 ? handler2.QueryEditor! : ((SearchView)handler.PlatformView).GetChildrenOfType<EditText>().First();
+
 		// Regression tests for https://github.com/dotnet/maui/issues/30779
 		// SearchBar.CursorPosition and SelectionLength were not updated when the user typed
 
