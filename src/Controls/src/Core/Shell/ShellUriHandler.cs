@@ -552,10 +552,15 @@ namespace Microsoft.Maui.Controls
 			{
 				bool acceptingTemplates = pass == 1;
 
-				// Of the route keys whose collapsed form matches, the one consuming
-				// the fewest segments wins, so a parent registration ("home/savings")
-				// isn't skipped in favor of a longer key ("home/savings/search") that
-				// happened to be registered first. Ties keep the first key encountered.
+				// Of the literal route keys whose collapsed form matches, the one
+				// consuming the fewest segments wins, so a parent registration
+				// ("home/savings") isn't skipped in favor of a longer key
+				// ("home/savings/search") that happened to be registered first.
+				// Among templated keys the LONGEST match wins instead: picking the
+				// shorter prefix ("item-{id}") would leave the longer key
+				// ("item-{id}/details") collapsing against already-resolved segments,
+				// where its template anchor is never found literally and captured
+				// parameters get lost. Ties keep the first key encountered.
 				string bestRouteKey = null;
 				string bestMatch = null;
 				Dictionary<string, string> bestParameters = null;
@@ -595,7 +600,9 @@ namespace Microsoft.Maui.Controls
 					if (!String.IsNullOrWhiteSpace(collapsedMatch))
 					{
 						int segmentCount = RetrievePaths(collapsedMatch).Length;
-						if (segmentCount < bestSegmentCount)
+						bool isBetterMatch = bestRouteKey == null ||
+							(acceptingTemplates ? segmentCount > bestSegmentCount : segmentCount < bestSegmentCount);
+						if (isBetterMatch)
 						{
 							bestRouteKey = routeKey;
 							bestMatch = collapsedMatch;
