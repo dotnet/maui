@@ -234,6 +234,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			_scrollAnimationEndedCallback = null;
 		}
 
+		internal override void ScrollingToEndOnce(double target) =>
+			SetScrollAnimationEndedCallback(() => CollectionViewScrollAnchor.ScrollToEndOnceEnded(CollectionView, target));
+
 
 		// internal UIEdgeInsets GetInsetForSection(UICollectionViewLayout itemsViewLayout,
 		// 	UICollectionView collectionView, nint section)

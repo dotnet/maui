@@ -75,12 +75,7 @@ namespace Microsoft.Maui.DeviceTests
 				Enumerable.Range(0, 4).Select(group => new AnchorGroup($"Group {group}", CreateAnchorItems(8))));
 			var collectionView = CreateAnchorCollectionView(groups, ScrollAnchorMode.End);
 			collectionView.IsGrouped = true;
-			collectionView.GroupHeaderTemplate = new DataTemplate(() =>
-			{
-				var label = new Label { HeightRequest = 24 };
-				label.SetBinding(Label.TextProperty, nameof(AnchorGroup.Name));
-				return label;
-			});
+			collectionView.GroupHeaderTemplate = CreateAnchorGroupHeaderTemplate();
 
 			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
 			{
@@ -92,6 +87,65 @@ namespace Microsoft.Maui.DeviceTests
 				groups.Add(new AnchorGroup("New group", CreateAnchorItems(3)));
 				await AssertAtEnd(handler, "A new group should keep the end in view.");
 				Assert.True(collectionView.IsAnchored);
+			});
+		}
+
+		[Theory(DisplayName = "AnchorMode End keeps the end in view when the header or footer is replaced")]
+		[InlineData(true)]
+		[InlineData(false)]
+		public async Task AnchorModeEndKeepsTheEndWhenTheHeaderOrFooterIsReplaced(bool replaceHeader)
+		{
+			SetupBuilder();
+
+			// Every row the same height: the content is the size it was when the platform lays the list out again from its
+			// start, so only the move tells that it did.
+			var items = CreateAnchorItems(40);
+			var collectionView = CreateAnchorCollectionView(items, ScrollAnchorMode.End);
+			collectionView.Header = new Label { Text = "Header", HeightRequest = 40 };
+			collectionView.Footer = new Label { Text = "Footer", HeightRequest = 40 };
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				await AssertAtEnd(handler, "The list should open at its end.");
+
+				if (replaceHeader)
+				{
+					collectionView.Header = new Label { Text = "New header", HeightRequest = 40 };
+				}
+				else
+				{
+					collectionView.Footer = new Label { Text = "New footer", HeightRequest = 40 };
+				}
+
+				await AssertAtEnd(handler, "Replacing the header or footer should keep the end in view.");
+				Assert.True(collectionView.IsAnchored, "Replacing the header or footer shouldn't stop following the end.");
+			});
+		}
+
+		[Fact(DisplayName = "A new group template doesn't follow the end of a list that stopped following it")]
+		public async Task ANewGroupTemplateDoesNotFollowTheEndAgain()
+		{
+			SetupBuilder();
+			var groups = new ObservableCollection<AnchorGroup>(
+				Enumerable.Range(0, 4).Select(group => new AnchorGroup($"Group {group}", CreateAnchorItems(8))));
+			var collectionView = CreateAnchorCollectionView(groups, ScrollAnchorMode.End);
+			collectionView.IsGrouped = true;
+			collectionView.GroupHeaderTemplate = CreateAnchorGroupHeaderTemplate();
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				await AssertAtEnd(handler, "The grouped list should open at its end.");
+
+				collectionView.ScrollTo(0, groupIndex: 0, position: ScrollToPosition.Start, animate: false);
+				await AssertEventually(() => !collectionView.IsAnchored, timeout: 3000, message: "ScrollTo away from the end should stop following it.");
+
+				// The items are the same: the list keeps not following its end.
+				collectionView.GroupHeaderTemplate = CreateAnchorGroupHeaderTemplate();
+				Assert.False(collectionView.IsAnchored, "A new group header template shouldn't follow the end again.");
+
+				await Task.Delay(500);
+				Assert.False(collectionView.IsAnchored, "A new group header template shouldn't follow the end again.");
+				Assert.True(GetDistanceToEnd(handler) > AnchorTolerance, "A new group header template shouldn't scroll the list to its end.");
 			});
 		}
 
@@ -141,8 +195,10 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact(DisplayName = "ScrollToEnd without AnchorMode scrolls past the footer once")]
-		public async Task ScrollToEndWithoutAnchorModeScrollsToTheEndOnce()
+		[Theory(DisplayName = "ScrollToEnd without AnchorMode scrolls past the footer once")]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task ScrollToEndWithoutAnchorModeScrollsToTheEndOnce(bool animate)
 		{
 			SetupBuilder();
 			var items = CreateAnchorItems(40);
@@ -152,8 +208,9 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				await AssertEventually(() => GetDistanceFromStart(handler) <= AnchorTolerance, timeout: 3000, message: "The list should open at its start.");
 
-				collectionView.ScrollToEnd(animate: false);
-				await AssertAtEnd(handler, "ScrollToEnd should reach the end of the content, footer included.");
+				// The rows on the way are measured as the view scrolls past them, which moves the end.
+				collectionView.ScrollToEnd(animate);
+				await AssertAtEnd(handler, "ScrollToEnd should reach the end of the content, footer included.", timeout: 5000);
 				Assert.False(collectionView.IsAnchored);
 
 				items.Add(new AnchorItem("Added", 40));
@@ -235,6 +292,13 @@ namespace Microsoft.Maui.DeviceTests
 
 		static ObservableCollection<AnchorItem> CreateAnchorItems(int count) =>
 			new(Enumerable.Range(0, count).Select(index => new AnchorItem($"Item {index}", 40)));
+
+		static DataTemplate CreateAnchorGroupHeaderTemplate() => new(() =>
+		{
+			var label = new Label { HeightRequest = 24 };
+			label.SetBinding(Label.TextProperty, nameof(AnchorGroup.Name));
+			return label;
+		});
 
 		static async Task AssertAtEnd(CollectionViewHandler handler, string message, int timeout = 3000)
 		{
