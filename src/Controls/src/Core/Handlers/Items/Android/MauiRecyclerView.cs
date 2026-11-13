@@ -39,6 +39,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		EmptyViewAdapter _emptyViewAdapter;
 		readonly DataChangeObserver _emptyCollectionObserver;
 		readonly DataChangeObserver _itemsUpdateScrollObserver;
+		readonly DataChangeObserver _scrollAnchorObserver;
 		readonly Func<MotionEvent, bool> _dispatchTouchEventToRecyclerView;
 		ParentScrollGestureDispatcher _parentScrollGestureDispatcher;
 
@@ -63,6 +64,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			_emptyCollectionObserver = new DataChangeObserver(UpdateEmptyViewVisibility);
 			_itemsUpdateScrollObserver = new DataChangeObserver(AdjustScrollForItemUpdate);
+			_scrollAnchorObserver = new DataChangeObserver(ScrollAnchorItemsChanged);
 			_dispatchTouchEventToRecyclerView = DispatchTouchEventToRecyclerView;
 			_parentScrollGestureDispatcher = new ParentScrollGestureDispatcher(this);
 		}
@@ -311,8 +313,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var oldItemViewAdapter = ItemsViewAdapter;
 
 			_emptyCollectionObserver.Stop(oldItemViewAdapter);
+			_scrollAnchorObserver.Stop(oldItemViewAdapter);
 
 			ItemsViewAdapter = CreateAdapter();
+
+			if (_scrollAnchor is not null && ItemsViewAdapter is not null)
+			{
+				_scrollAnchorObserver.Start(ItemsViewAdapter);
+			}
 
 			(RecyclerViewScrollListener as RecyclerViewScrollListener<TItemsView, TItemsViewSource>)?.UpdateAdapter(ItemsViewAdapter);
 
@@ -760,6 +768,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				var scrollAnchor = new RecyclerViewScrollAnchor(this, itemsView, mode);
 				_scrollAnchor = scrollAnchor;
+				if (ItemsViewAdapter is not null)
+				{
+					_scrollAnchorObserver.Start(ItemsViewAdapter);
+				}
+
 				scrollAnchor.Attach();
 			}
 			else if (_scrollAnchor.Edges != mode)
@@ -770,9 +783,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void DetachScrollAnchor()
 		{
+			_scrollAnchorObserver.Stop(ItemsViewAdapter);
 			_scrollAnchor?.Detach();
 			_scrollAnchor = null;
 		}
+
+		// RecyclerView keeps the rows in view where they are as it applies changes to the items: the anchor counts the offset
+		// change that comes with them as the layout's.
+		void ScrollAnchorItemsChanged() => _scrollAnchor?.ItemsChanged();
 
 		bool IScrollAnchorRecyclerView.ScrollToStart(bool animate)
 		{

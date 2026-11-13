@@ -183,50 +183,64 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		}
 
 		/// <summary>Scrolls to the start, and follows it again. The view must be able to follow its start.</summary>
+		/// <remarks>
+		/// The app can request another scroll from what this raises (the <c>Scrolled</c> event of a jump, the change of
+		/// <see cref="StructuredItemsView.IsAnchored"/>): that request is newer, and wins.
+		/// </remarks>
 		public void ScrollToStart(UICollectionView collectionView, StructuredItemsView? itemsView, bool animated)
 		{
 			if (animated && collectionView.Window is not null)
 			{
+				// Look at the view as laid out first, then animate: a ScrollTo the app requests as it hears the view follows
+				// its start stops the animation.
+				collectionView.LayoutIfNeeded();
 				_tracker.Engage(ScrollAnchorMode.Start);
+				SetOffsetToStart(collectionView, animated: true);
 				if (itemsView is not null)
 				{
 					Publish(collectionView, itemsView, true);
 				}
 
-				collectionView.LayoutIfNeeded();
-				SetOffsetToStart(collectionView, animated: true);
 				return;
 			}
 
-			// Jump there, which stops any deceleration, then look again as for a new view that follows its start.
-			ApplyOffset(collectionView, GetStartOffset(collectionView));
+			// Look again as for a new view that follows its start, and jump there, which stops any deceleration. The look then
+			// judges a ScrollTo the app requested from the Scrolled event of the jump.
 			_tracker.Reset(ScrollAnchorMode.Start);
 			_offsetChangedDuringLayout = false;
+			ApplyOffset(collectionView, GetStartOffset(collectionView));
 			collectionView.SetNeedsLayout();
 			collectionView.LayoutIfNeeded();
 		}
 
 		/// <summary>Scrolls to the end, and follows it again. The view must be able to follow its end.</summary>
+		/// <remarks>
+		/// The app can request another scroll from what this raises (the <c>Scrolled</c> event of a jump, the change of
+		/// <see cref="StructuredItemsView.IsAnchored"/>): that request is newer, and wins.
+		/// </remarks>
 		public void ScrollToEnd(UICollectionView collectionView, StructuredItemsView? itemsView, bool animated)
 		{
 			if (animated && collectionView.Window is not null)
 			{
+				// Look at the view as laid out first, then animate: a ScrollTo the app requests as it hears the view follows
+				// its end stops the animation.
+				collectionView.LayoutIfNeeded();
 				_tracker.Engage(ScrollAnchorMode.End);
+				SetOffsetToEnd(collectionView, animated: true);
 				if (itemsView is not null)
 				{
 					Publish(collectionView, itemsView, true);
 				}
 
-				collectionView.LayoutIfNeeded();
-				SetOffsetToEnd(collectionView, animated: true);
 				return;
 			}
 
-			// Jump to the end as laid out now, which stops any deceleration, then look again as for a new view: that scrolls to
-			// the exact end once the rows there are measured, and before the view first appears when it isn't in a window yet.
-			ApplyOffset(collectionView, GetEndOffset(collectionView));
+			// Look again as for a new view, and jump to the end as laid out now, which stops any deceleration: the look scrolls
+			// to the exact end once the rows there are measured, and before the view first appears when it isn't in a window
+			// yet. It judges a ScrollTo the app requested from the Scrolled event of the jump instead.
 			_tracker.Reset(ScrollAnchorMode.End);
 			_offsetChangedDuringLayout = false;
+			ApplyOffset(collectionView, GetEndOffset(collectionView));
 			collectionView.SetNeedsLayout();
 			collectionView.LayoutIfNeeded();
 		}
@@ -246,25 +260,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		/// <summary>Called when the animated scroll <see cref="ScrollToStartOnce"/> started has stopped: goes the rest of the way.</summary>
 		public static void ScrollToStartOnceEnded(UICollectionView collectionView) => SetOffsetToStart(collectionView, animated: false);
 
-		/// <summary>Scrolls a collection view to the end, once.</summary>
+		/// <summary>Starts an animated scroll of a collection view to the end, once.</summary>
 		/// <returns>
-		/// Where an animated scroll stops, or <see langword="null"/> when it didn't animate. The rows the animation scrolls
-		/// past are measured on the way, which can move the end beyond that point: the controller goes the rest of the way
-		/// once the animation ends.
+		/// Where the animation stops, or <see langword="null"/> when the view is at the end already. The rows the animation
+		/// scrolls past are measured on the way, which can move the end beyond that point: the controller goes the rest of the
+		/// way once the animation ends.
 		/// </returns>
-		public static double? ScrollToEndOnce(UICollectionView collectionView, bool animated)
+		public static double? AnimateToEndOnce(UICollectionView collectionView)
 		{
 			collectionView.LayoutIfNeeded();
-			var target = SetOffsetToEnd(collectionView, animated);
-			if (animated)
-			{
-				return target;
-			}
-
-			// The rows at the end are measured once they're in view, which can move the end: go the rest of the way.
-			collectionView.LayoutIfNeeded();
-			SetOffsetToEnd(collectionView, animated: false);
-			return null;
+			return SetOffsetToEnd(collectionView, animated: true);
 		}
 
 		// Returns whether it scrolls: not when the view is at the start already.
