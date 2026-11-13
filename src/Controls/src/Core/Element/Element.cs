@@ -694,36 +694,41 @@ namespace Microsoft.Maui.Controls
 			(this as IPropertyPropagationController)?.PropagatePropertyChanged(null);
 		}
 
-		HashSet<string> _pendingHandlerUpdatesFromBPSet = new HashSet<string>();
+		[ThreadStatic]
+		static Stack<(Element Element, string PropertyName)> s_pendingHandlerUpdatesFromBPSet;
+
 		private protected override void OnBindablePropertySet(BindableProperty property, object original, object value, bool changed, bool willFirePropertyChanged)
 		{
 			if (willFirePropertyChanged)
 			{
-				_pendingHandlerUpdatesFromBPSet.Add(property.PropertyName);
+				(s_pendingHandlerUpdatesFromBPSet ??= new()).Push((this, property.PropertyName));
 			}
 
-			base.OnBindablePropertySet(property, original, value, changed, willFirePropertyChanged);
-			_pendingHandlerUpdatesFromBPSet.Remove(property.PropertyName);
-			UpdateHandlerValue(property.PropertyName, changed);
+			try
+			{
+				base.OnBindablePropertySet(
+					property,
+					original,
+					value,
+					changed,
+					willFirePropertyChanged);
+			}
+			finally
+			{
+				if (willFirePropertyChanged)
+				{
+					s_pendingHandlerUpdatesFromBPSet.Pop();
+				}
+			}
 
+			UpdateHandlerValue(property.PropertyName, changed);
 		}
 
 		/// <summary>Method that is called when a bound property is changed.</summary>
 		/// <param name="propertyName">The name of the bound property that changed.</param>
 		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
 		{
-			// If OnPropertyChanged is being called from a SetValue call on the BO we want the handler update to happen after
-			// the PropertyChanged Delegate on the BP and this OnPropertyChanged has fired.
-			// if you look at BO you'll see the order is this
-			//
-			// OnPropertyChanged(property.PropertyName);
-			// property.PropertyChanged?.Invoke(this, original, value);
-			//
-			// It can cause somewhat confusing behavior if the handler update happens between these two calls
-			// And the user has placed reacting code inside the BP.PropertyChanged callback
-			//
-			// If the OnPropertyChanged is being called from user code, we still want that to propagate to the mapper
-			bool waitForHandlerUpdateToFireFromBP = _pendingHandlerUpdatesFromBPSet.Contains(propertyName);
+			bool waitForHandlerUpdateToFireFromBPSet = IsHandlerUpdatePending(propertyName);
 
 			base.OnPropertyChanged(propertyName);
 
@@ -736,10 +741,29 @@ namespace Microsoft.Maui.Controls
 				}
 			}
 
-			if (!waitForHandlerUpdateToFireFromBP)
+			if (!waitForHandlerUpdateToFireFromBPSet)
 			{
 				UpdateHandlerValue(propertyName, true);
 			}
+		}
+
+		bool IsHandlerUpdatePending(string propertyName)
+		{
+			if (s_pendingHandlerUpdatesFromBPSet is null)
+			{
+				return false;
+			}
+
+			foreach (var pendingUpdate in s_pendingHandlerUpdatesFromBPSet)
+			{
+				if (ReferenceEquals(pendingUpdate.Element, this) &&
+					pendingUpdate.PropertyName == propertyName)
+				{
+					return true;
+				}
+			}
+
+			return false;
 		}
 
 		private protected virtual void UpdateHandlerValue(string property, bool valueChanged)
