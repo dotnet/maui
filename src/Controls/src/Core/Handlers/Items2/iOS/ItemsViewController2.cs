@@ -280,6 +280,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			if (anchorsEnd)
 			{
+#if MACCATALYST
+				// It scrolls to the end: a restore armed by an earlier ScrollTo (see MauiCollectionView) would scroll back.
+				(CollectionView as Items.MauiCollectionView)?.ClearPendingScrollRestore();
+#endif
 				_scrollAnchor = new CollectionViewScrollAnchor();
 				CollectionView.SetNeedsLayout();
 			}
@@ -301,6 +305,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				return false;
 			}
+
+#if MACCATALYST
+			// A new scroll request: a restore armed by an earlier ScrollTo (see MauiCollectionView) would scroll back.
+			(CollectionView as Items.MauiCollectionView)?.ClearPendingScrollRestore();
+#endif
 
 			if (_scrollAnchor is { } scrollAnchor)
 			{

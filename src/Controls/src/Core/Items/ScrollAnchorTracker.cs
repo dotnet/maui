@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Controls
 	/// <item><description>
 	/// A user scroll disengages it once the user has moved the viewport more than <see cref="Threshold"/> away from the
 	/// end. Content growing while the user scrolls doesn't count as the user moving away, and neither does the viewport
-	/// springing back from past the end (a bounce).
+	/// springing back from past the end (a bounce), nor the platform moving the offset while it lays out.
 	/// </description></item>
 	/// <item><description>
 	/// An offset change the user isn't making that comes with a size change is the platform laying out, and never
@@ -47,6 +47,10 @@ namespace Microsoft.Maui.Controls
 
 		// Smaller differences are rounding to device pixels, not movement.
 		const double Tolerance = 0.5;
+
+		// Smaller differences in size are floating-point noise: content can grow by a device pixel at a time, which is less
+		// than Tolerance, and those changes add up.
+		const double SizeTolerance = 0.01;
 
 		ScrollAnchorMetrics? _last;
 		bool _lastWasUserScroll;
@@ -108,7 +112,7 @@ namespace Microsoft.Maui.Controls
 		/// Whether the platform reported that it laid out a change since the last update that the metrics may not show: a
 		/// platform can resize its content and resize it back in one layout pass (re-estimating the rows it measured
 		/// before), moving the offset as it goes. The metrics then show the same size and a new offset, which this says is
-		/// the layout's doing.
+		/// the layout's doing. While the user scrolls, the offset change it comes with doesn't count as the user moving.
 		/// </param>
 		/// <returns>The end offset to scroll to without animating, or <see langword="null"/> to stay.</returns>
 		public double? Update(ScrollAnchorMetrics metrics, bool isUserScrolling, bool sizeChanged = false)
@@ -150,9 +154,14 @@ namespace Microsoft.Maui.Controls
 					// The user's net movement away from the end in this gesture: moving back toward it cancels it out, and
 					// neither content growing below the viewport nor springing back from past the end (a bounce) adds to
 					// it. Only movement short of the end counts, and with the content resizing in between, short of both
-					// ends.
-					var end = Math.Min(previous.EndOffset, metrics.EndOffset);
-					_drift = Math.Max(0, _drift - (Math.Min(metrics.Offset, end) - Math.Min(previous.Offset, end)));
+					// ends. An offset change the platform reports making while it laid out isn't the user's. Sizes that
+					// merely differ don't say that: a platform can estimate the extent of content it hasn't laid out.
+					if (!sizeChanged)
+					{
+						var end = Math.Min(previous.EndOffset, metrics.EndOffset);
+						_drift = Math.Max(0, _drift - (Math.Min(metrics.Offset, end) - Math.Min(previous.Offset, end)));
+					}
+
 					if (!atEnd && _drift > Threshold)
 					{
 						IsAnchored = false;
@@ -168,7 +177,7 @@ namespace Microsoft.Maui.Controls
 			}
 
 			_drift = 0;
-			var resized = sizeChanged || Differs(metrics.Extent, previous.Extent) || Differs(metrics.Viewport, previous.Viewport);
+			var resized = sizeChanged || Resized(metrics.Extent, previous.Extent) || Resized(metrics.Viewport, previous.Viewport);
 			if (IsAnchored)
 			{
 				if (!resized && metrics.Offset - previous.Offset < -Tolerance && !atEnd)
@@ -211,5 +220,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		static bool Differs(double a, double b) => Math.Abs(a - b) > Tolerance;
+
+		static bool Resized(double a, double b) => Math.Abs(a - b) > SizeTolerance;
 	}
 }

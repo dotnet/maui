@@ -56,6 +56,9 @@ namespace Microsoft.Maui.DeviceTests
 				await AssertAtEnd(handler, "New items should keep the end in view.");
 
 				items[^1].Height = 160;
+
+				// Until the platform lays the item out at its new size, the view still shows the end it had.
+				await AssertEventually(() => Math.Abs(GetItemHeight(handler, items.Count - 1) - 160) <= AnchorTolerance, timeout: 3000, message: "The last item should grow.");
 				await AssertAtEnd(handler, "The last item growing should keep the end in view.");
 
 				items.RemoveAt(items.Count - 1);
@@ -156,6 +159,40 @@ namespace Microsoft.Maui.DeviceTests
 				items.Add(new AnchorItem("Added", 40));
 				await Task.Delay(500);
 				Assert.True(GetDistanceToEnd(handler) > AnchorTolerance, "Without AnchorMode, the list shouldn't follow its end.");
+			});
+		}
+
+		[Theory(DisplayName = "ScrollToEnd reaches the end of a last item taller than the view")]
+		[InlineData(ScrollAnchorMode.None, false)]
+		[InlineData(ScrollAnchorMode.None, true)]
+		[InlineData(ScrollAnchorMode.End, false)]
+		[InlineData(ScrollAnchorMode.End, true)]
+		public async Task ScrollToEndReachesTheEndOfALastItemTallerThanTheView(ScrollAnchorMode anchorMode, bool animate)
+		{
+			SetupBuilder();
+
+			// A long answer ends the chat: taller than the view, with nothing after it.
+			var items = CreateAnchorItems(10);
+			items.Add(new AnchorItem("Long answer", 600));
+			var collectionView = CreateAnchorCollectionView(items, anchorMode);
+			collectionView.Footer = null;
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				if (anchorMode == ScrollAnchorMode.None)
+				{
+					collectionView.ScrollToEnd(animate: false);
+				}
+
+				await AssertAtEnd(handler, "The list should start at the end of the long answer.");
+
+				// Read back into the answer: it starts above the view and ends below it.
+				ScrollPlatformViewBy(handler, -100);
+				await AssertEventually(() => !collectionView.IsAnchored && Math.Abs(GetDistanceToEnd(handler) - 100) <= AnchorTolerance, timeout: 3000, message: "The view should show the middle of the long answer.");
+
+				collectionView.ScrollToEnd(animate);
+				await AssertAtEnd(handler, "ScrollToEnd should reach the end of the long answer, not its start.", timeout: 5000);
+				Assert.Equal(anchorMode == ScrollAnchorMode.End, collectionView.IsAnchored);
 			});
 		}
 
@@ -278,6 +315,37 @@ namespace Microsoft.Maui.DeviceTests
 			}
 
 			return $"{first}:{top}";
+#endif
+		}
+
+		// The laid out height of the item at an index of an ungrouped list with a header, in device-independent units, or NaN
+		// while it isn't laid out.
+		static double GetItemHeight(CollectionViewHandler handler, int index)
+		{
+#if IOS || MACCATALYST
+			// The header is a supplementary view: the items are the first section's.
+			using var indexPath = Foundation.NSIndexPath.FromItemSection(index, 0);
+			return handler.Controller.CollectionView.CellForItem(indexPath) is { } cell ? (double)cell.Frame.Height : double.NaN;
+#else
+			// The header is the adapter's first position.
+			var recyclerView = (RecyclerView)handler.PlatformView;
+			return recyclerView.FindViewHolderForAdapterPosition(index + 1)?.ItemView is { } view
+				? view.Height / (double)recyclerView.Resources.DisplayMetrics.Density
+				: double.NaN;
+#endif
+		}
+
+		// Scrolls the platform view directly, as a scroll the app didn't ask CollectionView for does (in device-independent
+		// units, toward the end when positive).
+		static void ScrollPlatformViewBy(CollectionViewHandler handler, double distance)
+		{
+#if IOS || MACCATALYST
+			var collectionView = handler.Controller.CollectionView;
+			var offset = collectionView.ContentOffset;
+			collectionView.SetContentOffset(new CoreGraphics.CGPoint(offset.X, offset.Y + distance), false);
+#else
+			var recyclerView = (RecyclerView)handler.PlatformView;
+			recyclerView.ScrollBy(0, (int)Math.Round(distance * recyclerView.Resources.DisplayMetrics.Density));
 #endif
 		}
 

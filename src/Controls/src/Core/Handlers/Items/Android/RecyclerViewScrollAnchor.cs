@@ -179,7 +179,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				// scrolls the rest of the way if the end moved meanwhile.
 				_tracker.Engage();
 				Publish();
-				_recyclerView.SmoothScrollToPosition(layoutManager.ItemCount - 1);
+				SmoothScrollToEnd(_recyclerView, layoutManager);
 				return;
 			}
 
@@ -397,6 +397,28 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
+			var distance = GetDistanceToEnd(layoutManager, helper);
+			if (distance > 0)
+			{
+				_recyclerView.ScrollBy(0, distance);
+			}
+		}
+
+		/// <summary>
+		/// Starts an animated scroll that ends with the end of the last row at the end of the viewport, also when that row is
+		/// taller than the viewport and already in view, where <c>SmoothScrollToPosition</c> snaps the nearer edge and can
+		/// scroll back to the row's start.
+		/// </summary>
+		internal static void SmoothScrollToEnd(RecyclerView recyclerView, RecyclerView.LayoutManager layoutManager) =>
+			layoutManager.StartSmoothScroll(new PositionalSmoothScroller(recyclerView.Context, ScrollToPosition.End)
+			{
+				TargetPosition = layoutManager.ItemCount - 1
+			});
+
+		/// <summary>Gets how far, in pixels, the end of the lowest row laid out is past the end of the viewport.</summary>
+		/// <remarks>The lowest row ends the content once the last one is laid out: in a grid the last item can sit beside a taller one.</remarks>
+		internal static int GetDistanceToEnd(RecyclerView.LayoutManager layoutManager, OrientationHelper helper)
+		{
 			var end = int.MinValue;
 			for (var index = 0; index < layoutManager.ChildCount; index++)
 			{
@@ -406,11 +428,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				}
 			}
 
-			var distance = end - helper.EndAfterPadding;
-			if (distance > 0)
-			{
-				_recyclerView.ScrollBy(0, distance);
-			}
+			return end - helper.EndAfterPadding;
 		}
 
 		// Lays the last row out at the end in the next layout, so a view that starts at its end shows it from its first frame.
