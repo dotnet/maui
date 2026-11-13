@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls
@@ -85,6 +86,35 @@ namespace Microsoft.Maui.Controls
 			=> GoToState(visualElement, name, force: false);
 
 		internal static bool GoToState(VisualElement visualElement, string name, bool force)
+		{
+			var dispatcher = visualElement.Handler?.MauiContext?.GetOptionalDispatcher();
+			if (dispatcher?.IsDispatchRequired == true)
+			{
+				// A state transition changes both the VSM state and its bindable properties.
+				var completion = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+				if (!dispatcher.Dispatch(() =>
+				{
+					try
+					{
+						completion.SetResult(GoToStateCore(visualElement, name, force));
+					}
+					catch (Exception exception)
+					{
+						completion.SetException(exception);
+					}
+				}))
+				{
+					throw new InvalidOperationException("The visual state transition could not be dispatched to the element's dispatcher.");
+				}
+
+				// Preserve the synchronous result and exception behavior of GoToState.
+				return completion.Task.GetAwaiter().GetResult();
+			}
+
+			return GoToStateCore(visualElement, name, force);
+		}
+
+		static bool GoToStateCore(VisualElement visualElement, string name, bool force)
 		{
 			var context = visualElement.GetContext(VisualStateGroupsProperty);
 			if (context is null)
