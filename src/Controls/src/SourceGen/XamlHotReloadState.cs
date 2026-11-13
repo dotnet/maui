@@ -34,6 +34,13 @@ internal sealed record HotReloadFieldContract(string Type, string AccessModifier
 /// is exactly what made the generator non-deterministic and could leave reverted code uncompilable.)
 /// </para>
 ///
+/// <para>
+/// Rude edits (https://github.com/dotnet/maui/issues/36156): a generation whose output does not compile
+/// never reaches the running app. The generator rolls the entry back (<see cref="Capture"/> /
+/// <see cref="Restore"/>) so the next edit is diffed against the last generation that could have been
+/// applied, and its patch also carries the changes made together with the rude edit.
+/// </para>
+///
 /// Keyed on <c>(AssemblyName, TargetFramework, RelativePath)</c> to prevent:
 /// <list type="bullet">
 ///   <item>Cross-project cache bleeding when different projects contain identically-named XAML files.</item>
@@ -82,6 +89,45 @@ internal static class XamlHotReloadState
 		/// can tell how many times a file has been regenerated in the current build session.
 		/// </summary>
 		public int Version { get; set; }
+
+		public CacheEntry Clone()
+		{
+			var clone = (CacheEntry)MemberwiseClone();
+			clone.NodeIds = NodeIds is null ? null : new Dictionary<ElementNode, string>(NodeIds);
+			return clone;
+		}
+	}
+
+	/// <summary>
+	/// Returns a copy of the current entry for the given file, or <see langword="null"/> when none exists.
+	/// Pass it to <see cref="Restore"/> to roll back a generation that turned out not to compile.
+	/// </summary>
+	public static CacheEntry? Capture(string assemblyName, string targetFramework, string relativePath, HotReloadSessionToken? sessionToken)
+	{
+		lock (_lock)
+		{
+			return sessionToken is not null
+				&& _sessions.TryGetValue(sessionToken, out var session)
+				&& session.Cache.TryGetValue((assemblyName, targetFramework, relativePath), out var entry)
+					? entry.Clone()
+					: null;
+		}
+	}
+
+	/// <summary>
+	/// Puts back an entry returned by <see cref="Capture"/>. A generation whose output does not compile
+	/// never reaches the running app (https://github.com/dotnet/maui/issues/36156), so the next edit must be
+	/// diffed against the generation before it.
+	/// </summary>
+	public static void Restore(string assemblyName, string targetFramework, string relativePath, CacheEntry snapshot, HotReloadSessionToken? sessionToken)
+	{
+		if (sessionToken is null)
+			return;
+
+		lock (_lock)
+		{
+			_sessions.GetOrCreateValue(sessionToken).Cache[(assemblyName, targetFramework, relativePath)] = snapshot.Clone();
+		}
 	}
 
 	/// <summary>
