@@ -126,8 +126,10 @@ public class XamlGenerator : IIncrementalGenerator
 			.Select(XamlTypeConflictAnalyzer.Analyze)
 			.WithTrackingName("XamlTypeConflictDiagnostics");
 
+		// The original (user-only) compilation is threaded through so XIHR can fingerprint the user C#
+		// sources without the generated code-behind trees (see UserSourcesFingerprint).
 		var xamlSourceProviderForIC = xamlProjectItemProviderForIC
-			.Combine(xmlnsDefinitionsProviderForIC, compilationWithCodeBehindProvider.Select(GetTypeCache), compilationWithCodeBehindProvider)
+			.Combine(xmlnsDefinitionsProviderForIC, compilationWithCodeBehindProvider.Select(GetTypeCache), compilationWithCodeBehindProvider, initContext.CompilationProvider)
 			.WithTrackingName(TrackingNames.XamlSourceProviderForIC);
 
 		// Register the XAML pipeline for CodeBehind
@@ -158,7 +160,7 @@ public class XamlGenerator : IIncrementalGenerator
 		// Register the XAML pipeline for InitializeComponent
 		initContext.RegisterImplementationSourceOutput(xamlSourceProviderForIC, static (sourceProductionContext, provider) =>
 		{
-			var (xamlItem, xmlnsCache, typeCache, compilation) = provider;
+			var (xamlItem, xmlnsCache, typeCache, compilation, userCompilation) = provider;
 
 			if (xamlItem?.ProjectItem?.RelativePath is null)
 			{
@@ -218,6 +220,13 @@ public class XamlGenerator : IIncrementalGenerator
 				{
 					var rootType = ucRootType!;
 					var accessModifier = ucAccessModifier;
+					// The exact generation this diff starts from (copied before the diff can touch the IDs).
+					var patchBaseline = new XamlHotReloadState.GenerationSnapshot(
+						previousXaml!,
+						previousRoot,
+						previousNodeIds is null ? null : new Dictionary<ElementNode, string>(previousNodeIds),
+						previousNextId,
+						previousVersion);
 					var generatedFields = XamlHotReloadState.GetGeneratedFields(assemblyName, targetFramework, stateKey, xamlItem.ProjectItem.HotReloadSessionToken);
 					var patchBody = InitializeComponentCodeWriter.TryGeneratePatchBody(
 						previousRoot,
@@ -255,7 +264,10 @@ public class XamlGenerator : IIncrementalGenerator
 						// accumulate a version chain: accumulation retained stale/invalid intermediate patches
 						// and produced non-deterministic, sometimes-uncompilable output when an edit was
 						// reverted (the invalid value lingered forever). See the XIHR versioning fix.
-						XamlHotReloadState.Update(assemblyName, targetFramework, stateKey, xamlItem.Xaml!, parsedNewRoot, effectiveNewIds, newNextNodeId, previousVersion + 1, xamlItem.ProjectItem.HotReloadSessionToken);
+						// Keep the generation this patch was diffed from, so a re-evaluation of the same inputs
+						// re-derives the same patch (https://github.com/dotnet/maui/issues/36937).
+						var patchSources = UserSourcesFingerprint.Get(userCompilation, sourceProductionContext.CancellationToken);
+						XamlHotReloadState.Update(assemblyName, targetFramework, stateKey, xamlItem.Xaml!, parsedNewRoot, effectiveNewIds, newNextNodeId, previousVersion + 1, xamlItem.ProjectItem.HotReloadSessionToken, patchBaseline, patchSources);
 						ucCode = UpdateComponentCodeWriter.GenerateUpdateComponent(rootType, accessModifier, patchBody);
 					}
 					else if (emptyDiff)
@@ -280,6 +292,44 @@ public class XamlGenerator : IIncrementalGenerator
 						}
 						XamlHotReloadState.Update(assemblyName, targetFramework, stateKey, xamlItem.Xaml!, parsedNewRoot, freshIds, freshNextId, 0, xamlItem.ProjectItem.HotReloadSessionToken);
 						ucCode = UpdateComponentCodeWriter.GenerateUpdateComponent(rootType, accessModifier, (string?)null);
+					}
+				}
+				else if (hadPreviousEntry
+					&& previousXaml == xamlItem.Xaml
+					&& canEmitUC
+					&& XamlHotReloadState.TryGetPatchBaseline(assemblyName, targetFramework, stateKey, xamlItem.ProjectItem.HotReloadSessionToken, out var pendingBaseline, out var pendingSources))
+				{
+					// Same XAML as the generation that produced the pending patch. If the user C# sources are
+					// unchanged too, this is a re-evaluation of the same inputs (driver fork, speculative or
+					// discarded run): re-derive the identical patch from its baseline rather than emitting an
+					// empty UpdateComponent() and silently dropping the edit. Otherwise this is a later
+					// generation (C#-only edit): UC is emitted empty. The baseline is left untouched either
+					// way, so the output only depends on the inputs, never on evaluation order.
+					if (pendingSources is not null
+						&& pendingSources.Equals(UserSourcesFingerprint.Get(userCompilation, sourceProductionContext.CancellationToken)))
+					{
+						var replayedPatchBody = InitializeComponentCodeWriter.TryGeneratePatchBody(
+							pendingBaseline!.ParsedRoot,
+							pendingBaseline.NodeIds is null ? null : new Dictionary<ElementNode, string>(pendingBaseline.NodeIds),
+							pendingBaseline.NextNodeId,
+							pendingBaseline.XamlText,
+							xamlItem.Xaml!,
+							fromVersion: pendingBaseline.Version,
+							toVersion: pendingBaseline.Version + 1,
+							ucRootType!,
+							compilation,
+							xmlnsCache,
+							typeCache,
+							sourceProductionContext,
+							xamlItem.ProjectItem,
+							XamlHotReloadState.GetGeneratedFields(assemblyName, targetFramework, stateKey, xamlItem.ProjectItem.HotReloadSessionToken),
+							out _,
+							out _,
+							out _,
+							out _,
+							out _);
+						if (replayedPatchBody != null)
+							ucCode = UpdateComponentCodeWriter.GenerateUpdateComponent(ucRootType!, ucAccessModifier, replayedPatchBody);
 					}
 				}
 				else if (!hadPreviousEntry && xamlItem.ProjectItem.EnableIncrementalHotReload && xamlItem.Xaml is not null)
