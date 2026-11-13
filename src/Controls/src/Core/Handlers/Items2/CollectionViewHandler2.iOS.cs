@@ -86,10 +86,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			[StructuredItemsView.ItemSizingStrategyProperty.PropertyName] = MapItemSizingStrategy,
 			[GroupableItemsView.GroupHeaderTemplateProperty.PropertyName] = MapHeaderTemplate,
 			[GroupableItemsView.GroupFooterTemplateProperty.PropertyName] = MapFooterTemplate,
+			[StructuredItemsView.AnchorModeProperty.PropertyName] = MapAnchorMode,
 		};
 	}
 
-	public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItemsView>
+	public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItemsView>, IScrollToEndHandler
 	{
 		// Reorderable
 		protected override ItemsViewController2<ReorderableItemsView> CreateController(ReorderableItemsView itemsView, UICollectionViewLayout layout)
@@ -226,6 +227,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			handler.UpdateLayout();
 		}
+
+		/// <summary>Maps <see cref="StructuredItemsView.AnchorMode"/> to the platform view.</summary>
+		/// <param name="handler">The handler for the collection view.</param>
+		/// <param name="itemsView">The collection view.</param>
+		public static void MapAnchorMode(CollectionViewHandler2 handler, StructuredItemsView itemsView)
+		{
+			handler.Controller?.UpdateAnchorMode();
+		}
+
+		bool IScrollToEndHandler.ScrollToEnd(bool animate) => Controller?.ScrollToEnd(animate) ?? false;
 
 		Dictionary<string, object> _layoutPropertyCache = new();
 		IItemsLayout _subscribedItemsLayout;

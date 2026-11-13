@@ -47,6 +47,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		VisualElement _emptyViewFormsElement;
 		List<string> _cellReuseIds = new List<string>();
 		CGSize _previousContentSize;
+		CollectionViewScrollAnchor _scrollAnchor;
 
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		protected UICollectionViewDelegateFlowLayout Delegator { get; set; }
@@ -237,6 +238,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		public override void ViewWillLayoutSubviews()
 		{
+			_scrollAnchor?.LayoutStarting();
+
 			if (CollectionView is Items.MauiCollectionView { NeedsCellLayout: true } collectionView)
 			{
 				InvalidateLayoutIfItemsMeasureChanged();
@@ -255,6 +258,60 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			base.ViewWillLayoutSubviews();
 			LayoutEmptyView();
 			InvalidateMeasureIfContentSizeChanged();
+		}
+
+		public override void ViewDidLayoutSubviews()
+		{
+			base.ViewDidLayoutSubviews();
+			_scrollAnchor?.LayoutFinished(CollectionView, ItemsView as StructuredItemsView, ScrollDirection == UICollectionViewScrollDirection.Vertical);
+		}
+
+		internal CollectionViewScrollAnchor ScrollAnchor => _scrollAnchor;
+
+		internal void UpdateAnchorMode()
+		{
+			var anchorsEnd = ItemsView is StructuredItemsView structuredItemsView
+				&& (structuredItemsView.AnchorMode & ScrollAnchorMode.End) != 0;
+
+			if (anchorsEnd == (_scrollAnchor is not null))
+			{
+				return;
+			}
+
+			if (anchorsEnd)
+			{
+				_scrollAnchor = new CollectionViewScrollAnchor();
+				CollectionView.SetNeedsLayout();
+			}
+			else
+			{
+				DetachScrollAnchor();
+			}
+		}
+
+		internal void DetachScrollAnchor()
+		{
+			_scrollAnchor?.Detach(CollectionView, ItemsView as StructuredItemsView);
+			_scrollAnchor = null;
+		}
+
+		internal bool ScrollToEnd(bool animate)
+		{
+			if (ScrollDirection != UICollectionViewScrollDirection.Vertical)
+			{
+				return false;
+			}
+
+			if (_scrollAnchor is { } scrollAnchor)
+			{
+				scrollAnchor.ScrollToEnd(CollectionView, ItemsView as StructuredItemsView, animate);
+			}
+			else
+			{
+				CollectionViewScrollAnchor.ScrollToEndOnce(CollectionView, animate);
+			}
+
+			return true;
 		}
 
 		void InvalidateLayoutIfItemsMeasureChanged()
@@ -411,6 +468,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				(Delegator as IScrollTrackingDelegator)?.ResetScrollTracking();
 				CollectionView.ContentOffset = CoreGraphics.CGPoint.Empty;
 			}
+
+			// New items start at their end, as the view did when it first appeared.
+			_scrollAnchor?.Reset(CollectionView);
 
 			(ItemsView as IView)?.InvalidateMeasure();
 		}

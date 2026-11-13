@@ -17,7 +17,7 @@ using AViewCompat = AndroidX.Core.View.ViewCompat;
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
 
-	public class MauiRecyclerView<TItemsView, TAdapter, TItemsViewSource> : RecyclerView, IMauiRecyclerView<TItemsView>, IMauiRecyclerView
+	public class MauiRecyclerView<TItemsView, TAdapter, TItemsViewSource> : RecyclerView, IMauiRecyclerView<TItemsView>, IMauiRecyclerView, IScrollAnchorRecyclerView
 		where TItemsView : ItemsView
 		where TAdapter : ItemsViewAdapter<TItemsView, TItemsViewSource>
 		where TItemsViewSource : IItemsViewSource
@@ -52,6 +52,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		WeakNotifyPropertyChangedProxy _layoutPropertyChangedProxy;
 		PropertyChangedEventHandler _layoutPropertyChanged;
 		Java.Lang.IRunnable _setAppBarLiftTargetRunnable;
+		RecyclerViewScrollAnchor _scrollAnchor;
 
 		~MauiRecyclerView() => _layoutPropertyChangedProxy?.Unsubscribe();
 
@@ -144,6 +145,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			// Stop listening for ScrollTo requests
 			oldElement.ScrollToRequested -= ScrollToRequested;
+
+			DetachScrollAnchor();
 
 			RemoveScrollListener();
 
@@ -448,6 +451,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			AddOrUpdateScrollListener();
 			UpdateItemsUpdatingScrollMode();
 			UpdateSnapBehavior();
+
+			// New items start at their end, as the view did when it first appeared.
+			_scrollAnchor?.Reset();
 		}
 
 		protected virtual void UpdateItemsUpdatingScrollMode()
@@ -644,6 +650,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		protected virtual void ScrollToRequested(object sender, ScrollToRequestEventArgs args)
 		{
 			(GetSnapManager()?.GetCurrentSnapHelper() as SingleSnapHelper)?.ResetCurrentTargetPosition();
+
+			// A scroll the app requests is judged by where it lands: the anchor doesn't scroll it back to the end.
+			_scrollAnchor?.ScrollRequested(args.IsAnimated);
 			ScrollTo(args);
 		}
 
@@ -709,6 +718,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected override void OnLayout(bool changed, int l, int t, int r, int b)
 		{
+			_scrollAnchor?.LayoutStarting();
 			base.OnLayout(changed, l, t, r, b);
 			ClipBounds = new ARect(0, 0, Width, Height);
 			// After a direct (non-animated) scroll operation, we may need to make adjustments
@@ -716,6 +726,72 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			// (Deliberately checking the private member here rather than the property accessor; the accessor will
 			// create a new ScrollHelper if needed, and there's no reason to do that until a Scroll is requested.)
 			_scrollHelper?.AdjustScroll();
+			_scrollAnchor?.LayoutFinished();
+		}
+
+		public override void OnScrolled(int dx, int dy)
+		{
+			base.OnScrolled(dx, dy);
+			_scrollAnchor?.Scrolled(dx, dy);
+		}
+
+		public override void OnScrollStateChanged(int state)
+		{
+			base.OnScrollStateChanged(state);
+			_scrollAnchor?.ScrollStateChanged(state);
+		}
+
+		void IScrollAnchorRecyclerView.UpdateAnchorMode()
+		{
+			var itemsView = ItemsView as StructuredItemsView;
+			var anchorsEnd = itemsView is not null && (itemsView.AnchorMode & ScrollAnchorMode.End) != 0;
+
+			if (anchorsEnd == (_scrollAnchor is not null))
+			{
+				return;
+			}
+
+			if (anchorsEnd)
+			{
+				_scrollAnchor = new RecyclerViewScrollAnchor(this, itemsView);
+			}
+			else
+			{
+				DetachScrollAnchor();
+			}
+		}
+
+		void DetachScrollAnchor()
+		{
+			_scrollAnchor?.Detach();
+			_scrollAnchor = null;
+		}
+
+		bool IScrollAnchorRecyclerView.ScrollToEnd(bool animate)
+		{
+			if (GetLayoutManager() is not { } layoutManager || !layoutManager.CanScrollVertically())
+			{
+				return false;
+			}
+
+			if (_scrollAnchor is not null)
+			{
+				_scrollAnchor.ScrollToEnd(animate);
+			}
+			else if (layoutManager.ItemCount > 0)
+			{
+				// The footer is the adapter's last position: lined up with the end of the viewport, it ends the content.
+				if (animate)
+				{
+					SmoothScrollToPosition(layoutManager.ItemCount - 1);
+				}
+				else
+				{
+					ScrollToPosition(layoutManager.ItemCount - 1);
+				}
+			}
+
+			return true;
 		}
 
 		protected override void OnSizeChanged(int w, int h, int oldw, int oldh)
@@ -1111,6 +1187,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		internal void AdjustScrollForItemUpdate()
 		{
+			// While the view follows its end (ScrollAnchorMode.End), the anchor keeps it there instead.
+			if (_scrollAnchor?.IsFollowingEnd == true)
+			{
+				return;
+			}
+
 			if (ItemsView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepLastItemInView)
 			{
 				ScrollTo(new ScrollToRequestEventArgs(GetLayoutManager().ItemCount, 0,
