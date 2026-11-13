@@ -1,4 +1,7 @@
 using System;
+#if ANDROID
+using System.Diagnostics;
+#endif
 using System.Linq;
 using System.Net.Http;
 using System.Reflection.Metadata;
@@ -40,29 +43,61 @@ namespace Microsoft.Maui.DeviceTests
 				drained.TrySetResult();
 			});
 			await drained.Task;
+#elif WINDOWS
+			// WinRT finalization can queue native release onto the owning UI thread.
+			var queue = await Microsoft.Maui.ApplicationModel.MainThread.InvokeOnMainThreadAsync(
+				Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread);
+			var drained = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+			if (queue is null || !queue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () => drained.TrySetResult()))
+				throw new InvalidOperationException("Unable to drain the Windows UI queue after collection.");
+			await drained.Task.WaitAsync(TimeSpan.FromSeconds(30));
 #endif
 		}
 
 
 		public static async Task<bool> WaitForCollect(this WeakReference reference)
 		{
+#if ANDROID
+			return await WaitForAndroidCollection(() => reference.IsAlive);
+#else
 			for (int i = 0; i < 40 && reference.IsAlive; i++)
 			{
 				await Collect();
 			}
 
 			return reference.IsAlive;
+#endif
 		}
 
 		public static async Task<bool> WaitForCollect(this WeakReference<object> reference)
 		{
+#if ANDROID
+			return await WaitForAndroidCollection(() => reference.TryGetTarget(out _));
+#else
 			for (int i = 0; i < 40 && reference.TryGetTarget(out _); i++)
 			{
 				await Collect();
 			}
 
 			return reference.TryGetTarget(out _);
+#endif
 		}
+
+#if ANDROID
+		static async Task<bool> WaitForAndroidCollection(Func<bool> isAlive)
+		{
+			// Java-side release can finish after managed finalization.
+			var stopwatch = Stopwatch.StartNew();
+			while (isAlive() && stopwatch.Elapsed < TimeSpan.FromSeconds(10))
+			{
+				await Collect();
+				if (isAlive())
+					await Task.Delay(10);
+			}
+
+			return isAlive();
+		}
+#endif
 
 		public static async Task<bool> WaitForCollect(params WeakReference[] references)
 		{
@@ -92,7 +127,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				if (weakReference.IsAlive && weakReference.Target is object x)
 				{
-					stringBuilder.Append($"Reference to {x} (type {x.GetType()} is still alive.\n");
+					stringBuilder.Append($"Reference to {x.GetType()} is still alive.\n");
 				}
 			}
 

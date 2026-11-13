@@ -52,20 +52,22 @@ namespace Microsoft.Maui.DeviceTests
 				}
 				finally
 				{
-					window.Handler?.DisconnectHandler();
+					try
+					{
+						fragmentManager
+							.BeginTransaction()
+							.Remove(viewFragment)
+							.Commit();
 
-					fragmentManager
-						.BeginTransaction()
-						.Remove(viewFragment)
-						.Commit();
-
-					rootView.RemoveView(linearLayoutCompat);
+						await viewFragment.FinishedDestroying.WaitAsync(TimeSpan.FromSeconds(15));
+					}
+					finally
+					{
+						window.Handler?.DisconnectHandler();
+						rootView.RemoveView(linearLayoutCompat);
+					}
 
 					await linearLayoutCompat.OnUnloadedAsync();
-					if (viewFragment.View != null)
-						await viewFragment.View.OnUnloadedAsync();
-
-					await viewFragment.FinishedDestroying;
 
 					// Unset the Support Action bar if the calling code has set the support action bar
 					if (MauiContext.Context.GetActivity() is AppCompatActivity aca)
@@ -285,8 +287,8 @@ namespace Microsoft.Maui.DeviceTests
 
 		class WindowTestFragment : Fragment
 		{
-			TaskCompletionSource<bool> _taskCompletionSource = new TaskCompletionSource<bool>();
-			TaskCompletionSource<bool> _finishedDestroying = new TaskCompletionSource<bool>();
+			TaskCompletionSource<bool> _taskCompletionSource = new(TaskCreationOptions.RunContinuationsAsynchronously);
+			TaskCompletionSource<bool> _finishedDestroying = new(TaskCreationOptions.RunContinuationsAsynchronously);
 			readonly IMauiContext _mauiContext;
 			readonly IWindow _window;
 
@@ -294,7 +296,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			public Task FinishedLoading => _taskCompletionSource.Task;
 
-			public Task FinishedDestroying => _taskCompletionSource.Task;
+			public Task FinishedDestroying => _finishedDestroying.Task;
 
 			public FakeActivityRootView FakeActivityRootView { get; set; }
 

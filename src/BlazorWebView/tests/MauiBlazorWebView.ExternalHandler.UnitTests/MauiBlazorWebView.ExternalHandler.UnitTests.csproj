@@ -7,6 +7,8 @@
     public API surface. See ExternalHandlerContractTests for the assertion that enforces this.
   -->
   <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
     <TargetFramework>$(_MauiDotNetTfm)</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>Microsoft.Maui.MauiBlazorWebView.ExternalHandler.UnitTests</RootNamespace>
@@ -16,8 +18,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="coverlet.collector" Version="$(CoverletCollectorPackageVersion)" />
-    <PackageReference Include="xunit" Version="$(XunitPackageVersion)" />
+    <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" />
+    <PackageReference Include="xunit.v3.mtp-v2" Version="$(XunitPackageVersion)" />
   </ItemGroup>
 
   <ItemGroup>

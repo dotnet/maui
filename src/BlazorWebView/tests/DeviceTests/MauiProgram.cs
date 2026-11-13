@@ -19,9 +19,6 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests
 		public static IApplication DefaultTestApp => MauiProgramDefaults.DefaultTestApp;
 
 		public static MauiApp CreateMauiApp() =>
-			MauiProgramDefaults.CreateMauiApp(new List<Assembly>()
-			{
-				typeof(MauiProgram).Assembly
-			});
+			MauiProgramDefaults.CreateMauiApp(typeof(MauiProgram).Assembly);
 	}
 }

@@ -104,7 +104,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		protected Task CreateHandlerAndAddToWindow(IElement view, Func<Task> action)
 		{
-			return CreateHandlerAndAddToWindow<IWindowHandler>(CreateWindowForContent(view), handler =>
+			return CreateHandlerAndAddToWindow<IWindowHandler>(view, handler =>
 			{
 				return action();
 			}, MauiContext, null);
@@ -121,7 +121,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		protected Task CreateHandlerAndAddToWindow(IElement view, Action action)
 		{
-			return CreateHandlerAndAddToWindow<IWindowHandler>(CreateWindowForContent(view), handler =>
+			return CreateHandlerAndAddToWindow<IWindowHandler>(view, handler =>
 			{
 				action();
 				return Task.CompletedTask;
@@ -208,7 +208,7 @@ namespace Microsoft.Maui.DeviceTests
 
 							if (vc.Frame.Height < 0 && vc.Frame.Width < 0)
 							{
-								var batchTcs = new TaskCompletionSource();
+								var batchTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 								vc.BatchCommitted += OnBatchCommitted;
 								await batchTcs.Task.WaitAsync(timeOut.Value);
 								if (vc.Frame.Height < 0 && vc.Frame.Width < 0)
@@ -264,13 +264,15 @@ namespace Microsoft.Maui.DeviceTests
 
 #if !WINDOWS
 						bool isActivated = controlsWindow?.IsActivated ?? false;
-						bool isDestroyed = controlsWindow?.IsDestroyed ?? false;
 
 						if (isActivated)
 							window.Deactivated();
 
+#if !ANDROID && !IOS && !MACCATALYST
+						bool isDestroyed = controlsWindow?.IsDestroyed ?? false;
 						if (!isDestroyed)
 							window.Destroying();
+#endif
 #endif
 
 					}, mauiContext);
@@ -421,11 +423,10 @@ namespace Microsoft.Maui.DeviceTests
 		protected async Task OnLoadedAsync(VisualElement frameworkElement, TimeSpan? timeOut = null)
 		{
 			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
-			var source = new TaskCompletionSource();
+			var source = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 			if (frameworkElement.IsLoaded && frameworkElement.IsLoadedOnPlatform())
 			{
-				await Task.Delay(50);
-				source.TrySetResult();
+				return;
 			}
 			else
 			{
@@ -455,11 +456,10 @@ namespace Microsoft.Maui.DeviceTests
 		protected async Task OnUnloadedAsync(VisualElement frameworkElement, TimeSpan? timeOut = null)
 		{
 			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
-			var source = new TaskCompletionSource();
+			var source = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 			if (!frameworkElement.IsLoaded && !frameworkElement.IsLoadedOnPlatform())
 			{
-				await Task.Delay(50);
-				source.TrySetResult();
+				return;
 			}
 			// in the xplat code we switch Loaded to Unloaded if the window property is removed.
 			// This will happen before the the control has been unloaded at the platform level.
@@ -543,7 +543,7 @@ namespace Microsoft.Maui.DeviceTests
 			}
 
 			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
-			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
+			TaskCompletionSource<object> taskCompletionSource = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
 			page.NavigatedTo += NavigatedTo;
 
@@ -557,8 +557,8 @@ namespace Microsoft.Maui.DeviceTests
 
 			void NavigatedTo(object sender, NavigatedToEventArgs e)
 			{
-				taskCompletionSource.SetResult(true);
 				page.NavigatedTo -= NavigatedTo;
+				taskCompletionSource.SetResult(true);
 			}
 		}
 
@@ -571,7 +571,7 @@ namespace Microsoft.Maui.DeviceTests
 			}
 
 			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
-			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
+			TaskCompletionSource<object> taskCompletionSource = new(TaskCreationOptions.RunContinuationsAsynchronously);
 			frameworkElement.BatchCommitted += OnBatchCommitted;
 
 			await taskCompletionSource.Task.WaitAsync(timeOut.Value);

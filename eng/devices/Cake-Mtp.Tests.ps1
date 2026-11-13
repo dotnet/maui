@@ -1,0 +1,441 @@
+#Requires -Modules Pester
+
+BeforeAll {
+    $script:RepoRoot = (Resolve-Path "$PSScriptRoot/../..").Path
+    $script:WorkDirectory = Join-Path $RepoRoot "artifacts/cake-mtp-tests-$([guid]::NewGuid().ToString('N'))"
+    New-Item -ItemType Directory -Path $WorkDirectory -Force | Out-Null
+    $dotnet = Get-Content -Raw (Join-Path $RepoRoot 'eng/cake/dotnet.cake')
+    $reportClass = $dotnet.Substring($dotnet.IndexOf('public static class IosNativeTestReports'))
+    if (!('IosNativeTestReports' -as [type])) {
+        Add-Type -TypeDefinition "using System; using System.Linq; using System.Xml.Linq; $reportClass"
+    }
+
+    $ios = Get-Content -Raw (Join-Path $PSScriptRoot 'ios.cake')
+    $delete = [regex]::Match($ios, '(?s)void DeleteSimulator\(.*?(?=\r?\nstring GetDefaultRuntimeIdentifier)').Value
+    $getUdid = [regex]::Match($ios, '(?s)string GetUDID\(.*?(?=\r?\nvoid GetSimulators)').Value
+    $findRuntime = [regex]::Match($ios, '(?s)string FindSimulatorRuntime\(.*?(?=\r?\nstring RunAppleCommand)').Value
+    $getSimulators = [regex]::Match($ios, '(?s)void GetSimulators\(.*?(?=\r?\nvoid ResetSimulators)').Value
+    if (!('CakeSimulatorHarness' -as [type])) {
+        Add-Type -TypeDefinition @"
+using System;
+using System.Linq;
+using System.Collections.Generic;
+public class CakeSimulatorHarness
+{
+    public string ownedSimulatorUdid = "owned-before-retry";
+    public string udid = "";
+    public string iosVersion = "latest";
+    public string RuntimeIdentifier = "com.apple.CoreSimulator.SimRuntime.iOS-27-0";
+    public string RuntimesJson = null;
+    public string DevicesJson = "{\"devices\":{\"runtime\":[]}}";
+    public Queue<int> DeleteExits = new Queue<int>();
+    public List<string> Calls = new List<string>();
+    public int StartProcess(string tool, string arguments)
+    {
+        Calls.Add(arguments);
+        return arguments.StartsWith("simctl delete") ? DeleteExits.Dequeue() : 0;
+    }
+    void ExecuteWithRetries(Func<int> action, int retries)
+    {
+        while (retries-- > 0) { if (action() == 0) break; }
+    }
+    void Information(string message, params object[] arguments) {}
+    string EnvironmentVariable(string name) { return ""; }
+    string RunAppleCommand(params string[] arguments)
+    {
+        Calls.Add(string.Join(" ", arguments));
+        if (arguments[1] == "create") return "owned-after-retry";
+        if (arguments.Length > 2 && arguments[2] == "runtimes")
+            return RuntimesJson ?? "{\"runtimes\":[{\"isAvailable\":true,\"identifier\":\"" + RuntimeIdentifier +
+                "\",\"version\":\"" + RuntimeIdentifier.Split(new[] { "iOS-" }, StringSplitOptions.None).Last().Replace('-', '.') + "\"}]}";
+        return DevicesJson;
+    }
+    public void Delete(string simulator) { DeleteSimulator(simulator); }
+    public string Acquire(string target = "ios_simulator_latest") { return GetUDID(target, null); }
+    public string FindRuntime(string version) { return FindSimulatorRuntime(version); }
+    public void Prepare(string version) { GetSimulators(version, null); }
+    $delete
+    $getUdid
+    $findRuntime
+    $getSimulators
+}
+"@
+    }
+}
+
+AfterAll {
+    Remove-Item -LiteralPath $WorkDirectory -Recurse -Force
+}
+
+Describe 'Direct Cake native execution' {
+    It 'resolves actual minimum and latest selectors using installed runtime JSON' {
+        $harness = [CakeSimulatorHarness]::new()
+        $harness.RuntimesJson = '{"runtimes":[{"isAvailable":true,"identifier":"com.apple.CoreSimulator.SimRuntime.iOS-27-0","version":"27.0"},{"isAvailable":false,"identifier":"com.apple.CoreSimulator.SimRuntime.iOS-12-0","version":"12.0"},{"isAvailable":true,"identifier":"com.apple.CoreSimulator.SimRuntime.tvOS-10-0","version":"10.0"},{"isAvailable":true,"identifier":"com.apple.CoreSimulator.SimRuntime.iOS-15-0","version":"15.0"}]}'
+        $harness.FindRuntime('min') | Should -Be 'com.apple.CoreSimulator.SimRuntime.iOS-15-0'
+        $harness.FindRuntime('latest') | Should -Be 'com.apple.CoreSimulator.SimRuntime.iOS-27-0'
+        $harness.FindRuntime('15') | Should -Be 'com.apple.CoreSimulator.SimRuntime.iOS-15-0'
+        $harness.Prepare('ios_simulator_min')
+        @($harness.Calls | Where-Object { $_ -like '*downloadPlatform*' }).Count | Should -Be 0
+    }
+
+    It 'fails an unavailable minimum selector without attempting to download buildVersion min' {
+        $harness = [CakeSimulatorHarness]::new()
+        $harness.RuntimesJson = '{"runtimes":[]}'
+        $harness.FindRuntime('min') | Should -BeNullOrEmpty
+        { $harness.Prepare('ios_simulator_min') } | Should -Throw '*requires an installed iOS runtime*'
+        @($harness.Calls | Where-Object { $_ -like '*downloadPlatform*' }).Count | Should -Be 0
+    }
+
+    It 'preserves the legacy simulator profile instead of borrowing an arbitrary booted phone' -TestCases @(
+        @{ Target = 'ios_simulator_latest'; Runtime = 'com.apple.CoreSimulator.SimRuntime.iOS-27-0'; Profile = 'iPhone-11-Pro' }
+        @{ Target = 'ios_simulator_min'; Runtime = 'com.apple.CoreSimulator.SimRuntime.iOS-27-0'; Profile = 'iPhone-SE-3rd-generation' }
+        @{ Target = 'ios_simulator_min'; Runtime = 'com.apple.CoreSimulator.SimRuntime.iOS-15-0'; Profile = 'iPhone-6s' }
+    ) {
+        param($Target, $Runtime, $Profile)
+        $harness = [CakeSimulatorHarness]::new()
+        $harness.ownedSimulatorUdid = ''
+        $harness.RuntimeIdentifier = $Runtime
+        $harness.DevicesJson = '{"devices":{"runtime":[{"udid":"foreign-booted","name":"iPhone 17 Pro","state":"Booted","deviceTypeIdentifier":"com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro"}]}}'
+        $harness.Acquire($Target) | Should -Be 'owned-after-retry'
+        $create = @($harness.Calls | Where-Object { $_ -like 'simctl create *' })
+        $create.Count | Should -Be 1
+        $create[0] | Should -Match ([regex]::Escape("com.apple.CoreSimulator.SimDeviceType.$Profile $Runtime"))
+    }
+
+    It 'retains an explicitly selected simulator without creating or deleting it' {
+        $harness = [CakeSimulatorHarness]::new()
+        $harness.ownedSimulatorUdid = ''
+        $harness.udid = 'foreign-booted'
+        $harness.DevicesJson = '{"devices":{"runtime":[{"udid":"foreign-booted","name":"iPhone 17 Pro","state":"Booted"}]}}'
+        $harness.Acquire() | Should -Be 'foreign-booted'
+        @($harness.Calls | Where-Object { $_ -like 'simctl create *' -or $_ -like 'simctl delete *' }).Count |
+            Should -Be 0
+    }
+
+    It 'has no executable XHarness dependency in any platform script' {
+        foreach ($platform in @('ios', 'android', 'catalyst')) {
+            $source = Get-Content -Raw (Join-Path $PSScriptRoot "$platform.cake")
+            $source | Should -Not -Match '(?i)run\s+xharness'
+            $source | Should -Match 'RunNativeTestWithLocalDotNet\(project, config, tfm, rid,'
+        }
+    }
+
+    It 'uses the common native builder and propagates failing process exits' {
+        $source = Get-Content -Raw (Join-Path $RepoRoot 'eng/cake/dotnet.cake')
+        $source | Should -Match 'MtpTestArguments.Native'
+        $source | Should -Match 'IosNativeTestReports.RunForRuntime\(rid,'
+        $source | Should -Match 'Native dotnet test failed with exit code'
+        $source | Should -Not -Match 'ignore-exit-code'
+    }
+
+    It 'does not forward a distributed MSBuild logger into the MTP test host' {
+        $source = Get-Content -Raw (Join-Path $RepoRoot 'eng/cake/dotnet.cake')
+        $test = [regex]::Match($source,
+            '(?s)void RunTestWithLocalDotNet\(.*?(?=void RunNativeTestWithLocalDotNet)').Value
+        $test | Should -Not -Match 'GetMSBuildForwardingLoggerPath\('
+        $test | Should -Match '-bl:'
+        ($source -split 'void RunTestWithLocalDotNet', 2)[0] |
+            Should -Match 'msbuildSettings.WithArgumentCustomization\(args => args.Append\(loggerArg\)\)'
+    }
+
+    It 'routes Windows native targets through the owned MTP and TRX runner for both packaging modes' {
+        $windows = Get-Content -Raw (Join-Path $PSScriptRoot 'windows.cake')
+        $windows | Should -Match 'ExecuteWindowsNativeTests\(buildOnly: true\)'
+        $windows | Should -Match 'ExecuteWindowsNativeTests\(buildOnly: false\)'
+        $windows | Should -Match 'Run-DeviceTests.ps1'
+        $windows | Should -Match 'Append\("-ProjectPath"\)'
+        $windows | Should -Match 'Append\("-TargetFramework"\)'
+        $windows | Should -Match 'isPackagedTestRun \? "packaged" : "unpackaged"'
+        $windows | Should -Match 'WithCriteria\(isPackagedTestRun && !isNativeProjectTestRun\)'
+        $windows | Should -Not -Match 'devicetestcategories|LaunchPackagedAndWait|originalIndex|TestResults-.*\.xml'
+    }
+
+    It 'retains Appium preparation and NUnit retry execution' {
+        foreach ($platform in @('ios', 'android', 'catalyst')) {
+            $source = Get-Content -Raw (Join-Path $PSScriptRoot "$platform.cake")
+            $source | Should -Match 'RunUITestSetupWithRetry'
+            $source | Should -Match 'RunUITestsWithRetry'
+        }
+        (Get-Content -Raw (Join-Path $PSScriptRoot 'ios.cake')) | Should -Match 'InstallIpa\(testApp, "", device,'
+        (Get-Content -Raw (Join-Path $PSScriptRoot 'android.cake')) | Should -Match 'InstallApk\(testApp, appPackageName,'
+    }
+
+    It 'installs UI apps with native commands and never suppresses installation failures' {
+        $ios = Get-Content -Raw (Join-Path $PSScriptRoot 'ios.cake')
+        $android = Get-Content -Raw (Join-Path $PSScriptRoot 'android.cake')
+        $ios | Should -Match '"devicectl", "device", "install", "app"'
+        $ios | Should -Match '"simctl", "install"'
+        $ios | Should -Match 'xcrun .*failed with exit code'
+        $android | Should -Match 'Append\("install"\).Append\("-r"\)'
+        $android | Should -Match 'APK installation failed with exit code'
+    }
+}
+
+Describe 'Cake genuine native iOS reports' {
+    BeforeEach {
+        $script:CaseDirectory = Join-Path $WorkDirectory ([guid]::NewGuid().ToString('N'))
+        $script:Container = Join-Path $CaseDirectory 'container'
+        $script:NativeReport = Join-Path $Container 'Documents/TestResults/testResults.trx'
+        $script:ResultsDirectory = Join-Path $CaseDirectory 'results'
+        $script:ProjectPath = Join-Path $CaseDirectory 'test.csproj'
+        New-Item -ItemType Directory -Path (Split-Path $NativeReport), $ResultsDirectory -Force | Out-Null
+        Set-Content -LiteralPath $ProjectPath '<Project><PropertyGroup><ApplicationId>com.maui.tests</ApplicationId></PropertyGroup></Project>'
+        $script:GoodTrx = '<TestRun><Results><UnitTestResult outcome="Passed"/></Results><ResultSummary outcome="Completed"><Counters executed="1" failed="0" error="0" aborted="0" timeout="0"/></ResultSummary></TestRun>'
+        $script:ResolveCalls = @()
+        $script:ResolveContainer = [Func[string, string, string]] {
+            param($device, $applicationId)
+            $script:ResolveCalls += "$device/$applicationId"
+            return $script:Container
+        }
+        $script:ValidateReport = [Action[string]] {
+            param($directory)
+            & (Join-Path $script:RepoRoot 'eng/scripts/Assert-TestResults.ps1') -ResultsDirectory $directory
+        }
+    }
+
+    It 'extracts the app TRX from the exact selected simulator and validates it' {
+        [IosNativeTestReports]::Run($ProjectPath, 'owned-simulator', $ResultsDirectory, $ResolveContainer, {
+            [IO.File]::WriteAllText($script:NativeReport, $script:GoodTrx)
+            return 0
+        }, $ValidateReport)
+        $reports = @(Get-ChildItem -LiteralPath $ResultsDirectory -Filter '*.trx' -Recurse)
+        $reports.Count | Should -Be 1
+        [IO.File]::ReadAllText($reports[0].FullName) | Should -BeExactly $GoodTrx
+        $ResolveCalls | Should -Be @('owned-simulator/com.maui.tests', 'owned-simulator/com.maui.tests')
+    }
+
+    It 'rejects exit zero without a native report even with an older host TRX present' {
+        Set-Content -LiteralPath (Join-Path $ResultsDirectory 'old.trx') $GoodTrx
+        { [IosNativeTestReports]::Run($ProjectPath, 'owned-simulator', $ResultsDirectory,
+            $ResolveContainer, { return 0 }, $ValidateReport) } |
+            Should -Throw '*Native app did not produce genuine TRX*'
+    }
+
+    It 'uses the pre-run absence rather than filesystem timestamp precision to identify a new report' {
+        [IosNativeTestReports]::Run($ProjectPath, 'owned-simulator', $ResultsDirectory, $ResolveContainer, {
+            [IO.File]::WriteAllText($script:NativeReport, $script:GoodTrx)
+            [IO.File]::SetLastWriteTimeUtc($script:NativeReport, [DateTime]::UtcNow.AddMilliseconds(-20))
+            return 0
+        }, $ValidateReport)
+        @(Get-ChildItem -LiteralPath $ResultsDirectory -Filter '*.trx' -Recurse).Count | Should -Be 1
+    }
+
+    It 'rejects an unchanged native report even if its timestamp is refreshed' {
+        Set-Content -LiteralPath $NativeReport $GoodTrx
+        { [IosNativeTestReports]::Run($ProjectPath, 'owned-simulator', $ResultsDirectory, $ResolveContainer, {
+            [IO.File]::SetLastWriteTimeUtc($script:NativeReport, [DateTime]::UtcNow.AddSeconds(1))
+            return 0
+        }, $ValidateReport) } | Should -Throw '*native result is stale*'
+    }
+
+    It 'rejects an older report when the pre-run container lookup fails' {
+        Set-Content -LiteralPath $NativeReport $GoodTrx
+        [IO.File]::SetLastWriteTimeUtc($NativeReport, [DateTime]::UtcNow.AddMinutes(-1))
+        $script:LookupCount = 0
+        $resolve = [Func[string, string, string]] {
+            param($device, $applicationId)
+            if (++$script:LookupCount -eq 1) { return $null }
+            return $script:Container
+        }
+        { [IosNativeTestReports]::Run($ProjectPath, 'owned-simulator', $ResultsDirectory,
+            $resolve, { return 0 }, $ValidateReport) } | Should -Throw '*native result is stale*'
+    }
+
+    It 'retains genuine TRX but preserves a failing launcher exit' {
+        { [IosNativeTestReports]::Run($ProjectPath, 'owned-simulator', $ResultsDirectory, $ResolveContainer, {
+            [IO.File]::WriteAllText($script:NativeReport, $script:GoodTrx)
+            return 17
+        }, $ValidateReport) } | Should -Throw '*Native dotnet test failed with exit code 17*'
+        @(Get-ChildItem -LiteralPath $ResultsDirectory -Filter '*.trx' -Recurse).Count | Should -Be 1
+    }
+
+    It 'rejects a <Label> native report after exit zero' -ForEach @(
+        @{ Label = 'malformed'; Report = 'not XML'; Error = '*' }
+        @{ Label = 'failed'; Report = '<TestRun><Results><UnitTestResult outcome="Failed"/></Results><ResultSummary outcome="Failed"><Counters executed="1" failed="1"/></ResultSummary></TestRun>'; Error = '*failed or incomplete*' }
+        @{ Label = 'empty'; Report = '<TestRun><Results/><ResultSummary outcome="Completed"><Counters executed="0"/></ResultSummary></TestRun>'; Error = '*no executed tests*' }
+    ) {
+        $script:CurrentReport = $Report
+        { [IosNativeTestReports]::Run($ProjectPath, 'owned-simulator', $ResultsDirectory, $ResolveContainer, {
+            [IO.File]::WriteAllText($script:NativeReport, $script:CurrentReport)
+            return 0
+        }, $ValidateReport) } | Should -Throw $Error
+    }
+
+    It 'requires explicit device selection before launching' {
+        { [IosNativeTestReports]::Run($ProjectPath, '', $ResultsDirectory,
+            $ResolveContainer, { throw 'must not launch' }, $ValidateReport) } |
+            Should -Throw '*explicit simulator UDID*'
+    }
+
+    Describe 'Physical iOS report transport' {
+        BeforeEach {
+            $script:AppleCalls = [Collections.Generic.List[string[]]]::new()
+            $script:AppInstalled = $true
+            $script:LookupExit = 0
+            $script:CopyExit = 0
+            $script:Launched = $false
+            $script:ExecuteApple = [Func[string[], int]] {
+                param($arguments)
+                $script:AppleCalls.Add($arguments)
+                if ($arguments[2] -eq 'info') {
+                    if ($script:LookupExit -ne 0) { return $script:LookupExit }
+                    $jsonPath = $arguments[[Array]::IndexOf($arguments, '--json-output') + 1]
+                    $apps = if ($script:AppInstalled) { '[{"bundleIdentifier":"com.maui.tests"}]' } else { '[]' }
+                    [IO.File]::WriteAllText($jsonPath, '{"result":{"apps":' + $apps + '}}')
+                    return 0
+                }
+                if ($script:CopyExit -ne 0) { return $script:CopyExit }
+                $destination = $arguments[[Array]::IndexOf($arguments, '--destination') + 1]
+                [IO.Directory]::CreateDirectory($destination) | Out-Null
+                if ([IO.File]::Exists($script:NativeReport)) {
+                    [IO.Directory]::CreateDirectory((Join-Path $destination 'TestResults')) | Out-Null
+                    [IO.File]::Copy($script:NativeReport, (Join-Path $destination 'TestResults/testResults.trx'))
+                }
+                return 0
+            }
+            $script:NoSimulator = [Func[string, string, string]] { throw 'must not use simctl for physical iOS' }
+            $script:ExecutePhysical = [Func[int]] {
+                $script:Launched = $true
+                $script:AppInstalled = $true
+                [IO.File]::WriteAllText($script:NativeReport, $script:GoodTrx)
+                return 0
+            }
+        }
+
+        It 'routes ios-arm64 through the selected devicectl app container and copies genuine TRX' {
+            [IosNativeTestReports]::RunForRuntime('ios-arm64', $ProjectPath, 'physical-udid', $ResultsDirectory,
+                $NoSimulator, $ExecuteApple, $ExecutePhysical, $ValidateReport)
+            $AppleCalls.Count | Should -Be 4
+            foreach ($call in $AppleCalls) {
+                $call[0] | Should -BeExactly 'devicectl'
+                $call[[Array]::IndexOf($call, '--device') + 1] | Should -BeExactly 'physical-udid'
+            }
+            foreach ($call in @($AppleCalls | Where-Object { $_[2] -eq 'copy' })) {
+                $call[0..3] | Should -Be @('devicectl', 'device', 'copy', 'from')
+                $call[[Array]::IndexOf($call, '--domain-type') + 1] | Should -BeExactly 'appDataContainer'
+                $call[[Array]::IndexOf($call, '--domain-identifier') + 1] | Should -BeExactly 'com.maui.tests'
+                $call[[Array]::IndexOf($call, '--source') + 1] | Should -BeExactly 'Documents'
+            }
+            $reports = @(Get-ChildItem -LiteralPath $ResultsDirectory -Filter '*.trx' -Recurse -Force)
+            $reports.Count | Should -Be 1
+            [IO.File]::ReadAllText($reports[0].FullName) | Should -BeExactly $GoodTrx
+            @(Get-ChildItem -LiteralPath $ResultsDirectory -Filter '.ios-native-transfer-*' -Force).Count | Should -Be 0
+        }
+
+        It 'keeps <Rid> on simulator collection without invoking devicectl' -ForEach @(
+            @{ Rid = 'iossimulator-arm64' }
+            @{ Rid = 'iossimulator-x64' }
+        ) {
+            [IosNativeTestReports]::RunForRuntime($Rid, $ProjectPath, 'owned-simulator', $ResultsDirectory,
+                $ResolveContainer, { throw 'must not use devicectl for a simulator' }, $ExecutePhysical, $ValidateReport)
+            $ResolveCalls | Should -Be @('owned-simulator/com.maui.tests', 'owned-simulator/com.maui.tests')
+        }
+
+        It 'allows a confirmed absent app before the native install' {
+            $script:AppInstalled = $false
+            [IosNativeTestReports]::RunForRuntime('ios-arm64', $ProjectPath, 'physical-udid', $ResultsDirectory,
+                $NoSimulator, $ExecuteApple, $ExecutePhysical, $ValidateReport)
+            $AppleCalls.Count | Should -Be 3
+            $Launched | Should -BeTrue
+        }
+
+        It 'rejects exit zero with no physical report despite an older host TRX' {
+            Set-Content -LiteralPath (Join-Path $ResultsDirectory 'old.trx') $GoodTrx
+            { [IosNativeTestReports]::RunForRuntime('ios-arm64', $ProjectPath, 'physical-udid', $ResultsDirectory,
+                $NoSimulator, $ExecuteApple, { return 0 }, $ValidateReport) } |
+                Should -Throw '*Native app did not produce genuine TRX*'
+        }
+
+        It 'rejects an unchanged physical report even though it was freshly copied' {
+            Set-Content -LiteralPath $NativeReport $GoodTrx
+            { [IosNativeTestReports]::RunForRuntime('ios-arm64', $ProjectPath, 'physical-udid', $ResultsDirectory,
+                $NoSimulator, $ExecuteApple, { return 0 }, $ValidateReport) } |
+                Should -Throw '*native result is stale*'
+            @(Get-ChildItem -LiteralPath $ResultsDirectory -Filter '*.trx' -Recurse -Force).Count | Should -Be 0
+        }
+
+        It 'fails before launching on inaccessible device app discovery' {
+            $script:LookupExit = 7
+            { [IosNativeTestReports]::RunForRuntime('ios-arm64', $ProjectPath, 'physical-udid', $ResultsDirectory,
+                $NoSimulator, $ExecuteApple, $ExecutePhysical, $ValidateReport) } |
+                Should -Throw '*device app lookup failed with exit code 7*'
+            $Launched | Should -BeFalse
+        }
+
+        It 'does not treat pre-run report transport failure as report absence' {
+            $script:CopyExit = 9
+            { [IosNativeTestReports]::RunForRuntime('ios-arm64', $ProjectPath, 'physical-udid', $ResultsDirectory,
+                $NoSimulator, $ExecuteApple, $ExecutePhysical, $ValidateReport) } |
+                Should -Throw '*device report copy failed with exit code 9*'
+            $Launched | Should -BeFalse
+        }
+
+        It 'rejects post-run report transport failure after native exit zero' {
+            { [IosNativeTestReports]::RunForRuntime('ios-arm64', $ProjectPath, 'physical-udid', $ResultsDirectory,
+                $NoSimulator, $ExecuteApple, {
+                    $script:CopyExit = 13
+                    return 0
+                }, $ValidateReport) } | Should -Throw '*device report copy failed with exit code 13*'
+        }
+
+        It 'rejects exit zero when the native app is still absent after execution' {
+            $script:AppInstalled = $false
+            { [IosNativeTestReports]::RunForRuntime('ios-arm64', $ProjectPath, 'physical-udid', $ResultsDirectory,
+                $NoSimulator, $ExecuteApple, { return 0 }, $ValidateReport) } |
+                Should -Throw '*Native app did not produce genuine TRX*'
+            $AppleCalls.Count | Should -Be 2
+        }
+
+        It 'preserves a failing native exit when report transport also fails' {
+            { [IosNativeTestReports]::RunForRuntime('ios-arm64', $ProjectPath, 'physical-udid', $ResultsDirectory,
+                $NoSimulator, $ExecuteApple, {
+                    $script:CopyExit = 13
+                    return 17
+                }, $ValidateReport) } | Should -Throw '*Native dotnet test failed with exit code 17*'
+        }
+
+        It 'retains copied genuine TRX while preserving a failing native exit' {
+            { [IosNativeTestReports]::RunForRuntime('ios-arm64', $ProjectPath, 'physical-udid', $ResultsDirectory,
+                $NoSimulator, $ExecuteApple, {
+                    [IO.File]::WriteAllText($script:NativeReport, $script:GoodTrx)
+                    return 17
+                }, $ValidateReport) } | Should -Throw '*Native dotnet test failed with exit code 17*'
+            @(Get-ChildItem -LiteralPath $ResultsDirectory -Filter '*.trx' -Recurse -Force).Count | Should -Be 1
+        }
+    }
+}
+
+Describe 'Cake owned simulator cleanup retry' {
+    It 'clears a successfully deleted owner so the next attempt provisions a new simulator' {
+        $harness = [CakeSimulatorHarness]::new()
+        $harness.DeleteExits.Enqueue(0)
+        $harness.Delete('owned-before-retry')
+        $harness.ownedSimulatorUdid | Should -BeExactly ''
+        $harness.Acquire() | Should -BeExactly 'owned-after-retry'
+        $harness.ownedSimulatorUdid | Should -BeExactly 'owned-after-retry'
+    }
+
+    It 'retains the owner and fails when all deletion attempts fail' {
+        $harness = [CakeSimulatorHarness]::new()
+        1..3 | ForEach-Object { $harness.DeleteExits.Enqueue(1) }
+        { $harness.Delete('owned-before-retry') } | Should -Throw '*Failed to delete simulator*'
+        $harness.ownedSimulatorUdid | Should -BeExactly 'owned-before-retry'
+        @($harness.Calls | Where-Object { $_ -like 'simctl delete*' }).Count | Should -Be 3
+    }
+
+    It 'clears the owner only when a later deletion attempt succeeds' {
+        $harness = [CakeSimulatorHarness]::new()
+        $harness.DeleteExits.Enqueue(1)
+        $harness.DeleteExits.Enqueue(0)
+        $harness.Delete('owned-before-retry')
+        $harness.ownedSimulatorUdid | Should -BeExactly ''
+        @($harness.Calls | Where-Object { $_ -like 'simctl delete*' }).Count | Should -Be 2
+    }
+
+    It 'does not clear another simulator owner' {
+        $harness = [CakeSimulatorHarness]::new()
+        $harness.DeleteExits.Enqueue(0)
+        $harness.Delete('legacy-simulator')
+        $harness.ownedSimulatorUdid | Should -BeExactly 'owned-before-retry'
+    }
+}

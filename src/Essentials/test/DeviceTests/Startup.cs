@@ -26,10 +26,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 				})
 				.ConfigureTests(new TestOptions
 				{
-					Assemblies =
-					{
-						typeof(MauiProgram).Assembly
-					},
+					TestAssembly = typeof(MauiProgram).Assembly,
 					SkipCategories = Traits
 						.GetSkipTraits()
 						.ToList(),
@@ -37,8 +34,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 				.UseHeadlessRunner(new HeadlessRunnerOptions
 				{
 					RequiresUIContext = true,
-				})
-				.UseVisualRunner();
+				});
 
 			return appBuilder.Build();
 		}

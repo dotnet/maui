@@ -262,11 +262,16 @@ If you want to test in-tree in VSCode, the `Build Platform Sample` command will 
 
 The Integration test project under `src/TestUtils/src/Microsoft.Maui.IntegrationTests` contains tests that build and/or run MAUI templates or other projects.
 
-These tests can be run using the Test Explorer in VS, or from the command line with `dotnet test`. Here's how to run an individual test with parameters from command line:
+These tests can be run using Test Explorer in VS or `dotnet test`. Select template rows by category and their target-framework display name:
 
 ```bash
-dotnet test src/TestUtils/src/Microsoft.Maui.IntegrationTests --logger "console;verbosity=diagnostic" --filter "Name=Build\(%22maui%22,%22net7.0%22,%22Debug%22,False\)"
+dotnet test --project src/TestUtils/src/Microsoft.Maui.IntegrationTests/Microsoft.Maui.IntegrationTests.csproj --configuration Debug --filter-trait "Category=Build" --filter-display-name "*net11.0*" --report-trx --results-directory artifacts/TestResults/Integration
 ```
+
+CI translates its existing category, method and display-name selectors through
+the shared MTP argument helper. Display-name filters require xUnit v3 package
+4.0 or later. MTP extensions, including NUnit's VSTest bridge, use the same
+platform version to avoid incompatible runtime dependencies.
 
 Integration test commands terminate their process tree on timeout and report the command's PID and timeout duration, using the console when no test output helper is supplied. Emulator startup explicitly leaves the emulator running for the collection fixture to manage. Output draining waits at most 10 seconds after the parent exits, then reports if a descendant still holds the redirected pipes open.
 
@@ -301,13 +306,14 @@ observes handler, mapper, and layout spans. Emitted operations: `SetVirtualView`
 `CreatePlatformElement`, `AssignHandler`, `ConnectHandler`, `ResolveMapper`, `UpdateProperties`, and
 `MapProperty` (tagged with `element.type`, `handler.type`, and, for `MapProperty`, `mapper.property`).
 
-## Running Device Tests on Helix
+## Running device tests directly
 
-.NET MAUI now supports running device tests on [.NET Engineering Services Helix](https://helix.dot.net) using XHarness. Helix provides cloud-based device testing infrastructure that enables running tests across multiple platforms and devices in parallel.
+.NET MAUI device tests run directly on their execution agents using `dotnet test`
+and Microsoft.Testing.Platform. Helix submission and XHarness are retired.
 
 ### Overview
 
-Device tests can be run on the following platforms via Helix:
+Device tests run on Android, iOS simulators, Mac Catalyst and Windows.
 
 
 The device test projects include:
@@ -318,16 +324,34 @@ The device test projects include:
 - `MauiBlazorWebView.DeviceTests` - Blazor WebView tests
 
 
-### Available Helix Queues
+### Execution agents
 
-Check available queues at [helix.dot.net](https://helix.dot.net). The public (default) configuration uses:
+The direct matrix currently uses these execution environments:
 
-- **iOS**: `osx.15.arm64.maui.open`, `osx.26.arm64.open`
-- **Mac Catalyst**: `osx.15.arm64.maui.open`, `osx.26.arm64.open`
-- **Android**: `ubuntu.2204.amd64.android.33.open`
-- **Windows**: `windows.11.amd64.client.open`
+- **iOS / Mac Catalyst**: macOS 27 arm64, both iOS runtimes and CoreCLR Catalyst
+- **Android**: Ubuntu 22.04 x64, API 33, both CoreCLR and Mono
+- **Windows**: interactive Windows x64, packaged and unpackaged
 
-Internal runs (`HelixInternal=True`) use `osx.15.arm64.iphone.maui` for iOS and Mac Catalyst, and the non-`.open` Android and Windows queues instead.
+The Android jobs use the emulator-capable `MAUI-DNCENG` execution pool, not the
+general-purpose NetCore build image, which does not expose `/dev/kvm`.
+Internal runs retain their separately configured pools.
+The other pipeline environment retains its per-suite APIs and configurations.
+Former submission agents are not assumed to be device-capable; missing runtime,
+OS, graphical session or signing support is a provisioning failure, not permission
+to silently drop the affected matrix row.
+
+The configured GoldenGate Apple image runs macOS 27 with the required Xcode 27.
+The initial direct migration does not preserve the retired Helix macOS 15/26
+host coverage. Restoring those hosts requires compatible execution agents and
+separate build/execution jobs; changing a lane's label does not provide that
+coverage. `applePoolsPublic` and `applePoolsInternal` remain configurable, and
+each row still checks its requested host OS and architecture before executing.
+
+For an Android-only device pipeline rerun, set `applePoolsPublic=[]` and
+`runWindowsTests=false`. Defaults retain all platforms and both mobile runtimes.
+For Windows-only reruns, set `runtimes=[]` and `applePoolsPublic=[]`.
+`windowsPackaging` selects `both` (default), `packaged` or `unpackaged`;
+focusing a rerun does not remove either packaging mode from the default matrix.
 
 ### Running Device Tests Locally
 
@@ -352,42 +376,26 @@ Build the device test projects:
 ./build.sh -restore -build -configuration Release /p:BuildDeviceTests=true /bl:BuildDeviceTests.binlog -warnAsError false
 ```
 
-#### Step 3: Send to Helix
-Submit the tests to Helix for execution:
+#### Step 3: Run tests
 
-We need to set some variables. More info about Helix can be found [here](https://github.com/dotnet/arcade/blob/main/src/Microsoft.DotNet.Helix/Sdk/Readme.md) 
-
-
-```bash
-export BUILD_REASON=pr
-export BUILD_REPOSITORY_NAME=maui
-export BUILD_SOURCEBRANCH=main
-export SYSTEM_TEAMPROJECT=dnceng
-export SYSTEM_ACCESSTOKEN='' 
-```
+Select an exact device, not a shared default/booted device. The native host accepts
+`MauiTestFilter=Category=Shell` or
+`MauiTestFilter=SkipCategories=CollectionView,Shell,HybridWebView`.
 
 ```bash
-# Send to Helix for Android
-./eng/common/msbuild.sh ./eng/helix_xharness.proj /restore /p:TreatWarningsAsErrors=false /t:Test /p:TargetOS=android /bl:sendhelix_android.binlog -verbosity:diag
+# Android: substitute the serial of your emulator
+dotnet test --project src/Core/tests/DeviceTests/Core.DeviceTests.csproj --configuration Release --framework net11.0-android --device emulator-5554 --report-trx --results-directory artifacts/TestResults/Core-android -p:RuntimeIdentifier=android-x64
 
-# Send to Helix for iOS  
-./eng/common/msbuild.sh ./eng/helix_xharness.proj /restore /p:TreatWarningsAsErrors=false /t:Test /p:TargetOS=ios /bl:sendhelix_ios.binlog -verbosity:diag
+# iOS: substitute your exact simulator UDID
+dotnet test --project src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj --configuration Release --framework net11.0-ios --device YOUR-SIMULATOR-UDID -p:RuntimeIdentifier=iossimulator-arm64 -p:MauiTestFilter=Category=Shell
 
-# Send to Helix for Mac Catalyst
-./eng/common/msbuild.sh ./eng/helix_xharness.proj /restore /p:TreatWarningsAsErrors=false /t:Test /p:TargetOS=maccatalyst /bl:sendhelix_catalyst.binlog -verbosity:diag
+# Catalyst: explicitly give the native reporter its host destination
+dotnet test --project src/Core/tests/DeviceTests/Core.DeviceTests.csproj --configuration Release --framework net11.0-maccatalyst -p:MauiTestResultsDirectory="$PWD/artifacts/TestResults/Core-catalyst"
 ```
 
 ### Windows Commands
 
 For Windows development, use the corresponding `.cmd` files:
-
-```cmd
-set BUILD_REASON=pr
-set BUILD_REPOSITORY_NAME=maui
-set BUILD_SOURCEBRANCH=main
-set SYSTEM_TEAMPROJECT=dnceng
-set SYSTEM_ACCESSTOKEN=
-```
 
 ```cmd
 REM Build MSBuild tasks
@@ -396,44 +404,93 @@ REM Build MSBuild tasks
 REM Build device tests
 .\build.cmd -restore -build -configuration Release /p:BuildDeviceTests=true /bl:BuildDeviceTests.binlog -warnAsError false
 
-REM Send to Helix (Android example)
-.\eng\common\msbuild.cmd .\eng\helix_xharness.proj /restore /p:TreatWarningsAsErrors=false /t:Test /p:TargetOS=android /bl:sendhelix.binlog -verbosity:diag
+REM Run Android tests on the explicitly selected emulator
+dotnet test --project src/Core/tests/DeviceTests/Core.DeviceTests.csproj --configuration Release --framework net11.0-android --device emulator-5554 --report-trx --results-directory artifacts/TestResults/Core-android -p:RuntimeIdentifier=android-x64
 ```
 
 ### Configuration Details
 
-The Helix configuration is defined in `eng/helix_xharness.proj` and includes:
+The direct matrix is defined in `eng/pipelines/arcade/stage-device-tests.yml`.
+The common device templates provision job-owned devices, build and test in the
+same job, and always publish unique job/attempt result directories.
 
-- **Timeouts**: 2-hour work item timeout, 1-hour test timeout
-- **Test Discovery**: Automatically discovers test bundles for each scenario
-- **Platform Targeting**: Specific target frameworks per platform
-- **Queue Selection**: Platform-appropriate Helix queues
-- **XHarness Integration**: Uses XHarness for device orchestration
+- **Coverage**: all five suites, existing configurations, runtimes and API exclusions
+- **iOS shards**: CollectionView, Shell, HybridWebView, and General excluding those
+- **Windows**: packaged execution installs the signed MSIX and activates its AUMID
+  through the MTP launcher, preserving package identity and the complete server/pipe
+  arguments; building MSIX and executing its binary unpackaged is not equivalent
+- **Results**: genuine MTP TRX is required; missing, empty or failed results fail CI
+- **Ownership**: cleanup deletes only the current job's simulator or emulator.
+  Android records absolute provisioning paths and creates an exclusive named
+  device root; cleanup from another working directory rejects relative,
+  out-of-root or symbolic-link ownership paths rather than deleting foreign AVDs.
+
+Direct Windows jobs use the configured pipeline image, currently Windows Server
+2022. They require an interactive desktop and retain both packaging modes. This
+does not claim Windows 11 client-specific coverage from the retired Helix queue.
+Set `requireWindows11` when selecting a provisioned client pool; that check
+remains available rather than treating a server image as a client.
+
+The current Server 2022 image rejects the temporary package signer's chain with
+`0x800B0109` despite its public certificate being in the current user's
+`TrustedPeople` store. Packaged execution remains blocked until an authorized
+signing/agent owner provides an accepted trust chain or approved provisioning.
+The runner does not change machine trust, disable validation or substitute loose
+registration for signed-MSIX installation.
+
+The current Apple proxy does not register host `--report-trx`, and
+`--results-directory` alone does not collect native app results. For iOS, resolve
+the app container with `xcrun simctl get_app_container DEVICE APPLICATION_ID data`
+and copy its `Documents/TestResults/testResults.trx` before deleting the
+simulator. Catalyst uses the explicit `MauiTestResultsDirectory` host path.
+Never synthesize TRX from stdout.
+
+The retained Cake `ios-device`/`ios-arm64` lane instead copies the physical
+device's app `Documents` through `xcrun devicectl device copy from` with the
+`appDataContainer` domain. Pre-run and post-run snapshots reject unchanged
+reports; failed app lookup or copy transport is not treated as report absence.
+This transport has helper coverage but still needs real physical-device validation.
+
+Without an explicit simulator selector, the iOS Cake caller creates an owned
+iPhone 11 Pro, preserving the former runner's screenshot profile. Minimum-runtime
+targets retain iPhone 6s below iOS 16 and iPhone SE (3rd generation) thereafter.
+It does not borrow an arbitrary booted phone or select the first installed model,
+which would change screenshot geometry. An explicit device identifier/name remains respected.
+
+Android xUnit/MTP hosts require an on-disk entry assembly. Their runner props
+therefore use SDK fast deployment (`EmbedAssembliesIntoApk=false`) and disable
+ReadyToRun, including in Release. Release compiler optimization is retained.
+These jobs do not validate bundled-assembly or ReadyToRun loading: both modes
+leave the entry assembly without the location required by the xUnit MTP host.
 
 ### Troubleshooting
 
 #### Common Issues
 
 1. **Build failures**: Ensure you've built the MSBuild tasks first
-2. **Missing devices**: Check queue availability at [helix.dot.net](https://helix.dot.net)  
-3. **Authentication**: For CI scenarios, ensure proper Azure DevOps access tokens
+2. **Missing devices**: Check the execution pool's SDK/runtime and graphical-session requirements
+3. **Results**: Require a real TRX from the reporter, not merely a successful app launch
 4. **Timeouts**: Tests have generous timeouts but may need adjustment for complex scenarios
 
 #### Logging and Diagnostics
 
 - Use `/bl:filename.binlog` for detailed MSBuild logs
 - Add `-verbosity:diag` for maximum diagnostic output
-- Check Helix job results at the provided URL after submission
+- Inspect the job's published TRX, binlogs and device logs, including failed attempts
+- Windows device CI enables MTP crash collection with `--crashdump --crashdump-type Mini`.
+  Dumps and test-sequence diagnostics are published with the job's results when
+  the native host crashes; a recovered partial TRX does not make that run successful.
+  Windows application errors are also collected for the child PIDs recorded by
+  MTP, excluding older events and unrelated processes, when native termination
+  produces neither a managed exception nor a dump.
 
 ### CI Integration
 
 The device tests are integrated into the CI pipeline via:
 - `eng/pipelines/arcade/stage-device-tests.yml` - Pipeline template
-- `eng/test-configuration.json` - Test retry configuration
+- `eng/pipelines/common/device-tests-steps.yml` - Direct CLI and result collection
 - Automatic execution on PR builds for qualifying changes
 
 ### Additional Resources
 
-- [XHarness on Helix Documentation](https://github.com/dotnet/arcade/blob/main/src/Microsoft.DotNet.Helix/Sdk/tools/xharness-runner/Readme.md#android-apk-payloads)
-- [Helix Documentation](https://github.com/dotnet/arcade/tree/main/src/Microsoft.DotNet.Helix)
-- [Example Helix Run](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1115383&view=results)
+- [Direct device CI contracts](../.github/instructions/helix-device-tests.instructions.md)

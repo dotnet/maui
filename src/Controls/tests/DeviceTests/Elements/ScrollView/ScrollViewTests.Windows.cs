@@ -597,7 +597,10 @@ namespace Microsoft.Maui.DeviceTests
 
 			var entry = new Entry();
 			var focused = false;
-			entry.Focused += (_, _) => focused = true;
+			var phase = "initial load";
+			var reloadLoaded = false;
+			var focusDiagnostic = "No focus event observed.";
+			var focusTransfers = new System.Collections.Generic.List<string>();
 
 			var scrollView = new ScrollView
 			{
@@ -610,52 +613,101 @@ namespace Microsoft.Maui.DeviceTests
 					}
 				}
 			};
+			entry.Focused += (_, _) =>
+			{
+				focused = true;
+				var platformScrollView = (scrollView.Handler as ScrollViewHandler)?.PlatformView;
+				var platformEntry = (entry.Handler as EntryHandler)?.PlatformView;
+				focusDiagnostic = $"phase={phase}, loaded={platformScrollView?.IsLoaded}, tabStop={platformScrollView?.IsTabStop}, reload Loaded event={reloadLoaded}, native focus={platformEntry?.FocusState}";
+			};
 			var page = new ContentPage { Content = scrollView };
 			var navigationPage = new NavigationPage(page);
 			var window = new Window(navigationPage);
 
 			await CreateHandlerAndAddToWindow<IWindowHandler>(window, async _ =>
 			{
-				var scrollViewHandler = (ScrollViewHandler)scrollView.Handler;
-				var platformScrollView = scrollViewHandler.PlatformView;
-				await WaitForDispatcherIdle(platformScrollView.DispatcherQueue);
-				Assert.False(platformScrollView.IsTabStop);
-
-				var unloaded = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-				Microsoft.UI.Xaml.RoutedEventHandler unloadedHandler = (_, _) => unloaded.TrySetResult();
-				platformScrollView.Unloaded += unloadedHandler;
+				var platformEntry = ((EntryHandler)entry.Handler).PlatformView;
+				var platformScrollView = ((ScrollViewHandler)scrollView.Handler).PlatformView;
+				void RecordFocus(string target, Microsoft.UI.Xaml.Input.GettingFocusEventArgs args)
+				{
+					var previous = args.OldFocusedElement;
+					var next = args.NewFocusedElement;
+					focusTransfers.Add($"{phase}: {target} GettingFocus previous={previous?.GetType().Name}/{(previous as Microsoft.UI.Xaml.FrameworkElement)?.Name}, next={next?.GetType().Name}, direction={args.Direction}, state={args.FocusState}, loaded={platformScrollView.IsLoaded}, tabStop={platformScrollView.IsTabStop}");
+				}
+				void OnGettingFocus(Microsoft.UI.Xaml.UIElement sender, Microsoft.UI.Xaml.Input.GettingFocusEventArgs args)
+				{
+					RecordFocus("Entry", args);
+				}
+				void OnScrollGettingFocus(Microsoft.UI.Xaml.UIElement sender, Microsoft.UI.Xaml.Input.GettingFocusEventArgs args) =>
+					RecordFocus("ScrollViewer", args);
+				void OnLoading(Microsoft.UI.Xaml.FrameworkElement sender, object args) =>
+					focusTransfers.Add($"{phase}: Loading, tabStop={platformScrollView.IsTabStop}");
+				var tabStopToken = platformScrollView.RegisterPropertyChangedCallback(
+					WControl.IsTabStopProperty, (_, _) =>
+						focusTransfers.Add($"{phase}: IsTabStop={platformScrollView.IsTabStop}, loaded={platformScrollView.IsLoaded}, focus={platformScrollView.FocusState}"));
+				platformEntry.GettingFocus += OnGettingFocus;
+				platformScrollView.GettingFocus += OnScrollGettingFocus;
+				platformScrollView.Loading += OnLoading;
 				try
 				{
-					await navigationPage.PushAsync(new ContentPage { Content = new Label() });
-					await unloaded.Task.WaitAsync(TimeSpan.FromSeconds(5));
+					var scrollViewHandler = (ScrollViewHandler)scrollView.Handler;
+					await WaitForDispatcherIdle(platformScrollView.DispatcherQueue);
+					Assert.False(platformScrollView.IsTabStop);
+					var initiallyFocused = entry.IsFocused;
+					var initialFocusEvent = focused;
+
+					var unloaded = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+					Microsoft.UI.Xaml.RoutedEventHandler unloadedHandler = (_, _) => unloaded.TrySetResult();
+					platformScrollView.Unloaded += unloadedHandler;
+					try
+					{
+						phase = "push";
+						await navigationPage.PushAsync(new ContentPage { Content = new Label() });
+						await unloaded.Task.WaitAsync(TimeSpan.FromSeconds(5));
+					}
+					finally
+					{
+						platformScrollView.Unloaded -= unloadedHandler;
+					}
+
+					Assert.False(platformScrollView.IsLoaded);
+					Assert.Same(scrollViewHandler, scrollView.Handler);
+					var focusedWhileUnloaded = entry.IsFocused;
+
+					var loaded = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+					Microsoft.UI.Xaml.RoutedEventHandler loadedHandler = (_, _) =>
+					{
+						focusTransfers.Add($"{phase}: Loaded, tabStop={platformScrollView.IsTabStop}");
+						reloadLoaded = true;
+						loaded.TrySetResult();
+					};
+					platformScrollView.Loaded += loadedHandler;
+					try
+					{
+						phase = "pop";
+						await navigationPage.PopAsync();
+						await loaded.Task.WaitAsync(TimeSpan.FromSeconds(5));
+					}
+					finally
+					{
+						platformScrollView.Loaded -= loadedHandler;
+					}
+
+					Assert.True(platformScrollView.IsLoaded);
+					await WaitForDispatcherIdle(platformScrollView.DispatcherQueue);
+					Assert.False(platformScrollView.IsTabStop);
+
+					var focusTransfer = string.Join("; ", focusTransfers);
+					Assert.False(entry.IsFocused, $"Entry focus: initial={initiallyFocused}, unloaded={focusedWhileUnloaded}, initial event={initialFocusEvent}; {focusDiagnostic}; {focusTransfer}.");
+					Assert.False(focused, $"Entry received focus during the scenario; initial focus event={initialFocusEvent}; {focusDiagnostic}; {focusTransfer}.");
 				}
 				finally
 				{
-					platformScrollView.Unloaded -= unloadedHandler;
+					platformEntry.GettingFocus -= OnGettingFocus;
+					platformScrollView.GettingFocus -= OnScrollGettingFocus;
+					platformScrollView.Loading -= OnLoading;
+					platformScrollView.UnregisterPropertyChangedCallback(WControl.IsTabStopProperty, tabStopToken);
 				}
-
-				Assert.False(platformScrollView.IsLoaded);
-				Assert.Same(scrollViewHandler, scrollView.Handler);
-
-				var loaded = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-				Microsoft.UI.Xaml.RoutedEventHandler loadedHandler = (_, _) => loaded.TrySetResult();
-				platformScrollView.Loaded += loadedHandler;
-				try
-				{
-					await navigationPage.PopAsync();
-					await loaded.Task.WaitAsync(TimeSpan.FromSeconds(5));
-				}
-				finally
-				{
-					platformScrollView.Loaded -= loadedHandler;
-				}
-
-				Assert.True(platformScrollView.IsLoaded);
-				await WaitForDispatcherIdle(platformScrollView.DispatcherQueue);
-				Assert.False(platformScrollView.IsTabStop);
-
-				Assert.False(entry.IsFocused);
-				Assert.False(focused);
 			});
 		}
 

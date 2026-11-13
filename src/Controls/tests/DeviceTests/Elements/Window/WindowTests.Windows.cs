@@ -18,6 +18,49 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class WindowTests : ControlsHandlerTestBase
 	{
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task NativeAttachmentDisposesItsWindowScope(bool actionThrows)
+		{
+			SetupBuilder();
+			MauiContext windowContext = null;
+			var page = new ContentPage();
+			var navigationPage = new NavigationPage(page);
+			var window = new Window(navigationPage);
+			var destroyingRaised = false;
+			var handlerConnectedDuringDestroying = false;
+			var scopeAliveDuringDestroying = false;
+			window.Destroying += (_, _) =>
+			{
+				destroyingRaised = true;
+				handlerConnectedDuringDestroying = window.Handler is not null;
+				scopeAliveDuringDestroying = windowContext is not null && !windowContext.IsWindowScopeDisposed;
+			};
+			var run = CreateHandlerAndAddToWindow<IWindowHandler>(window, handler =>
+			{
+				windowContext = Assert.IsType<MauiContext>(handler.MauiContext);
+				Assert.False(windowContext.IsWindowScopeDisposed);
+				Assert.NotNull(navigationPage.Handler);
+				Assert.NotNull(page.Handler);
+				if (actionThrows)
+					throw new InvalidOperationException("Window attachment failure");
+				return Task.CompletedTask;
+			});
+
+			if (actionThrows)
+				await Assert.ThrowsAsync<InvalidOperationException>(() => run);
+			else
+				await run;
+
+			Assert.True(windowContext.IsWindowScopeDisposed);
+			Assert.True(destroyingRaised);
+			Assert.True(handlerConnectedDuringDestroying);
+			Assert.True(scopeAliveDuringDestroying);
+			Assert.Null(navigationPage.Handler);
+			Assert.Null(page.Handler);
+		}
+
 		[Fact(DisplayName = "Swapping MainPage doesn't Crash")]
 		public async Task SwappingMainPageDoesntCrash()
 		{

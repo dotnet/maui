@@ -21,6 +21,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 		public event EventHandler<DisplayInfoChangedEventArgs>? MainDisplayInfoChanged;
 
+		public int MainDisplayInfoChangedSubscriberCount => MainDisplayInfoChanged?.GetInvocationList().Length ?? 0;
+
 		public DisplayInfo MainDisplayInfo => _mainDisplayInfo;
 
 		public void UpdateMainDisplayInfo(DisplayInfo displayInfo)

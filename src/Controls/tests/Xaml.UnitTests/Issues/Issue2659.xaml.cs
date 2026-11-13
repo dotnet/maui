@@ -49,8 +49,10 @@ public partial class Issue2659 : ContentPage
 	}
 
 	[Collection("Issue")]
-	public class Tests
+	public class Tests : BaseTestFixture
 	{
+		public Tests() => Application.Current = null;
+
 		void AssertStyleApplied(Button button)
 		{
 			Assert.Equal(LayoutOptions.Center, button.HorizontalOptions);

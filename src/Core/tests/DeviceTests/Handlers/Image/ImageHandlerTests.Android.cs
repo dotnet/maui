@@ -2,14 +2,32 @@ using System;
 using System.Threading.Tasks;
 using Android.Graphics.Drawables;
 using Android.Widget;
-using Microsoft.Maui.DeviceTests.Stubs;
 using Google.Android.Material.ImageView;
+using Microsoft.Maui.DeviceTests.Stubs;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	public partial class ImageHandlerTests<TImageHandler, TStub>
 	{
+		[Fact]
+		public async Task FixtureDisposalHandlesAnAlreadyDisposedNativePeer()
+		{
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var disposedHandler = CreateHandler<TImageHandler>(new TStub());
+				var liveView = new TStub();
+				CreateHandler<TImageHandler>(liveView);
+				disposedHandler.PlatformView.Dispose();
+				Assert.Equal(IntPtr.Zero, disposedHandler.PlatformView.Handle);
+
+				await DisposeAsync();
+
+				Assert.Null(liveView.Handler);
+				GC.KeepAlive(disposedHandler);
+			});
+		}
+
 		[Fact]
 		public async Task UpdatingSourceWorks()
 		{

@@ -2,101 +2,44 @@ parameters:
   platform: ''
   pool: {}
   versions: []
-  provisionatorChannel: 'latest'
-  skipProvisioning: true
-  artifactName: 'nuget'
-  artifactItemPattern: '**/*.nupkg'
-  checkoutDirectory: $(System.DefaultWorkingDirectory)
-  useArtifacts: false
-  cakeArgs: ''
-  buildAndTest: true
-  useCoreClr: true # Use CoreCLR for Android, iOS, and Catalyst builds
+  timeoutInMinutes: 120
+  useCoreClr: true
   targetFrameworkVersion:
-    tfm: ''
-    dependsOn: ''
+    tfm: net11.0
   project:
     name: name
-    desc: Human Description
-    path: /optional/path/to/project.csproj
+    desc: Tests
+    path: ''
     versionsExclude: []
-    packageid: ''
-    configuration: ''
+    configuration: Release
 
 jobs:
-- ${{ if eq(parameters.buildAndTest, 'false') }}:
-  - job: ${{ parameters.platform }}_device_tests_${{ parameters.project.name }}_build_${{ parameters.useCoreClr }}
-    timeoutInMinutes: 60
-    workspace:
-      clean: all
-    displayName: Build ${{ parameters.platform }} ${{ parameters.project.desc }} ${{ iif(eq(parameters.useCoreClr, 'true'), ' (CoreCLR)', '(Mono)') }}
-    pool: ${{ parameters.pool }}
-    steps:
-    - template: device-tests-steps.yml
-      parameters:
-        buildType: 'buildOnly'
-        platform: ${{ parameters.platform }}
-        path: ${{ parameters.project.path }}
-        targetFrameworkVersion: ${{ parameters.targetFrameworkVersion.tfm }}
-        packageid: ${{ parameters.project.packageid }}
-        provisionatorChannel: ${{ parameters.provisionatorChannel }}
-        artifactName: ${{ parameters.artifactName }}
-        artifactItemPattern: ${{ parameters.artifactItemPattern }}
-        checkoutDirectory: ${{ parameters.checkoutDirectory }}
-        useArtifacts: ${{ parameters.useArtifacts }}
-        poolName: ${{ parameters.pool.name }}
-        deviceTestConfiguration: ${{ parameters.project.configuration }}
-        skipProvisioning: ${{ parameters.skipProvisioning }}
-        appArtifactName: ${{ parameters.platform }}_device_tests_${{ parameters.project.name }}_build
-        useCoreClr: ${{ parameters.useCoreClr }}
 - ${{ each version in parameters.versions }}:
   - ${{ if not(containsValue(parameters.project.versionsExclude, version)) }}:
-    - job: ${{ parameters.platform }}_device_tests_${{ parameters.project.name }}_${{ replace(replace(version, '.', ''), '-', '') }}_${{ parameters.useCoreClr }}
-      ${{ if eq(parameters.buildAndTest, 'false') }}:
-        dependsOn: ${{ parameters.platform }}_device_tests_${{ parameters.project.name }}_build_${{ parameters.useCoreClr }}
-      timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
-      workspace:
-        clean: all
-      displayName: Run ${{ parameters.platform }} ${{ parameters.project.desc }} ${{ version }}  ${{ iif(eq(parameters.useCoreClr, 'true'), ' (CoreCLR)', '(Mono)') }}
-      pool: ${{ parameters.pool }}
-      steps:
-      - template: device-tests-steps.yml
-        parameters:
-          buildType: ${{ iif(eq(parameters.buildAndTest, 'true'), 'buildAndTest', 'testOnly') }}
-          platform: ${{ parameters.platform }}
-          path: ${{ parameters.project.path }}
-          appArtifactName: ${{ parameters.platform }}_device_tests_${{ parameters.project.name }}_build
-          ${{ if eq(parameters.platform, 'android') }}:
-            device: android-emulator-64_${{ version }}
-            apiVersion: ${{ version }}
-          ${{ if eq(parameters.platform, 'ios') }}:
-            ${{ if contains(version, 'device') }}:
-              device: ios-device
-              apiVersion: ${{ replace(version, 'device-', '') }}
-            ${{ if contains(version, 'latest') }}:
-              device: ios-simulator-64
-              apiVersion: 26.0
-            ${{ else }}:
-              device: ios-simulator-64_${{ replace(version, 'simulator-', '') }}
+    - ${{ each shard in split(iif(and(eq(parameters.platform, 'ios'), eq(parameters.project.name, 'controls')), 'CollectionView;Shell;HybridWebView;General', 'All'), ';') }}:
+      - job: ${{ parameters.platform }}_${{ parameters.project.name }}_${{ replace(replace(version, '.', ''), '-', '') }}_${{ shard }}_${{ parameters.useCoreClr }}
+        timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
+        cancelTimeoutInMinutes: 15
+        workspace:
+          clean: all
+        displayName: ${{ parameters.project.desc }} ${{ parameters.platform }} ${{ version }} ${{ shard }} CoreCLR=${{ parameters.useCoreClr }}
+        pool: ${{ parameters.pool }}
+        steps:
+        - template: device-tests-steps.yml
+          parameters:
+            platform: ${{ parameters.platform }}
+            path: ${{ parameters.project.path }}
+            targetFrameworkVersion: ${{ parameters.targetFrameworkVersion.tfm }}
+            deviceTestConfiguration: ${{ parameters.project.configuration }}
+            useCoreClr: ${{ parameters.useCoreClr }}
+            ${{ if eq(parameters.platform, 'android') }}:
+              apiVersion: ${{ version }}
+            ${{ if eq(parameters.platform, 'ios') }}:
               apiVersion: ${{ replace(version, 'simulator-', '') }}
-          ${{ if eq(parameters.platform, 'catalyst') }}:
-            ${{ if eq(version, 'latest') }}:
-              device: maccatalyst
-              apiVersion: macos # Only needed for iOS, will be ignored
-            ${{ else }}:
-              device: maccatalyst_${{ version }}
-              apiVersion: macos # Only needed for iOS, will be ignored
-          ${{ if eq(parameters.platform, 'windows') }}:
-            device: ${{ version }}
-            apiVersion: 10.0.19041.0
-          targetFrameworkVersion: ${{ parameters.targetFrameworkVersion.tfm }}
-          packageid: ${{ parameters.project.packageid }}
-          provisionatorChannel: ${{ parameters.provisionatorChannel }}
-          artifactName: ${{ parameters.artifactName }}
-          artifactItemPattern: ${{ parameters.artifactItemPattern }}
-          checkoutDirectory: ${{ parameters.checkoutDirectory }}
-          useArtifacts: ${{ parameters.useArtifacts }}
-          poolName: ${{ parameters.pool.name }}
-          deviceTestConfiguration: ${{ parameters.project.configuration }}
-          skipProvisioning: ${{ parameters.skipProvisioning }}
-          skipDotNet: ${{ eq(parameters.buildAndTest, 'false') }}
-          useCoreClr: ${{ parameters.useCoreClr }}
+              applicationId: ${{ parameters.project.applicationId }}
+            ${{ if eq(parameters.platform, 'windows') }}:
+              device: ${{ version }}
+            ${{ if eq(shard, 'General') }}:
+              testFilter: SkipCategories=CollectionView,Shell,HybridWebView
+            ${{ elseif ne(shard, 'All') }}:
+              testFilter: Category=${{ shard }}

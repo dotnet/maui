@@ -247,6 +247,9 @@ public class BuildWarningsUtilitiesTests : IDisposable
 	{
 		readonly StringBuilder _text = new();
 		public string Text => _text.ToString();
+		public string Output => Text;
+		public void Write(string message) => _text.Append(message);
+		public void Write(string format, params object[] args) => Write(string.Format(format, args));
 		public void WriteLine(string message) => _text.AppendLine(message);
 		public void WriteLine(string format, params object[] args) => WriteLine(string.Format(format, args));
 	}

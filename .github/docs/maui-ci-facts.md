@@ -177,7 +177,7 @@ architectures; patch and minor updates remain enabled.
 | Pipeline Name | Definition ID | Purpose |
 |---------------|---------------|---------|
 | `maui-pr` | **302** | Main build + unit/integration validation — check this first |
-| `maui-pr-devicetests` | **314** | Helix device tests (iOS, Android, Windows, MacCatalyst) |
+| `maui-pr-devicetests` | **314** | Native `dotnet test` device tests (iOS, Android, Windows, MacCatalyst) |
 | `maui-pr-uitests` | **313** | Appium-based UI tests |
 
 **Investigation priority order**: `maui-pr` → `maui-pr-devicetests` → `maui-pr-uitests`.
@@ -549,6 +549,9 @@ error XAGRDL0000: Could not GET '...pkgs.dev.azure.com/.../maven/v1/...'
 | `XamlC` | `maui-pr` | XAML compiler — usually missing type or bad binding |
 | `WMC0612` / XBF `0x09C4` / `Property Not Found` after adding native Windows `x:DataType` | `maui-pr` Windows build/pack | The native XBF generator rejects the annotations introduced by #38735 on classic `{Binding}` templates. Restore the prior metadata without replacing bindings or converters. XML/source-only checks cannot validate XBF compilation; require an actual Windows build. |
 | `WMC9999` on overloaded table collections, `WMC0821` on open generic types, or invalid generated `XamlTypeInfo.g.cs` after adding native `[Bindable]` | `maui-pr` Windows build/pack | These were successive failures from #38735's new metadata in the Windows investigation on #39608. Restore the pre-cleanup native metadata baseline rather than changing public collection APIs, generic types, or generated code. Preserve existing runtime binding behavior and validate with the native Windows compiler. |
+| Native exit `57005` / `0xDEAD`, with `CTitleBar::InitializeComposition` returning `E_OUTOFMEMORY` and growing composition/section handle counts | Windows device tests | Compare the native dump with [microsoft/microsoft-ui-xaml#12210](https://github.com/microsoft/microsoft-ui-xaml/issues/12210): extended title bars retain native resources after window closure, including on the pinned Windows App SDK 2.5.1. Fixture ownership corrections did not resolve the observed Controls crash. The exit code and aggregate handle counts do not exclude an in-repository owner leak: verify actual HWND destruction before attributing this solely to the SDK. Preserve real window closure and title-bar assertions; the reported reset workaround needs explicit approval and native validation, and a newer SDK report also describes reset-induced crashes. |
+| Catalyst Core stops after `NativePresentationControlsInsetStabilization(style: PageSheet, ...)` | Native Core device tests | The last skipped Editor message was not the stalled test. `TEST_START:` tracing identified the native modal-presentation row. Present its owned controller from the real key window's root controller and await actual `ViewDidAppear`, with a bounded failure deadline. Dismiss only the owned modal; never hide, replace or dispose the borrowed runner window/controller. Preserve both PageSheet and FullScreen inset assertions and cover FullScreen followed by PageSheet explicitly. |
+| `Add-AppxPackage` fails with `0x800B0109` after trusting a job certificate in `CurrentUser\TrustedPeople` | Packaged Windows device tests | [MSIX deployment guidance](https://learn.microsoft.com/windows/msix/desktop/managing-your-msix-deployment-troubleshooting#step-3-verify-prerequisites) requires a chain trusted by the local computer, not just the current user. Use an accepted signer or explicitly approved agent provisioning. Do not silently change machine trust, export private keys, or substitute unpackaged execution. |
 | `error XAGRDL0000` / `401` / `No local versions` | `maui-pr` or official build | Gradle/Maven feed issue — see above |
 | Apple workload install cannot find a `net10.0` SDK pack | `maui-pr` SDK provisioning | The .NET 11 Apple manifests also install .NET 10 compatibility packs. Resolve the exact missing version's feed with `darc get-asset`; the current .NET 11 feed alone may not contain it. Do not copy another branch's compatibility feed without checking its manifest versions. |
 | `NETSDK1140` rejects the Apple target platform version | `maui-pr` build/pack | Align current Apple target-framework versions and SDK defaults in `Directory.Build.props` with the selected Apple SDK. net11.0 uses 26.5; the RC2 release branch uses 27.0. Preserve previous-.NET compatibility targets. |
@@ -562,6 +565,319 @@ error XAGRDL0000: Could not GET '...pkgs.dev.azure.com/.../maven/v1/...'
 | `XHarness timeout` | `maui-pr-devicetests` Helix logs | Test killed by infrastructure; may be transient |
 | `No test result files found` | `maui-pr-devicetests` Helix logs | Tests never ran or app crashed on launch |
 | UI test screenshot diff | `maui-pr-uitests` | Visual regression; check baseline images |
+| Copilot PAT selection reports every model unavailable almost immediately | Skill evaluation | A failed CLI probe is not proof of missing model entitlement. Copilot CLI 1.0.105 rejects the removed `--no-remote` option before authentication or inference; `--no-remote-export` is still accepted. Verify parser compatibility before changing credentials or models. The evaluator runs its token selector from trusted `main`, not the PR's copy. |
+
+### Native Windows resource evidence
+
+The temporary cleanup probe in [device run 1671453](https://dev.azure.com/dnceng-public/cbb18261-c48f-4abb-8651-8cdcb5474649/_build/results?buildId=1671453),
+log 937, reported `IsWindow=false` after every tracked window closure. Despite
+that destruction, process handles rose from 1,304 to 19,052 and GDI objects from
+144 to 15,834, while USER objects stayed between 39 and 56. Controls still exited
+`57005` while `SingleShellSectionWithMultipleChildren` was active.
+
+These observations rule out those HWNDs simply being left open. Together with
+the earlier symbolized `CTitleBar::InitializeComposition` allocation failure,
+they support investigating native title-bar resource retention, but do not
+identify every remaining managed or native owner. The probe is not a fix and is
+removed after capture. Do not substitute forced collection, raised quotas,
+skips, or disabled title bars for a verified lifetime correction.
+
+An independent repository-owned visual-root retention was subsequently reproduced
+in [device run 1672255](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1672255),
+log 553: `UnloadedWindowRootViewCanBeCollected` reached its collection assertion
+after observing native `Loaded`, `Unloaded` and window `Closed`, but the
+`WindowRootView` stayed alive. Its `UISettings.ColorValuesChanged` subscription
+was added on every template application and never removed. Scope that subscription
+to `Loaded`/`Unloaded`, refreshing current colors on reload rather than accumulating
+template subscriptions. The unchanged native regression passed in
+[device run 1672279](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1672279),
+test run 46605876, result 100104; Windows Core completed with 2,082 passes and
+111 existing skips. This proves release of that root, not resolution of every
+native SDK resource leak or the full Controls crash.
+
+Windows overlay teardown must clear the owned graphics view's `Drawable`
+reference before removing that view, as well as unsubscribing borrowed frame
+and platform-element events. A native graphics control retained by WinUI/Win2D
+must not keep the removed overlay and its window alive through that drawable.
+The native overlay regression retains the graphics view, checks that its
+drawable is detached, and preserves the original overlay collection assertion.
+Popping a Windows modal must likewise disconnect its full handler graph, not
+only the modal's top-level handler; the FlyoutPage modal regression checks both
+child-page handlers as well as the original collection assertions.
+
+Native hosts default xUnit's `--long-running` threshold to 60 seconds and enable
+`--xunit-diagnostics on`, unless those options were supplied explicitly. These
+are liveness diagnostics, not test deadlines, retries or result evidence. Add
+them inside the headless host: the native SDK proxy does not expose every xUnit
+option. The native message consumer also logs `TEST_START:` for each in-progress
+node, so a runtime or UI-thread stall does not depend on a diagnostic timer
+continuing to run. These messages never supply result counters; genuine TRX and
+the process exit code remain authoritative.
+
+Windows fixtures must close their owned native window before fallback handler
+and scope teardown, so `Destroying` sees the live handler and scoped services.
+Windows window destruction must disconnect the page's handler graph before
+disposing those services. In
+[device run 1672454](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1672454),
+log 692, a pending `StackNavigationManager.OnNavigated`/`Loaded` callback arranged
+a still-connected page after its service provider had been disposed. The resulting
+`ObjectDisposedException` terminated WinUI with `0xDEAD` after 65 passes; that
+failure is distinct from the earlier native title-bar allocation failure.
+Do not suppress the exception or replace native close with an arbitrary delay.
+
+The Windows native host's existing unhandled-exception hooks attempt one
+full-memory dump of their own process on a dedicated worker before termination.
+The dump includes handle and thread information and is written inside the
+unique result directory; a pending file is renamed only after a successful
+write. Capture has a bounded diagnostic wait, reports failures explicitly, and
+does not mark the original exception handled. This supplements MTP's crash
+collector, which did not produce its expected dump for these WinUI terminations.
+With `--diagnostic`, native test-start notifications also check the current
+process's GDI-object count and request that same one-shot snapshot at 8,000
+objects, before a hard termination can bypass unhandled-exception callbacks.
+This only records evidence: it does not change resource quotas, force collection,
+reset title bars or convert a failed process into a successful test run.
+Diagnostic runs also request the same one-shot snapshot when MTP publishes a
+failed/error test node. This captures transient retention at the failure instead
+of waiting for a later resource-pressure threshold; the original failure and
+genuine TRX remain authoritative.
+Windows jobs analyze any resulting owned snapshots on Windows, retaining heap
+statistics and managed root paths alongside the dump. Enumeration uses exact
+method tables from heap statistics, not substring matches that can select
+delegates or generated closure types instead of the requested objects. Root
+analysis covers every enumerated window, visual root, overlay, FlyoutPage and
+ContentPage, batching commands per type to reuse the root cache and requiring
+one completed root search per address. Tooling is installed
+only in the job-owned temporary directory when missing, and analysis failures
+remain explicit. A separate targeted ownership/focus invocation runs after the
+full Controls job, so an earlier suite crash cannot hide the attachment-lifetime,
+modal/overlay collection and ScrollView reload/removal/disconnect assertions.
+It does not replace or filter the full-suite invocation.
+In [device run 1672521](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1672521),
+log 1039, the live process snapshot was captured successfully at 8,002 GDI
+objects as `native-process-4008.dmp`. The same run still failed normally, so
+the diagnostic capture did not hide the subsequent native termination.
+
+In [device run 1672577](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1672577),
+the two genuine attachment-lifetime rows passed in test run 46615240. The full
+Controls run still failed modal ContentPage collection and then terminated with
+`0xDEAD` (331 passes, one failure and seven existing skips). Its pressure snapshot
+`native-process-5552.dmp` exposed a global root through
+`DeviceDisplayImplementation.MainDisplayInfoChanged` to a FlyoutPage, its pages
+and an older MauiWinUIWindow. This does not establish that the HWND was destroyed,
+or that every native-resource owner has been identified. FlyoutPage's display
+listener must require both a logical window and a live handler, removing it on
+handler teardown even while the logical Window reference remains. The managed
+regression failed before this change and passes for both attachment orders,
+handler replacement/reconnection and window removal/readdition. Native results
+remain a separate requirement; this managed proof does not establish that the
+remaining modal collection failure or native termination is resolved.
+
+In [device run 1672626](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1672626),
+the complete pressure snapshot contained no exact FlyoutPage or WindowOverlay
+instances. Only two of 49 MauiWinUIWindow wrappers, two of 50 WindowRootViews and
+two of 51 ContentPages had GC roots; their paths belonged to the runner/current
+test window. This does not establish native HWND destruction or native-resource
+release. The independent eight-row ownership/focus probe passed seven rows
+(including ScrollView collection, overlay collection, reload focus, removal,
+stale callback and both attachment-lifetime rows), but still failed modal
+ContentPage collection. That transient failure needs its own failure-time
+snapshot; the later pressure snapshot does not contain its retaining path.
+In run 1672685, MTP-triggered snapshots still arrived after the modal's test
+method had unwound: the isolated dump's two non-runner ContentPages and test
+window wrapper had no GC roots. The original assertion still failed in genuine TRX.
+The modal test therefore requests the same opt-in snapshot in its assertion
+exception handler before rethrowing unchanged. This is diagnostic only; it
+does not add a collection, drain, delay or accepted failure.
+Run 1672756 captured from that handler before the test unwound. The non-runner
+child ContentPage still had no GC root. The Windows collection helper now tests
+the deferred-native-release explanation by awaiting a low-priority UI-queue
+barrier after finalization, as the Apple helper already drains its native UI
+release queue. There is no sleep, quota change or weakened assertion. The
+focused probe also includes Shell page collection and both generic/non-generic
+rooted-object contrasts; native results must establish whether this candidate
+addresses the failure.
+That candidate passed in
+[device run 1672813](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1672813):
+all eleven genuine ownership/focus rows passed, including the unchanged modal
+and Shell collection assertions and both rooted-object contrasts. The full
+Windows Controls process still terminated with `0xDEAD` while
+`SettingTitleIconImageSourceDoesntCrash` was running. MTP recovered 339 rows
+(332 passes, seven existing skips, no assertion failures), but preserved exit
+code 7 and reported the host crash. Those incomplete results are not a passing
+suite or proof that the remaining native resource owner is fixed.
+The completed matrix had 35 successful jobs and six failed jobs: unpackaged
+Windows Controls terminated natively, and all five packaged Windows suites
+failed their signing/deployment prerequisite. All Android, iOS and Catalyst
+jobs succeeded. A separate local full pinned Catalyst run still reported 81
+fixture callback timeouts (1,520 passes and 42 existing skips); two affected
+methods passed fresh isolation. Do not equate that isolated result or the green
+CI lanes with resolution of the local full-run failures.
+
+The local Catalyst trace showed native navigation continuing through all ten
+push/pop operations while repeated readiness calls spent 50 ms waiting even
+when both managed and native state were already satisfied. Those branches now
+return immediately; transition waits, the 15-second fixture deadline and all
+assertions remain unchanged. Two native regressions require synchronous task
+completion only for already-satisfied loaded/unloaded states. The prescribed
+verification script, with the helper as its sole fix file and immutable baseline
+`832e96070e2346253ef3a7a6368d24ec41938ddc`, confirmed both regressions fail
+without the change and all four VisualElement cases pass with it. An initial
+attempt exposed a missing Label handler registration in the new test; that
+setup failure was corrected before the successful red/green run. The subsequent
+complete Release Catalyst run reported 1,600 passes, three failures and 42
+existing skips: none of the earlier 81 timeout failures recurred. Two lifecycle
+rows checked event counts before their observed events had arrived, and one
+split-Flyout row read initial geometry before its detail pane finished layout.
+The lifecycle test now waits for its own event counters before the unchanged
+assertions and transitions; the split test awaits positive, non-overlapping
+initial pane widths before its unchanged geometry assertions. All three rows
+then passed together, with one pre-existing skip. The subsequent complete
+Release CoreCLR Catalyst rerun passed all 1,603 runnable rows with 42 existing
+skips, no failures and a successful native launcher exit. This is local
+full-suite evidence for `9dc989040e`, not proof of Windows or Android success.
+
+Device run 1672894 exposed Android Controls ViewPager crashes on both runtimes.
+A local CoreCLR run of all 13 `ShellLazyStartupTests` reproduced the native
+RecyclerView termination. The fixture's `FinishedDestroying` property returned
+its loading task, its completion sources could run test code inline inside
+native lifecycle/layout callbacks, and cleanup disconnected the window before
+removing its owning fragment. The fixture now uses asynchronous continuations,
+waits for the actual fragment destruction signal and lets that native callback
+deliver window destruction before final handler cleanup. The same 13 native
+rows then passed with no skips; no production animation suppression, fixed
+delay or assertion change was needed. The complete local Release/CoreCLR
+Android Controls suite subsequently passed 1,331 rows with 13 existing skips,
+no failures and matching genuine host/native reports. Both Android runtimes
+still require their own CI evidence.
+The same run's Essentials Mono log identified reactivation of a disposed
+`ActivityLifecycleContextListener`. Test-owned listener disposal now runs on
+the UI thread, after owned recreation activities actually reach `OnDestroy`.
+All nine lifecycle/recreation rows and the complete 424-row Essentials suite
+passed locally on CoreCLR. The local Mono invocation's cross-target restore
+also evaluated `net11.0-ios`, which the SDK rejects for Mono (`NETSDK1242`);
+that invocation is not Mono execution evidence.
+
+Run 1673020 completed 32 of 41 jobs successfully. Its additional Windows Core
+termination was not attributed to title-bar pressure: log 928 records
+`MauiWebView.LoadHtml` dereferencing a null `CoreWebView2` after initialization
+reported `COMException (0x80010108)`. Navigation now captures and checks the
+initialized native object for HTML loading, local-URL mapping and navigation
+callbacks, logging explicitly if no native object remains. Local cross-host
+build reached the Windows-only `MakePri.exe` prerequisite; it did not establish
+native Windows correctness.
+The guarded code subsequently passed the complete native Windows Core suite in
+run 1673078, log 943: 2,082 passes, 111 existing skips, no failures and a
+successful launcher exit. This resolves that concrete null-dereference
+verification, not the distinct Windows Controls resource problem.
+
+The iOS initial-inset assertion now waits for the real safe-area API value
+before its unchanged final assertion; all three focused iOS 27 CoreCLR rows
+passed. Two subsequent complete local General runs passed 1,289 rows with 14
+existing skips. However, an earlier local run and both General jobs in run
+1673020 terminated without genuine TRX. The local simulator log records
+`SIGABRT` after Carousel tests; the last test and its complete ten-row class
+both passed in fresh isolation. The full-pass repetitions do not establish an
+abort fix or justify accepting missing results. Temporary app exception hooks
+were removed; SDK launch logging was used for further diagnosis without
+changing exception modes or native failure handling.
+The same iOS General shard also passed under debugger-only native exception
+capture (1,289 passes, 14 existing skips); no exception breakpoint fired.
+The debugger passed the runtime's normal `SIGUSR1` suspension signal through
+unchanged. This diagnostic run does not explain the earlier aborts.
+Run 1673078's iOS CoreCLR Shell shard instead reported one real assertion
+failure: the flyout-disposal test inspected header/footer native parents before
+attachment. It now awaits those exact parent relationships before all unchanged
+attachment and disposal assertions. The complete local Shell shard then passed
+all 507 native rows without skips.
+Two further native iOS fixture regressions demonstrated independent ownership
+defects: logical window destruction preceded native content removal, and the
+disconnect completion could resume callers before logical destruction.
+Both failed against the original fixture and passed after moving Apple window
+destruction into the native teardown owner and exposing its actual asynchronous
+disconnect task. The task also propagates teardown exceptions to the awaiting
+fixture instead of losing them through `async void`. This is direct lifecycle
+ordering evidence, not proof of the earlier intermittent abort's cause.
+The complete unfiltered local iOS Controls suite then passed 1,978 rows with
+23 existing skips and no failures (2,001 total), including all eight inherited
+rows for the two teardown regressions and the Shell attachment check. This
+native CoreCLR witness produced genuine TRX and a successful launcher exit;
+one complete pass still does not establish that the intermittent abort is gone.
+The same native teardown change also passed the complete Catalyst Controls
+suite: 1,611 passes, 42 existing skips, no failures and a successful launcher
+exit (1,653 total, including the eight new inherited regression rows).
+Run 1673173 exposed a separate Core presentation-test lifetime: the native
+scroll view intentionally references its cross-platform layout weakly, while
+the test's last strong use preceded native layout and its assertion. The test
+now keeps that owner alive through native removal with `GC.KeepAlive`, without
+changing production ownership or collecting garbage. Genuine CI TRX reported
+2,613 passes, one zero-content-height assertion and 40 existing skips; the
+complete local native iOS Core suite after the lifetime fix passed 2,614 rows
+with the same 40 skips (2,654 total).
+That run's Mono General simulator log also captured the previously missing abort
+stack: `CustomDataTemplateSelectorSelector.OnSelectTemplate` unboxed a null item
+from `ItemsViewController2.DetermineCellReuseId`, reached through the carousel
+controller. This is a concrete managed exception crossing UIKit, not evidence
+of an unexplained runtime-only abort. A real-detachment regression then passed
+without looping and failed with looping: removing the native view discarded the
+loop-index mapper while UIKit could still request cells. The mapper now remains
+owned until controller disposal, without retaining new native objects or changing
+template selectors. All 12 CarouselView rows passed on native iOS CoreCLR and
+Catalyst. The complete native iOS Mono General shard also passed 1,299 rows with
+14 existing skips (1,313 total), including the former crashing selector and both
+new mapping rows. Switching local runtime flavors required a full rebuild;
+the first incremental Mono attempt aborted at startup with a mismatched
+`System.Private.CoreLib` AOT module and is not counted as test coverage.
+The Windows fixture now captures each owned HWND before running its test and
+requires the real `IsWindow` API to report its destruction after native closure,
+before releasing the handler/window scopes. Successful checks log that exact
+handle and process. This stricter native teardown check needs Windows CI
+verification; it neither proves native title-bar/resource release nor treats
+managed `Closed` or garbage collection as evidence of HWND destruction.
+Completed native CI 1673292 tested functional head `8e446e8b16` and passed all
+Android and Apple jobs, plus the four other unpackaged Windows suites:
+35 of 41 jobs succeeded. Five installed-MSIX rows still failed the signing
+prerequisite; Windows Controls still terminated natively. Its log 992 records
+143 exact owned-HWND destruction checks passing before termination, with
+8,018 GDI objects observed at the snapshot threshold. The recovered report is
+explicitly failed and partial (332 passes, seven skips); it is not suite success.
+The handle checks establish destruction of those particular fixture HWNDs,
+not the release of their native title-bar objects or exclusion of every other
+repository-native owner. The Windows resource cause and approved packaged
+signing provisioning remain unresolved.
+
+The shared NUnit/Appium MTP caller also has native execution evidence in
+[UI run 1670623](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1670623):
+123 genuine test runs contain 15,140 rows, with 14,852 passes, 267 skips and
+21 failures. This establishes that the earlier invalid-argument startup failure
+no longer prevents execution, not that the UI suite is green. Four jobs failed:
+three Catalyst visual comparisons, one iOS title-view rotation assertion, and
+17 Windows TimePicker rows led by an unsupported mouse-pointer action. The
+Windows action source was corrected later in `f0775ea468`; that earlier run
+does not validate the correction. These remaining failures are not classified
+as pre-existing or infrastructure without corresponding baseline evidence.
+NUnit MTP collection validates original TRX paths as well as raw archive
+destinations before reading or rewriting reports. Shared PowerShell collection,
+launcher retry merging and Cake collection reject symbolic-link/junction
+redirection within the result boundary; NUnit source XML is also validated before
+archival. Attachment-free reports do not bypass these checks. Rejected paths
+must leave outside XML bytes unchanged and cannot become successful collection.
+
+In [device run 1672389](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1672389),
+log 719, PageSheet's `PresentViewControllerAsync` task did not complete within
+30 seconds even with an active application, foreground-active scene, key visible
+window, attached presenter and no existing presentation or transition. The native
+call itself returned, and the subsequent dismissal completed. Both the individual
+PageSheet row and explicit FullScreen-then-PageSheet sequence failed; the suite
+continued to a genuine TRX with 2,301 passes, two failures and 185 existing skips.
+This rejects a missing active presenter or presentation order alone as the full
+explanation. Waiting for the owned controller's native appearance event verifies
+the lifecycle needed by the inset test without depending on that completion
+callback. Local pinned-SDK results do not establish that the CI failure is fixed.
+The actual native correction subsequently passed in
+[device run 1672414](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1672414),
+test run 46610588: 2,303 passes, no failures and 185 existing skips, including
+both native styles and the explicit FullScreen-then-PageSheet sequence.
 
 ## Merge-readiness criteria
 

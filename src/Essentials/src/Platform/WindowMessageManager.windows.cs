@@ -83,6 +83,8 @@ namespace Microsoft.Maui.ApplicationModel
 		{
 			if (_managers.TryGetValue(hWnd, out var weakManager) && weakManager.TryGetTarget(out var manager))
 			{
+				// A subscriber can detach the manager while handling this message.
+				var oldWndProc = manager._oldWndProc;
 				var evt = manager.WindowMessageInternal;
 				if (evt is not null)
 				{
@@ -94,7 +96,7 @@ namespace Microsoft.Maui.ApplicationModel
 						return args.Result;
 				}
 
-				return PlatformMethods.CallWindowProc(manager._oldWndProc, hWnd, uMsg, wParam, lParam);
+				return PlatformMethods.CallWindowProc(oldWndProc, hWnd, uMsg, wParam, lParam);
 			}
 
 			// this technically should never happen

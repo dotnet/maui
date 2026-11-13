@@ -23,13 +23,6 @@
       ],
       "rollForward": false
     },
-    "microsoft.dotnet.xharness.cli": {
-      "version": "11.0.0-prerelease.26517.1",
-      "commands": [
-        "xharness"
-      ],
-      "rollForward": false
-    },
     "microsoft.maui.cli": {
       "version": "0.1.0-preview.14.26555.4",
       "commands": [

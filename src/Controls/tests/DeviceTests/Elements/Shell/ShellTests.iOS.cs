@@ -1073,7 +1073,7 @@ namespace Microsoft.Maui.DeviceTests
 				shell.FlyoutFooter = footer;
 			});
 
-			await CreateHandlerAndAddToWindow<ShellHandler>(shell, handler =>
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async handler =>
 			{
 				var flyoutContent = handler.ViewController
 					.ChildViewControllers
@@ -1085,6 +1085,12 @@ namespace Microsoft.Maui.DeviceTests
 				var tableView = tableViewController.View;
 				var headerPlatformView = header.ToPlatform();
 				var footerPlatformView = footer.ToPlatform();
+
+				await AssertEventually(() =>
+					tableView.Superview is not null &&
+					headerPlatformView.Superview is not null &&
+					footerPlatformView.Superview is not null,
+					message: "Shell flyout header and footer did not attach to their native parents");
 
 				Assert.NotNull(header.Handler);
 				Assert.NotNull(footer.Handler);
@@ -1099,8 +1105,6 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Null(tableView.Superview);
 				Assert.Null(headerPlatformView.Superview);
 				Assert.Null(footerPlatformView.Superview);
-
-				return Task.CompletedTask;
 			});
 		}
 

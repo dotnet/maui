@@ -9,7 +9,7 @@ using Microsoft.Maui.TestUtils.DeviceTests.Runners;
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
-	public class ContextStub : IMauiContext, IServiceProvider
+	public class ContextStub : IMauiContext, IServiceProvider, IDisposable
 	{
 		IServiceProvider _services;
 		IAnimationManager _manager;
@@ -23,6 +23,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 #if WINDOWS
 		UI.Xaml.Window _window;
+		bool _ownsWindow;
 #endif
 
 		public ContextStub(IServiceProvider services)
@@ -64,7 +65,9 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 				if (_window is not null)
 					return _window;
 
-				_window = (_services.GetService<UI.Xaml.Window>() ?? new UI.Xaml.Window());
+				_window = _services.GetService<UI.Xaml.Window>();
+				_ownsWindow = _window is null;
+				_window ??= new UI.Xaml.Window();
 
 				// If a single test needs to open multiple windows then we need to clear the window
 				// once it's closed. This way, the next request will get a new window instead of
@@ -107,8 +110,33 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 				w.Closed -= OnWindowClosed;
 
 			_window = null;
+			_ownsWindow = false;
+			_windowManager = null;
 		}
 #endif
+
+		public void Dispose()
+		{
+#if WINDOWS
+			var window = _window;
+			var ownsWindow = _ownsWindow;
+			var windowManager = _windowManager;
+			_window = null;
+			_ownsWindow = false;
+			_windowManager = null;
+			if (window is not null)
+				window.Closed -= OnWindowClosed;
+			try
+			{
+				windowManager?.Disconnect();
+			}
+			finally
+			{
+				if (ownsWindow)
+					window?.Close();
+			}
+#endif
+		}
 
 		public IMauiHandlersFactory Handlers =>
 			Services.GetRequiredService<IMauiHandlersFactory>();

@@ -26,7 +26,9 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Grouped CollectionView EmptyView Tracks Groups")]
 		public Task GroupedCollectionViewEmptyViewTracksGroups()
 		{
+#pragma warning disable CS0618 // This test intentionally covers the legacy handler.
 			return VerifyGroupedCollectionViewEmptyViewTracksGroups<CollectionViewHandler>();
+#pragma warning restore CS0618
 		}
 
 		[Fact(DisplayName = "CollectionViewHandler2 Grouped EmptyView Tracks Groups")]

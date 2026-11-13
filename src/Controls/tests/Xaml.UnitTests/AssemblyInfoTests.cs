@@ -73,34 +73,8 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 
 		internal static string GetFilePathFromRoot(string file)
 		{
-			// First, check Helix correlation payload (HELIX_CORRELATION_PAYLOAD environment variable)
-			var helixPayload = Environment.GetEnvironmentVariable("HELIX_CORRELATION_PAYLOAD");
-			if (!string.IsNullOrEmpty(helixPayload))
-			{
-				var normalizedFile = file.Replace('\\', '/');
-
-				// The MSBuild test files are copied to msbuild/ in the Helix payload
-				// Map paths like "src/Controls/tests/Xaml.UnitTests/MSBuild/X" to "msbuild/X"
-				var msbuildPrefix = "src/Controls/tests/Xaml.UnitTests/MSBuild/";
-				if (normalizedFile.StartsWith(msbuildPrefix, StringComparison.OrdinalIgnoreCase))
-				{
-					var relativePath = normalizedFile.Substring(msbuildPrefix.Length);
-					var helixPath = IOPath.Combine(helixPayload, "msbuild", relativePath);
-					if (File.Exists(helixPath))
-						return helixPath;
-				}
-
-				// Files from src/ folder are in the "src" correlation payload
-				// Map paths like "src/Controls/src/Build.Tasks/nuget/..." directly to "src/..." in payload
-				if (normalizedFile.StartsWith("src/", StringComparison.OrdinalIgnoreCase))
-				{
-					var helixPath = IOPath.Combine(helixPayload, normalizedFile);
-					if (File.Exists(helixPath))
-						return helixPath;
-				}
-			}
-
-			var fileFromRoot = IOPath.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", file);
+			var root = GetTopDirRecursive(AppContext.BaseDirectory) ?? GetTopDirRecursive(Directory.GetCurrentDirectory());
+			var fileFromRoot = IOPath.Combine(root ?? AppContext.BaseDirectory, file.Replace('\\', IOPath.DirectorySeparatorChar));
 			if (!File.Exists(fileFromRoot))
 			{
 				//NOTE: VSTS may be running tests in a staging directory, so we can use an environment variable to find the source
@@ -125,15 +99,6 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		}
 
 		/// <summary>
-		/// Returns true if running on Helix (any Helix environment)
-		/// </summary>
-		internal static bool IsRunningOnHelix()
-		{
-			var helixPayload = Environment.GetEnvironmentVariable("HELIX_CORRELATION_PAYLOAD");
-			return !string.IsNullOrEmpty(helixPayload);
-		}
-
-		/// <summary>
 		/// Find the repo root by looking for Microsoft.Maui.sln
 		/// </summary>
 		static string GetTopDirRecursive(string searchDirectory, int maxSearchDepth = 7)
@@ -155,33 +120,15 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		}
 
 		/// <summary>
-		/// Gets the path to the MSBuild test files, checking both local repo and Helix payload locations.
+		/// Gets the MSBuild fixtures copied to the test output.
 		/// </summary>
 		internal static string GetMSBuildTestsPath()
 		{
-			// First, check Helix correlation payload (HELIX_CORRELATION_PAYLOAD environment variable)
-			var helixPayload = Environment.GetEnvironmentVariable("HELIX_CORRELATION_PAYLOAD");
-			if (!string.IsNullOrEmpty(helixPayload))
-			{
-				var helixPath = IOPath.Combine(helixPayload, "msbuild", "_Directory.Build.props");
-				if (File.Exists(helixPath))
-					return IOPath.GetDirectoryName(helixPath);
-			}
-
-			// Check relative path from AppContext.BaseDirectory
-			var fileFromRoot = IOPath.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "src", "Controls", "tests", "Xaml.UnitTests", "MSBuild", "_Directory.Build.props");
+			var fileFromRoot = IOPath.Combine(AppContext.BaseDirectory, "MSBuild", "_Directory.Build.props");
 			if (File.Exists(fileFromRoot))
 				return IOPath.GetDirectoryName(fileFromRoot);
 
-			// Check BUILD_SOURCESDIRECTORY environment variable (Azure DevOps)
-			var sourcesDirectory = Environment.GetEnvironmentVariable("BUILD_SOURCESDIRECTORY");
-			if (!string.IsNullOrEmpty(sourcesDirectory))
-			{
-				fileFromRoot = IOPath.Combine(sourcesDirectory, "src", "Controls", "tests", "Xaml.UnitTests", "MSBuild", "_Directory.Build.props");
-				if (File.Exists(fileFromRoot))
-					return IOPath.GetDirectoryName(fileFromRoot);
-			}
-			return null;
+			return IOPath.GetDirectoryName(GetFilePathFromRoot("src/Controls/tests/Xaml.UnitTests/MSBuild/_Directory.Build.props"));
 		}
 
 

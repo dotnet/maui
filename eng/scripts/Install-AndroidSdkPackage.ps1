@@ -73,7 +73,14 @@ try {
 }
 finally {
     foreach ($name in $originalEnvironment.Keys) {
-        [Environment]::SetEnvironmentVariable($name, $originalEnvironment[$name])
+        if ($null -eq $originalEnvironment[$name]) {
+            if (Test-Path -LiteralPath "Env:$name") {
+                Remove-Item -LiteralPath "Env:$name"
+            }
+        }
+        else {
+            [Environment]::SetEnvironmentVariable($name, $originalEnvironment[$name])
+        }
     }
     if (Test-Path -LiteralPath $cacheRoot) {
         Remove-Item -LiteralPath $cacheRoot -Recurse -Force
