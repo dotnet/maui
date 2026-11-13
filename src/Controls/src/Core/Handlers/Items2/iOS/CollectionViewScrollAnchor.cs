@@ -161,26 +161,50 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		}
 
 		/// <summary>Scrolls a collection view that doesn't anchor its end to the end, once.</summary>
-		public static void ScrollToEndOnce(UICollectionView collectionView, bool animated)
+		/// <returns>
+		/// Where an animated scroll stops, or <see langword="null"/> when it didn't animate. The rows the animation scrolls
+		/// past are measured on the way, which can move the end beyond that point: <see cref="ScrollToEndOnceEnded"/> goes
+		/// the rest of the way.
+		/// </returns>
+		public static double? ScrollToEndOnce(UICollectionView collectionView, bool animated)
 		{
 			collectionView.LayoutIfNeeded();
-			SetOffsetToEnd(collectionView, animated);
-			if (!animated)
+			var target = SetOffsetToEnd(collectionView, animated);
+			if (animated)
 			{
-				// The rows at the end are measured once they're in view, which can move the end: go the rest of the way.
-				collectionView.LayoutIfNeeded();
-				SetOffsetToEnd(collectionView, animated: false);
+				return target;
+			}
+
+			// The rows at the end are measured once they're in view, which can move the end: go the rest of the way.
+			collectionView.LayoutIfNeeded();
+			SetOffsetToEnd(collectionView, animated: false);
+			return null;
+		}
+
+		/// <summary>
+		/// Called when the animated scroll <see cref="ScrollToEndOnce"/> started has stopped: goes the rest of the way to
+		/// the end, unless the view was scrolled away from where the animation stopped.
+		/// </summary>
+		public static void ScrollToEndOnceEnded(UICollectionView collectionView, double target)
+		{
+			if (Math.Abs(collectionView.ContentOffset.Y - target) <= 0.5)
+			{
+				ScrollToEndOnce(collectionView, animated: false);
 			}
 		}
 
-		static void SetOffsetToEnd(UICollectionView collectionView, bool animated)
+		// Returns the offset it scrolls to, or null when the view is at the end already.
+		static double? SetOffsetToEnd(UICollectionView collectionView, bool animated)
 		{
 			var inset = collectionView.AdjustedContentInset;
 			var end = Math.Max(-inset.Top, collectionView.ContentSize.Height + inset.Bottom - collectionView.Bounds.Height);
-			if (Math.Abs(collectionView.ContentOffset.Y - end) > 0.5)
+			if (Math.Abs(collectionView.ContentOffset.Y - end) <= 0.5)
 			{
-				collectionView.SetContentOffset(new CGPoint(collectionView.ContentOffset.X, end), animated);
+				return null;
 			}
+
+			collectionView.SetContentOffset(new CGPoint(collectionView.ContentOffset.X, end), animated);
+			return end;
 		}
 
 		/// <summary>Stops anchoring: the view no longer follows its end.</summary>

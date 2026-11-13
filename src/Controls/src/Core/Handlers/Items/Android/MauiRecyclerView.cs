@@ -330,6 +330,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_itemTouchHelperCallback?.SetAdapter(ItemsViewAdapter as IItemTouchHelperAdapter);
 
 			oldItemViewAdapter?.Dispose();
+
+			// The new adapter lays the view out from its start: the anchor decides where it goes.
+			_scrollAnchor?.AdapterReplaced();
 		}
 
 		public virtual void UpdateCanReorderItems()
@@ -451,9 +454,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			AddOrUpdateScrollListener();
 			UpdateItemsUpdatingScrollMode();
 			UpdateSnapBehavior();
-
-			// New items start at their end, as the view did when it first appeared.
-			_scrollAnchor?.Reset();
 		}
 
 		protected virtual void UpdateItemsUpdatingScrollMode()

@@ -315,12 +315,21 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				scrollAnchor.ScrollToEnd(CollectionView, ItemsView as StructuredItemsView, animate);
 			}
-			else
+			else if (CollectionViewScrollAnchor.ScrollToEndOnce(CollectionView, animate) is { } target)
 			{
-				CollectionViewScrollAnchor.ScrollToEndOnce(CollectionView, animate);
+				ScrollingToEndOnce(target);
 			}
 
 			return true;
+		}
+
+		/// <summary>
+		/// Called when <see cref="ScrollToEnd"/> started an animated scroll to <paramref name="target"/> for a view that
+		/// doesn't anchor its end: a controller told when a scroll animation ends calls
+		/// <see cref="CollectionViewScrollAnchor.ScrollToEndOnceEnded"/> then.
+		/// </summary>
+		internal virtual void ScrollingToEndOnce(double target)
+		{
 		}
 
 		void InvalidateLayoutIfItemsMeasureChanged()

@@ -36,6 +36,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		readonly StructuredItemsView _itemsView;
 		readonly ScrollAnchorTracker _tracker = new();
 		readonly float _density;
+		object? _itemsSource;
+		bool _isGrouped;
 		RecyclerView.LayoutManager? _layoutManager;
 		OrientationHelper? _helper;
 		AView? _reference;
@@ -59,6 +61,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			_recyclerView = recyclerView;
 			_itemsView = itemsView;
+			_itemsSource = itemsView.ItemsSource;
+			_isGrouped = (itemsView as GroupableItemsView)?.IsGrouped == true;
 			var density = recyclerView.Resources?.DisplayMetrics?.Density ?? 1f;
 			_density = density > 0 ? density : 1f;
 			_wasVertical = recyclerView.GetLayoutManager()?.CanScrollVertically() ?? true;
@@ -79,6 +83,30 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			ResetMeasurement();
 			Publish();
 			JumpToEnd();
+		}
+
+		/// <summary>
+		/// Called after the recycler view replaced its adapter, which lays it out again from its start: for new items, or for
+		/// the same items with a new header, footer or template.
+		/// </summary>
+		public void AdapterReplaced()
+		{
+			var itemsSource = _itemsView.ItemsSource;
+			var isGrouped = (_itemsView as GroupableItemsView)?.IsGrouped == true;
+			var newItems = !ReferenceEquals(itemsSource, _itemsSource) || isGrouped != _isGrouped;
+			_itemsSource = itemsSource;
+			_isGrouped = isGrouped;
+
+			// New items start at their end, as the view did when it first appeared. The same items go back to their end if
+			// the view followed it, and otherwise stay where the new adapter lays them out.
+			if (newItems || _tracker.IsAnchored)
+			{
+				Reset();
+			}
+			else
+			{
+				ResetMeasurement();
+			}
 		}
 
 		/// <summary>Called before the recycler view lays out its children.</summary>
