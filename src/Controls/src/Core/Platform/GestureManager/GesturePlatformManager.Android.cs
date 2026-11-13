@@ -305,7 +305,15 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			if (e.Event != null)
-				e.Handled = OnTouchEvent(e.Event);
+			{
+				var eventConsumed = OnTouchEvent(e.Event);
+				var isDownOnClickableControl =
+					e.Event.ActionMasked == MotionEventActions.Down &&
+					Control?.Clickable == true;
+
+				// Let clickable native controls receive Down while the gesture detector observes it.
+				e.Handled = eventConsumed && !isDownOnClickableControl;
+			}
 		}
 
 		void SetupElement(VisualElement? oldElement, VisualElement? newElement)
