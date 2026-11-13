@@ -119,6 +119,87 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public void GlobalRouteMatchingIsIndependentOfRegistrationOrder(bool childFirst)
+		{
+			if (childFirst)
+			{
+				Routing.RegisterRoute("home", typeof(TestPage1));
+				Routing.RegisterRoute("home/savings/search/levels", typeof(ContentPage));
+				Routing.RegisterRoute("home/savings/search", typeof(TestPage3));
+				Routing.RegisterRoute("home/savings", typeof(TestPage2));
+			}
+			else
+			{
+				Routing.RegisterRoute("home", typeof(TestPage1));
+				Routing.RegisterRoute("home/savings", typeof(TestPage2));
+				Routing.RegisterRoute("home/savings/search", typeof(TestPage3));
+				Routing.RegisterRoute("home/savings/search/levels", typeof(ContentPage));
+			}
+
+			var shell = new TestShell(CreateShellItem(shellContentRoute: "root"));
+
+			var request = ShellUriHandler.GetNavigationRequest(shell, CreateUri("//root/home/savings/search"));
+
+			Assert.Equal(3, request.Request.GlobalRoutes.Count);
+			Assert.Equal("home", request.Request.GlobalRoutes[0]);
+			Assert.Equal("home/savings", request.Request.GlobalRoutes[1]);
+			Assert.Equal("home/savings/search", request.Request.GlobalRoutes[2]);
+		}
+
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public void TemplateRouteWithTemplatePrefixMatchesIndependentOfRegistrationOrder(bool childFirst)
+		{
+			if (childFirst)
+			{
+				Routing.RegisterRoute("item-{id}/details", typeof(TestPage2));
+				Routing.RegisterRoute("item-{id}", typeof(TestPage1));
+			}
+			else
+			{
+				Routing.RegisterRoute("item-{id}", typeof(TestPage1));
+				Routing.RegisterRoute("item-{id}/details", typeof(TestPage2));
+			}
+
+			var shell = new TestShell(CreateShellItem(shellContentRoute: "root"));
+
+			var request = ShellUriHandler.GetNavigationRequest(shell, CreateUri("//root/item-42/details"));
+
+			Assert.Single(request.Request.GlobalRoutes);
+			Assert.Equal("item-{id}/details", request.Request.GlobalRoutes[0]);
+			Assert.Equal("42", request.Request.PathParameters["id"]);
+		}
+
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public void LongerTemplateRouteWinsIndependentOfRegistrationOrder(bool detailsFirst)
+		{
+			if (detailsFirst)
+			{
+				Routing.RegisterRoute("product/{id}/details", typeof(TestPage2));
+				Routing.RegisterRoute("product/{category}", typeof(TestPage1));
+			}
+			else
+			{
+				Routing.RegisterRoute("product/{category}", typeof(TestPage1));
+				Routing.RegisterRoute("product/{id}/details", typeof(TestPage2));
+			}
+
+			var shell = new TestShell(CreateShellItem(shellContentRoute: "root"));
+
+			var request = ShellUriHandler.GetNavigationRequest(shell, CreateUri("//root/product/42/details"));
+
+			Assert.Single(request.Request.GlobalRoutes);
+			Assert.Equal("product/{id}/details", request.Request.GlobalRoutes[0]);
+			Assert.Equal("42", request.Request.PathParameters["id"]);
+			Assert.False(request.Request.PathParameters.ContainsKey("category"));
+		}
+
 		[Fact]
 		public async Task ShellSectionWithGlobalRouteRelative()
 		{

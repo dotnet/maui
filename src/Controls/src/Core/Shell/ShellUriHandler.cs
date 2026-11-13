@@ -552,6 +552,20 @@ namespace Microsoft.Maui.Controls
 			{
 				bool acceptingTemplates = pass == 1;
 
+				// Of the literal route keys whose collapsed form matches, the one
+				// consuming the fewest segments wins, so a parent registration
+				// ("home/savings") isn't skipped in favor of a longer key
+				// ("home/savings/search") that happened to be registered first.
+				// Among templated keys the LONGEST match wins instead: picking the
+				// shorter prefix ("item-{id}") would leave the longer key
+				// ("item-{id}/details") collapsing against already-resolved segments,
+				// where its template anchor is never found literally and captured
+				// parameters get lost. Ties keep the first key encountered.
+				string bestRouteKey = null;
+				string bestMatch = null;
+				Dictionary<string, string> bestParameters = null;
+				int bestSegmentCount = int.MaxValue;
+
 				// First search by collapsing global routes if user is registering routes like "route1/route2/route3"
 				foreach (var routeKey in routeKeys)
 				{
@@ -585,13 +599,24 @@ namespace Microsoft.Maui.Controls
 					string collapsedMatch = possibleRoutePath.GetNextSegmentMatch(collapsedRoute, capturedParameters, routeTemplate);
 					if (!String.IsNullOrWhiteSpace(collapsedMatch))
 					{
-						possibleRoutePath.AddGlobalRoute(routeKey, collapsedMatch, capturedParameters);
-						return true;
+						int segmentCount = RetrievePaths(collapsedMatch).Length;
+						bool isBetterMatch = bestRouteKey == null ||
+							(acceptingTemplates ? segmentCount > bestSegmentCount : segmentCount < bestSegmentCount);
+						if (isBetterMatch)
+						{
+							bestRouteKey = routeKey;
+							bestMatch = collapsedMatch;
+							bestParameters = capturedParameters;
+							bestSegmentCount = segmentCount;
+						}
+
+						continue;
 					}
 
 					// If the registered route is a combination of shell items and global routes then we might end up here
 					// without the previous tree search finding the correct path
-					if ((possibleRoutePath.Shell != null) &&
+					if (bestRouteKey == null &&
+						(possibleRoutePath.Shell != null) &&
 						(possibleRoutePath.Item == null || possibleRoutePath.Section == null || possibleRoutePath.Content == null))
 					{
 						var nextNode = possibleRoutePath.GetNodeLocation().WalkToNextNode();
@@ -634,6 +659,12 @@ namespace Microsoft.Maui.Controls
 							nextNode = nextNode.WalkToNextNode();
 						}
 					}
+				}
+
+				if (bestRouteKey != null)
+				{
+					possibleRoutePath.AddGlobalRoute(bestRouteKey, bestMatch, bestParameters);
+					return true;
 				}
 			}
 
