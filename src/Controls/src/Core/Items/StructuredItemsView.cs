@@ -125,7 +125,7 @@ namespace Microsoft.Maui.Controls
 				propertyChanged: OnAnchorModeChanged);
 
 		/// <summary>
-		/// Gets or sets which edge of the content stays in view while the content changes. This is a bindable property.
+		/// Gets or sets which edges of the content stay in view while the content changes. This is a bindable property.
 		/// </summary>
 		/// <value>A <see cref="ScrollAnchorMode"/> value. The default is <see cref="ScrollAnchorMode.None"/>.</value>
 		/// <remarks>
@@ -138,8 +138,17 @@ namespace Microsoft.Maui.Controls
 		/// <see cref="ItemsView.ScrollTo(int, int, ScrollToPosition, bool)"/>.
 		/// </para>
 		/// <para>
-		/// While the view follows its end, <see cref="ItemsView.ItemsUpdatingScrollMode"/> doesn't scroll it; while it doesn't,
-		/// <see cref="ItemsView.ItemsUpdatingScrollMode"/> applies as usual.
+		/// <see cref="ScrollAnchorMode.Start"/> does the same for the start of the content, above the header: items added
+		/// before the first item while the view is at its start come into view instead of being added above it. The view
+		/// follows its start again once the user scrolls back to it, or the app calls <see cref="ScrollToStart(bool)"/>.
+		/// </para>
+		/// <para>
+		/// With both, the view follows whichever edge it is at, and starts at the end. When it is at both because its content
+		/// fits, it follows the end. Changing the anchor mode starts over, as when the view first appears.
+		/// </para>
+		/// <para>
+		/// While the view follows an edge, <see cref="ItemsView.ItemsUpdatingScrollMode"/> doesn't scroll it; while it
+		/// doesn't, <see cref="ItemsView.ItemsUpdatingScrollMode"/> applies as usual.
 		/// </para>
 		/// <para>
 		/// Anchoring applies to vertical layouts on Android, iOS, and Mac Catalyst. Elsewhere it has no effect, and
@@ -159,12 +168,12 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty IsAnchoredProperty = IsAnchoredPropertyKey.BindableProperty;
 
 		/// <summary>
-		/// Gets whether the view follows the edge of its content that <see cref="AnchorMode"/> selects. This is a bindable property.
+		/// Gets whether the view follows an edge of its content that <see cref="AnchorMode"/> selects. This is a bindable property.
 		/// </summary>
 		/// <value>
-		/// <see langword="true"/> while the view follows the end of its content; <see langword="false"/> after the user scrolls
-		/// away from it, and wherever the view can't follow it (before it's displayed, in a horizontal layout, or on a platform
-		/// that doesn't support anchoring).
+		/// <see langword="true"/> while the view follows the start or the end of its content; <see langword="false"/> after the
+		/// user scrolls away from it, and wherever the view can't follow it (before it's displayed, in a horizontal layout,
+		/// or on a platform that doesn't support anchoring).
 		/// </value>
 		/// <remarks>
 		/// Use it, for example, to show a "jump to latest" button that calls <see cref="ScrollToEnd(bool)"/> while the user
@@ -173,6 +182,27 @@ namespace Microsoft.Maui.Controls
 		public bool IsAnchored => (bool)GetValue(IsAnchoredProperty);
 
 		internal void SetIsAnchored(bool value) => SetValue(IsAnchoredPropertyKey, value);
+
+		/// <summary>Scrolls to the start of the content: before the first item, to the start of the header.</summary>
+		/// <param name="animate">Whether to animate the scroll.</param>
+		/// <remarks>
+		/// <para>
+		/// With <see cref="ScrollAnchorMode.Start"/>, the view follows its start again. Unlike scrolling to the first item with
+		/// <see cref="ItemsView.ScrollTo(int, int, ScrollToPosition, bool)"/>, it reaches the start when there's a header.
+		/// </para>
+		/// <para>
+		/// It scrolls to the start of vertical layouts on Android, iOS, and Mac Catalyst. Elsewhere, it scrolls to the first item.
+		/// </para>
+		/// </remarks>
+		public void ScrollToStart(bool animate = true)
+		{
+			if (Handler is IScrollToEdgeHandler handler && handler.ScrollToStart(animate))
+			{
+				return;
+			}
+
+			ScrollToFirstItem(animate);
+		}
 
 		/// <summary>Scrolls to the end of the content: past the last item, to the end of the footer.</summary>
 		/// <param name="animate">Whether to animate the scroll.</param>
@@ -187,12 +217,21 @@ namespace Microsoft.Maui.Controls
 		/// </remarks>
 		public void ScrollToEnd(bool animate = true)
 		{
-			if (Handler is IScrollToEndHandler handler && handler.ScrollToEnd(animate))
+			if (Handler is IScrollToEdgeHandler handler && handler.ScrollToEnd(animate))
 			{
 				return;
 			}
 
 			ScrollToLastItem(animate);
+		}
+
+		// Where the platform can't scroll to the start of the content, the first item is as close as ScrollTo gets.
+		internal virtual void ScrollToFirstItem(bool animate)
+		{
+			if (CountItems(ItemsSource) > 0)
+			{
+				ScrollTo(0, position: ScrollToPosition.Start, animate: animate);
+			}
 		}
 
 		// Where the platform can't scroll to the end of the content, the last item is as close as ScrollTo gets.
@@ -227,7 +266,7 @@ namespace Microsoft.Maui.Controls
 		static void OnAnchorModeChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			// Only a platform view that anchors reports being anchored; with anchoring off, the view never is.
-			if (((ScrollAnchorMode)newValue & ScrollAnchorMode.End) == 0)
+			if (((ScrollAnchorMode)newValue & (ScrollAnchorMode.Start | ScrollAnchorMode.End)) == 0)
 			{
 				((StructuredItemsView)bindable).SetIsAnchored(false);
 			}

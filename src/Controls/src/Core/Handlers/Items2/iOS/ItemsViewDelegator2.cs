@@ -37,9 +37,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		public override void Scrolled(UIScrollView scrollView)
 		{
-			if (scrollView is UICollectionView scrolledCollectionView)
+			if (scrollView is UICollectionView scrolledCollectionView && ViewController is { ScrollAnchor: { } scrollAnchor } controller)
 			{
-				ViewController?.ScrollAnchor?.Scrolled(scrolledCollectionView);
+				scrollAnchor.Scrolled(scrolledCollectionView, controller.ItemsView as StructuredItemsView,
+					controller.GetScrollDirection() == UICollectionViewScrollDirection.Vertical);
 			}
 
 			var (visibleItems, firstVisibleItemIndex, centerItemIndex, lastVisibleItemIndex) = GetVisibleItemsIndex();
@@ -90,15 +91,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 		}
 
-#if MACCATALYST
 		public override void DraggingStarted(UIScrollView scrollView)
 		{
+#if MACCATALYST
 			if (scrollView is MauiCollectionView mauiCV)
 			{
 				mauiCV.ClearPendingScrollRestore();
 			}
-		}
 #endif
+
+			// The user takes over: an animated scroll a drag stops never reports ending, so nothing waits for it to.
+			ViewController?.ScrollingToEdge(null);
+		}
 
 		public override void DraggingEnded(UIScrollView scrollView, bool willDecelerate)
 		{

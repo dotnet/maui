@@ -6,15 +6,18 @@ using AView = Android.Views.View;
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	/// <summary>
-	/// Keeps the end of a <see cref="StructuredItemsView"/>'s <see cref="RecyclerView"/> in view for
-	/// <see cref="ScrollAnchorMode.End"/>, grouped or not, with or without a header and footer (the adapter lays those
-	/// out as items too).
+	/// Keeps an edge of a <see cref="StructuredItemsView"/>'s <see cref="RecyclerView"/> in view for
+	/// <see cref="ScrollAnchorMode.Start"/> and <see cref="ScrollAnchorMode.End"/>, grouped or not, with or without a
+	/// header and footer (the adapter lays those out as items too).
 	/// </summary>
 	/// <remarks>
 	/// <para>
 	/// The recycler view reports to it after each layout (<see cref="LayoutFinished"/>), after it scrolled
 	/// (<see cref="Scrolled"/>), and when its scroll state changes (<see cref="ScrollStateChanged"/>): it looks at the
-	/// view then, and scrolls it to the end, without animating, when the content changed size while it followed the end.
+	/// view then, and scrolls it to the edge it follows, without animating, when the content changed size while it
+	/// followed it. RecyclerView keeps the first row it shows where it is when rows are added before it, so rows added
+	/// before the first row while the view is at its start land above the viewport: following the start scrolls them into
+	/// view.
 	/// </para>
 	/// <para>
 	/// RecyclerView reports its scroll offset and range as estimates: LinearLayoutManager extrapolates them from the
@@ -34,7 +37,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 	{
 		readonly RecyclerView _recyclerView;
 		readonly StructuredItemsView _itemsView;
-		readonly ScrollAnchorTracker _tracker = new();
+		readonly ScrollAnchorTracker _tracker;
 		readonly float _density;
 		object? _itemsSource;
 		bool _isGrouped;
@@ -57,8 +60,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		bool _updatePosted;
 		bool _jumpPosted;
 
-		public RecyclerViewScrollAnchor(RecyclerView recyclerView, StructuredItemsView itemsView)
+		public RecyclerViewScrollAnchor(RecyclerView recyclerView, StructuredItemsView itemsView, ScrollAnchorMode mode)
 		{
+			_tracker = new ScrollAnchorTracker(mode);
 			_recyclerView = recyclerView;
 			_itemsView = itemsView;
 			_itemsSource = itemsView.ItemsSource;
@@ -67,22 +71,41 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_density = density > 0 ? density : 1f;
 			_wasVertical = recyclerView.GetLayoutManager()?.CanScrollVertically() ?? true;
 			Publish();
-			JumpToEnd();
+			JumpToEdge();
 		}
 
-		/// <summary>Gets whether the view follows the end of its content right now.</summary>
-		public bool IsFollowingEnd => !_detached && _wasVertical && _tracker.IsAnchored;
+		/// <summary>Gets the edges the view can follow.</summary>
+		public ScrollAnchorMode Edges => _tracker.Edges;
+
+		/// <summary>Gets whether the view can follow <paramref name="edge"/>.</summary>
+		public bool CanFollow(ScrollAnchorMode edge) => _tracker.CanFollow(edge);
+
+		/// <summary>Gets whether the view follows an edge of its content right now.</summary>
+		public bool IsFollowingEdge => !_detached && _wasVertical && _tracker.IsAnchored;
 
 		bool IsUserScrolling => _recyclerView.ScrollState != RecyclerView.ScrollStateIdle;
 
-		/// <summary>Starts following the end again, as for a new set of items.</summary>
+		/// <summary>Follows the edges <paramref name="mode"/> selects instead, starting over as for a new view.</summary>
+		public void UpdateMode(ScrollAnchorMode mode)
+		{
+			_tracker.SetEdges(mode);
+			Restart();
+		}
+
+		/// <summary>Starts following the edge a new view shows again, as for a new set of items.</summary>
 		public void Reset()
 		{
 			_tracker.Reset();
+			Restart();
+		}
+
+		// Measures from scratch, and goes to the edge the view now follows.
+		void Restart()
+		{
 			_requestPending = false;
 			ResetMeasurement();
 			Publish();
-			JumpToEnd();
+			JumpToEdge();
 		}
 
 		/// <summary>
@@ -97,11 +120,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_itemsSource = itemsSource;
 			_isGrouped = isGrouped;
 
-			// New items start at their end, as the view did when it first appeared. The same items go back to their end if
-			// the view followed it, and otherwise stay where the new adapter lays them out.
-			if (newItems || _tracker.IsAnchored)
+			// New items start at the edge a new view shows, as the view did when it first appeared. The same items go back to
+			// the edge the view followed, and otherwise stay where the new adapter lays them out.
+			if (newItems)
 			{
 				Reset();
+			}
+			else if (_tracker.IsAnchored)
+			{
+				_tracker.Reset(_tracker.AnchoredEdge);
+				Restart();
 			}
 			else
 			{
@@ -162,7 +190,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
-			Update();
+			// RecyclerView lays out and measures the rows a scroll brings into view as it scrolls, which can change the size
+			// of the content it estimates: the move is still the scroll's.
+			Update(scrolled: true);
 		}
 
 		/// <summary>Called when the scroll state changes: a drag or fling that ends may need settling on the end.</summary>
@@ -176,11 +206,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		/// <summary>
 		/// Called when the app requests a scroll (<c>ScrollTo</c>): it is judged by where it lands, instead of being scrolled
-		/// back to the end.
+		/// back to the edge the view followed.
 		/// </summary>
 		public void ScrollRequested(bool animated)
 		{
-			// It supersedes a jump to the end queued after the last layout.
+			// It supersedes a jump to an edge queued after the last layout.
 			_jumpPosted = false;
 
 			if (animated)
@@ -195,7 +225,32 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 		}
 
-		/// <summary>Scrolls to the end, and follows it again.</summary>
+		/// <summary>Scrolls to the start, and follows it again. The view must be able to follow its start.</summary>
+		public void ScrollToStart(bool animate)
+		{
+			if (_detached)
+			{
+				return;
+			}
+
+			_requestPending = false;
+			if (animate && GetLayout() is var (layoutManager, _) && layoutManager.ItemCount > 0)
+			{
+				// It scrolls like a fling toward the start, which never disengages the anchor.
+				_tracker.Engage(ScrollAnchorMode.Start);
+				Publish();
+				SmoothScrollToStart(_recyclerView, layoutManager);
+				return;
+			}
+
+			// Look again as for a new view that follows its start.
+			_recyclerView.StopScroll();
+			_tracker.Reset(ScrollAnchorMode.Start);
+			Publish();
+			JumpToEdge();
+		}
+
+		/// <summary>Scrolls to the end, and follows it again. The view must be able to follow its end.</summary>
 		public void ScrollToEnd(bool animate)
 		{
 			if (_detached)
@@ -208,7 +263,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				// It scrolls like a fling toward the end, which never disengages the anchor; once it settles, the anchor
 				// scrolls the rest of the way if the end moved meanwhile.
-				_tracker.Engage();
+				_tracker.Engage(ScrollAnchorMode.End);
 				Publish();
 				SmoothScrollToEnd(_recyclerView, layoutManager);
 				return;
@@ -216,12 +271,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			// Look again as for a new view: the look after the jump scrolls to the exact end.
 			_recyclerView.StopScroll();
-			_tracker.Reset();
+			_tracker.Reset(ScrollAnchorMode.End);
 			Publish();
-			JumpToEnd();
+			JumpToEdge();
 		}
 
-		/// <summary>Stops anchoring: the view no longer follows its end.</summary>
+		/// <summary>Stops anchoring: the view no longer follows an edge.</summary>
 		public void Detach()
 		{
 			_detached = true;
@@ -235,7 +290,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			Publish();
 		}
 
-		void Update()
+		void Update(bool scrolled = false)
 		{
 			if (_updating || _detached)
 			{
@@ -245,7 +300,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var isVertical = _recyclerView.GetLayoutManager()?.CanScrollVertically() == true;
 			if (isVertical != _wasVertical)
 			{
-				// A new layout that scrolls vertically again follows the end from the start, as a new view does.
+				// A new layout that scrolls vertically again starts over, as a new view does.
 				_wasVertical = isVertical;
 				_tracker.Reset();
 				ResetMeasurement();
@@ -256,9 +311,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				_updating = true;
 				try
 				{
-					if (_tracker.Update(metrics, IsUserScrolling) is not null)
+					if (_tracker.Update(metrics, IsUserScrolling, scrolled: scrolled) is not null)
 					{
-						CorrectToEnd();
+						CorrectToEdge();
 					}
 				}
 				finally
@@ -272,7 +327,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void Publish()
 		{
-			var isAnchored = IsFollowingEnd;
+			var isAnchored = IsFollowingEdge;
 			if (_itemsView.IsAnchored != isAnchored)
 			{
 				_itemsView.SetIsAnchored(isAnchored);
@@ -399,41 +454,45 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return new ScrollAnchorMetrics(offset, offset + viewportUnits + distance / _density, viewportUnits);
 		}
 
-		void CorrectToEnd()
+		void CorrectToEdge()
 		{
-			if (GetLayout() is not var (layoutManager, helper))
+			if (GetLayout() is not var (layoutManager, helper) || layoutManager.ItemCount == 0)
 			{
 				return;
 			}
 
-			var last = layoutManager.ItemCount - 1;
-			if (last < 0)
+			var toEnd = _tracker.AnchoredEdge == ScrollAnchorMode.End;
+			var position = toEnd ? layoutManager.ItemCount - 1 : 0;
+			if (layoutManager.FindViewByPosition(position) is not { } row)
 			{
-				return;
-			}
-
-			if (layoutManager.FindViewByPosition(last) is null)
-			{
-				// Lay the last row out first; the look after that layout scrolls the rest of the way. Scrolling to a
+				// Lay the row at the edge out first; the look after that layout scrolls the rest of the way. Scrolling to a
 				// position asks for a layout, which is lost if asked for during one: ask once it's over.
 				if (_layoutDepth > 0 || _finishingLayout)
 				{
-					PostJumpToEnd();
+					PostJumpToEdge();
 				}
 				else
 				{
-					_recyclerView.ScrollToPosition(last);
+					_recyclerView.ScrollToPosition(position);
 				}
 
 				return;
 			}
 
-			var distance = GetDistanceToEnd(layoutManager, helper);
-			if (distance > 0)
+			// Past the end of the viewport for the end; above its start, so negative, for the start.
+			var distance = toEnd ? GetDistanceToEnd(layoutManager, helper) : helper.GetDecoratedStart(row) - helper.StartAfterPadding;
+			if (toEnd ? distance > 0 : distance < 0)
 			{
 				_recyclerView.ScrollBy(0, distance);
 			}
 		}
+
+		/// <summary>Starts an animated scroll that ends with the start of the first row at the start of the viewport.</summary>
+		internal static void SmoothScrollToStart(RecyclerView recyclerView, RecyclerView.LayoutManager layoutManager) =>
+			layoutManager.StartSmoothScroll(new PositionalSmoothScroller(recyclerView.Context, ScrollToPosition.Start)
+			{
+				TargetPosition = 0
+			});
 
 		/// <summary>
 		/// Starts an animated scroll that ends with the end of the last row at the end of the viewport, also when that row is
@@ -462,18 +521,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return end - helper.EndAfterPadding;
 		}
 
-		// Lays the last row out at the end in the next layout, so a view that starts at its end shows it from its first frame.
-		void JumpToEnd()
+		// Lays the row at the edge the view follows out at that edge in the next layout, so a view that starts at its end
+		// shows it from its first frame.
+		void JumpToEdge()
 		{
-			if (IsFollowingEnd && !IsUserScrolling && _recyclerView.GetLayoutManager() is { ItemCount: > 0 } layoutManager)
+			if (IsFollowingEdge && !IsUserScrolling && _recyclerView.GetLayoutManager() is { ItemCount: > 0 } layoutManager)
 			{
-				_recyclerView.ScrollToPosition(layoutManager.ItemCount - 1);
+				_recyclerView.ScrollToPosition(_tracker.AnchoredEdge == ScrollAnchorMode.End ? layoutManager.ItemCount - 1 : 0);
 			}
 		}
 
 		void PostUpdate() => Post(ref _updatePosted);
 
-		void PostJumpToEnd() => Post(ref _jumpPosted);
+		void PostJumpToEdge() => Post(ref _jumpPosted);
 
 		void Post(ref bool posted)
 		{
@@ -503,11 +563,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
-			// The look that asked for a jump already counted on the view being at the end: get it there, and the layout
+			// The look that asked for a jump already counted on the view being at the edge: get it there, and the layout
 			// that follows looks again.
 			if (jump)
 			{
-				JumpToEnd();
+				JumpToEdge();
 			}
 			else
 			{

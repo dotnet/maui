@@ -90,7 +90,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		};
 	}
 
-	public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItemsView>, IScrollToEndHandler
+	public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItemsView>, IScrollToEdgeHandler
 	{
 		// Reorderable
 		protected override ItemsViewController2<ReorderableItemsView> CreateController(ReorderableItemsView itemsView, UICollectionViewLayout layout)
@@ -104,6 +104,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		// Groupable
 		protected override void ScrollToRequested(object sender, ScrollToRequestEventArgs args)
 		{
+			// A newer request: what an earlier animated scroll left for when its animation ends no longer applies.
+			Controller?.ScrollingToEdge(null);
+
 			if (WillNeedScrollAdjustment(args))
 			{
 				if (args.IsAnimated)
@@ -236,7 +239,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			handler.Controller?.UpdateAnchorMode();
 		}
 
-		bool IScrollToEndHandler.ScrollToEnd(bool animate) => Controller?.ScrollToEnd(animate) ?? false;
+		bool IScrollToEdgeHandler.ScrollToStart(bool animate) => Controller?.ScrollToStart(animate) ?? false;
+
+		bool IScrollToEdgeHandler.ScrollToEnd(bool animate) => Controller?.ScrollToEnd(animate) ?? false;
 
 		Dictionary<string, object> _layoutPropertyCache = new();
 		IItemsLayout _subscribedItemsLayout;

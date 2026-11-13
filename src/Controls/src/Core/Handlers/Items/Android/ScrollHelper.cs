@@ -122,6 +122,20 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_recyclerView.ScrollToPosition(index);
 		}
 
+		// Scrolls, without animating, until the start of the first row meets the start of the viewport: the start of the
+		// content, above the header. Scrolling to the first position lines it up with the start of the viewport whenever
+		// it isn't wholly in view.
+		public void JumpScrollToStart()
+		{
+			// A newer request replaces an adjustment an earlier jump left for its layout.
+			_pendingScrollAdjustment = null;
+
+			if (_recyclerView.GetLayoutManager() is { ItemCount: > 0 })
+			{
+				_recyclerView.ScrollToPosition(0);
+			}
+		}
+
 		// Scrolls, without animating, until the end of the lowest row meets the end of the viewport: the end of the
 		// content, past the footer.
 		public void JumpScrollToEnd()

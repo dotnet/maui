@@ -37,10 +37,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.False(collectionView.IsAnchored);
 		}
 
-		[Fact]
-		public void TurningAnchoringOffClearsIsAnchored()
+		[Theory]
+		[InlineData(ScrollAnchorMode.Start)]
+		[InlineData(ScrollAnchorMode.End)]
+		[InlineData(ScrollAnchorMode.Start | ScrollAnchorMode.End)]
+		public void TurningAnchoringOffClearsIsAnchored(ScrollAnchorMode mode)
 		{
-			var collectionView = new CollectionView { AnchorMode = ScrollAnchorMode.End };
+			var collectionView = new CollectionView { AnchorMode = mode };
 			collectionView.SetIsAnchored(true);
 
 			var changes = 0;
@@ -58,16 +61,30 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(1, changes);
 		}
 
-		[Fact]
-		public void AnAnchorModeThatIncludesEndKeepsIsAnchored()
+		[Theory]
+		[InlineData(ScrollAnchorMode.Start)]
+		[InlineData(ScrollAnchorMode.End)]
+		[InlineData(ScrollAnchorMode.Start | ScrollAnchorMode.End)]
+		public void AnAnchorModeThatIncludesAnEdgeKeepsIsAnchored(ScrollAnchorMode mode)
 		{
 			var collectionView = new CollectionView { AnchorMode = ScrollAnchorMode.End };
 			collectionView.SetIsAnchored(true);
 
-			// A flag this version doesn't define yet, alongside End.
-			collectionView.AnchorMode = ScrollAnchorMode.End | (ScrollAnchorMode)1;
+			// The platform view reports where it is once it starts over with the new mode.
+			collectionView.AnchorMode = mode;
 
 			Assert.True(collectionView.IsAnchored);
+		}
+
+		[Fact]
+		public void AnAnchorModeWithOnlyFlagsThisVersionDoesNotDefineClearsIsAnchored()
+		{
+			var collectionView = new CollectionView { AnchorMode = ScrollAnchorMode.End };
+			collectionView.SetIsAnchored(true);
+
+			collectionView.AnchorMode = (ScrollAnchorMode)4;
+
+			Assert.False(collectionView.IsAnchored);
 		}
 
 		[Fact]
@@ -83,16 +100,110 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Theory]
 		[InlineData(true)]
 		[InlineData(false)]
+		public void ScrollToStartAsksThePlatformView(bool animate)
+		{
+			var collectionView = new CollectionView { ItemsSource = new[] { "a", "b", "c" } };
+			var handler = new ScrollToEdgeHandlerStub(canScrollToEdge: true);
+			collectionView.Handler = handler;
+			var requests = RecordScrollToRequests(collectionView);
+
+			collectionView.ScrollToStart(animate);
+
+			Assert.Equal(new[] { animate }, handler.ScrollsToStart);
+			Assert.Empty(handler.ScrollsToEnd);
+			Assert.Empty(requests);
+		}
+
+		[Fact]
+		public void ScrollToStartScrollsToTheFirstItemWhereThePlatformViewCant()
+		{
+			var collectionView = new CollectionView { ItemsSource = new[] { "a", "b", "c" } };
+			var handler = new ScrollToEdgeHandlerStub(canScrollToEdge: false);
+			collectionView.Handler = handler;
+			var requests = RecordScrollToRequests(collectionView);
+
+			collectionView.ScrollToStart(animate: false);
+
+			Assert.Equal(new[] { false }, handler.ScrollsToStart);
+			var request = Assert.Single(requests);
+			Assert.Equal(ScrollToMode.Position, request.Mode);
+			Assert.Equal(0, request.Index);
+			Assert.Equal(-1, request.GroupIndex);
+			Assert.Equal(ScrollToPosition.Start, request.ScrollToPosition);
+			Assert.False(request.IsAnimated);
+		}
+
+		[Fact]
+		public void ScrollToStartScrollsToTheFirstItemOfAnySequenceWhereThePlatformViewCant()
+		{
+			// Such as on Windows: its handler doesn't scroll to the start of the content.
+			var collectionView = new CollectionView { ItemsSource = Enumerable.Range(0, 5).Select(index => index * 2) };
+			collectionView.Handler = new ItemsViewHandlerStub();
+			var requests = RecordScrollToRequests(collectionView);
+
+			collectionView.ScrollToStart();
+
+			var request = Assert.Single(requests);
+			Assert.Equal(0, request.Index);
+			Assert.True(request.IsAnimated);
+		}
+
+		[Fact]
+		public void ScrollToStartWithoutAHandlerDoesNothing()
+		{
+			var collectionView = new CollectionView { ItemsSource = new[] { "a", "b", "c" } };
+			var requests = RecordScrollToRequests(collectionView);
+
+			collectionView.ScrollToStart();
+
+			Assert.Empty(requests);
+		}
+
+		[Fact]
+		public void ScrollToStartOfAnEmptyListDoesNothing()
+		{
+			var collectionView = new CollectionView { ItemsSource = new List<string>() };
+			collectionView.Handler = new ItemsViewHandlerStub();
+			var requests = RecordScrollToRequests(collectionView);
+
+			collectionView.ScrollToStart();
+
+			Assert.Empty(requests);
+		}
+
+		[Fact]
+		public void ScrollToStartOfAGroupedListScrollsToTheFirstItemOfTheFirstGroupWithItems()
+		{
+			var collectionView = new CollectionView
+			{
+				IsGrouped = true,
+				ItemsSource = new List<List<string>> { new(), new() { "a", "b" }, new() { "c" } },
+			};
+			collectionView.Handler = new ItemsViewHandlerStub();
+			var requests = RecordScrollToRequests(collectionView);
+
+			collectionView.ScrollToStart(animate: false);
+
+			var request = Assert.Single(requests);
+			Assert.Equal(0, request.Index);
+			Assert.Equal(1, request.GroupIndex);
+			Assert.Equal(ScrollToPosition.Start, request.ScrollToPosition);
+		}
+
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
 		public void ScrollToEndAsksThePlatformView(bool animate)
 		{
 			var collectionView = new CollectionView { ItemsSource = new[] { "a", "b", "c" } };
-			var handler = new ScrollToEndHandlerStub(canScrollToEnd: true);
+			var handler = new ScrollToEdgeHandlerStub(canScrollToEdge: true);
 			collectionView.Handler = handler;
 			var requests = RecordScrollToRequests(collectionView);
 
 			collectionView.ScrollToEnd(animate);
 
 			Assert.Equal(new[] { animate }, handler.ScrollsToEnd);
+			Assert.Empty(handler.ScrollsToStart);
 			Assert.Empty(requests);
 		}
 
@@ -100,7 +211,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void ScrollToEndScrollsToTheLastItemWhereThePlatformViewCant()
 		{
 			var collectionView = new CollectionView { ItemsSource = new[] { "a", "b", "c" } };
-			var handler = new ScrollToEndHandlerStub(canScrollToEnd: false);
+			var handler = new ScrollToEdgeHandlerStub(canScrollToEdge: false);
 			collectionView.Handler = handler;
 			var requests = RecordScrollToRequests(collectionView);
 
@@ -189,21 +300,29 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			protected override object CreatePlatformView() => new();
 		}
 
-		sealed class ScrollToEndHandlerStub : ItemsViewHandlerStub, IScrollToEndHandler
+		sealed class ScrollToEdgeHandlerStub : ItemsViewHandlerStub, IScrollToEdgeHandler
 		{
-			readonly bool _canScrollToEnd;
+			readonly bool _canScrollToEdge;
 
-			public ScrollToEndHandlerStub(bool canScrollToEnd)
+			public ScrollToEdgeHandlerStub(bool canScrollToEdge)
 			{
-				_canScrollToEnd = canScrollToEnd;
+				_canScrollToEdge = canScrollToEdge;
 			}
+
+			public List<bool> ScrollsToStart { get; } = new();
 
 			public List<bool> ScrollsToEnd { get; } = new();
 
-			bool IScrollToEndHandler.ScrollToEnd(bool animate)
+			bool IScrollToEdgeHandler.ScrollToStart(bool animate)
+			{
+				ScrollsToStart.Add(animate);
+				return _canScrollToEdge;
+			}
+
+			bool IScrollToEdgeHandler.ScrollToEnd(bool animate)
 			{
 				ScrollsToEnd.Add(animate);
-				return _canScrollToEnd;
+				return _canScrollToEdge;
 			}
 		}
 	}

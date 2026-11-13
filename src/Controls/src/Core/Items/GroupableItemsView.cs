@@ -64,6 +64,31 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(GroupFooterTemplateProperty, value);
 		}
 
+		internal override void ScrollToFirstItem(bool animate)
+		{
+			if (!IsGrouped)
+			{
+				base.ScrollToFirstItem(animate);
+				return;
+			}
+
+			// The first item of the first group that has any.
+			if (ItemsSource is System.Collections.IEnumerable groups)
+			{
+				var index = 0;
+				foreach (var group in groups)
+				{
+					if (CountItems(group as System.Collections.IEnumerable) > 0)
+					{
+						ScrollTo(0, index, ScrollToPosition.Start, animate);
+						return;
+					}
+
+					index++;
+				}
+			}
+		}
+
 		internal override void ScrollToLastItem(bool animate)
 		{
 			if (!IsGrouped)

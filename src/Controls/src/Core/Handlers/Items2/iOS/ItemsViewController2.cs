@@ -270,26 +270,33 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		internal void UpdateAnchorMode()
 		{
-			var anchorsEnd = ItemsView is StructuredItemsView structuredItemsView
-				&& (structuredItemsView.AnchorMode & ScrollAnchorMode.End) != 0;
+			var mode = ItemsView is StructuredItemsView structuredItemsView
+				? structuredItemsView.AnchorMode & (ScrollAnchorMode.Start | ScrollAnchorMode.End)
+				: ScrollAnchorMode.None;
 
-			if (anchorsEnd == (_scrollAnchor is not null))
+			if (mode == ScrollAnchorMode.None)
+			{
+				DetachScrollAnchor();
+				return;
+			}
+
+			if (_scrollAnchor?.Edges == mode)
 			{
 				return;
 			}
 
-			if (anchorsEnd)
-			{
 #if MACCATALYST
-				// It scrolls to the end: a restore armed by an earlier ScrollTo (see MauiCollectionView) would scroll back.
-				(CollectionView as Items.MauiCollectionView)?.ClearPendingScrollRestore();
+			// It scrolls to an edge: a restore armed by an earlier ScrollTo (see MauiCollectionView) would scroll back.
+			(CollectionView as Items.MauiCollectionView)?.ClearPendingScrollRestore();
 #endif
-				_scrollAnchor = new CollectionViewScrollAnchor();
+			if (_scrollAnchor is null)
+			{
+				_scrollAnchor = new CollectionViewScrollAnchor(mode);
 				CollectionView.SetNeedsLayout();
 			}
 			else
 			{
-				DetachScrollAnchor();
+				_scrollAnchor.UpdateMode(CollectionView, mode);
 			}
 		}
 
@@ -299,7 +306,76 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			_scrollAnchor = null;
 		}
 
+		internal bool ScrollToStart(bool animate)
+		{
+			if (!PrepareScrollToEdge())
+			{
+				return false;
+			}
+
+			if (_scrollAnchor is { } scrollAnchor && scrollAnchor.CanFollow(ScrollAnchorMode.Start))
+			{
+				scrollAnchor.ScrollToStart(CollectionView, ItemsView as StructuredItemsView, animate);
+				return true;
+			}
+
+			// A scroll the app requests: an anchor that follows the end judges where it lands.
+			bool animating;
+			_scrollAnchor?.ScrollRequesting();
+			try
+			{
+				animating = CollectionViewScrollAnchor.ScrollToStartOnce(CollectionView, animate);
+			}
+			finally
+			{
+				_scrollAnchor?.ScrollRequested(CollectionView);
+			}
+
+			if (animating)
+			{
+				var collectionView = CollectionView;
+				ScrollingToEdge(() => CollectionViewScrollAnchor.ScrollToStartOnceEnded(collectionView));
+			}
+
+			return true;
+		}
+
 		internal bool ScrollToEnd(bool animate)
+		{
+			if (!PrepareScrollToEdge())
+			{
+				return false;
+			}
+
+			if (_scrollAnchor is { } scrollAnchor && scrollAnchor.CanFollow(ScrollAnchorMode.End))
+			{
+				scrollAnchor.ScrollToEnd(CollectionView, ItemsView as StructuredItemsView, animate);
+				return true;
+			}
+
+			// A scroll the app requests: an anchor that follows the start judges where it lands.
+			double? target;
+			_scrollAnchor?.ScrollRequesting();
+			try
+			{
+				target = CollectionViewScrollAnchor.ScrollToEndOnce(CollectionView, animate);
+			}
+			finally
+			{
+				_scrollAnchor?.ScrollRequested(CollectionView);
+			}
+
+			if (target is double end)
+			{
+				var collectionView = CollectionView;
+				ScrollingToEdge(() => CollectionViewScrollAnchor.ScrollToEndOnceEnded(collectionView, end));
+			}
+
+			return true;
+		}
+
+		// Whether the view scrolls to an edge of its content: it does in a vertical layout.
+		bool PrepareScrollToEdge()
 		{
 			if (ScrollDirection != UICollectionViewScrollDirection.Vertical)
 			{
@@ -311,27 +387,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			(CollectionView as Items.MauiCollectionView)?.ClearPendingScrollRestore();
 #endif
 
-			// So would a correction an earlier animated ScrollTo left for when its animation ends.
-			ScrollingToEnd(null);
-
-			if (_scrollAnchor is { } scrollAnchor)
-			{
-				scrollAnchor.ScrollToEnd(CollectionView, ItemsView as StructuredItemsView, animate);
-			}
-			else if (CollectionViewScrollAnchor.ScrollToEndOnce(CollectionView, animate) is { } target)
-			{
-				ScrollingToEnd(target);
-			}
-
+			// So would a correction an earlier animated ScrollTo, ScrollToStart or ScrollToEnd left for when its animation ends.
+			ScrollingToEdge(null);
 			return true;
 		}
 
 		/// <summary>
-		/// Called as <see cref="ScrollToEnd"/> starts, and again when it started an animated scroll to
-		/// <paramref name="onceTarget"/> for a view that doesn't anchor its end. A controller told when a scroll animation
-		/// ends replaces what it does then: nothing, or <see cref="CollectionViewScrollAnchor.ScrollToEndOnceEnded"/>.
+		/// Called as <see cref="ScrollToStart"/> or <see cref="ScrollToEnd"/> starts, and again once either started an
+		/// animated scroll to an edge the view doesn't follow, with what to do when that animation ends. A controller told
+		/// when a scroll animation ends replaces what it does then: nothing, or <paramref name="animationEnded"/>.
 		/// </summary>
-		internal virtual void ScrollingToEnd(double? onceTarget)
+		internal virtual void ScrollingToEdge(Action animationEnded)
 		{
 		}
 
