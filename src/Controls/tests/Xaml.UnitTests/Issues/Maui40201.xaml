@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Maui40201">
+    <ContentPage.Resources>
+        <Style TargetType="Border">
+            <Setter Property="Background" Value="{AppThemeBinding Light='#e9f9ff', Dark='#616161'}" />
+            <Setter Property="StrokeThickness" Value="0" />
+            <Setter Property="StrokeLineJoin" Value="Round" />
+            <Setter Property="StrokeShape" Value="{RoundRectangle CornerRadius=20}" />
+        </Style>
+    </ContentPage.Resources>
+    <Border x:Name="border" />
+</ContentPage>
