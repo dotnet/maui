@@ -49,6 +49,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		CGSize _previousContentSize;
 		CollectionViewScrollAnchor _scrollAnchor;
 
+		// The number of items when a scroll to the end of a view that doesn't follow its end still goes the rest of the way
+		// after the next layout (see FinishScrollToEnd), or null when no scroll does.
+		nint? _finishingScrollToEnd;
+
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		protected UICollectionViewDelegateFlowLayout Delegator { get; set; }
 
@@ -264,6 +268,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			base.ViewDidLayoutSubviews();
 			_scrollAnchor?.LayoutFinished(CollectionView, ItemsView as StructuredItemsView, ScrollDirection == UICollectionViewScrollDirection.Vertical);
+			FinishScrollToEnd();
 		}
 
 		internal CollectionViewScrollAnchor ScrollAnchor => _scrollAnchor;
@@ -289,6 +294,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			// It scrolls to an edge: a restore armed by an earlier ScrollTo (see MauiCollectionView) would scroll back.
 			(CollectionView as Items.MauiCollectionView)?.ClearPendingScrollRestore();
 #endif
+			// So would what an earlier scroll left for when its animation ends, or for the next layout.
+			ScrollingToEdge(null);
+
 			if (_scrollAnchor is null)
 			{
 				_scrollAnchor = new CollectionViewScrollAnchor(mode);
@@ -367,11 +375,64 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			if (target is double end)
 			{
-				var collectionView = CollectionView;
-				ScrollingToEdge(() => CollectionViewScrollAnchor.ScrollToEndOnceEnded(collectionView, end));
+				ScrollingToEdge(() => ScrollToEndAnimationEnded(end));
+			}
+			else
+			{
+				FinishingScrollToEnd();
 			}
 
 			return true;
+		}
+
+		// Called when the animated scroll to the end of a view that doesn't follow its end has stopped. UIKit measures the
+		// rows the animation brought into view as it lays them out, which moves the end past where the animation stopped:
+		// go the rest of the way once it has. Measuring rows only moves the view and its end further on, so a view that is
+		// back before where the animation stopped was scrolled away, as a tap on the status bar scrolls to the top.
+		void ScrollToEndAnimationEnded(double target)
+		{
+			if (CollectionView.ContentOffset.Y >= target - 0.5)
+			{
+				FinishingScrollToEnd();
+			}
+		}
+
+		void FinishingScrollToEnd()
+		{
+			_finishingScrollToEnd = CountItems();
+			CollectionView.SetNeedsLayout();
+		}
+
+		// Called once the view is laid out. A scroll to the end goes the rest of the way to the end, which the layout moves as
+		// it measures the rows the scroll brought into view, until a layout leaves the end where it is. It doesn't follow
+		// items added or removed meanwhile: those aren't the rows it scrolled to.
+		void FinishScrollToEnd()
+		{
+			if (_finishingScrollToEnd is not nint count)
+			{
+				return;
+			}
+
+			_finishingScrollToEnd = null;
+			if (ScrollDirection == UICollectionViewScrollDirection.Vertical
+				&& count == CountItems()
+				&& CollectionViewScrollAnchor.SetOffsetToEnd(CollectionView, animated: false) is not null)
+			{
+				// The scroll brings rows into view: look again once the layout it causes has measured them.
+				FinishingScrollToEnd();
+			}
+		}
+
+		nint CountItems()
+		{
+			nint count = 0;
+			var sections = CollectionView.NumberOfSections();
+			for (nint section = 0; section < sections; section++)
+			{
+				count += CollectionView.NumberOfItemsInSection(section);
+			}
+
+			return count;
 		}
 
 		// Whether the view scrolls to an edge of its content: it does in a vertical layout.
@@ -394,11 +455,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		/// <summary>
 		/// Called as <see cref="ScrollToStart"/> or <see cref="ScrollToEnd"/> starts, and again once either started an
-		/// animated scroll to an edge the view doesn't follow, with what to do when that animation ends. A controller told
-		/// when a scroll animation ends replaces what it does then: nothing, or <paramref name="animationEnded"/>.
+		/// animated scroll to an edge the view doesn't follow, with what to do when that animation ends. It's also called
+		/// with <see langword="null"/> when the user starts dragging or the app requests another scroll: those stop an
+		/// earlier scroll to the end from going the rest of the way. A controller told when a scroll animation ends replaces
+		/// what it does then: nothing, or <paramref name="animationEnded"/>.
 		/// </summary>
 		internal virtual void ScrollingToEdge(Action animationEnded)
 		{
+			_finishingScrollToEnd = null;
 		}
 
 		void InvalidateLayoutIfItemsMeasureChanged()
