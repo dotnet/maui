@@ -16,6 +16,109 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class SearchBarHandlerTests
 	{
+		[Fact(DisplayName = "ReadOnly SearchBar Is Still Focusable")]
+		public async Task ReadOnlySearchBarIsFocusable()
+		{
+			var searchBar = new SearchBarStub() { IsReadOnly = true };
+
+			var focusable = await GetValueAsync(searchBar, handler =>
+			{
+				var editText = GetNativeSearchBar(handler).GetChildrenOfType<EditText>().First();
+				return editText.Focusable && editText.FocusableInTouchMode;
+			});
+
+			Assert.True(focusable);
+		}
+
+		[Theory(DisplayName = "Updating Input Properties Keeps SearchBar ReadOnly")]
+		[InlineData(nameof(ISearchBar.Keyboard), false)]
+		[InlineData(nameof(ISearchBar.IsTextPredictionEnabled), false)]
+		[InlineData(nameof(ISearchBar.IsTextPredictionEnabled), true)]
+		[InlineData(nameof(ISearchBar.IsSpellCheckEnabled), false)]
+		public async Task UpdatingInputPropertiesKeepsSearchBarReadOnly(string propertyName, bool isTextPredictionEnabled)
+		{
+			var searchBar = new SearchBarStub() { IsReadOnly = true };
+
+			var (isReadOnly, keyListener) = await GetValueAsync(searchBar, handler =>
+			{
+				searchBar.Keyboard = Keyboard.Numeric;
+				searchBar.IsTextPredictionEnabled = isTextPredictionEnabled;
+				searchBar.IsSpellCheckEnabled = false;
+				handler.UpdateValue(propertyName);
+
+				var editText = GetNativeSearchBar(handler).GetChildrenOfType<EditText>().First();
+				return (GetNativeIsReadOnly(handler), editText.KeyListener);
+			});
+
+			Assert.True(isReadOnly);
+			// Setting even a TYPE_NULL InputType installs a key listener, which lets hardware keys type into the text
+			Assert.Null(keyListener);
+		}
+
+		[Theory(DisplayName = "Updating IsReadOnly Keeps The Selection")]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task UpdatingIsReadOnlyKeepsSelection(bool isReadOnly)
+		{
+			var searchBar = new SearchBarStub() { Text = "abcdef" };
+
+			var selection = await GetValueAsync(searchBar, handler =>
+			{
+				var editText = GetNativeSearchBar(handler).GetChildrenOfType<EditText>().First();
+				editText.SetSelection(1, 4);
+
+				searchBar.IsReadOnly = isReadOnly;
+				handler.UpdateValue(nameof(ISearchBar.IsReadOnly));
+
+				return (editText.SelectionStart, editText.SelectionEnd);
+			});
+
+			Assert.Equal((1, 4), selection);
+		}
+
+		[Theory(DisplayName = "Turning Off IsReadOnly Restores Editing")]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task TurningOffIsReadOnlyRestoresEditing(bool material3)
+		{
+			// The input properties change while the SearchBar is read-only and must apply once it's editable again
+			var searchBar = new SearchBarStub() { Text = "123456", IsReadOnly = true };
+			var expected = new SearchBarStub() { Text = "123456", Keyboard = Keyboard.Numeric, IsTextPredictionEnabled = false, IsSpellCheckEnabled = false };
+
+			var (keyListener, isTextEditor, inputType, expectedInputType, text, selection) = await InvokeOnMainThreadAsync(() =>
+			{
+				var expectedInputType = GetQueryEditText(CreateSearchBarHandler(expected, material3)).InputType;
+
+				var handler = CreateSearchBarHandler(searchBar, material3);
+				var editText = GetQueryEditText(handler);
+				editText.SetSelection(1, 4);
+
+				searchBar.Keyboard = Keyboard.Numeric;
+				handler.UpdateValue(nameof(ISearchBar.Keyboard));
+				searchBar.IsTextPredictionEnabled = false;
+				handler.UpdateValue(nameof(ISearchBar.IsTextPredictionEnabled));
+				searchBar.IsSpellCheckEnabled = false;
+				handler.UpdateValue(nameof(ISearchBar.IsSpellCheckEnabled));
+
+				searchBar.IsReadOnly = false;
+				handler.UpdateValue(nameof(ISearchBar.IsReadOnly));
+
+				return (editText.KeyListener, editText.OnCheckIsTextEditor(), editText.InputType, expectedInputType, editText.Text, (editText.SelectionStart, editText.SelectionEnd));
+			});
+
+			Assert.NotNull(keyListener);
+			Assert.True(isTextEditor);
+			Assert.Equal(expectedInputType, inputType);
+			Assert.Equal("123456", text);
+			Assert.Equal((1, 4), selection);
+		}
+
+		IViewHandler CreateSearchBarHandler(SearchBarStub searchBar, bool material3) =>
+			material3 ? CreateHandler<SearchBarHandler2>(searchBar) : CreateHandler<SearchBarHandler>(searchBar);
+
+		static EditText GetQueryEditText(IViewHandler handler) =>
+			handler is SearchBarHandler2 handler2 ? handler2.QueryEditor! : ((SearchView)handler.PlatformView).GetChildrenOfType<EditText>().First();
+
 		[Fact(DisplayName = "Deferred Selection Update After Disconnect Does Not Crash (Issue 37425)")]
 		public async Task DeferredSelectionUpdateAfterDisconnectDoesNotCrash()
 		{
@@ -418,7 +521,7 @@ namespace Microsoft.Maui.DeviceTests
 			if (editText is null)
 				return false;
 
-			return !editText.Focusable && !editText.FocusableInTouchMode;
+			return !editText.OnCheckIsTextEditor();
 		}
 
 		bool GetNativeIsNumericKeyboard(SearchBarHandler searchBarHandler)
