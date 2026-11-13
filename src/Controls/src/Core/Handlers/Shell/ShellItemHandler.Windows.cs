@@ -48,8 +48,11 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		internal static void MapAutomationId(ShellItemHandler handler, ShellItem shellItem)
 		{
-			if (shellItem is TabBar && ((IShellItemController)shellItem).ShowTabs && handler.PlatformView is NavigationView navigationView)
-				navigationView.SetAutomationPropertiesAutomationId(shellItem.AutomationId);
+			if (handler.PlatformView is NavigationView navigationView)
+				navigationView.SetAutomationPropertiesAutomationId(
+					shellItem is TabBar && ((IShellItemController)shellItem).ShowTabs
+						? shellItem.AutomationId
+						: null);
 		}
 
 		void OnNavigationViewLoaded(object sender, RoutedEventArgs e)
