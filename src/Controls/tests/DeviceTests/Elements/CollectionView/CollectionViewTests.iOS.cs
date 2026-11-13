@@ -293,8 +293,10 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact]
-		public async Task ItemsSourceGroupedClearDoestCrash()
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task ItemsSourceGroupedClearDoestCrash(bool clearItems)
 		{
 			SetupBuilder();
 
@@ -308,16 +310,44 @@ namespace Microsoft.Maui.DeviceTests
 
 			var collectionView = new CollectionView
 			{
+				WidthRequest = 300,
+				HeightRequest = 300,
 				IsGrouped = true,
 				ItemsSource = groupData,
+				ItemsUpdatingScrollMode = ItemsUpdatingScrollMode.KeepLastItemInView,
 				ItemTemplate = new DataTemplate(() => new Label())
 			};
+			var initialFrame = collectionView.Frame;
 
 			await CreateHandlerAndAddToWindow<CollectionViewHandler2>(collectionView, async handler =>
 			{
-				await Task.Delay(1000);
+				await WaitForUIUpdate(initialFrame, collectionView);
+
+				var nativeCollectionView = handler.Controller.CollectionView;
+				nativeCollectionView.SetNeedsLayout();
+				nativeCollectionView.LayoutIfNeeded();
+				Assert.Equal(groupData.Count, (int)nativeCollectionView.NumberOfSections());
+				for (int section = 0; section < groupData.Count; section++)
+				{
+					Assert.Equal(data.Count, (int)nativeCollectionView.NumberOfItemsInSection(section));
+				}
+
+				if (clearItems)
+				{
+					foreach (var group in groupData)
+					{
+						group.Clear();
+					}
+				}
+
 				groupData.Clear();
+				nativeCollectionView.LayoutIfNeeded();
+				Assert.Equal(0, (int)nativeCollectionView.NumberOfSections());
+
 				groupData.Add(new("Header 1", new string[] { "oi" }));
+				nativeCollectionView.LayoutIfNeeded();
+				Assert.Equal(1, (int)nativeCollectionView.NumberOfSections());
+				Assert.Equal(1, (int)nativeCollectionView.NumberOfItemsInSection(0));
 			});
 		}
 
