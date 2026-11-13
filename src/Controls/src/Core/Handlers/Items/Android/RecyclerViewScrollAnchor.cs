@@ -180,6 +180,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		/// </summary>
 		public void ScrollRequested(bool animated)
 		{
+			// It supersedes a jump to the end queued after the last layout.
+			_jumpPosted = false;
+
 			if (animated)
 			{
 				// It scrolls like a fling: judge it as one.
@@ -493,7 +496,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var jump = _jumpPosted;
 			_updatePosted = false;
 			_jumpPosted = false;
-			if (_detached)
+
+			// The layout a requested scroll makes looks next, and judges it.
+			if (_detached || _requestPending)
 			{
 				return;
 			}

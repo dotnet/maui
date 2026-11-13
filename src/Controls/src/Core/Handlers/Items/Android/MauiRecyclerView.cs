@@ -774,6 +774,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return false;
 			}
 
+			// A scroll the app requests, as for ScrollTo: a fling's snap target would snap the view back away from the end.
+			(GetSnapManager()?.GetCurrentSnapHelper() as SingleSnapHelper)?.ResetCurrentTargetPosition();
+
 			if (_scrollAnchor is not null)
 			{
 				_scrollAnchor.ScrollToEnd(animate);

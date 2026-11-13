@@ -82,11 +82,38 @@ namespace Microsoft.Maui.DeviceTests
 				await AssertAtEnd(handler, "The grouped list should open at its end.");
 
 				groups[^1].Add(new AnchorItem("Added to the last group", 40));
+				await AssertEventually(() => Math.Abs(GetGroupedItemHeight(handler, groups, groups.Count - 1, groups[^1].Count - 1) - 40) <= AnchorTolerance, timeout: 3000, message: "The added item should be laid out in view.");
 				await AssertAtEnd(handler, "An item added to the last group should keep the end in view.");
 
 				groups.Add(new AnchorGroup("New group", CreateAnchorItems(3)));
+				await AssertEventually(() => Math.Abs(GetGroupedItemHeight(handler, groups, groups.Count - 1, 2) - 40) <= AnchorTolerance, timeout: 3000, message: "The new group should be laid out in view.");
 				await AssertAtEnd(handler, "A new group should keep the end in view.");
 				Assert.True(collectionView.IsAnchored);
+			});
+		}
+
+		[Fact(DisplayName = "ScrollToEnd during an animated ScrollTo in a grouped list stays at the end")]
+		public async Task ScrollToEndDuringAnAnimatedScrollToInAGroupedListStaysAtTheEnd()
+		{
+			SetupBuilder();
+			var groups = new ObservableCollection<AnchorGroup>(
+				Enumerable.Range(0, 4).Select(group => new AnchorGroup($"Group {group}", CreateAnchorItems(8))));
+			var collectionView = CreateAnchorCollectionView(groups, ScrollAnchorMode.End);
+			collectionView.IsGrouped = true;
+			collectionView.GroupHeaderTemplate = CreateAnchorGroupHeaderTemplate();
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				await AssertAtEnd(handler, "The grouped list should open at its end.");
+
+				// The newer request wins, also once its animation ends.
+				collectionView.ScrollTo(0, groupIndex: 0, animate: true);
+				await Task.Delay(100);
+				collectionView.ScrollToEnd(animate: true);
+				await Task.Delay(1500);
+
+				await AssertAtEnd(handler, "ScrollToEnd should stay at the end once its animation ends.");
+				Assert.True(collectionView.IsAnchored, "ScrollToEnd should follow the end.");
 			});
 		}
 
@@ -253,6 +280,83 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Theory(DisplayName = "A ScrollTo right after ScrollToEnd wins")]
+		[InlineData(ScrollAnchorMode.None)]
+		[InlineData(ScrollAnchorMode.End)]
+		public async Task AScrollToRightAfterScrollToEndWins(ScrollAnchorMode anchorMode)
+		{
+			SetupBuilder();
+
+			// A single answer taller than the view: the end of the last item is in reach from its start.
+			var items = new ObservableCollection<AnchorItem> { new("Long answer", 600) };
+			var collectionView = CreateAnchorCollectionView(items, anchorMode);
+			collectionView.Header = null;
+			collectionView.Footer = null;
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				if (anchorMode == ScrollAnchorMode.End)
+				{
+					await AssertAtEnd(handler, "The list should open at its end.");
+					ScrollPlatformViewBy(handler, -100);
+				}
+				else
+				{
+					await AssertEventually(() => GetDistanceFromStart(handler) <= AnchorTolerance, timeout: 3000, message: "The list should open at its start.");
+					ScrollPlatformViewBy(handler, 100);
+				}
+
+				await AssertEventually(() => Math.Abs(GetDistanceFromStart(handler) - (anchorMode == ScrollAnchorMode.End ? 200 : 100)) <= AnchorTolerance, timeout: 3000, message: "The view should show the middle of the answer.");
+
+				collectionView.ScrollToEnd(animate: false);
+				collectionView.ScrollTo(0, position: ScrollToPosition.Start, animate: false);
+
+				await AssertEventually(() => GetDistanceFromStart(handler) <= AnchorTolerance, timeout: 3000, message: "The later ScrollTo should win.");
+				await Task.Delay(500);
+				Assert.True(GetDistanceFromStart(handler) <= AnchorTolerance, $"The later ScrollTo should win. Distance from the start: {GetDistanceFromStart(handler)}.");
+				Assert.False(collectionView.IsAnchored);
+			});
+		}
+
+#if ANDROID
+		[Fact(DisplayName = "A ScrollTo as new items are laid out wins over following the end")]
+		public async Task AScrollToAsNewItemsAreLaidOutWinsOverFollowingTheEnd()
+		{
+			SetupBuilder();
+			var items = CreateAnchorItems(40);
+			var collectionView = CreateAnchorCollectionView(items, ScrollAnchorMode.End);
+
+			// ScrollTo(0) shows the first item at the top: with no header, that's the start of the content.
+			collectionView.Header = null;
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				await AssertAtEnd(handler, "The list should open at its end.");
+
+				// Right after the layout that lays out the new items, which leaves the end below the view: before the anchor
+				// gets the view there.
+				var recyclerView = (RecyclerView)handler.PlatformView;
+				void ScrollToStart(object sender, EventArgs e)
+				{
+					recyclerView.ViewTreeObserver.GlobalLayout -= ScrollToStart;
+					collectionView.ScrollTo(0, position: ScrollToPosition.Start, animate: false);
+				}
+
+				recyclerView.ViewTreeObserver.GlobalLayout += ScrollToStart;
+				for (var i = 0; i < 20; i++)
+				{
+					items.Add(new AnchorItem($"Added {i}", 40));
+				}
+
+				var atStart = await Wait(() => GetDistanceFromStart(handler) <= AnchorTolerance, 3000);
+				Assert.True(atStart, $"The list should scroll to its start. Position: {GetScrollPosition(handler)}, anchored: {collectionView.IsAnchored}.");
+				await Task.Delay(500);
+				Assert.True(GetDistanceFromStart(handler) <= AnchorTolerance, "Following the end shouldn't undo the ScrollTo.");
+				Assert.False(collectionView.IsAnchored);
+			});
+		}
+#endif
+
 		[Fact(DisplayName = "Turning AnchorMode off stops following the end")]
 		public async Task TurningAnchorModeOffStopsFollowingTheEnd()
 		{
@@ -394,6 +498,24 @@ namespace Microsoft.Maui.DeviceTests
 			// The header is the adapter's first position.
 			var recyclerView = (RecyclerView)handler.PlatformView;
 			return recyclerView.FindViewHolderForAdapterPosition(index + 1)?.ItemView is { } view
+				? view.Height / (double)recyclerView.Resources.DisplayMetrics.Density
+				: double.NaN;
+#endif
+		}
+
+		// The laid out height of an item of a grouped list with a header and a group header template, in device-independent
+		// units, or NaN while it isn't laid out.
+		static double GetGroupedItemHeight(CollectionViewHandler handler, IList<AnchorGroup> groups, int groupIndex, int index)
+		{
+#if IOS || MACCATALYST
+			// Each group is a section, and the headers are supplementary views.
+			using var indexPath = Foundation.NSIndexPath.FromItemSection(index, groupIndex);
+			return handler.Controller.CollectionView.CellForItem(indexPath) is { } cell ? (double)cell.Frame.Height : double.NaN;
+#else
+			// The header is the adapter's first position, and each group starts with its header.
+			var position = 1 + groups.Take(groupIndex).Sum(group => 1 + group.Count) + 1 + index;
+			var recyclerView = (RecyclerView)handler.PlatformView;
+			return recyclerView.FindViewHolderForAdapterPosition(position)?.ItemView is { } view
 				? view.Height / (double)recyclerView.Resources.DisplayMetrics.Density
 				: double.NaN;
 #endif

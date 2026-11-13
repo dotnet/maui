@@ -324,6 +324,25 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void AScrollAwayFromTheEndInStepsSmallerThanAPixelStillDisengages()
+		{
+			// An animated scroll the app requested, a short way: a quarter of a unit a frame.
+			var view = FakeScrollView.AtEnd(extent: 1000, viewport: 400);
+
+			for (var step = 0; step < 40; step++)
+			{
+				view.Offset -= 0.25;
+				Assert.Null(view.Look());
+			}
+
+			Assert.False(view.Tracker.IsAnchored);
+
+			// It stays where it went.
+			view.Extent += 50;
+			Assert.Null(view.Look());
+		}
+
+		[Fact]
 		public void AScrollAwayFromTheEndThatTheUserDidNotDragStillDisengages()
 		{
 			// The keyboard, accessibility, or tapping the status bar to scroll to the top.
