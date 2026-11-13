@@ -223,7 +223,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			QueryEditor?.Post(() =>
 			{
-				if (VirtualView is ISearchBar searchBar && QueryEditor is EditText queryEditor)
+				if (((IElementHandler)this).VirtualView is ISearchBar searchBar && QueryEditor is EditText queryEditor)
 				{
 					var cursorPosition = queryEditor.GetCursorPosition();
 					var selectedTextLength = queryEditor.GetSelectedTextLength();

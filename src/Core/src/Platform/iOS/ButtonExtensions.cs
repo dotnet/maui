@@ -78,6 +78,18 @@ namespace Microsoft.Maui.Platform
 			platformButton.SetAttributedTitle(mutable, UIControlState.Normal);
 		}
 
+		static void UpdateAttributedTitleFont(UIButton platformButton, UIFont font)
+		{
+			var attributedTitle = platformButton.GetAttributedTitle(UIControlState.Normal);
+			if (attributedTitle is null || attributedTitle.Length == 0)
+				return;
+
+			var mutable = new NSMutableAttributedString(attributedTitle);
+			mutable.AddAttribute(UIStringAttributeKey.Font, font, new NSRange(0, mutable.Length));
+
+			platformButton.SetAttributedTitle(mutable, UIControlState.Normal);
+		}
+
 		public static void UpdateBackground(this UIButton platformButton, Graphics.Paint? paint)
 			=> UpdateBackground(platformButton, paint, null);
 
@@ -120,6 +132,9 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateFont(this UIButton platformButton, ITextStyle textStyle, IFontManager fontManager)
 		{
 			platformButton.TitleLabel.UpdateFont(textStyle, fontManager, UIFont.ButtonFontSize);
+
+			// UIButton renders the attributed title (set by CharacterSpacing) instead of TitleLabel.Font
+			UpdateAttributedTitleFont(platformButton, platformButton.TitleLabel.Font);
 		}
 
 		public static void UpdatePadding(this UIButton platformButton, IButton button, Thickness? defaultPadding = null) =>

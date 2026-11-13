@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.Graphics;
 using Xunit;
@@ -148,6 +149,162 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			boxview.BindingContext = "Complete";
 			Assert.Equal(Colors.Green, boxview.Color);
 			Assert.Equal(.5, boxview.Opacity);
+		}
+
+		// https://github.com/dotnet/maui/issues/6847
+		[Fact]
+		public void SettersAppliedOnAttachIfBoundValueIsInitiallyNull()
+		{
+			var setterbp = BindableProperty.Create("bar", typeof(string), typeof(BindableObject), null);
+			var element = new MockElement();
+			var datatrigger = new DataTrigger(typeof(VisualElement))
+			{
+				Binding = new Binding("foo"),
+				Value = null,
+				Setters = {
+					new Setter { Property = setterbp, Value = "qux" },
+				}
+			};
+
+			element.SetValue(setterbp, "default");
+			element.BindingContext = new { foo = (string)null };
+			element.Triggers.Add(datatrigger);
+			Assert.Equal("qux", element.GetValue(setterbp));
+
+			element.BindingContext = new { foo = "foobar" };
+			Assert.Equal("default", element.GetValue(setterbp));
+
+			element.BindingContext = new { foo = (string)null };
+			Assert.Equal("qux", element.GetValue(setterbp));
+
+			element.Triggers.Remove(datatrigger);
+			Assert.Equal("default", element.GetValue(setterbp));
+		}
+
+		// https://github.com/dotnet/maui/issues/6847
+		[Fact]
+		public void SettersNotUnappliedWhenNullValueTriggerNeverMatched()
+		{
+			var setterbp = BindableProperty.Create("bar", typeof(string), typeof(BindableObject), null);
+			var element = new MockElement();
+			var datatrigger = new DataTrigger(typeof(VisualElement))
+			{
+				Binding = new Binding("foo"),
+				Value = "foobar",
+				Setters = {
+					new Setter { Property = setterbp, Value = "qux" },
+				}
+			};
+
+			element.SetValue(setterbp, "default");
+			element.BindingContext = new { foo = (string)null };
+			element.Triggers.Add(datatrigger);
+			Assert.Equal("default", element.GetValue(setterbp));
+
+			element.BindingContext = new { foo = "other" };
+			Assert.Equal("default", element.GetValue(setterbp));
+
+			element.BindingContext = new { foo = "foobar" };
+			Assert.Equal("qux", element.GetValue(setterbp));
+		}
+
+		// https://github.com/dotnet/maui/issues/6847
+		[Fact]
+		public void MultiTriggerWithNullBindingConditionAppliedOnAttach()
+		{
+			var setterbp = BindableProperty.Create("bar", typeof(string), typeof(BindableObject), null);
+			var element = new MockElement();
+			var multiTrigger = new MultiTrigger(typeof(VisualElement))
+			{
+				Conditions = {
+					new BindingCondition { Binding = new Binding("foo"), Value = null },
+					new BindingCondition { Binding = new Binding("baz"), Value = "ok" },
+				},
+				Setters = {
+					new Setter { Property = setterbp, Value = "qux" },
+				}
+			};
+
+			element.SetValue(setterbp, "default");
+			element.BindingContext = new { foo = (string)null, baz = "ok" };
+			element.Triggers.Add(multiTrigger);
+			Assert.Equal("qux", element.GetValue(setterbp));
+		}
+
+		// https://github.com/dotnet/maui/issues/6847
+		[Fact]
+		public void RemovingNullValueTriggerWhileBoundValueIsNonNullDoesNotReapply()
+		{
+			var setterbp = BindableProperty.Create("bar", typeof(string), typeof(BindableObject), null);
+			var element = new MockElement();
+			var enterAction = new CountingTriggerAction();
+			var datatrigger = new DataTrigger(typeof(VisualElement))
+			{
+				Binding = new Binding("foo"),
+				Value = null,
+				Setters = {
+					new Setter { Property = setterbp, Value = "qux" },
+				},
+				EnterActions = { enterAction },
+			};
+
+			element.SetValue(setterbp, "default");
+			element.BindingContext = new { foo = "foobar" };
+			element.Triggers.Add(datatrigger);
+			Assert.Equal("default", element.GetValue(setterbp));
+			Assert.Equal(0, enterAction.InvokeCount);
+
+			// TearDown clears the bound value (non-null -> null), which must not re-activate the removed trigger.
+			element.Triggers.Remove(datatrigger);
+			Assert.Equal("default", element.GetValue(setterbp));
+			Assert.Equal(0, enterAction.InvokeCount);
+		}
+
+		class DelegateTriggerAction : TriggerAction<BindableObject>
+		{
+			readonly Action<BindableObject> _action;
+
+			public DelegateTriggerAction(Action<BindableObject> action) => _action = action;
+
+			protected override void Invoke(BindableObject sender) => _action(sender);
+		}
+
+		// https://github.com/dotnet/maui/issues/6847
+		[Fact]
+		public void ReentrantBindingChangesFromEnterActionKeepFinalState()
+		{
+			var setterbp = BindableProperty.Create("bar", typeof(string), typeof(BindableObject), null);
+			var element = new MockElement();
+			bool fired = false;
+			var datatrigger = new DataTrigger(typeof(VisualElement))
+			{
+				Binding = new Binding("foo"),
+				Value = "on",
+				Setters = {
+					new Setter { Property = setterbp, Value = "qux" },
+				},
+				EnterActions = {
+					new DelegateTriggerAction(sender =>
+					{
+						if (fired)
+							return;
+						fired = true;
+						var ve = (VisualElement)sender;
+						ve.BindingContext = new { foo = "off" };
+						ve.BindingContext = new { foo = "on" };
+					}),
+				},
+			};
+
+			element.SetValue(setterbp, "default");
+			element.BindingContext = new { foo = "on" };
+			element.Triggers.Add(datatrigger);
+
+			Assert.True(fired);
+			Assert.Equal("qux", element.GetValue(setterbp));
+
+			element.BindingContext = new { foo = "off" };
+			Assert.Equal("default", element.GetValue(setterbp));
 		}
 	}
 }

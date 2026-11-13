@@ -119,6 +119,36 @@ namespace Microsoft.Maui.DeviceTests
 		static EditText GetQueryEditText(IViewHandler handler) =>
 			handler is SearchBarHandler2 handler2 ? handler2.QueryEditor! : ((SearchView)handler.PlatformView).GetChildrenOfType<EditText>().First();
 
+		[Fact(DisplayName = "Deferred Selection Update After Disconnect Does Not Crash (Issue 37425)")]
+		public async Task DeferredSelectionUpdateAfterDisconnectDoesNotCrash()
+		{
+			var searchBar = new SearchBarStub { Text = "Hello World" };
+
+			await AttachAndRun(searchBar, async handler =>
+			{
+				var queryEditor = handler.QueryEditor;
+				Assert.NotNull(queryEditor);
+				Assert.True(queryEditor.IsAttachedToWindow);
+
+				var cursorPosition = searchBar.CursorPosition;
+				var selectionLength = searchBar.SelectionLength;
+				queryEditor.SetSelection(2, 5);
+
+				// Queue and disconnect in the same UI-thread turn, before the callback can run.
+				handler.OnQueryEditorSelectionChanged();
+				((IElementHandler)handler).DisconnectHandler();
+				Assert.Null(((IElementHandler)handler).VirtualView);
+
+				// A marker on the same queue ensures the deferred callback has been processed.
+				var completionSource = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+				Assert.True(queryEditor.Post(() => completionSource.SetResult(true)));
+				await completionSource.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+				Assert.Equal(cursorPosition, searchBar.CursorPosition);
+				Assert.Equal(selectionLength, searchBar.SelectionLength);
+			});
+		}
+
 		// Regression tests for https://github.com/dotnet/maui/issues/30779
 		// SearchBar.CursorPosition and SelectionLength were not updated when the user typed
 
