@@ -311,24 +311,27 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			(CollectionView as Items.MauiCollectionView)?.ClearPendingScrollRestore();
 #endif
 
+			// So would a correction an earlier animated ScrollTo left for when its animation ends.
+			ScrollingToEnd(null);
+
 			if (_scrollAnchor is { } scrollAnchor)
 			{
 				scrollAnchor.ScrollToEnd(CollectionView, ItemsView as StructuredItemsView, animate);
 			}
 			else if (CollectionViewScrollAnchor.ScrollToEndOnce(CollectionView, animate) is { } target)
 			{
-				ScrollingToEndOnce(target);
+				ScrollingToEnd(target);
 			}
 
 			return true;
 		}
 
 		/// <summary>
-		/// Called when <see cref="ScrollToEnd"/> started an animated scroll to <paramref name="target"/> for a view that
-		/// doesn't anchor its end: a controller told when a scroll animation ends calls
-		/// <see cref="CollectionViewScrollAnchor.ScrollToEndOnceEnded"/> then.
+		/// Called as <see cref="ScrollToEnd"/> starts, and again when it started an animated scroll to
+		/// <paramref name="onceTarget"/> for a view that doesn't anchor its end. A controller told when a scroll animation
+		/// ends replaces what it does then: nothing, or <see cref="CollectionViewScrollAnchor.ScrollToEndOnceEnded"/>.
 		/// </summary>
-		internal virtual void ScrollingToEndOnce(double target)
+		internal virtual void ScrollingToEnd(double? onceTarget)
 		{
 		}
 

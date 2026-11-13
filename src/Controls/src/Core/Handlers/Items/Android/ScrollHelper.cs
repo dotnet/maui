@@ -39,6 +39,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public void AnimateScrollToPosition(int index, ScrollToPosition scrollToPosition)
 		{
+			// A newer request replaces an adjustment an earlier jump left for its layout.
+			_pendingScrollAdjustment = null;
+
 			if (scrollToPosition == ScrollToPosition.MakeVisible)
 			{
 				// MakeVisible matches the Android default of SnapAny, so we can just use the default
@@ -59,6 +62,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public void JumpScrollToPosition(int index, ScrollToPosition scrollToPosition, bool uniformSize = false)
 		{
+			// A newer request replaces an adjustment an earlier jump left for its layout.
+			_pendingScrollAdjustment = null;
+
 			if (scrollToPosition == ScrollToPosition.MakeVisible)
 			{
 				// MakeVisible is the default behavior, so we don't need to do anything special

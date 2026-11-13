@@ -30,7 +30,8 @@ namespace Microsoft.Maui.Controls
 	/// An offset change the user isn't making that comes with a size change is the platform laying out, and never
 	/// disengages it, even when the sizes end up where they started (the platform reports the change in between). One that
 	/// comes alone and moves away from the end is a deliberate scroll the platform doesn't report as the user's (the
-	/// keyboard, accessibility, scrolling to the top): it disengages it.
+	/// keyboard, accessibility, scrolling to the top): it disengages it, also when it moves in steps smaller than a device
+	/// pixel.
 	/// </description></item>
 	/// <item><description>
 	/// A scroll the app requests (<c>ScrollTo</c>) is judged by where it lands: engaged only if that's the end.
@@ -176,19 +177,23 @@ namespace Microsoft.Maui.Controls
 				return null;
 			}
 
-			_drift = 0;
 			var resized = sizeChanged || Resized(metrics.Extent, previous.Extent) || Resized(metrics.Viewport, previous.Viewport);
 			if (IsAnchored)
 			{
-				if (!resized && metrics.Offset - previous.Offset < -Tolerance && !atEnd)
+				// Movement away from the end since the view was last at it, that the platform didn't make laying out: a scroll
+				// can move the view in steps too small to tell from rounding, which add up.
+				_drift = resized || atEnd || wasUserScroll ? 0 : Math.Max(0, _drift - (metrics.Offset - previous.Offset));
+				if (_drift > Tolerance)
 				{
 					IsAnchored = false;
+					_drift = 0;
 					return null;
 				}
 			}
 			else if (atEnd)
 			{
 				IsAnchored = true;
+				_drift = 0;
 			}
 
 			// Scroll to the end for a size change, or when a user scroll just ended (the end may have moved meanwhile).
