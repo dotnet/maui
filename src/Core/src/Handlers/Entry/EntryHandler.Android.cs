@@ -64,7 +64,6 @@ namespace Microsoft.Maui.Handlers
 			if (PlatformView is null || VirtualView is null)
 				return;
 
-			PlatformView.UpdateKeyboard(VirtualView);
 			PlatformView.UpdateReturnType(VirtualView);
 		}
 

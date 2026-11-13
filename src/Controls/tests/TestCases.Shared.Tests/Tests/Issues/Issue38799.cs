@@ -20,14 +20,31 @@ public class Issue38799 : _IssuesUITest
 	{
 		App.WaitForElement("TextCell");
 		App.Tap("TextCell");
-		App.WaitForElement("TextEntry");
-		// Explicitly show the text keyboard before switching, as in the issue.
-		App.Tap("TextEntry");
-		Assert.That(App.WaitForKeyboardToShow(), Is.True, "The text keyboard must be visible before switching cells.");
-		App.WaitForElement("NumericCell");
-		App.Tap("NumericCell");
-		App.WaitForElement("NumericEntry");
-		Assert.That(App.WaitForElement("FocusResult").GetText(), Is.EqualTo("Focus relinquished before removal"));
+		AssertNativeEditorAndKeyboard("TextEntry");
+
+		for (int replacement = 1; replacement <= 2; replacement++)
+		{
+			App.WaitForElement("NumericCell");
+			App.Tap("NumericCell");
+			Assert.That(App.WaitForTextToBePresentInElement("FocusResult",
+				$"{replacement}: Focus relinquished before removal"), Is.True);
+			AssertNativeEditorAndKeyboard("NumericEntry");
+
+			App.WaitForElement("TextCell");
+			App.Tap("TextCell");
+			AssertNativeEditorAndKeyboard("TextEntry");
+		}
+	}
+
+	void AssertNativeEditorAndKeyboard(string automationId)
+	{
+		App.WaitForElement(automationId);
+		// The original sample requests focus before insertion; tap after attachment as well.
+		App.Tap(automationId);
+		Assert.That(App.WaitForTextToBePresentInElement("NativeState",
+			$"{automationId}: Native focus and input type correct"), Is.True,
+			"The incoming Entry must have native focus and the expected input class.");
+		Assert.That(App.WaitForKeyboardToShow(), Is.True, $"{automationId} must show the keyboard.");
 	}
 }
 #endif

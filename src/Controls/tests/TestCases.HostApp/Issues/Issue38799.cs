@@ -10,8 +10,29 @@ public class Issue38799 : TestShell
 		var numericContent = new ContentView { Content = numericLabel, WidthRequest = 200, BackgroundColor = Colors.LightBlue };
 		var textContent = new ContentView { Content = textLabel, WidthRequest = 200, BackgroundColor = Colors.LightBlue };
 		var result = new Label { AutomationId = "FocusResult", Text = "Waiting" };
+		var nativeState = new Label { AutomationId = "NativeState", Text = "Waiting" };
 		Entry numericEntry = null;
 		Entry textEntry = null;
+		int replacements = 0;
+
+		Entry CreateEntry(string automationId, Keyboard keyboard)
+		{
+			var entry = new Entry { AutomationId = automationId, Keyboard = keyboard, Margin = new Thickness(10, 0) };
+			entry.Focused += (_, _) =>
+			{
+#if ANDROID
+				var platformView = entry.Handler?.PlatformView as Android.Views.View;
+				var editor = platformView?.FindFocus() as Android.Widget.EditText;
+				var expectedClass = keyboard == Keyboard.Numeric
+					? Android.Text.InputTypes.ClassNumber : Android.Text.InputTypes.ClassText;
+				nativeState.Text = editor is not null &&
+					(editor.InputType & Android.Text.InputTypes.MaskClass) == expectedClass
+					? $"{automationId}: Native focus and input type correct"
+					: $"{automationId}: Native focus or input type incorrect";
+#endif
+			};
+			return entry;
+		}
 
 		// Record focus loss *during* replacement, not HasFocus after removal:
 		// Android can clear focus as a side effect of removing all the children.
@@ -23,8 +44,13 @@ public class Issue38799 : TestShell
 		var numericTap = new TapGestureRecognizer();
 		numericTap.Tapped += async (_, _) =>
 		{
+			if (numericContent.Content is Entry)
+				return;
+
 			if (textContent.Content is Entry)
 			{
+				hadNativeFocus = false;
+				lostFocusBeforeRemoval = false;
 				textLabel.Text = textEntry.Text;
 #if ANDROID
 				var nativeEntry = textEntry.Handler?.PlatformView as Android.Views.View;
@@ -33,22 +59,27 @@ public class Issue38799 : TestShell
 				replacing = true;
 				textContent.Content = textLabel;
 				replacing = false;
+				replacements++;
 			}
 
-			numericEntry ??= new Entry { AutomationId = "NumericEntry", Keyboard = Keyboard.Numeric, Margin = new Thickness(10, 0) };
+			numericEntry ??= CreateEntry("NumericEntry", Keyboard.Numeric);
 			numericEntry.Text = numericLabel.Text;
+			nativeState.Text = "Waiting for numeric focus";
 			await Task.Delay(250);
 			numericEntry.Focus();
 			numericContent.Content = numericEntry;
-			result.Text = !hadNativeFocus ? "Text Entry never had native focus"
-				: lostFocusBeforeRemoval ? "Focus relinquished before removal"
-				: "Focus not relinquished before removal";
+			result.Text = !hadNativeFocus ? $"{replacements}: Text Entry never had native focus"
+				: lostFocusBeforeRemoval ? $"{replacements}: Focus relinquished before removal"
+				: $"{replacements}: Focus not relinquished before removal";
 		};
 		numericContent.GestureRecognizers.Add(numericTap);
 
 		var textTap = new TapGestureRecognizer();
 		textTap.Tapped += async (_, _) =>
 		{
+			if (textContent.Content is Entry)
+				return;
+
 			if (numericContent.Content is Entry)
 			{
 				numericLabel.Text = numericEntry.Text;
@@ -57,7 +88,7 @@ public class Issue38799 : TestShell
 
 			if (textEntry is null)
 			{
-				textEntry = new Entry { AutomationId = "TextEntry", Keyboard = Keyboard.Text, Margin = new Thickness(10, 0) };
+				textEntry = CreateEntry("TextEntry", Keyboard.Text);
 #if ANDROID
 				textEntry.HandlerChanged += (_, _) =>
 				{
@@ -79,6 +110,7 @@ public class Issue38799 : TestShell
 			}
 
 			textEntry.Text = textLabel.Text;
+			nativeState.Text = "Waiting for text focus";
 			await Task.Delay(250);
 			textEntry.Focus();
 			textContent.Content = textEntry;
@@ -88,11 +120,12 @@ public class Issue38799 : TestShell
 		var grid = new Grid
 		{
 			RowSpacing = 10,
-			RowDefinitions = { new RowDefinition(50), new RowDefinition(50), new RowDefinition(50) }
+			RowDefinitions = { new RowDefinition(50), new RowDefinition(50), new RowDefinition(50), new RowDefinition(50) }
 		};
 		grid.Add(numericContent, 0, 0);
 		grid.Add(textContent, 0, 1);
 		grid.Add(result, 0, 2);
+		grid.Add(nativeState, 0, 3);
 		AddContentPage(new ContentPage { Content = grid });
 	}
 }
