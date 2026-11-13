@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
@@ -14,7 +15,14 @@ namespace Microsoft.Maui.DeviceTests
 		sealed class PlatformViewParentTrackingLabelHandler : LabelHandler
 		{
 			public int ConnectedPlatformViewCount { get; private set; }
+			public int SetupContainerCount { get; private set; }
 			public bool ConnectedPlatformViewsWereUnparented { get; private set; } = true;
+
+			protected override void SetupContainer()
+			{
+				SetupContainerCount++;
+				base.SetupContainer();
+			}
 
 			protected override void ConnectHandler(TextBlock platformView)
 			{
@@ -157,6 +165,228 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(Microsoft.UI.Xaml.VerticalAlignment.Center, handler.PlatformView.VerticalAlignment);
 				Assert.Equal(2, handler.ConnectedPlatformViewCount);
 				Assert.True(handler.ConnectedPlatformViewsWereUnparented);
+			});
+		}
+
+		[Theory]
+		[InlineData("Visibility")]
+		[InlineData("Opacity")]
+		[InlineData("Transform2D")]
+		[InlineData("Projection3D")]
+		[InlineData("Clip")]
+		[InlineData("Shadow")]
+		[InlineData("InputTransparent")]
+		public Task ReconnectingContainerRestoresDefaultPropertyValues(string property) =>
+			VerifyReconnectedContainerProperty(property, 0);
+
+		[Theory]
+		[InlineData("Visibility", 1)]
+		[InlineData("Opacity", 1)]
+		[InlineData("Opacity", 2)]
+		[InlineData("Transform2D", 1)]
+		[InlineData("Transform2D", 2)]
+		[InlineData("Projection3D", 1)]
+		[InlineData("Projection3D", 2)]
+		[InlineData("Clip", 1)]
+		[InlineData("Clip", 2)]
+		[InlineData("Shadow", 1)]
+		[InlineData("Shadow", 2)]
+		[InlineData("InputTransparent", 1)]
+		public Task ReconnectingContainerRestoresNonDefaultPropertyValues(string property, int value) =>
+			VerifyReconnectedContainerProperty(property, value);
+
+		async Task VerifyReconnectedContainerProperty(string property, int value)
+		{
+			var label = new Label
+			{
+				Text = "Reconnect",
+				BackgroundColor = Colors.Transparent,
+				WidthRequest = 100,
+				HeightRequest = 50
+			};
+
+			await AttachAndRun<PlatformViewParentTrackingLabelHandler>(label, handler =>
+			{
+				SetProperty(1);
+				var wrapper = Assert.IsType<WrapperView>(handler.ContainerView);
+				var parent = wrapper.Parent;
+				var oldPlatformView = handler.PlatformView;
+				var setupCount = handler.SetupContainerCount;
+				AssertProperty(1);
+
+				((IElementHandler)handler).DisconnectHandler();
+				SetProperty(value);
+				AssertProperty(1);
+				handler.SetVirtualView(label);
+
+				Assert.Same(wrapper, handler.ContainerView);
+				Assert.Same(parent, wrapper.Parent);
+				Assert.NotSame(oldPlatformView, handler.PlatformView);
+				Assert.Same(handler.PlatformView, wrapper.Child);
+				Assert.Equal(setupCount, handler.SetupContainerCount);
+				AssertProperty(value);
+
+				void SetProperty(int state)
+				{
+					switch (property)
+					{
+						case "Visibility":
+							label.IsVisible = state == 0;
+							break;
+						case "Opacity":
+							label.Opacity = state == 0 ? 1 : 0.25 * state;
+							break;
+						case "Transform2D":
+							label.TranslationX = 12 * state;
+							label.TranslationY = 4 * state;
+							label.Rotation = 10 * state;
+							label.Scale = state == 0 ? 1 : 0.8;
+							label.AnchorX = 0.25;
+							label.AnchorY = 0.75;
+							break;
+						case "Projection3D":
+							label.RotationX = 15 * state;
+							break;
+						case "Clip":
+							label.Clip = state == 0 ? null : new Microsoft.Maui.Controls.Shapes.RectangleGeometry
+							{
+								Rect = new Rect(0, 0, 40 * state, 20)
+							};
+							break;
+						case "Shadow":
+							label.Shadow = state == 0 ? null : new Shadow
+							{
+								Brush = new SolidColorBrush(Colors.Black),
+								Radius = 8 * state
+							};
+							break;
+						case "InputTransparent":
+							label.InputTransparent = state != 0;
+							break;
+						default:
+							throw new System.ArgumentOutOfRangeException(nameof(property));
+					}
+				}
+
+				void AssertProperty(int state)
+				{
+					switch (property)
+					{
+						case "Visibility":
+							Assert.Equal(state == 0 ? Microsoft.UI.Xaml.Visibility.Visible : Microsoft.UI.Xaml.Visibility.Collapsed,
+								wrapper.Visibility);
+							break;
+						case "Opacity":
+							Assert.Equal(state == 0 ? 1 : 0.25 * state, wrapper.Opacity, 6);
+							break;
+						case "Transform2D":
+							if (state == 0)
+							{
+								var origin = new global::Windows.Foundation.Point(0, 0);
+								var xAxis = new global::Windows.Foundation.Point(1, 0);
+								var yAxis = new global::Windows.Foundation.Point(0, 1);
+								var transform = wrapper.RenderTransform;
+								Assert.Equal(origin, transform?.TransformPoint(origin) ?? origin);
+								Assert.Equal(xAxis, transform?.TransformPoint(xAxis) ?? xAxis);
+								Assert.Equal(yAxis, transform?.TransformPoint(yAxis) ?? yAxis);
+							}
+							else
+							{
+								var transform = Assert.IsType<Microsoft.UI.Xaml.Media.CompositeTransform>(wrapper.RenderTransform);
+								Assert.Equal(12 * state, transform.TranslateX, 6);
+								Assert.Equal(4 * state, transform.TranslateY, 6);
+								Assert.Equal(10 * state, transform.Rotation, 6);
+								Assert.Equal(0.8, transform.ScaleX, 6);
+								Assert.Equal(0.8, transform.ScaleY, 6);
+								Assert.Equal(0.25, wrapper.RenderTransformOrigin.X, 6);
+								Assert.Equal(0.75, wrapper.RenderTransformOrigin.Y, 6);
+							}
+							break;
+						case "Projection3D":
+							if (state == 0)
+								Assert.Null(wrapper.Projection);
+							else
+								Assert.Equal(-15 * state,
+									Assert.IsType<Microsoft.UI.Xaml.Media.PlaneProjection>(wrapper.Projection).RotationX, 6);
+							break;
+						case "Clip":
+							if (state == 0)
+								Assert.Null(wrapper.Clip);
+							else
+								Assert.Equal(new Rect(0, 0, 40 * state, 20),
+									Assert.IsType<Microsoft.Maui.Controls.Shapes.RectangleGeometry>(wrapper.Clip).Rect);
+							break;
+						case "Shadow":
+							if (state == 0)
+								Assert.Null(wrapper.Shadow);
+							else
+								Assert.Equal(8 * state, Assert.IsType<Shadow>(wrapper.Shadow).Radius, 6);
+							break;
+						case "InputTransparent":
+							Assert.Equal(state == 0, wrapper.IsHitTestVisible);
+							break;
+					}
+				}
+			});
+		}
+
+		[Fact]
+		public async Task ReconnectingVisibleContainerRestoresShadowHostVisibility()
+		{
+			var label = new Label
+			{
+				Text = "Shadow visibility",
+				BackgroundColor = Colors.Transparent,
+				WidthRequest = 100,
+				HeightRequest = 50,
+				Shadow = new Shadow
+				{
+					Brush = new SolidColorBrush(Colors.Black),
+					Radius = 8,
+					Offset = new Point(4, 4)
+				}
+			};
+
+			await AttachAndRun(label, async (LabelHandler handler) =>
+			{
+				var wrapper = Assert.IsType<WrapperView>(handler.ContainerView);
+				var parent = wrapper.Parent;
+				await AssertHelpers.AssertEventually(
+					() => wrapper.CachedChildren.OfType<Canvas>().Any(),
+					message: "The attached Label did not create a shadow canvas.");
+				var originalCanvas = Assert.Single(wrapper.CachedChildren.OfType<Canvas>());
+				var hosts = originalCanvas.Children;
+				await AssertHelpers.AssertEventually(
+					() => hosts.Count == 1
+						&& Microsoft.UI.Xaml.Hosting.ElementCompositionPreview.GetElementChildVisual(hosts[0]) is not null,
+					message: "The initial shadow host did not finish composition initialization.");
+				var originalHost = Assert.Single(hosts);
+				Assert.Equal(Microsoft.UI.Xaml.Visibility.Visible, originalHost.Visibility);
+
+				label.IsVisible = false;
+				Assert.Equal(Microsoft.UI.Xaml.Visibility.Collapsed, wrapper.Visibility);
+				Assert.Equal(Microsoft.UI.Xaml.Visibility.Collapsed, handler.PlatformView.Visibility);
+				Assert.Equal(Microsoft.UI.Xaml.Visibility.Collapsed, originalHost.Visibility);
+
+				var oldPlatformView = handler.PlatformView;
+				var shadow = label.Shadow;
+				((IElementHandler)handler).DisconnectHandler();
+				Assert.Null(label.Handler);
+				label.IsVisible = true;
+				Assert.Equal(Microsoft.UI.Xaml.Visibility.Collapsed, originalHost.Visibility);
+				handler.SetVirtualView(label);
+
+				Assert.Same(wrapper, handler.ContainerView);
+				Assert.Same(parent, wrapper.Parent);
+				Assert.NotSame(oldPlatformView, handler.PlatformView);
+				Assert.Same(handler.PlatformView, wrapper.Child);
+				Assert.Same(shadow, label.Shadow);
+				Assert.Equal(Microsoft.UI.Xaml.Visibility.Visible, wrapper.Visibility);
+				Assert.Equal(Microsoft.UI.Xaml.Visibility.Visible, handler.PlatformView.Visibility);
+				Assert.Same(originalCanvas, Assert.Single(wrapper.CachedChildren.OfType<Canvas>()));
+				Assert.Same(originalHost, Assert.Single(hosts));
+				Assert.NotNull(Microsoft.UI.Xaml.Hosting.ElementCompositionPreview.GetElementChildVisual(originalHost));
+				Assert.Equal(Microsoft.UI.Xaml.Visibility.Visible, originalHost.Visibility);
 			});
 		}
 

@@ -50,6 +50,20 @@ public partial class ViewHandler
 		}
 
 		wrapper.Child = PlatformView;
+
+		// Reset to a fresh wrapper's state so the mappers (which skip defaults while connecting) stay authoritative.
+		wrapper.ClearValue(UIElement.VisibilityProperty);
+		wrapper.ClearValue(UIElement.OpacityProperty);
+		wrapper.ClearValue(UIElement.RenderTransformProperty);
+		wrapper.ClearValue(UIElement.RenderTransformOriginProperty);
+		wrapper.ClearValue(UIElement.ProjectionProperty);
+		wrapper.Clip = null;
+
+		// Clearing a shadow disposes and recreates it, so only clear one the view no longer has; MapShadow updates a kept one in place.
+		if (wrapper.Shadow is not null && VirtualView?.Shadow is null)
+		{
+			wrapper.Shadow = null;
+		}
 	}
 
 	public static void MapTranslationX(IViewHandler handler, IView view)
