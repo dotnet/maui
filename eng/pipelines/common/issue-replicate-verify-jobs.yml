@@ -1,0 +1,89 @@
+parameters:
+  - name: name
+    type: string
+  - name: dependsOn
+    type: string
+  - name: condition
+    type: string
+  - name: proposal
+    type: string
+  - name: platform
+    type: string
+
+jobs:
+  - template: issue-replicate-verify-job.yml
+    parameters:
+      name: ${{ parameters.name }}First
+      dependsOn: ${{ parameters.dependsOn }}
+      candidateJob: ${{ parameters.dependsOn }}
+      condition: ${{ parameters.condition }}
+      proposal: ${{ parameters.proposal }}
+      platform: ${{ parameters.platform }}
+      attempt: 1
+  - template: issue-replicate-verify-job.yml
+    parameters:
+      name: ${{ parameters.name }}Confirm
+      dependsOn: ${{ parameters.name }}First
+      candidateJob: ${{ parameters.dependsOn }}
+      condition: and(succeeded('${{ parameters.name }}First'), eq(dependencies.${{ parameters.name }}First.outputs['verify.observedAssertion'], 'true'))
+      proposal: ${{ parameters.proposal }}
+      platform: ${{ parameters.platform }}
+      attempt: 2
+  - job: ${{ parameters.name }}
+    dependsOn:
+      - Intake
+      - Sample
+      - ${{ parameters.dependsOn }}
+      - ${{ parameters.name }}First
+      - ${{ parameters.name }}Confirm
+    condition: and(not(canceled()), succeeded('${{ parameters.name }}First'))
+    pool:
+      vmImage: ubuntu-22.04
+    timeoutInMinutes: 15
+    variables:
+      REPRO_INPUT: $[ dependencies.Intake.outputs['snapshot.payload'] ]
+      REPRO_SAMPLE: $[ dependencies.Sample.outputs['sample.payload'] ]
+      REPRO_CANDIDATE: $[ dependencies.${{ parameters.dependsOn }}.outputs['candidate.payload'] ]
+      REPRO_FIRST: $[ dependencies.${{ parameters.name }}First.outputs['verify.payload'] ]
+      observedAssertion: $[ dependencies.${{ parameters.name }}First.outputs['verify.observedAssertion'] ]
+      REPRO_CONFIRMED: $[ dependencies.${{ parameters.name }}Confirm.outputs['verify.payload'] ]
+      confirmStatus: $[ dependencies.${{ parameters.name }}Confirm.result ]
+      ${{ each index in split('0,1,2,3,4,5,6,7', ',') }}:
+        REPRO_VIDEO_${{ index }}: $[ iif(eq(variables.observedAssertion, 'true'), dependencies.${{ parameters.name }}Confirm.outputs['verify.recording${{ index }}'], dependencies.${{ parameters.name }}First.outputs['verify.recording${{ index }}']) ]
+    steps:
+      - checkout: none
+      - template: issue-replicate-tools.yml
+      - pwsh: |
+          & "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Transport.ps1" -Mode Import -Kind Input `
+            -Encoded $env:REPRO_INPUT -Directory "$(Pipeline.Workspace)/IssueInput"
+          & "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Transport.ps1" -Mode Import -Kind Sample `
+            -Encoded $env:REPRO_SAMPLE -Directory "$(Pipeline.Workspace)/SampleOutput"
+          & "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Transport.ps1" -Mode Import -Kind Candidate `
+            -Encoded $env:REPRO_CANDIDATE -Directory "$(Pipeline.Workspace)/${{ parameters.proposal }}"
+          if ($env:OBSERVED_ASSERTION -ceq 'false') {
+            $attempt = 1
+            $encoded = $env:REPRO_FIRST
+          } elseif ($env:OBSERVED_ASSERTION -ceq 'true') {
+            if ($env:CONFIRM_STATUS -cnotin @('Succeeded', 'SucceededWithIssues')) {
+              throw 'The required fresh native confirmation did not complete.'
+            }
+            $attempt = 2
+            $encoded = $env:REPRO_CONFIRMED
+          } else {
+            throw 'The first attempt did not export a valid assertion routing state.'
+          }
+          & "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Transport.ps1" -Mode Import -Kind Verified `
+            -Encoded $encoded -Directory "$(Pipeline.Workspace)/CompletedAttempt"
+          & pwsh -NoProfile -File "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Run.ps1" -Mode Forward `
+            -InputDirectory "$(Pipeline.Workspace)/IssueInput" `
+            -SampleResultPath "$(Pipeline.Workspace)/SampleOutput/sample-result.json" `
+            -CandidatePath "$(Pipeline.Workspace)/${{ parameters.proposal }}/candidate.json" `
+            -OutputDirectory "$(Pipeline.Workspace)/IssueVerified" -Attempt $attempt `
+            -PreviousResultPath "$(Pipeline.Workspace)/CompletedAttempt/result.json" `
+            -Provider Azure
+          if ($LASTEXITCODE -ne 0) { throw 'Completed verification forwarding did not finish.' }
+        displayName: 'Forward validated completed evidence without native provisioning'
+        name: verify
+        env:
+          OBSERVED_ASSERTION: $(observedAssertion)
+          CONFIRM_STATUS: $(confirmStatus)

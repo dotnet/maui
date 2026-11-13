@@ -1,0 +1,319 @@
+parameters:
+  - name: name
+    type: string
+  - name: dependsOn
+    type: string
+  - name: condition
+    type: string
+  - name: proposal
+    type: string
+  - name: platform
+    type: string
+  - name: candidateJob
+    type: string
+  - name: attempt
+    type: number
+
+jobs:
+  - job: ${{ parameters.name }}
+    dependsOn:
+      - Intake
+      - Sample
+      - '${{ parameters.candidateJob }}'
+      - ${{ if ne(parameters.dependsOn, parameters.candidateJob) }}:
+        - '${{ parameters.dependsOn }}'
+    condition: ${{ parameters.condition }}
+    variables:
+      reproInput: $[ dependencies.Intake.outputs['snapshot.payload'] ]
+      reproSample: $[ dependencies.Sample.outputs['sample.payload'] ]
+      reproCandidate: $[ dependencies.${{ parameters.candidateJob }}.outputs['candidate.payload'] ]
+      ${{ if eq(parameters.platform, 'android') }}:
+        ANDROID_AVD_HOME: $(Pipeline.Workspace)/.android/avd
+      ${{ if eq(parameters.attempt, 2) }}:
+        reproPrevious: $[ dependencies.${{ parameters.dependsOn }}.outputs['verify.payload'] ]
+    ${{ if eq(parameters.platform, 'android') }}:
+      pool:
+        vmImage: ubuntu-22.04
+    ${{ else }}:
+      pool:
+        vmImage: macOS-26
+    timeoutInMinutes: 180
+    steps:
+      - checkout: none
+      - template: issue-replicate-tools.yml
+      - pwsh: |
+          & "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Transport.ps1" -Mode Import -Kind Input `
+            -Encoded $env:REPRO_INPUT -Directory "$(Pipeline.Workspace)/IssueInput"
+          & "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Transport.ps1" -Mode Import -Kind Sample `
+            -Encoded $env:REPRO_SAMPLE -Directory "$(Pipeline.Workspace)/SampleOutput"
+          & "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Transport.ps1" -Mode Import -Kind Candidate `
+            -Encoded $env:REPRO_CANDIDATE -Directory "$(Pipeline.Workspace)/${{ parameters.proposal }}"
+          if ($env:REPRO_PREVIOUS -and $env:REPRO_PREVIOUS -notmatch '^\$\(') {
+            & "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Transport.ps1" -Mode Import -Kind Verified `
+              -Encoded $env:REPRO_PREVIOUS -Directory "$(Pipeline.Workspace)/FirstAttempt"
+          }
+        displayName: 'Restore bounded verification data without downloading artifacts'
+        env:
+          REPRO_INPUT: $(reproInput)
+          REPRO_SAMPLE: $(reproSample)
+          REPRO_CANDIDATE: $(reproCandidate)
+          REPRO_PREVIOUS: $(reproPrevious)
+      - pwsh: |
+          & pwsh -NoProfile -File "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Checkout.ps1" `
+            -ManifestPath "$(Pipeline.Workspace)/IssueInput/manifest.json" `
+            -Destination "$(Pipeline.Workspace)/maui"
+          if ($LASTEXITCODE -ne 0) { throw 'Public MAUI checkout failed.' }
+        displayName: 'Fetch pinned public source without a checkout credential'
+      - template: issue-replicate-sdk.yml
+      - ${{ if eq(parameters.platform, 'android') }}:
+        - template: issue-replicate-linux-disk.yml
+      - pwsh: New-Item -ItemType Directory -Path "$(LogDirectory)" -Force | Out-Null
+        displayName: 'Prepare local provisioning logs'
+      - ${{ if eq(parameters.platform, 'ios') }}:
+        - pwsh: ./build.ps1 --target=dotnet --configuration=Release --verbosity=minimal
+          workingDirectory: $(Pipeline.Workspace)/maui
+          displayName: 'Install pinned public MAUI SDK/workloads before reading iOS pack requirements'
+          timeoutInMinutes: 50
+        - pwsh: |
+            & "$(Pipeline.Workspace)/IssueTools/IssueReplicate.SelectXcode.ps1" `
+              -RepoRoot "$(Pipeline.Workspace)/maui" -Provider Azure
+          displayName: 'Require Xcode declared by the installed pinned iOS SDK pack'
+      - ${{ if eq(parameters.platform, 'android') }}:
+        - template: enable-kvm.yml
+      - template: provision.yml
+        parameters:
+          checkoutDirectory: $(Pipeline.Workspace)/maui
+          skipDotNetSdk: true
+          skipProvisionator: true
+          skipInternalFeeds: true
+          skipCertificates: true
+          skipGradleCache: true
+          skipXcode: ${{ eq(parameters.platform, 'android') }}
+          skipSimulatorSetup: ${{ eq(parameters.platform, 'android') }}
+          skipJdk: ${{ eq(parameters.platform, 'ios') }}
+          skipAndroidCommonSdks: ${{ eq(parameters.platform, 'ios') }}
+          skipAndroidPlatformApis: true
+          skipAndroidEmulatorImages: true
+          skipAndroidCreateAvds: true
+      - ${{ if eq(parameters.platform, 'android') }}:
+        - pwsh: ./build.ps1 --target=dotnet --configuration=Release --verbosity=minimal
+          workingDirectory: $(Pipeline.Workspace)/maui
+          displayName: 'Install pinned public MAUI SDK/workloads'
+          timeoutInMinutes: 50
+      - bash: echo "##vso[task.prependpath]$(Pipeline.Workspace)/maui/.dotnet"
+        displayName: 'Use pinned SDK'
+      - pwsh: |
+          dotnet build Microsoft.Maui.BuildTasks.slnf -c Debug -p:BuildTaskOnlyBuild=true --nologo --verbosity quiet
+          if ($LASTEXITCODE -ne 0) { throw 'Could not build the pinned MAUI build tasks.' }
+        workingDirectory: $(Pipeline.Workspace)/maui
+        displayName: 'Build MAUI tasks before compiling generated tests'
+        timeoutInMinutes: 30
+      - task: UseNode@1
+        inputs:
+          version: "24.x"
+        displayName: 'Install Node.js for Appium'
+      - ${{ if eq(parameters.platform, 'ios') }}:
+        - pwsh: |
+            $ErrorActionPreference = 'Stop'
+            $candidate = Get-Content -LiteralPath "$(Pipeline.Workspace)/${{ parameters.proposal }}/candidate.json" -Raw |
+              ConvertFrom-Json -Depth 6
+            if ($candidate.kind -cne 'ui') { exit 0 }
+            . "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Core.ps1"
+            Initialize-IssueReplicateIOSRuntime -RepoRoot "$(Pipeline.Workspace)/maui"
+          displayName: 'Reuse or provision the exact unique pinned iOS runtime'
+          timeoutInMinutes: 30
+      - pwsh: |
+          $candidate = Get-Content -LiteralPath "$(Pipeline.Workspace)/${{ parameters.proposal }}/candidate.json" -Raw |
+            ConvertFrom-Json -Depth 6
+          if ($candidate.kind -ne 'ui') { exit 0 }
+          $repo = "$(Pipeline.Workspace)/maui"
+          dotnet build "$repo/src/Provisioning/Provisioning.csproj" -t:ProvisionAppium -p:SkipAppiumDoctor=true
+          if ($LASTEXITCODE -ne 0) { throw 'Could not provision Appium for UI tests.' }
+        displayName: 'Provision Appium only for UI candidates'
+        env:
+          APPIUM_HOME: $(Pipeline.Workspace)/.appium
+      - pwsh: |
+          $ErrorActionPreference = 'Stop'
+          $candidate = Get-Content -LiteralPath "$(Pipeline.Workspace)/${{ parameters.proposal }}/candidate.json" -Raw |
+            ConvertFrom-Json -Depth 6
+          if ($candidate.kind -ne 'ui') { exit 0 }
+          if (-not (Get-Command ffmpeg -CommandType Application -ErrorAction SilentlyContinue) -or
+              -not (Get-Command ffprobe -CommandType Application -ErrorAction SilentlyContinue)) {
+            if ($IsMacOS) {
+              & brew install ffmpeg
+              if ($LASTEXITCODE -ne 0) { throw 'Could not install FFmpeg for native recording.' }
+            } elseif ($IsLinux) {
+              & sudo apt-get update -qq
+              if ($LASTEXITCODE -ne 0) { throw 'Could not refresh the hosted FFmpeg package index.' }
+              & sudo apt-get install -y -qq ffmpeg
+              if ($LASTEXITCODE -ne 0) { throw 'Could not install FFmpeg for native recording.' }
+            } else {
+              throw 'Native recording requires a supported disposable macOS or Linux agent.'
+            }
+          }
+          foreach ($binary in @('ffmpeg', 'ffprobe')) {
+            $tool = Get-Command $binary -CommandType Application -ErrorAction Stop | Select-Object -First 1
+            $version = @(& $tool.Source -hide_banner -version)
+            if ($LASTEXITCODE -ne 0) { throw "$binary could not report its version." }
+            $version | Select-Object -First 1 | ForEach-Object { Write-Host $_ }
+          }
+          $encoders = @(& ffmpeg -hide_banner -encoders 2>&1)
+          if ($LASTEXITCODE -ne 0 -or -not ($encoders -match '\blibx264\b')) {
+            throw 'Native recording requires the FFmpeg libx264 encoder.'
+          }
+        displayName: 'Require FFmpeg, ffprobe and libx264 for native video'
+        timeoutInMinutes: 10
+      - ${{ if eq(parameters.platform, 'android') }}:
+        - bash: |
+            set -euo pipefail
+            if [ "$(jq -r .kind "$(Pipeline.Workspace)/${{ parameters.proposal }}/candidate.json")" != ui ]; then
+              exit 0
+            fi
+            emulator_log="$(Agent.TempDirectory)/issue-emulator.log"
+            trap 'status=$?; if [ "$status" -ne 0 ] && [ -f "$emulator_log" ]; then echo "Android emulator diagnostics:" >&2; tail -n 120 "$emulator_log" >&2; fi; exit "$status"' EXIT
+            test -d "$ANDROID_SDK_ROOT"
+            mkdir -p "$ANDROID_AVD_HOME"
+            for tool_dir in "$ANDROID_SDK_ROOT"/cmdline-tools/*/bin; do
+              if [ -x "$tool_dir/sdkmanager" ]; then
+                break
+              fi
+            done
+            test -x "$tool_dir/sdkmanager"
+            manifest="$(Pipeline.Workspace)/IssueInput/manifest.json"
+            api=$(jq -er 'if has("androidApi") then .androidApi | select(type == "string") else "30" end' "$manifest")
+            case "$api" in 30|35|36) ;; *) echo 'Unsupported requested Android API' >&2; exit 1 ;; esac
+            if jq -e 'has("androidApi")' "$manifest" >/dev/null; then
+              echo "Provisioning immutable-request Android API $api."
+            else
+              echo 'Legacy snapshot: preserving original API 30 provisioning without assigning retroactive runtime provenance.'
+            fi
+            "$tool_dir/sdkmanager" --install "system-images;android-${api};google_apis;x86_64" "platforms;android-${api}"
+            echo no | "$tool_dir/avdmanager" create avd --force --name IssueRepro --device "Nexus 5X" --package "system-images;android-${api};google_apis;x86_64"
+            test -f "$ANDROID_AVD_HOME/IssueRepro.ini"
+            avd_config="$ANDROID_AVD_HOME/IssueRepro.avd/config.ini"
+            test -f "$avd_config"
+            sed -i 's/^disk.dataPartition.size=.*/disk.dataPartition.size=2048m/' "$avd_config"
+            grep -qx 'disk.dataPartition.size=2048m' "$avd_config"
+            "$ANDROID_SDK_ROOT/emulator/emulator" -avd IssueRepro -port 5554 -no-window -no-audio -no-snapshot -no-boot-anim -gpu swiftshader_indirect -partition-size 2048 \
+              > "$emulator_log" 2>&1 &
+            emulator_pid=$!
+            adb="$ANDROID_SDK_ROOT/platform-tools/adb"
+            device=emulator-5554
+            sleep 5
+            if ! kill -0 "$emulator_pid" 2>/dev/null; then
+              echo 'Android emulator exited before connecting to ADB.' >&2
+              exit 1
+            fi
+            timeout 600 "$adb" -s "$device" wait-for-device
+            for attempt in $(seq 1 120); do
+              if [ "$("$adb" -s "$device" shell getprop sys.boot_completed | tr -d '\r')" = 1 ]; then
+                actual_api=$(timeout 20 "$adb" -s "$device" shell getprop ro.build.version.sdk | tr -d '\r')
+                if [ "$actual_api" != "$api" ]; then
+                  echo "Requested Android API $api; owned emulator reports $actual_api." >&2
+                  exit 1
+                fi
+                for setting in window_animation_scale transition_animation_scale animator_duration_scale; do
+                  timeout 20 "$adb" -s "$device" shell settings put global "$setting" 0.0
+                done
+                timeout 20 "$adb" -s "$device" shell settings put global hide_error_dialogs 1
+                test "$(timeout 20 "$adb" -s "$device" shell settings get global hide_error_dialogs | tr -d '\r')" = 1
+                timeout 20 "$adb" -s "$device" shell settings put system screen_off_timeout 2147483647
+                timeout 20 "$adb" -s "$device" shell svc power stayon true
+                timeout 20 "$adb" -s "$device" shell input keyevent KEYCODE_WAKEUP
+                timeout 20 "$adb" -s "$device" shell wm dismiss-keyguard
+                timeout 20 "$adb" -s "$device" shell input keyevent KEYCODE_MENU
+                echo "##vso[task.setvariable variable=DEVICE_UDID]$device"
+                echo "##vso[task.prependpath]$ANDROID_SDK_ROOT/platform-tools"
+                echo "##vso[task.prependpath]$ANDROID_SDK_ROOT/emulator"
+                exit 0
+              fi
+              sleep 5
+            done
+            echo 'Android emulator could not boot' >&2
+            exit 1
+          displayName: 'Boot unprivileged Android emulator for UI candidate'
+          timeoutInMinutes: 25
+      - pwsh: |
+          $previous = if (${{ parameters.attempt }} -eq 2) { @('-PreviousResultPath', "$(Pipeline.Workspace)/FirstAttempt/result.json") } else { @() }
+          & pwsh -NoProfile -File "$(Pipeline.Workspace)/IssueTools/IssueReplicate.Run.ps1" -Mode Verify `
+            -InputDirectory "$(Pipeline.Workspace)/IssueInput" `
+            -SampleResultPath "$(Pipeline.Workspace)/SampleOutput/sample-result.json" `
+            -CandidatePath "$(Pipeline.Workspace)/${{ parameters.proposal }}/candidate.json" `
+            -RepoRoot "$(Pipeline.Workspace)/maui" `
+            -OutputDirectory "$(Pipeline.Workspace)/IssueVerified" `
+            -Attempt ${{ parameters.attempt }} -RecordVideo -Provider Azure @previous
+          if ($LASTEXITCODE -ne 0) { throw 'Generated test verification did not complete.' }
+        displayName: 'Run generated test without credentials'
+        name: verify
+        timeoutInMinutes: 85
+        continueOnError: true
+        env:
+          APPIUM_HOME: $(Pipeline.Workspace)/.appium
+          ${{ if eq(parameters.platform, 'android') }}:
+            DEVICE_UDID: $(DEVICE_UDID)
+      - pwsh: |
+          $ErrorActionPreference = 'Stop'
+          $directory = "$(Pipeline.Workspace)/maui/CustomAgentLogsTmp/UITests"
+          if (-not (Test-Path -LiteralPath $directory)) {
+            Write-Host 'No native diagnostic directory was created; execution may not have started.'
+            exit 0
+          }
+          $root = Get-Item -LiteralPath $directory -Force
+          if (-not $root.PSIsContainer -or $root.Attributes -band [IO.FileAttributes]::ReparsePoint) {
+            throw 'Native diagnostics must be in a regular directory.'
+          }
+          $revision = "$(Build.SourceVersion)"
+          if ($revision -cnotmatch '^[0-9a-f]{40}$') { throw 'The diagnostic helper revision is not pinned.' }
+          $handler = [Net.Http.HttpClientHandler]::new()
+          $handler.AllowAutoRedirect = $false
+          $client = [Net.Http.HttpClient]::new($handler)
+          $client.Timeout = [TimeSpan]::FromSeconds(15)
+          try {
+            $url = "https://raw.githubusercontent.com/dotnet/maui/$revision/.github/scripts/IssueReplicate.Diagnostics.ps1"
+            $helper = $client.GetByteArrayAsync($url).GetAwaiter().GetResult()
+            if ($helper.Length -gt 64KB) { throw 'The immutable diagnostic helper exceeds its bound.' }
+            . ([scriptblock]::Create([Text.UTF8Encoding]::new($false, $true).GetString($helper)))
+          } finally {
+            $client.Dispose()
+            $handler.Dispose()
+          }
+          $path = Join-Path $directory 'appium.log'
+          if (Test-Path -LiteralPath $path) {
+            $file = Get-Item -LiteralPath $path -Force
+            if ($file.PSIsContainer -or $file.Attributes -band [IO.FileAttributes]::ReparsePoint) {
+              throw 'Appium diagnostics must be a regular log file.'
+            }
+            $diagnostic = Read-IssueReplicateNativeDiagnostic -Path $path -MaxBytes 128KB -Tail -AppiumLog
+            Write-Host 'Appium diagnostics (last 80 non-syslog lines, at most 128 KiB, within a 64 MiB tail scan; context only, not assertion evidence):'
+            if ($diagnostic.Omitted) { Write-Host '[Earlier or oversized Appium log content omitted]' }
+            ($diagnostic.Text -split "`n" | Select-Object -Last 80) | ForEach-Object {
+              $line = $_.Replace("`r", '') -replace '##vso\[[^]]*\]', ''
+              if ($line.Length -gt 2000) { $line = $line.Substring(0, 2000) }
+              Write-Host $line
+            }
+          } else {
+            Write-Host 'No Appium log was created.'
+          }
+          $page = Get-ChildItem -LiteralPath $directory -File -Filter '*-PageSource-*.txt' |
+            Sort-Object LastWriteTimeUtc -Descending | Select-Object -First 1
+          if ($page) {
+            if ($page.Attributes -band [IO.FileAttributes]::ReparsePoint -or $page.Length -gt 1MB) {
+              throw 'UI hierarchy diagnostics must be a bounded regular text file.'
+            }
+            $diagnostic = Read-IssueReplicateNativeDiagnostic -Path $page.FullName -MaxBytes 1MB
+            $text = $diagnostic.Text -replace "`r", ''
+            $text = $text -replace '##vso\[[^]]*\]', ''
+            Write-Host 'Latest UI hierarchy (at most 16000 characters; context only, not assertion evidence):'
+            if ($text.Length -gt 16000) {
+              $marker = "`n[UI hierarchy diagnostic truncated]`n"
+              $text = $text.Substring(0, 8000) + $marker +
+                $text.Substring($text.Length - (8000 - $marker.Length))
+            }
+            Write-Host $text
+          } else {
+            Write-Host 'No UI hierarchy diagnostic was captured.'
+          }
+        displayName: 'Show bounded native diagnostics without uploading an artifact'
+        condition: always()
+        timeoutInMinutes: 2
+        continueOnError: true
