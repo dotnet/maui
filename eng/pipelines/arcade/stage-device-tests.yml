@@ -638,6 +638,17 @@ stages:
           - pwsh: echo "##vso[task.prependpath]$(DotNet.Dir)"
             displayName: 'Add .NET to PATH'
 
+          # Record the workload manifest layout seen by the device-test build.
+          - pwsh: |
+              $dotnetDir = Join-Path "$(Build.SourcesDirectory)" ".dotnet"
+              Get-ChildItem (Join-Path $dotnetDir "sdk-manifests") -Recurse -Depth 2 -ErrorAction Continue | ForEach-Object { $_.FullName }
+              Get-ChildItem (Join-Path $dotnetDir "metadata") -Recurse -File -ErrorAction SilentlyContinue | ForEach-Object { $_.FullName; Get-Content $_.FullName -Raw -ErrorAction SilentlyContinue }
+              Get-ChildItem "$env:ProgramData\dotnet" -Recurse -File -ErrorAction SilentlyContinue | ForEach-Object { $_.FullName }
+              & (Join-Path $dotnetDir "dotnet.exe") workload --info
+              exit 0
+            displayName: 'Show workload manifest state'
+            continueOnError: true
+
           # Build Unpackaged tests FIRST (self-contained .exe for direct execution)
           # Must build unpackaged BEFORE packaged so we can save the publish output
           # before the packaged build overwrites the artifacts/bin directory
