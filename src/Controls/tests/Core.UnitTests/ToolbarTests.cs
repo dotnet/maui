@@ -425,6 +425,31 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public async Task DetachingNavigationPageLeavesReplacedModalRootToolbarAlone()
+		{
+			var window = new TestWindow();
+			var startingPage = new TestNavigationPage(true, new ContentPage());
+			window.Page = startingPage;
+			await startingPage.NavigatingTask;
+
+			var tabbedPage = new TabbedPage
+			{
+				Children = { new NavigationPage(new ContentPage()) }
+			};
+
+			await startingPage.Navigation.PushModalAsync(tabbedPage);
+
+			// The modal root no longer holds the NavigationPage-created toolbar
+			var replacement = new Toolbar(tabbedPage);
+			tabbedPage.Toolbar = replacement;
+
+			// Detaching the owner must not tear down a toolbar it no longer owns
+			tabbedPage.Children.RemoveAt(0);
+
+			Assert.Same(replacement, ((IToolbarElement)tabbedPage).Toolbar);
+		}
+
+		[Fact]
 		public void NavigationPageSetBackButtonAccessibilityLabel()
 		{
 			var page = new ContentPage();
