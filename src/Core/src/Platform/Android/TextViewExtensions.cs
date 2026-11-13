@@ -175,18 +175,13 @@ namespace Microsoft.Maui.Platform
 			if (label.LineHeight < 0)
 				return;
 
-			// The line spacing multiplier also scales the font padding of the first line, making its gap
-			// larger. Below API 23 Controls toggles SetSingleLine, which replaces the TransformationMethod.
-			if (OperatingSystem.IsAndroidVersionAtLeast(23))
-			{
-				// LineHeight replaces any native spacing, as SetLineSpacing(0, lineHeight) did.
-				textView.SetLineSpacing(0, 1);
-				textView.TransformationMethod = new PlatformLineHeightTransformationMethod((float)label.LineHeight, textView.TransformationMethod);
-			}
+			// The line spacing multiplier also scales the font padding that TextView adds to the first line,
+			// making the gap below it larger, so plain text gets the same fixed extra on every line instead.
+			// Spanned text (HTML) keeps the multiplier, which spaces lines of different sizes by their own height.
+			if (textView.TextFormatted is not ISpanned && textView.Paint?.GetFontMetricsInt() is { } fontMetrics)
+				textView.SetLineSpacing((fontMetrics.Descent - fontMetrics.Ascent) * ((float)label.LineHeight - 1), 1);
 			else
-			{
 				textView.SetLineSpacing(0, (float)label.LineHeight);
-			}
 		}
 
 		internal static void Focus(this TextView textView, FocusRequest request)
