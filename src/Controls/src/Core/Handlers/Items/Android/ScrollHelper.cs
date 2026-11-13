@@ -116,6 +116,34 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_recyclerView.ScrollToPosition(index);
 		}
 
+		// Scrolls, without animating, until the end of the lowest row meets the end of the viewport: the end of the
+		// content, past the footer.
+		public void JumpScrollToEnd()
+		{
+			if (_recyclerView.GetLayoutManager() is not { ItemCount: > 0 } layoutManager)
+			{
+				return;
+			}
+
+			// Scrolling to the last position lays it out lined up with the end of the viewport when it's out of view, but
+			// with the start when it's in view and taller than the viewport: once it's laid out, scroll the rest of the way.
+			_pendingScrollAdjustment = AdjustScrollToEnd;
+			_recyclerView.ScrollToPosition(layoutManager.ItemCount - 1);
+		}
+
+		void AdjustScrollToEnd()
+		{
+			_pendingScrollAdjustment = null;
+
+			if (_recyclerView.GetLayoutManager() is { ItemCount: > 0 } layoutManager
+				&& layoutManager.FindViewByPosition(layoutManager.ItemCount - 1) is not null
+				&& OrientationHelper.CreateVerticalHelper(layoutManager) is { } helper
+				&& RecyclerViewScrollAnchor.GetDistanceToEnd(layoutManager, helper) is > 0 and var distance)
+			{
+				_recyclerView.ScrollBy(0, distance);
+			}
+		}
+
 		ARect GetViewRect(int index)
 		{
 			var holder = _recyclerView.FindViewHolderForAdapterPosition(index);

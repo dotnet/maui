@@ -780,14 +780,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 			else if (layoutManager.ItemCount > 0)
 			{
-				// The footer is the adapter's last position: lined up with the end of the viewport, it ends the content.
+				// The footer is the adapter's last position: its end lined up with the end of the viewport ends the content.
 				if (animate)
 				{
-					SmoothScrollToPosition(layoutManager.ItemCount - 1);
+					RecyclerViewScrollAnchor.SmoothScrollToEnd(this, layoutManager);
 				}
 				else
 				{
-					ScrollToPosition(layoutManager.ItemCount - 1);
+					ScrollHelper.JumpScrollToEnd();
 				}
 			}
 

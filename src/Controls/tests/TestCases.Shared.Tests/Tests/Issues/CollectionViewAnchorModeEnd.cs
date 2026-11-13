@@ -1,3 +1,4 @@
+#if TEST_FAILS_ON_WINDOWS // ScrollAnchorMode.End isn't implemented on Windows: the list doesn't follow its end there.
 using System.Drawing;
 using NUnit.Framework;
 using UITest.Appium;
@@ -135,3 +136,4 @@ public class CollectionViewAnchorModeEnd : _IssuesUITest
 		return true;
 	}
 }
+#endif

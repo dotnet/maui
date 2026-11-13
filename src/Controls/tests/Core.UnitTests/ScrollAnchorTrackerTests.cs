@@ -62,6 +62,23 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void FollowsContentGrowingByLessThanAPixelAtATime()
+		{
+			// A device pixel at a time is a third of a unit at three pixels per unit: no single change is worth a scroll, but
+			// together they move the end on.
+			var view = FakeScrollView.AtEnd(extent: 1000, viewport: 400);
+
+			for (var step = 1; step <= 80; step++)
+			{
+				view.Extent += 1.0 / 3;
+				view.Look();
+				Assert.True(view.Metrics.DistanceToEnd <= 0.5, $"After {step} steps, the end is {view.Metrics.DistanceToEnd} away.");
+			}
+
+			Assert.True(view.Tracker.IsAnchored);
+		}
+
+		[Fact]
 		public void FollowsContentAddedAboveTheEndWhileAtTheEnd()
 		{
 			// A grouped log: the new entry lands in an earlier group, above the last one.
@@ -282,6 +299,27 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			// The same move with no size change is a scroll.
 			view.Offset -= 22;
 			Assert.Null(view.Look());
+			Assert.False(view.Tracker.IsAnchored);
+		}
+
+		[Fact]
+		public void ALayoutMovingTheOffsetWhileTheUserScrollsDoesNotCountAsTheUserMovingAway()
+		{
+			// The user holds the view at its end while UICollectionView re-estimates rows in a layout pass: the offset
+			// moved, but not by the user.
+			var view = FakeScrollView.AtEnd(extent: 967, viewport: 426.5);
+
+			view.Offset -= 22;
+			Assert.Null(view.Look(userScrolling: true, sizeChanged: true));
+			Assert.True(view.Tracker.IsAnchored);
+
+			// When the gesture ends, the anchor settles the view on the end.
+			Assert.Equal(540.5, view.Look());
+			Assert.True(view.Tracker.IsAnchored);
+
+			// The same move with no layout is the user's.
+			view.Offset -= 22;
+			Assert.Null(view.Look(userScrolling: true));
 			Assert.False(view.Tracker.IsAnchored);
 		}
 
