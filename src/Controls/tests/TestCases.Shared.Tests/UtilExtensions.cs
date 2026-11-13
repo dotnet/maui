@@ -10,6 +10,15 @@ namespace Microsoft.Maui.TestCases.Tests
 	{
 		const string goToTestButtonId = "GoToTestButton";
 
+		public static IQuery GetCollapsibleShellSearchQuery(this IApp app, string placeholder)
+		{
+			// Android's collapsed menu item uses SearchHandler.Placeholder as its title.
+			// iOS exposes the native search field, as in GetShellSearchHandler.
+			return app.GetTestDevice() == TestDevice.Android
+				? AppiumQuery.ByAccessibilityId(placeholder)
+				: AppiumQuery.ByXPath("//XCUIElementTypeSearchField");
+		}
+
 		/// <summary>
 		/// Ignores the current test only when running in the Android Shell Renderer configuration.
 		/// </summary>
