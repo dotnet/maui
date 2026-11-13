@@ -40,10 +40,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 		}
 
-		public void NotifyItemRangeChanged(IItemsViewSource source, int start, int end)
+		public void NotifyItemRangeChanged(IItemsViewSource source, int start, int count)
 		{
 			if (IsValidAdapter())
-				_adapter.NotifyItemRangeChanged(start, end);
+				_adapter.NotifyItemRangeChanged(start, count);
 		}
 
 		public void NotifyItemRangeInserted(IItemsViewSource source, int startIndex, int count)

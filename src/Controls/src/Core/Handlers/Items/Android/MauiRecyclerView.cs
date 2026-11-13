@@ -8,8 +8,8 @@ using Android.Views;
 using AndroidX.RecyclerView.Widget;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
-using Microsoft.Maui.Platform;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
 using ARect = Android.Graphics.Rect;
 using AView = Android.Views.View;
 using AViewCompat = AndroidX.Core.View.ViewCompat;
@@ -310,6 +310,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_emptyCollectionObserver.Stop(oldItemViewAdapter);
 
 			ItemsViewAdapter = CreateAdapter();
+			ItemsViewAdapter.CollectionChangedDispatcher.Attach(this);
 
 			(RecyclerViewScrollListener as RecyclerViewScrollListener<TItemsView, TItemsViewSource>)?.UpdateAdapter(ItemsViewAdapter);
 
@@ -997,11 +998,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				_descendantDisallowedIntercept = false;
 				_gestureOwner = GestureOwner.Undecided;
 
-				if (_downEvent is not null)
-				{
-					_downEvent.Recycle();
-					_downEvent = null;
-				}
+				_downEvent?.Recycle();
+				_downEvent = null;
 			}
 
 			int ScaledTouchSlop => _scaledTouchSlop ??= ViewConfiguration.Get(_owner.Context).ScaledTouchSlop;
