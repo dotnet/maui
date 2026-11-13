@@ -40,11 +40,15 @@ public class CollectionViewAnchorModeEnd : _IssuesUITest
 		App.WaitForElement("Message33");
 		Assert.That(WaitUntil(IsEndInView), Is.True, "New items should keep the end in view.");
 
+		// Each tap adds a line to the last message, as an answer streams in: wait until it has grown by several lines, so the
+		// end being in view shows the list followed it, not that nothing changed.
+		var initialHeight = App.WaitForElement("Message33").GetRect().Height;
 		for (var i = 0; i < 5; i++)
 		{
 			App.Tap(GrowId);
 		}
 
+		Assert.That(WaitUntil(() => App.FindElements("Message33").FirstOrDefault()?.GetRect().Height >= 2 * initialHeight), Is.True, "The last message should grow.");
 		Assert.That(WaitUntil(IsEndInView), Is.True, "The last item growing should keep the end in view.");
 		Assert.That(App.WaitForTextEqualToElement(IsAnchoredId, "True"), Is.True, "The list should still follow its end.");
 	}

@@ -306,6 +306,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				_scrollAnchor.UpdateMode(CollectionView, mode);
 			}
+
+			// And an animated scroll would carry on to where it was going, also when the view is at the edge it follows now and
+			// nothing scrolls it there: stop it where it is. A drag or a deceleration is the user's, and carries on.
+			if (!CollectionView.Dragging && !CollectionView.Decelerating)
+			{
+				CollectionView.SetContentOffset(CollectionView.ContentOffset, false);
+			}
 		}
 
 		internal void DetachScrollAnchor()
@@ -640,6 +647,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			ReloadData();
 			CollectionView.CollectionViewLayout.InvalidateLayout();
 
+			// New items start at their end, as the view did when it first appeared. Start over before resetting the offset:
+			// the app can request a scroll from the Scrolled event that raises, which is newer.
+			_scrollAnchor?.Reset(CollectionView);
+
 			// iOS/MacCatalyst: UIKit does not reset ContentOffset during ReloadData.
 			// ResetScrollTracking must run before the assignment so the UIKit-triggered
 			// scrollViewDidScroll callback computes delta from zero, not the stale previous offset.
@@ -648,9 +659,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				(Delegator as IScrollTrackingDelegator)?.ResetScrollTracking();
 				CollectionView.ContentOffset = CoreGraphics.CGPoint.Empty;
 			}
-
-			// New items start at their end, as the view did when it first appeared.
-			_scrollAnchor?.Reset(CollectionView);
 
 			(ItemsView as IView)?.InvalidateMeasure();
 		}

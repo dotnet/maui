@@ -802,6 +802,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			// A scroll the app requests, as for ScrollTo: a fling's snap target would snap the view back away from the start.
 			(GetSnapManager()?.GetCurrentSnapHelper() as SingleSnapHelper)?.ResetCurrentTargetPosition();
 
+			// And an adjustment an earlier jump left for its layout would scroll the view on after it.
+			_scrollHelper?.CancelPendingAdjustment();
+
 			if (_scrollAnchor is not null && _scrollAnchor.CanFollow(ScrollAnchorMode.Start))
 			{
 				_scrollAnchor.ScrollToStart(animate);
@@ -833,6 +836,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			// A scroll the app requests, as for ScrollTo: a fling's snap target would snap the view back away from the end.
 			(GetSnapManager()?.GetCurrentSnapHelper() as SingleSnapHelper)?.ResetCurrentTargetPosition();
+
+			// And an adjustment an earlier jump left for its layout would scroll the view on after it.
+			_scrollHelper?.CancelPendingAdjustment();
 
 			if (_scrollAnchor is not null && _scrollAnchor.CanFollow(ScrollAnchorMode.End))
 			{

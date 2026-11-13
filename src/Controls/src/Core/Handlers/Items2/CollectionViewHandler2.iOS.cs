@@ -104,22 +104,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		// Groupable
 		protected override void ScrollToRequested(object sender, ScrollToRequestEventArgs args)
 		{
-			// A newer request: what an earlier animated scroll left for when its animation ends no longer applies.
-			Controller?.ScrollingToEdge(null);
-
-			if (WillNeedScrollAdjustment(args))
+			if (WillNeedScrollAdjustment(args) && !args.IsAnimated)
 			{
-				if (args.IsAnimated)
-				{
-					(Controller as GroupableItemsViewController2<ReorderableItemsView>)?.SetScrollAnimationEndedCallback(() => base.ScrollToRequested(sender, args));
-				}
-				else
-				{
-					base.ScrollToRequested(sender, args);
-				}
+				base.ScrollToRequested(sender, args);
 			}
 
+			// The base handler finds the item first: a newer request for one it finds supersedes what an earlier one left for
+			// later, as for the end of its animation below.
 			base.ScrollToRequested(sender, args);
+
+			if (WillNeedScrollAdjustment(args) && args.IsAnimated)
+			{
+				(Controller as GroupableItemsViewController2<ReorderableItemsView>)?.SetScrollAnimationEndedCallback(() => base.ScrollToRequested(sender, args));
+			}
 		}
 
 		public static void MapIsGrouped(CollectionViewHandler2 handler, GroupableItemsView itemsView)
