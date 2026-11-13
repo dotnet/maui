@@ -6,7 +6,7 @@ using AndroidX.RecyclerView.Widget;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
-	public partial class StructuredItemsViewHandler<TItemsView> : ItemsViewHandler<TItemsView>, IScrollToEndHandler where TItemsView : StructuredItemsView
+	public partial class StructuredItemsViewHandler<TItemsView> : ItemsViewHandler<TItemsView>, IScrollToEdgeHandler where TItemsView : StructuredItemsView
 	{
 		protected override IItemsLayout GetItemsLayout() => VirtualView.ItemsLayout;
 
@@ -51,7 +51,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public static void MapAnchorMode(StructuredItemsViewHandler<TItemsView> handler, StructuredItemsView itemsView)
 			=> (handler.PlatformView as IScrollAnchorRecyclerView)?.UpdateAnchorMode();
 
-		bool IScrollToEndHandler.ScrollToEnd(bool animate)
+		bool IScrollToEdgeHandler.ScrollToStart(bool animate)
+			=> (PlatformView as IScrollAnchorRecyclerView)?.ScrollToStart(animate) ?? false;
+
+		bool IScrollToEdgeHandler.ScrollToEnd(bool animate)
 			=> (PlatformView as IScrollAnchorRecyclerView)?.ScrollToEnd(animate) ?? false;
 
 		void UpdateHeaderFooter(bool isHeader)

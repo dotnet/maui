@@ -401,6 +401,258 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Theory(DisplayName = "AnchorMode Start keeps items added before the first item in view")]
+		[InlineData(true)]
+		[InlineData(false)]
+		public async Task AnchorModeStartKeepsItemsAddedBeforeTheFirstInView(bool hasHeader)
+		{
+			SetupBuilder();
+			var items = CreateAnchorItems(40);
+			var collectionView = CreateAnchorCollectionView(items, ScrollAnchorMode.Start);
+			if (!hasHeader)
+			{
+				// The first item starts the content: Android keeps it where it is and adds new items above the view.
+				collectionView.Header = null;
+			}
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				await AssertEventually(() => GetDistanceFromStart(handler) <= AnchorTolerance, timeout: 3000, message: "The list should open at its start.");
+				Assert.True(collectionView.IsAnchored);
+
+				for (var i = 0; i < 3; i++)
+				{
+					// No other item is this tall: once the first item laid out is, the new item is laid out.
+					items.Insert(0, new AnchorItem($"Newest {i}", 64));
+					var atStart = await Wait(() => Math.Abs(GetItemHeight(handler, 0, hasHeader) - 64) <= AnchorTolerance && GetDistanceFromStart(handler) <= AnchorTolerance, 3000);
+					Assert.True(atStart, $"The new first item should be in view at the start. Position: {GetScrollPosition(handler)}, distance from the start: {GetDistanceFromStart(handler)}.");
+				}
+
+				Assert.True(collectionView.IsAnchored, "The list should still follow its start.");
+
+				// Following the start, items added after the last item don't move the list.
+				var position = GetScrollPosition(handler);
+				items.Add(new AnchorItem("Added at the end", 40));
+				await Task.Delay(500);
+				Assert.True(position == GetScrollPosition(handler), "A new last item shouldn't move a list that follows its start.");
+				Assert.True(collectionView.IsAnchored);
+			});
+		}
+
+		[Fact(DisplayName = "AnchorMode Start stops following the start once scrolled away from it")]
+		public async Task AnchorModeStartStopsFollowingTheStartOnceScrolledAway()
+		{
+			SetupBuilder();
+			var items = CreateAnchorItems(40);
+			var collectionView = CreateAnchorCollectionView(items, ScrollAnchorMode.Start);
+			collectionView.Header = null;
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				await AssertEventually(() => GetDistanceFromStart(handler) <= AnchorTolerance, timeout: 3000, message: "The list should open at its start.");
+
+				// Less than a row: the first item stays laid out, so the distance from the start is exact.
+				ScrollPlatformViewBy(handler, 30);
+				await AssertEventually(() => !collectionView.IsAnchored && Math.Abs(GetDistanceFromStart(handler) - 30) <= AnchorTolerance, timeout: 3000, message: "Scrolling away from the start should stop following it.");
+
+				items.Insert(0, new AnchorItem("Newest", 64));
+				await Task.Delay(500);
+				Assert.True(GetDistanceFromStart(handler) > AnchorTolerance, $"A new first item shouldn't scroll a list that doesn't follow its start. Position: {GetScrollPosition(handler)}.");
+				Assert.False(collectionView.IsAnchored);
+			});
+		}
+
+		[Theory(DisplayName = "A scroll that brings new rows into view stops following the edge")]
+		[InlineData(ScrollAnchorMode.Start)]
+		[InlineData(ScrollAnchorMode.End)]
+		public async Task AScrollThatBringsNewRowsIntoViewStopsFollowingTheEdge(ScrollAnchorMode edge)
+		{
+			SetupBuilder();
+
+			// Rows of different heights: the platform's idea of the content's size changes as it lays out the rows the
+			// scroll brings into view.
+			var items = new ObservableCollection<AnchorItem>(Enumerable.Range(0, 40).Select(index => new AnchorItem($"Item {index}", index % 2 == 0 ? 40 : 90)));
+			var collectionView = CreateAnchorCollectionView(items, edge);
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				if (edge == ScrollAnchorMode.Start)
+				{
+					await AssertEventually(() => GetDistanceFromStart(handler) <= AnchorTolerance, timeout: 3000, message: "The list should open at its start.");
+				}
+				else
+				{
+					await AssertAtEnd(handler, "The list should open at its end.");
+				}
+
+				// A scroll the list didn't ask for and the user isn't making, as accessibility or the keyboard can make.
+				ScrollPlatformViewBy(handler, edge == ScrollAnchorMode.Start ? 400 : -400);
+				await Task.Delay(500);
+				Assert.False(collectionView.IsAnchored, "Scrolling away from the edge should stop following it.");
+				var distance = edge == ScrollAnchorMode.Start ? GetDistanceFromStart(handler) : GetDistanceToEnd(handler);
+				Assert.True(distance > AnchorTolerance, $"The list shouldn't scroll back to the edge. Position: {GetScrollPosition(handler)}.");
+			});
+		}
+
+		[Theory(DisplayName = "ScrollToStart reaches above the header and follows the start again")]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task ScrollToStartFollowsTheStartAgain(bool animate)
+		{
+			SetupBuilder();
+			var items = CreateAnchorItems(40);
+			var collectionView = CreateAnchorCollectionView(items, ScrollAnchorMode.Start);
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				await AssertEventually(() => GetDistanceFromStart(handler) <= AnchorTolerance, timeout: 3000, message: "The list should open at its start.");
+
+				collectionView.ScrollTo(20, position: ScrollToPosition.Start, animate: false);
+				await AssertEventually(() => !collectionView.IsAnchored, timeout: 3000, message: "ScrollTo away from the start should stop following it.");
+
+				var anchoredChanges = new List<bool>();
+				collectionView.PropertyChanged += (_, e) =>
+				{
+					if (e.PropertyName == StructuredItemsView.IsAnchoredProperty.PropertyName)
+					{
+						anchoredChanges.Add(collectionView.IsAnchored);
+					}
+				};
+
+				collectionView.ScrollToStart(animate);
+				Assert.True(collectionView.IsAnchored, "ScrollToStart should follow the start right away.");
+				var atStart = await Wait(() => GetDistanceFromStart(handler) <= AnchorTolerance, 5000);
+				Assert.True(atStart, $"ScrollToStart should reach the start of the content, header included. Distance from the start: {GetDistanceFromStart(handler)}.");
+				Assert.True(collectionView.IsAnchored, "ScrollToStart should follow the start again.");
+				Assert.DoesNotContain(false, anchoredChanges);
+
+				items.Insert(0, new AnchorItem("Newest", 64));
+				var newestInView = await Wait(() => Math.Abs(GetItemHeight(handler, 0) - 64) <= AnchorTolerance && GetDistanceFromStart(handler) <= AnchorTolerance, 3000);
+				Assert.True(newestInView, $"The new first item should be in view at the start. Position: {GetScrollPosition(handler)}.");
+				Assert.True(collectionView.IsAnchored, "The list should still follow its start.");
+			});
+		}
+
+		[Theory(DisplayName = "ScrollToStart without AnchorMode scrolls above the header once")]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task ScrollToStartWithoutAnchorModeScrollsToTheStartOnce(bool animate)
+		{
+			SetupBuilder();
+			var items = CreateAnchorItems(40);
+			var collectionView = CreateAnchorCollectionView(items, ScrollAnchorMode.None);
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				collectionView.ScrollToEnd(animate: false);
+				await AssertAtEnd(handler, "ScrollToEnd should reach the end.");
+
+				// The rows on the way are measured as the view scrolls past them, which moves what's above the view.
+				collectionView.ScrollToStart(animate);
+				var atStart = await Wait(() => GetDistanceFromStart(handler) <= AnchorTolerance, 5000);
+				Assert.True(atStart, $"ScrollToStart should reach the start of the content, header included. Distance from the start: {GetDistanceFromStart(handler)}.");
+				await Task.Delay(500);
+				Assert.True(GetDistanceFromStart(handler) <= AnchorTolerance, "The list should stay at its start.");
+				Assert.False(collectionView.IsAnchored);
+			});
+		}
+
+		[Theory(DisplayName = "Scrolling to the edge a list doesn't follow scrolls there once")]
+		[InlineData(ScrollAnchorMode.Start, false)]
+		[InlineData(ScrollAnchorMode.Start, true)]
+		[InlineData(ScrollAnchorMode.End, false)]
+		[InlineData(ScrollAnchorMode.End, true)]
+		public async Task ScrollingToTheEdgeAListDoesNotFollowScrollsThereOnce(ScrollAnchorMode anchorMode, bool animate)
+		{
+			SetupBuilder();
+			var items = CreateAnchorItems(40);
+			var collectionView = CreateAnchorCollectionView(items, anchorMode);
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				if (anchorMode == ScrollAnchorMode.Start)
+				{
+					await AssertEventually(() => GetDistanceFromStart(handler) <= AnchorTolerance, timeout: 3000, message: "The list should open at its start.");
+					collectionView.ScrollToEnd(animate);
+					await AssertAtEnd(handler, "ScrollToEnd should reach the end of the content, footer included.", timeout: 5000);
+				}
+				else
+				{
+					await AssertAtEnd(handler, "The list should open at its end.");
+					collectionView.ScrollToStart(animate);
+					var atStart = await Wait(() => GetDistanceFromStart(handler) <= AnchorTolerance, 5000);
+					Assert.True(atStart, $"ScrollToStart should reach the start of the content, header included. Distance from the start: {GetDistanceFromStart(handler)}.");
+				}
+
+				await Task.Delay(500);
+				Assert.False(collectionView.IsAnchored, "The list shouldn't follow an edge its AnchorMode doesn't select.");
+
+				// It stays where it went: a new last item doesn't move it.
+				var position = GetScrollPosition(handler);
+				items.Add(new AnchorItem("Added at the end", 40));
+				await Task.Delay(500);
+				Assert.True(position == GetScrollPosition(handler), "A new last item shouldn't move the list.");
+				Assert.False(collectionView.IsAnchored);
+			});
+		}
+
+		[Fact(DisplayName = "AnchorMode Start | End follows whichever edge the list is at")]
+		public async Task AnchorModeStartAndEndFollowsWhicheverEdgeTheListIsAt()
+		{
+			SetupBuilder();
+			var items = CreateAnchorItems(40);
+			var collectionView = CreateAnchorCollectionView(items, ScrollAnchorMode.Start | ScrollAnchorMode.End);
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				await AssertAtEnd(handler, "The list should open at its end.");
+				Assert.True(collectionView.IsAnchored);
+
+				collectionView.ScrollToStart(animate: true);
+				var atStart = await Wait(() => GetDistanceFromStart(handler) <= AnchorTolerance, 5000);
+				Assert.True(atStart, $"ScrollToStart should reach the start. Distance from the start: {GetDistanceFromStart(handler)}.");
+				Assert.True(collectionView.IsAnchored, "The list should follow its start.");
+
+				items.Insert(0, new AnchorItem("Newest", 64));
+				var newestInView = await Wait(() => Math.Abs(GetItemHeight(handler, 0) - 64) <= AnchorTolerance && GetDistanceFromStart(handler) <= AnchorTolerance, 3000);
+				Assert.True(newestInView, $"The new first item should be in view at the start. Position: {GetScrollPosition(handler)}.");
+
+				var position = GetScrollPosition(handler);
+				items.Add(new AnchorItem("Added at the end", 40));
+				await Task.Delay(500);
+				Assert.True(position == GetScrollPosition(handler), "Following the start, a new last item shouldn't move the list.");
+
+				collectionView.ScrollToEnd(animate: true);
+				await AssertAtEnd(handler, "ScrollToEnd should reach the end.", timeout: 5000);
+				items.Add(new AnchorItem("Added after jumping", 40));
+				await AssertEventually(() => Math.Abs(GetItemHeight(handler, items.Count - 1) - 40) <= AnchorTolerance, timeout: 3000, message: "The new item should be laid out in view.");
+				await AssertAtEnd(handler, "Following the end, a new last item should keep the end in view.");
+				Assert.True(collectionView.IsAnchored, "The list should follow its end.");
+			});
+		}
+
+		[Fact(DisplayName = "Changing AnchorMode starts following the edge it selects")]
+		public async Task ChangingAnchorModeStartsFollowingTheEdgeItSelects()
+		{
+			SetupBuilder();
+			var items = CreateAnchorItems(40);
+			var collectionView = CreateAnchorCollectionView(items, ScrollAnchorMode.End);
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				await AssertAtEnd(handler, "The list should open at its end.");
+
+				collectionView.AnchorMode = ScrollAnchorMode.Start;
+				var atStart = await Wait(() => GetDistanceFromStart(handler) <= AnchorTolerance, 3000);
+				Assert.True(atStart, $"Following the start should show it. Distance from the start: {GetDistanceFromStart(handler)}.");
+				Assert.True(collectionView.IsAnchored);
+
+				collectionView.AnchorMode = ScrollAnchorMode.End;
+				await AssertAtEnd(handler, "Following the end should show it.");
+				Assert.True(collectionView.IsAnchored);
+			});
+		}
+
 		static CollectionView CreateAnchorCollectionView(System.Collections.IEnumerable itemsSource, ScrollAnchorMode anchorMode) => new()
 		{
 			AnchorMode = anchorMode,
@@ -509,9 +761,9 @@ namespace Microsoft.Maui.DeviceTests
 #endif
 		}
 
-		// The laid out height of the item at an index of an ungrouped list with a header, in device-independent units, or NaN
-		// while it isn't laid out.
-		static double GetItemHeight(CollectionViewHandler handler, int index)
+		// The laid out height of the item at an index of an ungrouped list, in device-independent units, or NaN while it isn't
+		// laid out.
+		static double GetItemHeight(CollectionViewHandler handler, int index, bool hasHeader = true)
 		{
 #if IOS || MACCATALYST
 			// The header is a supplementary view: the items are the first section's.
@@ -520,7 +772,7 @@ namespace Microsoft.Maui.DeviceTests
 #else
 			// The header is the adapter's first position.
 			var recyclerView = (RecyclerView)handler.PlatformView;
-			return recyclerView.FindViewHolderForAdapterPosition(index + 1)?.ItemView is { } view
+			return recyclerView.FindViewHolderForAdapterPosition(hasHeader ? index + 1 : index)?.ItemView is { } view
 				? view.Height / (double)recyclerView.Resources.DisplayMetrics.Density
 				: double.NaN;
 #endif

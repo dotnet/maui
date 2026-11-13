@@ -744,20 +744,21 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		void IScrollAnchorRecyclerView.UpdateAnchorMode()
 		{
 			var itemsView = ItemsView as StructuredItemsView;
-			var anchorsEnd = itemsView is not null && (itemsView.AnchorMode & ScrollAnchorMode.End) != 0;
+			var mode = itemsView is not null
+				? itemsView.AnchorMode & (ScrollAnchorMode.Start | ScrollAnchorMode.End)
+				: ScrollAnchorMode.None;
 
-			if (anchorsEnd == (_scrollAnchor is not null))
-			{
-				return;
-			}
-
-			if (anchorsEnd)
-			{
-				_scrollAnchor = new RecyclerViewScrollAnchor(this, itemsView);
-			}
-			else
+			if (mode == ScrollAnchorMode.None)
 			{
 				DetachScrollAnchor();
+			}
+			else if (_scrollAnchor is null)
+			{
+				_scrollAnchor = new RecyclerViewScrollAnchor(this, itemsView, mode);
+			}
+			else if (_scrollAnchor.Edges != mode)
+			{
+				_scrollAnchor.UpdateMode(mode);
 			}
 		}
 
@@ -765,6 +766,38 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			_scrollAnchor?.Detach();
 			_scrollAnchor = null;
+		}
+
+		bool IScrollAnchorRecyclerView.ScrollToStart(bool animate)
+		{
+			if (GetLayoutManager() is not { } layoutManager || !layoutManager.CanScrollVertically())
+			{
+				return false;
+			}
+
+			// A scroll the app requests, as for ScrollTo: a fling's snap target would snap the view back away from the start.
+			(GetSnapManager()?.GetCurrentSnapHelper() as SingleSnapHelper)?.ResetCurrentTargetPosition();
+
+			if (_scrollAnchor is not null && _scrollAnchor.CanFollow(ScrollAnchorMode.Start))
+			{
+				_scrollAnchor.ScrollToStart(animate);
+			}
+			else if (layoutManager.ItemCount > 0)
+			{
+				// An anchor that follows the end judges where it lands, as for ScrollTo. The header is the adapter's first
+				// position: its start lined up with the start of the viewport starts the content.
+				_scrollAnchor?.ScrollRequested(animate);
+				if (animate)
+				{
+					RecyclerViewScrollAnchor.SmoothScrollToStart(this, layoutManager);
+				}
+				else
+				{
+					ScrollHelper.JumpScrollToStart();
+				}
+			}
+
+			return true;
 		}
 
 		bool IScrollAnchorRecyclerView.ScrollToEnd(bool animate)
@@ -777,13 +810,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			// A scroll the app requests, as for ScrollTo: a fling's snap target would snap the view back away from the end.
 			(GetSnapManager()?.GetCurrentSnapHelper() as SingleSnapHelper)?.ResetCurrentTargetPosition();
 
-			if (_scrollAnchor is not null)
+			if (_scrollAnchor is not null && _scrollAnchor.CanFollow(ScrollAnchorMode.End))
 			{
 				_scrollAnchor.ScrollToEnd(animate);
 			}
 			else if (layoutManager.ItemCount > 0)
 			{
-				// The footer is the adapter's last position: its end lined up with the end of the viewport ends the content.
+				// An anchor that follows the start judges where it lands, as for ScrollTo. The footer is the adapter's last
+				// position: its end lined up with the end of the viewport ends the content.
+				_scrollAnchor?.ScrollRequested(animate);
 				if (animate)
 				{
 					RecyclerViewScrollAnchor.SmoothScrollToEnd(this, layoutManager);
@@ -1190,8 +1225,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		internal void AdjustScrollForItemUpdate()
 		{
-			// While the view follows its end (ScrollAnchorMode.End), the anchor keeps it there instead.
-			if (_scrollAnchor?.IsFollowingEnd == true)
+			// While the view follows an edge (ScrollAnchorMode), the anchor keeps it there instead.
+			if (_scrollAnchor?.IsFollowingEdge == true)
 			{
 				return;
 			}

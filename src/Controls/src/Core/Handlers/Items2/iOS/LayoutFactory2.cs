@@ -620,8 +620,8 @@ internal static class LayoutFactory2
 		{
 			base.FinalizeCollectionViewUpdates();
 
-			// While the view follows its end (ScrollAnchorMode.End), the anchor keeps it there instead.
-			if (CollectionView is Items.MauiCollectionView { IsFollowingEnd: true })
+			// While the view follows an edge (ScrollAnchorMode), the anchor keeps it there instead.
+			if (CollectionView is Items.MauiCollectionView { IsFollowingEdge: true })
 			{
 				return;
 			}
