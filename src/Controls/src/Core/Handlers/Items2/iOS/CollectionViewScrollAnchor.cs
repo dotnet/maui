@@ -247,8 +247,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		/// <summary>Scrolls a collection view to the end, once.</summary>
 		/// <returns>
 		/// Where an animated scroll stops, or <see langword="null"/> when it didn't animate. The rows the animation scrolls
-		/// past are measured on the way, which can move the end beyond that point: <see cref="ScrollToEndOnceEnded"/> goes
-		/// the rest of the way.
+		/// past are measured on the way, which can move the end beyond that point: the controller goes the rest of the way
+		/// once the animation ends.
 		/// </returns>
 		public static double? ScrollToEndOnce(UICollectionView collectionView, bool animated)
 		{
@@ -265,18 +265,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			return null;
 		}
 
-		/// <summary>
-		/// Called when the animated scroll <see cref="ScrollToEndOnce"/> started has stopped: goes the rest of the way to
-		/// the end, unless the view was scrolled away from where the animation stopped.
-		/// </summary>
-		public static void ScrollToEndOnceEnded(UICollectionView collectionView, double target)
-		{
-			if (Math.Abs(collectionView.ContentOffset.Y - target) <= 0.5)
-			{
-				ScrollToEndOnce(collectionView, animated: false);
-			}
-		}
-
 		// Returns whether it scrolls: not when the view is at the start already.
 		static bool SetOffsetToStart(UICollectionView collectionView, bool animated)
 		{
@@ -290,8 +278,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			return true;
 		}
 
-		// Returns the offset it scrolls to, or null when the view is at the end already.
-		static double? SetOffsetToEnd(UICollectionView collectionView, bool animated)
+		/// <summary>Scrolls to the end of the content as laid out now.</summary>
+		/// <returns>The offset it scrolls to, or <see langword="null"/> when the view is at the end already.</returns>
+		internal static double? SetOffsetToEnd(UICollectionView collectionView, bool animated)
 		{
 			var inset = collectionView.AdjustedContentInset;
 			var end = Math.Max(-inset.Top, collectionView.ContentSize.Height + inset.Bottom - collectionView.Bounds.Height);
