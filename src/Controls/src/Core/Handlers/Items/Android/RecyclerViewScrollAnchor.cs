@@ -70,6 +70,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var density = recyclerView.Resources?.DisplayMetrics?.Density ?? 1f;
 			_density = density > 0 ? density : 1f;
 			_wasVertical = recyclerView.GetLayoutManager()?.CanScrollVertically() ?? true;
+		}
+
+		/// <summary>
+		/// Starts anchoring: reports that the view follows an edge, and goes to that edge. Call it once the anchor is installed:
+		/// the app can turn anchoring off as it hears the view is anchored, which detaches the installed anchor.
+		/// </summary>
+		public void Attach()
+		{
 			Publish();
 			JumpToEdge();
 		}

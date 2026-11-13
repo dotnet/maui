@@ -758,7 +758,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 			else if (_scrollAnchor is null)
 			{
-				_scrollAnchor = new RecyclerViewScrollAnchor(this, itemsView, mode);
+				var scrollAnchor = new RecyclerViewScrollAnchor(this, itemsView, mode);
+				_scrollAnchor = scrollAnchor;
+				scrollAnchor.Attach();
 			}
 			else if (_scrollAnchor.Edges != mode)
 			{
