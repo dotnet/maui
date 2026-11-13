@@ -79,8 +79,15 @@ namespace Microsoft.Maui.Controls
 			// first, so re-resolve the request before applying it instead of replaying a
 			// stale target (e.g. two overlapping ".." requests must pop two pages, not one).
 			bool recomputeRelativePopOnResume = navigationRequestComputedLocally && isRelativePopping;
+			var relativePopOrigin = _shell?.CurrentItem?.CurrentItem;
 			void RecomputeRelativePopRequest()
 			{
+				// ".." was requested against the originating section's stack; if the user
+				// switched sections while we were waiting, resolving it against the new
+				// section would pop the wrong stack, so replay the original request instead.
+				if (_shell?.CurrentItem?.CurrentItem != relativePopOrigin)
+					return;
+
 				navigationRequest = ShellUriHandler.GetNavigationRequest(_shell, state.FullLocation, enableRelativeShellRoutes, shellNavigationParameters: shellNavigationParameters);
 				source = CalculateNavigationSource(_shell, _shell.CurrentState, navigationRequest);
 			}

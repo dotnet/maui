@@ -112,7 +112,9 @@ namespace Microsoft.Maui.Controls
 			// we need to know this so we don't clear the query parameters off
 			// the destination location
 
-			var dest = request.TargetState?.Location?.OriginalString;
+			// Strip the query string the same way FormatUri does when it resolves "..",
+			// so "..?x=1" is classified as a relative pop too
+			var dest = request.TargetState?.Location?.OriginalString.Split(new[] { '?' }, 2)[0];
 
 			foreach (var path in RetrievePaths(dest))
 			{
