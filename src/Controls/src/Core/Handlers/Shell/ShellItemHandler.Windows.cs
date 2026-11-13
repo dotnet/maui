@@ -905,6 +905,7 @@ namespace Microsoft.Maui.Controls.Handlers
 		public static void MapTabBarIsVisible(ShellItemHandler handler, ShellItem item)
 		{
 			handler.UpdateTabBarVisibility(item);
+			handler.UpdateValue(nameof(Element.AutomationId));
 		}
 
 		NavigationViewPaneDisplayMode GetNavigationViewPaneDisplayMode(IShellItemController shellItemController)
