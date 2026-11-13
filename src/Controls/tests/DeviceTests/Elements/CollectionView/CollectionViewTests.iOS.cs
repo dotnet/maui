@@ -24,6 +24,63 @@ namespace Microsoft.Maui.DeviceTests
 	public partial class CollectionViewTests
 	{
 		[Theory]
+		[InlineData(false, true)]
+		[InlineData(true, true)]
+		[InlineData(false, false)]
+		public async Task HorizontalCollectionViewPreMountHeightMeasuresContent(bool isGrouped, bool hasTemplate)
+		{
+			SetupBuilder();
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var items = new ObservableCollection<string> { "Item" };
+				var collectionView = new CollectionView
+				{
+					ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Horizontal),
+					IsGrouped = isGrouped,
+					ItemsSource = isGrouped
+						? new ObservableCollection<ObservableCollection<string>> { new(), items }
+						: items,
+					ItemTemplate = hasTemplate ? new DataTemplate(() =>
+					{
+						var label = new Label { FontSize = 20 };
+						label.SetBinding(Label.TextProperty, ".");
+						return label;
+					}) : null
+				};
+				var expectedLabel = new Label { Text = "Item", FontSize = 20 };
+				expectedLabel.ToPlatform(MauiContext);
+				using var defaultLabel = new UILabel { Text = "Item", Font = UIFont.PreferredBody };
+				var expectedHeight = hasTemplate
+					? ((IView)expectedLabel).Measure(double.PositiveInfinity, double.PositiveInfinity).Height
+					: defaultLabel.IntrinsicContentSize.Height;
+				Assert.True(expectedHeight > 0);
+
+				var handler = new CollectionViewHandler2();
+				handler.SetMauiContext(MauiContext);
+				collectionView.Handler = handler;
+				try
+				{
+					var platformView = handler.Controller.CollectionView;
+					Assert.Null(platformView.Window);
+					var originalFrame = platformView.Frame;
+
+					for (int i = 0; i < 2; i++)
+					{
+						var desiredSize = handler.GetDesiredSize(350, double.PositiveInfinity);
+						Assert.Equal(expectedHeight, desiredSize.Height, 1);
+						Assert.Equal(originalFrame, platformView.Frame);
+					}
+				}
+				finally
+				{
+					((IElementHandler)handler).DisconnectHandler();
+					expectedLabel.DisconnectHandlers();
+				}
+			});
+		}
+
+		[Theory]
 		[InlineData(0, false, double.PositiveInfinity, 250, -1, double.PositiveInfinity)]
 		[InlineData(1, false, double.PositiveInfinity, 250, -1, double.PositiveInfinity)]
 		[InlineData(3, false, double.PositiveInfinity, 250, -1, double.PositiveInfinity)]

@@ -404,17 +404,53 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				{
 					contentSize.Width = desiredSize.Width;
 
-					// For horizontal layouts, items use FractionalHeight(1f), meaning their height equals
-					// the CollectionView's current frame height. When no items are loaded (Width == 0),
-					// contentSize.Height reflects the container's frame height rather than actual content.
-					// This creates a circular sizing issue in Auto-height containers: the frame grows based
-					// on the incorrect content height and stays locked in even after items load.
-					// Reset to 0 so that MinimumHeight / HeightRequest can determine the correct size.
-					contentSize.Height = 0;
+					// Horizontal items fill the native frame, so its height is not an intrinsic measurement.
+					// Bootstrap unbounded Auto rows from real item content rather than a synthetic frame.
+					contentSize.Height = VirtualView is CollectionView { ItemsLayout: LinearItemsLayout } &&
+						!double.IsFinite(measurementHeight)
+							? MeasureFirstItemHeight()
+							: 0;
 				}
 			}
 
 			return contentSize;
+		}
+
+		double MeasureFirstItemHeight()
+		{
+			var source = Controller.ItemsSource;
+			for (int group = 0; group < source.GroupCount; group++)
+			{
+				if (source.ItemCountInGroup(group) == 0)
+				{
+					continue;
+				}
+
+				using var indexPath = NSIndexPath.Create(group, 0);
+				var item = source[indexPath];
+				if (ItemsView.ItemTemplate is null)
+				{
+					using var cell = new HorizontalDefaultCell2(CGRect.Empty);
+					cell.Label.Text = item.ToString();
+					return cell.Label.IntrinsicContentSize.Height;
+				}
+
+				using var measurementCell = new TemplatedCell2(CGRect.Empty);
+				try
+				{
+					measurementCell.Bind(ItemsView.ItemTemplate, item, ItemsView);
+					return measurementCell.PlatformHandler.VirtualView.Measure(
+						double.PositiveInfinity, double.PositiveInfinity).Height;
+				}
+				finally
+				{
+					var view = measurementCell.PlatformHandler?.VirtualView;
+					measurementCell.Unbind();
+					view?.DisconnectHandlers();
+				}
+			}
+
+			return 0;
 		}
 	}
 }
