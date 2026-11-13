@@ -450,6 +450,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			// So would a correction an earlier animated ScrollTo, ScrollToStart or ScrollToEnd left for when its animation ends.
 			ScrollingToEdge(null);
+
+			// And the animation itself would carry on to where that scroll was going, even when the view is at the edge
+			// already and this one doesn't move it: stop it where it is.
+			CollectionView.SetContentOffset(CollectionView.ContentOffset, false);
 			return true;
 		}
 

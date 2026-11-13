@@ -192,10 +192,17 @@ namespace Microsoft.Maui.Controls
 		/// </para>
 		/// <para>
 		/// It scrolls to the start of vertical layouts on Android, iOS, and Mac Catalyst. Elsewhere, it scrolls to the first item.
+		/// Like <see cref="ItemsView.ScrollTo(int, int, ScrollToPosition, bool)"/>, it does nothing before the view has a handler.
 		/// </para>
 		/// </remarks>
 		public void ScrollToStart(bool animate = true)
 		{
+			// There's nothing to scroll yet, and reading ItemsSource now would use up a sequence that can be read only once.
+			if (Handler is null)
+			{
+				return;
+			}
+
 			if (Handler is IScrollToEdgeHandler handler && handler.ScrollToStart(animate))
 			{
 				return;
@@ -213,10 +220,17 @@ namespace Microsoft.Maui.Controls
 		/// </para>
 		/// <para>
 		/// It scrolls to the end of vertical layouts on Android, iOS, and Mac Catalyst. Elsewhere, it scrolls to the last item.
+		/// Like <see cref="ItemsView.ScrollTo(int, int, ScrollToPosition, bool)"/>, it does nothing before the view has a handler.
 		/// </para>
 		/// </remarks>
 		public void ScrollToEnd(bool animate = true)
 		{
+			// There's nothing to scroll yet, and reading ItemsSource now would use up a sequence that can be read only once.
+			if (Handler is null)
+			{
+				return;
+			}
+
 			if (Handler is IScrollToEdgeHandler handler && handler.ScrollToEnd(animate))
 			{
 				return;

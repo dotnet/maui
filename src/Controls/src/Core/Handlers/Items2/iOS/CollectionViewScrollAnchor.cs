@@ -38,6 +38,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		bool _requestingScroll;
 		bool _applying;
 		bool _wasVertical = true;
+		bool _detached;
 
 		/// <summary>Initializes a new anchor that follows the edges <paramref name="mode"/> selects.</summary>
 		public CollectionViewScrollAnchor(ScrollAnchorMode mode)
@@ -296,6 +297,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		/// <summary>Stops anchoring: the view no longer follows an edge.</summary>
 		public void Detach(UICollectionView collectionView, StructuredItemsView? itemsView)
 		{
+			_detached = true;
 			if (itemsView is not null)
 			{
 				Publish(collectionView, itemsView, false);
@@ -308,6 +310,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		void Publish(UICollectionView collectionView, StructuredItemsView itemsView, bool isAnchored)
 		{
+			// The app can turn anchoring off from an event a scroll of this anchor raises, such as Scrolled: once detached, it
+			// no longer follows an edge, whatever the look it was in the middle of found.
+			isAnchored &= !_detached;
+
 			if (collectionView is Items.MauiCollectionView mauiCollectionView)
 			{
 				mauiCollectionView.IsFollowingEdge = isAnchored;

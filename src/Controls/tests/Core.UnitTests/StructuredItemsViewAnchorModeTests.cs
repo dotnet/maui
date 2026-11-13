@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Maui.Handlers;
@@ -151,12 +152,17 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void ScrollToStartWithoutAHandlerDoesNothing()
 		{
-			var collectionView = new CollectionView { ItemsSource = new[] { "a", "b", "c" } };
+			// As ScrollTo: there's nothing to scroll yet. Nor does it read the items, which can be a sequence that can be read
+			// only once.
+			var items = new ReadCountingSequence(Enumerable.Range(0, 5));
+			var collectionView = new CollectionView { ItemsSource = items };
 			var requests = RecordScrollToRequests(collectionView);
+			var reads = items.Reads;
 
 			collectionView.ScrollToStart();
 
 			Assert.Empty(requests);
+			Assert.Equal(reads, items.Reads);
 		}
 
 		[Fact]
@@ -244,13 +250,17 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void ScrollToEndWithoutAHandlerDoesNothing()
 		{
-			// As ScrollTo: there's nothing to scroll yet.
-			var collectionView = new CollectionView { ItemsSource = new[] { "a", "b", "c" } };
+			// As ScrollTo: there's nothing to scroll yet. Nor does it read the items, which can be a sequence that can be read
+			// only once.
+			var items = new ReadCountingSequence(Enumerable.Range(0, 5));
+			var collectionView = new CollectionView { ItemsSource = items };
 			var requests = RecordScrollToRequests(collectionView);
+			var reads = items.Reads;
 
 			collectionView.ScrollToEnd();
 
 			Assert.Empty(requests);
+			Assert.Equal(reads, items.Reads);
 		}
 
 		[Fact]
@@ -289,6 +299,25 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var requests = new List<ScrollToRequestEventArgs>();
 			itemsView.ScrollToRequested += (_, e) => requests.Add(e);
 			return requests;
+		}
+
+		// A sequence that counts how often it's read.
+		sealed class ReadCountingSequence : IEnumerable
+		{
+			readonly IEnumerable _items;
+
+			public ReadCountingSequence(IEnumerable items)
+			{
+				_items = items;
+			}
+
+			public int Reads { get; private set; }
+
+			public IEnumerator GetEnumerator()
+			{
+				Reads++;
+				return _items.GetEnumerator();
+			}
 		}
 
 		class ItemsViewHandlerStub : ViewHandler<CollectionView, object>
