@@ -148,6 +148,24 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(TextDecorationsProperty, value); }
 		}
 
+		/// <summary>Bindable property for <see cref="TextDecorationColor"/>.</summary>
+		public static readonly BindableProperty TextDecorationColorProperty
+			= BindableProperty.Create(nameof(TextDecorationColor), typeof(Color), typeof(Span), default(Color), defaultBindingMode: BindingMode.OneWay);
+
+		/// <summary>
+		/// Gets or sets the color of the span's <see cref="TextDecorations"/> (underline and strikethrough).
+		/// When <see langword="null"/> (the default), decorations are drawn in the text color. This is a bindable property.
+		/// </summary>
+		/// <remarks>
+		/// Supported on iOS and Mac Catalyst (underline and strikethrough) and on Android API 29+ (underline only).
+		/// On Windows, on earlier Android versions, and for strikethrough on Android, decorations keep the text color.
+		/// </remarks>
+		public Color TextDecorationColor
+		{
+			get { return (Color)GetValue(TextDecorationColorProperty); }
+			set { SetValue(TextDecorationColorProperty, value); }
+		}
+
 		/// <summary>Gets or sets the line height multiplier for the span. This is a bindable property.</summary>
 		public double LineHeight
 		{
