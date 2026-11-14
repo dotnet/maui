@@ -86,8 +86,14 @@ if ($Stage -eq 'Gather') {
         ConvertFrom-Json | ForEach-Object { $_ | ForEach-Object { $_ } })
     if ($files.Count -ne $pr.changed_files -or $files.Count -gt 3000) { throw 'PR file evidence is incomplete.' }
     $merge = Invoke-SelectionGh @('api', "repos/$Repository/git/commits/$($pr.merge_commit_sha)") | ConvertFrom-Json
-    if ($merge.parents.Count -ne 2 -or $merge.parents[0].sha -cne $pr.base.sha -or $merge.parents[1].sha -cne $pr.head.sha) {
-        throw 'GitHub test-merge does not match the frozen base and head.'
+    # pulls.base.sha is the base tip at the PR's last sync; GitHub rebuilds the test-merge on the current base tip.
+    if ($merge.parents.Count -ne 2 -or $merge.parents[1].sha -cne $pr.head.sha) {
+        throw 'GitHub test-merge does not match the frozen head.'
+    }
+    $mergeBaseSha = $merge.parents[0].sha
+    $baseProgress = Invoke-SelectionGh @('api', "repos/$Repository/compare/$($pr.base.sha)...$mergeBaseSha") | ConvertFrom-Json
+    if ($baseProgress.status -notin @('identical', 'ahead')) {
+        throw "GitHub's test-merge was built on a base commit outside the PR base history, so CI would test a stale merge. Push to the PR (or rebase it) so GitHub rebuilds the test-merge, then rerun."
     }
     $uiRoot = 'src/Controls/tests/TestCases.Shared.Tests'
     $uiConstants = Get-DeclaredCategories (Get-Content "$uiRoot/UITestCategories.cs" -Raw)
@@ -188,10 +194,10 @@ if ($Stage -eq 'Gather') {
         }
     }
     $latest = Invoke-SelectionGh @('api', "repos/$Repository/pulls/$PrNumber") | ConvertFrom-Json
-    if ($latest.head.sha -cne $pr.head.sha -or $latest.base.sha -cne $pr.base.sha) { throw 'PR changed during evidence collection.' }
+    if ($latest.head.sha -cne $pr.head.sha -or $latest.merge_commit_sha -cne $pr.merge_commit_sha) { throw 'PR changed during evidence collection.' }
     $context = [ordered]@{
         schemaVersion = 1; repository = $Repository; prNumber = $PrNumber
-        headSha = $pr.head.sha; baseSha = $pr.base.sha; mergeSha = $pr.merge_commit_sha
+        headSha = $pr.head.sha; baseSha = $mergeBaseSha; mergeSha = $pr.merge_commit_sha
         headRef = $pr.head.ref; baseRef = $pr.base.ref; headRepository = $pr.head.repo.full_name
         floor = @{
             platforms = @($floorPlatforms | Sort-Object -Unique)
