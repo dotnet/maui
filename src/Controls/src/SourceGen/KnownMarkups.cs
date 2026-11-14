@@ -335,14 +335,12 @@ internal class KnownMarkups
 		else // sourceNode != null
 		{
 			var source = (string)(sourceNode as ValueNode)!.Value;
-			var uri = $"new global::System.Uri(@\"{source}\", global::System.UriKind.Relative)";
-			var rootTargetPath = $"global::Microsoft.Maui.Controls.Xaml.XamlResourceIdAttribute.GetPathForType(typeof({context.RootType.ToFQDisplayString()}))";
-
-			var resourcePath = $"global::Microsoft.Maui.Controls.ResourceDictionary.RDSourceTypeConverter.GetResourcePath({uri}, {rootTargetPath})";
+			var rootTargetPath = (context.ProjectItem.RelativePath ?? string.Empty).Replace('\\', '/');
+			var resourcePath = TypeConverters.RDSourceConverter.GetResourcePath(source, rootTargetPath).Replace("\"", "\"\"");
 			var assembly = $"typeof({context.RootType.ToFQDisplayString()}).Assembly";
 
 			var lineInfo = $"new global::Microsoft.Maui.Controls.Xaml.XmlLineInfo({((IXmlLineInfo)markupNode).LineNumber}, {((IXmlLineInfo)markupNode).LinePosition})";
-			value = $"global::Microsoft.Maui.Controls.StyleSheets.StyleSheet.FromResource({resourcePath}, {assembly}, {lineInfo})";
+			value = $"global::Microsoft.Maui.Controls.StyleSheets.StyleSheet.FromResource(@\"{resourcePath}\", {assembly}, {lineInfo})";
 			return true;
 		}
 	}
