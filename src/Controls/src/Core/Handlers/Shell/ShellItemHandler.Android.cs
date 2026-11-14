@@ -7,6 +7,7 @@ using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.Core.View;
 using AndroidX.Core.View.Accessibility;
 using AndroidX.Fragment.App;
+using AndroidX.RecyclerView.Widget;
 using AndroidX.ViewPager2.Adapter;
 using AndroidX.ViewPager2.Widget;
 using Google.Android.Material.AppBar;
@@ -158,6 +159,8 @@ namespace Microsoft.Maui.Controls.Handlers
             ((AView)_viewPager).SaveEnabled = false;
             _viewPager.UserInputEnabled = false;
             _viewPager.OffscreenPageLimit = Math.Max(shellSections.Count, 1);
+            // The default item animator fades the old section out before the new one fades in, showing the window background in between.
+            (_viewPager.GetChildAt(0) as RecyclerView)?.SetItemAnimator(null);
 
             // Register page change callback for VP2 settle notifications.
             // When VP2 finishes settling on a page, OnPageSelected re-syncs toolbar
