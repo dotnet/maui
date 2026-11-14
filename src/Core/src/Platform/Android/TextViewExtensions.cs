@@ -183,7 +183,7 @@ namespace Microsoft.Maui.Platform
 
 			textView.Focus(request, () =>
 			{
-				if (textView.ShowSoftInputOnFocus)
+				if (textView.ShowSoftInputOnFocus && textView.OnCheckIsTextEditor())
 					ViewExtensions.PostShowSoftInput(textView);
 			});
 		}
