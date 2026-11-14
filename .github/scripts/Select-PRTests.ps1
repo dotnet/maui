@@ -53,7 +53,7 @@ function Get-DeclaredCategories {
 function Get-AttributeCategories {
     param([string]$Content, [hashtable]$Constants)
     $categories = @()
-    foreach ($match in [regex]::Matches($Content, '\bCategory\(\s*(?:nameof\()?(?:UITestCategories|TestCategory)\.(\w+)')) {
+    foreach ($match in [regex]::Matches($Content, '\b(?:ShardedTest)?Category\(\s*(?:nameof\()?(?:UITestCategories|TestCategory)\.(\w+)')) {
         if ($Constants.ContainsKey($match.Groups[1].Value)) { $categories += $Constants[$match.Groups[1].Value] }
     }
     foreach ($match in [regex]::Matches($Content, '\bCategory\(\s*"([A-Za-z0-9_]+)"')) {
@@ -63,16 +63,98 @@ function Get-AttributeCategories {
 }
 
 function Get-ChangedTestCategories {
-    param([string]$Path, [string]$Patch, [hashtable]$Constants, [string]$HeadSha)
-    $categories = @(Get-AttributeCategories $Patch $Constants)
-    if (-not $Path.EndsWith('.cs', [StringComparison]::OrdinalIgnoreCase)) { return $categories }
+    param([string]$Patch, [hashtable]$Constants, [string]$Content)
     # Existing class/category attributes are often outside the changed hunk.
+    return @(@(Get-AttributeCategories $Patch $Constants) + @(Get-AttributeCategories $Content $Constants) | Sort-Object -Unique)
+}
+
+function Get-HeadContent {
+    param([string]$Path, [string]$HeadSha)
     $encodedPath = [uri]::EscapeDataString($Path)
     $content = Invoke-SelectionGh @('api', "-H", 'Accept: application/vnd.github.raw+json',
         "repos/dotnet/maui/contents/$encodedPath`?ref=$HeadSha")
     if ($content.Length -gt 180000) { throw 'Changed test source exceeds bounded category inspection.' }
-    $categories += Get-AttributeCategories $content $Constants
-    return @($categories | Sort-Object -Unique)
+    return [string]$content
+}
+
+function Get-UiTestSymbols {
+    $projects = [ordered]@{ android = 'Android'; ios = 'iOS'; maccatalyst = 'Mac'; windows = 'WinUI' }
+    $symbols = [ordered]@{}
+    foreach ($platform in $projects.Keys) {
+        $name = $projects[$platform]
+        $csproj = Get-Content "src/Controls/tests/TestCases.$name.Tests/Controls.TestCases.$name.Tests.csproj" -Raw
+        $match = [regex]::Match($csproj, '<DefineConstants>\$\(DefineConstants\);([^<]+)</DefineConstants>')
+        if (-not $match.Success) { throw "Unable to read UI test symbols for $platform." }
+        $symbols[$platform] = @($match.Groups[1].Value -split ';' | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+    }
+    return $symbols
+}
+
+function Test-PreprocessorExpression {
+    param([string]$Expression, [string[]]$Defined, [string[]]$Known)
+    $tokens = @([regex]::Matches($Expression, '\s*(&&|\|\||!|\(|\)|[A-Za-z_]\w*)\s*') | ForEach-Object { $_.Groups[1].Value })
+    if (($tokens -join '') -cne ($Expression -replace '\s', '')) { return $null }
+    $script:guardTokens = $tokens
+    $script:guardIndex = 0
+    $parseOr = $null; $parseAnd = $null; $parseUnary = $null
+    $parseUnary = {
+        if ($script:guardIndex -ge $script:guardTokens.Count) { throw 'incomplete' }
+        $token = $script:guardTokens[$script:guardIndex++]
+        if ($token -eq '!') { return -not (& $parseUnary) }
+        if ($token -eq '(') {
+            $value = & $parseOr
+            if ($script:guardIndex -ge $script:guardTokens.Count -or $script:guardTokens[$script:guardIndex++] -ne ')') { throw 'unbalanced' }
+            return $value
+        }
+        if ($token -cin @('true', 'false')) { return $token -ceq 'true' }
+        if ($token -notmatch '^[A-Za-z_]\w*$' -or $token -cnotin $Known) { throw 'unknown symbol' }
+        return $token -cin $Defined
+    }
+    $parseAnd = {
+        $value = & $parseUnary
+        while ($script:guardIndex -lt $script:guardTokens.Count -and $script:guardTokens[$script:guardIndex] -eq '&&') {
+            $script:guardIndex++; $right = & $parseUnary; $value = $value -and $right
+        }
+        return $value
+    }
+    $parseOr = {
+        $value = & $parseAnd
+        while ($script:guardIndex -lt $script:guardTokens.Count -and $script:guardTokens[$script:guardIndex] -eq '||') {
+            $script:guardIndex++; $right = & $parseAnd; $value = $value -or $right
+        }
+        return $value
+    }
+    try {
+        $result = & $parseOr
+        if ($script:guardIndex -ne $script:guardTokens.Count) { return $null }
+        return [bool]$result
+    } catch { return $null }
+}
+
+function Get-GuardedTestPlatforms {
+    # Returns the platforms compiling a shared UI test wrapped in one file-wide #if, or $null when not provable.
+    param([string]$Content, [System.Collections.Specialized.OrderedDictionary]$Symbols)
+    $lines = @($Content -split "`r?`n" | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+    if ($lines.Count -lt 2 -or $lines[0] -notmatch '^#if\s+(.+?)\s*(//.*)?$') { return $null }
+    $expression = $Matches[1]
+    $depth = 0
+    for ($i = 0; $i -lt $lines.Count; $i++) {
+        if ($lines[$i] -match '^#if\b') { $depth++ }
+        elseif ($lines[$i] -match '^#(else|elif)\b' -and $depth -eq 1) { return $null }
+        elseif ($lines[$i] -match '^#endif\b') {
+            $depth--
+            if ($depth -eq 0 -and $i -ne $lines.Count - 1) { return $null }
+        }
+    }
+    if ($depth -ne 0) { return $null }
+    $known = @($Symbols.Values | ForEach-Object { $_ } | Sort-Object -Unique)
+    $platforms = @()
+    foreach ($platform in $Symbols.Keys) {
+        $compiled = Test-PreprocessorExpression $expression $Symbols[$platform] $known
+        if ($null -eq $compiled) { return $null }
+        if ($compiled) { $platforms += $platform }
+    }
+    return , $platforms
 }
 
 New-Item -ItemType Directory -Path $OutputDirectory -Force | Out-Null
@@ -97,6 +179,7 @@ if ($Stage -eq 'Gather') {
     }
     $uiRoot = 'src/Controls/tests/TestCases.Shared.Tests'
     $uiConstants = Get-DeclaredCategories (Get-Content "$uiRoot/UITestCategories.cs" -Raw)
+    $uiSymbols = Get-UiTestSymbols
     $projectRoots = [ordered]@{
         'Core.DeviceTests' = 'src/Core/tests/DeviceTests'
         'Controls.DeviceTests' = 'src/Controls/tests/DeviceTests'
@@ -139,7 +222,8 @@ if ($Stage -eq 'Gather') {
                 $broad = $true
                 $reasons += "Patch unavailable for changed content: $path"
             }
-            $floorPlatforms += Get-SelectionPlatforms $path
+            $pathPlatforms = @(Get-SelectionPlatforms $path)
+            $current = $file.status -ne 'removed' -and $path -eq $file.filename
             $control = $null
             foreach ($candidate in $controls) {
                 if ($path -match "(?i)^src/(Core/src/(Handlers/$candidate/|I$candidate\.|Platform/[^/]+/(Maui)?$candidate\.)|Controls/src/Core/$candidate(?:/|\.))") {
@@ -158,23 +242,67 @@ if ($Stage -eq 'Gather') {
                         $floorDevice += Get-AttributeCategories (Get-Content $testFile.FullName -Raw) $deviceInventories[$project]
                     }
                 }
+            } elseif ($current -and $path -match '^src/Controls/tests/TestCases\.(Android|iOS|Mac|WinUI)\.Tests/snapshots/.+/(\w+)\.png$') {
+                # A screenshot baseline belongs to the UI test method with the same name.
+                $method = $Matches[2]
+                $owners = @(Get-ChildItem -LiteralPath $uiRoot -Recurse -File -Filter '*.cs' |
+                    Where-Object { (Get-Content $_.FullName -Raw) -match "\bvoid\s+$method\s*\(" } |
+                    ForEach-Object { [IO.Path]::GetRelativePath((Get-Location).Path, $_.FullName) -replace '\\', '/' })
+                foreach ($changed in @($files | Where-Object { $_.status -ne 'removed' -and $_.filename -match "^$([regex]::Escape($uiRoot))/.+\.cs$" })) {
+                    if ($changed.patch -match "\bvoid\s+$method\s*\(") { $owners += $changed.filename }
+                }
+                $owners = @($owners | Sort-Object -Unique)
+                $cats = @()
+                if ($owners.Count -eq 1) {
+                    try { $cats = @(Get-AttributeCategories (Get-HeadContent $owners[0] $pr.head.sha) $uiConstants) } catch { $cats = @() }
+                }
+                if ($cats.Count -eq 0) { $broad = $true; $reasons += "Unresolved UI snapshot coverage: $path" }
+                $floorUi += $cats
             } elseif ($path -match '^src/Controls/tests/TestCases\.(Shared|Android|iOS|Mac|WinUI)') {
-                $cats = if ($file.status -eq 'removed' -or $path -ne $file.filename) {
-                    @(Get-AttributeCategories $patch $uiConstants)
-                } else {
-                    @(Get-ChangedTestCategories $path $patch $uiConstants $pr.head.sha)
+                $cats = @(Get-AttributeCategories $patch $uiConstants)
+                if ($current -and $path.EndsWith('.cs', [StringComparison]::OrdinalIgnoreCase)) {
+                    $content = Get-HeadContent $path $pr.head.sha
+                    $cats = @(Get-ChangedTestCategories $patch $uiConstants $content)
+                    if ($path.StartsWith("$uiRoot/")) {
+                        $guarded = Get-GuardedTestPlatforms $content $uiSymbols
+                        if ($null -ne $guarded) { $pathPlatforms = @($guarded) }
+                    }
                 }
                 $cats = @($cats | Where-Object { $_ })
                 if ($cats.Count -eq 0) { $broad = $true; $reasons += "Unresolved UI test coverage: $path" }
                 $floorUi += $cats
+            } elseif ($current -and $path -match '^src/Controls/tests/TestCases\.HostApp/Issues/') {
+                # An issue page only serves the UI test with the same name; reuse that test's categories and platform guard.
+                $issueName = ([IO.Path]::GetFileName($path) -split '\.')[0]
+                $pairPattern = "^$([regex]::Escape($uiRoot))/Tests/(?:.+/)?$([regex]::Escape($issueName))\.cs$"
+                $removedPaths = @($files | Where-Object { $_.status -eq 'removed' } | ForEach-Object { $_.filename })
+                $pairs = @(@($files | ForEach-Object { $_.filename }) +
+                    @(Get-ChildItem -LiteralPath "$uiRoot/Tests" -Recurse -File -Filter "$issueName.cs" |
+                        ForEach-Object { [IO.Path]::GetRelativePath((Get-Location).Path, $_.FullName) -replace '\\', '/' }) |
+                    Where-Object { $_ -match $pairPattern -and $_ -notin $removedPaths } | Sort-Object -Unique)
+                $cats = @()
+                if ($issueName -match '^\w+$' -and $pairs.Count -eq 1) {
+                    try {
+                        $content = Get-HeadContent $pairs[0] $pr.head.sha
+                        $cats = @(Get-AttributeCategories $content $uiConstants)
+                        $guarded = Get-GuardedTestPlatforms $content $uiSymbols
+                        if ($cats.Count -gt 0 -and $null -ne $guarded) { $pathPlatforms = @($guarded) }
+                    } catch { $cats = @() }
+                }
+                if ($cats.Count -eq 0) { $broad = $true; $reasons += "Unresolved HostApp issue page coverage: $path" }
+                $floorUi += $cats
             } elseif ($path -match '^src/(Core|Controls|Graphics|Essentials|BlazorWebView)/tests?/DeviceTests/') {
                 $project = @($projectRoots.Keys | Where-Object { $path.StartsWith($projectRoots[$_] + '/') })
-                if ($project.Count -ne 1) { $broad = $true; $reasons += "Unknown device test project: $path"; continue }
+                if ($project.Count -ne 1) {
+                    $broad = $true
+                    $reasons += "Unknown device test project: $path"
+                    $floorPlatforms += $pathPlatforms
+                    continue
+                }
                 $floorProjects += $project[0]
-                $cats = if ($file.status -eq 'removed' -or $path -ne $file.filename) {
-                    @(Get-AttributeCategories $patch $deviceInventories[$project[0]])
-                } else {
-                    @(Get-ChangedTestCategories $path $patch $deviceInventories[$project[0]] $pr.head.sha)
+                $cats = @(Get-AttributeCategories $patch $deviceInventories[$project[0]])
+                if ($current -and $path.EndsWith('.cs', [StringComparison]::OrdinalIgnoreCase)) {
+                    $cats = @(Get-ChangedTestCategories $patch $deviceInventories[$project[0]] (Get-HeadContent $path $pr.head.sha))
                 }
                 $cats = @($cats | Where-Object { $_ })
                 foreach ($candidate in $controls) {
@@ -191,6 +319,7 @@ if ($Stage -eq 'Gather') {
                 $broad = $true
                 $reasons += "Shared or unmapped runtime/build change: $path"
             }
+            $floorPlatforms += $pathPlatforms
         }
     }
     $latest = Invoke-SelectionGh @('api', "repos/$Repository/pulls/$PrNumber") | ConvertFrom-Json
