@@ -8,7 +8,8 @@ param(
     [string]$PullRequestsFixturePath,
     [ValidateRange(1, 540)][int]$DispatcherBudgetSeconds = 420,
     [long]$DispatcherDeadlineUnixSeconds = 0,
-    [switch]$DryRun
+    [switch]$DryRun,
+    [switch]$LibraryOnly
 )
 
 $ErrorActionPreference = 'Stop'
@@ -1050,6 +1051,8 @@ function Invoke-CiFixQueueWork {
 
     return $workResults.ToArray()
 }
+
+if ($LibraryOnly) { return }
 
 if ([Math]::Floor((Get-DispatcherRemainingSeconds)) -lt 1) {
     $preparationFailure = "$($script:DispatcherBudgetPrefix) Dispatcher deadline exhausted during preparation (trusted checkout / PowerShell startup), before PR discovery or authentication. No queue POST was attempted."

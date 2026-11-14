@@ -1,0 +1,52 @@
+# Validate regular JSON data before converting identifiers to MSBuild properties.
+# Categories must already have been checked against each project's platform inventory
+# by the dispatcher. Empty categories preserve full coverage, including uncategorized tests.
+# Controls/Core support Apple/Android filtering; Windows supports Controls only.
+# Other project/platform combinations widen to full project coverage in Helix.
+parameters:
+- name: selectedPlatforms
+  type: object
+  default: [android, ios, maccatalyst, windows]
+- name: selectedProjects
+  type: object
+  default: []
+- name: selectedCategories
+  type: object
+  default: []
+
+steps:
+- pwsh: |
+    $ErrorActionPreference = 'Stop'
+    function Read-Selection($json, $name, $allowed, $limit) {
+      $items = ConvertFrom-Json -InputObject $json -NoEnumerate
+      if ($items -isnot [array] -or $items.Count -gt $limit) {
+        throw "$name must be an array with at most $limit identifiers."
+      }
+      foreach ($item in $items) {
+        if ($item -isnot [string] -or $item -cnotmatch '^[A-Za-z][A-Za-z0-9_.-]{0,99}$') {
+          throw "Invalid $name identifier."
+        }
+        if ($allowed -and $item -cnotin $allowed) {
+          throw "Unknown $name identifier: $item"
+        }
+      }
+      if (@($items | Select-Object -Unique).Count -ne $items.Count) {
+        throw "$name must not contain duplicate identifiers."
+      }
+      return ,$items
+    }
+    $platforms = Read-Selection $env:SELECTED_PLATFORMS 'platform' @('android', 'ios', 'maccatalyst', 'windows') 4
+    $projects = Read-Selection $env:SELECTED_PROJECTS 'project' @('Controls.DeviceTests', 'Core.DeviceTests', 'Graphics.DeviceTests', 'Essentials.DeviceTests', 'MauiBlazorWebView.DeviceTests') 5
+    $categories = Read-Selection $env:SELECTED_CATEGORIES 'category' @() 100
+    if ($platforms.Count -eq 0) { throw 'Select at least one platform; omit dispatch when no device coverage is needed.' }
+    Write-Host "Device platforms: $($platforms -join ',')"
+    Write-Host "Device projects (empty means all): $($projects -join ',')"
+    Write-Host "Device categories (empty means all): $($categories -join ',')"
+    # Colon is neither an MSBuild property separator nor shell syntax.
+    Write-Host "##vso[task.setvariable variable=SelectedDeviceProjects]$($projects -join ':')"
+    Write-Host "##vso[task.setvariable variable=SelectedDeviceCategories]$($categories -join ':')"
+  displayName: Validate device test selection
+  env:
+    SELECTED_PLATFORMS: ${{ convertToJson(parameters.selectedPlatforms) }}
+    SELECTED_PROJECTS: ${{ convertToJson(parameters.selectedProjects) }}
+    SELECTED_CATEGORIES: ${{ convertToJson(parameters.selectedCategories) }}

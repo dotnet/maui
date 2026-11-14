@@ -19,6 +19,42 @@ GitHub Actions ──► GitHub OIDC Provider ──► Azure AD (federated cred
 > (e.g. in the `dotnet` org). The workflow uses **manual OIDC token exchange via
 > `curl`** instead, which works everywhere that `id-token: write` is allowed.
 
+## Selected test runs
+
+Authorized collaborators can request `/review run-tests` on an open, mergeable
+PR. A read-only GPT analysis proposes affected platforms and UI/device categories;
+trusted code validates them against inventories and conservative coverage floors
+before queueing `maui-pr`, `maui-pr-uitests`, and `maui-pr-devicetests` as needed.
+`maui-pr` build/unit/integration validation is unchanged. Android-only leaf-control
+changes can select Android tests for that control; shared or unknown runtime
+changes retain broader coverage. `.ios.cs` changes normally include MacCatalyst.
+Applicable runtime/handler variants are retained. Material3 control changes
+retain the Material3 lane; device runners without supported category filtering
+retain their full selected project, including uncategorized tests.
+
+The command does not replace `/azp run`, disable automatic PR builds, or satisfy
+full-suite coverage by assertion. `/review tests` still analyzes existing failures.
+The selection summary records head/base/test-merge SHAs, coverage and real run
+links; **queued is not passed**. Failed dispatches and stale PR evidence are
+reported rather than silently narrowing coverage.
+
+The workflow must be deployed on `main` for slash-command activation and
+credentialed queueing. Its manual `dry_run` input (default true) validates AI
+selections and queue payloads without queueing or posting. A branch dry run can
+exercise the new workflow before deployment without relaxing OIDC trust.
+
+The optional `selectedPlatforms` and `selectedCategories` pipeline parameters,
+plus device `selectedProjects`, preserve existing full defaults when omitted.
+Do not supply arbitrary filter expressions: selection uses validated identifiers.
+The workflow reuses the existing Azure DevOps OIDC identity and queue permissions.
+Its AI job never receives Azure queue credentials; dispatch runs on a fresh
+hosted agent from trusted workflow scripts. No PR code runs in that job.
+
+Credential review: this command reuses `COPILOT_PAT_0` through `COPILOT_PAT_9`
+only for the existing isolated GPT engine, and `AZDO_TRIGGER_CLIENT_ID` /
+`AZDO_TRIGGER_TENANT_ID` only for the isolated trusted queue job's OIDC exchange.
+No new secret values or repository-wide federation grants are required.
+
 ## CI comment cleanup
 
 `azure-pipelines-comment-cleanup.yml` collapses standalone `/azp run` commands
