@@ -179,6 +179,8 @@ public class XamlGenerator : IIncrementalGenerator
 				return;
 			}
 
+			// The state before this XAML edit, restored if the edit turns out not to compile.
+			XamlHotReloadState.CacheEntry? lastApplicableState = null;
 			try
 			{
 				if (!ShouldGenerateSourceGenInitializeComponent(xamlItem, xmlnsCache, compilation))
@@ -220,6 +222,7 @@ public class XamlGenerator : IIncrementalGenerator
 				{
 					var rootType = ucRootType!;
 					var accessModifier = ucAccessModifier;
+					lastApplicableState = XamlHotReloadState.Capture(assemblyName, targetFramework, stateKey, xamlItem.ProjectItem.HotReloadSessionToken);
 					// The exact generation this diff starts from (copied before the diff can touch the IDs).
 					var patchBaseline = new XamlHotReloadState.GenerationSnapshot(
 						previousXaml!,
@@ -369,8 +372,21 @@ public class XamlGenerator : IIncrementalGenerator
 				}
 
 				// Generate IC — reads latest version from XamlHotReloadState
-				var code = InitializeComponentCodeWriter.GenerateInitializeComponent(xamlItem, compilation, sourceProductionContext, xmlnsCache, typeCache);
+				var reportedError = false;
+				var code = InitializeComponentCodeWriter.GenerateInitializeComponent(xamlItem, compilation, sourceProductionContext, xmlnsCache, typeCache,
+					diagnostic => reportedError |= FailsBuild(diagnostic, compilation, sourceProductionContext.CancellationToken));
 				sourceProductionContext.AddSource(GetHintName(xamlItem.ProjectItem, "xsg"), code);
+
+				// A rude edit (https://github.com/dotnet/maui/issues/36156) fails the build, so it never
+				// reaches the running app. Roll the state back, so the next edit is diffed against the last
+				// generation that could have been applied and its patch carries this edit's changes too.
+				if (lastApplicableState is not null
+					&& (reportedError
+						|| HasSyntaxErrors(code, compilation, sourceProductionContext.CancellationToken)
+						|| HasSyntaxErrors(ucCode, compilation, sourceProductionContext.CancellationToken)))
+				{
+					XamlHotReloadState.Restore(assemblyName, targetFramework, stateKey, lastApplicableState, xamlItem.ProjectItem.HotReloadSessionToken);
+				}
 
 				// Emit UC source if a diff was computed
 				if (ucCode != null)
@@ -380,6 +396,10 @@ public class XamlGenerator : IIncrementalGenerator
 			}
 			catch (Exception e)
 			{
+				if (lastApplicableState is not null)
+				{
+					XamlHotReloadState.Restore(compilation.AssemblyName ?? string.Empty, xamlItem.ProjectItem.TargetFramework ?? string.Empty, xamlItem.ProjectItem.HotReloadStateKey, lastApplicableState, xamlItem.ProjectItem.HotReloadSessionToken);
+				}
 				sourceProductionContext.ReportDiagnostic(XamlDiagnosticHelpers.CreateXamlParserDiagnostic(xamlItem?.ProjectItem, xamlItem?.SourceText, e));
 			}
 		});
@@ -532,6 +552,33 @@ $"""
 			return false;
 
 		return true;
+	}
+
+	static bool FailsBuild(Diagnostic diagnostic, Compilation compilation, CancellationToken cancellationToken)
+	{
+		if (diagnostic.Severity != DiagnosticSeverity.Error || diagnostic.IsSuppressed)
+			return false;
+
+		// The user may have downgraded the error (NoWarn, WarningsNotAsErrors, .editorconfig/.globalconfig).
+		// Roslyn applies that after the generator reports it, so look it up here.
+		if (compilation.Options.SpecificDiagnosticOptions.TryGetValue(diagnostic.Id, out var configured)
+			|| compilation.Options.SyntaxTreeOptionsProvider?.TryGetGlobalDiagnosticValue(diagnostic.Id, cancellationToken, out configured) == true)
+			return configured is ReportDiagnostic.Default or ReportDiagnostic.Error;
+
+		return true;
+	}
+
+	static bool HasSyntaxErrors(string? generatedCode, Compilation compilation, CancellationToken cancellationToken)
+	{
+		if (generatedCode is null)
+			return false;
+
+		// Only syntax: semantic errors can't be told apart from references to members other generators
+		// add later (e.g. CommunityToolkit.Mvvm [ObservableProperty]), and a false positive would keep
+		// diffing against a generation the app already moved past.
+		var options = compilation.SyntaxTrees.FirstOrDefault()?.Options as CSharpParseOptions;
+		var tree = CSharpSyntaxTree.ParseText(generatedCode, options, cancellationToken: cancellationToken);
+		return tree.GetDiagnostics(cancellationToken).Any(d => d.Severity == DiagnosticSeverity.Error);
 	}
 
 	static bool CanSourceGenXaml(XamlProjectItemForIC? xamlItem, Compilation compilation, SourceProductionContext context, AssemblyAttributes xmlnsCache, IDictionary<XmlType, INamedTypeSymbol> typeCache)
