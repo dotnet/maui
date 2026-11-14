@@ -120,6 +120,7 @@ if ($Stage -eq 'Gather') {
         $paths = @($file.filename)
         if ($file.PSObject.Properties['previous_filename']) { $paths += $file.previous_filename }
         $patch = if ($file.PSObject.Properties['patch']) { [string]$file.patch } else { '' }
+        $patchUnavailable = -not $patch -and $file.changes -gt 0
         if ($patch.Length -gt $patchBudget) {
             $patch = ''
             $broad = $true
@@ -127,11 +128,15 @@ if ($Stage -eq 'Gather') {
         } else { $patchBudget -= $patch.Length }
         $evidence += @{ paths = $paths; status = $file.status; patch = $patch }
         foreach ($path in $paths) {
-            if ($path -match '^(docs/|\.github/)|(?i)\.(md|txt)$') { continue }
+            if ($path -match '^(docs/|\.github/docs/)|(?i)\.(md|txt)$') { continue }
+            if ($patchUnavailable) {
+                $broad = $true
+                $reasons += "Patch unavailable for changed content: $path"
+            }
             $floorPlatforms += Get-SelectionPlatforms $path
             $control = $null
             foreach ($candidate in $controls) {
-                if ($path -match "(?i)^src/(Core/src/(Handlers/$candidate/|I$candidate\.|Platform/[^/]+/(Maui)?$candidate[^/]*)|Controls/src/Core/$candidate(?:/|\.))") {
+                if ($path -match "(?i)^src/(Core/src/(Handlers/$candidate/|I$candidate\.|Platform/[^/]+/(Maui)?$candidate\.)|Controls/src/Core/$candidate(?:/|\.))") {
                     $control = $candidate
                     break
                 }

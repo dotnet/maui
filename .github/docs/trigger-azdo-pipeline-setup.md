@@ -27,7 +27,8 @@ trusted code validates them against inventories and conservative coverage floors
 before queueing `maui-pr`, `maui-pr-uitests`, and `maui-pr-devicetests` as needed.
 `maui-pr` build/unit/integration validation is unchanged. Android-only leaf-control
 changes can select Android tests for that control; shared or unknown runtime
-changes retain broader coverage. `.ios.cs` changes normally include MacCatalyst.
+changes, unavailable runtime patches, and unclassified execution scripts retain
+broader coverage. `.ios.cs` changes normally include MacCatalyst.
 Applicable runtime/handler variants are retained. Material3 control changes
 retain the Material3 lane; device runners without supported category filtering
 retain their full selected project, including uncategorized tests.
