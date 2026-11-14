@@ -1,8 +1,10 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Android.Graphics;
 using Android.Views;
 using Android.Widget;
+using AndroidX.AppCompat.Widget;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Xunit;
 using ATextAlignemnt = global::Android.Views.TextAlignment;
@@ -122,8 +124,14 @@ namespace Microsoft.Maui.DeviceTests
 				LineHeight = 2
 			};
 
-			// Narrow enough to wrap, wide enough to break only at the spaces
-			var (expectedGap, firstGap, secondGap) = await GetValueAsync(label, handler => GetBaselineGaps(handler, widthPixels: 500));
+			var (expectedGap, firstGap, secondGap) = await GetValueAsync(label, handler =>
+			{
+				// Wide enough for the widest "<word> line" pair but not for three words, so the text
+				// wraps into four lines whatever the screen density is
+				var paint = GetPlatformLabel(handler).Paint;
+				var width = new[] { "First line", "second line", "third line", "fourth line" }.Max(paint.MeasureText);
+				return GetBaselineGaps(handler, widthPixels: (int)Math.Ceiling(width));
+			});
 
 			Assert.InRange(firstGap, expectedGap - 1, expectedGap + 1);
 			Assert.InRange(secondGap, expectedGap - 1, expectedGap + 1);
@@ -149,6 +157,32 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 			Assert.InRange(secondGap, expectedGap - 1, expectedGap + 1);
+		}
+
+		[Fact(DisplayName = "LineHeight Follows Font Changes In Handlers Reusing The Label Mappings")]
+		public async Task LineHeightFollowsFontChangesInHandlersReusingTheLabelMappings()
+		{
+			var label = new LabelStub()
+			{
+				Text = "First\nSecond\nThird",
+				Font = Font.SystemFontOfSize(10),
+				LineHeight = 2
+			};
+
+			var (fontHeight, extra) = await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = new LabelMappingsHandler();
+				InitializeViewHandler(label, handler);
+
+				label.Font = Font.SystemFontOfSize(30);
+				handler.UpdateValue(nameof(ITextStyle.Font));
+
+				var fontMetrics = handler.PlatformView.Paint.GetFontMetricsInt();
+				return (fontMetrics.Descent - fontMetrics.Ascent, handler.PlatformView.LineSpacingExtra);
+			});
+
+			// LineHeight 2 adds one height of the new font between lines
+			Assert.Equal(fontHeight, extra);
 		}
 
 		[Fact(DisplayName = "LineHeight Follows Native Text Size Changes")]
@@ -319,6 +353,8 @@ namespace Microsoft.Maui.DeviceTests
 				global::Android.Views.View.MeasureSpec.MakeMeasureSpec(0, MeasureSpecMode.Unspecified));
 
 			var layout = textView.Layout;
+			Assert.True(layout.LineCount >= 3, $"Expected at least 3 lines, got {layout.LineCount}");
+
 			var fontMetrics = textView.Paint.GetFontMetricsInt();
 			var expectedGap = (int)Math.Round((fontMetrics.Descent - fontMetrics.Ascent) * labelHandler.VirtualView.LineHeight);
 
@@ -336,6 +372,27 @@ namespace Microsoft.Maui.DeviceTests
 				GetPlatformLabel(handler).UpdateTextHtml(label);
 				return GetBaselineGaps(handler);
 			});
+		}
+
+		// An ILabelHandler that reuses the LabelHandler mappings without deriving from LabelHandler
+		class LabelMappingsHandler : ViewHandler<ILabel, AppCompatTextView>, ILabelHandler
+		{
+			static readonly PropertyMapper<ILabel, ILabelHandler> LabelMappings = new(ViewMapper)
+			{
+				[nameof(ITextStyle.Font)] = LabelHandler.MapFont,
+				[nameof(ILabel.LineHeight)] = LabelHandler.MapLineHeight,
+				[nameof(ILabel.Text)] = LabelHandler.MapText,
+			};
+
+			public LabelMappingsHandler() : base(LabelMappings)
+			{
+			}
+
+			protected override AppCompatTextView CreatePlatformView() => new(Context);
+
+			ILabel ILabelHandler.VirtualView => VirtualView;
+
+			AppCompatTextView ILabelHandler.PlatformView => PlatformView;
 		}
 	}
 }

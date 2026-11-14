@@ -167,6 +167,9 @@ namespace Microsoft.Maui.Handlers
 			var fontManager = handler.GetRequiredService<IFontManager>();
 
 			handler.PlatformView?.UpdateFont(label, fontManager);
+
+			// The line spacing of plain text is computed from the font
+			handler.UpdateValue(nameof(ILabel.LineHeight));
 		}
 
 		public static void MapLineHeight(ILabelHandler handler, ILabel label)
