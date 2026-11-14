@@ -851,6 +851,40 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(typeof(TestPage3), shell.Navigation.NavigationStack[3].GetType());
 		}
 
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public async Task PoppingWithHierarchicalTemplateRoutesPreservesIntermediatePages(bool childFirst)
+		{
+			if (childFirst)
+			{
+				Routing.RegisterRoute("product/{id:int}/details", typeof(TestPage2));
+				Routing.RegisterRoute("product/{id:int}", typeof(TestPage1));
+			}
+			else
+			{
+				Routing.RegisterRoute("product/{id:int}", typeof(TestPage1));
+				Routing.RegisterRoute("product/{id:int}/details", typeof(TestPage2));
+			}
+
+			Routing.RegisterRoute("edit", typeof(TestPage3));
+
+			var shell = new TestShell(CreateShellItem(shellContentRoute: "root"));
+
+			await shell.GoToAsync("//root/product/5");
+			await shell.GoToAsync("details");
+			await shell.GoToAsync("edit");
+
+			Assert.Equal(4, shell.Navigation.NavigationStack.Count);
+
+			await shell.GoToAsync("..");
+
+			Assert.Equal("//root/product/5/details", shell.CurrentState.Location.ToString());
+			Assert.Equal(3, shell.Navigation.NavigationStack.Count);
+			Assert.Equal(typeof(TestPage1), shell.Navigation.NavigationStack[1].GetType());
+			Assert.Equal(typeof(TestPage2), shell.Navigation.NavigationStack[2].GetType());
+		}
+
 		[Fact]
 		public async Task GlobalRoutesRegisteredHierarchicallyNavigateCorrectlyVariation()
 		{
