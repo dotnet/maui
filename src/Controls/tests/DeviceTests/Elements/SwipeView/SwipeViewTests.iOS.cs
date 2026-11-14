@@ -1,7 +1,9 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Reflection;
 using System.Linq;
 using System.Threading.Tasks;
+using CoreGraphics;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
@@ -102,6 +104,54 @@ namespace Microsoft.Maui.DeviceTests
 					Assert.Equal(expectedItemWidth, nativeSwipeItems[1].Frame.Width, 1d);
 					Assert.Equal(totalWidth, actionView.Frame.Width, 1d);
 					Assert.Equal(totalWidth, Math.Abs(contentView.Frame.X), 1d);
+				});
+			});
+		}
+
+		[Fact(DisplayName = "Execute Mode Menu Item Width Excludes SwipeItemView")]
+		public async Task ExecuteModeMenuItemWidthExcludesSwipeItemView()
+		{
+			SetupBuilder();
+
+			var content = CreateContent();
+			var swipeItems = new SwipeItems
+			{
+				Mode = SwipeMode.Execute
+			};
+			swipeItems.Add(new SwipeItem { Text = "OK" });
+			swipeItems.Add(new SwipeItemView
+			{
+				Content = new Grid
+				{
+					WidthRequest = 240,
+					HeightRequest = 60
+				}
+			});
+			swipeItems.Add(new SwipeItem { Text = "A significantly longer action" });
+			var swipeView = CreateSwipeView(swipeItems, content);
+
+			var handler = await CreateHandlerAsync<SwipeViewHandler>(swipeView);
+			var platformView = GetPlatformControl(handler);
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				await platformView.AttachAndRun(async () =>
+				{
+					var actionView = await OpenLeftItemsAsync(swipeView, platformView);
+					var nativeMenuItems = actionView.Subviews.OfType<SwipeItemButton>().ToArray();
+					var contentView = Assert.IsAssignableFrom<UIView>(content.Handler?.PlatformView);
+
+					Assert.Equal(2, nativeMenuItems.Length);
+					await AssertEventually(() => nativeMenuItems.All(item => item.Frame.Width > 0));
+
+					var totalDesiredWidth = nativeMenuItems.Sum(
+						item => item.SizeThatFits(contentView.Bounds.Size).Width);
+					var expectedMenuItemWidth = totalDesiredWidth > contentView.Bounds.Width
+						? contentView.Bounds.Width / nativeMenuItems.Length
+						: totalDesiredWidth / nativeMenuItems.Length;
+
+					Assert.All(nativeMenuItems, item =>
+						Assert.Equal(expectedMenuItemWidth, item.Frame.Width, 1d));
 				});
 			});
 		}
@@ -310,6 +360,134 @@ namespace Microsoft.Maui.DeviceTests
 				   var isVisible = !nativeView.Hidden;
 				   Assert.Equal(expectedValue, isVisible);
 			   });
+		}
+
+		[Fact(DisplayName = "SwipeView Keeps Tracking And Can Be Closed After Pointer Leaves Bounds Vertically")]
+		public async Task SwipeViewTracksAndClosesAfterPointerLeavesBoundsVertically()
+		{
+			Grid content = new Grid
+			{
+				WidthRequest = 300,
+				HeightRequest = 60,
+				Background = new SolidPaint(Colors.White)
+			};
+
+			SwipeItem swipeItem = new SwipeItem
+			{
+				BackgroundColor = Colors.Red,
+			};
+
+			SwipeView swipeView = new SwipeView()
+			{
+				WidthRequest = 300,
+				HeightRequest = 60,
+				RightItems = new SwipeItems { swipeItem },
+				Content = content
+			};
+
+			SetupBuilder();
+
+			var handler = await CreateHandlerAsync<SwipeViewHandler>(swipeView);
+			var nativeView = GetPlatformControl(handler);
+
+			var handleTouchInteractions = typeof(MauiSwipeView).GetMethod(
+				"HandleTouchInteractions", BindingFlags.NonPublic | BindingFlags.Instance);
+			Assert.NotNull(handleTouchInteractions);
+
+			var offsetField = typeof(MauiSwipeView).GetField(
+				"_swipeOffset", BindingFlags.NonPublic | BindingFlags.Instance);
+			Assert.NotNull(offsetField);
+
+			double openOffset = 0;
+			double offsetAfterAttemptedClose = 0;
+
+			await InvokeOnMainThreadAsync(() =>
+				nativeView.AttachAndRun(() =>
+				{
+					void Dispatch(GestureStatus status, double x, double y) =>
+						handleTouchInteractions.Invoke(nativeView, new object[] { status, new CGPoint(x, y) });
+
+					Dispatch(GestureStatus.Started, 280, 30);
+					Dispatch(GestureStatus.Running, 130, 30);
+
+					openOffset = (double)offsetField.GetValue(nativeView);
+
+					Dispatch(GestureStatus.Running, 130, 500);
+					Dispatch(GestureStatus.Running, 275, 500);
+
+					offsetAfterAttemptedClose = (double)offsetField.GetValue(nativeView);
+					Dispatch(GestureStatus.Completed, 275, 500);
+				}));
+
+			Assert.NotEqual(0, openOffset);
+			Assert.True(Math.Abs(offsetAfterAttemptedClose) < Math.Abs(openOffset),
+				$"Expected swipe offset to shrink after the closing drag (frozen bug would keep it near {openOffset}), but got {offsetAfterAttemptedClose}.");
+		}
+
+		[Theory]
+		[InlineData(false, 61)]
+		[InlineData(true, 75)]
+		public async Task SwipeViewDoesNotStartOutsideBounds(bool attemptUnsupportedDirection, double outsideY)
+		{
+			SetupBuilder();
+
+			var content = new Grid
+			{
+				WidthRequest = 300,
+				HeightRequest = 60,
+				Background = new SolidPaint(Colors.White)
+			};
+			var swipeView = new SwipeView
+			{
+				WidthRequest = 300,
+				HeightRequest = 60,
+				RightItems = new SwipeItems { new SwipeItem { BackgroundColor = Colors.Red } },
+				Content = content
+			};
+			var swipeStartedCount = 0;
+			swipeView.SwipeStarted += (_, _) => swipeStartedCount++;
+
+			var handler = await CreateHandlerAsync<SwipeViewHandler>(swipeView);
+			var nativeView = GetPlatformControl(handler);
+			var handleTouchInteractions = typeof(MauiSwipeView).GetMethod(
+				"HandleTouchInteractions", BindingFlags.NonPublic | BindingFlags.Instance);
+			Assert.NotNull(handleTouchInteractions);
+			var offsetField = typeof(MauiSwipeView).GetField(
+				"_swipeOffset", BindingFlags.NonPublic | BindingFlags.Instance);
+			Assert.NotNull(offsetField);
+
+			await InvokeOnMainThreadAsync(() =>
+				nativeView.AttachAndRun(async () =>
+				{
+					var contentView = Assert.IsAssignableFrom<UIView>(content.Handler?.PlatformView);
+					await AssertEventually(() => contentView.Frame.Width == 300 && contentView.Frame.Height == 60,
+						message: "SwipeView content was not laid out at the expected size");
+					var initialFrame = contentView.Frame;
+
+					void Dispatch(GestureStatus status, double x, double y) =>
+						handleTouchInteractions.Invoke(nativeView, new object[] { status, new CGPoint(x, y) });
+
+					try
+					{
+						Dispatch(GestureStatus.Started, 280, 30);
+						if (attemptUnsupportedDirection)
+							Dispatch(GestureStatus.Running, 280, 45);
+
+						Assert.Equal(0, swipeStartedCount);
+						Assert.Equal(0d, (double)offsetField.GetValue(nativeView));
+
+						Dispatch(GestureStatus.Running, 130, outsideY);
+
+						Assert.Equal(0, swipeStartedCount);
+						Assert.Equal(0d, (double)offsetField.GetValue(nativeView));
+						Assert.Equal(initialFrame, contentView.Frame);
+					}
+					finally
+					{
+						Dispatch(GestureStatus.Completed, 130, outsideY);
+						swipeView.Close(false);
+					}
+				}));
 		}
 	}
 }

@@ -85,6 +85,30 @@ namespace Microsoft.Maui.Controls
 			return path.Replace(_pathSeparators[1], _pathSeparator[0]);
 		}
 
+		// When an absolute route is prefixed with ".." segments ("//../../Page2"), Uri
+		// normalization inside ConvertToStandardFormat silently discards those segments,
+		// so the number of pages each ".." should pop has to be captured up front
+		internal static int CountLeadingDotDotSegments(Uri request)
+		{
+			if (request == null || request.IsAbsoluteUri)
+				return 0;
+
+			var path = FormatUri(request.OriginalString);
+			if (!path.StartsWith("//", StringComparison.Ordinal))
+				return 0;
+
+			int count = 0;
+			foreach (var segment in RetrievePaths(path.Split('?')[0]))
+			{
+				if (segment != "..")
+					break;
+
+				count++;
+			}
+
+			return count;
+		}
+
 		internal static Uri CreateUri(string path)
 		{
 			path = FormatUri(path);
@@ -112,7 +136,9 @@ namespace Microsoft.Maui.Controls
 			// we need to know this so we don't clear the query parameters off
 			// the destination location
 
-			var dest = request.TargetState?.Location?.OriginalString;
+			// Strip the query string the same way FormatUri does when it resolves "..",
+			// so "..?x=1" is classified as a relative pop too
+			var dest = request.TargetState?.Location?.OriginalString.Split(new[] { '?' }, 2)[0];
 
 			foreach (var path in RetrievePaths(dest))
 			{

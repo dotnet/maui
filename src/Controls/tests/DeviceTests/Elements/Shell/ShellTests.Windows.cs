@@ -214,6 +214,36 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task ClearingFlyoutBackgroundImageRestoresBackground(bool configured)
+		{
+			SetupBuilder();
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.FlyoutBehavior = FlyoutBehavior.Locked;
+				if (configured)
+					shell.FlyoutBackground = new SolidColorBrush(Colors.Blue);
+				shell.Items.Add(new ContentPage());
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async handler =>
+			{
+				var navigationView = handler.PlatformView;
+				await AssertEventually(() => IsViewLaidOut(navigationView));
+				var expected = Assert.IsType<UI.Xaml.Media.SolidColorBrush>(navigationView.PaneContentGrid.Background).Color;
+				if (configured)
+					Assert.Equal(Colors.Blue.ToWindowsColor(), expected);
+				handler.GetRequiredService<IFontRegistrar>().Register("dokdo_regular.ttf", "Dokdo");
+				var image = new FontImageSource { FontFamily = "Dokdo", Glyph = "X", Size = 24 };
+				shell.FlyoutBackgroundImage = image;
+				await AssertEventually(() => navigationView.PaneContentGrid.Background is UI.Xaml.Media.ImageBrush);
+				shell.FlyoutBackgroundImage = null;
+				Assert.Equal(expected, Assert.IsType<UI.Xaml.Media.SolidColorBrush>(navigationView.PaneContentGrid.Background).Color);
+			});
+		}
+
 		[Fact(DisplayName = "Back Button Enabled/Disabled")]
 		public async Task BackButtonEnabledAndDisabled()
 		{

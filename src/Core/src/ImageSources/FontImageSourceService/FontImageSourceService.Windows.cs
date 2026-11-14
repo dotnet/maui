@@ -19,13 +19,20 @@ namespace Microsoft.Maui
 		public override Task<IImageSourceServiceResult<WImageSource>?> GetImageSourceAsync(IImageSource imageSource, float scale = 1, CancellationToken cancellationToken = default) =>
 			GetImageSourceAsync((IFontImageSource)imageSource, scale, cancellationToken);
 
-		public Task<IImageSourceServiceResult<WImageSource>?> GetImageSourceAsync(IFontImageSource imageSource, float scale = 1, CancellationToken cancellationToken = default)
+		public async Task<IImageSourceServiceResult<WImageSource>?> GetImageSourceAsync(IFontImageSource imageSource, float scale = 1, CancellationToken cancellationToken = default)
 		{
 			if (imageSource.IsEmpty)
-				return FromResult(null);
+				return null;
 
 			try
 			{
+				cancellationToken.ThrowIfCancellationRequested();
+
+				// Loading a custom font can pump STA messages. Render after the current
+				// XAML layout tick so those messages cannot reenter its dispatcher.
+				await Task.Yield();
+				cancellationToken.ThrowIfCancellationRequested();
+
 				// TODO: The DPI not working as the view is not respecting the
 				//       value, so just reset to 1 to keep the correct size.
 				//       https://github.com/dotnet/maui/issues/1000
@@ -42,17 +49,14 @@ namespace Microsoft.Maui
 				//       https://github.com/dotnet/maui/issues/1000
 				var result = new ImageSourceServiceResult(image, false);
 
-				return FromResult(result);
+				return result;
 			}
-			catch (Exception ex)
+			catch (Exception ex) when (ex is not OperationCanceledException)
 			{
 				Logger?.LogWarning(ex, "Unable to generate font image '{Glyph}'.", imageSource.Glyph);
 				throw;
 			}
 		}
-
-		static Task<IImageSourceServiceResult<WImageSource>?> FromResult(IImageSourceServiceResult<WImageSource>? result) =>
-			Task.FromResult(result);
 
 		internal CanvasImageSource RenderImageSource(IFontImageSource imageSource, float scale)
 		{
@@ -67,7 +71,7 @@ namespace Microsoft.Maui
 			var fontSize = (float)imageSource.Font.Size;
 			var color = (imageSource.Color ?? Colors.White).ToWindowsColor();
 
-			var textFormat = new CanvasTextFormat
+			using var textFormat = new CanvasTextFormat
 			{
 				FontFamily = fontFamily,
 				FontSize = fontSize,
