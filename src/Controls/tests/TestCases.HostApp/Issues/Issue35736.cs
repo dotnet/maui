@@ -49,13 +49,23 @@ public class Issue35736 : Shell
 			Shell.SetSearchHandler(this, _searchHandler);
 
 #if IOS
-			_searchHandler.Focused += (_, _) =>
+			UIKit.UIColor defaultQueryTintColor = null;
+			void UpdateQueryTintColor()
 			{
 				if ((Handler?.PlatformView as UIKit.UIView)?.Window?.FindDescendantView<UIKit.UISearchBar>() is { } searchBar)
 				{
-					// Keep the clear-icon screenshot independent of the insertion caret's blink phase.
-					searchBar.SearchTextField.TintColor = UIKit.UIColor.Clear;
+					var queryEditor = searchBar.SearchTextField;
+					defaultQueryTintColor ??= queryEditor.TintColor;
+					// Suppress the caret only for the typed-query shot; empty-query shots retain their native presentation.
+					queryEditor.TintColor = string.IsNullOrEmpty(_searchHandler.Query) ? defaultQueryTintColor : UIKit.UIColor.Clear;
 				}
+			}
+
+			_searchHandler.Focused += (_, _) => UpdateQueryTintColor();
+			_searchHandler.PropertyChanged += (_, e) =>
+			{
+				if (e.PropertyName == SearchHandler.QueryProperty.PropertyName)
+					UpdateQueryTintColor();
 			};
 #endif
 
