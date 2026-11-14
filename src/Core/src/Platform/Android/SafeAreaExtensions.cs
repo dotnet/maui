@@ -359,6 +359,24 @@ internal static class SafeAreaExtensions
 			? keyboardBottom
 			: Math.Max(containerBottom, keyboardBottom);
 
+		// Like the settled path, pad only by how far the view reaches into the inset, so a view
+		// that ends above the screen bottom (e.g. above bottom tabs) doesn't rise past the keyboard.
+		if (bottom > 0 && view.Height > 0 &&
+			context.GetSystemService(Context.WindowService) is IWindowManager { DefaultDisplay: { } display })
+		{
+			using var realMetrics = new global::Android.Util.DisplayMetrics();
+			display.GetRealMetrics(realMetrics);
+			var viewLocation = new int[2];
+			view.GetLocationOnScreen(viewLocation);
+			var margins = (GetSafeAreaView2(crossPlatformLayout) as IView)?.Margin ?? (GetSafeAreaElement(crossPlatformLayout) as IView)?.Margin ?? Thickness.Zero;
+			var viewBottom = viewLocation[1] + view.Height + (int)context.ToPixels(margins.Bottom);
+			var gap = realMetrics.HeightPixels - viewBottom;
+			if (gap > 0)
+			{
+				bottom = Math.Max(0, bottom - gap);
+			}
+		}
+
 		view.SetPadding(view.PaddingLeft, view.PaddingTop, view.PaddingRight, (int)bottom);
 		return bottom > 0;
 	}
