@@ -96,11 +96,52 @@ namespace Microsoft.Maui.DeviceTests
 				var spannable = formattedString.ToSpannableString(fontManager);
 				var start = "plain ".Length;
 				var end = spannable.Length();
-				var colored = spannable.GetSpans(start, end, Java.Lang.Class.FromType(typeof(PlatformUnderlineColorSpan)));
+				var colored = spannable.GetSpans(start, end, Java.Lang.Class.FromType(typeof(PlatformUnderlineSpan)));
 				var plain = spannable.GetSpans(start, end, Java.Lang.Class.FromType(typeof(global::Android.Text.Style.UnderlineSpan)));
 
 				Assert.Equal(hasDecorationColor ? 1 : 0, colored?.Length ?? 0);
 				Assert.Equal(hasDecorationColor ? 0 : 1, plain?.Length ?? 0);
+#endif
+			});
+		}
+#endif
+
+#if __IOS__ || __ANDROID__
+		[Theory]
+		[InlineData(-1d)]
+		[InlineData(1d)]
+		[InlineData(2d)]
+		public async Task TextDecorationThicknessSetsTheUnderlineThickness(double thickness)
+		{
+			var formattedString = new FormattedString();
+			formattedString.Spans.Add(new Span
+			{
+				Text = "underlined",
+				TextDecorations = TextDecorations.Underline,
+				TextDecorationThickness = thickness,
+			});
+
+			var label = new Label();
+			var handler = await CreateHandlerAsync<LabelHandler>(label);
+			var fontManager = handler.Services.GetRequiredService<IFontManager>();
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+#if __IOS__
+				// UIKit only has styles: Thick from 1.5 up, Single below (and by default).
+				var attributed = formattedString.ToNSAttributedString(fontManager);
+				var underlineStyle = attributed.GetAttribute(UIKit.UIStringAttributeKey.UnderlineStyle, 0, out _) as Foundation.NSNumber;
+
+				Assert.NotNull(underlineStyle);
+				Assert.Equal((long)(thickness >= 1.5 ? Foundation.NSUnderlineStyle.Thick : Foundation.NSUnderlineStyle.Single), underlineStyle.Int64Value);
+#elif __ANDROID__
+				// A thickness (even without a color) uses the platform span; the default keeps UnderlineSpan.
+				var spannable = formattedString.ToSpannableString(fontManager);
+				var custom = spannable.GetSpans(0, spannable.Length(), Java.Lang.Class.FromType(typeof(PlatformUnderlineSpan)));
+				var plain = spannable.GetSpans(0, spannable.Length(), Java.Lang.Class.FromType(typeof(global::Android.Text.Style.UnderlineSpan)));
+
+				Assert.Equal(thickness > 0 ? 1 : 0, custom?.Length ?? 0);
+				Assert.Equal(thickness > 0 ? 0 : 1, plain?.Length ?? 0);
 #endif
 			});
 		}
