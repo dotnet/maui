@@ -128,6 +128,49 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(new[] { "LoadingCompleted(False)" }, events);
 		}
 
+		[Fact]
+		public async Task OnWindowChangedAfterDisconnectDoesNotThrow()
+		{
+			// https://github.com/dotnet/maui/issues/39949
+			var image = new TStub();
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler(image);
+
+				((IElementHandler)handler).DisconnectHandler();
+
+				// UIKit still fires MovedToWindow on the detached UIImageView, e.g. while a
+				// navigation bar title view leaves the window during a pop
+				var exception = Record.Exception(() => handler.OnWindowChanged());
+
+				Assert.Null(exception);
+			});
+		}
+
+		[Fact]
+		public async Task MovingToWindowAfterDisconnectDoesNotThrow()
+		{
+			// https://github.com/dotnet/maui/issues/39949
+			var image = new TStub
+			{
+				Source = new FileImageSourceStub("dotnet_bot.png"),
+			};
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler(image);
+				await image.WaitUntilLoaded();
+
+				var platformImageView = GetPlatformImageView(handler);
+				((IElementHandler)handler).DisconnectHandler();
+
+				// UIKit can remove the view from its window after the handler was disconnected,
+				// e.g. the TitleView of a page that is popped
+				platformImageView.MovedToWindow();
+			});
+		}
+
 		protected virtual bool UsesAnimatedImages => true;
 
 		UIImageView GetPlatformImageView(IImageHandler imageHandler) =>

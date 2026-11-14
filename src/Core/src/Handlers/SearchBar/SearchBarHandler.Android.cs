@@ -161,6 +161,8 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapIsReadOnly(ISearchBarHandler handler, ISearchBar searchBar)
 		{
+			handler.UpdateValue(nameof(ISearchBar.Text));
+
 			handler.QueryEditor?.UpdateIsReadOnly(searchBar);
 			handler.PlatformView?.UpdateCancelButtonState(searchBar);
 		}
@@ -221,7 +223,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			QueryEditor?.Post(() =>
 			{
-				if (VirtualView is ISearchBar searchBar && QueryEditor is EditText queryEditor)
+				if (((IElementHandler)this).VirtualView is ISearchBar searchBar && QueryEditor is EditText queryEditor)
 				{
 					var cursorPosition = queryEditor.GetCursorPosition();
 					var selectedTextLength = queryEditor.GetSelectedTextLength();
@@ -310,7 +312,10 @@ namespace Microsoft.Maui.Handlers
 				var virtualView = Handler.VirtualView;
 
 				if (virtualView != null)
+				{
 					virtualView.IsFocused = hasFocus;
+					v?.HideSoftInputIfReadOnly(virtualView, hasFocus);
+				}
 			}
 		}
 	}

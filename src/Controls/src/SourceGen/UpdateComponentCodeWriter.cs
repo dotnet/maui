@@ -63,6 +63,7 @@ static class UpdateComponentCodeWriter
 	/// <param name="fromVersion">Vestigial: the monotonic version no longer drives dispatch (kept for the state/bookkeeping call chain and test signatures).</param>
 	/// <param name="toVersion">Vestigial: see <paramref name="fromVersion"/>.</param>
 	/// <param name="newIds">ID dictionary for added nodes (from the new tree). May be null for tests.</param>
+	/// <param name="previousResources">Previous root resources, used to distinguish implicit additions from updates.</param>
 	public static string? GeneratePatchBody(
 		XamlTreeDiff diff,
 		int fromVersion,
@@ -75,7 +76,8 @@ static class UpdateComponentCodeWriter
 		SourceProductionContext sourceProductionContext = default,
 		ProjectItem? projectItem = null,
 		Dictionary<string, XmlType>? generatedFields = null,
-		ISet<string>? templateNodeIds = null)
+		ISet<string>? templateNodeIds = null,
+		INode? previousResources = null)
 	{
 		if (diff.IsEmpty)
 			return null;
@@ -133,7 +135,9 @@ static class UpdateComponentCodeWriter
 				{
 					if (propDiff.PropertyName == XmlName.xName)
 						continue;
-					EmitRootPropertyChange(codeWriter, propDiff, rootNodeType ?? rootType, compilation, xmlnsCache, typeCache, sourceProductionContext, projectItem);
+					EmitRootPropertyChange(codeWriter, propDiff,
+						propDiff.PropertyName.LocalName == "Resources" ? rootType : rootNodeType ?? rootType,
+						compilation, xmlnsCache, typeCache, sourceProductionContext, projectItem, newIds, generatedFields, previousResources);
 				}
 				codeWriter.WriteLine();
 				continue;
@@ -331,7 +335,7 @@ static class UpdateComponentCodeWriter
 		}
 
 		codeWriter.Flush();
-		return codeWriter.InnerWriter.ToString();
+		return GeneratorHelpers.LiftFallbackUsings(codeWriter.InnerWriter.ToString(), NewLine);
 	}
 
 	/// <summary>
@@ -382,6 +386,17 @@ static class UpdateComponentCodeWriter
 		ProjectItem? projectItem)
 	{
 		bool isRoot = string.IsNullOrEmpty(change.ParentNodeId);
+
+		if (isRoot && InheritsFrom(rootType, "global::Microsoft.Maui.Controls.ResourceDictionary")
+			&& change.RemovedNodeIds.Count == 0
+			&& change.NewChildren.All(child => child.Kind == ChildChangeKind.Retained
+				|| child.Kind == ChildChangeKind.Added && child.NewElement is { } element
+					&& CanEmitResourceAddition(element)))
+		{
+			EmitResourceAdditions(codeWriter, change.NewChildren.Where(child => child.Kind == ChildChangeKind.Added).Select(child => child.NewElement!),
+				"this", compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem, newIds, existingNamedFields);
+			return true;
+		}
 
 		if (change.RemovedNames.Count > 0
 			&& InheritsFrom(rootType, "global::Microsoft.Maui.Controls.BindableObject"))
@@ -754,35 +769,34 @@ static class UpdateComponentCodeWriter
 		AssemblyAttributes xmlnsCache,
 		IDictionary<XmlType, INamedTypeSymbol> typeCache)
 	{
-		if (!InheritsFrom(typeSymbol, "global::Microsoft.Maui.Controls.Element")
-			|| !InheritsFrom(rootType, "global::Microsoft.Maui.Controls.BindableObject"))
+		var isElement = InheritsFrom(typeSymbol, "global::Microsoft.Maui.Controls.Element");
+		if (InheritsFrom(rootType, "global::Microsoft.Maui.Controls.BindableObject"))
 		{
-			return;
-		}
-
-		var nameScopeVar = $"__ns_{varName}";
-		using (PrePost.NewConditional(codeWriter, "!_MAUIXAML_SG_NAMESCOPE_DISABLE"))
-		{
-			codeWriter.WriteLine($"var {nameScopeVar} = global::Microsoft.Maui.Controls.Internals.NameScope.GetNameScope(this);");
-			codeWriter.WriteLine($"if ({nameScopeVar} != null)");
-			using (PrePost.NewBlock(codeWriter))
+			var nameScopeVar = $"__ns_{varName}";
+			using (PrePost.NewConditional(codeWriter, "!_MAUIXAML_SG_NAMESCOPE_DISABLE"))
 			{
-				codeWriter.WriteLine($"{varName}.transientNamescope = {nameScopeVar};");
-
-				if (element.Properties.TryGetValue(XmlName.xName, out var nameNode)
-					&& nameNode is ValueNode { Value: string name })
+				codeWriter.WriteLine($"var {nameScopeVar} = global::Microsoft.Maui.Controls.Internals.NameScope.GetNameScope(this);");
+				codeWriter.WriteLine($"if ({nameScopeVar} != null)");
+				using (PrePost.NewBlock(codeWriter))
 				{
-					var escapedName = EscapeString(name);
-					var previousVar = $"__previous_{varName}";
-					codeWriter.WriteLine($"var {previousVar} = {nameScopeVar}.FindByName(\"{escapedName}\");");
-					codeWriter.WriteLine($"if (!global::System.Object.ReferenceEquals({previousVar}, {varName}))");
-					using (PrePost.NewBlock(codeWriter))
+					if (isElement)
+						codeWriter.WriteLine($"{varName}.transientNamescope = {nameScopeVar};");
+
+					if (element.Properties.TryGetValue(XmlName.xName, out var nameNode)
+						&& nameNode is ValueNode { Value: string name })
 					{
-						codeWriter.WriteLine($"if ({previousVar} != null)");
-						codeWriter.Indent++;
-						codeWriter.WriteLine($"{nameScopeVar}.UnregisterName(\"{escapedName}\");");
-						codeWriter.Indent--;
-						codeWriter.WriteLine($"{nameScopeVar}.RegisterName(\"{escapedName}\", {varName});");
+						var escapedName = EscapeString(name);
+						var previousVar = $"__previous_{varName}";
+						codeWriter.WriteLine($"var {previousVar} = {nameScopeVar}.FindByName(\"{escapedName}\");");
+						codeWriter.WriteLine($"if (!global::System.Object.ReferenceEquals({previousVar}, {varName}))");
+						using (PrePost.NewBlock(codeWriter))
+						{
+							codeWriter.WriteLine($"if ({previousVar} != null)");
+							codeWriter.Indent++;
+							codeWriter.WriteLine($"{nameScopeVar}.UnregisterName(\"{escapedName}\");");
+							codeWriter.Indent--;
+							codeWriter.WriteLine($"{nameScopeVar}.RegisterName(\"{escapedName}\", {varName});");
+						}
 					}
 				}
 			}
@@ -798,7 +812,8 @@ static class UpdateComponentCodeWriter
 			{
 				codeWriter.WriteLine($"this.{GeneratorHelpers.EscapeIdentifier(fieldName)} = {varName};");
 			}
-			codeWriter.WriteLine($"{varName}.StyleId ??= \"{EscapeString(fieldName)}\";");
+			if (isElement)
+				codeWriter.WriteLine($"{varName}.StyleId ??= \"{EscapeString(fieldName)}\";");
 		}
 	}
 
@@ -1184,9 +1199,8 @@ static class UpdateComponentCodeWriter
 	}
 
 	/// <summary>
-	/// Emits code to patch the page's <c>Resources</c> dictionary from the new XAML node.
-	/// Removes old resource keys not present in the new XAML, then adds/updates all new keyed resources.
-	/// Tracks resource keys via <see cref="XamlComponentRegistry"/> so subsequent patches know what to remove.
+	/// Emits guarded additions for explicit dictionaries and addition-only implicit containers.
+	/// Other implicit resource edits retain the existing keyed update/removal path.
 	/// </summary>
 	/// <returns><see langword="true"/> if resource emission was handled; <see langword="false"/> to fall through.</returns>
 	static bool TryEmitResourceDictionaryChange(
@@ -1197,7 +1211,10 @@ static class UpdateComponentCodeWriter
 		IDictionary<XmlType, INamedTypeSymbol> typeCache,
 		INamedTypeSymbol rootType,
 		SourceProductionContext sourceProductionContext,
-		ProjectItem? projectItem)
+		ProjectItem? projectItem,
+		IReadOnlyDictionary<ElementNode, string>? nodeIds,
+		Dictionary<string, XmlType>? existingNamedFields,
+		INode? previousResources)
 	{
 		// Collect resource elements from the new node
 		var resourceElements = new List<ElementNode>();
@@ -1211,16 +1228,51 @@ static class UpdateComponentCodeWriter
 		}
 		else if (newNode is ElementNode singleElement)
 		{
-			resourceElements.Add(singleElement);
+			if (singleElement.XmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, typeCache, out var resourceType)
+				&& resourceType != null
+				&& (resourceType.ToFQDisplayString() == "global::Microsoft.Maui.Controls.ResourceDictionary"
+					|| InheritsFrom(resourceType, "global::Microsoft.Maui.Controls.ResourceDictionary")))
+			{
+				var additions = singleElement.CollectionItems.OfType<ElementNode>().Where(CanEmitResourceAddition)
+					.Where(resource => previousResources is not ElementNode previousDictionary
+						|| !previousDictionary.CollectionItems.Any(previous => XamlNodeDiff.NodeValueEquals(previous, resource)));
+				EmitResourceAdditions(codeWriter, additions, "this.Resources", compilation, xmlnsCache, typeCache,
+					rootType, sourceProductionContext, projectItem, nodeIds, existingNamedFields);
+				return true;
+			}
+			else
+				resourceElements.Add(singleElement);
 		}
 
-		// Verify all resources have x:Key — required for dictionary patching
+		var previousElements = previousResources switch
+		{
+			ListNode previousList => previousList.CollectionItems,
+			ElementNode previousElement => new List<INode> { previousElement },
+			_ => new List<INode>()
+		};
+		// Only additions use guarded inflation. Keep the existing update/removal path for other edits.
+		var retainedIndex = 0;
+		foreach (var element in resourceElements)
+			if (retainedIndex < previousElements.Count && XamlNodeDiff.NodeValueEquals(previousElements[retainedIndex], element))
+				retainedIndex++;
+		var addedResources = resourceElements.Where(resource =>
+			!previousElements.Any(previous => XamlNodeDiff.NodeValueEquals(previous, resource))).ToList();
+		if (retainedIndex == previousElements.Count && addedResources.All(CanEmitResourceAddition))
+		{
+			EmitResourceAdditions(codeWriter, addedResources, "this.Resources", compilation, xmlnsCache, typeCache,
+				rootType, sourceProductionContext, projectItem, nodeIds, existingNamedFields, trackResourceKeys: true);
+			return true;
+		}
+
+		var implicitStyles = resourceElements.Where(element => element.XmlType.Name == "Style"
+			&& !element.Properties.ContainsKey(XmlName.xKey)
+			&& !element.Properties.ContainsKey(new XmlName("", "Class"))).ToList();
+
 		var keyedResources = new List<(string key, ElementNode element)>();
 		foreach (var elem in resourceElements)
 		{
 			if (elem.Properties.TryGetValue(XmlName.xKey, out var keyNode) && keyNode is ValueNode keyVal && keyVal.Value is string key)
 				keyedResources.Add((key, elem));
-			// Resources without x:Key (e.g., implicit styles) are skipped
 		}
 
 		// Pre-compute which resources can actually be encoded as C# expressions.
@@ -1248,6 +1300,7 @@ static class UpdateComponentCodeWriter
 			codeWriter.WriteLine("this.Resources.Remove(__rk);");
 			codeWriter.Indent--;
 			codeWriter.WriteLine("global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.RegisterResourceKeys(this, global::System.Array.Empty<string>());");
+			EmitResourceAdditions(codeWriter, implicitStyles, "this.Resources", compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem, nodeIds, existingNamedFields);
 			return true;
 		}
 
@@ -1279,6 +1332,8 @@ static class UpdateComponentCodeWriter
 		// Register only the keys we manage for next patch
 		var keysArrayExpr = string.Join(", ", emittableResources.Select(kr => $"\"{EscapeString(kr.key)}\""));
 		codeWriter.WriteLine($"global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.RegisterResourceKeys(this, new string[] {{ {keysArrayExpr} }});");
+
+		EmitResourceAdditions(codeWriter, implicitStyles, "this.Resources", compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem, nodeIds, existingNamedFields);
 
 		return true;
 	}
@@ -1351,6 +1406,230 @@ static class UpdateComponentCodeWriter
 				codeWriter.WriteLine(localMethod);
 		}
 		return true;
+	}
+
+	static bool CanEmitResourceAddition(ElementNode resource) =>
+		resource.Properties.TryGetValue(XmlName.xKey, out var key) && key is ValueNode { Value: string }
+		|| resource.XmlType.Name == "Style"
+			&& !resource.Properties.ContainsKey(XmlName.xKey)
+			&& !resource.Properties.ContainsKey(new XmlName("", "Class"));
+
+	static void EmitResourceAdditions(
+		IndentedTextWriter codeWriter,
+		IEnumerable<ElementNode> resources,
+		string target,
+		Compilation compilation,
+		AssemblyAttributes xmlnsCache,
+		IDictionary<XmlType, INamedTypeSymbol> typeCache,
+		INamedTypeSymbol rootType,
+		SourceProductionContext sourceProductionContext,
+		ProjectItem? projectItem,
+		IReadOnlyDictionary<ElementNode, string>? nodeIds,
+		Dictionary<string, XmlType>? existingNamedFields,
+		bool trackResourceKeys = false)
+	{
+		var additions = resources.ToList();
+		if (additions.Count == 0)
+			return;
+		using (PrePost.NewBlock(codeWriter))
+		{
+			codeWriter.WriteLine("var __resourceInitializers = new global::System.Collections.Generic.List<global::System.Action>();");
+			if (trackResourceKeys)
+				codeWriter.WriteLine("var __resourceKeys = new global::System.Collections.Generic.List<string>(global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.GetResourceKeys(this));");
+			foreach (var resource in additions)
+				EmitResourceAddition(codeWriter, resource, target, compilation, xmlnsCache, typeCache, rootType,
+					sourceProductionContext, projectItem, nodeIds, existingNamedFields, trackResourceKeys);
+			codeWriter.WriteLine("foreach (var __initializeResource in __resourceInitializers)");
+			codeWriter.Indent++;
+			codeWriter.WriteLine("__initializeResource();");
+			codeWriter.Indent--;
+			if (trackResourceKeys)
+				codeWriter.WriteLine("global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.RegisterResourceKeys(this, __resourceKeys.ToArray());");
+		}
+	}
+
+	static void EmitResourceAddition(
+		IndentedTextWriter codeWriter,
+		ElementNode resource,
+		string target,
+		Compilation compilation,
+		AssemblyAttributes xmlnsCache,
+		IDictionary<XmlType, INamedTypeSymbol> typeCache,
+		INamedTypeSymbol rootType,
+		SourceProductionContext sourceProductionContext,
+		ProjectItem? projectItem,
+		IReadOnlyDictionary<ElementNode, string>? nodeIds,
+		Dictionary<string, XmlType>? existingNamedFields,
+		bool trackResourceKeys)
+	{
+		var key = resource.Properties.TryGetValue(XmlName.xKey, out var keyNode) && keyNode is ValueNode { Value: string resourceKey }
+			? $"\"{EscapeString(resourceKey)}\"" : null;
+		if (key != null)
+			codeWriter.WriteLine($"if (!{target}.ContainsKey({key}))");
+		using (PrePost.NewBlock(codeWriter))
+		{
+			var context = CreateConversionContext(compilation, sourceProductionContext, xmlnsCache, typeCache, rootType, projectItem, codeWriter);
+			context.UseLocalResourceFactories = true;
+			var dictionary = new ElementNode(new XmlType(XamlParser.MauiUri, "ResourceDictionary", null),
+				XamlParser.MauiUri, resource.NamespaceResolver)
+			{ Parent = CloneResourceAncestors(resource.Parent, context) };
+			context.Variables[dictionary] = new DirectValue(
+				compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ResourceDictionary")!, target);
+			var outerNames = new Dictionary<string, ILocalValue>(StringComparer.Ordinal);
+			if (nodeIds != null)
+			{
+				var enclosingScope = GetEnclosingResourceNameScope(resource.Parent);
+				foreach (var pair in nodeIds)
+				{
+					if (GetEnclosingResourceNameScope(pair.Key) != enclosingScope
+						|| IsResourceDescendant(pair.Key, resource)
+						|| !pair.Key.Properties.TryGetValue(XmlName.xName, out var nameNode)
+						|| nameNode is not ValueNode { Value: string name }
+						|| !pair.Key.XmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, typeCache, out var namedType)
+						|| namedType == null)
+						continue;
+					var accessor = $"global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.GetComponent(this, \"{EscapeString(pair.Value)}\")";
+					if (InheritsFrom(rootType, "global::Microsoft.Maui.Controls.BindableObject"))
+						accessor = $"global::Microsoft.Maui.Controls.Internals.NameScope.GetNameScope(this)?.FindByName(\"{EscapeString(name)}\") ?? {accessor}";
+					else if (existingNamedFields?.TryGetValue(name, out var fieldXmlType) == true
+						&& fieldXmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, typeCache, out var fieldType)
+						&& fieldType != null && IsAssignableTo(namedType, fieldType, compilation))
+						accessor = $"this.{GeneratorHelpers.EscapeIdentifier(name)}";
+					outerNames[name] = pair.Value.Length == 0 ? new DirectValue(rootType, "this")
+						: new DirectValue(namedType, $"(({namedType.ToFQDisplayString()})({accessor})!)");
+				}
+			}
+			context.Scopes[dictionary] = (SetNamescopesAndRegisterNamesVisitor.CreateNamescope(codeWriter, context), outerNames);
+			var node = (ElementNode)resource.Clone();
+			var originalElements = new List<ElementNode>();
+			resource.Accept(new XamlNodeVisitor((child, _) =>
+			{
+				if (child is ElementNode element)
+					originalElements.Add(element);
+			}), resource.Parent);
+			var clonedIds = new Dictionary<ElementNode, string>();
+			var elementIndex = 0;
+			node.Accept(new XamlNodeVisitor((child, _) =>
+			{
+				if (child is ElementNode element && nodeIds?.TryGetValue(originalElements[elementIndex++], out var id) == true)
+					clonedIds[element] = id;
+			}), dictionary);
+			context.NodeIds = clonedIds;
+			dictionary.CollectionItems.Add(node);
+			node.Accept(new XamlNodeVisitor((child, parent) =>
+			{
+				child.Parent = parent;
+				child.IgnorablePrefixes = child.IgnorablePrefixes?.ToList();
+			}), dictionary);
+			node.Accept(new ExpandMarkupsVisitor(context), dictionary);
+			node.Accept(new PruneIgnoredNodesVisitor(false), dictionary);
+			node.Accept(new SimplifyTypeExtensionVisitor(), dictionary);
+			if (!string.IsNullOrEmpty(context.ProjectItem.TargetFramework))
+				node.Accept(new SimplifyOnPlatformVisitor(context.ProjectItem.TargetFramework), dictionary);
+			node = (ElementNode)dictionary.CollectionItems[0];
+			if (key == null)
+			{
+				var targetType = SetPropertyHelpers.GetStyleTargetTypeExpression(node, context);
+				codeWriter.WriteLine($"if (!{target}.ContainsKey({targetType}.FullName))");
+			}
+			using var implicitStyleGuard = key == null ? PrePost.NewBlock(codeWriter) : PrePost.NoBlock();
+			if (node.IsLazyResource(dictionary, context))
+			{
+				SetPropertyHelpers.AddLazyResourceToResourceDictionary(codeWriter, context.Variables[dictionary], node, context, useLocalFactory: true);
+				if (trackResourceKeys && key != null)
+					codeWriter.WriteLine($"__resourceKeys.Add({key});");
+			}
+			else
+			{
+				node.Accept(new CreateValuesVisitor(context), null);
+				node.Accept(new SetNamescopesAndRegisterNamesVisitor(context), dictionary);
+				foreach (var entry in context.Variables)
+				{
+					if (entry.Key is not ElementNode element || element == dictionary)
+						continue;
+					if (clonedIds.TryGetValue(element, out var id) && id.Length != 0)
+					{
+						codeWriter.WriteLine($"if ((object?){entry.Value.ValueAccessor} is not null)");
+						codeWriter.Indent++;
+						codeWriter.WriteLine($"global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.Register(this, \"{EscapeString(id)}\", {entry.Value.ValueAccessor});");
+						codeWriter.Indent--;
+					}
+					if (element.Properties.ContainsKey(XmlName.xName)
+						&& GetEnclosingResourceNameScope(element) == GetEnclosingResourceNameScope(dictionary)
+						&& entry.Value.Type is INamedTypeSymbol namedType)
+						EmitNewElementNameScope(codeWriter, element, entry.Value.ValueAccessor, namedType,
+							rootType, existingNamedFields, compilation, xmlnsCache, typeCache);
+				}
+				// Resolve reference-dependent properties only after all eager additions have live names.
+				codeWriter.WriteLine("void __InitializeResource()");
+				using (PrePost.NewBlock(codeWriter))
+				{
+					node.Accept(new SetResourcesVisitor(context), null);
+					node.Accept(new SetPropertiesVisitor(context, true), null);
+					var value = context.Variables[node].ValueAccessor;
+					codeWriter.WriteLine(key != null ? $"{target}.Add({key}, {value});" : $"{target}.Add({value});");
+					if (trackResourceKeys && key != null)
+						codeWriter.WriteLine($"__resourceKeys.Add({key});");
+				}
+				codeWriter.WriteLine("__resourceInitializers.Add(new global::System.Action(__InitializeResource));");
+			}
+			foreach (var localMethod in context.LocalMethods)
+				codeWriter.WriteLine(localMethod);
+		}
+	}
+
+	static bool IsResourceDescendant(INode node, INode resource)
+	{
+		for (INode? current = node; current != null; current = current.Parent)
+			if (current == resource)
+				return true;
+		return false;
+	}
+
+	static INode? CloneResourceAncestors(INode? node, SourceGenContext context)
+	{
+		if (node == null)
+			return null;
+		var parent = CloneResourceAncestors(node.Parent, context);
+		if (node is ListNode list)
+			return new ListNode([], list.NamespaceResolver)
+			{
+				Parent = parent,
+				XmlName = list.XmlName,
+				IgnorablePrefixes = list.IgnorablePrefixes?.ToList()
+			};
+		if (node is not ElementNode element)
+			return parent;
+		var clone = new ElementNode(element.XmlType, element.NamespaceURI, element.NamespaceResolver)
+		{
+			Parent = parent,
+			IgnorablePrefixes = element.IgnorablePrefixes?.ToList()
+		};
+		var ignorableName = new XmlName(XamlParser.McUri, "Ignorable");
+		if (element.Properties.TryGetValue(ignorableName, out var ignorable))
+			clone.Properties[ignorableName] = ignorable.Clone();
+		if (element.Properties.TryGetValue(XmlName.xDataType, out var dataType))
+		{
+			clone.Properties[XmlName.xDataType] = dataType.Clone();
+			clone.Accept(new XamlNodeVisitor((child, owner) => child.Parent = owner), parent);
+			clone.Accept(new ExpandMarkupsVisitor(context), parent);
+			clone.Accept(new SimplifyTypeExtensionVisitor(), parent);
+		}
+		clone.Accept(new PruneIgnoredNodesVisitor(false), parent ?? clone);
+		if (parent is ElementNode parentElement && node.TryGetPropertyName(node.Parent, out var propertyName))
+			parentElement.Properties[propertyName] = clone;
+		return clone;
+	}
+
+	static INode? GetEnclosingResourceNameScope(INode? node)
+	{
+		for (; node != null; node = node.Parent)
+			if (node is RootNode || node is ElementNode element
+				&& (SetNamescopesAndRegisterNamesVisitor.IsDataTemplate(element, element.Parent)
+					|| SetNamescopesAndRegisterNamesVisitor.IsStyle(element, element.Parent)
+					|| SetNamescopesAndRegisterNamesVisitor.IsVisualStateGroupList(element)))
+				return node;
+		return null;
 	}
 
 	static bool TryEmitResourceDictionaryItemChange(
@@ -1472,7 +1751,10 @@ static class UpdateComponentCodeWriter
 		AssemblyAttributes xmlnsCache,
 		IDictionary<XmlType, INamedTypeSymbol> typeCache,
 		SourceProductionContext sourceProductionContext,
-		ProjectItem? projectItem)
+		ProjectItem? projectItem,
+		IReadOnlyDictionary<ElementNode, string>? nodeIds,
+		Dictionary<string, XmlType>? existingNamedFields,
+		INode? previousResources)
 	{
 		var propName = propDiff.PropertyName.LocalName;
 
@@ -1521,7 +1803,7 @@ static class UpdateComponentCodeWriter
 		if (propDiff.NewNode != null)
 		{
 			// Resource dictionary: emit Clear() + re-add all keyed resources
-			if (propName == "Resources" && TryEmitResourceDictionaryChange(codeWriter, propDiff.NewNode, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem))
+			if (propName == "Resources" && TryEmitResourceDictionaryChange(codeWriter, propDiff.NewNode, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem, nodeIds, existingNamedFields, previousResources))
 				return;
 
 			if (TryEmitMarkupNodeChange(codeWriter, propDiff, rootType, "this", isRoot: true, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem))

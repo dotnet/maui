@@ -49,7 +49,20 @@ namespace Microsoft.Maui.Media
 
 		public async Task<IScreenshotResult?> CaptureAsync(View view)
 		{
-			return await CaptureAsync(view, GetActivity(view.Context)?.Window).ConfigureAwait(false);
+			_ = view ?? throw new ArgumentNullException(nameof(view));
+
+			// PixelCopy copies whatever the window shows inside the view's on-screen bounds,
+			// so for an individual view it would also capture overlapping siblings and miss
+			// parts that are scrolled or clipped out of sight. Only use it when the view is the
+			// whole window; otherwise render the view itself. A window's root view has a context
+			// that does not lead back to the activity, so look the activity up for root views.
+			var activity = GetActivity(view.Context)
+				?? (view.RootView == view ? ActivityStateManager.Default.GetCurrentActivity() : null);
+			var window = activity?.Window;
+			if (window?.DecorView?.RootView != view)
+				window = null;
+
+			return await CaptureAsync(view, window).ConfigureAwait(false);
 		}
 
 		async Task<IScreenshotResult?> CaptureAsync(View view, Window? window)
@@ -65,7 +78,7 @@ namespace Microsoft.Maui.Media
 
 		static async Task<Bitmap?> RenderAsync(View view, Window? window)
 		{
-			if (OperatingSystem.IsAndroidVersionAtLeast(26))
+			if (window is not null && OperatingSystem.IsAndroidVersionAtLeast(26))
 			{
 				var bitmap = await RenderUsingPixelCopyAsync(view, window).ConfigureAwait(false);
 				if (bitmap is not null)
