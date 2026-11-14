@@ -665,6 +665,12 @@ namespace Microsoft.Maui.Controls
 						flyoutPage.Toolbar = null;
 					}
 
+					// The root of a modal stack also receives the toolbar we created
+					if (_toolbar.Parent is Page page && page.Toolbar == _toolbar)
+					{
+						page.Toolbar = null;
+					}
+
 					_toolbar.Disconnect();
 					_toolbar = null;
 				}
