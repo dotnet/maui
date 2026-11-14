@@ -29,27 +29,7 @@ namespace Microsoft.Maui.DeviceTests
 			await InvokeOnMainThreadAsync(() =>
 			{
 				var context = MauiProgram.DefaultContext;
-				// Resolve the typed Java peer before the inset helper calls GetSystemService.
-				var windowManager = context.GetActivity()?.WindowManager;
-				Assert.NotNull(windowManager);
-				Assert.IsAssignableFrom<IWindowManager>(context.GetSystemService(Context.WindowService));
-				int screenWidth;
-				int screenHeight;
-				if (OperatingSystem.IsAndroidVersionAtLeast(30))
-				{
-					using var windowMetrics = windowManager.MaximumWindowMetrics;
-					using var bounds = windowMetrics.Bounds;
-					screenWidth = bounds.Width();
-					screenHeight = bounds.Height();
-				}
-				else
-				{
-					using var metrics = new DisplayMetrics();
-					Assert.NotNull(windowManager.DefaultDisplay);
-					windowManager.DefaultDisplay.GetRealMetrics(metrics);
-					screenWidth = metrics.WidthPixels;
-					screenHeight = metrics.HeightPixels;
-				}
+				var (screenWidth, screenHeight) = GetScreenSize(context);
 
 				var height = fullHeight ? screenHeight : screenHeight / 2;
 				var top = fullHeight ? offset : screenHeight - height + offset;
@@ -71,13 +51,64 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		const int ImeBottom = 800;
+
+		[Theory]
+		[InlineData(0, ImeBottom)]
+		[InlineData(200, ImeBottom - 200)]
+		[InlineData(ImeBottom + 100, 0)]
+		public async Task AnimatedSoftInputInsetCoversOnlyTheKeyboardOverlap(int gapToScreenBottom, int expectedBottomInset)
+		{
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var context = MauiProgram.DefaultContext;
+				var (screenWidth, screenHeight) = GetScreenSize(context);
+
+				// A view that ends above the screen bottom, like a page above bottom tabs
+				using var view = new PositionedView(context, 0);
+				view.Layout(0, 0, screenWidth, screenHeight - gapToScreenBottom);
+
+				using var builder = new WindowInsetsCompat.Builder();
+				using var ime = AInsets.Of(0, 0, 0, ImeBottom);
+				using var insets = builder
+					.SetInsets(WindowInsetsCompat.Type.Ime(), ime)
+					.Build();
+				var padded = SafeAreaExtensions.ApplyAnimatedSoftInputInsetsPx(
+					insets, new SafeAreaLayoutStub { Regions = SafeAreaRegions.SoftInput }, context, view, isImeOpening: true);
+
+				Assert.Equal(expectedBottomInset, view.PaddingBottom);
+				Assert.Equal(expectedBottomInset > 0, padded);
+			});
+		}
+
+		static (int Width, int Height) GetScreenSize(Context context)
+		{
+			// Resolve the typed Java peer before the inset helper calls GetSystemService.
+			var windowManager = context.GetActivity()?.WindowManager;
+			Assert.NotNull(windowManager);
+			Assert.IsAssignableFrom<IWindowManager>(context.GetSystemService(Context.WindowService));
+			if (OperatingSystem.IsAndroidVersionAtLeast(30))
+			{
+				using var windowMetrics = windowManager.MaximumWindowMetrics;
+				using var bounds = windowMetrics.Bounds;
+				return (bounds.Width(), bounds.Height());
+			}
+
+			using var metrics = new DisplayMetrics();
+			Assert.NotNull(windowManager.DefaultDisplay);
+			windowManager.DefaultDisplay.GetRealMetrics(metrics);
+			return (metrics.WidthPixels, metrics.HeightPixels);
+		}
+
 		class SafeAreaLayoutStub : LayoutStub, ISafeAreaView2
 		{
 			public bool HasExplicitSafeAreaEdges => true;
 
 			public Thickness SafeAreaInsets { get; set; }
 
-			public SafeAreaRegions GetSafeAreaRegionsForEdge(int edge) => SafeAreaRegions.Container;
+			public SafeAreaRegions Regions { get; set; } = SafeAreaRegions.Container;
+
+			public SafeAreaRegions GetSafeAreaRegionsForEdge(int edge) => Regions;
 		}
 
 		class PositionedView : AView
