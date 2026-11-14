@@ -63,7 +63,7 @@ function ConvertFrom-ReviewCommand {
     if ($trimmed -notmatch '(?i)^/review(\s|$)') {
         return $null
     }
-    if ($trimmed -match '(?i)^/review\s+(rerun|tests|performance|expert-review(?:er)?)(\s|$)') {
+    if ($trimmed -match '(?i)^/review\s+(rerun|tests|run-tests|performance|expert-review(?:er)?)(\s|$)') {
         return $null
     }
 

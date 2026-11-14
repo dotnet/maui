@@ -1,5 +1,6 @@
 parameters:
   platform: '' # [ android, ios, windows, catalyst ]
+  platforms: [] # Optional shared-build platforms; Windows has its own build/artifact.
   path: '' # path to csproj
   device: '' # the xharness device to use
   cakeArgs: '' # additional cake args
@@ -26,7 +27,7 @@ steps:
 - template: provision.yml
   parameters:
     skipAndroidSdks: false
-    skipXcode: ${{ or(eq(parameters.platform, 'android'), eq(parameters.platform, 'windows')) }}
+    skipXcode: ${{ or(eq(parameters.platform, 'android'), eq(parameters.platform, 'windows'), and(gt(length(parameters.platforms), 0), not(containsValue(parameters.platforms, 'ios')), not(containsValue(parameters.platforms, 'catalyst')))) }}
     provisionatorChannel: ${{ parameters.provisionatorChannel }}
     ${{ if parameters.skipProvisioning }}:
       skipProvisionator: true
@@ -66,7 +67,16 @@ steps:
   
 - pwsh: |
     Get-Content $PSCommandPath
-    $buildCommand = "./build.ps1 --target=uitests-apphost --configuration=${{ parameters.configuration }} --${{ parameters.platform }} --verbosity=diagnostic --usenuget=false --runtimevariant=${{ parameters.runtimeVariant }}"
+    $platformArguments = "--${{ parameters.platform }}"
+    if ("${{ join(',', parameters.platforms) }}" -ne "") {
+        $platformArguments = ("${{ join(',', parameters.platforms) }}".Split(',') |
+            Where-Object { $_ -in @('android', 'ios', 'catalyst') } |
+            ForEach-Object { "--$_" }) -join ' '
+        if (-not $platformArguments) {
+            throw "A shared sample build requires at least one non-Windows platform."
+        }
+    }
+    $buildCommand = "./build.ps1 --target=uitests-apphost --configuration=${{ parameters.configuration }} $platformArguments --verbosity=diagnostic --usenuget=false --runtimevariant=${{ parameters.runtimeVariant }}"
     
     # Add Material3 build argument if enabled
     if (("${{ parameters.useMaterial3 }}" -eq "true") -and ("${{ parameters.platform }}" -eq "android")) {

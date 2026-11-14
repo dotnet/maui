@@ -57,6 +57,15 @@ variables:
 
 parameters:
 
+  # An empty category selection retains the complete default suite.
+  - name: selectedPlatforms
+    type: object
+    default: [android, ios, catalyst, windows]
+
+  - name: selectedCategories
+    type: object
+    default: []
+
   - name: BuildEverything
     type: boolean
     default: false
@@ -167,6 +176,8 @@ stages:
 
   - template: common/ui-tests.yml
     parameters:
+      selectedPlatforms: ${{ parameters.selectedPlatforms }}
+      selectedCategories: ${{ parameters.selectedCategories }}
       iosXcodeVersion: ${{ parameters.iosXcodeVersion }}
       # Select pools based on pipeline - internal vs public
       ${{ if eq(variables['System.TeamProject'], 'internal') }}:

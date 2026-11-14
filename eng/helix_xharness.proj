@@ -75,10 +75,17 @@
             <Destination>eng</Destination>
         </HelixCorrelationPayload>
     </ItemGroup>
+    <!-- Only selected category work items use the nonzero-results guard. -->
+    <ItemGroup Condition="'$(SelectedDeviceCategories)' != '' and '$(TargetOS)' != 'windows'">
+        <HelixCorrelationPayload Include="$(RepoRoot)eng/devices/selection">
+            <Destination>device-selection</Destination>
+        </HelixCorrelationPayload>
+    </ItemGroup>
 
     <ItemGroup>
 
         <MAUIScenario Include="Controls">
+            <SupportsCategorySelection>true</SupportsCategorySelection>
             <ScenarioDirectoryName>Controls.DeviceTests</ScenarioDirectoryName>
             <PayloadDirectory>$(ScenariosDir)Controls.DeviceTests</PayloadDirectory>
             <IPAName>Microsoft.Maui.Controls.DeviceTests</IPAName>
@@ -88,6 +95,7 @@
         </MAUIScenario>
 
        <MAUIScenario Include="Core">
+            <SupportsCategorySelection Condition="'$(TargetOS)' != 'windows'">true</SupportsCategorySelection>
             <ScenarioDirectoryName>Core.DeviceTests</ScenarioDirectoryName>
             <PayloadDirectory>$(ScenariosDir)Core.DeviceTests</PayloadDirectory>
             <IPAName>Microsoft.Maui.Core.DeviceTests</IPAName>
@@ -125,6 +133,22 @@
 
     </ItemGroup>
 
+    <!-- Colon-delimited identifiers come from device-test-selection.yml, never filter expressions.
+         The dispatcher widens unknown project/category mappings before queueing. -->
+    <Target Name="ValidateDeviceTestSelection" BeforeTargets="DiscoverTestBundles">
+        <Error Condition="!$([System.Text.RegularExpressions.Regex]::IsMatch('$(SelectedDeviceProjects)', '^((Controls|Core|Graphics|Essentials|MauiBlazorWebView)\.DeviceTests(:((Controls|Core|Graphics|Essentials|MauiBlazorWebView)\.DeviceTests))*)?$'))"
+               Text="SelectedDeviceProjects must contain colon-delimited device project identifiers." />
+        <Error Condition="!$([System.Text.RegularExpressions.Regex]::IsMatch('$(SelectedDeviceCategories)', '^([A-Za-z][A-Za-z0-9_.-]{0,99}(:[A-Za-z][A-Za-z0-9_.-]{0,99})*)?$'))"
+               Text="SelectedDeviceCategories must contain colon-delimited category identifiers, not filter expressions." />
+        <ItemGroup>
+            <MAUIScenario Remove="@(MAUIScenario)" Condition="'$(SelectedDeviceProjects)' != '' and !$([System.String]::Copy(':$(SelectedDeviceProjects):').Contains(':%(MAUIScenario.ScenarioDirectoryName):'))" />
+            <_SelectedDeviceCategory Include="$(SelectedDeviceCategories.Split(':'))" Condition="'$(SelectedDeviceCategories)' != ''" />
+        </ItemGroup>
+        <Message Text="Device selection: projects=$(SelectedDeviceProjects), categories=$(SelectedDeviceCategories) (empty means all)." Importance="high" />
+        <Message Condition="'$(SelectedDeviceCategories)' != '' and '%(MAUIScenario.SupportsCategorySelection)' != 'true'"
+                 Text="Category selection widened to all tests for %(MAUIScenario.ScenarioDirectoryName) on $(TargetOS): this runner has no safe category filter." Importance="high" />
+    </Target>
+
     <!-- Process each test scenario individually using direct path construction -->
     <Target Name="DiscoverTestBundles" BeforeTargets="Build">
         <!-- Print all MAUIScenarios -->
@@ -133,10 +157,18 @@
         <ItemGroup>
             <!-- Create a special batching task to find app bundles by scenario -->
             <_MAUIScenarioSearch Include="@(MAUIScenario)" />
+            <!-- MSBuild batches categories over each filter-capable selected scenario.
+                 Mobile Category=X excludes other known categories, retaining uncategorized tests. -->
+            <_SelectedScenarioCategory Include="@(_SelectedDeviceCategory)" Condition="'%(_MAUIScenarioSearch.SupportsCategorySelection)' == 'true'">
+                <ScenarioDirectoryName>%(_MAUIScenarioSearch.ScenarioDirectoryName)</ScenarioDirectoryName>
+                <PayloadDirectory>%(_MAUIScenarioSearch.PayloadDirectory)</PayloadDirectory>
+                <PackageName>%(_MAUIScenarioSearch.PackageName)</PackageName>
+                <WindowsPackageId>%(_MAUIScenarioSearch.WindowsPackageId)</WindowsPackageId>
+            </_SelectedScenarioCategory>
         </ItemGroup>
 
         <!-- iOS: Split only heavy Controls categories, run everything else as single work items -->
-        <ItemGroup Condition="'$(TargetOS)' == 'ios'">
+        <ItemGroup Condition="'$(TargetOS)' == 'ios' and '$(SelectedDeviceCategories)' == '' and ('$(SelectedDeviceProjects)' == '' or $([System.String]::Copy(':$(SelectedDeviceProjects):').Contains(':Controls.DeviceTests:')))">
             <!-- Controls.DeviceTests - heavy categories run as separate work items -->
             <XHarnessAppBundleToTest Include="@(ControlsTestCategoriesToRunIndividually->'Controls.DeviceTests-%(Identity)')">
                 <TestTarget>ios-simulator-64</TestTarget>
@@ -155,24 +187,10 @@
                 <AppBundlePath>$([System.IO.Directory]::GetDirectories('$(ScenariosDir)Controls.DeviceTests/Release/$(TargetFrameworkToTest)-ios/', '*.app', System.IO.SearchOption.AllDirectories))</AppBundlePath>
                 <CustomCommands>xharness apple test --target "$target" --app "$app" --output-directory "$output_directory" --timeout "$timeout" --launch-timeout "$launch_timeout" --set-env="TestFilter=SkipCategories=$(ControlsTestCategoriesToSkipForRestOfTests)"</CustomCommands>
             </XHarnessAppBundleToTest>
-            <!-- Core.DeviceTests - single work item (no category splitting) -->
-            <XHarnessAppBundleToTest Include="$([System.IO.Directory]::GetDirectories('$(ScenariosDir)Core.DeviceTests/Release/$(TargetFrameworkToTest)-ios/', '*.app', System.IO.SearchOption.AllDirectories))">
-                <TestTarget>ios-simulator-64</TestTarget>
-                <WorkItemTimeout>02:00:00</WorkItemTimeout>
-                <TestTimeout>01:00:00</TestTimeout>
-            </XHarnessAppBundleToTest>
-            <!-- Graphics, Essentials, BlazorWebView - single work item each -->
-            <XHarnessAppBundleToTest Include="$([System.IO.Directory]::GetDirectories('$(ScenariosDir)Graphics.DeviceTests/Release/$(TargetFrameworkToTest)-ios/', '*.app', System.IO.SearchOption.AllDirectories))">
-                <TestTarget>ios-simulator-64</TestTarget>
-                <WorkItemTimeout>02:00:00</WorkItemTimeout>
-                <TestTimeout>01:00:00</TestTimeout>
-            </XHarnessAppBundleToTest>
-            <XHarnessAppBundleToTest Include="$([System.IO.Directory]::GetDirectories('$(ScenariosDir)Essentials.DeviceTests/Release/$(TargetFrameworkToTest)-ios/', '*.app', System.IO.SearchOption.AllDirectories))">
-                <TestTarget>ios-simulator-64</TestTarget>
-                <WorkItemTimeout>02:00:00</WorkItemTimeout>
-                <TestTimeout>01:00:00</TestTimeout>
-            </XHarnessAppBundleToTest>
-            <XHarnessAppBundleToTest Include="$([System.IO.Directory]::GetDirectories('$(ScenariosDir)MauiBlazorWebView.DeviceTests/Release/$(TargetFrameworkToTest)-ios/', '*.app', System.IO.SearchOption.AllDirectories))">
+        </ItemGroup>
+        <ItemGroup Condition="'$(TargetOS)' == 'ios'">
+            <XHarnessAppBundleToTest Include="$([System.IO.Directory]::GetDirectories('%(_MAUIScenarioSearch.PayloadDirectory)/Release/$(TargetFrameworkToTest)-ios/', '*.app', System.IO.SearchOption.AllDirectories))"
+                                    Condition="('%(_MAUIScenarioSearch.Identity)' != 'Controls' and '$(SelectedDeviceCategories)' == '') or ('$(SelectedDeviceCategories)' != '' and '%(_MAUIScenarioSearch.SupportsCategorySelection)' != 'true')">
                 <TestTarget>ios-simulator-64</TestTarget>
                 <WorkItemTimeout>02:00:00</WorkItemTimeout>
                 <TestTimeout>01:00:00</TestTimeout>
@@ -181,7 +199,8 @@
 
         <!-- MacCatalyst: Use the original MAUIScenario approach -->
         <ItemGroup Condition="'$(TargetOS)' == 'maccatalyst'">
-            <XHarnessAppBundleToTest Include="$([System.IO.Directory]::GetDirectories('%(_MAUIScenarioSearch.PayloadDirectory)/Release/$(TargetFrameworkToTest)-maccatalyst/', '*.app', System.IO.SearchOption.AllDirectories))">
+            <XHarnessAppBundleToTest Include="$([System.IO.Directory]::GetDirectories('%(_MAUIScenarioSearch.PayloadDirectory)/Release/$(TargetFrameworkToTest)-maccatalyst/', '*.app', System.IO.SearchOption.AllDirectories))"
+                                    Condition="'$(SelectedDeviceCategories)' == '' or '%(_MAUIScenarioSearch.SupportsCategorySelection)' != 'true'">
                 <TestTarget>maccatalyst</TestTarget>
                 <WorkItemTimeout>02:00:00</WorkItemTimeout>
                 <TestTimeout>01:00:00</TestTimeout>
@@ -191,7 +210,8 @@
 
         <!-- Android: All scenarios run as single work items (no category splitting) -->
         <ItemGroup Condition="'$(TargetOS)' == 'android'">
-            <_apks Include="%(_MAUIScenarioSearch.PayloadDirectory)/Release/$(TargetFrameworkToTest)-android/**/*Signed.apk" />
+            <_apks Include="%(_MAUIScenarioSearch.PayloadDirectory)/Release/$(TargetFrameworkToTest)-android/**/*Signed.apk"
+                   Condition="'$(SelectedDeviceCategories)' == '' or '%(_MAUIScenarioSearch.SupportsCategorySelection)' != 'true'" />
             <XHarnessApkToTest Include="@(_apks)">
                 <WorkItemTimeout>02:00:00</WorkItemTimeout>
                 <TestTimeout>01:00:00</TestTimeout>
@@ -204,26 +224,80 @@
             </XHarnessApkToTest>
         </ItemGroup>
 
+        <!-- Each selected category has its own work item; no unsupported OR filters. -->
+        <ItemGroup Condition="'@(_SelectedScenarioCategory)' != '' and ('$(TargetOS)' == 'ios' or '$(TargetOS)' == 'maccatalyst')">
+            <XHarnessAppBundleToTest Include="%(_SelectedScenarioCategory.ScenarioDirectoryName)-%(_SelectedScenarioCategory.Identity)">
+                <TestTarget Condition="'$(TargetOS)' == 'ios'">ios-simulator-64</TestTarget>
+                <TestTarget Condition="'$(TargetOS)' == 'maccatalyst'">maccatalyst</TestTarget>
+                <AppBundlePath>$([System.IO.Directory]::GetDirectories('%(_SelectedScenarioCategory.PayloadDirectory)/Release/$(TargetFrameworkToTest)-$(TargetOS)/', '*.app', System.IO.SearchOption.AllDirectories))</AppBundlePath>
+                <WorkItemTimeout>02:00:00</WorkItemTimeout>
+                <TestTimeout>01:15:00</TestTimeout>
+                <LaunchTimeout>00:10:00</LaunchTimeout>
+                <CustomCommands>xharness apple test --target "$target" --app "$app" --output-directory "$output_directory" --timeout "$timeout" --launch-timeout "$launch_timeout" --set-env="TestFilter=Category=%(_SelectedScenarioCategory.Identity)" &amp;&amp; "$HELIX_PYTHONPATH" "$HELIX_CORRELATION_PAYLOAD/device-selection/verify-results.py" "$output_directory"</CustomCommands>
+            </XHarnessAppBundleToTest>
+        </ItemGroup>
+        <ItemGroup Condition="'@(_SelectedScenarioCategory)' != '' and '$(TargetOS)' == 'android'">
+            <_SelectedApk Include="%(_SelectedScenarioCategory.PayloadDirectory)/Release/$(TargetFrameworkToTest)-android/**/*Signed.apk">
+                <Category>%(_SelectedScenarioCategory.Identity)</Category>
+                <ScenarioDirectoryName>%(_SelectedScenarioCategory.ScenarioDirectoryName)</ScenarioDirectoryName>
+                <PackageName>%(_SelectedScenarioCategory.PackageName)</PackageName>
+            </_SelectedApk>
+            <XHarnessApkToTest Include="%(_SelectedApk.ScenarioDirectoryName)-%(_SelectedApk.Category)">
+                <ApkPath>%(_SelectedApk.Identity)</ApkPath>
+                <AndroidPackageName>%(_SelectedApk.PackageName)</AndroidPackageName>
+                <WorkItemTimeout>02:00:00</WorkItemTimeout>
+                <TestTimeout>01:00:00</TestTimeout>
+                <CustomCommands>xharness android test --app "$app" --package-name "$package_name" --output-directory "$output_directory" --timeout "$timeout" --expected-exit-code "$expected_exit_code" --arg "TestFilter=Category=%(_SelectedApk.Category)" &amp;&amp; "$HELIX_PYTHONPATH" "$HELIX_CORRELATION_PAYLOAD/device-selection/verify-results.py" "$output_directory"</CustomCommands>
+            </XHarnessApkToTest>
+        </ItemGroup>
+        <!-- Widened projects still must execute tests when categories were selected. -->
+        <ItemGroup Condition="'$(SelectedDeviceCategories)' != ''">
+            <XHarnessAppBundleToTest Update="@(XHarnessAppBundleToTest)" Condition="'%(XHarnessAppBundleToTest.CustomCommands)' == ''">
+                <CustomCommands>xharness apple test --target "$target" --app "$app" --output-directory "$output_directory" --timeout "$timeout" --launch-timeout "$launch_timeout" &amp;&amp; "$HELIX_PYTHONPATH" "$HELIX_CORRELATION_PAYLOAD/device-selection/verify-results.py" "$output_directory"</CustomCommands>
+            </XHarnessAppBundleToTest>
+            <XHarnessApkToTest Update="@(XHarnessApkToTest)" Condition="'%(XHarnessApkToTest.CustomCommands)' == ''">
+                <CustomCommands>xharness android test --app "$app" --package-name "$package_name" --output-directory "$output_directory" --timeout "$timeout" --expected-exit-code "$expected_exit_code" &amp;&amp; "$HELIX_PYTHONPATH" "$HELIX_CORRELATION_PAYLOAD/device-selection/verify-results.py" "$output_directory"</CustomCommands>
+            </XHarnessApkToTest>
+        </ItemGroup>
+
         <!-- Windows: Use HelixWorkItem with test runner script (not XHarness) -->
         <ItemGroup Condition="'$(TargetOS)' == 'windows'">
-            <HelixWorkItem Include="%(_MAUIScenarioSearch.ScenarioDirectoryName)-packaged">
+            <HelixWorkItem Include="%(_MAUIScenarioSearch.ScenarioDirectoryName)-packaged"
+                           Condition="'$(SelectedDeviceCategories)' == '' or '%(_MAUIScenarioSearch.SupportsCategorySelection)' != 'true'">
                 <PayloadArchive>%(_MAUIScenarioSearch.PayloadDirectory).zip</PayloadArchive>
                 <Command>call %HELIX_CORRELATION_PAYLOAD%\eng\devices\run-windows-devicetests.cmd %(_MAUIScenarioSearch.ScenarioDirectoryName) packaged %(_MAUIScenarioSearch.WindowsPackageId) $(TargetFrameworkToTest)</Command>
+                <Command Condition="'$(SelectedDeviceCategories)' != ''">call %HELIX_CORRELATION_PAYLOAD%\eng\devices\run-windows-devicetests.cmd %(_MAUIScenarioSearch.ScenarioDirectoryName) packaged %(_MAUIScenarioSearch.WindowsPackageId) $(TargetFrameworkToTest) --require-tests</Command>
                 <Timeout>02:00:00</Timeout>
             </HelixWorkItem>
         </ItemGroup>
         
         <!-- Windows Unpackaged tests -->
         <ItemGroup Condition="'$(TargetOS)' == 'windows'">
-            <HelixWorkItem Include="%(_MAUIScenarioSearch.ScenarioDirectoryName)-unpackaged">
+            <HelixWorkItem Include="%(_MAUIScenarioSearch.ScenarioDirectoryName)-unpackaged"
+                           Condition="'$(SelectedDeviceCategories)' == '' or '%(_MAUIScenarioSearch.SupportsCategorySelection)' != 'true'">
                 <PayloadArchive>%(_MAUIScenarioSearch.PayloadDirectory).zip</PayloadArchive>
                 <Command>call %HELIX_CORRELATION_PAYLOAD%\eng\devices\run-windows-devicetests.cmd %(_MAUIScenarioSearch.ScenarioDirectoryName) unpackaged %(_MAUIScenarioSearch.WindowsPackageId) $(TargetFrameworkToTest)</Command>
+                <Command Condition="'$(SelectedDeviceCategories)' != ''">call %HELIX_CORRELATION_PAYLOAD%\eng\devices\run-windows-devicetests.cmd %(_MAUIScenarioSearch.ScenarioDirectoryName) unpackaged %(_MAUIScenarioSearch.WindowsPackageId) $(TargetFrameworkToTest) --require-tests</Command>
+                <Timeout>02:00:00</Timeout>
+            </HelixWorkItem>
+        </ItemGroup>
+        <ItemGroup Condition="'$(TargetOS)' == 'windows' and '@(_SelectedScenarioCategory)' != ''">
+            <HelixWorkItem Include="%(_SelectedScenarioCategory.ScenarioDirectoryName)-packaged-%(_SelectedScenarioCategory.Identity)">
+                <PayloadArchive>%(_SelectedScenarioCategory.PayloadDirectory).zip</PayloadArchive>
+                <Command>call %HELIX_CORRELATION_PAYLOAD%\eng\devices\run-windows-devicetests.cmd %(_SelectedScenarioCategory.ScenarioDirectoryName) packaged %(_SelectedScenarioCategory.WindowsPackageId) $(TargetFrameworkToTest) --filter "Category=%(_SelectedScenarioCategory.Identity)"</Command>
+                <Timeout>02:00:00</Timeout>
+            </HelixWorkItem>
+            <HelixWorkItem Include="%(_SelectedScenarioCategory.ScenarioDirectoryName)-unpackaged-%(_SelectedScenarioCategory.Identity)">
+                <PayloadArchive>%(_SelectedScenarioCategory.PayloadDirectory).zip</PayloadArchive>
+                <Command>call %HELIX_CORRELATION_PAYLOAD%\eng\devices\run-windows-devicetests.cmd %(_SelectedScenarioCategory.ScenarioDirectoryName) unpackaged %(_SelectedScenarioCategory.WindowsPackageId) $(TargetFrameworkToTest) --filter "Category=%(_SelectedScenarioCategory.Identity)"</Command>
                 <Timeout>02:00:00</Timeout>
             </HelixWorkItem>
         </ItemGroup>
 
         <Message Text="Created @(XHarnessAppBundleToTest->Count()) iOS work items" Importance="high" Condition="'$(TargetOS)' == 'ios'" />
         <Message Text="Created @(HelixWorkItem->Count()) Windows work items" Importance="high" Condition="'$(TargetOS)' == 'windows'" />
+        <Error Condition="('$(SelectedDeviceProjects)' != '' or '$(SelectedDeviceCategories)' != '') and '@(XHarnessAppBundleToTest)' == '' and '@(XHarnessApkToTest)' == '' and '@(HelixWorkItem)' == ''"
+               Text="Selected device coverage produced no work items. Check the selected platform/project artifacts; zero coverage is not a successful selection." />
     </Target>
 
 

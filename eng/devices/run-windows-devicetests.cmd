@@ -1,6 +1,6 @@
 @echo off
 REM Windows Device Tests runner for Helix
-REM Usage: run-windows-devicetests.cmd <ScenarioName> <Device> <PackageId> <TargetFrameworkVersion> [CategoryFilter]
+REM Usage: run-windows-devicetests.cmd <ScenarioName> <Device> <PackageId> <TargetFrameworkVersion> [CategoryFilter | --filter "Category=X" | --require-tests]
 REM   ScenarioName: Controls.DeviceTests, Core.DeviceTests, etc.
 REM   Device: packaged or unpackaged
 REM   PackageId: Package ID for the app
@@ -18,6 +18,26 @@ set PACKAGE_ID=%3
 set TFM=%4
 set CATEGORY_FILTER=%~5
 set EXIT_CODE=0
+set REQUIRE_EXECUTED_TESTS=0
+if "%~5"=="--require-tests" (
+    set CATEGORY_FILTER=
+    set REQUIRE_EXECUTED_TESTS=1
+)
+REM The Controls app accepts category indices, not a native --filter argument.
+REM Adapt the validated single-category filter to discovery indices for both modes.
+if "%~5"=="--filter" (
+    set "CATEGORY_FILTER=%~6"
+    if not "!CATEGORY_FILTER:~0,9!"=="Category=" (
+        echo ERROR: Only --filter "Category=X" is supported.
+        exit /b 1
+    )
+    set "CATEGORY_FILTER=!CATEGORY_FILTER:~9!"
+    if not defined CATEGORY_FILTER (
+        echo ERROR: Category filter must not be empty.
+        exit /b 1
+    )
+)
+if defined CATEGORY_FILTER set REQUIRE_EXECUTED_TESTS=1
 
 REM Configuration
 set WINDOWS_VERSION=10.0.19041.0
@@ -316,22 +336,27 @@ if %IS_PACKAGED%==1 (
         for /f "usebackq delims=" %%c in ("%CATEGORY_FILE%") do (
             set CATEGORY_NAME=%%c
             set EXPECTED_RESULT_FILE=%TEST_RESULTS_DIR%\TestResults-%PACKAGE_ID_SAFE%_!CATEGORY_NAME!.xml
-            
-            echo Running category !CATEGORY_INDEX!: !CATEGORY_NAME!
-            start "" /wait "!TEST_EXE!" "%TEST_RESULTS_FILE%" !CATEGORY_INDEX!
-            set LAUNCH_ERRORLEVEL=!ERRORLEVEL!
-            echo App exited with code: !LAUNCH_ERRORLEVEL!
-            REM WinUI Application.Exit may return -1 on a successful run.
-            if !LAUNCH_ERRORLEVEL! NEQ 0 if !LAUNCH_ERRORLEVEL! NEQ -1 (
-                echo ERROR: Test process crashed for !CATEGORY_NAME! ^(exit !LAUNCH_ERRORLEVEL!^)
-                call :dump_diagnostics
-                set EXIT_CODE=1
-            )
-            
-            if not exist "!EXPECTED_RESULT_FILE!" (
-                echo ERROR: Result file not produced for !CATEGORY_NAME!: !EXPECTED_RESULT_FILE!
-                call :dump_diagnostics
-                set EXIT_CODE=1
+            set RUN_CATEGORY=1
+            if defined CATEGORY_FILTER if /i not "!CATEGORY_NAME!"=="%CATEGORY_FILTER%" set RUN_CATEGORY=
+            if defined RUN_CATEGORY (
+                echo Running category !CATEGORY_INDEX!: !CATEGORY_NAME!
+                start "" /wait "!TEST_EXE!" "%TEST_RESULTS_FILE%" !CATEGORY_INDEX!
+                set LAUNCH_ERRORLEVEL=!ERRORLEVEL!
+                echo App exited with code: !LAUNCH_ERRORLEVEL!
+                REM WinUI Application.Exit may return -1 on a successful run.
+                if !LAUNCH_ERRORLEVEL! NEQ 0 if !LAUNCH_ERRORLEVEL! NEQ -1 (
+                    echo ERROR: Test process crashed for !CATEGORY_NAME! ^(exit !LAUNCH_ERRORLEVEL!^)
+                    call :dump_diagnostics
+                    set EXIT_CODE=1
+                )
+
+                if not exist "!EXPECTED_RESULT_FILE!" (
+                    echo ERROR: Result file not produced for !CATEGORY_NAME!: !EXPECTED_RESULT_FILE!
+                    call :dump_diagnostics
+                    set EXIT_CODE=1
+                )
+            ) else (
+                echo Skipping category !CATEGORY_INDEX!: !CATEGORY_NAME! ^(filter: %CATEGORY_FILTER%^)
             )
             
             set /a CATEGORY_INDEX+=1
@@ -473,6 +498,7 @@ powershell -Command ^
     "}" ^
     "$mergedDoc.Save('%TEST_RESULTS_DIR%\testResults.xml');" ^
     "Write-Host 'Created merged testResults.xml';" ^
+    "if ('%REQUIRE_EXECUTED_TESTS%' -eq '1' -and -not $mergedDoc.SelectSingleNode('/assemblies/assembly[@passed > 0 or @failed > 0]')) { Write-Host 'ERROR: Selected device coverage executed zero tests; coverage is missing.'; $hasFailures = $true };" ^
     "if ($hasFailures) { exit 1 }"
 if %ERRORLEVEL% NEQ 0 set EXIT_CODE=1
 

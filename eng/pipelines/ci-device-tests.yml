@@ -60,6 +60,18 @@ variables:
 
 parameters:
 
+# Project identifiers are the artifact names (for example Core.DeviceTests).
+# Empty projects/categories mean all; the dispatcher must widen uncertain mappings.
+- name: selectedPlatforms
+  type: object
+  default: [android, ios, maccatalyst, windows]
+- name: selectedProjects
+  type: object
+  default: []
+- name: selectedCategories
+  type: object
+  default: []
+
 # Internal pools (dnceng)
 - name: windowsPoolInternal
   type: object
@@ -121,6 +133,9 @@ stages:
   # Use Helix for iOS / Android / MacCatalyst / Windows Device Tests
   - template: /eng/pipelines/arcade/stage-device-tests.yml@self
     parameters:
+      selectedPlatforms: ${{ parameters.selectedPlatforms }}
+      selectedProjects: ${{ parameters.selectedProjects }}
+      selectedCategories: ${{ parameters.selectedCategories }}
       # Select pools based on pipeline - internal vs public
       ${{ if eq(variables['System.TeamProject'], 'internal') }}:
         buildPool: ${{ parameters.macOSPoolInternal }}

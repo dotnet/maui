@@ -12,6 +12,7 @@ parameters:
   useMaterial3: false # NEW PARAMETER - Enable Material3 build
   useWindowsCV1: false # NEW PARAMETER - Enable WindowsCollectionView1Handler test configuration
   testFilter: '' # comma-separated category list, expanded into ORed TestCategory= terms
+  requireExecutedTests: false # Selected runs must produce nonempty, executed TRX results.
   headless: true
   testConfigurationArgs: ''
   skipProvisioning: true
@@ -142,6 +143,13 @@ steps:
   env:
     APPIUM_HOME: $(APPIUM_HOME)
 
+- ${{ if parameters.requireExecutedTests }}:
+  - pwsh: |
+      if (Test-Path -LiteralPath "$(TestResultsDirectory)") {
+        Get-ChildItem -LiteralPath "$(TestResultsDirectory)" -Filter '*.trx' -File | Remove-Item -Force
+      }
+    displayName: Clear stale selected-test results
+
 - pwsh: |
     Get-Content $PSCommandPath
     $command = "./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --target=uitest --project=""${{ parameters.path }}"""
@@ -184,6 +192,37 @@ steps:
   env:
     APPIUM_HOME: $(APPIUM_HOME)
 
+- ${{ if parameters.requireExecutedTests }}:
+  - pwsh: |
+      $ErrorActionPreference = 'Stop'
+      $files = @(Get-ChildItem -LiteralPath "$(TestResultsDirectory)" -Filter '*.trx' -File -ErrorAction SilentlyContinue)
+      if ($files.Count -eq 0) {
+        throw "Selected UI tests produced no TRX results."
+      }
+      $executed = 0L
+      foreach ($file in $files) {
+        $settings = [System.Xml.XmlReaderSettings]::new()
+        $settings.DtdProcessing = [System.Xml.DtdProcessing]::Prohibit
+        $settings.XmlResolver = $null
+        $reader = [System.Xml.XmlReader]::Create($file.FullName, $settings)
+        try {
+          $results = [System.Xml.XmlDocument]::new()
+          $results.XmlResolver = $null
+          $results.Load($reader)
+          foreach ($counters in $results.SelectNodes("/*[local-name()='TestRun']/*[local-name()='ResultSummary']/*[local-name()='Counters']")) {
+            $executed += [long]$counters.GetAttribute('executed')
+          }
+        } finally {
+          $reader.Dispose()
+        }
+      }
+      if ($executed -le 0) {
+        throw "Selected UI tests executed zero tests; selected coverage is missing."
+      }
+      Write-Host "Selected UI tests executed $executed tests."
+    displayName: Require executed selected UI tests
+    condition: always()
+
 - bash: |
     cat ${BASH_SOURCE[0]}
     pwsh ./build.ps1 --target=Cleanup -Script eng/devices/${{ parameters.platform }}.cake ---results="$(TestResultsDirectory)" ${{ parameters.cakeArgs }}
@@ -199,6 +238,8 @@ steps:
     testResultsFiles: '$(TestResultsDirectory)/*.trx'
     testRunTitle: '${{ parameters.testFilter }}_$(System.PhaseName)'
     failTaskOnFailedTests: true
+    ${{ if parameters.requireExecutedTests }}:
+      failTaskOnMissingResultsFile: true
 
 - task: PublishBuildArtifacts@1
   condition: always()
