@@ -40,12 +40,20 @@ reported rather than silently narrowing coverage.
 
 The workflow must be deployed on `main` for slash-command activation and
 credentialed queueing. Its manual `dry_run` input (default true) validates AI
-selections and queue payloads without queueing or posting. A branch dry run can
-exercise the new workflow before deployment without relaxing OIDC trust.
+selections and queue payloads without queueing or posting. GitHub requires the
+workflow to exist on the default branch before any manual dispatch, including a
+branch dry run. After initial deployment, branch dry runs can exercise updates
+without relaxing OIDC trust.
 
 The optional `selectedPlatforms` and `selectedCategories` pipeline parameters,
 plus device `selectedProjects`, preserve existing full defaults when omitted.
 Do not supply arbitrary filter expressions: selection uses validated identifiers.
+UI/device dispatch uses the Pipelines Runs API with string-valued
+`templateParameters`: arrays are JSON strings and booleans are `"true"`/`"false"`.
+Typed array values were ignored in live Azure queue requests. The dispatcher
+checks the persisted parameters and source revision, cancels mismatched runs,
+and only reuses runs with equivalent coverage.
+
 The workflow reuses the existing Azure DevOps OIDC identity and queue permissions.
 Its AI job never receives Azure queue credentials; dispatch runs on a fresh
 hosted agent from trusted workflow scripts. No PR code runs in that job.
