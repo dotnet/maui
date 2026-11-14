@@ -1,4 +1,7 @@
 parameters:
+  - name: selectedRun
+    type: boolean
+    default: false
   - name: selectedPlatforms
     type: object
     default: [android, ios, catalyst, windows]
@@ -234,7 +237,7 @@ stages:
                 steps:
                   - template: ui-tests-steps.yml
                     parameters:
-                      requireExecutedTests: ${{ or(gt(length(parameters.selectedCategories), 0), ne(length(parameters.selectedPlatforms), 4)) }}
+                      requireExecutedTests: ${{ or(parameters.selectedRun, gt(length(parameters.selectedCategories), 0), ne(length(parameters.selectedPlatforms), 4)) }}
                       platform: android
                       version: ${{ api }}
                       path: ${{ project.android }}
@@ -296,7 +299,7 @@ stages:
                       agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
                       testFilter: $(CATEGORYGROUP)
                       testConfigurationArgs: "ShellRenderer"
-                      requireExecutedTests: ${{ or(gt(length(parameters.selectedCategories), 0), ne(length(parameters.selectedPlatforms), 4)) }}
+                      requireExecutedTests: ${{ or(parameters.selectedRun, gt(length(parameters.selectedCategories), 0), ne(length(parameters.selectedPlatforms), 4)) }}
                       headless: ${{ parameters.headless }}
                       skipProvisioning: ${{ parameters.skipProvisioning }}
                       runtimeVariant: "CoreCLR"
@@ -338,7 +341,7 @@ stages:
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       runtimeVariant: "CoreCLR"
                       useMaterial3: true
-                      requireExecutedTests: ${{ or(gt(length(parameters.selectedCategories), 0), ne(length(parameters.selectedPlatforms), 4)) }}
+                      requireExecutedTests: ${{ or(parameters.selectedRun, gt(length(parameters.selectedCategories), 0), ne(length(parameters.selectedPlatforms), 4)) }}
                       testFilter: "Material3"
                       skipProvisioning: ${{ parameters.skipProvisioning }}
 
@@ -378,7 +381,7 @@ stages:
                     provisionatorChannel: ${{ parameters.provisionatorChannel }}
                     runtimeVariant: "CoreCLR"
                     testFilter: 'SafeAreaEdges'
-                    requireExecutedTests: ${{ or(gt(length(parameters.selectedCategories), 0), ne(length(parameters.selectedPlatforms), 4)) }}
+                    requireExecutedTests: ${{ or(parameters.selectedRun, gt(length(parameters.selectedCategories), 0), ne(length(parameters.selectedPlatforms), 4)) }}
                     skipProvisioning: ${{ parameters.skipProvisioning }}
 
                 # Collect and publish Android SafeAreaEdges snapshot diffs
@@ -424,7 +427,7 @@ stages:
                   - template: ui-tests-steps.yml
                     parameters:
                       platform: ios
-                      requireExecutedTests: ${{ or(gt(length(parameters.selectedCategories), 0), ne(length(parameters.selectedPlatforms), 4)) }}
+                      requireExecutedTests: ${{ or(parameters.selectedRun, gt(length(parameters.selectedCategories), 0), ne(length(parameters.selectedPlatforms), 4)) }}
                       ${{ if eq(version, 'latest') }}:
                         version: 18.5
                       ${{ if ne(version, 'latest') }}:
@@ -482,7 +485,7 @@ stages:
                     - template: ui-tests-steps.yml
                       parameters:
                         platform: ios
-                        requireExecutedTests: ${{ or(gt(length(parameters.selectedCategories), 0), ne(length(parameters.selectedPlatforms), 4)) }}
+                        requireExecutedTests: ${{ or(parameters.selectedRun, gt(length(parameters.selectedCategories), 0), ne(length(parameters.selectedPlatforms), 4)) }}
                         ${{ if eq(version, 'latest') }}:
                           version: ${{ parameters.defaultiOSVersion }}
                         ${{ if ne(version, 'latest') }}:
@@ -532,7 +535,7 @@ stages:
                   - template: ui-tests-steps.yml
                     parameters:
                       platform: windows
-                      requireExecutedTests: ${{ or(gt(length(parameters.selectedCategories), 0), ne(length(parameters.selectedPlatforms), 4)) }}
+                      requireExecutedTests: ${{ or(parameters.selectedRun, gt(length(parameters.selectedCategories), 0), ne(length(parameters.selectedPlatforms), 4)) }}
                       version: "10.0.19041.0"
                       device: windows10
                       path: ${{ project.winui }}
@@ -582,7 +585,7 @@ stages:
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       runtimeVariant: "CoreCLR"
                       useWindowsCV1: true
-                      requireExecutedTests: ${{ or(gt(length(parameters.selectedCategories), 0), ne(length(parameters.selectedPlatforms), 4)) }}
+                      requireExecutedTests: ${{ or(parameters.selectedRun, gt(length(parameters.selectedCategories), 0), ne(length(parameters.selectedPlatforms), 4)) }}
                       testFilter: $(CATEGORYGROUP)
                       testConfigurationArgs: "UseWindowsCV1:true"
                       skipProvisioning: ${{ parameters.skipProvisioning }}
@@ -623,7 +626,7 @@ stages:
                   - template: ui-tests-steps.yml
                     parameters:
                       platform: catalyst
-                      requireExecutedTests: ${{ or(gt(length(parameters.selectedCategories), 0), ne(length(parameters.selectedPlatforms), 4)) }}
+                      requireExecutedTests: ${{ or(parameters.selectedRun, gt(length(parameters.selectedCategories), 0), ne(length(parameters.selectedPlatforms), 4)) }}
                       version: "15.3"
                       device: mac
                       path: ${{ project.mac }}
