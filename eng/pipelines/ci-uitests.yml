@@ -57,6 +57,10 @@ variables:
 
 parameters:
 
+  - name: selectedRun
+    type: boolean
+    default: false
+
   # An empty category selection retains the complete default suite.
   - name: selectedPlatforms
     type: object
@@ -176,6 +180,7 @@ stages:
 
   - template: common/ui-tests.yml
     parameters:
+      selectedRun: ${{ parameters.selectedRun }}
       selectedPlatforms: ${{ parameters.selectedPlatforms }}
       selectedCategories: ${{ parameters.selectedCategories }}
       iosXcodeVersion: ${{ parameters.iosXcodeVersion }}

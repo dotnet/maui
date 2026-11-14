@@ -87,6 +87,7 @@ if ($selection.runUi) {
         parameters = [ordered]@{
             selectedPlatforms = @($selection.platforms | ForEach-Object { if ($_ -eq 'maccatalyst') { 'catalyst' } else { $_ } })
             selectedCategories = @($selection.uiCategories)
+            selectedRun = $true
         }
     }
 }
