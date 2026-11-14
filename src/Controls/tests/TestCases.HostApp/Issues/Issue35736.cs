@@ -1,3 +1,7 @@
+#if IOS
+using Microsoft.Maui.Platform;
+#endif
+
 namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.Github, 35736, "SearchHandler QueryIcon, ClearIcon, ClearPlaceholderIcon need to update visually at runtime", PlatformAffected.iOS | PlatformAffected.Android | PlatformAffected.UWP)]
@@ -43,6 +47,17 @@ public class Issue35736 : Shell
 			};
 
 			Shell.SetSearchHandler(this, _searchHandler);
+
+#if IOS
+			_searchHandler.Focused += (_, _) =>
+			{
+				if ((Handler?.PlatformView as UIKit.UIView)?.Window?.FindDescendantView<UIKit.UISearchBar>() is { } searchBar)
+				{
+					// Keep the clear-icon screenshot independent of the insertion caret's blink phase.
+					searchBar.SearchTextField.TintColor = UIKit.UIColor.Clear;
+				}
+			};
+#endif
 
 			_queryIconLabel = new Label { AutomationId = "Issue35736QueryIconLabel", Text = "QueryIcon: bank.png" };
 			_clearIconLabel = new Label { AutomationId = "Issue35736ClearIconLabel", Text = "ClearIcon: bank.png" };
