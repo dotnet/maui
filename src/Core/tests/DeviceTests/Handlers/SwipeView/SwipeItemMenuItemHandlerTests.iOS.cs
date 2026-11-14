@@ -117,7 +117,7 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task IconColorChangeDoesNotReloadOrRedrawImage()
 		{
-			var imageService = new CountingFileImageSourceService();
+			var imageService = await InvokeOnMainThreadAsync(() => new CountingFileImageSourceService());
 			EnsureHandlerCreated(builder => builder.ConfigureImageSources(
 				services => services.AddService<IFileImageSource>(_ => imageService)));
 
@@ -147,9 +147,12 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task ScaleOneImageBeyondRenderToleranceIsResized()
 		{
-			var renderScale = UIScreen.MainScreen.Scale;
-			var imageService = new CountingFileImageSourceService(
-				CountingFileImageSourceService.CreateImage(50 + (1 / renderScale) + 0.5f, 1));
+			var imageService = await InvokeOnMainThreadAsync(() =>
+			{
+				var renderScale = UIScreen.MainScreen.Scale;
+				return new CountingFileImageSourceService(
+					CountingFileImageSourceService.CreateImage(50 + (1 / renderScale) + 0.5f, 1));
+			});
 			EnsureHandlerCreated(builder => builder.ConfigureImageSources(
 				services => services.AddService<IFileImageSource>(_ => imageService)));
 

@@ -3,7 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Microsoft.Build.Framework;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace Microsoft.Maui.Resizetizer.Tests
 {

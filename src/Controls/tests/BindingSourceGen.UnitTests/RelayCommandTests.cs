@@ -60,14 +60,14 @@ public class RelayCommandTests
 			""";
 
 		var result = SourceGenHelpers.Run(source);
-		
+
 		// The binding should be generated successfully with RelayCommand inference
 		Assert.NotNull(result.Binding);
-		
+
 		// Verify the generated interceptor code contains the SaveCommand property access
 		var allGeneratedCode = string.Join("\n\n", result.GeneratedFiles.Values);
 		Assert.Contains("SaveCommand", allGeneratedCode, System.StringComparison.Ordinal);
-		
+
 		// Note: There will be compilation errors because SaveCommand doesn't actually exist,
 		// but the interceptor code itself is generated correctly. In real usage with
 		// CommunityToolkit.Mvvm, the property would exist and compile successfully.
@@ -112,7 +112,7 @@ public class RelayCommandTests
 
 		// Create a compilation to test the extension method directly
 		var compilation = Microsoft.CodeAnalysis.CSharp.CSharpCompilation.Create("test")
-			.AddSyntaxTrees(CSharpSyntaxTree.ParseText(source))
+			.AddSyntaxTrees(CSharpSyntaxTree.ParseText(source, cancellationToken: TestContext.Current.CancellationToken))
 			.AddReferences(MetadataReference.CreateFromFile(typeof(object).Assembly.Location));
 
 		var myViewModelType = compilation.GetTypeByMetadataName("TestApp.MyViewModel");
@@ -120,7 +120,7 @@ public class RelayCommandTests
 
 		// Test that TryGetRelayCommandPropertyType can detect the SaveCommand property
 		var canInfer = myViewModelType.TryGetRelayCommandPropertyType("SaveCommand", compilation, out var commandType);
-		
+
 		Assert.True(canInfer, "Should be able to infer SaveCommand from Save method with [RelayCommand]");
 		Assert.NotNull(commandType);
 		Assert.Equal("System.Windows.Input.ICommand", commandType!.ToDisplayString());
@@ -164,7 +164,7 @@ public class RelayCommandTests
 			""";
 
 		var compilation = Microsoft.CodeAnalysis.CSharp.CSharpCompilation.Create("test")
-			.AddSyntaxTrees(CSharpSyntaxTree.ParseText(source))
+			.AddSyntaxTrees(CSharpSyntaxTree.ParseText(source, cancellationToken: TestContext.Current.CancellationToken))
 			.AddReferences(MetadataReference.CreateFromFile(typeof(object).Assembly.Location));
 
 		var myViewModelType = compilation.GetTypeByMetadataName("TestApp.MyViewModel");
@@ -216,7 +216,7 @@ public class RelayCommandTests
 			";
 
 		var compilation = Microsoft.CodeAnalysis.CSharp.CSharpCompilation.Create("test")
-			.AddSyntaxTrees(CSharpSyntaxTree.ParseText(source))
+			.AddSyntaxTrees(CSharpSyntaxTree.ParseText(source, cancellationToken: TestContext.Current.CancellationToken))
 			.AddReferences(MetadataReference.CreateFromFile(typeof(object).Assembly.Location));
 
 		var myViewModelType = compilation.GetTypeByMetadataName("TestApp.MyViewModel");
@@ -250,7 +250,7 @@ public class RelayCommandTests
 			""";
 
 		var compilation = Microsoft.CodeAnalysis.CSharp.CSharpCompilation.Create("test")
-			.AddSyntaxTrees(CSharpSyntaxTree.ParseText(source))
+			.AddSyntaxTrees(CSharpSyntaxTree.ParseText(source, cancellationToken: TestContext.Current.CancellationToken))
 			.AddReferences(MetadataReference.CreateFromFile(typeof(object).Assembly.Location));
 
 		var myViewModelType = compilation.GetTypeByMetadataName("TestApp.MyViewModel");
@@ -258,7 +258,7 @@ public class RelayCommandTests
 
 		// Should not infer SaveCommand without [RelayCommand] attribute
 		var canInfer = myViewModelType.TryGetRelayCommandPropertyType("SaveCommand", compilation, out var commandType);
-		
+
 		Assert.False(canInfer, "Should not infer SaveCommand without [RelayCommand] attribute");
 		Assert.Null(commandType);
 	}

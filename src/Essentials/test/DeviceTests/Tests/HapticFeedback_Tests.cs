@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Microsoft.Maui.Devices;
 using Xunit;
 
@@ -8,9 +9,9 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 	public class HapticFeedback_Tests
 	{
 		[Fact]
-		public void Click() => HapticFeedback.Perform(HapticFeedbackType.Click);
+		public Task Click() => Utils.OnMainThread(() => HapticFeedback.Perform(HapticFeedbackType.Click));
 
 		[Fact]
-		public void LongPress() => HapticFeedback.Perform(HapticFeedbackType.LongPress);
+		public Task LongPress() => Utils.OnMainThread(() => HapticFeedback.Perform(HapticFeedbackType.LongPress));
 	}
 }

@@ -83,19 +83,25 @@ namespace Microsoft.Maui
 		void DeinitializePlatformDependencies()
 		{
 			if (_frame != null)
+			{
 				_frame.Navigating -= FrameNavigating;
+				_frame = null;
+			}
 			if (_platformElement is not null && _platformElement.TryGetTarget(out var platformElement))
 			{
 				platformElement.Tapped -= ViewTapped;
 				platformElement.PointerMoved -= PointerMoved;
 			}
+			_platformElement = null;
 			if (_graphicsView != null)
 			{
+				_graphicsView.Drawable = null;
 				_graphicsView.Tapped -= ViewTapped;
 				_graphicsView.PointerMoved -= PointerMoved;
 				_panel?.RemoveOverlay(_graphicsView);
 				_graphicsView = null;
 			}
+			_panel = null;
 			IsPlatformViewInitialized = false;
 		}
 

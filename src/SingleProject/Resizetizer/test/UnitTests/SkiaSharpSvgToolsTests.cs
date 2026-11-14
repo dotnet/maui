@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using SkiaSharp;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.Maui.Resizetizer.Tests
 {

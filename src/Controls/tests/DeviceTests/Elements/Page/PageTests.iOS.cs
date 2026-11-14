@@ -10,6 +10,7 @@ using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using UIKit;
 using Xunit;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -36,12 +37,13 @@ namespace Microsoft.Maui.DeviceTests
 
 			var shell = new Shell() { CurrentItem = page };
 
-			await CreateHandlerAndAddToWindow<IWindowHandler>(shell, (handler) =>
+			await CreateHandlerAndAddToWindow<IWindowHandler>(shell, async (handler) =>
 			{
-				if (handler.VirtualView is Window window && window.Page is Shell shellPage)
-				{
-					Assert.NotEqual(shellPage.CurrentPage.On<iOS>().SafeAreaInsets(), Thickness.Zero);
-				}
+				var window = Assert.IsType<Window>(handler.VirtualView);
+				var shellPage = Assert.IsType<Shell>(window.Page);
+				await AssertEventually(() => shellPage.CurrentPage.On<iOS>().SafeAreaInsets() != Thickness.Zero,
+					message: "The current page did not receive its initial safe-area insets");
+				Assert.NotEqual(shellPage.CurrentPage.On<iOS>().SafeAreaInsets(), Thickness.Zero);
 			});
 		}
 
@@ -67,13 +69,13 @@ namespace Microsoft.Maui.DeviceTests
 
 			var shell = new Shell() { CurrentItem = page };
 
-			await CreateHandlerAndAddToWindow<IWindowHandler>(shell, (handler) =>
+			await CreateHandlerAndAddToWindow<IWindowHandler>(shell, async (handler) =>
 			{
-				if (handler.VirtualView is Window window && window.Page is Shell shellPage)
-				{
-					// Both APIs should result in safe area being respected (non-zero insets)
-					Assert.NotEqual(shellPage.CurrentPage.On<iOS>().SafeAreaInsets(), Thickness.Zero);
-				}
+				var window = Assert.IsType<Window>(handler.VirtualView);
+				var shellPage = Assert.IsType<Shell>(window.Page);
+				await AssertEventually(() => shellPage.CurrentPage.On<iOS>().SafeAreaInsets() != Thickness.Zero,
+					message: "The current page did not receive its initial safe-area insets");
+				Assert.NotEqual(shellPage.CurrentPage.On<iOS>().SafeAreaInsets(), Thickness.Zero);
 			});
 		}
 

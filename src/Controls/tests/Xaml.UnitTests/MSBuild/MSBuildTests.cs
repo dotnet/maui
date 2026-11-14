@@ -9,7 +9,6 @@ using System.Text;
 using System.Xml.Linq;
 using Mono.Cecil;
 using Xunit;
-using Xunit.Abstractions;
 using static Microsoft.Maui.Controls.MSBuild.UnitTests.MSBuildXmlExtensions;
 using IOPath = System.IO.Path;
 
@@ -64,7 +63,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 
 			// Deliberately shares the same x:Class across all Platforms/<Platform> variants, to
 			// mirror the common per-platform partial-page pattern from https://github.com/dotnet/maui/issues/36951.
-			}
+		}
 
 		class Css
 		{
@@ -107,21 +106,9 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			intermediateDirectory = IOPath.Combine(tempDirectory, "obj", "Debug", GetTfm());
 			Directory.CreateDirectory(tempDirectory);
 
-			// Find the Directory.Build files - they handle both local and Helix via MSBuild conditions
-			string props, targets;
-			if (AssemblyInfoTests.IsRunningOnHelix())
-			{
-				// On Helix, the test DLL directory contains the MSBuild folder with our files
-				var msbuildDir = IOPath.Combine(testDirectory, "MSBuild");
-				props = IOPath.Combine(msbuildDir, "_Directory.Build.props");
-				targets = IOPath.Combine(msbuildDir, "_Directory.Build.targets");
-			}
-			else
-			{
-				// Local development - find from repo root
-				props = AssemblyInfoTests.GetFilePathFromRoot(IOPath.Combine("src", "Controls", "tests", "Xaml.UnitTests", "MSBuild", "_Directory.Build.props"));
-				targets = AssemblyInfoTests.GetFilePathFromRoot(IOPath.Combine("src", "Controls", "tests", "Xaml.UnitTests", "MSBuild", "_Directory.Build.targets"));
-			}
+			var msbuildDir = AssemblyInfoTests.GetMSBuildTestsPath();
+			var props = IOPath.Combine(msbuildDir, "_Directory.Build.props");
+			var targets = IOPath.Combine(msbuildDir, "_Directory.Build.targets");
 
 			if (!File.Exists(props))
 			{

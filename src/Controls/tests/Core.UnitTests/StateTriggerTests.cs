@@ -9,9 +9,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		const string RedStateName = "Red";
 		const string GreenStateName = "Green";
 
-		static readonly Entry TestEntry = new Entry();
+		readonly Entry TestEntry = new Entry();
 
-		static VisualStateGroupList CreateTestStateGroups()
+		VisualStateGroupList CreateTestStateGroups()
 		{
 			var stateGroups = new VisualStateGroupList();
 			var visualStateGroup = new VisualStateGroup();

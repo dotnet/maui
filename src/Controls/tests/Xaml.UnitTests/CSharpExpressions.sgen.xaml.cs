@@ -165,13 +165,13 @@ public partial class CSharpExpressions : ContentPage
 				var page = new CSharpExpressions(XamlInflator.SourceGen);
 				var vm = new SimpleViewModel { Price = 100m };
 				page.BindingContext = vm;
-				
+
 				// Method should have been called exactly once during initialization
 				Assert.Equal(1, page.GetMultiplierCallCount);
-				
+
 				// Verify initial value contains "100" and "1" and "5"
 				Assert.StartsWith("100 x 1", page.captureTestLabel.Text, StringComparison.Ordinal);
-				
+
 				// Change the binding source - binding updates but local method NOT called again
 				vm.Price = 200m;
 				Assert.StartsWith("200 x 1", page.captureTestLabel.Text, StringComparison.Ordinal);
@@ -192,7 +192,7 @@ public partial class CSharpExpressions : ContentPage
 				var page = new CSharpExpressions(XamlInflator.SourceGen);
 				var vm = new SimpleViewModel { Price = 99m };
 				page.BindingContext = vm;
-				
+
 				// GetFormattedValue(1) and GetFormattedValue(2) should both be captured
 				Assert.Equal("99: Value1 and Value2", page.multiMethodArgsLabel.Text);
 			}
@@ -472,9 +472,9 @@ public partial class CSharpExpressions : ContentPage
 				var page = new CSharpExpressions(XamlInflator.SourceGen);
 				var vm = new SimpleViewModel();
 				page.BindingContext = vm;
-				
+
 				Assert.Equal("From ViewModel", page.vmLabel.Text);
-				
+
 				// Change the property - binding should update
 				vm.Name = "Updated Name";
 				Assert.Equal("Updated Name", page.vmLabel.Text);
@@ -494,9 +494,9 @@ public partial class CSharpExpressions : ContentPage
 				var page = new CSharpExpressions(XamlInflator.SourceGen);
 				var vm = new SimpleViewModel();
 				page.BindingContext = vm;
-				
+
 				Assert.Equal("John Doe", page.nestedLabel.Text);
-				
+
 				// Change the nested property - binding should update
 				vm.User.DisplayName = "Jane Smith";
 				Assert.Equal("Jane Smith", page.nestedLabel.Text);
@@ -516,9 +516,9 @@ public partial class CSharpExpressions : ContentPage
 				var page = new CSharpExpressions(XamlInflator.SourceGen);
 				var vm = new SimpleViewModel();
 				page.BindingContext = vm;
-				
+
 				Assert.Equal("John Doe", page.nestedLabel.Text);
-				
+
 				// Change the parent property - binding should update
 				vm.User = new UserInfo { DisplayName = "New User" };
 				Assert.Equal("New User", page.nestedLabel.Text);
@@ -535,7 +535,7 @@ public partial class CSharpExpressions : ContentPage
 			var page = new CSharpExpressions(XamlInflator.SourceGen);
 			var vm = new SimpleViewModel();
 			page.BindingContext = vm;
-			
+
 			Assert.Equal("Display: From ViewModel", page.vmMethodLabel.Text);
 		}
 
@@ -546,7 +546,7 @@ public partial class CSharpExpressions : ContentPage
 			var page = new CSharpExpressions(XamlInflator.SourceGen);
 			var vm = new SimpleViewModel();
 			page.BindingContext = vm;
-			
+
 			Assert.Equal("Display: From ViewModel", page.vmMethodBareLabel.Text);
 		}
 
@@ -556,7 +556,7 @@ public partial class CSharpExpressions : ContentPage
 			var page = new CSharpExpressions(XamlInflator.SourceGen);
 			var vm = new SimpleViewModel { Price = 100m };
 			page.BindingContext = vm;
-			
+
 			// Price (100) * TaxRate (0.1) = 10.00 (culture-dependent decimal separator)
 			Assert.StartsWith("10", page.mixedExprLabel.Text, StringComparison.Ordinal);
 			Assert.Equal(5, page.mixedExprLabel.Text!.Length); // "10.00" or "10,00"
@@ -570,10 +570,10 @@ public partial class CSharpExpressions : ContentPage
 			var page = new CSharpExpressions(XamlInflator.SourceGen);
 			var vm = new SimpleViewModel { Price = 100m, Quantity = 5 };
 			page.BindingContext = vm;
-			
+
 			// First binding with explicit this.TaxRate: Quantity (5) * TaxRate (0.1) = 0.50
 			Assert.StartsWith("0", page.mixedExprLabel2.Text, StringComparison.Ordinal);
-			
+
 			// Second binding with explicit this.TaxRate: Price (100) * TaxRate (0.1) = 10.00
 			Assert.StartsWith("10", page.mixedExprLabel3.Text, StringComparison.Ordinal);
 		}
@@ -587,9 +587,9 @@ public partial class CSharpExpressions : ContentPage
 				var page = new CSharpExpressions(XamlInflator.SourceGen);
 				var vm = new SimpleViewModel { Price = 100m };
 				page.BindingContext = vm;
-				
+
 				Assert.StartsWith("10", page.mixedExprLabel.Text, StringComparison.Ordinal);
-				
+
 				// Change Price - binding should update (TaxRate was captured at init)
 				vm.Price = 200m;
 				Assert.StartsWith("20", page.mixedExprLabel.Text, StringComparison.Ordinal);
@@ -606,7 +606,7 @@ public partial class CSharpExpressions : ContentPage
 			var page = new CSharpExpressions(XamlInflator.SourceGen);
 			var vm = new SimpleViewModel { Price = 50m, Quantity = 3 };
 			page.BindingContext = vm;
-			
+
 			// Price (50) * Quantity (3) = 150
 			Assert.Equal("150", page.multiRootLabel.Text);
 		}
@@ -620,9 +620,9 @@ public partial class CSharpExpressions : ContentPage
 				var page = new CSharpExpressions(XamlInflator.SourceGen);
 				var vm = new SimpleViewModel { Price = 50m, Quantity = 3 };
 				page.BindingContext = vm;
-				
+
 				Assert.Equal("150", page.multiRootLabel.Text);
-				
+
 				// Change Price - binding should update
 				vm.Price = 100m;
 				Assert.Equal("300", page.multiRootLabel.Text);
@@ -642,9 +642,9 @@ public partial class CSharpExpressions : ContentPage
 				var page = new CSharpExpressions(XamlInflator.SourceGen);
 				var vm = new SimpleViewModel { Price = 50m, Quantity = 3 };
 				page.BindingContext = vm;
-				
+
 				Assert.Equal("150", page.multiRootLabel.Text);
-				
+
 				// Change Quantity - binding should update
 				vm.Quantity = 4;
 				Assert.Equal("200", page.multiRootLabel.Text);
@@ -661,7 +661,7 @@ public partial class CSharpExpressions : ContentPage
 			var page = new CSharpExpressions(XamlInflator.SourceGen);
 			var vm = new SimpleViewModel { Name = "World" };
 			page.BindingContext = vm;
-			
+
 			Assert.Equal("Hello World!", page.vmInterpolationLabel.Text);
 		}
 
@@ -674,9 +674,9 @@ public partial class CSharpExpressions : ContentPage
 				var page = new CSharpExpressions(XamlInflator.SourceGen);
 				var vm = new SimpleViewModel { Name = "World" };
 				page.BindingContext = vm;
-				
+
 				Assert.Equal("Hello World!", page.vmInterpolationLabel.Text);
-				
+
 				// Change Name - binding should update
 				vm.Name = "MAUI";
 				Assert.Equal("Hello MAUI!", page.vmInterpolationLabel.Text);
@@ -693,7 +693,7 @@ public partial class CSharpExpressions : ContentPage
 			var page = new CSharpExpressions(XamlInflator.SourceGen);
 			var vm = new SimpleViewModel { Price = 9.99m, Quantity = 5 };
 			page.BindingContext = vm;
-			
+
 			// Format is culture-dependent, just check structure
 			Assert.StartsWith("5x at", page.vmInterpolationMultiLabel.Text, StringComparison.Ordinal);
 		}
@@ -707,9 +707,9 @@ public partial class CSharpExpressions : ContentPage
 				var page = new CSharpExpressions(XamlInflator.SourceGen);
 				var vm = new SimpleViewModel { Price = 9.99m, Quantity = 5 };
 				page.BindingContext = vm;
-				
+
 				Assert.StartsWith("5x at", page.vmInterpolationMultiLabel.Text, StringComparison.Ordinal);
-				
+
 				// Change Quantity - should update
 				vm.Quantity = 10;
 				Assert.StartsWith("10x at", page.vmInterpolationMultiLabel.Text, StringComparison.Ordinal);
@@ -798,7 +798,7 @@ public partial class CSharpExpressions : ContentPage
 				page.BindingContext = vm;
 
 				// Use decimal.Parse to handle locale-specific decimal separators
-				Assert.Equal(42.5m, decimal.Parse(page.twoWayDecimalEntry.Text, CultureInfo.InvariantCulture));
+				Assert.Equal(42.5m, decimal.Parse(page.twoWayDecimalEntry.Text, CultureInfo.CurrentCulture));
 			}
 			finally
 			{
@@ -835,10 +835,10 @@ public partial class CSharpExpressions : ContentPage
 				var vm = new SimpleViewModel { Price = 10m };
 				page.BindingContext = vm;
 
-				Assert.Equal(10m, decimal.Parse(page.twoWayDecimalEntry.Text, CultureInfo.InvariantCulture));
+				Assert.Equal(10m, decimal.Parse(page.twoWayDecimalEntry.Text, CultureInfo.CurrentCulture));
 
 				vm.Price = 25.75m;
-				Assert.Equal(25.75m, decimal.Parse(page.twoWayDecimalEntry.Text, CultureInfo.InvariantCulture));
+				Assert.Equal(25.75m, decimal.Parse(page.twoWayDecimalEntry.Text, CultureInfo.CurrentCulture));
 			}
 			finally
 			{

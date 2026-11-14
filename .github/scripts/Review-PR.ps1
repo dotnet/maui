@@ -103,6 +103,7 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+. (Join-Path $PSScriptRoot 'shared/XunitMtp.ps1')
 
 if ($GateOnly -and $Phase -notin @('Setup', 'Gate')) {
     throw '-GateOnly requires -Phase Setup or -Phase Gate. Publication runs separately on a fresh agent.'
@@ -1995,8 +1996,9 @@ if ($risksData -and ($risksData.result -eq 'REVERT' -or $risksData.result -eq 'O
                     { $_ -eq 'UnitTest' -or $_ -eq 'XamlUnitTest' } {
                         if ($t.ProjectPath) {
                             $resolvedProj = Join-Path $RepoRoot $t.ProjectPath
-                            Write-Host "    🧪 Running: dotnet test $($t.ProjectPath) --filter `"$($t.Filter)`"" -ForegroundColor Cyan
-                            $testOutput = Invoke-WithoutGhTokens { dotnet test $resolvedProj --filter $t.Filter --logger "console;verbosity=minimal" 2>&1 }
+                            $testArguments = @(Get-XunitTestArguments -RepoRoot $RepoRoot -ProjectPath $resolvedProj -Filter $t.Filter)
+                            Write-Host "    🧪 Running: dotnet $($testArguments -join ' ')" -ForegroundColor Cyan
+                            $testOutput = Invoke-WithoutGhTokens { & dotnet @testArguments 2>&1 }
                             $testExitCode = $LASTEXITCODE
                             $testOutput | Select-Object -Last 20 | ForEach-Object { Write-Host "    $_" }
                         } else {

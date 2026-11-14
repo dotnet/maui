@@ -8,8 +8,12 @@ using Xunit;
 namespace Microsoft.Maui.UnitTests
 {
 	[Category(TestCategory.Core, TestCategory.Lifecycle)]
-	public class AbstractViewHandlerTests
+	public class AbstractViewHandlerTests : IDisposable
 	{
+		public AbstractViewHandlerTests() => HandlerStub.PlatformViewFactory = null;
+
+		public void Dispose() => HandlerStub.PlatformViewFactory = null;
+
 		[Fact]
 		public void ConnectAndDisconnectFireAppropriateNumberOfTimes()
 		{

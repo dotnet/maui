@@ -7,9 +7,9 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners
 	public class TestOptions
 	{
 		/// <summary>
-		/// The list of assemblies that contain tests.
+		/// The executable assembly containing this application's tests.
 		/// </summary>
-		public List<Assembly> Assemblies { get; set; } = new List<Assembly>();
+		public Assembly TestAssembly { get; set; } = null!;
 
 		/// <summary>
 		/// The list of categories to skip in the form:

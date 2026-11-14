@@ -65,7 +65,7 @@ namespace Test
 """;
 
 		var compilation = CreateMauiCompilation();
-		compilation = compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(codeBehind));
+		compilation = compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(codeBehind, cancellationToken: TestContext.Current.CancellationToken));
 
 		var result = RunGenerator<XamlGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml));
 

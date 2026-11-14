@@ -1,11 +1,12 @@
 ﻿using System.Diagnostics;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace Microsoft.Maui.IntegrationTests.Android
 {
 	public static class Adb
 	{
 		static readonly string AdbTool = Path.Combine(TestEnvironment.GetAndroidSdkPath(), "platform-tools", "adb");
+		internal static string ToolPath => AdbTool;
 		const int DEFAULT_TIMEOUT = 20;
 
 		public static bool WaitForEmulator(int timeout, string deviceId = "", ITestOutputHelper? output = null)

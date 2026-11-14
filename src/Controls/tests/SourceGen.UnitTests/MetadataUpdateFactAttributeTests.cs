@@ -1,6 +1,7 @@
 #nullable enable
 
 using System;
+using System.Runtime.CompilerServices;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.SourceGen.UnitTests;
@@ -30,7 +31,9 @@ public class MetadataUpdateFactAttributeTests
 
 	sealed class TestMetadataUpdateFactAttribute : FactAttribute
 	{
-		public TestMetadataUpdateFactAttribute(bool isSupported, string? modifiableAssemblies)
+		public TestMetadataUpdateFactAttribute(bool isSupported, string? modifiableAssemblies,
+			[CallerFilePath] string? sourceFilePath = null, [CallerLineNumber] int sourceLineNumber = -1)
+			: base(sourceFilePath, sourceLineNumber)
 		{
 			Skip = MetadataUpdateRequirements.GetSkipReasonOrThrowIfMisconfigured(isSupported, modifiableAssemblies);
 		}

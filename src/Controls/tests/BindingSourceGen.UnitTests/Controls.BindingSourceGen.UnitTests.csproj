@@ -1,6 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
     <TargetFramework>$(_MauiDotNetTfm)</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -20,9 +22,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="xunit" Version="$(XunitPackageVersion)" />
-    <PackageReference Include="coverlet.collector" Version="$(CoverletCollectorPackageVersion)">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    <PackageReference Include="xunit.v3.mtp-v2" Version="$(XunitPackageVersion)" />
+    <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage">
+      <IncludeAssets>compile; runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
   </ItemGroup>

@@ -89,7 +89,7 @@ namespace Microsoft.Maui.DeviceTests
 					// Set with new page
 					var navPage = new NavigationPage(new ContentPage()) { Title = "App Page" };
 					flyoutPage.Detail = navPage;
-          
+
 					// For NavigationPages, check the CurrentPage instead
 					var pageToCheck = navPage is NavigationPage np ? np.CurrentPage : navPage;
 					if (!pageToCheck.HasNavigatedTo)
@@ -99,7 +99,7 @@ namespace Microsoft.Maui.DeviceTests
 
 					// Set back to previous page
 					flyoutPage.Detail = currentDetailPage;
-          
+
 					// Check the current page again
 					var previousPageToCheck = currentDetailPage is NavigationPage cp ? cp.CurrentPage : currentDetailPage;
 					if (!previousPageToCheck.HasNavigatedTo)
@@ -227,7 +227,14 @@ namespace Microsoft.Maui.DeviceTests
 				if (!CanDeviceDoSplitMode(flyoutPage))
 					return;
 
-				await AssertEventually(() => flyoutPage.Flyout.GetBoundingBox().Width > 0);
+				await AssertEventually(() =>
+				{
+					var flyout = flyoutPage.Flyout.GetBoundingBox();
+					var detail = flyoutPage.Detail.GetBoundingBox();
+					var window = flyoutPage.GetBoundingBox();
+					return flyout.Width > 0 && detail.Width > 0 &&
+						flyout.Width + detail.Width <= window.Width;
+				}, message: "Split Flyout and Detail did not finish their initial layout");
 
 				var detailBounds = flyoutPage.Detail.GetBoundingBox();
 				var flyoutBounds = flyoutPage.Flyout.GetBoundingBox();
@@ -315,9 +322,26 @@ namespace Microsoft.Maui.DeviceTests
 				references.Add(new WeakReference(flyoutPage.Detail));
 
 				await launcherPage.Navigation.PopModalAsync();
+#if WINDOWS
+				Assert.Null(flyoutPage.Handler);
+				Assert.Null(flyoutPage.Flyout.Handler);
+				Assert.Null(flyoutPage.Detail.Handler);
+#endif
 			});
 
+#if WINDOWS
+			try
+			{
+				await AssertionExtensions.WaitForGC(references.ToArray());
+			}
+			catch (Xunit.Sdk.XunitException)
+			{
+				Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner.HeadlessTestRunner.CaptureWindowsTestFailureDump(nameof(DoesNotLeakAsModal));
+				throw;
+			}
+#else
 			await AssertionExtensions.WaitForGC(references.ToArray());
+#endif
 		}
 
 		bool CanDeviceDoSplitMode(FlyoutPage page)

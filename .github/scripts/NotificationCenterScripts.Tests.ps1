@@ -108,7 +108,7 @@ Describe 'Notification Center script safety' {
 
         foreach ($path in @(
             ".github/workflows/**",
-            ".github/skills/run-device-tests/scripts/*.ps1",
+            ".github/skills/run-device-tests/scripts/**",
             ".github/skills/verify-tests-fail-without-fix/scripts/*.ps1",
             ".github/skills/review-test-failures/scripts/*.ps1",
             "eng/scripts/**",

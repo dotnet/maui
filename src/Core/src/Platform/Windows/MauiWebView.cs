@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Text;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.Web.WebView2.Core;
 using Windows.ApplicationModel;
 
 namespace Microsoft.Maui.Platform
@@ -54,10 +56,13 @@ namespace Microsoft.Maui.Platform
 			}
 
 			await EnsureCoreWebView2Async();
+			var coreWebView = GetCoreWebView2ForNavigation();
+			if (coreWebView is null)
+				return;
 
 			if (mapBaseDirectory)
 			{
-				CoreWebView2.SetVirtualHostNameToFolderMapping(
+				coreWebView.SetVirtualHostNameToFolderMapping(
 					LocalHostName,
 					ApplicationPath,
 					Web.WebView2.Core.CoreWebView2HostResourceAccessKind.DenyCors);
@@ -77,8 +82,11 @@ namespace Microsoft.Maui.Platform
 			if (IsLocalAppDirUrl(url ?? string.Empty))
 			{
 				await EnsureCoreWebView2Async();
+				var coreWebView = GetCoreWebView2ForNavigation();
+				if (coreWebView is null)
+					return;
 
-				CoreWebView2.SetVirtualHostNameToFolderMapping(
+				coreWebView.SetVirtualHostNameToFolderMapping(
 					LocalHostName,
 					ApplicationPath,
 					Web.WebView2.Core.CoreWebView2HostResourceAccessKind.DenyCors);
@@ -100,15 +108,30 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		CoreWebView2? GetCoreWebView2ForNavigation()
+		{
+			var coreWebView = CoreWebView2;
+			if (coreWebView is null)
+			{
+				IPlatformApplication.Current?.Services.CreateLogger<MauiWebView>()?.LogError(
+					"WebView2 initialization completed without an active CoreWebView2. Navigation was not performed.");
+			}
+			return coreWebView;
+		}
+
 		void SetupPlatformEvents()
 		{
 			NavigationStarting += (sender, args) =>
 			{
+				var coreWebView = GetCoreWebView2ForNavigation();
+				if (coreWebView is null)
+					return;
+
 				// Auto map local virtual app dir host, e.g. if navigating back to local site from a link to an external site
 				if (IsUriWithLocalScheme(args?.Uri) ||
 					IsWebView2DataUriWithBaseUrl(args?.Uri))
 				{
-					CoreWebView2.SetVirtualHostNameToFolderMapping(
+					coreWebView.SetVirtualHostNameToFolderMapping(
 						LocalHostName,
 						ApplicationPath,
 						Web.WebView2.Core.CoreWebView2HostResourceAccessKind.DenyCors);
@@ -116,7 +139,7 @@ namespace Microsoft.Maui.Platform
 				// Auto unmap local virtual app dir host if navigating to any other potentially unsafe domain
 				else
 				{
-					CoreWebView2.ClearVirtualHostNameToFolderMapping(LocalHostName);
+					coreWebView.ClearVirtualHostNameToFolderMapping(LocalHostName);
 				}
 			};
 		}

@@ -1,4 +1,8 @@
 <Project>
+  <PropertyGroup>
+    <ExcludeMicrosoftNetTestSdk>true</ExcludeMicrosoftNetTestSdk>
+    <UsingToolXUnit>false</UsingToolXUnit>
+  </PropertyGroup>
   <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
   <Import Condition="'$(EnvironmentBuildPropsImported)' != 'True'" Project="$(MSBuildThisFileDirectory)eng\Environment.Build.props" />
 

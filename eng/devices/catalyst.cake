@@ -102,21 +102,8 @@ void ExecuteTests(string project, string device, string resultsDir, string confi
 {
 	CleanResults(resultsDir);
 
-	var testApp = GetTestApplications(project, device, config, tfm, rid).FirstOrDefault();
-	Information($"Testing App: {testApp}");
-
-	RunMacAndiOSTests(project, device, resultsDir, config, tfm, rid, toolPath, projectPath, (category) =>
-	{
-		return new DotNetToolSettings
-		{
-			DiagnosticOutput = true,
-			ToolPath = toolPath,
-			ArgumentCustomization = args => 
-				args.Append($"run xharness apple test --app=\"{testApp}\" --targets=\"{device}\" --output-directory=\"{resultsDir}\" " + 
-					" --verbosity=\"Debug\" " + 
-					$"--set-env=\"TestFilter={category}\" ")
-		};
-	});
+	RunNativeTestWithLocalDotNet(project, config, tfm, rid, "catalyst", testFilter, null,
+		resultsDir, toolPath, useCoreClr);
 }
 
 void ExecuteUITests(string project, string app, string device, string resultsDir, string binDir, string config, string tfm, string rid, string toolPath)

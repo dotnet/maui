@@ -1,320 +1,135 @@
 ---
 name: run-device-tests
-description: "Build and run .NET MAUI device tests locally with category filtering. Supports iOS, MacCatalyst, Android on macOS; Android, Windows on Windows. Use TestFilter to run specific test categories."
-metadata:
-  author: dotnet-maui
-  version: "2.2"
-compatibility: Requires xharness CLI (for iOS/MacCatalyst/Android), Xcode (for Apple platforms), Android SDK (for Android), and .NET SDK with platform workloads.
+description: "Build and run native MAUI device tests with plain dotnet test, explicit devices, native xUnit selection and genuine MTP TRX."
 ---
 
-# Run Device Tests Skill
+# Run device tests
 
-Build and run .NET MAUI device tests locally on iOS simulators, MacCatalyst, Android emulators, or Windows.
+Use `scripts/Run-DeviceTests.ps1` for Controls, Core, Essentials, Graphics or
+BlazorWebView. macOS supports iOS, Mac Catalyst and Android; Windows supports
+Android and unpackaged Windows. The repository SDK/workloads, built build tasks
+and native SDK tools are prerequisites. XHarness is not used.
 
-## Platform Support
-
-| Host OS | Supported Platforms |
-|---------|---------------------|
-| macOS   | ios, maccatalyst, android |
-| Windows | android, windows |
-
-## Tools Required
-
-This skill uses `bash` together with `pwsh` (PowerShell 7+) to run the PowerShell scripts. Requires:
-- `xharness` - Global dotnet tool for running tests on iOS/MacCatalyst/Android
-- `dotnet` - .NET SDK with platform workloads installed
-- **iOS/MacCatalyst**: Xcode with iOS simulators
-- **Android**: Android SDK with emulator
-- **Windows**: Windows SDK
-
-## Dependencies
-
-This skill uses shared infrastructure scripts:
-- `.github/scripts/shared/Start-Emulator.ps1` - Detects and boots iOS simulators / Android emulators
-- `.github/scripts/shared/shared-utils.ps1` - Common utility functions
-
-These are automatically loaded by the Run-DeviceTests.ps1 script.
-
-## When to Use
-
-- User wants to run device tests locally
-- User wants to verify iOS/MacCatalyst/Android/Windows compatibility
-- User wants to test on a specific iOS version (e.g., iOS 26)
-- User asks "run device tests for Controls/Core/Essentials/Graphics"
-- User asks "test on iOS simulator" or "test on Android emulator"
-- User asks "run device tests on MacCatalyst"
-- User wants to run only specific test categories (e.g., "run Button tests")
-
-## Available Test Projects
-
-| Project | Path |
-|---------|------|
-| Controls | `src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj` |
-| Core | `src/Core/tests/DeviceTests/Core.DeviceTests.csproj` |
-| Essentials | `src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj` |
-| Graphics | `src/Graphics/tests/DeviceTests/Graphics.DeviceTests.csproj` |
-| BlazorWebView | `src/BlazorWebView/tests/DeviceTests/MauiBlazorWebView.DeviceTests.csproj` |
-
-## Scripts
-
-All scripts are in `.github/skills/run-device-tests/scripts/`
-
-### Run Device Tests (Full Workflow)
-
-```bash
-# Run Controls device tests on iOS simulator (default on macOS)
-pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project Controls -Platform ios
-
-# Run Core device tests on MacCatalyst
-pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project Core -Platform maccatalyst
-
-# Run Controls device tests on Android emulator
-pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project Controls -Platform android
-
-# Run Controls device tests on Windows (default on Windows)
-pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project Controls -Platform windows
-
-# Run on specific iOS version
-pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project Core -Platform ios -iOSVersion 26
-
-# Run with test filter
-pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project Controls -Platform ios -TestFilter "Category=Button"
-
-# Run one exact Core test class on Windows
-pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project Core -Platform windows -IncludeClasses "Microsoft.Maui.DeviceTests.WindowHandlerTests"
-
-# Run other test projects
-pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project Essentials -Platform android
-pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project Graphics -Platform maccatalyst
-pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project BlazorWebView -Platform ios
+```powershell
+pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project Controls -Platform ios -iOSVersion 26 -TestFilter Category=Shell
+pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project Core -Platform android -DeviceUdid emulator-5554
+pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project Core -Platform maccatalyst -IncludeClasses Microsoft.Maui.DeviceTests.WindowHandlerTests -IncludeMethods Runs -Rebuild
+pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project Core -Platform windows -BuildOnly
+pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project Core -Platform windows -WindowsPackaging packaged
 ```
 
-### Build Only (No Test Run)
+## Parameters
 
-```bash
-pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project Controls -Platform ios -BuildOnly
+Existing parameters remain supported: `Project`, `Platform`, `iOSVersion`,
+`Configuration` (Release), `Rebuild`, `TestFilter`, `IncludeClasses`,
+`IncludeMethods`, `BuildOnly`, `OutputDirectory` (artifacts/log), `Timeout`
+(01:00:00), `DeviceUdid`, and `SkipXcodeVersionCheck`.
+`WindowsPackaging` selects `unpackaged` (the existing default) or `packaged`.
+Optional `RepoRoot` and `DotnetPath` select an explicit checkout/SDK.
+Use `ProjectPath` instead of `Project` for another native test application inside
+the selected checkout, including the device-test sample. Optional
+`TargetFramework` preserves an explicitly selected platform TFM; it must match
+`Platform`. Windows Cake callers use these parameters rather than duplicating
+package activation or report validation.
+
+Without `DeviceUdid`, the runner provisions a unique iOS simulator or Android
+API 33 emulator using SDK tools, records its identity and cleans up only that
+resource. Supplying an exact UDID/serial borrows that device without deleting or
+stopping it. iOS major-version requests select an installed matching runtime;
+unavailable runtimes fail rather than silently changing the requested OS.
+Android SDK licenses must already be accepted.
+In Azure CI, SDK package preparation uses the shared `Install-AndroidSdkPackage.ps1`
+policy: at most five attempts per package, with partial-download cleanup between
+attempts. SDK discovery must match the selected SDK before any package changes.
+Preparation restores originally absent SDK-user/temp variables as absent, not
+empty; native Android tools interpret empty temp paths as filesystem-root paths.
+Local startup still invokes `sdkmanager` once; tests and emulator boot are not retried.
+Android cleanup derives its executable from the configured SDK and rejects a
+persisted executable path that differs from that SDK's adb.
+PID cleanup additionally checks the actual emulator command line for the owned
+AVD argument before waiting for or terminating a still-running process.
+The owned iOS simulator uses an installed iPhone profile compatible with the
+selected runtime. Cleanup revalidates its individual UUID and recorded unique
+name; aggregate selectors and foreign simulator state cannot reach deletion.
+
+`TestFilter` accepts `Category=X` or `SkipCategories=X,Y,Z`.
+`IncludeClasses` accepts comma/semicolon-separated class FQNs; `IncludeMethods`
+accepts simple method names with class scope, or class-qualified methods.
+Selection becomes validated `MauiTestFilter`, `MauiTestClasses` and
+`MauiTestMethods` MSBuild metadata. Commas/semicolons are escaped for MSBuild.
+There is no source injection, category-index loop, or post-hoc acceptance of a
+broad suite: genuine TRX identities must demonstrate exact target isolation,
+including every requested class/method. Theory rows retain their real identities.
+
+`Rebuild` rebuilds the full project-reference graph before `dotnet test --no-build`,
+so Gate A/B attempts cannot accidentally reuse the other revision's dependencies.
+Every invocation has a unique child result directory, even when reusing the same
+`OutputDirectory`.
+
+## Reporting and failure contract
+
+Android and Windows use host `--report-trx --results-directory`.
+The Android SDK proxy rewrites method identities to display names. The local
+runner also pulls the app's original `files/TestResults/testResults.trx` from
+external storage using the project's literal `ApplicationId` and exact device
+serial. That native report alone supplies counts and selector verification;
+the host proxy report is retained for diagnostics and must agree on outcomes.
+A pre-run snapshot rejects unchanged results on borrowed Android devices.
+The current Apple proxy does not register host `--report-trx`.
+iOS writes native `Documents/TestResults/testResults.trx`; the local runner
+extracts that genuine file through `simctl get_app_container` and rejects an
+unchanged result left by a previous run on a borrowed simulator. Catalyst uses
+an explicit `MauiTestResultsDirectory` host path.
+
+The runner emits the verifier's existing `Passed:`, `Failed:`, `Skipped:` and
+`Total:` summary only after validating real TRX. Empty/all-skipped/missing
+targets, malformed reports, broad execution, crashes, timeouts, run-level
+errors and infrastructure exit failures cannot become success. In particular,
+a nonzero launcher exit is **not** ignored because a passing TRX exists.
+Stdout is diagnostic only and never synthesized into TRX or trusted counts.
+
+GH tokens are stripped at every build/test child-process start; PR-controlled
+console text is defanged before printing. Logs and native reports remain in
+the unique result directory. Scoped Windows timeouts retain the verifier's
+`WINDOWS_DEVICE_TEST_TARGET_TIMEOUT:` marker and missing reports retain
+`WINDOWS_DEVICE_TEST_NO_RESULTS:`.
+
+Windows packaged execution builds a signed MSIX with the original application
+ID and a job-unique signing publisher, installs it and its x64 SDK dependencies
+with `Add-AppxPackage`, then uses evaluated `RunCommand`/`RunArguments` to launch
+the standard MTP server through the small `windows-launcher` shim. The shim uses
+`IApplicationActivationManager.ActivateApplication`, forwards the complete MTP
+argument vector, verifies the activated PID's actual package identity and returns
+its real exit code. Native WinUI startup recovers activation arguments through
+`AppInstance.GetCurrent().GetActivatedEventArgs().Data` as
+`ILaunchActivatedEventArgs`, parsing with `CommandLineToArgvW` when needed.
+The app verifies both expected package name and publisher before running tests.
+There is no unpackaged or `Invoke-CommandInDesktopPackage` fallback.
+
+The launcher verifies the installed package's manifest publisher through its
+OS-registered package location before activation and again before termination.
+The state file records owner, package identity, certificate, activated PID and
+start time. Cleanup kills only that PID after matching start time and package
+identity and verifying the actual package registration's name and publisher
+against the owned session. It uninstalls only the job-owned main package and removes its signing
+certificate/private key. Shared SDK dependencies are never uninstalled. Cleanup
+verifies each actual certificate's subject and the private certificate's
+session-specific friendly name before deleting either certificate-store entry.
+Cleanup failure cannot emit a passing Gate summary. A logged-in Windows desktop and
+permission to install a signed MSIX remain agent prerequisites. The non-exportable
+private key stays in `CurrentUser\My`; only its public certificate is trusted in
+`CurrentUser\TrustedPeople`. No private PFX/password is exported or published.
+
+## Validation
+
+```powershell
+Invoke-Pester -Path .github/skills/run-device-tests/scripts/Run-DeviceTests.Tests.ps1,.github/skills/run-device-tests/scripts/WindowsTestPackage.Tests.ps1 -Output Detailed
 ```
 
-### Force a Full Rebuild
-
-Use `-Rebuild` when source files changed after an earlier build in the same worktree, such as an A/B verification run:
-
-```bash
-pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project Core -Platform windows -Rebuild
-```
-
-### List Available Simulators/Emulators
-
-```bash
-# iOS simulators
-xcrun simctl list devices available
-
-# Android emulators
-emulator -list-avds
-```
-
-## Workflow
-
-1. **Run tests**: `scripts/Run-DeviceTests.ps1 -Project <name> -Platform <platform>` automatically detects/boots device, builds, and runs tests
-2. **Check results**: Look at the console output or `artifacts/log/` directory for detailed test results
-
-## Output
-
-- Build artifacts: `artifacts/bin/<Project>.DeviceTests/<Configuration>/<tfm>/<rid>/`
-- Test logs: `artifacts/log/`
-- Test results summary is printed to console
-
-## Prerequisites
-
-- `xharness` global tool: `dotnet tool install --global Microsoft.DotNet.XHarness.CLI`
-- .NET SDK with platform workloads
-- **iOS/MacCatalyst**: Xcode with simulators installed
-- **Android**: Android SDK with emulator configured
-- **Windows**: Windows SDK
-- For iOS 26: macOS Tahoe (26) with Xcode 26
-
-## Examples
-
-```bash
-# Quick test run for Controls on iOS (default on macOS)
-pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project Controls -Platform ios
-
-# Test on MacCatalyst
-pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project Controls -Platform maccatalyst
-
-# Test on Android emulator (works on both macOS and Windows)
-pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project Controls -Platform android
-
-# Test on Windows (default on Windows)
-pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project Controls -Platform windows
-
-# Test on iOS 26 specifically
-pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project Controls -Platform ios -iOSVersion 26
-
-# Run only Button category tests on iOS
-pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project Controls -Platform ios -TestFilter "Category=Button"
-
-# Build for Android without running tests
-pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project Core -Platform android -BuildOnly
-```
-
-## Notes
-
-- The script automatically detects and boots an iOS simulator / Android emulator using the shared Start-Emulator.ps1 infrastructure
-- Default iOS simulator is iPhone Xs with iOS 18.5 (same as UI tests)
-- Default Android emulator priority: API 30 Nexus > API 30 > Nexus > First available
-- MacCatalyst runs directly on the Mac (no simulator needed)
-- Windows tests run directly on the local machine
-- Simulator/emulator selection and boot logic is handled by `.github/scripts/shared/Start-Emulator.ps1`
-- xharness manages test execution and reporting for iOS/MacCatalyst/Android
-- Class-filtered XHarness retries use isolated child output directories; Android also uses a per-run result filename so stale diagnostics or device-side XML cannot be reused
-- Windows runs the built device-test app directly and reads its xUnit XML results, matching `eng/devices/windows.cake`
-
-## Test Filtering
-
-The `-TestFilter` parameter allows running specific test categories instead of all tests. This is useful for quick iteration during development.
-
-### Filter Syntax
-
-| Format | Description | Example |
-|--------|-------------|---------|
-| `Category=X` | Run only category X | `Category=Button` |
-| `SkipCategories=X,Y,Z` | Skip categories X, Y, Z | `SkipCategories=Shell,CollectionView` |
-
-### Examples
-
-```bash
-# Run only Button tests on iOS
-pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project Controls -Platform ios -TestFilter "Category=Button"
-
-# Run only Button tests on Android  
-pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project Controls -Platform android -TestFilter "Category=Button"
-
-# Skip heavy test categories
-pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project Controls -Platform ios -TestFilter "SkipCategories=Shell,CollectionView,HybridWebView"
-```
-
-### How Test Filtering Works
-
-Test filtering is implemented in `src/Core/tests/DeviceTests.Shared/DeviceTestSharedHelpers.cs`:
-
-| Platform | How Filter is Passed | How Filter is Read |
-|----------|---------------------|-------------------|
-| **iOS/MacCatalyst** | `--set-env=TestFilter=...` | `NSProcessInfo.ProcessInfo.Environment["TestFilter"]` |
-| **Android** | `--arg TestFilter=...` | `MauiTestInstrumentation.Current.Arguments.GetString("TestFilter")` |
-| **Windows Controls** | App argument selects discovered category index | `ControlsHeadlessTestRunner` category loop |
-| **Windows non-Controls class filter** | Per-child `NUNIT_SKIPPED_CLASSES` plus the normal runner | XHarness `ApplicationOptions` class include |
-
-The Copilot Gate combines `-TestFilter` with `-IncludeClasses` when it knows the exact
-test class. On Windows, Controls still requires category discovery, while Core,
-Essentials, Graphics, and BlazorWebView bypass discovery and use XHarness's native class
-include. The result parser rejects output containing any unrelated class. Exact-class
-Windows runs, including scoped Controls category runs, are capped at 10 minutes per
-attempt; the Gate retries a timeout three times before treating repeated target-only
-timeouts as deterministic evidence.
-
-### Available Test Categories
-
-Common categories in Controls.DeviceTests:
-- `Button`, `Label`, `Entry`, `Editor` - Individual control tests
-- `CollectionView`, `ListView`, `CarouselView` - Collection controls (heavy)
-- `Shell`, `Navigation`, `TabbedPage` - Navigation tests (heavy)
-- `Layout`, `FlexLayout` - Layout tests
-- `Memory` - Memory leak tests
-- `Accessibility` - Accessibility tests
-- `Gesture` - Gesture recognition tests
-
-To see all categories, check `src/Controls/tests/DeviceTests/TestCategory.cs`.
-
-## Troubleshooting
-
-### Xcode Version Mismatch
-
-If you see errors about Xcode version mismatch (e.g., "Xcode 26.2 installed but 26.0 required"):
-
-```bash
-# Use -SkipXcodeVersionCheck to bypass validation
-pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project Controls -Platform ios -SkipXcodeVersionCheck
-```
-
-### MacCatalyst App Bundle Not Found
-
-MacCatalyst apps use display names (e.g., "Controls Tests.app") not assembly names. The script handles this automatically by searching for `.app` bundles in the output directory.
-
-### Android Package Name Issues
-
-Android package names must be lowercase (e.g., `com.microsoft.maui.controls.devicetests`). The script has a mapping of project names to correct package names.
-
-### Test Filter Not Working
-
-1. **Ensure full rebuild**: The test filter code must be compiled into the app. Delete artifacts and rebuild:
-   ```bash
-   rm -rf artifacts/bin/<Project>.DeviceTests
-   pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project Controls -Platform android -TestFilter "Category=Button"
-   ```
-
-2. **Check the console output**: Look for `TestFilter: Category=Button` in the test output to confirm filter was applied.
-
-3. **Verify category exists**: Ensure the category name matches exactly (case-sensitive).
-
-## XHarness Device Detection
-
-The script automatically handles XHarness device targeting for iOS and Android:
-
-### iOS
-1. **Simulator Boot**: Start-Emulator.ps1 detects and boots appropriate iOS simulator
-2. **UDID Extraction**: Script extracts simulator UDID from Start-Emulator.ps1 output
-3. **iOS Version Detection**: Script queries `xcrun simctl` to get iOS version from booted simulator
-4. **XHarness Targeting**: Passes both `--target ios-simulator-64_VERSION` and `--device UDID` to xharness for explicit targeting
-
-### MacCatalyst
-- Runs directly on the Mac, no device targeting needed
-- XHarness uses `--target maccatalyst`
-
-### Android
-1. **Emulator Boot**: Start-Emulator.ps1 detects running device or boots emulator
-2. **Device ID Extraction**: Script gets device ID (e.g., `emulator-5554`)
-3. **XHarness Targeting**: Passes `--device-id` to xharness android command
-
-### Windows
-- No device/emulator needed
-- Runs the built device-test app directly and parses `TestResults-*.xml`
-
-**Why both --target and --device for iOS?**
-- XHarness requires `--target ios-simulator-64` (or `ios-simulator-64_VERSION`) to specify platform type
-- Adding `--device UDID` explicitly tells xharness which simulator to use
-- This combination ensures reliable device selection even on ARM64 Macs where automatic detection can fail
-
-**Example xharness invocations:**
-```bash
-# iOS with test filter
-dotnet xharness apple test \
-  --app path/to/app \
-  --target ios-simulator-64_18.5 \
-  --device 56AE278D-60F7-4892-9DE0-6341357CA068 \
-  -o artifacts/log \
-  --timeout 01:00:00 \
-  -v \
-  --set-env=TestFilter=Category=Button
-
-# MacCatalyst with test filter
-dotnet xharness apple test \
-  --app path/to/app \
-  --target maccatalyst \
-  -o artifacts/log \
-  --timeout 01:00:00 \
-  -v \
-  --set-env=TestFilter=Category=Button
-
-# Android with test filter
-dotnet xharness android test \
-  --app path/to/app.apk \
-  --package-name com.microsoft.maui.controls.devicetests \
-  --device-id emulator-5554 \
-  -o artifacts/log \
-  --timeout 01:00:00 \
-  -v \
-  --arg TestFilter=Category=Button
-```
-
-This ensures tests run on the correct device with proper version targeting and filtering.
+The suite tests selectors, TRX identities/theory rows, process failure/timeout,
+credential stripping, real subprocess invocation, A/B rebuild and stale-result
+rejection using a fake SDK. It does not claim native device execution.
+`TestUtils.UnitTests` additionally exercises Windows quoting, real child-process
+exit/failure/timeout/cancellation, and package/PID ownership. The native
+`CommandLineToArgvW` roundtrip test runs only on Windows. Cross-host compilation
+does not establish real installed-MSIX activation or successful Windows CI.

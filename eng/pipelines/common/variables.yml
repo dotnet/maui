@@ -82,6 +82,5 @@ variables:
       value: true
     - name: _SignType
       value: real
-    - group: DotNet-HelixApi-Access
     - group: SDL_Settings
     - group: AzureDevOps-Artifact-Feeds-Pats

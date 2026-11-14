@@ -5,7 +5,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Maui.Controls.Xaml.UnitTests.SourceGen;
 using Xunit;
-using Xunit.Abstractions;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.SourceGen.SourceGeneratorDriver;
 
@@ -107,13 +106,13 @@ public partial class MyLabel : Microsoft.Maui.Controls.Label
 """;
 
 		var compilation = CreateMauiCompilation("MauiAppTestXamlSG");
-		compilation = compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(userCode));
+		compilation = compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(userCode, cancellationToken: TestContext.Current.CancellationToken));
 
 		var workingDirectory = Environment.CurrentDirectory;
 		var xamlFile = new AdditionalXamlFile(
-			Path.Combine(workingDirectory, "MainPage.xaml"), 
-			xaml, 
-			RelativePath: "MainPage.xaml", 
+			Path.Combine(workingDirectory, "MainPage.xaml"),
+			xaml,
+			RelativePath: "MainPage.xaml",
 			ManifestResourceName: $"MauiAppTestXamlSG.MainPage.xaml");
 
 		var result = RunGenerator<XamlGenerator>(compilation, xamlFile, assertNoCompilationErrors: false);
@@ -202,13 +201,13 @@ public partial class MyLabel
 """;
 
 		var compilation = CreateMauiCompilation("MauiAppTestXamlSG");
-		compilation = compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(code));
+		compilation = compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(code, cancellationToken: TestContext.Current.CancellationToken));
 
 		var workingDirectory = Environment.CurrentDirectory;
 		var xamlFile = new AdditionalXamlFile(
-			Path.Combine(workingDirectory, "MainPage.xaml"), 
-			xaml, 
-			RelativePath: "MainPage.xaml", 
+			Path.Combine(workingDirectory, "MainPage.xaml"),
+			xaml,
+			RelativePath: "MainPage.xaml",
 			ManifestResourceName: $"MauiAppTestXamlSG.MainPage.xaml");
 
 		var result = RunGenerator<XamlGenerator>(compilation, xamlFile, assertNoCompilationErrors: false);

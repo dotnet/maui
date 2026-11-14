@@ -681,7 +681,7 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 			""";
 
 		XamlHotReloadState.Reset();
-		var compilation = CreateCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText(host));
+		var compilation = CreateCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText(host, cancellationToken: TestContext.Current.CancellationToken));
 
 		// assertNoCompilationErrors: true throws if the generated .xsg.cs has C# errors (e.g. the
 		// duplicate-method CS0128 this test guards against).
@@ -735,7 +735,7 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 			""";
 
 		XamlHotReloadState.Reset();
-		var compilation = CreateCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText(host));
+		var compilation = CreateCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText(host, cancellationToken: TestContext.Current.CancellationToken));
 
 		var result = SourceGeneratorDriver.RunGenerator<XamlGenerator>(
 			compilation, MakeFile(xaml), assertNoCompilationErrors: true);
@@ -1848,13 +1848,13 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 
 		// Compile all V2 generated sources together and assert the UC has no compile errors.
 		var compilation = CreateCompilation()
-			.AddSyntaxTrees(CSharpSyntaxTree.ParseText(stubs, path: "Stubs.cs"));
+			.AddSyntaxTrees(CSharpSyntaxTree.ParseText(stubs, path: "Stubs.cs", cancellationToken: TestContext.Current.CancellationToken));
 		foreach (var gen in run2.Results)
 			foreach (var src in gen.GeneratedSources)
 				compilation = compilation.AddSyntaxTrees(
-					CSharpSyntaxTree.ParseText(src.SourceText.ToString(), path: src.HintName));
+					CSharpSyntaxTree.ParseText(src.SourceText.ToString(), path: src.HintName, cancellationToken: TestContext.Current.CancellationToken));
 
-		var errors = compilation.GetDiagnostics()
+		var errors = compilation.GetDiagnostics(TestContext.Current.CancellationToken)
 			.Where(d => d.Severity == DiagnosticSeverity.Error
 				&& d.Location.SourceTree?.FilePath?.EndsWith(".xsg.cs", StringComparison.OrdinalIgnoreCase) == true)
 			.ToArray();
@@ -1992,9 +1992,9 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		foreach (var gen in r3.Results)
 			foreach (var src in gen.GeneratedSources)
 				compilation = compilation.AddSyntaxTrees(
-					CSharpSyntaxTree.ParseText(src.SourceText.ToString(), path: src.HintName));
+					CSharpSyntaxTree.ParseText(src.SourceText.ToString(), path: src.HintName, cancellationToken: TestContext.Current.CancellationToken));
 
-		var errors = compilation.GetDiagnostics()
+		var errors = compilation.GetDiagnostics(TestContext.Current.CancellationToken)
 			.Where(d => d.Severity == DiagnosticSeverity.Error
 				&& d.Location.SourceTree?.FilePath?.EndsWith(".xsg.cs", StringComparison.OrdinalIgnoreCase) == true)
 			.ToArray();

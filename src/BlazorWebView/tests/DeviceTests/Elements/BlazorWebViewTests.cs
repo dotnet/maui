@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Components.WebView.Maui;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Primitives;
 using WebViewAppShared;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests.Elements;
 

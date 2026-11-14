@@ -42,6 +42,20 @@ namespace Microsoft.Maui.Platform
 			IsTabStop = false;
 			PassthroughTitlebarElements = new List<FrameworkElement>();
 			_viewSettings = new ViewManagement.UISettings();
+			Loaded += OnLoaded;
+			Unloaded += OnUnloaded;
+		}
+
+		void OnLoaded(object sender, RoutedEventArgs e)
+		{
+			_viewSettings.ColorValuesChanged -= ViewSettingsColorValuesChanged;
+			_viewSettings.ColorValuesChanged += ViewSettingsColorValuesChanged;
+			ApplyTitlebarColorPrevalence();
+		}
+
+		void OnUnloaded(object sender, RoutedEventArgs e)
+		{
+			_viewSettings.ColorValuesChanged -= ViewSettingsColorValuesChanged;
 		}
 
 		internal double AppTitleBarActualHeight => AppTitleBarContentControl?.ActualHeight ?? 0;
@@ -141,8 +155,6 @@ namespace Microsoft.Maui.Platform
 		protected override void OnApplyTemplate()
 		{
 			base.OnApplyTemplate();
-
-			_viewSettings.ColorValuesChanged += ViewSettingsColorValuesChanged;
 
 			AppTitleBarContainer = (FrameworkElement)GetTemplateChild("AppTitleBarContainer");
 			AppTitleBarContentControl = (ContentControl?)GetTemplateChild("AppTitleBarContentControl") ??

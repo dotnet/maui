@@ -1,235 +1,136 @@
 ---
-applyTo: "eng/helix_xharness.proj,eng/pipelines/**/device-tests*.yml,eng/pipelines/**/stage-device-tests.yml,src/**/DeviceTests/**"
-description: "Guidelines for running and configuring .NET MAUI device tests on Helix infrastructure"
+applyTo: ".github/skills/run-device-tests/scripts/*.ps1,eng/devices/*.ps1,eng/pipelines/**/device-tests*.yml,eng/pipelines/**/stage-device-tests.yml,src/**/DeviceTests/**"
+description: "Direct dotnet test device execution, matrix preservation, ownership and result contracts"
 ---
 
-# Helix Device Tests Guidelines
+# Direct device tests
 
-This document provides guidance for working with .NET MAUI device tests that run on Helix infrastructure using XHarness.
+Device tests execute in the pipeline job using `dotnet test`, not a remote Helix
+submission or XHarness. Keep vendored `eng/common` and historical/external Helix
+log readers unchanged.
 
-## Overview
+## Coverage
 
-.NET MAUI uses [.NET Engineering Services Helix](https://helix.dot.net) with XHarness to run device tests across multiple platforms in parallel. This provides cloud-based device testing infrastructure.
+All five suites are required: Controls, Core, Graphics, Essentials and
+MauiBlazorWebView. The explicit minimum matrix is in
+`eng/pipelines/arcade/stage-device-tests.yml`:
 
-### Device Test Projects
+- Release Android API 33 on Linux x64: CoreCLR and Mono.
+- Release iOS simulator on the configured macOS 27 arm64 execution image:
+  CoreCLR and Mono. The former macOS 15/26 host coverage is an explicit gap,
+  not equivalent coverage under a different label.
+- Release Catalyst on the same Apple OS/architecture rows: CoreCLR.
+- Release interactive Windows x64: packaged and unpackaged, each suite. Packaged rows use
+  installed MSIX activation, not an unpackaged execution of the built binary.
+- iOS Controls has CollectionView, Shell, HybridWebView, and General shards.
+  General must exclude all three individually executed categories.
 
-- `Controls.DeviceTests` - UI control tests
-- `Core.DeviceTests` - Core framework tests
-- `Graphics.DeviceTests` - Graphics and drawing tests
-- `Essentials.DeviceTests` - Platform API tests
-- `MauiBlazorWebView.DeviceTests` - Blazor WebView tests
+The other pipeline environment retains its CoreCLR-only API matrix, per-suite
+API exclusions and Debug/Release configuration in `eng/pipelines/device-tests.yml`.
+Do not silently expand exclusions or replace a missing runtime with a newer one.
 
-### Available Helix Queues
+## Agent contracts
 
-Public (default) configuration uses:
-- **iOS**: `osx.15.arm64.maui.open`, `osx.26.arm64.open`
-- **Mac Catalyst**: `osx.15.arm64.maui.open`, `osx.26.arm64.open`
-- **Android**: `ubuntu.2204.amd64.android.33.open`
-- **Windows**: `windows.11.amd64.client.open`
+Former submission agents are not assumed to be device-capable execution agents.
+Public and internal pipelines must retain separate pools; never schedule PR code
+on internal pools or expose submission/publication credentials to tests.
 
-Internal runs (`HelixInternal=True`) use `osx.15.arm64.iphone.maui` for iOS and Mac Catalyst, and the non-`.open` Android and Windows queues instead.
+- Android: SDK command-line tools, accepted SDK licenses, JDK, emulator hardware
+  acceleration, sufficient disk and `/dev/kvm` access on Linux. Install the exact
+  matrix image via `sdkmanager`; create a unique AVD via `avdmanager`.
+- Apple: matrix OS and arm64 architecture, compatible Xcode/workload, requested
+  simulator runtime, logged-in graphical user for Catalyst. A missing OS/runtime
+  is an agent provisioning failure, not permission to drop coverage. The pinned
+  SDK may require an Xcode unavailable on an older OS; report this incompatibility
+  explicitly rather than moving its row to a newer OS.
+- Windows: interactive Windows x64 agents, Windows App SDK, signing support and
+  permission to install/remove a job-owned signing certificate. Baseline pool/image defaults are retained; runtime
+  checks reject a missing interactive desktop. The configured Server 2022 image
+  does not provide Windows 11 client-specific coverage; requireWindows11 rejects
+  Server hosts when explicitly selecting a client pool. No new custom agent capability is assumed.
+  Packaged execution must retain package identity; an MSIX build followed by
+  unpackaged binary execution does not cover the packaged scenario.
 
-Check available queues at [helix.dot.net](https://helix.dot.net).
+The configured GoldenGate image actually runs macOS 27 with Xcode 27.
+`applePoolsPublic`/`applePoolsInternal` label that default honestly and retain
+explicit OS/architecture checks per row. Restoring macOS 15/26 host coverage
+requires compatible execution agents and separate build/execution jobs; do not
+claim the current image covers those hosts. Windows 11 client coverage likewise
+requires a provisioned client pool. The other pipeline retains its original
+MAUI execution pool.
 
-## Key Configuration Files
+Windows packaged jobs prepare a job-unique certificate/publisher and manifest
+copy while preserving the original application ID (including AppInfo assertions).
+The non-exportable private signing key stays in `CurrentUser\My`, selected only
+by public thumbprint; trust only the public certificate in the current user's
+`TrustedPeople` store. Never export private PFX/password material to results or
+binlogs, alter machine-wide trust, or replace a pre-existing user's package.
+The configured Server 2022 image currently rejects this signer with `0x800B0109`.
+Keep that packaged-execution prerequisite explicit: an authorized signing/agent
+owner must provide an accepted chain or approved provisioning. Do not silently
+move the certificate into a machine store or bypass deployment validation.
+`WindowsTestPackage.ps1` installs the signed MSIX and x64 dependencies through
+`Add-AppxPackage`. Standard evaluated `RunCommand`/`RunArguments` launch the
+`windows-launcher` DLL with its owned state file; the SDK appends its original MTP
+arguments, including server/pipe options. The launcher quotes the complete vector,
+activates the registered AUMID using `IApplicationActivationManager`, checks the
+actual PID package identity, records PID/start time and propagates its real exit.
 
-| File | Purpose |
-|------|---------|
-| `eng/helix_xharness.proj` | Main Helix configuration - defines scenarios, queues, and work items |
-| `eng/pipelines/arcade/stage-device-tests.yml` | Pipeline template for device tests |
-| `eng/test-configuration.json` | Test retry configuration |
+Native WinUI startup verifies package name and publisher, then recovers launch
+arguments from `AppInstance.GetCurrent().GetActivatedEventArgs().Data` as
+`ILaunchActivatedEventArgs` and parses them with `CommandLineToArgvW` when normal
+process argv does not contain the MTP server/pipe options. Never substitute
+`Invoke-CommandInDesktopPackage` or an unpackaged process for package activation.
+Always-cleanup checks both recorded PID start time and current process package
+identity before termination. Only the exact owned main package and certificate
+are removed; shared SDK dependency packages remain untouched. Preserve real
+failure/timeout/cancellation exits and require genuine TRX as for other platforms.
 
-## iOS Category Splitting
+The launcher and actual Windows activation API hook can be cross-host compiled,
+and ownership/process behavior is unit/Pester tested. Actual installed-MSIX,
+WinUI/pipe and native argument-roundtrip runtime verification still requires a
+Windows execution agent; do not claim that cross-host checks prove Windows CI.
 
-For iOS, Controls.DeviceTests heavy categories are split into separate Helix work items. This mirrors the old cake-based approach and enables parallel execution for the slowest tests.
+## Invocation and results
 
-**How it works:**
-1. Heavy categories are defined in `ControlsTestCategoriesToSkipForRestOfTests` property in `helix_xharness.proj`
-2. The `ControlsTestCategoriesToRunIndividually` ItemGroup is populated from that property
-3. Each heavy category becomes a separate Helix work item
-4. All other Controls tests run together in a single "General" work item
-5. XHarness passes `--set-env="TestFilter=Category=X"` for individual categories
-6. XHarness passes `--set-env="TestFilter=SkipCategories=X;Y;Z"` for the "General" work item
-7. Core.DeviceTests runs as a single work item (no splitting)
+Use the existing common templates, not a bespoke test scheduling framework.
+`Start-TestDevice.ps1` provisions only the current job's resource and records its
+identity in the unique result directory. Select its exact Android serial/iOS
+UDID with `--device`; never use a global booted/default device. Cleanup must not
+erase, stop or delete someone else's device.
 
-**Heavy categories that run separately:**
-- CollectionView, Shell, HybridWebView
+Native category selection uses the validated build property
+`-p:MauiTestFilter=Category=Shell`, or
+`-p:MauiTestFilter=SkipCategories=CollectionView,Shell,HybridWebView`.
+The native proxy does not expose xUnit's `--filter-trait` options. Do not use
+legacy VSTest `--filter` or assume process environment reaches the native app.
+Escape commas as `%2C` when passing this value through an MSBuild command-line
+property; the common template performs this escaping.
 
-**Keep in sync:** If adding new heavy categories, update the `ControlsTestCategoriesToSkipForRestOfTests` property in `eng/helix_xharness.proj`.
+Android uses `--report-trx --results-directory <unique-host-directory>`.
+The current Apple proxy does **not** register/publish host `--report-trx`.
+Apple hosts generate real TRX through MTP. Catalyst uses the explicit
+`MauiTestResultsDirectory` build property for its absolute host destination.
+iOS writes `Documents/TestResults/testResults.trx` in its native app container.
+After `dotnet test`, use `xcrun simctl get_app_container <owned-udid> <bundle-id>
+data` and copy that result directory before deleting the simulator. The freshly
+created, job-owned simulator prevents stale app results from another execution.
+Do not pass the Catalyst host path to the simulator app or assume
+`--results-directory` extracts its container. Never synthesize TRX from stdout
+or infer success from app launch.
 
-## Running Device Tests Locally
+Every job publishes genuine TRX, build binlogs and device logs under unique
+job/attempt paths with `condition: always()`. Missing, malformed, empty,
+failed or incomplete results fail the job independently of the launcher exit
+code. Preserve failed process exit codes too. Timeouts/cancellation must run
+bounded cleanup and always-publication tasks.
 
-### Prerequisites
-
-From the repository root:
-
-```bash
-# 1. Restore dotnet tools
-dotnet tool restore
-
-# 2. Build MSBuild tasks (required)
-./build.sh -restore -build -configuration Release -projects $(PWD)/Microsoft.Maui.BuildTasks.slnf /bl:BuildBuildTasks.binlog -warnAsError false
-
-# 3. Build device tests
-./build.sh -restore -build -configuration Release /p:BuildDeviceTests=true /bl:BuildDeviceTests.binlog -warnAsError false
-```
-
-### Using the run-device-tests Skill (Recommended)
-
-The easiest way to run device tests locally is using the `run-device-tests` skill:
-
-```bash
-# Run Controls tests on iOS simulator
-pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project Controls -Platform ios
-
-# Run only Button category tests
-pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project Controls -Platform ios -TestFilter "Category=Button"
-
-# Run on Android emulator
-pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project Controls -Platform android -TestFilter "Category=Button"
-
-# Run on MacCatalyst
-pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project Core -Platform maccatalyst
-```
-
-See `.github/skills/run-device-tests/SKILL.md` for full documentation.
-
-### Submit to Helix
-
-Set required environment variables:
-
-```bash
-export BUILD_REASON=pr
-export BUILD_REPOSITORY_NAME=maui
-export BUILD_SOURCEBRANCH=main
-export SYSTEM_TEAMPROJECT=dnceng
-export SYSTEM_ACCESSTOKEN=''
-```
-
-Submit tests:
-
-```bash
-# Android
-./eng/common/msbuild.sh ./eng/helix_xharness.proj /restore /p:TreatWarningsAsErrors=false /t:Test /p:TargetOS=android /bl:sendhelix_android.binlog
-
-# iOS
-./eng/common/msbuild.sh ./eng/helix_xharness.proj /restore /p:TreatWarningsAsErrors=false /t:Test /p:TargetOS=ios /bl:sendhelix_ios.binlog
-
-# Mac Catalyst
-./eng/common/msbuild.sh ./eng/helix_xharness.proj /restore /p:TreatWarningsAsErrors=false /t:Test /p:TargetOS=maccatalyst /bl:sendhelix_catalyst.binlog
-```
-
-### Windows Commands
-
-```cmd
-set BUILD_REASON=pr
-set BUILD_REPOSITORY_NAME=maui
-set BUILD_SOURCEBRANCH=main
-set SYSTEM_TEAMPROJECT=dnceng
-set SYSTEM_ACCESSTOKEN=
-
-.\build.cmd -restore -build -configuration Release -projects ".\Microsoft.Maui.BuildTasks.slnf" /bl:BuildBuildTasks.binlog -warnAsError false
-.\build.cmd -restore -build -configuration Release /p:BuildDeviceTests=true /bl:BuildDeviceTests.binlog -warnAsError false
-.\eng\common\msbuild.cmd .\eng\helix_xharness.proj /restore /p:TreatWarningsAsErrors=false /t:Test /p:TargetOS=android /bl:sendhelix.binlog
-```
-
-### Validate MSBuild Logic Only
-
-To validate the helix proj without submitting (requires built artifacts):
-
-```bash
-dotnet msbuild eng/helix_xharness.proj /t:DiscoverTestBundles /p:TargetOS=ios /p:_MauiDotNetTfm=net10.0 /p:RepoRoot=$(pwd)/ -v:n
-```
-
-## Test Filtering Implementation
-
-Test category filtering is implemented in `src/Core/tests/DeviceTests.Shared/DeviceTestSharedHelpers.cs`. The `GetExcludedTestCategories()` method reads the `TestFilter` value and converts it to a list of categories to skip.
-
-### Filter Syntax
-
-| Format | Description | Example |
-|--------|-------------|---------|
-| `Category=X` | Run only category X (skip all others) | `Category=Button` |
-| `SkipCategories=X,Y,Z` | Skip specific categories | `SkipCategories=Shell,CollectionView` |
-
-### Platform-Specific Filter Passing
-
-| Platform | XHarness Argument | How App Reads It |
-|----------|-------------------|------------------|
-| **iOS/MacCatalyst** | `--set-env=TestFilter=...` | `NSProcessInfo.ProcessInfo.Environment["TestFilter"]` |
-| **Android** | `--arg TestFilter=...` | `MauiTestInstrumentation.Current.Arguments.GetString("TestFilter")` |
-| **Windows** | `--filter "Category=..."` | Native vstest filter |
-
-**Important**: iOS uses `--set-env` (environment variable), while Android uses `--arg` (instrumentation argument). These are NOT interchangeable.
-
-### Example XHarness Commands with Filters
-
-```bash
-# iOS - uses --set-env
-xharness apple test --target ios-simulator-64_18.5 --device UDID --set-env=TestFilter=Category=Button ...
-
-# Android - uses --arg
-xharness android test --package-name com.microsoft.maui.controls.devicetests --arg TestFilter=Category=Button ...
-```
-
-## Configuration Details
-
-### Windows SDK Payload
-
-Windows does not use XHarness, so `helix_xharness.proj` defaults `DotNetCliVersion`
-to `MicrosoftNETSdkPackageVersion` from `eng/Versions.props`. Preserve the full
-package version: a servicing SDK such as `10.0.113-servicing.26454.107` reports
-`NETCoreSdkVersion=10.0.113`, but the download feed uses the full servicing version
-in its path. Falling back to the installed SDK version can fail before any tests
-are submitted. Explicit pipeline or command-line overrides remain supported;
-other platforms keep the SDK selected by XHarness.
-
-Run the SDK-selection regression checks without building device apps or submitting
-Helix jobs:
+## Validation
 
 ```powershell
-Invoke-Pester -Path ./eng/helix_xharness.Tests.ps1 -Output Detailed
+Invoke-Pester -Path ./eng/pipelines/ci.Tests.ps1,./eng/scripts/Assert-TestResults.Tests.ps1 -Output Detailed
 ```
 
-### Work Item Settings
-
-The `eng/helix_xharness.proj` configuration includes:
-
-- **Timeouts**: 2-hour work item timeout, 1-hour 15-min test timeout for category splits
-- **Test Discovery**: Automatically discovers test bundles for each scenario
-- **Platform Targeting**: Uses `TargetOS` property (ios, maccatalyst, android)
-- **Queue Selection**: Platform-appropriate Helix queues
-- **XHarness Integration**: Uses XHarness CLI for device orchestration
-
-### CustomCommands for Category Filtering
-
-When using category splitting, `CustomCommands` metadata overrides the default xharness invocation:
-
-```xml
-<CustomCommands>xharness apple test --target "$target" --app "$app" --output-directory "$output_directory" --timeout "$timeout" --launch-timeout "$launch_timeout" --set-env="TestFilter=Category=CategoryName"</CustomCommands>
-```
-
-**Important**: Keep CustomCommands as a single line. Multi-line commands with `set -ex` can cause parse errors.
-
-## Troubleshooting
-
-### Common Issues
-
-1. **Build failures**: Ensure MSBuild tasks are built first
-2. **Missing devices**: Check queue availability at [helix.dot.net](https://helix.dot.net)
-3. **Authentication**: For CI, ensure proper Azure DevOps access tokens
-4. **Timeouts**: Adjust `TestTimeout` and `WorkItemTimeout` for complex scenarios
-5. **CustomCommands parse errors**: Keep commands on single line, avoid shell constructs like `set -ex`
-
-### Logging and Diagnostics
-
-- Use `/bl:filename.binlog` for detailed MSBuild logs
-- Add `-verbosity:diag` for maximum diagnostic output
-- Check Helix job results at the URL provided after submission
-- Individual work item logs available at `https://helix.dot.net/api/2019-06-17/jobs/{jobId}/workitems/{workItemName}/console`
-
-## Additional Resources
-
-- [XHarness on Helix Documentation](https://github.com/dotnet/arcade/blob/main/src/Microsoft.DotNet.Helix/Sdk/tools/xharness-runner/Readme.md)
-- [Helix SDK Documentation](https://github.com/dotnet/arcade/blob/main/src/Microsoft.DotNet.Helix/Sdk/Readme.md)
-- [Example Helix Run](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1115383&view=results)
+Structural checks do not establish native execution or pool availability.
+Validate representative real device jobs on each OS, runtime and packaging mode
+before claiming equivalence or successful CI.

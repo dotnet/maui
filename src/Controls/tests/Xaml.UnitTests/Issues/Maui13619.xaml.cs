@@ -12,10 +12,13 @@ public partial class Maui13619 : ContentPage
 	public Maui13619() => InitializeComponent();
 
 	[Collection("Issue")]
-	public class Tests : IDisposable
+	public class Tests : BaseTestFixture
 	{
-		public Tests() => AppInfo.SetCurrent(new MockAppInfo());
-		public void Dispose() => AppInfo.SetCurrent(null);
+		public Tests()
+		{
+			AppInfo.SetCurrent(new MockAppInfo());
+			Application.Current = new MockApplication { UserAppTheme = AppTheme.Light };
+		}
 
 		[Theory]
 		[XamlInflatorData]

@@ -1,7 +1,7 @@
 parameters:
   platform: '' # [ android, ios, windows, catalyst ]
   path: '' # path to csproj
-  device: '' # the xharness device to use
+  device: '' # the native device or simulator selector
   cakeArgs: '' # additional cake args
   app: '' #path to app to test
   version: '' #the iOS version'

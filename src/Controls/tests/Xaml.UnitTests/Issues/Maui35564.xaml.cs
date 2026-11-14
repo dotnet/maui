@@ -51,6 +51,7 @@ public partial class Maui35564 : ContentPage
 	{
 		const string FeatureSwitch =
 			"Microsoft.Maui.RuntimeFeature.IsXamlCBindingWithSourceCompilationEnabled";
+		readonly bool originalSourceCompilation = RuntimeFeature.IsXamlCBindingWithSourceCompilationEnabled;
 
 		public Tests() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		public void Dispose() => DispatcherProvider.SetCurrent(null);
@@ -95,7 +96,7 @@ public partial class Maui35564 : ContentPage
 			}
 			finally
 			{
-				AppContext.SetSwitch(FeatureSwitch, false);
+				AppContext.SetSwitch(FeatureSwitch, originalSourceCompilation);
 			}
 		}
 
@@ -142,7 +143,7 @@ public partial class Maui35564 : ContentPage
 			}
 			finally
 			{
-				AppContext.SetSwitch(FeatureSwitch, false);
+				AppContext.SetSwitch(FeatureSwitch, originalSourceCompilation);
 			}
 		}
 		/// <summary>
@@ -177,7 +178,7 @@ public partial class Maui35564 : ContentPage
 			}
 			finally
 			{
-				AppContext.SetSwitch(FeatureSwitch, false);
+				AppContext.SetSwitch(FeatureSwitch, originalSourceCompilation);
 			}
 		}
 
@@ -213,7 +214,7 @@ public partial class Maui35564 : ContentPage
 			}
 			finally
 			{
-				AppContext.SetSwitch(FeatureSwitch, false);
+				AppContext.SetSwitch(FeatureSwitch, originalSourceCompilation);
 			}
 		}
 	}

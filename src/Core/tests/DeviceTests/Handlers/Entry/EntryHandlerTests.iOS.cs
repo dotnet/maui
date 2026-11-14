@@ -821,16 +821,20 @@ namespace Microsoft.Maui.DeviceTests
 			// on an iOS simulator that has softKeyboard toggled off, we will not see the keyboard
 			if (isKeyboardShowing)
 			{
-				var cursorRect = KeyboardAutoManagerScroll.FindCursorPosition();
-				var keyboardHeight = KeyboardAutoManagerScroll.FindKeyboardHeight();
-
-				if (cursorRect is CGRect rect)
-					Assert.True(rect.Y < keyboardHeight, "cursor position");
-				else
-					Assert.Fail("CursorRect should not be null");
-
-				uiTextField.ResignFirstResponder();
-				await uiTextField.WaitForKeyboardToHide();
+				try
+				{
+					await AssertEventually(() =>
+					{
+						var cursorRect = KeyboardAutoManagerScroll.FindCursorPosition();
+						Assert.True(cursorRect.HasValue, "CursorRect should not be null");
+						return cursorRect.Value.Y < KeyboardAutoManagerScroll.FindKeyboardHeight();
+					}, message: "cursor position");
+				}
+				finally
+				{
+					uiTextField.ResignFirstResponder();
+					await uiTextField.WaitForKeyboardToHide();
+				}
 			}
 		}
 
@@ -848,16 +852,20 @@ namespace Microsoft.Maui.DeviceTests
 			// on an iOS simulator that has softKeyboard toggled off, we will not see the keyboard
 			if (isKeyboardShowing)
 			{
-				var cursorRect = KeyboardAutoManagerScroll.FindCursorPosition();
-				var keyboardHeight = KeyboardAutoManagerScroll.FindKeyboardHeight();
-
-				if (cursorRect is CGRect rect)
-					Assert.True(rect.Y < keyboardHeight, "cursor position");
-				else
-					Assert.Fail("CursorRect should not be null");
-
-				nextUIText.ResignFirstResponder();
-				await nextUIText.WaitForKeyboardToHide();
+				try
+				{
+					await AssertEventually(() =>
+					{
+						var cursorRect = KeyboardAutoManagerScroll.FindCursorPosition();
+						Assert.True(cursorRect.HasValue, "CursorRect should not be null");
+						return cursorRect.Value.Y < KeyboardAutoManagerScroll.FindKeyboardHeight();
+					}, message: "cursor position");
+				}
+				finally
+				{
+					nextUIText.ResignFirstResponder();
+					await nextUIText.WaitForKeyboardToHide();
+				}
 			}
 		}
 

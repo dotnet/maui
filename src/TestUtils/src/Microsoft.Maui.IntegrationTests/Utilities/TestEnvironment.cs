@@ -30,7 +30,7 @@ namespace Microsoft.Maui.IntegrationTests
 			|| true; // ← Toggle to true if needed locally
 
 		/// <summary>
-		/// Specifies the iOS test device target for XHarness (e.g., "ios-simulator-64_18.5").
+		/// Specifies the iOS simulator runtime target (e.g., "ios-simulator-64_18.5").
 		/// Can also be set via IOS_TEST_DEVICE environment variable.
 		/// </summary>
 		public static string? IosTestDevice =>
@@ -38,7 +38,7 @@ namespace Microsoft.Maui.IntegrationTests
 			?? null; // ← Set to a specific device string if needed locally (e.g., "ios-simulator-64_18.5")
 
 		/// <summary>
-		/// Optional dedicated simulator UUID, used by both the fixture and XHarness.
+		/// Optional dedicated simulator UUID, used by both the fixture and app launcher.
 		/// The fixture boots and shuts down this simulator; do not select a shared device.
 		/// </summary>
 		public static string? IosTestDeviceUdid =>

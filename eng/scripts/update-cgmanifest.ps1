@@ -39,9 +39,14 @@ else {
 $packageVersionMappings = @{
     # Microsoft.NET.Test.Sdk and test-related packages
     'Microsoft.NET.Test.Sdk' = 'MicrosoftNETTestSdkPackageVersion'
-    'xunit' = 'XunitPackageVersion'
-    'xunit.runner.visualstudio' = 'XunitRunnerVisualStudioPackageVersion'
-    'xunit.analyzer' = 'XUnitAnalyzersPackageVersion'
+    'xunit.v3.mtp-v2' = 'XunitPackageVersion'
+    'xunit.v3.core.mtp-v2' = 'XunitPackageVersion'
+    'xunit.v3.extensibility.core' = 'XunitPackageVersion'
+    'xunit.v3.assert' = 'XunitPackageVersion'
+    'xunit.analyzers' = 'XUnitAnalyzersPackageVersion'
+    'Microsoft.Testing.Platform.MSBuild' = 'MicrosoftTestingPlatformVersion'
+    'Microsoft.Testing.Extensions.TrxReport' = 'MicrosoftTestingPlatformVersion'
+    'Microsoft.Testing.Extensions.CrashDump' = 'MicrosoftTestingPlatformVersion'
     'coverlet.collector' = 'CoverletCollectorPackageVersion'
     
     # Microsoft Extensions packages

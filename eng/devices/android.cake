@@ -180,54 +180,14 @@ void ExecuteTests(string project, string device, string appPackageName, string r
 {
 	CleanResults(resultsDir);
 
-	var testApp = GetTestApplications(project, device, config, tfm, "").FirstOrDefault();
-
-	if (string.IsNullOrEmpty(appPackageName))
-	{
-		var appFile = new FilePath(testApp);
-		appFile = appFile.GetFilenameWithoutExtension();
-		appPackageName = appFile.FullPath.Replace("-Signed", "");
-	}
-	if (string.IsNullOrEmpty(instrumentation))
-	{
-		instrumentation = appPackageName + ".TestInstrumentation";
-	}
-
-	Information("Test App: {0}", testApp);
-	Information("Test App Package Name: {0}", appPackageName);
 	Information("Test Results Directory: {0}", resultsDir);
-
 	PrepareDevice(waitDevice);
-
-	var settings = new DotNetToolSettings
-	{
-		DiagnosticOutput = true,
-		ArgumentCustomization = args => args.Append("run xharness android test " +
-			$"--app=\"{testApp}\" " +
-			$"--package-name=\"{appPackageName}\" " +
-			$"--instrumentation=\"{instrumentation}\" " +
-			$"--device-arch=\"{deviceArch}\" " +
-			$"--output-directory=\"{resultsDir}\" " +
-			$"--verbosity=\"Debug\" ")
-	};
-
-	bool testsFailed = true;
-	try
-	{
-		DotNetTool("tool", settings);
-		testsFailed = false;
-	}
-	finally
-	{
-		if (testsFailed)
-		{
-			// uncomment if you want to copy the test app to the results directory for any reason
-			// CopyFile(testApp, new DirectoryPath(resultsDir).CombineWithFilePath(new FilePath(testApp).GetFilename()));
-		}
-
-		HandleTestResults(resultsDir, testsFailed, false);
-	}
-
+	var rid = deviceArch == "x86_64" ? "android-x64" : deviceArch == "x86" ? "android-x86" :
+		deviceArch == "armeabi-v7a" ? "android-arm" : "android-arm64";
+	var selectedDevice = !string.IsNullOrEmpty(DEVICE_UDID) ? DEVICE_UDID :
+		EnvironmentVariable("DEVICE_UDID") ?? EnvironmentVariable("ANDROID_SERIAL");
+	RunNativeTestWithLocalDotNet(project, config, tfm, rid, "android", testFilter, selectedDevice,
+		resultsDir, toolPath, useCoreClr);
 	Information("Testing completed.");
 }
 
@@ -594,27 +554,11 @@ void InstallApk(string testApp, string testAppPackageName, string testResultsDir
 	PrepareDevice(deviceBootWait);
 
 	//install apk on the emulator or device
-	Information("Install with xharness: {0}", testApp);
-	var settings = new DotNetToolSettings
-	{
-		DiagnosticOutput = true,
-		ArgumentCustomization = args =>
-		{
-			args.Append("run xharness android install " +
-						$"--app=\"{testApp}\" " +
-						$"--package-name=\"{testAppPackageName}\" " +
-						$"--output-directory=\"{testResultsDirectory}\" " +
-						$"--verbosity=\"Debug\" ");
-
-			//if we specify a device we need to pass it to xharness
-			if (!string.IsNullOrEmpty(DEVICE_UDID))
-			{
-				args.Append($"--device-id=\"{DEVICE_UDID}\" ");
-			}
-
-			return args;
-		}
-	};
+	Information("Install APK: {0}", testApp);
+	var installArguments = new ProcessArgumentBuilder();
+	if (!string.IsNullOrEmpty(DEVICE_UDID))
+		installArguments.Append("-s").AppendQuoted(DEVICE_UDID);
+	installArguments.Append("install").Append("-r").AppendQuoted(testApp);
 
     Information("Use the Android emulators in a headless mode:");
     SetEnvironmentVariable("HEADLESS", headless.ToString());
@@ -646,7 +590,10 @@ void InstallApk(string testApp, string testAppPackageName, string testResultsDir
 		SetEnvironmentVariable("PLATFORM_VERSION", realApi);
 	}
 
-	DotNetTool("tool", settings);
+	var exitCode = StartProcess(System.IO.Path.Combine(androidSdkRoot, "platform-tools",
+		IsRunningOnWindows() ? "adb.exe" : "adb"), new ProcessSettings { Arguments = installArguments });
+	if (exitCode != 0)
+		throw new InvalidOperationException($"APK installation failed with exit code {exitCode}.");
 }
 
 void GetDevices(string version, string toolPath)
@@ -677,15 +624,8 @@ void GetDevices(string version, string toolPath)
 		}
 	}
 
-	//this will fail if there are no devices with this api attached
-	var settings = new DotNetToolSettings
-	{
-		DiagnosticOutput = true,
-		ToolPath = toolPath,
-		ArgumentCustomization = args => args.Append("run xharness android device " +
-		$"--api-version=\"{version}\" ")
-	};
-	DotNetTool("tool", settings);
+	if (string.IsNullOrEmpty(DEVICE_UDID))
+		throw new InvalidOperationException($"No Android device was found for API version {version}.");
 }
 
 IEnumerable<string> SafeAdbShell(string command, AdbToolSettings settings, int timeoutSeconds = AdbCommandTimeoutSeconds)

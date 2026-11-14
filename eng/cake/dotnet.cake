@@ -1,4 +1,7 @@
 #addin "nuget:?package=Cake.FileHelpers&version=3.2.1"
+#load "../../.github/scripts/shared/MtpTestArguments.cs"
+
+using System.Xml.Linq;
 
 // Contains .NET - related Cake targets
 
@@ -964,67 +967,108 @@ void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = nu
 
     Information("Run Test binlog: {0}", binlog);
 
-    var settings = new DotNetTestSettings
+    // Cake's DotNetTestSettings emits VSTest-only --logger and positional-project arguments.
+    // Root MTP mode takes --project and forwards extension options without a "--" separator.
+    var nunit = XDocument.Load(csproj).Descendants("EnableNUnitRunner").Any(element => element.Value == "true");
+    var args = new ProcessArgumentBuilder()
+        .Append("test").Append("--project").AppendQuoted(csproj)
+        .Append("--configuration").AppendQuoted(config)
+        .Append("--results-directory").AppendQuoted(resultsDirectory ?? MakeAbsolute(GetTestResultsDirectory()).FullPath)
+        .AppendQuoted($"-bl:{binlog}");
+    foreach (var argument in MtpTestArguments.DesktopReport(nunit, results))
+        args.AppendQuoted(argument);
+    if (noBuild)
+        args.Append("--no-build");
+    if (settingsFile != null)
+        args.Append("--settings").AppendQuoted(settingsFile);
+    // A retry's NUnit.Where already includes the original category constraint.
+    bool hasNUnitWhere = settingsFile != null &&
+        !string.IsNullOrWhiteSpace((string)XDocument.Load(settingsFile).Root.Element("NUnit")?.Element("Where"));
+    if (!hasNUnitWhere && !string.IsNullOrWhiteSpace(filter))
     {
-        Configuration = config,
-        NoBuild = noBuild,
-        // NUnit.Where replaces the VSTest filter; its category constraint is included in the settings.
-        Filter = settingsFile == null ? filter : null,
-        Settings = settingsFile == null ? null : new FilePath(settingsFile),
-        Loggers = {
-                $"trx;LogFileName={results}",
-                $"console;verbosity=normal"
-            },
-        ResultsDirectory = resultsDirectory == null ? GetTestResultsDirectory() : new DirectoryPath(resultsDirectory),
-        //    Verbosity = Cake.Common.Tools.DotNetCore.DotNetCoreVerbosity.Diagnostic,
-
-        ArgumentCustomization = args => 
-        { 
-            var loggerArg = GetMSBuildForwardingLoggerPath();
-            if (loggerArg != null)
-            {
-               args.Append(loggerArg);
-            }
-
-            args.Append($"-bl:{binlog}");
-            if(maxCpuCount > 0)
-            {
-               args.Append($"-maxcpucount:{maxCpuCount}");
-            }
-
-            if (argsExtra != null)
-            {
-                foreach (var prop in argsExtra)
-                {
-                    args.Append($"/p:{prop.Key}={prop.Value}");
-                }
-            }
-
-            // https://github.com/microsoft/vstest/issues/5112
-            args.Append($"/p:VStestUseMSBuildOutput=false");
-
-            if (!string.IsNullOrEmpty(nunitResultsDirectory))
-            {
-                args.Append("--").AppendQuoted($"NUnit.TestOutputXml={nunitResultsDirectory}");
-            }
-
-            return args;
-        }
-    };
-
-    if (!string.IsNullOrEmpty(pathDotnet))
-    {
-        settings.ToolPath = pathDotnet;
+        foreach (var argument in MtpTestArguments.DesktopFilter(filter, nunit))
+            args.AppendQuoted(argument);
     }
+    if (!string.IsNullOrEmpty(nunitResultsDirectory))
+        throw new InvalidOperationException("Set NUnit.TestOutputXml in the runsettings file, not on the MTP command line.");
+    if (maxCpuCount > 0)
+        args.Append($"-maxcpucount:{maxCpuCount}");
+    if (argsExtra != null)
+        foreach (var prop in argsExtra)
+            args.AppendQuoted($"/p:{prop.Key}={prop.Value}");
+    // MTP forwards -dl to the test host, which rejects this MSBuild-only logger option.
+    // The build commands and test binlog retain their existing diagnostics.
 
     try
     {
-        DotNetTest(csproj, settings);
+        var exitCode = StartProcess(string.IsNullOrEmpty(pathDotnet) ? "dotnet" : pathDotnet,
+            new ProcessSettings { Arguments = args });
+        if (exitCode != 0)
+            throw new InvalidOperationException($"dotnet test failed with exit code {exitCode}.");
     }
     finally
     {
         Information("Test Run complete: {0}", results);
     }
+}
+
+void RunNativeTestWithLocalDotNet(string project, string config, string tfm, string rid, string platform,
+    string filter, string device, string resultsDirectory, string toolPath, bool useCoreClr, string xcodePath = null)
+{
+    var args = new ProcessArgumentBuilder();
+    foreach (var argument in MtpTestArguments.Native(project, config, tfm, rid, platform, filter, device,
+        MakeAbsolute(new DirectoryPath(resultsDirectory)).FullPath, useCoreClr))
+        args.AppendQuoted(argument);
+    var settings = new ProcessSettings { Arguments = args };
+    if (!string.IsNullOrWhiteSpace(xcodePath))
+        settings.EnvironmentVariables = new Dictionary<string, string> { ["DEVELOPER_DIR"] = xcodePath };
+    if (platform == "ios")
+    {
+        IosNativeTestReports.RunForRuntime(rid, MakeAbsolute(File(project)).FullPath, device,
+            MakeAbsolute(new DirectoryPath(resultsDirectory)).FullPath,
+            (selector, applicationId) => GetIosNativeTestContainer(selector, applicationId, xcodePath),
+            arguments =>
+            {
+                var appleArgs = new ProcessArgumentBuilder();
+                foreach (var argument in arguments)
+                    appleArgs.AppendQuoted(argument);
+                var appleSettings = new ProcessSettings { Arguments = appleArgs };
+                if (!string.IsNullOrWhiteSpace(xcodePath))
+                    appleSettings.EnvironmentVariables = new Dictionary<string, string> { ["DEVELOPER_DIR"] = xcodePath };
+                return StartProcess("xcrun", appleSettings);
+            },
+            () => StartProcess(string.IsNullOrEmpty(toolPath) ? "dotnet" : toolPath, settings),
+            reportDirectory =>
+            {
+                var reportArgs = new ProcessArgumentBuilder()
+                    .Append("-NoLogo").Append("-NoProfile").Append("-File")
+                    .AppendQuoted(rootFolder.CombineWithFilePath("eng/scripts/Assert-TestResults.ps1").FullPath)
+                    .Append("-ResultsDirectory").AppendQuoted(reportDirectory);
+                var reportExit = StartProcess("pwsh", new ProcessSettings { Arguments = reportArgs });
+                if (reportExit != 0)
+                    throw new InvalidOperationException($"Native iOS TRX validation failed with exit code {reportExit}.");
+            });
+        return;
+    }
+    var exitCode = StartProcess(string.IsNullOrEmpty(toolPath) ? "dotnet" : toolPath, settings);
+    if (exitCode != 0)
+        throw new InvalidOperationException($"Native dotnet test failed with exit code {exitCode}.");
+}
+
+string GetIosNativeTestContainer(string device, string applicationId, string xcodePath)
+{
+    var output = new System.Text.StringBuilder();
+    var settings = new ProcessSettings
+    {
+        Arguments = new ProcessArgumentBuilder().Append("simctl").Append("get_app_container")
+            .AppendQuoted(device).AppendQuoted(applicationId).Append("data"),
+        RedirectStandardOutput = true,
+        RedirectedStandardOutputHandler = line => { output.AppendLine(line); return line; }
+    };
+    if (!string.IsNullOrWhiteSpace(xcodePath))
+        settings.EnvironmentVariables = new Dictionary<string, string> { ["DEVELOPER_DIR"] = xcodePath };
+    var exitCode = StartProcess("xcrun", settings);
+    return exitCode == 0 ? output.ToString().Trim() : null;
 }
 
 DirectoryPath PrepareSeparateBuildContext(string dirName, string props = null, string targets = null)
@@ -1113,4 +1157,118 @@ string GetMSBuildForwardingLoggerPath()
     var loggerArg = $"-dl:CentralLogger,\"{loggerDir}/Microsoft.TeamFoundation.DistributedTask.MSBuild.Logger.dll\"*ForwardingLogger,\"{loggerDir}/Microsoft.TeamFoundation.DistributedTask.MSBuild.Logger.dll\"";
 
     return loggerArg;
+}
+
+public static class IosNativeTestReports
+{
+    public static void RunForRuntime(string runtimeIdentifier, string project, string device, string resultsDirectory,
+        Func<string, string, string> getSimulatorContainer, Func<string[], int> executeApple,
+        Func<int> execute, Action<string> validate)
+    {
+        if (runtimeIdentifier != "ios-arm64")
+        {
+            Run(project, device, resultsDirectory, getSimulatorContainer, execute, validate);
+            return;
+        }
+
+        var transferDirectory = System.IO.Path.Combine(resultsDirectory, $".ios-native-transfer-{Guid.NewGuid():N}");
+        System.IO.Directory.CreateDirectory(transferDirectory);
+        try
+        {
+            Run(project, device, resultsDirectory,
+                (selector, applicationId) => CopyPhysicalContainer(selector, applicationId, transferDirectory, executeApple),
+                execute, validate);
+        }
+        finally
+        {
+            System.IO.Directory.Delete(transferDirectory, true);
+        }
+    }
+
+    static string CopyPhysicalContainer(string device, string applicationId, string transferDirectory,
+        Func<string[], int> executeApple)
+    {
+        var snapshot = System.IO.Path.Combine(transferDirectory, Guid.NewGuid().ToString("N"));
+        System.IO.Directory.CreateDirectory(snapshot);
+        var appList = System.IO.Path.Combine(snapshot, "apps.json");
+        var exitCode = executeApple(new[] {
+            "devicectl", "device", "info", "apps", "--device", device,
+            "--bundle-id", applicationId, "--include-default-apps", "--json-output", appList, "--timeout", "60"
+        });
+        if (exitCode != 0)
+            throw new InvalidOperationException($"Native iOS device app lookup failed with exit code {exitCode}.");
+
+        using (var apps = System.Text.Json.JsonDocument.Parse(System.IO.File.ReadAllText(appList)))
+        {
+            // An absent app is normal before its first install; a failed lookup is not evidence of absence.
+            if (apps.RootElement.GetProperty("result").GetProperty("apps").GetArrayLength() == 0)
+                return snapshot;
+        }
+
+        // Documents exists even before MTP creates TestResults. Copying it distinguishes a missing
+        // report from a failed device transport without relying on localized devicectl error text.
+        exitCode = executeApple(new[] {
+            "devicectl", "device", "copy", "from", "--device", device,
+            "--domain-type", "appDataContainer", "--domain-identifier", applicationId,
+            "--source", "Documents", "--destination", System.IO.Path.Combine(snapshot, "Documents"),
+            "--timeout", "60"
+        });
+        if (exitCode != 0)
+            throw new InvalidOperationException($"Native iOS device report copy failed with exit code {exitCode}.");
+        if (!System.IO.Directory.Exists(System.IO.Path.Combine(snapshot, "Documents")))
+            throw new InvalidOperationException("Native iOS device report copy did not produce Documents.");
+        return snapshot;
+    }
+
+    public static void Run(string project, string device, string resultsDirectory,
+        Func<string, string, string> getContainer, Func<int> execute, Action<string> validate)
+    {
+        if (string.IsNullOrWhiteSpace(device))
+            throw new InvalidOperationException("Native iOS tests require an explicit simulator UDID or physical device selector.");
+        var applicationId = XDocument.Load(project).Root.Elements("PropertyGroup")
+            .Elements("ApplicationId").Select(element => element.Value).FirstOrDefault();
+        if (string.IsNullOrEmpty(applicationId) ||
+            !System.Text.RegularExpressions.Regex.IsMatch(applicationId, @"\A[A-Za-z0-9_.-]+\z"))
+            throw new InvalidOperationException("Expected a literal native ApplicationId.");
+
+        var oldContainer = getContainer(device, applicationId);
+        var oldReport = string.IsNullOrEmpty(oldContainer) ? null :
+            System.IO.Path.Combine(oldContainer, "Documents", "TestResults", "testResults.trx");
+        var oldHash = oldReport != null && System.IO.File.Exists(oldReport) ? Hash(oldReport) : null;
+        var started = DateTime.UtcNow;
+        var exitCode = execute();
+        Exception reportFailure = null;
+        try
+        {
+            var container = getContainer(device, applicationId);
+            if (string.IsNullOrEmpty(container))
+                throw new InvalidOperationException("Could not resolve the native app result container.");
+            var report = System.IO.Path.Combine(container, "Documents", "TestResults", "testResults.trx");
+            if (!System.IO.File.Exists(report))
+                throw new InvalidOperationException("Native app did not produce genuine TRX.");
+            // Only fall back to file time when the pre-run container could not be inspected.
+            if ((string.IsNullOrEmpty(oldContainer) && System.IO.File.GetLastWriteTimeUtc(report) < started) ||
+                (oldHash != null && Hash(report) == oldHash))
+                throw new InvalidOperationException("The native result is stale: no new TRX was produced in this execution.");
+            var destination = System.IO.Path.Combine(resultsDirectory, $"ios-{Guid.NewGuid():N}");
+            System.IO.Directory.CreateDirectory(destination);
+            System.IO.File.Copy(report, System.IO.Path.Combine(destination, "testResults.trx"));
+            validate(destination);
+        }
+        catch (Exception ex)
+        {
+            reportFailure = ex;
+        }
+        if (exitCode != 0)
+            throw new InvalidOperationException($"Native dotnet test failed with exit code {exitCode}.", reportFailure);
+        if (reportFailure != null)
+            System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(reportFailure).Throw();
+    }
+
+    static string Hash(string path)
+    {
+        using (var algorithm = System.Security.Cryptography.SHA256.Create())
+        using (var stream = System.IO.File.OpenRead(path))
+            return Convert.ToBase64String(algorithm.ComputeHash(stream));
+    }
 }

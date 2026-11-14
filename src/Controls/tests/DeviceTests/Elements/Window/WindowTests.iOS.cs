@@ -13,6 +13,46 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class WindowTests
 	{
+		[Fact]
+		public async Task WindowDestructionFollowsNativeContentRemoval()
+		{
+			SetupBuilder();
+			var page = new ContentPage();
+			var window = new Window(page);
+			bool destroyed = false;
+			bool contentWasAttachedWhenDestroyed = false;
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, handler =>
+			{
+				var platformView = page.ToPlatform();
+				window.Destroying += (_, _) =>
+				{
+					destroyed = true;
+					contentWasAttachedWhenDestroyed = platformView.Window is not null;
+				};
+				return Task.CompletedTask;
+			});
+
+			Assert.True(destroyed);
+			Assert.False(contentWasAttachedWhenDestroyed);
+		}
+
+		[Fact]
+		public async Task DisconnectCompletionFollowsWindowDestruction()
+		{
+			SetupBuilder();
+			var window = new Window(new ContentPage());
+			bool destroyed = false;
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, async handler =>
+			{
+				window.Destroying += (_, _) => destroyed = true;
+				window.Handler.DisconnectHandler();
+				await handler.FinishedDisconnecting.WaitAsync(TimeSpan.FromSeconds(15));
+				Assert.True(destroyed);
+			});
+		}
+
 #if IOS
 		[Theory]
 		[InlineData(typeof(ContentPage))]
@@ -24,30 +64,33 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			SetupBuilder();
 
-			var testCase = new WindowPageSwapTestCase(rootPageType);
-			var rootPage = testCase.GetNextPageType();
-			var window = new Window(rootPage);
-
-			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, async handler =>
+			await InvokeOnMainThreadAsync(async () =>
 			{
-				await OnLoadedAsync(testCase.Page);
+				var testCase = new WindowPageSwapTestCase(rootPageType);
+				var rootPage = testCase.GetNextPageType();
+				var window = new Window(rootPage);
 
-				var rootController = ((IPlatformViewHandler)rootPage.Handler).ViewController;
+				await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, async handler =>
+				{
+					await OnLoadedAsync(testCase.Page);
 
-				Assert.Same(window, rootPage.Window);
-				Assert.Equal(UIStatusBarStyle.Default, GetStatusBarStyleProvider(rootController).PreferredStatusBarStyle());
+					var rootController = ((IPlatformViewHandler)rootPage.Handler).ViewController;
 
-				window.StatusBarTheme = StatusBarTheme.Dark;
-				var styleProvider = GetStatusBarStyleProvider(rootController);
-				if (rootPageType == typeof(Shell))
-					Assert.IsType<Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer>(styleProvider);
-				Assert.Equal(UIStatusBarStyle.LightContent, styleProvider.PreferredStatusBarStyle());
+					Assert.Same(window, rootPage.Window);
+					Assert.Equal(UIStatusBarStyle.Default, GetStatusBarStyleProvider(rootController).PreferredStatusBarStyle());
 
-				window.StatusBarTheme = StatusBarTheme.Light;
-				Assert.Equal(UIStatusBarStyle.DarkContent, GetStatusBarStyleProvider(rootController).PreferredStatusBarStyle());
+					window.StatusBarTheme = StatusBarTheme.Dark;
+					var styleProvider = GetStatusBarStyleProvider(rootController);
+					if (rootPageType == typeof(Shell))
+						Assert.IsType<Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer>(styleProvider);
+					Assert.Equal(UIStatusBarStyle.LightContent, styleProvider.PreferredStatusBarStyle());
 
-				window.StatusBarTheme = StatusBarTheme.Default;
-				Assert.Equal(UIStatusBarStyle.Default, GetStatusBarStyleProvider(rootController).PreferredStatusBarStyle());
+					window.StatusBarTheme = StatusBarTheme.Light;
+					Assert.Equal(UIStatusBarStyle.DarkContent, GetStatusBarStyleProvider(rootController).PreferredStatusBarStyle());
+
+					window.StatusBarTheme = StatusBarTheme.Default;
+					Assert.Equal(UIStatusBarStyle.Default, GetStatusBarStyleProvider(rootController).PreferredStatusBarStyle());
+				});
 			});
 		}
 

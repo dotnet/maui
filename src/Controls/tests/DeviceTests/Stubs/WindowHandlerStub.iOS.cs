@@ -10,8 +10,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 {
 	public class WindowHandlerStub : ElementHandler<IWindow, UIWindow>, IWindowHandler
 	{
-		TaskCompletionSource _finishedDisconnecting = new TaskCompletionSource();
-		public Task FinishedDisconnecting => _finishedDisconnecting.Task;
+		Task _finishedDisconnecting = Task.CompletedTask;
+		public Task FinishedDisconnecting => _finishedDisconnecting;
 		IView _currentView;
 		WorkspaceViewController _workSpace;
 		public bool IsDisconnected { get; private set; }
@@ -85,15 +85,11 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			}
 		}
 
-		async void Disconnect(IView view, UIWindow platformView, Action finishedClosing)
+		async Task DisconnectAsync(IView view, UIWindow platformView)
 		{
-			if (view == null)
-			{
-				finishedClosing?.Invoke();
-				return;
-			}
+			var virtualView = VirtualView;
 
-			if (_workSpace is not null)
+			if (view is not null && _workSpace is not null)
 			{
 				for (int i = _workSpace.ChildViewControllers.Length - 1; i >= 0; i--)
 				{
@@ -102,29 +98,23 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 				}
 			}
 
-			var vc = (view.Handler as IPlatformViewHandler).ViewController;
-			var virtualView = VirtualView;
 			var pvc = platformView?.RootViewController?.PresentedViewController;
 
-			// This means shell never got to the point of being preesented
-			if (pvc is null || _workSpace is null)
+			if (view is not null && pvc is not null && _workSpace is not null)
 			{
-				finishedClosing?.Invoke();
-				return;
-			}
+				FireWindowEvent(virtualView, (window) => window.IsActivated, () => virtualView.Deactivated());
 
-			FireWindowEvent(virtualView, (window) => window.IsActivated, () => virtualView.Deactivated());
+				// Cleanup any modal pages left over from the test
+				while (pvc.PresentedViewController is ModalWrapper mw)
+				{
+					await mw.DismissViewControllerAsync(false);
+					await Task.Yield();
+				}
 
-			// Cleanup any modal pages left over from the test
-			while (pvc.PresentedViewController is ModalWrapper mw)
-			{
-				await mw.DismissViewControllerAsync(false);
+				await pvc.PresentingViewController.DismissViewControllerAsync(false);
 				await Task.Yield();
 			}
 
-			await pvc.PresentingViewController.DismissViewControllerAsync(false);
-			await Task.Yield();
-			finishedClosing.Invoke();
 			FireWindowEvent(virtualView, (window) => !window.IsDestroyed, () => virtualView.Destroying());
 		}
 
@@ -148,9 +138,9 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		protected override void DisconnectHandler(UIWindow platformView)
 		{
-			Disconnect(VirtualView.Content, platformView, () => _finishedDisconnecting.TrySetResult());
-			base.DisconnectHandler(platformView);
 			IsDisconnected = true;
+			_finishedDisconnecting = DisconnectAsync(VirtualView.Content, platformView);
+			base.DisconnectHandler(platformView);
 		}
 
 		public WindowHandlerStub()

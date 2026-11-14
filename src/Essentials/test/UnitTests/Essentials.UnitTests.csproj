@@ -1,6 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
     <TargetFramework>$(_MauiDotNetTfm)</TargetFramework>
     <IsPackable>false</IsPackable>
     <AssemblyName>Microsoft.Maui.Essentials.UnitTests</AssemblyName>
@@ -12,7 +14,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="xunit" Version="$(XunitPackageVersion)"/>
+    <PackageReference Include="xunit.v3.mtp-v2" Version="$(XunitPackageVersion)"/>
   </ItemGroup>
 
   <ItemGroup>

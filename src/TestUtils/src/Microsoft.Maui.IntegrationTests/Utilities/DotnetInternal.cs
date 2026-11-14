@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 using System.IO;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace Microsoft.Maui.IntegrationTests
 {

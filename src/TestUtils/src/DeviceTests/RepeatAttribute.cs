@@ -2,7 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
+using Xunit;
 using Xunit.Sdk;
+using Xunit.v3;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -21,12 +24,11 @@ namespace Microsoft.Maui.DeviceTests
 			this._count = count;
 		}
 
-		public override IEnumerable<object[]> GetData(MethodInfo testMethod)
-		{
-			foreach (var iterationNumber in Enumerable.Range(start: 1, count: this._count))
-			{
-				yield return new object[] { iterationNumber };
-			}
-		}
+		public override bool SupportsDiscoveryEnumeration() => true;
+
+		public override ValueTask<IReadOnlyCollection<ITheoryDataRow>> GetData(
+			MethodInfo testMethod, DisposalTracker disposalTracker) =>
+			new(Enumerable.Range(1, _count)
+				.Select(iteration => (ITheoryDataRow)new TheoryDataRow(iteration)).ToArray());
 	}
 }

@@ -9,6 +9,6 @@ namespace Tests
 	{
 		[Fact]
 		public async Task Contacts_GetAll() =>
-			await Assert.ThrowsAsync<NotImplementedInReferenceAssemblyException>(() => Contacts.GetAllAsync());
+			await Assert.ThrowsAsync<NotImplementedInReferenceAssemblyException>(() => Contacts.GetAllAsync(TestContext.Current.CancellationToken));
 	}
 }

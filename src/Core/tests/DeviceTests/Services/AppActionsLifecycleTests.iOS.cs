@@ -73,7 +73,7 @@ namespace Microsoft.Maui.DeviceTests
 				await fixture.ConnectAsync(shortcutItem);
 				await fixture.DisconnectAsync();
 				Assert.True(fixture.Window.IsDestroyed);
-				fixture.CloseWindow();
+				await InvokeOnMainThreadAsync(fixture.CloseWindow);
 
 				await fixture.InvokeActivationCallbackAsync();
 
@@ -81,7 +81,7 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.DoesNotContain("AppAction:reused-action", events);
 
 				events.Clear();
-				fixture.UseNewWindow(events);
+				await InvokeOnMainThreadAsync(() => fixture.UseNewWindow(events));
 
 				await fixture.ConnectAsync(shortcutItem);
 				await fixture.ActivateAsync();
@@ -163,12 +163,12 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var events = new List<string>();
 			await using var fixture = await CreateFixtureAsync(events);
-			using var shortcutItem = new UIApplicationShortcutItem(
+			using var shortcutItem = await InvokeOnMainThreadAsync(() => new UIApplicationShortcutItem(
 				"foreign-action",
 				"Foreign Action",
 				null,
 				null,
-				null);
+				null));
 			var received = 0;
 			EventHandler<AppActionEventArgs> appActionHandler = (_, _) => received++;
 			AppActions.OnAppAction += appActionHandler;
@@ -197,7 +197,8 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var events = new List<string>();
 			await using var fixture = await CreateFixtureAsync(events);
-			using var shortcutItem = new UIApplicationShortcutItem("custom-action", "Custom Action", null, null, null);
+			using var shortcutItem = await InvokeOnMainThreadAsync(() =>
+				new UIApplicationShortcutItem("custom-action", "Custom Action", null, null, null));
 			var customInvoked = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 			var releaseCustomHandler = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 			var lifecycleService = Assert.IsType<LifecycleEventService>(

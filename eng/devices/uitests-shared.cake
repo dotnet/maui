@@ -26,6 +26,18 @@ void RunUITestsWithRetry(string project, string config, string toolPath, string 
 {
 	int numOfRetries = IsCIBuild() ? 1 : 0;
 	var resultDirectory = MakeAbsolute(GetTestResultsDirectory()).FullPath;
+	var projectFile = MakeAbsolute(File(project)).FullPath;
+	var projectName = System.IO.Path.GetFileNameWithoutExtension(projectFile);
+	var attachmentRoots = new List<string> {
+		System.IO.Path.Combine(rootFolder.FullPath, "artifacts", "bin", projectName, config),
+		System.IO.Path.Combine(System.IO.Path.GetDirectoryName(projectFile), "bin", config)
+	};
+	var ciArtifacts = EnvironmentVariable("BUILD_ARTIFACTSTAGINGDIRECTORY");
+	if (!string.IsNullOrEmpty(ciArtifacts))
+		attachmentRoots.Add(System.IO.Path.Combine(ciArtifacts, "Controls.TestCases.Shared.Tests"));
+	var appiumLog = EnvironmentVariable("APPIUM_LOG_FILE");
+	if (!string.IsNullOrEmpty(appiumLog))
+		attachmentRoots.Add(System.IO.Path.GetDirectoryName(System.IO.Path.GetFullPath(appiumLog)));
 	var runId = Convert.ToBase64String(Guid.NewGuid().ToByteArray()).TrimEnd('=').Replace('+', '-').Replace('/', '_');
 	var nunitDirectory = System.IO.Path.Combine(resultDirectory, $"n-{runId}");
 	var retryDirectory = System.IO.Path.Combine(nunitDirectory, "retry");
@@ -49,10 +61,13 @@ void RunUITestsWithRetry(string project, string config, string toolPath, string 
 			System.Runtime.ExceptionServices.ExceptionDispatchInfo testFailure = null;
 			try
 			{
+				EnsureDirectoryExists(attemptNUnitDirectory);
+				var attemptSettings = System.IO.Path.Combine(attemptNUnitDirectory, "nunit.runsettings");
+				UITestRetry.CreateRunSettings(null, attemptNUnitDirectory, retrySettingsFile).Save(attemptSettings);
 				RunTestWithLocalDotNet(project, config, pathDotnet: toolPath, noBuild: true,
 					resultsFileNameWithoutExtension: resultsFileName, filter: testFilter,
 					resultsDirectory: retryCount == 0 ? null : retryDirectory,
-					nunitResultsDirectory: attemptNUnitDirectory, settingsFile: retrySettingsFile);
+					settingsFile: attemptSettings);
 			}
 			catch (Exception ex)
 			{
@@ -65,13 +80,29 @@ void RunUITestsWithRetry(string project, string config, string toolPath, string 
 			try
 			{
 				// Preserve raw evidence before reconciliation or retry selection can fail.
+				UITestRetry.ValidateArchiveDestination(attemptResultsFile, attemptDirectory);
 				reportFiles = GetFiles($"{attemptNUnitDirectory}/*.xml").Select(file => file.FullPath).ToArray();
 				var rawDirectory = System.IO.Path.Combine(attemptNUnitDirectory, "raw");
+				UITestRetry.ValidateArchiveDestination(rawDirectory, attemptDirectory);
 				System.IO.Directory.CreateDirectory(rawDirectory);
 				if (System.IO.File.Exists(attemptResultsFile))
-					System.IO.File.Copy(attemptResultsFile, System.IO.Path.Combine(rawDirectory, resultsFileName + ".trx"));
+				{
+					var attachmentResults = XDocument.Load(attemptResultsFile);
+					UITestRetry.PreserveAttachments(attachmentResults, attemptDirectory,
+						System.IO.Path.Combine(rawDirectory, "attachments"), attachmentRoots);
+					UITestRetry.ValidateArchiveDestination(attemptResultsFile, attemptDirectory);
+					attachmentResults.Save(attemptResultsFile);
+					var rawTrxPath = System.IO.Path.Combine(rawDirectory, resultsFileName + ".trx");
+					UITestRetry.ValidateArchiveDestination(rawTrxPath, attemptDirectory);
+					System.IO.File.Copy(attemptResultsFile, rawTrxPath);
+				}
 				foreach (var file in reportFiles)
-					System.IO.File.Copy(file, System.IO.Path.Combine(rawDirectory, System.IO.Path.GetFileName(file)));
+				{
+					UITestRetry.ValidateArchiveDestination(file, attemptDirectory);
+					var rawReportPath = System.IO.Path.Combine(rawDirectory, System.IO.Path.GetFileName(file));
+					UITestRetry.ValidateArchiveDestination(rawReportPath, attemptDirectory);
+					System.IO.File.Copy(file, rawReportPath);
+				}
 			}
 			catch (Exception archiveException) when (archiveException is System.IO.IOException || archiveException is UnauthorizedAccessException)
 			{
@@ -86,6 +117,7 @@ void RunUITestsWithRetry(string project, string config, string toolPath, string 
 			{
 				try
 				{
+					UITestRetry.ValidateArchiveDestination(file, attemptDirectory);
 					var report = XDocument.Load(file);
 					if (report.Root?.Name != "test-run")
 						throw new InvalidOperationException("NUnit XML is missing a test-run.");
@@ -102,14 +134,17 @@ void RunUITestsWithRetry(string project, string config, string toolPath, string 
 			{
 				if (reports.Length == 0)
 				{
-					Warning("No readable NUnit XML was produced; using the VSTest exit status for this attempt.");
+					throw new InvalidOperationException("No readable NUnit XML was produced; fixture failures cannot be reconciled.");
 				}
 				else
 				{
 					var attemptResults = XDocument.Load(attemptResultsFile);
 					nunitFailed = UITestRetry.ApplyNUnitFailures(attemptResults, reports);
 					if (nunitFailed)
+					{
+						UITestRetry.ValidateArchiveDestination(attemptResultsFile, attemptDirectory);
 						attemptResults.Save(attemptResultsFile);
+					}
 				}
 			}
 			catch (Exception metadataException) when (metadataException is System.IO.IOException || metadataException is System.Xml.XmlException || metadataException is InvalidOperationException)
@@ -126,7 +161,10 @@ void RunUITestsWithRetry(string project, string config, string toolPath, string 
 					if (!retryResultsMissing)
 					{
 						if (originalResults == null)
+						{
+							UITestRetry.ValidateArchiveDestination(resultsFile, resultDirectory);
 							CopyFile(attemptResultsFile, resultsFile);
+						}
 						var retryResults = XDocument.Load(attemptResultsFile);
 						XNamespace ns = "http://microsoft.com/schemas/VisualStudio/TeamTest/2010";
 						var retryDeployment = (string)retryResults.Root.Element(ns + "TestSettings")?.Element(ns + "Deployment")?.Attribute("runDeploymentRoot");
@@ -141,6 +179,7 @@ void RunUITestsWithRetry(string project, string config, string toolPath, string 
 						if (originalResults != null)
 						{
 							UITestRetry.MergeResults(originalResults, retryResults, originalReports, reports);
+							UITestRetry.ValidateArchiveDestination(resultsFile, resultDirectory);
 							originalResults.Save(resultsFile);
 						}
 					}
@@ -191,6 +230,7 @@ void RunUITestsWithRetry(string project, string config, string toolPath, string 
 
 			try
 			{
+				UITestRetry.ValidateArchiveDestination(resultsFile, resultDirectory);
 				originalResults = XDocument.Load(resultsFile);
 				originalReports = reports;
 			}

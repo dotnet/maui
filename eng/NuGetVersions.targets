@@ -42,6 +42,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Update="Microsoft.Testing.Extensions.CodeCoverage" Version="$(MicrosoftTestingExtensionsCodeCoverageVersion)" />
+    <PackageReference Update="Microsoft.Testing.Platform.MSBuild" Version="$(MicrosoftTestingPlatformVersion)" />
+    <PackageReference Update="Microsoft.Testing.Extensions.TrxReport" Version="$(MicrosoftTestingPlatformVersion)" />
     <PackageReference
         Update="HarfBuzzSharp"
         Version="$(_HarfBuzzSharpVersion)"

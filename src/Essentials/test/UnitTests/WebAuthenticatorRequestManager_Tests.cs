@@ -24,7 +24,7 @@ namespace Tests
 		{
 			var transport = CreateTransport();
 
-			await Assert.ThrowsAsync<ArgumentNullException>(() => transport.AuthenticateAsync(null!));
+			await Assert.ThrowsAsync<ArgumentNullException>(() => transport.AuthenticateAsync(null!, TestContext.Current.CancellationToken));
 			Assert.Equal(0, transport.LaunchCount);
 		}
 
@@ -34,11 +34,11 @@ namespace Tests
 			var transport = CreateTransport();
 			var options = new WebAuthenticatorOptions();
 
-			var urlException = await Assert.ThrowsAsync<ArgumentNullException>(() => transport.AuthenticateAsync(options));
+			var urlException = await Assert.ThrowsAsync<ArgumentNullException>(() => transport.AuthenticateAsync(options, TestContext.Current.CancellationToken));
 			Assert.Equal("Url", urlException.ParamName);
 
 			options.Url = new Uri("https://example.com/authorize");
-			var callbackException = await Assert.ThrowsAsync<ArgumentNullException>(() => transport.AuthenticateAsync(options));
+			var callbackException = await Assert.ThrowsAsync<ArgumentNullException>(() => transport.AuthenticateAsync(options, TestContext.Current.CancellationToken));
 			Assert.Equal("CallbackUrl", callbackException.ParamName);
 			Assert.Equal(0, transport.LaunchCount);
 		}
@@ -52,13 +52,13 @@ namespace Tests
 			{
 				Url = new Uri("authorize", UriKind.Relative),
 				CallbackUrl = new Uri("maui-auth://callback"),
-			}));
+			}, TestContext.Current.CancellationToken));
 
 			await Assert.ThrowsAsync<ArgumentException>(() => transport.AuthenticateAsync(new WebAuthenticatorOptions
 			{
 				Url = new Uri("https://example.com/authorize"),
 				CallbackUrl = new Uri("callback", UriKind.Relative),
-			}));
+			}, TestContext.Current.CancellationToken));
 
 			Assert.Equal(0, transport.LaunchCount);
 		}
@@ -97,7 +97,7 @@ namespace Tests
 				options.PrefersEphemeralWebBrowserSession = false;
 			};
 
-			var task = transport.AuthenticateAsync(options);
+			var task = transport.AuthenticateAsync(options, TestContext.Current.CancellationToken);
 			var request = Assert.IsType<WebAuthenticatorRequest>(transport.Request);
 
 			Assert.Equal("example.com", request.Url.Host);
@@ -116,23 +116,23 @@ namespace Tests
 		[Fact]
 		public void BeginRejectsASecondValidRequest()
 		{
-			_ = Begin();
+			_ = Begin(cancellationToken: TestContext.Current.CancellationToken);
 
-			Assert.Throws<InvalidOperationException>(() => Begin());
+			Assert.Throws<InvalidOperationException>(() => Begin(cancellationToken: TestContext.Current.CancellationToken));
 		}
 
 		[Fact]
 		public async Task InvalidSecondCallKeepsValidationPrecedence()
 		{
 			var firstTransport = CreateTransport();
-			var firstTask = firstTransport.AuthenticateAsync(CreateOptions());
+			var firstTask = firstTransport.AuthenticateAsync(CreateOptions(), TestContext.Current.CancellationToken);
 			var secondTransport = CreateTransport();
 
 			var nullUrl = await Assert.ThrowsAsync<ArgumentNullException>(() =>
-				secondTransport.AuthenticateAsync(new WebAuthenticatorOptions { CallbackUrl = new Uri("maui-auth://callback") }));
+				secondTransport.AuthenticateAsync(new WebAuthenticatorOptions { CallbackUrl = new Uri("maui-auth://callback") }, TestContext.Current.CancellationToken));
 			Assert.Equal("Url", nullUrl.ParamName);
 
-			await Assert.ThrowsAsync<InvalidOperationException>(() => secondTransport.AuthenticateAsync(CreateOptions()));
+			await Assert.ThrowsAsync<InvalidOperationException>(() => secondTransport.AuthenticateAsync(CreateOptions(), TestContext.Current.CancellationToken));
 
 			Assert.True(WebAuthenticatorRequestManager.TryHandleCallback(new Uri("maui-auth://callback?code=ok")));
 			await firstTask;
@@ -141,7 +141,7 @@ namespace Tests
 		[Fact]
 		public async Task RouteOnlyCallbackCompletesMatchingRequest()
 		{
-			var request = Begin();
+			var request = Begin(cancellationToken: TestContext.Current.CancellationToken);
 
 			Assert.True(WebAuthenticatorRequestManager.TryHandleCallback(new Uri("MAUI-AUTH://CALLBACK?code=ok#state=kept")));
 
@@ -152,7 +152,7 @@ namespace Tests
 		[Fact]
 		public async Task RouteOnlyMismatchIsUnhandledAndRemainsPending()
 		{
-			var request = Begin(callbackUrl: new Uri("maui-auth://callback/complete"));
+			var request = Begin(callbackUrl: new Uri("maui-auth://callback/complete"), cancellationToken: TestContext.Current.CancellationToken);
 
 			Assert.False(WebAuthenticatorRequestManager.TryHandleCallback(new Uri("maui-auth://callback/wrong?code=bad")));
 			Assert.False(request.Task.IsCompleted);
@@ -166,7 +166,7 @@ namespace Tests
 		[Fact]
 		public async Task TerminalCallbackCompletesOnlyMatchingRequest()
 		{
-			var request = Begin(callbackUrl: new Uri("maui-auth://callback:4567/complete"));
+			var request = Begin(callbackUrl: new Uri("maui-auth://callback:4567/complete"), cancellationToken: TestContext.Current.CancellationToken);
 
 			Assert.True(WebAuthenticatorRequestManager.TryHandleTerminalCallback(
 				request,
@@ -178,7 +178,7 @@ namespace Tests
 		[Fact]
 		public async Task TerminalMismatchFaultsTheBoundRequestWithoutSensitiveUris()
 		{
-			var request = Begin(callbackUrl: new Uri("maui-auth://callback/complete"));
+			var request = Begin(callbackUrl: new Uri("maui-auth://callback/complete"), cancellationToken: TestContext.Current.CancellationToken);
 
 			Assert.True(WebAuthenticatorRequestManager.TryHandleTerminalCallback(
 				request,
@@ -192,7 +192,7 @@ namespace Tests
 		[Fact]
 		public async Task TerminalCallbackWithoutUriFaultsTheBoundRequest()
 		{
-			var request = Begin();
+			var request = Begin(cancellationToken: TestContext.Current.CancellationToken);
 
 			Assert.True(WebAuthenticatorRequestManager.TryHandleTerminalCallback(request, null));
 
@@ -204,7 +204,7 @@ namespace Tests
 		{
 			var decoder = new CallbackDecoder(_ => new Dictionary<string, string>());
 			var beforeCompletionCalls = 0;
-			var request = Begin(decoder: decoder, beforeCallbackCompletion: () => beforeCompletionCalls++);
+			var request = Begin(decoder: decoder, beforeCallbackCompletion: () => beforeCompletionCalls++, cancellationToken: TestContext.Current.CancellationToken);
 
 			Assert.True(WebAuthenticatorRequestManager.TryHandleCallback(new Uri("maui-auth://callback?code=first")));
 			Assert.True(WebAuthenticatorRequestManager.TryHandleCallback(new Uri("maui-auth://callback?code=second")));
@@ -223,12 +223,12 @@ namespace Tests
 		[Fact]
 		public async Task LateReferenceAndIdCannotCompleteSuccessor()
 		{
-			var first = Begin();
+			var first = Begin(cancellationToken: TestContext.Current.CancellationToken);
 			Assert.True(WebAuthenticatorRequestManager.TryCancelFromPlatform(first));
 			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => first.Task);
 			Assert.True(WebAuthenticatorRequestManager.End(first));
 
-			var second = Begin();
+			var second = Begin(cancellationToken: TestContext.Current.CancellationToken);
 			Assert.False(WebAuthenticatorRequestManager.TryHandleTerminalCallback(first, new Uri("maui-auth://callback?code=late")));
 			Assert.False(WebAuthenticatorRequestManager.TryHandleTerminalCallback(first.Id, new Uri("maui-auth://callback?code=late")));
 			Assert.False(WebAuthenticatorRequestManager.TryCancelFromPlatform(first.Id));
@@ -242,7 +242,7 @@ namespace Tests
 		[Fact]
 		public async Task CancelByIdIsIdentitySafe()
 		{
-			var request = Begin();
+			var request = Begin(cancellationToken: TestContext.Current.CancellationToken);
 
 			Assert.False(WebAuthenticatorRequestManager.TryCancelFromPlatform(request.Id + 1));
 			Assert.False(request.Task.IsCompleted);
@@ -254,7 +254,7 @@ namespace Tests
 		public async Task FailByIdIsIdentitySafe()
 		{
 			var expected = new InvalidOperationException("redacted failure");
-			var request = Begin();
+			var request = Begin(cancellationToken: TestContext.Current.CancellationToken);
 
 			Assert.False(WebAuthenticatorRequestManager.TryFail(request.Id + 1, expected));
 			Assert.False(request.Task.IsCompleted);
@@ -298,7 +298,7 @@ namespace Tests
 		{
 			var expected = new InvalidOperationException("redacted failure");
 			var decoder = new CallbackDecoder(_ => new Dictionary<string, string>());
-			var request = Begin(decoder: decoder);
+			var request = Begin(decoder: decoder, cancellationToken: TestContext.Current.CancellationToken);
 
 			Assert.True(WebAuthenticatorRequestManager.TryFail(request, expected));
 			Assert.False(WebAuthenticatorRequestManager.TryHandleCallback(new Uri("maui-auth://other?code=ignored")));
@@ -314,7 +314,7 @@ namespace Tests
 		{
 			var expected = new DecoderException();
 			var decoder = new CallbackDecoder(_ => throw expected);
-			var request = Begin(decoder: decoder);
+			var request = Begin(decoder: decoder, cancellationToken: TestContext.Current.CancellationToken);
 
 			Assert.True(WebAuthenticatorRequestManager.TryHandleCallback(new Uri("maui-auth://callback?code=sensitive")));
 			var actual = await Assert.ThrowsAsync<DecoderException>(() => request.Task);
@@ -338,6 +338,7 @@ namespace Tests
 			});
 
 			request = Begin(
+				cancellationToken: TestContext.Current.CancellationToken,
 				decoder: decoder,
 				beforeCallbackCompletion: () =>
 				{
@@ -362,7 +363,7 @@ namespace Tests
 				lockWasAvailable = Task.Run(() => WebAuthenticatorRequestManager.End(request!)).Wait(TimeSpan.FromSeconds(5));
 				return new Dictionary<string, string>();
 			});
-			request = Begin(decoder: decoder);
+			request = Begin(decoder: decoder, cancellationToken: TestContext.Current.CancellationToken);
 
 			Assert.True(WebAuthenticatorRequestManager.TryHandleCallback(new Uri("maui-auth://callback")));
 			await request.Task;
@@ -373,7 +374,7 @@ namespace Tests
 		[Fact]
 		public async Task ContinuationsDoNotRunInlineWithCompletion()
 		{
-			var request = Begin();
+			var request = Begin(cancellationToken: TestContext.Current.CancellationToken);
 			using var continuationStarted = new ManualResetEventSlim();
 			using var releaseContinuation = new ManualResetEventSlim();
 			var continuation = request.Task.ContinueWith(
@@ -389,15 +390,15 @@ namespace Tests
 			try
 			{
 				var completion = Task.Run(() => WebAuthenticatorRequestManager.TryHandleCallback(new Uri("maui-auth://callback")));
-				Assert.True(await completion.WaitAsync(TimeSpan.FromSeconds(5)));
-				Assert.True(continuationStarted.Wait(TimeSpan.FromSeconds(5)));
+				Assert.True(await completion.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken));
+				Assert.True(continuationStarted.Wait(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken));
 			}
 			finally
 			{
 				releaseContinuation.Set();
 			}
 
-			await continuation.WaitAsync(TimeSpan.FromSeconds(5));
+			await continuation.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
 		}
 
 		[Fact]
@@ -406,7 +407,7 @@ namespace Tests
 			for (var iteration = 0; iteration < 100; iteration++)
 			{
 				var decoder = new CallbackDecoder(_ => new Dictionary<string, string>());
-				var request = Begin(decoder: decoder);
+				var request = Begin(decoder: decoder, cancellationToken: TestContext.Current.CancellationToken);
 
 				await Task.WhenAll(
 					Task.Run(() => WebAuthenticatorRequestManager.TryHandleTerminalCallback(request, new Uri("maui-auth://callback"))),
@@ -433,14 +434,14 @@ namespace Tests
 		[Fact]
 		public async Task EndIsIdentitySafeAndKeepsConcurrencyClosedUntilCleanup()
 		{
-			var first = Begin();
+			var first = Begin(cancellationToken: TestContext.Current.CancellationToken);
 			Assert.True(WebAuthenticatorRequestManager.TryHandleCallback(new Uri("maui-auth://callback")));
 			await first.Task;
 
-			Assert.Throws<InvalidOperationException>(() => Begin());
+			Assert.Throws<InvalidOperationException>(() => Begin(cancellationToken: TestContext.Current.CancellationToken));
 			Assert.True(WebAuthenticatorRequestManager.End(first));
 
-			var second = Begin();
+			var second = Begin(cancellationToken: TestContext.Current.CancellationToken);
 			Assert.False(WebAuthenticatorRequestManager.End(first));
 			Assert.True(WebAuthenticatorRequestManager.TryCancelFromPlatform(second));
 			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => second.Task);
@@ -449,7 +450,7 @@ namespace Tests
 		[Fact]
 		public async Task ActiveBuiltInRequestSurvivesFacadeReplacement()
 		{
-			var request = Begin();
+			var request = Begin(cancellationToken: TestContext.Current.CancellationToken);
 			var custom = CreateTransport();
 
 			try

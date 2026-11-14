@@ -139,16 +139,16 @@ public class ActivityStateManagerRecreation_Tests
 		finally
 		{
 			recreatedActivity ??= manager.GetCurrentActivity() as ActivityResultRecreationActivity;
-			await MainThread.InvokeOnMainThreadAsync(() =>
+			try
 			{
-				if (recreatedActivity is { IsFinishing: false })
-					recreatedActivity.Finish();
-				if (originalActivity is { IsDestroyed: false, IsFinishing: false })
-					originalActivity.Finish();
-			});
-
-			manager.Dispose();
-			ActivityResultRecreationState.Reset();
+				await FinishActivityAsync(recreatedActivity);
+				await FinishActivityAsync(originalActivity);
+			}
+			finally
+			{
+				await MainThread.InvokeOnMainThreadAsync(manager.Dispose);
+				ActivityResultRecreationState.Reset();
+			}
 		}
 	}
 
@@ -191,14 +191,15 @@ public class ActivityStateManagerRecreation_Tests
 		finally
 		{
 			activity ??= manager.GetCurrentActivity() as ActivityResultRecreationActivity;
-			await MainThread.InvokeOnMainThreadAsync(() =>
+			try
 			{
-				if (activity is { IsDestroyed: false, IsFinishing: false })
-					activity.Finish();
-			});
-
-			manager.Dispose();
-			ActivityResultRecreationState.Reset();
+				await FinishActivityAsync(activity);
+			}
+			finally
+			{
+				await MainThread.InvokeOnMainThreadAsync(manager.Dispose);
+				ActivityResultRecreationState.Reset();
+			}
 		}
 	}
 
@@ -247,15 +248,34 @@ public class ActivityStateManagerRecreation_Tests
 		finally
 		{
 			activity ??= manager.GetCurrentActivity() as ActivityResultRecreationActivity;
-			await MainThread.InvokeOnMainThreadAsync(() =>
+			try
 			{
-				if (activity is { IsDestroyed: false, IsFinishing: false })
-					activity.FinishAndRemoveTask();
-			});
-
-			manager.Dispose();
-			ActivityResultRecreationState.Reset();
+				await FinishActivityAsync(activity, removeTask: true);
+			}
+			finally
+			{
+				await MainThread.InvokeOnMainThreadAsync(manager.Dispose);
+				ActivityResultRecreationState.Reset();
+			}
 		}
+	}
+
+	static async Task FinishActivityAsync(ActivityResultRecreationActivity? activity, bool removeTask = false)
+	{
+		if (activity is null)
+			return;
+
+		await MainThread.InvokeOnMainThreadAsync(() =>
+		{
+			if (activity.IsDestroyed || activity.IsFinishing)
+				return;
+
+			if (removeTask)
+				activity.FinishAndRemoveTask();
+			else
+				activity.Finish();
+		});
+		await activity.Destroyed.WaitAsync(TimeSpan.FromSeconds(15));
 	}
 
 	static ActivityManager.AppTask? FindTask(ActivityManager activityManager, int taskId)
@@ -319,8 +339,10 @@ sealed class RecreationActivityResultRegistry : ActivityResultRegistry
 public sealed class ActivityResultRecreationActivity : ComponentActivity
 {
 	const string RegistryStateKey = "ActivityStateManagerRecreation.Registry";
+	readonly TaskCompletionSource _destroyed = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
 	internal RecreationActivityResultRegistry ResultRegistry { get; } = new();
+	internal Task Destroyed => _destroyed.Task;
 
 	protected override void OnCreate(Bundle? savedInstanceState)
 	{
@@ -350,6 +372,7 @@ public sealed class ActivityResultRecreationActivity : ComponentActivity
 	{
 		ActivityResultRecreationState.OnActivityDestroyed(this);
 		base.OnDestroy();
+		_destroyed.TrySetResult();
 	}
 }
 

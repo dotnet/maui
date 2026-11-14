@@ -161,6 +161,46 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact]
+		public async Task UnloadedWindowRootViewCanBeCollected()
+		{
+			var reference = await InvokeOnMainThreadAsync(CreateAndUnloadWindowRootView);
+			await AssertionExtensions.WaitForGC(reference);
+		}
+
+		static async Task<WeakReference> CreateAndUnloadWindowRootView()
+		{
+			var root = new WindowRootView();
+			var loaded = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+			var unloaded = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+			var closed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+			root.Loaded += (_, _) => loaded.TrySetResult();
+			root.Unloaded += (_, _) => unloaded.TrySetResult();
+			var window = new UI.Xaml.Window { Content = root };
+			window.Closed += (_, _) => closed.TrySetResult();
+			try
+			{
+				window.Activate();
+				await loaded.Task.WaitAsync(TimeSpan.FromSeconds(5));
+				Assert.True(root.IsLoaded);
+				Assert.NotNull(root.AppTitleBarContainer);
+				Assert.NotNull(root.AppTitleBarContentControl);
+
+				window.Content = null;
+				await unloaded.Task.WaitAsync(TimeSpan.FromSeconds(5));
+				Assert.False(root.IsLoaded);
+			}
+			finally
+			{
+				window.Close();
+			}
+
+			await closed.Task.WaitAsync(TimeSpan.FromSeconds(5));
+			var reference = new WeakReference(root);
+			root = null;
+			return reference;
+		}
+
 		void MovePlatformWindow(UI.Xaml.Window window, Rect rect)
 		{
 			var density = window.GetDisplayDensity();

@@ -725,6 +725,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var topPage = new ContentPage { Title = "Top" };
 			var navPage = new TestNavigationPage(useMaui, root);
 			var window = new TestWindow(navPage);
+			await navPage.NavigatingTask;
+			navPage.ValidateNavigationCompleted();
 
 			// Manually assign a mock handler to track disconnection
 			var mockHandler = new HandlerStub();

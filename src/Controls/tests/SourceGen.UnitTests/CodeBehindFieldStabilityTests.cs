@@ -135,7 +135,7 @@ public class CodeBehindFieldStabilityTests : SourceGenTestsBase
 			""";
 
 		var xamlFile = new AdditionalXamlFile("WhitespaceInXName_IsTrimmedBeforeFieldReconciliation.xaml", xamlV1);
-		var compilation = CreateMauiCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText(codeBehind));
+		var compilation = CreateMauiCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText(codeBehind, cancellationToken: TestContext.Current.CancellationToken));
 		var (_, result, updatedCompilation, diagnostics) = RunGeneratorWithChangesAndUpdateCompilation<XamlGenerator>(compilation, ApplyChanges, xamlFile);
 
 		AssertNoErrors(diagnostics, updatedCompilation);
@@ -181,7 +181,7 @@ public class CodeBehindFieldStabilityTests : SourceGenTestsBase
 			""";
 
 		var xamlFile = new AdditionalXamlFile("RuntimeXNameWhitespace.xaml", xamlV1, enableIncrementalHotReload);
-		var compilation = CreateMauiCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText(codeBehind));
+		var compilation = CreateMauiCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText(codeBehind, cancellationToken: TestContext.Current.CancellationToken));
 		var (_, result, updatedCompilation, diagnostics) = RunGeneratorWithChangesAndUpdateCompilation<XamlGenerator>(compilation, ApplyChanges, xamlFile);
 		var output = GetCbOutput(result);
 
@@ -281,7 +281,7 @@ public class CodeBehindFieldStabilityTests : SourceGenTestsBase
 			""";
 
 		var xamlFile = new AdditionalXamlFile("ReusingXNameWithAssignableDerivedType.xaml", xamlV1);
-		var compilation = CreateMauiCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText(codeBehind));
+		var compilation = CreateMauiCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText(codeBehind, cancellationToken: TestContext.Current.CancellationToken));
 
 		var (_, _, updatedCompilation2, diagnostics2) = RunGeneratorWithChangesAndUpdateCompilation<XamlGenerator>(compilation, ApplyChanges, xamlFile);
 
@@ -338,7 +338,7 @@ public class CodeBehindFieldStabilityTests : SourceGenTestsBase
 			""";
 
 		var xamlFile = new AdditionalXamlFile("ReusingXNameWithIncompatibleType_Compiles.xaml", xamlV1);
-		var compilation = CreateMauiCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText(codeBehind));
+		var compilation = CreateMauiCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText(codeBehind, cancellationToken: TestContext.Current.CancellationToken));
 
 		var (_, _, updatedCompilation2, diagnostics2) = RunGeneratorWithChangesAndUpdateCompilation<XamlGenerator>(compilation, ApplyChanges, xamlFile);
 
@@ -497,7 +497,7 @@ public class CodeBehindFieldStabilityTests : SourceGenTestsBase
 			</ContentPage>
 			""";
 
-		var compilation = CreateMauiCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText(codeBehind));
+		var compilation = CreateMauiCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText(codeBehind, cancellationToken: TestContext.Current.CancellationToken));
 		var results = RunThreeGenerations(compilation, "TransientUnresolvedType.xaml", xamlV1, xamlV2, xamlV3);
 
 		var invalidOutput = GetCbOutput(results.result2);
@@ -638,7 +638,7 @@ public class CodeBehindFieldStabilityTests : SourceGenTestsBase
 			""";
 
 		var xamlFile = new AdditionalXamlFile("ConstructedGenericDerivedType.xaml", xamlV1);
-		var compilation = CreateMauiCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText(codeBehind));
+		var compilation = CreateMauiCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText(codeBehind, cancellationToken: TestContext.Current.CancellationToken));
 		var (_, _, updatedCompilation, diagnostics) = RunGeneratorWithChangesAndUpdateCompilation<XamlGenerator>(compilation, ApplyChanges, xamlFile);
 
 		AssertNoErrors(diagnostics, updatedCompilation);
@@ -693,7 +693,7 @@ public class CodeBehindFieldStabilityTests : SourceGenTestsBase
 
 		var pageFile = new AdditionalXamlFile("XamlGeneratedDerivedType.xaml", pageV1);
 		var cardFile = new AdditionalXamlFile("MyCard.xaml", cardXaml);
-		var compilation = CreateMauiCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText(codeBehind));
+		var compilation = CreateMauiCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText(codeBehind, cancellationToken: TestContext.Current.CancellationToken));
 		var (_, _, updatedCompilation, diagnostics) = RunGeneratorWithChangesAndUpdateCompilation<XamlGenerator>(compilation, ApplyChanges, pageFile, cardFile);
 
 		AssertNoErrors(diagnostics, updatedCompilation);
@@ -741,7 +741,7 @@ public class CodeBehindFieldStabilityTests : SourceGenTestsBase
 			""";
 
 		var xamlFile = new AdditionalXamlFile("ReusingObjectFieldWithValueType.xaml", xamlV1);
-		var compilation = CreateMauiCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText(codeBehind));
+		var compilation = CreateMauiCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText(codeBehind, cancellationToken: TestContext.Current.CancellationToken));
 		var (_, _, updatedCompilation, diagnostics) = RunGeneratorWithChangesAndUpdateCompilation<XamlGenerator>(compilation, ApplyChanges, xamlFile);
 
 		AssertNoErrors(diagnostics, updatedCompilation);

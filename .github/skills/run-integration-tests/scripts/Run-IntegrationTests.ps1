@@ -13,7 +13,17 @@
     Test category to run (WindowsTemplates, Samples, Build, Blazor, MultiProject, etc.)
 
 .PARAMETER TestFilter
-    Custom NUnit test filter expression. Overrides -Category if specified.
+    Native xUnit query or supported legacy test filter. Overrides -Category if specified.
+
+.PARAMETER TestClass
+    Fully qualified xUnit test class names. Cannot be combined with -TestFilter.
+
+.PARAMETER DotnetPath
+    Optional SDK executable for the outer test host. Defaults to .dotnet/dotnet.
+    Generated sample applications still use the repository-local SDK.
+
+.PARAMETER ArtifactsDirectory
+    Optional isolated build artifacts directory for the outer test host.
 
 .PARAMETER Configuration
     Build configuration (Debug or Release). Default: Debug
@@ -31,7 +41,7 @@
     .\Run-IntegrationTests.ps1 -Category "Samples" -Configuration "Release"
 
 .EXAMPLE
-    .\Run-IntegrationTests.ps1 -TestFilter "FullyQualifiedName~BuildSample" -SkipBuild
+    .\Run-IntegrationTests.ps1 -TestFilter "/*/*/*/*BuildSample*" -SkipBuild
 #>
 
 param(
@@ -41,6 +51,15 @@ param(
 
     [Parameter()]
     [string]$TestFilter,
+
+    [Parameter()]
+    [string[]]$TestClass,
+
+    [Parameter()]
+    [string]$DotnetPath,
+
+    [Parameter()]
+    [string]$ArtifactsDirectory,
 
     [Parameter()]
     [ValidateSet("Debug", "Release")]
@@ -63,7 +82,11 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+if ($DotnetPath -and (-not $SkipBuild -or -not $SkipInstall)) {
+    throw "-DotnetPath is only supported with -SkipBuild -SkipInstall; generated apps require the repository-local workload."
+}
 $RepoRoot = (Get-Item $PSScriptRoot).Parent.Parent.Parent.Parent.FullName
+. (Join-Path $RepoRoot '.github/scripts/shared/XunitMtp.ps1')
 $RunningOnWindows = $IsWindows -or $env:OS -eq 'Windows_NT'
 $RunningOnMacOS = $IsMacOS -or ((Get-Command uname -ErrorAction SilentlyContinue) -and ((uname) -eq 'Darwin'))
 
@@ -152,10 +175,12 @@ try {
     # ═══════════════════════════════════════════════════════════════════
     # Step 2: Install Workloads
     # ═══════════════════════════════════════════════════════════════════
-    $dotnetPath = if ($RunningOnWindows) { 
-        Join-Path $RepoRoot ".dotnet\dotnet.exe" 
-    } else { 
-        Join-Path $RepoRoot ".dotnet/dotnet" 
+    if (-not $DotnetPath) {
+        $DotnetPath = if ($RunningOnWindows) {
+            Join-Path $RepoRoot ".dotnet\dotnet.exe"
+        } else {
+            Join-Path $RepoRoot ".dotnet/dotnet"
+        }
     }
     
     if (-not (Test-Path $dotnetPath)) {
@@ -230,7 +255,12 @@ try {
     Write-Host "Step 3: Extracting MAUI Package Version..." -ForegroundColor Yellow
     Write-Host "═══════════════════════════════════════════════════════════" -ForegroundColor Yellow
     
-    $packsPath = Join-Path $RepoRoot ".dotnet/packs/Microsoft.Maui.Sdk"
+    $dotnetFile = Get-Item $dotnetPath
+    if ($dotnetFile.LinkType) {
+        $dotnetFile = $dotnetFile.ResolveLinkTarget($true)
+    }
+    $sdkRoot = Split-Path $dotnetFile.FullName -Parent
+    $packsPath = Join-Path $sdkRoot "packs/Microsoft.Maui.Sdk"
     
     if (-not (Test-Path $packsPath)) {
         throw "Microsoft.Maui.Sdk packs not found at: $packsPath"
@@ -287,26 +317,34 @@ try {
     }
     
     # Build test filter
-    $effectiveFilter = if ($TestFilter) {
-        $TestFilter
+    if ($TestFilter -and $TestClass) {
+        throw "-TestFilter and -TestClass cannot be combined."
     }
-    elseif ($Category) {
-        "Category=$Category"
-    }
-    else {
-        throw "Either -Category or -TestFilter must be specified"
-    }
+    $effectiveFilter = if ($TestFilter) { $TestFilter }
+        elseif ($TestClass) { $TestClass -join ', ' }
+        elseif ($Category) { "Category=$Category" }
+        else { throw "Either -Category, -TestFilter, or -TestClass must be specified" }
     
     $testProjectPath = Join-Path $RepoRoot "src/TestUtils/src/Microsoft.Maui.IntegrationTests/Microsoft.Maui.IntegrationTests.csproj"
     
     $testArgs = @(
         "test",
-        $testProjectPath,
-        "--configuration", $Configuration,
-        "--filter", $effectiveFilter,
-        "--logger", "trx",
-        "--results-directory", $resultsPath
+        "--project", $testProjectPath,
+        "--configuration", $Configuration
     )
+    if ($ArtifactsDirectory) {
+        $artifactsProperty = [IO.Path]::GetFullPath($ArtifactsDirectory).Replace('%', '%25').Replace(';', '%3B').Replace(',', '%2C')
+        $testArgs += "-p:ArtifactsDir=$artifactsProperty"
+    }
+    $testArgs += @("--", "--report-trx", "--results-directory", $resultsPath, "--minimum-expected-tests", "1")
+    if ($TestFilter) {
+        $testArgs += @(Get-XunitMtpFilterArguments $TestFilter)
+    } elseif ($TestClass) {
+        $testArgs += "--filter-class"
+        $testArgs += $TestClass
+    } else {
+        $testArgs += @("--filter-trait", "Category=$Category")
+    }
     
     Write-Host "Test Filter: $effectiveFilter" -ForegroundColor Cyan
     Write-Host "Results Directory: $resultsPath" -ForegroundColor Cyan

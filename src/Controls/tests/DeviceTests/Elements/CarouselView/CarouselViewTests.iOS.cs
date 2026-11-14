@@ -84,6 +84,44 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task DetachedCarouselPreservesNativeItemIndexMapping(bool loop)
+		{
+			SetupBuilder();
+			var carousel = new CarouselView
+			{
+				Loop = loop,
+				HeightRequest = 200,
+				WidthRequest = 300,
+				ItemsSource = new[] { 1, 2 },
+				ItemTemplate = new DataTemplate(() => new Label())
+			};
+
+			await CreateHandlerAndAddToWindow<CarouselViewHandler2>(carousel, async handler =>
+			{
+				var controller = Assert.IsType<CarouselViewController2>(handler.Controller);
+				await AssertEventually(() => controller.InitialPositionSet);
+				var expectedIndices = loop ? new[] { 1, 0, 1, 0 } : new[] { 0, 1 };
+
+				for (int i = 0; i < expectedIndices.Length; i++)
+				{
+					using var index = Foundation.NSIndexPath.FromItemSection(i, 0);
+					Assert.Equal(expectedIndices[i], controller.GetIndexFromIndexPath(index));
+				}
+
+				controller.CollectionView.RemoveFromSuperview();
+				Assert.Null(controller.CollectionView.Window);
+
+				for (int i = 0; i < expectedIndices.Length; i++)
+				{
+					using var index = Foundation.NSIndexPath.FromItemSection(i, 0);
+					Assert.Equal(expectedIndices[i], controller.GetIndexFromIndexPath(index));
+				}
+			});
+		}
+
 		sealed class NewCarouselTemplateSelector : DataTemplateSelector
 		{
 			protected override DataTemplate OnSelectTemplate(object item, BindableObject container)

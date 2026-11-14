@@ -22,16 +22,19 @@ namespace Microsoft.Maui.IntegrationTests
 			// One-time setup: boot simulator for all tests
 			if (TestEnvironment.IsMacOS)
 			{
-				TestSimulator.Shutdown();
-				TestSimulator.Launch();
+				if (!TestSimulator.Launch())
+				{
+					TestSimulator.Dispose();
+					throw new InvalidOperationException("Failed to boot the integration simulator.");
+				}
 				// Wait for simulator to fully boot to avoid race condition where
 				// simulator reports "booted" but is still in Booting state internally
 				// This prevents "Unable to lookup in current state: Booting" errors
 				if (!TestSimulator.WaitForBootComplete())
 				{
+					TestSimulator.Dispose();
 					throw new InvalidOperationException(
-						$"Simulator failed to fully boot within timeout. " +
-						$"Target: {TestSimulator.XHarnessID}, UDID: {TestSimulator.GetUDID()}");
+						"Simulator failed to fully boot within timeout.");
 				}
 			}
 		}
@@ -41,7 +44,7 @@ namespace Microsoft.Maui.IntegrationTests
 			// One-time teardown: shutdown simulator after all tests
 			if (TestEnvironment.IsMacOS)
 			{
-				TestSimulator.Shutdown();
+				TestSimulator.Dispose();
 			}
 		}
 	}
@@ -57,10 +60,7 @@ namespace Microsoft.Maui.IntegrationTests
 		{
 			_simulatorFixture = simulatorFixture;
 
-			// Per-test setup: skip if not on macOS
-			if (!TestEnvironment.IsMacOS)
-				if (true)
-					return; // Skip: "Running Apple templates is only supported on macOS."
+			Assert.SkipUnless(TestEnvironment.IsMacOS, "Running Apple templates is only supported on macOS.");
 		}
 
 		// DotNetPrevious test methods
@@ -178,14 +178,9 @@ namespace Microsoft.Maui.IntegrationTests
 			var appFile = Directory.GetDirectories(binDir, appName, SearchOption.AllDirectories).FirstOrDefault()
 				?? Path.Combine(binDir, appName);
 
-			// Write xh-results to the log directory for artifact collection
-			var xhResultsDir = Path.Combine(TestEnvironment.GetLogDirectory(), "xh-results", Path.GetFileName(projectDir));
-			Directory.CreateDirectory(xhResultsDir);
-
-			// Let XHarness find the simulator based on target (e.g., ios-simulator-64_18.5).
-			// Only pin a UDID when a dedicated simulator was explicitly selected.
-			Assert.True(XHarness.RunApple(appFile, xhResultsDir, _simulatorFixture.TestSimulator.XHarnessID, completionMarker,
-				deviceUdid: TestEnvironment.IosTestDeviceUdid, output: _output),
+			var resultsDir = Path.Combine(TestEnvironment.GetLogDirectory(), "app-results", Path.GetFileName(projectDir));
+			Assert.True(AppLaunch.RunApple(appFile, resultsDir, _simulatorFixture.TestSimulator.GetUDID(), completionMarker,
+				output: _output, cancellationToken: TestContext.Current.CancellationToken),
 				$"Project {Path.GetFileName(projectFile)} failed to run. Check test output/attachments for errors.");
 		}
 	}

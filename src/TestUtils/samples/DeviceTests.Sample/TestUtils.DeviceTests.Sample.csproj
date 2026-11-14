@@ -12,6 +12,8 @@
     <RuntimeIdentifier Condition="$(TargetFramework.Contains('-maccatalyst')) and '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'arm64'">maccatalyst-arm64</RuntimeIdentifier>
   </PropertyGroup>
 
+  <Import Project="$(MauiSrcDirectory)Microsoft.Maui.TestUtils.DeviceTests.Runners.props" />
+
   <PropertyGroup>
     <ApplicationTitle>Tests Sample</ApplicationTitle>
     <ApplicationId>com.microsoft.maui.testutils.devicetests</ApplicationId>

@@ -97,7 +97,7 @@ namespace Microsoft.Maui.Essentials.ExternalBackend.UnitTests
 
 			var locale = (await tts.GetLocalesAsync()).First();
 
-			await tts.SpeakAsync("hello", new SpeechOptions { Locale = locale, Rate = 1.0f });
+			await tts.SpeakAsync("hello", new SpeechOptions { Locale = locale, Rate = 1.0f }, TestContext.Current.CancellationToken);
 
 			Assert.NotNull(backend.LastOptions);
 			Assert.Same(locale, backend.LastOptions!.Locale);

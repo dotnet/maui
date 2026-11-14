@@ -20,6 +20,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		int _section = 0;
 		bool _wasDetachedFromWindow = false;
 		int _gotoPosition = -1;
+		// Native cell callbacks still require loop-index mapping after detachment.
 		CarouselViewLoopManager _carouselViewLoopManager;
 		CancellationTokenSource _scrollDebounce;
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The orientation observer token is removed from NSNotificationCenter in TearDown and Dispose, so it does not root this controller.")]
@@ -235,8 +236,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				NSNotificationCenter.DefaultCenter.RemoveObserver(_orientationObserver);
 				_orientationObserver = null;
 			}
-			_carouselViewLoopManager?.Dispose();
-			_carouselViewLoopManager = null;
 			_isUpdating = false;
 			_isRotating = false;
 			_isInternalCollectionUpdate = false;
@@ -925,6 +924,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			if (disposing)
 			{
+				_carouselViewLoopManager?.Dispose();
+				_carouselViewLoopManager = null;
 				if (_orientationObserver is not null)
 				{
 					NSNotificationCenter.DefaultCenter.RemoveObserver(_orientationObserver);

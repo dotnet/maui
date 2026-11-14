@@ -227,7 +227,7 @@ These provide specialized guidance for specific scenarios used by all agents:
 - **`instructions/collectionview-handler-detection.instructions.md`** - CollectionView handler configuration
 - **`instructions/agents.instructions.md`** - Custom agent authoring guidelines
 - **`instructions/skills.instructions.md`** - Skill development standards
-- **`instructions/helix-device-tests.instructions.md`** - Helix device test infrastructure
+- **`instructions/helix-device-tests.instructions.md`** - Direct `dotnet test` device infrastructure (retained compatibility filename)
 
 ### Shared Scripts
 

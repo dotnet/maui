@@ -167,7 +167,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		// Regression test for https://github.com/dotnet/maui/issues/35479
 		[Fact]
-		public async Task DisconnectClearsNativeMapStateBeforePooling()
+		public Task DisconnectClearsNativeMapStateBeforePooling() => InvokeOnMainThreadAsync(async () =>
 		{
 			var map = new Map();
 			var handler = await CreateHandlerAsync<Microsoft.Maui.Maps.Handlers.MapHandler>(map);
@@ -197,7 +197,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Null(polygon.MapElementId);
 			Assert.True(platformView.Annotations is null || platformView.Annotations.Length == 0);
 			Assert.True(platformView.Overlays is null || platformView.Overlays.Length == 0);
-		}
+		});
 	}
 #endif
 }

@@ -357,7 +357,7 @@ public class XamlIncrementalHotReloadE2ETests
 		// CS0108 (member hides inherited member) must NOT appear at ANY severity — the pragma in the
 		// generated UC file must suppress it. (Checked independently of general errors so the test
 		// would fail if the pragma were missing, regardless of warnings-as-errors configuration.)
-		var cs0108 = compilation.GetDiagnostics().Where(d => d.Id == "CS0108").ToArray();
+		var cs0108 = compilation.GetDiagnostics(TestContext.Current.CancellationToken).Where(d => d.Id == "CS0108").ToArray();
 		Assert.Empty(cs0108);
 	}
 
