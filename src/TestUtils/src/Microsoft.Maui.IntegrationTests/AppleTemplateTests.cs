@@ -136,6 +136,10 @@ namespace Microsoft.Maui.IntegrationTests
 			if (runtimeVariant == RuntimeVariant.Mono)
 			{
 				buildProps.Add("UseMonoRuntime=true");
+				// .NET 11+ SDKs reject Mono for mobile TFMs (NETSDK1242) unless opted out. Restrict the template to iOS
+				// so the global UseMonoRuntime does not also apply to its Android target, which has no Mono runtime.
+				buildProps.Add("_DisableCheckForUnsupportedMonoMobileRuntime=true");
+				buildProps.Add($"TargetFrameworks={framework}-ios");
 			}
 			else if (runtimeVariant == RuntimeVariant.CoreCLR)
 			{
