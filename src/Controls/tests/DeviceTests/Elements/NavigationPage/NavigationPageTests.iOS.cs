@@ -349,6 +349,59 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task StatusBarQueriesDuringInitialPushDoNotThrow(bool inFlyoutPage)
+		{
+			// iOS 27 asks for the status bar child controller while the first page is still being
+			// created (#39895, #39669). The root page's HandlerChanged fires in that window.
+			SetupNavigationRenderer();
+			var root = new ContentPage();
+			var navPage = new NavigationPage(root);
+			Page container = inFlyoutPage
+				? new FlyoutPage { Flyout = new ContentPage { Title = "Flyout" }, Detail = navPage }
+				: navPage;
+			var reached = new List<UIViewController>();
+			Exception error = null;
+
+			root.HandlerChanged += OnRootHandlerChanged;
+			void OnRootHandlerChanged(object sender, EventArgs e)
+			{
+				root.HandlerChanged -= OnRootHandlerChanged;
+				try
+				{
+					var start = ((IPlatformViewHandler)container.Handler).ViewController;
+					reached.Add(Walk(start, vc => vc.ChildViewControllerForStatusBarHidden()));
+#if !MACCATALYST
+					reached.Add(Walk(start, vc => vc.ChildViewControllerForStatusBarStyle()));
+#endif
+					reached.Add(Walk(start, vc => vc.ChildViewControllerForHomeIndicatorAutoHidden));
+				}
+				catch (Exception ex)
+				{
+					error = ex;
+				}
+			}
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(container), _ =>
+			{
+				Assert.True(error is null, error?.ToString());
+				var renderer = Assert.IsType<NavigationRenderer>(navPage.Handler);
+				Assert.NotEmpty(reached);
+				Assert.All(reached, vc => Assert.Same(renderer, vc));
+				Assert.Same(((IPlatformViewHandler)root.Handler).ViewController, renderer.ChildViewControllerForStatusBarHidden());
+			});
+
+			// Follows the child chain the way UIKit does and returns the controller that answers for itself.
+			static UIViewController Walk(UIViewController vc, Func<UIViewController, UIViewController> child)
+			{
+				for (var next = child(vc); next is not null; next = child(vc))
+					vc = next;
+				return vc;
+			}
+		}
+
 		void SetupNavigationRenderer()
 		{
 			// Renderer-disposal tests must retain their native implementation in inherited handler fixtures.
@@ -358,6 +411,7 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					handlers.AddHandler(typeof(Toolbar), typeof(ToolbarHandler));
 					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationRenderer));
+					handlers.AddHandler(typeof(FlyoutPage), typeof(PhoneFlyoutPageRenderer));
 					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedRenderer));
 					RegisterCommonHandlers(handlers);
 				});
