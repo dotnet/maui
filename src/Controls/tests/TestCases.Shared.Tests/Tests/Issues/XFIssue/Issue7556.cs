@@ -46,23 +46,32 @@ public class Issue7556 : _IssuesUITest
 
 		App.WaitForElement("FlyoutVisible");
 		App.Tap("CloseFlyout");
+		App.WaitForNoElement("FlyoutVisible");
 
 		App.SetOrientationLandscape();
-		App.WaitForElement("Close Flyout");
+		AssertDetailIsAccessible();
 		App.SetOrientationPortrait();
-		App.WaitForElement("Close Flyout");
+		AssertDetailIsAccessible();
 		App.SetOrientationLandscape();
-		App.WaitForElement("Close Flyout");
+		AssertDetailIsAccessible();
 		App.SetOrientationPortrait();
-
-		if (App.FindElements("FlyoutVisible").Count > 0)
-			App.Tap("CloseFlyout");
+		AssertDetailIsAccessible();
 
 		App.TapFlyoutPageIcon("Flyout");
 		App.WaitForElement("FlyoutVisible");
 		App.Tap("CloseFlyout");
 		App.TapFlyoutPageIcon("Flyout");
 		App.WaitForElement("FlyoutVisible");
+	}
+
+	void AssertDetailIsAccessible()
+	{
+		App.WaitForElement("DetailSentinel");
+		if (App.FindElements("FlyoutVisible").Count > 0)
+		{
+			Assert.That(App.WaitForElement("CloseFlyout").IsEnabled(), Is.False,
+				"The detail sentinel must not be covered by an open overlay flyout.");
+		}
 	}
 
 	[TearDown]

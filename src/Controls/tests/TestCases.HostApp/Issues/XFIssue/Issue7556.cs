@@ -6,6 +6,16 @@ public class Issue7556 : TestFlyoutPage
 {
 	protected override void Init()
 	{
+		var closeFlyout = new Command(() => IsPresented = false,
+			() => Window is not null && !((IFlyoutPageController)this).ShouldShowSplitMode);
+
+		SizeChanged += (_, _) => closeFlyout.ChangeCanExecute();
+		PropertyChanged += (_, args) =>
+		{
+			if (args.PropertyName == nameof(FlyoutLayoutBehavior))
+				closeFlyout.ChangeCanExecute();
+		};
+
 		Flyout = new ContentPage()
 		{
 			Content = new StackLayout()
@@ -35,7 +45,7 @@ public class Issue7556 : TestFlyoutPage
 					{
 						Text = "Close Flyout",
 						AutomationId = "CloseFlyout",
-						Command = new Command(() => IsPresented = false)
+						Command = closeFlyout
 					}
 				}
 			},
@@ -65,7 +75,7 @@ public class Issue7556 : TestFlyoutPage
 					Command = new Command(OnChangeMasterBehavior),
 					AutomationId = "ChangeMasterBehavior"
 				},
-				new Label(){ HorizontalTextAlignment = TextAlignment.Center, Text = "Close Flyout" }
+				new Label(){ HorizontalTextAlignment = TextAlignment.Center, Text = "Close Flyout", AutomationId = "DetailSentinel" }
 			};
 
 
