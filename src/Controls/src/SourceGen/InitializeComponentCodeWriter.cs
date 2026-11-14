@@ -17,8 +17,16 @@ static class InitializeComponentCodeWriter
 
 	public static string GeneratedCodeAttribute => $"[global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"{typeof(InitializeComponentCodeWriter).Assembly.FullName}\", \"{typeof(InitializeComponentCodeWriter).Assembly.GetName().Version}\")]";
 
-	public static string GenerateInitializeComponent(XamlProjectItemForIC xamlItem, Compilation compilation, SourceProductionContext sourceProductionContext, AssemblyAttributes xmlnsCache, IDictionary<XmlType, INamedTypeSymbol> typeCache)
+	public static string GenerateInitializeComponent(XamlProjectItemForIC xamlItem, Compilation compilation, SourceProductionContext sourceProductionContext, AssemblyAttributes xmlnsCache, IDictionary<XmlType, INamedTypeSymbol> typeCache, Action<Diagnostic>? diagnosticObserver = null)
 	{
+		Action<Diagnostic> reportDiagnostic = diagnosticObserver is null
+			? sourceProductionContext.ReportDiagnostic
+			: diagnostic =>
+			{
+				diagnosticObserver(diagnostic);
+				sourceProductionContext.ReportDiagnostic(diagnostic);
+			};
+
 		using (var codeWriter = new IndentedTextWriter(new StringWriter(CultureInfo.InvariantCulture), "\t") { NewLine = NewLine })
 		{
 			PrePost newblock() =>
@@ -40,7 +48,7 @@ static class InitializeComponentCodeWriter
 			foreach (var warning in root.Warnings)
 			{
 				var location = LocationHelpers.LocationCreate(xamlItem.ProjectItem.RelativePath!, warning.lineNumber, warning.linePosition, warning.lineNumber, warning.linePosition);
-				sourceProductionContext.ReportDiagnostic(Diagnostic.Create(Descriptors.PropertyElementWithAttribute, location, warning.message));
+				reportDiagnostic(Diagnostic.Create(Descriptors.PropertyElementWithAttribute, location, warning.message));
 			}
 
 			string accessModifier = "public";
@@ -90,7 +98,7 @@ static class InitializeComponentCodeWriter
 				var methodName = genSwitch ? "InitializeComponentSourceGen" : "InitializeComponent";
 				codeWriter.WriteLine($"private partial void {methodName}()");
 				root!.XmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, typeCache, out var baseType);
-				var sgcontext = new SourceGenContext(codeWriter, compilation, sourceProductionContext, xmlnsCache, typeCache, rootType!, baseType, xamlItem.ProjectItem, sourceProductionContext.ReportDiagnostic);
+				var sgcontext = new SourceGenContext(codeWriter, compilation, sourceProductionContext, xmlnsCache, typeCache, rootType!, baseType, xamlItem.ProjectItem, reportDiagnostic);
 
 				// Compute stable node IDs before Visit() mutates the tree (markup expansion etc.)
 				// Use cached effective IDs (from state) if available, to stay consistent with UC patches.
