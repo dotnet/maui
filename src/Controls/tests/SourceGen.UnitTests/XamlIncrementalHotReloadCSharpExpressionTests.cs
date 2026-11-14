@@ -627,6 +627,82 @@ public partial class TestPage : ContentPage
 		Assert.DoesNotContain("not supported", ucSource, StringComparison.Ordinal);
 	}
 
+	[Fact]
+	public void CSharpExpression_XmlnsPrefixedTypeChange_GeneratesUC()
+	{
+		const string code =
+"""
+using System.ComponentModel;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace TestApp.Helpers
+{
+	public static class Labels
+	{
+		public static string Active => "Active";
+		public static string Inactive => "Inactive";
+	}
+}
+
+namespace TestApp
+{
+	public class TestViewModel : INotifyPropertyChanged
+	{
+		public bool IsActive { get; set; } = true;
+		public string LabelText { get; set; } = "Initial";
+		public event PropertyChangedEventHandler? PropertyChanged;
+	}
+
+	[XamlProcessing(XamlInflator.SourceGen)]
+	public partial class TestPage : ContentPage
+	{
+		public TestPage() => InitializeComponent();
+	}
+}
+""";
+
+		var xamlV1 =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:TestApp"
+             xmlns:helpers="clr-namespace:TestApp.Helpers"
+             x:Class="TestApp.TestPage"
+             x:DataType="local:TestViewModel">
+    <VerticalStackLayout>
+        <Label Text="{LabelText}" />
+    </VerticalStackLayout>
+</ContentPage>
+""";
+		var xamlV2 =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:TestApp"
+             xmlns:helpers="clr-namespace:TestApp.Helpers"
+             x:Class="TestApp.TestPage"
+             x:DataType="local:TestViewModel">
+    <VerticalStackLayout>
+        <Label Text="{= IsActive ? helpers:Labels.Active : helpers:Labels.Inactive}" />
+        <Button Text="Second" />
+    </VerticalStackLayout>
+</ContentPage>
+""";
+
+		RunGenerator(xamlV1, code, enableIncrementalHotReload: true);
+		var (result, _) = RunGenerator(xamlV2, code, enableIncrementalHotReload: true);
+
+		var ucSource = GetUCSource(result);
+		Assert.NotNull(ucSource);
+		Assert.DoesNotContain("helpers:", ucSource, StringComparison.Ordinal);
+		Assert.Contains("global::TestApp.Helpers.Labels.Active", ucSource, StringComparison.Ordinal);
+		Assert.Contains("global::TestApp.Helpers.Labels.Inactive", ucSource, StringComparison.Ordinal);
+		Assert.Contains("SetBinding", ucSource, StringComparison.Ordinal);
+	}
+
 	static string? GetUCSource(GeneratorDriverRunResult result)
 	{
 		foreach (var gen in result.Results)

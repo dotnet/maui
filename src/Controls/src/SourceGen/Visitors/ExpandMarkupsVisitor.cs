@@ -153,28 +153,10 @@ class ExpandMarkupsVisitor(SourceGenContext context) : IXamlNodeVisitor
 	/// </summary>
 	bool CanResolveAsProperty(string name, ITypeSymbol? thisType, ITypeSymbol? dataType)
 	{
-		if (thisType != null && HasMember(thisType, name))
+		if (thisType != null && MemberResolver.HasMember(thisType, name, includeMethods: false, Context.Compilation))
 			return true;
-		if (dataType != null && HasMember(dataType, name))
+		if (dataType != null && MemberResolver.HasMember(dataType, name, includeMethods: false, Context.Compilation))
 			return true;
-		return false;
-	}
-
-	/// <summary>
-	/// Checks if a type has a property or field with the given name.
-	/// </summary>
-	static bool HasMember(ITypeSymbol type, string memberName)
-	{
-		var currentType = type;
-		while (currentType != null)
-		{
-			foreach (var member in currentType.GetMembers(memberName))
-			{
-				if (member is IPropertySymbol || member is IFieldSymbol)
-					return true;
-			}
-			currentType = currentType.BaseType;
-		}
 		return false;
 	}
 

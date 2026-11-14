@@ -445,6 +445,17 @@ static class CSharpExpressionHelpers
 	/// `?[`) and ternaries outside interpolation holes are left untouched.
 	/// </summary>
 	static string ParenthesizeInterpolationTernaries(string code)
+		=> TransformInterpolationHoles(code, WrapHoleTernary);
+
+	static string ParenthesizeInterpolationGlobalAliases(string code)
+	{
+		if (code.IndexOf('$') < 0 || code.IndexOf("::", StringComparison.Ordinal) < 0)
+			return code;
+
+		return TransformInterpolationHoles(code, WrapHoleGlobalAlias);
+	}
+
+	static string TransformInterpolationHoles(string code, Func<string, string> transformHole)
 	{
 		var result = new StringBuilder(code.Length);
 		int i = 0;
@@ -467,7 +478,7 @@ static class CSharpExpressionHelpers
 					// Escape sequence in literal text - copy verbatim.
 					if (c == '\\' && i + 1 < code.Length)
 					{
-						result.Append(c);
+						result.Append(code[i]);
 						result.Append(code[i + 1]);
 						i += 2;
 						continue;
@@ -496,10 +507,9 @@ static class CSharpExpressionHelpers
 						int j = FindHoleEnd(code, holeStart);
 						string holeContent = code.Substring(holeStart, j - holeStart);
 
-						// Recurse so nested interpolated strings are handled too,
-						// then wrap a hole-level ternary in parentheses.
-						holeContent = ParenthesizeInterpolationTernaries(holeContent);
-						holeContent = WrapHoleTernary(holeContent);
+						// Recurse so nested interpolated strings are handled too.
+						holeContent = TransformInterpolationHoles(holeContent, transformHole);
+						holeContent = transformHole(holeContent);
 
 						result.Append('{');
 						result.Append(holeContent);
@@ -632,23 +642,122 @@ static class CSharpExpressionHelpers
 	/// parentheses/brackets/braces and the non-ternary '?' forms ('??', '?.', '?[').
 	/// </summary>
 	static string WrapHoleTernary(string holeContent)
+		=> ContainsTopLevelTernary(holeContent) ? ParenthesizeTrimmed(holeContent) : holeContent;
+
+	static string WrapHoleGlobalAlias(string holeContent)
 	{
-		if (!ContainsTopLevelTernary(holeContent))
+		if (!TryFindTopLevelGlobalAliasSplit(holeContent, out int clauseIndex))
 			return holeContent;
 
+		return clauseIndex >= 0
+			? ParenthesizeTrimmed(holeContent.Substring(0, clauseIndex)) + holeContent.Substring(clauseIndex)
+			: ParenthesizeTrimmed(holeContent);
+	}
+
+	static string ParenthesizeTrimmed(string expr)
+	{
 		// Preserve leading/trailing whitespace outside the parentheses for readability.
 		int startTrim = 0;
-		while (startTrim < holeContent.Length && char.IsWhiteSpace(holeContent[startTrim]))
+		while (startTrim < expr.Length && char.IsWhiteSpace(expr[startTrim]))
 			startTrim++;
-		int endTrim = holeContent.Length;
-		while (endTrim > startTrim && char.IsWhiteSpace(holeContent[endTrim - 1]))
+		int endTrim = expr.Length;
+		while (endTrim > startTrim && char.IsWhiteSpace(expr[endTrim - 1]))
 			endTrim--;
 
-		var leading = holeContent.Substring(0, startTrim);
-		var inner = holeContent.Substring(startTrim, endTrim - startTrim);
-		var trailing = holeContent.Substring(endTrim);
+		var leading = expr.Substring(0, startTrim);
+		var inner = expr.Substring(startTrim, endTrim - startTrim);
+		var trailing = expr.Substring(endTrim);
 
 		return leading + "(" + inner + ")" + trailing;
+	}
+
+	static int SkipQuotedLiteral(string expr, int start)
+	{
+		char quote = expr[start];
+		int i = start + 1;
+		while (i < expr.Length)
+		{
+			if (expr[i] == '\\' && i + 1 < expr.Length)
+			{
+				i += 2;
+				continue;
+			}
+			if (expr[i] == quote)
+			{
+				i++;
+				break;
+			}
+			i++;
+		}
+		return i;
+	}
+
+	static bool TryFindTopLevelGlobalAliasSplit(string expr, out int clauseIndex)
+	{
+		clauseIndex = -1;
+		bool hasGlobalAlias = false;
+		int depth = 0;
+		int i = 0;
+
+		while (i < expr.Length)
+		{
+			char c = expr[i];
+
+			if (c == '\\' && i + 1 < expr.Length)
+			{
+				i += 2;
+				continue;
+			}
+
+			if (c == '\'' || c == '"')
+			{
+				i = SkipQuotedLiteral(expr, i);
+				continue;
+			}
+
+			if (c == '(' || c == '[' || c == '{')
+			{
+				depth++;
+				i++;
+				continue;
+			}
+
+			if (c == ')' || c == ']' || c == '}')
+			{
+				if (depth > 0)
+					depth--;
+				i++;
+				continue;
+			}
+
+			if (depth == 0)
+			{
+				if (c == ':')
+				{
+					if (i + 1 < expr.Length && expr[i + 1] == ':')
+					{
+						hasGlobalAlias = true;
+						i += 2;
+						continue;
+					}
+
+					// First single ':' at depth 0 starts an interpolation format specifier.
+					clauseIndex = i;
+					break;
+				}
+
+				if (c == ',')
+				{
+					// Top-level ',' starts an interpolation alignment clause.
+					clauseIndex = i;
+					break;
+				}
+			}
+
+			i++;
+		}
+
+		return hasGlobalAlias;
 	}
 
 	/// <summary>
@@ -672,22 +781,7 @@ static class CSharpExpressionHelpers
 
 			if (c == '\'' || c == '"')
 			{
-				char quote = c;
-				i++;
-				while (i < expr.Length)
-				{
-					if (expr[i] == '\\' && i + 1 < expr.Length)
-					{
-						i += 2;
-						continue;
-					}
-					if (expr[i] == quote)
-					{
-						i++;
-						break;
-					}
-					i++;
-				}
+				i = SkipQuotedLiteral(expr, i);
 				continue;
 			}
 
@@ -1218,11 +1312,19 @@ static class CSharpExpressionHelpers
 
 	/// <summary>
 	/// Resolves xmlns prefixes in expression code to fully qualified CLR type names.
-	/// E.g., "local:ExprHelper.GetValue()" → "Microsoft.Maui.Controls.Xaml.UnitTests.ExprHelper.GetValue()"
+	/// E.g., "local:ExprHelper.GetValue()" -> "global::Microsoft.Maui.Controls.Xaml.UnitTests.ExprHelper.GetValue()"
 	/// </summary>
 	public static string ResolveXmlnsPrefixes(string code, IXmlNamespaceResolver nsResolver, SourceGenContext context)
+		=> ResolveXmlnsPrefixes(code, nsResolver, context.Compilation, context.XmlnsCache, context.TypeCache);
+
+	/// <summary>
+	/// Resolves xmlns prefixes in expression code to fully qualified CLR type names.
+	/// Falls back to global::ClrNamespace.TypeName when the XAML namespace maps to a CLR namespace
+	/// even if the type is not yet present in <paramref name="compilation"/> (e.g., emitted by another source generator).
+	/// </summary>
+	public static string ResolveXmlnsPrefixes(string code, IXmlNamespaceResolver nsResolver, Compilation compilation, AssemblyAttributes xmlnsCache, IDictionary<XmlType, INamedTypeSymbol> typeCache)
 	{
-		return ReplaceOutsideLiteralSegments(code, XmlnsPrefixPattern, match =>
+		var resolved = ReplaceOutsideLiteralSegments(code, XmlnsPrefixPattern, (match, overlapsFormatClause) =>
 		{
 			var prefix = match.Groups[1].Value;
 			var typeName = match.Groups[2].Value;
@@ -1237,13 +1339,33 @@ static class CSharpExpressionHelpers
 
 			// Resolve to CLR type
 			var xmlType = new XmlType(namespaceUri, typeName, null);
-			if (xmlType.TryResolveTypeSymbol(null, context.Compilation, context.XmlnsCache, context.TypeCache, out var typeSymbol))
+			if (xmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, typeCache, out var typeSymbol))
 			{
 				return typeSymbol!.ToFQDisplayString();
 			}
 
+			// Inside an interpolation hole, Roslyn parses "ident:Text" as a format specifier.
+			// Keep format specifiers (e.g. "{d:F2}") untouched unless the type is followed by member access.
+			if (overlapsFormatClause && !IsFollowedByMemberAccess(code, match.Index + match.Length))
+			{
+				return match.Value;
+			}
+
+			var clrNamespace = namespaceUri.GetClrNamespace();
+			if (string.IsNullOrEmpty(clrNamespace) && xmlnsCache.ClrNamespacesForXmlns.TryGetValue(namespaceUri, out var clrNamespaces) && clrNamespaces.Count == 1)
+			{
+				clrNamespace = clrNamespaces[0];
+			}
+
+			if (!string.IsNullOrEmpty(clrNamespace))
+			{
+				return $"global::{clrNamespace}.{typeName}";
+			}
+
 			return match.Value;
-		});
+		}, allowInterpolationFormatClause: true);
+
+		return ParenthesizeInterpolationGlobalAliases(resolved);
 	}
 
 	// Pattern to match attached bindable property syntax: target.(Type.Property) or standalone (Type.Property)
@@ -1432,7 +1554,15 @@ static class CSharpExpressionHelpers
 		return true;
 	}
 
+	static bool IsFollowedByMemberAccess(string code, int index)
+		=> index + 1 < code.Length
+		&& code[index] == '.'
+		&& (char.IsLetter(code[index + 1]) || code[index + 1] == '_');
+
 	static string ReplaceOutsideLiteralSegments(string code, Regex pattern, MatchEvaluator evaluator)
+		=> ReplaceOutsideLiteralSegments(code, pattern, (match, _) => evaluator(match), allowInterpolationFormatClause: false);
+
+	static string ReplaceOutsideLiteralSegments(string code, Regex pattern, Func<Match, bool, string> evaluator, bool allowInterpolationFormatClause)
 	{
 		var matches = pattern.Matches(code).Cast<Match>().ToArray();
 		if (matches.Length == 0)
@@ -1444,11 +1574,12 @@ static class CSharpExpressionHelpers
 
 		foreach (var match in matches)
 		{
-			if (OverlapsLiteralSegment(match.Index, match.Length, literalSpans))
+			if (OverlapsLiteralSegment(match.Index, match.Length, literalSpans, out var overlapsFormatClause)
+				|| (overlapsFormatClause && !allowInterpolationFormatClause))
 				continue;
 
 			result.Append(code, currentIndex, match.Index - currentIndex);
-			result.Append(evaluator(match));
+			result.Append(evaluator(match, overlapsFormatClause));
 			currentIndex = match.Index + match.Length;
 		}
 
@@ -1466,23 +1597,24 @@ static class CSharpExpressionHelpers
 
 		foreach (var match in matches)
 		{
-			if (!OverlapsLiteralSegment(match.Index, match.Length, literalSpans))
+			if (!OverlapsLiteralSegment(match.Index, match.Length, literalSpans, out var overlapsFormatClause)
+				&& !overlapsFormatClause)
 				yield return match;
 		}
 	}
 
-	static List<(int Start, int End)> GetLiteralSegmentSpans(string code)
+	static List<(int Start, int End, bool IsFormatClause)> GetLiteralSegmentSpans(string code)
 	{
 		var tree = CSharpSyntaxTree.ParseText(code, new CSharpParseOptions(kind: SourceCodeKind.Script));
 		var root = tree.GetRoot();
-		var spans = new List<(int Start, int End)>();
+		var spans = new List<(int Start, int End, bool IsFormatClause)>();
 
 		foreach (var token in root.DescendantTokens(descendIntoTrivia: true))
 		{
 			if (!IsLiteralSegmentToken(token))
 				continue;
 
-			spans.Add((token.SpanStart, token.Span.End));
+			spans.Add((token.SpanStart, token.Span.End, token.Parent is InterpolationFormatClauseSyntax));
 		}
 
 		return spans;
@@ -1497,13 +1629,22 @@ static class CSharpExpressionHelpers
 			|| kind.Equals("InterpolatedRawStringTextToken", StringComparison.Ordinal);
 	}
 
-	static bool OverlapsLiteralSegment(int start, int length, List<(int Start, int End)> literalSpans)
+	static bool OverlapsLiteralSegment(int start, int length, List<(int Start, int End, bool IsFormatClause)> literalSpans, out bool overlapsFormatClause)
 	{
+		overlapsFormatClause = false;
 		var end = start + length;
 		foreach (var span in literalSpans)
 		{
 			if (start < span.End && end > span.Start)
-				return true;
+			{
+				if (!span.IsFormatClause)
+				{
+					overlapsFormatClause = false;
+					return true;
+				}
+
+				overlapsFormatClause = true;
+			}
 		}
 
 		return false;

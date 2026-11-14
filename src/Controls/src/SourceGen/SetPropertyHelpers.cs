@@ -836,8 +836,9 @@ static class SetPropertyHelpers
 		if (valueNode is not ValueNode vn || vn.Value is not Expression expression)
 			return false;
 
-		// Need a BindableProperty to set a binding
-		if (bpFieldSymbol == null)
+		// Need a BindableProperty (or heuristic attribute) to set a binding
+		string? explicitPropertyName = null;
+		if (bpFieldSymbol == null && (string.IsNullOrEmpty(localName) || !parentVar.Type.HasBindablePropertyHeuristic(localName, context, out explicitPropertyName)))
 			return false;
 
 		// Get the parent ElementNode to find x:DataType
@@ -895,8 +896,8 @@ static class SetPropertyHelpers
 				var id = idReference.Identifier;
 				var idResolution = MemberResolver.Resolve(id, context.RootType, dataTypeSymbol, context.Compilation);
 				if (idResolution.Location == MemberLocation.Neither &&
-					!MemberResolver.HasMember(context.RootType, id, includeMethods: true) &&
-					!MemberResolver.HasMember(dataTypeSymbol, id, includeMethods: true) &&
+					!MemberResolver.HasMember(context.RootType, id, includeMethods: true, context.Compilation) &&
+					!MemberResolver.HasMember(dataTypeSymbol, id, includeMethods: true, context.Compilation) &&
 					!MemberResolver.ResolvesToType(context.Compilation, idReference.TypeReferenceCandidate, MemberResolver.GetContainingNamespace(context.RootType)))
 				{
 					var idLocation = LocationCreate(context.ProjectItem.RelativePath!, (IXmlLineInfo)valueNode, expression.Code);
@@ -918,7 +919,7 @@ static class SetPropertyHelpers
 		// This covers complex expressions like (Price * TaxRate) where MemberResolver returns Neither
 		if (analysis.HasBindingProperties)
 		{
-			SetExpressionBinding(writer, parentVar, bpFieldSymbol, expression.Code, dataTypeSymbol, context, vn);
+			SetExpressionBinding(writer, parentVar, bpFieldSymbol, localName, explicitPropertyName, expression.Code, dataTypeSymbol, context, vn);
 			return true;
 		}
 
@@ -933,7 +934,7 @@ static class SetPropertyHelpers
 			case MemberLocation.DataType:
 			case MemberLocation.ForcedDataType:
 				// Binding expression - generate TypedBinding
-				SetExpressionBinding(writer, parentVar, bpFieldSymbol, resolution.Expression, dataTypeSymbol, context, vn);
+				SetExpressionBinding(writer, parentVar, bpFieldSymbol, localName, explicitPropertyName, resolution.Expression, dataTypeSymbol, context, vn);
 				return true;
 
 			case MemberLocation.Neither:
@@ -1023,9 +1024,11 @@ static class SetPropertyHelpers
 	/// <summary>
 	/// Generates a TypedBinding for a C# expression that references x:DataType members.
 	/// </summary>
-	static void SetExpressionBinding(IndentedTextWriter writer, ILocalValue parentVar, IFieldSymbol bpFieldSymbol, string expression, ITypeSymbol dataTypeSymbol, SourceGenContext context, ValueNode valueNode)
+	static void SetExpressionBinding(IndentedTextWriter writer, ILocalValue parentVar, IFieldSymbol? bpFieldSymbol, string localName, string? explicitPropertyName, string expression, ITypeSymbol dataTypeSymbol, SourceGenContext context, ValueNode valueNode)
 	{
-		var bpName = bpFieldSymbol.ToFQDisplayString();
+		var bpName = bpFieldSymbol != null
+			? bpFieldSymbol.ToFQDisplayString()
+			: $"{parentVar.Type.ToFQDisplayString()}.{explicitPropertyName ?? $"{localName}Property"}";
 
 		var sourceTypeName = dataTypeSymbol.ToFQDisplayString();
 
@@ -1086,7 +1089,7 @@ static class SetPropertyHelpers
 			{
 				writer.WriteLine($"null,");
 				// Emit diagnostics when binding a complex expression to a TwoWay property
-				if (IsTwoWayByDefault(bpFieldSymbol))
+				if (bpFieldSymbol != null && IsTwoWayByDefault(bpFieldSymbol))
 				{
 					var location = LocationCreate(context.ProjectItem.RelativePath!, (IXmlLineInfo)valueNode, expression);
 					context.ReportDiagnostic(Diagnostic.Create(

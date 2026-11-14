@@ -1938,6 +1938,8 @@ static class UpdateComponentCodeWriter
 		if (classification.IsExpression)
 		{
 			var expressionCode = CSharpExpressionHelpers.GetExpressionCode(markupString);
+			expressionCode = CSharpExpressionHelpers.ResolveXmlnsPrefixes(expressionCode, markupNode.NamespaceResolver, compilation, xmlnsCache, typeCache);
+			expressionCode = CSharpExpressionHelpers.TransformAttachedProperties(expressionCode);
 			return new ValueNode(new Expression(expressionCode), markupNode.NamespaceResolver, markupNode.LineNumber, markupNode.LinePosition);
 		}
 
@@ -2248,6 +2250,8 @@ static class UpdateComponentCodeWriter
 			return false;
 
 		var expressionCode = CSharpExpressionHelpers.GetExpressionCode(markupString);
+		expressionCode = CSharpExpressionHelpers.ResolveXmlnsPrefixes(expressionCode, markupNode.NamespaceResolver, compilation, xmlnsCache, typeCache);
+		expressionCode = CSharpExpressionHelpers.TransformAttachedProperties(expressionCode);
 		var setBindingTarget = isRoot ? "this" : $"(({ownerType.ToFQDisplayString()}){targetAccessor}!)";
 		var bpName = bpField.ToFQDisplayString();
 

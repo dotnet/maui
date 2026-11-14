@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Maui.Controls.Xaml.UnitTests.SourceGen;
 using Xunit;
 
@@ -1459,5 +1460,278 @@ public partial class InterpolationTernaryPage : ContentPage
 		Assert.Contains("== 1 ? \"time\" : \"times\")", output!, StringComparison.Ordinal);
 		// And the compilation must succeed (no CS8076/CS8361/CS1003/CS0103 leaked through).
 		Assert.DoesNotContain(result.Diagnostics, d => d.Severity == DiagnosticSeverity.Error);
+	}
+
+	[Fact]
+	public void XmlnsPrefixedTypeInTernaryAndCallee_ExpandsAndBinds()
+	{
+		var xaml =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:app="clr-namespace:Repro"
+             xmlns:res="clr-namespace:Repro.Resources"
+             xmlns:ext="clr-namespace:Repro.Resources;assembly=SourceGeneratorDriver.Generated"
+             x:Class="Repro.Views.MainPage"
+             x:DataType="app:MainViewModel">
+    <VerticalStackLayout>
+        <Label Text="{= IsVip ? res:Labels.Gold : res:Labels.Standard}" />
+        <Label Text="{= IsVip ? (res:Labels.Gold) : (res:Labels.Standard)}" />
+        <Label Text="{= IsVip ? ext:Labels.Gold : ext:Labels.Standard}" />
+        <Label Text="{= res:Labels.FormatMessage(IsVip)}" />
+        <Label Text="{= $'{(IsVip ? res:Labels.Gold : res:Labels.Standard)}'}" />
+    </VerticalStackLayout>
+</ContentPage>
+""";
+
+		var codeBehind =
+"""
+using System.ComponentModel;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace Repro.Resources
+{
+	public static class Labels
+	{
+		public static string Gold => "Gold member";
+		public static string Standard => "Standard member";
+		public static string FormatMessage(bool isVip) => isVip ? Gold : Standard;
+	}
+}
+
+namespace Repro
+{
+	public class MainViewModel : INotifyPropertyChanged
+	{
+		public bool IsVip { get; set; }
+		public string Repro { get; set; } = string.Empty;
+		public event PropertyChangedEventHandler? PropertyChanged;
+	}
+}
+
+namespace Repro.Views
+{
+	[XamlProcessing(XamlInflator.SourceGen)]
+	public partial class MainPage : ContentPage
+	{
+		public MainPage() => InitializeComponent();
+	}
+}
+""";
+
+		var (result, output) = RunGenerator(xaml, codeBehind);
+		Assert.DoesNotContain(result.Diagnostics, d => d.Severity == DiagnosticSeverity.Error);
+		Assert.NotNull(output);
+		Assert.DoesNotContain("res:", output, StringComparison.Ordinal);
+		Assert.DoesNotContain("ext:", output, StringComparison.Ordinal);
+		Assert.DoesNotContain("__source.Repro", output, StringComparison.Ordinal);
+		Assert.Contains("SetBinding", output, StringComparison.Ordinal);
+		Assert.Contains("__source.IsVip ? global::Repro.Resources.Labels.Gold : global::Repro.Resources.Labels.Standard", output, StringComparison.Ordinal);
+		Assert.Contains("__source.IsVip ? (global::Repro.Resources.Labels.Gold) : (global::Repro.Resources.Labels.Standard)", output, StringComparison.Ordinal);
+		Assert.Contains("global::Repro.Resources.Labels.FormatMessage(__source.IsVip)", output, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void XmlnsPrefixedUnresolvedType_FallsBackToClrNamespaceAndBinds()
+	{
+		var xaml =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:app="clr-namespace:Repro"
+             xmlns:missing="clr-namespace:Repro.MissingGen;assembly=SourceGeneratorDriver.Generated"
+             x:Class="Repro.Views.MainPage"
+             x:DataType="app:MainViewModel">
+    <VerticalStackLayout>
+        <Label Text="{= IsVip ? missing:Strings.Gold : missing:Strings.Standard}" />
+        <Label Text="{= IsVip ? (missing:Strings.Gold) : (missing:Strings.Standard)}" />
+        <Label Text="{= missing:Strings.FormatMessage(IsVip)}" />
+        <Label Text="{= $'{missing:Strings.FormatMessage(IsVip)}'}" />
+    </VerticalStackLayout>
+</ContentPage>
+""";
+
+		var codeBehind =
+"""
+using System.ComponentModel;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace Repro
+{
+	public class MainViewModel : INotifyPropertyChanged
+	{
+		public bool IsVip { get; set; }
+		public event PropertyChangedEventHandler? PropertyChanged;
+	}
+}
+
+namespace Repro.Views
+{
+	[XamlProcessing(XamlInflator.SourceGen)]
+	public partial class MainPage : ContentPage
+	{
+		public MainPage() => InitializeComponent();
+	}
+}
+""";
+
+		// Strings is absent from initial compilation (simulating a sibling ResX source generator).
+		var (result, output) = RunGenerator(xaml, codeBehind, assertNoCompilationErrors: false);
+		Assert.Empty(result.Diagnostics);
+		Assert.NotNull(output);
+		Assert.DoesNotContain("missing:", output, StringComparison.Ordinal);
+		Assert.Contains("SetBinding", output, StringComparison.Ordinal);
+		Assert.Contains("__source.IsVip ? global::Repro.MissingGen.Strings.Gold : global::Repro.MissingGen.Strings.Standard", output, StringComparison.Ordinal);
+		Assert.Contains("__source.IsVip ? (global::Repro.MissingGen.Strings.Gold) : (global::Repro.MissingGen.Strings.Standard)", output, StringComparison.Ordinal);
+		Assert.Contains("global::Repro.MissingGen.Strings.FormatMessage(__source.IsVip)", output, StringComparison.Ordinal);
+		Assert.Contains("$\"{(global::Repro.MissingGen.Strings.FormatMessage(__source.IsVip))}\"", output, StringComparison.Ordinal);
+
+		// Once the sibling generator emits Repro.MissingGen.Strings, generated code compiles cleanly.
+		var siblingGenerated =
+"""
+namespace Repro.MissingGen
+{
+	public static class Strings
+	{
+		public static string Gold => "Gold member";
+		public static string Standard => "Standard member";
+		public static string FormatMessage(bool isVip) => isVip ? Gold : Standard;
+	}
+}
+""";
+		AssertGeneratedCodeCompilesWithSiblingSource(codeBehind, siblingGenerated, result);
+	}
+
+	[Fact]
+	public void ExpressionOnHeuristicBindableProperty_AndObservableProperty_GeneratesTypedBinding()
+	{
+		var xaml =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:app="clr-namespace:Repro"
+             xmlns:res="clr-namespace:Repro.Resources"
+             x:Class="Repro.Views.MainPage"
+             x:DataType="app:MainViewModel">
+    <app:CustomPopup PopupMessage="{= res:Labels.FormatMessage(Nickname)}" />
+</ContentPage>
+""";
+
+		var codeBehind =
+"""
+using System;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace CommunityToolkit.Maui
+{
+	[AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
+	public sealed class BindablePropertyAttribute : Attribute
+	{
+		public string? PropertyName { get; set; }
+	}
+}
+
+namespace CommunityToolkit.Mvvm.ComponentModel
+{
+	[AttributeUsage(AttributeTargets.Field)]
+	public sealed class ObservablePropertyAttribute : Attribute
+	{
+	}
+}
+
+namespace Repro.Resources
+{
+	public static class Labels
+	{
+		public static string FormatMessage(string? name) => $"Delete {name}?";
+	}
+}
+
+namespace Repro
+{
+	public partial class MainViewModel
+	{
+		[CommunityToolkit.Mvvm.ComponentModel.ObservableProperty]
+		private string? _nickname;
+	}
+
+	public partial class CustomPopup : ContentView
+	{
+		[CommunityToolkit.Maui.BindableProperty]
+		public partial string? PopupMessage { get; set; }
+	}
+}
+
+namespace Repro.Views
+{
+	[XamlProcessing(XamlInflator.SourceGen)]
+	public partial class MainPage : ContentPage
+	{
+		public MainPage() => InitializeComponent();
+	}
+}
+""";
+
+		var (result, output) = RunGenerator(xaml, codeBehind, assertNoCompilationErrors: false);
+		Assert.Empty(result.Diagnostics);
+		Assert.NotNull(output);
+		Assert.DoesNotContain("res:", output, StringComparison.Ordinal);
+		Assert.Contains("customPopup.SetBinding(global::Repro.CustomPopup.PopupMessageProperty,", output, StringComparison.Ordinal);
+		Assert.Contains("__source => (global::Repro.Resources.Labels.FormatMessage(__source.Nickname), true)", output, StringComparison.Ordinal);
+		Assert.Contains("new(static __source => __source, \"Nickname\")", output, StringComparison.Ordinal);
+
+		var siblingGenerated =
+"""
+namespace Repro
+{
+	public partial class MainViewModel
+	{
+		public string? Nickname
+		{
+			get => _nickname;
+			set => _nickname = value;
+		}
+	}
+
+	public partial class CustomPopup
+	{
+		public static readonly Microsoft.Maui.Controls.BindableProperty PopupMessageProperty =
+			Microsoft.Maui.Controls.BindableProperty.Create(nameof(PopupMessage), typeof(string), typeof(CustomPopup), default(string));
+
+		public partial string? PopupMessage
+		{
+			get => (string?)GetValue(PopupMessageProperty);
+			set => SetValue(PopupMessageProperty, value);
+		}
+	}
+}
+""";
+		AssertGeneratedCodeCompilesWithSiblingSource(codeBehind, siblingGenerated, result);
+	}
+
+	static void AssertGeneratedCodeCompilesWithSiblingSource(string codeBehind, string siblingGenerated, GeneratorDriverRunResult result)
+	{
+		var codeBehindTree = CSharpSyntaxTree.ParseText(codeBehind, path: "CodeBehind.cs");
+		var siblingTree = CSharpSyntaxTree.ParseText(siblingGenerated, path: "SiblingGenerated.cs");
+		var generatedTrees = result.Results.Single().GeneratedSources
+			.Select(gs => CSharpSyntaxTree.ParseText(gs.SourceText.ToString(), path: gs.HintName))
+			.ToArray();
+
+		var compilationWithSibling = CreateMauiCompilation()
+			.AddSyntaxTrees(codeBehindTree, siblingTree)
+			.AddSyntaxTrees(generatedTrees);
+
+		var compileErrors = compilationWithSibling.GetDiagnostics()
+			.Where(d => d.Severity == DiagnosticSeverity.Error)
+			.Where(d => d.Location.SourceTree == siblingTree
+				|| d.Location.SourceTree?.FilePath?.EndsWith(".xsg.cs", StringComparison.OrdinalIgnoreCase) == true)
+			.ToArray();
+		Assert.Empty(compileErrors);
 	}
 }
