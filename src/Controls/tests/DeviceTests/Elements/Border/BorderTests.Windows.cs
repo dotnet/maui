@@ -1,18 +1,23 @@
 ﻿using System;
 using System.ComponentModel;
+using System.IO;
 using System.Threading.Tasks;
+using Microsoft.Graphics.Canvas;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers;
 using Microsoft.Maui.Controls.Shapes;
+using Microsoft.Maui.DeviceTests.ImageAnalysis;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
+using Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner;
 using Microsoft.UI.Composition;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Hosting;
 using Xunit;
+using Path = System.IO.Path;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -228,9 +233,101 @@ namespace Microsoft.Maui.DeviceTests
 
 			var bitmap = await GetRawBitmap(border, typeof(BorderHandler)).WaitAsync(TimeSpan.FromSeconds(5));
 
-			AssertPixelIsTransparent(bitmap, 10, 10);
-			AssertPixelIsRed(bitmap, 50, 50);
+			try
+			{
+				if (hasShadow)
+				{
+					await CaptureBorderShadowDiagnostics(border, content, bitmap);
+				}
+			}
+			finally
+			{
+				AssertPixelIsTransparent(bitmap, 10, 10);
+				AssertPixelIsRed(bitmap, 50, 50);
+			}
 		}
+
+		Task CaptureBorderShadowDiagnostics(Border border, BoxView content, RawBitmap originalBitmap) =>
+			InvokeOnMainThreadAsync(async () =>
+			{
+				var directory = Path.GetDirectoryName(ControlsHeadlessTestRunner.TestResultsFile) ?? Path.GetTempPath();
+				Directory.CreateDirectory(directory);
+				var reportPath = Path.Combine(directory, "border-shadow-diagnostic.txt");
+				File.WriteAllText(reportPath, $"Diagnostic output: {directory}{Environment.NewLine}");
+
+				var device = CanvasDevice.GetSharedDevice();
+				await SaveBitmap("original-rtb", originalBitmap);
+
+				// Reattach the same scene without changing the bitmap used by the original assertions.
+				var platformView = Assert.IsType<BorderHandler>(border.Handler).PlatformView;
+				await platformView.AttachAndRun(async window =>
+				{
+					await SaveBitmap("paired-rtb", await border.AsRawBitmapAsync());
+					var origin = platformView.TransformToVisual(window.Content).TransformPoint(new global::Windows.Foundation.Point());
+					Record($"Border size={platformView.ActualWidth}x{platformView.ActualHeight}; origin={origin}; density={platformView.XamlRoot.RasterizationScale}; window={window.AppWindow.Size}; client={window.AppWindow.ClientSize}");
+
+					global::Windows.Graphics.Capture.GraphicsCaptureItem captureItem;
+					try
+					{
+						captureItem = CaptureHelper.CreateItemForWindow(WinRT.Interop.WindowNative.GetWindowHandle(window));
+					}
+					catch (PlatformNotSupportedException exception)
+					{
+						Record($"Native capture unavailable; mask control not attempted: {exception}");
+						return;
+					}
+
+					using (var native = await captureItem.RenderAsync(device))
+					{
+						await native.SaveAsync(Path.Combine(directory, "border-shadow-original-native.png"), CanvasBitmapFileFormat.Png);
+						Record($"Original native frame={native.SizeInPixels}");
+					}
+
+					var wrapper = Assert.IsType<WrapperView>(Assert.IsType<BoxViewHandler>(content.Handler).ContainerView);
+					var canvas = Assert.IsType<Microsoft.UI.Xaml.Controls.Canvas>(Microsoft.UI.Xaml.Media.VisualTreeHelper.GetChild(wrapper, 0));
+					var host = Assert.IsType<Microsoft.UI.Xaml.Shapes.Rectangle>(Microsoft.UI.Xaml.Media.VisualTreeHelper.GetChild(canvas, 0));
+					var sprite = Assert.IsType<SpriteVisual>(ElementCompositionPreview.GetElementChildVisual(host));
+					var shadow = Assert.IsType<DropShadow>(sprite.Shadow);
+					var mask = shadow.Mask;
+					Record($"Original shadow mask={mask?.GetType().FullName}");
+
+					try
+					{
+						shadow.Mask = null;
+						await SaveBitmap("mask-removed-rtb", await border.AsRawBitmapAsync());
+						using var native = await captureItem.RenderAsync(device);
+						await native.SaveAsync(Path.Combine(directory, "border-shadow-mask-removed-native.png"), CanvasBitmapFileFormat.Png);
+						Record($"Mask-removed native frame={native.SizeInPixels}");
+					}
+					finally
+					{
+						shadow.Mask = mask;
+					}
+
+					await SaveBitmap("mask-restored-rtb", await border.AsRawBitmapAsync());
+					using (var native = await captureItem.RenderAsync(device))
+					{
+						await native.SaveAsync(Path.Combine(directory, "border-shadow-mask-restored-native.png"), CanvasBitmapFileFormat.Png);
+						Record($"Mask-restored native frame={native.SizeInPixels}");
+					}
+				}, MauiContext);
+
+				async Task SaveBitmap(string name, RawBitmap bitmap)
+				{
+					using var image = CanvasBitmap.CreateFromBytes(device, bitmap.PixelBuffer, bitmap.PixelWidth, bitmap.PixelHeight,
+						global::Windows.Graphics.DirectX.DirectXPixelFormat.B8G8R8A8UIntNormalized);
+					await image.SaveAsync(Path.Combine(directory, $"border-shadow-{name}.png"), CanvasBitmapFileFormat.Png);
+					var center = GetPixel(bitmap, 50, 50);
+					var corner = GetPixel(bitmap, 10, 10);
+					Record($"{name}: {bitmap.PixelWidth}x{bitmap.PixelHeight}; center=({center.Red},{center.Green},{center.Blue},{center.Alpha}); corner=({corner.Red},{corner.Green},{corner.Blue},{corner.Alpha})");
+				}
+
+				void Record(string message)
+				{
+					File.AppendAllText(reportPath, message + Environment.NewLine);
+					Console.WriteLine(message);
+				}
+			});
 
 		[Fact(DisplayName = "Border clips centered transformed content through nested layout - Issue 17523")]
 		public async Task BorderClipsCenteredTransformedContentThroughNestedLayout()
