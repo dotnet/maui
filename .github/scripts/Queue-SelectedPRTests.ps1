@@ -45,7 +45,7 @@ function Assert-SelectedIdentity {
 }
 
 function Find-SelectedRun {
-    param([int]$DefinitionId, [string]$Fingerprint, [string]$MergeSha, [string]$Token)
+    param([int]$DefinitionId, [System.Collections.IDictionary]$Parameters, [string]$MergeSha, [string]$Token)
     $branch = [uri]::EscapeDataString("refs/pull/$PrNumber/merge")
     $response = Invoke-WithHttpRetry -OperationName 'Find equivalent selected run' -Operation {
         param($timeoutSeconds)
@@ -53,11 +53,32 @@ function Find-SelectedRun {
             -Headers @{ Authorization = "Bearer $Token" } -TimeoutSec $timeoutSeconds
     }
     foreach ($build in $response.value) {
-        $key = Get-ObjectPropertyValue $build.triggerInfo 'review.selection'
-        if ($build.sourceVersion -ceq $MergeSha -and $key -ceq $Fingerprint -and
+        if ($build.sourceVersion -ceq $MergeSha -and (Test-EffectiveSelection $build $Parameters) -and
             ($build.status -in @('notStarted', 'inProgress') -or $build.result -eq 'succeeded')) { return $build }
     }
     return $null
+}
+
+function Test-EffectiveSelection {
+    param($Build, [System.Collections.IDictionary]$Parameters)
+    $effective = Get-ObjectPropertyValue $Build 'templateParameters'
+    foreach ($key in $Parameters.Keys) {
+        $actual = Get-ObjectPropertyValue $effective $key
+        if ($null -eq $actual) { return $false }
+        if ($Parameters[$key] -is [bool]) {
+            if ([string]$actual -cnotin @('True', 'true', 'False', 'false')) { return $false }
+            if (($actual -in @('True', 'true')) -ne $Parameters[$key]) { return $false }
+        } else {
+            if ($actual -is [string]) {
+                try { $actual = ConvertFrom-Json -InputObject $actual -NoEnumerate -Depth 5 }
+                catch [System.ArgumentException] { return $false }
+            }
+            if ($actual -isnot [array]) { return $false }
+            if ((ConvertTo-Json -InputObject $actual -Compress -Depth 5) -cne
+                (ConvertTo-Json -InputObject $Parameters[$key] -Compress -Depth 5)) { return $false }
+        }
+    }
+    return $true
 }
 
 if (-not $DryRun) {
@@ -109,11 +130,27 @@ foreach ($pipeline in $pipelines) {
     $prParameters['system.pullRequest.sourceRepositoryUri'] = $pr.head.repo.clone_url
     $request.parameters = $prParameters | ConvertTo-Json -Compress
     $request.triggerInfo['pr.isFork'] = "$($pr.head.repo.full_name -cne 'dotnet/maui')"
-    $request.templateParameters = $pipeline.parameters
+    $api = 'build'
+    if ($pipeline.id -ne 302) {
+        # Runtime parameters use the Runs API's string-valued dictionary;
+        # object values are encoded as JSON, matching the native Azure CLI.
+        $encodedParameters = [ordered]@{}
+        foreach ($key in $pipeline.parameters.Keys) {
+            $encodedParameters[$key] = ConvertTo-Json -InputObject $pipeline.parameters[$key] -Compress -Depth 8
+        }
+        $api = 'pipelines'
+        $request = [ordered]@{
+            resources = @{
+                repositories = @{
+                    self = @{ refName = "refs/pull/$PrNumber/merge"; version = $selection.mergeSha }
+                }
+            }
+            templateParameters = $encodedParameters
+        }
+    }
     $fingerprintInput = "$($selection.mergeSha):$($pipeline.id):" + ($pipeline.parameters | ConvertTo-Json -Compress -Depth 8)
     $fingerprint = [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData([Text.Encoding]::UTF8.GetBytes($fingerprintInput))).ToLowerInvariant()
-    $request.triggerInfo['review.selection'] = $fingerprint
-    $requests += @{ pipeline = $pipeline.name; id = $pipeline.id; fingerprint = $fingerprint; request = $request }
+    $requests += @{ pipeline = $pipeline.name; id = $pipeline.id; api = $api; parameters = $pipeline.parameters; fingerprint = $fingerprint; request = $request }
 }
 $requests | ConvertTo-Json -Depth 20 | Set-Content "$OutputDirectory/queue-requests.json" -Encoding utf8
 if ($DryRun) {
@@ -125,20 +162,34 @@ $results = @()
 foreach ($entry in $requests) {
     try {
         [void](Assert-SelectedIdentity $selection)
-        $build = Find-SelectedRun $entry.id $entry.fingerprint $selection.mergeSha $token
+        $build = Find-SelectedRun $entry.id $entry.parameters $selection.mergeSha $token
         $reused = $null -ne $build
         if (-not $build) {
             # Queue POST is not blindly retried: an uncertain response can already have created a run.
             try {
-                $build = Invoke-RestMethod -Method Post -Uri 'https://dev.azure.com/dnceng-public/public/_apis/build/builds?api-version=7.1' `
+                $queueUrl = if ($entry.api -eq 'pipelines') {
+                    "https://dev.azure.com/dnceng-public/public/_apis/pipelines/$($entry.id)/runs?api-version=7.1"
+                } else { 'https://dev.azure.com/dnceng-public/public/_apis/build/builds?api-version=7.1' }
+                $queued = Invoke-RestMethod -Method Post -Uri $queueUrl `
                     -Headers @{ Authorization = "Bearer $token" } -ContentType 'application/json' `
                     -Body ($entry.request | ConvertTo-Json -Depth 20 -Compress) `
                     -TimeoutSec (Get-DispatcherHttpTimeoutSeconds -OperationName "Queue $($entry.pipeline)")
+                $build = Invoke-WithHttpRetry -OperationName 'Confirm effective queued selection' -Operation {
+                    param($timeoutSeconds)
+                    Invoke-RestMethod -Uri "https://dev.azure.com/dnceng-public/public/_apis/build/builds/$($queued.id)?api-version=7.1" `
+                        -Headers @{ Authorization = "Bearer $token" } -TimeoutSec $timeoutSeconds
+                }
             } catch {
                 $queueError = $_
-                $build = Find-SelectedRun $entry.id $entry.fingerprint $selection.mergeSha $token
+                $build = Find-SelectedRun $entry.id $entry.parameters $selection.mergeSha $token
                 if (-not $build) { throw $queueError }
             }
+        }
+        if (-not (Test-EffectiveSelection $build $entry.parameters) -or $build.sourceVersion -cne $selection.mergeSha) {
+            Invoke-RestMethod -Method Patch -Uri "https://dev.azure.com/dnceng-public/public/_apis/build/builds/$($build.id)?api-version=7.1" `
+                -Headers @{ Authorization = "Bearer $token" } -ContentType 'application/json' `
+                -Body '{"status":"cancelling"}' -TimeoutSec 30 | Out-Null
+            throw 'Azure DevOps did not preserve the requested selection/revision; the unexpected run was cancelled.'
         }
         if ($build.sourceVersion -cne $selection.mergeSha -or -not $build._links.web.href) {
             throw 'Azure DevOps did not confirm the requested merge revision and run URL.'
