@@ -638,6 +638,15 @@ stages:
           - pwsh: echo "##vso[task.prependpath]$(DotNet.Dir)"
             displayName: 'Add .NET to PATH'
 
+          # Provisioning starts MSBuild nodes before it installs workloads; their cached
+          # workload resolver would otherwise make the device-test builds miss the
+          # installed manifests (NETSDK1139).
+          - pwsh: |
+              & (Join-Path "$(Build.SourcesDirectory)" ".dotnet/dotnet.exe") build-server shutdown
+              exit 0
+            displayName: 'Shut down build servers after provisioning'
+            continueOnError: true
+
           # Record the workload manifest layout seen by the device-test build.
           - pwsh: |
               $dotnetDir = Join-Path "$(Build.SourcesDirectory)" ".dotnet"
