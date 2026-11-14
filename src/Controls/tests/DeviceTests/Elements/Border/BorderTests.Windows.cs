@@ -1,23 +1,18 @@
 ﻿using System;
 using System.ComponentModel;
-using System.IO;
 using System.Threading.Tasks;
-using Microsoft.Graphics.Canvas;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers;
 using Microsoft.Maui.Controls.Shapes;
-using Microsoft.Maui.DeviceTests.ImageAnalysis;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
-using Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner;
 using Microsoft.UI.Composition;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Hosting;
 using Xunit;
-using Path = System.IO.Path;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -231,187 +226,10 @@ namespace Microsoft.Maui.DeviceTests
 				WidthRequest = 100,
 			};
 
-			RawBitmap bitmap = null;
-			try
-			{
-				await InvokeOnMainThreadAsync(async () =>
-				{
-					CreateHandler(border, typeof(BorderHandler));
-					var platformView = border.ToPlatform();
-					await platformView.AttachAndRun(async window =>
-					{
-						bitmap = await border.AsRawBitmapAsync();
-						if (hasShadow)
-						{
-							await CaptureBorderShadowDiagnostics(window, border, content, bitmap);
-						}
-					}, MauiContext);
-				}).WaitAsync(TimeSpan.FromSeconds(5));
-			}
-			catch (Exception diagnosticException)
-			{
-				Console.WriteLine($"Border capture or diagnostic failed: {diagnosticException}");
-				if (bitmap is not null)
-				{
-					try
-					{
-						AssertOriginalBitmap();
-					}
-					catch (Exception assertionException)
-					{
-						throw new AggregateException("The diagnostic and original Border bitmap oracle both failed.",
-							diagnosticException, assertionException);
-					}
-				}
+			var bitmap = await GetRawBitmap(border, typeof(BorderHandler)).WaitAsync(TimeSpan.FromSeconds(5));
 
-				throw;
-			}
-
-			AssertOriginalBitmap();
-
-			void AssertOriginalBitmap()
-			{
-				AssertPixelIsTransparent(bitmap, 10, 10);
-				AssertPixelIsRed(bitmap, 50, 50);
-			}
-		}
-
-		async Task CaptureBorderShadowDiagnostics(Microsoft.UI.Xaml.Window window, Border border, BoxView content, RawBitmap originalBitmap)
-		{
-			var directory = Path.GetDirectoryName(ControlsHeadlessTestRunner.TestResultsFile) ?? Path.GetTempPath();
-			Directory.CreateDirectory(directory);
-			var reportPath = Path.Combine(directory, "border-shadow-diagnostic.txt");
-			File.WriteAllText(reportPath, $"Diagnostic output: {directory}{Environment.NewLine}");
-
-			var device = CanvasDevice.GetSharedDevice();
-			try
-			{
-				await SaveBitmap("original-rtb", originalBitmap);
-				var platformView = border.ToPlatform();
-				var origin = platformView.TransformToVisual(window.Content).TransformPoint(new global::Windows.Foundation.Point());
-				Record($"Border size={platformView.ActualWidth}x{platformView.ActualHeight}; origin={origin}; density={platformView.XamlRoot.RasterizationScale}; window={window.AppWindow.Size}; client={window.AppWindow.ClientSize}");
-
-				var wrapper = content.Handler is IViewHandler contentHandler ? contentHandler.ContainerView as WrapperView : null;
-				DropShadow shadow = null;
-				if (wrapper is not null &&
-					Microsoft.UI.Xaml.Media.VisualTreeHelper.GetChildrenCount(wrapper) > 0 &&
-					Microsoft.UI.Xaml.Media.VisualTreeHelper.GetChild(wrapper, 0) is Microsoft.UI.Xaml.Controls.Canvas canvas &&
-					Microsoft.UI.Xaml.Media.VisualTreeHelper.GetChildrenCount(canvas) > 0 &&
-					Microsoft.UI.Xaml.Media.VisualTreeHelper.GetChild(canvas, 0) is Microsoft.UI.Xaml.Shapes.Rectangle host &&
-					ElementCompositionPreview.GetElementChildVisual(host) is SpriteVisual sprite)
-				{
-					shadow = sprite.Shadow as DropShadow;
-				}
-
-				RecordScene("original");
-				global::Windows.Graphics.Capture.GraphicsCaptureItem captureItem;
-				try
-				{
-					Record("Attempting native capture in the original still-attached window.");
-					captureItem = CaptureHelper.CreateItemForWindow(WinRT.Interop.WindowNative.GetWindowHandle(window));
-				}
-				catch (PlatformNotSupportedException exception)
-				{
-					Record($"Native capture unavailable; mask control not attempted: {exception}");
-					return;
-				}
-
-				using (var native = await captureItem.RenderAsync(device))
-				{
-					await native.SaveAsync(Path.Combine(directory, "border-shadow-original-native.png"), CanvasBitmapFileFormat.Png);
-					Record($"Original native frame={native.SizeInPixels}");
-				}
-
-				if (shadow is null)
-				{
-					throw new InvalidOperationException("The original scene has no discoverable native DropShadow for the mask control.");
-				}
-
-				var mask = shadow.Mask;
-
-				try
-				{
-					shadow.Mask = null;
-					RecordScene("mask-removed");
-					await SaveBitmap("mask-removed-rtb", await border.AsRawBitmapAsync());
-					using var native = await captureItem.RenderAsync(device);
-					await native.SaveAsync(Path.Combine(directory, "border-shadow-mask-removed-native.png"), CanvasBitmapFileFormat.Png);
-					Record($"Mask-removed native frame={native.SizeInPixels}");
-				}
-				finally
-				{
-					shadow.Mask = mask;
-				}
-
-				RecordScene("mask-restored");
-				await SaveBitmap("mask-restored-rtb", await border.AsRawBitmapAsync());
-				using (var native = await captureItem.RenderAsync(device))
-				{
-					await native.SaveAsync(Path.Combine(directory, "border-shadow-mask-restored-native.png"), CanvasBitmapFileFormat.Png);
-					Record($"Mask-restored native frame={native.SizeInPixels}");
-				}
-
-				void RecordScene(string phase)
-				{
-					Record($"{phase}: Border frame={border.Frame}; desired={platformView.DesiredSize}; render={platformView.RenderSize}; BoxView frame={content.Frame}; scale={content.Scale}; rotation={content.Rotation}; translation=({content.TranslationX},{content.TranslationY})");
-					if (content.Handler?.PlatformView is FrameworkElement child)
-					{
-						Record($"{phase}: W2D actual={child.ActualWidth}x{child.ActualHeight}; desired={child.DesiredSize}; render={child.RenderSize}; wrapper actual={wrapper?.ActualWidth}x{wrapper?.ActualHeight}; mask={shadow?.Mask?.GetType().FullName ?? "null"}");
-					}
-
-					if (shadow?.Mask is CompositionSurfaceBrush brush && brush.Surface is CompositionVisualSurface surface)
-					{
-						Record($"{phase}: mask source-size={surface.SourceSize}; source-offset={surface.SourceOffset}; visual-size={surface.SourceVisual.Size}; visual-offset={surface.SourceVisual.Offset}; visual-transform={surface.SourceVisual.TransformMatrix}");
-					}
-				}
-			}
-			catch (Exception exception)
-			{
-				Record($"Diagnostic failed before completion: {exception}");
-				throw;
-			}
-
-			async Task SaveBitmap(string name, RawBitmap bitmap)
-			{
-				using var image = CanvasBitmap.CreateFromBytes(device, bitmap.PixelBuffer, bitmap.PixelWidth, bitmap.PixelHeight,
-					global::Windows.Graphics.DirectX.DirectXPixelFormat.B8G8R8A8UIntNormalized);
-				await image.SaveAsync(Path.Combine(directory, $"border-shadow-{name}.png"), CanvasBitmapFileFormat.Png);
-				var center = GetPixel(bitmap, 50, 50);
-				var corner = GetPixel(bitmap, 10, 10);
-				Record($"{name}: {bitmap.PixelWidth}x{bitmap.PixelHeight}; density={bitmap.Density}; center=({center.Red},{center.Green},{center.Blue},{center.Alpha}); corner=({corner.Red},{corner.Green},{corner.Blue},{corner.Alpha}); nontransparent={MeasureBounds(bitmap, false)}; red={MeasureBounds(bitmap, true)}");
-			}
-
-			static string MeasureBounds(RawBitmap bitmap, bool redOnly)
-			{
-				int minX = bitmap.PixelWidth, minY = bitmap.PixelHeight, maxX = -1, maxY = -1, count = 0;
-				for (int y = 0; y < bitmap.PixelHeight; y++)
-				{
-					for (int x = 0; x < bitmap.PixelWidth; x++)
-					{
-						int offset = (y * bitmap.PixelWidth + x) * 4;
-						var pixels = bitmap.PixelBuffer;
-						if (pixels[offset + 3] == 0 ||
-							(redOnly && (pixels[offset + 2] <= 200 || pixels[offset + 1] >= 50 || pixels[offset] >= 50)))
-						{
-							continue;
-						}
-
-						minX = Math.Min(minX, x);
-						minY = Math.Min(minY, y);
-						maxX = Math.Max(maxX, x);
-						maxY = Math.Max(maxY, y);
-						count++;
-					}
-				}
-
-				return $"count={count}, bounds=({minX},{minY})-({maxX},{maxY})";
-			}
-
-			void Record(string message)
-			{
-				File.AppendAllText(reportPath, message + Environment.NewLine);
-				Console.WriteLine(message);
-			}
+			AssertPixelIsTransparent(bitmap, 10, 10);
+			AssertPixelIsRed(bitmap, 50, 50);
 		}
 
 		[Fact(DisplayName = "Border clips centered transformed content through nested layout - Issue 17523")]
