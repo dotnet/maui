@@ -642,9 +642,16 @@ namespace Microsoft.Maui.Controls
 					}
 
 					// If the registered route is a combination of shell items and global routes then we might end up here
-					// without the previous tree search finding the correct path
-					if (bestRouteKey == null &&
-						(possibleRoutePath.Shell != null) &&
+					// without the previous tree search finding the correct path.
+					// This runs even when a collapsed match was already found:
+					// resolving the remaining segments through shell NODES wins
+					// over treating them as global pushes, and the completed
+					// builder then deduplicates against the sibling match from
+					// SearchPath. Gating this on "no best match yet" kept two
+					// full matches with the same path alive ("Ambiguous routes
+					// matched") whenever a global key shared a content's route
+					// name and happened to be probed first.
+					if ((possibleRoutePath.Shell != null) &&
 						(possibleRoutePath.Item == null || possibleRoutePath.Section == null || possibleRoutePath.Content == null))
 					{
 						var nextNode = possibleRoutePath.GetNodeLocation().WalkToNextNode();
