@@ -28,13 +28,14 @@ public class Issue14708 : _IssuesUITest
 
 		// Tap the primary SearchBar to open the keyboard
 		App.Tap("SearchBarControl");
+		Assert.That(App.IsKeyboardShown(), Is.True, "Tapping the SearchBar should show the keyboard in landscape.");
 
 		// In the unfixed state, Android enters IME extract mode in landscape:
 		// a full-screen black overlay replaces the inline keyboard and covers all
 		// page content. VerifyScreenshot() catches this because the visual output
 		// is dramatically different from the fixed (inline-keyboard) baseline.
 #if ANDROID
-		VerifyScreenshot(cropLeft: 125, cropBottom:600, retryTimeout: TimeSpan.FromSeconds(2));
+		VerifyScreenshot(cropLeft: 125, cropBottom: 600, retryTimeout: TimeSpan.FromSeconds(2));
 #else
 		VerifyScreenshot(cropBottom:520, retryTimeout: TimeSpan.FromSeconds(2));
 #endif
