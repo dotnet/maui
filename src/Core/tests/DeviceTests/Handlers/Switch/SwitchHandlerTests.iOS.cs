@@ -150,6 +150,59 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "Turning the switch on again doesn't set its OnTintColor again")]
+		public async Task TurningOnAgainDoesNotSetTheOnTintColorAgain()
+		{
+			// https://github.com/dotnet/maui/issues/34560
+			var switchStub = new SwitchStub
+			{
+				IsOn = false,
+				TrackColor = Colors.Red,
+			};
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler(switchStub);
+				var uISwitch = GetNativeSwitch(handler);
+
+				switchStub.IsOn = true;
+				handler.UpdateValue(nameof(ISwitch.IsOn));
+				var onTintColor = uISwitch.OnTintColor;
+
+				switchStub.IsOn = false;
+				handler.UpdateValue(nameof(ISwitch.IsOn));
+				switchStub.IsOn = true;
+				handler.UpdateValue(nameof(ISwitch.IsOn));
+
+				// With Liquid Glass, setting the color while the switch animates shows a solid track over the thumb
+				Assert.Equal(onTintColor.Handle, uISwitch.OnTintColor.Handle);
+				Assert.Equal(Colors.Red, uISwitch.OnTintColor.ToColor());
+			});
+		}
+
+		[Fact(DisplayName = "Track Color's view is not painted when toggled on with Liquid Glass")]
+		public async Task OnTrackColorDoesNotPaintTheTrackSubviewWithLiquidGlass()
+		{
+			// https://github.com/dotnet/maui/issues/34560
+			var switchStub = new SwitchStub
+			{
+				IsOn = true,
+				TrackColor = Colors.Red,
+			};
+
+			var trackSubviewColor = await GetValueAsync(switchStub, handler => GetNativeSwitch(handler).GetTrackSubview()?.BackgroundColor);
+
+			if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+			{
+				// With Liquid Glass, OnTintColor colors the track, and the track subview covers the thumb while the switch animates
+				Assert.NotEqual(Colors.Red, trackSubviewColor?.ToColor());
+			}
+			else
+			{
+				Assert.Equal(Colors.Red, trackSubviewColor?.ToColor());
+			}
+		}
+
 		[Fact(DisplayName = "Apple has not changed UITrack Subviews")]
 		public async Task UIViewSubviewExists()
 		{

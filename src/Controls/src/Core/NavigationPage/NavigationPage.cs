@@ -499,8 +499,10 @@ namespace Microsoft.Maui.Controls
 
 		void FireAppearing(Page page)
 		{
-			if (HasAppeared)
-				page?.SendAppearing();
+			// The page already appeared when it became the CurrentPage. If it isn't the CurrentPage anymore, its
+			// Appearing handler started another navigation and it shouldn't appear a second time.
+			if (HasAppeared && page is not null && page == CurrentPage)
+				page.SendAppearing();
 		}
 
 
@@ -661,6 +663,12 @@ namespace Microsoft.Maui.Controls
 					if (flyoutPage is not null && flyoutPage.Toolbar == _toolbar)
 					{
 						flyoutPage.Toolbar = null;
+					}
+
+					// The root of a modal stack also receives the toolbar we created
+					if (_toolbar.Parent is Page page && page.Toolbar == _toolbar)
+					{
+						page.Toolbar = null;
 					}
 
 					_toolbar.Disconnect();

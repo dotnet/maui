@@ -650,6 +650,23 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			public override int GetHashCode() => 0;
 		}
 
+		[Fact]
+		// https://github.com/dotnet/maui/issues/18409
+		public async Task AppearanceIsResolvedWhileAModalPageIsOpen()
+		{
+			var shell = new TestShell(CreateShellItem());
+			_ = new TestWindow(shell);
+			Shell.SetBackgroundColor(shell, Colors.Red);
+
+			await shell.Navigation.PushModalAsync(new ContentPage());
+
+			var observer = new TestAppearanceObserver();
+			((IShellController)shell).AddAppearanceObserver(observer, shell.CurrentItem.CurrentItem);
+
+			Assert.NotNull(observer.LastAppearance);
+			Assert.Equal(Colors.Red, observer.LastAppearance.BackgroundColor);
+		}
+
 		class TestAppearanceObserver : IAppearanceObserver
 		{
 			public ShellAppearance LastAppearance { get; private set; }

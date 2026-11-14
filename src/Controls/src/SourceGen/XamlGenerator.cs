@@ -8,8 +8,10 @@ using System.Xml;
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 
+using Microsoft.Maui.Controls.BindingSourceGen;
 using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls.SourceGen;
@@ -29,17 +31,33 @@ public class XamlGenerator : IIncrementalGenerator
 		// 	System.Diagnostics.Debugger.Launch();
 		// }
 #endif
-		// Only provide a new Compilation when the references or syntax trees change
+		var globalUsingNamespacesProvider = initContext.SyntaxProvider
+			.CreateSyntaxProvider(
+				static (node, _) => node is UsingDirectiveSyntax directive
+					&& directive.GlobalKeyword.IsKind(SyntaxKind.GlobalKeyword)
+					&& directive.Alias is null
+					&& !directive.StaticKeyword.IsKind(SyntaxKind.StaticKeyword),
+				static (context, ct) => GetGlobalUsingNamespace(context, ct))
+			.Where(static ns => ns is not null)
+			.Select(static (ns, _) => ns!)
+			.Collect()
+			.Select(static (namespaces, _) => new EquatableArray<string>(
+				namespaces.Distinct(StringComparer.Ordinal).OrderBy(static ns => ns, StringComparer.Ordinal).ToArray()));
+
+		// Keep the current compilation when a global using changes, even if its type signatures do not.
 		var referenceCompilationProvider = initContext.CompilationProvider
-			.WithComparer(new CompilationSignaturesComparer())
-			.WithTrackingName(TrackingNames.CompilationProvider);
+			.Combine(globalUsingNamespacesProvider)
+			.WithComparer(new CompilationAndGlobalUsingsComparer())
+			.WithTrackingName(TrackingNames.CompilationProvider)
+			.Select(static (pair, _) => pair.Item1);
 
 		var referenceTypeCacheProvider = referenceCompilationProvider
 			.Select(GetTypeCache)
 			.WithTrackingName(TrackingNames.ReferenceTypeCacheProvider);
 
 		var xmlnsDefinitionsProvider = referenceCompilationProvider
-			.Select(GetAssemblyAttributes)
+			.Combine(globalUsingNamespacesProvider)
+			.Select(static (pair, ct) => GetAssemblyAttributes(pair.Left, pair.Right.ToArray(), ct))
 			.WithTrackingName(TrackingNames.XmlnsDefinitionsProvider);
 
 		var projectItemProvider = initContext.AdditionalTextsProvider
@@ -91,11 +109,27 @@ public class XamlGenerator : IIncrementalGenerator
 
 		//this xmlnsDefinitionProvider is computed AFTER feeding the codebehind into the compilation, and allows correct assemblySymbol comparisons
 		var xmlnsDefinitionsProviderForIC = compilationWithCodeBehindProvider
-			.Select(GetAssemblyAttributes)
+			.Combine(globalUsingNamespacesProvider)
+			.Select(static (pair, ct) => GetAssemblyAttributes(pair.Left, pair.Right.ToArray(), ct))
 			.WithTrackingName(TrackingNames.XmlnsDefinitionsProviderForIC);
 
+		// Select first: WithComparer clones the upstream transform, which would re-parse all code-behind.
+		var conflictCompilationProvider = compilationWithCodeBehindProvider
+			.Select(static (compilation, _) => compilation)
+			.WithComparer(new CompilationSignaturesComparer(includePrivateMembers: true));
+		var conflictXmlnsProvider = conflictCompilationProvider.Select(GetAssemblyAttributes);
+		var conflictDocumentProvider = xamlProjectItemProviderForCB
+			.Combine(conflictXmlnsProvider)
+			.Select(XamlTypeConflictAnalyzer.ParseDocument);
+		var conflictDiagnosticsProvider = conflictDocumentProvider
+			.Combine(conflictXmlnsProvider, conflictCompilationProvider)
+			.Select(XamlTypeConflictAnalyzer.Analyze)
+			.WithTrackingName("XamlTypeConflictDiagnostics");
+
+		// The original (user-only) compilation is threaded through so XIHR can fingerprint the user C#
+		// sources without the generated code-behind trees (see UserSourcesFingerprint).
 		var xamlSourceProviderForIC = xamlProjectItemProviderForIC
-			.Combine(xmlnsDefinitionsProviderForIC, compilationWithCodeBehindProvider.Select(GetTypeCache), compilationWithCodeBehindProvider)
+			.Combine(xmlnsDefinitionsProviderForIC, compilationWithCodeBehindProvider.Select(GetTypeCache), compilationWithCodeBehindProvider, initContext.CompilationProvider)
 			.WithTrackingName(TrackingNames.XamlSourceProviderForIC);
 
 		// Register the XAML pipeline for CodeBehind
@@ -117,10 +151,16 @@ public class XamlGenerator : IIncrementalGenerator
 			}
 		});
 
+		initContext.RegisterSourceOutput(conflictDiagnosticsProvider, static (context, diagnostics) =>
+		{
+			foreach (var diagnostic in diagnostics)
+				context.ReportDiagnostic(diagnostic);
+		});
+
 		// Register the XAML pipeline for InitializeComponent
 		initContext.RegisterImplementationSourceOutput(xamlSourceProviderForIC, static (sourceProductionContext, provider) =>
 		{
-			var (xamlItem, xmlnsCache, typeCache, compilation) = provider;
+			var (xamlItem, xmlnsCache, typeCache, compilation, userCompilation) = provider;
 
 			if (xamlItem?.ProjectItem?.RelativePath is null)
 			{
@@ -139,6 +179,8 @@ public class XamlGenerator : IIncrementalGenerator
 				return;
 			}
 
+			// The state before this XAML edit, restored if the edit turns out not to compile.
+			XamlHotReloadState.CacheEntry? lastApplicableState = null;
 			try
 			{
 				if (!ShouldGenerateSourceGenInitializeComponent(xamlItem, xmlnsCache, compilation))
@@ -180,6 +222,14 @@ public class XamlGenerator : IIncrementalGenerator
 				{
 					var rootType = ucRootType!;
 					var accessModifier = ucAccessModifier;
+					lastApplicableState = XamlHotReloadState.Capture(assemblyName, targetFramework, stateKey, xamlItem.ProjectItem.HotReloadSessionToken);
+					// The exact generation this diff starts from (copied before the diff can touch the IDs).
+					var patchBaseline = new XamlHotReloadState.GenerationSnapshot(
+						previousXaml!,
+						previousRoot,
+						previousNodeIds is null ? null : new Dictionary<ElementNode, string>(previousNodeIds),
+						previousNextId,
+						previousVersion);
 					var generatedFields = XamlHotReloadState.GetGeneratedFields(assemblyName, targetFramework, stateKey, xamlItem.ProjectItem.HotReloadSessionToken);
 					var patchBody = InitializeComponentCodeWriter.TryGeneratePatchBody(
 						previousRoot,
@@ -217,7 +267,10 @@ public class XamlGenerator : IIncrementalGenerator
 						// accumulate a version chain: accumulation retained stale/invalid intermediate patches
 						// and produced non-deterministic, sometimes-uncompilable output when an edit was
 						// reverted (the invalid value lingered forever). See the XIHR versioning fix.
-						XamlHotReloadState.Update(assemblyName, targetFramework, stateKey, xamlItem.Xaml!, parsedNewRoot, effectiveNewIds, newNextNodeId, previousVersion + 1, xamlItem.ProjectItem.HotReloadSessionToken);
+						// Keep the generation this patch was diffed from, so a re-evaluation of the same inputs
+						// re-derives the same patch (https://github.com/dotnet/maui/issues/36937).
+						var patchSources = UserSourcesFingerprint.Get(userCompilation, sourceProductionContext.CancellationToken);
+						XamlHotReloadState.Update(assemblyName, targetFramework, stateKey, xamlItem.Xaml!, parsedNewRoot, effectiveNewIds, newNextNodeId, previousVersion + 1, xamlItem.ProjectItem.HotReloadSessionToken, patchBaseline, patchSources);
 						ucCode = UpdateComponentCodeWriter.GenerateUpdateComponent(rootType, accessModifier, patchBody);
 					}
 					else if (emptyDiff)
@@ -242,6 +295,44 @@ public class XamlGenerator : IIncrementalGenerator
 						}
 						XamlHotReloadState.Update(assemblyName, targetFramework, stateKey, xamlItem.Xaml!, parsedNewRoot, freshIds, freshNextId, 0, xamlItem.ProjectItem.HotReloadSessionToken);
 						ucCode = UpdateComponentCodeWriter.GenerateUpdateComponent(rootType, accessModifier, (string?)null);
+					}
+				}
+				else if (hadPreviousEntry
+					&& previousXaml == xamlItem.Xaml
+					&& canEmitUC
+					&& XamlHotReloadState.TryGetPatchBaseline(assemblyName, targetFramework, stateKey, xamlItem.ProjectItem.HotReloadSessionToken, out var pendingBaseline, out var pendingSources))
+				{
+					// Same XAML as the generation that produced the pending patch. If the user C# sources are
+					// unchanged too, this is a re-evaluation of the same inputs (driver fork, speculative or
+					// discarded run): re-derive the identical patch from its baseline rather than emitting an
+					// empty UpdateComponent() and silently dropping the edit. Otherwise this is a later
+					// generation (C#-only edit): UC is emitted empty. The baseline is left untouched either
+					// way, so the output only depends on the inputs, never on evaluation order.
+					if (pendingSources is not null
+						&& pendingSources.Equals(UserSourcesFingerprint.Get(userCompilation, sourceProductionContext.CancellationToken)))
+					{
+						var replayedPatchBody = InitializeComponentCodeWriter.TryGeneratePatchBody(
+							pendingBaseline!.ParsedRoot,
+							pendingBaseline.NodeIds is null ? null : new Dictionary<ElementNode, string>(pendingBaseline.NodeIds),
+							pendingBaseline.NextNodeId,
+							pendingBaseline.XamlText,
+							xamlItem.Xaml!,
+							fromVersion: pendingBaseline.Version,
+							toVersion: pendingBaseline.Version + 1,
+							ucRootType!,
+							compilation,
+							xmlnsCache,
+							typeCache,
+							sourceProductionContext,
+							xamlItem.ProjectItem,
+							XamlHotReloadState.GetGeneratedFields(assemblyName, targetFramework, stateKey, xamlItem.ProjectItem.HotReloadSessionToken),
+							out _,
+							out _,
+							out _,
+							out _,
+							out _);
+						if (replayedPatchBody != null)
+							ucCode = UpdateComponentCodeWriter.GenerateUpdateComponent(ucRootType!, ucAccessModifier, replayedPatchBody);
 					}
 				}
 				else if (!hadPreviousEntry && xamlItem.ProjectItem.EnableIncrementalHotReload && xamlItem.Xaml is not null)
@@ -281,8 +372,21 @@ public class XamlGenerator : IIncrementalGenerator
 				}
 
 				// Generate IC — reads latest version from XamlHotReloadState
-				var code = InitializeComponentCodeWriter.GenerateInitializeComponent(xamlItem, compilation, sourceProductionContext, xmlnsCache, typeCache);
+				var reportedError = false;
+				var code = InitializeComponentCodeWriter.GenerateInitializeComponent(xamlItem, compilation, sourceProductionContext, xmlnsCache, typeCache,
+					diagnostic => reportedError |= FailsBuild(diagnostic, compilation, sourceProductionContext.CancellationToken));
 				sourceProductionContext.AddSource(GetHintName(xamlItem.ProjectItem, "xsg"), code);
+
+				// A rude edit (https://github.com/dotnet/maui/issues/36156) fails the build, so it never
+				// reaches the running app. Roll the state back, so the next edit is diffed against the last
+				// generation that could have been applied and its patch carries this edit's changes too.
+				if (lastApplicableState is not null
+					&& (reportedError
+						|| HasSyntaxErrors(code, compilation, sourceProductionContext.CancellationToken)
+						|| HasSyntaxErrors(ucCode, compilation, sourceProductionContext.CancellationToken)))
+				{
+					XamlHotReloadState.Restore(assemblyName, targetFramework, stateKey, lastApplicableState, xamlItem.ProjectItem.HotReloadSessionToken);
+				}
 
 				// Emit UC source if a diff was computed
 				if (ucCode != null)
@@ -292,6 +396,10 @@ public class XamlGenerator : IIncrementalGenerator
 			}
 			catch (Exception e)
 			{
+				if (lastApplicableState is not null)
+				{
+					XamlHotReloadState.Restore(compilation.AssemblyName ?? string.Empty, xamlItem.ProjectItem.TargetFramework ?? string.Empty, xamlItem.ProjectItem.HotReloadStateKey, lastApplicableState, xamlItem.ProjectItem.HotReloadSessionToken);
+				}
 				sourceProductionContext.ReportDiagnostic(XamlDiagnosticHelpers.CreateXamlParserDiagnostic(xamlItem?.ProjectItem, xamlItem?.SourceText, e));
 			}
 		});
@@ -320,6 +428,19 @@ $"""
 			, Encoding.UTF8));
 		});
 
+		initContext.RegisterSourceOutput(globalUsingNamespacesProvider, static (context, namespaces) =>
+		{
+			if (namespaces.Length == 0)
+				return;
+
+			var sb = new StringBuilder();
+			sb.AppendLine(AutoGeneratedHeaderText);
+			sb.AppendLine("#nullable enable");
+			foreach (var ns in namespaces)
+				sb.AppendLine($"[assembly: global::Microsoft.Maui.Controls.XmlnsDefinition({Microsoft.CodeAnalysis.CSharp.SymbolDisplay.FormatLiteral(XamlParser.MauiGlobalUri, true)}, {Microsoft.CodeAnalysis.CSharp.SymbolDisplay.FormatLiteral(ns, true)})]");
+			context.AddSource("Global.Usings.Xmlns.cs", SourceText.From(sb.ToString(), Encoding.UTF8));
+		});
+
 		// Register the global xmlns definitions. create equivalent XmlnsDefintion for the global ones, so most of the 1sr and 3rd party tooling should keep working
 		initContext.RegisterSourceOutput(xmlnsDefinitionsProvider, static (sourceProductionContext, xmlnsCache) =>
 		{
@@ -327,6 +448,33 @@ $"""
 			if (!string.IsNullOrEmpty(source))
 				sourceProductionContext.AddSource("Global.Xmlns.cs", SourceText.From(source!, Encoding.UTF8));
 		});
+	}
+
+	private static string? GetGlobalUsingNamespace(GeneratorSyntaxContext context, CancellationToken cancellationToken)
+	{
+		var name = ((UsingDirectiveSyntax)context.Node).Name;
+		if (name is null || name.DescendantNodesAndSelf().OfType<AliasQualifiedNameSyntax>()
+			.Any(static alias => alias.Alias.Identifier.Text != "global"))
+			return null;
+
+		if (context.SemanticModel.GetSymbolInfo(name, cancellationToken).Symbol is not INamespaceSymbol ns)
+			return null;
+
+		var parts = new Stack<string>();
+		for (var current = ns; !current.IsGlobalNamespace; current = current.ContainingNamespace)
+			parts.Push(current.Name);
+		return parts.Count == 0 ? null : string.Join(".", parts);
+	}
+
+	private sealed class CompilationAndGlobalUsingsComparer : IEqualityComparer<(Compilation Compilation, EquatableArray<string> GlobalUsings)>
+	{
+		private readonly CompilationSignaturesComparer _compilationComparer = new();
+
+		public bool Equals((Compilation Compilation, EquatableArray<string> GlobalUsings) x, (Compilation Compilation, EquatableArray<string> GlobalUsings) y)
+			=> x.GlobalUsings.Equals(y.GlobalUsings) && _compilationComparer.Equals(x.Compilation, y.Compilation);
+
+		public int GetHashCode((Compilation Compilation, EquatableArray<string> GlobalUsings) value)
+			=> value.GlobalUsings.GetHashCode();
 	}
 
 	private static string GetHintName(ProjectItem? projectItem, string suffix)
@@ -404,6 +552,33 @@ $"""
 			return false;
 
 		return true;
+	}
+
+	static bool FailsBuild(Diagnostic diagnostic, Compilation compilation, CancellationToken cancellationToken)
+	{
+		if (diagnostic.Severity != DiagnosticSeverity.Error || diagnostic.IsSuppressed)
+			return false;
+
+		// The user may have downgraded the error (NoWarn, WarningsNotAsErrors, .editorconfig/.globalconfig).
+		// Roslyn applies that after the generator reports it, so look it up here.
+		if (compilation.Options.SpecificDiagnosticOptions.TryGetValue(diagnostic.Id, out var configured)
+			|| compilation.Options.SyntaxTreeOptionsProvider?.TryGetGlobalDiagnosticValue(diagnostic.Id, cancellationToken, out configured) == true)
+			return configured is ReportDiagnostic.Default or ReportDiagnostic.Error;
+
+		return true;
+	}
+
+	static bool HasSyntaxErrors(string? generatedCode, Compilation compilation, CancellationToken cancellationToken)
+	{
+		if (generatedCode is null)
+			return false;
+
+		// Only syntax: semantic errors can't be told apart from references to members other generators
+		// add later (e.g. CommunityToolkit.Mvvm [ObservableProperty]), and a false positive would keep
+		// diffing against a generation the app already moved past.
+		var options = compilation.SyntaxTrees.FirstOrDefault()?.Options as CSharpParseOptions;
+		var tree = CSharpSyntaxTree.ParseText(generatedCode, options, cancellationToken: cancellationToken);
+		return tree.GetDiagnostics(cancellationToken).Any(d => d.Severity == DiagnosticSeverity.Error);
 	}
 
 	static bool CanSourceGenXaml(XamlProjectItemForIC? xamlItem, Compilation compilation, SourceProductionContext context, AssemblyAttributes xmlnsCache, IDictionary<XmlType, INamedTypeSymbol> typeCache)

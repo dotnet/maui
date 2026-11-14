@@ -26,6 +26,7 @@
 // THE SOFTWARE.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -364,7 +365,23 @@ namespace Microsoft.Maui.Controls.Xaml
 				((IXmlLineInfo)reader).LinePosition);
 		}
 
-		static IList<XmlnsDefinitionAttribute> s_xmlnsDefinitions;
+		// Global xmlns definitions only apply to the assembly declaring them, so keep their source assembly
+		// and expose a filtered view per current assembly.
+		sealed class XmlnsDefinitionsSnapshot(List<(Assembly Source, XmlnsDefinitionAttribute Definition)> definitions)
+		{
+			readonly ConcurrentDictionary<Assembly, IList<XmlnsDefinitionAttribute>> _forAssembly = new();
+
+			public IList<XmlnsDefinitionAttribute> For(Assembly currentAssembly)
+				=> currentAssembly is null ? Filter(null) : _forAssembly.GetOrAdd(currentAssembly, Filter);
+
+			IList<XmlnsDefinitionAttribute> Filter(Assembly currentAssembly)
+				=> definitions
+					.Where(d => d.Definition.XmlNamespace != XamlParser.MauiGlobalUri || d.Source == currentAssembly)
+					.Select(d => d.Definition)
+					.ToList();
+		}
+
+		static XmlnsDefinitionsSnapshot s_xmlnsDefinitions;
 		internal static IList<XmlnsPrefixAttribute> s_xmlnsPrefixes;
 		static bool ValidateProtectedXmlns(string xmlNamespace, string assemblyName)
 		{
@@ -382,22 +399,17 @@ namespace Microsoft.Maui.Controls.Xaml
 		}
 
 
-		internal static void GatherXmlnsDefinitionAndXmlnsPrefixAttributes(Assembly currentAssembly)
+		internal static void GatherXmlnsDefinitionAndXmlnsPrefixAttributes()
 		{
 			Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
-			s_xmlnsDefinitions = [];
-			s_xmlnsPrefixes = [];
+			var xmlnsDefinitions = new List<(Assembly Source, XmlnsDefinitionAttribute Definition)>();
+			var xmlnsPrefixes = new List<XmlnsPrefixAttribute>();
 			foreach (var assembly in assemblies)
 			{
 				try
 				{
 					foreach (XmlnsDefinitionAttribute attribute in assembly.GetCustomAttributes(typeof(XmlnsDefinitionAttribute)))
 					{
-						// Only add global xmlns definition from the current assembly
-						if (attribute.XmlNamespace == XamlParser.MauiGlobalUri
-							&& assembly != currentAssembly)
-							continue;
-
 						attribute.AssemblyName ??= assembly.FullName;
 
 						if (!ValidateProtectedXmlns(attribute.XmlNamespace, attribute.AssemblyName))
@@ -405,12 +417,12 @@ namespace Microsoft.Maui.Controls.Xaml
 							Debug.WriteLine($"Can not overloadxmlns {attribute.XmlNamespace}. cause it's protected.");
 							continue;
 						}
-						s_xmlnsDefinitions.Add(attribute);
+						xmlnsDefinitions.Add((assembly, attribute));
 					}
 
 					foreach (XmlnsPrefixAttribute attribute in assembly.GetCustomAttributes(typeof(XmlnsPrefixAttribute), false))
 					{
-						s_xmlnsPrefixes.Add(attribute);
+						xmlnsPrefixes.Add(attribute);
 					}
 				}
 				catch (Exception ex)
@@ -420,6 +432,8 @@ namespace Microsoft.Maui.Controls.Xaml
 					Debug.WriteLine($"Failed to parse Assembly Attribute: {ex.ToString()}");
 				}
 			}
+			s_xmlnsDefinitions = new XmlnsDefinitionsSnapshot(xmlnsDefinitions);
+			s_xmlnsPrefixes = xmlnsPrefixes;
 		}
 
 #if NET
@@ -437,10 +451,10 @@ namespace Microsoft.Maui.Controls.Xaml
 
 		retry:
 			if (s_xmlnsDefinitions == null)
-				GatherXmlnsDefinitionAndXmlnsPrefixAttributes(currentAssembly);
+				GatherXmlnsDefinitionAndXmlnsPrefixAttributes();
 
 			var types = xmlType.GetTypeReferences(
-				s_xmlnsDefinitions,
+				s_xmlnsDefinitions.For(currentAssembly),
 				currentAssembly?.FullName,
 				(typeInfo) =>
 				{
