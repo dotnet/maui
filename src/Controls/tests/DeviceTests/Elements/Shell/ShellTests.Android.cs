@@ -135,6 +135,63 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "Overlapping GoToAsync(\"..\") calls each pop one page")]
+		public async Task OverlappingRelativePopsEachPopAPage()
+		{
+			SetupBuilder();
+
+			Routing.RegisterRoute("overlapPopFirst", typeof(QueryTrackingPage));
+			Routing.RegisterRoute("overlapPopSecond", typeof(ContentPage));
+			Routing.RegisterRoute("overlapPopThird", typeof(ContentPage));
+
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.Items.Add(new ShellContent()
+				{
+					Route = "Item1",
+					Content = new ContentPage()
+				});
+			});
+
+			await CreateHandlerAndAddToWindow(shell, async () =>
+			{
+				await shell.GoToAsync($"overlapPopFirst?{nameof(QueryTrackingPage.TestValue)}=1");
+				var firstPage = (QueryTrackingPage)shell.CurrentPage;
+				await shell.GoToAsync("overlapPopSecond");
+				await shell.GoToAsync("overlapPopThird");
+
+				// Fire two relative pops without awaiting the first,
+				// like a double tap on the hardware back button
+				var pop1 = shell.GoToAsync("..");
+				var pop2 = shell.GoToAsync("..");
+				await Task.WhenAll(pop1, pop2);
+
+				// Wait until the navigation stack stops changing before asserting
+				int settledCount = -1;
+				await AssertEventually(() =>
+				{
+					var count = shell.Navigation.NavigationStack.Count;
+					if (count == settledCount)
+						return true;
+
+					settledCount = count;
+					return false;
+				}, timeout: 4000, interval: 500, message: "Navigation stack never settled");
+
+				Assert.Equal(2, shell.Navigation.NavigationStack.Count);
+				Assert.Same(firstPage, shell.CurrentPage);
+				Assert.Equal("1", firstPage.TestValue);
+			});
+		}
+
+		class QueryTrackingPage : ContentPage, IQueryAttributable
+		{
+			public string TestValue { get; private set; }
+
+			public void ApplyQueryAttributes(System.Collections.Generic.IDictionary<string, object> query) =>
+				TestValue = query.TryGetValue(nameof(TestValue), out var value) ? (string)value : null;
+		}
+
 		[Theory]
 		[InlineData(true)]
 		[InlineData(false)]
