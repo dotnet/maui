@@ -32,6 +32,7 @@ namespace Microsoft.Maui.Controls.Handlers
         readonly Dictionary<UITableViewCell, UIColor?> _defaultMoreTextLabelTextColors = new();
         ShellSection? _currentSection;
         Page? _displayedPage;
+        readonly ShellItemRenderer.TabSwitchBackgroundState _tabSwitchBackground = new();
 
         internal IShellSectionRenderer? CurrentRenderer { get; private set; }
 
@@ -200,6 +201,7 @@ namespace Microsoft.Maui.Controls.Handlers
             }
 
             ShellItemController.ItemsCollectionChanged -= OnItemsCollectionChanged;
+            _tabSwitchBackground.Reset();
         }
 
         #endregion
@@ -490,6 +492,12 @@ namespace Microsoft.Maui.Controls.Handlers
             {
                 UpdateTabBarHidden();
             }
+            else if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName ||
+                e.PropertyName == VisualElement.BackgroundProperty.PropertyName ||
+                e.PropertyName == VisualElement.OpacityProperty.PropertyName)
+            {
+                ShellItemRenderer.UpdateTabSwitchBackground(PlatformView, _displayedPage, _tabSwitchBackground);
+            }
         }
 
         #endregion
@@ -629,6 +637,8 @@ namespace Microsoft.Maui.Controls.Handlers
                 UpdateLargeTitles();
                 UpdateNavBarHidden();
             }
+
+            ShellItemRenderer.UpdateTabSwitchBackground(PlatformView, _displayedPage, _tabSwitchBackground);
         }
 
         #endregion
