@@ -118,17 +118,25 @@ namespace Microsoft.Maui.IntegrationTests
 						""");
 				}
 
-				// Also create Directory.Build.targets to prevent target inheritance
+				// Also create Directory.Build.targets to prevent target inheritance. It is always rewritten so
+				// existing test directories pick up the previous-.NET ILLink pin below.
 				var testDirBuildTargets = Path.Combine(TestEnvironment.GetTestDirectoryRoot(), "Directory.Build.targets");
-				if (!File.Exists(testDirBuildTargets))
-				{
-					File.WriteAllText(testDirBuildTargets, """
-						<Project>
-						  <!-- This file stops MSBuild from walking up the directory tree and inheriting
-						       the MAUI repo's Directory.Build.targets. -->
-						</Project>
-						""");
-				}
+				File.WriteAllText(testDirBuildTargets, $$"""
+					<Project>
+					  <!-- This file stops MSBuild from walking up the directory tree and inheriting
+					       the MAUI repo's Directory.Build.targets. -->
+
+					  <!-- The current SDK pins {{BaseBuildTest.DotNetPrevious}} ILLink to a pre-release whose API does not
+					       match the custom steps used by previous-.NET Apple SDKs for Mono builds (IL1027). -->
+					  <Target Name="_MauiTestPinPreviousILLinkPack" BeforeTargets="ProcessFrameworkReferences">
+					    <ItemGroup>
+					      <KnownILLinkPack Update="@(KnownILLinkPack)"
+					                       Condition="'%(KnownILLinkPack.TargetFramework)' == '{{BaseBuildTest.DotNetPrevious}}'"
+					                       ILLinkPackVersion="{{BaseBuildTest.PreviousILLinkPackVersion}}" />
+					    </ItemGroup>
+					  </Target>
+					</Project>
+					""");
 
 				_isSetupComplete = true;
 			}
@@ -144,6 +152,7 @@ namespace Microsoft.Maui.IntegrationTests
 	{
 		public const string DotNetCurrent = "net12.0";
 		public const string DotNetPrevious = "net11.0";
+		public const string PreviousILLinkPackVersion = "11.0.0";
 
 		// Versions of .NET MAUI that are used when testing the <MauiVersion> property. These should preferrably
 		// different to the defaults in the SDKs such that the tests can test what would happen if the user puts
