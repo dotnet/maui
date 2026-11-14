@@ -11,19 +11,24 @@ public class Issue6250 : _IssuesUITest
 
 	public override string Issue => "[Android] IsReadOnly=true EditText controls are not focusable";
 
-	[TestCase("ReadOnlyEntry")]
-	[TestCase("ReadOnlyEditor")]
-	[TestCase("ReadOnlySearchBar")]
+	[TestCase("ReadOnlyEntry", false)]
+	[TestCase("ReadOnlyEditor", false)]
+	[TestCase("ReadOnlySearchBar", false)]
+	[TestCase("ReadOnlyEntry", true)]
+	[TestCase("ReadOnlyEditor", true)]
+	[TestCase("ReadOnlySearchBar", true)]
 	[Category(UITestCategories.Entry)]
-	public void FocusingReadOnlyInputHidesKeyboard(string readOnlyInput)
+	public void FocusingReadOnlyInputHidesKeyboard(string readOnlyInput, bool programmaticFocus)
 	{
 		App.WaitForElement("EditableEntry");
-		App.Tap("EditableEntry");
-		Assert.That(App.WaitForKeyboardToShow(), Is.True, "Tapping the editable Entry should show the keyboard");
+		App.Tap(programmaticFocus ? "FocusEditableEntry" : "EditableEntry");
+		Assert.That(App.WaitForKeyboardToShow(), Is.True, "Focusing the editable Entry should show the keyboard");
+		Assert.That(App.WaitForElement("FocusedInput").GetText(), Is.EqualTo("EditableEntry"));
 
 		// The read-only input gets focus but can't be typed into, so the keyboard must not stay up
-		App.Tap(readOnlyInput);
+		App.Tap(programmaticFocus ? $"Focus{readOnlyInput}" : readOnlyInput);
 		Assert.That(App.WaitForKeyboardToHide(TimeSpan.FromSeconds(5)), Is.True, $"Focusing {readOnlyInput} should hide the keyboard");
+		Assert.That(App.WaitForElement("FocusedInput").GetText(), Is.EqualTo(readOnlyInput));
 	}
 }
 #endif
