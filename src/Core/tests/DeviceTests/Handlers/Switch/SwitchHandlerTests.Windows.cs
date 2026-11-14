@@ -1,7 +1,9 @@
 using System;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Platform;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
@@ -377,66 +379,120 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Theory]
-		[InlineData(false)]
-		[InlineData(true)]
-		public async Task CustomOnColorKeepsSingleHoverDictionaryAcrossGarbageCollections(bool populateThemeDictionary)
-		{
-			var switchStub = new SwitchStub { IsOn = true, TrackColor = Colors.Red };
-			await InvokeOnMainThreadAsync(() =>
-			{
-				var handler = CreateHandler(switchStub);
-				var toggleSwitch = handler.PlatformView;
-				if (populateThemeDictionary)
-				{
-					var hoverResources = Assert.Single(toggleSwitch.Resources.MergedDictionaries);
-					((ResourceDictionary)hoverResources.ThemeDictionaries["Default"])["OtherResource"] = "value";
-				}
-
-				for (int cycle = 0; cycle < 3; cycle++)
-				{
-					foreach (var color in new[] { null, Colors.Blue, null, Colors.Red })
-					{
-						CollectProjectedWrappers();
-						switchStub.TrackColor = color;
-						handler.UpdateValue(nameof(ISwitch.TrackColor));
-						CollectProjectedWrappers();
-
-						if (color is null && !populateThemeDictionary)
-						{
-							Assert.Empty(toggleSwitch.Resources.MergedDictionaries);
-							continue;
-						}
-
-						var hoverResources = Assert.Single(toggleSwitch.Resources.MergedDictionaries);
-						var defaultResources = Assert.IsType<ResourceDictionary>(hoverResources.ThemeDictionaries["Default"]);
-						if (color is null)
-						{
-							Assert.DoesNotContain("ToggleSwitchFillOnPointerOver", defaultResources.Keys);
-							Assert.Equal("value", defaultResources["OtherResource"]);
-							continue;
-						}
-
-						var brush = Assert.IsType<SolidColorBrush>(defaultResources["ToggleSwitchFillOnPointerOver"]);
-						Assert.Equal(color.ToWindowsColor(), brush.Color);
-					}
-				}
-			});
-
-			static void CollectProjectedWrappers()
-			{
-				for (int i = 0; i < 2; i++)
-				{
-					GC.Collect();
-					GC.WaitForPendingFinalizers();
-				}
-			}
-		}
-
 		static ResourceDictionary GetHoverThemeResources(ToggleSwitch toggleSwitch, string theme)
 		{
 			var resources = Assert.Single(toggleSwitch.Resources.MergedDictionaries);
 			return Assert.IsType<ResourceDictionary>(resources.ThemeDictionaries[theme]);
+		}
+
+		[Theory]
+		[InlineData(0)]
+		[InlineData(1)]
+		[InlineData(3)]
+		public async Task CustomOnColorResourceStateSurvivesCollection(int retainedWrapperCount)
+		{
+			var switchStub = new SwitchStub { IsOn = true };
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler<DirectHoverSwitchHandler>(switchStub);
+				var toggleSwitch = handler.PlatformView;
+				await toggleSwitch.AttachAndRun(async () =>
+				{
+					for (int cycle = 0; cycle < 3; cycle++)
+					{
+						switchStub.TrackColor = Colors.Red;
+						handler.UpdateValue(nameof(ISwitch.TrackColor));
+						var (weakReferences, retainedResources) = CaptureHoverResourceWrappers(toggleSwitch, retainedWrapperCount);
+
+						await CollectSwitchResources(toggleSwitch);
+
+						switchStub.TrackColor = Colors.Blue;
+						handler.UpdateValue(nameof(ISwitch.TrackColor));
+						Assert.True(toggleSwitch.Resources.MergedDictionaries.Count == 1,
+							$"Expected one owned dictionary after recoloring, got {toggleSwitch.Resources.MergedDictionaries.Count}. " +
+							$"Wrappers alive: root={weakReferences[0].IsAlive}, Default={weakReferences[1].IsAlive}, HighContrast={weakReferences[2].IsAlive}.");
+						foreach (var theme in new[] { "Default", "HighContrast" })
+						{
+							var brush = Assert.IsType<SolidColorBrush>(GetHoverThemeResources(toggleSwitch, theme)["ToggleSwitchFillOnPointerOver"]);
+							Assert.Equal(Colors.Blue.ToWindowsColor(), brush.Color);
+							Assert.Equal(theme == "HighContrast" ? 1 : 0.9, brush.Opacity, 2);
+						}
+
+						await CollectSwitchResources(toggleSwitch);
+
+						switchStub.TrackColor = null;
+						handler.UpdateValue(nameof(ISwitch.TrackColor));
+						Assert.True(toggleSwitch.Resources.MergedDictionaries.Count == 0,
+							$"Expected no owned dictionaries after clearing, got {toggleSwitch.Resources.MergedDictionaries.Count}. " +
+							$"Wrappers alive: root={weakReferences[0].IsAlive}, Default={weakReferences[1].IsAlive}, HighContrast={weakReferences[2].IsAlive}.");
+						Assert.Same(handler.OriginalHoverBrush, toggleSwitch.Resources["ToggleSwitchFillOnPointerOver"]);
+						GC.KeepAlive(retainedResources);
+					}
+				}, MauiContext);
+				GC.KeepAlive(handler);
+			});
+		}
+
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		static (WeakReference[] WeakReferences, ResourceDictionary[] RetainedResources) CaptureHoverResourceWrappers(ToggleSwitch toggleSwitch, int retainedWrapperCount)
+		{
+			var resources = new[]
+			{
+				toggleSwitch.Resources,
+				GetHoverThemeResources(toggleSwitch, "Default"),
+				GetHoverThemeResources(toggleSwitch, "HighContrast")
+			};
+			var weakReferences = new[]
+			{
+				new WeakReference(resources[0]),
+				new WeakReference(resources[1]),
+				new WeakReference(resources[2])
+			};
+			Array.Clear(resources, retainedWrapperCount, resources.Length - retainedWrapperCount);
+			return (weakReferences, resources);
+		}
+
+		static async Task CollectSwitchResources(ToggleSwitch toggleSwitch)
+		{
+			await AssertionExtensions.Collect();
+			var drained = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+			Assert.True(toggleSwitch.DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () => drained.SetResult()));
+			await drained.Task;
+			await AssertionExtensions.Collect();
+		}
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task CustomOnColorPreservesReplacedResources(bool hasDirectHoverResource)
+		{
+			var switchStub = new SwitchStub { IsOn = true, TrackColor = Colors.Red };
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<DirectHoverSwitchHandler>(switchStub);
+				var toggleSwitch = handler.PlatformView;
+				var resources = new ResourceDictionary();
+				var applicationResources = new ResourceDictionary { ["OtherResource"] = "value" };
+				resources.MergedDictionaries.Add(applicationResources);
+				var replacement = new SolidColorBrush(Colors.Purple.ToWindowsColor());
+				if (hasDirectHoverResource)
+					resources["ToggleSwitchFillOnPointerOver"] = replacement;
+				toggleSwitch.Resources = resources;
+
+				switchStub.TrackColor = Colors.Blue;
+				handler.UpdateValue(nameof(ISwitch.TrackColor));
+				Assert.Equal(2, resources.MergedDictionaries.Count);
+				Assert.Same(applicationResources, resources.MergedDictionaries[0]);
+
+				switchStub.TrackColor = null;
+				handler.UpdateValue(nameof(ISwitch.TrackColor));
+				Assert.Same(applicationResources, Assert.Single(resources.MergedDictionaries));
+				Assert.Equal("value", resources["OtherResource"]);
+				if (hasDirectHoverResource)
+					Assert.Same(replacement, resources["ToggleSwitchFillOnPointerOver"]);
+				else
+					Assert.DoesNotContain("ToggleSwitchFillOnPointerOver", resources.Keys);
+			});
 		}
 
 		[Fact]
