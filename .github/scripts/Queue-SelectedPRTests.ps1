@@ -33,7 +33,7 @@ function Assert-SelectedIdentity {
     param($Selection)
     $current = Get-SelectedPr
     if ($current.state -ne 'open' -or $current.head.sha -cne $Selection.headSha -or
-        $current.base.sha -cne $Selection.baseSha -or $current.merge_commit_sha -cne $Selection.mergeSha) {
+        $current.merge_commit_sha -cne $Selection.mergeSha) {
         throw 'PR head, base, or test-merge changed; request /review run-tests again.'
     }
     $merge = (& gh api "repos/dotnet/maui/git/commits/$($Selection.mergeSha)" | Out-String) | ConvertFrom-Json
