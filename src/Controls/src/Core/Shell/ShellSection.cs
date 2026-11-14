@@ -567,7 +567,10 @@ namespace Microsoft.Maui.Controls
 			if (request.StackRequest == ShellNavigationRequest.WhatToDoWithTheStack.ReplaceIt)
 				whereToStartNavigation = currentNavStack.Count - 1;
 
-			for (int i = whereToStartNavigation; i < globalRoutes.Count; i++)
+			// A relative pop ("..") must never create pages. Its routes were captured from
+			// the stack as it was when the pop was requested; if a concurrent navigation
+			// already popped some of them, re-creating them here would undo that pop.
+			for (int i = whereToStartNavigation; !isRelativePopping && i < globalRoutes.Count; i++)
 			{
 				bool isLast = i == globalRoutes.Count - 1;
 				var content = GetOrCreateFromRoute(globalRoutes[i], resolvedRoutes?.Count > i ? resolvedRoutes[i] : null, queryData, services, isLast, false);
