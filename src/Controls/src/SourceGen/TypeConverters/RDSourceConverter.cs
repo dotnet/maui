@@ -11,6 +11,21 @@ namespace Microsoft.Maui.Controls.SourceGen.TypeConverters;
 
 class RDSourceConverter : ISGTypeConverter
 {
+	const string GetResourcePathUriScheme = "maui://";
+
+	internal static string GetResourcePath(string value, string rootTargetPath)
+	{
+		var uri = new Uri(value, UriKind.RelativeOrAbsolute);
+		// GetResourcePathUriScheme is a fake scheme so it's not seen as file:// uri,
+		// and the forward slashes are valid on all plats
+		var resourceUri = uri.OriginalString.StartsWith("/", StringComparison.Ordinal)
+								? new Uri($"{GetResourcePathUriScheme}{uri.OriginalString}", UriKind.Absolute)
+								: new Uri($"{GetResourcePathUriScheme}/{rootTargetPath}/../{uri.OriginalString}", UriKind.Absolute);
+
+		//drop the leading '/'
+		return resourceUri.AbsolutePath.Substring(1);
+	}
+
 	public IEnumerable<string> SupportedTypes => ["ResourceDictionary", "Microsoft.Maui.Controls.ResourceDictionary", "System.Uri"];
 
 	public string Convert(string value, BaseNode node, ITypeSymbol toType, IndentedTextWriter writer, SourceGenContext context, ILocalValue? parentVar = null)
@@ -18,21 +33,7 @@ class RDSourceConverter : ISGTypeConverter
 		if (parentVar == null) //should never happen
 			throw new ArgumentException("parentVar is null");
 
-		const string GetResourcePathUriScheme = "maui://";
 		ITypeSymbol xamlResIdAttr = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.XamlResourceIdAttribute")!;
-
-		static string GetResourcePath(string value, string rootTargetPath)
-		{
-			var uri = new Uri(value, UriKind.RelativeOrAbsolute);
-			// GetResourcePathUriScheme is a fake scheme so it's not seen as file:// uri,
-			// and the forward slashes are valid on all plats
-			var resourceUri = uri.OriginalString.StartsWith("/", StringComparison.Ordinal)
-									? new Uri($"{GetResourcePathUriScheme}{uri.OriginalString}", UriKind.Absolute)
-									: new Uri($"{GetResourcePathUriScheme}/{rootTargetPath}/../{uri.OriginalString}", UriKind.Absolute);
-
-			//drop the leading '/'
-			return resourceUri.AbsolutePath.Substring(1);
-		}
 
 		ITypeSymbol? GetTypeForResourcePath(string resourcePath, IAssemblySymbol assembly)
 		{
