@@ -166,6 +166,25 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(TextDecorationColorProperty, value); }
 		}
 
+		/// <summary>Bindable property for <see cref="TextDecorationThickness"/>.</summary>
+		public static readonly BindableProperty TextDecorationThicknessProperty
+			= BindableProperty.Create(nameof(TextDecorationThickness), typeof(double), typeof(Span), -1d, defaultBindingMode: BindingMode.OneWay);
+
+		/// <summary>
+		/// Gets or sets the thickness, in device-independent units, of the span's <see cref="TextDecorations"/>.
+		/// Zero or less (the default is -1) uses the font's own thickness. This is a bindable property.
+		/// </summary>
+		/// <remarks>
+		/// On Android API 29+ the underline is drawn at exactly this thickness (strikethrough keeps the font's).
+		/// iOS and Mac Catalyst have no exact thickness, so underline and strikethrough use the nearer of the
+		/// <c>Single</c> (about 1) and <c>Thick</c> (about 2) styles. Windows and earlier Android versions keep the font's thickness.
+		/// </remarks>
+		public double TextDecorationThickness
+		{
+			get { return (double)GetValue(TextDecorationThicknessProperty); }
+			set { SetValue(TextDecorationThicknessProperty, value); }
+		}
+
 		/// <summary>Gets or sets the line height multiplier for the span. This is a bindable property.</summary>
 		public double LineHeight
 		{
