@@ -22,12 +22,12 @@ public class Issue7556 : _IssuesUITest
 		App.SetOrientationLandscape();
 		App.WaitForElement("Split");
 		App.TapFlyoutPageIcon("Flyout");
-		App.WaitForElement("Flyout Visible");
+		App.WaitForElement("FlyoutVisible");
 		App.WaitForElementTillPageNavigationSettled("PushModalPage");
 		App.Tap("PushModalPage");
 		App.WaitForElementTillPageNavigationSettled("PopModalPage");
 		App.Tap("PopModalPage");
-		App.WaitForElement("Flyout Visible");
+		App.WaitForElement("FlyoutVisible");
 	}
 
 	[Test]
@@ -36,16 +36,16 @@ public class Issue7556 : _IssuesUITest
 	{
 		while (App.WaitForElement("CurrentMasterBehavior").ReadText() != Microsoft.Maui.Controls.FlyoutLayoutBehavior.SplitOnLandscape.ToString())
 		{
-			App.Tap("ChangeMasterBehavior");
+			if (App.FindElements("FlyoutVisible").Count > 0)
+				App.Tap("CloseFlyout");
 
-			if (App.FindElements("Flyout Visible").Count > 0)
-				App.Tap("Close Flyout");
+			App.Tap("ChangeMasterBehavior");
 		}
 
 		App.TapFlyoutPageIcon("Flyout");
 
-		App.WaitForElement("Flyout Visible");
-		App.Tap("Close Flyout");
+		App.WaitForElement("FlyoutVisible");
+		App.Tap("CloseFlyout");
 
 		App.SetOrientationLandscape();
 		App.WaitForElement("Close Flyout");
@@ -55,14 +55,14 @@ public class Issue7556 : _IssuesUITest
 		App.WaitForElement("Close Flyout");
 		App.SetOrientationPortrait();
 
-		if (App.FindElements("Flyout Visible").Count > 0)
-			App.Tap("Close Flyout");
+		if (App.FindElements("FlyoutVisible").Count > 0)
+			App.Tap("CloseFlyout");
 
 		App.TapFlyoutPageIcon("Flyout");
-		App.WaitForElement("Flyout Visible");
-		App.Tap("Close Flyout");
+		App.WaitForElement("FlyoutVisible");
+		App.Tap("CloseFlyout");
 		App.TapFlyoutPageIcon("Flyout");
-		App.WaitForElement("Flyout Visible");
+		App.WaitForElement("FlyoutVisible");
 	}
 
 	[TearDown]
