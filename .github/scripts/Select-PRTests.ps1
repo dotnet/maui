@@ -197,6 +197,21 @@ if ($Stage -eq 'Gather') {
     $controls = @('ActivityIndicator','Border','BoxView','Button','CheckBox','DatePicker','Editor','Entry','Image','ImageButton',
         'IndicatorView','Label','Picker','ProgressBar','RadioButton','RefreshView','ScrollView','SearchBar','Slider','Stepper',
         'Switch','SwipeView','TimePicker','WebView')
+    # Feature areas whose implementation is owned by dedicated test categories; anything else stays broad.
+    $areas = @(
+        @{ Pattern = '^src/Controls/src/Core/(Items|Handlers/Items2?|Platform/Windows/CollectionView)/.*Carousel[^/]*$'
+           Ui = @('CarouselView'); Device = @{ 'Controls.DeviceTests' = @('CarouselView') } }
+        @{ Pattern = '^src/Controls/src/Core/(Items|Handlers/Items2?|Platform/Windows/CollectionView)/'
+           Ui = @('CollectionView', 'CarouselView'); Device = @{ 'Controls.DeviceTests' = @('CollectionView', 'CarouselView') } }
+        @{ Pattern = '^src/Controls/src/Core/(Shell|Handlers/Shell|Compatibility/Handlers/Shell)/'
+           Ui = @('Shell'); Device = @{ 'Controls.DeviceTests' = @('Shell') } }
+        @{ Pattern = '^src/(Controls/src/Core/(NavigationPage|Compatibility/Handlers/NavigationPage)|Core/src/Handlers/NavigationPage)/'
+           Ui = @('Navigation'); Device = @{ 'Controls.DeviceTests' = @('NavigationPage'); 'Core.DeviceTests' = @('NavigationPage') } }
+        @{ Pattern = '^src/Controls/src/Core/(TabbedPage|Compatibility/Handlers/TabbedPage|Platform/Windows/TabbedPage)/'
+           Ui = @('TabbedPage'); Device = @{ 'Controls.DeviceTests' = @('TabbedPage') } }
+        @{ Pattern = '^src/(Controls/src/Core/(FlyoutPage|Compatibility/Handlers/FlyoutPage)|Core/src/Handlers/FlyoutView)/'
+           Ui = @('FlyoutPage'); Device = @{ 'Controls.DeviceTests' = @('FlyoutPage'); 'Core.DeviceTests' = @('FlyoutView') } }
+    )
     $evidence = @()
     $floorPlatforms = @()
     $floorUi = @()
@@ -241,6 +256,18 @@ if ($Stage -eq 'Gather') {
                     foreach ($testFile in $testFiles) {
                         $floorDevice += Get-AttributeCategories (Get-Content $testFile.FullName -Raw) $deviceInventories[$project]
                     }
+                }
+            } elseif ($area = @($areas | Where-Object { $path -match $_.Pattern } | Select-Object -First 1)) {
+                foreach ($category in $area[0].Ui) {
+                    if ($category -cnotin $uiConstants.Values) { throw "Area UI category $category is missing from the inventory." }
+                    $floorUi += $category
+                }
+                foreach ($project in $area[0].Device.Keys) {
+                    foreach ($category in $area[0].Device[$project]) {
+                        if ($category -cnotin $deviceInventories[$project].Values) { throw "Area device category $category is missing from $project." }
+                        $floorDevice += $category
+                    }
+                    $floorProjects += $project
                 }
             } elseif ($current -and $path -match '^src/Controls/tests/TestCases\.(Android|iOS|Mac|WinUI)\.Tests/snapshots/.+/(\w+)\.png$') {
                 # A screenshot baseline belongs to the UI test method with the same name.
