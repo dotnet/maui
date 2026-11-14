@@ -3,6 +3,7 @@ using Android.Content;
 using Android.Content.Res;
 using Android.Graphics;
 using Android.Graphics.Drawables;
+using Android.Runtime;
 using Android.Text;
 using Android.Util;
 using Android.Views.InputMethods;
@@ -411,7 +412,7 @@ namespace Microsoft.Maui.Platform
 			editText.EnsureNoFullscreenFlag();
 
 			// Restart the input on the current focused EditText
-			InputMethodManager? imm = (InputMethodManager?)editText.Context?.GetSystemService(Context.InputMethodService);
+			var imm = editText.Context?.GetSystemService(Context.InputMethodService)?.JavaCast<InputMethodManager>();
 			imm?.RestartInput(editText);
 		}
 

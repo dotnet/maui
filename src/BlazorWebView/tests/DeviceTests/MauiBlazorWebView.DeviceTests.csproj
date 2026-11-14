@@ -21,6 +21,7 @@
     <ApplicationTitle>BlazorWebView Tests</ApplicationTitle>
     <ApplicationId>com.microsoft.maui.mauiblazorwebview.devicetests</ApplicationId>
     <ApplicationVersion>1</ApplicationVersion>
+    <UseXHarnessSceneManifest>true</UseXHarnessSceneManifest>
   </PropertyGroup>
 
   <ItemGroup>

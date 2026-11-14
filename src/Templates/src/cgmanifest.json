@@ -5,6 +5,24 @@
       "component": {
         "type": "nuget",
         "nuget": {
+          "name": "Avalonia.Controls.Maui",
+          "version": "11.0.0-rc.2.26287.618"
+        }
+      }
+    },
+    {
+      "component": {
+        "type": "nuget",
+        "nuget": {
+          "name": "Avalonia.Controls.Maui.Desktop",
+          "version": "11.0.0-rc.2.26287.618"
+        }
+      }
+    },
+    {
+      "component": {
+        "type": "nuget",
+        "nuget": {
           "name": "CommunityToolkit.Maui",
           "version": "11.1.1"
         }
@@ -51,7 +69,7 @@
         "type": "nuget",
         "nuget": {
           "name": "Microsoft.Extensions.Configuration",
-          "version": "10.0.0"
+          "version": "11.0.0"
         }
       }
     },
@@ -60,7 +78,7 @@
         "type": "nuget",
         "nuget": {
           "name": "Microsoft.Extensions.DependencyInjection",
-          "version": "10.0.0"
+          "version": "11.0.0"
         }
       }
     },
@@ -69,7 +87,7 @@
         "type": "nuget",
         "nuget": {
           "name": "Microsoft.Extensions.Logging.Debug",
-          "version": "10.0.0"
+          "version": "11.0.0"
         }
       }
     },
@@ -78,7 +96,7 @@
         "type": "nuget",
         "nuget": {
           "name": "Microsoft.Graphics.Win2D",
-          "version": "1.3.2"
+          "version": "1.4.0"
         }
       }
     },
@@ -96,7 +114,7 @@
         "type": "nuget",
         "nuget": {
           "name": "Microsoft.Windows.SDK.BuildTools",
-          "version": "10.0.26100.4654"
+          "version": "10.0.28000.2705"
         }
       }
     },
@@ -105,16 +123,7 @@
         "type": "nuget",
         "nuget": {
           "name": "Microsoft.WindowsAppSDK",
-          "version": "1.8.251106002"
-        }
-      }
-    },
-    {
-      "component": {
-        "type": "nuget",
-        "nuget": {
-          "name": "SQLitePCLRaw.bundle_green",
-          "version": "2.1.10"
+          "version": "2.5.1"
         }
       }
     },
@@ -132,7 +141,7 @@
         "type": "nuget",
         "nuget": {
           "name": "xunit",
-          "version": "2.9.0"
+          "version": "2.9.3"
         }
       }
     },
@@ -141,7 +150,7 @@
         "type": "nuget",
         "nuget": {
           "name": "xunit.analyzer",
-          "version": "1.15.0"
+          "version": "1.18.0"
         }
       }
     },

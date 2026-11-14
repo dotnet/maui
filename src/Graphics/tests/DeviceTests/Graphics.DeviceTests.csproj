@@ -20,6 +20,7 @@
     <ApplicationId>com.microsoft.maui.graphics.devicetests</ApplicationId>
     <ApplicationVersion>1</ApplicationVersion>
     <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
+    <UseXHarnessSceneManifest>true</UseXHarnessSceneManifest>
   </PropertyGroup>
 
   <PropertyGroup>

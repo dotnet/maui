@@ -124,6 +124,11 @@ parameters:
     demands:
       - ImageOverride -equals 1ESPT-Ubuntu22.04
 
+# The .NET 11 iOS compatibility workload recommends Xcode 27.0.
+- name: previousXcodeVersion
+  type: string
+  default: '27.0'
+
 # Condition for MacOSPool comparison lanes (non-ARM64)
 # Additional comparison lanes remain disabled; the build, pack and ARM64
 # integration lanes provide public macOS coverage.
@@ -257,16 +262,15 @@ stages:
         pool: ${{ parameters.MacOSPool.internal }}
       timeout: 240
       testCategory: Build
-      testFilter: 'Category=Build&DisplayName!~net10.0'
-    # The .NET 10 compatibility workload requires Xcode 26.5, not the app SDK's Xcode 27.
+      testFilter: 'Category=Build&DisplayName!~net11.0'
     - name: mac_buildtemplate_previous_tests
-      pool:
-        name: Azure Pipelines
-        vmImage: macOS-26
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:
+        pool: ${{ parameters.MacOSPool.internal }}
       timeout: 240
       testCategory: Build
-      testFilter: 'Category=Build&DisplayName~net10.0'
-      xcodeVersion: '26.5'
+      testFilter: 'Category=Build&DisplayName~net11.0'
 
     - name: win_blazortemplate_tests
       ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
@@ -302,7 +306,13 @@ stages:
       timeout: 120
       testCategory: MultiProject
 
-    # TODO: macOSTemplates category
+    - name: mac_mactemplate_tests
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:
+        pool: ${{ parameters.MacOSPool.internal }}
+      timeout: 240
+      testCategory: macOSTemplates
 
     - name: win_aot_tests
       ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
@@ -320,10 +330,20 @@ stages:
         pool: ${{ parameters.MacOSPool.internal }}
       timeout: 240
       testCategory: AOT
+      testFilter: 'Category=AOT&DisplayName!~net11.0'
+    - name: mac_aot_previous_tests
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:
+        pool: ${{ parameters.MacOSPool.internal }}
+      timeout: 240
+      testCategory: AOT
+      testFilter: 'Category=AOT&DisplayName~net11.0'
+      xcodeVersion: ${{ parameters.previousXcodeVersion }}
 
     # Android template integration tests (maui + maui-blazor build/install/run on emulator).
     # Runs the Android templates with their default BuildProps across the supported .NET
-    # versions (net10/net11); the lane doesn't pin UseMonoRuntime, so it exercises whatever
+    # versions (net11/net12); the lane doesn't pin UseMonoRuntime, so it exercises whatever
     # the template default runtime is for each version rather than asserting a specific runtime.
     - name: linux_runandroid_tests
       pool: ${{ parameters.AndroidPoolLinux }}
@@ -339,6 +359,7 @@ stages:
       timeout: 45
       testName: RunOniOS_Previous_MauiDebug
       arch: ARM64
+      xcodeVersion: ${{ parameters.previousXcodeVersion }}
 
     - name: mac_runios_previous_maui_release_arm64
       ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
@@ -348,6 +369,7 @@ stages:
       timeout: 45
       testName: RunOniOS_Previous_MauiRelease
       arch: ARM64
+      xcodeVersion: ${{ parameters.previousXcodeVersion }}
 
     - name: mac_runios_previous_blazor_debug_arm64
       ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
@@ -357,6 +379,7 @@ stages:
       timeout: 45
       testName: RunOniOS_Previous_BlazorDebug
       arch: ARM64
+      xcodeVersion: ${{ parameters.previousXcodeVersion }}
 
     - name: mac_runios_previous_blazor_release_arm64
       ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
@@ -366,6 +389,7 @@ stages:
       timeout: 45
       testName: RunOniOS_Previous_BlazorRelease
       arch: ARM64
+      xcodeVersion: ${{ parameters.previousXcodeVersion }}
 
     - name: mac_runios_nativeaot_arm64
       ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
@@ -374,6 +398,67 @@ stages:
         pool: ${{ parameters.MacOSPool.internal }}
       timeout: 45
       testName: RunOniOS_MauiNativeAOT
+      arch: ARM64
+
+    # Mono test variants - ARM64 (Apple Silicon) lanes
+    - name: mac_runios_maui_debug_mono_arm64
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:
+        pool: ${{ parameters.MacOSPool.internal }}
+      timeout: 45
+      testName: RunOniOS_MauiDebug
+      testFilter: 'FullyQualifiedName=Microsoft.Maui.IntegrationTests.AppleTemplateTests.RunOniOS_MauiDebug'
+      arch: ARM64
+
+    - name: mac_runios_maui_release_mono_arm64
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:
+        pool: ${{ parameters.MacOSPool.internal }}
+      timeout: 45
+      testName: RunOniOS_MauiRelease
+      testFilter: 'FullyQualifiedName=Microsoft.Maui.IntegrationTests.AppleTemplateTests.RunOniOS_MauiRelease'
+      arch: ARM64
+
+    - name: mac_runios_maui_trim_mono_arm64
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:
+        pool: ${{ parameters.MacOSPool.internal }}
+      timeout: 45
+      testName: RunOniOS_MauiReleaseTrimFull
+      testFilter: 'FullyQualifiedName=Microsoft.Maui.IntegrationTests.AppleTemplateTests.RunOniOS_MauiReleaseTrimFull'
+      arch: ARM64
+
+    - name: mac_runios_blazor_debug_mono_arm64
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:
+        pool: ${{ parameters.MacOSPool.internal }}
+      timeout: 45
+      testName: RunOniOS_BlazorDebug
+      testFilter: 'FullyQualifiedName=Microsoft.Maui.IntegrationTests.AppleTemplateTests.RunOniOS_BlazorDebug'
+      arch: ARM64
+
+    - name: mac_runios_blazor_release_mono_arm64
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:
+        pool: ${{ parameters.MacOSPool.internal }}
+      timeout: 45
+      testName: RunOniOS_BlazorRelease
+      testFilter: 'FullyQualifiedName=Microsoft.Maui.IntegrationTests.AppleTemplateTests.RunOniOS_BlazorRelease'
+      arch: ARM64
+
+    - name: mac_runios_blazor_trim_mono_arm64
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:
+        pool: ${{ parameters.MacOSPool.internal }}
+      timeout: 45
+      testName: RunOniOS_BlazorReleaseTrimFull
+      testFilter: 'FullyQualifiedName=Microsoft.Maui.IntegrationTests.AppleTemplateTests.RunOniOS_BlazorReleaseTrimFull'
       arch: ARM64
 
     # CoreCLR test variants - ARM64 (Apple Silicon) lanes
@@ -432,6 +517,7 @@ stages:
       timeout: 45
       testName: RunOniOS_Previous_MauiDebug
       arch: x64
+      xcodeVersion: ${{ parameters.previousXcodeVersion }}
       condition: ${{ parameters.macOSPoolLaneCondition }}
 
     - name: mac_runios_previous_maui_release
@@ -442,6 +528,7 @@ stages:
       timeout: 45
       testName: RunOniOS_Previous_MauiRelease
       arch: x64
+      xcodeVersion: ${{ parameters.previousXcodeVersion }}
       condition: ${{ parameters.macOSPoolLaneCondition }}
 
     - name: mac_runios_previous_blazor_debug
@@ -452,6 +539,7 @@ stages:
       timeout: 45
       testName: RunOniOS_Previous_BlazorDebug
       arch: x64
+      xcodeVersion: ${{ parameters.previousXcodeVersion }}
       condition: ${{ parameters.macOSPoolLaneCondition }}
 
     - name: mac_runios_previous_blazor_release
@@ -462,6 +550,7 @@ stages:
       timeout: 45
       testName: RunOniOS_Previous_BlazorRelease
       arch: x64
+      xcodeVersion: ${{ parameters.previousXcodeVersion }}
       condition: ${{ parameters.macOSPoolLaneCondition }}
 
     - name: mac_runios_nativeaot

@@ -2,7 +2,7 @@ parameters:
   platform: '' # [ android, ios, windows, catalyst ]
   path: '' # path to csproj
   device: '' # the xharness device to use
-  cakeArgs: '' # additional cake args
+  cakeArgs: [] # additional cake args, one argument per item
   app: '' #path to app to test
   version: '' #the iOS version'
   provisionatorChannel: 'latest'
@@ -11,6 +11,7 @@ parameters:
   testFilter: ''
   headless: true
   runtimeVariant: 'CoreCLR' #Mono, CoreCLR, NativeAOT
+  coreclrArtifactName: 'ui-tests-samples-coreclr'
   useMaterial3: false # NEW PARAMETER - Enable Material3 build
   useWindowsCV1: false # NEW PARAMETER - Enable WindowsCollectionView1Handler testing (default false)
 
@@ -66,24 +67,53 @@ steps:
   
 - pwsh: |
     Get-Content $PSCommandPath
-    $buildCommand = "./build.ps1 --target=uitests-apphost --configuration=${{ parameters.configuration }} --${{ parameters.platform }} --verbosity=diagnostic --usenuget=false --runtimevariant=${{ parameters.runtimeVariant }}"
+    $buildArguments = @(
+        '--target=uitests-apphost'
+        "--configuration=$env:UI_TEST_CONFIGURATION"
+        '--verbosity=diagnostic'
+        '--usenuget=false'
+        "--runtimevariant=$env:UI_TEST_RUNTIME_VARIANT"
+    )
+    if ($env:UI_TEST_PLATFORM) {
+        $buildArguments += "--$env:UI_TEST_PLATFORM"
+    }
+    $extraCakeArguments = ConvertFrom-Json -InputObject $env:UI_TEST_CAKE_ARGS -NoEnumerate
+    if ($extraCakeArguments -isnot [array]) {
+        throw 'cakeArgs must be an array of individual arguments.'
+    }
+    foreach ($argument in $extraCakeArguments) {
+        if ($argument -isnot [string]) {
+            throw 'Each cakeArgs item must be a string.'
+        }
+        $buildArguments += $argument
+    }
     
     # Add Material3 build argument if enabled
-    if (("${{ parameters.useMaterial3 }}" -eq "true") -and ("${{ parameters.platform }}" -eq "android")) {
-        $buildCommand += " --usematerial3=true"
+    if (($env:UI_TEST_USE_MATERIAL3 -eq 'true') -and ($env:UI_TEST_PLATFORM -eq 'android')) {
+        $buildArguments += '--usematerial3=true'
         Write-Host "Building with Material3 enabled"
-    } elseif ("${{ parameters.useMaterial3 }}" -eq "true") {
+    } elseif ($env:UI_TEST_USE_MATERIAL3 -eq 'true') {
         Write-Host "Material3 is only supported for Android platform, ignoring useMaterial3 parameter"
     }
     
     # Add UseWindowsCV1 build argument if enabled
-    if (("${{ parameters.useWindowsCV1 }}" -eq "true") -and ("${{ parameters.platform }}" -eq "windows")) {
-        $buildCommand += " --usewindowscv1=true"
+    if (($env:UI_TEST_USE_WINDOWS_CV1 -eq 'true') -and ($env:UI_TEST_PLATFORM -eq 'windows')) {
+        $buildArguments += '--usewindowscv1=true'
         Write-Host "Building with UseWindowsCollectionView2Handler=false (CV1)"
     }
     
-    Invoke-Expression $buildCommand
+    & ./build.ps1 @buildArguments
+    if ($LASTEXITCODE -ne 0) {
+        exit $LASTEXITCODE
+    }
   displayName: 'Build the samples'
+  env:
+    UI_TEST_CONFIGURATION: ${{ parameters.configuration }}
+    UI_TEST_RUNTIME_VARIANT: ${{ parameters.runtimeVariant }}
+    UI_TEST_PLATFORM: ${{ parameters.platform }}
+    UI_TEST_CAKE_ARGS: ${{ convertToJson(parameters.cakeArgs) }}
+    UI_TEST_USE_MATERIAL3: ${{ parameters.useMaterial3 }}
+    UI_TEST_USE_WINDOWS_CV1: ${{ parameters.useWindowsCV1 }}
 
 - bash: |
     if [ -f "$HOME/Library/Logs/CoreSimulator/*" ]; then rm -r $HOME/Library/Logs/CoreSimulator/*; fi
@@ -102,7 +132,7 @@ steps:
 
 - publish: $(System.DefaultWorkingDirectory)/artifacts/bin
   condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'CoreCLR'), eq('${{ parameters.useMaterial3 }}', 'false'), succeeded())
-  artifact: ui-tests-samples-coreclr
+  artifact: ${{ parameters.coreclrArtifactName }}
 
 # Material3 artifacts
 - publish: $(System.DefaultWorkingDirectory)/artifacts/bin
@@ -131,7 +161,7 @@ steps:
 
 - publish: $(System.DefaultWorkingDirectory)/artifacts/bin
   condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'CoreCLR'), eq('${{ parameters.useMaterial3 }}', 'false'), failed())
-  artifact: ui-tests-samples-coreclr_failed_$(System.JobAttempt)
+  artifact: ${{ parameters.coreclrArtifactName }}_failed_$(System.JobAttempt)
 
 # Material3 failure artifacts
 - publish: $(System.DefaultWorkingDirectory)/artifacts/bin

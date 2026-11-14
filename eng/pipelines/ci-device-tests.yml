@@ -113,7 +113,7 @@ parameters:
 - name: targetFrameworkVersions
   type: object
   default:
-  - tfm: net11.0
+  - tfm: net12.0
 
 stages:
 - ${{ each targetFrameworkVersion in parameters.targetFrameworkVersions }}:
@@ -138,6 +138,18 @@ stages:
         runAsPublic: true
       runWindowsTests: true
       TargetFrameworkVersion: ${{ targetFrameworkVersion.tfm }}
+      androidPrepareSteps:
+      - template: /eng/pipelines/common/provision.yml@self
+        parameters:
+          checkoutDirectory: '$(System.DefaultWorkingDirectory)'
+          skipJdk: false
+          skipAndroidCommonSdks: false
+          skipAndroidPlatformApis: false
+          onlyAndroidPlatformDefaultApis: true
+          skipAndroidEmulatorImages: true
+          skipAndroidCreateAvds: true
+          skipXcode: true
+          skipSimulatorSetup: true
       prepareSteps:
       - template: /eng/pipelines/common/provision.yml@self
         parameters:

@@ -1,10 +1,10 @@
 <Project>
   <PropertyGroup>
     <!-- The .NET product branding version -->
-    <MajorVersion>11</MajorVersion>
+    <MajorVersion>12</MajorVersion>
     <MinorVersion>0</MinorVersion>
-    <PatchVersion>10</PatchVersion>
-    <SdkBandVersion>11.0.100</SdkBandVersion>
+    <PatchVersion>0</PatchVersion>
+    <SdkBandVersion>12.0.100</SdkBandVersion>
     <PreReleaseVersionLabel>ci.main</PreReleaseVersionLabel>
     <PreReleaseVersionLabel Condition="'$(BUILD_SOURCEBRANCH)' == 'refs/heads/inflight/current' or $([System.Text.RegularExpressions.Regex]::IsMatch('$(BUILD_SOURCEBRANCH)', '\Arefs/heads/inflight/[1-9][0-9]*\.0\.[1-9][0-9]*xx-sr[1-9][0-9]*\z'))">ci.inflight</PreReleaseVersionLabel>
     <PreReleaseVersionLabel Condition="$([System.Text.RegularExpressions.Regex]::IsMatch('$(BUILD_SOURCEBRANCH)', '\Arefs/heads/release/[1-9][0-9]*\.0\.[1-9][0-9]*xx-sr[1-9][0-9]*\z'))">servicing</PreReleaseVersionLabel>
@@ -24,19 +24,19 @@
     <WorkloadsTestPreviousVersions Condition="'$(WorkloadsTestPreviousVersions)' == ''">true</WorkloadsTestPreviousVersions>
     <!-- Set assembly version to align with major and minor version,
          as for the patches and revisions should be manually updated per assembly if it is serviced. -->
-    <AssemblyVersion>11.0.0.0</AssemblyVersion>
+    <AssemblyVersion>12.0.0.0</AssemblyVersion>
     <!-- Opt-out repo features -->
     <UsingToolIbcOptimization>false</UsingToolIbcOptimization>
     <UsingToolXliff>false</UsingToolXliff>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Current previous .NET SDK major version's stable release of MAUI packages -->
-    <MicrosoftMauiPreviousDotNetReleasedVersion>10.0.110</MicrosoftMauiPreviousDotNetReleasedVersion>
+    <MicrosoftMauiPreviousDotNetReleasedVersion>11.0.0-rc.2.26505.5</MicrosoftMauiPreviousDotNetReleasedVersion>
     <!-- dotnet/sdk -->
-    <MicrosoftNETSdkPackageVersion>11.0.100-rtm.26514.118</MicrosoftNETSdkPackageVersion>
+    <MicrosoftNETSdkPackageVersion>12.0.100-alpha.1.26523.103</MicrosoftNETSdkPackageVersion>
     <MicrosoftDotnetSdkInternalPackageVersion>$(MicrosoftNETSdkPackageVersion)</MicrosoftDotnetSdkInternalPackageVersion>
     <!-- dotnet/runtime -->
-    <MicrosoftNETCoreAppRefPackageVersion>11.0.0</MicrosoftNETCoreAppRefPackageVersion>
+    <MicrosoftNETCoreAppRefPackageVersion>12.0.0-alpha.1.26523.103</MicrosoftNETCoreAppRefPackageVersion>
     <SystemTextJsonPackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</SystemTextJsonPackageVersion>
     <SystemTextEncodingsWebPackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</SystemTextEncodingsWebPackageVersion>
     <MicrosoftBclAsyncInterfacesPackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</MicrosoftBclAsyncInterfacesPackageVersion>
@@ -65,19 +65,19 @@
     <MicrosoftAgentsAIWorkflowsGeneratorsVersion>1.0.0-rc2</MicrosoftAgentsAIWorkflowsGeneratorsVersion>
     <MicrosoftAgentsAIHostingVersion>1.0.0-preview.260225.1</MicrosoftAgentsAIHostingVersion>
     <!-- xamarin/xamarin-android -->
-    <MicrosoftAndroidSdkWindowsPackageVersion>37.2.15</MicrosoftAndroidSdkWindowsPackageVersion>
-    <MicrosoftNETSdkAndroidManifest100100PackageVersion>36.1.118</MicrosoftNETSdkAndroidManifest100100PackageVersion>
-    <AndroidNetPreviousVersion>$(MicrosoftNetSdkAndroidManifest100100PackageVersion)</AndroidNetPreviousVersion>
+    <MicrosoftAndroidSdkWindowsPackageVersion>37.99.0-preview.1.358</MicrosoftAndroidSdkWindowsPackageVersion>
+    <MicrosoftNETSdkAndroidManifest110100rc2PackageVersion>37.2.0-rc.2.84</MicrosoftNETSdkAndroidManifest110100rc2PackageVersion>
+    <AndroidNetPreviousVersion>$(MicrosoftNETSdkAndroidManifest110100rc2PackageVersion)</AndroidNetPreviousVersion>
     <!-- dotnet/macios -->
-    <MicrosoftMacCatalystSdknet110_270PackageVersion>27.0.12230</MicrosoftMacCatalystSdknet110_270PackageVersion>
-    <MicrosoftmacOSSdknet110_270PackageVersion>27.0.12230</MicrosoftmacOSSdknet110_270PackageVersion>
-    <MicrosoftiOSSdknet110_270PackageVersion>27.0.12230</MicrosoftiOSSdknet110_270PackageVersion>
-    <MicrosofttvOSSdknet110_270PackageVersion>27.0.12230</MicrosofttvOSSdknet110_270PackageVersion>
-    <!-- This is a subscription of the .NET 10 latest stable versions of our packages -->
-    <MicrosoftMacCatalystSdknet100_265PackageVersion>26.5.10322</MicrosoftMacCatalystSdknet100_265PackageVersion>
-    <MicrosoftmacOSSdknet100_265PackageVersion>26.5.10322</MicrosoftmacOSSdknet100_265PackageVersion>
-    <MicrosoftiOSSdknet100_265PackageVersion>26.5.10322</MicrosoftiOSSdknet100_265PackageVersion>
-    <MicrosofttvOSSdknet100_265PackageVersion>26.5.10322</MicrosofttvOSSdknet100_265PackageVersion>
+    <MicrosoftMacCatalystSdknet120_270PackageVersion>27.0.13384-net12-p1</MicrosoftMacCatalystSdknet120_270PackageVersion>
+    <MicrosoftmacOSSdknet120_270PackageVersion>27.0.13384-net12-p1</MicrosoftmacOSSdknet120_270PackageVersion>
+    <MicrosoftiOSSdknet120_271PackageVersion>27.1.12089-net12-p1</MicrosoftiOSSdknet120_271PackageVersion>
+    <MicrosofttvOSSdknet120_270PackageVersion>27.0.13384-net12-p1</MicrosofttvOSSdknet120_270PackageVersion>
+    <!-- Previous .NET Apple SDKs selected by the current workload. -->
+    <MicrosoftMacCatalystSdknet110_270PackageVersion>27.0.12262</MicrosoftMacCatalystSdknet110_270PackageVersion>
+    <MicrosoftmacOSSdknet110_270PackageVersion>27.0.12262</MicrosoftmacOSSdknet110_270PackageVersion>
+    <MicrosoftiOSSdknet110_270PackageVersion>27.0.12214</MicrosoftiOSSdknet110_270PackageVersion>
+    <MicrosofttvOSSdknet110_270PackageVersion>27.0.12262</MicrosofttvOSSdknet110_270PackageVersion>
     <!-- wasdk -->
     <MicrosoftWindowsCsWin32PackageVersion>0.3.298</MicrosoftWindowsCsWin32PackageVersion>
     <MicrosoftWindowsSDKBuildToolsWinAppPackageVersion>0.7.1</MicrosoftWindowsSDKBuildToolsWinAppPackageVersion>
@@ -185,7 +185,7 @@
     <AppiumMac2DriverVersion>1.20.3</AppiumMac2DriverVersion>
     <AppiumUIAutomator2DriverVersion>4.2.1</AppiumUIAutomator2DriverVersion>
     <!-- Java JDK Version -->
-    <JavaJdkVersion>17.0.12</JavaJdkVersion>
+    <JavaJdkVersion>21.0.8</JavaJdkVersion>
     <!-- Android SDK package versions and info -->
     <!-- Build Tools and CmdLine Tools versions -->
     <AndroidSdkPlatformToolsVersion>35.0.2</AndroidSdkPlatformToolsVersion>
@@ -227,11 +227,11 @@
     <DotNetSdkManifestsFolder>$(DotNetVersionBand)</DotNetSdkManifestsFolder>
     <DotNetMauiManifestVersionBand>$(DotNetVersionBand)</DotNetMauiManifestVersionBand>
     <!-- Manifest package IDs follow each platform's publishing band independently of the VMR SDK. -->
-    <DotNetAndroidManifestVersionBand>11.0.100</DotNetAndroidManifestVersionBand>
-    <DotNetMaciOSManifestVersionBand>11.0.100</DotNetMaciOSManifestVersionBand>
-    <MicrosoftMacCatalystSdkPackageVersion>$(MicrosoftMacCatalystSdknet110_270PackageVersion)</MicrosoftMacCatalystSdkPackageVersion>
-    <MicrosoftmacOSSdkPackageVersion>$(MicrosoftmacOSSdknet110_270PackageVersion)</MicrosoftmacOSSdkPackageVersion>
-    <MicrosoftiOSSdkPackageVersion>$(MicrosoftiOSSdknet110_270PackageVersion)</MicrosoftiOSSdkPackageVersion>
-    <MicrosofttvOSSdkPackageVersion>$(MicrosofttvOSSdknet110_270PackageVersion)</MicrosofttvOSSdkPackageVersion>
+    <DotNetAndroidManifestVersionBand>12.0.100-alpha.1</DotNetAndroidManifestVersionBand>
+    <DotNetMaciOSManifestVersionBand>12.0.100-alpha.1</DotNetMaciOSManifestVersionBand>
+    <MicrosoftMacCatalystSdkPackageVersion>$(MicrosoftMacCatalystSdknet120_270PackageVersion)</MicrosoftMacCatalystSdkPackageVersion>
+    <MicrosoftmacOSSdkPackageVersion>$(MicrosoftmacOSSdknet120_270PackageVersion)</MicrosoftmacOSSdkPackageVersion>
+    <MicrosoftiOSSdkPackageVersion>$(MicrosoftiOSSdknet120_271PackageVersion)</MicrosoftiOSSdkPackageVersion>
+    <MicrosofttvOSSdkPackageVersion>$(MicrosofttvOSSdknet120_270PackageVersion)</MicrosofttvOSSdkPackageVersion>
   </PropertyGroup>
 </Project>

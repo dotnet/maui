@@ -3,6 +3,9 @@ parameters:
 - name: prepareSteps
   type: stepList
   default: []
+- name: androidPrepareSteps
+  type: stepList
+  default: []
 - name: postSteps
   type: stepList
   default: []
@@ -82,7 +85,7 @@ parameters:
 
 stages:
 - stage: devicetests_build_coreclr
-  displayName: ${{ parameters.TargetFrameworkVersion }} CoreCLR ios/catalyst/android Helix Tests
+  displayName: ${{ parameters.TargetFrameworkVersion }} CoreCLR iOS/MacCatalyst Helix Tests - Build
   dependsOn: []
   jobs:
   - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/jobs/jobs.yml', '/eng/common/templates-official/jobs/jobs.yml@self') }}
@@ -103,7 +106,7 @@ stages:
         clean: all
       jobs:
       - job: builddevice_tests_coreclr
-        displayName: Build Device Tests (CoreCLR)
+        displayName: Build Device Tests iOS and MacCatalyst (CoreCLR)
         timeoutInMinutes: 120
         variables:
         - name: _BuildConfig
@@ -126,8 +129,8 @@ stages:
             DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
             PRIVATE_BUILD: $(PrivateBuild)
 
-        - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) /p:BuildDeviceTests=true /p:UseMonoRuntime=false /bl:BuildDeviceTests.binlog
-          displayName: Build DeviceTests (CoreCLR)
+        - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) /p:BuildDeviceTests=true /p:UseMonoRuntime=false /p:IncludeAndroidTargetFrameworks=false /bl:BuildDeviceTests.binlog
+          displayName: Build DeviceTests iOS and MacCatalyst (CoreCLR)
 
         - publish: ${{ parameters.checkoutDirectory }}/artifacts/bin
           displayName: Publish Succeeded Artifacts Directory
@@ -139,10 +142,67 @@ stages:
           condition: not(succeeded())
           artifact: ${{ parameters.appArtifactName }}_coreclr_failed_$(System.JobAttempt)
 
+- stage: devicetests_build_android_coreclr
+  displayName: ${{ parameters.TargetFrameworkVersion }} CoreCLR Android Helix Tests - Build
+  dependsOn: []
+  jobs:
+  - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/jobs/jobs.yml', '/eng/common/templates-official/jobs/jobs.yml@self') }}
+    parameters:
+      helixRepo: dotnet/maui
+      pool: ${{ parameters.buildPool }}
+      enableMicrobuild: ${{ parameters.enableMicrobuild }}
+      enablePublishUsingPipelines: true
+      enablePublishBuildAssets: ${{ parameters.publishAssets }}
+      enableTelemetry: true
+      enableSourceBuild: ${{ parameters.enableSourceBuild }}
+      enableSourceIndex: ${{ parameters.enableSourceIndex }}
+      sourceIndexParams: ${{ parameters.sourceIndexParams }}
+      publishAssetsImmediately: true
+      enablePublishBuildArtifacts: true
+      enablePublishTestResults: false
+      workspace:
+        clean: all
+      jobs:
+      - job: builddevice_tests_android_coreclr
+        displayName: Build Device Tests Android (CoreCLR)
+        timeoutInMinutes: 120
+        variables:
+        - name: _BuildConfig
+          value: ${{ parameters.BuildConfiguration }}
+        preSteps:
+        - checkout: self
+          fetchDepth: 1
+          clean: true
+
+        steps:
+        - ${{ each step in parameters.androidPrepareSteps }}:
+          - ${{ each pair in step }}:
+              ${{ pair.key }}: ${{ pair.value }}
+
+        - script: dotnet cake --target=dotnet-buildtasks --configuration="$(_BuildConfig)" --verbosity=diagnostic
+          displayName: Provision SDK & Build BuildTasks
+          retryCountOnTaskFailure: 4
+          env:
+            DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
+            PRIVATE_BUILD: $(PrivateBuild)
+
+        - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) /p:BuildDeviceTests=true /p:UseMonoRuntime=false /p:IncludeIosTargetFrameworks=false /p:IncludeMacCatalystTargetFrameworks=false /bl:BuildDeviceTests.binlog
+          displayName: Build DeviceTests Android (CoreCLR)
+
+        - publish: ${{ parameters.checkoutDirectory }}/artifacts/bin
+          displayName: Publish Succeeded Artifacts Directory
+          condition: succeeded()
+          artifact: ${{ parameters.appArtifactName }}_android_coreclr
+
+        - publish: ${{ parameters.checkoutDirectory }}/artifacts/bin
+          displayName: Publish Failed Artifacts Directory
+          condition: not(succeeded())
+          artifact: ${{ parameters.appArtifactName }}_android_coreclr_failed_$(System.JobAttempt)
+
 - stage: devicetests_android_coreclr
   displayName: ${{ parameters.TargetFrameworkVersion }} CoreCLR Android Helix Tests
   dependsOn: 
-    - devicetests_build_coreclr
+    - devicetests_build_android_coreclr
   jobs:
   - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/jobs/jobs.yml', '/eng/common/templates-official/jobs/jobs.yml@self') }}
     parameters:
@@ -177,7 +237,7 @@ stages:
           retryCountOnTaskFailure: 4
           condition: succeeded()
           inputs:
-            artifactName: ${{ parameters.appArtifactName }}_coreclr
+            artifactName: ${{ parameters.appArtifactName }}_android_coreclr
             targetPath: ${{ parameters.checkoutDirectory }}/artifacts/bin
 
         - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/steps/send-to-helix.yml', '/eng/common/templates-official/steps/send-to-helix.yml@self') }}
@@ -247,9 +307,69 @@ stages:
             WorkItemTimeout: 04:00:00
             XUnitWorkItemTimeout: 04:00:00
 
-# Smoke coverage that device tests still build and run on mobile (Android and iOS) under Mono.
+# Smoke coverage that device tests still build and run on Android under Mono.
+# Built separately from iOS so an iOS Mono SDK failure does not block Android Mono coverage.
+- stage: devicetests_build_mono_android
+  displayName: ${{ parameters.TargetFrameworkVersion }} Mono Android Helix Tests
+  dependsOn: []
+  jobs:
+  - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/jobs/jobs.yml', '/eng/common/templates-official/jobs/jobs.yml@self') }}
+    parameters:
+      helixRepo: dotnet/maui
+      pool: ${{ parameters.buildPool }}
+      enableMicrobuild: ${{ parameters.enableMicrobuild }}
+      enablePublishUsingPipelines: true
+      enablePublishBuildAssets: ${{ parameters.publishAssets }}
+      enableTelemetry: true
+      enableSourceBuild: ${{ parameters.enableSourceBuild }}
+      enableSourceIndex: ${{ parameters.enableSourceIndex }}
+      sourceIndexParams: ${{ parameters.sourceIndexParams }}
+      publishAssetsImmediately: true
+      enablePublishBuildArtifacts: true
+      enablePublishTestResults: false
+      workspace:
+        clean: all
+      jobs:
+      - job: builddevice_tests_mono_android
+        displayName: Build Device Tests Android (Mono)
+        timeoutInMinutes: 120
+        variables:
+        - name: _BuildConfig
+          value: ${{ parameters.BuildConfiguration }}
+        preSteps:
+        - checkout: self
+          fetchDepth: 1
+          clean: true
+
+        steps:
+        - ${{ each step in parameters.androidPrepareSteps }}:
+          - ${{ each pair in step }}:
+              ${{ pair.key }}: ${{ pair.value }}
+
+        # Run on public pipeline
+        - script: dotnet cake --target=dotnet-buildtasks --configuration="$(_BuildConfig)" --verbosity=diagnostic
+          displayName: Provision SDK & Build BuildTasks
+          retryCountOnTaskFailure: 4
+          env:
+            DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
+            PRIVATE_BUILD: $(PrivateBuild)
+
+        - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) /p:BuildDeviceTests=true /p:UseMonoRuntime=true /p:IncludeMacCatalystTargetFrameworks=false /p:IncludeIosTargetFrameworks=false /bl:BuildDeviceTests.binlog
+          displayName: Build DeviceTests Android (Mono)
+
+        - publish: ${{ parameters.checkoutDirectory }}/artifacts/bin
+          displayName: Publish Succeeded Artifacts Directory
+          condition: succeeded()
+          artifact: ${{ parameters.appArtifactName }}_mono_android
+
+        - publish: ${{ parameters.checkoutDirectory }}/artifacts/bin
+          displayName: Publish Failed Artifacts Directory
+          condition: not(succeeded())
+          artifact: ${{ parameters.appArtifactName }}_mono_android_failed_$(System.JobAttempt)
+
+# Smoke coverage that device tests still build and run on mobile iOS under Mono.
 - stage: devicetests_build_mono
-  displayName: ${{ parameters.TargetFrameworkVersion }} Mono Android/iOS Helix Tests
+  displayName: ${{ parameters.TargetFrameworkVersion }} Mono iOS Helix Tests
   dependsOn: []
   jobs:
   - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/jobs/jobs.yml', '/eng/common/templates-official/jobs/jobs.yml@self') }}
@@ -270,7 +390,7 @@ stages:
         clean: all
       jobs:
       - job: builddevice_tests_mono
-        displayName: Build Device Tests (Mono)
+        displayName: Build Device Tests iOS (Mono)
         timeoutInMinutes: 120
         variables:
         - name: _BuildConfig
@@ -293,8 +413,8 @@ stages:
             DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
             PRIVATE_BUILD: $(PrivateBuild)
 
-        - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) /p:BuildDeviceTests=true /p:UseMonoRuntime=true /p:_DisableCheckForUnsupportedMonoMobileRuntime=true /p:IncludeMacCatalystTargetFrameworks=false /bl:BuildDeviceTests.binlog
-          displayName: Build DeviceTests (Mono)
+        - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) /p:BuildDeviceTests=true /p:UseMonoRuntime=true /p:IncludeMacCatalystTargetFrameworks=false /p:IncludeAndroidTargetFrameworks=false /bl:BuildDeviceTests.binlog
+          displayName: Build DeviceTests iOS (Mono)
 
         - publish: ${{ parameters.checkoutDirectory }}/artifacts/bin
           displayName: Publish Succeeded Artifacts Directory
@@ -308,8 +428,8 @@ stages:
 
 - stage: devicetests_android_mono
   displayName: ${{ parameters.TargetFrameworkVersion }} Mono Android Helix Tests Run
-  dependsOn: 
-    - devicetests_build_mono
+  dependsOn:
+    - devicetests_build_mono_android
   jobs:
   - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/jobs/jobs.yml', '/eng/common/templates-official/jobs/jobs.yml@self') }}
     parameters:
@@ -344,7 +464,7 @@ stages:
           retryCountOnTaskFailure: 4
           condition: succeeded()
           inputs:
-            artifactName: ${{ parameters.appArtifactName }}_mono
+            artifactName: ${{ parameters.appArtifactName }}_mono_android
             targetPath: ${{ parameters.checkoutDirectory }}/artifacts/bin
 
         - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/steps/send-to-helix.yml', '/eng/common/templates-official/steps/send-to-helix.yml@self') }}
@@ -517,6 +637,26 @@ stages:
 
           - pwsh: echo "##vso[task.prependpath]$(DotNet.Dir)"
             displayName: 'Add .NET to PATH'
+
+          # Provisioning starts MSBuild nodes before it installs workloads; their cached
+          # workload resolver would otherwise make the device-test builds miss the
+          # installed manifests (NETSDK1139).
+          - pwsh: |
+              & (Join-Path "$(Build.SourcesDirectory)" ".dotnet/dotnet.exe") build-server shutdown
+              exit 0
+            displayName: 'Shut down build servers after provisioning'
+            continueOnError: true
+
+          # Record the workload manifest layout seen by the device-test build.
+          - pwsh: |
+              $dotnetDir = Join-Path "$(Build.SourcesDirectory)" ".dotnet"
+              Get-ChildItem (Join-Path $dotnetDir "sdk-manifests") -Recurse -Depth 2 -ErrorAction Continue | ForEach-Object { $_.FullName }
+              Get-ChildItem (Join-Path $dotnetDir "metadata") -Recurse -File -ErrorAction SilentlyContinue | ForEach-Object { $_.FullName; Get-Content $_.FullName -Raw -ErrorAction SilentlyContinue }
+              Get-ChildItem "$env:ProgramData\dotnet" -Recurse -File -ErrorAction SilentlyContinue | ForEach-Object { $_.FullName }
+              & (Join-Path $dotnetDir "dotnet.exe") workload --info
+              exit 0
+            displayName: 'Show workload manifest state'
+            continueOnError: true
 
           # Build Unpackaged tests FIRST (self-contained .exe for direct execution)
           # Must build unpackaged BEFORE packaged so we can save the publish output

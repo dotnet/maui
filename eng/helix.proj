@@ -10,6 +10,8 @@
     <EnableAzurePipelinesReporter>true</EnableAzurePipelinesReporter>
     <FailOnTestFailure>true</FailOnTestFailure>
     <DotNetCliVersion>$(MicrosoftNETSdkPackageVersion)</DotNetCliVersion> 
+    <!-- The Helix SDK defaults this to its own Arcade NetCurrent, which can lag behind the repo's TFM. -->
+    <XUnitPublishTargetFramework>$(_MauiDotNetTfm)</XUnitPublishTargetFramework>
     <!-- Staging directory for MSBuild test payloads -->
     <MauiHelixPayloadDir>$(RepoRoot)artifacts/helix-payload/</MauiHelixPayloadDir>
   </PropertyGroup>

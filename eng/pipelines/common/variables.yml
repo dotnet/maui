@@ -16,6 +16,13 @@ variables:
   value: 27.0.0
 - name: XCODE
   value: 27.0
+# The .NET 12 Apple workloads recommend Xcode 27.1, which the CI images don't have yet.
+- name: ValidateXcodeVersion
+  value: false
+# Tools such as Cake target net10.0; let them run on the repo's .NET 12 preview runtime when
+# no .NET 10 runtime is installed (their own roll-forward setting skips prerelease runtimes).
+- name: DOTNET_ROLL_FORWARD
+  value: Major
 - name: POWERSHELL_VERSION
   value: 7.4.0
 # Workaround for PowerShell/PowerShell#20802 (open since Nov 2023):
