@@ -1,1 +1,4 @@
 #nullable enable
+~Microsoft.Maui.Controls.Span.TextDecorationColor.get -> Microsoft.Maui.Graphics.Color
+~Microsoft.Maui.Controls.Span.TextDecorationColor.set -> void
+~static readonly Microsoft.Maui.Controls.Span.TextDecorationColorProperty -> Microsoft.Maui.Controls.BindableProperty

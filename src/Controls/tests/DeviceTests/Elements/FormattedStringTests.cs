@@ -51,6 +51,61 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal("HELLOWORLD", actual);
 		}
 
+#if __IOS__ || __ANDROID__
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public async Task TextDecorationColorColorsTheUnderline(bool hasDecorationColor)
+		{
+			var formattedString = new FormattedString();
+			formattedString.Spans.Add(new Span { Text = "plain " });
+			formattedString.Spans.Add(new Span
+			{
+				Text = "underlined",
+				TextDecorations = TextDecorations.Underline,
+				TextDecorationColor = hasDecorationColor ? Colors.Orange : null,
+			});
+
+			var label = new Label();
+			var handler = await CreateHandlerAsync<LabelHandler>(label);
+			var fontManager = handler.Services.GetRequiredService<IFontManager>();
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+#if __IOS__
+				var attributed = formattedString.ToNSAttributedString(fontManager);
+				var start = (nint)"plain ".Length;
+				var underlineColor = attributed.GetAttribute(UIKit.UIStringAttributeKey.UnderlineColor, start, out _) as UIKit.UIColor;
+				var underlineStyle = attributed.GetAttribute(UIKit.UIStringAttributeKey.UnderlineStyle, start, out _) as Foundation.NSNumber;
+
+				Assert.NotNull(underlineStyle);
+				if (hasDecorationColor)
+				{
+					Assert.NotNull(underlineColor);
+					underlineColor.GetRGBA(out var r, out var g, out var b, out var a);
+					Assert.Equal(Colors.Orange, new Color((float)r, (float)g, (float)b, (float)a));
+				}
+				else
+				{
+					Assert.Null(underlineColor);
+				}
+
+				// The undecorated span gets no decoration color.
+				Assert.Null(attributed.GetAttribute(UIKit.UIStringAttributeKey.UnderlineColor, 0, out _));
+#elif __ANDROID__
+				var spannable = formattedString.ToSpannableString(fontManager);
+				var start = "plain ".Length;
+				var end = spannable.Length();
+				var colored = spannable.GetSpans(start, end, Java.Lang.Class.FromType(typeof(PlatformUnderlineColorSpan)));
+				var plain = spannable.GetSpans(start, end, Java.Lang.Class.FromType(typeof(global::Android.Text.Style.UnderlineSpan)));
+
+				Assert.Equal(hasDecorationColor ? 1 : 0, colored?.Length ?? 0);
+				Assert.Equal(hasDecorationColor ? 0 : 1, plain?.Length ?? 0);
+#endif
+			});
+		}
+#endif
+
 		// Covers https://github.com/dotnet/maui/issues/36519
 		// Updating Label.FormattedText must clear any highlighter/background-color state applied
 		// by the previous FormattedText. On Windows specifically, the native TextBlock's

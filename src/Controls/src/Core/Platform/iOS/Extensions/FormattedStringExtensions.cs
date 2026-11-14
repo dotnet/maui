@@ -203,6 +203,25 @@ namespace Microsoft.Maui.Controls.Platform
 				kerningAdjustment: (float)characterSpacing);
 #endif
 
+#if !MACOS
+			// A decoration color draws the underline / strikethrough in its own color instead of the text color.
+			if ((hasUnderline || hasStrikethrough) && span.TextDecorationColor is Color decorationColor && attrString.Length > 0)
+			{
+				var platformDecorationColor = decorationColor.ToPlatform();
+				var decorated = new NSMutableAttributedString(attrString);
+				var range = new NSRange(0, decorated.Length);
+				if (hasUnderline)
+				{
+					decorated.AddAttribute(UIStringAttributeKey.UnderlineColor, platformDecorationColor, range);
+				}
+				if (hasStrikethrough)
+				{
+					decorated.AddAttribute(UIStringAttributeKey.StrikethroughColor, platformDecorationColor, range);
+				}
+				return decorated;
+			}
+#endif
+
 			return attrString;
 		}
 

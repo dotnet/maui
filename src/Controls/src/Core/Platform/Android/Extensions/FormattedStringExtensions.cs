@@ -102,7 +102,14 @@ namespace Microsoft.Maui.Controls.Platform
 				if (textDecorations.HasFlag(TextDecorations.Strikethrough))
 					spannable.SetSpan(new StrikethroughSpan(), start, end, SpanTypes.InclusiveInclusive);
 				if (textDecorations.HasFlag(TextDecorations.Underline))
-					spannable.SetSpan(new UnderlineSpan(), start, end, SpanTypes.InclusiveInclusive);
+				{
+					// A decoration color draws the underline in its own color (API 29+; the span falls back to the text color below that).
+					// Android has no public API for a strikethrough color, so strikethrough stays in the text color.
+					if (span.TextDecorationColor is Graphics.Color decorationColor)
+						spannable.SetSpan(new PlatformUnderlineColorSpan(decorationColor.ToPlatform()), start, end, SpanTypes.InclusiveInclusive);
+					else
+						spannable.SetSpan(new UnderlineSpan(), start, end, SpanTypes.InclusiveInclusive);
+				}
 			}
 
 			return spannable;
