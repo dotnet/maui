@@ -3,6 +3,7 @@ using Android.Graphics.Drawables;
 using AndroidX.AppCompat.Graphics.Drawable;
 using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.DrawerLayout.Widget;
+using AndroidX.RecyclerView.Widget;
 using Google.Android.Material.AppBar;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers;
@@ -271,6 +272,37 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(2, shellHandler.BottomNavAppearanceTrackerCreationCount);
 				var background = Assert.IsType<ColorChangeRevealDrawable>(itemHandler.BottomNavigationView.Background);
 				Assert.Equal(expectedTabBackground.ToPlatform(), background.EndColor);
+			});
+		}
+
+		[Fact]
+		public async Task SwitchingShellItemsDoesNotAnimateSectionPager()
+		{
+			SetupBuilder();
+
+			var firstPage = new ContentPage();
+			var secondPage = new ContentPage();
+			var firstItem = new FlyoutItem { Items = { new ShellContent { Content = firstPage } } };
+			var secondItem = new FlyoutItem { Items = { new ShellContent { Content = secondPage } } };
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.Items.Add(firstItem);
+				shell.Items.Add(secondItem);
+				shell.CurrentItem = firstItem;
+			});
+
+			await CreateHandlerAndAddToWindow(shell, async () =>
+			{
+				await OnLoadedAsync(firstPage);
+
+				shell.CurrentItem = secondItem;
+				await OnLoadedAsync(secondPage);
+
+				// A fade-out/fade-in between the old and new section shows the window background (#39831).
+				var itemHandler = Assert.IsType<ShellItemHandler>(secondItem.Handler);
+				var recyclerView = Assert.IsAssignableFrom<RecyclerView>(itemHandler._viewPager.GetChildAt(0));
+				Assert.False(recyclerView.IsAnimating, "The section pager animated the ShellItem switch");
+				Assert.Null(recyclerView.GetItemAnimator());
 			});
 		}
 
