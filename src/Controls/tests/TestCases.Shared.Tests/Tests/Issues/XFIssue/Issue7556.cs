@@ -17,6 +17,38 @@ public class Issue7556 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.FlyoutPage)]
+	public void CloseFlyoutRespectsDeviceIdiomInSplitMode()
+	{
+		App.WaitForElement("Split");
+		var idiom = App.WaitForElement("DeviceIdiom").ReadText();
+		var isPhone = idiom == "Phone";
+
+		// Split is locked on non-phone idioms; phones still present an overlay.
+		if (isPhone)
+			App.TapFlyoutPageIcon("Flyout");
+
+		App.WaitForElement("FlyoutVisible");
+		Assert.That(App.WaitForElement("CloseFlyout").IsEnabled(), Is.EqualTo(isPhone),
+			$"Closing a Split flyout should only be enabled on phones (idiom: {idiom}).");
+
+		App.Tap("CloseFlyout");
+
+		if (isPhone)
+		{
+			App.WaitForNoElement("FlyoutVisible");
+			App.WaitForElement("DetailSentinel");
+		}
+		else
+		{
+			App.WaitForElement("Split");
+			App.WaitForElement("FlyoutVisible");
+			Assert.That(App.WaitForElement("CloseFlyout").IsEnabled(), Is.False,
+				"A tap must not enable closing a locked Split flyout.");
+		}
+	}
+
+	[Test]
+	[Category(UITestCategories.FlyoutPage)]
 	public void MasterStillVisibleAfterPushingAndPoppingModalPage()
 	{
 		App.SetOrientationLandscape();

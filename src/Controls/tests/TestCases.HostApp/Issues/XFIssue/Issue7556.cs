@@ -75,7 +75,12 @@ public class Issue7556 : TestFlyoutPage
 					Command = new Command(OnChangeMasterBehavior),
 					AutomationId = "ChangeMasterBehavior"
 				},
-				new Label(){ HorizontalTextAlignment = TextAlignment.Center, Text = "Close Flyout", AutomationId = "DetailSentinel" }
+				new Label(){ HorizontalTextAlignment = TextAlignment.Center, Text = "Close Flyout", AutomationId = "DetailSentinel" },
+				new Label()
+				{
+					Text = DeviceInfo.Idiom.ToString(),
+					AutomationId = "DeviceIdiom"
+				}
 			};
 
 
