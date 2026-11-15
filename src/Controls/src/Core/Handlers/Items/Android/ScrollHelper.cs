@@ -162,11 +162,33 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		}
 
 		/// <summary>
-		/// Gets how many jumps have been asked for. A jump scrolls in the next layout, which then applies the adjustment the jump
-		/// leaves. One asked for while the view lays out, as from the Scrolled event RecyclerView raises then, scrolls only in the
-		/// layout after that one, and so does its adjustment (see MauiRecyclerView.OnLayout).
+		/// Gets how many requests that scroll in or after the next layout have been made: a jump, which scrolls in that layout
+		/// and then applies the adjustment it leaves, or an animated scroll that starts once the view is laid out. One made while
+		/// the view lays out, as from the Scrolled event RecyclerView raises then, waits for the layout after that one (see
+		/// MauiRecyclerView.OnLayout).
 		/// </summary>
 		public int Jumps { get; private set; }
+
+		/// <summary>
+		/// Starts <paramref name="animateScroll"/> once the view is laid out, as the adjustment a jump leaves for its layout:
+		/// a newer request replaces it. RecyclerView's smooth scroller works out how far to go in the next frame's animation,
+		/// which comes before that frame lays the view out, so a change the app made to the rows with the request (a row that
+		/// grew) would move its target after it stopped.
+		/// </summary>
+		public void AnimateScrollOnceLaidOut(Action animateScroll)
+		{
+			_pendingScrollAdjustment = () =>
+			{
+				_pendingScrollAdjustment = null;
+				animateScroll();
+			};
+
+			LayoutAfterJump();
+			if (!_recyclerView.IsInLayout)
+			{
+				_recyclerView.RequestLayout();
+			}
+		}
 
 		// A jump scrolls in the layout it asks for. Asked for during a layout, as when the app scrolls from the Scrolled event
 		// RecyclerView raises as it lays out, that layout is lost: ask again once the layout is over.

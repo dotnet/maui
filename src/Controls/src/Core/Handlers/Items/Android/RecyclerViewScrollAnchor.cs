@@ -148,18 +148,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		}
 
 		// An animated scroll the app requested earlier (or an earlier ScrollToStart or ScrollToEnd) would carry on to where it
-		// was going: the edge the view follows now supersedes it. A fling is the user's, and carries on: the anchor goes to
-		// the edge once it settles, unless the user scrolled away. The smooth scroller that animates a request stops once it
-		// finds its target, and RecyclerView settles the rest of the way as it settles a fling: the recycler view tells them
-		// apart.
-		void StopRequestedScroll()
-		{
-			if (_recyclerView.GetLayoutManager()?.IsSmoothScrolling == true
-				|| (_recyclerView as IScrollAnchorRecyclerView)?.IsAnimatingRequestedScroll == true)
-			{
-				_recyclerView.StopScroll();
-			}
-		}
+		// was going, and what one left for the next layout would still scroll: the edge the view follows now supersedes it. A
+		// fling is the user's, and carries on: the anchor goes to the edge once it settles, unless the user scrolled away.
+		void StopRequestedScroll() => (_recyclerView as IScrollAnchorRecyclerView)?.StopRequestedScroll();
 
 		// Reports whether the view follows an edge, and goes to it: unless the app requested a scroll as it heard, which is
 		// newer.

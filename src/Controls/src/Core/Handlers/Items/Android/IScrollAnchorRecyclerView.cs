@@ -7,11 +7,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		void UpdateAnchorMode();
 
 		/// <summary>
-		/// Gets whether the view is settling an animated scroll the app requested (<c>ScrollTo</c>, <c>ScrollToStart</c> or
-		/// <c>ScrollToEnd</c>), rather than a fling of the user's. The smooth scroller that animates a request stops once it
-		/// finds its target, and leaves the rest of the way to RecyclerView, which settles it as it settles a fling.
+		/// Stops a scroll the app requested (<c>ScrollTo</c>, <c>ScrollToStart</c> or <c>ScrollToEnd</c>): what one left for
+		/// the next layout, and an animated one, also while RecyclerView settles the rest of the way. The smooth scroller that
+		/// animates a request stops once it finds its target, and leaves the rest of the way to RecyclerView, which settles it
+		/// as it settles a fling. A fling of the user's carries on.
 		/// </summary>
-		bool IsAnimatingRequestedScroll { get; }
+		void StopRequestedScroll();
 
 		/// <summary>
 		/// Scrolls to the start of the content, and follows it again while anchoring its start. A layout that doesn't scroll

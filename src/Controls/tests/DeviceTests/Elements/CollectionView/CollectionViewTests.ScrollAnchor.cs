@@ -433,9 +433,42 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Theory(DisplayName = "An animated ScrollToEnd without AnchorMode reaches the end of a last row that grows in the same update")]
+		[InlineData(true)]
+		[InlineData(false)]
+		public async Task AnAnimatedScrollToEndWithoutAnchorModeReachesTheEndOfALastRowThatGrowsInTheSameUpdate(bool growFirst)
+		{
+			SetupBuilder();
+			var items = CreateAnchorItems(40);
+			var collectionView = CreateAnchorCollectionView(items, ScrollAnchorMode.None);
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				// At the end, the last rows are in view as the scroll starts: how far it goes is measured from them.
+				collectionView.ScrollToEnd(animate: false);
+				await AssertAtEnd(handler, "ScrollToEnd should reach the end.");
+
+				// The row grows in a layout the change asks for, whichever comes first.
+				if (growFirst)
+				{
+					items[^1].Height = 120;
+					collectionView.ScrollToEnd(animate: true);
+				}
+				else
+				{
+					collectionView.ScrollToEnd(animate: true);
+					items[^1].Height = 120;
+				}
+
+				await AssertEventually(() => Math.Abs(GetItemHeight(handler, items.Count - 1) - 120) <= AnchorTolerance, timeout: 3000, message: "The last row should grow.");
+				await AssertAtEnd(handler, "ScrollToEnd should reach the end of the row as it grew.");
+				Assert.False(collectionView.IsAnchored);
+			});
+		}
+
 		// A list that scrolls horizontally scrolls to its first or last item, by the item's index in its group.
-		[Fact(DisplayName = "ScrollToStart and ScrollToEnd scroll a horizontal list of groups without headers to its edges")]
-		public async Task ScrollToStartAndScrollToEndScrollAHorizontalListOfGroupsWithoutHeadersToItsEdges()
+		[Fact(DisplayName = "ScrollToStart, ScrollToEnd and ScrollTo an item of a group scroll a horizontal list of groups without headers to its edges")]
+		public async Task ScrollToStartScrollToEndAndScrollToAnItemOfAGroupScrollAHorizontalListOfGroupsWithoutHeadersToItsEdges()
 		{
 			SetupBuilder();
 
@@ -463,11 +496,20 @@ namespace Microsoft.Maui.DeviceTests
 				collectionView.ScrollToStart(animate: false);
 				var atStart = await Wait(() => Math.Abs(distance = GetHorizontalDistanceFromStart(handler)) <= AnchorTolerance, 3000);
 				Assert.True(atStart, $"ScrollToStart should show the first item at the start. Distance from the start: {distance}.");
+
+				// ScrollTo counts only a group's items: the only item of a group without a header is its first.
+				collectionView.ScrollTo(0, groupIndex: 2, position: ScrollToPosition.End, animate: false);
+				atEnd = await Wait(() => Math.Abs(distance = GetHorizontalDistanceToEnd(handler)) <= AnchorTolerance, 3000);
+				Assert.True(atEnd, $"ScrollTo should show the item of the last group with items at the end. Distance to the end: {distance}.");
+
+				collectionView.ScrollTo(0, groupIndex: 0, position: ScrollToPosition.Start, animate: false);
+				atStart = await Wait(() => Math.Abs(distance = GetHorizontalDistanceFromStart(handler)) <= AnchorTolerance, 3000);
+				Assert.True(atStart, $"ScrollTo should show the item of the first group at the start. Distance from the start: {distance}.");
 			});
 		}
 
-		[Fact(DisplayName = "ScrollToEnd scrolls a horizontal list of groups to its last item, not an equal one before it")]
-		public async Task ScrollToEndScrollsAHorizontalListOfGroupsToItsLastItemNotAnEqualOneBeforeIt()
+		[Fact(DisplayName = "ScrollToEnd and ScrollTo an item of a group scroll a horizontal list of groups to that item, not an equal one before it")]
+		public async Task ScrollToEndAndScrollToAnItemOfAGroupScrollAHorizontalListOfGroupsToThatItemNotAnEqualOneBeforeIt()
 		{
 			SetupBuilder();
 			var groups = new List<List<string>>
@@ -488,6 +530,15 @@ namespace Microsoft.Maui.DeviceTests
 				collectionView.ScrollToEnd(animate: false);
 				var atEnd = await Wait(() => Math.Abs(distance = GetHorizontalDistanceToEnd(handler)) <= AnchorTolerance, 3000);
 				Assert.True(atEnd, $"ScrollToEnd should show the last item at the end. Distance to the end: {distance}.");
+
+				// Back to the first group, whose item is in view and equal to the last group's.
+				collectionView.ScrollToStart(animate: false);
+				var awayFromEnd = await Wait(() => (distance = GetHorizontalDistanceToEnd(handler)) > 100, 3000);
+				Assert.True(awayFromEnd, $"ScrollToStart should show the first item. Distance to the end: {distance}.");
+
+				collectionView.ScrollTo(0, groupIndex: 2, position: ScrollToPosition.End, animate: false);
+				atEnd = await Wait(() => Math.Abs(distance = GetHorizontalDistanceToEnd(handler)) <= AnchorTolerance, 3000);
+				Assert.True(atEnd, $"ScrollTo should show the item of the last group at the end, not the equal one of the first. Distance to the end: {distance}.");
 			});
 		}
 
@@ -624,6 +675,38 @@ namespace Microsoft.Maui.DeviceTests
 				await Task.Delay(500);
 				Assert.True(GetDistanceFromStart(handler) <= AnchorTolerance, $"The later ScrollTo should win. Distance from the start: {GetDistanceFromStart(handler)}.");
 				Assert.False(collectionView.IsAnchored);
+			});
+		}
+
+		[Theory(DisplayName = "A ScrollTo or AnchorMode change right after an animated ScrollToEnd wins")]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task AScrollToOrAnchorModeChangeRightAfterAnAnimatedScrollToEndWins(bool changeAnchorMode)
+		{
+			SetupBuilder();
+			var collectionView = CreateAnchorCollectionView(CreateAnchorItems(40), ScrollAnchorMode.None);
+			collectionView.Header = null;
+			collectionView.Footer = null;
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				await AssertEventually(() => GetDistanceFromStart(handler) <= AnchorTolerance, timeout: 3000, message: "The list should open at its start.");
+
+				// Before the animated scroll has started: on Android it waits for the view to be laid out.
+				collectionView.ScrollToEnd(animate: true);
+				if (changeAnchorMode)
+				{
+					collectionView.AnchorMode = ScrollAnchorMode.Start;
+				}
+				else
+				{
+					collectionView.ScrollTo(0, position: ScrollToPosition.Start, animate: false);
+				}
+
+				// Long enough for the animated scroll to the end to have ended, had it carried on.
+				await Task.Delay(1500);
+				Assert.True(GetDistanceFromStart(handler) <= AnchorTolerance, $"The later request should win. Position: {GetScrollPosition(handler)}.");
+				Assert.Equal(changeAnchorMode, collectionView.IsAnchored);
 			});
 		}
 
@@ -1658,9 +1741,9 @@ namespace Microsoft.Maui.DeviceTests
 
 #if IOS || MACCATALYST
 		// ScrollToStart and ScrollToEnd lay the view out before they scroll (they scroll to the edge as laid out): the app can
-		// turn anchoring off from the Scrolled event that layout raises, before the request scrolls. On Android an animated
-		// scroll to the edge goes to the edge as last laid out, and the layout that grows the row comes after it: once
-		// anchoring is off, nothing scrolls on to the end the row grew to.
+		// turn anchoring off from the Scrolled event that layout raises, before the request scrolls. On Android a view that
+		// follows the end starts the animated scroll right away, and its anchor follows the end the row grows to as the layout
+		// after it grows the row: once anchoring is off, nothing scrolls on to that end.
 		[Fact(DisplayName = "Turning AnchorMode off from Scrolled as ScrollToEnd lays the list out stops following, and the scroll carries on")]
 		public async Task TurningAnchorModeOffFromScrolledAsScrollToEndLaysTheListOutStopsFollowing()
 		{

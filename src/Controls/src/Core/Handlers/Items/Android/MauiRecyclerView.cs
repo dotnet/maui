@@ -775,7 +775,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			// (Deliberately checking the private member here rather than the property accessor; the accessor will
 			// create a new ScrollHelper if needed, and there's no reason to do that until a Scroll is requested.)
 			// A jump asked for as this layout ran, from the Scrolled event it raises, scrolls only in the layout after it, which
-			// the jump asks for: so does its adjustment.
+			// the jump asks for: so does its adjustment. An animated ScrollToEnd that waits for the view to be laid out starts
+			// here too (see ScrollHelper.AnimateScrollOnceLaidOut).
 			if (_scrollHelper is { } scrollHelper && scrollHelper.Jumps == jumps)
 			{
 				scrollHelper.AdjustScroll();
@@ -801,7 +802,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_scrollAnchor?.ScrollStateChanged(state);
 		}
 
-		bool IScrollAnchorRecyclerView.IsAnimatingRequestedScroll => _animatingRequestedScroll && ScrollState == ScrollStateSettling;
+		void IScrollAnchorRecyclerView.StopRequestedScroll()
+		{
+			// What a request left for the next layout: an adjustment, or an animated ScrollToEnd waiting for the view to be laid
+			// out.
+			_scrollHelper?.CancelPendingAdjustment();
+			if (GetLayoutManager()?.IsSmoothScrolling == true || (_animatingRequestedScroll && ScrollState == ScrollStateSettling))
+			{
+				StopScroll();
+			}
+		}
 
 		void IScrollAnchorRecyclerView.UpdateAnchorMode()
 		{
@@ -918,7 +928,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				_scrollAnchor?.ScrollRequested(animate);
 				if (animate)
 				{
-					RecyclerViewScrollAnchor.SmoothScrollToEnd(this, layoutManager);
+					// To the end as laid out once the view is: nothing follows an end that a row the app grew with the request
+					// moves after the scroll stopped.
+					ScrollHelper.AnimateScrollOnceLaidOut(AnimateScrollToEnd);
 				}
 				else
 				{
@@ -927,6 +939,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			return true;
+		}
+
+		// The animated scroll to the end that ScrollToEnd starts once the view is laid out.
+		void AnimateScrollToEnd()
+		{
+			if (GetLayoutManager() is { ItemCount: > 0 } layoutManager && layoutManager.CanScrollVertically())
+			{
+				_animatingRequestedScroll = true;
+				RecyclerViewScrollAnchor.SmoothScrollToEnd(this, layoutManager);
+			}
 		}
 
 		// Where the view doesn't scroll to an edge of its content, as in a horizontal layout, the first or last item is as close as
