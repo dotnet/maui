@@ -965,6 +965,43 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		// Turning anchoring off isn't a scroll: unlike an edge the view starts to follow, it doesn't stop a scroll the app
+		// requested.
+		[Theory(DisplayName = "Turning AnchorMode off during an animated scroll the app requested lets it carry on")]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task TurningAnchorModeOffDuringAnAnimatedScrollTheAppRequestedLetsItCarryOn(bool byScrollToStart)
+		{
+			SetupBuilder();
+			var items = CreateAnchorItems(40);
+			var collectionView = CreateAnchorCollectionView(items, ScrollAnchorMode.End);
+
+			// Without a header, the first item starts the content: ScrollTo scrolls to the same place as ScrollToStart.
+			collectionView.Header = null;
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				await AssertAtEnd(handler, "The list should open at its end.");
+
+				if (byScrollToStart)
+				{
+					collectionView.ScrollToStart(animate: true);
+				}
+				else
+				{
+					collectionView.ScrollTo(0, position: ScrollToPosition.Start, animate: true);
+				}
+
+				collectionView.AnchorMode = ScrollAnchorMode.None;
+				Assert.False(collectionView.IsAnchored);
+
+				var distance = double.NaN;
+				var reached = await Wait(() => (distance = GetDistanceFromStart(handler)) <= AnchorTolerance, 3000);
+				Assert.True(reached, $"The scroll should carry on to the start. Distance from the start: {distance}.");
+				Assert.False(collectionView.IsAnchored);
+			});
+		}
+
 		[Theory(DisplayName = "AnchorMode Start keeps items added before the first item in view")]
 		[InlineData(true)]
 		[InlineData(false)]

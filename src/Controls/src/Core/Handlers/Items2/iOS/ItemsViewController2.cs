@@ -380,6 +380,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			if (mode == ScrollAnchorMode.None)
 			{
+				// Turning anchoring off only stops following. It isn't a scroll: a scroll the app requested carries on to where
+				// it was going. An edge the view starts to follow is a scroll to that edge, and stops it (below).
 				DetachScrollAnchor();
 				return;
 			}

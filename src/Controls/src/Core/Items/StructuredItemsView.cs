@@ -144,7 +144,12 @@ namespace Microsoft.Maui.Controls
 		/// </para>
 		/// <para>
 		/// With both, the view follows whichever edge it is at, and starts at the end. When it is at both because its content
-		/// fits, it follows the end. Changing the anchor mode starts over, as when the view first appears.
+		/// fits, it follows the end.
+		/// </para>
+		/// <para>
+		/// Changing the anchor mode to one that follows an edge starts over, as when the view first appears, and stops an
+		/// animated scroll the app requested. Changing it to <see cref="ScrollAnchorMode.None"/> only stops following: the
+		/// view stays where it is, and a scroll under way carries on.
 		/// </para>
 		/// <para>
 		/// While the view follows an edge, <see cref="ItemsView.ItemsUpdatingScrollMode"/> doesn't scroll it; while it
