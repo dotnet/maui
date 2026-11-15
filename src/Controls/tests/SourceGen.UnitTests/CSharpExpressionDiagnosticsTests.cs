@@ -1527,10 +1527,14 @@ namespace Repro.Views
 		Assert.DoesNotContain("res:", output, StringComparison.Ordinal);
 		Assert.DoesNotContain("ext:", output, StringComparison.Ordinal);
 		Assert.DoesNotContain("__source.Repro", output, StringComparison.Ordinal);
-		Assert.Contains("SetBinding", output, StringComparison.Ordinal);
-		Assert.Contains("__source.IsVip ? global::Repro.Resources.Labels.Gold : global::Repro.Resources.Labels.Standard", output, StringComparison.Ordinal);
-		Assert.Contains("__source.IsVip ? (global::Repro.Resources.Labels.Gold) : (global::Repro.Resources.Labels.Standard)", output, StringComparison.Ordinal);
-		Assert.Contains("global::Repro.Resources.Labels.FormatMessage(__source.IsVip)", output, StringComparison.Ordinal);
+		AssertEachSetBindingContains(
+			output,
+			expectedCount: 5,
+			"new(static __source => __source, \"IsVip\")",
+			"__source.IsVip ? global::Repro.Resources.Labels.Gold : global::Repro.Resources.Labels.Standard",
+			"__source.IsVip ? (global::Repro.Resources.Labels.Gold) : (global::Repro.Resources.Labels.Standard)",
+			"global::Repro.Resources.Labels.FormatMessage(__source.IsVip)",
+			"$\"{(__source.IsVip ? global::Repro.Resources.Labels.Gold : global::Repro.Resources.Labels.Standard)}\"");
 	}
 
 	[Fact]
@@ -1584,11 +1588,14 @@ namespace Repro.Views
 		Assert.Empty(result.Diagnostics);
 		Assert.NotNull(output);
 		Assert.DoesNotContain("missing:", output, StringComparison.Ordinal);
-		Assert.Contains("SetBinding", output, StringComparison.Ordinal);
-		Assert.Contains("__source.IsVip ? global::Repro.MissingGen.Strings.Gold : global::Repro.MissingGen.Strings.Standard", output, StringComparison.Ordinal);
-		Assert.Contains("__source.IsVip ? (global::Repro.MissingGen.Strings.Gold) : (global::Repro.MissingGen.Strings.Standard)", output, StringComparison.Ordinal);
-		Assert.Contains("global::Repro.MissingGen.Strings.FormatMessage(__source.IsVip)", output, StringComparison.Ordinal);
-		Assert.Contains("$\"{(global::Repro.MissingGen.Strings.FormatMessage(__source.IsVip))}\"", output, StringComparison.Ordinal);
+		AssertEachSetBindingContains(
+			output,
+			expectedCount: 4,
+			"new(static __source => __source, \"IsVip\")",
+			"__source.IsVip ? global::Repro.MissingGen.Strings.Gold : global::Repro.MissingGen.Strings.Standard",
+			"__source.IsVip ? (global::Repro.MissingGen.Strings.Gold) : (global::Repro.MissingGen.Strings.Standard)",
+			"global::Repro.MissingGen.Strings.FormatMessage(__source.IsVip)",
+			"$\"{(global::Repro.MissingGen.Strings.FormatMessage(__source.IsVip))}\"");
 
 		// Once the sibling generator emits Repro.MissingGen.Strings, generated code compiles cleanly.
 		var siblingGenerated =
@@ -1917,6 +1924,8 @@ namespace Repro.Views
              x:DataType="local:MainViewModel">
     <VerticalStackLayout>
         <Label Text="{= helpers:Formatter.Format(local:Name)}" />
+        <Label Text="{= helpers:Formatter.Format(local:User.Name)}" />
+        <Label Text="{= helpers:Formatter.Format(local:User.GetName())}" />
         <Label Text="{= helpers:Formatter.Format(missing:Strings.Gold)}" />
     </VerticalStackLayout>
 </ContentPage>
@@ -1938,9 +1947,16 @@ namespace Repro.Helpers
 
 namespace Repro
 {
+	public class UserInfo
+	{
+		public string Name { get; set; } = "Maui";
+		public string GetName() => Name;
+	}
+
 	public class MainViewModel : INotifyPropertyChanged
 	{
 		public string Name { get; set; } = "Maui";
+		public UserInfo User { get; set; } = new();
 		public event PropertyChangedEventHandler? PropertyChanged;
 	}
 }
@@ -1959,7 +1975,10 @@ namespace Repro.Views
 		Assert.Empty(result.Diagnostics);
 		Assert.NotNull(output);
 		Assert.DoesNotContain("global::Repro.Name", output, StringComparison.Ordinal);
+		Assert.DoesNotContain("global::Repro.User", output, StringComparison.Ordinal);
 		Assert.Contains("global::Repro.Helpers.Formatter.Format(local:__source.Name)", output, StringComparison.Ordinal);
+		Assert.Contains("global::Repro.Helpers.Formatter.Format(local:__source.User.Name)", output, StringComparison.Ordinal);
+		Assert.Contains("global::Repro.Helpers.Formatter.Format(local:__source.User.GetName())", output, StringComparison.Ordinal);
 		Assert.Contains("global::Repro.Helpers.Formatter.Format(global::Repro.MissingGen.Strings.Gold)", output, StringComparison.Ordinal);
 
 		var siblingGenerated =
@@ -1973,6 +1992,85 @@ namespace Repro.MissingGen
 }
 """;
 		AssertGeneratedCodeCompilesWithSiblingSource(codeBehind, siblingGenerated, result);
+	}
+
+	[Fact]
+	public void InterpolationFormatClause_DottedFormatWithMatchingXmlnsPrefix_IsPreserved()
+	{
+		var xaml =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:app="clr-namespace:Repro"
+             xmlns:Time="clr-namespace:Repro"
+             x:Class="Repro.Views.MainPage"
+             x:DataType="app:MainViewModel">
+    <VerticalStackLayout>
+        <Label Text="{= $'{Time:HH.mm}'}" />
+        <Label Text="{= $'{User.Time:HH.mm}'}" />
+    </VerticalStackLayout>
+</ContentPage>
+""";
+
+		var codeBehind =
+"""
+using System;
+using System.ComponentModel;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace Repro
+{
+	public class UserInfo
+	{
+		public DateTime Time { get; set; }
+	}
+
+	public class MainViewModel : INotifyPropertyChanged
+	{
+		public DateTime Time { get; set; }
+		public UserInfo User { get; set; } = new();
+		public event PropertyChangedEventHandler? PropertyChanged;
+	}
+}
+
+namespace Repro.Views
+{
+	[XamlProcessing(XamlInflator.SourceGen)]
+	public partial class MainPage : ContentPage
+	{
+		public MainPage() => InitializeComponent();
+	}
+}
+""";
+
+		var (result, output) = RunGenerator(xaml, codeBehind);
+		Assert.Empty(result.Diagnostics);
+		Assert.NotNull(output);
+		Assert.DoesNotContain("global::Repro.HH", output, StringComparison.Ordinal);
+		Assert.Contains("$\"{__source.Time:HH.mm}\"", output, StringComparison.Ordinal);
+		Assert.Contains("$\"{__source.User.Time:HH.mm}\"", output, StringComparison.Ordinal);
+	}
+
+	static void AssertEachSetBindingContains(string output, int expectedCount, string requiredSnippet, params string[] expectedBindingExpressions)
+	{
+		var matches = System.Text.RegularExpressions.Regex.Matches(output, @"\bSetBinding\s*\(");
+		Assert.Equal(expectedCount, matches.Count);
+		var blocks = new System.Collections.Generic.List<string>(matches.Count);
+		for (int i = 0; i < matches.Count; i++)
+		{
+			var start = matches[i].Index;
+			var end = i + 1 < matches.Count ? matches[i + 1].Index : output.Length;
+			var block = output.Substring(start, end - start);
+			Assert.Contains(requiredSnippet, block, StringComparison.Ordinal);
+			blocks.Add(block);
+		}
+
+		foreach (var expectedExpression in expectedBindingExpressions)
+		{
+			Assert.Contains(blocks, b => b.Contains(expectedExpression, StringComparison.Ordinal));
+		}
 	}
 
 	static void AssertGeneratedCodeCompilesWithSiblingSource(string codeBehind, string siblingGenerated, GeneratorDriverRunResult result)

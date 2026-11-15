@@ -768,6 +768,83 @@ namespace TestApp
 		Assert.Contains("(__source, __value) => __source.Nickname = __value,", ucSource, StringComparison.Ordinal);
 	}
 
+	[Fact]
+	public void CSharpExpression_HeuristicBindableProperty_UpdatesExpressionInUC()
+	{
+		const string code =
+"""
+using System;
+using System.ComponentModel;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace CommunityToolkit.Maui
+{
+	[AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
+	public sealed class BindablePropertyAttribute : Attribute
+	{
+		public string? PropertyName { get; set; }
+	}
+}
+
+namespace TestApp
+{
+	public partial class CustomPopup : ContentView
+	{
+		[CommunityToolkit.Maui.BindableProperty]
+		public partial string? PopupMessage { get; set; }
+	}
+
+	public class TestViewModel : INotifyPropertyChanged
+	{
+		public string? Nickname { get; set; }
+		public string? OtherName { get; set; }
+		public event PropertyChangedEventHandler? PropertyChanged;
+	}
+
+	[XamlProcessing(XamlInflator.SourceGen)]
+	public partial class TestPage : ContentPage
+	{
+		public TestPage() => InitializeComponent();
+	}
+}
+""";
+
+		var xamlV1 =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:TestApp"
+             x:Class="TestApp.TestPage"
+             x:DataType="local:TestViewModel">
+    <local:CustomPopup PopupMessage="{Nickname}" />
+</ContentPage>
+""";
+		var xamlV2 =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:TestApp"
+             x:Class="TestApp.TestPage"
+             x:DataType="local:TestViewModel">
+    <local:CustomPopup PopupMessage="{OtherName}" />
+</ContentPage>
+""";
+
+		RunGenerator(xamlV1, code, assertNoCompilationErrors: false, enableIncrementalHotReload: true);
+		var (result, _) = RunGenerator(xamlV2, code, assertNoCompilationErrors: false, enableIncrementalHotReload: true);
+
+		var ucSource = GetUCSource(result);
+		Assert.NotNull(ucSource);
+		Assert.DoesNotContain("skipped", ucSource, StringComparison.OrdinalIgnoreCase);
+		Assert.Contains("global::TestApp.CustomPopup.PopupMessageProperty", ucSource, StringComparison.Ordinal);
+		Assert.Contains("SetBinding(global::TestApp.CustomPopup.PopupMessageProperty,", ucSource, StringComparison.Ordinal);
+		Assert.Contains("__source.OtherName", ucSource, StringComparison.Ordinal);
+		Assert.Contains("new(static __source => __source, \"OtherName\")", ucSource, StringComparison.Ordinal);
+	}
+
 	static string? GetUCSource(GeneratorDriverRunResult result)
 	{
 		foreach (var gen in result.Results)

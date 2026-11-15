@@ -7,6 +7,7 @@ using System.Xml;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.Maui.Controls.BindingSourceGen;
 using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls.SourceGen;
@@ -1523,17 +1524,24 @@ static class CSharpExpressionHelpers
 	/// Resolves xmlns prefixes in expression code to fully qualified CLR type names.
 	/// E.g., "local:ExprHelper.GetValue()" -> "global::Microsoft.Maui.Controls.Xaml.UnitTests.ExprHelper.GetValue()"
 	/// </summary>
-	public static string ResolveXmlnsPrefixes(string code, IXmlNamespaceResolver nsResolver, SourceGenContext context)
-		=> ResolveXmlnsPrefixes(code, nsResolver, context.Compilation, context.XmlnsCache, context.TypeCache);
+	public static string ResolveXmlnsPrefixes(string code, IXmlNamespaceResolver nsResolver, SourceGenContext context, ITypeSymbol? dataTypeSymbol = null, ITypeSymbol? rootType = null)
+		=> ResolveXmlnsPrefixes(code, nsResolver, context.Compilation, context.XmlnsCache, context.TypeCache, dataTypeSymbol, rootType ?? context.RootType);
 
 	/// <summary>
 	/// Resolves xmlns prefixes in expression code to fully qualified CLR type names.
 	/// Falls back to global::ClrNamespace.TypeName when the XAML namespace maps to a CLR namespace
 	/// even if the type is not yet present in <paramref name="compilation"/> (e.g., emitted by another source generator).
 	/// </summary>
-	public static string ResolveXmlnsPrefixes(string code, IXmlNamespaceResolver nsResolver, Compilation compilation, AssemblyAttributes xmlnsCache, IDictionary<XmlType, INamedTypeSymbol> typeCache)
+	public static string ResolveXmlnsPrefixes(
+		string code,
+		IXmlNamespaceResolver nsResolver,
+		Compilation compilation,
+		AssemblyAttributes xmlnsCache,
+		IDictionary<XmlType, INamedTypeSymbol> typeCache,
+		ITypeSymbol? dataTypeSymbol = null,
+		ITypeSymbol? rootType = null)
 	{
-		var resolved = ReplaceOutsideLiteralSegments(code, XmlnsPrefixPattern, (match, overlapsFormatClause) =>
+		var resolved = ReplaceOutsideLiteralSegments(code, XmlnsPrefixPattern, (match, overlapsFormatClause, literalSpans) =>
 		{
 			var prefix = match.Groups[1].Value;
 			var typeName = match.Groups[2].Value;
@@ -1546,24 +1554,41 @@ static class CSharpExpressionHelpers
 			if (namespaceUri == null)
 				return match.Value;
 
+			if (IsPrecededByMemberAccess(code, match.Index))
+				return match.Value;
+
 			// Inside an interpolation hole, Roslyn parses "ident:Text" as a format specifier.
-			// Keep format specifiers (e.g. "{d:F2}" or "{Price:C2}") untouched unless the type is followed by member access.
-			if (overlapsFormatClause && !IsFollowedByMemberAccess(code, match.Index + match.Length))
+			// Keep format specifiers (e.g. "{d:F2}", "{Price:C2}", or dotted "{Time:HH.mm}" when Time is in scope) untouched.
+			if (overlapsFormatClause &&
+				(!IsFollowedByMemberAccess(code, match.Index + match.Length)
+				 || HasMemberInExpressionScope(code, match.Index, prefix, dataTypeSymbol, rootType, compilation)))
 			{
 				return match.Value;
 			}
 
 			// Resolve to CLR type
 			var xmlType = new XmlType(namespaceUri, typeName, null);
-			if (xmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, typeCache, out var typeSymbol))
-			{
-				return typeSymbol!.ToFQDisplayString();
-			}
+			var hasResolvedType = xmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, typeCache, out var typeSymbol);
 
-			// Preserve C# named arguments (e.g. "Formatter.Format(local:Name)") when the type is unresolved.
-			if (IsNamedArgumentSyntax(code, match))
+			// Preserve C# named arguments (e.g. "Formatter.Format(local:Name)", "Formatter.Format(local:User.Name)").
+			if (!overlapsFormatClause && IsNamedArgumentSyntax(
+				code,
+				match,
+				literalSpans,
+				nsResolver,
+				compilation,
+				xmlnsCache,
+				typeCache,
+				dataTypeSymbol,
+				rootType,
+				hasResolvedType))
 			{
 				return match.Value;
+			}
+
+			if (hasResolvedType)
+			{
+				return typeSymbol!.ToFQDisplayString();
 			}
 
 			var clrNamespace = namespaceUri.GetClrNamespace();
@@ -1776,6 +1801,9 @@ static class CSharpExpressionHelpers
 		return index;
 	}
 
+	static bool IsPrecededByMemberAccess(string code, int index)
+		=> TrySkipWhitespaceBackwards(code, index, out char prevChar) && prevChar == '.';
+
 	static bool IsFollowedByMemberAccess(string code, int index)
 	{
 		if (index < code.Length && code[index] == '<' && TrySkipBalancedGenericArguments(code, index, out int afterGenerics))
@@ -1786,39 +1814,72 @@ static class CSharpExpressionHelpers
 			&& (char.IsLetter(code[index + 1]) || code[index + 1] == '_');
 	}
 
-	static bool IsNamedArgumentSyntax(string code, Match match)
+	static bool HasMemberInExpressionScope(
+		string code,
+		int matchIndex,
+		string identifier,
+		ITypeSymbol? dataTypeSymbol,
+		ITypeSymbol? rootType,
+		Compilation compilation)
 	{
-		if (IsFollowedByMemberAccess(code, match.Index + match.Length))
-			return false;
-
-		int prevIdx = match.Index - 1;
-		while (prevIdx >= 0 && char.IsWhiteSpace(code[prevIdx]))
-			prevIdx--;
-
-		if (prevIdx < 0)
-			return false;
-
-		char prevChar = code[prevIdx];
-		if (prevChar != '(' && prevChar != ',' && prevChar != '[')
-			return false;
-
-		if (prevChar == '(')
+		if (MemberResolver.HasMember(dataTypeSymbol, identifier, includeMethods: false, compilation)
+			|| MemberResolver.HasMember(rootType, identifier, includeMethods: false, compilation))
 		{
-			if (TryReadPrecedingWord(code, prevIdx, out var word))
-			{
-				if (word is "typeof" or "sizeof" or "default" or "nameof")
-					return false;
+			return true;
+		}
 
-				if (word is not ("return" or "throw" or "await" or "yield" or "case" or "in" or "is" or "as" or "new" or "var"))
+		return HasEnclosingLambdaParameter(code, matchIndex, identifier);
+	}
+
+	static bool HasEnclosingLambdaParameter(string code, int position, string identifier)
+	{
+		var tree = CSharpSyntaxTree.ParseText(code, new CSharpParseOptions(kind: SourceCodeKind.Script));
+		var root = tree.GetRoot();
+		if (root.FullSpan.Length == 0)
+			return false;
+
+		var safePosition = Math.Max(0, Math.Min(position, root.FullSpan.End - 1));
+		var node = root.FindToken(safePosition).Parent;
+		while (node != null)
+		{
+			switch (node)
+			{
+				case SimpleLambdaExpressionSyntax simpleLambda
+					when simpleLambda.Parameter.Identifier.ValueText == identifier:
+					return true;
+				case ParenthesizedLambdaExpressionSyntax parenthesizedLambda
+					when parenthesizedLambda.ParameterList.Parameters.Any(p => p.Identifier.ValueText == identifier):
 					return true;
 			}
-			else if (TrySkipWhitespaceBackwards(code, prevIdx, out char beforeParen)
-				&& (beforeParen == '>' || beforeParen == ']' || beforeParen == ')'))
-			{
-				return true;
-			}
 
-			// Inside "(...)" not opened by an invocation target: distinguish casts like "(missing:Box)x".
+			node = node.Parent;
+		}
+
+		return false;
+	}
+
+	static bool IsNamedArgumentSyntax(
+		string code,
+		Match match,
+		List<(int Start, int End, bool IsFormatClause)> literalSpans,
+		IXmlNamespaceResolver nsResolver,
+		Compilation compilation,
+		AssemblyAttributes xmlnsCache,
+		IDictionary<XmlType, INamedTypeSymbol> typeCache,
+		ITypeSymbol? dataTypeSymbol,
+		ITypeSymbol? rootType,
+		bool hasResolvedType)
+	{
+		if (!TryFindEnclosingArgumentListOpener(code, match.Index, literalSpans, out int openIndex, out bool isIndexer))
+			return false;
+
+		var prefix = match.Groups[1].Value;
+		var typeName = match.Groups[2].Value;
+		var isFollowedByMemberAccess = IsFollowedByMemberAccess(code, match.Index + match.Length);
+
+		if (openIndex == SkipWhitespaceBackwardsIndex(code, match.Index - 1) && !isIndexer)
+		{
+			// Inside "(...)", distinguish casts like "(missing:Box)x" from arguments.
 			int afterIdx = SkipWhitespace(code, match.Index + match.Length);
 			if (afterIdx < code.Length && code[afterIdx] == ')')
 			{
@@ -1828,7 +1889,522 @@ static class CSharpExpressionHelpers
 			}
 		}
 
+		if (hasResolvedType)
+		{
+			return HasMatchingParameterOnEnclosingCall(code, openIndex, isIndexer, prefix, nsResolver, compilation, xmlnsCache, typeCache, dataTypeSymbol, rootType)
+				&& (!isFollowedByMemberAccess || HasMemberInExpressionScope(code, match.Index, typeName, dataTypeSymbol, rootType, compilation));
+		}
+
+		if (!isFollowedByMemberAccess)
+			return true;
+
+		return HasMemberInExpressionScope(code, match.Index, typeName, dataTypeSymbol, rootType, compilation)
+			|| HasMatchingParameterOnEnclosingCall(code, openIndex, isIndexer, prefix, nsResolver, compilation, xmlnsCache, typeCache, dataTypeSymbol, rootType);
+	}
+
+	static int SkipWhitespaceBackwardsIndex(string text, int index)
+	{
+		while (index >= 0 && char.IsWhiteSpace(text[index]))
+			index--;
+		return index;
+	}
+
+	static bool TryFindEnclosingArgumentListOpener(
+		string code,
+		int matchIndex,
+		List<(int Start, int End, bool IsFormatClause)> literalSpans,
+		out int openIndex,
+		out bool isIndexer)
+	{
+		openIndex = -1;
+		isIndexer = false;
+
+		int prevIdx = SkipWhitespaceBackwardsIndex(code, matchIndex - 1);
+		if (prevIdx < 0)
+			return false;
+
+		char prevChar = code[prevIdx];
+		if (prevChar != '(' && prevChar != ',' && prevChar != '[')
+			return false;
+
+		if (prevChar == '(' || prevChar == '[')
+		{
+			openIndex = prevIdx;
+			isIndexer = prevChar == '[';
+		}
+		else
+		{
+			int parenDepth = 0;
+			int bracketDepth = 0;
+			int braceDepth = 0;
+			for (int i = prevIdx - 1; i >= 0; i--)
+			{
+				if (IsInLiteralSpan(i, literalSpans))
+					continue;
+
+				switch (code[i])
+				{
+					case ')':
+						parenDepth++;
+						break;
+					case ']':
+						bracketDepth++;
+						break;
+					case '}':
+						braceDepth++;
+						break;
+					case '(':
+						if (parenDepth > 0)
+						{
+							parenDepth--;
+						}
+						else if (bracketDepth == 0 && braceDepth == 0)
+						{
+							openIndex = i;
+							isIndexer = false;
+							i = 0;
+						}
+						break;
+					case '[':
+						if (bracketDepth > 0)
+						{
+							bracketDepth--;
+						}
+						else if (parenDepth == 0 && braceDepth == 0)
+						{
+							openIndex = i;
+							isIndexer = true;
+							i = 0;
+						}
+						break;
+					case '{':
+						if (braceDepth > 0)
+							braceDepth--;
+						else
+							return false;
+						break;
+					case ';':
+						if (parenDepth == 0 && bracketDepth == 0 && braceDepth == 0)
+							return false;
+						break;
+				}
+			}
+		}
+
+		if (openIndex < 0)
+			return false;
+
+		if (isIndexer)
+		{
+			if (!TrySkipWhitespaceBackwards(code, openIndex, out char beforeBracket)
+				|| (!char.IsLetterOrDigit(beforeBracket) && beforeBracket != '_' && beforeBracket != ')' && beforeBracket != ']'))
+			{
+				return false;
+			}
+
+			// Exclude array creation expressions like "new int[missing:Strings.Count]".
+			if (TryExtractInvocationTarget(code, openIndex, allowGenerics: true, out _, out bool isNewTarget) && isNewTarget)
+				return false;
+
+			return true;
+		}
+
+		if (TryReadPrecedingWord(code, openIndex, out var word))
+		{
+			return word is not ("typeof" or "sizeof" or "default" or "nameof" or "return" or "throw" or "await" or "yield"
+				or "case" or "in" or "is" or "as" or "var" or "if" or "while" or "for" or "foreach" or "using"
+				or "lock" or "fixed" or "switch" or "catch" or "when" or "checked" or "unchecked" or "else" or "do");
+		}
+
+		if (!TrySkipWhitespaceBackwards(code, openIndex, out char beforeParen))
+			return false;
+
+		if (beforeParen == ')' || beforeParen == ']')
+			return true;
+
+		if (beforeParen == '>')
+		{
+			int beforeParenIdx = SkipWhitespaceBackwardsIndex(code, openIndex - 1);
+			return TrySkipBalancedAngleBracketsBackwards(code, beforeParenIdx, out int beforeGenerics)
+				&& TryReadPrecedingWord(code, beforeGenerics, out _);
+		}
+
+		return false;
+	}
+
+	static bool IsInLiteralSpan(int index, List<(int Start, int End, bool IsFormatClause)> literalSpans)
+	{
+		foreach (var span in literalSpans)
+		{
+			if (!span.IsFormatClause && index >= span.Start && index < span.End)
+				return true;
+		}
+
+		return false;
+	}
+
+	static bool HasMatchingParameterOnEnclosingCall(
+		string code,
+		int openIndex,
+		bool isIndexer,
+		string paramName,
+		IXmlNamespaceResolver nsResolver,
+		Compilation compilation,
+		AssemblyAttributes xmlnsCache,
+		IDictionary<XmlType, INamedTypeSymbol> typeCache,
+		ITypeSymbol? dataTypeSymbol,
+		ITypeSymbol? rootType)
+	{
+		if (!TryExtractInvocationTarget(code, openIndex, !isIndexer, out var targetChain, out var isObjectCreation))
+			return false;
+
+		if (isIndexer)
+		{
+			var targetType = TryResolveExpressionTargetType(targetChain, nsResolver, compilation, xmlnsCache, typeCache, dataTypeSymbol, rootType);
+			return targetType != null && targetType.GetAllProperties(context: null).Any(p => p.IsIndexer && HasParameter(p.Parameters, paramName));
+		}
+
+		if (isObjectCreation)
+		{
+			if (string.Equals(targetChain, "new", StringComparison.Ordinal))
+				return false;
+
+			var constructedType = TryResolveExpressionTargetType(targetChain, nsResolver, compilation, xmlnsCache, typeCache, dataTypeSymbol, rootType) as INamedTypeSymbol;
+			return constructedType != null && constructedType.InstanceConstructors.Any(c => HasParameter(c.Parameters, paramName));
+		}
+
+		var lastDot = targetChain.LastIndexOf('.');
+		if (lastDot < 0)
+		{
+			var colonIdx = targetChain.IndexOf(':');
+			if (colonIdx >= 0)
+				return false;
+
+			return HasMethodWithParameter(dataTypeSymbol, targetChain, paramName)
+				|| HasMethodWithParameter(rootType, targetChain, paramName);
+		}
+
+		var receiver = targetChain.Substring(0, lastDot);
+		var methodName = targetChain.Substring(lastDot + 1);
+		if (string.IsNullOrEmpty(receiver) || string.IsNullOrEmpty(methodName))
+			return false;
+
+		var receiverType = TryResolveExpressionTargetType(receiver, nsResolver, compilation, xmlnsCache, typeCache, dataTypeSymbol, rootType);
+		return receiverType != null && HasMethodWithParameter(receiverType, methodName, paramName);
+	}
+
+	static bool HasMethodWithParameter(ITypeSymbol? targetType, string methodName, string paramName)
+	{
+		if (targetType == null)
+			return false;
+
+		foreach (var method in targetType.GetAllMethods(methodName, context: null))
+		{
+			if (HasParameter(method.Parameters, paramName))
+				return true;
+		}
+
+		foreach (var prop in targetType.GetAllProperties(methodName, context: null))
+		{
+			if (prop.Type is INamedTypeSymbol { DelegateInvokeMethod: { } invoke } && HasParameter(invoke.Parameters, paramName))
+				return true;
+		}
+
+		foreach (var field in targetType.GetAllFields(methodName, context: null))
+		{
+			if (field.Type is INamedTypeSymbol { DelegateInvokeMethod: { } invoke } && HasParameter(invoke.Parameters, paramName))
+				return true;
+		}
+
+		return false;
+	}
+
+	static bool HasParameter(System.Collections.Immutable.ImmutableArray<IParameterSymbol> parameters, string paramName)
+	{
+		for (int i = 0; i < parameters.Length; i++)
+		{
+			if (parameters[i].Name == paramName)
+				return true;
+		}
+
+		return false;
+	}
+
+	static bool TryExtractInvocationTarget(
+		string code,
+		int openIndex,
+		bool allowGenerics,
+		out string targetChain,
+		out bool isObjectCreation)
+	{
+		targetChain = string.Empty;
+		isObjectCreation = false;
+
+		int idx = SkipWhitespaceBackwardsIndex(code, openIndex - 1);
+		if (idx < 0)
+			return false;
+
+		var segments = new List<string>();
+		while (idx >= 0)
+		{
+			if (allowGenerics && code[idx] == '>')
+			{
+				if (!TrySkipBalancedAngleBracketsBackwards(code, idx, out int beforeGenerics))
+					return false;
+
+				idx = SkipWhitespaceBackwardsIndex(code, beforeGenerics - 1);
+				if (idx < 0)
+					return false;
+			}
+
+			int end = idx;
+			while (idx >= 0 && (char.IsLetterOrDigit(code[idx]) || code[idx] == '_'))
+				idx--;
+
+			int start = idx + 1;
+			if (start > end)
+				return false;
+
+			var segment = code.Substring(start, end - start + 1);
+			segments.Add(segment);
+
+			int sepIdx = SkipWhitespaceBackwardsIndex(code, start - 1);
+			if (sepIdx < 0)
+				break;
+
+			if (code[sepIdx] == '.')
+			{
+				segments.Add(".");
+				idx = SkipWhitespaceBackwardsIndex(code, sepIdx - 1);
+				continue;
+			}
+
+			if (code[sepIdx] == ':')
+			{
+				if (sepIdx > 0 && code[sepIdx - 1] == ':')
+				{
+					segments.Add("::");
+					idx = SkipWhitespaceBackwardsIndex(code, sepIdx - 2);
+					continue;
+				}
+
+				if (TryReadPrecedingWord(code, sepIdx, out var prefixWord))
+				{
+					int prefixStart = sepIdx - 1;
+					while (prefixStart >= 0 && char.IsWhiteSpace(code[prefixStart]))
+						prefixStart--;
+					prefixStart -= prefixWord.Length - 1;
+
+					// Stop only if the colon is preceded by another member-incompatible token rather than the xmlns prefix word.
+					if (prefixStart >= 0)
+					{
+						segments.Add(":");
+						segments.Add(prefixWord);
+						sepIdx = SkipWhitespaceBackwardsIndex(code, prefixStart - 1);
+						if (sepIdx >= 0 && TryReadKeywordNew(code, prefixStart))
+							isObjectCreation = true;
+						break;
+					}
+				}
+
+				return false;
+			}
+
+			if (TryReadKeywordNew(code, start))
+				isObjectCreation = true;
+			break;
+		}
+
+		if (segments.Count == 0)
+			return false;
+
+		segments.Reverse();
+		targetChain = string.Concat(segments);
+		if (string.Equals(targetChain, "new", StringComparison.Ordinal))
+			isObjectCreation = true;
 		return true;
+	}
+
+	static bool TryReadKeywordNew(string code, int beforeTokenIndex)
+	{
+		if (!TryReadPrecedingWord(code, beforeTokenIndex, out var word) || word != "new")
+			return false;
+
+		int end = beforeTokenIndex - 1;
+		while (end >= 0 && char.IsWhiteSpace(code[end]))
+			end--;
+		int newStart = end - 3;
+		int prevIdx = SkipWhitespaceBackwardsIndex(code, newStart);
+		return prevIdx < 0 || code[prevIdx] != '.';
+	}
+
+	static bool TrySkipBalancedAngleBracketsBackwards(string text, int closeIndex, out int openBracketIndex)
+	{
+		openBracketIndex = -1;
+		if (closeIndex < 0 || text[closeIndex] != '>')
+			return false;
+
+		int depth = 1;
+		for (int i = closeIndex - 1; i >= 0; i--)
+		{
+			char ch = text[i];
+			if (ch == '>')
+			{
+				depth++;
+			}
+			else if (ch == '<')
+			{
+				depth--;
+				if (depth == 0)
+				{
+					openBracketIndex = i;
+					return true;
+				}
+			}
+			else if (ch is ';' or '{' or '}' or '(' or ')' or '[' or ']' or '=' or '&' or '|' or '?')
+			{
+				return false;
+			}
+		}
+
+		return false;
+	}
+
+	static ITypeSymbol? TryResolveExpressionTargetType(
+		string targetChain,
+		IXmlNamespaceResolver nsResolver,
+		Compilation compilation,
+		AssemblyAttributes xmlnsCache,
+		IDictionary<XmlType, INamedTypeSymbol> typeCache,
+		ITypeSymbol? dataTypeSymbol,
+		ITypeSymbol? rootType)
+	{
+		if (string.IsNullOrEmpty(targetChain))
+			return null;
+
+		var forceGlobal = false;
+		if (targetChain.StartsWith("global::", StringComparison.Ordinal))
+		{
+			forceGlobal = true;
+			targetChain = targetChain.Substring("global::".Length);
+		}
+
+		var singleColonIdx = targetChain.IndexOf(':');
+		if (!forceGlobal && singleColonIdx > 0 && (singleColonIdx + 1 >= targetChain.Length || targetChain[singleColonIdx + 1] != ':'))
+		{
+			var prefix = targetChain.Substring(0, singleColonIdx);
+			var remainder = targetChain.Substring(singleColonIdx + 1);
+			var nsUri = nsResolver.LookupNamespace(prefix);
+			if (nsUri == null)
+				return null;
+
+			var parts = remainder.Split('.');
+			if (parts.Length == 0 || string.IsNullOrEmpty(parts[0]))
+				return null;
+
+			var xmlType = new XmlType(nsUri, parts[0], null);
+			if (!xmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, typeCache, out var resolvedType) || resolvedType == null)
+				return null;
+
+			ITypeSymbol? currentType = resolvedType;
+			for (int i = 1; i < parts.Length && currentType != null; i++)
+				currentType = StepTypeOrMember(currentType, parts[i], compilation);
+			return currentType;
+		}
+
+		var segments = targetChain.Split('.');
+		if (segments.Length == 0 || segments.Any(string.IsNullOrEmpty))
+			return null;
+
+		if (!forceGlobal)
+		{
+			var fromDataType = WalkTypeOrMemberChain(dataTypeSymbol, segments, compilation);
+			if (fromDataType != null)
+				return fromDataType;
+
+			var fromRoot = WalkTypeOrMemberChain(rootType, segments, compilation);
+			if (fromRoot != null)
+				return fromRoot;
+
+			var fromDataNs = WalkNamespaceOrTypeChain(dataTypeSymbol?.ContainingNamespace, segments, compilation);
+			if (fromDataNs != null)
+				return fromDataNs;
+
+			var fromRootNs = WalkNamespaceOrTypeChain(rootType?.ContainingNamespace, segments, compilation);
+			if (fromRootNs != null)
+				return fromRootNs;
+		}
+
+		return WalkNamespaceOrTypeChain(compilation.GlobalNamespace, segments, compilation);
+	}
+
+	static ITypeSymbol? WalkTypeOrMemberChain(ITypeSymbol? startType, string[] segments, Compilation compilation)
+	{
+		var current = startType;
+		for (int i = 0; i < segments.Length && current != null; i++)
+			current = StepTypeOrMember(current, segments[i], compilation);
+		return current;
+	}
+
+	static ITypeSymbol? WalkNamespaceOrTypeChain(INamespaceSymbol? startNs, string[] segments, Compilation compilation)
+	{
+		var currentNs = startNs;
+		ITypeSymbol? currentType = null;
+		for (int i = 0; i < segments.Length; i++)
+		{
+			var seg = segments[i];
+			if (currentType != null)
+			{
+				currentType = StepTypeOrMember(currentType, seg, compilation);
+				if (currentType == null)
+					return null;
+				continue;
+			}
+
+			if (currentNs == null)
+				return null;
+
+			var typeMatch = currentNs.GetTypeMembers(seg).FirstOrDefault();
+			if (typeMatch != null)
+			{
+				currentType = typeMatch;
+				continue;
+			}
+
+			var nsMatch = currentNs.GetNamespaceMembers().FirstOrDefault(ns => ns.Name == seg);
+			if (nsMatch != null)
+			{
+				currentNs = nsMatch;
+				continue;
+			}
+
+			return null;
+		}
+
+		return currentType;
+	}
+
+	static ITypeSymbol? StepTypeOrMember(ITypeSymbol type, string memberName, Compilation compilation)
+	{
+		for (var current = type; current != null; current = current.BaseType)
+		{
+			var nestedType = current.GetTypeMembers(memberName).FirstOrDefault();
+			if (nestedType != null)
+				return nestedType;
+		}
+
+		var prop = type.GetAllProperties(memberName, context: null).FirstOrDefault();
+		if (prop != null)
+			return prop.Type;
+
+		var field = type.GetAllFields(memberName, context: null).FirstOrDefault();
+		if (field != null)
+			return field.Type;
+
+		if (type.TryGetObservablePropertyType(memberName, compilation, out var observableType))
+			return observableType;
+
+		return null;
 	}
 
 	static bool TryReadPrecedingWord(string text, int beforeIndex, out string word)
@@ -1870,9 +2446,13 @@ static class CSharpExpressionHelpers
 			|| ch == '@' || ch == '$' || ch == '!' || ch == '~' || ch == '+' || ch == '-';
 
 	static string ReplaceOutsideLiteralSegments(string code, Regex pattern, MatchEvaluator evaluator)
-		=> ReplaceOutsideLiteralSegments(code, pattern, (match, _) => evaluator(match), allowInterpolationFormatClause: false);
+		=> ReplaceOutsideLiteralSegments(code, pattern, (match, _, _) => evaluator(match), allowInterpolationFormatClause: false);
 
-	static string ReplaceOutsideLiteralSegments(string code, Regex pattern, Func<Match, bool, string> evaluator, bool allowInterpolationFormatClause)
+	static string ReplaceOutsideLiteralSegments(
+		string code,
+		Regex pattern,
+		Func<Match, bool, List<(int Start, int End, bool IsFormatClause)>, string> evaluator,
+		bool allowInterpolationFormatClause)
 	{
 		var matches = pattern.Matches(code).Cast<Match>().ToArray();
 		if (matches.Length == 0)
@@ -1889,7 +2469,7 @@ static class CSharpExpressionHelpers
 				continue;
 
 			result.Append(code, currentIndex, match.Index - currentIndex);
-			result.Append(evaluator(match, overlapsFormatClause));
+			result.Append(evaluator(match, overlapsFormatClause, literalSpans));
 			currentIndex = match.Index + match.Length;
 		}
 
