@@ -960,7 +960,7 @@ static class SetPropertyHelpers
 		var analysis = ExpressionAnalyzer.Analyze(transformedExpression, "__source", dataTypeSymbol, rootType, compilation);
 		var handlers = analysis.Handlers;
 
-		var expressionType = ResolveExpressionType(expression, dataTypeSymbol, context: null);
+		var expressionType = ResolveExpressionType(expression, dataTypeSymbol, context: null, compilation);
 		var propertyTypeName = expressionType?.ToFQDisplayString() ?? "object";
 
 		bool hasCaptures = analysis.Captures.Count > 0;
@@ -986,8 +986,8 @@ static class SetPropertyHelpers
 
 		// UC intentionally skips the ExpressionNotSettable diagnostic (Descriptors.ExpressionNotSettable)
 		// that IC emits for TwoWay-default BPs with non-settable expressions. During hot reload,
-		// the developer is iterating rapidly and a warning would be noise — the IC already warned at build time.
-		var writeInfo = GetExpressionWriteInfo(expression, dataTypeSymbol, context: null);
+		// the developer is iterating rapidly and a warning would be noise - the IC already warned at build time.
+		var writeInfo = GetExpressionWriteInfo(expression, dataTypeSymbol, context: null, compilation);
 		if (analysis.IsSettable && writeInfo.Kind == ExpressionWriteKind.DirectAssignment)
 			writer.WriteLine($"(__source, __value) => {analysis.TransformedExpression} = __value,");
 		else if (analysis.IsSettable && writeInfo.Kind == ExpressionWriteKind.StructCopyWriteback)
@@ -1136,49 +1136,98 @@ static class SetPropertyHelpers
 	/// For example, "Price" on SimpleViewModel resolves to decimal, "User.DisplayName" resolves to string.
 	/// For complex expressions (operators, method calls, interpolation), returns null to fall back to object.
 	/// </summary>
-	internal static ITypeSymbol? ResolveExpressionType(string expression, ITypeSymbol dataType, SourceGenContext? context)
+	internal static ITypeSymbol? ResolveExpressionType(string expression, ITypeSymbol dataType, SourceGenContext? context, Compilation? compilation = null)
 	{
-		if (string.IsNullOrWhiteSpace(expression))
+		if (!TryGetMemberChainParts(expression, dataType, context, compilation, out var parts))
 			return null;
 
-		var expr = expression.Trim();
-
-		// Strip leading dot prefix (e.g., ".Name" → "Name"), but avoid the ".." range operator
-		if (expr.StartsWith(".", StringComparison.Ordinal) &&
-			!expr.StartsWith("..", StringComparison.Ordinal))
-			expr = expr.Substring(1);
-
-		// Strip "BindingContext." prefix only when it refers to BindableObject.BindingContext,
-		// not a user-defined member with the same name (e.g., a POCO with `public Person BindingContext;`)
-		if (expr.StartsWith("BindingContext.", StringComparison.Ordinal)
-			&& !dataType.GetAllMembers("BindingContext", context).Any())
-			expr = expr.Substring("BindingContext.".Length);
-
-		if (string.IsNullOrEmpty(expr))
-			return null;
-
-		// Walk the dot-separated property chain (also handle ?. null-conditional access)
-		var parts = expr.Replace("?.", ".").Split('.');
 		var currentType = dataType;
 
 		foreach (var part in parts)
 		{
 			var memberName = part.Trim().TrimEnd('!');
-
-			// If it contains parens, operators, or special chars, it's not a simple property chain
-			if (memberName.Contains('(') || memberName.Contains(' ') || memberName.Contains('[') || string.IsNullOrEmpty(memberName))
+			if (!TryResolveChainMember(currentType, memberName, context, compilation, out var memberType, out _, out _))
 				return null;
 
-			var member = currentType.GetAllMembers(memberName, context).FirstOrDefault();
-			if (member is IPropertySymbol prop)
-				currentType = prop.Type;
-			else if (member is IFieldSymbol field)
-				currentType = field.Type;
-			else
-				return null;
+			currentType = memberType;
 		}
 
 		return currentType;
+	}
+
+	static bool TryGetMemberChainParts(string expression, ITypeSymbol dataType, SourceGenContext? context, Compilation? compilation, out string[] parts)
+	{
+		parts = Array.Empty<string>();
+		if (string.IsNullOrWhiteSpace(expression))
+			return false;
+
+		var expr = expression.Trim();
+
+		// Strip leading dot prefix (e.g., ".Name" -> "Name"), but avoid the ".." range operator
+		if (expr.StartsWith(".", StringComparison.Ordinal) &&
+			!expr.StartsWith("..", StringComparison.Ordinal))
+			expr = expr.Substring(1);
+
+		// Strip "BindingContext." prefix only when it refers to BindableObject.BindingContext,
+		// not a user-defined or source-generated member with the same name
+		var effectiveCompilation = compilation ?? context?.Compilation;
+		if (expr.StartsWith("BindingContext.", StringComparison.Ordinal)
+			&& !dataType.GetAllMembers("BindingContext", context).Any()
+			&& !MemberResolver.HasMember(dataType, "BindingContext", includeMethods: false, effectiveCompilation))
+			expr = expr.Substring("BindingContext.".Length);
+
+		if (string.IsNullOrEmpty(expr))
+			return false;
+
+		parts = expr.Replace("?.", ".").Split('.');
+		return true;
+	}
+
+	static bool TryResolveChainMember(
+		ITypeSymbol currentType,
+		string memberName,
+		SourceGenContext? context,
+		Compilation? compilation,
+		out ITypeSymbol memberType,
+		out bool isWritable,
+		out bool isField)
+	{
+		memberType = null!;
+		isWritable = false;
+		isField = false;
+
+		// If it contains parens, operators, or special chars, it's not a simple property chain
+		if (string.IsNullOrEmpty(memberName) || memberName.Contains('(') || memberName.Contains(' ') || memberName.Contains('['))
+			return false;
+
+		var member = currentType.GetAllMembers(memberName, context).FirstOrDefault();
+		if (member is IPropertySymbol prop)
+		{
+			memberType = prop.Type;
+			isWritable = prop.SetMethod is not null
+				&& prop.SetMethod.DeclaredAccessibility == Accessibility.Public
+				&& !prop.SetMethod.IsInitOnly;
+			return true;
+		}
+
+		if (member is IFieldSymbol field)
+		{
+			memberType = field.Type;
+			isField = true;
+			isWritable = !field.IsReadOnly;
+			return true;
+		}
+
+		if (member == null
+			&& currentType.TryGetProperty(memberName, context, compilation, out _, out var inferredType, out var isAssumedWritable)
+			&& inferredType != null)
+		{
+			memberType = inferredType;
+			isWritable = isAssumedWritable;
+			return true;
+		}
+
+		return false;
 	}
 
 	/// <summary>
@@ -1244,88 +1293,52 @@ static class SetPropertyHelpers
 	/// and if so, what kind of setter is needed.
 	/// Handles value type (struct) intermediates that require copy-modify-writeback.
 	/// </summary>
-	static ExpressionWriteInfo GetExpressionWriteInfo(string expression, ITypeSymbol dataType, SourceGenContext? context)
+	static ExpressionWriteInfo GetExpressionWriteInfo(string expression, ITypeSymbol dataType, SourceGenContext? context, Compilation? compilation = null)
 	{
 		var notWritable = new ExpressionWriteInfo { Kind = ExpressionWriteKind.NotWritable };
 
-		if (string.IsNullOrWhiteSpace(expression))
-			return notWritable;
-
-		var expr = expression.Trim();
-
-		// Strip leading dot prefix (e.g., ".Name" → "Name"), but avoid the ".." range operator
-		if (expr.StartsWith(".", StringComparison.Ordinal) &&
-			!expr.StartsWith("..", StringComparison.Ordinal))
-			expr = expr.Substring(1);
-
-		// Strip "BindingContext." prefix only when it refers to BindableObject.BindingContext,
-		// not a user-defined member with the same name (e.g., a POCO with `public Person BindingContext;`)
-		if (expr.StartsWith("BindingContext.", StringComparison.Ordinal)
-			&& !dataType.GetAllMembers("BindingContext", context).Any())
-			expr = expr.Substring("BindingContext.".Length);
-
-		if (string.IsNullOrEmpty(expr))
+		if (!TryGetMemberChainParts(expression, dataType, context, compilation, out var parts))
 			return notWritable;
 
 		// Walk the dot-separated property chain (also handle ?. null-conditional access)
-		var parts = expr.Replace("?.", ".").Split('.');
 		var currentType = dataType;
-		IPropertySymbol? lastProperty = null;
 		var chain = new (string Name, bool IsStructIntermediate)[parts.Length];
 		bool hasStructIntermediate = false;
 		bool hasUnsettableStructIntermediate = false;
+		bool terminalWritable = false;
 
 		for (int i = 0; i < parts.Length; i++)
 		{
 			var memberName = parts[i].Trim().TrimEnd('!');
-
-			// If it contains parens, operators, or special chars, it's not a simple property chain
-			if (memberName.Contains('(') || memberName.Contains(' ') || memberName.Contains('[') || string.IsNullOrEmpty(memberName))
+			if (!TryResolveChainMember(currentType, memberName, context, compilation, out var memberType, out var isWritable, out var isField))
 				return notWritable;
 
-			var member = currentType.GetAllMembers(memberName, context).FirstOrDefault();
-			if (member is IPropertySymbol prop)
-			{
-				lastProperty = prop;
-				currentType = prop.Type;
+			currentType = memberType;
 
-				bool isStructIntermediate = i < parts.Length - 1 && currentType.IsValueType;
-				chain[i] = (memberName, isStructIntermediate);
-
-				if (isStructIntermediate)
-				{
-					hasStructIntermediate = true;
-					// Check if this intermediate property has a setter (needed for writeback)
-					bool intermediateSettable = prop.SetMethod is not null
-						&& prop.SetMethod.DeclaredAccessibility == Accessibility.Public
-						&& !prop.SetMethod.IsInitOnly;
-					if (!intermediateSettable)
-						hasUnsettableStructIntermediate = true;
-				}
-			}
-			else if (member is IFieldSymbol field)
+			if (isField)
 			{
-				if (field.IsReadOnly)
+				if (!isWritable)
 					return notWritable;
-				lastProperty = null;
 				chain[i] = (memberName, false); // Fields don't need writeback
-				currentType = field.Type;
+				terminalWritable = true;
 			}
 			else
 			{
-				return notWritable;
+				bool isStructIntermediate = i < parts.Length - 1 && currentType.IsValueType;
+				chain[i] = (memberName, isStructIntermediate);
+
+				if (isStructIntermediate && !isWritable)
+					hasUnsettableStructIntermediate = true;
+
+				if (isStructIntermediate)
+					hasStructIntermediate = true;
+
+				terminalWritable = isWritable;
 			}
 		}
 
-		// Check if the terminal property has a public, non-init setter
-		if (lastProperty is not null)
-		{
-			bool terminalWritable = lastProperty.SetMethod is not null
-				&& lastProperty.SetMethod.DeclaredAccessibility == Accessibility.Public
-				&& !lastProperty.SetMethod.IsInitOnly;
-			if (!terminalWritable)
-				return notWritable;
-		}
+		if (!terminalWritable)
+			return notWritable;
 
 		if (hasUnsettableStructIntermediate)
 			return new ExpressionWriteInfo { Kind = ExpressionWriteKind.StructIntermediateNotSettable };

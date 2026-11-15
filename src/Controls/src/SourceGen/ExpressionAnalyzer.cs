@@ -527,6 +527,10 @@ internal static class ExpressionAnalyzer
 				if (identifier.Parent is AliasQualifiedNameSyntax)
 					continue;
 
+				// Skip if it's a named-argument label (e.g., Format(local:Name) - skip "local")
+				if (identifier.Parent is NameColonSyntax nameColon && nameColon.Name == identifier)
+					continue;
+
 				// Check if this is a root-level invocation (not already prefixed)
 				// e.g., GetDisplayName() should become __source.GetDisplayName()
 				if (identifier.Parent is InvocationExpressionSyntax invocation && invocation.Expression == identifier)
@@ -630,7 +634,9 @@ internal static class ExpressionAnalyzer
 		{
 			memberAccesses.Add(memberAccess);
 		}
-		else if (node is IdentifierNameSyntax identifier && identifier.Parent is not AliasQualifiedNameSyntax)
+		else if (node is IdentifierNameSyntax identifier
+			&& identifier.Parent is not AliasQualifiedNameSyntax
+			&& identifier.Parent is not NameColonSyntax)
 		{
 			identifiers.Add(identifier);
 		}

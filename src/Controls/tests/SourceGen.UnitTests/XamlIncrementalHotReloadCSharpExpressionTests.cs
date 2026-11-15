@@ -703,6 +703,71 @@ namespace TestApp
 		Assert.Contains("SetBinding", ucSource, StringComparison.Ordinal);
 	}
 
+	[Fact]
+	public void CSharpExpression_ObservablePropertyTwoWay_GeneratesTypedSetterInUC()
+	{
+		const string code =
+"""
+using System;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace CommunityToolkit.Mvvm.ComponentModel
+{
+	[AttributeUsage(AttributeTargets.Field)]
+	public sealed class ObservablePropertyAttribute : Attribute
+	{
+	}
+}
+
+namespace TestApp
+{
+	public partial class TestViewModel
+	{
+		[CommunityToolkit.Mvvm.ComponentModel.ObservableProperty]
+		private string? _nickname;
+	}
+
+	[XamlProcessing(XamlInflator.SourceGen)]
+	public partial class TestPage : ContentPage
+	{
+		public TestPage() => InitializeComponent();
+	}
+}
+""";
+
+		var xamlV1 =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:TestApp"
+             x:Class="TestApp.TestPage"
+             x:DataType="local:TestViewModel">
+    <Entry Text="Initial" />
+</ContentPage>
+""";
+		var xamlV2 =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:TestApp"
+             x:Class="TestApp.TestPage"
+             x:DataType="local:TestViewModel">
+    <Entry Text="{Nickname}" />
+</ContentPage>
+""";
+
+		RunGenerator(xamlV1, code, assertNoCompilationErrors: false, enableIncrementalHotReload: true);
+		var (result, _) = RunGenerator(xamlV2, code, assertNoCompilationErrors: false, enableIncrementalHotReload: true);
+
+		var ucSource = GetUCSource(result);
+		Assert.NotNull(ucSource);
+		Assert.Contains("new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::TestApp.TestViewModel, string>(", ucSource, StringComparison.Ordinal);
+		Assert.Contains("(__source, __value) => __source.Nickname = __value,", ucSource, StringComparison.Ordinal);
+	}
+
 	static string? GetUCSource(GeneratorDriverRunResult result)
 	{
 		foreach (var gen in result.Results)

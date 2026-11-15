@@ -694,8 +694,148 @@ static class CSharpExpressionHelpers
 
 	static bool TryFindTopLevelGlobalAliasSplit(string expr, out int clauseIndex)
 	{
-		clauseIndex = -1;
-		bool hasGlobalAlias = false;
+		clauseIndex = TryFindInterpolationClauseIndex(expr);
+		int limit = clauseIndex >= 0 ? clauseIndex : expr.Length;
+
+		int depth = 0;
+		int i = 0;
+		while (i < limit)
+		{
+			char c = expr[i];
+
+			if (c == '\\' && i + 1 < limit)
+			{
+				i += 2;
+				continue;
+			}
+
+			if (c == '\'' || c == '"')
+			{
+				i = SkipQuotedLiteral(expr, i);
+				continue;
+			}
+
+			if (c == '(' || c == '[' || c == '{')
+			{
+				depth++;
+				i++;
+				continue;
+			}
+
+			if (c == ')' || c == ']' || c == '}')
+			{
+				if (depth > 0)
+					depth--;
+				i++;
+				continue;
+			}
+
+			if (depth == 0 && c == ':' && i + 1 < limit && expr[i + 1] == ':')
+			{
+				return true;
+			}
+
+			i++;
+		}
+
+		return false;
+	}
+
+	static int TryFindInterpolationClauseIndex(string expr)
+	{
+		string masked = MaskAliasQualifiers(expr);
+		int maxConsecutiveQuotes = CountMaxConsecutive(masked, '"');
+		string quotes = new string('"', Math.Max(3, maxConsecutiveQuotes + 1));
+		string prefix = "$" + quotes + "\n{";
+		string wrapped = prefix + masked + "}\n" + quotes;
+
+		var tree = CSharpSyntaxTree.ParseText(wrapped, new CSharpParseOptions(kind: SourceCodeKind.Script));
+		var root = tree.GetRoot();
+		var interpolation = root.DescendantNodes()
+			.OfType<InterpolationSyntax>()
+			.FirstOrDefault(n => n.OpenBraceToken.Span.End == prefix.Length);
+
+		if (interpolation != null
+			&& !interpolation.CloseBraceToken.IsMissing
+			&& interpolation.CloseBraceToken.SpanStart == prefix.Length + masked.Length
+			&& !interpolation.ContainsDiagnostics)
+		{
+			if (interpolation.AlignmentClause != null)
+				return interpolation.AlignmentClause.SpanStart - prefix.Length;
+
+			if (interpolation.FormatClause != null)
+				return interpolation.FormatClause.SpanStart - prefix.Length;
+
+			return -1;
+		}
+
+		return FindInterpolationClauseIndexFallback(expr);
+	}
+
+	static string MaskAliasQualifiers(string expr)
+	{
+		if (expr.IndexOf("::", StringComparison.Ordinal) < 0)
+			return expr;
+
+		var sb = new StringBuilder(expr.Length);
+		int i = 0;
+		while (i < expr.Length)
+		{
+			char c = expr[i];
+			if (c == '\\' && i + 1 < expr.Length)
+			{
+				sb.Append(c);
+				sb.Append(expr[i + 1]);
+				i += 2;
+				continue;
+			}
+
+			if (c == '\'' || c == '"')
+			{
+				int next = SkipQuotedLiteral(expr, i);
+				sb.Append(expr, i, next - i);
+				i = next;
+				continue;
+			}
+
+			if (c == ':' && i + 1 < expr.Length && expr[i + 1] == ':')
+			{
+				// Preserve exact string length so syntax spans match original expr offsets.
+				sb.Append(". ");
+				i += 2;
+				continue;
+			}
+
+			sb.Append(c);
+			i++;
+		}
+
+		return sb.ToString();
+	}
+
+	static int CountMaxConsecutive(string text, char target)
+	{
+		int max = 0;
+		int current = 0;
+		foreach (char c in text)
+		{
+			if (c == target)
+			{
+				current++;
+				if (current > max)
+					max = current;
+			}
+			else
+			{
+				current = 0;
+			}
+		}
+
+		return max;
+	}
+
+	static int FindInterpolationClauseIndexFallback(string expr)
+	{
 		int depth = 0;
 		int i = 0;
 
@@ -732,32 +872,101 @@ static class CSharpExpressionHelpers
 
 			if (depth == 0)
 			{
+				if (c == '<' && TrySkipBalancedGenericArguments(expr, i, out int afterGenerics))
+				{
+					i = afterGenerics;
+					continue;
+				}
+
 				if (c == ':')
 				{
 					if (i + 1 < expr.Length && expr[i + 1] == ':')
 					{
-						hasGlobalAlias = true;
 						i += 2;
 						continue;
 					}
 
-					// First single ':' at depth 0 starts an interpolation format specifier.
-					clauseIndex = i;
-					break;
+					return i;
 				}
 
 				if (c == ',')
+					return i;
+			}
+
+			i++;
+		}
+
+		return -1;
+	}
+
+	static bool TrySkipBalancedGenericArguments(string expr, int start, out int afterGenerics)
+	{
+		afterGenerics = start;
+		if (start >= expr.Length || expr[start] != '<')
+			return false;
+
+		// Skip shift and comparison operators (<<, <=).
+		if (start + 1 < expr.Length && (expr[start + 1] == '<' || expr[start + 1] == '='))
+			return false;
+
+		int angleDepth = 0;
+		int parenDepth = 0;
+		int bracketDepth = 0;
+		int i = start;
+
+		while (i < expr.Length)
+		{
+			char c = expr[i];
+			if (c == '(')
+				parenDepth++;
+			else if (c == ')')
+			{
+				if (parenDepth == 0)
+					return false;
+				parenDepth--;
+			}
+			else if (c == '[')
+				bracketDepth++;
+			else if (c == ']')
+			{
+				if (bracketDepth == 0)
+					return false;
+				bracketDepth--;
+			}
+			else if (parenDepth == 0 && bracketDepth == 0)
+			{
+				if (c == '<')
 				{
-					// Top-level ',' starts an interpolation alignment clause.
-					clauseIndex = i;
-					break;
+					angleDepth++;
+				}
+				else if (c == '>')
+				{
+					angleDepth--;
+					if (angleDepth == 0)
+					{
+						int next = SkipWhitespace(expr, i + 1);
+						if (next >= expr.Length
+							|| expr[next] == '(' || expr[next] == '.' || expr[next] == '['
+							|| expr[next] == ',' || expr[next] == ':'
+							|| expr[next] == ')' || expr[next] == ']' || expr[next] == '}')
+						{
+							afterGenerics = i + 1;
+							return true;
+						}
+						return false;
+					}
+				}
+				else if (!char.IsLetterOrDigit(c) && !char.IsWhiteSpace(c)
+					&& c != '_' && c != '.' && c != ',' && c != ':' && c != '?' && c != '*')
+				{
+					return false;
 				}
 			}
 
 			i++;
 		}
 
-		return hasGlobalAlias;
+		return false;
 	}
 
 	/// <summary>
@@ -1337,6 +1546,13 @@ static class CSharpExpressionHelpers
 			if (namespaceUri == null)
 				return match.Value;
 
+			// Inside an interpolation hole, Roslyn parses "ident:Text" as a format specifier.
+			// Keep format specifiers (e.g. "{d:F2}" or "{Price:C2}") untouched unless the type is followed by member access.
+			if (overlapsFormatClause && !IsFollowedByMemberAccess(code, match.Index + match.Length))
+			{
+				return match.Value;
+			}
+
 			// Resolve to CLR type
 			var xmlType = new XmlType(namespaceUri, typeName, null);
 			if (xmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, typeCache, out var typeSymbol))
@@ -1344,9 +1560,8 @@ static class CSharpExpressionHelpers
 				return typeSymbol!.ToFQDisplayString();
 			}
 
-			// Inside an interpolation hole, Roslyn parses "ident:Text" as a format specifier.
-			// Keep format specifiers (e.g. "{d:F2}") untouched unless the type is followed by member access.
-			if (overlapsFormatClause && !IsFollowedByMemberAccess(code, match.Index + match.Length))
+			// Preserve C# named arguments (e.g. "Formatter.Format(local:Name)") when the type is unresolved.
+			if (IsNamedArgumentSyntax(code, match))
 			{
 				return match.Value;
 			}
@@ -1554,10 +1769,105 @@ static class CSharpExpressionHelpers
 		return true;
 	}
 
+	static int SkipWhitespace(string text, int index)
+	{
+		while (index < text.Length && char.IsWhiteSpace(text[index]))
+			index++;
+		return index;
+	}
+
 	static bool IsFollowedByMemberAccess(string code, int index)
-		=> index + 1 < code.Length
-		&& code[index] == '.'
-		&& (char.IsLetter(code[index + 1]) || code[index + 1] == '_');
+	{
+		if (index < code.Length && code[index] == '<' && TrySkipBalancedGenericArguments(code, index, out int afterGenerics))
+			index = SkipWhitespace(code, afterGenerics);
+
+		return index + 1 < code.Length
+			&& code[index] == '.'
+			&& (char.IsLetter(code[index + 1]) || code[index + 1] == '_');
+	}
+
+	static bool IsNamedArgumentSyntax(string code, Match match)
+	{
+		if (IsFollowedByMemberAccess(code, match.Index + match.Length))
+			return false;
+
+		int prevIdx = match.Index - 1;
+		while (prevIdx >= 0 && char.IsWhiteSpace(code[prevIdx]))
+			prevIdx--;
+
+		if (prevIdx < 0)
+			return false;
+
+		char prevChar = code[prevIdx];
+		if (prevChar != '(' && prevChar != ',' && prevChar != '[')
+			return false;
+
+		if (prevChar == '(')
+		{
+			if (TryReadPrecedingWord(code, prevIdx, out var word))
+			{
+				if (word is "typeof" or "sizeof" or "default" or "nameof")
+					return false;
+
+				if (word is not ("return" or "throw" or "await" or "yield" or "case" or "in" or "is" or "as" or "new" or "var"))
+					return true;
+			}
+			else if (TrySkipWhitespaceBackwards(code, prevIdx, out char beforeParen)
+				&& (beforeParen == '>' || beforeParen == ']' || beforeParen == ')'))
+			{
+				return true;
+			}
+
+			// Inside "(...)" not opened by an invocation target: distinguish casts like "(missing:Box)x".
+			int afterIdx = SkipWhitespace(code, match.Index + match.Length);
+			if (afterIdx < code.Length && code[afterIdx] == ')')
+			{
+				int afterClose = SkipWhitespace(code, afterIdx + 1);
+				if (afterClose < code.Length && LooksLikeCastOperand(code[afterClose]))
+					return false;
+			}
+		}
+
+		return true;
+	}
+
+	static bool TryReadPrecedingWord(string text, int beforeIndex, out string word)
+	{
+		word = string.Empty;
+		int end = beforeIndex - 1;
+		while (end >= 0 && char.IsWhiteSpace(text[end]))
+			end--;
+
+		if (end < 0 || (!char.IsLetterOrDigit(text[end]) && text[end] != '_'))
+			return false;
+
+		int start = end;
+		while (start > 0 && (char.IsLetterOrDigit(text[start - 1]) || text[start - 1] == '_'))
+			start--;
+
+		word = text.Substring(start, end - start + 1);
+		return true;
+	}
+
+	static bool TrySkipWhitespaceBackwards(string text, int beforeIndex, out char ch)
+	{
+		int idx = beforeIndex - 1;
+		while (idx >= 0 && char.IsWhiteSpace(text[idx]))
+			idx--;
+
+		if (idx >= 0)
+		{
+			ch = text[idx];
+			return true;
+		}
+
+		ch = '\0';
+		return false;
+	}
+
+	static bool LooksLikeCastOperand(char ch)
+		=> char.IsLetterOrDigit(ch) || ch == '_' || ch == '(' || ch == '"' || ch == '\''
+			|| ch == '@' || ch == '$' || ch == '!' || ch == '~' || ch == '+' || ch == '-';
 
 	static string ReplaceOutsideLiteralSegments(string code, Regex pattern, MatchEvaluator evaluator)
 		=> ReplaceOutsideLiteralSegments(code, pattern, (match, _) => evaluator(match), allowInterpolationFormatClause: false);

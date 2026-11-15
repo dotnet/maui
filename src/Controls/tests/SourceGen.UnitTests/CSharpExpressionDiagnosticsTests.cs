@@ -1715,6 +1715,266 @@ namespace Repro
 		AssertGeneratedCodeCompilesWithSiblingSource(codeBehind, siblingGenerated, result);
 	}
 
+	[Fact]
+	public void ObservableProperty_TwoWayBinding_PreservesPropertyTypeAndSetter()
+	{
+		var xaml =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:app="clr-namespace:Repro"
+             x:Class="Repro.Views.MainPage"
+             x:DataType="app:MainViewModel">
+    <Entry Text="{Nickname}" />
+</ContentPage>
+""";
+
+		var codeBehind =
+"""
+using System;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace CommunityToolkit.Mvvm.ComponentModel
+{
+	[AttributeUsage(AttributeTargets.Field)]
+	public sealed class ObservablePropertyAttribute : Attribute
+	{
+	}
+}
+
+namespace Repro
+{
+	public partial class MainViewModel
+	{
+		[CommunityToolkit.Mvvm.ComponentModel.ObservableProperty]
+		private string? _nickname;
+	}
+}
+
+namespace Repro.Views
+{
+	[XamlProcessing(XamlInflator.SourceGen)]
+	public partial class MainPage : ContentPage
+	{
+		public MainPage() => InitializeComponent();
+	}
+}
+""";
+
+		var (result, output) = RunGenerator(xaml, codeBehind, assertNoCompilationErrors: false);
+		Assert.Empty(result.Diagnostics);
+		Assert.NotNull(output);
+		Assert.Contains("new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::Repro.MainViewModel, string>(", output, StringComparison.Ordinal);
+		Assert.Contains("__source => (__source.Nickname, true),", output, StringComparison.Ordinal);
+		Assert.Contains("(__source, __value) => __source.Nickname = __value,", output, StringComparison.Ordinal);
+
+		var siblingGenerated =
+"""
+namespace Repro
+{
+	public partial class MainViewModel
+	{
+		public string? Nickname
+		{
+			get => _nickname;
+			set => _nickname = value;
+		}
+	}
+}
+""";
+		AssertGeneratedCodeCompilesWithSiblingSource(codeBehind, siblingGenerated, result);
+	}
+
+	[Fact]
+	public void XmlnsPrefixedGenericMethodInInterpolation_PreservesTypeArguments()
+	{
+		var xaml =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:app="clr-namespace:Repro"
+             xmlns:res="clr-namespace:Repro.Resources"
+             x:Class="Repro.Views.MainPage"
+             x:DataType="app:MainViewModel">
+    <VerticalStackLayout>
+        <Label Text="{= $'{res:Helper.Format&lt;int, string&gt;(Count)}' }" />
+        <Label Text="{= $'{res:Helper.Format&lt;int, string&gt;(Count),10}' }" />
+    </VerticalStackLayout>
+</ContentPage>
+""";
+
+		var codeBehind =
+"""
+using System.ComponentModel;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace Repro.Resources
+{
+	public static class Helper
+	{
+		public static string Format<TFirst, TSecond>(TFirst value) => $"{typeof(TSecond).Name}:{value}";
+	}
+}
+
+namespace Repro
+{
+	public class MainViewModel : INotifyPropertyChanged
+	{
+		public int Count { get; set; } = 42;
+		public event PropertyChangedEventHandler? PropertyChanged;
+	}
+}
+
+namespace Repro.Views
+{
+	[XamlProcessing(XamlInflator.SourceGen)]
+	public partial class MainPage : ContentPage
+	{
+		public MainPage() => InitializeComponent();
+	}
+}
+""";
+
+		var (result, output) = RunGenerator(xaml, codeBehind);
+		Assert.DoesNotContain(result.Diagnostics, d => d.Severity == DiagnosticSeverity.Error);
+		Assert.NotNull(output);
+		Assert.DoesNotContain("res:", output, StringComparison.Ordinal);
+		Assert.Contains("$\"{(global::Repro.Resources.Helper.Format<int, string>(__source.Count))}\"", output, StringComparison.Ordinal);
+		Assert.Contains("$\"{(global::Repro.Resources.Helper.Format<int, string>(__source.Count)),10}\"", output, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void InterpolationFormatClause_MatchingXmlnsPrefixAndType_IsPreserved()
+	{
+		var xaml =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:app="clr-namespace:Repro"
+             xmlns:Price="clr-namespace:Repro.Formats"
+             x:Class="Repro.Views.MainPage"
+             x:DataType="app:MainViewModel">
+    <Label Text="{= $'{Price:C2}'}" />
+</ContentPage>
+""";
+
+		var codeBehind =
+"""
+using System.ComponentModel;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace Repro.Formats
+{
+	public class C2
+	{
+	}
+}
+
+namespace Repro
+{
+	public class MainViewModel : INotifyPropertyChanged
+	{
+		public decimal Price { get; set; } = 19.99m;
+		public event PropertyChangedEventHandler? PropertyChanged;
+	}
+}
+
+namespace Repro.Views
+{
+	[XamlProcessing(XamlInflator.SourceGen)]
+	public partial class MainPage : ContentPage
+	{
+		public MainPage() => InitializeComponent();
+	}
+}
+""";
+
+		var (result, output) = RunGenerator(xaml, codeBehind);
+		Assert.DoesNotContain(result.Diagnostics, d => d.Severity == DiagnosticSeverity.Error);
+		Assert.NotNull(output);
+		Assert.DoesNotContain("global::Repro.Formats.C2", output, StringComparison.Ordinal);
+		Assert.Contains("$\"{__source.Price:C2}\"", output, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void XmlnsPrefixedFallback_PreservesNamedArgumentMatchingPrefix()
+	{
+		var xaml =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Repro"
+             xmlns:helpers="clr-namespace:Repro.Helpers"
+             xmlns:missing="clr-namespace:Repro.MissingGen;assembly=SourceGeneratorDriver.Generated"
+             x:Class="Repro.Views.MainPage"
+             x:DataType="local:MainViewModel">
+    <VerticalStackLayout>
+        <Label Text="{= helpers:Formatter.Format(local:Name)}" />
+        <Label Text="{= helpers:Formatter.Format(missing:Strings.Gold)}" />
+    </VerticalStackLayout>
+</ContentPage>
+""";
+
+		var codeBehind =
+"""
+using System.ComponentModel;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace Repro.Helpers
+{
+	public static class Formatter
+	{
+		public static string Format(string local) => $"Hello, {local}";
+	}
+}
+
+namespace Repro
+{
+	public class MainViewModel : INotifyPropertyChanged
+	{
+		public string Name { get; set; } = "Maui";
+		public event PropertyChangedEventHandler? PropertyChanged;
+	}
+}
+
+namespace Repro.Views
+{
+	[XamlProcessing(XamlInflator.SourceGen)]
+	public partial class MainPage : ContentPage
+	{
+		public MainPage() => InitializeComponent();
+	}
+}
+""";
+
+		var (result, output) = RunGenerator(xaml, codeBehind, assertNoCompilationErrors: false);
+		Assert.Empty(result.Diagnostics);
+		Assert.NotNull(output);
+		Assert.DoesNotContain("global::Repro.Name", output, StringComparison.Ordinal);
+		Assert.Contains("global::Repro.Helpers.Formatter.Format(local:__source.Name)", output, StringComparison.Ordinal);
+		Assert.Contains("global::Repro.Helpers.Formatter.Format(global::Repro.MissingGen.Strings.Gold)", output, StringComparison.Ordinal);
+
+		var siblingGenerated =
+"""
+namespace Repro.MissingGen
+{
+	public static class Strings
+	{
+		public static string Gold => "Gold member";
+	}
+}
+""";
+		AssertGeneratedCodeCompilesWithSiblingSource(codeBehind, siblingGenerated, result);
+	}
+
 	static void AssertGeneratedCodeCompilesWithSiblingSource(string codeBehind, string siblingGenerated, GeneratorDriverRunResult result)
 	{
 		var codeBehindTree = CSharpSyntaxTree.ParseText(codeBehind, path: "CodeBehind.cs");
