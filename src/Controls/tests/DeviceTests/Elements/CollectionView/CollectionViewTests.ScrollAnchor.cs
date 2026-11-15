@@ -1086,7 +1086,11 @@ namespace Microsoft.Maui.DeviceTests
 		public async Task AnchorModeStartShowsANewFirstItemWhenTheLastItemIsRemovedInTheSameUpdate(bool hasHeader)
 		{
 			SetupBuilder();
-			var items = CreateAnchorItems(40);
+
+			// The last item is as tall as the new first item, and no other item is: removing it keeps the content the size it
+			// was, and the only item that tall afterwards is the new one.
+			var items = CreateAnchorItems(39);
+			items.Add(new AnchorItem("Oldest", 64));
 			var collectionView = CreateAnchorCollectionView(items, ScrollAnchorMode.Start);
 			if (!hasHeader)
 			{
@@ -1098,7 +1102,8 @@ namespace Microsoft.Maui.DeviceTests
 				await AssertEventually(() => GetDistanceFromStart(handler) <= AnchorTolerance, timeout: 3000, message: "The list should open at its start.");
 
 				// A feed that keeps as many items as it had: the content stays the size it was, while the platform keeps the
-				// row it showed first where it is, which can leave the new first item above the view.
+				// row it showed first where it is, which can leave the new first item above the view. Only the platform saying
+				// it laid the change out tells that move from a scroll.
 				items.Insert(0, new AnchorItem("Newest", 64));
 				items.RemoveAt(items.Count - 1);
 
@@ -1158,6 +1163,67 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.False(collectionView.IsAnchored);
 			});
 		}
+
+#if ANDROID
+		// Without the first row laid out, the anchor measures the offset from rows it laid out before, which counts on the rows
+		// above the view keeping their size. On iOS and Mac Catalyst, the offset is UIKit's, from its layout of every row.
+		[Theory(DisplayName = "A row above the view that grows out of view doesn't make the list follow the start before it gets there")]
+		[InlineData(true)]
+		[InlineData(false)]
+		public async Task ARowAboveTheViewThatGrowsOutOfViewDoesntMakeTheListFollowTheStartEarly(bool replaced)
+		{
+			SetupBuilder();
+			var items = CreateAnchorItems(40);
+			var collectionView = CreateAnchorCollectionView(items, ScrollAnchorMode.Start);
+			collectionView.Header = null;
+			collectionView.Footer = null;
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				await AssertEventually(() => GetDistanceFromStart(handler) <= AnchorTolerance && collectionView.IsAnchored, timeout: 3000, message: "The list should open at its start, and follow it.");
+
+				// In steps shorter than the view: each look measures from rows the one before laid out, from the start on.
+				for (var i = 0; i < 4; i++)
+				{
+					ScrollPlatformViewBy(handler, 100);
+					await Task.Delay(100);
+				}
+
+				await AssertEventually(() => !collectionView.IsAnchored, timeout: 3000, message: "Scrolling away from the start should stop following it.");
+
+				// The second item, out of view above, grows by far more than the list scrolled: replaced, which the adapter
+				// reports, or resized by a binding, which nothing reports until the row is laid out again.
+				if (replaced)
+				{
+					items[1] = new AnchorItem("Tall", 1000);
+				}
+				else
+				{
+					items[1].Height = 1000;
+				}
+
+				await Task.Delay(300);
+
+				// Back by more than the list scrolled down, and much less than the distance to the start now: the view ends
+				// up inside the tall row.
+				for (var i = 0; i < 5; i++)
+				{
+					ScrollPlatformViewBy(handler, -100);
+					await Task.Delay(100);
+				}
+
+				// Long enough for a scroll to the start to have happened, had the list followed it.
+				await Task.Delay(500);
+				Assert.True(ShowsItemOfHeight(handler, 1000), $"The view should show the tall row. Position: {GetScrollPosition(handler)}.");
+				Assert.True(double.IsPositiveInfinity(GetDistanceFromStart(handler)), $"The view shouldn't be at the start. Position: {GetScrollPosition(handler)}.");
+				Assert.False(collectionView.IsAnchored, "The list shouldn't follow the start before it gets there.");
+
+				// Once it does get there, it follows the start again.
+				ScrollPlatformViewBy(handler, -2000);
+				await AssertEventually(() => GetDistanceFromStart(handler) <= AnchorTolerance && collectionView.IsAnchored, timeout: 3000, message: "Scrolling back to the start should follow it again.");
+			});
+		}
+#endif
 
 		[Theory(DisplayName = "A scroll that brings new rows into view stops following the edge")]
 		[InlineData(ScrollAnchorMode.Start)]
@@ -1400,6 +1466,61 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Theory(DisplayName = "Changing AnchorMode as an animated ScrollTo to an item in view moves the view shows the edge it selects")]
+		[InlineData(ScrollAnchorMode.Start)]
+		[InlineData(ScrollAnchorMode.End)]
+		public async Task ChangingAnchorModeAsAnAnimatedScrollToAnItemInViewMovesTheViewShowsTheEdgeItSelects(ScrollAnchorMode edge)
+		{
+			SetupBuilder();
+			var items = CreateAnchorItems(40);
+			var collectionView = CreateAnchorCollectionView(items, ScrollAnchorMode.None);
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				await AssertEventually(() => GetDistanceFromStart(handler) <= AnchorTolerance, timeout: 3000, message: "The list should open at its start.");
+				if (edge == ScrollAnchorMode.End)
+				{
+					collectionView.ScrollToEnd(animate: false);
+					await AssertAtEnd(handler, "The list should be at its end.");
+				}
+
+				// The newer change wins over the scroll the app requested, from its first frame away from the edge to its last.
+				var changed = false;
+				collectionView.Scrolled += (sender, args) =>
+				{
+					if (!changed && (edge == ScrollAnchorMode.End ? args.VerticalDelta < 0 : args.VerticalDelta > 0))
+					{
+						changed = true;
+						collectionView.AnchorMode = edge;
+					}
+				};
+
+				// An item in view, most of the 300-unit view from that edge. RecyclerView's smooth scroller finds it as it
+				// starts, and stops: RecyclerView settles all of the way to it, as it settles a fling.
+				if (edge == ScrollAnchorMode.End)
+				{
+					collectionView.ScrollTo(items.Count - 6, position: ScrollToPosition.End, animate: true);
+				}
+				else
+				{
+					collectionView.ScrollTo(5, position: ScrollToPosition.Start, animate: true);
+				}
+
+				await AssertEventually(() => changed, timeout: 3000, message: "The scroll should move the view away from the edge.");
+				await Task.Delay(1500);
+				if (edge == ScrollAnchorMode.End)
+				{
+					await AssertAtEnd(handler, "Following the end should show it.");
+				}
+				else
+				{
+					Assert.True(GetDistanceFromStart(handler) <= AnchorTolerance, $"Following the start should show it. Position: {GetScrollPosition(handler)}.");
+				}
+
+				Assert.True(collectionView.IsAnchored);
+			});
+		}
+
 		[Theory(DisplayName = "Changing AnchorMode as ScrollToEnd reports following the end shows the edge it selects")]
 		[InlineData(true)]
 		[InlineData(false)]
@@ -1534,6 +1655,53 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.True(collectionView.IsAnchored);
 			});
 		}
+
+#if IOS || MACCATALYST
+		// ScrollToStart and ScrollToEnd lay the view out before they scroll (they scroll to the edge as laid out): the app can
+		// turn anchoring off from the Scrolled event that layout raises, before the request scrolls. On Android an animated
+		// scroll to the edge goes to the edge as last laid out, and the layout that grows the row comes after it: once
+		// anchoring is off, nothing scrolls on to the end the row grew to.
+		[Fact(DisplayName = "Turning AnchorMode off from Scrolled as ScrollToEnd lays the list out stops following, and the scroll carries on")]
+		public async Task TurningAnchorModeOffFromScrolledAsScrollToEndLaysTheListOutStopsFollowing()
+		{
+			SetupBuilder();
+			var items = CreateAnchorItems(40);
+			var collectionView = CreateAnchorCollectionView(items, ScrollAnchorMode.End);
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				await AssertAtEnd(handler, "The list should open at its end.");
+
+				// The last row grows, and the list follows the end as it lays the row out, which raises Scrolled: the app turns
+				// anchoring off from there. That only stops following: the ScrollToEnd the app requested still goes to the end,
+				// as it would had the app turned anchoring off after it, and the list doesn't follow the end from there.
+				var turnedOff = false;
+				collectionView.Scrolled += (_, _) =>
+				{
+					if (!turnedOff)
+					{
+						turnedOff = true;
+						collectionView.AnchorMode = ScrollAnchorMode.None;
+					}
+				};
+
+				items[^1].Height = 120;
+				collectionView.ScrollToEnd(animate: true);
+				await AssertEventually(() => turnedOff, timeout: 3000, message: "The list should follow the end as the last row grows.");
+				await AssertAtEnd(handler, "The ScrollToEnd the app requested should carry on to the end.", timeout: 5000);
+
+				// Long enough for the animated scroll to the end to have ended.
+				await Task.Delay(1500);
+				Assert.False(collectionView.IsAnchored, "Turning anchoring off should stop following the end.");
+				Assert.Equal(ScrollAnchorMode.None, collectionView.AnchorMode);
+
+				items.Add(new AnchorItem("Added", 40));
+				await Task.Delay(500);
+				Assert.True(GetDistanceToEnd(handler) > AnchorTolerance, $"With anchoring off, the list shouldn't follow a new last item. Distance to the end: {GetDistanceToEnd(handler)}.");
+				Assert.False(collectionView.IsAnchored);
+			});
+		}
+#endif
 
 		[Fact(DisplayName = "An animated ScrollToStart right after ScrollToEnd stays at the start")]
 		public async Task AnAnimatedScrollToStartRightAfterScrollToEndStaysAtTheStart()

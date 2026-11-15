@@ -55,6 +55,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		Java.Lang.IRunnable _setAppBarLiftTargetRunnable;
 		RecyclerViewScrollAnchor _scrollAnchor;
 
+		// Set as the app requests an animated scroll, and cleared once the view stops or the user drags it: the anchor stops a
+		// scroll the app requested, which an edge it starts to follow supersedes, and lets a fling of the user's settle.
+		bool _animatingRequestedScroll;
+
 		~MauiRecyclerView() => _layoutPropertyChangedProxy?.Unsubscribe();
 
 		public MauiRecyclerView(Context context, Func<IItemsLayout> getItemsLayout, Func<TAdapter> getAdapter) : base(new ContextThemeWrapper(context, Resource.Style.collectionViewTheme))
@@ -519,6 +523,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (args.IsAnimated)
 			{
+				_animatingRequestedScroll = true;
 				ScrollHelper.AnimateScrollToPosition(position, args.ScrollToPosition);
 			}
 			else
@@ -788,8 +793,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public override void OnScrollStateChanged(int state)
 		{
 			base.OnScrollStateChanged(state);
+			if (state != ScrollStateSettling)
+			{
+				_animatingRequestedScroll = false;
+			}
+
 			_scrollAnchor?.ScrollStateChanged(state);
 		}
+
+		bool IScrollAnchorRecyclerView.IsAnimatingRequestedScroll => _animatingRequestedScroll && ScrollState == ScrollStateSettling;
 
 		void IScrollAnchorRecyclerView.UpdateAnchorMode()
 		{
@@ -845,6 +857,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			// And an adjustment an earlier jump left for its layout would scroll the view on after it.
 			_scrollHelper?.CancelPendingAdjustment();
+			_animatingRequestedScroll |= animate;
 
 			if (!layoutManager.CanScrollVertically())
 			{
@@ -886,6 +899,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			// And an adjustment an earlier jump left for its layout would scroll the view on after it.
 			_scrollHelper?.CancelPendingAdjustment();
+			_animatingRequestedScroll |= animate;
 
 			if (!layoutManager.CanScrollVertically())
 			{

@@ -25,8 +25,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 	/// while the view scrolls forward. The anchor measures from the layout instead. The offset is exact while the first row
 	/// is laid out, and otherwise moves by exactly as much as a row that stayed laid out (at the same position, in the same
 	/// view) moved since the last look, or, when the view scrolled past every row it had laid out (a fast fling or animated
-	/// scroll), by exactly as much as it reported scrolling. The distance to the end is exact whenever the last row is laid
-	/// out: the end of the lowest row against the end of the viewport.
+	/// scroll), by exactly as much as it reported scrolling. That counts on the rows above the viewport keeping their size,
+	/// which a row that isn't laid out needn't do (an item replaced, or resized by a binding): so without the first row laid
+	/// out, the view isn't at the start. The distance to the end is exact whenever the last row is laid out: the end of the
+	/// lowest row against the end of the viewport.
 	/// </para>
 	/// <para>
 	/// RecyclerView keeps the first row it shows where it is as it applies changes to the items, so rows added before it
@@ -60,7 +62,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		int _estimatedOffset;
 		int _scrolledSinceLook;
 		double _offset;
-		bool _offsetIsExact;
 		bool _hasOffset;
 
 		// How far to scroll, in pixels, to the start (negative, or zero) and to the end (positive, or zero), as the last look
@@ -148,10 +149,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		// An animated scroll the app requested earlier (or an earlier ScrollToStart or ScrollToEnd) would carry on to where it
 		// was going: the edge the view follows now supersedes it. A fling is the user's, and carries on: the anchor goes to
-		// the edge once it settles, unless the user scrolled away.
+		// the edge once it settles, unless the user scrolled away. The smooth scroller that animates a request stops once it
+		// finds its target, and RecyclerView settles the rest of the way as it settles a fling: the recycler view tells them
+		// apart.
 		void StopRequestedScroll()
 		{
-			if (_recyclerView.GetLayoutManager()?.IsSmoothScrolling == true)
+			if (_recyclerView.GetLayoutManager()?.IsSmoothScrolling == true
+				|| (_recyclerView as IScrollAnchorRecyclerView)?.IsAnimatingRequestedScroll == true)
 			{
 				_recyclerView.StopScroll();
 			}
@@ -524,7 +528,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (startOffset is int exact)
 			{
 				_offset = exact;
-				_offsetIsExact = true;
 				_toStart = -exact;
 			}
 			else if (_hasOffset && referenceLaidOut)
@@ -538,18 +541,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			else if (_hasOffset)
 			{
 				_offset += estimatedOffset - _estimatedOffset;
-				_offsetIsExact = false;
 			}
 			else
 			{
 				_offset = estimatedOffset;
-				_offsetIsExact = false;
 			}
 
-			// Measured from an estimate, the offset can come out near or past the start while the first row is far away (the
-			// estimate averages the rows laid out): all that's certain is that the first row, which isn't laid out, is above
-			// the viewport.
-			if (!_offsetIsExact)
+			// Without the first row laid out, the offset comes from the rows laid out before, or from an estimate that averages
+			// the rows laid out. Either can come out near or past the start while the first row is far away: a row above the
+			// viewport can change size while it isn't laid out (an item replaced, or resized by a binding), and the rows in view
+			// don't show it. All that's certain is that the first row, which isn't laid out, is above the viewport.
+			if (startOffset is null)
 			{
 				_offset = Math.Max(_offset, (_tracker.Threshold + 1) * _density);
 			}
