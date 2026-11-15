@@ -200,9 +200,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Theory]
-		[InlineData(true)]
-		[InlineData(false)]
-		public void OverlappingMixedTemplateIsANonMatchNotAnException(bool overlappingFirst)
+		[InlineData(true, "aaa", "aa")]
+		[InlineData(false, "aaa", "aa")]
+		[InlineData(true, "aaaa", "aaa")]
+		[InlineData(false, "aaaa", "aaa")]
+		public void OverlappingMixedTemplateIsANonMatchNotAnException(bool overlappingFirst, string segment, string expectedId)
 		{
 			if (overlappingFirst)
 			{
@@ -217,11 +219,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var shell = new TestShell(CreateShellItem(shellContentRoute: "root"));
 
-			var request = ShellUriHandler.GetNavigationRequest(shell, CreateUri("//root/aaa"));
+			var request = ShellUriHandler.GetNavigationRequest(shell, CreateUri($"//root/{segment}"));
 
 			Assert.Single(request.Request.GlobalRoutes);
 			Assert.Equal("a{id}", request.Request.GlobalRoutes[0]);
-			Assert.Equal("aa", request.Request.PathParameters["id"]);
+			Assert.Equal(expectedId, request.Request.PathParameters["id"]);
 			Assert.False(request.Request.PathParameters.ContainsKey("other"));
 		}
 
