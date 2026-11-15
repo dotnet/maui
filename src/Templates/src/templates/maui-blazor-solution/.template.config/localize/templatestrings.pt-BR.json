@@ -1,4 +1,4 @@
-{
+﻿{
   "author": "Microsoft",
   "name": "Aplicativo Web e .NET MAUI Blazor Hybrid",
   "description": "Um aplicativo de vários projetos para criar um aplicativo .NET MAUI Blazor Híbrido com um projeto Web Blazor com uma interface de usuário compartilhada.",
@@ -22,9 +22,15 @@
   "symbols/InteractivityPlatform/choices/WebAssembly/description": "É executado no navegador usando o WebAssembly",
   "symbols/InteractivityPlatform/choices/Auto/displayName": "Automático (Servidor e WebAssembly)",
   "symbols/InteractivityPlatform/choices/Auto/description": "Usa Servidor ao baixar os ativos WebAssembly e usa o WebAssembly",
+  "symbols/InteractivityLocation/displayName": "Interactivity _location",
+  "symbols/InteractivityLocation/description": "Chooses which components will have interactive rendering enabled",
+  "symbols/InteractivityLocation/choices/InteractivePerPage/displayName": "Per page/component",
+  "symbols/InteractivityLocation/choices/InteractivePerPage/description": "Interactivity is applied on a per-page or per-component basis",
+  "symbols/InteractivityLocation/choices/InteractiveGlobal/displayName": "Global",
+  "symbols/InteractivityLocation/choices/InteractiveGlobal/description": "Interactivity is applied at the root level",
   "symbols/IncludeSampleContent/displayName": "_Incluir páginas de amostra",
   "symbols/IncludeSampleContent/description": "Configura se deseja adicionar páginas de amostra e estilo para demonstrar padrões de uso básicos.",
-  "symbols/empty/description": "Configura a omissão de páginas de amostra e estilo que demonstram padrões básicos de uso.",
+  "symbols/Empty/description": "Configura a omissão de páginas de amostra e estilo que demonstram padrões básicos de uso.",
   "symbols/AllInteractive/displayName": "_Habilitar renderização interativa globalmente no site",
   "symbols/AllInteractive/description": "Configura se todas as páginas devem ser interativas aplicando um modo de renderização interativo no nível superior. Se for falso, as páginas usarão a renderização do servidor estático por padrão e poderão ser marcadas como interativas por página ou por componente.",
   "symbols/NoHttps/description": "Se deve desligar o HTTPS. Essa opção só se aplica se Individual não for usado para --auth.",
