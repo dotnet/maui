@@ -176,10 +176,10 @@
     <WindowsTargetFrameworkVersion>10.0.19041.0</WindowsTargetFrameworkVersion>
     <Windows2TargetFrameworkVersion>10.0.20348.0</Windows2TargetFrameworkVersion>
     <!-- Previous .NET -->
-    <IosPreviousTargetFrameworkVersion>18.0</IosPreviousTargetFrameworkVersion>
-    <TvosPreviousTargetFrameworkVersion>18.0</TvosPreviousTargetFrameworkVersion>
-    <MacCatalystPreviousTargetFrameworkVersion>18.0</MacCatalystPreviousTargetFrameworkVersion>
-    <MacosPreviousTargetFrameworkVersion>15.0</MacosPreviousTargetFrameworkVersion>
+    <IosPreviousTargetFrameworkVersion>27.0</IosPreviousTargetFrameworkVersion>
+    <TvosPreviousTargetFrameworkVersion>27.0</TvosPreviousTargetFrameworkVersion>
+    <MacCatalystPreviousTargetFrameworkVersion>27.0</MacCatalystPreviousTargetFrameworkVersion>
+    <MacosPreviousTargetFrameworkVersion>27.0</MacosPreviousTargetFrameworkVersion>
     <AndroidPreviousTargetFrameworkVersion>35.0</AndroidPreviousTargetFrameworkVersion>
     <WindowsPreviousTargetFrameworkVersion>10.0.19041.0</WindowsPreviousTargetFrameworkVersion>
     <Windows2PreviousTargetFrameworkVersion>10.0.20348.0</Windows2PreviousTargetFrameworkVersion>
