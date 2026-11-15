@@ -463,7 +463,56 @@ static class CSharpExpressionHelpers
 		out char delimiter,
 		out bool isInterpolated,
 		out bool isVerbatim)
+		=> TryMatchStringStart(text, index, out prefixLength, out delimiter, out isInterpolated, out isVerbatim, out _, out _);
+
+	static bool TryMatchStringStart(
+		string text,
+		int index,
+		out int prefixLength,
+		out char delimiter,
+		out bool isInterpolated,
+		out bool isVerbatim,
+		out int delimiterLength,
+		out int interpolationBraceCount)
 	{
+		if (index < text.Length && text[index] == '$')
+		{
+			var dollars = 1;
+			while (index + dollars < text.Length && text[index + dollars] == '$')
+				dollars++;
+
+			var quoteStart = index + dollars;
+			if (quoteStart + 2 < text.Length && text[quoteStart] == '"' && text[quoteStart + 1] == '"' && text[quoteStart + 2] == '"')
+			{
+				var quotes = 3;
+				while (quoteStart + quotes < text.Length && text[quoteStart + quotes] == '"')
+					quotes++;
+
+				prefixLength = dollars + quotes;
+				delimiter = '"';
+				isInterpolated = true;
+				isVerbatim = true;
+				delimiterLength = quotes;
+				interpolationBraceCount = dollars;
+				return true;
+			}
+		}
+
+		if (index + 2 < text.Length && text[index] == '"' && text[index + 1] == '"' && text[index + 2] == '"')
+		{
+			var quotes = 3;
+			while (index + quotes < text.Length && text[index + quotes] == '"')
+				quotes++;
+
+			prefixLength = quotes;
+			delimiter = '"';
+			isInterpolated = false;
+			isVerbatim = true;
+			delimiterLength = quotes;
+			interpolationBraceCount = 0;
+			return true;
+		}
+
 		if (index + 2 < text.Length
 			&& ((text[index] == '$' && text[index + 1] == '@') || (text[index] == '@' && text[index + 1] == '$'))
 			&& (text[index + 2] == '\'' || text[index + 2] == '"'))
@@ -472,6 +521,8 @@ static class CSharpExpressionHelpers
 			delimiter = text[index + 2];
 			isInterpolated = true;
 			isVerbatim = true;
+			delimiterLength = 1;
+			interpolationBraceCount = 1;
 			return true;
 		}
 
@@ -483,6 +534,8 @@ static class CSharpExpressionHelpers
 			delimiter = text[index + 1];
 			isInterpolated = true;
 			isVerbatim = false;
+			delimiterLength = 1;
+			interpolationBraceCount = 1;
 			return true;
 		}
 
@@ -494,6 +547,8 @@ static class CSharpExpressionHelpers
 			delimiter = text[index + 1];
 			isInterpolated = false;
 			isVerbatim = true;
+			delimiterLength = 1;
+			interpolationBraceCount = 0;
 			return true;
 		}
 
@@ -503,6 +558,8 @@ static class CSharpExpressionHelpers
 			delimiter = text[index];
 			isInterpolated = false;
 			isVerbatim = false;
+			delimiterLength = 1;
+			interpolationBraceCount = 0;
 			return true;
 		}
 
@@ -510,7 +567,31 @@ static class CSharpExpressionHelpers
 		delimiter = '\0';
 		isInterpolated = false;
 		isVerbatim = false;
+		delimiterLength = 0;
+		interpolationBraceCount = 0;
 		return false;
+	}
+
+	static int CountConsecutiveChars(string text, int index, char target)
+	{
+		int count = 0;
+		while (index + count < text.Length && text[index + count] == target)
+			count++;
+		return count;
+	}
+
+	static bool HasConsecutiveChars(string text, int index, char target, int requiredCount)
+	{
+		if (requiredCount <= 0 || index < 0 || index + requiredCount > text.Length)
+			return false;
+
+		for (int k = 0; k < requiredCount; k++)
+		{
+			if (text[index + k] != target)
+				return false;
+		}
+
+		return true;
 	}
 
 	static string TransformInterpolationHoles(string code, Func<string, string> transformHole)
@@ -520,94 +601,26 @@ static class CSharpExpressionHelpers
 
 		while (i < code.Length)
 		{
-			if (TryMatchStringStart(code, i, out int prefixLength, out char delimiter, out bool isInterpolated, out bool isVerbatim))
+			if (TryMatchStringStart(code, i, out int prefixLength, out char delimiter, out bool isInterpolated, out bool isVerbatim, out int delimiterLength, out int interpolationBraceCount))
 			{
-				result.Append(code, i, prefixLength);
-				i += prefixLength;
-
-				if (isInterpolated)
+				if (!isInterpolated)
 				{
-					// Walk the interpolated string body until the unescaped closing delimiter.
-					while (i < code.Length)
-					{
-						char c = code[i];
-
-						if (!isVerbatim && c == '\\' && i + 1 < code.Length)
-						{
-							result.Append(c);
-							result.Append(code[i + 1]);
-							i += 2;
-							continue;
-						}
-
-						if (c == delimiter)
-						{
-							if (isVerbatim && i + 1 < code.Length && code[i + 1] == delimiter)
-							{
-								result.Append(c);
-								result.Append(delimiter);
-								i += 2;
-								continue;
-							}
-
-							result.Append(c);
-							i++;
-							break;
-						}
-
-						if (c == '{')
-						{
-							// Escaped brace '{{' is literal text, not a hole.
-							if (i + 1 < code.Length && code[i + 1] == '{')
-							{
-								result.Append("{{");
-								i += 2;
-								continue;
-							}
-
-							// Capture the hole content up to its matching '}'.
-							int holeStart = i + 1;
-							int j = FindHoleEnd(code, holeStart);
-							string holeContent = code.Substring(holeStart, j - holeStart);
-
-							// Recurse so nested interpolated strings are handled too.
-							holeContent = TransformInterpolationHoles(holeContent, transformHole);
-							holeContent = transformHole(holeContent);
-
-							result.Append('{');
-							result.Append(holeContent);
-							if (j < code.Length && code[j] == '}')
-							{
-								result.Append('}');
-								i = j + 1;
-							}
-							else
-							{
-								// Unterminated hole - leave as-is.
-								i = j;
-							}
-							continue;
-						}
-
-						if (c == '}' && i + 1 < code.Length && code[i + 1] == '}')
-						{
-							result.Append("}}");
-							i += 2;
-							continue;
-						}
-
-						result.Append(c);
-						i++;
-					}
-
+					// Non-interpolated string/char/raw literal: copy verbatim so its contents are never
+					// mistaken for interpolation structure.
+					int literalEnd = SkipQuotedLiteral(code, i);
+					result.Append(code, i, literalEnd - i);
+					i = literalEnd;
 					continue;
 				}
 
-				// Non-interpolated string/char literal: copy verbatim so its contents are never
-				// mistaken for interpolation structure.
+				result.Append(code, i, prefixLength);
+				i += prefixLength;
+
+				// Walk the interpolated string body until the unescaped closing delimiter.
 				while (i < code.Length)
 				{
 					char c = code[i];
+
 					if (!isVerbatim && c == '\\' && i + 1 < code.Length)
 					{
 						result.Append(c);
@@ -618,6 +631,21 @@ static class CSharpExpressionHelpers
 
 					if (c == delimiter)
 					{
+						if (delimiterLength > 1)
+						{
+							int quoteRun = CountConsecutiveChars(code, i, delimiter);
+							if (quoteRun >= delimiterLength)
+							{
+								result.Append(code, i, delimiterLength);
+								i += delimiterLength;
+								break;
+							}
+
+							result.Append(code, i, quoteRun);
+							i += quoteRun;
+							continue;
+						}
+
 						if (isVerbatim && i + 1 < code.Length && code[i + 1] == delimiter)
 						{
 							result.Append(c);
@@ -629,6 +657,70 @@ static class CSharpExpressionHelpers
 						result.Append(c);
 						i++;
 						break;
+					}
+
+					if (c == '{')
+					{
+						int literalBraces;
+						int holeStart;
+						if (delimiterLength > 1)
+						{
+							int openRun = CountConsecutiveChars(code, i, '{');
+							if (openRun < interpolationBraceCount)
+							{
+								result.Append(code, i, openRun);
+								i += openRun;
+								continue;
+							}
+
+							literalBraces = openRun - interpolationBraceCount;
+							holeStart = i + openRun;
+						}
+						else
+						{
+							// Escaped brace '{{' is literal text, not a hole.
+							if (i + 1 < code.Length && code[i + 1] == '{')
+							{
+								result.Append("{{");
+								i += 2;
+								continue;
+							}
+
+							literalBraces = 0;
+							holeStart = i + 1;
+						}
+
+						if (literalBraces > 0)
+							result.Append('{', literalBraces);
+
+						// Capture the hole content up to its matching closing braces.
+						int j = FindHoleEnd(code, holeStart, interpolationBraceCount);
+						string holeContent = code.Substring(holeStart, j - holeStart);
+
+						// Recurse so nested interpolated strings are handled too.
+						holeContent = TransformInterpolationHoles(holeContent, transformHole);
+						holeContent = transformHole(holeContent);
+
+						result.Append('{', interpolationBraceCount);
+						result.Append(holeContent);
+						if (HasConsecutiveChars(code, j, '}', interpolationBraceCount))
+						{
+							result.Append('}', interpolationBraceCount);
+							i = j + interpolationBraceCount;
+						}
+						else
+						{
+							// Unterminated hole - leave as-is.
+							i = j;
+						}
+						continue;
+					}
+
+					if (delimiterLength == 1 && c == '}' && i + 1 < code.Length && code[i + 1] == '}')
+					{
+						result.Append("}}");
+						i += 2;
+						continue;
 					}
 
 					result.Append(c);
@@ -646,12 +738,12 @@ static class CSharpExpressionHelpers
 	}
 
 	/// <summary>
-	/// Returns the index of the '}' that closes the interpolation hole starting at
-	/// <paramref name="start"/>, tracking nested braces and skipping string literals.
+	/// Returns the index of the closing brace sequence that terminates the interpolation hole
+	/// starting at <paramref name="start"/>, tracking nested braces and skipping string literals.
 	/// </summary>
-	static int FindHoleEnd(string code, int start)
+	static int FindHoleEnd(string code, int start, int braceCount = 1)
 	{
-		int depth = 1;
+		int depth = braceCount;
 		int j = start;
 		while (j < code.Length)
 		{
@@ -675,10 +767,17 @@ static class CSharpExpressionHelpers
 			}
 			if (c == '}')
 			{
-				depth--;
-				if (depth == 0)
+				if (depth > braceCount)
+				{
+					depth--;
+					j++;
+					continue;
+				}
+
+				if (HasConsecutiveChars(code, j, '}', braceCount))
 					return j;
-				j++;
+
+				j += CountConsecutiveChars(code, j, '}');
 				continue;
 			}
 			j++;
@@ -723,7 +822,7 @@ static class CSharpExpressionHelpers
 
 	static int SkipQuotedLiteral(string expr, int start)
 	{
-		if (!TryMatchStringStart(expr, start, out int prefixLength, out char delimiter, out bool isInterpolated, out bool isVerbatim))
+		if (!TryMatchStringStart(expr, start, out int prefixLength, out char delimiter, out bool isInterpolated, out bool isVerbatim, out int delimiterLength, out int interpolationBraceCount))
 			return start + 1;
 
 		int i = start + prefixLength;
@@ -738,6 +837,16 @@ static class CSharpExpressionHelpers
 
 			if (c == delimiter)
 			{
+				if (delimiterLength > 1)
+				{
+					int quoteRun = CountConsecutiveChars(expr, i, delimiter);
+					if (quoteRun >= delimiterLength)
+						return i + delimiterLength;
+
+					i += quoteRun;
+					continue;
+				}
+
 				if (isVerbatim && i + 1 < expr.Length && expr[i + 1] == delimiter)
 				{
 					i += 2;
@@ -751,18 +860,37 @@ static class CSharpExpressionHelpers
 			{
 				if (c == '{')
 				{
-					if (i + 1 < expr.Length && expr[i + 1] == '{')
+					int holeStart;
+					if (delimiterLength > 1)
 					{
-						i += 2;
-						continue;
+						int openRun = CountConsecutiveChars(expr, i, '{');
+						if (openRun < interpolationBraceCount)
+						{
+							i += openRun;
+							continue;
+						}
+
+						holeStart = i + openRun;
+					}
+					else
+					{
+						if (i + 1 < expr.Length && expr[i + 1] == '{')
+						{
+							i += 2;
+							continue;
+						}
+
+						holeStart = i + 1;
 					}
 
-					int holeEnd = FindHoleEnd(expr, i + 1);
-					i = holeEnd < expr.Length && expr[holeEnd] == '}' ? holeEnd + 1 : holeEnd;
+					int holeEnd = FindHoleEnd(expr, holeStart, interpolationBraceCount);
+					i = HasConsecutiveChars(expr, holeEnd, '}', interpolationBraceCount)
+						? holeEnd + interpolationBraceCount
+						: holeEnd;
 					continue;
 				}
 
-				if (c == '}' && i + 1 < expr.Length && expr[i + 1] == '}')
+				if (delimiterLength == 1 && c == '}' && i + 1 < expr.Length && expr[i + 1] == '}')
 				{
 					i += 2;
 					continue;
@@ -2158,22 +2286,71 @@ static class CSharpExpressionHelpers
 
 		var safePosition = Math.Max(0, Math.Min(position, root.FullSpan.End - 1));
 		var node = root.FindToken(safePosition).Parent;
+		SyntaxNode? previousNode = null;
 		while (node != null)
 		{
 			switch (node)
 			{
 				case SimpleLambdaExpressionSyntax simpleLambda
-					when simpleLambda.Parameter.Identifier.ValueText == identifier:
+					when simpleLambda.Parameter.Identifier.ValueText == identifier
+						|| (simpleLambda.ExpressionBody != null
+							&& simpleLambda.ExpressionBody.Span.Contains(safePosition)
+							&& HasShallowVariableDeclaration(simpleLambda.ExpressionBody, identifier, safePosition)):
 					return true;
 				case ParenthesizedLambdaExpressionSyntax parenthesizedLambda
-					when parenthesizedLambda.ParameterList.Parameters.Any(p => p.Identifier.ValueText == identifier):
+					when parenthesizedLambda.ParameterList.Parameters.Any(p => p.Identifier.ValueText == identifier)
+						|| (parenthesizedLambda.ExpressionBody != null
+							&& parenthesizedLambda.ExpressionBody.Span.Contains(safePosition)
+							&& HasShallowVariableDeclaration(parenthesizedLambda.ExpressionBody, identifier, safePosition)):
 					return true;
 				case AnonymousMethodExpressionSyntax anonymousMethod
 					when anonymousMethod.ParameterList?.Parameters.Any(p => p.Identifier.ValueText == identifier) == true:
 					return true;
 				case LocalFunctionStatementSyntax localFunction
 					when localFunction.Identifier.ValueText == identifier
-						|| localFunction.ParameterList.Parameters.Any(p => p.Identifier.ValueText == identifier):
+						|| localFunction.ParameterList.Parameters.Any(p => p.Identifier.ValueText == identifier)
+						|| (localFunction.ExpressionBody != null
+							&& localFunction.ExpressionBody.Span.Contains(safePosition)
+							&& HasShallowVariableDeclaration(localFunction.ExpressionBody, identifier, safePosition)):
+					return true;
+				case BaseArgumentListSyntax argList:
+					foreach (var arg in argList.Arguments)
+					{
+						if (arg.SpanStart >= safePosition)
+							break;
+						if (!arg.Span.Contains(safePosition)
+							&& HasShallowVariableDeclaration(arg, identifier, safePosition))
+						{
+							return true;
+						}
+					}
+					break;
+				case TupleExpressionSyntax tupleExpr:
+					foreach (var arg in tupleExpr.Arguments)
+					{
+						if (arg.SpanStart >= safePosition)
+							break;
+						if (!arg.Span.Contains(safePosition)
+							&& HasShallowVariableDeclaration(arg, identifier, safePosition))
+						{
+							return true;
+						}
+					}
+					break;
+				case InitializerExpressionSyntax initializerExpr:
+					foreach (var expr in initializerExpr.Expressions)
+					{
+						if (expr.SpanStart >= safePosition)
+							break;
+						if (!expr.Span.Contains(safePosition)
+							&& HasShallowVariableDeclaration(expr, identifier, safePosition))
+						{
+							return true;
+						}
+					}
+					break;
+				case ExpressionStatementSyntax exprStmt
+					when HasShallowVariableDeclaration(exprStmt.Expression, identifier, safePosition):
 					return true;
 				case ForEachStatementSyntax forEachStmt
 					when forEachStmt.Identifier.ValueText == identifier
@@ -2205,7 +2382,10 @@ static class CSharpExpressionHelpers
 						&& HasShallowVariableDeclaration(whileStmt.Condition, identifier, safePosition):
 					return true;
 				case SwitchExpressionArmSyntax switchArm
-					when HasShallowVariableDeclaration(switchArm.Pattern, identifier, safePosition):
+					when HasShallowVariableDeclaration(switchArm.Pattern, identifier, safePosition)
+						|| (switchArm.WhenClause != null
+							&& switchArm.Expression.Span.Contains(safePosition)
+							&& HasShallowVariableDeclaration(switchArm.WhenClause, identifier, safePosition)):
 					return true;
 				case SwitchSectionSyntax switchSection:
 					foreach (var label in switchSection.Labels)
@@ -2226,14 +2406,79 @@ static class CSharpExpressionHelpers
 					}
 					break;
 				case BinaryExpressionSyntax binaryExpr
-					when binaryExpr.IsKind(SyntaxKind.LogicalAndExpression)
-						&& binaryExpr.Right.Span.Contains(safePosition)
+					when binaryExpr.Right.Span.Contains(safePosition)
 						&& HasShallowVariableDeclaration(binaryExpr.Left, identifier, safePosition):
 					return true;
 				case ConditionalExpressionSyntax condExpr
 					when condExpr.WhenTrue.Span.Contains(safePosition)
 						&& HasShallowVariableDeclaration(condExpr.Condition, identifier, safePosition):
 					return true;
+				case JoinClauseSyntax joinClause
+					when joinClause.Identifier.ValueText == identifier
+						&& joinClause.RightExpression.Span.Contains(safePosition):
+					return true;
+				case QueryBodySyntax queryBody:
+					foreach (var clause in queryBody.Clauses)
+					{
+						if (clause == previousNode || clause.SpanStart >= safePosition)
+							break;
+
+						switch (clause)
+						{
+							case FromClauseSyntax fromClause
+								when fromClause.Identifier.ValueText == identifier
+									|| HasShallowVariableDeclaration(fromClause.Expression, identifier, safePosition):
+								return true;
+							case LetClauseSyntax letClause
+								when letClause.Identifier.ValueText == identifier
+									|| HasShallowVariableDeclaration(letClause.Expression, identifier, safePosition):
+								return true;
+							case JoinClauseSyntax joinClause:
+								if (joinClause.Into is { } joinInto)
+								{
+									if (joinInto.Identifier.ValueText == identifier)
+										return true;
+								}
+								else if (joinClause.Identifier.ValueText == identifier)
+								{
+									return true;
+								}
+
+								if (HasShallowVariableDeclaration(joinClause.InExpression, identifier, safePosition)
+									|| HasShallowVariableDeclaration(joinClause.LeftExpression, identifier, safePosition)
+									|| HasShallowVariableDeclaration(joinClause.RightExpression, identifier, safePosition))
+								{
+									return true;
+								}
+								break;
+							case WhereClauseSyntax whereClause
+								when HasShallowVariableDeclaration(whereClause.Condition, identifier, safePosition):
+								return true;
+						}
+					}
+					break;
+				case QueryExpressionSyntax queryExpr
+					when previousNode == queryExpr.Body
+						&& (queryExpr.FromClause.Identifier.ValueText == identifier
+							|| HasShallowVariableDeclaration(queryExpr.FromClause.Expression, identifier, safePosition)):
+					return true;
+				case QueryContinuationSyntax queryCont
+					when previousNode == queryCont.Body:
+					if (queryCont.Identifier.ValueText == identifier)
+						return true;
+
+					// Range variables introduced before "into" are out of scope in the continuation body,
+					// so jump past the inner query chain to any enclosing outer scope.
+					SyntaxNode currentQueryNode = queryCont;
+					while (currentQueryNode.Parent is QueryBodySyntax or QueryContinuationSyntax)
+						currentQueryNode = currentQueryNode.Parent;
+					if (currentQueryNode.Parent is QueryExpressionSyntax outerQuery)
+					{
+						previousNode = outerQuery;
+						node = outerQuery.Parent;
+						continue;
+					}
+					break;
 				case BlockSyntax block:
 					foreach (var stmt in block.Statements)
 					{
@@ -2252,6 +2497,7 @@ static class CSharpExpressionHelpers
 					break;
 			}
 
+			previousNode = node;
 			node = node.Parent;
 		}
 
@@ -2294,7 +2540,8 @@ static class CSharpExpressionHelpers
 				or SwitchSectionSyntax
 				or SwitchExpressionArmSyntax
 				or LambdaExpressionSyntax
-				or AnonymousMethodExpressionSyntax);
+				or AnonymousMethodExpressionSyntax
+				or QueryExpressionSyntax);
 		}))
 		{
 			switch (desc)
@@ -2596,40 +2843,46 @@ static class CSharpExpressionHelpers
 			if (targetChain.IndexOf(':') >= 0)
 				return false;
 
-			var methodNameOnly = StripGenericAndCallSuffixes(targetChain);
+			ParseSegment(targetChain, out var methodNameOnly, out var methodGenericArity, out _);
 			if (string.IsNullOrEmpty(methodNameOnly))
 				return false;
 
-			return HasCallableWithParameter(dataTypeSymbol, methodNameOnly, paramName, ref callTargetResolved)
-				| HasCallableWithParameter(rootType, methodNameOnly, paramName, ref callTargetResolved);
+			return HasCallableWithParameter(dataTypeSymbol, methodNameOnly, methodGenericArity, paramName, ref callTargetResolved)
+				| HasCallableWithParameter(rootType, methodNameOnly, methodGenericArity, paramName, ref callTargetResolved);
 		}
 
 		var receiver = targetChain.Substring(0, lastDot);
-		var methodName = StripGenericAndCallSuffixes(targetChain.Substring(lastDot + 1));
+		ParseSegment(targetChain.Substring(lastDot + 1), out var methodName, out var receiverMethodGenericArity, out _);
 		if (string.IsNullOrEmpty(receiver) || string.IsNullOrEmpty(methodName))
 			return false;
 
 		var receiverTypes = TryResolveExpressionTargetTypes(receiver, nsResolver, compilation, xmlnsCache, typeCache, dataTypeSymbol, rootType);
 		foreach (var receiverType in receiverTypes)
 		{
-			if (HasCallableWithParameter(receiverType, methodName, paramName, ref callTargetResolved))
+			if (HasCallableWithParameter(receiverType, methodName, receiverMethodGenericArity, paramName, ref callTargetResolved))
 				return true;
 		}
 
 		return false;
 	}
 
-	static bool HasCallableWithParameter(ITypeSymbol? targetType, string methodName, string paramName, ref bool foundCallable)
+	static bool HasCallableWithParameter(ITypeSymbol? targetType, string methodName, int genericArity, string paramName, ref bool foundCallable)
 	{
 		if (targetType == null)
 			return false;
 
 		foreach (var method in targetType.GetAllMethods(methodName, context: null))
 		{
+			if (method.Arity != genericArity)
+				continue;
+
 			foundCallable = true;
 			if (HasParameter(method.Parameters, paramName))
 				return true;
 		}
+
+		if (genericArity > 0)
+			return false;
 
 		foreach (var prop in targetType.GetAllProperties(methodName, context: null))
 		{
@@ -2698,11 +2951,14 @@ static class CSharpExpressionHelpers
 					return false;
 			}
 
+			string genericSuffix = string.Empty;
 			if (allowGenerics && code[idx] == '>')
 			{
-				if (!TrySkipBalancedAngleBracketsBackwards(code, idx, out int beforeGenerics))
+				int genericClose = idx;
+				if (!TrySkipBalancedAngleBracketsBackwards(code, genericClose, out int beforeGenerics))
 					return false;
 
+				genericSuffix = code.Substring(beforeGenerics, genericClose - beforeGenerics + 1);
 				idx = SkipWhitespaceBackwardsIndex(code, beforeGenerics - 1);
 				if (idx < 0)
 					return false;
@@ -2716,13 +2972,14 @@ static class CSharpExpressionHelpers
 			if (start > end)
 				return false;
 
-			var segment = code.Substring(start, end - start + 1);
+			var identifier = code.Substring(start, end - start + 1);
+			var segment = string.IsNullOrEmpty(genericSuffix) ? identifier : identifier + genericSuffix;
 			segments.Add(segment);
 
 			int sepIdx = SkipWhitespaceBackwardsIndex(code, start - 1);
 			if (sepIdx < 0)
 			{
-				if (IsNonInvocationKeyword(segment))
+				if (IsNonInvocationKeyword(identifier))
 					return false;
 				break;
 			}
@@ -2765,7 +3022,7 @@ static class CSharpExpressionHelpers
 				return false;
 			}
 
-			if (IsNonInvocationKeyword(segment))
+			if (IsNonInvocationKeyword(identifier))
 				return false;
 
 			if (!hasCallOrIndexerAfterSegment && TryReadKeywordNew(code, start))
@@ -2843,26 +3100,56 @@ static class CSharpExpressionHelpers
 		if (closeIndex < 0 || text[closeIndex] != '>')
 			return false;
 
-		int depth = 1;
+		int angleDepth = 1;
+		int parenDepth = 0;
+		int bracketDepth = 0;
 		for (int i = closeIndex - 1; i >= 0; i--)
 		{
 			char ch = text[i];
-			if (ch == '>')
+			switch (ch)
 			{
-				depth++;
-			}
-			else if (ch == '<')
-			{
-				depth--;
-				if (depth == 0)
-				{
-					openBracketIndex = i;
-					return true;
-				}
-			}
-			else if (ch is ';' or '{' or '}' or '(' or ')' or '[' or ']' or '=' or '&' or '|' or '?')
-			{
-				return false;
+				case ')':
+					parenDepth++;
+					break;
+				case '(':
+					if (parenDepth == 0)
+						return false;
+					parenDepth--;
+					break;
+				case ']':
+					bracketDepth++;
+					break;
+				case '[':
+					if (bracketDepth == 0)
+						return false;
+					bracketDepth--;
+					break;
+				case '>':
+					angleDepth++;
+					break;
+				case '<':
+					angleDepth--;
+					if (angleDepth == 0)
+					{
+						if (parenDepth != 0 || bracketDepth != 0)
+							return false;
+
+						openBracketIndex = i;
+						return true;
+					}
+					break;
+				case '?':
+					int nextIdx = SkipWhitespace(text, i + 1);
+					if (nextIdx >= text.Length || text[nextIdx] is not ('>' or ',' or '[' or ')' or '?'))
+						return false;
+					break;
+				case ';':
+				case '{':
+				case '}':
+				case '=':
+				case '&':
+				case '|':
+					return false;
 			}
 		}
 
@@ -2889,14 +3176,6 @@ static class CSharpExpressionHelpers
 		}
 
 		return -1;
-	}
-
-	static string StripGenericAndCallSuffixes(string segment)
-	{
-		var idx = 0;
-		while (idx < segment.Length && (char.IsLetterOrDigit(segment[idx]) || segment[idx] == '_'))
-			idx++;
-		return idx == segment.Length ? segment : segment.Substring(0, idx);
 	}
 
 	static List<string> SplitTopLevelDotSegments(string chain)
@@ -2959,11 +3238,12 @@ static class CSharpExpressionHelpers
 			if (nsUri == null)
 				return results;
 
-			ParseSegment(remainder, out var baseTypeName, out var suffixes);
+			ParseSegment(remainder, out var baseTypeName, out var genericArity, out var suffixes);
 			if (string.IsNullOrEmpty(baseTypeName))
 				return results;
 
-			var xmlType = new XmlType(nsUri, baseTypeName, null);
+			var xmlTypeName = genericArity > 0 ? $"{baseTypeName}`{genericArity}" : baseTypeName;
+			var xmlType = new XmlType(nsUri, xmlTypeName, null);
 			if (!xmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, typeCache, out var resolvedType) || resolvedType == null)
 				return results;
 
@@ -2981,7 +3261,7 @@ static class CSharpExpressionHelpers
 			if (TryResolveChainFromRoots(segments, dataTypeSymbol, rootType, compilation, out var fromInstance))
 				return fromInstance;
 
-			if (segments.All(s => s.IndexOf('(') < 0 && s.IndexOf('[') < 0))
+			if (segments.All(s => !HasCallOrIndexerSuffix(s)))
 			{
 				var segArray = segments.ToArray();
 				var fromRootNs = WalkNamespaceOrTypeChain(rootType?.ContainingNamespace, segArray, compilation);
@@ -2998,7 +3278,7 @@ static class CSharpExpressionHelpers
 			}
 		}
 
-		if (segments.All(s => s.IndexOf('(') < 0 && s.IndexOf('[') < 0))
+		if (segments.All(s => !HasCallOrIndexerSuffix(s)))
 		{
 			var globalType = WalkNamespaceOrTypeChain(compilation.GlobalNamespace, segments.ToArray(), compilation);
 			if (globalType != null)
@@ -3020,9 +3300,9 @@ static class CSharpExpressionHelpers
 		out List<ITypeSymbol> resolvedTypes)
 	{
 		resolvedTypes = [];
-		ParseSegment(segments[0], out var firstName, out var firstSuffixes);
+		ParseSegment(segments[0], out var firstName, out var firstGenericArity, out var firstSuffixes);
 		List<ITypeSymbol> current;
-		if (string.Equals(firstName, "this", StringComparison.Ordinal))
+		if (firstGenericArity == 0 && string.Equals(firstName, "this", StringComparison.Ordinal))
 		{
 			if (rootType == null)
 				return false;
@@ -3065,11 +3345,11 @@ static class CSharpExpressionHelpers
 		var currentNs = startNs;
 		for (int i = 0; i < segments.Count; i++)
 		{
-			ParseSegment(segments[i], out var name, out var suffixes);
+			ParseSegment(segments[i], out var name, out var genericArity, out var suffixes);
 			if (string.IsNullOrEmpty(name))
 				return false;
 
-			var typeMatch = currentNs.GetTypeMembers(name).FirstOrDefault();
+			var typeMatch = currentNs.GetTypeMembers(name, genericArity).FirstOrDefault();
 			if (typeMatch != null)
 			{
 				var candidates = suffixes.Count == 0
@@ -3085,7 +3365,7 @@ static class CSharpExpressionHelpers
 				return false;
 			}
 
-			if (suffixes.Count > 0)
+			if (genericArity > 0 || suffixes.Count > 0)
 				return false;
 
 			var nsMatch = currentNs.GetNamespaceMembers().FirstOrDefault(ns => ns.Name == name);
@@ -3097,8 +3377,15 @@ static class CSharpExpressionHelpers
 		return false;
 	}
 
-	static void ParseSegment(string segment, out string baseName, out List<string> suffixes)
+	static bool HasCallOrIndexerSuffix(string segment)
 	{
+		ParseSegment(segment, out _, out _, out var suffixes);
+		return suffixes.Count > 0;
+	}
+
+	static void ParseSegment(string segment, out string baseName, out int genericArity, out List<string> suffixes)
+	{
+		genericArity = 0;
 		suffixes = [];
 		int idx = 0;
 		while (idx < segment.Length && (char.IsLetterOrDigit(segment[idx]) || segment[idx] == '_'))
@@ -3107,17 +3394,47 @@ static class CSharpExpressionHelpers
 
 		if (idx < segment.Length && segment[idx] == '<')
 		{
-			int depth = 0;
+			int angleDepth = 0;
+			int parenDepth = 0;
+			int bracketDepth = 0;
+			int topLevelCommas = 0;
+			bool hasTypeArgContent = false;
 			while (idx < segment.Length)
 			{
-				if (segment[idx] == '<') depth++;
-				else if (segment[idx] == '>')
+				char ch = segment[idx];
+				if (ch == '<')
 				{
-					depth--;
-					if (depth == 0) { idx++; break; }
+					angleDepth++;
+				}
+				else if (ch == '>')
+				{
+					angleDepth--;
+					if (angleDepth == 0)
+					{
+						idx++;
+						break;
+					}
+				}
+				else if (angleDepth >= 1)
+				{
+					if (ch == '(')
+						parenDepth++;
+					else if (ch == ')' && parenDepth > 0)
+						parenDepth--;
+					else if (ch == '[')
+						bracketDepth++;
+					else if (ch == ']' && bracketDepth > 0)
+						bracketDepth--;
+					else if (ch == ',' && angleDepth == 1 && parenDepth == 0 && bracketDepth == 0)
+						topLevelCommas++;
+					else if (!char.IsWhiteSpace(ch))
+						hasTypeArgContent = true;
 				}
 				idx++;
 			}
+
+			if (hasTypeArgContent || topLevelCommas > 0)
+				genericArity = topLevelCommas + 1;
 		}
 
 		while (idx + 1 < segment.Length)
@@ -3137,7 +3454,7 @@ static class CSharpExpressionHelpers
 
 	static List<ITypeSymbol> StepSegmentOnTypes(List<ITypeSymbol> inputTypes, string segment, Compilation compilation)
 	{
-		ParseSegment(segment, out var memberName, out var suffixes);
+		ParseSegment(segment, out var memberName, out var genericArity, out var suffixes);
 		var results = new List<ITypeSymbol>();
 		if (string.IsNullOrEmpty(memberName))
 			return results;
@@ -3149,13 +3466,19 @@ static class CSharpExpressionHelpers
 			{
 				foreach (var method in type.GetAllMethods(memberName, context: null))
 				{
+					if (method.Arity != genericArity)
+						continue;
+
 					if (!method.ReturnsVoid && method.ReturnType != null)
 						methodReturnTypes.Add(method.ReturnType);
 				}
 
-				var delegateMember = StepTypeOrMember(type, memberName, compilation);
-				if (delegateMember is INamedTypeSymbol { DelegateInvokeMethod: { ReturnsVoid: false, ReturnType: { } delRet } })
-					methodReturnTypes.Add(delRet);
+				if (genericArity == 0)
+				{
+					var delegateMember = StepTypeOrMember(type, memberName, genericArity: 0, compilation);
+					if (delegateMember is INamedTypeSymbol { DelegateInvokeMethod: { ReturnsVoid: false, ReturnType: { } delRet } })
+						methodReturnTypes.Add(delRet);
+				}
 			}
 
 			if (suffixes.Count == 1)
@@ -3167,7 +3490,7 @@ static class CSharpExpressionHelpers
 		var memberTypes = new List<ITypeSymbol>();
 		foreach (var type in inputTypes)
 		{
-			var stepped = StepTypeOrMember(type, memberName, compilation);
+			var stepped = StepTypeOrMember(type, memberName, genericArity, compilation);
 			if (stepped != null)
 				memberTypes.Add(stepped);
 		}
@@ -3233,10 +3556,13 @@ static class CSharpExpressionHelpers
 		ITypeSymbol? currentType = null;
 		for (int i = 0; i < segments.Length; i++)
 		{
-			var seg = StripGenericAndCallSuffixes(segments[i]);
+			ParseSegment(segments[i], out var seg, out var genericArity, out _);
+			if (string.IsNullOrEmpty(seg))
+				return null;
+
 			if (currentType != null)
 			{
-				currentType = StepTypeOrMember(currentType, seg, compilation);
+				currentType = StepTypeOrMember(currentType, seg, genericArity, compilation);
 				if (currentType == null)
 					return null;
 				continue;
@@ -3245,12 +3571,15 @@ static class CSharpExpressionHelpers
 			if (currentNs == null)
 				return null;
 
-			var typeMatch = currentNs.GetTypeMembers(seg).FirstOrDefault();
+			var typeMatch = currentNs.GetTypeMembers(seg, genericArity).FirstOrDefault();
 			if (typeMatch != null)
 			{
 				currentType = typeMatch;
 				continue;
 			}
+
+			if (genericArity > 0)
+				return null;
 
 			var nsMatch = currentNs.GetNamespaceMembers().FirstOrDefault(ns => ns.Name == seg);
 			if (nsMatch != null)
@@ -3265,14 +3594,17 @@ static class CSharpExpressionHelpers
 		return currentType;
 	}
 
-	static ITypeSymbol? StepTypeOrMember(ITypeSymbol type, string memberName, Compilation compilation)
+	static ITypeSymbol? StepTypeOrMember(ITypeSymbol type, string memberName, int genericArity, Compilation compilation)
 	{
 		for (var current = type; current != null; current = current.BaseType)
 		{
-			var nestedType = current.GetTypeMembers(memberName).FirstOrDefault();
+			var nestedType = current.GetTypeMembers(memberName, genericArity).FirstOrDefault();
 			if (nestedType != null)
 				return nestedType;
 		}
+
+		if (genericArity > 0)
+			return null;
 
 		var prop = type.GetAllProperties(memberName, context: null).FirstOrDefault();
 		if (prop != null)

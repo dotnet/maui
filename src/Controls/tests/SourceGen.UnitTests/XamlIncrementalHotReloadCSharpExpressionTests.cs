@@ -1071,6 +1071,134 @@ namespace TestApp
 		Assert.Contains("$\"{(global::TestApp.Attached.CustomGrid.GetRow(this))}\"", ucSource, StringComparison.Ordinal);
 	}
 
+	[Fact]
+	public void CSharpExpression_RawStringsOutVarQueriesAndGenericArity_PreservedInUC()
+	{
+		const string code =
+"""
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.ComponentModel;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace TestApp.Models
+{
+	public class Name { }
+	public class HH { public static string mm => "bad"; }
+	public class Person { public static string Default => "fallback"; }
+	public static class Labels { public static string Gold => "Gold"; }
+}
+
+namespace TestApp
+{
+	public class Box
+	{
+		public Box(string plain) { }
+		public override string ToString() => "";
+	}
+
+	public class Box<T>
+	{
+		public Box(string generic) { }
+		public override string ToString() => "";
+	}
+
+	public static class Formatter
+	{
+		public static string Format(object local) => local?.ToString() ?? string.Empty;
+	}
+
+	public sealed class QuerySequence<T> : IEnumerable<T>
+	{
+		readonly List<T> _items;
+		public QuerySequence(IEnumerable<T> items) => _items = new List<T>(items);
+		public QuerySequence<TResult> Select<TResult>(Func<T, TResult> selector)
+		{
+			var results = new List<TResult>(_items.Count);
+			foreach (var item in _items)
+				results.Add(selector(item));
+			return new QuerySequence<TResult>(results);
+		}
+		public IEnumerator<T> GetEnumerator() => _items.GetEnumerator();
+		IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+	}
+
+	public class UcScopeViewModel : INotifyPropertyChanged
+	{
+		public string Name { get; set; } = "Ada";
+		public event PropertyChangedEventHandler? PropertyChanged;
+	}
+
+	[XamlProcessing(XamlInflator.SourceGen)]
+	public partial class UcScopePage : ContentPage
+	{
+		public UcScopePage() => InitializeComponent();
+		public QuerySequence<string> People { get; } = new(["Ada"]);
+		public string UpdateTime(bool ok, string formatted) => ok ? formatted : string.Empty;
+	}
+}
+""";
+
+		var xamlV1 =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:res="clr-namespace:TestApp.Models"
+             xmlns:Time="clr-namespace:TestApp.Models"
+             xmlns:local="clr-namespace:TestApp.Models"
+             xmlns:generic="clr-namespace:TestApp.Models"
+             xmlns:app="clr-namespace:TestApp"
+             x:Class="TestApp.UcScopePage"
+             x:DataType="app:UcScopeViewModel">
+    <VerticalStackLayout>
+        <Label Text="Initial1" />
+        <Label Text="Initial2" />
+        <Label Text="Initial3" />
+        <Label Text="Initial4" />
+        <Label Text="Initial5" />
+    </VerticalStackLayout>
+</ContentPage>
+""";
+		var xamlV2 =
+""""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:res="clr-namespace:TestApp.Models"
+             xmlns:Time="clr-namespace:TestApp.Models"
+             xmlns:local="clr-namespace:TestApp.Models"
+             xmlns:generic="clr-namespace:TestApp.Models"
+             xmlns:app="clr-namespace:TestApp"
+             x:Class="TestApp.UcScopePage"
+             x:DataType="app:UcScopeViewModel">
+    <VerticalStackLayout>
+        <Label Text='{= """literal " $@"{global::System.String.Empty}" """}' />
+        <Label Text='{= $"""{res:Labels.Gold}""" }' />
+        <Label Text="{= this.UpdateTime(System.DateTime.TryParse('2026-11-15', out var Time), $'{Time:HH.mm}')}" />
+        <Label Text="{= string.Join(', ', from Person in People select global::TestApp.Formatter.Format(local:Person))}" />
+        <Label Text="{= new global::TestApp.Box&lt;int&gt;(generic:Name).ToString()}" />
+    </VerticalStackLayout>
+</ContentPage>
+"""";
+
+		RunGenerator(xamlV1, code, assertNoCompilationErrors: false, enableIncrementalHotReload: true);
+		var (result, _) = RunGenerator(xamlV2, code, assertNoCompilationErrors: false, enableIncrementalHotReload: true);
+
+		var ucSource = GetUCSource(result);
+		Assert.NotNull(ucSource);
+		Assert.DoesNotContain("skipped", ucSource, StringComparison.OrdinalIgnoreCase);
+		Assert.Contains("\"\"\"literal \" $@\"{global::System.String.Empty}\" \"\"\"", ucSource, StringComparison.Ordinal);
+		Assert.Contains("$\"\"\"{(global::TestApp.Models.Labels.Gold)}\"\"\"", ucSource, StringComparison.Ordinal);
+		Assert.DoesNotContain("global::TestApp.Models.HH", ucSource, StringComparison.Ordinal);
+		Assert.Contains("Time:HH.mm}\"", ucSource, StringComparison.Ordinal);
+		Assert.Contains("Formatter.Format(local:Person)", ucSource, StringComparison.Ordinal);
+		Assert.DoesNotContain("global::TestApp.Models.Name", ucSource, StringComparison.Ordinal);
+		Assert.Contains("new global::TestApp.Box<int>(generic:", ucSource, StringComparison.Ordinal);
+	}
+
 	static string? GetUCSource(GeneratorDriverRunResult result)
 	{
 		foreach (var gen in result.Results)

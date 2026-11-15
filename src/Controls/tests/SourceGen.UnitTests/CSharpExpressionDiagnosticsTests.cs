@@ -2766,6 +2766,372 @@ namespace Repro.Views
 		Assert.Contains("$@\"{(global::Repro.Attached.CustomGrid.GetRow(this))}\"", output, StringComparison.Ordinal);
 	}
 
+	[Fact]
+	public void RawStringLiterals_PreserveContentsAndTransformInterpolatedRawHoles()
+	{
+		var xaml =
+""""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:res="clr-namespace:Repro.Resources"
+             x:Class="Repro.Views.RawStringLiteralsPage">
+    <VerticalStackLayout>
+        <Label Text='{= """literal " $@"{global::System.String.Empty}" """}' />
+        <Label Text='{= """raw ? a : b""" }' />
+        <Label Text='{= $"""{res:Labels.Gold}""" }' />
+        <Label Text='{= $$"""{res:Labels.Gold} {{res:Labels.Gold}} {{{res:Labels.Count:D2}}}""" }' />
+    </VerticalStackLayout>
+</ContentPage>
+"""";
+
+		var codeBehind =
+"""
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace Repro.Resources
+{
+	public static class Labels
+	{
+		public static string Gold => "Gold";
+		public static int Count => 7;
+	}
+}
+
+namespace Repro.Views
+{
+	[XamlProcessing(XamlInflator.SourceGen)]
+	public partial class RawStringLiteralsPage : ContentPage
+	{
+		public RawStringLiteralsPage() => InitializeComponent();
+	}
+}
+""";
+
+		var (result, output) = RunGenerator(xaml, codeBehind);
+		Assert.Empty(result.Diagnostics);
+		Assert.NotNull(output);
+		Assert.Contains("\"\"\"literal \" $@\"{global::System.String.Empty}\" \"\"\"", output, StringComparison.Ordinal);
+		Assert.Contains("\"\"\"raw ? a : b\"\"\"", output, StringComparison.Ordinal);
+		Assert.Contains("$\"\"\"{(global::Repro.Resources.Labels.Gold)}\"\"\"", output, StringComparison.Ordinal);
+		Assert.Contains("$$\"\"\"{res:Labels.Gold} {{(global::Repro.Resources.Labels.Gold)}} {{{(global::Repro.Resources.Labels.Count):D2}}}\"\"\"", output, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void ExpressionLambdaAndCallArguments_EarlierOutVar_PreservesInterpolationIdentifier()
+	{
+		var xaml =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:Time="clr-namespace:Repro"
+             x:Class="Repro.Views.OutVarInterpolationPage">
+    <VerticalStackLayout>
+        <Button Clicked="{= (s, e) => this.UpdateTime(System.DateTime.TryParse('2026-11-15', out var Time), $'{Time:HH.mm}')}" />
+        <Label Text="{= this.UpdateTime(System.DateTime.TryParse('2026-11-15', out var Time), $'{Time:HH.mm}')}" />
+    </VerticalStackLayout>
+</ContentPage>
+""";
+
+		var codeBehind =
+"""
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace Repro
+{
+	public static class HH
+	{
+		public static string mm => "bad";
+	}
+}
+
+namespace Repro.Views
+{
+	[XamlProcessing(XamlInflator.SourceGen)]
+	public partial class OutVarInterpolationPage : ContentPage
+	{
+		public OutVarInterpolationPage() => InitializeComponent();
+
+		public string UpdateTime(bool ok, string formatted) => ok ? formatted : string.Empty;
+	}
+}
+""";
+
+		var (result, output) = RunGenerator(xaml, codeBehind);
+		Assert.Empty(result.Diagnostics);
+		Assert.NotNull(output);
+		Assert.DoesNotContain("global::Repro.HH", output, StringComparison.Ordinal);
+		Assert.Contains("Time:HH.mm}\"", output, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void QueryExpression_RangeVariablesAndContinuationScoping_ResolvesXmlnsPrefixes()
+	{
+		var xaml =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Repro.Models"
+             xmlns:other="clr-namespace:Repro.Alt"
+             x:Class="App.Views.QueryScopePage">
+    <VerticalStackLayout>
+        <Label Text="{= string.Join(', ', from Person in People select global::Repro.Formatter.Format(local:Person))}" />
+        <Label Text="{= string.Join(', ', from p in People let Alias = p.Name join Entry in Entries on p.Id equals Entry.Id select global::Repro.Formatter.Format(local:Alias, other:Entry.Tag))}" />
+        <Label Text="{= string.Join(', ', from p in People join e in Entries on p.Id equals e.Id into Grouped select global::Repro.Formatter.Format(local:Grouped))}" />
+        <Label Text="{= string.Join(', ', from Person in People select Person.Name into Summary select global::Repro.Formatter.Format(local:Summary))}" />
+        <Label Text="{= string.Join(', ', from Person in People select Person.Name into Summary select global::Repro.Formatter.Format(local:Person.Default))}" />
+    </VerticalStackLayout>
+</ContentPage>
+""";
+
+		var codeBehind =
+"""
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace Repro.Alt
+{
+	public class DummyType { }
+}
+
+namespace Repro.Models
+{
+	public class Person
+	{
+		public static string Default => "fallback";
+	}
+
+	public class Alias { }
+
+	public class Grouped { }
+
+	public class Summary { }
+
+	public class Entry { }
+}
+
+namespace Repro
+{
+	public record PersonItem(int Id, string Name);
+
+	public record EntryItem(int Id, string Tag);
+
+	public sealed class QuerySequence<T> : IEnumerable<T>
+	{
+		readonly List<T> _items;
+		public QuerySequence(IEnumerable<T> items) => _items = new List<T>(items);
+
+		public QuerySequence<TResult> Select<TResult>(Func<T, TResult> selector)
+		{
+			var results = new List<TResult>(_items.Count);
+			foreach (var item in _items)
+				results.Add(selector(item));
+			return new QuerySequence<TResult>(results);
+		}
+
+		public QuerySequence<TResult> Join<TInner, TKey, TResult>(
+			IEnumerable<TInner> inner,
+			Func<T, TKey> outerKeySelector,
+			Func<TInner, TKey> innerKeySelector,
+			Func<T, TInner, TResult> resultSelector)
+		{
+			var innerList = new List<TInner>(inner);
+			var results = new List<TResult>();
+			foreach (var outerItem in _items)
+			{
+				var outerKey = outerKeySelector(outerItem);
+				foreach (var innerItem in innerList)
+				{
+					if (EqualityComparer<TKey>.Default.Equals(outerKey, innerKeySelector(innerItem)))
+						results.Add(resultSelector(outerItem, innerItem));
+				}
+			}
+			return new QuerySequence<TResult>(results);
+		}
+
+		public QuerySequence<TResult> GroupJoin<TInner, TKey, TResult>(
+			IEnumerable<TInner> inner,
+			Func<T, TKey> outerKeySelector,
+			Func<TInner, TKey> innerKeySelector,
+			Func<T, IEnumerable<TInner>, TResult> resultSelector)
+		{
+			var innerList = new List<TInner>(inner);
+			var results = new List<TResult>();
+			foreach (var outerItem in _items)
+			{
+				var outerKey = outerKeySelector(outerItem);
+				var matches = new List<TInner>();
+				foreach (var innerItem in innerList)
+				{
+					if (EqualityComparer<TKey>.Default.Equals(outerKey, innerKeySelector(innerItem)))
+						matches.Add(innerItem);
+				}
+				results.Add(resultSelector(outerItem, matches));
+			}
+			return new QuerySequence<TResult>(results);
+		}
+
+		public IEnumerator<T> GetEnumerator() => _items.GetEnumerator();
+		IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+	}
+
+	public static class Formatter
+	{
+		public static string Format(object local) => local?.ToString() ?? string.Empty;
+		public static string Format(object local, string other) => $"{local}:{other}";
+	}
+}
+
+namespace App.Views
+{
+	[XamlProcessing(XamlInflator.SourceGen)]
+	public partial class QueryScopePage : ContentPage
+	{
+		public QueryScopePage() => InitializeComponent();
+
+		public Repro.QuerySequence<Repro.PersonItem> People { get; } = new([new(1, "Ada")]);
+		public Repro.QuerySequence<Repro.EntryItem> Entries { get; } = new([new(1, "A")]);
+	}
+}
+""";
+
+		var (result, output) = RunGenerator(xaml, codeBehind);
+		Assert.Empty(result.Diagnostics);
+		Assert.NotNull(output);
+		Assert.Contains("Formatter.Format(local:Person)", output, StringComparison.Ordinal);
+		Assert.Contains("Formatter.Format(local:Alias, other:Entry.Tag)", output, StringComparison.Ordinal);
+		Assert.Contains("Formatter.Format(local:Grouped)", output, StringComparison.Ordinal);
+		Assert.Contains("Formatter.Format(local:Summary)", output, StringComparison.Ordinal);
+		Assert.DoesNotContain("global::Repro.Models.Alias", output, StringComparison.Ordinal);
+		Assert.DoesNotContain("global::Repro.Models.Grouped", output, StringComparison.Ordinal);
+		Assert.DoesNotContain("global::Repro.Models.Summary", output, StringComparison.Ordinal);
+		Assert.DoesNotContain("global::Repro.Alt.Entry", output, StringComparison.Ordinal);
+		Assert.DoesNotContain("Formatter.Format(local:global::Repro.Models.Person", output, StringComparison.Ordinal);
+		Assert.Contains("Formatter.Format(global::Repro.Models.Person.Default)", output, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void GenericArity_PreservesNamedArgumentsAcrossTypeAndMethodOverloads()
+	{
+		var xaml =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:plain="clr-namespace:Repro"
+             xmlns:generic="clr-namespace:Repro"
+             xmlns:pair="clr-namespace:Repro"
+             x:Class="Repro.Views.GenericArityPage"
+             x:DataType="plain:BoxViewModel">
+    <VerticalStackLayout>
+        <Label Text="{= new global::Repro.Box(plain:Name).ToString()}" />
+        <Label Text="{= new global::Repro.Box&lt;int&gt;(generic:Name).ToString()}" />
+        <Label Text="{= new global::Repro.Box&lt;int, string&gt;(pair:Name).ToString()}" />
+        <Label Text="{= new plain:Box(plain:Name).ToString()}" />
+        <Label Text="{= new plain:Box&lt;int&gt;(generic:Name).ToString()}" />
+        <Label Text="{= new global::Repro.Container.Inner(plain:Name).ToString()}" />
+        <Label Text="{= new global::Repro.Container.Inner&lt;int&gt;(generic:Name).ToString()}" />
+        <Label Text="{= global::Repro.Factory.Create(plain:Name)}" />
+        <Label Text="{= global::Repro.Factory.Create&lt;int&gt;(generic:Name)}" />
+        <Label Text="{= global::Repro.Factory.Create&lt;int, string&gt;(pair:Name)}" />
+    </VerticalStackLayout>
+</ContentPage>
+""";
+
+		var codeBehind =
+"""
+using System.ComponentModel;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace Repro
+{
+	public class Name { }
+
+	public class Box
+	{
+		readonly string _value;
+		public Box(string plain) => _value = plain;
+		public override string ToString() => _value;
+	}
+
+	public class Box<T>
+	{
+		readonly string _value;
+		public Box(string generic) => _value = generic;
+		public override string ToString() => _value;
+	}
+
+	public class Box<T1, T2>
+	{
+		readonly string _value;
+		public Box(string pair) => _value = pair;
+		public override string ToString() => _value;
+	}
+
+	public class Container
+	{
+		public class Inner
+		{
+			readonly string _value;
+			public Inner(string plain) => _value = plain;
+			public override string ToString() => _value;
+		}
+
+		public class Inner<T>
+		{
+			readonly string _value;
+			public Inner(string generic) => _value = generic;
+			public override string ToString() => _value;
+		}
+	}
+
+	public static class Factory
+	{
+		public static string Create(string plain) => plain;
+		public static string Create<T>(string generic) => generic;
+		public static string Create<T1, T2>(string pair) => pair;
+	}
+
+	public class BoxViewModel : INotifyPropertyChanged
+	{
+		public string Name { get; set; } = "Ada";
+		public event PropertyChangedEventHandler? PropertyChanged;
+	}
+}
+
+namespace Repro.Views
+{
+	[XamlProcessing(XamlInflator.SourceGen)]
+	public partial class GenericArityPage : ContentPage
+	{
+		public GenericArityPage() => InitializeComponent();
+	}
+}
+""";
+
+		var (result, output) = RunGenerator(xaml, codeBehind);
+		Assert.Empty(result.Diagnostics);
+		Assert.NotNull(output);
+		Assert.DoesNotContain("global::Repro.Name", output, StringComparison.Ordinal);
+		Assert.Contains("__source.Name", output, StringComparison.Ordinal);
+		Assert.Contains("new global::Repro.Box(plain:", output, StringComparison.Ordinal);
+		Assert.Contains("new global::Repro.Box<int>(generic:", output, StringComparison.Ordinal);
+		Assert.Contains("new global::Repro.Box<int, string>(pair:", output, StringComparison.Ordinal);
+		Assert.Contains("new global::Repro.Container.Inner(plain:", output, StringComparison.Ordinal);
+		Assert.Contains("new global::Repro.Container.Inner<int>(generic:", output, StringComparison.Ordinal);
+		Assert.Contains("Factory.Create(plain:", output, StringComparison.Ordinal);
+		Assert.Contains("Factory.Create<int>(generic:", output, StringComparison.Ordinal);
+		Assert.Contains("Factory.Create<int, string>(pair:", output, StringComparison.Ordinal);
+	}
+
 	static void AssertEachSetBindingContains(string output, int expectedCount, string requiredSnippet, params string[] expectedBindingExpressions)
 	{
 		var matches = System.Text.RegularExpressions.Regex.Matches(output, @"\bSetBinding\s*\(");
