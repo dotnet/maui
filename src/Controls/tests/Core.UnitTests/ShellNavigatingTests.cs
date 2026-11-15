@@ -985,6 +985,67 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(typeof(TestPage3), shell.Navigation.NavigationStack[3].GetType());
 		}
 
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public async Task PoppingWithHierarchicalRoutesIsIndependentOfRegistrationOrder(bool childFirst)
+		{
+			if (childFirst)
+			{
+				Routing.RegisterRoute("home", typeof(TestPage1));
+				Routing.RegisterRoute("home/savings/search/levels", typeof(ContentPage));
+				Routing.RegisterRoute("home/savings/search", typeof(TestPage3));
+				Routing.RegisterRoute("home/savings", typeof(TestPage2));
+			}
+			else
+			{
+				Routing.RegisterRoute("home", typeof(TestPage1));
+				Routing.RegisterRoute("home/savings", typeof(TestPage2));
+				Routing.RegisterRoute("home/savings/search", typeof(TestPage3));
+				Routing.RegisterRoute("home/savings/search/levels", typeof(ContentPage));
+			}
+
+			var shell = new TestShell(CreateShellItem(shellContentRoute: "root"));
+
+			await shell.GoToAsync("//root/home");
+			await shell.GoToAsync("savings");
+			await shell.GoToAsync("search");
+			await shell.GoToAsync("levels");
+
+			await shell.GoToAsync("..");
+
+			Assert.Equal("//root/home/savings/search", shell.CurrentState.Location.ToString());
+			Assert.Equal(4, shell.Navigation.NavigationStack.Count);
+			Assert.Equal(typeof(TestPage1), shell.Navigation.NavigationStack[1].GetType());
+			Assert.Equal(typeof(TestPage2), shell.Navigation.NavigationStack[2].GetType());
+			Assert.Equal(typeof(TestPage3), shell.Navigation.NavigationStack[3].GetType());
+		}
+
+		[Fact]
+		public async Task PoppingWithHierarchicalTemplateRoutesPreservesIntermediatePages()
+		{
+			// Templated keys keep first-match order, so this covers the registration order that works on main.
+			Routing.RegisterRoute("product/{id:int}", typeof(TestPage1));
+			Routing.RegisterRoute("product/{id:int}/details", typeof(TestPage2));
+
+			Routing.RegisterRoute("edit", typeof(TestPage3));
+
+			var shell = new TestShell(CreateShellItem(shellContentRoute: "root"));
+
+			await shell.GoToAsync("//root/product/5");
+			await shell.GoToAsync("details");
+			await shell.GoToAsync("edit");
+
+			Assert.Equal(4, shell.Navigation.NavigationStack.Count);
+
+			await shell.GoToAsync("..");
+
+			Assert.Equal("//root/product/5/details", shell.CurrentState.Location.ToString());
+			Assert.Equal(3, shell.Navigation.NavigationStack.Count);
+			Assert.Equal(typeof(TestPage1), shell.Navigation.NavigationStack[1].GetType());
+			Assert.Equal(typeof(TestPage2), shell.Navigation.NavigationStack[2].GetType());
+		}
+
 		[Fact]
 		public async Task GlobalRoutesRegisteredHierarchicallyNavigateCorrectlyVariation()
 		{
