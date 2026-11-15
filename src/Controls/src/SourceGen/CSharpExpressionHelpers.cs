@@ -1541,7 +1541,39 @@ static class CSharpExpressionHelpers
 		ITypeSymbol? dataTypeSymbol = null,
 		ITypeSymbol? rootType = null)
 	{
-		var resolved = ReplaceOutsideLiteralSegments(code, XmlnsPrefixPattern, (match, overlapsFormatClause, literalSpans) =>
+		// Re-run after parenthesizing global:: interpolation expressions so Roslyn re-parses
+		// nested calls/named arguments that initially fell inside an unparenthesized format clause.
+		const int maxPasses = 4;
+		var current = code;
+		for (var pass = 0; pass < maxPasses; pass++)
+		{
+			var next = ResolveXmlnsPrefixesPass(
+				current,
+				nsResolver,
+				compilation,
+				xmlnsCache,
+				typeCache,
+				dataTypeSymbol,
+				rootType);
+			next = ParenthesizeInterpolationGlobalAliases(next);
+			if (string.Equals(next, current, StringComparison.Ordinal))
+				break;
+			current = next;
+		}
+
+		return current;
+	}
+
+	static string ResolveXmlnsPrefixesPass(
+		string code,
+		IXmlNamespaceResolver nsResolver,
+		Compilation compilation,
+		AssemblyAttributes xmlnsCache,
+		IDictionary<XmlType, INamedTypeSymbol> typeCache,
+		ITypeSymbol? dataTypeSymbol,
+		ITypeSymbol? rootType)
+	{
+		return ReplaceOutsideLiteralSegments(code, XmlnsPrefixPattern, (match, overlapsFormatClause, literalSpans) =>
 		{
 			var prefix = match.Groups[1].Value;
 			var typeName = match.Groups[2].Value;
@@ -1558,10 +1590,21 @@ static class CSharpExpressionHelpers
 				return match.Value;
 
 			// Inside an interpolation hole, Roslyn parses "ident:Text" as a format specifier.
-			// Keep format specifiers (e.g. "{d:F2}", "{Price:C2}", or dotted "{Time:HH.mm}" when Time is in scope) untouched.
+			// Never rewrite matches wholly inside the format string token (e.g. "{Value:res:Labels.Gold}").
+			// For matches spanning the interpolation ':' boundary, keep format specifiers untouched.
 			if (overlapsFormatClause &&
-				(!IsFollowedByMemberAccess(code, match.Index + match.Length)
+				(!SpansFormatClauseStartBoundary(match.Index, match.Length, literalSpans)
+				 || !IsFollowedByMemberAccess(code, match.Index + match.Length)
 				 || HasMemberInExpressionScope(code, match.Index, prefix, dataTypeSymbol, rootType, compilation)))
+			{
+				return match.Value;
+			}
+
+			// Preserve ternary conditional ':' when there is no whitespace around ':' (e.g. "IsVip ? Gold:Standard")
+			// and tuple element labels whose value root is in scope (e.g. "(local:Name, Count)").
+			if (!overlapsFormatClause &&
+				(IsConditionalSeparatorColon(code, match)
+				 || IsTupleElementLabelSyntax(code, match, compilation, dataTypeSymbol, rootType)))
 			{
 				return match.Value;
 			}
@@ -1604,8 +1647,21 @@ static class CSharpExpressionHelpers
 
 			return match.Value;
 		}, allowInterpolationFormatClause: true);
+	}
 
-		return ParenthesizeInterpolationGlobalAliases(resolved);
+	static bool SpansFormatClauseStartBoundary(
+		int start,
+		int length,
+		List<(int Start, int End, bool IsFormatClause)> literalSpans)
+	{
+		var end = start + length;
+		foreach (var span in literalSpans)
+		{
+			if (span.IsFormatClause && start < span.Start && end > span.Start)
+				return true;
+		}
+
+		return false;
 	}
 
 	// Pattern to match attached bindable property syntax: target.(Type.Property) or standalone (Type.Property)
@@ -1829,7 +1885,7 @@ static class CSharpExpressionHelpers
 			return true;
 		}
 
-		return HasEnclosingLambdaParameter(code, matchIndex, identifier);
+		return HasEnclosingLocalOrParameter(code, matchIndex, identifier);
 	}
 
 	static bool HasExpressionRootInScope(
@@ -1852,10 +1908,162 @@ static class CSharpExpressionHelpers
 				return true;
 		}
 
-		return compilation.GlobalNamespace.GetMembers(identifier).Any();
+		if (compilation.GlobalNamespace.GetMembers(identifier).Any())
+			return true;
+
+		if (compilation is CSharpCompilation csharpCompilation)
+		{
+			foreach (var defaultUsing in csharpCompilation.Options.Usings)
+			{
+				if (ResolveNamespaceSymbol(compilation.GlobalNamespace, defaultUsing) is INamespaceSymbol usingNamespace
+					&& usingNamespace.GetMembers(identifier).Any())
+				{
+					return true;
+				}
+			}
+		}
+
+		foreach (var tree in compilation.SyntaxTrees)
+		{
+			if (tree.GetRoot() is not CompilationUnitSyntax compilationUnit)
+				continue;
+
+			SemanticModel? semanticModel = null;
+			foreach (var usingDirective in compilationUnit.Usings)
+			{
+				if (usingDirective.GlobalKeyword.IsKind(SyntaxKind.None))
+					continue;
+
+				if (usingDirective.Alias is not null)
+				{
+					if (string.Equals(usingDirective.Alias.Name.Identifier.ValueText, identifier, StringComparison.Ordinal))
+						return true;
+					continue;
+				}
+
+				if (usingDirective.NamespaceOrType is null)
+					continue;
+
+				semanticModel ??= compilation.GetSemanticModel(tree);
+				var targetSymbol = semanticModel.GetSymbolInfo(usingDirective.NamespaceOrType).Symbol;
+				if (!usingDirective.StaticKeyword.IsKind(SyntaxKind.None))
+				{
+					if (targetSymbol is INamedTypeSymbol staticTypeSymbol
+						&& HasStaticOrNestedMember(staticTypeSymbol, identifier))
+					{
+						return true;
+					}
+					continue;
+				}
+
+				var importedNamespace = targetSymbol as INamespaceSymbol
+					?? ResolveNamespaceSymbol(compilation.GlobalNamespace, usingDirective.NamespaceOrType.ToString());
+				if (importedNamespace is not null && importedNamespace.GetMembers(identifier).Any())
+					return true;
+			}
+		}
+
+		return false;
 	}
 
-	static bool HasEnclosingLambdaParameter(string code, int position, string identifier)
+	static INamespaceSymbol? ResolveNamespaceSymbol(INamespaceSymbol globalNamespace, string namespaceName)
+	{
+		if (string.IsNullOrWhiteSpace(namespaceName))
+			return null;
+
+		var trimmed = namespaceName.Trim();
+		if (trimmed.StartsWith("global::", StringComparison.Ordinal))
+			trimmed = trimmed.Substring("global::".Length);
+
+		INamespaceSymbol? current = globalNamespace;
+		foreach (var part in trimmed.Split('.'))
+		{
+			var segment = part.Trim();
+			if (string.IsNullOrEmpty(segment))
+				return null;
+
+			current = current.GetMembers(segment).OfType<INamespaceSymbol>().FirstOrDefault();
+			if (current is null)
+				return null;
+		}
+
+		return current;
+	}
+
+	static bool HasStaticOrNestedMember(INamedTypeSymbol typeSymbol, string identifier)
+	{
+		for (var current = typeSymbol; current is not null; current = current.BaseType)
+		{
+			if (current.GetMembers(identifier).Any(m => m.IsStatic || m is ITypeSymbol))
+				return true;
+		}
+
+		return false;
+	}
+
+	static bool IsConditionalSeparatorColon(string code, Match match)
+	{
+		var colonIndex = match.Index + match.Groups[1].Length;
+		if (colonIndex < 0 || colonIndex >= code.Length || code[colonIndex] != ':')
+			return false;
+
+		var tree = CSharpSyntaxTree.ParseText(code, new CSharpParseOptions(kind: SourceCodeKind.Script));
+		var root = tree.GetRoot();
+		var token = root.FindToken(colonIndex);
+		if (!token.IsKind(SyntaxKind.ColonToken) || token.SpanStart != colonIndex)
+			return false;
+
+		if (token.Parent is not ConditionalExpressionSyntax)
+			return false;
+
+		var replaced = string.Concat(
+			code.Substring(0, match.Index),
+			"__x",
+			code.Substring(match.Index + match.Length));
+		var replacedTree = CSharpSyntaxTree.ParseText(replaced, new CSharpParseOptions(kind: SourceCodeKind.Script));
+		var replacedRoot = replacedTree.GetRoot();
+		if (replacedRoot.FullSpan.Length == 0)
+			return false;
+
+		var replacedToken = replacedRoot.FindToken(Math.Min(match.Index, replacedRoot.FullSpan.End - 1));
+		for (var node = replacedToken.Parent; node != null; node = node.Parent)
+		{
+			if (node is ConditionalExpressionSyntax replacedConditional)
+				return replacedConditional.ColonToken.IsMissing;
+		}
+
+		return false;
+	}
+
+	static bool IsTupleElementLabelSyntax(
+		string code,
+		Match match,
+		Compilation compilation,
+		ITypeSymbol? dataTypeSymbol,
+		ITypeSymbol? rootType)
+	{
+		var colonIndex = match.Index + match.Groups[1].Length;
+		if (colonIndex < 0 || colonIndex >= code.Length || code[colonIndex] != ':')
+			return false;
+
+		var tree = CSharpSyntaxTree.ParseText(code, new CSharpParseOptions(kind: SourceCodeKind.Script));
+		var root = tree.GetRoot();
+		var token = root.FindToken(colonIndex);
+		if (!token.IsKind(SyntaxKind.ColonToken) || token.SpanStart != colonIndex)
+			return false;
+
+		if (token.Parent is not NameColonSyntax nameColon
+			|| nameColon.Parent is not ArgumentSyntax argument
+			|| argument.Parent is not TupleExpressionSyntax)
+		{
+			return false;
+		}
+
+		var valueStart = colonIndex + 1;
+		return HasExpressionRootInScope(code, valueStart, match.Groups[2].Value, dataTypeSymbol, rootType, compilation);
+	}
+
+	static bool HasEnclosingLocalOrParameter(string code, int position, string identifier)
 	{
 		var tree = CSharpSyntaxTree.ParseText(code, new CSharpParseOptions(kind: SourceCodeKind.Script));
 		var root = tree.GetRoot();
@@ -1874,9 +2082,146 @@ static class CSharpExpressionHelpers
 				case ParenthesizedLambdaExpressionSyntax parenthesizedLambda
 					when parenthesizedLambda.ParameterList.Parameters.Any(p => p.Identifier.ValueText == identifier):
 					return true;
+				case AnonymousMethodExpressionSyntax anonymousMethod
+					when anonymousMethod.ParameterList?.Parameters.Any(p => p.Identifier.ValueText == identifier) == true:
+					return true;
+				case LocalFunctionStatementSyntax localFunction
+					when localFunction.Identifier.ValueText == identifier
+						|| localFunction.ParameterList.Parameters.Any(p => p.Identifier.ValueText == identifier):
+					return true;
+				case ForEachStatementSyntax forEachStmt
+					when forEachStmt.Identifier.ValueText == identifier
+						&& forEachStmt.Statement.Span.Contains(safePosition):
+					return true;
+				case ForEachVariableStatementSyntax forEachVarStmt
+					when forEachVarStmt.Statement.Span.Contains(safePosition)
+						&& HasShallowVariableDeclaration(forEachVarStmt.Variable, identifier, safePosition):
+					return true;
+				case ForStatementSyntax forStmt
+					when forStmt.Declaration is not null
+						&& HasShallowVariableDeclaration(forStmt.Declaration, identifier, safePosition):
+					return true;
+				case UsingStatementSyntax usingStmt
+					when usingStmt.Statement.Span.Contains(safePosition)
+						&& usingStmt.Declaration is not null
+						&& HasShallowVariableDeclaration(usingStmt.Declaration, identifier, safePosition):
+					return true;
+				case CatchClauseSyntax catchClause
+					when catchClause.Declaration?.Identifier.ValueText == identifier
+						&& catchClause.Block.Span.Contains(safePosition):
+					return true;
+				case IfStatementSyntax ifStmt
+					when ifStmt.Statement.Span.Contains(safePosition)
+						&& HasShallowVariableDeclaration(ifStmt.Condition, identifier, safePosition):
+					return true;
+				case WhileStatementSyntax whileStmt
+					when whileStmt.Statement.Span.Contains(safePosition)
+						&& HasShallowVariableDeclaration(whileStmt.Condition, identifier, safePosition):
+					return true;
+				case SwitchExpressionArmSyntax switchArm
+					when HasShallowVariableDeclaration(switchArm.Pattern, identifier, safePosition):
+					return true;
+				case SwitchSectionSyntax switchSection:
+					foreach (var label in switchSection.Labels)
+					{
+						if (label is CasePatternSwitchLabelSyntax patternLabel
+							&& HasShallowVariableDeclaration(patternLabel.Pattern, identifier, safePosition))
+						{
+							return true;
+						}
+					}
+
+					foreach (var stmt in switchSection.Statements)
+					{
+						if (stmt.SpanStart >= safePosition)
+							break;
+						if (HasShallowStatementDeclaration(stmt, identifier, safePosition))
+							return true;
+					}
+					break;
+				case BinaryExpressionSyntax binaryExpr
+					when binaryExpr.IsKind(SyntaxKind.LogicalAndExpression)
+						&& binaryExpr.Right.Span.Contains(safePosition)
+						&& HasShallowVariableDeclaration(binaryExpr.Left, identifier, safePosition):
+					return true;
+				case ConditionalExpressionSyntax condExpr
+					when condExpr.WhenTrue.Span.Contains(safePosition)
+						&& HasShallowVariableDeclaration(condExpr.Condition, identifier, safePosition):
+					return true;
+				case BlockSyntax block:
+					foreach (var stmt in block.Statements)
+					{
+						if (stmt is LocalFunctionStatementSyntax localFn
+							&& localFn.Identifier.ValueText == identifier)
+						{
+							return true;
+						}
+
+						if (stmt.SpanStart < safePosition
+							&& HasShallowStatementDeclaration(stmt, identifier, safePosition))
+						{
+							return true;
+						}
+					}
+					break;
 			}
 
 			node = node.Parent;
+		}
+
+		return false;
+	}
+
+	static bool HasShallowStatementDeclaration(StatementSyntax stmt, string identifier, int beforePosition)
+	{
+		if (stmt is BlockSyntax
+			or LocalFunctionStatementSyntax
+			or ForStatementSyntax
+			or ForEachStatementSyntax
+			or ForEachVariableStatementSyntax
+			or UsingStatementSyntax
+			or WhileStatementSyntax
+			or DoStatementSyntax
+			or LockStatementSyntax
+			or FixedStatementSyntax
+			or CheckedStatementSyntax
+			or UnsafeStatementSyntax)
+		{
+			return false;
+		}
+
+		return HasShallowVariableDeclaration(stmt, identifier, beforePosition, rootNode: stmt);
+	}
+
+	static bool HasShallowVariableDeclaration(SyntaxNode node, string identifier, int beforePosition, SyntaxNode? rootNode = null)
+	{
+		rootNode ??= node;
+		foreach (var desc in node.DescendantNodesAndSelf(n =>
+		{
+			if (n == rootNode)
+				return true;
+
+			return n is not (BlockSyntax
+				or StatementSyntax
+				or ElseClauseSyntax
+				or CatchClauseSyntax
+				or SwitchSectionSyntax
+				or SwitchExpressionArmSyntax
+				or LambdaExpressionSyntax
+				or AnonymousMethodExpressionSyntax);
+		}))
+		{
+			switch (desc)
+			{
+				case VariableDeclaratorSyntax vd
+					when vd.SpanStart < beforePosition
+						&& string.Equals(vd.Identifier.ValueText, identifier, StringComparison.Ordinal):
+					return true;
+				case SingleVariableDesignationSyntax svd
+					when svd.SpanStart < beforePosition
+						&& string.Equals(svd.Identifier.ValueText, identifier, StringComparison.Ordinal):
+					return true;
+			}
 		}
 
 		return false;

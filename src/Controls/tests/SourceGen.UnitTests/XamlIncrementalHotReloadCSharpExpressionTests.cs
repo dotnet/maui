@@ -914,6 +914,72 @@ namespace TestApp
 		Assert.Contains("ClearValue(global::TestApp.CustomPopup.PopupMessageProperty)", ucSource, StringComparison.Ordinal);
 	}
 
+	[Fact]
+	public void CSharpExpression_XDataTypeWithXTypeMarkup_PreservesDottedFormatInUC()
+	{
+		const string code =
+"""
+using System;
+using System.ComponentModel;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace Repro
+{
+	public class DummyType { }
+}
+
+namespace TestApp
+{
+	public class ClockViewModel : INotifyPropertyChanged
+	{
+		public DateTime Time { get; set; }
+		public event PropertyChangedEventHandler? PropertyChanged;
+	}
+
+	[XamlProcessing(XamlInflator.SourceGen)]
+	public partial class XTypePage : ContentPage
+	{
+		public XTypePage() => InitializeComponent();
+	}
+}
+""";
+
+		var xamlV1 =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:Time="clr-namespace:Repro"
+             xmlns:app="clr-namespace:TestApp"
+             x:Class="TestApp.XTypePage"
+             x:DataType="{x:Type app:ClockViewModel}">
+    <Label Text="Initial" />
+</ContentPage>
+""";
+		var xamlV2 =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:Time="clr-namespace:Repro"
+             xmlns:app="clr-namespace:TestApp"
+             x:Class="TestApp.XTypePage"
+             x:DataType="{x:Type app:ClockViewModel}">
+    <Label Text="{= $'{Time:HH.mm}'}" />
+</ContentPage>
+""";
+
+		RunGenerator(xamlV1, code, assertNoCompilationErrors: false, enableIncrementalHotReload: true);
+		var (result, _) = RunGenerator(xamlV2, code, assertNoCompilationErrors: false, enableIncrementalHotReload: true);
+
+		var ucSource = GetUCSource(result);
+		Assert.NotNull(ucSource);
+		Assert.DoesNotContain("skipped", ucSource, StringComparison.OrdinalIgnoreCase);
+		Assert.DoesNotContain("global::Repro.HH", ucSource, StringComparison.Ordinal);
+		Assert.Contains("__source.Time:HH.mm}\"", ucSource, StringComparison.Ordinal);
+	}
+
 	static string? GetUCSource(GeneratorDriverRunResult result)
 	{
 		foreach (var gen in result.Results)

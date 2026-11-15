@@ -2114,6 +2114,428 @@ namespace Repro.Views
 		Assert.Contains("Time:HH.mm}\"", output, StringComparison.Ordinal);
 	}
 
+	[Fact]
+	public void GlobalUsings_InCompilationScope_PreservesNamedArgumentMatchingPrefix()
+	{
+		var xaml =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Repro"
+             xmlns:helpers="clr-namespace:Repro.Helpers"
+             x:Class="Repro.Views.GlobalUsingPage">
+    <VerticalStackLayout>
+        <Label Text="{= helpers:Formatter.Format(local:DateTime.Now)}" />
+        <Label Text="{= helpers:Formatter.Format(local:Dt.Now)}" />
+        <Label Text="{= helpers:Formatter.FormatStatic(local:PI)}" />
+    </VerticalStackLayout>
+</ContentPage>
+""";
+
+		var codeBehind =
+"""
+global using System;
+global using Dt = System.DateTime;
+global using static System.Math;
+
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace Repro
+{
+	public class DummyType { }
+}
+
+namespace Repro.Helpers
+{
+	public static class Formatter
+	{
+		public static string Format(DateTime local) => local.Year.ToString();
+		public static string FormatStatic(double local) => local.ToString();
+	}
+}
+
+namespace Repro.Views
+{
+	[XamlProcessing(XamlInflator.SourceGen)]
+	public partial class GlobalUsingPage : ContentPage
+	{
+		public GlobalUsingPage() => InitializeComponent();
+	}
+}
+""";
+
+		var (result, output) = RunGenerator(xaml, codeBehind);
+		Assert.Empty(result.Diagnostics);
+		Assert.NotNull(output);
+		Assert.DoesNotContain("global::Repro.DateTime", output, StringComparison.Ordinal);
+		Assert.DoesNotContain("global::Repro.Dt", output, StringComparison.Ordinal);
+		Assert.DoesNotContain("global::Repro.PI", output, StringComparison.Ordinal);
+		Assert.Contains("global::Repro.Helpers.Formatter.Format(", output, StringComparison.Ordinal);
+		Assert.Contains("DateTime.Now", output, StringComparison.Ordinal);
+		Assert.Contains("Dt.Now", output, StringComparison.Ordinal);
+		Assert.Contains("PI", output, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void ConditionalTernaryWithoutWhitespace_PreservesTernaryColonAndExpandsActualXmlnsBranch()
+	{
+		var xaml =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Repro"
+             xmlns:Gold="clr-namespace:Repro.Resources"
+             xmlns:missing="clr-namespace:Repro.Resources"
+             x:Class="Repro.Views.TernaryPage"
+             x:DataType="local:TernaryViewModel">
+    <VerticalStackLayout>
+        <Label Text="{= IsVip ? Gold:Standard}" />
+        <Label Text="{= IsVip ? missing:Labels.Gold : Standard}" />
+    </VerticalStackLayout>
+</ContentPage>
+""";
+
+		var codeBehind =
+"""
+using System.ComponentModel;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace Repro.Resources
+{
+	public static class Labels
+	{
+		public static string Gold => "GoldResource";
+	}
+}
+
+namespace Repro
+{
+	public class TernaryViewModel : INotifyPropertyChanged
+	{
+		public bool IsVip { get; set; }
+		public string Gold { get; set; } = "Gold";
+		public string Standard { get; set; } = "Standard";
+		public event PropertyChangedEventHandler? PropertyChanged;
+	}
+}
+
+namespace Repro.Views
+{
+	[XamlProcessing(XamlInflator.SourceGen)]
+	public partial class TernaryPage : ContentPage
+	{
+		public TernaryPage() => InitializeComponent();
+	}
+}
+""";
+
+		var (result, output) = RunGenerator(xaml, codeBehind);
+		Assert.Empty(result.Diagnostics);
+		Assert.NotNull(output);
+		Assert.DoesNotContain("global::Repro.Resources.Standard", output, StringComparison.Ordinal);
+		Assert.Contains("global::Repro.Resources.Labels.Gold", output, StringComparison.Ordinal);
+		Assert.Matches(@"__source\.IsVip\s*\?\s*__source\.Gold\s*:\s*__source\.Standard", output);
+	}
+
+	[Fact]
+	public void TupleElementLabel_PreservesLabelWhenRootInScope_AndExpandsUnscopedXmlns()
+	{
+		var xaml =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Repro"
+             xmlns:missing="clr-namespace:Repro.Resources"
+             x:Class="Repro.Views.TuplePage"
+             x:DataType="local:TupleViewModel">
+    <VerticalStackLayout>
+        <Label Text="{= (local:Name, Count).ToString()}" />
+        <Label Text="{= (missing:Labels.Gold, Count).ToString()}" />
+    </VerticalStackLayout>
+</ContentPage>
+""";
+
+		var codeBehind =
+"""
+using System.ComponentModel;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace Repro.Resources
+{
+	public static class Labels
+	{
+		public static string Gold => "Gold";
+	}
+}
+
+namespace Repro
+{
+	public class TupleViewModel : INotifyPropertyChanged
+	{
+		public string Name { get; set; } = "Ada";
+		public int Count { get; set; } = 3;
+		public event PropertyChangedEventHandler? PropertyChanged;
+	}
+}
+
+namespace Repro.Views
+{
+	[XamlProcessing(XamlInflator.SourceGen)]
+	public partial class TuplePage : ContentPage
+	{
+		public TuplePage() => InitializeComponent();
+	}
+}
+""";
+
+		var (result, output) = RunGenerator(xaml, codeBehind);
+		Assert.Empty(result.Diagnostics);
+		Assert.NotNull(output);
+		Assert.DoesNotContain("global::Repro.Name", output, StringComparison.Ordinal);
+		Assert.Contains("global::Repro.Resources.Labels.Gold", output, StringComparison.Ordinal);
+		Assert.Contains("__source.Name", output, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void InterpolationFormatClause_BlockBodiedLambdaLocal_PreservesFormatSpecifier()
+	{
+		var xaml =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:Time="clr-namespace:Repro"
+             x:Class="Repro.Views.LambdaLocalFormatPage">
+    <VerticalStackLayout>
+        <Button Clicked="{= (s, e) => { var Time = System.DateTime.Now; this.Title = $'{Time:HH.mm}'; }}" />
+    </VerticalStackLayout>
+</ContentPage>
+""";
+
+		var codeBehind =
+"""
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace Repro
+{
+	public class DummyType { }
+}
+
+namespace Repro.Views
+{
+	[XamlProcessing(XamlInflator.SourceGen)]
+	public partial class LambdaLocalFormatPage : ContentPage
+	{
+		public LambdaLocalFormatPage() => InitializeComponent();
+	}
+}
+""";
+
+		var (result, output) = RunGenerator(xaml, codeBehind);
+		Assert.Empty(result.Diagnostics);
+		Assert.NotNull(output);
+		Assert.DoesNotContain("global::Repro.HH", output, StringComparison.Ordinal);
+		Assert.Contains("Time:HH.mm}\"", output, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void InterpolationExpression_XmlnsMethodCall_PreservesNamedArgumentAndExpandsArgType()
+	{
+		var xaml =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Repro"
+             xmlns:helpers="clr-namespace:Repro.Helpers"
+             xmlns:missing="clr-namespace:Repro.Resources"
+             x:Class="Repro.Views.InterpolatedCallPage"
+             x:DataType="local:UserViewModel">
+    <VerticalStackLayout>
+        <Label Text="{= $'{helpers:Formatter.Format(local:User.Name)}'}" />
+        <Label Text="{= $'{helpers:Formatter.FormatText(missing:Labels.Gold)}'}" />
+    </VerticalStackLayout>
+</ContentPage>
+""";
+
+		var codeBehind =
+"""
+using System.ComponentModel;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace Repro.Resources
+{
+	public static class Labels
+	{
+		public static string Gold => "Gold";
+	}
+}
+
+namespace Repro.Helpers
+{
+	public static class Formatter
+	{
+		public static string Format(string local) => local;
+		public static string FormatText(string value) => value;
+	}
+}
+
+namespace Repro
+{
+	public class UserInfo
+	{
+		public string Name { get; set; } = "Ada";
+	}
+
+	public class UserViewModel : INotifyPropertyChanged
+	{
+		public UserInfo User { get; set; } = new();
+		public event PropertyChangedEventHandler? PropertyChanged;
+	}
+}
+
+namespace Repro.Views
+{
+	[XamlProcessing(XamlInflator.SourceGen)]
+	public partial class InterpolatedCallPage : ContentPage
+	{
+		public InterpolatedCallPage() => InitializeComponent();
+	}
+}
+""";
+
+		var (result, output) = RunGenerator(xaml, codeBehind);
+		Assert.Empty(result.Diagnostics);
+		Assert.NotNull(output);
+		Assert.DoesNotContain("global::Repro.User.", output, StringComparison.Ordinal);
+		Assert.Contains("global::Repro.Helpers.Formatter.Format(", output, StringComparison.Ordinal);
+		Assert.Contains("__source.User.Name", output, StringComparison.Ordinal);
+		Assert.Contains("global::Repro.Resources.Labels.Gold", output, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void InterpolationFormatClause_ColonInsideFormatString_DoesNotExpandAsXmlns()
+	{
+		var xaml =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Repro"
+             xmlns:res="clr-namespace:Repro.Resources"
+             x:Class="Repro.Views.FormatStringColonPage"
+             x:DataType="local:FormatViewModel">
+    <VerticalStackLayout>
+        <Label Text="{= $'{Value:res:Labels.Gold}'}" />
+    </VerticalStackLayout>
+</ContentPage>
+""";
+
+		var codeBehind =
+"""
+using System;
+using System.ComponentModel;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace Repro.Resources
+{
+	public static class Labels
+	{
+		public static string Gold => "G";
+	}
+}
+
+namespace Repro
+{
+	public class FormatViewModel : INotifyPropertyChanged
+	{
+		public DateTime Value { get; set; }
+		public event PropertyChangedEventHandler? PropertyChanged;
+	}
+}
+
+namespace Repro.Views
+{
+	[XamlProcessing(XamlInflator.SourceGen)]
+	public partial class FormatStringColonPage : ContentPage
+	{
+		public FormatStringColonPage() => InitializeComponent();
+	}
+}
+""";
+
+		var (result, output) = RunGenerator(xaml, codeBehind);
+		Assert.Empty(result.Diagnostics);
+		Assert.NotNull(output);
+		Assert.DoesNotContain("global::Repro.Resources.Labels", output, StringComparison.Ordinal);
+		Assert.Contains(":res:Labels.Gold}\"", output, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void XDataType_WithXTypeMarkupExtension_DottedFormatUsesDataType()
+	{
+		var xaml =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:Time="clr-namespace:Repro"
+             xmlns:app="clr-namespace:Repro.ViewModels"
+             x:Class="Repro.Views.XTypeClockPage"
+             x:DataType="{x:Type app:ClockViewModel}">
+    <VerticalStackLayout>
+        <Label Text="{= $'{Time:HH.mm}'}" />
+    </VerticalStackLayout>
+</ContentPage>
+""";
+
+		var codeBehind =
+"""
+using System;
+using System.ComponentModel;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace Repro
+{
+	public class DummyType { }
+}
+
+namespace Repro.ViewModels
+{
+	public class ClockViewModel : INotifyPropertyChanged
+	{
+		public DateTime Time { get; set; }
+		public event PropertyChangedEventHandler? PropertyChanged;
+	}
+}
+
+namespace Repro.Views
+{
+	[XamlProcessing(XamlInflator.SourceGen)]
+	public partial class XTypeClockPage : ContentPage
+	{
+		public XTypeClockPage() => InitializeComponent();
+	}
+}
+""";
+
+		var (result, output) = RunGenerator(xaml, codeBehind);
+		Assert.Empty(result.Diagnostics);
+		Assert.NotNull(output);
+		Assert.DoesNotContain("global::Repro.HH", output, StringComparison.Ordinal);
+		Assert.Contains("$\"{__source.Time:HH.mm}\"", output, StringComparison.Ordinal);
+	}
+
 	static void AssertEachSetBindingContains(string output, int expectedCount, string requiredSnippet, params string[] expectedBindingExpressions)
 	{
 		var matches = System.Text.RegularExpressions.Regex.Matches(output, @"\bSetBinding\s*\(");

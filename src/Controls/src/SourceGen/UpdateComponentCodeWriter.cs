@@ -2262,25 +2262,14 @@ static class UpdateComponentCodeWriter
 		{
 			if (current.Properties.TryGetValue(XmlName.xDataType, out var dtNode))
 			{
-				// x:DataType="local:TypeName" stored as ValueNode
-				if (dtNode is ValueNode vn && vn.Value is string dtString)
-				{
-					XmlType? xmlType;
-					try
-					{
-						xmlType = TypeArgumentsParser.ParseSingle(dtString, current.NamespaceResolver, null);
-					}
-					catch (XamlParseException)
-					{
-						return false;
-					}
-					if (xmlType != null && xmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, typeCache, out var resolved))
-					{
-						dataTypeSymbol = resolved;
-						return true;
-					}
-				}
-				return false;
+				return XDataTypeResolver.TryResolveXDataTypeNode(
+					dtNode,
+					current,
+					compilation,
+					xmlnsCache,
+					typeCache,
+					context: null,
+					out dataTypeSymbol);
 			}
 
 			// Walk up to parent ElementNode
