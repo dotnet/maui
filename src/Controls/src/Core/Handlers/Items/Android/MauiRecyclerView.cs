@@ -762,13 +762,20 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		protected override void OnLayout(bool changed, int l, int t, int r, int b)
 		{
 			_scrollAnchor?.LayoutStarting();
+			var jumps = _scrollHelper?.Jumps ?? 0;
 			base.OnLayout(changed, l, t, r, b);
 			ClipBounds = new ARect(0, 0, Width, Height);
 			// After a direct (non-animated) scroll operation, we may need to make adjustments
 			// to align the target item; if an adjustment is pending, execute it here.
 			// (Deliberately checking the private member here rather than the property accessor; the accessor will
 			// create a new ScrollHelper if needed, and there's no reason to do that until a Scroll is requested.)
-			_scrollHelper?.AdjustScroll();
+			// A jump asked for as this layout ran, from the Scrolled event it raises, scrolls only in the layout after it, which
+			// the jump asks for: so does its adjustment.
+			if (_scrollHelper is { } scrollHelper && scrollHelper.Jumps == jumps)
+			{
+				scrollHelper.AdjustScroll();
+			}
+
 			_scrollAnchor?.LayoutFinished();
 		}
 

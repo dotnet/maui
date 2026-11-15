@@ -798,6 +798,46 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "ScrollToEnd from Scrolled as a ScrollTo lays out a last item taller than the view reaches its end")]
+		public async Task ScrollToEndFromScrolledAsAScrollToLaysOutATallLastItemReachesItsEnd()
+		{
+			SetupBuilder();
+
+			// A long answer ends the chat: taller than the view, with nothing after it. A list that doesn't follow its end, so
+			// nothing but ScrollToEnd takes it the rest of the way past the start of the answer, where scrolling to it stops.
+			var items = CreateAnchorItems(10);
+			items.Add(new AnchorItem("Long answer", 600));
+			var collectionView = CreateAnchorCollectionView(items, ScrollAnchorMode.None);
+			collectionView.Header = null;
+			collectionView.Footer = null;
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				await AssertEventually(() => GetDistanceFromStart(handler) <= AnchorTolerance, timeout: 3000, message: "The list should open at its start.");
+
+				// The app asks for the end as soon as the ScrollTo lays the long answer out: from the Scrolled event that layout
+				// raises, before the layout that scrolls to the end.
+				var scrolledToEnd = false;
+				collectionView.Scrolled += (_, _) =>
+				{
+					if (!scrolledToEnd && !double.IsNaN(GetItemHeight(handler, items.Count - 1, hasHeader: false)))
+					{
+						scrolledToEnd = true;
+						collectionView.ScrollToEnd(animate: false);
+					}
+				};
+
+				collectionView.ScrollTo(items.Count - 1, position: ScrollToPosition.Start, animate: false);
+				await AssertEventually(() => scrolledToEnd, timeout: 3000, message: "The ScrollTo should lay the long answer out.");
+				await AssertAtEnd(handler, "ScrollToEnd should reach the end of the long answer, not its start.");
+
+				// Long enough for the layouts the scrolls asked for to have run.
+				await Task.Delay(500);
+				await AssertAtEnd(handler, "The list should stay at the end of the long answer.");
+				Assert.False(collectionView.IsAnchored);
+			});
+		}
+
 #if IOS || MACCATALYST
 		// UIKit can stop the animation of ScrollToStart short of the start, having measured the rows it brought into view on the
 		// way: ScrollToStart goes the rest of the way once UIKit reports that the animation ended, which raises Scrolled.

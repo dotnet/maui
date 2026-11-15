@@ -14,7 +14,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2
 {
-	public abstract class ItemsViewController2<TItemsView> : UICollectionViewController, IItemsUpdateObserver
+	public abstract class ItemsViewController2<TItemsView> : UICollectionViewController, IItemsUpdateObserver, IContentOffsetListener
 	where TItemsView : ItemsView
 	{
 		public const int EmptyTag = 333;
@@ -116,7 +116,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 #if MACCATALYST
 				if (CollectionView is Items.MauiCollectionView mauiCollectionView)
 				{
-					mauiCollectionView.ContentOffsetObserved -= ContentOffsetObserved;
+					mauiCollectionView.ContentOffsetListener = null;
 				}
 #endif
 
@@ -252,9 +252,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			base.LoadView();
 			var collectionView = new Items.MauiCollectionView(CGRect.Empty, ItemsViewLayout);
 			((IUIViewLifeCycleEvents)collectionView).MovedToWindow += MovedToWindow;
-#if MACCATALYST
-			collectionView.ContentOffsetObserved += ContentOffsetObserved;
-#endif
 			CollectionView = collectionView;
 		}
 
@@ -404,6 +401,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			if (_scrollAnchor is null)
 			{
 				_scrollAnchor = new CollectionViewScrollAnchor(mode);
+#if MACCATALYST
+				// The controller hears of every change of the content offset only while it anchors (see
+				// IContentOffsetListener.ContentOffsetChanged): on every scroll tick of a view that doesn't, that's for nothing.
+				if (CollectionView is Items.MauiCollectionView mauiCollectionView)
+				{
+					mauiCollectionView.ContentOffsetListener = this;
+				}
+#endif
 				CollectionView.SetNeedsLayout();
 			}
 			else
@@ -423,6 +428,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			_scrollAnchor?.Detach(CollectionView, ItemsView as StructuredItemsView);
 			_scrollAnchor = null;
+#if MACCATALYST
+			if (CollectionView is Items.MauiCollectionView mauiCollectionView)
+			{
+				mauiCollectionView.ContentOffsetListener = null;
+			}
+#endif
 		}
 
 		internal bool ScrollToStart(bool animate)
@@ -716,12 +727,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			return OperatingSystem.IsIOSVersionAtLeast(15);
 		}
 
-#if MACCATALYST
 		// Mac Catalyst can move the content offset without telling the scroll view delegate or laying the view out, as it can
-		// when the window changes: the anchor looks again.
-		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
-		void ContentOffsetObserved(object sender, EventArgs e) => _scrollAnchor?.OffsetObserved(CollectionView);
-#endif
+		// when the window changes: the anchor looks again. Only Mac Catalyst observes the content offset (see
+		// MauiCollectionView.ContentOffsetListener).
+		void IContentOffsetListener.ContentOffsetChanged() => _scrollAnchor?.OffsetObserved(CollectionView);
 
     [UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		private void MovedToWindow(object sender, EventArgs e)

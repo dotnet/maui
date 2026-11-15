@@ -161,10 +161,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_recyclerView.ScrollToPosition(layoutManager.ItemCount - 1);
 		}
 
+		/// <summary>
+		/// Gets how many jumps have been asked for. A jump scrolls in the next layout, which then applies the adjustment the jump
+		/// leaves. One asked for while the view lays out, as from the Scrolled event RecyclerView raises then, scrolls only in the
+		/// layout after that one, and so does its adjustment (see MauiRecyclerView.OnLayout).
+		/// </summary>
+		public int Jumps { get; private set; }
+
 		// A jump scrolls in the layout it asks for. Asked for during a layout, as when the app scrolls from the Scrolled event
 		// RecyclerView raises as it lays out, that layout is lost: ask again once the layout is over.
 		void LayoutAfterJump()
 		{
+			Jumps++;
 			if (_recyclerView.IsInLayout)
 			{
 				_recyclerView.Post(_recyclerView.RequestLayout);

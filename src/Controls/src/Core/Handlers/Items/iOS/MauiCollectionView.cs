@@ -45,8 +45,9 @@ public class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents, IPla
 	// Any Y-offset drop larger than this is treated as a silent reset rather than normal movement.
 	static readonly nfloat SilentResetThreshold = 10f;
 
-	// Raised for every contentOffset change the KVO observer sees (see ContentOffsetObserved).
-	readonly WeakEventManager _contentOffsetObservedEventManager = new();
+	// Told of every contentOffset change the KVO observer sees (see ContentOffsetListener). Held weakly, as the controller
+	// that listens holds this view.
+	WeakReference<IContentOffsetListener>? _contentOffsetListener;
 
 	// KVO observer token for contentOffset — active while the view is attached to a window.
 	[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Observer is disposed and cleared when the view is detached from its window or the view is disposed.")]
@@ -65,13 +66,14 @@ public class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents, IPla
 	}
 
 	/// <summary>
-	/// Raised for every change of the content offset the KVO observer sees while the view is in a window, including a silent
-	/// one that no delegate, layout or view controller callback reports.
+	/// Gets or sets what is told of every change of the content offset the KVO observer sees while the view is in a window,
+	/// including a silent one that no delegate, layout or view controller callback reports. Called on every scroll tick, so
+	/// it's a single listener, called directly, rather than an event.
 	/// </summary>
-	internal event EventHandler? ContentOffsetObserved
+	internal IContentOffsetListener? ContentOffsetListener
 	{
-		add => _contentOffsetObservedEventManager.AddEventHandler(value);
-		remove => _contentOffsetObservedEventManager.RemoveEventHandler(value);
+		get => _contentOffsetListener is { } listener && listener.TryGetTarget(out var target) ? target : null;
+		set => _contentOffsetListener = value is null ? null : new WeakReference<IContentOffsetListener>(value);
 	}
 
 	internal void ClearPendingScrollRestore()
@@ -83,7 +85,7 @@ public class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents, IPla
 
 	void OnContentOffsetChanged()
 	{
-		_contentOffsetObservedEventManager.HandleEvent(this, EventArgs.Empty, nameof(ContentOffsetObserved));
+		ContentOffsetListener?.ContentOffsetChanged();
 
 		if (!_isTrackingScrollRestore)
 		{

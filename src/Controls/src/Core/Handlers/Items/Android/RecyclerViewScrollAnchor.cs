@@ -391,7 +391,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
-			var isVertical = _recyclerView.GetLayoutManager()?.CanScrollVertically() == true;
+			// Each a call into Java: looked up once a look, and handed on to the measuring.
+			var layoutManager = _recyclerView.GetLayoutManager() is { } manager && manager.CanScrollVertically() ? manager : null;
+			var isVertical = layoutManager is not null;
 			if (isVertical != _wasVertical)
 			{
 				// A new layout that scrolls vertically again starts over, as a new view does.
@@ -400,7 +402,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				ResetMeasurement();
 			}
 
-			if (isVertical && ReadMetrics() is ScrollAnchorMetrics metrics)
+			if (layoutManager is not null && ReadMetrics(layoutManager) is ScrollAnchorMetrics metrics)
 			{
 				// The look after the layout that applied item changes counts the offset change as the layout's. A look after a
 				// scroll doesn't: items changing as the user flings would otherwise keep a fling from ever moving away.
@@ -445,11 +447,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_scrolledSinceLook = 0;
 		}
 
-		ScrollAnchorMetrics? ReadMetrics()
+		ScrollAnchorMetrics? ReadMetrics(RecyclerView.LayoutManager verticalLayoutManager)
 		{
 			_toStart = null;
 			_toEnd = null;
-			if (GetLayout() is not var (layoutManager, helper))
+			if (GetLayout(verticalLayoutManager) is not var (layoutManager, helper))
 			{
 				return null;
 			}
@@ -699,10 +701,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 		}
 
-		(RecyclerView.LayoutManager LayoutManager, OrientationHelper Helper)? GetLayout()
+		(RecyclerView.LayoutManager LayoutManager, OrientationHelper Helper)? GetLayout() =>
+			_recyclerView.GetLayoutManager() is { } layoutManager && layoutManager.CanScrollVertically() ? GetLayout(layoutManager) : null;
+
+		// For a layout manager that scrolls vertically.
+		(RecyclerView.LayoutManager LayoutManager, OrientationHelper Helper)? GetLayout(RecyclerView.LayoutManager layoutManager)
 		{
-			var layoutManager = _recyclerView.GetLayoutManager();
-			if (layoutManager is null || !layoutManager.CanScrollVertically() || _recyclerView.Height <= 0)
+			if (_recyclerView.Height <= 0)
 			{
 				return null;
 			}
