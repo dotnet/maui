@@ -391,6 +391,41 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task ReconnectingImageContainerRestoresDefaultOpacityWithBaseMapper()
+		{
+			var image = new Microsoft.Maui.Controls.Image
+			{
+				BackgroundColor = Colors.Transparent,
+				WidthRequest = 100,
+				HeightRequest = 50,
+				Opacity = 0.25
+			};
+
+			await AttachAndRun(image, (ImageHandler handler) =>
+			{
+				var wrapper = Assert.IsType<WrapperView>(handler.ContainerView);
+				var parent = wrapper.Parent;
+				var oldPlatformView = handler.PlatformView;
+				Assert.Equal(0.25, wrapper.Opacity, 6);
+				Assert.Equal(1, oldPlatformView.Opacity, 6);
+
+				((IElementHandler)handler).DisconnectHandler();
+				Assert.Null(image.Handler);
+				image.Opacity = 1;
+				Assert.Equal(0.25, wrapper.Opacity, 6);
+
+				handler.SetVirtualView(image);
+
+				Assert.Same(wrapper, handler.ContainerView);
+				Assert.Same(parent, wrapper.Parent);
+				Assert.NotSame(oldPlatformView, handler.PlatformView);
+				Assert.Same(handler.PlatformView, wrapper.Child);
+				Assert.Equal(1, wrapper.Opacity, 6);
+				Assert.Equal(1, handler.PlatformView.Opacity, 6);
+			});
+		}
+
+		[Fact]
 		public async Task ReconnectingContainerPreservesWrapperInDifferentPanel()
 		{
 			var label = new Label
