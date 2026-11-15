@@ -110,10 +110,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 
 			// The base handler finds the item first: a newer request for one it finds supersedes what an earlier one left for
-			// later, as for the end of its animation below.
-			base.ScrollToRequested(sender, args);
-
-			if (WillNeedScrollAdjustment(args) && args.IsAnimated)
+			// later, as for the end of its animation below. One for an item it doesn't find scrolls nowhere, and leaves that.
+			if (TryScrollTo(args) && WillNeedScrollAdjustment(args) && args.IsAnimated)
 			{
 				(Controller as GroupableItemsViewController2<ReorderableItemsView>)?.SetScrollAnimationEndedCallback(() => base.ScrollToRequested(sender, args));
 			}

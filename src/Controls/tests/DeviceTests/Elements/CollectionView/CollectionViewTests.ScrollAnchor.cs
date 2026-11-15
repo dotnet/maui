@@ -120,6 +120,32 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Theory(DisplayName = "An animated ScrollTo that finds nothing leaves ScrollToEnd reaching the end of a grouped list")]
+		[InlineData(ScrollToPosition.End)]
+		[InlineData(ScrollToPosition.MakeVisible)]
+		public async Task AnAnimatedScrollToThatFindsNothingLeavesScrollToEndReachingTheEndOfAGroupedList(ScrollToPosition position)
+		{
+			SetupBuilder();
+			var groups = new ObservableCollection<AnchorGroup>(
+				Enumerable.Range(0, 4).Select(group => new AnchorGroup($"Group {group}", CreateAnchorItems(8))));
+			var collectionView = CreateAnchorCollectionView(groups, ScrollAnchorMode.None);
+			collectionView.IsGrouped = true;
+			collectionView.GroupHeaderTemplate = CreateAnchorGroupHeaderTemplate();
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				await AssertEventually(() => GetDistanceFromStart(handler) <= AnchorTolerance, timeout: 3000, message: "The list should open at its start.");
+
+				// The view doesn't scroll for an item it doesn't have: ScrollToEnd still goes the rest of the way once its
+				// animation ends, as measuring the rows it scrolls past moves the end.
+				collectionView.ScrollToEnd(animate: true);
+				collectionView.ScrollTo(new AnchorItem("Not in the list", 40), position: position, animate: true);
+
+				await AssertAtEnd(handler, "ScrollToEnd should reach the end once its animation ends.", timeout: 5000);
+				Assert.False(collectionView.IsAnchored);
+			});
+		}
+
 		[Theory(DisplayName = "AnchorMode End keeps the end in view when the header or footer is replaced")]
 		[InlineData(true)]
 		[InlineData(false)]
@@ -258,6 +284,29 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "A ScrollTo past the last item right after ScrollToEnd leaves it reaching the end")]
+		public async Task AScrollToPastTheLastItemRightAfterScrollToEndLeavesItReachingTheEnd()
+		{
+			SetupBuilder();
+
+			// A row taller than the view: ScrollToEnd goes the rest of the way once the row is laid out where it scrolls to.
+			var items = new ObservableCollection<AnchorItem> { new("Tall", 600) };
+			var collectionView = CreateAnchorCollectionView(items, ScrollAnchorMode.None);
+			collectionView.Header = null;
+			collectionView.Footer = null;
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				await AssertEventually(() => GetDistanceFromStart(handler) <= AnchorTolerance, timeout: 3000, message: "The list should open at its start.");
+
+				// The index is past the end: the view doesn't scroll for it.
+				collectionView.ScrollToEnd(animate: false);
+				collectionView.ScrollTo(10000, animate: false);
+
+				await AssertAtEnd(handler, "ScrollToEnd should still reach the end.");
+			});
+		}
+
 		[Theory(DisplayName = "ScrollToEnd without AnchorMode scrolls past the footer once")]
 		[InlineData(false)]
 		[InlineData(true)]
@@ -279,6 +328,78 @@ namespace Microsoft.Maui.DeviceTests
 				items.Add(new AnchorItem("Added", 40));
 				await Task.Delay(500);
 				Assert.True(GetDistanceToEnd(handler) > AnchorTolerance, "Without AnchorMode, the list shouldn't follow its end.");
+			});
+		}
+
+		[Fact(DisplayName = "ScrollToEnd without AnchorMode reaches the end of a row measured in a later layout")]
+		public async Task ScrollToEndWithoutAnchorModeReachesTheEndOfARowMeasuredInALaterLayout()
+		{
+			SetupBuilder();
+			var items = CreateAnchorItems(40);
+			var collectionView = CreateAnchorCollectionView(items, ScrollAnchorMode.None);
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				await AssertEventually(() => GetDistanceFromStart(handler) <= AnchorTolerance, timeout: 3000, message: "The list should open at its start.");
+
+				// The platform measures the last row again in a layout after the ones the scroll lays out right away, as UIKit
+				// can for the rows a scroll brings into view.
+				collectionView.ScrollToEnd(animate: false);
+				items[^1].Height = 120;
+
+				await AssertEventually(() => Math.Abs(GetItemHeight(handler, items.Count - 1) - 120) <= AnchorTolerance, timeout: 3000, message: "The last row should be measured at its new size.");
+				await AssertAtEnd(handler, "ScrollToEnd should reach the end of the rows it scrolled to, as measured.");
+				Assert.False(collectionView.IsAnchored);
+			});
+		}
+
+		// A list that scrolls horizontally scrolls to its first or last item, by the item's index in its group.
+		[Fact(DisplayName = "ScrollToStart and ScrollToEnd scroll a horizontal list of groups without headers to its edges")]
+		public async Task ScrollToStartAndScrollToEndScrollAHorizontalListOfGroupsWithoutHeadersToItsEdges()
+		{
+			SetupBuilder();
+
+			// A single item at either edge, and an empty group after the last.
+			var groups = new List<List<string>>
+			{
+				new() { "First" },
+				new(Enumerable.Range(0, 10).Select(index => $"Item {index}")),
+				new() { "Last" },
+				new(),
+			};
+			var collectionView = CreateHorizontalGroupedCollectionView(groups, groupHeaders: false);
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				collectionView.ScrollToEnd(animate: false);
+				var distance = double.NaN;
+				var atEnd = await Wait(() => Math.Abs(distance = GetHorizontalDistanceToEnd(handler)) <= AnchorTolerance, 3000);
+				Assert.True(atEnd, $"ScrollToEnd should show the last item at the end. Distance to the end: {distance}.");
+
+				collectionView.ScrollToStart(animate: false);
+				var atStart = await Wait(() => Math.Abs(distance = GetHorizontalDistanceFromStart(handler)) <= AnchorTolerance, 3000);
+				Assert.True(atStart, $"ScrollToStart should show the first item at the start. Distance from the start: {distance}.");
+			});
+		}
+
+		[Fact(DisplayName = "ScrollToEnd scrolls a horizontal list of groups to its last item, not an equal one before it")]
+		public async Task ScrollToEndScrollsAHorizontalListOfGroupsToItsLastItemNotAnEqualOneBeforeIt()
+		{
+			SetupBuilder();
+			var groups = new List<List<string>>
+			{
+				new() { "Same" },
+				new(Enumerable.Range(0, 10).Select(index => $"Item {index}")),
+				new() { "Same" },
+			};
+			var collectionView = CreateHorizontalGroupedCollectionView(groups, groupHeaders: true);
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				collectionView.ScrollToEnd(animate: false);
+				var distance = double.NaN;
+				var atEnd = await Wait(() => Math.Abs(distance = GetHorizontalDistanceToEnd(handler)) <= AnchorTolerance, 3000);
+				Assert.True(atEnd, $"ScrollToEnd should show the last item at the end. Distance to the end: {distance}.");
 			});
 		}
 
@@ -498,6 +619,49 @@ namespace Microsoft.Maui.DeviceTests
 				await Task.Delay(1000);
 				Assert.True(GetDistanceFromStart(handler) <= AnchorTolerance, $"The later ScrollTo should win. Position: {GetScrollPosition(handler)}.");
 				Assert.False(collectionView.IsAnchored);
+			});
+		}
+
+		[Fact(DisplayName = "ScrollToEnd from Scrolled as a ScrollTo scrolls the list wins")]
+		public async Task ScrollToEndFromScrolledAsAScrollToScrollsTheListWins()
+		{
+			SetupBuilder();
+			var items = CreateAnchorItems(40);
+			var collectionView = CreateAnchorCollectionView(items, ScrollAnchorMode.End);
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				await AssertAtEnd(handler, "The list should open at its end.");
+
+				// The app asks for the end again as soon as the ScrollTo moves the list away from it: the newer request wins,
+				// and the list follows the end all the way there.
+				var scrolledToEnd = false;
+				var stoppedFollowing = false;
+				collectionView.Scrolled += (_, _) =>
+				{
+					if (!scrolledToEnd && GetDistanceToEnd(handler) > 100)
+					{
+						scrolledToEnd = true;
+						collectionView.ScrollToEnd(animate: true);
+					}
+				};
+				collectionView.PropertyChanged += (_, e) =>
+				{
+					if (scrolledToEnd && e.PropertyName == nameof(CollectionView.IsAnchored) && !collectionView.IsAnchored)
+					{
+						stoppedFollowing = true;
+					}
+				};
+
+				collectionView.ScrollTo(5, position: ScrollToPosition.Start, animate: false);
+				await AssertEventually(() => scrolledToEnd, timeout: 3000, message: "The ScrollTo should scroll the list.");
+				await AssertAtEnd(handler, "The later ScrollToEnd should win.", timeout: 5000);
+				Assert.False(stoppedFollowing, "ScrollToEnd should follow the end on its way there.");
+				Assert.True(collectionView.IsAnchored, "ScrollToEnd should follow the end.");
+
+				items.Add(new AnchorItem("Added", 40));
+				await AssertEventually(() => Math.Abs(GetItemHeight(handler, items.Count - 1) - 40) <= AnchorTolerance, timeout: 3000, message: "The new item should be laid out in view.");
+				await AssertAtEnd(handler, "Following the end, a new item should keep the end in view.");
 			});
 		}
 
@@ -1072,6 +1236,33 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.False(collectionView.IsAnchored);
 			});
 		}
+
+		// Where the first row isn't laid out, RecyclerView only estimates how far the view is from the start, from the rows
+		// that are. Tall rows followed by short ones make that estimate, at the end, a tenth of the distance.
+		[Fact(DisplayName = "Scrolling back from the end past where an estimate puts the start doesn't follow the start")]
+		public async Task ScrollingBackFromTheEndPastWhereAnEstimatePutsTheStartDoesNotFollowTheStart()
+		{
+			SetupBuilder();
+			var items = new ObservableCollection<AnchorItem>(Enumerable.Range(0, 80).Select(index => new AnchorItem($"Item {index}", index < 60 ? 200 : 20)));
+			var collectionView = CreateAnchorCollectionView(items, ScrollAnchorMode.Start | ScrollAnchorMode.End);
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				await AssertAtEnd(handler, "The list should open at its end.");
+
+				// Back further than the estimate puts the start, in steps that each keep rows of the one before in view.
+				for (var step = 0; step < 20; step++)
+				{
+					ScrollPlatformViewBy(handler, -100);
+					await Task.Delay(16);
+				}
+
+				await Task.Delay(500);
+				Assert.False(collectionView.IsAnchored, $"The list is far from both edges: it shouldn't follow either. Position: {GetScrollPosition(handler)}.");
+				var distance = GetDistanceFromStart(handler);
+				Assert.True(distance > 5000, $"The list shouldn't jump to its start. Distance from the start: {distance}.");
+			});
+		}
 #endif
 
 		[Fact(DisplayName = "A ScrollTo from Scrolled as ItemsSource is replaced wins")]
@@ -1201,6 +1392,69 @@ namespace Microsoft.Maui.DeviceTests
 
 		static ObservableCollection<AnchorItem> CreateAnchorItems(int count) =>
 			new(Enumerable.Range(0, count).Select(index => new AnchorItem($"Item {index}", 40)));
+
+		static CollectionView CreateHorizontalGroupedCollectionView(System.Collections.IEnumerable groups, bool groupHeaders) => new()
+		{
+			IsGrouped = true,
+			ItemsLayout = LinearItemsLayout.Horizontal,
+			HeightRequest = 100,
+			WidthRequest = 300,
+			ItemsSource = groups,
+			ItemTemplate = new DataTemplate(() =>
+			{
+				var label = new Label { WidthRequest = 100 };
+				label.SetBinding(Label.TextProperty, ".");
+				return label;
+			}),
+			GroupHeaderTemplate = groupHeaders ? new DataTemplate(() => new Label { Text = "Group", WidthRequest = 60 }) : null,
+		};
+
+		// How far the content extends past the right of the viewport, in device-independent units.
+		static double GetHorizontalDistanceToEnd(CollectionViewHandler handler)
+		{
+#if IOS || MACCATALYST
+			var collectionView = handler.Controller.CollectionView;
+			var inset = collectionView.AdjustedContentInset;
+			var end = Math.Max(-inset.Left, collectionView.ContentSize.Width + inset.Right - collectionView.Bounds.Width);
+			return end - collectionView.ContentOffset.X;
+#else
+			var recyclerView = (RecyclerView)handler.PlatformView;
+			var layoutManager = recyclerView.GetLayoutManager();
+			var last = layoutManager.ItemCount - 1;
+			for (var index = 0; index < layoutManager.ChildCount; index++)
+			{
+				var child = layoutManager.GetChildAt(index);
+				if (layoutManager.GetPosition(child) == last)
+				{
+					return (layoutManager.GetDecoratedRight(child) - (recyclerView.Width - recyclerView.PaddingRight)) / (double)recyclerView.Resources.DisplayMetrics.Density;
+				}
+			}
+
+			return double.PositiveInfinity;
+#endif
+		}
+
+		// How far the content extends left of the viewport, in device-independent units.
+		static double GetHorizontalDistanceFromStart(CollectionViewHandler handler)
+		{
+#if IOS || MACCATALYST
+			var collectionView = handler.Controller.CollectionView;
+			return collectionView.ContentOffset.X + collectionView.AdjustedContentInset.Left;
+#else
+			var recyclerView = (RecyclerView)handler.PlatformView;
+			var layoutManager = recyclerView.GetLayoutManager();
+			for (var index = 0; index < layoutManager.ChildCount; index++)
+			{
+				var child = layoutManager.GetChildAt(index);
+				if (layoutManager.GetPosition(child) == 0)
+				{
+					return (recyclerView.PaddingLeft - layoutManager.GetDecoratedLeft(child)) / (double)recyclerView.Resources.DisplayMetrics.Density;
+				}
+			}
+
+			return double.PositiveInfinity;
+#endif
+		}
 
 		static DataTemplate CreateAnchorGroupHeaderTemplate() => new(() =>
 		{

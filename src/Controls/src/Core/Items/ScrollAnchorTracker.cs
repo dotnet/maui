@@ -41,6 +41,10 @@ namespace Microsoft.Maui.Controls
 	/// went.
 	/// </description></item>
 	/// <item><description>
+	/// An animated scroll to an edge (<see cref="Engage"/>) follows that edge on its way there: offset changes the user
+	/// doesn't make never stop it following before it arrives.
+	/// </description></item>
+	/// <item><description>
 	/// The viewport being at an edge it can follow, within <see cref="Threshold"/>, makes it follow that edge again,
 	/// however it got there. A view whose content fits is at both edges: it follows the end.
 	/// </description></item>
@@ -64,6 +68,7 @@ namespace Microsoft.Maui.Controls
 		bool _lastWasUserScroll;
 		double _drift;
 		bool _scrollRequested;
+		bool _approaching;
 
 		/// <summary>Initializes a new tracker, following the edge a new view shows.</summary>
 		/// <param name="edges">The edges the view can follow. Other flags are ignored.</param>
@@ -130,6 +135,7 @@ namespace Microsoft.Maui.Controls
 			_lastWasUserScroll = false;
 			_drift = 0;
 			_scrollRequested = false;
+			_approaching = false;
 			AnchoredEdge = CanFollow(edge) ? edge : ScrollAnchorMode.None;
 		}
 
@@ -137,17 +143,24 @@ namespace Microsoft.Maui.Controls
 		/// Notes that the app requested a scroll (such as <c>ScrollTo</c>): the next update judges where it landed, following
 		/// an edge only if it's there, instead of scrolling the view back.
 		/// </summary>
-		public void RequestScroll() => _scrollRequested = true;
+		public void RequestScroll()
+		{
+			_scrollRequested = true;
+			_approaching = false;
+		}
 
 		/// <summary>
-		/// Follows <paramref name="edge"/> for an animated scroll to it that the platform is about to start: the animation
-		/// only moves toward that edge, which never stops it following, and a size change on the way scrolls straight to the
-		/// edge. It supersedes any scroll the user was making.
+		/// Follows <paramref name="edge"/> for an animated scroll to it that the platform is about to start, until the view
+		/// gets there. The animation scrolls toward that edge, and an offset change the user doesn't make on the way never
+		/// stops it following: the platform can move the offset as it measures the rows the animation brings into view,
+		/// before it reports the content changing size. A size change on the way scrolls straight to the edge. It supersedes
+		/// any scroll the user was making; a scroll the user starts, or one the app requests, ends it.
 		/// </summary>
 		/// <param name="edge">The edge to follow; one the view can't follow follows none.</param>
 		public void Engage(ScrollAnchorMode edge)
 		{
 			AnchoredEdge = CanFollow(edge) ? edge : ScrollAnchorMode.None;
+			_approaching = IsAnchored;
 			_drift = 0;
 			_scrollRequested = false;
 			_lastWasUserScroll = false;
@@ -180,6 +193,12 @@ namespace Microsoft.Maui.Controls
 			_last = metrics;
 			_lastWasUserScroll = isUserScrolling;
 			var edge = EdgeAt(metrics);
+
+			// An animated scroll to an edge got there, or the user took over.
+			if (_approaching && (isUserScrolling || IsAt(AnchoredEdge, metrics)))
+			{
+				_approaching = false;
+			}
 
 			// A view at both edges, its content fitting, follows the end.
 			if (AnchoredEdge == ScrollAnchorMode.Start && edge == ScrollAnchorMode.End && IsAt(ScrollAnchorMode.Start, metrics))
@@ -242,8 +261,9 @@ namespace Microsoft.Maui.Controls
 			if (IsAnchored)
 			{
 				// Movement away from the edge since the view was last at it, that the platform didn't make laying out: a
-				// scroll can move the view in steps too small to tell from rounding, which add up.
-				_drift = laidOut || IsAt(AnchoredEdge, metrics) || wasUserScroll
+				// scroll can move the view in steps too small to tell from rounding, which add up. An animated scroll to the
+				// edge is on its way there.
+				_drift = laidOut || _approaching || IsAt(AnchoredEdge, metrics) || wasUserScroll
 					? 0
 					: Math.Max(0, _drift + MovementAway(previous, metrics));
 				if (_drift > Tolerance)

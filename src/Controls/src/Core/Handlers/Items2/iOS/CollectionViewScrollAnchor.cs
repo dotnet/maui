@@ -14,17 +14,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 	/// <para>
 	/// It looks at the collection view after each of its layout passes, once the content size and any offset
 	/// adjustments UIKit made while laying out (self-sizing rows above the viewport, clamping after items are removed)
-	/// have settled. UIKit lays the collection view out as it scrolls and whenever its content or size changes. A scroll
-	/// that happens outside a layout pass, and the end of a drag or a deceleration, ask for a layout pass, so the anchor
-	/// looks after those too. It also looks right away at a scroll the user isn't making (an animation, the keyboard,
-	/// tapping the status bar to scroll to the top): the layout pass that follows measures the rows the scroll brought
-	/// into view, and the scroll would then look like UIKit laying out.
+	/// have settled. UIKit lays the collection view out as it scrolls and whenever its content or size changes, also
+	/// outside a layout pass when the controller has it update the view for a new layout or for items added, removed or
+	/// moved: the controller tells the anchor about those as it does about its layout passes. A scroll that happens
+	/// outside a layout pass, and the end of a drag or a deceleration, ask for a layout pass, so the anchor looks after
+	/// those too. It also looks right away at a scroll the user isn't making (an animation, the keyboard, tapping the
+	/// status bar to scroll to the top): the layout pass that follows measures the rows the scroll brought into view, and
+	/// the scroll would then look like UIKit laying out.
 	/// </para>
 	/// <para>
-	/// The scroll view delegate reports every offset change. One made during a layout pass is UIKit laying out, even when
+	/// The scroll view delegate reports every offset change. One made while UIKit lays the view out is UIKit's, even when
 	/// the content ends up the size it was (UIKit can re-estimate rows it measured before and measure them again in one
-	/// pass), so it never counts as a scroll away from an edge. The user is scrolling while the collection view is
-	/// dragging or decelerating.
+	/// pass, and can move the offset before it updates the content size), so it never counts as a scroll away from an
+	/// edge. The user is scrolling while the collection view is dragging or decelerating.
 	/// </para>
 	/// <para>
 	/// It holds no references: the controller passes its views in. It is vertical only.
@@ -39,6 +41,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		bool _applying;
 		bool _wasVertical = true;
 		bool _detached;
+
+		// Counts the scrolls requested, and the times the view started following an edge or started over: the app can request
+		// one from a callback of an earlier one's scroll (the Scrolled event it raises), which makes the earlier one older.
+		int _scrollRequests;
 
 		/// <summary>Initializes a new anchor that follows the edges <paramref name="mode"/> selects.</summary>
 		public CollectionViewScrollAnchor(ScrollAnchorMode mode)
@@ -55,6 +61,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		/// <summary>Follows the edges <paramref name="mode"/> selects instead, starting over as for a new view.</summary>
 		public void UpdateMode(UICollectionView collectionView, ScrollAnchorMode mode)
 		{
+			_scrollRequests++;
 			_tracker.SetEdges(mode);
 			_offsetChangedDuringLayout = false;
 			collectionView.SetNeedsLayout();
@@ -63,15 +70,20 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		/// <summary>Starts following the edge a new view shows again, as for a new set of items.</summary>
 		public void Reset(UICollectionView collectionView)
 		{
+			_scrollRequests++;
 			_tracker.Reset();
 			_offsetChangedDuringLayout = false;
 			collectionView.SetNeedsLayout();
 		}
 
-		/// <summary>Called when the controller's view is about to lay out its subviews.</summary>
+		/// <summary>
+		/// Called before UIKit lays the view out: before the controller's view lays out its subviews, and before UIKit updates
+		/// the view for a change the controller or its items source makes (a new layout, items added, removed or moved), as
+		/// UIKit can move the content offset before it updates the content size then.
+		/// </summary>
 		public void LayoutStarting() => _layoutDepth++;
 
-		/// <summary>Called when the controller's view has laid out its subviews: looks at where the view is.</summary>
+		/// <summary>Called once UIKit has laid the view out (see <see cref="LayoutStarting"/>): looks at where the view is.</summary>
 		public void LayoutFinished(UICollectionView collectionView, StructuredItemsView? itemsView, bool isVertical)
 		{
 			if (_layoutDepth > 0)
@@ -169,26 +181,38 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		public void UserScrollEnded(UICollectionView collectionView) => collectionView.SetNeedsLayout();
 
 		/// <summary>Called before the handler scrolls for a <c>ScrollTo</c> request.</summary>
-		public void ScrollRequesting() => _requestingScroll = true;
+		/// <returns>The request, to pass to <see cref="ScrollRequested"/>.</returns>
+		public int ScrollRequesting()
+		{
+			_requestingScroll = true;
+			return ++_scrollRequests;
+		}
 
 		/// <summary>
 		/// Called after the handler scrolled for a <c>ScrollTo</c> request (animating, or not): the next look judges where
-		/// it went, instead of scrolling back to the edge the view followed.
+		/// it went, instead of scrolling back to the edge the view followed. A newer request the app made from a callback of
+		/// this scroll, or an edge the view started following meanwhile, wins: the look doesn't judge this one.
 		/// </summary>
-		public void ScrollRequested(UICollectionView collectionView)
+		public void ScrollRequested(UICollectionView collectionView, int request)
 		{
 			_requestingScroll = false;
-			_tracker.RequestScroll();
+			if (request == _scrollRequests)
+			{
+				_tracker.RequestScroll();
+			}
+
 			collectionView.SetNeedsLayout();
 		}
 
 		/// <summary>Scrolls to the start, and follows it again. The view must be able to follow its start.</summary>
 		/// <remarks>
 		/// The app can request another scroll from what this raises (the <c>Scrolled</c> event of a jump, the change of
-		/// <see cref="StructuredItemsView.IsAnchored"/>): that request is newer, and wins.
+		/// <see cref="StructuredItemsView.IsAnchored"/>): that request is newer, and wins. This is newer than a scroll the
+		/// app requested and raised that from.
 		/// </remarks>
 		public void ScrollToStart(UICollectionView collectionView, StructuredItemsView? itemsView, bool animated)
 		{
+			_scrollRequests++;
 			if (animated && collectionView.Window is not null)
 			{
 				// Look at the view as laid out first, then animate: a ScrollTo the app requests as it hears the view follows
@@ -216,10 +240,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		/// <summary>Scrolls to the end, and follows it again. The view must be able to follow its end.</summary>
 		/// <remarks>
 		/// The app can request another scroll from what this raises (the <c>Scrolled</c> event of a jump, the change of
-		/// <see cref="StructuredItemsView.IsAnchored"/>): that request is newer, and wins.
+		/// <see cref="StructuredItemsView.IsAnchored"/>): that request is newer, and wins. This is newer than a scroll the
+		/// app requested and raised that from.
 		/// </remarks>
 		public void ScrollToEnd(UICollectionView collectionView, StructuredItemsView? itemsView, bool animated)
 		{
+			_scrollRequests++;
 			if (animated && collectionView.Window is not null)
 			{
 				// Look at the view as laid out first, then animate: a ScrollTo the app requests as it hears the view follows

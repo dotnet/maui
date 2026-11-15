@@ -14,7 +14,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2
 {
-	public abstract class ItemsViewController2<TItemsView> : UICollectionViewController
+	public abstract class ItemsViewController2<TItemsView> : UICollectionViewController, IItemsUpdateObserver
 	where TItemsView : ItemsView
 	{
 		public const int EmptyTag = 333;
@@ -52,6 +52,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		// The number of items when a scroll to the end of a view that doesn't follow its end still goes the rest of the way
 		// after the next layout (see FinishScrollToEnd), or null when no scroll does.
 		nint? _finishingScrollToEnd;
+		int _forcedLayouts;
 
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		protected UICollectionViewDelegateFlowLayout Delegator { get; set; }
@@ -273,6 +274,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		internal CollectionViewScrollAnchor ScrollAnchor => _scrollAnchor;
 
+		// UIKit lays the view out for a change in the items as the items source has it update the view, and can move the
+		// content offset before it updates the content size: that's UIKit laying out, not a scroll.
+		void IItemsUpdateObserver.ItemsUpdating() => _scrollAnchor?.LayoutStarting();
+
+		void IItemsUpdateObserver.ItemsUpdated() =>
+			_scrollAnchor?.LayoutFinished(CollectionView, ItemsView as StructuredItemsView, ScrollDirection == UICollectionViewScrollDirection.Vertical);
+
 		internal void UpdateAnchorMode()
 		{
 			var mode = ItemsView is StructuredItemsView structuredItemsView
@@ -328,7 +336,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				return false;
 			}
 
-			if (_scrollAnchor is { } scrollAnchor && scrollAnchor.CanFollow(ScrollAnchorMode.Start))
+			var scrollAnchor = _scrollAnchor;
+			if (scrollAnchor is not null && scrollAnchor.CanFollow(ScrollAnchorMode.Start))
 			{
 				scrollAnchor.ScrollToStart(CollectionView, ItemsView as StructuredItemsView, animate);
 				return true;
@@ -336,14 +345,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			// A scroll the app requests: an anchor that follows the end judges where it lands.
 			bool animating;
-			_scrollAnchor?.ScrollRequesting();
+			var request = scrollAnchor?.ScrollRequesting() ?? 0;
 			try
 			{
 				animating = CollectionViewScrollAnchor.ScrollToStartOnce(CollectionView, animate);
 			}
 			finally
 			{
-				_scrollAnchor?.ScrollRequested(CollectionView);
+				scrollAnchor?.ScrollRequested(CollectionView, request);
 			}
 
 			if (animating)
@@ -362,7 +371,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				return false;
 			}
 
-			if (_scrollAnchor is { } scrollAnchor && scrollAnchor.CanFollow(ScrollAnchorMode.End))
+			var scrollAnchor = _scrollAnchor;
+			if (scrollAnchor is not null && scrollAnchor.CanFollow(ScrollAnchorMode.End))
 			{
 				scrollAnchor.ScrollToEnd(CollectionView, ItemsView as StructuredItemsView, animate);
 				return true;
@@ -370,7 +380,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			// A scroll the app requests: an anchor that follows the start judges where it lands.
 			double? target = null;
-			_scrollAnchor?.ScrollRequesting();
+			var request = scrollAnchor?.ScrollRequesting() ?? 0;
 			try
 			{
 				if (animate)
@@ -379,17 +389,31 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				}
 				else
 				{
-					// Scroll to the end as laid out in the next layout, and the rest of the way in the one after, once the rows
+					// Scroll to the end as laid out in the next layout, and the rest of the way in the ones after, once the rows
 					// there are measured (see FinishScrollToEnd). The app can request another scroll from the Scrolled event either
 					// raises: that one wins.
 					FinishingScrollToEnd();
-					CollectionView.LayoutIfNeeded();
-					CollectionView.LayoutIfNeeded();
+					_forcedLayouts++;
+					try
+					{
+						CollectionView.LayoutIfNeeded();
+						CollectionView.LayoutIfNeeded();
+					}
+					finally
+					{
+						_forcedLayouts--;
+					}
+
+					// UIKit can measure the rows there in a layout pass of its own, after the ones forced here: finish in one.
+					if (_finishingScrollToEnd is not null)
+					{
+						CollectionView.SetNeedsLayout();
+					}
 				}
 			}
 			finally
 			{
-				_scrollAnchor?.ScrollRequested(CollectionView);
+				scrollAnchor?.ScrollRequested(CollectionView, request);
 			}
 
 			if (target is double end)
@@ -424,9 +448,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		}
 
 		// Called once the view is laid out. A scroll to the end goes the rest of the way to the end, which the layout moves as
-		// it measures the rows the scroll brought into view, until a layout leaves the end where it is. It doesn't follow
-		// items added or removed meanwhile: those aren't the rows it scrolled to. It stops for a newer scroll request, which
-		// the app can make from the Scrolled event its own scroll raises (see ScrollingToEdge).
+		// it measures the rows the scroll brought into view, until a layout UIKit runs on its own leaves the end where it is: a
+		// layout forced right after the scroll may not have measured them yet. It doesn't follow items added or removed
+		// meanwhile: those aren't the rows it scrolled to. It stops for a newer scroll request, which the app can make from the
+		// Scrolled event its own scroll raises (see ScrollingToEdge).
 		void FinishScrollToEnd()
 		{
 			if (_finishingScrollToEnd is not nint count)
@@ -444,7 +469,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			_finishingScrollToEnd = count;
 			if (CollectionViewScrollAnchor.SetOffsetToEnd(CollectionView, animated: false) is null)
 			{
-				_finishingScrollToEnd = null;
+				if (_forcedLayouts == 0)
+				{
+					_finishingScrollToEnd = null;
+				}
 			}
 			else if (_finishingScrollToEnd is not null)
 			{
@@ -611,16 +639,25 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			Delegator = CreateDelegator();
 			CollectionView.Delegate = Delegator;
 
-			var contentOffset = CollectionView.ContentOffset;
-
-			CollectionView.SetCollectionViewLayout(ItemsViewLayout, false);
-
-			// UIKit already preserves scrolled content when replacing the layout.
-			// Only restore the offset at the origin, where self-sizing can shift the first item out of view.
-			if (contentOffset == CGPoint.Empty && CollectionView.ContentOffset != contentOffset)
+			// UIKit lays the view out for the new layout, and can move the content offset before it updates the content size.
+			_scrollAnchor?.LayoutStarting();
+			try
 			{
-				(Delegator as IScrollTrackingDelegator)?.ResetScrollTracking();
-				CollectionView.ContentOffset = contentOffset;
+				var contentOffset = CollectionView.ContentOffset;
+
+				CollectionView.SetCollectionViewLayout(ItemsViewLayout, false);
+
+				// UIKit already preserves scrolled content when replacing the layout.
+				// Only restore the offset at the origin, where self-sizing can shift the first item out of view.
+				if (contentOffset == CGPoint.Empty && CollectionView.ContentOffset != contentOffset)
+				{
+					(Delegator as IScrollTrackingDelegator)?.ResetScrollTracking();
+					CollectionView.ContentOffset = contentOffset;
+				}
+			}
+			finally
+			{
+				_scrollAnchor?.LayoutFinished(CollectionView, ItemsView as StructuredItemsView, ScrollDirection == UICollectionViewScrollDirection.Vertical);
 			}
 
 			UpdateEmptyView();

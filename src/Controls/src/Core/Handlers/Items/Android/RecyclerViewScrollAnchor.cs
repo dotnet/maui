@@ -60,6 +60,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		int _estimatedOffset;
 		int _scrolledSinceLook;
 		double _offset;
+		bool _offsetIsExact;
 		bool _hasOffset;
 
 		// How far to scroll, in pixels, to the start (negative, or zero) and to the end (positive, or zero), as the last look
@@ -518,6 +519,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (startOffset is int exact)
 			{
 				_offset = exact;
+				_offsetIsExact = true;
 				_toStart = -exact;
 			}
 			else if (_hasOffset && referenceLaidOut)
@@ -531,10 +533,20 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			else if (_hasOffset)
 			{
 				_offset += estimatedOffset - _estimatedOffset;
+				_offsetIsExact = false;
 			}
 			else
 			{
 				_offset = estimatedOffset;
+				_offsetIsExact = false;
+			}
+
+			// Measured from an estimate, the offset can come out near or past the start while the first row is far away (the
+			// estimate averages the rows laid out): all that's certain is that the first row, which isn't laid out, is above
+			// the viewport.
+			if (!_offsetIsExact)
+			{
+				_offset = Math.Max(_offset, (_tracker.Threshold + 1) * _density);
 			}
 
 			_hasOffset = true;
@@ -576,6 +588,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			// Lay the row at the edge out first; the look after that layout scrolls the rest of the way.
 			JumpToEdge();
+
+			// Asked for during a layout, the jump waits for the layout to end, and a scroll can move the view first (the
+			// animated ScrollToEnd the app requested from the Scrolled event the layout raised): the look counted on the view
+			// being at the edge, so start measuring again from the next look, which scrolls there unless the view is scrolling.
+			if (_jumpPosted)
+			{
+				_tracker.Reset(_tracker.AnchoredEdge);
+			}
 		}
 
 		/// <summary>Starts an animated scroll that ends with the start of the first row at the start of the viewport.</summary>

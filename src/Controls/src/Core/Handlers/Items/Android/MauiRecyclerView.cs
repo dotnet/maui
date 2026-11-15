@@ -502,9 +502,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
-			// A scroll the app requests is judged by where it lands: the anchor doesn't scroll it back to the end. A position
-			// past the adapter's last one scrolls nowhere, so there's nothing to judge.
-			if (position < ItemsViewAdapter.ItemCount)
+			// A position past the adapter's last one. Without animating, RecyclerView ignores it once it lays out, and it would
+			// only replace a scroll requested earlier that hasn't been laid out yet. Animated, RecyclerView scrolls to the last
+			// item instead (ItemsUpdatingScrollMode.KeepLastItemInView relies on that), which the anchor judges as a fling.
+			var inRange = position < ItemsViewAdapter.ItemCount;
+			if (!inRange && !args.IsAnimated)
+			{
+				return;
+			}
+
+			// A scroll the app requests is judged by where it lands: the anchor doesn't scroll it back to the end.
+			if (inRange)
 			{
 				_scrollAnchor?.ScrollRequested(args.IsAnimated);
 			}
@@ -559,24 +567,47 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 						return GetAdapterPositionFromFlatDataIndex(args.Index, groupItemSource);
 					}
 
-					item = FindBoundItemInGroup(args, groupItemSource);
-
-					if (item is null)
-					{
-						return InvalidPosition;
-					}
+					// The same for an index within a group, which also counts only the group's items.
+					return GetAdapterPositionFromGroupedIndex(args.GroupIndex, args.Index, groupItemSource);
 				}
 			}
 
 			return ItemsViewAdapter.GetPositionForItem(item);
 		}
 
-		private static object FindBoundItemInGroup(ScrollToRequestEventArgs args, IGroupableItemsViewSource groupItemSource)
+		/// <summary>
+		/// Converts the index of an item within a group (excluding the group's header and footer, as on iOS/Mac/Windows) into
+		/// a RecyclerView adapter position, which counts the headers and footers before it. Computed from the groups' sizes:
+		/// no item round trip that could find an equal item in an earlier group.
+		/// </summary>
+		private static int GetAdapterPositionFromGroupedIndex(int groupIndex, int itemIndex, IGroupableItemsViewSource source)
 		{
-			var group = groupItemSource.GetGroupItemsViewSource(args.GroupIndex);
+			if (itemIndex < 0)
+			{
+				return InvalidPosition;
+			}
 
-			// GetItem calls AdjustIndexRequest, which subtracts 1 if we have a header (UngroupedItemsSource does not do this)
-			return group?.GetItem(args.Index + 1);
+			// The outer ItemsView header (if any) sits at adapter position 0.
+			int adapterPosition = source.HasHeader ? 1 : 0;
+			for (int groupIdx = 0; groupIdx < groupIndex; groupIdx++)
+			{
+				if (source.GetGroupItemsViewSource(groupIdx) is not { } before)
+				{
+					return InvalidPosition;
+				}
+
+				// Skip this whole group (header + items + footer).
+				adapterPosition += before.Count;
+			}
+
+			if (source.GetGroupItemsViewSource(groupIndex) is not { } group)
+			{
+				return InvalidPosition;
+			}
+
+			int groupHeader = group.HasHeader ? 1 : 0;
+			int dataItemsInGroup = group.Count - groupHeader - (group.HasFooter ? 1 : 0);
+			return itemIndex < dataItemsInGroup ? adapterPosition + groupHeader + itemIndex : InvalidPosition;
 		}
 
 		/// <summary>

@@ -949,6 +949,89 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 		}
 
+		[Fact]
+		public void AnAnimatedScrollToTheStartKeepsFollowingItAsThePlatformMeasuresRowsOnTheWay()
+		{
+			var view = new FakeScrollView(extent: 1440, viewport: 300, edges: ScrollAnchorMode.Start | ScrollAnchorMode.End);
+			view.Look();
+
+			view.Tracker.Engage(ScrollAnchorMode.Start);
+			view.Offset = 1100;
+			Assert.Null(view.Look());
+
+			// The platform measures a row the animation brought into view above the viewport, taller than it estimated: it
+			// moves the offset to keep the rows in view where they are, and can report that before the content changing size.
+			view.Offset += 10;
+			Assert.Null(view.Look());
+			Assert.Equal(ScrollAnchorMode.Start, view.Tracker.AnchoredEdge);
+
+			// Once it does, the view scrolls straight to the start.
+			view.Extent += 10;
+			Assert.Equal(0, view.Look());
+			Assert.Equal(ScrollAnchorMode.Start, view.Tracker.AnchoredEdge);
+		}
+
+		[Fact]
+		public void AScrollAwayFromTheStartOnceAnAnimatedScrollGotThereStopsFollowingIt()
+		{
+			var view = new FakeScrollView(extent: 1440, viewport: 300, edges: ScrollAnchorMode.Start | ScrollAnchorMode.End);
+			view.Look();
+
+			view.Tracker.Engage(ScrollAnchorMode.Start);
+			foreach (var offset in new[] { 600, 0 })
+			{
+				view.Offset = offset;
+				Assert.Null(view.Look());
+			}
+
+			// A scroll the user doesn't make (the keyboard, accessibility) away from the start it got to.
+			view.Offset = 120;
+			Assert.Null(view.Look());
+			Assert.False(view.Tracker.IsAnchored);
+		}
+
+		[Fact]
+		public void AUserScrollDuringAnAnimatedScrollToAnEdgeStopsFollowingIt()
+		{
+			var view = new FakeScrollView(extent: 1440, viewport: 300, edges: ScrollAnchorMode.Start | ScrollAnchorMode.End);
+			view.Look();
+
+			view.Tracker.Engage(ScrollAnchorMode.Start);
+			view.Offset = 800;
+			Assert.Null(view.Look());
+
+			// The user catches the list and drags it back toward the end.
+			foreach (var offset in new[] { 820, 900 })
+			{
+				view.Offset = offset;
+				Assert.Null(view.Look(userScrolling: true));
+			}
+
+			Assert.False(view.Tracker.IsAnchored);
+		}
+
+		[Fact]
+		public void AScrollTheAppRequestsDuringAnAnimatedScrollToAnEdgeIsJudgedByWhereItLands()
+		{
+			var view = new FakeScrollView(extent: 1440, viewport: 300, edges: ScrollAnchorMode.Start | ScrollAnchorMode.End);
+			view.Look();
+
+			view.Tracker.Engage(ScrollAnchorMode.Start);
+			view.Offset = 800;
+			Assert.Null(view.Look());
+
+			view.Tracker.RequestScroll();
+			view.Offset = 500;
+			Assert.Null(view.Look());
+			Assert.False(view.Tracker.IsAnchored);
+
+			// It no longer follows the start: the content changing size leaves the view where the request put it.
+			view.Offset = 510;
+			view.Extent += 10;
+			Assert.Null(view.Look());
+			Assert.False(view.Tracker.IsAnchored);
+		}
+
 		[Theory]
 		[InlineData(ScrollAnchorMode.Start)]
 		[InlineData(ScrollAnchorMode.End)]

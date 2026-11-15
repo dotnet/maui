@@ -170,7 +170,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		}
 #endif
 
-		protected virtual void ScrollToRequested(object sender, ScrollToRequestEventArgs args)
+		protected virtual void ScrollToRequested(object sender, ScrollToRequestEventArgs args) => TryScrollTo(args);
+
+		// Scrolls to the item the request is for. Returns whether the view has it: it doesn't scroll for one it doesn't have.
+		internal bool TryScrollTo(ScrollToRequestEventArgs args)
 		{
 			int section = 0, item = 0;
 			UICollectionViewScrollPosition scrollPosition = UICollectionViewScrollPosition.None;
@@ -180,7 +183,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				if (!IsIndexPathValid(indexPath))
 				{
 					// Specified path wasn't valid, or item wasn't found
-					return;
+					return false;
 				}
 
 				var scrollDirection = Controller.GetScrollDirection();
@@ -206,7 +209,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 				// A scroll the app requests is judged by where it lands: the anchor doesn't scroll it back to the end.
 				var scrollAnchor = Controller.ScrollAnchor;
-				scrollAnchor?.ScrollRequesting();
+				var request = scrollAnchor?.ScrollRequesting() ?? 0;
 				try
 				{
 					Controller.CollectionView.ScrollToItem(indexPath,
@@ -214,7 +217,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				}
 				finally
 				{
-					scrollAnchor?.ScrollRequested(Controller.CollectionView);
+					scrollAnchor?.ScrollRequested(Controller.CollectionView, request);
 				}
 			}
 
@@ -228,6 +231,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				}
 			}
 #endif
+
+			return true;
 
 			NSIndexPath DetermineIndex(ScrollToRequestEventArgs args)
 			{
