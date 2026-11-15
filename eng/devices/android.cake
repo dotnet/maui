@@ -290,8 +290,36 @@ void ExecuteUITests(string project, string app, string appPackageName, string de
 	SetEnvironmentVariable("APPIUM_LOG_FILE", appiumLog);
 
 	Information("Run UITests  project {0}", project);
-	RunUITestsWithRetry(project, config, toolPath, resultsFileName, () => WriteLogCat());
+	RunUITestsWithRetry(project, config, toolPath, resultsFileName, () => WriteLogCat(),
+		() => EnsureDeviceForUITestRetry(project, app, appPackageName, device, resultsDir, binDir, config, tfm, rid, ver, toolPath, instrumentation));
 	Information("UI Tests completed.");
+}
+
+void EnsureDeviceForUITestRetry(string project, string app, string appPackageName, string device, string resultsDir, string binDir, string config, string tfm, string rid, string ver, string toolPath, string instrumentation)
+{
+	var settings = new AdbToolSettings { SdkRoot = androidSdkRoot };
+	if (!string.IsNullOrEmpty(DEVICE_UDID))
+		settings.Serial = DEVICE_UDID;
+
+	if (SafeAdbShell("getprop sys.boot_completed", settings).FirstOrDefault() == "1")
+		return;
+
+	if (emulatorProcess == null || !deviceBoot)
+		throw new Exception("The Android device is no longer available and was not started by this script, so it cannot be recovered for the UI test retry.");
+
+	Warning("The Android emulator is no longer available; restarting it and reinstalling the app before retrying UI tests.");
+	try
+	{
+		CleanUpVirtualDevice(emulatorProcess, avdSettings);
+	}
+	catch (Exception ex)
+	{
+		Warning("Failed to clean up the lost emulator: {0}", ex.Message);
+	}
+
+	emulatorProcess = null;
+	HandleVirtualDevice(emuSettings, avdSettings, androidAvd, androidAvdImage, deviceSkin, deviceBoot).GetAwaiter().GetResult();
+	ExecutePrepareUITests(project, app, appPackageName, device, resultsDir, binDir, config, tfm, rid, ver, toolPath, instrumentation, headless);
 }
 
 void ExecuteBuildUITestApp(string appProject, string device, string binDir, string config, string tfm, string rid, string toolPath)
