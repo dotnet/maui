@@ -64,9 +64,13 @@ namespace Microsoft.Maui.DeviceTests
 				var context = MauiProgram.DefaultContext;
 				var (screenWidth, screenHeight) = GetScreenSize(context);
 
-				// A view that ends above the screen bottom, like a page above bottom tabs
-				using var view = new PositionedView(context, 0);
-				view.Layout(0, 0, screenWidth, screenHeight - gapToScreenBottom);
+				// Keep a laid-out view even when the bottom gap exceeds the screen height.
+				using var view = new PositionedView(context, -gapToScreenBottom);
+				view.Layout(0, 0, screenWidth, screenHeight);
+				var viewLocation = new int[2];
+				view.GetLocationOnScreen(viewLocation);
+				Assert.True(view.Height > 0);
+				Assert.Equal(gapToScreenBottom, screenHeight - (viewLocation[1] + view.Height));
 
 				using var builder = new WindowInsetsCompat.Builder();
 				using var ime = AInsets.Of(0, 0, 0, ImeBottom);
