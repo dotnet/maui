@@ -391,6 +391,67 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task ReconnectingContainerRemovesShadowCanvasWithoutAccumulation()
+		{
+			var shadow = new Shadow
+			{
+				Brush = new SolidColorBrush(Colors.Black),
+				Radius = 8,
+				Offset = new Point(4, 4)
+			};
+			var label = new Label
+			{
+				Text = "Shadow removal",
+				BackgroundColor = Colors.Transparent,
+				WidthRequest = 100,
+				HeightRequest = 50,
+				Shadow = shadow
+			};
+
+			await AttachAndRun(label, async (LabelHandler handler) =>
+			{
+				var wrapper = Assert.IsType<WrapperView>(handler.ContainerView);
+				var parent = wrapper.Parent;
+
+				for (int cycle = 0; cycle < 3; cycle++)
+				{
+					await AssertHelpers.AssertEventually(
+		() => wrapper.CachedChildren.OfType<Canvas>().Any(),
+		message: "The Label did not create a shadow canvas.");
+					var originalCanvas = Assert.Single(wrapper.CachedChildren.OfType<Canvas>());
+					await AssertHelpers.AssertEventually(
+		() => Microsoft.UI.Xaml.Media.VisualTreeHelper.GetChildrenCount(originalCanvas) == 1
+		&& Microsoft.UI.Xaml.Hosting.ElementCompositionPreview.GetElementChildVisual(
+		(Microsoft.UI.Xaml.UIElement)Microsoft.UI.Xaml.Media.VisualTreeHelper.GetChild(originalCanvas, 0)) is not null,
+		message: "The shadow host did not finish composition initialization.");
+
+					((IElementHandler)handler).DisconnectHandler();
+					Assert.Null(label.Handler);
+					label.Shadow = null;
+					Assert.Contains(originalCanvas, wrapper.CachedChildren);
+					handler.SetVirtualView(label);
+
+					Assert.Same(wrapper, handler.ContainerView);
+					Assert.Same(parent, wrapper.Parent);
+					Assert.Same(handler.PlatformView, wrapper.Child);
+					Assert.Null(wrapper.Shadow);
+					Assert.DoesNotContain(originalCanvas, wrapper.CachedChildren);
+					Assert.Null(originalCanvas.Parent);
+					Assert.Empty(wrapper.CachedChildren.OfType<Canvas>());
+
+					if (cycle < 2)
+					{
+						((IElementHandler)handler).DisconnectHandler();
+						label.Shadow = shadow;
+						handler.SetVirtualView(label);
+						Assert.Same(wrapper, handler.ContainerView);
+						Assert.Same(parent, wrapper.Parent);
+					}
+				}
+			});
+		}
+
+		[Fact]
 		public async Task ReconnectingImageContainerRestoresDefaultOpacityWithBaseMapper()
 		{
 			var image = new Microsoft.Maui.Controls.Image
