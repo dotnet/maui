@@ -172,7 +172,8 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateLineHeight(this TextView textView, ILabel label)
 		{
-			if (label.LineHeight < 0)
+			// Like iOS and Windows, 0 keeps the natural line height: as a multiplier it would stack every line on the first
+			if (label.LineHeight <= 0)
 				return;
 
 			// The line spacing multiplier also scales the font padding that TextView adds to the first line,

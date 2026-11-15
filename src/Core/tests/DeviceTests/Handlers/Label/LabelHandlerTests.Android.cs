@@ -288,6 +288,23 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(1, multiplier);
 		}
 
+		[Fact(DisplayName = "LineHeight Of Zero Keeps The Natural Line Spacing")]
+		public async Task LineHeightOfZeroKeepsTheNaturalLineSpacing()
+		{
+			// iOS and Windows treat 0 as the natural line height; as a multiplier it would stack every line on the first.
+			var label = new LabelStub()
+			{
+				Text = "First\nSecond\nThird",
+				Font = Font.SystemFontOfSize(30),
+				LineHeight = 0
+			};
+
+			var (extra, multiplier) = await GetValueAsync(label, handler => (handler.PlatformView.LineSpacingExtra, handler.PlatformView.LineSpacingMultiplier));
+
+			Assert.Equal(0, extra);
+			Assert.Equal(1, multiplier);
+		}
+
 		[Fact(DisplayName = "LineHeight Scales Html Lines By Their Own Height")]
 		public async Task LineHeightScalesHtmlLinesByTheirOwnHeight()
 		{

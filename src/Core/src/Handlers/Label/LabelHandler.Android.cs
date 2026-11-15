@@ -177,7 +177,7 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateLineHeight(label);
 
 			if (handler is LabelHandler labelHandler)
-				labelHandler._lineHeightSource = label.LineHeight >= 0 && handler.PlatformView is { } textView ? GetLineHeightSource(textView) : null;
+				labelHandler._lineHeightSource = label.LineHeight > 0 && handler.PlatformView is { } textView ? GetLineHeightSource(textView) : null;
 		}
 
 		static (float FontSpacing, bool IsSpanned) GetLineHeightSource(AppCompatTextView textView) =>
