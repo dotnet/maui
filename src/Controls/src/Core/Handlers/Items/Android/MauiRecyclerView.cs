@@ -825,7 +825,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		bool IScrollAnchorRecyclerView.ScrollToStart(bool animate)
 		{
-			if (GetLayoutManager() is not { } layoutManager || !layoutManager.CanScrollVertically())
+			if (GetLayoutManager() is not { } layoutManager)
 			{
 				return false;
 			}
@@ -835,6 +835,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			// And an adjustment an earlier jump left for its layout would scroll the view on after it.
 			_scrollHelper?.CancelPendingAdjustment();
+
+			if (!layoutManager.CanScrollVertically())
+			{
+				ScrollToEdgeItem(end: false, animate);
+				return true;
+			}
 
 			if (_scrollAnchor is not null && _scrollAnchor.CanFollow(ScrollAnchorMode.Start))
 			{
@@ -860,7 +866,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		bool IScrollAnchorRecyclerView.ScrollToEnd(bool animate)
 		{
-			if (GetLayoutManager() is not { } layoutManager || !layoutManager.CanScrollVertically())
+			if (GetLayoutManager() is not { } layoutManager)
 			{
 				return false;
 			}
@@ -870,6 +876,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			// And an adjustment an earlier jump left for its layout would scroll the view on after it.
 			_scrollHelper?.CancelPendingAdjustment();
+
+			if (!layoutManager.CanScrollVertically())
+			{
+				ScrollToEdgeItem(end: true, animate);
+				return true;
+			}
 
 			if (_scrollAnchor is not null && _scrollAnchor.CanFollow(ScrollAnchorMode.End))
 			{
@@ -891,6 +903,50 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			return true;
+		}
+
+		// Where the view doesn't scroll to an edge of its content, as in a horizontal layout, the first or last item is as close as
+		// it gets: the first or last the adapter shows, which an items source that can be read only once doesn't give again.
+		void ScrollToEdgeItem(bool end, bool animate)
+		{
+			var position = FindEdgeItemPosition(end);
+			if (position < 0)
+			{
+				return;
+			}
+
+			var scrollToPosition = end ? Microsoft.Maui.Controls.ScrollToPosition.End : Microsoft.Maui.Controls.ScrollToPosition.Start;
+			if (animate)
+			{
+				ScrollHelper.AnimateScrollToPosition(position, scrollToPosition);
+			}
+			else
+			{
+				ScrollHelper.JumpScrollToPosition(position, scrollToPosition);
+			}
+		}
+
+		// The adapter position of the first or last item, past the header and footer and the headers and footers of groups.
+		int FindEdgeItemPosition(bool end)
+		{
+			if ((ItemsViewAdapter as IItemsViewAdapter)?.ItemsSource is not { } source)
+			{
+				return -1;
+			}
+
+			var groupableSource = source as IGroupableItemsViewSource;
+			var count = ItemsViewAdapter.ItemCount;
+			for (var index = 0; index < count; index++)
+			{
+				var position = end ? count - 1 - index : index;
+				if (!source.IsHeader(position) && !source.IsFooter(position)
+					&& groupableSource?.IsGroupHeader(position) != true && groupableSource?.IsGroupFooter(position) != true)
+				{
+					return position;
+				}
+			}
+
+			return -1;
 		}
 
 		protected override void OnSizeChanged(int w, int h, int oldw, int oldh)

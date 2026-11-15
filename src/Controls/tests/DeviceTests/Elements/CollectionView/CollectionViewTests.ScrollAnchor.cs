@@ -451,8 +451,12 @@ namespace Microsoft.Maui.DeviceTests
 
 			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
 			{
-				collectionView.ScrollToEnd(animate: false);
+				// Until the list is laid out, it has no content to scroll, and is at both of its edges.
 				var distance = double.NaN;
+				var laidOut = await Wait(() => (distance = GetHorizontalDistanceToEnd(handler)) > 100, 3000);
+				Assert.True(laidOut, $"The items should extend past the end of the list. Distance to the end: {distance}.");
+
+				collectionView.ScrollToEnd(animate: false);
 				var atEnd = await Wait(() => Math.Abs(distance = GetHorizontalDistanceToEnd(handler)) <= AnchorTolerance, 3000);
 				Assert.True(atEnd, $"ScrollToEnd should show the last item at the end. Distance to the end: {distance}.");
 
@@ -476,10 +480,55 @@ namespace Microsoft.Maui.DeviceTests
 
 			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
 			{
-				collectionView.ScrollToEnd(animate: false);
+				// Until the list is laid out, it has no content to scroll, and is at both of its edges.
 				var distance = double.NaN;
+				var laidOut = await Wait(() => (distance = GetHorizontalDistanceToEnd(handler)) > 100, 3000);
+				Assert.True(laidOut, $"The items should extend past the end of the list. Distance to the end: {distance}.");
+
+				collectionView.ScrollToEnd(animate: false);
 				var atEnd = await Wait(() => Math.Abs(distance = GetHorizontalDistanceToEnd(handler)) <= AnchorTolerance, 3000);
 				Assert.True(atEnd, $"ScrollToEnd should show the last item at the end. Distance to the end: {distance}.");
+			});
+		}
+
+		// The list shows the items a sequence that can be read only once gave it: its edges are where those are.
+		[Theory(DisplayName = "ScrollToStart and ScrollToEnd scroll a horizontal list of a sequence read once to its edges")]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task ScrollToStartAndScrollToEndScrollAHorizontalListOfASequenceReadOnceToItsEdges(bool animate)
+		{
+			SetupBuilder();
+			var collectionView = new CollectionView
+			{
+				ItemsLayout = LinearItemsLayout.Horizontal,
+				HeightRequest = 100,
+				WidthRequest = 300,
+				ItemTemplate = new DataTemplate(() =>
+				{
+					var label = new Label { WidthRequest = 100 };
+					label.SetBinding(Label.TextProperty, ".");
+					return label;
+				}),
+			};
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				// Set once the list has its layout and template, so that the list reads it once.
+				collectionView.ItemsSource = new ReadOnceSequence(Enumerable.Range(0, 20).Select(index => $"Item {index}"));
+				await AssertEventually(() => GetPlatformItemCount(handler) == 20, timeout: 3000, message: "The list should show the items the sequence gave it.");
+				await AssertEventually(() => GetHorizontalDistanceFromStart(handler) <= AnchorTolerance, timeout: 3000, message: "The list should open at its start.");
+				// Until the list is laid out, it has no content to scroll, and is at both of its edges.
+				var distance = double.NaN;
+				var laidOut = await Wait(() => (distance = GetHorizontalDistanceToEnd(handler)) > 100, 3000);
+				Assert.True(laidOut, $"The items should extend past the end of the list. Distance to the end: {distance}.");
+
+				collectionView.ScrollToEnd(animate);
+				var atEnd = await Wait(() => Math.Abs(distance = GetHorizontalDistanceToEnd(handler)) <= AnchorTolerance, 3000);
+				Assert.True(atEnd, $"ScrollToEnd should show the last item the list shows at the end. Distance to the end: {distance}.");
+
+				collectionView.ScrollToStart(animate);
+				var atStart = await Wait(() => Math.Abs(distance = GetHorizontalDistanceFromStart(handler)) <= AnchorTolerance, 3000);
+				Assert.True(atStart, $"ScrollToStart should show the first item the list shows at the start. Distance from the start: {distance}.");
 			});
 		}
 
@@ -1309,6 +1358,106 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Theory(DisplayName = "Turning AnchorMode off and scrolling as ScrollToStart or ScrollToEnd reports following the edge wins")]
+		[InlineData(ScrollAnchorMode.Start, false)]
+		[InlineData(ScrollAnchorMode.Start, true)]
+		[InlineData(ScrollAnchorMode.End, false)]
+		[InlineData(ScrollAnchorMode.End, true)]
+		public async Task TurningAnchorModeOffAndScrollingAsScrollingToTheEdgeReportsFollowingItWins(ScrollAnchorMode edge, bool animate)
+		{
+			SetupBuilder();
+			var items = CreateAnchorItems(40);
+			var collectionView = CreateAnchorCollectionView(items, edge);
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				if (edge == ScrollAnchorMode.End)
+				{
+					await AssertAtEnd(handler, "The list should open at its end.");
+					ScrollPlatformViewBy(handler, -200);
+				}
+				else
+				{
+					await AssertEventually(() => GetDistanceFromStart(handler) <= AnchorTolerance, timeout: 3000, message: "The list should open at its start.");
+					ScrollPlatformViewBy(handler, 200);
+				}
+
+				await AssertEventually(() => !collectionView.IsAnchored, timeout: 3000, message: "Scrolling away from the edge should stop following it.");
+
+				// The app hears that the list follows the edge again, turns anchoring off and scrolls to the item at the other end:
+				// that's newer than the animated scroll to the edge, also once nothing anchors the list.
+				var scrolled = false;
+				collectionView.PropertyChanged += (_, e) =>
+				{
+					if (!scrolled && e.PropertyName == StructuredItemsView.IsAnchoredProperty.PropertyName && collectionView.IsAnchored)
+					{
+						scrolled = true;
+						collectionView.AnchorMode = ScrollAnchorMode.None;
+						if (edge == ScrollAnchorMode.End)
+						{
+							collectionView.ScrollTo(0, position: ScrollToPosition.Start, animate: animate);
+						}
+						else
+						{
+							collectionView.ScrollTo(items.Count - 1, position: ScrollToPosition.End, animate: animate);
+						}
+					}
+				};
+
+				if (edge == ScrollAnchorMode.End)
+				{
+					collectionView.ScrollToEnd(animate: true);
+				}
+				else
+				{
+					collectionView.ScrollToStart(animate: true);
+				}
+
+				Assert.True(scrolled, "Scrolling to the edge should report that the list follows it.");
+
+				// Long enough for the animated scroll to the edge to have ended, had it carried on: it would replace an animated
+				// ScrollTo.
+				await Task.Delay(1500);
+				var distance = edge == ScrollAnchorMode.End ? GetDistanceToEnd(handler) : GetDistanceFromStart(handler);
+				Assert.True(distance > 300, $"The list should show the item the later ScrollTo scrolled to, not the edge. Distance from the edge: {distance}.");
+				Assert.False(collectionView.IsAnchored);
+			});
+		}
+
+		[Fact(DisplayName = "Changing AnchorMode from Scrolled as ScrollToEnd lays the list out wins")]
+		public async Task ChangingAnchorModeFromScrolledAsScrollToEndLaysTheListOutWins()
+		{
+			SetupBuilder();
+			var items = CreateAnchorItems(40);
+			var collectionView = CreateAnchorCollectionView(items, ScrollAnchorMode.End);
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				await AssertAtEnd(handler, "The list should open at its end.");
+
+				// The last row grows, and the list follows the end as it lays the row out, which raises Scrolled: the app follows
+				// the start from there instead. That's newer than the ScrollToEnd that has the list laid out, and wins.
+				var changedMode = false;
+				collectionView.Scrolled += (_, _) =>
+				{
+					if (!changedMode)
+					{
+						changedMode = true;
+						collectionView.AnchorMode = ScrollAnchorMode.Start;
+					}
+				};
+
+				items[^1].Height = 120;
+				collectionView.ScrollToEnd(animate: true);
+				await AssertEventually(() => changedMode, timeout: 3000, message: "The list should follow the end as the last row grows.");
+
+				// Long enough for an animated scroll to the end to have ended, had it carried on.
+				await Task.Delay(1500);
+				Assert.True(GetDistanceFromStart(handler) <= AnchorTolerance, $"Following the start should show it. Position: {GetScrollPosition(handler)}.");
+				Assert.True(collectionView.IsAnchored);
+			});
+		}
+
 		[Fact(DisplayName = "An animated ScrollToStart right after ScrollToEnd stays at the start")]
 		public async Task AnAnimatedScrollToStartRightAfterScrollToEndStaysAtTheStart()
 		{
@@ -1332,6 +1481,42 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.True(GetDistanceFromStart(handler) <= AnchorTolerance, $"The later ScrollToStart should win. Position: {GetScrollPosition(handler)}.");
 			});
 		}
+
+#if MACCATALYST
+		// Mac Catalyst can move the content offset without telling the scroll view delegate or laying the view out, as when a
+		// window is restored (see #34271): only an observer of the offset sees it. Following the end replaces the scroll back to
+		// the item of an earlier ScrollTo that MAUI makes then.
+		[Fact(DisplayName = "AnchorMode End follows the end again after Mac Catalyst moves the view silently")]
+		public async Task AnchorModeEndFollowsTheEndAgainAfterMacCatalystMovesTheViewSilently()
+		{
+			SetupBuilder();
+			var items = CreateAnchorItems(40);
+			var collectionView = CreateAnchorCollectionView(items, ScrollAnchorMode.None);
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				await AssertEventually(() => GetDistanceFromStart(handler) <= AnchorTolerance, timeout: 3000, message: "The list should open at its start.");
+				collectionView.ScrollTo(items.Count - 1, position: ScrollToPosition.End, animate: false);
+				collectionView.AnchorMode = ScrollAnchorMode.End;
+				await AssertAtEnd(handler, "AnchorMode End should show the end.");
+				await AssertEventually(() => collectionView.IsAnchored, timeout: 3000, message: "The list should follow the end.");
+
+				// Move the view as UIKit does then: its bounds change under the observer, and the delegate hears of no scroll.
+				var platformView = handler.Controller.CollectionView;
+				var scrolled = false;
+				collectionView.Scrolled += (_, _) => scrolled = true;
+				var bounds = platformView.Layer.Bounds;
+				platformView.WillChangeValue("contentOffset");
+				platformView.Layer.Bounds = new CoreGraphics.CGRect(bounds.X, bounds.Y - 200, bounds.Width, bounds.Height);
+				platformView.DidChangeValue("contentOffset");
+				Assert.False(scrolled, "The move should be one the scroll view delegate doesn't hear of.");
+				Assert.True(GetDistanceToEnd(handler) > 100, $"The move should take the view away from the end. Distance to the end: {GetDistanceToEnd(handler)}.");
+
+				await AssertAtEnd(handler, "The list should follow the end again after a move it wasn't told about.");
+				Assert.True(collectionView.IsAnchored);
+			});
+		}
+#endif
 
 #if ANDROID
 		// RecyclerView applies the new item as the scroll starts, outside a layout: the look after the scroll still counts the
@@ -1385,6 +1570,71 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.False(collectionView.IsAnchored, $"The list is far from both edges: it shouldn't follow either. Position: {GetScrollPosition(handler)}.");
 				var distance = GetDistanceFromStart(handler);
 				Assert.True(distance > 5000, $"The list shouldn't jump to its start. Distance from the start: {distance}.");
+			});
+		}
+
+		// MandatorySingle snap points remember the item a fling snaps to, and snap the view back to it when a later scroll settles
+		// with that item in view.
+		[Theory(DisplayName = "An animated ScrollToStart or ScrollToEnd after a fling to a snap point stays at the edge")]
+		[InlineData(ScrollAnchorMode.Start)]
+		[InlineData(ScrollAnchorMode.End)]
+		public async Task AnAnimatedScrollToTheEdgeAfterAFlingToASnapPointStaysAtTheEdge(ScrollAnchorMode edge)
+		{
+			SetupBuilder();
+
+			// The view shows 300 of a header of 50, six rows of 100 and a footer of 30.
+			var items = CreateAnchorItems(6);
+			foreach (var item in items)
+			{
+				item.Height = 100;
+			}
+
+			var collectionView = CreateAnchorCollectionView(items, ScrollAnchorMode.None);
+			collectionView.ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Vertical)
+			{
+				SnapPointsType = SnapPointsType.MandatorySingle,
+				SnapPointsAlignment = SnapPointsAlignment.Center,
+			};
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				var recyclerView = (RecyclerView)handler.PlatformView;
+				var toEnd = edge == ScrollAnchorMode.End;
+				double GetDistanceFromEdge() => toEnd ? GetDistanceToEnd(handler) : GetDistanceFromStart(handler);
+
+				await AssertEventually(() => GetDistanceFromStart(handler) <= AnchorTolerance, timeout: 3000, message: "The list should open at its start.");
+				if (!toEnd)
+				{
+					collectionView.ScrollToEnd(animate: false);
+					await AssertAtEnd(handler, "ScrollToEnd should show the end.");
+				}
+
+				// A fling from the other edge snaps the row past the middle of the view in its direction to the middle: that row
+				// is in view at the edge the list then scrolls to.
+				ScrollPlatformViewBy(handler, toEnd ? 160 : -160);
+				var flungFrom = GetScrollPosition(handler);
+				var velocity = (int)(2000 * recyclerView.Resources.DisplayMetrics.Density);
+				Assert.True(recyclerView.Fling(0, toEnd ? velocity : -velocity), "The snap points should take the fling.");
+				await AssertEventually(() => GetScrollPosition(handler) != flungFrom && recyclerView.ScrollState == RecyclerView.ScrollStateIdle, timeout: 3000, message: "The fling should snap a row to the middle.");
+				Assert.True(GetDistanceFromEdge() > AnchorTolerance, $"The fling should leave the list away from the edge. Distance from the edge: {GetDistanceFromEdge()}.");
+
+				if (toEnd)
+				{
+					collectionView.ScrollToEnd(animate: true);
+				}
+				else
+				{
+					collectionView.ScrollToStart(animate: true);
+				}
+
+				var distance = double.NaN;
+				var reached = await Wait(() => Math.Abs(distance = GetDistanceFromEdge()) <= AnchorTolerance, 3000);
+				Assert.True(reached, $"The scroll should reach the edge. Distance from the edge: {distance}.");
+				await AssertEventually(() => recyclerView.ScrollState == RecyclerView.ScrollStateIdle, timeout: 3000, message: "The scroll should settle.");
+				await Task.Delay(1000);
+				distance = GetDistanceFromEdge();
+				Assert.True(Math.Abs(distance) <= AnchorTolerance, $"The snap points shouldn't take the list back to the row the fling snapped to. Distance from the edge: {distance}.");
+				Assert.False(collectionView.IsAnchored);
 			});
 		}
 #endif
@@ -1473,9 +1723,10 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory(DisplayName = "Following the end from Scrolled as a ScrollTo scrolls the list doesn't take it back to that item")]
-		[InlineData(true)]
-		[InlineData(false)]
-		public async Task FollowingTheEndFromScrolledAsAScrollToScrollsTheListDoesNotTakeItBackToThatItem(bool byAnchorMode)
+		[InlineData(true, false)]
+		[InlineData(false, false)]
+		[InlineData(false, true)]
+		public async Task FollowingTheEndFromScrolledAsAScrollToScrollsTheListDoesNotTakeItBackToThatItem(bool byAnchorMode, bool animate)
 		{
 			SetupBuilder();
 			var items = CreateAnchorItems(40);
@@ -1502,14 +1753,14 @@ namespace Microsoft.Maui.DeviceTests
 						}
 						else
 						{
-							collectionView.ScrollToEnd(animate: false);
+							collectionView.ScrollToEnd(animate);
 						}
 					}
 				};
 
 				collectionView.ScrollTo(0, position: ScrollToPosition.Start, animate: false);
 				await AssertEventually(() => followed, timeout: 3000, message: "The ScrollTo should scroll the list.");
-				await AssertAtEnd(handler, "The list should follow its end.");
+				await AssertAtEnd(handler, "The list should follow its end.", timeout: 5000);
 
 				// The end moves up by more than the distance that sets off that restore, and the items stay as many as before.
 				items[^1].Height = 160;
@@ -1630,6 +1881,23 @@ namespace Microsoft.Maui.DeviceTests
 			}
 
 			return double.PositiveInfinity;
+#endif
+		}
+
+		// How many items the platform view shows, in all its sections.
+		static int GetPlatformItemCount(CollectionViewHandler handler)
+		{
+#if IOS || MACCATALYST
+			var collectionView = handler.Controller.CollectionView;
+			var count = 0;
+			for (var section = 0; section < (int)collectionView.NumberOfSections(); section++)
+			{
+				count += (int)collectionView.NumberOfItemsInSection(section);
+			}
+
+			return count;
+#else
+			return ((RecyclerView)handler.PlatformView).GetAdapter()?.ItemCount ?? 0;
 #endif
 		}
 
@@ -1812,6 +2080,22 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					_height = value;
 					PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Height)));
+				}
+			}
+		}
+
+		// A sequence that gives its items only the first time it's read, as one that reads a stream does.
+		sealed class ReadOnceSequence : System.Collections.IEnumerable
+		{
+			readonly IEnumerator<string> _items;
+
+			public ReadOnceSequence(IEnumerable<string> items) => _items = items.GetEnumerator();
+
+			public System.Collections.IEnumerator GetEnumerator()
+			{
+				while (_items.MoveNext())
+				{
+					yield return _items.Current;
 				}
 			}
 		}

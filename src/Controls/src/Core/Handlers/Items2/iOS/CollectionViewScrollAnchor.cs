@@ -42,6 +42,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		bool _wasVertical = true;
 		bool _detached;
 
+		// The content offset the scroll view delegate last reported: UIKit can move it without reporting that (see
+		// OffsetObserved).
+		double _reportedOffsetY = double.NaN;
+
 		/// <summary>Initializes a new anchor that follows the edges <paramref name="mode"/> selects.</summary>
 		public CollectionViewScrollAnchor(ScrollAnchorMode mode)
 		{
@@ -97,6 +101,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		/// <summary>Called by the scroll view delegate whenever the content offset changes.</summary>
 		public void Scrolled(UICollectionView collectionView, StructuredItemsView? itemsView, bool isVertical)
 		{
+			_reportedOffsetY = collectionView.ContentOffset.Y;
 			if (_applying)
 			{
 				return;
@@ -141,11 +146,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				collectionView.ContentSize.Height + inset.Top + inset.Bottom,
 				collectionView.Bounds.Height);
 
+			// An offset change UIKit made during the layout, or one it never reported, is UIKit's.
 			var sizeChanged = false;
 			if (afterLayout)
 			{
-				sizeChanged = _offsetChangedDuringLayout;
+				sizeChanged = _offsetChangedDuringLayout || !IsReported(collectionView);
 				_offsetChangedDuringLayout = false;
+				_reportedOffsetY = collectionView.ContentOffset.Y;
 			}
 
 			if (_tracker.Update(metrics, collectionView.Dragging || collectionView.Decelerating, sizeChanged) is double edge)
@@ -173,6 +180,23 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		/// <summary>Called when a drag ends without decelerating, or a deceleration ends.</summary>
 		public void UserScrollEnded(UICollectionView collectionView) => collectionView.SetNeedsLayout();
+
+		/// <summary>
+		/// Called when an observer of the content offset sees it change. Mac Catalyst can move it without telling the scroll view
+		/// delegate or laying the view out, as it can when the window changes: look again once the view is laid out, counting
+		/// the move as UIKit's.
+		/// </summary>
+		public void OffsetObserved(UICollectionView collectionView)
+		{
+			if (!_detached && !_applying && !IsReported(collectionView))
+			{
+				collectionView.SetNeedsLayout();
+			}
+		}
+
+		// Whether the scroll view delegate reported the content offset as it is.
+		bool IsReported(UICollectionView collectionView) =>
+			double.IsNaN(_reportedOffsetY) || Math.Abs(collectionView.ContentOffset.Y - _reportedOffsetY) <= 0.5;
 
 		/// <summary>Called before the handler scrolls for a <c>ScrollTo</c> request.</summary>
 		public void ScrollRequesting() => _requestingScroll = true;
@@ -204,9 +228,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			if (animated && collectionView.Window is not null)
 			{
-				// Look at the view as laid out first, then animate: a ScrollTo the app requests as it hears the view follows
-				// its start stops the animation.
-				collectionView.LayoutIfNeeded();
+				// Animate to the start as laid out (the controller lays the view out first): a ScrollTo the app requests as it
+				// hears the view follows its start stops the animation.
 				_tracker.Engage(ScrollAnchorMode.Start);
 				SetOffsetToStart(collectionView, animated: true);
 				if (itemsView is not null)
@@ -235,9 +258,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			if (animated && collectionView.Window is not null)
 			{
-				// Look at the view as laid out first, then animate: a ScrollTo the app requests as it hears the view follows
-				// its end stops the animation.
-				collectionView.LayoutIfNeeded();
+				// Animate to the end as laid out (the controller lays the view out first): a ScrollTo the app requests as it
+				// hears the view follows its end stops the animation.
 				_tracker.Engage(ScrollAnchorMode.End);
 				SetOffsetToEnd(collectionView, animated: true);
 				if (itemsView is not null)
@@ -258,32 +280,25 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			collectionView.LayoutIfNeeded();
 		}
 
-		/// <summary>Scrolls a collection view to the start, once.</summary>
+		/// <summary>Scrolls a collection view to the start as laid out, once.</summary>
 		/// <returns>
 		/// Whether it started an animated scroll. UIKit keeps the rows in view where they are as it measures the rows the
 		/// animation brings into view above them, which moves where the animation stops: <see cref="ScrollToStartOnceEnded"/>
 		/// goes the rest of the way.
 		/// </returns>
-		public static bool ScrollToStartOnce(UICollectionView collectionView, bool animated)
-		{
-			collectionView.LayoutIfNeeded();
-			return SetOffsetToStart(collectionView, animated) && animated;
-		}
+		public static bool ScrollToStartOnce(UICollectionView collectionView, bool animated) =>
+			SetOffsetToStart(collectionView, animated) && animated;
 
 		/// <summary>Called when the animated scroll <see cref="ScrollToStartOnce"/> started has stopped: goes the rest of the way.</summary>
 		public static void ScrollToStartOnceEnded(UICollectionView collectionView) => SetOffsetToStart(collectionView, animated: false);
 
-		/// <summary>Starts an animated scroll of a collection view to the end, once.</summary>
+		/// <summary>Starts an animated scroll of a collection view to the end as laid out, once.</summary>
 		/// <returns>
 		/// Where the animation stops, or <see langword="null"/> when the view is at the end already. The rows the animation
 		/// scrolls past are measured on the way, which can move the end beyond that point: the controller goes the rest of the
 		/// way once the animation ends.
 		/// </returns>
-		public static double? AnimateToEndOnce(UICollectionView collectionView)
-		{
-			collectionView.LayoutIfNeeded();
-			return SetOffsetToEnd(collectionView, animated: true);
-		}
+		public static double? AnimateToEndOnce(UICollectionView collectionView) => SetOffsetToEnd(collectionView, animated: true);
 
 		// Returns whether it scrolls: not when the view is at the start already.
 		static bool SetOffsetToStart(UICollectionView collectionView, bool animated)

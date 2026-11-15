@@ -45,6 +45,9 @@ public class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents, IPla
 	// Any Y-offset drop larger than this is treated as a silent reset rather than normal movement.
 	static readonly nfloat SilentResetThreshold = 10f;
 
+	// Raised for every contentOffset change the KVO observer sees (see ContentOffsetObserved).
+	readonly WeakEventManager _contentOffsetObservedEventManager = new();
+
 	// KVO observer token for contentOffset — active while the view is attached to a window.
 	[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Observer is disposed and cleared when the view is detached from its window or the view is disposed.")]
 	IDisposable? _contentOffsetObserver;
@@ -61,6 +64,16 @@ public class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents, IPla
 		_isTrackingScrollRestore = true;
 	}
 
+	/// <summary>
+	/// Raised for every change of the content offset the KVO observer sees while the view is in a window, including a silent
+	/// one that no delegate, layout or view controller callback reports.
+	/// </summary>
+	internal event EventHandler? ContentOffsetObserved
+	{
+		add => _contentOffsetObservedEventManager.AddEventHandler(value);
+		remove => _contentOffsetObservedEventManager.RemoveEventHandler(value);
+	}
+
 	internal void ClearPendingScrollRestore()
 	{
 		_isTrackingScrollRestore = false;
@@ -70,6 +83,8 @@ public class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents, IPla
 
 	void OnContentOffsetChanged()
 	{
+		_contentOffsetObservedEventManager.HandleEvent(this, EventArgs.Empty, nameof(ContentOffsetObserved));
+
 		if (!_isTrackingScrollRestore)
 		{
 			return;

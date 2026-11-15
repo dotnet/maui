@@ -370,6 +370,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		/// <summary>Stops anchoring: the view no longer follows an edge.</summary>
 		public void Detach()
 		{
+			// A scroll to an edge this started and is publishing for stops: what the app requests from the change of
+			// IsAnchored, which no longer reaches this, is newer.
+			_scrollRequests++;
 			_detached = true;
 			if (_postedRunnable is not null)
 			{

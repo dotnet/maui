@@ -236,9 +236,32 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			handler.Controller?.UpdateAnchorMode();
 		}
 
-		bool IScrollToEdgeHandler.ScrollToStart(bool animate) => Controller?.ScrollToStart(animate) ?? false;
+		bool IScrollToEdgeHandler.ScrollToStart(bool animate) =>
+			Controller is not null && (Controller.ScrollToStart(animate) || ScrollToEdgeItem(end: false, animate));
 
-		bool IScrollToEdgeHandler.ScrollToEnd(bool animate) => Controller?.ScrollToEnd(animate) ?? false;
+		bool IScrollToEdgeHandler.ScrollToEnd(bool animate) =>
+			Controller is not null && (Controller.ScrollToEnd(animate) || ScrollToEdgeItem(end: true, animate));
+
+		// Where the view doesn't scroll to an edge of its content, as in a horizontal layout, the first or last item is as close as
+		// it gets: the first or last the view shows, which an items source that can be read only once doesn't give again.
+		bool ScrollToEdgeItem(bool end, bool animate)
+		{
+			var collectionView = Controller.CollectionView;
+			var sections = (int)collectionView.NumberOfSections();
+			for (var index = 0; index < sections; index++)
+			{
+				var section = end ? sections - 1 - index : index;
+				var count = (int)collectionView.NumberOfItemsInSection(section);
+				if (count > 0)
+				{
+					var position = end ? ScrollToPosition.End : ScrollToPosition.Start;
+					ScrollToRequested(this, new ScrollToRequestEventArgs(end ? count - 1 : 0, ItemsView.IsGrouped ? section : -1, position, animate));
+					break;
+				}
+			}
+
+			return true;
+		}
 
 		Dictionary<string, object> _layoutPropertyCache = new();
 		IItemsLayout _subscribedItemsLayout;

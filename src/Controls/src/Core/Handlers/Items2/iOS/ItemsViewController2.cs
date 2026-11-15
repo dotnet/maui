@@ -113,6 +113,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				ItemsSource?.Dispose();
 
 				((IUIViewLifeCycleEvents)CollectionView).MovedToWindow -= MovedToWindow;
+#if MACCATALYST
+				if (CollectionView is Items.MauiCollectionView mauiCollectionView)
+				{
+					mauiCollectionView.ContentOffsetObserved -= ContentOffsetObserved;
+				}
+#endif
 
 				CollectionView.Delegate = null;
 				Delegator?.Dispose();
@@ -246,6 +252,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			base.LoadView();
 			var collectionView = new Items.MauiCollectionView(CGRect.Empty, ItemsViewLayout);
 			((IUIViewLifeCycleEvents)collectionView).MovedToWindow += MovedToWindow;
+#if MACCATALYST
+			collectionView.ContentOffsetObserved += ContentOffsetObserved;
+#endif
 			CollectionView = collectionView;
 		}
 
@@ -426,6 +435,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				return false;
 			}
 
+			// The app can request another scroll from the Scrolled event laying the view out raised: that one wins.
+			if (!IsLatestScrollRequest(request))
+			{
+				return true;
+			}
+
 			var scrollAnchor = _scrollAnchor;
 			if (scrollAnchor is not null && scrollAnchor.CanFollow(ScrollAnchorMode.Start))
 			{
@@ -464,6 +479,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			if (!PrepareScrollToEdge(out var request))
 			{
 				return false;
+			}
+
+			// The app can request another scroll from the Scrolled event laying the view out raised: that one wins.
+			if (!IsLatestScrollRequest(request))
+			{
+				return true;
 			}
 
 			var scrollAnchor = _scrollAnchor;
@@ -594,7 +615,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		}
 
 		// Starts a scroll to an edge of the content, which the view makes in a vertical layout: returns whether it does, and
-		// the request it starts.
+		// the request it starts, which the caller checks is still the latest.
 		bool PrepareScrollToEdge(out int request)
 		{
 			request = 0;
@@ -617,6 +638,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			// And the animation itself would carry on to where that scroll was going, even when the view is at the edge
 			// already and this one doesn't move it: stop it where it is.
 			CollectionView.SetContentOffset(CollectionView.ContentOffset, false);
+
+			// It scrolls to the edge as laid out: lay the view out now. That can raise Scrolled, from which the app can request
+			// another scroll, which wins (see IsLatestScrollRequest).
+			CollectionView.LayoutIfNeeded();
 			return true;
 		}
 
@@ -688,6 +713,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			return OperatingSystem.IsIOSVersionAtLeast(15);
 		}
+
+#if MACCATALYST
+		// Mac Catalyst can move the content offset without telling the scroll view delegate or laying the view out, as it can
+		// when the window changes: the anchor looks again.
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
+		void ContentOffsetObserved(object sender, EventArgs e) => _scrollAnchor?.OffsetObserved(CollectionView);
+#endif
 
     [UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		private void MovedToWindow(object sender, EventArgs e)

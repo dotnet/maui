@@ -240,7 +240,8 @@ namespace Microsoft.Maui.Controls
 			ScrollToLastItem(animate);
 		}
 
-		// Where the platform can't scroll to the start of the content, the first item is as close as ScrollTo gets.
+		// For a handler that doesn't scroll to an edge itself (see IScrollToEdgeHandler), the first item is as close as ScrollTo
+		// gets. The built-in handlers find it in the items they show; this reads ItemsSource again.
 		internal virtual void ScrollToFirstItem(bool animate)
 		{
 			if (CountItems(ItemsSource) > 0)
@@ -249,7 +250,8 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		// Where the platform can't scroll to the end of the content, the last item is as close as ScrollTo gets.
+		// For a handler that doesn't scroll to an edge itself (see IScrollToEdgeHandler), the last item is as close as ScrollTo
+		// gets. The built-in handlers find it in the items they show; this reads ItemsSource again.
 		internal virtual void ScrollToLastItem(bool animate)
 		{
 			var count = CountItems(ItemsSource);
