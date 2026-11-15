@@ -183,7 +183,6 @@ namespace Microsoft.Maui.Platform
 
 			textView.Focus(request, () =>
 			{
-				// A read-only input gets focus but isn't a text editor, so there is nothing to type into
 				if (textView.ShowSoftInputOnFocus && textView.OnCheckIsTextEditor())
 					ViewExtensions.PostShowSoftInput(textView);
 			});

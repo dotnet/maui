@@ -5,35 +5,38 @@ public class Issue6250 : ContentPage
 {
 	public Issue6250()
 	{
-		var layout = new VerticalStackLayout
+		var focusedInput = new Label { AutomationId = "FocusedInput", Text = "None" };
+
+		Content = new VerticalStackLayout
 		{
 			Padding = 20,
 			Spacing = 20,
 			Children =
 			{
-				new Entry { AutomationId = "EditableEntry", Placeholder = "Editable Entry" },
+				focusedInput,
+				CreateFocusRow(new Entry { AutomationId = "EditableEntry", Placeholder = "Editable Entry" }),
+				CreateFocusRow(new Entry { AutomationId = "ReadOnlyEntry", Text = "Read-only Entry", IsReadOnly = true }),
+				CreateFocusRow(new Editor { AutomationId = "ReadOnlyEditor", Text = "Read-only Editor", IsReadOnly = true, HeightRequest = 100 }),
+				CreateFocusRow(new SearchBar { AutomationId = "ReadOnlySearchBar", Text = "Read-only SearchBar", IsReadOnly = true }),
 			}
 		};
 
-		var focusButtons = new HorizontalStackLayout { Spacing = 10 };
-		var focusedInput = new Label { AutomationId = "FocusedInput" };
-
-		InputView[] readOnlyInputs =
-		{
-			new Entry { AutomationId = "ReadOnlyEntry", Text = "Read-only Entry", IsReadOnly = true },
-			new Editor { AutomationId = "ReadOnlyEditor", Text = "Read-only Editor", IsReadOnly = true, HeightRequest = 100 },
-			new SearchBar { AutomationId = "ReadOnlySearchBar", Text = "Read-only SearchBar", IsReadOnly = true },
-		};
-
-		foreach (var input in readOnlyInputs)
+		Grid CreateFocusRow(View input)
 		{
 			input.Focused += (_, _) => focusedInput.Text = input.AutomationId;
-			layout.Add(input);
-			focusButtons.Add(new Button { AutomationId = $"Focus{input.AutomationId}", Text = input.GetType().Name, Command = new Command(() => input.Focus()) });
+			var focusButton = new Button { AutomationId = $"Focus{input.AutomationId}", Text = "Focus" };
+			focusButton.Clicked += (_, _) => input.Focus();
+			var row = new Grid
+			{
+				ColumnDefinitions =
+				{
+					new ColumnDefinition { Width = GridLength.Star },
+					new ColumnDefinition { Width = GridLength.Auto },
+				}
+			};
+			row.Add(input);
+			row.Add(focusButton, 1);
+			return row;
 		}
-
-		layout.Add(focusButtons);
-		layout.Add(focusedInput);
-		Content = layout;
 	}
 }
