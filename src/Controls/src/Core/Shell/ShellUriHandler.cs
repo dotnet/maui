@@ -578,6 +578,12 @@ namespace Microsoft.Maui.Controls
 			{
 				bool acceptingTemplates = pass == 1;
 
+				// Among matching literal keys the fewest segments wins, so a parent ("home/savings")
+				// beats a child registered first; templated keys keep first-match order.
+				string bestRouteKey = null;
+				string bestMatch = null;
+				int bestSegmentCount = int.MaxValue;
+
 				// First search by collapsing global routes if user is registering routes like "route1/route2/route3"
 				foreach (var routeKey in routeKeys)
 				{
@@ -611,12 +617,33 @@ namespace Microsoft.Maui.Controls
 					string collapsedMatch = possibleRoutePath.GetNextSegmentMatch(collapsedRoute, capturedParameters, routeTemplate);
 					if (!String.IsNullOrWhiteSpace(collapsedMatch))
 					{
-						possibleRoutePath.AddGlobalRoute(routeKey, collapsedMatch, capturedParameters);
-						return true;
+						if (acceptingTemplates)
+						{
+							possibleRoutePath.AddGlobalRoute(routeKey, collapsedMatch, capturedParameters);
+							return true;
+						}
+
+						int segmentCount = RetrievePaths(collapsedMatch).Length;
+						if (segmentCount < bestSegmentCount)
+						{
+							bestRouteKey = routeKey;
+							bestMatch = collapsedMatch;
+							bestSegmentCount = segmentCount;
+						}
+
+						continue;
 					}
 
 					// If the registered route is a combination of shell items and global routes then we might end up here
-					// without the previous tree search finding the correct path
+					// without the previous tree search finding the correct path.
+					// This runs even when a collapsed match was already found:
+					// resolving the remaining segments through shell NODES wins
+					// over treating them as global pushes, and the completed
+					// builder then deduplicates against the sibling match from
+					// SearchPath. Gating this on "no best match yet" kept two
+					// full matches with the same path alive ("Ambiguous routes
+					// matched") whenever a global key shared a content's route
+					// name and happened to be probed first.
 					if ((possibleRoutePath.Shell != null) &&
 						(possibleRoutePath.Item == null || possibleRoutePath.Section == null || possibleRoutePath.Content == null))
 					{
@@ -660,6 +687,12 @@ namespace Microsoft.Maui.Controls
 							nextNode = nextNode.WalkToNextNode();
 						}
 					}
+				}
+
+				if (bestRouteKey != null)
+				{
+					possibleRoutePath.AddGlobalRoute(bestRouteKey, bestMatch);
+					return true;
 				}
 			}
 
