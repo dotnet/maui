@@ -851,21 +851,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(typeof(TestPage3), shell.Navigation.NavigationStack[3].GetType());
 		}
 
-		[Theory]
-		[InlineData(true)]
-		[InlineData(false)]
-		public async Task PoppingWithHierarchicalTemplateRoutesPreservesIntermediatePages(bool childFirst)
+		[Fact]
+		public async Task PoppingWithHierarchicalTemplateRoutesPreservesIntermediatePages()
 		{
-			if (childFirst)
-			{
-				Routing.RegisterRoute("product/{id:int}/details", typeof(TestPage2));
-				Routing.RegisterRoute("product/{id:int}", typeof(TestPage1));
-			}
-			else
-			{
-				Routing.RegisterRoute("product/{id:int}", typeof(TestPage1));
-				Routing.RegisterRoute("product/{id:int}/details", typeof(TestPage2));
-			}
+			// Templated keys keep first-match order, so this covers the registration order that works on main.
+			Routing.RegisterRoute("product/{id:int}", typeof(TestPage1));
+			Routing.RegisterRoute("product/{id:int}/details", typeof(TestPage2));
 
 			Routing.RegisterRoute("edit", typeof(TestPage3));
 

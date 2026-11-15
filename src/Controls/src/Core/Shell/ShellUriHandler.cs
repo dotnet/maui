@@ -540,33 +540,6 @@ namespace Microsoft.Maui.Controls
 			return paths;
 		}
 
-		// Picks between two matching templated keys. Normally the LONGEST match
-		// wins: with overlapping registrations like "item-{id}" + "item-{id}/details"
-		// or "product/{category}" + "product/{id}/details", taking the shorter key
-		// first would leave the longer one collapsing against already-resolved
-		// segments where CollapsePath can't anchor it (its first segment never
-		// appears literally in the matched stack), so its captures would be lost.
-		// The exception is a true hierarchy such as "product/{id:int}" +
-		// "product/{id:int}/details": the shorter key's segments are a textual
-		// prefix of the longer key's and the longer key starts with a literal
-		// segment, so after the parent resolves, CollapsePath can anchor the child
-		// on that literal and strip the already-matched segments. There the
-		// SHORTER (parent) key wins, the route decomposes one level per entry, and
-		// navigating back keeps the intermediate pages alive.
-		static bool IsBetterTemplateMatch(string bestRouteKey, int bestSegmentCount, string routeKey, int segmentCount)
-		{
-			var bestSegments = RetrievePaths(bestRouteKey);
-			var newSegments = RetrievePaths(routeKey);
-			var shorter = bestSegments.Length <= newSegments.Length ? bestSegments : newSegments;
-			var longer = bestSegments.Length <= newSegments.Length ? newSegments : bestSegments;
-
-			bool hierarchical = shorter.Length < longer.Length && !RouteTemplate.IsTemplateSegment(longer[0]);
-			for (int i = 0; hierarchical && i < shorter.Length; i++)
-				hierarchical = shorter[i] == longer[i];
-
-			return hierarchical ? segmentCount < bestSegmentCount : segmentCount > bestSegmentCount;
-		}
-
 		static bool FindAndAddSegmentMatch(RouteRequestBuilder possibleRoutePath, HashSet<string> routeKeys)
 		{
 			// Two-pass match enforces literal-route precedence over templated
@@ -579,17 +552,10 @@ namespace Microsoft.Maui.Controls
 			{
 				bool acceptingTemplates = pass == 1;
 
-				// Of the literal route keys whose collapsed form matches, the one
-				// consuming the fewest segments wins, so a parent registration
-				// ("home/savings") isn't skipped in favor of a longer key
-				// ("home/savings/search") that happened to be registered first.
-				// Templated keys follow the same rule when they form a hierarchy
-				// that can be decomposed one level at a time (see
-				// IsBetterTemplateMatch); otherwise the LONGEST templated match
-				// wins. Ties keep the first key encountered.
+				// Among matching literal keys the fewest segments wins, so a parent ("home/savings")
+				// beats a child registered first; templated keys keep first-match order.
 				string bestRouteKey = null;
 				string bestMatch = null;
-				Dictionary<string, string> bestParameters = null;
 				int bestSegmentCount = int.MaxValue;
 
 				// First search by collapsing global routes if user is registering routes like "route1/route2/route3"
@@ -625,16 +591,17 @@ namespace Microsoft.Maui.Controls
 					string collapsedMatch = possibleRoutePath.GetNextSegmentMatch(collapsedRoute, capturedParameters, routeTemplate);
 					if (!String.IsNullOrWhiteSpace(collapsedMatch))
 					{
+						if (acceptingTemplates)
+						{
+							possibleRoutePath.AddGlobalRoute(routeKey, collapsedMatch, capturedParameters);
+							return true;
+						}
+
 						int segmentCount = RetrievePaths(collapsedMatch).Length;
-						bool isBetterMatch = bestRouteKey == null ||
-							(acceptingTemplates
-								? IsBetterTemplateMatch(bestRouteKey, bestSegmentCount, routeKey, segmentCount)
-								: segmentCount < bestSegmentCount);
-						if (isBetterMatch)
+						if (segmentCount < bestSegmentCount)
 						{
 							bestRouteKey = routeKey;
 							bestMatch = collapsedMatch;
-							bestParameters = capturedParameters;
 							bestSegmentCount = segmentCount;
 						}
 
@@ -698,7 +665,7 @@ namespace Microsoft.Maui.Controls
 
 				if (bestRouteKey != null)
 				{
-					possibleRoutePath.AddGlobalRoute(bestRouteKey, bestMatch, bestParameters);
+					possibleRoutePath.AddGlobalRoute(bestRouteKey, bestMatch);
 					return true;
 				}
 			}
