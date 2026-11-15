@@ -701,6 +701,7 @@ namespace TestApp
 		Assert.Contains("global::TestApp.Helpers.Labels.Active", ucSource, StringComparison.Ordinal);
 		Assert.Contains("global::TestApp.Helpers.Labels.Inactive", ucSource, StringComparison.Ordinal);
 		Assert.Contains("SetBinding", ucSource, StringComparison.Ordinal);
+		Assert.Contains("new(static __source => __source, \"IsActive\")", ucSource, StringComparison.Ordinal);
 	}
 
 	[Fact]
@@ -843,6 +844,74 @@ namespace TestApp
 		Assert.Contains("SetBinding(global::TestApp.CustomPopup.PopupMessageProperty,", ucSource, StringComparison.Ordinal);
 		Assert.Contains("__source.OtherName", ucSource, StringComparison.Ordinal);
 		Assert.Contains("new(static __source => __source, \"OtherName\")", ucSource, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void CSharpExpression_HeuristicBindableProperty_RemovesRootAttribute_GeneratesClearAndRemoveBindingInUC()
+	{
+		const string code =
+"""
+using System;
+using System.ComponentModel;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace CommunityToolkit.Maui
+{
+	[AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
+	public sealed class BindablePropertyAttribute : Attribute
+	{
+		public string? PropertyName { get; set; }
+	}
+}
+
+namespace TestApp
+{
+	[XamlProcessing(XamlInflator.SourceGen)]
+	public partial class CustomPopup : ContentView
+	{
+		public CustomPopup() => InitializeComponent();
+
+		[CommunityToolkit.Maui.BindableProperty]
+		public partial string? PopupMessage { get; set; }
+	}
+
+	public class TestViewModel : INotifyPropertyChanged
+	{
+		public string? Nickname { get; set; }
+		public event PropertyChangedEventHandler? PropertyChanged;
+	}
+}
+""";
+
+		var xamlV1 =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<local:CustomPopup xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                   xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                   xmlns:local="clr-namespace:TestApp"
+                   x:Class="TestApp.CustomPopup"
+                   x:DataType="local:TestViewModel"
+                   PopupMessage="{Nickname}" />
+""";
+		var xamlV2 =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<local:CustomPopup xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                   xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                   xmlns:local="clr-namespace:TestApp"
+                   x:Class="TestApp.CustomPopup"
+                   x:DataType="local:TestViewModel" />
+""";
+
+		RunGenerator(xamlV1, code, assertNoCompilationErrors: false, enableIncrementalHotReload: true);
+		var (result, _) = RunGenerator(xamlV2, code, assertNoCompilationErrors: false, enableIncrementalHotReload: true);
+
+		var ucSource = GetUCSource(result);
+		Assert.NotNull(ucSource);
+		Assert.DoesNotContain("skipped", ucSource, StringComparison.OrdinalIgnoreCase);
+		Assert.Contains("RemoveBinding(global::TestApp.CustomPopup.PopupMessageProperty)", ucSource, StringComparison.Ordinal);
+		Assert.Contains("ClearValue(global::TestApp.CustomPopup.PopupMessageProperty)", ucSource, StringComparison.Ordinal);
 	}
 
 	static string? GetUCSource(GeneratorDriverRunResult result)

@@ -142,21 +142,20 @@ class ExpandMarkupsVisitor(SourceGenContext context) : IXamlNodeVisitor
 
 	void ResolveExpressionContext(INode parentNode, out ITypeSymbol? thisType, out ITypeSymbol? dataType)
 	{
-		thisType = null;
+		thisType = Context.RootType;
 		dataType = null;
 
 		var elementNode = parentNode as ElementNode ?? (parentNode as ListNode)?.Parent as ElementNode;
 		if (elementNode == null)
-		{
-			thisType = Context.RootType;
 			return;
+
+		if (thisType == null)
+		{
+			var rootElement = GetRootElement(elementNode);
+			if (rootElement?.XmlType.TryResolveTypeSymbol(null, Context.Compilation, Context.XmlnsCache, Context.TypeCache, out var resolvedThisType) == true)
+				thisType = resolvedThisType;
 		}
 
-		var rootElement = GetRootElement(elementNode);
-		if (rootElement?.XmlType.TryResolveTypeSymbol(null, Context.Compilation, Context.XmlnsCache, Context.TypeCache, out var resolvedThisType) == true)
-			thisType = resolvedThisType;
-
-		thisType ??= Context.RootType;
 		XDataTypeResolver.TryGetXDataType(elementNode, Context, out dataType);
 	}
 

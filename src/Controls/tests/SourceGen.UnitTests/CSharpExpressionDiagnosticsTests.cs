@@ -1927,6 +1927,9 @@ namespace Repro.Views
         <Label Text="{= helpers:Formatter.Format(local:User.Name)}" />
         <Label Text="{= helpers:Formatter.Format(local:User.GetName())}" />
         <Label Text="{= helpers:Formatter.Format(missing:Strings.Gold)}" />
+        <Label Text="{= helpers:Formatter.Format(local:Name) + '!'}" />
+        <Label Text="{= helpers:Formatter.Format(missing:Strings.Gold, IsVip)}" />
+        <Label Text="{= this.GetFormatter().Format(local:System.String.Empty)}" />
     </VerticalStackLayout>
 </ContentPage>
 """;
@@ -1942,6 +1945,12 @@ namespace Repro.Helpers
 	public static class Formatter
 	{
 		public static string Format(string local) => $"Hello, {local}";
+		public static string Format(string missing, bool isVip) => isVip ? missing : "Standard";
+	}
+
+	public class InstanceFormatter
+	{
+		public string Format(string local) => $"Instance: {local}";
 	}
 }
 
@@ -1956,6 +1965,7 @@ namespace Repro
 	public class MainViewModel : INotifyPropertyChanged
 	{
 		public string Name { get; set; } = "Maui";
+		public bool IsVip { get; set; } = true;
 		public UserInfo User { get; set; } = new();
 		public event PropertyChangedEventHandler? PropertyChanged;
 	}
@@ -1967,6 +1977,7 @@ namespace Repro.Views
 	public partial class MainPage : ContentPage
 	{
 		public MainPage() => InitializeComponent();
+		public Repro.Helpers.InstanceFormatter GetFormatter() => new();
 	}
 }
 """;
@@ -1980,6 +1991,11 @@ namespace Repro.Views
 		Assert.Contains("global::Repro.Helpers.Formatter.Format(local:__source.User.Name)", output, StringComparison.Ordinal);
 		Assert.Contains("global::Repro.Helpers.Formatter.Format(local:__source.User.GetName())", output, StringComparison.Ordinal);
 		Assert.Contains("global::Repro.Helpers.Formatter.Format(global::Repro.MissingGen.Strings.Gold)", output, StringComparison.Ordinal);
+		Assert.Contains("global::Repro.Helpers.Formatter.Format(local:__source.Name) +", output, StringComparison.Ordinal);
+		Assert.Contains("global::Repro.Helpers.Formatter.Format(global::Repro.MissingGen.Strings.Gold, __source.IsVip)", output, StringComparison.Ordinal);
+		Assert.Contains("GetFormatter().Format(local:", output, StringComparison.Ordinal);
+		Assert.Contains("String.Empty)", output, StringComparison.Ordinal);
+		Assert.DoesNotContain("Repro.LocalGen.System", output, StringComparison.Ordinal);
 
 		var siblingGenerated =
 """
@@ -2051,6 +2067,51 @@ namespace Repro.Views
 		Assert.DoesNotContain("global::Repro.HH", output, StringComparison.Ordinal);
 		Assert.Contains("$\"{__source.Time:HH.mm}\"", output, StringComparison.Ordinal);
 		Assert.Contains("$\"{__source.User.Time:HH.mm}\"", output, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void InterpolationFormatClause_DottedFormatWithoutDataType_UsesRootClassType()
+	{
+		var xaml =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:Time="clr-namespace:Repro"
+             x:Class="Repro.Views.ClockPage">
+    <VerticalStackLayout>
+        <Label Text="{= $'{Time:HH.mm}'}" />
+    </VerticalStackLayout>
+</ContentPage>
+""";
+
+		var codeBehind =
+"""
+using System;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace Repro
+{
+	public class DummyType { }
+}
+
+namespace Repro.Views
+{
+	[XamlProcessing(XamlInflator.SourceGen)]
+	public partial class ClockPage : ContentPage
+	{
+		public ClockPage() => InitializeComponent();
+		public DateTime Time { get; set; }
+	}
+}
+""";
+
+		var (result, output) = RunGenerator(xaml, codeBehind);
+		Assert.Empty(result.Diagnostics);
+		Assert.NotNull(output);
+		Assert.DoesNotContain("global::Repro.HH", output, StringComparison.Ordinal);
+		Assert.Contains("Time:HH.mm}\"", output, StringComparison.Ordinal);
 	}
 
 	static void AssertEachSetBindingContains(string output, int expectedCount, string requiredSnippet, params string[] expectedBindingExpressions)

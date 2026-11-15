@@ -1504,14 +1504,11 @@ static class UpdateComponentCodeWriter
 
 		if (propDiff.Kind == PropertyDiffKind.Clear)
 		{
-			var bpFieldName = $"{propName}Property";
-			var bp = FindStaticField(rootType, bpFieldName);
-			if (bp != null)
+			if (TryResolveBindablePropertyFieldFqn(rootType, propName, out var bpFieldFqn, qualifyWithOwnerType: true))
 			{
-				var fqType = rootType.ToFQDisplayString();
 				// Remove any existing binding before clearing (prevents zombie bindings)
-				codeWriter.WriteLine($"(this as global::Microsoft.Maui.Controls.BindableObject)?.RemoveBinding({fqType}.{bpFieldName});");
-				codeWriter.WriteLine($"(this as global::Microsoft.Maui.Controls.BindableObject)?.ClearValue({fqType}.{bpFieldName});");
+				codeWriter.WriteLine($"(this as global::Microsoft.Maui.Controls.BindableObject)?.RemoveBinding({bpFieldFqn});");
+				codeWriter.WriteLine($"(this as global::Microsoft.Maui.Controls.BindableObject)?.ClearValue({bpFieldFqn});");
 				return;
 			}
 			codeWriter.WriteLine($"// Property '{propName}' cleared on root — skipped (no BP found)");

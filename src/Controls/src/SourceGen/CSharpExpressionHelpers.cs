@@ -1820,15 +1820,39 @@ static class CSharpExpressionHelpers
 		string identifier,
 		ITypeSymbol? dataTypeSymbol,
 		ITypeSymbol? rootType,
-		Compilation compilation)
+		Compilation compilation,
+		bool includeMethods = false)
 	{
-		if (MemberResolver.HasMember(dataTypeSymbol, identifier, includeMethods: false, compilation)
-			|| MemberResolver.HasMember(rootType, identifier, includeMethods: false, compilation))
+		if (MemberResolver.HasMember(dataTypeSymbol, identifier, includeMethods: includeMethods, compilation)
+			|| MemberResolver.HasMember(rootType, identifier, includeMethods: includeMethods, compilation))
 		{
 			return true;
 		}
 
 		return HasEnclosingLambdaParameter(code, matchIndex, identifier);
+	}
+
+	static bool HasExpressionRootInScope(
+		string code,
+		int matchIndex,
+		string identifier,
+		ITypeSymbol? dataTypeSymbol,
+		ITypeSymbol? rootType,
+		Compilation compilation)
+	{
+		return HasMemberInExpressionScope(code, matchIndex, identifier, dataTypeSymbol, rootType, compilation, includeMethods: true)
+			|| HasNamespaceOrTypeInCompilationScope(identifier, rootType, compilation);
+	}
+
+	static bool HasNamespaceOrTypeInCompilationScope(string identifier, ITypeSymbol? rootType, Compilation compilation)
+	{
+		for (var ns = rootType?.ContainingNamespace; ns != null && !ns.IsGlobalNamespace; ns = ns.ContainingNamespace)
+		{
+			if (ns.GetMembers(identifier).Any())
+				return true;
+		}
+
+		return compilation.GlobalNamespace.GetMembers(identifier).Any();
 	}
 
 	static bool HasEnclosingLambdaParameter(string code, int position, string identifier)
@@ -1879,27 +1903,52 @@ static class CSharpExpressionHelpers
 
 		if (openIndex == SkipWhitespaceBackwardsIndex(code, match.Index - 1) && !isIndexer)
 		{
-			// Inside "(...)", distinguish casts like "(missing:Box)x" from arguments.
+			// Inside "(...)", distinguish casts like "(missing:Box)x" from invocation arguments like "Format(local:Name) + '!'".
 			int afterIdx = SkipWhitespace(code, match.Index + match.Length);
 			if (afterIdx < code.Length && code[afterIdx] == ')')
 			{
 				int afterClose = SkipWhitespace(code, afterIdx + 1);
-				if (afterClose < code.Length && LooksLikeCastOperand(code[afterClose]))
+				if (afterClose < code.Length
+					&& LooksLikeCastOperand(code[afterClose])
+					&& !TryExtractInvocationTarget(code, openIndex, allowGenerics: true, literalSpans, out _, out _))
+				{
 					return false;
+				}
 			}
 		}
 
+		var hasMatchingParam = TryHasMatchingParameterOnEnclosingCall(
+			code,
+			openIndex,
+			isIndexer,
+			prefix,
+			nsResolver,
+			compilation,
+			xmlnsCache,
+			typeCache,
+			dataTypeSymbol,
+			rootType,
+			literalSpans,
+			out bool callTargetResolved);
+
 		if (hasResolvedType)
 		{
-			return HasMatchingParameterOnEnclosingCall(code, openIndex, isIndexer, prefix, nsResolver, compilation, xmlnsCache, typeCache, dataTypeSymbol, rootType)
-				&& (!isFollowedByMemberAccess || HasMemberInExpressionScope(code, match.Index, typeName, dataTypeSymbol, rootType, compilation));
+			return hasMatchingParam
+				&& (!isFollowedByMemberAccess || HasExpressionRootInScope(code, match.Index, typeName, dataTypeSymbol, rootType, compilation));
 		}
 
-		if (!isFollowedByMemberAccess)
-			return true;
+		if (isFollowedByMemberAccess)
+		{
+			if (!HasExpressionRootInScope(code, match.Index, typeName, dataTypeSymbol, rootType, compilation))
+				return false;
 
-		return HasMemberInExpressionScope(code, match.Index, typeName, dataTypeSymbol, rootType, compilation)
-			|| HasMatchingParameterOnEnclosingCall(code, openIndex, isIndexer, prefix, nsResolver, compilation, xmlnsCache, typeCache, dataTypeSymbol, rootType);
+			return !callTargetResolved || hasMatchingParam;
+		}
+
+		if (callTargetResolved && !hasMatchingParam)
+			return false;
+
+		return !callTargetResolved || HasExpressionRootInScope(code, match.Index, typeName, dataTypeSymbol, rootType, compilation);
 	}
 
 	static int SkipWhitespaceBackwardsIndex(string text, int index)
@@ -2003,18 +2052,14 @@ static class CSharpExpressionHelpers
 			}
 
 			// Exclude array creation expressions like "new int[missing:Strings.Count]".
-			if (TryExtractInvocationTarget(code, openIndex, allowGenerics: true, out _, out bool isNewTarget) && isNewTarget)
+			if (TryExtractInvocationTarget(code, openIndex, allowGenerics: true, literalSpans, out _, out bool isNewTarget) && isNewTarget)
 				return false;
 
 			return true;
 		}
 
 		if (TryReadPrecedingWord(code, openIndex, out var word))
-		{
-			return word is not ("typeof" or "sizeof" or "default" or "nameof" or "return" or "throw" or "await" or "yield"
-				or "case" or "in" or "is" or "as" or "var" or "if" or "while" or "for" or "foreach" or "using"
-				or "lock" or "fixed" or "switch" or "catch" or "when" or "checked" or "unchecked" or "else" or "do");
-		}
+			return !IsNonInvocationKeyword(word);
 
 		if (!TrySkipWhitespaceBackwards(code, openIndex, out char beforeParen))
 			return false;
@@ -2026,11 +2071,17 @@ static class CSharpExpressionHelpers
 		{
 			int beforeParenIdx = SkipWhitespaceBackwardsIndex(code, openIndex - 1);
 			return TrySkipBalancedAngleBracketsBackwards(code, beforeParenIdx, out int beforeGenerics)
-				&& TryReadPrecedingWord(code, beforeGenerics, out _);
+				&& TryReadPrecedingWord(code, beforeGenerics, out var genericWord)
+				&& !IsNonInvocationKeyword(genericWord);
 		}
 
 		return false;
 	}
+
+	static bool IsNonInvocationKeyword(string word)
+		=> word is "typeof" or "sizeof" or "default" or "nameof" or "return" or "throw" or "await" or "yield"
+			or "case" or "in" or "is" or "as" or "var" or "if" or "while" or "for" or "foreach" or "using"
+			or "lock" or "fixed" or "switch" or "catch" or "when" or "checked" or "unchecked" or "else" or "do";
 
 	static bool IsInLiteralSpan(int index, List<(int Start, int End, bool IsFormatClause)> literalSpans)
 	{
@@ -2043,7 +2094,7 @@ static class CSharpExpressionHelpers
 		return false;
 	}
 
-	static bool HasMatchingParameterOnEnclosingCall(
+	static bool TryHasMatchingParameterOnEnclosingCall(
 		string code,
 		int openIndex,
 		bool isIndexer,
@@ -2053,15 +2104,36 @@ static class CSharpExpressionHelpers
 		AssemblyAttributes xmlnsCache,
 		IDictionary<XmlType, INamedTypeSymbol> typeCache,
 		ITypeSymbol? dataTypeSymbol,
-		ITypeSymbol? rootType)
+		ITypeSymbol? rootType,
+		List<(int Start, int End, bool IsFormatClause)> literalSpans,
+		out bool callTargetResolved)
 	{
-		if (!TryExtractInvocationTarget(code, openIndex, !isIndexer, out var targetChain, out var isObjectCreation))
+		callTargetResolved = false;
+		if (!TryExtractInvocationTarget(code, openIndex, !isIndexer, literalSpans, out var targetChain, out var isObjectCreation))
 			return false;
 
 		if (isIndexer)
 		{
-			var targetType = TryResolveExpressionTargetType(targetChain, nsResolver, compilation, xmlnsCache, typeCache, dataTypeSymbol, rootType);
-			return targetType != null && targetType.GetAllProperties(context: null).Any(p => p.IsIndexer && HasParameter(p.Parameters, paramName));
+			var targetTypes = TryResolveExpressionTargetTypes(targetChain, nsResolver, compilation, xmlnsCache, typeCache, dataTypeSymbol, rootType);
+			var hasIndexers = false;
+			foreach (var targetType in targetTypes)
+			{
+				foreach (var prop in targetType.GetAllProperties(context: null))
+				{
+					if (!prop.IsIndexer)
+						continue;
+
+					hasIndexers = true;
+					if (HasParameter(prop.Parameters, paramName))
+					{
+						callTargetResolved = true;
+						return true;
+					}
+				}
+			}
+
+			callTargetResolved = hasIndexers;
+			return false;
 		}
 
 		if (isObjectCreation)
@@ -2069,51 +2141,82 @@ static class CSharpExpressionHelpers
 			if (string.Equals(targetChain, "new", StringComparison.Ordinal))
 				return false;
 
-			var constructedType = TryResolveExpressionTargetType(targetChain, nsResolver, compilation, xmlnsCache, typeCache, dataTypeSymbol, rootType) as INamedTypeSymbol;
-			return constructedType != null && constructedType.InstanceConstructors.Any(c => HasParameter(c.Parameters, paramName));
+			var constructedTypes = TryResolveExpressionTargetTypes(targetChain, nsResolver, compilation, xmlnsCache, typeCache, dataTypeSymbol, rootType);
+			var hasConstructors = false;
+			foreach (var constructedType in constructedTypes.OfType<INamedTypeSymbol>())
+			{
+				if (constructedType.InstanceConstructors.Length > 0)
+					hasConstructors = true;
+				if (constructedType.InstanceConstructors.Any(c => HasParameter(c.Parameters, paramName)))
+				{
+					callTargetResolved = true;
+					return true;
+				}
+			}
+
+			callTargetResolved = hasConstructors;
+			return false;
 		}
 
-		var lastDot = targetChain.LastIndexOf('.');
+		var lastDot = LastTopLevelDotIndex(targetChain);
 		if (lastDot < 0)
 		{
-			var colonIdx = targetChain.IndexOf(':');
-			if (colonIdx >= 0)
+			if (targetChain.IndexOf(':') >= 0)
 				return false;
 
-			return HasMethodWithParameter(dataTypeSymbol, targetChain, paramName)
-				|| HasMethodWithParameter(rootType, targetChain, paramName);
+			var methodNameOnly = StripGenericAndCallSuffixes(targetChain);
+			if (string.IsNullOrEmpty(methodNameOnly))
+				return false;
+
+			return HasCallableWithParameter(dataTypeSymbol, methodNameOnly, paramName, ref callTargetResolved)
+				| HasCallableWithParameter(rootType, methodNameOnly, paramName, ref callTargetResolved);
 		}
 
 		var receiver = targetChain.Substring(0, lastDot);
-		var methodName = targetChain.Substring(lastDot + 1);
+		var methodName = StripGenericAndCallSuffixes(targetChain.Substring(lastDot + 1));
 		if (string.IsNullOrEmpty(receiver) || string.IsNullOrEmpty(methodName))
 			return false;
 
-		var receiverType = TryResolveExpressionTargetType(receiver, nsResolver, compilation, xmlnsCache, typeCache, dataTypeSymbol, rootType);
-		return receiverType != null && HasMethodWithParameter(receiverType, methodName, paramName);
+		var receiverTypes = TryResolveExpressionTargetTypes(receiver, nsResolver, compilation, xmlnsCache, typeCache, dataTypeSymbol, rootType);
+		foreach (var receiverType in receiverTypes)
+		{
+			if (HasCallableWithParameter(receiverType, methodName, paramName, ref callTargetResolved))
+				return true;
+		}
+
+		return false;
 	}
 
-	static bool HasMethodWithParameter(ITypeSymbol? targetType, string methodName, string paramName)
+	static bool HasCallableWithParameter(ITypeSymbol? targetType, string methodName, string paramName, ref bool foundCallable)
 	{
 		if (targetType == null)
 			return false;
 
 		foreach (var method in targetType.GetAllMethods(methodName, context: null))
 		{
+			foundCallable = true;
 			if (HasParameter(method.Parameters, paramName))
 				return true;
 		}
 
 		foreach (var prop in targetType.GetAllProperties(methodName, context: null))
 		{
-			if (prop.Type is INamedTypeSymbol { DelegateInvokeMethod: { } invoke } && HasParameter(invoke.Parameters, paramName))
-				return true;
+			if (prop.Type is INamedTypeSymbol { DelegateInvokeMethod: { } invoke })
+			{
+				foundCallable = true;
+				if (HasParameter(invoke.Parameters, paramName))
+					return true;
+			}
 		}
 
 		foreach (var field in targetType.GetAllFields(methodName, context: null))
 		{
-			if (field.Type is INamedTypeSymbol { DelegateInvokeMethod: { } invoke } && HasParameter(invoke.Parameters, paramName))
-				return true;
+			if (field.Type is INamedTypeSymbol { DelegateInvokeMethod: { } invoke })
+			{
+				foundCallable = true;
+				if (HasParameter(invoke.Parameters, paramName))
+					return true;
+			}
 		}
 
 		return false;
@@ -2134,6 +2237,7 @@ static class CSharpExpressionHelpers
 		string code,
 		int openIndex,
 		bool allowGenerics,
+		List<(int Start, int End, bool IsFormatClause)> literalSpans,
 		out string targetChain,
 		out bool isObjectCreation)
 	{
@@ -2145,8 +2249,23 @@ static class CSharpExpressionHelpers
 			return false;
 
 		var segments = new List<string>();
+		var hasMemberOrCallAfterSegment = false;
 		while (idx >= 0)
 		{
+			while (idx >= 0 && (code[idx] == ')' || code[idx] == ']'))
+			{
+				char closeChar = code[idx];
+				char openChar = closeChar == ')' ? '(' : '[';
+				if (!TrySkipBalancedGroupBackwards(code, idx, openChar, closeChar, literalSpans, out int groupOpen))
+					return false;
+
+				segments.Add(closeChar == ')' ? "()" : "[]");
+				hasMemberOrCallAfterSegment = true;
+				idx = SkipWhitespaceBackwardsIndex(code, groupOpen - 1);
+				if (idx < 0)
+					return false;
+			}
+
 			if (allowGenerics && code[idx] == '>')
 			{
 				if (!TrySkipBalancedAngleBracketsBackwards(code, idx, out int beforeGenerics))
@@ -2170,11 +2289,16 @@ static class CSharpExpressionHelpers
 
 			int sepIdx = SkipWhitespaceBackwardsIndex(code, start - 1);
 			if (sepIdx < 0)
+			{
+				if (IsNonInvocationKeyword(segment))
+					return false;
 				break;
+			}
 
 			if (code[sepIdx] == '.')
 			{
 				segments.Add(".");
+				hasMemberOrCallAfterSegment = true;
 				idx = SkipWhitespaceBackwardsIndex(code, sepIdx - 1);
 				continue;
 			}
@@ -2201,7 +2325,7 @@ static class CSharpExpressionHelpers
 						segments.Add(":");
 						segments.Add(prefixWord);
 						sepIdx = SkipWhitespaceBackwardsIndex(code, prefixStart - 1);
-						if (sepIdx >= 0 && TryReadKeywordNew(code, prefixStart))
+						if (!hasMemberOrCallAfterSegment && sepIdx >= 0 && TryReadKeywordNew(code, prefixStart))
 							isObjectCreation = true;
 						break;
 					}
@@ -2210,7 +2334,10 @@ static class CSharpExpressionHelpers
 				return false;
 			}
 
-			if (TryReadKeywordNew(code, start))
+			if (IsNonInvocationKeyword(segment))
+				return false;
+
+			if (!hasMemberOrCallAfterSegment && TryReadKeywordNew(code, start))
 				isObjectCreation = true;
 			break;
 		}
@@ -2223,6 +2350,47 @@ static class CSharpExpressionHelpers
 		if (string.Equals(targetChain, "new", StringComparison.Ordinal))
 			isObjectCreation = true;
 		return true;
+	}
+
+	static bool TrySkipBalancedGroupBackwards(
+		string code,
+		int closeIndex,
+		char openChar,
+		char closeChar,
+		List<(int Start, int End, bool IsFormatClause)> literalSpans,
+		out int openIndex)
+	{
+		openIndex = -1;
+		if (closeIndex < 0 || code[closeIndex] != closeChar)
+			return false;
+
+		int depth = 1;
+		for (int i = closeIndex - 1; i >= 0; i--)
+		{
+			if (IsInLiteralSpan(i, literalSpans))
+				continue;
+
+			char ch = code[i];
+			if (ch == closeChar)
+			{
+				depth++;
+			}
+			else if (ch == openChar)
+			{
+				depth--;
+				if (depth == 0)
+				{
+					openIndex = i;
+					return true;
+				}
+			}
+			else if (ch == ';')
+			{
+				return false;
+			}
+		}
+
+		return false;
 	}
 
 	static bool TryReadKeywordNew(string code, int beforeTokenIndex)
@@ -2270,7 +2438,64 @@ static class CSharpExpressionHelpers
 		return false;
 	}
 
-	static ITypeSymbol? TryResolveExpressionTargetType(
+	static int LastTopLevelDotIndex(string targetChain)
+	{
+		int angleDepth = 0;
+		for (int i = targetChain.Length - 1; i >= 0; i--)
+		{
+			switch (targetChain[i])
+			{
+				case '>':
+					angleDepth++;
+					break;
+				case '<':
+					if (angleDepth > 0)
+						angleDepth--;
+					break;
+				case '.' when angleDepth == 0:
+					return i;
+			}
+		}
+
+		return -1;
+	}
+
+	static string StripGenericAndCallSuffixes(string segment)
+	{
+		var idx = 0;
+		while (idx < segment.Length && (char.IsLetterOrDigit(segment[idx]) || segment[idx] == '_'))
+			idx++;
+		return idx == segment.Length ? segment : segment.Substring(0, idx);
+	}
+
+	static List<string> SplitTopLevelDotSegments(string chain)
+	{
+		var parts = new List<string>();
+		int start = 0;
+		int angleDepth = 0;
+		for (int i = 0; i < chain.Length; i++)
+		{
+			switch (chain[i])
+			{
+				case '<':
+					angleDepth++;
+					break;
+				case '>':
+					if (angleDepth > 0)
+						angleDepth--;
+					break;
+				case '.' when angleDepth == 0:
+					parts.Add(chain.Substring(start, i - start));
+					start = i + 1;
+					break;
+			}
+		}
+
+		parts.Add(chain.Substring(start));
+		return parts;
+	}
+
+	static List<ITypeSymbol> TryResolveExpressionTargetTypes(
 		string targetChain,
 		IXmlNamespaceResolver nsResolver,
 		Compilation compilation,
@@ -2279,8 +2504,9 @@ static class CSharpExpressionHelpers
 		ITypeSymbol? dataTypeSymbol,
 		ITypeSymbol? rootType)
 	{
+		var results = new List<ITypeSymbol>();
 		if (string.IsNullOrEmpty(targetChain))
-			return null;
+			return results;
 
 		var forceGlobal = false;
 		if (targetChain.StartsWith("global::", StringComparison.Ordinal))
@@ -2289,61 +2515,285 @@ static class CSharpExpressionHelpers
 			targetChain = targetChain.Substring("global::".Length);
 		}
 
-		var singleColonIdx = targetChain.IndexOf(':');
-		if (!forceGlobal && singleColonIdx > 0 && (singleColonIdx + 1 >= targetChain.Length || targetChain[singleColonIdx + 1] != ':'))
+		var segments = SplitTopLevelDotSegments(targetChain);
+		if (segments.Count == 0 || segments.Any(string.IsNullOrEmpty))
+			return results;
+
+		var singleColonIdx = segments[0].IndexOf(':');
+		if (!forceGlobal && singleColonIdx > 0 && (singleColonIdx + 1 >= segments[0].Length || segments[0][singleColonIdx + 1] != ':'))
 		{
-			var prefix = targetChain.Substring(0, singleColonIdx);
-			var remainder = targetChain.Substring(singleColonIdx + 1);
+			var prefix = segments[0].Substring(0, singleColonIdx);
+			var remainder = segments[0].Substring(singleColonIdx + 1);
 			var nsUri = nsResolver.LookupNamespace(prefix);
 			if (nsUri == null)
-				return null;
+				return results;
 
-			var parts = remainder.Split('.');
-			if (parts.Length == 0 || string.IsNullOrEmpty(parts[0]))
-				return null;
+			ParseSegment(remainder, out var baseTypeName, out var suffixes);
+			if (string.IsNullOrEmpty(baseTypeName))
+				return results;
 
-			var xmlType = new XmlType(nsUri, parts[0], null);
+			var xmlType = new XmlType(nsUri, baseTypeName, null);
 			if (!xmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, typeCache, out var resolvedType) || resolvedType == null)
-				return null;
+				return results;
 
-			ITypeSymbol? currentType = resolvedType;
-			for (int i = 1; i < parts.Length && currentType != null; i++)
-				currentType = StepTypeOrMember(currentType, parts[i], compilation);
-			return currentType;
+			var candidates = suffixes.Count == 0
+				? new List<ITypeSymbol> { resolvedType }
+				: ApplyCallOrIndexerSuffixes([resolvedType], suffixes, isConstructorOrStaticRoot: true);
+
+			for (int i = 1; i < segments.Count && candidates.Count > 0; i++)
+				candidates = StepSegmentOnTypes(candidates, segments[i], compilation);
+			return candidates;
 		}
-
-		var segments = targetChain.Split('.');
-		if (segments.Length == 0 || segments.Any(string.IsNullOrEmpty))
-			return null;
 
 		if (!forceGlobal)
 		{
-			var fromDataType = WalkTypeOrMemberChain(dataTypeSymbol, segments, compilation);
-			if (fromDataType != null)
-				return fromDataType;
+			if (TryResolveChainFromRoots(segments, dataTypeSymbol, rootType, compilation, out var fromInstance))
+				return fromInstance;
 
-			var fromRoot = WalkTypeOrMemberChain(rootType, segments, compilation);
-			if (fromRoot != null)
-				return fromRoot;
+			if (segments.All(s => s.IndexOf('(') < 0 && s.IndexOf('[') < 0))
+			{
+				var segArray = segments.ToArray();
+				var fromRootNs = WalkNamespaceOrTypeChain(rootType?.ContainingNamespace, segArray, compilation);
+				if (fromRootNs != null)
+					return [fromRootNs];
 
-			var fromDataNs = WalkNamespaceOrTypeChain(dataTypeSymbol?.ContainingNamespace, segments, compilation);
-			if (fromDataNs != null)
-				return fromDataNs;
-
-			var fromRootNs = WalkNamespaceOrTypeChain(rootType?.ContainingNamespace, segments, compilation);
-			if (fromRootNs != null)
-				return fromRootNs;
+				var fromDataNs = WalkNamespaceOrTypeChain(dataTypeSymbol?.ContainingNamespace, segArray, compilation);
+				if (fromDataNs != null)
+					return [fromDataNs];
+			}
+			else if (TryResolveNamespacePrefixThenMembers(segments, rootType?.ContainingNamespace, compilation, out var fromNsThenCalls))
+			{
+				return fromNsThenCalls;
+			}
 		}
 
-		return WalkNamespaceOrTypeChain(compilation.GlobalNamespace, segments, compilation);
+		if (segments.All(s => s.IndexOf('(') < 0 && s.IndexOf('[') < 0))
+		{
+			var globalType = WalkNamespaceOrTypeChain(compilation.GlobalNamespace, segments.ToArray(), compilation);
+			if (globalType != null)
+				return [globalType];
+		}
+		else if (TryResolveNamespacePrefixThenMembers(segments, compilation.GlobalNamespace, compilation, out var fromGlobalCalls))
+		{
+			return fromGlobalCalls;
+		}
+
+		return results;
 	}
 
-	static ITypeSymbol? WalkTypeOrMemberChain(ITypeSymbol? startType, string[] segments, Compilation compilation)
+	static bool TryResolveChainFromRoots(
+		List<string> segments,
+		ITypeSymbol? dataTypeSymbol,
+		ITypeSymbol? rootType,
+		Compilation compilation,
+		out List<ITypeSymbol> resolvedTypes)
 	{
-		var current = startType;
-		for (int i = 0; i < segments.Length && current != null; i++)
-			current = StepTypeOrMember(current, segments[i], compilation);
+		resolvedTypes = [];
+		ParseSegment(segments[0], out var firstName, out var firstSuffixes);
+		List<ITypeSymbol> current;
+		if (string.Equals(firstName, "this", StringComparison.Ordinal))
+		{
+			if (rootType == null)
+				return false;
+
+			current = firstSuffixes.Count == 0
+				? [rootType]
+				: ApplyCallOrIndexerSuffixes([rootType], firstSuffixes, isConstructorOrStaticRoot: false);
+		}
+		else
+		{
+			current = [];
+			if (dataTypeSymbol != null)
+				current.AddRange(StepSegmentOnTypes([dataTypeSymbol], segments[0], compilation));
+			if (rootType != null && !SymbolEqualityComparer.Default.Equals(rootType, dataTypeSymbol))
+				current.AddRange(StepSegmentOnTypes([rootType], segments[0], compilation));
+		}
+
+		for (int i = 1; i < segments.Count && current.Count > 0; i++)
+			current = StepSegmentOnTypes(current, segments[i], compilation);
+
+		if (current.Count > 0)
+		{
+			resolvedTypes = current;
+			return true;
+		}
+
+		return false;
+	}
+
+	static bool TryResolveNamespacePrefixThenMembers(
+		List<string> segments,
+		INamespaceSymbol? startNs,
+		Compilation compilation,
+		out List<ITypeSymbol> resolvedTypes)
+	{
+		resolvedTypes = [];
+		if (startNs == null)
+			return false;
+
+		var currentNs = startNs;
+		for (int i = 0; i < segments.Count; i++)
+		{
+			ParseSegment(segments[i], out var name, out var suffixes);
+			if (string.IsNullOrEmpty(name))
+				return false;
+
+			var typeMatch = currentNs.GetTypeMembers(name).FirstOrDefault();
+			if (typeMatch != null)
+			{
+				var candidates = suffixes.Count == 0
+					? new List<ITypeSymbol> { typeMatch }
+					: ApplyCallOrIndexerSuffixes([typeMatch], suffixes, isConstructorOrStaticRoot: true);
+				for (int j = i + 1; j < segments.Count && candidates.Count > 0; j++)
+					candidates = StepSegmentOnTypes(candidates, segments[j], compilation);
+				if (candidates.Count > 0)
+				{
+					resolvedTypes = candidates;
+					return true;
+				}
+				return false;
+			}
+
+			if (suffixes.Count > 0)
+				return false;
+
+			var nsMatch = currentNs.GetNamespaceMembers().FirstOrDefault(ns => ns.Name == name);
+			if (nsMatch == null)
+				return false;
+			currentNs = nsMatch;
+		}
+
+		return false;
+	}
+
+	static void ParseSegment(string segment, out string baseName, out List<string> suffixes)
+	{
+		suffixes = [];
+		int idx = 0;
+		while (idx < segment.Length && (char.IsLetterOrDigit(segment[idx]) || segment[idx] == '_'))
+			idx++;
+		baseName = segment.Substring(0, idx);
+
+		if (idx < segment.Length && segment[idx] == '<')
+		{
+			int depth = 0;
+			while (idx < segment.Length)
+			{
+				if (segment[idx] == '<') depth++;
+				else if (segment[idx] == '>')
+				{
+					depth--;
+					if (depth == 0) { idx++; break; }
+				}
+				idx++;
+			}
+		}
+
+		while (idx + 1 < segment.Length)
+		{
+			var pair = segment.Substring(idx, 2);
+			if (pair is "()" or "[]")
+			{
+				suffixes.Add(pair);
+				idx += 2;
+			}
+			else
+			{
+				break;
+			}
+		}
+	}
+
+	static List<ITypeSymbol> StepSegmentOnTypes(List<ITypeSymbol> inputTypes, string segment, Compilation compilation)
+	{
+		ParseSegment(segment, out var memberName, out var suffixes);
+		var results = new List<ITypeSymbol>();
+		if (string.IsNullOrEmpty(memberName))
+			return results;
+
+		if (suffixes.Count > 0 && suffixes[0] == "()")
+		{
+			var methodReturnTypes = new List<ITypeSymbol>();
+			foreach (var type in inputTypes)
+			{
+				foreach (var method in type.GetAllMethods(memberName, context: null))
+				{
+					if (!method.ReturnsVoid && method.ReturnType != null)
+						methodReturnTypes.Add(method.ReturnType);
+				}
+
+				var delegateMember = StepTypeOrMember(type, memberName, compilation);
+				if (delegateMember is INamedTypeSymbol { DelegateInvokeMethod: { ReturnsVoid: false, ReturnType: { } delRet } })
+					methodReturnTypes.Add(delRet);
+			}
+
+			if (suffixes.Count == 1)
+				return DeduplicateTypes(methodReturnTypes);
+
+			return ApplyCallOrIndexerSuffixes(methodReturnTypes, suffixes.GetRange(1, suffixes.Count - 1), isConstructorOrStaticRoot: false);
+		}
+
+		var memberTypes = new List<ITypeSymbol>();
+		foreach (var type in inputTypes)
+		{
+			var stepped = StepTypeOrMember(type, memberName, compilation);
+			if (stepped != null)
+				memberTypes.Add(stepped);
+		}
+
+		if (suffixes.Count == 0)
+			return DeduplicateTypes(memberTypes);
+
+		return ApplyCallOrIndexerSuffixes(memberTypes, suffixes, isConstructorOrStaticRoot: false);
+	}
+
+	static List<ITypeSymbol> ApplyCallOrIndexerSuffixes(List<ITypeSymbol> types, List<string> suffixes, bool isConstructorOrStaticRoot)
+	{
+		var current = DeduplicateTypes(types);
+		for (int i = 0; i < suffixes.Count && current.Count > 0; i++)
+		{
+			var suffix = suffixes[i];
+			var next = new List<ITypeSymbol>();
+			if (suffix == "()")
+			{
+				if (i == 0 && isConstructorOrStaticRoot)
+				{
+					// e.g. "new Type()" keeps the constructed type itself rather than invoking a delegate on it.
+					continue;
+				}
+				foreach (var t in current)
+				{
+					if (t is INamedTypeSymbol { DelegateInvokeMethod: { ReturnsVoid: false, ReturnType: { } ret } })
+						next.Add(ret);
+				}
+			}
+			else if (suffix == "[]")
+			{
+				foreach (var t in current)
+				{
+					foreach (var prop in t.GetAllProperties(context: null))
+					{
+						if (prop.IsIndexer && prop.Type != null)
+							next.Add(prop.Type);
+					}
+				}
+			}
+			current = DeduplicateTypes(next);
+		}
+
 		return current;
+	}
+
+	static List<ITypeSymbol> DeduplicateTypes(List<ITypeSymbol> types)
+	{
+		var seen = new HashSet<ITypeSymbol>(SymbolEqualityComparer.Default);
+		var result = new List<ITypeSymbol>(types.Count);
+		foreach (var t in types)
+		{
+			if (seen.Add(t))
+				result.Add(t);
+		}
+		return result;
 	}
 
 	static ITypeSymbol? WalkNamespaceOrTypeChain(INamespaceSymbol? startNs, string[] segments, Compilation compilation)
@@ -2352,7 +2802,7 @@ static class CSharpExpressionHelpers
 		ITypeSymbol? currentType = null;
 		for (int i = 0; i < segments.Length; i++)
 		{
-			var seg = segments[i];
+			var seg = StripGenericAndCallSuffixes(segments[i]);
 			if (currentType != null)
 			{
 				currentType = StepTypeOrMember(currentType, seg, compilation);
