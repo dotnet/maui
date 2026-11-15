@@ -1835,7 +1835,8 @@ static class CSharpExpressionHelpers
 				typeCache,
 				dataTypeSymbol,
 				rootType,
-				hasResolvedType))
+				hasResolvedType,
+				typeSymbol))
 			{
 				return match.Value;
 			}
@@ -2103,7 +2104,16 @@ static class CSharpExpressionHelpers
 			return true;
 		}
 
-		return HasEnclosingLocalOrParameter(code, matchIndex, identifier, syntaxRoot);
+		for (var enclosing = rootType?.ContainingType; enclosing != null; enclosing = enclosing.ContainingType)
+		{
+			if (HasStaticOrNestedMember(enclosing, identifier, includeNestedTypes: false, includeMethods: includeMethods, compilation, within: rootType))
+				return true;
+		}
+
+		if (HasEnclosingLocalOrParameter(code, matchIndex, identifier, syntaxRoot))
+			return true;
+
+		return HasImportedStaticMemberInCompilationScope(identifier, compilation, includeMethods);
 	}
 
 	static bool HasExpressionRootInScope(
@@ -2121,6 +2131,9 @@ static class CSharpExpressionHelpers
 
 	static bool HasNamespaceOrTypeInCompilationScope(string identifier, ITypeSymbol? rootType, Compilation compilation)
 	{
+		if (TryCollectAccessibleNestedTypes(rootType, identifier, compilation, results: null))
+			return true;
+
 		for (var ns = rootType?.ContainingNamespace; ns != null && !ns.IsGlobalNamespace; ns = ns.ContainingNamespace)
 		{
 			if (ns.GetMembers(identifier).Any())
@@ -2209,12 +2222,101 @@ static class CSharpExpressionHelpers
 		return current;
 	}
 
-	static bool HasStaticOrNestedMember(INamedTypeSymbol typeSymbol, string identifier)
+	static bool TryCollectAccessibleNestedTypes(
+		ITypeSymbol? rootType,
+		string identifier,
+		Compilation compilation,
+		List<(ITypeSymbol Type, bool IsType)>? results,
+		int genericArity = -1)
+	{
+		int initialCount = results?.Count ?? 0;
+		for (var enclosing = rootType; enclosing != null; enclosing = enclosing.ContainingType)
+		{
+			for (var current = enclosing; current != null; current = current.BaseType)
+			{
+				bool foundOnCurrent = false;
+				foreach (var nestedType in current.GetTypeMembers(identifier))
+				{
+					if (genericArity >= 0 && nestedType.Arity != genericArity)
+						continue;
+					if (!compilation.IsSymbolAccessibleWithin(nestedType, rootType!))
+						continue;
+
+					if (results == null)
+						return true;
+
+					results.Add((nestedType, IsType: true));
+					foundOnCurrent = true;
+				}
+
+				if (foundOnCurrent)
+					break;
+			}
+
+			if (results != null && results.Count > initialCount)
+				return true;
+		}
+
+		return false;
+	}
+
+	static IEnumerable<(UsingDirectiveSyntax Directive, ISymbol? TargetSymbol)> EnumerateGlobalUsingTargets(Compilation compilation)
+	{
+		foreach (var tree in compilation.SyntaxTrees)
+		{
+			if (!tree.TryGetRoot(out var root) || root is not CompilationUnitSyntax compilationUnit)
+				continue;
+
+			SemanticModel? semanticModel = null;
+			foreach (var usingDirective in compilationUnit.Usings)
+			{
+				if (usingDirective.GlobalKeyword.IsKind(SyntaxKind.None) || usingDirective.NamespaceOrType == null)
+					continue;
+
+				semanticModel ??= compilation.GetSemanticModel(tree);
+				var targetSymbol = semanticModel.GetSymbolInfo(usingDirective.NamespaceOrType).Symbol;
+				yield return (usingDirective, targetSymbol);
+			}
+		}
+	}
+
+	static bool HasImportedStaticMemberInCompilationScope(string identifier, Compilation compilation, bool includeMethods)
+	{
+		foreach (var (usingDirective, targetSymbol) in EnumerateGlobalUsingTargets(compilation))
+		{
+			if (usingDirective.StaticKeyword.IsKind(SyntaxKind.None))
+				continue;
+
+			if (targetSymbol is INamedTypeSymbol staticTypeSymbol
+				&& HasStaticOrNestedMember(staticTypeSymbol, identifier, includeNestedTypes: false, includeMethods: includeMethods))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	static bool HasStaticOrNestedMember(
+		INamedTypeSymbol typeSymbol,
+		string identifier,
+		bool includeNestedTypes = true,
+		bool includeMethods = true,
+		Compilation? compilation = null,
+		ISymbol? within = null)
 	{
 		for (var current = typeSymbol; current is not null; current = current.BaseType)
 		{
-			if (current.GetMembers(identifier).Any(m => m.IsStatic || m is ITypeSymbol))
-				return true;
+			foreach (var member in current.GetMembers(identifier))
+			{
+				bool kindMatches = (member.IsStatic && member is not ITypeSymbol && (includeMethods || member is not IMethodSymbol))
+					|| (includeNestedTypes && member is ITypeSymbol);
+				if (!kindMatches)
+					continue;
+
+				if (compilation == null || within == null || compilation.IsSymbolAccessibleWithin(member, within))
+					return true;
+			}
 		}
 
 		return false;
@@ -2361,13 +2463,12 @@ static class CSharpExpressionHelpers
 						&& HasShallowVariableDeclaration(forEachVarStmt.Variable, identifier, safePosition):
 					return true;
 				case ForStatementSyntax forStmt
-					when forStmt.Declaration is not null
-						&& HasShallowVariableDeclaration(forStmt.Declaration, identifier, safePosition):
+					when HasForHeaderVariableDeclaration(forStmt, identifier, safePosition):
 					return true;
 				case UsingStatementSyntax usingStmt
 					when usingStmt.Statement.Span.Contains(safePosition)
-						&& usingStmt.Declaration is not null
-						&& HasShallowVariableDeclaration(usingStmt.Declaration, identifier, safePosition):
+						&& ((usingStmt.Declaration is not null && HasShallowVariableDeclaration(usingStmt.Declaration, identifier, safePosition))
+							|| (usingStmt.Expression is not null && HasShallowVariableDeclaration(usingStmt.Expression, identifier, safePosition))):
 					return true;
 				case CatchClauseSyntax catchClause
 					when catchClause.Declaration?.Identifier.ValueText == identifier
@@ -2571,7 +2672,8 @@ static class CSharpExpressionHelpers
 		IDictionary<XmlType, INamedTypeSymbol> typeCache,
 		ITypeSymbol? dataTypeSymbol,
 		ITypeSymbol? rootType,
-		bool hasResolvedType)
+		bool hasResolvedType,
+		ITypeSymbol? resolvedXmlnsType = null)
 	{
 		if (!TryFindEnclosingArgumentListOpener(code, match.Index, literalSpans, out int openIndex, out bool isIndexer))
 			return false;
@@ -2612,8 +2714,31 @@ static class CSharpExpressionHelpers
 
 		if (hasResolvedType)
 		{
-			return hasMatchingParam
-				&& (!isFollowedByMemberAccess || HasExpressionRootInScope(code, match.Index, typeName, dataTypeSymbol, rootType, compilation, syntaxRoot));
+			if (!hasMatchingParam)
+				return false;
+
+			if (!isFollowedByMemberAccess)
+				return true;
+
+			if (!HasExpressionRootInScope(code, match.Index, typeName, dataTypeSymbol, rootType, compilation, syntaxRoot))
+				return false;
+
+			if (resolvedXmlnsType != null
+				&& ShouldPreferXmlnsTypeOverExpressionRoot(
+					code,
+					match.Index,
+					match.Groups[2].Index,
+					literalSpans,
+					syntaxRoot,
+					compilation,
+					dataTypeSymbol,
+					rootType,
+					resolvedXmlnsType))
+			{
+				return false;
+			}
+
+			return true;
 		}
 
 		if (isFollowedByMemberAccess)
@@ -2628,6 +2753,671 @@ static class CSharpExpressionHelpers
 			return false;
 
 		return !callTargetResolved || HasExpressionRootInScope(code, match.Index, typeName, dataTypeSymbol, rootType, compilation, syntaxRoot);
+	}
+
+	static bool HasForHeaderVariableDeclaration(ForStatementSyntax forStmt, string identifier, int beforePosition)
+	{
+		if (forStmt.Declaration is not null
+			&& HasShallowVariableDeclaration(forStmt.Declaration, identifier, beforePosition))
+		{
+			return true;
+		}
+
+		if (forStmt.Condition is not null
+			&& forStmt.Condition.SpanStart < beforePosition
+			&& HasShallowVariableDeclaration(forStmt.Condition, identifier, beforePosition))
+		{
+			return true;
+		}
+
+		return HasAnyPrecedingExpressionDeclaration(forStmt.Initializers, identifier, beforePosition)
+			|| HasAnyPrecedingExpressionDeclaration(forStmt.Incrementors, identifier, beforePosition);
+	}
+
+	static bool HasAnyPrecedingExpressionDeclaration(
+		SeparatedSyntaxList<ExpressionSyntax> expressions,
+		string identifier,
+		int beforePosition)
+	{
+		foreach (var expr in expressions)
+		{
+			if (expr.SpanStart < beforePosition
+				&& HasShallowVariableDeclaration(expr, identifier, beforePosition))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	static bool ShouldPreferXmlnsTypeOverExpressionRoot(
+		string code,
+		int matchIndex,
+		int typeNameStart,
+		List<(int Start, int End, bool IsFormatClause)> literalSpans,
+		SyntaxNode syntaxRoot,
+		Compilation compilation,
+		ITypeSymbol? dataTypeSymbol,
+		ITypeSymbol? rootType,
+		ITypeSymbol resolvedXmlnsType)
+	{
+		var segments = TryExtractMemberAccessSegments(code, typeNameStart, literalSpans);
+		if (segments.Count < 2)
+			return false;
+
+		ParseSegment(segments[0], out var rootName, out var seg0Arity, out var seg0Suffixes);
+		if (seg0Suffixes.Count > 0
+			|| (seg0Arity > 0 && resolvedXmlnsType is INamedTypeSymbol namedXml && namedXml.Arity != seg0Arity))
+		{
+			return false;
+		}
+
+		if (!CanStepMemberChain([(resolvedXmlnsType, IsType: true)], segments, 1, rootType, compilation))
+			return false;
+
+		return !CanExpressionRootStepMemberChain(
+			code,
+			matchIndex,
+			rootName,
+			seg0Arity,
+			seg0Suffixes,
+			segments,
+			dataTypeSymbol,
+			rootType,
+			compilation,
+			syntaxRoot);
+	}
+
+	static bool CanExpressionRootStepMemberChain(
+		string code,
+		int matchIndex,
+		string rootName,
+		int seg0Arity,
+		List<string> seg0Suffixes,
+		List<string> segments,
+		ITypeSymbol? dataTypeSymbol,
+		ITypeSymbol? rootType,
+		Compilation compilation,
+		SyntaxNode syntaxRoot)
+	{
+		if (HasEnclosingLocalOrParameter(code, matchIndex, rootName, syntaxRoot))
+			return true;
+
+		var memberScopeReceivers = new List<(ITypeSymbol Type, bool IsType)>();
+		bool shadowedInMemberScope = false;
+
+		if (dataTypeSymbol != null
+			&& MemberResolver.HasMember(dataTypeSymbol, rootName, includeMethods: true, compilation))
+		{
+			shadowedInMemberScope = true;
+			CollectTypeScopeRootReceivers(dataTypeSymbol, rootName, seg0Arity, seg0Suffixes, isInstanceContext: true, compilation, within: rootType, memberScopeReceivers);
+		}
+
+		if (rootType != null)
+		{
+			if (MemberResolver.HasMember(rootType, rootName, includeMethods: true, compilation)
+				|| TryCollectAccessibleNestedTypes(rootType, rootName, compilation, memberScopeReceivers, seg0Arity))
+			{
+				shadowedInMemberScope = true;
+			}
+
+			CollectTypeScopeRootReceivers(rootType, rootName, seg0Arity, seg0Suffixes, isInstanceContext: false, compilation, within: rootType, memberScopeReceivers);
+			for (var enclosing = rootType.ContainingType; enclosing != null; enclosing = enclosing.ContainingType)
+			{
+				if (HasStaticOrNestedMember(enclosing, rootName, includeNestedTypes: false, includeMethods: true, compilation, within: rootType))
+				{
+					shadowedInMemberScope = true;
+					CollectTypeScopeRootReceivers(enclosing, rootName, seg0Arity, seg0Suffixes, isInstanceContext: false, compilation, within: rootType, memberScopeReceivers, staticOnly: true);
+				}
+			}
+		}
+
+		if (memberScopeReceivers.Count > 0
+			&& CanStepMemberChain(memberScopeReceivers, segments, 1, rootType, compilation))
+		{
+			return true;
+		}
+
+		if (shadowedInMemberScope)
+			return false;
+
+		// Check global using static, global using aliases, and visible namespaces/types.
+		var namespaceReceivers = new List<(ITypeSymbol Type, bool IsType)>();
+		foreach (var (usingDirective, targetSymbol) in EnumerateGlobalUsingTargets(compilation))
+		{
+			if (!usingDirective.StaticKeyword.IsKind(SyntaxKind.None))
+			{
+				if (targetSymbol is INamedTypeSymbol staticTypeSymbol)
+					CollectStaticOrNestedRootReceivers(staticTypeSymbol, rootName, seg0Arity, seg0Suffixes, compilation, rootType, namespaceReceivers);
+				continue;
+			}
+
+			if (usingDirective.Alias != null && string.Equals(usingDirective.Alias.Name.Identifier.ValueText, rootName, StringComparison.Ordinal))
+			{
+				if (targetSymbol is ITypeSymbol aliasType
+					&& seg0Suffixes.Count == 0
+					&& (seg0Arity == 0 || (aliasType is INamedTypeSymbol namedAlias && namedAlias.Arity == seg0Arity)))
+				{
+					namespaceReceivers.Add((aliasType, IsType: true));
+				}
+				else if (targetSymbol is INamespaceSymbol aliasNs
+					&& seg0Arity == 0
+					&& seg0Suffixes.Count == 0
+					&& CanStepFromNamespace(aliasNs, segments, 1, rootType, compilation))
+				{
+					return true;
+				}
+			}
+		}
+
+		if (seg0Suffixes.Count == 0)
+		{
+			foreach (var ns in EnumerateImportedNamespaces(rootType, compilation))
+			{
+				foreach (var typeMember in ns.GetTypeMembers(rootName, seg0Arity))
+					namespaceReceivers.Add((typeMember, IsType: true));
+
+				if (seg0Arity == 0)
+				{
+					var subNs = ns.GetNamespaceMembers().FirstOrDefault(m => m.Name == rootName);
+					if (subNs != null && CanStepFromNamespace(subNs, segments, 1, rootType, compilation))
+						return true;
+				}
+			}
+		}
+
+		return namespaceReceivers.Count > 0
+			&& CanStepMemberChain(namespaceReceivers, segments, 1, rootType, compilation);
+	}
+
+	static void CollectTypeScopeRootReceivers(
+		ITypeSymbol targetType,
+		string rootName,
+		int seg0Arity,
+		List<string> seg0Suffixes,
+		bool isInstanceContext,
+		Compilation compilation,
+		ISymbol? within,
+		List<(ITypeSymbol Type, bool IsType)> receivers,
+		bool staticOnly = false)
+	{
+		if (seg0Suffixes.Count > 0 && seg0Suffixes[0] == "()")
+		{
+			var returnTypes = new List<ITypeSymbol>();
+			foreach (var method in targetType.GetAllMethods(rootName, context: null))
+			{
+				if (staticOnly && !method.IsStatic)
+					continue;
+				if (isInstanceContext && method.IsStatic)
+					continue;
+				if (!CanInvokeWithArity(method, seg0Arity))
+					continue;
+				if (within != null && !compilation.IsSymbolAccessibleWithin(method, within))
+					continue;
+				if (!method.ReturnsVoid && method.ReturnType != null)
+					returnTypes.Add(method.ReturnType);
+			}
+
+			if (seg0Arity == 0)
+			{
+				var delegates = new List<ITypeSymbol>();
+				StepValueMembers(targetType, rootName, requireStatic: !isInstanceContext, allowInstance: !staticOnly, delegates, compilation, within);
+				foreach (var del in delegates)
+				{
+					if (del is INamedTypeSymbol { DelegateInvokeMethod: { ReturnsVoid: false, ReturnType: { } delRet } })
+						returnTypes.Add(delRet);
+				}
+			}
+
+			var remainingSuffixes = seg0Suffixes.Count > 1 ? seg0Suffixes.GetRange(1, seg0Suffixes.Count - 1) : [];
+			var stepped = ApplyCallOrIndexerSuffixes(returnTypes, remainingSuffixes, isConstructorOrStaticRoot: false);
+			foreach (var t in stepped)
+				receivers.Add((t, IsType: false));
+			return;
+		}
+
+		if (seg0Arity != 0)
+			return;
+
+		var valueTypes = new List<ITypeSymbol>();
+		StepValueMembers(targetType, rootName, requireStatic: !isInstanceContext, allowInstance: !staticOnly, valueTypes, compilation, within);
+		var finalTypes = seg0Suffixes.Count == 0
+			? DeduplicateTypes(valueTypes)
+			: ApplyCallOrIndexerSuffixes(valueTypes, seg0Suffixes, isConstructorOrStaticRoot: false);
+		foreach (var t in finalTypes)
+			receivers.Add((t, IsType: false));
+	}
+
+	static void CollectStaticOrNestedRootReceivers(
+		INamedTypeSymbol typeSymbol,
+		string rootName,
+		int seg0Arity,
+		List<string> seg0Suffixes,
+		Compilation compilation,
+		ISymbol? within,
+		List<(ITypeSymbol Type, bool IsType)> receivers)
+	{
+		for (var current = typeSymbol; current != null; current = current.BaseType)
+		{
+			if (seg0Suffixes.Count == 0)
+			{
+				foreach (var nestedType in current.GetTypeMembers(rootName, seg0Arity))
+				{
+					if (within == null || compilation.IsSymbolAccessibleWithin(nestedType, within))
+						receivers.Add((nestedType, IsType: true));
+				}
+			}
+		}
+
+		CollectTypeScopeRootReceivers(typeSymbol, rootName, seg0Arity, seg0Suffixes, isInstanceContext: false, compilation, within, receivers, staticOnly: true);
+	}
+
+	static bool CanStepFromNamespace(
+		INamespaceSymbol startNs,
+		List<string> segments,
+		int startIndex,
+		ITypeSymbol? rootType,
+		Compilation compilation)
+	{
+		var currentNs = startNs;
+		for (int i = startIndex; i < segments.Count; i++)
+		{
+			ParseSegment(segments[i], out var name, out var genericArity, out var suffixes);
+			if (string.IsNullOrEmpty(name))
+				return false;
+
+			var typeMatch = currentNs.GetTypeMembers(name, genericArity).FirstOrDefault();
+			if (typeMatch != null)
+			{
+				if (suffixes.Count > 0 || i == segments.Count - 1)
+					return false;
+
+				return CanStepMemberChain([(typeMatch, IsType: true)], segments, i + 1, rootType, compilation);
+			}
+
+			if (genericArity > 0 || suffixes.Count > 0)
+				return false;
+
+			currentNs = currentNs.GetNamespaceMembers().FirstOrDefault(ns => ns.Name == name);
+			if (currentNs == null)
+				return false;
+		}
+
+		return false;
+	}
+
+	static bool CanStepMemberChain(
+		List<(ITypeSymbol Type, bool IsType)> receivers,
+		List<string> segments,
+		int startIndex,
+		ITypeSymbol? rootType,
+		Compilation compilation)
+	{
+		var current = receivers;
+		for (int i = startIndex; i < segments.Count; i++)
+		{
+			if (current.Count == 0)
+				return false;
+
+			bool isFinal = i == segments.Count - 1;
+			current = StepReceiversForSegment(current, segments[i], isFinal, compilation, rootType, out bool matchedTerminalMethod);
+			if (isFinal)
+				return current.Count > 0 || matchedTerminalMethod;
+		}
+
+		return current.Count > 0;
+	}
+
+	static List<(ITypeSymbol Type, bool IsType)> StepReceiversForSegment(
+		List<(ITypeSymbol Type, bool IsType)> receivers,
+		string segment,
+		bool isFinalSegment,
+		Compilation compilation,
+		ITypeSymbol? rootType,
+		out bool matchedTerminalMethod)
+	{
+		matchedTerminalMethod = false;
+		ParseSegment(segment, out var memberName, out var genericArity, out var suffixes);
+		var next = new List<(ITypeSymbol Type, bool IsType)>();
+		if (string.IsNullOrEmpty(memberName))
+			return next;
+
+		void AddReceiver(ITypeSymbol type, bool isType)
+		{
+			foreach (var existing in next)
+			{
+				if (existing.IsType == isType && SymbolEqualityComparer.Default.Equals(existing.Type, type))
+					return;
+			}
+			next.Add((type, isType));
+		}
+
+		foreach (var (type, isType) in receivers)
+		{
+			if (type.TypeKind == TypeKind.Dynamic)
+			{
+				AddReceiver(type, isType: false);
+				continue;
+			}
+
+			if (suffixes.Count > 0 && suffixes[0] == "()")
+			{
+				var returnTypes = new List<ITypeSymbol>();
+				foreach (var method in type.GetAllMethods(memberName, context: null))
+				{
+					if (method.IsStatic != isType || !CanInvokeWithArity(method, genericArity))
+						continue;
+					if (rootType != null && !compilation.IsSymbolAccessibleWithin(method, rootType))
+						continue;
+
+					if (!method.ReturnsVoid && method.ReturnType != null)
+						returnTypes.Add(method.ReturnType);
+					else if (method.ReturnsVoid && suffixes.Count == 1 && isFinalSegment)
+						matchedTerminalMethod = true;
+				}
+
+				if (genericArity == 0)
+				{
+					var delegates = new List<ITypeSymbol>();
+					StepValueMembers(type, memberName, requireStatic: isType, allowInstance: !isType, delegates, compilation, rootType);
+					foreach (var del in delegates)
+					{
+						if (del is INamedTypeSymbol { DelegateInvokeMethod: { ReturnsVoid: false, ReturnType: { } delRet } })
+							returnTypes.Add(delRet);
+					}
+				}
+
+				if (!isType && returnTypes.Count == 0 && !matchedTerminalMethod)
+					CollectMatchingExtensionReturnTypes(type, memberName, genericArity, compilation, rootType, returnTypes, ref matchedTerminalMethod, suffixes.Count == 1 && isFinalSegment);
+
+				var stepped = ApplyCallOrIndexerSuffixes(returnTypes, suffixes.GetRange(1, suffixes.Count - 1), isConstructorOrStaticRoot: false);
+				foreach (var r in stepped)
+					AddReceiver(r, isType: false);
+				continue;
+			}
+
+			if (isType && suffixes.Count == 0)
+			{
+				for (var current = type; current != null; current = current.BaseType)
+				{
+					foreach (var nestedType in current.GetTypeMembers(memberName, genericArity))
+					{
+						if (rootType == null || compilation.IsSymbolAccessibleWithin(nestedType, rootType))
+							AddReceiver(nestedType, isType: true);
+					}
+				}
+			}
+
+			if (genericArity == 0)
+			{
+				var valueTypes = new List<ITypeSymbol>();
+				StepValueMembers(type, memberName, requireStatic: isType, allowInstance: !isType, valueTypes, compilation, rootType);
+				var stepped = suffixes.Count == 0
+					? DeduplicateTypes(valueTypes)
+					: ApplyCallOrIndexerSuffixes(valueTypes, suffixes, isConstructorOrStaticRoot: false);
+				foreach (var v in stepped)
+					AddReceiver(v, isType: false);
+			}
+
+			if (isFinalSegment && suffixes.Count == 0 && next.Count == 0)
+			{
+				foreach (var method in type.GetAllMethods(memberName, context: null))
+				{
+					if (method.IsStatic == isType
+						&& CanInvokeWithArity(method, genericArity)
+						&& (rootType == null || compilation.IsSymbolAccessibleWithin(method, rootType)))
+					{
+						matchedTerminalMethod = true;
+						break;
+					}
+				}
+			}
+		}
+
+		return next;
+	}
+
+	static void StepValueMembers(
+		ITypeSymbol type,
+		string memberName,
+		bool requireStatic,
+		bool allowInstance,
+		List<ITypeSymbol> results,
+		Compilation compilation,
+		ISymbol? within)
+	{
+		foreach (var prop in type.GetAllProperties(memberName, context: null))
+		{
+			if ((prop.IsStatic ? requireStatic : allowInstance)
+				&& prop.Type != null
+				&& (within == null || compilation.IsSymbolAccessibleWithin(prop, within)))
+			{
+				results.Add(prop.Type);
+			}
+		}
+
+		foreach (var field in type.GetAllFields(memberName, context: null))
+		{
+			if ((field.IsStatic ? requireStatic : allowInstance)
+				&& field.Type != null
+				&& (within == null || compilation.IsSymbolAccessibleWithin(field, within)))
+			{
+				results.Add(field.Type);
+			}
+		}
+
+		if (allowInstance && type.TryGetObservablePropertyType(memberName, compilation, out var observableType) && observableType != null)
+			results.Add(observableType);
+	}
+
+	static IEnumerable<INamespaceSymbol> EnumerateImportedNamespaces(ITypeSymbol? rootType, Compilation compilation)
+	{
+		for (var ns = rootType?.ContainingNamespace; ns != null && !ns.IsGlobalNamespace; ns = ns.ContainingNamespace)
+			yield return ns;
+
+		yield return compilation.GlobalNamespace;
+
+		if (compilation.Options is CSharpCompilationOptions csharpOptions)
+		{
+			foreach (var defaultUsing in csharpOptions.Usings)
+			{
+				if (ResolveNamespaceSymbol(compilation.GlobalNamespace, defaultUsing) is INamespaceSymbol usingNs)
+					yield return usingNs;
+			}
+		}
+
+		foreach (var (usingDirective, targetSymbol) in EnumerateGlobalUsingTargets(compilation))
+		{
+			if (!usingDirective.StaticKeyword.IsKind(SyntaxKind.None) || usingDirective.Alias != null)
+				continue;
+
+			var ns = targetSymbol as INamespaceSymbol
+				?? ResolveNamespaceSymbol(compilation.GlobalNamespace, usingDirective.NamespaceOrType.ToString());
+			if (ns != null)
+				yield return ns;
+		}
+	}
+
+	static void CollectMatchingExtensionReturnTypes(
+		ITypeSymbol receiverType,
+		string methodName,
+		int genericArity,
+		Compilation compilation,
+		ITypeSymbol? rootType,
+		List<ITypeSymbol> returnTypes,
+		ref bool matchedTerminalMethod,
+		bool allowVoidTerminal)
+	{
+		foreach (var ns in EnumerateImportedNamespaces(rootType, compilation))
+		{
+			foreach (var candidateType in ns.GetTypeMembers())
+			{
+				if (!candidateType.MightContainExtensionMethods)
+					continue;
+				if (rootType != null && !compilation.IsSymbolAccessibleWithin(candidateType, rootType))
+					continue;
+
+				foreach (var member in candidateType.GetMembers(methodName))
+				{
+					if (member is not IMethodSymbol { IsExtensionMethod: true } extMethod)
+						continue;
+
+					var reduced = extMethod.ReduceExtensionMethod(receiverType);
+					if (reduced == null || !CanInvokeWithArity(reduced, genericArity))
+						continue;
+
+					if (!reduced.ReturnsVoid && reduced.ReturnType != null)
+						returnTypes.Add(reduced.ReturnType);
+					else if (reduced.ReturnsVoid && allowVoidTerminal)
+						matchedTerminalMethod = true;
+				}
+			}
+		}
+	}
+
+	static List<string> TryExtractMemberAccessSegments(
+		string code,
+		int startIndex,
+		List<(int Start, int End, bool IsFormatClause)> literalSpans)
+	{
+		var segments = new List<string>();
+		int idx = startIndex;
+		while (TryReadMemberChainSegment(code, ref idx, literalSpans, out var segment))
+		{
+			segments.Add(segment);
+			int afterSeg = SkipWhitespace(code, idx);
+			if (afterSeg >= code.Length || code[afterSeg] != '.' || IsRangeDot(code, afterSeg))
+				break;
+
+			idx = SkipWhitespace(code, afterSeg + 1);
+		}
+
+		return segments;
+	}
+
+	static bool IsRangeDot(string code, int dotIndex)
+		=> (dotIndex + 1 < code.Length && code[dotIndex + 1] == '.')
+			|| (dotIndex > 0 && code[dotIndex - 1] == '.');
+
+	static bool TryReadMemberChainSegment(
+		string code,
+		ref int idx,
+		List<(int Start, int End, bool IsFormatClause)> literalSpans,
+		out string segment)
+	{
+		segment = string.Empty;
+		if (idx >= code.Length || (!char.IsLetter(code[idx]) && code[idx] != '_'))
+			return false;
+
+		int idStart = idx;
+		while (idx < code.Length && (char.IsLetterOrDigit(code[idx]) || code[idx] == '_'))
+			idx++;
+
+		var sb = new System.Text.StringBuilder();
+		sb.Append(code, idStart, idx - idStart);
+
+		int afterId = SkipWhitespace(code, idx);
+		if (afterId < code.Length && code[afterId] == '<'
+			&& TryFindBalancedTypeArgListEnd(code, afterId, literalSpans, out int angleEnd))
+		{
+			sb.Append(code, afterId, angleEnd - afterId + 1);
+			idx = angleEnd + 1;
+		}
+
+		while (true)
+		{
+			int afterPart = SkipWhitespace(code, idx);
+			if (afterPart >= code.Length || (code[afterPart] != '(' && code[afterPart] != '['))
+				break;
+
+			char open = code[afterPart];
+			char close = open == '(' ? ')' : ']';
+			if (!TryFindBalancedDelimiterEnd(code, afterPart, open, close, literalSpans, out int closeIdx))
+				break;
+
+			sb.Append(open == '(' ? "()" : "[]");
+			idx = closeIdx + 1;
+		}
+
+		segment = sb.ToString();
+		return true;
+	}
+
+	static bool TryFindBalancedTypeArgListEnd(
+		string code,
+		int openAngleIndex,
+		List<(int Start, int End, bool IsFormatClause)> literalSpans,
+		out int closeAngleIndex)
+	{
+		closeAngleIndex = -1;
+		int angleDepth = 0;
+		int parenDepth = 0;
+		int bracketDepth = 0;
+
+		for (int i = openAngleIndex; i < code.Length; i++)
+		{
+			if (IsInLiteralSpan(i, literalSpans))
+				continue;
+
+			char ch = code[i];
+			if (ch == '(')
+				parenDepth++;
+			else if (ch == ')' && parenDepth > 0)
+				parenDepth--;
+			else if (ch == '[')
+				bracketDepth++;
+			else if (ch == ']' && bracketDepth > 0)
+				bracketDepth--;
+			else if (ch == '<' && parenDepth == 0 && bracketDepth == 0)
+				angleDepth++;
+			else if (ch == '>' && parenDepth == 0 && bracketDepth == 0)
+			{
+				angleDepth--;
+				if (angleDepth == 0)
+				{
+					closeAngleIndex = i;
+					return true;
+				}
+			}
+			else if (parenDepth == 0 && bracketDepth == 0 && ch is ';' or '{' or '}' or '=' or '&' or '|')
+			{
+				return false;
+			}
+		}
+
+		return false;
+	}
+
+	static bool TryFindBalancedDelimiterEnd(
+		string code,
+		int openIndex,
+		char openChar,
+		char closeChar,
+		List<(int Start, int End, bool IsFormatClause)> literalSpans,
+		out int closeIndex)
+	{
+		closeIndex = -1;
+		int depth = 0;
+		for (int i = openIndex; i < code.Length; i++)
+		{
+			if (IsInLiteralSpan(i, literalSpans))
+				continue;
+
+			if (code[i] == openChar)
+				depth++;
+			else if (code[i] == closeChar)
+			{
+				depth--;
+				if (depth == 0)
+				{
+					closeIndex = i;
+					return true;
+				}
+			}
+		}
+
+		return false;
 	}
 
 	static int SkipWhitespaceBackwardsIndex(string text, int index)
@@ -2873,7 +3663,7 @@ static class CSharpExpressionHelpers
 
 		foreach (var method in targetType.GetAllMethods(methodName, context: null))
 		{
-			if (method.Arity != genericArity)
+			if (!CanInvokeWithArity(method, genericArity))
 				continue;
 
 			foundCallable = true;
@@ -3466,7 +4256,7 @@ static class CSharpExpressionHelpers
 			{
 				foreach (var method in type.GetAllMethods(memberName, context: null))
 				{
-					if (method.Arity != genericArity)
+					if (!CanInvokeWithArity(method, genericArity))
 						continue;
 
 					if (!method.ReturnsVoid && method.ReturnType != null)
@@ -3525,6 +4315,13 @@ static class CSharpExpressionHelpers
 			{
 				foreach (var t in current)
 				{
+					if (t is IArrayTypeSymbol arrayType)
+					{
+						if (arrayType.ElementType != null)
+							next.Add(arrayType.ElementType);
+						continue;
+					}
+
 					foreach (var prop in t.GetAllProperties(context: null))
 					{
 						if (prop.IsIndexer && prop.Type != null)
@@ -3536,6 +4333,67 @@ static class CSharpExpressionHelpers
 		}
 
 		return current;
+	}
+
+	static bool CanInvokeWithArity(IMethodSymbol method, int genericArity)
+	{
+		if (genericArity > 0)
+			return method.Arity == genericArity;
+
+		if (method.Arity == 0)
+			return true;
+
+		// Generic type arguments were omitted: verify every type parameter can be inferred from parameters.
+		foreach (var typeParam in method.TypeParameters)
+		{
+			bool foundInParam = false;
+			foreach (var param in method.Parameters)
+			{
+				if (ContainsTypeParameter(param.Type, typeParam))
+				{
+					foundInParam = true;
+					break;
+				}
+			}
+
+			if (!foundInParam)
+				return false;
+		}
+
+		return true;
+	}
+
+	static bool ContainsTypeParameter(ITypeSymbol type, ITypeParameterSymbol target)
+	{
+		if (SymbolEqualityComparer.Default.Equals(type, target))
+			return true;
+
+		switch (type)
+		{
+			case INamedTypeSymbol namedType:
+				foreach (var typeArg in namedType.TypeArguments)
+				{
+					if (ContainsTypeParameter(typeArg, target))
+						return true;
+				}
+
+				return namedType.ContainingType != null && ContainsTypeParameter(namedType.ContainingType, target);
+			case IArrayTypeSymbol arrayType:
+				return ContainsTypeParameter(arrayType.ElementType, target);
+			case IPointerTypeSymbol pointerType:
+				return ContainsTypeParameter(pointerType.PointedAtType, target);
+			case IFunctionPointerTypeSymbol fnPointer:
+				if (ContainsTypeParameter(fnPointer.Signature.ReturnType, target))
+					return true;
+				foreach (var p in fnPointer.Signature.Parameters)
+				{
+					if (ContainsTypeParameter(p.Type, target))
+						return true;
+				}
+				return false;
+			default:
+				return false;
+		}
 	}
 
 	static List<ITypeSymbol> DeduplicateTypes(List<ITypeSymbol> types)
