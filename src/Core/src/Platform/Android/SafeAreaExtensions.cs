@@ -119,9 +119,10 @@ internal static class SafeAreaExtensions
 			}
 
 
+			// The root view's layout params are the attributes of the window hosting the view,
+			// which for a modal is its dialog window rather than the activity's
 			if (isKeyboardShowing &&
-				context.GetActivity()?.Window is Window window &&
-				window?.Attributes is WindowManagerLayoutParams attr)
+				(view.RootView?.LayoutParameters as WindowManagerLayoutParams ?? context.GetActivity()?.Window?.Attributes) is WindowManagerLayoutParams attr)
 			{
 				// When AdjustPan is set, the window pans instead of resizing
 				// so we should not modify any padding - just consume the insets and return
