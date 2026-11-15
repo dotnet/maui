@@ -30,5 +30,19 @@ public class Issue6250 : _IssuesUITest
 		Assert.That(App.WaitForKeyboardToHide(TimeSpan.FromSeconds(5)), Is.True, $"Focusing {readOnlyInput} should hide the keyboard");
 		Assert.That(App.WaitForElement("FocusedInput").GetText(), Is.EqualTo(readOnlyInput));
 	}
+
+	[TestCase("ReadOnlyEntry")]
+	[TestCase("ReadOnlyEditor")]
+	[TestCase("ReadOnlySearchBar")]
+	[Category(UITestCategories.Entry)]
+	public void FocusingReadOnlyInputFromCodeDoesNotShowKeyboard(string readOnlyInput)
+	{
+		App.WaitForElement($"Focus{readOnlyInput}");
+		App.Tap($"Focus{readOnlyInput}");
+		Assert.That(App.WaitForTextToBePresentInElement("FocusedInput", readOnlyInput), Is.True, $"{readOnlyInput} should get focus");
+
+		// VisualElement.Focus() shows the keyboard for inputs that can be typed into, and a read-only one can't
+		Assert.That(App.WaitForKeyboardToShow(TimeSpan.FromSeconds(3)), Is.False, $"Focusing {readOnlyInput} from code should not show the keyboard");
+	}
 }
 #endif
