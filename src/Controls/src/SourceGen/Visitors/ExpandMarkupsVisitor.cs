@@ -141,6 +141,12 @@ class ExpandMarkupsVisitor(SourceGenContext context) : IXamlNodeVisitor
 		// If not an expression, parse as markup extension
 		node ??= ParseExpression(ref markupString, markupnode.NamespaceResolver, markupnode, markupnode, parentNode);
 
+		// x:DataType only accepts {x:Type} or {x:Null}; like the runtime inflator, leave any other markup unexpanded so it is never instantiated
+		if (propertyName == XmlName.xDataType && node is ElementNode
+			&& !node.RepresentsType(XamlParser.X2009Uri, "TypeExtension")
+			&& !node.RepresentsType(XamlParser.X2009Uri, "NullExtension"))
+			return;
+
 		if (node != null)
 		{
 			parentElement.Properties[propertyName] = node;
