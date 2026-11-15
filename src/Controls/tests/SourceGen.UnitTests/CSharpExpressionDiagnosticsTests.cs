@@ -2536,6 +2536,236 @@ namespace Repro.Views
 		Assert.Contains("$\"{__source.Time:HH.mm}\"", output, StringComparison.Ordinal);
 	}
 
+	[Fact]
+	public void VerbatimInterpolatedString_BothPrefixOrders_ParenthesizesXmlnsAliasAndHandlesEscapes()
+	{
+		var xaml =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:res="clr-namespace:Repro.Resources"
+             x:Class="Repro.Views.VerbatimInterpolatedPage">
+    <VerticalStackLayout>
+        <Label Text='{= $@"{res:Labels.Gold}"}' />
+        <Label Text='{= @$"{res:Labels.Gold}"}' />
+        <Label Text='{= $@"prefix ""quoted"" C:\{res:Labels.Gold}\end"}' />
+        <Label Text='{= @$"C:\""quoted""\{res:Labels.Gold}"}' />
+        <Label Text='{= $@"val: {res:Labels.Count:D2}"}' />
+        <Label Text="{= $@'{res:Labels.Gold}'}" />
+        <Label Text="{= @$'{res:Labels.Gold}'}" />
+    </VerticalStackLayout>
+</ContentPage>
+""";
+
+		var codeBehind =
+"""
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace Repro.Resources
+{
+	public static class Labels
+	{
+		public static string Gold => "Gold";
+		public static int Count => 7;
+	}
+}
+
+namespace Repro.Views
+{
+	[XamlProcessing(XamlInflator.SourceGen)]
+	public partial class VerbatimInterpolatedPage : ContentPage
+	{
+		public VerbatimInterpolatedPage() => InitializeComponent();
+	}
+}
+""";
+
+		var (result, output) = RunGenerator(xaml, codeBehind);
+		Assert.Empty(result.Diagnostics);
+		Assert.NotNull(output);
+		Assert.Contains("$@\"{(global::Repro.Resources.Labels.Gold)}\"", output, StringComparison.Ordinal);
+		Assert.Contains("@$\"{(global::Repro.Resources.Labels.Gold)}\"", output, StringComparison.Ordinal);
+		Assert.Contains("(global::Repro.Resources.Labels.Count):D2", output, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void InterpolationExpression_WhitespaceAroundDotAndGenerics_ExpandsXmlnsType()
+	{
+		var xaml =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:res="clr-namespace:Repro.Resources"
+             x:Class="Repro.Views.WhitespaceMemberAccessPage">
+    <VerticalStackLayout>
+        <Label Text="{= $'{res:Labels .Gold}'}" />
+        <Label Text="{= $'{res:Labels. Gold}'}" />
+        <Label Text="{= $'{res:GenericBox &lt;int&gt; .Value}'}" />
+    </VerticalStackLayout>
+</ContentPage>
+""";
+
+		var codeBehind =
+"""
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace Repro.Resources
+{
+	public static class Labels
+	{
+		public static string Gold => "Gold";
+	}
+
+	public static class GenericBox<T>
+	{
+		public static string Value => typeof(T).Name;
+	}
+}
+
+namespace Repro.Views
+{
+	[XamlProcessing(XamlInflator.SourceGen)]
+	public partial class WhitespaceMemberAccessPage : ContentPage
+	{
+		public WhitespaceMemberAccessPage() => InitializeComponent();
+	}
+}
+""";
+
+		var (result, output) = RunGenerator(xaml, codeBehind);
+		Assert.Empty(result.Diagnostics);
+		Assert.NotNull(output);
+		Assert.Contains("(global::Repro.Resources.Labels .Gold)", output, StringComparison.Ordinal);
+		Assert.Contains("(global::Repro.Resources.Labels. Gold)", output, StringComparison.Ordinal);
+		Assert.Contains("(global::Repro.Resources.GenericBox <int> .Value)", output, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void QualifiedConstructorCall_PreservesNamedArgumentMatchingPrefix()
+	{
+		var xaml =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Repro"
+             xmlns:missing="clr-namespace:Repro.Resources"
+             x:Class="Repro.Views.QualifiedCtorPage"
+             x:DataType="local:BoxViewModel">
+    <VerticalStackLayout>
+        <Label Text="{= new Repro.Box(local:Name).ToString()}" />
+        <Label Text="{= new global::Repro.Box(local:Name).ToString()}" />
+        <Label Text="{= new Repro.Box(missing:Labels.Gold).ToString()}" />
+    </VerticalStackLayout>
+</ContentPage>
+""";
+
+		var codeBehind =
+"""
+using System.ComponentModel;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace Repro.Resources
+{
+	public static class Labels
+	{
+		public static string Gold => "Gold";
+	}
+}
+
+namespace Repro
+{
+	public class Name { }
+
+	public class Box
+	{
+		readonly string _value;
+		public Box(string local) => _value = local;
+		public override string ToString() => _value;
+	}
+
+	public class BoxViewModel : INotifyPropertyChanged
+	{
+		public string Name { get; set; } = "Ada";
+		public event PropertyChangedEventHandler? PropertyChanged;
+	}
+}
+
+namespace Repro.Views
+{
+	[XamlProcessing(XamlInflator.SourceGen)]
+	public partial class QualifiedCtorPage : ContentPage
+	{
+		public QualifiedCtorPage() => InitializeComponent();
+	}
+}
+""";
+
+		var (result, output) = RunGenerator(xaml, codeBehind);
+		Assert.Empty(result.Diagnostics);
+		Assert.NotNull(output);
+		Assert.DoesNotContain("global::Repro.Name", output, StringComparison.Ordinal);
+		Assert.Contains("__source.Name", output, StringComparison.Ordinal);
+		Assert.Contains("global::Repro.Resources.Labels.Gold", output, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void AttachedPropertyInsideInterpolation_ParenthesizesAfterRewrite()
+	{
+		var xaml =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:m="clr-namespace:Repro.Attached"
+             x:Class="Repro.Views.InterpolatedAttachedPage">
+    <VerticalStackLayout>
+        <Label Text="{= $'{this.(m:CustomGrid.Row)}'}" />
+        <Label>
+            <Label.Text>{= $@"{this.(m:CustomGrid.Row)}"}</Label.Text>
+        </Label>
+    </VerticalStackLayout>
+</ContentPage>
+""";
+
+		var codeBehind =
+"""
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace Repro.Attached
+{
+	public static class CustomGrid
+	{
+		public static readonly BindableProperty RowProperty =
+			BindableProperty.CreateAttached("Row", typeof(int), typeof(CustomGrid), 0);
+
+		public static int GetRow(BindableObject view) => (int)view.GetValue(RowProperty);
+	}
+}
+
+namespace Repro.Views
+{
+	[XamlProcessing(XamlInflator.SourceGen)]
+	public partial class InterpolatedAttachedPage : ContentPage
+	{
+		public InterpolatedAttachedPage() => InitializeComponent();
+	}
+}
+""";
+
+		var (result, output) = RunGenerator(xaml, codeBehind);
+		Assert.Empty(result.Diagnostics);
+		Assert.NotNull(output);
+		Assert.Contains("$\"{(global::Repro.Attached.CustomGrid.GetRow(this))}\"", output, StringComparison.Ordinal);
+		Assert.Contains("$@\"{(global::Repro.Attached.CustomGrid.GetRow(this))}\"", output, StringComparison.Ordinal);
+	}
+
 	static void AssertEachSetBindingContains(string output, int expectedCount, string requiredSnippet, params string[] expectedBindingExpressions)
 	{
 		var matches = System.Text.RegularExpressions.Regex.Matches(output, @"\bSetBinding\s*\(");

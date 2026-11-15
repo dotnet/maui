@@ -456,6 +456,63 @@ static class CSharpExpressionHelpers
 		return TransformInterpolationHoles(code, WrapHoleGlobalAlias);
 	}
 
+	static bool TryMatchStringStart(
+		string text,
+		int index,
+		out int prefixLength,
+		out char delimiter,
+		out bool isInterpolated,
+		out bool isVerbatim)
+	{
+		if (index + 2 < text.Length
+			&& ((text[index] == '$' && text[index + 1] == '@') || (text[index] == '@' && text[index + 1] == '$'))
+			&& (text[index + 2] == '\'' || text[index + 2] == '"'))
+		{
+			prefixLength = 3;
+			delimiter = text[index + 2];
+			isInterpolated = true;
+			isVerbatim = true;
+			return true;
+		}
+
+		if (index + 1 < text.Length
+			&& text[index] == '$'
+			&& (text[index + 1] == '\'' || text[index + 1] == '"'))
+		{
+			prefixLength = 2;
+			delimiter = text[index + 1];
+			isInterpolated = true;
+			isVerbatim = false;
+			return true;
+		}
+
+		if (index + 1 < text.Length
+			&& text[index] == '@'
+			&& (text[index + 1] == '\'' || text[index + 1] == '"'))
+		{
+			prefixLength = 2;
+			delimiter = text[index + 1];
+			isInterpolated = false;
+			isVerbatim = true;
+			return true;
+		}
+
+		if (index < text.Length && (text[index] == '\'' || text[index] == '"'))
+		{
+			prefixLength = 1;
+			delimiter = text[index];
+			isInterpolated = false;
+			isVerbatim = false;
+			return true;
+		}
+
+		prefixLength = 0;
+		delimiter = '\0';
+		isInterpolated = false;
+		isVerbatim = false;
+		return false;
+	}
+
 	static string TransformInterpolationHoles(string code, Func<string, string> transformHole)
 	{
 		var result = new StringBuilder(code.Length);
@@ -463,115 +520,121 @@ static class CSharpExpressionHelpers
 
 		while (i < code.Length)
 		{
-			// Interpolated string: '$' immediately followed by a quote delimiter.
-			if (code[i] == '$' && i + 1 < code.Length && (code[i + 1] == '\'' || code[i + 1] == '"'))
+			if (TryMatchStringStart(code, i, out int prefixLength, out char delimiter, out bool isInterpolated, out bool isVerbatim))
 			{
-				char delimiter = code[i + 1];
-				result.Append(code[i]);     // $
-				result.Append(code[i + 1]); // opening delimiter
-				i += 2;
+				result.Append(code, i, prefixLength);
+				i += prefixLength;
 
-				// Walk the interpolated string body until the closing delimiter.
-				while (i < code.Length)
+				if (isInterpolated)
 				{
-					char c = code[i];
-
-					// Escape sequence in literal text - copy verbatim.
-					if (c == '\\' && i + 1 < code.Length)
+					// Walk the interpolated string body until the unescaped closing delimiter.
+					while (i < code.Length)
 					{
-						result.Append(code[i]);
-						result.Append(code[i + 1]);
-						i += 2;
-						continue;
-					}
+						char c = code[i];
 
-					// Closing delimiter ends the interpolated string.
-					if (c == delimiter)
-					{
-						result.Append(c);
-						i++;
-						break;
-					}
-
-					if (c == '{')
-					{
-						// Escaped brace '{{' is literal text, not a hole.
-						if (i + 1 < code.Length && code[i + 1] == '{')
+						if (!isVerbatim && c == '\\' && i + 1 < code.Length)
 						{
-							result.Append("{{");
+							result.Append(c);
+							result.Append(code[i + 1]);
 							i += 2;
 							continue;
 						}
 
-						// Capture the hole content up to its matching '}'.
-						int holeStart = i + 1;
-						int j = FindHoleEnd(code, holeStart);
-						string holeContent = code.Substring(holeStart, j - holeStart);
-
-						// Recurse so nested interpolated strings are handled too.
-						holeContent = TransformInterpolationHoles(holeContent, transformHole);
-						holeContent = transformHole(holeContent);
-
-						result.Append('{');
-						result.Append(holeContent);
-						if (j < code.Length && code[j] == '}')
+						if (c == delimiter)
 						{
-							result.Append('}');
-							i = j + 1;
-						}
-						else
-						{
-							// Unterminated hole - leave as-is.
-							i = j;
-						}
-						continue;
-					}
+							if (isVerbatim && i + 1 < code.Length && code[i + 1] == delimiter)
+							{
+								result.Append(c);
+								result.Append(delimiter);
+								i += 2;
+								continue;
+							}
 
-					if (c == '}')
-					{
-						// Escaped brace '}}'.
-						if (i + 1 < code.Length && code[i + 1] == '}')
+							result.Append(c);
+							i++;
+							break;
+						}
+
+						if (c == '{')
+						{
+							// Escaped brace '{{' is literal text, not a hole.
+							if (i + 1 < code.Length && code[i + 1] == '{')
+							{
+								result.Append("{{");
+								i += 2;
+								continue;
+							}
+
+							// Capture the hole content up to its matching '}'.
+							int holeStart = i + 1;
+							int j = FindHoleEnd(code, holeStart);
+							string holeContent = code.Substring(holeStart, j - holeStart);
+
+							// Recurse so nested interpolated strings are handled too.
+							holeContent = TransformInterpolationHoles(holeContent, transformHole);
+							holeContent = transformHole(holeContent);
+
+							result.Append('{');
+							result.Append(holeContent);
+							if (j < code.Length && code[j] == '}')
+							{
+								result.Append('}');
+								i = j + 1;
+							}
+							else
+							{
+								// Unterminated hole - leave as-is.
+								i = j;
+							}
+							continue;
+						}
+
+						if (c == '}' && i + 1 < code.Length && code[i + 1] == '}')
 						{
 							result.Append("}}");
 							i += 2;
 							continue;
 						}
+
 						result.Append(c);
 						i++;
+					}
+
+					continue;
+				}
+
+				// Non-interpolated string/char literal: copy verbatim so its contents are never
+				// mistaken for interpolation structure.
+				while (i < code.Length)
+				{
+					char c = code[i];
+					if (!isVerbatim && c == '\\' && i + 1 < code.Length)
+					{
+						result.Append(c);
+						result.Append(code[i + 1]);
+						i += 2;
 						continue;
+					}
+
+					if (c == delimiter)
+					{
+						if (isVerbatim && i + 1 < code.Length && code[i + 1] == delimiter)
+						{
+							result.Append(c);
+							result.Append(delimiter);
+							i += 2;
+							continue;
+						}
+
+						result.Append(c);
+						i++;
+						break;
 					}
 
 					result.Append(c);
 					i++;
 				}
 
-				continue;
-			}
-
-			// Skip non-interpolated string literals so their contents are never
-			// mistaken for interpolation structure.
-			if (code[i] == '\'' || code[i] == '"')
-			{
-				char quote = code[i];
-				result.Append(code[i]);
-				i++;
-				while (i < code.Length)
-				{
-					if (code[i] == '\\' && i + 1 < code.Length)
-					{
-						result.Append(code[i]);
-						result.Append(code[i + 1]);
-						i += 2;
-						continue;
-					}
-					result.Append(code[i]);
-					if (code[i] == quote)
-					{
-						i++;
-						break;
-					}
-					i++;
-				}
 				continue;
 			}
 
@@ -592,30 +655,16 @@ static class CSharpExpressionHelpers
 		int j = start;
 		while (j < code.Length)
 		{
+			if (TryMatchStringStart(code, j, out _, out _, out _, out _))
+			{
+				j = SkipQuotedLiteral(code, j);
+				continue;
+			}
+
 			char c = code[j];
 			if (c == '\\' && j + 1 < code.Length)
 			{
 				j += 2;
-				continue;
-			}
-			if (c == '\'' || c == '"')
-			{
-				char quote = c;
-				j++;
-				while (j < code.Length)
-				{
-					if (code[j] == '\\' && j + 1 < code.Length)
-					{
-						j += 2;
-						continue;
-					}
-					if (code[j] == quote)
-					{
-						j++;
-						break;
-					}
-					j++;
-				}
 				continue;
 			}
 			if (c == '{')
@@ -674,22 +723,55 @@ static class CSharpExpressionHelpers
 
 	static int SkipQuotedLiteral(string expr, int start)
 	{
-		char quote = expr[start];
-		int i = start + 1;
+		if (!TryMatchStringStart(expr, start, out int prefixLength, out char delimiter, out bool isInterpolated, out bool isVerbatim))
+			return start + 1;
+
+		int i = start + prefixLength;
 		while (i < expr.Length)
 		{
-			if (expr[i] == '\\' && i + 1 < expr.Length)
+			char c = expr[i];
+			if (!isVerbatim && c == '\\' && i + 1 < expr.Length)
 			{
 				i += 2;
 				continue;
 			}
-			if (expr[i] == quote)
+
+			if (c == delimiter)
 			{
-				i++;
-				break;
+				if (isVerbatim && i + 1 < expr.Length && expr[i + 1] == delimiter)
+				{
+					i += 2;
+					continue;
+				}
+
+				return i + 1;
 			}
+
+			if (isInterpolated)
+			{
+				if (c == '{')
+				{
+					if (i + 1 < expr.Length && expr[i + 1] == '{')
+					{
+						i += 2;
+						continue;
+					}
+
+					int holeEnd = FindHoleEnd(expr, i + 1);
+					i = holeEnd < expr.Length && expr[holeEnd] == '}' ? holeEnd + 1 : holeEnd;
+					continue;
+				}
+
+				if (c == '}' && i + 1 < expr.Length && expr[i + 1] == '}')
+				{
+					i += 2;
+					continue;
+				}
+			}
+
 			i++;
 		}
+
 		return i;
 	}
 
@@ -702,17 +784,17 @@ static class CSharpExpressionHelpers
 		int i = 0;
 		while (i < limit)
 		{
+			if (TryMatchStringStart(expr, i, out _, out _, out _, out _))
+			{
+				i = SkipQuotedLiteral(expr, i);
+				continue;
+			}
+
 			char c = expr[i];
 
 			if (c == '\\' && i + 1 < limit)
 			{
 				i += 2;
-				continue;
-			}
-
-			if (c == '\'' || c == '"')
-			{
-				i = SkipQuotedLiteral(expr, i);
 				continue;
 			}
 
@@ -782,20 +864,20 @@ static class CSharpExpressionHelpers
 		int i = 0;
 		while (i < expr.Length)
 		{
+			if (TryMatchStringStart(expr, i, out _, out _, out _, out _))
+			{
+				int next = SkipQuotedLiteral(expr, i);
+				sb.Append(expr, i, next - i);
+				i = next;
+				continue;
+			}
+
 			char c = expr[i];
 			if (c == '\\' && i + 1 < expr.Length)
 			{
 				sb.Append(c);
 				sb.Append(expr[i + 1]);
 				i += 2;
-				continue;
-			}
-
-			if (c == '\'' || c == '"')
-			{
-				int next = SkipQuotedLiteral(expr, i);
-				sb.Append(expr, i, next - i);
-				i = next;
 				continue;
 			}
 
@@ -842,17 +924,17 @@ static class CSharpExpressionHelpers
 
 		while (i < expr.Length)
 		{
+			if (TryMatchStringStart(expr, i, out _, out _, out _, out _))
+			{
+				i = SkipQuotedLiteral(expr, i);
+				continue;
+			}
+
 			char c = expr[i];
 
 			if (c == '\\' && i + 1 < expr.Length)
 			{
 				i += 2;
-				continue;
-			}
-
-			if (c == '\'' || c == '"')
-			{
-				i = SkipQuotedLiteral(expr, i);
 				continue;
 			}
 
@@ -981,17 +1063,17 @@ static class CSharpExpressionHelpers
 		int i = 0;
 		while (i < expr.Length)
 		{
+			if (TryMatchStringStart(expr, i, out _, out _, out _, out _))
+			{
+				i = SkipQuotedLiteral(expr, i);
+				continue;
+			}
+
 			char c = expr[i];
 
 			if (c == '\\' && i + 1 < expr.Length)
 			{
 				i += 2;
-				continue;
-			}
-
-			if (c == '\'' || c == '"')
-			{
-				i = SkipQuotedLiteral(expr, i);
 				continue;
 			}
 
@@ -1573,7 +1655,7 @@ static class CSharpExpressionHelpers
 		ITypeSymbol? dataTypeSymbol,
 		ITypeSymbol? rootType)
 	{
-		return ReplaceOutsideLiteralSegments(code, XmlnsPrefixPattern, (match, overlapsFormatClause, literalSpans) =>
+		return ReplaceOutsideLiteralSegments(code, XmlnsPrefixPattern, (match, overlapsFormatClause, literalSpans, syntaxRoot) =>
 		{
 			var prefix = match.Groups[1].Value;
 			var typeName = match.Groups[2].Value;
@@ -1595,7 +1677,7 @@ static class CSharpExpressionHelpers
 			if (overlapsFormatClause &&
 				(!SpansFormatClauseStartBoundary(match.Index, match.Length, literalSpans)
 				 || !IsFollowedByMemberAccess(code, match.Index + match.Length)
-				 || HasMemberInExpressionScope(code, match.Index, prefix, dataTypeSymbol, rootType, compilation)))
+				 || HasMemberInExpressionScope(code, match.Index, prefix, dataTypeSymbol, rootType, compilation, includeMethods: false, syntaxRoot)))
 			{
 				return match.Value;
 			}
@@ -1603,8 +1685,8 @@ static class CSharpExpressionHelpers
 			// Preserve ternary conditional ':' when there is no whitespace around ':' (e.g. "IsVip ? Gold:Standard")
 			// and tuple element labels whose value root is in scope (e.g. "(local:Name, Count)").
 			if (!overlapsFormatClause &&
-				(IsConditionalSeparatorColon(code, match)
-				 || IsTupleElementLabelSyntax(code, match, compilation, dataTypeSymbol, rootType)))
+				(IsConditionalSeparatorColon(code, match, syntaxRoot)
+				 || IsTupleElementLabelSyntax(code, match, compilation, dataTypeSymbol, rootType, syntaxRoot)))
 			{
 				return match.Value;
 			}
@@ -1618,6 +1700,7 @@ static class CSharpExpressionHelpers
 				code,
 				match,
 				literalSpans,
+				syntaxRoot,
 				nsResolver,
 				compilation,
 				xmlnsCache,
@@ -1692,7 +1775,7 @@ static class CSharpExpressionHelpers
 	/// </summary>
 	public static string TransformAttachedProperties(string code)
 	{
-		return ReplaceOutsideLiteralSegments(code, AttachedPropertyPattern, match =>
+		var transformed = ReplaceOutsideLiteralSegments(code, AttachedPropertyPattern, match =>
 		{
 			var target = match.Groups["target"].Value; // "gridChild", "this", or empty
 			var member = match.Groups["member"].Value; // "Grid.Row" or "global::Namespace.Grid.Row"
@@ -1705,6 +1788,8 @@ static class CSharpExpressionHelpers
 
 			return $"{typeName}.Get{propertyName}({target})";
 		});
+
+		return ParenthesizeInterpolationGlobalAliases(transformed);
 	}
 
 	static bool TrySplitAttachedProperty(string member, out string typeName, out string propertyName)
@@ -1862,12 +1947,16 @@ static class CSharpExpressionHelpers
 
 	static bool IsFollowedByMemberAccess(string code, int index)
 	{
+		index = SkipWhitespace(code, index);
 		if (index < code.Length && code[index] == '<' && TrySkipBalancedGenericArguments(code, index, out int afterGenerics))
 			index = SkipWhitespace(code, afterGenerics);
 
-		return index + 1 < code.Length
-			&& code[index] == '.'
-			&& (char.IsLetter(code[index + 1]) || code[index + 1] == '_');
+		if (index >= code.Length || code[index] != '.')
+			return false;
+
+		int memberStart = SkipWhitespace(code, index + 1);
+		return memberStart < code.Length
+			&& (char.IsLetter(code[memberStart]) || code[memberStart] == '_');
 	}
 
 	static bool HasMemberInExpressionScope(
@@ -1877,7 +1966,8 @@ static class CSharpExpressionHelpers
 		ITypeSymbol? dataTypeSymbol,
 		ITypeSymbol? rootType,
 		Compilation compilation,
-		bool includeMethods = false)
+		bool includeMethods = false,
+		SyntaxNode? syntaxRoot = null)
 	{
 		if (MemberResolver.HasMember(dataTypeSymbol, identifier, includeMethods: includeMethods, compilation)
 			|| MemberResolver.HasMember(rootType, identifier, includeMethods: includeMethods, compilation))
@@ -1885,7 +1975,7 @@ static class CSharpExpressionHelpers
 			return true;
 		}
 
-		return HasEnclosingLocalOrParameter(code, matchIndex, identifier);
+		return HasEnclosingLocalOrParameter(code, matchIndex, identifier, syntaxRoot);
 	}
 
 	static bool HasExpressionRootInScope(
@@ -1894,9 +1984,10 @@ static class CSharpExpressionHelpers
 		string identifier,
 		ITypeSymbol? dataTypeSymbol,
 		ITypeSymbol? rootType,
-		Compilation compilation)
+		Compilation compilation,
+		SyntaxNode? syntaxRoot = null)
 	{
-		return HasMemberInExpressionScope(code, matchIndex, identifier, dataTypeSymbol, rootType, compilation, includeMethods: true)
+		return HasMemberInExpressionScope(code, matchIndex, identifier, dataTypeSymbol, rootType, compilation, includeMethods: true, syntaxRoot)
 			|| HasNamespaceOrTypeInCompilationScope(identifier, rootType, compilation);
 	}
 
@@ -2001,15 +2092,13 @@ static class CSharpExpressionHelpers
 		return false;
 	}
 
-	static bool IsConditionalSeparatorColon(string code, Match match)
+	static bool IsConditionalSeparatorColon(string code, Match match, SyntaxNode syntaxRoot)
 	{
 		var colonIndex = match.Index + match.Groups[1].Length;
 		if (colonIndex < 0 || colonIndex >= code.Length || code[colonIndex] != ':')
 			return false;
 
-		var tree = CSharpSyntaxTree.ParseText(code, new CSharpParseOptions(kind: SourceCodeKind.Script));
-		var root = tree.GetRoot();
-		var token = root.FindToken(colonIndex);
+		var token = syntaxRoot.FindToken(colonIndex);
 		if (!token.IsKind(SyntaxKind.ColonToken) || token.SpanStart != colonIndex)
 			return false;
 
@@ -2020,8 +2109,7 @@ static class CSharpExpressionHelpers
 			code.Substring(0, match.Index),
 			"__x",
 			code.Substring(match.Index + match.Length));
-		var replacedTree = CSharpSyntaxTree.ParseText(replaced, new CSharpParseOptions(kind: SourceCodeKind.Script));
-		var replacedRoot = replacedTree.GetRoot();
+		var replacedRoot = ParseExpressionSyntaxRoot(replaced);
 		if (replacedRoot.FullSpan.Length == 0)
 			return false;
 
@@ -2040,15 +2128,14 @@ static class CSharpExpressionHelpers
 		Match match,
 		Compilation compilation,
 		ITypeSymbol? dataTypeSymbol,
-		ITypeSymbol? rootType)
+		ITypeSymbol? rootType,
+		SyntaxNode syntaxRoot)
 	{
 		var colonIndex = match.Index + match.Groups[1].Length;
 		if (colonIndex < 0 || colonIndex >= code.Length || code[colonIndex] != ':')
 			return false;
 
-		var tree = CSharpSyntaxTree.ParseText(code, new CSharpParseOptions(kind: SourceCodeKind.Script));
-		var root = tree.GetRoot();
-		var token = root.FindToken(colonIndex);
+		var token = syntaxRoot.FindToken(colonIndex);
 		if (!token.IsKind(SyntaxKind.ColonToken) || token.SpanStart != colonIndex)
 			return false;
 
@@ -2060,13 +2147,12 @@ static class CSharpExpressionHelpers
 		}
 
 		var valueStart = colonIndex + 1;
-		return HasExpressionRootInScope(code, valueStart, match.Groups[2].Value, dataTypeSymbol, rootType, compilation);
+		return HasExpressionRootInScope(code, valueStart, match.Groups[2].Value, dataTypeSymbol, rootType, compilation, syntaxRoot);
 	}
 
-	static bool HasEnclosingLocalOrParameter(string code, int position, string identifier)
+	static bool HasEnclosingLocalOrParameter(string code, int position, string identifier, SyntaxNode? syntaxRoot = null)
 	{
-		var tree = CSharpSyntaxTree.ParseText(code, new CSharpParseOptions(kind: SourceCodeKind.Script));
-		var root = tree.GetRoot();
+		var root = syntaxRoot ?? ParseExpressionSyntaxRoot(code);
 		if (root.FullSpan.Length == 0)
 			return false;
 
@@ -2231,6 +2317,7 @@ static class CSharpExpressionHelpers
 		string code,
 		Match match,
 		List<(int Start, int End, bool IsFormatClause)> literalSpans,
+		SyntaxNode syntaxRoot,
 		IXmlNamespaceResolver nsResolver,
 		Compilation compilation,
 		AssemblyAttributes xmlnsCache,
@@ -2279,12 +2366,12 @@ static class CSharpExpressionHelpers
 		if (hasResolvedType)
 		{
 			return hasMatchingParam
-				&& (!isFollowedByMemberAccess || HasExpressionRootInScope(code, match.Index, typeName, dataTypeSymbol, rootType, compilation));
+				&& (!isFollowedByMemberAccess || HasExpressionRootInScope(code, match.Index, typeName, dataTypeSymbol, rootType, compilation, syntaxRoot));
 		}
 
 		if (isFollowedByMemberAccess)
 		{
-			if (!HasExpressionRootInScope(code, match.Index, typeName, dataTypeSymbol, rootType, compilation))
+			if (!HasExpressionRootInScope(code, match.Index, typeName, dataTypeSymbol, rootType, compilation, syntaxRoot))
 				return false;
 
 			return !callTargetResolved || hasMatchingParam;
@@ -2293,7 +2380,7 @@ static class CSharpExpressionHelpers
 		if (callTargetResolved && !hasMatchingParam)
 			return false;
 
-		return !callTargetResolved || HasExpressionRootInScope(code, match.Index, typeName, dataTypeSymbol, rootType, compilation);
+		return !callTargetResolved || HasExpressionRootInScope(code, match.Index, typeName, dataTypeSymbol, rootType, compilation, syntaxRoot);
 	}
 
 	static int SkipWhitespaceBackwardsIndex(string text, int index)
@@ -2594,7 +2681,7 @@ static class CSharpExpressionHelpers
 			return false;
 
 		var segments = new List<string>();
-		var hasMemberOrCallAfterSegment = false;
+		var hasCallOrIndexerAfterSegment = false;
 		while (idx >= 0)
 		{
 			while (idx >= 0 && (code[idx] == ')' || code[idx] == ']'))
@@ -2605,7 +2692,7 @@ static class CSharpExpressionHelpers
 					return false;
 
 				segments.Add(closeChar == ')' ? "()" : "[]");
-				hasMemberOrCallAfterSegment = true;
+				hasCallOrIndexerAfterSegment = true;
 				idx = SkipWhitespaceBackwardsIndex(code, groupOpen - 1);
 				if (idx < 0)
 					return false;
@@ -2643,7 +2730,6 @@ static class CSharpExpressionHelpers
 			if (code[sepIdx] == '.')
 			{
 				segments.Add(".");
-				hasMemberOrCallAfterSegment = true;
 				idx = SkipWhitespaceBackwardsIndex(code, sepIdx - 1);
 				continue;
 			}
@@ -2670,7 +2756,7 @@ static class CSharpExpressionHelpers
 						segments.Add(":");
 						segments.Add(prefixWord);
 						sepIdx = SkipWhitespaceBackwardsIndex(code, prefixStart - 1);
-						if (!hasMemberOrCallAfterSegment && sepIdx >= 0 && TryReadKeywordNew(code, prefixStart))
+						if (!hasCallOrIndexerAfterSegment && sepIdx >= 0 && TryReadKeywordNew(code, prefixStart))
 							isObjectCreation = true;
 						break;
 					}
@@ -2682,7 +2768,7 @@ static class CSharpExpressionHelpers
 			if (IsNonInvocationKeyword(segment))
 				return false;
 
-			if (!hasMemberOrCallAfterSegment && TryReadKeywordNew(code, start))
+			if (!hasCallOrIndexerAfterSegment && TryReadKeywordNew(code, start))
 				isObjectCreation = true;
 			break;
 		}
@@ -3241,19 +3327,20 @@ static class CSharpExpressionHelpers
 			|| ch == '@' || ch == '$' || ch == '!' || ch == '~' || ch == '+' || ch == '-';
 
 	static string ReplaceOutsideLiteralSegments(string code, Regex pattern, MatchEvaluator evaluator)
-		=> ReplaceOutsideLiteralSegments(code, pattern, (match, _, _) => evaluator(match), allowInterpolationFormatClause: false);
+		=> ReplaceOutsideLiteralSegments(code, pattern, (match, _, _, _) => evaluator(match), allowInterpolationFormatClause: false);
 
 	static string ReplaceOutsideLiteralSegments(
 		string code,
 		Regex pattern,
-		Func<Match, bool, List<(int Start, int End, bool IsFormatClause)>, string> evaluator,
+		Func<Match, bool, List<(int Start, int End, bool IsFormatClause)>, SyntaxNode, string> evaluator,
 		bool allowInterpolationFormatClause)
 	{
 		var matches = pattern.Matches(code).Cast<Match>().ToArray();
 		if (matches.Length == 0)
 			return code;
 
-		var literalSpans = GetLiteralSegmentSpans(code);
+		var syntaxRoot = ParseExpressionSyntaxRoot(code);
+		var literalSpans = GetLiteralSegmentSpans(syntaxRoot);
 		var result = new StringBuilder(code.Length);
 		var currentIndex = 0;
 
@@ -3264,7 +3351,7 @@ static class CSharpExpressionHelpers
 				continue;
 
 			result.Append(code, currentIndex, match.Index - currentIndex);
-			result.Append(evaluator(match, overlapsFormatClause, literalSpans));
+			result.Append(evaluator(match, overlapsFormatClause, literalSpans, syntaxRoot));
 			currentIndex = match.Index + match.Length;
 		}
 
@@ -3288,10 +3375,14 @@ static class CSharpExpressionHelpers
 		}
 	}
 
+	static SyntaxNode ParseExpressionSyntaxRoot(string code)
+		=> CSharpSyntaxTree.ParseText(code, new CSharpParseOptions(kind: SourceCodeKind.Script)).GetRoot();
+
 	static List<(int Start, int End, bool IsFormatClause)> GetLiteralSegmentSpans(string code)
+		=> GetLiteralSegmentSpans(ParseExpressionSyntaxRoot(code));
+
+	static List<(int Start, int End, bool IsFormatClause)> GetLiteralSegmentSpans(SyntaxNode root)
 	{
-		var tree = CSharpSyntaxTree.ParseText(code, new CSharpParseOptions(kind: SourceCodeKind.Script));
-		var root = tree.GetRoot();
 		var spans = new List<(int Start, int End, bool IsFormatClause)>();
 
 		foreach (var token in root.DescendantTokens(descendIntoTrivia: true))

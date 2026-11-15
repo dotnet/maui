@@ -980,6 +980,97 @@ namespace TestApp
 		Assert.Contains("__source.Time:HH.mm}\"", ucSource, StringComparison.Ordinal);
 	}
 
+	[Fact]
+	public void CSharpExpression_VerbatimAndAttachedPropertyInterpolation_ParenthesizesAliasesInUC()
+	{
+		const string code =
+"""
+using System;
+using System.ComponentModel;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace TestApp.Resources
+{
+	public static class Labels
+	{
+		public static string Gold => "Gold";
+	}
+}
+
+namespace TestApp.Attached
+{
+	public static class CustomGrid
+	{
+		public static readonly BindableProperty RowProperty =
+			BindableProperty.CreateAttached("Row", typeof(int), typeof(CustomGrid), 0);
+
+		public static int GetRow(BindableObject view) => (int)view.GetValue(RowProperty);
+	}
+}
+
+namespace TestApp
+{
+	public class DummyViewModel : INotifyPropertyChanged
+	{
+		public int Dummy { get; set; }
+		public event PropertyChangedEventHandler? PropertyChanged;
+	}
+
+	[XamlProcessing(XamlInflator.SourceGen)]
+	public partial class VerbatimAttachedPage : ContentPage
+	{
+		public VerbatimAttachedPage() => InitializeComponent();
+	}
+}
+""";
+
+		var xamlV1 =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:res="clr-namespace:TestApp.Resources"
+             xmlns:m="clr-namespace:TestApp.Attached"
+             xmlns:app="clr-namespace:TestApp"
+             x:Class="TestApp.VerbatimAttachedPage"
+             x:DataType="app:DummyViewModel">
+    <VerticalStackLayout>
+        <Label Text="Initial1" />
+        <Label Text="Initial2" />
+        <Label Text="Initial3" />
+    </VerticalStackLayout>
+</ContentPage>
+""";
+		var xamlV2 =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:res="clr-namespace:TestApp.Resources"
+             xmlns:m="clr-namespace:TestApp.Attached"
+             xmlns:app="clr-namespace:TestApp"
+             x:Class="TestApp.VerbatimAttachedPage"
+             x:DataType="app:DummyViewModel">
+    <VerticalStackLayout>
+        <Label Text='{= $@"{res:Labels.Gold}"}' />
+        <Label Text='{= @$"C:\""q""\{res:Labels.Gold}"}' />
+        <Label Text="{= $'{this.(m:CustomGrid.Row)}'}" />
+    </VerticalStackLayout>
+</ContentPage>
+""";
+
+		RunGenerator(xamlV1, code, assertNoCompilationErrors: false, enableIncrementalHotReload: true);
+		var (result, _) = RunGenerator(xamlV2, code, assertNoCompilationErrors: false, enableIncrementalHotReload: true);
+
+		var ucSource = GetUCSource(result);
+		Assert.NotNull(ucSource);
+		Assert.DoesNotContain("skipped", ucSource, StringComparison.OrdinalIgnoreCase);
+		Assert.Contains("$@\"{(global::TestApp.Resources.Labels.Gold)}\"", ucSource, StringComparison.Ordinal);
+		Assert.Contains("@$\"C:\\\"\"q\"\"\\{(global::TestApp.Resources.Labels.Gold)}\"", ucSource, StringComparison.Ordinal);
+		Assert.Contains("$\"{(global::TestApp.Attached.CustomGrid.GetRow(this))}\"", ucSource, StringComparison.Ordinal);
+	}
+
 	static string? GetUCSource(GeneratorDriverRunResult result)
 	{
 		foreach (var gen in result.Results)
