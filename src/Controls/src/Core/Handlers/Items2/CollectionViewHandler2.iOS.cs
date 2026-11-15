@@ -104,13 +104,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		// Groupable
 		protected override void ScrollToRequested(object sender, ScrollToRequestEventArgs args)
 		{
-			if (WillNeedScrollAdjustment(args) && !args.IsAnimated)
+			// Scrolling to an item measures the rows it brings into view, which can move the item: a grouped list that measures
+			// all its items scrolls to it again once they're measured. Not when the app made a newer request from the Scrolled
+			// event the first scroll raised, nor for an item the view doesn't have: that scrolls nowhere, and leaves what an
+			// earlier request left for later.
+			if (WillNeedScrollAdjustment(args) && !args.IsAnimated && !TryScrollTo(args))
 			{
-				base.ScrollToRequested(sender, args);
+				return;
 			}
 
-			// The base handler finds the item first: a newer request for one it finds supersedes what an earlier one left for
-			// later, as for the end of its animation below. One for an item it doesn't find scrolls nowhere, and leaves that.
 			if (TryScrollTo(args) && WillNeedScrollAdjustment(args) && args.IsAnimated)
 			{
 				(Controller as GroupableItemsViewController2<ReorderableItemsView>)?.SetScrollAnimationEndedCallback(() => base.ScrollToRequested(sender, args));

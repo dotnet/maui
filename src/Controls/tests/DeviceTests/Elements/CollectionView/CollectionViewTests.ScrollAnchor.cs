@@ -146,6 +146,78 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Theory(DisplayName = "ScrollToStart or ScrollToEnd from Scrolled as a ScrollTo scrolls a grouped list wins")]
+		[InlineData(ScrollToPosition.End, ScrollAnchorMode.Start)]
+		[InlineData(ScrollToPosition.MakeVisible, ScrollAnchorMode.Start)]
+		[InlineData(ScrollToPosition.End, ScrollAnchorMode.End)]
+		[InlineData(ScrollToPosition.MakeVisible, ScrollAnchorMode.End)]
+		public async Task ScrollingToTheEdgeFromScrolledAsAScrollToScrollsAGroupedListWins(ScrollToPosition position, ScrollAnchorMode edge)
+		{
+			SetupBuilder();
+			var groups = new ObservableCollection<AnchorGroup>(
+				Enumerable.Range(0, 4).Select(group => new AnchorGroup($"Group {group}", CreateAnchorItems(8))));
+
+			// Scrolling to the start of a list that doesn't follow it; to the end of one that does, which keeps it in view as
+			// the rows above are measured.
+			var anchorMode = edge == ScrollAnchorMode.End ? ScrollAnchorMode.End : ScrollAnchorMode.None;
+			var collectionView = CreateAnchorCollectionView(groups, anchorMode);
+			collectionView.IsGrouped = true;
+			collectionView.GroupHeaderTemplate = CreateAnchorGroupHeaderTemplate();
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				if (edge == ScrollAnchorMode.End)
+				{
+					await AssertAtEnd(handler, "The list should open at its end.");
+				}
+				else
+				{
+					await AssertEventually(() => GetDistanceFromStart(handler) <= AnchorTolerance, timeout: 3000, message: "The list should open at its start.");
+				}
+
+				// The app asks for the edge as soon as the ScrollTo scrolls the list: the newer request wins, also over a grouped
+				// list scrolling to the item again once the rows it brought into view are measured.
+				var scrolledToEdge = false;
+				collectionView.Scrolled += (_, _) =>
+				{
+					if (!scrolledToEdge)
+					{
+						scrolledToEdge = true;
+						if (edge == ScrollAnchorMode.End)
+						{
+							collectionView.ScrollToEnd(animate: false);
+						}
+						else
+						{
+							collectionView.ScrollToStart(animate: false);
+						}
+					}
+				};
+
+				collectionView.ScrollTo(2, groupIndex: 1, position: position, animate: false);
+				await AssertEventually(() => scrolledToEdge, timeout: 3000, message: "The ScrollTo should scroll the list.");
+
+				// And a row in view changes size: the item isn't put back where the ScrollTo put it as the list is laid out again.
+				var groupIndex = edge == ScrollAnchorMode.End ? groups.Count - 1 : 0;
+				var index = edge == ScrollAnchorMode.End ? groups[groupIndex].Count - 1 : 0;
+				groups[groupIndex][index].Height = 80;
+				var laidOut = await Wait(() => Math.Abs(GetGroupedItemHeight(handler, groups, groupIndex, index) - 80) <= AnchorTolerance, 3000);
+				await Task.Delay(500);
+				if (edge == ScrollAnchorMode.End)
+				{
+					await AssertAtEnd(handler, "The later ScrollToEnd should win.");
+					Assert.True(collectionView.IsAnchored, "ScrollToEnd should follow the end.");
+				}
+				else
+				{
+					Assert.True(GetDistanceFromStart(handler) <= AnchorTolerance, $"The later ScrollToStart should win. Distance from the start: {GetDistanceFromStart(handler)}.");
+					Assert.False(collectionView.IsAnchored);
+				}
+
+				Assert.True(laidOut, "The row should be laid out at its new size.");
+			});
+		}
+
 		[Theory(DisplayName = "AnchorMode End keeps the end in view when the header or footer is replaced")]
 		[InlineData(true)]
 		[InlineData(false)]
@@ -342,13 +414,21 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				await AssertEventually(() => GetDistanceFromStart(handler) <= AnchorTolerance, timeout: 3000, message: "The list should open at its start.");
 
+				// It reaches the end once the row is measured. As the row changes, UIKit can lay the rows above the view out
+				// again at their estimated size and measure them once more in a layout of its own, such as when accessibility is
+				// on: that moves the end away from a list that doesn't follow it, later.
+				var reachedEnd = false;
+				bool ShowsEndOfMeasuredRow() =>
+					Math.Abs(GetItemHeight(handler, items.Count - 1) - 120) <= AnchorTolerance && Math.Abs(GetDistanceToEnd(handler)) <= AnchorTolerance;
+				collectionView.Scrolled += (_, _) => reachedEnd |= ShowsEndOfMeasuredRow();
+
 				// The platform measures the last row again in a layout after the ones the scroll lays out right away, as UIKit
 				// can for the rows a scroll brings into view.
 				collectionView.ScrollToEnd(animate: false);
 				items[^1].Height = 120;
 
-				await AssertEventually(() => Math.Abs(GetItemHeight(handler, items.Count - 1) - 120) <= AnchorTolerance, timeout: 3000, message: "The last row should be measured at its new size.");
-				await AssertAtEnd(handler, "ScrollToEnd should reach the end of the rows it scrolled to, as measured.");
+				var reached = await Wait(() => reachedEnd || ShowsEndOfMeasuredRow(), 3000);
+				Assert.True(reached, $"ScrollToEnd should reach the end of the rows it scrolled to, as measured. Distance to the end: {GetDistanceToEnd(handler)}. Last row: {GetItemHeight(handler, items.Count - 1)}.");
 				Assert.False(collectionView.IsAnchored);
 			});
 		}
@@ -506,7 +586,11 @@ namespace Microsoft.Maui.DeviceTests
 		public async Task AScrollToTheEdgeRightAfterAnAnimatedScrollToWins(ScrollAnchorMode anchorMode, ScrollAnchorMode edge)
 		{
 			SetupBuilder();
-			var items = CreateAnchorItems(40);
+
+			// Few enough rows that the list has measured them all once it has shown its start and its end. UIKit can measure
+			// rows above the view in a layout of its own after a scroll, such as when accessibility is on, which moves the end
+			// away from a list that doesn't follow it.
+			var items = CreateAnchorItems(12);
 			var collectionView = CreateAnchorCollectionView(items, anchorMode);
 
 			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
@@ -664,6 +748,46 @@ namespace Microsoft.Maui.DeviceTests
 				await AssertAtEnd(handler, "Following the end, a new item should keep the end in view.");
 			});
 		}
+
+#if IOS || MACCATALYST
+		// UIKit can stop the animation of ScrollToStart short of the start, having measured the rows it brought into view on the
+		// way: ScrollToStart goes the rest of the way once UIKit reports that the animation ended, which raises Scrolled.
+		[Fact(DisplayName = "ScrollToEnd from Scrolled as ScrollToStart goes the rest of the way reaches the end")]
+		public async Task ScrollToEndFromScrolledAsScrollToStartGoesTheRestOfTheWayReachesTheEnd()
+		{
+			SetupBuilder();
+			var items = CreateAnchorItems(40);
+			var collectionView = CreateAnchorCollectionView(items, ScrollAnchorMode.None);
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				collectionView.ScrollToEnd(animate: false);
+				await AssertAtEnd(handler, "ScrollToEnd should reach the end.");
+
+				// The app asks for the end again as soon as the list is back at its start.
+				var scrolledToEnd = false;
+				collectionView.Scrolled += (_, _) =>
+				{
+					if (!scrolledToEnd && GetDistanceFromStart(handler) <= AnchorTolerance)
+					{
+						scrolledToEnd = true;
+						collectionView.ScrollToEnd(animate: true);
+					}
+				};
+
+				// UIKit reports that the animation ended before it got to the start.
+				collectionView.ScrollToStart(animate: true);
+				var platformView = handler.Controller.CollectionView;
+				((UIKit.UICollectionViewDelegate)platformView.Delegate).ScrollAnimationEnded(platformView);
+				Assert.True(scrolledToEnd, "ScrollToStart should go the rest of the way to the start.");
+
+				// The end moves past where the animation of ScrollToEnd stops: it goes the rest of the way once that ends.
+				items[^1].Height = 120;
+				await AssertAtEnd(handler, "ScrollToEnd should reach the end once its animation ends.", timeout: 5000);
+				Assert.False(collectionView.IsAnchored);
+			});
+		}
+#endif
 
 #if ANDROID
 		[Fact(DisplayName = "A ScrollTo as new items are laid out wins over following the end")]
@@ -1344,6 +1468,59 @@ namespace Microsoft.Maui.DeviceTests
 				// Long enough for a restore the shrink set off to have run.
 				await Task.Delay(500);
 				await AssertAtEnd(handler, "The list should show its end, not the item it scrolled to before following it.");
+				Assert.True(collectionView.IsAnchored);
+			});
+		}
+
+		[Theory(DisplayName = "Following the end from Scrolled as a ScrollTo scrolls the list doesn't take it back to that item")]
+		[InlineData(true)]
+		[InlineData(false)]
+		public async Task FollowingTheEndFromScrolledAsAScrollToScrollsTheListDoesNotTakeItBackToThatItem(bool byAnchorMode)
+		{
+			SetupBuilder();
+			var items = CreateAnchorItems(40);
+			var collectionView = CreateAnchorCollectionView(items, byAnchorMode ? ScrollAnchorMode.None : ScrollAnchorMode.End);
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				if (!byAnchorMode)
+				{
+					await AssertAtEnd(handler, "The list should open at its end.");
+				}
+
+				// The app follows the end again as soon as a ScrollTo that doesn't animate scrolls the list: that's newer than the
+				// ScrollTo, whose item Mac Catalyst would otherwise keep in view when the view is moved back from it.
+				var followed = false;
+				collectionView.Scrolled += (_, _) =>
+				{
+					if (!followed)
+					{
+						followed = true;
+						if (byAnchorMode)
+						{
+							collectionView.AnchorMode = ScrollAnchorMode.End;
+						}
+						else
+						{
+							collectionView.ScrollToEnd(animate: false);
+						}
+					}
+				};
+
+				collectionView.ScrollTo(0, position: ScrollToPosition.Start, animate: false);
+				await AssertEventually(() => followed, timeout: 3000, message: "The ScrollTo should scroll the list.");
+				await AssertAtEnd(handler, "The list should follow its end.");
+
+				// The end moves up by more than the distance that sets off that restore, and the items stay as many as before.
+				items[^1].Height = 160;
+				await AssertEventually(() => Math.Abs(GetItemHeight(handler, items.Count - 1) - 160) <= AnchorTolerance, timeout: 3000, message: "The last item should grow.");
+				await AssertAtEnd(handler, "The list should follow the end as the last item grows.");
+				items[^1].Height = 40;
+				await AssertEventually(() => !ShowsItemOfHeight(handler, 160), timeout: 3000, message: "The last item should shrink.");
+
+				// Long enough for a restore the shrink set off to have run.
+				await Task.Delay(500);
+				await AssertAtEnd(handler, "The list should show its end, not the item the ScrollTo scrolled to.");
 				Assert.True(collectionView.IsAnchored);
 			});
 		}

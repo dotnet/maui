@@ -42,10 +42,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		bool _wasVertical = true;
 		bool _detached;
 
-		// Counts the scrolls requested, and the times the view started following an edge or started over: the app can request
-		// one from a callback of an earlier one's scroll (the Scrolled event it raises), which makes the earlier one older.
-		int _scrollRequests;
-
 		/// <summary>Initializes a new anchor that follows the edges <paramref name="mode"/> selects.</summary>
 		public CollectionViewScrollAnchor(ScrollAnchorMode mode)
 		{
@@ -61,7 +57,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		/// <summary>Follows the edges <paramref name="mode"/> selects instead, starting over as for a new view.</summary>
 		public void UpdateMode(UICollectionView collectionView, ScrollAnchorMode mode)
 		{
-			_scrollRequests++;
 			_tracker.SetEdges(mode);
 			_offsetChangedDuringLayout = false;
 			collectionView.SetNeedsLayout();
@@ -70,7 +65,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		/// <summary>Starts following the edge a new view shows again, as for a new set of items.</summary>
 		public void Reset(UICollectionView collectionView)
 		{
-			_scrollRequests++;
 			_tracker.Reset();
 			_offsetChangedDuringLayout = false;
 			collectionView.SetNeedsLayout();
@@ -181,22 +175,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		public void UserScrollEnded(UICollectionView collectionView) => collectionView.SetNeedsLayout();
 
 		/// <summary>Called before the handler scrolls for a <c>ScrollTo</c> request.</summary>
-		/// <returns>The request, to pass to <see cref="ScrollRequested"/>.</returns>
-		public int ScrollRequesting()
-		{
-			_requestingScroll = true;
-			return ++_scrollRequests;
-		}
+		public void ScrollRequesting() => _requestingScroll = true;
 
 		/// <summary>
 		/// Called after the handler scrolled for a <c>ScrollTo</c> request (animating, or not): the next look judges where
-		/// it went, instead of scrolling back to the edge the view followed. A newer request the app made from a callback of
-		/// this scroll, or an edge the view started following meanwhile, wins: the look doesn't judge this one.
+		/// it went, instead of scrolling back to the edge the view followed. Not when the app made a newer request from what
+		/// the scroll raised (its <c>Scrolled</c> event), or the view started following an edge meanwhile: that wins.
 		/// </summary>
-		public void ScrollRequested(UICollectionView collectionView, int request)
+		/// <param name="collectionView">The collection view.</param>
+		/// <param name="isLatest">Whether the request is still the latest (see <c>ItemsViewController2.IsLatestScrollRequest</c>).</param>
+		public void ScrollRequested(UICollectionView collectionView, bool isLatest)
 		{
 			_requestingScroll = false;
-			if (request == _scrollRequests)
+			if (isLatest)
 			{
 				_tracker.RequestScroll();
 			}
@@ -207,12 +198,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		/// <summary>Scrolls to the start, and follows it again. The view must be able to follow its start.</summary>
 		/// <remarks>
 		/// The app can request another scroll from what this raises (the <c>Scrolled</c> event of a jump, the change of
-		/// <see cref="StructuredItemsView.IsAnchored"/>): that request is newer, and wins. This is newer than a scroll the
-		/// app requested and raised that from.
+		/// <see cref="StructuredItemsView.IsAnchored"/>): that request is newer, and wins.
 		/// </remarks>
 		public void ScrollToStart(UICollectionView collectionView, StructuredItemsView? itemsView, bool animated)
 		{
-			_scrollRequests++;
 			if (animated && collectionView.Window is not null)
 			{
 				// Look at the view as laid out first, then animate: a ScrollTo the app requests as it hears the view follows
@@ -240,12 +229,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		/// <summary>Scrolls to the end, and follows it again. The view must be able to follow its end.</summary>
 		/// <remarks>
 		/// The app can request another scroll from what this raises (the <c>Scrolled</c> event of a jump, the change of
-		/// <see cref="StructuredItemsView.IsAnchored"/>): that request is newer, and wins. This is newer than a scroll the
-		/// app requested and raised that from.
+		/// <see cref="StructuredItemsView.IsAnchored"/>): that request is newer, and wins.
 		/// </remarks>
 		public void ScrollToEnd(UICollectionView collectionView, StructuredItemsView? itemsView, bool animated)
 		{
-			_scrollRequests++;
 			if (animated && collectionView.Window is not null)
 			{
 				// Look at the view as laid out first, then animate: a ScrollTo the app requests as it hears the view follows

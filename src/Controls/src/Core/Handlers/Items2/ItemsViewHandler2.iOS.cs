@@ -172,10 +172,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		protected virtual void ScrollToRequested(object sender, ScrollToRequestEventArgs args) => TryScrollTo(args);
 
-		// Scrolls to the item the request is for. Returns whether the view has it: it doesn't scroll for one it doesn't have.
+		// Scrolls to the item the request is for. Returns whether the request still stands once that scroll returns: not when
+		// the view doesn't have the item, which it doesn't scroll for, nor when the app made a newer request from what the
+		// scroll raised (its Scrolled event), which wins.
 		internal bool TryScrollTo(ScrollToRequestEventArgs args)
 		{
 			int section = 0, item = 0;
+			int request;
 			UICollectionViewScrollPosition scrollPosition = UICollectionViewScrollPosition.None;
 
 			using (var indexPath = DetermineIndex(args))
@@ -195,6 +198,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 				// A newer request: what an earlier scroll left for when its animation ends, or for the next layout, no longer
 				// applies. A request for an item the view doesn't have scrolls nowhere, and returned above, leaving it.
+				request = Controller.StartScrollRequest();
 				Controller.ScrollingToEdge(null);
 
 				// Clear any previously armed restore before issuing the new scroll. Otherwise the
@@ -209,16 +213,23 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 				// A scroll the app requests is judged by where it lands: the anchor doesn't scroll it back to the end.
 				var scrollAnchor = Controller.ScrollAnchor;
-				var request = scrollAnchor?.ScrollRequesting() ?? 0;
+				scrollAnchor?.ScrollRequesting();
 				try
 				{
-					Controller.CollectionView.ScrollToItem(indexPath,
-						scrollPosition, args.IsAnimated);
+					Controller.ScrollToItem(indexPath, scrollPosition, args.IsAnimated);
 				}
 				finally
 				{
-					scrollAnchor?.ScrollRequested(Controller.CollectionView, request);
+					scrollAnchor?.ScrollRequested(Controller.CollectionView, Controller.IsLatestScrollRequest(request));
 				}
+			}
+
+			// A newer request the app made from the Scrolled event the scroll raised wins: this one doesn't keep its item in
+			// view. A ScrollToStart or ScrollToEnd scrolls now that this scroll returned (see ScrollToItem).
+			if (!Controller.IsLatestScrollRequest(request))
+			{
+				Controller.ScrolledToItem();
+				return false;
 			}
 
 			// After non-animated scroll, arm KVO restore to recover from silent Mac Catalyst contentOffset shift

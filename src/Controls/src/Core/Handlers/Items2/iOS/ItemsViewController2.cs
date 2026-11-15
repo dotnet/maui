@@ -54,6 +54,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		nint? _finishingScrollToEnd;
 		int _forcedLayouts;
 
+		// Counts the scroll requests (see StartScrollRequest).
+		int _scrollRequests;
+
+		// Whether UIKit is scrolling to an item for a ScrollTo, and the ScrollToStart or ScrollToEnd the app requested meanwhile,
+		// which scrolls once it's done (see ScrollToItem).
+		bool _scrollingToItem;
+		(int Request, bool ToEnd, bool Animate)? _scrollToEdgeAfterScrollingToItem;
+
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		protected UICollectionViewDelegateFlowLayout Delegator { get; set; }
 
@@ -274,6 +282,80 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		internal CollectionViewScrollAnchor ScrollAnchor => _scrollAnchor;
 
+		/// <summary>
+		/// Starts a scroll request: a <c>ScrollTo</c>, a <c>ScrollToStart</c> or <c>ScrollToEnd</c>, or a new
+		/// <see cref="StructuredItemsView.AnchorMode"/> or set of items, which scroll to the edge they select.
+		/// </summary>
+		/// <returns>The request, for <see cref="IsLatestScrollRequest"/>.</returns>
+		internal int StartScrollRequest() => ++_scrollRequests;
+
+		/// <summary>
+		/// Gets whether <paramref name="request"/> is the latest scroll request. The app can make a newer one from what a
+		/// request's scroll raises (its <c>Scrolled</c> event): the newer one wins, and the older one doesn't do what it would
+		/// once its scroll returns (scroll again, keep the item in view, go the rest of the way once its animation ends).
+		/// </summary>
+		internal bool IsLatestScrollRequest(int request) => request == _scrollRequests;
+
+		/// <summary>
+		/// Scrolls to an item for a <c>ScrollTo</c> request. UIKit can put the item back where this put it as it measures rows
+		/// in a later layout, unless the view scrolled after this returned: a scroll the app requests from the <c>Scrolled</c>
+		/// event this raises happens before, and UIKit undoes it. So a <c>ScrollToStart</c> or <c>ScrollToEnd</c> requested
+		/// from there scrolls once this returns (see <see cref="ScrolledToItem"/>).
+		/// </summary>
+		internal void ScrollToItem(NSIndexPath indexPath, UICollectionViewScrollPosition scrollPosition, bool animated)
+		{
+			var scrollingToItem = _scrollingToItem;
+			_scrollingToItem = true;
+			try
+			{
+				CollectionView.ScrollToItem(indexPath, scrollPosition, animated);
+			}
+			finally
+			{
+				_scrollingToItem = scrollingToItem;
+			}
+		}
+
+		/// <summary>
+		/// Called once a <c>ScrollTo</c> request's scroll returned and the request isn't the latest: scrolls to the edge the app
+		/// requested meanwhile, if that's still the latest request.
+		/// </summary>
+		internal void ScrolledToItem()
+		{
+			if (_scrollingToItem || _scrollToEdgeAfterScrollingToItem is not { } scroll)
+			{
+				return;
+			}
+
+			_scrollToEdgeAfterScrollingToItem = null;
+			if (!IsLatestScrollRequest(scroll.Request))
+			{
+				return;
+			}
+
+			if (scroll.ToEnd)
+			{
+				ScrollToEnd(scroll.Animate);
+			}
+			else
+			{
+				ScrollToStart(scroll.Animate);
+			}
+		}
+
+		// Called as ScrollToStart or ScrollToEnd starts: while UIKit scrolls to an item, the scroll waits until it's done (see
+		// ScrollToItem). Returns whether it waits. It's the latest request until the app makes another one.
+		bool ScrollToEdgeAfterScrollingToItem(bool toEnd, bool animate)
+		{
+			if (!_scrollingToItem || ScrollDirection != UICollectionViewScrollDirection.Vertical)
+			{
+				return false;
+			}
+
+			_scrollToEdgeAfterScrollingToItem = (StartScrollRequest(), toEnd, animate);
+			return true;
+		}
+
 		// UIKit lays the view out for a change in the items as the items source has it update the view, and can move the
 		// content offset before it updates the content size: that's UIKit laying out, not a scroll.
 		void IItemsUpdateObserver.ItemsUpdating() => _scrollAnchor?.LayoutStarting();
@@ -297,6 +379,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				return;
 			}
+
+			// It scrolls to the edge it selects: it's newer than any scroll requested before.
+			StartScrollRequest();
 
 #if MACCATALYST
 			// It scrolls to an edge: a restore armed by an earlier ScrollTo (see MauiCollectionView) would scroll back.
@@ -331,7 +416,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		internal bool ScrollToStart(bool animate)
 		{
-			if (!PrepareScrollToEdge())
+			if (ScrollToEdgeAfterScrollingToItem(toEnd: false, animate))
+			{
+				return true;
+			}
+
+			if (!PrepareScrollToEdge(out var request))
 			{
 				return false;
 			}
@@ -345,17 +435,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			// A scroll the app requests: an anchor that follows the end judges where it lands.
 			bool animating;
-			var request = scrollAnchor?.ScrollRequesting() ?? 0;
+			scrollAnchor?.ScrollRequesting();
 			try
 			{
 				animating = CollectionViewScrollAnchor.ScrollToStartOnce(CollectionView, animate);
 			}
 			finally
 			{
-				scrollAnchor?.ScrollRequested(CollectionView, request);
+				scrollAnchor?.ScrollRequested(CollectionView, IsLatestScrollRequest(request));
 			}
 
-			if (animating)
+			if (animating && IsLatestScrollRequest(request))
 			{
 				var collectionView = CollectionView;
 				ScrollingToEdge(() => CollectionViewScrollAnchor.ScrollToStartOnceEnded(collectionView));
@@ -366,7 +456,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		internal bool ScrollToEnd(bool animate)
 		{
-			if (!PrepareScrollToEdge())
+			if (ScrollToEdgeAfterScrollingToItem(toEnd: true, animate))
+			{
+				return true;
+			}
+
+			if (!PrepareScrollToEdge(out var request))
 			{
 				return false;
 			}
@@ -380,7 +475,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			// A scroll the app requests: an anchor that follows the start judges where it lands.
 			double? target = null;
-			var request = scrollAnchor?.ScrollRequesting() ?? 0;
+			scrollAnchor?.ScrollRequesting();
 			try
 			{
 				if (animate)
@@ -413,7 +508,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 			finally
 			{
-				scrollAnchor?.ScrollRequested(CollectionView, request);
+				scrollAnchor?.ScrollRequested(CollectionView, IsLatestScrollRequest(request));
+			}
+
+			// The app can request another scroll from the Scrolled event this one raised: that one wins.
+			if (!IsLatestScrollRequest(request))
+			{
+				return true;
 			}
 
 			if (target is double end)
@@ -492,13 +593,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			return count;
 		}
 
-		// Whether the view scrolls to an edge of its content: it does in a vertical layout.
-		bool PrepareScrollToEdge()
+		// Starts a scroll to an edge of the content, which the view makes in a vertical layout: returns whether it does, and
+		// the request it starts.
+		bool PrepareScrollToEdge(out int request)
 		{
+			request = 0;
 			if (ScrollDirection != UICollectionViewScrollDirection.Vertical)
 			{
 				return false;
 			}
+
+			// It's newer than any scroll requested before.
+			request = StartScrollRequest();
 
 #if MACCATALYST
 			// A new scroll request: a restore armed by an earlier ScrollTo (see MauiCollectionView) would scroll back.
@@ -675,7 +781,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		public virtual void UpdateItemsSource()
 		{
-			// What an earlier ScrollTo, ScrollToStart or ScrollToEnd left for later was for the old items.
+			// What an earlier ScrollTo, ScrollToStart or ScrollToEnd left for later was for the old items: the new items are
+			// newer, also than a scroll that raised the Scrolled event the app replaced the items from.
+			StartScrollRequest();
 			ScrollingToEdge(null);
 
 			ItemsSource?.Dispose();
