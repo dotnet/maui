@@ -36,7 +36,8 @@ public class PlatformUnderlineSpan extends CharacterStyle implements UpdateAppea
             // The standard underline gives way to one drawn in underlineColor at underlineThickness.
             textPaint.setUnderlineText(false);
             textPaint.underlineColor = hasColor ? color : textPaint.getColor();
-            textPaint.underlineThickness = thickness > 0 ? thickness : textPaint.getUnderlineThickness();
+            // Match Android's standard underline minimum when the font has no thickness metric.
+            textPaint.underlineThickness = thickness > 0 ? thickness : Math.max(textPaint.getUnderlineThickness(), 1.0f);
         } else {
             textPaint.setUnderlineText(true);
         }
