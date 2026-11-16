@@ -1,6 +1,7 @@
 #if TEST_FAILS_ON_WINDOWS // ScrollAnchorMode.End isn't implemented on Windows: the list doesn't follow its end there.
 using System.Drawing;
 using NUnit.Framework;
+using OpenQA.Selenium;
 using UITest.Appium;
 using UITest.Core;
 
@@ -42,7 +43,7 @@ public class CollectionViewAnchorModeEnd : _IssuesUITest
 
 		// Each tap adds a line to the last message, as an answer streams in: wait until it has grown by several lines, so the
 		// end being in view shows the list followed it, not that nothing changed.
-		var initialHeight = App.WaitForElement("Message33").GetRect().Height;
+		var initialHeight = App.WaitForElementAndGetRect("Message33").Height;
 		for (var i = 0; i < 5; i++)
 		{
 			App.Tap(GrowId);
@@ -127,7 +128,7 @@ public class CollectionViewAnchorModeEnd : _IssuesUITest
 	static bool WaitUntil(Func<bool> condition)
 	{
 		var timeout = DateTime.Now.AddSeconds(10);
-		while (!condition())
+		while (!Holds(condition))
 		{
 			if (DateTime.Now > timeout)
 			{
@@ -138,6 +139,20 @@ public class CollectionViewAnchorModeEnd : _IssuesUITest
 		}
 
 		return true;
+	}
+
+	// The list recycles a row's view as it adds items, an item grows, or it scrolls: one found just before that is stale
+	// when its geometry is read, and is found again on the next try.
+	static bool Holds(Func<bool> condition)
+	{
+		try
+		{
+			return condition();
+		}
+		catch (StaleElementReferenceException)
+		{
+			return false;
+		}
 	}
 }
 #endif

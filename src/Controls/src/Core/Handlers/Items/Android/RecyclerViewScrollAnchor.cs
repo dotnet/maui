@@ -615,12 +615,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			// Lay the row at the edge out first; the look after that layout scrolls the rest of the way.
 			JumpToEdge();
 
-			// Asked for during a layout, the jump waits for the layout to end, and a scroll the user or the app starts meanwhile
-			// can move the view first: the look counted on the view being at the edge, so start measuring again from the next
-			// look, which scrolls there unless the view is scrolling.
+			// Asked for during a layout, the jump waits for the layout to end, and a scroll the user or code starts meanwhile can
+			// move the view first: the look counted on the view being at the edge, so the next look measures from where the view
+			// is instead. It judges that scroll, which stops following the edge if it took the view away, and otherwise scrolls
+			// to the edge unless the view is scrolling.
 			if (_jumpPosted)
 			{
-				_tracker.Reset(_tracker.AnchoredEdge);
+				_tracker.DeferCorrection();
 			}
 		}
 

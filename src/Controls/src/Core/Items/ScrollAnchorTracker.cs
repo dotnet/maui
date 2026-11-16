@@ -11,7 +11,8 @@ namespace Microsoft.Maui.Controls
 	/// A platform reports <see cref="ScrollAnchorMetrics"/> after it has laid out a change (so a content size change and
 	/// the offset adjustments the platform makes in the same layout pass arrive together) and after the view scrolled,
 	/// plus whether the user is scrolling it (dragging or flinging). When <see cref="Update"/> returns an offset, the
-	/// platform scrolls there without animating: it is always the edge the view follows.
+	/// platform scrolls there without animating: it is always the edge the view follows. A platform that can only get there
+	/// once it has laid that edge out says so (<see cref="DeferCorrection"/>).
 	/// </para>
 	/// <para>The rules, for each edge the view can follow (<see cref="Edges"/>):</para>
 	/// <list type="bullet">
@@ -69,6 +70,11 @@ namespace Microsoft.Maui.Controls
 		double _drift;
 		bool _scrollRequested;
 		bool _approaching;
+
+		// Where the view was when the last update asked for a correction, and whether the platform makes that correction
+		// later (see DeferCorrection).
+		ScrollAnchorMetrics? _uncorrected;
+		bool _correctionDeferred;
 
 		/// <summary>Initializes a new tracker, following the edge a new view shows.</summary>
 		/// <param name="edges">The edges the view can follow. Other flags are ignored.</param>
@@ -142,6 +148,8 @@ namespace Microsoft.Maui.Controls
 			_drift = 0;
 			_scrollRequested = false;
 			_approaching = false;
+			_uncorrected = null;
+			_correctionDeferred = false;
 			AnchoredEdge = CanFollow(edge) ? edge : ScrollAnchorMode.None;
 		}
 
@@ -153,6 +161,23 @@ namespace Microsoft.Maui.Controls
 		{
 			_scrollRequested = true;
 			_approaching = false;
+			_uncorrected = null;
+			_correctionDeferred = false;
+		}
+
+		/// <summary>
+		/// Notes that the platform makes the correction the last <see cref="Update"/> returned only later, as when it has to
+		/// lay out the edge before it can scroll there. The next update measures from where the view was rather than from the
+		/// edge, so a scroll made meanwhile (by the user, or by code the platform doesn't report as the app's request) is
+		/// judged as any other. Unless that scroll took the view away from the edge, the update asks for the correction again.
+		/// </summary>
+		public void DeferCorrection()
+		{
+			if (_uncorrected is ScrollAnchorMetrics metrics)
+			{
+				_last = metrics;
+				_correctionDeferred = true;
+			}
 		}
 
 		/// <summary>
@@ -170,6 +195,8 @@ namespace Microsoft.Maui.Controls
 			_drift = 0;
 			_scrollRequested = false;
 			_lastWasUserScroll = false;
+			_uncorrected = null;
+			_correctionDeferred = false;
 		}
 
 		/// <summary>Observes where the view is, after the platform laid out a change or the view scrolled.</summary>
@@ -196,8 +223,11 @@ namespace Microsoft.Maui.Controls
 
 			var last = _last;
 			var wasUserScroll = _lastWasUserScroll;
+			var correctionDeferred = _correctionDeferred;
 			_last = metrics;
 			_lastWasUserScroll = isUserScrolling;
+			_uncorrected = null;
+			_correctionDeferred = false;
 			var edge = EdgeAt(metrics);
 
 			// An animated scroll to an edge got there, or the user took over.
@@ -292,8 +322,9 @@ namespace Microsoft.Maui.Controls
 				_drift = 0;
 			}
 
-			// Scroll to the edge for a size change, or when a user scroll just ended (the edge may have moved meanwhile).
-			if (!resized && !wasUserScroll)
+			// Scroll to the edge for a size change, when a user scroll just ended (the edge may have moved meanwhile), or when
+			// the platform hasn't made the last correction yet.
+			if (!resized && !wasUserScroll && !correctionDeferred)
 			{
 				return null;
 			}
@@ -315,7 +346,8 @@ namespace Microsoft.Maui.Controls
 			}
 
 			// The platform scrolls there before anything else happens: measure the next change from there, so this scroll
-			// isn't mistaken for part of the next one.
+			// isn't mistaken for part of the next one. Unless it says it scrolls there later (see DeferCorrection).
+			_uncorrected = metrics;
 			_last = metrics.WithOffset(target);
 			return target;
 		}

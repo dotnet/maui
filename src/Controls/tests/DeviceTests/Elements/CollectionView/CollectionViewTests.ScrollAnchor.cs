@@ -1016,6 +1016,46 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.False(collectionView.IsAnchored);
 			});
 		}
+
+		[Fact(DisplayName = "A scroll away from the end as new items are laid out stops following the end")]
+		public async Task AScrollAwayAsNewItemsAreLaidOutStopsFollowingTheEnd()
+		{
+			SetupBuilder();
+			var items = CreateAnchorItems(40);
+			var collectionView = CreateAnchorCollectionView(items, ScrollAnchorMode.End);
+
+			// The last item ends the content.
+			collectionView.Header = null;
+			collectionView.Footer = null;
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				await AssertAtEnd(handler, "The list should open at its end.");
+
+				// Right after the layout that lays out the new items, which leaves the end below the view: before the anchor
+				// gets the view there, code scrolls the native view up, as the keyboard or accessibility can.
+				var recyclerView = (RecyclerView)handler.PlatformView;
+				string position = null;
+				void ScrollUp(object sender, EventArgs e)
+				{
+					recyclerView.ViewTreeObserver.GlobalLayout -= ScrollUp;
+					recyclerView.ScrollBy(0, -(int)(200 * recyclerView.Resources.DisplayMetrics.Density));
+					position = GetScrollPosition(handler);
+				}
+
+				recyclerView.ViewTreeObserver.GlobalLayout += ScrollUp;
+				for (var i = 0; i < 20; i++)
+				{
+					items.Add(new AnchorItem($"Added {i}", 40));
+				}
+
+				await AssertEventually(() => position is not null, timeout: 3000, message: "The new items should be laid out.");
+				await Task.Delay(500);
+				Assert.True(position == GetScrollPosition(handler), $"The list should stay where the scroll took it, at {position}, not at {GetScrollPosition(handler)}.");
+				Assert.True(GetDistanceToEnd(handler) > AnchorTolerance, "The list shouldn't go to its end.");
+				Assert.False(collectionView.IsAnchored, "A scroll away from the end should stop following it.");
+			});
+		}
 #endif
 
 		[Fact(DisplayName = "Turning AnchorMode off stops following the end")]

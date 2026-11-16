@@ -1094,6 +1094,47 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void ACorrectionThePlatformMakesLaterIsAskedForUntilItIsMade()
+		{
+			// Items appended below the end: the platform has to lay the new end out before it can scroll there.
+			var view = FakeScrollView.AtEnd(extent: 1600, viewport: 300);
+			view.Extent = 2400;
+			Assert.Equal(2100, view.LookAndDeferTheCorrection(sizeChanged: true));
+			Assert.Equal(1300, view.Offset);
+
+			// Looks before it gets there, with the view where it was or a little closer: it still follows the end.
+			Assert.Equal(2100, view.LookAndDeferTheCorrection());
+			view.Offset += 100;
+			Assert.Equal(2100, view.LookAndDeferTheCorrection(scrolled: true));
+			Assert.True(view.Tracker.IsAnchored);
+
+			// It lands short of the end, as beside a taller item in a grid: the look scrolls the rest of the way.
+			view.Offset = 2070;
+			Assert.Equal(2100, view.Look());
+			Assert.Null(view.Look());
+			Assert.True(view.Tracker.IsAnchored);
+		}
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void AScrollAwayBeforeACorrectionThePlatformMakesLaterStopsFollowing(bool userScrolling)
+		{
+			var view = FakeScrollView.AtEnd(extent: 1600, viewport: 300);
+			view.Extent = 2400;
+			Assert.Equal(2100, view.LookAndDeferTheCorrection(sizeChanged: true));
+
+			// The view moves up before the platform gets it to the end: away from where it was, not from the end.
+			view.Offset -= 200;
+			Assert.Null(view.Look(userScrolling, scrolled: true));
+			Assert.False(view.Tracker.IsAnchored);
+
+			view.Extent += 100;
+			Assert.Null(view.Look());
+			Assert.Equal(1100, view.Offset);
+		}
+
+		[Fact]
 		public void ChangingTheEdgesStartsOver()
 		{
 			var view = FakeScrollView.AtEnd(extent: 1000, viewport: 400);
@@ -1184,6 +1225,21 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				if (target is double edge)
 				{
 					Offset = edge;
+				}
+
+				return target;
+			}
+
+			/// <summary>
+			/// Reports the position; when told to scroll to the edge, scrolls there only later, as a platform that has to lay
+			/// the edge out first does.
+			/// </summary>
+			public double? LookAndDeferTheCorrection(bool sizeChanged = false, bool scrolled = false)
+			{
+				var target = Tracker.Update(Metrics, isUserScrolling: false, sizeChanged, scrolled);
+				if (target is not null)
+				{
+					Tracker.DeferCorrection();
 				}
 
 				return target;
