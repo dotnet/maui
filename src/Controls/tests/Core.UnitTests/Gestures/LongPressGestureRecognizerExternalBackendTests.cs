@@ -77,7 +77,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void ExternalBackendRaisesLongPressedBeforeCompleted()
+		public void ExternalBackendRaisesLongPressedAtRecognitionAndOnlyOnce()
 		{
 			var (_, recognizer, backend) = CreateBackend();
 
@@ -86,26 +86,32 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			recognizer.LongPressing += (_, args) => sequence.Add(args.Status.ToString());
 
 			backend.RaisePressStarted(Point.Zero);
+			Assert.Equal(new[] { "Started", "pressed" }, sequence);
+
+			backend.RaisePressMoved(Point.Zero);
 			backend.RaisePressCompleted();
 
-			Assert.Equal(new[] { "Started", "pressed", "Completed" }, sequence);
+			Assert.Equal(new[] { "Started", "pressed", "Running", "Completed" }, sequence);
 		}
 
 		[Fact]
-		public void ExternalBackendCancelDoesNotRaiseLongPressedOrCommand()
+		public void ExternalBackendCancelAfterRecognitionDoesNotRepeatLongPressedOrCommand()
 		{
 			var (_, recognizer, backend) = CreateBackend();
 
-			var commandInvoked = false;
-			var pressedRaised = false;
-			recognizer.Command = new Command(() => commandInvoked = true);
-			recognizer.LongPressed += (_, _) => pressedRaised = true;
+			var commandCount = 0;
+			var pressedCount = 0;
+			recognizer.Command = new Command(() => commandCount++);
+			recognizer.LongPressed += (_, _) => pressedCount++;
 
 			backend.RaisePressStarted(Point.Zero);
+			Assert.Equal(1, pressedCount);
+			Assert.Equal(1, commandCount);
+
 			backend.RaisePressCanceled();
 
-			Assert.False(pressedRaised);
-			Assert.False(commandInvoked);
+			Assert.Equal(1, pressedCount);
+			Assert.Equal(1, commandCount);
 			Assert.Equal(GestureStatus.Canceled, recognizer.State);
 		}
 
