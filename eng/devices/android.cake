@@ -291,11 +291,11 @@ void ExecuteUITests(string project, string app, string appPackageName, string de
 
 	Information("Run UITests  project {0}", project);
 	RunUITestsWithRetry(project, config, toolPath, resultsFileName, () => WriteLogCat(),
-		() => EnsureDeviceForUITestRetry(project, app, appPackageName, device, resultsDir, binDir, config, tfm, rid, ver, toolPath, instrumentation));
+		() => EnsureDeviceForUITestAttempt(project, app, appPackageName, device, resultsDir, binDir, config, tfm, rid, ver, toolPath, instrumentation));
 	Information("UI Tests completed.");
 }
 
-void EnsureDeviceForUITestRetry(string project, string app, string appPackageName, string device, string resultsDir, string binDir, string config, string tfm, string rid, string ver, string toolPath, string instrumentation)
+void EnsureDeviceForUITestAttempt(string project, string app, string appPackageName, string device, string resultsDir, string binDir, string config, string tfm, string rid, string ver, string toolPath, string instrumentation)
 {
 	var settings = new AdbToolSettings { SdkRoot = androidSdkRoot };
 	if (!string.IsNullOrEmpty(DEVICE_UDID))
@@ -305,9 +305,12 @@ void EnsureDeviceForUITestRetry(string project, string app, string appPackageNam
 		return;
 
 	if (emulatorProcess == null || !deviceBoot)
-		throw new Exception("The Android device is no longer available and was not started by this script, so it cannot be recovered for the UI test retry.");
+	{
+		Warning("Could not confirm the Android device has booted; it was not started by this script, so running UI tests without recovery.");
+		return;
+	}
 
-	Warning("The Android emulator is no longer available; restarting it and reinstalling the app before retrying UI tests.");
+	Warning("The Android emulator is no longer available; restarting it and reinstalling the app before running UI tests.");
 	try
 	{
 		CleanUpVirtualDevice(emulatorProcess, avdSettings);

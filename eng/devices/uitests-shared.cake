@@ -22,7 +22,7 @@ void RunUITestSetupWithRetry(Action setup)
 		ex => Warning("UI test setup/build attempt {0}/5 failed; retrying before running tests: {1}", attempt++, ex.Message));
 }
 
-void RunUITestsWithRetry(string project, string config, string toolPath, string resultsFileName, Action onFinalFailure = null, Action beforeRetry = null)
+void RunUITestsWithRetry(string project, string config, string toolPath, string resultsFileName, Action onFinalFailure = null, Action beforeAttempt = null)
 {
 	int numOfRetries = IsCIBuild() ? 1 : 0;
 	var resultDirectory = MakeAbsolute(GetTestResultsDirectory()).FullPath;
@@ -45,11 +45,9 @@ void RunUITestsWithRetry(string project, string config, string toolPath, string 
 			var attemptDirectory = retryCount == 0 ? resultDirectory : retryDirectory;
 			var attemptNUnitDirectory = retryCount == 0 ? nunitDirectory : retryDirectory;
 			if (retryCount > 0)
-			{
 				EnsureDirectoryExists(retryDirectory);
-				// A retry against a lost device spends minutes per fixture waiting for a session; recover or fail fast.
-				beforeRetry?.Invoke();
-			}
+			// Running against a lost device spends minutes per fixture waiting for a session; recover or fail fast.
+			beforeAttempt?.Invoke();
 			System.Runtime.ExceptionServices.ExceptionDispatchInfo testFailure = null;
 			try
 			{
