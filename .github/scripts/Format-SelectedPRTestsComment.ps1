@@ -4,7 +4,8 @@ function New-SelectedPRTestsComment {
         [Parameter(Mandatory)]$Selection,
         [Parameter(Mandatory)]$PullRequest,
         [Parameter(Mandatory)][AllowEmptyCollection()][array]$Results,
-        [Parameter(Mandatory)][string]$WorkflowRunUrl
+        [Parameter(Mandatory)][string]$WorkflowRunUrl,
+        [AllowEmptyCollection()][array]$Outcomes = @()
     )
 
     $sha = [string]$Selection.headSha
@@ -54,8 +55,15 @@ function New-SelectedPRTestsComment {
     if ($Selection.runDevice) {
         $deviceLine += " $(Format-SelectedPRTestsRun -Results $Results -Pipeline 'maui-pr-devicetests')"
     }
+    $builds = @($Results | Where-Object { $_.status -in 'queued', 'reused' -and $_.buildId } | ForEach-Object {
+        if ([string]$_.pipeline -notmatch '^maui-pr(-uitests|-devicetests)?$' -or [string]$_.buildId -notmatch '^\d{1,12}$') {
+            throw 'Invalid selected-test build reference.'
+        }
+        "$($_.pipeline)=$($_.buildId)"
+    })
     $lines = @(
         '<!-- review-run-tests -->',
+        "<!-- review-run-tests-builds: $($builds -join ';') -->",
         '',
         '## Selected PR Tests',
         '',
@@ -66,16 +74,20 @@ function New-SelectedPRTestsComment {
         "  <img alt=`"Commit $shortSha`" src=`"https://img.shields.io/badge/Commit-$shortSha-1f6feb?labelColor=30363d&amp;style=flat-square`">",
         '</p>',
         '',
-        '---',
-        '',
-        '<details>',
-        '<summary><strong>&#x1F9EA; Selected coverage</strong> &#x2014; click to expand</summary>',
-        '<br/>',
+        '### &#x1F3AF; Detected coverage',
         '',
         "- **Platforms:** $($platforms -join ', ').",
         "- **maui-pr:** full build, unit and integration validation is unchanged. $(Format-SelectedPRTestsRun -Results $Results -Pipeline 'maui-pr')",
         $uiLine,
         $deviceLine,
+        '',
+        (Format-SelectedPRTestsResults -Outcomes $Outcomes -Pending:($builds.Count -gt 0)),
+        '',
+        '---',
+        '',
+        '<details>',
+        '<summary><strong>&#x1F9EA; Selection notes</strong> &#x2014; click to expand</summary>',
+        '<br/>',
         '',
         'Selected runs are not full-suite certification; queued does not mean passed.'
     )
@@ -100,4 +112,67 @@ function Format-SelectedPRTestsRun {
     if (-not $result.Count) { return 'not queued.' }
     if ($result[0].status -eq 'failed') { return '**dispatch failed**; inspect the workflow logs.' }
     return "[$($result[0].status)]($($result[0].url))."
+}
+
+function Format-SelectedPRTestsResults {
+    <#
+    .SYNOPSIS
+    Renders the replaceable results block of a selected-test comment.
+    #>
+    param(
+        [AllowEmptyCollection()][array]$Outcomes = @(),
+        [switch]$Pending
+    )
+
+    $outcomeList = @($Outcomes)
+    $lines = @('<!-- review-run-tests-results:start -->')
+    if (-not $outcomeList.Count) {
+        $state = if ($Pending) { 'Waiting for the selected runs to finish; this section updates automatically.' } else { 'No selected runs to report.' }
+        $lines += @('### &#x23F3; Results', '', $state)
+    } else {
+        $running = @($outcomeList | Where-Object { $_.status -ne 'completed' }).Count
+        $failing = @($outcomeList | Where-Object { $_.failed -gt 0 -or ($_.status -eq 'completed' -and $_.result -notin 'succeeded', 'partiallySucceeded') }).Count
+        $badge = if ($failing) { 'Tests-Failed-d1242f' } elseif ($running) { 'Tests-Running-bf8700' } else { 'Tests-Passed-1a7f37' }
+        $icon = if ($failing) { '&#x274C;' } elseif ($running) { '&#x23F3;' } else { '&#x2705;' }
+        $lines += @(
+            "### $icon Results",
+            '',
+            "<img alt=`"$($badge.Split('-')[0]) $($badge.Split('-')[1])`" src=`"https://img.shields.io/badge/$badge`?labelColor=30363d&amp;style=flat-square`">",
+            '',
+            '| Pipeline | Run | Status | Passed | Failed | Not run |',
+            '|---|---|---|---:|---:|---:|'
+        )
+        foreach ($outcome in $outcomeList) {
+            $status = if ($outcome.status -ne 'completed') { '&#x23F3; running' }
+                elseif ($outcome.result -eq 'succeeded') { '&#x2705; succeeded' }
+                elseif ($outcome.result -eq 'partiallySucceeded') { '&#x26A0;&#xFE0F; partially succeeded' }
+                elseif ($outcome.result -eq 'canceled') { '&#x26AA; canceled' }
+                else { '&#x274C; failed' }
+            if ($outcome.status -eq 'completed' -and $outcome.result -eq 'failed' -and $outcome.total -eq 0) {
+                $status = '&#x274C; failed before tests ran'
+            }
+            $lines += "| ``$($outcome.pipeline)`` | [$([long]$outcome.buildId)]($($outcome.url)) | $status | $([int]$outcome.passed) | $([int]$outcome.failed) | $([int]$outcome.notExecuted) |"
+        }
+        $failedTests = @($outcomeList | ForEach-Object { $p = $_.pipeline; $_.failedTests | ForEach-Object { [pscustomobject]@{ pipeline = $p; name = $_.name; run = $_.run } } })
+        $failedTotal = ($outcomeList | Measure-Object -Property failed -Sum).Sum
+        if ($failedTotal -gt 0) {
+            $lines += @('', '<details>', "<summary><strong>Failed tests ($failedTotal)</strong></summary>", '')
+            foreach ($test in $failedTests) {
+                $name = ([string]$test.name -replace '[^\w\.\(\),:= -]', '')
+                $run = ([string]$test.run -replace '[^\w\.-]', '')
+                $lines += "- ``$name`` &#x2014; $run"
+            }
+            if ($failedTests.Count -lt $failedTotal) {
+                $lines += "- &#x2026;and $($failedTotal - $failedTests.Count) more; see the run links above."
+            }
+            $lines += @('', '</details>', '', 'Comment `/review tests` to compare these failures with recent `main` runs.')
+        }
+        if ($running) {
+            $lines += @('', '_Some runs are still in progress; this section updates automatically._')
+        } else {
+            $lines += '<!-- review-run-tests-results:final -->'
+        }
+    }
+    $lines += '<!-- review-run-tests-results:end -->'
+    return $lines -join "`n"
 }

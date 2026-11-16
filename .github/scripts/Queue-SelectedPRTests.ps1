@@ -195,7 +195,7 @@ foreach ($entry in $requests) {
         if ($build.sourceVersion -cne $selection.mergeSha -or -not $build._links.web.href) {
             throw 'Azure DevOps did not confirm the requested merge revision and run URL.'
         }
-        $results += @{ pipeline = $entry.pipeline; status = $(if ($reused) { 'reused' } else { 'queued' }); url = $build._links.web.href }
+        $results += @{ pipeline = $entry.pipeline; status = $(if ($reused) { 'reused' } else { 'queued' }); url = $build._links.web.href; buildId = [long]$build.id }
     } catch {
         $results += @{ pipeline = $entry.pipeline; status = 'failed'; detail = 'Dispatch failed; see the workflow log for the API diagnostic.' }
         Write-Warning (Get-AzdoQueueFailureMessage -ErrorRecord $_)

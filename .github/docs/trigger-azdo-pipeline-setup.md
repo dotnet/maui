@@ -37,7 +37,10 @@ The command does not replace `/azp run`, disable automatic PR builds, or satisfy
 full-suite coverage by assertion. `/review tests` still analyzes existing failures.
 The selection summary records head/base/test-merge SHAs, coverage and real run
 links; **queued is not passed**. Failed dispatches and stale PR evidence are
-reported rather than silently narrowing coverage.
+reported rather than silently narrowing coverage. The scheduled
+`review-run-tests-results.yml` workflow refreshes that comment's results section
+with each selected run's status, pass/fail/not-run totals and verified failing
+test names, then marks it final once every run completes.
 
 The workflow must be deployed on `main` for slash-command activation and
 credentialed queueing. Its manual `dry_run` input (default true) validates AI
