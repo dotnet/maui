@@ -41,7 +41,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Theory]
-		[InlineData(TextAlignment.Justify)]
 		[InlineData((TextAlignment)(-1))]
 		[InlineData((TextAlignment)100)]
 		public void UnsupportedTextAlignmentIsRejected(TextAlignment alignment)
@@ -54,6 +53,27 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			button.HorizontalTextAlignment = alignment;
 			button.VerticalTextAlignment = alignment;
 			Assert.Equal(TextAlignment.Start, button.HorizontalTextAlignment);
+			Assert.Equal(TextAlignment.End, button.VerticalTextAlignment);
+		}
+
+		[Fact]
+		public void JustifyIsSupportedOnlyForHorizontalAlignment()
+		{
+			var button = new Button
+			{
+				HorizontalTextAlignment = TextAlignment.Justify,
+				VerticalTextAlignment = TextAlignment.End
+			};
+			Assert.Equal(TextAlignment.Justify, button.HorizontalTextAlignment);
+			Assert.True(button.IsSetExplicitly(Button.HorizontalTextAlignmentProperty));
+
+			button.VerticalTextAlignment = TextAlignment.Justify;
+			Assert.Equal(TextAlignment.End, button.VerticalTextAlignment);
+			Assert.Equal(TextAlignment.Justify, button.HorizontalTextAlignment);
+
+			button.ClearValue(Button.HorizontalTextAlignmentProperty);
+			Assert.Equal(TextAlignment.Center, button.HorizontalTextAlignment);
+			Assert.False(button.IsSetExplicitly(Button.HorizontalTextAlignmentProperty));
 			Assert.Equal(TextAlignment.End, button.VerticalTextAlignment);
 		}
 

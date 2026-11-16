@@ -18,6 +18,7 @@ namespace Microsoft.Maui.Handlers
 		object? _defaultPanelHorizontalAlignment;
 		object? _defaultPanelVerticalAlignment;
 		object? _defaultTextAlignment;
+		object? _defaultTextHorizontalAlignment;
 		DefaultMauiButtonContent? _alignmentContent;
 		TextBlock? _alignmentTextBlock;
 		bool _horizontalTextAlignmentSet;
@@ -55,6 +56,7 @@ namespace Microsoft.Maui.Handlers
 			_alignmentTextBlock = null;
 			_defaultHorizontalContentAlignment = _defaultVerticalContentAlignment = null;
 			_defaultPanelHorizontalAlignment = _defaultPanelVerticalAlignment = _defaultTextAlignment = null;
+			_defaultTextHorizontalAlignment = null;
 
 			platformView.Click -= OnClick;
 			platformView.Unloaded -= OnUnloaded;
@@ -79,6 +81,10 @@ namespace Microsoft.Maui.Handlers
 				// WinUI mirrors the content panel in RTL; text itself requires physical line alignment.
 				platformView.HorizontalContentAlignment = content.HorizontalAlignment = horizontalAlignment.ToPlatformHorizontalAlignment();
 				textBlock.TextAlignment = horizontalAlignment.ToPlatform(platformView.FlowDirection == Microsoft.UI.Xaml.FlowDirection.LeftToRight);
+				if (horizontalAlignment == TextAlignment.Justify)
+					textBlock.HorizontalAlignment = HorizontalAlignment.Stretch;
+				else
+					RestoreAlignmentValue(textBlock, FrameworkElement.HorizontalAlignmentProperty, _defaultTextHorizontalAlignment);
 				_horizontalTextAlignmentSet = true;
 			}
 			else
@@ -98,11 +104,13 @@ namespace Microsoft.Maui.Handlers
 			_alignmentContent = platformView.Content as DefaultMauiButtonContent;
 			_alignmentTextBlock = _alignmentContent is null ? null : platformView.GetContent<TextBlock>();
 			_defaultPanelHorizontalAlignment = _defaultPanelVerticalAlignment = _defaultTextAlignment = null;
+			_defaultTextHorizontalAlignment = null;
 			if (_alignmentContent is { } content && _alignmentTextBlock is { } textBlock)
 			{
 				_defaultPanelHorizontalAlignment = CaptureAlignmentValue(content, FrameworkElement.HorizontalAlignmentProperty);
 				_defaultPanelVerticalAlignment = CaptureAlignmentValue(content, FrameworkElement.VerticalAlignmentProperty);
 				_defaultTextAlignment = CaptureAlignmentValue(textBlock, TextBlock.TextAlignmentProperty);
+				_defaultTextHorizontalAlignment = CaptureAlignmentValue(textBlock, FrameworkElement.HorizontalAlignmentProperty);
 			}
 		}
 
@@ -115,7 +123,10 @@ namespace Microsoft.Maui.Handlers
 			if (_alignmentContent is { } content)
 				RestoreAlignmentValue(content, FrameworkElement.HorizontalAlignmentProperty, _defaultPanelHorizontalAlignment);
 			if (_alignmentTextBlock is { } textBlock)
+			{
 				RestoreAlignmentValue(textBlock, TextBlock.TextAlignmentProperty, _defaultTextAlignment);
+				RestoreAlignmentValue(textBlock, FrameworkElement.HorizontalAlignmentProperty, _defaultTextHorizontalAlignment);
+			}
 			_horizontalTextAlignmentSet = false;
 		}
 

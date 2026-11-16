@@ -189,6 +189,7 @@ namespace Microsoft.Maui.Controls
 
 			var imageInsets = new UIEdgeInsets();
 			var titleInsets = new UIEdgeInsets();
+			nfloat? justifiedTitleWidth = null;
 
 			var image = platformButton.CurrentImage;
 			if (button.Handler is ButtonHandler buttonHandler)
@@ -209,6 +210,13 @@ namespace Microsoft.Maui.Controls
 				var titleRect = ComputeTitleRect(platformButton, button, image, size.Width, size.Height, borderWidth, padding, false);
 
 				var titleWidth = titleRect.Width;
+				if (button.HorizontalTextAlignment == TextAlignment.Justify)
+				{
+					var imageSpace = layout.Position is ButtonContentLayout.ImagePosition.Left or ButtonContentLayout.ImagePosition.Right
+						? (double)image.Size.Width + layout.Spacing : 0;
+					titleWidth = (nfloat)Math.Max(0, size.Width - padding.HorizontalThickness - borderWidth * 2 - imageSpace);
+					justifiedTitleWidth = titleWidth;
+				}
 				var titleHeight = titleRect.Height;
 				var imageWidth = image.Size.Width;
 				var imageHeight = image.Size.Height;
@@ -278,6 +286,14 @@ namespace Microsoft.Maui.Controls
 				platformButton.TitleEdgeInsets = titleInsets;
 			}
 
+			if (justifiedTitleWidth is { } textWidth)
+			{
+				var contentRect = platformButton.ContentRectForBounds(new CGRect(0, 0, size.Width, size.Height));
+				var nativeTitleRect = platformButton.TitleRectForContentRect(contentRect);
+				titleInsets.Right += nativeTitleRect.Width - textWidth;
+				platformButton.TitleEdgeInsets = titleInsets;
+			}
+
 			if (image is not null && !string.IsNullOrEmpty(platformButton.CurrentTitle) &&
 				(button.IsSetExplicitly(HorizontalTextAlignmentProperty) || button.IsSetExplicitly(VerticalTextAlignmentProperty)))
 			{
@@ -308,7 +324,7 @@ namespace Microsoft.Maui.Controls
 				var alignment = button.HorizontalTextAlignment;
 				if (((IVisualElementController)button).EffectiveFlowDirection.IsRightToLeft())
 					alignment = alignment == TextAlignment.Start ? TextAlignment.End : alignment == TextAlignment.End ? TextAlignment.Start : alignment;
-				offsetX = padding.Left + border - left + (alignment == TextAlignment.Start ? 0 : alignment == TextAlignment.End ? available : available / 2);
+				offsetX = padding.Left + border - left + (alignment is TextAlignment.Start or TextAlignment.Justify ? 0 : alignment == TextAlignment.End ? available : available / 2);
 			}
 			if (button.IsSetExplicitly(VerticalTextAlignmentProperty))
 			{
