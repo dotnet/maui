@@ -10,6 +10,9 @@ imports:
 
 environment: copilot-pat-pool
 
+# The agent works from the collected context and GitHub read tools; it never needs PR code on disk.
+checkout: false
+
 on:
   slash_command:
     name: review

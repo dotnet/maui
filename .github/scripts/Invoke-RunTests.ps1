@@ -79,7 +79,7 @@ if (-not $proposal) {
     # The agent failed or produced nothing usable: fall back to the full suite rather than guessing.
     $proposal = @{
         full_run = $true; platforms = '[]'; categories = '[]'
-        summary = 'The AI selection was unavailable, so the full UI test suite was queued.'
+        summary = 'The AI selection was unavailable, so the full UI test suite was selected.'
         rationale = 'No valid `run_selected_ui_tests` proposal was produced by the agent.'
     }
 }
