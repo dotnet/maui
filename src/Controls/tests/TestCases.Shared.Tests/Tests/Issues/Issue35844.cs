@@ -28,6 +28,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 				App.WaitForElement(() =>
 				{
 					var view = App.FindElement("TitleViewGrid");
+					if (view is null)
+					{
+						previousPortraitRect = null;
+						return null;
+					}
+
 					var rect = view.GetRect();
 					var stable = rect.Width > 0 && rect.Height > 0 && previousPortraitRect == rect;
 					previousPortraitRect = rect;
@@ -41,6 +47,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 				App.WaitForElement(() =>
 				{
 					var view = App.FindElement("TitleViewGrid");
+					if (view is null)
+						return null;
+
 					landscapeWidth = view.GetRect().Width;
 					return landscapeWidth > portraitWidth + 50 ? view : null;
 				});

@@ -21,6 +21,26 @@ public class AssertionPollingTests
 	}
 
 	[Test]
+	public void TransientMultipleAssertionsDoNotFailTheTest()
+	{
+		var enclosingResult = TestExecutionContext.CurrentContext.CurrentResult;
+		var attempts = 0;
+		((IApp)null!).RetryAssert(() =>
+		{
+			attempts++;
+			Assert.Multiple(() =>
+			{
+				Assert.That(attempts, Is.EqualTo(2));
+				Assert.That(attempts * 2, Is.EqualTo(4));
+			});
+		}, retryFrequency: TimeSpan.FromMilliseconds(1));
+
+		Assert.That(attempts, Is.EqualTo(2));
+		Assert.That(enclosingResult.AssertionResults
+			.Where(assertion => assertion.Status == AssertionStatus.Failed), Is.Empty);
+	}
+
+	[Test]
 	public void PersistentAssertionIsNotSwallowed()
 	{
 		Assert.Throws<AssertionException>(() => ((IApp)null!).RetryAssert(
