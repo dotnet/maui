@@ -15,6 +15,7 @@ namespace Microsoft.Maui.Platform
 	{
 		readonly WeakReference<IWebViewHandler> _handler;
 		WebNavigationEvent _lastEvent;
+		long? _lastProcessTerminationReload;
 
 		public MauiWebViewNavigationDelegate(IWebViewHandler handler)
 		{
@@ -162,6 +163,27 @@ namespace Microsoft.Maui.Platform
 			{
 				decisionHandler(cancel ? WKNavigationActionPolicy.Cancel : WKNavigationActionPolicy.Allow);
 			}
+		}
+
+		// Implementing this turns off WebKit's own reload, which can't restore HTML from LoadSimulatedRequest
+		// and leaves the view blank, so reload the source here instead.
+		[Export("webViewWebContentProcessDidTerminate:")]
+		void ContentProcessDidTerminate(WKWebView webView)
+		{
+			var handler = Handler;
+
+			if (handler is null || !handler.IsConnected() || handler.VirtualView is not IWebView virtualView)
+				return;
+
+			virtualView.ProcessTerminated(new WebProcessTerminatedEventArgs(webView));
+
+			// Reload at most once per 30 seconds so a page that keeps crashing the process can't loop.
+			var now = Environment.TickCount64;
+			if (now - _lastProcessTerminationReload < 30_000)
+				return;
+
+			_lastProcessTerminationReload = now;
+			handler.UpdateValue(nameof(IWebView.Source));
 		}
 
 		string GetCurrentUrl()
