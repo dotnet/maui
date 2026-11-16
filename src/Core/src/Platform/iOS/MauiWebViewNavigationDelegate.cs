@@ -165,8 +165,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		// Implementing this turns off WebKit's own reload, which can't restore HTML from LoadSimulatedRequest
-		// and leaves the view blank, so reload the source here instead.
+		// Implementing this turns off WebKit's own reload, which leaves HTML sources blank; UpdateReload restores them.
 		[Export("webViewWebContentProcessDidTerminate:")]
 		void ContentProcessDidTerminate(WKWebView webView)
 		{
@@ -183,7 +182,7 @@ namespace Microsoft.Maui.Platform
 				return;
 
 			_lastProcessTerminationReload = now;
-			handler.UpdateValue(nameof(IWebView.Source));
+			webView.UpdateReload(virtualView);
 		}
 
 		string GetCurrentUrl()

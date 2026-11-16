@@ -51,5 +51,36 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.False(navigated.Task.IsCompleted);
 			});
 		}
+
+		[Fact(DisplayName = "URL source keeps its current page after the web content process terminates")]
+		public async Task UrlSourceKeepsCurrentPageAfterWebContentProcessTerminates()
+		{
+			SetupBuilder();
+
+			var webView = new WebView
+			{
+				WidthRequest = 100,
+				HeightRequest = 100,
+				Source = new UrlWebViewSource { Url = "HybridTestRoot/index.html" }
+			};
+
+			var navigated = new TaskCompletionSource<WebNavigationResult>(TaskCreationOptions.RunContinuationsAsynchronously);
+			webView.Navigated += (_, e) => navigated.TrySetResult(e.Result);
+
+			await AttachAndRun<WebViewHandler>(webView, async handler =>
+			{
+				Assert.Equal(WebNavigationResult.Success, await navigated.Task.WaitAsync(TimeSpan.FromSeconds(5)));
+
+				// Move to a new history entry, so reloading the source would lose it but reloading the current page keeps it
+				await webView.EvaluateJavaScriptAsync("location.hash = 'second'");
+				await AssertHelpers.AssertEventually(() => handler.PlatformView.Url?.Fragment == "second");
+
+				navigated = new TaskCompletionSource<WebNavigationResult>(TaskCreationOptions.RunContinuationsAsynchronously);
+				handler.PlatformView.PerformSelector(new Selector("_killWebContentProcess"), null, 0);
+
+				Assert.Equal(WebNavigationResult.Success, await navigated.Task.WaitAsync(TimeSpan.FromSeconds(5)));
+				Assert.Equal("second", handler.PlatformView.Url?.Fragment);
+			});
+		}
 	}
 }
