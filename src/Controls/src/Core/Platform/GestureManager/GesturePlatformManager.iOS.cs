@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Diagnostics.CodeAnalysis;
-using System.Threading.Tasks;
 using System.Reflection;
 using System.Runtime.Versioning;
+using System.Threading.Tasks;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Controls.Internals;
@@ -76,8 +76,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		internal void Disconnect()
 		{
-			if (ElementGestureRecognizers != null)
-				ElementGestureRecognizers.CollectionChanged -= _collectionChangedHandler;
+			ElementGestureRecognizers?.CollectionChanged -= _collectionChangedHandler;
 		}
 
 		public void Dispose()
@@ -192,7 +191,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 				var childTapGestureRecognizer = childGestureRecognizer.GestureRecognizer as TapGestureRecognizer;
 				foreach (var item in recognizers)
-				if (item == childTapGestureRecognizer && view != null)
+					if (item == childTapGestureRecognizer && view != null)
 						childTapGestureRecognizer.SendTapped(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakPlatformRecognizer, weakEventTracker));
 			}
 		}
@@ -419,12 +418,12 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					case UIGestureRecognizerState.Began:
 						lpRecognizer.SendLongPressing(view, GestureStatus.Started, getPosition);
+						lpRecognizer.SendLongPressed(view, getPosition);
 						break;
 					case UIGestureRecognizerState.Changed:
 						lpRecognizer.SendLongPressing(view, GestureStatus.Running, getPosition);
 						break;
 					case UIGestureRecognizerState.Ended:
-						lpRecognizer.SendLongPressed(view, getPosition);
 						lpRecognizer.SendLongPressing(view, GestureStatus.Completed, getPosition);
 						break;
 					case UIGestureRecognizerState.Cancelled:
@@ -458,13 +457,13 @@ namespace Microsoft.Maui.Controls.Platform
 			var result = new UISwipeGestureRecognizer();
 			result.NumberOfTouchesRequired = (uint)numFingers;
 			result.Direction = (UISwipeGestureRecognizerDirection)direction;
-			result.ShouldRecognizeSimultaneously = (g, o) => 
+			result.ShouldRecognizeSimultaneously = (g, o) =>
 			{
 				if (o.View is UIScrollView)
 				{
 					return false;
 				}
-				
+
 				return true;
 			};
 			result.AddTarget(() => action(direction));
@@ -474,7 +473,7 @@ namespace Microsoft.Maui.Controls.Platform
 		UILongPressGestureRecognizer CreateLongPressRecognizer(Action<UILongPressGestureRecognizer> action)
 		{
 			var result = new UILongPressGestureRecognizer(action);
-			
+
 			// Get the recognizer from the handler's VirtualView
 			if (_handler?.VirtualView is View view)
 			{
@@ -491,11 +490,11 @@ namespace Microsoft.Maui.Controls.Platform
 					}
 				}
 			}
-			
+
 			// Enable simultaneous recognition with other gestures (like Swipe, Tap)
 			// This allows LongPress to coexist with other gestures
 			result.ShouldRecognizeSimultaneously = _alwaysRecognizeSimultaneously;
-			
+
 			return result;
 		}
 
@@ -544,7 +543,7 @@ namespace Microsoft.Maui.Controls.Platform
 					eventTracker._handler?.VirtualView is View view)
 				{
 					ButtonsMask button = ButtonsMask.Primary;
-					
+
 					// Try to get actual button information from the CustomPressGestureRecognizer
 					if (pointerGesture is CustomPressGestureRecognizer customPress)
 					{
@@ -623,7 +622,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			// For Mac Catalyst, add context menu interaction to detect right-clicks for PointerGestureRecognizer
 			// since right-click events don't come through the normal Presses* events
-			if (OperatingSystem.IsMacCatalyst() && 
+			if (OperatingSystem.IsMacCatalyst() &&
 				weakRecognizer.Target is PointerGestureRecognizer pgr &&
 				(pgr.Buttons & ButtonsMask.Secondary) == ButtonsMask.Secondary)
 			{
@@ -1050,7 +1049,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void OnSwipeGestureRecognizerPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
 		{
-			if (e.Is(SwipeGestureRecognizer.DirectionProperty) && 
+			if (e.Is(SwipeGestureRecognizer.DirectionProperty) &&
 				sender is SwipeGestureRecognizer swipeGesture &&
 				_gestureRecognizers.TryGetValue(swipeGesture, out var uiRecognizers))
 			{
@@ -1331,21 +1330,21 @@ namespace Microsoft.Maui.Controls.Platform
 						// Check if this recognizer should respond to secondary button
 						if ((pointerGestureRecognizer.Buttons & ButtonsMask.Secondary) == ButtonsMask.Secondary)
 						{
-								pointerGestureRecognizer.SendPointerPressed(view,
-									(relativeTo) => CalculatePosition(relativeTo, location, null, new WeakReference(eventTracker)),
-									null,
-									ButtonsMask.Secondary);
+							pointerGestureRecognizer.SendPointerPressed(view,
+								(relativeTo) => CalculatePosition(relativeTo, location, null, new WeakReference(eventTracker)),
+								null,
+								ButtonsMask.Secondary);
 
-								// Immediately send pointer released event
-								if (_gestureManager.Target is GesturePlatformManager gt
-									&& _recognizer.Target is PointerGestureRecognizer pgr2
-									&& gt._handler?.VirtualView is View view2)
-								{
-									view2.Dispatcher?.Dispatch(() => pgr2.SendPointerReleased(view2,
-										(relativeTo) => CalculatePosition(relativeTo, location, null, new WeakReference(gt)),
-										null,
-										ButtonsMask.Secondary));
-								}
+							// Immediately send pointer released event
+							if (_gestureManager.Target is GesturePlatformManager gt
+								&& _recognizer.Target is PointerGestureRecognizer pgr2
+								&& gt._handler?.VirtualView is View view2)
+							{
+								view2.Dispatcher?.Dispatch(() => pgr2.SendPointerReleased(view2,
+									(relativeTo) => CalculatePosition(relativeTo, location, null, new WeakReference(gt)),
+									null,
+									ButtonsMask.Secondary));
+							}
 						}
 					}
 
