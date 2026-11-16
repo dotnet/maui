@@ -26,9 +26,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 	/// The scroll view delegate reports every offset change. One made while UIKit lays the view out is UIKit's, even when
 	/// the content ends up the size it was (UIKit can re-estimate rows it measured before and measure them again in one
 	/// pass, and can move the offset before it updates the content size), so it never counts as a scroll away from an
-	/// edge. The user is scrolling while the collection view is dragging or decelerating. An animated scroll to an edge the
-	/// app requested and the view doesn't follow scrolls as the user's does, as on Android, until it ends: it's judged by
-	/// where it stops, and the content changing on its way doesn't scroll the view back to the edge it left.
+	/// edge. The user is scrolling while the collection view is dragging or decelerating. An animated scroll the app
+	/// requested, to an item or to an edge the view doesn't follow, scrolls as the user's does, as on Android, until it ends:
+	/// it's judged by where it stops, and the content changing on its way doesn't scroll the view back to the edge it left.
 	/// </para>
 	/// <para>
 	/// It holds no references: the controller passes its views in. It is vertical only.
@@ -226,10 +226,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		/// <param name="collectionView">The collection view.</param>
 		/// <param name="isLatest">Whether the request is still the latest (see <c>ItemsViewController2.IsLatestScrollRequest</c>).</param>
 		/// <param name="animating">
-		/// Whether the request started an animated scroll to an edge the view doesn't follow that's still on its way, which UIKit
-		/// reports the end of (see <see cref="RequestedScrollEnded"/>). Until then it scrolls as a fling does: the looks before
-		/// it moves would otherwise judge it where it starts, at the edge it leaves, and scroll back there for the content
-		/// changing, which stops the animation.
+		/// Whether the request started an animated scroll that's still on its way, to an item or to an edge the view doesn't
+		/// follow, which UIKit reports the end of (see <see cref="RequestedScrollEnded"/>). Until then it scrolls as a fling
+		/// does: the looks before it moves would otherwise judge it where it starts, at the edge it leaves, and scroll back
+		/// there for the content changing, which stops the animation.
 		/// </param>
 		public void ScrollRequested(UICollectionView collectionView, bool isLatest, bool animating = false)
 		{

@@ -311,7 +311,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		/// event this raises happens before, and UIKit undoes it. So a <c>ScrollToStart</c> or <c>ScrollToEnd</c> requested
 		/// from there scrolls once this returns (see <see cref="ScrolledToItem"/>).
 		/// </summary>
-		internal void ScrollToItem(NSIndexPath indexPath, UICollectionViewScrollPosition scrollPosition, bool animated)
+		/// <returns>
+		/// Whether UIKit animates the scroll once this returns, and reports when the animation ends. It doesn't animate when the
+		/// item is where the request puts it already, and never reports an end then, nor for a view that isn't in a window, which
+		/// it scrolls at once. Before iOS and Mac Catalyst 17, which don't tell, this returns <see langword="false"/>.
+		/// </returns>
+		internal bool ScrollToItem(NSIndexPath indexPath, UICollectionViewScrollPosition scrollPosition, bool animated)
 		{
 			var scrollingToItem = _scrollingToItem;
 			_scrollingToItem = true;
@@ -323,6 +328,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				_scrollingToItem = scrollingToItem;
 			}
+
+			// An animation this replaced reported its end as this ran: whether one runs now is what tells.
+			return animated
+				&& (OperatingSystem.IsIOSVersionAtLeast(17) || OperatingSystem.IsMacCatalystVersionAtLeast(17))
+				&& CollectionView.ScrollAnimating;
 		}
 
 		/// <summary>

@@ -211,16 +211,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				}
 #endif
 
-				// A scroll the app requests is judged by where it lands: the anchor doesn't scroll it back to the end.
+				// A scroll the app requests is judged by where it lands: the anchor doesn't scroll it back to the end. An animated
+				// one is judged once UIKit reports that it ended.
 				var scrollAnchor = Controller.ScrollAnchor;
+				var animating = false;
 				scrollAnchor?.ScrollRequesting();
 				try
 				{
-					Controller.ScrollToItem(indexPath, scrollPosition, args.IsAnimated);
+					animating = Controller.ScrollToItem(indexPath, scrollPosition, args.IsAnimated);
 				}
 				finally
 				{
-					scrollAnchor?.ScrollRequested(Controller.CollectionView, Controller.IsLatestScrollRequest(request));
+					scrollAnchor?.ScrollRequested(Controller.CollectionView, Controller.IsLatestScrollRequest(request), animating);
 				}
 			}
 

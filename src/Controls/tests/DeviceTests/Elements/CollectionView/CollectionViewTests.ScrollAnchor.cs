@@ -1556,6 +1556,78 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Theory(DisplayName = "An animated ScrollTo from the end of a list that follows its end gets there as the content changes")]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task AnAnimatedScrollToFromTheEndGetsThereAsTheContentChanges(bool addItem)
+		{
+			SetupBuilder();
+			var items = CreateAnchorItems(40);
+			var collectionView = CreateAnchorCollectionView(items, ScrollAnchorMode.End);
+
+			// The first item starts the content.
+			collectionView.Header = null;
+			collectionView.Footer = null;
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				await AssertAtEnd(handler, "The list should open at its end.");
+
+				// The app scrolls to the first item as a chat's last answer streams in. The list is laid out before the
+				// animation moves it, and the content changes after that, while the list is still at the end: it carries on.
+				collectionView.ScrollTo(0, position: ScrollToPosition.Start, animate: true);
+#if IOS || MACCATALYST
+				handler.Controller.CollectionView.LayoutIfNeeded();
+#endif
+				if (addItem)
+				{
+					items.Add(new AnchorItem("Added at the end", 40));
+				}
+				else
+				{
+					items[^1].Height = 120;
+				}
+#if IOS || MACCATALYST
+				handler.Controller.CollectionView.LayoutIfNeeded();
+#endif
+
+				var atStart = await Wait(() => GetDistanceFromStart(handler) <= AnchorTolerance, 5000);
+				Assert.True(atStart, $"ScrollTo should reach the first item. Distance from the start: {GetDistanceFromStart(handler)}.");
+				await Task.Delay(500);
+				Assert.True(GetDistanceFromStart(handler) <= AnchorTolerance, $"The list should stay at its first item. Distance from the start: {GetDistanceFromStart(handler)}.");
+				Assert.False(collectionView.IsAnchored, "The list shouldn't follow an edge its AnchorMode doesn't select.");
+			});
+		}
+
+		[Fact(DisplayName = "An animated ScrollTo to where a list that follows its end already is doesn't stop it following the end")]
+		public async Task AnAnimatedScrollToWhereTheListIsKeepsItFollowingTheEnd()
+		{
+			SetupBuilder();
+			var items = CreateAnchorItems(40);
+			var collectionView = CreateAnchorCollectionView(items, ScrollAnchorMode.End);
+
+			// The last item ends the content.
+			collectionView.Header = null;
+			collectionView.Footer = null;
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				await AssertAtEnd(handler, "The list should open at its end.");
+				await Task.Delay(300);
+
+				// The last item is where the app scrolls it already, so nothing animates: the list still follows its end.
+				collectionView.ScrollTo(items.Count - 1, position: ScrollToPosition.End, animate: true);
+				await Task.Delay(500);
+				await AssertAtEnd(handler, "The list should stay at its end.");
+				Assert.True(collectionView.IsAnchored, "The list should still follow its end.");
+
+				items[^1].Height = 120;
+				await AssertEventually(() => Math.Abs(GetItemHeight(handler, items.Count - 1, hasHeader: false) - 120) <= AnchorTolerance, timeout: 3000, message: "The last item should grow.");
+				await AssertAtEnd(handler, "Following the end, the list should keep the grown last item's end in view.");
+				Assert.True(collectionView.IsAnchored);
+			});
+		}
+
 #if IOS || MACCATALYST
 		// UIKit doesn't animate a scroll of a view that isn't in a window: it scrolls the view there, and reports that the
 		// animation ended before the request returns.

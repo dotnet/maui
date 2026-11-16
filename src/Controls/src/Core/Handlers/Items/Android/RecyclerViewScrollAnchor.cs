@@ -317,6 +317,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 		}
 
+		/// <summary>
+		/// Called once an animated scroll the app requested has started. RecyclerView's smooth scroller takes its first step in
+		/// the next frame's animation, and doesn't scroll at all when it finds its target in place, which nothing reports: the
+		/// view wouldn't look again until the content next changes, which moves it from where the request left it. Look after
+		/// that step instead, which judges the request (see <see cref="ScrollRequested"/>): as a fling when it scrolls.
+		/// </summary>
+		public void RequestedScrollStarted() => PostUpdate();
+
 		/// <summary>Scrolls to the start, and follows it again. The view must be able to follow its start.</summary>
 		public void ScrollToStart(bool animate)
 		{

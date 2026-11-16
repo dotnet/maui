@@ -534,6 +534,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				_animatingRequestedScroll = true;
 				ScrollHelper.AnimateScrollToPosition(position, args.ScrollToPosition);
+				if (isItem)
+				{
+					_scrollAnchor?.RequestedScrollStarted();
+				}
 			}
 			else
 			{
