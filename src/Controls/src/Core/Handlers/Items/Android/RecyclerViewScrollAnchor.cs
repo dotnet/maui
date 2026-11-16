@@ -41,9 +41,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 	/// scroll the app requested, which the anchor judges like a fling). It is vertical only.
 	/// </para>
 	/// <para>
-	/// The anchor raises <see cref="StructuredItemsView.IsAnchored"/> changes, and RecyclerView raises scroll events as it
-	/// lays out: the app can request a scroll from either. The newest request wins: the anchor doesn't scroll for an older
-	/// one after reporting, and judges a request made during a layout once the layout it asks for has landed it.
+	/// The anchor raises <see cref="StructuredItemsView.IsAnchored"/> changes, RecyclerView raises scroll events as it lays
+	/// out, and stopping a scroll raises <see cref="ItemsView.RemainingItemsThresholdReached"/> when it's pending, as the view
+	/// goes idle: the app can request a scroll from any of them. The newest request wins: the anchor doesn't scroll for an
+	/// older one after reporting or stopping, and judges a request made during a layout once the layout it asks for has
+	/// landed it. A layout the anchor doesn't follow (one that doesn't scroll vertically) isn't anchored: there, changing the
+	/// mode doesn't stop a scroll the app requested.
 	/// </para>
 	/// </remarks>
 	sealed class RecyclerViewScrollAnchor
@@ -104,11 +107,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		/// Starts anchoring: reports that the view follows an edge, and goes to that edge. Call it once the anchor is installed:
 		/// the app can turn anchoring off as it hears the view is anchored, which detaches the installed anchor.
 		/// </summary>
-		public void Attach()
-		{
-			StopRequestedScroll();
-			PublishAndJumpToEdge();
-		}
+		public void Attach() => StopRequestedScrollAndJumpToEdge();
 
 		/// <summary>Gets the edges the view can follow.</summary>
 		public ScrollAnchorMode Edges => _tracker.Edges;
@@ -143,7 +142,25 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_requestPending = false;
 			_requestLandsLater = false;
 			ResetMeasurement();
-			StopRequestedScroll();
+			StopRequestedScrollAndJumpToEdge();
+		}
+
+		// Stops a scroll the app requested earlier, which the edge the view follows now supersedes, reports whether the view
+		// follows an edge, and goes to it. A layout the anchor doesn't follow (one that doesn't scroll vertically) has no edge
+		// to go to: there, the scroll carries on. Stopping a scroll raises RemainingItemsThresholdReached when it's pending, as
+		// the view goes idle: a scroll the app requests from it is newer, and judged where it lands.
+		void StopRequestedScrollAndJumpToEdge()
+		{
+			if (IsFollowingEdge)
+			{
+				var requests = _scrollRequests;
+				StopRequestedScroll();
+				if (requests != _scrollRequests)
+				{
+					return;
+				}
+			}
+
 			PublishAndJumpToEdge();
 		}
 
@@ -306,14 +323,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			// It's newer than any scroll requested before.
-			_scrollRequests++;
+			var requests = ++_scrollRequests;
 			_requestPending = false;
 			_requestLandsLater = false;
 			if (animate && GetLayout() is var (layoutManager, _) && layoutManager.ItemCount > 0)
 			{
 				// It scrolls like a fling toward the start, which never disengages the anchor.
 				_tracker.Engage(ScrollAnchorMode.Start);
-				var requests = _scrollRequests;
 				Publish();
 				if (requests == _scrollRequests)
 				{
@@ -323,8 +339,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
-			// Look again as for a new view that follows its start.
+			// Look again as for a new view that follows its start. Stopping a scroll can raise RemainingItemsThresholdReached (see
+			// StopRequestedScrollAndJumpToEdge): a scroll the app requests from it is newer.
 			_recyclerView.StopScroll();
+			if (requests != _scrollRequests)
+			{
+				return;
+			}
+
 			_tracker.Reset(ScrollAnchorMode.Start);
 			PublishAndJumpToEdge();
 		}
@@ -338,7 +360,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			// It's newer than any scroll requested before.
-			_scrollRequests++;
+			var requests = ++_scrollRequests;
 			_requestPending = false;
 			_requestLandsLater = false;
 			if (animate && GetLayout() is var (layoutManager, _) && layoutManager.ItemCount > 0)
@@ -346,7 +368,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				// It scrolls like a fling toward the end, which never disengages the anchor; once it settles, the anchor
 				// scrolls the rest of the way if the end moved meanwhile.
 				_tracker.Engage(ScrollAnchorMode.End);
-				var requests = _scrollRequests;
 				Publish();
 				if (requests == _scrollRequests)
 				{
@@ -356,8 +377,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
-			// Look again as for a new view: the look after the jump scrolls to the exact end.
+			// Look again as for a new view: the look after the jump scrolls to the exact end. Stopping a scroll can raise
+			// RemainingItemsThresholdReached (see StopRequestedScrollAndJumpToEdge): a scroll the app requests from it is newer.
 			_recyclerView.StopScroll();
+			if (requests != _scrollRequests)
+			{
+				return;
+			}
+
 			_tracker.Reset(ScrollAnchorMode.End);
 			PublishAndJumpToEdge();
 		}

@@ -388,15 +388,21 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				return;
 			}
 
-			// It scrolls to the edge it selects: it's newer than any scroll requested before.
-			StartScrollRequest();
+			// A layout that doesn't scroll vertically isn't anchored (see CollectionViewScrollAnchor): the mode has no effect on
+			// it, and a scroll the app requested carries on to where it was going.
+			var isVertical = ScrollDirection == UICollectionViewScrollDirection.Vertical;
+			if (isVertical)
+			{
+				// It scrolls to the edge it selects: it's newer than any scroll requested before.
+				StartScrollRequest();
 
 #if MACCATALYST
-			// It scrolls to an edge: a restore armed by an earlier ScrollTo (see MauiCollectionView) would scroll back.
-			(CollectionView as Items.MauiCollectionView)?.ClearPendingScrollRestore();
+				// It scrolls to an edge: a restore armed by an earlier ScrollTo (see MauiCollectionView) would scroll back.
+				(CollectionView as Items.MauiCollectionView)?.ClearPendingScrollRestore();
 #endif
-			// So would what an earlier scroll left for when its animation ends, or for the next layout.
-			ScrollingToEdge(null);
+				// So would what an earlier scroll left for when its animation ends, or for the next layout.
+				ScrollingToEdge(null);
+			}
 
 			if (_scrollAnchor is null)
 			{
@@ -418,7 +424,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			// And an animated scroll would carry on to where it was going, also when the view is at the edge it follows now and
 			// nothing scrolls it there: stop it where it is. A drag or a deceleration is the user's, and carries on.
-			if (!CollectionView.Dragging && !CollectionView.Decelerating)
+			if (isVertical && !CollectionView.Dragging && !CollectionView.Decelerating)
 			{
 				CollectionView.SetContentOffset(CollectionView.ContentOffset, false);
 			}

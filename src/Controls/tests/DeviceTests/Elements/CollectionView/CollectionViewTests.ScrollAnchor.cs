@@ -1616,6 +1616,187 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		// A list that scrolls horizontally isn't anchored: the mode has no effect on it, and doesn't stop a scroll the app
+		// requested.
+		[Theory(DisplayName = "Changing AnchorMode during an animated ScrollTo in a horizontal list lets it carry on")]
+		[InlineData(ScrollAnchorMode.None)]
+		[InlineData(ScrollAnchorMode.Start)]
+		public async Task ChangingAnchorModeDuringAnAnimatedScrollToInAHorizontalListLetsItCarryOn(ScrollAnchorMode initialMode)
+		{
+			SetupBuilder();
+			var collectionView = new CollectionView
+			{
+				AnchorMode = initialMode,
+				ItemsLayout = LinearItemsLayout.Horizontal,
+				HeightRequest = 100,
+				WidthRequest = 300,
+				ItemsSource = Enumerable.Range(0, 40).Select(index => $"Item {index}").ToList(),
+				ItemTemplate = new DataTemplate(() =>
+				{
+					var label = new Label { WidthRequest = 100 };
+					label.SetBinding(Label.TextProperty, ".");
+					return label;
+				}),
+			};
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				await AssertEventually(() => GetHorizontalDistanceFromStart(handler) <= AnchorTolerance, timeout: 3000, message: "The list should open at its start.");
+				// Until the list is laid out, it has no content to scroll, and is at both of its edges.
+				var distance = double.NaN;
+				var laidOut = await Wait(() => (distance = GetHorizontalDistanceToEnd(handler)) > 100, 3000);
+				Assert.True(laidOut, $"The items should extend past the end of the list. Distance to the end: {distance}.");
+
+				// From a frame of the scroll's animation, far from the last item. iOS raises Scrolled as it starts the scroll, before
+				// the animation.
+				var scrolling = false;
+				var changed = false;
+				var steps = 0;
+				collectionView.Scrolled += (sender, args) =>
+				{
+					if (changed)
+					{
+						steps++;
+					}
+					else if (scrolling && args.HorizontalDelta > 0)
+					{
+						changed = true;
+						collectionView.AnchorMode = ScrollAnchorMode.End;
+					}
+				};
+
+				collectionView.ScrollTo(39, position: ScrollToPosition.End, animate: true);
+				scrolling = true;
+
+				await AssertEventually(() => changed, timeout: 3000, message: "The scroll should move the list.");
+				var atEnd = await Wait(() => Math.Abs(distance = GetHorizontalDistanceToEnd(handler)) <= AnchorTolerance, 3000);
+				Assert.True(atEnd, $"The scroll should carry on to the last item. Distance to the end: {distance}.");
+
+				// On iOS, a scroll stopped short gets there in one step: UIKit lays the view out again with the item it scrolls to
+				// where the scroll was taking it.
+				Assert.True(steps > 1, $"The scroll should carry on animated. Steps after the change: {steps}.");
+				Assert.False(collectionView.IsAnchored);
+			});
+		}
+
+#if ANDROID
+		// Stopping a scroll raises RemainingItemsThresholdReached when it's pending, as RecyclerView goes idle: a scroll the app
+		// requests from it is newer than the edge the list goes to.
+		[Theory(DisplayName = "A ScrollTo from RemainingItemsThresholdReached as the list stops a scroll to go to an edge wins")]
+		[InlineData("AnchorMode")]
+		[InlineData("ScrollToEnd")]
+		[InlineData("ScrollToStart")]
+		public async Task AScrollToFromRemainingItemsThresholdReachedAsTheListStopsAScrollToGoToAnEdgeWins(string stopBy)
+		{
+			SetupBuilder();
+			var items = CreateAnchorItems(40);
+			var toStart = stopBy == "ScrollToStart";
+			var collectionView = CreateAnchorCollectionView(items, stopBy switch
+			{
+				"ScrollToEnd" => ScrollAnchorMode.End,
+				"ScrollToStart" => ScrollAnchorMode.Start,
+				_ => ScrollAnchorMode.None,
+			});
+
+			// Without a header and footer, the first and last items start and end the content: ScrollTo either scrolls to
+			// that edge. The threshold is reached with the tenth item in view.
+			collectionView.Header = null;
+			collectionView.Footer = null;
+			collectionView.RemainingItemsThreshold = 30;
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				// The scroll goes away from the edge the list then goes to, which the app's ScrollTo takes it back from.
+				if (stopBy == "ScrollToEnd")
+				{
+					await AssertAtEnd(handler, "The list should open at its end.");
+					collectionView.ScrollTo(0, position: ScrollToPosition.Start, animate: false);
+				}
+				else if (toStart)
+				{
+					await AssertEventually(() => GetDistanceFromStart(handler) <= AnchorTolerance, timeout: 3000, message: "The list should open at its start.");
+					collectionView.ScrollTo(items.Count - 1, position: ScrollToPosition.End, animate: false);
+				}
+
+				if (toStart)
+				{
+					await AssertAtEnd(handler, "The list should be at its end.");
+				}
+				else
+				{
+					await AssertEventually(() => GetDistanceFromStart(handler) <= AnchorTolerance, timeout: 3000, message: "The list should be at its start.");
+				}
+
+				var stopped = false;
+				var scrolledTo = false;
+				collectionView.RemainingItemsThresholdReached += (sender, args) =>
+				{
+					if (stopped && !scrolledTo)
+					{
+						scrolledTo = true;
+						collectionView.ScrollTo(toStart ? items.Count - 1 : 0, position: toStart ? ScrollToPosition.End : ScrollToPosition.Start, animate: false);
+					}
+				};
+
+				// Past the threshold, which RecyclerView raises once it's idle, the list goes to an edge: that stops the scroll.
+				var passedThreshold = false;
+				collectionView.Scrolled += (sender, args) =>
+				{
+					if (stopped)
+					{
+						return;
+					}
+
+					if (passedThreshold)
+					{
+						stopped = true;
+						switch (stopBy)
+						{
+							case "ScrollToEnd":
+								collectionView.ScrollToEnd(animate: false);
+								break;
+							case "ScrollToStart":
+								collectionView.ScrollToStart(animate: false);
+								break;
+							default:
+								collectionView.AnchorMode = ScrollAnchorMode.End;
+								break;
+						}
+					}
+					else if (args.LastVisibleItemIndex >= 12 && (toStart ? args.VerticalDelta < 0 : args.VerticalDelta > 0))
+					{
+						passedThreshold = true;
+					}
+				};
+
+				if (toStart)
+				{
+					collectionView.ScrollTo(0, position: ScrollToPosition.Start, animate: true);
+				}
+				else
+				{
+					collectionView.ScrollTo(items.Count - 1, position: ScrollToPosition.End, animate: true);
+				}
+
+				await AssertEventually(() => stopped, timeout: 3000, message: "The scroll should pass the threshold.");
+				Assert.True(scrolledTo, "Stopping the scroll should raise RemainingItemsThresholdReached.");
+
+				await Task.Delay(1500);
+				if (toStart)
+				{
+					var distance = GetDistanceToEnd(handler);
+					Assert.True(Math.Abs(distance) <= AnchorTolerance, $"The ScrollTo should show the end. Distance to the end: {distance}.");
+				}
+				else
+				{
+					Assert.True(GetDistanceFromStart(handler) <= AnchorTolerance, $"The ScrollTo should show the start. Position: {GetScrollPosition(handler)}.");
+				}
+
+				Assert.False(collectionView.IsAnchored);
+			});
+		}
+#endif
+
 		[Theory(DisplayName = "Changing AnchorMode as ScrollToEnd reports following the end shows the edge it selects")]
 		[InlineData(true)]
 		[InlineData(false)]
