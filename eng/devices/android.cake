@@ -322,19 +322,28 @@ void EnsureDeviceForUITestAttempt(string project, string app, string appPackageN
 		Warning("Failed to clean up the lost emulator ({0}); killing its process directly.", ex.Message);
 		try
 		{
-			var killTask = System.Threading.Tasks.Task.Run(() =>
-			{
-				lostEmulator.Kill();
-				lostEmulator.WaitForExit();
-			});
-			if (!killTask.Wait(TimeSpan.FromSeconds(EmulatorKillTimeoutSeconds)))
-				Warning("The lost emulator process did not exit within {0} seconds.", EmulatorKillTimeoutSeconds);
+			if (!System.Threading.Tasks.Task.Run(() => lostEmulator.Kill()).Wait(TimeSpan.FromSeconds(EmulatorKillTimeoutSeconds)))
+				Warning("Killing the lost emulator process timed out after {0} seconds.", EmulatorKillTimeoutSeconds);
 		}
 		catch (Exception killEx)
 		{
 			Warning("Failed to kill the lost emulator process: {0}", killEx.Message);
 		}
 	}
+
+	// Cleanup only warns when the kill or wait times out; restarting the AVD while the old instance runs would start a duplicate.
+	bool exited;
+	try
+	{
+		exited = System.Threading.Tasks.Task.Run(() => lostEmulator.WaitForExit()).Wait(TimeSpan.FromSeconds(EmulatorKillTimeoutSeconds));
+	}
+	catch (Exception waitEx)
+	{
+		Warning("Failed to confirm the lost emulator process exited: {0}", waitEx.Message);
+		exited = false;
+	}
+	if (!exited)
+		throw new InvalidOperationException($"The lost Android emulator process did not exit within {EmulatorKillTimeoutSeconds} seconds; not restarting the AVD while it may still be running.");
 
 	emulatorProcess = null;
 	HandleVirtualDevice(emuSettings, avdSettings, androidAvd, androidAvdImage, deviceSkin, deviceBoot).GetAwaiter().GetResult();
