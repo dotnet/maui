@@ -1839,6 +1839,28 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 		}
 
 		[Fact]
+		public async Task PickPhotosAsync_Throws_While_Another_Operation_Is_In_Progress()
+		{
+			// Without the photo picker, PickPhotosAsync launches the legacy chooser activity instead.
+			if (!MediaPickerImplementation.IsPhotoPickerAvailable)
+				return;
+
+			// Same state as a double tap: the first pick is still waiting for the photo picker result.
+			var firstPick = MediaPickerRecoveryManager.BeginOperation(
+				RecoveredMediaPickerResultKind.PickPhotos,
+				[],
+				PersistedPhotoProcessingOptions.Default);
+
+			var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => MediaPicker.PickPhotosAsync());
+
+			Assert.Equal("A MediaPicker operation is already in progress.", exception.Message);
+
+			var activePick = Assert.IsType<PendingMediaPickerOperation>(GetActiveOperation());
+			Assert.Equal(firstPick.Id, activePick.Id);
+			Assert.Equal(PendingMediaPickerState.Pending, activePick.State);
+		}
+
+		[Fact]
 		public async Task BeginOperationWithRecoveryAsync_Promotes_Callback_Race_And_Starts_New_Operation()
 		{
 			var firstCapturePath = CreateNonEmptyMediaFile(FileExtensions.Mp4);
