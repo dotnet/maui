@@ -564,10 +564,17 @@ function ConvertTo-RunTestsResults {
     param([Parameter(Mandatory)]$Build, [AllowNull()]$Timeline)
     $jobs = @()
     if ($Timeline -and $Timeline.records) {
-        $jobs = @($Timeline.records | Where-Object { $_.type -eq 'Job' -and $_.result -ne 'skipped' } |
-            Sort-Object { $_.name } | ForEach-Object {
-                [pscustomobject]@{ name = [string]$_.name; result = $(if ($_.result) { [string]$_.result } else { [string]$_.state }) }
-            })
+        $byId = @{}
+        foreach ($record in $Timeline.records) { if ($record.id) { $byId[[string]$record.id] = $record } }
+        $jobs = @($Timeline.records | Where-Object { $_.type -eq 'Job' -and $_.result -ne 'skipped' } | ForEach-Object {
+                # Job -> Phase -> Stage; show "Stage Job" like the Azure Pipelines check names.
+                $stage = $null
+                $parent = $byId[[string]$_.parentId]
+                while ($parent -and $parent.type -ne 'Stage') { $parent = $byId[[string]$parent.parentId] }
+                if ($parent) { $stage = [string]$parent.name }
+                $name = if ($stage) { "$stage $($_.name)" } else { [string]$_.name }
+                [pscustomobject]@{ name = $name; result = $(if ($_.result) { [string]$_.result } else { [string]$_.state }) }
+            } | Sort-Object name)
     }
     $completed = $Build.status -eq 'completed'
     $failed = @($jobs | Where-Object { $_.result -eq 'failed' }).Count
