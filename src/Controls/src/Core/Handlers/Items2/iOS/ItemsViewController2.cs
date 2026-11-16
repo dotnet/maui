@@ -483,7 +483,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 
 			// A scroll the app requests: an anchor that follows the end judges where it lands.
-			bool animating;
+			var animating = false;
 			scrollAnchor?.ScrollRequesting();
 			try
 			{
@@ -491,7 +491,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 			finally
 			{
-				scrollAnchor?.ScrollRequested(CollectionView, IsLatestScrollRequest(request));
+				scrollAnchor?.ScrollRequested(CollectionView, IsLatestScrollRequest(request), animating);
 			}
 
 			if (animating && IsLatestScrollRequest(request))
@@ -563,7 +563,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 			finally
 			{
-				scrollAnchor?.ScrollRequested(CollectionView, IsLatestScrollRequest(request));
+				scrollAnchor?.ScrollRequested(CollectionView, IsLatestScrollRequest(request), target is not null);
 			}
 
 			// The app can request another scroll from the Scrolled event this one raised: that one wins.
@@ -683,12 +683,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		/// Called as <see cref="ScrollToStart"/> or <see cref="ScrollToEnd"/> starts, and again once either started an
 		/// animated scroll to an edge the view doesn't follow, with what to do when that animation ends. It's also called
 		/// with <see langword="null"/> when the user starts dragging or the app requests another scroll: those stop an
-		/// earlier scroll to the end from going the rest of the way. A controller told when a scroll animation ends replaces
-		/// what it does then: nothing, or <paramref name="animationEnded"/>.
+		/// earlier scroll to the end from going the rest of the way, and an animated scroll a request started from scrolling
+		/// as a fling does (see <see cref="CollectionViewScrollAnchor.ScrollRequested"/>). A controller told when a scroll
+		/// animation ends replaces what it does then: nothing, or <paramref name="animationEnded"/>.
 		/// </summary>
 		internal virtual void ScrollingToEdge(Action animationEnded)
 		{
 			_finishingScrollToEnd = null;
+			if (animationEnded is null)
+			{
+				_scrollAnchor?.RequestedScrollEnded(CollectionView);
+			}
 		}
 
 		void InvalidateLayoutIfItemsMeasureChanged()

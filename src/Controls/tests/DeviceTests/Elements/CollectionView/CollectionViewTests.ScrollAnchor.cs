@@ -1517,6 +1517,45 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Theory(DisplayName = "An animated ScrollToStart from the end of a list that follows its end gets there as the content changes")]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task AnAnimatedScrollToStartFromTheEndGetsThereAsTheContentChanges(bool addItem)
+		{
+			SetupBuilder();
+			var items = CreateAnchorItems(40);
+			var collectionView = CreateAnchorCollectionView(items, ScrollAnchorMode.End);
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				await AssertAtEnd(handler, "The list should open at its end.");
+
+				// The app scrolls to the start as a chat's last answer streams in. The list is laid out before the animation
+				// moves it, and the content changes after that, while the list is still at the end: it carries on to the start.
+				collectionView.ScrollToStart(animate: true);
+#if IOS || MACCATALYST
+				handler.Controller.CollectionView.LayoutIfNeeded();
+#endif
+				if (addItem)
+				{
+					items.Add(new AnchorItem("Added at the end", 40));
+				}
+				else
+				{
+					items[^1].Height = 120;
+				}
+#if IOS || MACCATALYST
+				handler.Controller.CollectionView.LayoutIfNeeded();
+#endif
+
+				var atStart = await Wait(() => GetDistanceFromStart(handler) <= AnchorTolerance, 5000);
+				Assert.True(atStart, $"ScrollToStart should reach the start. Distance from the start: {GetDistanceFromStart(handler)}.");
+				await Task.Delay(500);
+				Assert.True(GetDistanceFromStart(handler) <= AnchorTolerance, $"The list should stay at its start. Distance from the start: {GetDistanceFromStart(handler)}.");
+				Assert.False(collectionView.IsAnchored, "The list shouldn't follow an edge its AnchorMode doesn't select.");
+			});
+		}
+
 		[Fact(DisplayName = "AnchorMode Start | End follows whichever edge the list is at")]
 		public async Task AnchorModeStartAndEndFollowsWhicheverEdgeTheListIsAt()
 		{

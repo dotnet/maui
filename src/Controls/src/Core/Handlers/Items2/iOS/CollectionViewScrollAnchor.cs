@@ -26,7 +26,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 	/// The scroll view delegate reports every offset change. One made while UIKit lays the view out is UIKit's, even when
 	/// the content ends up the size it was (UIKit can re-estimate rows it measured before and measure them again in one
 	/// pass, and can move the offset before it updates the content size), so it never counts as a scroll away from an
-	/// edge. The user is scrolling while the collection view is dragging or decelerating.
+	/// edge. The user is scrolling while the collection view is dragging or decelerating. An animated scroll to an edge the
+	/// app requested and the view doesn't follow scrolls as the user's does, as on Android, until it ends: it's judged by
+	/// where it stops, and the content changing on its way doesn't scroll the view back to the edge it left.
 	/// </para>
 	/// <para>
 	/// It holds no references: the controller passes its views in. It is vertical only.
@@ -41,6 +43,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		bool _applying;
 		bool _wasVertical = true;
 		bool _detached;
+
+		// Whether an animated scroll the app requested is on its way (see ScrollRequested).
+		bool _animatingRequest;
 
 		// The content offset the scroll view delegate last reported: UIKit can move it without reporting that (see
 		// OffsetObserved).
@@ -73,6 +78,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			_tracker.SetEdges(mode);
 			_offsetChangedDuringLayout = false;
+			_animatingRequest = false;
 			collectionView.SetNeedsLayout();
 		}
 
@@ -81,6 +87,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			_tracker.Reset();
 			_offsetChangedDuringLayout = false;
+			_animatingRequest = false;
 			collectionView.SetNeedsLayout();
 		}
 
@@ -165,7 +172,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				_reportedOffsetY = collectionView.ContentOffset.Y;
 			}
 
-			if (_tracker.Update(metrics, collectionView.Dragging || collectionView.Decelerating, sizeChanged) is double edge)
+			if (_tracker.Update(metrics, collectionView.Dragging || collectionView.Decelerating || _animatingRequest, sizeChanged) is double edge)
 			{
 				ApplyOffset(collectionView, edge - inset.Top);
 			}
@@ -218,15 +225,35 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		/// </summary>
 		/// <param name="collectionView">The collection view.</param>
 		/// <param name="isLatest">Whether the request is still the latest (see <c>ItemsViewController2.IsLatestScrollRequest</c>).</param>
-		public void ScrollRequested(UICollectionView collectionView, bool isLatest)
+		/// <param name="animating">
+		/// Whether the request started an animated scroll to an edge the view doesn't follow, and the controller is told when
+		/// it ends (<see cref="RequestedScrollEnded"/>). Until then it scrolls as a fling does: the looks before it moves would
+		/// otherwise judge it where it starts, at the edge it leaves, and scroll back there for the content changing, which
+		/// stops the animation.
+		/// </param>
+		public void ScrollRequested(UICollectionView collectionView, bool isLatest, bool animating = false)
 		{
 			_requestingScroll = false;
 			if (isLatest)
 			{
 				_tracker.RequestScroll();
+				_animatingRequest = animating;
 			}
 
 			collectionView.SetNeedsLayout();
+		}
+
+		/// <summary>
+		/// Called when a scroll animation ended, the user started dragging, or the app requested another scroll: an animated
+		/// scroll a request started (see <see cref="ScrollRequested"/>) no longer scrolls as a fling does.
+		/// </summary>
+		public void RequestedScrollEnded(UICollectionView collectionView)
+		{
+			if (_animatingRequest)
+			{
+				_animatingRequest = false;
+				collectionView.SetNeedsLayout();
+			}
 		}
 
 		/// <summary>Scrolls to the start, and follows it again. The view must be able to follow its start.</summary>
