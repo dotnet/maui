@@ -14,7 +14,7 @@ public partial class App : Application
 
 		if (!useShell)
 		{
-			return new Window(new NavigationPage(new ButtonTextAlignmentPage()));
+			return new Window(new NavigationPage(new MainPage()));
 		}
 		else
 		{
