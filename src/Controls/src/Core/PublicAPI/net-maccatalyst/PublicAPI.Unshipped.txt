@@ -1,2 +1,3 @@
 #nullable enable
 ~static Microsoft.Maui.Controls.ResourceDictionary.CreateMergedDictionary<T>(Microsoft.Maui.Controls.ResourceDictionary mergeTarget) -> T
+override Microsoft.Maui.Controls.Handlers.Items2.ItemsViewController2<TItemsView>.ViewDidLayoutSubviews() -> void

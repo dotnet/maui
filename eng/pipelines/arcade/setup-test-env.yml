@@ -6,6 +6,8 @@ parameters:
   buildMSBuildTasks: false
   androidSdkRoot: $(ANDROID_SDK_ROOT)
   skipXcode: false
+  installXcodePackage: true
+  requirePinnedXcodeVersion: false
 
 steps:
 - checkout: self
@@ -25,6 +27,8 @@ steps:
     skipAndroidCreateAvds: true
     skipProvisioning: true
     skipXcode: ${{ parameters.skipXcode }}
+    installXcodePackage: ${{ parameters.installXcodePackage }}
+    requirePinnedXcodeVersion: ${{ parameters.requirePinnedXcodeVersion }}
     skipSimulatorSetup: ${{ parameters.skipXcode }}
 
 - task: UseDotNet@2

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 #if IOS || MACCATALYST
@@ -21,10 +21,10 @@ namespace Microsoft.Maui.Handlers
 #if WINDOWS
 			[nameof(IMenuFlyoutSubItem.Text)] = MapText,
 			[nameof(IMenuFlyoutItem.KeyboardAccelerators)] = MapKeyboardAccelerators,
-			[nameof(IMenuElement.Source)] = MapSource,
 #endif
 #if MACCATALYST || IOS || WINDOWS
-			[nameof(IMenuElement.IsEnabled)] = MapIsEnabled
+			[nameof(IMenuElement.IsEnabled)] = MapIsEnabled,
+			[nameof(IMenuElement.Source)] = MapSource,
 #endif
 		};
 

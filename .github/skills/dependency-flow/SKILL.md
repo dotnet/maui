@@ -70,9 +70,13 @@ never select .NET 11 assets from whatever channel currently feeds feature `main`
 Before calling a new lane operational, verify its exact public/internal refs,
 outward default-channel mapping, incoming subscriptions, pipeline schedule,
 signed-build identity, and published feed. Creating refs does not transfer any
-of these external records. The checked-in `nightlyMode: legacy` deliberately
-keeps `inflight/current` selected until deployment is verified; versioned mode
-follows the state-derived inflight lane, not the highest retained SR branch.
+of these external records. The checked-in `nightlyMode: candidate` builds
+official nightlies from `candidate/<band>-sr<currentSr>` and follows `currentSr`;
+versioned mode follows the state-derived inflight lane. Neither uses the highest
+retained SR branch. The selected candidate needs a default-channel mapping to the
+band's SDK channel (a regex mapping such as `^candidate/11\.0\.1xx-sr[0-9]+$` →
+`.NET 11.0.1xx SDK` follows SR changes); `inflight/current` must not stay mapped
+to an older band's channel.
 
 Query subscriptions separately for the literal fixes branch, candidate branch,
 and active inflight branch. Do not copy the historical `net11.0` table below
