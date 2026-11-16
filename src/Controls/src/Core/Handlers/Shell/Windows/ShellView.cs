@@ -19,6 +19,7 @@ namespace Microsoft.Maui.Controls.Platform
 		internal static readonly global::Windows.UI.Color DefaultUnselectedColor = global::Windows.UI.Color.FromArgb(180, 255, 255, 255);
 		double _flyoutHeight = -1d;
 		double _flyoutWidth = -1d;
+		bool _updatingFlyoutSelection;
 
 		List<List<Element>> _flyoutGrouping;
 		ShellItemHandler ItemRenderer { get; set; }
@@ -268,10 +269,11 @@ namespace Microsoft.Maui.Controls.Platform
 			// the user defined on Shell
 			if (Routing.IsImplicit(newItem))
 			{
-				if (Routing.IsImplicit(newItem.CurrentItem))
-					SelectedItem = navItems.GetWithData(newItem.CurrentItem.CurrentItem);
+				if (!Routing.IsImplicit(newItem.CurrentItem) &&
+					navItems.TryGetWithData(newItem.CurrentItem, out NavigationViewItemViewModel sectionItem))
+					SelectedItem = sectionItem;
 				else
-					SelectedItem = navItems.GetWithData(newItem.CurrentItem);
+					SelectedItem = navItems.GetWithData(newItem.CurrentItem.CurrentItem);
 			}
 			else
 			{
@@ -291,7 +293,7 @@ namespace Microsoft.Maui.Controls.Platform
 		void OnFlyoutSelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
 		{
 			var shell = Element;
-			if (shell is null)
+			if (shell is null || _updatingFlyoutSelection)
 			{
 				return;
 			}
@@ -301,7 +303,16 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				if (Element == shell && shell.CurrentItem?.CurrentItem is not null)
 				{
-					UpdateFlyoutSelection(shell.CurrentItem);
+					// Include mapper customizations without queuing their selection changes again.
+					_updatingFlyoutSelection = true;
+					try
+					{
+						shell.Handler?.UpdateValue(nameof(Shell.CurrentItem));
+					}
+					finally
+					{
+						_updatingFlyoutSelection = false;
+					}
 				}
 			});
 		}
