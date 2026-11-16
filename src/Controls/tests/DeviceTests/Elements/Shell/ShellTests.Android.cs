@@ -33,6 +33,89 @@ namespace Microsoft.Maui.DeviceTests
 		protected virtual MaterialToolbar GetShellToolbar(IElementHandler handler) =>
 			GetPlatformToolbar(handler);
 
+		[Theory]
+		[InlineData(false, false, false)]
+		[InlineData(false, true, false)]
+		[InlineData(true, false, false)]
+		[InlineData(true, true, false)]
+		[InlineData(false, false, true)]
+		[InlineData(true, false, true)]
+		public async Task ShellItemTransitionUsesOutgoingModalState(bool useTabBar, bool useDerivedItem, bool hasModal)
+		{
+			SetupBuilder(typeof(TransitionProbeShellRenderer));
+
+			var targetPage = new ContentPage { Content = new Label { Text = "Target" } };
+			ShellItem target = useTabBar
+				? (useDerivedItem ? new TransitionProbeTabBar() : new TabBar())
+				: (useDerivedItem ? new TransitionProbeShellItem() : new ShellItem());
+			target.Route = "TransitionProbeTarget";
+			target.Items.Add(new ShellSection { Items = { new ShellContent { Content = targetPage } } });
+
+			var homePage = new ContentPage { Content = new Label { Text = "Home" } };
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.Items.Add(homePage);
+				shell.Items.Add(target);
+			});
+
+			await CreateHandlerAndAddToWindow(shell, async () =>
+			{
+				await OnLoadedAsync(homePage);
+				var renderer = Assert.IsType<TransitionProbeShellRenderer>(shell.Handler);
+
+				if (hasModal)
+					await shell.Navigation.PushModalAsync(new ContentPage { Content = new Label { Text = "Modal" } }, false);
+
+				await shell.GoToAsync("//TransitionProbeTarget");
+				await AssertEventually(() => renderer.LatestItemRenderer?.EnterTransit is not null);
+
+				Assert.Same(target, ((IShellItemRenderer)renderer.LatestItemRenderer).ShellItem);
+				Assert.Equal(
+					hasModal ? 0 : (int)global::Android.App.FragmentTransit.FragmentOpen,
+					renderer.LatestItemRenderer.EnterTransit.Value);
+				Assert.Empty(homePage.Navigation.ModalStack);
+			});
+		}
+
+		class TransitionProbeShellItem : ShellItem
+		{
+		}
+
+		class TransitionProbeTabBar : TabBar
+		{
+		}
+
+		class TransitionProbeShellRenderer : ShellRenderer
+		{
+			public TransitionProbeShellRenderer()
+			{
+			}
+
+			public TransitionProbeItemRenderer LatestItemRenderer { get; private set; }
+
+			protected override IShellItemRenderer CreateShellItemRenderer(ShellItem shellItem)
+			{
+				return LatestItemRenderer = new TransitionProbeItemRenderer(this);
+			}
+		}
+
+		class TransitionProbeItemRenderer : ShellItemRenderer
+		{
+			public TransitionProbeItemRenderer(IShellContext shellContext) : base(shellContext)
+			{
+			}
+
+			public int? EnterTransit { get; private set; }
+
+			public override global::Android.Views.Animations.Animation OnCreateAnimation(int transit, bool enter, int nextAnim)
+			{
+				if (enter)
+					EnterTransit = transit;
+
+				return base.OnCreateAnimation(transit, enter, nextAnim);
+			}
+		}
+
 		[Fact(DisplayName = "Collapsible SearchHandler Icon Uses ForegroundColor Set On Parent Shell Element")]
 		public async Task CollapsibleSearchHandlerIconUsesForegroundColorSetOnParentShellElement()
 		{
