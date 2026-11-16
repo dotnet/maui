@@ -24,7 +24,9 @@
                        FontAttributes="Bold"
                        SemanticProperties.HeadingLevel="Level1" />
                 <Label AutomationId="ButtonAlignmentInstructions"
-                       Text="Scenario for dotnet/maui#10463. On Android, iOS, and Windows, align text and its image together inside the padded Button. Native default clears the selected axis. Image-only Buttons remain unchanged. Mac Catalyst remains unverified." />
+                       Text="Initial manual checks for dotnet/maui#10463 on Android, iOS, Mac Catalyst, and Windows. The new HorizontalTextAlignment and VerticalTextAlignment properties position text inside the Button. With an image, the current implementation moves text and image together. Image behavior still requires design confirmation." />
+                <Label Text="Quick check:&#10;1. Select Start/Start, Center/Center, then End/End; also try Start/End and End/Start.&#10;2. Check both live previews against EXPECTED below.&#10;3. Try each image position, then toggle RTL and padding.&#10;4. Clear the editor text with the image enabled, then restore text.&#10;5. Select Native default on each axis (or clear both below) to restore native alignment."
+                       AutomationId="ButtonAlignmentQuickCheck" />
 
                 <Label Text="Unmodified default Button"
                        FontAttributes="Bold" />
@@ -57,6 +59,10 @@
                        Text="Clicks: 0" />
                 <Label x:Name="SettingsLabel"
                        AutomationId="ButtonAlignmentSettings" />
+                <Label x:Name="ExpectedResultLabel"
+                       AutomationId="ButtonAlignmentExpected"
+                       FontAttributes="Bold" />
+                <Label Text="The + symbol is the sample image (FontImageSource). With text present, it should move with the text while preserving the selected image position and spacing. Image-only alignment is currently ignored; compare its placement before and after changing alignment." />
 
                 <Label Text="Runtime controls"
                        FontAttributes="Bold"
@@ -69,6 +75,10 @@
                 <Picker x:Name="VerticalAlignmentPicker"
                         AutomationId="ButtonAlignmentVertical"
                         Title="Vertical text alignment" />
+                <Button Text="Clear both alignment axes"
+                        AutomationId="ButtonAlignmentClear"
+                        Clicked="OnClearAlignment" />
+                <Label Text="Native default means the property is unset, not an explicit Center value. One axis can remain native while the other is aligned." />
                 <Label Text="Preview text (enter a newline to test multiple lines)" />
                 <Editor x:Name="PreviewTextEditor"
                         AutomationId="ButtonAlignmentTextEditor"
@@ -76,8 +86,9 @@
                         AutoSize="TextChanges"
                         MinimumHeightRequest="80"
                         Text="Save changes&#10;A second line of text" />
+                <Label Text="To check the text/image-to-image-only transition, empty the editor while Show image is on. The image should return to native placement. Enter text again to reapply the selected alignment." />
 
-                <Label Text="Image position relative to text" />
+                <Label Text="Image position relative to text (existing ContentLayout property)" />
                 <Picker x:Name="ImagePositionPicker"
                         AutomationId="ButtonAlignmentImagePosition"
                         Title="Image position" />
@@ -119,10 +130,10 @@
                             SemanticProperties.Description="Use larger Button text" />
                 </Grid>
 
-                <Label Text="Fixed comparison scenarios"
+                <Label Text="Fixed-content comparison scenarios"
                        FontAttributes="Bold"
                        SemanticProperties.HeadingLevel="Level2" />
-                <Label Text="These keep their original text and wrapping. Enabled state, flow direction, padding, and font size still follow the switches." />
+                <Label Text="These keep their original text and wrapping, but follow the alignment selectors. Enabled state, flow direction, padding, and font size follow the switches. The unmodified default Button at the top follows none of these controls." />
                 <VerticalStackLayout x:Name="ComparisonLayout" Spacing="12">
                     <Label Text="Single line" FontAttributes="Bold" />
                     <Button x:Name="SingleLineButton"
@@ -163,7 +174,7 @@
                             Style="{StaticResource ScenarioButton}"
                             Clicked="OnScenarioClicked" />
                 </VerticalStackLayout>
-                <Label Text="Inspect native rendering before and after the alignment feature. Check all image positions and line break modes, change the text, and toggle RTL, padding, and font size. Current alignment may differ by platform; this page does not claim Start/Center/End support." />
+                <Label Text="EXPECTED: Text stays inside the padded content area. Horizontal Start/End reverse in RTL; vertical Start means top and End means bottom. Multiline text follows the horizontal selection. Image-only regular Buttons retain native placement. Enabled Buttons still respond to clicks; disabled preview/comparison Buttons do not. This page supports manual checks, not automatic pass/fail results or complete feature sign-off." />
             </VerticalStackLayout>
         </ScrollView>
     </Grid>
