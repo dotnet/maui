@@ -39,6 +39,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		EmptyViewAdapter _emptyViewAdapter;
 		readonly DataChangeObserver _emptyCollectionObserver;
 		readonly DataChangeObserver _itemsUpdateScrollObserver;
+		readonly DataChangeObserver _itemSpacingObserver;
 		readonly Func<MotionEvent, bool> _dispatchTouchEventToRecyclerView;
 		ParentScrollGestureDispatcher _parentScrollGestureDispatcher;
 
@@ -62,6 +63,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			_emptyCollectionObserver = new DataChangeObserver(UpdateEmptyViewVisibility);
 			_itemsUpdateScrollObserver = new DataChangeObserver(AdjustScrollForItemUpdate);
+			_itemSpacingObserver = new DataChangeObserver(InvalidateItemSpacing);
 			_dispatchTouchEventToRecyclerView = DispatchTouchEventToRecyclerView;
 			_parentScrollGestureDispatcher = new ParentScrollGestureDispatcher(this);
 		}
@@ -152,6 +154,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				// Stop watching for empty items or scroll adjustments
 				_emptyCollectionObserver.Stop(ItemsViewAdapter);
 				_itemsUpdateScrollObserver.Stop(ItemsViewAdapter);
+				_itemSpacingObserver.Stop(ItemsViewAdapter);
 
 				// Unhook whichever adapter is active
 				SetAdapter(null);
@@ -308,8 +311,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var oldItemViewAdapter = ItemsViewAdapter;
 
 			_emptyCollectionObserver.Stop(oldItemViewAdapter);
+			_itemSpacingObserver.Stop(oldItemViewAdapter);
 
 			ItemsViewAdapter = CreateAdapter();
+			_itemSpacingObserver.Start(ItemsViewAdapter);
 
 			(RecyclerViewScrollListener as RecyclerViewScrollListener<TItemsView, TItemsViewSource>)?.UpdateAdapter(ItemsViewAdapter);
 
@@ -626,6 +631,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		protected virtual ItemDecoration CreateSpacingDecoration(IItemsLayout itemsLayout)
 		{
 			return new SpacingItemDecoration(Context, itemsLayout);
+		}
+
+		void InvalidateItemSpacing()
+		{
+			// SpacingItemDecoration drops the spacing on the outer edges based on each item's position, but RecyclerView only
+			// recomputes the offsets of items it rebinds or shifts (not the previous last item on an append, for example)
+			if (_itemDecoration is SpacingItemDecoration spacing
+				&& (spacing.HorizontalOffset != 0 || spacing.VerticalOffset != 0)
+				&& !IsComputingLayout)
+			{
+				InvalidateItemDecorations();
+			}
 		}
 
 		protected virtual void ReconcileFlowDirectionAndLayout()

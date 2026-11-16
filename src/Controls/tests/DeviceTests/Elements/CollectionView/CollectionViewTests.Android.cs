@@ -213,6 +213,87 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Theory(DisplayName = "ItemSpacing matches an up-front list after items are added or removed at runtime")]
+		[InlineData(false, "Append")]
+		[InlineData(false, "InsertAtStart")]
+		[InlineData(false, "RemoveFromEnd")]
+		[InlineData(false, "RemoveFromStart")]
+		[InlineData(true, "Append")]
+		[InlineData(true, "InsertAtStart")]
+		[InlineData(true, "RemoveFromEnd")]
+		[InlineData(true, "RemoveFromStart")]
+		public async Task ItemSpacingIsUpdatedWhenItemsChangeAtRuntime(bool grid, string change)
+		{
+			SetupBuilder();
+
+			var finalItems = grid ? new[] { "0", "1", "2", "3" } : new[] { "0", "1", "2" };
+
+			var collectionView = new CollectionView
+			{
+				ItemsLayout = grid
+					? new GridItemsLayout(2, ItemsLayoutOrientation.Vertical) { VerticalItemSpacing = 8 }
+					: new LinearItemsLayout(ItemsLayoutOrientation.Vertical) { ItemSpacing = 8 },
+				ItemTemplate = new DataTemplate(() => new Label { HeightRequest = 30 }),
+			};
+
+			// The CollectionView sizes to its content here, so spacing left on an outer edge shows up in its height
+			var layout = new VerticalStackLayout { collectionView };
+
+			await CreateHandlerAndAddToWindow<LayoutHandler>(layout, async _ =>
+			{
+				var recyclerView = (RecyclerView)collectionView.Handler.PlatformView;
+
+				collectionView.ItemsSource = new ObservableCollection<string>(finalItems);
+				var expected = await GetSettledItemLayout(recyclerView, finalItems.Length);
+
+				var items = new ObservableCollection<string>(change switch
+				{
+					"Append" => finalItems.Take(grid ? 2 : 1),
+					"InsertAtStart" => finalItems.Skip(1),
+					"RemoveFromEnd" => finalItems.Append("extra"),
+					_ => finalItems.Prepend("extra"),
+				});
+				collectionView.ItemsSource = items;
+				await GetSettledItemLayout(recyclerView, items.Count);
+
+				switch (change)
+				{
+					case "Append":
+						while (items.Count < finalItems.Length)
+						{
+							items.Add(finalItems[items.Count]);
+							await GetSettledItemLayout(recyclerView, items.Count);
+						}
+						break;
+					case "InsertAtStart":
+						items.Insert(0, finalItems[0]);
+						break;
+					case "RemoveFromEnd":
+						items.RemoveAt(items.Count - 1);
+						break;
+					default:
+						items.RemoveAt(0);
+						break;
+				}
+
+				Assert.Equal(expected, await GetSettledItemLayout(recyclerView, finalItems.Length));
+			});
+
+			static async Task<string> GetSettledItemLayout(RecyclerView recyclerView, int itemCount)
+			{
+				await AssertEventually(() => recyclerView.ChildCount == itemCount && !recyclerView.IsAnimating && !recyclerView.IsLayoutRequested, timeout: 5000);
+
+				var tops = new int[itemCount];
+				for (var i = 0; i < itemCount; i++)
+				{
+					var child = recyclerView.GetChildAt(i);
+					tops[recyclerView.GetChildAdapterPosition(child)] = child.Top;
+				}
+
+				return $"item tops [{string.Join(", ", tops)}], height {recyclerView.Height}";
+			}
+		}
+
 		[Fact]
 		public async Task GroupedCollectionViewEmptyViewTracksOuterGroupCount()
 		{
