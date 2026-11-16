@@ -143,7 +143,7 @@ steps:
   env:
     APPIUM_HOME: $(APPIUM_HOME)
 
-- ${{ if parameters.requireExecutedTests }}:
+- ${{ if eq(parameters.requireExecutedTests, true) }}:
   - pwsh: |
       if (Test-Path -LiteralPath "$(TestResultsDirectory)") {
         Get-ChildItem -LiteralPath "$(TestResultsDirectory)" -Filter '*.trx' -File | Remove-Item -Force
@@ -192,7 +192,7 @@ steps:
   env:
     APPIUM_HOME: $(APPIUM_HOME)
 
-- ${{ if parameters.requireExecutedTests }}:
+- ${{ if eq(parameters.requireExecutedTests, true) }}:
   - pwsh: |
       $ErrorActionPreference = 'Stop'
       $files = @(Get-ChildItem -LiteralPath "$(TestResultsDirectory)" -Filter '*.trx' -File -ErrorAction SilentlyContinue)
@@ -238,7 +238,7 @@ steps:
     testResultsFiles: '$(TestResultsDirectory)/*.trx'
     testRunTitle: '${{ parameters.testFilter }}_$(System.PhaseName)'
     failTaskOnFailedTests: true
-    ${{ if parameters.requireExecutedTests }}:
+    ${{ if eq(parameters.requireExecutedTests, true) }}:
       failTaskOnMissingResultsFile: true
 
 - task: PublishBuildArtifacts@1
