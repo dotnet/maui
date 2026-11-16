@@ -19,6 +19,7 @@ using Microsoft.Maui.Controls.Platform.Compatibility;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Xunit;
 using static Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutTemplatedContentRenderer;
@@ -28,34 +29,35 @@ using AView = Android.Views.View;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Shell)]
-	public partial class ShellTests
+	[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
+	[Trait(RendererHandlerVariant.TraitName, RendererHandlerVariant.AndroidShellRenderer)]
+	public class ShellRendererTransitionTests : ControlsHandlerTestBase
 	{
-		protected virtual MaterialToolbar GetShellToolbar(IElementHandler handler) =>
-			GetPlatformToolbar(handler);
-
 		[Theory]
-		[InlineData(false, false, false)]
-		[InlineData(false, true, false)]
-		[InlineData(true, false, false)]
-		[InlineData(true, true, false)]
-		[InlineData(false, false, true)]
-		[InlineData(true, false, true)]
-		public async Task ShellItemTransitionUsesOutgoingModalState(bool useTabBar, bool useDerivedItem, bool hasModal)
+		[InlineData(false, false)]
+		[InlineData(true, false)]
+		[InlineData(false, true)]
+		[InlineData(true, true)]
+		public async Task ShellItemTransitionUsesOutgoingModalState(bool useTabBar, bool hasModal)
 		{
-			SetupBuilder(typeof(TransitionProbeShellRenderer));
+			EnsureHandlerCreated(builder => builder.ConfigureMauiHandlers(handlers =>
+			{
+				SetupShellHandlers(handlers);
+				handlers.AddHandler<Shell, TransitionProbeShellRenderer>();
+			}));
 
 			var targetPage = new ContentPage { Content = new Label { Text = "Target" } };
-			ShellItem target = useTabBar
-				? (useDerivedItem ? new TransitionProbeTabBar() : new TabBar())
-				: (useDerivedItem ? new TransitionProbeShellItem() : new ShellItem());
+			ShellItem target = useTabBar ? new TabBar() : new ShellItem();
 			target.Route = "TransitionProbeTarget";
 			target.Items.Add(new ShellSection { Items = { new ShellContent { Content = targetPage } } });
 
 			var homePage = new ContentPage { Content = new Label { Text = "Home" } };
-			var shell = await CreateShellAsync(shell =>
+			var shell = await InvokeOnMainThreadAsync(() =>
 			{
+				var shell = new Shell();
 				shell.Items.Add(homePage);
 				shell.Items.Add(target);
+				return shell;
 			});
 
 			await CreateHandlerAndAddToWindow(shell, async () =>
@@ -75,14 +77,6 @@ namespace Microsoft.Maui.DeviceTests
 					renderer.LatestItemRenderer.EnterTransit.Value);
 				Assert.Empty(homePage.Navigation.ModalStack);
 			});
-		}
-
-		class TransitionProbeShellItem : ShellItem
-		{
-		}
-
-		class TransitionProbeTabBar : TabBar
-		{
 		}
 
 		class TransitionProbeShellRenderer : ShellRenderer
@@ -115,6 +109,13 @@ namespace Microsoft.Maui.DeviceTests
 				return base.OnCreateAnimation(transit, enter, nextAnim);
 			}
 		}
+	}
+
+	[Category(TestCategory.Shell)]
+	public partial class ShellTests
+	{
+		protected virtual MaterialToolbar GetShellToolbar(IElementHandler handler) =>
+			GetPlatformToolbar(handler);
 
 		[Fact(DisplayName = "Collapsible SearchHandler Icon Uses ForegroundColor Set On Parent Shell Element")]
 		public async Task CollapsibleSearchHandlerIconUsesForegroundColorSetOnParentShellElement()
