@@ -31,7 +31,8 @@ public partial class ScopedExtensionPropertiesErrors : ContentPage
 				.AddReferences(MetadataReference.CreateFromFile(typeof(ScopedExtensionPropertiesErrors).Assembly.Location))
 				.WithAdditionalSource("namespace Microsoft.Maui.Controls.Xaml.UnitTests; public partial class ScopedExtensionProperties : ContentPage { }")
 				.RunMauiSourceGenerator(new AdditionalXamlFile("ScopedExtensionProperties.rt.xaml", xaml));
-			Assert.Empty(result.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error));
+			Assert.Empty(result.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error)
+				.Select(d => $"{d.Id}: {d.GetMessage()}"));
 		}
 
 		static GeneratorDriverRunResult Generate(Type xamlType) =>

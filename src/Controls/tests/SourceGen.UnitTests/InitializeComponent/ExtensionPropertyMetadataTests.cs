@@ -39,11 +39,12 @@ public partial class ExtensionMetadataPage : ContentPage
 				MetadataReference.CreateFromFile(Path.Combine(runtimePath, "System.ComponentModel.dll")))
 			.AddSyntaxTrees(CSharpSyntaxTree.ParseText(code));
 		var result = RunGenerator<XamlGenerator>(compilation, new AdditionalXamlFile("ExtensionMetadataPage.xaml", xaml));
-		Assert.Empty(result.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error));
+		Assert.Empty(result.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error)
+			.Select(d => $"{d.Id}: {d.GetMessage()}"));
 
 		using var output = new MemoryStream();
 		var emit = compilation.AddSyntaxTrees(result.GeneratedTrees).Emit(output);
-		Assert.True(emit.Success, string.Join(Environment.NewLine, emit.Diagnostics));
+		Assert.True(emit.Success, string.Join(Environment.NewLine, emit.Diagnostics.Select(d => $"{d.Id}: {d.GetMessage()}")));
 		var type = Assembly.Load(output.ToArray()).GetType("Test.ExtensionMetadataPage", throwOnError: true)!;
 		var page = (ContentPage)Activator.CreateInstance(type)!;
 		var label = (Label)type.GetField("label", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)!.GetValue(page)!;

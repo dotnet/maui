@@ -105,11 +105,12 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 	static Type Emit(Compilation compilation, GeneratorDriverRunResult result, string fullName)
 	{
-		Assert.Empty(result.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error));
+		Assert.Empty(result.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error)
+			.Select(d => $"{d.Id}: {d.GetMessage()}"));
 
 		using var output = new MemoryStream();
 		var emit = compilation.AddSyntaxTrees(result.GeneratedTrees).Emit(output);
-		Assert.True(emit.Success, string.Join(Environment.NewLine, emit.Diagnostics));
+		Assert.True(emit.Success, string.Join(Environment.NewLine, emit.Diagnostics.Select(d => $"{d.Id}: {d.GetMessage()}")));
 		return Assembly.Load(output.ToArray()).GetType(fullName, throwOnError: true)!;
 	}
 
