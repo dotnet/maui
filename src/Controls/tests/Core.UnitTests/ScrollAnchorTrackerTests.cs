@@ -230,6 +230,37 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void AScrollAwayRightAfterAFlingEndsDisengages()
+		{
+			// A platform can look at the view once a fling has ended only later: a scroll it reports before that, as the keyboard,
+			// accessibility or code make, is a new scroll, not the end of the fling springing back.
+			var view = FakeScrollView.AtEnd(extent: 1000, viewport: 400);
+			Assert.Null(view.Look(userScrolling: true));
+
+			view.Offset = 400;
+			Assert.Null(view.Look(scrolled: true));
+			Assert.False(view.Tracker.IsAnchored);
+			Assert.Equal(400, view.Offset);
+		}
+
+		[Fact]
+		public void AScrollTowardTheEndRightAfterAFlingEndsCatchesUpWithTheEnd()
+		{
+			// The fling moves the view a little away from the end as an answer streams in: it still follows the end.
+			var view = FakeScrollView.AtEnd(extent: 1000, viewport: 400);
+			view.Offset = 594;
+			Assert.Null(view.Look(userScrolling: true));
+			view.Extent += 100;
+			Assert.Null(view.Look(userScrolling: true));
+			Assert.True(view.Tracker.IsAnchored);
+
+			// What the fling moved doesn't count against a scroll toward the end that comes before the look at the settled view.
+			view.Offset = 596;
+			Assert.Equal(700, view.Look(scrolled: true));
+			Assert.True(view.Tracker.IsAnchored);
+		}
+
+		[Fact]
 		public void TheBounceAtTheEndDoesNotDisengageWhenTheContentGrowsDuringIt()
 		{
 			var view = FakeScrollView.AtEnd(extent: 1000, viewport: 400);

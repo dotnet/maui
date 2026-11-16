@@ -401,6 +401,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			if (collectionView is Items.MauiCollectionView mauiCollectionView)
 			{
 				mauiCollectionView.IsFollowingEdge = isAnchored;
+#if MACCATALYST
+				// Following an edge, the anchor keeps the view there, also after a move Mac Catalyst makes silently (see
+				// OffsetObserved). A restore an earlier ScrollTo armed (see MauiCollectionView) would scroll back to its item as
+				// the anchor moves the view up for the content shrinking. A drag clears it, but the view can get back to the edge
+				// without one, as the keyboard or accessibility scroll it.
+				if (isAnchored)
+				{
+					mauiCollectionView.ClearPendingScrollRestore();
+				}
+#endif
 			}
 
 			if (itemsView.IsAnchored != isAnchored)

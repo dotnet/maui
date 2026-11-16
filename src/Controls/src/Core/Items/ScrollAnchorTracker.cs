@@ -211,7 +211,7 @@ namespace Microsoft.Maui.Controls
 		/// <param name="scrolled">
 		/// Whether the view scrolled since the last update, rather than the platform laying it out: its offset change
 		/// counts as movement even when the content changed size meanwhile, as when a platform measures the rows a scroll
-		/// brings into view as it scrolls.
+		/// brings into view as it scrolls, and right after a user scroll ended, as a new scroll rather than the end of that one.
 		/// </param>
 		/// <returns>The offset of the edge to scroll to without animating, or <see langword="null"/> to stay.</returns>
 		public double? Update(ScrollAnchorMetrics metrics, bool isUserScrolling, bool sizeChanged = false, bool scrolled = false)
@@ -298,10 +298,12 @@ namespace Microsoft.Maui.Controls
 			{
 				// Movement away from the edge since the view was last at it, that the platform didn't make laying out: a
 				// scroll can move the view in steps too small to tell from rounding, which add up. An animated scroll to the
-				// edge is on its way there.
-				_drift = laidOut || _approaching || IsAt(AnchoredEdge, metrics) || wasUserScroll
+				// edge is on its way there. Right after a user scroll, what that scroll moved doesn't count, and the movement
+				// since the last update is the end of it, as the view springs back from past the edge: unless the platform says
+				// the view scrolled since, which is a new scroll (a platform can look at a view whose scroll ended only later).
+				_drift = laidOut || _approaching || IsAt(AnchoredEdge, metrics) || (wasUserScroll && !scrolled)
 					? 0
-					: Math.Max(0, _drift + MovementAway(previous, metrics));
+					: Math.Max(0, (wasUserScroll ? 0 : _drift) + MovementAway(previous, metrics));
 				if (_drift > Tolerance)
 				{
 					// The view isn't at the edge it followed: it follows the other edge only if it's there.

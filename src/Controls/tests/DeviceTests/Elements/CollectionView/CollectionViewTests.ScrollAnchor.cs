@@ -1056,6 +1056,49 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.False(collectionView.IsAnchored, "A scroll away from the end should stop following it.");
 			});
 		}
+
+		// RecyclerView reports that a fling ended before the anchor looks at the settled view, which it does in the next frame: a
+		// scroll made in between, as the keyboard, accessibility or code can make, is a new scroll, not the end of the fling.
+		[Fact(DisplayName = "A scroll away right as a fling ends stops following the end")]
+		public async Task AScrollAwayRightAsAFlingEndsStopsFollowingTheEnd()
+		{
+			SetupBuilder();
+			var items = CreateAnchorItems(40);
+			var collectionView = CreateAnchorCollectionView(items, ScrollAnchorMode.End);
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				await AssertAtEnd(handler, "The list should open at its end.");
+
+				var recyclerView = (RecyclerView)handler.PlatformView;
+				var density = recyclerView.Resources.DisplayMetrics.Density;
+				var scrolledAway = false;
+				var listener = new ScrollEndedListener(() =>
+				{
+					if (!scrolledAway)
+					{
+						scrolledAway = true;
+						recyclerView.ScrollBy(0, -(int)(200 * density));
+					}
+				});
+
+				recyclerView.AddOnScrollListener(listener);
+				try
+				{
+					// A fling that ends within the threshold of the end, which the list still follows.
+					recyclerView.SmoothScrollBy(0, -(int)(4 * density));
+					await AssertEventually(() => scrolledAway, timeout: 3000, message: "The fling should end.");
+					await Task.Delay(500);
+				}
+				finally
+				{
+					recyclerView.RemoveOnScrollListener(listener);
+				}
+
+				Assert.True(GetDistanceToEnd(handler) > 100, $"The list shouldn't be pulled back to its end. Position: {GetScrollPosition(handler)}.");
+				Assert.False(collectionView.IsAnchored, "A scroll away from the end should stop following it.");
+			});
+		}
 #endif
 
 		[Fact(DisplayName = "Turning AnchorMode off stops following the end")]
@@ -2394,6 +2437,42 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.True(collectionView.IsAnchored);
 			});
 		}
+
+		// After a ScrollTo that doesn't animate, MAUI scrolls back to its item when Mac Catalyst moves the view up by itself (see
+		// #34271). Back at the end without a drag, as the keyboard or accessibility scroll, the list follows the end again: the
+		// view moving up as the last item shrinks is the anchor keeping the end in view, not a move to undo.
+		[Fact(DisplayName = "Back at the end after a ScrollTo away, the list keeps the end in view as the last item shrinks")]
+		public async Task BackAtTheEndAfterAScrollToAwayTheListKeepsTheEndInViewAsTheLastItemShrinks()
+		{
+			SetupBuilder();
+			var items = CreateAnchorItems(40);
+			items[^1].Height = 120;
+			var collectionView = CreateAnchorCollectionView(items, ScrollAnchorMode.End);
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				await AssertAtEnd(handler, "The list should open at its end.");
+
+				collectionView.ScrollTo(0, position: ScrollToPosition.Start, animate: false);
+				await AssertEventually(() => !collectionView.IsAnchored, timeout: 3000, message: "ScrollTo away from the end should stop following it.");
+
+				// Back to the end in scrolls that aren't drags, as the keyboard or accessibility make.
+				for (var attempt = 0; attempt < 10 && !collectionView.IsAnchored; attempt++)
+				{
+					ScrollPlatformViewBy(handler, GetDistanceToEnd(handler));
+					await Task.Delay(100);
+				}
+
+				Assert.True(collectionView.IsAnchored, $"Back at its end, the list should follow it again. Distance to the end: {GetDistanceToEnd(handler)}.");
+
+				items[^1].Height = 40;
+				var shrunk = await Wait(() => Math.Abs(GetItemHeight(handler, items.Count - 1) - 40) <= AnchorTolerance, 3000);
+				Assert.True(shrunk, $"The last item should shrink in view. Distance from the start: {GetDistanceFromStart(handler)}, to the end: {GetDistanceToEnd(handler)}, anchored: {collectionView.IsAnchored}.");
+				await Task.Delay(500);
+				await AssertAtEnd(handler, "Following the end, the list should keep the end in view as the last item shrinks.");
+				Assert.True(collectionView.IsAnchored);
+			});
+		}
 #endif
 
 		// A scroll the user isn't dragging, as accessibility or the keyboard can make, right as the content changes size, is still
@@ -2986,6 +3065,30 @@ namespace Microsoft.Maui.DeviceTests
 
 			public string Name { get; }
 		}
+
+#if ANDROID
+		// Tells when a scroll of a RecyclerView ends. RecyclerView tells its listeners after the view itself, which tells the anchor.
+		sealed class ScrollEndedListener : RecyclerView.OnScrollListener
+		{
+			readonly Action _scrollEnded;
+			bool _scrolling;
+
+			public ScrollEndedListener(Action scrollEnded) => _scrollEnded = scrollEnded;
+
+			public override void OnScrollStateChanged(RecyclerView recyclerView, int newState)
+			{
+				if (newState != RecyclerView.ScrollStateIdle)
+				{
+					_scrolling = true;
+				}
+				else if (_scrolling)
+				{
+					_scrolling = false;
+					_scrollEnded();
+				}
+			}
+		}
+#endif
 	}
 }
 #endif
