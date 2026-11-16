@@ -419,12 +419,12 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					case UIGestureRecognizerState.Began:
 						lpRecognizer.SendLongPressing(view, GestureStatus.Started, getPosition);
+						lpRecognizer.SendLongPressed(view, getPosition);
 						break;
 					case UIGestureRecognizerState.Changed:
 						lpRecognizer.SendLongPressing(view, GestureStatus.Running, getPosition);
 						break;
 					case UIGestureRecognizerState.Ended:
-						lpRecognizer.SendLongPressed(view, getPosition);
 						lpRecognizer.SendLongPressing(view, GestureStatus.Completed, getPosition);
 						break;
 					case UIGestureRecognizerState.Cancelled:
