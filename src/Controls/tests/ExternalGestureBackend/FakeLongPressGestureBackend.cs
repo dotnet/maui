@@ -50,7 +50,8 @@ namespace Microsoft.Maui.Controls.Tests.ExternalGestureBackend
 		public IReadOnlyList<LongPressGestureRecognizer> ActiveRecognizers => _active;
 
 		/// <summary>
-		/// Raises <see cref="GestureStatus.Started"/> for every matching recognizer on the view.
+		/// Raises <see cref="GestureStatus.Started"/> and the long pressed event for every matching
+		/// recognizer on the view when the press is recognized.
 		/// </summary>
 		/// <param name="origin">The press location relative to the pressed view.</param>
 		public void RaisePressStarted(Point origin)
@@ -62,7 +63,10 @@ namespace Microsoft.Maui.Controls.Tests.ExternalGestureBackend
 				.Where(recognizer => recognizer.NumberOfTouchesRequired == TouchCount));
 
 			foreach (var recognizer in _active)
+			{
 				recognizer.SendLongPressing(_view, GestureStatus.Started, GetPosition(origin));
+				recognizer.SendLongPressed(_view, GetPosition(origin));
+			}
 		}
 
 		/// <summary>
@@ -88,8 +92,8 @@ namespace Microsoft.Maui.Controls.Tests.ExternalGestureBackend
 		}
 
 		/// <summary>
-		/// Completes the gesture, raising the long pressed event followed by
-		/// <see cref="GestureStatus.Completed"/>, mirroring the built-in platform backends.
+		/// Completes the gesture on release, raising <see cref="GestureStatus.Completed"/>
+		/// without repeating the long pressed event.
 		/// </summary>
 		/// <param name="location">The release location relative to the pressed view.</param>
 		public void RaisePressCompleted(Point? location = null)
@@ -98,7 +102,6 @@ namespace Microsoft.Maui.Controls.Tests.ExternalGestureBackend
 
 			foreach (var recognizer in _active)
 			{
-				recognizer.SendLongPressed(_view, position);
 				recognizer.SendLongPressing(_view, GestureStatus.Completed, position);
 			}
 
@@ -106,7 +109,8 @@ namespace Microsoft.Maui.Controls.Tests.ExternalGestureBackend
 		}
 
 		/// <summary>
-		/// Cancels the gesture, raising <see cref="GestureStatus.Canceled"/> without a long pressed event.
+		/// Cancels the gesture, raising <see cref="GestureStatus.Canceled"/> without repeating
+		/// the long pressed event already raised at recognition.
 		/// </summary>
 		/// <param name="location">The location the gesture was cancelled at, relative to the pressed view.</param>
 		public void RaisePressCanceled(Point? location = null)
