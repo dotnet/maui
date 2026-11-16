@@ -1101,6 +1101,41 @@ namespace Microsoft.Maui.DeviceTests
 		}
 #endif
 
+#if IOS || MACCATALYST
+		// UIKit reports that a drag, a deceleration or an animated scroll of the app's ended, and the anchor looks at where the view
+		// settled once it's laid out next: a scroll the delegate reports before that, as the keyboard, accessibility or code make,
+		// is a new scroll, not the end of the one that ended.
+		[Fact(DisplayName = "A scroll away right as an animated scroll ends stops following the end")]
+		public async Task AScrollAwayRightAsAnAnimatedScrollEndsStopsFollowingTheEnd()
+		{
+			SetupBuilder();
+			var items = CreateAnchorItems(40);
+			var collectionView = CreateAnchorCollectionView(items, ScrollAnchorMode.End);
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				await AssertAtEnd(handler, "The list should open at its end.");
+
+				// An animated scroll of the app's scrolls as a fling does until UIKit reports that it ended: this one ends at the end.
+				var platformView = handler.Controller.CollectionView;
+				var scrollAnchor = handler.Controller.ScrollAnchor;
+				scrollAnchor.ScrollRequesting();
+				scrollAnchor.ScrollRequested(platformView, isLatest: true, animating: true);
+				platformView.SetNeedsLayout();
+				platformView.LayoutIfNeeded();
+				Assert.True(collectionView.IsAnchored, "Ending at the end, the scroll should leave the list following it.");
+
+				// UIKit reports that it ended, and code scrolls the native view up before the layout that report asks for.
+				handler.Controller.ScrollAnimationEnded();
+				ScrollPlatformViewBy(handler, -200);
+
+				await Task.Delay(500);
+				Assert.True(GetDistanceToEnd(handler) > 100, $"The list shouldn't be pulled back to its end. Distance to the end: {GetDistanceToEnd(handler)}.");
+				Assert.False(collectionView.IsAnchored, "A scroll away from the end should stop following it.");
+			});
+		}
+#endif
+
 		[Fact(DisplayName = "Turning AnchorMode off stops following the end")]
 		public async Task TurningAnchorModeOffStopsFollowingTheEnd()
 		{

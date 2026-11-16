@@ -20,7 +20,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 	/// outside a layout pass, and the end of a drag or a deceleration, ask for a layout pass, so the anchor looks after
 	/// those too. It also looks right away at a scroll the user isn't making (an animation, the keyboard, tapping the
 	/// status bar to scroll to the top): the layout pass that follows measures the rows the scroll brought into view, and
-	/// the scroll would then look like UIKit laying out.
+	/// the scroll would then look like UIKit laying out. That look judges the scroll as a new one, also right after a drag,
+	/// a deceleration or an animated scroll ended, unless the content or the viewport changed size since the last look.
 	/// </para>
 	/// <para>
 	/// The scroll view delegate reports every offset change. One made while UIKit lays the view out is UIKit's, even when
@@ -172,7 +173,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				_reportedOffsetY = collectionView.ContentOffset.Y;
 			}
 
-			if (_tracker.Update(metrics, collectionView.Dragging || collectionView.Decelerating || _animatingRequest, sizeChanged) is double edge)
+			// A scroll the delegate reports outside a layout pass is the view scrolling, also right after a drag, a deceleration
+			// or an animated scroll ended, unless the content or the viewport changed size since the last look: the offset moved
+			// for that change, as UIKit measures the rows a scroll brings into view only in the layout pass that follows.
+			var scrolled = !afterLayout && !_tracker.IsResized(metrics);
+			if (_tracker.Update(metrics, collectionView.Dragging || collectionView.Decelerating || _animatingRequest, sizeChanged, scrolled) is double edge)
 			{
 				ApplyOffset(collectionView, edge - inset.Top);
 			}

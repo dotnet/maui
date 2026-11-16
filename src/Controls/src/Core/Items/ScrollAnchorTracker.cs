@@ -111,6 +111,13 @@ namespace Microsoft.Maui.Controls
 		public bool HasPosition => _last is not null;
 
 		/// <summary>
+		/// Gets whether the content or the viewport is a different size in <paramref name="metrics"/> than when the tracker last
+		/// saw the view: never before it has seen it.
+		/// </summary>
+		public bool IsResized(ScrollAnchorMetrics metrics) =>
+			_last is ScrollAnchorMetrics last && (Resized(metrics.Extent, last.Extent) || Resized(metrics.Viewport, last.Viewport));
+
+		/// <summary>
 		/// Gets whether the view is on its way to the edge it follows, after <see cref="Engage"/>: until it gets there, the user
 		/// scrolls, or the tracker starts over.
 		/// </summary>

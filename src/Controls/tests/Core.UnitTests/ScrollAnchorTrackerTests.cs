@@ -1125,6 +1125,25 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void IsResizedTellsWhetherTheContentOrTheViewportChangedSizeSinceTheLastLook()
+		{
+			var view = new FakeScrollView(extent: 1000, viewport: 400);
+			Assert.False(view.Tracker.IsResized(view.Metrics));
+
+			view.Look();
+			view.Offset -= 200;
+			view.Extent += 0.005;
+			Assert.False(view.Tracker.IsResized(view.Metrics));
+
+			view.Extent += 20;
+			Assert.True(view.Tracker.IsResized(view.Metrics));
+
+			view.Extent = 1000;
+			view.Viewport -= 50;
+			Assert.True(view.Tracker.IsResized(view.Metrics));
+		}
+
+		[Fact]
 		public void ACorrectionThePlatformMakesLaterIsAskedForUntilItIsMade()
 		{
 			// Items appended below the end: the platform has to lay the new end out before it can scroll there.
