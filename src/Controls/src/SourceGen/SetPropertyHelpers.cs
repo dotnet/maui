@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Xml;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls.SourceGen;
@@ -351,7 +352,7 @@ static class SetPropertyHelpers
 
 	static bool CanSet(ILocalValue parentVar, string localName, INode node, SourceGenContext context)
 	{
-		if (parentVar.Type.GetAllProperties(localName, context).FirstOrDefault() is not IPropertySymbol property)
+		if (GetInstanceProperty(parentVar.Type, localName, context) is not IPropertySymbol property)
 			return false;
 		if (property.SetMethod is not IMethodSymbol propertySetter || !propertySetter.IsPublic() || propertySetter.IsStatic)
 			return false;
@@ -697,7 +698,7 @@ static class SetPropertyHelpers
 
 	static void Set(IndentedTextWriter writer, ILocalValue parentVar, string localName, INode node, SourceGenContext context, NodeSGExtensions.GetNodeValueDelegate getNodeValue)
 	{
-		var property = parentVar.Type.GetAllProperties(localName, context).First();
+		var property = GetInstanceProperty(parentVar.Type, localName, context)!;
 
 		if (node is ValueNode valueNode)
 		{
@@ -715,6 +716,10 @@ static class SetPropertyHelpers
 				writer.WriteLine($"{parentVar.ValueAccessor}.{EscapeIdentifier(localName)} = ({property.Type.ToFQDisplayString()}){intermediateCast}{localVar.ValueAccessor};");
 			}
 	}
+
+	static IPropertySymbol? GetInstanceProperty(ITypeSymbol targetType, string name, SourceGenContext context)
+		=> targetType.GetAllProperties(name, context)
+			.FirstOrDefault(property => targetType.TypeKind == TypeKind.Interface || property.ContainingType.TypeKind != TypeKind.Interface);
 
 	static bool CanSetBinding(IFieldSymbol? bpFieldSymbol, INode node, ITypeSymbol parentType, string localName, SourceGenContext context, out string? explicitPropertyName)
 	{
@@ -1443,7 +1448,9 @@ static class SetPropertyHelpers
 
 		var accessors = MostSpecific(candidates, context);
 		if (accessors == null)
-			reported = report && ReportExtensionPropertyResolution(propertyName, container, targetType, context, lineInfo);
+			reported = report && (candidates.Count > 1
+				? ReportExtensionPropertyAmbiguous(propertyName, $"container \"{container.ToFQDisplayString()}\"", targetType, context, lineInfo)
+				: ReportExtensionPropertyResolution(propertyName, container, targetType, context, lineInfo));
 
 		return accessors;
 	}
@@ -1545,15 +1552,17 @@ static class SetPropertyHelpers
 		return true; //always reported: callers use the return value to flag the member as handled
 	}
 
+	static bool ReportExtensionPropertyAmbiguous(string propertyName, string scope, ITypeSymbol targetType, SourceGenContext context, IXmlLineInfo lineInfo)
+	{
+		var location = LocationCreate(context.ProjectItem.RelativePath!, lineInfo, propertyName);
+		context.ReportDiagnostic(Diagnostic.Create(Descriptors.ExtensionPropertyAmbiguous, location, propertyName, scope, targetType.ToFQDisplayString()));
+		return true;
+	}
+
 	static bool IsReceiverApplicable(ITypeSymbol receiverType, ITypeSymbol targetType, SourceGenContext context)
 	{
-		if (SymbolEqualityComparer.Default.Equals(receiverType, targetType))
-			return true;
-		if (receiverType.SpecialType == SpecialType.System_Object)
-			return true;
-		if (targetType.InheritsFrom(receiverType, context))
-			return true;
-		return receiverType.TypeKind == TypeKind.Interface && targetType.AllInterfaces.Any(i => SymbolEqualityComparer.Default.Equals(i, receiverType));
+		var conversion = context.Compilation.ClassifyConversion(targetType, receiverType);
+		return conversion.IsImplicit && (conversion.IsIdentity || conversion.IsReference || conversion.IsBoxing);
 	}
 
 	/// <summary>
@@ -1605,15 +1614,21 @@ static class SetPropertyHelpers
 			return cached;
 
 		var mappings = context.XmlnsCache.XmlnsDefinitions
-			.Where(d => d.XmlNamespace == xmlNamespace && d.Target != null && !d.Target.StartsWith("http", StringComparison.Ordinal))
+			.Where(d => d.XmlNamespace == xmlNamespace && d.Target != null
+				&& !d.Target.StartsWith("http://", StringComparison.Ordinal)
+				&& !d.Target.StartsWith("https://", StringComparison.Ordinal))
 			.Select(d => (clrNamespace: d.Target, assemblyName: d.AssemblyName))
 			.ToList();
 		if (mappings.Count == 0)
 		{
-			XmlnsHelper.ParseXmlns(xmlNamespace, out _, out var ns, out var asm, out _);
-			if (ns != null && !ns.StartsWith("http", StringComparison.Ordinal))
-				//a clr-namespace without an assembly refers to the assembly declaring the XAML
-				mappings.Add((ns, string.IsNullOrEmpty(asm) ? context.Compilation.Assembly.Identity.Name : asm));
+			var declaration = xmlNamespace.TrimStart();
+			var isUsing = declaration.StartsWith("using:", StringComparison.Ordinal);
+			if (isUsing || declaration.StartsWith("clr-namespace:", StringComparison.Ordinal))
+			{
+				XmlnsHelper.ParseXmlns(xmlNamespace, out _, out var ns, out var asm, out _);
+				if (ns != null)
+					mappings.Add((ns, string.IsNullOrEmpty(asm) && !isUsing ? context.Compilation.Assembly.Identity.Name : asm));
+			}
 		}
 
 		var containers = new List<INamedTypeSymbol>();
@@ -1696,7 +1711,7 @@ static class SetPropertyHelpers
 		if (HasAccessibleInstanceMember(targetType, propertyName.LocalName, context))
 			return null;
 
-		xmlNamespace = node.NamespaceResolver.LookupNamespace(string.Empty);
+		xmlNamespace = (node.Parent as ElementNode)?.DefaultXmlNamespace ?? node.NamespaceResolver.LookupNamespace(string.Empty);
 		if (string.IsNullOrEmpty(xmlNamespace))
 			return null;
 
@@ -1717,9 +1732,7 @@ static class SetPropertyHelpers
 		//C# picks the most specific receiver, and refuses to guess between unrelated ones
 		if (ambiguous)
 		{
-			var location = LocationCreate(context.ProjectItem.RelativePath!, (IXmlLineInfo)node, propertyName.LocalName);
-			context.ReportDiagnostic(Diagnostic.Create(Descriptors.ExtensionPropertyAmbiguous, location, propertyName.LocalName, xmlNamespace, parentVar.Type.ToFQDisplayString()));
-			reported = true;
+			reported = ReportExtensionPropertyAmbiguous(propertyName.LocalName, $"xmlns \"{xmlNamespace}\"", parentVar.Type, context, (IXmlLineInfo)node);
 			return false;
 		}
 
@@ -1792,13 +1805,14 @@ static class SetPropertyHelpers
 		var setter = accessors.Setter;
 		var setterAccessor = $"{setter.ContainingType.ToFQDisplayString()}.{setter.Name}";
 		var receiverCast = SymbolEqualityComparer.Default.Equals(parentVar.Type, accessors.ReceiverType) ? string.Empty : $"({accessors.ReceiverType.ToFQDisplayString()})";
+		var propertyType = accessors.PropertyType.TypeKind == TypeKind.Dynamic ? "global::System.Object" : accessors.PropertyType.ToFQDisplayString();
 
 		if (node is ValueNode valueNode)
 		{
 			using (context.ProjectItem.EnableLineInfo ? PrePost.NewLineInfo(writer, (IXmlLineInfo)node, context.ProjectItem) : PrePost.NoBlock())
 			{
 				var valueString = valueNode.ConvertTo(accessors.Property, writer, context, parentVar);
-				writer.WriteLine($"{setterAccessor}({receiverCast}{parentVar.ValueAccessor}, {valueString});");
+				writer.WriteLine($"{setterAccessor}({receiverCast}{parentVar.ValueAccessor}, ({propertyType})({valueString}));");
 			}
 		}
 		else if (node is ElementNode elementNode)
@@ -1806,10 +1820,26 @@ static class SetPropertyHelpers
 			using (context.ProjectItem.EnableLineInfo ? PrePost.NewLineInfo(writer, (IXmlLineInfo)node, context.ProjectItem) : PrePost.NoBlock())
 			{
 				var localVar = getNodeValue(elementNode, context.Compilation.ObjectType);
+				var valueExpression = localVar.ValueAccessor;
+				if (localVar.Type.Equals(context.Compilation.ObjectType, SymbolEqualityComparer.Default)
+					&& elementNode.XmlType.TryResolveTypeSymbol(null, context.Compilation, context.XmlnsCache, context.TypeCache, out var markupType)
+					&& SymbolEqualityComparer.Default.Equals(markupType, context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.StaticResourceExtension")))
+				{
+					var converter = accessors.Property.GetAttributes().Concat(accessors.PropertyType.GetAttributes())
+						.FirstOrDefault(attribute => attribute.AttributeClass?.ToString() == "System.ComponentModel.TypeConverterAttribute")
+						?.ConstructorArguments[0].Value as ITypeSymbol;
+					if (converter is not null)
+					{
+						var stringName = NamingHelpers.CreateUniqueVariableName(context, context.Compilation.GetSpecialType(SpecialType.System_String));
+						var convertedName = NamingHelpers.CreateUniqueVariableName(context, context.Compilation.ObjectType);
+						var converted = elementNode.ConvertWithConverter(stringName, converter, accessors.PropertyType, writer, context);
+						writer.WriteLine($"var {convertedName} = {valueExpression} is string {stringName} ? (object?){converted} : {valueExpression};");
+						valueExpression = convertedName;
+					}
+				}
 				//mirrors Set: an intermediate cast is needed when the conversion goes through an operator
 				var intermediateCast = HasDoubleImplicitConversion(localVar.Type, accessors.PropertyType, context, out var conv) ? $"({conv!.ReturnType.ToFQDisplayString()})" : string.Empty;
-				var cast = context.Compilation.HasImplicitConversion(localVar.Type, accessors.PropertyType) && intermediateCast.Length == 0 ? string.Empty : $"({accessors.PropertyType.ToFQDisplayString()})";
-				writer.WriteLine($"{setterAccessor}({receiverCast}{parentVar.ValueAccessor}, {cast}{intermediateCast}{localVar.ValueAccessor});");
+				writer.WriteLine($"{setterAccessor}({receiverCast}{parentVar.ValueAccessor}, ({propertyType})({intermediateCast}{valueExpression}));");
 			}
 		}
 	}

@@ -33,7 +33,8 @@ namespace Microsoft.Maui.Controls.SourceGen
 	/// that declares no xmlns at all. Candidates are therefore never searched for outside the namespaces and
 	/// assemblies the document already imports, and the map is cached per xmlns. An [XmlnsDefinition] only
 	/// imports its namespace from the assembly it names, so another referenced assembly reusing the namespace
-	/// name contributes no container.
+	/// name contributes no container. An assembly-less <c>using:</c> namespace searches referenced assemblies;
+	/// an assembly-less <c>clr-namespace:</c> namespace refers to the XAML assembly.
 	/// </para>
 	/// <para>
 	/// Naming the container explicitly stays available, to reach a container the document does not import and
@@ -70,6 +71,11 @@ namespace Microsoft.Maui.Controls.SourceGen
 	/// either, so that the three inflators keep accepting exactly the same markup. Generic extension blocks
 	/// (<c>extension&lt;T&gt;(ICollection&lt;T&gt;)</c>) and static extension properties have no applicable
 	/// <c>set_Name(TReceiver, TValue)</c> method and are reported, not silently ignored.
+	/// </para>
+	/// <para>
+	/// Markup extensions and converters receive the selected property through <c>IProvideValueTarget</c>.
+	/// Its <c>PropertyInfo.DeclaringType</c> is the compiler-generated extension declaration type, not the
+	/// type of the target element or the extension container.
 	/// </para>
 	/// <para>
 	/// Neither XamlC nor the runtime inflator resolve extension properties. Both would have to discover the

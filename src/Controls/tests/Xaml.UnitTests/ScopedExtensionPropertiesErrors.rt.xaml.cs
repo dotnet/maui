@@ -17,6 +17,23 @@ public partial class ScopedExtensionPropertiesErrors : ContentPage
 	[Collection("Xaml Inflation")]
 	public class Tests
 	{
+		static void AssertFeatureAvailable()
+		{
+			const string xaml =
+"""
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.ScopedExtensionProperties">
+	<Label ScopedTag="positive control" />
+</ContentPage>
+""";
+			var result = CreateMauiCompilation()
+				.AddReferences(MetadataReference.CreateFromFile(typeof(ScopedExtensionPropertiesErrors).Assembly.Location))
+				.WithAdditionalSource("namespace Microsoft.Maui.Controls.Xaml.UnitTests; public partial class ScopedExtensionProperties : ContentPage { }")
+				.RunMauiSourceGenerator(new AdditionalXamlFile("ScopedExtensionProperties.rt.xaml", xaml));
+			Assert.Empty(result.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error));
+		}
+
 		static GeneratorDriverRunResult Generate(Type xamlType) =>
 			CreateMauiCompilation()
 				.AddReferences(
@@ -35,8 +52,9 @@ public partial class {{xamlType.Name}} : ContentPage
 				.RunMauiSourceGenerator(xamlType);
 
 		[Fact]
-		public void AmbiguousAcrossContainersInScope()
+		public void ScopedExtensionPropertiesErrors_AmbiguousAcrossContainersInScope()
 		{
+			AssertFeatureAvailable();
 			// ScopedAmbiguousAExtensions declares it for IView, ScopedAmbiguousBExtensions for BindableObject
 			var result = Generate(typeof(ScopedExtensionPropertiesErrors));
 
@@ -44,16 +62,18 @@ public partial class {{xamlType.Name}} : ContentPage
 		}
 
 		[Fact]
-		public void ContainerInAnUnmappedNamespaceIsNotInScope()
+		public void ScopedExtensionPropertiesOutOfScope_ContainerInAnUnmappedNamespaceIsNotInScope()
 		{
+			AssertFeatureAvailable();
 			var result = Generate(typeof(ScopedExtensionPropertiesOutOfScope));
 
 			Assert.True(result.Diagnostics.Any(d => d.Id == "MAUIX2002"));
 		}
 
 		[Fact]
-		public void NamedContainerNeverFallsBackToTheTargetsOwnProperty()
+		public void ScopedExtensionPropertiesQualified_NamedContainerNeverFallsBackToTheTargetsOwnProperty()
 		{
+			AssertFeatureAvailable();
 			// ExternalLabelExtensions is a real extension container, but declares no Text. Label.Text must
 			// not be assigned just because the qualifier was dropped
 			var result = Generate(typeof(ScopedExtensionPropertiesQualified));
@@ -62,8 +82,9 @@ public partial class {{xamlType.Name}} : ContentPage
 		}
 
 		[Fact]
-		public void LookalikeStaticClassIsNotAnExtensionContainer()
+		public void ScopedExtensionPropertiesLookalike_LookalikeStaticClassIsNotAnExtensionContainer()
 		{
+			AssertFeatureAvailable();
 			// the members of LookalikeExtensions have the shape of lowered accessors, but the class carries
 			// no extension declaration, so it resolves like any other ordinary owner and finds nothing
 			var result = Generate(typeof(ScopedExtensionPropertiesLookalike));
@@ -72,8 +93,9 @@ public partial class {{xamlType.Name}} : ContentPage
 		}
 
 		[Fact]
-		public void AmbiguityInsideOneContainerIsNotHiddenByALessSpecificCandidate()
+		public void ScopedExtensionPropertiesNestedAmbiguity_AmbiguityInsideOneContainerIsNotHiddenByALessSpecificCandidate()
 		{
+			AssertFeatureAvailable();
 			// NestedAmbiguityExtensions declares it for IView and BindableObject, the fallback container for object
 			var result = Generate(typeof(ScopedExtensionPropertiesNestedAmbiguity));
 
@@ -82,8 +104,49 @@ public partial class {{xamlType.Name}} : ContentPage
 		}
 
 		[Fact]
-		public void UnassignableInstanceMemberIsNotHiddenByAnExtensionProperty()
+		public void ScopedExtensionPropertiesNestedAmbiguity_QualifiedContainerStillReportsAmbiguity()
 		{
+			AssertFeatureAvailable();
+			const string xaml =
+"""
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	xmlns:scoped="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests.ScopedExtensions"
+	x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.ScopedExtensionPropertiesNestedAmbiguity">
+	<Label scoped:NestedAmbiguityExtensions.NestedAmbiguous="ambiguous" />
+</ContentPage>
+""";
+			var compilation = CreateMauiCompilation()
+				.AddReferences(MetadataReference.CreateFromFile(typeof(ScopedExtensionPropertiesErrors).Assembly.Location))
+				.WithAdditionalSource("namespace Microsoft.Maui.Controls.Xaml.UnitTests; public partial class ScopedExtensionPropertiesNestedAmbiguity : ContentPage { }");
+			var result = compilation.RunMauiSourceGenerator(new AdditionalXamlFile("ScopedExtensionPropertiesNestedAmbiguity.rt.xaml", xaml));
+			Assert.Contains(result.Diagnostics, d => d.Id == "MAUIX2021");
+			Assert.DoesNotContain(result.Diagnostics, d => d.Id == "MAUIX2020");
+		}
+
+		[Fact]
+		public void ScopedExtensionPropertiesErrors_UserDefinedReceiverConversionIsNotApplicable()
+		{
+			AssertFeatureAvailable();
+			const string xaml =
+"""
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.ScopedExtensionPropertiesErrors">
+	<ConvertibleExtensionView UserConversionTag="not an applicable receiver" />
+</ContentPage>
+""";
+			var compilation = CreateMauiCompilation()
+				.AddReferences(MetadataReference.CreateFromFile(typeof(ScopedExtensionPropertiesErrors).Assembly.Location))
+				.WithAdditionalSource("namespace Microsoft.Maui.Controls.Xaml.UnitTests; public partial class ScopedExtensionPropertiesErrors : ContentPage { }");
+			var result = compilation.RunMauiSourceGenerator(new AdditionalXamlFile("ScopedExtensionPropertiesErrors.rt.xaml", xaml));
+			Assert.Contains(result.Diagnostics, d => d.Id == "MAUIX2002");
+		}
+
+		[Fact]
+		public void ScopedExtensionPropertiesReadOnlyMember_UnassignableInstanceMemberIsNotHiddenByAnExtensionProperty()
+		{
+			AssertFeatureAvailable();
 			var result = Generate(typeof(ScopedExtensionPropertiesReadOnlyMember));
 
 			Assert.Contains(result.Diagnostics, d => d.Id == "MAUIX2002");
@@ -91,8 +154,9 @@ public partial class {{xamlType.Name}} : ContentPage
 		}
 
 		[Fact]
-		public void ContainerFromAnUnmappedAssemblyIsNotInScope()
+		public void ScopedExtensionPropertiesLeaked_ContainerFromAnUnmappedAssemblyIsNotInScope()
 		{
+			AssertFeatureAvailable();
 			// LeakedExtensions lives in a namespace the MAUI xmlns maps, but for another assembly
 			var result = Generate(typeof(ScopedExtensionPropertiesLeaked));
 

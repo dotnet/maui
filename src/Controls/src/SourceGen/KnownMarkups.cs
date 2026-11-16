@@ -1119,10 +1119,9 @@ internal class KnownMarkups
 			{
 				var localName = propertyName.LocalName;
 				var bpFieldSymbol = parentVar.Type.GetBindableProperty(propertyName.NamespaceURI, ref localName, out System.Boolean attached, context, node as IXmlLineInfo);
-				var propertySymbol = parentVar.Type.GetAllProperties(localName, context).FirstOrDefault();
+				var extensionProperty = bpFieldSymbol == null ? SetPropertyHelpers.FindExtensionProperty(parentVar.Type, propertyName, node, context) : null;
+				var propertySymbol = extensionProperty ?? parentVar.Type.GetAllProperties(localName, context).FirstOrDefault();
 				var typeandconverter = bpFieldSymbol?.GetBPTypeAndConverter(context);
-				if (typeandconverter == null && propertySymbol == null)
-					propertySymbol = SetPropertyHelpers.FindExtensionProperty(parentVar.Type, propertyName, node, context);
 
 				var propertyType = typeandconverter?.type ?? propertySymbol?.Type;
 				var converter = typeandconverter?.converter;
@@ -1150,7 +1149,7 @@ internal class KnownMarkups
 				}
 				try
 				{
-					value = vn.ConvertTo(propertyType!, converter, writer, context, parentVar);
+					value = vn.ConvertTo(propertyType!, converter, writer, context, parentVar, extensionProperty is not null ? node : null);
 				}
 				catch (Exception)
 				{

@@ -5,6 +5,7 @@ using System;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Controls.Xaml.UnitTests.GlobalScopedExtensions;
+using Microsoft.Maui.Controls.Xaml.UnitTests.ScopedExtensions;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
 using Xunit;
@@ -20,16 +21,27 @@ public partial class GlobalScopedExtensionProperties : ContentPage
 	[Collection("Xaml Inflation")]
 	public class Tests : IDisposable
 	{
+		static readonly Lazy<Type> PageType = new(() => ExtensionPropertyTestHelper.Compile(typeof(GlobalScopedExtensionProperties)));
+
 		public Tests()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-		public void Dispose() => AppInfo.SetCurrent(null);
+		public void Dispose()
+		{
+			AppInfo.SetCurrent(null);
+			Application.SetCurrentApplication(null!);
+			DispatcherProvider.SetCurrent(null);
+		}
 
 		[Fact]
-		public void UnqualifiedExtensionPropertyFromTheGlobalXmlns()
-			=> Assert.Equal("from the global xmlns", new GlobalScopedExtensionProperties().label.GlobalTag);
+		public void GlobalScopedExtensionProperties_UnqualifiedExtensionPropertyFromTheGlobalXmlns()
+			=> Assert.Equal("from the global xmlns", ((ContentPage)Activator.CreateInstance(PageType.Value)!).Named<Label>("label").GlobalTag);
+
+		[Fact]
+		public void GlobalScopedExtensionProperties_MappedNamespaceBeginningWithHttpIsInScope()
+			=> Assert.Equal("from mapped namespace", ThreeWayRecorder.Get(((ContentPage)Activator.CreateInstance(PageType.Value)!).Named<Label>("label")));
 	}
 }

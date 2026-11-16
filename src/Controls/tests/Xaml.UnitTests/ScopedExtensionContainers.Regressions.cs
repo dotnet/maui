@@ -1,7 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 #nullable enable
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Globalization;
+using System.Reflection;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests.ScopedExtensions;
 
@@ -55,6 +62,7 @@ public static class NestedAmbiguityFallbackExtensions
 public interface IScopedExplicitTag
 {
 	string ExplicitTag { get; }
+	string WritableExplicitTag { get; set; }
 }
 
 // Instance members win over extension properties of the same name, even when they cannot be assigned. An
@@ -65,7 +73,10 @@ public class ScopedPrecedenceView : ContentView, IScopedExplicitTag
 
 	public string ReadOnlyClr { get; private set; } = string.Empty;
 
+	public string Collision { get; set; } = string.Empty;
+
 	string IScopedExplicitTag.ExplicitTag => string.Empty;
+	string IScopedExplicitTag.WritableExplicitTag { get; set; } = string.Empty;
 }
 
 public static class ScopedPrecedenceExtensions
@@ -86,5 +97,144 @@ public static class ScopedPrecedenceExtensions
 		{
 			set => ThreeWayRecorder.Record(view, "extension ExplicitTag:" + value);
 		}
+
+		public string WritableExplicitTag
+		{
+			set => ThreeWayRecorder.Record(view, "extension WritableExplicitTag:" + value);
+		}
+
+		public int Collision
+		{
+			set => ThreeWayRecorder.Record(view, "extension Collision:" + value);
+		}
 	}
+}
+
+public static class ObjectImpostorExtensions
+{
+	extension(View view)
+	{
+		public object ObjectImpostor
+		{
+			set => ThreeWayRecorder.Record(view, "extension object:" + value);
+		}
+
+		public dynamic DynamicImpostor
+		{
+			set => ThreeWayRecorder.Record(view, "extension dynamic:" + value);
+		}
+	}
+
+	public static void set_ObjectImpostor(View view, string value) => ThreeWayRecorder.Record(view, "handwritten object:" + value);
+	public static void set_DynamicImpostor(View view, string value) => ThreeWayRecorder.Record(view, "handwritten dynamic:" + value);
+}
+
+public class VariantExtensionView : ContentView, IEnumerable<string>
+{
+	public IEnumerator<string> GetEnumerator() => ((IEnumerable<string>)Array.Empty<string>()).GetEnumerator();
+	IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+}
+
+public static class VariantExtensions
+{
+	extension(IEnumerable<object> target)
+	{
+		public string VariantTag
+		{
+			set => ThreeWayRecorder.Record(target, "variant:" + value);
+		}
+	}
+}
+
+public static class VariantFallbackExtensions
+{
+	extension(object target)
+	{
+		public string VariantTag
+		{
+			set => ThreeWayRecorder.Record(target, "object:" + value);
+		}
+	}
+}
+
+public class ConvertibleExtensionView : ContentView
+{
+	public static implicit operator ExtensionReceiver(ConvertibleExtensionView value) => new();
+}
+
+public class ExtensionReceiver;
+
+public static class UserConversionExtensions
+{
+	extension(ExtensionReceiver target)
+	{
+		public string UserConversionTag
+		{
+			set => ThreeWayRecorder.Record(target, value);
+		}
+	}
+}
+
+public sealed class ExtensionValue(string value)
+{
+	public string Value { get; } = value;
+}
+
+public class ExtensionValueConverter : TypeConverter, IExtendedTypeConverter
+{
+	public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType) => sourceType == typeof(string);
+	public override object ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value) => new ExtensionValue((string)value);
+
+	public object ConvertFromInvariantString(string value, IServiceProvider serviceProvider)
+	{
+		var target = serviceProvider.GetService(typeof(IProvideValueTarget)) as IProvideValueTarget;
+		if (target?.TargetObject is not Label
+			|| target.TargetProperty is not PropertyInfo { PropertyType: var type }
+			|| type != typeof(ExtensionValue))
+			throw new InvalidOperationException("The converter did not receive the extension property.");
+		return new ExtensionValue(value);
+	}
+}
+
+public static class ConvertedExtensionProperties
+{
+	extension(Label label)
+	{
+		[TypeConverter(typeof(ExtensionValueConverter))]
+		public ExtensionValue ConvertedTag
+		{
+			set => ThreeWayRecorder.Record(label, "converted:" + value.Value);
+		}
+
+		public ImageSource ResourceImage
+		{
+			set => ThreeWayRecorder.Record(label, ((FileImageSource)value).File);
+		}
+	}
+}
+
+[ContentProperty(nameof(Value))]
+[AcceptEmptyServiceProvider]
+public class ExtensionStringValueExtension : IMarkupExtension<string>
+{
+	public string Value { get; set; } = string.Empty;
+	public string ProvideValue(IServiceProvider serviceProvider) => Value;
+	object IMarkupExtension.ProvideValue(IServiceProvider serviceProvider) => ProvideValue(serviceProvider);
+}
+
+[AcceptEmptyServiceProvider]
+public class ExtensionObjectValueExtension : IMarkupExtension
+{
+	public object ProvideValue(IServiceProvider serviceProvider) => "provided as object";
+}
+
+[RequireService([typeof(IProvideValueTarget)])]
+public class ExtensionTargetPropertyExtension : IMarkupExtension<object>
+{
+	public object ProvideValue(IServiceProvider serviceProvider)
+	{
+		var target = (IProvideValueTarget)serviceProvider.GetService(typeof(IProvideValueTarget))!;
+		return target.TargetProperty is PropertyInfo property ? $"{property.Name}:{property.PropertyType.Name}" : "missing target property";
+	}
+	object IMarkupExtension.ProvideValue(IServiceProvider serviceProvider) => ProvideValue(serviceProvider);
 }
