@@ -1,0 +1,100 @@
+#!/usr/bin/env pwsh
+<#
+.SYNOPSIS
+Collects the evidence the `/review run-tests` agent uses to pick UI tests.
+
+.DESCRIPTION
+Runs from the trusted default-branch checkout before the agent starts. Writes
+context.json with the PR identity, the changed files (with truncated patches), and
+the UI test category inventory that maui-pr-uitests can run. PR code is never executed.
+#>
+[CmdletBinding()]
+param(
+    [Parameter(Mandatory)][ValidateRange(1, 2147483647)][int]$PrNumber,
+    [Parameter(Mandatory)][string]$OutputDirectory,
+    [string]$Repository = $(if ($env:GITHUB_REPOSITORY) { $env:GITHUB_REPOSITORY } else { 'dotnet/maui' }),
+    [string]$PipelineYamlPath = "$PSScriptRoot/../../eng/pipelines/common/ui-tests.yml",
+    [int]$MaxPatchCharsPerFile = 6000,
+    [int]$MaxPatchCharsTotal = 200000
+)
+
+$ErrorActionPreference = 'Stop'
+. "$PSScriptRoot/RunTests.Common.ps1"
+
+function Invoke-GhJson {
+    param([string[]]$Arguments)
+    $raw = & gh api @Arguments
+    if ($LASTEXITCODE -ne 0) { throw "gh api $($Arguments -join ' ') failed." }
+    return ($raw -join "`n") | ConvertFrom-Json -Depth 50
+}
+
+$pr = Invoke-GhJson @("repos/$Repository/pulls/$PrNumber")
+if ($pr.state -ne 'open') { throw "PR #$PrNumber is not open." }
+
+# --paginate concatenates pages as separate JSON arrays; --slurp merges them.
+$pages = Invoke-GhJson @('--paginate', '--slurp', "repos/$Repository/pulls/$PrNumber/files?per_page=100")
+$files = @($pages | ForEach-Object { $_ })
+
+$budget = $MaxPatchCharsTotal
+$changed = foreach ($file in $files) {
+    $patch = [string]$file.PSObject.Properties['patch']?.Value
+    $truncated = $false
+    if ($patch.Length -gt $MaxPatchCharsPerFile) { $patch = $patch.Substring(0, $MaxPatchCharsPerFile); $truncated = $true }
+    if ($patch.Length -gt $budget) { $patch = $patch.Substring(0, [Math]::Max(0, $budget)); $truncated = $true }
+    $budget -= $patch.Length
+    [ordered]@{
+        path = $file.filename
+        previousPath = $file.PSObject.Properties['previous_filename']?.Value
+        status = $file.status
+        additions = $file.additions
+        deletions = $file.deletions
+        patch = $patch
+        patchTruncated = $truncated
+    }
+}
+
+$inventory = Get-RunTestsInventory -PipelineYamlPath $PipelineYamlPath
+
+# Map UITestCategories constant names to their category values (e.g. LifeCycle -> Lifecycle).
+$categoryConstants = @{}
+$categoriesSource = "$PSScriptRoot/../../src/Controls/tests/TestCases.Shared.Tests/UITestCategories.cs"
+if (Test-Path -LiteralPath $categoriesSource) {
+    foreach ($match in [regex]::Matches((Get-Content -LiteralPath $categoriesSource -Raw), 'const\s+string\s+(\w+)\s*=\s*"([^"]+)"')) {
+        $categoryConstants[$match.Groups[1].Value] = $match.Groups[2].Value
+    }
+}
+
+# Categories referenced by changed UI tests: a strong, cheap hint for the agent.
+$testCategoryHints = foreach ($entry in $changed) {
+    if ($entry.path -notmatch '(?i)^src/Controls/tests/TestCases\.[^/]+\.Tests/') { continue }
+    $found = @([regex]::Matches([string]$entry.patch, 'UITestCategories\.(\w+)') | ForEach-Object {
+        $name = $_.Groups[1].Value
+        if ($categoryConstants.ContainsKey($name)) { $categoryConstants[$name] } else { $name }
+    } | Sort-Object -Unique)
+    if ($found.Count) { [ordered]@{ path = $entry.path; categories = $found } }
+}
+
+$context = [ordered]@{
+    repository = $Repository
+    prNumber = $PrNumber
+    title = $pr.title
+    body = $(if ($pr.body) { ([string]$pr.body).Substring(0, [Math]::Min(4000, ([string]$pr.body).Length)) } else { '' })
+    labels = @($pr.labels | ForEach-Object { $_.name })
+    headSha = $pr.head.sha
+    baseRef = $pr.base.ref
+    baseSha = $pr.base.sha
+    changedFileCount = $files.Count
+    changedFiles = @($changed)
+    testCategoryHints = @($testCategoryHints)
+    inventory = [ordered]@{
+        platforms = @(Get-RunTestsPlatformIds)
+        categories = @(Get-RunTestsAllCategories $inventory)
+        umbrellas = $inventory.umbrellas
+    }
+}
+
+New-Item -ItemType Directory -Force -Path $OutputDirectory | Out-Null
+$path = Join-Path $OutputDirectory 'context.json'
+$context | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath $path -Encoding utf8
+Write-Host "Collected $($files.Count) changed files and $($context.inventory.categories.Count) UI categories for PR #$PrNumber at $($pr.head.sha)."
+if ($env:GITHUB_OUTPUT) { "ready=true" | Add-Content -LiteralPath $env:GITHUB_OUTPUT }
