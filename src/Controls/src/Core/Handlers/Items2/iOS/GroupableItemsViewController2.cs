@@ -230,8 +230,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		internal void HandleScrollAnimationEnded()
 		{
-			// An animated scroll a request started no longer scrolls as a fling does: the anchor judges where it stopped.
-			ScrollAnchor?.RequestedScrollEnded(CollectionView);
+			ScrollAnimationEnded();
 
 			// Clear it first: what it does can raise Scrolled, from which the app can start a newer scroll that leaves what to
 			// do once its own animation ends.

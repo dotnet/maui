@@ -57,6 +57,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		// Counts the scroll requests (see StartScrollRequest).
 		int _scrollRequests;
 
+		// Counts the scroll animations UIKit reported ending (see ScrollAnimationEnded).
+		int _scrollAnimationsEnded;
+
 		// Whether UIKit is scrolling to an item for a ScrollTo, and the ScrollToStart or ScrollToEnd the app requested meanwhile,
 		// which scrolls once it's done (see ScrollToItem).
 		bool _scrollingToItem;
@@ -484,10 +487,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			// A scroll the app requests: an anchor that follows the end judges where it lands.
 			var animating = false;
+			var animationsEnded = _scrollAnimationsEnded;
 			scrollAnchor?.ScrollRequesting();
 			try
 			{
-				animating = CollectionViewScrollAnchor.ScrollToStartOnce(CollectionView, animate);
+				// UIKit doesn't animate a view that isn't in a window: it scrolls the view to the start, and reports that the
+				// animation ended before this returns. Nothing is left to do then.
+				animating = CollectionViewScrollAnchor.ScrollToStartOnce(CollectionView, animate) && animationsEnded == _scrollAnimationsEnded;
 			}
 			finally
 			{
@@ -530,12 +536,20 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			// A scroll the app requests: an anchor that follows the start judges where it lands.
 			double? target = null;
+			var animationsEnded = _scrollAnimationsEnded;
 			scrollAnchor?.ScrollRequesting();
 			try
 			{
 				if (animate)
 				{
+					// UIKit doesn't animate a view that isn't in a window: it scrolls the view to the end as laid out, and
+					// reports that the animation ended before this returns. It goes the rest of the way as from the end as laid
+					// out (below).
 					target = CollectionViewScrollAnchor.AnimateToEndOnce(CollectionView);
+					if (animationsEnded != _scrollAnimationsEnded)
+					{
+						target = null;
+					}
 				}
 				else
 				{
@@ -578,7 +592,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 			else if (animate)
 			{
-				// At the end as laid out: it still goes the rest of the way if measuring the rows there moves the end.
+				// At the end as laid out, or scrolled there without animating: it still goes the rest of the way if measuring
+				// the rows there moves the end.
 				FinishingScrollToEnd();
 			}
 
@@ -694,6 +709,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				_scrollAnchor?.RequestedScrollEnded(CollectionView);
 			}
+		}
+
+		/// <summary>
+		/// Called when UIKit reports that a scroll animation ended: one that got where it was going, one a scroll stopped, or
+		/// one UIKit didn't run, as for a view that isn't in a window, which it reports as it scrolls the view. An animated
+		/// scroll a request started no longer scrolls as a fling does (see <see cref="CollectionViewScrollAnchor.ScrollRequested"/>).
+		/// </summary>
+		internal void ScrollAnimationEnded()
+		{
+			_scrollAnimationsEnded++;
+			_scrollAnchor?.RequestedScrollEnded(CollectionView);
 		}
 
 		void InvalidateLayoutIfItemsMeasureChanged()

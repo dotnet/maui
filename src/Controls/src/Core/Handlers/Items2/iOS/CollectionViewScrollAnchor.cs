@@ -226,10 +226,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		/// <param name="collectionView">The collection view.</param>
 		/// <param name="isLatest">Whether the request is still the latest (see <c>ItemsViewController2.IsLatestScrollRequest</c>).</param>
 		/// <param name="animating">
-		/// Whether the request started an animated scroll to an edge the view doesn't follow, and the controller is told when
-		/// it ends (<see cref="RequestedScrollEnded"/>). Until then it scrolls as a fling does: the looks before it moves would
-		/// otherwise judge it where it starts, at the edge it leaves, and scroll back there for the content changing, which
-		/// stops the animation.
+		/// Whether the request started an animated scroll to an edge the view doesn't follow that's still on its way, which UIKit
+		/// reports the end of (see <see cref="RequestedScrollEnded"/>). Until then it scrolls as a fling does: the looks before
+		/// it moves would otherwise judge it where it starts, at the edge it leaves, and scroll back there for the content
+		/// changing, which stops the animation.
 		/// </param>
 		public void ScrollRequested(UICollectionView collectionView, bool isLatest, bool animating = false)
 		{

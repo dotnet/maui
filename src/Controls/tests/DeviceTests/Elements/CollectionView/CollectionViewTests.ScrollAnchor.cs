@@ -1556,6 +1556,78 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+#if IOS || MACCATALYST
+		// UIKit doesn't animate a scroll of a view that isn't in a window: it scrolls the view there, and reports that the
+		// animation ended before the request returns.
+		[Theory(DisplayName = "An animated ScrollToStart or ScrollToEnd made while the list isn't in a window gets there, and the list follows its edge again")]
+		[InlineData(ScrollAnchorMode.End)]
+		[InlineData(ScrollAnchorMode.Start)]
+		public async Task AnAnimatedScrollToAnEdgeMadeOutsideTheWindowGetsThere(ScrollAnchorMode anchorMode)
+		{
+			SetupBuilder();
+			var items = CreateAnchorItems(40);
+			var collectionView = CreateAnchorCollectionView(items, anchorMode);
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				var toEnd = anchorMode == ScrollAnchorMode.Start;
+				if (toEnd)
+				{
+					await AssertEventually(() => GetDistanceFromStart(handler) <= AnchorTolerance, timeout: 3000, message: "The list should open at its start.");
+				}
+				else
+				{
+					await AssertAtEnd(handler, "The list should open at its end.");
+				}
+
+				// The app scrolls the list to the edge it doesn't follow while the list is out of its window.
+				var platformView = handler.PlatformView;
+				var superview = platformView.Superview;
+				var index = Array.IndexOf(superview.Subviews, platformView);
+				platformView.RemoveFromSuperview();
+				if (toEnd)
+				{
+					collectionView.ScrollToEnd(animate: true);
+				}
+				else
+				{
+					collectionView.ScrollToStart(animate: true);
+				}
+
+				superview.InsertSubview(platformView, index);
+
+				if (toEnd)
+				{
+					await AssertAtEnd(handler, "ScrollToEnd should reach the end once the rows there are measured.", timeout: 5000);
+				}
+				else
+				{
+					var atStart = await Wait(() => GetDistanceFromStart(handler) <= AnchorTolerance, 5000);
+					Assert.True(atStart, $"ScrollToStart should reach the start. Distance from the start: {GetDistanceFromStart(handler)}.");
+				}
+
+				await Task.Delay(500);
+				Assert.False(collectionView.IsAnchored, "The list shouldn't follow an edge its AnchorMode doesn't select.");
+
+				if (!toEnd)
+				{
+					// Back at its end without a request, the list follows its end again: a new last item keeps the end in view.
+					for (var attempt = 0; attempt < 5 && GetDistanceToEnd(handler) > AnchorTolerance; attempt++)
+					{
+						ScrollPlatformViewBy(handler, GetDistanceToEnd(handler));
+						await Task.Delay(100);
+					}
+
+					await AssertAtEnd(handler, "The list should be back at its end.");
+					Assert.True(collectionView.IsAnchored, "Back at its end, the list should follow it.");
+					items.Add(new AnchorItem("Added at the end", 40));
+					await AssertEventually(() => Math.Abs(GetItemHeight(handler, items.Count - 1) - 40) <= AnchorTolerance, timeout: 3000, message: "The new item should be laid out in view.");
+					await AssertAtEnd(handler, "Following the end, a new last item should keep the end in view.");
+				}
+			});
+		}
+#endif
+
 		[Fact(DisplayName = "AnchorMode Start | End follows whichever edge the list is at")]
 		public async Task AnchorModeStartAndEndFollowsWhicheverEdgeTheListIsAt()
 		{
