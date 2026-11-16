@@ -2067,6 +2067,76 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		// The list is already at the edge the animated scroll goes to: RecyclerView's smooth scroller finds its target in place,
+		// and stops before the layout that lands the jump to the other edge. Without a header and footer, the rows all the same
+		// height, RecyclerView estimates the content exactly: the anchor measures no change in size after the jump either.
+		[Theory(DisplayName = "An animated ScrollToStart or ScrollToEnd right after one to the other edge that doesn't animate wins")]
+		[InlineData(ScrollAnchorMode.None, ScrollAnchorMode.Start, true)]
+		[InlineData(ScrollAnchorMode.None, ScrollAnchorMode.End, true)]
+		[InlineData(ScrollAnchorMode.Start, ScrollAnchorMode.Start, true)]
+		[InlineData(ScrollAnchorMode.Start, ScrollAnchorMode.End, true)]
+		[InlineData(ScrollAnchorMode.End, ScrollAnchorMode.Start, true)]
+		[InlineData(ScrollAnchorMode.End, ScrollAnchorMode.End, true)]
+		[InlineData(ScrollAnchorMode.Start | ScrollAnchorMode.End, ScrollAnchorMode.Start, true)]
+		[InlineData(ScrollAnchorMode.Start | ScrollAnchorMode.End, ScrollAnchorMode.End, true)]
+		[InlineData(ScrollAnchorMode.None, ScrollAnchorMode.Start, false)]
+		[InlineData(ScrollAnchorMode.None, ScrollAnchorMode.End, false)]
+		[InlineData(ScrollAnchorMode.Start, ScrollAnchorMode.Start, false)]
+		[InlineData(ScrollAnchorMode.Start, ScrollAnchorMode.End, false)]
+		[InlineData(ScrollAnchorMode.End, ScrollAnchorMode.Start, false)]
+		[InlineData(ScrollAnchorMode.End, ScrollAnchorMode.End, false)]
+		[InlineData(ScrollAnchorMode.Start | ScrollAnchorMode.End, ScrollAnchorMode.Start, false)]
+		[InlineData(ScrollAnchorMode.Start | ScrollAnchorMode.End, ScrollAnchorMode.End, false)]
+		public async Task AnAnimatedScrollToAnEdgeRightAfterAJumpToTheOtherEdgeWins(ScrollAnchorMode anchorMode, ScrollAnchorMode edge, bool headerAndFooter)
+		{
+			SetupBuilder();
+			var items = CreateAnchorItems(40);
+			var collectionView = CreateAnchorCollectionView(items, anchorMode);
+			if (!headerAndFooter)
+			{
+				collectionView.Header = null;
+				collectionView.Footer = null;
+			}
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				var toStart = edge == ScrollAnchorMode.Start;
+				bool AtEdge() => toStart ? GetDistanceFromStart(handler) <= AnchorTolerance : Math.Abs(GetDistanceToEnd(handler)) <= AnchorTolerance;
+				if (toStart)
+				{
+					collectionView.ScrollToStart(animate: false);
+				}
+				else
+				{
+					collectionView.ScrollToEnd(animate: false);
+				}
+
+				await AssertEventually(AtEdge, timeout: 3000, message: "The list should be at the edge.");
+
+				// Settled there: laid out where it is, and looked at.
+				await Task.Delay(300);
+
+				if (toStart)
+				{
+					collectionView.ScrollToEnd(animate: false);
+					collectionView.ScrollToStart(animate: true);
+				}
+				else
+				{
+					collectionView.ScrollToStart(animate: false);
+					collectionView.ScrollToEnd(animate: true);
+				}
+
+				var reached = await Wait(AtEdge, 5000);
+				Assert.True(reached, $"The later animated scroll should win. Position: {GetScrollPosition(handler)}.");
+
+				// Nothing the earlier request left takes the list away again.
+				await Task.Delay(500);
+				Assert.True(AtEdge(), $"The list should stay at the edge. Position: {GetScrollPosition(handler)}.");
+				Assert.Equal(anchorMode.HasFlag(edge), collectionView.IsAnchored);
+			});
+		}
+
 #if MACCATALYST
 		// Mac Catalyst can move the content offset without telling the scroll view delegate or laying the view out, as when a
 		// window is restored (see #34271): only an observer of the offset sees it. Following the end replaces the scroll back to

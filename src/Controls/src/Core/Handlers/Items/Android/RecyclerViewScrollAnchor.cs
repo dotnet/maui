@@ -169,6 +169,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		// fling is the user's, and carries on: the anchor goes to the edge once it settles, unless the user scrolled away.
 		void StopRequestedScroll() => (_recyclerView as IScrollAnchorRecyclerView)?.StopRequestedScroll();
 
+		void AnimateScrollToEdgeOnceLaidOut(bool end) =>
+			(_recyclerView as IScrollAnchorRecyclerView)?.AnimateScrollToEdgeOnceLaidOut(end);
+
 		// Reports whether the view follows an edge, and goes to it: unless the app requested a scroll as it heard, which is
 		// newer.
 		void PublishAndJumpToEdge()
@@ -328,12 +331,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_requestLandsLater = false;
 			if (animate && GetLayout() is var (layoutManager, _) && layoutManager.ItemCount > 0)
 			{
-				// It scrolls like a fling toward the start, which never disengages the anchor.
+				// It scrolls like a fling toward the start, which never disengages the anchor. It starts once the view is laid
+				// out: a jump an earlier request left for that layout lands first.
 				_tracker.Engage(ScrollAnchorMode.Start);
 				Publish();
 				if (requests == _scrollRequests)
 				{
-					SmoothScrollToStart(_recyclerView, layoutManager);
+					AnimateScrollToEdgeOnceLaidOut(end: false);
 				}
 
 				return;
@@ -360,12 +364,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (animate && GetLayout() is var (layoutManager, _) && layoutManager.ItemCount > 0)
 			{
 				// It scrolls like a fling toward the end, which never disengages the anchor; once it settles, the anchor
-				// scrolls the rest of the way if the end moved meanwhile.
+				// scrolls the rest of the way if the end moved meanwhile. It starts once the view is laid out: a jump an earlier
+				// request left for that layout lands first.
 				_tracker.Engage(ScrollAnchorMode.End);
 				Publish();
 				if (requests == _scrollRequests)
 				{
-					SmoothScrollToEnd(_recyclerView, layoutManager);
+					AnimateScrollToEdgeOnceLaidOut(end: true);
 				}
 
 				return;
@@ -602,9 +607,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			// Lay the row at the edge out first; the look after that layout scrolls the rest of the way.
 			JumpToEdge();
 
-			// Asked for during a layout, the jump waits for the layout to end, and a scroll can move the view first (the
-			// animated ScrollToEnd the app requested from the Scrolled event the layout raised): the look counted on the view
-			// being at the edge, so start measuring again from the next look, which scrolls there unless the view is scrolling.
+			// Asked for during a layout, the jump waits for the layout to end, and a scroll the user or the app starts meanwhile
+			// can move the view first: the look counted on the view being at the edge, so start measuring again from the next
+			// look, which scrolls there unless the view is scrolling.
 			if (_jumpPosted)
 			{
 				_tracker.Reset(_tracker.AnchoredEdge);

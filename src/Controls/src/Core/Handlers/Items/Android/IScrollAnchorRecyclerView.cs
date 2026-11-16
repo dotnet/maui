@@ -15,6 +15,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		void StopRequestedScroll();
 
 		/// <summary>
+		/// Starts an animated scroll to the start or the end of the content once the view is laid out, as an animated
+		/// <c>ScrollToStart</c> or <c>ScrollToEnd</c> does: a jump an earlier request left for that layout lands first, and a
+		/// newer request replaces it.
+		/// </summary>
+		/// <param name="end">Whether to scroll to the end, rather than the start.</param>
+		void AnimateScrollToEdgeOnceLaidOut(bool end);
+
+		/// <summary>
 		/// Scrolls to the start of the content, and follows it again while anchoring its start. A layout that doesn't scroll
 		/// vertically scrolls to the first item the adapter shows.
 		/// </summary>

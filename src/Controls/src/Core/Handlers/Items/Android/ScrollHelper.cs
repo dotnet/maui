@@ -37,8 +37,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_pendingScrollAdjustment?.Invoke();
 		}
 
-		// Called for a newer scroll request that doesn't go through this helper (an animated scroll to an edge): the adjustment
-		// an earlier jump left for its layout no longer applies.
+		// Called for a newer scroll request that doesn't go through this helper (the anchor's jump to an edge), and to stop a
+		// requested scroll: the adjustment an earlier jump left for its layout no longer applies, and neither does an animated
+		// scroll waiting for the view to be laid out.
 		public void CancelPendingAdjustment()
 		{
 			_pendingScrollAdjustment = null;
@@ -173,7 +174,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		/// Starts <paramref name="animateScroll"/> once the view is laid out, as the adjustment a jump leaves for its layout:
 		/// a newer request replaces it. RecyclerView's smooth scroller works out how far to go in the next frame's animation,
 		/// which comes before that frame lays the view out, so a change the app made to the rows with the request (a row that
-		/// grew) would move its target after it stopped.
+		/// grew) would move its target after it stopped. And a jump an earlier request left for that layout would land after
+		/// the animation, which stops right away when it finds its target in place.
 		/// </summary>
 		public void AnimateScrollOnceLaidOut(Action animateScroll)
 		{
