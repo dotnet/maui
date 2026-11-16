@@ -1,1 +1,8 @@
-#nullable enable
+﻿#nullable enable
+Microsoft.Maui.Controls.Button.HorizontalTextAlignment.get -> Microsoft.Maui.TextAlignment
+Microsoft.Maui.Controls.Button.HorizontalTextAlignment.set -> void
+Microsoft.Maui.Controls.Button.VerticalTextAlignment.get -> Microsoft.Maui.TextAlignment
+Microsoft.Maui.Controls.Button.VerticalTextAlignment.set -> void
+~static Microsoft.Maui.Controls.Button.MapTextAlignment(Microsoft.Maui.Handlers.IButtonHandler handler, Microsoft.Maui.Controls.Button button) -> void
+~static readonly Microsoft.Maui.Controls.Button.HorizontalTextAlignmentProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.Button.VerticalTextAlignmentProperty -> Microsoft.Maui.Controls.BindableProperty
