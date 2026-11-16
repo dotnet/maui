@@ -379,7 +379,22 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				// Turning anchoring off only stops following. It isn't a scroll: a scroll the app requested carries on to where
 				// it was going. An edge the view starts to follow is a scroll to that edge, and stops it (below).
+				// An animated ScrollToStart or ScrollToEnd the anchor followed on its way to the edge goes the rest of the way
+				// once its animation ends, as for a view that doesn't follow that edge: UIKit measures the rows it brings into
+				// view as it goes, which moves the edge past where it stops.
+				var edgeAnimation = _scrollAnchor?.EdgeAnimation;
+				var request = _scrollRequests;
 				DetachScrollAnchor();
+
+				// Not when the app requested a scroll as it heard the view no longer follows an edge: that one wins.
+				if (edgeAnimation is { } animation && IsLatestScrollRequest(request))
+				{
+					var target = animation.Target;
+					ScrollingToEdge(animation.Edge == ScrollAnchorMode.End
+						? () => ScrollToEndAnimationEnded(target)
+						: () => CollectionViewScrollAnchor.ScrollToStartOnceEnded(CollectionView));
+				}
+
 				return;
 			}
 

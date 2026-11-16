@@ -59,6 +59,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		// scroll the app requested, which an edge it starts to follow supersedes, and lets a fling of the user's settle.
 		bool _animatingRequestedScroll;
 
+		// Counts the scrolls the app requests: ScrollTo an item, ScrollToStart, ScrollToEnd, and an edge AnchorMode has the view
+		// start to follow. Stopping a scroll raises a pending RemainingItemsThresholdReached as the view goes idle: a scroll
+		// requested from it is newer than the one that stopped the view.
+		int _scrollRequests;
+
 		~MauiRecyclerView() => _layoutPropertyChangedProxy?.Unsubscribe();
 
 		public MauiRecyclerView(Context context, Func<IItemsLayout> getItemsLayout, Func<TAdapter> getAdapter) : base(new ContextThemeWrapper(context, Resource.Style.collectionViewTheme))
@@ -506,18 +511,22 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
-			// A position past the adapter's last one. Without animating, RecyclerView ignores it once it lays out, and it would
-			// only replace a scroll requested earlier that hasn't been laid out yet. Animated, RecyclerView scrolls to the last
-			// item instead (ItemsUpdatingScrollMode.KeepLastItemInView relies on that), which the anchor judges as a fling.
-			var inRange = position < ItemsViewAdapter.ItemCount;
-			if (!inRange && !args.IsAnimated)
+			// An index the items don't have: a position past the adapter's last one, or the header's or footer's, where an index
+			// before the first item or past the last one puts it. Without animating, it would only replace a scroll requested
+			// earlier that hasn't been laid out yet, which iOS doesn't do: RecyclerView ignores a position past the last one once
+			// it lays out, and scrolls to the header or footer. Animated, RecyclerView scrolls to the position, or to the last
+			// item for one past it (ItemsUpdatingScrollMode.KeepLastItemInView relies on that), which the anchor judges as a fling.
+			var itemsSource = ItemsViewAdapter.ItemsSource;
+			var isItem = position < ItemsViewAdapter.ItemCount && !itemsSource.IsHeader(position) && !itemsSource.IsFooter(position);
+			if (!isItem && !args.IsAnimated)
 			{
 				return;
 			}
 
 			// A scroll the app requests is judged by where it lands: the anchor doesn't scroll it back to the end.
-			if (inRange)
+			if (isItem)
 			{
+				_scrollRequests++;
 				_scrollAnchor?.ScrollRequested(args.IsAnimated);
 			}
 
@@ -829,6 +838,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 			else if (_scrollAnchor is null)
 			{
+				// It scrolls to the edge it selects: it's newer than any scroll requested before.
+				_scrollRequests++;
 				var scrollAnchor = new RecyclerViewScrollAnchor(this, itemsView, mode);
 				_scrollAnchor = scrollAnchor;
 				if (ItemsViewAdapter is not null)
@@ -840,6 +851,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 			else if (_scrollAnchor.Edges != mode)
 			{
+				_scrollRequests++;
 				_scrollAnchor.UpdateMode(mode);
 			}
 		}
@@ -857,17 +869,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		bool IScrollAnchorRecyclerView.ScrollToStart(bool animate)
 		{
-			if (GetLayoutManager() is not { } layoutManager)
+			if (GetLayoutManager() is null)
 			{
 				return false;
 			}
 
-			// A scroll the app requests, as for ScrollTo: a fling's snap target would snap the view back away from the start.
-			(GetSnapManager()?.GetCurrentSnapHelper() as SingleSnapHelper)?.ResetCurrentTargetPosition();
-
-			// And an adjustment an earlier jump left for its layout would scroll the view on after it.
-			_scrollHelper?.CancelPendingAdjustment();
-			_animatingRequestedScroll |= animate;
+			// A scroll the app requested as this one stopped the view is newer, and wins.
+			if (!StartScrollToEdge(animate) || GetLayoutManager() is not { } layoutManager)
+			{
+				return true;
+			}
 
 			if (!layoutManager.CanScrollVertically())
 			{
@@ -899,17 +910,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		bool IScrollAnchorRecyclerView.ScrollToEnd(bool animate)
 		{
-			if (GetLayoutManager() is not { } layoutManager)
+			if (GetLayoutManager() is null)
 			{
 				return false;
 			}
 
-			// A scroll the app requests, as for ScrollTo: a fling's snap target would snap the view back away from the end.
-			(GetSnapManager()?.GetCurrentSnapHelper() as SingleSnapHelper)?.ResetCurrentTargetPosition();
-
-			// And an adjustment an earlier jump left for its layout would scroll the view on after it.
-			_scrollHelper?.CancelPendingAdjustment();
-			_animatingRequestedScroll |= animate;
+			// A scroll the app requested as this one stopped the view is newer, and wins.
+			if (!StartScrollToEdge(animate) || GetLayoutManager() is not { } layoutManager)
+			{
+				return true;
+			}
 
 			if (!layoutManager.CanScrollVertically())
 			{
@@ -949,6 +959,33 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				_animatingRequestedScroll = true;
 				RecyclerViewScrollAnchor.SmoothScrollToEnd(this, layoutManager);
 			}
+		}
+
+		// Starts a ScrollToStart or ScrollToEnd, which is newer than any scroll requested before. Returns false when the app
+		// requested a scroll as it stopped the view, which is newer still: a jump stops a scroll under way, and that raises a
+		// pending RemainingItemsThresholdReached as the view goes idle, before RecyclerView sets the position it jumps to. So
+		// the view stops first, and the jump checks for a newer request before it sets its position.
+		bool StartScrollToEdge(bool animate)
+		{
+			var request = ++_scrollRequests;
+
+			// A scroll the app requests, as for ScrollTo: a fling's snap target would snap the view back away from the edge.
+			(GetSnapManager()?.GetCurrentSnapHelper() as SingleSnapHelper)?.ResetCurrentTargetPosition();
+
+			// And an adjustment an earlier jump left for its layout would scroll the view on after it.
+			_scrollHelper?.CancelPendingAdjustment();
+
+			if (!animate)
+			{
+				StopScroll();
+				if (request != _scrollRequests)
+				{
+					return false;
+				}
+			}
+
+			_animatingRequestedScroll |= animate;
+			return true;
 		}
 
 		// Where the view doesn't scroll to an edge of its content, as in a horizontal layout, the first or last item is as close as

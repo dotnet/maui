@@ -356,24 +356,30 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact(DisplayName = "A ScrollTo past the last item right after ScrollToEnd leaves it reaching the end")]
-		public async Task AScrollToPastTheLastItemRightAfterScrollToEndLeavesItReachingTheEnd()
+		// An index the items don't have: past the last item, or before the first, where Android's adapter has the footer or
+		// header.
+		[Theory(DisplayName = "A ScrollTo for an index the items don't have right after ScrollToEnd leaves it reaching the end")]
+		[InlineData(10000, 0, 0)]
+		[InlineData(1, 0, 600)]
+		[InlineData(-1, 50, 0)]
+		public async Task AScrollToForAnIndexTheItemsDoNotHaveRightAfterScrollToEndLeavesItReachingTheEnd(int index, int headerHeight, int footerHeight)
 		{
 			SetupBuilder();
 
-			// A row taller than the view: ScrollToEnd goes the rest of the way once the row is laid out where it scrolls to.
-			var items = new ObservableCollection<AnchorItem> { new("Tall", 600) };
+			// A last row taller than the view, the footer or the one item: ScrollToEnd goes the rest of the way once that row is
+			// laid out where it scrolls to.
+			var items = new ObservableCollection<AnchorItem> { new("Item", footerHeight > 0 ? 40 : 600) };
 			var collectionView = CreateAnchorCollectionView(items, ScrollAnchorMode.None);
-			collectionView.Header = null;
-			collectionView.Footer = null;
+			collectionView.Header = headerHeight > 0 ? new Label { Text = "Header", HeightRequest = headerHeight } : null;
+			collectionView.Footer = footerHeight > 0 ? new Label { Text = "Footer", HeightRequest = footerHeight } : null;
 
 			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
 			{
 				await AssertEventually(() => GetDistanceFromStart(handler) <= AnchorTolerance, timeout: 3000, message: "The list should open at its start.");
 
-				// The index is past the end: the view doesn't scroll for it.
+				// The list doesn't have the index: the view doesn't scroll for it.
 				collectionView.ScrollToEnd(animate: false);
-				collectionView.ScrollTo(10000, animate: false);
+				collectionView.ScrollTo(index, animate: false);
 
 				await AssertAtEnd(handler, "ScrollToEnd should still reach the end.");
 			});
@@ -1137,6 +1143,63 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		// The view follows the edge an animated ScrollToStart or ScrollToEnd scrolls to, past where its animation stops, as the
+		// rows it brings into view are measured. Turning anchoring off leaves it to go the rest of the way, as one to an edge the
+		// view doesn't follow does.
+		[Theory(DisplayName = "Turning AnchorMode off during an animated ScrollToStart or ScrollToEnd to the edge it follows lets it reach that edge")]
+		[InlineData(ScrollAnchorMode.Start)]
+		[InlineData(ScrollAnchorMode.End)]
+		public async Task TurningAnchorModeOffDuringAnAnimatedScrollToTheEdgeItFollowsLetsItReachThatEdge(ScrollAnchorMode edge)
+		{
+			SetupBuilder();
+			var items = CreateAnchorItems(40);
+			var collectionView = CreateAnchorCollectionView(items, edge);
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				// To the other edge without animating: on iOS, the rows in between keep the size UIKit estimates for them until
+				// the scroll back brings them into view.
+				if (edge == ScrollAnchorMode.End)
+				{
+					await AssertAtEnd(handler, "The list should open at its end.");
+					collectionView.ScrollTo(0, position: ScrollToPosition.Start, animate: false);
+				}
+				else
+				{
+					await AssertEventually(() => GetDistanceFromStart(handler) <= AnchorTolerance, timeout: 3000, message: "The list should open at its start.");
+					collectionView.ScrollTo(items.Count - 1, position: ScrollToPosition.End, animate: false);
+				}
+
+				await AssertEventually(() => !collectionView.IsAnchored, timeout: 3000, message: "Scrolling away from the edge should stop following it.");
+
+				// Before the animation's first frame.
+				if (edge == ScrollAnchorMode.End)
+				{
+					collectionView.ScrollToEnd(animate: true);
+				}
+				else
+				{
+					collectionView.ScrollToStart(animate: true);
+				}
+
+				collectionView.AnchorMode = ScrollAnchorMode.None;
+				Assert.False(collectionView.IsAnchored);
+
+				if (edge == ScrollAnchorMode.End)
+				{
+					await AssertAtEnd(handler, "The scroll should carry on to the end.");
+				}
+				else
+				{
+					var distance = double.NaN;
+					var reached = await Wait(() => (distance = GetDistanceFromStart(handler)) <= AnchorTolerance, 3000);
+					Assert.True(reached, $"The scroll should carry on to the start. Distance from the start: {distance}.");
+				}
+
+				Assert.False(collectionView.IsAnchored);
+			});
+		}
+
 		[Theory(DisplayName = "AnchorMode Start keeps items added before the first item in view")]
 		[InlineData(true)]
 		[InlineData(false)]
@@ -1682,21 +1745,19 @@ namespace Microsoft.Maui.DeviceTests
 #if ANDROID
 		// Stopping a scroll raises RemainingItemsThresholdReached when it's pending, as RecyclerView goes idle: a scroll the app
 		// requests from it is newer than the edge the list goes to.
+		// ScrollToStart and ScrollToEnd stop the view whether it follows the edge or not.
 		[Theory(DisplayName = "A ScrollTo from RemainingItemsThresholdReached as the list stops a scroll to go to an edge wins")]
-		[InlineData("AnchorMode")]
-		[InlineData("ScrollToEnd")]
-		[InlineData("ScrollToStart")]
-		public async Task AScrollToFromRemainingItemsThresholdReachedAsTheListStopsAScrollToGoToAnEdgeWins(string stopBy)
+		[InlineData("AnchorMode", ScrollAnchorMode.None)]
+		[InlineData("ScrollToEnd", ScrollAnchorMode.End)]
+		[InlineData("ScrollToEnd", ScrollAnchorMode.None)]
+		[InlineData("ScrollToStart", ScrollAnchorMode.Start)]
+		[InlineData("ScrollToStart", ScrollAnchorMode.None)]
+		public async Task AScrollToFromRemainingItemsThresholdReachedAsTheListStopsAScrollToGoToAnEdgeWins(string stopBy, ScrollAnchorMode anchorMode)
 		{
 			SetupBuilder();
 			var items = CreateAnchorItems(40);
 			var toStart = stopBy == "ScrollToStart";
-			var collectionView = CreateAnchorCollectionView(items, stopBy switch
-			{
-				"ScrollToEnd" => ScrollAnchorMode.End,
-				"ScrollToStart" => ScrollAnchorMode.Start,
-				_ => ScrollAnchorMode.None,
-			});
+			var collectionView = CreateAnchorCollectionView(items, anchorMode);
 
 			// Without a header and footer, the first and last items start and end the content: ScrollTo either scrolls to
 			// that edge. The threshold is reached with the tenth item in view.
@@ -1707,15 +1768,18 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
 			{
 				// The scroll goes away from the edge the list then goes to, which the app's ScrollTo takes it back from.
-				if (stopBy == "ScrollToEnd")
+				if (anchorMode == ScrollAnchorMode.End)
 				{
 					await AssertAtEnd(handler, "The list should open at its end.");
 					collectionView.ScrollTo(0, position: ScrollToPosition.Start, animate: false);
 				}
-				else if (toStart)
+				else
 				{
 					await AssertEventually(() => GetDistanceFromStart(handler) <= AnchorTolerance, timeout: 3000, message: "The list should open at its start.");
-					collectionView.ScrollTo(items.Count - 1, position: ScrollToPosition.End, animate: false);
+					if (toStart)
+					{
+						collectionView.ScrollTo(items.Count - 1, position: ScrollToPosition.End, animate: false);
+					}
 				}
 
 				if (toStart)
@@ -2039,11 +2103,10 @@ namespace Microsoft.Maui.DeviceTests
 		}
 #endif
 
-#if ANDROID
-		// RecyclerView applies the new item as the scroll starts, outside a layout: the look after the scroll still counts the
-		// move as the scroll's. On iOS and Mac Catalyst, UICollectionView resizes its content as the item is inserted, and an
-		// offset change outside a drag that comes with a size change is the platform laying out (as when the keyboard resizes
-		// the viewport): the anchor keeps following the end there.
+		// A scroll the user isn't dragging, as accessibility or the keyboard can make, right as the content changes size, is still
+		// a scroll. RecyclerView applies the new item as the scroll starts, outside a layout: the look after the scroll counts the
+		// move as the scroll's. UICollectionView resizes its content as the item is inserted, which the anchor looks at as the
+		// update ends, before the scroll.
 		[Fact(DisplayName = "Scrolling away as an item is added stops following the end")]
 		public async Task ScrollingAwayAsAnItemIsAddedStopsFollowingTheEnd()
 		{
@@ -2055,8 +2118,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				await AssertAtEnd(handler, "The list should open at its end.");
 
-				// The scroll applies the new item before it moves the view: the move is still a scroll away from the end, not the
-				// platform laying out the new item.
+				// The move is a scroll away from the end, not the platform laying out the new item.
 				items.Add(new AnchorItem("Added", 40));
 				ScrollPlatformViewBy(handler, -200);
 
@@ -2067,6 +2129,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+#if ANDROID
 		// Where the first row isn't laid out, RecyclerView only estimates how far the view is from the start, from the rows
 		// that are. Tall rows followed by short ones make that estimate, at the end, a tenth of the distance.
 		[Fact(DisplayName = "Scrolling back from the end past where an estimate puts the start doesn't follow the start")]

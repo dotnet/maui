@@ -339,14 +339,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
-			// Look again as for a new view that follows its start. Stopping a scroll can raise RemainingItemsThresholdReached (see
-			// StopRequestedScrollAndJumpToEdge): a scroll the app requests from it is newer.
+			// Look again as for a new view that follows its start.
 			_recyclerView.StopScroll();
-			if (requests != _scrollRequests)
-			{
-				return;
-			}
-
 			_tracker.Reset(ScrollAnchorMode.Start);
 			PublishAndJumpToEdge();
 		}
@@ -377,14 +371,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
-			// Look again as for a new view: the look after the jump scrolls to the exact end. Stopping a scroll can raise
-			// RemainingItemsThresholdReached (see StopRequestedScrollAndJumpToEdge): a scroll the app requests from it is newer.
+			// Look again as for a new view: the look after the jump scrolls to the exact end.
 			_recyclerView.StopScroll();
-			if (requests != _scrollRequests)
-			{
-				return;
-			}
-
 			_tracker.Reset(ScrollAnchorMode.End);
 			PublishAndJumpToEdge();
 		}

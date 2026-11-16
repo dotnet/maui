@@ -104,6 +104,12 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Gets whether the tracker has seen where the view is since it started over.</summary>
 		public bool HasPosition => _last is not null;
 
+		/// <summary>
+		/// Gets whether the view is on its way to the edge it follows, after <see cref="Engage"/>: until it gets there, the user
+		/// scrolls, or the tracker starts over.
+		/// </summary>
+		public bool IsApproaching => _approaching;
+
 		// A new view shows its end where it follows it, and otherwise its start.
 		ScrollAnchorMode InitialEdge => CanFollow(ScrollAnchorMode.End) ? ScrollAnchorMode.End
 			: CanFollow(ScrollAnchorMode.Start) ? ScrollAnchorMode.Start

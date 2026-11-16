@@ -572,6 +572,41 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void ApproachesTheEngagedEdgeUntilItGetsThereTheUserScrollsOrItStartsOver()
+		{
+			var view = FakeScrollView.AtEnd(extent: 1000, viewport: 400);
+			view.Offset = 100;
+			view.Look(userScrolling: true);
+			Assert.False(view.Tracker.IsApproaching);
+
+			// An animated scroll to the end is on its way there until it gets there.
+			view.Tracker.Engage(ScrollAnchorMode.End);
+			Assert.True(view.Tracker.IsApproaching);
+			view.Offset = 400;
+			Assert.Null(view.Look());
+			Assert.True(view.Tracker.IsApproaching);
+			view.Offset = 600;
+			Assert.Null(view.Look());
+			Assert.False(view.Tracker.IsApproaching);
+
+			// The user takes over.
+			view.Offset = 100;
+			view.Look(userScrolling: true);
+			view.Tracker.Engage(ScrollAnchorMode.End);
+			view.Offset = 300;
+			view.Look(userScrolling: true);
+			Assert.False(view.Tracker.IsApproaching);
+
+			// The app requests another scroll, or the view starts over.
+			view.Tracker.Engage(ScrollAnchorMode.End);
+			view.Tracker.RequestScroll();
+			Assert.False(view.Tracker.IsApproaching);
+			view.Tracker.Engage(ScrollAnchorMode.End);
+			view.Tracker.Reset();
+			Assert.False(view.Tracker.IsApproaching);
+		}
+
+		[Fact]
 		public void IgnoresMetricsThatArentNumbers()
 		{
 			var view = FakeScrollView.AtEnd(extent: 1000, viewport: 400);

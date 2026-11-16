@@ -46,6 +46,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		// OffsetObserved).
 		double _reportedOffsetY = double.NaN;
 
+		// The animated scroll to an edge the anchor last started (see EdgeAnimation).
+		(ScrollAnchorMode Edge, double Target)? _edgeAnimation;
+
 		/// <summary>Initializes a new anchor that follows the edges <paramref name="mode"/> selects.</summary>
 		public CollectionViewScrollAnchor(ScrollAnchorMode mode)
 		{
@@ -57,6 +60,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		/// <summary>Gets whether the view can follow <paramref name="edge"/>.</summary>
 		public bool CanFollow(ScrollAnchorMode edge) => _tracker.CanFollow(edge);
+
+		/// <summary>
+		/// Gets the animated scroll to an edge that <see cref="ScrollToStart"/> or <see cref="ScrollToEnd"/> started, while it's
+		/// on its way there: the edge, and where the animation stops. The anchor follows the edge past that point as UIKit
+		/// measures the rows the animation brings into view. A newer request, a drag, or getting there ends it.
+		/// </summary>
+		public (ScrollAnchorMode Edge, double Target)? EdgeAnimation => _tracker.IsApproaching ? _edgeAnimation : null;
 
 		/// <summary>Follows the edges <paramref name="mode"/> selects instead, starting over as for a new view.</summary>
 		public void UpdateMode(UICollectionView collectionView, ScrollAnchorMode mode)
@@ -231,7 +241,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				// Animate to the start as laid out (the controller lays the view out first): a ScrollTo the app requests as it
 				// hears the view follows its start stops the animation.
 				_tracker.Engage(ScrollAnchorMode.Start);
-				SetOffsetToStart(collectionView, animated: true);
+				_edgeAnimation = SetOffsetToStart(collectionView, animated: true)
+					? (ScrollAnchorMode.Start, GetStartOffset(collectionView))
+					: null;
 				if (itemsView is not null)
 				{
 					Publish(collectionView, itemsView, true);
@@ -243,6 +255,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			// Look again as for a new view that follows its start, and jump there, which stops any deceleration. The look then
 			// judges a ScrollTo the app requested from the Scrolled event of the jump.
 			_tracker.Reset(ScrollAnchorMode.Start);
+			_edgeAnimation = null;
 			_offsetChangedDuringLayout = false;
 			ApplyOffset(collectionView, GetStartOffset(collectionView));
 			collectionView.SetNeedsLayout();
@@ -261,7 +274,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				// Animate to the end as laid out (the controller lays the view out first): a ScrollTo the app requests as it
 				// hears the view follows its end stops the animation.
 				_tracker.Engage(ScrollAnchorMode.End);
-				SetOffsetToEnd(collectionView, animated: true);
+				_edgeAnimation = SetOffsetToEnd(collectionView, animated: true) is double end ? (ScrollAnchorMode.End, end) : null;
 				if (itemsView is not null)
 				{
 					Publish(collectionView, itemsView, true);
@@ -274,6 +287,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			// to the exact end once the rows there are measured, and before the view first appears when it isn't in a window
 			// yet. It judges a ScrollTo the app requested from the Scrolled event of the jump instead.
 			_tracker.Reset(ScrollAnchorMode.End);
+			_edgeAnimation = null;
 			_offsetChangedDuringLayout = false;
 			ApplyOffset(collectionView, GetEndOffset(collectionView));
 			collectionView.SetNeedsLayout();
