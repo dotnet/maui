@@ -1786,14 +1786,11 @@ static class UpdateComponentCodeWriter
 
 		if (propDiff.Kind == PropertyDiffKind.Clear)
 		{
-			var bpFieldName = $"{propName}Property";
-			var bp = FindStaticField(rootType, bpFieldName);
-			if (bp != null)
+			if (TryResolveBindablePropertyFieldFqn(rootType, propName, out var bpFieldFqn, qualifyWithOwnerType: true))
 			{
-				var fqType = rootType.ToFQDisplayString();
 				// Remove any existing binding before clearing (prevents zombie bindings)
-				codeWriter.WriteLine($"(this as global::Microsoft.Maui.Controls.BindableObject)?.RemoveBinding({fqType}.{bpFieldName});");
-				codeWriter.WriteLine($"(this as global::Microsoft.Maui.Controls.BindableObject)?.ClearValue({fqType}.{bpFieldName});");
+				codeWriter.WriteLine($"(this as global::Microsoft.Maui.Controls.BindableObject)?.RemoveBinding({bpFieldFqn});");
+				codeWriter.WriteLine($"(this as global::Microsoft.Maui.Controls.BindableObject)?.ClearValue({bpFieldFqn});");
 				return;
 			}
 			codeWriter.WriteLine($"// Property '{propName}' cleared on root — skipped (no BP found)");
@@ -1870,19 +1867,12 @@ static class UpdateComponentCodeWriter
 				return;
 			}
 			// Use ClearValue via the BindableObject API when we know the bindable property field
-			if (nodeType != null)
+			if (nodeType != null && TryResolveBindablePropertyFieldFqn(nodeType, propName, out var bpFieldFqn, qualifyWithOwnerType: true))
 			{
-				// Look for a static BindableProperty field named {PropName}Property
-				var bpFieldName = $"{propName}Property";
-				var bp = FindStaticField(nodeType, bpFieldName);
-				if (bp != null)
-				{
-					var fqType = nodeType.ToFQDisplayString();
-					// Remove any existing binding before clearing (prevents zombie bindings)
-					codeWriter.WriteLine($"({varName} as global::Microsoft.Maui.Controls.BindableObject)?.RemoveBinding({fqType}.{bpFieldName});");
-					codeWriter.WriteLine($"({varName} as global::Microsoft.Maui.Controls.BindableObject)?.ClearValue({fqType}.{bpFieldName});");
-					return;
-				}
+				// Remove any existing binding before clearing (prevents zombie bindings)
+				codeWriter.WriteLine($"({varName} as global::Microsoft.Maui.Controls.BindableObject)?.RemoveBinding({bpFieldFqn});");
+				codeWriter.WriteLine($"({varName} as global::Microsoft.Maui.Controls.BindableObject)?.ClearValue({bpFieldFqn});");
+				return;
 			}
 			codeWriter.WriteLine($"// Property '{propName}' cleared — skipped (no BP found)");
 			return;
@@ -2159,16 +2149,12 @@ static class UpdateComponentCodeWriter
 		}
 
 		// Fallback: bare string value from escape sequence {}{...}
-		if (expandedNode is ValueNode plainValue && plainValue.Value is string sv)
+		if (expandedNode is ValueNode plainValue && plainValue.Value is string sv
+			&& TryResolveBindablePropertyFieldFqn(ownerType, propName, out var bpFieldFqn))
 		{
-			var bpFieldName = $"{propName}Property";
-			var bpField = FindStaticField(ownerType, bpFieldName);
-			if (bpField != null)
-			{
-				var target = isRoot ? "this" : $"(({ownerType.ToFQDisplayString()}){targetAccessor}!)";
-				codeWriter.WriteLine($"{target}.SetValue({bpField.ToFQDisplayString()}, \"{EscapeString(sv)}\");");
-				return true;
-			}
+			var target = isRoot ? "this" : $"(({ownerType.ToFQDisplayString()}){targetAccessor}!)";
+			codeWriter.WriteLine($"{target}.SetValue({bpFieldFqn}, \"{EscapeString(sv)}\");");
+			return true;
 		}
 
 		return false;
@@ -2219,7 +2205,10 @@ static class UpdateComponentCodeWriter
 
 		if (classification.IsExpression)
 		{
+			TryResolveXDataType(markupNode, compilation, xmlnsCache, typeCache, out var dataTypeSymbol);
 			var expressionCode = CSharpExpressionHelpers.GetExpressionCode(markupString);
+			expressionCode = CSharpExpressionHelpers.ResolveXmlnsPrefixes(expressionCode, markupNode.NamespaceResolver, compilation, xmlnsCache, typeCache, dataTypeSymbol, rootType);
+			expressionCode = CSharpExpressionHelpers.TransformAttachedProperties(expressionCode);
 			return new ValueNode(new Expression(expressionCode), markupNode.NamespaceResolver, markupNode.LineNumber, markupNode.LinePosition);
 		}
 
@@ -2519,10 +2508,8 @@ static class UpdateComponentCodeWriter
 		INamedTypeSymbol rootType,
 		MarkupNode markupNode)
 	{
-		// Find the BindableProperty field
-		var bpFieldName = $"{propName}Property";
-		var bpField = FindStaticField(ownerType, bpFieldName);
-		if (bpField == null)
+		// Find the BindableProperty field (or heuristic attribute for source-generated bindable properties)
+		if (!TryResolveBindablePropertyFieldFqn(ownerType, propName, out var bpName))
 			return false;
 
 		// Resolve x:DataType using shared resolver
@@ -2530,8 +2517,9 @@ static class UpdateComponentCodeWriter
 			return false;
 
 		var expressionCode = CSharpExpressionHelpers.GetExpressionCode(markupString);
+		expressionCode = CSharpExpressionHelpers.ResolveXmlnsPrefixes(expressionCode, markupNode.NamespaceResolver, compilation, xmlnsCache, typeCache, dataTypeSymbol, rootType);
+		expressionCode = CSharpExpressionHelpers.TransformAttachedProperties(expressionCode);
 		var setBindingTarget = isRoot ? "this" : $"(({ownerType.ToFQDisplayString()}){targetAccessor}!)";
-		var bpName = bpField.ToFQDisplayString();
 
 		SetPropertyHelpers.SetExpressionBindingForUC(codeWriter, setBindingTarget, bpName, expressionCode, dataTypeSymbol, rootType, compilation);
 		return true;
@@ -2556,25 +2544,14 @@ static class UpdateComponentCodeWriter
 		{
 			if (current.Properties.TryGetValue(XmlName.xDataType, out var dtNode))
 			{
-				// x:DataType="local:TypeName" stored as ValueNode
-				if (dtNode is ValueNode vn && vn.Value is string dtString)
-				{
-					XmlType? xmlType;
-					try
-					{
-						xmlType = TypeArgumentsParser.ParseSingle(dtString, current.NamespaceResolver, null);
-					}
-					catch (XamlParseException)
-					{
-						return false;
-					}
-					if (xmlType != null && xmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, typeCache, out var resolved))
-					{
-						dataTypeSymbol = resolved;
-						return true;
-					}
-				}
-				return false;
+				return XDataTypeResolver.TryResolveXDataTypeNode(
+					dtNode,
+					current,
+					compilation,
+					xmlnsCache,
+					typeCache,
+					context: null,
+					out dataTypeSymbol);
 			}
 
 			// Walk up to parent ElementNode
@@ -2651,14 +2628,31 @@ static class UpdateComponentCodeWriter
 	/// </summary>
 	static void EmitRemoveBindingIfNeeded(IndentedTextWriter codeWriter, string varName, INamedTypeSymbol? nodeType, string propName)
 	{
-		if (nodeType == null)
+		if (nodeType == null || !TryResolveBindablePropertyFieldFqn(nodeType, propName, out var bpFieldFqn, qualifyWithOwnerType: true))
 			return;
+		codeWriter.WriteLine($"({varName} as global::Microsoft.Maui.Controls.BindableObject)?.RemoveBinding({bpFieldFqn});");
+	}
+
+	static bool TryResolveBindablePropertyFieldFqn(INamedTypeSymbol ownerType, string propName, out string bpFieldFqn, bool qualifyWithOwnerType = false)
+	{
 		var bpFieldName = $"{propName}Property";
-		var bp = FindStaticField(nodeType, bpFieldName);
-		if (bp == null)
-			return;
-		var fqType = nodeType.ToFQDisplayString();
-		codeWriter.WriteLine($"({varName} as global::Microsoft.Maui.Controls.BindableObject)?.RemoveBinding({fqType}.{bpFieldName});");
+		var bpField = FindStaticField(ownerType, bpFieldName);
+		if (bpField != null)
+		{
+			bpFieldFqn = qualifyWithOwnerType
+				? $"{ownerType.ToFQDisplayString()}.{bpFieldName}"
+				: bpField.ToFQDisplayString();
+			return true;
+		}
+
+		if (ownerType.HasBindablePropertyHeuristic(propName, context: null, out var explicitPropertyName))
+		{
+			bpFieldFqn = $"{ownerType.ToFQDisplayString()}.{explicitPropertyName ?? bpFieldName}";
+			return true;
+		}
+
+		bpFieldFqn = string.Empty;
+		return false;
 	}
 
 	static IPropertySymbol? FindProperty(INamedTypeSymbol type, string name)

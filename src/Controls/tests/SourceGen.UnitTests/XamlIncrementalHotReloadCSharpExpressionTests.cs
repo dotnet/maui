@@ -627,6 +627,578 @@ public partial class TestPage : ContentPage
 		Assert.DoesNotContain("not supported", ucSource, StringComparison.Ordinal);
 	}
 
+	[Fact]
+	public void CSharpExpression_XmlnsPrefixedTypeChange_GeneratesUC()
+	{
+		const string code =
+"""
+using System.ComponentModel;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace TestApp.Helpers
+{
+	public static class Labels
+	{
+		public static string Active => "Active";
+		public static string Inactive => "Inactive";
+	}
+}
+
+namespace TestApp
+{
+	public class TestViewModel : INotifyPropertyChanged
+	{
+		public bool IsActive { get; set; } = true;
+		public string LabelText { get; set; } = "Initial";
+		public event PropertyChangedEventHandler? PropertyChanged;
+	}
+
+	[XamlProcessing(XamlInflator.SourceGen)]
+	public partial class TestPage : ContentPage
+	{
+		public TestPage() => InitializeComponent();
+	}
+}
+""";
+
+		var xamlV1 =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:TestApp"
+             xmlns:helpers="clr-namespace:TestApp.Helpers"
+             x:Class="TestApp.TestPage"
+             x:DataType="local:TestViewModel">
+    <VerticalStackLayout>
+        <Label Text="{LabelText}" />
+    </VerticalStackLayout>
+</ContentPage>
+""";
+		var xamlV2 =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:TestApp"
+             xmlns:helpers="clr-namespace:TestApp.Helpers"
+             x:Class="TestApp.TestPage"
+             x:DataType="local:TestViewModel">
+    <VerticalStackLayout>
+        <Label Text="{= IsActive ? helpers:Labels.Active : helpers:Labels.Inactive}" />
+        <Button Text="Second" />
+    </VerticalStackLayout>
+</ContentPage>
+""";
+
+		RunGenerator(xamlV1, code, enableIncrementalHotReload: true);
+		var (result, _) = RunGenerator(xamlV2, code, enableIncrementalHotReload: true);
+
+		var ucSource = GetUCSource(result);
+		Assert.NotNull(ucSource);
+		Assert.DoesNotContain("helpers:", ucSource, StringComparison.Ordinal);
+		Assert.Contains("global::TestApp.Helpers.Labels.Active", ucSource, StringComparison.Ordinal);
+		Assert.Contains("global::TestApp.Helpers.Labels.Inactive", ucSource, StringComparison.Ordinal);
+		Assert.Contains("SetBinding", ucSource, StringComparison.Ordinal);
+		Assert.Contains("new(static __source => __source, \"IsActive\")", ucSource, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void CSharpExpression_ObservablePropertyTwoWay_GeneratesTypedSetterInUC()
+	{
+		const string code =
+"""
+using System;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace CommunityToolkit.Mvvm.ComponentModel
+{
+	[AttributeUsage(AttributeTargets.Field)]
+	public sealed class ObservablePropertyAttribute : Attribute
+	{
+	}
+}
+
+namespace TestApp
+{
+	public partial class TestViewModel
+	{
+		[CommunityToolkit.Mvvm.ComponentModel.ObservableProperty]
+		private string? _nickname;
+	}
+
+	[XamlProcessing(XamlInflator.SourceGen)]
+	public partial class TestPage : ContentPage
+	{
+		public TestPage() => InitializeComponent();
+	}
+}
+""";
+
+		var xamlV1 =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:TestApp"
+             x:Class="TestApp.TestPage"
+             x:DataType="local:TestViewModel">
+    <Entry Text="Initial" />
+</ContentPage>
+""";
+		var xamlV2 =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:TestApp"
+             x:Class="TestApp.TestPage"
+             x:DataType="local:TestViewModel">
+    <Entry Text="{Nickname}" />
+</ContentPage>
+""";
+
+		RunGenerator(xamlV1, code, assertNoCompilationErrors: false, enableIncrementalHotReload: true);
+		var (result, _) = RunGenerator(xamlV2, code, assertNoCompilationErrors: false, enableIncrementalHotReload: true);
+
+		var ucSource = GetUCSource(result);
+		Assert.NotNull(ucSource);
+		Assert.Contains("new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::TestApp.TestViewModel, string>(", ucSource, StringComparison.Ordinal);
+		Assert.Contains("(__source, __value) => __source.Nickname = __value,", ucSource, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void CSharpExpression_HeuristicBindableProperty_UpdatesExpressionInUC()
+	{
+		const string code =
+"""
+using System;
+using System.ComponentModel;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace CommunityToolkit.Maui
+{
+	[AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
+	public sealed class BindablePropertyAttribute : Attribute
+	{
+		public string? PropertyName { get; set; }
+	}
+}
+
+namespace TestApp
+{
+	public partial class CustomPopup : ContentView
+	{
+		[CommunityToolkit.Maui.BindableProperty]
+		public partial string? PopupMessage { get; set; }
+	}
+
+	public class TestViewModel : INotifyPropertyChanged
+	{
+		public string? Nickname { get; set; }
+		public string? OtherName { get; set; }
+		public event PropertyChangedEventHandler? PropertyChanged;
+	}
+
+	[XamlProcessing(XamlInflator.SourceGen)]
+	public partial class TestPage : ContentPage
+	{
+		public TestPage() => InitializeComponent();
+	}
+}
+""";
+
+		var xamlV1 =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:TestApp"
+             x:Class="TestApp.TestPage"
+             x:DataType="local:TestViewModel">
+    <local:CustomPopup PopupMessage="{Nickname}" />
+</ContentPage>
+""";
+		var xamlV2 =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:TestApp"
+             x:Class="TestApp.TestPage"
+             x:DataType="local:TestViewModel">
+    <local:CustomPopup PopupMessage="{OtherName}" />
+</ContentPage>
+""";
+
+		RunGenerator(xamlV1, code, assertNoCompilationErrors: false, enableIncrementalHotReload: true);
+		var (result, _) = RunGenerator(xamlV2, code, assertNoCompilationErrors: false, enableIncrementalHotReload: true);
+
+		var ucSource = GetUCSource(result);
+		Assert.NotNull(ucSource);
+		Assert.DoesNotContain("skipped", ucSource, StringComparison.OrdinalIgnoreCase);
+		Assert.Contains("global::TestApp.CustomPopup.PopupMessageProperty", ucSource, StringComparison.Ordinal);
+		Assert.Contains("SetBinding(global::TestApp.CustomPopup.PopupMessageProperty,", ucSource, StringComparison.Ordinal);
+		Assert.Contains("__source.OtherName", ucSource, StringComparison.Ordinal);
+		Assert.Contains("new(static __source => __source, \"OtherName\")", ucSource, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void CSharpExpression_HeuristicBindableProperty_RemovesRootAttribute_GeneratesClearAndRemoveBindingInUC()
+	{
+		const string code =
+"""
+using System;
+using System.ComponentModel;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace CommunityToolkit.Maui
+{
+	[AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
+	public sealed class BindablePropertyAttribute : Attribute
+	{
+		public string? PropertyName { get; set; }
+	}
+}
+
+namespace TestApp
+{
+	[XamlProcessing(XamlInflator.SourceGen)]
+	public partial class CustomPopup : ContentView
+	{
+		public CustomPopup() => InitializeComponent();
+
+		[CommunityToolkit.Maui.BindableProperty]
+		public partial string? PopupMessage { get; set; }
+	}
+
+	public class TestViewModel : INotifyPropertyChanged
+	{
+		public string? Nickname { get; set; }
+		public event PropertyChangedEventHandler? PropertyChanged;
+	}
+}
+""";
+
+		var xamlV1 =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<local:CustomPopup xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                   xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                   xmlns:local="clr-namespace:TestApp"
+                   x:Class="TestApp.CustomPopup"
+                   x:DataType="local:TestViewModel"
+                   PopupMessage="{Nickname}" />
+""";
+		var xamlV2 =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<local:CustomPopup xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                   xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                   xmlns:local="clr-namespace:TestApp"
+                   x:Class="TestApp.CustomPopup"
+                   x:DataType="local:TestViewModel" />
+""";
+
+		RunGenerator(xamlV1, code, assertNoCompilationErrors: false, enableIncrementalHotReload: true);
+		var (result, _) = RunGenerator(xamlV2, code, assertNoCompilationErrors: false, enableIncrementalHotReload: true);
+
+		var ucSource = GetUCSource(result);
+		Assert.NotNull(ucSource);
+		Assert.DoesNotContain("skipped", ucSource, StringComparison.OrdinalIgnoreCase);
+		Assert.Contains("RemoveBinding(global::TestApp.CustomPopup.PopupMessageProperty)", ucSource, StringComparison.Ordinal);
+		Assert.Contains("ClearValue(global::TestApp.CustomPopup.PopupMessageProperty)", ucSource, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void CSharpExpression_XDataTypeWithXTypeMarkup_PreservesDottedFormatInUC()
+	{
+		const string code =
+"""
+using System;
+using System.ComponentModel;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace Repro
+{
+	public class DummyType { }
+}
+
+namespace TestApp
+{
+	public class ClockViewModel : INotifyPropertyChanged
+	{
+		public DateTime Time { get; set; }
+		public event PropertyChangedEventHandler? PropertyChanged;
+	}
+
+	[XamlProcessing(XamlInflator.SourceGen)]
+	public partial class XTypePage : ContentPage
+	{
+		public XTypePage() => InitializeComponent();
+	}
+}
+""";
+
+		var xamlV1 =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:Time="clr-namespace:Repro"
+             xmlns:app="clr-namespace:TestApp"
+             x:Class="TestApp.XTypePage"
+             x:DataType="{x:Type app:ClockViewModel}">
+    <Label Text="Initial" />
+</ContentPage>
+""";
+		var xamlV2 =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:Time="clr-namespace:Repro"
+             xmlns:app="clr-namespace:TestApp"
+             x:Class="TestApp.XTypePage"
+             x:DataType="{x:Type app:ClockViewModel}">
+    <Label Text="{= $'{Time:HH.mm}'}" />
+</ContentPage>
+""";
+
+		RunGenerator(xamlV1, code, assertNoCompilationErrors: false, enableIncrementalHotReload: true);
+		var (result, _) = RunGenerator(xamlV2, code, assertNoCompilationErrors: false, enableIncrementalHotReload: true);
+
+		var ucSource = GetUCSource(result);
+		Assert.NotNull(ucSource);
+		Assert.DoesNotContain("skipped", ucSource, StringComparison.OrdinalIgnoreCase);
+		Assert.DoesNotContain("global::Repro.HH", ucSource, StringComparison.Ordinal);
+		Assert.Contains("__source.Time:HH.mm}\"", ucSource, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void CSharpExpression_VerbatimAndAttachedPropertyInterpolation_ParenthesizesAliasesInUC()
+	{
+		const string code =
+"""
+using System;
+using System.ComponentModel;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace TestApp.Resources
+{
+	public static class Labels
+	{
+		public static string Gold => "Gold";
+	}
+}
+
+namespace TestApp.Attached
+{
+	public static class CustomGrid
+	{
+		public static readonly BindableProperty RowProperty =
+			BindableProperty.CreateAttached("Row", typeof(int), typeof(CustomGrid), 0);
+
+		public static int GetRow(BindableObject view) => (int)view.GetValue(RowProperty);
+	}
+}
+
+namespace TestApp
+{
+	public class DummyViewModel : INotifyPropertyChanged
+	{
+		public int Dummy { get; set; }
+		public event PropertyChangedEventHandler? PropertyChanged;
+	}
+
+	[XamlProcessing(XamlInflator.SourceGen)]
+	public partial class VerbatimAttachedPage : ContentPage
+	{
+		public VerbatimAttachedPage() => InitializeComponent();
+	}
+}
+""";
+
+		var xamlV1 =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:res="clr-namespace:TestApp.Resources"
+             xmlns:m="clr-namespace:TestApp.Attached"
+             xmlns:app="clr-namespace:TestApp"
+             x:Class="TestApp.VerbatimAttachedPage"
+             x:DataType="app:DummyViewModel">
+    <VerticalStackLayout>
+        <Label Text="Initial1" />
+        <Label Text="Initial2" />
+        <Label Text="Initial3" />
+    </VerticalStackLayout>
+</ContentPage>
+""";
+		var xamlV2 =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:res="clr-namespace:TestApp.Resources"
+             xmlns:m="clr-namespace:TestApp.Attached"
+             xmlns:app="clr-namespace:TestApp"
+             x:Class="TestApp.VerbatimAttachedPage"
+             x:DataType="app:DummyViewModel">
+    <VerticalStackLayout>
+        <Label Text='{= $@"{res:Labels.Gold}"}' />
+        <Label Text='{= @$"C:\""q""\{res:Labels.Gold}"}' />
+        <Label Text="{= $'{this.(m:CustomGrid.Row)}'}" />
+    </VerticalStackLayout>
+</ContentPage>
+""";
+
+		RunGenerator(xamlV1, code, assertNoCompilationErrors: false, enableIncrementalHotReload: true);
+		var (result, _) = RunGenerator(xamlV2, code, assertNoCompilationErrors: false, enableIncrementalHotReload: true);
+
+		var ucSource = GetUCSource(result);
+		Assert.NotNull(ucSource);
+		Assert.DoesNotContain("skipped", ucSource, StringComparison.OrdinalIgnoreCase);
+		Assert.Contains("$@\"{(global::TestApp.Resources.Labels.Gold)}\"", ucSource, StringComparison.Ordinal);
+		Assert.Contains("@$\"C:\\\"\"q\"\"\\{(global::TestApp.Resources.Labels.Gold)}\"", ucSource, StringComparison.Ordinal);
+		Assert.Contains("$\"{(global::TestApp.Attached.CustomGrid.GetRow(this))}\"", ucSource, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void CSharpExpression_RawStringsOutVarQueriesAndGenericArity_PreservedInUC()
+	{
+		const string code =
+"""
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.ComponentModel;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace TestApp.Models
+{
+	public class Name { }
+	public class HH { public static string mm => "bad"; }
+	public class Person { public static string Default => "fallback"; }
+	public static class Labels { public static string Gold => "Gold"; }
+}
+
+namespace TestApp
+{
+	public class Box
+	{
+		public Box(string plain) { }
+		public override string ToString() => "";
+	}
+
+	public class Box<T>
+	{
+		public Box(string generic) { }
+		public override string ToString() => "";
+	}
+
+	public static class Formatter
+	{
+		public static string Format(object local) => local?.ToString() ?? string.Empty;
+	}
+
+	public sealed class QuerySequence<T> : IEnumerable<T>
+	{
+		readonly List<T> _items;
+		public QuerySequence(IEnumerable<T> items) => _items = new List<T>(items);
+		public QuerySequence<TResult> Select<TResult>(Func<T, TResult> selector)
+		{
+			var results = new List<TResult>(_items.Count);
+			foreach (var item in _items)
+				results.Add(selector(item));
+			return new QuerySequence<TResult>(results);
+		}
+		public IEnumerator<T> GetEnumerator() => _items.GetEnumerator();
+		IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+	}
+
+	public class UcScopeViewModel : INotifyPropertyChanged
+	{
+		public string Name { get; set; } = "Ada";
+		public event PropertyChangedEventHandler? PropertyChanged;
+	}
+
+	[XamlProcessing(XamlInflator.SourceGen)]
+	public partial class UcScopePage : ContentPage
+	{
+		public UcScopePage() => InitializeComponent();
+		public QuerySequence<string> People { get; } = new(["Ada"]);
+		public string UpdateTime(bool ok, string formatted) => ok ? formatted : string.Empty;
+	}
+}
+""";
+
+		var xamlV1 =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:res="clr-namespace:TestApp.Models"
+             xmlns:Time="clr-namespace:TestApp.Models"
+             xmlns:local="clr-namespace:TestApp.Models"
+             xmlns:generic="clr-namespace:TestApp.Models"
+             xmlns:app="clr-namespace:TestApp"
+             x:Class="TestApp.UcScopePage"
+             x:DataType="app:UcScopeViewModel">
+    <VerticalStackLayout>
+        <Label Text="Initial1" />
+        <Label Text="Initial2" />
+        <Label Text="Initial3" />
+        <Label Text="Initial4" />
+        <Label Text="Initial5" />
+    </VerticalStackLayout>
+</ContentPage>
+""";
+		var xamlV2 =
+""""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:res="clr-namespace:TestApp.Models"
+             xmlns:Time="clr-namespace:TestApp.Models"
+             xmlns:local="clr-namespace:TestApp.Models"
+             xmlns:generic="clr-namespace:TestApp.Models"
+             xmlns:app="clr-namespace:TestApp"
+             x:Class="TestApp.UcScopePage"
+             x:DataType="app:UcScopeViewModel">
+    <VerticalStackLayout>
+        <Label Text='{= """literal " $@"{global::System.String.Empty}" """}' />
+        <Label Text='{= $"""{res:Labels.Gold}""" }' />
+        <Label Text="{= this.UpdateTime(System.DateTime.TryParse('2026-11-15', out var Time), $'{Time:HH.mm}')}" />
+        <Label Text="{= string.Join(', ', from Person in People select global::TestApp.Formatter.Format(local:Person))}" />
+        <Label Text="{= new global::TestApp.Box&lt;int&gt;(generic:Name).ToString()}" />
+    </VerticalStackLayout>
+</ContentPage>
+"""";
+
+		RunGenerator(xamlV1, code, assertNoCompilationErrors: false, enableIncrementalHotReload: true);
+		var (result, _) = RunGenerator(xamlV2, code, assertNoCompilationErrors: false, enableIncrementalHotReload: true);
+
+		var ucSource = GetUCSource(result);
+		Assert.NotNull(ucSource);
+		Assert.DoesNotContain("skipped", ucSource, StringComparison.OrdinalIgnoreCase);
+		Assert.Contains("\"\"\"literal \" $@\"{global::System.String.Empty}\" \"\"\"", ucSource, StringComparison.Ordinal);
+		Assert.Contains("$\"\"\"{(global::TestApp.Models.Labels.Gold)}\"\"\"", ucSource, StringComparison.Ordinal);
+		Assert.DoesNotContain("global::TestApp.Models.HH", ucSource, StringComparison.Ordinal);
+		Assert.Contains("Time:HH.mm}\"", ucSource, StringComparison.Ordinal);
+		Assert.Contains("Formatter.Format(local:Person)", ucSource, StringComparison.Ordinal);
+		Assert.DoesNotContain("global::TestApp.Models.Name", ucSource, StringComparison.Ordinal);
+		Assert.Contains("new global::TestApp.Box<int>(generic:", ucSource, StringComparison.Ordinal);
+	}
+
 	static string? GetUCSource(GeneratorDriverRunResult result)
 	{
 		foreach (var gen in result.Results)
