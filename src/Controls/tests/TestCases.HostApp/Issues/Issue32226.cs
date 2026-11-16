@@ -19,33 +19,35 @@ public class Issue32226 : ContentPage
 
 		var tapTarget = new Label
 		{
-			Text = "Tap me (native Touch handler sets Handled = false)",
+			Text = "Tap me (native Touch handler)",
 			AutomationId = "TapTarget",
 			BackgroundColor = Colors.LightBlue,
-			Padding = 20
+			Padding = 15
 		};
 
 		var tapGesture = new TapGestureRecognizer();
 		tapGesture.Tapped += (s, e) => resultLabel.Text = "Tapped";
 		tapTarget.GestureRecognizers.Add(tapGesture);
+		ObserveNativeTouches(tapTarget, () => nativeTouchLabel.Text = "Native touch received");
 
-#if ANDROID
-		// Same pattern as the workaround from https://github.com/dotnet/maui/issues/23901:
-		// observe touches on the platform view without consuming them.
-		tapTarget.HandlerChanged += (s, e) =>
+		var doubleTapResultLabel = new Label
 		{
-			if (tapTarget.Handler?.PlatformView is Android.Views.View platformView)
-			{
-				platformView.Touch += (sender, args) =>
-				{
-					if (args.Event?.Action == Android.Views.MotionEventActions.Down)
-						nativeTouchLabel.Text = "Native touch received";
-
-					args.Handled = false;
-				};
-			}
+			Text = "Not double tapped",
+			AutomationId = "DoubleTapResultLabel"
 		};
-#endif
+
+		var doubleTapTarget = new Label
+		{
+			Text = "Double tap me (native Touch handler)",
+			AutomationId = "DoubleTapTarget",
+			BackgroundColor = Colors.LightPink,
+			Padding = 15
+		};
+
+		var doubleTapGesture = new TapGestureRecognizer { NumberOfTapsRequired = 2 };
+		doubleTapGesture.Tapped += (s, e) => doubleTapResultLabel.Text = "Double tapped";
+		doubleTapTarget.GestureRecognizers.Add(doubleTapGesture);
+		ObserveNativeTouches(doubleTapTarget);
 
 		var plainResultLabel = new Label
 		{
@@ -58,54 +60,84 @@ public class Issue32226 : ContentPage
 			Text = "Tap me (no native Touch handler)",
 			AutomationId = "PlainTapTarget",
 			BackgroundColor = Colors.LightGreen,
-			Padding = 20
+			Padding = 15
 		};
 
 		var plainTapGesture = new TapGestureRecognizer();
 		plainTapGesture.Tapped += (s, e) => plainResultLabel.Text = "Tapped";
 		plainTapTarget.GestureRecognizers.Add(plainTapGesture);
 
-		// A disabled view with its own tap gesture must still let the parent's gesture handle the tap
+		// Once disabled, a view with its own tap gesture must let the parent's gesture handle the tap
 		var parentResultLabel = new Label
 		{
 			Text = "Parent not tapped",
 			AutomationId = "ParentResultLabel"
 		};
 
-		var disabledTapTarget = new Label
+		var childTapTarget = new Label
 		{
-			Text = "Tap me (disabled, inside a tappable parent)",
-			AutomationId = "DisabledTapTarget",
-			IsEnabled = false,
-			Padding = 20
+			Text = "Tap me after disabling (inside a tappable parent)",
+			AutomationId = "ChildTapTarget",
+			Padding = 15
 		};
-		disabledTapTarget.GestureRecognizers.Add(new TapGestureRecognizer());
+		childTapTarget.GestureRecognizers.Add(new TapGestureRecognizer());
 
 		var parent = new Grid
 		{
 			BackgroundColor = Colors.LightGray,
 			Padding = 10,
-			Children = { disabledTapTarget }
+			Children = { childTapTarget }
 		};
 
 		var parentTapGesture = new TapGestureRecognizer();
 		parentTapGesture.Tapped += (s, e) => parentResultLabel.Text = "Parent tapped";
 		parent.GestureRecognizers.Add(parentTapGesture);
 
+		var disableChildButton = new Button
+		{
+			Text = "Disable the child",
+			AutomationId = "DisableChildButton"
+		};
+		disableChildButton.Clicked += (s, e) => childTapTarget.IsEnabled = false;
+
 		Content = new VerticalStackLayout
 		{
 			Padding = 20,
-			Spacing = 20,
+			Spacing = 10,
 			Children =
 			{
 				tapTarget,
 				nativeTouchLabel,
 				resultLabel,
+				doubleTapTarget,
+				doubleTapResultLabel,
 				plainTapTarget,
 				plainResultLabel,
+				disableChildButton,
 				parent,
 				parentResultLabel
 			}
 		};
+	}
+
+	// Same pattern as the workaround from https://github.com/dotnet/maui/issues/23901:
+	// observe touches on the platform view without consuming them.
+	static void ObserveNativeTouches(View view, Action onDown = null)
+	{
+#if ANDROID
+		view.HandlerChanged += (s, e) =>
+		{
+			if (view.Handler?.PlatformView is Android.Views.View platformView)
+			{
+				platformView.Touch += (sender, args) =>
+				{
+					if (args.Event?.Action == Android.Views.MotionEventActions.Down)
+						onDown?.Invoke();
+
+					args.Handled = false;
+				};
+			}
+		};
+#endif
 	}
 }

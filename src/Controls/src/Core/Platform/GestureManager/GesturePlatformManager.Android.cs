@@ -261,7 +261,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		// A View.Touch subscriber that runs after ours can overwrite e.Handled with false. Android then falls back to
 		// View.onTouchEvent, which only keeps the touch sequence on clickable views, so the gesture detector never gets
-		// ACTION_UP and the tap is lost. ContextClickable counts as clickable there without changing isClickable(),
+		// the rest of the gesture. ContextClickable counts as clickable there without changing isClickable(),
 		// which would make TalkBack send ACTION_CLICK instead of a tap (#31483).
 		void UpdateContextClickable()
 		{
@@ -269,7 +269,7 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 
 			// A disabled clickable view still consumes touches, which would block the parent's gestures
-			if (_isEnabled && platformView is not RecyclerView && View?.HasAccessibleTapGesture() == true)
+			if (_isEnabled && platformView is not RecyclerView && ViewConsumesTouchSequence())
 			{
 				_contextClickableDefaultValue ??= platformView.ContextClickable;
 				platformView.ContextClickable = true;
@@ -279,6 +279,25 @@ namespace Microsoft.Maui.Controls.Platform
 				platformView.ContextClickable = contextClickable;
 				_contextClickableDefaultValue = null;
 			}
+		}
+
+		// The recognizers OnTouchEvent always consumes ACTION_DOWN for: InnerGestureListener.OnDown (tap, including Span
+		// taps, pan, swipe, drag) and the pinch detector. Pointer gestures only consume it while nothing in the hierarchy
+		// is clickable and long press doesn't at all, so views with only those keep passing the touch on.
+		bool ViewConsumesTouchSequence()
+		{
+			var gestures = View?.GetCompositeGestureRecognizers();
+			if (gestures is null)
+				return false;
+
+			foreach (var gesture in gestures)
+			{
+				if (gesture is TapGestureRecognizer or PanGestureRecognizer or SwipeGestureRecognizer or PinchGestureRecognizer or DragGestureRecognizer
+					or ChildGestureRecognizer { GestureRecognizer: TapGestureRecognizer })
+					return true;
+			}
+
+			return false;
 		}
 
 		void OnKeyPress(object? sender, KeyEventArgs e)

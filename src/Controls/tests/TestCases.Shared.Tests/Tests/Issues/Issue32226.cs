@@ -24,6 +24,16 @@ public class Issue32226 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Gestures)]
+	public void DoubleTapGestureFiresWhenNativeTouchHandlerDoesNotHandleTouch()
+	{
+		App.WaitForElement("DoubleTapTarget");
+		App.DoubleTap("DoubleTapTarget");
+
+		Assert.That(App.WaitForElement("DoubleTapResultLabel").GetText(), Is.EqualTo("Double tapped"));
+	}
+
+	[Test]
+	[Category(UITestCategories.Gestures)]
 	public void TapGestureFiresWithoutNativeTouchHandler()
 	{
 		App.WaitForElement("PlainTapTarget");
@@ -34,10 +44,11 @@ public class Issue32226 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Gestures)]
-	public void TapOnDisabledViewWithTapGestureReachesParent()
+	public void TapOnViewDisabledAtRuntimeReachesParent()
 	{
-		App.WaitForElement("DisabledTapTarget");
-		App.Tap("DisabledTapTarget");
+		App.WaitForElement("DisableChildButton");
+		App.Tap("DisableChildButton");
+		App.Tap("ChildTapTarget");
 
 		Assert.That(App.WaitForElement("ParentResultLabel").GetText(), Is.EqualTo("Parent tapped"));
 	}
