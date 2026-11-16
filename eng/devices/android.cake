@@ -311,13 +311,29 @@ void EnsureDeviceForUITestAttempt(string project, string app, string appPackageN
 	}
 
 	Warning("The Android emulator is no longer available; restarting it and reinstalling the app before running UI tests.");
+	var lostEmulator = emulatorProcess;
 	try
 	{
-		CleanUpVirtualDevice(emulatorProcess, avdSettings);
+		CleanUpVirtualDevice(lostEmulator, avdSettings);
 	}
 	catch (Exception ex)
 	{
-		Warning("Failed to clean up the lost emulator: {0}", ex.Message);
+		// Cleanup can throw before it kills the process; never restart the AVD while the old instance is alive.
+		Warning("Failed to clean up the lost emulator ({0}); killing its process directly.", ex.Message);
+		try
+		{
+			var killTask = System.Threading.Tasks.Task.Run(() =>
+			{
+				lostEmulator.Kill();
+				lostEmulator.WaitForExit();
+			});
+			if (!killTask.Wait(TimeSpan.FromSeconds(EmulatorKillTimeoutSeconds)))
+				Warning("The lost emulator process did not exit within {0} seconds.", EmulatorKillTimeoutSeconds);
+		}
+		catch (Exception killEx)
+		{
+			Warning("Failed to kill the lost emulator process: {0}", killEx.Message);
+		}
 	}
 
 	emulatorProcess = null;
