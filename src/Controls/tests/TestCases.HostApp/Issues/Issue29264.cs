@@ -1,11 +1,12 @@
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 29264, "Rotating My Recipes changes the selected item", PlatformAffected.iOS)]
+[Issue(IssueTracker.Github, 29264, "Rotating or resizing My Recipes changes the selected item", PlatformAffected.iOS | PlatformAffected.macOS)]
 public class Issue29264 : ContentPage
 {
 	readonly CarouselView _carousel;
 	readonly Label _orientationLabel;
 	readonly Label _positionLabel;
+	readonly Label _boundsResizeLabel;
 
 	public Issue29264()
 	{
@@ -69,12 +70,28 @@ public class Issue29264 : ContentPage
 			_positionLabel.Text = $"Position: {e.CurrentPosition}";
 			positionChangedLabel.Text = $"Changes: {++positionChanges}";
 		};
+		_boundsResizeLabel = new Label
+		{
+			AutomationId = "BoundsResizeLabel",
+			Text = "Bounds unchanged"
+		};
+		var resizeButton = new Button
+		{
+			AutomationId = "ResizeCarouselButton",
+			Text = "Resize carousel"
+		};
+		resizeButton.Clicked += (_, _) =>
+		{
+			_carousel.HeightRequest = Math.Max(100, _carousel.HeightRequest - 40);
+			_boundsResizeLabel.Text = "Bounds resized";
+		};
 
 		var layout = new Grid
 		{
 			Margin = 20,
 			RowDefinitions = new RowDefinitionCollection
 			{
+				new RowDefinition { Height = GridLength.Auto },
 				new RowDefinition { Height = GridLength.Auto },
 				new RowDefinition { Height = GridLength.Auto },
 				new RowDefinition { Height = GridLength.Auto },
@@ -90,7 +107,12 @@ public class Issue29264 : ContentPage
 		layout.Add(loopSwitch, row: 3);
 		layout.Add(currentItemLabel, row: 4);
 		layout.Add(positionChangedLabel, row: 5);
-		layout.Add(_carousel, row: 6);
+		layout.Add(new HorizontalStackLayout
+		{
+			Spacing = 8,
+			Children = { resizeButton, _boundsResizeLabel }
+		}, row: 6);
+		layout.Add(_carousel, row: 7);
 		Content = layout;
 	}
 

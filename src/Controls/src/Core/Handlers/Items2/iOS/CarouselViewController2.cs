@@ -136,6 +136,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		void BoundsSizeChanged()
 		{
+			if (IsScrollInteractionActive())
+			{
+				CancelBoundsChangeRestoration();
+				return;
+			}
+
 			if (ItemsView is CarouselView carousel && ItemsSource is not null && ItemsSource.ItemCount > 0)
 			{
 				var position = _positionBeforeBoundsChange >= 0
@@ -518,7 +524,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		internal bool IsRotatingOrResizing()
 		{
-			return (_isRotating || _isResizing) && !CollectionView.Dragging && !CollectionView.Decelerating;
+			if (!_isRotating && !_isResizing)
+			{
+				return false;
+			}
+
+			if (IsScrollInteractionActive())
+			{
+				CancelBoundsChangeRestoration();
+				return false;
+			}
+
+			return _isRotating || _isResizing;
 		}
 
 		internal int PositionBeforeBoundsChange => _positionBeforeBoundsChange;
@@ -530,20 +547,72 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				return false;
 			}
 
-			if (CollectionView.Dragging || CollectionView.Decelerating)
+			if (IsScrollInteractionActive())
 			{
-				_isRotating = false;
-				_isResizing = false;
-				_positionBeforeBoundsChange = -1;
+				CancelBoundsChangeRestoration();
 				return false;
 			}
 
 			if (position == _positionBeforeBoundsChange && isRestoredItemVisible)
 			{
 				_positionBeforeBoundsChange = -1;
+				// Let the confirming callback synchronize CurrentItem and complete any pending scroll.
+				return false;
 			}
 
 			return true;
+		}
+
+		internal bool IsScrollInteractionActive()
+		{
+			if (IsScrollViewInteractionActive(CollectionView))
+			{
+				return true;
+			}
+
+			return IsHorizontal && HasActiveEmbeddedScrollView(CollectionView);
+		}
+
+		static bool HasActiveEmbeddedScrollView(UIView view)
+		{
+			var subviews = view.Subviews;
+			for (int i = 0; i < subviews.Length; i++)
+			{
+				var subview = subviews[i];
+				// Item content can contain unrelated scroll views; only inspect the paging container.
+				if (subview is UICollectionReusableView || subview is UICollectionView)
+				{
+					continue;
+				}
+
+				if (subview is UIScrollView scrollView
+					? IsScrollViewInteractionActive(scrollView)
+					: HasActiveEmbeddedScrollView(subview))
+				{
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		static bool IsScrollViewInteractionActive(UIScrollView scrollView)
+		{
+			var panState = scrollView.PanGestureRecognizer?.State;
+			return scrollView.Tracking || scrollView.Dragging || scrollView.Decelerating ||
+				panState is UIGestureRecognizerState.Began or UIGestureRecognizerState.Changed;
+		}
+
+		void CancelBoundsChangeRestoration()
+		{
+			_isRotating = false;
+			_isResizing = false;
+			_positionBeforeBoundsChange = -1;
+		}
+
+		internal void CancelPendingBoundsChangeRestoration()
+		{
+			CancelBoundsChangeRestoration();
 		}
 
 		internal void UpdateLoop()

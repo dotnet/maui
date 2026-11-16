@@ -1,4 +1,4 @@
-#if IOS // Device orientation changes are not supported on Windows or MacCatalyst.
+#if IOS || MACCATALYST
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -9,10 +9,11 @@ public class Issue29264 : _IssuesUITest
 {
 	public Issue29264(TestDevice device) : base(device) { }
 
-	public override string Issue => "Rotating My Recipes changes the selected item";
+	public override string Issue => "Rotating or resizing My Recipes changes the selected item";
 
 	protected override bool ResetAfterEachTest => true;
 
+#if IOS
 	[TestCase(3, true)]
 	[TestCase(4, true)]
 	[TestCase(3, false)]
@@ -65,6 +66,42 @@ public class Issue29264 : _IssuesUITest
 			App.SetOrientationPortrait();
 		}
 	}
+#endif
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CarouselView)]
+	public void BoundsOnlyResizePreservesSelectedRecipe()
+	{
+		App.WaitForElement("RecipeCarousel");
+		Assert.That(App.FindElement("RecipePositionLabel").GetText(), Is.EqualTo("Position: 0"));
+
+		for (int position = 1; position <= 3; position++)
+		{
+			App.SwipeRightToLeft("RecipeCarousel");
+			Assert.That(App.WaitForTextToBePresentInElement("RecipePositionLabel", $"Position: {position}"), Is.True);
+		}
+
+		const int selectedPosition = 3;
+		const string selectedRecipe = "Fourth Recipe";
+		Assert.That(App.WaitForTextToBePresentInElement("RecipeCurrentItemLabel", selectedRecipe), Is.True);
+		var positionChanges = App.FindElement("RecipePositionChangedLabel").GetText();
+		var orientation = App.FindElement("OrientationLabel").GetText();
+		var carouselBeforeResize = App.WaitForElement("RecipeCarousel").GetRect();
+
+		App.Tap("ResizeCarouselButton");
+		Assert.That(App.WaitForTextToBePresentInElement("BoundsResizeLabel", "Bounds resized"), Is.True);
+
+		var carouselElement = App.WaitForElement(() =>
+		{
+			var element = App.FindElement("RecipeCarousel");
+			return element is not null && element.GetRect().Height < carouselBeforeResize.Height ? element : null;
+		}, "Timed out waiting for the carousel bounds to resize.");
+		var carouselAfterResize = carouselElement.GetRect();
+		Assert.That(carouselAfterResize.Height, Is.LessThan(carouselBeforeResize.Height),
+			"The test must resize the carousel without changing device orientation.");
+		Assert.That(App.FindElement("OrientationLabel").GetText(), Is.EqualTo(orientation));
+		AssertSelection(selectedPosition, selectedRecipe, positionChanges);
+	}
 
 	void AssertSelection(int position, string recipe, string? positionChanges)
 	{
@@ -76,6 +113,8 @@ public class Issue29264 : _IssuesUITest
 		var carousel = App.WaitForElement("RecipeCarousel").GetRect();
 		var item = App.WaitForElement(recipe).GetRect();
 		Assert.That(item.CenterX(), Is.InRange(carousel.X, carousel.X + carousel.Width),
+			"The selected recipe must remain visible after resizing.");
+		Assert.That(item.CenterY(), Is.InRange(carousel.Y, carousel.Y + carousel.Height),
 			"The selected recipe must remain visible after resizing.");
 	}
 }

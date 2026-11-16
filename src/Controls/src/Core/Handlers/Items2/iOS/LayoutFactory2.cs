@@ -434,6 +434,8 @@ internal static class LayoutFactory2
 					return;
 				}
 
+				// Bounds setters can invalidate visible items before ViewWillLayoutSubviews captures the position.
+				cv2Controller.UpdateResizeState();
 				if (cv2Controller.IsRotatingOrResizing())
 				{
 					return;
