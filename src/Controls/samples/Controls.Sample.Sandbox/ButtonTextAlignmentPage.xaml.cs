@@ -51,7 +51,7 @@ public partial class ButtonTextAlignmentPage : ContentPage
 		HorizontalAlignmentPicker.ItemsSource = new[] { "Native default", "Start", "Center", "End" };
 		VerticalAlignmentPicker.ItemsSource = new[] { "Native default", "Start", "Center", "End" };
 		HorizontalAlignmentPicker.SelectedIndex = VerticalAlignmentPicker.SelectedIndex = 0;
-#if !ANDROID && !IOS && !WINDOWS
+#if !ANDROID && !IOS && !MACCATALYST && !WINDOWS
 		HorizontalAlignmentPicker.IsEnabled = VerticalAlignmentPicker.IsEnabled = false;
 #endif
 
@@ -108,7 +108,28 @@ public partial class ButtonTextAlignmentPage : ContentPage
 		SettingsLabel.Text = $"Horizontal: {HorizontalAlignmentPicker.SelectedItem}; vertical: {VerticalAlignmentPicker.SelectedItem}; " +
 			$"direction: {flowDirection}; image: {position}; visible: {ShowImageSwitch.IsToggled}; " +
 			$"wrapping: {lineBreakMode}; padding: {padding}; font: {fontSize}; enabled: {EnabledSwitch.IsToggled}";
+		var expectedHorizontal = HorizontalAlignmentPicker.SelectedIndex switch
+		{
+			1 => RtlSwitch.IsToggled ? "right (Start in RTL)" : "left (Start in LTR)",
+			2 => "center",
+			3 => RtlSwitch.IsToggled ? "left (End in RTL)" : "right (End in LTR)",
+			_ => "native horizontal placement"
+		};
+		var expectedVertical = VerticalAlignmentPicker.SelectedIndex switch
+		{
+			1 => "top",
+			2 => "center",
+			3 => "bottom",
+			_ => "native vertical placement"
+		};
+		ExpectedResultLabel.Text = $"EXPECTED with text: {expectedHorizontal}; {expectedVertical}, inside the padding. " +
+			"Text and image move together when both are present. Without text, retain native placement.";
 		Console.WriteLine($"SANDBOX: Button alignment settings: {SettingsLabel.Text}");
+	}
+
+	void OnClearAlignment(object? sender, EventArgs e)
+	{
+		HorizontalAlignmentPicker.SelectedIndex = VerticalAlignmentPicker.SelectedIndex = 0;
 	}
 
 	static void UpdateAlignment(Button button, BindableProperty property, int selectedIndex)
