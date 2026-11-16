@@ -95,7 +95,7 @@ namespace Microsoft.Maui
 			return canvasImageSource;
 		}
 
-		string GetFontSource(IFontImageSource imageSource)
+		internal string GetFontSource(IFontImageSource imageSource)
 		{
 			if (imageSource == null)
 				return string.Empty;

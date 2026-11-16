@@ -99,6 +99,19 @@ public partial class FontManagerTests : TestBase
 			Assert.Equal("dokdo_regular.ttf#Dokdo", actual.Source);
 		});
 
+#if !USE_NATIVE_AOT
+	[Fact]
+	public Task CanReadFamilyNameFromUnregisteredFontAsset() =>
+		InvokeOnMainThreadAsync(() =>
+		{
+			var manager = new FontManager(new FontRegistrar(fontLoader: null));
+
+			var actual = manager.GetFontFamily(Font.OfSize("insubfolder", 12));
+
+			Assert.Equal("insubfolder, Assets/Fonts/insubfolder.ttf#Dokdo, Assets/Fonts/insubfolder.otf#insubfolder", actual.Source);
+		});
+#endif
+
 	sealed class RelativeFontRegistrar : IFontRegistrar
 	{
 		public string GetFont(string font) => "dokdo_regular.ttf";
