@@ -76,27 +76,7 @@ namespace Microsoft.Maui.IntegrationTests
 		[Fact]
 		public void RunOniOS_Previous_BlazorRelease() => RunOniOS("maui-blazor", "Release", DotNetPrevious, RuntimeVariant.Mono, null);
 
-		// Individual test methods for each configuration to enable parallel CI runs
-		[Fact]
-		public void RunOniOS_MauiDebug() => RunOniOS("maui", "Debug", DotNetCurrent, RuntimeVariant.Mono, null);
-
-		[Fact]
-		public void RunOniOS_MauiRelease() => RunOniOS("maui", "Release", DotNetCurrent, RuntimeVariant.Mono, null);
-
-		[Fact]
-		public void RunOniOS_MauiReleaseTrimFull() => RunOniOS("maui", "Release", DotNetCurrent, RuntimeVariant.Mono, "full");
-
-		[Fact]
-		public void RunOniOS_BlazorDebug() => RunOniOS("maui-blazor", "Debug", DotNetCurrent, RuntimeVariant.Mono, null);
-
-		[Fact]
-		public void RunOniOS_BlazorRelease() => RunOniOS("maui-blazor", "Release", DotNetCurrent, RuntimeVariant.Mono, null);
-
-		// Full application trimming remains unsupported by Blazor: https://github.com/dotnet/aspnetcore/issues/63951
-		[Fact]
-		public void RunOniOS_BlazorReleaseTrimFull() => RunOniOS("maui-blazor", "Release", DotNetCurrent, RuntimeVariant.Mono, "full");
-
-		// CoreCLR test variants
+		// DotNetCurrent test methods. .NET 12 removed Mono for mobile, so these use CoreCLR or NativeAOT.
 		[Fact]
 		public void RunOniOS_MauiDebug_CoreCLR() => RunOniOS("maui", "Debug", DotNetCurrent, RuntimeVariant.CoreCLR, null);
 
