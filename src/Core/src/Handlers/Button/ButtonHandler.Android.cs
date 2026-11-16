@@ -28,6 +28,7 @@ namespace Microsoft.Maui.Handlers
 		ColorStateList? _defaultTextColors;
 		GravityFlags _defaultGravity;
 		global::Android.Views.TextAlignment _defaultTextAlignment;
+		global::Android.Text.JustificationMode _defaultJustificationMode;
 		bool _horizontalTextAlignmentSet;
 		bool _verticalTextAlignmentSet;
 
@@ -59,6 +60,8 @@ namespace Microsoft.Maui.Handlers
 			_defaultTextColors = platformView.TextColors;
 			_defaultGravity = platformView.Gravity;
 			_defaultTextAlignment = platformView.TextAlignment;
+			if (OperatingSystem.IsAndroidVersionAtLeast(26))
+				_defaultJustificationMode = platformView.JustificationMode;
 			_horizontalTextAlignmentSet = _verticalTextAlignmentSet = false;
 
 			base.ConnectHandler(platformView);
@@ -76,6 +79,8 @@ namespace Microsoft.Maui.Handlers
 			platformView.LayoutChange -= OnPlatformViewLayoutChange;
 
 			_defaultTextColors = null;
+			if (_horizontalTextAlignmentSet && OperatingSystem.IsAndroidVersionAtLeast(26))
+				platformView.JustificationMode = _defaultJustificationMode;
 			_horizontalTextAlignmentSet = _verticalTextAlignmentSet = false;
 			if (platformView is MauiMaterialButton mauiButton)
 				mauiButton.AlignTextAndImage = false;
@@ -96,6 +101,10 @@ namespace Microsoft.Maui.Handlers
 			{
 				gravity = (gravity & ~horizontalMask) | (horizontal?.ToHorizontalGravityFlags() ?? (_defaultGravity & horizontalMask));
 				platformView.TextAlignment = horizontal?.ToTextAlignment() ?? _defaultTextAlignment;
+				if (OperatingSystem.IsAndroidVersionAtLeast(26))
+					platformView.JustificationMode = horizontal.HasValue
+						? horizontal == TextAlignment.Justify ? global::Android.Text.JustificationMode.InterWord : global::Android.Text.JustificationMode.None
+						: _defaultJustificationMode;
 			}
 			if (vertical.HasValue || _verticalTextAlignmentSet)
 				gravity = (gravity & ~GravityFlags.VerticalGravityMask) | (vertical?.ToVerticalGravityFlags() ?? (_defaultGravity & GravityFlags.VerticalGravityMask));

@@ -40,6 +40,7 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(TextAlignment.Start)]
 		[InlineData(TextAlignment.Center)]
 		[InlineData(TextAlignment.End)]
+		[InlineData(TextAlignment.Justify)]
 		public async Task NativeTextAlignmentCanBeChangedAndCleared(TextAlignment alignment)
 		{
 			var button = new Button { Text = "First line\nSecond line" };
@@ -49,10 +50,12 @@ namespace Microsoft.Maui.DeviceTests
 				var platform = handler.PlatformView;
 				var originalGravity = platform.Gravity;
 				var originalTextAlignment = platform.TextAlignment;
+				var originalJustification = OperatingSystem.IsAndroidVersionAtLeast(26)
+					? platform.JustificationMode : global::Android.Text.JustificationMode.None;
 				const GravityFlags horizontalMask = GravityFlags.HorizontalGravityMask | GravityFlags.RelativeLayoutDirection;
 				var horizontal = alignment switch
 				{
-					TextAlignment.Start => GravityFlags.Start,
+					TextAlignment.Start or TextAlignment.Justify => GravityFlags.Start,
 					TextAlignment.End => GravityFlags.End,
 					_ => GravityFlags.CenterHorizontal
 				};
@@ -68,16 +71,22 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(originalGravity & GravityFlags.VerticalGravityMask, platform.Gravity & GravityFlags.VerticalGravityMask);
 				Assert.Equal(alignment switch
 				{
-					TextAlignment.Start => global::Android.Views.TextAlignment.ViewStart,
+					TextAlignment.Start or TextAlignment.Justify => global::Android.Views.TextAlignment.ViewStart,
 					TextAlignment.End => global::Android.Views.TextAlignment.ViewEnd,
 					_ => global::Android.Views.TextAlignment.Center
 				}, platform.TextAlignment);
+				if (OperatingSystem.IsAndroidVersionAtLeast(26))
+					Assert.Equal(alignment == TextAlignment.Justify
+						? global::Android.Text.JustificationMode.InterWord
+						: global::Android.Text.JustificationMode.None, platform.JustificationMode);
 
-				button.VerticalTextAlignment = alignment;
+				button.VerticalTextAlignment = alignment == TextAlignment.Justify ? TextAlignment.Center : alignment;
 				Assert.Equal(vertical, platform.Gravity & GravityFlags.VerticalGravityMask);
 				button.ClearValue(Button.HorizontalTextAlignmentProperty);
 				Assert.Equal(originalGravity & horizontalMask, platform.Gravity & horizontalMask);
 				Assert.Equal(originalTextAlignment, platform.TextAlignment);
+				if (OperatingSystem.IsAndroidVersionAtLeast(26))
+					Assert.Equal(originalJustification, platform.JustificationMode);
 				Assert.Equal(vertical, platform.Gravity & GravityFlags.VerticalGravityMask);
 
 				button.Text = string.Empty;

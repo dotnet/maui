@@ -196,21 +196,22 @@ namespace Microsoft.Maui.Platform
 		/// <returns></returns>
 		private (double newX, double newY) ArrangePrimaryElement(FrameworkElement element, double x, double y, double spacing, WSize finalSize)
 		{
+			var width = GetArrangeWidth(element, finalSize);
 			if (_isHorizontalLayout)
 			{
 				var centeredY = Math.Max(0, (finalSize.Height / 2.0) - (element.DesiredSize.Height / 2.0));
 
 				element.Arrange(new WRect(0, centeredY,
-					element.DesiredSize.Width, element.DesiredSize.Height));
+					width, element.DesiredSize.Height));
 
-				return (x + element.DesiredSize.Width + spacing, 0);
+				return (x + width + spacing, 0);
 			}
 			else // Vertical
 			{
-				var centeredX = Math.Max(0, (finalSize.Width / 2.0) - (element.DesiredSize.Width / 2.0));
+				var centeredX = Math.Max(0, (finalSize.Width / 2.0) - (width / 2.0));
 
 				element.Arrange(new WRect(centeredX, 0,
-					element.DesiredSize.Width, element.DesiredSize.Height));
+					width, element.DesiredSize.Height));
 
 				return (0, y + element.DesiredSize.Height + spacing);
 			}
@@ -218,17 +219,28 @@ namespace Microsoft.Maui.Platform
 
 		private void ArrangeSecondaryElement(FrameworkElement element, double x, double y, WSize finalSize)
 		{
+			var width = GetArrangeWidth(element, finalSize);
 			if (_isHorizontalLayout)
 			{
 				y = Math.Max(0, (finalSize.Height / 2.0) - (element.DesiredSize.Height / 2.0));
 			}
 			else
 			{
-				x = Math.Max(0, (finalSize.Width / 2.0) - (element.DesiredSize.Width / 2.0));
+				x = Math.Max(0, (finalSize.Width / 2.0) - (width / 2.0));
 			}
 
 			element.Arrange(new WRect(x, y,
-				element.DesiredSize.Width, element.DesiredSize.Height));
+				width, element.DesiredSize.Height));
+		}
+
+		double GetArrangeWidth(FrameworkElement element, WSize finalSize)
+		{
+			if (element != _textBlock || _textBlock.TextAlignment != Microsoft.UI.Xaml.TextAlignment.Justify)
+				return element.DesiredSize.Width;
+
+			var imageSpace = _isHorizontalLayout && _image.Visibility == UI.Xaml.Visibility.Visible
+				? _image.DesiredSize.Width + _spacing : 0;
+			return Math.Max(0, finalSize.Width - imageSpace);
 		}
 
 		public void LayoutImageLeft(double spacing)

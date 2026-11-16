@@ -113,7 +113,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Identifies the <see cref="HorizontalTextAlignment"/> bindable property.</summary>
 		public static readonly BindableProperty HorizontalTextAlignmentProperty = BindableProperty.Create(
 			nameof(HorizontalTextAlignment), typeof(TextAlignment), typeof(Button), TextAlignment.Center,
-			validateValue: ValidateTextAlignment,
+			validateValue: (bindable, value) => value is TextAlignment.Justify || ValidateTextAlignment(bindable, value),
 			propertyChanged: (bindable, oldValue, newValue) => ((Button)bindable).InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged));
 
 		/// <summary>Identifies the <see cref="VerticalTextAlignment"/> bindable property.</summary>
@@ -127,7 +127,9 @@ namespace Microsoft.Maui.Controls
 		/// This is a bindable property.
 		/// </summary>
 		/// <remarks>
-		/// Supports Start, Center, and End on Android, iOS, and Windows. Start and End follow the effective
+		/// Supports Start, Center, End, and Justify on Android, iOS, Mac Catalyst, and Windows. Justify
+		/// distributes words across wrapped lines; Android requires API 26 or later for justification.
+		/// Start and End follow the effective
 		/// flow direction. The reported default is Center, but native rendering is preserved until
 		/// the property is explicitly set. Clearing the value restores native alignment.
 		/// Image-only buttons retain their existing alignment.
@@ -143,7 +145,7 @@ namespace Microsoft.Maui.Controls
 		/// This is a bindable property.
 		/// </summary>
 		/// <remarks>
-		/// Supports Start (top), Center, and End (bottom) on Android, iOS, and Windows. The reported default
+		/// Supports Start (top), Center, and End (bottom) on Android, iOS, Mac Catalyst, and Windows. The reported default
 		/// is Center, but native rendering is preserved until the property is explicitly set.
 		/// Clearing the value restores native alignment. Image-only buttons retain their existing alignment.
 		/// </remarks>

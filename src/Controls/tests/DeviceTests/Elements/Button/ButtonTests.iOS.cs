@@ -36,6 +36,7 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(TextAlignment.Start)]
 		[InlineData(TextAlignment.Center)]
 		[InlineData(TextAlignment.End)]
+		[InlineData(TextAlignment.Justify)]
 		public async Task NativeTextAlignmentCanBeChangedAndCleared(TextAlignment alignment)
 		{
 			var button = new Button { Text = "First line\nSecond line", FlowDirection = FlowDirection.LeftToRight };
@@ -48,6 +49,7 @@ namespace Microsoft.Maui.DeviceTests
 				var originalTitle = platform.TitleLabel.TextAlignment;
 				var horizontal = alignment switch
 				{
+					TextAlignment.Justify => UIControlContentHorizontalAlignment.Fill,
 					TextAlignment.Start => UIControlContentHorizontalAlignment.Leading,
 					TextAlignment.End => UIControlContentHorizontalAlignment.Trailing,
 					_ => UIControlContentHorizontalAlignment.Center
@@ -64,11 +66,12 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(originalVertical, platform.VerticalAlignment);
 				Assert.Equal(alignment switch
 				{
+					TextAlignment.Justify => UITextAlignment.Justified,
 					TextAlignment.Start => UITextAlignment.Left,
 					TextAlignment.End => UITextAlignment.Right,
 					_ => UITextAlignment.Center
 				}, platform.TitleLabel.TextAlignment);
-				button.VerticalTextAlignment = alignment;
+				button.VerticalTextAlignment = alignment == TextAlignment.Justify ? TextAlignment.Center : alignment;
 				Assert.Equal(vertical, platform.VerticalAlignment);
 				button.ClearValue(Button.HorizontalTextAlignmentProperty);
 				Assert.Equal(originalHorizontal, platform.HorizontalAlignment);
@@ -121,9 +124,11 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var platform = Assert.IsType<ButtonHandler>(button.Handler).PlatformView;
 				await AssertHelpers.AssertEventually(() => platform.CurrentImage is not null && platform.Bounds.Width > 0 && platform.Bounds.Height > 0);
-				foreach (var alignment in new[] { TextAlignment.Start, TextAlignment.Center, TextAlignment.End })
+				foreach (var alignment in new[] { TextAlignment.Start, TextAlignment.Center, TextAlignment.End, TextAlignment.Justify })
 				{
-					button.HorizontalTextAlignment = button.VerticalTextAlignment = alignment;
+					button.HorizontalTextAlignment = alignment;
+					var vertical = alignment == TextAlignment.Justify ? TextAlignment.Center : alignment;
+					button.VerticalTextAlignment = vertical;
 					var width = (double)platform.Bounds.Width;
 					var height = (double)platform.Bounds.Height;
 					((ICrossPlatformLayout)button).CrossPlatformArrange(new Rect(0, 0, width, height));
@@ -136,12 +141,18 @@ namespace Microsoft.Maui.DeviceTests
 					var top = Math.Min((double)image.Top, (double)text.Top);
 					var groupWidth = Math.Max((double)image.Right, (double)text.Right) - left;
 					var groupHeight = Math.Max((double)image.Bottom, (double)text.Bottom) - top;
-					var horizontal = rtl && alignment != TextAlignment.Center
+					var horizontal = rtl && alignment is TextAlignment.Start or TextAlignment.End
 						? alignment == TextAlignment.Start ? TextAlignment.End : TextAlignment.Start : alignment;
 					var expectedLeft = button.Padding.Left + (width - button.Padding.HorizontalThickness - groupWidth) *
-						(horizontal == TextAlignment.Start ? 0 : horizontal == TextAlignment.End ? 1 : 0.5);
+						(horizontal is TextAlignment.Start or TextAlignment.Justify ? 0 : horizontal == TextAlignment.End ? 1 : 0.5);
 					var expectedTop = button.Padding.Top + (height - button.Padding.VerticalThickness - groupHeight) *
-						(alignment == TextAlignment.Start ? 0 : alignment == TextAlignment.End ? 1 : 0.5);
+						(vertical == TextAlignment.Start ? 0 : vertical == TextAlignment.End ? 1 : 0.5);
+					if (alignment == TextAlignment.Justify)
+					{
+						var imageSpace = position is Button.ButtonContentLayout.ImagePosition.Left or Button.ButtonContentLayout.ImagePosition.Right
+							? image.Width + button.ContentLayout.Spacing : 0;
+						Assert.InRange(Math.Abs(text.Width - (width - button.Padding.HorizontalThickness - imageSpace)), 0, 1);
+					}
 					Assert.InRange(Math.Abs(left - expectedLeft), 0, 1);
 					Assert.InRange(Math.Abs(top - expectedTop), 0, 1);
 					var gap = position switch
@@ -156,6 +167,32 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 #endif
+
+		[Fact]
+		public async Task HorizontalJustificationCanBeChangedAndCleared()
+		{
+			var button = new Button { Text = "Words that wrap across several lines", LineBreakMode = LineBreakMode.WordWrap };
+			var handler = await CreateHandlerAsync<ButtonHandler>(button);
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var platform = handler.PlatformView;
+				var originalHorizontal = platform.HorizontalAlignment;
+				var originalTitle = platform.TitleLabel.TextAlignment;
+				button.HorizontalTextAlignment = TextAlignment.Justify;
+				Assert.Equal(UIControlContentHorizontalAlignment.Fill, platform.HorizontalAlignment);
+				Assert.Equal(UITextAlignment.Justified, platform.TitleLabel.TextAlignment);
+				button.Text = string.Empty;
+				Assert.Equal(originalHorizontal, platform.HorizontalAlignment);
+				Assert.Equal(originalTitle, platform.TitleLabel.TextAlignment);
+				button.Text = "Restored words";
+				Assert.Equal(UITextAlignment.Justified, platform.TitleLabel.TextAlignment);
+				button.HorizontalTextAlignment = TextAlignment.End;
+				Assert.Equal(UITextAlignment.Right, platform.TitleLabel.TextAlignment);
+				button.ClearValue(Button.HorizontalTextAlignmentProperty);
+				Assert.Equal(originalHorizontal, platform.HorizontalAlignment);
+				Assert.Equal(originalTitle, platform.TitleLabel.TextAlignment);
+			});
+		}
 
 		UIButton GetPlatformButton(ButtonHandler buttonHandler) =>
 			(UIButton)buttonHandler.PlatformView;

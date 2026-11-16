@@ -21,6 +21,7 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(MauiTextAlignment.Start)]
 		[InlineData(MauiTextAlignment.Center)]
 		[InlineData(MauiTextAlignment.End)]
+		[InlineData(MauiTextAlignment.Justify)]
 		public async Task NativeTextAlignmentCanBeChangedAndCleared(MauiTextAlignment alignment)
 		{
 			var button = new Controls.Button { Text = "First line\nSecond line" };
@@ -35,8 +36,10 @@ namespace Microsoft.Maui.DeviceTests
 				var originalPanelHorizontal = content.HorizontalAlignment;
 				var originalPanelVertical = content.VerticalAlignment;
 				var originalTextAlignment = text.ReadLocalValue(TextBlock.TextAlignmentProperty);
+				var originalTextHorizontal = text.ReadLocalValue(FrameworkElement.HorizontalAlignmentProperty);
 				var horizontal = alignment switch
 				{
+					MauiTextAlignment.Justify => HorizontalAlignment.Stretch,
 					MauiTextAlignment.Start => HorizontalAlignment.Left,
 					MauiTextAlignment.End => HorizontalAlignment.Right,
 					_ => HorizontalAlignment.Center
@@ -54,13 +57,14 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(originalVertical, platform.VerticalContentAlignment);
 				Assert.Equal(originalPanelVertical, content.VerticalAlignment);
 
-				button.VerticalTextAlignment = alignment;
+				button.VerticalTextAlignment = alignment == MauiTextAlignment.Justify ? MauiTextAlignment.Center : alignment;
 				Assert.Equal(vertical, platform.VerticalContentAlignment);
 				Assert.Equal(vertical, content.VerticalAlignment);
 				button.ClearValue(Controls.Button.HorizontalTextAlignmentProperty);
 				Assert.Equal(originalHorizontal, platform.HorizontalContentAlignment);
 				Assert.Equal(originalPanelHorizontal, content.HorizontalAlignment);
 				Assert.Equal(originalTextAlignment, text.ReadLocalValue(TextBlock.TextAlignmentProperty));
+				Assert.Equal(originalTextHorizontal, text.ReadLocalValue(FrameworkElement.HorizontalAlignmentProperty));
 				Assert.Equal(vertical, platform.VerticalContentAlignment);
 
 				button.Text = string.Empty;
@@ -227,10 +231,11 @@ namespace Microsoft.Maui.DeviceTests
 				var image = Assert.IsType<Image>(platform.GetContent<Image>());
 				await AssertHelpers.AssertEventually(() => image.Source is not null && image.ActualWidth > 0 && image.ActualHeight > 0);
 				var alignments = new[] { MauiTextAlignment.Start, MauiTextAlignment.Center, MauiTextAlignment.End };
+				var horizontalAlignments = new[] { MauiTextAlignment.Start, MauiTextAlignment.Center, MauiTextAlignment.End, MauiTextAlignment.Justify };
 				foreach (var rightToLeft in new[] { rtl, !rtl })
 				{
 					button.FlowDirection = rightToLeft ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
-					foreach (var horizontal in alignments)
+					foreach (var horizontal in horizontalAlignments)
 						foreach (var vertical in alignments)
 						{
 							button.HorizontalTextAlignment = horizontal;
@@ -239,6 +244,7 @@ namespace Microsoft.Maui.DeviceTests
 							Assert.Equal(rightToLeft ? Microsoft.UI.Xaml.FlowDirection.RightToLeft : Microsoft.UI.Xaml.FlowDirection.LeftToRight, platform.FlowDirection);
 							Assert.Equal(horizontal switch
 							{
+								MauiTextAlignment.Justify => Microsoft.UI.Xaml.TextAlignment.Justify,
 								MauiTextAlignment.Center => Microsoft.UI.Xaml.TextAlignment.Center,
 								MauiTextAlignment.Start => rightToLeft ? Microsoft.UI.Xaml.TextAlignment.Right : Microsoft.UI.Xaml.TextAlignment.Left,
 								_ => rightToLeft ? Microsoft.UI.Xaml.TextAlignment.Left : Microsoft.UI.Xaml.TextAlignment.Right
@@ -260,6 +266,12 @@ namespace Microsoft.Maui.DeviceTests
 							var imageBounds = GetAlignmentBounds(image, content);
 							var textBounds = GetAlignmentBounds(text, content);
 							Assert.True(imageBounds.Width > 0 && imageBounds.Height > 0 && textBounds.Width > 0 && textBounds.Height > 0);
+							if (horizontal == MauiTextAlignment.Justify)
+							{
+								var imageSpace = position is Controls.Button.ButtonContentLayout.ImagePosition.Left or Controls.Button.ButtonContentLayout.ImagePosition.Right
+									? imageBounds.Width + button.ContentLayout.Spacing : 0;
+								Assert.InRange(Math.Abs(textBounds.Width - (bounds.Width - imageSpace)), 0, 1);
+							}
 							var gap = position switch
 							{
 								Controls.Button.ButtonContentLayout.ImagePosition.Top => textBounds.Y - (imageBounds.Y + imageBounds.Height),

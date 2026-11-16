@@ -65,8 +65,10 @@ namespace Microsoft.Maui.Handlers
 
 			var imageGroup = platformView.CurrentImage is not null && !string.IsNullOrEmpty(platformView.CurrentTitle);
 			var horizontalAlignment = horizontal.HasValue
-				? imageGroup ? UIControlContentHorizontalAlignment.Center : horizontal.Value switch
+				? horizontal.Value switch
 				{
+					TextAlignment.Justify => UIControlContentHorizontalAlignment.Fill,
+					_ when imageGroup => UIControlContentHorizontalAlignment.Center,
 					TextAlignment.Start => UIControlContentHorizontalAlignment.Leading,
 					TextAlignment.End => UIControlContentHorizontalAlignment.Trailing,
 					_ => UIControlContentHorizontalAlignment.Center
