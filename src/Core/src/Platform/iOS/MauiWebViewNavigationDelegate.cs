@@ -176,6 +176,10 @@ namespace Microsoft.Maui.Platform
 
 			virtualView.ProcessTerminated(new WebProcessTerminatedEventArgs(webView));
 
+			// The app's ProcessTerminated handler may have disconnected the handler or swapped its views.
+			if (!handler.IsConnected() || handler.VirtualView != virtualView || handler.PlatformView != webView)
+				return;
+
 			// Reload at most once per 30 seconds so a page that keeps crashing the process can't loop.
 			var now = Environment.TickCount64;
 			if (now - _lastProcessTerminationReload < 30_000)
