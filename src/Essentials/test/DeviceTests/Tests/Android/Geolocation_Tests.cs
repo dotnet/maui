@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.Versioning;
 using Microsoft.Maui.Devices.Sensors;
 using Xunit;
 using AndroidLocation = Android.Locations.Location;
 using AndroidLocationManager = Android.Locations.LocationManager;
+using LocationRequestQuality = Android.Locations.LocationRequestQuality;
 
 namespace Microsoft.Maui.Essentials.DeviceTests
 {
@@ -34,11 +36,38 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 				new object[] { GeolocationAccuracy.Best, AndroidLocationManager.GpsProvider },
 			};
 
+		[SupportedOSPlatform("android31.0")]
+		public static IEnumerable<object[]> AccuracyQualities =>
+			new[]
+			{
+				new object[] { GeolocationAccuracy.Lowest, LocationRequestQuality.LowPower },
+				new object[] { GeolocationAccuracy.Low, LocationRequestQuality.LowPower },
+				new object[] { GeolocationAccuracy.Default, LocationRequestQuality.BalancedPowerAccuracy },
+				new object[] { GeolocationAccuracy.Medium, LocationRequestQuality.BalancedPowerAccuracy },
+				new object[] { GeolocationAccuracy.High, LocationRequestQuality.HighAccuracy },
+				new object[] { GeolocationAccuracy.Best, LocationRequestQuality.HighAccuracy },
+			};
+
 		[Theory]
 		[MemberData(nameof(AccuracyDistances))]
 		public void GetAccuracyDistance_ReturnsExpectedDistance(GeolocationAccuracy accuracy, float expectedDistance)
 		{
 			Assert.Equal(expectedDistance, GeolocationImplementation.GetAccuracyDistance(accuracy));
+		}
+
+		[Theory]
+		[MemberData(nameof(AccuracyQualities))]
+		public void CreateLocationRequest_UsesQualityForAccuracy(GeolocationAccuracy accuracy, LocationRequestQuality expectedQuality)
+		{
+			if (!OperatingSystem.IsAndroidVersionAtLeast(31))
+				return;
+
+			var request = GeolocationImplementation.CreateLocationRequest(1000, 5, accuracy);
+
+			Assert.Equal((int)expectedQuality, request.Quality);
+			Assert.Equal(1000, request.IntervalMillis);
+			Assert.Equal(1000, request.MinUpdateIntervalMillis);
+			Assert.Equal(5f, request.MinUpdateDistanceMeters);
 		}
 
 		[Theory]
