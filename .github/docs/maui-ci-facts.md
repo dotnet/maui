@@ -152,6 +152,12 @@ This is a staged migration, not evidence that the new lanes are already building
 Deploy the selection and branding changes to the internal mirrored source
 branches and verify signed artifacts/feed wiring before switching the canonical
 mode. Creating the public refs or passing the GitHub sandbox is not sufficient.
+The independent nightly-mirror job in **Prepare signed release publication**
+reconciles the state-selected candidate hourly and after canonical state changes
+on trusted `main`. It reuses the existing Azure federation identity and keeps an
+internal ownership ref so later rebases cannot discard unrelated internal work.
+The mirrored candidate retains the existing 05:00 UTC official-build schedule;
+the mirror workflow does not queue a competing nightly.
 
 ### Engineering dependency updates
 
