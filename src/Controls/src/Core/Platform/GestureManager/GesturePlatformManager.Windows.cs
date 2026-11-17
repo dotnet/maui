@@ -878,6 +878,14 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 			}
 
+			if (Element is SelectableItemsView &&
+				IsTapOnCollectionViewItem(_control, e.OriginalSource, out var tappedCollectionView) &&
+				!ReferenceEquals(tappedCollectionView, _control))
+			{
+				e.Handled = true;
+				return;
+			}
+
 			if (!view.IsEnabled)
 			{
 				return;
@@ -1242,12 +1250,63 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void HandleTapped(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
 		{
-			tappedRoutedEventArgs.Handled = true;
+			if (Element is not SelectableItemsView ||
+				IsTapOnCollectionViewItem(sender as FrameworkElement, tappedRoutedEventArgs.OriginalSource, out _))
+			{
+				tappedRoutedEventArgs.Handled = true;
+			}
 		}
 
 		void HandleDoubleTapped(object sender, DoubleTappedRoutedEventArgs doubleTappedRoutedEventArgs)
 		{
-			doubleTappedRoutedEventArgs.Handled = true;
+			if (Element is not SelectableItemsView ||
+				IsTapOnCollectionViewItem(sender as FrameworkElement, doubleTappedRoutedEventArgs.OriginalSource, out _))
+			{
+				doubleTappedRoutedEventArgs.Handled = true;
+			}
+		}
+
+		static bool IsTapOnCollectionViewItem(FrameworkElement? control, object? originalSource, out FrameworkElement? tappedCollectionView)
+		{
+			tappedCollectionView = null;
+			if (control is null || originalSource is not DependencyObject source)
+			{
+				return false;
+			}
+
+			bool isInsideItem = false;
+			for (var current = source; current is not null; current = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetParent(current))
+			{
+				if (ReferenceEquals(current, control))
+				{
+					if (isInsideItem)
+					{
+						tappedCollectionView = control;
+					}
+
+					return isInsideItem;
+				}
+
+				if (current is ItemContainer or ListViewItem)
+				{
+					isInsideItem = true;
+				}
+				else if (current is ItemsView or ListViewBase)
+				{
+					if (isInsideItem)
+					{
+						tappedCollectionView = current as FrameworkElement;
+						return tappedCollectionView is not null;
+					}
+
+					if (ReferenceEquals(current, control))
+					{
+						return false;
+					}
+				}
+			}
+
+			return false;
 		}
 
 		void HandleDragAndDropGesturePropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -1261,6 +1320,12 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void HandleElementPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
 		{
+			if (e.PropertyName == SelectableItemsView.SelectionModeProperty.PropertyName)
+			{
+				UpdatingGestureRecognizers();
+				return;
+			}
+
 			if ((e.PropertyName == VisualElement.IsEnabledProperty.PropertyName ||
 				 e.PropertyName == VisualElement.InputTransparentProperty.PropertyName)
 				&& _control is ContentPanel { CrossPlatformLayout: IBorderView })
