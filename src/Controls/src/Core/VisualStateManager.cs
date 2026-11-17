@@ -178,10 +178,11 @@ namespace Microsoft.Maui.Controls
 					else if (!animates)
 						group.FinishTransitions();
 				}
-				catch
+				catch when (transition is not null)
 				{
 					// Pins must not outlive a state change that threw: release them, so nothing stays held. The
-					// original exception is the one that propagates.
+					// original exception is the one that propagates. Without a transition nothing is caught, so
+					// exceptions propagate exactly as before.
 					try
 					{
 						transition?.Finish();

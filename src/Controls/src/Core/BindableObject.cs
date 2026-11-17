@@ -1038,6 +1038,18 @@ namespace Microsoft.Maui.Controls
 				throw;
 			}
 
+			// A handler of this write, such as a PropertyChanging handler, ended the hold before the value was stored:
+			// the entry this write stored has no owner, so it goes too.
+			if ((context.Attributes & BindableContextAttributes.IsAnimated) == 0)
+			{
+				if (context.Values.GetSpecificity() == SetterSpecificity.Animation)
+					ClearValueCore(property, SetterSpecificity.Animation);
+				else
+					context.Values.Remove(SetterSpecificity.Animation);
+
+				return false;
+			}
+
 			return true;
 		}
 

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Microsoft.Maui.Controls.Animations;
 using Microsoft.Maui.Graphics;
 using Xunit;
@@ -659,6 +660,86 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Animations
 			changes.AssertNone();
 		}
 
+		// Without a transition, GoToState catches nothing: exception dispatch is exactly as before, with the caller's
+		// filter running in the first pass, before inner finally blocks. With one, the exception still propagates
+		// after the pins are released; the order then isn't asserted.
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void SetterExceptionsPropagateFromGoToState(bool withTransition)
+		{
+			var box = Load(new LoggingBox());
+			Attach(box,
+				new[]
+				{
+					State("A", (LoggingBox.FragileProperty, 1.0), (OpacityProperty, 0.2)),
+					State("X", (OpacityProperty, 1.0), (LoggingBox.FragileProperty, LoggingBox.Breaking)),
+				},
+				withTransition ? new[] { new VisualTransition() } : Array.Empty<VisualTransition>());
+			VisualStateManager.GoToState(box, "A");
+			var caught = false;
+
+			try
+			{
+				VisualStateManager.GoToState(box, "X");
+			}
+			catch (SetterFailedException) when (Record(box.Log, "caller filter"))
+			{
+				caught = true;
+			}
+
+			Assert.True(caught);
+			if (withTransition)
+			{
+				Assert.False(box.HasAnimatedValue(OpacityProperty));
+				Assert.False(box.HasAnimatedValue(LoggingBox.FragileProperty));
+			}
+			else
+			{
+				Assert.Equal(new[] { "caller filter", "inner finally" }, box.Log);
+			}
+		}
+
+		[Fact]
+		public void InstantStateChangeFromAPropertyChangingHandlerLeavesNoOrphanHold()
+		{
+			var box = CreateLoadedBox();
+			box.Opacity = 0.5;
+			Attach(box,
+				new[] { State("A", OpacityProperty, 0.2), State("B", OpacityProperty, 1.0), State("Other", VisualElement.ScaleProperty, 1.5) },
+				new VisualTransition { Easing = Easing.Linear });
+			VisualStateManager.GoToState(box, "A");
+			VisualStateManager.GoToState(box, "B");
+			Advance(0.5, DefaultTransitionDuration);
+			var armed = true;
+			box.PropertyChanging += (_, e) =>
+			{
+				if (armed && e.PropertyName == OpacityProperty.PropertyName)
+				{
+					armed = false;
+					VisualStateManager.GoToState(box, "Other", useTransitions: false);
+				}
+			};
+
+			// The next frame's write raises PropertyChanging, whose handler ends the transition before the frame is stored.
+			Advance(0.1, DefaultTransitionDuration);
+
+			Assert.False(armed);
+			Assert.False(box.HasAnimatedValue(OpacityProperty));
+			Assert.Equal(0.5, box.Opacity);
+			var changes = new ChangeRecorder(box, OpacityProperty);
+			Advance(1.0, DefaultTransitionDuration);
+			changes.AssertNone();
+			box.Opacity = 0.4;
+			Assert.Equal(0.4, box.Opacity);
+		}
+
+		static bool Record(List<string> log, string entry)
+		{
+			log.Add(entry);
+			return true;
+		}
+
 		// A pin is a write too: when one throws, the pins made before it must not stay held either.
 		[Fact]
 		public void StateChangeWhosePinThrowsReleasesWhatItPinned()
@@ -747,6 +828,36 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Animations
 
 			public static readonly BindableProperty FragileProperty = BindableProperty.Create("Fragile", typeof(double), typeof(FragileBox), 0.0,
 				coerceValue: (_, value) => (double)value == Breaking ? throw new InvalidOperationException("The setter failed.") : value);
+		}
+
+		// Coercion of Breaking throws a SetterFailedException from inside a try block whose finally block logs.
+		sealed class LoggingBox : BoxView
+		{
+			public const double Breaking = 666;
+
+			public static readonly BindableProperty FragileProperty = BindableProperty.Create("Fragile", typeof(double), typeof(LoggingBox), 0.0,
+				coerceValue: (bindable, value) =>
+				{
+					if ((double)value == Breaking)
+					{
+						try
+						{
+							throw new SetterFailedException();
+						}
+						finally
+						{
+							((LoggingBox)bindable).Log.Add("inner finally");
+						}
+					}
+
+					return value;
+				});
+
+			public List<string> Log { get; } = new List<string>();
+		}
+
+		sealed class SetterFailedException : Exception
+		{
 		}
 
 		// Coercion that throws for any value while armed, including the property's current value.

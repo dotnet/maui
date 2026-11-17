@@ -1114,6 +1114,38 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Animations
 		}
 
 		[Fact]
+		public void StoppingFromAPropertyChangingHandlerDuringAFrameLeavesNoOrphanHold()
+		{
+			var box = new BoxView { Opacity = 0.5 };
+			var player = Play(Board(100,
+				KeyFrameAt(0, VisualElement.OpacityProperty, 0.2),
+				KeyFrameAt(1, VisualElement.OpacityProperty, 1.0)), box);
+			Advance(50);
+			var armed = true;
+			box.PropertyChanging += (_, e) =>
+			{
+				if (armed && e.PropertyName == VisualElement.OpacityProperty.PropertyName)
+				{
+					armed = false;
+					player.Dispose();
+				}
+			};
+
+			// The next frame's write raises PropertyChanging, whose handler ends the run before the frame is stored.
+			Advance(10);
+
+			Assert.False(armed);
+			Assert.Equal(PlaybackState.Stopped, player.State);
+			Assert.False(box.HasAnimatedValue(VisualElement.OpacityProperty));
+			Assert.Equal(0.5, box.Opacity);
+			var changes = new ChangeRecorder(box, VisualElement.OpacityProperty);
+			Advance(100);
+			changes.AssertNone();
+			box.Opacity = 0.4;
+			Assert.Equal(0.4, box.Opacity);
+		}
+
+		[Fact]
 		public void FaultWhileFinishingIntoAHeldFillReleasesEveryTrack()
 		{
 			var boom = new InvalidOperationException("boom");
