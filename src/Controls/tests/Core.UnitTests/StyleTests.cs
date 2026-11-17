@@ -627,6 +627,38 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void PageImplicitStyleWinsOverApplicationImplicitStyleWhenSetAsMainPage()
+		{
+			var app = new MockApplication();
+			app.Resources.Add(new Style(typeof(Button))
+			{
+				Setters = { new Setter { Property = Button.BackgroundColorProperty, Value = Colors.Blue } }
+			});
+			Application.Current = app;
+
+			var button = new Button();
+			var page = new ContentPage
+			{
+				Resources = new ResourceDictionary
+				{
+					new Style(typeof(Button))
+					{
+						Setters = { new Setter { Property = Button.BorderColorProperty, Value = Colors.Red } }
+					}
+				},
+				Content = button
+			};
+			Assert.Equal(Colors.Red, button.BorderColor);
+
+#pragma warning disable CS0618 // Type or member is obsolete
+			app.MainPage = page;
+#pragma warning restore CS0618 // Type or member is obsolete
+
+			Assert.Equal(Colors.Red, button.BorderColor);
+			Assert.Null(button.BackgroundColor);
+		}
+
+		[Fact]
 		public void MultipleStylesCanShareTheSameClassName()
 		{
 			var buttonStyle = new Style(typeof(Button))
