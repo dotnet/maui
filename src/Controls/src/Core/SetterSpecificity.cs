@@ -42,6 +42,11 @@ namespace Microsoft.Maui.Controls
 		// handler always apply, but are removed when anything else comes in. see SetValueActual
 		public static readonly SetterSpecificity FromHandler = new SetterSpecificity(0xFF, 0, 0, 0, 0, 0, 0, 0);
 
+		// Animation holds rank above every VSM, Style, Manual and Trigger combination (max 0x01FFF00000FFFFFF)
+		// and below Handler. It must be built from the raw value: the 8-argument constructor collapses
+		// extras to one bit, which would encode it below Binding. Never pass it through CopyStyle.
+		public static readonly SetterSpecificity Animation = new SetterSpecificity(0x0200000000000000UL);
+
 		// We store all information in one single UInt64 value to have the fastest comparison possible
 		readonly ulong _value;
 

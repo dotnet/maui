@@ -332,5 +332,71 @@ public partial class TestPage : ContentPage
 			Assert.True(generated!.Contains("flexLayout.SetValue(global::Microsoft.Maui.Controls.FlexLayout.DirectionProperty, global::Microsoft.Maui.Layouts.FlexDirection.Row);", StringComparison.Ordinal),
 				"Generated code should contain FlexDirection.Row for 'Row' value");
 		}
+
+		[Theory]
+		[InlineData("Spring(0.4)", "global::Microsoft.Maui.Easing.Spring(0.4d)")]
+		[InlineData("Easing.Spring()", "global::Microsoft.Maui.Easing.Spring()")]
+		[InlineData("CubicBezier(0.4, 0, 0.2, 1)", "global::Microsoft.Maui.Easing.CubicBezier(0.4d, 0d, 0.2d, 1d)")]
+		[InlineData("Steps(4, start)", "global::Microsoft.Maui.Easing.Steps(4, true)")]
+		[InlineData("Hold", "global::Microsoft.Maui.Easing.Hold")]
+		public void EasingTypeConverter_FunctionForms_GenerateFactoryCalls(string easing, string expected)
+		{
+			System.Threading.Thread.CurrentThread.CurrentCulture = CultureInfo.GetCultureInfo("fr-FR");
+
+			var (result, generated) = RunGenerator(EasingXaml(easing), EasingCode);
+
+			Assert.False(result.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error),
+				$"Generated code should not have errors. Diagnostics: {string.Join(", ", result.Diagnostics.Select(d => d.ToString()))}");
+			Assert.Contains(expected, generated, StringComparison.Ordinal);
+		}
+
+		[Theory]
+		[InlineData("Spring(2)")]
+		[InlineData("Sprung(0.3)")]
+		[InlineData("CubicBezier(1.5, 0, 0.2, 1)")]
+		[InlineData("Steps(0)")]
+		public void EasingTypeConverter_InvalidFunctionForms_FailTheBuild(string easing)
+		{
+			var (result, _) = RunGenerator(EasingXaml(easing), EasingCode);
+
+			Assert.Contains(result.Diagnostics, d => d.Id == "MAUIG1010" && d.Severity == DiagnosticSeverity.Error);
+		}
+
+		static string EasingXaml(string easing) => $"""
+			<?xml version="1.0" encoding="UTF-8"?>
+			<ContentPage
+				xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+				xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+				xmlns:anim="http://schemas.microsoft.com/dotnet/2021/maui/animations"
+				x:Class="Test.TestPage">
+				<Label>
+					<VisualStateManager.VisualStateGroups>
+						<VisualStateGroup Name="CommonStates">
+							<VisualStateGroup.Transitions>
+								<anim:VisualTransition Easing="{easing}" />
+							</VisualStateGroup.Transitions>
+							<VisualState Name="Normal" />
+						</VisualStateGroup>
+					</VisualStateManager.VisualStateGroups>
+				</Label>
+			</ContentPage>
+			""";
+
+		const string EasingCode = """
+			using System;
+			using Microsoft.Maui.Controls;
+			using Microsoft.Maui.Controls.Xaml;
+
+			namespace Test;
+
+			[XamlProcessing(XamlInflator.SourceGen)]
+			public partial class TestPage : ContentPage
+			{
+				public TestPage()
+				{
+					InitializeComponent();
+				}
+			}
+			""";
 	}
 }

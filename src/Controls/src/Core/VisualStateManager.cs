@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
+using Microsoft.Maui.Controls.Animations;
 using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls
@@ -84,7 +85,18 @@ namespace Microsoft.Maui.Controls
 		public static bool GoToState(VisualElement visualElement, string name)
 			=> GoToState(visualElement, name, force: false);
 
-		internal static bool GoToState(VisualElement visualElement, string name, bool force)
+		/// <summary>
+		/// Transitions the <paramref name="visualElement"/> to the specified visual state, and controls whether
+		/// the <see cref="VisualStateGroup.Transitions"/> of its group animate the change.
+		/// </summary>
+		/// <param name="visualElement">The visual element to transition.</param>
+		/// <param name="name">The name of the visual state to transition to.</param>
+		/// <param name="useTransitions"><see langword="false"/> to apply the state without animation.</param>
+		/// <returns><see langword="true"/> if the transition was successful; otherwise, <see langword="false"/>.</returns>
+		public static bool GoToState(VisualElement visualElement, string name, bool useTransitions)
+			=> GoToState(visualElement, name, force: false, useTransitions);
+
+		internal static bool GoToState(VisualElement visualElement, string name, bool force, bool useTransitions = true)
 		{
 			var context = visualElement.GetContext(VisualStateGroupsProperty);
 			if (context is null)
@@ -119,6 +131,11 @@ namespace Microsoft.Maui.Controls
 					return true;
 				}
 
+				// Pin the affected properties first, so the state change below happens silently beneath them.
+				var outgoing = group.CurrentState;
+				var transition = useTransitions ? VisualTransitionRun.Prepare(visualElement, group, target) : null;
+				transition?.Pin();
+
 				// If we've got a new state to transition to, unapply the setters from the current state
 				if (group.CurrentState != null)
 				{
@@ -147,6 +164,11 @@ namespace Microsoft.Maui.Controls
 				{
 					setter.Apply(visualElement, applySpecificity);
 				}
+
+				if (transition is not null)
+					transition.Start();
+				else if (outgoing is not null && group.HasTransitions)
+					VisualTransitionRun.ReleaseRunningTracks(visualElement, outgoing, target);
 
 				return true;
 			}
@@ -581,6 +603,40 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		public IList<VisualState> States { get; }
 
+		List<VisualTransition> _transitions;
+
+		/// <summary>
+		/// Gets the transitions that animate changes between the states of this group.
+		/// </summary>
+		public IList<VisualTransition> Transitions => _transitions ??= new List<VisualTransition>();
+
+		internal bool HasTransitions => _transitions is { Count: > 0 };
+
+		// WPF's order: exact From and To, then To only, then From only, then neither.
+		internal VisualTransition FindTransition(string from, string to)
+		{
+			if (_transitions is null)
+				return null;
+
+			VisualTransition toOnly = null, fromOnly = null, any = null;
+			foreach (var transition in _transitions)
+			{
+				if (transition is null)
+					continue;
+
+				if (transition.From is null && transition.To is null)
+					any ??= transition;
+				else if (transition.From is null)
+					toOnly ??= transition.Matches(from, to) ? transition : null;
+				else if (transition.To is null)
+					fromOnly ??= transition.Matches(from, to) ? transition : null;
+				else if (transition.Matches(from, to))
+					return transition;
+			}
+
+			return toOnly ?? fromOnly ?? any;
+		}
+
 		/// <summary>
 		/// Gets the currently active <see cref="VisualState"/> in this group.
 		/// </summary>
@@ -707,6 +763,10 @@ namespace Microsoft.Maui.Controls
 				clone.States.Add(state.Clone());
 			}
 
+			// Transitions are shared definitions; cloned groups (from styles) must keep them.
+			if (_transitions is { Count: > 0 })
+				clone._transitions = new List<VisualTransition>(_transitions);
+
 			if (VisualDiagnostics.IsEnabled && VisualDiagnostics.GetSourceInfo(this) is SourceInfo info)
 				VisualDiagnostics.RegisterSourceInfo(clone, info.SourceUri, info.LineNumber, info.LinePosition);
 
@@ -807,6 +867,14 @@ namespace Microsoft.Maui.Controls
 			for (var i = 0; i < States.Count; i++)
 				if (!States[i].Equals(other.States[i]))
 					return false;
+
+			// A null and an empty Transitions collection are equal.
+			var transitionCount = _transitions?.Count ?? 0;
+			if (transitionCount != (other._transitions?.Count ?? 0))
+				return false;
+			for (var i = 0; i < transitionCount; i++)
+				if (!ReferenceEquals(_transitions[i], other._transitions[i]))
+					return false;
 			return true;
 		}
 
@@ -817,6 +885,11 @@ namespace Microsoft.Maui.Controls
 				var hash = (Name, TargetType).GetHashCode();
 				for (var i = 0; i < States.Count; i++)
 					hash = (hash * 43) ^ States[i].GetHashCode();
+				if (_transitions is not null)
+				{
+					for (var i = 0; i < _transitions.Count; i++)
+						hash = (hash * 43) ^ (_transitions[i]?.GetHashCode() ?? 0);
+				}
 				return hash;
 			}
 		}

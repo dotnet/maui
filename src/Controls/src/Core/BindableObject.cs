@@ -315,9 +315,16 @@ namespace Microsoft.Maui.Controls
 
 			//if the value is manually set (has highest specificity than FromBinding), we reassign the specificity so it'll get replaced when the binding is applied
 			var currentSpecificity = context.Values.GetSpecificity();
+
+			// While an animation holds the property, operate on the value beneath the hold and keep the hold.
+			bool held = (context.Attributes & BindableContextAttributes.IsAnimated) != 0
+				&& currentSpecificity == SetterSpecificity.Animation;
+			if (held)
+				currentSpecificity = context.Values.GetClearedSpecificity();
+
 			if (currentSpecificity > SetterSpecificity.FromBinding)
 			{
-				var currentValue = context.Values.GetValue();
+				var currentValue = held ? context.Values.GetClearedValue() : context.Values.GetValue();
 
 				context.Values.Remove(currentSpecificity);
 				// Also remove any ManualValueSetter entries that might interfere with binding value comparison.
@@ -718,6 +725,21 @@ namespace Microsoft.Maui.Controls
 			var original = specificityAndValue.Value;
 			var originalSpecificity = specificityAndValue.Key;
 
+			// A native-originated write ends an animation hold, and the user's value stands. A handler echoing
+			// the displayed value isn't user input: the hold stays, and the echo is dropped rather than stored
+			// above the hold, where it would become the base value and outlive the release.
+			bool animationEndedByHandler = false;
+			if ((context.Attributes & BindableContextAttributes.IsAnimated) != 0
+				&& specificity == SetterSpecificity.FromHandler)
+			{
+				if (Equals(value, original))
+					return;
+
+				context.Attributes &= ~BindableContextAttributes.IsAnimated;
+				context.Values.Remove(SetterSpecificity.Animation);
+				animationEndedByHandler = true;
+			}
+
 			//if the last value was set from handler, override it
 			if (specificity != SetterSpecificity.FromHandler
 				&& originalSpecificity == SetterSpecificity.FromHandler)
@@ -769,7 +791,8 @@ namespace Microsoft.Maui.Controls
 
 			if (!silent && (!sameValue || raiseOnEqual))
 			{
-				if (binding != null && !currentlyApplying)
+				// Animation frames are presentation only; they never flow back to a binding source.
+				if (binding != null && !currentlyApplying && specificity != SetterSpecificity.Animation)
 				{
 					_applying = true;
 					binding.Apply(true);
@@ -782,6 +805,9 @@ namespace Microsoft.Maui.Controls
 			{
 				OnBindablePropertySet(property, original, value, !sameValue, false);
 			}
+
+			if (animationEndedByHandler)
+				Animations.AnimationLayer.OnHandlerWrite(this, property);
 		}
 
 		private protected virtual void OnBindablePropertySet(BindableProperty property, object original, object value, bool didChange, bool willFirePropertyChanged)
@@ -957,6 +983,80 @@ namespace Microsoft.Maui.Controls
 			property.CoerceValue?.Invoke(this, currentValue);
 		}
 
+		// Animation layer support (Microsoft.Maui.Controls.Animations.AnimationLayer). Everything below is
+		// reached only through the animation layer, so writes that never animate pay at most one flag test.
+
+		internal void SetAnimatedValue(BindableProperty property, object value)
+		{
+			var context = GetOrCreateContext(property);
+			context.Attributes |= BindableContextAttributes.IsAnimated;
+			SetValueCore(property, value, SetValueFlags.None, SetValuePrivateFlags.Default, SetterSpecificity.Animation);
+		}
+
+		internal bool HasAnimatedValue(BindableProperty property)
+		{
+			var context = GetContext(property);
+			return context is not null && (context.Attributes & BindableContextAttributes.IsAnimated) != 0;
+		}
+
+		internal void ClearAnimatedValue(BindableProperty property)
+		{
+			var context = GetContext(property);
+			if (context is null || (context.Attributes & BindableContextAttributes.IsAnimated) == 0)
+				return;
+
+			context.Attributes &= ~BindableContextAttributes.IsAnimated;
+
+			// ClearValueCore strips a FromHandler value on top; a handler value above the hold must survive.
+			if (context.Values.GetSpecificity() != SetterSpecificity.Animation)
+			{
+				context.Values.Remove(SetterSpecificity.Animation);
+				return;
+			}
+
+			ClearValueCore(property, SetterSpecificity.Animation);
+		}
+
+		// The highest entry that isn't the animation hold: what the property would show without it.
+		internal object GetAnimationBaseValue(BindableProperty property, out SetterSpecificity specificity)
+		{
+			var context = GetContext(property);
+			if (context is not null)
+			{
+				for (int i = context.Values.Count - 1; i >= 0; i--)
+				{
+					var entrySpecificity = context.Values.GetSpecificityAt(i);
+					if (entrySpecificity == SetterSpecificity.Animation)
+						continue;
+
+					specificity = entrySpecificity;
+					return context.Values.GetValueAt(i);
+				}
+			}
+
+			specificity = SetterSpecificity.DefaultValue;
+			return property.DefaultValueCreator is not null ? GetValue(property) : property.DefaultValue;
+		}
+
+		// Values the platform wrote (FromHandler) and values with a TwoWay or OneWayToSource binding are never interpolated.
+		internal bool IsExcludedFromAnimation(BindableProperty property)
+		{
+			var context = GetContext(property);
+			if (context is null)
+				return false;
+
+			if (context.Values.GetSpecificity() == SetterSpecificity.FromHandler)
+				return true;
+
+			if (context.Bindings.Count > 0 && context.Bindings.GetValue() is BindingBase binding)
+			{
+				var mode = binding.GetRealizedMode(property);
+				return mode == BindingMode.TwoWay || mode == BindingMode.OneWayToSource;
+			}
+
+			return false;
+		}
+
 		[Flags]
 		internal enum BindableContextAttributes
 		{
@@ -965,6 +1065,7 @@ namespace Microsoft.Maui.Controls
 			IsDynamicResource = 1 << 2,
 			IsSetFromStyle = 1 << 3,
 			IsDefaultValueCreated = 1 << 5,
+			IsAnimated = 1 << 6,
 		}
 
 		internal sealed class BindablePropertyContext

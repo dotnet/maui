@@ -122,7 +122,11 @@ namespace Microsoft.Maui.Controls
 			targetObject.ClearValue(Property, specificity);
 		}
 
-		static BindableObject FindTargetByName(Element element, string name)
+		// Resolves TargetName exactly as Apply and UnApply do; null when the name doesn't resolve.
+		internal BindableObject ResolveTarget(BindableObject target)
+			=> !string.IsNullOrEmpty(TargetName) && target is Element element ? FindTargetByName(element, TargetName) : target;
+
+		internal static BindableObject FindTargetByName(Element element, string name)
 		{
 			// Try standard lookup first (works for same or child namescopes)
 			if (element.FindByName(name) is BindableObject target)
