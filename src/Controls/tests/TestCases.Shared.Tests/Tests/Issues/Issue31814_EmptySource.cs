@@ -1,4 +1,4 @@
-#if TEST_FAILS_ON_WINDOWS // The Windows threshold check has no visible-item guard: ItemCount - 1 - LastVisibleItemIndex is 0 for an empty source, so the event is raised
+#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST // Windows: the threshold check has no visible-item guard (ItemCount - 1 - LastVisibleItemIndex is 0 for an empty source), so the event is raised. Catalyst: WebDriverAgentMac only supports mouse pointers, so the gesture scroll fails
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;

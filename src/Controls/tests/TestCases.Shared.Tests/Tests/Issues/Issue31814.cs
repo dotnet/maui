@@ -1,3 +1,4 @@
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // Catalyst: WebDriverAgentMac only supports mouse pointers, so the gesture scroll fails. Windows: RemainingItemsThresholdReached isn't raised for a single item under a Header there; this fix is Android only
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -44,3 +45,4 @@ public class Issue31814 : _IssuesUITest
 		Assert.Fail("Scrolling did not settle");
 	}
 }
+#endif
