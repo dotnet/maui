@@ -113,6 +113,66 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact]
+		public async Task ClearingGroupedItemsThenGroupsAllowsRepopulation()
+		{
+			EnsureHandlerCreated(builder => builder.ConfigureMauiHandlers(handlers =>
+			{
+				handlers.AddHandler<CollectionView, CollectionViewHandler2>();
+				handlers.AddHandler<Label, LabelHandler>();
+			}));
+
+			var groups = new ObservableCollection<CollectionViewStringGroup>
+			{
+				new("First group", new[] { "First item", "Second item" }),
+				new("Last group", new[] { "Last item" }),
+				new("Empty group", Array.Empty<string>())
+			};
+			var collectionView = new CollectionView
+			{
+				WidthRequest = 300,
+				HeightRequest = 300,
+				IsGrouped = true,
+				ItemsSource = groups,
+				ItemTemplate = new DataTemplate(() =>
+				{
+					var label = new Label { HeightRequest = 40 };
+					label.SetBinding(Label.TextProperty, static (string item) => item);
+					return label;
+				})
+			};
+			var frame = collectionView.Frame;
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler2>(collectionView, async handler =>
+			{
+				await WaitForUIUpdate(frame, collectionView);
+				var nativeCollectionView = handler.Controller.CollectionView;
+				Assert.NotNull(nativeCollectionView.Window);
+				nativeCollectionView.LayoutIfNeeded();
+				Assert.Equal(3, (int)nativeCollectionView.NumberOfSections());
+				Assert.Equal(2, (int)nativeCollectionView.NumberOfItemsInSection(0));
+				await AssertEventually(() => nativeCollectionView.VisibleCells.Length > 0);
+
+				for (int i = 0; i < groups.Count; i++)
+				{
+					groups[i].Clear();
+				}
+				groups.Clear();
+
+				nativeCollectionView.LayoutIfNeeded();
+				Assert.Equal(0, (int)nativeCollectionView.NumberOfSections());
+				Assert.Empty(nativeCollectionView.IndexPathsForVisibleItems);
+
+				groups.Add(new("Repopulated group", new[] { "Repopulated item" }));
+				nativeCollectionView.LayoutIfNeeded();
+				Assert.Equal(1, (int)nativeCollectionView.NumberOfSections());
+				Assert.Equal(1, (int)nativeCollectionView.NumberOfItemsInSection(0));
+				await AssertEventually(() => nativeCollectionView.VisibleCells.Length > 0
+					&& collectionView.GetVisualTreeDescendants()
+						.OfType<Label>().Any(label => label.Text == "Repopulated item"));
+			});
+		}
+
 		[Fact(DisplayName = "Removing a grouped CollectionView section does not crash")]
 		public async Task RemovingGroupedCollectionViewSectionDoesNotCrash()
 		{

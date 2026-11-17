@@ -166,8 +166,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			// Force UICollectionView to get the internal accounting straight
 			var collectionView = controller.CollectionView;
-			// For Remove, the source has already changed while UICollectionView still has its old sections.
-			if (args.Action != NotifyCollectionChangedAction.Remove)
+			// Remove and Reset can leave UIKit's old sections pointing past the already-mutated source.
+			if (args.Action != NotifyCollectionChangedAction.Remove && args.Action != NotifyCollectionChangedAction.Reset)
 			{
 				UpdateSection(collectionView);
 			}
