@@ -243,7 +243,15 @@ namespace Microsoft.Maui.Controls.SourceGen {
 			}
 		}
 
+		internal static string ConflictingXmlnsTypeTitle => ResourceManager.GetString("ConflictingXmlnsTypeTitle", resourceCulture);
+
+		internal static string ConflictingXmlnsTypeMessage => ResourceManager.GetString("ConflictingXmlnsTypeMessage", resourceCulture);
+
 		internal static string MemberResolution => ResourceManager.GetString("MemberResolution", resourceCulture);
+
+		internal static string ExtensionPropertyResolution => ResourceManager.GetString("ExtensionPropertyResolution", resourceCulture);
+
+		internal static string ExtensionPropertyAmbiguous => ResourceManager.GetString("ExtensionPropertyAmbiguous", resourceCulture);
 
 		internal static string MethodResolution => ResourceManager.GetString("MethodResolution", resourceCulture);
 
