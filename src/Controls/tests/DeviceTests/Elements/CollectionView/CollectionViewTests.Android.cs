@@ -239,6 +239,149 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Theory]
+		[InlineData(false, 0, 240)]
+		[InlineData(true, 0, 240)]
+		[InlineData(false, 360, 0)]
+		[InlineData(true, 360, 0)]
+		public async Task EmptyViewMinimumSizeOverflowDoesNotRequestAnotherLayout(bool useTemplate, double minimumWidth, double minimumHeight)
+		{
+			SetupBuilder();
+
+			var emptyView = new Label
+			{
+				Text = "Empty",
+				MinimumWidthRequest = minimumWidth,
+				MinimumHeightRequest = minimumHeight
+			};
+			var collectionView = new CollectionView
+			{
+				ItemsSource = System.Array.Empty<string>(),
+				ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Horizontal),
+				HeightRequest = 180
+			};
+
+			if (useTemplate)
+				collectionView.EmptyViewTemplate = new DataTemplate(() => emptyView);
+			else
+				collectionView.EmptyView = emptyView;
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler<CollectionViewHandler>(collectionView);
+				using var parent = new LayoutRequestCountingFrameLayout(MauiContext.Context);
+				parent.AddView(handler.PlatformView);
+
+				handler.GetDesiredSize(300, 180);
+				handler.PlatformArrange(new Rect(0, 0, 300, 180));
+				LayoutEmptyViewParent(parent, 300, 180);
+
+				var holder = handler.PlatformView.FindViewHolderForAdapterPosition(0);
+				var itemView = Assert.IsType<EmptyViewContentView>(holder?.ItemView);
+				var expectedWidth = (int)MauiContext.Context.ToPixels(System.Math.Max(300, minimumWidth));
+				var expectedHeight = (int)MauiContext.Context.ToPixels(System.Math.Max(180, minimumHeight));
+
+				await parent.AttachAndRun(async () =>
+				{
+					await WaitForEmptyViewFrames(parent);
+					var arrangedDuringLayout = false;
+					parent.LayoutAction = () =>
+					{
+						arrangedDuringLayout |= parent.IsInLayout;
+						handler.PlatformArrange(new Rect(0, 0, 300, 180));
+					};
+
+					try
+					{
+						parent.RequestLayout();
+						parent.RequestLayoutCount = 0;
+						await WaitForEmptyViewFrames(parent);
+
+						Assert.True(arrangedDuringLayout);
+						Assert.Equal(expectedWidth, itemView.MeasuredWidth);
+						Assert.Equal(expectedHeight, itemView.MeasuredHeight);
+						Assert.Equal(expectedWidth, itemView.Width);
+						Assert.Equal(expectedHeight, itemView.Height);
+						Assert.Equal(0, parent.RequestLayoutCount);
+					}
+					finally
+					{
+						parent.LayoutAction = null;
+					}
+				});
+			});
+		}
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task EmptyViewRepairsUnconsumedFinalSizeAndStopsRequestingLayout(bool useTemplate)
+		{
+			SetupBuilder();
+
+			var emptyView = new Label
+			{
+				Text = "Empty",
+				HorizontalOptions = LayoutOptions.Center,
+				VerticalOptions = LayoutOptions.Center
+			};
+			var collectionView = new CollectionView
+			{
+				ItemsSource = System.Array.Empty<string>(),
+				ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Horizontal)
+			};
+
+			if (useTemplate)
+				collectionView.EmptyViewTemplate = new DataTemplate(() => emptyView);
+			else
+				collectionView.EmptyView = emptyView;
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler<CollectionViewHandler>(collectionView);
+				using var parent = new LayoutRequestCountingFrameLayout(MauiContext.Context);
+				var recyclerView = handler.PlatformView;
+				parent.AddView(recyclerView, new FrameLayout.LayoutParams(
+					global::Android.Views.ViewGroup.LayoutParams.MatchParent,
+					global::Android.Views.ViewGroup.LayoutParams.MatchParent));
+				LayoutEmptyViewParent(parent, 300, 180);
+
+				await parent.AttachAndRun(async () =>
+				{
+					await WaitForEmptyViewFrames(parent);
+					var pixelWidth = (int)parent.Context.ToPixels(300);
+					var pixelHeight = (int)parent.Context.ToPixels(180);
+
+					handler.GetDesiredSize(300, 500);
+
+					// The native parent resolves a smaller exact height after speculative measurement.
+					recyclerView.ForceLayout();
+					recyclerView.Measure(
+						AView.MeasureSpec.MakeMeasureSpec(pixelWidth, global::Android.Views.MeasureSpecMode.AtMost),
+						AView.MeasureSpec.MakeMeasureSpec(pixelHeight, global::Android.Views.MeasureSpecMode.Exactly));
+
+					var holder = recyclerView.FindViewHolderForAdapterPosition(0);
+					var itemView = Assert.IsType<EmptyViewContentView>(holder?.ItemView);
+					Assert.Equal(pixelHeight, recyclerView.MeasuredHeight);
+					Assert.Equal((int)parent.Context.ToPixels(500), itemView.MeasuredHeight);
+
+					parent.RequestLayoutCount = 0;
+					handler.PlatformArrange(new Rect(0, 0, 300, 180));
+					Assert.True(parent.RequestLayoutCount > 0, "Stale geometry must schedule a corrective parent pass.");
+
+					await WaitForEmptyViewFrames(parent);
+					Assert.Equal(pixelHeight, itemView.MeasuredHeight);
+					Assert.Equal(pixelHeight, itemView.Height);
+					Assert.InRange(System.Math.Abs(emptyView.Frame.Center.Y - 90), 0, parent.Context.FromPixels(1));
+
+					parent.RequestLayoutCount = 0;
+					handler.PlatformArrange(new Rect(0, 0, 300, 180));
+					await WaitForEmptyViewFrames(parent);
+					Assert.Equal(0, parent.RequestLayoutCount);
+				});
+			});
+		}
+
 		[Fact]
 		public async Task DisconnectingWhileEmptyViewLayoutIsQueuedDoesNotCrash()
 		{
@@ -1077,9 +1220,22 @@ namespace Microsoft.Maui.DeviceTests
 			parent.Layout(0, 0, pixelWidth, pixelHeight);
 		}
 
+		static async Task WaitForEmptyViewFrames(AView view)
+		{
+			for (var frame = 0; frame < 6; frame++)
+			{
+				var completed = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+				using var callback = new Java.Lang.Runnable(() => view.Post(() => completed.TrySetResult(true)));
+				view.PostOnAnimation(callback);
+				await completed.Task.WaitAsync(System.TimeSpan.FromSeconds(5));
+			}
+		}
+
 		class LayoutRequestCountingFrameLayout : FrameLayout
 		{
 			public int RequestLayoutCount { get; set; }
+
+			public System.Action LayoutAction { get; set; }
 
 			public LayoutRequestCountingFrameLayout(Context context) : base(context)
 			{
@@ -1089,6 +1245,12 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				RequestLayoutCount++;
 				base.RequestLayout();
+			}
+
+			protected override void OnLayout(bool changed, int left, int top, int right, int bottom)
+			{
+				base.OnLayout(changed, left, top, right, bottom);
+				LayoutAction?.Invoke();
 			}
 		}
 
