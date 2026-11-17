@@ -2,13 +2,8 @@
 // This file is part of the XAML Incremental HotReload feature.
 
 #nullable enable
-using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Threading;
-using Microsoft.CodeAnalysis;
 using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls.SourceGen;
@@ -18,65 +13,6 @@ internal sealed class HotReloadSessionToken
 }
 
 internal sealed record HotReloadFieldContract(string Type, string AccessModifier, XmlType XmlType);
-
-/// <summary>
-/// Content fingerprint of the user-authored C# syntax trees of a compilation (path + content hash per
-/// tree). Used to tell a re-evaluation of the same inputs (driver fork, speculative or cancelled run)
-/// apart from a later generation in which the C# sources changed.
-/// </summary>
-internal sealed class UserSourcesFingerprint : IEquatable<UserSourcesFingerprint>
-{
-	static readonly ConditionalWeakTable<Compilation, UserSourcesFingerprint> _byCompilation = new();
-
-	readonly ImmutableArray<(string Path, ImmutableArray<byte> Hash)> _sources;
-
-	UserSourcesFingerprint(ImmutableArray<(string Path, ImmutableArray<byte> Hash)> sources) => _sources = sources;
-
-	/// <summary>
-	/// Returns the fingerprint of <paramref name="compilation"/>'s syntax trees, computed once per
-	/// compilation. Content hashes are also cached by each <see cref="Microsoft.CodeAnalysis.Text.SourceText"/>,
-	/// so trees shared between compilation snapshots are only hashed once.
-	/// </summary>
-	public static UserSourcesFingerprint Get(Compilation compilation, CancellationToken cancellationToken)
-	{
-		if (_byCompilation.TryGetValue(compilation, out var cached))
-			return cached;
-		var fingerprint = Create(compilation, cancellationToken);
-		return _byCompilation.GetValue(compilation, _ => fingerprint);
-	}
-
-	static UserSourcesFingerprint Create(Compilation compilation, CancellationToken cancellationToken)
-	{
-		var builder = ImmutableArray.CreateBuilder<(string, ImmutableArray<byte>)>();
-		foreach (var tree in compilation.SyntaxTrees)
-		{
-			cancellationToken.ThrowIfCancellationRequested();
-			builder.Add((tree.FilePath, tree.GetText(cancellationToken).GetContentHash()));
-		}
-		return new UserSourcesFingerprint(builder.ToImmutable());
-	}
-
-	public bool Equals(UserSourcesFingerprint? other)
-	{
-		if (other is null)
-			return false;
-		if (ReferenceEquals(this, other))
-			return true;
-		if (_sources.Length != other._sources.Length)
-			return false;
-		for (var i = 0; i < _sources.Length; i++)
-		{
-			if (!string.Equals(_sources[i].Path, other._sources[i].Path, StringComparison.Ordinal)
-				|| !_sources[i].Hash.SequenceEqual(other._sources[i].Hash))
-				return false;
-		}
-		return true;
-	}
-
-	public override bool Equals(object? obj) => Equals(obj as UserSourcesFingerprint);
-
-	public override int GetHashCode() => _sources.Length;
-}
 
 /// <summary>
 /// In-process static cache that tracks the last-generated XAML text (and its parsed tree / node IDs)
@@ -115,15 +51,14 @@ internal sealed class UserSourcesFingerprint : IEquatable<UserSourcesFingerprint
 /// <para>
 /// Repeated evaluation (https://github.com/dotnet/maui/issues/36937): Roslyn may evaluate the same
 /// driver snapshot more than once (driver forks, speculative/design-time requests, cancelled or
-/// discarded runs). When a generation produces a patch, the entry also keeps the generation it was
-/// diffed from (<see cref="CacheEntry.PatchBaseline"/>) and the <see cref="UserSourcesFingerprint"/>
-/// it was produced with. A later evaluation with the same XAML and the same user C# sources re-derives
-/// the identical patch from that baseline instead of seeing "no change" and emitting an empty
-/// <c>UpdateComponent()</c>. A generation with the same XAML but different user C# sources is a later
-/// generation (e.g. a C#-only edit), so it emits an empty <c>UpdateComponent()</c> (runtime tooling reads
-/// a non-empty body as "this delta carries a XAML change"). The baseline is never dropped by such a
-/// generation — only replaced by the next XAML edit — so the output stays a pure function of the inputs
-/// and an interleaved, discarded run cannot consume the patch of another snapshot.
+/// discarded runs), possibly with different C# sources. When a generation produces a patch, the entry
+/// also keeps the generation it was diffed from (<see cref="CacheEntry.PatchBaseline"/>). Any later
+/// generation with the same XAML re-derives the patch from that baseline instead of seeing "no change"
+/// and emitting an empty <c>UpdateComponent()</c>. The baseline is never dropped by such a generation —
+/// only replaced by the next XAML edit — so the output stays a pure function of the inputs and a
+/// throwaway run cannot consume the patch of the real one. Re-emitting the patch on a C#-only edit is
+/// safe: the patch is unchanged, so its companion signal type is unchanged and the runtime doesn't
+/// re-apply it (see <see cref="UpdateComponentCodeWriter.SignalTypeName"/>).
 /// </para>
 ///
 /// Thread-safety: the dictionary is protected by a lock. Generator output callbacks may run
@@ -172,11 +107,6 @@ internal static class XamlHotReloadState
 		/// when the current generation carries no pending patch.
 		/// </summary>
 		public GenerationSnapshot? PatchBaseline { get; set; }
-		/// <summary>
-		/// The user C# sources the pending patch was produced with. Only meaningful when
-		/// <see cref="PatchBaseline"/> is set.
-		/// </summary>
-		public UserSourcesFingerprint? PatchSources { get; set; }
 
 		public CacheEntry Clone()
 		{
@@ -224,10 +154,10 @@ internal static class XamlHotReloadState
 	internal sealed record GenerationSnapshot(string XamlText, SGRootNode? ParsedRoot, Dictionary<ElementNode, string>? NodeIds, int NextNodeId, int Version);
 
 	/// <summary>
-	/// Returns the baseline of the pending patch for the given file and the user sources it was produced
-	/// with, or <see langword="false"/> when the current generation carries no pending patch.
+	/// Returns the baseline of the pending patch for the given file, or <see langword="false"/> when the
+	/// current generation carries no pending patch.
 	/// </summary>
-	public static bool TryGetPatchBaseline(string assemblyName, string targetFramework, string relativePath, HotReloadSessionToken? sessionToken, out GenerationSnapshot? baseline, out UserSourcesFingerprint? sources)
+	public static bool TryGetPatchBaseline(string assemblyName, string targetFramework, string relativePath, HotReloadSessionToken? sessionToken, out GenerationSnapshot? baseline)
 	{
 		lock (_lock)
 		{
@@ -237,12 +167,10 @@ internal static class XamlHotReloadState
 				&& entry.PatchBaseline is not null)
 			{
 				baseline = entry.PatchBaseline;
-				sources = entry.PatchSources;
 				return true;
 			}
 		}
 		baseline = null;
-		sources = null;
 		return false;
 	}
 
@@ -281,7 +209,7 @@ internal static class XamlHotReloadState
 	/// (plus, when that generation carries a patch, the single generation it was diffed from), never an
 	/// accumulated history.
 	/// </summary>
-	public static void Update(string assemblyName, string targetFramework, string relativePath, string xamlText, SGRootNode? parsedRoot, Dictionary<ElementNode, string>? nodeIds, int nextNodeId, int version, HotReloadSessionToken? sessionToken, GenerationSnapshot? patchBaseline = null, UserSourcesFingerprint? patchSources = null)
+	public static void Update(string assemblyName, string targetFramework, string relativePath, string xamlText, SGRootNode? parsedRoot, Dictionary<ElementNode, string>? nodeIds, int nextNodeId, int version, HotReloadSessionToken? sessionToken, GenerationSnapshot? patchBaseline = null)
 	{
 		if (sessionToken is null)
 			return;
@@ -300,7 +228,6 @@ internal static class XamlHotReloadState
 			entry.NextNodeId = nextNodeId;
 			entry.Version = version;
 			entry.PatchBaseline = patchBaseline;
-			entry.PatchSources = patchBaseline is null ? null : patchSources;
 		}
 	}
 

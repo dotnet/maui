@@ -22,16 +22,17 @@ namespace Microsoft.Maui.Controls.SourceGen;
 /// <para>
 /// The method is emitted UNCONDITIONALLY and is present on EVERY generation — even the first compile
 /// and no-op edits — so a XIHR type never gains or loses the method across generations (that member
-/// churn is what crashes Roslyn's EnC delta tracking). Its body is EMPTY when this generation carries
-/// no XAML change and contains the patch when the XAML changed:
+/// churn is what crashes Roslyn's EnC delta tracking). Its body contains the patch of the last XAML
+/// edit, and is EMPTY when there is no pending patch:
 /// <code>
 /// internal void UpdateComponent()
 /// {
 ///     /* absolute previous→current patch (property sets assign target values); empty when unchanged */
 /// }
 /// </code>
-/// The empty-vs-non-empty body is also the runtime's "is this a XAML change?" signal (see
-/// <c>XamlIncrementalHotReloadHandler</c>). Because patch property-sets are absolute, a single patch
+/// Next to it, a companion type (<see cref="SignalTypeName"/>) carries a fingerprint of the patch. A delta
+/// changes the companion only when the patch itself changed, which is the runtime's "is this a XAML
+/// change?" signal (see <c>XamlIncrementalHotReloadHandler</c>). Because patch property-sets are absolute, a single patch
 /// brings any live instance to the current state regardless of which edit it was last updated to, and a
 /// revert to earlier content collapses to the earlier patch — deterministic, revert-stable output for
 /// identical XAML (no accumulated chain, no stale intermediate values).
@@ -52,6 +53,12 @@ static class UpdateComponentCodeWriter
 	// Roslyn caches generator output by content hash; per-OS line endings would invalidate caching and
 	// produce different .g.cs checksums per host.
 	const string NewLine = "\n";
+
+	/// <summary>
+	/// Name of the companion type nested in every XIHR root. Must match
+	/// <c>XamlIncrementalHotReloadHandler.SignalTypeName</c> in Microsoft.Maui.Controls.Xaml.
+	/// </summary>
+	internal const string SignalTypeName = "__XamlHotReloadSignal";
 
 	/// <summary>
 	/// Generates the statements that apply a single previous→current patch (property sets, child-list
@@ -320,17 +327,27 @@ static class UpdateComponentCodeWriter
 			codeWriter.WriteLine($"[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]");
 			codeWriter.WriteLine($"internal void UpdateComponent()");
 
-			// The method is ALWAYS emitted (member stability / no EnC churn), but its BODY is empty when
-			// this generation carries no XAML change (first compile, empty/reverted diff, structural
-			// reset). A non-empty body means the XAML actually changed. The SDK's MetadataUpdateHandler
-			// classifies a delta as a XAML change by inspecting whether this method's body is non-empty
-			// (its compiled IL is more than a trivial return) — an empty UpdateComponent() therefore reads
-			// as "not a XAML change", which is what keeps pure C#/code-behind edits out of the XAML-change
-			// signal while still guaranteeing the method never appears/disappears across generations.
+			// The method is ALWAYS emitted (member stability / no EnC churn). Its BODY is the pending patch
+			// (the diff of the last XAML edit), or empty when there is none (first compile, empty diff,
+			// structural reset). The SDK's MetadataUpdateHandler only invokes it when the delta also changes
+			// the companion signal type below, so re-emitting the same patch on a C#-only edit is a no-op.
 			using (PrePost.NewBlock(codeWriter))
 			{
 				if (!string.IsNullOrWhiteSpace(patchBody))
 					WriteIndentedBody(codeWriter, patchBody!);
+			}
+
+			// XAML-change signal (https://github.com/dotnet/maui/issues/36937). A pending patch is re-emitted
+			// unchanged on later generations (C#-only edits, repeated or throwaway evaluations), so the
+			// UpdateComponent() body alone can't tell a delta that carries a new patch from one that doesn't.
+			// The fingerprint only changes when the patch changes, so Roslyn's delta lists this type exactly
+			// when there is a new patch to apply. Like UpdateComponent(), it is emitted on every generation.
+			codeWriter.WriteLine();
+			codeWriter.WriteLine($"[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]");
+			codeWriter.WriteLine($"static class {SignalTypeName}");
+			using (PrePost.NewBlock(codeWriter))
+			{
+				codeWriter.WriteLine($"internal static string Fingerprint() => \"{ComputeFingerprint(patchBody)}\";");
 			}
 		}
 
@@ -357,6 +374,19 @@ static class UpdateComponentCodeWriter
 			return null;
 
 		return GenerateUpdateComponent(rootType, accessModifier, patchBody);
+	}
+
+	internal static string ComputeFingerprint(string? patchBody)
+	{
+		if (string.IsNullOrWhiteSpace(patchBody))
+			return string.Empty;
+
+		using var sha = System.Security.Cryptography.SHA256.Create();
+		var hash = sha.ComputeHash(System.Text.Encoding.UTF8.GetBytes(patchBody!.Replace("\r\n", "\n")));
+		var builder = new System.Text.StringBuilder(hash.Length * 2);
+		foreach (var b in hash)
+			builder.Append(b.ToString("x2", CultureInfo.InvariantCulture));
+		return builder.ToString();
 	}
 
 	static void WriteIndentedBody(IndentedTextWriter codeWriter, string body)
