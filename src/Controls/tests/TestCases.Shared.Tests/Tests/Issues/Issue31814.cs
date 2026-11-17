@@ -15,7 +15,32 @@ public class Issue31814 : _IssuesUITest
 	public void RemainingItemsThresholdReachedFiresForSingleItemWithHeader()
 	{
 		App.WaitForElement("CollectionView");
+
+		// A short scroll keeps only the tall Header on screen, so no item is visible yet
+		App.ScrollDown("CollectionView", ScrollStrategy.Gesture, 0.3, 1000);
+		WaitForScrollToSettle();
+		Assert.That(App.FindElement("StatusLabel").GetText(), Is.EqualTo("Waiting"));
+
 		App.ScrollTo("FooterLabel");
 		Assert.That(App.WaitForTextEqualToElement("StatusLabel", "Threshold reached"), Is.True);
+	}
+
+	// Scrolling (and any fling) has ended once the offset reported by the Scrolled event stops changing
+	void WaitForScrollToSettle()
+	{
+		var offset = App.FindElement("OffsetLabel").GetText();
+		for (int i = 0; i < 20; i++)
+		{
+			Thread.Sleep(500);
+			var current = App.FindElement("OffsetLabel").GetText();
+			if (current == offset)
+			{
+				return;
+			}
+
+			offset = current;
+		}
+
+		Assert.Fail("Scrolling did not settle");
 	}
 }

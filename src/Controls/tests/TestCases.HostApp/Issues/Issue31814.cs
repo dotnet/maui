@@ -11,6 +11,12 @@ public class Issue31814 : ContentPage
 			Text = "Waiting"
 		};
 
+		var offsetLabel = new Label
+		{
+			AutomationId = "OffsetLabel",
+			Text = "0"
+		};
+
 		var collectionView = new CollectionView
 		{
 			AutomationId = "CollectionView",
@@ -28,17 +34,20 @@ public class Issue31814 : ContentPage
 		};
 
 		collectionView.RemainingItemsThresholdReached += (s, e) => statusLabel.Text = "Threshold reached";
+		collectionView.Scrolled += (s, e) => offsetLabel.Text = $"{e.VerticalOffset}";
 
 		var grid = new Grid
 		{
 			RowDefinitions =
 			{
 				new RowDefinition(GridLength.Auto),
+				new RowDefinition(GridLength.Auto),
 				new RowDefinition(GridLength.Star)
 			}
 		};
 		grid.Add(statusLabel, 0, 0);
-		grid.Add(collectionView, 0, 1);
+		grid.Add(offsetLabel, 0, 1);
+		grid.Add(collectionView, 0, 2);
 		Content = grid;
 	}
 }
