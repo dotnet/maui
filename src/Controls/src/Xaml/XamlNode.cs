@@ -117,6 +117,10 @@ class ElementNode(XmlType type, string namespaceURI, IXmlNamespaceResolver names
 	public XmlType XmlType { get; } = type;
 	public string NamespaceURI { get; } = namespaceURI;
 	public NameScopeRef NameScopeRef { get; set; }
+#if __SOURCEGEN__
+	// The parser's XmlReader advances after this element; preserve its local default namespace.
+	public string DefaultXmlNamespace { get; set; } = namespaceResolver?.LookupNamespace(string.Empty);
+#endif
 	
 	/// <summary>
 	/// When true, this node represents a default value for an OnPlatform element
@@ -167,6 +171,9 @@ class ElementNode(XmlType type, string namespaceURI, IXmlNamespaceResolver names
 			IgnorablePrefixes = IgnorablePrefixes,
 			IsOnPlatformDefaultValue = IsOnPlatformDefaultValue
 		};
+#if __SOURCEGEN__
+		clone.DefaultXmlNamespace = DefaultXmlNamespace;
+#endif
 		foreach (var kvp in Properties)
 			clone.Properties.Add(kvp.Key, kvp.Value.Clone());
 		foreach (var p in SkipProperties)
