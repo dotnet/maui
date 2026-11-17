@@ -383,7 +383,8 @@ public class XamlGenerator : IIncrementalGenerator
 				if (lastApplicableState is not null
 					&& (reportedError
 						|| HasSyntaxErrors(code, compilation, sourceProductionContext.CancellationToken)
-						|| HasSyntaxErrors(ucCode, compilation, sourceProductionContext.CancellationToken)))
+						|| HasSyntaxErrors(ucCode, compilation, sourceProductionContext.CancellationToken)
+						|| HasSemanticErrors(code, ucCode, compilation, sourceProductionContext.CancellationToken)))
 				{
 					XamlHotReloadState.Restore(assemblyName, targetFramework, stateKey, lastApplicableState, xamlItem.ProjectItem.HotReloadSessionToken);
 				}
@@ -573,12 +574,97 @@ $"""
 		if (generatedCode is null)
 			return false;
 
-		// Only syntax: semantic errors can't be told apart from references to members other generators
-		// add later (e.g. CommunityToolkit.Mvvm [ObservableProperty]), and a false positive would keep
-		// diffing against a generation the app already moved past.
 		var options = compilation.SyntaxTrees.FirstOrDefault()?.Options as CSharpParseOptions;
 		var tree = CSharpSyntaxTree.ParseText(generatedCode, options, cancellationToken: cancellationToken);
 		return tree.GetDiagnostics(cancellationToken).Any(d => d.Severity == DiagnosticSeverity.Error);
+	}
+
+	/// <summary>
+	/// Whether the generated IC/UC code fails type checking, against the user code and the generated
+	/// code-behind. Only errors located in that generated code count, and errors that another source
+	/// generator could make go away are ignored (see <see cref="MayBeFixedByAnotherGenerator"/>): a false
+	/// positive would keep diffing against a generation the app already moved past.
+	/// </summary>
+	static bool HasSemanticErrors(string code, string? ucCode, Compilation compilation, CancellationToken cancellationToken)
+	{
+		var options = compilation.SyntaxTrees.FirstOrDefault()?.Options as CSharpParseOptions;
+		var trees = new List<SyntaxTree>(2) { CSharpSyntaxTree.ParseText(code, options, cancellationToken: cancellationToken) };
+		if (ucCode is not null)
+			trees.Add(CSharpSyntaxTree.ParseText(ucCode, options, cancellationToken: cancellationToken));
+		var withGeneratedCode = compilation.AddSyntaxTrees(trees);
+
+		foreach (var tree in trees)
+		{
+			var model = withGeneratedCode.GetSemanticModel(tree);
+			foreach (var diagnostic in model.GetDiagnostics(cancellationToken: cancellationToken))
+			{
+				if (diagnostic.Severity == DiagnosticSeverity.Error
+					&& !diagnostic.IsSuppressed
+					&& !MayBeFixedByAnotherGenerator(diagnostic, model, cancellationToken))
+					return true;
+			}
+		}
+		return false;
+	}
+
+	/// <summary>
+	/// Other generators run on the same input compilation, so the XAML generator doesn't see what they add.
+	/// They can declare new types and namespaces, and add members to partial types (e.g. CommunityToolkit.Mvvm
+	/// <c>[ObservableProperty]</c> / <c>[RelayCommand]</c>). Returns <see langword="true"/> for errors that may
+	/// come from such a missing declaration: unresolved names, and failed member lookups or overload
+	/// resolution on a partial type declared in source.
+	/// </summary>
+	static bool MayBeFixedByAnotherGenerator(Diagnostic diagnostic, SemanticModel model, CancellationToken cancellationToken)
+	{
+		switch (diagnostic.Id)
+		{
+			case "CS0103": // The name does not exist in the current context
+			case "CS0234": // The type or namespace name does not exist in the namespace
+			case "CS0246": // The type or namespace name could not be found
+			case "CS0426": // The type name does not exist in the type
+				return true;
+		}
+
+		var node = model.SyntaxTree.GetRoot(cancellationToken).FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true);
+		for (SyntaxNode? current = node; current is not null; current = current.Parent)
+		{
+			switch (current)
+			{
+				case MemberAccessExpressionSyntax memberAccess when memberAccess.Name.Span.Contains(diagnostic.Location.SourceSpan):
+					return IsPartialSourceType(GetReceiverType(memberAccess.Expression, model, cancellationToken), cancellationToken);
+				case MemberBindingExpressionSyntax memberBinding:
+					return memberBinding.Ancestors().OfType<ConditionalAccessExpressionSyntax>().FirstOrDefault() is { } conditionalAccess
+						&& IsPartialSourceType(GetReceiverType(conditionalAccess.Expression, model, cancellationToken), cancellationToken);
+				case InvocationExpressionSyntax invocation:
+					return invocation.Expression switch
+					{
+						MemberAccessExpressionSyntax memberAccess => IsPartialSourceType(GetReceiverType(memberAccess.Expression, model, cancellationToken), cancellationToken),
+						SimpleNameSyntax => IsPartialSourceType(model.GetEnclosingSymbol(invocation.SpanStart, cancellationToken)?.ContainingType, cancellationToken),
+						_ => false,
+					};
+				case BaseObjectCreationExpressionSyntax creation:
+					return IsPartialSourceType(model.GetTypeInfo(creation, cancellationToken).Type, cancellationToken);
+				// An error on an argument comes from the invocation's overload resolution; an error anywhere
+				// else inside an argument isn't about the invocation.
+				case ArgumentSyntax argument when argument != node && argument.Expression != node:
+					return false;
+				case StatementSyntax:
+				case AnonymousFunctionExpressionSyntax:
+				case MemberDeclarationSyntax:
+					return false;
+			}
+		}
+		return false;
+
+		static ITypeSymbol? GetReceiverType(ExpressionSyntax receiver, SemanticModel model, CancellationToken cancellationToken)
+			=> model.GetTypeInfo(receiver, cancellationToken).Type is { TypeKind: not TypeKind.Error } type
+				? type
+				: model.GetSymbolInfo(receiver, cancellationToken).Symbol as ITypeSymbol;
+
+		static bool IsPartialSourceType(ITypeSymbol? type, CancellationToken cancellationToken)
+			=> type?.OriginalDefinition.DeclaringSyntaxReferences.Any(reference =>
+				reference.GetSyntax(cancellationToken) is TypeDeclarationSyntax declaration
+				&& declaration.Modifiers.Any(SyntaxKind.PartialKeyword)) == true;
 	}
 
 	static bool CanSourceGenXaml(XamlProjectItemForIC? xamlItem, Compilation compilation, SourceProductionContext context, AssemblyAttributes xmlnsCache, IDictionary<XmlType, INamedTypeSymbol> typeCache)

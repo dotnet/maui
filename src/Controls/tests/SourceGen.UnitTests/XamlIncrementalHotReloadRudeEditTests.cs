@@ -50,18 +50,28 @@ public class XamlIncrementalHotReloadRudeEditTests : IDisposable
 	static readonly string RudeSyntax = Page("{Count +}", "Two");
 	// Rude edit reported by the generator itself (MAUIX2009), with the same second-label edit.
 	static readonly string RudeUnresolved = Page("{NoSuchMember}", "Two");
+	// Rude edit that only fails type checking (CS1061), with the same second-label edit.
+	static readonly string RudeSemantic = Page("{Count.Nope()}", "Two");
 	// The rude expression is fixed; the second-label edit is kept.
 	static readonly string Fixed = Page("{Count + 1}", "Two");
 	static readonly string FixedThenEdited = Page("{Count + 1}", "Three");
 
 	const string AddedButton = "\n        <Button Text=\"Added\" />";
 
+	public enum RudeEdit { Syntax, GeneratorReported, Semantic }
+
 	[Theory]
-	[InlineData(false)]
-	[InlineData(true)]
-	public void EditAfterRudeEdit_IsDiffedAgainstLastAppliedGeneration(bool generatorReportedError)
+	[InlineData(RudeEdit.Syntax)]
+	[InlineData(RudeEdit.GeneratorReported)]
+	[InlineData(RudeEdit.Semantic)]
+	public void EditAfterRudeEdit_IsDiffedAgainstLastAppliedGeneration(RudeEdit kind)
 	{
-		var rude = generatorReportedError ? RudeUnresolved : RudeSyntax;
+		var rude = kind switch
+		{
+			RudeEdit.Syntax => RudeSyntax,
+			RudeEdit.GeneratorReported => RudeUnresolved,
+			_ => RudeSemantic,
+		};
 		var runs = RunEdits(Applied, rude, Fixed, FixedThenEdited);
 
 		Assert.False(runs[1].Compiles, "the rude edit is expected not to compile");
@@ -136,6 +146,64 @@ public class XamlIncrementalHotReloadRudeEditTests : IDisposable
 		Assert.True(runs[2].Compiles, runs[2].Errors);
 		Assert.Contains("\"Two\"", runs[2].UC, StringComparison.Ordinal);
 		Assert.DoesNotContain("\"Added\"", runs[2].UC, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void ElementAddedWithSemanticRudeEdit_IsAddedOnceTheEditIsFixed()
+	{
+		var runs = RunEdits(
+			Applied,
+			Page("{Count.Nope()}", "One", AddedButton),
+			Page("{Count + 1}", "One", AddedButton));
+
+		Assert.False(runs[1].Compiles);
+		Assert.True(runs[2].Compiles, runs[2].Errors);
+		Assert.Contains("\"Added\"", runs[2].UC, StringComparison.Ordinal);
+	}
+
+	const string ObservableViewModel = """
+		namespace CommunityToolkit.Mvvm.ComponentModel
+		{
+			[System.AttributeUsage(System.AttributeTargets.Field)]
+			public sealed class ObservablePropertyAttribute : System.Attribute { }
+		}
+		namespace CommunityToolkit.Mvvm.Input
+		{
+			[System.AttributeUsage(System.AttributeTargets.Method)]
+			public sealed class RelayCommandAttribute : System.Attribute { }
+		}
+		namespace TestApp
+		{
+			public partial class ViewModel
+			{
+				[CommunityToolkit.Mvvm.ComponentModel.ObservableProperty]
+				private int _count;
+
+				[CommunityToolkit.Mvvm.Input.RelayCommand]
+				private void Save() { }
+			}
+		}
+		""";
+
+	[Fact]
+	public void MembersGeneratedByAnotherGenerator_DoNotRollBack()
+	{
+		// Count and SaveCommand are added by the MVVM Toolkit's generator, which the XAML generator
+		// doesn't see: its generated code doesn't compile on its own, but the app's build does.
+		var compilation = SourceGeneratorDriver.CreateMauiCompilation("TestApp")
+			.AddSyntaxTrees(CSharpSyntaxTree.ParseText(ObservableViewModel));
+		const string button = "\n        <Button Text=\"Added\" Command=\"{Binding SaveCommand}\" />";
+		var runs = RunEdits(compilation,
+			Page("{Count}", "One"),
+			Page("{Count + 1}", "One", button),
+			Page("{Count + 1}", "Two", button));
+
+		Assert.Contains("\"Added\"", runs[1].UC, StringComparison.Ordinal);
+		Assert.Contains("Count + 1", runs[1].UC, StringComparison.Ordinal);
+		// The previous edit was applied: the Button must not be added a second time.
+		Assert.Contains("\"Two\"", runs[2].UC, StringComparison.Ordinal);
+		Assert.DoesNotContain("\"Added\"", runs[2].UC, StringComparison.Ordinal);
+		Assert.DoesNotContain("Count + 1", runs[2].UC, StringComparison.Ordinal);
 	}
 
 	sealed record Generation(string UC, bool Compiles, string Errors);
