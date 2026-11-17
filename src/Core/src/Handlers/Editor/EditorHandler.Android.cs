@@ -77,8 +77,12 @@ namespace Microsoft.Maui.Handlers
 		public static void MapMaxLength(IEditorHandler handler, IEditor editor) =>
 			handler.PlatformView?.UpdateMaxLength(editor);
 
-		public static void MapIsReadOnly(IEditorHandler handler, IEditor editor) =>
+		public static void MapIsReadOnly(IEditorHandler handler, IEditor editor)
+		{
+			handler.UpdateValue(nameof(IEditor.Text));
+
 			handler.PlatformView?.UpdateIsReadOnly(editor);
+		}
 
 		public static void MapIsTextPredictionEnabled(IEditorHandler handler, IEditor editor) =>
 			handler.PlatformView?.UpdateIsTextPredictionEnabled(editor);
@@ -141,6 +145,10 @@ namespace Microsoft.Maui.Handlers
 			if (!e.HasFocus)
 			{
 				VirtualView?.Completed();
+			}
+			else if (VirtualView is not null)
+			{
+				PlatformView.HideSoftInputIfReadOnly(VirtualView, e.HasFocus);
 			}
 		}
 

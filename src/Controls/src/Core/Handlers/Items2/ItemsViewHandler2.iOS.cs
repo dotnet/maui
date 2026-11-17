@@ -313,11 +313,40 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					((scrollDirection == UICollectionViewScrollDirection.Vertical && collectionView.Frame.Height == 0) ||
 					 (scrollDirection == UICollectionViewScrollDirection.Horizontal && collectionView.Frame.Width == 0));
 
+				var measurementWidth = widthConstraint;
+				var measurementHeight = heightConstraint;
+				if (VirtualView is CollectionView and IView view)
+				{
+					static double ResolveMeasurementConstraint(double constraint, double exact, double minimum, double maximum)
+					{
+						// An explicit request or finite maximum can bound an otherwise unbounded probe.
+						return double.IsFinite(exact) || double.IsFinite(maximum)
+							? ViewHandlerExtensions.ResolveConstraints(constraint, exact, minimum, maximum)
+							: constraint;
+					}
+
+					if (scrollDirection == UICollectionViewScrollDirection.Vertical &&
+						!double.IsFinite(widthConstraint))
+					{
+						measurementWidth = ResolveMeasurementConstraint(widthConstraint, view.Width, view.MinimumWidth, view.MaximumWidth);
+					}
+					else if (scrollDirection == UICollectionViewScrollDirection.Horizontal &&
+						!double.IsFinite(heightConstraint))
+					{
+						measurementHeight = ResolveMeasurementConstraint(heightConstraint, view.Height, view.MinimumHeight, view.MaximumHeight);
+					}
+				}
+
 				// When the CollectionView has not yet been added to a window (pre-mount measurement),
 				// UICollectionViewCompositionalLayout hasn't run a layout pass and therefore
 				// CollectionViewContentSize is still zero. Force a layout pass with the given constraints
 				// so the layout can compute actual content size from its items.
-				if (collectionView.Window == null || frameIsZeroInScrollDirection)
+				// Skip unbounded CollectionView cross-axis probes to avoid measuring the synthetic frame.
+				bool canMeasureContent = VirtualView is not CollectionView ||
+					((scrollDirection != UICollectionViewScrollDirection.Horizontal || double.IsFinite(measurementHeight)) &&
+					 (scrollDirection != UICollectionViewScrollDirection.Vertical || double.IsFinite(measurementWidth)));
+
+				if (canMeasureContent && (collectionView.Window == null || frameIsZeroInScrollDirection))
 				{
 					// Local helper to clamp layout constraints to finite, non-negative nfloat values.
 					nfloat ClampConstraint(double constraint, nfloat fallback)
@@ -340,8 +369,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					try
 					{
 						// Give the CollectionView a finite available size so the layout calculates correctly
-						var frameWidth = ClampConstraint(widthConstraint, UIView.UILayoutFittingExpandedSize.Width);
-						var frameHeight = ClampConstraint(heightConstraint, UIView.UILayoutFittingExpandedSize.Height);
+						var frameWidth = ClampConstraint(measurementWidth, UIView.UILayoutFittingExpandedSize.Width);
+						var frameHeight = ClampConstraint(measurementHeight, UIView.UILayoutFittingExpandedSize.Height);
 
 						collectionView.Frame = new CoreGraphics.CGRect(0, 0, frameWidth, frameHeight);
 						collectionView.SetNeedsLayout();
@@ -375,17 +404,53 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				{
 					contentSize.Width = desiredSize.Width;
 
-					// For horizontal layouts, items use FractionalHeight(1f), meaning their height equals
-					// the CollectionView's current frame height. When no items are loaded (Width == 0),
-					// contentSize.Height reflects the container's frame height rather than actual content.
-					// This creates a circular sizing issue in Auto-height containers: the frame grows based
-					// on the incorrect content height and stays locked in even after items load.
-					// Reset to 0 so that MinimumHeight / HeightRequest can determine the correct size.
-					contentSize.Height = 0;
+					// Horizontal items fill the native frame, so its height is not an intrinsic measurement.
+					// Bootstrap unbounded Auto rows from real item content rather than a synthetic frame.
+					contentSize.Height = VirtualView is CollectionView { ItemsLayout: LinearItemsLayout } &&
+						!double.IsFinite(measurementHeight)
+							? MeasureFirstItemHeight()
+							: 0;
 				}
 			}
 
 			return contentSize;
+		}
+
+		double MeasureFirstItemHeight()
+		{
+			var source = Controller.ItemsSource;
+			for (int group = 0; group < source.GroupCount; group++)
+			{
+				if (source.ItemCountInGroup(group) == 0)
+				{
+					continue;
+				}
+
+				using var indexPath = NSIndexPath.Create(group, 0);
+				var item = source[indexPath];
+				if (ItemsView.ItemTemplate is null)
+				{
+					using var cell = new HorizontalDefaultCell2(CGRect.Empty);
+					cell.Label.Text = item.ToString();
+					return cell.Label.IntrinsicContentSize.Height;
+				}
+
+				using var measurementCell = new TemplatedCell2(CGRect.Empty);
+				try
+				{
+					measurementCell.Bind(ItemsView.ItemTemplate, item, ItemsView);
+					return measurementCell.PlatformHandler.VirtualView.Measure(
+						double.PositiveInfinity, double.PositiveInfinity).Height;
+				}
+				finally
+				{
+					var view = measurementCell.PlatformHandler?.VirtualView;
+					measurementCell.Unbind();
+					view?.DisconnectHandlers();
+				}
+			}
+
+			return 0;
 		}
 	}
 }
