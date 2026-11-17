@@ -2265,6 +2265,109 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.False(collectionView.IsAnchored);
 			});
 		}
+
+		// A ScrollTo that doesn't animate stops a scroll under way too, before RecyclerView sets the position it jumps to: a
+		// ScrollToStart or ScrollToEnd the app requests from the RemainingItemsThresholdReached that raises is newer.
+		[Theory(DisplayName = "A ScrollToStart or ScrollToEnd from RemainingItemsThresholdReached as a ScrollTo stops the list wins")]
+		[InlineData(ScrollAnchorMode.Start, ScrollAnchorMode.None)]
+		[InlineData(ScrollAnchorMode.Start, ScrollAnchorMode.Start)]
+		[InlineData(ScrollAnchorMode.End, ScrollAnchorMode.None)]
+		[InlineData(ScrollAnchorMode.End, ScrollAnchorMode.End)]
+		public async Task AScrollToStartOrEndFromRemainingItemsThresholdReachedAsAScrollToStopsTheListWins(ScrollAnchorMode edge, ScrollAnchorMode anchorMode)
+		{
+			SetupBuilder();
+			var items = CreateAnchorItems(40);
+			var toStart = edge == ScrollAnchorMode.Start;
+			var collectionView = CreateAnchorCollectionView(items, anchorMode);
+
+			// The threshold is reached with the tenth item in view.
+			collectionView.Header = null;
+			collectionView.Footer = null;
+			collectionView.RemainingItemsThreshold = 30;
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				// The scroll goes away from the edge the app's ScrollToStart or ScrollToEnd then takes the list back to.
+				if (toStart)
+				{
+					await AssertEventually(() => GetDistanceFromStart(handler) <= AnchorTolerance, timeout: 3000, message: "The list should open at its start.");
+				}
+				else
+				{
+					if (anchorMode != ScrollAnchorMode.End)
+					{
+						await AssertEventually(() => GetDistanceFromStart(handler) <= AnchorTolerance, timeout: 3000, message: "The list should open at its start.");
+						collectionView.ScrollTo(items.Count - 1, position: ScrollToPosition.End, animate: false);
+					}
+
+					await AssertAtEnd(handler, "The list should be at its end.");
+				}
+
+				var stopped = false;
+				var scrolledToEdge = false;
+				collectionView.RemainingItemsThresholdReached += (sender, args) =>
+				{
+					if (stopped && !scrolledToEdge)
+					{
+						scrolledToEdge = true;
+						if (toStart)
+						{
+							collectionView.ScrollToStart(animate: false);
+						}
+						else
+						{
+							collectionView.ScrollToEnd(animate: false);
+						}
+					}
+				};
+
+				// Past the threshold, which RecyclerView raises once it's idle, the app scrolls to an item without animating, which
+				// shows it with the least scrolling: that stops the scroll.
+				var passedThreshold = false;
+				collectionView.Scrolled += (sender, args) =>
+				{
+					if (stopped)
+					{
+						return;
+					}
+
+					if (passedThreshold)
+					{
+						stopped = true;
+						collectionView.ScrollTo(20, animate: false);
+					}
+					else if (args.LastVisibleItemIndex >= 12 && (toStart ? args.VerticalDelta > 0 : args.VerticalDelta < 0))
+					{
+						passedThreshold = true;
+					}
+				};
+
+				if (toStart)
+				{
+					collectionView.ScrollTo(items.Count - 1, position: ScrollToPosition.End, animate: true);
+				}
+				else
+				{
+					collectionView.ScrollTo(0, position: ScrollToPosition.Start, animate: true);
+				}
+
+				await AssertEventually(() => stopped, timeout: 3000, message: "The scroll should pass the threshold.");
+				Assert.True(scrolledToEdge, "Stopping the scroll should raise RemainingItemsThresholdReached.");
+
+				await Task.Delay(1500);
+				if (toStart)
+				{
+					Assert.True(GetDistanceFromStart(handler) <= AnchorTolerance, $"ScrollToStart should show the start. Position: {GetScrollPosition(handler)}.");
+				}
+				else
+				{
+					var distance = GetDistanceToEnd(handler);
+					Assert.True(Math.Abs(distance) <= AnchorTolerance, $"ScrollToEnd should show the end. Distance to the end: {distance}.");
+				}
+
+				Assert.Equal(anchorMode != ScrollAnchorMode.None, collectionView.IsAnchored);
+			});
+		}
 #endif
 
 		[Theory(DisplayName = "Changing AnchorMode as ScrollToEnd reports following the end shows the edge it selects")]

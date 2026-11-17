@@ -524,9 +524,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			// A scroll the app requests is judged by where it lands: the anchor doesn't scroll it back to the end.
+			var request = _scrollRequests;
 			if (isItem)
 			{
-				_scrollRequests++;
+				request = ++_scrollRequests;
 				_scrollAnchor?.ScrollRequested(args.IsAnimated);
 			}
 
@@ -552,6 +553,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 			else
 			{
+				// A jump stops a scroll under way, and that raises a pending RemainingItemsThresholdReached as the view goes idle,
+				// before RecyclerView sets the position it jumps to: a scroll the app requests from there is newer, and wins. So
+				// the view stops first, as for ScrollToStart and ScrollToEnd (see StartScrollToEdge).
+				StopScroll();
+				if (request != _scrollRequests)
+				{
+					return;
+				}
+
 				ScrollHelper.JumpScrollToPosition(position, args.ScrollToPosition);
 			}
 		}
