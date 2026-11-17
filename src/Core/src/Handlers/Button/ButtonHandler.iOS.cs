@@ -58,13 +58,13 @@ namespace Microsoft.Maui.Handlers
 			base.DisconnectHandler(platformView);
 		}
 
-		internal void UpdateTextAlignment(TextAlignment? horizontal, TextAlignment? vertical)
+		internal void UpdateTextAlignment(TextAlignment? horizontal, TextAlignment? vertical, bool updateHorizontal = true, bool updateVertical = true)
 		{
 			if (PlatformView is not { } platformView)
 				return;
 
 			var imageGroup = platformView.CurrentImage is not null && !string.IsNullOrEmpty(platformView.CurrentTitle);
-			var horizontalAlignment = horizontal.HasValue
+			var horizontalAlignment = !updateHorizontal ? platformView.HorizontalAlignment : horizontal.HasValue
 				? horizontal.Value switch
 				{
 					TextAlignment.Justify => UIControlContentHorizontalAlignment.Fill,
@@ -74,14 +74,16 @@ namespace Microsoft.Maui.Handlers
 					_ => UIControlContentHorizontalAlignment.Center
 				}
 				: _horizontalTextAlignmentSet ? _defaultHorizontalAlignment : platformView.HorizontalAlignment;
-			var verticalAlignment = vertical.HasValue
+			var verticalAlignment = !updateVertical ? platformView.VerticalAlignment : vertical.HasValue
 				? imageGroup ? UIControlContentVerticalAlignment.Center : vertical.Value.ToPlatformVertical()
 				: _verticalTextAlignmentSet ? _defaultVerticalAlignment : platformView.VerticalAlignment;
-			var titleAlignment = horizontal.HasValue
+			var titleAlignment = !updateHorizontal ? platformView.TitleLabel.TextAlignment : horizontal.HasValue
 				? horizontal.Value.ToPlatformHorizontal(platformView.EffectiveUserInterfaceLayoutDirection)
 				: _horizontalTextAlignmentSet ? _defaultTitleAlignment : platformView.TitleLabel.TextAlignment;
-			_horizontalTextAlignmentSet = horizontal.HasValue;
-			_verticalTextAlignmentSet = vertical.HasValue;
+			if (updateHorizontal)
+				_horizontalTextAlignmentSet = horizontal.HasValue;
+			if (updateVertical)
+				_verticalTextAlignmentSet = vertical.HasValue;
 			if (platformView.HorizontalAlignment != horizontalAlignment ||
 				platformView.VerticalAlignment != verticalAlignment ||
 				platformView.TitleLabel.TextAlignment != titleAlignment)
@@ -273,6 +275,7 @@ namespace Microsoft.Maui.Handlers
 				// To ensure SizeThatFits is correct, and avoid race conditions, we have to force a layout.
 				button.LayoutIfNeeded();
 				Handler.UpdateValue(nameof(ITextAlignment.HorizontalTextAlignment));
+				Handler.UpdateValue(nameof(ITextAlignment.VerticalTextAlignment));
 			}
 		}
 	}

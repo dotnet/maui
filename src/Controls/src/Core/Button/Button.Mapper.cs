@@ -30,8 +30,8 @@ namespace Microsoft.Maui.Controls
 
 			ButtonHandler.Mapper.ReplaceMapping<Button, IButtonHandler>(nameof(TextTransform), MapText);
 			ButtonHandler.Mapper.ReplaceMapping<Button, IButtonHandler>(nameof(Button.LineBreakMode), MapLineBreakMode);
-			ButtonHandler.Mapper.ReplaceMapping<Button, IButtonHandler>(nameof(HorizontalTextAlignment), MapTextAlignment);
-			ButtonHandler.Mapper.ReplaceMapping<Button, IButtonHandler>(nameof(VerticalTextAlignment), MapTextAlignment);
+			ButtonHandler.Mapper.ReplaceMapping<Button, IButtonHandler>(nameof(HorizontalTextAlignment), MapHorizontalTextAlignment);
+			ButtonHandler.Mapper.ReplaceMapping<Button, IButtonHandler>(nameof(VerticalTextAlignment), MapVerticalTextAlignment);
 		}
 
 		/// <summary>Maps explicitly set text alignment to the Android, iOS, and Windows button implementations.</summary>
@@ -39,16 +39,30 @@ namespace Microsoft.Maui.Controls
 		/// <param name="button">The button whose alignment is being updated.</param>
 		public static void MapTextAlignment(IButtonHandler handler, Button button)
 		{
+			MapHorizontalTextAlignment(handler, button);
+			MapVerticalTextAlignment(handler, button);
+		}
+
+		static void MapHorizontalTextAlignment(IButtonHandler handler, Button button) =>
+			MapTextAlignment(handler, button, true);
+
+		static void MapVerticalTextAlignment(IButtonHandler handler, Button button) =>
+			MapTextAlignment(handler, button, false);
+
+		static void MapTextAlignment(IButtonHandler handler, Button button, bool horizontal)
+		{
 #if ANDROID || IOS || MACCATALYST || WINDOWS
 			if (handler is ButtonHandler buttonHandler)
 			{
 #if WINDOWS
-				handler.UpdateValue(nameof(ContentLayout));
+				if (horizontal)
+					handler.UpdateValue(nameof(ContentLayout));
 #endif
 				var hasText = !string.IsNullOrEmpty(button.Text);
 				buttonHandler.UpdateTextAlignment(
 					hasText && button.IsSetExplicitly(HorizontalTextAlignmentProperty) ? button.HorizontalTextAlignment : null,
-					hasText && button.IsSetExplicitly(VerticalTextAlignmentProperty) ? button.VerticalTextAlignment : null);
+					hasText && button.IsSetExplicitly(VerticalTextAlignmentProperty) ? button.VerticalTextAlignment : null,
+					updateHorizontal: horizontal, updateVertical: !horizontal);
 			}
 #endif
 		}

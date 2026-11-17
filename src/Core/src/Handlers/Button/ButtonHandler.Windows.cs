@@ -23,6 +23,7 @@ namespace Microsoft.Maui.Handlers
 		TextBlock? _alignmentTextBlock;
 		bool _horizontalTextAlignmentSet;
 		bool _verticalTextAlignmentSet;
+		bool _textHorizontalAlignmentSet;
 
 		protected override Button CreatePlatformView() => new MauiButton();
 
@@ -69,33 +70,38 @@ namespace Microsoft.Maui.Handlers
 			base.DisconnectHandler(platformView);
 		}
 
-		internal void UpdateTextAlignment(TextAlignment? horizontal, TextAlignment? vertical)
+		internal void UpdateTextAlignment(TextAlignment? horizontal, TextAlignment? vertical, bool updateHorizontal = true, bool updateVertical = true)
 		{
 			if (PlatformView is not { } platformView ||
 				_alignmentContent is not { } content ||
 				_alignmentTextBlock is not { } textBlock)
 				return;
 
-			if (horizontal is { } horizontalAlignment)
+			if (updateHorizontal && horizontal is { } horizontalAlignment)
 			{
 				// WinUI mirrors the content panel in RTL; text itself requires physical line alignment.
 				platformView.HorizontalContentAlignment = content.HorizontalAlignment = horizontalAlignment.ToPlatformHorizontalAlignment();
 				textBlock.TextAlignment = horizontalAlignment.ToPlatform(platformView.FlowDirection == Microsoft.UI.Xaml.FlowDirection.LeftToRight);
 				if (horizontalAlignment == TextAlignment.Justify)
+				{
+					if (!_textHorizontalAlignmentSet)
+						_defaultTextHorizontalAlignment = CaptureAlignmentValue(textBlock, FrameworkElement.HorizontalAlignmentProperty);
 					textBlock.HorizontalAlignment = HorizontalAlignment.Stretch;
+					_textHorizontalAlignmentSet = true;
+				}
 				else
-					RestoreAlignmentValue(textBlock, FrameworkElement.HorizontalAlignmentProperty, _defaultTextHorizontalAlignment);
+					RestoreTextHorizontalAlignment();
 				_horizontalTextAlignmentSet = true;
 			}
-			else
+			else if (updateHorizontal)
 				RestoreHorizontalTextAlignment(platformView);
 
-			if (vertical is { } verticalAlignment)
+			if (updateVertical && vertical is { } verticalAlignment)
 			{
 				platformView.VerticalContentAlignment = content.VerticalAlignment = verticalAlignment.ToPlatformVerticalAlignment();
 				_verticalTextAlignmentSet = true;
 			}
-			else
+			else if (updateVertical)
 				RestoreVerticalTextAlignment(platformView);
 		}
 
@@ -110,7 +116,6 @@ namespace Microsoft.Maui.Handlers
 				_defaultPanelHorizontalAlignment = CaptureAlignmentValue(content, FrameworkElement.HorizontalAlignmentProperty);
 				_defaultPanelVerticalAlignment = CaptureAlignmentValue(content, FrameworkElement.VerticalAlignmentProperty);
 				_defaultTextAlignment = CaptureAlignmentValue(textBlock, TextBlock.TextAlignmentProperty);
-				_defaultTextHorizontalAlignment = CaptureAlignmentValue(textBlock, FrameworkElement.HorizontalAlignmentProperty);
 			}
 		}
 
@@ -125,9 +130,19 @@ namespace Microsoft.Maui.Handlers
 			if (_alignmentTextBlock is { } textBlock)
 			{
 				RestoreAlignmentValue(textBlock, TextBlock.TextAlignmentProperty, _defaultTextAlignment);
-				RestoreAlignmentValue(textBlock, FrameworkElement.HorizontalAlignmentProperty, _defaultTextHorizontalAlignment);
+				RestoreTextHorizontalAlignment();
 			}
 			_horizontalTextAlignmentSet = false;
+		}
+
+		void RestoreTextHorizontalAlignment()
+		{
+			if (!_textHorizontalAlignmentSet || _alignmentTextBlock is not { } textBlock)
+				return;
+
+			RestoreAlignmentValue(textBlock, FrameworkElement.HorizontalAlignmentProperty, _defaultTextHorizontalAlignment);
+			_defaultTextHorizontalAlignment = null;
+			_textHorizontalAlignmentSet = false;
 		}
 
 		void RestoreVerticalTextAlignment(Button platformView)
@@ -163,6 +178,7 @@ namespace Microsoft.Maui.Handlers
 			RestoreVerticalTextAlignment(platformView);
 			CaptureAlignmentContent(platformView);
 			UpdateValue(nameof(ITextAlignment.HorizontalTextAlignment));
+			UpdateValue(nameof(ITextAlignment.VerticalTextAlignment));
 		}
 
 		void OnAlignmentFlowDirectionChanged(DependencyObject sender, DependencyProperty property)

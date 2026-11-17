@@ -11,12 +11,84 @@ using Microsoft.UI.Xaml.Data;
 using Xunit;
 using Controls = Microsoft.Maui.Controls;
 using MauiTextAlignment = Microsoft.Maui.TextAlignment;
+using HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment;
+using VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment;
 using WRect = global::Windows.Foundation.Rect;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	public partial class ButtonTests
 	{
+		[Fact]
+		public async Task JustifyRestoresTheChildBindingItActuallyOverrides()
+		{
+			var button = new Controls.Button { Text = "Native child", HorizontalTextAlignment = MauiTextAlignment.Center };
+			var handler = await CreateHandlerAsync<ButtonHandler>(button);
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var platform = handler.PlatformView;
+				var text = Assert.IsType<TextBlock>(platform.GetContent<TextBlock>());
+				var source = new Border { HorizontalAlignment = HorizontalAlignment.Right };
+				text.SetBinding(FrameworkElement.HorizontalAlignmentProperty, new Binding
+				{
+					Source = source,
+					Path = new PropertyPath(nameof(FrameworkElement.HorizontalAlignment)),
+					Mode = BindingMode.OneWay
+				});
+				button.HorizontalTextAlignment = MauiTextAlignment.End;
+				button.Text = "Updated native child";
+				Assert.Same(source, text.GetBindingExpression(FrameworkElement.HorizontalAlignmentProperty)?.ParentBinding.Source);
+				button.HorizontalTextAlignment = MauiTextAlignment.Justify;
+				Assert.Equal(HorizontalAlignment.Stretch, text.HorizontalAlignment);
+				source.HorizontalAlignment = HorizontalAlignment.Left;
+				button.HorizontalTextAlignment = MauiTextAlignment.Start;
+				Assert.Same(source, text.GetBindingExpression(FrameworkElement.HorizontalAlignmentProperty)?.ParentBinding.Source);
+				Assert.Equal(HorizontalAlignment.Left, text.HorizontalAlignment);
+				button.HorizontalTextAlignment = MauiTextAlignment.Justify;
+				button.ClearValue(Controls.Button.HorizontalTextAlignmentProperty);
+				Assert.Same(source, text.GetBindingExpression(FrameworkElement.HorizontalAlignmentProperty)?.ParentBinding.Source);
+				Assert.Equal(HorizontalAlignment.Left, text.HorizontalAlignment);
+				button.HorizontalTextAlignment = MauiTextAlignment.Justify;
+				handler.DisconnectHandler();
+				Assert.Same(source, text.GetBindingExpression(FrameworkElement.HorizontalAlignmentProperty)?.ParentBinding.Source);
+			});
+		}
+
+		[Fact]
+		public async Task LegacyMapperRefreshesImageSpacingWhenTextBecomesVisible()
+		{
+			var button = new Controls.Button
+			{
+				Text = string.Empty,
+				ImageSource = "red.png",
+				ContentLayout = new Controls.Button.ButtonContentLayout(Controls.Button.ButtonContentLayout.ImagePosition.Left, 18)
+			};
+			await AttachAndRun<LegacyAlignmentButtonHandler>(button, async handler =>
+			{
+				var platform = Assert.IsAssignableFrom<Button>(handler.PlatformView);
+				var image = Assert.IsType<Image>(platform.GetContent<Image>());
+				var text = Assert.IsType<TextBlock>(platform.GetContent<TextBlock>());
+				await AssertHelpers.AssertEventually(() => image.Source is not null && image.ActualWidth > 0);
+				button.Text = "Now visible";
+				platform.UpdateLayout();
+				var imageBounds = GetAlignmentBounds(image, platform);
+				var textBounds = GetAlignmentBounds(text, platform);
+				Assert.InRange(Math.Abs(textBounds.X - imageBounds.Right - button.ContentLayout.Spacing), 0, 1);
+			});
+		}
+
+		class LegacyAlignmentButtonHandler : ButtonHandler
+		{
+			public LegacyAlignmentButtonHandler() : base(new PropertyMapper<Controls.Button, IButtonHandler>(ViewHandler.ViewMapper)
+			{
+				[nameof(Controls.Button.Text)] = Controls.Button.MapText,
+				[nameof(Controls.Button.ImageSource)] = Controls.Button.MapImageSource,
+				[nameof(Controls.Button.ContentLayout)] = Controls.Button.MapContentLayout
+			})
+			{
+			}
+		}
+
 		[Theory]
 		[InlineData(MauiTextAlignment.Start)]
 		[InlineData(MauiTextAlignment.Center)]
@@ -225,7 +297,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await AttachAndRun<ButtonHandler>(button, async handler =>
 			{
-				var platform = handler.PlatformView;
+				var platform = Assert.IsAssignableFrom<Microsoft.UI.Xaml.Controls.Button>(handler.PlatformView);
 				var content = Assert.IsAssignableFrom<FrameworkElement>(platform.Content);
 				var text = Assert.IsType<TextBlock>(platform.GetContent<TextBlock>());
 				var image = Assert.IsType<Image>(platform.GetContent<Image>());

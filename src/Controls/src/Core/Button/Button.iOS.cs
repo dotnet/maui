@@ -192,13 +192,8 @@ namespace Microsoft.Maui.Controls
 			nfloat? justifiedTitleWidth = null;
 
 			var image = platformButton.CurrentImage;
-			if (button.Handler is ButtonHandler buttonHandler)
-			{
-				var hasText = !string.IsNullOrEmpty(button.Text);
-				buttonHandler.UpdateTextAlignment(
-					hasText && button.IsSetExplicitly(HorizontalTextAlignmentProperty) ? button.HorizontalTextAlignment : null,
-					hasText && button.IsSetExplicitly(VerticalTextAlignmentProperty) ? button.VerticalTextAlignment : null);
-			}
+			button.Handler?.UpdateValue(nameof(HorizontalTextAlignment));
+			button.Handler?.UpdateValue(nameof(VerticalTextAlignment));
 
 			if (image is not null && !string.IsNullOrEmpty(platformButton.CurrentTitle))
 			{
@@ -522,6 +517,7 @@ namespace Microsoft.Maui.Controls
 			handler.PlatformView?.UpdateText(button);
 			handler.UpdateValue(nameof(CharacterSpacing));
 			handler.UpdateValue(nameof(HorizontalTextAlignment));
+			handler.UpdateValue(nameof(VerticalTextAlignment));
 		}
 
 		internal static void MapBorderWidth(IButtonHandler handler, Button button)

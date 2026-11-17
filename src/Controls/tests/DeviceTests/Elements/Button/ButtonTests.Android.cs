@@ -20,6 +20,38 @@ namespace Microsoft.Maui.DeviceTests
 	public partial class ButtonTests
 	{
 		[Fact]
+		public async Task HorizontalAlignmentPreservesVerticalMapperCustomization()
+		{
+			var button = new Button
+			{
+				Text = "Customized title",
+				VerticalTextAlignment = TextAlignment.Start
+			};
+			var handler = await CreateHandlerAsync<CustomizedAlignmentButtonHandler>(button);
+			await InvokeOnMainThreadAsync(() =>
+			{
+				Assert.Equal(GravityFlags.Bottom, handler.PlatformView.Gravity & GravityFlags.VerticalGravityMask);
+				button.HorizontalTextAlignment = TextAlignment.End;
+				Assert.Equal(GravityFlags.Bottom, handler.PlatformView.Gravity & GravityFlags.VerticalGravityMask);
+			});
+		}
+
+		class CustomizedAlignmentButtonHandler : ButtonHandler
+		{
+			public CustomizedAlignmentButtonHandler() : base(CreateMapper())
+			{
+			}
+
+			static IPropertyMapper CreateMapper()
+			{
+				var mapper = new PropertyMapper<Button, IButtonHandler>(ButtonHandler.Mapper);
+				mapper.AppendToMapping(nameof(Button.VerticalTextAlignment), (handler, button) =>
+					handler.PlatformView.Gravity = (handler.PlatformView.Gravity & ~GravityFlags.VerticalGravityMask) | GravityFlags.Bottom);
+				return mapper;
+			}
+		}
+
+		[Fact]
 		public async Task NativeAlignmentIsNotRewrittenWhenUnset()
 		{
 			var button = new Button { Text = "Initial title" };

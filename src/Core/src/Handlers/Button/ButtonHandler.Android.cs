@@ -90,14 +90,14 @@ namespace Microsoft.Maui.Handlers
 			base.DisconnectHandler(platformView);
 		}
 
-		internal void UpdateTextAlignment(TextAlignment? horizontal, TextAlignment? vertical)
+		internal void UpdateTextAlignment(TextAlignment? horizontal, TextAlignment? vertical, bool updateHorizontal = true, bool updateVertical = true)
 		{
 			if (PlatformView is not { } platformView)
 				return;
 
 			const GravityFlags horizontalMask = GravityFlags.HorizontalGravityMask | GravityFlags.RelativeLayoutDirection;
 			var gravity = platformView.Gravity;
-			if (horizontal.HasValue || _horizontalTextAlignmentSet)
+			if (updateHorizontal && (horizontal.HasValue || _horizontalTextAlignmentSet))
 			{
 				gravity = (gravity & ~horizontalMask) | (horizontal?.ToHorizontalGravityFlags() ?? (_defaultGravity & horizontalMask));
 				platformView.TextAlignment = horizontal?.ToTextAlignment() ?? _defaultTextAlignment;
@@ -106,13 +106,15 @@ namespace Microsoft.Maui.Handlers
 						? horizontal == TextAlignment.Justify ? global::Android.Text.JustificationMode.InterWord : global::Android.Text.JustificationMode.None
 						: _defaultJustificationMode;
 			}
-			if (vertical.HasValue || _verticalTextAlignmentSet)
+			if (updateVertical && (vertical.HasValue || _verticalTextAlignmentSet))
 				gravity = (gravity & ~GravityFlags.VerticalGravityMask) | (vertical?.ToVerticalGravityFlags() ?? (_defaultGravity & GravityFlags.VerticalGravityMask));
 			platformView.Gravity = gravity;
-			_horizontalTextAlignmentSet = horizontal.HasValue;
-			_verticalTextAlignmentSet = vertical.HasValue;
+			if (updateHorizontal)
+				_horizontalTextAlignmentSet = horizontal.HasValue;
+			if (updateVertical)
+				_verticalTextAlignmentSet = vertical.HasValue;
 			if (platformView is MauiMaterialButton mauiButton)
-				mauiButton.AlignTextAndImage = horizontal.HasValue || vertical.HasValue;
+				mauiButton.AlignTextAndImage = _horizontalTextAlignmentSet || _verticalTextAlignmentSet;
 			platformView.Invalidate();
 		}
 
