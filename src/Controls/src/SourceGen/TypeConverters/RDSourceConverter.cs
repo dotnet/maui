@@ -13,6 +13,10 @@ class RDSourceConverter : ISGTypeConverter
 {
 	const string GetResourcePathUriScheme = "maui://";
 
+	/// <summary>
+	/// Mirrors <c>ResourceDictionary.RDSourceTypeConverter.GetResourcePath</c> so resource paths can be
+	/// resolved at generation time instead of calling that internal runtime API from generated code.
+	/// </summary>
 	internal static string GetResourcePath(string value, string rootTargetPath)
 	{
 		var uri = new Uri(value, UriKind.RelativeOrAbsolute);
