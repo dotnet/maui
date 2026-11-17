@@ -165,8 +165,13 @@ tracked toolset or shared build infrastructure.
 Stable Mono ToolChain and Emscripten workload manifests are published to
 NuGet.org. `src/DotNet/Dependencies/Workloads.csproj` adds that source only when
 restoring final runtime manifests; prerelease manifests retain the configured
-build feeds. Keep the pinned versions unchanged when repairing a missing-source
-`NU1102` failure rather than substituting the nearest older RTM package.
+build feeds. Official Pack macOS stages the exact restored runtime-manifest
+`.nupkg` files in `MacNativeArtifacts`. Pack Windows sets
+`RuntimeManifestPackageSource` to that transferred local source instead of
+contacting NuGet.org through CFSClean. Public/local builds keep the NuGet.org
+default. Keep the pinned versions unchanged when repairing a missing-source
+`NU1102` failure rather than substituting the nearest older RTM package or
+assuming SDK-bundled manifests with the same version contain identical packs.
 
 Dependabot excludes these packages to avoid partial toolset upgrades. It also
 excludes `Magick.NET-Q8-AnyCPU` major version updates: version 15 changed screenshot
