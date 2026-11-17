@@ -861,6 +861,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				? itemsView.AnchorMode & (ScrollAnchorMode.Start | ScrollAnchorMode.End)
 				: ScrollAnchorMode.None;
 
+			// A layout that doesn't scroll vertically isn't anchored (see RecyclerViewScrollAnchor): there, an edge the view starts
+			// to follow isn't a scroll, and a scroll the app requested carries on to where it was going.
+			var scrollsToEdge = GetLayoutManager()?.CanScrollVertically() != false;
+
 			if (mode == ScrollAnchorMode.None)
 			{
 				// Turning anchoring off only stops following. It isn't a scroll: a scroll the app requested carries on to where
@@ -871,7 +875,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			else if (_scrollAnchor is null)
 			{
 				// It scrolls to the edge it selects: it's newer than any scroll requested before.
-				_scrollRequests++;
+				if (scrollsToEdge)
+				{
+					_scrollRequests++;
+				}
+
 				var scrollAnchor = new RecyclerViewScrollAnchor(this, itemsView, mode);
 				_scrollAnchor = scrollAnchor;
 				if (ItemsViewAdapter is not null)
@@ -883,7 +891,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 			else if (_scrollAnchor.Edges != mode)
 			{
-				_scrollRequests++;
+				if (scrollsToEdge)
+				{
+					_scrollRequests++;
+				}
+
 				_scrollAnchor.UpdateMode(mode);
 			}
 		}

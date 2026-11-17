@@ -965,11 +965,10 @@ namespace Microsoft.Maui.DeviceTests
 					}
 				};
 
-				// UIKit reports that the animation ended before it got to the start.
+				// UIKit stops the animation short of the start, as it measures the rows it brings into view on the way: they're
+				// estimated at 30 high, and 40 high. ScrollToStart goes the rest of the way once UIKit reports that it ended.
 				collectionView.ScrollToStart(animate: true);
-				var platformView = handler.Controller.CollectionView;
-				((UIKit.UICollectionViewDelegate)platformView.Delegate).ScrollAnimationEnded(platformView);
-				Assert.True(scrolledToEnd, "ScrollToStart should go the rest of the way to the start.");
+				await AssertEventually(() => scrolledToEnd, timeout: 5000, message: "ScrollToStart should go the rest of the way to the start.");
 
 				// The end moves past where the animation of ScrollToEnd stops: it goes the rest of the way once that ends.
 				items[^1].Height = 120;
@@ -1237,6 +1236,140 @@ namespace Microsoft.Maui.DeviceTests
 				// Long enough for the animation to end, and for a scroll back to the item, had its end started one.
 				await Task.Delay(1000);
 				Assert.True(GetDistanceFromStart(handler) < distanceAtItem / 2, $"The list shouldn't scroll back to the item. Distance from the start: {GetDistanceFromStart(handler)}, at the item: {distanceAtItem}.");
+			});
+		}
+
+		// An animated ScrollToStart or ScrollToEnd of a list at that edge already has nowhere to go: UIKit doesn't animate, and
+		// never reports an end. The list follows the edge from where it is, and a scroll away from it right after, as code
+		// moving the native view makes, stops it following.
+		[Theory(DisplayName = "An animated ScrollToStart or ScrollToEnd of a list at that edge lets a scroll right after it take the list away")]
+		[InlineData(ScrollAnchorMode.Start)]
+		[InlineData(ScrollAnchorMode.End)]
+		public async Task AnAnimatedScrollToAnEdgeTheListIsAtLetsAScrollRightAfterItTakeTheListAway(ScrollAnchorMode edge)
+		{
+			SetupBuilder();
+			var items = CreateAnchorItems(40);
+			var toStart = edge == ScrollAnchorMode.Start;
+			var collectionView = CreateAnchorCollectionView(items, edge);
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				double Distance() => toStart ? GetDistanceFromStart(handler) : GetDistanceToEnd(handler);
+				if (toStart)
+				{
+					await AssertEventually(() => GetDistanceFromStart(handler) <= AnchorTolerance, timeout: 3000, message: "The list should open at its start.");
+				}
+				else
+				{
+					await AssertAtEnd(handler, "The list should open at its end.");
+				}
+
+				// Laid out where it is.
+				await Task.Delay(300);
+
+				if (toStart)
+				{
+					collectionView.ScrollToStart(animate: true);
+				}
+				else
+				{
+					collectionView.ScrollToEnd(animate: true);
+				}
+
+				Assert.True(collectionView.IsAnchored, "The list should follow the edge it's at.");
+
+				// Code scrolls the native view 200 away from the edge. The rows it brings into view are measured, which can only move
+				// the end further away.
+				var platformView = handler.Controller.CollectionView;
+				platformView.SetContentOffset(new CoreGraphics.CGPoint(platformView.ContentOffset.X, platformView.ContentOffset.Y + (toStart ? 200 : -200)), false);
+
+				await Task.Delay(500);
+				Assert.True(Distance() >= 200 - AnchorTolerance, $"The list should stay where the scroll took it. Distance from the edge: {Distance()}.");
+				Assert.False(collectionView.IsAnchored, "Scrolled away, the list shouldn't follow the edge.");
+
+				// The content growing doesn't take the list back to the edge.
+				items.Add(new AnchorItem("New", 40));
+				await Task.Delay(500);
+				Assert.True(Distance() >= 150, $"The list shouldn't be taken back to the edge. Distance from the edge: {Distance()}.");
+				Assert.False(collectionView.IsAnchored);
+			});
+		}
+
+		// An animated ScrollToStart of a list that doesn't follow its start goes the rest of the way once its animation ends: UIKit
+		// stops it short as it measures the rows it brings into view above. A scroll that stops it on its way, as code moving the
+		// native view makes, without animating or animated, leaves the list where that scroll took it.
+		[Theory(DisplayName = "A scroll that stops an animated ScrollToStart of a list that doesn't follow its start leaves the list where it took it")]
+		[InlineData(ScrollAnchorMode.None, false)]
+		[InlineData(ScrollAnchorMode.None, true)]
+		[InlineData(ScrollAnchorMode.End, false)]
+		[InlineData(ScrollAnchorMode.End, true)]
+		public async Task AScrollThatStopsAnAnimatedScrollToStartOfAListThatDoesNotFollowItsStartLeavesTheListWhereItTookIt(ScrollAnchorMode anchorMode, bool animated)
+		{
+			SetupBuilder();
+			var items = CreateAnchorItems(40);
+			var collectionView = CreateAnchorCollectionView(items, anchorMode);
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				if (anchorMode != ScrollAnchorMode.End)
+				{
+					await AssertEventually(() => GetDistanceFromStart(handler) <= AnchorTolerance, timeout: 3000, message: "The list should open at its start.");
+					collectionView.ScrollToEnd(animate: false);
+				}
+
+				await AssertAtEnd(handler, "The list should be at its end.");
+				await Task.Delay(300);
+				var extent = GetDistanceFromStart(handler);
+
+				collectionView.ScrollToStart(animate: true);
+
+				// Code scrolls the native view to 100 short of the end as the animation starts.
+				var platformView = handler.Controller.CollectionView;
+				var inset = platformView.AdjustedContentInset;
+				var end = Math.Max(-inset.Top, platformView.ContentSize.Height + inset.Bottom - platformView.Bounds.Height);
+				platformView.SetContentOffset(new CoreGraphics.CGPoint(platformView.ContentOffset.X, end - 100), animated);
+
+				await AssertEventually(() => GetDistanceToEnd(handler) >= 100 - AnchorTolerance, timeout: 3000, message: "The scroll should take the list to 100 short of its end.");
+
+				// Long enough for the animation the scroll stopped to end, and for a scroll to the start, had its end started one.
+				// UIKit can move the end further away as it measures the rows the scroll brought into view.
+				await Task.Delay(1000);
+				var distance = GetDistanceToEnd(handler);
+				Assert.True(distance >= 100 - AnchorTolerance && distance < extent / 2, $"The list should stay where the scroll took it, near its end. Distance to the end: {distance}, from the start: {GetDistanceFromStart(handler)}.");
+				Assert.False(collectionView.IsAnchored);
+			});
+		}
+
+		// A scroll UIKit animates away from the end, as code moving the native view or a tap on the status bar make, scrolls as a
+		// fling does: the content growing as it starts doesn't take the list back to the end, which would stop the animation.
+		[Fact(DisplayName = "A scroll UIKit animates away from the end isn't stopped by the content growing as it starts")]
+		public async Task AScrollUIKitAnimatesAwayFromTheEndIsNotStoppedByTheContentGrowingAsItStarts()
+		{
+			SetupBuilder();
+			var items = CreateAnchorItems(40);
+			var collectionView = CreateAnchorCollectionView(items, ScrollAnchorMode.End);
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				await AssertAtEnd(handler, "The list should open at its end.");
+				await Task.Delay(300);
+
+				// The last item grows, as a streamed answer does, as code animates the native view to 100 short of the end.
+				var platformView = handler.Controller.CollectionView;
+				var inset = platformView.AdjustedContentInset;
+				var end = Math.Max(-inset.Top, platformView.ContentSize.Height + inset.Bottom - platformView.Bounds.Height);
+				items[^1].Height += 50;
+				platformView.SetContentOffset(new CoreGraphics.CGPoint(platformView.ContentOffset.X, end - 100), true);
+
+				// The animation goes where it was going, 100 short of the end that UIKit moves as it measures the rows it brings into
+				// view, and as the content grows past the view.
+				await AssertEventually(() => !collectionView.IsAnchored && GetDistanceToEnd(handler) >= 100, timeout: 3000, message: "The scroll should take the list 100 short of its end, or further.");
+
+				// Long enough for the animation to end.
+				await Task.Delay(1000);
+				var distance = GetDistanceToEnd(handler);
+				Assert.True(distance >= 100 && distance <= 300, $"The list should stay where the scroll took it. Distance to the end: {distance}.");
+				Assert.False(collectionView.IsAnchored);
 			});
 		}
 #endif
@@ -2366,6 +2499,90 @@ namespace Microsoft.Maui.DeviceTests
 				}
 
 				Assert.Equal(anchorMode != ScrollAnchorMode.None, collectionView.IsAnchored);
+			});
+		}
+
+		// A layout that doesn't scroll vertically isn't anchored: a change of AnchorMode doesn't scroll it. A ScrollTo that stops a
+		// scroll, which raises RemainingItemsThresholdReached, from which the app changes AnchorMode, still goes to its item.
+		[Theory(DisplayName = "A ScrollTo that stops a horizontal list goes to its item when the app changes AnchorMode from RemainingItemsThresholdReached")]
+		[InlineData(ScrollAnchorMode.None)]
+		[InlineData(ScrollAnchorMode.Start)]
+		public async Task AScrollToThatStopsAHorizontalListGoesToItsItemWhenTheAppChangesAnchorModeFromRemainingItemsThresholdReached(ScrollAnchorMode anchorMode)
+		{
+			SetupBuilder();
+			var collectionView = new CollectionView
+			{
+				AnchorMode = anchorMode,
+				ItemsLayout = LinearItemsLayout.Horizontal,
+				HeightRequest = 100,
+				WidthRequest = 300,
+				RemainingItemsThreshold = 30,
+				ItemsSource = Enumerable.Range(0, 40).Select(index => $"Item {index}").ToList(),
+				ItemTemplate = new DataTemplate(() =>
+				{
+					var label = new Label { WidthRequest = 100 };
+					label.SetBinding(Label.TextProperty, ".");
+					return label;
+				}),
+			};
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				// How far the start of an item is from the start of the list, if it's laid out.
+				double GetItemDistanceFromStart(int position)
+				{
+					var recyclerView = (RecyclerView)handler.PlatformView;
+					var layoutManager = recyclerView.GetLayoutManager();
+					return layoutManager.FindViewByPosition(position) is { } child
+						? (layoutManager.GetDecoratedLeft(child) - recyclerView.PaddingLeft) / (double)recyclerView.Resources.DisplayMetrics.Density
+						: double.PositiveInfinity;
+				}
+
+				// Until the list is laid out, it has no content to scroll.
+				var laidOut = await Wait(() => GetHorizontalDistanceToEnd(handler) > 100, 3000);
+				Assert.True(laidOut, $"The items should extend past the end of the list. Distance to the end: {GetHorizontalDistanceToEnd(handler)}.");
+
+				var stopped = false;
+				var changedMode = false;
+				collectionView.RemainingItemsThresholdReached += (sender, args) =>
+				{
+					if (stopped && !changedMode)
+					{
+						changedMode = true;
+						collectionView.AnchorMode = ScrollAnchorMode.End;
+					}
+				};
+
+				// Past the threshold, which RecyclerView raises once it's idle, the app scrolls to an item without animating: that
+				// stops the scroll.
+				var passedThreshold = false;
+				collectionView.Scrolled += (sender, args) =>
+				{
+					if (stopped)
+					{
+						return;
+					}
+
+					if (passedThreshold)
+					{
+						stopped = true;
+						collectionView.ScrollTo(5, position: ScrollToPosition.Start, animate: false);
+					}
+					else if (args.LastVisibleItemIndex >= 12 && args.HorizontalDelta > 0)
+					{
+						passedThreshold = true;
+					}
+				};
+
+				collectionView.ScrollTo(39, position: ScrollToPosition.End, animate: true);
+
+				await AssertEventually(() => stopped, timeout: 3000, message: "The scroll should pass the threshold.");
+				Assert.True(changedMode, "Stopping the scroll should raise RemainingItemsThresholdReached.");
+
+				await Task.Delay(1000);
+				var distance = GetItemDistanceFromStart(5);
+				Assert.True(Math.Abs(distance) <= AnchorTolerance, $"The ScrollTo should show its item at the start of the list. Item 5 is {distance} from the start.");
+				Assert.False(collectionView.IsAnchored);
 			});
 		}
 #endif

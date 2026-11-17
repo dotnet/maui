@@ -403,9 +403,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				if (edgeAnimation is { } animation && IsLatestScrollRequest(request))
 				{
 					var target = animation.Target;
+					double contentHeight = CollectionView.ContentSize.Height;
 					ScrollingToEdge(animation.Edge == ScrollAnchorMode.End
 						? () => ScrollToEndAnimationEnded(target)
-						: () => CollectionViewScrollAnchor.ScrollToStartOnceEnded(CollectionView));
+						: () => CollectionViewScrollAnchor.ScrollToStartOnceEnded(CollectionView, contentHeight));
 				}
 
 				return;
@@ -498,6 +499,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			// A scroll the app requests: an anchor that follows the end judges where it lands.
 			var animating = false;
 			var animationsEnded = _scrollAnimationsEnded;
+			double contentHeight = CollectionView.ContentSize.Height;
 			scrollAnchor?.ScrollRequesting();
 			try
 			{
@@ -513,7 +515,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			if (animating && IsLatestScrollRequest(request))
 			{
 				var collectionView = CollectionView;
-				ScrollingToEdge(() => CollectionViewScrollAnchor.ScrollToStartOnceEnded(collectionView));
+				ScrollingToEdge(() => CollectionViewScrollAnchor.ScrollToStartOnceEnded(collectionView, contentHeight));
 			}
 
 			return true;

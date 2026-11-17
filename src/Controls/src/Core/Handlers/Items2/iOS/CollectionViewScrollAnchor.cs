@@ -177,13 +177,23 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			// or an animated scroll ended, unless the content or the viewport changed size since the last look: the offset moved
 			// for that change, as UIKit measures the rows a scroll brings into view only in the layout pass that follows.
 			var scrolled = !afterLayout && !_tracker.IsResized(metrics);
-			if (_tracker.Update(metrics, collectionView.Dragging || collectionView.Decelerating || _animatingRequest, sizeChanged, scrolled) is double edge)
+
+			// A scroll UIKit animates that the anchor didn't start, as code moving the native view or a tap on the status bar
+			// make, scrolls as a fling does: scrolling to the edge would stop it, also for the content changing size just as it
+			// starts, while the view is still at the edge. It's judged once it ends, as a request's animated scroll is.
+			var userScrolling = collectionView.Dragging || collectionView.Decelerating || _animatingRequest
+				|| (_edgeAnimation is null && IsScrollAnimating(collectionView));
+			if (_tracker.Update(metrics, userScrolling, sizeChanged, scrolled) is double edge)
 			{
 				ApplyOffset(collectionView, edge - inset.Top);
 			}
 
 			Publish(collectionView, itemsView, _tracker.IsAnchored);
 		}
+
+		// Whether UIKit animates a scroll. Before iOS and Mac Catalyst 17, which don't tell, it says it doesn't.
+		static bool IsScrollAnimating(UICollectionView collectionView) =>
+			(OperatingSystem.IsIOSVersionAtLeast(17) || OperatingSystem.IsMacCatalystVersionAtLeast(17)) && collectionView.ScrollAnimating;
 
 		// Where the view is, measured from the start of its content, above the content inset.
 		static ScrollAnchorMetrics Measure(UICollectionView collectionView, UIEdgeInsets inset) =>
@@ -273,6 +283,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		/// a scroll the user isn't making, as the app's code, the keyboard or a tap on the status bar make: the next look judges
 		/// where the view stopped, instead of following the edge. Not when the anchor stopped it, scrolling to the edge, nor
 		/// UIKit laying the view out, or for the content or the viewport changing size: the view still goes to the edge then.
+		/// The next look also judges where an animation the anchor didn't start left the view, as a fling (see <c>Look</c>).
 		/// </summary>
 		public void ScrollAnimationEnded(UICollectionView collectionView)
 		{
@@ -280,10 +291,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				&& !_tracker.IsResized(Measure(collectionView, collectionView.AdjustedContentInset)))
 			{
 				_tracker.RequestScroll();
-				collectionView.SetNeedsLayout();
 			}
 
 			RequestedScrollEnded(collectionView);
+			collectionView.SetNeedsLayout();
 		}
 
 		// Whether the view got where an animated scroll to an edge was going, or past it.
@@ -299,7 +310,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		/// </remarks>
 		public void ScrollToStart(UICollectionView collectionView, StructuredItemsView? itemsView, bool animated)
 		{
-			if (animated && collectionView.Window is not null)
+			// A view at the start already has nowhere to animate to, and UIKit wouldn't report an end: it jumps there instead
+			// (below), which judges where it is now. Following the start on the way to an animation that never runs would ignore
+			// a scroll away from it right after.
+			if (animated && collectionView.Window is not null && !IsAt(collectionView, GetStartOffset(collectionView)))
 			{
 				// Animate to the start as laid out (the controller lays the view out first): a ScrollTo the app requests as it
 				// hears the view follows its start stops the animation.
@@ -332,7 +346,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		/// </remarks>
 		public void ScrollToEnd(UICollectionView collectionView, StructuredItemsView? itemsView, bool animated)
 		{
-			if (animated && collectionView.Window is not null)
+			// A view at the end already jumps there instead, as at the start (see ScrollToStart).
+			if (animated && collectionView.Window is not null && !IsAt(collectionView, GetEndOffset(collectionView)))
 			{
 				// Animate to the end as laid out (the controller lays the view out first): a ScrollTo the app requests as it
 				// hears the view follows its end stops the animation.
@@ -366,8 +381,24 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		public static bool ScrollToStartOnce(UICollectionView collectionView, bool animated) =>
 			SetOffsetToStart(collectionView, animated) && animated;
 
-		/// <summary>Called when the animated scroll <see cref="ScrollToStartOnce"/> started has stopped: goes the rest of the way.</summary>
-		public static void ScrollToStartOnceEnded(UICollectionView collectionView) => SetOffsetToStart(collectionView, animated: false);
+		/// <summary>
+		/// Called when an animated scroll to the start that <see cref="ScrollToStartOnce"/> started has stopped: goes the rest
+		/// of the way, unless a scroll stopped it and took the view away, as code moving the native view does. UIKit keeps the
+		/// rows in view where they are as it measures the rows the animation brings into view above them, so the animation
+		/// stops short of the start by as much as those rows grew, as the content did, or past it when they shrank. A view
+		/// further from the start than the content grew meanwhile, by more than the anchor's threshold, was taken there by
+		/// another scroll.
+		/// </summary>
+		/// <param name="collectionView">The collection view.</param>
+		/// <param name="contentHeight">The height of the content when the animation started.</param>
+		public static void ScrollToStartOnceEnded(UICollectionView collectionView, double contentHeight)
+		{
+			var grown = Math.Max(0, collectionView.ContentSize.Height - contentHeight);
+			if (collectionView.ContentOffset.Y - GetStartOffset(collectionView) <= grown + ScrollAnchorTracker.DefaultThreshold)
+			{
+				SetOffsetToStart(collectionView, animated: false);
+			}
+		}
 
 		/// <summary>Starts an animated scroll of a collection view to the end as laid out, once.</summary>
 		/// <returns>
@@ -381,7 +412,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		static bool SetOffsetToStart(UICollectionView collectionView, bool animated)
 		{
 			var start = GetStartOffset(collectionView);
-			if (Math.Abs(collectionView.ContentOffset.Y - start) <= 0.5)
+			if (IsAt(collectionView, start))
 			{
 				return false;
 			}
@@ -395,7 +426,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		internal static double? SetOffsetToEnd(UICollectionView collectionView, bool animated)
 		{
 			var end = GetEndOffset(collectionView);
-			if (Math.Abs(collectionView.ContentOffset.Y - end) <= 0.5)
+			if (IsAt(collectionView, end))
 			{
 				return null;
 			}
@@ -403,6 +434,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			collectionView.SetContentOffset(new CGPoint(collectionView.ContentOffset.X, end), animated);
 			return end;
 		}
+
+		// Whether the view is at an offset, give or take rounding.
+		static bool IsAt(UICollectionView collectionView, double offsetY) => Math.Abs(collectionView.ContentOffset.Y - offsetY) <= 0.5;
 
 		// The offset that shows the start of the content, above the header.
 		static double GetStartOffset(UICollectionView collectionView) => -collectionView.AdjustedContentInset.Top;
