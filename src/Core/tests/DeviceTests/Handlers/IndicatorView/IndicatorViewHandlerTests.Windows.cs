@@ -3,8 +3,8 @@ using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Shapes;
 using Xunit;
+using WShape = Microsoft.UI.Xaml.Shapes.Shape;
 
 namespace Microsoft.Maui.DeviceTests
 {
