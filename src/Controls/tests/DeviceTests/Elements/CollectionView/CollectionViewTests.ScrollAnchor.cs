@@ -1134,6 +1134,30 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.False(collectionView.IsAnchored, "A scroll away from the end should stop following it.");
 			});
 		}
+
+		// The keyboard manager insets the view and moves its offset before the layout either asks for: the offset moved for the
+		// inset, which the anchor judges as layout, keeping the end in view.
+		[Fact(DisplayName = "An offset change that comes with an inset change outside a layout pass keeps the end in view")]
+		public async Task AnOffsetChangeThatComesWithAnInsetChangeOutsideALayoutPassKeepsTheEndInView()
+		{
+			SetupBuilder();
+			var collectionView = CreateAnchorCollectionView(CreateAnchorItems(40), ScrollAnchorMode.End);
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				await AssertAtEnd(handler, "The list should open at its end.");
+
+				var platformView = handler.Controller.CollectionView;
+				var inset = platformView.ContentInset;
+				platformView.ContentInset = new UIKit.UIEdgeInsets(inset.Top, inset.Left, inset.Bottom + 300, inset.Right);
+				ScrollPlatformViewBy(handler, -200);
+
+				await AssertAtEnd(handler, "The list should keep its end in view.");
+				await Task.Delay(500);
+				Assert.True(Math.Abs(GetDistanceToEnd(handler)) <= AnchorTolerance, $"The list should stay at its end. Distance to the end: {GetDistanceToEnd(handler)}.");
+				Assert.True(collectionView.IsAnchored, "An offset change that comes with an inset change shouldn't stop following the end.");
+			});
+		}
 #endif
 
 		[Fact(DisplayName = "Turning AnchorMode off stops following the end")]
@@ -2435,6 +2459,44 @@ namespace Microsoft.Maui.DeviceTests
 				await Task.Delay(500);
 				Assert.True(AtEdge(), $"The list should stay at the edge. Position: {GetScrollPosition(handler)}.");
 				Assert.Equal(anchorMode.HasFlag(edge), collectionView.IsAnchored);
+			});
+		}
+
+		// An animated ScrollTo for an item, rather than for an edge: RecyclerView's smooth scroller finds the item in place and
+		// stops before the layout that lands the jump to the other edge, which would then take the list there.
+		[Theory(DisplayName = "An animated ScrollTo right after a jump to the other edge wins")]
+		[InlineData(ScrollAnchorMode.None)]
+		[InlineData(ScrollAnchorMode.Start)]
+		[InlineData(ScrollAnchorMode.End)]
+		[InlineData(ScrollAnchorMode.Start | ScrollAnchorMode.End)]
+		public async Task AnAnimatedScrollToRightAfterAJumpToTheOtherEdgeWins(ScrollAnchorMode anchorMode)
+		{
+			SetupBuilder();
+			var collectionView = CreateAnchorCollectionView(CreateAnchorItems(40), anchorMode);
+			collectionView.Header = null;
+			collectionView.Footer = null;
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				bool AtStart() => GetDistanceFromStart(handler) <= AnchorTolerance;
+				collectionView.ScrollToStart(animate: false);
+				await AssertEventually(AtStart, timeout: 3000, message: "The list should be at its start.");
+
+				// Settled there: laid out where it is, and looked at.
+				await Task.Delay(300);
+
+				collectionView.ScrollToEnd(animate: false);
+				collectionView.ScrollTo(0, position: ScrollToPosition.Start, animate: true);
+
+				// The list can show the end first, and scroll back from there.
+				await Task.Delay(300);
+				var reached = await Wait(AtStart, 5000);
+				Assert.True(reached, $"The later ScrollTo should win. Position: {GetScrollPosition(handler)}.");
+
+				// Nothing the earlier request left takes the list away again.
+				await Task.Delay(500);
+				Assert.True(AtStart(), $"The list should stay at its start. Position: {GetScrollPosition(handler)}.");
+				Assert.Equal(anchorMode.HasFlag(ScrollAnchorMode.Start), collectionView.IsAnchored);
 			});
 		}
 

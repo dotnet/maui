@@ -118,6 +118,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		/// <summary>Gets whether the view follows an edge of its content right now.</summary>
 		public bool IsFollowingEdge => !_detached && _wasVertical && _tracker.IsAnchored;
 
+		/// <summary>
+		/// Gets whether a jump to the edge this made hasn't been laid out yet: RecyclerView scrolls to the position it set in the
+		/// next layout.
+		/// </summary>
+		public bool IsJumpPending { get; private set; }
+
 		bool IsUserScrolling => _recyclerView.ScrollState != RecyclerView.ScrollStateIdle;
 
 		/// <summary>Follows the edges <paramref name="mode"/> selects instead, starting over as for a new view.</summary>
@@ -234,6 +240,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				return;
 			}
+
+			// This layout made a jump to the edge requested before it (one requested during a layout is posted).
+			IsJumpPending = false;
 
 			// A ScrollTo that doesn't animate moves the view in this layout: judge it by where it landed. One the app requested
 			// during this layout, from an event it raised, lands in the layout it asked for: that one judges it.
@@ -677,6 +686,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			_recyclerView.ScrollToPosition(_tracker.AnchoredEdge == ScrollAnchorMode.End ? layoutManager.ItemCount - 1 : 0);
+			IsJumpPending = true;
 		}
 
 		void PostUpdate() => Post(ref _updatePosted);

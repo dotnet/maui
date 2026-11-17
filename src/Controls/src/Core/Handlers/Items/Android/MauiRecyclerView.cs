@@ -533,16 +533,34 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (args.IsAnimated)
 			{
 				_animatingRequestedScroll = true;
-				ScrollHelper.AnimateScrollToPosition(position, args.ScrollToPosition);
-				if (isItem)
+
+				// A jump an earlier request made scrolls in the next layout. RecyclerView's smooth scroller takes its first step
+				// before that layout, and stops if it finds the item in place: the jump would then take the view away from it. So
+				// the scroll starts once the view is laid out, as an animated ScrollToStart or ScrollToEnd does.
+				if (isItem && (ScrollHelper.IsJumpPending || _scrollAnchor?.IsJumpPending == true))
 				{
-					_scrollAnchor?.RequestedScrollStarted();
+					ScrollHelper.AnimateScrollOnceLaidOut(() => AnimateScrollToItem(position, args.ScrollToPosition));
+				}
+				else
+				{
+					ScrollHelper.AnimateScrollToPosition(position, args.ScrollToPosition);
+					if (isItem)
+					{
+						_scrollAnchor?.RequestedScrollStarted();
+					}
 				}
 			}
 			else
 			{
 				ScrollHelper.JumpScrollToPosition(position, args.ScrollToPosition);
 			}
+		}
+
+		// The animated scroll to an item that a ScrollTo starts once the view is laid out.
+		void AnimateScrollToItem(int position, ScrollToPosition scrollToPosition)
+		{
+			ScrollHelper.AnimateScrollToPosition(position, scrollToPosition);
+			_scrollAnchor?.RequestedScrollStarted();
 		}
 
 		protected virtual LayoutManager SelectLayoutManager(IItemsLayout layoutSpecification)

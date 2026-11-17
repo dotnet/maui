@@ -34,6 +34,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public void AdjustScroll()
 		{
+			// This is the layout that makes the jumps requested before it.
+			IsJumpPending = false;
 			_pendingScrollAdjustment?.Invoke();
 		}
 
@@ -73,6 +75,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			// A newer request replaces an adjustment an earlier jump left for its layout.
 			_pendingScrollAdjustment = null;
 			LayoutAfterJump();
+			IsJumpPending = true;
 
 			if (scrollToPosition == ScrollToPosition.MakeVisible)
 			{
@@ -142,6 +145,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (_recyclerView.GetLayoutManager() is { ItemCount: > 0 })
 			{
 				LayoutAfterJump();
+				IsJumpPending = true;
 				_recyclerView.ScrollToPosition(0);
 			}
 		}
@@ -159,8 +163,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			// with the start when it's in view and taller than the viewport: once it's laid out, scroll the rest of the way.
 			_pendingScrollAdjustment = AdjustScrollToEnd;
 			LayoutAfterJump();
+			IsJumpPending = true;
 			_recyclerView.ScrollToPosition(layoutManager.ItemCount - 1);
 		}
+
+		/// <summary>
+		/// Gets whether a jump this made (<see cref="JumpScrollToPosition"/>, <see cref="JumpScrollToStart"/>,
+		/// <see cref="JumpScrollToEnd"/>) hasn't been laid out yet: RecyclerView scrolls to the position the jump set in the next
+		/// layout, or in the one after when the jump was made during a layout.
+		/// </summary>
+		public bool IsJumpPending { get; private set; }
 
 		/// <summary>
 		/// Gets how many requests that scroll in or after the next layout have been made: a jump, which scrolls in that layout
