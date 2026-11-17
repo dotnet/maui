@@ -100,6 +100,34 @@ public class Issue32226 : ContentPage
 		};
 		disableChildButton.Clicked += (s, e) => childTapTarget.IsEnabled = false;
 
+		// A view whose ACTION_DOWN our Touch listener never consumes must keep passing taps to the parent.
+		// It uses a drop gesture: a long press consumes ACTION_DOWN once #40219 is in, and a pointer
+		// gesture does whenever no ancestor is clickable.
+		var dropParentResultLabel = new Label
+		{
+			Text = "Parent not tapped",
+			AutomationId = "DropParentResultLabel"
+		};
+
+		var dropOnlyChild = new Label
+		{
+			Text = "Tap me (only a drop gesture, inside a tappable parent)",
+			AutomationId = "DropOnlyChild",
+			Padding = 15
+		};
+		dropOnlyChild.GestureRecognizers.Add(new DropGestureRecognizer());
+
+		var dropParent = new Grid
+		{
+			BackgroundColor = Colors.LightYellow,
+			Padding = 10,
+			Children = { dropOnlyChild }
+		};
+
+		var dropParentTapGesture = new TapGestureRecognizer();
+		dropParentTapGesture.Tapped += (s, e) => dropParentResultLabel.Text = "Parent tapped";
+		dropParent.GestureRecognizers.Add(dropParentTapGesture);
+
 		Content = new VerticalStackLayout
 		{
 			Padding = 20,
@@ -115,7 +143,9 @@ public class Issue32226 : ContentPage
 				plainResultLabel,
 				disableChildButton,
 				parent,
-				parentResultLabel
+				parentResultLabel,
+				dropParent,
+				dropParentResultLabel
 			}
 		};
 	}

@@ -52,5 +52,15 @@ public class Issue32226 : _IssuesUITest
 
 		Assert.That(App.WaitForElement("ParentResultLabel").GetText(), Is.EqualTo("Parent tapped"));
 	}
+
+	[Test]
+	[Category(UITestCategories.Gestures)]
+	public void TapOnViewWithOnlyDropGestureReachesParent()
+	{
+		App.WaitForElement("DropOnlyChild");
+		App.Tap("DropOnlyChild");
+
+		Assert.That(App.WaitForElement("DropParentResultLabel").GetText(), Is.EqualTo("Parent tapped"));
+	}
 }
 #endif
