@@ -149,7 +149,7 @@ namespace Microsoft.Maui.Platform
 					throw new InvalidOperationException("MauiContext is required to display an indicator template.");
 
 				var indicatorLayoutView = layout.ToPlatform(mauiContext);
-				indicatorLayoutView.MarkAsCrossPlatformLayoutBacking();
+				this.MarkAsCrossPlatformLayoutBacking();
 				_indicatorLayoutView = new(indicatorLayoutView);
 				AddSubview(indicatorLayoutView);
 			}
