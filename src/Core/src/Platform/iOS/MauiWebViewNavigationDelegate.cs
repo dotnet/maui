@@ -15,7 +15,6 @@ namespace Microsoft.Maui.Platform
 	{
 		readonly WeakReference<IWebViewHandler> _handler;
 		WebNavigationEvent _lastEvent;
-		long? _lastProcessTerminationReload;
 
 		public MauiWebViewNavigationDelegate(IWebViewHandler handler)
 		{
@@ -182,10 +181,10 @@ namespace Microsoft.Maui.Platform
 
 			// Reload at most once per 30 seconds so a page that keeps crashing the process can't loop.
 			var now = Environment.TickCount64;
-			if (now - _lastProcessTerminationReload < 30_000)
+			if (now - LastProcessTerminationReload < 30_000)
 				return;
 
-			_lastProcessTerminationReload = now;
+			LastProcessTerminationReload = now;
 
 			// Restore an HTML source only while its document is shown; a page the user moved on to reloads itself.
 			if (webView is MauiWKWebView { HtmlUrl: { } htmlUrl } && webView.Url?.AbsoluteString?.Split('#')[0] is { } url && url != htmlUrl)
@@ -204,6 +203,8 @@ namespace Microsoft.Maui.Platform
 			get;
 			set;
 		}
+
+		internal long? LastProcessTerminationReload { get; set; }
 
 		IWebViewHandler? Handler
 		{

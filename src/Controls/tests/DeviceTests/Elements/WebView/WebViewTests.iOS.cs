@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Foundation;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Platform;
 using ObjCRuntime;
 using Xunit;
 
@@ -31,12 +32,23 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				Assert.Equal(WebNavigationResult.Success, await navigated.Task.WaitAsync(TimeSpan.FromSeconds(5)));
 
-				navigated = new TaskCompletionSource<WebNavigationResult>(TaskCreationOptions.RunContinuationsAsynchronously);
-				KillWebContentProcess(handler.PlatformView);
+				async Task KillAndAssertRestored()
+				{
+					terminated = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+					navigated = new TaskCompletionSource<WebNavigationResult>(TaskCreationOptions.RunContinuationsAsynchronously);
+					KillWebContentProcess(handler.PlatformView);
 
-				await terminated.Task.WaitAsync(TimeSpan.FromSeconds(5));
-				Assert.Equal(WebNavigationResult.Success, await navigated.Task.WaitAsync(TimeSpan.FromSeconds(5)));
-				Assert.Equal("Issue39973", await webView.EvaluateJavaScriptAsync("document.getElementById('content').textContent"));
+					await terminated.Task.WaitAsync(TimeSpan.FromSeconds(5));
+					Assert.Equal(WebNavigationResult.Success, await navigated.Task.WaitAsync(TimeSpan.FromSeconds(5)));
+					Assert.Equal("Issue39973", await webView.EvaluateJavaScriptAsync("document.getElementById('content').textContent"));
+				}
+
+				await KillAndAssertRestored();
+
+				// Once the 30 second cooldown has passed, the next termination is recovered again
+				var navigationDelegate = (MauiWebViewNavigationDelegate)handler.PlatformView.NavigationDelegate;
+				navigationDelegate.LastProcessTerminationReload -= 30_000;
+				await KillAndAssertRestored();
 
 				// A second termination right after the reload must not reload again, so a page that keeps crashing can't loop
 				terminated = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
