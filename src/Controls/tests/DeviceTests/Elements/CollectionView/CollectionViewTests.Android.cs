@@ -213,15 +213,17 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Theory(DisplayName = "ItemSpacing matches an up-front list after items are added or removed at runtime")]
+		[Theory(DisplayName = "ItemSpacing matches an up-front list after items are added, removed or replaced at runtime")]
 		[InlineData(false, "Append")]
 		[InlineData(false, "InsertAtStart")]
 		[InlineData(false, "RemoveFromEnd")]
 		[InlineData(false, "RemoveFromStart")]
+		[InlineData(false, "Replace")]
 		[InlineData(true, "Append")]
 		[InlineData(true, "InsertAtStart")]
 		[InlineData(true, "RemoveFromEnd")]
 		[InlineData(true, "RemoveFromStart")]
+		[InlineData(true, "Replace")]
 		public async Task ItemSpacingIsUpdatedWhenItemsChangeAtRuntime(bool grid, string change)
 		{
 			SetupBuilder();
@@ -251,7 +253,8 @@ namespace Microsoft.Maui.DeviceTests
 					"Append" => finalItems.Take(grid ? 2 : 1),
 					"InsertAtStart" => finalItems.Skip(1),
 					"RemoveFromEnd" => finalItems.Append("extra"),
-					_ => finalItems.Prepend("extra"),
+					"RemoveFromStart" => finalItems.Prepend("extra"),
+					_ => finalItems.Select((item, index) => index == 1 ? "replaced" : item),
 				});
 				collectionView.ItemsSource = items;
 				await GetSettledItemLayout(recyclerView, items.Count);
@@ -271,8 +274,11 @@ namespace Microsoft.Maui.DeviceTests
 					case "RemoveFromEnd":
 						items.RemoveAt(items.Count - 1);
 						break;
-					default:
+					case "RemoveFromStart":
 						items.RemoveAt(0);
+						break;
+					default:
+						items[1] = finalItems[1];
 						break;
 				}
 
@@ -292,6 +298,42 @@ namespace Microsoft.Maui.DeviceTests
 
 				return $"item tops [{string.Join(", ", tops)}], height {recyclerView.Height}";
 			}
+		}
+
+		[Fact(DisplayName = "Replacing an off-screen item does not recompute the spacing of the visible items")]
+		public async Task ReplacingAnItemDoesNotRecomputeOtherItemOffsets()
+		{
+			SetupBuilder();
+
+			var items = new ObservableCollection<string>(Enumerable.Range(0, 100).Select(i => $"{i}"));
+			var collectionView = new CollectionView
+			{
+				ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Vertical) { ItemSpacing = 8 },
+				ItemTemplate = new DataTemplate(() => new Label { HeightRequest = 30 }),
+				ItemsSource = items,
+			};
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				var recyclerView = handler.PlatformView;
+				var offsets = new ItemOffsetsCounter();
+				recyclerView.AddItemDecoration(offsets);
+				await AssertEventually(() => offsets.Count > 0 && !recyclerView.IsLayoutRequested);
+
+				offsets.Count = 0;
+				items[items.Count - 1] = "replaced";
+				await AssertEventually(() => !recyclerView.IsLayoutRequested);
+
+				// RecyclerView only recomputes the offsets of children whose decorations were invalidated
+				Assert.Equal(0, offsets.Count);
+			});
+		}
+
+		class ItemOffsetsCounter : RecyclerView.ItemDecoration
+		{
+			public int Count { get; set; }
+
+			public override void GetItemOffsets(global::Android.Graphics.Rect outRect, AView view, RecyclerView parent, RecyclerView.State state) => Count++;
 		}
 
 		[Fact]

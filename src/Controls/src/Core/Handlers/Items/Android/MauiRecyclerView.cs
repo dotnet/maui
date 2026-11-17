@@ -63,7 +63,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			_emptyCollectionObserver = new DataChangeObserver(UpdateEmptyViewVisibility);
 			_itemsUpdateScrollObserver = new DataChangeObserver(AdjustScrollForItemUpdate);
-			_itemSpacingObserver = new DataChangeObserver(InvalidateItemSpacing);
+			// Item (content) changes keep every position, and RecyclerView recomputes the offsets of the items it rebinds
+			_itemSpacingObserver = new DataChangeObserver(InvalidateItemSpacing, structuralChangesOnly: true);
 			_dispatchTouchEventToRecyclerView = DispatchTouchEventToRecyclerView;
 			_parentScrollGestureDispatcher = new ParentScrollGestureDispatcher(this);
 		}

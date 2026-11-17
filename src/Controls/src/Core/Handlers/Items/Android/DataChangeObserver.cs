@@ -10,12 +10,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 	{
 		IntPtr _adapter;
 		readonly Action _onDataChange;
+		readonly bool _structuralChangesOnly;
 
 		public bool Observing { get; private set; }
 
-		public DataChangeObserver(Action onDataChange) : base()
+		public DataChangeObserver(Action onDataChange, bool structuralChangesOnly = false) : base()
 		{
 			_onDataChange = onDataChange;
+			_structuralChangesOnly = structuralChangesOnly;
 		}
 
 		public void Start(Adapter adapter)
@@ -57,13 +59,21 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public override void OnItemRangeChanged(int positionStart, int itemCount)
 		{
 			base.OnItemRangeChanged(positionStart, itemCount);
-			_onDataChange?.Invoke();
+
+			if (!_structuralChangesOnly)
+			{
+				_onDataChange?.Invoke();
+			}
 		}
 
 		public override void OnItemRangeChanged(int positionStart, int itemCount, Object payload)
 		{
 			base.OnItemRangeChanged(positionStart, itemCount, payload);
-			_onDataChange?.Invoke();
+
+			if (!_structuralChangesOnly)
+			{
+				_onDataChange?.Invoke();
+			}
 		}
 
 		public override void OnItemRangeRemoved(int positionStart, int itemCount)
