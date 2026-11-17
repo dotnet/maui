@@ -2,12 +2,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Versioning;
 using System.Threading;
 using System.Threading.Tasks;
 using Android.App;
 using Android.Content;
 using Android.Locations;
 using Android.OS;
+using AndroidX.Core.OS;
 using Microsoft.Maui.ApplicationModel;
 using AndroidLocation = Android.Locations.Location;
 using LocationPower = Android.Locations.Power;
@@ -101,7 +103,7 @@ namespace Microsoft.Maui.Devices.Sensors
 			var looper = Looper.MyLooper() ?? Looper.MainLooper;
 
 			foreach (var provider in providers)
-				LocationManager.RequestLocationUpdates(provider, 0, 0, listener, looper);
+				RequestLocationUpdates(LocationManager, provider, 0, 0, request.DesiredAccuracy, listener, looper);
 
 			var androidLocation = await tcs.Task;
 
@@ -182,7 +184,7 @@ namespace Microsoft.Maui.Devices.Sensors
 			var minTimeMilliseconds = (long)request.MinimumTime.TotalMilliseconds;
 
 			foreach (var provider in listeningProviders)
-				LocationManager.RequestLocationUpdates(provider, minTimeMilliseconds, (float)request.MinimumDistance, continuousListener, looper);
+				RequestLocationUpdates(LocationManager, provider, minTimeMilliseconds, (float)request.MinimumDistance, request.DesiredAccuracy, continuousListener, looper);
 
 			return true;
 
@@ -315,6 +317,34 @@ namespace Microsoft.Maui.Devices.Sensors
 				providers.Add(selectedProvider);
 
 			return providers;
+		}
+
+		static void RequestLocationUpdates(LocationManager locationManager, string provider, long minTimeMs, float minDistanceMeters, GeolocationAccuracy accuracy, ILocationListener listener, Looper? looper)
+		{
+			// The legacy overload registers every provider except gps as BALANCED, so the fused provider would never turn on GPS.
+			if (OperatingSystem.IsAndroidVersionAtLeast(34) && looper is not null &&
+				ExecutorCompat.Create(new Handler(looper)) is { } executor)
+				locationManager.RequestLocationUpdates(provider, CreateLocationRequest(minTimeMs, minDistanceMeters, accuracy), executor, listener);
+			else
+				locationManager.RequestLocationUpdates(provider, minTimeMs, minDistanceMeters, listener, looper);
+		}
+
+		[SupportedOSPlatform("android31.0")]
+		internal static LocationRequest CreateLocationRequest(long minTimeMs, float minDistanceMeters, GeolocationAccuracy accuracy)
+		{
+			var quality = accuracy switch
+			{
+				GeolocationAccuracy.Lowest or GeolocationAccuracy.Low => LocationRequestQuality.LowPower,
+				GeolocationAccuracy.High or GeolocationAccuracy.Best => LocationRequestQuality.HighAccuracy,
+				_ => LocationRequestQuality.BalancedPowerAccuracy,
+			};
+
+			// Same min update interval as the legacy overload, so updates don't arrive faster than minTimeMs.
+			return new LocationRequest.Builder(minTimeMs)
+				.SetQuality((int)quality)
+				.SetMinUpdateIntervalMillis(minTimeMs)
+				.SetMinUpdateDistanceMeters(minDistanceMeters)
+				.Build();
 		}
 
 		internal static float GetAccuracyDistance(GeolocationAccuracy accuracy) =>
