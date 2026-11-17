@@ -1,3 +1,4 @@
+#if WINDOWS
 using System;
 using Microsoft.Graphics.Canvas;
 using Microsoft.Graphics.Canvas.Geometry;
@@ -101,3 +102,4 @@ public class PathTests
 		Assert.InRange(Math.Abs(bounds.Height - height), 0d, 0.01d);
 	}
 }
+#endif
