@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 
 namespace Microsoft.Maui.Controls.Design
@@ -35,7 +36,7 @@ namespace Microsoft.Maui.Controls.Design
 			if (KnownValues.Any(v => value?.ToString()?.Equals(v, StringComparison.Ordinal) ?? false))
 				return true;
 
-			if (double.TryParse(value?.ToString(), out var d))
+			if (double.TryParse(value?.ToString(), NumberStyles.Number, CultureInfo.InvariantCulture, out _))
 				return true;
 
 			return false;

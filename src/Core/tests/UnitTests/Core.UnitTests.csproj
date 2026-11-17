@@ -10,6 +10,8 @@
       CanAddMultipleEventsViaMultipleConfigureLifecycleEvents, CanAddMultipleEventsViaBuilder, EventsFireExactlyOnce
     -->
     <LangVersion>9.0</LangVersion>
+    <!-- Mirrors Core.csproj: lets HandlerInstrumentationTests compile/run when the instrumented Core is built. -->
+    <DefineConstants Condition="'$(MauiEnableHandlerInstrumentation)' == 'true'">$(DefineConstants);HANDLER_INSTRUMENTATION</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
@@ -21,6 +23,25 @@
           Link="TemplateLocalization\%(RecursiveDir)%(Filename)%(Extension)"
           CopyToOutputDirectory="PreserveNewest"
           CopyToPublishDirectory="PreserveNewest" />
+    <_LocalizationFiles Include="..\..\..\..\loc\**\*.lcl" />
+    <AssemblyMetadata Include="LocalizationFileCount" Value="@(_LocalizationFiles->Count())" />
+    <None Include="@(_LocalizationFiles)"
+          Link="Localization\%(RecursiveDir)%(Filename)%(Extension)"
+          CopyToOutputDirectory="PreserveNewest"
+          CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <!--
+    ExternalBackendTargetFrameworkTests compares the external-backend guard project's target frameworks
+    against Core's, and checks that a fake-native-view source exists for every platform. Unit tests run
+    on Helix from a payload directory with no repository on disk, so these inputs are embedded at build
+    time rather than read from the working tree. Embedding keeps the assertion hermetic while still
+    capturing the live files on every build, so real drift is still caught.
+  -->
+  <ItemGroup>
+    <EmbeddedResource Include="..\..\src\Core.csproj" LogicalName="ProjectFiles/Core.csproj" />
+    <EmbeddedResource Include="..\ExternalBackend\Core.ExternalBackend.csproj" LogicalName="ProjectFiles/Core.ExternalBackend.csproj" />
+    <EmbeddedResource Include="..\ExternalBackend\FakeNativeViews.*.cs" LogicalName="ProjectFiles/%(Filename)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>
@@ -40,6 +61,7 @@
     <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core.csproj" />
     <ProjectReference Include="..\..\..\TestUtils\src\TestUtils\TestUtils.csproj" />
     <ProjectReference Include="..\..\src\Core.csproj" />
+    <ProjectReference Include="..\ExternalBackend\Core.ExternalBackend.csproj" />
 
     <EmbeddedResource Include="..\..\..\Controls\src\Core\Compatibility\iOS\Resources\StringResources.resx" Link="Resources\StringResources.resx" />
     <EmbeddedResource Include="..\..\..\Controls\src\Core\Compatibility\iOS\Resources\StringResources.cs.resx" Link="Resources\StringResources.cs.resx" />
@@ -72,19 +94,19 @@
     <EmbeddedResource Include="..\..\..\Controls\src\Build.Tasks\xlf\ErrorMessages.zh-Hant.resx" Link="Resources\ErrorMessages.zh-Hant.resx" />
 
     <EmbeddedResource Include="..\..\..\Controls\src\SourceGen\MauiGResources.resx" Link="Resources\MauiGResources.resx" />
-    <EmbeddedResource Include="..\..\..\Controls\src\SourceGen\xlf\MauiGResources.cs.resx" Link="Resources\xlf\MauiGResources.cs.resx" />
-    <EmbeddedResource Include="..\..\..\Controls\src\SourceGen\xlf\MauiGResources.de.resx" Link="Resources\xlf\MauiGResources.de.resx" />
-    <EmbeddedResource Include="..\..\..\Controls\src\SourceGen\xlf\MauiGResources.es.resx" Link="Resources\xlf\MauiGResources.es.resx" />
-    <EmbeddedResource Include="..\..\..\Controls\src\SourceGen\xlf\MauiGResources.fr.resx" Link="Resources\xlf\MauiGResources.fr.resx" />
-    <EmbeddedResource Include="..\..\..\Controls\src\SourceGen\xlf\MauiGResources.it.resx" Link="Resources\xlf\MauiGResources.it.resx" />
-    <EmbeddedResource Include="..\..\..\Controls\src\SourceGen\xlf\MauiGResources.ja.resx" Link="Resources\xlf\MauiGResources.ja.resx" />
-    <EmbeddedResource Include="..\..\..\Controls\src\SourceGen\xlf\MauiGResources.ko.resx" Link="Resources\xlf\MauiGResources.ko.resx" />
-    <EmbeddedResource Include="..\..\..\Controls\src\SourceGen\xlf\MauiGResources.pl.resx" Link="Resources\xlf\MauiGResources.pl.resx" />
-    <EmbeddedResource Include="..\..\..\Controls\src\SourceGen\xlf\MauiGResources.pt-BR.resx" Link="Resources\xlf\MauiGResources.pt-BR.resx" />
-    <EmbeddedResource Include="..\..\..\Controls\src\SourceGen\xlf\MauiGResources.ru.resx" Link="Resources\xlf\MauiGResources.ru.resx" />
-    <EmbeddedResource Include="..\..\..\Controls\src\SourceGen\xlf\MauiGResources.tr.resx" Link="Resources\xlf\MauiGResources.tr.resx" />
-    <EmbeddedResource Include="..\..\..\Controls\src\SourceGen\xlf\MauiGResources.zh-Hans.resx" Link="Resources\xlf\MauiGResources.zh-Hans.resx" />
-    <EmbeddedResource Include="..\..\..\Controls\src\SourceGen\xlf\MauiGResources.zh-Hant.resx" Link="Resources\xlf\MauiGResources.zh-Hant.resx" />
+    <EmbeddedResource Include="..\..\..\Controls\src\SourceGen\xlf\MauiGResources.cs.resx" Link="Resources\MauiGResources.cs.resx" />
+    <EmbeddedResource Include="..\..\..\Controls\src\SourceGen\xlf\MauiGResources.de.resx" Link="Resources\MauiGResources.de.resx" />
+    <EmbeddedResource Include="..\..\..\Controls\src\SourceGen\xlf\MauiGResources.es.resx" Link="Resources\MauiGResources.es.resx" />
+    <EmbeddedResource Include="..\..\..\Controls\src\SourceGen\xlf\MauiGResources.fr.resx" Link="Resources\MauiGResources.fr.resx" />
+    <EmbeddedResource Include="..\..\..\Controls\src\SourceGen\xlf\MauiGResources.it.resx" Link="Resources\MauiGResources.it.resx" />
+    <EmbeddedResource Include="..\..\..\Controls\src\SourceGen\xlf\MauiGResources.ja.resx" Link="Resources\MauiGResources.ja.resx" />
+    <EmbeddedResource Include="..\..\..\Controls\src\SourceGen\xlf\MauiGResources.ko.resx" Link="Resources\MauiGResources.ko.resx" />
+    <EmbeddedResource Include="..\..\..\Controls\src\SourceGen\xlf\MauiGResources.pl.resx" Link="Resources\MauiGResources.pl.resx" />
+    <EmbeddedResource Include="..\..\..\Controls\src\SourceGen\xlf\MauiGResources.pt-BR.resx" Link="Resources\MauiGResources.pt-BR.resx" />
+    <EmbeddedResource Include="..\..\..\Controls\src\SourceGen\xlf\MauiGResources.ru.resx" Link="Resources\MauiGResources.ru.resx" />
+    <EmbeddedResource Include="..\..\..\Controls\src\SourceGen\xlf\MauiGResources.tr.resx" Link="Resources\MauiGResources.tr.resx" />
+    <EmbeddedResource Include="..\..\..\Controls\src\SourceGen\xlf\MauiGResources.zh-Hans.resx" Link="Resources\MauiGResources.zh-Hans.resx" />
+    <EmbeddedResource Include="..\..\..\Controls\src\SourceGen\xlf\MauiGResources.zh-Hant.resx" Link="Resources\MauiGResources.zh-Hant.resx" />
 
   </ItemGroup>
 

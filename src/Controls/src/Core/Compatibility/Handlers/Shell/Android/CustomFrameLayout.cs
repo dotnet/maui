@@ -32,15 +32,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public override WindowInsets OnApplyWindowInsets(WindowInsets insets)
 		{
-			// We need to make sure we retain left padding.
-			// Failure to do so will result in the padding being wrong if you set FlyoutBehavior to Locked
-			// and then rotate the device.
+			// Preserve the locked flyout's start padding across inset dispatches and layout direction changes.
 
-			var leftPadding = PaddingLeft;
+			var startPadding = PaddingStart;
 
 			var result = base.OnApplyWindowInsets(insets);
 
-			SetPadding(leftPadding, PaddingTop, PaddingRight, PaddingBottom);
+			SetPaddingRelative(startPadding, PaddingTop, PaddingEnd, PaddingBottom);
 
 			return result;
 		}

@@ -21,6 +21,7 @@ Create a new app with `dotnet new maui -n NewApp` or a [sample app](https://gith
 * [.NET MAUI Customer Showcase](https://dotnet.microsoft.com/platform/customers?filters=technology%3Adotnet-maui)
 
 ## Current News
+* 2026 - [What's new in .NET MAUI for .NET 11](https://learn.microsoft.com/dotnet/maui/whats-new/dotnet-11)
 * 2025 - [What's new in .NET MAUI for .NET 10](https://learn.microsoft.com/dotnet/maui/whats-new/dotnet-10)
 * November 13, 2024 - [What's new in .NET MAUI for .NET 9](https://learn.microsoft.com/dotnet/maui/whats-new/dotnet-9)
 * November 12, 2024 - [Announcing .NET 9](https://devblogs.microsoft.com/dotnet/announcing-dotnet-9/#.net-maui-–-enhancing-multi-platform-app-development)
@@ -36,5 +37,9 @@ Do you have questions? Do not worry; we have prepared a complete [FAQ](https://g
 
 Some of the best ways to [contribute](./.github/CONTRIBUTING.md) are to try things out, file issues, join in design conversations,
 and make pull-requests. Proposals for changes specific to MAUI can be found [here for discussion](https://github.com/dotnet/maui/issues).
+
+**PR base:** `main` for new features and .NET 12 work; `net11` for .NET 11 servicing
+review. Read the [branch-targeting guide](./.github/CONTRIBUTING.md#choose-your-pr-base-before-starting)
+before starting a change.
 
 See [CONTRIBUTING](./.github/CONTRIBUTING.md), [CODE-OF-CONDUCT](./.github/CODE_OF_CONDUCT.md) and the [Development Guide](./.github/DEVELOPMENT.md).

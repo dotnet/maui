@@ -1,0 +1,70 @@
+<views:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                xmlns:views="clr-namespace:Samples.View"
+                xmlns:viewmodels="clr-namespace:Samples.ViewModel"
+                x:Class="Samples.View.PasskeysPage"
+                Title="Passkeys">
+    <views:BasePage.BindingContext>
+        <viewmodels:PasskeysViewModel />
+    </views:BasePage.BindingContext>
+
+    <Grid RowDefinitions="*,Auto" Padding="12" RowSpacing="8">
+
+        <ScrollView Grid.Row="0">
+            <VerticalStackLayout Spacing="10">
+
+                <Label Text="{Binding SupportedText}" FontAttributes="Italic" />
+
+                <!-- Signed OUT: the landing screen — password sign-in / create account, or go straight
+                     to a username-less passkey sign-in. -->
+                <VerticalStackLayout Spacing="8" IsVisible="{Binding IsLoggedOut}">
+                    <Label Text="Sign in to your ASP.NET Core Identity account (Samples.Server.Passkeys). No browser — just a native form post that sets the session cookie."
+                           FontSize="12" TextColor="Gray" />
+                    <Entry Text="{Binding Username}" Placeholder="Email" Keyboard="Email" />
+                    <Entry Text="{Binding Password}" Placeholder="Password" IsPassword="True" />
+                    <Button Text="Sign in" Command="{Binding SignInPasswordCommand}" IsEnabled="{Binding IsNotBusy}" />
+                    <Button Text="Create account" Command="{Binding SignUpCommand}" IsEnabled="{Binding IsNotBusy}" />
+
+                    <Label Text="— or —" HorizontalOptions="Center" TextColor="Gray" Margin="0,4" />
+
+                    <Button Text="Sign in with a passkey" Command="{Binding LoginCommand}" IsEnabled="{Binding IsNotBusy}" />
+                    <Label Text="Username-less: no email needed. Your device lists the passkeys you've saved and you just pick one — the passkey carries the identity."
+                           FontSize="12" TextColor="Gray" />
+                </VerticalStackLayout>
+
+                <!-- Signed IN: account summary + passkey management. -->
+                <VerticalStackLayout Spacing="8" IsVisible="{Binding IsSignedIn}">
+                    <Label Text="{Binding AccountStatusText}" FontAttributes="Bold" FontSize="16" />
+                    <Label Text="{Binding PasskeyStatusText}" TextColor="Gray" />
+
+                    <!-- The user's passkeys, each shown by its device label, credential id and creation date. -->
+                    <VerticalStackLayout Spacing="6" BindableLayout.ItemsSource="{Binding Passkeys}">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate>
+                                <Border Stroke="LightGray" StrokeThickness="1" Padding="10" StrokeShape="RoundRectangle 8">
+                                    <VerticalStackLayout Spacing="2">
+                                        <Label Text="{Binding DisplayName}" FontAttributes="Bold" />
+                                        <Label Text="{Binding ShortId}" FontFamily="Monospace" FontSize="11" TextColor="Gray" />
+                                        <Label Text="{Binding CreatedAtText}" FontSize="11" TextColor="Gray" />
+                                    </VerticalStackLayout>
+                                </Border>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </VerticalStackLayout>
+
+                    <Button Text="{Binding CreatePasskeyButtonText}" Command="{Binding RegisterCommand}" IsEnabled="{Binding IsNotBusy}" />
+                    <Button Text="Sign out" Command="{Binding SignOutCommand}" IsEnabled="{Binding IsNotBusy}" />
+                </VerticalStackLayout>
+
+                <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
+
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- Status strip: only the latest message is kept, shown across up to 5 lines. -->
+        <Label Grid.Row="1" Text="{Binding Status}" FontFamily="Monospace" FontSize="11"
+               TextColor="Gray" LineBreakMode="WordWrap" MaxLines="5" />
+
+    </Grid>
+
+</views:BasePage>

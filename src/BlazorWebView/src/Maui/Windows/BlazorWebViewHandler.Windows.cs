@@ -35,8 +35,17 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// <inheritdoc />
 		protected override void DisconnectHandler(WebView2Control platformView)
 		{
+			DisconnectRootComponents();
+
 			if (_webviewManager != null)
 			{
+				if (_webviewManager is WinUIWebViewManager winUIWebViewManager)
+				{
+					winUIWebViewManager.ClearStaticContentCache();
+				}
+
+				// Disposing the manager tears down the hot reload notifier along with the renderer, and
+				// this handler always builds a new manager on reconnect, so there is nothing to detach.
 				// Start the disposal...
 				var disposalTask = _webviewManager?
 					.DisposeAsync()
@@ -142,7 +151,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				this,
 				logger);
 
-			StaticContentHotReloadManager.AttachToWebViewManagerIfEnabled(_webviewManager);
+			_ = BlazorWebViewStaticContentHotReload.TryAttachToWebViewManager(_webviewManager);
 
 			if (RootComponents != null)
 			{

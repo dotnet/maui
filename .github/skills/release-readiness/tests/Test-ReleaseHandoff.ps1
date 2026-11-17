@@ -339,6 +339,34 @@ Assert-HandoffEqual -Label 'Private feed URL is not emitted' -Expected $false `
 Assert-HandoffTrue -Label 'Blocked SR check is retained in the handoff' `
     -Actual ($srMarkdown.Contains('Ship Assessment') -and $srMarkdown.Contains('source readiness report'))
 
+$shippedReadiness = [PSCustomObject]@{
+    metadata = [PSCustomObject]@{
+        srBranch = 'release/10.0.1xx-sr10'
+        contentsRef = '10.0.100'
+        shippedTagVersion = '10.0.100'
+        liveBranchVersion = '10.0.101'
+        sourceBranch = 'net10.0'
+        mode = 'shipped'
+    }
+    verdict = [PSCustomObject]@{ label = 'Shipped'; tier = 3 }
+}
+foreach ($publicSafe in @($true, $false)) {
+    $shippedModel = New-ReleaseHandoffModel -Readiness $shippedReadiness -PublicSafe $publicSafe
+    Assert-HandoffEqual -Label "Shipped survey uses assessed immutable contents (publicSafe=$publicSafe)" `
+        -Expected '10.0.100' -Actual $shippedModel.SurveyRef
+    Assert-HandoffEqual -Label "Shipped branch remains distinct from contents (publicSafe=$publicSafe)" `
+        -Expected 'release/10.0.1xx-sr10' -Actual $shippedModel.Branch
+}
+$shippedReadiness.metadata.contentsRef = 'refs/tags/10.0.100'
+Assert-HandoffEqual -Label 'Verified fully qualified stable tag is public-safe' `
+    -Expected 'refs/tags/10.0.100' -Actual (New-ReleaseHandoffModel -Readiness $shippedReadiness).SurveyRef
+$shippedReadiness.metadata.shippedTagVersion = '10.0.101'
+Assert-HandoffEqual -Label 'Mismatched tag evidence cannot supply public survey identity' `
+    -Expected $null -Actual (New-ReleaseHandoffModel -Readiness $shippedReadiness).SurveyRef
+$shippedReadiness.metadata.PSObject.Properties.Remove('contentsRef')
+Assert-HandoffEqual -Label 'Older shipped reports retain the branch fallback' `
+    -Expected 'release/10.0.1xx-sr10' -Actual (New-ReleaseHandoffModel -Readiness $shippedReadiness).SurveyRef
+
 $srCandidateReadiness = [PSCustomObject]@{
     trackerKey = 'net10-sr10'
     metadata = [PSCustomObject]@{

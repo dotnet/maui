@@ -1,0 +1,612 @@
+using System;
+using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui;
+using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Foldable;
+using Microsoft.Maui.Graphics;
+using Xunit;
+
+namespace Microsoft.Maui.Controls.Foldable.UnitTests
+{
+	[Collection(DualScreenInfoCurrentCollection.Name)]
+	public class TwoPaneViewLayoutGuideTests
+	{
+		[Fact]
+		public void UsesViewScopedVerticalDivisionRegion()
+		{
+			var layout = new Grid();
+			var service = new TestFoldableService
+			{
+				Hinge = new Rect(490, 0, 20, 1000),
+				Location = Point.Zero,
+			};
+			var guide = new TwoPaneViewLayoutGuide(layout, service);
+
+			guide.UpdateLayouts(1000, 1000);
+
+			Assert.Same(layout, service.LastHingeView);
+			Assert.Equal(TwoPaneViewMode.Wide, guide.Mode);
+			Assert.Equal(new Rect(0, 0, 490, 1000), guide.Pane1);
+			Assert.Equal(new Rect(510, 0, 490, 1000), guide.Pane2);
+		}
+
+		[Fact]
+		public void UsesViewScopedHorizontalDivisionRegion()
+		{
+			var layout = new Grid();
+			var service = new TestFoldableService
+			{
+				Hinge = new Rect(0, 490, 1000, 20),
+				Location = Point.Zero,
+				Landscape = true,
+			};
+			var guide = new TwoPaneViewLayoutGuide(layout, service);
+
+			guide.UpdateLayouts(1000, 1000);
+
+			Assert.Equal(TwoPaneViewMode.Tall, guide.Mode);
+			Assert.Equal(new Rect(0, 0, 1000, 490), guide.Pane1);
+			Assert.Equal(new Rect(0, 510, 1000, 490), guide.Pane2);
+		}
+
+		[Fact]
+		public void ConvertsWindowDivisionRegionToViewLayout()
+		{
+			var layout = new Grid();
+			var service = new TestFoldableService
+			{
+				Hinge = new Rect(490, 0, 20, 1000),
+				Location = new Point(400, 0),
+			};
+			var guide = new TwoPaneViewLayoutGuide(layout, service);
+
+			guide.UpdateLayouts(200, 1000);
+
+			Assert.Equal(TwoPaneViewMode.Wide, guide.Mode);
+			Assert.Equal(new Rect(0, 0, 90, 1000), guide.Pane1);
+			Assert.Equal(new Rect(110, 0, 90, 1000), guide.Pane2);
+		}
+
+		[Fact]
+		public void NoDivisionRegionPreservesSinglePaneLayout()
+		{
+			var layout = new Grid();
+			var service = new TestFoldableService
+			{
+				Location = Point.Zero,
+			};
+			var guide = new TwoPaneViewLayoutGuide(layout, service);
+
+			guide.UpdateLayouts(600, 800);
+
+			Assert.Equal(TwoPaneViewMode.SinglePane, guide.Mode);
+			Assert.Equal(new Rect(0, 0, 600, 800), guide.Pane1);
+			Assert.Equal(Rect.Zero, guide.Pane2);
+		}
+
+		[Fact]
+		public void PositionChangeRefreshesViewScopedDivisionRegion()
+		{
+			var layout = new Grid { IsPlatformEnabled = true };
+			var service = new TestFoldableService
+			{
+				Hinge = new Rect(490, 0, 20, 1000),
+				Location = Point.Zero,
+			};
+			var guide = new TwoPaneViewLayoutGuide(layout, service);
+
+			layout.Arrange(new Rect(0, 0, 400, 1000));
+			Assert.Equal(TwoPaneViewMode.SinglePane, guide.Mode);
+
+			service.Location = new Point(300, 0);
+			layout.Arrange(new Rect(300, 0, 400, 1000));
+
+			Assert.Equal(TwoPaneViewMode.Wide, guide.Mode);
+		}
+
+		[Fact]
+		public void AncestorPositionChangeRefreshesViewScopedDivisionRegion()
+		{
+			var parent = new Grid { IsPlatformEnabled = true };
+			var layout = new Grid { IsPlatformEnabled = true };
+			parent.Children.Add(layout);
+			var service = new TestFoldableService
+			{
+				Hinge = new Rect(490, 0, 20, 1000),
+				Location = Point.Zero,
+			};
+			var guide = new TwoPaneViewLayoutGuide(layout, service);
+
+			layout.Arrange(new Rect(0, 0, 400, 1000));
+			parent.Arrange(new Rect(0, 0, 400, 1000));
+			Assert.Equal(TwoPaneViewMode.SinglePane, guide.Mode);
+
+			service.Location = new Point(300, 0);
+			parent.Arrange(new Rect(300, 0, 400, 1000));
+
+			Assert.Equal(TwoPaneViewMode.Wide, guide.Mode);
+		}
+
+		[Fact]
+		public void AncestorTranslationRefreshesViewScopedDivisionRegion()
+		{
+			var parent = new Grid { IsPlatformEnabled = true };
+			var layout = new Grid { IsPlatformEnabled = true };
+			parent.Children.Add(layout);
+			var service = new TestFoldableService
+			{
+				Hinge = new Rect(490, 0, 20, 1000),
+				Location = Point.Zero,
+			};
+			var guide = new TwoPaneViewLayoutGuide(layout, service);
+
+			layout.Arrange(new Rect(0, 0, 400, 1000));
+			Assert.Equal(TwoPaneViewMode.SinglePane, guide.Mode);
+
+			service.Location = new Point(300, 0);
+			parent.TranslationX = 300;
+
+			Assert.Equal(TwoPaneViewMode.Wide, guide.Mode);
+		}
+
+		[Fact]
+		public void SizeChangeRefreshesViewScopedDivisionRegion()
+		{
+			var layout = new Grid { IsPlatformEnabled = true };
+			var service = new TestFoldableService
+			{
+				Hinge = new Rect(490, 0, 20, 1000),
+				Location = Point.Zero,
+			};
+			var guide = new TwoPaneViewLayoutGuide(layout, service);
+
+			layout.Arrange(new Rect(0, 0, 400, 1000));
+			Assert.Equal(TwoPaneViewMode.SinglePane, guide.Mode);
+
+			layout.Arrange(new Rect(0, 0, 600, 1000));
+
+			Assert.Equal(TwoPaneViewMode.Wide, guide.Mode);
+		}
+
+		[Fact]
+		public void ResponsiveThresholdsSwitchBetweenWideAndSinglePane()
+		{
+			var view = CreateTwoPaneView(new TestFoldableService());
+			view.MinTallModeHeight = double.MaxValue;
+			view.MinWideModeWidth = 100;
+
+			view.Measure(300, 300);
+			view.Arrange(new Rect(0, 0, 300, 300));
+
+			Assert.Equal(TwoPaneViewMode.Wide, view.Mode);
+			Assert.True(((VisualElement)view.Children[0]).IsVisible);
+			Assert.True(((VisualElement)view.Children[1]).IsVisible);
+
+			view.MinWideModeWidth = 400;
+
+			Assert.Equal(TwoPaneViewMode.SinglePane, view.Mode);
+			Assert.True(((VisualElement)view.Children[0]).IsVisible);
+			Assert.False(((VisualElement)view.Children[1]).IsVisible);
+		}
+
+		[Fact]
+		public void ActiveDivisionOverridesThresholdsAndPaneLengths()
+		{
+			var service = new TestFoldableService
+			{
+				Hinge = new Rect(490, 0, 20, 1000),
+				Location = Point.Zero,
+			};
+			var view = CreateTwoPaneView(service);
+			view.MinTallModeHeight = double.MaxValue;
+			view.MinWideModeWidth = double.MaxValue;
+			view.Pane1Length = new GridLength(1, GridUnitType.Star);
+			view.Pane2Length = new GridLength(3, GridUnitType.Star);
+
+			view.Measure(1000, 1000);
+			view.Arrange(new Rect(0, 0, 1000, 1000));
+
+			Assert.Equal(TwoPaneViewMode.Wide, view.Mode);
+			Assert.Equal(490, view.ColumnDefinitions[0].Width.Value);
+			Assert.Equal(20, view.ColumnDefinitions[1].Width.Value);
+			Assert.Equal(490, view.ColumnDefinitions[2].Width.Value);
+		}
+
+		[Fact]
+		public void SinglePaneConfigurationHonorsPanePriority()
+		{
+			var view = CreateTwoPaneView(new TestFoldableService());
+			view.MinTallModeHeight = double.MaxValue;
+			view.MinWideModeWidth = 0;
+			view.WideModeConfiguration = TwoPaneViewWideModeConfiguration.SinglePane;
+
+			view.Measure(300, 300);
+			view.Arrange(new Rect(0, 0, 300, 300));
+
+			Assert.True(((VisualElement)view.Children[0]).IsVisible);
+			Assert.False(((VisualElement)view.Children[1]).IsVisible);
+
+			view.PanePriority = TwoPaneViewPriority.Pane2;
+
+			Assert.False(((VisualElement)view.Children[0]).IsVisible);
+			Assert.True(((VisualElement)view.Children[1]).IsVisible);
+		}
+
+		[Fact]
+		public void ResponsivePaneLengthsAreApplied()
+		{
+			var view = CreateTwoPaneView(new TestFoldableService());
+			view.MinTallModeHeight = double.MaxValue;
+			view.MinWideModeWidth = 0;
+			view.Pane1Length = new GridLength(1, GridUnitType.Star);
+			view.Pane2Length = new GridLength(3, GridUnitType.Star);
+
+			view.Measure(300, 300);
+			view.Arrange(new Rect(0, 0, 300, 300));
+
+			Assert.Equal(TwoPaneViewMode.Wide, view.Mode);
+			Assert.Equal(new GridLength(1, GridUnitType.Star), view.ColumnDefinitions[0].Width);
+			Assert.Equal(new GridLength(3, GridUnitType.Star), view.ColumnDefinitions[2].Width);
+		}
+
+		[Fact]
+		public void HorizontalDivisionHonorsBottomTopConfiguration()
+		{
+			var service = new TestFoldableService
+			{
+				Hinge = new Rect(0, 490, 1000, 20),
+				Location = Point.Zero,
+				Landscape = true,
+			};
+			var view = CreateTwoPaneView(service);
+			view.MinTallModeHeight = double.MaxValue;
+			view.MinWideModeWidth = double.MaxValue;
+			view.TallModeConfiguration = TwoPaneViewTallModeConfiguration.BottomTop;
+
+			view.Measure(1000, 1000);
+			view.Arrange(new Rect(0, 0, 1000, 1000));
+
+			Assert.Equal(TwoPaneViewMode.Tall, view.Mode);
+			Assert.Equal(490, view.RowDefinitions[0].Height.Value);
+			Assert.Equal(20, view.RowDefinitions[1].Height.Value);
+			Assert.Equal(490, view.RowDefinitions[2].Height.Value);
+			Assert.Equal(2, view.GetRow(view.Children[0]));
+			Assert.Equal(0, view.GetRow(view.Children[1]));
+		}
+
+		[Fact]
+		public void MonitoringRetryDoesNotDuplicateServiceConnection()
+		{
+			var layout = new Grid();
+			var service = new TestFoldableService
+			{
+				CanStartMonitoring = false,
+			};
+			var guide = new TwoPaneViewLayoutGuide(layout, service);
+
+			guide.ConnectToService();
+			service.CanStartMonitoring = true;
+			guide.ConnectToService();
+			guide.ConnectToService();
+
+			Assert.Equal(2, service.StartMonitoringCount);
+			Assert.Equal(1, service.LayoutSubscriberCount);
+
+			guide.DisconnectFromService();
+
+			Assert.Equal(1, service.StopMonitoringCount);
+			Assert.Equal(0, service.LayoutSubscriberCount);
+		}
+
+		[Fact]
+		public void ElementScopedInfoRebindsServiceWhenHandlerContextChanges()
+		{
+			RunWithSynchronousMainThread(() =>
+			{
+				var layout = new Grid { IsPlatformEnabled = true };
+				var firstService = new TestFoldableService
+				{
+					Hinge = new Rect(490, 0, 20, 1000),
+				};
+				var secondService = new TestFoldableService
+				{
+					Hinge = firstService.Hinge,
+				};
+				layout.Handler = new TestElementHandler(firstService);
+				var info = new DualScreenInfo(layout);
+				var receivedAngles = new System.Collections.Generic.List<double>();
+				EventHandler<HingeAngleChangedEventArgs> handler = (_, e) => receivedAngles.Add(e.HingeAngleInDegrees);
+				info.HingeAngleChanged += handler;
+				layout.Arrange(new Rect(0, 0, 1000, 1000));
+
+				Assert.Equal(1, firstService.LayoutSubscriberCount);
+				Assert.Equal(1, firstService.HingeAngleSubscriberCount);
+
+				layout.Handler = new TestElementHandler(secondService);
+				receivedAngles.Clear();
+				firstService.RaiseHingeAngle(10);
+				secondService.RaiseHingeAngle(20);
+
+				Assert.Equal(1, firstService.StopMonitoringCount);
+				Assert.Equal(1, secondService.LayoutSubscriberCount);
+				Assert.Equal(0, firstService.HingeAngleSubscriberCount);
+				Assert.Equal(1, secondService.HingeAngleSubscriberCount);
+				Assert.Equal(new[] { 20d }, receivedAngles);
+
+				info.HingeAngleChanged -= handler;
+			});
+		}
+
+		[Fact]
+		public void FirstHingeAngleSubscriberDoesNotRemoveUnregisteredHandler()
+		{
+			var service = new TestFoldableService();
+			var info = new DualScreenInfo(new Grid(), service);
+			EventHandler<HingeAngleChangedEventArgs> handler = (_, _) => { };
+
+			RunWithSynchronousMainThread(() =>
+			{
+				info.HingeAngleChanged += handler;
+
+				Assert.Equal(1, service.HingeAngleSubscriberCount);
+				Assert.Equal(1, service.HingeAngleAddCount);
+				Assert.Equal(0, service.HingeAngleRemoveCount);
+				Assert.Equal(1, service.StartMonitoringCount);
+
+				info.HingeAngleChanged -= handler;
+
+				Assert.Equal(0, service.HingeAngleSubscriberCount);
+				Assert.Equal(1, service.HingeAngleRemoveCount);
+			});
+		}
+
+		[Fact]
+		public void RepeatedHingeAngleQueriesDoNotDuplicateMonitoring()
+		{
+			var service = new TestFoldableService();
+			var info = new DualScreenInfo(new Grid(), service);
+
+			RunWithSynchronousMainThread(() =>
+			{
+				info.GetHingeAngleAsync().GetAwaiter().GetResult();
+				info.GetHingeAngleAsync().GetAwaiter().GetResult();
+			});
+
+			Assert.Equal(1, service.StartMonitoringCount);
+		}
+
+		[Theory]
+		[InlineData(true, 490, 0, 20, 1000, 510, 0, 490, 1000)]
+		[InlineData(false, 0, 490, 1000, 20, 0, 510, 1000, 490)]
+		public void SpanningBoundsUseDivisionOrientation(
+			bool isLandscape,
+			double hingeX,
+			double hingeY,
+			double hingeWidth,
+			double hingeHeight,
+			double pane2X,
+			double pane2Y,
+			double pane2Width,
+			double pane2Height)
+		{
+			var layout = new Grid { IsPlatformEnabled = true };
+			var service = new TestFoldableService
+			{
+				Hinge = new Rect(hingeX, hingeY, hingeWidth, hingeHeight),
+				Landscape = isLandscape,
+			};
+			var info = new DualScreenInfo(layout, service);
+
+			layout.Arrange(new Rect(0, 0, 1000, 1000));
+
+			Assert.Equal(2, info.SpanningBounds.Length);
+			Assert.Equal(new Rect(pane2X, pane2Y, pane2Width, pane2Height), info.SpanningBounds[1]);
+		}
+
+		[Fact]
+		public void CurrentUsesAssignedWindowScopedService()
+		{
+			var service = new TestFoldableService
+			{
+				Hinge = new Rect(490, 0, 20, 1000),
+			};
+
+			try
+			{
+				DualScreenInfo.Current.SetFoldableService(service);
+
+				Assert.Equal(TwoPaneViewMode.Wide, DualScreenInfo.Current.SpanMode);
+				Assert.Equal(service.Hinge, DualScreenInfo.Current.HingeBounds);
+				Assert.Equal(2, DualScreenInfo.Current.SpanningBounds.Length);
+				Assert.Equal(1, service.StartMonitoringCount);
+			}
+			finally
+			{
+				DualScreenInfo.Current.SetFoldableService(null);
+			}
+		}
+
+		static void RunWithSynchronousMainThread(Action action)
+		{
+			var setMainThreadImplementation = typeof(MainThread).GetMethod(
+				"SetCustomImplementation",
+				System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic,
+				binder: null,
+				types: new[] { typeof(Func<bool>), typeof(Action<Action>) },
+				modifiers: null);
+			var clearMainThreadImplementation = typeof(MainThread).GetMethod(
+				"ClearCustomImplementation",
+				System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
+			Assert.NotNull(setMainThreadImplementation);
+			Assert.NotNull(clearMainThreadImplementation);
+
+			setMainThreadImplementation.Invoke(null, new object[]
+			{
+				(Func<bool>)(() => true),
+				(Action<Action>)(callback => callback()),
+			});
+
+			try
+			{
+				action();
+			}
+			finally
+			{
+				clearMainThreadImplementation.Invoke(null, null);
+			}
+		}
+
+		static TwoPaneView CreateTwoPaneView(TestFoldableService service)
+		{
+			var pane1 = new BoxView { IsPlatformEnabled = true };
+			var pane2 = new BoxView { IsPlatformEnabled = true };
+			var view = new TwoPaneView(service)
+			{
+				IsPlatformEnabled = true,
+				Pane1 = pane1,
+				Pane2 = pane2,
+			};
+
+			((VisualElement)view.Children[0]).IsPlatformEnabled = true;
+			((VisualElement)view.Children[1]).IsPlatformEnabled = true;
+			return view;
+		}
+
+		sealed class TestFoldableService : IFoldableService
+		{
+			EventHandler<FoldableHingeAngleChangedEventArgs> _hingeAngleChanged;
+			EventHandler<FoldEventArgs> _onLayoutChanged;
+
+			public event EventHandler OnScreenChanged
+			{
+				add { }
+				remove { }
+			}
+
+			public event EventHandler<FoldableHingeAngleChangedEventArgs> HingeAngleChanged
+			{
+				add
+				{
+					_hingeAngleChanged += value;
+					HingeAngleAddCount++;
+					HingeAngleSubscriberCount = _hingeAngleChanged?.GetInvocationList().Length ?? 0;
+				}
+				remove
+				{
+					_hingeAngleChanged -= value;
+					HingeAngleRemoveCount++;
+					HingeAngleSubscriberCount = _hingeAngleChanged?.GetInvocationList().Length ?? 0;
+				}
+			}
+
+			public event EventHandler<FoldEventArgs> OnLayoutChanged
+			{
+				add
+				{
+					_onLayoutChanged += value;
+					LayoutSubscriberCount = _onLayoutChanged?.GetInvocationList().Length ?? 0;
+				}
+				remove
+				{
+					_onLayoutChanged -= value;
+					LayoutSubscriberCount = _onLayoutChanged?.GetInvocationList().Length ?? 0;
+				}
+			}
+
+			public bool IsSpanned => Hinge != Rect.Zero;
+			public bool IsLandscape => Landscape;
+			public bool Landscape { get; set; }
+			public Rect Hinge { get; set; }
+			public Point Location { get; set; }
+			public VisualElement LastHingeView { get; private set; }
+			public int LayoutSubscriberCount { get; private set; }
+			public int HingeAngleAddCount { get; private set; }
+			public int HingeAngleRemoveCount { get; private set; }
+			public int HingeAngleSubscriberCount { get; private set; }
+			public int StartMonitoringCount { get; private set; }
+			public int StopMonitoringCount { get; private set; }
+			public bool CanStartMonitoring { get; set; } = true;
+			public Size ScaledScreenSize => new Size(1000, 1000);
+
+			public Rect GetHinge() => Hinge;
+
+			public Rect GetHinge(VisualElement visualElement)
+			{
+				LastHingeView = visualElement;
+				return Hinge;
+			}
+
+			public bool IsLandscapeFor(VisualElement visualElement) => Landscape;
+
+			public Size GetScaledScreenSize(VisualElement visualElement) => ScaledScreenSize;
+
+			public Point? GetLocationOnScreen(VisualElement visualElement) => Location;
+
+			public Task<int> GetHingeAngleAsync() => Task.FromResult(0);
+
+			public bool StartMonitoring(VisualElement visualElement)
+			{
+				StartMonitoringCount++;
+				return CanStartMonitoring;
+			}
+
+			public void StopMonitoring(VisualElement visualElement)
+			{
+				StopMonitoringCount++;
+			}
+
+			public void RaiseHingeAngle(double angle)
+			{
+				_hingeAngleChanged?.Invoke(this, new FoldableHingeAngleChangedEventArgs(angle));
+			}
+		}
+
+		sealed class TestElementHandler : IViewHandler
+		{
+			public TestElementHandler(IFoldableService service)
+			{
+				var services = new ServiceCollection()
+					.AddSingleton(service)
+					.BuildServiceProvider();
+				MauiContext = new MauiContext(services);
+			}
+
+			public object PlatformView => null;
+			public object ContainerView => null;
+			public IView VirtualView { get; private set; }
+			IElement IElementHandler.VirtualView => VirtualView;
+			public IMauiContext MauiContext { get; private set; }
+			public bool HasContainer { get; set; }
+
+			public void DisconnectHandler()
+			{
+			}
+
+			public void Invoke(string command, object args = null)
+			{
+			}
+
+			public void SetMauiContext(IMauiContext mauiContext)
+			{
+				MauiContext = mauiContext;
+			}
+
+			public void SetVirtualView(IElement view)
+			{
+				VirtualView = (IView)view;
+			}
+
+			public void UpdateValue(string property)
+			{
+			}
+
+			public Size GetDesiredSize(double widthConstraint, double heightConstraint) => Size.Zero;
+
+			public void PlatformArrange(Rect frame)
+			{
+			}
+		}
+	}
+}

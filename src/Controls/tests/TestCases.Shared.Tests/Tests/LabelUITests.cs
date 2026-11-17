@@ -63,14 +63,21 @@ public class LabelUITests : _ViewUITests
 	[Test]
 	public void FontFamily()
 	{
+		Exception? exception = null;
+
 		var remote = GoToStateRemote();
 
-		VerifyScreenshot("LabelUITests_FontFamily_FontAwesome");
+		VerifyScreenshotOrSetException(ref exception, "LabelUITests_FontFamily_FontAwesome");
 
 		remote.TapStateButton();
-		VerifyScreenshot("LabelUITests_FontFamily_Ionicons");
+		VerifyScreenshotOrSetException(ref exception, "LabelUITests_FontFamily_Ionicons");
 
 		remote.TapStateButton();
-		VerifyScreenshot("LabelUITests_FontFamily_FontAwesome");
+		VerifyScreenshotOrSetException(ref exception, "LabelUITests_FontFamily_FontAwesome");
+
+		if (exception is not null)
+		{
+			throw exception;
+		}
 	}
 }

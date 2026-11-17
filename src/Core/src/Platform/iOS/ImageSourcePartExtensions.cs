@@ -52,6 +52,12 @@ namespace Microsoft.Maui.Platform
 				// no-op
 				events?.LoadingCompleted(false);
 			}
+			catch (Exception) when (cancellationToken.IsCancellationRequested)
+			{
+				// The load was cancelled (for example, the handler was disconnected), but the
+				// image source service reported it as a failure; treat it as a cancellation
+				events?.LoadingCompleted(false);
+			}
 			catch (Exception ex)
 			{
 				setImage?.Invoke(null);

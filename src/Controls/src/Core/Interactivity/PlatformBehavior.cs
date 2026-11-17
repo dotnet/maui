@@ -6,8 +6,6 @@ using PlatformView = AppKit.NSView;
 using PlatformView = Android.Views.View;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
-#elif TIZEN
-using PlatformView = Tizen.NUI.BaseComponents.View;
 #elif NETSTANDARD || !PLATFORM
 using PlatformView = System.Object;
 #endif

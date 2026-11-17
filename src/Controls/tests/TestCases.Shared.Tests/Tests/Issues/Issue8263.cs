@@ -16,12 +16,19 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Switch)]
 		public void SwitchOnOffVisualStatesTest()
 		{
+			Exception? exception = null;
+
 			App.WaitForElement("Switch");
 			App.Tap("Switch");
-			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_SwitchOff");
+			VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "_SwitchOff");
 			App.WaitForElement("Switch");
 			App.Tap("Switch");
-			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_SwitchOn");
+			VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "_SwitchOn");
+
+			if (exception is not null)
+			{
+				throw exception;
+			}
 		}
 	}
 }

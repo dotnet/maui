@@ -1,4 +1,5 @@
-﻿using Xunit.Abstractions;
+﻿using System.Text.RegularExpressions;
+using Xunit.Abstractions;
 
 namespace Microsoft.Maui.IntegrationTests
 {
@@ -15,54 +16,50 @@ namespace Microsoft.Maui.IntegrationTests
 		}
 
 		/// <summary>
-		/// Attempts to launch an iOS app on the target device and verifies it runs without crashing.
-		/// Since exit code detection doesn't work reliably on iOS 15+, we consider success as:
-		/// - The app ran until timeout (exit code 90 = APP_LAUNCH_TIMEOUT)
-		/// - The app was killed after running (exit code 83 with mlaunch 137 = SIGKILL from timeout)
-		/// - The app exited cleanly (exit code 0)
-		/// Failure is indicated by crash/error exit codes (80/APP_CRASH, 81/DEVICE_NOT_FOUND, 78/INSTALL_FAILURE).
+		/// Launches an instrumented iOS template and requires both its completion marker
+		/// and a successful XHarness exit. A launch timeout alone does not prove the app ran.
 		/// </summary>
 		/// <param name="appPath">Path to the .app bundle</param>
 		/// <param name="resultDir">Directory for XHarness output logs</param>
 		/// <param name="targetDevice">XHarness target device string (e.g., "ios-simulator-64_18.5")</param>
+		/// <param name="completionMarker">Unique marker emitted by this app after its smoke-test interval</param>
 		/// <param name="deviceUdid">Optional specific device UDID to use</param>
-		/// <param name="launchTimeoutSeconds">How long to let the app run before killing it (default: 15s)</param>
 		/// <param name="output">Optional test output helper for logging</param>
-		/// <returns>True if the app ran successfully (didn't crash), false otherwise</returns>
-		public static bool RunAppleForTimeout(string appPath, string resultDir, string targetDevice, string? deviceUdid = null, int launchTimeoutSeconds = 15, ITestOutputHelper? output = null)
+		/// <returns>True if the app completed its smoke test and exited successfully</returns>
+		public static bool RunApple(string appPath, string resultDir, string targetDevice, string completionMarker, string? deviceUdid = null, ITestOutputHelper? output = null)
 		{
-			var timeoutString = TimeSpan.FromSeconds(launchTimeoutSeconds).ToString();
-			
+			// XHarness applies --timeout before discovery and installation, not after app startup.
+			var timeoutString = TimeSpan.FromSeconds(DEFAULT_TIMEOUT).ToString();
+
 			string deviceArg = $"--target={targetDevice}";
 			if (!string.IsNullOrEmpty(deviceUdid))
 			{
 				deviceArg += $" --device=\"{deviceUdid}\"";
 			}
-			
-			var args = $"apple run --app=\"{appPath}\" --output-directory=\"{resultDir}\" {deviceArg} --timeout=\"{timeoutString}\" --verbosity=Debug";
-			var xhOutput = RunForOutput(args, out int exitCode, launchTimeoutSeconds + 30, output: output);
 
-			// XHarness exit codes - see https://github.com/dotnet/xharness/blob/main/src/Microsoft.DotNet.XHarness.Common/CLI/ExitCode.cs
-			// Success cases:
-			//   0  = SUCCESS (app exited cleanly)
-			//   90 = APP_LAUNCH_TIMEOUT (app ran until we killed it - expected for UI apps)
-			//   83 = APP_LAUNCH_FAILURE - but if caused by mlaunch 137 (SIGKILL), it's actually the timeout kill
-			// Failure cases:
-			//   78 = PACKAGE_INSTALLATION_FAILURE
-			//   80 = APP_CRASH
-			//   81 = DEVICE_NOT_FOUND
-			
-			// Check if exit code 83 is actually a timeout kill (mlaunch exited with 137 = SIGKILL)
-			bool isTimeoutKill = exitCode == 83 && xhOutput.Contains("mlaunch exited with 137", StringComparison.Ordinal);
-			bool isSuccess = exitCode == 0 || exitCode == 90 || isTimeoutKill;
+			var args = $"apple run --app=\"{appPath}\" --output-directory=\"{resultDir}\" {deviceArg} --timeout=\"{timeoutString}\" --verbosity=Debug";
+			var xhOutput = RunForOutput(args, out int exitCode, DEFAULT_TIMEOUT + 30, output: output);
+			bool isSuccess = AppleRunCompleted(exitCode, resultDir, completionMarker);
 
 			if (!isSuccess)
 			{
-				output?.WriteLine($"XHarness failed with exit code {exitCode}");
+				output?.WriteLine($"iOS smoke test did not complete: XHarness exit code {exitCode}, expected marker '{completionMarker}' in '{resultDir}'.");
 				output?.WriteLine(xhOutput);
 			}
 
 			return isSuccess;
+		}
+
+		internal static bool AppleRunCompleted(int exitCode, string resultDir, string completionMarker)
+		{
+			ArgumentException.ThrowIfNullOrWhiteSpace(completionMarker);
+			// XHarness timestamps each line; iOS may also prefix Console output with an NSLog header.
+			var markerLine = new Regex(
+				@"^(?:\[\d{2}:\d{2}:\d{2}\.\d+\] )?(?:\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d+[+-]\d{4} [^\[\r\n]+\[\d+:\d+\] )?" +
+				Regex.Escape(completionMarker) + @"\s*$", RegexOptions.CultureInvariant);
+			return exitCode == 0 && Directory.Exists(resultDir) &&
+				Directory.EnumerateFiles(resultDir, "*.log").Any(path =>
+					File.ReadLines(path).Any(markerLine.IsMatch));
 		}
 
 		public static bool InstallSimulator(string targetDevice, ITestOutputHelper? output = null)

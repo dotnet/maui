@@ -26,6 +26,12 @@ namespace Microsoft.Maui.Controls.Internals
 			Resolver = (type, objects) => resolver.Invoke(type);
 		}
 
+		/// <summary>Clears the currently registered resolver, releasing any references it holds.</summary>
+		public static void ResetResolver()
+		{
+			Resolver = null;
+		}
+
 		internal static object Resolve(Type type, params object[] args)
 		{
 			var result = Resolver?.Invoke(type, args);

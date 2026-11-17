@@ -5,8 +5,8 @@
     xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
     xmlns:foldable="clr-namespace:Microsoft.Maui.Controls.Foldable;assembly=Microsoft.Maui.Controls.Foldable"
     Title="TwoPaneView"
-    BackgroundColor="#bbbbbb">
-    <!-- For Surface Duo and other foldable Android phones -->
+    BackgroundColor="{AppThemeBinding Light=#F3F4F6, Dark=#111827}">
+    <!-- For foldable devices including Surface Duo and iPhone Duo -->
     <!-- Requires Microsoft.Maui.Controls.Foldable NuGet -->
     <views:BasePage.Content>
         <foldable:TwoPaneView x:Name="twoPaneView"
@@ -17,44 +17,58 @@
                               PanePriority="{Binding Source={x:Reference PanePriority}, Path=SelectedItem, Mode=TwoWay}"
             >
             <foldable:TwoPaneView.Pane1>
-                <Frame BorderColor="Red" BackgroundColor="#dddddd">
-                    <StackLayout BackgroundColor="Blue"
-                                 Orientation="Vertical"
-                                 VerticalOptions="StartAndExpand"
-                                 >
+                <ScrollView BackgroundColor="{AppThemeBinding Light=#DBEAFE, Dark=#172554}">
+                    <VerticalStackLayout Padding="24" Spacing="12">
+                        <Label Text="Pane 1"
+                               FontSize="24"
+                               FontAttributes="Bold" />
+                        <Label Text="Foldable state"
+                               FontSize="18"
+                               FontAttributes="Bold" />
+                        <Label x:Name="modeLabel" Text="Mode: SinglePane" />
+                        <Label x:Name="hingeBoundsLabel" Text="Division region: inactive" />
+                        <Label x:Name="spanningBoundsLabel" Text="Spanning panes: 0" />
+                        <Label x:Name="hingeAngleLabel" Text="Hinge angle: 0°" />
 
-                        <Label Text="ScreenSize" x:Name="sizeLabel"/>
-                        <Label Text="SinglePane" x:Name="spanLabel"/>
-                        <Label Text="Hinge" x:Name="hingeLabel"/>
+                        <BoxView HeightRequest="1"
+                                 Margin="0,8"
+                                 Color="{AppThemeBinding Light=#93C5FD, Dark=#1E40AF}" />
 
-                        <Label Text=""/>
-                        <Label Text="MinTallModeHeight"/>
+                        <Label Text="Responsive thresholds" FontAttributes="Bold" />
+                        <Label Text="Minimum tall-mode height" />
                         <Slider x:Name="MinTallModeHeight" Maximum="2000" />
-                        <Label Text="MinWideModeWidth"/>
+                        <Label Text="Minimum wide-mode width" />
                         <Slider x:Name="MinWideModeWidth" Maximum="2000" />
 
-                        <Label Text=""/>
-                        <Label Text="Pane1Length"/>
+                        <Label Text="Pane sizing" FontAttributes="Bold" />
+                        <Label Text="Pane 1 length" />
                         <Slider x:Name="Pane1Length" Maximum="1" Value="0.5" />
-                        <Label Text="Pane2Length"/>
+                        <Label Text="Pane 2 length" />
                         <Slider x:Name="Pane2Length" Maximum="1" Value="0.5" />
 
-                        <Label Text=""/>
-                        <Picker x:Name="PanePriority" Title="PanePriority" SelectedIndex="0" />
-                        <Picker x:Name="TallModeConfiguration" Title="TallModeConfiguration" SelectedIndex="1" />
-                        <Picker x:Name="WideModeConfiguration" Title="WideModeConfiguration" SelectedIndex="1" />
+                        <Picker x:Name="PanePriority" Title="Pane priority" SelectedIndex="0" />
+                        <Picker x:Name="TallModeConfiguration" Title="Tall-mode configuration" SelectedIndex="1" />
+                        <Picker x:Name="WideModeConfiguration" Title="Wide-mode configuration" SelectedIndex="1" />
 
-                        <Label Text=""/>
-                        <Label Text="Jetpack Window Manager 1.0.0"/>
-                        <Button Text="Reset" Clicked="OnReset" />
-                    </StackLayout>
-                </Frame>
+                        <Button Text="Reset settings" Clicked="OnReset" />
+                    </VerticalStackLayout>
+                </ScrollView>
             </foldable:TwoPaneView.Pane1>
             <foldable:TwoPaneView.Pane2>
-                <StackLayout BackgroundColor="DarkGreen">
-                    <Label Text="Pane2 StackLayout"/>
-                    <Button Text="Reset" Clicked="OnReset" />
-                </StackLayout>
+                <Grid Padding="24"
+                      BackgroundColor="{AppThemeBinding Light=#DCFCE7, Dark=#052E16}">
+                    <VerticalStackLayout HorizontalOptions="Center"
+                                         VerticalOptions="Center"
+                                         Spacing="12">
+                        <Label Text="Pane 2"
+                               HorizontalTextAlignment="Center"
+                               FontSize="24"
+                               FontAttributes="Bold" />
+                        <Label Text="This pane automatically moves across the active division region."
+                               HorizontalTextAlignment="Center" />
+                        <Button Text="Reset settings" Clicked="OnReset" />
+                    </VerticalStackLayout>
+                </Grid>
             </foldable:TwoPaneView.Pane2>
         </foldable:TwoPaneView>
     </views:BasePage.Content>

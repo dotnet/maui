@@ -15,8 +15,15 @@ public partial class LabelOptionsPage : ContentPage
 	{
 		if (Navigation.NavigationStack.Count > 1)
 		{
-			await Navigation.PopAsync();
+			TextEditor.Unfocus();
+			LineHeightEntry.Unfocus();
+			await Navigation.PopAsync(animated: false);
 		}
+	}
+
+	private void UseSampleText_Clicked(object sender, EventArgs e)
+	{
+		_viewModel.Text = "Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua ut enim ad minim veniam quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea";
 	}
 
 	private void OnFontSizeChanged(object sender, TextChangedEventArgs e)

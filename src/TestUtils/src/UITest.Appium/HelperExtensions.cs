@@ -33,7 +33,17 @@ namespace UITest.Appium
 		/// <param name="element">Target Element.</param>
 		public static void Tap(this IApp app, string element)
 		{
-			RunWithTimeout(() => FindElement(app, element).Click());
+			RunWithTimeout(() =>
+			{
+				try
+				{
+					FindElement(app, element).Click();
+				}
+				catch (StaleElementReferenceException) when (app is AppiumCatalystApp)
+				{
+					app.WaitForElement(element).Click();
+				}
+			});
 		}
 
 		/// <summary>
@@ -44,7 +54,17 @@ namespace UITest.Appium
 		/// <param name="query">Represents the query that identify an element by parameters such as type, text it contains or identifier.</param>
 		public static void Tap(this IApp app, IQuery query)
 		{
-			RunWithTimeout(() => app.FindElement(query).Tap());
+			RunWithTimeout(() =>
+			{
+				try
+				{
+					app.FindElement(query).Tap();
+				}
+				catch (StaleElementReferenceException) when (app is AppiumCatalystApp)
+				{
+					app.WaitForElement(query).Tap();
+				}
+			});
 		}
 
 		/// <summary>
@@ -1083,30 +1103,54 @@ namespace UITest.Appium
 		}
 
 		public static bool WaitForTextToBePresentInElement(this IApp app, string automationId, string text, TimeSpan? timeout = null)
+			=> app.WaitForText(automationId, text, s => s.Contains(text, StringComparison.OrdinalIgnoreCase), timeout);
+
+		/// <summary>
+		/// Waits until the element's text is exactly equal to <paramref name="text"/> (ordinal), rather
+		/// than merely containing it. Use this when the element's placeholder/initial text already
+		/// contains the expected value as a substring, which would make a Contains-based wait pass
+		/// prematurely on the placeholder.
+		/// </summary>
+		public static bool WaitForTextEqualToElement(this IApp app, string automationId, string text, TimeSpan? timeout = null)
+			=> app.WaitForText(automationId, text, s => string.Equals(s, text, StringComparison.Ordinal), timeout);
+
+		/// <summary>
+		/// Shared polling loop for the text-wait helpers. Repeatedly reads the element's text and
+		/// returns <see langword="true"/> as soon as <paramref name="matches"/> is satisfied. On
+		/// timeout it logs the last observed text (and the expected value) so a stalled or
+		/// placeholder-stuck label is distinguishable from a text-read failure, then returns
+		/// <see langword="false"/>.
+		/// </summary>
+		static bool WaitForText(this IApp app, string automationId, string expected, Func<string, bool> matches, TimeSpan? timeout)
 		{
 			timeout ??= DefaultTimeout;
 			TimeSpan retryFrequency = TimeSpan.FromMilliseconds(500);
 
 			DateTime start = DateTime.Now;
+			string? lastObservedText = null;
 
 			while (true)
 			{
 				var element = app.FindElements(automationId).FirstOrDefault();
 
-				if (element is not null && element.TryGetText(out var s) && s.Contains(text, StringComparison.OrdinalIgnoreCase))
+				if (element is not null && element.TryGetText(out var s))
 				{
-					return true;
+					lastObservedText = s;
+					if (matches(s))
+					{
+						return true;
+					}
 				}
 
 				long elapsed = DateTime.Now.Subtract(start).Ticks;
 				if (elapsed >= timeout.Value.Ticks)
 				{
-					Debug.WriteLine($">>>>> {elapsed} ticks elapsed, timeout value is {timeout.Value.Ticks}");
+					Debug.WriteLine($">>>>> {elapsed} ticks elapsed, timeout value is {timeout.Value.Ticks}; last observed text for '{automationId}' was '{lastObservedText ?? "<unavailable>"}', expected '{expected}'");
 
 					return false;
 				}
 
-				Task.Delay(retryFrequency.Milliseconds).Wait();
+				Task.Delay(retryFrequency).Wait();
 			}
 		}
 
@@ -1384,9 +1428,15 @@ namespace UITest.Appium
 		/// <param name="withInertia">Whether swipes should cause inertia.</param>
 		public static void ScrollDown(this IApp app, string marked, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
 		{
-			var elementToScroll = FindElement(app, marked);
-
-			app.ScrollDown(elementToScroll, strategy, swipePercentage, swipeSpeed, withInertia);
+			try
+			{
+				var elementToScroll = FindElement(app, marked);
+				app.ScrollDown(elementToScroll, strategy, swipePercentage, swipeSpeed, withInertia);
+			}
+			catch (StaleElementReferenceException) when (app is AppiumCatalystApp)
+			{
+				app.ScrollDown(app.WaitForElement(marked), strategy, swipePercentage, swipeSpeed, withInertia);
+			}
 		}
 
 		/// <summary>
@@ -3084,18 +3134,18 @@ namespace UITest.Appium
 				{
 					// Signal cancellation (Appium driver won't respect it, but good hygiene)
 					cts.Cancel();
-					
+
 					// Warn about orphaned thread - the background task will continue blocking until
 					// the underlying Appium/WDA call times out or the process is killed
 					Debug.WriteLine($">>>>> Appium command timed out after {timeout.Value.TotalSeconds}s. Background thread may remain blocked until app is force-terminated.");
-					
+
 					// Observe any future exception from the orphaned task to prevent unobserved task exceptions
 					task.ContinueWith(t =>
 					{
 						if (t.Exception is not null)
 							Debug.WriteLine($">>>>> Orphaned Appium task faulted: {t.Exception.InnerException?.Message}");
 					}, TaskContinuationOptions.OnlyOnFaulted);
-					
+
 					throw new TimeoutException(
 						$"An Appium command did not complete within {timeout.Value.TotalSeconds}s. " +
 						"The application may be unresponsive (e.g., due to an infinite layout loop).");

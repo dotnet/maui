@@ -10,7 +10,9 @@
     "IncludeSampleContent": {
       "isHidden": true
     },
-    "Empty": {
+    "LegacyEmpty": {
+      "longName": "Empty",
+      "shortName": "",
       "isHidden": true
     }
   },

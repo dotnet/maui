@@ -11,7 +11,7 @@ namespace Maui.Controls.Sample.Pages
 			InitializeComponent();
 		}
 
-		void OnToggleButtonClicked(object sender, EventArgs e)
+		void OnToggleButtonClicked(object? sender, EventArgs e)
 		{
 			_searchBar.On<Microsoft.Maui.Controls.PlatformConfiguration.Windows>().SetIsSpellCheckEnabled(!_searchBar.On<Microsoft.Maui.Controls.PlatformConfiguration.Windows>().GetIsSpellCheckEnabled());
 		}

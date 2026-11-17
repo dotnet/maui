@@ -10,7 +10,7 @@ namespace Microsoft.Maui
 	public partial class WindowOverlay
 	{
 		PassthroughView? _passthroughView;
-		IDisposable? _frameObserver;
+		KeyValueObservation? _frameObserver;
 		OverlayGraphicsView? _graphicsView;
 
 		public virtual bool Initialize()
@@ -40,7 +40,7 @@ namespace Microsoft.Maui
 			}
 
 			// Any time the frame gets a new value, we need to update and invalidate the canvas.
-			_frameObserver = nativeLayer.AddObserver("frame", Foundation.NSKeyValueObservingOptions.New, FrameAction);
+			_frameObserver = KeyValueObservation.ObserveFrame(platformWindow, FrameAction);
 			// Disable the graphics view from user input.
 			// This will be handled by the passthrough view.
 			_graphicsView.UserInteractionEnabled = false;
@@ -74,7 +74,7 @@ namespace Microsoft.Maui
 			IsPlatformViewInitialized = false;
 		}
 
-		void FrameAction(Foundation.NSObservedChange obj)
+		void FrameAction()
 		{
 			HandleUIChange();
 			Invalidate();

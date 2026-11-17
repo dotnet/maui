@@ -41,8 +41,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.TapDisplayAlertButton("OK");
 
 			// Verify all alerts were shown successfully
-			var statusText = App.FindElement("StatusLabel").GetText();
-			Assert.That(statusText, Does.Contain("All alerts shown successfully"));
+			Assert.That(() => App.FindElement("StatusLabel").GetText(),
+				Does.Contain("All alerts shown successfully").After(2000, 100));
 		}
 	}
 }

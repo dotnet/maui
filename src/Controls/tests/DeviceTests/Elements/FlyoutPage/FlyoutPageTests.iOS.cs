@@ -9,10 +9,6 @@ using UIKit;
 using Xunit;
 using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
-#if IOS || MACCATALYST
-using FlyoutViewHandler = Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer;
-#endif
-
 namespace Microsoft.Maui.DeviceTests
 {
 	[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
@@ -45,7 +41,7 @@ namespace Microsoft.Maui.DeviceTests
 				}
 			});
 
-			await CreateHandlerAndAddToWindow<PhoneFlyoutPageRenderer>(flyoutPage, async (handler) =>
+			await CreateHandlerAndAddToWindow<IElementHandler>(flyoutPage, async (handler) =>
 			{
 				var offset = (float)UIApplication.SharedApplication.GetSafeAreaInsetsForWindow().Top;
 				await AssertEventually(() => flyoutLabel.ToPlatform().GetLocationOnScreen().Y > 1);
@@ -82,7 +78,7 @@ namespace Microsoft.Maui.DeviceTests
 				FlowDirection = isRtl ? FlowDirection.RightToLeft : FlowDirection.LeftToRight
 			});
 
-			await CreateHandlerAndAddToWindow<FlyoutViewHandler>(flyoutPage, async (handler) =>
+			await CreateHandlerAndAddToWindow<IElementHandler>(flyoutPage, async (handler) =>
 			{
 				await AssertEventually(() => flyoutPage.Flyout.GetBoundingBox().Width > 0);
 				var screenBounds = flyoutPage.GetBoundingBox();
@@ -129,7 +125,9 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		UIView FindPlatformFlyoutView(UIView uiView) =>
+		// The base class exercises PhoneFlyoutPageRenderer on iOS/MacCatalyst;
+		// FlyoutPageHandlerTests overrides this to look for FlyoutContainerViewController instead.
+		protected virtual UIView FindPlatformFlyoutView(UIView uiView) =>
 			uiView.FindResponder<PhoneFlyoutPageRenderer>()?.View;
 
 		async Task CloseFlyout(FlyoutPage flyoutPage)

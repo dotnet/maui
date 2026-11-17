@@ -5,9 +5,7 @@ using PlatformView = UIKit.UIProgressView;
 using PlatformView = Android.Widget.ProgressBar;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.Controls.ProgressBar;
-#elif TIZEN
-using PlatformView = Tizen.UIExtensions.NUI.GraphicsView.ProgressBar;
-#elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID && !TIZEN)
+#elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID)
 using PlatformView = System.Object;
 #endif
 

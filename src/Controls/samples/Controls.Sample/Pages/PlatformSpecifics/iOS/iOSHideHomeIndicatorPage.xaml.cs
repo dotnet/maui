@@ -12,22 +12,22 @@ namespace Maui.Controls.Sample.Pages
 			InitializeComponent();
 		}
 
-		void NavigationPage_Clicked(object sender, EventArgs e)
+		void NavigationPage_Clicked(object? sender, EventArgs e)
 		{
 			Navigation.PushAsync(new iOSHideHomeIndicatorNavigationPageDemo());
 		}
 
-		void TabbedPage_Clicked(object sender, EventArgs e)
+		void TabbedPage_Clicked(object? sender, EventArgs e)
 		{
 			Navigation.PushAsync(new iOSHideHomeIndicatorPageDemo());
 		}
 
-		void FlyoutPage_Clicked(object sender, EventArgs e)
+		void FlyoutPage_Clicked(object? sender, EventArgs e)
 		{
 			Navigation.PushAsync(new iOSHideHomeIndicatorFlyoutPageDemo());
 		}
 
-		void Shell_Clicked(object sender, EventArgs e)
+		void Shell_Clicked(object? sender, EventArgs e)
 		{
 			Navigation.PushAsync(new iOSHideHomeIndicatorShellDemo());
 		}

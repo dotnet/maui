@@ -44,9 +44,7 @@ stages:
     pool: ${{ parameters.pool }}
     templateContext:
       type: releaseJob
-      # APIScanFiles are build outputs from before signing and nothing is released from this job.
-      # As a production release job 1ES PT would apply its release validations to the input,
-      # including CodeSign Validation, which reports every unsigned file in it.
+      # This job analyzes build outputs; it does not release them.
       isProduction: false
       inputs:
       - input: pipelineArtifact

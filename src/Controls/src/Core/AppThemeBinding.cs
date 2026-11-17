@@ -99,26 +99,31 @@ namespace Microsoft.Maui.Controls
 			}
 
 			if (dispatch)
-				target.Dispatcher.DispatchIfRequired(Set);
+				ApplyWithDispatch(target);
 			else
-				Set();
+				SetValue(target);
+		}
 
-			void Set()
+		void ApplyWithDispatch(BindableObject target)
+		{
+			// Keep the captured target in a separate method so synchronous applies don't allocate a closure.
+			target.Dispatcher.DispatchIfRequired(() => SetValue(target));
+		}
+
+		void SetValue(BindableObject target)
+		{
+			var value = GetValue();
+			if (value is DynamicResource dynamicResource)
+				target.SetDynamicResource(_targetProperty, dynamicResource.Key, specificity);
+			else
 			{
-				var value = GetValue();
-				if (value is DynamicResource dynamicResource)
-					target.SetDynamicResource(_targetProperty, dynamicResource.Key, specificity);
-				else
+				if (!BindingExpressionHelper.TryConvert(ref value, _targetProperty, _targetProperty.ReturnType, true))
 				{
-					if (!BindingExpressionHelper.TryConvert(ref value, _targetProperty, _targetProperty.ReturnType, true))
-					{
-						BindingDiagnostics.SendBindingFailure(this, null, target, _targetProperty, "AppThemeBinding", BindingExpression.CannotConvertTypeErrorMessage, value, _targetProperty.ReturnType);
-						return;
-					}
-					target.SetValueCore(_targetProperty, value, Internals.SetValueFlags.ClearDynamicResource, BindableObject.SetValuePrivateFlags.Default | BindableObject.SetValuePrivateFlags.Converted, specificity);
+					BindingDiagnostics.SendBindingFailure(this, null, target, _targetProperty, "AppThemeBinding", BindingExpression.CannotConvertTypeErrorMessage, value, _targetProperty.ReturnType);
+					return;
 				}
+				target.SetValueCore(_targetProperty, value, Internals.SetValueFlags.ClearDynamicResource, BindableObject.SetValuePrivateFlags.Default | BindableObject.SetValuePrivateFlags.Converted, specificity);
 			}
-			;
 		}
 
 		object _light;

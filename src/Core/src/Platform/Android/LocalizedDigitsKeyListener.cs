@@ -92,10 +92,10 @@ namespace Microsoft.Maui.Platform
 		{
 			if ((InputType & InputTypes.NumberFlagSigned) == 0)
 			{
-				return _acceptedChars ??= new[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', _decimalSeparator };
+				return _acceptedChars ??= new[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', _decimalSeparator, '.' };
 			}
 
-			return _acceptedChars ??= new[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', SignCharacter, _decimalSeparator };
+			return _acceptedChars ??= new[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', SignCharacter, _decimalSeparator, '.' };
 		}
 
 		static bool IsSignChar(char c)
@@ -111,8 +111,29 @@ namespace Microsoft.Maui.Platform
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
 		public override ICharSequence? FilterFormatted(ICharSequence? source, int start, int end, ISpanned? dest, int dstart, int dend)
 		{
+			// Some numeric IMEs emit '.' even when the locale uses a different separator.
+			SpannableStringBuilder? localized = null;
+			if (_decimalSeparator != '.')
+			{
+				for (int i = start; i < end; i++)
+				{
+					if (source.CharAt(i) == '.')
+					{
+						localized ??= new SpannableStringBuilder(source, start, end);
+						localized.Replace(i - start, i + 1 - start, _decimalSeparator.ToString());
+					}
+				}
+			}
+
+			if (localized != null)
+			{
+				source = localized;
+				start = 0;
+				end = localized.Length();
+			}
+
 			// Borrowed heavily from the Android source
-			ICharSequence? filterFormatted = base.FilterFormatted(source, start, end, dest, dstart, dend);
+			ICharSequence? filterFormatted = base.FilterFormatted(source, start, end, dest, dstart, dend) ?? localized;
 
 			if (filterFormatted != null)
 			{

@@ -36,6 +36,11 @@ namespace Microsoft.Maui.Platform
 
 		public override AView OnCreateView(LayoutInflater inflater, ViewGroup? container, Bundle? savedInstanceState)
 		{
+			// A pending fragment transaction can run after the navigation manager has been disconnected,
+			// for example when a modal NavigationPage is dismissed while it's still navigating
+			if ((_navigationManager ?? NavHostFragment?.StackNavigationManager) is not { HasNavHost: true })
+				return null!;
+
 			_fragmentContainerView ??= container as FragmentContainerView;
 
 			// When shuffling around the back stack sometimes we'll need a page to detach and then reattach.
@@ -96,54 +101,17 @@ namespace Microsoft.Maui.Platform
 
 		public override Animation OnCreateAnimation(int transit, bool enter, int nextAnim)
 		{
-			int id = 0;
-
-			Animation? returnValue;
-
 			// This means the operation currently being processed shouldn't be animated
 			// This will happen if a user inserts or removes a root page
 			if (NavigationManager.IsPopping == null || !NavigationManager.IsAnimated)
 			{
-				returnValue = null;
-			}
-			else
-			{
-				// Once we have Function Mappers figured out all of this code can
-				// move to a function mapper as a way to customize animations from code
-				if (NavigationManager.IsPopping.Value)
-				{
-					if (!enter)
-					{
-						id = Resource.Animation.nav_default_pop_exit_anim;
-					}
-					else
-					{
-						id = Resource.Animation.nav_default_pop_enter_anim;
-					}
-				}
-				else
-				{
-					if (enter)
-					{
-						id = Resource.Animation.nav_default_enter_anim;
-					}
-					else
-					{
-						id = Resource.Animation.nav_default_exit_anim;
-					}
-				}
-
-				if (id > 0)
-				{
-					returnValue = AnimationUtils.LoadAnimation(Context, id);
-				}
-				else
-				{
-					returnValue = base.OnCreateAnimation(transit, enter, id);
-				}
+				return null!;
 			}
 
-			return returnValue!;
+			// Delegate to StackNavigationManager which can be overridden for custom animations
+			var animation = NavigationManager.OnCreateNavigationAnimation(Context!, NavigationManager.IsPopping.Value, enter);
+
+			return (animation ?? base.OnCreateAnimation(transit, enter, 0))!;
 		}
 	}
 }

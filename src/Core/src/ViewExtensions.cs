@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Media;
 using System.Collections.Generic;
 using System.IO;
-#if (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID && !TIZEN)
+#if (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID)
 using IPlatformViewHandler = Microsoft.Maui.IViewHandler;
 #endif
 #if IOS || MACCATALYST
@@ -16,9 +16,6 @@ using ParentView = Android.Views.IViewParent;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
 using ParentView = Microsoft.UI.Xaml.DependencyObject;
-#elif TIZEN
-using PlatformView = Tizen.NUI.BaseComponents.View;
-using ParentView = Tizen.NUI.BaseComponents.View;
 #else
 using PlatformView = System.Object;
 using ParentView = System.Object;
@@ -75,19 +72,19 @@ namespace Microsoft.Maui
 		/// <remarks>
 		/// On non-built-in platform TFMs (e.g. <c>net10.0-macos</c> AppKit backends,
 		/// <c>net10.0</c> Linux/GTK backends) where MAUI does not ship a screenshot
-		/// implementation, capture is routed through a keyed DI hook. Third-party
-		/// platform backends can opt in by registering a
-		/// <see cref="Func{T, TResult}"/> of <see cref="object"/> to
-		/// <c>Task&lt;IScreenshotResult?&gt;</c> under the service key
-		/// <c>"Microsoft.Maui.ViewCapture"</c>:
+		/// implementation, capture is routed through the registered screenshot service.
+		/// Third-party platform backends opt in by registering an <see cref="IScreenshot"/>
+		/// implementation that also implements <see cref="IViewScreenshot"/> in the app's
+		/// <see cref="System.IServiceProvider"/>:
 		/// <code>
-		/// builder.Services.AddKeyedSingleton&lt;Func&lt;object, Task&lt;IScreenshotResult?&gt;&gt;&gt;(
-		///     "Microsoft.Maui.ViewCapture",
-		///     (_, _) =&gt; platformView =&gt; ((AppKit.NSView)platformView).CaptureAsync());
+		/// builder.Services.AddSingleton&lt;IScreenshot, AppKitScreenshotImplementation&gt;();
 		/// </code>
-		/// If no hook is registered (or the <see cref="IElementHandler.PlatformView"/>
-		/// is <see langword="null"/>), the returned task resolves to
-		/// <see langword="null"/>.
+		/// The dispatch resolves that service from the handler's
+		/// <see cref="IElementHandler.MauiContext"/> and forwards the view's container view
+		/// (or, failing that, its platform view) to
+		/// <see cref="IViewScreenshot.CaptureViewAsync(object)"/>. When no capable service is
+		/// registered (or the <see cref="IElementHandler.PlatformView"/> is
+		/// <see langword="null"/>), the returned task resolves to <see langword="null"/>.
 		/// </remarks>
 		public static Task<IScreenshotResult?> CaptureAsync(this IView view)
 		{
@@ -100,7 +97,13 @@ namespace Microsoft.Maui
 
 			return CaptureAsync(platformView);
 #else
-			return ScreenshotDispatch.CaptureAsync(view?.Handler, ScreenshotDispatch.ViewCaptureKey);
+			// Prefer the container view (clip/shadow/border) like the #if PLATFORM path's
+			// view.ToPlatform() does; fall back to the raw platform view. The shared dispatch
+			// helper resolves the registered IViewScreenshot and stays graceful (returns null
+			// when capture is unavailable) to preserve this path's contract.
+			var handler = view?.Handler;
+			var captureView = (handler as IViewHandler)?.ContainerView ?? handler?.PlatformView;
+			return ScreenshotDispatch.CaptureAsync(handler, captureView);
 #endif
 		}
 
@@ -110,7 +113,6 @@ namespace Microsoft.Maui
 			await Screenshot.Default.CaptureAsync(window);
 #endif
 
-#if !TIZEN
 		internal static bool NeedsContainer(this IView? view)
 		{
 			if (view?.Clip != null || view?.Shadow != null)
@@ -132,7 +134,6 @@ namespace Microsoft.Maui
 #endif
 			return false;
 		}
-#endif
 
 	}
 }

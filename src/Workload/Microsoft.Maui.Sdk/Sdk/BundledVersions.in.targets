@@ -67,7 +67,7 @@
     <PropertyGroup>
       <_MauiValidateRefsPrefix>Starting with .NET 8, setting </_MauiValidateRefsPrefix>
       <!-- &lt;UseMaui&gt;true&lt;/UseMaui&gt; -->
-      <_MauiValidateRefsInfix> does not automatically include NuGet package references in your project.  Update your project by including this item:  &lt;PackageReference Include=&quot;</_MauiValidateRefsInfix>
+      <_MauiValidateRefsInfix> still adds an implicit NuGet package reference to your project, but only for backward compatibility. Reference the package explicitly instead.  Update your project by including this item:  &lt;PackageReference Include=&quot;</_MauiValidateRefsInfix>
       <!-- Microsoft.Maui.Controls -->
       <_MauiValidateRefsSuffix>&quot; Version=&quot;$(MauiVersion)&quot; /&gt;.  You can skip this warning by setting  &lt;SkipValidateMauiImplicitPackageReferences&gt;true&lt;/SkipValidateMauiImplicitPackageReferences&gt;  in your project file.</_MauiValidateRefsSuffix>
     </PropertyGroup>

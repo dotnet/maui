@@ -84,10 +84,10 @@ namespace Microsoft.Maui.Devices.Sensors
 		/// Provides the default implementation for static usage of this API.
 		/// </summary>
 		public static IBarometer Default =>
-			defaultImplementation ??= new BarometerImplementation();
+			EssentialsImplementation.GetOrCreate(ref defaultImplementation, static () => new BarometerImplementation());
 
 		internal static void SetDefault(IBarometer? implementation) =>
-			defaultImplementation = implementation;
+			EssentialsImplementation.Set(ref defaultImplementation, implementation);
 	}
 
 	/// <summary>

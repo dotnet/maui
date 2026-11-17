@@ -172,10 +172,10 @@ namespace Microsoft.Maui.ApplicationModel
 		/// Provides the default implementation for static usage of this API.
 		/// </summary>
 		public static IMap Default =>
-			defaultImplementation ??= new MapImplementation();
+			EssentialsImplementation.GetOrCreate(ref defaultImplementation, static () => new MapImplementation());
 
 		internal static void SetDefault(IMap? implementation) =>
-			defaultImplementation = implementation;
+			EssentialsImplementation.Set(ref defaultImplementation, implementation);
 	}
 
 	/// <summary>

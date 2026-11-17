@@ -204,14 +204,7 @@ namespace Microsoft.Maui.Platform
 		}
 
 		SafeAreaRegions GetSafeAreaRegionForEdge(int edge)
-		{
-			if (View is ISafeAreaView2 safeAreaPage)
-			{
-				return safeAreaPage.GetSafeAreaRegionsForEdge(edge);
-			}
-
-			return SafeAreaRegions.None; // Default: edge-to-edge content
-		}
+			=> View.GetSafeAreaRegionForEdge(edge);
 
 		SafeAreaEdges? _previousEdges;
 
@@ -409,6 +402,7 @@ namespace Microsoft.Maui.Platform
 			_safeAreaInvalidated = false;
 
 			var oldSafeArea = _safeArea;
+			var scale = this.GetEffectiveDisplayScale();
 			var systemAdjustedContentInset = SystemAdjustedContentInset.ToSafeAreaInsets();
 
 			// iOS sets AdjustedContentInset only when the ContentSize exceeds the ScrollView's Bounds.
@@ -422,7 +416,7 @@ namespace Microsoft.Maui.Platform
 			else
 				_safeArea = GetInset(SystemAdjustedContentInset).ToSafeAreaInsets();
 
-			if (_safeArea.IsEmptyAtPixelLevel())
+			if (_safeArea.IsEmptyAtPixelLevel(scale))
 			{
 				_safeArea = SafeAreaPadding.Empty;
 			}
@@ -435,7 +429,7 @@ namespace Microsoft.Maui.Platform
 			// whole-view parent check is needed.
 			_appliesSafeAreaAdjustments = RespondsToSafeArea() && !_safeArea.IsEmpty;
 
-			if (!_systemAdjustedContentInset.EqualsAtPixelLevel(systemAdjustedContentInset))
+			if (!_systemAdjustedContentInset.EqualsAtPixelLevel(systemAdjustedContentInset, scale))
 			{
 				InvalidateConstraintsCache();
 				_systemAdjustedContentInset = systemAdjustedContentInset;
@@ -451,7 +445,7 @@ namespace Microsoft.Maui.Platform
 			// Compare at device-pixel resolution to filter sub-pixel noise from animations
 			// that would otherwise trigger infinite layout invalidation cycles (#32586, #33934).
 			return oldApplyingSafeAreaAdjustments == _appliesSafeAreaAdjustments &&
-				   (oldSafeArea.EqualsAtPixelLevel(_safeArea) || !_appliesSafeAreaAdjustments);
+				   (oldSafeArea.EqualsAtPixelLevel(_safeArea, scale) || !_appliesSafeAreaAdjustments);
 		}
 
 		/// <summary>
@@ -527,7 +521,7 @@ namespace Microsoft.Maui.Platform
 		/// readers between arranges.
 		/// </summary>
 		bool UIKitCompensatesForSafeArea =>
-			!SystemAdjustedContentInset.ToSafeAreaInsets().IsEmptyAtPixelLevel()
+			!SystemAdjustedContentInset.ToSafeAreaInsets().IsEmptyAtPixelLevel(this.GetEffectiveDisplayScale())
 			&& ContentInsetAdjustmentBehavior != UIScrollViewContentInsetAdjustmentBehavior.Never;
 
 		/// <summary>

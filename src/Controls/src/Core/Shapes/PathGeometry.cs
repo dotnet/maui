@@ -18,6 +18,8 @@ namespace Microsoft.Maui.Controls.Shapes
 		// subscribed so we can unsubscribe them even when the collection is cleared (Reset
 		// action does not populate OldItems).
 		readonly List<PathFigure> _subscribedFigures = new List<PathFigure>();
+		WeakNotifyCollectionChangedProxy _figuresCollectionChangedProxy;
+		NotifyCollectionChangedEventHandler _figuresCollectionChanged;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="PathGeometry"/> class.
@@ -45,6 +47,11 @@ namespace Microsoft.Maui.Controls.Shapes
 		{
 			Figures = figures;
 			FillRule = fillRule;
+		}
+
+		~PathGeometry()
+		{
+			_figuresCollectionChangedProxy?.Unsubscribe();
 		}
 
 		/// <summary>Bindable property for <see cref="Figures"/>.</summary>
@@ -231,14 +238,16 @@ namespace Microsoft.Maui.Controls.Shapes
 		{
 			if (oldCollection != null)
 			{
-				oldCollection.CollectionChanged -= OnPathFigureCollectionChanged;
+				_figuresCollectionChangedProxy?.Unsubscribe();
 				UnsubscribeAllFigures();
 			}
 
 			if (newCollection == null)
 				return;
 
-			newCollection.CollectionChanged += OnPathFigureCollectionChanged;
+			_figuresCollectionChanged ??= OnPathFigureCollectionChanged;
+			_figuresCollectionChangedProxy ??= new WeakNotifyCollectionChangedProxy();
+			_figuresCollectionChangedProxy.Subscribe(newCollection, _figuresCollectionChanged);
 
 			foreach (var newPathFigure in newCollection)
 			{

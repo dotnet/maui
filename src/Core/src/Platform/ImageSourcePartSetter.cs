@@ -5,9 +5,7 @@ using PlatformImage = UIKit.UIImage;
 using PlatformImage = Android.Graphics.Drawables.Drawable;
 #elif WINDOWS
 using PlatformImage = Microsoft.UI.Xaml.Media.ImageSource;
-#elif TIZEN
-using PlatformImage = Microsoft.Maui.Platform.MauiImageSource;
-#elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID && !TIZEN)
+#elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID)
 using PlatformImage = System.Object;
 #endif
 
