@@ -367,12 +367,21 @@ internal class KnownMarkups
 		else // sourceNode != null
 		{
 			var source = (string)(sourceNode as ValueNode)!.Value;
+			if (!Uri.TryCreate(source, UriKind.Relative, out _))
+			{
+				context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, LocationHelpers.LocationCreate(context.ProjectItem.RelativePath!, (IXmlLineInfo)sourceNode, source), $"StyleSheet Source '{source}' is not a valid relative URI."));
+				value = "default";
+				return false;
+			}
+
+			// Resolve the path at generation time: the runtime helpers used by XamlC are internal to Controls.
+			// The root path matches the XamlResourceId path generated for this XAML file.
 			var rootTargetPath = (context.ProjectItem.RelativePath ?? string.Empty).Replace('\\', '/');
-			var resourcePath = TypeConverters.RDSourceConverter.GetResourcePath(source, rootTargetPath).Replace("\"", "\"\"");
+			var resourcePath = $"\"{CSharpExpressionHelpers.EscapeForString(RDSourceConverter.GetResourcePath(source, rootTargetPath))}\"";
 			var assembly = $"typeof({context.RootType.ToFQDisplayString()}).Assembly";
 
 			var lineInfo = $"new global::Microsoft.Maui.Controls.Xaml.XmlLineInfo({((IXmlLineInfo)markupNode).LineNumber}, {((IXmlLineInfo)markupNode).LinePosition})";
-			value = $"global::Microsoft.Maui.Controls.StyleSheets.StyleSheet.FromResource(@\"{resourcePath}\", {assembly}, {lineInfo})";
+			value = $"global::Microsoft.Maui.Controls.StyleSheets.StyleSheet.FromResource({resourcePath}, {assembly}, {lineInfo})";
 			return true;
 		}
 	}
