@@ -182,7 +182,12 @@ namespace Microsoft.Maui.Platform
 				return;
 
 			_lastProcessTerminationReload = now;
-			webView.UpdateReload(virtualView);
+
+			// Restore an HTML source only while its document is shown; a page the user moved on to reloads itself.
+			if (webView is MauiWKWebView { HtmlUrl: { } htmlUrl } && webView.Url?.AbsoluteString?.Split('#')[0] is { } url && url != htmlUrl)
+				webView.Reload();
+			else
+				webView.UpdateReload(virtualView);
 		}
 
 		string GetCurrentUrl()

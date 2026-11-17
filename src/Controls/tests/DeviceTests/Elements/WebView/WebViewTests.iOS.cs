@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Foundation;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
 using ObjCRuntime;
@@ -45,6 +46,39 @@ namespace Microsoft.Maui.DeviceTests
 				await terminated.Task.WaitAsync(TimeSpan.FromSeconds(5));
 				await Task.Delay(1000);
 				Assert.False(navigated.Task.IsCompleted);
+			});
+		}
+
+		[Fact(DisplayName = "HTML source keeps a page it navigated to after the web content process terminates")]
+		public async Task HtmlSourceKeepsNavigatedPageAfterWebContentProcessTerminates()
+		{
+			SetupBuilder();
+
+			var webView = new WebView
+			{
+				WidthRequest = 100,
+				HeightRequest = 100,
+				Source = new HtmlWebViewSource { Html = "<html><body><p id='content'>Issue39973</p></body></html>" }
+			};
+
+			var navigated = new TaskCompletionSource<WebNavigationResult>(TaskCreationOptions.RunContinuationsAsynchronously);
+			webView.Navigated += (_, e) => navigated.TrySetResult(e.Result);
+
+			await AttachAndRun<WebViewHandler>(webView, async handler =>
+			{
+				Assert.Equal(WebNavigationResult.Success, await navigated.Task.WaitAsync(TimeSpan.FromSeconds(5)));
+
+				// Leave the HTML document, as following a link does, while Source stays the HTML
+				var page = NSBundle.MainBundle.GetUrlForResource("index", "html", "HybridTestRoot");
+				navigated = new TaskCompletionSource<WebNavigationResult>(TaskCreationOptions.RunContinuationsAsynchronously);
+				handler.PlatformView.LoadFileUrl(page, page);
+				Assert.Equal(WebNavigationResult.Success, await navigated.Task.WaitAsync(TimeSpan.FromSeconds(5)));
+
+				navigated = new TaskCompletionSource<WebNavigationResult>(TaskCreationOptions.RunContinuationsAsynchronously);
+				KillWebContentProcess(handler.PlatformView);
+
+				Assert.Equal(WebNavigationResult.Success, await navigated.Task.WaitAsync(TimeSpan.FromSeconds(5)));
+				Assert.Equal(page.AbsoluteString, handler.PlatformView.Url?.AbsoluteString);
 			});
 		}
 
