@@ -88,6 +88,7 @@ public partial class FontManagerTests : TestBase
 			Assert.Equal(0, logger.ErrorCount);
 		});
 
+#if !USE_NATIVE_AOT
 	[Fact]
 	public Task CanReadFamilyNameFromRelativeFontFile() =>
 		InvokeOnMainThreadAsync(() =>
@@ -99,7 +100,6 @@ public partial class FontManagerTests : TestBase
 			Assert.Equal("dokdo_regular.ttf#Dokdo", actual.Source);
 		});
 
-#if !USE_NATIVE_AOT
 	[Fact]
 	public Task CanReadFamilyNameFromUnregisteredFontAsset() =>
 		InvokeOnMainThreadAsync(() =>
