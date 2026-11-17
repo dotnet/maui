@@ -8,6 +8,16 @@ public partial class Issue25599 : Shell
 		InitializeComponent();
 	}
 
+	protected override void OnNavigating(ShellNavigatingEventArgs args)
+	{
+		base.OnNavigating(args);
+
+		if (args.Source == ShellNavigationSource.ShellSectionChanged)
+		{
+			args.Cancel();
+		}
+	}
+
 	private async void Button_Clicked(object sender, EventArgs e)
 	{
 		await Navigation.PushAsync(new DetailsPage());
