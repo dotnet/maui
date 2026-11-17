@@ -1,0 +1,13 @@
+{
+    "Globs": [
+        "**/.git",
+        "**/.git/**",
+        "**/bin/**",
+        "**/obj/**",
+        "**/tests/**",
+        "**/test/**",
+        "**/samples/**",
+        "**/src/TestUtils/**",
+        "**/wwwroot/lib/bootstrap/**"
+    ]
+}

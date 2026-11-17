@@ -26,6 +26,7 @@ on:
       - '.github/skills/trace-regression/**'
       - '.github/workflows/**'
       - 'eng/scripts/**'
+      - 'eng/automation/devskim/**'
       - 'Directory.Build.props'
       - 'global.json'
       - 'eng/Versions.props'
@@ -113,6 +114,7 @@ jobs:
             'eng/scripts/nuget_release_packages.Tests.ps1'
             'eng/pipelines/arcade/build-warning-configuration.Tests.ps1'
             'eng/pipelines/arcade/windows-xaml-trimming.Tests.ps1'
+            'eng/automation/devskim/DevSkim.Tests.ps1'
           )
           $config.Run.PassThru = $true
           $config.Output.Verbosity = 'Detailed'
