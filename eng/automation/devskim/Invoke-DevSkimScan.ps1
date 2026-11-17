@@ -1,7 +1,7 @@
 #Requires -Version 7.0
 <#
 .SYNOPSIS
-Scans the shipping sources and build tooling with DevSkim and fails if it reports a banned API.
+Scans the src and eng trees with DevSkim and fails if it reports a banned API.
 
 .DESCRIPTION
 Runs DevSkim over each source tree with every rule at every severity, ignoring inline suppressions and
@@ -12,8 +12,9 @@ severity. Findings from other rules stay in the reports for triage.
 A clean result has to mean something, so the script also fails when
   - DevSkim isn't the version this script was validated with,
   - the options file is missing (DevSkim would silently scan everything),
-  - DevSkim doesn't report the banned strcpy calls in a set of canary files it writes itself, or
-  - DevSkim analyzed no files in a source tree.
+  - DevSkim doesn't report the banned strcpy calls in the canary files that the script writes,
+  - DevSkim analyzed no files in a source tree, or
+  - a report is missing or malformed.
 #>
 [CmdletBinding()]
 param (

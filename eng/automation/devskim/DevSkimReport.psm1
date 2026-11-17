@@ -31,9 +31,9 @@ function Get-DevSkimBannedFindings {
     Returns the results tagged API.DangerousAPI.BannedFunction in a DevSkim SARIF report.
 
     .DESCRIPTION
-    Every severity counts, because the general banned-function rule is only Moderate, and so does a result
-    that carries an inline suppression. Throws if the file isn't a complete DevSkim report, so that a failed
-    scan can't be mistaken for a clean one.
+    Every severity counts, because the general banned-function rule is only Moderate. A result with an inline
+    suppression counts too. Throws if the file isn't a complete DevSkim report, so that a failed scan can't be
+    mistaken for a clean one.
     #>
     [CmdletBinding()]
     param ([Parameter(Mandatory)] [string] $Path)

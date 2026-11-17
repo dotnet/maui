@@ -41,8 +41,8 @@ stages:
         packageType: sdk
         version: 10.0.x
 
-    # DevSkim is installed from the repository's NuGet.config, because the agents can't reach nuget.org, and from
-    # outside the checkout, so that dotnet ignores the repository's global.json.
+    # Install DevSkim from the repository's NuGet.config, because the official agents can't reach nuget.org.
+    # Install it outside the checkout, so that dotnet ignores the repository's global.json.
     # When changing the version, follow the steps in eng/automation/devskim/README.md.
     - pwsh: |
         dotnet tool install Microsoft.CST.DevSkim.CLI `
