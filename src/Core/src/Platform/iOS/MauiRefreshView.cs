@@ -17,6 +17,7 @@ namespace Microsoft.Maui.Platform
 		bool _isRefreshEnabled = true;
 		bool _originalAlwaysBounceVertical;
 		bool _hasStoredAlwaysBounceVertical;
+		bool _restoreScrollPosition;
 		nfloat _originalY;
 		nfloat _refreshControlHeight;
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
@@ -46,13 +47,21 @@ namespace Microsoft.Maui.Platform
 					{
 						// Store the current scroll position when refresh starts
 						StoreCurrentScrollPosition();
+						_restoreScrollPosition = true;
 						TryOffsetRefresh(this, IsRefreshing);
 						_refreshControl.BeginRefreshing();
 					}
 					else
 					{
 						_refreshControl.EndRefreshing();
-						TryOffsetRefresh(this, IsRefreshing);
+
+						// A user pull starts the control before IsRefreshing is set, so no position was stored;
+						// UIKit settles the scroll view itself when it ends.
+						if (_restoreScrollPosition)
+						{
+							_restoreScrollPosition = false;
+							TryOffsetRefresh(this, IsRefreshing);
+						}
 					}
 				}
 			}
