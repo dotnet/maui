@@ -564,9 +564,13 @@ The **Prepare signed release publication** workflow follows completion and polls
 hourly, and wakes on merged staging servicing PRs and real release-branch creation.
 It inventories all retained receipts for the configured band, not just `currentSr`.
 A lane is reported as `published` and skipped when a stable, non-draft GitHub
-Release for that SR is tagged at the exact live release head and that commit's
-`eng/Versions.props` matches the tag. Nothing is signed, dispatched or
-re-verified against later integration history for it. A hotfix that moves the
+Release for that SR is tagged at the exact live release head, that commit's
+`eng/Versions.props` matches the tag, and its tree is identical to the reviewed
+servicing merge of the lane's current receipt generation. That check runs only
+after servicing preparation, so a superseding candidate generation still gets
+its own servicing PR and is never reported as published while the release
+branch holds older content. Nothing is signed, dispatched or re-verified
+against later integration history for a published lane. A hotfix that moves the
 release head is not covered until its own release is published.
 Its trusted job automatically prepares the separate servicing/stable PR against
 `automation/release/<band>-srN` before a real release exists. An old actual
