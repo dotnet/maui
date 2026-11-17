@@ -659,7 +659,6 @@ public class ShellFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_IOS && TEST_FAILS_ON_MACCATALYST // Issue Link: https://github.com/dotnet/maui/issues/32417
 	[Test, Order(32)]
 	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void VerifyShellFlyout_SetItemTemplateAndMenuItemTemplate()
@@ -679,7 +678,6 @@ public class ShellFeatureTests : _GalleryUITest
 		App.WaitForElement("MenuItem1");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
-#endif
 
 	[Test, Order(33)]
 	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]

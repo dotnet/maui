@@ -20,6 +20,7 @@ namespace Microsoft.Maui.Controls.Platform
 		View _content;
 		object _previousDataContext;
 		Shell _shell;
+		DataTemplate _dataTemplate;
 		bool _updatingVisualState;
 		ShellView ShellView => _shell.Handler?.PlatformView as ShellView;
 
@@ -45,6 +46,34 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void UpdateContent()
 		{
+			BindableObject bo = null;
+
+			if (_previousDataContext is NavigationViewItemViewModel vm && vm.Data is BindableObject bindableObject)
+				bo = bindableObject;
+			else
+				bo = (BindableObject)_previousDataContext;
+
+			var element = bo as Element;
+			var shell = element?.FindParentOfType<Shell>();
+
+			if (_shell != shell)
+			{
+				if (_shell is not null)
+				{
+					_shell.FlyoutItemTemplateChanged -= OnFlyoutItemTemplateChanged;
+				}
+
+				_shell = shell;
+
+				if (_shell is not null)
+				{
+					_shell.FlyoutItemTemplateChanged += OnFlyoutItemTemplateChanged;
+				}
+			}
+
+			if (shell != null && shell.Handler?.MauiContext is null)
+				return;
+
 			if (_content != null)
 			{
 				if (_content.BindingContext is INotifyPropertyChanged inpc)
@@ -65,36 +94,13 @@ namespace Microsoft.Maui.Controls.Platform
 				Content = null;
 			}
 
-			BindableObject bo = null;
-
-			if (_previousDataContext is NavigationViewItemViewModel vm && vm.Data is BindableObject bindableObject)
-				bo = bindableObject;
-			else
-				bo = (BindableObject)_previousDataContext;
-
-			var element = bo as Element;
-			var shell = element?.FindParentOfType<Shell>();
-			if (_shell != shell)
-			{
-				if (_shell is not null)
-				{
-					_shell.FlyoutItemTemplateChanged -= OnFlyoutItemTemplateChanged;
-				}
-
-				_shell = shell;
-
-				if (_shell is not null)
-				{
-					_shell.FlyoutItemTemplateChanged += OnFlyoutItemTemplateChanged;
-				}
-			}
+			_dataTemplate = bo != null && _shell != null
+				? Shell.ResolveFlyoutItemTemplate(_shell, bo)
+				: null;
 
 			// Resolve the application supplied template through the same public contract external backends use.
 			// A null result means the application did not supply one, so fall back to the default flyout item cell.
-			DataTemplate dataTemplate = null;
-
-			if (bo != null && _shell != null)
-				dataTemplate = Shell.ResolveFlyoutItemTemplate(_shell, bo) ?? BaseShellItem.CreateDefaultFlyoutItemCell(bo);
+			var dataTemplate = _dataTemplate ?? (bo != null ? BaseShellItem.CreateDefaultFlyoutItemCell(bo) : null);
 
 			if (bo != null)
 				bo.PropertyChanged += ShellElementPropertyChanged;
@@ -123,6 +129,17 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void OnFlyoutItemTemplateChanged(object sender, EventArgs e)
 		{
+			if (_shell?.Handler?.MauiContext is null)
+				return;
+
+			BindableObject bo = _previousDataContext is NavigationViewItemViewModel vm && vm.Data is BindableObject bindableObject
+				? bindableObject
+				: (BindableObject)_previousDataContext;
+
+			var dataTemplate = bo != null ? Shell.ResolveFlyoutItemTemplate(_shell, bo) : null;
+			if (ReferenceEquals(_dataTemplate, dataTemplate))
+				return;
+
 			UpdateContent();
 		}
 
