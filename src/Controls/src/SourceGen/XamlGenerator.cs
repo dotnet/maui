@@ -126,10 +126,8 @@ public class XamlGenerator : IIncrementalGenerator
 			.Select(XamlTypeConflictAnalyzer.Analyze)
 			.WithTrackingName("XamlTypeConflictDiagnostics");
 
-		// The original (user-only) compilation is threaded through so XIHR can fingerprint the user C#
-		// sources without the generated code-behind trees (see UserSourcesFingerprint).
 		var xamlSourceProviderForIC = xamlProjectItemProviderForIC
-			.Combine(xmlnsDefinitionsProviderForIC, compilationWithCodeBehindProvider.Select(GetTypeCache), compilationWithCodeBehindProvider, initContext.CompilationProvider)
+			.Combine(xmlnsDefinitionsProviderForIC, compilationWithCodeBehindProvider.Select(GetTypeCache), compilationWithCodeBehindProvider)
 			.WithTrackingName(TrackingNames.XamlSourceProviderForIC);
 
 		// Register the XAML pipeline for CodeBehind
@@ -160,7 +158,7 @@ public class XamlGenerator : IIncrementalGenerator
 		// Register the XAML pipeline for InitializeComponent
 		initContext.RegisterImplementationSourceOutput(xamlSourceProviderForIC, static (sourceProductionContext, provider) =>
 		{
-			var (xamlItem, xmlnsCache, typeCache, compilation, userCompilation) = provider;
+			var (xamlItem, xmlnsCache, typeCache, compilation) = provider;
 
 			if (xamlItem?.ProjectItem?.RelativePath is null)
 			{
@@ -269,8 +267,7 @@ public class XamlGenerator : IIncrementalGenerator
 						// reverted (the invalid value lingered forever). See the XIHR versioning fix.
 						// Keep the generation this patch was diffed from, so a re-evaluation of the same inputs
 						// re-derives the same patch (https://github.com/dotnet/maui/issues/36937).
-						var patchSources = UserSourcesFingerprint.Get(userCompilation, sourceProductionContext.CancellationToken);
-						XamlHotReloadState.Update(assemblyName, targetFramework, stateKey, xamlItem.Xaml!, parsedNewRoot, effectiveNewIds, newNextNodeId, previousVersion + 1, xamlItem.ProjectItem.HotReloadSessionToken, patchBaseline, patchSources);
+						XamlHotReloadState.Update(assemblyName, targetFramework, stateKey, xamlItem.Xaml!, parsedNewRoot, effectiveNewIds, newNextNodeId, previousVersion + 1, xamlItem.ProjectItem.HotReloadSessionToken, patchBaseline);
 						ucCode = UpdateComponentCodeWriter.GenerateUpdateComponent(rootType, accessModifier, patchBody);
 					}
 					else if (emptyDiff)
@@ -300,40 +297,38 @@ public class XamlGenerator : IIncrementalGenerator
 				else if (hadPreviousEntry
 					&& previousXaml == xamlItem.Xaml
 					&& canEmitUC
-					&& XamlHotReloadState.TryGetPatchBaseline(assemblyName, targetFramework, stateKey, xamlItem.ProjectItem.HotReloadSessionToken, out var pendingBaseline, out var pendingSources))
+					&& XamlHotReloadState.TryGetPatchBaseline(assemblyName, targetFramework, stateKey, xamlItem.ProjectItem.HotReloadSessionToken, out var pendingBaseline))
 				{
-					// Same XAML as the generation that produced the pending patch. If the user C# sources are
-					// unchanged too, this is a re-evaluation of the same inputs (driver fork, speculative or
-					// discarded run): re-derive the identical patch from its baseline rather than emitting an
-					// empty UpdateComponent() and silently dropping the edit. Otherwise this is a later
-					// generation (C#-only edit): UC is emitted empty. The baseline is left untouched either
-					// way, so the output only depends on the inputs, never on evaluation order.
-					if (pendingSources is not null
-						&& pendingSources.Equals(UserSourcesFingerprint.Get(userCompilation, sourceProductionContext.CancellationToken)))
-					{
-						var replayedPatchBody = InitializeComponentCodeWriter.TryGeneratePatchBody(
-							pendingBaseline!.ParsedRoot,
-							pendingBaseline.NodeIds is null ? null : new Dictionary<ElementNode, string>(pendingBaseline.NodeIds),
-							pendingBaseline.NextNodeId,
-							pendingBaseline.XamlText,
-							xamlItem.Xaml!,
-							fromVersion: pendingBaseline.Version,
-							toVersion: pendingBaseline.Version + 1,
-							ucRootType!,
-							compilation,
-							xmlnsCache,
-							typeCache,
-							sourceProductionContext,
-							xamlItem.ProjectItem,
-							XamlHotReloadState.GetGeneratedFields(assemblyName, targetFramework, stateKey, xamlItem.ProjectItem.HotReloadSessionToken),
-							out _,
-							out _,
-							out _,
-							out _,
-							out _);
-						if (replayedPatchBody != null)
-							ucCode = UpdateComponentCodeWriter.GenerateUpdateComponent(ucRootType!, ucAccessModifier, replayedPatchBody);
-					}
+					// Same XAML as the generation that produced the pending patch: re-derive it from its
+					// baseline instead of emitting an empty UpdateComponent() and silently dropping the edit.
+					// This covers re-evaluations of the same inputs (driver forks, speculative runs) as well as
+					// generations with different C# sources (a throwaway compilation that evaluated the edit
+					// first, then the real one, or a later C#-only edit). The patch is unchanged in the last
+					// case, so the companion signal type is unchanged and the runtime doesn't re-apply it
+					// (https://github.com/dotnet/maui/issues/36937). The baseline is left untouched, so the
+					// output only depends on the inputs, never on evaluation order.
+					var replayedPatchBody = InitializeComponentCodeWriter.TryGeneratePatchBody(
+						pendingBaseline!.ParsedRoot,
+						pendingBaseline.NodeIds is null ? null : new Dictionary<ElementNode, string>(pendingBaseline.NodeIds),
+						pendingBaseline.NextNodeId,
+						pendingBaseline.XamlText,
+						xamlItem.Xaml!,
+						fromVersion: pendingBaseline.Version,
+						toVersion: pendingBaseline.Version + 1,
+						ucRootType!,
+						compilation,
+						xmlnsCache,
+						typeCache,
+						sourceProductionContext,
+						xamlItem.ProjectItem,
+						XamlHotReloadState.GetGeneratedFields(assemblyName, targetFramework, stateKey, xamlItem.ProjectItem.HotReloadSessionToken),
+						out _,
+						out _,
+						out _,
+						out _,
+						out _);
+					if (replayedPatchBody != null)
+						ucCode = UpdateComponentCodeWriter.GenerateUpdateComponent(ucRootType!, ucAccessModifier, replayedPatchBody);
 				}
 				else if (!hadPreviousEntry && xamlItem.ProjectItem.EnableIncrementalHotReload && xamlItem.Xaml is not null)
 				{

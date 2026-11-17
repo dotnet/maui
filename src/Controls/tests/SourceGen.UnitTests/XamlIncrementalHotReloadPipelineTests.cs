@@ -2745,10 +2745,31 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 	}
 
 	[Fact]
-	public void CSharpOnlyEditAfterXamlEdit_EmitsEmptyUpdateComponent()
+	public void ThrowawayRunWithDifferentCSharpFirst_DoesNotConsumePendingPatch()
 	{
-		// A later generation whose XAML is unchanged but whose C# sources changed must keep emitting
-		// an empty UpdateComponent(): runtime tooling reads a non-empty body as "XAML changed".
+		// A throwaway compilation with different user C# (e.g. a speculative or design-time snapshot)
+		// evaluates the edited XAML before the real compilation does.
+		XamlHotReloadState.Reset();
+		var compilation = CreateCompilation();
+		var throwawayCompilation = compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText("namespace TestApp; class Speculative { }", path: "Speculative.cs"));
+		var v1 = MakeFile(PageXamlV1);
+		var v2 = MakeFile(PageXamlV2_PropertyChange);
+
+		var baseline = CreateDriver(v1).RunGenerators(compilation);
+		var edited = baseline.ReplaceAdditionalText(v1.Text, v2.Text).WithUpdatedAnalyzerConfigOptions(new OptionsProvider([v2]));
+
+		var throwaway = FindUCSource(edited.RunGenerators(throwawayCompilation).GetRunResult(), "uc.xsg");
+		var real = FindUCSource(edited.RunGenerators(compilation).GetRunResult(), "uc.xsg");
+
+		Assert.Contains("\"World\"", real, StringComparison.Ordinal);
+		Assert.Equal(throwaway, real);
+	}
+
+	[Fact]
+	public void CSharpOnlyEditAfterXamlEdit_KeepsPatchAndSignalUnchanged()
+	{
+		// The pending patch is re-emitted unchanged, so the delta of a C#-only edit doesn't touch
+		// UpdateComponent() or its companion signal type, and the runtime doesn't re-apply the patch.
 		XamlHotReloadState.Reset();
 		var compilation = CreateCompilation();
 		var v1 = MakeFile(PageXamlV1);
@@ -2757,14 +2778,46 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		var baseline = CreateDriver(v1).RunGenerators(compilation);
 		var baselineUc = FindUCSource(baseline.GetRunResult(), "uc.xsg");
 		var edited = baseline.ReplaceAdditionalText(v1.Text, v2.Text).WithUpdatedAnalyzerConfigOptions(new OptionsProvider([v2])).RunGenerators(compilation);
-		Assert.Contains("\"World\"", FindUCSource(edited.GetRunResult(), "uc.xsg"), StringComparison.Ordinal);
+		var patch = FindUCSource(edited.GetRunResult(), "uc.xsg");
+		Assert.Contains("\"World\"", patch, StringComparison.Ordinal);
 
 		var csharpEdited = compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText("namespace TestApp; class Unrelated { }", path: "Unrelated.cs"));
 		var afterCSharpEdit = FindUCSource(edited.RunGenerators(csharpEdited).GetRunResult(), "uc.xsg");
-		var afterCSharpEditAgain = FindUCSource(edited.RunGenerators(csharpEdited).GetRunResult(), "uc.xsg");
 
-		Assert.Equal(baselineUc, afterCSharpEdit);
-		Assert.Equal(baselineUc, afterCSharpEditAgain);
+		Assert.Equal(patch, afterCSharpEdit);
+		Assert.NotEqual(GetSignalFingerprint(baselineUc), GetSignalFingerprint(patch));
+	}
+
+	[Fact]
+	public void SignalFingerprint_ChangesWithThePatchOnly()
+	{
+		XamlHotReloadState.Reset();
+		var compilation = CreateCompilation();
+		var v1 = MakeFile(PageXamlV1);
+		var v2 = MakeFile(PageXamlV2_PropertyChange);
+		var v1Again = MakeFile(PageXamlV1);
+
+		var driver = CreateDriver(v1).RunGenerators(compilation);
+		var first = GetSignalFingerprint(FindUCSource(driver.GetRunResult(), "uc.xsg"));
+		driver = driver.ReplaceAdditionalText(v1.Text, v2.Text).WithUpdatedAnalyzerConfigOptions(new OptionsProvider([v2])).RunGenerators(compilation);
+		var forward = GetSignalFingerprint(FindUCSource(driver.GetRunResult(), "uc.xsg"));
+		driver = driver.ReplaceAdditionalText(v2.Text, v1Again.Text).WithUpdatedAnalyzerConfigOptions(new OptionsProvider([v1Again])).RunGenerators(compilation);
+		var reverted = GetSignalFingerprint(FindUCSource(driver.GetRunResult(), "uc.xsg"));
+
+		Assert.Equal(string.Empty, first);
+		Assert.NotEqual(string.Empty, forward);
+		Assert.NotEqual(string.Empty, reverted);
+		Assert.NotEqual(forward, reverted);
+	}
+
+	static string GetSignalFingerprint(string? updateComponentSource)
+	{
+		Assert.NotNull(updateComponentSource);
+		var match = System.Text.RegularExpressions.Regex.Match(
+			updateComponentSource!,
+			"static class __XamlHotReloadSignal\\s*\\{\\s*internal static string Fingerprint\\(\\) => \"([0-9a-f]*)\";");
+		Assert.True(match.Success, "The companion signal type is missing.");
+		return match.Groups[1].Value;
 	}
 
 	[Fact]
