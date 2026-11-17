@@ -30,6 +30,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 	/// edge. The user is scrolling while the collection view is dragging or decelerating. An animated scroll the app
 	/// requested, to an item or to an edge the view doesn't follow, scrolls as the user's does, as on Android, until it ends:
 	/// it's judged by where it stops, and the content changing on its way doesn't scroll the view back to the edge it left.
+	/// An animated scroll to the edge the view follows keeps following that edge on its way there, unless a scroll stops it
+	/// short: the view is then judged by where it stopped.
 	/// </para>
 	/// <para>
 	/// It holds no references: the controller passes its views in. It is vertical only.
@@ -70,7 +72,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		/// <summary>
 		/// Gets the animated scroll to an edge that <see cref="ScrollToStart"/> or <see cref="ScrollToEnd"/> started, while it's
 		/// on its way there: the edge, and where the animation stops. The anchor follows the edge past that point as UIKit
-		/// measures the rows the animation brings into view. A newer request, a drag, or getting there ends it.
+		/// measures the rows the animation brings into view. A newer request, a drag, getting there, or the animation ending
+		/// ends it (see <see cref="ScrollAnimationEnded"/>).
 		/// </summary>
 		public (ScrollAnchorMode Edge, double Target)? EdgeAnimation => _tracker.IsApproaching ? _edgeAnimation : null;
 
@@ -159,10 +162,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 
 			var inset = collectionView.AdjustedContentInset;
-			var metrics = new ScrollAnchorMetrics(
-				collectionView.ContentOffset.Y + inset.Top,
-				collectionView.ContentSize.Height + inset.Top + inset.Bottom,
-				collectionView.Bounds.Height);
+			var metrics = Measure(collectionView, inset);
 
 			// An offset change UIKit made during the layout, or one it never reported, is UIKit's.
 			var sizeChanged = false;
@@ -184,6 +184,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			Publish(collectionView, itemsView, _tracker.IsAnchored);
 		}
+
+		// Where the view is, measured from the start of its content, above the content inset.
+		static ScrollAnchorMetrics Measure(UICollectionView collectionView, UIEdgeInsets inset) =>
+			new(collectionView.ContentOffset.Y + inset.Top, collectionView.ContentSize.Height + inset.Top + inset.Bottom, collectionView.Bounds.Height);
 
 		// Scrolls without the scroll counting as one: the anchor knows where it put the view. It takes the offset, not a
 		// callback, as the anchor looks after every layout pass: a callback that captures would allocate on each.
@@ -232,7 +236,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		/// <param name="isLatest">Whether the request is still the latest (see <c>ItemsViewController2.IsLatestScrollRequest</c>).</param>
 		/// <param name="animating">
 		/// Whether the request started an animated scroll that's still on its way, to an item or to an edge the view doesn't
-		/// follow, which UIKit reports the end of (see <see cref="RequestedScrollEnded"/>). Until then it scrolls as a fling
+		/// follow, which UIKit reports the end of (see <see cref="ScrollAnimationEnded"/>). Until then it scrolls as a fling
 		/// does: the looks before it moves would otherwise judge it where it starts, at the edge it leaves, and scroll back
 		/// there for the content changing, which stops the animation.
 		/// </param>
@@ -250,16 +254,43 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		/// <summary>
 		/// Called when a scroll animation ended, the user started dragging, or the app requested another scroll: an animated
-		/// scroll a request started (see <see cref="ScrollRequested"/>) no longer scrolls as a fling does.
+		/// scroll a request started (see <see cref="ScrollRequested"/>) no longer scrolls as a fling does, and one to an edge
+		/// (see <see cref="EdgeAnimation"/>) is no longer on its way.
 		/// </summary>
 		public void RequestedScrollEnded(UICollectionView collectionView)
 		{
+			_edgeAnimation = null;
 			if (_animatingRequest)
 			{
 				_animatingRequest = false;
 				collectionView.SetNeedsLayout();
 			}
 		}
+
+		/// <summary>
+		/// Called when UIKit reports that a scroll animation ended (see <see cref="RequestedScrollEnded"/>). An animated scroll
+		/// to the edge the view follows (see <see cref="EdgeAnimation"/>) that ended short of where it was going was stopped by
+		/// a scroll the user isn't making, as the app's code, the keyboard or a tap on the status bar make: the next look judges
+		/// where the view stopped, instead of following the edge. Not when the anchor stopped it, scrolling to the edge, nor
+		/// UIKit laying the view out, or for the content or the viewport changing size: the view still goes to the edge then.
+		/// </summary>
+		public void ScrollAnimationEnded(UICollectionView collectionView)
+		{
+			if (EdgeAnimation is { } animation && !_applying && _layoutDepth == 0 && !HasArrived(collectionView, animation)
+				&& !_tracker.IsResized(Measure(collectionView, collectionView.AdjustedContentInset)))
+			{
+				_tracker.RequestScroll();
+				collectionView.SetNeedsLayout();
+			}
+
+			RequestedScrollEnded(collectionView);
+		}
+
+		// Whether the view got where an animated scroll to an edge was going, or past it.
+		static bool HasArrived(UICollectionView collectionView, (ScrollAnchorMode Edge, double Target) animation) =>
+			animation.Edge == ScrollAnchorMode.End
+				? collectionView.ContentOffset.Y >= animation.Target - 0.5
+				: collectionView.ContentOffset.Y <= animation.Target + 0.5;
 
 		/// <summary>Scrolls to the start, and follows it again. The view must be able to follow its start.</summary>
 		/// <remarks>

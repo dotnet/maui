@@ -724,12 +724,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		/// <summary>
 		/// Called when UIKit reports that a scroll animation ended: one that got where it was going, one a scroll stopped, or
 		/// one UIKit didn't run, as for a view that isn't in a window, which it reports as it scrolls the view. An animated
-		/// scroll a request started no longer scrolls as a fling does (see <see cref="CollectionViewScrollAnchor.ScrollRequested"/>).
+		/// scroll a request started no longer scrolls as a fling does (see <see cref="CollectionViewScrollAnchor.ScrollRequested"/>),
+		/// and one to the edge the view follows that a scroll stopped short is judged by where it stopped (see
+		/// <see cref="CollectionViewScrollAnchor.ScrollAnimationEnded"/>).
 		/// </summary>
 		internal void ScrollAnimationEnded()
 		{
 			_scrollAnimationsEnded++;
-			_scrollAnchor?.RequestedScrollEnded(CollectionView);
+			_scrollAnchor?.ScrollAnimationEnded(CollectionView);
 		}
 
 		void InvalidateLayoutIfItemsMeasureChanged()

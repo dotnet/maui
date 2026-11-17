@@ -172,14 +172,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		protected virtual void ScrollToRequested(object sender, ScrollToRequestEventArgs args) => TryScrollTo(args);
 
+		internal bool TryScrollTo(ScrollToRequestEventArgs args) => TryScrollTo(args, out _);
+
 		// Scrolls to the item the request is for. Returns whether the request still stands once that scroll returns: not when
 		// the view doesn't have the item, which it doesn't scroll for, nor when the app made a newer request from what the
-		// scroll raised (its Scrolled event), which wins.
-		internal bool TryScrollTo(ScrollToRequestEventArgs args)
+		// scroll raised (its Scrolled event), which wins. It also says whether UIKit animates the scroll, and reports when the
+		// animation ends (see ItemsViewController2.ScrollToItem).
+		internal bool TryScrollTo(ScrollToRequestEventArgs args, out bool animating)
 		{
 			int section = 0, item = 0;
 			int request;
 			UICollectionViewScrollPosition scrollPosition = UICollectionViewScrollPosition.None;
+			animating = false;
 
 			using (var indexPath = DetermineIndex(args))
 			{
@@ -214,7 +218,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				// A scroll the app requests is judged by where it lands: the anchor doesn't scroll it back to the end. An animated
 				// one is judged once UIKit reports that it ended.
 				var scrollAnchor = Controller.ScrollAnchor;
-				var animating = false;
 				scrollAnchor?.ScrollRequesting();
 				try
 				{
@@ -230,6 +233,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			// view. A ScrollToStart or ScrollToEnd scrolls now that this scroll returned (see ScrollToItem).
 			if (!Controller.IsLatestScrollRequest(request))
 			{
+				animating = false;
 				Controller.ScrolledToItem();
 				return false;
 			}

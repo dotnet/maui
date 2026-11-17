@@ -1158,6 +1158,87 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.True(collectionView.IsAnchored, "An offset change that comes with an inset change shouldn't stop following the end.");
 			});
 		}
+
+		// A scroll of the app's code or of the keyboard, without animating, or an animated one, as a tap on the status bar makes,
+		// stops the animated scroll ScrollToEnd started on its way to the end: UIKit reports that the animation ended. The list
+		// no longer goes to the end, and is judged by where it stopped.
+		[Theory(DisplayName = "A scroll that stops an animated ScrollToEnd on its way leaves the list where it stopped")]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task AScrollThatStopsAnAnimatedScrollToEndOnItsWayLeavesTheListWhereItStopped(bool animated)
+		{
+			SetupBuilder();
+			var items = CreateAnchorItems(40);
+			var collectionView = CreateAnchorCollectionView(items, ScrollAnchorMode.End);
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				await AssertAtEnd(handler, "The list should open at its end.");
+				collectionView.ScrollToStart(animate: false);
+				await AssertEventually(() => GetDistanceFromStart(handler) <= AnchorTolerance, timeout: 3000, message: "The list should be at its start.");
+				await Task.Delay(300);
+				Assert.False(collectionView.IsAnchored, "At its start, the list shouldn't follow its end.");
+
+				collectionView.ScrollToEnd(animate: true);
+				Assert.True(collectionView.IsAnchored, "ScrollToEnd should follow the end on its way there.");
+
+				var platformView = handler.Controller.CollectionView;
+				platformView.SetContentOffset(new CoreGraphics.CGPoint(platformView.ContentOffset.X, -platformView.AdjustedContentInset.Top), animated);
+
+				await AssertEventually(() => GetDistanceFromStart(handler) <= AnchorTolerance, timeout: 3000, message: "The list should be back at its start.");
+				await Task.Delay(500);
+				Assert.True(GetDistanceFromStart(handler) <= AnchorTolerance, $"The list should stay at its start. Distance from the start: {GetDistanceFromStart(handler)}.");
+				Assert.False(collectionView.IsAnchored, "Stopped on its way, the list shouldn't follow the end.");
+
+				// A new last item doesn't take the list to the end.
+				items.Add(new AnchorItem("New", 40));
+				await Task.Delay(500);
+				Assert.True(GetDistanceFromStart(handler) <= AnchorTolerance, $"The list shouldn't be taken to its end. Distance from the start: {GetDistanceFromStart(handler)}.");
+				Assert.False(collectionView.IsAnchored);
+			});
+		}
+
+		// UIKit doesn't animate a scroll of a view that isn't in a window: it scrolls the view there, and reports that the
+		// animation ended before the request returns. A grouped list that measures all its items scrolls to the item again once
+		// the animation ends: right away then, not when a later animation ends.
+		[Theory(DisplayName = "An animated ScrollTo in a grouped list made while it isn't in a window doesn't scroll back to its item later")]
+		[InlineData(ScrollToPosition.End)]
+		[InlineData(ScrollToPosition.MakeVisible)]
+		public async Task AnAnimatedScrollToInAGroupedListMadeOutsideTheWindowDoesNotScrollBackToItsItemLater(ScrollToPosition position)
+		{
+			SetupBuilder();
+			var groups = new ObservableCollection<AnchorGroup>(
+				Enumerable.Range(0, 4).Select(group => new AnchorGroup($"Group {group}", CreateAnchorItems(8))));
+			var collectionView = CreateAnchorCollectionView(groups, ScrollAnchorMode.None);
+			collectionView.IsGrouped = true;
+			collectionView.GroupHeaderTemplate = CreateAnchorGroupHeaderTemplate();
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				await AssertEventually(() => GetDistanceFromStart(handler) <= AnchorTolerance, timeout: 3000, message: "The list should open at its start.");
+
+				// The app scrolls the list to an item of its last group while the list is out of its window.
+				var platformView = handler.PlatformView;
+				var superview = platformView.Superview;
+				var index = Array.IndexOf(superview.Subviews, platformView);
+				platformView.RemoveFromSuperview();
+				collectionView.ScrollTo(4, groupIndex: 3, position: position, animate: true);
+				superview.InsertSubview(platformView, index);
+				await AssertEventually(() => GetDistanceFromStart(handler) > 100, timeout: 3000, message: "The list should show the item.");
+				await Task.Delay(300);
+				var distanceAtItem = GetDistanceFromStart(handler);
+
+				// An animation the app didn't request through the list, as the keyboard makes, scrolls the list back toward its
+				// start. UIKit stops it short of the start, as it measures the rows above that the jump skipped.
+				var collectionViewPlatform = handler.Controller.CollectionView;
+				collectionViewPlatform.SetContentOffset(new CoreGraphics.CGPoint(collectionViewPlatform.ContentOffset.X, -collectionViewPlatform.AdjustedContentInset.Top), true);
+				await AssertEventually(() => GetDistanceFromStart(handler) < distanceAtItem / 2, timeout: 3000, message: "The list should scroll back toward its start.");
+
+				// Long enough for the animation to end, and for a scroll back to the item, had its end started one.
+				await Task.Delay(1000);
+				Assert.True(GetDistanceFromStart(handler) < distanceAtItem / 2, $"The list shouldn't scroll back to the item. Distance from the start: {GetDistanceFromStart(handler)}, at the item: {distanceAtItem}.");
+			});
+		}
 #endif
 
 		[Fact(DisplayName = "Turning AnchorMode off stops following the end")]
@@ -2497,6 +2578,76 @@ namespace Microsoft.Maui.DeviceTests
 				await Task.Delay(500);
 				Assert.True(AtStart(), $"The list should stay at its start. Position: {GetScrollPosition(handler)}.");
 				Assert.Equal(anchorMode.HasFlag(ScrollAnchorMode.Start), collectionView.IsAnchored);
+			});
+		}
+
+		// A horizontal list isn't anchored: ScrollToStart and ScrollToEnd scroll it to its first and last item. RecyclerView's
+		// smooth scroller finds the item at the edge already in place, and stops before the layout that lands the jump to the
+		// other edge, which would then take the list there.
+		[Theory(DisplayName = "An animated ScrollToStart or ScrollToEnd right after a jump to the other edge of a horizontal list wins")]
+		[InlineData(ScrollAnchorMode.Start)]
+		[InlineData(ScrollAnchorMode.End)]
+		public async Task AnAnimatedScrollToAnEdgeRightAfterAJumpToTheOtherEdgeOfAHorizontalListWins(ScrollAnchorMode edge)
+		{
+			SetupBuilder();
+			var collectionView = new CollectionView
+			{
+				ItemsLayout = LinearItemsLayout.Horizontal,
+				HeightRequest = 100,
+				WidthRequest = 300,
+				ItemsSource = Enumerable.Range(0, 20).Select(index => $"Item {index}").ToList(),
+				ItemTemplate = new DataTemplate(() =>
+				{
+					var label = new Label { WidthRequest = 100 };
+					label.SetBinding(Label.TextProperty, ".");
+					return label;
+				}),
+			};
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				var toStart = edge == ScrollAnchorMode.Start;
+				bool AtEdge() => toStart
+					? GetHorizontalDistanceFromStart(handler) <= AnchorTolerance
+					: Math.Abs(GetHorizontalDistanceToEnd(handler)) <= AnchorTolerance;
+
+				// Until the list is laid out, it has no content to scroll, and is at both of its edges.
+				var laidOut = await Wait(() => GetHorizontalDistanceToEnd(handler) > 100, 3000);
+				Assert.True(laidOut, $"The items should extend past the end of the list. Distance to the end: {GetHorizontalDistanceToEnd(handler)}.");
+				if (toStart)
+				{
+					collectionView.ScrollToStart(animate: false);
+				}
+				else
+				{
+					collectionView.ScrollToEnd(animate: false);
+				}
+
+				await AssertEventually(AtEdge, timeout: 3000, message: "The list should be at the edge.");
+
+				// Settled there: laid out where it is.
+				await Task.Delay(300);
+
+				if (toStart)
+				{
+					collectionView.ScrollToEnd(animate: false);
+					collectionView.ScrollToStart(animate: true);
+				}
+				else
+				{
+					collectionView.ScrollToStart(animate: false);
+					collectionView.ScrollToEnd(animate: true);
+				}
+
+				// The list can show the other edge first, and scroll back from there.
+				await Task.Delay(300);
+				var reached = await Wait(AtEdge, 5000);
+				Assert.True(reached, $"The later animated scroll should win. Distance from the start: {GetHorizontalDistanceFromStart(handler)}, to the end: {GetHorizontalDistanceToEnd(handler)}.");
+
+				// Nothing the earlier request left takes the list away again.
+				await Task.Delay(500);
+				Assert.True(AtEdge(), $"The list should stay at the edge. Distance from the start: {GetHorizontalDistanceFromStart(handler)}, to the end: {GetHorizontalDistanceToEnd(handler)}.");
+				Assert.False(collectionView.IsAnchored);
 			});
 		}
 

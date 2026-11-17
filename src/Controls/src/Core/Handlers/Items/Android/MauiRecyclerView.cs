@@ -1035,7 +1035,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		}
 
 		// Where the view doesn't scroll to an edge of its content, as in a horizontal layout, the first or last item is as close as
-		// it gets: the first or last the adapter shows, which an items source that can be read only once doesn't give again.
+		// it gets: the first or last the adapter shows, which an items source that can be read only once doesn't give again. An
+		// animated scroll there starts once the view is laid out, as one to an edge does (see AnimateScrollToEdgeOnceLaidOut).
 		void ScrollToEdgeItem(bool end, bool animate)
 		{
 			var position = FindEdgeItemPosition(end);
@@ -1044,14 +1045,24 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
-			var scrollToPosition = end ? Microsoft.Maui.Controls.ScrollToPosition.End : Microsoft.Maui.Controls.ScrollToPosition.Start;
 			if (animate)
 			{
-				ScrollHelper.AnimateScrollToPosition(position, scrollToPosition);
+				ScrollHelper.AnimateScrollOnceLaidOut(() => AnimateScrollToEdgeItem(end));
 			}
 			else
 			{
-				ScrollHelper.JumpScrollToPosition(position, scrollToPosition);
+				ScrollHelper.JumpScrollToPosition(position, end ? Microsoft.Maui.Controls.ScrollToPosition.End : Microsoft.Maui.Controls.ScrollToPosition.Start);
+			}
+		}
+
+		// The animated scroll to the first or last item that ScrollToStart or ScrollToEnd starts once the view is laid out.
+		void AnimateScrollToEdgeItem(bool end)
+		{
+			var position = FindEdgeItemPosition(end);
+			if (position >= 0)
+			{
+				_animatingRequestedScroll = true;
+				ScrollHelper.AnimateScrollToPosition(position, end ? Microsoft.Maui.Controls.ScrollToPosition.End : Microsoft.Maui.Controls.ScrollToPosition.Start);
 			}
 		}
 

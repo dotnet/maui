@@ -113,9 +113,23 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				return;
 			}
 
-			if (TryScrollTo(args) && WillNeedScrollAdjustment(args) && args.IsAnimated)
+			if (TryScrollTo(args, out var animating) && WillNeedScrollAdjustment(args) && args.IsAnimated)
 			{
-				(Controller as GroupableItemsViewController2<ReorderableItemsView>)?.SetScrollAnimationEndedCallback(() => base.ScrollToRequested(sender, args));
+				// An animated scroll scrolls to the item again once UIKit reports that its animation ended. UIKit doesn't animate a
+				// view that isn't in a window, nor to an item that's where the request puts it already: it scrolls the view at
+				// once and reports the end before the scroll returns, or never reports one. Scroll again now then, rather than
+				// when a later animation ends. Before iOS and Mac Catalyst 17, which don't tell, an animation runs in a window.
+				var animationEnds = OperatingSystem.IsIOSVersionAtLeast(17) || OperatingSystem.IsMacCatalystVersionAtLeast(17)
+					? animating
+					: Controller.CollectionView.Window is not null;
+				if (animationEnds)
+				{
+					(Controller as GroupableItemsViewController2<ReorderableItemsView>)?.SetScrollAnimationEndedCallback(() => base.ScrollToRequested(sender, args));
+				}
+				else
+				{
+					base.ScrollToRequested(sender, args);
+				}
 			}
 		}
 
