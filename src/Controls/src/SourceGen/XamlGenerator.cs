@@ -173,7 +173,10 @@ $"""
 [assembly: global::Microsoft.Maui.Controls.XmlnsPrefix("{XamlParser.MauiGlobalUri}", "global")]
 
 #if MauiAllowImplicitXmlnsDeclaration
+// Defining MauiAllowImplicitXmlnsDeclaration is the opt-in. The SDK only marks the assembly with RequiresPreviewFeatures when targeting its latest TFM.
+#pragma warning disable CA2252
 [assembly: global::Microsoft.Maui.Controls.Xaml.Internals.AllowImplicitXmlnsDeclaration]
+#pragma warning restore CA2252
 #endif
 """
 			, Encoding.UTF8));
