@@ -794,12 +794,12 @@ namespace Microsoft.Maui.Controls.Handlers
                 oldHandler.RemoveTopTabs();
             }
 
-            // Evaluate incoming section's top tabs (will place if > 1 content)
+            // Only restore the incoming section's top tabs when its navigation stack is at root.
             if (newSection?.Handler is ShellSectionHandler newHandler)
             {
                 var visibleCount = ((IShellSectionController)newSection).GetItems().Count;
 
-                if (visibleCount > 1)
+                if (visibleCount > 1 && newSection.Stack.Count == 1)
                 {
                     newHandler.PlaceTopTabs();
                 }
