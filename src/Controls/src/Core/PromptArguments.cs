@@ -25,7 +25,13 @@ namespace Microsoft.Maui.Controls.Internals
 	public class PromptArguments
 	{
 		/// <summary>Creates a new <see cref="PromptArguments"/> with the specified parameters.</summary>
-		public PromptArguments(string title, string message, string accept = "OK", string cancel = "Cancel", string placeholder = null, int maxLength = -1, Keyboard keyboard = default(Keyboard), string initialValue = "", bool preselectInitialValue = false)
+		public PromptArguments(string title, string message, string accept = "OK", string cancel = "Cancel", string placeholder = null, int maxLength = -1, Keyboard keyboard = default(Keyboard), string initialValue = "")
+			: this(title, message, false, accept, cancel, placeholder, maxLength, keyboard, initialValue)
+		{
+		}
+
+		/// <summary>Creates a new <see cref="PromptArguments"/> with the specified parameters.</summary>
+		public PromptArguments(string title, string message, bool preselectInitialValue, string accept = "OK", string cancel = "Cancel", string placeholder = null, int maxLength = -1, Keyboard keyboard = default(Keyboard), string initialValue = "")
 		{
 			Title = title;
 			Message = message;
