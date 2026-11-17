@@ -256,11 +256,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var fragment = _currentView.Fragment;
 
 			FragmentTransaction transaction = manager.BeginTransactionEx();
-			var outgoingModalCount = previousView?.ShellItem?.CurrentItem?.Navigation.ModalStack.Count ?? 0;
-			// The outgoing modal owns the visible transition; prepare the destination without a second animation.
-			bool useFragmentOpenTransition = animate && outgoingModalCount == 0;
 
-			if (useFragmentOpenTransition)
+			if (animate)
 				transaction.SetTransitionEx((int)global::Android.App.FragmentTransit.FragmentOpen);
 
 			transaction.ReplaceEx(_frameLayout.Id, fragment);

@@ -112,6 +112,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			return _outerLayout;
 		}
 
+		public override void OnResume()
+		{
+			base.OnResume();
+
+			// Recalculate insets after the entering transition restores the view's final position.
+			if (View is { IsAttachedToWindow: true } view)
+				ViewCompat.RequestApplyInsets(view);
+		}
 
 		void Destroy()
 		{

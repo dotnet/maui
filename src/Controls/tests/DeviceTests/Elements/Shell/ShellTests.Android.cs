@@ -34,11 +34,13 @@ namespace Microsoft.Maui.DeviceTests
 	public class ShellRendererTransitionTests : ControlsHandlerTestBase
 	{
 		[Theory]
-		[InlineData(false, false)]
-		[InlineData(true, false)]
-		[InlineData(false, true)]
-		[InlineData(true, true)]
-		public async Task ShellItemTransitionUsesOutgoingModalState(bool useTabBar, bool hasModal)
+		[InlineData(false, false, false)]
+		[InlineData(true, false, false)]
+		[InlineData(false, true, false)]
+		[InlineData(true, true, false)]
+		[InlineData(false, true, true)]
+		[InlineData(true, true, true)]
+		public async Task ShellItemTransitionPreservesContentPosition(bool useTabBar, bool hasModal, bool centerContent)
 		{
 			EnsureHandlerCreated(builder => builder.ConfigureMauiHandlers(handlers =>
 			{
@@ -46,10 +48,23 @@ namespace Microsoft.Maui.DeviceTests
 				handlers.AddHandler<Shell, TransitionProbeShellRenderer>();
 			}));
 
-			var targetPage = new ContentPage { Content = new Label { Text = "Target" } };
+			var label = new Label { Text = "First line\nSecond line", HorizontalOptions = LayoutOptions.Center };
+			var contentLayout = new VerticalStackLayout
+			{
+				VerticalOptions = centerContent ? LayoutOptions.Center : LayoutOptions.Start,
+				HorizontalOptions = LayoutOptions.Center,
+				Children = { label }
+			};
+			var targetPage = new ContentPage
+			{
+				Content = contentLayout
+			};
+			Shell.SetNavBarIsVisible(targetPage, false);
 			ShellItem target = useTabBar ? new TabBar() : new ShellItem();
 			target.Route = "TransitionProbeTarget";
 			target.Items.Add(new ShellSection { Items = { new ShellContent { Content = targetPage } } });
+			target.Items.Add(new ShellSection { Items = { new ShellContent { Content = new ContentPage() } } });
+			target.Items.Add(new ShellSection { Items = { new ShellContent { Content = new ContentPage() } } });
 
 			var homePage = new ContentPage { Content = new Label { Text = "Home" } };
 			var shell = await InvokeOnMainThreadAsync(() =>
@@ -64,18 +79,49 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				await OnLoadedAsync(homePage);
 				var renderer = Assert.IsType<TransitionProbeShellRenderer>(shell.Handler);
+				var context = MauiContext.Context;
+				// Resolve the typed Java peer so inset calculation can obtain IWindowManager.
+				Assert.NotNull(context.GetActivity()?.WindowManager);
+				Assert.IsAssignableFrom<IWindowManager>(context.GetSystemService(global::Android.Content.Context.WindowService));
 
 				if (hasModal)
-					await shell.Navigation.PushModalAsync(new ContentPage { Content = new Label { Text = "Modal" } }, false);
+					await shell.Navigation.PushModalAsync(new ContentPage { Content = new Label { Text = "Modal" } });
 
 				await shell.GoToAsync("//TransitionProbeTarget");
 				await AssertEventually(() => renderer.LatestItemRenderer?.EnterTransit is not null);
 
 				Assert.Same(target, ((IShellItemRenderer)renderer.LatestItemRenderer).ShellItem);
 				Assert.Equal(
-					hasModal ? 0 : (int)global::Android.App.FragmentTransit.FragmentOpen,
+					(int)global::Android.App.FragmentTransit.FragmentOpen,
 					renderer.LatestItemRenderer.EnterTransit.Value);
 				Assert.Empty(homePage.Navigation.ModalStack);
+
+				await OnLoadedAsync(label);
+				var pageView = (AView)targetPage.Handler.PlatformView;
+				var labelView = (AView)label.Handler.PlatformView;
+				using var insets = ViewCompat.GetRootWindowInsets(pageView);
+				Assert.NotNull(insets);
+				var topInset = insets.GetInsets(WindowInsetsCompat.Type.StatusBars()).Top;
+				var pageLocation = new int[2];
+				var labelLocation = new int[2];
+				var expectedY = 0;
+				var positionMatches = await Wait(() =>
+				{
+					pageView.GetLocationOnScreen(pageLocation);
+					labelView.GetLocationOnScreen(labelLocation);
+					expectedY = centerContent
+						? pageLocation[1] + (pageView.Height - labelView.Height) / 2
+						: Math.Max(pageLocation[1], topInset);
+					var root = renderer.LatestItemRenderer.View;
+					return pageView.Height > 0 && labelView.Height > 0 &&
+						root.ScaleX == 1 && root.ScaleY == 1 && root.Alpha == 1 &&
+						Math.Abs(labelLocation[1] - expectedY) <= 1;
+				});
+				Assert.True(positionMatches,
+					$"Expected label Y={expectedY}, actual={labelLocation[1]}, page Y={pageLocation[1]}, " +
+					$"page height={pageView.Height}, label height={labelView.Height}, status bar={topInset}, " +
+					$"layout padding={((AView)contentLayout.Handler.PlatformView).PaddingTop}, page padding={pageView.PaddingTop}, " +
+					$"root scale={renderer.LatestItemRenderer.View.ScaleY}, alpha={renderer.LatestItemRenderer.View.Alpha}");
 			});
 		}
 
