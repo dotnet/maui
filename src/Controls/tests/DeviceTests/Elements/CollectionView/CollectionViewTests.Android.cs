@@ -177,9 +177,11 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory]
-		[InlineData(false)]
-		[InlineData(true)]
-		public async Task EmptyViewDoesNotRequestAnotherLayoutWhenConstraintsAreUnchanged(bool useTemplate)
+		[InlineData(false, double.PositiveInfinity)]
+		[InlineData(true, double.PositiveInfinity)]
+		[InlineData(false, 500)]
+		[InlineData(true, 500)]
+		public async Task EmptyViewDoesNotRequestAnotherLayoutWhenConstraintsAreUnchanged(bool useTemplate, double heightConstraint)
 		{
 			SetupBuilder();
 
@@ -207,24 +209,33 @@ namespace Microsoft.Maui.DeviceTests
 				using var parent = new LayoutRequestCountingFrameLayout(MauiContext.Context);
 				parent.AddView(handler.PlatformView);
 
-				handler.GetDesiredSize(300, double.PositiveInfinity);
+				handler.GetDesiredSize(300, heightConstraint);
 				handler.PlatformArrange(new Rect(0, 0, 300, 180));
 				LayoutEmptyViewParent(parent, 300, 180);
 
-				var holder = handler.PlatformView.FindViewHolderForAdapterPosition(0);
-				var itemView = Assert.IsType<EmptyViewContentView>(holder?.ItemView);
-				Assert.True(itemView.MeasuredWidth > 0);
-				Assert.True(itemView.MeasuredHeight > 0);
+				AssertEmptyViewGeometry();
 				parent.RequestLayoutCount = 0;
 
 				for (var pass = 0; pass < 3; pass++)
 				{
-					// A vertical stack measures with infinite height, then arranges at a finite height.
-					handler.GetDesiredSize(300, double.PositiveInfinity);
+					handler.PlatformView.ForceLayout();
+					handler.GetDesiredSize(300, heightConstraint);
 					handler.PlatformArrange(new Rect(0, 0, 300, 180));
+					AssertEmptyViewGeometry();
 				}
 
 				Assert.Equal(0, parent.RequestLayoutCount);
+
+				void AssertEmptyViewGeometry()
+				{
+					var holder = handler.PlatformView.FindViewHolderForAdapterPosition(0);
+					var itemView = Assert.IsType<EmptyViewContentView>(holder?.ItemView);
+					Assert.Equal((int)MauiContext.Context.ToPixels(300), itemView.MeasuredWidth);
+					Assert.Equal((int)MauiContext.Context.ToPixels(180), itemView.MeasuredHeight);
+					Assert.Equal(itemView.MeasuredWidth, itemView.Width);
+					Assert.Equal(itemView.MeasuredHeight, itemView.Height);
+					Assert.InRange(System.Math.Abs(emptyView.Frame.Center.Y - 90), 0, MauiContext.Context.FromPixels(1));
+				}
 			});
 		}
 

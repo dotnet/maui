@@ -293,6 +293,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return Math.Abs((int)(height - headerFooterHeight));
 		}
 
+		internal bool HasValidEmptyViewSize(global::Android.Views.View itemView, ViewGroup parent)
+		{
+			var width = GetWidth(parent);
+			var height = GetHeight(parent);
+			return itemView.MeasuredWidth == width && itemView.Width == width
+				&& itemView.MeasuredHeight == height && itemView.Height == height;
+		}
+
 		int GetWidth(ViewGroup parent)
 		{
 			int width = (int)RecyclerViewWidth;
