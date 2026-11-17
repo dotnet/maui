@@ -26,6 +26,7 @@ namespace Microsoft.Maui.Controls.Platform
 		bool _inputTransparent;
 		bool _isEnabled;
 		bool? _focusableDefaultValue;
+		bool? _contextClickableDefaultValue;
 		GestureItemTouchListener? _recyclerViewTouchListener;
 		protected virtual VisualElement? Element => _handler?.VirtualView as VisualElement;
 
@@ -254,6 +255,49 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				_focusableDefaultValue = null;
 			}
+
+			UpdateContextClickable();
+		}
+
+		// A View.Touch subscriber that runs after ours can overwrite e.Handled with false. Android then falls back to
+		// View.onTouchEvent, which only keeps the touch sequence on clickable views, so the gesture detector never gets
+		// the rest of the gesture. ContextClickable counts as clickable there without changing isClickable(),
+		// which would make TalkBack send ACTION_CLICK instead of a tap (#31483).
+		void UpdateContextClickable()
+		{
+			if (Control is not AView platformView)
+				return;
+
+			// A disabled clickable view still consumes touches, which would block the parent's gestures
+			if (_isEnabled && platformView is not RecyclerView && ViewConsumesTouchSequence())
+			{
+				_contextClickableDefaultValue ??= platformView.ContextClickable;
+				platformView.ContextClickable = true;
+			}
+			else if (_contextClickableDefaultValue is bool contextClickable)
+			{
+				platformView.ContextClickable = contextClickable;
+				_contextClickableDefaultValue = null;
+			}
+		}
+
+		// The recognizers OnTouchEvent always consumes ACTION_DOWN for: InnerGestureListener.OnDown (tap, including Span
+		// taps, pan, swipe, drag) and the pinch detector. Pointer gestures only consume it while nothing in the hierarchy
+		// is clickable and long press doesn't at all, so views with only those keep passing the touch on.
+		bool ViewConsumesTouchSequence()
+		{
+			var gestures = View?.GetCompositeGestureRecognizers();
+			if (gestures is null)
+				return false;
+
+			foreach (var gesture in gestures)
+			{
+				if (gesture is TapGestureRecognizer or PanGestureRecognizer or SwipeGestureRecognizer or PinchGestureRecognizer or DragGestureRecognizer
+					or ChildGestureRecognizer { GestureRecognizer: TapGestureRecognizer })
+					return true;
+			}
+
+			return false;
 		}
 
 		void OnKeyPress(object? sender, KeyEventArgs e)
@@ -315,6 +359,8 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				platformView.Focusable = _focusableDefaultValue ?? platformView.Focusable;
 				_focusableDefaultValue = null;
+				platformView.ContextClickable = _contextClickableDefaultValue ?? platformView.ContextClickable;
+				_contextClickableDefaultValue = null;
 				ClearRecyclerViewTouchListener(platformView);
 				platformView.Touch -= OnPlatformViewTouched;
 				platformView.KeyPress -= OnKeyPress;
@@ -429,6 +475,7 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			_isEnabled = Element.IsEnabled;
+			UpdateContextClickable();
 		}
 
 		void ClearRecyclerViewTouchListener(AView platformView)
