@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.UnitTests;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests.Menu
@@ -65,6 +66,104 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Menu
 
 			Assert.Same(bc, subMenuFlyout.BindingContext);
 			Assert.Same(bc, menuFlyoutItem.BindingContext);
+		}
+
+		[Fact]
+		public void ShowNullTargetThrows()
+		{
+			Assert.Throws<ArgumentNullException>(() => FlyoutBase.ShowContextFlyout(null!));
+		}
+
+		[Fact]
+		public void ShowMissingMenuThrows()
+		{
+			Assert.Throws<InvalidOperationException>(() => FlyoutBase.ShowContextFlyout(new Button()));
+		}
+
+		[Fact]
+		public void ShowEmptyMenuThrows()
+		{
+			var target = new Button();
+			FlyoutBase.SetContextFlyout(target, new MenuFlyout());
+			Assert.Throws<InvalidOperationException>(() => FlyoutBase.ShowContextFlyout(target));
+		}
+
+		[Fact]
+		public void ShowDisconnectedTargetThrows()
+		{
+			Assert.Throws<InvalidOperationException>(() => FlyoutBase.ShowContextFlyout(CreateTarget()));
+		}
+
+		[Theory]
+		[InlineData(false, false, true)]
+		[InlineData(true, true, true)]
+		[InlineData(true, false, false)]
+		public void ShowNoninteractiveTargetThrows(bool enabled, bool transparent, bool visible)
+		{
+			var target = CreateTarget();
+			target.IsEnabled = enabled;
+			target.InputTransparent = transparent;
+			target.IsVisible = visible;
+			target.Handler = new HandlerStub();
+			Assert.Throws<InvalidOperationException>(() => FlyoutBase.ShowContextFlyout(target));
+		}
+
+		[Fact]
+		public void ShowOnWrongThreadThrows()
+		{
+			bool isInvokeRequired = false;
+			DispatcherProviderStubOptions.IsInvokeRequired = () => isInvokeRequired;
+			try
+			{
+				var target = CreateTarget();
+				target.Handler = new HandlerStub();
+				isInvokeRequired = true;
+				Assert.Throws<InvalidOperationException>(() => FlyoutBase.ShowContextFlyout(target));
+			}
+			finally
+			{
+				DispatcherProviderStubOptions.IsInvokeRequired = null;
+			}
+		}
+
+		[Fact]
+		public void ShowUsesTargetCommandMapper()
+		{
+			var target = CreateTarget();
+			int requests = 0;
+			var commands = new CommandMapper<IView, IViewHandler>(ViewHandler.ViewCommandMapper)
+			{
+				[ViewHandler.ShowContextFlyoutCommandKey] = (handler, view, args) =>
+				{
+					Assert.Same(target, view);
+					Assert.Same(target.Handler, handler);
+					Assert.Null(args);
+					requests++;
+				}
+			};
+			target.Handler = new HandlerStub(new PropertyMapper<IView>(), commands);
+
+			FlyoutBase.ShowContextFlyout(target);
+
+			Assert.Equal(1, requests);
+		}
+
+		[Fact]
+		public void ShowOnUnsupportedPlatformThrows()
+		{
+			var target = CreateTarget();
+			target.Handler = new HandlerStub();
+			Assert.Throws<PlatformNotSupportedException>(() => FlyoutBase.ShowContextFlyout(target));
+		}
+
+		static Button CreateTarget()
+		{
+			var target = new Button();
+			FlyoutBase.SetContextFlyout(target, new MenuFlyout
+			{
+				new MenuFlyoutItem { Text = "Action" }
+			});
+			return target;
 		}
 
 		protected override int GetIndex(ContextFlyoutItemHandlerUpdate handlerUpdate)
