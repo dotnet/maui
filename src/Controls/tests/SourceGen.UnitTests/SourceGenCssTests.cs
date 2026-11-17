@@ -40,7 +40,7 @@ public class SourceGenCssTests : SourceGenTestsBase
 
 		var generated = result.Results.Single().GeneratedSources.Single(gs => gs.HintName.EndsWith(".xsg.cs", StringComparison.OrdinalIgnoreCase)).SourceText.ToString();
 
-		Assert.Contains("global::Microsoft.Maui.Controls.StyleSheets.StyleSheet.FromResource(@\"Resources/Styles/Styles.css\", typeof(global::Test.MainPage).Assembly,", generated, StringComparison.Ordinal);
+		Assert.Contains("global::Microsoft.Maui.Controls.StyleSheets.StyleSheet.FromResource(\"Resources/Styles/Styles.css\", typeof(global::Test.MainPage).Assembly,", generated, StringComparison.Ordinal);
 		Assert.DoesNotContain("RDSourceTypeConverter.GetResourcePath", generated, StringComparison.Ordinal);
 		Assert.DoesNotContain("XamlResourceIdAttribute.GetPathForType", generated, StringComparison.Ordinal);
 	}
@@ -69,8 +69,8 @@ public class SourceGenCssTests : SourceGenTestsBase
 
 		var generated = result.Results.Single().GeneratedSources.Single(gs => gs.HintName.EndsWith(".xsg.cs", StringComparison.OrdinalIgnoreCase)).SourceText.ToString();
 
-		Assert.Contains("global::Microsoft.Maui.Controls.StyleSheets.StyleSheet.FromResource(@\"Resources/Styles/Styles.css\", typeof(global::Test.SubPage).Assembly,", generated, StringComparison.Ordinal);
-		Assert.Contains("global::Microsoft.Maui.Controls.StyleSheets.StyleSheet.FromResource(@\"Views/Local.css\", typeof(global::Test.SubPage).Assembly,", generated, StringComparison.Ordinal);
+		Assert.Contains("global::Microsoft.Maui.Controls.StyleSheets.StyleSheet.FromResource(\"Resources/Styles/Styles.css\", typeof(global::Test.SubPage).Assembly,", generated, StringComparison.Ordinal);
+		Assert.Contains("global::Microsoft.Maui.Controls.StyleSheets.StyleSheet.FromResource(\"Views/Local.css\", typeof(global::Test.SubPage).Assembly,", generated, StringComparison.Ordinal);
 	}
 
 	[Fact]
