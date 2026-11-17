@@ -136,7 +136,7 @@ namespace Microsoft.Maui.Controls
 			}
 
 			var newValue = bpcontext.Values.GetClearedValue(specificity);
-			var changed = !Equals(original.Value, newValue);
+			var changed = !IsSameValue(property, original.Value, newValue);
 			if (changed)
 			{
 				property.PropertyChanging?.Invoke(this, original.Value, newValue);
@@ -151,6 +151,13 @@ namespace Microsoft.Maui.Controls
 
 			OnBindablePropertySet(property, original.Value, newValue, changed, changed);
 		}
+
+		// BindingContext and VisualStateGroups are compared by reference: VisualStateGroupList has value
+		// equality, but each style application owns its own clone and must be notified when swapped (#16569)
+		static bool IsSameValue(BindableProperty property, object value, object original)
+			=> ReferenceEquals(property, BindingContextProperty) || ReferenceEquals(property, VisualStateManager.VisualStateGroupsProperty)
+				? ReferenceEquals(value, original)
+				: Equals(value, original);
 
 		/// <summary>
 		/// Returns the value that is contained in the given bindable property.
@@ -313,9 +320,10 @@ namespace Microsoft.Maui.Controls
 
 			var context = GetOrCreateContext(targetProperty);
 
-			//if the value is manually set (has highest specificity than FromBinding), we reassign the specificity so it'll get replaced when the binding is applied
+			//if the value is manually set (has highest specificity than FromBinding), we reassign the specificity so it'll get replaced when the binding is applied.
+			//Style bindings have a lower specificity than FromBinding and must not demote higher values (e.g. VSM setters), or those values could never be unapplied (#16569)
 			var currentSpecificity = context.Values.GetSpecificity();
-			if (currentSpecificity > SetterSpecificity.FromBinding)
+			if (currentSpecificity > SetterSpecificity.FromBinding && specificity >= SetterSpecificity.FromBinding)
 			{
 				var currentValue = context.Values.GetValue();
 
@@ -747,7 +755,7 @@ namespace Microsoft.Maui.Controls
 			// bool clearOneWayBindings = (attributes & SetValueFlags.ClearOneWayBindings) != 0 && specificity != SetterSpecificity.FromHandler;
 			// bool clearTwoWayBindings = (attributes & SetValueFlags.ClearTwoWayBindings) != 0 && specificity != SetterSpecificity.FromHandler;
 
-			bool sameValue = ReferenceEquals(context.Property, BindingContextProperty) ? ReferenceEquals(value, original) : Equals(value, original);
+			bool sameValue = IsSameValue(context.Property, value, original);
 			if (!silent && (!sameValue || raiseOnEqual))
 			{
 				property.PropertyChanging?.Invoke(this, original, value);
