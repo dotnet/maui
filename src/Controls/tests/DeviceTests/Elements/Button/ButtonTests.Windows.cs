@@ -2,12 +2,14 @@
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
+using Microsoft.Maui.DeviceTests.ImageAnalysis;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
+using Microsoft.UI.Xaml.Media.Imaging;
 using Xunit;
 using Controls = Microsoft.Maui.Controls;
 using MauiTextAlignment = Microsoft.Maui.TextAlignment;
@@ -19,6 +21,131 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class ButtonTests
 	{
+		static async Task<double> GetJustificationImageWidth(Controls.Button button)
+		{
+			var platform = Assert.IsType<Microsoft.Maui.Platform.MauiButton>(button.Handler?.PlatformView);
+			var image = Assert.IsType<Image>(platform.GetContent<Image>());
+			await AssertHelpers.AssertEventually(() => image.Source is BitmapImage { PixelWidth: > 0 } &&
+				image.ActualWidth > 0 && image.ActualHeight > 0);
+			platform.UpdateLayout();
+			return button.ContentLayout.Position is Controls.Button.ButtonContentLayout.ImagePosition.Left or Controls.Button.ButtonContentLayout.ImagePosition.Right
+				? image.ActualWidth + button.ContentLayout.Spacing : 0;
+		}
+
+		static async Task<RawBitmap> GetJustificationBitmap(Controls.Button button)
+		{
+			var platform = Assert.IsType<Microsoft.Maui.Platform.MauiButton>(button.Handler?.PlatformView);
+			await AssertHelpers.AssertEventually(() => Math.Abs(platform.ActualWidth - button.WidthRequest) <= 1 &&
+				Math.Abs(platform.ActualHeight - button.HeightRequest) <= 1);
+			RawBitmap? bitmap = null;
+			await AssertHelpers.AssertEventually(async () =>
+			{
+				var previous = bitmap;
+				bitmap = await button.AsRawBitmapAsync();
+				return Math.Abs(bitmap.PixelWidth - platform.ActualWidth * bitmap.Density) <= 1 &&
+					Math.Abs(bitmap.PixelHeight - platform.ActualHeight * bitmap.Density) <= 1 &&
+					previous is not null && previous.PixelBuffer.AsSpan().SequenceEqual(bitmap.PixelBuffer);
+			}, message: "The captured bitmap must stabilize at the button's laid-out size.");
+			return Assert.IsType<RawBitmap>(bitmap);
+		}
+
+		[Theory]
+		[InlineData(null!)]
+		[InlineData(HorizontalAlignment.Left)]
+		[InlineData(HorizontalAlignment.Right)]
+		[InlineData(HorizontalAlignment.Stretch)]
+		public async Task JustifyRestoresTheChildLocalValueItActuallyOverrides(HorizontalAlignment? alignment)
+		{
+			var button = new Controls.Button { Text = "Native child", HorizontalTextAlignment = MauiTextAlignment.Center };
+			var handler = await CreateHandlerAsync<ButtonHandler>(button);
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var platform = handler.PlatformView;
+				var content = platform.Content;
+				var text = Assert.IsType<TextBlock>(platform.GetContent<TextBlock>());
+				if (alignment is { } value)
+					text.HorizontalAlignment = value;
+				else
+					text.ClearValue(FrameworkElement.HorizontalAlignmentProperty);
+				var original = text.ReadLocalValue(FrameworkElement.HorizontalAlignmentProperty);
+
+				button.HorizontalTextAlignment = MauiTextAlignment.End;
+				button.Text = "Updated child";
+				Assert.Equal(original, text.ReadLocalValue(FrameworkElement.HorizontalAlignmentProperty));
+				button.HorizontalTextAlignment = MauiTextAlignment.Justify;
+				Assert.Equal(HorizontalAlignment.Stretch, text.HorizontalAlignment);
+				button.HorizontalTextAlignment = MauiTextAlignment.Start;
+				Assert.Equal(original, text.ReadLocalValue(FrameworkElement.HorizontalAlignmentProperty));
+				button.HorizontalTextAlignment = MauiTextAlignment.Justify;
+				button.ClearValue(Controls.Button.HorizontalTextAlignmentProperty);
+				Assert.Equal(original, text.ReadLocalValue(FrameworkElement.HorizontalAlignmentProperty));
+
+				button.HorizontalTextAlignment = MauiTextAlignment.Justify;
+				platform.Content = new TextBlock { Text = "Custom content" };
+				Assert.Equal(original, text.ReadLocalValue(FrameworkElement.HorizontalAlignmentProperty));
+				platform.Content = content;
+				Assert.Equal(HorizontalAlignment.Stretch, text.HorizontalAlignment);
+				((IElementHandler)handler).DisconnectHandler();
+				Assert.Equal(original, text.ReadLocalValue(FrameworkElement.HorizontalAlignmentProperty));
+			});
+		}
+
+		[Fact]
+		public async Task AlignmentChangesPreserveOtherAxisMapperCustomization()
+		{
+			var button = new Controls.Button
+			{
+				Text = "Customized title",
+				HorizontalTextAlignment = MauiTextAlignment.Start,
+				VerticalTextAlignment = MauiTextAlignment.Start
+			};
+			var handler = await CreateHandlerAsync<CustomizedAlignmentButtonHandler>(button);
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var platform = handler.PlatformView;
+				Assert.Equal(HorizontalAlignment.Right, platform.HorizontalContentAlignment);
+				Assert.Equal(VerticalAlignment.Bottom, platform.VerticalContentAlignment);
+				button.HorizontalTextAlignment = MauiTextAlignment.Center;
+				Assert.Equal(VerticalAlignment.Bottom, platform.VerticalContentAlignment);
+				button.VerticalTextAlignment = MauiTextAlignment.Center;
+				Assert.Equal(HorizontalAlignment.Right, platform.HorizontalContentAlignment);
+			});
+		}
+
+		class CustomizedAlignmentButtonHandler : ButtonHandler
+		{
+			public CustomizedAlignmentButtonHandler() : base(CreateMapper())
+			{
+			}
+
+			static IPropertyMapper CreateMapper()
+			{
+				var mapper = new PropertyMapper<Controls.Button, IButtonHandler>(ButtonHandler.Mapper);
+				mapper.AppendToMapping(nameof(Controls.Button.HorizontalTextAlignment), (handler, button) =>
+					handler.PlatformView.HorizontalContentAlignment = HorizontalAlignment.Right);
+				mapper.AppendToMapping(nameof(Controls.Button.VerticalTextAlignment), (handler, button) =>
+					handler.PlatformView.VerticalContentAlignment = VerticalAlignment.Bottom);
+				return mapper;
+			}
+		}
+
+		[Fact]
+		public async Task RejectedVerticalJustifyPreservesNativeAlignment()
+		{
+			var button = new Controls.Button { Text = "Aligned title", VerticalTextAlignment = MauiTextAlignment.End };
+			var handler = await CreateHandlerAsync<ButtonHandler>(button);
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var platform = handler.PlatformView;
+				var content = Assert.IsAssignableFrom<FrameworkElement>(platform.Content);
+				Assert.Equal(VerticalAlignment.Bottom, platform.VerticalContentAlignment);
+				button.VerticalTextAlignment = MauiTextAlignment.Justify;
+				Assert.Equal(MauiTextAlignment.End, button.VerticalTextAlignment);
+				Assert.Equal(VerticalAlignment.Bottom, platform.VerticalContentAlignment);
+				Assert.Equal(VerticalAlignment.Bottom, content.VerticalAlignment);
+			});
+		}
+
 		[Fact]
 		public async Task JustifyRestoresTheChildBindingItActuallyOverrides()
 		{
@@ -49,7 +176,7 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Same(source, text.GetBindingExpression(FrameworkElement.HorizontalAlignmentProperty)?.ParentBinding.Source);
 				Assert.Equal(HorizontalAlignment.Left, text.HorizontalAlignment);
 				button.HorizontalTextAlignment = MauiTextAlignment.Justify;
-				handler.DisconnectHandler();
+				((IElementHandler)handler).DisconnectHandler();
 				Assert.Same(source, text.GetBindingExpression(FrameworkElement.HorizontalAlignmentProperty)?.ParentBinding.Source);
 			});
 		}
@@ -302,6 +429,8 @@ namespace Microsoft.Maui.DeviceTests
 				var text = Assert.IsType<TextBlock>(platform.GetContent<TextBlock>());
 				var image = Assert.IsType<Image>(platform.GetContent<Image>());
 				await AssertHelpers.AssertEventually(() => image.Source is not null && image.ActualWidth > 0 && image.ActualHeight > 0);
+				var originalImageWidth = image.ActualWidth;
+				var originalImageHeight = image.ActualHeight;
 				var alignments = new[] { MauiTextAlignment.Start, MauiTextAlignment.Center, MauiTextAlignment.End };
 				var horizontalAlignments = new[] { MauiTextAlignment.Start, MauiTextAlignment.Center, MauiTextAlignment.End, MauiTextAlignment.Justify };
 				foreach (var rightToLeft in new[] { rtl, !rtl })
@@ -336,10 +465,14 @@ namespace Microsoft.Maui.DeviceTests
 							Assert.InRange(Math.Abs(bounds.Y - expectedY), 0, 1);
 
 							var imageBounds = GetAlignmentBounds(image, content);
-							var textBounds = GetAlignmentBounds(text, content);
+							// TextBlock.ActualWidth reports ink width, not the space available for justification.
+							var textBounds = Microsoft.UI.Xaml.Controls.Primitives.LayoutInformation.GetLayoutSlot(text);
 							Assert.True(imageBounds.Width > 0 && imageBounds.Height > 0 && textBounds.Width > 0 && textBounds.Height > 0);
+							Assert.InRange(Math.Abs(imageBounds.Width - originalImageWidth), 0, 1);
+							Assert.InRange(Math.Abs(imageBounds.Height - originalImageHeight), 0, 1);
 							if (horizontal == MauiTextAlignment.Justify)
 							{
+								Assert.Equal(HorizontalAlignment.Stretch, text.HorizontalAlignment);
 								var imageSpace = position is Controls.Button.ButtonContentLayout.ImagePosition.Left or Controls.Button.ButtonContentLayout.ImagePosition.Right
 									? imageBounds.Width + button.ContentLayout.Spacing : 0;
 								Assert.InRange(Math.Abs(textBounds.Width - (bounds.Width - imageSpace)), 0, 1);

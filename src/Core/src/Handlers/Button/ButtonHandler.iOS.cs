@@ -68,14 +68,14 @@ namespace Microsoft.Maui.Handlers
 				? horizontal.Value switch
 				{
 					TextAlignment.Justify => UIControlContentHorizontalAlignment.Fill,
-					_ when imageGroup => UIControlContentHorizontalAlignment.Center,
+					_ when imageGroup && platformView.Configuration is null => UIControlContentHorizontalAlignment.Center,
 					TextAlignment.Start => UIControlContentHorizontalAlignment.Leading,
 					TextAlignment.End => UIControlContentHorizontalAlignment.Trailing,
 					_ => UIControlContentHorizontalAlignment.Center
 				}
 				: _horizontalTextAlignmentSet ? _defaultHorizontalAlignment : platformView.HorizontalAlignment;
 			var verticalAlignment = !updateVertical ? platformView.VerticalAlignment : vertical.HasValue
-				? imageGroup ? UIControlContentVerticalAlignment.Center : vertical.Value.ToPlatformVertical()
+				? imageGroup && platformView.Configuration is null ? UIControlContentVerticalAlignment.Center : vertical.Value.ToPlatformVertical()
 				: _verticalTextAlignmentSet ? _defaultVerticalAlignment : platformView.VerticalAlignment;
 			var titleAlignment = !updateHorizontal ? platformView.TitleLabel.TextAlignment : horizontal.HasValue
 				? horizontal.Value.ToPlatformHorizontal(platformView.EffectiveUserInterfaceLayoutDirection)

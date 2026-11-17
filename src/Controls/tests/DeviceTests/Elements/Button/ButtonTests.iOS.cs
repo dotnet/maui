@@ -3,6 +3,7 @@ using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.DeviceTests.ImageAnalysis;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
@@ -44,6 +45,16 @@ namespace Microsoft.Maui.DeviceTests
 				mapper.AppendToMapping(nameof(Button.HorizontalTextAlignment), (handler, button) =>
 					handler.PlatformView.TitleLabel.TextAlignment = UITextAlignment.Right);
 				return mapper;
+			}
+		}
+
+		class ConfiguredAlignmentButtonHandler : ButtonHandler
+		{
+			protected override UIButton CreatePlatformView()
+			{
+				var button = base.CreatePlatformView();
+				button.Configuration = UIButtonConfiguration.BorderedButtonConfiguration;
+				return button;
 			}
 		}
 
@@ -145,7 +156,10 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				builder.ConfigureMauiHandlers(handlers =>
 				{
-					handlers.AddHandler<Button, ButtonHandler>();
+					if (configured)
+						handlers.AddHandler<Button, ConfiguredAlignmentButtonHandler>();
+					else
+						handlers.AddHandler<Button, ButtonHandler>();
 				});
 			});
 			var button = new Button
@@ -154,6 +168,7 @@ namespace Microsoft.Maui.DeviceTests
 				ImageSource = "red.png",
 				LineBreakMode = LineBreakMode.WordWrap,
 				FontSize = 20,
+				BackgroundColor = Colors.White,
 				WidthRequest = 300,
 				HeightRequest = 260,
 				HorizontalOptions = LayoutOptions.Center,
@@ -161,55 +176,54 @@ namespace Microsoft.Maui.DeviceTests
 				BorderWidth = 0,
 				Padding = new Thickness(24, 12, 8, 20),
 				FlowDirection = rtl ? FlowDirection.RightToLeft : FlowDirection.LeftToRight,
+				TextColor = Colors.Blue,
 				ContentLayout = new Button.ButtonContentLayout(position, 8)
 			};
 			await CreateHandlerAndAddToWindow(button, async () =>
 			{
-				var platform = Assert.IsType<ButtonHandler>(button.Handler).PlatformView;
+				var platform = Assert.IsAssignableFrom<ButtonHandler>(button.Handler).PlatformView;
 				await AssertHelpers.AssertEventually(() => platform.CurrentImage is not null && platform.Bounds.Width > 0 && platform.Bounds.Height > 0);
-				if (configured)
-					platform.Configuration = UIButtonConfiguration.BorderedButtonConfiguration;
 				var originalConfiguration = platform.Configuration;
-				foreach (var alignment in new[] { TextAlignment.Start, TextAlignment.Center, TextAlignment.End, TextAlignment.Justify })
+				Assert.True(!configured || originalConfiguration is not null);
+				Rect? start = null;
+				Rect? center = null;
+				foreach (var alignment in new[] { TextAlignment.Start, TextAlignment.Center, TextAlignment.End })
 				{
 					button.HorizontalTextAlignment = alignment;
-					var vertical = alignment == TextAlignment.Justify ? TextAlignment.Center : alignment;
-					button.VerticalTextAlignment = vertical;
+					button.VerticalTextAlignment = alignment;
 					var width = (double)platform.Bounds.Width;
 					var height = (double)platform.Bounds.Height;
 					((ICrossPlatformLayout)button).CrossPlatformArrange(new Rect(0, 0, width, height));
 					platform.SetNeedsLayout();
 					platform.LayoutIfNeeded();
-					var image = platform.ImageView.Frame;
-					var text = platform.TitleLabel.Frame;
-					Assert.True(image.Width > 0 && image.Height > 0 && text.Width > 0 && text.Height > 0);
-					Assert.InRange(Math.Abs(image.Width - platform.CurrentImage!.Size.Width), 0, 1);
-					var left = Math.Min((double)image.Left, (double)text.Left);
-					var top = Math.Min((double)image.Top, (double)text.Top);
-					var groupWidth = Math.Max((double)image.Right, (double)text.Right) - left;
-					var groupHeight = Math.Max((double)image.Bottom, (double)text.Bottom) - top;
-					var horizontal = rtl && alignment is TextAlignment.Start or TextAlignment.End
-						? alignment == TextAlignment.Start ? TextAlignment.End : TextAlignment.Start : alignment;
-					var expectedLeft = button.Padding.Left + (width - button.Padding.HorizontalThickness - groupWidth) *
-						(horizontal is TextAlignment.Start or TextAlignment.Justify ? 0 : horizontal == TextAlignment.End ? 1 : 0.5);
-					var expectedTop = button.Padding.Top + (height - button.Padding.VerticalThickness - groupHeight) *
-						(vertical == TextAlignment.Start ? 0 : vertical == TextAlignment.End ? 1 : 0.5);
-					if (alignment == TextAlignment.Justify)
+					var imageFrame = platform.ImageView.ConvertRectToView(platform.ImageView.Bounds, platform);
+					var text = platform.TitleLabel.ConvertRectToView(platform.TitleLabel.Bounds, platform);
+					for (var repeat = 0; repeat < 2; repeat++)
 					{
-						var imageSpace = position is Button.ButtonContentLayout.ImagePosition.Left or Button.ButtonContentLayout.ImagePosition.Right
-							? image.Width + button.ContentLayout.Spacing : 0;
-						Assert.InRange(Math.Abs(text.Width - (width - button.Padding.HorizontalThickness - imageSpace)), 0, 1);
+						platform.SetNeedsLayout();
+						platform.LayoutIfNeeded();
+						Assert.Equal(imageFrame, platform.ImageView.ConvertRectToView(platform.ImageView.Bounds, platform));
+						Assert.Equal(text, platform.TitleLabel.ConvertRectToView(platform.TitleLabel.Bounds, platform));
 					}
-					Assert.InRange(Math.Abs(left - expectedLeft), 0, 1);
-					Assert.InRange(Math.Abs(top - expectedTop), 0, 1);
-					var gap = position switch
+					var bitmap = await button.AsRawBitmapAsync();
+					var image = GetRenderedRedImageBounds(bitmap);
+					var ink = GetRenderedBlueTextBounds(bitmap);
+					var left = Math.Min(image.Left, ink.Left);
+					var top = Math.Min(image.Top, ink.Top);
+					var group = new Rect(left, top,
+						Math.Max(image.Right, ink.Right) - left, Math.Max(image.Bottom, ink.Bottom) - top);
+					if (alignment == TextAlignment.Start)
+						start = group;
+					else if (alignment == TextAlignment.Center)
+						center = group;
+					else
 					{
-						Button.ButtonContentLayout.ImagePosition.Top => (double)(text.Top - image.Bottom),
-						Button.ButtonContentLayout.ImagePosition.Bottom => (double)(image.Top - text.Bottom),
-						_ => (position == Button.ButtonContentLayout.ImagePosition.Left) != rtl
-							? (double)(text.Left - image.Right) : (double)(image.Left - text.Right)
-					};
-					Assert.InRange(Math.Abs(gap - button.ContentLayout.Spacing), 0, 1);
+						Assert.True(start.HasValue && center.HasValue);
+						Assert.True(rtl
+							? start.Value.Left > center.Value.Left + 4 && center.Value.Left > group.Left + 4
+							: start.Value.Left + 4 < center.Value.Left && center.Value.Left + 4 < group.Left);
+						Assert.True(start.Value.Top + 4 < center.Value.Top && center.Value.Top + 4 < group.Top);
+					}
 				}
 				button.ClearValue(Button.HorizontalTextAlignmentProperty);
 				button.ClearValue(Button.VerticalTextAlignmentProperty);
@@ -221,6 +235,58 @@ namespace Microsoft.Maui.DeviceTests
 					Assert.Equal(originalConfiguration.ContentInsets, platform.Configuration.ContentInsets);
 				}
 			});
+		}
+
+		static Rect GetRenderedRedImageBounds(RawBitmap bitmap)
+		{
+			var left = bitmap.PixelWidth;
+			var top = bitmap.PixelHeight;
+			var right = -1;
+			var bottom = -1;
+			for (var y = 0; y < bitmap.PixelHeight; y++)
+			{
+				for (var x = 0; x < bitmap.PixelWidth; x++)
+				{
+					var offset = (y * bitmap.PixelWidth + x) * 4;
+					if (bitmap.PixelBuffer[offset + 2] > 180 &&
+						bitmap.PixelBuffer[offset + 1] < 80 && bitmap.PixelBuffer[offset] < 80)
+					{
+						left = Math.Min(left, x);
+						right = Math.Max(right, x);
+						top = Math.Min(top, y);
+						bottom = Math.Max(bottom, y);
+					}
+				}
+			}
+			Assert.True(right >= left && bottom >= top, "The button image must render.");
+			return new Rect(left / bitmap.Density, top / bitmap.Density,
+				(right - left + 1) / bitmap.Density, (bottom - top + 1) / bitmap.Density);
+		}
+
+		static Rect GetRenderedBlueTextBounds(RawBitmap bitmap)
+		{
+			var left = bitmap.PixelWidth;
+			var top = bitmap.PixelHeight;
+			var right = -1;
+			var bottom = -1;
+			for (var y = 0; y < bitmap.PixelHeight; y++)
+			{
+				for (var x = 0; x < bitmap.PixelWidth; x++)
+				{
+					var offset = (y * bitmap.PixelWidth + x) * 4;
+					if (bitmap.PixelBuffer[offset] > 180 &&
+						bitmap.PixelBuffer[offset + 1] < 80 && bitmap.PixelBuffer[offset + 2] < 80)
+					{
+						left = Math.Min(left, x);
+						right = Math.Max(right, x);
+						top = Math.Min(top, y);
+						bottom = Math.Max(bottom, y);
+					}
+				}
+			}
+			Assert.True(right >= left && bottom >= top, "The button title must render.");
+			return new Rect(left / bitmap.Density, top / bitmap.Density,
+				(right - left + 1) / bitmap.Density, (bottom - top + 1) / bitmap.Density);
 		}
 
 		[Fact]

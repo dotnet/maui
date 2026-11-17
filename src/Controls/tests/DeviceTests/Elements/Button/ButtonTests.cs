@@ -45,11 +45,18 @@ namespace Microsoft.Maui.DeviceTests
 			};
 			await CreateHandlerAndAddToWindow(button, async () =>
 			{
+#if WINDOWS
+				var imageWidth = position.HasValue ? await GetJustificationImageWidth(button) : 0;
+				var bitmap = await GetJustificationBitmap(button);
+#else
 				var bitmap = await button.AsRawBitmapAsync();
+#endif
 				var lines = GetBlueTextLineWidths(bitmap);
 				Assert.True(lines.Count > 1, "The text must wrap naturally into multiple rendered lines.");
+#if !WINDOWS
 				var imageWidth = position is Button.ButtonContentLayout.ImagePosition.Left or Button.ButtonContentLayout.ImagePosition.Right
 					? 100 + button.ContentLayout.Spacing : 0;
+#endif
 				var available = bitmap.PixelWidth - (button.Padding.HorizontalThickness + imageWidth) * bitmap.Density;
 				Assert.InRange(lines[0], available - button.FontSize * bitmap.Density / 2, available);
 				Assert.True(lines[lines.Count - 1] < available - button.FontSize * bitmap.Density,
