@@ -41,13 +41,17 @@ The `src` and `eng` trees, minus the globs in `devskim-options.json`:
 Everything else is in scope, including Arcade's `eng/common`. The other top-level folders (`docs`, `loc`,
 `grounding`, `Assets`, `.github`) and the build scripts in the repository root aren't scanned.
 
+Keep the test globs: DevSkim 1.0.100 aborts with a logging error when it scans the test snapshot folders, which
+hold more than ten thousand PNG files.
+
 DevSkim matches the globs against absolute paths. If the checkout is below a directory with one of these names,
 for example `tests`, the globs exclude everything and the script fails because no files were analyzed.
 
 ## Results
 
 The stage publishes the `DevSkim-<attempt>` artifact, even when it fails. It has a SARIF report and a log for
-each scan (`src`, `eng` and `canary`) and the output of the tool installation.
+each scan (`src`, `eng` and `canary`) and the output of the tool installation. The reports have no code
+excerpts, so none of the repository's source text is published.
 
 ## Run it locally
 

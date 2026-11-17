@@ -62,10 +62,11 @@ function Invoke-DevSkim {
 
     $sarif = Join-Path $OutputDirectory "$Name.sarif"
     $log = Join-Path $OutputDirectory "$Name.log"
-    # The Debug log ends with the number of files analyzed.
+    # The Debug log ends with the number of files analyzed. The gate needs no code excerpts, and leaving them out
+    # keeps source text, such as the hashes that DevSkim flags as possible keys, out of the published reports.
     & $DevSkim analyze --source-code $Source --base-path $BasePath --output-file $sarif --file-format sarif `
         --severity 'Critical,Important,Moderate,BestPractice,ManualReview' --confidence 'High,Medium,Low' `
-        --disable-supression --disable-parallel --console-verbosity Debug @ExtraArguments 2>&1 |
+        --disable-supression --disable-parallel --skip-excerpts --console-verbosity Debug @ExtraArguments 2>&1 |
         Tee-Object -FilePath $log | Write-Host
     if ($LASTEXITCODE -ne 0) {
         throw "DevSkim failed with exit code $LASTEXITCODE while scanning '$Source'. See '$log'."
