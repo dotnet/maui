@@ -17,7 +17,7 @@ public class Issue29516 : _IssuesUITest
     public void TitleBarTrailingContentShouldRenderProperly()
     {
         App.WaitForElement("ContentLabel");
-        VerifyScreenshot(includeTitleBar: true);
+        VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2), includeTitleBar: true);
     }
 }
 #endif

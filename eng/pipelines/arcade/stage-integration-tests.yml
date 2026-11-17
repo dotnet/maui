@@ -42,6 +42,10 @@ stages:
           # Skip Xcode provisioning for Android-only tests (RunOnAndroid category)
           # All other tests may build or run iOS/macOS targets and need Xcode
           skipXcode: ${{ eq(job.testCategory, 'RunOnAndroid') }}
+          # An explicit job pin must not be overwritten by the internal Xcode package.
+          ${{ if job.xcodeVersion }}:
+            installXcodePackage: false
+            requirePinnedXcodeVersion: true
 
       - template: /eng/pipelines/common/run-dotnet-preview.yml
         parameters:

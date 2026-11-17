@@ -103,6 +103,12 @@ with Xcode 26.5, matching their Apple compatibility SDK. The complementary cases
 retain the main branch's GoldenGate/Xcode 27 compilation pool. Compound test
 filters use single-quoted arguments in the shared PowerShell runner.
 
+Internal (dnceng `internal`) macOS jobs install the Xcode Universal Package that
+dotnet/macios pins (`xcodePackageVersion` in `eng/pipelines/common/provision.yml`,
+currently 27.2.0), then select that exact application and verify its build
+version before compiling. Jobs with an explicit `xcodeVersion` pin skip the
+package.
+
 ### Compile using a local `.dotnet\dotnet` via `build.*` scripts on the root folder 
 
 This is the **recommended** method for provisioning the .NET SDK and workloads. It uses the Arcade build infrastructure. For more information, you can look [here](https://github.com/dotnet/arcade/blob/main/Documentation/ArcadeSdk.md#build-scripts-and-extensibility-points)

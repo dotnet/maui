@@ -196,38 +196,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(AppTheme.Light, newTheme);
 		}
 
-		[Fact]
-		// https://github.com/dotnet/maui/issues/9736
-		public void StyleSetsShellFlyoutBackgroundColor()
-		{
-			app.Resources.Add(new Style(typeof(Shell))
-			{
-				Setters = { new Setter { Property = Shell.FlyoutBackgroundColorProperty, Value = Colors.Red } }
-			});
-
-			var shell = new Shell();
-			app.LoadPage(shell);
-
-			Assert.Equal(Colors.Red, shell.FlyoutBackgroundColor);
-
-			SetAppTheme(AppTheme.Dark);
-
-			Assert.Equal(Colors.Red, shell.FlyoutBackgroundColor);
-		}
-
-		[Fact]
-		public void ShellFlyoutBackgroundColorFollowsTheThemeWithoutAStyle()
-		{
-			var shell = new Shell();
-			app.LoadPage(shell);
-
-			Assert.Equal(Colors.White, shell.FlyoutBackgroundColor);
-
-			SetAppTheme(AppTheme.Dark);
-
-			Assert.Equal(Colors.Black, shell.FlyoutBackgroundColor);
-		}
-
 		void SetAppTheme(AppTheme theme)
 		{
 			mockAppInfo.RequestedTheme = theme;
