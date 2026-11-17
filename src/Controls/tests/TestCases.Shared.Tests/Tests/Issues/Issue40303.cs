@@ -1,3 +1,4 @@
+#if TEST_FAILS_ON_WINDOWS // Windows shows ShellContent choices in a dropdown when Library is selected, so WaitForNoElement sees Manga and cannot assert that the top strip is hidden.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -42,3 +43,4 @@ public class Issue40303 : _IssuesUITest
 #endif
 	}
 }
+#endif
