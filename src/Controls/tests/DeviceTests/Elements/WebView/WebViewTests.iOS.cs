@@ -30,12 +30,8 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				Assert.Equal(WebNavigationResult.Success, await navigated.Task.WaitAsync(TimeSpan.FromSeconds(5)));
 
-				// WebKit SPI that ends the web content process, as iOS does when it reclaims memory from an idle app
-				var kill = new Selector("_killWebContentProcess");
-				Assert.True(handler.PlatformView.RespondsToSelector(kill));
-
 				navigated = new TaskCompletionSource<WebNavigationResult>(TaskCreationOptions.RunContinuationsAsynchronously);
-				handler.PlatformView.PerformSelector(kill, null, 0);
+				KillWebContentProcess(handler.PlatformView);
 
 				await terminated.Task.WaitAsync(TimeSpan.FromSeconds(5));
 				Assert.Equal(WebNavigationResult.Success, await navigated.Task.WaitAsync(TimeSpan.FromSeconds(5)));
@@ -44,7 +40,7 @@ namespace Microsoft.Maui.DeviceTests
 				// A second termination right after the reload must not reload again, so a page that keeps crashing can't loop
 				terminated = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 				navigated = new TaskCompletionSource<WebNavigationResult>(TaskCreationOptions.RunContinuationsAsynchronously);
-				handler.PlatformView.PerformSelector(kill, null, 0);
+				KillWebContentProcess(handler.PlatformView);
 
 				await terminated.Task.WaitAsync(TimeSpan.FromSeconds(5));
 				await Task.Delay(1000);
@@ -76,11 +72,20 @@ namespace Microsoft.Maui.DeviceTests
 				await AssertHelpers.AssertEventually(() => handler.PlatformView.Url?.Fragment == "second");
 
 				navigated = new TaskCompletionSource<WebNavigationResult>(TaskCreationOptions.RunContinuationsAsynchronously);
-				handler.PlatformView.PerformSelector(new Selector("_killWebContentProcess"), null, 0);
+				KillWebContentProcess(handler.PlatformView);
 
 				Assert.Equal(WebNavigationResult.Success, await navigated.Task.WaitAsync(TimeSpan.FromSeconds(5)));
 				Assert.Equal("second", handler.PlatformView.Url?.Fragment);
 			});
+		}
+
+		// WebKit SPI that ends the web content process, as iOS does when it reclaims memory from an idle app.
+		// The shorter _killWebContentProcess does nothing on macOS 26, so Mac Catalyst needs this variant.
+		static void KillWebContentProcess(WebKit.WKWebView webView)
+		{
+			var kill = new Selector("_killWebContentProcessAndResetState");
+			Assert.True(webView.RespondsToSelector(kill));
+			webView.PerformSelector(kill, null, 0);
 		}
 	}
 }
