@@ -1,5 +1,4 @@
-﻿using System;
-using System.Diagnostics.CodeAnalysis;
+using System;
 using System.IO;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
@@ -291,10 +290,6 @@ namespace Microsoft.Maui.Handlers
 			return ras;
 		}
 
-		[RequiresUnreferencedCode(DynamicFeatures)]
-#if !NETSTANDARD
-		[RequiresDynamicCode(DynamicFeatures)]
-#endif
 		private sealed class HybridWebView2Proxy
 		{
 			private WeakReference<Window>? _window;
@@ -317,10 +312,22 @@ namespace Microsoft.Maui.Handlers
 				var initializingArgs = new WebViewInitializationStartedEventArgs();
 				VirtualView?.WebViewInitializationStarted(initializingArgs);
 
+				var environmentOptions = initializingArgs.EnvironmentOptions ?? new CoreWebView2EnvironmentOptions();
+				if (string.IsNullOrEmpty(environmentOptions.Language))
+				{
+					// Match WinUI's default environment so WebViews sharing a user data folder
+					// can share a browser process, including when controller options are customized.
+					var languages = Windows.Globalization.ApplicationLanguages.Languages;
+					if (languages.Count > 0)
+					{
+						environmentOptions.Language = languages[0];
+					}
+				}
+
 				var env = await CoreWebView2Environment.CreateWithOptionsAsync(
 					browserExecutableFolder: initializingArgs.BrowserExecutableFolder,
 					userDataFolder: initializingArgs.UserDataFolder,
-					options: initializingArgs.EnvironmentOptions);
+					options: environmentOptions);
 
 				var options = env.CreateCoreWebView2ControllerOptions();
 				options.ScriptLocale = initializingArgs.ScriptLocale;

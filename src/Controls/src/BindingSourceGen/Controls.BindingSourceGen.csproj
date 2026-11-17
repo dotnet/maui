@@ -22,7 +22,7 @@
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" PrivateAssets="all" />
   </ItemGroup>
 
-  <Target Name="_CopyToBuildTasksDir" AfterTargets="Build">
+  <Target Name="_CopyToBuildTasksDir" AfterTargets="Build" Condition="'$(BuildTaskOnlyBuild)' == 'true' or '$(TF_BUILD)' != 'true'">
     <ItemGroup>
       <_CopyItems Include="$(TargetDir)*.dll" Exclude="$(TargetDir)System.*.dll" />
       <_CopyItems Include="$(TargetDir)*.pdb" Exclude="$(TargetDir)System.*.pdb" />

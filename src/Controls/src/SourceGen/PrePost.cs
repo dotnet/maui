@@ -17,11 +17,11 @@ class PrePost : IDisposable
 	/// <returns></returns>
 	public static PrePost NewLineInfo(IndentedTextWriter codeWriter, IXmlLineInfo iXmlLineInfo, ProjectItem? projectItem)
 	{
-		// Emit #line with an absolute path since relative paths have undefined behavior (https://github.com/dotnet/roslyn/issues/71202#issuecomment-1874649780)
+		// Use the physical input path, not the potentially relative or linked TargetPath (https://github.com/dotnet/roslyn/issues/71202#issuecomment-1874649780).
 		static void LineInfo(IndentedTextWriter codeWriter, IXmlLineInfo iXmlLineInfo, ProjectItem? projectItem)
 		{
 			var lineNumber = iXmlLineInfo.LineNumber != -1 ? iXmlLineInfo.LineNumber : 1;
-			codeWriter.WriteLineNoTabs($"#line {lineNumber} \"{projectItem?.TargetPath}\"");
+			codeWriter.WriteLineNoTabs($"#line {lineNumber} \"{projectItem?.AdditionalText.Path}\"");
 		}
 
 		static void LineDefault(IndentedTextWriter codeWriter, IXmlLineInfo iXmlLineInfo)

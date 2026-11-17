@@ -25,20 +25,27 @@ internal class ImageButtonUITests : _ViewUITests
 	[Test]
 	public void Aspect()
 	{
+		Exception? exception = null;
+
 		var remote = GoToStateRemote();
-		VerifyScreenshot("ImageButtonUITests_Aspect_State_AspectFit");
+		VerifyScreenshotOrSetException(ref exception, "ImageButtonUITests_Aspect_State_AspectFit");
 
 		remote.TapStateButton();
-		VerifyScreenshot("ImageButtonUITests_Aspect_State_AspectFill");
+		VerifyScreenshotOrSetException(ref exception, "ImageButtonUITests_Aspect_State_AspectFill");
 
 		remote.TapStateButton();
-		VerifyScreenshot("ImageButtonUITests_Aspect_State_Fill");
+		VerifyScreenshotOrSetException(ref exception, "ImageButtonUITests_Aspect_State_Fill");
 
 		remote.TapStateButton();
-		VerifyScreenshot("ImageButtonUITests_Aspect_State_Center");
+		VerifyScreenshotOrSetException(ref exception, "ImageButtonUITests_Aspect_State_Center");
 
 		remote.TapStateButton();
-		VerifyScreenshot("ImageButtonUITests_Aspect_State_AspectFit");
+		VerifyScreenshotOrSetException(ref exception, "ImageButtonUITests_Aspect_State_AspectFit");
+
+		if (exception is not null)
+		{
+			throw exception;
+		}
 	}
 #endif
 
@@ -161,26 +168,40 @@ internal class ImageButtonUITests : _ViewUITests
 	[Test]
 	public void Padding()
 	{
+		Exception? exception = null;
+
 		var remote = GoToStateRemote();
-		VerifyScreenshot("ImageButtonUITests_Padding_Initial");
+		VerifyScreenshotOrSetException(ref exception, "ImageButtonUITests_Padding_Initial");
 
 		remote.TapStateButton();
-		VerifyScreenshot("ImageButtonUITests_Padding_Removed");
+		VerifyScreenshotOrSetException(ref exception, "ImageButtonUITests_Padding_Removed");
 
 		remote.TapStateButton();
-		VerifyScreenshot("ImageButtonUITests_Padding_Initial");
+		VerifyScreenshotOrSetException(ref exception, "ImageButtonUITests_Padding_Initial");
+
+		if (exception is not null)
+		{
+			throw exception;
+		}
 	}
 
 	[Test]
 	public void Padding_Add()
 	{
+		Exception? exception = null;
+
 		var remote = GoToStateRemote();
-		VerifyScreenshot("ImageButtonUITests_Padding_Add_Initial");
+		VerifyScreenshotOrSetException(ref exception, "ImageButtonUITests_Padding_Add_Initial");
 
 		remote.TapStateButton();
-		VerifyScreenshot("ImageButtonUITests_Padding_Add_Added");
+		VerifyScreenshotOrSetException(ref exception, "ImageButtonUITests_Padding_Add_Added");
 
 		remote.TapStateButton();
-		VerifyScreenshot("ImageButtonUITests_Padding_Add_Initial");
+		VerifyScreenshotOrSetException(ref exception, "ImageButtonUITests_Padding_Add_Initial");
+
+		if (exception is not null)
+		{
+			throw exception;
+		}
 	}
 }

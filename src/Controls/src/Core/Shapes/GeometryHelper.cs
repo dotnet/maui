@@ -257,7 +257,7 @@ namespace Microsoft.Maui.Controls.Shapes
 		/// <param name="tolerance">The maximum distance between the curve and the polyline approximation.</param>
 		public static void FlattenCubicBezier(List<Point> points, Point ptStart, Point ptCtrl1, Point ptCtrl2, Point ptEnd, double tolerance)
 		{
-			int max = (int)((ptCtrl1.Distance(ptStart) + ptCtrl2.Distance(ptCtrl1) + ptEnd.Distance(ptCtrl2)) / tolerance);
+			int max = Math.Max(1, (int)((ptCtrl1.Distance(ptStart) + ptCtrl2.Distance(ptCtrl1) + ptEnd.Distance(ptCtrl2)) / tolerance));
 
 			for (int i = 0; i <= max; i++)
 			{
@@ -287,7 +287,7 @@ namespace Microsoft.Maui.Controls.Shapes
 		/// <param name="tolerance">The maximum distance between the curve and the polyline approximation.</param>
 		public static void FlattenQuadraticBezier(List<Point> points, Point ptStart, Point ptCtrl, Point ptEnd, double tolerance)
 		{
-			int max = (int)((ptCtrl.Distance(ptStart) + ptEnd.Distance(ptCtrl)) / tolerance);
+			int max = Math.Max(1, (int)((ptCtrl.Distance(ptStart) + ptEnd.Distance(ptCtrl)) / tolerance));
 
 			for (int i = 0; i <= max; i++)
 			{
@@ -385,7 +385,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			matx.Invert();
 
 			// Calculate number of points for polyline approximation
-			int max = (int)(4 * (radiusX + radiusY) * Math.Abs(angle2 - angle1) / (2 * Math.PI) / tolerance);
+			int max = Math.Max(1, (int)(4 * (radiusX + radiusY) * Math.Abs(angle2 - angle1) / (2 * Math.PI) / tolerance));
 
 			for (int i = 0; i <= max; i++)
 			{

@@ -408,6 +408,53 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void SharedStyleTriggersHaveIndependentSpecificity()
+		{
+			var style = new Style(typeof(Label))
+			{
+				Triggers = {
+					new Trigger(typeof(Label)) {
+						Property = VisualElement.IsEnabledProperty,
+						Value = false,
+						Setters = { new Setter { Property = VisualElement.ScaleProperty, Value = 2d } },
+					},
+					new Trigger(typeof(Label)) {
+						Property = VisualElement.IsVisibleProperty,
+						Value = false,
+						Setters = { new Setter { Property = VisualElement.ScaleProperty, Value = 3d } },
+					},
+				}
+			};
+			var first = new Label { IsEnabled = false, IsVisible = false };
+			var second = new Label();
+			Assert.Null(first._triggerSpecificity);
+			Assert.Null(second._triggerSpecificity);
+
+			first.Style = second.Style = style;
+			Assert.Equal(2, first._triggerSpecificity.Count);
+			Assert.Equal(2, second._triggerSpecificity.Count);
+			Assert.NotSame(first._triggerSpecificity, second._triggerSpecificity);
+			Assert.Equal(3d, first.Scale);
+			Assert.Equal(1d, second.Scale);
+
+			second.IsEnabled = false;
+			Assert.Equal(2d, second.Scale);
+			Assert.Equal(3d, first.Scale);
+			first.IsVisible = true;
+			Assert.Equal(2d, first.Scale);
+
+			first.Style = null;
+			Assert.Empty(first._triggerSpecificity);
+			Assert.Equal(1d, first.Scale);
+			Assert.Equal(2, second._triggerSpecificity.Count);
+			Assert.Equal(2d, second.Scale);
+
+			first.Style = style;
+			Assert.Equal(2d, first.Scale);
+			Assert.Equal(2d, second.Scale);
+		}
+
+		[Fact]
 		//https://bugzilla.xamarin.com/show_bug.cgi?id=28556
 		public void TriggersAppliedAfterSetters()
 		{
@@ -1201,6 +1248,59 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			style.BasedOn = null;
 			Assert.Equal(Label.TextProperty.DefaultValue, label.Text);
 
+		}
+
+		[Fact]
+		public void InvalidateStyleReappliesMutatedSetter()
+		{
+			var style = new Style(typeof(Label))
+			{
+				Setters = {
+					new Setter { Property = Label.TextProperty, Value = "original" },
+				}
+			};
+
+			var label = new Label { Style = style };
+			Assert.Equal("original", label.Text);
+
+			// Mutate the setter in-place — the label should NOT update yet
+			style.Setters[0].Value = "mutated";
+			Assert.Equal("original", label.Text);
+
+			// After InvalidateStyle, the new value should be applied
+			label.InvalidateStyle();
+			Assert.Equal("mutated", label.Text);
+		}
+
+		[Fact]
+		public void InvalidateStyleReappliesMultipleSetters()
+		{
+			var style = new Style(typeof(Label))
+			{
+				Setters = {
+					new Setter { Property = Label.TextProperty, Value = "text" },
+					new Setter { Property = VisualElement.BackgroundColorProperty, Value = Colors.Red },
+				}
+			};
+
+			var label = new Label { Style = style };
+			Assert.Equal("text", label.Text);
+			Assert.Equal(Colors.Red, label.BackgroundColor);
+
+			style.Setters[0].Value = "updated";
+			style.Setters[1].Value = Colors.Blue;
+
+			label.InvalidateStyle();
+			Assert.Equal("updated", label.Text);
+			Assert.Equal(Colors.Blue, label.BackgroundColor);
+		}
+
+		[Fact]
+		public void InvalidateStyleWithNoStyleDoesNotThrow()
+		{
+			var label = new Label();
+			var exception = Record.Exception(() => label.InvalidateStyle());
+			Assert.Null(exception);
 		}
 	}
 }

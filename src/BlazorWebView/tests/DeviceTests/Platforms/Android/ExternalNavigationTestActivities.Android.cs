@@ -13,6 +13,7 @@ internal static class ExternalNavigationTestData
 	public const string ApplicationId = "com.microsoft.maui.mauiblazorwebview.devicetests";
 
 	public const string ExplicitActivityName = ApplicationId + ".ExplicitIntentTestActivity";
+	public const string ExplicitAction = ApplicationId + ".action.EXPLICIT";
 
 	public const string NonBrowsableActivityName = ApplicationId + ".NonBrowsableIntentTestActivity";
 	public const string NonBrowsableAction = ApplicationId + ".action.NON_BROWSABLE";

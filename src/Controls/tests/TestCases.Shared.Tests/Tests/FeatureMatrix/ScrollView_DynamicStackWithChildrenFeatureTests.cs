@@ -12,6 +12,7 @@ public class ScrollView_DynamicStackWithChildrenFeatureTests : _GalleryUITest
 
 	public const string ScrollViewDynamicStackWithChildrenFeatureTests = "ScrollView With LayoutOptions Feature Matrix";
 	public override string GalleryPageName => ScrollViewDynamicStackWithChildrenFeatureTests;
+	protected override string GallerySubPageButton => "DynamicStackLayoutButton";
 	public ScrollView_DynamicStackWithChildrenFeatureTests(TestDevice device)
 		: base(device)
 	{
@@ -20,8 +21,6 @@ public class ScrollView_DynamicStackWithChildrenFeatureTests : _GalleryUITest
 	[Test, Order(1)]
 	public void VerifyStackWithAddChildren_OrientationVertical()
 	{
-		App.WaitForElement("DynamicStackLayoutButton");
-		App.Tap("DynamicStackLayoutButton");
 		App.WaitForElement("ScrollViewWithDynamicStackLayout");
 		App.WaitForElement("VerticalButton");
 		App.Tap("VerticalButton");

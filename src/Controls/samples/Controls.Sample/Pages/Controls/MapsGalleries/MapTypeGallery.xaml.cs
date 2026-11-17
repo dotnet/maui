@@ -13,11 +13,11 @@ namespace Maui.Controls.Sample.Pages.MapsGalleries
 			InitializeComponent();
 		}
 
-		void MapTypePicker_SelectedIndexChanged(object sender, System.EventArgs e)
+		void MapTypePicker_SelectedIndexChanged(object? sender, System.EventArgs e)
 		{
-			var picker = (Picker)sender;
+			var picker = (Picker)sender!;
 
-			switch (picker.SelectedItem.ToString())
+			switch (picker.SelectedItem!.ToString())
 			{
 				default:
 				case "Street":
@@ -32,7 +32,7 @@ namespace Maui.Controls.Sample.Pages.MapsGalleries
 			}
 		}
 
-		void OnSliderValueChanged(object sender, ValueChangedEventArgs e)
+		void OnSliderValueChanged(object? sender, ValueChangedEventArgs e)
 		{
 			double zoomLevel = e.NewValue;
 			double latlongDegrees = 360 / (Math.Pow(2, zoomLevel));

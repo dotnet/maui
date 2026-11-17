@@ -14,13 +14,13 @@ public class Issue38925 : _IssuesUITest
 
 	[Test]
 	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
-	public void LargeGroupedGridLoadsWithinTimeout()
+	public void LargeGroupedGridLoadsAndScrollsWithinTimeout()
 	{
 		App.WaitForElement("LoadButton");
 		App.Tap("LoadButton");
 
 		Assert.That(App.WaitForTextToBePresentInElement("StatusLabel", "Loaded"), Is.True,
-			"Assigning a large grouped ItemsSource did not finish in time.");
+			"Assigning a large grouped ItemsSource did not finish laying out in time.");
 		App.WaitForElement("G1 Item 1");
 
 		// Tap can return after the UI stall, so also assert the time measured inside the app.
@@ -29,6 +29,16 @@ public class Issue38925 : _IssuesUITest
 		var elapsedMilliseconds = long.Parse(timing, CultureInfo.InvariantCulture);
 		Assert.That(elapsedMilliseconds, Is.LessThan(15000),
 			"Assigning a large grouped ItemsSource blocked the UI thread for 15 seconds or more.");
+
+		// Each step must complete within the default wait; before the fix every one of
+		// these blocked the UI thread for tens of seconds with 10 000 grouped items.
+		App.Tap("ScrollToEndButton");
+		Assert.That(App.WaitForTextToBePresentInElement("StatusLabel", "Scrolled to end"), Is.True,
+			"ScrollTo the last group did not finish in time.");
+
+		App.Tap("ScrollToStartButton");
+		Assert.That(App.WaitForTextToBePresentInElement("StatusLabel", "Scrolled to start"), Is.True,
+			"ScrollTo the first group did not finish in time.");
 	}
 }
 #endif

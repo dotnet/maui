@@ -19,11 +19,13 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Animation)]
 		public void AnimateScaleOfBoxView()
 		{
+			Exception? exception = null;
+
 			App.WaitForElement("TestReady");
 			//The BoxView's AutomationId doesn't work correctly on the Windows platform, and using a Label also doesn't ensure the BoxView's size changes.
 			//Issue Link: https://github.com/dotnet/maui/issues/27195
 #if WINDOWS
-			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_SmallBox");
+			VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "_SmallBox");
 #else
 			var rect = App.WaitForElement(BoxToScale).GetRect();
 #endif
@@ -35,12 +37,17 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			// Wait for animation to finish.
 			Thread.Sleep(500);
 #if WINDOWS
-			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_BigBox");
+			VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "_BigBox");
 #else
 			var scaledRect = App.WaitForElement(BoxToScale).GetRect();
 			Assert.That(scaledRect.Width, Is.GreaterThan(rect.Width));
 			Assert.That(scaledRect.Height, Is.GreaterThan(rect.Height));
 #endif
+
+			if (exception is not null)
+			{
+				throw exception;
+			}
 		}
 	}
 }

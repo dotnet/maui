@@ -4,9 +4,7 @@ using PlatformView = Microsoft.Maui.Platform.MauiShapeView;
 using PlatformView = Microsoft.Maui.Platform.MauiShapeView;
 #elif WINDOWS
 using PlatformView = Microsoft.Maui.Graphics.Win2D.W2DGraphicsView;
-#elif TIZEN
-using PlatformView = Microsoft.Maui.Platform.MauiShapeView;
-#elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID && !TIZEN)
+#elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID)
 using PlatformView = System.Object;
 #endif
 
@@ -70,8 +68,7 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		// TODO: make it public in .net 11
-		internal static void MapFlowDirection(IShapeViewHandler handler, IShapeView shapeView)
+		public static void MapFlowDirection(IShapeViewHandler handler, IShapeView shapeView)
   		{
 			handler.PlatformView?.UpdateFlowDirection(shapeView);
    			handler.PlatformView?.InvalidateShape(shapeView);

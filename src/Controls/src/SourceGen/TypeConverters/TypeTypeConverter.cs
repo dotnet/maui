@@ -10,24 +10,19 @@ class TypeTypeConverter : ISGTypeConverter
 {
 	public IEnumerable<string> SupportedTypes => ["Type", "System.Type"];
 
+	public static INamedTypeSymbol? ResolveType(string value, BaseNode node, SourceGenContext context)
+	{
+		var xmlType = TypeArgumentsParser.ParseSingle(value, node.NamespaceResolver, node);
+		return xmlType.TryResolveTypeSymbol(null, context.Compilation, context.XmlnsCache, context.TypeCache, out var type)
+			? type
+			: null;
+	}
+
 	public string Convert(string value, BaseNode node, ITypeSymbol toType, IndentedTextWriter writer, SourceGenContext context, ILocalValue? parentVar = null)
 	{
-		if (string.IsNullOrEmpty(value))
-			goto error;
-
-		var split = value.Split(':');
-		if (split.Length > 2)
-			goto error;
-
-		XmlType xmlType;
-		if (split.Length == 2)
-			xmlType = new XmlType(node.NamespaceResolver.LookupNamespace(split[0]), split[1], null);
-		else
-			xmlType = new XmlType(node.NamespaceResolver.LookupNamespace(""), split[0], null);
-		var typeRef = xmlType.GetTypeSymbol(context);
+		var typeRef = ResolveType(value, node, context);
 		if (typeRef != null)
 			return $"typeof({typeRef.ToFQDisplayString()})";
-		error:
 		context.ReportConversionFailed((IXmlLineInfo)node, value, Descriptors.TypeResolution);
 		return "default";
 	}

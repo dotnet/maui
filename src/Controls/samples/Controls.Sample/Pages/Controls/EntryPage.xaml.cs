@@ -35,12 +35,12 @@ namespace Maui.Controls.Sample.Pages
 			UpdateEntryBackgroundColor();
 		}
 
-		void OnSlideCursorPositionValueChanged(object sender, ValueChangedEventArgs e)
+		void OnSlideCursorPositionValueChanged(object? sender, ValueChangedEventArgs e)
 		{
 			entryCursor.CursorPosition = (int)e.NewValue;
 		}
 
-		void OnSlideSelectionValueChanged(object sender, ValueChangedEventArgs e)
+		void OnSlideSelectionValueChanged(object? sender, ValueChangedEventArgs e)
 		{
 			entrySelection.SelectionLength = (int)e.NewValue;
 		}
@@ -61,40 +61,40 @@ namespace Maui.Controls.Sample.Pages
 				sldSelection.Maximum = ((Entry)sender!).Text.Length;
 		}
 
-		void OnEntryCompleted(object sender, EventArgs e)
+		void OnEntryCompleted(object? sender, EventArgs e)
 		{
-			var text = ((Microsoft.Maui.Controls.Entry)sender).Text;
+			var text = ((Microsoft.Maui.Controls.Entry)sender!).Text;
 			DisplayAlertAsync("Completed", text, "Ok");
 		}
 
-		void OnEntryFocused(object sender, FocusEventArgs e)
+		void OnEntryFocused(object? sender, FocusEventArgs e)
 		{
-			var text = ((Microsoft.Maui.Controls.Entry)sender).Text;
+			var text = ((Microsoft.Maui.Controls.Entry)sender!).Text;
 			DisplayAlertAsync("Focused", text, "Ok");
 		}
 
-		void OnEntryUnfocused(object sender, FocusEventArgs e)
+		void OnEntryUnfocused(object? sender, FocusEventArgs e)
 		{
-			var text = ((Entry)sender).Text;
+			var text = ((Entry)sender!).Text;
 			DisplayAlertAsync("Unfocused", text, "Ok");
 		}
 
-		void OnUpdateBackgroundColorButtonClicked(object sender, System.EventArgs e)
+		void OnUpdateBackgroundColorButtonClicked(object? sender, System.EventArgs e)
 		{
 			UpdateEntryBackgroundColor();
 		}
 
-		void OnClearBackgroundColorButtonClicked(object sender, System.EventArgs e)
+		void OnClearBackgroundColorButtonClicked(object? sender, System.EventArgs e)
 		{
 			BackgroundColorEntry.BackgroundColor = null;
 		}
 
-		void OnUpdateBackgroundButtonClicked(object sender, System.EventArgs e)
+		void OnUpdateBackgroundButtonClicked(object? sender, System.EventArgs e)
 		{
 			UpdateEntryBackground();
 		}
 
-		void OnClearBackgroundButtonClicked(object sender, System.EventArgs e)
+		void OnClearBackgroundButtonClicked(object? sender, System.EventArgs e)
 		{
 			BackgroundEntry.Background = null;
 		}
@@ -123,17 +123,17 @@ namespace Maui.Controls.Sample.Pages
 			};
 		}
 
-		void ShowSoftInputAsyncButton_Clicked(object sender, EventArgs e)
+		void ShowSoftInputAsyncButton_Clicked(object? sender, EventArgs e)
 		{
 			PlaceholderEntryItem.ShowSoftInputAsync(System.Threading.CancellationToken.None);
 		}
 
-		void HideSoftInputAsyncButton_Clicked(object sender, EventArgs e)
+		void HideSoftInputAsyncButton_Clicked(object? sender, EventArgs e)
 		{
 			PlaceholderEntryItem.HideSoftInputAsync(System.Threading.CancellationToken.None);
 		}
 
-		void OnReturnTypeEntryTextChanged(object sender, TextChangedEventArgs e)
+		void OnReturnTypeEntryTextChanged(object? sender, TextChangedEventArgs e)
 		{
 			Random rnd = new Random();
 			var returnTypeCount = Enum.GetNames(typeof(ReturnType)).Length;

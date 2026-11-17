@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "Application .NET MAUI Blazor Hybrid",
   "description": "Projet de création d’une application .NET MAUI pour iOS, Android, Mac Catalyst et WinUI utilisant Blazor",
@@ -8,5 +8,5 @@
   "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "DOTNET_TFM_VALUE cible",
   "symbols/IncludeSampleContent/displayName": "_Inclure des exemples de pages",
   "symbols/IncludeSampleContent/description": "Configure s'il faut ajouter des exemples de pages et de style pour illustrer les modèles d'utilisation de base.",
-  "symbols/Empty/description": "Configure s'il faut omettre les exemples de pages et le style qui illustrent les modèles d'utilisation de base."
+  "symbols/empty/description": "Configure s'il faut omettre les exemples de pages et le style qui illustrent les modèles d'utilisation de base."
 }

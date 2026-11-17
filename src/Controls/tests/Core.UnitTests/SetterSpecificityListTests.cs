@@ -20,9 +20,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void OverridesValueWithSameSpecificity()
 		{
 			var list = new SetterSpecificityList<object>();
-			list[SetterSpecificity.ManualValueSetter] = "initial";
+			list.SetValue(SetterSpecificity.ManualValueSetter, "initial");
 
-			list[SetterSpecificity.ManualValueSetter] = "new";
+			list.SetValue(SetterSpecificity.ManualValueSetter, "new");
 			Assert.Equal(1, list.Count);
 
 			var pair = list.GetSpecificityAndValue();
@@ -34,14 +34,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public async Task RemovingValueDoesNotLeak()
 		{
 			var list = new SetterSpecificityList<object>();
-			list[SetterSpecificity.DefaultValue] = nameof(SetterSpecificity.DefaultValue);
-			list[SetterSpecificity.FromHandler] = nameof(SetterSpecificity.FromHandler);
+			list.SetValue(SetterSpecificity.DefaultValue, nameof(SetterSpecificity.DefaultValue));
+			list.SetValue(SetterSpecificity.FromHandler, nameof(SetterSpecificity.FromHandler));
 			WeakReference weakReference;
 
 			{
 				var o = new object();
 				weakReference = new WeakReference(o);
-				list[SetterSpecificity.FromBinding] = o;
+				list.SetValue(SetterSpecificity.FromBinding, o);
 			}
 
 			list.Remove(SetterSpecificity.FromBinding);
@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			{
 				var o = new object();
 				weakReference = new WeakReference(o);
-				list[SetterSpecificity.ManualValueSetter] = o;
+				list.SetValue(SetterSpecificity.ManualValueSetter, o);
 			}
 
 			list.Remove(SetterSpecificity.ManualValueSetter);
@@ -70,10 +70,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void GetValueForSpecificity()
 		{
 			var list = new SetterSpecificityList<object>();
-			list[SetterSpecificity.DefaultValue] = nameof(SetterSpecificity.DefaultValue);
-			list[SetterSpecificity.ManualValueSetter] = nameof(SetterSpecificity.ManualValueSetter);
+			list.SetValue(SetterSpecificity.DefaultValue, nameof(SetterSpecificity.DefaultValue));
+			list.SetValue(SetterSpecificity.ManualValueSetter, nameof(SetterSpecificity.ManualValueSetter));
 
-			var foundValue = list[SetterSpecificity.DefaultValue];
+			var foundValue = list.GetValue(SetterSpecificity.DefaultValue);
 			Assert.Equal(nameof(SetterSpecificity.DefaultValue), foundValue);
 		}
 
@@ -81,10 +81,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void NullWhenNoValuesMatchSpecificity()
 		{
 			var list = new SetterSpecificityList<object>();
-			list[SetterSpecificity.DefaultValue] = nameof(SetterSpecificity.DefaultValue);
-			list[SetterSpecificity.ManualValueSetter] = nameof(SetterSpecificity.ManualValueSetter);
+			list.SetValue(SetterSpecificity.DefaultValue, nameof(SetterSpecificity.DefaultValue));
+			list.SetValue(SetterSpecificity.ManualValueSetter, nameof(SetterSpecificity.ManualValueSetter));
 
-			var foundValue = list[SetterSpecificity.FromHandler];
+			var foundValue = list.GetValue(SetterSpecificity.FromHandler);
 			Assert.Null(foundValue);
 		}
 
@@ -92,14 +92,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void OneValue()
 		{
 			var list = new SetterSpecificityList<object>();
-			list[SetterSpecificity.ManualValueSetter] = nameof(SetterSpecificity.ManualValueSetter);
+			list.SetValue(SetterSpecificity.ManualValueSetter, nameof(SetterSpecificity.ManualValueSetter));
 
 			var pair = list.GetSpecificityAndValue();
 			Assert.Equal(nameof(SetterSpecificity.ManualValueSetter), pair.Value);
 			Assert.Equal(SetterSpecificity.ManualValueSetter, pair.Key);
 
 			// Add a "default" value
-			list[SetterSpecificity.DefaultValue] = nameof(SetterSpecificity.DefaultValue);
+			list.SetValue(SetterSpecificity.DefaultValue, nameof(SetterSpecificity.DefaultValue));
 			pair = list.GetSpecificityAndValue();
 			Assert.Equal(nameof(SetterSpecificity.ManualValueSetter), pair.Value);
 			Assert.Equal(SetterSpecificity.ManualValueSetter, pair.Key);
@@ -111,8 +111,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void TwoValues()
 		{
 			var list = new SetterSpecificityList<object>();
-			list[SetterSpecificity.DefaultValue] = nameof(SetterSpecificity.DefaultValue);
-			list[SetterSpecificity.ManualValueSetter] = nameof(SetterSpecificity.ManualValueSetter);
+			list.SetValue(SetterSpecificity.DefaultValue, nameof(SetterSpecificity.DefaultValue));
+			list.SetValue(SetterSpecificity.ManualValueSetter, nameof(SetterSpecificity.ManualValueSetter));
 
 			var pair = list.GetSpecificityAndValue();
 			Assert.Equal(nameof(SetterSpecificity.ManualValueSetter), pair.Value);
@@ -131,9 +131,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void ThreeValues()
 		{
 			var list = new SetterSpecificityList<object>();
-			list[SetterSpecificity.DefaultValue] = nameof(SetterSpecificity.DefaultValue);
-			list[SetterSpecificity.FromBinding] = nameof(SetterSpecificity.FromBinding);
-			list[SetterSpecificity.ManualValueSetter] = nameof(SetterSpecificity.ManualValueSetter);
+			list.SetValue(SetterSpecificity.DefaultValue, nameof(SetterSpecificity.DefaultValue));
+			list.SetValue(SetterSpecificity.FromBinding, nameof(SetterSpecificity.FromBinding));
+			list.SetValue(SetterSpecificity.ManualValueSetter, nameof(SetterSpecificity.ManualValueSetter));
 
 			var pair = list.GetSpecificityAndValue();
 			Assert.Equal(nameof(SetterSpecificity.ManualValueSetter), pair.Value);
@@ -152,11 +152,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void ManyValues()
 		{
 			var list = new SetterSpecificityList<object>();
-			list[SetterSpecificity.DefaultValue] = nameof(SetterSpecificity.DefaultValue);
-			list[SetterSpecificity.FromBinding] = nameof(SetterSpecificity.FromBinding);
-			list[SetterSpecificity.DynamicResourceSetter] = nameof(SetterSpecificity.DynamicResourceSetter);
-			list[SetterSpecificity.ManualValueSetter] = nameof(SetterSpecificity.ManualValueSetter);
-			list[SetterSpecificity.Trigger] = nameof(SetterSpecificity.Trigger);
+			list.SetValue(SetterSpecificity.DefaultValue, nameof(SetterSpecificity.DefaultValue));
+			list.SetValue(SetterSpecificity.FromBinding, nameof(SetterSpecificity.FromBinding));
+			list.SetValue(SetterSpecificity.DynamicResourceSetter, nameof(SetterSpecificity.DynamicResourceSetter));
+			list.SetValue(SetterSpecificity.ManualValueSetter, nameof(SetterSpecificity.ManualValueSetter));
+			list.SetValue(SetterSpecificity.Trigger, nameof(SetterSpecificity.Trigger));
 
 			var pair = list.GetSpecificityAndValue();
 			Assert.Equal(nameof(SetterSpecificity.Trigger), pair.Value);
@@ -175,10 +175,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void GetClearedValue()
 		{
 			var list = new SetterSpecificityList<object>();
-			list[SetterSpecificity.DefaultValue] = nameof(SetterSpecificity.DefaultValue);
+			list.SetValue(SetterSpecificity.DefaultValue, nameof(SetterSpecificity.DefaultValue));
 			Assert.Equal(default, list.GetClearedValue());
 			Assert.Equal(default, list.GetClearedSpecificity());
-			list[SetterSpecificity.ManualValueSetter] = nameof(SetterSpecificity.ManualValueSetter);
+			list.SetValue(SetterSpecificity.ManualValueSetter, nameof(SetterSpecificity.ManualValueSetter));
 			Assert.Equal(nameof(SetterSpecificity.DefaultValue), list.GetClearedValue());
 			Assert.Equal(SetterSpecificity.DefaultValue, list.GetClearedSpecificity());
 		}
@@ -187,9 +187,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void GetClearedValueForSpecificity()
 		{
 			var list = new SetterSpecificityList<object>();
-			list[SetterSpecificity.DefaultValue] = nameof(SetterSpecificity.DefaultValue);
+			list.SetValue(SetterSpecificity.DefaultValue, nameof(SetterSpecificity.DefaultValue));
 			Assert.Equal(default, list.GetClearedValue(SetterSpecificity.DefaultValue));
-			list[SetterSpecificity.ManualValueSetter] = nameof(SetterSpecificity.ManualValueSetter);
+			list.SetValue(SetterSpecificity.ManualValueSetter, nameof(SetterSpecificity.ManualValueSetter));
 			Assert.Equal(nameof(SetterSpecificity.DefaultValue), list.GetClearedValue(SetterSpecificity.ManualValueSetter));
 			Assert.Equal(nameof(SetterSpecificity.ManualValueSetter), list.GetClearedValue(SetterSpecificity.FromHandler));
 		}

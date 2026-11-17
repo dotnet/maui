@@ -15,6 +15,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.ImageButton)]
 		public void ImageButtonPaddingDoesNotChangeWhenIsVisibleChanges()
 		{
+			Exception? exception = null;
+
 			App.WaitForElement("Switch1");
 
 			// https://github.com/dotnet/maui/issues/25201
@@ -22,13 +24,18 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 								// https://github.com/dotnet/maui/issues/16713
 			App.Tap("Switch2"); // Hides overlay ContentView
 
-			VerifyScreenshot();
+			VerifyScreenshotOrSetException(ref exception);
 
 			// https://github.com/dotnet/maui/issues/18001
 			App.Tap("Switch1"); // ImageButton IsVisible changes to false
 			App.Tap("Switch1"); // ImageButton IsVisible changes to true
 
-			VerifyScreenshot();
+			VerifyScreenshotOrSetException(ref exception);
+
+			if (exception is not null)
+			{
+				throw exception;
+			}
 		}
 	}
 }

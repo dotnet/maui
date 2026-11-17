@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls.Platform
 				return null;
 
 			var context = source.FindMauiContext(true);
-			return source.ToIconSource(context).CreateIconElement();
+			return source.ToIconSource(context)?.CreateIconElement();
 		}
 
 		public object ConvertBack(object value, Type targetType, object parameter, string language)

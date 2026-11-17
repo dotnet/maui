@@ -14,10 +14,17 @@ public class Issue34993 : _IssuesUITest
     [Category(UITestCategories.RadioButton)]
     public void VerifyRadioButtonBackgroundUpdatesFromGradientToSolidColor()
     {
+        Exception? exception = null;
+
         App.WaitForElement("BackgroundRadioButton");
-        VerifyScreenshot("GradientBackgroundRadioButton");
+        VerifyScreenshotOrSetException(ref exception, "GradientBackgroundRadioButton");
         App.WaitForElement("ChangeBackgroundButton");
         App.Tap("ChangeBackgroundButton");
-        VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
+        VerifyScreenshotOrSetException(ref exception, retryTimeout: TimeSpan.FromSeconds(2));
+
+        if (exception is not null)
+        {
+            throw exception;
+        }
     }
 }

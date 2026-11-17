@@ -3,6 +3,7 @@ using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
+using Microsoft.Maui.Controls.SourceGen.TypeConverters;
 using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls.SourceGen;
@@ -20,7 +21,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
 	public bool StopOnDataTemplate => true;
 	public bool StopOnResourceDictionary => false;
 	public bool VisitNodeOnDataTemplate => false;
-	public bool SkipChildren(INode node, INode parentNode) => false;
+	public bool SkipChildren(INode node, INode parentNode) => node is ElementNode en && en.IsLazyResource(parentNode, Context);
 	public bool IsResourceDictionary(ElementNode node) => node.IsResourceDictionary(Context);
 
 	public void Visit(ValueNode node, INode parentNode)
@@ -54,7 +55,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
 		if (type.Equals(compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.ArrayExtension"), SymbolEqualityComparer.Default))
 		{
 			//we might want to move this to a separate method
-			var visitor = new SetPropertiesVisitor(Context);
+			var visitor = new SetPropertiesVisitor(Context, valuePrecomputePass: true);
 			// var children = node.Properties.Values.ToList();
 			// children.AddRange(node.CollectionItems);
 			foreach (var cn in node.CollectionItems)
@@ -67,9 +68,16 @@ class CreateValuesVisitor : IXamlNodeVisitor
 					n.Accept(visitor, cn);
 			}
 
-			var typeNode = node.Properties[new XmlName("", "Type")];
-			if (!Context.Types.TryGetValue(typeNode, out var arrayType))
-				throw new Exception("ArrayExtension Type not found");
+			if (!node.Properties.TryGetValue(new XmlName("", "Type"), out var typeNode))
+				throw new XamlParseException("Type argument mandatory for x:Array extension", node);
+			if (!Context.Types.TryGetValue(typeNode, out var arrayType) && typeNode is ValueNode { Value: string typeName } typeValueNode)
+			{
+				arrayType = TypeTypeConverter.ResolveType(typeName, typeValueNode, Context);
+				if (arrayType is null)
+					throw new XamlParseException($"Cannot resolve type \"{typeName}\" for x:Array.", typeValueNode);
+			}
+			if (arrayType is null)
+				throw new XamlParseException("Unable to resolve the x:Array element type.", typeNode as System.Xml.IXmlLineInfo);
 
 			var variableName = NamingHelpers.CreateUniqueVariableName(Context, compilation.CreateArrayTypeSymbol(arrayType));
 
@@ -220,7 +228,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
 				var pType = req is IPropertySymbol prop ? prop.Type : ((IFieldSymbol)req).Type;
 				var pConverter = req.GetAttributes().FirstOrDefault(a => a.AttributeClass!.Equals(compilation.GetTypeByMetadataName("System.ComponentModel.TypeConverterAttribute")!, SymbolEqualityComparer.Default))?.ConstructorArguments[0].Value as ITypeSymbol;
 
-				var visitor = new SetPropertiesVisitor(Context);
+				var visitor = new SetPropertiesVisitor(Context, valuePrecomputePass: true);
 				var children = node.Properties.Values.ToList();
 				children.AddRange(node.CollectionItems);
 				foreach (var cn in children)
@@ -351,6 +359,10 @@ class CreateValuesVisitor : IXamlNodeVisitor
 
 	public void Visit(ElementNode node, INode parentNode)
 	{
+		// Skip lazy RD resources - they will be created inside lambda in SetPropertiesVisitor
+		if (node.IsLazyResource(parentNode, Context))
+			return;
+
 		CreateValue(node, Writer, Context.Variables, Context.Compilation, Context.XmlnsCache, Context);
 	}
 

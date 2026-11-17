@@ -45,13 +45,15 @@ namespace Microsoft.Maui.Controls
 			coerceValue: (bindable, value) =>
 			{
 				var stepper = (Stepper)bindable;
+				var original = (double)value;
 				// Only store the requested value if the user is setting it (not during recoercion)
 				if (!stepper._isRecoercing)
 				{
-					stepper._requestedValue = (double)value;
+					stepper._requestedValue = original;
 					stepper._userSetValue = true;
 				}
-				return Math.Round(((double)value), stepper.digits).Clamp(stepper.Minimum, stepper.Maximum);
+				var coerced = Math.Round(original, stepper.digits).Clamp(stepper.Minimum, stepper.Maximum);
+				return coerced == original ? value : (object)coerced;
 			},
 			propertyChanged: (bindable, oldValue, newValue) =>
 			{

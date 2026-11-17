@@ -13,6 +13,7 @@ public class BoxViewViewModel : INotifyPropertyChanged
 	private CornerRadius _cornerRadius;
 	private bool _isRedChecked = false;
 	private bool _isBlueChecked = true;
+
 	private FlowDirection _flowDirection = FlowDirection.LeftToRight;
 	private bool _isRTL = false;
 
@@ -23,6 +24,35 @@ public class BoxViewViewModel : INotifyPropertyChanged
 	private string _opacityEntryText = "1";
 	private string _widthEntryText = "200";
 	private string _heightEntryText = "100";
+
+	private Brush _fill = null;
+	private LinearGradientBrush _linearGradientBrush = new LinearGradientBrush()
+	{
+		StartPoint = new Point(0, 0),
+		EndPoint = new Point(1, 1),
+		GradientStops =
+		[
+			new GradientStop { Color = Colors.Purple, Offset = 0.0f },
+			new GradientStop { Color = Colors.Pink, Offset = 0.3f },
+			new GradientStop { Color = Colors.Orange, Offset = 0.7f },
+			new GradientStop { Color = Colors.Red, Offset = 1.0f }
+		]
+	};
+
+	RadialGradientBrush _radialGradientBrush = new RadialGradientBrush()
+	{
+		Center = new Point(0.5, 0.5),
+		Radius = 0.5,
+		GradientStops =
+		[
+			new GradientStop { Color = Colors.Yellow, Offset = 0.0f },
+			new GradientStop { Color = Colors.Green, Offset = 1.0f }
+		]
+	};
+
+	private bool _isSolidChecked = false;
+	private bool _isLinearChecked = false;
+	private bool _isRadialChecked = false;
 
 	public void Reset()
 	{
@@ -235,6 +265,11 @@ public class BoxViewViewModel : INotifyPropertyChanged
 		}
 	}
 
+	public Brush Fill
+	{
+		get => _fill;
+		set { _fill = value; OnPropertyChanged(); }
+	}
 	public double Width
 	{
 		get => _width;
@@ -287,6 +322,58 @@ public class BoxViewViewModel : INotifyPropertyChanged
 			}
 		}
 	}
+
+	public bool IsSolidChecked
+	{
+		get => _isSolidChecked;
+		set
+		{
+			if (_isSolidChecked != value)
+			{
+				_isSolidChecked = value;
+				if (value)
+				{
+					Fill = Colors.Red.AsPaint();
+					OnPropertyChanged();
+				}
+			}
+		}
+	}
+
+	public bool IsLinearChecked
+	{
+		get => _isLinearChecked;
+		set
+		{
+			if (_isLinearChecked != value)
+			{
+				_isLinearChecked = value;
+				if (value)
+				{
+					Fill = _linearGradientBrush;
+					OnPropertyChanged();
+				}
+			}
+		}
+	}
+
+	public bool IsRadialChecked
+	{
+		get => _isRadialChecked;
+		set
+		{
+			if (_isRadialChecked != value)
+			{
+				_isRadialChecked = value;
+				if (value)
+				{
+					Fill = _radialGradientBrush;
+					OnPropertyChanged();
+				}
+			}
+		}
+	}
+
 	public event PropertyChangedEventHandler PropertyChanged;
 
 	protected void OnPropertyChanged([CallerMemberName] string propertyName = null)

@@ -31,7 +31,14 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElementTillPageNavigationSettled(FinalLabel);
 			App.TapBackArrow(Back);
 			App.WaitForElement("This is the intermediate page");
-			App.TapBackArrow(Tab1);
+			if (App is AppiumCatalystApp)
+			{
+				App.TapBackArrow(AppiumQuery.ByXPath("//XCUIElementTypeNavigationBar/XCUIElementTypeButton[@identifier='BackButton' or @label='Tab 1' or @identifier='Tab 1']"));
+			}
+			else
+			{
+				App.TapBackArrow(Tab1);
+			}
 			App.WaitForElement(ClickMe);
 			App.Tap(ClickMe);
 			App.WaitForElementTillPageNavigationSettled(FinalLabel);

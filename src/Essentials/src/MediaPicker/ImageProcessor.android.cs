@@ -255,7 +255,7 @@ internal static partial class ImageProcessor
 					ExifInterface.TagGpsAltitude,
 					ExifInterface.TagExposureTime,
 					ExifInterface.TagFNumber,
-					ExifInterface.TagIso,
+					ExifInterface.TagIsoSpeedRatings,
 					ExifInterface.TagWhiteBalance,
 					ExifInterface.TagFlash,
 					ExifInterface.TagFocalLength

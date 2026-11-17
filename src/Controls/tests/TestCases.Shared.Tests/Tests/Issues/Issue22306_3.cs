@@ -14,14 +14,21 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Button)]
 		public void VerifyButtonPage1()
 		{
+			Exception? exception = null;
+
 			App.WaitForElement("Page1Button");
 			App.Tap("Page1Button");
 			App.WaitForElement("Page1_1");
-			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_NoBorder");
+			VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "_NoBorder");
 
 			App.Tap("Page1_2Button");
 			App.WaitForElement("Page1_1");
-			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_Border");
+			VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "_Border");
+
+			if (exception is not null)
+			{
+				throw exception;
+			}
 		}
 
 		[Test]
@@ -88,18 +95,25 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Button)]
 		public void VerifyButtonPage8()
 		{
+			Exception? exception = null;
+
 			App.WaitForElement("Page8Button");
 			App.Tap("Page8Button");
 			App.WaitForElement("Page8_1");
-			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_Start");
+			VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "_Start");
 
 			App.Tap("Page8_6Button");
 			App.WaitForElement("Page8_1");
-			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_Center");
+			VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "_Center");
 
 			App.Tap("Page8_7Button");
 			App.WaitForElement("Page8_1");
-			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_End");
+			VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "_End");
+
+			if (exception is not null)
+			{
+				throw exception;
+			}
 		}
 	}
 }

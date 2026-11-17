@@ -1,0 +1,579 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using Microsoft.CodeAnalysis;
+using Microsoft.Maui.Controls.SourceGen;
+using Microsoft.Maui.Controls.Xaml;
+using Xunit;
+
+using static Microsoft.Maui.Controls.Xaml.UnitTests.SourceGen.SourceGeneratorDriver;
+
+namespace Microsoft.Maui.Controls.SourceGen.UnitTests;
+
+/// <summary>
+/// Unit tests for <see cref="UpdateComponentCodeWriter.GenerateUpdateComponent"/>.
+/// </summary>
+[Collection("XamlHotReloadTests")]
+public class UpdateComponentCodeWriterTests
+{
+
+	const string MauiXmlns =
+		"""xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" """;
+
+	static SGRootNode Parse(string xaml) =>
+		GeneratorHelpers.ParseXaml(xaml, AssemblyAttributes.Empty)
+		?? throw new System.Exception("ParseXaml returned null");
+
+	/// <summary>
+	/// Generates UC code for the diff between two XAML snippets.
+	/// Uses a full MAUI compilation for Roslyn type resolution.
+	/// </summary>
+	static string? Generate(
+		string xamlV1,
+		string xamlV2,
+		int fromVersion = 1,
+		int toVersion = 2,
+		INamedTypeSymbol? rootType = null,
+		string accessModifier = "public")
+	{
+		var compilation = CreateMauiCompilation();
+		var xmlnsCache = GeneratorHelpers.GetAssemblyAttributes(compilation, default);
+
+		// typeCache is lazily populated; start empty — TryResolveTypeSymbol fills it
+		var typeCache = new Dictionary<XmlType, INamedTypeSymbol>();
+
+		var oldRoot = Parse(xamlV1);
+		var newRoot = Parse(xamlV2);
+
+		// Set Parent pointers (needed for x:DataType resolution in UC)
+		newRoot.Accept(new XamlNodeVisitor((node, parent) => node.Parent = parent), null);
+
+		var diff = XamlNodeDiff.ComputeDiff(oldRoot, newRoot);
+		if (diff == null)
+			return null; // structural change
+
+		if (rootType == null)
+		{
+			// Resolve from x:Class (if present)
+			if (newRoot.Properties.TryGetValue(XmlName.xClass, out var classNode)
+				&& classNode is ValueNode vn
+				&& vn.Value is string className)
+			{
+				XmlnsHelper.ParseXmlns(className, out var typeName, out var ns, out _, out _);
+				rootType = compilation.GetTypeByMetadataName($"{ns}.{typeName}");
+			}
+		}
+
+		if (rootType == null)
+		{
+			// Synthesize a minimal stub type (enough for the test)
+			rootType = compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ContentPage")!;
+		}
+
+		return UpdateComponentCodeWriter.GenerateUpdateComponent(
+			rootType,
+			accessModifier,
+			diff,
+			fromVersion,
+			toVersion,
+			compilation,
+			xmlnsCache,
+			typeCache);
+	}
+
+	[Fact]
+	public void EmptyDiff_ReturnsNull()
+	{
+		var xaml =
+$"""
+<ContentPage {MauiXmlns} x:Class="Test.TestPage">
+	<Label Text="Hello" />
+</ContentPage>
+""";
+		var result = Generate(xaml, xaml);
+		Assert.Null(result); // diff is empty → no UC file needed
+	}
+
+	[Fact]
+	public void ChildAdd_ProducesUCWithChildListChange()
+	{
+		var v1 =
+$"""
+<ContentPage {MauiXmlns} x:Class="Test.TestPage">
+	<Label Text="Hello" />
+</ContentPage>
+""";
+		var v2 =
+$"""
+<ContentPage {MauiXmlns} x:Class="Test.TestPage">
+	<Label Text="Hello" />
+	<Button Text="New" />
+</ContentPage>
+""";
+		// Child add → UC generated with child list change handling
+		var result = Generate(v1, v2);
+		Assert.NotNull(result);
+		// New design: a single unconditional patch — no `if (__version == N)` version-chain guard.
+		Assert.DoesNotContain("if (__version ==", result!, StringComparison.Ordinal);
+		// No goto fallback label or fallback block
+		Assert.DoesNotContain("goto fallback", result!, StringComparison.Ordinal);
+		Assert.DoesNotContain("fallback:", result!, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void RemovedName_NonBindableObjectRoot_DoesNotEmitNameScopeLookup()
+	{
+		var v1 =
+$"""
+<ResourceDictionary {MauiXmlns} x:Class="Test.TestResources">
+	<Label x:Name="RemovedLabel" />
+</ResourceDictionary>
+""";
+		var v2 =
+$"""
+<ResourceDictionary {MauiXmlns} x:Class="Test.TestResources" />
+""";
+		var compilation = CreateMauiCompilation();
+		var rootType = compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ResourceDictionary")!;
+
+		var result = Generate(v1, v2, rootType: rootType);
+
+		Assert.NotNull(result);
+		Assert.DoesNotContain("NameScope.GetNameScope(this)", result!, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void RenamedName_NonBindableObjectRoot_DoesNotEmitNameScopeLookup()
+	{
+		var v1 =
+$"""
+<ResourceDictionary {MauiXmlns} x:Class="Test.TestResources">
+	<Label x:Name="OldName" />
+</ResourceDictionary>
+""";
+		var v2 =
+$"""
+<ResourceDictionary {MauiXmlns} x:Class="Test.TestResources">
+	<Label x:Name="NewName" />
+</ResourceDictionary>
+""";
+		var compilation = CreateMauiCompilation();
+		var rootType = compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ResourceDictionary")!;
+
+		var result = Generate(v1, v2, rootType: rootType);
+
+		Assert.NotNull(result);
+		Assert.DoesNotContain("NameScope.GetNameScope(this)", result!, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void SinglePropertyChange_GeneratesMethodHeader()
+	{
+		var v1 = $"<ContentPage {MauiXmlns} x:Class=\"Test.TestPage\"><Label Text=\"Hello\" /></ContentPage>";
+		var v2 = $"<ContentPage {MauiXmlns} x:Class=\"Test.TestPage\"><Label Text=\"World\" /></ContentPage>";
+
+		var result = Generate(v1, v2);
+		Assert.NotNull(result);
+		Assert.Contains("UpdateComponent", result, System.StringComparison.Ordinal);
+		// Must NOT contain old versioned method names
+		Assert.DoesNotContain("UpdateComponent_v", result, System.StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void SinglePropertyChange_AppliesPatchUnconditionally()
+	{
+		var v1 = $"<ContentPage {MauiXmlns} x:Class=\"Test.TestPage\"><Label Text=\"Hello\" /></ContentPage>";
+		var v2 = $"<ContentPage {MauiXmlns} x:Class=\"Test.TestPage\"><Label Text=\"World\" /></ContentPage>";
+
+		var result = Generate(v1, v2);
+		Assert.NotNull(result);
+		// New design: the single baseline->current patch is applied unconditionally (patch property-sets
+		// are absolute), with no accumulated `if (__version == N)` version-chain guard.
+		Assert.DoesNotContain("if (__version ==", result!, System.StringComparison.Ordinal);
+		Assert.Contains("World", result!, System.StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void SinglePropertyChange_NoFallbackLabel()
+	{
+		var v1 = $"<ContentPage {MauiXmlns} x:Class=\"Test.TestPage\"><Label Text=\"Hello\" /></ContentPage>";
+		var v2 = $"<ContentPage {MauiXmlns} x:Class=\"Test.TestPage\"><Label Text=\"World\" /></ContentPage>";
+
+		var result = Generate(v1, v2);
+		Assert.NotNull(result);
+		Assert.DoesNotContain("fallback:", result, System.StringComparison.Ordinal);
+		Assert.DoesNotContain("InitializeComponentRuntime", result, System.StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void SinglePropertyChange_ProducesNonEmptyPatchBody()
+	{
+		var v1 = $"<ContentPage {MauiXmlns} x:Class=\"Test.TestPage\"><Label Text=\"Hello\" /></ContentPage>";
+		var v2 = $"<ContentPage {MauiXmlns} x:Class=\"Test.TestPage\"><Label Text=\"World\" /></ContentPage>";
+
+		var result = Generate(v1, v2);
+		Assert.NotNull(result);
+		// A real XAML change yields a non-empty UpdateComponent() body (the patch), which is exactly the
+		// signal the runtime uses to classify the delta as a XAML change.
+		Assert.Contains("\"World\"", result, System.StringComparison.Ordinal);
+		Assert.Contains("XamlComponentRegistry.TryGet(this,", result, System.StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void SinglePropertyChange_RegistryLookupPresent()
+	{
+		var v1 = $"<ContentPage {MauiXmlns} x:Class=\"Test.TestPage\"><Label Text=\"Hello\" /></ContentPage>";
+		var v2 = $"<ContentPage {MauiXmlns} x:Class=\"Test.TestPage\"><Label Text=\"World\" /></ContentPage>";
+
+		var result = Generate(v1, v2);
+		Assert.NotNull(result);
+		Assert.Contains("XamlComponentRegistry.TryGet(this,", result, System.StringComparison.Ordinal);
+		// With numeric IDs: direct child of root is "0"
+		Assert.Contains("\"0\"", result, System.StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void SinglePropertyChange_NewValueInOutput()
+	{
+		var v1 = $"<ContentPage {MauiXmlns} x:Class=\"Test.TestPage\"><Label Text=\"Hello\" /></ContentPage>";
+		var v2 = $"<ContentPage {MauiXmlns} x:Class=\"Test.TestPage\"><Label Text=\"World\" /></ContentPage>";
+
+		var result = Generate(v1, v2);
+		Assert.NotNull(result);
+		// The new value "World" must appear in the generated property assignment
+		Assert.Contains("World", result, System.StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void SingleUpdateComponent_NoVersionedMethodName()
+	{
+		var v1 = $"<ContentPage {MauiXmlns} x:Class=\"Test.TestPage\"><Label Text=\"A\" /></ContentPage>";
+		var v2 = $"<ContentPage {MauiXmlns} x:Class=\"Test.TestPage\"><Label Text=\"B\" /></ContentPage>";
+
+		var result = Generate(v1, v2, fromVersion: 5, toVersion: 6);
+		Assert.NotNull(result);
+		// New design: a single unconditional UpdateComponent() with no `if (__version == N)` guard and
+		// no version-suffixed method name.
+		Assert.Contains("void UpdateComponent()", result, System.StringComparison.Ordinal);
+		Assert.DoesNotContain("if (__version ==", result, System.StringComparison.Ordinal);
+		Assert.DoesNotContain("UpdateComponent_v", result, System.StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void MultipleNodes_MultipleRegistryLookups()
+	{
+		var v1 =
+$"""
+<ContentPage {MauiXmlns} x:Class="Test.TestPage">
+	<VerticalStackLayout>
+		<Label Text="A" />
+		<Label Text="B" />
+	</VerticalStackLayout>
+</ContentPage>
+""";
+		var v2 =
+$"""
+<ContentPage {MauiXmlns} x:Class="Test.TestPage">
+	<VerticalStackLayout>
+		<Label Text="X" />
+		<Label Text="Y" />
+	</VerticalStackLayout>
+</ContentPage>
+""";
+		var result = Generate(v1, v2);
+		Assert.NotNull(result);
+
+		// Two distinct node IDs should appear (numeric IDs: "1" and "2" for children of VerticalStackLayout)
+		Assert.Contains("\"1\"", result, System.StringComparison.Ordinal);
+		Assert.Contains("\"2\"", result, System.StringComparison.Ordinal);
+		// Both TryGet calls present
+		var lookupCount = CountOccurrences(result!, "XamlComponentRegistry.TryGet(this,");
+		Assert.True(lookupCount >= 2, $"Expected at least 2 TryGet calls, got {lookupCount}");
+	}
+
+	[Fact]
+	public void GeneratedMethod_HasEditorBrowsableNeverAttribute()
+	{
+		var v1 = $"<ContentPage {MauiXmlns} x:Class=\"Test.TestPage\"><Label Text=\"A\" /></ContentPage>";
+		var v2 = $"<ContentPage {MauiXmlns} x:Class=\"Test.TestPage\"><Label Text=\"B\" /></ContentPage>";
+
+		var result = Generate(v1, v2);
+		Assert.NotNull(result);
+		Assert.Contains("EditorBrowsable", result, System.StringComparison.Ordinal);
+		Assert.Contains("Never", result, System.StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void GeneratedFile_ContainsAutoGeneratedHeader()
+	{
+		var v1 = $"<ContentPage {MauiXmlns} x:Class=\"Test.TestPage\"><Label Text=\"A\" /></ContentPage>";
+		var v2 = $"<ContentPage {MauiXmlns} x:Class=\"Test.TestPage\"><Label Text=\"B\" /></ContentPage>";
+
+		var result = Generate(v1, v2);
+		Assert.NotNull(result);
+		Assert.Contains("<auto-generated>", result, System.StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void ReorderedChildren_GeneratesReorderCode()
+	{
+		var v1 =
+$"""
+<ContentPage {MauiXmlns} x:Class="Test.TestPage">
+	<VerticalStackLayout>
+		<Label Text="A" />
+		<Button Text="B" />
+	</VerticalStackLayout>
+</ContentPage>
+""";
+		var v2 =
+$"""
+<ContentPage {MauiXmlns} x:Class="Test.TestPage">
+	<VerticalStackLayout>
+		<Button Text="B" />
+		<Label Text="A" />
+	</VerticalStackLayout>
+</ContentPage>
+""";
+		var result = Generate(v1, v2);
+		Assert.NotNull(result);
+
+		// Should contain parent registry lookup (numeric ID "0" for VerticalStackLayout)
+		Assert.Contains("\"0\"", result, System.StringComparison.Ordinal);
+		// Should cast parent to Layout
+		Assert.Contains("as global::Microsoft.Maui.Controls.Layout", result, System.StringComparison.Ordinal);
+		// M13 optimization: pure reorders are emitted as RemoveAt + Insert (in-place reorder)
+		// rather than destructive Clear + re-Add. This preserves the underlying IView/handler
+		// state of the retained children.
+		Assert.DoesNotContain(".Clear()", result, System.StringComparison.Ordinal);
+		Assert.Contains("RemoveAt", result, System.StringComparison.Ordinal);
+		Assert.Contains(".Insert(", result, System.StringComparison.Ordinal);
+		// With stable IDs, retained children keep their old IDs — no ReRoot needed
+		Assert.DoesNotContain("ReRoot", result, System.StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void XNameRename_AmongUntouchedSiblings_DoesNotMutateLayout()
+	{
+		// A same-position x:Name rename targets the existing element and must not mutate the
+		// containing Layout, so untouched siblings keep their live handler/platform view state.
+		var v1 =
+$"""
+<ContentPage {MauiXmlns} x:Class="Test.TestPage">
+	<VerticalStackLayout>
+		<Label Text="A" />
+		<Entry x:Name="oldName" Text="B" />
+		<Label Text="C" />
+	</VerticalStackLayout>
+</ContentPage>
+""";
+		var v2 =
+$"""
+<ContentPage {MauiXmlns} x:Class="Test.TestPage">
+	<VerticalStackLayout>
+		<Label Text="A" />
+		<Entry x:Name="newName" Text="B" />
+		<Label Text="C" />
+	</VerticalStackLayout>
+</ContentPage>
+""";
+		var result = Generate(v1, v2);
+		Assert.NotNull(result);
+
+		Assert.DoesNotContain(".Clear()", result, System.StringComparison.Ordinal);
+		Assert.DoesNotContain("RemoveAt", result, System.StringComparison.Ordinal);
+		Assert.DoesNotContain(".Insert(", result, System.StringComparison.Ordinal);
+		Assert.Contains("UnregisterName(\"oldName\")", result, System.StringComparison.Ordinal);
+		Assert.Contains("RegisterName(\"newName\"", result, System.StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void XNameRename_WithEventHandler_DoesNotRewireExistingInstance()
+	{
+		// The element is retained, so its existing event subscription must not be duplicated.
+		var v1 =
+$"""
+<ContentPage {MauiXmlns} x:Class="Test.TestPage">
+	<Button x:Name="oldName" Text="Click me" Clicked="OnClicked" />
+</ContentPage>
+""";
+		var v2 =
+$"""
+<ContentPage {MauiXmlns} x:Class="Test.TestPage">
+	<Button x:Name="newName" Text="Click me" Clicked="OnClicked" />
+</ContentPage>
+""";
+		var result = Generate(v1, v2);
+		Assert.NotNull(result);
+
+		Assert.Contains("UnregisterName(\"oldName\")", result, System.StringComparison.Ordinal);
+		Assert.Contains("RegisterName(\"newName\"", result, System.StringComparison.Ordinal);
+		Assert.DoesNotContain("Clicked += OnClicked", result, System.StringComparison.Ordinal);
+		Assert.DoesNotContain("Clicked = OnClicked", result, System.StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void XNameRename_UnderGetterOnlyCollectionContentProperty_DoesNotMutateCollection()
+	{
+		// The Span is renamed in place, so the getter-only Spans collection is not assigned or
+		// structurally modified.
+		var v1 =
+$"""
+<ContentPage {MauiXmlns} x:Class="Test.TestPage">
+	<FormattedString>
+		<Span x:Name="oldName" Text="Hi" />
+	</FormattedString>
+</ContentPage>
+""";
+		var v2 =
+$"""
+<ContentPage {MauiXmlns} x:Class="Test.TestPage">
+	<FormattedString>
+		<Span x:Name="newName" Text="Hi" />
+	</FormattedString>
+</ContentPage>
+""";
+		var result = Generate(v1, v2);
+
+		Assert.NotNull(result);
+		Assert.Contains("UnregisterName(\"oldName\")", result, System.StringComparison.Ordinal);
+		Assert.Contains("RegisterName(\"newName\"", result, System.StringComparison.Ordinal);
+		Assert.DoesNotContain(".Spans =", result, System.StringComparison.Ordinal);
+		Assert.DoesNotContain("RemoveAt", result, System.StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void RootXNameRename_UpdatesNameScope()
+	{
+		var v1 = $"""<ContentPage {MauiXmlns} x:Class="Test.TestPage" x:Name="oldName" />""";
+		var v2 = $"""<ContentPage {MauiXmlns} x:Class="Test.TestPage" x:Name="newName" />""";
+
+		var result = Generate(v1, v2);
+
+		Assert.NotNull(result);
+		Assert.Contains("UnregisterName(\"oldName\")", result, StringComparison.Ordinal);
+		Assert.Contains("RegisterName(\"newName\", this)", result, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void SwappedSiblingNames_UnregistersAllNamesBeforeRegisteringAny()
+	{
+		var v1 =
+$"""
+<ContentPage {MauiXmlns} x:Class="Test.TestPage">
+	<VerticalStackLayout>
+		<Label x:Name="a" />
+		<Button x:Name="b" />
+	</VerticalStackLayout>
+</ContentPage>
+""";
+		var v2 =
+$"""
+<ContentPage {MauiXmlns} x:Class="Test.TestPage">
+	<VerticalStackLayout>
+		<Label x:Name="b" />
+		<Button x:Name="a" />
+	</VerticalStackLayout>
+</ContentPage>
+""";
+
+		var result = Generate(v1, v2);
+
+		Assert.NotNull(result);
+		var lastUnregister = Math.Max(
+			result!.LastIndexOf("UnregisterName(\"a\")", StringComparison.Ordinal),
+			result.LastIndexOf("UnregisterName(\"b\")", StringComparison.Ordinal));
+		var firstRegister = Math.Min(
+			result.IndexOf("RegisterName(\"a\"", StringComparison.Ordinal),
+			result.IndexOf("RegisterName(\"b\"", StringComparison.Ordinal));
+		Assert.True(lastUnregister >= 0);
+		Assert.True(firstRegister > lastUnregister);
+	}
+
+	[Fact]
+	public void RenamedName_IsRegisteredBeforeDependentForwardReferenceUpdate()
+	{
+		var v1 =
+$$"""
+<ContentPage {{MauiXmlns}} x:Class="Test.TestPage">
+	<VerticalStackLayout>
+		<Label Text="{Binding Source={x:Reference oldName}, Path=Text}" />
+		<Entry x:Name="oldName" />
+	</VerticalStackLayout>
+</ContentPage>
+""";
+		var v2 =
+$$"""
+<ContentPage {{MauiXmlns}} x:Class="Test.TestPage">
+	<VerticalStackLayout>
+		<Label Text="{Binding Source={x:Reference newName}, Path=Text}" />
+		<Entry x:Name="newName" />
+	</VerticalStackLayout>
+</ContentPage>
+""";
+
+		var result = Generate(v1, v2);
+
+		Assert.NotNull(result);
+		var register = result!.IndexOf("RegisterName(\"newName\"", StringComparison.Ordinal);
+		var reference = result.IndexOf(".FindByName(\"newName\")", StringComparison.Ordinal);
+		Assert.True(register >= 0);
+		Assert.True(reference > register);
+	}
+
+	[Fact]
+	public void AddingXName_InitializesStyleId()
+	{
+		var v1 = $"""<ContentPage {MauiXmlns} x:Class="Test.TestPage"><Label /></ContentPage>""";
+		var v2 = $"""<ContentPage {MauiXmlns} x:Class="Test.TestPage"><Label x:Name="newName" /></ContentPage>""";
+
+		var result = Generate(v1, v2);
+
+		Assert.NotNull(result);
+		Assert.Contains("StyleId ??= \"newName\"", result, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void TemplateLocalXNameRename_UsesStructuralFallback()
+	{
+		var v1 =
+$"""
+<ContentPage {MauiXmlns} x:Class="Test.TestPage">
+	<CollectionView>
+		<CollectionView.ItemTemplate>
+			<DataTemplate>
+				<Label x:Name="oldName" />
+			</DataTemplate>
+		</CollectionView.ItemTemplate>
+	</CollectionView>
+</ContentPage>
+""";
+		var v2 =
+$"""
+<ContentPage {MauiXmlns} x:Class="Test.TestPage">
+	<CollectionView>
+		<CollectionView.ItemTemplate>
+			<DataTemplate>
+				<Label x:Name="newName" />
+			</DataTemplate>
+		</CollectionView.ItemTemplate>
+	</CollectionView>
+</ContentPage>
+""";
+
+		Assert.Null(Generate(v1, v2));
+	}
+
+	// helpers
+	static int CountOccurrences(string source, string pattern)
+	{
+		int count = 0;
+		int idx = 0;
+		while ((idx = source.IndexOf(pattern, idx, System.StringComparison.Ordinal)) >= 0)
+		{
+			count++;
+			idx += pattern.Length;
+		}
+		return count;
+	}
+}

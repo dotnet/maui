@@ -439,7 +439,7 @@ NuGet feed security, build task dependencies, feature flags, and auto-generated 
 
 Font scaling, WinUI accessible elements, and property propagation.
 
-- CHECK: Don't disable font scaling globally via implicit styles — "Rather have an ugly app that a partially blind person can use instead of a beautiful one they can't"
+- CHECK: Don't disable font scaling globally via implicit styles — keep the app usable for people with low vision and prioritize accessibility over visual polish.
 - CHECK: Verify `AutomationProperties` propagate to the native accessibility tree — broken binding silently removes accessibility
 
 ### 31. Input and Path Correctness `[major]`

@@ -1,3 +1,7 @@
+#if MACCATALYST
+using UIKit;
+#endif
+
 namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.Github, 20685, "MenuBarItem Commands not working on Mac Catalyst",
@@ -73,6 +77,16 @@ public class Issue20685 : TestShell
 					}
 			}
 		};
+
+#if MACCATALYST
+		Loaded += (s, e) =>
+		{
+			if (OperatingSystem.IsMacCatalystVersionAtLeast(13))
+			{
+				UIMenuSystem.MainSystem.SetNeedsRebuild();
+			}
+		};
+#endif
 
 		AddContentPage(contentPage);
 	}

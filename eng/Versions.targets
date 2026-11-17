@@ -30,10 +30,6 @@
           DependsOnTargets="$(SetVersionsDependsOn)"
           Returns="$(Version)">
 
-    <PropertyGroup>
-      <PreReleaseVersionLabel Condition="'$(CI)' == 'true' and '$(BUILD_REASON)' == 'Schedule'">$(NightlyTag)</PreReleaseVersionLabel>
-    </PropertyGroup>
-
     <ItemGroup>
 
       <VersionMetadata Condition="'$(CI)' == 'true' and '$(BUILD_REASON)' == 'PullRequest'"
