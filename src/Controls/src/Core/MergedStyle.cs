@@ -67,6 +67,7 @@ namespace Microsoft.Maui.Controls
 
 				_styleClass = value;
 				_classStyleProperties = new List<BindableProperty>();
+				var previousClassStyles = ClassStyles;
 
 				if (_styleClass != null)
 				{
@@ -79,8 +80,11 @@ namespace Microsoft.Maui.Controls
 					}
 				}
 
-				// Resource registration may not notify when the list is empty or no class resolves.
-				OnClassStyleChanged();
+				// Only recalculate if resource registration did not already notify.
+				if (ClassStyles == previousClassStyles)
+				{
+					OnClassStyleChanged();
+				}
 
 				//reapply the css stylesheets
 				if (_styleClass != null && Target is Element targetelement)
