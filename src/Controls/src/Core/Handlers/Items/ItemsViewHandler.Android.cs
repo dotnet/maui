@@ -124,26 +124,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					var hasHeader = (structuredItemsView?.Header ?? structuredItemsView?.HeaderTemplate) is not null;
 					var emptyViewPosition = hasHeader ? 1 : 0;
 
-					// Check if ViewHolder exists and is ready for immediate layout request
 					var viewHolder = platformView.FindViewHolderForAdapterPosition(emptyViewPosition);
-					if (viewHolder is not null)
-					{
-						// ViewHolder exists, request layout immediately to avoid frame delay
-						viewHolder.ItemView.RequestLayout();
-					}
-					else
-					{
-						// ViewHolder not created yet, defer layout request to next UI loop iteration
-						platformView.Post(() =>
-						{
-							if (!ReferenceEquals(((IElementHandler)this).PlatformView, platformView))
-							{
-								return;
-							}
-							var vh = platformView.FindViewHolderForAdapterPosition(emptyViewPosition);
-							vh?.ItemView.RequestLayout();
-						});
-					}
+					// Remeasure in the current pass without requesting another parent layout.
+					// A holder created later will already use the updated adapter dimensions.
+					viewHolder?.ItemView.ForceLayout();
 				}
 			}
 		}

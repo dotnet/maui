@@ -176,6 +176,58 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task EmptyViewDoesNotRequestAnotherLayoutWhenConstraintsAreUnchanged(bool useTemplate)
+		{
+			SetupBuilder();
+
+			var emptyView = new Label
+			{
+				Text = "No photo yet",
+				HorizontalOptions = LayoutOptions.Center,
+				VerticalOptions = LayoutOptions.Center
+			};
+			var collectionView = new CollectionView
+			{
+				ItemsSource = System.Array.Empty<string>(),
+				ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Horizontal),
+				HeightRequest = 180
+			};
+
+			if (useTemplate)
+				collectionView.EmptyViewTemplate = new DataTemplate(() => emptyView);
+			else
+				collectionView.EmptyView = emptyView;
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<CollectionViewHandler>(collectionView);
+				using var parent = new LayoutRequestCountingFrameLayout(MauiContext.Context);
+				parent.AddView(handler.PlatformView);
+
+				handler.GetDesiredSize(300, double.PositiveInfinity);
+				handler.PlatformArrange(new Rect(0, 0, 300, 180));
+				LayoutEmptyViewParent(parent, 300, 180);
+
+				var holder = handler.PlatformView.FindViewHolderForAdapterPosition(0);
+				var itemView = Assert.IsType<EmptyViewContentView>(holder?.ItemView);
+				Assert.True(itemView.MeasuredWidth > 0);
+				Assert.True(itemView.MeasuredHeight > 0);
+				parent.RequestLayoutCount = 0;
+
+				for (var pass = 0; pass < 3; pass++)
+				{
+					// A vertical stack measures with infinite height, then arranges at a finite height.
+					handler.GetDesiredSize(300, double.PositiveInfinity);
+					handler.PlatformArrange(new Rect(0, 0, 300, 180));
+				}
+
+				Assert.Equal(0, parent.RequestLayoutCount);
+			});
+		}
+
 		[Fact]
 		public async Task DisconnectingWhileEmptyViewLayoutIsQueuedDoesNotCrash()
 		{
@@ -1001,6 +1053,31 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			public TestRecyclerView(Context context) : base(context)
 			{
+			}
+		}
+
+		static void LayoutEmptyViewParent(FrameLayout parent, double width, double height)
+		{
+			var pixelWidth = (int)parent.Context.ToPixels(width);
+			var pixelHeight = (int)parent.Context.ToPixels(height);
+			parent.Measure(
+				AView.MeasureSpec.MakeMeasureSpec(pixelWidth, global::Android.Views.MeasureSpecMode.Exactly),
+				AView.MeasureSpec.MakeMeasureSpec(pixelHeight, global::Android.Views.MeasureSpecMode.Exactly));
+			parent.Layout(0, 0, pixelWidth, pixelHeight);
+		}
+
+		class LayoutRequestCountingFrameLayout : FrameLayout
+		{
+			public int RequestLayoutCount { get; set; }
+
+			public LayoutRequestCountingFrameLayout(Context context) : base(context)
+			{
+			}
+
+			public override void RequestLayout()
+			{
+				RequestLayoutCount++;
+				base.RequestLayout();
 			}
 		}
 
