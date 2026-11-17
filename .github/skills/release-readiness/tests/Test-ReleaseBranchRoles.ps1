@@ -147,6 +147,14 @@ try {
     Assert-Role refs/heads/inflight/11.0.1xx-sr2 ($branches -join ',') 'signed-build discovery uses configured nightly only'
     Write-FixtureState -NightlyMode legacy
     Assert-Role inflight/current (Resolve-ReadinessBranchRoles -Major 11 -RepositoryPath $fixture).nightlyBranch 'legacy nightly compatibility'
+    Write-FixtureState -NightlyMode candidate
+    $candidateRoles = Resolve-ReadinessBranchRoles -Major 11 -RepositoryPath $fixture
+    Assert-Role candidate/11.0.1xx-sr1 $candidateRoles.nightlyBranch 'candidate nightly follows the current candidate'
+    $candidateNightly = Get-ReadinessNightlyParameters -Roles $candidateRoles -Major 11 -RepositoryPath $fixture `
+        -VersionContent '<Project><MajorVersion>11</MajorVersion><PatchVersion>10</PatchVersion></Project>'
+    Assert-Role '^11\.0\.10-ci\.inflight\.' $candidateNightly.InflightPrefixRegex 'candidate nightly expects the current SR patch'
+    Write-FixtureState -Sr 2 -NightlyMode candidate
+    Assert-Role candidate/11.0.1xx-sr2 (Resolve-ReadinessBranchRoles -Major 11 -RepositoryPath $fixture).nightlyBranch 'candidate nightly advances with currentSr'
     Write-FixtureState
 
     $detectionPath = Join-Path $fixture 'trackers.json'

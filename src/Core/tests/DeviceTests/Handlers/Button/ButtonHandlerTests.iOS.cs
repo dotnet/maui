@@ -109,6 +109,28 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "Font Size Updates Correctly With CharacterSpacing")]
+		public async Task FontSizeUpdatesCorrectlyWithCharacterSpacing()
+		{
+			var button = new ButtonStub()
+			{
+				CharacterSpacing = 4,
+				Font = Font.SystemFontOfSize(8, enableScaling: false),
+				Text = "Test"
+			};
+
+			var handler = await CreateHandlerAsync(button);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				button.Font = Font.SystemFontOfSize(24, enableScaling: false);
+				handler.UpdateValue(nameof(ITextStyle.Font));
+
+				Assert.Equal(24, GetNativeTitleFontSize(handler));
+				Assert.Equal(4, GetNativeCharacterSpacing(handler));
+			});
+		}
+
 		[Fact(DisplayName = "Default Accessibility Traits Don't Change")]
 		[InlineData()]
 		public async Task ValidateDefaultAccessibilityTraits()
@@ -162,6 +184,18 @@ namespace Microsoft.Maui.DeviceTests
 			var attributedText = button.GetAttributedTitle(UIControlState.Normal);
 
 			return attributedText.GetCharacterSpacing();
+		}
+
+		double GetNativeTitleFontSize(ButtonHandler buttonHandler)
+		{
+			var button = GetNativeButton(buttonHandler);
+
+			// UIButton renders the attributed title (set by CharacterSpacing) instead of TitleLabel.Font
+			var attributedTitle = button.GetAttributedTitle(UIControlState.Normal);
+			if (attributedTitle?.Length > 0 && attributedTitle.GetAttribute(UIStringAttributeKey.Font, 0, out _) is UIFont font)
+				return font.PointSize;
+
+			return button.TitleLabel.Font.PointSize;
 		}
 
 		UILineBreakMode GetNativeLineBreakMode(ButtonHandler buttonHandler) =>

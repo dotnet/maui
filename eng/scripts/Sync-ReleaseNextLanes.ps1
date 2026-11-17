@@ -297,7 +297,7 @@ function Sync-StagedReleasePr {
             "Only ``currentSr`` changes. ``nightlyMode`` remains **$($Plan.nightlyMode)**; SDK, package metadata, branch roles, release contents and access rules are unchanged."
             ''
             '**Review and required CI are mandatory. Automation never updates the default branch, approves, retargets or merges this PR.**'
-            'If nightlyMode is already versioned, advancing currentSr also selects the following inflight lane. Before merging, verify that exact lane has its protections, internal mirror, schedule, signed artifacts and existing feed/channel wiring deployed.'
+            'If nightlyMode is candidate, advancing currentSr also moves nightly builds to the new candidate lane; if versioned, to the following inflight lane. Before merging, verify that exact lane has its protections, internal mirror, schedule, signed artifacts and existing feed/channel wiring deployed.'
             'The first legacy-to-versioned switch is a separate owner-reviewed state change after that deployment evidence exists; this PR does not guess or certify it.'
         ) -join "`n"
     } elseif ($normalization) {

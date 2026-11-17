@@ -6,5 +6,5 @@
     "fixBranch": "net11",
     "featureBranch": "main",
     "candidateNamingPolicy": "candidate",
-    "nightlyMode": "legacy"
+    "nightlyMode": "candidate"
 }

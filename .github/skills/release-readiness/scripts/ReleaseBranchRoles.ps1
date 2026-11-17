@@ -69,10 +69,11 @@ function Get-ReadinessNightlyParameters {
         throw "Active nightly lane '$ref' has no PatchVersion; feed freshness is UNKNOWN."
     }
     $patch = [int]$Matches[1]
-    if ($Roles.nightlyMode -eq 'versioned') {
-        $expectedPatch = ([int]$Roles.currentSr + 1) * 10
+    if ($Roles.nightlyMode -in @('versioned', 'candidate')) {
+        $nightlySr = if ($Roles.nightlyMode -eq 'candidate') { [int]$Roles.currentSr } else { [int]$Roles.currentSr + 1 }
+        $expectedPatch = $nightlySr * 10
         if ($patch -lt $expectedPatch -or $patch -ge ($expectedPatch + 10)) {
-            throw "Active nightly lane '$ref' declares PatchVersion $patch; expected $expectedPatch..$($expectedPatch + 9) for SR$([int]$Roles.currentSr + 1). Version advance is unverified; feed freshness is UNKNOWN."
+            throw "Active nightly lane '$ref' declares PatchVersion $patch; expected $expectedPatch..$($expectedPatch + 9) for SR$nightlySr. Version advance is unverified; feed freshness is UNKNOWN."
         }
     }
     $versionBase = "$Major.0.$patch"

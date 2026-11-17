@@ -141,7 +141,12 @@ versioned `inflight/<band>-srN` sources without changing the existing
 Scheduled inflight runs select their eligible lane from
 `eng/release-rollover.json` at a pinned public `main` commit before packing.
 `nightlyMode: legacy` preserves `inflight/current`; `versioned` selects the state's
-`releaseBand` and `currentSr + 1`. Unselected retained lanes skip packing.
+`releaseBand` and `currentSr + 1`; `candidate` (the checked-in mode) selects
+`candidate/<releaseBand>-sr<currentSr>` and follows `currentSr` automatically.
+Unselected retained lanes skip packing. Feed destination is set by the Maestro
+default-channel mapping for the built branch, not by this repository; a stale
+`inflight/current → .NET 10.0.1xx SDK` mapping publishes 11.x packages to the
+dotnet10 feeds.
 
 This is a staged migration, not evidence that the new lanes are already building.
 Deploy the selection and branding changes to the internal mirrored source

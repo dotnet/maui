@@ -79,7 +79,7 @@ public partial class {{xamlType.Name}} : ContentPage
 			// not be assigned just because the qualifier was dropped
 			var result = Generate(typeof(ScopedExtensionPropertiesQualified));
 
-			Assert.True(result.Diagnostics.Any(d => d.Id == "MAUIX2020"));
+			Assert.True(result.Diagnostics.Any(d => d.Id == "MAUIX2022"));
 		}
 
 		[Fact]
@@ -122,7 +122,7 @@ public partial class {{xamlType.Name}} : ContentPage
 				.WithAdditionalSource("namespace Microsoft.Maui.Controls.Xaml.UnitTests; public partial class ScopedExtensionPropertiesNestedAmbiguity : ContentPage { }");
 			var result = compilation.RunMauiSourceGenerator(new AdditionalXamlFile("ScopedExtensionPropertiesNestedAmbiguity.rt.xaml", xaml));
 			Assert.Contains(result.Diagnostics, d => d.Id == "MAUIX2021");
-			Assert.DoesNotContain(result.Diagnostics, d => d.Id == "MAUIX2020");
+			Assert.DoesNotContain(result.Diagnostics, d => d.Id == "MAUIX2022");
 		}
 
 		[Fact]

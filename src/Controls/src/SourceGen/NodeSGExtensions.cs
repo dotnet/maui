@@ -139,6 +139,48 @@ static class NodeSGExtensions
 		=> context.Variables.TryGetValue(node, out var variable) && variable.Type.InheritsFrom(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ResourceDictionary")!, context);
 
 	/// <summary>
+	/// Empty elements of a ResourceDictionary subtype (typically an x:Class dictionary) added to
+	/// MergedDictionaries are created when they are merged rather than up front, so their
+	/// {StaticResource} can resolve resources from the preceding merged dictionaries (#29589).
+	/// </summary>
+	public static bool IsDeferredMergedDictionary(this ElementNode node, INode parentNode, ITypeSymbol? type, SourceGenContext context, out ElementNode? mergeTargetNode)
+	{
+		mergeTargetNode = null;
+		if (node.Properties.Count != 0 || node.CollectionItems.Count != 0)
+			return false;
+
+		var rdType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ResourceDictionary")!;
+		if (type is not INamedTypeSymbol namedType
+			|| namedType.IsAbstract
+			|| namedType.IsUnboundGenericType
+			|| namedType.Equals(rdType, SymbolEqualityComparer.Default)
+			|| !namedType.InheritsFrom(rdType, context)
+			|| !namedType.InstanceConstructors.Any(c => c.Parameters.Length == 0 && c.DeclaredAccessibility == Accessibility.Public))
+			return false;
+
+		XmlName propertyName;
+		if (parentNode is ListNode listNode)
+		{
+			mergeTargetNode = listNode.Parent as ElementNode;
+			if (mergeTargetNode is null || !listNode.TryGetPropertyName(mergeTargetNode, out propertyName))
+				return false;
+		}
+		else if (parentNode is ElementNode parentElement && node.TryGetPropertyName(parentNode, out propertyName))
+			mergeTargetNode = parentElement;
+		else
+			return false;
+
+		if (mergeTargetNode is null || propertyName.LocalName is null
+			|| (propertyName.LocalName != "MergedDictionaries"
+				&& !propertyName.LocalName.EndsWith(".MergedDictionaries", StringComparison.Ordinal)))
+		{
+			mergeTargetNode = null;
+			return false;
+		}
+		return true;
+	}
+
+	/// <summary>
 	/// Determines if a node should be treated as a lazy resource in ResourceDictionary.
 	/// Lazy resources are created via factory functions for on-demand instantiation.
 	/// </summary>

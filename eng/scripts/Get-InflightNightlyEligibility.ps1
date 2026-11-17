@@ -8,8 +8,8 @@ $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
 if ($SourceBranch -cne 'refs/heads/inflight/current' -and
-    $SourceBranch -cnotmatch '^refs/heads/inflight/[1-9][0-9]*\.0\.[1-9][0-9]*xx-sr[1-9][0-9]*$') {
-    throw "Nightly selection requires a legacy or versioned inflight source ref."
+    $SourceBranch -cnotmatch '^refs/heads/(inflight|candidate)/[1-9][0-9]*\.0\.[1-9][0-9]*xx-sr[1-9][0-9]*$') {
+    throw "Nightly selection requires a legacy inflight, versioned inflight or candidate source ref."
 }
 
 $state = & (Join-Path $PSScriptRoot 'Get-ReleaseRolloverPlan.ps1') -StatePath $StatePath -ResolveStateOnly |
