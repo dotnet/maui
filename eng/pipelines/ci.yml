@@ -124,6 +124,14 @@ parameters:
     demands:
       - ImageOverride -equals 1ESPT-Ubuntu22.04
 
+- name: LinuxPool
+  type: object
+  default:
+    name: MAUI-DNCENG
+    demands:
+      - ImageOverride -equals 1ESPT-Ubuntu22.04
+    os: linux
+
 # Condition for MacOSPool comparison lanes (non-ARM64)
 # Additional comparison lanes remain disabled; the build, pack and ARM64
 # integration lanes provide public macOS coverage.
@@ -133,6 +141,10 @@ parameters:
   default: false
 
 stages:
+
+- template: /eng/pipelines/arcade/stage-devskim.yml@self
+  parameters:
+    pool: ${{ parameters.LinuxPool }}
 
 - template: /eng/pipelines/arcade/stage-helix-tests.yml@self
   parameters:
