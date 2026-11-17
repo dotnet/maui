@@ -1,1 +1,2 @@
 #nullable enable
+static Microsoft.Maui.Controls.FlyoutBase.ShowContextFlyout(Microsoft.Maui.Controls.VisualElement! target) -> void
