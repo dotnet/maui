@@ -145,6 +145,7 @@ while [ $# -gt 0 ]; do
     esac
     shift
 done
+if [ -n "$FAKE_EXIT_CODE" ]; then exit "$FAKE_EXIT_CODE"; fi
 case "$source" in
     */canary) cp "$FAKE_CANARY_REPORT" "$output"; echo "[00:00:00 DBG] Files analyzed: 3" ;;
     *) cp "$FAKE_TREE_REPORT" "$output"; echo "[00:00:00 DBG] Files analyzed: $FAKE_FILES_ANALYZED" ;;
@@ -167,11 +168,12 @@ esac
             $env:FAKE_CANARY_REPORT = $script:canaryReport
             $env:FAKE_TREE_REPORT = $script:cleanReport
             $env:FAKE_FILES_ANALYZED = '25'
+            $env:FAKE_EXIT_CODE = ''
             $output = Join-Path $TestDrive "output-$(New-Guid)"
         }
 
         AfterAll {
-            Remove-Item Env:FAKE_DEVSKIM_VERSION, Env:FAKE_CANARY_REPORT, Env:FAKE_TREE_REPORT, Env:FAKE_FILES_ANALYZED -ErrorAction Ignore
+            Remove-Item Env:FAKE_DEVSKIM_VERSION, Env:FAKE_CANARY_REPORT, Env:FAKE_TREE_REPORT, Env:FAKE_FILES_ANALYZED, Env:FAKE_EXIT_CODE -ErrorAction Ignore
         }
 
         It 'passes when the canary is detected and the source trees are clean' {
@@ -203,6 +205,19 @@ esac
             $env:FAKE_DEVSKIM_VERSION = '1.0.101'
 
             { & $script -DevSkim $devskim -OutputDirectory $output -RepositoryRoot $repository *> $null } | Should -Throw '*was validated with DevSkim*'
+        }
+
+        It 'fails when DevSkim fails' {
+            $env:FAKE_EXIT_CODE = '134'
+
+            { & $script -DevSkim $devskim -OutputDirectory $output -RepositoryRoot $repository *> $null } | Should -Throw '*failed with exit code 134*'
+        }
+
+        It 'fails when the options file defines no globs' {
+            $options = Join-Path $TestDrive 'no-globs.json'
+            Set-Content -LiteralPath $options -Value '{ "Globs": [] }'
+
+            { & $script -DevSkim $devskim -OutputDirectory $output -RepositoryRoot $repository -OptionsFile $options *> $null } | Should -Throw "*doesn't define the Globs*"
         }
 
         It 'fails when the options file is missing' {
