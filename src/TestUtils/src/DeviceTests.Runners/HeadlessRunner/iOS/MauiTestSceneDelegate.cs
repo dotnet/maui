@@ -5,7 +5,7 @@ using UIKit;
 namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner;
 
 /// <summary>
-/// Attaches the headless runner's window to its Mac Catalyst scene before starting tests.
+/// Attaches the headless runner's window to its scene before starting tests.
 /// </summary>
 public class MauiTestSceneDelegate : MauiUISceneDelegate
 {

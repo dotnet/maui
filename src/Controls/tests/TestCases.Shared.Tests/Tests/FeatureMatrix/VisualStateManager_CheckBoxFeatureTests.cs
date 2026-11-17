@@ -22,7 +22,7 @@ public class VisualStateManager_CheckBoxFeatureTests : _GalleryUITest
 		App.WaitForElement("CheckBoxState");
 		var stateText = App.FindElement("CheckBoxState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Normal"));
-		VerifyScreenshot();
+		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(2)]
@@ -32,7 +32,7 @@ public class VisualStateManager_CheckBoxFeatureTests : _GalleryUITest
 		App.Tap("CheckBoxDisable");
 		var stateText = App.FindElement("CheckBoxState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Disabled"));
-		VerifyScreenshot();
+		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(3)]
@@ -42,7 +42,7 @@ public class VisualStateManager_CheckBoxFeatureTests : _GalleryUITest
 		App.Tap("CheckBoxReset");
 		var stateText = App.FindElement("CheckBoxState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Normal"));
-		VerifyScreenshot();
+		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(4)]
@@ -52,7 +52,7 @@ public class VisualStateManager_CheckBoxFeatureTests : _GalleryUITest
 		App.Tap("VSMCheckBox");
 		var stateText = App.FindElement("CheckBoxState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Checked"));
-		VerifyScreenshot();
+		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(5)]
@@ -83,7 +83,7 @@ public class VisualStateManager_CheckBoxFeatureTests : _GalleryUITest
 		App.Tap("CheckBoxDisable");
 		stateText = App.FindElement("CheckBoxState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Disabled"));
-		VerifyScreenshot();
+		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(7)]

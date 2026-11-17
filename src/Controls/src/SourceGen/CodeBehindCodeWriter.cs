@@ -497,7 +497,7 @@ static class CodeBehindCodeWriter
 
 			var xmlType = new XmlType(node.NamespaceURI, node.LocalName,
 									  typeArguments != null
-									  ? TypeArgumentsParser.ParseExpression(typeArguments, nsmgr, null)
+									  ? TypeArgumentsParser.ParseExpression(typeArguments, GetNamespacesInScope(node, root, nsmgr), null)
 									  : null);
 
 			var accessModifier = fieldModifier?.ToLowerInvariant().Replace("notpublic", "internal") ?? "private"; //notpublic is WPF for internal
@@ -507,6 +507,28 @@ static class CodeBehindCodeWriter
 			// Fields use trimmed identifiers, but runtime namescope lookups must preserve the XAML name.
 			yield return (xamlName.Trim(), xmlType.GetTypeSymbol(reportDiagnostic, compilation, xmlnsCache, typeCache)?.ToFQDisplayString() ?? "", accessModifier, xmlType, xamlName);
 		}
+	}
+
+	static XmlNamespaceManager GetNamespacesInScope(XmlNode node, XmlNode root, XmlNamespaceManager rootNamespaces)
+	{
+		var namespaces = new XmlNamespaceManager(rootNamespaces.NameTable);
+		foreach (var entry in rootNamespaces.GetNamespacesInScope(XmlNamespaceScope.ExcludeXml))
+			namespaces.AddNamespace(entry.Key, entry.Value);
+
+		var ancestors = new Stack<XmlNode>();
+		for (var current = node; current != null && current != root; current = current.ParentNode)
+			ancestors.Push(current);
+		while (ancestors.Count > 0)
+		{
+			foreach (XmlAttribute attribute in ancestors.Pop().Attributes!)
+			{
+				if (attribute.Name == "xmlns")
+					namespaces.AddNamespace("", attribute.Value);
+				else if (attribute.Prefix == "xmlns")
+					namespaces.AddNamespace(attribute.LocalName, attribute.Value);
+			}
+		}
+		return namespaces;
 	}
 
 	static string? GetAttributeValue(XmlNode node, string localName, params string[] namespaceURIs)

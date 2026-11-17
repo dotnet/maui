@@ -1,0 +1,45 @@
+name: Release rollover sandbox
+
+on:
+  push:
+    branches:
+      - 'release-rollover-trial/*/main'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-rollover-trial-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  rollover:
+    if: >-
+      github.repository == 'dotnet/maui' &&
+      startsWith(github.ref, 'refs/heads/release-rollover-trial/') &&
+      (github.event_name == 'workflow_dispatch' || !github.event.deleted)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Initialize or advance dummy release lanes
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: ./eng/scripts/Invoke-ReleaseRolloverTrial.ps1
+
+      - name: Preserve the sandbox plan and result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-rollover-trial-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/release-rollover-trial-result.json
+          if-no-files-found: ignore

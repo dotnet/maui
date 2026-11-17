@@ -359,7 +359,9 @@ class ExpandMarkupsVisitor(SourceGenContext context) : IXamlNodeVisitor
 
 					if (childname == XmlName.xTypeArguments)
 					{
-						typeArguments = TypeArgumentsParser.ParseExpression(parsed.strValue, nsResolver, xmlLineInfo);
+						typeArguments = parsed.value is ElementNode typeExtension
+							? new[] { TypeArgumentsParser.ParseTypeExtension(typeExtension, xmlLineInfo) }
+							: TypeArgumentsParser.ParseExpression(parsed.strValue, nsResolver, xmlLineInfo);
 						childnodes.Add((childname, new ValueNode(typeArguments, nsResolver, xmlLineInfo?.LineNumber ?? -1, xmlLineInfo?.LinePosition ?? -1)));
 					}
 					else

@@ -1,0 +1,82 @@
+{
+  "name": "microsoft-maui-controls-upgrade-external-consumers",
+  "version": 1,
+  "kind": "readiness-pilot-not-CT24",
+  "source": {"sdk": "10.0.301", "controls": "10.0.110"},
+  "target": {"sdk": "11.0.100-rc.1.26425.128", "controls": "11.0.0-rc.1.26451.6"},
+  "agentRunsAuthorized": false,
+  "loggingVersion": "10.0.0",
+  "cases": [
+    {
+      "id": "binding",
+      "applicationId": "com.companyname.databindingdemos",
+      "complexity": "simple-workflow-in-a-gallery",
+      "repo": "dotnet/maui-samples",
+      "commit": "e78b47511ac706bb179abc4a09f182355ae75178",
+      "archiveSha256": "0a81146cee4bb2161e984b2e49e43753bfa7016476d25bb47fa188f00b968d6f",
+      "license": "LICENSE",
+      "directory": "10.0/Fundamentals/DataBindingDemos/DataBindingDemos",
+      "project": "DataBindingDemos.csproj",
+      "prompt": "Upgrade this Android data-binding sample from Controls 10.0.110 / SDK 10.0.301 to Controls 11.0.0-rc.1.26451.6 / SDK 11.0.100-rc.1.26425.128. Preserve the existing sample pages, slider-driven bindings and two-way editing behavior. Keep the application's package-management style, SDK roll-forward disabled and standalone APK installation. Restore/build Debug and Release without disabling analyzers or hiding warnings. Verify the existing behavior on Android; report unavailable prerequisites rather than changing global tools. Only app/ is editable.",
+      "runtime": [
+        {"name": "open-color", "scrollTo": {"text": "Better Color Selector", "class": "android.widget.Button"}, "assert": [{"selector": {"text": "Better Color Selector", "class": "android.widget.Button"}}], "tap": {"text": "Better Color Selector", "class": "android.widget.Button"}},
+        {"name": "color-initial", "assert": [{"selector": {"text": "Sienna", "class": "android.widget.TextView"}}, {"selector": {"text": "Hue = 0.05", "class": "android.widget.TextView"}}], "drag": {"selector": {"class": "android.widget.SeekBar"}, "count": 3, "index": 0, "fraction": 0.5}},
+        {"name": "bound-color-changed", "assert": [{"selector": {"$textPrefix": "Hue = ", "class": "android.widget.TextView"}, "number": {"prefix": "Hue = ", "minimum": 0.45, "maximum": 0.55}}], "back": true},
+        {"name": "open-converters", "scrollTo": {"text": "Enable Buttons", "class": "android.widget.Button"}, "assert": [{"selector": {"text": "Enable Buttons", "class": "android.widget.Button"}, "count": 2}], "tap": {"text": "Enable Buttons", "class": "android.widget.Button"}, "tapCount": 2, "tapIndex": 0},
+        {"name": "converters-empty", "assert": [{"selector": {"text": "Search", "class": "android.widget.Button"}, "attributes": {"enabled": "false"}}, {"selector": {"text": "Submit", "class": "android.widget.Button"}, "attributes": {"enabled": "false"}}], "tap": {"text": "enter search term", "class": "android.widget.EditText"}, "text": "maui", "back": true},
+        {"name": "search-bound", "assert": [{"selector": {"text": "Search", "class": "android.widget.Button"}, "attributes": {"enabled": "true"}}, {"selector": {"text": "Submit", "class": "android.widget.Button"}, "attributes": {"enabled": "false"}}], "tap": {"text": "enter destination", "class": "android.widget.EditText"}, "text": "android", "back": true},
+        {"name": "independent-converters", "assert": [{"selector": {"text": "Search", "class": "android.widget.Button"}, "attributes": {"enabled": "true"}}, {"selector": {"text": "Submit", "class": "android.widget.Button"}, "attributes": {"enabled": "true"}}], "back": true},
+        {"name": "binding-menu-return", "assert": [{"selector": {"text": "Data Binding demos", "class": "android.widget.TextView"}}]}
+      ]
+    },
+    {
+      "id": "shell-tabs",
+      "applicationId": "com.companyname.shelltabbarsample",
+      "complexity": "intermediate-navigation-and-page-state",
+      "repo": "dotnet/maui-samples",
+      "commit": "e78b47511ac706bb179abc4a09f182355ae75178",
+      "archiveSha256": "0a81146cee4bb2161e984b2e49e43753bfa7016476d25bb47fa188f00b968d6f",
+      "license": "LICENSE",
+      "directory": "10.0/Navigation/ShellTabBarSample/ShellTabBarSample",
+      "project": "ShellTabBarSample.csproj",
+      "prompt": "Upgrade this Android Shell tab sample from Controls 10.0.110 / SDK 10.0.301 to Controls 11.0.0-rc.1.26451.6 / SDK 11.0.100-rc.1.26425.128. Preserve all four tabs and independent counter state on their existing pages, including switching away and returning. Preserve Shell navigation and the exact target release's default Android implementation. Keep SDK roll-forward disabled and standalone APK installation. Restore/build Debug and Release without disabling analyzers or hiding warnings. Only app/ is editable; do not edit sibling configuration.",
+      "expectedControlNative": {"source": "ShellFlyoutRenderer", "target": "MauiDrawerLayout"},
+      "runtime": [
+        {"name": "one-root", "assert": [{"selector": {"content-desc": "One", "class": "android.widget.FrameLayout"}, "attributes": {"selected": "true"}}, {"selector": {"text": "Click me", "class": "android.widget.Button"}}], "tap": {"text": "Click me", "class": "android.widget.Button"}},
+        {"name": "one-once", "assert": [{"selector": {"text": "Clicked 1 time", "class": "android.widget.Button"}}], "tap": {"text": "Clicked 1 time", "class": "android.widget.Button"}},
+        {"name": "one-twice", "assert": [{"selector": {"text": "Clicked 2 times", "class": "android.widget.Button"}}], "tap": {"content-desc": "Two", "class": "android.widget.FrameLayout"}},
+        {"name": "two-fresh", "assert": [{"selector": {"content-desc": "Two", "class": "android.widget.FrameLayout"}, "attributes": {"selected": "true"}}, {"selector": {"text": "Click me", "class": "android.widget.Button"}}], "tap": {"text": "Click me", "class": "android.widget.Button"}},
+        {"name": "two-once", "assert": [{"selector": {"text": "Clicked 1 time", "class": "android.widget.Button"}}], "tap": {"content-desc": "Three", "class": "android.widget.FrameLayout"}},
+        {"name": "three-fresh", "assert": [{"selector": {"content-desc": "Three", "class": "android.widget.FrameLayout"}, "attributes": {"selected": "true"}}, {"selector": {"text": "Click me", "class": "android.widget.Button"}}], "tap": {"text": "Click me", "class": "android.widget.Button"}},
+        {"name": "three-once", "assert": [{"selector": {"text": "Clicked 1 time", "class": "android.widget.Button"}}], "tap": {"content-desc": "Four", "class": "android.widget.FrameLayout"}},
+        {"name": "four-fresh", "assert": [{"selector": {"content-desc": "Four", "class": "android.widget.FrameLayout"}, "attributes": {"selected": "true"}}, {"selector": {"text": "Click me", "class": "android.widget.Button"}}], "tap": {"text": "Click me", "class": "android.widget.Button"}},
+        {"name": "four-once", "assert": [{"selector": {"text": "Clicked 1 time", "class": "android.widget.Button"}}], "tap": {"content-desc": "One", "class": "android.widget.FrameLayout"}},
+        {"name": "one-preserved", "assert": [{"selector": {"content-desc": "One", "class": "android.widget.FrameLayout"}, "attributes": {"selected": "true"}}, {"selector": {"text": "Clicked 2 times", "class": "android.widget.Button"}}], "tap": {"content-desc": "Two", "class": "android.widget.FrameLayout"}},
+        {"name": "two-preserved", "assert": [{"selector": {"content-desc": "Two", "class": "android.widget.FrameLayout"}, "attributes": {"selected": "true"}}, {"selector": {"text": "Clicked 1 time", "class": "android.widget.Button"}}]}
+      ]
+    },
+    {
+      "id": "employee-directory",
+      "applicationId": "com.companyname.employeedirectory",
+      "complexity": "larger-multi-project-local-data-and-persistence",
+      "repo": "dotnet/maui-samples",
+      "commit": "e78b47511ac706bb179abc4a09f182355ae75178",
+      "archiveSha256": "0a81146cee4bb2161e984b2e49e43753bfa7016476d25bb47fa188f00b968d6f",
+      "license": "LICENSE",
+      "directory": "10.0/Apps/EmployeeDirectory",
+      "additionalLicenses": ["Apache-2.0"],
+      "project": "EmployeeDirectory/EmployeeDirectory.csproj",
+      "managedProjects": ["EmployeeDirectory.Core/EmployeeDirectory.Core.csproj"],
+      "prompt": "Upgrade this Android Employee Directory and its referenced Core project from Controls 10.0.110 / SDK 10.0.301 to Controls 11.0.0-rc.1.26451.6 / SDK 11.0.100-rc.1.26425.128. Preserve local CSV loading, the grouped favorites list, employee detail navigation and favorites persistence across reopening. Do not replace the app or introduce an external service. Keep SDK roll-forward disabled, the existing multi-project organization and standalone APK installation. Restore/build Debug and Release without disabling analyzers or hiding warnings. Only app/ is editable; do not edit sibling configuration.",
+      "runtime": [
+        {"name": "favorites-loaded", "assert": [{"selector": {"text": "Employee Directory", "class": "android.widget.TextView"}}, {"selector": {"text": "Nat Friedman", "class": "android.widget.TextView"}}], "tap": {"text": "Nat Friedman", "class": "android.widget.TextView"}},
+        {"name": "employee-detail", "assert": [{"selector": {"text": "Nat Friedman", "class": "android.widget.TextView"}, "count": 2}, {"selector": {"text": "Added to favorites", "class": "android.widget.TextView"}}, {"selector": {"class": "android.widget.Switch"}, "attributes": {"checked": "true"}}], "tap": {"class": "android.widget.Switch"}},
+        {"name": "favorite-removed", "assert": [{"selector": {"text": "Not in favorites", "class": "android.widget.TextView"}}, {"selector": {"class": "android.widget.Switch"}, "attributes": {"checked": "false"}}], "back": true},
+        {"name": "list-after-back", "assert": [{"selector": {"text": "Employee Directory", "class": "android.widget.TextView"}}, {"selector": {"text": "Nat Friedman", "class": "android.widget.TextView"}, "count": 0}, {"selector": {"text": "Miguel de Icaza", "class": "android.widget.TextView"}}], "restart": true},
+        {"name": "favorites-after-restart", "assert": [{"selector": {"text": "Employee Directory", "class": "android.widget.TextView"}}, {"selector": {"text": "Nat Friedman", "class": "android.widget.TextView"}, "count": 0}, {"selector": {"text": "Miguel de Icaza", "class": "android.widget.TextView"}}], "tap": {"text": "Miguel de Icaza", "class": "android.widget.TextView"}},
+        {"name": "favorite-detail-after-restart", "assert": [{"selector": {"text": "Added to favorites", "class": "android.widget.TextView"}}, {"selector": {"class": "android.widget.Switch"}, "attributes": {"checked": "true"}}], "back": true},
+        {"name": "directory-final", "assert": [{"selector": {"text": "Employee Directory", "class": "android.widget.TextView"}}]}
+      ]
+    }
+  ]
+}

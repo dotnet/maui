@@ -26,6 +26,7 @@ public class Issue19219 : _IssuesUITest
 #else
 		App.Tap("Los Angeles");
 #endif
+		App.WaitForTextEqualToElement("SearchHandlerLabel", "SearchHandler Command Executed when tap on item");
 		var text = App.WaitForElement("SearchHandlerLabel").GetText();
 		Assert.That(text, Is.EqualTo("SearchHandler Command Executed when tap on item"));
 	}

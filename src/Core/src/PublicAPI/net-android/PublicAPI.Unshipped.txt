@@ -1,18 +1,1 @@
 #nullable enable
-Microsoft.Maui.Platform.MauiMaterialPickerTextInputLayout
-Microsoft.Maui.Platform.MauiMaterialPickerTextInputLayout.MauiMaterialPickerTextInputLayout(Android.Content.Context! context) -> void
-Microsoft.Maui.Platform.MauiMaterialPickerTextInputLayout.Picker.get -> Microsoft.Maui.Platform.MauiMaterialPicker!
-override Microsoft.Maui.Platform.MauiMaterialPickerBase.OnMeasure(int widthMeasureSpec, int heightMeasureSpec) -> void
-static Microsoft.Maui.Handlers.PickerHandler2.MapFlowDirection(Microsoft.Maui.Handlers.PickerHandler2! handler, Microsoft.Maui.IPicker! picker) -> void
-override Microsoft.Maui.Handlers.PickerHandler2.ConnectHandler(Microsoft.Maui.Platform.MauiMaterialPickerTextInputLayout! platformView) -> void
-override Microsoft.Maui.Handlers.PickerHandler2.CreatePlatformView() -> Microsoft.Maui.Platform.MauiMaterialPickerTextInputLayout!
-override Microsoft.Maui.Handlers.PickerHandler2.DisconnectHandler(Microsoft.Maui.Platform.MauiMaterialPickerTextInputLayout! platformView) -> void
-override Microsoft.Maui.Handlers.WebViewHandler.NeedsContainer.get -> bool
-override Microsoft.Maui.Handlers.WebViewHandler.SetupContainer() -> void
-override Microsoft.Maui.Handlers.WebViewHandler.RemoveContainer() -> void
-override Microsoft.Maui.Handlers.HybridWebViewHandler.NeedsContainer.get -> bool
-override Microsoft.Maui.Handlers.HybridWebViewHandler.SetupContainer() -> void
-override Microsoft.Maui.Handlers.HybridWebViewHandler.RemoveContainer() -> void
-*REMOVED*override Microsoft.Maui.Handlers.PickerHandler2.ConnectHandler(Microsoft.Maui.Platform.MauiMaterialPicker! platformView) -> void
-*REMOVED*override Microsoft.Maui.Handlers.PickerHandler2.CreatePlatformView() -> Microsoft.Maui.Platform.MauiMaterialPicker!
-*REMOVED*override Microsoft.Maui.Handlers.PickerHandler2.DisconnectHandler(Microsoft.Maui.Platform.MauiMaterialPicker! platformView) -> void

@@ -55,10 +55,10 @@ function Get-MainBranchForVersion {
         Returns the long-lived development branch that currently owns work for
         a given .NET major version.
     .DESCRIPTION
-        If main's MajorVersion matches, the version lives on main. Otherwise it
-        lives on net{Major}.0. This correctly tracks main rolling forward between
-        major versions (e.g., when main moves from .NET 10 to .NET 11, the previous
-        major's work shifts from main to net10.0).
+        The configured release train owns servicing through its fixBranch, even
+        while main still has the same MajorVersion during migration.
+        A matching literal net{Major} servicing ref also supports the transition
+        before state is deployed. Other majors retain main / net{Major}.0 resolution.
     .PARAMETER Major
         The .NET major version (e.g., 10, 11).
     .PARAMETER Repo
@@ -69,13 +69,46 @@ function Get-MainBranchForVersion {
         [Parameter(Mandatory)][int]$Major,
         [Parameter(Mandatory)][string]$Repo
     )
+    $stateJson = git -C $Repo --no-pager show origin/main:eng/release-rollover.json 2>$null
+    if ($LASTEXITCODE -eq 0) {
+        $state = ($stateJson -join "`n") | ConvertFrom-Json
+        foreach ($name in @('schemaVersion', 'releaseBand', 'fixBranch')) {
+            if ($null -eq $state -or $name -notin $state.PSObject.Properties.Name) {
+                throw "Release state on origin/main is missing '$name'; refusing to guess the servicing branch."
+            }
+        }
+        if ([string] $state.schemaVersion -cne '1' -or
+            $state.releaseBand -isnot [string] -or
+            $state.releaseBand -cnotmatch '^([1-9][0-9]*)\.0\.[1-9][0-9]*xx$') {
+            throw "Release state on origin/main has an unsupported schema or release band."
+        }
+        $stateMajor = [int] $Matches[1]
+        if ($state.fixBranch -isnot [string] -or [string]::IsNullOrWhiteSpace($state.fixBranch)) {
+            throw "Release state on origin/main has no valid fixes branch."
+        }
+        $null = git check-ref-format "refs/heads/$($state.fixBranch)"
+        if ($LASTEXITCODE -ne 0) {
+            throw "Release state on origin/main has an invalid fixes branch."
+        }
+        if ($stateMajor -eq $Major) {
+            return $state.fixBranch
+        }
+    }
+
+    $servicingXml = git -C $Repo --no-pager show "origin/net${Major}:eng/Versions.props" 2>$null
+    if ($LASTEXITCODE -eq 0 -and
+        ($servicingXml -join "`n") -match '<MajorVersion>(\d+)</MajorVersion>' -and
+        [int]$Matches[1] -eq $Major) {
+        return "net$Major"
+    }
+
     $versionXml = git -C $Repo --no-pager show origin/main:eng/Versions.props 2>&1
     if ($LASTEXITCODE -eq 0) {
         $joined = ($versionXml -join "`n")
         if ($joined -match '<MajorVersion>(\d+)</MajorVersion>') {
             $mainMajor = [int]$Matches[1]
             if ($mainMajor -eq $Major) { return "main" }
-            Write-Verbose "origin/main has MajorVersion=$mainMajor, not $Major - version lives on net$Major.0"
+            Write-Verbose "origin/main has MajorVersion=$mainMajor, not $Major - using historical net$Major.0"
             return "net$Major.0"
         }
     }
@@ -209,7 +242,7 @@ function ConvertBranchToMilestone {
     if ($BranchName -match '^release/(\d+)\.0\.\d+xx$') {
         return ".NET $([int]$Matches[1]).0 GA"
     }
-    if ($BranchName -match '^release/(\d+)\.0\.\d+xx-sr(\d+)$') {
+    if ($BranchName -match '^(?:release|candidate|inflight)/(\d+)\.0\.\d+xx-sr(\d+)$') {
         return ".NET $([int]$Matches[1]) SR$([int]$Matches[2])"
     }
     if ($BranchName -match '^release/(\d+)\.0\.\d+xx-(preview|rc)(\d+)$') {

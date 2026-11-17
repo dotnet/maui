@@ -20,26 +20,33 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Window)]
 		public void TitleBarWithSmallHeightShell()
 		{
+			Exception? exception = null;
+
 			App.WaitForElement("OpenTitlebarWithSmallHeightRequest");
-			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_Initial");
+			VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "_Initial");
 			App.WaitForElement("OpenTitlebarWithSmallHeightRequest").Tap();
 			App.WaitForElement("ToggleButton");
-			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_SmallHeightRequest");
+			VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "_SmallHeightRequest");
 			App.TapBackArrow("Issue24489_2");
 
 			App.WaitForElement("OpenTitlebarWithSmallHeightRequest");
-			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_StartPageWithSmallTitleBar");
+			VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "_StartPageWithSmallTitleBar");
 			App.WaitForElement("OpenTitlebarWithSmallHeightRequest").Tap();
 			App.WaitForElement("ToggleButton");
-			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_SmallHeightRequest");
+			VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "_SmallHeightRequest");
 			App.TapBackArrow("Issue24489_2");
 
 			App.WaitForElement("SetTitleBarToNull").Tap();
-			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_Initial");
+			VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "_Initial");
 
 			App.WaitForElement("OpenTitlebarWithSmallHeightRequest").Tap();
 			App.WaitForElement("ToggleButton");
-			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_SmallHeightRequest");
+			VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "_SmallHeightRequest");
+
+			if (exception is not null)
+			{
+				throw exception;
+			}
 		}
 
 		[Test]

@@ -3,17 +3,18 @@
     <!-- The .NET product branding version -->
     <MajorVersion>11</MajorVersion>
     <MinorVersion>0</MinorVersion>
-    <PatchVersion>10</PatchVersion>
+    <PatchVersion>20</PatchVersion>
     <SdkBandVersion>11.0.100</SdkBandVersion>
     <PreReleaseVersionLabel>ci.main</PreReleaseVersionLabel>
-    <PreReleaseVersionLabel Condition="'$(BUILD_SOURCEBRANCH)' == 'refs/heads/inflight/current'">ci.inflight</PreReleaseVersionLabel>
+    <PreReleaseVersionLabel Condition="'$(BUILD_SOURCEBRANCH)' == 'refs/heads/inflight/current' or $([System.Text.RegularExpressions.Regex]::IsMatch('$(BUILD_SOURCEBRANCH)', '\Arefs/heads/inflight/[1-9][0-9]*\.0\.[1-9][0-9]*xx-sr[1-9][0-9]*\z'))">ci.inflight</PreReleaseVersionLabel>
+    <PreReleaseVersionLabel Condition="$([System.Text.RegularExpressions.Regex]::IsMatch('$(BUILD_SOURCEBRANCH)', '\Arefs/heads/release/[1-9][0-9]*\.0\.[1-9][0-9]*xx-sr[1-9][0-9]*\z'))">servicing</PreReleaseVersionLabel>
     <PreReleaseVersionIteration>
     </PreReleaseVersionIteration>
     <!-- Essentials.AI preview versioning — bump this for new AI previews -->
     <EssentialsAIPreviewVersionIteration>1</EssentialsAIPreviewVersionIteration>
     <!-- Servicing builds have different characteristics for the way dependencies, baselines, and versions are handled. -->
     <IsServicingBuild Condition=" '$(PreReleaseVersionLabel)' == 'servicing' ">true</IsServicingBuild>
-    <!-- Enable to remove prerelease label and produce stable package versions. -->
+    <!-- Stable packages are enabled explicitly by the reviewed servicing configuration. -->
     <StabilizePackageVersion Condition="'$(StabilizePackageVersion)' == ''">false</StabilizePackageVersion>
     <DotNetFinalVersionKind Condition="'$(StabilizePackageVersion)' == 'true'">release</DotNetFinalVersionKind>
     <WorkloadVersionSuffix Condition="'$(DotNetFinalVersionKind)' != 'release' and '$(PreReleaseVersionIteration)' == ''">-$(PreReleaseVersionLabel)</WorkloadVersionSuffix>
@@ -140,14 +141,14 @@
     <_HarfBuzzSharpVersion>14.2.1.1</_HarfBuzzSharpVersion>
     <_SkiaSharpNativeAssetsVersion>0.0.0-commit.e57e2a11dac4ccc72bea52939dede49816842005.1728</_SkiaSharpNativeAssetsVersion>
     <MicrosoftTemplateEngineTasksVersion>7.0.120</MicrosoftTemplateEngineTasksVersion>
-    <MicrosoftDotNetXHarnessTestRunnersCommonVersion>11.0.0-prerelease.26064.3</MicrosoftDotNetXHarnessTestRunnersCommonVersion>
-    <MicrosoftDotNetXHarnessTestRunnersXunitVersion>11.0.0-prerelease.26064.3</MicrosoftDotNetXHarnessTestRunnersXunitVersion>
-    <MicrosoftDotNetXHarnessCLIVersion>11.0.0-prerelease.26064.3</MicrosoftDotNetXHarnessCLIVersion>
+    <MicrosoftDotNetXHarnessTestRunnersCommonVersion>11.0.0-prerelease.26556.1</MicrosoftDotNetXHarnessTestRunnersCommonVersion>
+    <MicrosoftDotNetXHarnessTestRunnersXunitVersion>11.0.0-prerelease.26556.1</MicrosoftDotNetXHarnessTestRunnersXunitVersion>
+    <MicrosoftDotNetXHarnessCLIVersion>11.0.0-prerelease.26556.1</MicrosoftDotNetXHarnessCLIVersion>
     <SvgSkiaPackageVersion>5.2.3</SvgSkiaPackageVersion>
     <FizzlerPackageVersion>1.3.0</FizzlerPackageVersion>
     <ExCSSPackageVersion>4.3.1</ExCSSPackageVersion>
     <SystemDrawingCommonPackageVersion>9.0.0</SystemDrawingCommonPackageVersion>
-    <MicrosoftDotNetBuildTasksFeedVersion>11.0.0-beta.26552.106</MicrosoftDotNetBuildTasksFeedVersion>
+    <MicrosoftDotNetBuildTasksFeedVersion>11.0.0-beta.26514.118</MicrosoftDotNetBuildTasksFeedVersion>
     <MicrosoftDotNetBuildTasksInstallersPackageVersion>11.0.0-beta.26514.118</MicrosoftDotNetBuildTasksInstallersPackageVersion>
     <MicrosoftDotNetBuildTasksWorkloadsPackageVersion>11.0.0-beta.26514.118</MicrosoftDotNetBuildTasksWorkloadsPackageVersion>
     <MicrosoftDotNetHelixJobMonitorPackageVersion>11.0.0-beta.26514.118</MicrosoftDotNetHelixJobMonitorPackageVersion>

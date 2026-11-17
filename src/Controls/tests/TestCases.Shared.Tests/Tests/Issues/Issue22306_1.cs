@@ -26,20 +26,27 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Button)]
 		public void ButtonLayoutResizesWithImagePosition()
 		{
+			Exception? exception = null;
+
 			App.WaitForElement("RotateButton");
-			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "Top");
+			VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "Top");
 
 			App.WaitForElement("RotateButton").Tap();
-			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "Right");
+			VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "Right");
 
 			App.WaitForElement("RotateButton").Tap();
-			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "Bottom");
+			VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "Bottom");
 
 			App.WaitForElement("RotateButton").Tap();
-			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "Left");
+			VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "Left");
 
 			App.WaitForElement("RotateButton").Tap();
-			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "Top");
+			VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "Top");
+
+			if (exception is not null)
+			{
+				throw exception;
+			}
 		}
 	}
 }

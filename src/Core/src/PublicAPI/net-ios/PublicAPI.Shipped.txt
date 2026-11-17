@@ -2488,6 +2488,7 @@ override Microsoft.Maui.Platform.MauiLabel.SizeThatFits(CoreGraphics.CGSize size
 override Microsoft.Maui.Platform.MauiPageControl.Dispose(bool disposing) -> void
 override Microsoft.Maui.Platform.MauiPageControl.LayoutSubviews() -> void
 override Microsoft.Maui.Platform.MauiPageControl.MovedToWindow() -> void
+override Microsoft.Maui.Platform.MauiPageControl.SizeThatFits(CoreGraphics.CGSize size) -> CoreGraphics.CGSize
 override Microsoft.Maui.Platform.MauiPicker.CanPerform(ObjCRuntime.Selector! action, Foundation.NSObject? withSender) -> bool
 override Microsoft.Maui.Platform.MauiScrollView.AdjustedContentInsetDidChange() -> void
 override Microsoft.Maui.Platform.MauiScrollView.LayoutSubviews() -> void
@@ -2547,6 +2548,7 @@ override Microsoft.Maui.Platform.PageViewController.PrefersHomeIndicatorAutoHidd
 override Microsoft.Maui.Platform.PageViewController.PrefersStatusBarHidden() -> bool
 override Microsoft.Maui.Platform.PageViewController.TraitCollectionDidChange(UIKit.UITraitCollection? previousTraitCollection) -> void
 override Microsoft.Maui.Platform.PlatformTouchGraphicsView.LayoutSubviews() -> void
+override Microsoft.Maui.Platform.PlatformTouchGraphicsView.MovedToWindow() -> void
 override Microsoft.Maui.Platform.PlatformTouchGraphicsView.TouchesBegan(Foundation.NSSet! touches, UIKit.UIEvent? evt) -> void
 override Microsoft.Maui.Platform.PlatformTouchGraphicsView.TouchesCancelled(Foundation.NSSet! touches, UIKit.UIEvent? evt) -> void
 override Microsoft.Maui.Platform.PlatformTouchGraphicsView.TouchesEnded(Foundation.NSSet! touches, UIKit.UIEvent? evt) -> void

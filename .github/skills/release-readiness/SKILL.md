@@ -29,11 +29,91 @@ This skill **reports**. It does **not** execute release operations against dotne
 
 ## Architecture
 
+### Branch roles: configured train versus historical releases
+
+Read `eng/release-rollover.json` through
+`eng/scripts/Get-ReleaseRolloverPlan.ps1 -ResolveStateOnly`. Configuration is
+maintained once; callers do not supply cycle numbers at runtime. The readiness
+helper `scripts/ReleaseBranchRoles.ps1` reuses that validator and the shared
+`Get-MainBranchForVersion` resolver, rather than deriving ownership from the
+largest branch name or feature-main's version.
+
+For the configured `11.0.1xx` / SR1 train:
+
+| Role | Ref |
+|---|---|
+| Initial fix review, release integration and cut source | literal `net11` (not historical `net11.0`) |
+| Next-major features | `main` (.NET 12); daily flow is `net11 → main`, never features back into `net11` |
+| Selected current content | `candidate/11.0.1xx-sr1` |
+| Future content | `inflight/11.0.1xx-sr2` |
+| Release after candidate integration | `release/11.0.1xx-sr1`, cut from approved `net11` |
+| Active nightly | resolver's `nightlyBranch`: `inflight/current` in legacy mode, versioned inflight in versioned mode |
+
+Fix PRs initially target `net11` for review. After approval, a maintainer manually
+retargets each PR to the active versioned inflight branch and merges it directly
+there. Bots must not retarget or merge. Required CI validates the final base.
+An approved fix on inflight but not yet on `net11` is normal staged content:
+promotion through candidate integration, not a direct individual-fix merge,
+brings selected contents into `net11`.
+
+The selected `candidateNamingPolicy=candidate` convention prepares candidate SR
+N+1 and future inflight SR N+2 after a verified candidate merge. Older
+`unresolved` configurations still block mutation, not read-only reporting.
+The deployed merged-candidate workflow stages the exact CI candidate merge and
+proposes reviewed next-cycle CI on net11. Independently, publication opens a
+separate draft servicing/stable PR targeting `automation/release/<band>-srN`
+before the real release exists. The candidate itself includes its upcoming
+bug-template version and never carries the servicing flip. Signing waits for
+that separate human-reviewed two-parent servicing merge, followed by a manual
+real release cut at that exact merge and matching internal mirror. No post-cut
+servicing PR is opened. Receipts do not change canonical
+`currentSr`/`nightlyMode`. When the approved
+release-state update advances to SR2, readiness selects
+`candidate/11.0.1xx-sr2` and versioned nightly `inflight/11.0.1xx-sr3`
+automatically. It never writes state.
+Resolved roles are configuration evidence only: branch existence does not prove
+deployed branch protections, correct required-check wiring, or a signed build.
+Report those deployment/validation gaps independently; never enable mutations
+because a branch happens to exist.
+
+The configured SR candidate inventories **the selected staged ref**, not the
+latest fixes or feature branch. Source-fix ancestry, open source PRs, and
+next-cycle version checks use the resolved fixes branch. JSON compatibility
+names (`mainBranch`, `onMain`, `merged-on-main-no-backport`, `open-on-main`) mean
+that resolved source, which is also emitted explicitly as `sourceBranch`.
+Candidate evidence is pre-flight, never proof of a release cut or signed build.
+The report verifies both ancestry directions. If the fixes source contains
+commits absent from the candidate snapshot, `candidateIntegration` records the
+relationship/count and a prominent synchronization WATCH explicitly states that
+the candidate-only inventory is **not the full prospective cut**. Inventory the
+approved integrated source commit separately, or synchronize the staged snapshot,
+before certifying release contents. No synthetic union is assumed.
+
+**Configured servicing progress is tag-independent.** Maintainers create tags
+manually when releasing; automation does not create/move tags, infer shipping
+from them, or require them for cuts, normalization, next lanes or signing
+preparation. SR1 inventories against `release/<band>` (the first GA branch);
+later SRs use the preceding `release/<band>-srN`. Both the content source and
+baseline are pinned to full commit SHAs at report time. The configured current
+cycle and its preceding cut remain visible independently of tags.
+
+If a preceding release branch is absent, emit an incomplete **UNKNOWN / NOT
+RUN** inventory diagnostic, not zero findings and not a missing-tag blocker.
+Remove stale inventory exports when reusing an output directory. Wrong source
+versions and invalid explicit revisions still fail. Human closure is honored
+for each exact source/baseline snapshot; a new snapshot can produce a new
+generation without tags or a false shipped claim.
+
+Historical majors remain independent: `.NET 10`, Preview/RC branches, explicit
+source/survey overrides, immutable shipped-tag bounds, tag retirement and
+Release Captain Notes retain their own lifecycle. Historical examples below
+using `main` or `net11.0` describe those releases, not active .NET 11 ownership.
+
 This skill has **four** PowerShell entry points, one Preview helper, and one workflow:
 
 | Script | Branch type | Purpose |
 |--------|-------------|---------|
-| [`Find-ReleaseReadinessTrackers.ps1`](scripts/Find-ReleaseReadinessTrackers.ps1) | all | Detects active in-flight & candidate trackers (SR, Preview, and RC) across all active majors using a five-lane algorithm and the **tag-existence rule** ("a release is in flight unless its tag already exists"). Emits a single tracker JSON consumed by the workflow. |
+| [`Find-ReleaseReadinessTrackers.ps1`](scripts/Find-ReleaseReadinessTrackers.ps1) | all | Uses configured cycle state and pinned branches for servicing progress; historical/unconfigured and Preview/RC trackers retain their tag rules. Emits the tracker JSON consumed by the workflow. |
 | [`Get-ReleaseReadiness.ps1`](scripts/Get-ReleaseReadiness.ps1) | SR | Full readiness report for a single SR branch (in-flight, `-Candidate`, or `-Shipped`). `-Shipped` surveys the same branch with post-ship verdict, carry-forward, and hotfix-vs-next-SR guidance semantics. |
 | [`Get-PreviewReadiness.ps1`](scripts/Get-PreviewReadiness.ps1) | Preview / RC | Full readiness report for a single prerelease branch (in-flight or candidate via `-Mode candidate -SurveyRef net<major>.0`). Preview reports include consumer-installability evidence; RC reports retain that check as `UNKNOWN` until RC workload-set package resolution is supported. |
 | [`PreviewInstallability.ps1`](scripts/PreviewInstallability.ps1) | Preview helper | Resolves the workload-set package, validates branch-pin coherence, probes manifest and representative pack availability, extracts platform prerequisites, and emits an isolated NuGet configuration for local validation. |
@@ -42,13 +122,24 @@ This skill has **four** PowerShell entry points, one Preview helper, and one wor
 
 Shared support code lives in [`PublicReportSanitizer.ps1`](scripts/PublicReportSanitizer.ps1) for public Markdown/JSON redaction and [`TrackerIssueLifecycle.sh`](scripts/TrackerIssueLifecycle.sh) for tested issue-selection and race-compensation primitives.
 
-### Tag-existence rule (canonical signal)
+### Historical tag-existence rule
+
+The rules below apply to historical/unconfigured trains and Preview/RC
+reporting. They do **not** control configured GA/SR progress, which uses branch
+snapshots and canonical cycle state. Automatic milestone processing also ignores
+stable tag-push events for that configured train; manual tag diagnostics remain
+available separately.
 
 The trackers detector is grounded in **tag existence as the source of truth for "shipped vs in-flight"**. A release is in-flight if and only if its expected tag has NOT been published — branch existence, commit recency, and milestone state are all secondary signals.
 
 - SR shipped tag pattern: `<major>.0.<patch>` (e.g. `10.0.71` shipped → SR7 retired, no longer produces a tracker)
 - Preview shipped tag pattern: `<major>.0.0-preview.<N>.<date>[.<build>]` (e.g. `11.0.0-preview.5.26304.4` shipped → preview5 no longer produces a tracker)
 - RC shipped tag pattern: `<major>.0.0-rc.<N>.<date>[.<build>]` (e.g. `11.0.0-rc.1.26425.128` shipped → RC1 no longer produces a tracker)
+
+Preview/RC retirement also recognizes the published SDK-band `.0.100-...`
+tags (for example `11.0.100-preview.7.26410.2` and
+`11.0.100-rc.1.26458.5`). Retained old prerelease branches are not revived as
+in-flight merely because their immutable tags use that package-version format.
 
 **Post-ship lifecycle (`shipped` mode).** Most shipped SRs are retired the moment their tag exists. The **one exception** is the *most-recently-shipped* SR (highest shipped patch), which keeps emitting as `mode='shipped'` so its tracker issue stays useful through post-ship follow-up — adding the new build to the GitHub issue version dropdown, publishing release notes, closing out the milestone. Shipped reports never retroactively return `Not Ready`: unresolved work is split into urgent hotfix-vs-next-SR follow-ups and structured carry-forward items. Each immutable shipped tag is **create-once**: if it was never tracked (for example, the tag appeared before a scheduled updater ran), the workflow creates it; once a human closes that exact tagged generation, scheduled runs do not resurrect it. An untagged hotfix is explicitly marked `hotfixInProgress=true`, forces a yellow follow-up verdict, and is likewise create-once. Hotfix closure is scoped to the live version **and branch commit**: the same generation stays closed, while new commits or a new version can create fresh evidence. Workflow decisions use the generated report markers, not detector-time hotfix fields, so tag/commit changes between detection and reporting cannot apply stale lifecycle state. Older shipped SRs remain retired.
 
@@ -83,6 +174,14 @@ pwsh .github/skills/release-readiness/scripts/Find-ReleaseReadinessTrackers.ps1 
 ### SR (Servicing Release)
 
 ```bash
+# Configured current candidate: automatic staged ref + fixes source, no SR0.
+# Uses the pinned GA/prior release branch; no tag is required.
+pwsh .github/skills/release-readiness/scripts/Get-ReleaseReadiness.ps1 \
+  -SrBranch release/11.0.1xx-sr1 -Candidate \
+  -RegressionLabels regressed-in-11.0.0,regressed-in-11.0.10 \
+  -TrackerKey net11-sr1 \
+  -OutputDir CustomAgentLogsTmp/release-readiness/sr1-candidate
+
 # In-flight SR
 pwsh .github/skills/release-readiness/scripts/Get-ReleaseReadiness.ps1 \
   -SrBranch release/10.0.1xx-sr8 \
@@ -164,11 +263,12 @@ queries the internal official `dotnet-maui` pipeline (Azure DevOps definition
 `1095`, org `dnceng`, project `internal`) when the current Azure CLI identity has
 access. No build ID is required. It independently checks:
 
-1. `refs/heads/net11.0` — the inflight source/survey lane.
+1. The resolved active nightly ref for the configured .NET11 train; for an
+   unconfigured historical train, its per-major source ref.
 2. `refs/heads/release/11.0.1xx-previewN` — the evaluated release branch, when
    that branch exists.
 
-Candidate mode still checks `net11.0`; it adds the prospective release ref only
+Candidate mode still checks that source/nightly lane; it adds the prospective release ref only
 after that ref exists. Identical refs are queried once. The local report includes
 each branch's health classification, build ID and number, pipeline status/result,
 source SHA, and internal build URL. A failed or canceled current build is `red`;
@@ -372,7 +472,7 @@ work. Those belong only in the Preview N+1 candidate/in-flight readiness report.
 
 | Parameter | Default | Description |
 |-----------|---------|-------------|
-| `-MajorVersion` | 0 (auto from `eng/Versions.props`) | Single major to scan. |
+| `-MajorVersion` | 0 (configured release train, otherwise `origin/main`) | Explicit single-major overrides stay independent of state for other majors. |
 | `-AllActiveMajors` | off | Scan every active major (current + lower in-flight). Mutually exclusive with `-MajorVersion`. |
 | `-Repo` | cwd | Path to a checkout of dotnet/maui. |
 | `-ActivityWindowDays` | 7 | Recent-commit window used to compute `recentCommitCount`. |
@@ -384,16 +484,19 @@ work. Those belong only in the Preview N+1 candidate/in-flight readiness report.
 
 | Parameter | Required | Default | Description |
 |-----------|----------|---------|-------------|
-| `-SrBranch` | Yes | — | SR branch name (e.g. `release/10.0.1xx-sr8`). In `-Candidate` mode, pass the **prior** SR — it's the exclude baseline for "what's new". |
-| `-Candidate` | No | off | Pre-flight mode — survey `main` (with `-SrBranch` as the prior-SR baseline) to show what WOULD ship in the next SR. |
+| `-SrBranch` | Yes | — | Actual SR branch, or the configured current target with `-Candidate`. Legacy candidate callers pass the prior SR unless `-CandidateTargetBranch` is supplied. |
+| `-Candidate` | No | off | Pre-flight selected-content survey. Configured current SR uses its staged candidate; legacy mode surveys the per-major source against the prior SR. |
 | `-Shipped` | No | off | Post-ship mode for any explicitly requested tagged SR. Uses immutable stable-tag contents while keeping operational checks live; scheduled trackers normally emit only the most recently tagged SR. |
 | `-ShippedTag` | No | latest local stable tag in the SR patch range | Explicit immutable shipped-anchor override for deterministic/manual runs. |
 | `-InheritFromPriorSr` | No | off | In `-Candidate` mode, model the workflow where the prior SR is merged into the new branch after cut. Candidate's "what's shipping" set = main-since-priorSR ∪ priorSR-only commits. |
 | `-RegressionLabels` | One of these | — | Comma-separated `regressed-in-*` labels. |
 | `-InferRegressionLabels` | One of these | off | Auto-infer from `-SrBranch`. Agent should confirm before relying on this for automation. |
 | `-Repo` | No | `dotnet/maui` | Repository in `owner/name` form. |
-| `-MainBranch` | No | `main` | Stable branch used for ancestry checks. |
-| `-ExcludeBranches` | No | `origin/main` | Branches to exclude from SR-only commit computation. |
+| `-MainBranch` | No | resolved per-major fixes source | Compatibility parameter for an explicit source override; active .NET11 defaults to `net11`. |
+| `-ExcludeBranches` | No | resolved `origin/<source>` | Explicit inventory excludes; missing excludes fail instead of silently disappearing. |
+| `-CandidateTargetBranch` | No | automatic for the configured current SR | Proposed `release/...-srN`, distinct from the staged survey ref. Legacy callers without this continue to pass the prior SR in `-SrBranch`. |
+| `-SurveyRef` | No | configured candidate for current train, otherwise resolved source | Explicit candidate-content override. It does not change source-fix ownership. |
+| `-BaselineRef` | No | pinned GA/prior release-branch SHA for configured candidates | Explicit verified diagnostic inventory bound; normal configured progress does not require a tag. |
 | `-Phase` | No | `all` | `all`, `ci`, `commits`, `regressions`, or `open-prs`. |
 | `-TrackerKey` | No | — | Canonical key (e.g. `net10-sr8`) embedded in the markdown body for idempotent issue lookup. |
 | `-OutputDir` | No | — | If set, writes `release-readiness.{json,md}` and `sr-source-prs.txt`. |
@@ -444,6 +547,12 @@ work. Those belong only in the Preview N+1 candidate/in-flight readiness report.
      - **Create path**: open a new issue with the mandatory `area-infrastructure` ownership label (creation fails rather than producing a tracker the lifecycle lookup cannot recognize); attach `report` / `s/triaged` best-effort.
    - **Activity gate**: skip new-issue creation when `recentCommitCount == 0` AND no open tracker issue exists. (Existing open issues are still refreshed.)
 3. **`validate`** — PR-trigger path. Runs the test suite + smoke-runs all three scripts. **Does not create or modify issues.**
+   A configured SR candidate descriptor with an explicit target but no verified
+   baseline records `validate-out/<tracker>/smoke-diagnostic.json` as **NOT RUN**
+   with a visible warning/step summary, then continues other trackers. This is
+   not a passed readiness report: inventory/verdict remain absent and production
+   reporting/publication remains blocked. Verified-baseline fixtures exercise the
+   actual SR1 output; all other smoke errors still fail validation.
 
 ### Reading trackers directly (ad-hoc status)
 
@@ -468,9 +577,9 @@ Each candidate fix PR is classified with confidence + evidence:
 | `in-sr-reverted` | Backport landed but a later commit reverts it |
 | `rejected-from-sr` | A backport PR targeting the release branch was opened and CLOSED unmerged |
 | `backport-in-progress` | A backport PR targeting the release branch is OPEN |
-| `merged-on-main-no-backport` | Fix merged to `main`, no backport PR exists. Remains Tier 2 in candidate mode because an already-selected Candidate cut commit can lag current `main`; rerun after the SR branch is cut to verify inclusion. |
-| `merged-non-main-only` | Fix merged but only to `inflight/current` (or similar), not `main` |
-| `open-on-main` | Fix PR is OPEN against main, not yet merged |
+| `merged-on-main-no-backport` | Compatibility token: fix merged to the resolved fixes source, no backport PR exists. Remains Tier 2 before the release cut; the staged candidate can lag the source. |
+| `merged-non-main-only` | Fix merged elsewhere but not on the resolved fixes source. Feature-main ancestry alone does not qualify a .NET11 fix. |
+| `open-on-main` | Compatibility token: fix PR is OPEN against the resolved fixes source, not yet merged |
 | `no-fix-yet` | No fix PR cross-referenced from the regression issue |
 | `closed-fix-unlinked` | Issue is CLOSED and a closing comment **explicitly names** a fix PR (fix/resolve/close language) that is MERGED and present on the release branch, but the PR↔issue link was never recorded (no closing keyword / cross-reference). A bare mention of a PR (e.g. naming the *cause* PR for context) does **not** qualify. Non-blocking; action is to add a closing reference for traceability |
 | `needs-human-review` | Evidence is contradictory or weak |
@@ -485,8 +594,8 @@ This skill remains report-only: it MUST NOT post a comment, create a branch, or 
    /backport to release/<major>.0.1xx-sr<N>
    ```
 
-2. For `open-on-main`, wait for the source PR to merge, then recommend the same command. For `backport-in-progress`, do not trigger a duplicate backport.
-3. For `merged-non-main-only`, do **not** recommend the command yet. Require a fix PR to merge into `main` first, then rerun readiness; only recommend the command after the merged source PR's ancestry is verified on `main`.
+2. For `open-on-main` on the configured train, the maintainer first approves the net11-targeting fix, then manually retargets it to the active inflight and merges there. Wait for verified candidate promotion/release ancestry before recommending a backport; do not recommend merging the individual fix into net11. Historical trains retain their source-merge workflow. For `backport-in-progress`, do not trigger a duplicate backport.
+3. For `merged-non-main-only`, do **not** recommend the command yet. A fix already staged on versioned inflight follows normal candidate promotion into `net11`; do not ask for a direct individual-fix merge. Rerun readiness after selected integration/cut ancestry is verified. Never recommend merging .NET12 features backwards into `net11`.
 4. If the automation reports a conflict, recommend manually cherry-picking the source PR's **merge commit** onto the SR branch with `git cherry-pick -x`, resolving and testing the conflict, then opening a PR targeting the SR branch.
 
 Read [Gotcha #4](references/methodology.md#gotcha-4-source-to-sr-backport-workflow) for the generated PR shape and manual fallback commands.
@@ -507,10 +616,10 @@ The SR readiness report rolls operational checks into a single **Blocking** summ
 
 | Check | When | Status meanings |
 |-------|------|-----------------|
-| **`Versions.props bump`** | All SR runs | `BLOCKED` if `eng/Versions.props` on `main` hasn't been bumped past the current SR cycle (next SR has nowhere to flow). |
+| **`Versions.props bump`** | All SR runs | `BLOCKED` if the selected candidate/release contents do not identify the expected major and SR patch decade. |
 | **`Versions.props servicing flip`** | Live-SR mode only | `BLOCKED` if the SR branch's `eng/Versions.props` is not flipped to servicing-release mode (`PreReleaseVersionLabel=servicing` + `StabilizePackageVersion=true`). After the last backport, create a focused SR PR that preserves `PatchVersion`, replaces `ci.main` and its inflight conditional with `servicing`, and enables stable versions; rerun final CI after it merges. |
 | **`Bug template lists SR version`** | All SR runs | `CLEANUP` if `.github/ISSUE_TEMPLATE/bug-report.yml` on `main` is missing an entry for the SR being shipped (users can't file bugs against the version) — post-release housekeeping, not a ship blocker. |
-| **`Main bumped to next SR cycle`** | All SR runs | `BLOCKED` if the next SR cycle's version hasn't been promoted on `main`. The next action emits the exact one-line `PatchVersion` edit and PR title while preserving the mainline SDK-band and prerelease settings. |
+| **`<fixes source> bumped to next SR cycle`** | Cut/shipped SR runs | `BLOCKED` if the next SR cycle's version has not advanced on the resolved fixes source (`net11` for this train). Feature-main moving to .NET12 does not satisfy this check. |
 | **`BAR default-channel mapping`** | SR branches matching `release/X.Y.Zxx-srN` | `BLOCKED` if the SR branch is not wired to the `.NET <band> SDK` channel in BAR. `UNKNOWN` if `darc` isn't on PATH (report includes the exact verification command). |
 | **`BAR build for SR HEAD`** | SR branches with the SR HEAD SHA resolved | `READY` if BAR has a published build for the SR HEAD commit. `WATCH` (not blocking — transient) if CI hasn't published one yet. `UNKNOWN` if `darc` isn't on PATH or the build lookup fails (report includes the exact verification command). |
 | **`Ship Assessment validation feed`** | SR branches with the SR HEAD SHA resolved | `READY` surfaces the per-build `darc-pub-dotnet-maui-<sha8>` NuGet feed URL to paste into the DevDiv ship **Assessment**, once `darc get-asset` confirms the build's published `NugetFeed` location. `WATCH` if the build isn't promoted to a channel yet (no channel → no feed → the Assessment has no validation feed to link — the SR9 miss), or if a promoted build's `NugetFeed` location isn't confirmed by `darc get-asset` yet (don't link the guessed per-build endpoint before BAR publishes it — `--skip-assets-publishing` can leave it missing). `UNKNOWN` when `darc` is unavailable or the build lookup fails, so the feed can't be resolved. |
@@ -521,10 +630,11 @@ The SR readiness report rolls operational checks into a single **Blocking** summ
 | **`CI Failure Scanner signals`** | All SR runs | `WATCH` if fresh ci-scan issues are filed in the last 24h. |
 | **`Known Build Errors`** | All SR runs | `WATCH` if open Known Build Error issues exist that may explain background CI noise. |
 
-### Next-cycle main bump workflow
+### Next-cycle fixes-source bump workflow
 
-After `release/<major>.0.1xx-sr<N>` is cut, `main` must move to the next SR
-cycle before SR<N> ships. Use a focused PR targeting `main`:
+After `release/<major>.0.1xx-sr<N>` is cut, the resolved fixes source must move
+to the next SR cycle before SR<N> ships. For active .NET11 target `net11`,
+not .NET12 feature-main. Use a focused source-branch PR:
 
 1. Change only `PatchVersion` in `eng/Versions.props` from the current SR
    patch to `(N+1)*10`.
@@ -540,11 +650,11 @@ For SR9 → SR10, the complete source change is:
 +    <PatchVersion>100</PatchVersion>
 ```
 
-This is the same one-file, one-line pattern used for SR8 in
+The historical `main` examples use the same one-file, one-line pattern for SR8 in
 [#35433](https://github.com/dotnet/maui/pull/35433) (`70` → `80`) and SR9 in
 [#35879](https://github.com/dotnet/maui/pull/35879) (`80` → `90`). The skill
 remains report-only: it must explain this PR precisely, never edit or push
-`main` itself.
+the fixes branch itself.
 
 ### Expected ship date
 
@@ -627,7 +737,21 @@ Key functions (all PURE except the one network call, which is **fail-open** — 
 
 Determinism / idempotency: the engine captures **one** `UtcNow` per run (`$Data['nightlyFeedNow']`) and reuses it for both the rendered banner and the semantic-hash tier, so a quiet SR tracker still refreshes when the feed crosses a tier boundary, but a same-tier day-count tick does **not** churn the issue. The freshness band is folded into `Get-ReportSemanticHash` (tier|version only — the raw timestamp is never hashed).
 
-**When the banner is ❌ (feed STALE):** the dogfood bits have stopped flowing because the nightly **official signed build** is failing — pipeline `dotnet-maui` (definition **1095**, org `dnceng` / project `internal`), defined by [`eng/pipelines/ci-official.yml`](../../../eng/pipelines/ci-official.yml) and scheduled daily on `inflight/current`. See the [`azdo-build-investigator`](../azdo-build-investigator/SKILL.md) skill's **Nightly / Official Signed Build (inflight dogfood feed)** section for the investigation recipe and the recurring `vs-workload.props` (`MSB4019`) failure in the `Pack Windows` → "Build Workloads, Sign & Publish" step.
+For the configured train, the banner scopes `ci.inflight` to the version base
+read from the resolver's active `nightlyBranch`. It never falls back to fresh
+`ci.main` or a retained older inflight band. Missing active-ref metadata renders
+UNKNOWN; missing matching feed assets render no-match. Historical per-major
+fallback behavior remains unchanged.
+In versioned mode the selected nightly ref must also carry its SR patch decade:
+`inflight/...-sr2` with `PatchVersion=10` is explicitly UNKNOWN, not a coherent
+SR2 package lane. The report surfaces a `Configured nightly lane metadata`
+UNKNOWN check; it does not bump the branch or borrow another lane's feed.
+
+**When the banner is ❌ (feed STALE):** investigate the configured active
+nightly lane's official `dotnet-maui` build (definition **1095**,
+`dnceng/internal`) with `azdo-build-investigator`. Stale feed evidence alone
+does **not** prove which signed build failed; configuration and feed publication
+are not signed-build proof. Public Actions never receives internal credentials.
 
 ## Integration
 
@@ -645,19 +769,21 @@ Determinism / idempotency: the engine captures **one** `UtcNow` per run (`$Data[
 
 > ❌ **Don't run with `-InferRegressionLabels` for automated workflows** without surfacing the inferred labels for confirmation. Label inference is brittle for non-standard SR cycles.
 
-> ❌ **Don't infer "in-flight" from branch existence alone.** The detector uses the **tag-existence rule** — a release is in-flight if and only if its expected tag has not been published. Branches can linger after their release ships (and SR branches don't exist yet for SR candidates).
+> ❌ **Don't infer shipping from manual tags for the configured train.** Its progress uses cycle state and pinned branch snapshots. Historical/unconfigured and Preview/RC reporting retain their existing tag rules.
 
 ## Tests
 
 ```powershell
-pwsh -NoProfile -File .github/skills/release-readiness/tests/Test-ReleaseReadiness.ps1
+pwsh -NoProfile -File .github/skills/release-readiness/tests/Test-ReleaseReadiness.ps1 -SkipE2E
+pwsh -NoProfile -File .github/skills/release-readiness/tests/Test-ReleaseBranchRoles.ps1
+pwsh -NoProfile -File .github/skills/release-readiness/tests/Test-ReleaseHandoff.ps1
 ```
 
 The harness covers:
 
-- **Lane 1–4 detection** (shipped patch set, SR-from-main candidate, in-flight SR branches, preview lane) against the live `dotnet/maui` clone
-- **Tracker emission** for SR2/SR3 (inactive), SR8 (active in-flight), SR9 (active candidate), and net11 preview6 (active candidate)
-- **`-AllActiveMajors`** end-to-end across net10 + net11 with the expected tracker counts
+- **Role/detection fixtures** for main12 + literal net11 + staged SR1 + versioned SR2 nightly, legacy .NET10, state rotation, absent GA baseline, `.0`/`.100` Preview/RC tag retirement, and source/survey overrides. No remote services or workflow-YAML assertions are added.
+- **Actual SR JSON/Markdown and handoff shapes** from isolated Git repositories: selected contents exclude newer source/main features; SR1 never invents SR0; source version advance is independent of main12; versioned nightly metadata mismatches remain UNKNOWN.
+- **Optional historical live E2E** remains available by omitting `-SkipE2E`; its SR7-era known-answer scenarios require matching historical refs and are not the current-train validation gate.
 - **`Get-ReleaseReadiness`** verdict classification using known-answer data from the SR7 readiness analysis (e.g. #35313 → `in-sr-active`, #35344 → `in-sr-active` via the SafeArea follow-on fix, #35771 → `no-fix-yet`)
 - **Idempotent body hash** stability across re-runs — **SR trackers only** (the scheduled/event-driven workflow compares the embedded `<!-- release-readiness-hash: sha=... -->` marker against the live issue and skips the edit when the semantic content is unchanged, so re-runs don't churn the tracker). Preview trackers carry no hash marker and are refreshed on every scheduled run.
 - **Nightly dogfood feed banner** (`NightlyFeed.ps1`) — offline unit coverage for the lane-label honest-labeling rule (`Format-NightlyFeedLaneLabel`), the `ci.inflight`-first / `ci.main`-false-green resolver, age→tier bucketing, the fail-open feed query (mocked `-Fetcher`), and the banner's fold into `Get-ReportSemanticHash` (tier change refreshes, same-tier day tick does not). All network-free via injected fixtures and explicit `-Now`.

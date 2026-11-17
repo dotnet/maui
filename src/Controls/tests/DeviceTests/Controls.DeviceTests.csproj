@@ -80,4 +80,9 @@
 
   <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
 
+  <ItemGroup>
+    <!-- Keep this reproduction on the pinned SourceGen path, even if the project default changes. -->
+    <MauiXaml Update="Xaml\Maui34499ItemListView.xaml" Inflator="SourceGen" />
+  </ItemGroup>
+
 </Project>

@@ -5394,6 +5394,7 @@ Microsoft.Maui.Controls.GestureState.Failed = 3 -> Microsoft.Maui.Controls.Gestu
 Microsoft.Maui.Controls.GestureState.Possible = 5 -> Microsoft.Maui.Controls.GestureState
 Microsoft.Maui.Controls.GestureState.Update = 1 -> Microsoft.Maui.Controls.GestureState
 Microsoft.Maui.Controls.GradientBrush
+Microsoft.Maui.Controls.GradientBrush.~GradientBrush() -> void
 Microsoft.Maui.Controls.GradientBrush.GradientBrush() -> void
 Microsoft.Maui.Controls.GradientBrush.InvalidateGradientBrushRequested -> System.EventHandler
 Microsoft.Maui.Controls.GradientStop
@@ -6503,6 +6504,7 @@ Microsoft.Maui.Controls.PanUpdatedEventArgs.TotalX.get -> double
 Microsoft.Maui.Controls.PanUpdatedEventArgs.TotalY.get -> double
 Microsoft.Maui.Controls.ParentChangingEventArgs
 Microsoft.Maui.Controls.Picker
+Microsoft.Maui.Controls.Picker.~Picker() -> void
 Microsoft.Maui.Controls.Picker.CharacterSpacing.get -> double
 Microsoft.Maui.Controls.Picker.CharacterSpacing.set -> void
 Microsoft.Maui.Controls.Picker.Closed -> System.EventHandler<Microsoft.Maui.Controls.PickerClosedEventArgs>
@@ -7481,6 +7483,7 @@ Microsoft.Maui.Controls.ShellAppearance.FlyoutHeight.get -> double
 Microsoft.Maui.Controls.ShellAppearance.FlyoutWidth.get -> double
 Microsoft.Maui.Controls.ShellAppearance.MakeComplete() -> void
 Microsoft.Maui.Controls.ShellContent
+Microsoft.Maui.Controls.ShellContent.~ShellContent() -> void
 Microsoft.Maui.Controls.ShellContent.QueryString.get -> string?
 Microsoft.Maui.Controls.ShellContent.QueryString.set -> void
 Microsoft.Maui.Controls.ShellContent.ShellContent() -> void
@@ -7684,6 +7687,7 @@ Microsoft.Maui.Controls.SwipeItemView.SwipeItemView() -> void
 Microsoft.Maui.Controls.SwipeStartedEventArgs
 Microsoft.Maui.Controls.SwipeStartedEventArgs.SwipeStartedEventArgs(Microsoft.Maui.SwipeDirection swipeDirection) -> void
 Microsoft.Maui.Controls.SwipeView
+Microsoft.Maui.Controls.SwipeView.~SwipeView() -> void
 Microsoft.Maui.Controls.SwipeView.Close(bool animated = true) -> void
 Microsoft.Maui.Controls.SwipeView.CloseRequested -> System.EventHandler<Microsoft.Maui.Controls.CloseRequestedEventArgs>
 Microsoft.Maui.Controls.SwipeView.Open(Microsoft.Maui.OpenSwipeItem openSwipeItem, bool animated = true) -> void

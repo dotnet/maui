@@ -16,9 +16,16 @@ public class Issue24583 : _IssuesUITest
 	[Category(UITestCategories.Editor)]
 	public void TextInEditorShouldBeCorrectlyPositionedAfterResizing()
 	{
+		Exception? exception = null;
+
 		App.WaitForElement("button");
-		VerifyScreenshot("TextsInEditorsBeforeScaling");
+		VerifyScreenshotOrSetException(ref exception, "TextsInEditorsBeforeScaling");
 		App.Click("button");
-		VerifyScreenshot("TextsInEditorsAfterScaling");
+		VerifyScreenshotOrSetException(ref exception, "TextsInEditorsAfterScaling");
+
+		if (exception is not null)
+		{
+			throw exception;
+		}
 	}
 }
