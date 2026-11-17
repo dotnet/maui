@@ -1,3 +1,221 @@
-﻿<ContentPage x:Class="Maui.Controls.Sample.MainPage"
-             xmlns:local="clr-namespace:Maui.Controls.Sample">
+<ContentPage x:Class="Maui.Controls.Sample.MainPage"
+             xmlns:anim="http://schemas.microsoft.com/dotnet/2021/maui/animations"
+             Title="Keyframe animations prototype"
+             BackgroundColor="White">
+
+    <ContentPage.Resources>
+
+        <!-- Entrance: fades and slides the header in every time it loads. Trim-safe, no EventTrigger. -->
+        <anim:Storyboard x:Key="Entrance" Duration="0:0:0.7">
+            <anim:KeyFrame Cue="0%">
+                <Setter Property="VisualElement.Opacity" Value="0" />
+                <Setter Property="VisualElement.TranslationY" Value="24" />
+            </anim:KeyFrame>
+            <anim:KeyFrame Cue="100%" Easing="CubicOut">
+                <Setter Property="VisualElement.Opacity" Value="1" />
+                <Setter Property="VisualElement.TranslationY" Value="0" />
+            </anim:KeyFrame>
+        </anim:Storyboard>
+
+        <!-- Keyframes with per-segment easing: the easing shapes the segment ARRIVING at its keyframe. -->
+        <anim:Storyboard x:Key="LikePop" Duration="0:0:0.8" TargetName="Heart">
+            <anim:KeyFrame Cue="0%">
+                <Setter Property="VisualElement.Scale" Value="1" />
+                <Setter Property="VisualElement.Rotation" Value="0" />
+            </anim:KeyFrame>
+            <anim:KeyFrame Cue="22%" Easing="CubicOut">
+                <Setter Property="VisualElement.Scale" Value="1.6" />
+                <Setter Property="VisualElement.Rotation" Value="-14" />
+            </anim:KeyFrame>
+            <anim:KeyFrame Cue="40%" Easing="CubicIn">
+                <Setter Property="VisualElement.Scale" Value="0.85" />
+                <Setter Property="VisualElement.Rotation" Value="10" />
+            </anim:KeyFrame>
+            <anim:KeyFrame Cue="100%" Easing="Spring(0.55)">
+                <Setter Property="VisualElement.Scale" Value="1" />
+                <Setter Property="VisualElement.Rotation" Value="0" />
+            </anim:KeyFrame>
+        </anim:Storyboard>
+
+        <!-- No cues at all: the engine spreads the six keyframes evenly over the duration. -->
+        <anim:Storyboard x:Key="Shake" Duration="0:0:0.5" TargetName="CodeBox" Easing="SinInOut">
+            <anim:KeyFrame><Setter Property="VisualElement.TranslationX" Value="0" /></anim:KeyFrame>
+            <anim:KeyFrame><Setter Property="VisualElement.TranslationX" Value="-16" /></anim:KeyFrame>
+            <anim:KeyFrame><Setter Property="VisualElement.TranslationX" Value="13" /></anim:KeyFrame>
+            <anim:KeyFrame><Setter Property="VisualElement.TranslationX" Value="-8" /></anim:KeyFrame>
+            <anim:KeyFrame><Setter Property="VisualElement.TranslationX" Value="4" /></anim:KeyFrame>
+            <anim:KeyFrame><Setter Property="VisualElement.TranslationX" Value="0" /></anim:KeyFrame>
+        </anim:Storyboard>
+
+        <!-- One looping storyboard, three targets: setters pick their element with TargetName. -->
+        <anim:Storyboard x:Key="Typing" Duration="0:0:1.2" RepeatBehavior="Forever" Easing="SinInOut">
+            <anim:KeyFrame Cue="0%">
+                <Setter TargetName="Dot1" Property="VisualElement.TranslationY" Value="0" />
+                <Setter TargetName="Dot2" Property="VisualElement.TranslationY" Value="0" />
+                <Setter TargetName="Dot3" Property="VisualElement.TranslationY" Value="0" />
+            </anim:KeyFrame>
+            <anim:KeyFrame Cue="15%">
+                <Setter TargetName="Dot1" Property="VisualElement.TranslationY" Value="-12" />
+                <Setter TargetName="Dot2" Property="VisualElement.TranslationY" Value="0" />
+            </anim:KeyFrame>
+            <anim:KeyFrame Cue="30%">
+                <Setter TargetName="Dot1" Property="VisualElement.TranslationY" Value="0" />
+                <Setter TargetName="Dot2" Property="VisualElement.TranslationY" Value="-12" />
+                <Setter TargetName="Dot3" Property="VisualElement.TranslationY" Value="0" />
+            </anim:KeyFrame>
+            <anim:KeyFrame Cue="45%">
+                <Setter TargetName="Dot2" Property="VisualElement.TranslationY" Value="0" />
+                <Setter TargetName="Dot3" Property="VisualElement.TranslationY" Value="-12" />
+            </anim:KeyFrame>
+            <anim:KeyFrame Cue="60%">
+                <Setter TargetName="Dot3" Property="VisualElement.TranslationY" Value="0" />
+            </anim:KeyFrame>
+        </anim:Storyboard>
+
+        <!-- A lone keyframe at 100%: animates from wherever the value is now. -->
+        <anim:Storyboard x:Key="FadeOut" Duration="0:0:0.6">
+            <anim:KeyFrame Cue="100%" Easing="CubicOut">
+                <Setter Property="VisualElement.Opacity" Value="0.2" />
+            </anim:KeyFrame>
+        </anim:Storyboard>
+
+    </ContentPage.Resources>
+
+    <Grid RowDefinitions="Auto,*,Auto" Padding="20,12,20,16" RowSpacing="10">
+
+        <VerticalStackLayout x:Name="Header" Spacing="2" anim:Storyboard.PlayOnLoaded="{StaticResource Entrance}">
+            <Label Text="Animations prototype" FontSize="26" FontAttributes="Bold" TextColor="#1C1C1E" />
+            <Label x:Name="Caption" Text="VisualTransition · Storyboard · KeyFrame" FontSize="14" TextColor="#636366" />
+        </VerticalStackLayout>
+
+        <VerticalStackLayout Grid.Row="1" Spacing="14">
+
+            <!-- 1. Visual state transitions: the state changes at once, the properties animate. -->
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="14">
+                <Border x:Name="Card" StrokeShape="RoundRectangle 18" StrokeThickness="2" Padding="16,14">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnCardTapped" />
+                    </Border.GestureRecognizers>
+                    <VisualStateManager.VisualStateGroups>
+                        <VisualStateGroup Name="SelectionStates">
+                            <VisualStateGroup.Transitions>
+                                <anim:VisualTransition To="Selected" Duration="0:0:0.5" Easing="Spring(0.45)" />
+                                <anim:VisualTransition To="Normal" Duration="0:0:0.3" Easing="CubicOut" />
+                            </VisualStateGroup.Transitions>
+                            <VisualState Name="Normal">
+                                <VisualState.Setters>
+                                    <Setter Property="Background" Value="#F2F2F7" />
+                                    <Setter Property="Stroke" Value="#D1D1D6" />
+                                    <Setter Property="Scale" Value="1" />
+                                    <Setter TargetName="CardTitle" Property="Label.TextColor" Value="#1C1C1E" />
+                                </VisualState.Setters>
+                            </VisualState>
+                            <VisualState Name="Selected">
+                                <VisualState.Setters>
+                                    <Setter Property="Background" Value="#5B5BD6" />
+                                    <Setter Property="Stroke" Value="#3434A8" />
+                                    <Setter Property="Scale" Value="1.06" />
+                                    <Setter TargetName="CardTitle" Property="Label.TextColor" Value="White" />
+                                </VisualState.Setters>
+                            </VisualState>
+                        </VisualStateGroup>
+                    </VisualStateManager.VisualStateGroups>
+                    <Label x:Name="CardTitle" Text="Tap to select" FontSize="17" FontAttributes="Bold" />
+                </Border>
+
+                <Button x:Name="PressButton" Grid.Column="1" Text="Press" WidthRequest="96" CornerRadius="14" TextColor="White">
+                    <VisualStateManager.VisualStateGroups>
+                        <VisualStateGroup Name="CommonStates">
+                            <VisualStateGroup.Transitions>
+                                <anim:VisualTransition To="Pressed" Duration="0:0:0.08" Easing="CubicOut" />
+                                <anim:VisualTransition Duration="0:0:0.45" Easing="Spring(0.5)" />
+                            </VisualStateGroup.Transitions>
+                            <VisualState Name="Normal">
+                                <VisualState.Setters>
+                                    <Setter Property="Scale" Value="1" />
+                                    <Setter Property="BackgroundColor" Value="#0A84FF" />
+                                </VisualState.Setters>
+                            </VisualState>
+                            <VisualState Name="Pressed">
+                                <VisualState.Setters>
+                                    <Setter Property="Scale" Value="0.88" />
+                                    <Setter Property="BackgroundColor" Value="#0050C8" />
+                                </VisualState.Setters>
+                            </VisualState>
+                            <VisualState Name="PointerOver" />
+                            <VisualState Name="Disabled">
+                                <VisualState.Setters>
+                                    <Setter Property="BackgroundColor" Value="#C7C7CC" />
+                                </VisualState.Setters>
+                            </VisualState>
+                        </VisualStateGroup>
+                    </VisualStateManager.VisualStateGroups>
+                </Button>
+            </Grid>
+
+            <!-- 2. Keyframe storyboards, plus a visual state transition on the heart's color. -->
+            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="16">
+                <Label x:Name="Heart" Text="&#x2665;&#xFE0E;" FontSize="54" WidthRequest="70" HorizontalTextAlignment="Center" VerticalTextAlignment="Center">
+                    <Label.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnHeartTapped" />
+                    </Label.GestureRecognizers>
+                    <VisualStateManager.VisualStateGroups>
+                        <VisualStateGroup Name="LikeStates">
+                            <VisualStateGroup.Transitions>
+                                <anim:VisualTransition Duration="0:0:0.35" Easing="CubicOut" />
+                            </VisualStateGroup.Transitions>
+                            <VisualState Name="NotLiked">
+                                <VisualState.Setters>
+                                    <Setter Property="TextColor" Value="#C7C7CC" />
+                                </VisualState.Setters>
+                            </VisualState>
+                            <VisualState Name="Liked">
+                                <VisualState.Setters>
+                                    <Setter Property="TextColor" Value="#FF2D55" />
+                                </VisualState.Setters>
+                            </VisualState>
+                        </VisualStateGroup>
+                    </VisualStateManager.VisualStateGroups>
+                </Label>
+
+                <Border x:Name="CodeBox" Grid.Column="1" StrokeShape="RoundRectangle 12" Stroke="#D1D1D6" Padding="12,10" VerticalOptions="Center">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnShakeTapped" />
+                    </Border.GestureRecognizers>
+                    <Label Text="Wrong code? Tap to shake" FontSize="15" TextColor="#3A3A3C" />
+                </Border>
+            </Grid>
+
+            <!-- 3. A looping storyboard with three targets, started and stopped from code. -->
+            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="16">
+                <Border StrokeShape="RoundRectangle 18" Stroke="Transparent" Background="#E5E5EA" Padding="16,12">
+                    <HorizontalStackLayout Spacing="7" HeightRequest="20" VerticalOptions="Center">
+                        <Ellipse x:Name="Dot1" Fill="#8E8E93" WidthRequest="10" HeightRequest="10" VerticalOptions="End" />
+                        <Ellipse x:Name="Dot2" Fill="#8E8E93" WidthRequest="10" HeightRequest="10" VerticalOptions="End" />
+                        <Ellipse x:Name="Dot3" Fill="#8E8E93" WidthRequest="10" HeightRequest="10" VerticalOptions="End" />
+                    </HorizontalStackLayout>
+                </Border>
+                <Button x:Name="TypingButton" Grid.Column="1" Text="Start typing" Clicked="OnTypingClicked" BackgroundColor="#E5E5EA" TextColor="#1C1C1E" CornerRadius="14" />
+            </Grid>
+
+            <!-- 4. Bindings stay live: both boxes bind Opacity to the slider. -->
+            <VerticalStackLayout Spacing="8">
+                <Label Text="Opacity bound to the slider" FontSize="13" TextColor="#636366" />
+                <Slider x:Name="OpacitySlider" Minimum="0" Maximum="1" Value="1" />
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                    <Border x:Name="LegacyBox" StrokeShape="RoundRectangle 12" Stroke="Transparent" Background="#FF9F0A" Padding="10" HeightRequest="64"
+                            Opacity="{Binding Value, Source={x:Reference OpacitySlider}}">
+                        <Label Text="FadeToAsync (today)" TextColor="White" FontAttributes="Bold" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" />
+                    </Border>
+                    <Border x:Name="NewBox" Grid.Column="1" StrokeShape="RoundRectangle 12" Stroke="Transparent" Background="#30B0C7" Padding="10" HeightRequest="64"
+                            Opacity="{Binding Value, Source={x:Reference OpacitySlider}}">
+                        <Label Text="Storyboard (new)" TextColor="White" FontAttributes="Bold" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" />
+                    </Border>
+                </Grid>
+                <Button x:Name="FadeButton" Text="Fade both to 0.2" Clicked="OnFadeClicked" BackgroundColor="#1C1C1E" TextColor="White" CornerRadius="14" />
+            </VerticalStackLayout>
+        </VerticalStackLayout>
+
+        <Label x:Name="Status" Grid.Row="2" FontSize="13" TextColor="#8E8E93" Text="Ready" />
+    </Grid>
 </ContentPage>
