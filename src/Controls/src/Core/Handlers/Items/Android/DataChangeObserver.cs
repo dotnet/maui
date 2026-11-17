@@ -9,17 +9,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 	internal class DataChangeObserver : RecyclerView.AdapterDataObserver
 	{
 		IntPtr _adapter;
-		Adapter _observedAdapter;
 		readonly Action _onDataChange;
-		readonly Func<int> _trailingWindow;
+		readonly Func<int> _lastRowStart;
 
 		public bool Observing { get; private set; }
 
-		// trailingWindow: when set, only report items inserted or removed within that many positions of the end of the adapter
-		public DataChangeObserver(Action onDataChange, Func<int> trailingWindow = null) : base()
+		// lastRowStart: when set, only report items inserted or removed after that adapter position (read after the change)
+		public DataChangeObserver(Action onDataChange, Func<int> lastRowStart = null) : base()
 		{
 			_onDataChange = onDataChange;
-			_trailingWindow = trailingWindow;
+			_lastRowStart = lastRowStart;
 		}
 
 		public void Start(Adapter adapter)
@@ -32,7 +31,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			adapter.RegisterAdapterDataObserver(this);
 
 			_adapter = adapter.Handle;
-			_observedAdapter = adapter;
 			Observing = true;
 		}
 
@@ -44,7 +42,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			_adapter = IntPtr.Zero;
-			_observedAdapter = null;
 			Observing = false;
 		}
 
@@ -52,7 +49,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			base.OnChanged();
 
-			if (_trailingWindow is null)
+			if (_lastRowStart is null)
 			{
 				_onDataChange?.Invoke();
 			}
@@ -62,7 +59,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			base.OnItemRangeInserted(positionStart, itemCount);
 
-			if (_trailingWindow is null || positionStart + _trailingWindow() > ItemCount - itemCount)
+			if (_lastRowStart is null || positionStart + itemCount > _lastRowStart())
 			{
 				_onDataChange?.Invoke();
 			}
@@ -72,7 +69,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			base.OnItemRangeChanged(positionStart, itemCount);
 
-			if (_trailingWindow is null)
+			if (_lastRowStart is null)
 			{
 				_onDataChange?.Invoke();
 			}
@@ -82,7 +79,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			base.OnItemRangeChanged(positionStart, itemCount, payload);
 
-			if (_trailingWindow is null)
+			if (_lastRowStart is null)
 			{
 				_onDataChange?.Invoke();
 			}
@@ -92,7 +89,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			base.OnItemRangeRemoved(positionStart, itemCount);
 
-			if (_trailingWindow is null || positionStart + _trailingWindow() > ItemCount)
+			if (_lastRowStart is null || positionStart > _lastRowStart())
 			{
 				_onDataChange?.Invoke();
 			}
@@ -102,13 +99,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			base.OnItemRangeMoved(fromPosition, toPosition, itemCount);
 
-			if (_trailingWindow is null)
+			if (_lastRowStart is null)
 			{
 				_onDataChange?.Invoke();
 			}
 		}
-
-		int ItemCount => _observedAdapter?.ItemCount ?? 0;
 
 		bool IsValidAdapter(Adapter adapter)
 		{
