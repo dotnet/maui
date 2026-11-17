@@ -777,6 +777,19 @@ internal sealed class XamlHotReloadLiveSession : IDisposable
 				edits.Add(new SemanticEdit(SemanticEditKind.Update, previousUpdateComponent, nextUpdateComponent));
 			}
 
+			// Like Roslyn, only list the companion signal type when its content changed.
+			var previousSignal = GetSignalFingerprint(previousType);
+			var nextSignal = GetSignalFingerprint(nextType);
+			if (previousSignal is not null && nextSignal is not null
+				&& !string.Equals(
+					previousSignal.DeclaringSyntaxReferences.Single().GetSyntax().ToString(),
+					nextSignal.DeclaringSyntaxReferences.Single().GetSyntax().ToString(),
+					StringComparison.Ordinal))
+			{
+				edits.Add(new SemanticEdit(SemanticEditKind.Update, previousSignal, nextSignal));
+				affectedTypes.Add($"{nextRoot.TypeName}+{nextSignal.ContainingType.Name}");
+			}
+
 			foreach (var nextField in nextType.GetMembers().OfType<IFieldSymbol>())
 			{
 				if (previousType.GetMembers(nextField.Name).OfType<IFieldSymbol>().Any())
@@ -815,6 +828,13 @@ internal sealed class XamlHotReloadLiveSession : IDisposable
 			insertedSymbols.ToImmutable(),
 			affectedTypes.ToImmutable());
 	}
+
+	static IMethodSymbol? GetSignalFingerprint(INamedTypeSymbol rootType) =>
+		rootType.GetTypeMembers(UpdateComponentCodeWriter.SignalTypeName)
+			.SingleOrDefault()
+			?.GetMembers("Fingerprint")
+			.OfType<IMethodSymbol>()
+			.SingleOrDefault();
 
 	static IMethodSymbol GetPartialImplementation(INamedTypeSymbol type, string methodName)
 	{

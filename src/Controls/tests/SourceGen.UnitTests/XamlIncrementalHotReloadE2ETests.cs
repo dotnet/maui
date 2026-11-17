@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Reflection.Metadata;
 using System.Runtime.CompilerServices;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.SourceGen;
 using Microsoft.Maui.Controls.SourceGen.UnitTests.HotReload;
 using Microsoft.Maui.Controls.Xaml;
@@ -362,17 +363,17 @@ public class XamlIncrementalHotReloadE2ETests
 	}
 
 	/// <summary>
-	/// Diagnostics classification (Kirill Ovchinnikov's requirement), the "empty UpdateComponent" design.
-	/// <c>UpdateComponent()</c> is always present (member stability / no EnC churn), but its BODY is empty
-	/// when a generation carries no XAML change and non-empty (a patch) when the XAML changed. The runtime
-	/// classifies a delta as a XAML change — SYNCHRONOUSLY, pre-dispatch, on
-	/// <c>HotReloadRequestedEventArgs.HandledTypes</c>, exactly where XamlTools reads it today — by
-	/// inspecting whether <c>UpdateComponent()</c>'s body is non-empty. An empty UC (a page whose XAML did
-	/// not change, e.g. a pure C#/code-behind edit) is correctly NOT reported as a XAML change. No live
-	/// instance or main-thread dispatcher is needed: classification is a property of the type's UC body.
+	/// Diagnostics classification (Kirill Ovchinnikov's requirement). <c>UpdateComponent()</c> is always
+	/// present (member stability / no EnC churn) and keeps the pending patch across later generations, so
+	/// the generator also nests a companion signal type in the root whose content only changes with the
+	/// patch. The runtime classifies a delta as a XAML change — SYNCHRONOUSLY, pre-dispatch, on
+	/// <c>HotReloadRequestedEventArgs.HandledTypes</c>, exactly where XamlTools reads it today — when the
+	/// delta lists that companion and <c>UpdateComponent()</c> is not empty. A delta that only lists the
+	/// root (a pure C#/code-behind edit) is NOT reported as a XAML change, even with a pending patch. No
+	/// live instance or main-thread dispatcher is needed.
 	/// </summary>
 	[MetadataUpdateFact]
-	public void UpdateRequested_ReportsXamlChange_WhenUpdateComponentBodyIsNonEmpty()
+	public void UpdateRequested_ReportsXamlChange_WhenSignalTypeIsUpdated()
 	{
 		const string switchName = "Microsoft.Maui.RuntimeFeature.IsIncrementalHotReloadEnabled";
 		AppContext.TryGetSwitch(switchName, out var previousSwitch);
@@ -406,24 +407,86 @@ public class XamlIncrementalHotReloadE2ETests
 			{
 				var page = live.GetInstance<ContentPage>();
 				var pageType = page.GetType();
+				var signalType = pageType.GetNestedType("__XamlHotReloadSignal", BindingFlags.NonPublic);
+				Assert.NotNull(signalType);
 				XamlComponentRegistry.Unregister(page);
 
 				// The loaded type's UpdateComponent() is EMPTY → the update is NOT a XAML change.
-				XamlIncrementalHotReloadHandler.UpdateApplication([pageType]);
+				XamlIncrementalHotReloadHandler.UpdateApplication([pageType, signalType!]);
 				Assert.NotNull(lastHandled);
 				Assert.DoesNotContain(pageType, lastHandled!);
 
-				// Apply the V1→V2 delta: UpdateComponent()'s body becomes non-empty. The same notification
-				// now classifies the type as a XAML change.
+				// Apply the V1→V2 delta: UpdateComponent()'s body becomes the patch and the signal changes.
 				live.ApplyUpdate<ContentPage>(1);
+				XamlIncrementalHotReloadHandler.UpdateApplication([pageType, signalType!]);
+				Assert.NotNull(lastHandled);
+				Assert.Equal([pageType], lastHandled!);
+
+				// A later delta that doesn't touch the signal (pure C# edit) is not a XAML change, even
+				// though UpdateComponent() still holds the patch.
 				XamlIncrementalHotReloadHandler.UpdateApplication([pageType]);
 				Assert.NotNull(lastHandled);
-				Assert.Contains(pageType, lastHandled!);
+				Assert.Empty(lastHandled!);
 			});
 		}
 		finally
 		{
 			HotReloadDiagnostics.UpdateRequested -= capture;
+			AppContext.SetSwitch(switchName, previousSwitch);
+		}
+	}
+
+	/// <summary>
+	/// https://github.com/dotnet/maui/issues/36937: after a XAML edit, a C#-only edit re-emits the same
+	/// patch. Its delta must not re-apply the patch to live instances (patches aren't always idempotent).
+	/// </summary>
+	[MetadataUpdateFact]
+	public void CSharpOnlyEditAfterXamlEdit_DoesNotReapplyPatch()
+	{
+		const string switchName = "Microsoft.Maui.RuntimeFeature.IsIncrementalHotReloadEnabled";
+		AppContext.TryGetSwitch(switchName, out var previousSwitch);
+		AppContext.SetSwitch(switchName, true);
+		// MainThread.SetCustomImplementation is internal to Essentials: dispatch inline, like the other runtime-handler tests.
+		typeof(MainThread).GetMethod("SetCustomImplementation", BindingFlags.Static | BindingFlags.NonPublic, null, [typeof(Func<bool>), typeof(Action<Action>)], null)!
+			.Invoke(null, [() => true, (Action<Action>)(action => action())]);
+
+		string Page(string text) => $$"""
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestE2EApp.MainPage">
+			    <VerticalStackLayout>
+			        <Label Text="{{text}}" />
+			    </VerticalStackLayout>
+			</ContentPage>
+			""";
+		var pageStubEdited = PageStub.Replace("InitializeComponent();", "InitializeComponent();\n\t\tTitle = \"Edited\";", StringComparison.Ordinal);
+
+		using var harness = CreateHarness();
+		var generation = harness.GenerateWithPageSources(
+			new XamlHotReloadSourceVersion(Page("Hello"), PageStub),
+			new XamlHotReloadSourceVersion(Page("World"), PageStub),
+			new XamlHotReloadSourceVersion(Page("World"), pageStubEdited));
+		Assert.Equal(generation[1].UpdateComponentSource, generation[2].UpdateComponentSource);
+
+		try
+		{
+			harness.RunLive(generation, live =>
+			{
+				var page = live.GetInstance<ContentPage>();
+				var label = ((Layout)page.Content!).Children.OfType<Label>().Single();
+
+				live.ApplyUpdateThroughRuntimeHandler<ContentPage>(1);
+				Assert.Equal("World", label.Text);
+
+				label.Text = "Changed at runtime";
+				live.ApplyUpdateThroughRuntimeHandler<ContentPage>(2);
+				Assert.Equal("Changed at runtime", label.Text);
+			});
+		}
+		finally
+		{
+			typeof(MainThread).GetMethod("ClearCustomImplementation", BindingFlags.Static | BindingFlags.NonPublic)!.Invoke(null, null);
 			AppContext.SetSwitch(switchName, previousSwitch);
 		}
 	}
