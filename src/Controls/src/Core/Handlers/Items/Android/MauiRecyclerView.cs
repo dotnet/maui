@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_itemsUpdateScrollObserver = new DataChangeObserver(AdjustScrollForItemUpdate);
 			// RecyclerView recomputes the offsets of items it rebinds or shifts (and of every item on a full reset), so only
 			// insertions and removals in the last row can leave items that kept their position with stale edge spacing
-			_itemSpacingObserver = new DataChangeObserver(InvalidateItemSpacing, () => (ItemsViewAdapter?.ItemCount ?? 0) - (ItemsLayout is GridItemsLayout grid ? grid.Span : 1));
+			_itemSpacingObserver = new DataChangeObserver(InvalidateItemSpacing, GetLastRowStart);
 			_dispatchTouchEventToRecyclerView = DispatchTouchEventToRecyclerView;
 			_parentScrollGestureDispatcher = new ParentScrollGestureDispatcher(this);
 		}
@@ -635,14 +635,21 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return new SpacingItemDecoration(Context, itemsLayout);
 		}
 
+		// Only the spacing along the scrolling direction depends on an item's position; the cross-axis spacing is the same for every item
+		bool HasPositionDependentSpacing() =>
+			_itemDecoration is SpacingItemDecoration spacing
+			&& ((ItemsLayout as ItemsLayout)?.Orientation == ItemsLayoutOrientation.Horizontal ? spacing.HorizontalOffset : spacing.VerticalOffset) != 0;
+
+		// Checks the spacing first: ItemCount walks every group of a grouped source
+		int GetLastRowStart() => HasPositionDependentSpacing()
+			? (ItemsViewAdapter?.ItemCount ?? 0) - (ItemsLayout is GridItemsLayout grid ? grid.Span : 1)
+			: int.MaxValue;
+
 		void InvalidateItemSpacing()
 		{
 			// SpacingItemDecoration drops the spacing on the outer edges based on each item's position, but RecyclerView only
 			// recomputes the offsets of items it rebinds or shifts (not the previous last item on an append, for example)
-			// Only the spacing along the scrolling direction depends on the position; the cross-axis spacing is the same for every item
-			if (_itemDecoration is SpacingItemDecoration spacing
-				&& ((ItemsLayout as ItemsLayout)?.Orientation == ItemsLayoutOrientation.Horizontal ? spacing.HorizontalOffset : spacing.VerticalOffset) != 0
-				&& !IsComputingLayout)
+			if (!IsComputingLayout)
 			{
 				InvalidateItemDecorations();
 			}
