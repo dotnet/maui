@@ -289,6 +289,14 @@ namespace Microsoft.Maui.Platform
 			ElementCompositionPreview.SetElementChildVisual(_shadowHost, _shadowVisual);
 		}
 
+		internal void InvalidateShadow()
+		{
+			if (HasShadow)
+			{
+				UpdateShadowAsync().FireAndForget(IPlatformApplication.Current?.Services?.CreateLogger(nameof(WrapperView)));
+			}
+		}
+
 		async Task UpdateShadowAsync()
 		{
 			if (_dropShadow != null)
