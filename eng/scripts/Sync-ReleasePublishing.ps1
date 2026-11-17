@@ -71,6 +71,39 @@ function Fetch-PublishingCommit {
     $null = Invoke-PublishingGit ($arguments + @('--', $roles.repository) + $Commits)
 }
 
+<#
+.SYNOPSIS
+Returns verified evidence when a stable GitHub Release for this SR is tagged at
+the exact live release head, so the published lane is reported instead of
+being re-signed or re-verified against later integration history.
+#>
+function Get-PublishedReleaseLane {
+    param([int] $Sr, [string] $LiveCommit)
+    if ($SandboxPrefix) { return $null }
+    $major = $roles.releaseBand.Split('.')[0]
+    $pages = @(Invoke-PublishingApi @('repos/dotnet/maui/releases?per_page=100', '--paginate', '--slurp'))
+    foreach ($page in $pages) {
+        foreach ($published in @($page)) {
+            $names = $published.PSObject.Properties.Name
+            if (@('tag_name', 'draft', 'prerelease', 'published_at') | Where-Object { $_ -notin $names }) { continue }
+            if ($published.draft -or $published.prerelease -or !$published.published_at -or
+                $published.tag_name -cnotmatch "^$major\.0\.(?<patch>[1-9][0-9]*)$" -or
+                [Math]::Floor([long]$Matches.patch / 10) -ne $Sr) { continue }
+            $object = (Invoke-PublishingApi @("repos/dotnet/maui/git/ref/tags/$($published.tag_name)")).object
+            for ($depth = 0; $object.type -ceq 'tag' -and $depth -lt 4; $depth++) {
+                $object = (Invoke-PublishingApi @("repos/dotnet/maui/git/tags/$($object.sha)")).object
+            }
+            if ($object.type -cne 'commit' -or $object.sha -cne $LiveCommit) { continue }
+            Fetch-PublishingCommit @($LiveCommit)
+            $content = Get-MauiReleaseFile -RepositoryPath $RepositoryPath -Commit $LiveCommit -Path 'eng/Versions.props'
+            $verified = Get-MauiVerifiedPublishedVersion -Release $published -VersionContent $content `
+                -ReleaseBand $roles.releaseBand -CurrentSr $roles.currentSr -TagCommit $LiveCommit
+            if ($verified.sr -eq $Sr) { return $verified }
+        }
+    }
+    $null
+}
+
 function Get-ReleaseAzureHeaders {
     $tenantId = $env:AZDO_TRIGGER_TENANT_ID
     $clientId = $env:AZDO_TRIGGER_CLIENT_ID
@@ -548,6 +581,16 @@ try {
             publicPublicationApprovalRequired = $true; publicPublicationRequested = $false
         }
         $results.Add($entry)
+        if ($release.Count -eq 1) {
+            $published = Get-PublishedReleaseLane -Sr $sr -LiveCommit $release[0].sha
+            if ($published) {
+                $entry.liveReleaseSha = $release[0].sha
+                $entry.publishedRelease = $published
+                $entry.publicPublicationApprovalRequired = $false
+                $entry.status = 'published'
+                continue
+            }
+        }
         if (!$staging.Count) { continue }
         if ($staging.Count -ne 1) { throw 'Ambiguous release staging ref.' }
         Fetch-PublishingCommit @($staging[0].sha)

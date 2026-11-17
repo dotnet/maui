@@ -60,8 +60,10 @@ jobs:
           ./eng/scripts/Sync-ReleasePublishing.ps1 -SyncNightlyMirror -PlanOnly -OutputDirectory '${{ runner.temp }}/nightly-mirror-plan'
 
   mirror-nightly:
+    # Opt-in until the federated identity is onboarded to dnceng; without it every run fails with TF400813.
     if: >-
       github.repository == 'dotnet/maui' &&
+      vars.RELEASE_NIGHTLY_MIRROR_ENABLED == 'true' &&
       github.ref == 'refs/heads/main' &&
       (github.event_name == 'schedule' || github.event_name == 'push' ||
        github.event_name == 'workflow_dispatch' ||
