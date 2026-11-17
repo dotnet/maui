@@ -116,6 +116,40 @@ namespace Microsoft.Maui.DeviceTests
 				}
 			});
 		}
+
+		[Fact]
+		public async Task DoneSelectsFirstItemAfterClearButtonIsDisabled()
+		{
+			var picker = new Picker
+			{
+				Items = { "One", "Two" },
+				SelectedIndex = 1,
+				IsClearButtonVisible = true
+			};
+			_ = await CreateHandlerAsync<PickerHandler>(picker);
+
+			await CreateHandlerAndAddToWindow<PickerHandler>(picker, async handler =>
+			{
+				Assert.False(handler.PlatformView.ShouldClear(handler.PlatformView));
+				Assert.Equal(-1, picker.SelectedIndex);
+
+				picker.IsClearButtonVisible = false;
+				picker.IsOpen = true;
+				await AssertEventually(() => handler.PlatformView.IsFirstResponder);
+				try
+				{
+					var accessory = Assert.IsType<MauiDoneAccessoryView>(handler.PlatformView.InputAccessoryView);
+					accessory.SendDoneClicked();
+					Assert.Equal(0, picker.SelectedIndex);
+					Assert.Equal("One", picker.SelectedItem);
+				}
+				finally
+				{
+					picker.IsOpen = false;
+				}
+			});
+		}
+
 #else
 		[Fact]
 		public async Task ClearButtonKeepsMacCatalystDialogOpen()

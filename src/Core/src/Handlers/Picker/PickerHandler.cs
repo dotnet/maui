@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Handlers
 #elif __IOS__ || MACCATALYST
 			[nameof(IView.IsEnabled)] = static (handler, picker) =>
 			{
-				ViewHandler.MapIsEnabled(handler, picker);
+				ViewMapper.UpdateProperty(handler, picker, nameof(IView.IsEnabled));
 				handler.UpdateValue(nameof(IPickerClearButton.IsClearButtonVisible));
 			},
 #endif
