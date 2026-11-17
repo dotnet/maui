@@ -24,6 +24,10 @@ namespace Microsoft.Maui.Controls.Animations
 
 				_lastTargetTimestamp = 0;
 				_link = CADisplayLink.Create(OnLinkFrame);
+
+				// Up to the display's maximum (120 Hz on ProMotion). On iPhone, rates above 60 Hz also need
+				// CADisableMinimumFrameDurationOnPhone in the app's Info.plist.
+				_link.PreferredFrameRateRange = CAFrameRateRange.Create(30, 120, 120);
 				_link.AddToRunLoop(NSRunLoop.Main, NSRunLoopMode.Common);
 			}
 

@@ -54,9 +54,19 @@ namespace Microsoft.Maui.Controls.Animations
 		public static bool Owns(BindableObject target, BindableProperty property, IAnimationTrackOwner owner)
 			=> ReferenceEquals(GetOwner(target, property), owner);
 
-		/// <summary>Shows <paramref name="value"/> at animation rank (rule 1). The caller must own the track.</summary>
-		public static void Write(BindableObject target, BindableProperty property, object? value)
+		/// <summary>
+		/// Shows <paramref name="value"/> at animation rank (rule 1). The caller must own the track. Returns
+		/// <see langword="false"/>, writing nothing, while the property is in the middle of being set.
+		/// </summary>
+		public static bool Write(BindableObject target, BindableProperty property, object? value)
 			=> target.SetAnimatedValue(property, value!);
+
+		/// <summary>Removes the hold but keeps ownership: the base value shows until the owner writes again.</summary>
+		public static void Clear(BindableObject target, BindableProperty property, IAnimationTrackOwner owner)
+		{
+			if (Owns(target, property, owner))
+				target.ClearAnimatedValue(property);
+		}
 
 		/// <summary>Removes the hold; the highest remaining value is promoted (rule 2).</summary>
 		public static void Release(BindableObject target, BindableProperty property, IAnimationTrackOwner owner)
@@ -79,7 +89,7 @@ namespace Microsoft.Maui.Controls.Animations
 				return;
 
 			target.GetAnimationBaseValue(property, out var baseSpecificity);
-			target.SetValue(property, value, baseSpecificity);
+			target.SetValueForAnimation(property, value, baseSpecificity);
 			Release(target, property, owner);
 		}
 
@@ -91,7 +101,10 @@ namespace Microsoft.Maui.Controls.Animations
 		public static bool IsExcluded(BindableObject target, BindableProperty property)
 			=> target.IsExcludedFromAnimation(property);
 
-		/// <summary>Called by <see cref="BindableObject"/> after a handler write ended a hold (rule 9).</summary>
+		/// <summary>
+		/// Called by <see cref="BindableObject"/> after a hold ended from outside the animation layer: a handler
+		/// wrote a new value (rule 9), or a TwoWay or OneWayToSource binding was attached (rule 8).
+		/// </summary>
 		internal static void OnHandlerWrite(BindableObject target, BindableProperty property)
 		{
 			if (!s_owners.TryGetValue(target, out var owners) || !owners.Map.TryGetValue(property, out var owner))

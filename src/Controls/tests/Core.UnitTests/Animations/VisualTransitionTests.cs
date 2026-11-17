@@ -1,5 +1,6 @@
 using System;
 using Microsoft.Maui.Controls.Animations;
+using Microsoft.Maui.Graphics;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests.Animations
@@ -412,8 +413,312 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Animations
 			Assert.Equal(0.2, box.Opacity);
 		}
 
+		[Fact]
+		public void GoingToTheCurrentStateWithoutTransitionsLandsItsRunningTransition()
+		{
+			var box = CreateLoadedBox();
+			var group = Attach(box,
+				new[] { State("Normal", OpacityProperty, 1.0), State("Pressed", OpacityProperty, 0.5) },
+				new VisualTransition { Easing = Easing.Linear });
+			VisualStateManager.GoToState(box, "Normal");
+			VisualStateManager.GoToState(box, "Pressed");
+			Advance(0.5, DefaultTransitionDuration);
+			Assert.Equal(0.75, box.Opacity, 9);
+			Assert.True(box.HasAnimatedValue(OpacityProperty));
+			var changes = new ChangeRecorder(box, OpacityProperty);
+
+			Assert.True(VisualStateManager.GoToState(box, "Pressed", useTransitions: false));
+
+			Assert.Equal("Pressed", group.CurrentState.Name);
+			Assert.Equal(0.5, box.Opacity);
+			Assert.False(box.HasAnimatedValue(OpacityProperty));
+			changes.AssertOnePair();
+
+			Advance(1.0, DefaultTransitionDuration);
+			Assert.Equal(0.5, box.Opacity);
+			changes.AssertOnePair();
+		}
+
+		[Fact]
+		public void InstantStateChangeFinishesEveryRunningTransitionOfTheGroup()
+		{
+			var box = CreateLoadedBox();
+			Attach(box,
+				new[] { State("Zero", VisualElement.ScaleProperty, 2.0), new VisualState { Name = "A" }, State("B", OpacityProperty, 0.5) },
+				new VisualTransition { Easing = Easing.Linear });
+			VisualStateManager.GoToState(box, "Zero");
+			VisualStateManager.GoToState(box, "A");
+			Advance(0.5, DefaultTransitionDuration);
+			Assert.Equal(1.5, box.Scale, 9);
+			var scaleChanges = new ChangeRecorder(box, VisualElement.ScaleProperty);
+
+			// Only the earlier state sets Scale; neither A nor B mentions it.
+			VisualStateManager.GoToState(box, "B", useTransitions: false);
+
+			Assert.Equal(1.0, box.Scale);
+			Assert.False(box.HasAnimatedValue(VisualElement.ScaleProperty));
+			scaleChanges.AssertOnePair();
+			Assert.Equal(0.5, box.Opacity);
+			Assert.False(box.HasAnimatedValue(OpacityProperty));
+
+			Advance(1.0, DefaultTransitionDuration);
+			Assert.Equal(1.0, box.Scale);
+			scaleChanges.AssertOnePair();
+		}
+
+		// An animated state change doesn't cut short what an earlier state is still animating. Whether it does
+		// must not depend on whether the new states happen to set any property themselves.
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public void AnimatedStateChangeLeavesEarlierTransitionsRunning(bool newStateSetsAProperty)
+		{
+			var box = CreateLoadedBox();
+			var b = newStateSetsAProperty ? State("B", OpacityProperty, 0.5) : new VisualState { Name = "B" };
+			Attach(box,
+				new[] { State("Zero", VisualElement.ScaleProperty, 2.0), new VisualState { Name = "A" }, b },
+				new VisualTransition { Easing = Easing.Linear });
+			VisualStateManager.GoToState(box, "Zero");
+			VisualStateManager.GoToState(box, "A");
+			Advance(0.5, DefaultTransitionDuration);
+
+			VisualStateManager.GoToState(box, "B");
+
+			Assert.Equal(1.5, box.Scale, 9);
+			Assert.True(box.HasAnimatedValue(VisualElement.ScaleProperty));
+			Advance(0.25, DefaultTransitionDuration);
+			Assert.Equal(1.25, box.Scale, 9);
+
+			Advance(0.3, DefaultTransitionDuration);
+			Assert.Equal(1.0, box.Scale);
+			Assert.False(box.HasAnimatedValue(VisualElement.ScaleProperty));
+		}
+
+		[Fact]
+		public void InvalidatingVisualStatesMidTransitionFinishesIt()
+		{
+			var box = CreateLoadedBox();
+			AttachOpacityStates(box, 0.2, 0.8, new VisualTransition { Easing = Easing.Linear });
+			VisualStateManager.GoToState(box, "A");
+			VisualStateManager.GoToState(box, "B");
+			Advance(0.5, DefaultTransitionDuration);
+
+			VisualStateManager.InvalidateVisualStates(box);
+
+			Assert.Equal(0.8, box.Opacity);
+			Assert.False(box.HasAnimatedValue(OpacityProperty));
+			var changes = new ChangeRecorder(box, OpacityProperty);
+			Advance(1.0, DefaultTransitionDuration);
+			Assert.Equal(0.8, box.Opacity);
+			changes.AssertNone();
+		}
+
+		[Fact]
+		public void RemovingTheGroupMidTransitionFinishesIt()
+		{
+			var box = CreateLoadedBox();
+			box.Opacity = 0.9;
+			var group = AttachOpacityStates(box, 0.2, 0.8, new VisualTransition { Easing = Easing.Linear });
+			VisualStateManager.GoToState(box, "A");
+			VisualStateManager.GoToState(box, "B");
+			Advance(0.5, DefaultTransitionDuration);
+
+			VisualStateManager.GetVisualStateGroups(box).Remove(group);
+
+			Assert.Equal(0.9, box.Opacity);
+			Assert.False(box.HasAnimatedValue(OpacityProperty));
+			var changes = new ChangeRecorder(box, OpacityProperty);
+			Advance(1.0, DefaultTransitionDuration);
+			Assert.Equal(0.9, box.Opacity);
+			changes.AssertNone();
+		}
+
+		[Theory]
+		[InlineData(400, 40)]
+		[InlineData(2000, 100)]
+		public void ReducedMotionShortenPlaysTheTransitionWithinTheShortenedTime(double durationMs, double shortenedMs)
+		{
+			MotionPolicy.ReducedMotionOverride = true;
+			var box = CreateLoadedBox();
+			AttachOpacityStates(box, 0.2, 1.0, new VisualTransition
+			{
+				Duration = TimeSpan.FromMilliseconds(durationMs),
+				Easing = Easing.Linear,
+				ReducedMotion = ReducedMotionBehavior.Shorten,
+			});
+			VisualStateManager.GoToState(box, "A");
+			VisualStateManager.GoToState(box, "B");
+
+			Assert.True(box.HasAnimatedValue(OpacityProperty));
+			Advance(shortenedMs / 2);
+			Assert.Equal(0.6, box.Opacity, 9);
+			Advance(shortenedMs / 2 - 1);
+			Assert.True(box.HasAnimatedValue(OpacityProperty));
+
+			Advance(2);
+			Assert.Equal(1.0, box.Opacity);
+			Assert.False(box.HasAnimatedValue(OpacityProperty));
+		}
+
+		[Fact]
+		public void DestinationThatBecomesInterpolableMidTransitionIsInterpolated()
+		{
+			var box = CreateLoadedBox();
+			box.Resources = new ResourceDictionary();
+			// The resource doesn't exist yet, so beneath state A the background is null.
+			box.SetDynamicResource(VisualElement.BackgroundColorProperty, "Background");
+			Attach(box,
+				new[] { State("A", VisualElement.BackgroundColorProperty, Colors.Red), new VisualState { Name = "B" } },
+				new VisualTransition { Easing = Easing.Linear });
+			VisualStateManager.GoToState(box, "A");
+			VisualStateManager.GoToState(box, "B");
+
+			// Red -> null can't be interpolated: the start value holds.
+			Advance(0.25, DefaultTransitionDuration);
+			Assert.Same(Colors.Red, box.BackgroundColor);
+
+			box.Resources["Background"] = Colors.Blue;
+			Assert.Same(Colors.Red, box.BackgroundColor);
+
+			Advance(0.25, DefaultTransitionDuration);
+			var halfway = box.BackgroundColor;
+			Assert.Equal(0.5, halfway.Red, 6);
+			Assert.Equal(0, halfway.Green, 6);
+			Assert.Equal(0.5, halfway.Blue, 6);
+			Assert.Equal(1, halfway.Alpha, 6);
+
+			Advance(0.6, DefaultTransitionDuration);
+			Assert.Same(Colors.Blue, box.BackgroundColor);
+			Assert.False(box.HasAnimatedValue(VisualElement.BackgroundColorProperty));
+		}
+
+		[Fact]
+		public void StateChangeFromAPropertysOwnChangeNotificationLeavesNoOrphanHold()
+		{
+			var box = CreateLoadedBox();
+			Attach(box,
+				new[] { new VisualState { Name = "A" }, State("B", (OpacityProperty, 0.8), (VisualElement.ScaleProperty, 2.0)) },
+				new VisualTransition { Easing = Easing.Linear });
+			VisualStateManager.GoToState(box, "A");
+			var reentered = false;
+			box.PropertyChanged += (_, e) =>
+			{
+				if (e.PropertyName == OpacityProperty.PropertyName && !reentered)
+				{
+					reentered = true;
+					VisualStateManager.GoToState(box, "B");
+				}
+			};
+
+			// B is entered while Opacity is still being set: Opacity changes without animation.
+			box.Opacity = 0.3;
+
+			Assert.True(reentered);
+			Assert.Equal(0.8, box.Opacity); // B's visual-state value beats the manual value, as without animation
+			Assert.False(box.HasAnimatedValue(OpacityProperty));
+
+			// Scale wasn't being set: it animates as usual.
+			Assert.True(box.HasAnimatedValue(VisualElement.ScaleProperty));
+			Assert.Equal(1.0, box.Scale);
+			Advance(0.5, DefaultTransitionDuration);
+			Assert.Equal(1.5, box.Scale, 9);
+			Advance(0.6, DefaultTransitionDuration);
+			Assert.Equal(2.0, box.Scale);
+			Assert.False(box.HasAnimatedValue(VisualElement.ScaleProperty));
+
+			// Nothing is left above Opacity: once B lets go of it, the manual value shows and manual writes land at once.
+			VisualStateManager.GoToState(box, "A", useTransitions: false);
+			Assert.Equal(0.3, box.Opacity);
+			box.Opacity = 0.4;
+			Assert.Equal(0.4, box.Opacity);
+		}
+
+		[Fact]
+		public void HandlerThatThrowsDuringATransitionFrameFinishesTheTransition()
+		{
+			var box = CreateLoadedBox();
+			AttachOpacityStates(box, 0.2, 1.0, new VisualTransition { Easing = Easing.Linear });
+			VisualStateManager.GoToState(box, "A");
+			VisualStateManager.GoToState(box, "B");
+			var armed = true;
+			box.PropertyChanged += (_, e) =>
+			{
+				if (armed && e.PropertyName == OpacityProperty.PropertyName)
+				{
+					armed = false;
+					throw new InvalidOperationException("boom");
+				}
+			};
+
+			Advance(0.5, DefaultTransitionDuration);
+
+			Assert.False(box.HasAnimatedValue(OpacityProperty));
+			Assert.Equal(1.0, box.Opacity);
+			var changes = new ChangeRecorder(box, OpacityProperty);
+			Advance(1.0, DefaultTransitionDuration);
+			changes.AssertNone();
+		}
+
+		// A pin is a write too: when one throws, the pins made before it must not stay held either.
+		[Fact]
+		public void StateChangeWhosePinThrowsReleasesWhatItPinned()
+		{
+			var box = Load(new ArmedBox());
+			Attach(box,
+				new[]
+				{
+					// Tracks pin in reverse order: Opacity is pinned before Armed throws.
+					State("A", (ArmedBox.ArmedProperty, 1.0), (OpacityProperty, 0.2)),
+					State("B", (OpacityProperty, 1.0)),
+				},
+				new VisualTransition());
+			VisualStateManager.GoToState(box, "A");
+			box.ThrowOnCoerce = true;
+
+			Assert.Throws<InvalidOperationException>(() => VisualStateManager.GoToState(box, "B"));
+
+			box.ThrowOnCoerce = false;
+			Assert.False(box.HasAnimatedValue(OpacityProperty));
+			Assert.False(box.HasAnimatedValue(ArmedBox.ArmedProperty));
+		}
+
+		[Fact]
+		public void StateChangeThatThrowsReleasesItsPins()
+		{
+			var box = Load(new FragileBox());
+			Attach(box,
+				new[]
+				{
+					State("A", (OpacityProperty, 0.2), (FragileBox.FragileProperty, 1.0)),
+					State("B", (OpacityProperty, 0.7), (FragileBox.FragileProperty, FragileBox.Breaking)),
+				},
+				new VisualTransition());
+			VisualStateManager.GoToState(box, "A");
+
+			Assert.Throws<InvalidOperationException>(() => VisualStateManager.GoToState(box, "B"));
+
+			Assert.False(box.HasAnimatedValue(OpacityProperty));
+			Assert.False(box.HasAnimatedValue(FragileBox.FragileProperty));
+			// As without a transition: setters applied before the failing one stay applied.
+			Assert.Equal(0.7, box.Opacity);
+			Assert.Equal(0.0, (double)box.GetValue(FragileBox.FragileProperty));
+
+			var changes = new ChangeRecorder(box, OpacityProperty);
+			Advance(1.0, DefaultTransitionDuration);
+			Assert.Equal(0.7, box.Opacity);
+			changes.AssertNone();
+		}
+
 		static VisualState State(string name, BindableProperty property, object value)
 			=> new VisualState { Name = name, Setters = { new Setter { Property = property, Value = value } } };
+
+		static VisualState State(string name, params (BindableProperty Property, object Value)[] setters)
+		{
+			var state = new VisualState { Name = name };
+			foreach (var (property, value) in setters)
+				state.Setters.Add(new Setter { Property = property, Value = value });
+			return state;
+		}
 
 		static VisualStateGroup Attach(VisualElement element, VisualState[] states, params VisualTransition[] transitions)
 		{
@@ -434,5 +739,23 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Animations
 			=> Attach(element,
 				new[] { State("Hidden", VisualElement.IsVisibleProperty, false), State("Shown", VisualElement.IsVisibleProperty, true) },
 				new VisualTransition());
+
+		// Coercion runs before any value is stored, so a setter of Breaking throws even beneath an animation hold.
+		sealed class FragileBox : BoxView
+		{
+			public const double Breaking = 666;
+
+			public static readonly BindableProperty FragileProperty = BindableProperty.Create("Fragile", typeof(double), typeof(FragileBox), 0.0,
+				coerceValue: (_, value) => (double)value == Breaking ? throw new InvalidOperationException("The setter failed.") : value);
+		}
+
+		// Coercion that throws for any value while armed, including the property's current value.
+		sealed class ArmedBox : BoxView
+		{
+			public static readonly BindableProperty ArmedProperty = BindableProperty.Create("Armed", typeof(double), typeof(ArmedBox), 0.0,
+				coerceValue: (bindable, value) => ((ArmedBox)bindable).ThrowOnCoerce ? throw new InvalidOperationException("The coercion failed.") : value);
+
+			public bool ThrowOnCoerce { get; set; }
+		}
 	}
 }

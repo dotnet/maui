@@ -9,6 +9,12 @@ namespace Microsoft.Maui.Controls
 	internal static class DispatcherExtensions
 	{
 		public static IDispatcher FindDispatcher(this BindableObject? bindableObject)
+			=> bindableObject.TryFindDispatcher()
+				// no dispatchers found at all
+				?? throw new InvalidOperationException("BindableObject was not instantiated on a thread with a dispatcher nor does the current application have a dispatcher.");
+
+		// As FindDispatcher, but null when there's no dispatcher at all, as in a unit test.
+		public static IDispatcher? TryFindDispatcher(this BindableObject? bindableObject)
 		{
 			// try find the dispatcher in the current hierarchy
 			// Exclude Application because we don't want to jump
@@ -40,11 +46,10 @@ namespace Microsoft.Maui.Controls
 			// `FindDispatcher` if it's _dispatcher property isn't initialized so this
 			// could cause a Stack Overflow Exception
 			if (bindableObject is not Application &&
-				Application.Current?.Dispatcher is IDispatcher appDispatcher)
+				Application.Current?.TryGetDispatcher() is IDispatcher appDispatcher)
 				return appDispatcher;
 
-			// no dispatchers found at all
-			throw new InvalidOperationException("BindableObject was not instantiated on a thread with a dispatcher nor does the current application have a dispatcher.");
+			return null;
 		}
 
 		public static void DispatchIfRequired(this IDispatcher? dispatcher, Action action)

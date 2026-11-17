@@ -12,9 +12,16 @@ namespace Microsoft.Maui.Controls.Animations
 		sealed class RenderingClock : AnimationFrameClock
 		{
 			readonly Stopwatch _stopwatch = Stopwatch.StartNew();
+			TimeSpan _lastFrameTime;
+			TimeSpan _renderingOffset;
 			bool _running;
+			bool _hasFrame;
 
-			protected override TimeSpan Now => _stopwatch.Elapsed;
+			// Frame timestamps while frames run, the stopwatch otherwise. RenderingTime counts from when the app started
+			// rendering, so frames are mapped onto the stopwatch's time line at the first frame of each run of frames:
+			// times read before that frame stay comparable, and frames still advance by exact rendering intervals.
+			protected override TimeSpan Now
+				=> _running && _hasFrame ? _lastFrameTime : _stopwatch.Elapsed;
 
 			protected override void StartFrames()
 			{
@@ -22,6 +29,7 @@ namespace Microsoft.Maui.Controls.Animations
 					return;
 
 				_running = true;
+				_hasFrame = false;
 				CompositionTarget.Rendering += OnRendering;
 			}
 
@@ -34,7 +42,19 @@ namespace Microsoft.Maui.Controls.Animations
 				CompositionTarget.Rendering -= OnRendering;
 			}
 
-			void OnRendering(object? sender, object e) => OnFrame();
+			void OnRendering(object? sender, object e)
+			{
+				if (e is RenderingEventArgs args)
+				{
+					if (!_hasFrame)
+						_renderingOffset = _stopwatch.Elapsed - args.RenderingTime;
+
+					_lastFrameTime = args.RenderingTime + _renderingOffset;
+					_hasFrame = true;
+				}
+
+				OnFrame();
+			}
 		}
 	}
 }

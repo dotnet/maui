@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls.Animations
 				if (_timer is not null)
 					return;
 
-				var dispatcher = Dispatcher.GetForCurrentThread() ?? Application.Current?.Dispatcher
+				var dispatcher = Dispatcher.GetForCurrentThread() ?? Application.Current?.TryGetDispatcher()
 					?? throw new InvalidOperationException("Animations need a dispatcher. In tests, use a ManualStoryboardClock.");
 
 				_timer = dispatcher.CreateTimer();

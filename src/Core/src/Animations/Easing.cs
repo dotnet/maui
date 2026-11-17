@@ -124,7 +124,8 @@ namespace Microsoft.Maui
 				return new Easing(t => t >= 1 ? 1 : 1 - Math.Exp(-omega * t) * (1 + omega * t));
 			}
 
-			var damped = Math.Sqrt(1 - zeta * zeta);
+			// sqrt(1 - zeta^2), computed without cancellation: for a tiny bounce, 1 - bounce rounds to 1.
+			var damped = Math.Sqrt(bounce * (2 - bounce));
 			var naturalFrequency = Math.Log(1000 / damped) / zeta;
 			var dampedFrequency = naturalFrequency * damped;
 			var sineFactor = zeta * naturalFrequency / dampedFrequency;
@@ -179,38 +180,36 @@ namespace Microsoft.Maui
 
 			double SolveForT(double x)
 			{
-				// Newton-Raphson converges in a few iterations for most curves; bisection is the fallback.
+				// Newton-Raphson converges in a few steps where x changes with t. Where the curve is nearly flat
+				// in x, a tiny error in x is a large error in t and so in the output: convergence is judged on t,
+				// and bisection, which x's monotonicity makes safe, takes over near flat spots.
 				var t = x;
 				for (var i = 0; i < 8; i++)
 				{
-					var error = Sample(_ax, _bx, _cx, t) - x;
-					if (Math.Abs(error) < 1e-7)
-						return t;
-
 					var slope = (3 * _ax * t + 2 * _bx) * t + _cx;
-					if (Math.Abs(slope) < 1e-6)
+					if (Math.Abs(slope) < 1e-3)
 						break;
 
-					t -= error / slope;
+					var step = (Sample(_ax, _bx, _cx, t) - x) / slope;
+					t -= step;
+					if (t < 0 || t > 1)
+						break;
+
+					if (Math.Abs(step) < 1e-12)
+						return t;
 				}
 
 				double low = 0, high = 1;
-				t = x;
-				while (high - low > 1e-7)
+				while (high - low > 1e-12)
 				{
-					var estimate = Sample(_ax, _bx, _cx, t);
-					if (Math.Abs(estimate - x) < 1e-7)
-						break;
-
-					if (x > estimate)
+					t = (low + high) / 2;
+					if (Sample(_ax, _bx, _cx, t) < x)
 						low = t;
 					else
 						high = t;
-
-					t = (low + high) / 2;
 				}
 
-				return t;
+				return (low + high) / 2;
 			}
 		}
 

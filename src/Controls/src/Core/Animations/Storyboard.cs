@@ -211,8 +211,8 @@ namespace Microsoft.Maui.Controls.Animations
 			if (cancellationToken.IsCancellationRequested)
 				return Task.FromCanceled<AnimationResult>(cancellationToken);
 
-			if (target.Dispatcher is { IsDispatchRequired: true } dispatcher)
-				return dispatcher.DispatchAsync(() => PlayAsync(target, options, cancellationToken));
+			if (target.TryGetDispatcher() is { IsDispatchRequired: true } dispatcher)
+				return PlayOnDispatcherAsync(dispatcher, target, options, cancellationToken);
 
 			var player = CreatePlayer(target, null, options);
 			player.Resume();
@@ -233,7 +233,37 @@ namespace Microsoft.Maui.Controls.Animations
 			if (target is null)
 				throw new ArgumentNullException(nameof(target));
 
+			if (target.TryGetDispatcher() is { IsDispatchRequired: true })
+				throw new InvalidOperationException("Begin and CreatePlayer can only be called on the target's UI thread. Use PlayAsync from other threads.");
+
 			return new StoryboardPlayer(this, target, clock, options ?? new PlaybackOptions());
+		}
+
+		// Marshals to the target's dispatcher. Cancellation stays cancellation: the returned task is canceled, not
+		// faulted, and a dispatcher that refuses the work faults it instead of leaving it pending.
+		Task<AnimationResult> PlayOnDispatcherAsync(IDispatcher dispatcher, VisualElement target, PlaybackOptions? options, CancellationToken cancellationToken)
+		{
+			var completion = new TaskCompletionSource<AnimationResult>(TaskCreationOptions.RunContinuationsAsynchronously);
+			if (!dispatcher.Dispatch(() => _ = PlayAndForwardAsync(target, options, cancellationToken, completion)))
+				completion.TrySetException(new InvalidOperationException("The target's dispatcher didn't accept the animation."));
+
+			return completion.Task;
+		}
+
+		async Task PlayAndForwardAsync(VisualElement target, PlaybackOptions? options, CancellationToken cancellationToken, TaskCompletionSource<AnimationResult> completion)
+		{
+			try
+			{
+				completion.TrySetResult(await PlayAsync(target, options, cancellationToken).ConfigureAwait(false));
+			}
+			catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+			{
+				completion.TrySetCanceled(cancellationToken);
+			}
+			catch (Exception exception)
+			{
+				completion.TrySetException(exception);
+			}
 		}
 
 		static async Task<AnimationResult> WithCancellation(StoryboardPlayer player, CancellationToken cancellationToken)

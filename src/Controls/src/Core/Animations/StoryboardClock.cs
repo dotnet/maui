@@ -89,6 +89,9 @@ namespace Microsoft.Maui.Controls.Animations
 		/// <summary>Raised when the window that owns this clock is destroyed. Runs on it stop.</summary>
 		public event EventHandler? Destroyed;
 
+		/// <summary>Whether a window owns this clock. The application clock is never destroyed.</summary>
+		public bool IsWindowClock { get; set; }
+
 		protected void OnFrame()
 		{
 			if (!_suspended)
@@ -151,10 +154,42 @@ namespace Microsoft.Maui.Controls.Animations
 		static AnimationFrameClock CreateWindowClock(Window window)
 		{
 			var clock = AnimationFrameClock.CreatePlatformClock();
-			window.Stopped += (_, _) => clock.Suspend();
-			window.Resumed += (_, _) => clock.Resume();
-			window.Destroying += (_, _) => clock.Destroy();
+			clock.IsWindowClock = true;
+			_ = new WindowClockLifetime(window, clock);
 			return clock;
+		}
+
+		// Follows the window's lifecycle. A destroyed window can come back: Android keeps a MainPage window when the
+		// Activity is recreated, and the new Activity raises Created, not Resumed. So a destroyed clock is dropped,
+		// and the window gets a fresh one on its next run.
+		sealed class WindowClockLifetime
+		{
+			readonly Window _window;
+			readonly AnimationFrameClock _clock;
+
+			public WindowClockLifetime(Window window, AnimationFrameClock clock)
+			{
+				_window = window;
+				_clock = clock;
+				window.Stopped += OnStopped;
+				window.Resumed += OnResumed;
+				window.Activated += OnResumed;
+				window.Destroying += OnDestroying;
+			}
+
+			void OnStopped(object? sender, EventArgs e) => _clock.Suspend();
+
+			void OnResumed(object? sender, EventArgs e) => _clock.Resume();
+
+			void OnDestroying(object? sender, EventArgs e)
+			{
+				_window.Stopped -= OnStopped;
+				_window.Resumed -= OnResumed;
+				_window.Activated -= OnResumed;
+				_window.Destroying -= OnDestroying;
+				s_windowClocks.Remove(_window);
+				_clock.Destroy();
+			}
 		}
 	}
 }

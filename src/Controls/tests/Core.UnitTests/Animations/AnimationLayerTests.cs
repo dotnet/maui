@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Microsoft.Maui.Controls.Animations;
 using Xunit;
 
@@ -329,6 +330,65 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Animations
 			source.Value = 0.6;
 
 			Assert.Equal(0.6, box.Opacity);
+		}
+
+		[Theory]
+		[InlineData(0.2)] // equal to the animated value: must not be dropped as an echo
+		[InlineData(0.9)]
+		public void AttachingATwoWayBindingEndsTheHoldAndTheBindingsValueStands(double sourceValue)
+		{
+			var box = new BoxView { Opacity = 0.5 };
+			var owner = RecordingTrackOwner.Hold(box, OpacityProperty, 0.2);
+			var source = new ValueSource { Value = sourceValue };
+
+			box.SetBinding(OpacityProperty, new Binding(nameof(ValueSource.Value), BindingMode.TwoWay, source: source));
+
+			Assert.Equal(sourceValue, box.Opacity);
+			Assert.False(box.HasAnimatedValue(OpacityProperty));
+			Assert.Null(AnimationLayer.GetOwner(box, OpacityProperty));
+			Assert.Equal(TrackLossReason.HandlerWrite, Assert.Single(owner.Losses));
+
+			// The binding works in both directions afterwards.
+			source.Value = 0.4;
+			Assert.Equal(0.4, box.Opacity);
+			box.Opacity = 0.7;
+			Assert.Equal(0.7, source.Value);
+		}
+
+		[Fact]
+		public void AttachingAOneWayToSourceBindingEndsTheHoldAndSendsTheValueBeneathIt()
+		{
+			var box = new BoxView { Opacity = 0.5 };
+			var owner = RecordingTrackOwner.Hold(box, OpacityProperty, 0.2);
+			var source = new ValueSource { Value = 0.9 };
+
+			box.SetBinding(OpacityProperty, new Binding(nameof(ValueSource.Value), BindingMode.OneWayToSource, source: source));
+
+			Assert.Equal(0.5, box.Opacity);
+			Assert.Equal(0.5, source.Value);
+			Assert.False(box.HasAnimatedValue(OpacityProperty));
+			Assert.Equal(TrackLossReason.HandlerWrite, Assert.Single(owner.Losses));
+		}
+
+		// Like a handler write (rule 9), the display goes from the animated value straight to the binding's value:
+		// one change when they differ, none when they're equal. The value beneath the hold is never raised.
+		[Theory]
+		[InlineData(0.2, false)]
+		[InlineData(0.9, true)]
+		public void AttachingATwoWayBindingNeverRaisesTheValueBeneathTheHold(double sourceValue, bool changes)
+		{
+			var box = new BoxView { Opacity = 0.5 };
+			RecordingTrackOwner.Hold(box, OpacityProperty, 0.2);
+			var raised = new List<double>();
+			box.PropertyChanged += (_, e) =>
+			{
+				if (e.PropertyName == OpacityProperty.PropertyName)
+					raised.Add(box.Opacity);
+			};
+
+			box.SetBinding(OpacityProperty, new Binding(nameof(ValueSource.Value), BindingMode.TwoWay, source: new ValueSource { Value = sourceValue }));
+
+			Assert.Equal(changes ? new[] { sourceValue } : Array.Empty<double>(), raised);
 		}
 
 		static Action ArrangeOpacity(BoxView box, LowerSource source)

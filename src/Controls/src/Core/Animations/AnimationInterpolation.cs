@@ -13,12 +13,30 @@ namespace Microsoft.Maui.Controls.Animations
 		public static bool CanInterpolate(object? from, object? to) => (from, to) switch
 		{
 			(double, double) or (float, float) or (int, int) or (long, long) => true,
+			(short, short) or (byte, byte) or (uint, uint) or (TimeSpan, TimeSpan) => true,
 			(Color, Color) => true,
 			(Thickness, Thickness) or (CornerRadius, CornerRadius) => true,
 			(Point, Point) or (Size, Size) or (Rect, Rect) => true,
+			(PointF, PointF) or (SizeF, SizeF) or (RectF, RectF) => true,
+			(GridLength a, GridLength b) => a.GridUnitType == b.GridUnitType && a.GridUnitType != GridUnitType.Auto,
+			(DoubleCollection a, DoubleCollection b) => a.Count == b.Count,
 			(SolidColorBrush { Color: not null }, SolidColorBrush { Color: not null }) => true,
 			_ => false,
 		};
+
+		/// <summary>
+		/// As <see cref="CanInterpolate(object?, object?)"/>, and an automatic (−1) or unbounded size request holds:
+		/// it isn't a number to interpolate. Resolving it to a measured size (spec Part C) isn't prototyped.
+		/// </summary>
+		public static bool CanInterpolate(BindableProperty property, object? from, object? to)
+			=> CanInterpolate(from, to) && !(IsSizeRequest(property) && (IsAutomaticSize(from) || IsAutomaticSize(to)));
+
+		static bool IsSizeRequest(BindableProperty property)
+			=> property == VisualElement.WidthRequestProperty || property == VisualElement.HeightRequestProperty
+			|| property == VisualElement.MinimumWidthRequestProperty || property == VisualElement.MinimumHeightRequestProperty
+			|| property == VisualElement.MaximumWidthRequestProperty || property == VisualElement.MaximumHeightRequestProperty;
+
+		static bool IsAutomaticSize(object? value) => value is double size && !(size >= 0 && size < double.PositiveInfinity);
 
 		/// <summary>
 		/// Interpolates at eased progress <paramref name="t"/>, which may leave [0, 1] for overshooting
@@ -39,6 +57,28 @@ namespace Microsoft.Maui.Controls.Animations
 					return (int)Clamp(Math.Round(a + (b - (double)a) * t, MidpointRounding.AwayFromZero), int.MinValue, int.MaxValue);
 				case long a when to is long b:
 					return (long)Clamp(Math.Round(a + (b - (double)a) * t, MidpointRounding.AwayFromZero), long.MinValue, long.MaxValue);
+				case short a when to is short b:
+					return (short)Clamp(Math.Round(a + (b - (double)a) * t, MidpointRounding.AwayFromZero), short.MinValue, short.MaxValue);
+				case byte a when to is byte b:
+					return (byte)Clamp(Math.Round(a + (b - (double)a) * t, MidpointRounding.AwayFromZero), byte.MinValue, byte.MaxValue);
+				case uint a when to is uint b:
+					return (uint)Clamp(Math.Round(a + (b - (double)a) * t, MidpointRounding.AwayFromZero), uint.MinValue, uint.MaxValue);
+				case TimeSpan a when to is TimeSpan b:
+					return TimeSpan.FromTicks((long)Clamp(Math.Round(a.Ticks + (b.Ticks - (double)a.Ticks) * t, MidpointRounding.AwayFromZero), TimeSpan.MinValue.Ticks, TimeSpan.MaxValue.Ticks));
+				case PointF a when to is PointF b:
+					return new PointF((float)Lerp(a.X, b.X, t), (float)Lerp(a.Y, b.Y, t));
+				case SizeF a when to is SizeF b:
+					return new SizeF((float)Lerp(a.Width, b.Width, t), (float)Lerp(a.Height, b.Height, t));
+				case RectF a when to is RectF b:
+					return new RectF((float)Lerp(a.X, b.X, t), (float)Lerp(a.Y, b.Y, t), (float)Lerp(a.Width, b.Width, t), (float)Lerp(a.Height, b.Height, t));
+				case GridLength a when to is GridLength b && a.GridUnitType == b.GridUnitType && a.GridUnitType != GridUnitType.Auto:
+					// GridLength rejects negative values, which an overshooting easing can produce.
+					return new GridLength(Math.Max(0, Lerp(a.Value, b.Value, t)), a.GridUnitType);
+				case DoubleCollection a when to is DoubleCollection b && a.Count == b.Count:
+					var values = new double[a.Count];
+					for (int i = 0; i < values.Length; i++)
+						values[i] = Lerp(a[i], b[i], t);
+					return new DoubleCollection(values);
 				case Color a when to is Color b:
 					return Lerp(a, b, t);
 				case Thickness a when to is Thickness b:

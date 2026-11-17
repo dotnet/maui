@@ -91,6 +91,9 @@ namespace Microsoft.Maui.Controls.Animations
 
 		internal void CancelFromToken() => _run.CancelFromToken();
 
+		/// <summary>Whether the run can still show values: not ended, or ended holding a fill.</summary>
+		internal bool HoldsValues => _run.HoldsValues;
+
 		internal void RaiseStateChanged(PlaybackState oldState, PlaybackState newState)
 			=> StateChanged?.Invoke(this, new PlaybackStateChangedEventArgs(oldState, newState));
 
@@ -140,7 +143,7 @@ namespace Microsoft.Maui.Controls.Animations
 			{
 				_interpolates = new bool[Cues.Count];
 				for (int k = 1; k < Cues.Count; k++)
-					_interpolates[k] = AnimationInterpolation.CanInterpolate(Values[k - 1], Values[k]);
+					_interpolates[k] = AnimationInterpolation.CanInterpolate(Property, Values[k - 1], Values[k]);
 			}
 
 			// The keyframe's easing shapes the segment that arrives at it.
@@ -171,7 +174,8 @@ namespace Microsoft.Maui.Controls.Animations
 		readonly Storyboard _storyboard;
 		readonly VisualElement _target;
 		readonly IStoryboardClock? _explicitClock;
-		readonly PlaybackOptions _options;
+		readonly FillCompletion _fillCompletion;
+		readonly StoryboardHandoffBehavior _handoff;
 		readonly List<Track> _tracks;
 		readonly TaskCompletionSource<AnimationResult> _completion = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
@@ -189,10 +193,12 @@ namespace Microsoft.Maui.Controls.Animations
 		readonly Easing _defaultEasing;
 
 		PlaybackState _state = PlaybackState.Created;
+		bool _started;
 		bool _prepared;
 		bool _completed;
 		bool _holding;
 		bool _observingUnload;
+		bool _waitingForWindow;
 		double _rootTime;
 		TimeSpan _segmentStart;
 		double _rate = 1.0;
@@ -208,7 +214,10 @@ namespace Microsoft.Maui.Controls.Animations
 			_storyboard = storyboard;
 			_target = target;
 			_explicitClock = clock;
-			_options = options;
+
+			// Options are read once. Changing the options object later doesn't affect this run.
+			_fillCompletion = options.FillCompletion;
+			_handoff = options.HandoffBehavior;
 
 			if (!(options.SpeedRatio > 0) || double.IsInfinity(options.SpeedRatio))
 				throw new ArgumentOutOfRangeException(nameof(options), "SpeedRatio must be greater than zero.");
@@ -225,6 +234,9 @@ namespace Microsoft.Maui.Controls.Animations
 			_fillMode = storyboard.FillMode;
 			_defaultEasing = storyboard.Easing ?? Easing.Linear;
 
+			// Products such as 300 ms x 1.1 and differences such as 1.2 - 1 aren't exact in binary. The END state
+			// is computed from boundaries snapped at far below one tick, so an end that is mathematically on an
+			// iteration boundary or on a cue isn't placed just before it.
 			var span = _duration + _delay;
 			var repeat = storyboard.RepeatBehavior;
 			long endIteration;
@@ -239,21 +251,34 @@ namespace Microsoft.Maui.Controls.Animations
 			else if (repeat.HasDuration)
 			{
 				// An end exactly on an iteration boundary belongs to the previous iteration.
-				_active = repeat.Duration.Ticks * _speed;
-				endIteration = Math.Max(0, (long)Math.Ceiling(_active / span) - 1);
-				endProgress = Math.Min(_active - endIteration * span, _duration);
+				_active = SnapToTick(repeat.Duration.Ticks * _speed);
+				var iterations = SnapToInteger(_active / span);
+				endIteration = Math.Max(0, (long)Math.Ceiling(iterations) - 1);
+				endProgress = Math.Min(SnapToTick(_active - endIteration * span), _duration);
 			}
 			else
 			{
 				var count = repeat.Count;
-				_active = count * _duration + (Math.Ceiling(count) - 1) * _delay;
+				_active = SnapToTick(count * _duration + (Math.Ceiling(count) - 1) * _delay);
 				endIteration = (long)Math.Ceiling(count) - 1;
-				endProgress = (count - endIteration) * _duration;
+				endProgress = SnapToTick((count - endIteration) * _duration);
 			}
 
 			_endIteration = endIteration;
 			_endTau = Directed(endIteration, endProgress);
 			_tracks = BuildTracks(storyboard, target, duration);
+		}
+
+		static double SnapToTick(double ticks)
+		{
+			var rounded = Math.Round(ticks);
+			return Math.Abs(ticks - rounded) < 1e-6 ? rounded : ticks;
+		}
+
+		static double SnapToInteger(double value)
+		{
+			var rounded = Math.Round(value);
+			return Math.Abs(value - rounded) < 1e-9 ? rounded : value;
 		}
 
 		public VisualElement? Target => _target;
@@ -272,11 +297,15 @@ namespace Microsoft.Maui.Controls.Animations
 
 		public bool CanceledByToken { get; private set; }
 
+		/// <summary>Whether the run can still show values: not ended, or ended holding a fill.</summary>
+		public bool HoldsValues => !_completed || _holding;
+
 		public double PlaybackRate
 		{
 			get => _rate;
 			set
 			{
+				CheckAccess();
 				if (!(value > 0) || double.IsInfinity(value))
 					throw new ArgumentOutOfRangeException(nameof(value), "This prototype supports positive playback rates only.");
 
@@ -287,59 +316,121 @@ namespace Microsoft.Maui.Controls.Animations
 
 		public void Resume()
 		{
+			CheckAccess();
 			if (_completed || _state == PlaybackState.Running)
 				return;
 
-			var starting = _state == PlaybackState.Created;
-			if (starting)
+			if (!Start())
+				return;
+
+			SetState(PlaybackState.Running);
+
+			// A StateChanged handler can stop or pause the run, which must then not tick.
+			if (_completed || _state != PlaybackState.Running)
+				return;
+
+			BeginTicking();
+		}
+
+		// Runs once, at the first Resume or synchronous seek: claims the tracks, applies the reduced-motion
+		// policy and observes the target's lifetime. Returns false when that ended the run.
+		bool Start()
+		{
+			if (_started)
+				return !_completed;
+
+			_started = true;
+			Prepare();
+			if (_completed)
+				return false;
+
+			// Observed before the reduced-motion policy, which can end the run holding its fill.
+			ObserveLifetime();
+			ApplyMotionPolicy();
+			return !_completed;
+		}
+
+		void BeginTicking()
+		{
+			// A Forever run on an element without a window waits for one. A forgotten run on an element that's
+			// never shown doesn't tick forever, and nothing static keeps it or its target alive.
+			if (_explicitClock is null && _forever && _target.Window is null)
 			{
-				Prepare();
-				if (_completed)
-					return;
+				if (!_waitingForWindow)
+				{
+					_waitingForWindow = true;
+					_target.Loaded += OnTargetLoaded;
+				}
 
-				ApplyMotionPolicy();
-				if (_completed)
-					return;
+				return;
+			}
 
-				_target.Unloaded += OnTargetUnloaded;
-				_observingUnload = true;
+			if (_pendingSeek is double seek)
+			{
+				_rootTime = seek;
+				_pendingSeek = null;
 			}
 
 			var clock = _explicitClock ?? AnimationClocks.For(_target);
 			_segmentStart = clock.Elapsed;
-			SetState(PlaybackState.Running);
 			StartTicking(clock);
 
-			// Show the first frame now, so an entrance never flashes its final state.
-			if (starting)
-				Render(CurrentRootTime());
+			// Show the current frame now, so an entrance never flashes its final state.
+			Render(CurrentRootTime());
+		}
+
+		void OnTargetLoaded(object? sender, EventArgs e)
+		{
+			// Loaded can be raised while the window isn't set yet; keep waiting until it is.
+			if (_target.Window is null)
+				return;
+
+			StopWaitingForWindow();
+			if (_completed || _state != PlaybackState.Running)
+				return;
+
+			ObserveLifetime();
+			BeginTicking();
+		}
+
+		void StopWaitingForWindow()
+		{
+			if (!_waitingForWindow)
+				return;
+
+			_waitingForWindow = false;
+			_target.Loaded -= OnTargetLoaded;
 		}
 
 		public void Pause()
 		{
+			CheckAccess();
 			if (_state != PlaybackState.Running)
 				return;
 
 			_rootTime = CurrentRootTime();
 			StopTicking();
+			StopWaitingForWindow();
 			SetState(PlaybackState.Paused);
 		}
 
 		public void Seek(double progress, TimeSeekOrigin origin)
 		{
+			CheckAccess();
 			var local = (origin == TimeSeekOrigin.Duration ? 1 - progress : progress) * _duration;
 			_pendingSeek = Math.Max(0, _begin + local / _speed);
 		}
 
-		public void SeekTo(TimeSpan time, TimeSeekOrigin origin) => _pendingSeek = ToRootTime(time, origin);
+		public void SeekTo(TimeSpan time, TimeSeekOrigin origin)
+		{
+			CheckAccess();
+			_pendingSeek = ToRootTime(time, origin);
+		}
 
 		public void SeekAlignedToLastTick(TimeSpan time, TimeSeekOrigin origin)
 		{
-			if (_completed)
-				return;
-
-			Prepare();
-			if (_completed)
+			CheckAccess();
+			if (_completed || !Start())
 				return;
 
 			_rootTime = ToRootTime(time, origin);
@@ -352,6 +443,7 @@ namespace Microsoft.Maui.Controls.Animations
 
 		public void SkipToFill()
 		{
+			CheckAccess();
 			if (_completed)
 				return;
 
@@ -359,6 +451,8 @@ namespace Microsoft.Maui.Controls.Animations
 			if (_completed)
 				return;
 
+			// A held fill must still end with its target or window.
+			ObserveLifetime();
 			if (_forever)
 				Finish(AnimationResult.Stopped, keepEnd: false, commitCurrent: false);
 			else
@@ -367,9 +461,18 @@ namespace Microsoft.Maui.Controls.Animations
 
 		public void Stop(StopBehavior behavior)
 		{
+			CheckAccess();
+			StopCore(behavior);
+		}
+
+		void StopCore(StopBehavior behavior)
+		{
 			if (_holding)
 			{
-				ReleaseHeldFill();
+				// The run already ended at its fill. ApplyFill keeps it; CommitCurrent keeps the values beneath their
+				// value sources; Release removes them.
+				if (behavior != StopBehavior.ApplyFill)
+					ReleaseHeldFill(commit: behavior == StopBehavior.CommitCurrent);
 				return;
 			}
 
@@ -404,13 +507,29 @@ namespace Microsoft.Maui.Controls.Animations
 					return;
 
 				CanceledByToken = true;
-				Stop(StopBehavior.Release);
+				StopCore(StopBehavior.Release);
 			}
 
-			if (_target.Dispatcher is { IsDispatchRequired: true } dispatcher)
-				dispatcher.Dispatch(Cancel);
+			if (_target.TryGetDispatcher() is { IsDispatchRequired: true } dispatcher)
+			{
+				// A dispatcher that no longer accepts work can't release anything, but the task still ends.
+				if (!dispatcher.Dispatch(Cancel))
+				{
+					CanceledByToken = true;
+					_completion.TrySetResult(AnimationResult.Stopped);
+				}
+			}
 			else
+			{
 				Cancel();
+			}
+		}
+
+		// Players are UI-thread only. Without a dispatcher, as in unit tests, nothing is checked.
+		void CheckAccess()
+		{
+			if (_target.TryGetDispatcher() is { IsDispatchRequired: true })
+				throw new InvalidOperationException("A storyboard player can only be used on its target's UI thread. Use Storyboard.PlayAsync from other threads.");
 		}
 
 		protected override void OnTick()
@@ -425,7 +544,37 @@ namespace Microsoft.Maui.Controls.Animations
 			Render(CurrentRootTime());
 		}
 
-		protected override void OnWindowDestroyed() => Stop(StopBehavior.Release);
+		protected override void OnWindowDestroyed() => StopCore(StopBehavior.Release);
+
+		// Teardown first, then the fault is reported: Completion faults, and the engine observes and logs it
+		// (MAUIA1005) rather than letting it escape into the platform's frame callback.
+		protected override void OnFault(Exception exception)
+		{
+			LogFault<StoryboardRun>(exception);
+			if (_completed && !_holding)
+				return;
+
+			_completed = true;
+			_holding = false;
+			_rootTime = CurrentRootTime();
+			StopTicking();
+			StopWaitingForWindow();
+			StopObservingLifetime();
+			foreach (var track in _tracks)
+				ReleaseQuietly(track);
+
+			if (_completion.TrySetException(exception))
+				_ = _completion.Task.Exception;
+
+			try
+			{
+				SetState(PlaybackState.Stopped);
+			}
+			catch (Exception handlerException)
+			{
+				LogFault<StoryboardRun>(handlerException);
+			}
+		}
 
 		public override void OnTrackLost(BindableObject target, BindableProperty property, TrackLossReason reason)
 		{
@@ -441,6 +590,8 @@ namespace Microsoft.Maui.Controls.Animations
 			if (_holding)
 			{
 				_holding = _tracks.Exists(t => t.Owned);
+				if (!_holding)
+					StopObservingLifetime();
 				return;
 			}
 
@@ -488,7 +639,7 @@ namespace Microsoft.Maui.Controls.Animations
 					// Rule 8: TwoWay-bound and platform-written values are never interpolated.
 					track.Excluded = true;
 				}
-				else if (_options.HandoffBehavior == StoryboardHandoffBehavior.Ignore && AnimationLayer.GetOwner(track.Target, track.Property) is { } owner && !ReferenceEquals(owner, this))
+				else if (_handoff == StoryboardHandoffBehavior.Ignore && AnimationLayer.GetOwner(track.Target, track.Property) is { } owner && !ReferenceEquals(owner, this))
 				{
 					// Leave the property to the run that animates it.
 				}
@@ -568,6 +719,8 @@ namespace Microsoft.Maui.Controls.Animations
 				case Phase.Before:
 					if (_fillMode == AnimationFillMode.Backward || _fillMode == AnimationFillMode.Both)
 						Write(_tau / _duration);
+					else
+						ClearContribution();
 					break;
 				case Phase.Active:
 					Write(_tau / _duration);
@@ -603,9 +756,26 @@ namespace Microsoft.Maui.Controls.Animations
 				if (track.HasWritten && Equals(value, track.LastWritten))
 					continue;
 
-				track.HasWritten = true;
-				track.LastWritten = value;
-				AnimationLayer.Write(track.Target, track.Property, value);
+				if (AnimationLayer.Write(track.Target, track.Property, value))
+				{
+					track.HasWritten = true;
+					track.LastWritten = value;
+				}
+			}
+		}
+
+		// Before the active interval, without a backward fill, the run contributes nothing: a seek back removes
+		// what it showed. It keeps ownership, so it can write again once active.
+		void ClearContribution()
+		{
+			foreach (var track in _tracks)
+			{
+				if (!track.Owned || !track.HasWritten)
+					continue;
+
+				track.HasWritten = false;
+				track.LastWritten = null;
+				AnimationLayer.Clear(track.Target, track.Property, this);
 			}
 		}
 
@@ -614,67 +784,147 @@ namespace Microsoft.Maui.Controls.Animations
 			if (_completed)
 				return;
 
+			// Teardown happens before any user callback runs. Nothing ticks, waits or observes past this point,
+			// except to end a held fill with its target or window.
+			_rootTime = CurrentRootTime();
 			_completed = true;
 			StopTicking();
-			StopObservingUnload();
+			StopWaitingForWindow();
 
-			var hold = keepEnd && _options.FillCompletion == FillCompletion.Hold;
-			var endProgress = _endTau / _duration;
-
-			foreach (var track in _tracks)
+			if (!_forever && (keepEnd || result == AnimationResult.Completed || result == AnimationResult.ReducedMotionSkipped))
 			{
-				if (!_prepared)
-					break;
+				_tau = _endTau;
+				_iteration = _endIteration;
+				_rootTime = Math.Max(_rootTime, _begin + _active / _speed);
+			}
 
-				if (keepEnd && (track.Owned || track.Excluded))
+			var hold = keepEnd && _fillCompletion == FillCompletion.Hold;
+			var endProgress = _endTau / _duration;
+			Exception? error = null;
+
+			if (_prepared)
+			{
+				foreach (var track in _tracks)
 				{
-					var end = track.Sample(endProgress, _defaultEasing);
-					if (track.Owned)
+					try
 					{
-						// Exact end (rule 5), then keep it: held at animation rank, or committed beneath the
-						// hold at the rank of the value it replaces (rule 6), so nothing is raised at release.
-						AnimationLayer.Write(track.Target, track.Property, end);
-						if (!hold)
-						{
-							AnimationLayer.CommitAndRelease(track.Target, track.Property, end, this);
-							track.Owned = false;
-						}
+						FinishTrack(track, keepEnd, hold, commitCurrent, endProgress);
 					}
-					else if (track.Excluded)
+					catch (Exception exception)
 					{
-						// Rule 8: one write at handler rank, exactly as if the user had edited the value.
-						track.Target.SetValue(track.Property, end, SetterSpecificity.FromHandler);
+						error ??= exception;
+						ReleaseQuietly(track);
 					}
 				}
-				else if (track.Owned)
+
+				// A fault ends the run: nothing it still holds stays held, held fills included.
+				if (error is not null)
 				{
-					if (commitCurrent)
+					foreach (var track in _tracks)
+					{
+						if (track.Owned)
+							ReleaseQuietly(track);
+					}
+				}
+			}
+
+			_holding = hold && error is null && _tracks.Exists(t => t.Owned);
+			if (!_holding)
+				StopObservingLifetime();
+
+			if (error is null)
+			{
+				_completion.TrySetResult(result);
+			}
+			else
+			{
+				LogFault<StoryboardRun>(error);
+				if (_completion.TrySetException(error))
+					_ = _completion.Task.Exception;
+			}
+
+			var finished = error is null && (result == AnimationResult.Completed || result == AnimationResult.ReducedMotionSkipped);
+			SetState(finished ? PlaybackState.Finished : PlaybackState.Stopped);
+			if (error is null)
+				_player.RaiseCompleted(result, _replacedTracks);
+		}
+
+		void FinishTrack(Track track, bool keepEnd, bool hold, bool commitCurrent, double endProgress)
+		{
+			if (keepEnd && track.Owned)
+			{
+				// Exact end (rule 5), then keep it: held at animation rank, or committed beneath the hold at the
+				// rank of the value it replaces (rule 6), so nothing is raised at release.
+				var end = track.Sample(endProgress, _defaultEasing);
+				var shown = AnimationLayer.Write(track.Target, track.Property, end);
+
+				// A hold needs the end at animation rank, which can't be written while the property is mid-set:
+				// then the end is committed instead.
+				if (!hold || !shown)
+				{
+					AnimationLayer.CommitAndRelease(track.Target, track.Property, end, this);
+					track.Owned = false;
+				}
+			}
+			else if (keepEnd && track.Excluded && !hold)
+			{
+				// Rule 8: a run that commits its end writes an excluded property once at handler rank, as if the
+				// user had edited the value. A held fill writes nothing to it.
+				track.Target.SetValueForAnimation(track.Property, track.Sample(endProgress, _defaultEasing), SetterSpecificity.FromHandler);
+			}
+			else if (track.Owned)
+			{
+				if (commitCurrent)
+					AnimationLayer.CommitAndRelease(track.Target, track.Property, track.Target.GetValue(track.Property), this);
+				else
+					AnimationLayer.Release(track.Target, track.Property, this);
+
+				track.Owned = false;
+			}
+		}
+
+		// Best effort after an exception: whatever this run still holds is released.
+		void ReleaseQuietly(Track track)
+		{
+			track.Owned = false;
+			try
+			{
+				AnimationLayer.Release(track.Target, track.Property, this);
+			}
+			catch (Exception exception)
+			{
+				LogFault<StoryboardRun>(exception);
+			}
+		}
+
+		void ReleaseHeldFill(bool commit)
+		{
+			_holding = false;
+			StopObservingLifetime();
+			Exception? error = null;
+			foreach (var track in _tracks)
+			{
+				if (!track.Owned)
+					continue;
+
+				try
+				{
+					if (commit)
 						AnimationLayer.CommitAndRelease(track.Target, track.Property, track.Target.GetValue(track.Property), this);
 					else
 						AnimationLayer.Release(track.Target, track.Property, this);
 
 					track.Owned = false;
 				}
+				catch (Exception exception)
+				{
+					error ??= exception;
+					ReleaseQuietly(track);
+				}
 			}
 
-			_holding = hold && _tracks.Exists(t => t.Owned);
-
-			SetState(result == AnimationResult.Completed || result == AnimationResult.ReducedMotionSkipped ? PlaybackState.Finished : PlaybackState.Stopped);
-			_completion.TrySetResult(result);
-			_player.RaiseCompleted(result, _replacedTracks);
-		}
-
-		void ReleaseHeldFill()
-		{
-			_holding = false;
-			foreach (var track in _tracks)
-			{
-				if (!track.Owned)
-					continue;
-
-				AnimationLayer.Release(track.Target, track.Property, this);
-				track.Owned = false;
-			}
+			if (error is not null)
+				LogFault<StoryboardRun>(error);
 
 			SetState(PlaybackState.Stopped);
 		}
@@ -689,8 +939,25 @@ namespace Microsoft.Maui.Controls.Animations
 			_player.RaiseStateChanged(old, state);
 		}
 
-		void StopObservingUnload()
+		// The target's Unloaded and its window's destruction end the run, also while it's paused or holding a
+		// fill, until it holds nothing.
+		void ObserveLifetime()
 		{
+			if (!_observingUnload)
+			{
+				_observingUnload = true;
+				_target.Unloaded += OnTargetUnloaded;
+			}
+
+			if (_explicitClock is not null)
+				ObserveClock(_explicitClock);
+			else if (_target.Window is not null)
+				ObserveClock(AnimationClocks.For(_target));
+		}
+
+		void StopObservingLifetime()
+		{
+			StopObservingClock();
 			if (!_observingUnload)
 				return;
 
@@ -698,7 +965,7 @@ namespace Microsoft.Maui.Controls.Animations
 			_target.Unloaded -= OnTargetUnloaded;
 		}
 
-		void OnTargetUnloaded(object? sender, EventArgs e) => Stop(StopBehavior.Release);
+		void OnTargetUnloaded(object? sender, EventArgs e) => StopCore(StopBehavior.Release);
 
 		static List<Track> BuildTracks(Storyboard storyboard, VisualElement playTarget, TimeSpan duration)
 		{

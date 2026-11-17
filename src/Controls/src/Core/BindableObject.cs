@@ -29,6 +29,10 @@ namespace Microsoft.Maui.Controls
 		public IDispatcher Dispatcher =>
 			_dispatcher ??= this.FindDispatcher();
 
+		// As Dispatcher, but null rather than an exception in a process without a dispatcher, such as a unit test.
+		internal IDispatcher TryGetDispatcher() =>
+			_dispatcher ??= this.TryFindDispatcher();
+
 		/// <summary>
 		/// Initializes a new instance of the <see cref="BindableObject"/> class.
 		/// </summary>
@@ -357,13 +361,35 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
-			oldBinding?.Unapply();
+			var removeHoldAfterApply = binding is not null && EndHoldForNewBinding(targetProperty, context, binding);
 
-			context.Bindings.SetValue(specificity, binding ?? throw new ArgumentNullException(nameof(binding)));
+			try
+			{
+				oldBinding?.Unapply();
 
-			targetProperty.BindingChanging?.Invoke(this, oldBinding, binding);
+				context.Bindings.SetValue(specificity, binding ?? throw new ArgumentNullException(nameof(binding)));
 
-			binding.Apply(BindingContext, this, targetProperty, false, specificity);
+				targetProperty.BindingChanging?.Invoke(this, oldBinding, binding);
+
+				binding.Apply(BindingContext, this, targetProperty, false, specificity);
+			}
+			catch when (removeHoldAfterApply)
+			{
+				// The hold's flag is already cleared, so its entry must go now: nothing could remove it later.
+				try
+				{
+					RemoveHoldBeneathBinding(targetProperty, context);
+				}
+				catch (Exception releaseException)
+				{
+					MauiLogger<BindableObject>.Log(LogLevel.Error, releaseException, "Ending an animation hold after a failed SetBinding threw.");
+				}
+
+				throw;
+			}
+
+			if (removeHoldAfterApply)
+				RemoveHoldBeneathBinding(targetProperty, context);
 		}
 
 		/// <summary>
@@ -729,15 +755,22 @@ namespace Microsoft.Maui.Controls
 			// the displayed value isn't user input: the hold stays, and the echo is dropped rather than stored
 			// above the hold, where it would become the base value and outlive the release.
 			bool animationEndedByHandler = false;
-			if ((context.Attributes & BindableContextAttributes.IsAnimated) != 0
-				&& specificity == SetterSpecificity.FromHandler)
+			if ((context.Attributes & BindableContextAttributes.IsAnimated) != 0)
 			{
-				if (Equals(value, original))
-					return;
+				if (specificity == SetterSpecificity.FromHandler)
+				{
+					if (Equals(value, original))
+						return;
 
-				context.Attributes &= ~BindableContextAttributes.IsAnimated;
-				context.Values.Remove(SetterSpecificity.Animation);
-				animationEndedByHandler = true;
+					context.Attributes &= ~BindableContextAttributes.IsAnimated;
+					context.Values.Remove(SetterSpecificity.Animation);
+					animationEndedByHandler = true;
+				}
+				else if (originalSpecificity == SetterSpecificity.Animation && specificity != SetterSpecificity.Animation)
+				{
+					SetValueBeneathHold(property, context, value, currentlyApplying, attributes, specificity);
+					return;
+				}
 			}
 
 			//if the last value was set from handler, override it
@@ -986,11 +1019,51 @@ namespace Microsoft.Maui.Controls
 		// Animation layer support (Microsoft.Maui.Controls.Animations.AnimationLayer). Everything below is
 		// reached only through the animation layer, so writes that never animate pay at most one flag test.
 
-		internal void SetAnimatedValue(BindableProperty property, object value)
+		// Refused while the property is mid-set, when this property's own change notification started the run: the
+		// write would be queued and could land after the run released the property, leaving a hold nothing owns.
+		internal bool SetAnimatedValue(BindableProperty property, object value)
 		{
 			var context = GetOrCreateContext(property);
+			if ((context.Attributes & BindableContextAttributes.IsBeingSet) != 0)
+				return false;
+
 			context.Attributes |= BindableContextAttributes.IsAnimated;
-			SetValueCore(property, value, SetValueFlags.None, SetValuePrivateFlags.Default, SetterSpecificity.Animation);
+			try
+			{
+				SetValueCore(property, value, SetValueFlags.None, SetValuePrivateFlags.Default, SetterSpecificity.Animation);
+			}
+			catch
+			{
+				EndFaultedSet(context);
+				throw;
+			}
+
+			return true;
+		}
+
+		// Other writes the animation engine makes: commits, and the single handler-rank write of rule 8.
+		internal void SetValueForAnimation(BindableProperty property, object value, SetterSpecificity specificity)
+		{
+			var context = GetOrCreateContext(property);
+			var wasBeingSet = (context.Attributes & BindableContextAttributes.IsBeingSet) != 0;
+			try
+			{
+				SetValue(property, value, specificity);
+			}
+			catch
+			{
+				if (!wasBeingSet)
+					EndFaultedSet(context);
+				throw;
+			}
+		}
+
+		// The animation engine reports a fault instead of letting it escape, so a handler that threw mid-set must not
+		// leave the property marked as being set: every later write to it would be queued and never applied.
+		static void EndFaultedSet(BindablePropertyContext context)
+		{
+			context.Attributes &= ~BindableContextAttributes.IsBeingSet;
+			context.DelayedSetters = null;
 		}
 
 		internal bool HasAnimatedValue(BindableProperty property)
@@ -1015,6 +1088,69 @@ namespace Microsoft.Maui.Controls
 			}
 
 			ClearValueCore(property, SetterSpecificity.Animation);
+		}
+
+		// A TwoWay or OneWayToSource binding that becomes active ends a hold, as such properties are never animated
+		// (rule 8). Returns true when the hold entry must be removed once the binding has applied.
+		bool EndHoldForNewBinding(BindableProperty property, BindablePropertyContext context, BindingBase binding)
+		{
+			if ((context.Attributes & BindableContextAttributes.IsAnimated) == 0)
+				return false;
+
+			var mode = binding.GetRealizedMode(property);
+			if (mode == BindingMode.TwoWay)
+			{
+				// The binding's first value lands on top of the hold entry, so the property changes at most once,
+				// and isn't mistaken for a handler echo of the animated value and dropped.
+				context.Attributes &= ~BindableContextAttributes.IsAnimated;
+				return true;
+			}
+
+			if (mode == BindingMode.OneWayToSource)
+			{
+				// The source must receive the value beneath the hold, so the hold ends first.
+				ClearAnimatedValue(property);
+				Animations.AnimationLayer.OnHandlerWrite(this, property);
+			}
+
+			return false;
+		}
+
+		void RemoveHoldBeneathBinding(BindableProperty property, BindablePropertyContext context)
+		{
+			// Nothing landed on top, for example while there's no source yet: the value beneath the hold shows.
+			if (context.Values.GetSpecificity() == SetterSpecificity.Animation)
+				ClearValueCore(property, SetterSpecificity.Animation);
+			else
+				context.Values.Remove(SetterSpecificity.Animation);
+
+			Animations.AnimationLayer.OnHandlerWrite(this, property);
+		}
+
+		// A write beneath an animation hold. The displayed value doesn't change, so nothing is raised, but the
+		// precedence rules run against the value beneath the hold: after the release, the property shows what the
+		// same writes would have produced without an animation (rule 1), dynamic resources included.
+		void SetValueBeneathHold(BindableProperty property, BindablePropertyContext context, object value, bool currentlyApplying, SetValueFlags attributes, SetterSpecificity specificity)
+		{
+			var baseSpecificity = context.Values.GetClearedSpecificity();
+			if (specificity == SetterSpecificity.DynamicResourceSetter
+				&& (context.Attributes & BindableContextAttributes.IsDynamicResource) != 0
+				&& baseSpecificity == SetterSpecificity.ManualValueSetter)
+			{
+				context.Values.Remove(SetterSpecificity.ManualValueSetter);
+				baseSpecificity = context.Values.GetClearedSpecificity();
+			}
+
+			context.Values.SetValue(specificity, value);
+			if (specificity < baseSpecificity)
+				return;
+
+			context.Attributes &= ~BindableContextAttributes.IsDefaultValueCreated;
+
+			if ((context.Attributes & BindableContextAttributes.IsDynamicResource) != 0
+				&& (attributes & SetValueFlags.ClearDynamicResource) != 0
+				&& (specificity == SetterSpecificity.ManualValueSetter || (!currentlyApplying && specificity.IsBinding)))
+				RemoveDynamicResource(property);
 		}
 
 		// The highest entry that isn't the animation hold: what the property would show without it.

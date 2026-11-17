@@ -15,6 +15,7 @@ namespace Microsoft.Maui.Controls.Animations
 			readonly FrameCallback _callback;
 			long _lastFrameNanos;
 			bool _running;
+			bool _posted;
 
 			public ChoreographerClock() => _callback = new FrameCallback(this);
 
@@ -28,7 +29,7 @@ namespace Microsoft.Maui.Controls.Animations
 
 				_running = true;
 				_lastFrameNanos = 0;
-				Choreographer.Instance?.PostFrameCallback(_callback);
+				Post();
 			}
 
 			protected override void StopFrames()
@@ -37,11 +38,27 @@ namespace Microsoft.Maui.Controls.Animations
 					return;
 
 				_running = false;
-				Choreographer.Instance?.RemoveFrameCallback(_callback);
+				if (_posted)
+				{
+					_posted = false;
+					Choreographer.Instance?.RemoveFrameCallback(_callback);
+				}
+			}
+
+			// Choreographer doesn't merge duplicate posts. A run that ends inside a frame and a new one that starts
+			// from it would otherwise post twice and tick every run twice per frame from then on.
+			void Post()
+			{
+				if (_posted)
+					return;
+
+				_posted = true;
+				Choreographer.Instance?.PostFrameCallback(_callback);
 			}
 
 			void DoFrame(long frameTimeNanos)
 			{
+				_posted = false;
 				if (!_running)
 					return;
 
@@ -49,7 +66,7 @@ namespace Microsoft.Maui.Controls.Animations
 				OnFrame();
 
 				if (_running)
-					Choreographer.Instance?.PostFrameCallback(_callback);
+					Post();
 			}
 
 			sealed class FrameCallback : Java.Lang.Object, Choreographer.IFrameCallback

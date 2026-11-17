@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using System.Runtime.ExceptionServices;
 
 namespace Microsoft.Maui.Controls.Animations
 {
@@ -25,49 +26,55 @@ namespace Microsoft.Maui.Controls.Animations
 
 			public object? From { get; set; }
 
-			public bool Interpolates { get; set; }
-
 			// IsVisible follows CSS visibility: visible for the whole transition when either end is visible.
 			public object? VisibleDuring { get; set; }
 		}
 
 		readonly VisualElement _element;
+		readonly VisualStateGroup _group;
 		readonly VisualTransition _transition;
 		readonly List<Track> _tracks = new();
 		TimeSpan _duration;
 		TimeSpan _startTime;
 		Easing _easing = Easing.Default;
 		bool _observingUnload;
+		bool _tracked;
 
-		VisualTransitionRun(VisualElement element, VisualTransition transition)
+		VisualTransitionRun(VisualElement element, VisualStateGroup group, VisualTransition transition)
 		{
 			_element = element;
+			_group = group;
 			_transition = transition;
 		}
 
 		/// <summary>
-		/// Returns a run when this state change animates, or <see langword="null"/> for today's instant behavior.
+		/// Returns <see langword="false"/> when this state change doesn't animate (today's instant behavior). Otherwise
+		/// <paramref name="run"/> is the run, or <see langword="null"/> when the change has nothing it can animate.
 		/// </summary>
-		public static VisualTransitionRun? Prepare(VisualElement element, VisualStateGroup group, VisualState to)
+		public static bool Prepare(VisualElement element, VisualStateGroup group, VisualState to, out VisualTransitionRun? run)
 		{
-			// Never animate the initial state, a missing match, an element that isn't on screen, or a change
-			// the caller asked to apply without transitions (handled by the caller).
+			run = null;
+
+			// Never animate the initial state, a missing match, or an element that isn't on screen. A change
+			// the caller asked to apply without transitions never gets here.
 			if (group.CurrentState is not { } from || ReferenceEquals(from, to) || !group.HasTransitions)
-				return null;
+				return false;
 
 			var transition = group.FindTransition(from.Name, to.Name);
 			if (transition is null || transition.Duration <= TimeSpan.Zero)
-				return null;
+				return false;
 
 			if (!element.IsLoaded || element.Handler is null)
-				return null;
+				return false;
 
 			// Step 1: the union of the outgoing and incoming setters. MAUI unapplies every outgoing setter,
 			// so a property only the outgoing state sets must animate back, not snap.
-			var run = new VisualTransitionRun(element, transition);
-			run.AddSetters(from);
-			run.AddSetters(to);
-			return run._tracks.Count > 0 ? run : null;
+			var candidate = new VisualTransitionRun(element, group, transition);
+			candidate.AddSetters(from);
+			candidate.AddSetters(to);
+			if (candidate._tracks.Count > 0)
+				run = candidate;
+			return true;
 		}
 
 		void AddSetters(VisualState state)
@@ -79,45 +86,6 @@ namespace Microsoft.Maui.Controls.Animations
 
 				if (setter.ResolveTarget(_element) is { } target)
 					Add(target, property);
-			}
-		}
-
-		/// <summary>
-		/// A state change that doesn't animate applies instantly, also when a transition is still running:
-		/// the running transition lets go of the properties either state sets, which then show their new values.
-		/// </summary>
-		public static void ReleaseRunningTracks(VisualElement element, VisualState from, VisualState to)
-		{
-			ReleaseRunningTracks(element, from);
-			ReleaseRunningTracks(element, to);
-		}
-
-		static void ReleaseRunningTracks(VisualElement element, VisualState state)
-		{
-			foreach (var setter in state.Setters)
-			{
-				if (setter.Property is not { } property || setter.ResolveTarget(element) is not { } target)
-					continue;
-
-				if (AnimationLayer.GetOwner(target, property) is VisualTransitionRun run)
-					run.ReleaseTrack(target, property);
-			}
-		}
-
-		void ReleaseTrack(BindableObject target, BindableProperty property)
-		{
-			for (int i = _tracks.Count - 1; i >= 0; i--)
-			{
-				if (ReferenceEquals(_tracks[i].Target, target) && _tracks[i].Property == property)
-					_tracks.RemoveAt(i);
-			}
-
-			AnimationLayer.Release(target, property, this);
-
-			if (_tracks.Count == 0)
-			{
-				StopTicking();
-				StopObservingUnload();
 			}
 		}
 
@@ -142,14 +110,20 @@ namespace Microsoft.Maui.Controls.Animations
 		/// </summary>
 		public void Pin()
 		{
-			foreach (var track in _tracks)
+			for (int i = _tracks.Count - 1; i >= 0; i--)
 			{
+				var track = _tracks[i];
 				var current = track.Target.GetValue(track.Property);
 				var alreadyHeld = track.Target.HasAnimatedValue(track.Property);
 
 				AnimationLayer.Acquire(track.Target, track.Property, this);
-				if (!alreadyHeld)
-					AnimationLayer.Write(track.Target, track.Property, current);
+				if (!alreadyHeld && !AnimationLayer.Write(track.Target, track.Property, current))
+				{
+					// The property's own change notification changed the state: it changes without animation.
+					AnimationLayer.Release(track.Target, track.Property, this);
+					_tracks.RemoveAt(i);
+					continue;
+				}
 
 				track.From = current;
 			}
@@ -182,10 +156,6 @@ namespace Microsoft.Maui.Controls.Animations
 					track.VisibleDuring = fromVisible || toVisible;
 					AnimationLayer.Write(track.Target, track.Property, track.VisibleDuring);
 				}
-				else
-				{
-					track.Interpolates = AnimationInterpolation.CanInterpolate(track.From, destination);
-				}
 			}
 
 			if (_tracks.Count == 0)
@@ -213,6 +183,9 @@ namespace Microsoft.Maui.Controls.Animations
 
 			_element.Unloaded += OnUnloaded;
 			_observingUnload = true;
+
+			_group.TrackTransition(this);
+			_tracked = true;
 
 			var clock = AnimationClocks.For(_element);
 			_startTime = clock.Elapsed;
@@ -247,7 +220,7 @@ namespace Microsoft.Maui.Controls.Animations
 					// Destinations are re-read every frame, so a source that changes mid-transition moves the
 					// destination with it instead of jumping at release.
 					var destination = AnimationLayer.GetBaseValue(track.Target, track.Property);
-					value = track.Interpolates && AnimationInterpolation.CanInterpolate(track.From, destination)
+					value = AnimationInterpolation.CanInterpolate(track.Property, track.From, destination)
 						? AnimationInterpolation.Interpolate(track.From, destination, eased)
 						: track.From;
 				}
@@ -256,16 +229,44 @@ namespace Microsoft.Maui.Controls.Animations
 			}
 		}
 
-		/// <summary>Step 7: release every hold. The highest remaining value, the new state's, is shown.</summary>
-		void Finish()
+		/// <summary>
+		/// Step 7: release every hold. The highest remaining value, the new state's, is shown. Also used when
+		/// the group changes state without animation or is invalidated: the change then applies instantly.
+		/// </summary>
+		public void Finish()
 		{
 			StopTicking();
+			StopObservingClock();
 			StopObservingUnload();
+			Untrack();
 
+			// Every hold is released even when a PropertyChanged handler throws; the first exception is rethrown.
 			var tracks = _tracks.ToArray();
 			_tracks.Clear();
+			Exception? error = null;
 			foreach (var track in tracks)
-				AnimationLayer.Release(track.Target, track.Property, this);
+			{
+				try
+				{
+					AnimationLayer.Release(track.Target, track.Property, this);
+				}
+				catch (Exception exception)
+				{
+					error ??= exception;
+				}
+			}
+
+			if (error is not null)
+				ExceptionDispatchInfo.Capture(error).Throw();
+		}
+
+		void Untrack()
+		{
+			if (!_tracked)
+				return;
+
+			_tracked = false;
+			_group.UntrackTransition(this);
 		}
 
 		void StopObservingUnload()
@@ -292,7 +293,22 @@ namespace Microsoft.Maui.Controls.Animations
 			if (_tracks.Count == 0)
 			{
 				StopTicking();
+				StopObservingClock();
 				StopObservingUnload();
+				Untrack();
+			}
+		}
+
+		protected override void OnFault(Exception exception)
+		{
+			LogFault<VisualTransitionRun>(exception);
+			try
+			{
+				Finish();
+			}
+			catch (Exception releaseException)
+			{
+				LogFault<VisualTransitionRun>(releaseException);
 			}
 		}
 	}

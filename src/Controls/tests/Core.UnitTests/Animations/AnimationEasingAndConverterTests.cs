@@ -1,6 +1,7 @@
 using System;
 using Microsoft.Maui.Controls.Animations;
 using Microsoft.Maui.Converters;
+using Microsoft.Maui.Graphics;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests.Animations
@@ -74,6 +75,65 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Animations
 			Assert.Equal(0, Easing.Hold.Ease(0));
 			Assert.Equal(0, Easing.Hold.Ease(0.999));
 			Assert.Equal(1, Easing.Hold.Ease(1));
+		}
+
+		[Fact]
+		public void SpringWithATinyBounceStaysFinite()
+		{
+			// 1 - 1e-17 rounds to 1: the damping must not be computed as sqrt(1 - zeta^2) = 0.
+			var spring = Easing.Spring(1e-17);
+
+			Assert.True(double.IsFinite(spring.Ease(0)));
+			Assert.True(double.IsFinite(spring.Ease(0.5)));
+		}
+
+		[Fact]
+		public void CubicBezierIsAccurateNearAFlatSpot()
+		{
+			// x'(t) = 0 at t = 0.5 for (1, 0, 0, 1): a tiny error in x there is a large error in the result.
+			Assert.Equal(0.504234617, Easing.CubicBezier(1, 0, 0, 1).Ease(0.50000009), 1e-6);
+		}
+
+		[Fact]
+		public void NewValueTypesInterpolate()
+		{
+			AssertMidpoint(TimeSpan.Zero, TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(5));
+			AssertMidpoint(new GridLength(0), new GridLength(100), new GridLength(50));
+			AssertMidpoint((byte)0, (byte)100, (byte)50);
+			AssertMidpoint((short)-100, (short)100, (short)0);
+			AssertMidpoint(0u, 100u, 50u);
+			AssertMidpoint(new PointF(0, 0), new PointF(10, 20), new PointF(5, 10));
+			AssertMidpoint(new SizeF(0, 0), new SizeF(10, 20), new SizeF(5, 10));
+			AssertMidpoint(new RectF(0, 0, 0, 0), new RectF(10, 20, 30, 40), new RectF(5, 10, 15, 20));
+		}
+
+		[Fact]
+		public void DoubleCollectionsInterpolateElementWiseWhenTheirLengthsMatch()
+		{
+			var halfway = AnimationInterpolation.Interpolate(new DoubleCollection(new[] { 0.0, 10.0 }), new DoubleCollection(new[] { 10.0, 30.0 }), 0.5);
+			Assert.Equal(new[] { 5.0, 20.0 }, Assert.IsType<DoubleCollection>(halfway));
+
+			var shorter = new DoubleCollection(new[] { 1.0 });
+			var longer = new DoubleCollection(new[] { 1.0, 2.0 });
+			Assert.False(AnimationInterpolation.CanInterpolate(shorter, longer));
+			Assert.Same(shorter, AnimationInterpolation.Interpolate(shorter, longer, 0.5));
+		}
+
+		[Fact]
+		public void GridLengthsOfDifferentUnitsHold()
+		{
+			var star = new GridLength(1, GridUnitType.Star);
+			var absolute = new GridLength(100);
+
+			Assert.False(AnimationInterpolation.CanInterpolate(star, absolute));
+			Assert.Equal(star, AnimationInterpolation.Interpolate(star, absolute, 0.5));
+			Assert.False(AnimationInterpolation.CanInterpolate(absolute, star));
+		}
+
+		static void AssertMidpoint(object from, object to, object expected)
+		{
+			Assert.True(AnimationInterpolation.CanInterpolate(from, to), $"{from.GetType().Name} should interpolate.");
+			Assert.Equal(expected, AnimationInterpolation.Interpolate(from, to, 0.5));
 		}
 
 		[Fact]

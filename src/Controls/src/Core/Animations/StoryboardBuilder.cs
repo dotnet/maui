@@ -119,6 +119,8 @@ namespace Microsoft.Maui.Controls.Animations
 
 			// Cues must not decrease in declaration order; samples from different tracks interleave by cue.
 			frames.Sort((left, right) => left.Order != right.Order ? left.Order.CompareTo(right.Order) : left.Sequence.CompareTo(right.Sequence));
+			// Building again rebuilds the same storyboard rather than appending to it.
+			_storyboard.KeyFrames.Clear();
 			foreach (var (_, _, frame) in frames)
 				_storyboard.KeyFrames.Add(frame);
 

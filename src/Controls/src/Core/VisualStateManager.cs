@@ -127,48 +127,72 @@ namespace Microsoft.Maui.Controls
 
 				if (group.CurrentState?.Name == name && !force)
 				{
-					// We're already in the target state; nothing else to do
+					// We're already in the target state; nothing else to do, except that a change asked for
+					// without transitions still lands without one.
+					if (!useTransitions)
+						group.FinishTransitions();
 					return true;
 				}
 
 				// Pin the affected properties first, so the state change below happens silently beneath them.
-				var outgoing = group.CurrentState;
-				var transition = useTransitions ? VisualTransitionRun.Prepare(visualElement, group, target) : null;
-				transition?.Pin();
+				VisualTransitionRun transition = null;
+				var animates = useTransitions && VisualTransitionRun.Prepare(visualElement, group, target, out transition);
 
-				// If we've got a new state to transition to, unapply the setters from the current state
-				if (group.CurrentState != null)
+				try
 				{
-					// Mirror the apply logic: use the same promoted specificity for system-driven states.
-					var unapplySpecificity = IsSystemDrivenState(group.CurrentState.Name)
+					transition?.Pin();
+
+					// If we've got a new state to transition to, unapply the setters from the current state
+					if (group.CurrentState != null)
+					{
+						// Mirror the apply logic: use the same promoted specificity for system-driven states.
+						var unapplySpecificity = IsSystemDrivenState(group.CurrentState.Name)
+							? baseSpecificity.WithFullVsmPriority()
+							: baseSpecificity;
+						foreach (Setter setter in group.CurrentState.Setters)
+						{
+							setter.UnApply(visualElement, unapplySpecificity);
+						}
+					}
+
+					// Update the current state
+					group.CurrentState = target;
+
+					// For system-driven states (Disabled, Focused, Selected, PointerOver, Unfocused),
+					// promote implicit VSM to full VSM priority so it can override locally-set values.
+					// Normal state and custom developer-defined states keep downgraded priority (#18103, #34363).
+					var applySpecificity = IsSystemDrivenState(name)
 						? baseSpecificity.WithFullVsmPriority()
 						: baseSpecificity;
-					foreach (Setter setter in group.CurrentState.Setters)
+
+					// Apply the setters from the new state
+					foreach (Setter setter in target.Setters)
 					{
-						setter.UnApply(visualElement, unapplySpecificity);
+						setter.Apply(visualElement, applySpecificity);
 					}
+
+					// A change that animates leaves earlier transitions of the group running, even when it has nothing
+					// of its own to animate; one that doesn't lands everything at once.
+					if (transition is not null)
+						transition.Start();
+					else if (!animates)
+						group.FinishTransitions();
 				}
-
-				// Update the current state
-				group.CurrentState = target;
-
-				// For system-driven states (Disabled, Focused, Selected, PointerOver, Unfocused),
-				// promote implicit VSM to full VSM priority so it can override locally-set values.
-				// Normal state and custom developer-defined states keep downgraded priority (#18103, #34363).
-				var applySpecificity = IsSystemDrivenState(name)
-					? baseSpecificity.WithFullVsmPriority()
-					: baseSpecificity;
-
-				// Apply the setters from the new state
-				foreach (Setter setter in target.Setters)
+				catch
 				{
-					setter.Apply(visualElement, applySpecificity);
-				}
+					// Pins must not outlive a state change that threw: release them, so nothing stays held. The
+					// original exception is the one that propagates.
+					try
+					{
+						transition?.Finish();
+					}
+					catch (Exception releaseException)
+					{
+						MauiLogger<VisualStateGroup>.Log(Microsoft.Extensions.Logging.LogLevel.Error, releaseException, "Releasing a visual-state transition after a failed state change threw.");
+					}
 
-				if (transition is not null)
-					transition.Start();
-				else if (outgoing is not null && group.HasTransitions)
-					VisualTransitionRun.ReleaseRunningTracks(visualElement, outgoing, target);
+					throw;
+				}
 
 				return true;
 			}
@@ -251,6 +275,9 @@ namespace Microsoft.Maui.Controls
 				{
 					continue;
 				}
+
+				// Hot Reload and group replacement never animate; a running transition ends at once.
+				group.FinishTransitions();
 
 				foreach (Setter setter in state.Setters)
 				{
@@ -372,6 +399,8 @@ namespace Microsoft.Maui.Controls
 
 		internal void OnGroupRemoving(VisualStateGroup group)
 		{
+			group.FinishTransitions();
+
 			foreach (var state in group.States)
 			{
 				foreach (var trigger in state.StateTriggers)
@@ -611,6 +640,23 @@ namespace Microsoft.Maui.Controls
 		public IList<VisualTransition> Transitions => _transitions ??= new List<VisualTransition>();
 
 		internal bool HasTransitions => _transitions is { Count: > 0 };
+
+		List<VisualTransitionRun> _runningTransitions;
+
+		internal void TrackTransition(VisualTransitionRun run) => (_runningTransitions ??= new List<VisualTransitionRun>()).Add(run);
+
+		internal void UntrackTransition(VisualTransitionRun run) => _runningTransitions?.Remove(run);
+
+		// A state change without animation, or a re-application of the group, applies instantly: running
+		// transitions let go of their properties, which then show their current values.
+		internal void FinishTransitions()
+		{
+			if (_runningTransitions is not { Count: > 0 } runs)
+				return;
+
+			foreach (var run in runs.ToArray())
+				run.Finish();
+		}
 
 		// WPF's order: exact From and To, then To only, then From only, then neither.
 		internal VisualTransition FindTransition(string from, string to)

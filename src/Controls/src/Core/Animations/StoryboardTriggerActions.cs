@@ -63,7 +63,9 @@ namespace Microsoft.Maui.Controls.Animations
 		public static void Add(VisualElement element, StoryboardPlayer player)
 		{
 			var runs = s_runs.GetValue(element, static _ => new List<StoryboardPlayer>());
-			runs.RemoveAll(p => p.State == PlaybackState.Stopped);
+
+			// Bookkeeping follows what a run holds: runs that ended holding nothing are dropped.
+			runs.RemoveAll(static p => !p.HoldsValues);
 			runs.Add(player);
 		}
 
@@ -75,11 +77,11 @@ namespace Microsoft.Maui.Controls.Animations
 			foreach (var player in runs.ToArray())
 			{
 				if (storyboard is null || ReferenceEquals(player.Storyboard, storyboard))
-				{
 					player.Stop(behavior);
-					runs.Remove(player);
-				}
 			}
+
+			// A run stopped with ApplyFill can still hold its fill, and stays so a later StopStoryboard releases it.
+			runs.RemoveAll(static p => !p.HoldsValues);
 		}
 	}
 }

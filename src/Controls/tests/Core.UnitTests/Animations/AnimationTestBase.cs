@@ -42,12 +42,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Animations
 		}
 
 		// On this TFM IsLoaded means "has a Window"; visual-state transitions also need a handler.
-		protected static BoxView CreateLoadedBox()
+		protected static BoxView CreateLoadedBox() => Load(new BoxView());
+
+		protected static TView Load<TView>(TView view)
+			where TView : View
 		{
-			var box = CreateWindowedBox();
-			box.Handler = new HandlerStub();
-			Assert.True(box.IsLoaded);
-			return box;
+			_ = new Window(new ContentPage { Content = view });
+			view.Handler = new HandlerStub();
+			Assert.True(view.IsLoaded);
+			return view;
 		}
 
 		protected static BoxView CreateWindowedBox()
