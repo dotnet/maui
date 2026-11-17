@@ -882,7 +882,7 @@ namespace Microsoft.Maui.Controls.Platform
 				IsTapOnCollectionViewItem(_control, e.OriginalSource, out var tappedCollectionView) &&
 				!ReferenceEquals(tappedCollectionView, _control))
 			{
-				e.Handled = true;
+				e.SetHandled(true);
 				return;
 			}
 
@@ -1291,7 +1291,7 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					isInsideItem = true;
 				}
-				else if (current is ItemsView or ListViewBase)
+				else if (current is Microsoft.UI.Xaml.Controls.ItemsView or ListViewBase)
 				{
 					if (isInsideItem)
 					{
