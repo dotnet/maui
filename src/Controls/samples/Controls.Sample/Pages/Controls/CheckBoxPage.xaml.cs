@@ -13,7 +13,7 @@ namespace Maui.Controls.Sample.Pages
 			UpdateControls();
 		}
 
-		void OnChangeIsCheckedButtonClicked(object sender, EventArgs e)
+		void OnChangeIsCheckedButtonClicked(object? sender, EventArgs e)
 		{
 			_isGreen = !_isGreen;
 			UpdateControls();

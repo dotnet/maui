@@ -90,6 +90,7 @@ namespace Microsoft.Maui.Controls
 				var manualSpecificity = (ushort)(SetterSpecificity.ManualTriggerBaseline + triggerIndex);
 				var specificity = new SetterSpecificity(0, manualSpecificity, 0, 0, 0, 0, 0, 0);
 
+				bindable._triggerSpecificity ??= new Dictionary<TriggerBase, SetterSpecificity>();
 				bindable._triggerSpecificity[this] = specificity;
 				Condition.SetUp(bindable);
 			}
@@ -100,7 +101,7 @@ namespace Microsoft.Maui.Controls
 			if (Condition != null)
 			{
 				Condition.TearDown(bindable);
-				bindable._triggerSpecificity.Remove(this);
+				bindable._triggerSpecificity?.Remove(this);
 			}
 		}
 
@@ -116,7 +117,7 @@ namespace Microsoft.Maui.Controls
 
 		void OnConditionChanged(BindableObject bindable, bool oldValue, bool newValue)
 		{
-			if (!bindable._triggerSpecificity.TryGetValue(this, out var specificity))
+			if (bindable._triggerSpecificity?.TryGetValue(this, out var specificity) != true)
 			{
 				// this should never happen
 				return;

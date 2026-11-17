@@ -14,7 +14,6 @@ There are several artifacts in the .NET MAUI "universe":
   * `Microsoft.Maui.Resizetizer` - The framework-and-platform-agnostic asset generator and integrator
   * `Microsoft.Maui.Core` - The base interfaces and handlers for all .NET MAUI things
   * `Microsoft.Maui.Essentials` - The core set of framework-agnostic, cross-platform APIs
-  * `Microsoft.Maui.Controls.Compatibility` - The set of compatibility APIs for Xamarin.Forms
 * .NET MAUI maps support:
   * `Microsoft.Maui.Controls.Maps` - The set of XAML-based map controls
   * `Microsoft.Maui.Maps` - The set of handlers and interfaces for mapping controls

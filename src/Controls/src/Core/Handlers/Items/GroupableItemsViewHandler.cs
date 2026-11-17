@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public static PropertyMapper<TItemsView, GroupableItemsViewHandler<TItemsView>> GroupableItemsViewMapper = new(SelectableItemsViewMapper)
 		{
 			[GroupableItemsView.IsGroupedProperty.PropertyName] = MapIsGrouped,
-#if WINDOWS || __ANDROID__ || TIZEN
+#if WINDOWS || __ANDROID__
 			[GroupableItemsView.GroupFooterTemplateProperty.PropertyName] = MapIsGrouped,
 			[GroupableItemsView.GroupHeaderTemplateProperty.PropertyName] = MapIsGrouped,
 #endif

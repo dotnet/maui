@@ -165,14 +165,12 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateCancelButtonState(searchBar);
 		}
 
-		// make it public in .net 11
-		internal static void MapCursorPosition(ISearchBarHandler handler, ISearchBar searchBar)
+		public static void MapCursorPosition(ISearchBarHandler handler, ISearchBar searchBar)
 		{
 			handler.QueryEditor?.UpdateCursorPosition(searchBar);
 		}
 
-		// make it public in .net 11
-		internal static void MapSelectionLength(ISearchBarHandler handler, ISearchBar searchBar)
+		public static void MapSelectionLength(ISearchBarHandler handler, ISearchBar searchBar)
 		{
 			handler.QueryEditor?.UpdateSelectionLength(searchBar);
 		}

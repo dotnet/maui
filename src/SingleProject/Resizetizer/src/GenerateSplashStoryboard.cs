@@ -28,6 +28,8 @@ namespace Microsoft.Maui.Resizetizer
 
 			try
 			{
+				CleanThemedAssets();
+
 				var splash = MauiSplashScreen?.FirstOrDefault();
 				if (splash is null)
 				{
@@ -86,7 +88,7 @@ namespace Microsoft.Maui.Resizetizer
 			else
 				dpi = DpiPath.Ios.Original;
 
-			var image = resizer.GetRasterFileDestination(dpi, includeIntermediate: false, includeScale: false);
+			var image = Path.GetFileName(resizer.GetRasterFileDestination(dpi, includeIntermediate: false, includeScale: false));
 
 			var color = resizer.Info.Color ?? SKColors.White;
 
@@ -144,6 +146,13 @@ namespace Microsoft.Maui.Resizetizer
 		void ILogger.Log(string message)
 		{
 			Log?.LogMessage(message);
+		}
+
+		void CleanThemedAssets()
+		{
+			var assetsPath = Path.Combine(IntermediateOutputPath, "Assets.xcassets");
+			if (Directory.Exists(assetsPath))
+				Directory.Delete(assetsPath, recursive: true);
 		}
 	}
 }

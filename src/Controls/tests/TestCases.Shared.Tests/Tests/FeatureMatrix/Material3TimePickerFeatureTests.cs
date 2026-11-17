@@ -19,6 +19,14 @@ public class Material3TimePickerFeatureTests : _GalleryUITest
 	{
 	}
 
+	void OpenTimePickerDialog()
+	{
+		App.WaitForElement("TimePickerControl");
+		var endIcon = AppiumQuery.ByAccessibilityId("Open time picker");
+		App.WaitForElement(endIcon);
+		App.Tap(endIcon);
+	}
+
 	[Test, Order(1)]
 	[Category(UITestCategories.Material3)]
 	public void Material3TimePicker_InitialState_VerifyVisualState()
@@ -28,7 +36,10 @@ public class Material3TimePickerFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("TimePickerControl");
-		App.Tap("TimePickerControl");
+		// Snapshot the resting outlined field (dialog dismissed via OK); the platform Material dialog is intentionally not captured (platform component, non-deterministic).
+		OpenTimePickerDialog();
+		App.WaitForElement("OK");
+		App.Tap("OK");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
@@ -36,10 +47,7 @@ public class Material3TimePickerFeatureTests : _GalleryUITest
 	[Category(UITestCategories.Material3)]
 	public void Material3TimePicker_ModifyOldTimeAndNewTime_VerifyVisualState()
 	{
-		App.WaitForElement("Cancel");
-		App.Tap("Cancel");
-		App.WaitForElement("TimePickerControl");
-		App.Tap("TimePickerControl");
+		OpenTimePickerDialog();
 		App.WaitForElement(MaterialClockHour("6"));
 		App.Tap(MaterialClockHour("6"));
 		App.WaitForElement("OK");
@@ -53,14 +61,12 @@ public class Material3TimePickerFeatureTests : _GalleryUITest
 	[Category(UITestCategories.Material3)]
 	public void Material3TimePicker_OldTimeAndNewTime_VerifyVisualState()
 	{
-		App.WaitForElement("TimePickerControl");
-		App.Tap("TimePickerControl");
+		OpenTimePickerDialog();
 		App.WaitForElement(MaterialClockHour("7"));
 		App.Tap(MaterialClockHour("7"));
 		App.WaitForElement("OK");
 		App.Tap("OK");
-		App.WaitForElement("TimePickerControl");
-		App.Tap("TimePickerControl");
+		OpenTimePickerDialog();
 		App.WaitForElement(MaterialClockHour("8"));
 		App.Tap(MaterialClockHour("8"));
 		App.WaitForElement("Cancel");
@@ -612,6 +618,22 @@ public class Material3TimePickerFeatureTests : _GalleryUITest
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("TimePickerControl");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+	}
+
+	[Test, Order(31)]
+	[Category(UITestCategories.Material3)]
+	public void Material3TimePicker_TapTextArea_DoesNotOpenDialog()
+	{
+		var pickerRect = App.WaitForElement("TimePickerControl").GetRect();
+		// Material3 opens the dialog only via the trailing clock icon; tapping the text area must not open it.
+		App.TapCoordinates(pickerRect.X + pickerRect.Width / 4, pickerRect.CenterY());
+		// Bounded wait: the dialog must NOT appear within its normal inflation window.
+		Assert.Throws<TimeoutException>(() => App.WaitForElement("OK", timeout: TimeSpan.FromSeconds(2)));
+
+		// Positive control: the trailing icon DOES open the dialog, proving the field is interactive.
+		OpenTimePickerDialog();
+		App.WaitForElement("OK");
+		App.Tap("Cancel");
 	}
 }
 #endif

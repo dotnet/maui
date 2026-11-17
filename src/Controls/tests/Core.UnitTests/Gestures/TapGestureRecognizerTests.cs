@@ -29,5 +29,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			tap.SendTapped(view);
 			Assert.Equal(result, tap.CommandParameter);
 		}
+
+		[Fact]
+		public void SendTappedThrowsForNullSender()
+		{
+			var tap = new TapGestureRecognizer();
+
+			Assert.Throws<ArgumentNullException>(() => tap.SendTapped(null));
+		}
 	}
 }

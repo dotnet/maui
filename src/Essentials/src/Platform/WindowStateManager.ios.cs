@@ -40,10 +40,10 @@ namespace Microsoft.Maui.ApplicationModel
 		/// Provides the default implementation for static usage of this API.
 		/// </summary>
 		public static IWindowStateManager Default =>
-			defaultImplementation ??= new WindowStateManagerImplementation();
+			EssentialsImplementation.GetOrCreate(ref defaultImplementation, static () => new WindowStateManagerImplementation());
 
 		internal static void SetDefault(IWindowStateManager? implementation) =>
-			defaultImplementation = implementation;
+			EssentialsImplementation.Set(ref defaultImplementation, implementation);
 	}
 
 	static class WindowStateManagerExtensions

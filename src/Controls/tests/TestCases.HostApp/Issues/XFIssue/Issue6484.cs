@@ -23,6 +23,7 @@ public class Issue6484 : TestShell
 	async void OnPageAppearing(object sender, EventArgs e)
 	{
 		page.Appearing -= OnPageAppearing;
+		await Task.Delay(1000);
 
 		var removeMe = new ContentPage();
 		await Navigation.PushAsync(removeMe);

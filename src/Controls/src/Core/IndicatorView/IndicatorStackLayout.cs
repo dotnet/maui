@@ -11,11 +11,18 @@ namespace Microsoft.Maui.Controls
 	internal class IndicatorStackLayout : StackLayout
 	{
 		readonly IndicatorView _indicatorView;
+		readonly WeakNotifyPropertyChangedProxy _propertyChangedProxy = new WeakNotifyPropertyChangedProxy();
+
+		PropertyChangedEventHandler _propertyChangedEventHandler;
+
+		~IndicatorStackLayout() => _propertyChangedProxy.Unsubscribe();
+
 		public IndicatorStackLayout(IndicatorView indicatorView)
 		{
 			_indicatorView = indicatorView;
+			_propertyChangedEventHandler ??= IndicatorViewPropertyChanged;
+			_propertyChangedProxy.Subscribe(_indicatorView, _propertyChangedEventHandler);
 			Orientation = StackOrientation.Horizontal;
-			_indicatorView.PropertyChanged += IndicatorViewPropertyChanged;
 		}
 
 		protected override void OnChildAdded(Element child)
@@ -203,7 +210,7 @@ namespace Microsoft.Maui.Controls
 
 		public void Remove()
 		{
-			_indicatorView.PropertyChanged -= IndicatorViewPropertyChanged;
+			_propertyChangedProxy.Unsubscribe();
 		}
 	}
 }

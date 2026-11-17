@@ -42,7 +42,7 @@
     <Reference Include="System.Xaml" />
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="Microsoft.VisualStudio.DesignTools.Extensibility" Version="17.5.33428.366" />
+		<PackageReference Include="Microsoft.VisualStudio.DesignTools.Extensibility" Version="17.10.34916.79" />
 	</ItemGroup>
 	<!-- The IDE will look for a top level assembly resource called 'Microsoft.Maui.toolbox.xml' to -->
 	<!-- load the toolbox metadata from.                                                           -->

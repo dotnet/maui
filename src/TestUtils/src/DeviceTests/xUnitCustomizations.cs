@@ -213,13 +213,103 @@ namespace Microsoft.Maui
 			return _categoryPrefix;
 		}
 
+		string? _reuseVariantPrefix;
+
+		// Renderer/handler subclass pairs reuse the same test bodies, so DisplayName alone can't
+		// distinguish variants. Android uses the "Variant" trait ("[Renderer]"/"[Handler]"),
+		// NavigationPage uses "NavigationViewVariant" ("[NavigationRenderer]"/"[NavigationViewHandler]"),
+		// FlyoutPage uses "FlyoutViewVariant" ("[PhoneFlyoutPageRenderer]"/"[FlyoutViewHandler]"),
+		// and TabbedPage uses "TabbedViewVariant" ("[TabbedRenderer]"/"[TabbedViewHandler]").
+		string GetReuseVariantPrefix()
+		{
+			if (_reuseVariantPrefix == null)
+			{
+#if ANDROID || IOS || MACCATALYST
+				try
+				{
+					// These literals must stay in sync with RendererHandlerVariant.cs (Controls.DeviceTests).
+#if IOS || MACCATALYST
+					if (Traits.TryGetValue("NavigationViewVariant", out var navigationViewVariants) && navigationViewVariants is not null)
+					{
+						// Check Handler first: a Handler subclass also inherits the base class's
+						// "NavigationRenderer" trait, so Traits may contain both values for this key.
+						if (navigationViewVariants.Contains("NavigationViewHandler"))
+						{
+							_reuseVariantPrefix = "[NavigationViewHandler] ";
+						}
+						else if (navigationViewVariants.Contains("NavigationRenderer"))
+						{
+							_reuseVariantPrefix = "[NavigationRenderer] ";
+						}
+					}
+
+					if (Traits.TryGetValue("FlyoutViewVariant", out var flyoutViewVariants) && flyoutViewVariants is not null)
+					{
+						// Check Handler first: a Handler subclass also inherits the base class's
+						// "PhoneFlyoutPageRenderer" trait, so Traits may contain both values for this key.
+						if (flyoutViewVariants.Contains("FlyoutViewHandler"))
+						{
+							_reuseVariantPrefix = (_reuseVariantPrefix ?? string.Empty) + "[FlyoutViewHandler] ";
+						}
+						else if (flyoutViewVariants.Contains("PhoneFlyoutPageRenderer"))
+						{
+							_reuseVariantPrefix = (_reuseVariantPrefix ?? string.Empty) + "[PhoneFlyoutPageRenderer] ";
+						}
+					}
+
+					if (Traits.TryGetValue("TabbedViewVariant", out var tabbedViewVariants) && tabbedViewVariants is not null)
+					{
+						// Check Handler first: a Handler subclass also inherits the base class's
+						// "TabbedRenderer" trait, so Traits may contain both values for this key.
+						if (tabbedViewVariants.Contains("TabbedViewHandler"))
+						{
+							_reuseVariantPrefix = (_reuseVariantPrefix ?? string.Empty) + "[TabbedViewHandler] ";
+						}
+						else if (tabbedViewVariants.Contains("TabbedRenderer"))
+						{
+							_reuseVariantPrefix = (_reuseVariantPrefix ?? string.Empty) + "[TabbedRenderer] ";
+						}
+					}
+#endif
+
+#if ANDROID
+					if (_reuseVariantPrefix is null && Traits.TryGetValue("Variant", out var variants) && variants is not null)
+					{
+						// Check Handler first: a Handler subclass also inherits the base class's
+						// "Renderer" trait, so Traits may contain both values for this key.
+						if (variants.Contains("Handler"))
+						{
+							_reuseVariantPrefix = "[Handler] ";
+						}
+						else if (variants.Contains("Renderer"))
+						{
+							_reuseVariantPrefix = "[Renderer] ";
+						}
+					}
+#endif
+
+					_reuseVariantPrefix ??= string.Empty;
+				}
+				catch
+				{
+					// Never let display-name resolution crash the test run.
+					_reuseVariantPrefix = string.Empty;
+				}
+#else
+				_reuseVariantPrefix = string.Empty;
+#endif
+			}
+
+			return _reuseVariantPrefix;
+		}
+
 		string? _displayName;
 
 		public string DisplayName
 		{
 			get
 			{
-				_displayName = _displayName ?? $"{GetCategoryPrefix()}{_inner.DisplayName}";
+				_displayName = _displayName ?? $"{GetCategoryPrefix()}{GetReuseVariantPrefix()}{_inner.DisplayName}";
 				return _displayName;
 			}
 		}

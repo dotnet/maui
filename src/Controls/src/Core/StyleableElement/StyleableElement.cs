@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.ComponentModel;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.StyleSheets;
 
@@ -53,5 +54,12 @@ namespace Microsoft.Maui.Controls
 		}
 
 		IList<string> IStyleSelectable.Classes => StyleClass;
+
+		/// <summary>
+		/// Forces unapply and reapply of the current merged style.
+		/// This method is intended for infrastructure use (e.g., Hot Reload) and should not be used in application code.
+		/// </summary>
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public void InvalidateStyle() => _mergedStyle.Reapply();
 	}
 }

@@ -45,7 +45,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 
 		public override bool WillFinishLaunching(UIApplication application, NSDictionary? launchOptions)
 		{
-			Runtime.MarshalManagedException += (object sender, MarshalManagedExceptionEventArgs args) =>
+			Runtime.MarshalManagedException += (object? sender, MarshalManagedExceptionEventArgs args) =>
 			{
 				Console.WriteLine("Marshaling managed exception");
 				Console.WriteLine("    Exception: {0}", args.Exception);
@@ -53,7 +53,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 
 			};
 
-			Runtime.MarshalObjectiveCException += (object sender, MarshalObjectiveCExceptionEventArgs args) =>
+			Runtime.MarshalObjectiveCException += (object? sender, MarshalObjectiveCExceptionEventArgs args) =>
 			{
 				Console.WriteLine("Marshaling Objective-C exception");
 				Console.WriteLine("    Exception: {0}", args.Exception);
@@ -80,10 +80,8 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 
 			Window = window;
 
-#if MACCATALYST
 			if (HasSceneManifest())
 				return true;
-#endif
 
 			window.MakeKeyAndVisible();
 			SetWindowReady();
@@ -91,9 +89,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 			return true;
 		}
 
-#if MACCATALYST
 		static bool HasSceneManifest() =>
 			NSBundle.MainBundle.InfoDictionary?.ContainsKey(new NSString("UIApplicationSceneManifest")) == true;
-#endif
 	}
 }

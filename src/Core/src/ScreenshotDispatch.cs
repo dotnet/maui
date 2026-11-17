@@ -1,4 +1,3 @@
-using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Media;
@@ -7,50 +6,36 @@ namespace Microsoft.Maui
 {
 	/// <summary>
 	/// Internal helper that routes <see cref="ViewExtensions.CaptureAsync(IView)"/>
-	/// and <see cref="WindowExtensions.CaptureAsync(IWindow)"/> through a keyed DI
-	/// hook when MAUI is built for a non-built-in platform TFM and therefore has no
-	/// compile-time screenshot implementation.
+	/// and <see cref="WindowExtensions.CaptureAsync(IWindow)"/> through the registered
+	/// screenshot service when MAUI is built for a non-built-in platform TFM and
+	/// therefore has no compile-time screenshot implementation.
 	/// </summary>
 	/// <remarks>
-	/// Third-party platform backends (e.g. macOS AppKit, Linux/GTK) register a
-	/// <see cref="Func{T, TResult}"/> of <see cref="object"/> to
-	/// <see cref="Task{TResult}"/> of nullable <see cref="IScreenshotResult"/>
-	/// (i.e. <c>Func&lt;object, Task&lt;IScreenshotResult?&gt;&gt;</c>) under one of
-	/// the well-known keys defined on this type. The lambda receives the handler's
-	/// <see cref="IElementHandler.PlatformView"/> object and returns a task whose
-	/// result is the screenshot (or <see langword="null"/> if capture is not
-	/// supported for that view). A hook that returns a <see langword="null"/>
-	/// task is treated as unsupported and produces a <see langword="null"/> result.
-	/// This contract intentionally uses only BCL types so it can ship without any
-	/// MAUI public API addition.
+	/// Third-party platform backends (e.g. macOS AppKit, Linux/GTK) register an
+	/// <see cref="IScreenshot"/> implementation that also implements
+	/// <see cref="IViewScreenshot"/> in the app's <see cref="System.IServiceProvider"/>.
+	/// The dispatch resolves that service from the handler's
+	/// <see cref="IElementHandler.MauiContext"/> and forwards the handler's platform
+	/// view (or, for views, its container) to
+	/// <see cref="IViewScreenshot.CaptureViewAsync(object)"/>. When no capable
+	/// service is registered (or capture is unsupported) the result is
+	/// <see langword="null"/>, preserving the extension methods' graceful contract.
 	/// </remarks>
 	static class ScreenshotDispatch
 	{
-		/// <summary>
-		/// DI service key for the <see cref="IView"/> screenshot hook.
-		/// </summary>
-		public const string ViewCaptureKey = "Microsoft.Maui.ViewCapture";
-
-		/// <summary>
-		/// DI service key for the <see cref="IWindow"/> screenshot hook.
-		/// </summary>
-		public const string WindowCaptureKey = "Microsoft.Maui.WindowCapture";
-
-		public static Task<IScreenshotResult?> CaptureAsync(IElementHandler? handler, string serviceKey)
+		public static Task<IScreenshotResult?> CaptureAsync(IElementHandler? handler, object? captureView)
 		{
-			var platformView = handler?.PlatformView;
-			if (platformView is null)
+			if (captureView is null)
 				return Task.FromResult<IScreenshotResult?>(null);
 
-			if (handler!.MauiContext?.Services is not IKeyedServiceProvider keyedProvider)
+			if (handler?.MauiContext?.Services?.GetService(typeof(IScreenshot)) is not IScreenshot screenshot
+				|| !screenshot.IsCaptureSupported
+				|| screenshot is not IViewScreenshot viewScreenshot)
+			{
 				return Task.FromResult<IScreenshotResult?>(null);
+			}
 
-			var capture = keyedProvider.GetKeyedService<Func<object, Task<IScreenshotResult?>>>(serviceKey);
-
-			if (capture is null)
-				return Task.FromResult<IScreenshotResult?>(null);
-
-			return capture(platformView) ?? Task.FromResult<IScreenshotResult?>(null);
+			return viewScreenshot.CaptureViewAsync(captureView) ?? Task.FromResult<IScreenshotResult?>(null);
 		}
 	}
 }

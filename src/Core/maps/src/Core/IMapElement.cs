@@ -9,5 +9,21 @@
 		/// Gets or sets the platform counterpart of this map element.
 		/// </summary>
 		object? MapElementId { get; set; }
+
+		/// <summary>
+		/// Gets a value indicating whether the map element is visible on the map.
+		/// </summary>
+		bool IsVisible { get; }
+
+		/// <summary>
+		/// Gets the z-index of the map element, which controls its draw order relative to other elements.
+		/// Higher values are drawn on top of lower values.
+		/// </summary>
+		int ZIndex { get; }
+
+		/// <summary>
+		/// Method called by the handler when user clicks on the element.
+		/// </summary>
+		void Clicked();
 	}
 }

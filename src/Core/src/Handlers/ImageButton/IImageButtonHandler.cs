@@ -4,9 +4,7 @@ using PlatformView = UIKit.UIButton;
 using PlatformView = Google.Android.Material.ImageView.ShapeableImageView;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.Controls.Button;
-#elif TIZEN
-using PlatformView = Microsoft.Maui.Platform.MauiImageButton;
-#elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID && !TIZEN)
+#elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID)
 using PlatformView = System.Object;
 #endif
 

@@ -48,7 +48,7 @@ public class Issue38443DetailPage : ContentPage, IQueryAttributable, INotifyProp
         var collectionView = new CollectionView
         {
             AutomationId = "ColorsCollectionView",
-            HorizontalOptions = LayoutOptions.Center,
+            HorizontalOptions = LayoutOptions.Fill,
             ItemsSource = BoxColors,
             SelectionMode = SelectionMode.Single,
             VerticalOptions = LayoutOptions.Center,

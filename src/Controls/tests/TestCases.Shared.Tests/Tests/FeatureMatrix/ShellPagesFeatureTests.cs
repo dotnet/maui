@@ -9,6 +9,7 @@ public class ShellPagesFeatureTests : _GalleryUITest
 {
 	public const string ShellPagesFeatureMatrix = "Shell Feature Matrix";
 	public override string GalleryPageName => ShellPagesFeatureMatrix;
+	protected override string GallerySubPageButton => "ShellPageButton";
 	public const string Options = "Options";
 	public const string Apply = "Apply";
 
@@ -91,8 +92,6 @@ public class ShellPagesFeatureTests : _GalleryUITest
 	[ShardedTestCategory(UITestCategories.Shell, shard: 1)]
 	public void ShellPages_IsEnabledTrue()
 	{
-		App.WaitForElement("ShellPageButton");
-		App.Tap("ShellPageButton");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("IsEnabledTrue");

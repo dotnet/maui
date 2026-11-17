@@ -1,3 +1,4 @@
+#if TEST_FAILS_ON_CATALYST //https://github.com/dotnet/maui/issues/39956
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -33,3 +34,4 @@ public class Issue31897 : _IssuesUITest
 		Assert.That(heightLabel.GetText(), Is.EqualTo("250"));
 	}
 }
+#endif

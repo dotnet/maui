@@ -20,6 +20,7 @@ public class Issue12126 : TestShell
 		if (firstNavigated)
 		{
 			firstNavigated = false;
+			await Task.Delay(1000);
 			ContentPage contentPage = new ContentPage();
 			contentPage.Content = new Label()
 			{

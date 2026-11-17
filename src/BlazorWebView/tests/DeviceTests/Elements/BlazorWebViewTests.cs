@@ -1,6 +1,10 @@
+using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Text;
 using Microsoft.AspNetCore.Components.WebView.Maui;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Primitives;
 using WebViewAppShared;
 using Xunit.Abstractions;
 
@@ -19,6 +23,8 @@ public partial class BlazorWebViewTests : Microsoft.Maui.DeviceTests.ControlsHan
 	sealed class BlazorWebViewWithCustomFiles : BlazorWebView
 	{
 		public Dictionary<string, string> CustomFiles { get; set; }
+		public Action<string> FileOpened { get; set; }
+		public Func<string, string> FileContentsOverride { get; set; }
 
 		public override IFileProvider CreateFileProvider(string contentRootDir)
 		{
@@ -30,12 +36,75 @@ public partial class BlazorWebViewTests : Microsoft.Maui.DeviceTests.ControlsHan
 				fileContentsMap: CustomFiles,
 				// The contentRoot is ignored here because in WinForms it would include the absolute physical path to the app's content, which this provider doesn't care about
 				contentRoot: null);
+			IFileProvider customFileProvider = FileOpened is null && FileContentsOverride is null
+				? inMemoryFiles
+				: new ObservingFileProvider(inMemoryFiles, FileOpened, FileContentsOverride);
 
 			var baseFileProvider = base.CreateFileProvider(contentRootDir);
 
 			return baseFileProvider == null
-				? inMemoryFiles
-				: new CompositeFileProvider(inMemoryFiles, baseFileProvider);
+				? customFileProvider
+				: new CompositeFileProvider(customFileProvider, baseFileProvider);
+		}
+
+		sealed class ObservingFileProvider : IFileProvider
+		{
+			readonly IFileProvider _inner;
+			readonly Action<string> _fileOpened;
+			readonly Func<string, string> _fileContentsOverride;
+
+			public ObservingFileProvider(IFileProvider inner, Action<string> fileOpened, Func<string, string> fileContentsOverride)
+			{
+				_inner = inner;
+				_fileOpened = fileOpened;
+				_fileContentsOverride = fileContentsOverride;
+			}
+
+			public IDirectoryContents GetDirectoryContents(string subpath) => _inner.GetDirectoryContents(subpath);
+
+			public IFileInfo GetFileInfo(string subpath)
+				=> new ObservingFileInfo(_inner.GetFileInfo(subpath), subpath, _fileOpened, _fileContentsOverride);
+
+			public IChangeToken Watch(string filter) => _inner.Watch(filter);
+		}
+
+		sealed class ObservingFileInfo : IFileInfo
+		{
+			readonly IFileInfo _inner;
+			readonly string _subpath;
+			readonly Action<string> _fileOpened;
+			readonly Func<string, string> _fileContentsOverride;
+
+			public ObservingFileInfo(
+				IFileInfo inner,
+				string subpath,
+				Action<string> fileOpened,
+				Func<string, string> fileContentsOverride)
+			{
+				_inner = inner;
+				_subpath = subpath;
+				_fileOpened = fileOpened;
+				_fileContentsOverride = fileContentsOverride;
+			}
+
+			public bool Exists => _inner.Exists;
+			public long Length => _inner.Length;
+			public string PhysicalPath => _inner.PhysicalPath;
+			public string Name => _inner.Name;
+			public DateTimeOffset LastModified => _inner.LastModified;
+			public bool IsDirectory => _inner.IsDirectory;
+
+			public Stream CreateReadStream()
+			{
+				_fileOpened?.Invoke(_subpath);
+				var contentsOverride = _fileContentsOverride?.Invoke(_subpath);
+				if (contentsOverride is not null)
+				{
+					return new MemoryStream(Encoding.UTF8.GetBytes(contentsOverride));
+				}
+
+				return _inner.CreateReadStream();
+			}
 		}
 	}
 

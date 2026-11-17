@@ -317,7 +317,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void IViewHandler.PlatformArrange(Graphics.Rect rect)
 		{
-			//TODO I don't think we need this
+			// The flyout root is arranged from OnElementSizeChanged.
 		}
 
 		void IElementHandler.SetMauiContext(IMauiContext mauiContext)

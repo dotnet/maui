@@ -14,13 +14,13 @@ namespace Maui.Controls.Sample.Pages
 			BindingContext = new ListViewViewModel();
 		}
 
-		void OnButtonClicked(object sender, EventArgs e)
+		void OnButtonClicked(object? sender, EventArgs e)
 		{
 			Microsoft.Maui.Controls.Application.Current!.On<iOS>().SetPanGestureRecognizerShouldRecognizeSimultaneously(
 				!Microsoft.Maui.Controls.Application.Current!.On<iOS>().GetPanGestureRecognizerShouldRecognizeSimultaneously());
 		}
 
-		void OnPanUpdated(object sender, PanUpdatedEventArgs e)
+		void OnPanUpdated(object? sender, PanUpdatedEventArgs e)
 		{
 			_messageLabel.Text = $"panned x:{e.TotalX} y:{e.TotalY}";
 		}

@@ -30,12 +30,12 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.ScrollModeGalleries
 			_collectionView.ItemsSource = _demoFilteredItemSource.Items;
 		}
 
-		void ScrollToMiddle_Clicked(object sender, EventArgs e)
+		void ScrollToMiddle_Clicked(object? sender, EventArgs e)
 		{
 			_collectionView.ScrollTo(_demoFilteredItemSource.Items.Count / 2, position: ScrollToPosition.Start, animate: false);
 		}
 
-		void AddItemAbove_Clicked(object sender, EventArgs e)
+		void AddItemAbove_Clicked(object? sender, EventArgs e)
 		{
 			var index = (_demoFilteredItemSource.Items.Count / 2) - 1;
 
@@ -46,7 +46,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.ScrollModeGalleries
 				index));
 		}
 
-		void AddItemBelow_Clicked(object sender, EventArgs e)
+		void AddItemBelow_Clicked(object? sender, EventArgs e)
 		{
 			var index = (_demoFilteredItemSource.Items.Count / 2) + 2;
 
@@ -57,7 +57,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.ScrollModeGalleries
 				index));
 		}
 
-		void AddItemToEnd_Clicked(object sender, EventArgs e)
+		void AddItemToEnd_Clicked(object? sender, EventArgs e)
 		{
 			_demoFilteredItemSource.Items.Add(
 				new CollectionViewGalleryTestItem(DateTime.Now,

@@ -6,7 +6,6 @@ using Android.App;
 using Android.Content;
 using Android.OS;
 using AndroidX.Activity;
-using Microsoft.Maui.Media;
 
 namespace Microsoft.Maui.ApplicationModel
 {
@@ -80,9 +79,7 @@ namespace Microsoft.Maui.ApplicationModel
 		}
 
 		static IActivityForResultRequest[] CreateDefaultActivityResultRequests() =>
-			MediaPickerImplementation.IsPhotoPickerAvailable
-				? [PickVisualMediaForResult.Instance, PickMultipleVisualMediaForResult.Instance]
-				: [];
+			[CapturePhotoForResult.Instance, CaptureVideoForResult.Instance, PickVisualMediaForResult.Instance, PickMultipleVisualMediaForResult.Instance];
 
 		public Activity? GetCurrentActivity() => lifecycleListener?.Activity;
 
@@ -109,6 +106,8 @@ namespace Microsoft.Maui.ApplicationModel
 
 			if (activity is ComponentActivity componentActivity)
 			{
+				// Register all contracts so AndroidX can replay pending results after activity/process recreation.
+				// Feature support is still checked before launch.
 				foreach (var activityResultRequest in activityResultRequests)
 					activityResultRequest.Register(componentActivity, bundle);
 			}
@@ -155,6 +154,25 @@ namespace Microsoft.Maui.ApplicationModel
 			lifecycleListener?.Dispose();
 			lifecycleListener = null;
 			lifecycleApplication = null;
+		}
+
+		internal static void RegisterActivityResultLaunchers(ComponentActivity componentActivity, Bundle? bundle = null)
+			=> RegisterActivityResultLaunchers(
+				() => CapturePhotoForResult.Instance.Register(componentActivity, bundle),
+				() => CaptureVideoForResult.Instance.Register(componentActivity, bundle),
+				() => PickVisualMediaForResult.Instance.Register(componentActivity, bundle),
+				() => PickMultipleVisualMediaForResult.Instance.Register(componentActivity, bundle));
+
+		internal static void RegisterActivityResultLaunchers(
+			Action registerCapturePhoto,
+			Action registerCaptureVideo,
+			Action registerPickVisualMedia,
+			Action registerPickMultipleVisualMedia)
+		{
+			registerCapturePhoto();
+			registerCaptureVideo();
+			registerPickVisualMedia();
+			registerPickMultipleVisualMedia();
 		}
 	}
 

@@ -18,9 +18,6 @@ using ParentView = Android.Views.IViewParent;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
 using ParentView = Microsoft.UI.Xaml.DependencyObject;
-#elif TIZEN
-using PlatformView = Tizen.NUI.BaseComponents.View;
-using ParentView = Tizen.NUI.BaseComponents.View;
 #else
 using PlatformView = System.Object;
 using ParentView = System.Object;
@@ -233,13 +230,6 @@ namespace Microsoft.Maui.Platform
 				PlatformView? child;
 				while ((child = descendantView?.GetChildAt<PlatformView>(i)) is not null)
 				{
-#if TIZEN
-					// I had to add this check for Tizen to compile.
-					// I think Tizen isn't accounting for the null check
-					// in the while loop correctly
-					if (child is null)
-						break;
-#endif
 					queue.Enqueue(child);
 					i++;
 				}

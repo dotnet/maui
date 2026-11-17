@@ -185,8 +185,8 @@ namespace Microsoft.Maui.Graphics
 		public static readonly Color MediumBlue = Color.FromUint(0xFF0000CD);
 		/// <summary>Gets the system-defined color that has an ARGB value of <c>#FFBA55D3</c>.</summary>
 		public static readonly Color MediumOrchid = Color.FromUint(0xFFBA55D3);
-		/// <summary>Gets the system-defined color that has an ARGB value of <c>#FF9370D8</c>.</summary>
-		public static readonly Color MediumPurple = Color.FromUint(0xFF9370D8);
+		/// <summary>Gets the system-defined color that has an ARGB value of <c>#FF9370DB</c>.</summary>
+		public static readonly Color MediumPurple = Color.FromUint(0xFF9370DB);
 		/// <summary>Gets the system-defined color that has an ARGB value of <c>#FF3CB371</c>.</summary>
 		public static readonly Color MediumSeaGreen = Color.FromUint(0xFF3CB371);
 		/// <summary>Gets the system-defined color that has an ARGB value of <c>#FF7B68EE</c>.</summary>

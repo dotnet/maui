@@ -18,6 +18,47 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class EntryHandlerTests
 	{
+		[Theory]
+		[InlineData("sk-SK", false, "3,14")]
+		[InlineData("sk-SK", true, "3,14")]
+		[InlineData("pl-PL", false, "3,14")]
+		[InlineData("en-US", false, "3.14")]
+		public async Task NumericKeyboardLocalizesPeriodInput(string culture, bool isPassword, string expected)
+		{
+			var entry = new EntryStub { Keyboard = Keyboard.Numeric, IsPassword = isPassword };
+
+			await GetValueAsync(entry, handler =>
+			{
+				var previousCulture = CultureInfo.CurrentCulture;
+				try
+				{
+					CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo(culture);
+					handler.PlatformView.SetInputType(entry);
+					using var editorInfo = new EditorInfo();
+					using var inputConnection = handler.PlatformView.OnCreateInputConnection(editorInfo);
+					Assert.NotNull(inputConnection);
+
+					foreach (var text in new[] { "3", ".", "14" })
+					{
+						using var source = new Java.Lang.String(text);
+						Assert.True(inputConnection.CommitText(source, 1));
+					}
+
+					Assert.Equal(expected, handler.PlatformView.Text);
+					Assert.Equal(expected, entry.Text);
+					Assert.Equal(expected.Length, handler.PlatformView.SelectionStart);
+					Assert.True(handler.PlatformView.InputType.HasFlag(InputTypes.NumberFlagDecimal));
+					Assert.True(handler.PlatformView.InputType.HasFlag(InputTypes.NumberFlagSigned));
+					Assert.Equal(isPassword, handler.PlatformView.InputType.HasFlag(InputTypes.NumberVariationPassword));
+					return true;
+				}
+				finally
+				{
+					CultureInfo.CurrentCulture = previousCulture;
+				}
+			});
+		}
+
 		[Fact(DisplayName = "Numeric keyboard accepts Polish decimal separator")]
 		public async Task NumericKeyboardAcceptsPolishDecimalSeparator()
 		{

@@ -1,4 +1,4 @@
-﻿#if TEST_FAILS_ON_WINDOWS //Image rendering size inside AbsoluteLayout is inconsistent on Windows. Created a issue report: https://github.com/dotnet/maui/issues/26094.
+﻿#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST //Image rendering size inside AbsoluteLayout is inconsistent on Windows. Created a issue report: https://github.com/dotnet/maui/issues/26094. , Mac layout timeout after macOS 26 update
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;

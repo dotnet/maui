@@ -8,8 +8,8 @@ namespace Microsoft.Maui.Platform
 	public class MauiWebViewUIDelegate : WKUIDelegate
 	{
 		WeakReference<IWebViewHandler> _handler;
-		static readonly string LocalOK = NSBundle.FromIdentifier("com.apple.UIKit").GetLocalizedString("OK");
-		static readonly string LocalCancel = NSBundle.FromIdentifier("com.apple.UIKit").GetLocalizedString("Cancel");
+		static readonly string LocalOK = NSBundle.FromIdentifier("com.apple.UIKit")?.GetLocalizedString("OK") ?? "OK";
+		static readonly string LocalCancel = NSBundle.FromIdentifier("com.apple.UIKit")?.GetLocalizedString("Cancel") ?? "Cancel";
 
 		public MauiWebViewUIDelegate(IWebViewHandler handler)
 		{

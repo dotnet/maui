@@ -147,6 +147,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 Set-StrictMode -Version Latest
+. (Join-Path $PSScriptRoot 'ReleaseBranchRoles.ps1')
 
 # Shared nightly-feed freshness helpers (Get-NightlyFeedFreshness / Format-NightlyFeedBanner).
 # Defensive load: the banner is auxiliary signal, not part of the verdict, so a missing
@@ -206,7 +207,8 @@ $previewNumber = $releaseNumber
 $releaseStageDisplay = if ($releaseStage -eq 'rc') { 'RC' } else { 'Preview' }
 $releaseDisplayName = "$releaseStageDisplay $releaseNumber"
 $expectedChannelName = ".NET $majorVersion.0.1xx SDK $releaseStageDisplay $releaseNumber"
-$mainBranch = "net$majorVersion.0"
+$branchRoles = Resolve-ReadinessBranchRoles -Major $majorVersion
+$mainBranch = $branchRoles.sourceBranch
 $isGitHubActions = if (Get-Command Test-IsGitHubActions -ErrorAction SilentlyContinue) {
     Test-IsGitHubActions
 } else {
@@ -226,7 +228,11 @@ if ([string]::IsNullOrWhiteSpace($SurveyRef)) {
 # Preview N is cut, its report assesses only net<N>.0 → previewN. Work targeting
 # net<N>.0 after the cut belongs to Preview N+1 readiness and must not leak into
 # the Preview N report.
-$mergeUpChainLabel = if ($Mode -eq 'candidate') { "main → $SurveyRef" } else { "$mainBranch → $SurveyRef" }
+$mergeUpChainLabel = if ($branchRoles.configured) {
+    "$SurveyRef (fix source: $mainBranch; forward flow: $mainBranch → $($branchRoles.featureBranch))"
+} elseif ($Mode -eq 'candidate' -and $SurveyRef -ne 'main') {
+    "main → $SurveyRef"
+} else { "$mainBranch → $SurveyRef" }
 
 # Canonical tracker key. Default matches tracker discovery.
 if ([string]::IsNullOrWhiteSpace($TrackerKey)) {
@@ -2904,6 +2910,7 @@ if ($shouldQueryInternal) {
         -MajorVersion $majorVersion `
         -ReleaseBranch $Branch `
         -ReleaseBranchExists $targetBranchExists `
+        -SourceBranch $(if ($branchRoles.configured) { $branchRoles.nightlyBranch } else { $mainBranch }) `
         -BuildFetcher $buildFetcher `
         -HeadFetcher $headFetcher `
         -BuildCurrencyFetcher $buildCurrencyFetcher `
@@ -2933,6 +2940,20 @@ if ($componentPinsCheck) {
     $checks += $componentPinsCheck
 }
 
+$nightlyParameters = @{}
+$nightlyMetadataError = $null
+if ($branchRoles.configured) {
+    try {
+        $nightlyVersionContent = Get-ContentFromRepo -Path 'eng/Versions.props' -Ref $branchRoles.nightlyBranch
+        $nightlyParameters = Get-ReadinessNightlyParameters -Roles $branchRoles -Major $majorVersion `
+            -VersionContent $nightlyVersionContent
+    } catch {
+        $nightlyMetadataError = $_.Exception.Message
+        $checks += New-Check -Area 'Configured nightly lane metadata' -Status 'UNKNOWN' `
+            -Details $_.Exception.Message `
+            -NextAction "Verify ``$($branchRoles.nightlyBranch)`` version advance and active-lane publication. Configuration is not signed-build proof."
+    }
+}
 $overallStatus = Get-OverallStatus -Checks $checks
 $readinessVerdict = Get-ReadinessVerdict -Checks $checks
 
@@ -2954,6 +2975,8 @@ $report = [PSCustomObject]@{
     RcNumber              = if ($releaseStage -eq 'rc') { $releaseNumber } else { $null }
     ExpectedChannelName   = $expectedChannelName
     InflightBranch        = $mainBranch
+    SourceBranch          = $mainBranch
+    BranchRoles           = $branchRoles
     TrackerKey            = $TrackerKey
     OverallStatus         = $overallStatus
     Verdict               = $readinessVerdict
@@ -2995,7 +3018,8 @@ if ($Script:NightlyFeedHelperLoaded -and
         $nfBand = "$majorVersion.0.0-$nfLabel.$nfIteration"
         $nfBandPrefix = '^' + [regex]::Escape("$nfBand.")
 
-        $nfFresh = Resolve-NightlyDogfoodFreshness -Feed $nfFeed -BandPrefixRegex $nfBandPrefix
+        if ($nightlyMetadataError) { throw $nightlyMetadataError }
+        $nfFresh = Resolve-NightlyDogfoodFreshness -Feed $nfFeed -BandPrefixRegex $nfBandPrefix @nightlyParameters
         if ($null -eq $nfFresh) { $nfFresh = @{ unknown = $true } }
 
         $nfBuildType = [string](Get-NightlyFeedProp $nfFresh 'buildType')
@@ -3003,6 +3027,10 @@ if ($Script:NightlyFeedHelperLoaded -and
         $nfFresh['laneLabel'] = $nfLaneLabel
         $nfFresh['feedUrl'] = $nfFeedUrl
         $nfFresh['versionPrefix'] = $nfBandPrefix
+        if ($branchRoles.configured -and $nfBuildType -eq 'inflight') {
+            $nfFresh['branch'] = $branchRoles.nightlyBranch
+            $nfFresh['laneLabel'] += " · ``$($branchRoles.nightlyBranch)`` (feed evidence only, not signed-build proof)"
+        }
 
         $report.NightlyFeed = $nfFresh
         $nightlyFeedBanner = Format-NightlyFeedBanner -Freshness $nfFresh -Now ([DateTime]::UtcNow)
@@ -3011,6 +3039,8 @@ if ($Script:NightlyFeedHelperLoaded -and
         # $WarningPreference='Stop', where a bare Write-Warning would be promoted to a
         # terminating error inside the catch and escape, crashing the unattended job.
         Write-Warning "Nightly-feed freshness check failed (non-fatal): $($_.Exception.Message)" -WarningAction Continue
+        $report.NightlyFeed = @{ unknown = $true; reason = $_.Exception.Message }
+        $nightlyFeedBanner = Format-NightlyFeedBanner -Freshness $report.NightlyFeed -Now ([DateTime]::UtcNow)
     }
 }
 

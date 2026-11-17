@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		MauiContext SetupMauiContext()
 		{
 			var mauiApp1 = MauiApp.CreateBuilder()
-				.ConfigureMauiHandlers(handlers => handlers.AddHandler<ButtonWithControlsMapper, ButtonWithControlsMapperHandler>())
+				.ConfigureMauiHandlers(handlers => handlers.AddHandler<ButtonWithControlsMapper>(static _ => new ButtonWithControlsMapperHandler()))
 				.Build();
 
 			// reset all the mappings

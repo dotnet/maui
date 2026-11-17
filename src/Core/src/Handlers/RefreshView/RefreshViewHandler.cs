@@ -4,9 +4,7 @@ using PlatformView = Microsoft.Maui.Platform.MauiRefreshView;
 using PlatformView = Microsoft.Maui.Platform.MauiSwipeRefreshLayout;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.Controls.RefreshContainer;
-#elif TIZEN
-using PlatformView = Microsoft.Maui.Platform.MauiRefreshLayout;
-#elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID && !TIZEN)
+#elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID)
 using PlatformView = System.Object;
 #endif
 

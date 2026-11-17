@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,149 +11,231 @@ namespace Microsoft.Maui.Authentication
 {
 	partial class WebAuthenticatorImplementation : IWebAuthenticator, IPlatformWebAuthenticatorCallback
 	{
-		TaskCompletionSource<WebAuthenticatorResult> tcsResponse = null;
-		Uri currentRedirectUri = null;
-		WebAuthenticatorOptions currentOptions = null;
+		public bool OnResumeCallback(Intent intent) =>
+			TryHandleBuiltInCallback(intent);
 
-		internal bool AuthenticatingWithCustomTabs { get; private set; } = false;
-
-		public bool OnResumeCallback(Intent intent)
+		internal static bool TryHandleBuiltInCallback(Intent intent)
 		{
-			// If we aren't waiting on a task, don't handle the url
-			if (tcsResponse?.Task?.IsCompleted ?? true)
+			var callback = intent?.Data?.ToString();
+			if (string.IsNullOrEmpty(callback))
 				return false;
-
-			if (intent?.Data == null)
-			{
-				tcsResponse.TrySetCanceled();
-				return false;
-			}
 
 			try
 			{
-				var intentUri = new Uri(intent.Data.ToString());
-
-				// Only handle schemes we expect
-				if (!WebUtils.CanHandleCallback(currentRedirectUri, intentUri))
-				{
-					tcsResponse.TrySetException(new InvalidOperationException($"Invalid Redirect URI, detected `{intentUri}` but expected a URI in the format of `{currentRedirectUri}`"));
-					return false;
-				}
-				tcsResponse?.TrySetResult(new WebAuthenticatorResult(intentUri, currentOptions?.ResponseDecoder));
-				return true;
+				return WebAuthenticatorRequestManager.TryHandleCallback(new Uri(callback));
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
-				tcsResponse.TrySetException(ex);
 				return false;
 			}
 		}
 
-		public async Task<WebAuthenticatorResult> AuthenticateAsync(WebAuthenticatorOptions webAuthenticatorOptions)
-			=> await AuthenticateAsync(webAuthenticatorOptions, CancellationToken.None);
+		public Task<WebAuthenticatorResult> AuthenticateAsync(WebAuthenticatorOptions webAuthenticatorOptions) =>
+			AuthenticateAsync(webAuthenticatorOptions, CancellationToken.None);
 
-		public async Task<WebAuthenticatorResult> AuthenticateAsync(WebAuthenticatorOptions webAuthenticatorOptions, CancellationToken cancellationToken)
+		public async Task<WebAuthenticatorResult> AuthenticateAsync(
+			WebAuthenticatorOptions webAuthenticatorOptions,
+			CancellationToken cancellationToken)
 		{
-			currentOptions = webAuthenticatorOptions;
-			var url = webAuthenticatorOptions?.Url;
-			var callbackUrl = webAuthenticatorOptions?.CallbackUrl;
-			var packageName = Application.Context.PackageName;
+			if (webAuthenticatorOptions is null)
+				throw new ArgumentNullException(nameof(webAuthenticatorOptions));
 
-			// Create an intent to see if the app developer wired up the callback activity correctly
-			var intent = new Intent(Intent.ActionView);
+			var url = webAuthenticatorOptions.Url;
+			var callbackUrl = webAuthenticatorOptions.CallbackUrl;
+			var responseDecoder = webAuthenticatorOptions.ResponseDecoder;
+			var prefersEphemeral = webAuthenticatorOptions.PrefersEphemeralWebBrowserSession;
+
+			if (url is null)
+				throw new ArgumentNullException(nameof(webAuthenticatorOptions.Url));
+			if (callbackUrl is null)
+				throw new ArgumentNullException(nameof(webAuthenticatorOptions.CallbackUrl));
+			if (!url.IsAbsoluteUri)
+				throw new ArgumentException("The authentication URL must be absolute.", nameof(webAuthenticatorOptions.Url));
+			if (!callbackUrl.IsAbsoluteUri)
+				throw new ArgumentException("The callback URL must be absolute.", nameof(webAuthenticatorOptions.CallbackUrl));
+			var applicationContext = Application.Context;
+			var callbackActivityAvailable = IsCallbackActivityAvailable(applicationContext, callbackUrl);
+			var customTabsProvider = TryGetCustomTabsProvider(applicationContext);
+			var useAuthTab = CanUseAuthTab(url, callbackUrl) &&
+				IsAuthTabSupported(applicationContext, customTabsProvider);
+
+			if (!useAuthTab && !callbackActivityAvailable)
+			{
+				throw new InvalidOperationException(
+					$"You must subclass {nameof(WebAuthenticatorCallbackActivity)} and register an IntentFilter for the callback route.");
+			}
+
+			cancellationToken.ThrowIfCancellationRequested();
+
+			var parentActivity = ActivityStateManager.Default.GetCurrentActivity(true) ??
+				throw new InvalidOperationException("The current Android Activity is unavailable.");
+			var request = WebAuthenticatorRequestManager.Begin(
+				url,
+				callbackUrl,
+				responseDecoder,
+				prefersEphemeral,
+				cancellationToken);
+
+			var registration = cancellationToken.Register(
+				static state =>
+				{
+					var request = (WebAuthenticatorRequest)state!;
+					WebAuthenticatorRequestManager.TryCancelFromCaller(request);
+				},
+				request);
+
+			var usesIntermediateActivity = false;
+			var callerCancellationWon = false;
+			try
+			{
+				if (!request.Task.IsCompleted)
+				{
+					try
+					{
+						await MainThread.InvokeOnMainThreadAsync(() =>
+						{
+							if (request.Task.IsCompleted)
+								return;
+
+							if (useAuthTab)
+							{
+								WebAuthenticatorIntermediateActivity.StartAuthTab(
+									parentActivity,
+									request.Id,
+									url,
+									callbackUrl,
+									customTabsProvider!,
+									prefersEphemeral,
+									callbackActivityAvailable);
+								usesIntermediateActivity = true;
+							}
+							else if (!string.IsNullOrEmpty(customTabsProvider))
+							{
+								WebAuthenticatorIntermediateActivity.StartCustomTab(
+									parentActivity,
+									request.Id,
+									url,
+									customTabsProvider,
+									prefersEphemeral);
+								usesIntermediateActivity = true;
+							}
+							else
+							{
+								WebAuthenticatorIntermediateActivity.StartBrowser(
+									parentActivity,
+									request.Id,
+									url);
+								usesIntermediateActivity = true;
+							}
+						});
+					}
+					catch (Exception ex)
+					{
+						WebAuthenticatorRequestManager.TryFail(
+							request,
+							new InvalidOperationException("Unable to open a browser for web authentication.", ex));
+					}
+				}
+
+				return await request.Task.ConfigureAwait(false);
+			}
+			catch (OperationCanceledException ex) when (
+				ex.CancellationToken == cancellationToken && cancellationToken.IsCancellationRequested)
+			{
+				callerCancellationWon = true;
+				throw;
+			}
+			finally
+			{
+				if (usesIntermediateActivity && callerCancellationWon)
+				{
+					try
+					{
+						await MainThread.InvokeOnMainThreadAsync(() =>
+							WebAuthenticatorIntermediateActivity.TryRequestCleanup(request.Id));
+					}
+					catch (Exception ex)
+					{
+						System.Diagnostics.Debug.WriteLine($"Unable to close the Android WebAuthenticator activity ({ex}).");
+					}
+				}
+
+				registration.Dispose();
+				WebAuthenticatorRequestManager.End(request);
+			}
+		}
+
+		internal static bool CanUseAuthTab(Uri url, Uri callbackUrl) =>
+			url.Scheme is "http" or "https" &&
+			callbackUrl.Scheme != "http" &&
+			(callbackUrl.Scheme != "https" || callbackUrl.IsDefaultPort);
+
+		internal static string? TryGetCustomTabsProvider(Context context)
+		{
+			try
+			{
+				return CustomTabsHelper.GetPackageNameToUse(context);
+			}
+			catch (Exception)
+			{
+				return null;
+			}
+		}
+
+		internal static bool IsAuthTabSupported(Context context, string? provider)
+		{
+			if (string.IsNullOrEmpty(provider))
+				return false;
+
+			try
+			{
+				return CustomTabsClient.IsAuthTabSupported(context, provider);
+			}
+			catch (Exception)
+			{
+				return false;
+			}
+		}
+
+		internal static bool IsEphemeralBrowsingSupported(Context context, string? provider)
+		{
+			if (string.IsNullOrEmpty(provider))
+				return false;
+
+			try
+			{
+				return CustomTabsClient.IsEphemeralBrowsingSupported(context, provider);
+			}
+			catch (Exception)
+			{
+				return false;
+			}
+		}
+
+		static bool IsCallbackActivityAvailable(Context context, Uri callbackUrl)
+		{
+			var packageName = context.PackageName;
+			if (string.IsNullOrEmpty(packageName))
+				return false;
+
+			using var intent = new Intent(Intent.ActionView);
 			intent.AddCategory(Intent.CategoryBrowsable);
 			intent.AddCategory(Intent.CategoryDefault);
 			intent.SetPackage(packageName);
 			intent.SetData(global::Android.Net.Uri.Parse(callbackUrl.OriginalString));
 
-			// Try to find the activity for the callback intent
-			if (!PlatformUtils.IsIntentSupported(intent, packageName))
-				throw new InvalidOperationException($"You must subclass the `{nameof(WebAuthenticatorCallbackActivity)}` and create an IntentFilter for it which matches your `{nameof(callbackUrl)}`.");
-
-			// Cancel any previous task that's still pending
-			if (tcsResponse?.Task != null && !tcsResponse.Task.IsCompleted)
-				tcsResponse.TrySetCanceled();
-
-			tcsResponse = new TaskCompletionSource<WebAuthenticatorResult>();
-			currentRedirectUri = callbackUrl;
-
-			// Use the CancellationToken to cancel the authentication if requested
-			using (cancellationToken.Register(() => tcsResponse.TrySetCanceled()))
-			{
-				// Try to start with custom tabs if the system supports it and we resolve it
-				AuthenticatingWithCustomTabs = await StartCustomTabsActivity(url);
-
-				// Fall back to using the system browser if necessary
-				if (!AuthenticatingWithCustomTabs)
-				{
-					// Fall back to opening the system-registered browser if necessary
-					var urlOriginalString = url.OriginalString;
-					var browserIntent = new Intent(Intent.ActionView, global::Android.Net.Uri.Parse(urlOriginalString));
-					Platform.CurrentActivity.StartActivity(browserIntent);
-				}
-
-				return await tcsResponse.Task;
-			}
+			return PlatformUtils.IsIntentSupported(intent, packageName);
 		}
 
-
-		static async Task<bool> StartCustomTabsActivity(Uri url)
+		internal static void LaunchSystemBrowser(Context context, Uri url)
 		{
-			// Is only set to true if BindServiceAsync succeeds and no exceptions are thrown
-			var success = false;
-			var parentActivity = ActivityStateManager.Default.GetCurrentActivity(true);
+			using var browserIntent = new Intent(
+				Intent.ActionView,
+				global::Android.Net.Uri.Parse(url.OriginalString));
+			if (context is not Activity)
+				browserIntent.AddFlags(ActivityFlags.NewTask);
 
-			var customTabsActivityManager = new CustomTabsActivityManager(parentActivity);
-			try
-			{
-				if (await BindServiceAsync(customTabsActivityManager))
-				{
-					var customTabsIntent = new CustomTabsIntent.Builder(customTabsActivityManager.Session)
-						.SetShowTitle(true)
-						.Build();
-
-					customTabsIntent.Intent.SetData(global::Android.Net.Uri.Parse(url.OriginalString));
-
-					if (customTabsIntent.Intent.ResolveActivity(parentActivity.PackageManager) != null)
-					{
-						WebAuthenticatorIntermediateActivity.StartActivity(parentActivity, customTabsIntent.Intent);
-						success = true;
-					}
-				}
-			}
-			finally
-			{
-				try
-				{
-					customTabsActivityManager.Client?.Dispose();
-				}
-				finally
-				{
-				}
-			}
-
-			return success;
-		}
-
-		static Task<bool> BindServiceAsync(CustomTabsActivityManager manager)
-		{
-			var tcs = new TaskCompletionSource<bool>();
-
-			manager.CustomTabsServiceConnected += OnCustomTabsServiceConnected;
-
-			if (!manager.BindService())
-			{
-				manager.CustomTabsServiceConnected -= OnCustomTabsServiceConnected;
-				tcs.TrySetResult(false);
-			}
-
-			return tcs.Task;
-
-			void OnCustomTabsServiceConnected(ComponentName name, CustomTabsClient client)
-			{
-				manager.CustomTabsServiceConnected -= OnCustomTabsServiceConnected;
-				tcs.TrySetResult(true);
-			}
+			context.StartActivity(browserIntent);
 		}
 	}
 }

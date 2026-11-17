@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls.Platform
 	/// its own subscription management.
 	/// </para>
 	/// </summary>
-	internal interface IAlertManagerSubscription
+	public interface IAlertManagerSubscription
 	{
 		/// <summary>
 		/// Called when an action sheet is requested.
@@ -45,9 +45,11 @@ namespace Microsoft.Maui.Controls.Platform
 
 		/// <summary>
 		/// Called when the page busy state changes.
-		/// Implementers may provide an empty body for this method; it will be removed in .NET 11.
+		/// Page busy notifications have no replacement. Callers should remove usage,
+		/// and interface implementers may omit this member on target frameworks that support default
+		/// interface methods or provide an empty implementation otherwise.
 		/// </summary>
-		[Obsolete("This method is obsolete in .NET 10 and will be removed in .NET 11.")]
+		[Obsolete("Page busy notifications are obsolete and have no replacement. Remove usage. Implementers may omit this member on target frameworks that support default interface methods or provide an empty implementation otherwise. This method will be removed in a future release.")]
 #if !NETSTANDARD2_0
 		void OnPageBusy(Page sender, bool enabled) { }
 #else

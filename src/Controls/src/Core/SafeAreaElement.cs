@@ -17,7 +17,9 @@ namespace Microsoft.Maui.Controls
 									defaultValueCreator: SafeAreaEdgesDefaultValueCreator);
 
 		static object SafeAreaEdgesDefaultValueCreator(BindableObject bindable)
-			=> ((ISafeAreaElement)bindable).SafeAreaEdgesDefaultValueCreator();
+			=> bindable is ISafeAreaElementController controller
+				? controller.SafeAreaEdgesDefaultValueCreator()
+				: SafeAreaEdges.Default;
 
 		/// <summary>
 		/// Gets the effective safe area behavior for a specific edge.

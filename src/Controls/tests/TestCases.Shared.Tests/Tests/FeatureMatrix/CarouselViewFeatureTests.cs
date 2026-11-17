@@ -32,6 +32,7 @@ public class CarouselViewFeatureTests : _GalleryUITest
 	private const string ScrollToButton = "ScrollToButton";
 
 	public override string GalleryPageName => CarouselViewFeatureMatrix;
+	protected override string GallerySubPageButton => "CarouselViewButton";
 
 	public CarouselViewFeatureTests(TestDevice device) : base(device)
 	{
@@ -41,8 +42,6 @@ public class CarouselViewFeatureTests : _GalleryUITest
 	[Category(UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithKeepItemInView()
 	{
-		App.WaitForElement("CarouselViewButton");
-		App.Tap("CarouselViewButton");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(KeepItemsInView);
