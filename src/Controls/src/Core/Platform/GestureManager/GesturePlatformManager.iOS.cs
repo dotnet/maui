@@ -1117,8 +1117,8 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 
 				if (recognizer is UITapGestureRecognizer &&
-					virtualView is not SelectableItemsView &&
-					IsTouchOnSelectableCollectionViewItem(touch, platformView))
+					IsTouchOnSelectableCollectionViewItem(touch, platformView, out var touchedCollectionView) &&
+					(virtualView is not SelectableItemsView || !ReferenceEquals(touchedCollectionView, platformView)))
 				{
 					return false;
 				}
@@ -1142,15 +1142,25 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			// Checks whether the touch occurred on an actual item within a selectable CollectionView.
-			static bool IsTouchOnSelectableCollectionViewItem(UITouch touch, UIView platformView)
+			static bool IsTouchOnSelectableCollectionViewItem(UITouch touch, UIView platformView, out MauiCollectionView? touchedCollectionView)
 			{
-				for (var view = touch.View; view is not null && view != platformView; view = view.Superview)
+				touchedCollectionView = null;
+				for (var view = touch.View; view is not null; view = view.Superview)
 				{
 					if (view is MauiCollectionView { AllowsSelection: true } collectionView &&
-						collectionView.IsDescendantOfView(platformView))
+						(ReferenceEquals(collectionView, platformView) || collectionView.IsDescendantOfView(platformView)))
 					{
 						var location = touch.LocationInView(collectionView);
-						return collectionView.IndexPathForItemAtPoint(location) is not null;
+						if (collectionView.IndexPathForItemAtPoint(location) is not null)
+						{
+							touchedCollectionView = collectionView;
+							return true;
+						}
+					}
+
+					if (ReferenceEquals(view, platformView))
+					{
+						break;
 					}
 				}
 
