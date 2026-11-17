@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls
@@ -80,16 +81,37 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		/// <param name="visualElement">The visual element to transition.</param>
 		/// <param name="name">The name of the visual state to transition to.</param>
-		/// <returns><see langword="true"/> if the transition was successful or, when called off the UI thread, was queued; otherwise, <see langword="false"/>.</returns>
+		/// <returns><see langword="true"/> if the transition was successful or was queued on the element's dispatcher; otherwise, <see langword="false"/>.</returns>
+		/// <remarks>
+		/// When dispatch is required, the return value indicates whether the transition was queued, not whether
+		/// the state was found or applied. Exceptions from the queued transition are logged when logging is
+		/// configured and are not propagated to the caller. If no dispatcher is available, the transition runs
+		/// on the calling thread.
+		/// </remarks>
+		/// <exception cref="InvalidOperationException">The element's dispatcher could not accept the transition.</exception>
 		public static bool GoToState(VisualElement visualElement, string name)
 			=> GoToState(visualElement, name, force: false);
 
 		internal static bool GoToState(VisualElement visualElement, string name, bool force)
 		{
-			var dispatcher = visualElement.Handler?.MauiContext?.GetOptionalDispatcher();
+			var context = visualElement.Handler?.MauiContext;
+			var dispatcher = context?.GetOptionalDispatcher();
 			if (dispatcher?.IsDispatchRequired == true)
 			{
-				if (!dispatcher.Dispatch(() => GoToStateCore(visualElement, name, force)))
+				if (!dispatcher.Dispatch(() =>
+				{
+					try
+					{
+						GoToStateCore(visualElement, name, force);
+					}
+					catch (Exception exception)
+					{
+						context.CreateLogger(nameof(VisualStateManager))?.LogError(
+							exception,
+							"Failed to transition to visual state '{VisualState}' on the UI thread.",
+							name);
+					}
+				}))
 				{
 					throw new InvalidOperationException("The visual state transition could not be dispatched to the element's dispatcher.");
 				}
