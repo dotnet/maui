@@ -1493,7 +1493,7 @@ namespace Microsoft.Maui.Controls
 
 		private void OnRequestedThemeChanged(object sender, AppThemeChangedEventArgs e)
 		{
-			ShellController.AppearanceChanged(CurrentPage, false);
+			ShellController.AppearanceChanged(GetCurrentShellPage(), false);
 		}
 
 		void Initialize()
