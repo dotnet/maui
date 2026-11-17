@@ -973,7 +973,8 @@ namespace Microsoft.Maui.Controls
 
                 if (frame != CGRect.Empty)
                 {
-                    Frame = new RectangleF(0, 0, frame.Width, frame.Height);
+                    // The bar can be taller than UIKit's title area; only use it for the initial width.
+                    Frame = new RectangleF(0, 0, frame.Width, ToolbarHeight);
                 }
             }
             else if (OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsMacCatalystVersionAtLeast(11))

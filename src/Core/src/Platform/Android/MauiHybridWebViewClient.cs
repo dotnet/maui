@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
@@ -172,7 +171,7 @@ namespace Microsoft.Maui.Platform
 			if (relativePath is null)
 			{
 				logger?.LogDebug("Request for {Url} resolved to an invalid path.", fullUrl);
-				return new WebResourceResponse("text/plain", "UTF-8", 404, "Not Found", GetHeaders("text/plain"), new MemoryStream());
+				return new WebResourceResponse("text/plain", "UTF-8", 404, "Not Found", null, new MemoryStream());
 			}
 
 			// 1.a. Try the special "_framework/hybridwebview.js" path
@@ -182,7 +181,7 @@ namespace Microsoft.Maui.Platform
 				var jsStream = HybridWebViewHandler.GetEmbeddedStream(HybridWebViewHandler.HybridWebViewDotJsPath);
 				if (jsStream is not null)
 				{
-					return new WebResourceResponse("application/json", "UTF-8", 200, "OK", GetHeaders("application/json"), jsStream);
+					return new WebResourceResponse("application/json", "UTF-8", 200, "OK", null, jsStream);
 				}
 			}
 
@@ -198,7 +197,7 @@ namespace Microsoft.Maui.Platform
 
 				var contentBytesTask = Handler.InvokeDotNetAsync(stringBody: requestBody);
 				var responseStream = new AsyncStream(contentBytesTask, logger);
-				return new WebResourceResponse("application/json", "UTF-8", 200, "OK", GetHeaders("application/json"), responseStream);
+				return new WebResourceResponse("application/json", "UTF-8", 200, "OK", null, responseStream);
 			}
 
 			// 1.c. Try the special SendMessage path (JS -> .NET messages).
@@ -247,7 +246,9 @@ namespace Microsoft.Maui.Platform
 
 				// TODO: We don't know the content length because Android doesn't tell us. Seems to work without it!
 
-				return new WebResourceResponse(contentType, "UTF-8", 200, "OK", GetHeaders(contentType ?? "text/plain"), contentStream);
+				// No responseHeaders: Android WebView already writes the mimeType argument as the Content-Type header,
+				// and a Content-Type entry in responseHeaders would be appended as a second one ("text/html, text/html").
+				return new WebResourceResponse(contentType, "UTF-8", 200, "OK", null, contentStream);
 			}
 
 			// 3.b. Otherwise, return a 404
@@ -307,11 +308,6 @@ namespace Microsoft.Maui.Platform
 				return null;
 			}
 		}
-
-		private protected static IDictionary<string, string> GetHeaders(string contentType) =>
-			new Dictionary<string, string> {
-				{ "Content-Type", contentType },
-			};
 
 		protected override void Dispose(bool disposing)
 		{
