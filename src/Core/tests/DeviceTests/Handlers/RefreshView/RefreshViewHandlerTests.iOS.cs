@@ -1,5 +1,7 @@
 ﻿using Microsoft.Maui.Handlers;
+using System;
 using System.Threading.Tasks;
+using CoreGraphics;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Hosting;
 using ObjCRuntime;
@@ -120,6 +122,50 @@ namespace Microsoft.Maui.DeviceTests
 				refreshView.IsRefreshEnabled = false;
 
 				Assert.True(replacementHandler.PlatformView.AlwaysBounceVertical);
+			});
+		}
+
+		[Fact]
+		public async Task EndingUserPullRefreshKeepsScrollViewAtInsetAdjustedTop()
+		{
+			EnsureHandlerCreated(builder => builder.ConfigureMauiHandlers(
+				handlers => handlers.AddHandler<ScrollViewStub, ScrollViewHandler>()));
+
+			var scrollView = new ScrollViewStub();
+			var refreshView = new RefreshViewStub
+			{
+				Content = scrollView,
+			};
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var platformScrollView = CreateHandler<ScrollViewHandler>(scrollView).PlatformView;
+				var handler = CreateHandler(refreshView);
+
+				// UIRefreshControl only starts refreshing inside a window.
+				await handler.PlatformView.AttachAndRun(async () =>
+				{
+					// Like a large title: the scroll view rests at -AdjustedContentInset.Top, not at 0.
+					platformScrollView.ContentInset = new UIEdgeInsets(100, 0, 0, 0);
+					var top = -platformScrollView.AdjustedContentInset.Top;
+					platformScrollView.ContentOffset = new CGPoint(0, top);
+
+					// A user pull: UIKit starts the refresh control, then ValueChanged sets IsRefreshing.
+					var refreshControl = handler.PlatformView.RefreshControl;
+					refreshControl.BeginRefreshing();
+					Assert.True(refreshControl.Refreshing);
+					refreshControl.SendActionForControlEvents(UIControlEvent.ValueChanged);
+					Assert.True(refreshView.IsRefreshing);
+					handler.UpdateValue(nameof(IRefreshView.IsRefreshing));
+
+					refreshView.IsRefreshing = false;
+					handler.UpdateValue(nameof(IRefreshView.IsRefreshing));
+
+					await AssertHelpers.AssertEventually(
+						() => Math.Abs(platformScrollView.ContentOffset.Y - top) < 1,
+						timeout: 2000,
+						message: $"ContentOffset.Y was {platformScrollView.ContentOffset.Y} right after the refresh ended and did not settle at {top}");
+				});
 			});
 		}
 
