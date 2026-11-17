@@ -317,11 +317,11 @@ function Get-XHarnessTestResultSnapshot {
     )
 
     $snapshot = @{}
-    if (-not (Test-Path $OutputDirectory -PathType Container)) {
+    if (-not (Test-Path -LiteralPath $OutputDirectory -PathType Container)) {
         return $snapshot
     }
 
-    foreach ($file in @(Get-ChildItem -Path $OutputDirectory -File -Recurse -ErrorAction SilentlyContinue |
+    foreach ($file in @(Get-ChildItem -LiteralPath $OutputDirectory -File -Recurse -ErrorAction SilentlyContinue |
             Where-Object {
                 $_.Name -ieq $ResultFileName -or
                 ($AdditionalResultFilePattern -and $_.Name -like $AdditionalResultFilePattern)
@@ -340,12 +340,12 @@ function Get-FreshXHarnessTestResultFiles {
         [string]$AdditionalResultFilePattern
     )
 
-    if (-not (Test-Path $OutputDirectory -PathType Container)) {
+    if (-not (Test-Path -LiteralPath $OutputDirectory -PathType Container)) {
         return @()
     }
 
     $freshFiles = [System.Collections.Generic.List[string]]::new()
-    foreach ($file in @(Get-ChildItem -Path $OutputDirectory -File -Recurse -ErrorAction SilentlyContinue |
+    foreach ($file in @(Get-ChildItem -LiteralPath $OutputDirectory -File -Recurse -ErrorAction SilentlyContinue |
             Where-Object {
                 $_.Name -ieq $ResultFileName -or
                 ($AdditionalResultFilePattern -and $_.Name -like $AdditionalResultFilePattern)
@@ -373,7 +373,7 @@ function New-XHarnessRunOutputDirectory {
     )
 
     $root = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($OutputDirectory)
-    if (-not (Test-Path $root -PathType Container)) {
+    if (-not (Test-Path -LiteralPath $root -PathType Container)) {
         New-Item -ItemType Directory -Path $root -Force | Out-Null
     }
 
@@ -587,7 +587,7 @@ function Get-DeviceTestResultSummary {
     $unexpectedClasses = [System.Collections.Generic.List[string]]::new()
 
     foreach ($file in $ResultFiles) {
-        if (-not (Test-Path $file)) {
+        if (-not (Test-Path -LiteralPath $file)) {
             continue
         }
 
@@ -604,7 +604,7 @@ function Get-DeviceTestResultSummary {
         # malformed (e.g. the app crashed before writing results).
         $xml = $null
         for ($attempt = 1; $attempt -le 5; $attempt++) {
-            $raw = Get-Content $file -Raw -ErrorAction SilentlyContinue
+            $raw = Get-Content -LiteralPath $file -Raw -ErrorAction SilentlyContinue
             if (-not [string]::IsNullOrWhiteSpace($raw)) {
                 try {
                     $xml = [xml]$raw
@@ -1387,7 +1387,7 @@ try {
     Write-Host "═══════════════════════════════════════════════════════════" -ForegroundColor Cyan
 
     # Create output directory
-    if (-not (Test-Path $OutputDirectory)) {
+    if (-not (Test-Path -LiteralPath $OutputDirectory)) {
         New-Item -ItemType Directory -Path $OutputDirectory -Force | Out-Null
     }
 
@@ -1587,7 +1587,7 @@ try {
     Write-Host "═══════════════════════════════════════════════════════════" -ForegroundColor Cyan
 
     # Try to find and parse the log file
-    $logFile = Get-ChildItem -Path $testOutputDirectory -Filter "$appName.log" -ErrorAction SilentlyContinue | Select-Object -First 1
+    $logFile = Get-ChildItem -LiteralPath $testOutputDirectory -Filter "$appName.log" -ErrorAction SilentlyContinue | Select-Object -First 1
     
     if ($script:XHarnessDeviceTestSummary) {
         Write-Host ""
@@ -1606,7 +1606,7 @@ try {
         }
         Write-Host "  Result file(s): $($script:XHarnessDeviceTestResultFiles -join ', ')" -ForegroundColor Gray
     } elseif ($logFile) {
-        $logContent = Get-Content $logFile.FullName -Raw
+        $logContent = Get-Content -LiteralPath $logFile.FullName -Raw
         $passCount = ([regex]::Matches($logContent, '\[PASS\]')).Count
         $failCount = ([regex]::Matches($logContent, '\[FAIL\]')).Count
         
