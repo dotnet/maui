@@ -288,6 +288,8 @@ namespace Microsoft.Maui.IntegrationTests
 			"TreatWarningsAsErrors=true",
 			// Detailed trimmer warnings, if present
 			"TrimmerSingleWarn=false",
+			// Parallel tests must not create the same Android debug keystore.
+			$"AppSettingsDirectory=\"{Path.Combine(TestDirectory, ".android")}\"",
 			// Allow skipping Xcode version validation via environment variable or TestConfig
 			$"ValidateXcodeVersion={!TestEnvironment.SkipXcodeVersionCheck}",
 		};
