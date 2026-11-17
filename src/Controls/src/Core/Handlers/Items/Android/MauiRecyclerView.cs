@@ -639,8 +639,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			// SpacingItemDecoration drops the spacing on the outer edges based on each item's position, but RecyclerView only
 			// recomputes the offsets of items it rebinds or shifts (not the previous last item on an append, for example)
+			// Only the spacing along the scrolling direction depends on the position; the cross-axis spacing is the same for every item
 			if (_itemDecoration is SpacingItemDecoration spacing
-				&& (spacing.HorizontalOffset != 0 || spacing.VerticalOffset != 0)
+				&& ((ItemsLayout as ItemsLayout)?.Orientation == ItemsLayoutOrientation.Horizontal ? spacing.HorizontalOffset : spacing.VerticalOffset) != 0
 				&& !IsComputingLayout)
 			{
 				InvalidateItemDecorations();

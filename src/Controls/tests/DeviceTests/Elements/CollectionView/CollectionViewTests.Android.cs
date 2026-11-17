@@ -329,6 +329,74 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Theory(DisplayName = "The ItemSpacing observer only reports insertions and removals in the last row")]
+		[InlineData("Insert", 0, 1, false)]
+		[InlineData("Insert", 98, 1, false)]
+		[InlineData("Insert", 99, 1, true)]
+		[InlineData("Remove", 0, 1, false)]
+		[InlineData("Remove", 99, 1, false)]
+		[InlineData("Remove", 100, 1, true)]
+		[InlineData("Change", 99, 1, false)]
+		[InlineData("Move", 99, 0, false)]
+		[InlineData("Reset", 0, 0, false)]
+		public void ItemSpacingObserverOnlyReportsLastRowChanges(string change, int positionStart, int itemCount, bool expected)
+		{
+			var calls = 0;
+
+			// lastRowStart is read after the change: 100 items in a list, so the last row starts at 99
+			using var observer = new DataChangeObserver(() => calls++, () => 99);
+
+			switch (change)
+			{
+				case "Insert":
+					observer.OnItemRangeInserted(positionStart, itemCount);
+					break;
+				case "Remove":
+					observer.OnItemRangeRemoved(positionStart, itemCount);
+					break;
+				case "Change":
+					observer.OnItemRangeChanged(positionStart, itemCount);
+					break;
+				case "Move":
+					observer.OnItemRangeMoved(positionStart, itemCount, 1);
+					break;
+				default:
+					observer.OnChanged();
+					break;
+			}
+
+			Assert.Equal(expected ? 1 : 0, calls);
+		}
+
+		[Fact(DisplayName = "Appending to a grid with only cross-axis spacing does not recompute the spacing of the visible items")]
+		public async Task AppendingToGridWithCrossAxisSpacingDoesNotRecomputeOffsets()
+		{
+			SetupBuilder();
+
+			var items = new ObservableCollection<string>(Enumerable.Range(0, 100).Select(i => $"{i}"));
+			var collectionView = new CollectionView
+			{
+				ItemsLayout = new GridItemsLayout(2, ItemsLayoutOrientation.Vertical) { HorizontalItemSpacing = 8 },
+				ItemTemplate = new DataTemplate(() => new Label { HeightRequest = 30 }),
+				ItemsSource = items,
+			};
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				var recyclerView = handler.PlatformView;
+				var offsets = new ItemOffsetsCounter();
+				recyclerView.AddItemDecoration(offsets);
+				await AssertEventually(() => offsets.Count > 0 && !recyclerView.IsLayoutRequested);
+
+				offsets.Count = 0;
+				items.Add("new");
+				await AssertEventually(() => !recyclerView.IsLayoutRequested);
+
+				// HorizontalItemSpacing is the same for every row, so the off-screen append changes no visible item's spacing
+				Assert.Equal(0, offsets.Count);
+			});
+		}
+
 		class ItemOffsetsCounter : RecyclerView.ItemDecoration
 		{
 			public int Count { get; set; }
