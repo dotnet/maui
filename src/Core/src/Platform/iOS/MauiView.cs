@@ -998,6 +998,5 @@ namespace Microsoft.Maui.Platform
 
 			return base.AccessibilityActivate();
 		}
-
 	}
 }
