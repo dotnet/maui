@@ -63,8 +63,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			_emptyCollectionObserver = new DataChangeObserver(UpdateEmptyViewVisibility);
 			_itemsUpdateScrollObserver = new DataChangeObserver(AdjustScrollForItemUpdate);
-			// Item (content) changes keep every position, and RecyclerView recomputes the offsets of the items it rebinds
-			_itemSpacingObserver = new DataChangeObserver(InvalidateItemSpacing, structuralChangesOnly: true);
+			// RecyclerView recomputes the offsets of items it rebinds or shifts (and of every item on a full reset), so only
+			// insertions and removals in the last row can leave items that kept their position with stale edge spacing
+			_itemSpacingObserver = new DataChangeObserver(InvalidateItemSpacing, () => ItemsLayout is GridItemsLayout grid ? grid.Span : 1);
 			_dispatchTouchEventToRecyclerView = DispatchTouchEventToRecyclerView;
 			_parentScrollGestureDispatcher = new ParentScrollGestureDispatcher(this);
 		}
