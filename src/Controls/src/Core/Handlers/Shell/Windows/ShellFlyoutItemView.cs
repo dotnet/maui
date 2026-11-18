@@ -55,6 +55,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			var element = bo as Element;
 			var shell = element?.FindParentOfType<Shell>();
+			var previousShell = _shell;
 
 			if (_shell != shell)
 			{
@@ -82,7 +83,7 @@ namespace Microsoft.Maui.Controls.Platform
 				if (_content.Parent is BaseShellItem bsi)
 					bsi.RemoveLogicalChild(_content);
 				else
-					_shell?.RemoveLogicalChild(_content);
+					previousShell?.RemoveLogicalChild(_content);
 
 				// Remove resource listener from previous content
 				if (_content is IElementDefinition contentDef)
@@ -94,13 +95,16 @@ namespace Microsoft.Maui.Controls.Platform
 				Content = null;
 			}
 
-			_dataTemplate = bo != null && _shell != null
+			var template = bo != null && _shell != null
 				? Shell.ResolveFlyoutItemTemplate(_shell, bo)
 				: null;
+			_dataTemplate = template?.SelectDataTemplate(bo, _shell);
 
 			// Resolve the application supplied template through the same public contract external backends use.
 			// A null result means the application did not supply one, so fall back to the default flyout item cell.
-			var dataTemplate = _dataTemplate ?? (bo != null ? BaseShellItem.CreateDefaultFlyoutItemCell(bo) : null);
+			var dataTemplate = bo != null && _shell != null
+				? _dataTemplate ?? BaseShellItem.CreateDefaultFlyoutItemCell(bo)
+				: null;
 
 			if (bo != null)
 				bo.PropertyChanged += ShellElementPropertyChanged;
@@ -136,7 +140,8 @@ namespace Microsoft.Maui.Controls.Platform
 				? bindableObject
 				: (BindableObject)_previousDataContext;
 
-			var dataTemplate = bo != null ? Shell.ResolveFlyoutItemTemplate(_shell, bo) : null;
+			var template = bo != null ? Shell.ResolveFlyoutItemTemplate(_shell, bo) : null;
+			var dataTemplate = template?.SelectDataTemplate(bo, _shell);
 			if (ReferenceEquals(_dataTemplate, dataTemplate))
 				return;
 
