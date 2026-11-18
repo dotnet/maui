@@ -185,6 +185,7 @@ The identity needs **"Queue builds"** permission on the target pipeline(s):
 |---|---|---|
 | `dnceng-public` | `public` | 302 (maui-pr), 313 (maui-pr-uitests), 314 (maui-pr-devicetests) |
 | `DevDiv` | `DevDiv` | 27723 |
+| `dnceng` | `internal` | 1095 (official signed build), 1445 (release publication), `dotnet-maui` Git mirror. Used by `release-publishing.yml`; its nightly-mirror job stays off until `RELEASE_NIGHTLY_MIRROR_ENABLED` is `true`. |
 
 ## Step 4: Set GitHub Repository Secrets
 
@@ -295,6 +296,7 @@ fires after direct issue-free PR creation and follow-up pushes.
 | `AADSTS7002381: ... enterprise claim ... actual value is ''` | Personal fork outside GitHub Enterprise | Microsoft tenant requires `enterprise` claim. Only repos in `dotnet`, `microsoft`, etc. GitHub Enterprise orgs work. |
 | `TF215106: Access denied. <name> needs Queue builds permissions` | Stakeholder access level or missing permission | Upgrade identity to **Basic** access (not Stakeholder). Verify "Queue builds" is explicitly allowed on the pipeline. |
 | `TF401444: Sign-in required` | Identity not added to AzDO org | Add the MI as a user in the AzDO Organization Settings → Users. |
+| `TF400813: The user ... is not authorized to access this resource` | The token is valid but the identity is not a member of that AzDO org (seen against `dnceng`) | Add the MI to that organization with access to the project. For `dnceng`, keep `RELEASE_NIGHTLY_MIRROR_ENABLED` unset until then. |
 | `403` from AzDO REST API | Missing permissions | Ensure the identity has "Queue builds" on the specific pipeline AND Basic access level. |
 | `OIDC environment variables not available` | Missing `id-token: write` permission | Add `permissions: { id-token: write }` at the **job** level (not workflow level). |
 | `Failed to get Azure AD token` | Wrong client_id/tenant_id or federated credential mismatch | Verify secrets match the MI's Client ID and Tenant ID. Check federated credential subject matches the actual OIDC claim. |

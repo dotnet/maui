@@ -864,6 +864,8 @@ void PrepareDevice(bool waitForBoot)
 			Warning("Failed to set Logcat properties: {0}", ex.Message);
 			// Continue without throwing - logcat setup is not critical for device function
 		}
+
+		DisablePlayStoreAutoUpdates(settings);
 	}
 
 	Information("Setting the ADB properties...");
@@ -883,6 +885,16 @@ void PrepareDevice(bool waitForBoot)
 		Warning("Failed to set ADB properties: {0}", ex.Message);
 		// Continue without throwing - property setup failure should not stop the process
 	}
+}
+
+// Play Store images auto-update Google Play services minutes after boot. Replacing that
+// package force-restarts every process that loaded its modules, including the app under test.
+void DisablePlayStoreAutoUpdates(AdbToolSettings settings)
+{
+	Information("Disabling Play Store auto-updates...");
+
+	var lines = SafeAdbShell("pm disable-user --user 0 com.android.vending", settings);
+	Information("{0}", string.Join("\n", lines));
 }
 
 void EnsureAdbKeys(AdbToolSettings settings)
