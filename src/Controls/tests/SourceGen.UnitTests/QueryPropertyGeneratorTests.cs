@@ -1,10 +1,11 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Runtime.Loader;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -17,7 +18,7 @@ namespace Microsoft.Maui.Controls.SourceGen.UnitTests;
 public class QueryPropertyGeneratorTests
 {
 	[Fact]
-	public void GeneratesRegistrationWithoutRequiringPartial()
+	public void GeneratesExplicitImplementationForPartialClass()
 	{
 		var (result, _) = RunGenerator("""
 			using Microsoft.Maui.Controls;
@@ -26,7 +27,7 @@ public class QueryPropertyGeneratorTests
 
 			[QueryProperty(nameof(Name), "name")]
 			[QueryProperty(nameof(Count), "count")]
-			public class DetailsPage : ContentPage
+			public partial class DetailsPage : ContentPage
 			{
 				public string Name { get; set; }
 				public int Count { get; set; }
@@ -39,46 +40,23 @@ public class QueryPropertyGeneratorTests
 			#nullable disable
 			#pragma warning disable
 
-			namespace Microsoft.Maui.Controls.Generated
+			namespace MyApp
 			{
-				[global::System.CodeDom.Compiler.GeneratedCode("Microsoft.Maui.Controls.SourceGen", "1.0.0.0")]
-				[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
-				internal static class QueryPropertyRegistrations
+				partial class DetailsPage : global::Microsoft.Maui.Controls.IQueryPropertyAttributable
 				{
-					[global::System.Runtime.CompilerServices.ModuleInitializer]
-					internal static void Initialize()
+					[global::System.CodeDom.Compiler.GeneratedCode("Microsoft.Maui.Controls.SourceGen", "1.0.0.0")]
+					void global::Microsoft.Maui.Controls.IQueryPropertyAttributable.ApplyQueryProperties(global::System.Collections.Generic.IDictionary<string, object> query, global::System.Collections.Generic.IDictionary<string, object> previousQuery)
 					{
-						Register(null, typeof(global::MyApp.DetailsPage),
-							new string[]
-							{
-								"name",
-								"count",
-							},
-							new global::System.Type[]
-							{
-								typeof(string),
-								typeof(int),
-							},
-							new global::System.Action<object, object>[]
-							{
-								static (target, value) => ((global::MyApp.DetailsPage)target).Name = (string)value,
-								static (target, value) => ((global::MyApp.DetailsPage)target).Count = value is null ? default(int) : (int)value,
-							},
-							new global::System.Action<object>[]
-							{
-								static target => ((global::MyApp.DetailsPage)target).Name = default(string),
-								static target => ((global::MyApp.DetailsPage)target).Count = new int(),
-							});
+						object value;
+						if (query.TryGetValue("name", out value))
+							((global::MyApp.DetailsPage)this).Name = global::Microsoft.Maui.Controls.QueryPropertyConversion.ConvertToString(query, "name", value);
+						else if (previousQuery.ContainsKey("name"))
+							((global::MyApp.DetailsPage)this).Name = default(string);
+						if (query.TryGetValue("count", out value))
+							((global::MyApp.DetailsPage)this).Count = value is null ? default(int) : (int)global::System.Convert.ChangeType(value, typeof(int), global::Microsoft.Maui.Controls.QueryPropertyConversion.GetFormatProvider(query, "count"));
+						else if (previousQuery.ContainsKey("count"))
+							((global::MyApp.DetailsPage)this).Count = new int();
 					}
-
-					[global::System.Runtime.CompilerServices.UnsafeAccessor(global::System.Runtime.CompilerServices.UnsafeAccessorKind.StaticMethod, Name = "Register")]
-					static extern void Register(
-						[global::System.Runtime.CompilerServices.UnsafeAccessorType("Microsoft.Maui.Controls.QueryPropertyRegistry, Microsoft.Maui.Controls")] object registry,
-						global::System.Type type,
-						string[] queryIds,
-						global::System.Type[] propertyTypes,
-						global::System.Action<object, object>[] setters,
-						global::System.Action<object>[] resetters);
 				}
 			}
 			"""), Normalize(generated));
@@ -90,7 +68,7 @@ public class QueryPropertyGeneratorTests
 		var (result, _) = RunGenerator("""
 			using Microsoft.Maui.Controls;
 
-			public class PlainPage : ContentPage
+			public partial class PlainPage : ContentPage
 			{
 				public string Name { get; set; }
 			}
@@ -101,7 +79,7 @@ public class QueryPropertyGeneratorTests
 	}
 
 	[Fact]
-	public void RegistrationsMatchReflection()
+	public void GeneratedCodeMatchesReflection()
 	{
 		const string source = """
 			using System;
@@ -115,6 +93,7 @@ public class QueryPropertyGeneratorTests
 			{
 				public Point() { X = 42; }
 				public int X { get; set; }
+				public override string ToString() => $"Point({X})";
 			}
 
 			[QueryProperty(nameof(Text), "text")]
@@ -126,7 +105,7 @@ public class QueryPropertyGeneratorTests
 			[QueryProperty(nameof(Ratio), "ratio")]
 			[QueryProperty(nameof(Payload), "payload")]
 			[QueryProperty(nameof(Title), "title")]
-			public class SupportedTypes : ContentPage
+			public partial class SupportedTypes : ContentPage
 			{
 				public string Text { get; set; }
 				public int Number { get; set; }
@@ -148,7 +127,7 @@ public class QueryPropertyGeneratorTests
 			[QueryProperty("class", "keyword")]
 			[QueryProperty(nameof(SetOnly), "setonly")]
 			[QueryProperty(nameof(Shared), "shared")]
-			public class FilteredProperties
+			public partial class FilteredProperties
 			{
 				public string Text { get; set; }
 				public string ReadOnly { get; }
@@ -166,7 +145,7 @@ public class QueryPropertyGeneratorTests
 			[QueryProperty(nameof(Virtual), "virtual")]
 			[QueryProperty(nameof(Hiding), "hiding")]
 			[QueryProperty(nameof(BaseStatic), "basestatic")]
-			public class BaseModel
+			public partial class BaseModel
 			{
 				public string BaseValue { get; set; }
 				public virtual string Virtual { get; set; }
@@ -175,7 +154,7 @@ public class QueryPropertyGeneratorTests
 			}
 
 			[QueryProperty(nameof(DerivedValue), "derived")]
-			public class DerivedModel : BaseModel
+			public partial class DerivedModel : BaseModel
 			{
 				public string DerivedValue { get; set; }
 				public string VirtualSetValue;
@@ -183,12 +162,12 @@ public class QueryPropertyGeneratorTests
 				public new string Hiding { get; set; }
 			}
 
-			public class DerivedWithoutAttributes : DerivedModel
+			public partial class DerivedWithoutAttributes : DerivedModel
 			{
 			}
 
 			[QueryProperty(nameof(Value), "value")]
-			public record RecordModel
+			public partial record RecordModel
 			{
 				public string Value { get; set; }
 			}
@@ -203,16 +182,23 @@ public class QueryPropertyGeneratorTests
 				public string Value { get; set; }
 			}
 
-			public class Outer
+			[QueryProperty(nameof(Value), "value")]
+			public partial class GenericModel<T>
+			{
+				public string Value { get; set; }
+				public T Other { get; set; }
+			}
+
+			public partial class Outer
 			{
 				[QueryProperty(nameof(Value), "value")]
-				public class PublicNested
+				public partial class PublicNested
 				{
 					public string Value { get; set; }
 				}
 
 				[QueryProperty(nameof(Value), "value")]
-				internal class InternalNested
+				private partial class PrivateNested
 				{
 					public string Value { get; set; }
 				}
@@ -220,29 +206,63 @@ public class QueryPropertyGeneratorTests
 			""";
 
 		var assembly = CompileAndLoad(source);
-		var types = assembly.GetTypes().Where(t => t.Namespace == "Parity" && t.GetCustomAttributes(typeof(QueryPropertyAttribute), true).Length > 0).ToArray();
-		Assert.Equal(9, types.Length);
+		var types = assembly.GetTypes()
+			.Where(t => t.Namespace == "Parity" && t.GetCustomAttributes(typeof(QueryPropertyAttribute), true).Length > 0)
+			.Select(t => t.IsGenericTypeDefinition ? t.MakeGenericType(typeof(int)) : t)
+			.ToArray();
+		Assert.Equal(10, types.Length);
 
 		foreach (var type in types)
 		{
-			var expected = GetReflectionQueryProperties(type);
-			var registered = GetRegisteredQueryProperties(type);
-			Assert.True(registered is not null, $"{type} is not registered");
-			Assert.Equal(expected.Select(e => e.QueryId), registered!.Select(r => r.QueryId));
-			Assert.Equal(expected.Select(e => e.Property.PropertyType), registered!.Select(r => r.PropertyType));
+			Assert.True(typeof(IQueryPropertyAttributable).IsAssignableFrom(type), $"{type} doesn't implement IQueryPropertyAttributable");
+			Assert.Equal(type, type.GetInterfaceMap(typeof(IQueryPropertyAttributable)).TargetMethods[0].DeclaringType);
 
-			for (var i = 0; i < expected.Count; i++)
-				AssertSetterMatchesReflection(type, expected[i].Property, registered[i]);
+			var queries = GetReflectionQueryProperties(type).Select(p => p.QueryId).Distinct().ToArray();
+			var values = queries.ToDictionary(id => id, id => (object?)GetSampleValue(GetReflectionQueryProperties(type).First(p => p.QueryId == id).Property.PropertyType));
+			var nulls = queries.ToDictionary(id => id, id => (object?)null);
+			var empty = new Dictionary<string, object?>();
+
+			AssertMatchesReflection(type, values, empty);
+			AssertMatchesReflection(type, empty, values);
+			AssertMatchesReflection(type, nulls, values);
 		}
 
-		var derived = Activator.CreateInstance(assembly.GetType("Parity.DerivedModel")!)!;
-		var virtualProperty = GetRegisteredQueryProperties(derived.GetType())!.Single(p => p.QueryId == "virtual");
-		virtualProperty.SetValue(derived, "v");
+		var derived = (IQueryPropertyAttributable)Activator.CreateInstance(assembly.GetType("Parity.DerivedModel")!)!;
+		derived.ApplyQueryProperties(new Dictionary<string, object> { ["virtual"] = "v" }, new Dictionary<string, object>());
 		Assert.Equal("v", derived.GetType().GetField("VirtualSetValue")!.GetValue(derived));
+	}
 
-		var filtered = Activator.CreateInstance(assembly.GetType("Parity.FilteredProperties")!)!;
-		GetRegisteredQueryProperties(filtered.GetType())!.Single(p => p.QueryId == "setonly").SetValue(filtered, "s");
-		Assert.Equal("s", filtered.GetType().GetProperty("SetOnlyValue")!.GetValue(filtered));
+	[Fact]
+	public void StringValuesAreUrlDecodedAndNumbersUseCurrentCulture()
+	{
+		var assembly = CompileAndLoad("""
+			using Microsoft.Maui.Controls;
+
+			[QueryProperty(nameof(Text), "text")]
+			[QueryProperty(nameof(Number), "number")]
+			public partial class Model
+			{
+				public string Text { get; set; }
+				public double Number { get; set; }
+			}
+			""");
+
+		var originalCulture = CultureInfo.CurrentCulture;
+		try
+		{
+			CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("de-DE");
+			var query = new Dictionary<string, object?> { ["text"] = "a%2Bb", ["number"] = "3,5" };
+			AssertMatchesReflection(assembly.GetType("Model")!, query, new Dictionary<string, object?>());
+
+			var model = Activator.CreateInstance(assembly.GetType("Model")!)!;
+			((IQueryPropertyAttributable)model).ApplyQueryProperties(query!, new Dictionary<string, object>());
+			Assert.Equal("a+b", model.GetType().GetProperty("Text")!.GetValue(model));
+			Assert.Equal(3.5, model.GetType().GetProperty("Number")!.GetValue(model));
+		}
+		finally
+		{
+			CultureInfo.CurrentCulture = originalCulture;
+		}
 	}
 
 	[Fact]
@@ -255,22 +275,28 @@ public class QueryPropertyGeneratorTests
 			namespace Fallback;
 
 			[QueryProperty(nameof(Value), "value")]
-			public class GenericModel<T>
+			public class NotPartial
 			{
-				public T Value { get; set; }
+				public string Value { get; set; }
 			}
 
 			public class Outer
 			{
 				[QueryProperty(nameof(Value), "value")]
-				private class PrivateNested
+				public partial class NestedInNonPartial
 				{
 					public string Value { get; set; }
 				}
 			}
 
 			[QueryProperty(nameof(Value), "value")]
-			public class InitOnly
+			public partial class GenericProperty<T>
+			{
+				public T Value { get; set; }
+			}
+
+			[QueryProperty(nameof(Value), "value")]
+			public partial class InitOnly
 			{
 				public string Value { get; init; }
 			}
@@ -281,7 +307,7 @@ public class QueryPropertyGeneratorTests
 			}
 
 			[CustomQueryProperty(nameof(Value), "value")]
-			public class CustomAttribute
+			public partial class CustomAttribute
 			{
 				public string Value { get; set; }
 			}
@@ -292,13 +318,13 @@ public class QueryPropertyGeneratorTests
 			}
 
 			[QueryProperty(nameof(Value), "value")]
-			public class Ambiguous : AmbiguousBase
+			public partial class Ambiguous : AmbiguousBase
 			{
 				public new int Value { get; set; }
 			}
 
 			[QueryProperty(nameof(Value), "value")]
-			public class Supported
+			public partial class Supported
 			{
 				public string Value { get; set; }
 			}
@@ -306,10 +332,31 @@ public class QueryPropertyGeneratorTests
 
 		var assembly = CompileAndLoad(source);
 
-		foreach (var typeName in new[] { "Fallback.GenericModel`1", "Fallback.Outer+PrivateNested", "Fallback.InitOnly", "Fallback.CustomAttribute", "Fallback.Ambiguous" })
-			Assert.Null(GetRegisteredQueryProperties(assembly.GetType(typeName, throwOnError: true)!));
+		foreach (var typeName in new[] { "Fallback.NotPartial", "Fallback.Outer+NestedInNonPartial", "Fallback.GenericProperty`1", "Fallback.InitOnly", "Fallback.CustomAttribute", "Fallback.Ambiguous" })
+			Assert.False(typeof(IQueryPropertyAttributable).IsAssignableFrom(assembly.GetType(typeName, throwOnError: true)), typeName);
 
-		Assert.NotNull(GetRegisteredQueryProperties(assembly.GetType("Fallback.Supported", throwOnError: true)!));
+		Assert.True(typeof(IQueryPropertyAttributable).IsAssignableFrom(assembly.GetType("Fallback.Supported", throwOnError: true)));
+	}
+
+	[Fact]
+	public void UserImplementationIsNotReplaced()
+	{
+		var (result, _) = RunGenerator("""
+			using System.Collections.Generic;
+			using Microsoft.Maui.Controls;
+
+			[QueryProperty(nameof(Value), "value")]
+			public partial class Manual : IQueryPropertyAttributable
+			{
+				public string Value { get; set; }
+
+				void IQueryPropertyAttributable.ApplyQueryProperties(IDictionary<string, object> query, IDictionary<string, object> previousQuery)
+				{
+				}
+			}
+			""");
+
+		Assert.Empty(result.GeneratedTrees);
 	}
 
 	[Fact]
@@ -319,13 +366,13 @@ public class QueryPropertyGeneratorTests
 			using Microsoft.Maui.Controls;
 
 			[QueryProperty(nameof(Value), "value")]
-			public class GenericModel<T>
+			public class NotPartial
 			{
-				public T Value { get; set; }
+				public string Value { get; set; }
 			}
 
 			[QueryProperty(nameof(Value), "value")]
-			public class Supported
+			public partial class Supported
 			{
 				public string Value { get; set; }
 			}
@@ -337,7 +384,8 @@ public class QueryPropertyGeneratorTests
 		var (withTrimming, _) = RunGenerator(source, ("build_property.EnableTrimAnalyzer", "true"));
 		var diagnostic = Assert.Single(withTrimming.Diagnostics);
 		Assert.Equal("MAUI1200", diagnostic.Id);
-		Assert.Contains("GenericModel<T>", diagnostic.GetMessage(), StringComparison.Ordinal);
+		Assert.Contains("NotPartial", diagnostic.GetMessage(), StringComparison.Ordinal);
+		Assert.Contains("not partial", diagnostic.GetMessage(), StringComparison.Ordinal);
 		Assert.Equal(DiagnosticSeverity.Warning, diagnostic.Severity);
 	}
 
@@ -368,12 +416,10 @@ public class QueryPropertyGeneratorTests
 		Assert.True(emitResult.Success, string.Join(Environment.NewLine, emitResult.Diagnostics));
 
 		stream.Position = 0;
-		var assembly = AssemblyLoadContext.Default.LoadFromStream(stream);
-		RuntimeHelpers.RunModuleConstructor(assembly.ManifestModule.ModuleHandle);
-		return assembly;
+		return AssemblyLoadContext.Default.LoadFromStream(stream);
 	}
 
-	// Mirrors the reflection-based implementation in ShellContent.ApplyQueryAttributes.
+	// Mirrors the reflection-based property lookup in ShellContent.ApplyQueryAttributes.
 	static List<(string QueryId, PropertyInfo Property)> GetReflectionQueryProperties(Type type)
 	{
 		var result = new List<(string, PropertyInfo)>();
@@ -387,43 +433,78 @@ public class QueryPropertyGeneratorTests
 		return result;
 	}
 
-	static void AssertSetterMatchesReflection(Type type, PropertyInfo property, RegisteredQueryProperty registered)
+	// Mirrors ShellContent.ApplyQueryAttributes for navigation parameters, which are URL decoded and use the current culture.
+	static void ApplyWithReflection(object target, IDictionary<string, object?> query, IDictionary<string, object?> previousQuery)
 	{
-		var instance = Activator.CreateInstance(type)!;
-		var sample = GetSampleValue(property.PropertyType);
+		foreach (var (queryId, property) in GetReflectionQueryProperties(target.GetType()))
+		{
+			if (query.TryGetValue(queryId, out var value))
+			{
+				if (property.PropertyType == typeof(string))
+					value = value is null ? null : WebUtility.UrlDecode((string)value);
+				else if (value is not null)
+					value = Convert.ChangeType(value, Nullable.GetUnderlyingType(property.PropertyType) ?? property.PropertyType, CultureInfo.CurrentCulture);
+				property.SetValue(target, value);
+			}
+			else if (previousQuery.ContainsKey(queryId))
+			{
+				property.SetValue(target, property.PropertyType.IsValueType && Nullable.GetUnderlyingType(property.PropertyType) is null
+					? Activator.CreateInstance(property.PropertyType)
+					: null);
+			}
+		}
+	}
 
-		registered.SetValue(instance, sample);
-		if (property.CanRead)
-			Assert.Equal(sample, property.GetValue(instance));
+	static void AssertMatchesReflection(Type type, IDictionary<string, object?> query, IDictionary<string, object?> previousQuery)
+	{
+		var expected = Activator.CreateInstance(type, nonPublic: true)!;
+		ResetStatics(type);
+		ApplyWithReflection(expected, query, previousQuery);
+		var expectedState = Snapshot(expected);
 
-		registered.ResetValue(instance);
-		var expectedDefault = property.PropertyType.IsValueType && Nullable.GetUnderlyingType(property.PropertyType) is null
-			? Activator.CreateInstance(property.PropertyType)
-			: null;
-		if (property.CanRead)
-			Assert.Equal(expectedDefault, property.GetValue(instance));
+		var actual = Activator.CreateInstance(type, nonPublic: true)!;
+		ResetStatics(type);
+		((IQueryPropertyAttributable)actual).ApplyQueryProperties(query!, previousQuery!);
+		var actualState = Snapshot(actual);
 
-		// PropertyInfo.SetValue(target, null) stores the default value of non-nullable value types.
-		registered.SetValue(instance, sample);
-		registered.SetValue(instance, null);
-		var reflectionInstance = Activator.CreateInstance(type)!;
-		property.SetValue(reflectionInstance, sample);
-		property.SetValue(reflectionInstance, null);
-		if (property.CanRead)
-			Assert.Equal(property.GetValue(reflectionInstance), property.GetValue(instance));
+		Assert.Equal(expectedState, actualState);
+	}
+
+	static void ResetStatics(Type type)
+	{
+		foreach (var property in type.GetProperties(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy))
+		{
+			if (property.CanWrite)
+				property.SetValue(null, null);
+		}
+	}
+
+	static List<string> Snapshot(object instance)
+	{
+		const BindingFlags flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static;
+		var state = new List<string>();
+		for (var type = instance.GetType(); type is not null && type != typeof(object) && type.Namespace?.StartsWith("Microsoft.Maui", StringComparison.Ordinal) != true; type = type.BaseType)
+		{
+			foreach (var field in type.GetFields(flags | BindingFlags.DeclaredOnly))
+				state.Add($"{type.Name}.{field.Name}={field.GetValue(field.IsStatic ? null : instance)}");
+		}
+
+		return state;
 	}
 
 	static object GetSampleValue(Type type)
 	{
 		type = Nullable.GetUnderlyingType(type) ?? type;
-		if (type == typeof(string) || type == typeof(object))
+		if (type == typeof(string))
+			return "a%2Bb";
+		if (type == typeof(object))
 			return "sample";
 		if (type.IsEnum)
 			return Enum.GetValues(type).GetValue(2)!;
 		if (type == typeof(int))
-			return 7;
+			return "7";
 		if (type == typeof(bool))
-			return true;
+			return "True";
 		if (type == typeof(double))
 			return 0.5;
 
@@ -432,29 +513,8 @@ public class QueryPropertyGeneratorTests
 		return value;
 	}
 
-	static RegisteredQueryProperty[]? GetRegisteredQueryProperties(Type type)
-	{
-		var registry = typeof(QueryPropertyAttribute).Assembly.GetType("Microsoft.Maui.Controls.QueryPropertyRegistry", throwOnError: true)!;
-		var tryGet = registry.GetMethod("TryGetQueryProperties", BindingFlags.NonPublic | BindingFlags.Static)!;
-		var arguments = new object?[] { type, null };
-		if (!(bool)tryGet.Invoke(null, arguments)!)
-			return null;
-
-		return ((Array)arguments[1]!).Cast<object>().Select(entry =>
-		{
-			var entryType = entry.GetType();
-			return new RegisteredQueryProperty(
-				(string)entryType.GetProperty("QueryId")!.GetValue(entry)!,
-				(Type)entryType.GetProperty("PropertyType")!.GetValue(entry)!,
-				(Action<object, object?>)entryType.GetProperty("SetValue")!.GetValue(entry)!,
-				(Action<object>)entryType.GetProperty("ResetValue")!.GetValue(entry)!);
-		}).ToArray();
-	}
-
 	static string Normalize(string text) =>
 		string.Join("\n", text.Replace("\r\n", "\n", StringComparison.Ordinal).Split('\n').Select(l => l.Trim()).Where(l => l.Length > 0));
-
-	sealed record RegisteredQueryProperty(string QueryId, Type PropertyType, Action<object, object?> SetValue, Action<object> ResetValue);
 
 	sealed class GlobalOptionsProvider((string Key, string Value)[] options) : AnalyzerConfigOptionsProvider
 	{

@@ -97,7 +97,9 @@ When this feature is disabled, any value set to [`SearchHandler.DisplayMemberNam
 
 When disabled, the `[QueryProperty(...)]` attributes won't be applied using reflection when navigating.
 
-The Controls source generator processes `[QueryProperty(...)]` attributes at build time, so they keep working without reflection and with this feature disabled. No code changes are required. Types the generator can't handle (for example generic types or private nested types) still rely on reflection; when the trim analyzer is enabled (`PublishTrimmed`, `PublishAot` or `IsAotCompatible`), the generator reports them with the `MAUI1200` warning. For those types, implement the [`IQueryAttributable`](https://learn.microsoft.com/en-us/dotnet/maui/fundamentals/shell/navigation#process-navigation-data-using-a-single-method) interface instead.
+For `partial` classes, the Controls source generator turns `[QueryProperty(...)]` attributes into an explicit implementation of the hidden `IQueryPropertyAttributable` interface at build time. The generated code sets the properties and converts the values exactly like the reflection-based implementation, so the attributes keep working without reflection and with this feature disabled. Marking the class `partial` is the only code change required.
+
+Classes that aren't `partial`, or that the generator can't handle (for example properties with `init` setters or ambiguous property names), still rely on reflection. When the trim analyzer is enabled (`PublishTrimmed`, `PublishAot` or `IsAotCompatible`), the generator reports them with the `MAUI1200` warning. Make those classes `partial`, or implement the [`IQueryAttributable`](https://learn.microsoft.com/en-us/dotnet/maui/fundamentals/shell/navigation#process-navigation-data-using-a-single-method) interface instead.
 
 ## MauiImplicitCastOperatorsUsageViaReflectionSupport
 

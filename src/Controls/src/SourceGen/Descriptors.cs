@@ -361,7 +361,7 @@ namespace Microsoft.Maui.Controls.SourceGen
 		public static DiagnosticDescriptor QueryPropertyRequiresReflection = new DiagnosticDescriptor(
 			id: "MAUI1200",
 			title: "QueryProperty attributes are applied using reflection",
-			messageFormat: "The [QueryProperty] attributes of '{0}' can't be source generated ({1}). They are applied using reflection, which is not trimming-safe and is disabled in trimmed and NativeAOT apps.",
+			messageFormat: "The [QueryProperty] attributes of '{0}' can't be source generated ({1}). They are applied using reflection, which is not trimming-safe and is disabled in trimmed and NativeAOT apps. Make the type partial or implement IQueryAttributable instead.",
 			category: "QueryProperty",
 			defaultSeverity: DiagnosticSeverity.Warning,
 			isEnabledByDefault: true);
