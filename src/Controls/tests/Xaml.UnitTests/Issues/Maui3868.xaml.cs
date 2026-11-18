@@ -47,4 +47,6 @@ public class Maui3868ReminderPage : ContentPage, IQueryAttributable
 		ReceivedQuery = new Dictionary<string, object>(query);
 		Date = (string)query["date"];
 	}
+
+	void IQueryAttributable.ApplyQueryProperties(IDictionary<string, object> query, IDictionary<string, object> previousQuery) { }
 }

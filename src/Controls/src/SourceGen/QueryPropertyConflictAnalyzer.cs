@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls.SourceGen;
 public sealed class QueryPropertyConflictAnalyzer : DiagnosticAnalyzer
 {
 	public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics
-		=> ImmutableArray.Create(Descriptors.QueryPropertyConflictsWithIQueryPropertyAttributable);
+		=> ImmutableArray.Create(Descriptors.QueryPropertyConflictsWithIQueryAttributable);
 
 	public override void Initialize(AnalysisContext context)
 	{
@@ -17,10 +17,10 @@ public sealed class QueryPropertyConflictAnalyzer : DiagnosticAnalyzer
 		context.EnableConcurrentExecution();
 		context.RegisterCompilationStartAction(static context =>
 		{
-			var queryAttributable = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.IQueryPropertyAttributable");
+			var queryAttributable = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.IQueryAttributable");
 			var queryPropertyAttribute = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.QueryPropertyAttribute");
-			var applyQueryProperties = queryAttributable?.GetMembers("ApplyQueryProperties").OfType<IMethodSymbol>().FirstOrDefault();
-			if (queryAttributable is null || queryPropertyAttribute is null || applyQueryProperties is null)
+			var applyQueryAttributes = queryAttributable?.GetMembers("ApplyQueryAttributes").OfType<IMethodSymbol>().FirstOrDefault();
+			if (queryAttributable is null || queryPropertyAttribute is null || applyQueryAttributes is null)
 				return;
 
 			context.RegisterSymbolAction(context =>
@@ -33,12 +33,12 @@ public sealed class QueryPropertyConflictAnalyzer : DiagnosticAnalyzer
 					attribute.AttributeClass?.InheritsFrom(queryPropertyAttribute, context: null) == true))
 					return;
 
-				if (type.FindImplementationForInterfaceMember(applyQueryProperties) is not IMethodSymbol implementation ||
+				if (type.FindImplementationForInterfaceMember(applyQueryAttributes) is not IMethodSymbol implementation ||
 					QueryPropertyGenerator.IsGeneratedQueryPropertyImplementation(implementation))
 					return;
 
 				context.ReportDiagnostic(Diagnostic.Create(
-					Descriptors.QueryPropertyConflictsWithIQueryPropertyAttributable, type.Locations[0], type.Name));
+					Descriptors.QueryPropertyConflictsWithIQueryAttributable, type.Locations[0], type.Name));
 			}, SymbolKind.NamedType);
 		});
 	}

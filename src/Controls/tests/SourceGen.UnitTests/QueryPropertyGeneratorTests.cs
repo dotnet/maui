@@ -42,11 +42,15 @@ public class QueryPropertyGeneratorTests
 
 			namespace MyApp
 			{
-				partial class DetailsPage : global::Microsoft.Maui.Controls.IQueryPropertyAttributable
+				partial class DetailsPage : global::Microsoft.Maui.Controls.IQueryAttributable
 				{
 					[global::System.CodeDom.Compiler.GeneratedCode("Microsoft.Maui.Controls.SourceGen", "1.0.0.0")]
-					void global::Microsoft.Maui.Controls.IQueryPropertyAttributable.ApplyQueryProperties(global::System.Collections.Generic.IDictionary<string, object> query, global::System.Collections.Generic.IDictionary<string, object> previousQuery)
+					void global::Microsoft.Maui.Controls.IQueryAttributable.ApplyQueryAttributes(global::System.Collections.Generic.IDictionary<string, object> query) { }
+
+					[global::System.CodeDom.Compiler.GeneratedCode("Microsoft.Maui.Controls.SourceGen", "1.0.0.0")]
+					void global::Microsoft.Maui.Controls.IQueryAttributable.ApplyQueryProperties(global::System.Collections.Generic.IDictionary<string, object> query, global::System.Collections.Generic.IDictionary<string, object> previousQuery)
 					{
+						global::Microsoft.Maui.Controls.QueryPropertyConversion.ValidateGeneratedQueryProperties(this, typeof(global::MyApp.DetailsPage));
 						object value;
 						if (query.TryGetValue("name", out value))
 							((global::MyApp.DetailsPage)this).Name = global::Microsoft.Maui.Controls.QueryPropertyConversion.ConvertToString(query, "name", value);
@@ -76,6 +80,33 @@ public class QueryPropertyGeneratorTests
 
 		Assert.Empty(result.GeneratedTrees);
 		Assert.Empty(result.Diagnostics);
+	}
+
+	[Fact]
+	public void IgnoresNonInheritedQueryPropertyAttributesOnBaseTypes()
+	{
+		var (result, _) = RunGenerator("""
+			using System;
+			using Microsoft.Maui.Controls;
+
+			[AttributeUsage(AttributeTargets.Class, Inherited = false)]
+			public class LocalQueryAttribute : QueryPropertyAttribute
+			{
+				public LocalQueryAttribute() : base("Unused", "unused") { }
+			}
+
+			[LocalQuery]
+			public class BasePage { }
+
+			[QueryProperty(nameof(Value), "value")]
+			public partial class DerivedPage : BasePage
+			{
+				public string Value { get; set; }
+			}
+			""");
+
+		var generated = Assert.Single(result.GeneratedTrees).ToString();
+		Assert.Contains("partial class DerivedPage", generated, StringComparison.Ordinal);
 	}
 
 	[Fact]
@@ -214,8 +245,8 @@ public class QueryPropertyGeneratorTests
 
 		foreach (var type in types)
 		{
-			Assert.True(typeof(IQueryPropertyAttributable).IsAssignableFrom(type), $"{type} doesn't implement IQueryPropertyAttributable");
-			Assert.Equal(type, type.GetInterfaceMap(typeof(IQueryPropertyAttributable)).TargetMethods[0].DeclaringType);
+			Assert.True(typeof(IQueryAttributable).IsAssignableFrom(type), $"{type} doesn't implement IQueryAttributable");
+			Assert.Equal(type, type.GetInterfaceMap(typeof(IQueryAttributable)).TargetMethods[0].DeclaringType);
 
 			var queries = GetReflectionQueryProperties(type).Select(p => p.QueryId).Distinct().ToArray();
 			var values = queries.ToDictionary(id => id, id => (object?)GetSampleValue(GetReflectionQueryProperties(type).First(p => p.QueryId == id).Property.PropertyType));
@@ -227,7 +258,7 @@ public class QueryPropertyGeneratorTests
 			AssertMatchesReflection(type, nulls, values);
 		}
 
-		var derived = (IQueryPropertyAttributable)Activator.CreateInstance(assembly.GetType("Parity.DerivedModel")!)!;
+		var derived = (IQueryAttributable)Activator.CreateInstance(assembly.GetType("Parity.DerivedModel")!)!;
 		derived.ApplyQueryProperties(new Dictionary<string, object> { ["virtual"] = "v" }, new Dictionary<string, object>());
 		Assert.Equal("v", derived.GetType().GetField("VirtualSetValue")!.GetValue(derived));
 	}
@@ -255,7 +286,7 @@ public class QueryPropertyGeneratorTests
 			AssertMatchesReflection(assembly.GetType("Model")!, query, new Dictionary<string, object?>());
 
 			var model = Activator.CreateInstance(assembly.GetType("Model")!)!;
-			((IQueryPropertyAttributable)model).ApplyQueryProperties(query!, new Dictionary<string, object>());
+			((IQueryAttributable)model).ApplyQueryProperties(query!, new Dictionary<string, object>());
 			Assert.Equal("a+b", model.GetType().GetProperty("Text")!.GetValue(model));
 			Assert.Equal(3.5, model.GetType().GetProperty("Number")!.GetValue(model));
 		}
@@ -266,7 +297,7 @@ public class QueryPropertyGeneratorTests
 	}
 
 	[Fact]
-	public void UnsupportedTypesFallBackToReflection()
+	public void UnsupportedTypesAreNotGenerated()
 	{
 		const string source = """
 			using System;
@@ -333,9 +364,9 @@ public class QueryPropertyGeneratorTests
 		var assembly = CompileAndLoad(source);
 
 		foreach (var typeName in new[] { "Fallback.NotPartial", "Fallback.Outer+NestedInNonPartial", "Fallback.GenericProperty`1", "Fallback.InitOnly", "Fallback.CustomAttribute", "Fallback.Ambiguous" })
-			Assert.False(typeof(IQueryPropertyAttributable).IsAssignableFrom(assembly.GetType(typeName, throwOnError: true)), typeName);
+			Assert.False(typeof(IQueryAttributable).IsAssignableFrom(assembly.GetType(typeName, throwOnError: true)), typeName);
 
-		Assert.True(typeof(IQueryPropertyAttributable).IsAssignableFrom(assembly.GetType("Fallback.Supported", throwOnError: true)));
+		Assert.True(typeof(IQueryAttributable).IsAssignableFrom(assembly.GetType("Fallback.Supported", throwOnError: true)));
 	}
 
 	[Fact]
@@ -346,11 +377,26 @@ public class QueryPropertyGeneratorTests
 			using Microsoft.Maui.Controls;
 
 			[QueryProperty(nameof(Value), "value")]
-			public partial class Manual : IQueryPropertyAttributable
+			public partial class ExistingImplementation : IQueryAttributable
+			{
+				public string Value { get; set; }
+				public void ApplyQueryAttributes(IDictionary<string, object> query) { }
+				void IQueryAttributable.ApplyQueryProperties(IDictionary<string, object> query, IDictionary<string, object> previousQuery) { }
+			}
+
+			[QueryProperty(nameof(Other), "other")]
+			public partial class InheritedExistingImplementation : ExistingImplementation
+			{
+				public string Other { get; set; }
+			}
+
+			[QueryProperty(nameof(Value), "value")]
+			public partial class Manual : IQueryAttributable
 			{
 				public string Value { get; set; }
 
-				void IQueryPropertyAttributable.ApplyQueryProperties(IDictionary<string, object> query, IDictionary<string, object> previousQuery)
+				void IQueryAttributable.ApplyQueryAttributes(IDictionary<string, object> query) { }
+				void IQueryAttributable.ApplyQueryProperties(IDictionary<string, object> query, IDictionary<string, object> previousQuery)
 				{
 				}
 			}
@@ -361,7 +407,7 @@ public class QueryPropertyGeneratorTests
 				public string Other { get; set; }
 			}
 
-			public interface IDerivedQueryPropertyAttributable : IQueryPropertyAttributable
+			public interface IDerivedQueryPropertyAttributable : IQueryAttributable
 			{
 			}
 
@@ -370,7 +416,8 @@ public class QueryPropertyGeneratorTests
 			{
 				public string Value { get; set; }
 
-				void IQueryPropertyAttributable.ApplyQueryProperties(IDictionary<string, object> query, IDictionary<string, object> previousQuery)
+				void IQueryAttributable.ApplyQueryAttributes(IDictionary<string, object> query) { }
+				void IQueryAttributable.ApplyQueryProperties(IDictionary<string, object> query, IDictionary<string, object> previousQuery)
 				{
 				}
 			}
@@ -522,7 +569,7 @@ public class QueryPropertyGeneratorTests
 
 		var actual = Activator.CreateInstance(type, nonPublic: true)!;
 		ResetStatics(type);
-		((IQueryPropertyAttributable)actual).ApplyQueryProperties(query!, previousQuery!);
+		((IQueryAttributable)actual).ApplyQueryProperties(query!, previousQuery!);
 		var actualState = Snapshot(actual);
 
 		Assert.Equal(expectedState, actualState);

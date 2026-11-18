@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls.SourceGen;
 /// <remarks>
 /// <para>
 /// For every partial class with <c>[QueryProperty]</c> attributes (declared or inherited), the generator adds an explicit
-/// implementation of <c>IQueryPropertyAttributable</c> that sets the properties directly. <c>ShellContent</c> calls it
+/// implementation of <c>IQueryAttributable</c> that sets the properties directly. <c>ShellContent</c> calls it
 /// instead of using reflection.
 /// </para>
 /// <para>
@@ -25,16 +25,16 @@ namespace Microsoft.Maui.Controls.SourceGen;
 /// The conversions that depend on where a parameter came from use <c>QueryPropertyConversion</c>.
 /// </para>
 /// <para>
-/// Classes that can't be handled (for example classes that aren't partial) keep using reflection.
-/// When the trim analyzer is enabled, MAUI1200 reports them.
+/// Classes that can't be handled (for example classes that aren't partial) fail at runtime if their
+/// <c>[QueryProperty]</c> attributes are applied. When the trim analyzer is enabled, MAUI1200 reports them.
 /// </para>
 /// </remarks>
 [Generator(LanguageNames.CSharp)]
 public sealed class QueryPropertyGenerator : IIncrementalGenerator
 {
 	const string QueryPropertyAttributeMetadataName = "Microsoft.Maui.Controls.QueryPropertyAttribute";
-	const string InterfaceMetadataName = "Microsoft.Maui.Controls.IQueryPropertyAttributable";
-	const string InterfaceName = "global::Microsoft.Maui.Controls.IQueryPropertyAttributable";
+	const string InterfaceMetadataName = "Microsoft.Maui.Controls.IQueryAttributable";
+	const string InterfaceName = "global::Microsoft.Maui.Controls.IQueryAttributable";
 	const string ConversionName = "global::Microsoft.Maui.Controls.QueryPropertyConversion";
 
 	public void Initialize(IncrementalGeneratorInitializationContext context)
@@ -79,22 +79,16 @@ public sealed class QueryPropertyGenerator : IIncrementalGenerator
 
 		// Same order as Type.GetCustomAttributes(typeof(QueryPropertyAttribute), inherit: true):
 		// the attributes of the type itself, then those of each base type.
-		var attributes = new List<AttributeData>();
-		for (var current = type; current is not null; current = current.BaseType)
-		{
-			foreach (var attribute in current.GetAttributes())
-			{
-				if (attribute.AttributeClass is { } attributeClass && InheritsFromOrEquals(attributeClass, attributeType))
-					attributes.Add(attribute);
-			}
-		}
+		var attributes = type.GetAllAttributes(context: null)
+			.Where(attribute => attribute.AttributeClass is { } attributeClass && InheritsFromOrEquals(attributeClass, attributeType))
+			.ToList();
 
 		if (attributes.Count == 0)
 			return null;
 
 		if (type.AllInterfaces.Contains(interfaceType, SymbolEqualityComparer.Default))
 		{
-			var implementation = type.FindImplementationForInterfaceMember(interfaceType.GetMembers("ApplyQueryProperties").Single());
+			var implementation = type.FindImplementationForInterfaceMember(interfaceType.GetMembers("ApplyQueryAttributes").Single());
 			// A derived class must replace a generated base implementation to include its own attributes.
 			if (!IsGeneratedQueryPropertyImplementation(implementation))
 				return null;
@@ -250,8 +244,12 @@ public sealed class QueryPropertyGenerator : IIncrementalGenerator
 		}
 
 		builder.AppendLine($"{indent}[global::System.CodeDom.Compiler.GeneratedCode(\"Microsoft.Maui.Controls.SourceGen\", \"1.0.0.0\")]");
+		builder.AppendLine($"{indent}void {InterfaceName}.ApplyQueryAttributes(global::System.Collections.Generic.IDictionary<string, object> query) {{ }}");
+		builder.AppendLine();
+		builder.AppendLine($"{indent}[global::System.CodeDom.Compiler.GeneratedCode(\"Microsoft.Maui.Controls.SourceGen\", \"1.0.0.0\")]");
 		builder.AppendLine($"{indent}void {InterfaceName}.ApplyQueryProperties(global::System.Collections.Generic.IDictionary<string, object> query, global::System.Collections.Generic.IDictionary<string, object> previousQuery)");
 		builder.AppendLine($"{indent}{{");
+		builder.AppendLine($"{indent}	{ConversionName}.ValidateGeneratedQueryProperties(this, typeof({type.ToFQDisplayString()}));");
 		builder.AppendLine($"{indent}	object value;");
 		foreach (var line in body.Split('\n'))
 		{

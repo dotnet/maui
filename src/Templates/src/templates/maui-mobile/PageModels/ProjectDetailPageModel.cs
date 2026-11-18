@@ -101,6 +101,8 @@ public partial class ProjectDetailPageModel : ObservableObject, IQueryAttributab
 		}
 	}
 
+	void IQueryAttributable.ApplyQueryProperties(IDictionary<string, object> query, IDictionary<string, object> previousQuery) { }
+
 	private async Task LoadCategories() =>
 		Categories = await _categoryRepository.ListAsync();
 

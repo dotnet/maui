@@ -154,6 +154,8 @@ public class Issue38443DetailPage : ContentPage, IQueryAttributable, INotifyProp
         SelectedBoxColor = BoxColors[1];
     }
 
+    void IQueryAttributable.ApplyQueryProperties(IDictionary<string, object> query, IDictionary<string, object> previousQuery) { }
+
     public new event PropertyChangedEventHandler? PropertyChanged;
 
     protected new void OnPropertyChanged([CallerMemberName] string? propertyName = null)

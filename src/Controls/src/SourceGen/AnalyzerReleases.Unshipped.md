@@ -40,4 +40,4 @@ MAUIX2021 | XamlInflation | Error | ExtensionPropertyAmbiguous
 MAUIX2022 | XamlInflation | Error | ExtensionPropertyResolution
 MAUIX2023 | XamlParsing | Error | XCodeRequiresSourceGen
 MAUI1200 | QueryProperty | Warning | QueryPropertyRequiresReflection
-MAUI1201 | QueryProperty | Warning | QueryPropertyConflictsWithIQueryPropertyAttributable
+MAUI1201 | QueryProperty | Warning | QueryPropertyConflictsWithIQueryAttributable
