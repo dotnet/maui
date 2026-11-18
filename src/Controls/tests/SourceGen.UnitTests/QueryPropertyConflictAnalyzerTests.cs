@@ -21,16 +21,17 @@ public class QueryPropertyConflictAnalyzerTests
 		""";
 
 	[Theory]
-	[InlineData("public void ApplyQueryProperties(IDictionary<string, object> query, IDictionary<string, object> previousQuery) { }")]
-	[InlineData("void IQueryPropertyAttributable.ApplyQueryProperties(IDictionary<string, object> query, IDictionary<string, object> previousQuery) { }")]
+	[InlineData("public void ApplyQueryAttributes(IDictionary<string, object> query) { }")]
+	[InlineData("void IQueryAttributable.ApplyQueryAttributes(IDictionary<string, object> query) { }")]
 	public async Task WarnsForImplicitAndExplicitImplementations(string implementation)
 	{
 		var (result, compilation) = RunGenerator(CreateCompilation($$"""
 			[QueryProperty(nameof(Value), "value")]
-			public partial class Model : IQueryPropertyAttributable
+			public partial class Model : IQueryAttributable
 			{
 				public string Value { get; set; }
 				{{implementation}}
+				public void ApplyQueryProperties(IDictionary<string, object> query, IDictionary<string, object> previousQuery) { }
 			}
 			"""));
 
@@ -38,7 +39,7 @@ public class QueryPropertyConflictAnalyzerTests
 		var diagnostic = Assert.Single(await GetDiagnostics(compilation));
 		Assert.Equal("MAUI1201", diagnostic.Id);
 		Assert.Equal(DiagnosticSeverity.Warning, diagnostic.Severity);
-		Assert.Equal("'Model' implements IQueryPropertyAttributable and uses [QueryProperty] attributes. Remove either the IQueryPropertyAttributable implementation or the [QueryProperty] attributes.", diagnostic.GetMessage());
+		Assert.Equal("'Model' implements IQueryAttributable and uses [QueryProperty] attributes. The source generator skips this type; handle the properties manually or remove the interface implementation.", diagnostic.GetMessage());
 		Assert.Equal("Model", diagnostic.Location.SourceTree!.GetText().ToString(diagnostic.Location.SourceSpan));
 	}
 
@@ -50,9 +51,10 @@ public class QueryPropertyConflictAnalyzerTests
 	{
 		var (_, compilation) = RunGenerator(CreateCompilation($$"""
 			{{(hasAttribute ? "[QueryProperty(nameof(Value), \"value\")]" : "")}}
-			public partial class Model {{(hasInterface ? ": IQueryPropertyAttributable" : "")}}
+			public partial class Model {{(hasInterface ? ": IQueryAttributable" : "")}}
 			{
 				public string Value { get; set; }
+				public void ApplyQueryAttributes(IDictionary<string, object> query) { }
 				public void ApplyQueryProperties(IDictionary<string, object> query, IDictionary<string, object> previousQuery) { }
 			}
 			"""));
@@ -60,17 +62,14 @@ public class QueryPropertyConflictAnalyzerTests
 		Assert.Empty(await GetDiagnostics(compilation));
 	}
 
-	[Theory]
-	[InlineData("public void ApplyQueryAttributes(IDictionary<string, object> query) { }")]
-	[InlineData("void IQueryAttributable.ApplyQueryAttributes(IDictionary<string, object> query) { }")]
-	public async Task DoesNotWarnForIQueryAttributable(string implementation)
+	[Fact]
+	public async Task DoesNotWarnForGeneratedImplementation()
 	{
-		var (result, compilation) = RunGenerator(CreateCompilation($$"""
+		var (result, compilation) = RunGenerator(CreateCompilation("""
 			[QueryProperty(nameof(Value), "value")]
-			public partial class Model : IQueryAttributable
+			public partial class Model
 			{
 				public string Value { get; set; }
-				{{implementation}}
 			}
 			"""));
 
@@ -86,14 +85,15 @@ public class QueryPropertyConflictAnalyzerTests
 	{
 		var diagnostics = await Analyze($$"""
 			{{(inheritedAttribute ? "[QueryProperty(nameof(Value), \"value\")]" : "")}}
-			public class BaseModel {{(inheritedInterface ? ": IQueryPropertyAttributable" : "")}}
+			public class BaseModel {{(inheritedInterface ? ": IQueryAttributable" : "")}}
 			{
 				public string Value { get; set; }
+				public void ApplyQueryAttributes(IDictionary<string, object> query) { }
 				public void ApplyQueryProperties(IDictionary<string, object> query, IDictionary<string, object> previousQuery) { }
 			}
 
 			{{(!inheritedAttribute ? "[QueryProperty(nameof(Value), \"value\")]" : "")}}
-			public class Model : BaseModel {{(!inheritedInterface ? ", IQueryPropertyAttributable" : "")}} { }
+			public class Model : BaseModel {{(!inheritedInterface ? ", IQueryAttributable" : "")}} { }
 			""");
 
 		var names = diagnostics.Select(d => d.Location.SourceTree!.GetText().ToString(d.Location.SourceSpan)).OrderBy(n => n).ToArray();
@@ -112,8 +112,9 @@ public class QueryPropertyConflictAnalyzerTests
 			}
 
 			[QueryProperty(nameof(Value), "other")]
-			public partial class Model : IQueryPropertyAttributable
+			public partial class Model : IQueryAttributable
 			{
+				public void ApplyQueryAttributes(IDictionary<string, object> query) { }
 				public void ApplyQueryProperties(IDictionary<string, object> query, IDictionary<string, object> previousQuery) { }
 			}
 			""");
@@ -142,8 +143,9 @@ public class QueryPropertyConflictAnalyzerTests
 				public string Value { get; set; }
 			}
 
-			public class Model : BaseModel, IQueryPropertyAttributable
+			public class Model : BaseModel, IQueryAttributable
 			{
+				public void ApplyQueryAttributes(IDictionary<string, object> query) { }
 				public void ApplyQueryProperties(IDictionary<string, object> query, IDictionary<string, object> previousQuery) { }
 			}
 			""");
@@ -155,7 +157,7 @@ public class QueryPropertyConflictAnalyzerTests
 	public async Task WarnsForDerivedInterfaceAndAttribute()
 	{
 		var diagnostics = await Analyze("""
-			public interface IQueryHandler : IQueryPropertyAttributable { }
+			public interface IQueryHandler : IQueryAttributable { }
 			public class CustomQueryAttribute : QueryPropertyAttribute
 			{
 				public CustomQueryAttribute() : base("Value", "value") { }
@@ -165,6 +167,7 @@ public class QueryPropertyConflictAnalyzerTests
 			public class Model : IQueryHandler
 			{
 				public string Value { get; set; }
+				public void ApplyQueryAttributes(IDictionary<string, object> query) { }
 				public void ApplyQueryProperties(IDictionary<string, object> query, IDictionary<string, object> previousQuery) { }
 			}
 			""");
@@ -174,9 +177,9 @@ public class QueryPropertyConflictAnalyzerTests
 
 	[Theory]
 	[InlineData("""
-		public interface IQueryPropertyAttributable { }
+		public interface IQueryAttributable { }
 		[Microsoft.Maui.Controls.QueryProperty("Value", "value")]
-		public class Model : IQueryPropertyAttributable { }
+		public class Model : IQueryAttributable { }
 		""")]
 	[InlineData("""
 		public class QueryPropertyAttribute : Attribute
@@ -184,8 +187,9 @@ public class QueryPropertyConflictAnalyzerTests
 			public QueryPropertyAttribute(string name, string queryId) { }
 		}
 		[QueryProperty("Value", "value")]
-		public class Model : Microsoft.Maui.Controls.IQueryPropertyAttributable
+		public class Model : Microsoft.Maui.Controls.IQueryAttributable
 		{
+			public void ApplyQueryAttributes(IDictionary<string, object> query) { }
 			public void ApplyQueryProperties(IDictionary<string, object> query, IDictionary<string, object> previousQuery) { }
 		}
 		""")]
@@ -195,9 +199,9 @@ public class QueryPropertyConflictAnalyzerTests
 	}
 
 	[Theory]
-	[InlineData("[QueryProperty(nameof(Value), \"value\")]", "", "public class Model : BaseModel, IQueryPropertyAttributable { }")]
-	[InlineData("", ": IQueryPropertyAttributable", "[QueryProperty(nameof(Value), \"value\")] public class Model : BaseModel { }")]
-	[InlineData("[QueryProperty(nameof(Value), \"value\")]", ": IQueryPropertyAttributable", "public class Model : BaseModel { }")]
+	[InlineData("[QueryProperty(nameof(Value), \"value\")]", "", "public class Model : BaseModel, IQueryAttributable { }")]
+	[InlineData("", ": IQueryAttributable", "[QueryProperty(nameof(Value), \"value\")] public class Model : BaseModel { }")]
+	[InlineData("[QueryProperty(nameof(Value), \"value\")]", ": IQueryAttributable", "public class Model : BaseModel { }")]
 	public async Task WarnsForMechanismsInheritedFromMetadata(string baseAttribute, string baseInterface, string source)
 	{
 		var baseCompilation = CreateCompilation($$"""
@@ -205,6 +209,7 @@ public class QueryPropertyConflictAnalyzerTests
 			public class BaseModel {{baseInterface}}
 			{
 				public string Value { get; set; }
+				public void ApplyQueryAttributes(IDictionary<string, object> query) { }
 				public void ApplyQueryProperties(IDictionary<string, object> query, IDictionary<string, object> previousQuery) { }
 			}
 			""");
@@ -218,9 +223,10 @@ public class QueryPropertyConflictAnalyzerTests
 	public async Task WarnsForExplicitImplementationInheritedFromMetadata()
 	{
 		var baseCompilation = CreateCompilation("""
-			public class BaseModel : IQueryPropertyAttributable
+			public class BaseModel : IQueryAttributable
 			{
-				void IQueryPropertyAttributable.ApplyQueryProperties(IDictionary<string, object> query, IDictionary<string, object> previousQuery) { }
+				void IQueryAttributable.ApplyQueryAttributes(IDictionary<string, object> query) { }
+				void IQueryAttributable.ApplyQueryProperties(IDictionary<string, object> query, IDictionary<string, object> previousQuery) { }
 			}
 			""");
 
@@ -283,11 +289,36 @@ public class QueryPropertyConflictAnalyzerTests
 	}
 
 	[Fact]
+	public async Task WarnsWhenUserImplementationReplacesGeneratedBase()
+	{
+		var (result, compilation) = RunGenerator(CreateCompilation("""
+			[QueryProperty(nameof(Value), "value")]
+			public partial class BaseModel
+			{
+				public string Value { get; set; }
+			}
+
+			[QueryProperty(nameof(Other), "other")]
+			public partial class Model : BaseModel, IQueryAttributable
+			{
+				public string Other { get; set; }
+				void IQueryAttributable.ApplyQueryAttributes(IDictionary<string, object> query) { }
+				void IQueryAttributable.ApplyQueryProperties(IDictionary<string, object> query, IDictionary<string, object> previousQuery) { }
+			}
+			"""));
+
+		Assert.Single(result.GeneratedTrees);
+		var diagnostic = Assert.Single(await GetDiagnostics(compilation));
+		Assert.Equal("Model", diagnostic.Location.SourceTree!.GetText().ToString(diagnostic.Location.SourceSpan));
+	}
+
+	[Fact]
 	public async Task WarnsForInheritedUserImplementationWhenGeneratorRuns()
 	{
 		var (result, compilation) = RunGenerator(CreateCompilation("""
-			public class BaseModel : IQueryPropertyAttributable
+			public class BaseModel : IQueryAttributable
 			{
+				public void ApplyQueryAttributes(IDictionary<string, object> query) { }
 				public void ApplyQueryProperties(IDictionary<string, object> query, IDictionary<string, object> previousQuery) { }
 			}
 
@@ -307,12 +338,13 @@ public class QueryPropertyConflictAnalyzerTests
 	public async Task WarnsForDerivedInterfaceWhenGeneratorRuns()
 	{
 		var (result, compilation) = RunGenerator(CreateCompilation("""
-			public interface IQueryHandler : IQueryPropertyAttributable { }
+			public interface IQueryHandler : IQueryAttributable { }
 
 			[QueryProperty(nameof(Value), "value")]
 			public partial class Model : IQueryHandler
 			{
 				public string Value { get; set; }
+				public void ApplyQueryAttributes(IDictionary<string, object> query) { }
 				public void ApplyQueryProperties(IDictionary<string, object> query, IDictionary<string, object> previousQuery) { }
 			}
 			"""));
@@ -326,10 +358,11 @@ public class QueryPropertyConflictAnalyzerTests
 	{
 		var diagnostics = await Analyze("""
 			[QueryProperty(nameof(Value), "value")]
-			public class Model : IQueryPropertyAttributable
+			public class Model : IQueryAttributable
 			{
 				public string Value { get; set; }
 				[System.CodeDom.Compiler.GeneratedCode("OtherTool", "1.0")]
+				public void ApplyQueryAttributes(IDictionary<string, object> query) { }
 				public void ApplyQueryProperties(IDictionary<string, object> query, IDictionary<string, object> previousQuery) { }
 			}
 			""");
@@ -343,9 +376,10 @@ public class QueryPropertyConflictAnalyzerTests
 		var compilation = SourceGeneratorDriver.CreateMauiCompilation()
 			.AddSyntaxTrees(CSharpSyntaxTree.ParseText(Usings + """
 				[QueryProperty("Value", "value")]
-				public class Model : IQueryPropertyAttributable
+				public class Model : IQueryAttributable
 				{
 					public string Value { get; set; }
+					public void ApplyQueryAttributes(IDictionary<string, object> query) { }
 					public void ApplyQueryProperties(IDictionary<string, object> query, IDictionary<string, object> previousQuery) { }
 				}
 				""", path: "Model.g.cs"));

@@ -4,8 +4,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
 using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
@@ -727,90 +725,16 @@ namespace Microsoft.Maui.Controls
 			if (content is BindableObject bindable && bindable.BindingContext != null && content != bindable.BindingContext)
 				ApplyQueryAttributes(bindable.BindingContext, query, oldQuery);
 
-			if (content is IQueryPropertyAttributable queryPropertyAttributable
-				&& !(RuntimeFeature.IsQueryPropertyAttributeSupported && HasQueryPropertiesOutsideGeneratedCode(content.GetType())))
+			if (content is IQueryAttributable queryPropertyAttributable)
 			{
 				queryPropertyAttributable.ApplyQueryProperties(query, oldQuery);
 			}
-			else if (RuntimeFeature.IsQueryPropertyAttributeSupported)
+			else if (content.GetType().IsDefined(typeof(QueryPropertyAttribute), inherit: true))
 			{
-				var type = content.GetType();
-				var queryPropertyAttributes = type.GetCustomAttributes(typeof(QueryPropertyAttribute), true);
-				if (queryPropertyAttributes.Length == 0)
-				{
-					ClearQueryIfAppliedToPage(query, content);
-					return;
-				}
-
-				foreach (QueryPropertyAttribute attrib in queryPropertyAttributes)
-				{
-					if (query.TryGetValue(attrib.QueryId, out var value))
-					{
-						PropertyInfo prop = type.GetRuntimeProperty(attrib.Name);
-
-						if (prop != null && prop.CanWrite && prop.SetMethod.IsPublic)
-						{
-							prop.SetValue(content, ConvertQueryPropertyValue(query, attrib.QueryId, prop.PropertyType, value));
-						}
-					}
-					else if (oldQuery.TryGetValue(attrib.QueryId, out var oldValue))
-					{
-						PropertyInfo prop = type.GetRuntimeProperty(attrib.Name);
-
-						if (prop != null && prop.CanWrite && prop.SetMethod.IsPublic)
-						{
-							object defaultValue = prop.PropertyType.IsValueType &&
-								Nullable.GetUnderlyingType(prop.PropertyType) is null
-									? Activator.CreateInstance(prop.PropertyType)
-									: null;
-							prop.SetValue(content, defaultValue);
-						}
-					}
-				}
+				QueryPropertyConversion.ThrowQueryPropertySourceGenerationFailure(content.GetType());
 			}
 
 			ClearQueryIfAppliedToPage(query, content);
-
-			static object ConvertQueryPropertyValue(ShellRouteParameters query, string queryId, Type propertyType, object value)
-			{
-				if (propertyType == typeof(string))
-				{
-					if (value != null)
-					{
-						if (query.IsShellContentQueryParameter(queryId))
-							value = Convert.ToString(value, global::System.Globalization.CultureInfo.InvariantCulture);
-						else if (!query.IsShellContentQueryStringParameter(queryId))
-							value = global::System.Net.WebUtility.UrlDecode((string)value);
-					}
-
-					return value;
-				}
-
-				if (value == null)
-					return null;
-
-				// Handle nullable types
-				Type targetType = Nullable.GetUnderlyingType(propertyType) ?? propertyType;
-				var culture = query.IsShellContentParameter(queryId)
-					? global::System.Globalization.CultureInfo.InvariantCulture
-					: global::System.Globalization.CultureInfo.CurrentCulture;
-				return Convert.ChangeType(value, targetType, culture);
-			}
-
-			// A class deriving from a class with generated code isn't covered by it when it declares
-			// its own [QueryProperty] attributes but isn't partial. Reflection handles those classes.
-			[RequiresUnreferencedCode(TrimmerConstants.QueryPropertyAttributeWarning)]
-			static bool HasQueryPropertiesOutsideGeneratedCode(Type type)
-			{
-				var implementingType = type.GetInterfaceMap(typeof(IQueryPropertyAttributable)).TargetMethods[0].DeclaringType;
-				for (var current = type; current is not null && current != implementingType; current = current.BaseType)
-				{
-					if (current.IsDefined(typeof(QueryPropertyAttribute), inherit: false))
-						return true;
-				}
-
-				return false;
-			}
 
 			static void ClearQueryIfAppliedToPage(ShellRouteParameters query, object content)
 			{

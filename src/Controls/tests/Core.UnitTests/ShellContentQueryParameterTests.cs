@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	public class ShellContentQueryParameterTests : ShellTestBase
+	public partial class ShellContentQueryParameterTests : ShellTestBase
 	{
 		[Fact]
 		public void StaticSelectionDeliversDistinctParametersToSharedPageTemplate()
@@ -97,6 +97,32 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.Equal("first", page.Value);
 			Assert.Equal("second", page.LastQuery["other"]);
+		}
+
+		[Fact]
+		public void ExplicitQueryAttributableDoesNotGetGeneratedPropertySetters()
+		{
+			var content = CreateQueryStringContent("value=manual", () => new ExplicitQueryAttributablePage());
+			CreateShell(content);
+
+			var page = GetPage<ExplicitQueryAttributablePage>(content);
+
+			Assert.Equal("manual", page.ReceivedValue);
+			Assert.True(page.ApplyQueryPropertiesCalled);
+			Assert.Null(page.Value);
+		}
+
+		[Fact]
+		public void InheritedExplicitQueryAttributableDoesNotGetGeneratedPropertySetters()
+		{
+			var content = CreateQueryStringContent("value=manual", () => new InheritedExplicitQueryAttributablePage());
+			CreateShell(content);
+
+			var page = GetPage<InheritedExplicitQueryAttributablePage>(content);
+
+			Assert.Equal("manual", page.ReceivedValue);
+			Assert.True(page.ApplyQueryPropertiesCalled);
+			Assert.Null(page.Value);
 		}
 
 		[Fact]
@@ -191,17 +217,46 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void DerivedClassWithOwnQueryPropertiesUsesReflection()
+		public void DerivedClassWithOwnQueryPropertiesWithoutGeneratedImplementationThrowsAndLogs()
 		{
+			ApplicationExtensions.CreateAndSetMockApplication();
 			var content = CreateQueryStringContent(
 				"text=base&count=42",
 				() => new NonPartialDerivedQueryPropertyPage());
 			CreateShell(content);
-			var page = GetPage<NonPartialDerivedQueryPropertyPage>(content);
 
-			Assert.False(page.GeneratedCodeCalled);
-			Assert.Equal("base", page.Text);
-			Assert.Equal(42, page.Count);
+			var exception = Assert.Throws<InvalidOperationException>(() => GetPage<NonPartialDerivedQueryPropertyPage>(content));
+
+			Assert.Contains("source generator did not generate", exception.Message, StringComparison.Ordinal);
+			Assert.Contains(exception.Message, MockApplication.MockLogger.Messages);
+		}
+
+		[Fact]
+		public void DerivedClassWithHiddenPropertyWithoutGeneratedImplementationThrowsAndLogs()
+		{
+			ApplicationExtensions.CreateAndSetMockApplication();
+			var content = CreateQueryStringContent("text=derived", () => new NonPartialHiddenPropertyPage());
+			CreateShell(content);
+
+			var exception = Assert.Throws<InvalidOperationException>(() => GetPage<NonPartialHiddenPropertyPage>(content));
+
+			Assert.Contains("source generator did not generate", exception.Message, StringComparison.Ordinal);
+			Assert.Contains(exception.Message, MockApplication.MockLogger.Messages);
+		}
+
+		[Fact]
+		public void QueryPropertyWithoutGeneratedImplementationThrowsAndLogs()
+		{
+			ApplicationExtensions.CreateAndSetMockApplication();
+			var content = CreateQueryStringContent(
+				"value=missing",
+				() => new UnsupportedQueryPropertyPage());
+			CreateShell(content);
+
+			var exception = Assert.Throws<InvalidOperationException>(() => GetPage<UnsupportedQueryPropertyPage>(content));
+
+			Assert.Contains("source generator did not generate", exception.Message, StringComparison.Ordinal);
+			Assert.Contains(exception.Message, MockApplication.MockLogger.Messages);
 		}
 
 		[Fact]
@@ -1131,28 +1186,72 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				LastQuery = new Dictionary<string, object>(query);
 				Value = query.TryGetValue("value", out var value) ? (string)value : null;
 			}
+
+			void IQueryAttributable.ApplyQueryProperties(IDictionary<string, object> query, IDictionary<string, object> previousQuery) { }
 		}
 
+#pragma warning disable MAUI1201 // Exercise the intentionally handwritten implementation.
 		[QueryProperty(nameof(Value), "value")]
-		sealed class QueryPropertyPage : ContentPage
+		sealed partial class ExplicitQueryAttributablePage : ContentPage, IQueryAttributable
+		{
+			public string Value { get; set; }
+			public string ReceivedValue { get; private set; }
+			public bool ApplyQueryPropertiesCalled { get; private set; }
+
+			void IQueryAttributable.ApplyQueryAttributes(IDictionary<string, object> query) =>
+				ReceivedValue = (string)query["value"];
+
+			void IQueryAttributable.ApplyQueryProperties(IDictionary<string, object> query, IDictionary<string, object> previousQuery) =>
+				ApplyQueryPropertiesCalled = true;
+		}
+#pragma warning restore MAUI1201
+
+		class ExplicitQueryAttributableBasePage : ContentPage, IQueryAttributable
+		{
+			public string Value { get; set; }
+			public string ReceivedValue { get; private set; }
+			public bool ApplyQueryPropertiesCalled { get; private set; }
+
+			void IQueryAttributable.ApplyQueryAttributes(IDictionary<string, object> query) =>
+				ReceivedValue = (string)query["value"];
+
+			void IQueryAttributable.ApplyQueryProperties(IDictionary<string, object> query, IDictionary<string, object> previousQuery) =>
+				ApplyQueryPropertiesCalled = true;
+		}
+
+#pragma warning disable MAUI1201 // Exercise the intentionally handwritten implementation.
+		[QueryProperty(nameof(Value), "value")]
+		sealed partial class InheritedExplicitQueryAttributablePage : ExplicitQueryAttributableBasePage
+		{
+		}
+#pragma warning restore MAUI1201
+
+		[QueryProperty(nameof(Value), "value")]
+		sealed partial class QueryPropertyPage : ContentPage
 		{
 			public string Value { get; set; }
 		}
 
 		[QueryProperty(nameof(Value), "value")]
-		sealed class NumericQueryPropertyPage : ContentPage
+		sealed partial class NumericQueryPropertyPage : ContentPage
 		{
 			public double Value { get; set; }
 		}
 
 		[QueryProperty(nameof(Value), "value")]
-		sealed class IntegerQueryPropertyPage : ContentPage
+		sealed partial class IntegerQueryPropertyPage : ContentPage
 		{
 			public int Value { get; set; }
 		}
 
+		[QueryProperty(nameof(Value), "value")]
+		sealed class UnsupportedQueryPropertyPage : ContentPage
+		{
+			public string Value { get; set; }
+		}
+
 		// Equivalent to the code the QueryProperty source generator emits for [QueryProperty] attributes.
-		sealed class GeneratedQueryPropertyPage : ContentPage, IQueryAttributable, IQueryPropertyAttributable
+		sealed class GeneratedQueryPropertyPage : ContentPage, IQueryAttributable
 		{
 			public string Text { get; set; }
 			public double Number { get; set; }
@@ -1162,7 +1261,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			public void ApplyQueryAttributes(IDictionary<string, object> query) =>
 				LastQuery = new Dictionary<string, object>(query);
 
-			void IQueryPropertyAttributable.ApplyQueryProperties(IDictionary<string, object> query, IDictionary<string, object> previousQuery)
+			void IQueryAttributable.ApplyQueryProperties(IDictionary<string, object> query, IDictionary<string, object> previousQuery)
 			{
 				object value;
 				if (query.TryGetValue("text", out value))
@@ -1181,13 +1280,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[QueryProperty(nameof(Text), "text")]
-		class GeneratedBaseQueryPropertyPage : ContentPage, IQueryPropertyAttributable
+		partial class GeneratedBaseQueryPropertyPage : ContentPage
 		{
 			public string Text { get; set; }
-			public bool GeneratedCodeCalled { get; private set; }
-
-			void IQueryPropertyAttributable.ApplyQueryProperties(IDictionary<string, object> query, IDictionary<string, object> previousQuery) =>
-				GeneratedCodeCalled = true;
 		}
 
 		[QueryProperty(nameof(Count), "count")]
@@ -1196,9 +1291,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			public int Count { get; set; }
 		}
 
+		sealed class NonPartialHiddenPropertyPage : GeneratedBaseQueryPropertyPage
+		{
+			public new string Text { get; set; }
+		}
+
 		[QueryProperty(nameof(First), "first")]
 		[QueryProperty(nameof(Second), "second")]
-		sealed class TwoQueryPropertyPage : ContentPage
+		sealed partial class TwoQueryPropertyPage : ContentPage
 		{
 			public string First { get; set; }
 			public string Second { get; set; }
@@ -1208,6 +1308,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			public void ApplyQueryAttributes(IDictionary<string, object> query) =>
 				throw new InvalidOperationException("Query failure");
+
+			void IQueryAttributable.ApplyQueryProperties(IDictionary<string, object> query, IDictionary<string, object> previousQuery) { }
 		}
 
 		sealed class TestViewModel : INotifyPropertyChanged
@@ -1238,6 +1340,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			{
 				Date = (string)query["date"];
 			}
+
+			void IQueryAttributable.ApplyQueryProperties(IDictionary<string, object> query, IDictionary<string, object> previousQuery) { }
 		}
 	}
 }

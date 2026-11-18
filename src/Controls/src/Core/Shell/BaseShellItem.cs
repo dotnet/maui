@@ -673,5 +673,13 @@ namespace Microsoft.Maui.Controls
 	public interface IQueryAttributable
 	{
 		void ApplyQueryAttributes(IDictionary<string, object> query);
+
+#nullable enable
+		/// <summary>Applies query properties using the current and previous queries.</summary>
+		/// <param name="query">The current query parameters.</param>
+		/// <param name="previousQuery">The previously applied query parameters.</param>
+		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+		void ApplyQueryProperties(IDictionary<string, object> query, IDictionary<string, object> previousQuery);
+#nullable disable
 	}
 }
