@@ -92,9 +92,13 @@ public sealed class QueryPropertyGenerator : IIncrementalGenerator
 		if (attributes.Count == 0)
 			return null;
 
-		// The type implements the interface itself; the generated code would conflict with it.
-		if (type.Interfaces.Contains(interfaceType, SymbolEqualityComparer.Default))
-			return null;
+		if (type.AllInterfaces.Contains(interfaceType, SymbolEqualityComparer.Default))
+		{
+			var implementation = type.FindImplementationForInterfaceMember(interfaceType.GetMembers("ApplyQueryProperties").Single());
+			// A derived class must replace a generated base implementation to include its own attributes.
+			if (!IsGeneratedQueryPropertyImplementation(implementation))
+				return null;
+		}
 
 		var typeName = type.ToFQDisplayString();
 		var location = LocationModel.From(declaration.Identifier.GetLocation());
@@ -103,6 +107,12 @@ public sealed class QueryPropertyGenerator : IIncrementalGenerator
 		var source = TryGenerateSource(compilation, type, attributes, attributeType, out var unsupportedReason);
 		return new TypeModel(typeName, type.ToString(), hintName, source, unsupportedReason, location);
 	}
+
+	internal static bool IsGeneratedQueryPropertyImplementation(ISymbol? implementation) =>
+		implementation is not null && implementation.GetAttributes().Any(static attribute =>
+			attribute.AttributeClass?.ToString() == "System.CodeDom.Compiler.GeneratedCodeAttribute"
+			&& attribute.ConstructorArguments.Length > 0
+			&& attribute.ConstructorArguments[0].Value is "Microsoft.Maui.Controls.SourceGen");
 
 	static string? TryGenerateSource(Compilation compilation, INamedTypeSymbol type, List<AttributeData> attributes, INamedTypeSymbol attributeType, out string? unsupportedReason)
 	{

@@ -354,9 +354,67 @@ public class QueryPropertyGeneratorTests
 				{
 				}
 			}
+
+			[QueryProperty(nameof(Other), "other")]
+			public partial class InheritedManual : Manual
+			{
+				public string Other { get; set; }
+			}
+
+			public interface IDerivedQueryPropertyAttributable : IQueryPropertyAttributable
+			{
+			}
+
+			[QueryProperty(nameof(Value), "value")]
+			public partial class ManualThroughDerivedInterface : IDerivedQueryPropertyAttributable
+			{
+				public string Value { get; set; }
+
+				void IQueryPropertyAttributable.ApplyQueryProperties(IDictionary<string, object> query, IDictionary<string, object> previousQuery)
+				{
+				}
+			}
 			""");
 
 		Assert.Empty(result.GeneratedTrees);
+	}
+
+	[Fact]
+	public void GeneratedBaseImplementationFromReferencedAssemblyIsReplaced()
+	{
+		var (_, baseCompilation) = RunGenerator("""
+			using Microsoft.Maui.Controls;
+
+			[QueryProperty(nameof(Value), "value")]
+			public partial class GeneratedBase
+			{
+				public string Value { get; set; }
+			}
+			""");
+		using var stream = new MemoryStream();
+		var emitResult = baseCompilation.Emit(stream);
+		Assert.True(emitResult.Success, string.Join(Environment.NewLine, emitResult.Diagnostics));
+
+		var compilation = SourceGeneratorDriver.CreateMauiCompilation($"QueryPropertyTests{Guid.NewGuid():N}")
+			.AddReferences(MetadataReference.CreateFromImage(stream.ToArray()))
+			.AddSyntaxTrees(CSharpSyntaxTree.ParseText("""
+				using Microsoft.Maui.Controls;
+
+				[QueryProperty(nameof(Other), "other")]
+				public partial class Derived : GeneratedBase
+				{
+					public string Other { get; set; }
+				}
+				""", new CSharpParseOptions(LanguageVersion.Preview)));
+		GeneratorDriver driver = CSharpGeneratorDriver.Create(
+			[new QueryPropertyGenerator().AsSourceGenerator()],
+			parseOptions: new CSharpParseOptions(LanguageVersion.Preview));
+		driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var updatedCompilation, out _);
+
+		var generated = Assert.Single(driver.GetRunResult().GeneratedTrees).ToString();
+		Assert.Contains("TryGetValue(\"value\"", generated, StringComparison.Ordinal);
+		Assert.Contains("TryGetValue(\"other\"", generated, StringComparison.Ordinal);
+		Assert.Empty(updatedCompilation.GetDiagnostics().Where(d => d.Severity == DiagnosticSeverity.Error));
 	}
 
 	[Fact]
