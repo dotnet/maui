@@ -110,7 +110,7 @@ namespace Microsoft.Maui.Controls.Platform
 					var decorationThickness = span.TextDecorationThickness;
 					if (decorationColor is not null || decorationThickness > 0)
 					{
-						var thicknessPixels = decorationThickness > 0 ? (context ?? AAplication.Context).ToPixels(decorationThickness) : -1f;
+						var thicknessPixels = decorationThickness > 0 ? (float)(decorationThickness * (context ?? AAplication.Context).GetDisplayDensity()) : -1f;
 						spannable.SetSpan(new PlatformUnderlineSpan(decorationColor is not null, decorationColor?.ToPlatform().ToArgb() ?? 0, thicknessPixels),
 							start, end, SpanTypes.InclusiveInclusive);
 					}
