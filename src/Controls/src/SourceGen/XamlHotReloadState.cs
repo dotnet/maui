@@ -51,14 +51,23 @@ internal sealed record HotReloadFieldContract(string Type, string AccessModifier
 /// <para>
 /// Repeated evaluation (https://github.com/dotnet/maui/issues/36937): Roslyn may evaluate the same
 /// driver snapshot more than once (driver forks, speculative/design-time requests, cancelled or
-/// discarded runs), possibly with different C# sources. When a generation produces a patch, the entry
-/// also keeps the generation it was diffed from (<see cref="CacheEntry.PatchBaseline"/>). Any later
-/// generation with the same XAML re-derives the patch from that baseline instead of seeing "no change"
-/// and emitting an empty <c>UpdateComponent()</c>. The baseline is never dropped by such a generation —
-/// only replaced by the next XAML edit — so the output stays a pure function of the inputs and a
-/// throwaway run cannot consume the patch of the real one. Re-emitting the patch on a C#-only edit is
-/// safe: the patch is unchanged, so its companion signal type is unchanged and the runtime doesn't
-/// re-apply it (see <see cref="UpdateComponentCodeWriter.SignalTypeName"/>).
+/// discarded runs), possibly with different C# sources and even with different XAML. When a generation
+/// produces a patch, the entry also keeps the generations it can be applied from
+/// (<see cref="CacheEntry.Baselines"/>, newest first). Any later generation with the same XAML
+/// re-derives the patch from them instead of seeing "no change" and emitting an empty
+/// <c>UpdateComponent()</c>, so a throwaway run cannot consume the patch of the real one. Re-emitting
+/// the patch on a C#-only edit is safe: the patch is unchanged, so its companion signal type is
+/// unchanged and the runtime doesn't re-apply it (see <see cref="UpdateComponentCodeWriter.SignalTypeName"/>).
+/// </para>
+///
+/// <para>
+/// The generator can't know which of those generations reached the running app: a throwaway run with
+/// different XAML advances the cache to a generation that was never applied. So the patch has one
+/// branch per retained baseline, and each live instance records the generation it is at
+/// (<see cref="CacheEntry.GenerationKey"/>, see <see cref="UpdateComponentCodeWriter.GenerationMarkerPrefix"/>).
+/// <c>UpdateComponent()</c> applies the branch diffed from that generation, so the patch is right
+/// whether or not the intermediate generations were applied. At most <see cref="MaxBaselines"/>
+/// generations are retained.
 /// </para>
 ///
 /// Thread-safety: the dictionary is protected by a lock. Generator output callbacks may run
@@ -67,6 +76,11 @@ internal sealed record HotReloadFieldContract(string Type, string AccessModifier
 internal static class XamlHotReloadState
 {
 	static readonly object _lock = new();
+
+	/// <summary>
+	/// The number of earlier generations a patch can be applied from.
+	/// </summary>
+	internal const int MaxBaselines = 4;
 
 	static ConditionalWeakTable<HotReloadSessionToken, SessionState> _sessions = new();
 
@@ -103,10 +117,15 @@ internal static class XamlHotReloadState
 		/// </summary>
 		public int Version { get; set; }
 		/// <summary>
-		/// The generation the current <c>UpdateComponent()</c> patch was diffed from, or <see langword="null"/>
-		/// when the current generation carries no pending patch.
+		/// Identifies this generation (its XAML and node IDs). <c>InitializeComponent()</c> and
+		/// <c>UpdateComponent()</c> record it on each live instance.
 		/// </summary>
-		public GenerationSnapshot? PatchBaseline { get; set; }
+		public string? GenerationKey { get; set; }
+		/// <summary>
+		/// The generations the current <c>UpdateComponent()</c> patch can be applied from, newest first,
+		/// or empty when the current generation carries no pending patch.
+		/// </summary>
+		public IReadOnlyList<GenerationSnapshot> Baselines { get; set; } = System.Array.Empty<GenerationSnapshot>();
 
 		public CacheEntry Clone()
 		{
@@ -149,29 +168,60 @@ internal static class XamlHotReloadState
 	}
 
 	/// <summary>
-	/// Immutable view of a previous generation, used to re-derive a pending patch deterministically.
+	/// Immutable view of a previous generation, used to derive and re-derive a pending patch deterministically.
 	/// </summary>
-	internal sealed record GenerationSnapshot(string XamlText, SGRootNode? ParsedRoot, Dictionary<ElementNode, string>? NodeIds, int NextNodeId, int Version);
+	internal sealed record GenerationSnapshot(string XamlText, SGRootNode? ParsedRoot, Dictionary<ElementNode, string>? NodeIds, int NextNodeId, int Version, string? Key);
 
 	/// <summary>
-	/// Returns the baseline of the pending patch for the given file, or <see langword="false"/> when the
-	/// current generation carries no pending patch.
+	/// Returns the current generation for the given file, or <see langword="null"/> when none exists.
 	/// </summary>
-	public static bool TryGetPatchBaseline(string assemblyName, string targetFramework, string relativePath, HotReloadSessionToken? sessionToken, out GenerationSnapshot? baseline)
+	public static GenerationSnapshot? GetCurrentGeneration(string assemblyName, string targetFramework, string relativePath, HotReloadSessionToken? sessionToken)
 	{
 		lock (_lock)
 		{
-			if (sessionToken is not null
+			return sessionToken is not null
 				&& _sessions.TryGetValue(sessionToken, out var session)
 				&& session.Cache.TryGetValue((assemblyName, targetFramework, relativePath), out var entry)
-				&& entry.PatchBaseline is not null)
-			{
-				baseline = entry.PatchBaseline;
-				return true;
-			}
+					? new GenerationSnapshot(
+						entry.XamlText,
+						entry.ParsedRoot,
+						entry.NodeIds is null ? null : new Dictionary<ElementNode, string>(entry.NodeIds),
+						entry.NextNodeId,
+						entry.Version,
+						entry.GenerationKey)
+					: null;
 		}
-		baseline = null;
-		return false;
+	}
+
+	/// <summary>
+	/// Returns the generations the pending patch for the given file can be applied from (newest first),
+	/// or an empty list when the current generation carries no pending patch.
+	/// </summary>
+	public static IReadOnlyList<GenerationSnapshot> GetBaselines(string assemblyName, string targetFramework, string relativePath, HotReloadSessionToken? sessionToken)
+	{
+		lock (_lock)
+		{
+			return sessionToken is not null
+				&& _sessions.TryGetValue(sessionToken, out var session)
+				&& session.Cache.TryGetValue((assemblyName, targetFramework, relativePath), out var entry)
+					? entry.Baselines
+					: System.Array.Empty<GenerationSnapshot>();
+		}
+	}
+
+	/// <summary>
+	/// Returns the key of the current generation for the given file, or <see langword="null"/> when none exists.
+	/// </summary>
+	public static string? GetGenerationKey(string assemblyName, string targetFramework, string relativePath, HotReloadSessionToken? sessionToken)
+	{
+		lock (_lock)
+		{
+			return sessionToken is not null
+				&& _sessions.TryGetValue(sessionToken, out var session)
+				&& session.Cache.TryGetValue((assemblyName, targetFramework, relativePath), out var entry)
+					? entry.GenerationKey
+					: null;
+		}
 	}
 
 	/// <summary>
@@ -206,10 +256,10 @@ internal static class XamlHotReloadState
 	/// <summary>
 	/// Stores (or replaces) the current XAML text, parsed root, node IDs, and version for the given
 	/// file. This fully replaces the previous entry — the cache only ever holds the latest generation
-	/// (plus, when that generation carries a patch, the single generation it was diffed from), never an
-	/// accumulated history.
+	/// (plus, when that generation carries a patch, the at most <see cref="MaxBaselines"/> generations it
+	/// can be applied from), never an accumulated patch chain.
 	/// </summary>
-	public static void Update(string assemblyName, string targetFramework, string relativePath, string xamlText, SGRootNode? parsedRoot, Dictionary<ElementNode, string>? nodeIds, int nextNodeId, int version, HotReloadSessionToken? sessionToken, GenerationSnapshot? patchBaseline = null)
+	public static void Update(string assemblyName, string targetFramework, string relativePath, string xamlText, SGRootNode? parsedRoot, Dictionary<ElementNode, string>? nodeIds, int nextNodeId, int version, HotReloadSessionToken? sessionToken, IReadOnlyList<GenerationSnapshot>? baselines = null)
 	{
 		if (sessionToken is null)
 			return;
@@ -227,7 +277,8 @@ internal static class XamlHotReloadState
 			entry.NodeIds = nodeIds;
 			entry.NextNodeId = nextNodeId;
 			entry.Version = version;
-			entry.PatchBaseline = patchBaseline;
+			entry.GenerationKey = parsedRoot is null || nodeIds is null ? null : NodeIdHelper.ComputeGenerationKey(xamlText, parsedRoot, nodeIds);
+			entry.Baselines = baselines ?? System.Array.Empty<GenerationSnapshot>();
 		}
 	}
 

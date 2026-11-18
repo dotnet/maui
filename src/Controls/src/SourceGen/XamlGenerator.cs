@@ -221,13 +221,10 @@ public class XamlGenerator : IIncrementalGenerator
 					var rootType = ucRootType!;
 					var accessModifier = ucAccessModifier;
 					lastApplicableState = XamlHotReloadState.Capture(assemblyName, targetFramework, stateKey, xamlItem.ProjectItem.HotReloadSessionToken);
-					// The exact generation this diff starts from (copied before the diff can touch the IDs).
-					var patchBaseline = new XamlHotReloadState.GenerationSnapshot(
-						previousXaml!,
-						previousRoot,
-						previousNodeIds is null ? null : new Dictionary<ElementNode, string>(previousNodeIds),
-						previousNextId,
-						previousVersion);
+					// The exact generation this diff starts from (copied before the diff can touch the IDs), and
+					// the generations its own patch could be applied from.
+					var previousGeneration = XamlHotReloadState.GetCurrentGeneration(assemblyName, targetFramework, stateKey, xamlItem.ProjectItem.HotReloadSessionToken);
+					var previousBaselines = XamlHotReloadState.GetBaselines(assemblyName, targetFramework, stateKey, xamlItem.ProjectItem.HotReloadSessionToken);
 					var generatedFields = XamlHotReloadState.GetGeneratedFields(assemblyName, targetFramework, stateKey, xamlItem.ProjectItem.HotReloadSessionToken);
 					var patchBody = InitializeComponentCodeWriter.TryGeneratePatchBody(
 						previousRoot,
@@ -257,27 +254,30 @@ public class XamlGenerator : IIncrementalGenerator
 						// will emit the parse-error diagnostic. No UC update for this iteration.
 						parseErrorOccurred = true;
 					}
-					else if (patchBody != null)
+					else if (patchBody != null || emptyDiff)
 					{
-						// Emit ONLY the single previous->current patch. Patch property-sets are absolute
-						// (they assign target values, not relative deltas), so applying this one patch brings
-						// any live instance to the current state regardless of the edit it was last at. Do NOT
-						// accumulate a version chain: accumulation retained stale/invalid intermediate patches
-						// and produced non-deterministic, sometimes-uncompilable output when an edit was
-						// reverted (the invalid value lingered forever). See the XIHR versioning fix.
-						// Keep the generation this patch was diffed from, so a re-evaluation of the same inputs
-						// re-derives the same patch (https://github.com/dotnet/maui/issues/36937).
-						XamlHotReloadState.Update(assemblyName, targetFramework, stateKey, xamlItem.Xaml!, parsedNewRoot, effectiveNewIds, newNextNodeId, previousVersion + 1, xamlItem.ProjectItem.HotReloadSessionToken, patchBaseline);
-						ucCode = UpdateComponentCodeWriter.GenerateUpdateComponent(rootType, accessModifier, patchBody);
-					}
-					else if (emptyDiff)
-					{
-						// Semantically empty diff (revert to the previous state, or a formatting/comment-only
-						// edit). Refresh the cached XAML text + parsed tree, and emit an EMPTY UpdateComponent()
-						// so the method stays present across generations (a disappearing UC looks like a
-						// type-removal delta and crashes Roslyn's EnC tracking).
-						XamlHotReloadState.Update(assemblyName, targetFramework, stateKey, xamlItem.Xaml!, parsedNewRoot, effectiveNewIds, newNextNodeId, previousVersion, xamlItem.ProjectItem.HotReloadSessionToken);
-						ucCode = UpdateComponentCodeWriter.GenerateUpdateComponent(rootType, accessModifier, (string?)null);
+						// Patch property-sets are absolute (they assign target values, not relative deltas). Do NOT
+						// accumulate a version chain: accumulation retained stale/invalid intermediate patches and
+						// produced non-deterministic, sometimes-uncompilable output when an edit was reverted (the
+						// invalid value lingered forever). See the XIHR versioning fix.
+						// Instead, keep the last few generations, newest first: a throwaway run with different XAML
+						// advances the cache to a generation the app never got, so UpdateComponent() patches each live
+						// instance from the generation it is at (https://github.com/dotnet/maui/issues/36937).
+						// An empty diff (a revert to the previous state, or a formatting/comment-only edit) needs
+						// no patch for instances at the previous generation, but still does for older ones.
+						var newKey = parsedNewRoot is null || effectiveNewIds is null ? null : NodeIdHelper.ComputeGenerationKey(xamlItem.Xaml!, parsedNewRoot, effectiveNewIds);
+						var baselines = new List<XamlHotReloadState.GenerationSnapshot>();
+						foreach (var baseline in previousGeneration is null ? previousBaselines : new[] { previousGeneration }.Concat(previousBaselines))
+						{
+							if (baselines.Count == XamlHotReloadState.MaxBaselines)
+								break;
+							if (baseline.Key is not null
+								&& baseline.Key != newKey
+								&& !baselines.Any(retained => retained.Key == baseline.Key))
+								baselines.Add(baseline);
+						}
+						XamlHotReloadState.Update(assemblyName, targetFramework, stateKey, xamlItem.Xaml!, parsedNewRoot, effectiveNewIds, newNextNodeId, patchBody != null ? previousVersion + 1 : previousVersion, xamlItem.ProjectItem.HotReloadSessionToken, baselines);
+						ucCode = GenerateUpdateComponentFromBaselines(xamlItem, rootType, accessModifier, assemblyName, targetFramework, stateKey, compilation, xmlnsCache, typeCache, sourceProductionContext);
 					}
 					else
 					{
@@ -297,38 +297,17 @@ public class XamlGenerator : IIncrementalGenerator
 				else if (hadPreviousEntry
 					&& previousXaml == xamlItem.Xaml
 					&& canEmitUC
-					&& XamlHotReloadState.TryGetPatchBaseline(assemblyName, targetFramework, stateKey, xamlItem.ProjectItem.HotReloadSessionToken, out var pendingBaseline))
+					&& XamlHotReloadState.GetBaselines(assemblyName, targetFramework, stateKey, xamlItem.ProjectItem.HotReloadSessionToken).Count > 0)
 				{
 					// Same XAML as the generation that produced the pending patch: re-derive it from its
-					// baseline instead of emitting an empty UpdateComponent() and silently dropping the edit.
+					// baselines instead of emitting an empty UpdateComponent() and silently dropping the edit.
 					// This covers re-evaluations of the same inputs (driver forks, speculative runs) as well as
 					// generations with different C# sources (a throwaway compilation that evaluated the edit
 					// first, then the real one, or a later C#-only edit). The patch is unchanged in the last
 					// case, so the companion signal type is unchanged and the runtime doesn't re-apply it
-					// (https://github.com/dotnet/maui/issues/36937). The baseline is left untouched, so the
+					// (https://github.com/dotnet/maui/issues/36937). The baselines are left untouched, so the
 					// output only depends on the inputs, never on evaluation order.
-					var replayedPatchBody = InitializeComponentCodeWriter.TryGeneratePatchBody(
-						pendingBaseline!.ParsedRoot,
-						pendingBaseline.NodeIds is null ? null : new Dictionary<ElementNode, string>(pendingBaseline.NodeIds),
-						pendingBaseline.NextNodeId,
-						pendingBaseline.XamlText,
-						xamlItem.Xaml!,
-						fromVersion: pendingBaseline.Version,
-						toVersion: pendingBaseline.Version + 1,
-						ucRootType!,
-						compilation,
-						xmlnsCache,
-						typeCache,
-						sourceProductionContext,
-						xamlItem.ProjectItem,
-						XamlHotReloadState.GetGeneratedFields(assemblyName, targetFramework, stateKey, xamlItem.ProjectItem.HotReloadSessionToken),
-						out _,
-						out _,
-						out _,
-						out _,
-						out _);
-					if (replayedPatchBody != null)
-						ucCode = UpdateComponentCodeWriter.GenerateUpdateComponent(ucRootType!, ucAccessModifier, replayedPatchBody);
+					ucCode = GenerateUpdateComponentFromBaselines(xamlItem, ucRootType!, ucAccessModifier, assemblyName, targetFramework, stateKey, compilation, xmlnsCache, typeCache, sourceProductionContext);
 				}
 				else if (!hadPreviousEntry && xamlItem.ProjectItem.EnableIncrementalHotReload && xamlItem.Xaml is not null)
 				{
@@ -562,6 +541,74 @@ $"""
 			return configured is ReportDiagnostic.Default or ReportDiagnostic.Error;
 
 		return true;
+	}
+
+	/// <summary>
+	/// Generates the <c>UpdateComponent()</c> for the current generation of a file from the generations it
+	/// keeps as baselines (see <see cref="XamlHotReloadState"/>). The first baseline, the previous generation,
+	/// gives the patch for live instances at an unknown generation. An older baseline gets its own branch when
+	/// its patch leaves the components registry exactly as the current <c>InitializeComponent()</c> builds it;
+	/// instances at any other generation get the default patch, as before.
+	/// </summary>
+	static string? GenerateUpdateComponentFromBaselines(
+		XamlProjectItemForIC xamlItem,
+		INamedTypeSymbol rootType,
+		string accessModifier,
+		string assemblyName,
+		string targetFramework,
+		string stateKey,
+		Compilation compilation,
+		AssemblyAttributes xmlnsCache,
+		IDictionary<XmlType, INamedTypeSymbol> typeCache,
+		SourceProductionContext sourceProductionContext)
+	{
+		var sessionToken = xamlItem.ProjectItem!.HotReloadSessionToken;
+		var current = XamlHotReloadState.GetCurrentGeneration(assemblyName, targetFramework, stateKey, sessionToken);
+		var baselines = XamlHotReloadState.GetBaselines(assemblyName, targetFramework, stateKey, sessionToken);
+		if (current is null || baselines.Count == 0)
+			return null;
+
+		var generatedFields = XamlHotReloadState.GetGeneratedFields(assemblyName, targetFramework, stateKey, sessionToken);
+		string? defaultPatchBody = null;
+		var baselinePatches = new List<UpdateComponentCodeWriter.BaselinePatch>();
+		for (int i = 0; i < baselines.Count; i++)
+		{
+			var baseline = baselines[i];
+			var patchBody = InitializeComponentCodeWriter.TryGeneratePatchBody(
+				baseline.ParsedRoot,
+				baseline.NodeIds is null ? null : new Dictionary<ElementNode, string>(baseline.NodeIds),
+				baseline.NextNodeId,
+				baseline.XamlText,
+				current.XamlText,
+				fromVersion: baseline.Version,
+				toVersion: baseline.Version + 1,
+				rootType,
+				compilation,
+				xmlnsCache,
+				typeCache,
+				sourceProductionContext,
+				xamlItem.ProjectItem,
+				generatedFields,
+				// The previous generation's diff is the one that gave the current IDs.
+				currentRoot: i == 0 ? null : current.ParsedRoot,
+				currentIds: i == 0 ? null : current.NodeIds,
+				out _,
+				out _,
+				out _,
+				out _,
+				out var emptyDiff,
+				out var idsMatchCurrent);
+			if (i == 0)
+				defaultPatchBody = patchBody;
+			else if (idsMatchCurrent && (patchBody != null || emptyDiff) && baseline.Key is not null)
+				baselinePatches.Add(new UpdateComponentCodeWriter.BaselinePatch(baseline.Key, patchBody));
+		}
+
+		if (current.Key is null)
+			return defaultPatchBody is null ? null : UpdateComponentCodeWriter.GenerateUpdateComponent(rootType, accessModifier, defaultPatchBody);
+		if (defaultPatchBody is null && baselinePatches.Count == 0)
+			return null;
+		return UpdateComponentCodeWriter.GenerateUpdateComponent(rootType, accessModifier, current.Key, defaultPatchBody, baselinePatches);
 	}
 
 	static bool HasSyntaxErrors(string? generatedCode, Compilation compilation, CancellationToken cancellationToken)
