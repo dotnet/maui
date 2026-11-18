@@ -91,10 +91,11 @@ namespace Microsoft.Maui.DeviceTests
 
 				target.PropertyChanged += OnPropertyChanged;
 				using var cancellation = new CancellationTokenSource();
-				var animation = FadeLoopAsync(target, cancellation.Token);
+				Task animation = Task.CompletedTask;
 
 				try
 				{
+					animation = FadeLoopAsync(target, cancellation.Token);
 					await firstAnimationTick.Task.WaitAsync(TimeSpan.FromSeconds(5));
 					int initialOpacityChanges = opacityChanges;
 
@@ -122,8 +123,8 @@ namespace Microsoft.Maui.DeviceTests
 				finally
 				{
 					cancellation.Cancel();
-					await animation;
 					target.PropertyChanged -= OnPropertyChanged;
+					await animation;
 				}
 
 				void OnPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs args)
@@ -153,11 +154,20 @@ namespace Microsoft.Maui.DeviceTests
 
 		static async Task FadeLoopAsync(VisualElement target, CancellationToken cancellationToken)
 		{
-			while (!cancellationToken.IsCancellationRequested)
+			try
 			{
-				await target.FadeToAsync(0.2, 100, null, cancellationToken);
-				if (!cancellationToken.IsCancellationRequested)
-					await target.FadeToAsync(1, 100, null, cancellationToken);
+				while (!cancellationToken.IsCancellationRequested)
+				{
+					await target.FadeToAsync(0.2, 100, null, cancellationToken);
+					if (!cancellationToken.IsCancellationRequested)
+					{
+						await target.FadeToAsync(1, 100, null, cancellationToken);
+						await Task.Delay(1, cancellationToken);
+					}
+				}
+			}
+			catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+			{
 			}
 		}
 
