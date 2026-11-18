@@ -223,7 +223,19 @@ namespace Microsoft.Maui.Controls
             base.ViewWillLayoutSubviews();
 
             var childView = (Child?.Handler as IPlatformViewHandler)?.ViewController?.View;
-            childView?.Frame = View!.Bounds;
+            var bounds = View!.Bounds;
+
+            // iOS 26 can start this view under an opaque bar in iPhone landscape, reporting the overlap only as a safe area inset (#39210).
+            if (!EdgesForExtendedLayout.HasFlag(UIRectEdge.Top) && View.Window is not null && NavigationController is { NavigationBarHidden: false } navigationController)
+            {
+                var overlap = navigationController.NavigationBar.ConvertRectToView(navigationController.NavigationBar.Bounds, View).Bottom - bounds.Top;
+                if (overlap > 0.5)
+                {
+                    bounds = new UIEdgeInsets(overlap, 0, 0, 0).InsetRect(bounds);
+                }
+            }
+
+            childView?.Frame = bounds;
         }
 
         public override void ViewDidDisappear(bool animated)
