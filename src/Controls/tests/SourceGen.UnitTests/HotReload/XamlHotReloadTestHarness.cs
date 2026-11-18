@@ -360,7 +360,8 @@ internal sealed class XamlHotReloadTestHarness : IDisposable
 				options.TargetFramework,
 				options.NoWarn,
 				EnableIncrementalHotReload: true,
-				EnableDiagnostics: options.EnableDiagnostics);
+				EnableDiagnostics: options.EnableDiagnostics,
+				EnablePreviewFeatures: options.EnablePreviewFeatures);
 			files.Add(document.Key, new XamlHotReloadAdditionalFile(options, file));
 		}
 
@@ -526,7 +527,8 @@ internal sealed record XamlHotReloadDocument(
 	string? ManifestResourceName = null,
 	string? TargetFramework = "net11.0",
 	string? NoWarn = null,
-	bool EnableDiagnostics = true);
+	bool EnableDiagnostics = true,
+	bool EnablePreviewFeatures = false);
 
 internal sealed record XamlHotReloadSourceVersion(
 	string Xaml,
@@ -838,12 +840,18 @@ internal sealed class XamlHotReloadLiveSession : IDisposable
 				var previousMethod = previousPageType!
 					.GetMembers(methodName)
 					.OfType<IMethodSymbol>()
-					.Single();
+					.SingleOrDefault();
 				var nextMethod = nextPageType!
 					.GetMembers(methodName)
 					.OfType<IMethodSymbol>()
 					.Single();
-				edits.Add(new SemanticEdit(SemanticEditKind.Update, previousMethod, nextMethod));
+				if (previousMethod is null)
+				{
+					edits.Add(new SemanticEdit(SemanticEditKind.Insert, null, nextMethod));
+					insertedSymbols.Add(nextMethod);
+				}
+				else
+					edits.Add(new SemanticEdit(SemanticEditKind.Update, previousMethod, nextMethod));
 			}
 		}
 
