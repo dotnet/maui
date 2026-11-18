@@ -522,8 +522,10 @@ namespace Microsoft.Maui.Platform
 
 		void ProcessTouchMove(CGPoint point)
 		{
-			if (_contentView == null || !TouchInsideContent(point))
+			if (_contentView is null || (!_isSwiping && !TouchInsideContent(point)))
+			{
 				return;
+			}
 
 			if (!_isOpen)
 			{
@@ -536,6 +538,11 @@ namespace Microsoft.Maui.Platform
 
 			if (!_isSwiping)
 			{
+				if (!ValidateSwipeDirection())
+				{
+					return;
+				}
+
 				RaiseSwipeStarted();
 				_isSwiping = true;
 			}

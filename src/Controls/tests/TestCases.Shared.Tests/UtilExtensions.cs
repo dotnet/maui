@@ -1,5 +1,9 @@
-﻿using System.Drawing;
+﻿using System.Diagnostics;
+using System.Drawing;
 using NUnit.Framework;
+using NUnit.Framework.Interfaces;
+using NUnit.Framework.Internal;
+using OpenQA.Selenium;
 using UITest.Appium;
 using UITest.Appium.NUnit;
 using UITest.Core;
@@ -9,6 +13,63 @@ namespace Microsoft.Maui.TestCases.Tests
 	public static class UtilExtensions
 	{
 		const string goToTestButtonId = "GoToTestButton";
+
+		/// <summary>
+		/// Retries transient NUnit assertions without retaining failed observations in the test result.
+		/// </summary>
+		public static void RetryAssert(
+			this IApp app,
+			Action assertToRetry,
+			TimeSpan? timeout = null,
+			TimeSpan? retryFrequency = null)
+		{
+			var deadline = timeout ?? TimeSpan.FromSeconds(15);
+			var interval = retryFrequency ?? TimeSpan.FromMilliseconds(500);
+			var stopwatch = Stopwatch.StartNew();
+
+			while (true)
+			{
+				try
+				{
+					// NUnit records caught assertion failures in the enclosing test result.
+					var enclosingResult = TestExecutionContext.CurrentContext.CurrentResult;
+					using var context = new TestExecutionContext.IsolatedContext();
+					try
+					{
+						assertToRetry();
+						var result = TestExecutionContext.CurrentContext.CurrentResult;
+						if (result.AssertionResults.Any(assertion => assertion.Status == AssertionStatus.Failed))
+							throw new MultipleAssertException(result);
+						return;
+					}
+					finally
+					{
+						foreach (var assertion in TestExecutionContext.CurrentContext.CurrentResult.AssertionResults)
+						{
+							if (assertion.Status == AssertionStatus.Warning)
+								enclosingResult.RecordAssertion(assertion);
+						}
+					}
+				}
+				catch (Exception exception) when (
+					(exception is AssertionException or MultipleAssertException or StaleElementReferenceException or NoSuchElementException)
+					&& stopwatch.Elapsed < deadline)
+				{
+					var remaining = deadline - stopwatch.Elapsed;
+					if (remaining > TimeSpan.Zero)
+						Thread.Sleep(interval < remaining ? interval : remaining);
+				}
+			}
+		}
+
+		public static IQuery GetCollapsibleShellSearchQuery(this IApp app, string placeholder)
+		{
+			// Android's collapsed menu item uses SearchHandler.Placeholder as its title.
+			// iOS exposes the native search field, as in GetShellSearchHandler.
+			return app.GetTestDevice() == TestDevice.Android
+				? AppiumQuery.ByAccessibilityId(placeholder)
+				: AppiumQuery.ByXPath("//XCUIElementTypeSearchField");
+		}
 
 		/// <summary>
 		/// Ignores the current test only when running in the Android Shell Renderer configuration.

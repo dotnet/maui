@@ -35,4 +35,7 @@ MAUIX2016 | XamlParsing | Error | XCodeRequiresXClass
 MAUIX2017 | XamlInflation | Warning | DuplicatePropertyAssignment
 MAUIX2018 | XamlParsing | Warning | StructIntermediateNotSettable
 MAUIX2019 | XamlParsing | Error | LambdaMethodGroupReference
-MAUIX2020 | XamlParsing | Error | XCodeRequiresSourceGen
+MAUIX2020 | XamlInflation | Warning | ConflictingXmlnsType
+MAUIX2021 | XamlInflation | Error | ExtensionPropertyAmbiguous
+MAUIX2022 | XamlInflation | Error | ExtensionPropertyResolution
+MAUIX2023 | XamlParsing | Error | XCodeRequiresSourceGen

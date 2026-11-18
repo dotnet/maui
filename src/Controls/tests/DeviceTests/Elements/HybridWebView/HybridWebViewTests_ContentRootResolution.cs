@@ -22,6 +22,7 @@ public partial class HybridWebViewTests_ContentRootResolution : HybridWebViewTes
 	public class UrlResolutionResult
 	{
 		public int status { get; set; }
+		public string? contentType { get; set; }
 		public int bodyLength { get; set; }
 		public string bodyPreview { get; set; } = "";
 		public string url { get; set; } = "";
@@ -60,6 +61,19 @@ public partial class HybridWebViewTests_ContentRootResolution : HybridWebViewTes
 		{
 			Assert.Equal(200, result.status);
 			Assert.True(result.bodyLength > 0, $"Expected content for '{path}' but got empty response.");
+		});
+
+	// Android WebView writes the mimeType argument of WebResourceResponse as the Content-Type header and then appends
+	// the response headers map, so a Content-Type entry in that map reached the page as "text/plain, text/plain".
+	// See https://github.com/dotnet/maui/issues/39794
+	[Theory]
+	[InlineData("index.html", "text/html")]
+	[InlineData("safe-file.txt", "text/plain")]
+	public Task StaticContent_IsServedWithASingleContentTypeHeader(string path, string expectedContentType) =>
+		RunUrlResolutionTest(path, "relative", result =>
+		{
+			Assert.Equal(200, result.status);
+			Assert.Equal(expectedContentType, result.contentType);
 		});
 
 	[Fact]
