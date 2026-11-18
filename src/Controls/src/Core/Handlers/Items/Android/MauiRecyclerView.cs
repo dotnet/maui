@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_itemsUpdateScrollObserver = new DataChangeObserver(AdjustScrollForItemUpdate);
 			// RecyclerView recomputes the offsets of items it rebinds or shifts (and of every item on a full reset), so only
 			// insertions and removals in the last row can leave items that kept their position with stale edge spacing
-			_itemSpacingObserver = new DataChangeObserver(InvalidateItemSpacing, GetLastRowStart);
+			_itemSpacingObserver = new DataChangeObserver(InvalidateItemSpacing, GetSpacingLastRowSize, () => ItemsViewAdapter?.ItemCount ?? 0);
 			_dispatchTouchEventToRecyclerView = DispatchTouchEventToRecyclerView;
 			_parentScrollGestureDispatcher = new ParentScrollGestureDispatcher(this);
 		}
@@ -640,10 +640,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_itemDecoration is SpacingItemDecoration spacing
 			&& ((ItemsLayout as ItemsLayout)?.Orientation == ItemsLayoutOrientation.Horizontal ? spacing.HorizontalOffset : spacing.VerticalOffset) != 0;
 
-		// Checks the spacing first: ItemCount walks every group of a grouped source
-		int GetLastRowStart() => HasPositionDependentSpacing()
-			? (ItemsViewAdapter?.ItemCount ?? 0) - (ItemsLayout is GridItemsLayout grid ? grid.Span : 1)
-			: int.MaxValue;
+		// The number of positions in the last row whose edge spacing can change, or 0 when no spacing depends on the position
+		int GetSpacingLastRowSize() => HasPositionDependentSpacing() ? (ItemsLayout is GridItemsLayout grid ? grid.Span : 1) : 0;
 
 		void InvalidateItemSpacing()
 		{
