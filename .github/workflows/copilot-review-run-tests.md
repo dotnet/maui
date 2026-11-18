@@ -262,14 +262,19 @@ code.
   rationale. Do not add categories "just in case".
 - Changes with wide blast radius — `VisualElement`, `Element`, `View`, base
   handlers/mappers, `Layout` base classes, the platform layout/measure pipeline,
-  `MauiContext`/app startup, styles and resource infrastructure, build/MSBuild
-  props, or shared UI test infrastructure (`UITest.*`, `TestCases.Shared.Tests`
-  base classes, `TestCases.HostApp` shell) — set `full_run` to `true`.
+  `MauiContext`/app startup, styles and resource infrastructure, MSBuild or SDK
+  changes that alter how the product or the UI test apps are built by default,
+  or shared UI test infrastructure (`UITest.*`, `TestCases.Shared.Tests` base
+  classes, `TestCases.HostApp` shell) — set `full_run` to `true`.
+- Read build changes before escalating: a change that only applies behind a new
+  opt-in property, or only to packing, signing, official/nightly pipelines or
+  other pipelines, does not change what `maui-pr-uitests` builds or runs.
 
 **No UI tests**
 
 Use `platforms: "[]"` when nothing in the PR can change UI test behavior: docs,
-`.github/`, unit or device tests only, XAML source generator/compiler internals
+`.github/`, unit or device tests only, packaging/signing/official-build-only
+changes, XAML source generator/compiler internals
 covered by unit tests, Essentials APIs without UI, templates, or other pipelines.
 
 ## Output
