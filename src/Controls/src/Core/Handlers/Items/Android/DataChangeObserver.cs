@@ -10,15 +10,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 	{
 		IntPtr _adapter;
 		readonly Action _onDataChange;
-		readonly Func<int> _lastRowStart;
+		readonly Func<int> _lastRowSize;
 
 		public bool Observing { get; private set; }
 
-		// lastRowStart: when set, only report items inserted or removed after that adapter position (read after the change)
-		public DataChangeObserver(Action onDataChange, Func<int> lastRowStart = null) : base()
+		// Only used with lastRowSize: the adapter's item count as of the last layout pass, kept up to date with the insertions
+		// and removals since then, or -1 when unknown
+		public int ItemCount { get; set; } = -1;
+
+		// lastRowSize: when set, only report items inserted into or removed from the last row (that many positions, 0 for none)
+		public DataChangeObserver(Action onDataChange, Func<int> lastRowSize = null) : base()
 		{
 			_onDataChange = onDataChange;
-			_lastRowStart = lastRowStart;
+			_lastRowSize = lastRowSize;
 		}
 
 		public void Start(Adapter adapter)
@@ -31,6 +35,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			adapter.RegisterAdapterDataObserver(this);
 
 			_adapter = adapter.Handle;
+			ItemCount = -1;
 			Observing = true;
 		}
 
@@ -48,8 +53,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public override void OnChanged()
 		{
 			base.OnChanged();
+			ItemCount = -1;
 
-			if (_lastRowStart is null)
+			if (_lastRowSize is null)
 			{
 				_onDataChange?.Invoke();
 			}
@@ -59,7 +65,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			base.OnItemRangeInserted(positionStart, itemCount);
 
-			if (_lastRowStart is null || positionStart + itemCount > _lastRowStart())
+			if (ItemCount >= 0)
+			{
+				ItemCount += itemCount;
+			}
+
+			if (_lastRowSize is null || ReachesLastRow(positionStart + itemCount))
 			{
 				_onDataChange?.Invoke();
 			}
@@ -69,7 +80,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			base.OnItemRangeChanged(positionStart, itemCount);
 
-			if (_lastRowStart is null)
+			if (_lastRowSize is null)
 			{
 				_onDataChange?.Invoke();
 			}
@@ -79,7 +90,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			base.OnItemRangeChanged(positionStart, itemCount, payload);
 
-			if (_lastRowStart is null)
+			if (_lastRowSize is null)
 			{
 				_onDataChange?.Invoke();
 			}
@@ -89,7 +100,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			base.OnItemRangeRemoved(positionStart, itemCount);
 
-			if (_lastRowStart is null || positionStart > _lastRowStart())
+			if (ItemCount >= 0)
+			{
+				ItemCount -= itemCount;
+			}
+
+			if (_lastRowSize is null || ReachesLastRow(positionStart))
 			{
 				_onDataChange?.Invoke();
 			}
@@ -99,10 +115,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			base.OnItemRangeMoved(fromPosition, toPosition, itemCount);
 
-			if (_lastRowStart is null)
+			if (_lastRowSize is null)
 			{
 				_onDataChange?.Invoke();
 			}
+		}
+
+		// True when a range ending at `position` (exclusive) reaches the last row. Without a count from a layout pass yet,
+		// report the change rather than risk stale spacing.
+		bool ReachesLastRow(int position)
+		{
+			int lastRowSize = _lastRowSize();
+			return lastRowSize > 0 && (ItemCount < 0 || position > ItemCount - lastRowSize);
 		}
 
 		bool IsValidAdapter(Adapter adapter)

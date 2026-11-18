@@ -343,8 +343,11 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var calls = 0;
 
-			// lastRowStart is read after the change: 100 items in a list, so the last row starts at 99
-			using var observer = new DataChangeObserver(() => calls++, () => 99);
+			// ItemCount is the count at the last layout pass; the change leaves 100 items in a list, so the last row starts at 99
+			using var observer = new DataChangeObserver(() => calls++, () => 1)
+			{
+				ItemCount = change switch { "Insert" => 100 - itemCount, "Remove" => 100 + itemCount, _ => 100 },
+			};
 
 			switch (change)
 			{
@@ -366,6 +369,56 @@ namespace Microsoft.Maui.DeviceTests
 			}
 
 			Assert.Equal(expected ? 1 : 0, calls);
+		}
+
+		[Fact(DisplayName = "The ItemSpacing observer applies every change since the last layout pass")]
+		public void ItemSpacingObserverAppliesChangesSinceLastLayout()
+		{
+			var calls = 0;
+
+			// One item at the last layout pass, then two appends dispatched before the next one
+			using var observer = new DataChangeObserver(() => calls++, () => 1) { ItemCount = 1 };
+			observer.OnItemRangeInserted(1, 1);
+			observer.OnItemRangeInserted(2, 1);
+			Assert.Equal(2, calls);
+
+			observer.OnItemRangeInserted(0, 1);
+			observer.OnItemRangeRemoved(3, 1);
+			Assert.Equal(3, calls);
+			Assert.Equal(3, observer.ItemCount);
+
+			// A reset can change the count in any way, so changes are reported until the next layout pass sets it again
+			observer.OnChanged();
+			observer.OnItemRangeInserted(0, 1);
+			Assert.Equal(4, calls);
+		}
+
+		[Fact(DisplayName = "Inserting into the first group of a grouped CollectionView with item spacing does not count all groups")]
+		public async Task GroupedInsertWithItemSpacingDoesNotCountAllGroups()
+		{
+			SetupBuilder();
+
+			var groups = Enumerable.Range(0, 5).Select(g => new EnumerationCountingGroup(Enumerable.Range(0, 3).Select(i => $"{g}-{i}"))).ToList();
+			var collectionView = new CollectionView
+			{
+				IsGrouped = true,
+				ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Vertical) { ItemSpacing = 8 },
+				ItemTemplate = new DataTemplate(() => new Label { HeightRequest = 30 }),
+				ItemsSource = groups,
+			};
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				var recyclerView = handler.PlatformView;
+				await AssertEventually(() => recyclerView.ChildCount > 0 && !recyclerView.IsLayoutRequested);
+
+				var lastGroup = groups[groups.Count - 1];
+				lastGroup.Enumerations = 0;
+				groups[0].Add("new");
+
+				// The notification uses the count from the last layout pass instead of counting every group again
+				Assert.Equal(0, lastGroup.Enumerations);
+			});
 		}
 
 		[Fact(DisplayName = "Appending to a grid with only cross-axis spacing does not recompute the spacing of the visible items")]

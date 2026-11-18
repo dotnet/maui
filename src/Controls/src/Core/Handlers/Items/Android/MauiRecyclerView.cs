@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_itemsUpdateScrollObserver = new DataChangeObserver(AdjustScrollForItemUpdate);
 			// RecyclerView recomputes the offsets of items it rebinds or shifts (and of every item on a full reset), so only
 			// insertions and removals in the last row can leave items that kept their position with stale edge spacing
-			_itemSpacingObserver = new DataChangeObserver(InvalidateItemSpacing, GetLastRowStart);
+			_itemSpacingObserver = new DataChangeObserver(InvalidateItemSpacing, GetSpacingLastRowSize);
 			_dispatchTouchEventToRecyclerView = DispatchTouchEventToRecyclerView;
 			_parentScrollGestureDispatcher = new ParentScrollGestureDispatcher(this);
 		}
@@ -640,11 +640,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_itemDecoration is SpacingItemDecoration spacing
 			&& ((ItemsLayout as ItemsLayout)?.Orientation == ItemsLayoutOrientation.Horizontal ? spacing.HorizontalOffset : spacing.VerticalOffset) != 0;
 
-		// Checks the spacing first: ItemCount walks every group of a grouped source. The count isn't cached from the notifications
-		// because a source changed off the UI thread can be ahead of the notifications that haven't been dispatched yet.
-		int GetLastRowStart() => HasPositionDependentSpacing()
-			? (ItemsViewAdapter?.ItemCount ?? 0) - (ItemsLayout is GridItemsLayout grid ? grid.Span : 1)
-			: int.MaxValue;
+		// The number of positions in the last row whose edge spacing can change, or 0 when no spacing depends on the position
+		int GetSpacingLastRowSize() => HasPositionDependentSpacing() ? (ItemsLayout is GridItemsLayout grid ? grid.Span : 1) : 0;
 
 		void InvalidateItemSpacing()
 		{
@@ -739,6 +736,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			base.OnLayout(changed, l, t, r, b);
 			ClipBounds = new ARect(0, 0, Width, Height);
+
+			// The count this layout pass used (ItemCount walks every group of a grouped source, so read it once here rather than
+			// for every notification); the spacing observer applies the insertions and removals until the next layout pass
+			_itemSpacingObserver.ItemCount = HasPositionDependentSpacing() ? ItemsViewAdapter?.ItemCount ?? 0 : -1;
 			// After a direct (non-animated) scroll operation, we may need to make adjustments
 			// to align the target item; if an adjustment is pending, execute it here.
 			// (Deliberately checking the private member here rather than the property accessor; the accessor will
