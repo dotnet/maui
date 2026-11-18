@@ -126,10 +126,17 @@ Task("uitest-build")
 
 Task("uitest-prepare")
 	.IsDependentOn("connectToDevice")
-	.Does(() => RunUITestSetupWithRetry(() =>
+	.Does(() =>
 	{
-		ExecutePrepareUITests(projectPath, testAppProjectPath, testAppPackageName, testDevice, testResultsPath, binlogDirectory, configuration, targetFramework, "", androidVersion, dotnetToolPath, testAppInstrumentation, headless);
-	}));
+		var setupAttempt = 0;
+		RunUITestSetupWithRetry(() =>
+		{
+			// A failed boot wait otherwise leaves every retry waiting on the same wedged emulator.
+			if (setupAttempt++ > 0)
+				RestartEmulatorIfNotBooted("retrying UI test setup");
+			ExecutePrepareUITests(projectPath, testAppProjectPath, testAppPackageName, testDevice, testResultsPath, binlogDirectory, configuration, targetFramework, "", androidVersion, dotnetToolPath, testAppInstrumentation, headless);
+		});
+	});
 
 Task("uitest")
 	.IsDependentOn("uitest-prepare")
@@ -297,20 +304,26 @@ void ExecuteUITests(string project, string app, string appPackageName, string de
 
 void EnsureDeviceForUITestAttempt(string project, string app, string appPackageName, string device, string resultsDir, string binDir, string config, string tfm, string rid, string ver, string toolPath, string instrumentation)
 {
+	if (RestartEmulatorIfNotBooted("reinstalling the app before running UI tests"))
+		ExecutePrepareUITests(project, app, appPackageName, device, resultsDir, binDir, config, tfm, rid, ver, toolPath, instrumentation, headless);
+}
+
+bool RestartEmulatorIfNotBooted(string nextStep)
+{
 	var settings = new AdbToolSettings { SdkRoot = androidSdkRoot };
 	if (!string.IsNullOrEmpty(DEVICE_UDID))
 		settings.Serial = DEVICE_UDID;
 
 	if (SafeAdbShell("getprop sys.boot_completed", settings).FirstOrDefault() == "1")
-		return;
+		return false;
 
 	if (emulatorProcess == null || !deviceBoot)
 	{
-		Warning("Could not confirm the Android device has booted; it was not started by this script, so running UI tests without recovery.");
-		return;
+		Warning("Could not confirm the Android device has booted; it was not started by this script, so continuing without recovery.");
+		return false;
 	}
 
-	Warning("The Android emulator is no longer available; restarting it and reinstalling the app before running UI tests.");
+	Warning("The Android emulator is not booted; restarting it before {0}.", nextStep);
 	var lostEmulator = emulatorProcess;
 	try
 	{
@@ -347,7 +360,7 @@ void EnsureDeviceForUITestAttempt(string project, string app, string appPackageN
 
 	emulatorProcess = null;
 	HandleVirtualDevice(emuSettings, avdSettings, androidAvd, androidAvdImage, deviceSkin, deviceBoot).GetAwaiter().GetResult();
-	ExecutePrepareUITests(project, app, appPackageName, device, resultsDir, binDir, config, tfm, rid, ver, toolPath, instrumentation, headless);
+	return true;
 }
 
 void ExecuteBuildUITestApp(string appProject, string device, string binDir, string config, string tfm, string rid, string toolPath)
