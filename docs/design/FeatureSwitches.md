@@ -105,7 +105,7 @@ For `partial` classes, the Controls source generator turns `[QueryProperty(...)]
 
 Classes that aren't `partial`, or that the generator can't handle (for example properties with `init` setters or ambiguous property names), still rely on reflection. When the trim analyzer is enabled (`PublishTrimmed`, `PublishAot` or `IsAotCompatible`), the generator reports them with the `MAUI1200` warning. Make those classes `partial`, or implement the [`IQueryAttributable`](https://learn.microsoft.com/en-us/dotnet/maui/fundamentals/shell/navigation#process-navigation-data-using-a-single-method) interface instead.
 
-The `MAUI1201` analyzer warning reports classes that combine a handwritten `IQueryPropertyAttributable` implementation with `[QueryProperty]` attributes, including inherited implementations and attributes. Remove either the implementation or the attributes. Generated implementations and `IQueryAttributable` do not trigger this warning.
+The `MAUI1201` analyzer warning reports classes that combine `[QueryProperty]` attributes with an `IQueryPropertyAttributable` implementation not emitted by the Controls source generator, including inherited implementations and attributes. Remove either the implementation or the attributes. `IQueryAttributable` does not trigger this warning.
 
 ## MauiImplicitCastOperatorsUsageViaReflectionSupport
 
