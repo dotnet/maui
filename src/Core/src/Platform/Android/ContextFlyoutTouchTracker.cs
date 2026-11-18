@@ -122,6 +122,10 @@ namespace Microsoft.Maui.Platform
 					return false;
 				}
 
+				// A long press that already does something else (a gesture, text selection, ...) keeps doing it
+				if (manager.DefersLongPress(root, e.GetX(), e.GetY()))
+					return false;
+
 				SetActive(true);
 				_candidate = new WeakReference<ContextFlyoutManager>(manager);
 				_downX = e.GetX();

@@ -558,9 +558,6 @@ namespace Microsoft.Maui.Controls.Platform
 
 				public override bool OnKeyUp(Keycode keyCode, KeyEvent e)
 				{
-					if (ContextFlyoutManager.IsContextMenuKeyUp(keyCode, e) && ContextFlyoutManager.TryShowForFocusedView(CurrentFocus))
-						return true;
-
 					var handled = false;
 					IPlatformApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnKeyUp>(del =>
 					{

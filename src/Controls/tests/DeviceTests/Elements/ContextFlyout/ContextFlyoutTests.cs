@@ -28,6 +28,7 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					handlers.AddHandler<Layout, LayoutHandler>();
 					handlers.AddHandler<Label, LabelHandler>();
+					handlers.AddHandler<Entry, EntryHandler>();
 					handlers.AddHandler<Page, PageHandler>();
 
 					handlers.AddHandler<MenuFlyout, MenuFlyoutHandler>();

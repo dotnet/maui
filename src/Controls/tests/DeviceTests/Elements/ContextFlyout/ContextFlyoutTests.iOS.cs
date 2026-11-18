@@ -91,7 +91,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact(DisplayName = "Disabled or input transparent views don't open a context menu")]
+		[Fact(DisplayName = "Disabled or input transparent views don't open a context menu on iOS")]
 		public async Task DisabledViewHasNoContextMenu()
 		{
 			SetupBuilder();
@@ -104,14 +104,23 @@ namespace Microsoft.Maui.DeviceTests
 				var interaction = GetInteraction(handler.PlatformView)!;
 
 				label.IsEnabled = false;
-				Assert.Null(interaction.CreateMenu());
+				AssertMenuOnlyOnMacCatalyst(interaction.CreateMenu());
 
 				label.IsEnabled = true;
 				label.InputTransparent = true;
-				Assert.Null(interaction.CreateMenu());
+				AssertMenuOnlyOnMacCatalyst(interaction.CreateMenu());
 
 				label.InputTransparent = false;
 				Assert.NotNull(interaction.CreateMenu());
+
+				// Mac Catalyst keeps its existing behavior (before iOS support) of not checking the view's state
+				static void AssertMenuOnlyOnMacCatalyst(UIMenu? menu)
+				{
+					if (OperatingSystem.IsMacCatalyst())
+						Assert.NotNull(menu);
+					else
+						Assert.Null(menu);
+				}
 			});
 		}
 
@@ -156,6 +165,33 @@ namespace Microsoft.Maui.DeviceTests
 
 				var action = Assert.IsType<UIAction>(GetInteraction(handler.PlatformView)!.CreateMenu()!.Children.Single());
 				Assert.Null(action.Image);
+			});
+		}
+
+		public static TheoryData<string> ExistingLongPressBehaviors => new() { "None", "LongPressGesture", "Entry" };
+
+		[Theory(DisplayName = "An existing long-press behavior keeps priority on iOS; Mac Catalyst is unchanged")]
+		[MemberData(nameof(ExistingLongPressBehaviors))]
+		public async Task ExistingLongPressBehaviorKeepsPriority(string behavior)
+		{
+			SetupBuilder();
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				View target = behavior == "Entry" ? new Entry { Text = "Text" } : new Label { Text = "Target" };
+				if (behavior == "LongPressGesture")
+					target.GestureRecognizers.Add(new LongPressGestureRecognizer());
+
+				FlyoutBase.SetContextFlyout(target, CreateFlyout(out _));
+				var handler = (IPlatformViewHandler)target.ToHandler(MauiContext);
+				var interaction = GetInteraction(handler.PlatformView!)!;
+
+				var configuration = interaction.GetConfigurationForMenu(CoreGraphics.CGPoint.Empty);
+
+				if (behavior == "None" || OperatingSystem.IsMacCatalyst())
+					Assert.NotNull(configuration);
+				else
+					Assert.Null(configuration);
 			});
 		}
 

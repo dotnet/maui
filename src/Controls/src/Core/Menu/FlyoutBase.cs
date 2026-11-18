@@ -1,4 +1,4 @@
-#nullable disable
+﻿#nullable disable
 namespace Microsoft.Maui.Controls
 {
 	public abstract class FlyoutBase : Element, IFlyout
@@ -15,9 +15,13 @@ namespace Microsoft.Maui.Controls
 		/// <param name="value">The <see cref="MenuFlyout"/> to show, or <see langword="null"/> to remove the context menu.</param>
 		/// <remarks>
 		/// The menu opens with the platform's context menu gesture: a long press on iOS and Android, a secondary
-		/// (right) click on Mac Catalyst, Windows and Android with a mouse, and Shift+F10 or the menu key on
-		/// Windows and Android. Its items are read every time it opens, so bindings, <see cref="MenuItem.IsEnabled"/>
-		/// and commands that can't execute are always reflected. Elements without a context menu aren't affected.
+		/// (right) click on Mac Catalyst, Windows and Android with a mouse, and Shift+F10 on Windows and Android.
+		/// Its items are read every time it opens, so bindings, <see cref="MenuItem.IsEnabled"/> and commands that
+		/// can't execute are always reflected. Elements without a context menu aren't affected.
+		/// On iOS and Android, a long press that already does something else keeps doing it, for example a
+		/// <see cref="LongPressGestureRecognizer"/> on the element or one of its parents, dragging on Android,
+		/// text selection in an <see cref="Entry"/> or <see cref="Editor"/>, or reordering a
+		/// <see cref="CollectionView"/>. The menu still opens with a secondary click or the keyboard.
 		/// </remarks>
 		public static void SetContextFlyout(BindableObject b, FlyoutBase value)
 		{

@@ -33,6 +33,9 @@ namespace Microsoft.Maui.Platform
 		static readonly List<WeakReference<ContextFlyoutManager>> s_managers = new();
 		static readonly ConditionalWeakTable<AView, ContextFlyoutManager> s_managersByView = new();
 
+		// Views whose long press is handled by MAUI (gesture recognizers, CollectionView reordering)
+		static readonly ConditionalWeakTable<AView, object> s_longPressHandlers = new();
+
 		readonly WeakReference<AView> _view;
 		WeakReference<IViewHandler> _handler;
 		readonly bool _usesLongClickFallback;
@@ -66,8 +69,13 @@ namespace Microsoft.Maui.Platform
 			{
 				_usesLongClickFallback = true;
 				_wasLongClickable = view.LongClickable;
-				_longClickListener = new LongClickListener(this);
-				view.SetOnLongClickListener(_longClickListener);
+
+				// A view that already handles long press (e.g. text selection) keeps doing so
+				if (!_wasLongClickable)
+				{
+					_longClickListener = new LongClickListener(this);
+					view.SetOnLongClickListener(_longClickListener);
+				}
 			}
 		}
 
@@ -119,7 +127,7 @@ namespace Microsoft.Maui.Platform
 			if (manager._accessibilityDelegate is not null && ViewCompat.GetAccessibilityDelegate(view) == manager._accessibilityDelegate)
 				ViewCompat.SetAccessibilityDelegate(view, null);
 
-			if (manager._usesLongClickFallback)
+			if (manager._longClickListener is not null)
 			{
 				// SetOnLongClickListener makes the view long-clickable, so restore the original value afterwards
 				view.SetOnLongClickListener(null);
@@ -191,13 +199,77 @@ namespace Microsoft.Maui.Platform
 			return false;
 		}
 
-		// Shift+F10 opens on key down (like Windows); the menu key on key up, where Android would otherwise
-		// open the options menu
+		// Shift+F10 opens on key down, like Windows. The menu key isn't used: it opens the options menu.
 		internal static bool IsContextMenuKeyDown(Keycode keyCode, KeyEvent? e) =>
 			keyCode == Keycode.F10 && e is not null && e.HasModifiers(MetaKeyStates.ShiftOn);
 
-		internal static bool IsContextMenuKeyUp(Keycode keyCode, KeyEvent? e) =>
-			keyCode == Keycode.Menu && e is not null && e.HasNoModifiers;
+		/// <summary>
+		/// Marks a view whose long press is handled by MAUI, so that a context flyout doesn't take it over.
+		/// </summary>
+		internal static void SetHandlesLongPress(AView view, bool handlesLongPress)
+		{
+			if (handlesLongPress)
+				s_longPressHandlers.AddOrUpdate(view, s_longPressHandlers);
+			else
+				s_longPressHandlers.Remove(view);
+		}
+
+		/// <summary>
+		/// Whether a long press at the given point already does something else, which then keeps priority over
+		/// the context flyout: a long-press or drag gesture, text selection, a tooltip, reordering, etc. on the
+		/// view, an ancestor, or the view under the finger. Secondary clicks and the keyboard still open the menu.
+		/// </summary>
+		internal bool DefersLongPress(AView root, float x, float y)
+		{
+			if (!_view.TryGetTarget(out var view) || !view.IsAlive())
+				return true;
+
+			for (AView? current = view; current is not null; current = current.Parent as AView)
+			{
+				if (HandlesLongPress(current, current == view && _longClickListener is not null))
+					return true;
+
+				if (current == root)
+					break;
+			}
+
+			return view is ViewGroup group && HasLongPressHandlerAt(root, group, x, y);
+		}
+
+		// Used for the accessibility long-click action, which has no position
+		bool DefersLongPress()
+		{
+			if (!_view.TryGetTarget(out var view) || !view.IsAlive())
+				return true;
+
+			for (AView? current = view; current is not null; current = current.Parent as AView)
+			{
+				if (HandlesLongPress(current, current == view && _longClickListener is not null))
+					return true;
+			}
+
+			return false;
+		}
+
+		// The fallback long-click listener makes the view long-clickable itself, which doesn't count
+		static bool HandlesLongPress(AView view, bool ignoreLongClickable = false) =>
+			(!ignoreLongClickable && view.Enabled && view.LongClickable) ||
+			s_longPressHandlers.TryGetValue(view, out _) ||
+			(OperatingSystem.IsAndroidVersionAtLeast(26) && view.TooltipTextFormatted is not null);
+
+		static bool HasLongPressHandlerAt(AView root, ViewGroup group, float x, float y)
+		{
+			for (int i = group.ChildCount - 1; i >= 0; i--)
+			{
+				if (group.GetChildAt(i) is not AView child || child.Visibility != ViewStates.Visible || !TryMapToLocal(root, child, x, y, out _, out _))
+					continue;
+
+				if (HandlesLongPress(child) || (child is ViewGroup childGroup && HasLongPressHandlerAt(root, childGroup, x, y)))
+					return true;
+			}
+
+			return false;
+		}
 
 		internal void PerformHapticFeedback()
 		{
@@ -636,7 +708,7 @@ namespace Microsoft.Maui.Platform
 				_manager = new WeakReference<ContextFlyoutManager>(manager);
 
 			public bool OnLongClick(AView? v) =>
-				_manager.TryGetTarget(out var manager) && manager.Show();
+				_manager.TryGetTarget(out var manager) && !manager.DefersLongPress() && manager.Show();
 		}
 
 		sealed class AccessibilityCommand : Java.Lang.Object, IAccessibilityViewCommand
@@ -646,8 +718,9 @@ namespace Microsoft.Maui.Platform
 			public AccessibilityCommand(ContextFlyoutManager manager) =>
 				_manager = new WeakReference<ContextFlyoutManager>(manager);
 
+			// Returning false lets the view's own long-click behavior run, as it does without a context flyout
 			public bool Perform(AView? view, AccessibilityViewCommandCommandArguments? arguments) =>
-				_manager.TryGetTarget(out var manager) && manager.Show();
+				_manager.TryGetTarget(out var manager) && !manager.DefersLongPress() && manager.Show();
 		}
 	}
 }

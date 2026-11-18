@@ -33,6 +33,17 @@
             </Label>
         </Border>
 
+        <Label AutomationId="LongPressLabel" Text="Long press runs the gesture; right-click opens the menu" Padding="8" BackgroundColor="LightGreen">
+            <Label.GestureRecognizers>
+                <LongPressGestureRecognizer Command="{Binding RecordCommand}" CommandParameter="long-pressed" />
+            </Label.GestureRecognizers>
+            <FlyoutBase.ContextFlyout>
+                <MenuFlyout>
+                    <MenuFlyoutItem Text="Gesture menu item" Command="{Binding RecordCommand}" CommandParameter="gesture-menu" />
+                </MenuFlyout>
+            </FlyoutBase.ContextFlyout>
+        </Label>
+
         <CollectionView AutomationId="ItemsView" ItemsSource="{Binding Items}" SelectionMode="Single" SelectedItem="{Binding SelectedItem}" HeightRequest="240">
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="x:String">

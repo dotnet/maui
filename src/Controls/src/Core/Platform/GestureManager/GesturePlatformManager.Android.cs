@@ -10,6 +10,7 @@ using AndroidX.Core.View;
 using AndroidX.RecyclerView.Widget;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
 using static Android.Views.View;
 using AView = Android.Views.View;
 
@@ -181,6 +182,18 @@ namespace Microsoft.Maui.Controls.Platform
 			return false;
 		}
 
+		static bool HasLongPressGestures(View view)
+		{
+			int count = view.GestureRecognizers.Count;
+			for (var i = 0; i < count; i++)
+			{
+				if (view.GestureRecognizers[i] is LongPressGestureRecognizer or DragGestureRecognizer)
+					return true;
+			}
+
+			return false;
+		}
+
 		void SetupGestures()
 		{
 			if (View == null)
@@ -217,6 +230,9 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				shouldAddTouchEvent = true;
 			}
+
+			// Long press and drag gestures keep priority over a context flyout's long press
+			ContextFlyoutManager.SetHandlesLongPress(platformView, HasLongPressGestures(View));
 
 			// Always unsubscribe first to avoid duplicates
 			ClearRecyclerViewTouchListener(platformView);
@@ -315,6 +331,7 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				platformView.Focusable = _focusableDefaultValue ?? platformView.Focusable;
 				_focusableDefaultValue = null;
+				ContextFlyoutManager.SetHandlesLongPress(platformView, false);
 				ClearRecyclerViewTouchListener(platformView);
 				platformView.Touch -= OnPlatformViewTouched;
 				platformView.KeyPress -= OnKeyPress;

@@ -56,6 +56,19 @@ public class Issue33402 : _IssuesUITest
 		App.WaitForNoElement("Item2");
 	}
 
+#if ANDROID || IOS
+	[Test, Order(5)]
+	[Category(UITestCategories.ContextActions)]
+	public void LongPressGestureKeepsPriorityOverContextFlyout()
+	{
+		App.WaitForElement("LongPressLabel");
+		App.LongPress("LongPressLabel");
+
+		Assert.That(App.WaitForElement("StatusLabel").GetText(), Is.EqualTo("long-pressed"));
+		App.WaitForNoElement(MenuItem("Gesture menu item"));
+	}
+#endif
+
 	void OpenContextFlyout(string automationId)
 	{
 		App.WaitForElement(automationId);

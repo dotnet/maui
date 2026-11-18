@@ -316,6 +316,66 @@ namespace Microsoft.Maui.DeviceTests
 			}));
 		}
 
+		public static TheoryData<string> ExistingLongPressBehaviors => new() { "LongPressGesture", "DragGesture", "Entry", "ToolTip", "ParentLongPressGesture" };
+
+		[Theory(DisplayName = "An existing long-press behavior keeps priority; secondary click still opens the menu")]
+		[MemberData(nameof(ExistingLongPressBehaviors))]
+		public async Task ExistingLongPressBehaviorKeepsPriority(string behavior)
+		{
+			SetupBuilder();
+			Microsoft.Maui.Controls.View target = behavior == "Entry" ? new Entry { Text = "Text" } : new Label { Text = "Target" };
+			target.WidthRequest = 200;
+			target.HeightRequest = 100;
+			var root = new Grid { Children = { target } };
+
+			switch (behavior)
+			{
+				case "LongPressGesture":
+					target.GestureRecognizers.Add(new LongPressGestureRecognizer());
+					break;
+				case "DragGesture":
+					target.GestureRecognizers.Add(new DragGestureRecognizer());
+					break;
+				case "ToolTip":
+					ToolTipProperties.SetText(target, "Tooltip");
+					break;
+				case "ParentLongPressGesture":
+					root.GestureRecognizers.Add(new LongPressGestureRecognizer());
+					break;
+			}
+
+			FlyoutBase.SetContextFlyout(target, CreateFlyout(out _));
+
+			await WithTouchTrackerAsync(() => AttachAndRun(root, async handler =>
+			{
+				var view = (AView)target.Handler!.PlatformView!;
+				var manager = ContextFlyoutManager.Get(view)!;
+				var window = view.Context!.GetActivity()!.Window!;
+				var (x, y) = GetCenterInWindow(view);
+
+				if (behavior == "ToolTip" && !OperatingSystem.IsAndroidVersionAtLeast(26))
+					return;
+
+				// A long press keeps doing what it did before
+				var downTime = SystemClock.UptimeMillis();
+				Assert.False(Dispatch(window, downTime, MotionEventActions.Down, x, y));
+				await Task.Delay(ViewConfiguration.LongPressTimeout + 300);
+				Assert.Null(manager.Popup);
+				Assert.False(Dispatch(window, downTime, MotionEventActions.Up, x, y));
+
+				// So does the accessibility long-click action
+				view.PerformAccessibilityAction(global::Android.Views.Accessibility.Action.LongClick, null);
+				Assert.Null(manager.Popup);
+
+				// A secondary click still opens the context menu
+				downTime = SystemClock.UptimeMillis();
+				Assert.True(Dispatch(window, downTime, MotionEventActions.Down, x, y, InputSourceType.Mouse, MotionEventButtonState.Secondary));
+				Dispatch(window, downTime, MotionEventActions.Up, x, y, InputSourceType.Mouse);
+				Assert.NotNull(manager.Popup);
+				manager.Dismiss();
+			}));
+		}
+
 		[Fact(DisplayName = "Secondary mouse click opens the context menu immediately")]
 		public async Task SecondaryClickOpensContextMenu()
 		{

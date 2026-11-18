@@ -12,6 +12,7 @@ using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform.iOS;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
 using ObjCRuntime;
 using UIKit;
 using PlatformView = UIKit.UIView;
@@ -474,6 +475,8 @@ namespace Microsoft.Maui.Controls.Platform
 		UILongPressGestureRecognizer CreateLongPressRecognizer(Action<UILongPressGestureRecognizer> action)
 		{
 			var result = new UILongPressGestureRecognizer(action);
+			// Keeps priority over a context flyout's long press
+			MauiUIContextMenuInteraction.MarkLongPressRecognizer(result);
 			
 			// Get the recognizer from the handler's VirtualView
 			if (_handler?.VirtualView is View view)
