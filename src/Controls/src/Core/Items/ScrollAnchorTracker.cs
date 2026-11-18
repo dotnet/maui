@@ -12,7 +12,8 @@ namespace Microsoft.Maui.Controls
 	/// the offset adjustments the platform makes in the same layout pass arrive together) and after the view scrolled,
 	/// plus whether the user is scrolling it (dragging or flinging). When <see cref="Update"/> returns an offset, the
 	/// platform scrolls there without animating: it is always the edge the view follows. A platform that can only get there
-	/// once it has laid that edge out says so (<see cref="DeferCorrection"/>).
+	/// once it has laid that edge out says so (<see cref="DeferCorrection"/>), and one that starts measuring the view from
+	/// another origin, as when it measures content it only estimated before, says that too (<see cref="MoveOrigin"/>).
 	/// </para>
 	/// <para>The rules, for each edge the view can follow (<see cref="Edges"/>):</para>
 	/// <list type="bullet">
@@ -184,6 +185,21 @@ namespace Microsoft.Maui.Controls
 			{
 				_last = metrics;
 				_correctionDeferred = true;
+			}
+		}
+
+		/// <summary>
+		/// Notes that the platform now measures where the view is from another origin, with nothing moved: an offset it
+		/// reported as <c>x</c> is <c>x + delta</c> now, and the content measures <paramref name="delta"/> longer before the
+		/// viewport. A platform that estimated how far the content extends before the viewport, and then measures it, calls
+		/// this before the next update, so the estimate being off isn't taken for the view moving, or the content changing size.
+		/// </summary>
+		/// <param name="delta">How much further on the same position measures now, in device-independent units.</param>
+		public void MoveOrigin(double delta)
+		{
+			if (_last is ScrollAnchorMetrics last)
+			{
+				_last = new ScrollAnchorMetrics(last.Offset + delta, last.Extent + delta, last.Viewport);
 			}
 		}
 

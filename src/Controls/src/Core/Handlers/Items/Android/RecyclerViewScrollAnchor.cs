@@ -67,6 +67,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		double _offset;
 		bool _hasOffset;
 
+		// Whether _offset was measured from the first row, then moved as far as the rows in view moved: not from an estimate
+		// (see ReadMetrics).
+		bool _offsetMeasured;
+
 		// How far to scroll, in pixels, to the start (negative, or zero) and to the end (positive, or zero), as the last look
 		// measured them; null when the row at that edge wasn't laid out.
 		int? _toStart;
@@ -555,7 +559,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_scrolledSinceLook = 0;
 			if (startOffset is int exact)
 			{
+				// An offset that came from an estimate is off by as much as the estimate was: now that the first row measures it,
+				// that isn't movement. The view moved as far as the row it kept in view says, or the scroll.
+				if (_hasOffset && !_offsetMeasured && (referenceLaidOut || scrolled != 0))
+				{
+					var moved = referenceLaidOut ? _referenceStart - referenceStart : scrolled;
+					_tracker.MoveOrigin((exact - (_offset + moved)) / _density);
+				}
+
 				_offset = exact;
+				_offsetMeasured = true;
 				_toStart = -exact;
 			}
 			else if (_hasOffset && referenceLaidOut)
@@ -569,19 +582,22 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			else if (_hasOffset)
 			{
 				_offset += estimatedOffset - _estimatedOffset;
+				_offsetMeasured = false;
 			}
 			else
 			{
 				_offset = estimatedOffset;
+				_offsetMeasured = false;
 			}
 
 			// Without the first row laid out, the offset comes from the rows laid out before, or from an estimate that averages
 			// the rows laid out. Either can come out near or past the start while the first row is far away: a row above the
 			// viewport can change size while it isn't laid out (an item replaced, or resized by a binding), and the rows in view
 			// don't show it. All that's certain is that the first row, which isn't laid out, is above the viewport.
-			if (startOffset is null)
+			if (startOffset is null && _offset < (_tracker.Threshold + 1) * _density)
 			{
-				_offset = Math.Max(_offset, (_tracker.Threshold + 1) * _density);
+				_offset = (_tracker.Threshold + 1) * _density;
+				_offsetMeasured = false;
 			}
 
 			_hasOffset = true;

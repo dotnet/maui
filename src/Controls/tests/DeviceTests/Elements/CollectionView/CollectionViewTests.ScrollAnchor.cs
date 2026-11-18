@@ -1098,6 +1098,42 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.False(collectionView.IsAnchored, "A scroll away from the end should stop following it.");
 			});
 		}
+
+		// Without the first row laid out, the anchor estimates how far the content extends above the rows in view, from their
+		// average height. A first row much taller than the others, just above the view at the end, makes that estimate far off.
+		// A scroll that first lays it out, as code scrolling the native view or accessibility makes, moves the view as far as the
+		// rows in view moved, not as far as the estimate was off.
+		[Fact(DisplayName = "A scroll away from the end that first lays out a tall first row stops following the end")]
+		public async Task AScrollAwayFromTheEndThatFirstLaysOutATallFirstRowStopsFollowingTheEnd()
+		{
+			SetupBuilder();
+
+			// A first row taller than three viewports, then rows that fill a little more than one.
+			var items = new ObservableCollection<AnchorItem>(
+				Enumerable.Range(0, 111).Select(index => new AnchorItem($"Item {index}", index == 0 ? 1000 : 3)));
+			var collectionView = CreateAnchorCollectionView(items, ScrollAnchorMode.End);
+
+			// The first row starts the content.
+			collectionView.Header = null;
+			collectionView.Footer = null;
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				await AssertAtEnd(handler, "The list should open at its end.");
+				await Task.Delay(300);
+				Assert.True(double.IsPositiveInfinity(GetDistanceFromStart(handler)), "The first row shouldn't be laid out at the end.");
+
+				// Code scrolls the native view up 100, which lays the first row out.
+				var recyclerView = (RecyclerView)handler.PlatformView;
+				recyclerView.ScrollBy(0, -(int)(100 * recyclerView.Resources.DisplayMetrics.Density));
+				var position = GetScrollPosition(handler);
+				Assert.False(double.IsPositiveInfinity(GetDistanceFromStart(handler)), "The scroll should lay the first row out.");
+
+				await Task.Delay(500);
+				Assert.True(position == GetScrollPosition(handler), $"The list should stay where the scroll took it, at {position}, not at {GetScrollPosition(handler)}.");
+				Assert.False(collectionView.IsAnchored, "A scroll away from the end should stop following it.");
+			});
+		}
 #endif
 
 #if IOS || MACCATALYST
@@ -1353,6 +1389,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				await AssertAtEnd(handler, "The list should open at its end.");
 				await Task.Delay(300);
+				var extent = GetDistanceFromStart(handler);
 
 				// The last item grows, as a streamed answer does, as code animates the native view to 100 short of the end.
 				var platformView = handler.Controller.CollectionView;
@@ -1365,10 +1402,11 @@ namespace Microsoft.Maui.DeviceTests
 				// view, and as the content grows past the view.
 				await AssertEventually(() => !collectionView.IsAnchored && GetDistanceToEnd(handler) >= 100, timeout: 3000, message: "The scroll should take the list 100 short of its end, or further.");
 
-				// Long enough for the animation to end.
+				// Long enough for the animation to end. UIKit moves the end further away as it measures the rows above again, by as
+				// much as it estimated them wrong: the list ended 130 short of the end on macOS 27, and 360 short on macOS 26.
 				await Task.Delay(1000);
 				var distance = GetDistanceToEnd(handler);
-				Assert.True(distance >= 100 && distance <= 300, $"The list should stay where the scroll took it. Distance to the end: {distance}.");
+				Assert.True(distance >= 100 && distance < extent / 2, $"The list should stay where the scroll took it, away from both edges. Distance to the end: {distance}, from the start: {GetDistanceFromStart(handler)}.");
 				Assert.False(collectionView.IsAnchored);
 			});
 		}

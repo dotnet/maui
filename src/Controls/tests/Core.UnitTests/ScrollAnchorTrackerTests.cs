@@ -1184,6 +1184,42 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(1100, view.Offset);
 		}
 
+		[Theory]
+		[InlineData(991)]
+		[InlineData(-200)]
+		public void MovingTheOriginIsNeitherMovementNorAResize(double delta)
+		{
+			var view = FakeScrollView.AtEnd(extent: 1300, viewport: 300);
+
+			// The platform measures the content before the viewport anew: the same position, from another origin.
+			view.Tracker.MoveOrigin(delta);
+			view.Offset += delta;
+			view.Extent += delta;
+			Assert.False(view.Tracker.IsResized(view.Metrics));
+			Assert.Null(view.Look(scrolled: true));
+			Assert.True(view.Tracker.IsAnchored);
+
+			view.Extent += 50;
+			Assert.Equal(view.Extent - 300, view.Look(sizeChanged: true));
+		}
+
+		[Fact]
+		public void AScrollAwayMeasuredFromAnotherOriginStopsFollowing()
+		{
+			// The platform estimated the content before the viewport at 9, of an actual 1000, and measures it as code scrolls the
+			// view up 100: the offset it measures is far past the one it estimated, which isn't movement toward the end.
+			var view = new FakeScrollView(extent: 309, viewport: 300) { Offset = 9 };
+			Assert.Null(view.Look());
+			Assert.True(view.Tracker.IsAnchored);
+
+			view.Tracker.MoveOrigin(991);
+			view.Offset = 900;
+			view.Extent = 1300;
+			Assert.Null(view.Look(scrolled: true));
+			Assert.False(view.Tracker.IsAnchored);
+			Assert.Equal(900, view.Offset);
+		}
+
 		[Fact]
 		public void ChangingTheEdgesStartsOver()
 		{
