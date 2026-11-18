@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Android.Graphics.Drawables;
 using Android.Views;
 using Android.Views.Accessibility;
+using AndroidX.Core.View;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration;
@@ -57,6 +58,54 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(ImportantForAccessibility.Yes, platformContent.ImportantForAccessibility);
 
 				return Task.CompletedTask;
+			});
+		}
+
+		[Fact]
+		public async Task ContainerSafeAreaInsetsDirectContent()
+		{
+			SetupBuilder();
+			var label = new Label { Text = "Safe area content" };
+			var button = new ControlsContentButton
+			{
+				Content = label,
+				SafeAreaEdges = SafeAreaEdges.Container,
+				WidthRequest = 240,
+				HeightRequest = 120,
+			};
+			var handler = await CreateHandlerAsync<ContentButtonHandler>(button);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var platformView = Assert.IsType<MauiContentButton>(handler.PlatformView);
+				var labelView = Assert.IsAssignableFrom<global::Android.Views.View>(label.Handler!.PlatformView);
+				var safeAreaView = Assert.IsAssignableFrom<ISafeAreaView2>(button);
+				Assert.True(safeAreaView.HasExplicitSafeAreaEdges);
+				var leftRegion = safeAreaView.GetSafeAreaRegionsForEdge(0);
+				Assert.True(leftRegion == SafeAreaRegions.Container, $"The left safe-area region was {leftRegion}.");
+				Assert.Same(button, platformView.CrossPlatformLayout);
+				const int expectedLeftPadding = 24;
+				var width = (int)platformView.Context!.ToPixels(button.WidthRequest);
+				var height = (int)platformView.Context.ToPixels(button.HeightRequest);
+				var widthSpec = global::Android.Views.View.MeasureSpec.MakeMeasureSpec(width, MeasureSpecMode.Exactly);
+				var heightSpec = global::Android.Views.View.MeasureSpec.MakeMeasureSpec(height, MeasureSpecMode.Exactly);
+				var zeroSpec = global::Android.Views.View.MeasureSpec.MakeMeasureSpec(0, MeasureSpecMode.Exactly);
+				platformView.Measure(zeroSpec, zeroSpec);
+				platformView.Layout(0, 0, 0, 0);
+
+				using var builder = new WindowInsetsCompat.Builder();
+				var configuredBuilder = builder.SetInsets(
+					WindowInsetsCompat.Type.SystemBars(),
+					AndroidX.Core.Graphics.Insets.Of(expectedLeftPadding, 0, 0, 0))!;
+				var visibleBuilder = configuredBuilder.SetVisible(WindowInsetsCompat.Type.SystemBars(), true)!;
+				using var insets = visibleBuilder.Build()!;
+				var syntheticLeft = insets.GetInsets(WindowInsetsCompat.Type.SystemBars())!.Left;
+				Assert.True(syntheticLeft == expectedLeftPadding, $"The synthetic inset left was {syntheticLeft}.");
+				((IHandleWindowInsets)platformView).HandleWindowInsets(platformView, insets);
+				platformView.Measure(widthSpec, heightSpec);
+				platformView.Layout(0, 0, width, height);
+
+				Assert.True(labelView.Left >= expectedLeftPadding);
 			});
 		}
 

@@ -81,9 +81,15 @@ Template replacement covers both a direct presenter and one nested in a layout,
 including returning to content without a template. Windows stroke-reset coverage
 compares against the native default captured before applying an explicit border.
 Native tests also cover replacing the virtual button on a connected handler while
-it is pressed. On Apple platforms, content is hosted in an owned inert container,
+it is pressed, and disconnecting or replacing it from `Released` while disabling or
+activating. After such a callback, the old handler stops updating the native view
+and does not deliver activation to a replacement button.
+On Apple platforms, content is hosted in an owned inert container,
 so content views keep their own accessibility and input state when reused elsewhere.
 The container applies the inherited `SafeAreaEdges` behavior from `ContentView`.
+Re-enabling an Apple button wrapped for `Shadow` or `Clip` also restores input on
+its wrapper. A requested width wider than the parent measures content at that
+requested width, which is also the width used to arrange it.
 
 The following checks require real platform runs; adding a test does not certify
 that a platform has passed:

@@ -2,6 +2,7 @@ using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Primitives;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
@@ -35,6 +36,8 @@ namespace Microsoft.Maui.DeviceTests
 			var button = new ContentButtonStub
 			{
 				Content = new ButtonStub { Text = "Presentation", Width = 200, Height = 100 },
+				Width = Dimension.Unset,
+				Height = Dimension.Unset,
 				MaximumWidth = 120,
 				MaximumHeight = 80,
 				Padding = new Thickness(5),
@@ -42,8 +45,8 @@ namespace Microsoft.Maui.DeviceTests
 			await AttachAndRun(button, handler =>
 			{
 				var size = handler.GetDesiredSize(double.PositiveInfinity, double.PositiveInfinity);
-				Assert.InRange(size.Width, 0, 120);
-				Assert.InRange(size.Height, 0, 80);
+				Assert.Equal(120, size.Width, 1);
+				Assert.Equal(80, size.Height, 1);
 				return Task.CompletedTask;
 			});
 		}

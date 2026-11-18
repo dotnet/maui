@@ -173,6 +173,68 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task DisconnectDuringPressRestoresVisualState()
+		{
+			var button = new ContentButton();
+			VisualStateManager.SetVisualStateGroups(button, new VisualStateGroupList
+			{
+				new VisualStateGroup
+				{
+					Name = "CommonStates",
+					States =
+					{
+						new VisualState { Name = "Normal" },
+						new VisualState
+						{
+							Name = "Pressed",
+							Setters = { new Setter { Property = VisualElement.BackgroundProperty, Value = new SolidColorBrush(Colors.Red) } }
+						}
+					}
+				}
+			});
+			var handler = await CreateHandlerAsync<ContentButtonHandler>(button);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				handler.PlatformView.SendActionForControlEvents(UIControlEvent.TouchDown);
+				Assert.True(button.IsPressed);
+				Assert.NotNull(button.Background);
+
+				var exception = Record.Exception(() => ((IElementHandler)handler).DisconnectHandler());
+
+				Assert.Null(exception);
+				Assert.False(button.IsPressed);
+				Assert.Null(((IElementHandler)handler).PlatformView);
+			});
+		}
+
+		[Fact]
+		public async Task NativeFocusUpdatesButtonState()
+		{
+			var button = new ContentButton();
+			var handler = await CreateHandlerAsync<ContentButtonHandler>(button);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var platformView = handler.PlatformView;
+				using var otherView = new UIView();
+				using var coordinator = new UIFocusAnimationCoordinator();
+				using var focused = new TestFocusUpdateContext(platformView, otherView);
+				using var unfocused = new TestFocusUpdateContext(otherView, platformView);
+
+				platformView.DidUpdateFocus(focused, coordinator);
+				Assert.True(button.IsFocused);
+
+				platformView.DidUpdateFocus(unfocused, coordinator);
+				Assert.False(button.IsFocused);
+
+				((IView)button).IsFocused = true;
+				platformView.DidUpdateFocus(unfocused, coordinator);
+				Assert.True(button.IsFocused);
+			});
+		}
+
+		[Fact]
 		public async Task GradientStrokeAndRadiusUpdateToDefaults()
 		{
 			var button = new ContentButton

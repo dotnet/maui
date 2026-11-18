@@ -84,7 +84,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static partial void MapContent(IContentButtonHandler handler, IContentButton button)
 		{
-			if (handler.PlatformView is not MauiContentButton platformView)
+			if (((IElementHandler)handler).PlatformView is not MauiContentButton platformView)
 				return;
 
 			if (handler.MauiContext is null)
@@ -100,32 +100,39 @@ namespace Microsoft.Maui.Handlers
 
 		public static partial void MapBackground(IContentButtonHandler handler, IContentButton button)
 		{
-			if (handler.PlatformView is MauiContentButton platformView)
+			if (((IElementHandler)handler).PlatformView is MauiContentButton platformView)
 				platformView.UpdateButtonBackground(button);
 		}
 
 		public static partial void MapIsEnabled(IContentButtonHandler handler, IContentButton button)
 		{
 			if (!button.IsEnabled && handler is ContentButtonHandler contentButtonHandler)
+			{
 				contentButtonHandler.ReleasePressed();
 
-			handler.PlatformView?.UpdateIsEnabled(button);
+				if (!IsConnectedTo(handler, button))
+					return;
+			}
+
+			if (((IElementHandler)handler).PlatformView is MaterialCardView platformView)
+				platformView.UpdateIsEnabled(button);
 		}
 
 		public static partial void MapPadding(IContentButtonHandler handler, IContentButton button)
 		{
-			handler.PlatformView?.RequestLayout();
+			if (((IElementHandler)handler).PlatformView is MaterialCardView platformView)
+				platformView.RequestLayout();
 		}
 
 		public static partial void MapStrokeColor(IContentButtonHandler handler, IContentButton button)
 		{
-			if (handler.PlatformView is MauiContentButton platformView)
+			if (((IElementHandler)handler).PlatformView is MauiContentButton platformView)
 				platformView.UpdateButtonStroke(button);
 		}
 
 		public static partial void MapStrokeThickness(IContentButtonHandler handler, IContentButton button)
 		{
-			if (handler.PlatformView is MauiContentButton platformView)
+			if (((IElementHandler)handler).PlatformView is MauiContentButton platformView)
 			{
 				platformView.UpdateButtonStroke(button);
 				platformView.RequestLayout();
@@ -134,14 +141,16 @@ namespace Microsoft.Maui.Handlers
 
 		public static partial void MapCornerRadius(IContentButtonHandler handler, IContentButton button)
 		{
-			if (handler.PlatformView is MauiContentButton platformView)
+			if (((IElementHandler)handler).PlatformView is MauiContentButton platformView)
+			{
 				platformView.UpdateButtonStroke(button);
 
-			if (button.Shadow is not null)
-				handler.UpdateValue(nameof(IContentButton.Shadow));
+				if (button.Shadow is not null)
+					handler.UpdateValue(nameof(IContentButton.Shadow));
+			}
 		}
 
-		static bool OnTouch(ContentButtonHandler? handler, MotionEvent? e)
+		static bool OnTouch(ContentButtonHandler? handler, AView? platformView, MotionEvent? e)
 		{
 			if (handler is null || ((IElementHandler)handler).VirtualView is not IContentButton button)
 				return false;
@@ -153,9 +162,18 @@ namespace Microsoft.Maui.Handlers
 					button.Pressed();
 					break;
 				case MotionEventActions.Cancel:
-				case MotionEventActions.Up:
 					handler.ReleasePressed();
 					break;
+				case MotionEventActions.Up:
+					var releasedOutside = platformView is not null &&
+						(e.GetX() < 0 || e.GetX() >= platformView.Width ||
+							e.GetY() < 0 || e.GetY() >= platformView.Height);
+
+					if (releasedOutside)
+						platformView!.Pressed = false;
+
+					handler.ReleasePressed();
+					return releasedOutside;
 			}
 
 			return false;
@@ -187,11 +205,14 @@ namespace Microsoft.Maui.Handlers
 		{
 			if ((e.Right - e.Left != e.OldRight - e.OldLeft ||
 				e.Bottom - e.Top != e.OldBottom - e.OldTop) &&
-				sender is MauiContentButton platformView &&
-				((IElementHandler)this).VirtualView is IContentButton { Background: { } background } virtualView &&
-				!background.IsNullOrEmpty())
+				sender is MauiContentButton platformView)
 			{
-				platformView.UpdateButtonBackground(virtualView);
+				var elementHandler = (IElementHandler)this;
+				if (ReferenceEquals(elementHandler.PlatformView, platformView) &&
+					elementHandler.VirtualView is IContentButton { Background: GradientPaint })
+				{
+					UpdateValue(nameof(IView.Background));
+				}
 			}
 		}
 
@@ -206,7 +227,7 @@ namespace Microsoft.Maui.Handlers
 				return;
 
 			var elementHandler = (IElementHandler)this;
-			var virtualView = elementHandler.VirtualView;
+			var virtualView = elementHandler.VirtualView as IContentButton;
 			platformView.Post(() =>
 			{
 				if (!ReferenceEquals(elementHandler.PlatformView, platformView) ||
@@ -220,8 +241,17 @@ namespace Microsoft.Maui.Handlers
 				platformView.RefreshNativeDefaults();
 				platformView.UpdateRippleColor(null);
 				UpdateValue(nameof(IView.Background));
+				if (!IsConnectedTo(elementHandler, virtualView))
+					return;
+
 				UpdateValue(nameof(IButtonStroke.StrokeColor));
+				if (!IsConnectedTo(elementHandler, virtualView))
+					return;
+
 				UpdateValue(nameof(IButtonStroke.StrokeThickness));
+				if (!IsConnectedTo(elementHandler, virtualView))
+					return;
+
 				UpdateValue(nameof(IButtonStroke.CornerRadius));
 			});
 		}
@@ -237,7 +267,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			public ContentButtonHandler? Handler { get; set; }
 
-			public bool OnTouch(AView? v, MotionEvent? e) => ContentButtonHandler.OnTouch(Handler, e);
+			public bool OnTouch(AView? v, MotionEvent? e) => ContentButtonHandler.OnTouch(Handler, v, e);
 		}
 	}
 }

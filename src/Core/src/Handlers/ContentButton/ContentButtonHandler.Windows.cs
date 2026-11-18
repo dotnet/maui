@@ -17,13 +17,23 @@ namespace Microsoft.Maui.Handlers
 
 		public override void SetVirtualView(IView view)
 		{
-			if (_isPressed && !ReferenceEquals(VirtualView, view))
+			var previousView = ((IElementHandler)this).VirtualView;
+			if (_isPressed && !ReferenceEquals(previousView, view))
+			{
 				Release();
+
+				if (!ReferenceEquals(((IElementHandler)this).VirtualView, previousView))
+					return;
+			}
 
 			base.SetVirtualView(view);
 
-			if (PlatformView is MauiContentButton platformView)
-				platformView.ContentPanel.UpdateCrossPlatformLayout(VirtualView);
+			if (view is IContentButton button &&
+				IsConnectedTo(this, button) &&
+				((IElementHandler)this).PlatformView is MauiContentButton platformView)
+			{
+				platformView.ContentPanel.UpdateCrossPlatformLayout(button);
+			}
 		}
 
 		protected override Button CreatePlatformView()
@@ -38,6 +48,9 @@ namespace Microsoft.Maui.Handlers
 			_isPressed = false;
 			_pointerPressedHandler = new PointerEventHandler(OnPointerPressed);
 			_pointerReleasedHandler = new PointerEventHandler(OnPointerReleased);
+
+			if (platformView is MauiContentButton nativeButton)
+				nativeButton.CaptureNativeDefaults();
 
 			platformView.Click += OnClick;
 			platformView.Unloaded += OnUnloaded;
@@ -86,7 +99,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static partial void MapContent(IContentButtonHandler handler, IContentButton button)
 		{
-			if (handler.PlatformView is not MauiContentButton platformButton)
+			if (((IElementHandler)handler).PlatformView is not MauiContentButton platformButton)
 				return;
 
 			var mauiContext = handler.MauiContext ??
@@ -105,12 +118,16 @@ namespace Microsoft.Maui.Handlers
 
 		public static partial void MapBackground(IContentButtonHandler handler, IContentButton button)
 		{
-			handler.PlatformView?.UpdateBackground(button);
+			if (((IElementHandler)handler).PlatformView is MauiContentButton platformButton)
+				platformButton.UpdateBackground(button);
+			else if (((IElementHandler)handler).PlatformView is Button nativeButton)
+				nativeButton.UpdateBackground(button);
 		}
 
 		public static partial void MapIsEnabled(IContentButtonHandler handler, IContentButton button)
 		{
-			handler.PlatformView?.UpdateIsEnabled(button);
+			if (((IElementHandler)handler).PlatformView is Button platformButton)
+				platformButton.UpdateIsEnabled(button);
 
 			if (!button.IsEnabled && handler is ContentButtonHandler contentButtonHandler)
 			{
@@ -120,7 +137,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static partial void MapPadding(IContentButtonHandler handler, IContentButton button)
 		{
-			if (handler.PlatformView is MauiContentButton platformButton)
+			if (((IElementHandler)handler).PlatformView is MauiContentButton platformButton)
 			{
 				platformButton.Padding = new WThickness(0);
 				platformButton.ContentPanel.InvalidateMeasure();
@@ -130,22 +147,31 @@ namespace Microsoft.Maui.Handlers
 
 		public static partial void MapStrokeColor(IContentButtonHandler handler, IContentButton button)
 		{
-			handler.PlatformView?.UpdateStrokeColor(button);
+			if (((IElementHandler)handler).PlatformView is MauiContentButton platformButton)
+				platformButton.UpdateStrokeColor(button);
+			else if (((IElementHandler)handler).PlatformView is Button nativeButton)
+				nativeButton.UpdateStrokeColor(button);
 		}
 
 		public static partial void MapStrokeThickness(IContentButtonHandler handler, IContentButton button)
 		{
-			handler.PlatformView?.UpdateStrokeThickness(button);
-
-			if (handler.PlatformView is MauiContentButton platformButton)
+			if (((IElementHandler)handler).PlatformView is MauiContentButton platformButton)
 			{
+				platformButton.UpdateStrokeThickness(button);
 				platformButton.UpdateContentLayout(button.StrokeThickness);
+			}
+			else if (((IElementHandler)handler).PlatformView is Button nativeButton)
+			{
+				nativeButton.UpdateStrokeThickness(button);
 			}
 		}
 
 		public static partial void MapCornerRadius(IContentButtonHandler handler, IContentButton button)
 		{
-			handler.PlatformView?.UpdateCornerRadius(button);
+			if (((IElementHandler)handler).PlatformView is MauiContentButton platformButton)
+				platformButton.UpdateCornerRadius(button);
+			else if (((IElementHandler)handler).PlatformView is Button nativeButton)
+				nativeButton.UpdateCornerRadius(button);
 		}
 
 		static void RemoveFromParent(FrameworkElement platformView)
@@ -169,11 +195,12 @@ namespace Microsoft.Maui.Handlers
 
 		void OnClick(object sender, RoutedEventArgs e)
 		{
+			var button = ((IElementHandler)this).VirtualView as IContentButton;
 			Release();
 
-			if (VirtualView?.IsEnabled == true)
+			if (button is { IsEnabled: true } && IsConnectedTo(this, button))
 			{
-				VirtualView.Clicked();
+				button.Clicked();
 			}
 		}
 
@@ -213,11 +240,11 @@ namespace Microsoft.Maui.Handlers
 
 		void Press()
 		{
-			if (_isPressed || VirtualView?.IsEnabled != true)
+			if (_isPressed || ((IElementHandler)this).VirtualView is not IContentButton { IsEnabled: true } button)
 				return;
 
 			_isPressed = true;
-			VirtualView.Pressed();
+			button.Pressed();
 		}
 
 		void Release()
@@ -226,7 +253,7 @@ namespace Microsoft.Maui.Handlers
 				return;
 
 			_isPressed = false;
-			VirtualView?.Released();
+			(((IElementHandler)this).VirtualView as IContentButton)?.Released();
 		}
 	}
 }

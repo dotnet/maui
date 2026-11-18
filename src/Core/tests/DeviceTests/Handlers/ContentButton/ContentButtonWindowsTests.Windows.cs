@@ -1,9 +1,11 @@
 #nullable enable
 using System;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml;
@@ -12,9 +14,11 @@ using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Automation.Provider;
 using Xunit;
 using WButton = Microsoft.UI.Xaml.Controls.Button;
+using WCornerRadius = Microsoft.UI.Xaml.CornerRadius;
 using WGrid = Microsoft.UI.Xaml.Controls.Grid;
 using WRect = Windows.Foundation.Rect;
 using WSize = Windows.Foundation.Size;
+using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 using WStackPanel = Microsoft.UI.Xaml.Controls.StackPanel;
 using WThickness = Microsoft.UI.Xaml.Thickness;
 
@@ -251,6 +255,140 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task AutomationInvokeAbandonsClickWhenReleasedDisconnectsHandler()
+		{
+			var presses = 0;
+			var releases = 0;
+			var clicks = 0;
+			ContentButtonHandler? handler = null;
+			var button = new ContentButtonStub
+			{
+				Pressed = () => presses++,
+				Released = () =>
+				{
+					releases++;
+					((IElementHandler)handler!).DisconnectHandler();
+				},
+				Clicked = () => clicks++
+			};
+			var connectedHandler = await CreateHandlerAsync(button);
+			handler = connectedHandler;
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				PressActivationKey(connectedHandler);
+				Assert.Equal(1, presses);
+
+				var peer = new ButtonAutomationPeer(connectedHandler.PlatformView);
+				var invokeProvider = Assert.IsAssignableFrom<IInvokeProvider>(peer.GetPattern(PatternInterface.Invoke));
+				invokeProvider.Invoke();
+
+				await AssertionExtensions.AssertEventually(() => releases == 1);
+				Assert.Equal(1, presses);
+				Assert.Equal(1, releases);
+				Assert.Equal(0, clicks);
+				Assert.Null(((IElementHandler)connectedHandler).VirtualView);
+			});
+		}
+
+		[Fact]
+		public async Task AutomationInvokeAbandonsClickWhenReleasedReplacesVirtualView()
+		{
+			var presses = 0;
+			var releases = 0;
+			var originalClicks = 0;
+			var replacementClicks = 0;
+			ContentButtonHandler? handler = null;
+			var replacement = new ContentButtonStub
+			{
+				Clicked = () => replacementClicks++
+			};
+			var original = new ContentButtonStub
+			{
+				Pressed = () => presses++,
+				Released = () =>
+				{
+					releases++;
+					handler!.SetVirtualView(replacement);
+				},
+				Clicked = () => originalClicks++
+			};
+			var connectedHandler = await CreateHandlerAsync(original);
+			handler = connectedHandler;
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				PressActivationKey(connectedHandler);
+				Assert.Equal(1, presses);
+
+				var peer = new ButtonAutomationPeer(connectedHandler.PlatformView);
+				var invokeProvider = Assert.IsAssignableFrom<IInvokeProvider>(peer.GetPattern(PatternInterface.Invoke));
+				invokeProvider.Invoke();
+
+				await AssertionExtensions.AssertEventually(
+					() => releases == 1 && ReferenceEquals(((IElementHandler)connectedHandler).VirtualView, replacement));
+				Assert.Equal(1, presses);
+				Assert.Equal(1, releases);
+				Assert.Equal(0, originalClicks);
+				Assert.Equal(0, replacementClicks);
+			});
+		}
+
+		[Fact]
+		public async Task HandlerProvidedNativeResourcesAreRestoredAsDefaults()
+		{
+			var button = new ContentButtonStub();
+			var handler = await InvokeOnMainThreadAsync(() =>
+				CreateHandler<ContentButtonHandler, StyledContentButtonHandler>(button, MauiContext));
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var resources = handler.PlatformView.Resources;
+
+				Assert.Same(StyledContentButtonHandler.Background, resources["ButtonBackground"]);
+				Assert.Same(StyledContentButtonHandler.Border, resources["ButtonBorderBrushPressed"]);
+				Assert.Equal(StyledContentButtonHandler.BorderThickness, resources["ButtonBorderThemeThickness"]);
+				Assert.Equal(StyledContentButtonHandler.CornerRadius, resources["ControlCornerRadius"]);
+				Assert.False(resources.Keys.Contains("ButtonBackgroundPointerOver"));
+				Assert.False(resources.Keys.Contains("ButtonBorderBrush"));
+
+				button.Background = new SolidPaintStub(Colors.Blue);
+				button.StrokeColor = Colors.Green;
+				button.StrokeThickness = 7;
+				button.CornerRadius = 11;
+				handler.UpdateValue(nameof(IView.Background));
+				handler.UpdateValue(nameof(IButtonStroke.StrokeColor));
+				handler.UpdateValue(nameof(IButtonStroke.StrokeThickness));
+				handler.UpdateValue(nameof(IButtonStroke.CornerRadius));
+
+				Assert.NotSame(StyledContentButtonHandler.Background, resources["ButtonBackground"]);
+				Assert.NotSame(StyledContentButtonHandler.Border, resources["ButtonBorderBrushPressed"]);
+				Assert.Equal(new WThickness(7), Assert.IsType<WThickness>(resources["ButtonBorderThemeThickness"]));
+				Assert.Equal(WinUIHelpers.CreateCornerRadius(11), Assert.IsType<WCornerRadius>(resources["ControlCornerRadius"]));
+
+				button.Background = null!;
+				button.StrokeColor = null!;
+				button.StrokeThickness = -1;
+				button.CornerRadius = -1;
+				handler.UpdateValue(nameof(IView.Background));
+				handler.UpdateValue(nameof(IButtonStroke.StrokeColor));
+				handler.UpdateValue(nameof(IButtonStroke.StrokeThickness));
+				handler.UpdateValue(nameof(IButtonStroke.CornerRadius));
+
+				Assert.Same(StyledContentButtonHandler.Background, resources["ButtonBackground"]);
+				Assert.Same(StyledContentButtonHandler.Border, resources["ButtonBorderBrushPressed"]);
+				Assert.Equal(StyledContentButtonHandler.BorderThickness, resources["ButtonBorderThemeThickness"]);
+				Assert.Equal(StyledContentButtonHandler.CornerRadius, resources["ControlCornerRadius"]);
+				Assert.False(resources.Keys.Contains("ButtonBackgroundPointerOver"));
+				Assert.False(resources.Keys.Contains("ButtonBackgroundPressed"));
+				Assert.False(resources.Keys.Contains("ButtonBackgroundDisabled"));
+				Assert.False(resources.Keys.Contains("ButtonBorderBrush"));
+				Assert.False(resources.Keys.Contains("ButtonBorderBrushPointerOver"));
+				Assert.False(resources.Keys.Contains("ButtonBorderBrushDisabled"));
+			});
+		}
+
+		[Fact]
 		public async Task NativePaddingAndStrokeReserveInsetsOnce()
 		{
 			var button = new ContentButtonStub
@@ -290,6 +428,24 @@ namespace Microsoft.Maui.DeviceTests
 			var keyDown = typeof(ContentButtonHandler).GetMethod("OnKeyDown", BindingFlags.Instance | BindingFlags.NonPublic);
 			Assert.NotNull(keyDown);
 			keyDown.Invoke(handler, new object?[] { handler.PlatformView, null });
+		}
+
+		sealed class StyledContentButtonHandler : ContentButtonHandler
+		{
+			internal static readonly WSolidColorBrush Background = new(Colors.Red.ToWindowsColor());
+			internal static readonly WSolidColorBrush Border = new(Colors.Purple.ToWindowsColor());
+			internal static readonly WThickness BorderThickness = new(3);
+			internal static readonly WCornerRadius CornerRadius = WinUIHelpers.CreateCornerRadius(5);
+
+			protected override WButton CreatePlatformView()
+			{
+				var button = base.CreatePlatformView();
+				button.Resources["ButtonBackground"] = Background;
+				button.Resources["ButtonBorderBrushPressed"] = Border;
+				button.Resources["ButtonBorderThemeThickness"] = BorderThickness;
+				button.Resources["ControlCornerRadius"] = CornerRadius;
+				return button;
+			}
 		}
 
 		[MethodImpl(MethodImplOptions.NoInlining)]

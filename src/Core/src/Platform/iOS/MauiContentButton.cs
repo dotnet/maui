@@ -18,6 +18,7 @@ namespace Microsoft.Maui.Platform
 		nfloat _defaultBorderWidth;
 		nfloat _defaultCornerRadius;
 
+		bool _isFocusedSetByUs;
 		bool _invalidateParentWhenMovedToWindow;
 		WeakReference<UIView>? _contentView;
 		WeakReference<ICrossPlatformLayout>? _crossPlatformLayout;
@@ -67,7 +68,30 @@ namespace Microsoft.Maui.Platform
 
 		internal void SetVirtualView(IContentButton? virtualView)
 		{
+			if (!ReferenceEquals(VirtualView, virtualView))
+				_isFocusedSetByUs = false;
+
 			((ICrossPlatformLayoutBacking)this).CrossPlatformLayout = virtualView;
+		}
+
+		public override void DidUpdateFocus(UIFocusUpdateContext context, UIFocusAnimationCoordinator coordinator)
+		{
+			base.DidUpdateFocus(context, coordinator);
+
+			if (context.NextFocusedView == this)
+			{
+				if (VirtualView is IView { IsFocused: false } view)
+				{
+					_isFocusedSetByUs = true;
+					view.IsFocused = true;
+				}
+			}
+			else if (_isFocusedSetByUs)
+			{
+				_isFocusedSetByUs = false;
+				if (VirtualView is IView { IsFocused: true } view)
+					view.IsFocused = false;
+			}
 		}
 
 		internal void SetContent(UIView? content)
@@ -123,14 +147,12 @@ namespace Microsoft.Maui.Platform
 		{
 			CaptureNativeDefaults();
 			Layer.BorderColor = button.StrokeColor?.ToCGColor() ?? _defaultBorderColor;
-			UpdateBackground(button);
 		}
 
 		internal void UpdateStrokeThickness(IContentButton button)
 		{
 			CaptureNativeDefaults();
 			Layer.BorderWidth = button.StrokeThickness >= 0 ? (nfloat)button.StrokeThickness : _defaultBorderWidth;
-			UpdateBackground(button);
 			this.InvalidateMeasure();
 		}
 
@@ -138,7 +160,6 @@ namespace Microsoft.Maui.Platform
 		{
 			CaptureNativeDefaults();
 			Layer.CornerRadius = button.CornerRadius >= 0 ? button.CornerRadius : _defaultCornerRadius;
-			UpdateBackground(button);
 			SetNeedsLayout();
 		}
 

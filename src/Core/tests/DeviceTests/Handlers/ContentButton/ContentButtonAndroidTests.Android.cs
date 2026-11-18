@@ -2,15 +2,18 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Android.Content.Res;
+using Android.Graphics.Drawables;
 using Android.OS;
 using Android.Views;
 using Android.Views.Accessibility;
 using AndroidX.Core.View.Accessibility;
+using Google.Android.Material.Card;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Xunit;
+using AColor = Android.Graphics.Color;
 using AView = Android.Views.View;
 
 namespace Microsoft.Maui.DeviceTests
@@ -78,6 +81,109 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact]
+		public async Task PostedThemeChangeRefreshesConnectedNativeDefaultsAndStyling()
+		{
+			var button = new ContentButtonStub
+			{
+				Background = new LinearGradientPaintStub(Colors.Red, Colors.Blue),
+				StrokeColor = Colors.Green,
+				StrokeThickness = 3,
+				CornerRadius = -1,
+			};
+
+			await AttachAndRun(button, async handler =>
+			{
+				var platformView = Assert.IsType<MauiContentButton>(handler.PlatformView);
+				using var themedCard = new MaterialCardView(platformView.Context!);
+				var expectedRadius = themedCard.Radius;
+				var expectedRipple = themedCard.RippleColor!.DefaultColor;
+				using var replacementBackground = new ColorDrawable(AColor.Magenta);
+				platformView.Background = replacementBackground;
+				platformView.Radius = 99;
+				platformView.UpdateRippleColor(Colors.Yellow);
+
+				using var configuration = new Configuration(platformView.Resources!.Configuration!);
+				var nightMode = configuration.UiMode & UiMode.NightMask;
+				configuration.UiMode = (configuration.UiMode & ~UiMode.NightMask) |
+					(nightMode == UiMode.NightYes ? UiMode.NightNo : UiMode.NightYes);
+
+				platformView.DispatchConfigurationChanged(configuration);
+				await DrainPostedWork(platformView);
+
+				Assert.True(platformView.TryGetMauiBackground(
+					out _,
+					out _,
+					out var background,
+					out var stroke,
+					out var mask));
+				Assert.Equal(expectedRadius, background.CornerRadius, 1);
+				Assert.Equal(expectedRadius, stroke.CornerRadius, 1);
+				Assert.Equal(expectedRadius, mask.CornerRadius, 1);
+				Assert.Equal(expectedRipple, platformView.RippleColor!.DefaultColor);
+				Assert.IsType<RippleDrawable>(platformView.Background);
+			});
+		}
+
+		[Fact]
+		public async Task HandlerProvidedNativeRadiusSurvivesAttachmentAndThemeRefresh()
+		{
+			var button = new ContentButtonStub { CornerRadius = -1 };
+			var handler = await InvokeOnMainThreadAsync(() =>
+				CreateHandler<ContentButtonHandler, StyledContentButtonHandler>(button, MauiContext));
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				await handler.PlatformView.AttachAndRun(async () =>
+				{
+					await DrainPostedWork(handler.PlatformView);
+					Assert.Equal(StyledContentButtonHandler.NativeRadius, handler.PlatformView.Radius);
+
+					using var configuration = new Configuration(handler.PlatformView.Resources!.Configuration!);
+					var nightMode = configuration.UiMode & UiMode.NightMask;
+					configuration.UiMode = (configuration.UiMode & ~UiMode.NightMask) |
+						(nightMode == UiMode.NightYes ? UiMode.NightNo : UiMode.NightYes);
+
+					handler.PlatformView.DispatchConfigurationChanged(configuration);
+					await DrainPostedWork(handler.PlatformView);
+					Assert.Equal(StyledContentButtonHandler.NativeRadius, handler.PlatformView.Radius);
+				});
+			});
+		}
+
+		[Fact]
+		public async Task DisableDuringPressCanDisconnectDuringRelease()
+		{
+			var pressed = 0;
+			var released = 0;
+			var button = new ContentButtonStub();
+
+			await AttachAndRun(button, handler =>
+			{
+				button.Pressed = () =>
+				{
+					pressed++;
+					button.IsEnabled = false;
+					handler.UpdateValue(nameof(IView.IsEnabled));
+				};
+				button.Released = () =>
+				{
+					released++;
+					((IElementHandler)handler).DisconnectHandler();
+				};
+
+				var exception = Record.Exception(() =>
+					DispatchTouch(handler.PlatformView, MotionEventActions.Down, 1, 1));
+
+				Assert.Null(exception);
+				Assert.Equal(1, pressed);
+				Assert.Equal(1, released);
+				Assert.Null(((IElementHandler)handler).PlatformView);
+				Assert.Null(((IElementHandler)handler).VirtualView);
+				return Task.CompletedTask;
+			});
+		}
+
 		[Theory]
 		[InlineData(false)]
 		[InlineData(true)]
@@ -132,6 +238,92 @@ namespace Microsoft.Maui.DeviceTests
 				platformView.Layout(20, 30, 200, 130);
 				Assert.True(platformView.TryGetMauiBackground(out _, out _, out var resizedBackground, out _, out _));
 				Assert.NotSame(background, resizedBackground);
+			});
+		}
+
+		[Fact]
+		public async Task ResizeRerunsBackgroundMapperCustomization()
+		{
+			var button = new ContentButtonStub
+			{
+				Background = new LinearGradientPaintStub(Colors.Red, Colors.Blue),
+			};
+			var customBackground = new ColorDrawable(AColor.Magenta);
+			var mapper = new PropertyMapper<IContentButton, IContentButtonHandler>(ContentButtonHandler.Mapper);
+			mapper.AppendToMapping(nameof(IView.Background), (handler, _) =>
+				handler.PlatformView.Background = customBackground);
+			var handler = new ContentButtonHandler(mapper);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				InitializeViewHandler(button, handler);
+				var platformView = handler.PlatformView;
+				Assert.Same(customBackground, platformView.Background);
+
+				platformView.Layout(0, 0, 160, 80);
+				platformView.Layout(0, 0, 180, 90);
+
+				Assert.Same(customBackground, platformView.Background);
+			});
+		}
+
+		[Fact]
+		public async Task ResizeDoesNotRebuildSolidBackground()
+		{
+			var button = new ContentButtonStub
+			{
+				Background = new SolidPaint(Colors.Red),
+			};
+			var handler = await CreateHandlerAsync(button);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var platformView = handler.PlatformView;
+				platformView.Layout(0, 0, 160, 80);
+				var background = platformView.Background;
+
+				platformView.Layout(0, 0, 180, 90);
+
+				Assert.Same(background, platformView.Background);
+			});
+		}
+
+		[Fact]
+		public async Task ReleaseOutsideBoundsCancelsClickWhileInsideReleaseActivates()
+		{
+			var pressed = 0;
+			var released = 0;
+			var clicked = 0;
+			var button = new ContentButtonStub
+			{
+				Pressed = () => pressed++,
+				Released = () => released++,
+				Clicked = () => clicked++,
+			};
+
+			await AttachAndRun(button, async handler =>
+			{
+				var platformView = handler.PlatformView;
+				var downTime = SystemClock.UptimeMillis();
+				var insideX = platformView.Width - 1;
+				var y = platformView.Height / 2f;
+				DispatchTouch(platformView, MotionEventActions.Down, insideX, y, downTime);
+				DispatchTouch(platformView, MotionEventActions.Move, platformView.Width + 1, y, downTime);
+				DispatchTouch(platformView, MotionEventActions.Up, platformView.Width + 1, y, downTime);
+				await Task.Delay(250);
+
+				Assert.Equal(1, pressed);
+				Assert.Equal(1, released);
+				Assert.Equal(0, clicked);
+
+				downTime = SystemClock.UptimeMillis();
+				DispatchTouch(platformView, MotionEventActions.Down, platformView.Width / 2f, y, downTime);
+				DispatchTouch(platformView, MotionEventActions.Up, platformView.Width / 2f, y, downTime);
+				await Task.Delay(250);
+
+				Assert.Equal(2, pressed);
+				Assert.Equal(2, released);
+				Assert.Equal(1, clicked);
 			});
 		}
 
@@ -267,11 +459,30 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		static void DispatchTouch(AView view, MotionEventActions action)
+		static Task DrainPostedWork(AView view)
+		{
+			var completed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+			view.Post(() => completed.SetResult());
+			return completed.Task.WaitAsync(TimeSpan.FromSeconds(5));
+		}
+
+		static void DispatchTouch(AView view, MotionEventActions action, float x = 1, float y = 1, long? downTime = null)
 		{
 			var now = SystemClock.UptimeMillis();
-			using var motionEvent = MotionEvent.Obtain(now, now, action, 1, 1, 0);
+			using var motionEvent = MotionEvent.Obtain(downTime ?? now, now, action, x, y, 0);
 			view.DispatchTouchEvent(motionEvent);
+		}
+
+		sealed class StyledContentButtonHandler : ContentButtonHandler
+		{
+			internal const float NativeRadius = 12;
+
+			protected override MaterialCardView CreatePlatformView()
+			{
+				var button = base.CreatePlatformView();
+				button.Radius = NativeRadius;
+				return button;
+			}
 		}
 	}
 }

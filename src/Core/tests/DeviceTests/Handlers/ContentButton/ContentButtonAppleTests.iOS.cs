@@ -149,6 +149,33 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact]
+		public async Task StrokeUpdatesPreserveBackgroundMapperCustomization()
+		{
+			var button = new ContentButtonStub();
+			var mapper = new PropertyMapper<IContentButton, IContentButtonHandler>(ContentButtonHandler.Mapper);
+			var backgroundUpdates = 0;
+			mapper.AppendToMapping(nameof(IView.Background), (handler, _) =>
+			{
+				backgroundUpdates++;
+				handler.PlatformView.BackgroundColor = UIColor.Purple;
+			});
+			var handler = new ContentButtonHandler(mapper);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				InitializeViewHandler(button, handler);
+
+				foreach (var property in new[] { nameof(IButtonStroke.StrokeColor), nameof(IButtonStroke.StrokeThickness), nameof(IButtonStroke.CornerRadius) })
+				{
+					var previousUpdates = backgroundUpdates;
+					handler.UpdateValue(property);
+					Assert.True(backgroundUpdates > previousUpdates);
+					Assert.Equal(UIColor.Purple, handler.PlatformView.BackgroundColor);
+				}
+			});
+		}
+
 		sealed class StyledContentButtonHandler : ContentButtonHandler
 		{
 			internal static readonly UIColor Background = UIColor.Red;
@@ -254,6 +281,83 @@ namespace Microsoft.Maui.DeviceTests
 
 			Assert.Equal(70, size.Width);
 			Assert.Equal(50, size.Height);
+		}
+
+		[Fact]
+		public async Task ExplicitWidthMeasuresContentAtArrangedWidthInNarrowParent()
+		{
+			var content = new LabelStub
+			{
+				Text = new string('W', 80),
+				Width = Dimension.Unset,
+				Height = Dimension.Unset,
+			};
+			var button = new ContentButtonStub
+			{
+				Width = 200,
+				Height = Dimension.Unset,
+				Content = content,
+				Padding = new Thickness(5),
+			};
+			var handler = await CreateHandlerAsync(button);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var size = handler.GetDesiredSize(100, double.PositiveInfinity);
+
+				Assert.Equal(200, size.Width, 1);
+				Assert.Equal(190, content.DesiredSize.Width, 1);
+			});
+		}
+
+		[Fact]
+		public async Task EnablingWrappedButtonRestoresContainerInteraction()
+		{
+			var button = new ContentButtonStub
+			{
+				Clip = new PathShapeStub(),
+				IsEnabled = false,
+				Content = new LabelStub { Text = "Content" },
+			};
+			var handler = await CreateHandlerAsync(button);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var containerView = Assert.IsType<WrapperView>(handler.ContainerView);
+				Assert.False(containerView.UserInteractionEnabled);
+				Assert.False(handler.PlatformView.Enabled);
+
+				button.IsEnabled = true;
+				handler.UpdateValue(nameof(IView.IsEnabled));
+
+				Assert.True(containerView.UserInteractionEnabled);
+				Assert.True(handler.PlatformView.Enabled);
+			});
+		}
+
+		[Fact]
+		public async Task DisablingDuringPressToleratesReleasedDisconnectingHandler()
+		{
+			var released = 0;
+			var button = new ContentButtonStub();
+			var handler = await CreateHandlerAsync(button);
+			button.Released = () =>
+			{
+				released++;
+				((IElementHandler)handler).DisconnectHandler();
+			};
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				handler.PlatformView.SendActionForControlEvents(UIControlEvent.TouchDown);
+				button.IsEnabled = false;
+
+				var exception = Record.Exception(() => handler.UpdateValue(nameof(IView.IsEnabled)));
+
+				Assert.Null(exception);
+				Assert.Equal(1, released);
+				Assert.Null(((IElementHandler)handler).PlatformView);
+			});
 		}
 	}
 }
