@@ -23,6 +23,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		List<List<Element>> _flyoutGroupings;
 		Action<Element> _selectedCallback;
 		bool _disposed;
+		RecyclerView.RecycledViewPool _recycledViewPool;
 		readonly HashSet<ElementViewHolder> _viewHolders = new HashSet<ElementViewHolder>();
 		IMauiContext MauiContext => _shellContext.Shell.Handler.MauiContext;
 
@@ -32,9 +33,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_shellContext = shellContext;
 
 			ShellController.FlyoutItemsChanged += OnFlyoutItemsChanged;
+			Shell.FlyoutItemTemplateChanged += OnFlyoutItemTemplateChanged;
 
 			_listItems = GenerateItemList();
 			_selectedCallback = selectedCallback;
+		}
+
+		internal void SetRecycledViewPool(RecyclerView.RecycledViewPool recycledViewPool)
+		{
+			_recycledViewPool = recycledViewPool;
 		}
 
 		public override int ItemCount => _listItems.Count;
@@ -49,7 +56,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public override int GetItemViewType(int position)
 		{
-			return _listItems[position].Index;
+			return _listItems[position].ViewType;
 		}
 
 		DataTemplate GetDataTemplate(int viewTypeId)
@@ -58,7 +65,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			foreach (var ali in _listItems)
 			{
-				if (viewTypeId == ali.Index)
+				if (viewTypeId == ali.ViewType)
 				{
 					item = ali;
 					break;
@@ -94,7 +101,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				{
 					foreach (var item in _listItems)
 					{
-						if (item.Element == evh.Element)
+						if (item.Element == evh.Element && item.ViewType == evh.ItemViewType)
 						{
 							found = true;
 							break;
@@ -207,6 +214,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					}
 
 					toAdd = toAdd ?? new AdapterListItem(element, first);
+					toAdd.UpdateTemplate(Shell.ResolveFlyoutItemTemplate(Shell, element));
 					result.Add(toAdd);
 					first = false;
 				}
@@ -225,6 +233,24 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_listItems = newListItems;
 				NotifyDataSetChanged();
 			}
+		}
+
+		void OnFlyoutItemTemplateChanged(object sender, EventArgs e)
+		{
+			bool changed = false;
+			foreach (var item in _listItems)
+			{
+				var oldViewType = item.ViewType;
+				if (!item.UpdateTemplate(Shell.ResolveFlyoutItemTemplate(Shell, item.Element)))
+					continue;
+
+				// Evict pooled holders and reject holders recycled later for this obsolete type.
+				_recycledViewPool?.SetMaxRecycledViews(oldViewType, 0);
+				changed = true;
+			}
+
+			if (changed)
+				NotifyDataSetChanged();
 		}
 
 		protected override void Dispose(bool disposing)
@@ -253,6 +279,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (_shellContext is null)
 				return;
 
+			Shell.FlyoutItemTemplateChanged -= OnFlyoutItemTemplateChanged;
+
 			if (Shell is IShellController scc)
 			{
 				scc.FlyoutItemsChanged -= OnFlyoutItemsChanged;
@@ -274,9 +302,24 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				DrawTopLine = drawTopLine;
 				Element = element;
 				Index = IndexCounter++;
+				ViewType = Index;
 			}
 
 			public int Index { get; }
+			internal int ViewType { get; private set; }
+			DataTemplate _template;
+
+			internal bool UpdateTemplate(DataTemplate template)
+			{
+				if (_template == template)
+					return false;
+
+				_template = template;
+				// A new view type prevents RecyclerView from reusing content created from the old template.
+				ViewType = IndexCounter++;
+				return true;
+			}
+
 			public bool DrawTopLine { get; set; }
 			public Element Element { get; set; }
 		}

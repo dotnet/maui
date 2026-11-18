@@ -155,7 +155,7 @@ namespace Microsoft.Maui.Controls
 		/// Customizes the appearance of each <see cref = "MenuItem" />.
 		/// </summary>
 		public static readonly BindableProperty MenuItemTemplateProperty =
-			BindableProperty.CreateAttached(nameof(MenuItemTemplate), typeof(DataTemplate), typeof(Shell), null, BindingMode.OneTime);
+			BindableProperty.CreateAttached(nameof(MenuItemTemplate), typeof(DataTemplate), typeof(Shell), null, BindingMode.OneTime, propertyChanged: OnFlyoutItemTemplateChanged);
 
 		/// <summary>
 		/// Gets the <see cref = "DataTemplate" /> applied to <see cref = "MenuItem" /> objects in the MenuItems collection.
@@ -179,7 +179,24 @@ namespace Microsoft.Maui.Controls
 		///  The <see cref = "DataTemplate" /> applied to each <see cref = "FlyoutItem" /> object managed by Shell.
 		/// </summary>
 		public static readonly BindableProperty ItemTemplateProperty =
-			BindableProperty.CreateAttached(nameof(ItemTemplate), typeof(DataTemplate), typeof(Shell), null, BindingMode.OneTime);
+			BindableProperty.CreateAttached(nameof(ItemTemplate), typeof(DataTemplate), typeof(Shell), null, BindingMode.OneTime, propertyChanged: OnFlyoutItemTemplateChanged);
+
+		readonly WeakEventManager _flyoutItemTemplateChanged = new WeakEventManager();
+
+		internal event EventHandler FlyoutItemTemplateChanged
+		{
+			add => _flyoutItemTemplateChanged.AddEventHandler(value);
+			remove => _flyoutItemTemplateChanged.RemoveEventHandler(value);
+		}
+
+		static void OnFlyoutItemTemplateChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			if (bindable is Element element)
+			{
+				var shell = element.FindParentOfType<Shell>(includeThis: true);
+				shell?._flyoutItemTemplateChanged.HandleEvent(bindable, EventArgs.Empty, nameof(FlyoutItemTemplateChanged));
+			}
+		}
 
 		/// <summary>
 		/// Gets the <see cref = "DataTemplate" /> applied to each <see cref = "FlyoutItem" /> object managed by Shell.
@@ -1746,6 +1763,10 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Gets or sets <see cref = "DataTemplate" /> applied to each of the Items.
 		/// </summary>
+		/// <remarks>
+		/// Replacing this template refreshes the flyout items. The default binding mode is
+		/// <see cref="BindingMode.OneTime"/>; use <see cref="BindingMode.OneWay"/> to observe changes to a bound template.
+		/// </remarks>
 		public DataTemplate ItemTemplate
 		{
 			get => GetItemTemplate(this);
@@ -1755,6 +1776,10 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Gets or sets the <see cref = "DataTemplate" /> applied to MenuItem objects in the MenuItems collection.
 		/// </summary>
+		/// <remarks>
+		/// Replacing this template refreshes the flyout menu items. The default binding mode is
+		/// <see cref="BindingMode.OneTime"/>; use <see cref="BindingMode.OneWay"/> to observe changes to a bound template.
+		/// </remarks>
 		public DataTemplate MenuItemTemplate
 		{
 			get => GetMenuItemTemplate(this);

@@ -105,6 +105,31 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 		}
 
+		internal void InvalidateTemplates()
+		{
+			if (_cells == null)
+				return;
+
+			var invalidatedItems = new List<Element>();
+			foreach (var pair in _cells)
+			{
+				var template = GetDataTemplate(pair.Key).SelectDataTemplate(pair.Key, _context.Shell);
+				var cellId = ((IDataTemplateController)template).IdString;
+				if (string.Equals(pair.Value.ReuseIdentifier, cellId, StringComparison.Ordinal))
+				{
+					continue;
+				}
+
+				pair.Value.Disconnect(_context.Shell);
+				invalidatedItems.Add(pair.Key);
+			}
+
+			foreach (var item in invalidatedItems)
+			{
+				_cells.Remove(item);
+			}
+		}
+
 		internal void Disconnect()
 		{
 			ScrolledEvent = null;
@@ -164,19 +189,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			int row = indexPath.Row;
 			var context = Groups[section][row];
 
-			DataTemplate template = ShellController.GetFlyoutItemDataTemplate(context);
-			if (context is IMenuItemController)
-			{
-				if (DefaultMenuItemTemplate != null && _context.Shell.MenuItemTemplate == template)
-					template = DefaultMenuItemTemplate;
-			}
-			else
-			{
-				if (DefaultItemTemplate != null && _context.Shell.ItemTemplate == template)
-					template = DefaultItemTemplate;
-			}
-
-			var cellId = ((IDataTemplateController)template.SelectDataTemplate(context, _context.Shell)).IdString;
+			DataTemplate template = GetDataTemplate(context);
+			var selectedTemplate = template.SelectDataTemplate(context, _context.Shell);
+			var cellId = ((IDataTemplateController)selectedTemplate).IdString;
 
 			UIContainerCell cell;
 			if (!_cells.TryGetValue(context, out cell))
@@ -214,6 +229,23 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			cell.ViewMeasureInvalidated += OnViewMeasureInvalidated;
 
 			return cell;
+		}
+
+		DataTemplate GetDataTemplate(Element context)
+		{
+			DataTemplate template = ShellController.GetFlyoutItemDataTemplate(context);
+			if (context is IMenuItemController)
+			{
+				if (DefaultMenuItemTemplate != null && _context.Shell.MenuItemTemplate == template)
+					template = DefaultMenuItemTemplate;
+			}
+			else
+			{
+				if (DefaultItemTemplate != null && _context.Shell.ItemTemplate == template)
+					template = DefaultItemTemplate;
+			}
+
+			return template;
 		}
 
 		static void OnViewMeasureInvalidated(UIContainerCell cell)

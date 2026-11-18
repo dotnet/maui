@@ -1,4 +1,5 @@
 #nullable disable
+using System;
 using System.ComponentModel;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
@@ -19,6 +20,7 @@ namespace Microsoft.Maui.Controls.Platform
 		View _content;
 		object _previousDataContext;
 		Shell _shell;
+		DataTemplate _dataTemplate;
 		bool _updatingVisualState;
 		ShellView ShellView => _shell.Handler?.PlatformView as ShellView;
 
@@ -39,6 +41,40 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 
 			_previousDataContext = args.NewValue;
+			UpdateContent();
+		}
+
+		void UpdateContent()
+		{
+			BindableObject bo = null;
+
+			if (_previousDataContext is NavigationViewItemViewModel vm && vm.Data is BindableObject bindableObject)
+				bo = bindableObject;
+			else
+				bo = (BindableObject)_previousDataContext;
+
+			var element = bo as Element;
+			var shell = element?.FindParentOfType<Shell>();
+			var previousShell = _shell;
+
+			if (_shell != shell)
+			{
+				if (_shell is not null)
+				{
+					_shell.FlyoutItemTemplateChanged -= OnFlyoutItemTemplateChanged;
+				}
+
+				_shell = shell;
+
+				if (_shell is not null)
+				{
+					_shell.FlyoutItemTemplateChanged += OnFlyoutItemTemplateChanged;
+				}
+			}
+
+			if (shell != null && shell.Handler?.MauiContext is null)
+				return;
+
 			if (_content != null)
 			{
 				if (_content.BindingContext is INotifyPropertyChanged inpc)
@@ -47,7 +83,7 @@ namespace Microsoft.Maui.Controls.Platform
 				if (_content.Parent is BaseShellItem bsi)
 					bsi.RemoveLogicalChild(_content);
 				else
-					_shell?.RemoveLogicalChild(_content);
+					previousShell?.RemoveLogicalChild(_content);
 
 				// Remove resource listener from previous content
 				if (_content is IElementDefinition contentDef)
@@ -56,31 +92,26 @@ namespace Microsoft.Maui.Controls.Platform
 				_content.BindingContext = null;
 				_content.Parent = null;
 				_content = null;
+				Content = null;
 			}
 
-			BindableObject bo = null;
-
-			if (args.NewValue is NavigationViewItemViewModel vm && vm.Data is BindableObject bindableObject)
-				bo = bindableObject;
-			else
-				bo = (BindableObject)args.NewValue;
-
-			var element = bo as Element;
-			_shell = element?.FindParentOfType<Shell>();
+			var template = bo != null && _shell != null
+				? Shell.ResolveFlyoutItemTemplate(_shell, bo)
+				: null;
+			_dataTemplate = template?.SelectDataTemplate(bo, _shell);
 
 			// Resolve the application supplied template through the same public contract external backends use.
 			// A null result means the application did not supply one, so fall back to the default flyout item cell.
-			DataTemplate dataTemplate = null;
-
-			if (bo != null && _shell != null)
-				dataTemplate = Shell.ResolveFlyoutItemTemplate(_shell, bo) ?? BaseShellItem.CreateDefaultFlyoutItemCell(bo);
+			var dataTemplate = bo != null && _shell != null
+				? _dataTemplate ?? BaseShellItem.CreateDefaultFlyoutItemCell(bo)
+				: null;
 
 			if (bo != null)
 				bo.PropertyChanged += ShellElementPropertyChanged;
 
 			if (dataTemplate != null)
 			{
-				_content = (View)dataTemplate.CreateContent();
+				_content = (View)dataTemplate.CreateContent(bo, _shell);
 
 				// Set binding context before calling AddLogicalChild so parent binding context doesn't propagate to view
 				_content.BindingContext = bo;
@@ -98,6 +129,23 @@ namespace Microsoft.Maui.Controls.Platform
 				Content = platformView;
 				UpdateVisualState();
 			}
+		}
+
+		void OnFlyoutItemTemplateChanged(object sender, EventArgs e)
+		{
+			if (_shell?.Handler?.MauiContext is null)
+				return;
+
+			BindableObject bo = _previousDataContext is NavigationViewItemViewModel vm && vm.Data is BindableObject bindableObject
+				? bindableObject
+				: (BindableObject)_previousDataContext;
+
+			var template = bo != null ? Shell.ResolveFlyoutItemTemplate(_shell, bo) : null;
+			var dataTemplate = template?.SelectDataTemplate(bo, _shell);
+			if (ReferenceEquals(_dataTemplate, dataTemplate))
+				return;
+
+			UpdateContent();
 		}
 
 		void ShellElementPropertyChanged(object sender, PropertyChangedEventArgs e)

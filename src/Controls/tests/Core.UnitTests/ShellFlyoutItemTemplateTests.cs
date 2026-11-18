@@ -241,6 +241,126 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void ReplacingAndClearingShellTemplateNotifiesFlyout(bool menuItemTemplate)
+		{
+			var shell = new Shell();
+			var shellItem = CreateShellItem();
+			shell.Items.Add(shellItem);
+			var menuItem = new MenuItem();
+			shell.Items.Add(menuItem);
+
+			var property = menuItemTemplate ? Shell.MenuItemTemplateProperty : Shell.ItemTemplateProperty;
+			BindableObject flyoutItem = menuItemTemplate ? shell.Items[1] : shellItem;
+			shell.SetValue(property, new DataTemplate(() => new Label()));
+
+			int notifications = 0;
+			DataTemplate resolvedTemplate = null;
+			EventHandler handler = (sender, args) =>
+			{
+				Assert.Same(shell, sender);
+				notifications++;
+				resolvedTemplate = Shell.ResolveFlyoutItemTemplate(shell, flyoutItem);
+			};
+			shell.FlyoutItemTemplateChanged += handler;
+
+			var replacement = new DataTemplate(() => new Grid());
+			shell.SetValue(property, replacement);
+
+			Assert.Equal(1, notifications);
+			Assert.Same(replacement, resolvedTemplate);
+
+			shell.ClearValue(property);
+
+			Assert.Equal(2, notifications);
+			Assert.Null(resolvedTemplate);
+			shell.FlyoutItemTemplateChanged -= handler;
+		}
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void AttachedTemplateChangesNotifyFlyoutAndPreserveItemPrecedence(bool menuItemTemplate)
+		{
+			var shell = new Shell();
+			var shellItem = CreateShellItem();
+			shell.Items.Add(shellItem);
+			var menuItem = new MenuItem();
+			shell.Items.Add(menuItem);
+
+			var property = menuItemTemplate ? Shell.MenuItemTemplateProperty : Shell.ItemTemplateProperty;
+			BindableObject flyoutItem = menuItemTemplate ? shell.Items[1] : shellItem;
+			BindableObject templateSource = flyoutItem;
+			var shellTemplate = new DataTemplate(() => new Label());
+			shell.SetValue(property, shellTemplate);
+
+			int notifications = 0;
+			DataTemplate resolvedTemplate = null;
+			EventHandler handler = (sender, args) =>
+			{
+				notifications++;
+				resolvedTemplate = Shell.ResolveFlyoutItemTemplate(shell, flyoutItem);
+			};
+			shell.FlyoutItemTemplateChanged += handler;
+
+			var itemTemplate = new DataTemplate(() => new Grid());
+			templateSource.SetValue(property, itemTemplate);
+
+			Assert.True(notifications > 0);
+			Assert.Same(itemTemplate, resolvedTemplate);
+
+			shellTemplate = new DataTemplate(() => new Button());
+			shell.SetValue(property, shellTemplate);
+
+			Assert.Same(itemTemplate, resolvedTemplate);
+
+			int previousNotifications = notifications;
+			templateSource.ClearValue(property);
+
+			Assert.True(notifications > previousNotifications);
+			Assert.Same(shellTemplate, resolvedTemplate);
+			shell.FlyoutItemTemplateChanged -= handler;
+		}
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void OneWayBoundTemplateChangesNotifyFlyout(bool menuItemTemplate)
+		{
+			var source = new Shell();
+			var shell = new Shell();
+			var property = menuItemTemplate ? Shell.MenuItemTemplateProperty : Shell.ItemTemplateProperty;
+			source.SetValue(property, new DataTemplate(() => new Label()));
+			shell.SetBinding(property, new Binding(property.PropertyName, BindingMode.OneWay, source: source));
+
+			int notifications = 0;
+			EventHandler handler = (sender, args) => notifications++;
+			shell.FlyoutItemTemplateChanged += handler;
+
+			var replacement = new DataTemplate(() => new Grid());
+			source.SetValue(property, replacement);
+
+			Assert.Same(replacement, shell.GetValue(property));
+			Assert.Equal(1, notifications);
+			shell.FlyoutItemTemplateChanged -= handler;
+		}
+
+		[Fact]
+		public void UnrelatedPropertyChangesDoNotNotifyFlyoutTemplateChanges()
+		{
+			var shell = new Shell();
+			int notifications = 0;
+			EventHandler handler = (sender, args) => notifications++;
+			shell.FlyoutItemTemplateChanged += handler;
+
+			shell.Title = "Updated title";
+
+			Assert.Equal(0, notifications);
+			shell.FlyoutItemTemplateChanged -= handler;
+		}
+
 		T GetFlyoutItemDataTemplateElement<T>(Shell shell, BindableObject bo)
 			where T : class
 		{
