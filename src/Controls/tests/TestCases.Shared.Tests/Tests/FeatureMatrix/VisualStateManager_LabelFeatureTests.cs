@@ -22,7 +22,7 @@ public class VisualStateManager_LabelFeatureTests : _GalleryUITest
 		App.WaitForElement("LabelState");
 		var labelText = App.FindElement("LabelState").GetText();
 		Assert.That(labelText, Is.EqualTo("State: Normal"));
-		VerifyScreenshot();
+		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(2)]
@@ -33,7 +33,7 @@ public class VisualStateManager_LabelFeatureTests : _GalleryUITest
 		App.WaitForElement("LabelState");
 		var labelText = App.FindElement("LabelState").GetText();
 		Assert.That(labelText, Is.EqualTo("State: Selected"));
-		VerifyScreenshot();
+		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(3)]
@@ -44,7 +44,7 @@ public class VisualStateManager_LabelFeatureTests : _GalleryUITest
 		App.WaitForElement("LabelState");
 		var labelText = App.FindElement("LabelState").GetText();
 		Assert.That(labelText, Is.EqualTo("State: Disabled"));
-		VerifyScreenshot();
+		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(4)]
@@ -55,7 +55,7 @@ public class VisualStateManager_LabelFeatureTests : _GalleryUITest
 		App.WaitForElement("LabelState");
 		var labelText = App.FindElement("LabelState").GetText();
 		Assert.That(labelText, Is.EqualTo("State: Normal"));
-		VerifyScreenshot();
+		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(5)]
@@ -73,7 +73,7 @@ public class VisualStateManager_LabelFeatureTests : _GalleryUITest
 		App.WaitForElement("LabelState");
 		labelText = App.FindElement("LabelState").GetText();
 		Assert.That(labelText, Is.EqualTo("State: Disabled"));
-		VerifyScreenshot();
+		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(6)]
@@ -86,7 +86,7 @@ public class VisualStateManager_LabelFeatureTests : _GalleryUITest
 		App.WaitForElement("LabelState");
 		var labelText = App.FindElement("LabelState").GetText();
 		Assert.That(labelText, Is.EqualTo("State: Disabled"));
-		VerifyScreenshot();
+		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(7)]

@@ -343,36 +343,59 @@ builds, `ci.inflight` package branding, workload artifacts, BAR registration, an
 the configured dogfood feed. Renaming or creating a public branch alone does not
 provide any of those external integrations.
 
-The official schedule recognizes versioned `inflight/*xx-sr*` refs. A selection
-stage runs before packing on scheduled inflight builds and reads the release
+The official schedule recognizes versioned `inflight/*xx-sr*` and
+`candidate/*xx-sr*` refs. A selection stage runs before packing on scheduled
+inflight and candidate builds and reads the release
 state from a pinned commit on public `main`. It selects only one publishing lane:
 
 | `nightlyMode` | Eligible nightly source |
 |---|---|
 | `legacy` | `inflight/current` |
 | `versioned` | `inflight/<releaseBand>-sr<currentSr+1>` |
+| `candidate` | `candidate/<releaseBand>-sr<currentSr>` |
 
-The checked-in mode remains **`legacy` during migration**. In versioned mode,
+The checked-in mode is **`candidate`**: official nightlies are built from the
+staged release contents, not from inflight. When the trusted release state
+advances `currentSr`, the nightly source moves to the next candidate (for
+example `candidate/11.0.1xx-sr2` → `candidate/11.0.1xx-sr3`) automatically;
+inflight lanes and older candidates skip packing. In versioned mode,
 SR1's inflight source is SR2; after the trusted release state advances to SR2,
 the source becomes SR3 automatically. Retained older inflight branches and the
 legacy branch skip packing when not selected, so they cannot make a retired
 stream appear fresh. Missing or invalid canonical state fails selection instead
 of falling back to another branch.
 
-Versioned inflight refs keep `PreReleaseVersionLabel=ci.inflight` and the existing
-signing path. `main`, candidate branches, tags, and other inflight experiments
-retain their existing branding. No feed or channel is invented from the SR name;
+Versioned inflight and candidate `*xx-srN` refs keep
+`PreReleaseVersionLabel=ci.inflight` and the existing signing path, so the
+dogfood stream contract is unchanged when the source moves to the candidate.
+`main`, tags, and other experiments retain their existing branding. No feed or channel is invented from the SR name;
 the existing publishing and Maestro configuration must be preserved and verified.
 The readiness feed check continues measuring `ci.inflight`, not a fresh
 `ci.main` build.
 
-Before switching `nightlyMode` to `versioned`, deploy the schedule/selection,
+Before switching `nightlyMode` to `versioned` or `candidate`, deploy the schedule/selection,
 signing, and branding changes to the mirrored legacy and active versioned
 branches. Verify that the internal mirror has the exact selected public commit,
 that its default-channel/feed wiring matches the existing nightly contract, and
 that a signed internal build publishes the expected artifacts. Do not rewrite
 mirror history or promote workload-release packages as part of this migration.
-The same deployment prerequisite applies when each new lane is created.
+The **Prepare signed release publication** workflow keeps the selected candidate
+mirrored automatically. Its independent nightly-mirror job runs hourly, after
+release tracking succeeds, and when canonical state or mirror tooling changes on
+`main`. It uses trusted `main` code and the existing Azure federation identity;
+candidate code is fetched as Git data, never executed in that credentialed job.
+The internal candidate's own 05:00 UTC schedule then runs official pipeline 1095,
+without an additional competing build trigger. Advancing `currentSr` therefore
+selects and mirrors the next candidate without a manual per-SR sync.
+
+The existing federated identity needs Git read/contribute/create-branch and
+force-push permission on the internal candidate and
+`automation/nightly-mirror/candidate/*` refs. It does not need a new PAT.
+New mirrors and fast-forwards can be adopted safely. Each verified sync records
+the public SHA in an internal ownership ref; later public rebases may replace
+only that exact last-mirrored tip, using explicit leases. Unrelated internal
+commits or concurrent ref changes fail the workflow instead of being overwritten.
+The `nightly-mirror-*` artifact records the selected source and verified mirror.
 
 The public PR and sandbox do not deploy internal mirrors, change Maestro
 subscriptions, or certify an actual signed nightly. They must not be reported as
@@ -483,7 +506,7 @@ required to prepare or merge this state update.
 `versioned` switch remains a separate owner-reviewed state change after exact
 internal mirroring, signed artifacts and feed/channel deployment have been
 verified. Once mode is `versioned`, advancing `currentSr` automatically selects
-inflight SR `N+1`; verify that newly selected lane's deployment before merging
+inflight SR `N+1`; in `candidate` mode it selects candidate SR `N`; verify that newly selected lane's deployment before merging
 each state update. A completed rollover is not signed-nightly acceptance.
 No pipeline, channel, subscription, protection or public-publishing permission
 is changed by preparing this PR.
