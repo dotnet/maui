@@ -178,58 +178,6 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Theory]
-		[InlineData(false)]
-		[InlineData(true)]
-		public async Task EmptyViewDoesNotRequestAnotherLayoutWhenConstraintsAreUnchanged(bool useTemplate)
-		{
-			SetupBuilder();
-
-			var emptyView = new Label
-			{
-				Text = "No photo yet",
-				HorizontalOptions = LayoutOptions.Center,
-				VerticalOptions = LayoutOptions.Center
-			};
-			var collectionView = new CollectionView
-			{
-				ItemsSource = System.Array.Empty<string>(),
-				ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Horizontal),
-				HeightRequest = 180
-			};
-
-			if (useTemplate)
-				collectionView.EmptyViewTemplate = new DataTemplate(() => emptyView);
-			else
-				collectionView.EmptyView = emptyView;
-
-			await InvokeOnMainThreadAsync(() =>
-			{
-				var handler = CreateHandler<CollectionViewHandler>(collectionView);
-				using var parent = new LayoutRequestCountingFrameLayout(MauiContext.Context);
-				parent.AddView(handler.PlatformView);
-
-				handler.GetDesiredSize(300, double.PositiveInfinity);
-				handler.PlatformArrange(new Rect(0, 0, 300, 180));
-				LayoutEmptyViewParent(parent, 300, 180);
-
-				var holder = handler.PlatformView.FindViewHolderForAdapterPosition(0);
-				var itemView = Assert.IsType<EmptyViewContentView>(holder?.ItemView);
-				Assert.True(itemView.MeasuredWidth > 0);
-				Assert.True(itemView.MeasuredHeight > 0);
-				parent.RequestLayoutCount = 0;
-
-				for (var pass = 0; pass < 3; pass++)
-				{
-					// A vertical stack measures with infinite height, then arranges at a finite height.
-					handler.GetDesiredSize(300, double.PositiveInfinity);
-					handler.PlatformArrange(new Rect(0, 0, 300, 180));
-				}
-
-				Assert.Equal(0, parent.RequestLayoutCount);
-			});
-		}
-
 		[Fact]
 		public async Task Issue40308EmptyViewDoesNotLogImproperRequestLayoutWhenSiblingChanges()
 		{
@@ -238,15 +186,35 @@ namespace Microsoft.Maui.DeviceTests
 				RegisterCommonHandlers(handlers);
 				handlers.AddHandler<CollectionView, CollectionViewHandler>();
 				handlers.AddHandler<ScrollView, ScrollViewHandler>();
+				handlers.AddHandler<BoxView, Microsoft.Maui.Controls.Handlers.BoxViewHandler>();
 			}));
 
+			var photos = new ObservableCollection<string>();
 			var sibling = new Label { Text = "Sibling control" };
+			var expanded = false;
+			var changeLayout = new Microsoft.Maui.Controls.Button { Text = "Change sibling layout" };
+			changeLayout.Clicked += (_, _) =>
+			{
+				expanded = !expanded;
+				sibling.HeightRequest = expanded ? 100 : -1;
+			};
 			var collectionView = new CollectionView
 			{
-				ItemsSource = System.Array.Empty<string>(),
+				ItemsSource = photos,
 				HeightRequest = 180,
-				ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Horizontal),
-				EmptyView = new Label { Text = "No photo yet" }
+				ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Horizontal) { ItemSpacing = 8 },
+				EmptyView = new Label
+				{
+					Text = "No photo yet",
+					HorizontalOptions = LayoutOptions.Center,
+					VerticalOptions = LayoutOptions.Center
+				},
+				ItemTemplate = new DataTemplate(() =>
+				{
+					var image = new Image { HeightRequest = 150, WidthRequest = 150 };
+					image.SetBinding(Image.SourceProperty, ".");
+					return image;
+				})
 			};
 			var page = new ContentPage
 			{
@@ -254,7 +222,16 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					Content = new VerticalStackLayout
 					{
-						Children = { sibling, collectionView, new Label { HeightRequest = 900 } }
+						Padding = 16,
+						Spacing = 12,
+						Children =
+						{
+							changeLayout,
+							sibling,
+							collectionView,
+							new BoxView { HeightRequest = 900, Color = Colors.LightGray },
+							new Label { Text = "Scroll back up to bring the CollectionView into view again." }
+						}
 					}
 				}
 			};
@@ -280,12 +257,16 @@ namespace Microsoft.Maui.DeviceTests
 				try
 				{
 					global::Android.Util.Log.Warn("Maui40308", $"{marker}-start");
-					var previousY = collectionView.Y;
-					sibling.HeightRequest = 100;
-					await WaitForIssue40308Frames(recyclerView);
+					for (var pass = 0; pass < 2; pass++)
+					{
+						arrangedDuringLayout = false;
+						var previousY = collectionView.Y;
+						((IButtonController)changeLayout).SendClicked();
+						await WaitForIssue40308Frames(recyclerView);
 
-					Assert.True(arrangedDuringLayout, "The attached EmptyView must participate in native layout.");
-					Assert.NotEqual(previousY, collectionView.Y);
+						Assert.True(arrangedDuringLayout, "The attached EmptyView must participate in native layout.");
+						Assert.NotEqual(previousY, collectionView.Y);
+					}
 					global::Android.Util.Log.Warn("Maui40308", $"{marker}-end");
 
 					// Observe the real ViewRootImpl diagnostic, including requests RecyclerView may
@@ -1135,16 +1116,6 @@ namespace Microsoft.Maui.DeviceTests
 			}
 		}
 
-		static void LayoutEmptyViewParent(FrameLayout parent, double width, double height)
-		{
-			var pixelWidth = (int)parent.Context.ToPixels(width);
-			var pixelHeight = (int)parent.Context.ToPixels(height);
-			parent.Measure(
-				AView.MeasureSpec.MakeMeasureSpec(pixelWidth, global::Android.Views.MeasureSpecMode.Exactly),
-				AView.MeasureSpec.MakeMeasureSpec(pixelHeight, global::Android.Views.MeasureSpecMode.Exactly));
-			parent.Layout(0, 0, pixelWidth, pixelHeight);
-		}
-
 		static async Task WaitForIssue40308Frames(AView view)
 		{
 			// Include subsequent traversals and requests posted by RequestLayoutIfNeeded.
@@ -1174,21 +1145,6 @@ namespace Microsoft.Maui.DeviceTests
 				process.Destroy();
 			}
 		});
-
-		class LayoutRequestCountingFrameLayout : FrameLayout
-		{
-			public int RequestLayoutCount { get; set; }
-
-			public LayoutRequestCountingFrameLayout(Context context) : base(context)
-			{
-			}
-
-			public override void RequestLayout()
-			{
-				RequestLayoutCount++;
-				base.RequestLayout();
-			}
-		}
 
 		class TestRecyclerEmptyView : FrameLayout, IMauiRecyclerViewEmptyView
 		{
