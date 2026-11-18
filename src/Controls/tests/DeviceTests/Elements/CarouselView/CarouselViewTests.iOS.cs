@@ -166,6 +166,68 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		// https://github.com/dotnet/maui/issues/29544: while an animated ScrollTo passes over items,
+		// UIKit can land a frame exactly on an intermediate page, which reports that page through
+		// SetPosition. Only the requested target must be reported.
+		[Fact(DisplayName = "Animated ScrollTo Does Not Report Positions It Passes Over")]
+		public async Task AnimatedScrollToDoesNotReportPositionsItPassesOver()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<CarouselView, CarouselViewHandler2>();
+					handlers.AddHandler<Label, LabelHandler>();
+				});
+			});
+
+			var carouselView = new CarouselView
+			{
+				Loop = false,
+				HeightRequest = 100,
+				WidthRequest = 300,
+				ItemsSource = new List<string> { "Item 0", "Item 1", "Item 2", "Item 3", "Item 4" },
+				ItemTemplate = new DataTemplate(() =>
+				{
+					var label = new Label();
+					label.SetBinding(Label.TextProperty, ".");
+					return label;
+				})
+			};
+
+			var positionChanges = new List<(int Previous, int Current)>();
+			carouselView.PositionChanged += (_, e) => positionChanges.Add((e.PreviousPosition, e.CurrentPosition));
+
+			await CreateHandlerAndAddToWindow<CarouselViewHandler2>(carouselView, async handler =>
+			{
+				var controller = Assert.IsType<CarouselViewController2>(handler.Controller);
+				await AssertEventually(() => controller.InitialPositionSet &&
+					controller.CollectionView.VisibleCells.Length > 0,
+					message: "The carousel did not finish its initial layout.");
+
+				await AssertOnlyTargetIsReported(origin: 0, target: 3, passedOver: new[] { 1, 2 });
+				await AssertOnlyTargetIsReported(origin: 3, target: 1, passedOver: new[] { 2 });
+
+				async Task AssertOnlyTargetIsReported(int origin, int target, int[] passedOver)
+				{
+					Assert.Equal(origin, carouselView.Position);
+					positionChanges.Clear();
+
+					carouselView.ScrollTo(target);
+					foreach (var position in passedOver)
+					{
+						controller.SetPosition(position);
+					}
+
+					await Wait(() => carouselView.Position == target, timeout: 3000);
+					await Task.Delay(300);
+
+					Assert.Equal(new[] { (origin, target) }, positionChanges);
+					Assert.Equal(target, carouselView.Position);
+				}
+			});
+		}
+
 		[Fact(DisplayName = "CarouselView Does Not Leak With Default ItemsLayout")]
 		public async Task CarouselViewDoesNotLeakWithDefaultItemsLayout()
 		{
