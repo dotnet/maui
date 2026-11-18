@@ -13,6 +13,11 @@ using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Xunit;
 using AColor = Android.Graphics.Color;
+using AEditText = Android.Widget.EditText;
+using ALinearLayout = Android.Widget.LinearLayout;
+using AView = Android.Views.View;
+using AViewGroup = Android.Views.ViewGroup;
+using FocusSearchDirection = Android.Views.FocusSearchDirection;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -224,6 +229,106 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidateHasColor(entry, expected);
 		}
 
+		[Fact(DisplayName = "ReadOnly Entry Is Still Focusable")]
+		public async Task ReadOnlyEntryIsFocusable()
+		{
+			var entry = new EntryStub() { IsReadOnly = true };
+
+			var focusable = await GetValueAsync(entry, handler =>
+				GetNativeEntry(handler).Focusable && GetNativeEntry(handler).FocusableInTouchMode);
+
+			Assert.True(focusable);
+		}
+
+		[Theory(DisplayName = "Updating Input Properties Keeps Entry ReadOnly")]
+		[InlineData(nameof(IEntry.Keyboard), false)]
+		[InlineData(nameof(IEntry.IsPassword), false)]
+		[InlineData(nameof(IEntry.IsTextPredictionEnabled), false)]
+		[InlineData(nameof(IEntry.IsTextPredictionEnabled), true)]
+		[InlineData(nameof(IEntry.IsSpellCheckEnabled), false)]
+		public async Task UpdatingInputPropertiesKeepsEntryReadOnly(string propertyName, bool isTextPredictionEnabled)
+		{
+			var entry = new EntryStub() { IsReadOnly = true };
+
+			var (isReadOnly, keyListener) = await GetValueAsync(entry, handler =>
+			{
+				entry.Keyboard = Keyboard.Numeric;
+				entry.IsPassword = true;
+				entry.IsTextPredictionEnabled = isTextPredictionEnabled;
+				entry.IsSpellCheckEnabled = false;
+				handler.UpdateValue(propertyName);
+
+				return (GetNativeIsReadOnly(handler), GetNativeEntry(handler).KeyListener);
+			});
+
+			Assert.True(isReadOnly);
+			// Setting even a TYPE_NULL InputType installs a key listener, which lets hardware keys type into the text
+			Assert.Null(keyListener);
+		}
+
+		[Fact(DisplayName = "ReadOnly Entry Does Not Show Clear Button When Focused")]
+		public async Task ReadOnlyEntryDoesNotShowClearButtonWhenFocused()
+		{
+			var entry = new EntryStub()
+			{
+				Text = "Test",
+				IsReadOnly = true,
+				ClearButtonVisibility = ClearButtonVisibility.WhileEditing
+			};
+
+			var handler = await CreateHandlerAsync(entry);
+
+			await InvokeOnMainThreadAsync(() => handler.PlatformView.AttachAndRun(async () =>
+			{
+				handler.PlatformView.RequestFocus();
+				await handler.PlatformView.WaitForFocused();
+
+				Assert.Null(handler.PlatformView.GetCompoundDrawables()[2]);
+			}));
+		}
+
+		[Theory(DisplayName = "Tab Navigation Enters And Leaves A ReadOnly Entry")]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task TabNavigationEntersAndLeavesReadOnlyEntry(bool material3)
+		{
+			var entries = new[]
+			{
+				new EntryStub() { Text = "Before" },
+				new EntryStub() { Text = "Read-only", IsReadOnly = true },
+				new EntryStub() { Text = "After" },
+			};
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var layout = new ALinearLayout(MauiContext.Context) { Orientation = global::Android.Widget.Orientation.Vertical };
+				var editTexts = new AEditText[entries.Length];
+
+				for (int i = 0; i < entries.Length; i++)
+				{
+					AView platformView = material3
+						? CreateHandler<EntryHandler2>(entries[i]).PlatformView
+						: CreateHandler<EntryHandler>(entries[i]).PlatformView;
+
+					// Android doesn't focus zero-sized views, and nothing lays these out with MAUI here
+					layout.AddView(platformView, new ALinearLayout.LayoutParams(AViewGroup.LayoutParams.MatchParent, 150));
+					editTexts[i] = platformView as AEditText ?? ((AViewGroup)platformView).GetChildrenOfType<AEditText>().First();
+				}
+
+				await layout.AttachAndRun(async () =>
+				{
+					editTexts[0].RequestFocus();
+					await editTexts[0].WaitForFocused();
+
+					// Tab and Shift+Tab move the focus to FocusSearch(Forward) and FocusSearch(Backward)
+					Assert.Equal(editTexts[1], editTexts[0].FocusSearch(FocusSearchDirection.Forward));
+					Assert.True(editTexts[1].RequestFocus());
+					Assert.Equal(editTexts[2], editTexts[1].FocusSearch(FocusSearchDirection.Forward));
+					Assert.Equal(editTexts[0], editTexts[1].FocusSearch(FocusSearchDirection.Backward));
+				});
+			});
+		}
+
 		[Fact(DisplayName = "Padding is the same after background changes")]
 		public async Task PaddingDoesntChangeAfterBackground()
 		{
@@ -375,12 +480,8 @@ namespace Microsoft.Maui.DeviceTests
 			return currentPlaceholderColor.ToColor();
 		}
 
-		bool GetNativeIsReadOnly(EntryHandler entryHandler)
-		{
-			var editText = GetNativeEntry(entryHandler);
-
-			return !editText.Focusable && !editText.FocusableInTouchMode;
-		}
+		bool GetNativeIsReadOnly(EntryHandler entryHandler) =>
+			!GetNativeEntry(entryHandler).OnCheckIsTextEditor();
 
 		bool GetNativeIsNumericKeyboard(EntryHandler entryHandler)
 		{

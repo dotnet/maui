@@ -84,6 +84,66 @@ namespace Microsoft.Maui.Controls
 			s_setAndLoadSource(this, value, resourcePath, assembly, lineInfo);
 		}
 
+		[ThreadStatic]
+		static List<ResourceDictionary> s_mergeTargets;
+
+		//Used by XamlC and SourceGen generated code
+		/// <summary>For internal use by the MAUI platform.</summary>
+		/// <typeparam name="T">The type of resource dictionary to create.</typeparam>
+		/// <param name="mergeTarget">The resource dictionary the new instance will be merged into.</param>
+		/// <returns>The new resource dictionary.</returns>
+		/// <remarks>Resources already available from <paramref name="mergeTarget"/> can be resolved by <c>{StaticResource}</c> while the new instance is initialized.</remarks>
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static T CreateMergedDictionary<T>(ResourceDictionary mergeTarget)
+			where T : ResourceDictionary, new()
+			=> (T)CreateMergedDictionary(mergeTarget, static () =>
+			{
+				try
+				{
+					return new T();
+				}
+				catch (TargetInvocationException tie) when (tie.InnerException is not null)
+				{
+					ExceptionDispatchInfo.Capture(tie.InnerException).Throw();
+					throw;
+				}
+			});
+
+		internal static ResourceDictionary CreateMergedDictionary(ResourceDictionary mergeTarget, Func<ResourceDictionary> factory)
+		{
+			if (mergeTarget is null)
+				return factory();
+
+			var targets = s_mergeTargets ??= new List<ResourceDictionary>();
+			var depth = targets.Count;
+			targets.Add(mergeTarget);
+			try
+			{
+				return factory();
+			}
+			finally
+			{
+				targets.RemoveRange(depth, targets.Count - depth);
+			}
+		}
+
+		internal static bool TryGetValueFromMergeTargets(string key, out object value, out ResourceDictionary source)
+		{
+			var targets = s_mergeTargets;
+			if (targets is not null)
+			{
+				for (int i = targets.Count - 1; i >= 0; i--)
+				{
+					if (targets[i].TryGetValueAndSource(key, out value, out source))
+						return true;
+				}
+			}
+
+			value = null;
+			source = null;
+			return false;
+		}
+
 		internal static ResourceDictionary GetOrCreateInstance([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
 		{
 			return s_instances.GetValue(type, _ =>

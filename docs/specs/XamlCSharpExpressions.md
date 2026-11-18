@@ -242,6 +242,14 @@ The `prefix:Type` syntax is expanded to the fully qualified CLR type name before
 
 **Note:** This is distinct from `{prefix:Name}` at the start of an expression, which is always interpreted as a markup extension (see [Disambiguation](#disambiguation)).
 
+**XAML element and markup-extension names** use separate global xmlns mappings. A C# namespace directive such as
+`global using MyApp.Controls;` adds types in that namespace from the current assembly to
+`http://schemas.microsoft.com/dotnet/maui/global`, the default when `xmlns` is omitted. This includes MSBuild- and
+SDK-generated global usings, but not ordinary output from other source generators in the same pass. Namespace/type
+aliases, extern-alias-qualified imports, `global using static`, and types from referenced assemblies are excluded.
+Existing explicit mappings can still expose referenced-assembly types. Explicit default namespaces such as
+`http://schemas.microsoft.com/dotnet/2021/maui` are unchanged; use a qualified namespace when needed.
+
 ## Disambiguation
 
 When a `{...}` value could be interpreted as either a markup extension or an expression, disambiguation rules apply.

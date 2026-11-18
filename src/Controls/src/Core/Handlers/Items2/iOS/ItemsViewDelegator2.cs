@@ -147,9 +147,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			if (visibleItems)
 			{
-				firstVisibleItemIndex = GetFirstVisibleIndexPathUsingLayoutAttributes(collectionView, indexPathsForVisibleItems);
+				(firstVisibleItemIndex, lastVisibleItemIndex) = GetVisibleIndexPathsUsingLayoutAttributes(collectionView, indexPathsForVisibleItems);
 				centerItemIndex = GetCenteredIndexPath(collectionView);
-				lastVisibleItemIndex = indexPathsForVisibleItems.Last();
 			}
 
 			return (visibleItems, firstVisibleItemIndex, centerItemIndex, lastVisibleItemIndex);
@@ -185,24 +184,24 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			return index;
 		}
 
-		static NSIndexPath GetFirstVisibleIndexPathUsingLayoutAttributes(UICollectionView collectionView, IEnumerable<NSIndexPath> indexPathsForVisibleItems)
+		static (NSIndexPath First, NSIndexPath Last) GetVisibleIndexPathsUsingLayoutAttributes(UICollectionView collectionView, IEnumerable<NSIndexPath> indexPathsForVisibleItems)
 		{
 			if (!indexPathsForVisibleItems.Any())
-				return null;
+				return default;
 
 			var layout = collectionView.CollectionViewLayout;
 			if (layout is null)
-				return indexPathsForVisibleItems.First();
+				return (indexPathsForVisibleItems.First(), indexPathsForVisibleItems.Last());
 
 			var visibleRect = new CGRect(collectionView.ContentOffset, collectionView.Bounds.Size);
 			var layoutAttributes = layout.LayoutAttributesForElementsInRect(visibleRect);
 			if (layoutAttributes is null || layoutAttributes.Length == 0)
-				return indexPathsForVisibleItems.First();
+				return (indexPathsForVisibleItems.First(), indexPathsForVisibleItems.Last());
 
 			var flowLayout = layout as UICollectionViewFlowLayout;
 			bool isVertical = flowLayout?.ScrollDirection != UICollectionViewScrollDirection.Horizontal;
 			// Find the first visible cell (not headers/footers) based on scroll direction
-			NSIndexPath firstVisibleIndexPath = null;
+			NSIndexPath firstVisibleIndexPath = null, lastVisibleIndexPath = null;
 			nfloat minPosition = nfloat.MaxValue;
 
 			for (int i = 0; i < layoutAttributes.Length; i++)
@@ -222,9 +221,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					minPosition = position;
 					firstVisibleIndexPath = attr.IndexPath;
 				}
+
+				// The native visible-cell cache can lag behind the current viewport during Scrolled.
+				var indexPath = attr.IndexPath;
+				if (lastVisibleIndexPath is null
+					|| indexPath.Section > lastVisibleIndexPath.Section
+					|| (indexPath.Section == lastVisibleIndexPath.Section && indexPath.Item > lastVisibleIndexPath.Item))
+				{
+					lastVisibleIndexPath = indexPath;
+				}
 			}
 
-			return firstVisibleIndexPath ?? indexPathsForVisibleItems.First();
+			return (firstVisibleIndexPath ?? indexPathsForVisibleItems.First(),
+				lastVisibleIndexPath ?? indexPathsForVisibleItems.Last());
 		}
 
 		static NSIndexPath GetCenteredIndexPath(UICollectionView collectionView)
