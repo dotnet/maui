@@ -112,6 +112,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			return _outerLayout;
 		}
 
+
 		void Destroy()
 		{
 			if (_destroyed)
