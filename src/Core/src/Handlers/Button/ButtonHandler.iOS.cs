@@ -61,7 +61,9 @@ namespace Microsoft.Maui.Handlers
 		internal void UpdateHorizontalTextAlignment(TextAlignment? horizontal)
 		{
 			if (PlatformView is not { } platformView)
+			{
 				return;
+			}
 
 			var imageGroup = platformView.CurrentImage is not null && !string.IsNullOrEmpty(platformView.CurrentTitle);
 			var horizontalAlignment = horizontal.HasValue
@@ -78,6 +80,7 @@ namespace Microsoft.Maui.Handlers
 				? horizontal.Value.ToPlatformHorizontal(platformView.EffectiveUserInterfaceLayoutDirection)
 				: _horizontalTextAlignmentSet ? _defaultTitleAlignment : platformView.TitleLabel.TextAlignment;
 			_horizontalTextAlignmentSet = horizontal.HasValue;
+
 			if (platformView.HorizontalAlignment != horizontalAlignment || platformView.TitleLabel.TextAlignment != titleAlignment)
 			{
 				platformView.HorizontalAlignment = horizontalAlignment;
@@ -89,13 +92,16 @@ namespace Microsoft.Maui.Handlers
 		internal void UpdateVerticalTextAlignment(TextAlignment? vertical)
 		{
 			if (PlatformView is not { } platformView)
+			{
 				return;
+			}
 
 			var imageGroup = platformView.CurrentImage is not null && !string.IsNullOrEmpty(platformView.CurrentTitle);
 			var verticalAlignment = vertical.HasValue
 				? imageGroup && platformView.Configuration is null ? UIControlContentVerticalAlignment.Center : vertical.Value.ToPlatformVertical()
 				: _verticalTextAlignmentSet ? _defaultVerticalAlignment : platformView.VerticalAlignment;
 			_verticalTextAlignmentSet = vertical.HasValue;
+
 			if (platformView.VerticalAlignment != verticalAlignment)
 			{
 				platformView.VerticalAlignment = verticalAlignment;
@@ -117,14 +123,21 @@ namespace Microsoft.Maui.Handlers
 						Color backgroundColor = solidPaint.Color;
 
 						if (backgroundColor == null)
+						{
 							config.BaseBackgroundColor = ColorExtensions.BackgroundColor;
+						}
 						else
+						{
 							config.BaseBackgroundColor = backgroundColor.ToPlatform();
+						}
 
 					}
 				}
+
 				if (handler.PlatformView != null)
+				{
 					handler.PlatformView.Configuration = config;
+				}
 			}
 			else
 			{
@@ -168,9 +181,14 @@ namespace Microsoft.Maui.Handlers
 			{
 				var config = handler.PlatformView?.Configuration ?? UIButtonConfiguration.BorderedButtonConfiguration;
 				if (button?.TextColor != null && handler.PlatformView != null)
+				{
 					config.BaseForegroundColor = button?.TextColor.ToPlatform();
+				}
+
 				if (handler.PlatformView != null)
+				{
 					handler.PlatformView.Configuration = config;
+				}
 			}
 			else
 			{
@@ -272,7 +290,9 @@ namespace Microsoft.Maui.Handlers
 			public override void SetImageSource(UIImage? platformImage)
 			{
 				if (Handler?.PlatformView is not UIButton button)
+				{
 					return;
+				}
 
 				platformImage = platformImage?.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
 

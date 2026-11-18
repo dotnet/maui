@@ -62,9 +62,11 @@ namespace Microsoft.Maui.Controls
 		{
 #if ANDROID || IOS || MACCATALYST || WINDOWS
 			if (handler is ButtonHandler buttonHandler)
+			{
 				buttonHandler.UpdateVerticalTextAlignment(
 					!string.IsNullOrEmpty(button.Text) && button.IsSetExplicitly(VerticalTextAlignmentProperty)
 						? button.VerticalTextAlignment : null);
+			}
 #endif
 		}
 
