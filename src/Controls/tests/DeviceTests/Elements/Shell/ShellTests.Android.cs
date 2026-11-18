@@ -34,13 +34,25 @@ namespace Microsoft.Maui.DeviceTests
 	public class ShellRendererTransitionTests : ControlsHandlerTestBase
 	{
 		[Theory]
-		[InlineData(false, false, false)]
-		[InlineData(true, false, false)]
-		[InlineData(false, true, false)]
-		[InlineData(true, true, false)]
-		[InlineData(false, true, true)]
-		[InlineData(true, true, true)]
-		public async Task ShellItemTransitionPreservesContentPosition(bool useTabBar, bool hasModal, bool centerContent)
+		[InlineData(false)]
+		[InlineData(true)]
+		public Task NavigatingFromModalToShellItemPreservesContentPosition(bool useTabBar) =>
+			VerifyModalNavigationAsync(useTabBar: useTabBar);
+
+		[Fact]
+		public Task CustomItemRendererPreservesContentPositionAfterModalNavigation() =>
+			VerifyModalNavigationAsync(useCustomRenderer: true);
+
+		[Fact]
+		public Task ResumingShellItemRefreshesStaleInsetsWithoutAnotherTransition() =>
+			VerifyModalNavigationAsync(resumeAgain: true);
+
+		[Fact]
+		public Task CenteredContentRemainsCenteredAfterModalNavigation() =>
+			VerifyModalNavigationAsync(centerContent: true);
+
+		async Task VerifyModalNavigationAsync(
+			bool useTabBar = false, bool useCustomRenderer = false, bool resumeAgain = false, bool centerContent = false)
 		{
 			EnsureHandlerCreated(builder => builder.ConfigureMauiHandlers(handlers =>
 			{
@@ -84,16 +96,12 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.NotNull(context.GetActivity()?.WindowManager);
 				Assert.IsAssignableFrom<IWindowManager>(context.GetSystemService(global::Android.Content.Context.WindowService));
 
-				if (hasModal)
-					await shell.Navigation.PushModalAsync(new ContentPage { Content = new Label { Text = "Modal" } });
-
+				renderer.UseCustomItemRenderer = useCustomRenderer;
+				await shell.Navigation.PushModalAsync(new ContentPage { Content = new Label { Text = "Modal" } });
 				await shell.GoToAsync("//TransitionProbeTarget");
-				await AssertEventually(() => renderer.LatestItemRenderer?.EnterTransit is not null);
+				await AssertEventually(() => renderer.LatestItemRenderer?.Fragment.IsResumed == true);
 
-				Assert.Same(target, ((IShellItemRenderer)renderer.LatestItemRenderer).ShellItem);
-				Assert.Equal(
-					(int)global::Android.App.FragmentTransit.FragmentOpen,
-					renderer.LatestItemRenderer.EnterTransit.Value);
+				Assert.Same(target, renderer.LatestItemRenderer.ShellItem);
 				Assert.Empty(homePage.Navigation.ModalStack);
 
 				await OnLoadedAsync(label);
@@ -102,6 +110,35 @@ namespace Microsoft.Maui.DeviceTests
 				using var insets = ViewCompat.GetRootWindowInsets(pageView);
 				Assert.NotNull(insets);
 				var topInset = insets.GetInsets(WindowInsetsCompat.Type.StatusBars()).Top;
+				Assert.True(topInset > 0);
+				var fragment = renderer.LatestItemRenderer.Fragment;
+				var root = fragment.View;
+
+				if (resumeAgain)
+				{
+					await AssertEventually(() => root.ScaleX == 1 && root.ScaleY == 1 && root.Alpha == 1);
+					var manager = fragment.ParentFragmentManager;
+					manager.BeginTransaction()
+						.SetMaxLifecycle(fragment, AndroidX.Lifecycle.Lifecycle.State.Started)
+						.CommitNow();
+					Assert.False(fragment.IsResumed);
+					Assert.True(root.IsAttachedToWindow);
+
+					// Reproduce stale padding while scaled, then resume without a new entering animation.
+					root.ScaleY = 0.85f;
+					ViewCompat.DispatchApplyWindowInsets(root, insets);
+					var layoutView = (AView)contentLayout.Handler.PlatformView;
+					await AssertEventually(() => layoutView.PaddingTop == 0 && !layoutView.IsLayoutRequested);
+					root.ScaleY = 1;
+					Assert.Equal(0, layoutView.PaddingTop);
+
+					manager.BeginTransaction()
+						.SetMaxLifecycle(fragment, AndroidX.Lifecycle.Lifecycle.State.Resumed)
+						.CommitNow();
+					Assert.True(fragment.IsResumed);
+					Assert.Same(root, fragment.View);
+				}
+
 				var pageLocation = new int[2];
 				var labelLocation = new int[2];
 				var expectedY = 0;
@@ -112,7 +149,6 @@ namespace Microsoft.Maui.DeviceTests
 					expectedY = centerContent
 						? pageLocation[1] + (pageView.Height - labelView.Height) / 2
 						: Math.Max(pageLocation[1], topInset);
-					var root = renderer.LatestItemRenderer.View;
 					return pageView.Height > 0 && labelView.Height > 0 &&
 						root.ScaleX == 1 && root.ScaleY == 1 && root.Alpha == 1 &&
 						Math.Abs(labelLocation[1] - expectedY) <= 1;
@@ -121,7 +157,7 @@ namespace Microsoft.Maui.DeviceTests
 					$"Expected label Y={expectedY}, actual={labelLocation[1]}, page Y={pageLocation[1]}, " +
 					$"page height={pageView.Height}, label height={labelView.Height}, status bar={topInset}, " +
 					$"layout padding={((AView)contentLayout.Handler.PlatformView).PaddingTop}, page padding={pageView.PaddingTop}, " +
-					$"root scale={renderer.LatestItemRenderer.View.ScaleY}, alpha={renderer.LatestItemRenderer.View.Alpha}");
+					$"root scale={root.ScaleY}, alpha={root.Alpha}");
 			});
 		}
 
@@ -131,28 +167,21 @@ namespace Microsoft.Maui.DeviceTests
 			{
 			}
 
-			public TransitionProbeItemRenderer LatestItemRenderer { get; private set; }
+			public IShellItemRenderer LatestItemRenderer { get; private set; }
+			public bool UseCustomItemRenderer { get; set; }
 
 			protected override IShellItemRenderer CreateShellItemRenderer(ShellItem shellItem)
 			{
-				return LatestItemRenderer = new TransitionProbeItemRenderer(this);
+				return LatestItemRenderer = UseCustomItemRenderer
+					? new CustomShellItemRenderer(this)
+					: base.CreateShellItemRenderer(shellItem);
 			}
 		}
 
-		class TransitionProbeItemRenderer : ShellItemRenderer
+		class CustomShellItemRenderer : ShellItemRenderer
 		{
-			public TransitionProbeItemRenderer(IShellContext shellContext) : base(shellContext)
+			public CustomShellItemRenderer(IShellContext shellContext) : base(shellContext)
 			{
-			}
-
-			public int? EnterTransit { get; private set; }
-
-			public override global::Android.Views.Animations.Animation OnCreateAnimation(int transit, bool enter, int nextAnim)
-			{
-				if (enter)
-					EnterTransit = transit;
-
-				return base.OnCreateAnimation(transit, enter, nextAnim);
 			}
 		}
 	}
