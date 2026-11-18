@@ -390,6 +390,16 @@ be dropped and performs a leased internal sync. The internal candidate's own
 competing build trigger. Advancing `currentSr` therefore selects and mirrors the
 next candidate without a manual per-SR change.
 
+Candidate nightlies publish to the production `.NET 11.0.1xx SDK` channel, so
+`.azuredevops/policies/branchClassification.yml` classifies `candidate/*` as a
+production branch, as it does `main`, `release/*` and `inflight/current`.
+Arcade's production-channel validation checks the build's branch against this
+classification during promotion. Today a mismatch is only an audit warning
+("is not classified as a production branch"), but enforcement would block
+publication. The classification service reads the file from the internal
+repository's default branch (`main`); after changing it, confirm the service
+lists the new pattern before relying on it.
+
 The **Prepare signed release publication** workflow also has an opt-in
 nightly-mirror job that performs those leased syncs. It runs only while the
 repository variable `RELEASE_NIGHTLY_MIRROR_ENABLED` is `true`; enable it only
