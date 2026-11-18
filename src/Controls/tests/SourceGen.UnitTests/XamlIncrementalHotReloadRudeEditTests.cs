@@ -6,6 +6,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.Maui.Controls.SourceGen.UnitTests.HotReload;
 using Microsoft.Maui.Controls.Xaml.UnitTests.SourceGen;
 using Xunit;
 
@@ -84,8 +85,9 @@ public class XamlIncrementalHotReloadRudeEditTests : IDisposable
 		Assert.Contains("Count + 1", runs[2].UC, StringComparison.Ordinal);
 
 		// Later edits are diffed against the fixed (applied) generation again.
-		Assert.Contains("\"Three\"", runs[3].UC, StringComparison.Ordinal);
-		Assert.DoesNotContain("Count + 1", runs[3].UC, StringComparison.Ordinal);
+		var patchFromFixed = UpdateComponentText.DefaultPatch(runs[3].UC);
+		Assert.Contains("\"Three\"", patchFromFixed, StringComparison.Ordinal);
+		Assert.DoesNotContain("Count + 1", patchFromFixed, StringComparison.Ordinal);
 	}
 
 	[Fact]
@@ -144,8 +146,9 @@ public class XamlIncrementalHotReloadRudeEditTests : IDisposable
 		Assert.Contains("\"Added\"", runs[1].UC, StringComparison.Ordinal);
 		// The Button was applied with the previous edit: it must not be added a second time.
 		Assert.True(runs[2].Compiles, runs[2].Errors);
-		Assert.Contains("\"Two\"", runs[2].UC, StringComparison.Ordinal);
-		Assert.DoesNotContain("\"Added\"", runs[2].UC, StringComparison.Ordinal);
+		var patchFromPrevious = UpdateComponentText.DefaultPatch(runs[2].UC);
+		Assert.Contains("\"Two\"", patchFromPrevious, StringComparison.Ordinal);
+		Assert.DoesNotContain("\"Added\"", patchFromPrevious, StringComparison.Ordinal);
 	}
 
 	[Fact]
@@ -201,9 +204,10 @@ public class XamlIncrementalHotReloadRudeEditTests : IDisposable
 		Assert.Contains("\"Added\"", runs[1].UC, StringComparison.Ordinal);
 		Assert.Contains("Count + 1", runs[1].UC, StringComparison.Ordinal);
 		// The previous edit was applied: the Button must not be added a second time.
-		Assert.Contains("\"Two\"", runs[2].UC, StringComparison.Ordinal);
-		Assert.DoesNotContain("\"Added\"", runs[2].UC, StringComparison.Ordinal);
-		Assert.DoesNotContain("Count + 1", runs[2].UC, StringComparison.Ordinal);
+		var patchFromPrevious = UpdateComponentText.DefaultPatch(runs[2].UC);
+		Assert.Contains("\"Two\"", patchFromPrevious, StringComparison.Ordinal);
+		Assert.DoesNotContain("\"Added\"", patchFromPrevious, StringComparison.Ordinal);
+		Assert.DoesNotContain("Count + 1", patchFromPrevious, StringComparison.Ordinal);
 	}
 
 	sealed record Generation(string UC, bool Compiles, string Errors);
