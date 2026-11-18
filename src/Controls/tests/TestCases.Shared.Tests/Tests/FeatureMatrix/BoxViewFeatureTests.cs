@@ -160,6 +160,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
+#if TEST_FAILS_ON_WINDOWS // For more information see: https://github.com/dotnet/maui/issues/27732
 		// ── Shadow tests - disabled on Windows (Order 12–14) ──
 
 		[Test, Order(12)]
@@ -231,5 +232,6 @@ namespace Microsoft.Maui.TestCases.Tests
 
 			VerifyScreenshot();
 		}
+#endif
 	}
 }
