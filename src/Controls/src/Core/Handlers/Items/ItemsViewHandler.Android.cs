@@ -2,11 +2,9 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Android.Views;
 using AndroidX.RecyclerView.Widget;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
-using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
@@ -37,16 +35,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			if (VirtualView is not IView view)
-				return base.GetDesiredSize(widthConstraint, heightConstraint);
+			var width = widthConstraint;
+			var height = heightConstraint;
 
-			// Match the native constraints, including explicit sizes and minimum/maximum requests.
-			var widthSpec = Context.CreateMeasureSpec(widthConstraint, view.Width, view.MinimumWidth, view.MaximumWidth);
-			var heightSpec = Context.CreateMeasureSpec(heightConstraint, view.Height, view.MinimumHeight, view.MaximumHeight);
-			var width = AView.MeasureSpec.GetMode(widthSpec) == MeasureSpecMode.Unspecified
-				? double.PositiveInfinity : AView.MeasureSpec.GetSize(widthSpec);
-			var height = AView.MeasureSpec.GetMode(heightSpec) == MeasureSpecMode.Unspecified
-				? double.PositiveInfinity : AView.MeasureSpec.GetSize(heightSpec);
+			if (!double.IsInfinity(width))
+				width = Context.ToPixels(width);
+
+			if (!double.IsInfinity(height))
+				height = Context.ToPixels(height);
 
 			UpdateEmptyViewSize(width, height);
 
@@ -61,18 +57,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			UpdateEmptyViewSize(width, height);
 
 			base.PlatformArrange(frame);
-
-			if (PlatformView?.GetAdapter() is EmptyViewAdapter emptyViewAdapter)
-			{
-				var itemView = GetEmptyViewHolder(PlatformView)?.ItemView;
-				if (itemView is not null && !emptyViewAdapter.HasValidEmptyViewSize(itemView, PlatformView))
-				{
-					// Auto-measure can finish child layout before the final arrange size is known.
-					// Only request another pass if that size was not applied, deferring during layout.
-					itemView.ForceLayout();
-					PlatformInterop.RequestLayoutIfNeeded(itemView);
-				}
-			}
 		}
 
 		public static void MapItemsSource(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
@@ -135,16 +119,34 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 				if (widthChanged || heightChanged)
 				{
-					GetEmptyViewHolder(platformView)?.ItemView.ForceLayout();
+					// EmptyView position depends on whether the CollectionView has a header
+					var structuredItemsView = VirtualView as StructuredItemsView;
+					var hasHeader = (structuredItemsView?.Header ?? structuredItemsView?.HeaderTemplate) is not null;
+					var emptyViewPosition = hasHeader ? 1 : 0;
+
+					// Check if ViewHolder exists and is ready for immediate layout request
+					var viewHolder = platformView.FindViewHolderForAdapterPosition(emptyViewPosition);
+					if (viewHolder is not null)
+					{
+						// Defer the request if Android is already laying out the view.
+						PlatformInterop.RequestLayoutIfNeeded(viewHolder.ItemView);
+					}
+					else
+					{
+						// ViewHolder not created yet, defer layout request to next UI loop iteration
+						platformView.Post(() =>
+						{
+							if (!ReferenceEquals(((IElementHandler)this).PlatformView, platformView))
+							{
+								return;
+							}
+							var vh = platformView.FindViewHolderForAdapterPosition(emptyViewPosition);
+							if (vh is not null)
+								PlatformInterop.RequestLayoutIfNeeded(vh.ItemView);
+						});
+					}
 				}
 			}
-		}
-
-		RecyclerView.ViewHolder GetEmptyViewHolder(RecyclerView platformView)
-		{
-			var structuredItemsView = VirtualView as StructuredItemsView;
-			var hasHeader = (structuredItemsView?.Header ?? structuredItemsView?.HeaderTemplate) is not null;
-			return platformView.FindViewHolderForAdapterPosition(hasHeader ? 1 : 0);
 		}
 	}
 }

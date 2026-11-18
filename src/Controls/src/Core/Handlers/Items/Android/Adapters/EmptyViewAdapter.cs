@@ -293,23 +293,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return Math.Abs((int)(height - headerFooterHeight));
 		}
 
-		internal bool HasValidEmptyViewSize(global::Android.Views.View itemView, ViewGroup parent)
-		{
-			var width = GetWidth(parent);
-			var height = GetHeight(parent);
-			if (itemView is ItemContentView itemContentView &&
-				itemContentView.View?.Handler is IPlatformViewHandler contentHandler &&
-				contentHandler.PlatformView is { } contentView)
-			{
-				// MeasureVirtualView gives the content's native minimum precedence over exact specs.
-				width = Math.Max(width, contentView.MinimumWidth);
-				height = Math.Max(height, contentView.MinimumHeight);
-			}
-
-			return itemView.MeasuredWidth == width && itemView.Width == width
-				&& itemView.MeasuredHeight == height && itemView.Height == height;
-		}
-
 		int GetWidth(ViewGroup parent)
 		{
 			int width = (int)RecyclerViewWidth;
