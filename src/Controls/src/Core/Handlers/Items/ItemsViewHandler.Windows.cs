@@ -598,6 +598,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				firstVisibleItemIndex = itemsPanel.FirstVisibleIndex;
 				lastVisibleItemIndex = itemsPanel.LastVisibleIndex;
 			}
+			else if (CollectionViewSource?.IsSourceGrouped == false && ListViewBase.ItemsPanelRoot is ItemsWrapGrid itemsWrapGrid)
+			{
+				firstVisibleItemIndex = itemsWrapGrid.FirstVisibleIndex;
+				lastVisibleItemIndex = itemsWrapGrid.LastVisibleIndex;
+			}
 			else
 			{
 				var presenters = ListViewBase.GetChildren<ListViewItemPresenter>();
