@@ -58,13 +58,13 @@ namespace Microsoft.Maui.Handlers
 			base.DisconnectHandler(platformView);
 		}
 
-		internal void UpdateTextAlignment(TextAlignment? horizontal, TextAlignment? vertical, bool updateHorizontal = true, bool updateVertical = true)
+		internal void UpdateHorizontalTextAlignment(TextAlignment? horizontal)
 		{
 			if (PlatformView is not { } platformView)
 				return;
 
 			var imageGroup = platformView.CurrentImage is not null && !string.IsNullOrEmpty(platformView.CurrentTitle);
-			var horizontalAlignment = !updateHorizontal ? platformView.HorizontalAlignment : horizontal.HasValue
+			var horizontalAlignment = horizontal.HasValue
 				? horizontal.Value switch
 				{
 					TextAlignment.Justify => UIControlContentHorizontalAlignment.Fill,
@@ -74,23 +74,31 @@ namespace Microsoft.Maui.Handlers
 					_ => UIControlContentHorizontalAlignment.Center
 				}
 				: _horizontalTextAlignmentSet ? _defaultHorizontalAlignment : platformView.HorizontalAlignment;
-			var verticalAlignment = !updateVertical ? platformView.VerticalAlignment : vertical.HasValue
-				? imageGroup && platformView.Configuration is null ? UIControlContentVerticalAlignment.Center : vertical.Value.ToPlatformVertical()
-				: _verticalTextAlignmentSet ? _defaultVerticalAlignment : platformView.VerticalAlignment;
-			var titleAlignment = !updateHorizontal ? platformView.TitleLabel.TextAlignment : horizontal.HasValue
+			var titleAlignment = horizontal.HasValue
 				? horizontal.Value.ToPlatformHorizontal(platformView.EffectiveUserInterfaceLayoutDirection)
 				: _horizontalTextAlignmentSet ? _defaultTitleAlignment : platformView.TitleLabel.TextAlignment;
-			if (updateHorizontal)
-				_horizontalTextAlignmentSet = horizontal.HasValue;
-			if (updateVertical)
-				_verticalTextAlignmentSet = vertical.HasValue;
-			if (platformView.HorizontalAlignment != horizontalAlignment ||
-				platformView.VerticalAlignment != verticalAlignment ||
-				platformView.TitleLabel.TextAlignment != titleAlignment)
+			_horizontalTextAlignmentSet = horizontal.HasValue;
+			if (platformView.HorizontalAlignment != horizontalAlignment || platformView.TitleLabel.TextAlignment != titleAlignment)
 			{
 				platformView.HorizontalAlignment = horizontalAlignment;
-				platformView.VerticalAlignment = verticalAlignment;
 				platformView.TitleLabel.TextAlignment = titleAlignment;
+				platformView.SetNeedsLayout();
+			}
+		}
+
+		internal void UpdateVerticalTextAlignment(TextAlignment? vertical)
+		{
+			if (PlatformView is not { } platformView)
+				return;
+
+			var imageGroup = platformView.CurrentImage is not null && !string.IsNullOrEmpty(platformView.CurrentTitle);
+			var verticalAlignment = vertical.HasValue
+				? imageGroup && platformView.Configuration is null ? UIControlContentVerticalAlignment.Center : vertical.Value.ToPlatformVertical()
+				: _verticalTextAlignmentSet ? _defaultVerticalAlignment : platformView.VerticalAlignment;
+			_verticalTextAlignmentSet = vertical.HasValue;
+			if (platformView.VerticalAlignment != verticalAlignment)
+			{
+				platformView.VerticalAlignment = verticalAlignment;
 				platformView.SetNeedsLayout();
 			}
 		}

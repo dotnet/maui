@@ -70,14 +70,14 @@ namespace Microsoft.Maui.Handlers
 			base.DisconnectHandler(platformView);
 		}
 
-		internal void UpdateTextAlignment(TextAlignment? horizontal, TextAlignment? vertical, bool updateHorizontal = true, bool updateVertical = true)
+		internal void UpdateHorizontalTextAlignment(TextAlignment? horizontal)
 		{
 			if (PlatformView is not { } platformView ||
 				_alignmentContent is not { } content ||
 				_alignmentTextBlock is not { } textBlock)
 				return;
 
-			if (updateHorizontal && horizontal is { } horizontalAlignment)
+			if (horizontal is { } horizontalAlignment)
 			{
 				// WinUI mirrors the content panel in RTL; text itself requires physical line alignment.
 				platformView.HorizontalContentAlignment = content.HorizontalAlignment = horizontalAlignment.ToPlatformHorizontalAlignment();
@@ -93,15 +93,23 @@ namespace Microsoft.Maui.Handlers
 					RestoreTextHorizontalAlignment();
 				_horizontalTextAlignmentSet = true;
 			}
-			else if (updateHorizontal)
+			else
 				RestoreHorizontalTextAlignment(platformView);
+		}
 
-			if (updateVertical && vertical is { } verticalAlignment)
+		internal void UpdateVerticalTextAlignment(TextAlignment? vertical)
+		{
+			if (PlatformView is not { } platformView ||
+				_alignmentContent is not { } content ||
+				_alignmentTextBlock is null)
+				return;
+
+			if (vertical is { } verticalAlignment)
 			{
 				platformView.VerticalContentAlignment = content.VerticalAlignment = verticalAlignment.ToPlatformVerticalAlignment();
 				_verticalTextAlignmentSet = true;
 			}
-			else if (updateVertical)
+			else
 				RestoreVerticalTextAlignment(platformView);
 		}
 

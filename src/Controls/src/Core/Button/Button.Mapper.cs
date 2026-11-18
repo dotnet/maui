@@ -43,27 +43,28 @@ namespace Microsoft.Maui.Controls
 			MapVerticalTextAlignment(handler, button);
 		}
 
-		static void MapHorizontalTextAlignment(IButtonHandler handler, Button button) =>
-			MapTextAlignment(handler, button, true);
-
-		static void MapVerticalTextAlignment(IButtonHandler handler, Button button) =>
-			MapTextAlignment(handler, button, false);
-
-		static void MapTextAlignment(IButtonHandler handler, Button button, bool horizontal)
+		static void MapHorizontalTextAlignment(IButtonHandler handler, Button button)
 		{
 #if ANDROID || IOS || MACCATALYST || WINDOWS
 			if (handler is ButtonHandler buttonHandler)
 			{
 #if WINDOWS
-				if (horizontal)
-					handler.UpdateValue(nameof(ContentLayout));
+				handler.UpdateValue(nameof(ContentLayout));
 #endif
-				var hasText = !string.IsNullOrEmpty(button.Text);
-				buttonHandler.UpdateTextAlignment(
-					hasText && button.IsSetExplicitly(HorizontalTextAlignmentProperty) ? button.HorizontalTextAlignment : null,
-					hasText && button.IsSetExplicitly(VerticalTextAlignmentProperty) ? button.VerticalTextAlignment : null,
-					updateHorizontal: horizontal, updateVertical: !horizontal);
+				buttonHandler.UpdateHorizontalTextAlignment(
+					!string.IsNullOrEmpty(button.Text) && button.IsSetExplicitly(HorizontalTextAlignmentProperty)
+						? button.HorizontalTextAlignment : null);
 			}
+#endif
+		}
+
+		static void MapVerticalTextAlignment(IButtonHandler handler, Button button)
+		{
+#if ANDROID || IOS || MACCATALYST || WINDOWS
+			if (handler is ButtonHandler buttonHandler)
+				buttonHandler.UpdateVerticalTextAlignment(
+					!string.IsNullOrEmpty(button.Text) && button.IsSetExplicitly(VerticalTextAlignmentProperty)
+						? button.VerticalTextAlignment : null);
 #endif
 		}
 
