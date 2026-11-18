@@ -263,9 +263,12 @@ namespace Microsoft.Maui.Platform
 			var ttv = Child.TransformToVisual(_shadowCanvas);
 			global::Windows.Foundation.Point offset = ttv.TransformPoint(new global::Windows.Foundation.Point(0, 0));
 
+			// The host only carries the shadow's composition visual. It deliberately has no Fill:
+			// a filled (even transparent) shape adds XAML content bounds, so a transformed child
+			// (for example a scaled view inside a clipped Border) would enlarge RenderTargetBitmap
+			// captures and hit testing beyond the composition clip, unlike the same view without a shadow.
 			_shadowHost = new UI.Xaml.Shapes.Rectangle()
 			{
-				Fill = new SolidColorBrush(UI.Colors.Transparent),
 				Width = width,
 				Height = height
 			};
