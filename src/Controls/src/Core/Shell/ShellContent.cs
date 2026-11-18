@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.Maui.Controls.Internals;
 
@@ -726,15 +727,10 @@ namespace Microsoft.Maui.Controls
 			if (content is BindableObject bindable && bindable.BindingContext != null && content != bindable.BindingContext)
 				ApplyQueryAttributes(bindable.BindingContext, query, oldQuery);
 
-			if (QueryPropertyRegistry.TryGetQueryProperties(content.GetType(), out var generatedQueryProperties))
+			if (content is IQueryPropertyAttributable queryPropertyAttributable
+				&& !(RuntimeFeature.IsQueryPropertyAttributeSupported && HasQueryPropertiesOutsideGeneratedCode(content.GetType())))
 			{
-				foreach (var queryProperty in generatedQueryProperties)
-				{
-					if (query.TryGetValue(queryProperty.QueryId, out var value))
-						queryProperty.SetValue(content, ConvertQueryPropertyValue(query, queryProperty.QueryId, queryProperty.PropertyType, value));
-					else if (oldQuery.TryGetValue(queryProperty.QueryId, out _))
-						queryProperty.ResetValue(content);
-				}
+				queryPropertyAttributable.ApplyQueryProperties(query, oldQuery);
 			}
 			else if (RuntimeFeature.IsQueryPropertyAttributeSupported)
 			{
@@ -799,6 +795,21 @@ namespace Microsoft.Maui.Controls
 					? global::System.Globalization.CultureInfo.InvariantCulture
 					: global::System.Globalization.CultureInfo.CurrentCulture;
 				return Convert.ChangeType(value, targetType, culture);
+			}
+
+			// A class deriving from a class with generated code isn't covered by it when it declares
+			// its own [QueryProperty] attributes but isn't partial. Reflection handles those classes.
+			[RequiresUnreferencedCode(TrimmerConstants.QueryPropertyAttributeWarning)]
+			static bool HasQueryPropertiesOutsideGeneratedCode(Type type)
+			{
+				var implementingType = type.GetInterfaceMap(typeof(IQueryPropertyAttributable)).TargetMethods[0].DeclaringType;
+				for (var current = type; current is not null && current != implementingType; current = current.BaseType)
+				{
+					if (current.IsDefined(typeof(QueryPropertyAttribute), inherit: false))
+						return true;
+				}
+
+				return false;
 			}
 
 			static void ClearQueryIfAppliedToPage(ShellRouteParameters query, object content)

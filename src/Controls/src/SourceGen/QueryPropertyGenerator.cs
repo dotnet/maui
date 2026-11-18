@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -15,36 +14,34 @@ namespace Microsoft.Maui.Controls.SourceGen;
 /// </summary>
 /// <remarks>
 /// <para>
-/// For every class whose <c>[QueryProperty]</c> attributes (declared or inherited) can be applied without reflection,
-/// the generator emits strongly-typed setters and registers them from a module initializer with the internal
-/// <c>Microsoft.Maui.Controls.QueryPropertyRegistry</c>, which it reaches through <c>UnsafeAccessor</c>.
-/// No user code changes and no public API are required.
+/// For every partial class with <c>[QueryProperty]</c> attributes (declared or inherited), the generator adds an explicit
+/// implementation of <c>IQueryPropertyAttributable</c> that sets the properties directly. <c>ShellContent</c> calls it
+/// instead of using reflection.
 /// </para>
 /// <para>
-/// The generated data mirrors what <c>ShellContent</c> computes with reflection: the attributes in
+/// The generated code mirrors what <c>ShellContent</c> does with reflection: the attributes in
 /// <c>GetCustomAttributes(typeof(QueryPropertyAttribute), true)</c> order, the property found by
-/// <c>Type.GetRuntimeProperty</c>, and only properties with a public setter. <c>ShellContent</c> keeps
-/// converting the values, so both paths share the same conversion logic.
+/// <c>Type.GetRuntimeProperty</c>, only properties with a public setter, and the same value conversions and resets.
+/// The conversions that depend on where a parameter came from use <c>QueryPropertyConversion</c>.
 /// </para>
 /// <para>
-/// Classes that can't be handled (for example generic or private nested classes) are not registered and keep
-/// using reflection. When the trim analyzer is enabled, MAUI1200 reports them.
+/// Classes that can't be handled (for example classes that aren't partial) keep using reflection.
+/// When the trim analyzer is enabled, MAUI1200 reports them.
 /// </para>
 /// </remarks>
 [Generator(LanguageNames.CSharp)]
 public sealed class QueryPropertyGenerator : IIncrementalGenerator
 {
 	const string QueryPropertyAttributeMetadataName = "Microsoft.Maui.Controls.QueryPropertyAttribute";
-	const string RegistryTypeName = "Microsoft.Maui.Controls.QueryPropertyRegistry";
-	internal const string HintName = "QueryPropertyRegistrations.g.cs";
+	const string InterfaceMetadataName = "Microsoft.Maui.Controls.IQueryPropertyAttributable";
+	const string InterfaceName = "global::Microsoft.Maui.Controls.IQueryPropertyAttributable";
+	const string ConversionName = "global::Microsoft.Maui.Controls.QueryPropertyConversion";
 
 	public void Initialize(IncrementalGeneratorInitializationContext context)
 	{
-		var canGenerate = context.CompilationProvider.Select(static (compilation, _) => GetRegistryAssemblyName(compilation));
-
 		var types = context.SyntaxProvider
 			.CreateSyntaxProvider(
-				predicate: static (node, _) => node is TypeDeclarationSyntax { AttributeLists.Count: > 0 } or TypeDeclarationSyntax { BaseList: not null },
+				predicate: static (node, _) => node is ClassDeclarationSyntax or RecordDeclarationSyntax,
 				transform: static (ctx, ct) => GetTypeModel(ctx, ct))
 			.Where(static model => model is not null)
 			.Select(static (model, _) => model!)
@@ -53,44 +50,19 @@ public sealed class QueryPropertyGenerator : IIncrementalGenerator
 		var reportDiagnostics = context.AnalyzerConfigOptionsProvider
 			.Select(static (options, _) => options.GlobalOptions.IsTrue("build_property.EnableTrimAnalyzer"));
 
-		context.RegisterSourceOutput(types.Combine(canGenerate).Combine(reportDiagnostics), static (spc, input) =>
+		context.RegisterSourceOutput(types.Combine(reportDiagnostics), static (spc, input) =>
 		{
-			var ((models, registryAssemblyName), reportDiagnostics) = input;
-			if (registryAssemblyName is null || models.IsEmpty)
-				return;
+			var (models, reportDiagnostics) = input;
 
 			// Partial classes are seen once per declaration.
-			var distinctModels = models
-				.GroupBy(static m => m.TypeName)
-				.Select(static g => g.First())
-				.OrderBy(static m => m.TypeName, System.StringComparer.Ordinal)
-				.ToList();
-
-			if (reportDiagnostics)
+			foreach (var model in models.GroupBy(static m => m.TypeName).Select(static g => g.First()))
 			{
-				foreach (var model in distinctModels)
-				{
-					if (model.UnsupportedReason is not null)
-						spc.ReportDiagnostic(Diagnostic.Create(Descriptors.QueryPropertyRequiresReflection, model.Location?.ToLocation(), model.DisplayName, model.UnsupportedReason));
-				}
+				if (model.Source is not null)
+					spc.AddSource(model.HintName, SourceText.From(model.Source, Encoding.UTF8));
+				else if (reportDiagnostics && model.UnsupportedReason is not null)
+					spc.ReportDiagnostic(Diagnostic.Create(Descriptors.QueryPropertyRequiresReflection, model.Location?.ToLocation(), model.DisplayName, model.UnsupportedReason));
 			}
-
-			var registrations = distinctModels.Where(static m => m.Registration is not null).Select(static m => m.Registration!).ToList();
-			if (registrations.Count > 0)
-				spc.AddSource(HintName, SourceText.From(GenerateSource(registryAssemblyName, registrations), Encoding.UTF8));
 		});
-	}
-
-	static string? GetRegistryAssemblyName(Compilation compilation)
-	{
-		if (compilation is not CSharpCompilation { LanguageVersion: >= LanguageVersion.CSharp9 })
-			return null;
-
-		if (compilation.GetTypeByMetadataName("System.Runtime.CompilerServices.ModuleInitializerAttribute") is null
-			|| compilation.GetTypeByMetadataName("System.Runtime.CompilerServices.UnsafeAccessorTypeAttribute") is null)
-			return null;
-
-		return compilation.GetTypeByMetadataName(QueryPropertyAttributeMetadataName)?.ContainingAssembly.Name;
 	}
 
 	static TypeModel? GetTypeModel(GeneratorSyntaxContext context, CancellationToken cancellationToken)
@@ -101,7 +73,8 @@ public sealed class QueryPropertyGenerator : IIncrementalGenerator
 
 		var compilation = context.SemanticModel.Compilation;
 		var attributeType = compilation.GetTypeByMetadataName(QueryPropertyAttributeMetadataName);
-		if (attributeType is null)
+		var interfaceType = compilation.GetTypeByMetadataName(InterfaceMetadataName);
+		if (attributeType is null || interfaceType is null)
 			return null;
 
 		// Same order as Type.GetCustomAttributes(typeof(QueryPropertyAttribute), inherit: true):
@@ -119,31 +92,37 @@ public sealed class QueryPropertyGenerator : IIncrementalGenerator
 		if (attributes.Count == 0)
 			return null;
 
-		var typeName = type.ToFQDisplayString();
-		var displayName = type.ToString();
-		var location = LocationModel.From(declaration.Identifier.GetLocation());
+		// The type implements the interface itself; the generated code would conflict with it.
+		if (type.Interfaces.Contains(interfaceType, SymbolEqualityComparer.Default))
+			return null;
 
-		var registration = TryCreateRegistration(compilation, type, typeName, attributes, attributeType, out var unsupportedReason);
-		return new TypeModel(typeName, displayName, registration, unsupportedReason, location);
+		var typeName = type.ToFQDisplayString();
+		var location = LocationModel.From(declaration.Identifier.GetLocation());
+		var hintName = GetHintName(typeName);
+
+		var source = TryGenerateSource(compilation, type, attributes, attributeType, out var unsupportedReason);
+		return new TypeModel(typeName, type.ToString(), hintName, source, unsupportedReason, location);
 	}
 
-	static string? TryCreateRegistration(Compilation compilation, INamedTypeSymbol type, string typeName, List<AttributeData> attributes, INamedTypeSymbol attributeType, out string? unsupportedReason)
+	static string? TryGenerateSource(Compilation compilation, INamedTypeSymbol type, List<AttributeData> attributes, INamedTypeSymbol attributeType, out string? unsupportedReason)
 	{
 		unsupportedReason = null;
 
 		for (var current = type; current is not null; current = current.ContainingType)
 		{
-			if (current.IsGenericType)
+			if (current.IsFileLocal)
 			{
-				unsupportedReason = "generic types are not supported";
+				unsupportedReason = "file-local types are not supported";
 				return null;
 			}
-		}
 
-		if (type.IsFileLocal || !compilation.IsSymbolAccessibleWithin(type, compilation.Assembly))
-		{
-			unsupportedReason = "the type is not accessible from other types in the assembly";
-			return null;
+			if (!IsPartial(current))
+			{
+				unsupportedReason = SymbolEqualityComparer.Default.Equals(current, type)
+					? "the type is not partial"
+					: $"the containing type '{current.ToString()}' is not partial";
+				return null;
+			}
 		}
 
 		if (IsObsoleteError(type))
@@ -152,11 +131,7 @@ public sealed class QueryPropertyGenerator : IIncrementalGenerator
 			return null;
 		}
 
-		var queryIds = new List<string>();
-		var propertyTypes = new List<string>();
-		var setters = new List<string>();
-		var resetters = new List<string>();
-
+		var body = new StringBuilder();
 		foreach (var attribute in attributes)
 		{
 			if (!SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, attributeType))
@@ -187,60 +162,139 @@ public sealed class QueryPropertyGenerator : IIncrementalGenerator
 				|| property.Type.IsRefLikeType
 				|| property.Type is IPointerTypeSymbol or IFunctionPointerTypeSymbol
 				|| property.Type.TypeKind == TypeKind.Error
-				|| !compilation.IsSymbolAccessibleWithin(property.Type, compilation.Assembly)
-				|| !compilation.IsSymbolAccessibleWithin(property.ContainingType, compilation.Assembly)
+				|| ContainsTypeParameter(property.Type)
+				|| !compilation.IsSymbolAccessibleWithin(property.Type, type)
+				|| !compilation.IsSymbolAccessibleWithin(property.ContainingType, type)
 				|| IsObsoleteError(property) || IsObsoleteError(setMethod))
 			{
 				unsupportedReason = $"property '{name}' can't be set from generated code";
 				return null;
 			}
 
-			var propertyType = property.Type.ToFQDisplayString();
-			var target = property.IsStatic
-				? property.ContainingType.ToFQDisplayString()
-				: $"(({property.ContainingType.ToFQDisplayString()})target)";
-			var member = $"{target}.{EscapeIdentifier(property.Name)}";
-			var isNonNullableValueType = property.Type.IsValueType && property.Type.OriginalDefinition.SpecialType != SpecialType.System_Nullable_T;
-
-			queryIds.Add(SymbolDisplay.FormatLiteral(queryId, quote: true));
-			propertyTypes.Add($"typeof({propertyType})");
-			// PropertyInfo.SetValue(target, null) stores the default value of a value type.
-			setters.Add(isNonNullableValueType
-				? $"static (target, value) => {member} = value is null ? default({propertyType}) : ({propertyType})value"
-				: $"static (target, value) => {member} = ({propertyType})value");
-			// Matches Activator.CreateInstance(propertyType) for value types and null otherwise.
-			resetters.Add(isNonNullableValueType
-				? $"static target => {member} = new {propertyType}()"
-				: $"static target => {member} = default({propertyType})");
+			AppendPropertyAssignment(body, property, queryId);
 		}
+
+		return GenerateSource(type, body.ToString());
+	}
+
+	static void AppendPropertyAssignment(StringBuilder builder, IPropertySymbol property, string queryId)
+	{
+		var propertyType = property.Type.ToFQDisplayString();
+		var member = property.IsStatic
+			? $"{property.ContainingType.ToFQDisplayString()}.{EscapeIdentifier(property.Name)}"
+			// Cast to the declaring type so a member hidden by a more derived type isn't used instead.
+			: $"(({property.ContainingType.ToFQDisplayString()})this).{EscapeIdentifier(property.Name)}";
+		var id = SymbolDisplay.FormatLiteral(queryId, quote: true);
+		var isNullableValueType = property.Type.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T;
+		var isNonNullableValueType = property.Type.IsValueType && !isNullableValueType;
+
+		string value;
+		if (property.Type.SpecialType == SpecialType.System_String)
+		{
+			value = $"{ConversionName}.ConvertToString(query, {id}, value)";
+		}
+		else
+		{
+			var conversionType = isNullableValueType
+				? ((INamedTypeSymbol)property.Type).TypeArguments[0].ToFQDisplayString()
+				: propertyType;
+			// PropertyInfo.SetValue(target, null) stores the default value of a value type.
+			value = $"value is null ? default({propertyType}) : ({propertyType})global::System.Convert.ChangeType(value, typeof({conversionType}), {ConversionName}.GetFormatProvider(query, {id}))";
+		}
+
+		builder.AppendLine($"			if (query.TryGetValue({id}, out value))");
+		builder.AppendLine($"				{member} = {value};");
+		builder.AppendLine($"			else if (previousQuery.ContainsKey({id}))");
+		// Matches Activator.CreateInstance(propertyType) for value types and null otherwise.
+		builder.AppendLine(isNonNullableValueType
+			? $"				{member} = new {propertyType}();"
+			: $"				{member} = default({propertyType});");
+	}
+
+	static string GenerateSource(INamedTypeSymbol type, string body)
+	{
+		var containingTypes = new List<INamedTypeSymbol>();
+		for (var current = type; current is not null; current = current.ContainingType)
+			containingTypes.Insert(0, current);
 
 		var builder = new StringBuilder();
-		builder.AppendLine($"\t\t\tRegister(null, typeof({typeName}),");
-		AppendArray(builder, "string", queryIds);
-		builder.AppendLine(",");
-		AppendArray(builder, "global::System.Type", propertyTypes);
-		builder.AppendLine(",");
-		AppendArray(builder, "global::System.Action<object, object>", setters);
-		builder.AppendLine(",");
-		AppendArray(builder, "global::System.Action<object>", resetters);
-		builder.AppendLine(");");
-		return builder.ToString();
+		builder.AppendLine("// <auto-generated/>");
+		builder.AppendLine("#nullable disable");
+		builder.AppendLine("#pragma warning disable");
+		builder.AppendLine();
 
-		static void AppendArray(StringBuilder builder, string elementType, List<string> items)
+		var indent = "";
+		if (!type.ContainingNamespace.IsGlobalNamespace)
 		{
-			if (items.Count == 0)
-			{
-				builder.Append($"\t\t\t\tglobal::System.Array.Empty<{elementType}>()");
-				return;
-			}
-
-			builder.AppendLine($"\t\t\t\tnew {elementType}[]");
-			builder.AppendLine("\t\t\t\t{");
-			foreach (var item in items)
-				builder.AppendLine($"\t\t\t\t\t{item},");
-			builder.Append("\t\t\t\t}");
+			builder.AppendLine($"namespace {type.ContainingNamespace.ToString()}");
+			builder.AppendLine("{");
+			indent = "	";
 		}
+
+		foreach (var current in containingTypes)
+		{
+			var baseList = SymbolEqualityComparer.Default.Equals(current, type) ? $" : {InterfaceName}" : "";
+			builder.AppendLine($"{indent}partial {GetTypeKeyword(current)} {GetTypeName(current)}{baseList}");
+			builder.AppendLine($"{indent}{{");
+			indent += "	";
+		}
+
+		builder.AppendLine($"{indent}[global::System.CodeDom.Compiler.GeneratedCode(\"Microsoft.Maui.Controls.SourceGen\", \"1.0.0.0\")]");
+		builder.AppendLine($"{indent}void {InterfaceName}.ApplyQueryProperties(global::System.Collections.Generic.IDictionary<string, object> query, global::System.Collections.Generic.IDictionary<string, object> previousQuery)");
+		builder.AppendLine($"{indent}{{");
+		builder.AppendLine($"{indent}	object value;");
+		foreach (var line in body.Split('\n'))
+		{
+			if (line.Length > 0)
+				builder.AppendLine(indent + line.TrimEnd('\r'));
+		}
+		builder.AppendLine($"{indent}}}");
+
+		for (var i = 0; i < containingTypes.Count; i++)
+		{
+			indent = indent.Substring(1);
+			builder.AppendLine($"{indent}}}");
+		}
+
+		if (!type.ContainingNamespace.IsGlobalNamespace)
+			builder.AppendLine("}");
+
+		return builder.ToString();
 	}
+
+	static bool IsPartial(INamedTypeSymbol type) =>
+		type.DeclaringSyntaxReferences.Length > 0
+		&& type.DeclaringSyntaxReferences.All(static r => r.GetSyntax() is TypeDeclarationSyntax declaration && declaration.Modifiers.Any(SyntaxKind.PartialKeyword));
+
+	static string GetTypeKeyword(INamedTypeSymbol type) => type switch
+	{
+		{ IsRecord: true, TypeKind: TypeKind.Struct } => "record struct",
+		{ IsRecord: true } => "record",
+		{ TypeKind: TypeKind.Struct } => "struct",
+		{ TypeKind: TypeKind.Interface } => "interface",
+		_ => "class",
+	};
+
+	static string GetTypeName(INamedTypeSymbol type) =>
+		type.TypeParameters.Length == 0
+			? EscapeIdentifier(type.Name)
+			: $"{EscapeIdentifier(type.Name)}<{string.Join(", ", type.TypeParameters.Select(static p => EscapeIdentifier(p.Name)))}>";
+
+	static string GetHintName(string typeName)
+	{
+		var builder = new StringBuilder();
+		foreach (var c in typeName.StartsWith("global::", System.StringComparison.Ordinal) ? typeName.Substring("global::".Length) : typeName)
+			builder.Append(char.IsLetterOrDigit(c) || c == '.' ? c : '_');
+		return builder.Append(".QueryProperties.g.cs").ToString();
+	}
+
+	static bool ContainsTypeParameter(ITypeSymbol type) => type switch
+	{
+		ITypeParameterSymbol => true,
+		IArrayTypeSymbol array => ContainsTypeParameter(array.ElementType),
+		INamedTypeSymbol named => named.TypeArguments.Any(ContainsTypeParameter) || (named.ContainingType is { } containing && ContainsTypeParameter(containing)),
+		_ => false,
+	};
 
 	/// <summary>
 	/// Resolves a property name the same way as <c>Type.GetRuntimeProperty(name)</c>: public instance properties of
@@ -313,41 +367,7 @@ public sealed class QueryPropertyGenerator : IIncrementalGenerator
 	static string EscapeIdentifier(string identifier) =>
 		SyntaxFacts.GetKeywordKind(identifier) != SyntaxKind.None ? "@" + identifier : identifier;
 
-	static string GenerateSource(string registryAssemblyName, List<string> registrations)
-	{
-		var registryType = SymbolDisplay.FormatLiteral($"{RegistryTypeName}, {registryAssemblyName}", quote: true);
-		var builder = new StringBuilder();
-		builder.AppendLine("// <auto-generated/>");
-		builder.AppendLine("#nullable disable");
-		builder.AppendLine("#pragma warning disable");
-		builder.AppendLine();
-		builder.AppendLine("namespace Microsoft.Maui.Controls.Generated");
-		builder.AppendLine("{");
-		builder.AppendLine("\t[global::System.CodeDom.Compiler.GeneratedCode(\"Microsoft.Maui.Controls.SourceGen\", \"1.0.0.0\")]");
-		builder.AppendLine("\t[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]");
-		builder.AppendLine("\tinternal static class QueryPropertyRegistrations");
-		builder.AppendLine("\t{");
-		builder.AppendLine("\t\t[global::System.Runtime.CompilerServices.ModuleInitializer]");
-		builder.AppendLine("\t\tinternal static void Initialize()");
-		builder.AppendLine("\t\t{");
-		foreach (var registration in registrations)
-			builder.Append(registration);
-		builder.AppendLine("\t\t}");
-		builder.AppendLine();
-		builder.AppendLine("\t\t[global::System.Runtime.CompilerServices.UnsafeAccessor(global::System.Runtime.CompilerServices.UnsafeAccessorKind.StaticMethod, Name = \"Register\")]");
-		builder.AppendLine("\t\tstatic extern void Register(");
-		builder.AppendLine($"\t\t\t[global::System.Runtime.CompilerServices.UnsafeAccessorType({registryType})] object registry,");
-		builder.AppendLine("\t\t\tglobal::System.Type type,");
-		builder.AppendLine("\t\t\tstring[] queryIds,");
-		builder.AppendLine("\t\t\tglobal::System.Type[] propertyTypes,");
-		builder.AppendLine("\t\t\tglobal::System.Action<object, object>[] setters,");
-		builder.AppendLine("\t\t\tglobal::System.Action<object>[] resetters);");
-		builder.AppendLine("\t}");
-		builder.AppendLine("}");
-		return builder.ToString();
-	}
-
-	sealed record TypeModel(string TypeName, string DisplayName, string? Registration, string? UnsupportedReason, LocationModel? Location);
+	sealed record TypeModel(string TypeName, string DisplayName, string HintName, string? Source, string? UnsupportedReason, LocationModel? Location);
 
 	sealed record LocationModel(string FilePath, TextSpan TextSpan, LinePositionSpan LineSpan)
 	{
