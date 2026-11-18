@@ -9,6 +9,10 @@ public partial class App : Application
 
 	protected override Window CreateWindow(IActivationState? activationState)
 	{
+		// The animation performance benchmark, when launched with ANIM_PERF=1 (environment variable or Android intent extra).
+		if (PerfPage.IsRequested(activationState))
+			return new Window(new PerfPage());
+
 		// To test shell scenarios, change this to true
 		bool useShell = false;
 
