@@ -83,6 +83,8 @@ When disabled, the `[QueryProperty(...)]` attributes won't be applied using refl
 
 The Controls source generator processes `[QueryProperty(...)]` attributes at build time, so they keep working without reflection and with this feature disabled. No code changes are required. Types the generator can't handle (for example generic types or private nested types) still rely on reflection; when the trim analyzer is enabled (`PublishTrimmed`, `PublishAot` or `IsAotCompatible`), the generator reports them with the `MAUI1200` warning. For those types, implement the [`IQueryAttributable`](https://learn.microsoft.com/en-us/dotnet/maui/fundamentals/shell/navigation#process-navigation-data-using-a-single-method) interface instead.
 
+The `MAUI1201` analyzer warning reports classes that combine `IQueryAttributable` with `[QueryProperty]` attributes, including inherited implementations and attributes. Choose one mechanism and remove the other to avoid processing navigation data twice. This warning is independent of trimming and does not change runtime behavior.
+
 ## MauiImplicitCastOperatorsUsageViaReflectionSupport
 
 When disabled, MAUI won't look for implicit cast operators when converting values from one type to another. This can affect the following scenarios:

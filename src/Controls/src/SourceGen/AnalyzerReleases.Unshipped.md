@@ -36,3 +36,4 @@ MAUIX2017 | XamlInflation | Warning | DuplicatePropertyAssignment
 MAUIX2018 | XamlParsing | Warning | StructIntermediateNotSettable
 MAUIX2019 | XamlParsing | Error | LambdaMethodGroupReference
 MAUI1200 | QueryProperty | Warning | QueryPropertyRequiresReflection
+MAUI1201 | QueryProperty | Warning | QueryPropertyConflictsWithIQueryAttributable
