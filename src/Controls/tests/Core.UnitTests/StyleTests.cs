@@ -854,6 +854,83 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Theory]
+		[InlineData("")]
+		[InlineData("missing")]
+		public void EmptyOrUnresolvedClassDoesNotReapplyExplicitStyleTriggers(string className)
+		{
+			var enterAction = new CountingTriggerAction();
+			var exitAction = new CountingTriggerAction();
+			var label = new Label
+			{
+				Style = new Style(typeof(Label))
+				{
+					Triggers =
+					{
+						new Trigger(typeof(Label))
+						{
+							Property = VisualElement.IsEnabledProperty,
+							Value = true,
+							EnterActions = { enterAction },
+							ExitActions = { exitAction }
+						}
+					}
+				}
+			};
+
+			Assert.Equal(1, enterAction.InvokeCount);
+			Assert.Equal(0, exitAction.InvokeCount);
+
+			label.StyleClass = className.Length == 0 ? Array.Empty<string>() : new[] { className };
+
+			Assert.Equal(1, enterAction.InvokeCount);
+			Assert.Equal(0, exitAction.InvokeCount);
+
+			label.IsEnabled = false;
+			Assert.Equal(1, exitAction.InvokeCount);
+			label.IsEnabled = true;
+
+			Assert.Equal(2, enterAction.InvokeCount);
+			Assert.Equal(1, exitAction.InvokeCount);
+		}
+
+		[Fact]
+		public void SettingStyleToNullUnappliesActiveTriggerOnce()
+		{
+			var enterAction = new CountingTriggerAction();
+			var exitAction = new CountingTriggerAction();
+			var label = new Label
+			{
+				Style = new Style(typeof(Label))
+				{
+					Triggers =
+					{
+						new Trigger(typeof(Label))
+						{
+							Property = VisualElement.IsEnabledProperty,
+							Value = true,
+							EnterActions = { enterAction },
+							ExitActions = { exitAction }
+						}
+					}
+				}
+			};
+
+			Assert.Equal(1, enterAction.InvokeCount);
+			Assert.Equal(0, exitAction.InvokeCount);
+
+			label.Style = null;
+
+			Assert.Equal(1, enterAction.InvokeCount);
+			Assert.Equal(1, exitAction.InvokeCount);
+
+			label.IsEnabled = false;
+			label.IsEnabled = true;
+
+			Assert.Equal(1, enterAction.InvokeCount);
+			Assert.Equal(1, exitAction.InvokeCount);
+		}
+
+		[Theory]
 		[InlineData(null)]
 		[InlineData("")]
 		[InlineData("missing")]

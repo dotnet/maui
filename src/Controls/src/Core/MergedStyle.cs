@@ -149,7 +149,14 @@ namespace Microsoft.Maui.Controls
 
 		void OnClassStyleChanged()
 		{
-			ClassStyles = _classStyleProperties.Select(p => (Target.GetValue(p) as IList<Style>)?.FirstOrDefault(s => s.CanBeAppliedTo(TargetType))).ToList();
+			var classStyles = _classStyleProperties
+				.Select(p => (Target.GetValue(p) as IList<Style>)?.FirstOrDefault(s => s.CanBeAppliedTo(TargetType)))
+				.Where(style => style != null)
+				.ToList();
+			if (!classStyles.SequenceEqual(ClassStyles ?? Array.Empty<Style>()))
+			{
+				ClassStyles = classStyles;
+			}
 		}
 
 		void OnImplicitStyleChanged()
