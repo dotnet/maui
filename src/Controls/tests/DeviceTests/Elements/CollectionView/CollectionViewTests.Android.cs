@@ -397,6 +397,62 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Theory(DisplayName = "Inserting into a grouped CollectionView without scrolling-axis spacing does not count all groups")]
+		[InlineData(0)]
+		[InlineData(8)]
+		public async Task GroupedInsertWithoutScrollingAxisSpacingDoesNotCountAllGroups(double crossAxisSpacing)
+		{
+			SetupBuilder();
+
+			var groups = Enumerable.Range(0, 5).Select(g => new EnumerationCountingGroup(Enumerable.Range(0, 3).Select(i => $"{g}-{i}"))).ToList();
+			var collectionView = new CollectionView
+			{
+				IsGrouped = true,
+				ItemsLayout = new GridItemsLayout(2, ItemsLayoutOrientation.Vertical) { HorizontalItemSpacing = crossAxisSpacing },
+				ItemTemplate = new DataTemplate(() => new Label { HeightRequest = 30 }),
+				ItemsSource = groups,
+			};
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				var recyclerView = handler.PlatformView;
+				await AssertEventually(() => recyclerView.ChildCount > 0 && !recyclerView.IsLayoutRequested);
+
+				var lastGroup = groups[groups.Count - 1];
+				lastGroup.Enumerations = 0;
+				groups[0].Add("new");
+
+				// Counting the items (ItemsViewAdapter.ItemCount) walks every group, so it would enumerate the last group
+				Assert.Equal(0, lastGroup.Enumerations);
+			});
+		}
+
+		class EnumerationCountingGroup : IEnumerable<string>, System.Collections.Specialized.INotifyCollectionChanged
+		{
+			readonly List<string> _items;
+
+			public EnumerationCountingGroup(IEnumerable<string> items) => _items = new List<string>(items);
+
+			public int Enumerations { get; set; }
+
+			public event System.Collections.Specialized.NotifyCollectionChangedEventHandler CollectionChanged;
+
+			public void Add(string item)
+			{
+				_items.Add(item);
+				CollectionChanged?.Invoke(this, new System.Collections.Specialized.NotifyCollectionChangedEventArgs(
+					System.Collections.Specialized.NotifyCollectionChangedAction.Add, item, _items.Count - 1));
+			}
+
+			public IEnumerator<string> GetEnumerator()
+			{
+				Enumerations++;
+				return _items.GetEnumerator();
+			}
+
+			System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+		}
+
 		class ItemOffsetsCounter : RecyclerView.ItemDecoration
 		{
 			public int Count { get; set; }
