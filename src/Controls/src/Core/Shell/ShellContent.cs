@@ -726,17 +726,19 @@ namespace Microsoft.Maui.Controls
 			if (content is BindableObject bindable && bindable.BindingContext != null && content != bindable.BindingContext)
 				ApplyQueryAttributes(bindable.BindingContext, query, oldQuery);
 
-			var queryPropertyAttributable = content as IQueryPropertyAttributable;
-			if (queryPropertyAttributable is not null &&
-				(!RuntimeFeature.IsQueryPropertyAttributeSupported ||
-					!HasQueryPropertiesOutsideGeneratedType(content.GetType(), queryPropertyAttributable.QueryPropertyTargetType)))
+			if (QueryPropertyRegistry.TryGetQueryProperties(content.GetType(), out var generatedQueryProperties))
 			{
-				queryPropertyAttributable.ApplyQueryPropertyAttributes(new QueryPropertyAttributeContext(query, oldQuery));
+				foreach (var queryProperty in generatedQueryProperties)
+				{
+					if (query.TryGetValue(queryProperty.QueryId, out var value))
+						queryProperty.SetValue(content, ConvertQueryPropertyValue(query, queryProperty.QueryId, queryProperty.PropertyType, value));
+					else if (oldQuery.TryGetValue(queryProperty.QueryId, out _))
+						queryProperty.ResetValue(content);
+				}
 			}
 			else if (RuntimeFeature.IsQueryPropertyAttributeSupported)
 			{
 				var type = content.GetType();
-				var queryPropertyContext = new QueryPropertyAttributeContext(query, oldQuery);
 				var queryPropertyAttributes = type.GetCustomAttributes(typeof(QueryPropertyAttribute), true);
 				if (queryPropertyAttributes.Length == 0)
 				{
@@ -752,11 +754,10 @@ namespace Microsoft.Maui.Controls
 
 						if (prop != null && prop.CanWrite && prop.SetMethod.IsPublic)
 						{
-							if (queryPropertyContext.TryGetValue(attrib.QueryId, prop.PropertyType, out value))
-								prop.SetValue(content, value);
+							prop.SetValue(content, ConvertQueryPropertyValue(query, attrib.QueryId, prop.PropertyType, value));
 						}
 					}
-					else if (queryPropertyContext.WasRemoved(attrib.QueryId))
+					else if (oldQuery.TryGetValue(attrib.QueryId, out var oldValue))
 					{
 						PropertyInfo prop = type.GetRuntimeProperty(attrib.Name);
 
@@ -774,15 +775,30 @@ namespace Microsoft.Maui.Controls
 
 			ClearQueryIfAppliedToPage(query, content);
 
-			static bool HasQueryPropertiesOutsideGeneratedType(Type contentType, Type generatedType)
+			static object ConvertQueryPropertyValue(ShellRouteParameters query, string queryId, Type propertyType, object value)
 			{
-				for (var current = contentType; current is not null && current != generatedType; current = current.BaseType)
+				if (propertyType == typeof(string))
 				{
-					if (current.GetCustomAttributes(typeof(QueryPropertyAttribute), false).Length > 0)
-						return true;
+					if (value != null)
+					{
+						if (query.IsShellContentQueryParameter(queryId))
+							value = Convert.ToString(value, global::System.Globalization.CultureInfo.InvariantCulture);
+						else if (!query.IsShellContentQueryStringParameter(queryId))
+							value = global::System.Net.WebUtility.UrlDecode((string)value);
+					}
+
+					return value;
 				}
 
-				return !generatedType.IsAssignableFrom(contentType);
+				if (value == null)
+					return null;
+
+				// Handle nullable types
+				Type targetType = Nullable.GetUnderlyingType(propertyType) ?? propertyType;
+				var culture = query.IsShellContentParameter(queryId)
+					? global::System.Globalization.CultureInfo.InvariantCulture
+					: global::System.Globalization.CultureInfo.CurrentCulture;
+				return Convert.ChangeType(value, targetType, culture);
 			}
 
 			static void ClearQueryIfAppliedToPage(ShellRouteParameters query, object content)

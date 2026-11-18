@@ -100,51 +100,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void GeneratedQueryPropertyAndIQueryAttributableBothRun()
-		{
-			var content = CreateQueryStringContent(
-				"value=A%2BB&other=second",
-				() => new GeneratedQueryAttributablePage());
-			CreateShell(content);
-
-			var page = GetPage<GeneratedQueryAttributablePage>(content);
-
-			Assert.Equal(1, page.ApplyCount);
-			Assert.Equal("second", page.LastQuery["other"]);
-			Assert.Equal("A+B", page.Value);
-		}
-
-		[Fact]
-		public void ReflectionQueryPropertyAndIQueryAttributableBothRun()
-		{
-			var content = CreateQueryStringContent(
-				"value=A%2BB&other=second",
-				() => new LegacyQueryAttributablePage());
-			CreateShell(content);
-
-			var page = GetPage<LegacyQueryAttributablePage>(content);
-
-			Assert.Equal(1, page.ApplyCount);
-			Assert.Equal("second", page.LastQuery["other"]);
-			Assert.Equal("A+B", page.Value);
-		}
-
-		[Fact]
-		public void DerivedQueryPropertyFallsBackWhenGeneratedBaseCannotCoverConcreteType()
-		{
-			var content = CreateQueryStringContent(
-				"baseValue=base&derivedValue=derived",
-				() => new LegacyDerivedQueryPropertyPage());
-			CreateShell(content);
-
-			var page = GetPage<LegacyDerivedQueryPropertyPage>(content);
-
-			Assert.Equal(0, page.GeneratedApplyCount);
-			Assert.Equal("base", page.BaseValue);
-			Assert.Equal("derived", page.DerivedValue);
-		}
-
-		[Fact]
 		public void QueryStringDecodesQueryProperty()
 		{
 			var content = CreateQueryStringContent(
@@ -204,6 +159,52 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			content.QueryString = null;
 			Assert.Equal(0, page.Value);
+		}
+
+		[Fact]
+		public void RegisteredQueryPropertiesAreAppliedWithoutReflection()
+		{
+			// The source generator registers setters for [QueryProperty] types; this page has no attributes,
+			// so only the registered setters can deliver the values.
+			QueryPropertyRegistry.Register(
+				typeof(RegisteredQueryPropertyPage),
+				["text", "number", "count"],
+				[typeof(string), typeof(double), typeof(int)],
+				[
+					static (target, value) => ((RegisteredQueryPropertyPage)target).Text = (string)value,
+					static (target, value) => ((RegisteredQueryPropertyPage)target).Number = (double)value,
+					static (target, value) => ((RegisteredQueryPropertyPage)target).Count = value is null ? 0 : (int)value,
+				],
+				[
+					static target => ((RegisteredQueryPropertyPage)target).Text = null,
+					static target => ((RegisteredQueryPropertyPage)target).Number = 0,
+					static target => ((RegisteredQueryPropertyPage)target).Count = 0,
+				]);
+
+			var originalCulture = CultureInfo.CurrentCulture;
+			try
+			{
+				CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("de-DE");
+				var content = CreateQueryStringContent(
+					"text=A%2BB&number=3.5&count=42",
+					() => new RegisteredQueryPropertyPage());
+				CreateShell(content);
+				var page = GetPage<RegisteredQueryPropertyPage>(content);
+
+				Assert.Equal("A+B", page.Text);
+				Assert.Equal(3.5, page.Number);
+				Assert.Equal(42, page.Count);
+				Assert.Equal("42", page.LastQuery["count"]);
+
+				content.QueryString = "text=updated";
+				Assert.Equal("updated", page.Text);
+				Assert.Equal(0, page.Number);
+				Assert.Equal(0, page.Count);
+			}
+			finally
+			{
+				CultureInfo.CurrentCulture = originalCulture;
+			}
 		}
 
 		[Fact]
@@ -1136,68 +1137,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[QueryProperty(nameof(Value), "value")]
-		sealed class GeneratedQueryAttributablePage : ContentPage, IQueryAttributable, IQueryPropertyAttributable
-		{
-			public int ApplyCount { get; private set; }
-			public IDictionary<string, object> LastQuery { get; private set; }
-			public string Value { get; set; }
-
-			Type IQueryPropertyAttributable.QueryPropertyTargetType => typeof(GeneratedQueryAttributablePage);
-
-			public void ApplyQueryAttributes(IDictionary<string, object> query)
-			{
-				ApplyCount++;
-				LastQuery = new Dictionary<string, object>(query);
-			}
-
-			void IQueryPropertyAttributable.ApplyQueryPropertyAttributes(QueryPropertyAttributeContext query)
-			{
-				if (query.TryGetValue("value", typeof(string), out var value))
-					Value = (string)value;
-				else if (query.WasRemoved("value"))
-					Value = default;
-			}
-		}
-
-		[QueryProperty(nameof(Value), "value")]
-		sealed class LegacyQueryAttributablePage : ContentPage, IQueryAttributable
-		{
-			public int ApplyCount { get; private set; }
-			public IDictionary<string, object> LastQuery { get; private set; }
-			public string Value { get; set; }
-
-			public void ApplyQueryAttributes(IDictionary<string, object> query)
-			{
-				ApplyCount++;
-				LastQuery = new Dictionary<string, object>(query);
-			}
-		}
-
-		[QueryProperty(nameof(BaseValue), "baseValue")]
-		class GeneratedBaseQueryPropertyPage : ContentPage, IQueryPropertyAttributable
-		{
-			public int GeneratedApplyCount { get; private set; }
-			public string BaseValue { get; set; }
-
-			Type IQueryPropertyAttributable.QueryPropertyTargetType => typeof(GeneratedBaseQueryPropertyPage);
-
-			void IQueryPropertyAttributable.ApplyQueryPropertyAttributes(QueryPropertyAttributeContext query)
-			{
-				GeneratedApplyCount++;
-				if (query.TryGetValue("baseValue", typeof(string), out var value))
-					BaseValue = (string)value;
-				else if (query.WasRemoved("baseValue"))
-					BaseValue = default;
-			}
-		}
-
-		[QueryProperty(nameof(DerivedValue), "derivedValue")]
-		sealed class LegacyDerivedQueryPropertyPage : GeneratedBaseQueryPropertyPage
-		{
-			public string DerivedValue { get; set; }
-		}
-
-		[QueryProperty(nameof(Value), "value")]
 		sealed class QueryPropertyPage : ContentPage
 		{
 			public string Value { get; set; }
@@ -1213,6 +1152,17 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		sealed class IntegerQueryPropertyPage : ContentPage
 		{
 			public int Value { get; set; }
+		}
+
+		sealed class RegisteredQueryPropertyPage : ContentPage, IQueryAttributable
+		{
+			public string Text { get; set; }
+			public double Number { get; set; }
+			public int Count { get; set; }
+			public IDictionary<string, object> LastQuery { get; private set; }
+
+			public void ApplyQueryAttributes(IDictionary<string, object> query) =>
+				LastQuery = new Dictionary<string, object>(query);
 		}
 
 		[QueryProperty(nameof(First), "first")]
