@@ -382,6 +382,11 @@ namespace Microsoft.Maui.Controls
 						if (IsModal(page))
 						{
 							await PushModalAsync(page, IsNavigationAnimated(page));
+#if IOS || MACCATALYST
+							// Remove obsolete pages beneath the modal without dismissing and presenting it again.
+							while (_navStack.Count > navIndex)
+								OnRemovePage(_navStack[_navStack.Count - 1]);
+#endif
 							break;
 						}
 						else if (!isLast && navIndex < _navStack.Count)
