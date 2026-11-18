@@ -125,6 +125,36 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "Evaluating JavaScript returns null when navigating to another site destroys the page running it")]
+		public async Task EvaluateJavaScriptReturnsNullWhenNavigationDestroysPage()
+		{
+			SetupBuilder();
+
+			var webView = new WebView
+			{
+				WidthRequest = 100,
+				HeightRequest = 100,
+				Source = new HtmlWebViewSource { Html = "<html><body>First</body></html>", BaseUrl = "https://first.example/" }
+			};
+
+			var navigated = new TaskCompletionSource<WebNavigationResult>(TaskCreationOptions.RunContinuationsAsynchronously);
+			webView.Navigated += (_, e) => navigated.TrySetResult(e.Result);
+
+			await AttachAndRun<WebViewHandler>(webView, async handler =>
+			{
+				Assert.Equal(WebNavigationResult.Success, await navigated.Task.WaitAsync(TimeSpan.FromSeconds(5)));
+
+				// The other site loads in a new web content process. The first page is still busy running the
+				// script, so it cannot suspend, and WebKit destroys it after about 10 seconds, before the script
+				// can return its result.
+				webView.Source = new HtmlWebViewSource { Html = "<html><body>Second</body></html>", BaseUrl = "https://second.example/" };
+				var result = await webView.EvaluateJavaScriptAsync("(function(){var start=Date.now();while(Date.now()-start<30000){}return 1;})()")
+					.WaitAsync(TimeSpan.FromSeconds(60));
+
+				Assert.Null(result);
+			});
+		}
+
 		// WebKit SPI that ends the web content process, as iOS does when it reclaims memory from an idle app.
 		// The shorter _killWebContentProcess does nothing on macOS 26, so Mac Catalyst needs this variant.
 		static void KillWebContentProcess(WebKit.WKWebView webView)
