@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected override AppCompatCheckBox CreatePlatformView()
 		{
-			var platformCheckBox = new MaterialCheckBox(MauiMaterialContextThemeWrapper.Create(Context))
+			var platformCheckBox = new MauiMaterialCheckBox(MauiMaterialContextThemeWrapper.Create(Context))
 			{
 				SoundEffectsEnabled = false
 			};
@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(AppCompatCheckBox platformView)
 		{
-			if (platformView is MaterialCheckBox materialCheckBox)
+			if (platformView is MauiMaterialCheckBox materialCheckBox)
 			{
 				materialCheckBox.CheckedStateChanged += OnCheckedStateChanged;
 			}
@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(AppCompatCheckBox platformView)
 		{
-			if (platformView is MaterialCheckBox materialCheckBox)
+			if (platformView is MauiMaterialCheckBox materialCheckBox)
 			{
 				materialCheckBox.CheckedStateChanged -= OnCheckedStateChanged;
 			}
@@ -69,7 +69,7 @@ namespace Microsoft.Maui.Handlers
 
 		void OnCheckedStateChanged(object? sender, EventArgs e)
 		{
-			if (sender is MaterialCheckBox platformView && VirtualView != null)
+			if (sender is MauiMaterialCheckBox platformView && VirtualView != null)
 			{
 				SetCheckedState(VirtualView, platformView.CheckedState switch
 				{

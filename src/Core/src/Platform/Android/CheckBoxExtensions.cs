@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateIsChecked(this AppCompatCheckBox platformCheckBox, ICheckBox check)
 		{
 			var isChecked = check is ICheckBox2 checkBox2 ? checkBox2.IsChecked : check.IsChecked;
-			if (platformCheckBox is MaterialCheckBox materialCheckBox)
+			if (platformCheckBox is MauiMaterialCheckBox materialCheckBox)
 			{
 				materialCheckBox.CheckedState = isChecked switch
 				{
