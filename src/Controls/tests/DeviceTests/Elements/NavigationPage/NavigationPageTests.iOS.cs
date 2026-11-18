@@ -97,6 +97,65 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+#if IOS
+		// https://github.com/dotnet/maui/issues/39210
+		// iOS 26 lays out the opaque bar at y=24 in iPhone landscape but starts the page at y=54.
+		[Fact]
+		public async Task Handler_PageStartsBelowOpaqueNavigationBarInLandscape()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler(typeof(Toolbar), typeof(ToolbarHandler));
+					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
+					RegisterCommonHandlers(handlers);
+				});
+			});
+
+			var page = new ContentPage { Title = "Second Page", SafeAreaEdges = SafeAreaEdges.None, Content = new Label { Text = "Header" } };
+			var navPage = new NavigationPage(new ContentPage { Title = "Root Page" }) { BarBackgroundColor = Colors.Blue };
+			await navPage.PushAsync(page);
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
+			{
+				await OnNavigatedToAsync(page);
+
+				var navController = (UINavigationController)((IPlatformViewHandler)navPage.Handler).ViewController;
+				var pageView = ((IPlatformViewHandler)page.Handler).PlatformView;
+				var window = pageView.Window;
+				Assert.False(navController.NavigationBar.Translucent);
+
+				bool IsLandscape() => window.Bounds.Width > window.Bounds.Height && pageView.Bounds.Width == window.Bounds.Width;
+
+				try
+				{
+					RequestOrientation(window, UIInterfaceOrientationMask.Landscape);
+					await AssertEventually(IsLandscape, timeout: 5000, message: "The window did not rotate to landscape");
+
+					var bar = navController.NavigationBar;
+					var barFrame = bar.ConvertRectToView(bar.Bounds, window);
+					var pageFrame = pageView.ConvertRectToView(pageView.Bounds, window);
+					Assert.True(pageFrame.Top >= barFrame.Bottom - 0.5,
+						$"The page starts at y={pageFrame.Top}, under the opaque navigation bar that ends at y={barFrame.Bottom}");
+				}
+				finally
+				{
+					RequestOrientation(window, UIInterfaceOrientationMask.Portrait);
+					await AssertEventually(() => window.Bounds.Height > window.Bounds.Width, timeout: 5000, message: "The window did not rotate back to portrait");
+				}
+			});
+
+			static void RequestOrientation(UIWindow window, UIInterfaceOrientationMask orientation)
+			{
+				if (OperatingSystem.IsIOSVersionAtLeast(16))
+				{
+					window.WindowScene.RequestGeometryUpdate(new UIWindowSceneGeometryPreferencesIOS(orientation), _ => { });
+				}
+			}
+		}
+#endif
+
 		[Theory]
 		[InlineData(true, false)]
 		[InlineData(false, true)]
