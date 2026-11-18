@@ -97,6 +97,19 @@ internal sealed class XamlHotReloadTestHarness : IDisposable
 			allowDiagnostics: false);
 	}
 
+	/// <summary>
+	/// Generates <paramref name="xamlVersions"/> like <see cref="Generate(string[])"/>, but before generating
+	/// version <c>i</c>, first evaluates <paramref name="throwawayXamlBefore"/>[i] (when not null) on a fork of
+	/// the driver and discards it, like a design-time or speculative run that never reaches the app.
+	/// </summary>
+	public XamlHotReloadGeneration GenerateWithThrowawayRuns(string?[] throwawayXamlBefore, params string[] xamlVersions)
+	{
+		ArgumentNullException.ThrowIfNull(throwawayXamlBefore);
+		if (throwawayXamlBefore.Length != xamlVersions.Length)
+			throw new ArgumentException("Each XAML version must have a corresponding (possibly null) throwaway XAML.", nameof(throwawayXamlBefore));
+		return Generate(CreateMainPageSnapshots(xamlVersions), pageSources: null, allowDiagnostics: false, throwawayXamlBefore);
+	}
+
 	public XamlHotReloadGeneration GenerateDocuments(
 		params IReadOnlyDictionary<string, XamlHotReloadDocument>[] documentVersions)
 		=> Generate(documentVersions, pageSources: null, allowDiagnostics: false);
@@ -108,7 +121,8 @@ internal sealed class XamlHotReloadTestHarness : IDisposable
 	XamlHotReloadGeneration Generate(
 		IReadOnlyDictionary<string, XamlHotReloadDocument>[] documentVersions,
 		IReadOnlyList<string>? pageSources,
-		bool allowDiagnostics)
+		bool allowDiagnostics,
+		IReadOnlyList<string?>? throwawayXamlBefore = null)
 	{
 		ObjectDisposedException.ThrowIf(_disposed, this);
 		ArgumentNullException.ThrowIfNull(documentVersions);
@@ -142,6 +156,16 @@ internal sealed class XamlHotReloadTestHarness : IDisposable
 				var pageTree = compilation.SyntaxTrees.Single(static tree => tree.FilePath == "Page.cs");
 				compilation = compilation.ReplaceSyntaxTree(pageTree, ParseSource(pageSource, "Page.cs"));
 				currentPageSource = pageSource;
+			}
+			if (throwawayXamlBefore?[index] is { } throwawayXaml)
+			{
+				var throwawayFiles = RetainUnchangedAdditionalTexts(
+					previousFiles,
+					CreateAdditionalFiles(CreateMainPageSnapshots([throwawayXaml])[0]));
+				_ = UpdateAdditionalTexts(driver, previousFiles, throwawayFiles)
+					.WithUpdatedAnalyzerConfigOptions(SourceGeneratorDriver.CreateAnalyzerConfigOptionsProvider(
+						[.. throwawayFiles.Values.Select(static file => file.File)]))
+					.RunGenerators(compilation);
 			}
 			var files = RetainUnchangedAdditionalTexts(
 				previousFiles,

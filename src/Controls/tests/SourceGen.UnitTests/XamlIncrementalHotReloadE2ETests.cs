@@ -418,6 +418,8 @@ public class XamlIncrementalHotReloadE2ETests
 
 				// Apply the V1→V2 delta: UpdateComponent()'s body becomes the patch and the signal changes.
 				live.ApplyUpdate<ContentPage>(1);
+				// Running the patch records the page's generation in the registry again.
+				XamlComponentRegistry.Unregister(page);
 				XamlIncrementalHotReloadHandler.UpdateApplication([pageType, signalType!]);
 				Assert.NotNull(lastHandled);
 				Assert.Equal([pageType], lastHandled!);
@@ -489,6 +491,59 @@ public class XamlIncrementalHotReloadE2ETests
 			typeof(MainThread).GetMethod("ClearCustomImplementation", BindingFlags.Static | BindingFlags.NonPublic)!.Invoke(null, null);
 			AppContext.SetSwitch(switchName, previousSwitch);
 		}
+	}
+
+	/// <summary>
+	/// https://github.com/dotnet/maui/issues/36937: a throwaway generator run with different XAML (here
+	/// Text="World" FontSize="30") advances the generator's cache to a generation the app never received.
+	/// The next real patch must still bring an instance at the applied generation to the new XAML, including
+	/// the Text edit the throwaway generation already contained, and running it again must change nothing.
+	/// </summary>
+	[MetadataUpdateFact]
+	public void ThrowawayRunWithDifferentXaml_PatchStartsFromTheAppliedGeneration()
+	{
+		string Page(string label) => $$"""
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestE2EApp.MainPage">
+			    <VerticalStackLayout>
+			        <Label {{label}} />
+			    </VerticalStackLayout>
+			</ContentPage>
+			""";
+
+		using var harness = CreateHarness();
+		var generation = harness.GenerateWithThrowawayRuns(
+			[null, Page("Text=\"World\" FontSize=\"30\"")],
+			Page("Text=\"Hello\""),
+			Page("Text=\"World\""));
+
+		harness.RunLive(generation, live =>
+		{
+			var page = live.GetInstance<ContentPage>();
+			var label = ((Layout)page.Content!).Children.OfType<Label>().Single();
+			Assert.Equal("Hello", label.Text);
+			var defaultFontSize = label.FontSize;
+
+			live.ApplyUpdate<ContentPage>(1);
+			Assert.Same(label, ((Layout)page.Content!).Children.OfType<Label>().Single());
+			Assert.Equal("World", label.Text);
+			Assert.Equal(defaultFontSize, label.FontSize);
+
+			var updateComponent = page.GetType().GetMethod("UpdateComponent", BindingFlags.Instance | BindingFlags.NonPublic)!;
+			label.Text = "Changed at runtime";
+			updateComponent.Invoke(page, null);
+			Assert.Equal("Changed at runtime", label.Text);
+
+			// A page created from the updated InitializeComponent() is already at the current generation.
+			var created = live.CreateInstance<ContentPage>();
+			var createdLabel = ((Layout)created.Content!).Children.OfType<Label>().Single();
+			Assert.Equal("World", createdLabel.Text);
+			createdLabel.Text = "Changed at runtime";
+			updateComponent.Invoke(created, null);
+			Assert.Equal("Changed at runtime", createdLabel.Text);
+		});
 	}
 
 	/// <summary>
