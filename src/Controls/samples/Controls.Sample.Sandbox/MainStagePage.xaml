@@ -1,0 +1,606 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+  THESIS: The player is a festival. Your playlists are a lineup poster ranked like headliners, and the song
+  playing is live on the main stage. It refuses the dark streaming player: big blurred art over a transport row.
+  OWN-WORLD: A drenched sun-yellow poster ground, ink condensed headliner type, a woven white wristband, an
+  electric-blue main-stage card in a thick ink outline with a hard print shadow, a yellow LED wall, magenta
+  hand-stamp ink for likes and selection.
+  STORY: Viewers scan the lineup in a second, watch an act spring forward like a headliner, see the LED wall pump,
+  stamp a like, and feel every state change as something physical. Backstage, the engine proves itself.
+  FIRST VIEWPORT: "MAUI FEST" masthead with a VOL. 11 sticker, the wristband across the poster, three stacked
+  acts in falling sizes, small acts below, and the blue main-stage card filling the lower third, play centered.
+  FORM: Festival lineup poster, wristband and hand stamp (grounded direction 6, staging: main stage as the live
+  anchor), seed d0b704b4.
+-->
+<ContentPage x:Class="Maui.Controls.Sample.MainStagePage"
+             xmlns:anim="http://schemas.microsoft.com/dotnet/2021/maui/animations"
+             BackgroundColor="#FFD23F"
+             SafeAreaEdges="None"
+             Shell.NavBarIsVisible="False">
+
+    <ContentPage.Resources>
+        <Color x:Key="Sun">#FFD23F</Color>
+        <Color x:Key="SunPressed">#E5B200</Color>
+        <Color x:Key="Ink">#16120E</Color>
+        <Color x:Key="Stamp">#FF2E88</Color>
+        <!-- Stamp ink deep enough for small text on white (5.8:1). -->
+        <Color x:Key="StampText">#C8005F</Color>
+        <Color x:Key="Stage">#2340FF</Color>
+        <Color x:Key="StageText">#DCE1FF</Color>
+        <Color x:Key="Band">#FFFFFF</Color>
+
+        <Style x:Key="Poster" TargetType="Label">
+            <Setter Property="FontFamily" Value="{OnPlatform iOS='AvenirNextCondensed-Heavy', Android='sans-serif-condensed'}" />
+            <Setter Property="FontAttributes" Value="{OnPlatform Android=Bold, Default=None}" />
+            <Setter Property="TextColor" Value="{StaticResource Ink}" />
+            <Setter Property="LineBreakMode" Value="NoWrap" />
+        </Style>
+
+        <Style x:Key="LineupBand" TargetType="Border">
+            <Setter Property="StrokeThickness" Value="0" />
+            <Setter Property="StrokeShape" Value="RoundRectangle 6" />
+            <Setter Property="Padding" Value="10,0,12,0" />
+            <Setter Property="HorizontalOptions" Value="Start" />
+            <Setter Property="AnchorX" Value="0" />
+            <Setter Property="Opacity" Value="0" />
+        </Style>
+
+        <!-- The poster assembles: masthead, wristband, each act, then the main stage, staggered by holding values.
+             BeginTime lets the launch screen clear first; until then every element shows its hidden XAML value. -->
+        <anim:Storyboard x:Key="PosterIn" Duration="0:0:1.4" BeginTime="0:0:0.6" Easing="CubicOut" FillMode="Forward">
+            <anim:KeyFrame Cue="0%">
+                <Setter TargetName="Masthead" Property="VisualElement.Opacity" Value="0" />
+                <Setter TargetName="Masthead" Property="VisualElement.TranslationY" Value="-28" />
+                <Setter TargetName="Sticker" Property="VisualElement.Scale" Value="0" />
+                <Setter TargetName="Wristband" Property="VisualElement.TranslationX" Value="-480" />
+                <Setter TargetName="Act0" Property="VisualElement.Opacity" Value="0" />
+                <Setter TargetName="Act0" Property="VisualElement.TranslationY" Value="36" />
+                <Setter TargetName="Act1" Property="VisualElement.Opacity" Value="0" />
+                <Setter TargetName="Act1" Property="VisualElement.TranslationY" Value="36" />
+                <Setter TargetName="Act2" Property="VisualElement.Opacity" Value="0" />
+                <Setter TargetName="Act2" Property="VisualElement.TranslationY" Value="36" />
+                <Setter TargetName="SmallActs" Property="VisualElement.Opacity" Value="0" />
+                <Setter TargetName="StageCard" Property="VisualElement.Opacity" Value="0" />
+                <Setter TargetName="StageCard" Property="VisualElement.TranslationY" Value="120" />
+            </anim:KeyFrame>
+            <anim:KeyFrame Cue="12%">
+                <Setter TargetName="Wristband" Property="VisualElement.TranslationX" Value="-480" />
+                <Setter TargetName="Act0" Property="VisualElement.Opacity" Value="0" />
+                <Setter TargetName="Act0" Property="VisualElement.TranslationY" Value="36" />
+            </anim:KeyFrame>
+            <anim:KeyFrame Cue="22%">
+                <Setter TargetName="Act1" Property="VisualElement.Opacity" Value="0" />
+                <Setter TargetName="Act1" Property="VisualElement.TranslationY" Value="36" />
+                <Setter TargetName="Sticker" Property="VisualElement.Scale" Value="0" />
+            </anim:KeyFrame>
+            <anim:KeyFrame Cue="30%">
+                <Setter TargetName="Masthead" Property="VisualElement.Opacity" Value="1" />
+                <Setter TargetName="Masthead" Property="VisualElement.TranslationY" Value="0" />
+                <Setter TargetName="Act2" Property="VisualElement.Opacity" Value="0" />
+                <Setter TargetName="Act2" Property="VisualElement.TranslationY" Value="36" />
+                <Setter TargetName="StageCard" Property="VisualElement.Opacity" Value="0" />
+                <Setter TargetName="StageCard" Property="VisualElement.TranslationY" Value="120" />
+            </anim:KeyFrame>
+            <anim:KeyFrame Cue="40%">
+                <Setter TargetName="SmallActs" Property="VisualElement.Opacity" Value="0" />
+            </anim:KeyFrame>
+            <anim:KeyFrame Cue="45%">
+                <Setter TargetName="Wristband" Property="VisualElement.TranslationX" Value="0" />
+                <Setter TargetName="Act0" Property="VisualElement.Opacity" Value="1" />
+                <Setter TargetName="Act0" Property="VisualElement.TranslationY" Value="0" />
+            </anim:KeyFrame>
+            <anim:KeyFrame Cue="55%">
+                <Setter TargetName="Act1" Property="VisualElement.Opacity" Value="1" />
+                <Setter TargetName="Act1" Property="VisualElement.TranslationY" Value="0" />
+            </anim:KeyFrame>
+            <anim:KeyFrame Cue="62%" Easing="Spring(0.5)">
+                <Setter TargetName="Sticker" Property="VisualElement.Scale" Value="1" />
+            </anim:KeyFrame>
+            <anim:KeyFrame Cue="65%">
+                <Setter TargetName="Act2" Property="VisualElement.Opacity" Value="1" />
+                <Setter TargetName="Act2" Property="VisualElement.TranslationY" Value="0" />
+            </anim:KeyFrame>
+            <anim:KeyFrame Cue="75%">
+                <Setter TargetName="SmallActs" Property="VisualElement.Opacity" Value="1" />
+            </anim:KeyFrame>
+            <anim:KeyFrame Cue="100%" Easing="CubicBezier(0.2, 0.9, 0.25, 1)">
+                <Setter TargetName="StageCard" Property="VisualElement.Opacity" Value="1" />
+                <Setter TargetName="StageCard" Property="VisualElement.TranslationY" Value="0" />
+            </anim:KeyFrame>
+        </anim:Storyboard>
+
+        <!-- The LED wall: one looping storyboard drives nine bars. Stop() drops them back to rest. -->
+        <anim:Storyboard x:Key="LedWall" Duration="0:0:1.2" RepeatBehavior="Forever" Easing="SinInOut">
+            <anim:KeyFrame Cue="0%">
+                <Setter TargetName="Bar0" Property="VisualElement.ScaleY" Value="0.45" />
+                <Setter TargetName="Bar1" Property="VisualElement.ScaleY" Value="0.85" />
+                <Setter TargetName="Bar2" Property="VisualElement.ScaleY" Value="0.60" />
+                <Setter TargetName="Bar3" Property="VisualElement.ScaleY" Value="1.00" />
+                <Setter TargetName="Bar4" Property="VisualElement.ScaleY" Value="0.70" />
+                <Setter TargetName="Bar5" Property="VisualElement.ScaleY" Value="0.90" />
+                <Setter TargetName="Bar6" Property="VisualElement.ScaleY" Value="0.40" />
+                <Setter TargetName="Bar7" Property="VisualElement.ScaleY" Value="0.75" />
+                <Setter TargetName="Bar8" Property="VisualElement.ScaleY" Value="0.50" />
+            </anim:KeyFrame>
+            <anim:KeyFrame Cue="25%">
+                <Setter TargetName="Bar0" Property="VisualElement.ScaleY" Value="0.90" />
+                <Setter TargetName="Bar1" Property="VisualElement.ScaleY" Value="0.40" />
+                <Setter TargetName="Bar2" Property="VisualElement.ScaleY" Value="1.00" />
+                <Setter TargetName="Bar3" Property="VisualElement.ScaleY" Value="0.55" />
+                <Setter TargetName="Bar4" Property="VisualElement.ScaleY" Value="0.95" />
+                <Setter TargetName="Bar5" Property="VisualElement.ScaleY" Value="0.45" />
+                <Setter TargetName="Bar6" Property="VisualElement.ScaleY" Value="0.85" />
+                <Setter TargetName="Bar7" Property="VisualElement.ScaleY" Value="0.35" />
+                <Setter TargetName="Bar8" Property="VisualElement.ScaleY" Value="0.80" />
+            </anim:KeyFrame>
+            <anim:KeyFrame Cue="50%">
+                <Setter TargetName="Bar0" Property="VisualElement.ScaleY" Value="0.55" />
+                <Setter TargetName="Bar1" Property="VisualElement.ScaleY" Value="1.00" />
+                <Setter TargetName="Bar2" Property="VisualElement.ScaleY" Value="0.45" />
+                <Setter TargetName="Bar3" Property="VisualElement.ScaleY" Value="0.80" />
+                <Setter TargetName="Bar4" Property="VisualElement.ScaleY" Value="0.40" />
+                <Setter TargetName="Bar5" Property="VisualElement.ScaleY" Value="1.00" />
+                <Setter TargetName="Bar6" Property="VisualElement.ScaleY" Value="0.60" />
+                <Setter TargetName="Bar7" Property="VisualElement.ScaleY" Value="0.95" />
+                <Setter TargetName="Bar8" Property="VisualElement.ScaleY" Value="0.40" />
+            </anim:KeyFrame>
+            <anim:KeyFrame Cue="75%">
+                <Setter TargetName="Bar0" Property="VisualElement.ScaleY" Value="1.00" />
+                <Setter TargetName="Bar1" Property="VisualElement.ScaleY" Value="0.60" />
+                <Setter TargetName="Bar2" Property="VisualElement.ScaleY" Value="0.85" />
+                <Setter TargetName="Bar3" Property="VisualElement.ScaleY" Value="0.35" />
+                <Setter TargetName="Bar4" Property="VisualElement.ScaleY" Value="0.80" />
+                <Setter TargetName="Bar5" Property="VisualElement.ScaleY" Value="0.55" />
+                <Setter TargetName="Bar6" Property="VisualElement.ScaleY" Value="1.00" />
+                <Setter TargetName="Bar7" Property="VisualElement.ScaleY" Value="0.50" />
+                <Setter TargetName="Bar8" Property="VisualElement.ScaleY" Value="0.95" />
+            </anim:KeyFrame>
+            <anim:KeyFrame Cue="100%">
+                <Setter TargetName="Bar0" Property="VisualElement.ScaleY" Value="0.45" />
+                <Setter TargetName="Bar1" Property="VisualElement.ScaleY" Value="0.85" />
+                <Setter TargetName="Bar2" Property="VisualElement.ScaleY" Value="0.60" />
+                <Setter TargetName="Bar3" Property="VisualElement.ScaleY" Value="1.00" />
+                <Setter TargetName="Bar4" Property="VisualElement.ScaleY" Value="0.70" />
+                <Setter TargetName="Bar5" Property="VisualElement.ScaleY" Value="0.90" />
+                <Setter TargetName="Bar6" Property="VisualElement.ScaleY" Value="0.40" />
+                <Setter TargetName="Bar7" Property="VisualElement.ScaleY" Value="0.75" />
+                <Setter TargetName="Bar8" Property="VisualElement.ScaleY" Value="0.50" />
+            </anim:KeyFrame>
+        </anim:Storyboard>
+
+        <!-- The like stamp: the heart pops on keyframes while a ring of ink spreads and fades. -->
+        <anim:Storyboard x:Key="StampLike" Duration="0:0:0.8">
+            <anim:KeyFrame Cue="0%">
+                <Setter TargetName="Heart" Property="VisualElement.Scale" Value="1" />
+                <Setter TargetName="Heart" Property="VisualElement.Rotation" Value="0" />
+                <Setter TargetName="StampRing" Property="VisualElement.Opacity" Value="0" />
+                <Setter TargetName="StampRing" Property="VisualElement.Scale" Value="0.6" />
+            </anim:KeyFrame>
+            <anim:KeyFrame Cue="18%" Easing="CubicOut">
+                <Setter TargetName="StampRing" Property="VisualElement.Opacity" Value="1" />
+            </anim:KeyFrame>
+            <anim:KeyFrame Cue="22%" Easing="CubicOut">
+                <Setter TargetName="Heart" Property="VisualElement.Scale" Value="1.6" />
+                <Setter TargetName="Heart" Property="VisualElement.Rotation" Value="-14" />
+            </anim:KeyFrame>
+            <anim:KeyFrame Cue="40%" Easing="CubicIn">
+                <Setter TargetName="Heart" Property="VisualElement.Scale" Value="0.85" />
+                <Setter TargetName="Heart" Property="VisualElement.Rotation" Value="10" />
+            </anim:KeyFrame>
+            <anim:KeyFrame Cue="70%" Easing="CubicOut">
+                <Setter TargetName="StampRing" Property="VisualElement.Opacity" Value="0" />
+                <Setter TargetName="StampRing" Property="VisualElement.Scale" Value="1.7" />
+            </anim:KeyFrame>
+            <anim:KeyFrame Cue="100%" Easing="Spring(0.55)">
+                <Setter TargetName="Heart" Property="VisualElement.Scale" Value="1" />
+                <Setter TargetName="Heart" Property="VisualElement.Rotation" Value="0" />
+            </anim:KeyFrame>
+        </anim:Storyboard>
+
+        <!-- No cues: the engine spreads the six keyframes evenly over the duration. -->
+        <anim:Storyboard x:Key="Shake" Duration="0:0:0.5" TargetName="SkipButton" Easing="SinInOut">
+            <anim:KeyFrame><Setter Property="VisualElement.TranslationX" Value="0" /></anim:KeyFrame>
+            <anim:KeyFrame><Setter Property="VisualElement.TranslationX" Value="-14" /></anim:KeyFrame>
+            <anim:KeyFrame><Setter Property="VisualElement.TranslationX" Value="11" /></anim:KeyFrame>
+            <anim:KeyFrame><Setter Property="VisualElement.TranslationX" Value="-7" /></anim:KeyFrame>
+            <anim:KeyFrame><Setter Property="VisualElement.TranslationX" Value="3" /></anim:KeyFrame>
+            <anim:KeyFrame><Setter Property="VisualElement.TranslationX" Value="0" /></anim:KeyFrame>
+        </anim:Storyboard>
+
+        <anim:Storyboard x:Key="Toast" Duration="0:0:2.4" TargetName="Toast">
+            <anim:KeyFrame Cue="0%">
+                <Setter Property="VisualElement.Opacity" Value="0" />
+                <Setter Property="VisualElement.TranslationY" Value="12" />
+                <Setter Property="VisualElement.Scale" Value="0.9" />
+            </anim:KeyFrame>
+            <anim:KeyFrame Cue="14%" Easing="Spring(0.4)">
+                <Setter Property="VisualElement.Opacity" Value="1" />
+                <Setter Property="VisualElement.TranslationY" Value="0" />
+                <Setter Property="VisualElement.Scale" Value="1" />
+            </anim:KeyFrame>
+            <anim:KeyFrame Cue="82%">
+                <Setter Property="VisualElement.Opacity" Value="1" />
+            </anim:KeyFrame>
+            <anim:KeyFrame Cue="100%" Easing="CubicIn">
+                <Setter Property="VisualElement.Opacity" Value="0" />
+            </anim:KeyFrame>
+        </anim:Storyboard>
+
+        <anim:Storyboard x:Key="SwapIn" Duration="0:0:0.45" Easing="CubicOut">
+            <anim:KeyFrame Cue="0%">
+                <Setter Property="VisualElement.Opacity" Value="0" />
+                <Setter Property="VisualElement.TranslationY" Value="14" />
+            </anim:KeyFrame>
+            <anim:KeyFrame Cue="100%">
+                <Setter Property="VisualElement.Opacity" Value="1" />
+                <Setter Property="VisualElement.TranslationY" Value="0" />
+            </anim:KeyFrame>
+        </anim:Storyboard>
+
+        <!-- The sheet slides up over a dimming scrim; only the sheet moves, so its safe-area host never does. -->
+        <anim:Storyboard x:Key="BackstageIn" Duration="0:0:0.55" Easing="CubicBezier(0.2, 0.9, 0.25, 1)" FillMode="Forward">
+            <anim:KeyFrame Cue="0%">
+                <Setter TargetName="Scrim" Property="VisualElement.Opacity" Value="0" />
+                <Setter TargetName="Backstage" Property="VisualElement.TranslationY" Value="1000" />
+            </anim:KeyFrame>
+            <anim:KeyFrame Cue="100%">
+                <Setter TargetName="Scrim" Property="VisualElement.Opacity" Value="0.6" />
+                <Setter TargetName="Backstage" Property="VisualElement.TranslationY" Value="0" />
+            </anim:KeyFrame>
+        </anim:Storyboard>
+
+        <anim:Storyboard x:Key="BackstageOut" Duration="0:0:0.4" Easing="CubicIn" FillMode="Forward">
+            <anim:KeyFrame Cue="100%">
+                <Setter TargetName="Scrim" Property="VisualElement.Opacity" Value="0" />
+                <Setter TargetName="Backstage" Property="VisualElement.TranslationY" Value="1000" />
+            </anim:KeyFrame>
+        </anim:Storyboard>
+
+        <!-- A lone keyframe: animates from wherever the value is now. -->
+        <anim:Storyboard x:Key="FadeOut" Duration="0:0:0.6">
+            <anim:KeyFrame Cue="100%" Easing="CubicOut">
+                <Setter Property="VisualElement.Opacity" Value="0.2" />
+            </anim:KeyFrame>
+        </anim:Storyboard>
+    </ContentPage.Resources>
+
+    <!-- The page runs edge to edge so the backstage sheet can reach the bottom of the screen; the poster keeps clear of the system bars. -->
+    <Grid x:Name="Root" SafeAreaEdges="None" anim:Storyboard.PlayOnLoaded="{StaticResource PosterIn}">
+        <Grid RowDefinitions="Auto,Auto,*,Auto" Padding="20,8,20,18" RowSpacing="12" SafeAreaEdges="Container">
+
+            <!-- Masthead. Tapping the festival name opens backstage. -->
+            <Grid x:Name="Masthead" ColumnDefinitions="*,Auto" Opacity="0">
+                <Grid.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnMastheadTapped" />
+                </Grid.GestureRecognizers>
+                <VerticalStackLayout Spacing="0">
+                    <!-- Android reads CharacterSpacing in sixteenths of an em, iOS in points: the same tracking needs two values. -->
+                    <Label Text="MAUI FEST" Style="{StaticResource Poster}" FontSize="66" CharacterSpacing="{OnPlatform Default='-1.5', Android='-0.36'}" />
+                    <Label Text="Three stages · hosted by Gerald Versluis" FontSize="15" FontAttributes="Bold" TextColor="{StaticResource Ink}" Margin="2,-4,0,0" />
+                </VerticalStackLayout>
+                <Grid x:Name="Sticker" Grid.Column="1" WidthRequest="72" HeightRequest="72" Rotation="12" Scale="0" VerticalOptions="Start" Margin="0,6,0,0">
+                    <Ellipse Fill="{StaticResource Stamp}" Stroke="{StaticResource Ink}" StrokeThickness="3" />
+                    <Label Text="VOL.&#10;11" Style="{StaticResource Poster}" FontSize="22" TextColor="White" LineHeight="0.85"
+                           HorizontalTextAlignment="Center" VerticalTextAlignment="Center" LineBreakMode="WordWrap" />
+                </Grid>
+            </Grid>
+
+            <!-- The wristband lying across the poster. -->
+            <Grid x:Name="Wristband" Grid.Row="1" Margin="-60,4,-60,2" Rotation="-2.5" HeightRequest="34" TranslationX="-480">
+                <BoxView Color="{StaticResource Band}" />
+                <BoxView Color="{StaticResource Stamp}" HeightRequest="3" VerticalOptions="Start" Margin="0,3,0,0" />
+                <BoxView Color="{StaticResource Stamp}" HeightRequest="3" VerticalOptions="End" Margin="0,0,0,3" />
+                <Label Text="MAUI FEST ✦ VOL. 11 ✦ HOT RELOAD ✦ ALL WEEKEND ✦ MAUI FEST ✦ VOL. 11 ✦ HOT RELOAD ✦ ALL WEEKEND"
+                       FontSize="13" FontAttributes="Bold" CharacterSpacing="1.5" TextColor="{StaticResource StampText}"
+                       LineBreakMode="NoWrap" VerticalTextAlignment="Center" Margin="60,0,0,0" />
+            </Grid>
+
+            <!-- The lineup, ranked like a festival poster. Selecting an act springs it forward. -->
+            <VerticalStackLayout Grid.Row="2" Spacing="4" VerticalOptions="Center">
+                <Border x:Name="Act0" Style="{StaticResource LineupBand}">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnActTapped" CommandParameter="0" />
+                    </Border.GestureRecognizers>
+                    <VisualStateManager.VisualStateGroups>
+                        <VisualStateGroup Name="SelectionStates">
+                            <VisualStateGroup.Transitions>
+                                <anim:VisualTransition To="Selected" Duration="0:0:0.55" Easing="Spring(0.45)" />
+                                <anim:VisualTransition To="Normal" Duration="0:0:0.3" Easing="CubicOut" />
+                            </VisualStateGroup.Transitions>
+                            <VisualState Name="Normal">
+                                <VisualState.Setters>
+                                    <Setter Property="Background" Value="#00FF2E88" />
+                                    <Setter Property="Scale" Value="1" />
+                                    <Setter Property="Rotation" Value="0" />
+                                    <Setter TargetName="Act0Name" Property="Label.TextColor" Value="#16120E" />
+                                </VisualState.Setters>
+                            </VisualState>
+                            <VisualState Name="Selected">
+                                <VisualState.Setters>
+                                    <Setter Property="Background" Value="#FF2E88" />
+                                    <Setter Property="Scale" Value="1.05" />
+                                    <Setter Property="Rotation" Value="-2.5" />
+                                    <Setter TargetName="Act0Name" Property="Label.TextColor" Value="White" />
+                                </VisualState.Setters>
+                            </VisualState>
+                        </VisualStateGroup>
+                    </VisualStateManager.VisualStateGroups>
+                    <Label x:Name="Act0Name" Text="THE HANDLERS" Style="{StaticResource Poster}" FontSize="54" CharacterSpacing="{OnPlatform Default='-1.2', Android='-0.36'}" />
+                </Border>
+
+                <Border x:Name="Act1" Style="{StaticResource LineupBand}">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnActTapped" CommandParameter="1" />
+                    </Border.GestureRecognizers>
+                    <VisualStateManager.VisualStateGroups>
+                        <VisualStateGroup Name="SelectionStates">
+                            <VisualStateGroup.Transitions>
+                                <anim:VisualTransition To="Selected" Duration="0:0:0.55" Easing="Spring(0.45)" />
+                                <anim:VisualTransition To="Normal" Duration="0:0:0.3" Easing="CubicOut" />
+                            </VisualStateGroup.Transitions>
+                            <VisualState Name="Normal">
+                                <VisualState.Setters>
+                                    <Setter Property="Background" Value="#00FF2E88" />
+                                    <Setter Property="Scale" Value="1" />
+                                    <Setter Property="Rotation" Value="0" />
+                                    <Setter TargetName="Act1Name" Property="Label.TextColor" Value="#16120E" />
+                                </VisualState.Setters>
+                            </VisualState>
+                            <VisualState Name="Selected">
+                                <VisualState.Setters>
+                                    <Setter Property="Background" Value="#FF2E88" />
+                                    <Setter Property="Scale" Value="1.07" />
+                                    <Setter Property="Rotation" Value="2" />
+                                    <Setter TargetName="Act1Name" Property="Label.TextColor" Value="White" />
+                                </VisualState.Setters>
+                            </VisualState>
+                        </VisualStateGroup>
+                    </VisualStateManager.VisualStateGroups>
+                    <Label x:Name="Act1Name" Text="HOT RELOAD" Style="{StaticResource Poster}" FontSize="44" CharacterSpacing="{OnPlatform Default='-1', Android='-0.36'}" />
+                </Border>
+
+                <Border x:Name="Act2" Style="{StaticResource LineupBand}">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnActTapped" CommandParameter="2" />
+                    </Border.GestureRecognizers>
+                    <VisualStateManager.VisualStateGroups>
+                        <VisualStateGroup Name="SelectionStates">
+                            <VisualStateGroup.Transitions>
+                                <anim:VisualTransition To="Selected" Duration="0:0:0.55" Easing="Spring(0.45)" />
+                                <anim:VisualTransition To="Normal" Duration="0:0:0.3" Easing="CubicOut" />
+                            </VisualStateGroup.Transitions>
+                            <VisualState Name="Normal">
+                                <VisualState.Setters>
+                                    <Setter Property="Background" Value="#00FF2E88" />
+                                    <Setter Property="Scale" Value="1" />
+                                    <Setter Property="Rotation" Value="0" />
+                                    <Setter TargetName="Act2Name" Property="Label.TextColor" Value="#16120E" />
+                                </VisualState.Setters>
+                            </VisualState>
+                            <VisualState Name="Selected">
+                                <VisualState.Setters>
+                                    <Setter Property="Background" Value="#FF2E88" />
+                                    <Setter Property="Scale" Value="1.08" />
+                                    <Setter Property="Rotation" Value="-3" />
+                                    <Setter TargetName="Act2Name" Property="Label.TextColor" Value="White" />
+                                </VisualState.Setters>
+                            </VisualState>
+                        </VisualStateGroup>
+                    </VisualStateManager.VisualStateGroups>
+                    <Label x:Name="Act2Name" Text="XAML GROOVES" Style="{StaticResource Poster}" FontSize="36" CharacterSpacing="{OnPlatform Default='-0.8', Android='-0.36'}" />
+                </Border>
+
+                <Label x:Name="SmallActs" Opacity="0" FontSize="13" FontAttributes="Bold" TextColor="{StaticResource Ink}" LineHeight="1.25" Margin="10,6,0,0">
+                    <Label.FormattedText>
+                        <FormattedString>
+                            <Span Text="Bindable Beats · DJ CADisplayLink · The Choreographers · Trim Mode · Ahead of Time · Single Project · " />
+                            <Span Text="Xamarin.Forms" TextDecorations="Strikethrough" />
+                            <Span Text=" (moved to MAUI)" />
+                        </FormattedString>
+                    </Label.FormattedText>
+                </Label>
+            </VerticalStackLayout>
+
+            <!-- The main stage: the act playing now, its LED wall, and the controls. The wrapper carries the entrance:
+                 on Android an initial Opacity of 0 doesn't reach a view's shadow, so the card's print shadow lives one level down. -->
+            <Grid x:Name="StageCard" Grid.Row="3" Opacity="0" TranslationY="120">
+                <Border Background="{StaticResource Stage}" Stroke="{StaticResource Ink}" StrokeThickness="3"
+                        StrokeShape="RoundRectangle 28" Padding="20,18,20,20">
+                    <Border.Shadow>
+                        <Shadow Brush="{StaticResource Ink}" Offset="7,7" Radius="0" Opacity="1" />
+                    </Border.Shadow>
+                    <Grid RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="14">
+
+                        <!-- The LED wall spans the stage; the LIVE sign hangs over its corner. -->
+                        <Grid>
+                            <Grid x:Name="LedWallBars" ColumnDefinitions="*,*,*,*,*,*,*,*,*" ColumnSpacing="8" HeightRequest="72">
+                                <BoxView x:Name="Bar0" Grid.Column="0" Color="{StaticResource Sun}" CornerRadius="4" AnchorY="1" ScaleY="0.3" />
+                                <BoxView x:Name="Bar1" Grid.Column="1" Color="{StaticResource Sun}" CornerRadius="4" AnchorY="1" ScaleY="0.3" />
+                                <BoxView x:Name="Bar2" Grid.Column="2" Color="{StaticResource Sun}" CornerRadius="4" AnchorY="1" ScaleY="0.3" />
+                                <BoxView x:Name="Bar3" Grid.Column="3" Color="{StaticResource Sun}" CornerRadius="4" AnchorY="1" ScaleY="0.3" />
+                                <BoxView x:Name="Bar4" Grid.Column="4" Color="{StaticResource Sun}" CornerRadius="4" AnchorY="1" ScaleY="0.3" />
+                                <BoxView x:Name="Bar5" Grid.Column="5" Color="{StaticResource Sun}" CornerRadius="4" AnchorY="1" ScaleY="0.3" />
+                                <BoxView x:Name="Bar6" Grid.Column="6" Color="{StaticResource Sun}" CornerRadius="4" AnchorY="1" ScaleY="0.3" />
+                                <BoxView x:Name="Bar7" Grid.Column="7" Color="{StaticResource Sun}" CornerRadius="4" AnchorY="1" ScaleY="0.3" />
+                                <BoxView x:Name="Bar8" Grid.Column="8" Color="{StaticResource Sun}" CornerRadius="4" AnchorY="1" ScaleY="0.3" />
+                            </Grid>
+                            <Border Background="{StaticResource Stamp}" Stroke="{StaticResource Ink}" StrokeThickness="2" StrokeShape="RoundRectangle 14"
+                                    Padding="12,6" HorizontalOptions="End" VerticalOptions="Start">
+                                <Border.Shadow>
+                                    <Shadow Brush="{StaticResource Ink}" Offset="3,3" Radius="0" Opacity="1" />
+                                </Border.Shadow>
+                                <HorizontalStackLayout Spacing="6">
+                                    <Ellipse x:Name="LiveDot" Fill="{StaticResource Ink}" WidthRequest="8" HeightRequest="8" VerticalOptions="Center" />
+                                    <Label x:Name="LiveLabel" Text="LIVE · MAIN STAGE" FontSize="12" FontAttributes="Bold" CharacterSpacing="1" TextColor="{StaticResource Ink}" />
+                                </HorizontalStackLayout>
+                            </Border>
+                        </Grid>
+
+                        <VerticalStackLayout x:Name="NowPlaying" Grid.Row="1" Spacing="2">
+                            <Label x:Name="TrackTitle" Text="GoToState of Mind" FontSize="28" FontAttributes="Bold" TextColor="White" LineBreakMode="TailTruncation" />
+                            <Label x:Name="TrackArtist" Text="Gerald &amp; The Handlers" FontSize="16" TextColor="{StaticResource StageText}" />
+                        </VerticalStackLayout>
+
+                        <Grid Grid.Row="2" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                            <Label Text="2:41" FontSize="12" FontAttributes="Bold" TextColor="{StaticResource StageText}" VerticalOptions="Center" />
+                            <Grid Grid.Column="1" HeightRequest="10" VerticalOptions="Center">
+                                <BoxView Color="{StaticResource Band}" CornerRadius="5" />
+                                <BoxView Color="{StaticResource Sun}" CornerRadius="5" HorizontalOptions="Start" WidthRequest="150" Margin="2" />
+                            </Grid>
+                            <Label Grid.Column="2" Text="4:05" FontSize="12" FontAttributes="Bold" TextColor="{StaticResource StageText}" VerticalOptions="Center" />
+                        </Grid>
+
+                        <Grid Grid.Row="3" ColumnDefinitions="*,Auto,*" HeightRequest="76">
+                            <!-- Like: a hand stamp. -->
+                            <Grid HorizontalOptions="End" VerticalOptions="Center" WidthRequest="54" HeightRequest="54">
+                                <Ellipse x:Name="StampRing" Fill="Transparent" Stroke="{StaticResource Stamp}" StrokeThickness="5" Opacity="0" />
+                                <Border x:Name="LikeButton" StrokeShape="RoundRectangle 27" StrokeThickness="2.5" Stroke="White" Background="#00FF2E88"
+                                        SemanticProperties.Description="Like">
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer Tapped="OnLikeTapped" />
+                                    </Border.GestureRecognizers>
+                                    <VisualStateManager.VisualStateGroups>
+                                        <VisualStateGroup Name="LikeStates">
+                                            <VisualStateGroup.Transitions>
+                                                <anim:VisualTransition Duration="0:0:0.35" Easing="CubicOut" />
+                                            </VisualStateGroup.Transitions>
+                                            <!-- Liking inks the stamp: the background fills with magenta, the heart stays white. -->
+                                            <VisualState Name="NotLiked">
+                                                <VisualState.Setters>
+                                                    <Setter Property="Background" Value="#00FF2E88" />
+                                                </VisualState.Setters>
+                                            </VisualState>
+                                            <VisualState Name="Liked">
+                                                <VisualState.Setters>
+                                                    <Setter Property="Background" Value="#FF2E88" />
+                                                </VisualState.Setters>
+                                            </VisualState>
+                                        </VisualStateGroup>
+                                    </VisualStateManager.VisualStateGroups>
+                                </Border>
+                                <!-- The heart sits on the button, not inside it: on iOS the Border's content clip cut the popping
+                                     (scaled, rotated) heart away mid-stamp. -->
+                                <Label x:Name="Heart" Text="&#x2665;&#xFE0E;" FontSize="24" TextColor="White"
+                                       HorizontalOptions="Center" VerticalOptions="Center" InputTransparent="True"
+                                       AutomationProperties.IsInAccessibleTree="False" />
+                            </Grid>
+
+                            <!-- Play and pause: the built-in Pressed state, animated with a spring. -->
+                            <Button x:Name="PlayButton" Grid.Column="1" SemanticProperties.Description="Pause"
+                                    WidthRequest="76" HeightRequest="76" CornerRadius="38" BorderColor="{StaticResource Ink}" BorderWidth="3"
+                                    Margin="26,0" Clicked="OnPlayClicked">
+                                <Button.Shadow>
+                                    <Shadow Brush="{StaticResource Ink}" Offset="4,4" Radius="0" Opacity="1" />
+                                </Button.Shadow>
+                                <VisualStateManager.VisualStateGroups>
+                                    <VisualStateGroup Name="CommonStates">
+                                        <VisualStateGroup.Transitions>
+                                            <anim:VisualTransition To="Pressed" Duration="0:0:0.08" Easing="CubicOut" />
+                                            <anim:VisualTransition Duration="0:0:0.5" Easing="Spring(0.5)" />
+                                        </VisualStateGroup.Transitions>
+                                        <VisualState Name="Normal">
+                                            <VisualState.Setters>
+                                                <Setter Property="Scale" Value="1" />
+                                                <Setter Property="BackgroundColor" Value="{StaticResource Sun}" />
+                                            </VisualState.Setters>
+                                        </VisualState>
+                                        <VisualState Name="Pressed">
+                                            <VisualState.Setters>
+                                                <Setter Property="Scale" Value="0.86" />
+                                                <Setter Property="BackgroundColor" Value="{StaticResource SunPressed}" />
+                                            </VisualState.Setters>
+                                        </VisualState>
+                                        <VisualState Name="PointerOver" />
+                                    </VisualStateGroup>
+                                </VisualStateManager.VisualStateGroups>
+                            </Button>
+                            <!-- The glyph sits on its own label, so swapping it never waits on the platform button's title animation.
+                                 A binding makes it follow the button's animated scale. -->
+                            <Label x:Name="PlayGlyph" Grid.Column="1" Text="❚❚" FontSize="22" FontAttributes="Bold" TextColor="{StaticResource Ink}"
+                                   HorizontalOptions="Center" VerticalOptions="Center" InputTransparent="True"
+                                   AutomationProperties.IsInAccessibleTree="False"
+                                   Scale="{Binding Scale, Source={x:Reference PlayButton}}" />
+
+                            <!-- Skip: headliners can't be skipped. -->
+                            <Button x:Name="SkipButton" Grid.Column="2" Text="►►" FontSize="18" TextColor="White" BackgroundColor="#002340FF" Padding="0"
+                                    SemanticProperties.Description="Skip"
+                                    WidthRequest="54" HeightRequest="54" CornerRadius="27" BorderColor="White" BorderWidth="2.5"
+                                    HorizontalOptions="Start" VerticalOptions="Center" Clicked="OnSkipClicked" />
+                        </Grid>
+
+                        <!-- A sticker slapped over the progress bar, clear of the buttons. The wrapper carries the animated opacity:
+                             on Android an initial Opacity of 0 doesn't reach a view's shadow, so the shadow lives one level down. -->
+                        <Grid x:Name="Toast" Grid.Row="1" Grid.RowSpan="2" Opacity="0" HorizontalOptions="Center" VerticalOptions="End" InputTransparent="True">
+                            <Border Background="{StaticResource Stamp}" Stroke="{StaticResource Ink}" StrokeThickness="2.5"
+                                    StrokeShape="RoundRectangle 16" Padding="14,8" Rotation="-3">
+                                <Border.Shadow>
+                                    <Shadow Brush="{StaticResource Ink}" Offset="3,3" Radius="0" Opacity="1" />
+                                </Border.Shadow>
+                                <Label Text="Nobody skips the headliner." FontSize="14" FontAttributes="Bold" TextColor="{StaticResource Ink}" />
+                            </Border>
+                        </Grid>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Grid>
+
+        <!-- Backstage: a floating sheet over the dimmed poster, showing why the new engine keeps bindings alive.
+             The host clears the system bars and never moves; only the sheet inside it slides. -->
+        <Grid x:Name="BackstageHost" InputTransparent="True" SafeAreaEdges="None">
+            <BoxView x:Name="Scrim" Color="{StaticResource Ink}" Opacity="0" />
+            <Grid SafeAreaEdges="Container" Padding="8">
+                <Border x:Name="Backstage" Background="{StaticResource Ink}" StrokeThickness="0" StrokeShape="RoundRectangle 32" TranslationY="1000"
+                        Padding="24,10,24,24">
+                    <Grid RowDefinitions="Auto,Auto,*,Auto,Auto" RowSpacing="10">
+                        <!-- Tapping the header closes the sheet. -->
+                        <VerticalStackLayout Spacing="6">
+                            <VerticalStackLayout.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnBackstageTapped" />
+                            </VerticalStackLayout.GestureRecognizers>
+                            <Border Background="#4A4036" StrokeThickness="0" StrokeShape="RoundRectangle 3" WidthRequest="44" HeightRequest="5" HorizontalOptions="Center" />
+                            <Label Text="BACKSTAGE" Style="{StaticResource Poster}" FontSize="66" CharacterSpacing="{OnPlatform Default='-1.5', Android='-0.36'}" TextColor="{StaticResource Sun}" />
+                        </VerticalStackLayout>
+                        <Label Grid.Row="1" Text="Both spotlights are bound to the dimmer. Fade them out, then move the dimmer." FontSize="16" TextColor="#FFE9A8" LineHeight="1.25" />
+
+                        <Grid Grid.Row="2" ColumnDefinitions="*,*" ColumnSpacing="16" VerticalOptions="Center">
+                            <VerticalStackLayout Spacing="12" HorizontalOptions="Center">
+                                <!-- A lamp: core plus two glow rings, all dimmed together through the bound Opacity. -->
+                                <Grid x:Name="LegacyLight" WidthRequest="156" HeightRequest="156" HorizontalOptions="Center"
+                                      Opacity="{Binding Value, Source={x:Reference DimmerSlider}}">
+                                    <Ellipse Fill="{StaticResource Sun}" Opacity="0.14" />
+                                    <Ellipse Fill="{StaticResource Sun}" Opacity="0.3" Margin="14" />
+                                    <Ellipse Fill="{StaticResource Sun}" Margin="30" />
+                                </Grid>
+                                <Label Text="FadeToAsync" FontSize="18" FontAttributes="Bold" TextColor="{StaticResource Sun}" HorizontalTextAlignment="Center" />
+                                <Label Text="today" FontSize="14" TextColor="#FFE9A8" HorizontalTextAlignment="Center" Margin="0,-10,0,0" />
+                                <!-- The verdict: the light's actual opacity, revealed once the dimmer has moved. -->
+                                <VerticalStackLayout x:Name="LegacyResult" Opacity="0" Spacing="0" Margin="0,4,0,0">
+                                    <Label x:Name="LegacyTag" Text=" " FontSize="13" FontAttributes="Bold" CharacterSpacing="2" TextColor="#FFE9A8" HorizontalTextAlignment="Center" />
+                                    <Label x:Name="LegacyNumber" Text=" " Style="{StaticResource Poster}" FontSize="48" HorizontalTextAlignment="Center" />
+                                </VerticalStackLayout>
+                            </VerticalStackLayout>
+                            <VerticalStackLayout Grid.Column="1" Spacing="12" HorizontalOptions="Center">
+                                <Grid x:Name="NewLight" WidthRequest="156" HeightRequest="156" HorizontalOptions="Center"
+                                      Opacity="{Binding Value, Source={x:Reference DimmerSlider}}">
+                                    <Ellipse Fill="{StaticResource Sun}" Opacity="0.14" />
+                                    <Ellipse Fill="{StaticResource Sun}" Opacity="0.3" Margin="14" />
+                                    <Ellipse Fill="{StaticResource Sun}" Margin="30" />
+                                </Grid>
+                                <Label Text="Storyboard" FontSize="18" FontAttributes="Bold" TextColor="{StaticResource Sun}" HorizontalTextAlignment="Center" />
+                                <Label Text="new engine" FontSize="14" TextColor="#FFE9A8" HorizontalTextAlignment="Center" Margin="0,-10,0,0" />
+                                <VerticalStackLayout x:Name="NewResult" Opacity="0" Spacing="0" Margin="0,4,0,0">
+                                    <Label x:Name="NewTag" Text=" " FontSize="13" FontAttributes="Bold" CharacterSpacing="2" TextColor="#FFE9A8" HorizontalTextAlignment="Center" />
+                                    <Label x:Name="NewNumber" Text=" " Style="{StaticResource Poster}" FontSize="48" HorizontalTextAlignment="Center" />
+                                </VerticalStackLayout>
+                            </VerticalStackLayout>
+                        </Grid>
+
+                        <Label Grid.Row="3" Text="DIMMER" FontSize="13" FontAttributes="Bold" CharacterSpacing="2" TextColor="#FFE9A8" />
+                        <Slider x:Name="DimmerSlider" Grid.Row="4" Minimum="0" Maximum="1" Value="1"
+                                MinimumTrackColor="{StaticResource Stamp}" MaximumTrackColor="#4A4036" ThumbColor="{StaticResource Sun}" />
+                    </Grid>
+                </Border>
+            </Grid>
+        </Grid>
+    </Grid>
+</ContentPage>

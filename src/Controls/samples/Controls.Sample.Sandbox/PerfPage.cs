@@ -48,15 +48,7 @@ public class PerfPage : ContentPage
 	}
 
 	public static bool IsRequested(IActivationState? activationState)
-	{
-		if (Environment.GetEnvironmentVariable("ANIM_PERF") == "1")
-			return true;
-#if ANDROID
-		if (activationState?.Context?.Context is Android.App.Activity activity)
-			return activity.Intent?.GetStringExtra("ANIM_PERF") == "1";
-#endif
-		return false;
-	}
+		=> LaunchOptions.Get(activationState, "ANIM_PERF") == "1";
 
 	void Record(bool relevant, bool isStart)
 	{

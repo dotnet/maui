@@ -16,13 +16,15 @@ public partial class App : Application
 		// To test shell scenarios, change this to true
 		bool useShell = false;
 
-		if (!useShell)
-		{
-			return new Window(new NavigationPage(new MainPage()));
-		}
-		else
-		{
+		if (useShell)
 			return new Window(new SandboxShell());
-		}
+
+		// The original functional demo of the animations prototype, when launched with ANIM_DEMO=classic.
+		if (LaunchOptions.Get(activationState, "ANIM_DEMO") == "classic")
+			return new Window(new NavigationPage(new MainPage()));
+
+		// The festival player showcase. Its poster colors are designed for the light theme.
+		UserAppTheme = AppTheme.Light;
+		return new Window(new MainStagePage());
 	}
 }
