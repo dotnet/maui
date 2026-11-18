@@ -379,14 +379,35 @@ branches. Verify that the internal mirror has the exact selected public commit,
 that its default-channel/feed wiring matches the existing nightly contract, and
 that a signed internal build publishes the expected artifacts. Do not rewrite
 mirror history or promote workload-release packages as part of this migration.
-The **Prepare signed release publication** workflow keeps the selected candidate
-mirrored automatically. Its independent nightly-mirror job runs hourly, after
-release tracking succeeds, and when canonical state or mirror tooling changes on
-`main`. It uses trusted `main` code and the existing Azure federation identity;
-candidate code is fetched as Git data, never executed in that credentialed job.
-The internal candidate's own 05:00 UTC schedule then runs official pipeline 1095,
-without an additional competing build trigger. Advancing `currentSr` therefore
-selects and mirrors the next candidate without a manual per-SR sync.
+The dnceng `dotnet-mirroring` configuration must list `candidate/<band>-srN` as
+an optional fast-forward pattern, as it does `main`, `release/*` and
+`inflight/current`, so the selected candidate reaches the internal `dotnet-maui`
+repository. That mirroring never force-pushes: after a public rebase or
+force-push of a mirrored branch, the branch stops mirroring (and a mirroring
+issue is filed) until a maintainer verifies that no internal-only commits would
+be dropped and performs a leased internal sync. The internal candidate's own
+05:00 UTC schedule then runs official pipeline 1095, without an additional
+competing build trigger. Advancing `currentSr` therefore selects and mirrors the
+next candidate without a manual per-SR change.
+
+Candidate nightlies publish to the production `.NET 11.0.1xx SDK` channel, so
+`.azuredevops/policies/branchClassification.yml` classifies `candidate/*` as a
+production branch, as it does `main`, `release/*` and `inflight/current`.
+Arcade's production-channel validation checks the build's branch against this
+classification during promotion. Today a mismatch is only an audit warning
+("is not classified as a production branch"), but enforcement would block
+publication. The classification service reads the file from the internal
+repository's default branch (`main`); after changing it, confirm the service
+lists the new pattern before relying on it.
+
+The **Prepare signed release publication** workflow also has an opt-in
+nightly-mirror job that performs those leased syncs. It runs only while the
+repository variable `RELEASE_NIGHTLY_MIRROR_ENABLED` is `true`; enable it only
+after the existing Azure federation identity is onboarded to the dnceng
+organization, because until then every run fails with TF400813. Once enabled it
+runs hourly, after release tracking succeeds, and when canonical state or mirror
+tooling changes on `main`. It uses trusted `main` code; candidate code is fetched
+as Git data, never executed in that credentialed job.
 
 The existing federated identity needs Git read/contribute/create-branch and
 force-push permission on the internal candidate and
@@ -473,6 +494,9 @@ candidate source also matches. The receipt makes this pause resumable:
 does not activate the replacement lanes, and does not prepare forward flow.
 A maintainer must review, run required CI and use **Create a merge commit**,
 not squash/rebase, so the exact prepared child remains an ancestor of `net11`.
+Force-pushing or rebasing `net11` breaks that ancestry for every unpublished
+lane: the publication reconciler fails until its prepared commit is an ancestor
+of `net11` again.
 The merged-PR trigger then revalidates that ancestry and resumes the same receipt.
 Existing protections and bypass actors are never changed by this workflow.
 If net11 acquires unrelated work before normalization, the runner refuses to
@@ -549,6 +573,15 @@ housekeeping, next lanes and state-PR preparation do not require a real release 
 The **Prepare signed release publication** workflow follows completion and polls
 hourly, and wakes on merged staging servicing PRs and real release-branch creation.
 It inventories all retained receipts for the configured band, not just `currentSr`.
+A lane is reported as `published` and skipped when a stable, non-draft GitHub
+Release for that SR is tagged at the exact live release head, that commit's
+`eng/Versions.props` matches the tag, and its tree is identical to the reviewed
+servicing merge of the lane's current receipt generation. That check runs only
+after servicing preparation, so a superseding candidate generation still gets
+its own servicing PR and is never reported as published while the release
+branch holds older content. Nothing is signed, dispatched or re-verified
+against later integration history for a published lane. A hotfix that moves the
+release head is not covered until its own release is published.
 Its trusted job automatically prepares the separate servicing/stable PR against
 `automation/release/<band>-srN` before a real release exists. An old actual
 release ref does not block this preparation and is never adopted as approval.
