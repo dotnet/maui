@@ -326,6 +326,14 @@ namespace Microsoft.Maui.Controls.SourceGen
 			isEnabledByDefault: true);
 
 		// x:Code diagnostics
+		public static DiagnosticDescriptor XCodeRequiresPreview = new DiagnosticDescriptor(
+			id: "MAUIX2012",
+			title: "x:Code requires preview features",
+			messageFormat: "x:Code requires EnablePreviewFeatures to be set to true.",
+			category: "XamlParsing",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true);
+
 		public static DiagnosticDescriptor XCodeNotChildOfRoot = new DiagnosticDescriptor(
 			id: "MAUIX2015",
 			title: "x:Code must be an immediate child of the root element",
@@ -338,6 +346,14 @@ namespace Microsoft.Maui.Controls.SourceGen
 			id: "MAUIX2016",
 			title: "x:Code requires x:Class on the root element",
 			messageFormat: "x:Code requires x:Class to be specified on the root element.",
+			category: "XamlParsing",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true);
+
+		public static DiagnosticDescriptor XCodeRequiresSourceGen = new DiagnosticDescriptor(
+			id: "MAUIX2023",
+			title: "x:Code requires XAML source generation",
+			messageFormat: "x:Code requires SourceGen as the only XAML inflator.",
 			category: "XamlParsing",
 			defaultSeverity: DiagnosticSeverity.Error,
 			isEnabledByDefault: true);

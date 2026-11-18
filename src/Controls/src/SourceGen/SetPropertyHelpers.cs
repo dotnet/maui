@@ -492,7 +492,21 @@ static class SetPropertyHelpers
 		}
 		using (context.ProjectItem.EnableLineInfo ? PrePost.NewLineInfo(writer, (IXmlLineInfo)valueNode, context.ProjectItem) : PrePost.NoBlock())
 		{
-			writer.WriteLine($"{parentVar.ValueAccessor}.{localName} += {handler};");
+			var eventHandlerAccessor = CodeBehindCodeWriter.GetEventHandlerAccessor(context.ProjectItem, context.Compilation);
+			if (eventHandlerAccessor is null)
+			{
+				writer.WriteLine($"{parentVar.ValueAccessor}.{localName} += {handler};");
+			}
+			else
+			{
+				var delegateType = eventType.WithNullableAnnotation(NullableAnnotation.NotAnnotated).ToFQDisplayString();
+				using (PrePost.NewBlock(writer))
+				{
+					writer.WriteLine($"var __xamlHandler = new {delegateType}({handler});");
+					writer.WriteLine($"{parentVar.ValueAccessor}.{localName} += __xamlHandler;");
+					writer.WriteLine($"{eventHandlerAccessor}().GetOrCreateValue({parentVar.ValueAccessor})[{Microsoft.CodeAnalysis.CSharp.SymbolDisplay.FormatLiteral(localName, true)}] = __xamlHandler;");
+				}
+			}
 		}
 	}
 

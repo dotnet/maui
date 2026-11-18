@@ -2495,8 +2495,9 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		var (_, run2) = TwoRuns(xamlV1, xamlV2);
 		var uc = FindUCSource(run2, "uc.xsg");
 		Assert.NotNull(uc);
-		Assert.Contains("Clicked -= OnClicked", uc, StringComparison.Ordinal);
-		Assert.Contains("Clicked += OnClicked2", uc, StringComparison.Ordinal);
+		Assert.Contains("Clicked -= __typedHandler", uc, StringComparison.Ordinal);
+		Assert.Contains("Clicked += __newHandler", uc, StringComparison.Ordinal);
+		Assert.Contains("OnClicked2", uc, StringComparison.Ordinal);
 	}
 
 	[Fact]
@@ -2525,7 +2526,7 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		var (_, run2) = TwoRuns(xamlV1, xamlV2);
 		var uc = FindUCSource(run2, "uc.xsg");
 		Assert.NotNull(uc);
-		Assert.Contains("Clicked -= OnClicked", uc, StringComparison.Ordinal);
+		Assert.Contains("Clicked -= __typedHandler", uc, StringComparison.Ordinal);
 		Assert.DoesNotContain("Clicked +=", uc, StringComparison.Ordinal);
 	}
 
