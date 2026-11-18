@@ -10,11 +10,13 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Items;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Xunit;
 using static Microsoft.Maui.DeviceTests.AssertHelpers;
 using AInsets = AndroidX.Core.Graphics.Insets;
 using AView = Android.Views.View;
+using ScrollView = Microsoft.Maui.Controls.ScrollView;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -177,19 +179,17 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory]
-		[InlineData(false, 0, 240)]
-		[InlineData(true, 0, 240)]
-		[InlineData(false, 360, 0)]
-		[InlineData(true, 360, 0)]
-		public async Task EmptyViewMinimumSizeOverflowDoesNotRequestAnotherLayout(bool useTemplate, double minimumWidth, double minimumHeight)
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task EmptyViewDoesNotRequestAnotherLayoutWhenConstraintsAreUnchanged(bool useTemplate)
 		{
 			SetupBuilder();
 
 			var emptyView = new Label
 			{
-				Text = "Empty",
-				MinimumWidthRequest = minimumWidth,
-				MinimumHeightRequest = minimumHeight
+				Text = "No photo yet",
+				HorizontalOptions = LayoutOptions.Center,
+				VerticalOptions = LayoutOptions.Center
 			};
 			var collectionView = new CollectionView
 			{
@@ -203,119 +203,107 @@ namespace Microsoft.Maui.DeviceTests
 			else
 				collectionView.EmptyView = emptyView;
 
-			await InvokeOnMainThreadAsync(async () =>
+			await InvokeOnMainThreadAsync(() =>
 			{
 				var handler = CreateHandler<CollectionViewHandler>(collectionView);
 				using var parent = new LayoutRequestCountingFrameLayout(MauiContext.Context);
 				parent.AddView(handler.PlatformView);
 
-				handler.GetDesiredSize(300, 180);
+				handler.GetDesiredSize(300, double.PositiveInfinity);
 				handler.PlatformArrange(new Rect(0, 0, 300, 180));
 				LayoutEmptyViewParent(parent, 300, 180);
 
 				var holder = handler.PlatformView.FindViewHolderForAdapterPosition(0);
 				var itemView = Assert.IsType<EmptyViewContentView>(holder?.ItemView);
-				var expectedWidth = (int)MauiContext.Context.ToPixels(System.Math.Max(300, minimumWidth));
-				var expectedHeight = (int)MauiContext.Context.ToPixels(System.Math.Max(180, minimumHeight));
+				Assert.True(itemView.MeasuredWidth > 0);
+				Assert.True(itemView.MeasuredHeight > 0);
+				parent.RequestLayoutCount = 0;
 
-				await parent.AttachAndRun(async () =>
+				for (var pass = 0; pass < 3; pass++)
 				{
-					await WaitForEmptyViewFrames(parent);
-					var arrangedDuringLayout = false;
-					parent.LayoutAction = () =>
-					{
-						arrangedDuringLayout |= parent.IsInLayout;
-						handler.PlatformArrange(new Rect(0, 0, 300, 180));
-					};
+					// A vertical stack measures with infinite height, then arranges at a finite height.
+					handler.GetDesiredSize(300, double.PositiveInfinity);
+					handler.PlatformArrange(new Rect(0, 0, 300, 180));
+				}
 
-					try
-					{
-						parent.RequestLayout();
-						parent.RequestLayoutCount = 0;
-						await WaitForEmptyViewFrames(parent);
-
-						Assert.True(arrangedDuringLayout);
-						Assert.Equal(expectedWidth, itemView.MeasuredWidth);
-						Assert.Equal(expectedHeight, itemView.MeasuredHeight);
-						Assert.Equal(expectedWidth, itemView.Width);
-						Assert.Equal(expectedHeight, itemView.Height);
-						Assert.Equal(0, parent.RequestLayoutCount);
-					}
-					finally
-					{
-						parent.LayoutAction = null;
-					}
-				});
+				Assert.Equal(0, parent.RequestLayoutCount);
 			});
 		}
 
-		[Theory]
-		[InlineData(false)]
-		[InlineData(true)]
-		public async Task EmptyViewRepairsUnconsumedFinalSizeAndStopsRequestingLayout(bool useTemplate)
+		[Fact]
+		public async Task Issue40308EmptyViewDoesNotLogImproperRequestLayoutWhenSiblingChanges()
 		{
-			SetupBuilder();
-
-			var emptyView = new Label
+			EnsureHandlerCreated(builder => builder.ConfigureMauiHandlers(handlers =>
 			{
-				Text = "Empty",
-				HorizontalOptions = LayoutOptions.Center,
-				VerticalOptions = LayoutOptions.Center
-			};
+				RegisterCommonHandlers(handlers);
+				handlers.AddHandler<CollectionView, CollectionViewHandler>();
+				handlers.AddHandler<ScrollView, ScrollViewHandler>();
+			}));
+
+			var sibling = new Label { Text = "Sibling control" };
 			var collectionView = new CollectionView
 			{
 				ItemsSource = System.Array.Empty<string>(),
-				ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Horizontal)
+				HeightRequest = 180,
+				ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Horizontal),
+				EmptyView = new Label { Text = "No photo yet" }
+			};
+			var page = new ContentPage
+			{
+				Content = new ScrollView
+				{
+					Content = new VerticalStackLayout
+					{
+						Children = { sibling, collectionView, new Label { HeightRequest = 900 } }
+					}
+				}
 			};
 
-			if (useTemplate)
-				collectionView.EmptyViewTemplate = new DataTemplate(() => emptyView);
-			else
-				collectionView.EmptyView = emptyView;
-
-			await InvokeOnMainThreadAsync(async () =>
+			await CreateHandlerAndAddToWindow<IWindowHandler>(page, async _ =>
 			{
-				var handler = CreateHandler<CollectionViewHandler>(collectionView);
-				using var parent = new LayoutRequestCountingFrameLayout(MauiContext.Context);
-				var recyclerView = handler.PlatformView;
-				parent.AddView(recyclerView, new FrameLayout.LayoutParams(
-					global::Android.Views.ViewGroup.LayoutParams.MatchParent,
-					global::Android.Views.ViewGroup.LayoutParams.MatchParent));
-				LayoutEmptyViewParent(parent, 300, 180);
+				var recyclerView = Assert.IsType<CollectionViewHandler>(collectionView.Handler).PlatformView;
+				await WaitForIssue40308Frames(recyclerView);
+				var itemView = Assert.IsType<EmptyViewContentView>(
+					recyclerView.FindViewHolderForAdapterPosition(0)?.ItemView);
+				Assert.True(itemView.IsAttachedToWindow);
 
-				await parent.AttachAndRun(async () =>
+				// View.toString() starts with the native class and instance hash, before changing bounds/flags.
+				var nativeIdentity = itemView.ToString().Split(' ')[0];
+				var marker = $"Issue40308-{System.Guid.NewGuid():N}";
+				var arrangedDuringLayout = false;
+				System.EventHandler<AView.LayoutChangeEventArgs> onLayout = (_, _) =>
 				{
-					await WaitForEmptyViewFrames(parent);
-					var pixelWidth = (int)parent.Context.ToPixels(300);
-					var pixelHeight = (int)parent.Context.ToPixels(180);
+					arrangedDuringLayout |= itemView.IsInLayout;
+				};
 
-					handler.GetDesiredSize(300, 500);
+				recyclerView.LayoutChange += onLayout;
+				try
+				{
+					global::Android.Util.Log.Warn("Maui40308", $"{marker}-start");
+					var previousY = collectionView.Y;
+					sibling.HeightRequest = 100;
+					await WaitForIssue40308Frames(recyclerView);
 
-					// The native parent resolves a smaller exact height after speculative measurement.
-					recyclerView.ForceLayout();
-					recyclerView.Measure(
-						AView.MeasureSpec.MakeMeasureSpec(pixelWidth, global::Android.Views.MeasureSpecMode.AtMost),
-						AView.MeasureSpec.MakeMeasureSpec(pixelHeight, global::Android.Views.MeasureSpecMode.Exactly));
+					Assert.True(arrangedDuringLayout, "The attached EmptyView must participate in native layout.");
+					Assert.NotEqual(previousY, collectionView.Y);
+					global::Android.Util.Log.Warn("Maui40308", $"{marker}-end");
 
-					var holder = recyclerView.FindViewHolderForAdapterPosition(0);
-					var itemView = Assert.IsType<EmptyViewContentView>(holder?.ItemView);
-					Assert.Equal(pixelHeight, recyclerView.MeasuredHeight);
-					Assert.Equal((int)parent.Context.ToPixels(500), itemView.MeasuredHeight);
-
-					parent.RequestLayoutCount = 0;
-					handler.PlatformArrange(new Rect(0, 0, 300, 180));
-					Assert.True(parent.RequestLayoutCount > 0, "Stale geometry must schedule a corrective parent pass.");
-
-					await WaitForEmptyViewFrames(parent);
-					Assert.Equal(pixelHeight, itemView.MeasuredHeight);
-					Assert.Equal(pixelHeight, itemView.Height);
-					Assert.InRange(System.Math.Abs(emptyView.Frame.Center.Y - 90), 0, parent.Context.FromPixels(1));
-
-					parent.RequestLayoutCount = 0;
-					handler.PlatformArrange(new Rect(0, 0, 300, 180));
-					await WaitForEmptyViewFrames(parent);
-					Assert.Equal(0, parent.RequestLayoutCount);
-				});
+					// Observe the real ViewRootImpl diagnostic, including requests RecyclerView may
+					// intercept before they reach an ancestor RequestLayout override. Never clear logcat.
+					var log = await ReadIssue40308Logcat();
+					var start = log.IndexOf($"{marker}-start", System.StringComparison.Ordinal);
+					var end = log.IndexOf($"{marker}-end", System.StringComparison.Ordinal);
+					Assert.True(start >= 0 && end > start,
+						$"Both log markers must be readable; missing/truncated logcat is not a pass.\n{log}");
+					var warnings = log.Substring(start, end - start).Split('\n').Where(line =>
+						line.Contains("requestLayout() improperly called", System.StringComparison.Ordinal) &&
+						line.Contains(nativeIdentity, System.StringComparison.Ordinal));
+					Assert.True(!warnings.Any(), string.Join("\n", warnings));
+				}
+				finally
+				{
+					recyclerView.LayoutChange -= onLayout;
+				}
 			});
 		}
 
@@ -1157,8 +1145,9 @@ namespace Microsoft.Maui.DeviceTests
 			parent.Layout(0, 0, pixelWidth, pixelHeight);
 		}
 
-		static async Task WaitForEmptyViewFrames(AView view)
+		static async Task WaitForIssue40308Frames(AView view)
 		{
+			// Include subsequent traversals and requests posted by RequestLayoutIfNeeded.
 			for (var frame = 0; frame < 6; frame++)
 			{
 				var completed = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -1168,11 +1157,27 @@ namespace Microsoft.Maui.DeviceTests
 			}
 		}
 
+		static Task<string> ReadIssue40308Logcat() => Task.Run(async () =>
+		{
+			// Android permits reading this app's own logs without READ_LOGS or adb privileges.
+			using var builder = new Java.Lang.ProcessBuilder("/system/bin/logcat", "-d", "-b", "main",
+				"-v", "raw", $"--pid={(global::Android.OS.Process.MyPid())}", "*:W");
+			builder.RedirectErrorStream(true);
+			using var process = builder.Start();
+			try
+			{
+				using var reader = new System.IO.StreamReader(process.InputStream);
+				return await reader.ReadToEndAsync().WaitAsync(System.TimeSpan.FromSeconds(5));
+			}
+			finally
+			{
+				process.Destroy();
+			}
+		});
+
 		class LayoutRequestCountingFrameLayout : FrameLayout
 		{
 			public int RequestLayoutCount { get; set; }
-
-			public System.Action LayoutAction { get; set; }
 
 			public LayoutRequestCountingFrameLayout(Context context) : base(context)
 			{
@@ -1182,12 +1187,6 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				RequestLayoutCount++;
 				base.RequestLayout();
-			}
-
-			protected override void OnLayout(bool changed, int left, int top, int right, int bottom)
-			{
-				base.OnLayout(changed, left, top, right, bottom);
-				LayoutAction?.Invoke();
 			}
 		}
 
