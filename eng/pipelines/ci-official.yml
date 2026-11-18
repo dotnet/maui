@@ -85,7 +85,7 @@ extends:
         # CodeQL for the compiled languages (C# and Java) runs in the CodeQL stage below, not in every job.
         compiled:
           enabled: false
-        # Turning the compiled scan off also turns this one off, unless it is enabled explicitly.
+        # Turning off the compiled scan also turns off the interpreted scan, so turn it back on here.
         interpreted:
           enabled: true
         runSourceLanguagesInSourceAnalysis: true
@@ -165,10 +165,11 @@ extends:
           dependsOnStage: Pack
 
     # CodeQL for the compiled languages (C# and Java), in the scheduled and manual builds of main.
-    # CodeQL scans a language at most every 72 hours for each branch and BuildIdentifier, and a scan that failed counts
-    # too. The 1ES template starts CodeQL right after the checkout, so any later failure in the job (the provisioning,
-    # for instance) used up the three days. Here CodeQL starts after the provisioning, and only the build runs before
-    # it finishes. On the nights when no scan is due, CodeQL does nothing and the job is only a build.
+    # CodeQL scans a language at most every 72 hours for each branch and BuildIdentifier, and a failed scan still blocks
+    # the next one for 72 hours. The 1ES template starts CodeQL right after the checkout, and CodeQL fails its scan when
+    # the job fails later, in the provisioning for example. Here CodeQL starts after the provisioning, and the build is
+    # the only step between the start and the end of CodeQL. On nights when no scan is due, CodeQL does nothing and the
+    # job is only a build.
     # This is a separate stage, so that it cannot hold up the publishing. It runs after Pack because it needs the
     # runtime manifest packages that Pack macOS publishes.
     - ${{ if and(in(variables['Build.Reason'], 'Schedule', 'Manual'), eq(variables['Build.SourceBranch'], 'refs/heads/main')) }}:
@@ -207,7 +208,7 @@ extends:
                   base64Encode: true
                   outputVariableName: dotnetbuilds-internal-container-read-token-base64
 
-              # The provisioning restores the runtime manifest packages that Pack macOS publishes here.
+              # Downloads the runtime manifest packages that Pack macOS publishes. The provisioning restores them from here.
               - task: DownloadPipelineArtifact@2
                 displayName: Download Mac Native Binaries
                 inputs:
@@ -234,7 +235,7 @@ extends:
               - script: $(_buildScript) -restore -build -configuration $(_BuildConfig) /p:BuildPackageProjects=true /p:SkipInitInternalTooling=true /bl:$(Build.Arcade.LogsPath)/$(_BuildConfig)/codeql-build.binlog $(_OfficialBuildIdArgs)
                 displayName: Build
 
-              # Also runs when the build failed, so that CodeQL can clean up.
+              # Runs even if the build failed, so that CodeQL can clean up.
               - task: CodeQL3000Finalize@0
                 displayName: CodeQL Finalize
                 condition: always()

@@ -13,7 +13,7 @@
     </ProjectToBuild>
   </ItemGroup>
 
-  <!-- Pack only: Microsoft.Maui.Packages. BuildPackageProjects=true builds the same projects without packing them. -->
+  <!-- Pack, or BuildPackageProjects=true to build without packing: Microsoft.Maui.Packages -->
   <ItemGroup Condition="'$(BuildDeviceTests)' != 'true' and ('$(Pack)' == 'true' or '$(BuildPackageProjects)' == 'true')">
     <ProjectToBuild Include="$(RepoRoot)eng/Microsoft.Maui.Packages-mac.slnf" Condition="'$(OS)' != 'Windows_NT'" BuildInParallel="false" />
     <ProjectToBuild Include="$(RepoRoot)eng/Microsoft.Maui.Packages.slnf" Condition="'$(OS)' == 'Windows_NT'" BuildInParallel="false" />
