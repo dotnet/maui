@@ -5,6 +5,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Xml;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -59,6 +60,32 @@ static class UpdateComponentCodeWriter
 	/// <c>XamlIncrementalHotReloadHandler.SignalTypeName</c> in Microsoft.Maui.Controls.Xaml.
 	/// </summary>
 	internal const string SignalTypeName = "__XamlHotReloadSignal";
+
+	/// <summary>
+	/// Prefix of the <c>XamlComponentRegistry</c> entry that records the
+	/// generation a live instance is at (https://github.com/dotnet/maui/issues/36937). The entry is per
+	/// XAML type, because a XAML class deriving from another XAML class runs both
+	/// <c>InitializeComponent()</c> on the same instance.
+	/// </summary>
+	internal const string GenerationMarkerPrefix = "__xihr_generation:";
+
+	internal static string GetGenerationMarkerKey(INamedTypeSymbol rootType)
+		=> GenerationMarkerPrefix + rootType.ToFQDisplayString();
+
+	/// <summary>
+	/// A patch for live instances at the generation identified by <see cref="BaselineKey"/>.
+	/// </summary>
+	internal readonly struct BaselinePatch
+	{
+		public BaselinePatch(string baselineKey, string? patchBody)
+		{
+			BaselineKey = baselineKey;
+			PatchBody = patchBody;
+		}
+
+		public string BaselineKey { get; }
+		public string? PatchBody { get; }
+	}
 
 	/// <summary>
 	/// Generates the statements that apply a single previous→current patch (property sets, child-list
@@ -306,6 +333,98 @@ static class UpdateComponentCodeWriter
 		INamedTypeSymbol rootType,
 		string accessModifier,
 		string? patchBody)
+		=> GenerateUpdateComponent(
+			rootType,
+			accessModifier,
+			codeWriter =>
+			{
+				if (!string.IsNullOrWhiteSpace(patchBody))
+					WriteIndentedBody(codeWriter, patchBody!);
+			},
+			patchBody);
+
+	/// <summary>
+	/// Generates an <c>UpdateComponent()</c> that brings a live instance to the generation identified by
+	/// <paramref name="generationKey"/> from whichever retained generation it is at
+	/// (https://github.com/dotnet/maui/issues/36937). The generator can't tell which generations reached the
+	/// running app (a throwaway run with different XAML advances its cache to a generation that was never
+	/// applied), so each instance records its generation, and the patch picks the branch diffed from it.
+	/// An instance at an unknown generation gets <paramref name="defaultPatchBody"/>, the patch from the
+	/// previous generation; an instance already at the current generation is left alone.
+	/// </summary>
+	public static string GenerateUpdateComponent(
+		INamedTypeSymbol rootType,
+		string accessModifier,
+		string generationKey,
+		string? defaultPatchBody,
+		IReadOnlyList<BaselinePatch> baselinePatches)
+	{
+		var markerKey = SymbolDisplay.FormatLiteral(GetGenerationMarkerKey(rootType), quote: true);
+		var currentKey = SymbolDisplay.FormatLiteral(generationKey, quote: true);
+		var body = new StringBuilder();
+		body.Append("global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.TryGet(this, ").Append(markerKey).Append(", out var __xihrGeneration);").Append(NewLine);
+		body.Append("var __xihrFrom = __xihrGeneration as string;").Append(NewLine);
+		// No early return: patch bodies are emitted inline, and the tooling expects no `return;` in UC.
+		body.Append("if (__xihrFrom != ").Append(currentKey).Append(')').Append(NewLine);
+		body.Append('{').Append(NewLine);
+		var prefix = "if";
+		foreach (var baselinePatch in baselinePatches)
+		{
+			body.Append('\t').Append(prefix).Append(" (__xihrFrom == ").Append(SymbolDisplay.FormatLiteral(baselinePatch.BaselineKey, quote: true)).Append(')').Append(NewLine);
+			AppendBlock(body, baselinePatch.PatchBody);
+			prefix = "else if";
+		}
+		if (baselinePatches.Count > 0)
+		{
+			body.Append('\t').Append("else").Append(NewLine);
+			AppendBlock(body, defaultPatchBody);
+		}
+		else if (!string.IsNullOrWhiteSpace(defaultPatchBody))
+		{
+			AppendBlock(body, defaultPatchBody);
+		}
+		body.Append('\t').Append("global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.Register(this, ").Append(markerKey).Append(", ").Append(currentKey).Append(");").Append(NewLine);
+		body.Append('}').Append(NewLine);
+
+		var bodyText = body.ToString();
+		return GenerateUpdateComponent(rootType, accessModifier, codeWriter => WriteBody(codeWriter, bodyText), bodyText);
+
+		static void AppendBlock(StringBuilder builder, string? patchBody)
+		{
+			builder.Append("\t{").Append(NewLine);
+			if (!string.IsNullOrWhiteSpace(patchBody))
+			{
+				foreach (var line in patchBody!.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None))
+				{
+					if (!string.IsNullOrWhiteSpace(line))
+						builder.Append("\t\t").Append(line.TrimStart('\t'));
+					builder.Append(NewLine);
+				}
+			}
+			builder.Append("\t}").Append(NewLine);
+		}
+
+		static void WriteBody(IndentedTextWriter codeWriter, string text)
+		{
+			foreach (var line in text.Split(new[] { NewLine }, StringSplitOptions.None))
+			{
+				if (line.Length == 0)
+					continue;
+				var depth = 0;
+				while (depth < line.Length && line[depth] == '\t')
+					depth++;
+				codeWriter.Indent += depth;
+				codeWriter.WriteLine(line.Substring(depth));
+				codeWriter.Indent -= depth;
+			}
+		}
+	}
+
+	static string GenerateUpdateComponent(
+		INamedTypeSymbol rootType,
+		string accessModifier,
+		Action<IndentedTextWriter> writeBody,
+		string? fingerprintSource)
 	{
 		using var codeWriter = new IndentedTextWriter(new StringWriter(CultureInfo.InvariantCulture), "\t") { NewLine = NewLine };
 
@@ -333,8 +452,7 @@ static class UpdateComponentCodeWriter
 			// the companion signal type below, so re-emitting the same patch on a C#-only edit is a no-op.
 			using (PrePost.NewBlock(codeWriter))
 			{
-				if (!string.IsNullOrWhiteSpace(patchBody))
-					WriteIndentedBody(codeWriter, patchBody!);
+				writeBody(codeWriter);
 			}
 
 			// XAML-change signal (https://github.com/dotnet/maui/issues/36937). A pending patch is re-emitted
@@ -347,7 +465,7 @@ static class UpdateComponentCodeWriter
 			codeWriter.WriteLine($"static class {SignalTypeName}");
 			using (PrePost.NewBlock(codeWriter))
 			{
-				codeWriter.WriteLine($"internal static string Fingerprint() => \"{ComputeFingerprint(patchBody)}\";");
+				codeWriter.WriteLine($"internal static string Fingerprint() => \"{ComputeFingerprint(fingerprintSource)}\";");
 			}
 		}
 
