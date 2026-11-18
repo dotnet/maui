@@ -21,23 +21,24 @@ public class QueryPropertyConflictAnalyzerTests
 		""";
 
 	[Theory]
-	[InlineData("public void ApplyQueryAttributes(IDictionary<string, object> query) { }")]
-	[InlineData("void IQueryAttributable.ApplyQueryAttributes(IDictionary<string, object> query) { }")]
+	[InlineData("public void ApplyQueryProperties(IDictionary<string, object> query, IDictionary<string, object> previousQuery) { }")]
+	[InlineData("void IQueryPropertyAttributable.ApplyQueryProperties(IDictionary<string, object> query, IDictionary<string, object> previousQuery) { }")]
 	public async Task WarnsForImplicitAndExplicitImplementations(string implementation)
 	{
-		var diagnostics = await Analyze($$"""
+		var (result, compilation) = RunGenerator(CreateCompilation($$"""
 			[QueryProperty(nameof(Value), "value")]
-			public class Model : IQueryAttributable
+			public partial class Model : IQueryPropertyAttributable
 			{
 				public string Value { get; set; }
 				{{implementation}}
 			}
-			""");
+			"""));
 
-		var diagnostic = Assert.Single(diagnostics);
+		Assert.Empty(result.GeneratedTrees);
+		var diagnostic = Assert.Single(await GetDiagnostics(compilation));
 		Assert.Equal("MAUI1201", diagnostic.Id);
 		Assert.Equal(DiagnosticSeverity.Warning, diagnostic.Severity);
-		Assert.Equal("'Model' implements IQueryAttributable and uses [QueryProperty] attributes. Remove either the IQueryAttributable implementation or the [QueryProperty] attributes.", diagnostic.GetMessage());
+		Assert.Equal("'Model' implements IQueryPropertyAttributable and uses [QueryProperty] attributes. Remove either the IQueryPropertyAttributable implementation or the [QueryProperty] attributes.", diagnostic.GetMessage());
 		Assert.Equal("Model", diagnostic.Location.SourceTree!.GetText().ToString(diagnostic.Location.SourceSpan));
 	}
 
@@ -47,16 +48,34 @@ public class QueryPropertyConflictAnalyzerTests
 	[InlineData(false, false)]
 	public async Task DoesNotWarnWithoutBothMechanisms(bool hasAttribute, bool hasInterface)
 	{
-		var diagnostics = await Analyze($$"""
+		var (_, compilation) = RunGenerator(CreateCompilation($$"""
 			{{(hasAttribute ? "[QueryProperty(nameof(Value), \"value\")]" : "")}}
-			public class Model {{(hasInterface ? ": IQueryAttributable" : "")}}
+			public partial class Model {{(hasInterface ? ": IQueryPropertyAttributable" : "")}}
 			{
 				public string Value { get; set; }
-				public void ApplyQueryAttributes(IDictionary<string, object> query) { }
+				public void ApplyQueryProperties(IDictionary<string, object> query, IDictionary<string, object> previousQuery) { }
 			}
-			""");
+			"""));
 
-		Assert.Empty(diagnostics);
+		Assert.Empty(await GetDiagnostics(compilation));
+	}
+
+	[Theory]
+	[InlineData("public void ApplyQueryAttributes(IDictionary<string, object> query) { }")]
+	[InlineData("void IQueryAttributable.ApplyQueryAttributes(IDictionary<string, object> query) { }")]
+	public async Task DoesNotWarnForIQueryAttributable(string implementation)
+	{
+		var (result, compilation) = RunGenerator(CreateCompilation($$"""
+			[QueryProperty(nameof(Value), "value")]
+			public partial class Model : IQueryAttributable
+			{
+				public string Value { get; set; }
+				{{implementation}}
+			}
+			"""));
+
+		Assert.Single(result.GeneratedTrees);
+		Assert.Empty(await GetDiagnostics(compilation));
 	}
 
 	[Theory]
@@ -67,19 +86,18 @@ public class QueryPropertyConflictAnalyzerTests
 	{
 		var diagnostics = await Analyze($$"""
 			{{(inheritedAttribute ? "[QueryProperty(nameof(Value), \"value\")]" : "")}}
-			public class BaseModel {{(inheritedInterface ? ": IQueryAttributable" : "")}}
+			public class BaseModel {{(inheritedInterface ? ": IQueryPropertyAttributable" : "")}}
 			{
 				public string Value { get; set; }
-				public void ApplyQueryAttributes(IDictionary<string, object> query) { }
+				public void ApplyQueryProperties(IDictionary<string, object> query, IDictionary<string, object> previousQuery) { }
 			}
 
 			{{(!inheritedAttribute ? "[QueryProperty(nameof(Value), \"value\")]" : "")}}
-			public class Model : BaseModel {{(!inheritedInterface ? ", IQueryAttributable" : "")}} { }
+			public class Model : BaseModel {{(!inheritedInterface ? ", IQueryPropertyAttributable" : "")}} { }
 			""");
 
 		var names = diagnostics.Select(d => d.Location.SourceTree!.GetText().ToString(d.Location.SourceSpan)).OrderBy(n => n).ToArray();
-		// When both mechanisms come from the base class, only the base class is reported.
-		Assert.Equal(inheritedAttribute && inheritedInterface ? new[] { "BaseModel" } : new[] { "Model" }, names);
+		Assert.Equal(inheritedAttribute && inheritedInterface ? new[] { "BaseModel", "Model" } : new[] { "Model" }, names);
 		Assert.All(diagnostics, d => Assert.Equal("MAUI1201", d.Id));
 	}
 
@@ -94,9 +112,9 @@ public class QueryPropertyConflictAnalyzerTests
 			}
 
 			[QueryProperty(nameof(Value), "other")]
-			public partial class Model : IQueryAttributable
+			public partial class Model : IQueryPropertyAttributable
 			{
-				public void ApplyQueryAttributes(IDictionary<string, object> query) { }
+				public void ApplyQueryProperties(IDictionary<string, object> query, IDictionary<string, object> previousQuery) { }
 			}
 			""");
 
@@ -124,9 +142,9 @@ public class QueryPropertyConflictAnalyzerTests
 				public string Value { get; set; }
 			}
 
-			public class Model : BaseModel, IQueryAttributable
+			public class Model : BaseModel, IQueryPropertyAttributable
 			{
-				public void ApplyQueryAttributes(IDictionary<string, object> query) { }
+				public void ApplyQueryProperties(IDictionary<string, object> query, IDictionary<string, object> previousQuery) { }
 			}
 			""");
 
@@ -137,7 +155,7 @@ public class QueryPropertyConflictAnalyzerTests
 	public async Task WarnsForDerivedInterfaceAndAttribute()
 	{
 		var diagnostics = await Analyze("""
-			public interface IQueryHandler : IQueryAttributable { }
+			public interface IQueryHandler : IQueryPropertyAttributable { }
 			public class CustomQueryAttribute : QueryPropertyAttribute
 			{
 				public CustomQueryAttribute() : base("Value", "value") { }
@@ -147,7 +165,7 @@ public class QueryPropertyConflictAnalyzerTests
 			public class Model : IQueryHandler
 			{
 				public string Value { get; set; }
-				public void ApplyQueryAttributes(IDictionary<string, object> query) { }
+				public void ApplyQueryProperties(IDictionary<string, object> query, IDictionary<string, object> previousQuery) { }
 			}
 			""");
 
@@ -156,9 +174,9 @@ public class QueryPropertyConflictAnalyzerTests
 
 	[Theory]
 	[InlineData("""
-		public interface IQueryAttributable { }
+		public interface IQueryPropertyAttributable { }
 		[Microsoft.Maui.Controls.QueryProperty("Value", "value")]
-		public class Model : IQueryAttributable { }
+		public class Model : IQueryPropertyAttributable { }
 		""")]
 	[InlineData("""
 		public class QueryPropertyAttribute : Attribute
@@ -166,9 +184,9 @@ public class QueryPropertyConflictAnalyzerTests
 			public QueryPropertyAttribute(string name, string queryId) { }
 		}
 		[QueryProperty("Value", "value")]
-		public class Model : Microsoft.Maui.Controls.IQueryAttributable
+		public class Model : Microsoft.Maui.Controls.IQueryPropertyAttributable
 		{
-			public void ApplyQueryAttributes(IDictionary<string, object> query) { }
+			public void ApplyQueryProperties(IDictionary<string, object> query, IDictionary<string, object> previousQuery) { }
 		}
 		""")]
 	public async Task IgnoresUnrelatedTypesWithSameNames(string source)
@@ -177,26 +195,146 @@ public class QueryPropertyConflictAnalyzerTests
 	}
 
 	[Theory]
-	[InlineData("[QueryProperty(nameof(Value), \"value\")]", "", "public class Model : BaseModel, IQueryAttributable { public void ApplyQueryAttributes(IDictionary<string, object> query) { } }", 1)]
-	[InlineData("", ": IQueryAttributable", "[QueryProperty(nameof(Value), \"value\")] public class Model : BaseModel { }", 1)]
-	[InlineData("[QueryProperty(nameof(Value), \"value\")]", ": IQueryAttributable", "public class Model : BaseModel { }", 0)]
-	public async Task HandlesMechanismsInheritedFromMetadata(string baseAttribute, string baseInterface, string source, int expectedCount)
+	[InlineData("[QueryProperty(nameof(Value), \"value\")]", "", "public class Model : BaseModel, IQueryPropertyAttributable { }")]
+	[InlineData("", ": IQueryPropertyAttributable", "[QueryProperty(nameof(Value), \"value\")] public class Model : BaseModel { }")]
+	[InlineData("[QueryProperty(nameof(Value), \"value\")]", ": IQueryPropertyAttributable", "public class Model : BaseModel { }")]
+	public async Task WarnsForMechanismsInheritedFromMetadata(string baseAttribute, string baseInterface, string source)
 	{
 		var baseCompilation = CreateCompilation($$"""
 			{{baseAttribute}}
 			public class BaseModel {{baseInterface}}
 			{
 				public string Value { get; set; }
-				public void ApplyQueryAttributes(IDictionary<string, object> query) { }
+				public void ApplyQueryProperties(IDictionary<string, object> query, IDictionary<string, object> previousQuery) { }
 			}
 			""");
-		using var stream = new MemoryStream();
-		var result = baseCompilation.Emit(stream);
-		Assert.True(result.Success, string.Join(Environment.NewLine, result.Diagnostics));
 
-		var diagnostics = await Analyze(source, MetadataReference.CreateFromImage(stream.ToArray()));
+		var diagnostics = await Analyze(source, EmitReference(baseCompilation));
 
-		Assert.Equal(expectedCount, diagnostics.Length);
+		Assert.Single(diagnostics);
+	}
+
+	[Fact]
+	public async Task WarnsForExplicitImplementationInheritedFromMetadata()
+	{
+		var baseCompilation = CreateCompilation("""
+			public class BaseModel : IQueryPropertyAttributable
+			{
+				void IQueryPropertyAttributable.ApplyQueryProperties(IDictionary<string, object> query, IDictionary<string, object> previousQuery) { }
+			}
+			""");
+
+		var diagnostics = await Analyze("""
+			[QueryProperty(nameof(Value), "value")]
+			public class Model : BaseModel
+			{
+				public string Value { get; set; }
+			}
+			""", EmitReference(baseCompilation));
+
+		Assert.Single(diagnostics);
+	}
+
+	[Theory]
+	[InlineData(false)]
+	[InlineData(true)]
+	public async Task DoesNotWarnForGeneratedImplementationInheritedFromMetadata(bool isPartial)
+	{
+		var (result, baseCompilation) = RunGenerator(CreateCompilation("""
+			[QueryProperty(nameof(Value), "value")]
+			public partial class BaseModel
+			{
+				public string Value { get; set; }
+			}
+			"""));
+
+		Assert.Single(result.GeneratedTrees);
+		var (derivedResult, compilation) = RunGenerator(CreateCompilation($$"""
+			[QueryProperty(nameof(Other), "other")]
+			public {{(isPartial ? "partial " : "")}}class Model : BaseModel
+			{
+				public string Other { get; set; }
+			}
+			""").AddReferences(EmitReference(baseCompilation)));
+
+		Assert.Equal(isPartial ? 1 : 0, derivedResult.GeneratedTrees.Length);
+		Assert.Empty(await GetDiagnostics(compilation));
+	}
+
+	[Fact]
+	public async Task DoesNotWarnForGeneratedImplementationInheritedFromSource()
+	{
+		var (result, compilation) = RunGenerator(CreateCompilation("""
+			[QueryProperty(nameof(Value), "value")]
+			public partial class BaseModel
+			{
+				public string Value { get; set; }
+			}
+
+			[QueryProperty(nameof(Other), "other")]
+			public class Model : BaseModel
+			{
+				public string Other { get; set; }
+			}
+			"""));
+
+		Assert.Single(result.GeneratedTrees);
+		Assert.Empty(await GetDiagnostics(compilation));
+	}
+
+	[Fact]
+	public async Task WarnsForInheritedUserImplementationWhenGeneratorRuns()
+	{
+		var (result, compilation) = RunGenerator(CreateCompilation("""
+			public class BaseModel : IQueryPropertyAttributable
+			{
+				public void ApplyQueryProperties(IDictionary<string, object> query, IDictionary<string, object> previousQuery) { }
+			}
+
+			[QueryProperty(nameof(Value), "value")]
+			public partial class Model : BaseModel
+			{
+				public string Value { get; set; }
+			}
+			"""));
+
+		Assert.Empty(result.GeneratedTrees);
+		var diagnostic = Assert.Single(await GetDiagnostics(compilation));
+		Assert.Equal("Model", diagnostic.Location.SourceTree!.GetText().ToString(diagnostic.Location.SourceSpan));
+	}
+
+	[Fact]
+	public async Task WarnsForDerivedInterfaceWhenGeneratorRuns()
+	{
+		var (result, compilation) = RunGenerator(CreateCompilation("""
+			public interface IQueryHandler : IQueryPropertyAttributable { }
+
+			[QueryProperty(nameof(Value), "value")]
+			public partial class Model : IQueryHandler
+			{
+				public string Value { get; set; }
+				public void ApplyQueryProperties(IDictionary<string, object> query, IDictionary<string, object> previousQuery) { }
+			}
+			"""));
+
+		Assert.Empty(result.GeneratedTrees);
+		Assert.Single(await GetDiagnostics(compilation));
+	}
+
+	[Fact]
+	public async Task WarnsForImplementationsMarkedAsGeneratedByOtherTools()
+	{
+		var diagnostics = await Analyze("""
+			[QueryProperty(nameof(Value), "value")]
+			public class Model : IQueryPropertyAttributable
+			{
+				public string Value { get; set; }
+				[System.CodeDom.Compiler.GeneratedCode("OtherTool", "1.0")]
+				public void ApplyQueryProperties(IDictionary<string, object> query, IDictionary<string, object> previousQuery) { }
+			}
+			""");
+
+		Assert.Single(diagnostics);
 	}
 
 	[Fact]
@@ -205,10 +343,10 @@ public class QueryPropertyConflictAnalyzerTests
 		var compilation = SourceGeneratorDriver.CreateMauiCompilation()
 			.AddSyntaxTrees(CSharpSyntaxTree.ParseText(Usings + """
 				[QueryProperty("Value", "value")]
-				public class Model : IQueryAttributable
+				public class Model : IQueryPropertyAttributable
 				{
 					public string Value { get; set; }
-					public void ApplyQueryAttributes(IDictionary<string, object> query) { }
+					public void ApplyQueryProperties(IDictionary<string, object> query, IDictionary<string, object> previousQuery) { }
 				}
 				""", path: "Model.g.cs"));
 
@@ -218,6 +356,21 @@ public class QueryPropertyConflictAnalyzerTests
 	static Compilation CreateCompilation(string source)
 		=> SourceGeneratorDriver.CreateMauiCompilation($"QueryConflictTests{Guid.NewGuid():N}")
 			.AddSyntaxTrees(CSharpSyntaxTree.ParseText(Usings + source));
+
+	static (GeneratorDriverRunResult Result, Compilation Compilation) RunGenerator(Compilation compilation)
+	{
+		GeneratorDriver driver = CSharpGeneratorDriver.Create([new QueryPropertyGenerator().AsSourceGenerator()]);
+		driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var updatedCompilation, out _);
+		return (driver.GetRunResult(), updatedCompilation);
+	}
+
+	static MetadataReference EmitReference(Compilation compilation)
+	{
+		using var stream = new MemoryStream();
+		var result = compilation.Emit(stream);
+		Assert.True(result.Success, string.Join(Environment.NewLine, result.Diagnostics));
+		return MetadataReference.CreateFromImage(stream.ToArray());
+	}
 
 	static Task<ImmutableArray<Diagnostic>> Analyze(string source, params MetadataReference[] references)
 		=> GetDiagnostics(CreateCompilation(source).AddReferences(references));

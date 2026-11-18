@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls.SourceGen;
 public sealed class QueryPropertyConflictAnalyzer : DiagnosticAnalyzer
 {
 	public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics
-		=> ImmutableArray.Create(Descriptors.QueryPropertyConflictsWithIQueryAttributable);
+		=> ImmutableArray.Create(Descriptors.QueryPropertyConflictsWithIQueryPropertyAttributable);
 
 	public override void Initialize(AnalysisContext context)
 	{
@@ -17,9 +17,10 @@ public sealed class QueryPropertyConflictAnalyzer : DiagnosticAnalyzer
 		context.EnableConcurrentExecution();
 		context.RegisterCompilationStartAction(static context =>
 		{
-			var queryAttributable = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.IQueryAttributable");
+			var queryAttributable = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.IQueryPropertyAttributable");
 			var queryPropertyAttribute = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.QueryPropertyAttribute");
-			if (queryAttributable is null || queryPropertyAttribute is null)
+			var applyQueryProperties = queryAttributable?.GetMembers("ApplyQueryProperties").OfType<IMethodSymbol>().FirstOrDefault();
+			if (queryAttributable is null || queryPropertyAttribute is null || applyQueryProperties is null)
 				return;
 
 			context.RegisterSymbolAction(context =>
@@ -28,26 +29,16 @@ public sealed class QueryPropertyConflictAnalyzer : DiagnosticAnalyzer
 				if (type.TypeKind != TypeKind.Class || !type.Implements(queryAttributable))
 					return;
 
-				// Shell applies inherited attributes as well as inherited interface implementations,
-				// so the conflict is checked on the whole hierarchy. It is only reported on types that
-				// introduce one of the mechanisms themselves, so a single conflict isn't reported on
-				// every derived type.
-				var declaresInterface = type.Interfaces.Any(i =>
-					SymbolEqualityComparer.Default.Equals(i, queryAttributable) || i.Implements(queryAttributable));
-				var declaresAttribute = type.GetAttributes().Any(IsQueryProperty);
-				if (!declaresInterface && !declaresAttribute)
+				if (!type.GetAllAttributes(context: null).Any(attribute =>
+					attribute.AttributeClass?.InheritsFrom(queryPropertyAttribute, context: null) == true))
 					return;
 
-				if (declaresAttribute || type.GetAllAttributes(context: null).Any(IsQueryProperty))
-				{
-					context.ReportDiagnostic(Diagnostic.Create(
-						Descriptors.QueryPropertyConflictsWithIQueryAttributable,
-						type.Locations[0],
-						type.Name));
-				}
+				if (type.FindImplementationForInterfaceMember(applyQueryProperties) is not IMethodSymbol implementation ||
+					QueryPropertyGenerator.IsGeneratedQueryPropertyImplementation(implementation))
+					return;
 
-				bool IsQueryProperty(AttributeData attribute)
-					=> attribute.AttributeClass?.InheritsFrom(queryPropertyAttribute, context: null) == true;
+				context.ReportDiagnostic(Diagnostic.Create(
+					Descriptors.QueryPropertyConflictsWithIQueryPropertyAttributable, type.Locations[0], type.Name));
 			}, SymbolKind.NamedType);
 		});
 	}

@@ -358,10 +358,10 @@ namespace Microsoft.Maui.Controls.SourceGen
 			defaultSeverity: DiagnosticSeverity.Warning,
 			isEnabledByDefault: true);
 
-		public static DiagnosticDescriptor QueryPropertyConflictsWithIQueryAttributable = new DiagnosticDescriptor(
+		public static DiagnosticDescriptor QueryPropertyConflictsWithIQueryPropertyAttributable = new DiagnosticDescriptor(
 			id: "MAUI1201",
 			title: "Use a single query parameter handling mechanism",
-			messageFormat: "'{0}' implements IQueryAttributable and uses [QueryProperty] attributes. Remove either the IQueryAttributable implementation or the [QueryProperty] attributes.",
+			messageFormat: "'{0}' implements IQueryPropertyAttributable and uses [QueryProperty] attributes. Remove either the IQueryPropertyAttributable implementation or the [QueryProperty] attributes.",
 			category: "QueryProperty",
 			defaultSeverity: DiagnosticSeverity.Warning,
 			isEnabledByDefault: true);
