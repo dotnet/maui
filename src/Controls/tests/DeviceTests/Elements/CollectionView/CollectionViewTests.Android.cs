@@ -421,6 +421,40 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Theory(DisplayName = "Inserting or removing an off-screen middle item does not recompute the spacing of the visible items")]
+		[InlineData(true)]
+		[InlineData(false)]
+		public async Task OffscreenMiddleChangeDoesNotRecomputeOffsets(bool insert)
+		{
+			SetupBuilder();
+
+			var items = new ObservableCollection<string>(Enumerable.Range(0, 100).Select(i => $"{i}"));
+			var collectionView = new CollectionView
+			{
+				ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Vertical) { ItemSpacing = 8 },
+				ItemTemplate = new DataTemplate(() => new Label { HeightRequest = 30 }),
+				ItemsSource = items,
+			};
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				var recyclerView = handler.PlatformView;
+				var offsets = new ItemOffsetsCounter();
+				recyclerView.AddItemDecoration(offsets);
+				await AssertEventually(() => offsets.Count > 0 && !recyclerView.IsLayoutRequested);
+
+				offsets.Count = 0;
+				if (insert)
+					items.Insert(50, "new");
+				else
+					items.RemoveAt(50);
+				await AssertEventually(() => !recyclerView.IsLayoutRequested);
+
+				// The count from the last layout pass shows the change is far from the last row, so nothing is invalidated
+				Assert.Equal(0, offsets.Count);
+			});
+		}
+
 		[Fact(DisplayName = "Appending to a grid with only cross-axis spacing does not recompute the spacing of the visible items")]
 		public async Task AppendingToGridWithCrossAxisSpacingDoesNotRecomputeOffsets()
 		{
