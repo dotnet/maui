@@ -70,6 +70,10 @@ You can override the inflator for individual XAML files using item metadata:
 **Changes in .NET 12:**
 - The `[XamlCompilation]` attribute will be obsolete with `error: true` and becomes a no-op. Use MSBuild properties or item metadata instead.
 
+### Source-generated XAML line information
+
+The XAML source generator emits line directives by default in all configurations so compiler diagnostics can point to the original XAML. Set `<MauiXamlLineInfo>disable</MauiXamlLineInfo>` to turn them off; `enable` and the values `true` and `false` are also supported.
+
 ## MauiCssEnabled
 
 When this feature is disabled, CSS stylesheets cannot be parsed or applied to UI elements. Any attempt to use CSS will throw a `NotSupportedException`.
