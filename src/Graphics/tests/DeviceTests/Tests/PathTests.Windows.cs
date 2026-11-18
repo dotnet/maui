@@ -83,6 +83,33 @@ public class PathTests
 		AssertGeometry(geometry, MathF.Sqrt(10125) + 45 * MathF.PI + 45, 10, 10, 90, 90);
 	}
 
+	[Theory]
+	[InlineData(false)]
+	[InlineData(true)]
+	public void ArcAfterClosedFigureStartsIndependentFigure(bool useWin2D)
+	{
+		var path = new PathF();
+		path.MoveTo(0, 0);
+		path.LineTo(10, 0);
+		path.LineTo(10, 10);
+		path.Close();
+		path.AddArc(100, 100, 120, 120, 0, 90, false);
+
+		Assert.Equal(new[]
+		{
+			PathOperation.Move, PathOperation.Line, PathOperation.Line,
+			PathOperation.Close, PathOperation.Arc
+		}, path.SegmentTypes);
+		Assert.Equal(2, path.SubPathCount);
+		Assert.True(path.IsSubPathClosed(0));
+		Assert.False(path.IsSubPathClosed(1));
+
+		using var geometry = ConvertPath(path, useWin2D);
+
+		// Only the triangle perimeter and quarter-circle arc contribute to the length.
+		AssertGeometry(geometry, 20 + MathF.Sqrt(200) + 5 * MathF.PI, 0, 0, 120, 110);
+	}
+
 	static CanvasGeometry ConvertPath(PathF path, bool useWin2D)
 	{
 		var device = CanvasDevice.GetSharedDevice();
