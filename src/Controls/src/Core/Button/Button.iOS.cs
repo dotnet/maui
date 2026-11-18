@@ -318,9 +318,13 @@ namespace Microsoft.Maui.Controls
 				var available = Math.Max(0, size.Width - padding.HorizontalThickness - border * 2 - width);
 				var alignment = button.HorizontalTextAlignment;
 				if (((IVisualElementController)button).EffectiveFlowDirection.IsRightToLeft())
+				{
 					alignment = alignment == TextAlignment.Start ? TextAlignment.End : alignment == TextAlignment.End ? TextAlignment.Start : alignment;
+				}
+
 				offsetX = padding.Left + border - left + (alignment is TextAlignment.Start or TextAlignment.Justify ? 0 : alignment == TextAlignment.End ? available : available / 2);
 			}
+
 			if (button.IsSetExplicitly(VerticalTextAlignmentProperty))
 			{
 				var available = Math.Max(0, size.Height - padding.VerticalThickness - border * 2 - height);

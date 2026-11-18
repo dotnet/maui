@@ -64,9 +64,14 @@ namespace Microsoft.Maui.DeviceTests
 				var content = platform.Content;
 				var text = Assert.IsType<TextBlock>(platform.GetContent<TextBlock>());
 				if (alignment is { } value)
+				{
 					text.HorizontalAlignment = value;
+				}
 				else
+				{
 					text.ClearValue(FrameworkElement.HorizontalAlignmentProperty);
+				}
+
 				var original = text.ReadLocalValue(FrameworkElement.HorizontalAlignmentProperty);
 
 				button.HorizontalTextAlignment = MauiTextAlignment.End;

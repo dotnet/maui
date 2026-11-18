@@ -157,9 +157,13 @@ namespace Microsoft.Maui.DeviceTests
 				builder.ConfigureMauiHandlers(handlers =>
 				{
 					if (configured)
+					{
 						handlers.AddHandler<Button, ConfiguredAlignmentButtonHandler>();
+					}
 					else
+					{
 						handlers.AddHandler<Button, ButtonHandler>();
+					}
 				});
 			});
 			var button = new Button
@@ -213,9 +217,13 @@ namespace Microsoft.Maui.DeviceTests
 					var group = new Rect(left, top,
 						Math.Max(image.Right, ink.Right) - left, Math.Max(image.Bottom, ink.Bottom) - top);
 					if (alignment == TextAlignment.Start)
+					{
 						start = group;
+					}
 					else if (alignment == TextAlignment.Center)
+					{
 						center = group;
+					}
 					else
 					{
 						Assert.True(start.HasValue && center.HasValue);

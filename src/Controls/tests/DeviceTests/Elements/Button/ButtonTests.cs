@@ -24,7 +24,9 @@ namespace Microsoft.Maui.DeviceTests
 		{
 #if ANDROID
 			if (!OperatingSystem.IsAndroidVersionAtLeast(26))
+			{
 				return;
+			}
 #endif
 			EnsureHandlerCreated(builder => builder.ConfigureMauiHandlers(handlers => handlers.AddHandler<Button, ButtonHandler>()));
 			var button = new Button

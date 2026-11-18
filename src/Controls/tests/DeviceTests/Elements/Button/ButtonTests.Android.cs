@@ -108,9 +108,11 @@ namespace Microsoft.Maui.DeviceTests
 					_ => global::Android.Views.TextAlignment.Center
 				}, platform.TextAlignment);
 				if (OperatingSystem.IsAndroidVersionAtLeast(26))
+				{
 					Assert.Equal(alignment == TextAlignment.Justify
 						? global::Android.Text.JustificationMode.InterWord
 						: global::Android.Text.JustificationMode.None, platform.JustificationMode);
+				}
 
 				button.VerticalTextAlignment = alignment == TextAlignment.Justify ? TextAlignment.Center : alignment;
 				Assert.Equal(vertical, platform.Gravity & GravityFlags.VerticalGravityMask);
@@ -118,7 +120,10 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(originalGravity & horizontalMask, platform.Gravity & horizontalMask);
 				Assert.Equal(originalTextAlignment, platform.TextAlignment);
 				if (OperatingSystem.IsAndroidVersionAtLeast(26))
+				{
 					Assert.Equal(originalJustification, platform.JustificationMode);
+				}
+
 				Assert.Equal(vertical, platform.Gravity & GravityFlags.VerticalGravityMask);
 
 				button.Text = string.Empty;
@@ -219,7 +224,9 @@ namespace Microsoft.Maui.DeviceTests
 			var right = -1;
 			var bottom = -1;
 			for (var y = 0; y < height; y++)
+			{
 				for (var x = 0; x < width; x++)
+				{
 					if ((pixels[y * width + x] & 0xFFFFFF) == rgb)
 					{
 						left = Math.Min(left, x);
@@ -227,6 +234,9 @@ namespace Microsoft.Maui.DeviceTests
 						right = Math.Max(right, x);
 						bottom = Math.Max(bottom, y);
 					}
+				}
+			}
+
 			Assert.True(right >= left && bottom >= top, $"Expected rendered color 0x{rgb:X6}.");
 			return new Rect(left, top, right - left + 1, bottom - top + 1);
 		}
