@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Foundation;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using ObjCRuntime;
 using Xunit;
@@ -123,6 +124,105 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(WebNavigationResult.Success, await navigated.Task.WaitAsync(TimeSpan.FromSeconds(5)));
 				Assert.Equal("second", handler.PlatformView.Url?.Fragment);
 			});
+		}
+
+		[Fact(DisplayName = "Evaluating JavaScript returns null when navigating to another site destroys the page running it")]
+		public async Task EvaluateJavaScriptReturnsNullWhenNavigationDestroysPage()
+		{
+			SetupBuilder();
+
+			var webView = new WebView
+			{
+				WidthRequest = 100,
+				HeightRequest = 100,
+				Source = new HtmlWebViewSource { Html = "<html><body>First</body></html>", BaseUrl = "https://first.example/" }
+			};
+
+			var navigated = new TaskCompletionSource<WebNavigationResult>(TaskCreationOptions.RunContinuationsAsynchronously);
+			webView.Navigated += (_, e) => navigated.TrySetResult(e.Result);
+
+			await AttachAndRun<WebViewHandler>(webView, async handler =>
+			{
+				Assert.Equal(WebNavigationResult.Success, await navigated.Task.WaitAsync(TimeSpan.FromSeconds(5)));
+
+				// The other site loads in a new web content process. The first page is still busy running the
+				// script, so it cannot suspend, and WebKit destroys it after about 10 seconds, before the script
+				// can return its result.
+				webView.Source = new HtmlWebViewSource { Html = "<html><body>Second</body></html>", BaseUrl = "https://second.example/" };
+				var result = await webView.EvaluateJavaScriptAsync("(function(){var start=Date.now();while(Date.now()-start<30000){}return 1;})()")
+					.WaitAsync(TimeSpan.FromSeconds(60));
+
+				Assert.Null(result);
+			});
+		}
+
+		[Theory(DisplayName = "Evaluating JavaScript returns null only for a lost WebKit result")]
+		[InlineData("WKErrorDomain", 5, true)]
+		[InlineData("WKErrorDomain", 4, false)]
+		[InlineData("WKErrorDomain", 1, false)]
+		[InlineData("NSCocoaErrorDomain", 5, false)]
+		public async Task EvaluateJavaScriptReturnsNullOnlyForLostResult(string domain, int code, bool resultLost)
+		{
+			using var error = new NSError(new NSString(domain), code);
+
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<WebView>(_ => new FailingEvaluationWebViewHandler(error));
+				});
+			});
+
+			var webView = new WebView
+			{
+				WidthRequest = 100,
+				HeightRequest = 100,
+			};
+
+			await AttachAndRun(webView, async handler =>
+			{
+				Assert.IsType<FailingEvaluationWebViewHandler>(handler);
+
+				var evaluation = webView.EvaluateJavaScriptAsync("1+1").WaitAsync(TimeSpan.FromSeconds(5));
+
+				if (resultLost)
+				{
+					Assert.Null(await evaluation);
+				}
+				else
+				{
+					var exception = await Assert.ThrowsAsync<NSErrorException>(() => evaluation);
+					Assert.Equal(domain, exception.Error.Domain);
+					Assert.Equal((nint)code, exception.Error.Code);
+				}
+			});
+		}
+
+		sealed class FailingEvaluationWebViewHandler : WebViewHandler
+		{
+			readonly NSError _error;
+
+			public FailingEvaluationWebViewHandler(NSError error)
+			{
+				_error = error;
+			}
+
+			protected override WebKit.WKWebView CreatePlatformView() => new FailingEvaluationWKWebView(this, _error);
+		}
+
+		sealed class FailingEvaluationWKWebView : MauiWKWebView
+		{
+			readonly NSError _error;
+
+			public FailingEvaluationWKWebView(WebViewHandler handler, NSError error) : base(handler)
+			{
+				_error = error;
+			}
+
+			public override void EvaluateJavaScript(NSString javascript, WebKit.WKJavascriptEvaluationResult completionHandler)
+			{
+				completionHandler?.Invoke(null, _error);
+			}
 		}
 
 		// WebKit SPI that ends the web content process, as iOS does when it reclaims memory from an idle app.
