@@ -101,9 +101,11 @@ jobs:
     outputs:
       context_ready: ${{ steps.context.outputs.ready }}
   # If the agent fails, still give the requester a run: the full suite, clearly labelled.
+  # An agent can emit its proposal and then exit non-zero; the proposal is still handed over
+  # in that case, so only fall back when no proposal was dispatched.
   run-tests-fallback:
-    needs: [pre_activation, activation, agent]
-    if: ${{ !cancelled() && needs.pre_activation.outputs.context_ready == 'true' && needs.agent.result == 'failure' }}
+    needs: [pre_activation, activation, agent, run_selected_ui_tests]
+    if: ${{ !cancelled() && needs.pre_activation.outputs.context_ready == 'true' && needs.agent.result == 'failure' && needs.run_selected_ui_tests.result != 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
