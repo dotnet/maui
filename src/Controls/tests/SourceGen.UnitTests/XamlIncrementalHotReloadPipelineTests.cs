@@ -17,6 +17,7 @@ using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Maui.Controls.SourceGen;
+using Microsoft.Maui.Controls.SourceGen.UnitTests.HotReload;
 using Microsoft.Maui.Controls.Xaml.UnitTests.SourceGen;
 using Xunit;
 
@@ -2763,6 +2764,66 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 
 		Assert.Contains("\"World\"", real, StringComparison.Ordinal);
 		Assert.Equal(throwaway, real);
+	}
+
+	static string LabelPage(string label) => $$"""
+		<?xml version="1.0" encoding="utf-8" ?>
+		<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+		             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+		             x:Class="TestApp.MainPage">
+		    <VerticalStackLayout>
+		        <Label {{label}} />
+		    </VerticalStackLayout>
+		</ContentPage>
+		""";
+
+	[Fact]
+	public void ThrowawayRunWithDifferentXaml_PatchesFromEveryRetainedGeneration()
+	{
+		// https://github.com/dotnet/maui/issues/36937: the throwaway run advances the cache to Text="World"
+		// FontSize="30", which never reaches the app. The real patch can't be diffed from that generation
+		// alone: instances still at Text="Hello" must get a branch that sets Text.
+		XamlHotReloadState.Reset();
+		var compilation = CreateCompilation();
+		var applied = MakeFile(LabelPage("Text=\"Hello\""));
+		var throwaway = MakeFile(LabelPage("Text=\"World\" FontSize=\"30\""));
+		var real = MakeFile(LabelPage("Text=\"World\""));
+
+		var baseline = CreateDriver(applied).RunGenerators(compilation);
+		_ = baseline.ReplaceAdditionalText(applied.Text, throwaway.Text).WithUpdatedAnalyzerConfigOptions(new OptionsProvider([throwaway])).RunGenerators(compilation);
+		var edited = baseline.ReplaceAdditionalText(applied.Text, real.Text).WithUpdatedAnalyzerConfigOptions(new OptionsProvider([real]));
+		var uc = FindUCSource(edited.RunGenerators(compilation).GetRunResult(), "uc.xsg");
+
+		Assert.NotNull(uc);
+		Assert.Equal(1, UpdateComponentText.BaselineCaseCount(uc!));
+		var fromThrowaway = UpdateComponentText.DefaultPatch(uc!);
+		Assert.Contains("FontSize", fromThrowaway, StringComparison.Ordinal);
+		Assert.DoesNotContain("\"World\"", fromThrowaway, StringComparison.Ordinal);
+		Assert.Contains("\"World\"", uc!.Replace(fromThrowaway, string.Empty, StringComparison.Ordinal), StringComparison.Ordinal);
+
+		// Re-evaluating the same snapshot, or a C#-only edit, emits the same multi-baseline patch.
+		var csharpEdited = compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText("namespace TestApp; class Unrelated { }", path: "Unrelated.cs"));
+		Assert.Equal(uc, FindUCSource(edited.RunGenerators(compilation).GetRunResult(), "uc.xsg"));
+		Assert.Equal(uc, FindUCSource(edited.RunGenerators(csharpEdited).GetRunResult(), "uc.xsg"));
+	}
+
+	[Fact]
+	public void RetainedGenerations_AreBounded()
+	{
+		XamlHotReloadState.Reset();
+		var compilation = CreateCompilation();
+		var files = Enumerable.Range(0, XamlHotReloadState.MaxBaselines + 3)
+			.Select(i => MakeFile(LabelPage($"Text=\"Text{i}\"")))
+			.ToArray();
+
+		GeneratorDriver driver = CreateDriver(files[0]).RunGenerators(compilation);
+		string? uc = null;
+		for (var i = 1; i < files.Length; i++)
+		{
+			driver = driver.ReplaceAdditionalText(files[i - 1].Text, files[i].Text).WithUpdatedAnalyzerConfigOptions(new OptionsProvider([files[i]])).RunGenerators(compilation);
+			uc = FindUCSource(driver.GetRunResult(), "uc.xsg");
+			Assert.Equal(Math.Min(i, XamlHotReloadState.MaxBaselines) - 1, UpdateComponentText.BaselineCaseCount(uc!));
+		}
 	}
 
 	[Fact]
