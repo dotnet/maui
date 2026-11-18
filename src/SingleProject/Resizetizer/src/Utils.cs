@@ -84,10 +84,11 @@ namespace Microsoft.Maui.Resizetizer
 		public static void DeleteDirectoryWithRetries(string path) =>
 			RetryWhileFileIsLocked(() => Directory.Delete(path, recursive: true));
 
-		static void RetryWhileFileIsLocked(Action action)
+		static void RetryWhileFileIsLocked(Action action) =>
+			RetryWhileFileIsLocked(action, SkiaSharpTools.GetFileWriteRetryAttempts(), SkiaSharpTools.GetFileWriteRetryDelay());
+
+		internal static void RetryWhileFileIsLocked(Action action, int attempts, int delay)
 		{
-			var attempts = SkiaSharpTools.GetFileWriteRetryAttempts();
-			var delay = SkiaSharpTools.GetFileWriteRetryDelay();
 			for (var attempt = 0; ; attempt++)
 			{
 				try
