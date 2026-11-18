@@ -165,7 +165,7 @@ namespace Microsoft.Maui.Platform
 				Background = _defaultBackgroundState?.NewDrawable()?.Mutate() ?? _defaultBackground;
 				BackgroundTintList = _defaultBackgroundTint;
 				if (_defaultCardBackgroundColor is not null)
-					SetCardBackgroundColor(_defaultCardBackgroundColor.DefaultColor);
+					CardBackgroundColor = _defaultCardBackgroundColor;
 
 				UpdateButtonStroke(button);
 				return;

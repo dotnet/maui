@@ -62,6 +62,47 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task DisconnectDuringPressRestoresVisualState()
+		{
+			SetupBuilder();
+			var button = new ControlsContentButton();
+			VisualStateManager.SetVisualStateGroups(button, new VisualStateGroupList
+			{
+				new VisualStateGroup
+				{
+					Name = "CommonStates",
+					States =
+					{
+						new VisualState { Name = "Normal" },
+						new VisualState
+						{
+							Name = "Pressed",
+							Setters = { new Setter { Property = Controls.VisualElement.BackgroundProperty, Value = new SolidColorBrush(Colors.Red) } }
+						}
+					}
+				}
+			});
+
+			await CreateHandlerAndAddToWindow<ContentButtonHandler>(button, handler =>
+			{
+				var platformView = handler.PlatformView;
+				var now = global::Android.OS.SystemClock.UptimeMillis();
+				using var down = MotionEvent.Obtain(now, now, MotionEventActions.Down, 1, 1, 0);
+				platformView.DispatchTouchEvent(down);
+				Assert.True(button.IsPressed);
+				Assert.NotNull(button.Background);
+
+				var exception = Record.Exception(() => ((IElementHandler)handler).DisconnectHandler());
+
+				Assert.Null(exception);
+				Assert.False(button.IsPressed);
+				Assert.Null(((IElementHandler)handler).PlatformView);
+				Assert.Null(Record.Exception(() => ControlsContentButton.MapRippleColor(handler, button)));
+				return Task.CompletedTask;
+			});
+		}
+
+		[Fact]
 		public async Task ContainerSafeAreaInsetsDirectContent()
 		{
 			SetupBuilder();

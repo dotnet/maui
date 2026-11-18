@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls
 	{
 		public static void MapRippleColor(IContentButtonHandler handler, ContentButton button)
 		{
-			if (handler.PlatformView is MauiContentButton platformView)
+			if (((IElementHandler)handler).PlatformView is MauiContentButton platformView)
 				platformView.UpdateRippleColor(button.OnThisPlatform().GetRippleColor());
 		}
 	}

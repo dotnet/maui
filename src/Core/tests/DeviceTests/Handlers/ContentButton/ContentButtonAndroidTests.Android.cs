@@ -288,6 +288,67 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task TouchDoesNotActivateReplacementView(bool replaceOnPress)
+		{
+			var firstClicks = 0;
+			var secondClicks = 0;
+			var second = new ContentButtonStub { Clicked = () => secondClicks++ };
+			var first = new ContentButtonStub { Clicked = () => firstClicks++ };
+
+			await AttachAndRun(first, async handler =>
+			{
+				var platformView = handler.PlatformView;
+				if (replaceOnPress)
+					first.Pressed = () => handler.SetVirtualView(second);
+				else
+					first.Released = () => handler.SetVirtualView(second);
+				var downTime = SystemClock.UptimeMillis();
+				DispatchTouch(platformView, MotionEventActions.Down, 1, 1, downTime);
+				DispatchTouch(platformView, MotionEventActions.Up, 1, 1, downTime);
+				await Task.Delay(250);
+
+				Assert.Same(second, ((IElementHandler)handler).VirtualView);
+				Assert.Equal(0, firstClicks);
+				Assert.Equal(0, secondClicks);
+
+				downTime = SystemClock.UptimeMillis();
+				DispatchTouch(platformView, MotionEventActions.Down, 1, 1, downTime);
+				DispatchTouch(platformView, MotionEventActions.Up, 1, 1, downTime);
+				await Task.Delay(250);
+				Assert.Equal(1, secondClicks);
+			});
+		}
+
+		[Fact]
+		public async Task StatefulNativeBackgroundIsRestored()
+		{
+			var button = new ContentButtonStub();
+			var handler = await InvokeOnMainThreadAsync(() =>
+				CreateHandler<ContentButtonHandler, StatefulBackgroundHandler>(button, MauiContext));
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var platformView = handler.PlatformView;
+				AssertColors();
+
+				button.Background = new LinearGradientPaintStub(Colors.Red, Colors.Blue);
+				handler.UpdateValue(nameof(IView.Background));
+				button.Background = null;
+				handler.UpdateValue(nameof(IView.Background));
+				AssertColors();
+
+				void AssertColors()
+				{
+					var background = platformView.CardBackgroundColor!;
+					Assert.Equal(AColor.Red, background.GetColorForState([global::Android.Resource.Attribute.StateEnabled], AColor.Transparent));
+					Assert.Equal(AColor.Blue, background.GetColorForState([], AColor.Transparent));
+				}
+			});
+		}
+
 		[Fact]
 		public async Task ReleaseOutsideBoundsCancelsClickWhileInsideReleaseActivates()
 		{
@@ -481,6 +542,19 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var button = base.CreatePlatformView();
 				button.Radius = NativeRadius;
+				return button;
+			}
+		}
+
+		sealed class StatefulBackgroundHandler : ContentButtonHandler
+		{
+			protected override MaterialCardView CreatePlatformView()
+			{
+				var button = base.CreatePlatformView();
+				using var colors = new ColorStateList(
+					[[global::Android.Resource.Attribute.StateEnabled], []],
+					[AColor.Red.ToArgb(), AColor.Blue.ToArgb()]);
+				button.CardBackgroundColor = colors;
 				return button;
 			}
 		}

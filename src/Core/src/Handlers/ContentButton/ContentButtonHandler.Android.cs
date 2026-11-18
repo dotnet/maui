@@ -12,6 +12,7 @@ namespace Microsoft.Maui.Handlers
 		ButtonClickListener ClickListener { get; } = new();
 		ButtonTouchListener TouchListener { get; } = new();
 		bool _isPressed;
+		IContentButton? _touchTarget;
 
 		protected override MaterialCardView CreatePlatformView()
 		{
@@ -61,6 +62,7 @@ namespace Microsoft.Maui.Handlers
 		protected override void DisconnectHandler(MaterialCardView platformView)
 		{
 			ReleasePressed();
+			_touchTarget = null;
 
 			if (platformView is MauiContentButton contentButton)
 			{
@@ -158,22 +160,28 @@ namespace Microsoft.Maui.Handlers
 			switch (e?.ActionMasked)
 			{
 				case MotionEventActions.Down when button.IsEnabled && !handler._isPressed:
+					handler._touchTarget = button;
 					handler._isPressed = true;
 					button.Pressed();
 					break;
 				case MotionEventActions.Cancel:
+					handler._touchTarget = null;
 					handler.ReleasePressed();
 					break;
 				case MotionEventActions.Up:
+					var touchTarget = handler._touchTarget;
+					handler._touchTarget = null;
 					var releasedOutside = platformView is not null &&
 						(e.GetX() < 0 || e.GetX() >= platformView.Width ||
 							e.GetY() < 0 || e.GetY() >= platformView.Height);
 
-					if (releasedOutside)
-						platformView!.Pressed = false;
-
 					handler.ReleasePressed();
-					return releasedOutside;
+					var cancelActivation = releasedOutside || !ReferenceEquals(touchTarget, button) ||
+						!IsConnectedTo(handler, button) ||
+						!ReferenceEquals(((IElementHandler)handler).PlatformView, platformView);
+					if (cancelActivation && platformView is not null)
+						platformView.Pressed = false;
+					return cancelActivation;
 			}
 
 			return false;
