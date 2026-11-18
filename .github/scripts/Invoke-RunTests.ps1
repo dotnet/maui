@@ -224,7 +224,7 @@ if (-not $DryRun -and -not $SkipChecks) {
     }
 
     $selectionConclusion = if ($queueError) { 'failure' } else { 'success' }
-    $title = if ($queueError) { 'UI tests were not queued' } elseif ($selection.mode -eq 'none') { 'No UI tests selected' } elseif ($selection.mode -eq 'full') { 'Full UI test suite selected' } else { "$($selection.expandedCategories.Count) categories on $platformText" }
+    $title = if ($queueError) { 'UI tests were not queued' } elseif ($selection.mode -eq 'none') { 'No UI tests selected' } elseif ($selection.mode -eq 'full') { 'Full UI test suite selected' } else { "$(Format-RunTestsCount $selection.expandedCategories.Count 'category' 'categories') on $platformText" }
     $body = [ordered]@{
         name = $script:RunTestsSelectionCheckName; head_sha = $sha; status = 'completed'; conclusion = $selectionConclusion
         started_at = $now; completed_at = $now; details_url = $buildUrl
