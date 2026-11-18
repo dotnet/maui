@@ -11,6 +11,7 @@ using AndroidX.Activity;
 using AndroidX.Core.View;
 using AndroidX.Fragment.App;
 using Microsoft.Maui.LifecycleEvents;
+using Microsoft.Maui.Platform;
 using AAnimation = Android.Views.Animations.Animation;
 using AColor = Android.Graphics.Color;
 using AView = Android.Views.View;
@@ -510,6 +511,9 @@ namespace Microsoft.Maui.Controls.Platform
 
 				public override bool OnKeyDown(Keycode keyCode, KeyEvent e)
 				{
+					if (ContextFlyoutManager.IsContextMenuKeyDown(keyCode, e) && ContextFlyoutManager.TryShowForFocusedView(CurrentFocus))
+						return true;
+
 					var handled = false;
 					IPlatformApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnKeyDown>(del =>
 					{
@@ -554,6 +558,9 @@ namespace Microsoft.Maui.Controls.Platform
 
 				public override bool OnKeyUp(Keycode keyCode, KeyEvent e)
 				{
+					if (ContextFlyoutManager.IsContextMenuKeyUp(keyCode, e) && ContextFlyoutManager.TryShowForFocusedView(CurrentFocus))
+						return true;
+
 					var handled = false;
 					IPlatformApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnKeyUp>(del =>
 					{
@@ -569,6 +576,10 @@ namespace Microsoft.Maui.Controls.Platform
 					{
 						return false;
 					}
+
+					// Context flyouts observe touches before they're dispatched (see MauiAppCompatActivity)
+					if (ContextFlyoutTouchTracker.OnDispatchTouchEvent(Window, e))
+						return true;
 
 					bool handled = base.DispatchTouchEvent(e);
 

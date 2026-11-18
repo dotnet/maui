@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -35,6 +36,39 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler<MenuFlyoutSeparator, MenuFlyoutSeparatorHandler>();
 				});
 			});
+		}
+
+		// Copy, Disabled, ---, Edit > Nested
+		static MenuFlyout CreateFlyout(out MenuFlyoutItem nested)
+		{
+			nested = new MenuFlyoutItem { Text = "Nested" };
+			var subItem = new MenuFlyoutSubItem { Text = "Edit" };
+			subItem.Add(nested);
+
+			return new MenuFlyout
+			{
+				new MenuFlyoutItem { Text = "Copy" },
+				new MenuFlyoutItem { Text = "Disabled", IsEnabled = false },
+				new MenuFlyoutSeparator(),
+				subItem,
+			};
+		}
+
+		class ContextMenuViewModel : INotifyPropertyChanged
+		{
+			string _title;
+
+			public string Title
+			{
+				get => _title;
+				set
+				{
+					_title = value;
+					PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Title)));
+				}
+			}
+
+			public event PropertyChangedEventHandler PropertyChanged;
 		}
 	}
 }

@@ -30,25 +30,39 @@ namespace Microsoft.Maui.Platform
 
 		public UIContextMenuConfiguration? GetConfigurationForMenu()
 		{
-			var contextFlyout = (Handler?.VirtualView as IContextFlyoutElement)?.ContextFlyout;
-			var mauiContext = Handler?.MauiContext;
+			// A flyout with only separators has nothing to show
+			if (CreateMenu() is not UIMenu { Children.Length: > 0 } uiMenu)
+				return null;
+
+			return UIContextMenuConfiguration.Create(
+						identifier: null,
+						previewProvider: null,
+						actionProvider: _ => uiMenu);
+		}
+
+		internal UIMenu? CreateMenu()
+		{
+			var handler = Handler;
+			var virtualView = handler?.VirtualView;
+			var contextFlyout = (virtualView as IContextFlyoutElement)?.ContextFlyout;
+			var mauiContext = handler?.MauiContext;
 
 			if (contextFlyout == null || mauiContext == null)
 				return null;
 
+			// Disabled views don't receive input, so they shouldn't open a context menu either
+			if (virtualView is IView view && (!view.IsEnabled || view.InputTransparent))
+				return null;
+
+			if (contextFlyout is IMenuFlyout menuFlyout && menuFlyout.Count == 0)
+				return null;
+
+			// The menu is rebuilt every time it opens, so it always reflects the current state of the items
 			contextFlyout.Handler?.DisconnectHandler();
 			var contextFlyoutHandler = contextFlyout.ToHandler(mauiContext);
 			var contextFlyoutPlatformView = contextFlyoutHandler.PlatformView;
 
-			if (contextFlyoutPlatformView is UIMenu uiMenu)
-			{
-				return UIContextMenuConfiguration.Create(
-							identifier: null,
-							previewProvider: null,
-							actionProvider: _ => uiMenu);
-			}
-
-			return null;
+			return contextFlyoutPlatformView as UIMenu;
 		}
 
 		IElementHandler? Handler

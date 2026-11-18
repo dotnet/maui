@@ -52,6 +52,11 @@ namespace Microsoft.Maui
 
 		public override bool DispatchTouchEvent(MotionEvent? e)
 		{
+			// Context flyouts observe touches before they're dispatched; this only consumes the event
+			// when a context menu was opened by the current touch.
+			if (ContextFlyoutTouchTracker.OnDispatchTouchEvent(Window, e))
+				return true;
+
 			// For current purposes this needs to get called before we propagate
 			// this message out. In Controls this dispatch call will unfocus the 
 			// current focused element which is important for timing if we should
