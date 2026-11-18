@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Foundation;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using ObjCRuntime;
 using Xunit;
@@ -153,6 +154,75 @@ namespace Microsoft.Maui.DeviceTests
 
 				Assert.Null(result);
 			});
+		}
+
+		[Theory(DisplayName = "Evaluating JavaScript returns null only for a lost WebKit result")]
+		[InlineData("WKErrorDomain", 5, true)]
+		[InlineData("WKErrorDomain", 4, false)]
+		[InlineData("WKErrorDomain", 1, false)]
+		[InlineData("NSCocoaErrorDomain", 5, false)]
+		public async Task EvaluateJavaScriptReturnsNullOnlyForLostResult(string domain, int code, bool resultLost)
+		{
+			using var error = new NSError(new NSString(domain), code);
+
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<WebView>(_ => new FailingEvaluationWebViewHandler(error));
+				});
+			});
+
+			var webView = new WebView
+			{
+				WidthRequest = 100,
+				HeightRequest = 100,
+			};
+
+			await AttachAndRun(webView, async handler =>
+			{
+				Assert.IsType<FailingEvaluationWebViewHandler>(handler);
+
+				var evaluation = webView.EvaluateJavaScriptAsync("1+1").WaitAsync(TimeSpan.FromSeconds(5));
+
+				if (resultLost)
+				{
+					Assert.Null(await evaluation);
+				}
+				else
+				{
+					var exception = await Assert.ThrowsAsync<NSErrorException>(() => evaluation);
+					Assert.Equal(domain, exception.Error.Domain);
+					Assert.Equal((nint)code, exception.Error.Code);
+				}
+			});
+		}
+
+		sealed class FailingEvaluationWebViewHandler : WebViewHandler
+		{
+			readonly NSError _error;
+
+			public FailingEvaluationWebViewHandler(NSError error)
+			{
+				_error = error;
+			}
+
+			protected override WebKit.WKWebView CreatePlatformView() => new FailingEvaluationWKWebView(this, _error);
+		}
+
+		sealed class FailingEvaluationWKWebView : MauiWKWebView
+		{
+			readonly NSError _error;
+
+			public FailingEvaluationWKWebView(WebViewHandler handler, NSError error) : base(handler)
+			{
+				_error = error;
+			}
+
+			public override void EvaluateJavaScript(NSString javascript, WebKit.WKJavascriptEvaluationResult completionHandler)
+			{
+				completionHandler?.Invoke(null, _error);
+			}
 		}
 
 		// WebKit SPI that ends the web content process, as iOS does when it reclaims memory from an idle app.
