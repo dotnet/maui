@@ -12,6 +12,24 @@ namespace Tests
 		public async Task TextToSpeech_Speak_Fail_On_NetStandard() =>
 			await Assert.ThrowsAsync<NotImplementedInReferenceAssemblyException>(() => TextToSpeech.SpeakAsync("Xamarin Essentials!"));
 
+		[Theory]
+		[InlineData(-0.1f, null, null)]
+		[InlineData(1.1f, null, null)]
+		[InlineData(null, -0.1f, null)]
+		[InlineData(null, 2.1f, null)]
+		[InlineData(null, null, 0.05f)]
+		[InlineData(null, null, 2.1f)]
+		public async Task SpeakAsync_OptionOutOfRange_ReportsRange(float? volume, float? pitch, float? rate)
+		{
+			var options = new SpeechOptions { Volume = volume, Pitch = pitch, Rate = rate };
+
+			var ex = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
+				new TextToSpeechImplementation().SpeakAsync("text", options));
+
+			Assert.Equal("options", ex.ParamName);
+			Assert.Contains(volume.HasValue ? "and <= 1" : "and <= 2", ex.Message, StringComparison.Ordinal);
+		}
+
 		// NormalizeRate tests — use arbitrary platform constants to verify math
 		const float PlatMin = 0.0f;
 		const float PlatMax = 1.0f;
