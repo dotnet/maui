@@ -18,7 +18,7 @@ public static class SourceGeneratorDriver
 {
 	private static MetadataReference[]? MauiReferences;
 
-	public record AdditionalFile(AdditionalText Text, string Kind, string RelativePath, string? TargetPath, string? ManifestResourceName, string? TargetFramework, string? NoWarn, string LineInfo = "enable", bool EnableIncrementalHotReload = false, bool EnableDiagnostics = true, string Inflator = "SourceGen", string? LineInfoMetadata = null, string? Configuration = null);
+	public record AdditionalFile(AdditionalText Text, string Kind, string RelativePath, string? TargetPath, string? ManifestResourceName, string? TargetFramework, string? NoWarn, string LineInfo = "enable", bool EnableIncrementalHotReload = false, bool EnableDiagnostics = true, string Inflator = "SourceGen", string? LineInfoMetadata = null, string? Configuration = null, bool EnablePreviewFeatures = false);
 	public static GeneratorDriverRunResult RunGenerator<T>(Compilation compilation, AdditionalFile additionalFile, bool assertNoCompilationErrors = true, IncrementalGeneratorOutputKind disabledOutputs = IncrementalGeneratorOutputKind.None)
 		where T : IIncrementalGenerator, new()
 		=> RunGenerator<T>(compilation, additionalFiles: [additionalFile], assertNoCompilationErrors, disabledOutputs);
@@ -208,6 +208,7 @@ public static class SourceGeneratorDriver
 					"build_metadata.additionalfiles.TargetPath" => _additionalFile.TargetPath,
 					"build_metadata.additionalfiles.ManifestResourceName" => _additionalFile.ManifestResourceName,
 					"build_metadata.additionalfiles.RelativePath" => _additionalFile.RelativePath,
+					"build_property.EnablePreviewFeatures" => _additionalFile.EnablePreviewFeatures ? "true" : "false",
 					"build_metadata.additionalfiles.LineInfo" => _additionalFile.LineInfoMetadata,
 					"build_metadata.additionalfiles.Inflator" => _additionalFile.Inflator,
 					"build_property.targetFramework" => _additionalFile.TargetFramework,
