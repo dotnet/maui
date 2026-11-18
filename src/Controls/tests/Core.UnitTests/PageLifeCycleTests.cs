@@ -247,7 +247,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var lcPage = new ContentPage();
 			var targetPage = new LCPage();
 			var modalPage = new ContentPage();
-			var window = new TestWindow(new TestNavigationPage(useMaui, lcPage));
+			var navigationPage = new TestNavigationPage(useMaui, lcPage);
+			var window = new TestWindow(navigationPage);
+			// The initial handler navigation completes on another thread and would otherwise sync the stack while PushAsync is changing it
+			await navigationPage.NavigatingTask;
 
 			await window.Page.Navigation.PushAsync(targetPage);
 			targetPage.ClearNavigationArgs();
