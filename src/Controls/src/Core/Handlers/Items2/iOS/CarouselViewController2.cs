@@ -664,7 +664,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		// Horizontal carousels scroll an orthogonal section scroller rather than the collection view,
 		// and its drag callbacks don't reach this controller, so inspect the scroller hosting the cells.
-		bool IsUserScrolling()
+		private protected virtual bool IsUserScrolling()
 		{
 			if (CollectionView is not UICollectionView collectionView)
 			{
