@@ -1,529 +1,359 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Text;
+using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Text;
 
 namespace Microsoft.Maui.Controls.SourceGen;
 
-using static GeneratorHelpers;
-
 /// <summary>
-/// Incremental source generator that generates <c>IQueryPropertyAttributable</c> implementations
-/// for classes decorated with <c>[QueryProperty]</c> attributes.
+/// Replaces the reflection-based processing of <c>[QueryProperty]</c> attributes with generated code.
 /// </summary>
 /// <remarks>
 /// <para>
-/// The <c>[QueryProperty]</c> attribute is traditionally processed at runtime via reflection in
-/// <c>ShellContent.ApplyQueryAttributes</c>. This generator creates a compile-time implementation
-/// that is trim-safe, NativeAOT-compatible, and avoids reflection overhead.
+/// For every class whose <c>[QueryProperty]</c> attributes (declared or inherited) can be applied without reflection,
+/// the generator emits strongly-typed setters and registers them from a module initializer with the internal
+/// <c>Microsoft.Maui.Controls.QueryPropertyRegistry</c>, which it reaches through <c>UnsafeAccessor</c>.
+/// No user code changes and no public API are required.
 /// </para>
 /// <para>
-/// For each partial class with <c>[QueryProperty]</c> attributes, the generator emits a partial class
-/// that explicitly implements <c>IQueryPropertyAttributable.ApplyQueryPropertyAttributes</c>. This
-/// dedicated interface lets generated query-property setters replace only the reflection path while
-/// preserving any user implementation of <c>IQueryAttributable</c>.
+/// The generated data mirrors what <c>ShellContent</c> computes with reflection: the attributes in
+/// <c>GetCustomAttributes(typeof(QueryPropertyAttribute), true)</c> order, the property found by
+/// <c>Type.GetRuntimeProperty</c>, and only properties with a public setter. <c>ShellContent</c> keeps
+/// converting the values, so both paths share the same conversion logic.
 /// </para>
 /// <para>
-/// For non-partial classes, the generator emits a MAUI1200 warning and no code is generated.
-/// The existing reflection fallback continues to work for these classes.
-/// </para>
-/// <para>
-/// The generated code requests converted values from <c>QueryPropertyAttributeContext</c>, which
-/// centralizes the same decoding, conversion, and clearing behavior used by the reflection fallback.
+/// Classes that can't be handled (for example generic or private nested classes) are not registered and keep
+/// using reflection. When the trim analyzer is enabled, MAUI1200 reports them.
 /// </para>
 /// </remarks>
 [Generator(LanguageNames.CSharp)]
-public class QueryPropertyGenerator : IIncrementalGenerator
+public sealed class QueryPropertyGenerator : IIncrementalGenerator
 {
-	const string QueryPropertyAttributeFullName = "Microsoft.Maui.Controls.QueryPropertyAttribute";
+	const string QueryPropertyAttributeMetadataName = "Microsoft.Maui.Controls.QueryPropertyAttribute";
+	const string RegistryTypeName = "Microsoft.Maui.Controls.QueryPropertyRegistry";
+	internal const string HintName = "QueryPropertyRegistrations.g.cs";
 
 	public void Initialize(IncrementalGeneratorInitializationContext context)
 	{
-		// Use ForAttributeWithMetadataName for better performance when filtering by attribute
-		var classesWithQueryProperty = context.SyntaxProvider
-			.ForAttributeWithMetadataName(
-				QueryPropertyAttributeFullName,
-				predicate: static (node, _) => node is TypeDeclarationSyntax,
-				transform: static (ctx, ct) => GetClassInfo(ctx, ct));
+		var canGenerate = context.CompilationProvider.Select(static (compilation, _) => GetRegistryAssemblyName(compilation));
 
-		// Combine with global options to check if reflection fallback is available
-		var classesWithOptions = classesWithQueryProperty
-			.Combine(context.AnalyzerConfigOptionsProvider);
+		var types = context.SyntaxProvider
+			.CreateSyntaxProvider(
+				predicate: static (node, _) => node is TypeDeclarationSyntax { AttributeLists.Count: > 0 } or TypeDeclarationSyntax { BaseList: not null },
+				transform: static (ctx, ct) => GetTypeModel(ctx, ct))
+			.Where(static model => model is not null)
+			.Select(static (model, _) => model!)
+			.Collect();
 
-		// Generate source for each class
-		context.RegisterSourceOutput(classesWithOptions, static (spc, pair) =>
+		var reportDiagnostics = context.AnalyzerConfigOptionsProvider
+			.Select(static (options, _) => options.GlobalOptions.IsTrue("build_property.EnableTrimAnalyzer"));
+
+		context.RegisterSourceOutput(types.Combine(canGenerate).Combine(reportDiagnostics), static (spc, input) =>
 		{
-			var classInfo = pair.Left;
-			var options = pair.Right;
+			var ((models, registryAssemblyName), reportDiagnostics) = input;
+			if (registryAssemblyName is null || models.IsEmpty)
+				return;
 
-			// Check if the reflection fallback is disabled (trimmed/AOT apps)
-			bool reflectionFallbackDisabled = options.GlobalOptions.IsFalse("build_property.MauiQueryPropertyAttributeSupport");
+			// Partial classes are seen once per declaration.
+			var distinctModels = models
+				.GroupBy(static m => m.TypeName)
+				.Select(static g => g.First())
+				.OrderBy(static m => m.TypeName, System.StringComparer.Ordinal)
+				.ToList();
 
-			// Report diagnostics — escalate non-partial warning to error if reflection is off
-			foreach (var diagnostic in classInfo.Diagnostics)
+			if (reportDiagnostics)
 			{
-				if (reflectionFallbackDisabled
-					&& diagnostic.Id == Descriptors.QueryPropertyClassMustBePartial.Id
-					&& diagnostic.Severity != DiagnosticSeverity.Error)
+				foreach (var model in distinctModels)
 				{
-					// Re-create as error when reflection is disabled
-					spc.ReportDiagnostic(Diagnostic.Create(
-						Descriptors.QueryPropertyClassMustBePartialNoFallback,
-						diagnostic.Location,
-						diagnostic.AdditionalLocations,
-						diagnostic.Properties,
-						classInfo.ClassName));
-				}
-				else if (reflectionFallbackDisabled && diagnostic.Severity != DiagnosticSeverity.Error)
-				{
-					spc.ReportDiagnostic(CreateErrorDiagnostic(diagnostic));
-				}
-				else
-				{
-					spc.ReportDiagnostic(diagnostic);
+					if (model.UnsupportedReason is not null)
+						spc.ReportDiagnostic(Diagnostic.Create(Descriptors.QueryPropertyRequiresReflection, model.Location?.ToLocation(), model.DisplayName, model.UnsupportedReason));
 				}
 			}
 
-			// Only generate if there are valid properties
-			if (classInfo.Diagnostics.Length == 0 && classInfo.PropertyMappings.Length > 0)
-			{
-				var source = GenerateSource(classInfo);
-				var typePath = classInfo.ContainingTypes.Length > 0
-					? string.Join(".", classInfo.ContainingTypes) + "." + classInfo.ClassName
-					: classInfo.ClassName;
-				var hintName = SanitizeHintName(classInfo.Namespace is not null
-					? $"{classInfo.Namespace}.{typePath}_QueryProperty.g.cs"
-					: $"{typePath}_QueryProperty.g.cs");
-				spc.AddSource(hintName, source);
-			}
+			var registrations = distinctModels.Where(static m => m.Registration is not null).Select(static m => m.Registration!).ToList();
+			if (registrations.Count > 0)
+				spc.AddSource(HintName, SourceText.From(GenerateSource(registryAssemblyName, registrations), Encoding.UTF8));
 		});
 	}
 
-	private static ClassInfo GetClassInfo(GeneratorAttributeSyntaxContext context, System.Threading.CancellationToken cancellationToken)
+	static string? GetRegistryAssemblyName(Compilation compilation)
 	{
-		var classDecl = (TypeDeclarationSyntax)context.TargetNode;
-		var classSymbol = (INamedTypeSymbol)context.TargetSymbol;
+		if (compilation is not CSharpCompilation { LanguageVersion: >= LanguageVersion.CSharp9 })
+			return null;
 
-		var diagnostics = ImmutableArray.CreateBuilder<Diagnostic>();
+		if (compilation.GetTypeByMetadataName("System.Runtime.CompilerServices.ModuleInitializerAttribute") is null
+			|| compilation.GetTypeByMetadataName("System.Runtime.CompilerServices.UnsafeAccessorTypeAttribute") is null)
+			return null;
 
-		// Check if the class is partial
-		var isPartial = classDecl.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword));
-		if (!isPartial)
-		{
-			var diagnostic = Diagnostic.Create(
-				Descriptors.QueryPropertyClassMustBePartial,
-				classDecl.Identifier.GetLocation(),
-				classSymbol.Name);
-			diagnostics.Add(diagnostic);
-			return new ClassInfo(classSymbol.Name, classSymbol.ToFQDisplayString(), null, ImmutableArray<string>.Empty, ImmutableArray<PropertyMapping>.Empty, diagnostics.ToImmutable());
-		}
-
-		if (classDecl is not ClassDeclarationSyntax ||
-			classSymbol.Arity > 0 ||
-			classDecl.Modifiers.Any(m => m.IsKind(SyntaxKind.FileKeyword)) ||
-			HasGenericContainingType(classSymbol))
-		{
-			diagnostics.Add(Diagnostic.Create(
-				Descriptors.QueryPropertyTypeNotSupported,
-				classDecl.Identifier.GetLocation(),
-				classSymbol.Name));
-			return new ClassInfo(classSymbol.Name, classSymbol.ToFQDisplayString(), null, ImmutableArray<string>.Empty, ImmutableArray<PropertyMapping>.Empty, diagnostics.ToImmutable());
-		}
-
-		// For nested classes, verify the entire containing type chain is partial.
-		// The generator emits partial class wrappers for each containing type,
-		// which requires the original declarations to also be partial.
-		var containingType = classSymbol.ContainingType;
-		while (containingType is not null)
-		{
-			// Check all syntax declarations of the containing type for the partial modifier
-			bool containingIsPartial = false;
-			foreach (var syntaxRef in containingType.DeclaringSyntaxReferences)
-			{
-				if (syntaxRef.GetSyntax(cancellationToken) is ClassDeclarationSyntax containingDecl
-					&& containingDecl.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword)))
-				{
-					containingIsPartial = true;
-					break;
-				}
-			}
-
-			if (!containingIsPartial)
-			{
-				var diagnostic = Diagnostic.Create(
-					Descriptors.QueryPropertyContainingClassMustBePartial,
-					classDecl.Identifier.GetLocation(),
-					containingType.Name,
-					classSymbol.Name);
-				diagnostics.Add(diagnostic);
-				return new ClassInfo(classSymbol.Name, classSymbol.ToFQDisplayString(), null, ImmutableArray<string>.Empty, ImmutableArray<PropertyMapping>.Empty, diagnostics.ToImmutable());
-			}
-
-			containingType = containingType.ContainingType;
-		}
-
-		// Skip generation if the class already explicitly implements the generated-code contract.
-		var iQueryPropertyAttributable = context.SemanticModel.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.IQueryPropertyAttributable");
-		if (iQueryPropertyAttributable is not null)
-		{
-			foreach (var iface in classSymbol.Interfaces)
-			{
-				if (SymbolEqualityComparer.Default.Equals(iface, iQueryPropertyAttributable))
-					return new ClassInfo(classSymbol.Name, classSymbol.ToFQDisplayString(), null, ImmutableArray<string>.Empty, ImmutableArray<PropertyMapping>.Empty, diagnostics.ToImmutable());
-			}
-		}
-
-		// Include inherited QueryProperty attributes because the runtime reflection path does.
-		var queryPropertyAttributes = GetQueryPropertyAttributes(classSymbol);
-
-		// Extract property mappings
-		var propertyMappings = ImmutableArray.CreateBuilder<PropertyMapping>();
-
-		foreach (var attr in queryPropertyAttributes)
-		{
-			cancellationToken.ThrowIfCancellationRequested();
-
-			if (attr.ConstructorArguments.Length != 2)
-				continue;
-
-			var propertyName = attr.ConstructorArguments[0].Value as string;
-			var queryId = attr.ConstructorArguments[1].Value as string;
-
-			if (string.IsNullOrEmpty(propertyName) || string.IsNullOrEmpty(queryId))
-			{
-				var diagnostic = Diagnostic.Create(
-					Descriptors.QueryPropertyAttributeInvalidArguments,
-					classDecl.Identifier.GetLocation(),
-					classSymbol.Name);
-				diagnostics.Add(diagnostic);
-				continue;
-			}
-
-			// Find the property — walk the type hierarchy since the property may be inherited
-			var property = FindPropertyInHierarchy(classSymbol, propertyName!);
-
-			if (property is null)
-			{
-				var diagnostic = Diagnostic.Create(
-					Descriptors.QueryPropertyNotFound,
-					classDecl.Identifier.GetLocation(),
-					propertyName,
-					classSymbol.Name);
-				diagnostics.Add(diagnostic);
-				continue;
-			}
-
-			if (property.SetMethod is null || property.SetMethod.DeclaredAccessibility != Accessibility.Public)
-			{
-				var diagnostic = Diagnostic.Create(
-					Descriptors.QueryPropertySetterNotPublic,
-					classDecl.Identifier.GetLocation(),
-					propertyName);
-				diagnostics.Add(diagnostic);
-				continue;
-			}
-
-			var propertyType = property.Type;
-			var propertyTypeName = propertyType.ToFQDisplayString();
-			var contextTypeName = propertyTypeName;
-			if (propertyType is INamedTypeSymbol { IsGenericType: true } namedType &&
-				namedType.ConstructedFrom.SpecialType == SpecialType.System_Nullable_T)
-			{
-				contextTypeName = namedType.TypeArguments[0].ToFQDisplayString();
-			}
-
-			propertyMappings.Add(new PropertyMapping(propertyName!, queryId!, propertyTypeName, contextTypeName));
-		}
-
-		var propertyMappingsArray = propertyMappings.ToImmutable();
-
-		// Get namespace
-		var namespaceName = classSymbol.ContainingNamespace?.ToString();
-		if (string.IsNullOrEmpty(namespaceName) || namespaceName == "<global namespace>")
-			namespaceName = null;
-
-		// Collect containing type chain for nested classes (outermost first)
-		var containingTypes = ImmutableArray.CreateBuilder<string>();
-		var current = classSymbol.ContainingType;
-		while (current is not null)
-		{
-			containingTypes.Insert(0, current.Name);
-			current = current.ContainingType;
-		}
-
-		return new ClassInfo(
-			classSymbol.Name,
-			classSymbol.ToFQDisplayString(),
-			namespaceName,
-			containingTypes.ToImmutable(),
-			propertyMappingsArray,
-			diagnostics.ToImmutable());
+		return compilation.GetTypeByMetadataName(QueryPropertyAttributeMetadataName)?.ContainingAssembly.Name;
 	}
 
-	private static ImmutableArray<AttributeData> GetQueryPropertyAttributes(INamedTypeSymbol classSymbol)
+	static TypeModel? GetTypeModel(GeneratorSyntaxContext context, CancellationToken cancellationToken)
 	{
-		var attributes = ImmutableArray.CreateBuilder<AttributeData>();
-		for (var current = classSymbol; current is not null; current = current.BaseType)
+		var declaration = (TypeDeclarationSyntax)context.Node;
+		if (context.SemanticModel.GetDeclaredSymbol(declaration, cancellationToken) is not INamedTypeSymbol { TypeKind: TypeKind.Class, IsStatic: false } type)
+			return null;
+
+		var compilation = context.SemanticModel.Compilation;
+		var attributeType = compilation.GetTypeByMetadataName(QueryPropertyAttributeMetadataName);
+		if (attributeType is null)
+			return null;
+
+		// Same order as Type.GetCustomAttributes(typeof(QueryPropertyAttribute), inherit: true):
+		// the attributes of the type itself, then those of each base type.
+		var attributes = new List<AttributeData>();
+		for (var current = type; current is not null; current = current.BaseType)
 		{
 			foreach (var attribute in current.GetAttributes())
 			{
-				if (attribute.AttributeClass?.ToFQDisplayString() == $"global::{QueryPropertyAttributeFullName}")
+				if (attribute.AttributeClass is { } attributeClass && InheritsFromOrEquals(attributeClass, attributeType))
 					attributes.Add(attribute);
 			}
 		}
-		return attributes.ToImmutable();
+
+		if (attributes.Count == 0)
+			return null;
+
+		var typeName = type.ToFQDisplayString();
+		var displayName = type.ToString();
+		var location = LocationModel.From(declaration.Identifier.GetLocation());
+
+		var registration = TryCreateRegistration(compilation, type, typeName, attributes, attributeType, out var unsupportedReason);
+		return new TypeModel(typeName, displayName, registration, unsupportedReason, location);
 	}
 
-	private static bool HasGenericContainingType(INamedTypeSymbol classSymbol)
+	static string? TryCreateRegistration(Compilation compilation, INamedTypeSymbol type, string typeName, List<AttributeData> attributes, INamedTypeSymbol attributeType, out string? unsupportedReason)
 	{
-		for (var current = classSymbol.ContainingType; current is not null; current = current.ContainingType)
+		unsupportedReason = null;
+
+		for (var current = type; current is not null; current = current.ContainingType)
 		{
-			if (current.Arity > 0)
+			if (current.IsGenericType)
+			{
+				unsupportedReason = "generic types are not supported";
+				return null;
+			}
+		}
+
+		if (type.IsFileLocal || !compilation.IsSymbolAccessibleWithin(type, compilation.Assembly))
+		{
+			unsupportedReason = "the type is not accessible from other types in the assembly";
+			return null;
+		}
+
+		if (IsObsoleteError(type))
+		{
+			unsupportedReason = "the type is obsolete";
+			return null;
+		}
+
+		var queryIds = new List<string>();
+		var propertyTypes = new List<string>();
+		var setters = new List<string>();
+		var resetters = new List<string>();
+
+		foreach (var attribute in attributes)
+		{
+			if (!SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, attributeType))
+			{
+				unsupportedReason = $"'{attribute.AttributeClass!.ToString()}' derives from QueryPropertyAttribute";
+				return null;
+			}
+
+			if (attribute.ConstructorArguments.Length != 2
+				|| attribute.ConstructorArguments[0].Value is not string name
+				|| attribute.ConstructorArguments[1].Value is not string queryId)
+			{
+				unsupportedReason = "the attribute arguments are not constant strings";
+				return null;
+			}
+
+			if (!TryFindProperty(type, name, out var property))
+			{
+				unsupportedReason = $"property '{name}' can't be resolved without reflection";
+				return null;
+			}
+
+			// Reflection only sets properties with a public setter and ignores the attribute otherwise.
+			if (property is null || property.SetMethod is not { DeclaredAccessibility: Accessibility.Public } setMethod)
+				continue;
+
+			if (setMethod.IsInitOnly
+				|| property.Type.IsRefLikeType
+				|| property.Type is IPointerTypeSymbol or IFunctionPointerTypeSymbol
+				|| property.Type.TypeKind == TypeKind.Error
+				|| !compilation.IsSymbolAccessibleWithin(property.Type, compilation.Assembly)
+				|| !compilation.IsSymbolAccessibleWithin(property.ContainingType, compilation.Assembly)
+				|| IsObsoleteError(property) || IsObsoleteError(setMethod))
+			{
+				unsupportedReason = $"property '{name}' can't be set from generated code";
+				return null;
+			}
+
+			var propertyType = property.Type.ToFQDisplayString();
+			var target = property.IsStatic
+				? property.ContainingType.ToFQDisplayString()
+				: $"(({property.ContainingType.ToFQDisplayString()})target)";
+			var member = $"{target}.{EscapeIdentifier(property.Name)}";
+			var isNonNullableValueType = property.Type.IsValueType && property.Type.OriginalDefinition.SpecialType != SpecialType.System_Nullable_T;
+
+			queryIds.Add(SymbolDisplay.FormatLiteral(queryId, quote: true));
+			propertyTypes.Add($"typeof({propertyType})");
+			// PropertyInfo.SetValue(target, null) stores the default value of a value type.
+			setters.Add(isNonNullableValueType
+				? $"static (target, value) => {member} = value is null ? default({propertyType}) : ({propertyType})value"
+				: $"static (target, value) => {member} = ({propertyType})value");
+			// Matches Activator.CreateInstance(propertyType) for value types and null otherwise.
+			resetters.Add(isNonNullableValueType
+				? $"static target => {member} = new {propertyType}()"
+				: $"static target => {member} = default({propertyType})");
+		}
+
+		var builder = new StringBuilder();
+		builder.AppendLine($"\t\t\tRegister(null, typeof({typeName}),");
+		AppendArray(builder, "string", queryIds);
+		builder.AppendLine(",");
+		AppendArray(builder, "global::System.Type", propertyTypes);
+		builder.AppendLine(",");
+		AppendArray(builder, "global::System.Action<object, object>", setters);
+		builder.AppendLine(",");
+		AppendArray(builder, "global::System.Action<object>", resetters);
+		builder.AppendLine(");");
+		return builder.ToString();
+
+		static void AppendArray(StringBuilder builder, string elementType, List<string> items)
+		{
+			if (items.Count == 0)
+			{
+				builder.Append($"\t\t\t\tglobal::System.Array.Empty<{elementType}>()");
+				return;
+			}
+
+			builder.AppendLine($"\t\t\t\tnew {elementType}[]");
+			builder.AppendLine("\t\t\t\t{");
+			foreach (var item in items)
+				builder.AppendLine($"\t\t\t\t\t{item},");
+			builder.Append("\t\t\t\t}");
+		}
+	}
+
+	/// <summary>
+	/// Resolves a property name the same way as <c>Type.GetRuntimeProperty(name)</c>: public instance properties of
+	/// the type and its base types, public static properties of the type itself. Returns <c>false</c> when reflection
+	/// would throw or bind differently than C# member access.
+	/// </summary>
+	static bool TryFindProperty(INamedTypeSymbol type, string name, out IPropertySymbol? property)
+	{
+		property = null;
+
+		for (var current = type; current is not null; current = current.BaseType)
+		{
+			foreach (var member in current.GetMembers(name))
+			{
+				if (member is not IPropertySymbol candidate || candidate.DeclaredAccessibility != Accessibility.Public)
+					continue;
+
+				if (candidate.IsIndexer || candidate.Parameters.Length > 0)
+					return false;
+
+				if (candidate.IsStatic && !SymbolEqualityComparer.Default.Equals(current, type))
+					continue;
+
+				if (property is null)
+				{
+					property = candidate;
+				}
+				else if (!SymbolEqualityComparer.Default.Equals(property.Type, candidate.Type))
+				{
+					// A property hidden by a property of another type makes GetRuntimeProperty ambiguous.
+					property = null;
+					return false;
+				}
+			}
+		}
+
+		if (property?.SetMethod is null && property?.OverriddenProperty is not null)
+		{
+			// Reflection reports the setter declared in the overridden property; C# can't call it through the override.
+			for (var overridden = property.OverriddenProperty; overridden is not null; overridden = overridden.OverriddenProperty)
+			{
+				if (overridden.SetMethod is not null)
+				{
+					property = null;
+					return false;
+				}
+			}
+		}
+
+		return true;
+	}
+
+	static bool InheritsFromOrEquals(INamedTypeSymbol type, INamedTypeSymbol baseType)
+	{
+		for (INamedTypeSymbol? current = type; current is not null; current = current.BaseType)
+		{
+			if (SymbolEqualityComparer.Default.Equals(current, baseType))
 				return true;
 		}
+
 		return false;
 	}
 
-	private static string SanitizeHintName(string hintName) =>
-		new(hintName.Select(character =>
-			char.IsLetterOrDigit(character) || character is '.' or '_' or '-'
-				? character
-				: '_').ToArray());
+	static bool IsObsoleteError(ISymbol symbol) =>
+		symbol.GetAttributes().Any(static a =>
+			a.AttributeClass?.ToString() == "System.ObsoleteAttribute"
+			&& a.ConstructorArguments.Length == 2
+			&& a.ConstructorArguments[1].Value is true);
 
-	private static Diagnostic CreateErrorDiagnostic(Diagnostic diagnostic)
+	static string EscapeIdentifier(string identifier) =>
+		SyntaxFacts.GetKeywordKind(identifier) != SyntaxKind.None ? "@" + identifier : identifier;
+
+	static string GenerateSource(string registryAssemblyName, List<string> registrations)
 	{
-		var descriptor = new DiagnosticDescriptor(
-			diagnostic.Id,
-			diagnostic.Descriptor.Title,
-			diagnostic.GetMessage(),
-			diagnostic.Descriptor.Category,
-			DiagnosticSeverity.Error,
-			isEnabledByDefault: true,
-			diagnostic.Descriptor.Description,
-			diagnostic.Descriptor.HelpLinkUri,
-			diagnostic.Descriptor.CustomTags.ToArray());
-
-		return Diagnostic.Create(
-			descriptor,
-			diagnostic.Location,
-			diagnostic.AdditionalLocations,
-			diagnostic.Properties);
+		var registryType = SymbolDisplay.FormatLiteral($"{RegistryTypeName}, {registryAssemblyName}", quote: true);
+		var builder = new StringBuilder();
+		builder.AppendLine("// <auto-generated/>");
+		builder.AppendLine("#nullable disable");
+		builder.AppendLine("#pragma warning disable");
+		builder.AppendLine();
+		builder.AppendLine("namespace Microsoft.Maui.Controls.Generated");
+		builder.AppendLine("{");
+		builder.AppendLine("\t[global::System.CodeDom.Compiler.GeneratedCode(\"Microsoft.Maui.Controls.SourceGen\", \"1.0.0.0\")]");
+		builder.AppendLine("\t[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]");
+		builder.AppendLine("\tinternal static class QueryPropertyRegistrations");
+		builder.AppendLine("\t{");
+		builder.AppendLine("\t\t[global::System.Runtime.CompilerServices.ModuleInitializer]");
+		builder.AppendLine("\t\tinternal static void Initialize()");
+		builder.AppendLine("\t\t{");
+		foreach (var registration in registrations)
+			builder.Append(registration);
+		builder.AppendLine("\t\t}");
+		builder.AppendLine();
+		builder.AppendLine("\t\t[global::System.Runtime.CompilerServices.UnsafeAccessor(global::System.Runtime.CompilerServices.UnsafeAccessorKind.StaticMethod, Name = \"Register\")]");
+		builder.AppendLine("\t\tstatic extern void Register(");
+		builder.AppendLine($"\t\t\t[global::System.Runtime.CompilerServices.UnsafeAccessorType({registryType})] object registry,");
+		builder.AppendLine("\t\t\tglobal::System.Type type,");
+		builder.AppendLine("\t\t\tstring[] queryIds,");
+		builder.AppendLine("\t\t\tglobal::System.Type[] propertyTypes,");
+		builder.AppendLine("\t\t\tglobal::System.Action<object, object>[] setters,");
+		builder.AppendLine("\t\t\tglobal::System.Action<object>[] resetters);");
+		builder.AppendLine("\t}");
+		builder.AppendLine("}");
+		return builder.ToString();
 	}
 
-	private static string GenerateSource(ClassInfo classInfo)
+	sealed record TypeModel(string TypeName, string DisplayName, string? Registration, string? UnsupportedReason, LocationModel? Location);
+
+	sealed record LocationModel(string FilePath, TextSpan TextSpan, LinePositionSpan LineSpan)
 	{
-		var compilationUnit = BuildCompilationUnit(classInfo);
-		var normalizedCode = compilationUnit.NormalizeWhitespace().ToFullString();
+		public static LocationModel? From(Location location) =>
+			location.SourceTree is null ? null : new LocationModel(location.SourceTree.FilePath, location.SourceSpan, location.GetLineSpan().Span);
 
-		// Prepend the auto-generated header comment
-		return AutoGeneratedHeaderText + "\r\n" + normalizedCode;
+		public Location ToLocation() => Location.Create(FilePath, TextSpan, LineSpan);
 	}
-
-	private static CompilationUnitSyntax BuildCompilationUnit(ClassInfo classInfo)
-	{
-		// Create using directives
-		var usingDirectives = new[]
-		{
-			SyntaxFactory.UsingDirective(SyntaxFactory.ParseName("System")),
-			SyntaxFactory.UsingDirective(SyntaxFactory.ParseName("System.Collections.Generic"))
-		};
-
-		// Build class members
-		var classMembers = new List<MemberDeclarationSyntax>
-		{
-			BuildQueryPropertyTargetTypeProperty(classInfo)
-		};
-
-		// Add ApplyQueryPropertyAttributes method
-		classMembers.Add(BuildApplyQueryPropertyAttributesMethod(classInfo));
-
-		// Build class declaration implementing the generated query-property contract.
-		var classDeclaration = SyntaxFactory.ClassDeclaration(EscapeIdentifier(classInfo.ClassName))
-			.WithModifiers(SyntaxFactory.TokenList(SyntaxFactory.Token(SyntaxKind.PartialKeyword)))
-			.WithBaseList(SyntaxFactory.BaseList(SyntaxFactory.SingletonSeparatedList<BaseTypeSyntax>(
-				SyntaxFactory.SimpleBaseType(SyntaxFactory.ParseTypeName("global::Microsoft.Maui.Controls.IQueryPropertyAttributable")))))
-			.WithMembers(SyntaxFactory.List(classMembers));
-
-		// Wrap in containing type chain for nested classes (innermost → outermost)
-		MemberDeclarationSyntax topMember = classDeclaration;
-		for (int i = classInfo.ContainingTypes.Length - 1; i >= 0; i--)
-		{
-			topMember = SyntaxFactory.ClassDeclaration(EscapeIdentifier(classInfo.ContainingTypes[i]))
-				.WithModifiers(SyntaxFactory.TokenList(SyntaxFactory.Token(SyntaxKind.PartialKeyword)))
-				.AddMembers(topMember);
-		}
-
-		// Create compilation unit with nullable enable directive
-		var compilationUnit = SyntaxFactory.CompilationUnit()
-			.AddUsings(usingDirectives);
-
-		// Add nullable directive
-		var nullableDirective = SyntaxFactory.Trivia(
-			SyntaxFactory.NullableDirectiveTrivia(SyntaxFactory.Token(SyntaxKind.EnableKeyword), true));
-
-		// Get the first using directive and add the nullable directive before it
-		var firstUsing = compilationUnit.Usings[0];
-		var updatedFirstUsing = firstUsing.WithLeadingTrivia(nullableDirective, SyntaxFactory.CarriageReturnLineFeed);
-		compilationUnit = compilationUnit.WithUsings(
-			compilationUnit.Usings.Replace(firstUsing, updatedFirstUsing));
-
-		if (classInfo.Namespace is not null)
-		{
-			var namespaceDeclaration = SyntaxFactory.NamespaceDeclaration(SyntaxFactory.ParseName(EscapeNamespace(classInfo.Namespace)))
-				.AddMembers(topMember);
-			compilationUnit = compilationUnit.AddMembers(namespaceDeclaration);
-		}
-		else
-		{
-			compilationUnit = compilationUnit.AddMembers(topMember);
-		}
-
-		return compilationUnit;
-	}
-
-	private static PropertyDeclarationSyntax BuildQueryPropertyTargetTypeProperty(ClassInfo classInfo)
-	{
-		return SyntaxFactory.PropertyDeclaration(
-				SyntaxFactory.ParseTypeName("global::System.Type"),
-				SyntaxFactory.Identifier("QueryPropertyTargetType"))
-			.WithExplicitInterfaceSpecifier(
-				SyntaxFactory.ExplicitInterfaceSpecifier(
-					SyntaxFactory.ParseName("global::Microsoft.Maui.Controls.IQueryPropertyAttributable")))
-			.WithExpressionBody(
-				SyntaxFactory.ArrowExpressionClause(
-					SyntaxFactory.TypeOfExpression(
-						SyntaxFactory.ParseTypeName(classInfo.FullyQualifiedTypeName))))
-			.WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken));
-	}
-
-	private static MethodDeclarationSyntax BuildApplyQueryPropertyAttributesMethod(ClassInfo classInfo)
-	{
-		var statements = new List<StatementSyntax>();
-
-		// if (query == null) return;
-		statements.Add(SyntaxFactory.IfStatement(
-			SyntaxFactory.BinaryExpression(
-				SyntaxKind.EqualsExpression,
-				SyntaxFactory.IdentifierName("query"),
-				SyntaxFactory.LiteralExpression(SyntaxKind.NullLiteralExpression)),
-			SyntaxFactory.ReturnStatement()));
-
-		// Generate property setting code for each mapping
-		var valueVariableNames = new HashSet<string>();
-		foreach (var mapping in classInfo.PropertyMappings)
-		{
-			var valueVarName = $"{EscapeIdentifier(mapping.PropertyName)}__value";
-			var suffix = 2;
-			while (!valueVariableNames.Add(valueVarName))
-				valueVarName = $"{EscapeIdentifier(mapping.PropertyName)}__value{suffix++}";
-
-			statements.AddRange(BuildPropertyMappingStatements(mapping, valueVarName));
-		}
-
-		var method = SyntaxFactory.MethodDeclaration(
-				SyntaxFactory.PredefinedType(SyntaxFactory.Token(SyntaxKind.VoidKeyword)),
-				SyntaxFactory.Identifier("ApplyQueryPropertyAttributes"))
-			.WithExplicitInterfaceSpecifier(
-				SyntaxFactory.ExplicitInterfaceSpecifier(
-					SyntaxFactory.ParseName("global::Microsoft.Maui.Controls.IQueryPropertyAttributable")))
-			.AddParameterListParameters(
-				SyntaxFactory.Parameter(SyntaxFactory.Identifier("query"))
-					.WithType(SyntaxFactory.ParseTypeName("global::Microsoft.Maui.Controls.QueryPropertyAttributeContext")))
-			.WithBody(SyntaxFactory.Block(statements));
-
-		// Add XML doc comment
-		var docComment = SyntaxFactory.ParseLeadingTrivia(
-			"/// <summary>\r\n" +
-			"/// Applies generated query-property assignments from navigation parameters.\r\n" +
-			"/// This method is generated by the QueryPropertyGenerator.\r\n" +
-			"/// </summary>\r\n");
-		method = method.WithLeadingTrivia(docComment);
-
-		return method;
-	}
-
-	private static IEnumerable<StatementSyntax> BuildPropertyMappingStatements(PropertyMapping mapping, string valueVarName)
-	{
-		var statements = new List<StatementSyntax>();
-
-		// if (query.TryGetValue("queryId", typeof(PropertyType), out var value))
-		var tryGetValueCondition = SyntaxFactory.InvocationExpression(
-			SyntaxFactory.MemberAccessExpression(
-				SyntaxKind.SimpleMemberAccessExpression,
-				SyntaxFactory.IdentifierName("query"),
-				SyntaxFactory.IdentifierName("TryGetValue")))
-			.AddArgumentListArguments(
-				SyntaxFactory.Argument(SyntaxFactory.LiteralExpression(
-					SyntaxKind.StringLiteralExpression,
-					SyntaxFactory.Literal(mapping.QueryId))),
-				SyntaxFactory.Argument(
-					SyntaxFactory.TypeOfExpression(
-						SyntaxFactory.ParseTypeName(mapping.ContextType))),
-				SyntaxFactory.Argument(
-					SyntaxFactory.DeclarationExpression(
-						SyntaxFactory.IdentifierName("var"),
-						SyntaxFactory.SingleVariableDesignation(SyntaxFactory.Identifier(valueVarName))))
-					.WithRefOrOutKeyword(SyntaxFactory.Token(SyntaxKind.OutKeyword)));
-
-		statements.Add(SyntaxFactory.IfStatement(
-			tryGetValueCondition,
-			SyntaxFactory.Block(
-				SyntaxFactory.ExpressionStatement(
-					SyntaxFactory.AssignmentExpression(
-						SyntaxKind.SimpleAssignmentExpression,
-						SyntaxFactory.IdentifierName(EscapeIdentifier(mapping.PropertyName)),
-						SyntaxFactory.ParseExpression($"({mapping.PropertyType}){valueVarName}")))),
-			SyntaxFactory.ElseClause(
-				SyntaxFactory.IfStatement(
-					SyntaxFactory.InvocationExpression(
-						SyntaxFactory.MemberAccessExpression(
-							SyntaxKind.SimpleMemberAccessExpression,
-							SyntaxFactory.IdentifierName("query"),
-							SyntaxFactory.IdentifierName("WasRemoved")))
-						.AddArgumentListArguments(
-							SyntaxFactory.Argument(
-								SyntaxFactory.LiteralExpression(
-									SyntaxKind.StringLiteralExpression,
-									SyntaxFactory.Literal(mapping.QueryId)))),
-					SyntaxFactory.Block(
-						SyntaxFactory.ExpressionStatement(
-							SyntaxFactory.AssignmentExpression(
-								SyntaxKind.SimpleAssignmentExpression,
-								SyntaxFactory.IdentifierName(EscapeIdentifier(mapping.PropertyName)),
-								SyntaxFactory.LiteralExpression(SyntaxKind.DefaultLiteralExpression))))))));
-
-		return statements;
-	}
-
-	private static IPropertySymbol? FindPropertyInHierarchy(INamedTypeSymbol type, string propertyName)
-	{
-		var current = type;
-		while (current is not null)
-		{
-			var property = current.GetMembers(propertyName)
-				.OfType<IPropertySymbol>()
-				.FirstOrDefault();
-
-			if (property is not null)
-				return property;
-
-			current = current.BaseType;
-		}
-		return null;
-	}
-
-	private static string EscapeNamespace(string namespaceName) =>
-		string.Join(".", namespaceName.Split('.').Select(EscapeIdentifier));
-
-	private record struct PropertyMapping(string PropertyName, string QueryId, string PropertyType, string ContextType);
-
-	private record struct ClassInfo(
-		string ClassName,
-		string FullyQualifiedTypeName,
-		string? Namespace,
-		ImmutableArray<string> ContainingTypes,
-		ImmutableArray<PropertyMapping> PropertyMappings,
-		ImmutableArray<Diagnostic> Diagnostics);
 }
