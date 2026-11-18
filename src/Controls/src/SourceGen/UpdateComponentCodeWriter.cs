@@ -1489,7 +1489,7 @@ static class UpdateComponentCodeWriter
 		}
 
 		// Event handlers: unsubscribe old, subscribe new
-		if (TryEmitEventChange(codeWriter, propDiff, rootType, "this.", rootType))
+		if (TryEmitEventChange(codeWriter, propDiff, rootType, "this.", rootType, compilation, projectItem))
 			return;
 
 		// Attached properties on root element (e.g., Shell.NavBarIsVisible on ContentPage)
@@ -1576,7 +1576,7 @@ static class UpdateComponentCodeWriter
 		}
 
 		// Event handlers: unsubscribe old, subscribe new
-		if (TryEmitEventChange(codeWriter, propDiff, nodeType, castPrefix, rootType))
+		if (TryEmitEventChange(codeWriter, propDiff, nodeType, castPrefix, rootType, compilation, projectItem))
 			return;
 
 		if (propDiff.Kind == PropertyDiffKind.Clear)
@@ -2429,7 +2429,9 @@ static class UpdateComponentCodeWriter
 		PropertyDiff propDiff,
 		INamedTypeSymbol? nodeType,
 		string varPrefix,
-		INamedTypeSymbol rootType)
+		INamedTypeSymbol rootType,
+		Compilation compilation,
+		ProjectItem? projectItem)
 	{
 		if (nodeType == null)
 			return false;
@@ -2441,11 +2443,13 @@ static class UpdateComponentCodeWriter
 		if (eventSymbol == null)
 			return false;
 
+		var eventHandlerAccessor = CodeBehindCodeWriter.GetEventHandlerAccessor(projectItem, compilation);
+
 		if (propDiff.Kind == PropertyDiffKind.Clear)
 		{
 			// Event handler removed — unsubscribe old handler if known
 			if (propDiff.OldValue != null && IsValidCSharpIdentifier(propDiff.OldValue))
-				codeWriter.WriteLine($"{varPrefix}{propName} -= {propDiff.OldValue};");
+				EmitEventUnsubscription(codeWriter, varPrefix, eventSymbol, propDiff.OldValue, rootType, compilation, eventHandlerAccessor);
 			else
 				codeWriter.WriteLine($"// Event '{propName}' cleared — old handler unknown or invalid, cannot unsubscribe");
 			return true;
@@ -2457,16 +2461,124 @@ static class UpdateComponentCodeWriter
 		{
 			// Still unsubscribe old handler even if new is invalid
 			if (propDiff.OldValue != null && IsValidCSharpIdentifier(propDiff.OldValue))
-				codeWriter.WriteLine($"{varPrefix}{propName} -= {propDiff.OldValue};");
+				EmitEventUnsubscription(codeWriter, varPrefix, eventSymbol, propDiff.OldValue, rootType, compilation, eventHandlerAccessor);
 			codeWriter.WriteLine($"// Event '{propName}' new handler is not a valid identifier — skipped subscribe");
 			return true;
 		}
 
 		if (propDiff.OldValue != null && IsValidCSharpIdentifier(propDiff.OldValue))
-			codeWriter.WriteLine($"{varPrefix}{propName} -= {propDiff.OldValue};");
+			EmitEventUnsubscription(codeWriter, varPrefix, eventSymbol, propDiff.OldValue, rootType, compilation, eventHandlerAccessor);
 
-		codeWriter.WriteLine($"{varPrefix}{propName} += {newHandler};");
+		if (eventHandlerAccessor is null)
+		{
+			codeWriter.WriteLine($"{varPrefix}{propName} += {newHandler};");
+		}
+		else
+		{
+			var eventType = eventSymbol.Type.WithNullableAnnotation(NullableAnnotation.NotAnnotated).ToFQDisplayString();
+			var target = varPrefix.Substring(0, varPrefix.Length - 1);
+			using (PrePost.NewBlock(codeWriter))
+			{
+				codeWriter.WriteLine($"var __newHandler = new {eventType}({newHandler});");
+				codeWriter.WriteLine($"{varPrefix}{propName} += __newHandler;");
+				codeWriter.WriteLine($"{eventHandlerAccessor}().GetOrCreateValue({target})[{Microsoft.CodeAnalysis.CSharp.SymbolDisplay.FormatLiteral(propName, true)}] = __newHandler;");
+			}
+		}
 		return true;
+	}
+
+	static void EmitEventUnsubscription(
+		IndentedTextWriter codeWriter,
+		string varPrefix,
+		IEventSymbol eventSymbol,
+		string handler,
+		INamedTypeSymbol rootType,
+		Compilation compilation,
+		string? eventHandlerAccessor)
+	{
+		if (eventHandlerAccessor is null)
+		{
+			codeWriter.WriteLine($"{varPrefix}{eventSymbol.Name} -= {handler};");
+			return;
+		}
+
+		var eventType = eventSymbol.Type.WithNullableAnnotation(NullableAnnotation.NotAnnotated).ToFQDisplayString();
+		var target = varPrefix.Substring(0, varPrefix.Length - 1);
+		var eventName = Microsoft.CodeAnalysis.CSharp.SymbolDisplay.FormatLiteral(eventSymbol.Name, true);
+		using (PrePost.NewBlock(codeWriter))
+		{
+			codeWriter.WriteLine($"if ({eventHandlerAccessor}().TryGetValue({target}, out var __events) && __events.TryGetValue({eventName}, out var __previousHandler))");
+			using (PrePost.NewBlock(codeWriter))
+			{
+				codeWriter.WriteLine($"if (__previousHandler is not {eventType} __typedHandler)");
+				codeWriter.Indent++;
+				codeWriter.WriteLine($"throw new global::System.InvalidOperationException(\"The previous XAML event handler for '{EscapeString(eventSymbol.Name)}' has an incompatible type.\");");
+				codeWriter.Indent--;
+				codeWriter.WriteLine($"{varPrefix}{eventSymbol.Name} -= __typedHandler;");
+				codeWriter.WriteLine($"__events.Remove({eventName});");
+			}
+			codeWriter.WriteLine("else");
+			using (PrePost.NewBlock(codeWriter))
+				EmitEventUnsubscriptionFallback(codeWriter, varPrefix, eventSymbol, handler, rootType, compilation);
+		}
+	}
+
+	static void EmitEventUnsubscriptionFallback(
+		IndentedTextWriter codeWriter,
+		string varPrefix,
+		IEventSymbol eventSymbol,
+		string handler,
+		INamedTypeSymbol rootType,
+		Compilation compilation)
+	{
+		var invoke = (eventSymbol.Type as INamedTypeSymbol)?.DelegateInvokeMethod;
+		bool compatibleConversion(ITypeSymbol source, ITypeSymbol target)
+		{
+			var conversion = compilation.ClassifyConversion(source, target);
+			return conversion.IsIdentity || (conversion.IsImplicit && conversion.IsReference);
+		}
+
+		var hasHandler = invoke != null && rootType.GetAllMethods(handler, context: null).Any(method =>
+			!method.IsGenericMethod
+			&& method.ReturnsVoid == invoke.ReturnsVoid
+			&& (method.ReturnsVoid || compatibleConversion(method.ReturnType, invoke.ReturnType))
+			&& method.Parameters.Length == invoke.Parameters.Length
+			&& method.Parameters.Zip(invoke.Parameters, (parameter, argument) =>
+				parameter.RefKind == argument.RefKind && compatibleConversion(argument.Type, parameter.Type)).All(matches => matches));
+		if (hasHandler)
+		{
+			codeWriter.WriteLine($"{varPrefix}{eventSymbol.Name} -= {handler};");
+			return;
+		}
+
+		// A handler removed from x:Code is absent from the new compilation but can still be attached
+		// to live instances from the previous Hot Reload generation.
+		var eventType = eventSymbol.Type.WithNullableAnnotation(NullableAnnotation.NotAnnotated).ToFQDisplayString();
+		using (PrePost.NewBlock(codeWriter))
+		{
+			codeWriter.WriteLine("global::System.Delegate? __oldHandler = null;");
+			codeWriter.WriteLine($"for (global::System.Type? __type = typeof({rootType.ToFQDisplayString()}); __type != null && __oldHandler == null; __type = __type.BaseType)");
+			using (PrePost.NewBlock(codeWriter))
+			{
+				codeWriter.WriteLine("foreach (var __method in __type.GetMethods(global::System.Reflection.BindingFlags.DeclaredOnly | global::System.Reflection.BindingFlags.Instance | global::System.Reflection.BindingFlags.Static | global::System.Reflection.BindingFlags.Public | global::System.Reflection.BindingFlags.NonPublic))");
+				using (PrePost.NewBlock(codeWriter))
+				{
+					codeWriter.WriteLine($"if (__method.Name == \"{EscapeString(handler)}\" && !__method.ContainsGenericParameters)");
+					codeWriter.Indent++;
+					codeWriter.WriteLine($"__oldHandler = global::System.Delegate.CreateDelegate(typeof({eventType}), __method.IsStatic ? null : this, __method, false);");
+					codeWriter.Indent--;
+					codeWriter.WriteLine("if (__oldHandler != null)");
+					codeWriter.Indent++;
+					codeWriter.WriteLine("break;");
+					codeWriter.Indent--;
+				}
+			}
+			codeWriter.WriteLine($"if (__oldHandler is not {eventType} __typedHandler)");
+			codeWriter.Indent++;
+			codeWriter.WriteLine($"throw new global::System.InvalidOperationException(\"Unable to remove the previous XAML event handler '{EscapeString(handler)}' during Hot Reload.\");");
+			codeWriter.Indent--;
+			codeWriter.WriteLine($"{varPrefix}{eventSymbol.Name} -= __typedHandler;");
+		}
 	}
 
 	static bool IsValidCSharpIdentifier(string name)

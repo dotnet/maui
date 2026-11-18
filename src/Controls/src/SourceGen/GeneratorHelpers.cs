@@ -106,6 +106,8 @@ static class GeneratorHelpers
 
 				var rootnode = new SGRootNode(new XmlType(reader.NamespaceURI, reader.Name, XamlParser.GetTypeArguments(reader)), /*typeReference, */(IXmlNamespaceResolver)reader, ((IXmlLineInfo)reader).LineNumber, ((IXmlLineInfo)reader).LinePosition);
 				XamlParser.ParseXaml(rootnode, reader);
+				if (xaml.IndexOf("Code", StringComparison.Ordinal) >= 0)
+					PruneIgnoredNodesVisitor.RemoveCodeDirectives(rootnode);
 
 				return rootnode;
 			}

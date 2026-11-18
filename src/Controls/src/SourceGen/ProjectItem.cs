@@ -11,6 +11,8 @@ record ProjectItem(AdditionalText AdditionalText, AnalyzerConfigOptions Options)
 	public string Configuration
 		=> Options.GetValueOrDefault("build_property.Configuration", "Debug");
 
+	public bool EnablePreviewFeatures => Options.IsTrue("build_property.EnablePreviewFeatures");
+
 	public bool EnableLineInfo
 	{
 		get

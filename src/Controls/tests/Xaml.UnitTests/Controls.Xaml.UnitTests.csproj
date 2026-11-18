@@ -12,6 +12,7 @@
     <IsPackable>false</IsPackable>
     <DisableMSBuildAssemblyCopyCheck>true</DisableMSBuildAssemblyCopyCheck>
     <MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
+    <EnablePreviewFeatures>true</EnablePreviewFeatures>
     <DefineConstants>$(DefineConstants)</DefineConstants>
     <ReportAnalyzer>true</ReportAnalyzer>
     <!-- We can't yet disable the namescope generation, ConstraintTypeConverter and ReferenceTypeConverter need to be ported to sourcegen
@@ -98,6 +99,7 @@
          See dotnet/maui#36682. -->
     <MauiXaml Update="HotReload.xaml" EnableIncrementalHotReload="false" />
     <MauiXaml Update="InflatorSwitch\XamlInflatorSourceGen.sgen.xaml" EnableIncrementalHotReload="false" />
+    <MauiXaml Update="Issues\Maui40328.sgen.xaml" EnableIncrementalHotReload="false" />
   </ItemGroup>
 
   <ItemGroup>
