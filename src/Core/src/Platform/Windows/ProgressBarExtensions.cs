@@ -14,7 +14,15 @@ namespace Microsoft.Maui.Platform
 		{
 			Color progressColor = progress.ProgressColor;
 			if (progressColor != null)
+			{
 				platformProgressBar.Foreground = progressColor.ToPlatform();
+			}
+			else
+			{
+				// Clear the local value so the ProgressBar falls back to its
+				// default (theme) foreground instead of keeping the last color.
+				platformProgressBar.ClearValue(ProgressBar.ForegroundProperty);
+			}
 		}
 	}
 }

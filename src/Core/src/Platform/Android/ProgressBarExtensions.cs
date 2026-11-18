@@ -32,8 +32,20 @@ namespace Microsoft.Maui.Platform
 
 			if (color == null)
 			{
-				(platformProgressBar.Indeterminate ? platformProgressBar.IndeterminateDrawable :
-					platformProgressBar.ProgressDrawable)?.ClearColorFilter();
+				// Clear the tint list so the ProgressBar falls back to its default
+				// color. Clearing the drawable's color filter alone is not enough:
+				// the color was applied through the tint list, which a color
+				// filter does not remove.
+				if (platformProgressBar.Indeterminate)
+				{
+					platformProgressBar.IndeterminateTintList = null;
+					platformProgressBar.IndeterminateDrawable?.ClearColorFilter();
+				}
+				else
+				{
+					platformProgressBar.ProgressTintList = null;
+					platformProgressBar.ProgressDrawable?.ClearColorFilter();
+				}
 			}
 			else
 			{
