@@ -1,1 +1,10 @@
 #nullable enable
+Microsoft.Maui.ICheckBox2
+Microsoft.Maui.ICheckBox2.IsChecked.get -> bool?
+Microsoft.Maui.ICheckBox2.IsChecked.set -> void
+Microsoft.Maui.ICheckBox2.IsThreeState.get -> bool
+*REMOVED*Microsoft.Maui.Platform.MauiCheckBox.IsChecked.get -> bool
+Microsoft.Maui.Platform.MauiCheckBox.IsChecked.get -> bool?
+Microsoft.Maui.Platform.MauiCheckBox.IsThreeState.get -> bool
+Microsoft.Maui.Platform.MauiCheckBox.IsThreeState.set -> void
+static Microsoft.Maui.Handlers.CheckBoxHandler.MapIsThreeState(Microsoft.Maui.Handlers.ICheckBoxHandler! handler, Microsoft.Maui.ICheckBox! check) -> void

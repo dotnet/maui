@@ -11,12 +11,13 @@ namespace Microsoft.Maui.Controls
 	/// Represents a control that a user can select or clear.
 	/// </summary>
 	/// <remarks>
-	/// A <see cref="CheckBox"/> is a type of button that can either be checked or not. 
-	/// When a user taps a checkbox, it toggles between checked and unchecked states.
+	/// A <see cref="CheckBox"/> can be checked, unchecked, or indeterminate.
+	/// Application code can assign indeterminate when <see cref="IsThreeState"/> is true;
+	/// user interaction remains binary.
 	/// Use the <see cref="IsChecked"/> property to determine or set the state.
 	/// </remarks>
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
-	public partial class CheckBox : View, IElementConfiguration<CheckBox>, IBorderElement, IColorElement, ICheckBox, ICommandElement
+	public partial class CheckBox : View, IElementConfiguration<CheckBox>, IBorderElement, IColorElement, ICheckBox2, ICommandElement
 	{
 		readonly Lazy<PlatformConfigurationRegistry<CheckBox>> _platformConfigurationRegistry;
 		
@@ -26,9 +27,15 @@ namespace Microsoft.Maui.Controls
 		/// <value>The string "IsChecked".</value>
 		public const string IsCheckedVisualState = "IsChecked";
 
+		/// <summary>
+		/// The visual state name for the indeterminate state of the <see cref="CheckBox"/>.
+		/// </summary>
+		/// <value>The string "IsIndeterminate".</value>
+		public const string IsIndeterminateVisualState = "IsIndeterminate";
+
 		/// <summary>Bindable property for <see cref="IsChecked"/>. This is a bindable property.</summary>
 		public static readonly BindableProperty IsCheckedProperty =
-			BindableProperty.Create(nameof(IsChecked), typeof(bool), typeof(CheckBox), BooleanBoxes.FalseBox,
+			BindableProperty.Create(nameof(IsChecked), typeof(bool?), typeof(CheckBox), BooleanBoxes.FalseBox,
 				propertyChanged: (bindable, oldValue, newValue) =>
 				{
 					if (bindable is not CheckBox checkBox)
@@ -37,13 +44,30 @@ namespace Microsoft.Maui.Controls
 					}
 
 					checkBox.Handler?.UpdateValue(nameof(ICheckBox.Foreground));
-					checkBox.CheckedChanged?.Invoke(bindable, new CheckedChangedEventArgs((bool)newValue));
+					checkBox.CheckedChanged?.Invoke(bindable, new CheckedChangedEventArgs((bool?)newValue));
 					if (checkBox.Command?.CanExecute(checkBox.CommandParameter) == true)
 					{
 						checkBox.Command.Execute(checkBox.CommandParameter);
 					}
 
 					checkBox.ChangeVisualState();
+				}, defaultBindingMode: BindingMode.TwoWay,
+				coerceValue: (bindable, value) =>
+					!((CheckBox)bindable).IsThreeState && value is null ? BooleanBoxes.FalseBox : value);
+
+		/// <summary>Bindable property for <see cref="IsThreeState"/>.</summary>
+		public static readonly BindableProperty IsThreeStateProperty =
+			BindableProperty.Create(nameof(IsThreeState), typeof(bool), typeof(CheckBox), BooleanBoxes.FalseBox,
+				propertyChanged: (bindable, oldValue, newValue) =>
+				{
+					var checkBox = (CheckBox)bindable;
+					if (!(bool)newValue && checkBox.IsChecked is null)
+					{
+						// Keep the existing binding or setter priority when clearing mixed state.
+						var context = checkBox.GetContext(IsCheckedProperty);
+						checkBox.SetValueCore(IsCheckedProperty, BooleanBoxes.FalseBox, SetValueFlags.None,
+							SetValuePrivateFlags.Default, context.Values.GetSpecificity());
+					}
 				}, defaultBindingMode: BindingMode.TwoWay);
 
 		/// <summary>Bindable property for the <see cref="Command"/> property.</summary>
@@ -53,7 +77,7 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty CommandParameterProperty = BindableProperty.Create(nameof(CommandParameter), typeof(object), typeof(CheckBox), null, propertyChanged: CommandElement.OnCommandParameterChanged);
 
 		/// <summary>
-		/// Gets or sets the command that is executed when the CheckBox is checked or unchecked. This is a bindable property.
+		/// Gets or sets the command executed whenever the checked state changes, including indeterminate. This is a bindable property.
 		/// </summary>
 		public ICommand Command
 		{
@@ -93,18 +117,34 @@ namespace Microsoft.Maui.Controls
 		/// Gets or sets a value indicating whether the <see cref="CheckBox"/> is checked.
 		/// This is a bindable property.
 		/// </summary>
-		/// <value><see langword="true"/> if the checkbox is checked; otherwise, <see langword="false"/>. The default is <see langword="false"/>.</value>
-		public bool IsChecked
+		/// <value>True if checked, false if unchecked, or null if indeterminate. The default is false.</value>
+		/// <remarks>When <see cref="IsThreeState"/> is false, assigning null sets the value to false.</remarks>
+		public bool? IsChecked
 		{
-			get => (bool)GetValue(IsCheckedProperty);
+			get => (bool?)GetValue(IsCheckedProperty);
 			set => SetValue(IsCheckedProperty, BooleanBoxes.Box(value));
+		}
+
+		/// <summary>
+		/// Gets or sets whether application code can assign the indeterminate state.
+		/// This is a bindable property.
+		/// </summary>
+		/// <remarks>
+		/// The default is false. User interaction remains binary regardless of this flag.
+		/// Disabling three-state support resets an indeterminate <see cref="IsChecked"/> value to false.
+		/// </remarks>
+		public bool IsThreeState
+		{
+			get => (bool)GetValue(IsThreeStateProperty);
+			set => SetValue(IsThreeStateProperty, BooleanBoxes.Box(value));
 		}
 
 		protected internal override void ChangeVisualState()
 		{
-			if (IsEnabled && IsChecked)
+			if (IsEnabled && IsChecked != false)
 			{
-				bool isCheckedStateAvailable = false;
+				string stateName = IsChecked == true ? IsCheckedVisualState : IsIndeterminateVisualState;
+				bool isStateAvailable = false;
 				var visualStates = VisualStateManager.GetVisualStateGroups(this);
 				foreach (var group in visualStates)
 				{
@@ -115,9 +155,9 @@ namespace Microsoft.Maui.Controls
 
 					foreach (var state in group.States)
 					{
-						if (state.Name is IsCheckedVisualState)
+						if (state.Name == stateName)
 						{
-							isCheckedStateAvailable = true;
+							isStateAvailable = true;
 							break;
 						}
 					}
@@ -125,9 +165,9 @@ namespace Microsoft.Maui.Controls
 					break;
 				}
 
-				if (isCheckedStateAvailable)
+				if (isStateAvailable)
 				{
-					VisualStateManager.GoToState(this, IsCheckedVisualState);
+					VisualStateManager.GoToState(this, stateName);
 				}
 				else
 				{
@@ -173,9 +213,17 @@ namespace Microsoft.Maui.Controls
 
 		bool ICheckBox.IsChecked
 		{
+			get => IsChecked == true;
+			set => SetValue(IsCheckedProperty, BooleanBoxes.Box(value), SetterSpecificity.FromHandler);
+		}
+
+		bool? ICheckBox2.IsChecked
+		{
 			get => IsChecked;
 			set => SetValue(IsCheckedProperty, BooleanBoxes.Box(value), SetterSpecificity.FromHandler);
 		}
+
+		bool ICheckBox2.IsThreeState => IsThreeState;
 
 		ICommand ICommandElement.Command => Command;
 
@@ -185,11 +233,17 @@ namespace Microsoft.Maui.Controls
 
 		private protected override string GetDebuggerDisplay()
 		{
-			return $"{base.GetDebuggerDisplay()}, IsChecked = {IsChecked}";
+			return $"{base.GetDebuggerDisplay()}, IsChecked = {IsChecked?.ToString() ?? "Indeterminate"}";
 		}
 
 		internal override bool TrySetValue(string text)
 		{
+			if (string.Equals(text, "Indeterminate", StringComparison.OrdinalIgnoreCase))
+			{
+				IsChecked = null;
+				return true;
+			}
+
 			if (bool.TryParse(text, out bool result))
 			{
 				IsChecked = result;

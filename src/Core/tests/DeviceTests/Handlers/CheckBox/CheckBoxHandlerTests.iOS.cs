@@ -52,7 +52,7 @@ namespace Microsoft.Maui.DeviceTests
 			(MauiCheckBox)checkBoxHandler.PlatformView;
 
 		bool GetNativeIsChecked(CheckBoxHandler checkBoxHandler) =>
-			GetNativeCheckBox(checkBoxHandler).IsChecked;
+			GetNativeCheckBox(checkBoxHandler).IsChecked == true;
 
 		async Task ValidateColor(ICheckBox checkBoxStub, Color color, Action action = null)
 		{

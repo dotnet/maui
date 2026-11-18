@@ -1,1 +1,8 @@
 #nullable enable
+~const Microsoft.Maui.Controls.CheckBox.IsIndeterminateVisualState = "IsIndeterminate" -> string
+*REMOVED*Microsoft.Maui.Controls.CheckBox.IsChecked.get -> bool
+Microsoft.Maui.Controls.CheckBox.IsChecked.get -> bool?
+Microsoft.Maui.Controls.CheckBox.IsThreeState.get -> bool
+Microsoft.Maui.Controls.CheckBox.IsThreeState.set -> void
+Microsoft.Maui.Controls.CheckedChangedEventArgs.CheckedValue.get -> bool?
+~static readonly Microsoft.Maui.Controls.CheckBox.IsThreeStateProperty -> Microsoft.Maui.Controls.BindableProperty
