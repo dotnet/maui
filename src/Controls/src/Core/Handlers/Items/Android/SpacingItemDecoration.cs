@@ -105,7 +105,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				var spanSizeLookup = gridLayoutManager.GetSpanSizeLookup();
 				int spanCount = gridLayoutManager.SpanCount;
 				isInFirstRowCol = IsInFirstSpanGroup(spanSizeLookup, position, spanCount);
-				isInLastRowCol = IsInLastSpanGroup(spanSizeLookup, view, position, itemCount, spanCount);
+				isInLastRowCol = IsInLastSpanGroup(spanSizeLookup, view, state, position, itemCount, spanCount);
 			}
 			else
 			{
@@ -156,7 +156,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return true;
 		}
 
-		static bool IsInLastSpanGroup(GridLayoutManager.SpanSizeLookup spanSizeLookup, AView view, int position, int itemCount, int spanCount)
+		static bool IsInLastSpanGroup(GridLayoutManager.SpanSizeLookup spanSizeLookup, AView view, RecyclerView.State state, int position, int itemCount, int spanCount)
 		{
 			// Every item occupies at least one span, so the last row holds at most spanCount items.
 			if (itemCount - 1 - position >= spanCount)
@@ -164,7 +164,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return false;
 			}
 
-			int span = GetSpanIndex(spanSizeLookup, view, position, spanCount) + spanSizeLookup.GetSpanSize(position);
+			int span = GetSpanIndex(spanSizeLookup, view, state, position, spanCount) + spanSizeLookup.GetSpanSize(position);
 
 			for (int i = position + 1; i < itemCount; i++)
 			{
@@ -182,11 +182,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return true;
 		}
 
-		static int GetSpanIndex(GridLayoutManager.SpanSizeLookup spanSizeLookup, AView view, int position, int spanCount)
+		static int GetSpanIndex(GridLayoutManager.SpanSizeLookup spanSizeLookup, AView view, RecyclerView.State state, int position, int spanCount)
 		{
 			// GridLayoutManager assigns spans to the whole row before measuring its children, so the
 			// LayoutParams already hold the answer; fall back to the lookup for anything not yet assigned.
-			if (view.LayoutParameters is GridLayoutManager.LayoutParams layoutParams
+			// In pre-layout they hold the span of the item's old position, which no longer matches `position`.
+			if (!state.IsPreLayout
+				&& view.LayoutParameters is GridLayoutManager.LayoutParams layoutParams
 				&& layoutParams.SpanIndex != GridLayoutManager.LayoutParams.InvalidSpanId)
 			{
 				return layoutParams.SpanIndex;
