@@ -178,6 +178,10 @@ contacting NuGet.org through CFSClean. Public/local builds keep the NuGet.org
 default. Keep the pinned versions unchanged when repairing a missing-source
 `NU1102` failure rather than substituting the nearest older RTM package or
 assuming SDK-bundled manifests with the same version contain identical packs.
+The .NET 11.0.101 SDK also requests .NET 10.0.16 workload packs, which are not
+yet on NuGet.org. `NuGet.config` includes the public .NET 10 build feed for
+those packs until they are released; the manifest restore source alone does
+not supply packages to `dotnet workload install`.
 
 Dependabot excludes these packages to avoid partial toolset upgrades. It also
 excludes `Magick.NET-Q8-AnyCPU` major version updates: version 15 changed screenshot
