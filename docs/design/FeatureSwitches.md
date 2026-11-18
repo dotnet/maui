@@ -10,7 +10,7 @@ The following switches are toggled for applications running on Mono for `TrimMod
 | MauiCssEnabled | Microsoft.Maui.RuntimeFeature.IsCssEnabled | When disabled, CSS stylesheets cannot be used. Defaults to `false` when no `MauiCss` items are present in the project, and `true` otherwise. |
 | MauiEnableIVisualAssemblyScanning | Microsoft.Maui.RuntimeFeature.IsIVisualAssemblyScanningEnabled | When enabled, MAUI will scan assemblies for types implementing `IVisual` and for `[assembly: Visual(...)]` attributes and register these types. |
 | MauiShellSearchResultsRendererDisplayMemberNameSupported | Microsoft.Maui.RuntimeFeature.IsShellSearchResultsRendererDisplayMemberNameSupported | When disabled, it is necessary to always set `ItemTemplate` of any `SearchHandler`. Displaying search results through `DisplayMemberName` will not work. |
-| MauiQueryPropertyAttributeSupport | Microsoft.Maui.RuntimeFeature.IsQueryPropertyAttributeSupported | When disabled, reflection-based `[QueryProperty(...)]` handling is removed; source-generated query properties on supported partial classes continue to work. |
+| MauiQueryPropertyAttributeSupport | Microsoft.Maui.RuntimeFeature.IsQueryPropertyAttributeSupported | When disabled, the `[QueryProperty(...)]` attributes won't be used to set values to properties when navigating. |
 | MauiImplicitCastOperatorsUsageViaReflectionSupport | Microsoft.Maui.RuntimeFeature.IsImplicitCastOperatorsUsageViaReflectionSupported | When disabled, MAUI won't look for implicit cast operators when converting values from one type to another. This feature is not trim-compatible. |
 | _MauiBindingInterceptorsSupport | Microsoft.Maui.RuntimeFeature.AreBindingInterceptorsSupported | When disabled, MAUI won't intercept any calls to `SetBinding` methods and try to compile them. Enabled by default. |
 | MauiEnableXamlCBindingWithSourceCompilation | Microsoft.Maui.RuntimeFeature.XamlCBindingWithSourceCompilationEnabled | When enabled, MAUI will compile all bindings, including those where the `Source` property is used. |
@@ -99,7 +99,9 @@ When this feature is disabled, any value set to [`SearchHandler.DisplayMemberNam
 
 ## MauiQueryPropertyAttributeSupport
 
-When disabled, MAUI doesn't use reflection to process `[QueryProperty(...)]` attributes. Supported partial classes use source-generated setters and continue to receive query values. Unsupported declarations produce a build error when the reflection fallback is disabled. You can also implement the [`IQueryAttributable`](https://learn.microsoft.com/en-us/dotnet/maui/fundamentals/shell/navigation#process-navigation-data-using-a-single-method) interface to process query parameters directly.
+When disabled, the `[QueryProperty(...)]` attributes won't be applied using reflection when navigating.
+
+The Controls source generator processes `[QueryProperty(...)]` attributes at build time, so they keep working without reflection and with this feature disabled. No code changes are required. Types the generator can't handle (for example generic types or private nested types) still rely on reflection; when the trim analyzer is enabled (`PublishTrimmed`, `PublishAot` or `IsAotCompatible`), the generator reports them with the `MAUI1200` warning. For those types, implement the [`IQueryAttributable`](https://learn.microsoft.com/en-us/dotnet/maui/fundamentals/shell/navigation#process-navigation-data-using-a-single-method) interface instead.
 
 ## MauiImplicitCastOperatorsUsageViaReflectionSupport
 
