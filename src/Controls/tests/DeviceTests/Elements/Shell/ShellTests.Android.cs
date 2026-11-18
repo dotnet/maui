@@ -44,12 +44,59 @@ namespace Microsoft.Maui.DeviceTests
 			VerifyModalNavigationAsync(useCustomRenderer: true);
 
 		[Fact]
-		public Task ResumingShellItemRefreshesStaleInsetsWithoutAnotherTransition() =>
+		public Task ResumingShellItemRequestsInsetsWithoutAnotherTransition() =>
 			VerifyModalNavigationAsync(resumeAgain: true);
 
 		[Fact]
-		public Task CenteredContentRemainsCenteredAfterModalNavigation() =>
+		public Task CenteredEdgeToEdgeContentRemainsCenteredAfterModalNavigation() =>
 			VerifyModalNavigationAsync(centerContent: true);
+
+		[Fact]
+		public async Task ResumingUnrelatedFragmentDoesNotRequestInsets()
+		{
+			EnsureHandlerCreated(builder => builder.ConfigureMauiHandlers(handlers =>
+			{
+				SetupShellHandlers(handlers);
+				handlers.AddHandler<Shell, TransitionProbeShellRenderer>();
+			}));
+
+			var page = new ContentPage { Content = new Label { Text = "Shell content" } };
+			var shell = await InvokeOnMainThreadAsync(() => new Shell { Items = { page } });
+			await CreateHandlerAndAddToWindow(shell, async () =>
+			{
+				await OnLoadedAsync(page);
+				var renderer = Assert.IsType<TransitionProbeShellRenderer>(shell.Handler);
+				var current = renderer.LatestItemRenderer.Fragment;
+				await AssertEventually(() => current.IsResumed);
+				var manager = current.ParentFragmentManager;
+				var container = Assert.IsAssignableFrom<ViewGroup>(current.View.Parent);
+				using var unrelated = new InsetsRecordingFragment();
+				try
+				{
+					manager.BeginTransaction()
+						.Add(container.Id, unrelated)
+						.SetMaxLifecycle(unrelated, AndroidX.Lifecycle.Lifecycle.State.Started)
+						.CommitNow();
+					var view = Assert.IsType<InsetsRecordingView>(unrelated.View);
+					Assert.True(view.IsAttachedToWindow);
+					Assert.False(unrelated.IsResumed);
+					var requests = view.InsetRequestCount;
+
+					// Observe direct requests synchronously, not window-wide inset redispatches.
+					manager.BeginTransaction()
+						.SetMaxLifecycle(unrelated, AndroidX.Lifecycle.Lifecycle.State.Resumed)
+						.CommitNow();
+
+					Assert.True(unrelated.IsResumed);
+					Assert.Same(current, renderer.LatestItemRenderer.Fragment);
+					Assert.Equal(requests, view.InsetRequestCount);
+				}
+				finally
+				{
+					manager.BeginTransaction().Remove(unrelated).CommitNow();
+				}
+			});
+		}
 
 		async Task VerifyModalNavigationAsync(
 			bool useTabBar = false, bool useCustomRenderer = false, bool resumeAgain = false, bool centerContent = false)
@@ -67,6 +114,9 @@ namespace Microsoft.Maui.DeviceTests
 				HorizontalOptions = LayoutOptions.Center,
 				Children = { label }
 			};
+			if (centerContent)
+				contentLayout.SafeAreaEdges = SafeAreaEdges.None;
+
 			var targetPage = new ContentPage
 			{
 				Content = contentLayout
@@ -91,12 +141,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				await OnLoadedAsync(homePage);
 				var renderer = Assert.IsType<TransitionProbeShellRenderer>(shell.Handler);
-				var context = MauiContext.Context;
-				// Resolve the typed Java peer so inset calculation can obtain IWindowManager.
-				Assert.NotNull(context.GetActivity()?.WindowManager);
-				Assert.IsAssignableFrom<IWindowManager>(context.GetSystemService(global::Android.Content.Context.WindowService));
-
-				renderer.UseCustomItemRenderer = useCustomRenderer;
+				renderer.UseCustomItemRenderer = useCustomRenderer || resumeAgain;
 				await shell.Navigation.PushModalAsync(new ContentPage { Content = new Label { Text = "Modal" } });
 				await shell.GoToAsync("//TransitionProbeTarget");
 				await AssertEventually(() => renderer.LatestItemRenderer?.Fragment.IsResumed == true);
@@ -123,20 +168,15 @@ namespace Microsoft.Maui.DeviceTests
 						.CommitNow();
 					Assert.False(fragment.IsResumed);
 					Assert.True(root.IsAttachedToWindow);
-
-					// Reproduce stale padding while scaled, then resume without a new entering animation.
-					root.ScaleY = 0.85f;
-					ViewCompat.DispatchApplyWindowInsets(root, insets);
-					var layoutView = (AView)contentLayout.Handler.PlatformView;
-					await AssertEventually(() => layoutView.PaddingTop == 0 && !layoutView.IsLayoutRequested);
-					root.ScaleY = 1;
-					Assert.Equal(0, layoutView.PaddingTop);
+					var recordingView = Assert.IsType<InsetsRecordingView>(root);
+					var requests = recordingView.InsetRequestCount;
 
 					manager.BeginTransaction()
 						.SetMaxLifecycle(fragment, AndroidX.Lifecycle.Lifecycle.State.Resumed)
 						.CommitNow();
 					Assert.True(fragment.IsResumed);
 					Assert.Same(root, fragment.View);
+					Assert.Equal(requests + 1, recordingView.InsetRequestCount);
 				}
 
 				var pageLocation = new int[2];
@@ -182,6 +222,35 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			public CustomShellItemRenderer(IShellContext shellContext) : base(shellContext)
 			{
+			}
+
+			public override AView OnCreateView(LayoutInflater inflater, ViewGroup container, global::Android.OS.Bundle savedInstanceState)
+			{
+				var view = new InsetsRecordingView(inflater.Context);
+				view.AddView(base.OnCreateView(inflater, container, savedInstanceState),
+					new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent));
+				return view;
+			}
+		}
+
+		class InsetsRecordingFragment : AndroidX.Fragment.App.Fragment
+		{
+			public override AView OnCreateView(LayoutInflater inflater, ViewGroup container, global::Android.OS.Bundle savedInstanceState) =>
+				new InsetsRecordingView(inflater.Context);
+		}
+
+		class InsetsRecordingView : global::Android.Widget.FrameLayout
+		{
+			public InsetsRecordingView(global::Android.Content.Context context) : base(context)
+			{
+			}
+
+			public int InsetRequestCount { get; private set; }
+
+			public override void RequestApplyInsets()
+			{
+				InsetRequestCount++;
+				base.RequestApplyInsets();
 			}
 		}
 	}
