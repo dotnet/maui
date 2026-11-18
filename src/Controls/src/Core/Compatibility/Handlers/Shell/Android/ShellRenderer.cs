@@ -6,6 +6,7 @@ using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.Views;
 using Android.Widget;
+using AndroidX.Core.View;
 using Microsoft.Maui.Platform;
 using AndroidX.DrawerLayout.Widget;
 using AndroidX.Fragment.App;
@@ -113,6 +114,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		IShellFlyoutRenderer _flyoutView;
 		FrameLayout _frameLayout;
 		FragmentManager _fragmentManager;
+		ShellItemInsetsCallbacks _shellItemInsetsCallbacks;
 		IMauiContext _mauiContext;
 		bool _disposed;
 
@@ -214,6 +216,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			((IShellController)shell).AddAppearanceObserver(this, shell);
 
+			if (_shellItemInsetsCallbacks is null)
+			{
+				_shellItemInsetsCallbacks = new ShellItemInsetsCallbacks(this);
+				FragmentManager.RegisterFragmentLifecycleCallbacks(_shellItemInsetsCallbacks, false);
+			}
+
 			SwitchFragment(FragmentManager, _frameLayout, shell.CurrentItem, false);
 		}
 
@@ -256,11 +264,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var fragment = _currentView.Fragment;
 
 			FragmentTransaction transaction = manager.BeginTransactionEx();
-			var outgoingModalCount = previousView?.ShellItem?.CurrentItem?.Navigation.ModalStack.Count ?? 0;
-			// The outgoing modal owns the visible transition; prepare the destination without a second animation.
-			bool useFragmentOpenTransition = animate && outgoingModalCount == 0;
 
-			if (useFragmentOpenTransition)
+			if (animate)
 				transaction.SetTransitionEx((int)global::Android.App.FragmentTransit.FragmentOpen);
 
 			transaction.ReplaceEx(_frameLayout.Id, fragment);
@@ -360,6 +365,15 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			_disposed = true;
 
+			if (_shellItemInsetsCallbacks is not null)
+			{
+				if (_fragmentManager is not null && !_fragmentManager.IsDestroyed(AndroidContext))
+					_fragmentManager.UnregisterFragmentLifecycleCallbacks(_shellItemInsetsCallbacks);
+
+				_shellItemInsetsCallbacks.Dispose();
+				_shellItemInsetsCallbacks = null;
+			}
+
 			Element.PropertyChanged -= OnElementPropertyChanged;
 			Element.SizeChanged -= OnElementSizeChanged;
 			((IShellController)Element).RemoveAppearanceObserver(this);
@@ -391,6 +405,29 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 
 			// FragmentManager owns deferred destruction, which still reads IShellContext.Shell.
+		}
+
+		// TODO (.NET 12): Move the inset refresh to ShellItemRenderer.OnResume.
+		sealed class ShellItemInsetsCallbacks : FragmentManager.FragmentLifecycleCallbacks
+		{
+			readonly ShellRenderer _renderer;
+
+			public ShellItemInsetsCallbacks(ShellRenderer renderer)
+			{
+				_renderer = renderer;
+			}
+
+			public override void OnFragmentResumed(FragmentManager fm, Fragment fragment)
+			{
+				base.OnFragmentResumed(fm, fragment);
+
+				if (_renderer._disposed || !ReferenceEquals(_renderer._currentView?.Fragment, fragment))
+					return;
+
+				// Entering effects can leave safe-area padding based on transient screen coordinates.
+				if (fragment.View is { } view && !view.IsDisposed() && view.IsAttachedToWindow)
+					ViewCompat.RequestApplyInsets(view);
+			}
 		}
 	}
 }
