@@ -68,10 +68,14 @@ steps:
 - pwsh: |
     Get-Content $PSCommandPath
     $platformArguments = "--${{ parameters.platform }}"
-    if ("${{ join(',', parameters.platforms) }}" -ne "") {
-        $platformArguments = ("${{ join(',', parameters.platforms) }}".Split(',') |
-            Where-Object { $_ -in @('android', 'ios', 'catalyst') } |
-            ForEach-Object { "--$_" }) -join ' '
+    # Selected runs build only the selected mobile platforms. The flags below are
+    # template-evaluated booleans, so no parameter text reaches this script.
+    if ($env:UITEST_SHARED_PLATFORMS -eq 'True') {
+        $platformArguments = @(
+            if ($env:UITEST_BUILD_ANDROID -eq 'True') { '--android' }
+            if ($env:UITEST_BUILD_IOS -eq 'True') { '--ios' }
+            if ($env:UITEST_BUILD_CATALYST -eq 'True') { '--catalyst' }
+        ) -join ' '
         if (-not $platformArguments) {
             throw "A shared sample build requires at least one non-Windows platform."
         }
@@ -94,6 +98,11 @@ steps:
     
     Invoke-Expression $buildCommand
   displayName: 'Build the samples'
+  env:
+    UITEST_SHARED_PLATFORMS: ${{ and(gt(length(parameters.platforms), 0), lt(length(parameters.platforms), 4)) }}
+    UITEST_BUILD_ANDROID: ${{ containsValue(parameters.platforms, 'android') }}
+    UITEST_BUILD_IOS: ${{ containsValue(parameters.platforms, 'ios') }}
+    UITEST_BUILD_CATALYST: ${{ containsValue(parameters.platforms, 'catalyst') }}
 
 - bash: |
     if [ -f "$HOME/Library/Logs/CoreSimulator/*" ]; then rm -r $HOME/Library/Logs/CoreSimulator/*; fi

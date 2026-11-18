@@ -6,6 +6,8 @@ parameters:
     type: object
     default: [android, ios, catalyst, windows]
   # Individual identifiers, not comma-separated category groups. Umbrellas expand to CI shards.
+  # '<platform>:<Category>' (android, ios, catalyst, windows) limits a category to one platform,
+  # for categories whose tests are compiled out on some of the selected platforms.
   - name: selectedCategories
     type: object
     default: []
@@ -224,7 +226,7 @@ stages:
                             CATEGORYGROUP: ${{ categoryGroup }}
                       ${{ else }}:
                         ${{ each category in split(categoryGroup, ',') }}:
-                          ${{ if and(ne(category, 'SafeAreaEdges'), or(containsValue(parameters.selectedCategories, category), and(startsWith(category, 'CollectionView'), containsValue(parameters.selectedCategories, 'CollectionView')), and(startsWith(category, 'Shell'), containsValue(parameters.selectedCategories, 'Shell')))) }}:
+                          ${{ if and(ne(category, 'SafeAreaEdges'), or(containsValue(parameters.selectedCategories, category), containsValue(parameters.selectedCategories, format('android:{0}', category)), and(startsWith(category, 'CollectionView'), containsValue(parameters.selectedCategories, 'CollectionView')), and(startsWith(category, 'Shell'), containsValue(parameters.selectedCategories, 'Shell')))) }}:
                             ${{ category }}:
                               CATEGORYGROUP: ${{ category }}
                 timeoutInMinutes: 240 # how long to run the job before automatically cancelling
@@ -408,7 +410,7 @@ stages:
                           CATEGORYGROUP: ${{ categoryGroup }}
                       ${{ else }}:
                         ${{ each category in split(categoryGroup, ',') }}:
-                          ${{ if or(containsValue(parameters.selectedCategories, category), and(startsWith(category, 'CollectionView'), containsValue(parameters.selectedCategories, 'CollectionView')), and(startsWith(category, 'Shell'), containsValue(parameters.selectedCategories, 'Shell'))) }}:
+                          ${{ if or(containsValue(parameters.selectedCategories, category), containsValue(parameters.selectedCategories, format('ios:{0}', category)), and(startsWith(category, 'CollectionView'), containsValue(parameters.selectedCategories, 'CollectionView')), and(startsWith(category, 'Shell'), containsValue(parameters.selectedCategories, 'Shell'))) }}:
                             ${{ category }}:
                               CATEGORYGROUP: ${{ category }}
                 timeoutInMinutes: ${{ parameters.timeoutInMinutes }} # how long to run the job before automatically cancelling
@@ -468,7 +470,7 @@ stages:
                             CATEGORYGROUP: ${{ categoryGroup }}
                         ${{ else }}:
                           ${{ each category in split(categoryGroup, ',') }}:
-                            ${{ if or(containsValue(parameters.selectedCategories, category), and(startsWith(category, 'CollectionView'), containsValue(parameters.selectedCategories, 'CollectionView')), and(startsWith(category, 'Shell'), containsValue(parameters.selectedCategories, 'Shell'))) }}:
+                            ${{ if or(containsValue(parameters.selectedCategories, category), containsValue(parameters.selectedCategories, format('ios:{0}', category)), and(startsWith(category, 'CollectionView'), containsValue(parameters.selectedCategories, 'CollectionView')), and(startsWith(category, 'Shell'), containsValue(parameters.selectedCategories, 'Shell'))) }}:
                               ${{ category }}:
                                 CATEGORYGROUP: ${{ category }}
                   timeoutInMinutes: ${{ parameters.timeoutInMinutes }} # how long to run the job before automatically cancelling
@@ -521,7 +523,7 @@ stages:
                             CATEGORYGROUP: ${{ categoryGroup }}
                       ${{ else }}:
                         ${{ each category in split(categoryGroup, ',') }}:
-                          ${{ if and(ne(category, 'WebView'), or(containsValue(parameters.selectedCategories, category), and(startsWith(category, 'CollectionView'), containsValue(parameters.selectedCategories, 'CollectionView')), and(startsWith(category, 'Shell'), containsValue(parameters.selectedCategories, 'Shell')))) }}:
+                          ${{ if and(ne(category, 'WebView'), or(containsValue(parameters.selectedCategories, category), containsValue(parameters.selectedCategories, format('windows:{0}', category)), and(startsWith(category, 'CollectionView'), containsValue(parameters.selectedCategories, 'CollectionView')), and(startsWith(category, 'Shell'), containsValue(parameters.selectedCategories, 'Shell')))) }}:
                             ${{ category }}:
                               CATEGORYGROUP: ${{ category }}
                 timeoutInMinutes: ${{ parameters.timeoutInMinutes }} # how long to run the job before automatically cancelling
@@ -611,7 +613,7 @@ stages:
                           CATEGORYGROUP: ${{ categoryGroup }}
                       ${{ else }}:
                         ${{ each category in split(categoryGroup, ',') }}:
-                          ${{ if or(containsValue(parameters.selectedCategories, category), and(startsWith(category, 'CollectionView'), containsValue(parameters.selectedCategories, 'CollectionView')), and(startsWith(category, 'Shell'), containsValue(parameters.selectedCategories, 'Shell'))) }}:
+                          ${{ if or(containsValue(parameters.selectedCategories, category), containsValue(parameters.selectedCategories, format('catalyst:{0}', category)), and(startsWith(category, 'CollectionView'), containsValue(parameters.selectedCategories, 'CollectionView')), and(startsWith(category, 'Shell'), containsValue(parameters.selectedCategories, 'Shell'))) }}:
                             ${{ category }}:
                               CATEGORYGROUP: ${{ category }}
                 timeoutInMinutes: ${{ parameters.timeoutInMinutes }} # how long to run the job before automatically cancelling

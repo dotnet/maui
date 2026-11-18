@@ -165,3 +165,136 @@ Describe 'Run-tests comment' {
         $updated | Should -Match '1 passed, 1 failed of 2 jobs'
     }
 }
+
+Describe 'Runnable categories' {
+    It 'evaluates #if guards the way each platform project compiles them' {
+        $symbols = @{ android = @('ANDROID', 'TEST_FAILS_ON_IOS', 'TEST_FAILS_ON_CATALYST', 'TEST_FAILS_ON_WINDOWS') }
+        Test-RunTestsPreprocessorExpression 'ANDROID' $symbols.android | Should -BeTrue
+        Test-RunTestsPreprocessorExpression 'TEST_FAILS_ON_ANDROID' $symbols.android | Should -BeFalse
+        Test-RunTestsPreprocessorExpression 'TEST_FAILS_ON_WINDOWS && !(IOS || MACCATALYST)' $symbols.android | Should -BeTrue
+        Test-RunTestsPreprocessorExpression 'TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_ANDROID' $symbols.android | Should -BeFalse
+    }
+
+    It 'collects categories only from compiled code, including shards' {
+        $content = @"
+#if TEST_FAILS_ON_WINDOWS
+[Test, Category(UITestCategories.Label)]
+#else
+[Category(UITestCategories.Entry)]
+#endif
+#if IOS
+[Category(UITestCategories.Maps)]
+#elif ANDROID
+[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
+#endif
+//[Category(UITestCategories.Effects)]
+[Category(UITestCategories.LifeCycle)]
+"@
+        $constants = @{ Label = 'Label'; Entry = 'Entry'; Maps = 'Maps'; CollectionView = 'CollectionView'; Effects = 'Effects'; LifeCycle = 'Lifecycle' }
+        $android = Get-RunTestsFileCategories -Content $content -Symbols @('ANDROID', 'TEST_FAILS_ON_IOS', 'TEST_FAILS_ON_CATALYST', 'TEST_FAILS_ON_WINDOWS') -CategoryConstants $constants
+        $android | Sort-Object | Should -Be @('CollectionView', 'CollectionView3', 'Label', 'Lifecycle')
+        $windows = Get-RunTestsFileCategories -Content $content -Symbols @('WINDOWS', 'TEST_FAILS_ON_ANDROID', 'TEST_FAILS_ON_CATALYST', 'TEST_FAILS_ON_IOS') -CategoryConstants $constants
+        $windows | Sort-Object | Should -Be @('Entry', 'Lifecycle')
+    }
+
+    It 'finds categories whose tests are compiled out on some platforms in the real test projects' {
+        $runnable = Get-RunTestsRunnableCategories -TestsRoot (Join-Path $PSScriptRoot '../../src/Controls/tests')
+        $runnable.android | Should -Contain 'Button'
+        $runnable.android | Should -Contain 'Material3'
+        $runnable.ios | Should -Not -Contain 'Material3'
+        foreach ($platform in Get-RunTestsPlatformIds) { $runnable[$platform] | Should -Contain 'CollectionView1' }
+    }
+}
+
+Describe 'Resolve-RunTestsSelection with runnable categories' {
+    BeforeAll {
+        $script:runnable = [ordered]@{
+            android = @('Button', 'Label', 'Material3', 'Essentials', 'WebView')
+            ios = @('Button', 'Label', 'Window', 'WebView')
+            maccatalyst = @('Button', 'Label', 'Window', 'WebView')
+            windows = @('Button', 'Label', 'Window', 'Essentials', 'WebView')
+        }
+    }
+
+    It 'limits a category to the platforms where it has tests' {
+        $s = Resolve-RunTestsSelection (New-Proposal @('android', 'ios') @('Window', 'Label')) $inventory -Runnable $runnable
+        $s.platforms | Should -Be @('android', 'ios')
+        $s.pipelineCategories | Sort-Object | Should -Be @('ios:Window', 'Label')
+        $s.platformCategories['android'] | Should -Not -Contain 'Window'
+        (Get-RunTestsTemplateParameters $s).selectedCategories | Should -Match '"ios:Window"'
+    }
+
+    It 'drops platforms that would run nothing' {
+        $s = Resolve-RunTestsSelection (New-Proposal @('android', 'windows') @('Material3')) $inventory -Runnable $runnable
+        $s.platforms | Should -Be @('android')
+        $s.notes -join ' ' | Should -Match 'Windows was dropped'
+    }
+
+    It 'never runs WebView on Windows, where the pipeline excludes it' {
+        $s = Resolve-RunTestsSelection (New-Proposal @('windows') @('WebView')) $inventory -Runnable $runnable
+        $s.mode | Should -Be 'none'
+    }
+
+    It 'runs nothing for categories without enabled tests' {
+        $s = Resolve-RunTestsSelection (New-Proposal @('android', 'ios') @('AppLinks')) $inventory -Runnable $runnable
+        $s.mode | Should -Be 'none'
+        $s.notes -join ' ' | Should -Match 'AppLinks'
+    }
+}
+
+Describe 'Pipeline templates' {
+    BeforeAll {
+        $script:pipelines = Join-Path $PSScriptRoot '../../eng/pipelines/common'
+    }
+
+    It 'only enables the zero-test guard for selected runs' {
+        # Untyped template parameters pass booleans as the strings 'True'/'False', and a bare
+        # ${{ if parameters.x }} treats 'False' as true. That once put the guard into full runs.
+        $steps = Get-Content (Join-Path $pipelines 'ui-tests-steps.yml') -Raw
+        $steps | Should -Not -Match '\$\{\{\s*if\s+parameters\.requireExecutedTests\s*\}\}'
+        ([regex]::Matches($steps, 'if eq\(parameters\.requireExecutedTests, true\)')).Count | Should -BeGreaterOrEqual 3
+        $tests = Get-Content (Join-Path $pipelines 'ui-tests.yml') -Raw
+        $values = [regex]::Matches($tests, 'requireExecutedTests:\s*(.+)') | ForEach-Object { $_.Groups[1].Value.Trim() } | Sort-Object -Unique
+        $values | Should -Be @('${{ eq(parameters.selectedRun, true) }}')
+    }
+
+    It 'accepts platform-qualified categories in every platform matrix' {
+        $tests = Get-Content (Join-Path $pipelines 'ui-tests.yml') -Raw
+        foreach ($platform in 'android', 'ios', 'windows', 'catalyst') {
+            $tests | Should -Match ([regex]::Escape("format('$($platform):{0}', category)"))
+        }
+    }
+
+    It 'never interpolates selected platform values into the sample build script' {
+        $build = Get-Content (Join-Path $pipelines 'ui-tests-build-sample.yml') -Raw
+        $build | Should -Not -Match 'join\([^)]*parameters\.platforms'
+        $build | Should -Match "UITEST_BUILD_ANDROID: \$\{\{ containsValue\(parameters\.platforms, 'android'\) \}\}"
+    }
+}
+
+Describe 'Rebalance skill' {
+    It 'finds the typed categoryGroupsToTest parameter' {
+        $temp = Join-Path ([IO.Path]::GetTempPath()) ([guid]::NewGuid())
+        New-Item -ItemType Directory $temp | Out-Null
+        try {
+            Copy-Item (Join-Path $PSScriptRoot '../../eng/pipelines/common/ui-tests.yml') "$temp/ui-tests.yml"
+            Copy-Item (Join-Path $PSScriptRoot '../../src/Controls/tests/TestCases.Shared.Tests/UITestCategories.cs') "$temp/UITestCategories.cs"
+            Set-Content "$temp/analyzer.cs" 'static readonly string[] CiShardCategoryPrefixes = { "CollectionView", "Shell" };'
+            $module = Import-Module (Join-Path $PSScriptRoot '../skills/rebalance-ui-test-categories/scripts/Rebalance-UITestCategories.psm1') -Force -PassThru
+            try {
+                & $module { param($t) Set-ShardInfrastructure -Category Label -ShardCount 2 -CategoriesPath "$t/UITestCategories.cs" -PipelinePath "$t/ui-tests.yml" -AnalyzerPath "$t/analyzer.cs" } $temp
+            } catch {
+                # Only the pipeline edit matters here; the stub analyzer may not match the real format.
+                if ($_.Exception.Message -match 'categoryGroupsToTest') { throw }
+            }
+            $yaml = Get-Content "$temp/ui-tests.yml" -Raw
+            $yaml | Should -Match "- 'Label1'"
+            $yaml | Should -Match "- 'Label2'"
+            $yaml | Should -Not -Match "- 'Label'\s"
+        } finally {
+            Remove-Module Rebalance-UITestCategories -ErrorAction SilentlyContinue
+            Remove-Item $temp -Recurse -Force
+        }
+    }
+}
+

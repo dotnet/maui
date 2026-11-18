@@ -26,6 +26,10 @@ param(
     [Parameter(Mandatory)][string]$ContextPath,
     [string]$AgentOutputPath,
     [string]$ProposalJson,
+    # proposal.json handed over by the agentic workflow (one run_selected_ui_tests item).
+    [string]$ProposalPath,
+    # The /review run-tests run to credit in the comment and checks.
+    [string]$WorkflowRunUrl,
     [string]$OutputDirectory = $(if ($env:RUNNER_TEMP) { Join-Path $env:RUNNER_TEMP 'run-tests' } else { Join-Path ([IO.Path]::GetTempPath()) 'run-tests' }),
     [string]$Repository = $(if ($env:GITHUB_REPOSITORY) { $env:GITHUB_REPOSITORY } else { 'dotnet/maui' }),
     [string]$Actor = $env:GITHUB_ACTOR,
@@ -43,7 +47,7 @@ param(
 $ErrorActionPreference = 'Stop'
 . "$PSScriptRoot/RunTests.Common.ps1"
 
-$runUrl = if ($env:GITHUB_RUN_ID) { "$($env:GITHUB_SERVER_URL ?? 'https://github.com')/$Repository/actions/runs/$($env:GITHUB_RUN_ID)" } else { "https://github.com/$Repository" }
+$runUrl = if ($WorkflowRunUrl -cmatch '^https://github\.com/[\w.-]+/[\w.-]+/actions/runs/\d+$') { $WorkflowRunUrl } elseif ($env:GITHUB_RUN_ID) { "$($env:GITHUB_SERVER_URL ?? 'https://github.com')/$Repository/actions/runs/$($env:GITHUB_RUN_ID)" } else { "https://github.com/$Repository" }
 New-Item -ItemType Directory -Force -Path $OutputDirectory | Out-Null
 
 function Invoke-GhJson {
@@ -60,6 +64,11 @@ function Invoke-GhJson {
 
 function Get-Proposal {
     if ($ProposalJson) { return $ProposalJson | ConvertFrom-Json -AsHashtable }
+    if ($ProposalPath -and (Test-Path -LiteralPath $ProposalPath)) {
+        $file = Get-Item -LiteralPath $ProposalPath
+        if ($file.Length -gt 65536) { throw 'The proposal file is unexpectedly large.' }
+        return Get-Content -LiteralPath $ProposalPath -Raw | ConvertFrom-Json -AsHashtable -Depth 5
+    }
     if (-not $AgentOutputPath -or -not (Test-Path -LiteralPath $AgentOutputPath)) {
         return $null
     }
@@ -83,7 +92,16 @@ if (-not $proposal) {
         rationale = 'No valid `run_selected_ui_tests` proposal was produced by the agent.'
     }
 }
-$selection = Resolve-RunTestsSelection -Proposal $proposal -Inventory $inventory
+# Which categories have enabled tests on each platform, from this trusted checkout, plus the
+# categories the PR's own changed tests enable (evaluated per platform at the PR head).
+$runnable = Get-RunTestsRunnableCategories -TestsRoot "$PSScriptRoot/../../src/Controls/tests"
+if ($context.PSObject.Properties['changedTestRunnable'] -and $context.changedTestRunnable) {
+    foreach ($platform in Get-RunTestsPlatformIds) {
+        $extra = @($context.changedTestRunnable.$platform | Where-Object { $_ -is [string] -and $_ -cmatch '^[A-Za-z0-9_]{1,64}$' })
+        if ($extra.Count) { $runnable[$platform] = @(@($runnable[$platform]) + $extra | Sort-Object -Unique) }
+    }
+}
+$selection = Resolve-RunTestsSelection -Proposal $proposal -Inventory $inventory -Runnable $runnable
 $selection | ConvertTo-Json -Depth 10 | Set-Content (Join-Path $OutputDirectory 'selection.json') -Encoding utf8
 
 # Re-check the caller and the PR: the agent may have taken minutes and the PR may have moved.
@@ -93,7 +111,31 @@ if (-not $DryRun -and $Actor) {
         throw "@$Actor no longer has write access; nothing was queued."
     }
 }
-$pr = Invoke-GhJson @("repos/$Repository/pulls/$PrNumber")
+function Get-VerifiedPullRequest {
+    <#
+    .SYNOPSIS
+    Reads the PR and confirms GitHub's test-merge commit really merges the selected head.
+    After a push GitHub recomputes the merge asynchronously; until then merge_commit_sha can
+    still point at a merge of the previous head, so wait for it rather than trusting it.
+    #>
+    for ($attempt = 1; $attempt -le 8; $attempt++) {
+        $current = Invoke-GhJson @("repos/$Repository/pulls/$PrNumber")
+        if ($current.state -ne 'open' -or $current.head.sha -cne $context.headSha) { return @{ pr = $current; merge = $false } }
+        if ($current.mergeable -eq $false) { return @{ pr = $current; merge = $false } }
+        if ($current.merge_commit_sha) {
+            $merge = Invoke-GhJson @("repos/$Repository/git/commits/$($current.merge_commit_sha)")
+            if (@($merge.parents).Count -eq 2 -and $merge.parents[1].sha -ceq $current.head.sha) {
+                return @{ pr = $current; merge = $true }
+            }
+        }
+        Write-Host "Waiting for GitHub to compute the test-merge commit for $($context.headSha.Substring(0, 8)) (attempt $attempt)..."
+        Start-Sleep -Seconds 10
+    }
+    return @{ pr = $current; merge = $false }
+}
+
+$verified = Get-VerifiedPullRequest
+$pr = $verified.pr
 $queueError = $null
 if ($pr.state -ne 'open') {
     $queueError = 'The PR is no longer open.'
@@ -101,42 +143,40 @@ if ($pr.state -ne 'open') {
     $queueError = "The PR was updated while tests were being selected (selected for $($context.headSha.Substring(0, 8)), now $($pr.head.sha.Substring(0, 8))). Comment ``/review run-tests`` again."
     # Report against the commit the selection was made for.
     $pr.head.sha = $context.headSha
+} elseif ($selection.mode -ne 'none' -and -not $verified.merge) {
+    $queueError = 'GitHub has no test-merge commit for this PR head (it may have merge conflicts, or GitHub is still computing it). Resolve conflicts or retry `/review run-tests`.'
 }
 
 $build = $null
 if (-not $queueError -and $selection.mode -ne 'none') {
-    if ($pr.mergeable -eq $false -or -not $pr.merge_commit_sha) {
-        $queueError = 'GitHub has no test-merge commit for this PR (it may have merge conflicts). Rebase or resolve conflicts, then retry.'
+    $request = New-RunTestsQueueRequest -PullRequest $pr -Selection $selection -DefinitionId $DefinitionId
+    $request | ConvertTo-Json -Depth 10 | Set-Content (Join-Path $OutputDirectory 'queue-request.json') -Encoding utf8
+    if ($DryRun) {
+        Write-Host 'Dry run: queue request written; nothing queued.'
+    } elseif ($SkipQueue) {
+        Write-Host 'Azure DevOps dispatch is not available in this repository; publishing the selection only.'
     } else {
-        $request = New-RunTestsQueueRequest -PullRequest $pr -Selection $selection -DefinitionId $DefinitionId
-        $request | ConvertTo-Json -Depth 10 | Set-Content (Join-Path $OutputDirectory 'queue-request.json') -Encoding utf8
-        if ($DryRun) {
-            Write-Host 'Dry run: queue request written; nothing queued.'
-        } elseif ($SkipQueue) {
-            Write-Host 'Azure DevOps dispatch is not available in this repository; publishing the selection only.'
-        } else {
-            try {
-                if (-not $AzdoToken) { $AzdoToken = Get-RunTestsAzdoToken }
-                $headers = @{ Authorization = "Bearer $AzdoToken" }
-                $base = 'https://dev.azure.com/dnceng-public/public/_apis/build/builds'
-                $build = Invoke-RestMethod -Method Post -Uri "$($base)?api-version=7.1" -Headers $headers `
-                    -ContentType 'application/json' -Body ($request | ConvertTo-Json -Depth 10 -Compress) -TimeoutSec 60
-                if (-not (Test-RunTestsQueuedSelection -Build $build -Selection $selection)) {
-                    # Never leave an unexpected full run behind a "targeted" comment.
-                    Invoke-RestMethod -Method Patch -Uri "$base/$($build.id)?api-version=7.1" -Headers $headers `
-                        -ContentType 'application/json' -Body '{"status":"cancelling"}' -TimeoutSec 30 | Out-Null
-                    $build = $null
-                    $queueError = 'Azure DevOps ignored the selection parameters (is the pipeline YAML on the PR merge ref up to date?); the run was cancelled.'
-                } else {
-                    Write-Host "Queued maui-pr-uitests build $($build.id): $($build._links.web.href)"
-                }
-            } catch {
-                Write-Warning "Queueing maui-pr-uitests failed: $($_.Exception.Message)"
-                $queueError = 'The Azure DevOps request failed; see the workflow log.'
+        try {
+            if (-not $AzdoToken) { $AzdoToken = Get-RunTestsAzdoToken }
+            $headers = @{ Authorization = "Bearer $AzdoToken" }
+            $base = 'https://dev.azure.com/dnceng-public/public/_apis/build/builds'
+            $build = Invoke-RestMethod -Method Post -Uri "$($base)?api-version=7.1" -Headers $headers `
+                -ContentType 'application/json' -Body ($request | ConvertTo-Json -Depth 10 -Compress) -TimeoutSec 60
+            if (-not (Test-RunTestsQueuedSelection -Build $build -Selection $selection) -or $build.sourceVersion -cne $pr.merge_commit_sha) {
+                # Never leave an unexpected full run behind a "targeted" comment.
+                Invoke-RestMethod -Method Patch -Uri "$base/$($build.id)?api-version=7.1" -Headers $headers `
+                    -ContentType 'application/json' -Body '{"status":"cancelling"}' -TimeoutSec 30 | Out-Null
                 $build = $null
-            } finally {
-                $AzdoToken = $null
+                $queueError = 'Azure DevOps did not apply the selection to the verified test-merge commit; the run was cancelled.'
+            } else {
+                Write-Host "Queued maui-pr-uitests build $($build.id): $($build._links.web.href)"
             }
+        } catch {
+            Write-Warning "Queueing maui-pr-uitests failed: $($_.Exception.Message)"
+            $queueError = 'The Azure DevOps request failed; see the workflow log.'
+            $build = $null
+        } finally {
+            $AzdoToken = $null
         }
     }
 }

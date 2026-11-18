@@ -74,6 +74,26 @@ $testCategoryHints = foreach ($entry in $changed) {
     if ($found.Count) { [ordered]@{ path = $entry.path; categories = $found } }
 }
 
+# Categories enabled by the PR's own UI test files, per platform. Each changed test file is read
+# at the PR head and its #if guards are evaluated for every platform project that compiles it.
+$changedTestRunnable = [ordered]@{}
+foreach ($platform in Get-RunTestsPlatformIds) { $changedTestRunnable[$platform] = [System.Collections.Generic.List[string]]::new() }
+$projectPlatforms = @{ 'Shared' = @(Get-RunTestsPlatformIds); 'Android' = @('android'); 'iOS' = @('ios'); 'Mac' = @('maccatalyst'); 'WinUI' = @('windows') }
+$testFiles = @($changed | Where-Object {
+        $_.status -ne 'removed' -and $_.path -match '^src/Controls/tests/TestCases\.(Shared|Android|iOS|Mac|WinUI)\.Tests/.+\.cs$'
+    } | Select-Object -First 40)
+foreach ($file in $testFiles) {
+    $null = $file.path -match '^src/Controls/tests/TestCases\.(\w+)\.Tests/'
+    $raw = & gh api -H 'Accept: application/vnd.github.raw' "repos/$Repository/contents/$($file.path)?ref=$($pr.head.sha)" 2>$null
+    if ($LASTEXITCODE -ne 0 -or -not $raw) { continue }
+    $content = $raw -join "`n"
+    foreach ($platform in $projectPlatforms[$Matches[1]]) {
+        foreach ($category in Get-RunTestsFileCategories -Content $content -Symbols $script:RunTestsPlatformSymbols[$platform] -CategoryConstants $categoryConstants) {
+            if (-not $changedTestRunnable[$platform].Contains($category)) { $changedTestRunnable[$platform].Add($category) }
+        }
+    }
+}
+
 $context = [ordered]@{
     repository = $Repository
     prNumber = $PrNumber
@@ -86,10 +106,14 @@ $context = [ordered]@{
     changedFileCount = $files.Count
     changedFiles = @($changed)
     testCategoryHints = @($testCategoryHints)
+    # Categories the PR's own changed UI tests enable, per platform (evaluated at the PR head).
+    changedTestRunnable = $changedTestRunnable
     inventory = [ordered]@{
         platforms = @(Get-RunTestsPlatformIds)
         categories = @(Get-RunTestsAllCategories $inventory)
         umbrellas = $inventory.umbrellas
+        # Categories with at least one enabled test per platform on the base branch.
+        runnable = (Get-RunTestsRunnableCategories -TestsRoot "$PSScriptRoot/../../src/Controls/tests")
     }
 }
 

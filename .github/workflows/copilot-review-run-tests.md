@@ -105,34 +105,18 @@ jobs:
     needs: [pre_activation, activation, agent]
     if: ${{ !cancelled() && needs.pre_activation.outputs.context_ready == 'true' && needs.agent.result == 'failure' }}
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 5
     permissions:
-      checks: write
-      contents: read
-      issues: write
-      pull-requests: write
-      id-token: write
+      actions: write
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          ref: ${{ github.event.repository.default_branch }}
-          persist-credentials: false
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: run-tests-context-${{ github.run_id }}
-          path: ${{ runner.temp }}/run-tests
-      - name: Queue the full UI suite
+      - name: Hand over to the dispatch workflow without a proposal
         env:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ github.event.issue.number || inputs.pr_number }}
-          AZDO_TRIGGER_TENANT_ID: ${{ secrets.AZDO_TRIGGER_TENANT_ID }}
-          AZDO_TRIGGER_CLIENT_ID: ${{ secrets.AZDO_TRIGGER_CLIENT_ID }}
-          SKIP_QUEUE: ${{ github.repository != 'dotnet/maui' }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
         run: |
-          args=()
-          if [ "$SKIP_QUEUE" = "true" ]; then args+=(-SkipQueue); fi
-          pwsh -NoProfile -File .github/scripts/Invoke-RunTests.ps1 -PrNumber "$PR_NUMBER" \
-            -ContextPath "$RUNNER_TEMP/run-tests/context.json" "${args[@]}"
+          gh workflow run review-run-tests-dispatch.yml --repo "$GITHUB_REPOSITORY" --ref "$DEFAULT_BRANCH" \
+            -f pr_number="$PR_NUMBER" -f source_run_id="$GITHUB_RUN_ID"
 
 safe-outputs:
   report-failure-as-issue: false
@@ -147,12 +131,10 @@ safe-outputs:
         Queue maui-pr-uitests for the triggering PR with the selected platforms and UI test categories.
         Call exactly once. Trusted code validates the selection, queues the run and reports it.
       runs-on: ubuntu-latest
+      # This job inherits the copilot-pat-pool environment, whose OIDC subject Azure DevOps does not
+      # trust. It only hands the proposal to review-run-tests-dispatch.yml, which has no environment.
       permissions:
-        checks: write
-        contents: read
-        issues: write
-        pull-requests: write
-        id-token: write
+        actions: write
       inputs:
         platforms:
           description: 'JSON array string of platforms to run: any of "android", "ios", "maccatalyst", "windows". Use "[]" when no UI test is affected.'
@@ -174,35 +156,34 @@ safe-outputs:
           type: string
           required: true
       steps:
-        - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        - name: Extract the proposal
+          shell: pwsh
+          run: |
+            $output = Get-Content -LiteralPath $env:GH_AW_AGENT_OUTPUT -Raw | ConvertFrom-Json -Depth 20
+            $items = @($output.items | Where-Object { $_.type -eq 'run_selected_ui_tests' })
+            if ($items.Count -eq 0) { throw 'The agent produced no run_selected_ui_tests proposal.' }
+            # Keep only the declared inputs; the dispatch workflow validates every value again.
+            $item = $items[-1]
+            $proposal = [ordered]@{}
+            foreach ($key in 'platforms', 'categories', 'full_run', 'summary', 'rationale') {
+              if ($item.PSObject.Properties[$key]) { $proposal[$key] = $item.$key }
+            }
+            New-Item -ItemType Directory -Force "$env:RUNNER_TEMP/run-tests-proposal" | Out-Null
+            $proposal | ConvertTo-Json -Depth 5 | Set-Content "$env:RUNNER_TEMP/run-tests-proposal/proposal.json" -Encoding utf8
+        - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
           with:
-            ref: ${{ github.event.repository.default_branch }}
-            persist-credentials: false
-        - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-          with:
-            name: run-tests-context-${{ github.run_id }}
-            path: ${{ runner.temp }}/run-tests
-        - name: Validate, queue maui-pr-uitests, publish checks and comment
+            name: run-tests-proposal-${{ github.run_id }}
+            path: ${{ runner.temp }}/run-tests-proposal/proposal.json
+            retention-days: 7
+            if-no-files-found: error
+        - name: Hand over to the dispatch workflow
           env:
             GH_TOKEN: ${{ github.token }}
             PR_NUMBER: ${{ github.event.issue.number || inputs.pr_number }}
-            AZDO_TRIGGER_TENANT_ID: ${{ secrets.AZDO_TRIGGER_TENANT_ID }}
-            AZDO_TRIGGER_CLIENT_ID: ${{ secrets.AZDO_TRIGGER_CLIENT_ID }}
-            SKIP_QUEUE: ${{ github.repository != 'dotnet/maui' }}
+            DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
           run: |
-            args=()
-            if [ "$SKIP_QUEUE" = "true" ]; then args+=(-SkipQueue); fi
-            pwsh -NoProfile -File .github/scripts/Invoke-RunTests.ps1 -PrNumber "$PR_NUMBER" \
-              -ContextPath "$RUNNER_TEMP/run-tests/context.json" \
-              -AgentOutputPath "$GH_AW_AGENT_OUTPUT" "${args[@]}"
-        - name: Keep the selection evidence
-          if: always()
-          uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-          with:
-            name: run-tests-selection-${{ github.run_id }}
-            path: ${{ runner.temp }}/run-tests
-            if-no-files-found: warn
-            retention-days: 7
+            gh workflow run review-run-tests-dispatch.yml --repo "$GITHUB_REPOSITORY" --ref "$DEFAULT_BRANCH" \
+              -f pr_number="$PR_NUMBER" -f source_run_id="$GITHUB_RUN_ID"
 
 tools:
   github:
@@ -266,6 +247,11 @@ code.
 - `Items`/`Items2` handlers → `CollectionView` and `CarouselView`.
   `NavigationPage`/navigation stack → `Navigation`; `TabbedPage`, `FlyoutPage`
   and `Shell` map to their own categories.
+- `inventory.runnable` lists, per platform, the categories that have at least one
+  enabled test (many tests are compiled out per platform with `#if TEST_FAILS_ON_*`).
+  Do not pick a category for a platform where it has no enabled tests; trusted
+  code drops such combinations anyway, and `changedTestRunnable` adds the
+  categories enabled by the PR's own changed tests.
 - Include every category in `testCategoryHints`, and the category of the test
   paired with any changed `TestCases.HostApp/Issues/IssueXXXX` page.
 - Add closely coupled categories only with a concrete reason (for example a

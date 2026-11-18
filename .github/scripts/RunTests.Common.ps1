@@ -123,7 +123,9 @@ function Resolve-RunTestsSelection {
     #>
     param(
         [Parameter(Mandatory)]$Proposal,
-        [Parameter(Mandatory)]$Inventory
+        [Parameter(Mandatory)]$Inventory,
+        # platform id -> categories with enabled tests (Get-RunTestsRunnableCategories).
+        [System.Collections.IDictionary]$Runnable
     )
 
     $get = {
@@ -199,10 +201,57 @@ function Resolve-RunTestsSelection {
         }
     }
 
+    # Per-platform categories that will actually execute tests. Without a runnable map
+    # (unit tests), every inventory category is assumed to have tests everywhere.
+    $platformCategories = [ordered]@{}
+    $pipelineCategories = [System.Collections.Generic.List[string]]::new()
+    if ($mode -eq 'selected') {
+        foreach ($platform in $orderedPlatforms) {
+            $runnableHere = if ($Runnable) { @($Runnable[$platform]) } else { $allCategories }
+            # The pipeline never runs WebView on Windows, and Material3 only has an Android lane.
+            $platformCategories[$platform] = @($expanded | Where-Object {
+                $_ -cin $runnableHere -and -not ($platform -eq 'windows' -and $_ -ceq 'WebView') -and
+                -not ($platform -ne 'android' -and $_ -ceq 'Material3')
+            })
+        }
+        if ($validCategories.Count -gt 0) {
+            foreach ($c in @($expanded)) {
+                if (-not @($orderedPlatforms | Where-Object { $c -cin $platformCategories[$_] }).Count) {
+                    $notes.Add("``$c`` has no enabled UI tests on the selected platforms, so it does not run.")
+                }
+            }
+            $kept = @($orderedPlatforms | Where-Object { $platformCategories[$_].Count -gt 0 })
+            foreach ($platform in @($orderedPlatforms | Where-Object { $_ -notin $kept })) {
+                $notes.Add("$(Get-RunTestsPlatformName $platform) was dropped: none of the selected categories have enabled tests there.")
+                $platformCategories.Remove($platform)
+            }
+            $orderedPlatforms = $kept
+            if ($orderedPlatforms.Count -eq 0) {
+                $mode = 'none'
+                $expanded.Clear()
+                $validCategories.Clear()
+            } else {
+                $running = @($expanded | Where-Object { $c = $_; @($orderedPlatforms | Where-Object { $c -cin $platformCategories[$_] }).Count })
+                $expanded.Clear(); foreach ($c in $running) { $expanded.Add($c) }
+                foreach ($c in $running) {
+                    $on = @($orderedPlatforms | Where-Object { $c -cin $platformCategories[$_] })
+                    # Material3 has its own Android-only lane, so it never needs a qualifier.
+                    if ($on.Count -eq $orderedPlatforms.Count -or $c -ceq 'Material3') {
+                        $pipelineCategories.Add($c)
+                    } else {
+                        # Limit the category to the platforms where its tests are compiled in.
+                        foreach ($platform in $on) { $pipelineCategories.Add("$($script:RunTestsPipelinePlatform[$platform]):$c") }
+                    }
+                }
+            }
+        }
+    }
+
     # eng/pipelines/common/ui-tests.yml also runs the Android Material3 lane for these controls.
     if ($mode -eq 'selected' -and 'android' -cin $orderedPlatforms -and -not $expanded.Contains('Material3') -and
         @($expanded | Where-Object { $_ -match 'Button|Picker' -or $_ -cin $script:RunTestsMaterial3Controls }).Count) {
         $expanded.Add('Material3')
+        if ($platformCategories.Contains('android')) { $platformCategories['android'] = @($platformCategories['android']) + 'Material3' }
         $notes.Add('Android Material3 tests also run because a Material3-styled control was selected.')
     }
 
@@ -211,6 +260,8 @@ function Resolve-RunTestsSelection {
         platforms = @($orderedPlatforms)
         categories = @($validCategories)
         expandedCategories = @($allCategories | Where-Object { $expanded.Contains($_) })
+        platformCategories = $platformCategories
+        pipelineCategories = @($pipelineCategories)
         summary = (Format-RunTestsText $summary 600)
         rationale = (Format-RunTestsText $rationale 4000 -Multiline)
         notes = @($notes)
@@ -244,7 +295,7 @@ function Get-RunTestsTemplateParameters {
     return [ordered]@{
         selectedRun        = 'true'
         selectedPlatforms  = (ConvertTo-Json -InputObject @($platforms) -Compress)
-        selectedCategories = (ConvertTo-Json -InputObject @($Selection.categories) -Compress)
+        selectedCategories = (ConvertTo-Json -InputObject @($Selection.pipelineCategories) -Compress)
     }
 }
 
@@ -447,7 +498,11 @@ function New-RunTestsComment {
             $lines.Add('| Platform | Categories |')
             $lines.Add('| --- | --- |')
             foreach ($platform in $Selection.platforms) {
-                $categoriesForPlatform = @($Selection.expandedCategories | Where-Object { $_ -cne 'Material3' -or $platform -eq 'android' })
+                $categoriesForPlatform = if ($Selection.platformCategories -and $Selection.platformCategories.Contains($platform)) {
+                    @($Selection.platformCategories[$platform])
+                } else {
+                    @($Selection.expandedCategories | Where-Object { $_ -cne 'Material3' -or $platform -eq 'android' })
+                }
                 $text = if ($Selection.categories.Count -eq 0) { '_all categories_' } else { Format-RunTestsCategoryList $categoriesForPlatform }
                 $lines.Add("| $(Get-RunTestsPlatformName $platform) | $text |")
             }
@@ -613,4 +668,151 @@ function Get-RunTestsAzdoToken {
         }
     Write-Host "::add-mask::$($token.access_token)"
     return $token.access_token
+}
+
+# ---------------------------------------------------------------------------
+# Which categories have at least one enabled UI test on each platform.
+# Shared UI tests are compiled into every platform project; each project defines the
+# TEST_FAILS_ON_* symbols of the *other* platforms, so `#if TEST_FAILS_ON_WINDOWS`
+# compiles a test everywhere except Windows.
+# ---------------------------------------------------------------------------
+
+$script:RunTestsPlatformSymbols = @{
+    android     = @('ANDROID', 'TEST_FAILS_ON_IOS', 'TEST_FAILS_ON_CATALYST', 'TEST_FAILS_ON_WINDOWS')
+    ios         = @('IOS', 'IOSUITEST', 'TEST_FAILS_ON_ANDROID', 'TEST_FAILS_ON_WINDOWS', 'TEST_FAILS_ON_CATALYST')
+    maccatalyst = @('MACCATALYST', 'MACUITEST', 'TEST_FAILS_ON_ANDROID', 'TEST_FAILS_ON_WINDOWS', 'TEST_FAILS_ON_IOS')
+    windows     = @('WINDOWS', 'WINTEST', 'TEST_FAILS_ON_ANDROID', 'TEST_FAILS_ON_CATALYST', 'TEST_FAILS_ON_IOS')
+}
+
+$script:RunTestsPlatformProjects = @{
+    android     = 'TestCases.Android.Tests'
+    ios         = 'TestCases.iOS.Tests'
+    maccatalyst = 'TestCases.Mac.Tests'
+    windows     = 'TestCases.WinUI.Tests'
+}
+
+function Test-RunTestsPreprocessorExpression {
+    <#
+    .SYNOPSIS
+    Evaluates a C# `#if` expression (identifiers, true/false, !, &&, ||, parentheses).
+    Undefined symbols are false, as in C#.
+    #>
+    param([Parameter(Mandatory)][string]$Expression, [Parameter(Mandatory)][AllowEmptyCollection()][string[]]$Symbols)
+    $tokens = @([regex]::Matches(($Expression -replace '//.*$', ''), '&&|\|\||!|\(|\)|[A-Za-z_][A-Za-z0-9_]*') | ForEach-Object Value)
+    $state = @{ i = 0 }
+    $peek = { if ($state.i -lt $tokens.Count) { $tokens[$state.i] } else { $null } }
+    $parseOr = $null; $parseAnd = $null; $parseUnary = $null
+    $parseUnary = {
+        $t = & $peek
+        if ($t -eq '!') { $state.i++; return -not (& $parseUnary) }
+        if ($t -eq '(') { $state.i++; $v = & $parseOr; if ((& $peek) -eq ')') { $state.i++ }; return $v }
+        $state.i++
+        if ($t -ceq 'true') { return $true }
+        if ($t -ceq 'false') { return $false }
+        return ($t -cin $Symbols)
+    }
+    $parseAnd = {
+        $v = & $parseUnary
+        while ((& $peek) -eq '&&') { $state.i++; $r = & $parseUnary; $v = $v -and $r }
+        return $v
+    }
+    $parseOr = {
+        $v = & $parseAnd
+        while ((& $peek) -eq '||') { $state.i++; $r = & $parseAnd; $v = $v -or $r }
+        return $v
+    }
+    return [bool](& $parseOr)
+}
+
+function Get-RunTestsFileCategories {
+    <#
+    .SYNOPSIS
+    Category values of the tests that are compiled in a source file for the given symbols.
+    #>
+    param(
+        [Parameter(Mandatory)][AllowEmptyString()][string]$Content,
+        [Parameter(Mandatory)][AllowEmptyCollection()][string[]]$Symbols,
+        [Parameter(Mandatory)][hashtable]$CategoryConstants
+    )
+    $found = [System.Collections.Generic.HashSet[string]]::new()
+    # Each frame: parent active, any branch taken, this branch active.
+    $stack = [System.Collections.Generic.Stack[object]]::new()
+    $active = $true
+    foreach ($line in $Content -split "`n") {
+        $trim = $line.Trim()
+        if ($trim -match '^#\s*if\s+(.+)$') {
+            $value = Test-RunTestsPreprocessorExpression $Matches[1] $Symbols
+            $stack.Push(@{ parent = $active; taken = $value })
+            $active = $active -and $value
+            continue
+        }
+        if ($trim -match '^#\s*elif\s+(.+)$' -and $stack.Count) {
+            $frame = $stack.Peek()
+            $value = (-not $frame.taken) -and (Test-RunTestsPreprocessorExpression $Matches[1] $Symbols)
+            if ($value) { $frame.taken = $true }
+            $active = $frame.parent -and $value
+            continue
+        }
+        if ($trim -match '^#\s*else\b' -and $stack.Count) {
+            $frame = $stack.Peek()
+            $active = $frame.parent -and -not $frame.taken
+            $frame.taken = $true
+            continue
+        }
+        if ($trim -match '^#\s*endif\b' -and $stack.Count) {
+            $active = $stack.Pop().parent
+            continue
+        }
+        if (-not $active -or $trim.StartsWith('//')) { continue }
+        foreach ($m in [regex]::Matches($trim, '(?:\[|,)\s*(?:NUnit\.Framework\.)?(ShardedTestCategory|Category)\s*\(\s*UITestCategories\.(\w+)(?:\s*,\s*(?:shard\s*:\s*)?(\d+))?')) {
+            $name = $m.Groups[2].Value
+            $value = if ($CategoryConstants.ContainsKey($name)) { $CategoryConstants[$name] } else { $name }
+            [void]$found.Add($value)
+            if ($m.Groups[1].Value -eq 'ShardedTestCategory') {
+                $shard = if ($m.Groups[3].Success) { $m.Groups[3].Value } else { '1' }
+                [void]$found.Add("$value$shard")
+            }
+        }
+    }
+    return @($found)
+}
+
+function Get-RunTestsCategoryConstants {
+    param([Parameter(Mandatory)][string]$TestsRoot)
+    $constants = @{}
+    $source = Join-Path $TestsRoot 'TestCases.Shared.Tests/UITestCategories.cs'
+    foreach ($match in [regex]::Matches((Get-Content -LiteralPath $source -Raw), 'const\s+string\s+(\w+)\s*=\s*"([^"]+)"')) {
+        $constants[$match.Groups[1].Value] = $match.Groups[2].Value
+    }
+    return $constants
+}
+
+function Get-RunTestsRunnableCategories {
+    <#
+    .SYNOPSIS
+    Map of platform id -> sorted list of categories with at least one enabled UI test.
+    .PARAMETER TestsRoot
+    src/Controls/tests
+    #>
+    param([Parameter(Mandatory)][string]$TestsRoot)
+    $constants = Get-RunTestsCategoryConstants $TestsRoot
+    $shared = @(Get-ChildItem -LiteralPath (Join-Path $TestsRoot 'TestCases.Shared.Tests') -Recurse -Filter '*.cs' -File |
+        Where-Object { $_.FullName -notmatch '[\\/](obj|bin)[\\/]' } | ForEach-Object { Get-Content -LiteralPath $_.FullName -Raw })
+    $result = [ordered]@{}
+    foreach ($platform in Get-RunTestsPlatformIds) {
+        $symbols = $script:RunTestsPlatformSymbols[$platform]
+        $set = [System.Collections.Generic.HashSet[string]]::new()
+        $own = Join-Path $TestsRoot $script:RunTestsPlatformProjects[$platform]
+        $files = @($shared)
+        if (Test-Path -LiteralPath $own) {
+            $files += @(Get-ChildItem -LiteralPath $own -Recurse -Filter '*.cs' -File |
+                Where-Object { $_.FullName -notmatch '[\\/](obj|bin)[\\/]' } | ForEach-Object { Get-Content -LiteralPath $_.FullName -Raw })
+        }
+        foreach ($content in $files) {
+            if (-not $content -or $content -notmatch 'UITestCategories\.') { continue }
+            foreach ($c in Get-RunTestsFileCategories -Content $content -Symbols $symbols -CategoryConstants $constants) { [void]$set.Add($c) }
+        }
+        $result[$platform] = @($set | Sort-Object)
+    }
+    return $result
 }

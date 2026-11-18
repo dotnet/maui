@@ -1,0 +1,128 @@
+# Second half of `/review run-tests` (see copilot-review-run-tests.md).
+#
+# The agentic workflow runs in the `copilot-pat-pool` environment for its Copilot
+# tokens. A job in an environment gets the OIDC subject
+# `repo:dotnet/maui:environment:copilot-pat-pool`, but the Azure DevOps federated
+# credential trusts only `repo:dotnet/maui:ref:refs/heads/main` (the same subject
+# review-trigger.yml uses). So the agentic workflow hands its validated inputs over
+# to this environment-free workflow, which queues maui-pr-uitests, publishes the
+# Skipped checks and posts the PR comment.
+
+name: Review run-tests dispatch
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: PR the selection belongs to
+        required: true
+        type: string
+      source_run_id:
+        description: Run of copilot-review-run-tests that produced the selection
+        required: true
+        type: string
+
+permissions: {}
+
+concurrency:
+  group: review-run-tests-dispatch-${{ inputs.pr_number }}
+  cancel-in-progress: false
+
+jobs:
+  dispatch:
+    # Credentialed dispatch only from the trusted default branch.
+    if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      actions: read
+      checks: write
+      contents: read
+      id-token: write
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Checkout trusted scripts
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Verify the source run
+        id: source
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+          SOURCE_RUN_ID: ${{ inputs.source_run_id }}
+          REPO: ${{ github.repository }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        shell: pwsh
+        run: |
+          if ($env:PR_NUMBER -notmatch '^[1-9][0-9]{0,9}$' -or $env:SOURCE_RUN_ID -notmatch '^[1-9][0-9]{0,19}$') {
+            throw 'pr_number and source_run_id must be positive integers.'
+          }
+          $run = gh api "repos/$env:REPO/actions/runs/$env:SOURCE_RUN_ID" | ConvertFrom-Json
+          if ($LASTEXITCODE -ne 0) { throw 'Could not read the source run.' }
+          # Only the run-tests agentic workflow, from the default branch of this repository, may hand over a selection.
+          if ($run.path -ne '.github/workflows/copilot-review-run-tests.lock.yml' -or
+              $run.head_branch -ne $env:DEFAULT_BRANCH -or
+              $run.repository.full_name -ne $env:REPO -or
+              $run.event -notin @('issue_comment', 'workflow_dispatch')) {
+            throw "Run $env:SOURCE_RUN_ID is not a /review run-tests run on $env:DEFAULT_BRANCH."
+          }
+          if (([DateTimeOffset]::UtcNow - [DateTimeOffset]::Parse($run.created_at)).TotalHours -gt 3) {
+            throw 'The source run is too old; request /review run-tests again.'
+          }
+          "requester=$($run.triggering_actor.login)" >> $env:GITHUB_OUTPUT
+          "run_url=$($run.html_url)" >> $env:GITHUB_OUTPUT
+
+      - name: Download the collected context
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: run-tests-context-${{ inputs.source_run_id }}
+          path: ${{ runner.temp }}/run-tests
+          run-id: ${{ inputs.source_run_id }}
+          github-token: ${{ github.token }}
+
+      - name: Download the AI proposal
+        # Absent when the agent failed; the dispatcher then queues the full suite.
+        continue-on-error: true
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: run-tests-proposal-${{ inputs.source_run_id }}
+          path: ${{ runner.temp }}/run-tests-proposal
+          run-id: ${{ inputs.source_run_id }}
+          github-token: ${{ github.token }}
+
+      - name: Validate, queue maui-pr-uitests, publish checks and comment
+        env:
+          GH_TOKEN: ${{ github.token }}
+          AZDO_TRIGGER_TENANT_ID: ${{ secrets.AZDO_TRIGGER_TENANT_ID }}
+          AZDO_TRIGGER_CLIENT_ID: ${{ secrets.AZDO_TRIGGER_CLIENT_ID }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+          REQUESTER: ${{ steps.source.outputs.requester }}
+          SOURCE_RUN_URL: ${{ steps.source.outputs.run_url }}
+          # Forks have no Azure DevOps identity: publish the selection only.
+          SKIP_QUEUE: ${{ github.repository != 'dotnet/maui' }}
+        shell: pwsh
+        run: |
+          $arguments = @{
+            PrNumber = [int]$env:PR_NUMBER
+            ContextPath = "$env:RUNNER_TEMP/run-tests/context.json"
+            OutputDirectory = "$env:RUNNER_TEMP/run-tests-output"
+            Actor = $env:REQUESTER
+            WorkflowRunUrl = $env:SOURCE_RUN_URL
+          }
+          $proposal = "$env:RUNNER_TEMP/run-tests-proposal/proposal.json"
+          if (Test-Path -LiteralPath $proposal) { $arguments.ProposalPath = $proposal }
+          if ($env:SKIP_QUEUE -eq 'true') { $arguments.SkipQueue = $true }
+          ./.github/scripts/Invoke-RunTests.ps1 @arguments
+
+      - name: Keep the selection evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: run-tests-dispatch-${{ github.run_id }}
+          path: ${{ runner.temp }}/run-tests-output
+          if-no-files-found: warn
+          retention-days: 7
