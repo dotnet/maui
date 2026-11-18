@@ -58,7 +58,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			foreach (var decorations in new[] { TextDecorations.None, TextDecorations.Underline, TextDecorations.Strikethrough, TextDecorations.Underline | TextDecorations.Strikethrough })
 				foreach (var hasDecorationColor in new[] { false, true })
-					foreach (var thickness in new[] { -1d, 0d, 1d, 1.5d, 2d })
+					foreach (var thickness in new[] { -1d, 0d, 0.25d, 1d, 1.5d, 2d })
 						yield return new object[] { decorations, hasDecorationColor, thickness };
 		}
 
@@ -154,7 +154,7 @@ namespace Microsoft.Maui.DeviceTests
 					// The Java field is not bound because Paint already exposes the font's UnderlineThickness property.
 					using var thicknessField = paint.Class.GetField("underlineThickness");
 					var actualThickness = thicknessField.GetFloat(paint);
-					var expectedThickness = thickness > 0 ? context.ToPixels(thickness) : System.Math.Max(paint.UnderlineThickness, 1f);
+					var expectedThickness = thickness > 0 ? (float)(thickness * context.Resources.DisplayMetrics.Density) : System.Math.Max(paint.UnderlineThickness, 1f);
 					Assert.True(actualThickness > 0, $"Expected positive underline thickness, got {actualThickness}; font thickness: {paint.UnderlineThickness}.");
 					Assert.Equal(expectedThickness, actualThickness, 5);
 				}
