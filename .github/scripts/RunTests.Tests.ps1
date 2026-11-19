@@ -121,6 +121,60 @@ Describe 'New-RunTestsQueueRequest' {
     }
 }
 
+Describe 'Get-RunTestsMergeState' {
+    BeforeAll {
+        function New-Pr([string]$Head = ('a' * 40), [string]$Base = 'main', [string]$State = 'open', $Mergeable = $true, [string]$Merge = ('b' * 40)) {
+            [pscustomobject]@{
+                state = $State; mergeable = $Mergeable; merge_commit_sha = $Merge
+                head = [pscustomobject]@{ sha = $Head }; base = [pscustomobject]@{ ref = $Base }
+            }
+        }
+        function New-Merge([string]$Sha, [string]$SecondParent) {
+            [pscustomobject]@{ sha = $Sha; parents = @([pscustomobject]@{ sha = ('c' * 40) }, [pscustomobject]@{ sha = $SecondParent }) }
+        }
+    }
+
+    It 'builds only a test-merge commit of the selected head' {
+        Get-RunTestsMergeState -PullRequest (New-Pr) -MergeCommit (New-Merge ('b' * 40) ('a' * 40)) -HeadSha ('a' * 40) -BaseRef 'main' | Should -Be 'ready'
+    }
+
+    It 'waits while GitHub still points at the merge of the previous head' {
+        # The original failure: after a push, merge_commit_sha still merged the old head.
+        Get-RunTestsMergeState -PullRequest (New-Pr) -MergeCommit (New-Merge ('b' * 40) ('d' * 40)) -HeadSha ('a' * 40) -BaseRef 'main' | Should -Be 'wait'
+        Get-RunTestsMergeState -PullRequest (New-Pr -Merge $null) -MergeCommit $null -HeadSha ('a' * 40) -BaseRef 'main' | Should -Be 'wait'
+        Get-RunTestsMergeState -PullRequest (New-Pr) -MergeCommit (New-Merge ('e' * 40) ('a' * 40)) -HeadSha ('a' * 40) -BaseRef 'main' | Should -Be 'wait'
+    }
+
+    It 'stops when the PR moved, was retargeted, closed or conflicts' {
+        $merge = New-Merge ('b' * 40) ('a' * 40)
+        Get-RunTestsMergeState -PullRequest (New-Pr -Head ('f' * 40)) -MergeCommit $merge -HeadSha ('a' * 40) -BaseRef 'main' | Should -Be 'moved'
+        Get-RunTestsMergeState -PullRequest (New-Pr -Base 'net11') -MergeCommit $merge -HeadSha ('a' * 40) -BaseRef 'main' | Should -Be 'moved'
+        Get-RunTestsMergeState -PullRequest (New-Pr -State 'closed') -MergeCommit $merge -HeadSha ('a' * 40) -BaseRef 'main' | Should -Be 'moved'
+        Get-RunTestsMergeState -PullRequest (New-Pr -Mergeable $false) -MergeCommit $merge -HeadSha ('a' * 40) -BaseRef 'main' | Should -Be 'moved'
+    }
+}
+
+Describe 'Changed-test context collection' {
+    BeforeAll { $script:contextScript = Get-Content -Raw (Join-Path $PSScriptRoot 'Get-RunTestsContext.ps1') }
+
+    It 'URL-encodes changed test paths before reading them' {
+        $contextScript | Should -Match ([regex]::Escape('[uri]::EscapeDataString($_)'))
+        $contextScript | Should -Match ([regex]::Escape('contents/$($encodedPath)?ref='))
+    }
+
+    It 'reports an incomplete scan so trusted code does not prune' {
+        $contextScript | Should -Match 'changedTestScanComplete = \$false; continue'
+        $contextScript | Should -Match 'changedTestScanComplete = \$changedTestScanComplete'
+        $invoke = Get-Content -Raw (Join-Path $PSScriptRoot 'Invoke-RunTests.ps1')
+        $invoke | Should -Match 'changedTestScanComplete -eq \$false'
+    }
+
+    It 'keeps every AI-selected category when nothing is known to be runnable' {
+        $s = Resolve-RunTestsSelection (New-Proposal @('android') @('Button', 'Window')) $inventory -Runnable $null
+        $s.platformCategories['android'] | Should -Be @('Button', 'Window')
+    }
+}
+
 Describe 'New-RunTestsCheckPlan' {
     It 'lists skipped platforms and categories' {
         $s = Resolve-RunTestsSelection (New-Proposal @('android') @('Shell')) $inventory
@@ -320,6 +374,14 @@ Describe 'Two-model selection' {
         $s.platformCategories['ios'] | Should -Be @('Label')
         # Button was only chosen for Android, so it must not run on iOS.
         $s.pipelineCategories | Should -Be @('android:Button', 'android:Label', 'ios:Label')
+    }
+
+    It 'shows the rationale when only one model produced a proposal' {
+        $s = Resolve-Pair $null (New-Proposal @('windows') @('Window'))
+        $s.rationale | Should -Be '- reason'
+        $comment = New-RunTestsComment -Selection $s -Inventory $inventory -PullRequest $pr -WorkflowRunUrl 'https://example.test/run' -Requester 'someone'
+        $comment | Should -Match '- reason'
+        $comment | Should -Not -Match 'No rationale provided'
     }
 
     It 'runs only what one model chose when the other found nothing' {

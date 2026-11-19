@@ -914,6 +914,24 @@ function ConvertTo-RunTestsPipelineCategories {
     return @($qualified)
 }
 
+function Get-RunTestsMergeState {
+    <#
+    .SYNOPSIS
+    Decides whether GitHub's test-merge commit can be built for the selected head.
+    Returns 'ready' (it merges exactly that head), 'wait' (GitHub has not recomputed it yet, e.g.
+    it still merges the previous head) or 'moved' (the PR closed, moved, was retargeted or conflicts).
+    #>
+    param([Parameter(Mandatory)]$PullRequest, [AllowNull()]$MergeCommit, [Parameter(Mandatory)][string]$HeadSha, [string]$BaseRef)
+    if ($PullRequest.state -ne 'open' -or $PullRequest.head.sha -cne $HeadSha) { return 'moved' }
+    if ($BaseRef -and $PullRequest.base.ref -cne $BaseRef) { return 'moved' }
+    if ($PullRequest.mergeable -eq $false) { return 'moved' }
+    if (-not $PullRequest.merge_commit_sha -or -not $MergeCommit) { return 'wait' }
+    if ($MergeCommit.sha -and $MergeCommit.sha -cne $PullRequest.merge_commit_sha) { return 'wait' }
+    $parents = @($MergeCommit.parents)
+    if ($parents.Count -eq 2 -and $parents[1].sha -ceq $HeadSha) { return 'ready' }
+    return 'wait'
+}
+
 function Merge-RunTestsSelections {
     <#
     .SYNOPSIS
@@ -940,7 +958,7 @@ function Merge-RunTestsSelections {
     $summary = (@($models | ForEach-Object { "**$($_.displayName):** $($_.summary)" }) -join '<br/>')
     $base = [ordered]@{
         mode = 'none'; platforms = @(); categories = @(); expandedCategories = @(); platformCategories = [ordered]@{}
-        pipelineCategories = @(); summary = $summary; rationale = ''; notes = @($notes); models = $models
+        pipelineCategories = @(); summary = $summary; rationale = $(if ($models.Count -eq 1) { $models[0].rationale } else { '' }); notes = @($notes); models = $models
     }
     if (@($all | Where-Object { $_.mode -eq 'full' }).Count) {
         $full = @($all | Where-Object { $_.mode -eq 'full' })[0]

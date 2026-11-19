@@ -79,13 +79,18 @@ $testCategoryHints = foreach ($entry in $changed) {
 $changedTestRunnable = [ordered]@{}
 foreach ($platform in Get-RunTestsPlatformIds) { $changedTestRunnable[$platform] = [System.Collections.Generic.List[string]]::new() }
 $projectPlatforms = @{ 'Shared' = @(Get-RunTestsPlatformIds); 'Android' = @('android'); 'iOS' = @('ios'); 'Mac' = @('maccatalyst'); 'WinUI' = @('windows') }
-$testFiles = @($changed | Where-Object {
+$changedTestFiles = @($changed | Where-Object {
         $_.status -ne 'removed' -and $_.path -match '^src/Controls/tests/TestCases\.(Shared|Android|iOS|Mac|WinUI)\.Tests/.+\.cs$'
-    } | Select-Object -First 40)
-foreach ($file in $testFiles) {
+    })
+$maxChangedTestFiles = 100
+# When a changed test file cannot be inspected, the categories it enables are unknown. The trusted
+# side then keeps every AI-selected category instead of pruning to the categories known to be runnable.
+$changedTestScanComplete = ($changedTestFiles.Count -le $maxChangedTestFiles) -and ($files.Count -lt 3000)
+foreach ($file in @($changedTestFiles | Select-Object -First $maxChangedTestFiles)) {
     $null = $file.path -match '^src/Controls/tests/TestCases\.(\w+)\.Tests/'
-    $raw = & gh api -H 'Accept: application/vnd.github.raw' "repos/$Repository/contents/$($file.path)?ref=$($pr.head.sha)" 2>$null
-    if ($LASTEXITCODE -ne 0 -or -not $raw) { continue }
+    $encodedPath = (($file.path -split '/') | ForEach-Object { [uri]::EscapeDataString($_) }) -join '/'
+    $raw = & gh api -H 'Accept: application/vnd.github.raw' "repos/$Repository/contents/$($encodedPath)?ref=$($pr.head.sha)" 2>$null
+    if ($LASTEXITCODE -ne 0 -or -not $raw) { $changedTestScanComplete = $false; continue }
     $content = $raw -join "`n"
     foreach ($platform in $projectPlatforms[$Matches[1]]) {
         foreach ($category in Get-RunTestsFileCategories -Content $content -Symbols $script:RunTestsPlatformSymbols[$platform] -CategoryConstants $categoryConstants) {
@@ -108,6 +113,8 @@ $context = [ordered]@{
     testCategoryHints = @($testCategoryHints)
     # Categories the PR's own changed UI tests enable, per platform (evaluated at the PR head).
     changedTestRunnable = $changedTestRunnable
+    # False when some changed UI test file could not be read; pruning is then skipped.
+    changedTestScanComplete = $changedTestScanComplete
     inventory = [ordered]@{
         platforms = @(Get-RunTestsPlatformIds)
         categories = @(Get-RunTestsAllCategories $inventory)

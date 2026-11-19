@@ -110,6 +110,12 @@ if ($context.PSObject.Properties['changedTestRunnable'] -and $context.changedTes
         if ($extra.Count) { $runnable[$platform] = @(@($runnable[$platform]) + $extra | Sort-Object -Unique) }
     }
 }
+if ($context.PSObject.Properties['changedTestScanComplete'] -and $context.changedTestScanComplete -eq $false) {
+    # Some changed UI test files were not inspected, so an AI-selected category may be enabled only
+    # by them. Keep every AI-selected category rather than pruning it as "no enabled tests".
+    Write-Host 'Not every changed UI test file was inspected; keeping all AI-selected categories.'
+    $runnable = $null
+}
 # Only AI-selected tests run: each model's proposal is validated on its own, then the union is taken.
 $resolved = [ordered]@{}
 foreach ($model in $proposals.Keys) {
@@ -137,14 +143,13 @@ function Get-VerifiedPullRequest {
     #>
     for ($attempt = 1; $attempt -le 8; $attempt++) {
         $current = Invoke-GhJson @("repos/$Repository/pulls/$PrNumber")
-        if ($current.state -ne 'open' -or $current.head.sha -cne $context.headSha -or
-            ($context.baseRef -and $current.base.ref -cne $context.baseRef)) { return @{ pr = $current; merge = $false } }
-        if ($current.mergeable -eq $false) { return @{ pr = $current; merge = $false } }
-        if ($current.merge_commit_sha) {
-            $merge = Invoke-GhJson @("repos/$Repository/git/commits/$($current.merge_commit_sha)")
-            if (@($merge.parents).Count -eq 2 -and $merge.parents[1].sha -ceq $current.head.sha) {
-                return @{ pr = $current; merge = $true }
-            }
+        $mergeCommit = $null
+        if ($current.state -eq 'open' -and $current.merge_commit_sha) {
+            $mergeCommit = Invoke-GhJson @("repos/$Repository/git/commits/$($current.merge_commit_sha)")
+        }
+        switch (Get-RunTestsMergeState -PullRequest $current -MergeCommit $mergeCommit -HeadSha $context.headSha -BaseRef $context.baseRef) {
+            'ready' { return @{ pr = $current; merge = $true } }
+            'moved' { return @{ pr = $current; merge = $false } }
         }
         Write-Host "Waiting for GitHub to compute the test-merge commit for $($context.headSha.Substring(0, 8)) (attempt $attempt)..."
         Start-Sleep -Seconds 10
