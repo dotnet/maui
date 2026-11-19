@@ -211,6 +211,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				Assert.True(scrollView.ScrollY > 0, "The ScrollView should handle the drag.");
 				Assert.Equal(0, clicks);
+				Assert.True(pressed > 0, "The ContentButton should receive the touch before cancellation.");
 				Assert.Equal(pressed, released);
 				Assert.False(button.IsPressed);
 			});
