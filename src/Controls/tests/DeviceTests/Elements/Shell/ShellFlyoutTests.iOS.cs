@@ -48,7 +48,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				return new VerticalStackLayout
 				{
-					new ContentView
+					new Controls.ContentView
 					{
 						Content = new VerticalStackLayout { scaled, unscaled }
 					}
