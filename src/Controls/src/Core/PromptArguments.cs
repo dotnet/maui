@@ -26,6 +26,12 @@ namespace Microsoft.Maui.Controls.Internals
 	{
 		/// <summary>Creates a new <see cref="PromptArguments"/> with the specified parameters.</summary>
 		public PromptArguments(string title, string message, string accept = "OK", string cancel = "Cancel", string placeholder = null, int maxLength = -1, Keyboard keyboard = default(Keyboard), string initialValue = "")
+			: this(title, message, false, accept, cancel, placeholder, maxLength, keyboard, initialValue)
+		{
+		}
+
+		/// <summary>Creates a new <see cref="PromptArguments"/> with the specified parameters.</summary>
+		public PromptArguments(string title, string message, bool preselectInitialValue, string accept = "OK", string cancel = "Cancel", string placeholder = null, int maxLength = -1, Keyboard keyboard = default(Keyboard), string initialValue = "")
 		{
 			Title = title;
 			Message = message;
@@ -33,6 +39,7 @@ namespace Microsoft.Maui.Controls.Internals
 			Cancel = cancel;
 			Placeholder = placeholder;
 			InitialValue = initialValue;
+			PreselectInitialValue = preselectInitialValue;
 			MaxLength = maxLength;
 			Keyboard = keyboard ?? Keyboard.Default;
 			Result = new TaskCompletionSource<string>();
@@ -55,6 +62,9 @@ namespace Microsoft.Maui.Controls.Internals
 
 		/// <summary>Gets the initial value for the input field.</summary>
 		public string InitialValue { get; }
+
+		/// <summary>Gets a value indicating whether the initial value should be pre-selected when the prompt is displayed.</summary>
+		public bool PreselectInitialValue { get; }
 
 		/// <summary>Gets the maximum input length, or -1 for no limit.</summary>
 		public int MaxLength { get; }
