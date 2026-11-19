@@ -12,8 +12,7 @@ namespace Microsoft.Maui.Controls
 	/// </summary>
 	/// <remarks>
 	/// A <see cref="CheckBox"/> can be checked, unchecked, or indeterminate.
-	/// Application code can assign indeterminate when <see cref="IsThreeState"/> is true;
-	/// user interaction remains binary.
+	/// Application code and user interaction can set indeterminate when <see cref="IsThreeState"/> is true.
 	/// Use the <see cref="IsChecked"/> property to determine or set the state.
 	/// </remarks>
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
@@ -126,11 +125,12 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Gets or sets whether application code can assign the indeterminate state.
+		/// Gets or sets whether application code and user interaction can set the indeterminate state.
 		/// This is a bindable property.
 		/// </summary>
 		/// <remarks>
-		/// The default is false. User interaction remains binary regardless of this flag.
+		/// The default is false. When true, user interaction cycles from unchecked to checked
+		/// to indeterminate, then back to unchecked. Otherwise, user interaction remains binary.
 		/// Disabling three-state support resets an indeterminate <see cref="IsChecked"/> value to false.
 		/// </remarks>
 		public bool IsThreeState

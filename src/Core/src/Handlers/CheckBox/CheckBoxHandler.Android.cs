@@ -54,7 +54,13 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateIsChecked(check);
 		}
 
-		public static partial void MapIsThreeState(ICheckBoxHandler handler, ICheckBox check) { }
+		public static partial void MapIsThreeState(ICheckBoxHandler handler, ICheckBox check)
+		{
+			if (handler.PlatformView is MauiMaterialCheckBox platformView)
+			{
+				platformView.IsThreeState = check is ICheckBox2 { IsThreeState: true };
+			}
+		}
 
 		public static partial void MapForeground(ICheckBoxHandler handler, ICheckBox check)
 		{

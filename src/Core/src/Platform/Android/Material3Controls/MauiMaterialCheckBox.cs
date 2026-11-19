@@ -1,5 +1,4 @@
 using Android.Content;
-using Android.Views;
 using Google.Android.Material.CheckBox;
 
 namespace Microsoft.Maui.Platform;
@@ -11,25 +10,16 @@ public class MauiMaterialCheckBox : MaterialCheckBox
 
 	}
 
-	public override bool PerformClick()
-	{
-		if (Enabled == false)
-		{
-			return false;
-		}
+	internal bool IsThreeState { get; set; }
 
-		var nextState = CheckedState switch
+	/// <summary>Cycles through checked, indeterminate, and unchecked when three-state support is enabled; otherwise toggles between checked and unchecked.</summary>
+	public override void Toggle()
+	{
+		CheckedState = CheckedState switch
 		{
 			MaterialCheckBox.StateUnchecked => MaterialCheckBox.StateChecked,
-			MaterialCheckBox.StateChecked => MaterialCheckBox.StateUnchecked,
-			MaterialCheckBox.StateIndeterminate => MaterialCheckBox.StateUnchecked,
+			MaterialCheckBox.StateChecked when IsThreeState => MaterialCheckBox.StateIndeterminate,
 			_ => MaterialCheckBox.StateUnchecked
 		};
-		CheckedState = nextState;
-
-		PlaySoundEffect(SoundEffects.Click);
- 
-		SendAccessibilityEvent(global::Android.Views.Accessibility.EventTypes.ViewClicked);
-		return true;
 	}
 }

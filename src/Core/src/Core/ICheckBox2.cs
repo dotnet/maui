@@ -1,7 +1,7 @@
 namespace Microsoft.Maui
 {
 	/// <summary>
-	/// Represents a checkbox that supports programmatic indeterminate state.
+	/// Represents a checkbox that supports an indeterminate state.
 	/// </summary>
 	public interface ICheckBox2 : ICheckBox
 	{
@@ -12,7 +12,7 @@ namespace Microsoft.Maui
 		new bool? IsChecked { get; set; }
 
 		/// <summary>
-		/// Gets whether application code can assign indeterminate. User interaction remains binary.
+		/// Gets whether application code can assign indeterminate and user interaction cycles through three states.
 		/// </summary>
 		bool IsThreeState { get; }
 	}

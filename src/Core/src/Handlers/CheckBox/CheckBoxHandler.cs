@@ -78,7 +78,7 @@ namespace Microsoft.Maui.Handlers
 		/// <param name="check">The associated <see cref="ICheckBox"/> instance.</param>
 		public static partial void MapIsChecked(ICheckBoxHandler handler, ICheckBox check);
 
-		/// <summary>Maps the three-state configuration while retaining binary user interaction.</summary>
+		/// <summary>Maps whether user interaction cycles through three states.</summary>
 		/// <param name="handler">The associated handler.</param>
 		/// <param name="check">The associated checkbox.</param>
 		public static partial void MapIsThreeState(ICheckBoxHandler handler, ICheckBox check);

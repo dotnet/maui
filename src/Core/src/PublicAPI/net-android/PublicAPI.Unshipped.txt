@@ -5,5 +5,5 @@ Microsoft.Maui.ICheckBox2.IsChecked.set -> void
 Microsoft.Maui.ICheckBox2.IsThreeState.get -> bool
 Microsoft.Maui.Platform.MauiMaterialCheckBox
 Microsoft.Maui.Platform.MauiMaterialCheckBox.MauiMaterialCheckBox(Android.Content.Context! context) -> void
-override Microsoft.Maui.Platform.MauiMaterialCheckBox.PerformClick() -> bool
+override Microsoft.Maui.Platform.MauiMaterialCheckBox.Toggle() -> void
 static Microsoft.Maui.Handlers.CheckBoxHandler.MapIsThreeState(Microsoft.Maui.Handlers.ICheckBoxHandler! handler, Microsoft.Maui.ICheckBox! check) -> void
