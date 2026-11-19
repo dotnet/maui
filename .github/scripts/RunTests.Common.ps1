@@ -481,7 +481,7 @@ function New-RunTestsComment {
     # What runs
     $lines.Add('<details>')
     $runningText = if ($Selection.mode -eq 'none') { 'nothing' } else { "$(Format-RunTestsCount $runCount 'category' 'categories') on $platformText" }
-    $lines.Add("<summary><strong>&#x2705; Running</strong> &#x2014; $runningText</summary>")
+    $lines.Add("<summary><strong>$($script:RunTestsRunHeading['running'])</strong> &#x2014; $runningText</summary>")
     $lines.Add('<br/>')
     $lines.Add('')
     switch ($Selection.mode) {
@@ -627,6 +627,9 @@ function ConvertTo-RunTestsFailedTests {
     return @($groups.Keys | Sort-Object | ForEach-Object { [pscustomobject]@{ name = $_; platforms = @($groups[$_]) } })
 }
 
+# Heading of the section listing what runs. A neutral icon, so a failed build never shows a green tick there.
+$script:RunTestsRunHeading = @{ running = '&#x1F9EA; Running'; done = '&#x1F9EA; Ran' }
+
 function Update-RunTestsComment {
     <#
     .SYNOPSIS
@@ -639,6 +642,9 @@ function Update-RunTestsComment {
     $updated = [regex]::Replace($updated, '<!-- review-run-tests-state: [a-z-]+ -->', "<!-- review-run-tests-state: $($status.state) -->")
     $updated = [regex]::Replace($updated, '(?s)<!-- run-tests-status -->.*?<!-- /run-tests-status -->',
         { param($m) "<!-- run-tests-status -->`n$($status.line)`n<!-- /run-tests-status -->" })
+    # "Running" while the build is in progress (or re-running), "Ran" once it has finished.
+    $heading = $script:RunTestsRunHeading[$(if ($Results -and $Results.completed) { 'done' } else { 'running' })]
+    $updated = [regex]::Replace($updated, '<summary><strong>(?:&#x2705;|&#x1F9EA;) (?:Running|Ran)</strong>', { param($m) "<summary><strong>$heading</strong>" })
     $block = Format-RunTestsResultsBlock $Results
     $updated = [regex]::Replace($updated, '(?s)<!-- run-tests-results -->.*?<!-- /run-tests-results -->',
         { param($m) "<!-- run-tests-results -->`n$block`n<!-- /run-tests-results -->" })

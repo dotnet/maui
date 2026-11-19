@@ -151,7 +151,7 @@ Describe 'Run-tests comment' {
         $body | Should -Match '<!-- review-run-tests-build: 99 -->'
         $body | Should -Match '<!-- review-run-tests-state: running -->'
         $body | Should -Match 'Result-RUNNING'
-        $body | Should -Match '<summary><strong>&#x2705; Running</strong>'
+        $body | Should -Match '<summary><strong>&#x1F9EA; Running</strong>'
         $body | Should -Match '<summary><strong>&#x23ED;&#xFE0F; Skipped</strong>'
         $body | Should -Match '@octocat'
     }
@@ -159,7 +159,7 @@ Describe 'Run-tests comment' {
     It 'says nothing runs when no UI test is affected' {
         $none = Resolve-RunTestsSelection (New-Proposal @() @()) $inventory
         $noneBody = New-RunTestsComment -Selection $none -Inventory $inventory -PullRequest $pr -WorkflowRunUrl 'https://run' -Requester 'octocat'
-        $noneBody | Should -Match '<summary><strong>&#x2705; Running</strong> &#x2014; nothing</summary>'
+        $noneBody | Should -Match '<summary><strong>&#x1F9EA; Running</strong> &#x2014; nothing</summary>'
         $noneBody | Should -Not -Match 'on none'
     }
 
@@ -174,6 +174,11 @@ Describe 'Run-tests comment' {
         $updated = Update-RunTestsComment -Body $body -Build $done -Results $results
         $updated | Should -Match '<!-- review-run-tests-state: done -->'
         $updated | Should -Match 'Result-FAILED'
+        $updated | Should -Match '<summary><strong>&#x1F9EA; Ran</strong> &#x2014; '
+        $updated | Should -Not -Match 'Running</strong>'
+        # A re-run puts it back to Running, and older comments with the green tick are updated too.
+        $again = Update-RunTestsComment -Body ($updated -replace '&#x1F9EA; Ran', '&#x2705; Running') -Build $build -Results ([pscustomobject]@{ completed = $false })
+        $again | Should -Match '<summary><strong>&#x1F9EA; Running</strong>'
         $updated | Should -Not -Match 'Result-RUNNING'
         $updated | Should -Match '\| Android Button \| &#x274C; failed \|'
         $updated | Should -Not -Match 'Skipped job'
