@@ -416,16 +416,17 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			if (e.PropertyName == ShellSection.CurrentItemProperty.PropertyName)
 			{
-				var newIndex = SectionController.GetItems().IndexOf(ShellSection.CurrentItem);
-
+				var currentItem = ShellSection.CurrentItem;
 				if (SectionController.GetItems().Count != _viewPager.ChildCount)
 				{
 					SafeNotifyDataSetChanged();
 				}
 
+				var page = ((IShellContentController)currentItem).GetOrCreateContent();
+                var newIndex = SectionController.GetItems().IndexOf(currentItem);
 				if (newIndex >= 0)
 				{
-					_toolbarTracker.Page = ((IShellContentController)ShellSection.CurrentItem).GetOrCreateContent();
+					_toolbarTracker.Page = page;
 					_viewPager.CurrentItem = newIndex;
 				}
 			}
