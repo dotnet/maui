@@ -262,7 +262,7 @@ function Resolve-RunTestsSelection {
         expandedCategories = @($allCategories | Where-Object { $expanded.Contains($_) })
         platformCategories = $platformCategories
         pipelineCategories = @($pipelineCategories)
-        # The full suite was required by the command or the PR's base branch, not chosen by the AI.
+        # The full suite was required by the PR's base branch, not chosen by the AI.
         forced = [bool](& $get 'forced')
         summary = (Format-RunTestsText $summary 600)
         rationale = (Format-RunTestsText $rationale 4000 -Multiline)
@@ -530,7 +530,7 @@ function New-RunTestsComment {
             $lines.Add("**Categories not run:** $(Format-RunTestsCategoryList $skippedCategories)")
             $lines.Add('')
         }
-        $lines.Add('Each skipped platform and category is listed as a **Skipped** `maui-pr-uitests (skipped) …` check on this commit. Comment `/review run-tests --all` for the full suite.')
+        $lines.Add('Each skipped platform and category is listed as a **Skipped** `maui-pr-uitests (skipped) …` check on this commit. Use `/azp run maui-pr-uitests` for the full suite.')
         $lines.Add('')
         $lines.Add('</details>')
         $lines.Add('')
@@ -870,16 +870,9 @@ $script:RunTestsFullSuiteBasePattern = '^(release|candidate)/'
 function Get-RunTestsFullSuiteProposal {
     <#
     .SYNOPSIS
-    Returns a full-suite proposal when the command or the PR's base branch requires one, otherwise $null.
+    Returns a full-suite proposal when the PR's base branch requires one, otherwise $null.
     #>
-    param([string]$BaseRef, [switch]$Requested)
-    if ($Requested) {
-        return @{
-            full_run = $true; forced = $true; platforms = '[]'; categories = '[]'
-            summary = 'Full UI test suite, requested with `/review run-tests --all`.'
-            rationale = 'The requester asked for every UI test category on every platform, so no AI selection was made.'
-        }
-    }
+    param([string]$BaseRef)
     if ($BaseRef -match $script:RunTestsFullSuiteBasePattern) {
         return @{
             full_run = $true; forced = $true; platforms = '[]'; categories = '[]'

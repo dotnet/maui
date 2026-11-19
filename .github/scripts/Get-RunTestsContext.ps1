@@ -15,9 +15,7 @@ param(
     [string]$Repository = $(if ($env:GITHUB_REPOSITORY) { $env:GITHUB_REPOSITORY } else { 'dotnet/maui' }),
     [string]$PipelineYamlPath = "$PSScriptRoot/../../eng/pipelines/common/ui-tests.yml",
     [int]$MaxPatchCharsPerFile = 6000,
-    [int]$MaxPatchCharsTotal = 200000,
-    # `/review run-tests --all`: run the full suite without an AI selection.
-    [switch]$FullRunRequested
+    [int]$MaxPatchCharsTotal = 200000
 )
 
 $ErrorActionPreference = 'Stop'
@@ -105,7 +103,6 @@ $context = [ordered]@{
     headSha = $pr.head.sha
     baseRef = $pr.base.ref
     baseSha = $pr.base.sha
-    fullRunRequested = [bool]$FullRunRequested
     changedFileCount = $files.Count
     changedFiles = @($changed)
     testCategoryHints = @($testCategoryHints)
@@ -124,7 +121,7 @@ New-Item -ItemType Directory -Force -Path $OutputDirectory | Out-Null
 $path = Join-Path $OutputDirectory 'context.json'
 $context | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath $path -Encoding utf8
 Write-Host "Collected $($files.Count) changed files and $($context.inventory.categories.Count) UI categories for PR #$PrNumber at $($pr.head.sha)."
-$fullRun = [bool](Get-RunTestsFullSuiteProposal -BaseRef $pr.base.ref -Requested:$FullRunRequested)
+$fullRun = [bool](Get-RunTestsFullSuiteProposal -BaseRef $pr.base.ref)
 if ($fullRun) { Write-Host 'The full suite is required; the AI selection is skipped.' }
 if ($env:GITHUB_OUTPUT) {
     "ready=true" | Add-Content -LiteralPath $env:GITHUB_OUTPUT

@@ -278,12 +278,6 @@ Describe 'Resolve-RunTestsSelection with runnable categories' {
 }
 
 Describe 'Full suite rules' {
-    It 'forces the full suite for --all, whatever the base branch' {
-        $proposal = Get-RunTestsFullSuiteProposal -BaseRef 'main' -Requested
-        $proposal.full_run | Should -BeTrue
-        $proposal.summary | Should -Match '--all'
-    }
-
     It 'forces the full suite for PRs into release and candidate branches' {
         foreach ($base in 'release/10.0.1xx-sr6', 'candidate/11.0.1xx-sr2') {
             $proposal = Get-RunTestsFullSuiteProposal -BaseRef $base
@@ -299,7 +293,7 @@ Describe 'Full suite rules' {
     }
 
     It 'labels a required full suite as such instead of as an AI selection' {
-        $selection = Resolve-RunTestsSelection -Proposal (Get-RunTestsFullSuiteProposal -BaseRef 'main' -Requested) -Inventory $inventory
+        $selection = Resolve-RunTestsSelection -Proposal (Get-RunTestsFullSuiteProposal -BaseRef 'release/10.0.1xx-sr6') -Inventory $inventory
         $selection.mode | Should -Be 'full'
         $selection.forced | Should -BeTrue
         $body = New-RunTestsComment -Selection $selection -Inventory $inventory -PullRequest $pr -WorkflowRunUrl 'https://run' -Requester 'octocat'
@@ -311,14 +305,10 @@ Describe 'Full suite rules' {
         (New-RunTestsComment -Selection $ai -Inventory $inventory -PullRequest $pr -WorkflowRunUrl 'https://run') | Should -Match 'AI-selected UI tests'
     }
 
-    It 'only accepts the exact command, optionally with --all' {
+    It 'only accepts the exact command' {
         $workflow = Get-Content (Join-Path $PSScriptRoot '../workflows/copilot-review-run-tests.md') -Raw
-        $workflow | Should -Match ([regex]::Escape('/^\s*\/review\s+run-tests(\s+--all)?\s*$/i'))
-        $pattern = '^\s*/review\s+run-tests(\s+--all)?\s*$'
-        '/review run-tests' | Should -Match $pattern
-        '/review run-tests --all' | Should -Match $pattern
-        '/review run-tests --all please' | Should -Not -Match $pattern
-        '/review run-tests --allx' | Should -Not -Match $pattern
+        $workflow | Should -Match ([regex]::Escape('/^\s*\/review\s+run-tests\s*$/i'))
+        $workflow | Should -Not -Match '--all'
     }
 }
 
