@@ -369,14 +369,17 @@ steps:
             echo "Unable to list simulator runtimes."
             return 1
           fi
-          device_type=$(printf '%s\n' "$runtimes_json" | jq -r --arg id "$REQUIRED_RUNTIME_ID" --arg pref "$PREFERRED_SMOKE_DEVICE_TYPE" '
-            [.runtimes[]? | select(.identifier == $id and .isAvailable == true)]
-            | if length == 0 then empty
-              else .[0] | [.supportedDeviceTypes[]? | select(.productFamily == "iPhone") | .identifier]
-                | if index($pref) != null then $pref else (.[0] // empty) end
-              end')
+          SMOKE_RT=$(printf '%s\n' "$runtimes_json" | jq -r --arg id "$REQUIRED_RUNTIME_ID" --arg req "${MAJOR}.${MINOR}" '[.runtimes[]? | select(.identifier == $id and .isAvailable == true and ((.version // "" | split(".")[0:2] | join(".")) == $req))] | first | .identifier // empty')
+          if [[ -z "$SMOKE_RT" ]]; then
+            echo "Required runtime $REQUIRED_RUNTIME_ID is not available."
+            return 1
+          fi
+          device_type=$(printf '%s\n' "$runtimes_json" | jq -r --arg id "$SMOKE_RT" --arg pref "$PREFERRED_SMOKE_DEVICE_TYPE" '
+            [.runtimes[]? | select(.identifier == $id)][0]
+            | [.supportedDeviceTypes[]? | select(.productFamily == "iPhone") | .identifier]
+            | if index($pref) != null then $pref else (.[0] // empty) end')
           if [[ -z "$device_type" ]]; then
-            echo "Required runtime $REQUIRED_RUNTIME_ID is not available with a supported iPhone device type."
+            echo "Required runtime $REQUIRED_RUNTIME_ID has no supported iPhone device type."
             return 1
           fi
           if ! udid=$(xcrun simctl create "copilot-runtime-smoketest" "$device_type" "$REQUIRED_RUNTIME_ID" 2>&1); then
@@ -403,10 +406,12 @@ steps:
         fi
         rm -f "$DOWNLOAD_LOG"
         RUNTIME_READY=0
-        if [[ "$RC" == "0" || "$ALREADY_DOWNLOADED" == "1" ]]; then
-          if required_runtime_create_usable; then
+        if [[ "$RC" != "0" ]]; then
+          if [[ "$ALREADY_DOWNLOADED" == "1" ]] && required_runtime_create_usable; then
             RUNTIME_READY=1
           fi
+        elif required_runtime_create_usable; then
+          RUNTIME_READY=1
         fi
         if [[ "$RUNTIME_READY" != "1" ]]; then
           if [[ "$RC" == "0" || "$ALREADY_DOWNLOADED" == "1" ]]; then
