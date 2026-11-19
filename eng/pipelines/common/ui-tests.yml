@@ -390,6 +390,7 @@ stages:
                       testFilter: $(CATEGORYGROUP)
                       headless: ${{ parameters.headless }}
                       skipProvisioning: ${{ parameters.skipProvisioning }}
+                      requirePinnedXcodeVersion: ${{ ne(parameters.iosXcodeVersion, '') }}
                   
                   # Collect and publish iOS snapshot diffs
                   - template: ui-tests-collect-snapshot-diffs.yml
@@ -441,6 +442,7 @@ stages:
                         testFilter: $(CATEGORYGROUP)
                         headless: ${{ parameters.headless }}
                         skipProvisioning: ${{ parameters.skipProvisioning }}
+                        requirePinnedXcodeVersion: ${{ ne(parameters.iosXcodeVersion, '') }}
 
   - stage: winui_ui_tests
     displayName: WinUI UITests

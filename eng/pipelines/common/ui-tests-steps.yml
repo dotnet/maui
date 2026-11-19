@@ -17,6 +17,7 @@ parameters:
   testConfigurationArgs: ''
   skipProvisioning: true
   checkoutDirectory: $(System.DefaultWorkingDirectory)
+  requirePinnedXcodeVersion: false
 
 steps:
 - task: DownloadPipelineArtifact@2
@@ -91,6 +92,8 @@ steps:
     androidEmulatorApiLevel: ${{ parameters.version }}
     skipXcode: ${{ or(eq(parameters.platform, 'android'), eq(parameters.platform, 'windows'), eq(parameters.platform, 'catalyst')) }}
     skipSimulatorSetup: ${{ or(eq(parameters.platform, 'android'), eq(parameters.platform, 'windows'), eq(parameters.platform, 'catalyst')) }}
+    installXcodePackage: ${{ not(parameters.requirePinnedXcodeVersion) }}
+    requirePinnedXcodeVersion: ${{ parameters.requirePinnedXcodeVersion }}
     provisionatorChannel: ${{ parameters.provisionatorChannel }}
     ${{ if parameters.skipProvisioning }}:
       skipProvisionator: true
