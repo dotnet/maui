@@ -894,6 +894,52 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void ReplacingStyleClassWithSameResolvedClassDoesNotReapplyTriggers()
+		{
+			var enterAction = new CountingTriggerAction();
+			var exitAction = new CountingTriggerAction();
+			var label = new Label();
+			new ContentView
+			{
+				Resources = new ResourceDictionary
+				{
+					new Style(typeof(Label))
+					{
+						Class = "accent",
+						Triggers =
+						{
+							new Trigger(typeof(Label))
+							{
+								Property = VisualElement.IsEnabledProperty,
+								Value = true,
+								EnterActions = { enterAction },
+								ExitActions = { exitAction }
+							}
+						}
+					}
+				},
+				Content = label
+			};
+
+			label.StyleClass = new[] { "accent" };
+
+			Assert.Equal(1, enterAction.InvokeCount);
+			Assert.Equal(0, exitAction.InvokeCount);
+
+			label.StyleClass = new[] { "accent" };
+
+			Assert.Equal(1, enterAction.InvokeCount);
+			Assert.Equal(0, exitAction.InvokeCount);
+
+			label.IsEnabled = false;
+			Assert.Equal(1, exitAction.InvokeCount);
+			label.IsEnabled = true;
+
+			Assert.Equal(2, enterAction.InvokeCount);
+			Assert.Equal(1, exitAction.InvokeCount);
+		}
+
+		[Fact]
 		public void SettingStyleToNullUnappliesActiveTriggerOnce()
 		{
 			var enterAction = new CountingTriggerAction();
