@@ -128,6 +128,32 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact]
+		public async Task KeyActivationDoesNotClickReplacementSetByReleasedCallback()
+		{
+			var originalClicks = 0;
+			var replacementClicks = 0;
+			ContentButtonHandler? handler = null;
+			var replacement = new ContentButtonStub { Clicked = () => replacementClicks++ };
+			var original = new ContentButtonStub
+			{
+				Released = () => handler!.SetVirtualView(replacement),
+				Clicked = () => originalClicks++
+			};
+			handler = await CreateHandlerAsync(original);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				PressActivationKey(handler);
+				ReleaseActivationKey(handler);
+				InvokeClick(handler);
+
+				Assert.Same(replacement, ((IElementHandler)handler).VirtualView);
+				Assert.Equal(0, originalClicks);
+				Assert.Equal(0, replacementClicks);
+			});
+		}
+
 		[Theory]
 		[InlineData(false)]
 		[InlineData(true)]
@@ -428,6 +454,20 @@ namespace Microsoft.Maui.DeviceTests
 			var keyDown = typeof(ContentButtonHandler).GetMethod("OnKeyDown", BindingFlags.Instance | BindingFlags.NonPublic);
 			Assert.NotNull(keyDown);
 			keyDown.Invoke(handler, new object?[] { handler.PlatformView, null });
+		}
+
+		static void ReleaseActivationKey(ContentButtonHandler handler)
+		{
+			var keyUp = typeof(ContentButtonHandler).GetMethod("OnKeyUp", BindingFlags.Instance | BindingFlags.NonPublic);
+			Assert.NotNull(keyUp);
+			keyUp.Invoke(handler, new object?[] { handler.PlatformView, null });
+		}
+
+		static void InvokeClick(ContentButtonHandler handler)
+		{
+			var onClick = typeof(ContentButtonHandler).GetMethod("OnClick", BindingFlags.Instance | BindingFlags.NonPublic);
+			Assert.NotNull(onClick);
+			onClick.Invoke(handler, new object?[] { handler.PlatformView, new RoutedEventArgs() });
 		}
 
 		sealed class StyledContentButtonHandler : ContentButtonHandler

@@ -94,6 +94,34 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task TouchActivationDoesNotClickReplacementView()
+		{
+			var firstClicks = 0;
+			var secondClicks = 0;
+			ContentButtonHandler? handler = null;
+			var second = new ContentButtonStub { Clicked = () => secondClicks++ };
+			var first = new ContentButtonStub
+			{
+				Pressed = () => handler!.SetVirtualView(second),
+				Clicked = () => firstClicks++
+			};
+			handler = await CreateHandlerAsync(first);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				handler.PlatformView.SendActionForControlEvents(UIControlEvent.TouchDown);
+				handler.PlatformView.SendActionForControlEvents(UIControlEvent.TouchUpInside);
+				handler.PlatformView.SendActionForControlEvents(UIControlEvent.PrimaryActionTriggered);
+
+				Assert.Equal(0, firstClicks);
+				Assert.Equal(0, secondClicks);
+
+				handler.PlatformView.SendActionForControlEvents(UIControlEvent.PrimaryActionTriggered);
+				Assert.Equal(1, secondClicks);
+			});
+		}
+
+		[Fact]
 		public async Task ReentrantReplacementKeepsNewestView()
 		{
 			var firstReleased = 0;

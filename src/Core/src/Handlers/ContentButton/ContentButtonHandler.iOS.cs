@@ -137,6 +137,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			bool _isPressed;
 			WeakReference<IContentButton>? _virtualView;
+			WeakReference<IContentButton>? _touchActivationView;
 
 			IContentButton? VirtualView =>
 				_virtualView is not null && _virtualView.TryGetTarget(out var view) ? view : null;
@@ -145,9 +146,9 @@ namespace Microsoft.Maui.Handlers
 			{
 				UpdateVirtualView(virtualView);
 				platformView.TouchDown += OnTouchDown;
-				platformView.TouchUpInside += OnTouchEnded;
-				platformView.TouchUpOutside += OnTouchEnded;
-				platformView.TouchCancel += OnTouchEnded;
+				platformView.TouchUpInside += OnTouchUpInside;
+				platformView.TouchUpOutside += OnTouchCancelled;
+				platformView.TouchCancel += OnTouchCancelled;
 				platformView.PrimaryActionTriggered += OnPrimaryActionTriggered;
 			}
 
@@ -160,11 +161,12 @@ namespace Microsoft.Maui.Handlers
 			{
 				Release();
 				_virtualView = null;
+				_touchActivationView = null;
 
 				platformView.TouchDown -= OnTouchDown;
-				platformView.TouchUpInside -= OnTouchEnded;
-				platformView.TouchUpOutside -= OnTouchEnded;
-				platformView.TouchCancel -= OnTouchEnded;
+				platformView.TouchUpInside -= OnTouchUpInside;
+				platformView.TouchUpOutside -= OnTouchCancelled;
+				platformView.TouchCancel -= OnTouchCancelled;
 				platformView.PrimaryActionTriggered -= OnPrimaryActionTriggered;
 			}
 
@@ -183,17 +185,31 @@ namespace Microsoft.Maui.Handlers
 					return;
 
 				_isPressed = true;
+				_touchActivationView = new(button);
 				button.Pressed();
 			}
 
-			void OnTouchEnded(object? sender, EventArgs e)
+			void OnTouchUpInside(object? sender, EventArgs e)
 			{
 				Release();
 			}
 
+			void OnTouchCancelled(object? sender, EventArgs e)
+			{
+				Release();
+				_touchActivationView = null;
+			}
+
 			void OnPrimaryActionTriggered(object? sender, EventArgs e)
 			{
-				if (VirtualView is { IsEnabled: true } button)
+				var touchActivationView = _touchActivationView is not null &&
+					_touchActivationView.TryGetTarget(out var target)
+						? target
+						: null;
+				_touchActivationView = null;
+
+				if (VirtualView is { IsEnabled: true } button &&
+					(touchActivationView is null || ReferenceEquals(touchActivationView, button)))
 					button.Clicked();
 			}
 		}

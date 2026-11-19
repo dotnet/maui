@@ -13,6 +13,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		PointerEventHandler? _pointerPressedHandler;
 		PointerEventHandler? _pointerReleasedHandler;
+		WeakReference<IContentButton>? _activationView;
 		bool _isPressed;
 
 		public override void SetVirtualView(IView view)
@@ -72,7 +73,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(Button platformView)
 		{
-			Release();
+			CancelPress();
 
 			platformView.Click -= OnClick;
 			platformView.Unloaded -= OnUnloaded;
@@ -196,9 +197,16 @@ namespace Microsoft.Maui.Handlers
 		void OnClick(object sender, RoutedEventArgs e)
 		{
 			var button = ((IElementHandler)this).VirtualView as IContentButton;
+			var activationView = _activationView is not null &&
+				_activationView.TryGetTarget(out var target)
+					? target
+					: null;
+			_activationView = null;
 			Release();
 
-			if (button is { IsEnabled: true } && IsConnectedTo(this, button))
+			if (button is { IsEnabled: true } &&
+				(activationView is null || ReferenceEquals(activationView, button)) &&
+				IsConnectedTo(this, button))
 			{
 				button.Clicked();
 			}
@@ -230,13 +238,13 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (sender is Button { IsEnabled: false })
 			{
-				Release();
+				CancelPress();
 			}
 		}
 
-		void OnUnloaded(object sender, RoutedEventArgs e) => Release();
+		void OnUnloaded(object sender, RoutedEventArgs e) => CancelPress();
 
-		void OnLostFocus(object sender, RoutedEventArgs e) => Release();
+		void OnLostFocus(object sender, RoutedEventArgs e) => CancelPress();
 
 		void Press()
 		{
@@ -244,6 +252,7 @@ namespace Microsoft.Maui.Handlers
 				return;
 
 			_isPressed = true;
+			_activationView = new(button);
 			button.Pressed();
 		}
 
@@ -254,6 +263,12 @@ namespace Microsoft.Maui.Handlers
 
 			_isPressed = false;
 			(((IElementHandler)this).VirtualView as IContentButton)?.Released();
+		}
+
+		void CancelPress()
+		{
+			Release();
+			_activationView = null;
 		}
 	}
 }
