@@ -904,6 +904,22 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.NotNull(button.Handler);
 		}
 
+		[Fact]
+		public void DestroyingKeepsHandlersOfAPageMovedToANewerWindow()
+		{
+			var page = new ContentPage();
+			IWindow oldWindow = new TestWindow(page);
+			page.ToHandler(CreateMauiContextWithHandlerStubs());
+			_ = new TestWindow(page);
+			page.ToHandler(CreateMauiContextWithHandlerStubs());
+			var newWindowPageHandler = (HandlerStub)page.Handler;
+
+			oldWindow.Destroying();
+
+			Assert.Same(newWindowPageHandler, page.Handler);
+			Assert.Equal(0, newWindowPageHandler.DisconnectHandlerCount);
+		}
+
 		static MauiContext CreateMauiContextWithHandlerStubs()
 		{
 			var mauiApp = MauiApp.CreateBuilder()
