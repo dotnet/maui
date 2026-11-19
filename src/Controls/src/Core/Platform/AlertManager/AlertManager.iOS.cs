@@ -165,14 +165,14 @@ namespace Microsoft.Maui.Controls.Platform
 #else
 					if (arguments.PreselectInitialValue && !string.IsNullOrEmpty(arguments.InitialValue))
 					{
-						// SelectedTextRange can only be set while the field is first responder.
-						// Defer the selection to EditingDidBegin, matching the same pattern
-						// used by the Entry handler (EntryHandler.iOS.cs OnEditingBegan).
-						uiTextField.EditingDidBegin += (s, e) =>
+						// Apply the initial selection only once, preserving user edits on refocus.
+						void SelectInitialValue(object sender, EventArgs e)
 						{
-							if (s is UITextField tf)
-								tf.SelectedTextRange = tf.GetTextRange(tf.BeginningOfDocument, tf.EndOfDocument);
-						};
+							uiTextField.EditingDidBegin -= SelectInitialValue;
+							uiTextField.SelectedTextRange = uiTextField.GetTextRange(uiTextField.BeginningOfDocument, uiTextField.EndOfDocument);
+						}
+
+						uiTextField.EditingDidBegin += SelectInitialValue;
 					}
 #endif
 					if (arguments.MaxLength > -1 && (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26)))
