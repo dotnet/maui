@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Android.OS;
@@ -122,7 +122,7 @@ namespace Microsoft.Maui.Platform
 					return false;
 				}
 
-				// A long press that already does something else (a gesture, text selection, ...) keeps doing it
+				// The pressed view's own long-press handler (a gesture, a long-click listener) comes first, like natively
 				if (manager.DefersLongPress(root, e.GetX(), e.GetY()))
 					return false;
 
@@ -135,8 +135,12 @@ namespace Microsoft.Maui.Platform
 				if (s_touchSlop == 0 && root.Context is not null)
 					s_touchSlop = ViewConfiguration.Get(root.Context)?.ScaledTouchSlop ?? 0;
 
+				// Gesture detectors schedule their long press for the same time. This one is scheduled first, so it
+				// runs first and cancels theirs when the menu opens, like a native long click takes the touch over.
 				_pendingLongPress = new Java.Lang.Runnable(OnLongPress);
-				root.PostDelayed(_pendingLongPress, ViewConfiguration.LongPressTimeout);
+				if (root.Handler is not global::Android.OS.Handler handler ||
+					!handler.PostAtTime(_pendingLongPress, e.DownTime + ViewConfiguration.LongPressTimeout))
+					root.PostDelayed(_pendingLongPress, ViewConfiguration.LongPressTimeout);
 
 				return false;
 			}
@@ -165,6 +169,11 @@ namespace Microsoft.Maui.Platform
 				try
 				{
 					_window.SuperDispatchTouchEvent(cancel);
+
+					// Views that saw the press without taking the touch don't get that cancel, but they may be waiting
+					// for the long press too. Natively they wouldn't have seen the press, as the long-clickable view takes it.
+					if (_window.IsAlive() && _window.DecorView is AView root)
+						ContextFlyoutManager.CancelLongPresses(root, _downX, _downY, cancel);
 				}
 				finally
 				{
@@ -183,8 +192,11 @@ namespace Microsoft.Maui.Platform
 			{
 				if (_pendingLongPress is not null)
 				{
-					if (_window.IsAlive())
-						_window.DecorView?.RemoveCallbacks(_pendingLongPress);
+					if (_window.IsAlive() && _window.DecorView is AView decor)
+					{
+						decor.Handler?.RemoveCallbacks(_pendingLongPress);
+						decor.RemoveCallbacks(_pendingLongPress);
+					}
 
 					_pendingLongPress.Dispose();
 					_pendingLongPress = null;

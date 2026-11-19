@@ -168,9 +168,10 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		// UIKit gives the context menu priority over long-press gestures and text selection, like in native apps
 		public static TheoryData<string> ExistingLongPressBehaviors => new() { "None", "LongPressGesture", "Entry" };
 
-		[Theory(DisplayName = "An existing long-press behavior keeps priority on iOS; Mac Catalyst is unchanged")]
+		[Theory(DisplayName = "The context menu opens like in native apps, also with other long-press behavior")]
 		[MemberData(nameof(ExistingLongPressBehaviors))]
 		public async Task ExistingLongPressBehaviorKeepsPriority(string behavior)
 		{
@@ -188,10 +189,69 @@ namespace Microsoft.Maui.DeviceTests
 
 				var configuration = interaction.GetConfigurationForMenu(CoreGraphics.CGPoint.Empty);
 
-				if (behavior == "None" || OperatingSystem.IsMacCatalyst())
+				Assert.NotNull(configuration);
+			});
+		}
+
+		[Fact(DisplayName = "CollectionView reordering keeps priority over context menus of its items")]
+		public async Task ReorderingKeepsPriority()
+		{
+			SetupBuilder();
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var label = new Label { Text = "Target" };
+				FlyoutBase.SetContextFlyout(label, CreateFlyout(out _));
+				var handler = CreateHandler<LabelHandler>(label);
+				var interaction = GetInteraction(handler.PlatformView)!;
+
+				using var reorderingParent = new UIView();
+				using var reorderRecognizer = new UILongPressGestureRecognizer();
+				MauiUIContextMenuInteraction.MarkLongPressRecognizer(reorderRecognizer);
+				reorderingParent.AddGestureRecognizer(reorderRecognizer);
+				reorderingParent.AddSubview(handler.PlatformView);
+
+				var configuration = interaction.GetConfigurationForMenu(CoreGraphics.CGPoint.Empty);
+
+				// Mac Catalyst opens context menus with a secondary click, which doesn't compete with reordering
+				if (OperatingSystem.IsMacCatalyst())
 					Assert.NotNull(configuration);
 				else
 					Assert.Null(configuration);
+
+				handler.PlatformView.RemoveFromSuperview();
+			});
+		}
+
+		[Fact(DisplayName = "CollectionView reordering keeps priority inside a view with a context menu")]
+		public async Task ReorderingInsideViewWithMenuKeepsPriority()
+		{
+			SetupBuilder();
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var grid = new Grid();
+				FlyoutBase.SetContextFlyout(grid, CreateFlyout(out _));
+				var handler = CreateHandler<LayoutHandler>(grid);
+				var interaction = GetInteraction(handler.PlatformView)!;
+				handler.PlatformView.Frame = new CoreGraphics.CGRect(0, 0, 200, 100);
+
+				using var reordering = new UIView(new CoreGraphics.CGRect(0, 0, 100, 100));
+				using var reorderRecognizer = new UILongPressGestureRecognizer();
+				MauiUIContextMenuInteraction.MarkLongPressRecognizer(reorderRecognizer);
+				reordering.AddGestureRecognizer(reorderRecognizer);
+				handler.PlatformView.AddSubview(reordering);
+
+				var onReordering = interaction.GetConfigurationForMenu(new CoreGraphics.CGPoint(50, 50));
+				var besideReordering = interaction.GetConfigurationForMenu(new CoreGraphics.CGPoint(150, 50));
+
+				Assert.NotNull(besideReordering);
+				if (OperatingSystem.IsMacCatalyst())
+					Assert.NotNull(onReordering);
+				else
+					Assert.Null(onReordering);
+
+				reordering.RemoveFromSuperview();
 			});
 		}
 

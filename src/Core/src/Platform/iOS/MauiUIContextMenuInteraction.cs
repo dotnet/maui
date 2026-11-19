@@ -41,31 +41,31 @@ namespace Microsoft.Maui.Platform
 						actionProvider: _ => uiMenu);
 		}
 
-		// Long-press recognizers created by MAUI (gesture recognizers, CollectionView reordering). UIKit adds
-		// its own long-press recognizers to some views, which don't do anything an app relies on.
+		// Long-press recognizers that keep priority over context menus: MAUI's CollectionView reordering, which
+		// isn't based on UIKit's drag and drop that context menus work together with
 		static readonly ConditionalWeakTable<UIGestureRecognizer, object> s_longPressRecognizers = new();
 
 		/// <summary>
-		/// Marks a long-press recognizer created by MAUI, so that a context menu doesn't take its long press over.
+		/// Marks a long-press recognizer that keeps priority over context menus of the views inside its view.
 		/// </summary>
 		internal static void MarkLongPressRecognizer(UIGestureRecognizer recognizer) =>
 			s_longPressRecognizers.AddOrUpdate(recognizer, s_longPressRecognizers);
 
 		/// <summary>
-		/// Whether a long press at the location already does something else, which then keeps priority over
-		/// the context menu: a long-press gesture or reordering on the view, an ancestor or the view under the
-		/// finger, or text selection in a text input.
+		/// Whether a long press at the location does something else instead of opening the context menu.
 		/// </summary>
+		/// <remarks>
+		/// UIKit decides between the context menu and other long presses, like it does in native apps: the
+		/// context menu wins over long-press gesture recognizers and text selection. Only CollectionView
+		/// reordering keeps working on items that have a context menu, and in a collection inside a view with one.
+		/// </remarks>
 		internal bool DefersLongPress(CGPoint location)
 		{
-			if (View is not UIView view)
-				return false;
+			var view = View;
+			var pressed = view is not null && view.PointInside(location, null) ? view.HitTest(location, null) : null;
 
-			for (var current = view.HitTest(location, null) ?? view; current is not null; current = current.Superview)
+			for (var current = pressed ?? view; current is not null; current = current.Superview)
 			{
-				if (current is UITextField { Enabled: true } || current is UITextView { Editable: true } || current is UITextView { Selectable: true })
-					return true;
-
 				if (current.GestureRecognizers is { } recognizers)
 				{
 					foreach (var recognizer in recognizers)

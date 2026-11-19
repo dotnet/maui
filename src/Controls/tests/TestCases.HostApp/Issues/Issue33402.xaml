@@ -33,7 +33,7 @@
             </Label>
         </Border>
 
-        <Label AutomationId="LongPressLabel" Text="Long press runs the gesture; right-click opens the menu" Padding="8" BackgroundColor="LightGreen">
+        <Label AutomationId="LongPressLabel" Text="Long-press gesture and context menu on the same label" Padding="8" BackgroundColor="LightGreen">
             <Label.GestureRecognizers>
                 <LongPressGestureRecognizer Command="{Binding RecordCommand}" CommandParameter="long-pressed" />
             </Label.GestureRecognizers>

@@ -19,10 +19,13 @@ namespace Microsoft.Maui.Controls
 		/// and holding Enter or the D-pad center on a focused control on Android.
 		/// Its items are read every time it opens, so bindings, <see cref="MenuItem.IsEnabled"/> and commands that
 		/// can't execute are always reflected. Elements without a context menu aren't affected.
-		/// On iOS and Android, a long press that already does something else keeps doing it, for example a
-		/// <see cref="LongPressGestureRecognizer"/> on the element or one of its parents, dragging on Android,
-		/// text selection in an <see cref="Entry"/> or <see cref="Editor"/>, or reordering a
-		/// <see cref="CollectionView"/>. The menu still opens with a secondary click or the keyboard.
+		/// A long press is shared with other behavior the way each platform shares it. On iOS the context menu
+		/// takes the long press over, including from a <see cref="LongPressGestureRecognizer"/>. On Android the
+		/// pressed view's own long-press handler comes first (a <see cref="LongPressGestureRecognizer"/> or
+		/// <see cref="DragGestureRecognizer"/> on it), then the context menu, which comes before text selection in
+		/// an <see cref="Entry"/> or <see cref="Editor"/> and before tooltips. Double-tapping still selects text on
+		/// both. Reordering a <see cref="CollectionView"/> keeps its long press on both. The menu still opens with
+		/// a secondary click or the keyboard.
 		/// </remarks>
 		public static void SetContextFlyout(BindableObject b, FlyoutBase value)
 		{

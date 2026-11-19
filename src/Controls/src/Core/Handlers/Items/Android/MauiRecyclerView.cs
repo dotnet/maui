@@ -334,7 +334,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var canReorderItems = (ItemsView as ReorderableItemsView)?.CanReorderItems == true;
 
 			// Reordering starts with a long press, which keeps priority over context flyouts on the items
-			ContextFlyoutManager.SetHandlesLongPress(this, canReorderItems);
+			ContextFlyoutManager.SetInterceptsLongPress(this, canReorderItems);
 
 			if (canReorderItems)
 			{

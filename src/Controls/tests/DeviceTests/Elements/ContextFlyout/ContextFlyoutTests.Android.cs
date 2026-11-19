@@ -320,58 +320,120 @@ namespace Microsoft.Maui.DeviceTests
 			}));
 		}
 
-		public static TheoryData<string> ExistingLongPressBehaviors => new() { "LongPressGesture", "DragGesture", "Entry", "ToolTip", "ParentLongPressGesture" };
+		// What a long press does natively: the innermost view under the finger that receives touches handles it.
+		// Its own long-press handler comes first, then the context menu, then text selection and tooltips.
+		public static TheoryData<string, bool> LongPressPriorities => new()
+		{
+			{ "LongPressGesture", false },
+			{ "DragGesture", false },
+			{ "ChildLongPressGesture", false },
+			{ "ParentLongPressGesture", true },
+			{ "Entry", true },
+			{ "ToolTip", true },
+			{ "ReorderingParent", false },
+			{ "ReorderingWithMenu", false },
+			{ "DropTargetAbove", true },
+			{ "ElevatedLongPressGesture", false },
+			{ "DisabledChildWithMenu", true },
+			{ "DisabledChildLongPressGesture", true },
+		};
 
-		[Theory(DisplayName = "An existing long-press behavior keeps priority; secondary click still opens the menu")]
-		[MemberData(nameof(ExistingLongPressBehaviors))]
-		public async Task ExistingLongPressBehaviorKeepsPriority(string behavior)
+		[Theory(DisplayName = "Long press follows native priority; secondary click always opens the menu")]
+		[MemberData(nameof(LongPressPriorities))]
+		public async Task LongPressFollowsNativePriority(string behavior, bool menuOpensOnLongPress)
 		{
 			SetupBuilder();
-			Microsoft.Maui.Controls.View target = behavior == "Entry" ? new Entry { Text = "Text" } : new Label { Text = "Target" };
-			target.WidthRequest = 200;
-			target.HeightRequest = 100;
-			var root = new Grid { Children = { target } };
+			var pressed = behavior == "Entry" ? (Microsoft.Maui.Controls.View)new Entry { Text = "Text" } : new Label { Text = "Target" };
+			pressed.WidthRequest = 200;
+			pressed.HeightRequest = 100;
+			var root = new Grid { Children = { pressed } };
+			var withMenu = behavior is "ChildLongPressGesture" or "ReorderingWithMenu" or "ElevatedLongPressGesture" or "DisabledChildWithMenu" or "DisabledChildLongPressGesture"
+				? (Microsoft.Maui.Controls.View)root
+				: pressed;
+			var longPresses = 0;
+			var longPress = new LongPressGestureRecognizer();
+			longPress.LongPressed += (_, _) => longPresses++;
 
 			switch (behavior)
 			{
 				case "LongPressGesture":
-					target.GestureRecognizers.Add(new LongPressGestureRecognizer());
+				case "ChildLongPressGesture":
+					pressed.GestureRecognizers.Add(longPress);
+					break;
+				case "DisabledChildWithMenu":
+					// Disabled views don't take touches, so the press goes to the parent's menu
+					pressed.IsEnabled = false;
+					FlyoutBase.SetContextFlyout(pressed, CreateFlyout(out _));
+					break;
+				case "DisabledChildLongPressGesture":
+					pressed.IsEnabled = false;
+					pressed.GestureRecognizers.Add(longPress);
 					break;
 				case "DragGesture":
-					target.GestureRecognizers.Add(new DragGestureRecognizer());
+					pressed.GestureRecognizers.Add(new DragGestureRecognizer());
 					break;
 				case "ToolTip":
-					ToolTipProperties.SetText(target, "Tooltip");
+					ToolTipProperties.SetText(pressed, "Tooltip");
 					break;
 				case "ParentLongPressGesture":
-					root.GestureRecognizers.Add(new LongPressGestureRecognizer());
+					root.GestureRecognizers.Add(longPress);
+					break;
+				case "DropTargetAbove":
+					// Drop targets only watch drags, so the press goes through to the view below
+					var dropTarget = new Label { WidthRequest = 200, HeightRequest = 100 };
+					dropTarget.GestureRecognizers.Add(new DropGestureRecognizer());
+					root.Add(dropTarget);
+					break;
+				case "ElevatedLongPressGesture":
+					// The elevated view gets the press first, even though the tappable one was added later
+					pressed.GestureRecognizers.Add(longPress);
+					var tappable = new Label { WidthRequest = 200, HeightRequest = 100 };
+					tappable.GestureRecognizers.Add(new TapGestureRecognizer());
+					root.Add(tappable);
 					break;
 			}
 
-			FlyoutBase.SetContextFlyout(target, CreateFlyout(out _));
+			FlyoutBase.SetContextFlyout(withMenu, CreateFlyout(out _));
 
 			await WithTouchTrackerAsync(() => AttachAndRun(root, async handler =>
 			{
-				var view = (AView)target.Handler!.PlatformView!;
-				var manager = ContextFlyoutManager.Get(view)!;
+				var view = (AView)pressed.Handler!.PlatformView!;
+				var menuView = (AView)withMenu.Handler!.PlatformView!;
+				var manager = ContextFlyoutManager.Get(menuView)!;
 				var window = view.Context!.GetActivity()!.Window!;
 				var (x, y) = GetCenterInWindow(view);
 
-				if (behavior == "ToolTip" && !OperatingSystem.IsAndroidVersionAtLeast(26))
-					return;
+				// Like a reorderable CollectionView, which reorders its items on long press
+				var rootView = (AView)root.Handler!.PlatformView!;
+				if (behavior is "ReorderingParent" or "ReorderingWithMenu")
+					ContextFlyoutManager.SetInterceptsLongPress(rootView, true);
 
-				// A long press keeps doing what it did before
+				if (behavior == "ElevatedLongPressGesture")
+					view.Elevation = 10;
+
 				var downTime = SystemClock.UptimeMillis();
 				Assert.False(Dispatch(window, downTime, MotionEventActions.Down, x, y));
 				await Task.Delay(ViewConfiguration.LongPressTimeout + 300);
-				Assert.Null(manager.Popup);
-				Assert.False(Dispatch(window, downTime, MotionEventActions.Up, x, y));
+				Assert.Equal(menuOpensOnLongPress, manager.Popup is not null);
 
-				// So does the accessibility long-click action
-				view.PerformAccessibilityAction(global::Android.Views.Accessibility.Action.LongClick, null);
-				Assert.Null(manager.Popup);
+				// Only one of them happens: the gesture doesn't fire after the menu opened, even on a parent
+				if (behavior.EndsWith("LongPressGesture", StringComparison.Ordinal))
+				{
+					await Task.Delay(ViewConfiguration.LongPressTimeout);
+					Assert.Equal(menuOpensOnLongPress ? 0 : 1, longPresses);
+				}
 
-				// A secondary click still opens the context menu
+				ContextFlyoutManager.SetInterceptsLongPress(rootView, false);
+				Dispatch(window, downTime, MotionEventActions.Up, x, y);
+				manager.Dismiss();
+
+				// The accessibility long-click action acts on the view with the menu itself
+				var sameViewHandler = behavior is "LongPressGesture" or "DragGesture";
+				menuView.PerformAccessibilityAction(global::Android.Views.Accessibility.Action.LongClick, null);
+				Assert.Equal(!sameViewHandler, manager.Popup is not null);
+				manager.Dismiss();
+
+				// A secondary click always opens the context menu
 				downTime = SystemClock.UptimeMillis();
 				Assert.True(Dispatch(window, downTime, MotionEventActions.Down, x, y, InputSourceType.Mouse, MotionEventButtonState.Secondary));
 				Dispatch(window, downTime, MotionEventActions.Up, x, y, InputSourceType.Mouse);
@@ -380,40 +442,31 @@ namespace Microsoft.Maui.DeviceTests
 			}));
 		}
 
-		[Fact(DisplayName = "Secondary mouse click opens the context menu immediately")]
-		public async Task SecondaryClickOpensContextMenu()
-		{
-			SetupBuilder();
-			var label = new Label { Text = "Target", WidthRequest = 200, HeightRequest = 100 };
-			FlyoutBase.SetContextFlyout(label, CreateFlyout(out _));
-
-			await WithTouchTrackerAsync(() => AttachAndRun(label, handler =>
-			{
-				var view = (AView)handler.PlatformView!;
-				var manager = ContextFlyoutManager.Get(view)!;
-				var window = view.Context!.GetActivity()!.Window!;
-				var (x, y) = GetCenterInWindow(view);
-				var downTime = SystemClock.UptimeMillis();
-
-				Assert.True(Dispatch(window, downTime, MotionEventActions.Down, x + 30, y - 20, InputSourceType.Mouse, MotionEventButtonState.Secondary));
-				Assert.NotNull(manager.Popup);
-				AssertAnchoredAt(manager, x + 30, y - 20);
-				Assert.True(Dispatch(window, downTime, MotionEventActions.Up, x + 30, y - 20, InputSourceType.Mouse));
-
-				manager.Dismiss();
-			}));
-		}
-
-		[Fact(DisplayName = "Holding a confirm key on a focused control opens its context menu at its center; a short press clicks")]
-		public async Task HoldingConfirmKeyOpensContextMenu()
+		[Theory(DisplayName = "Holding a confirm key on a focused control opens its context menu at its center; a short press clicks")]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task HoldingConfirmKeyOpensContextMenu(bool tapGesture)
 		{
 			SetupBuilder();
 			var clicks = 0;
-			var button = new Button { Text = "Target", WidthRequest = 200, HeightRequest = 100 };
-			button.Clicked += (_, _) => clicks++;
-			FlyoutBase.SetContextFlyout(button, CreateFlyout(out _));
+			Microsoft.Maui.Controls.View target;
+			if (tapGesture)
+			{
+				// Not clickable natively: the tap gesture handles the confirm key
+				var tap = new TapGestureRecognizer();
+				tap.Tapped += (_, _) => clicks++;
+				target = new Label { Text = "Target", WidthRequest = 200, HeightRequest = 100, GestureRecognizers = { tap } };
+			}
+			else
+			{
+				var button = new Button { Text = "Target", WidthRequest = 200, HeightRequest = 100 };
+				button.Clicked += (_, _) => clicks++;
+				target = button;
+			}
 
-			await WithTouchTrackerAsync(() => AttachAndRun(button, async handler =>
+			FlyoutBase.SetContextFlyout(target, CreateFlyout(out _));
+
+			await WithTouchTrackerAsync(() => AttachAndRun(target, async handler =>
 			{
 				var view = (AView)handler.PlatformView!;
 				var manager = ContextFlyoutManager.Get(view)!;
@@ -565,7 +618,12 @@ namespace Microsoft.Maui.DeviceTests
 			var properties = new[] { new MotionEvent.PointerProperties { Id = 0, ToolType = source == InputSourceType.Mouse ? MotionEventToolType.Mouse : MotionEventToolType.Finger } };
 			var coords = new[] { new MotionEvent.PointerCoords { X = x, Y = y, Pressure = 1, Size = 1 } };
 			using var e = MotionEvent.Obtain(downTime, SystemClock.UptimeMillis(), action, 1, properties, coords, 0, buttonState, 1, 1, 0, 0, source, 0)!;
-			return ContextFlyoutTouchTracker.OnDispatchTouchEvent(window, e);
+			// Like the activity: the views get the event unless the tracker consumed it
+			if (ContextFlyoutTouchTracker.OnDispatchTouchEvent(window, e))
+				return true;
+
+			window.SuperDispatchTouchEvent(e);
+			return false;
 		}
 	}
 }

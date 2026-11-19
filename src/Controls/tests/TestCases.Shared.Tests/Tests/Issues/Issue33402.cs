@@ -57,15 +57,22 @@ public class Issue33402 : _IssuesUITest
 	}
 
 #if ANDROID || IOS
+	// A long press on a view with both a long-press gesture and a context menu does what the platform does:
+	// Android runs the view's own long-press handler, iOS opens the context menu.
 	[Test, Order(5)]
 	[Category(UITestCategories.ContextActions)]
-	public void LongPressGestureKeepsPriorityOverContextFlyout()
+	public void LongPressOnViewWithGestureFollowsPlatform()
 	{
 		App.WaitForElement("LongPressLabel");
 		App.LongPress("LongPressLabel");
 
+#if ANDROID
 		Assert.That(App.WaitForElement("StatusLabel").GetText(), Is.EqualTo("long-pressed"));
 		App.WaitForNoElement(MenuItem("Gesture menu item"));
+#else
+		TapMenuItem("Gesture menu item");
+		Assert.That(App.WaitForElement("StatusLabel").GetText(), Is.EqualTo("gesture-menu"));
+#endif
 	}
 #endif
 

@@ -34,8 +34,11 @@ namespace Microsoft.Maui.Platform
 		static readonly List<WeakReference<ContextFlyoutManager>> s_managers = new();
 		static readonly ConditionalWeakTable<AView, ContextFlyoutManager> s_managersByView = new();
 
-		// Views whose long press is handled by MAUI (gesture recognizers, CollectionView reordering)
-		static readonly ConditionalWeakTable<AView, object> s_longPressHandlers = new();
+		// How MAUI's gesture recognizers handle touches on a view
+		static readonly ConditionalWeakTable<AView, GestureState> s_gestureStates = new();
+
+		// Views that take long presses over from their children, like a reorderable CollectionView
+		static readonly ConditionalWeakTable<AView, object> s_longPressInterceptors = new();
 
 		readonly WeakReference<AView> _view;
 		WeakReference<IViewHandler> _handler;
@@ -179,33 +182,28 @@ namespace Microsoft.Maui.Platform
 				}
 			}
 
-			if (best is null || bestView is null)
-				return null;
-
-			// A descendant that handles long presses itself (e.g. text selection) takes precedence
-			if (bestView is ViewGroup group && HasLongClickableDescendantAt(root, group, x, y))
-				return null;
-
 			return best;
 		}
 
 		/// <summary>
 		/// Finds the context flyout that holding a confirm key (Enter, D-pad center, ...) opens for the focused
-		/// view. Like native long-clicks, the focused view must be clickable, and the menu of the view or of the
-		/// closest ancestor with one opens. A long press that already does something else keeps priority.
+		/// view, following native long clicks: the focused view must be clickable (or have a context menu, which
+		/// natively makes it long-clickable, or gesture recognizers that take its input), its own long-click handler
+		/// comes first, and otherwise the menu of the view or of the closest ancestor with one opens.
 		/// </summary>
 		internal static ContextFlyoutManager? FindForFocusedView(AView? focused)
 		{
-			if (!HasAny || focused is null || !focused.Enabled || !focused.Clickable)
+			// Text inputs use the confirm keys themselves (new line, IME action)
+			if (!HasAny || focused is null || focused is EditText || !focused.Enabled || !(ReceivesTouches(focused) || Get(focused) is not null))
+				return null;
+
+			if (HasLongPressHandler(focused, Get(focused)))
 				return null;
 
 			for (var current = focused; current is not null; current = current.Parent as AView)
 			{
 				if (Get(current) is { } manager)
-					return manager.CanShow() && !manager.DefersLongPress() ? manager : null;
-
-				if (HandlesLongPress(current))
-					return null;
+					return manager.CanShow() ? manager : null;
 			}
 
 			return null;
@@ -222,71 +220,162 @@ namespace Microsoft.Maui.Platform
 		}
 
 		/// <summary>
-		/// Marks a view whose long press is handled by MAUI, so that a context flyout doesn't take it over.
+		/// Tells context flyouts how MAUI's gesture recognizers handle touches on a view.
 		/// </summary>
-		internal static void SetHandlesLongPress(AView view, bool handlesLongPress)
+		/// <param name="view">The platform view the gesture recognizers are attached to.</param>
+		/// <param name="consumesTouches">Whether the view receives touches, so its children's views don't get them.</param>
+		/// <param name="handlesLongPress">Whether the view does something on a long press (long-press or drag gestures).</param>
+		/// <param name="cancelLongPress">Cancels a pending long press when a context menu takes the press over.</param>
+		internal static void SetGestureState(AView view, bool consumesTouches, bool handlesLongPress, Action<MotionEvent>? cancelLongPress)
 		{
-			if (handlesLongPress)
-				s_longPressHandlers.AddOrUpdate(view, s_longPressHandlers);
+			if (consumesTouches || handlesLongPress)
+				s_gestureStates.AddOrUpdate(view, new GestureState(consumesTouches, handlesLongPress, cancelLongPress));
 			else
-				s_longPressHandlers.Remove(view);
+				s_gestureStates.Remove(view);
 		}
 
 		/// <summary>
-		/// Whether a long press at the given point already does something else, which then keeps priority over
-		/// the context flyout: a long-press or drag gesture, text selection, a tooltip, reordering, etc. on the
-		/// view, an ancestor, or the view under the finger. Secondary clicks and the keyboard still open the menu.
+		/// Marks a view that takes long presses over from its children, like a reorderable CollectionView.
 		/// </summary>
+		internal static void SetInterceptsLongPress(AView view, bool interceptsLongPress)
+		{
+			if (interceptsLongPress)
+				s_longPressInterceptors.AddOrUpdate(view, s_longPressInterceptors);
+			else
+				s_longPressInterceptors.Remove(view);
+		}
+
+		/// <summary>
+		/// Whether a long press at the given point does something else instead of opening the context flyout.
+		/// </summary>
+		/// <remarks>
+		/// This follows how Android handles long presses: they go to the innermost view under the finger that
+		/// receives touches. If that view handles long presses itself (a long-press or drag gesture, or a
+		/// long-click listener), that wins. Otherwise the context menu of that view or of its closest ancestor
+		/// with one opens, which comes before built-in behavior like text selection and tooltips.
+		/// A reorderable CollectionView keeps reordering its items on long press.
+		/// </remarks>
 		internal bool DefersLongPress(AView root, float x, float y)
 		{
 			if (!_view.TryGetTarget(out var view) || !view.IsAlive())
 				return true;
 
-			for (AView? current = view; current is not null; current = current.Parent as AView)
-			{
-				if (HandlesLongPress(current, current == view && _longClickListener is not null))
-					return true;
+			var target = view is ViewGroup group ? FindTouchTargetAt(root, group, x, y) ?? view : view;
 
-				if (current == root)
-					break;
+			// Reordering a collection the press is in, whether the menu is on an item, the collection or around it
+			for (var current = target; current is not null; current = current.Parent as AView)
+			{
+				if (s_longPressInterceptors.TryGetValue(current, out _))
+					return true;
 			}
 
-			return view is ViewGroup group && HasLongPressHandlerAt(root, group, x, y);
-		}
-
-		// Used for the accessibility long-click action, which has no position
-		bool DefersLongPress()
-		{
-			if (!_view.TryGetTarget(out var view) || !view.IsAlive())
+			// A disabled view still receives the touch, but nothing happens on a long press
+			if (target != view && !target.Enabled)
 				return true;
 
-			for (AView? current = view; current is not null; current = current.Parent as AView)
-			{
-				if (HandlesLongPress(current, current == view && _longClickListener is not null))
-					return true;
-			}
-
-			return false;
+			return HasLongPressHandler(target, Get(target));
 		}
 
-		// The fallback long-click listener makes the view long-clickable itself, which doesn't count
-		static bool HandlesLongPress(AView view, bool ignoreLongClickable = false) =>
-			(!ignoreLongClickable && view.Enabled && view.LongClickable) ||
-			s_longPressHandlers.TryGetValue(view, out _) ||
-			(OperatingSystem.IsAndroidVersionAtLeast(26) && view.TooltipTextFormatted is not null);
+		// Used for the accessibility long-click action and the long-click fallback, which act on the view itself
+		bool DefersLongPress() =>
+			!_view.TryGetTarget(out var view) || !view.IsAlive() || HasLongPressHandler(view, this);
 
-		static bool HasLongPressHandlerAt(AView root, ViewGroup group, float x, float y)
+		// The innermost view under the point that receives touches, like ViewGroup dispatches them
+		static AView? FindTouchTargetAt(AView root, ViewGroup group, float x, float y)
+		{
+			foreach (var child in GetChildrenInTouchOrder(group))
+			{
+				if (child.Visibility != ViewStates.Visible || !TryMapToLocal(root, child, x, y, out _, out _))
+					continue;
+
+				if (child is ViewGroup childGroup && FindTouchTargetAt(root, childGroup, x, y) is AView target)
+					return target;
+
+				if (ReceivesTouches(child))
+					return child;
+			}
+
+			return null;
+		}
+
+		// Like ViewGroup.buildOrderedChildList: higher Z first, then the ones added later
+		static List<AView> GetChildrenInTouchOrder(ViewGroup group)
+		{
+			var children = new List<AView>(group.ChildCount);
+			var hasZ = false;
+			for (int i = group.ChildCount - 1; i >= 0; i--)
+			{
+				if (group.GetChildAt(i) is AView child)
+				{
+					children.Add(child);
+					hasZ |= ViewCompat.GetZ(child) != 0;
+				}
+			}
+
+			if (hasZ)
+			{
+				// Stable, so children with the same Z keep the later ones first
+				var ordered = new List<AView>(children.Count);
+				foreach (var child in children)
+				{
+					var z = ViewCompat.GetZ(child);
+					var index = ordered.FindIndex(c => ViewCompat.GetZ(c) < z);
+					ordered.Insert(index < 0 ? ordered.Count : index, child);
+				}
+
+				return ordered;
+			}
+
+			return children;
+		}
+
+		// A context flyout doesn't make its view take touches: one that can't show (disabled, no items) lets them through
+		static bool ReceivesTouches(AView view) =>
+			view.Clickable || view.LongClickable ||
+			(s_gestureStates.TryGetValue(view, out var state) && state.ConsumesTouches);
+
+		static bool HasLongPressHandler(AView view, ContextFlyoutManager? manager)
+		{
+			if (s_gestureStates.TryGetValue(view, out var state) && state.HandlesLongPress)
+				return true;
+
+			// The long-click fallback of a context flyout is its own listener
+			if (manager?._longClickListener is not null)
+				return false;
+
+			if (OperatingSystem.IsAndroidVersionAtLeast(30))
+				return view.HasOnLongClickListeners;
+
+			// Before Android 11 listeners can't be queried: text inputs, selectable text and tooltips are
+			// long-clickable by themselves
+			return view.Enabled && view.LongClickable && view is not EditText && view is not TextView { IsTextSelectable: true } &&
+				!(OperatingSystem.IsAndroidVersionAtLeast(26) && view.TooltipTextFormatted is not null);
+		}
+
+		sealed record GestureState(bool ConsumesTouches, bool HandlesLongPress, Action<MotionEvent>? CancelLongPress);
+
+		/// <summary>
+		/// Cancels the pending long presses of gesture recognizers on the views under the point.
+		/// </summary>
+		internal static void CancelLongPresses(AView root, float x, float y, MotionEvent cancel)
+		{
+			if (root is ViewGroup group)
+				CancelLongPresses(root, group, x, y, cancel);
+		}
+
+		static void CancelLongPresses(AView root, ViewGroup group, float x, float y, MotionEvent cancel)
 		{
 			for (int i = group.ChildCount - 1; i >= 0; i--)
 			{
-				if (group.GetChildAt(i) is not AView child || child.Visibility != ViewStates.Visible || !TryMapToLocal(root, child, x, y, out _, out _))
+				if (group.GetChildAt(i) is not AView child || !TryMapToLocal(root, child, x, y, out _, out _))
 					continue;
 
-				if (HandlesLongPress(child) || (child is ViewGroup childGroup && HasLongPressHandlerAt(root, childGroup, x, y)))
-					return true;
-			}
+				if (s_gestureStates.TryGetValue(child, out var state))
+					state.CancelLongPress?.Invoke(cancel);
 
-			return false;
+				if (child is ViewGroup childGroup)
+					CancelLongPresses(root, childGroup, x, y, cancel);
+			}
 		}
 
 		internal void PerformHapticFeedback()
@@ -664,7 +753,7 @@ namespace Microsoft.Maui.Platform
 					if (siblingZ < z || (siblingZ == z && i < index))
 						continue;
 
-					if (HandlesTouchAt(root, sibling, x, y, longPressOnly: false))
+					if (ReceivesTouchesAt(root, sibling, x, y))
 						return true;
 				}
 			}
@@ -672,31 +761,19 @@ namespace Microsoft.Maui.Platform
 			return false;
 		}
 
-		static bool HasLongClickableDescendantAt(AView root, ViewGroup group, float x, float y)
-		{
-			for (int i = group.ChildCount - 1; i >= 0; i--)
-			{
-				if (group.GetChildAt(i) is AView child && HandlesTouchAt(root, child, x, y, longPressOnly: true))
-					return true;
-			}
-
-			return false;
-		}
-
-		static bool HandlesTouchAt(AView root, AView view, float x, float y, bool longPressOnly)
+		static bool ReceivesTouchesAt(AView root, AView view, float x, float y)
 		{
 			if (view.Visibility != ViewStates.Visible || !TryMapToLocal(root, view, x, y, out _, out _))
 				return false;
 
-			// Disabled views don't long press, but a disabled clickable view still consumes the touch
-			if ((view.Enabled && view.LongClickable) || (!longPressOnly && view.Clickable))
+			if (ReceivesTouches(view))
 				return true;
 
 			if (view is ViewGroup group)
 			{
 				for (int i = group.ChildCount - 1; i >= 0; i--)
 				{
-					if (group.GetChildAt(i) is AView child && HandlesTouchAt(root, child, x, y, longPressOnly))
+					if (group.GetChildAt(i) is AView child && ReceivesTouchesAt(root, child, x, y))
 						return true;
 				}
 			}

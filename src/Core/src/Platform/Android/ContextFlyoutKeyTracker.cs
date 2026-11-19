@@ -49,9 +49,14 @@ namespace Microsoft.Maui.Platform
 		/// <summary>
 		/// Whether the key release completed a long press that opened a context menu, so it shouldn't act as a click.
 		/// </summary>
+		/// <remarks>
+		/// Other key listeners on the view may run before this one handles the release, so a release that is about to
+		/// be consumed counts too.
+		/// </remarks>
 		internal static bool IsConsumedKeyUp(KeyEvent? e) =>
-			e is not null && s_consumedKeyUp is KeyEvent consumed && consumed.IsAlive() &&
-			consumed.KeyCode == e.KeyCode && consumed.EventTime == e.EventTime;
+			e is not null && e.Action == KeyEventActions.Up &&
+			((s_consumeKeyUp && e.KeyCode == s_keyCode) ||
+			(s_consumedKeyUp is KeyEvent consumed && consumed.IsAlive() && consumed.KeyCode == e.KeyCode && consumed.EventTime == e.EventTime));
 
 		static void OnGlobalFocusChange(object? sender, ViewTreeObserver.GlobalFocusChangeEventArgs e) =>
 			UpdateListenedView(e.NewFocus);
