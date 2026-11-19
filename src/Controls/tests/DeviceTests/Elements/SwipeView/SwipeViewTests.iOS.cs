@@ -402,8 +402,12 @@ namespace Microsoft.Maui.DeviceTests
 			double offsetAfterAttemptedClose = 0;
 
 			await InvokeOnMainThreadAsync(() =>
-				nativeView.AttachAndRun(() =>
+				nativeView.AttachAndRun(async () =>
 				{
+					var contentView = Assert.IsAssignableFrom<UIView>(content.Handler?.PlatformView);
+					await AssertEventually(() => contentView.Frame.Width == 300 && contentView.Frame.Height == 60,
+						message: "SwipeView content was not laid out at the expected size");
+
 					void Dispatch(GestureStatus status, double x, double y) =>
 						handleTouchInteractions.Invoke(nativeView, new object[] { status, new CGPoint(x, y) });
 
