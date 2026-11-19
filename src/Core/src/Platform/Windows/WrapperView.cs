@@ -70,6 +70,7 @@ namespace Microsoft.Maui.Platform
 				_child.SizeChanged += OnChildSizeChanged;
 				_visibilityDependencyPropertyCallbackToken = _child.RegisterPropertyChangedCallback(VisibilityProperty, OnChildVisibilityChanged);
 				CachedChildren.Add(_child);
+				UpdateShadowVisibility(_child);
 			}
 		}
 
@@ -197,7 +198,13 @@ namespace Microsoft.Maui.Platform
 		void OnChildVisibilityChanged(DependencyObject sender, DependencyProperty dp)
 		{
 			// OnChildSizeChanged does not fire for Visibility changes to child
-			if (sender is FrameworkElement child && _shadowCanvasCachedChildren?.Count > 0)
+			if (sender is FrameworkElement child)
+				UpdateShadowVisibility(child);
+		}
+
+		void UpdateShadowVisibility(FrameworkElement child)
+		{
+			if (_shadowCanvasCachedChildren?.Count > 0)
 			{
 				var shadowHost = _shadowCanvasCachedChildren[0];
 				shadowHost.Visibility = child.Visibility;
@@ -220,6 +227,8 @@ namespace Microsoft.Maui.Platform
 			{
 				_shadowCanvasCachedChildren.RemoveAt(0);
 			}
+
+			CachedChildren.Remove(_shadowCanvas);
 
 			_shadowVisual?.Dispose();
 			_shadowVisual = null;
@@ -269,6 +278,7 @@ namespace Microsoft.Maui.Platform
 			// captures and hit testing beyond the composition clip, unlike the same view without a shadow.
 			_shadowHost = new UI.Xaml.Shapes.Rectangle()
 			{
+				Visibility = Child.Visibility,
 				Width = width,
 				Height = height
 			};
