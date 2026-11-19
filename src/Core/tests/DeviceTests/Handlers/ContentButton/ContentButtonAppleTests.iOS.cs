@@ -98,23 +98,20 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var firstClicks = 0;
 			var secondClicks = 0;
-			ContentButtonHandler? handler = null;
 			var second = new ContentButtonStub { Clicked = () => secondClicks++ };
-			var first = new ContentButtonStub
-			{
-				Pressed = () => handler!.SetVirtualView(second),
-				Clicked = () => firstClicks++
-			};
-			handler = await CreateHandlerAsync(first);
+			var first = new ContentButtonStub { Clicked = () => firstClicks++ };
+			var handler = await CreateHandlerAsync(first);
+			first.Pressed = () => handler.SetVirtualView(second);
 
 			await InvokeOnMainThreadAsync(() =>
 			{
 				handler.PlatformView.SendActionForControlEvents(UIControlEvent.TouchDown);
-				handler.PlatformView.SendActionForControlEvents(UIControlEvent.TouchUpInside);
+				Assert.True(secondClicks == 0, "TouchDown should not click the replacement.");
+
 				handler.PlatformView.SendActionForControlEvents(UIControlEvent.PrimaryActionTriggered);
 
 				Assert.Equal(0, firstClicks);
-				Assert.Equal(0, secondClicks);
+				Assert.True(secondClicks == 0, "The touch activation should not click the replacement.");
 
 				handler.PlatformView.SendActionForControlEvents(UIControlEvent.PrimaryActionTriggered);
 				Assert.Equal(1, secondClicks);
