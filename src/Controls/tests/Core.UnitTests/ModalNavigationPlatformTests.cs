@@ -445,6 +445,21 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public async Task DestroyingDisconnectsRootAndModalPageHandlers()
+		{
+			// https://github.com/dotnet/maui/issues/40056
+			var (window, _, _) = CreateWindowWithPlatform();
+			var rootPageHandler = AttachRootPage(window).Handler;
+			var modalPageHandler = Substitute.For<IViewHandler>();
+			await window.Navigation.PushModalAsync(new ContentPage { Handler = modalPageHandler });
+
+			((IWindow)window).Destroying();
+
+			rootPageHandler.Received(1).DisconnectHandler();
+			modalPageHandler.Received(1).DisconnectHandler();
+		}
+
+		[Fact]
 		public async Task DelayedPopFailureAfterTeardownDoesNotRestorePlatformState()
 		{
 			var (window, _, factory) = CreateWindowWithPlatform();

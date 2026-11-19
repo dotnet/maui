@@ -7,7 +7,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Hosting;
+using Microsoft.Maui.Platform;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -857,6 +860,63 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			(window as IWindow).Deactivated();
 
 			Assert.False(vm.IsWindowActive);
+		}
+
+		[Fact]
+		public void DestroyingDisconnectsHandlersOfThePage()
+		{
+			// https://github.com/dotnet/maui/issues/40056
+			var mauiContext = CreateMauiContextWithHandlerStubs();
+			var button = new Button();
+			var layout = new VerticalStackLayout { button };
+			var page = new ContentPage { Content = layout };
+			IWindow window = new TestWindow(page);
+			page.ToHandler(mauiContext);
+			layout.ToHandler(mauiContext);
+			button.ToHandler(mauiContext);
+			var buttonHandler = (HandlerStub)button.Handler;
+
+			window.Destroying();
+
+			Assert.Null(page.Handler);
+			Assert.Null(layout.Handler);
+			Assert.Null(button.Handler);
+			Assert.Equal(1, buttonHandler.DisconnectHandlerCount);
+		}
+
+		[Fact]
+		public void DestroyingKeepsHandlersWithManualDisconnectPolicy()
+		{
+			var mauiContext = CreateMauiContextWithHandlerStubs();
+			var button = new Button();
+			var layout = new VerticalStackLayout { button };
+			var page = new ContentPage { Content = layout };
+			HandlerProperties.SetDisconnectPolicy(layout, HandlerDisconnectPolicy.Manual);
+			IWindow window = new TestWindow(page);
+			page.ToHandler(mauiContext);
+			layout.ToHandler(mauiContext);
+			button.ToHandler(mauiContext);
+
+			window.Destroying();
+
+			Assert.Null(page.Handler);
+			Assert.NotNull(layout.Handler);
+			Assert.NotNull(button.Handler);
+		}
+
+		static MauiContext CreateMauiContextWithHandlerStubs()
+		{
+			var mauiApp = MauiApp.CreateBuilder()
+				.UseMauiApp<ApplicationStub>()
+				.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<ContentPage>(static _ => new HandlerStub());
+					handlers.AddHandler<VerticalStackLayout>(static _ => new HandlerStub());
+					handlers.AddHandler<Button>(static _ => new HandlerStub());
+				})
+				.Build();
+
+			return new MauiContext(mauiApp.Services);
 		}
 
 		[Fact]
