@@ -137,6 +137,17 @@ public class ContentButtonFeatureTests : _GalleryUITest
 			["actions"] = new[]
 			{
 				new Dictionary<string, object> { ["virtualKeyCode"] = virtualKey, ["down"] = true },
+			}
+		});
+		Assert.That(Status, Does.Contain("Commands=0; Clicks=0"));
+		Assert.That(GetStatusValue("Pressed"), Is.EqualTo(1));
+		Assert.That(GetStatusValue("Released"), Is.Zero);
+		Assert.That(Status, Does.Contain("IsPressed=True"));
+
+		((AppiumApp)App).Driver.ExecuteScript("windows: keys", new Dictionary<string, object>
+		{
+			["actions"] = new[]
+			{
 				new Dictionary<string, object> { ["virtualKeyCode"] = virtualKey, ["down"] = false },
 			}
 		});
