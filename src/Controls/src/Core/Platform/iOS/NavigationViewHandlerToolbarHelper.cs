@@ -238,6 +238,15 @@ namespace Microsoft.Maui.Controls
             childView?.Frame = bounds;
         }
 
+        public override void ViewSafeAreaInsetsDidChange()
+        {
+            base.ViewSafeAreaInsetsDidChange();
+
+            // After rotating, iOS 26 can move the bar down without laying this view out again,
+            // reporting the new overlap only as a safe area change. Recheck it.
+            View?.SetNeedsLayout();
+        }
+
         public override void ViewDidDisappear(bool animated)
         {
             base.ViewDidDisappear(animated);
