@@ -27,7 +27,11 @@ namespace Microsoft.Maui.Platform
 		public void Show(Activity context, View view, WebChromeClient.ICustomViewCallback callback)
 		{
 			if (context is null)
+			{
+				// Nothing can be shown, so tell the page right away; otherwise it believes it is still in fullscreen.
+				callback?.OnCustomViewHidden();
 				return;
+			}
 
 			// Captures the current orientation.
 			_originalOrientation = context.RequestedOrientation;
@@ -89,7 +93,8 @@ namespace Microsoft.Maui.Platform
 
 		public void Hide(Activity context)
 		{
-			if (context is null)
+			// Without a shown view there is nothing to restore, and the stored orientation would be stale.
+			if (context is null || !IsShowing)
 				return;
 
 			// Remove the CustomView

@@ -119,6 +119,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			_backPressedCallback?.Dispose();
 			_backPressedCallback = null;
 
+			(_webChromeClient as BlazorWebChromeClient)?.ExitFullScreen();
+
 			platformView.StopLoading();
 
 			// Capture and null the client fields now, but dispose them only after the native view

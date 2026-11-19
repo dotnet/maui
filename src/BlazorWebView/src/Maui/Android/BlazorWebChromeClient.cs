@@ -51,6 +51,19 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			_fullScreenPresenter.Hide(activity);
 		}
 
+		/// <summary>
+		/// Leaves fullscreen when the WebView goes away while it is showing. The handler detaches this client
+		/// before destroying the WebView, so Chromium's own OnHideCustomView never arrives, and the fullscreen
+		/// view, the landscape orientation and the hidden system bars would otherwise stay on the activity.
+		/// </summary>
+		internal void ExitFullScreen()
+		{
+			if (_fullScreenPresenter.IsShowing)
+			{
+				OnHideCustomView();
+			}
+		}
+
 		public override bool OnCreateWindow(global::Android.Webkit.WebView? view, bool isDialog, bool isUserGesture, Message? resultMsg)
 		{
 			if (view?.Context is not null)
