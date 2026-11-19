@@ -1124,9 +1124,9 @@ internal class TabbedViewManager
             return null;
         }
 
-        if (_originalTabIconColors is null)
+        if (!IsBottomTabPlacement && _originalTabIconColors is null)
         {
-            _originalTabIconColors = IsBottomTabPlacement ? _bottomNavigationView.ItemIconTintList : _tabLayout.TabIconTint;
+            _originalTabIconColors = _tabLayout.TabIconTint;
         }
 
         Color barItemColor = BarItemColor;
@@ -1134,7 +1134,7 @@ internal class TabbedViewManager
 
         if (barItemColor is null && barSelectedItemColor is null)
         {
-            return _originalTabIconColors;
+            return IsBottomTabPlacement ? _bottomNavigationView.ItemIconTintList : _originalTabIconColors;
         }
 
         if (_newTabIconColors is not null)
