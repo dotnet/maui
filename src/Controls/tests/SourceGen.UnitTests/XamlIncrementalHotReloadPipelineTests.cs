@@ -2935,6 +2935,74 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		Assert.Contains("\"Other2\"", FindUCSource(driver.GetRunResult(), "OtherPage.xaml.uc.xsg"), StringComparison.Ordinal);
 	}
 
+	const string TemplateMainPageXaml = """
+		<?xml version="1.0" encoding="utf-8" ?>
+		<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+		             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+		             x:Class="TestApp.MainPage">
+		    <ScrollView>
+		        <VerticalStackLayout Padding="30,0" Spacing="25">
+		            <Image Source="dotnet_bot.png" HeightRequest="185" Aspect="AspectFit"
+		                   SemanticProperties.Description="dot net bot in a hovercraft number nine" />
+		            <Label Text="Hello, Maui!" Style="{StaticResource Headline}" SemanticProperties.HeadingLevel="Level1" />
+		            <Label Text="Welcome to &#10;.NET Multi-platform App UI" Style="{StaticResource SubHeadline}"
+		                   SemanticProperties.HeadingLevel="Level2"
+		                   SemanticProperties.Description="Welcome to dot net Multi platform App U I" />
+		            <Button x:Name="CounterBtn" Text="Click me" SemanticProperties.Hint="Counts the number of times you click"
+		                    Clicked="OnCounterClicked" HorizontalOptions="Fill" />
+		        </VerticalStackLayout>
+		    </ScrollView>
+		</ContentPage>
+		""";
+
+	const string TemplateStylesXaml = """
+		<?xml version="1.0" encoding="utf-8" ?>
+		<ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+		                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+		    <Style TargetType="Label" x:Key="Headline">
+		        <Setter Property="FontSize" Value="32" />
+		        <Setter Property="HorizontalOptions" Value="Center" />
+		    </Style>
+		    <Style TargetType="Label" x:Key="SubHeadline">
+		        <Setter Property="FontSize" Value="24" />
+		        <Setter Property="HorizontalOptions" Value="Center" />
+		    </Style>
+		</ResourceDictionary>
+		""";
+
+	// https://github.com/dotnet/maui/issues/40413: editing the default template's MainPage text was
+	// silently dropped when the IDE evaluated the edited snapshot more than once or ran a throwaway
+	// compilation first (#36937), because the later evaluation emitted an empty UpdateComponent.
+	[Theory]
+	[InlineData(false)]
+	[InlineData(true)]
+	public void DefaultTemplateMainPageTextEdit_SurvivesRepeatedAndThrowawayEvaluations(bool throwawayFirst)
+	{
+		XamlHotReloadState.Reset();
+		var compilation = CreateCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText("""
+			using System;
+			using Microsoft.Maui.Controls;
+			namespace TestApp;
+			public partial class MainPage : ContentPage
+			{
+				public MainPage() => InitializeComponent();
+				void OnCounterClicked(object? sender, EventArgs e) => CounterBtn.Text = "Clicked";
+			}
+			"""));
+		var v1 = MakeFile(TemplateMainPageXaml);
+		var v2 = MakeFile(TemplateMainPageXaml.Replace("Hello, Maui!", "Hello, World!", StringComparison.Ordinal));
+		var styles = MakeFileAt("Resources/Styles/Styles.xaml", TemplateStylesXaml);
+
+		var edited = CreateDriver(v1, styles).RunGenerators(compilation)
+			.ReplaceAdditionalText(v1.Text, v2.Text)
+			.WithUpdatedAnalyzerConfigOptions(new OptionsProvider([v2, styles]));
+		var first = FindUCSource(edited.RunGenerators(throwawayFirst ? compilation.Clone() : compilation).GetRunResult(), "MainPage.xaml.uc.xsg");
+		var applied = FindUCSource(edited.RunGenerators(compilation).GetRunResult(), "MainPage.xaml.uc.xsg");
+
+		Assert.Contains("\"Hello, World!\"", first, StringComparison.Ordinal);
+		Assert.Equal(first, applied);
+	}
+
 	static SourceGeneratorDriver.AdditionalFile MakeFileAt(string relativePath, string xaml) =>
 		new(
 			SourceGeneratorDriver.ToAdditionalText(relativePath, xaml),
