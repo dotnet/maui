@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text.Encodings.Web;
+using System.Threading.Tasks;
 using CoreFoundation;
 using Foundation;
 using Microsoft.AspNetCore.Components.Web;
@@ -28,6 +28,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		private readonly ILogger _logger;
 		private readonly WKWebView _webview;
 		private readonly string _contentRootRelativeToAppRoot;
+		private readonly WebContentProcessReloader _webContentProcessReloader;
 
 		/// <summary>
 		/// Initializes a new instance of <see cref="IOSWebViewManager"/>
@@ -59,8 +60,16 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			_blazorMauiWebViewHandler = blazorMauiWebViewHandler;
 			_webview = webview;
 			_contentRootRelativeToAppRoot = contentRootRelativeToAppRoot;
+			_webContentProcessReloader = new WebContentProcessReloader(blazorMauiWebViewHandler, webview);
 
 			InitializeWebView();
+		}
+
+		/// <inheritdoc />
+		protected override ValueTask DisposeAsyncCore()
+		{
+			_webContentProcessReloader.Dispose();
+			return base.DisposeAsyncCore();
 		}
 
 		/// <inheritdoc />
@@ -110,7 +119,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 		private void InitializeWebView()
 		{
-			_webview.NavigationDelegate = new WebViewNavigationDelegate(_blazorMauiWebViewHandler);
+			_webview.NavigationDelegate = new WebViewNavigationDelegate(_blazorMauiWebViewHandler, _webContentProcessReloader);
 			_webview.UIDelegate = new WebViewUIDelegate(_blazorMauiWebViewHandler);
 		}
 
@@ -265,24 +274,22 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 		internal class WebViewNavigationDelegate : WKNavigationDelegate
 		{
-			// The same limit WebKit applies when it reloads after a crash on its own: one reload, and no second one
-			// within 30 seconds (maximumWebProcessRelaunchAttempts and resetRecentCrashCountDelay in WebPageProxy.cpp).
-			private static readonly TimeSpan MinimumTimeBetweenReloadsAfterTermination = TimeSpan.FromSeconds(30);
-
 			private readonly BlazorWebViewHandler _webView;
+			private readonly WebContentProcessReloader _webContentProcessReloader;
 
 			private WKNavigation? _currentNavigation;
 			private Uri? _currentUri;
-			private long? _lastReloadAfterTerminationTimestamp;
 
-			public WebViewNavigationDelegate(BlazorWebViewHandler webView)
+			public WebViewNavigationDelegate(BlazorWebViewHandler webView, WebContentProcessReloader webContentProcessReloader)
 			{
 				_webView = webView ?? throw new ArgumentNullException(nameof(webView));
+				_webContentProcessReloader = webContentProcessReloader;
 			}
 
 			public override void DidStartProvisionalNavigation(WKWebView webView, WKNavigation navigation)
 			{
 				_currentNavigation = navigation;
+				_webContentProcessReloader.NavigationStarted();
 			}
 
 			public override void DecidePolicy(WKWebView webView, WKNavigationAction navigationAction, Action<WKNavigationActionPolicy> decisionHandler)
@@ -388,6 +395,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 			public override void DidFinishNavigation(WKWebView webView, WKNavigation navigation)
 			{
+				_webContentProcessReloader.NavigationFinished();
+
 				if (_currentUri != null && _currentNavigation == navigation)
 				{
 					// TODO: Determine whether this is needed
@@ -408,17 +417,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				}
 
 				_webView.ProcessTerminated(new WebProcessTerminatedEventArgs(webView));
-
-				if (_lastReloadAfterTerminationTimestamp is not null
-					&& Stopwatch.GetElapsedTime(_lastReloadAfterTerminationTimestamp.Value) < MinimumTimeBetweenReloadsAfterTermination)
-				{
-					_webView.Logger.NotReloadingAfterWebContentProcessTermination(MinimumTimeBetweenReloadsAfterTermination);
-					return;
-				}
-
-				_webView.Logger.ReloadingAfterWebContentProcessTermination();
-				_lastReloadAfterTerminationTimestamp = Stopwatch.GetTimestamp();
-				webView.Reload();
+				_webContentProcessReloader.ProcessTerminated();
 			}
 		}
 	}
