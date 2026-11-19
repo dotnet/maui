@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text.Encodings.Web;
@@ -264,10 +265,15 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 		internal class WebViewNavigationDelegate : WKNavigationDelegate
 		{
+			// The same limit WebKit applies when it reloads after a crash on its own: one reload, and no second one
+			// within 30 seconds (maximumWebProcessRelaunchAttempts and resetRecentCrashCountDelay in WebPageProxy.cpp).
+			private static readonly TimeSpan MinimumTimeBetweenReloadsAfterTermination = TimeSpan.FromSeconds(30);
+
 			private readonly BlazorWebViewHandler _webView;
 
 			private WKNavigation? _currentNavigation;
 			private Uri? _currentUri;
+			private long? _lastReloadAfterTerminationTimestamp;
 
 			public WebViewNavigationDelegate(BlazorWebViewHandler webView)
 			{
@@ -389,6 +395,30 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 					_currentUri = null;
 					_currentNavigation = null;
 				}
+			}
+
+			// Implementing this tells WebKit that the app handles the termination, so WebKit no longer reloads the
+			// page by itself. That silent reload restarted the Blazor app without the app ever knowing
+			// (https://github.com/dotnet/maui/issues/24669). The app is now told first, then the page is reloaded here.
+			public override void ContentProcessDidTerminate(WKWebView webView)
+			{
+				if (((IViewHandler)_webView).VirtualView is null)
+				{
+					return;
+				}
+
+				_webView.ProcessTerminated(new WebProcessTerminatedEventArgs(webView));
+
+				if (_lastReloadAfterTerminationTimestamp is not null
+					&& Stopwatch.GetElapsedTime(_lastReloadAfterTerminationTimestamp.Value) < MinimumTimeBetweenReloadsAfterTermination)
+				{
+					_webView.Logger.NotReloadingAfterWebContentProcessTermination(MinimumTimeBetweenReloadsAfterTermination);
+					return;
+				}
+
+				_webView.Logger.ReloadingAfterWebContentProcessTermination();
+				_lastReloadAfterTerminationTimestamp = Stopwatch.GetTimestamp();
+				webView.Reload();
 			}
 		}
 	}
