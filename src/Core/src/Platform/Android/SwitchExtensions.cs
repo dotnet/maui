@@ -2,6 +2,8 @@ using System.Runtime.CompilerServices;
 using Android.Content.Res;
 using Android.Graphics.Drawables;
 using AndroidX.Core.Content;
+using AColor = Android.Graphics.Color;
+using AAttribute = Android.Resource.Attribute;
 using ASwitch = AndroidX.AppCompat.Widget.SwitchCompat;
 using MSwitch = Google.Android.Material.MaterialSwitch.MaterialSwitch;
 
@@ -60,12 +62,34 @@ namespace Microsoft.Maui.Platform
 
 			if (trackColor is not null)
 			{
-				materialSwitch.TrackTintList = ColorStateList.ValueOf(trackColor.ToPlatform());
+				var currentTintList = materialSwitch.TrackTintList ?? defaultTrackTintList;
+				materialSwitch.TrackTintList = CreateTrackTintList(currentTintList, trackColor.ToPlatform().ToArgb(), materialSwitch.Checked);
 			}
 			else
 			{
-				materialSwitch.TrackTintList = defaultTrackTintList;
+				var defaultOffColor = defaultTrackTintList?.GetColorForState([AAttribute.StateEnabled], new AColor(defaultTrackTintList.DefaultColor)) ?? 0;
+				var currentOffColor = materialSwitch.TrackTintList?.GetColorForState([AAttribute.StateEnabled], new AColor(defaultOffColor)) ?? defaultOffColor;
+
+				// Keep a custom checked-state tint while the unchecked state uses its platform default.
+				if (materialSwitch.Checked || currentOffColor != defaultOffColor)
+					materialSwitch.TrackTintList = defaultTrackTintList;
 			}
+		}
+
+		static ColorStateList CreateTrackTintList(ColorStateList? tintList, int color, bool isOn)
+		{
+			if (tintList is null)
+				return ColorStateList.ValueOf(new AColor(color));
+
+			var defaultColor = new AColor(tintList.DefaultColor);
+			var disabledColor = tintList.GetColorForState([], defaultColor);
+			var checkedColor = tintList.GetColorForState([AAttribute.StateEnabled, AAttribute.StateChecked], defaultColor);
+			var normalColor = tintList.GetColorForState([AAttribute.StateEnabled], defaultColor);
+
+			return ColorStateListExtensions.CreateSwitch(
+				disabledColor,
+				isOn ? color : checkedColor,
+				isOn ? normalColor : color);
 		}
 
 		public static void UpdateThumbColor(this MSwitch materialSwitch, ISwitch view)
