@@ -38,6 +38,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			ItemView.Clickable = enableSelection;
+			UpdatePressFeedback();
+		}
+
+		// Show the platform touch feedback (ripple) whenever the item responds to taps, independent of selection
+		void UpdatePressFeedback()
+		{
+			if (OperatingSystem.IsAndroidVersionAtLeast(23))
+			{
+				ItemView.Foreground = _isSelectionEnabled ? (_selectableItemDrawable ??= GetSelectableItemDrawable()) : null;
+			}
 		}
 
 		public bool IsSelected
@@ -81,14 +91,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (!UseDefaultSelectionColor)
 			{
 				return;
-			}
-			if (OperatingSystem.IsAndroidVersionAtLeast(23))
-			{
-				// We're looking for the foreground ripple effect, which is not available on older APIs
-				// Limiting this to Marshmallow and newer, because View.setForeground() is not available on lower APIs
-				_selectableItemDrawable = !isSelected ? null : (_selectableItemDrawable ?? GetSelectableItemDrawable());
-
-				ItemView.Foreground = _selectableItemDrawable;
 			}
 
 			_selectedDrawable = !isSelected ? null : (_selectedDrawable ?? GetSelectedDrawable());
