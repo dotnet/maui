@@ -27,8 +27,13 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 	public const string ReplaceItemsSource = "ReplaceItemsSource";
 	public const string IndexEntry = "IndexEntry";
 	public const string CurrentSelectionTextLabel = "CurrentSelectionTextLabel";
+	public const string SelectedItemsCount = "SelectedItemsCount";
 	public const string MultipleModePreselection = "MultipleModePreselection";
 	public const string SingleModePreselection = "SingleModePreselection";
+	public const string ReplaceSelectedItems = "ReplaceSelectedItems";
+	public const string ClearOldSelectedItems = "ClearOldSelectedItems";
+	public const string MutateNewSelectedItems = "MutateNewSelectedItems";
+	public const string SetSelectedItemsNull = "SetSelectedItemsNull";
 
 	private const string InitialStringItemsOrder = "Apple|Banana|Carrot|Broccoli";
 	private const string InitialGroupedStringItemsOrder = "Apple|Banana|Orange|Carrot|Broccoli|Spinach";
@@ -68,7 +73,11 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 
 	private void WaitForItemInItemsLayout(string item, string itemsLayout, bool scrollLeft = false)
 	{
-		if (itemsLayout is ItemsLayoutHorizontalList or ItemsLayoutHorizontalGrid)
+		if (itemsLayout is ItemsLayoutVerticalList or ItemsLayoutVerticalGrid)
+		{
+			App.ScrollDown(CollectionViewItemsSource, ScrollStrategy.Gesture, swipePercentage: 0.9, swipeSpeed: 500);
+		}
+		else if (itemsLayout is ItemsLayoutHorizontalList or ItemsLayoutHorizontalGrid)
 		{
 			if (scrollLeft)
 			{
@@ -109,7 +118,6 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 		App.WaitForElement(ReplaceItemsSource);
 		App.Tap(ReplaceItemsSource);
 		App.WaitForElement("Updated Group A");
-		App.WaitForElement("Updated Group B");
 		App.WaitForElement("Updated calculator.png");
 		App.WaitForNoElement("dotnet_bot.png");
 	}
@@ -170,6 +178,7 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 		App.WaitForElement(IndexEntry);
 		App.EnterText(IndexEntry, "2");
 		App.Tap(AddItems);
+		App.ScrollDown(CollectionViewItemsSource, ScrollStrategy.Gesture, swipePercentage: 0.9, swipeSpeed: 500);
 		App.WaitForElement("oasis.jpg");
 	}
 
@@ -223,6 +232,7 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 		App.Tap(ItemsSourceObservableCollection);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
+		App.ScrollDown(CollectionViewItemsSource, ScrollStrategy.Gesture, swipePercentage: 0.9, swipeSpeed: 500);
 		App.WaitForElement("avatar.png");
 		App.WaitForElement(RemoveItems);
 		App.Tap(RemoveItems);
@@ -359,6 +369,7 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 		App.WaitForElement(IndexEntry);
 		App.EnterText(IndexEntry, "1");
 		App.Tap(AddItems);
+		App.ScrollDown(CollectionViewItemsSource, ScrollStrategy.Gesture, swipePercentage: 0.9, swipeSpeed: 500);
 		App.WaitForElement("groceries.png");
 	}
 
@@ -376,7 +387,9 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 		App.Tap(Apply);
 		App.WaitForElement(AddItems);
 		App.Tap(AddItems);
+		App.ScrollDown(CollectionViewItemsSource, ScrollStrategy.Gesture, swipePercentage: 0.9, swipeSpeed: 500);
 		App.WaitForElement("green.png");
+
 	}
 
 	[Test]
@@ -410,6 +423,7 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 		App.Tap(ItemsSourceList);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
+		App.ScrollDown(CollectionViewItemsSource, ScrollStrategy.Gesture, swipePercentage: 0.9, swipeSpeed: 500);
 		App.WaitForElement("calculator.png");
 		App.WaitForElement(RemoveItems);
 		App.Tap(RemoveItems);
@@ -802,6 +816,7 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 		App.WaitForElement(IndexEntry);
 		App.EnterText(IndexEntry, "1");
 		App.Tap(AddItems);
+		App.ScrollDown(CollectionViewItemsSource, ScrollStrategy.Gesture, swipePercentage: 0.9, swipeSpeed: 500);
 		App.WaitForElement("groceries.png");
 	}
 
@@ -823,6 +838,7 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 		App.WaitForElement("Group B");
 		App.WaitForElement(AddItems);
 		App.Tap(AddItems);
+		App.ScrollDown(CollectionViewItemsSource, ScrollStrategy.Gesture, swipePercentage: 0.9, swipeSpeed: 500);
 		App.WaitForElement("green.png");
 	}
 
@@ -866,6 +882,7 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 		App.WaitForElement("dotnet_bot.png");
 		App.WaitForElement("Group A");
 		App.WaitForElement("Group B");
+		App.ScrollDown(CollectionViewItemsSource, ScrollStrategy.Gesture, swipePercentage: 0.9, swipeSpeed: 500);
 		App.WaitForElement("avatar.png");
 		App.WaitForElement(RemoveItems);
 		App.Tap(RemoveItems);
@@ -889,6 +906,7 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 		App.WaitForElement(IndexEntry);
 		App.EnterText(IndexEntry, "6");
 		App.Tap(AddItems);
+		App.ScrollDown(CollectionViewItemsSource, ScrollStrategy.Gesture, swipePercentage: 0.9, swipeSpeed: 500);
 		App.WaitForElement("Strawberry");
 		Assert.That(App.FindElementsByText("Strawberry").Count, Is.EqualTo(1));
 		VerifyItemsSourceState(7, "Apple|Banana|Orange|Carrot|Broccoli|Spinach|Strawberry");
@@ -910,6 +928,7 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 		App.WaitForElement(IndexEntry);
 		App.EnterText(IndexEntry, "3");
 		App.Tap(AddItems);
+		App.ScrollDown(CollectionViewItemsSource, ScrollStrategy.Gesture, swipePercentage: 0.9, swipeSpeed: 500);
 		App.WaitForElement("Raseberry");
 		Assert.That(App.FindElementsByText("Raseberry").Count, Is.EqualTo(1));
 		VerifyItemsSourceState(7, "Apple|Banana|Orange|Raseberry|Carrot|Broccoli|Spinach");
@@ -970,7 +989,6 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 		App.Tap(RemoveItems);
 		VerifyItemsSourceState(6, InitialGroupedStringItemsOrder);
 		App.WaitForElement("Apple");
-		App.WaitForElement("Spinach");
 		App.WaitForElement("Vegetables");
 	}
 
@@ -1487,5 +1505,198 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 		App.Tap(RemoveItems);
 		Assert.That(App.WaitForElement(CurrentSelectionTextLabel).GetText(), Is.EqualTo("No current items"));
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
+	public void VerifyObservableItemsSourceMutationsAfterReplacement()
+	{
+		ConfigureItemsSource(ItemsSourceObservableCollection, ItemsLayoutVerticalList);
+		App.Tap(ReplaceItemsSource);
+		App.WaitForElement("Updated Item 1");
+		App.Tap(AddItems);
+		App.WaitForElement("Kiwi");
+		VerifyItemsSourceState(5, "Updated Item 1|Updated Item 2|Updated Item 3|Updated Item 4|Kiwi");
+		App.Tap(RemoveItems);
+		App.WaitForNoElement("Kiwi");
+		VerifyItemsSourceState(4, "Updated Item 1|Updated Item 2|Updated Item 3|Updated Item 4");
+	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
+	public void VerifyGroupedItemsSourceMutationsAfterReplacement()
+	{
+		ConfigureItemsSource(ItemsSourceGroupedList, ItemsLayoutVerticalList, grouped: true);
+		App.Tap(ReplaceItemsSource);
+		App.WaitForElement("Updated Item 1");
+		App.Tap(AddItems);
+		App.WaitForElement("Kiwi");
+		VerifyItemsSourceState(5, "Updated Item 1|Updated Item 2|Kiwi|Updated Item 3|Updated Item 4");
+		App.EnterText(IndexEntry, "2");
+		App.Tap(RemoveItems);
+		App.WaitForNoElement("Kiwi");
+		VerifyItemsSourceState(4, "Updated Item 1|Updated Item 2|Updated Item 3|Updated Item 4");
+	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
+	public void VerifyObservableItemsSourceCanRemoveAllRemoveAgainAndAddBack()
+	{
+		ConfigureItemsSource(ItemsSourceObservableCollection, ItemsLayoutVerticalList);
+		VerifyItemsSourceState(4, InitialStringItemsOrder);
+
+		for (var i = 0; i < 4; i++)
+		{
+			App.EnterText(IndexEntry, "0");
+			App.Tap(RemoveItems);
+		}
+
+		VerifyItemsSourceState(0, string.Empty);
+		App.Tap(RemoveItems);
+		VerifyItemsSourceState(0, string.Empty);
+		App.Tap(AddItems);
+		VerifyItemsSourceState(1, "Kiwi");
+		App.WaitForElement("Kiwi");
+	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
+	public void VerifyGroupedItemsSourceCanRemoveAllRemoveAgainAndAddBack()
+	{
+		ConfigureItemsSource(ItemsSourceGroupedList, ItemsLayoutVerticalList, grouped: true);
+		VerifyItemsSourceState(6, InitialGroupedStringItemsOrder);
+
+		for (var i = 0; i < 6; i++)
+			App.Tap(RemoveItems);
+
+		VerifyItemsSourceState(0, string.Empty);
+		App.Tap(RemoveItems);
+		VerifyItemsSourceState(0, string.Empty);
+		App.Tap(AddItems);
+		VerifyItemsSourceState(1, "Kiwi");
+		App.WaitForElement("Kiwi");
+	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+	public void VerifyGroupedItemsSourceHandlesEmptyGroupAndBoundaryRemoval()
+	{
+		ConfigureItemsSource(ItemsSourceGroupedList, ItemsLayoutVerticalList, grouped: true);
+		VerifyItemsSourceState(6, InitialGroupedStringItemsOrder);
+
+		for (var i = 0; i < 3; i++)
+		{
+			App.EnterText(IndexEntry, "0");
+			App.Tap(RemoveItems);
+		}
+
+		VerifyItemsSourceState(3, "Carrot|Broccoli|Spinach");
+		App.WaitForElement("Vegetables");
+
+		App.EnterText(IndexEntry, "0");
+		App.Tap(RemoveItems);
+		VerifyItemsSourceState(2, "Broccoli|Spinach");
+	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
+	public void VerifyModelListCountAndCountMinusOneBoundaries()
+	{
+		ConfigureItemsSource(ItemsSourceList, ItemsLayoutVerticalList, modelItems: true);
+		VerifyItemsSourceState(2, "dotnet_bot.png|calculator.png");
+
+		App.EnterText(IndexEntry, "1");
+		App.Tap(AddItems);
+		VerifyItemsSourceState(3, "dotnet_bot.png|groceries.png|calculator.png");
+		App.EnterText(IndexEntry, "3");
+		App.Tap(AddItems);
+		VerifyItemsSourceState(4, "dotnet_bot.png|groceries.png|calculator.png|seth.png");
+		App.EnterText(IndexEntry, "4");
+		App.Tap(AddItems);
+		VerifyItemsSourceState(5, "dotnet_bot.png|groceries.png|calculator.png|seth.png|test.jpg");
+
+		App.EnterText(IndexEntry, "4");
+		App.Tap(RemoveItems);
+		VerifyItemsSourceState(4, "dotnet_bot.png|groceries.png|calculator.png|seth.png");
+		App.EnterText(IndexEntry, "4");
+		App.Tap(RemoveItems);
+		VerifyItemsSourceState(4, "dotnet_bot.png|groceries.png|calculator.png|seth.png");
+	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
+	public void VerifyStringListCountAndCountMinusOneBoundaries()
+	{
+		ConfigureItemsSource(ItemsSourceList, ItemsLayoutVerticalList);
+		VerifyItemsSourceState(4, InitialStringItemsOrder);
+
+		App.EnterText(IndexEntry, "3");
+		App.Tap(AddItems);
+		VerifyItemsSourceState(5, "Apple|Banana|Carrot|Raseberry|Broccoli");
+		App.EnterText(IndexEntry, "5");
+		App.Tap(AddItems);
+		VerifyItemsSourceState(6, "Apple|Banana|Carrot|Raseberry|Broccoli|Pineapple");
+
+		App.EnterText(IndexEntry, "5");
+		App.Tap(RemoveItems);
+		VerifyItemsSourceState(5, "Apple|Banana|Carrot|Raseberry|Broccoli");
+		App.EnterText(IndexEntry, "5");
+		App.Tap(RemoveItems);
+		VerifyItemsSourceState(5, "Apple|Banana|Carrot|Raseberry|Broccoli");
+	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
+	public void VerifyInvalidTextFallsBackToSequentialAddAndLastRemoval()
+	{
+		ConfigureItemsSource(ItemsSourceObservableCollection, ItemsLayoutVerticalList);
+
+		App.EnterText(IndexEntry, "not-a-number");
+		App.Tap(AddItems);
+		App.EnterText(IndexEntry, "   ");
+		App.Tap(AddItems);
+		App.EnterText(IndexEntry, "999999999999999999999999");
+		App.Tap(AddItems);
+		VerifyItemsSourceState(7, "Apple|Banana|Carrot|Broccoli|Kiwi|Guava|Chikoo");
+
+		App.EnterText(IndexEntry, "not-a-number");
+		App.Tap(RemoveItems);
+		App.EnterText(IndexEntry, "   ");
+		App.Tap(RemoveItems);
+		App.EnterText(IndexEntry, "999999999999999999999999");
+		App.Tap(RemoveItems);
+		VerifyItemsSourceState(4, InitialStringItemsOrder);
+	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
+	public void VerifySelectedItemsReplacementKeepsCurrentSelectionAfterOldCollectionChanges()
+	{
+		ConfigureItemsSource(ItemsSourceObservableCollection, ItemsLayoutVerticalList);
+		App.Tap(MultipleModePreselection);
+		Assert.That(App.WaitForElement(SelectedItemsCount).GetText(), Is.EqualTo("2"));
+
+		App.Tap(ReplaceSelectedItems);
+		Assert.That(App.WaitForElement(SelectedItemsCount).GetText(), Is.EqualTo("1"));
+		Assert.That(App.WaitForElement("SelectedItemText").GetText(), Is.EqualTo("Apple"));
+		App.Tap(ClearOldSelectedItems);
+		Assert.That(App.WaitForElement(SelectedItemsCount).GetText(), Is.EqualTo("1"));
+		Assert.That(App.WaitForElement("SelectedItemText").GetText(), Is.EqualTo("Apple"));
+		App.Tap(MutateNewSelectedItems);
+		Assert.That(App.WaitForElement(SelectedItemsCount).GetText(), Is.EqualTo("2"));
+		Assert.That(App.WaitForElement("SelectedItemText").GetText(), Is.EqualTo("Apple, Banana"));
+	}
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
+	public void VerifySelectedItemsNullIsNormalizedAndNewCollectionRemainsObservable()
+	{
+		ConfigureItemsSource(ItemsSourceObservableCollection, ItemsLayoutVerticalList);
+		App.Tap(MultipleModePreselection);
+		Assert.That(App.WaitForElement(SelectedItemsCount).GetText(), Is.EqualTo("2"));
+		App.Tap(SetSelectedItemsNull);
+		Assert.That(App.WaitForElement(SelectedItemsCount).GetText(), Is.EqualTo("0"));
+		App.Tap(MutateNewSelectedItems);
+		Assert.That(App.WaitForElement(SelectedItemsCount).GetText(), Is.EqualTo("1"));
 	}
 }

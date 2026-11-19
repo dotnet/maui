@@ -76,8 +76,15 @@ public partial class CollectionViewItemsSourcePage : ContentPage
 				}).Where(caption => caption != null))
 				: "No previous items";
 
-			var currentSelection = e.CurrentSelection.Any()
-				? string.Join(", ", e.CurrentSelection.Select(obj =>
+			IEnumerable<object> currentSelectionItems = vm.SelectionMode switch
+			{
+				SelectionMode.Multiple => vm.SelectedItems,
+				SelectionMode.Single when vm.SelectedItem is not null => new[] { vm.SelectedItem },
+				_ => Enumerable.Empty<object>()
+			};
+
+			var currentSelection = currentSelectionItems.Any()
+				? string.Join(", ", currentSelectionItems.Select(obj =>
 				{
 					if (obj is CollectionViewViewModel.CollectionViewTestItem item)
 						return item.Caption;
@@ -155,5 +162,25 @@ public partial class CollectionViewItemsSourcePage : ContentPage
 			_viewModel.SelectionMode = SelectionMode.Multiple;
 			_viewModel.SelectedItems = new ObservableCollection<object>(itemsToSelect);
 		}
+	}
+
+	private void ReplaceSelectedItems_Clicked(object sender, EventArgs e)
+	{
+		_viewModel.ReplaceSelectedItemsForTest();
+	}
+
+	private void SetSelectedItemsNull_Clicked(object sender, EventArgs e)
+	{
+		_viewModel.SelectedItems = null;
+	}
+
+	private void ClearOldSelectedItems_Clicked(object sender, EventArgs e)
+	{
+		_viewModel.ClearPreviousSelectedItemsForTest();
+	}
+
+	private void MutateNewSelectedItems_Clicked(object sender, EventArgs e)
+	{
+		_viewModel.MutateCurrentSelectedItemsForTest();
 	}
 }

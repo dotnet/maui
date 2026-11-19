@@ -86,6 +86,7 @@ public class CollectionViewViewModel : INotifyPropertyChanged
 	private SelectionMode _selectionMode = SelectionMode.None;
 	private object _selectedItem;
 	private ObservableCollection<object> _selectedItems = new ObservableCollection<object>();
+	private ObservableCollection<object> _previousSelectedItems;
 	private ScrollToPosition _scrollToPosition = ScrollToPosition.MakeVisible;
 	private string _groupName = "Fruits";
 	private int _groupIndex = 0;
@@ -160,28 +161,17 @@ public class CollectionViewViewModel : INotifyPropertyChanged
 	{
 		ClearSelection();
 
-		_itemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Vertical);
-		_itemsSourceType = ItemsSourceType.None;
-		_isGrouped = false;
-		_itemsSourceStringItems = true;
+		ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Vertical);
+		ItemsSourceType = ItemsSourceType.None;
+		IsGrouped = false;
+		ItemsSourceStringItems = true;
 		fruitIndex = 0;
 		groupAIndex = 0;
 		_addIndex = 0;
-		_selectionMode = SelectionMode.None;
+		SelectionMode = SelectionMode.None;
 
 		LoadItems();
 		SetItemTemplate();
-
-		OnPropertyChanged(nameof(ItemsLayout));
-		OnPropertyChanged(nameof(ItemsSourceType));
-		OnPropertyChanged(nameof(IsGrouped));
-		OnPropertyChanged(nameof(ItemsSourceStringItems));
-		OnPropertyChanged(nameof(SelectionMode));
-		OnPropertyChanged(nameof(ItemsSource));
-		OnPropertyChanged(nameof(ItemsSourceItemCount));
-		OnPropertyChanged(nameof(ItemsSourceItemOrder));
-		OnPropertyChanged(nameof(ShowAddRemoveButtons));
-		OnPropertyChanged(nameof(CanReplaceItemsSource));
 	}
 
 	public object EmptyView
@@ -1382,6 +1372,40 @@ public class CollectionViewViewModel : INotifyPropertyChanged
 		OnPropertyChanged(nameof(ItemsSource));
 		OnPropertyChanged(nameof(ItemsSourceItemCount));
 		OnPropertyChanged(nameof(ItemsSourceItemOrder));
+	}
+
+	public void ReplaceSelectedItemsForTest()
+	{
+		_previousSelectedItems = SelectedItems;
+		var replacement = SelectedItems?.Take(1).ToList() ?? new List<object>();
+		SelectedItems = new ObservableCollection<object>(replacement);
+	}
+
+	public void ClearPreviousSelectedItemsForTest()
+	{
+		if (_previousSelectedItems is null)
+			return;
+
+		_previousSelectedItems.Clear();
+	}
+
+	public void MutateCurrentSelectedItemsForTest()
+	{
+		var item = GetSelectableItems().FirstOrDefault(candidate => !SelectedItems.Contains(candidate));
+		if (item is not null)
+			SelectedItems.Add(item);
+	}
+
+	private IEnumerable<object> GetSelectableItems()
+	{
+		return ItemsSource switch
+		{
+			IEnumerable<CollectionViewTestItem> items => items.Cast<object>(),
+			IEnumerable<CollectionViewTestModelItem> items => items.Cast<object>(),
+			IEnumerable<Grouping<string, CollectionViewTestItem>> groups => groups.SelectMany(group => group).Cast<object>(),
+			IEnumerable<Grouping<string, CollectionViewTestModelItem>> groups => groups.SelectMany(group => group).Cast<object>(),
+			_ => Enumerable.Empty<object>()
+		};
 	}
 
 	private void ClearSelection()
