@@ -10,14 +10,14 @@ public class Issue4981 : _IssuesUITest
 
 	public override string Issue => "DisplayPromptAsync respects initial value selection";
 
-	[Test]
+	[Test, Order(1)]
 	[Category(UITestCategories.DisplayPrompt)]
 	public void PromptInitialValueIsSelected()
 	{
 		VerifyPrompt("PreselectTrueButton");
 	}
 
-	[Test]
+	[Test, Order(2)]
 	[Category(UITestCategories.DisplayPrompt)]
 	public void PromptInitialValueIsNotSelected()
 	{
@@ -36,7 +36,15 @@ public class Issue4981 : _IssuesUITest
 		}
 		finally
 		{
+#if MACCATALYST
+			var alert = App.WaitForElement(() => App.GetAlert());
+			var okButton = alert.GetAlertButtons()
+				.Single(button => button.GetText() == "OK");
+			okButton.Click();
+			App.WaitForNoElement(() => App.GetAlert());
+#else
 			App.TapDisplayAlertButton("OK");
+#endif
 		}
 	}
 }
