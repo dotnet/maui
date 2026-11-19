@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Xml;
 using Microsoft.CodeAnalysis;
 using Microsoft.Maui.Controls.Xaml;
 
@@ -25,31 +27,83 @@ internal static class XDataTypeResolver
 		if (!TryFindXDataTypeNode(node, context, out INode? dataTypeNode, out _) || dataTypeNode is null)
 			return false;
 
+		var scopeNode = dataTypeNode.Parent as ElementNode ?? node;
+		return TryResolveXDataTypeNode(
+			dataTypeNode,
+			scopeNode,
+			context.Compilation,
+			context.XmlnsCache,
+			context.TypeCache,
+			context,
+			out dataTypeSymbol);
+	}
+
+	/// <summary>
+	/// Resolves an x:DataType property value node (ValueNode, MarkupNode, or TypeExtension ElementNode) to a type symbol.
+	/// </summary>
+	public static bool TryResolveXDataTypeNode(
+		INode dataTypeNode,
+		ElementNode scopeNode,
+		Compilation compilation,
+		AssemblyAttributes xmlnsCache,
+		IDictionary<XmlType, INamedTypeSymbol> typeCache,
+		SourceGenContext? context,
+		out ITypeSymbol? dataTypeSymbol)
+	{
+		dataTypeSymbol = null;
+
 		if (dataTypeNode.RepresentsType(XamlParser.X2009Uri, "NullExtension"))
 			return false;
 
-		// TypeExtension: lookup from context's type cache
-		if (dataTypeNode.RepresentsType(XamlParser.X2009Uri, "TypeExtension"))
+		// TypeExtension: check context cache first (when already created), otherwise parse before CreateValuesVisitor runs.
+		if (dataTypeNode is ElementNode typeElement
+			&& (typeElement.RepresentsType(XamlParser.X2009Uri, "TypeExtension")
+				|| typeElement.RepresentsType(XamlParser.X2006Uri, "TypeExtension")
+				|| typeElement.RepresentsType(XamlParser.X2009Uri, "Type")
+				|| typeElement.RepresentsType(XamlParser.X2006Uri, "Type")))
 		{
-			SourceGenContext? ctx = context;
+			var ctx = context;
 			while (ctx is not null)
 			{
 				if (ctx.Types.TryGetValue(dataTypeNode, out dataTypeSymbol))
 					return true;
 				ctx = ctx.ParentContext;
 			}
+
+			XmlType? typeExtensionXmlType;
+			try
+			{
+				typeExtensionXmlType = TypeArgumentsParser.ParseTypeExtension(typeElement, dataTypeNode as IXmlLineInfo);
+			}
+			catch (XamlParseException)
+			{
+				return false;
+			}
+
+			if (typeExtensionXmlType is not null
+				&& typeExtensionXmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, typeCache, out INamedTypeSymbol? typeExtensionSymbol))
+			{
+				dataTypeSymbol = typeExtensionSymbol;
+				return true;
+			}
+
 			return false;
 		}
 
-		// Value node with type name string
-		string? dataTypeName = (dataTypeNode as ValueNode)?.Value as string;
+		// ValueNode with type name string or unexpanded MarkupNode (e.g., {x:Type local:MyViewModel}).
+		string? dataTypeName = dataTypeNode switch
+		{
+			ValueNode valueNode => valueNode.Value as string,
+			MarkupNode markupNode => markupNode.MarkupString,
+			_ => null,
+		};
 		if (dataTypeName is null)
 			return false;
 
-		XmlType? dataType = null;
+		XmlType? dataType;
 		try
 		{
-			dataType = TypeArgumentsParser.ParseSingle(dataTypeName, node.NamespaceResolver, dataTypeNode as System.Xml.IXmlLineInfo);
+			dataType = TypeArgumentsParser.ParseSingle(dataTypeName, scopeNode.NamespaceResolver, dataTypeNode as IXmlLineInfo);
 		}
 		catch (XamlParseException)
 		{
@@ -59,7 +113,7 @@ internal static class XDataTypeResolver
 		if (dataType is null)
 			return false;
 
-		if (!dataType.TryResolveTypeSymbol(null, context.Compilation, context.XmlnsCache, context.TypeCache, out INamedTypeSymbol? symbol))
+		if (!dataType.TryResolveTypeSymbol(null, compilation, xmlnsCache, typeCache, out INamedTypeSymbol? symbol))
 			return false;
 
 		dataTypeSymbol = symbol;

@@ -29,6 +29,7 @@ public partial class ViewHandler
 
 	partial void DisconnectingHandler(PlatformView platformView)
 	{
+		ControlExtensions.BackgroundImageRequests.Begin(platformView);
 		FocusManagerMapping.Remove(platformView);
 		UpdateIsFocused(false);
 	}

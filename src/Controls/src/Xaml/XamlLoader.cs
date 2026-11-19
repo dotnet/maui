@@ -26,6 +26,7 @@
 // THE SOFTWARE.
 
 using System;
+using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -50,7 +51,13 @@ namespace Microsoft.Maui.Controls.Xaml
 			var xaml = GetXamlForType(callingType, view, out var useDesignProperties);
 			if (string.IsNullOrEmpty(xaml))
 				throw new XamlParseException(string.Format("No embeddedresource found for {0}", callingType), new XmlLineInfo());
-			Load(view, xaml, useDesignProperties);
+
+			// Only the SourceGen fallback has already compiled the inline code.
+			var sourceGenFallback = xaml.IndexOf("Code", StringComparison.Ordinal) >= 0
+				&& callingType.GetMethod("InitializeComponentRuntime",
+					BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly,
+					null, Type.EmptyTypes, null)?.GetCustomAttribute<GeneratedCodeAttribute>()?.Tool == "Microsoft.Maui.Controls.SourceGen";
+			Load(view, xaml, null, useDesignProperties, removeCodeDirectives: sourceGenFallback);
 		}
 
 		public static void Load(object view, string xaml) => Load(view, xaml, false);
@@ -58,11 +65,14 @@ namespace Microsoft.Maui.Controls.Xaml
 		public static void Load(object view, string xaml, Assembly rootAssembly) => Load(view, xaml, rootAssembly, false);
 
 		public static void Load(object view, string xaml, Assembly rootAssembly, bool useDesignProperties)
+			=> Load(view, xaml, rootAssembly, useDesignProperties, removeCodeDirectives: false);
+
+		static void Load(object view, string xaml, Assembly rootAssembly, bool useDesignProperties, bool removeCodeDirectives)
 		{
 			rootAssembly ??= view.GetType().Assembly;
 
 			if (XamlParser.s_xmlnsPrefixes == null)
-				XamlParser.GatherXmlnsDefinitionAndXmlnsPrefixAttributes(rootAssembly);
+				XamlParser.GatherXmlnsDefinitionAndXmlnsPrefixAttributes();
 
 			var nsmgr = new XmlNamespaceManager(new NameTable());
 			nsmgr.AddNamespace("", XamlParser.DefaultImplicitUri);
@@ -88,6 +98,8 @@ namespace Microsoft.Maui.Controls.Xaml
 
 					var rootnode = new RuntimeRootNode(new XmlType(reader.NamespaceURI, reader.Name, null), view, (IXmlNamespaceResolver)reader) { LineNumber = ((IXmlLineInfo)reader).LineNumber, LinePosition = ((IXmlLineInfo)reader).LinePosition };
 					XamlParser.ParseXaml(rootnode, reader);
+					if (removeCodeDirectives && xaml.IndexOf("Code", StringComparison.Ordinal) >= 0)
+						PruneIgnoredNodesVisitor.RemoveCodeDirectives(rootnode);
 					var doNotThrow = ResourceLoader.ExceptionHandler2 != null;
 					Visit(rootnode, new HydrationContext
 					{
