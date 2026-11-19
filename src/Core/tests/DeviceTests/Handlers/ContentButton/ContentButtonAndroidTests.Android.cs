@@ -2,11 +2,15 @@ using System;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using Android.Content;
 using Android.Content.Res;
 using Android.Graphics.Drawables;
 using Android.OS;
 using Android.Views;
 using Android.Views.Accessibility;
+using Android.Widget;
+using AndroidX.Core.Graphics;
+using AndroidX.Core.View;
 using AndroidX.Core.View.Accessibility;
 using Google.Android.Material.Card;
 using Microsoft.Maui.DeviceTests.Stubs;
@@ -15,6 +19,7 @@ using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Xunit;
 using AColor = Android.Graphics.Color;
+using AInsets = AndroidX.Core.Graphics.Insets;
 using AView = Android.Views.View;
 
 namespace Microsoft.Maui.DeviceTests
@@ -239,6 +244,34 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Same(third, ((IElementHandler)handler).VirtualView);
 				Assert.Equal(1, firstReleased);
 				return Task.CompletedTask;
+			});
+		}
+
+		[Fact]
+		public async Task ReplacementRefreshesSafeAreaListenerEligibility()
+		{
+			var handler = await CreateHandlerAsync(new ContentButtonStub());
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var platformView = handler.PlatformView;
+				using var parent = new InsetTestRecyclerView(MauiContext.Context);
+				parent.AddView(platformView);
+				MauiWindowInsetListener.RegisterParentForChildViews(parent);
+
+				Assert.False(MauiWindowInsetListener.ShouldSetMauiWindowInsetListener(platformView));
+
+				handler.SetVirtualView(new ExplicitSafeAreaContentButtonStub());
+				Assert.True(MauiWindowInsetListener.ShouldSetMauiWindowInsetListener(platformView));
+
+				using var builder = new WindowInsetsCompat.Builder();
+				using var insets = builder
+					.SetInsets(WindowInsetsCompat.Type.SystemBars(), AInsets.Of(40, 0, 0, 0))
+					.Build();
+				ViewCompat.DispatchApplyWindowInsets(platformView, insets);
+
+				Assert.Equal(40, platformView.PaddingLeft);
+				parent.RemoveView(platformView);
 			});
 		}
 
@@ -611,6 +644,22 @@ namespace Microsoft.Maui.DeviceTests
 				button.CardBackgroundColor = colors;
 				return button;
 			}
+		}
+
+		sealed class InsetTestRecyclerView : FrameLayout, IMauiRecyclerView
+		{
+			public InsetTestRecyclerView(Context context) : base(context)
+			{
+			}
+		}
+
+		sealed class ExplicitSafeAreaContentButtonStub : ContentButtonStub, ISafeAreaView2
+		{
+			public bool HasExplicitSafeAreaEdges => true;
+
+			Thickness ISafeAreaView2.SafeAreaInsets { set { } }
+
+			public SafeAreaRegions GetSafeAreaRegionsForEdge(int edge) => SafeAreaRegions.Container;
 		}
 	}
 }

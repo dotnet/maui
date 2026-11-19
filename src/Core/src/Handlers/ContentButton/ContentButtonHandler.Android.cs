@@ -41,7 +41,13 @@ namespace Microsoft.Maui.Handlers
 			base.SetVirtualView(view);
 
 			if (PlatformView is MauiContentButton platformView)
-				platformView.CrossPlatformLayout = VirtualView;
+			{
+				if (!ReferenceEquals(platformView.CrossPlatformLayout, VirtualView))
+				{
+					platformView.CrossPlatformLayout = VirtualView;
+					platformView.MarkSafeAreaEdgeConfigurationChanged();
+				}
+			}
 		}
 
 		protected override void ConnectHandler(MaterialCardView platformView)
